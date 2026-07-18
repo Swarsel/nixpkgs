@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
+  directoryListingUpdater,
+  efl,
+  gst_all_1,
   meson,
   ninja,
   pkg-config,
-  efl,
-  gst_all_1,
   wrapGAppsHook3,
-  directoryListingUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -40,13 +40,15 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Video and audio player along the lines of mplayer";
-    mainProgram = "rage";
     homepage = "https://enlightenment.org/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       matejc
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "rage";
     teams = [ lib.teams.enlightenment ];
   };
 }

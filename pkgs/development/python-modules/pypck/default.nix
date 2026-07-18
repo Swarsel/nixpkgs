@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-timeout,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pypck";
   version = "0.9.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alengwenus";
@@ -25,18 +24,16 @@ buildPythonPackage (finalAttrs: {
     echo "${finalAttrs.version}" > VERSION
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-timeout
     pytestCheckHook
   ];
 
-  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [ "test_connection_lost" ];
-
   __darwinAllowLocalNetworking = true;
-
+  build-system = [ setuptools ];
+  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [ "test_connection_lost" ];
+  pyproject = true;
   pythonImportsCheck = [ "pypck" ];
 
   meta = {

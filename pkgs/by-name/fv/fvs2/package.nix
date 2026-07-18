@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 let
   core = fetchFromGitHub {
+    hash = "sha256-IBNNa5LGjtPNWhI0PC0NX8rK8z2LnfzOpKpDE1TZQhw=";
     owner = "fvs-lab";
     repo = "core";
     tag = "v0.0.1";
-    hash = "sha256-IBNNa5LGjtPNWhI0PC0NX8rK8z2LnfzOpKpDE1TZQhw=";
   };
 in
 buildGoModule (finalAttrs: {
@@ -34,8 +34,8 @@ buildGoModule (finalAttrs: {
     description = "Standalone CLI for FVS v2";
     homepage = "https://github.com/fvs-lab/fvs2";
     license = lib.licenses.mit;
-    mainProgram = "fvs2";
     maintainers = [ lib.maintainers.Gliczy ];
     platforms = lib.platforms.linux;
+    mainProgram = "fvs2";
   };
 })

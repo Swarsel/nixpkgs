@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libgcrypt,
-  libuuid,
   gettext,
   gitUpdater,
+  libgcrypt,
+  libuuid,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ntfsprogs-plus";
@@ -27,6 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -41,13 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
     lib.optionals stdenv.hostPlatform.isLinux [ libuuid ]
     ++ lib.optionals (!stdenv.hostPlatform.isGnu) [ gettext ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   configureFlags = [ "--exec-prefix=\${prefix}" ];
-
+  __structuredAttrs = true;
   enableParallelBuilding = true;
-
   passthru.updateScript = gitUpdater { };
 
   meta = {

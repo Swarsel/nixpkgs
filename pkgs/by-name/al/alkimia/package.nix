@@ -5,8 +5,8 @@
   cmake,
   doxygen,
   graphviz,
-  mpir,
   kdePackages,
+  mpir,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,16 +14,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "8.2.1";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "office";
     repo = "alkimia";
     tag = "v${finalAttrs.version}";
     hash = "sha256-v5DfnnzOMsoCXr074ydXxBIrSsnbex6G/OqF6psTvPs=";
+    domain = "invent.kde.org";
   };
-
-  cmakeFlags = [
-    "-DBUILD_WITH_QT6=1"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -48,10 +44,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ mpir ];
 
+  cmakeFlags = [
+    "-DBUILD_WITH_QT6=1"
+  ];
+
   meta = {
     description = "Library used by KDE finance applications";
-    homepage = "https://invent.kde.org/office/alkimia";
-    mainProgram = "onlinequoteseditor5";
+
     longDescription = ''
       Alkimia is the infrastructure for common storage and business
       logic that will be used by all financial applications in KDE.
@@ -59,7 +58,10 @@ stdenv.mkDerivation (finalAttrs: {
       The target is to share financial related information over
       application boundaries.
     '';
+
+    homepage = "https://invent.kde.org/office/alkimia";
     license = lib.licenses.lgpl21Plus;
     platforms = kdePackages.qtbase.meta.platforms;
+    mainProgram = "onlinequoteseditor5";
   };
 })

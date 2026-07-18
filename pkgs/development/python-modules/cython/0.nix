@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-  setuptools,
-  python,
-  pkg-config,
-  pythonAtLeast,
   gdb,
-  numpy,
   ncurses,
+  numpy,
+  pkg-config,
+  python,
+  pythonAtLeast,
+  setuptools,
 }:
 
 let
@@ -35,10 +35,6 @@ in
 buildPythonPackage rec {
   pname = "cython";
   version = "0.29.37.1";
-  pyproject = true;
-
-  # error: too few arguments to function '_PyLong_AsByteArray'
-  disabled = pythonAtLeast "3.13";
 
   src = fetchFromGitHub {
     owner = "cython";
@@ -46,19 +42,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-XsEy2NrG7hq+VXRCRbD4BRaBieU6mVoE0GT52L3mMhs=";
   };
-
-  nativeBuildInputs = [
-    pkg-config
-    setuptools
-  ];
-
-  nativeCheckInputs = [
-    gdb
-    numpy
-    ncurses
-  ];
-
-  env.LC_ALL = "en_US.UTF-8";
 
   patches = [
     # backport Cython 3.0 trashcan support (https://github.com/cython/cython/pull/2842) to 0.X series.
@@ -73,10 +56,26 @@ buildPythonPackage rec {
     # 3.11 support, because the API used in Cython's implementation
     # changed: https://github.com/cython/cython/pull/4475
     (fetchpatch {
+      hash = "sha256-q0f63eetKrDpmP5Z4v8EuGxg26heSyp/62OYqhRoSso=";
       name = "disable-trashcan.patch";
       url = "https://github.com/cython/cython/commit/e337825cdcf5e94d38ba06a0cb0188e99ce0cc92.patch";
-      hash = "sha256-q0f63eetKrDpmP5Z4v8EuGxg26heSyp/62OYqhRoSso=";
     })
+  ];
+
+  nativeBuildInputs = [
+    pkg-config
+    setuptools
+  ];
+
+  env.LC_ALL = "en_US.UTF-8";
+  # https://github.com/cython/cython/issues/2785
+  # Temporary solution
+  doCheck = false;
+
+  nativeCheckInputs = [
+    gdb
+    numpy
+    ncurses
   ];
 
   checkPhase = ''
@@ -88,19 +87,18 @@ buildPythonPackage rec {
       ) ''--exclude="(${builtins.concatStringsSep "|" excludedTests})"''}
   '';
 
-  # https://github.com/cython/cython/issues/2785
-  # Temporary solution
-  doCheck = false;
+  # error: too few arguments to function '_PyLong_AsByteArray'
+  disabled = pythonAtLeast "3.13";
+  pyproject = true;
   # doCheck = !stdenv.hostPlatform.isDarwin;
-
   # force regeneration of generated code in source distributions
   # https://github.com/cython/cython/issues/5089
   setupHook = ./setup-hook.sh;
 
   meta = {
-    changelog = "https://github.com/cython/cython/blob/${version}/CHANGES.rst";
     description = "Optimising static compiler for both the Python programming language and the extended Cython programming language";
     homepage = "https://cython.org";
+    changelog = "https://github.com/cython/cython/blob/${version}/CHANGES.rst";
     license = lib.licenses.asl20;
   };
 }

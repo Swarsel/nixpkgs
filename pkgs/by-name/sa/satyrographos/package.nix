@@ -1,7 +1,7 @@
 {
-  ocamlPackages,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  ocamlPackages,
 }:
 
 let
@@ -37,11 +37,11 @@ ocamlPackages.buildDunePackage {
   ];
 
   meta = {
-    changelog = "https://github.com/na4zagin3/satyrographos/releases/tag/${src.rev}";
     description = "Package manager for SATySFi";
     homepage = "https://github.com/na4zagin3/satyrographos";
+    changelog = "https://github.com/na4zagin3/satyrographos/releases/tag/${src.rev}";
+    license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
     mainProgram = "satyrographos";
-    license = lib.licenses.lgpl3Plus;
   };
 }

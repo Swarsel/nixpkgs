@@ -1,34 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  replaceVars,
-
+  # dependencies
+  alsa-plugins,
   # build system
   autoconf,
   automake,
+  buildPackages,
   cmake,
+  fetchpatch,
   libtool,
   makeWrapper,
+  mbrola,
   ninja,
+  pcaudiolib,
   pkg-config,
+  replaceVars,
   ronn,
+  sonic,
   which,
-
-  # dependencies
-  alsa-plugins,
   asyncSupport ? true,
   klattSupport ? true,
-  mbrola,
   mbrolaSupport ? true,
-  pcaudiolib,
   pcaudiolibSupport ? true,
-  sonic,
   sonicSupport ? true,
   speechPlayerSupport ? true,
   ucdSupport ? false,
-  buildPackages,
 }:
 
 let
@@ -42,10 +40,8 @@ let
   };
 
   ucd-tools = stdenv.mkDerivation {
-    pname = "ucd-tools";
     inherit version src;
-
-    sourceRoot = "${src.name}/src/ucd-tools";
+    pname = "ucd-tools";
 
     # fix compatibility with CMake (https://cmake.org/cmake/help/v4.0/policy/CMP0000.html)
     postPatch = ''
@@ -60,25 +56,27 @@ let
       cp -v libucd.a $out/
       runHook postInstall
     '';
+
+    sourceRoot = "${src.name}/src/ucd-tools";
   };
 in
 
 stdenv.mkDerivation rec {
-  pname = "espeak-ng";
   inherit version src;
+  pname = "espeak-ng";
 
   patches = [
     # https://github.com/espeak-ng/espeak-ng/pull/2274
     (fetchpatch {
+      hash = "sha256-UHuURyqRy/JVYYJH5EI5J2cpBfCNeTE24sMmheb+D2Q=";
       name = "libsonic.patch";
       url = "https://github.com/espeak-ng/espeak-ng/commit/83e646e711af608fafa8c01dd812cd29e073f644.patch";
-      hash = "sha256-UHuURyqRy/JVYYJH5EI5J2cpBfCNeTE24sMmheb+D2Q=";
     })
     # Remove after next release.
     (fetchpatch {
+      hash = "sha256-U694hGe+cwy7qLe/6XmNHYIhccJGsbM0CzPZT5pIpUI=";
       name = "cmake-default-ESPEAK_COMPAT-to-ON.patch";
       url = "https://github.com/espeak-ng/espeak-ng/commit/3dcbe7ea3ea85a9212968d0f05172dde4259e770.patch";
-      hash = "sha256-U694hGe+cwy7qLe/6XmNHYIhccJGsbM0CzPZT5pIpUI=";
     })
   ]
   ++ lib.optionals mbrolaSupport [

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
 }:
@@ -17,8 +17,8 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ cmake ];
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   checkPhase = ''
     runHook preCheck
     Bin/Release/wavelibLibTests
@@ -34,7 +34,7 @@ stdenv.mkDerivation {
     description = "C Implementation of Discrete Wavelet Transform (DWT,SWT and MODWT)";
     homepage = "https://github.com/rafat/wavelib";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ rowanG077 ];
+    platforms = lib.platforms.all;
   };
 }

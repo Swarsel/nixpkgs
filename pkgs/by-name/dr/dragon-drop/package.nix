@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   gtk3,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,22 +19,25 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ gtk3 ];
-
   makeFlags = [ "NAME=dragon-drop" ];
-  installFlags = [ "PREFIX=${placeholder "out"}" ];
+
   postInstall = ''
     ln -s $out/bin/dragon-drop $out/bin/xdragon
   '';
+
+  installFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
     description = "Simple drag-and-drop source/sink for X or Wayland (called dragon in upstream)";
     homepage = "https://github.com/mwh/dragon";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       das_j
       panicrune
     ];
-    mainProgram = "dragon-drop";
+
     platforms = lib.platforms.linux;
+    mainProgram = "dragon-drop";
   };
 })

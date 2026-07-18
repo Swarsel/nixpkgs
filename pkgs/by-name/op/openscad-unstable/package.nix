@@ -1,18 +1,16 @@
 {
   lib,
   stdenv,
-  clangStdenv,
-  llvmPackages,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  pkg-config,
   bison,
   boost,
   cairo,
   catch2_3,
   cgal,
+  clangStdenv,
   clipper2,
+  cmake,
+  ctestCheckHook,
   double-conversion,
   eigen,
   flex,
@@ -27,22 +25,24 @@
   lib3mf,
   libGLU,
   libice,
-  libsm,
   libsForQt5,
+  libsm,
   libspnav,
+  libxdmcp,
   libzip,
+  llvmPackages,
   manifold,
   mesa,
+  mimalloc,
   mpfr,
-  python3,
+  ninja,
   onetbb,
+  opencsg,
+  pkg-config,
+  python3,
   wayland,
   wayland-protocols,
   wrapGAppsHook3,
-  libxdmcp,
-  mimalloc,
-  opencsg,
-  ctestCheckHook,
 }:
 # clang consume much less RAM than GCC
 let
@@ -57,8 +57,8 @@ let
 in
 clangStdenv.mkDerivation rec {
   pname = "openscad-unstable";
-  unstable_date = "2026-02-25";
   version = "2021.01-unstable-${unstable_date}";
+
   src = fetchFromGitHub {
     owner = "openscad";
     repo = "openscad";
@@ -66,6 +66,14 @@ clangStdenv.mkDerivation rec {
     hash = "sha256-jCiCB3tbM0dyIC2gvQarzwjfYI9mnREkMI+0R3EaGPM=";
     fetchSubmodules = true; # Only really need sanitizers-cmake and MCAD and manifold
   };
+
+  postPatch = ''
+    patchShebangs scripts/
+
+    # Take Python3 executable as passed
+    sed -e '/set(VENV_DIR /d' -i tests/cmake/ImageCompare.cmake
+    sed -e '/find_path(VENV_BIN_PATH /d' -i tests/cmake/ImageCompare.cmake
+  '';
 
   nativeBuildInputs = [
     python3withPackages
@@ -78,6 +86,7 @@ clangStdenv.mkDerivation rec {
     ninja
     pkg-config
   ];
+
   buildInputs = [
     catch2_3
     clipper2
@@ -115,6 +124,7 @@ clangStdenv.mkDerivation rec {
     libGLU
   ]
   ++ lib.optional clangStdenv.hostPlatform.isDarwin libsForQt5.qtmacextras;
+
   cmakeFlags = [
     "-DEXPERIMENTAL=ON" # enable experimental options
     "-DSNAPSHOT=ON" # nightly icons
@@ -140,21 +150,11 @@ clangStdenv.mkDerivation rec {
   # tests rely on sysprof which is not available on darwin
   doCheck = !stdenv.hostPlatform.isDarwin;
 
-  # remove unused submodules, to ensure correct dependency usage
-  postUnpack = ''
-    ( cd $sourceRoot
-      for m in submodules/OpenCSG submodules/mimalloc submodules/Clipper2
-      do rm -r $m
-      done )
-  '';
-
-  postPatch = ''
-    patchShebangs scripts/
-
-    # Take Python3 executable as passed
-    sed -e '/set(VENV_DIR /d' -i tests/cmake/ImageCompare.cmake
-    sed -e '/find_path(VENV_BIN_PATH /d' -i tests/cmake/ImageCompare.cmake
-  '';
+  nativeCheckInputs = [
+    mesa.llvmpipeHook
+    ctestCheckHook
+    ghostscript
+  ];
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir $out/Applications
@@ -163,14 +163,6 @@ clangStdenv.mkDerivation rec {
     ln -s $out/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD $out/bin/openscad-unstable
   '';
 
-  nativeCheckInputs = [
-    mesa.llvmpipeHook
-    ctestCheckHook
-    ghostscript
-  ];
-
-  dontUseNinjaCheck = true;
-
   # These tests consistently fail when building on aarch64-linux
   disabledTests = [
     "export-svg_spec-paths-arcs01"
@@ -178,8 +170,21 @@ clangStdenv.mkDerivation rec {
     "export-svg-fill-only_spec-paths-arcs01"
   ];
 
+  dontUseNinjaCheck = true;
+
+  # remove unused submodules, to ensure correct dependency usage
+  postUnpack = ''
+    ( cd $sourceRoot
+      for m in submodules/OpenCSG submodules/mimalloc submodules/Clipper2
+      do rm -r $m
+      done )
+  '';
+
+  unstable_date = "2026-02-25";
+
   meta = {
     description = "3D parametric model compiler (unstable)";
+
     longDescription = ''
       OpenSCAD is a software for creating solid 3D CAD objects. It is free
       software and available for Linux/UNIX, MS Windows and macOS.
@@ -191,15 +196,18 @@ clangStdenv.mkDerivation rec {
       machine parts but pretty sure is not what you are looking for when you are more
       interested in creating computer-animated movies.
     '';
+
     homepage = "https://openscad.org/";
     # note that the *binary license* is gpl3 due to CGAL
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       hzeller
       pca006132
       raskin
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "openscad";
   };
 }

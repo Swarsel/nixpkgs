@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  openssl,
   curl,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     openssl
     curl
@@ -30,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/GuardTime/libksi";
     description = "Keyless Signature Infrastructure API library";
+    homepage = "https://github.com/GuardTime/libksi";
     license = lib.licenses.asl20;
     platforms = lib.platforms.all;
   };

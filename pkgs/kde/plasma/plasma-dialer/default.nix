@@ -1,15 +1,14 @@
 {
-  mkKdeDerivation,
-  pkg-config,
-  qtbase,
   callaudiod,
   libphonenumber,
+  mkKdeDerivation,
+  pkg-config,
   protobuf,
+  qtbase,
 }:
 mkKdeDerivation {
   pname = "plasma-dialer";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     callaudiod
     libphonenumber
@@ -19,4 +18,6 @@ mkKdeDerivation {
   extraCmakeFlags = [
     "-DQtWaylandScanner_EXECUTABLE=${qtbase}/libexec/qtwaylandscanner"
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 }

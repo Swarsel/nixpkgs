@@ -1,11 +1,11 @@
 {
   lib,
-  aiohttp-retry,
+  fetchFromGitHub,
   aiohttp,
+  aiohttp-retry,
   buildPythonPackage,
   cryptography,
   django,
-  fetchFromGitHub,
   mock,
   multidict,
   pyjwt,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "twilio";
   version = "9.10.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "twilio";
@@ -30,6 +29,14 @@ buildPythonPackage (finalAttrs: {
 
   # https://github.com/twilio/twilio-python/pull/919
   patches = [ ./remove-aiounittest.patch ];
+
+  nativeCheckInputs = [
+    cryptography
+    django
+    mock
+    multidict
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -42,12 +49,10 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    cryptography
-    django
-    mock
-    multidict
-    pytestCheckHook
+  disabledTestPaths = [
+    # Tests require API token
+    "tests/cluster/test_webhook.py"
+    "tests/cluster/test_cluster.py"
   ];
 
   disabledTests = [
@@ -56,12 +61,7 @@ buildPythonPackage (finalAttrs: {
     "test_set_user_agent_extensions"
   ];
 
-  disabledTestPaths = [
-    # Tests require API token
-    "tests/cluster/test_webhook.py"
-    "tests/cluster/test_cluster.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "twilio" ];
 
   meta = {

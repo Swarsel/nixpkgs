@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   bluetooth-data-tools,
   bluetooth-sensor-state-data,
   buildPythonPackage,
-  fetchFromGitHub,
   home-assistant-bluetooth,
   poetry-core,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "sensorpush-ble";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Jsf/NTVwEHoH989yQqWEdG43H74JHlKpUvMWuH4paOw=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -32,11 +36,7 @@ buildPythonPackage rec {
     sensor-state-data
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sensorpush_ble" ];
 
   meta = {

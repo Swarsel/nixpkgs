@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   py3dns,
 }:
 
 buildPythonPackage rec {
   pname = "pyspf";
   version = "2.0.14";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "sdgathman";
@@ -18,14 +17,14 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ py3dns ];
-
   # requires /etc/resolv.conf to exist
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "http://bmsi.com/python/milter.html";
     description = "Python API for Sendmail Milters (SPF)";
-    maintainers = [ ];
+    homepage = "http://bmsi.com/python/milter.html";
     license = lib.licenses.gpl2;
+    maintainers = [ ];
   };
 }

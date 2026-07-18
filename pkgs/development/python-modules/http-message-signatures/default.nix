@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "http-message-signatures";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyauth";
@@ -21,20 +20,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-GFOdefqcAia4ZHqt1XMS2dw2bQ3AzbY0AQm7b8niYRI=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests
+  ];
+
   build-system = [
     hatchling
     hatch-vcs
   ];
 
   dependencies = [ cryptography ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests
-  ];
-
   enabledTestPaths = [ "test/test.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "http_message_signatures" ];
 
   meta = {

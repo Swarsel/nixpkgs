@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cryptography,
-  ifaddr,
   freezegun,
+  ifaddr,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "xknx";
   version = "3.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "XKNX";
@@ -22,22 +21,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-884iWQynTRBauJR10CzgkveoD9//Dq+mpvywtSnmT+c=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    cryptography
-    ifaddr
-  ];
-
   nativeCheckInputs = [
     freezegun
     pytest-asyncio
     pytestCheckHook
   ];
 
-  pytestFlags = [ "--asyncio-mode=auto" ];
+  build-system = [ setuptools ];
 
-  pythonImportsCheck = [ "xknx" ];
+  dependencies = [
+    cryptography
+    ifaddr
+  ];
 
   disabledTests = [
     # Test requires network access
@@ -48,12 +43,18 @@ buildPythonPackage (finalAttrs: {
     "test_start_secure_routing_manual"
   ];
 
+  pyproject = true;
+  pytestFlags = [ "--asyncio-mode=auto" ];
+  pythonImportsCheck = [ "xknx" ];
+
   meta = {
     description = "KNX Library Written in Python";
+
     longDescription = ''
       XKNX is an asynchronous Python library for reading and writing KNX/IP
       packets. It provides support for KNX/IP routing and tunneling devices.
     '';
+
     homepage = "https://github.com/XKNX/xknx";
     changelog = "https://github.com/XKNX/xknx/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;

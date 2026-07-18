@@ -1,19 +1,18 @@
 {
   lib,
+  arpeggio,
+  attrs,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  attrs,
-  pytestCheckHook,
   hypothesis,
   pretend,
-  arpeggio,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "parver";
   version = "0.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -32,6 +31,8 @@ buildPythonPackage rec {
     hypothesis
     pretend
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Allows parsing and manipulation of PEP 440 version numbers";

@@ -1,29 +1,26 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
+  fetchPypi,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-reversion";
   version = "6.3.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "django_reversion";
     inherit version;
     hash = "sha256-CqVOszRpT1Iv0jR0OXjGFNRap4XtxwphdyZ82q8G+Wc=";
+    pname = "django_reversion";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ django ];
 
   # Tests assume the availability of a mysql/postgresql database
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "reversion" ];
 
   meta = {

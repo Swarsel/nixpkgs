@@ -19,14 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "uname" "echo ${stdenv.hostPlatform.uname.system}"
   '';
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   makeFlags = [
     "AR:=$(AR)"
     "CC:=$(CC)"
     "RANLIB:=$(RANLIB)"
     "BUILD_CC=$(CC_FOR_BUILD)"
   ];
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   installFlags = [
     "PREFIX=$(out)"
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Unicode string library";
     homepage = "https://libs.suckless.org/libgrapheme/";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
   };
 })

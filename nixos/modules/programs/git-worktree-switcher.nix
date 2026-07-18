@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -29,13 +29,14 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [ git-worktree-switcher ];
-
     programs.bash.interactiveShellInit = initScript "bash";
-    programs.zsh.interactiveShellInit = lib.optionalString config.programs.zsh.enable (
-      initScript "zsh"
-    );
+
     programs.fish.interactiveShellInit = lib.optionalString config.programs.fish.enable (
       initScript "fish"
+    );
+
+    programs.zsh.interactiveShellInit = lib.optionalString config.programs.zsh.enable (
+      initScript "zsh"
     );
   };
 }

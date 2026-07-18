@@ -1,16 +1,15 @@
 {
   lib,
-  pkgs,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  pkgs,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "rrdtool";
   version = "0.1.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "commx";
@@ -18,10 +17,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-xBMyY2/lY16H7D0JX5BhgHV5afDKKDObPJnynZ4iZdI=";
   };
-
-  build-system = [
-    setuptools
-  ];
 
   buildInputs = [
     pkgs.rrdtool
@@ -32,13 +27,18 @@ buildPythonPackage rec {
     "-Wno-error=incompatible-pointer-types"
   ];
 
-  pythonImportsCheck = [ "rrdtool" ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
   __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "rrdtool" ];
 
   meta = {
     description = "Python bindings for rrdtool";

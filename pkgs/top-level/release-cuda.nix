@@ -15,28 +15,27 @@ let
 in
 
 {
+  # Attributes passed to nixpkgs.
+  nixpkgsArgs ? {
+    __allowFileset = false;
+
+    config = {
+      "${variant}Support" = true;
+      # Don't evaluate duplicate and/or deprecated attributes
+      allowAliases = false;
+      # [CVE-2026-24188](https://github.com/NixOS/nixpkgs/issues/522570):
+      # OOB write
+      allowInsecurePredicate = p: lib.getName p == "tensorrt";
+      allowUnfreePredicate = cudaLib.allowUnfreeCudaPredicate;
+      inHydra = true;
+    };
+  },
   # The platforms for which we build Nixpkgs.
   supportedSystems ? [
     "x86_64-linux"
     "aarch64-linux"
   ],
   variant ? "cuda",
-  # Attributes passed to nixpkgs.
-  nixpkgsArgs ? {
-    config = {
-      allowUnfreePredicate = cudaLib.allowUnfreeCudaPredicate;
-      # [CVE-2026-24188](https://github.com/NixOS/nixpkgs/issues/522570):
-      # OOB write
-      allowInsecurePredicate = p: lib.getName p == "tensorrt";
-      "${variant}Support" = true;
-      inHydra = true;
-
-      # Don't evaluate duplicate and/or deprecated attributes
-      allowAliases = false;
-    };
-
-    __allowFileset = false;
-  },
   ...
 }@args:
 
@@ -72,26 +71,18 @@ let
     {
       blas = linux;
       blender = linux;
-      faiss = linux;
-      lapack = linux;
-      magma = linux;
-      mpich = linux;
-      openmpi = linux;
-      ucx = linux;
-
-      opencv = linux;
       cctag = linux; # Failed in https://github.com/NixOS/nixpkgs/pull/233581
-
       cholmod-extra = linux;
       colmap = linux;
       ctranslate2 = linux;
+      faiss = linux;
       ffmpeg-full = linux;
       firefox = linux;
-      firefox-unwrapped = linux;
       firefox-beta = linux;
       firefox-beta-unwrapped = linux;
       firefox-devedition = linux;
       firefox-devedition-unwrapped = linux;
+      firefox-unwrapped = linux;
       freecad = linux;
       gimp = linux;
       gpu-screen-recorder = linux;
@@ -99,33 +90,26 @@ let
       jellyfin-ffmpeg = linux;
       kdePackages.kdenlive = linux;
       krita = linux;
+      lapack = linux;
       lightgbm = linux;
       llama-cpp = linux;
+      magma = linux;
       meshlab = linux;
       mistral-rs = linux;
       monado = linux; # Failed in https://github.com/NixOS/nixpkgs/pull/233581
+      mpich = linux;
       noisetorch = linux;
       obs-studio-plugins.obs-backgroundremoval = linux;
       octave = linux; # because depend on SuiteSparse which need rebuild when cuda enabled
       ollama = linux;
       onnxruntime = linux;
+      opencv = linux;
+      openmpi = linux;
       openmvg = linux;
       openmvs = linux;
       opentrack = linux;
       openvino = linux;
       pixinsight = linux; # Failed in https://github.com/NixOS/nixpkgs/pull/233581
-      qgis = linux;
-      rtabmap = linux;
-      saga = linux;
-      suitesparse = linux;
-      sunshine = linux;
-      thunderbird = linux;
-      thunderbird-unwrapped = linux;
-      truecrack-cuda = linux;
-      tts = linux;
-      ueberzugpp = linux; # Failed in https://github.com/NixOS/nixpkgs/pull/233581
-      wyoming-faster-whisper = linux;
-      xgboost = linux;
 
       python3Packages = {
         catboost = linux;
@@ -136,15 +120,14 @@ let
         flax = linux;
         gpt-2-simple = linux;
         grad-cam = linux;
-        jaxlib = linux;
         jax = linux;
+        jaxlib = linux;
         keras = linux;
         kornia = linux;
         mmcv = linux;
         mxnet = linux;
         numpy = linux; # Only affected by MKL?
         onnx = linux;
-        triton = linux;
         openai-whisper = linux;
         opencv4 = linux;
         opencv4Full = linux;
@@ -161,14 +144,29 @@ let
         tensorflow-probability = linux;
         tesserocr = linux;
         tiny-cuda-nn = linux;
-        torchaudio = linux;
         torch = linux;
+        torchaudio = linux;
         torchvision = linux;
         transformers = linux;
+        triton = linux;
         ttstokenizer = linux;
         vidstab = linux;
         vllm = linux;
       };
+
+      qgis = linux;
+      rtabmap = linux;
+      saga = linux;
+      suitesparse = linux;
+      sunshine = linux;
+      thunderbird = linux;
+      thunderbird-unwrapped = linux;
+      truecrack-cuda = linux;
+      tts = linux;
+      ucx = linux;
+      ueberzugpp = linux; # Failed in https://github.com/NixOS/nixpkgs/pull/233581
+      wyoming-faster-whisper = linux;
+      xgboost = linux;
     };
 
   # Explicitly specified platforms take precedence over the platforms

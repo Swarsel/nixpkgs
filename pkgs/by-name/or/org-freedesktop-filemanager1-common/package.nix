@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  dbus,
   meson,
   ninja,
-  pkg-config,
-  dbus,
-  systemdLibs,
   nix-update-script,
+  pkg-config,
+  systemdLibs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

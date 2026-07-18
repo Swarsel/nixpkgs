@@ -1,39 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
-  # docs
-  sphinxHook,
-  sphinx-rtd-theme,
-  myst-parser,
-
+  buildPythonPackage,
   # optionals
   cryptography,
+  # build-system
+  flit-core,
   fonttools,
-  pillow,
-
   # tests
   fpdf2,
-  pytestCheckHook,
+  myst-parser,
+  pillow,
   pytest-timeout,
+  pytestCheckHook,
+  sphinx-rtd-theme,
+  # docs
+  sphinxHook,
 }:
 
 buildPythonPackage rec {
   pname = "pypdf";
   version = "6.14.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "py-pdf";
     repo = "pypdf";
     tag = version;
+    hash = "sha256-h7JuQTTUZ5tWoAhixjp+grDVA3JQ8PbHcMBzIyCMOJU=";
     # fetch sample files used in tests
     fetchSubmodules = true;
-    hash = "sha256-h7JuQTTUZ5tWoAhixjp+grDVA3JQ8PbHcMBzIyCMOJU=";
   };
 
   outputs = [
@@ -46,22 +41,11 @@ buildPythonPackage rec {
       --replace-fail "--disable-socket" ""
   '';
 
-  build-system = [ flit-core ];
-
   nativeBuildInputs = [
     sphinxHook
     sphinx-rtd-theme
     myst-parser
   ];
-
-  optional-dependencies = rec {
-    full = crypto ++ fonts ++ image;
-    crypto = [ cryptography ];
-    fonts = [ fonttools ];
-    image = [ pillow ];
-  };
-
-  pythonImportsCheck = [ "pypdf" ];
 
   nativeCheckInputs = [
     (fpdf2.overridePythonAttrs { doCheck = false; }) # avoid reference loop
@@ -70,10 +54,22 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.full;
 
+  build-system = [ flit-core ];
+
   disabledTestMarks = [
     # don't access the network
     "enable_socket"
   ];
+
+  optional-dependencies = rec {
+    crypto = [ cryptography ];
+    fonts = [ fonttools ];
+    full = crypto ++ fonts ++ image;
+    image = [ pillow ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pypdf" ];
 
   meta = {
     description = "Pure-python PDF library capable of splitting, merging, cropping, and transforming the pages of PDF files";

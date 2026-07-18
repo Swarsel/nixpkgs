@@ -16,9 +16,9 @@ stdenv.mkDerivation rec {
     rev = version;
     sha256 = "sha256-hjWmjMOxq1wX9/7RB+pUSPq/CxBzNOwV7VsYfbdrww4=";
   };
-  sourceRoot = "${src.name}/src";
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
+
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNEL_DIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
@@ -28,12 +28,13 @@ stdenv.mkDerivation rec {
   '';
 
   enableParallelBuilding = true;
+  sourceRoot = "${src.name}/src";
 
   meta = {
     description = "Virtual camera driver for Linux";
     homepage = "https://github.com/webcamoid/akvcam";
+    license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Only;
   };
 }

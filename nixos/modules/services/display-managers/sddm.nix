@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 
@@ -55,16 +55,15 @@ let
 
   defaultConfig = {
     General = {
-      HaltCommand = "/run/current-system/systemd/bin/systemctl poweroff";
-      RebootCommand = "/run/current-system/systemd/bin/systemctl reboot";
-      Numlock = if cfg.autoNumlock then "on" else "none"; # on, off none
-
       # Implementation is done via pkgs/applications/display-managers/sddm/sddm-default-session.patch
       DefaultSession = optionalString (
         config.services.displayManager.defaultSession != null
       ) "${config.services.displayManager.defaultSession}.desktop";
 
       DisplayServer = if cfg.wayland.enable then "wayland" else "x11";
+      HaltCommand = "/run/current-system/systemd/bin/systemctl poweroff";
+      Numlock = if cfg.autoNumlock then "on" else "none"; # on, off none
+      RebootCommand = "/run/current-system/systemd/bin/systemctl reboot";
     }
     // optionalAttrs (cfg.wayland.enable && cfg.wayland.compositor == "kwin") {
       GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell";
@@ -73,44 +72,44 @@ let
 
     Theme = {
       Current = cfg.theme;
-      ThemeDir = "/run/current-system/sw/share/sddm/themes";
       FacesDir = "/run/current-system/sw/share/sddm/faces";
+      ThemeDir = "/run/current-system/sw/share/sddm/themes";
     }
     // optionalAttrs (cfg.theme == "breeze") {
-      CursorTheme = "breeze_cursors";
       CursorSize = 24;
+      CursorTheme = "breeze_cursors";
     };
 
     Users = {
-      MaximumUid = config.ids.uids.nixbld;
-      HideUsers = concatStringsSep "," dmcfg.hiddenUsers;
       HideShells = "/run/current-system/sw/bin/nologin";
+      HideUsers = concatStringsSep "," dmcfg.hiddenUsers;
+      MaximumUid = config.ids.uids.nixbld;
     };
 
     Wayland = {
+      CompositorCommand = lib.optionalString cfg.wayland.enable cfg.wayland.compositorCommand;
       EnableHiDPI = cfg.enableHidpi;
       SessionDir = "${dmcfg.sessionData.desktops}/share/wayland-sessions";
-      CompositorCommand = lib.optionalString cfg.wayland.enable cfg.wayland.compositorCommand;
     };
 
   }
   // optionalAttrs xcfg.enable {
     X11 = {
-      ServerPath = toString xserverWrapper;
-      XephyrPath = "${pkgs.xorg-server.out}/bin/Xephyr";
-      SessionCommand = toString dmcfg.sessionData.wrapper;
-      SessionDir = "${dmcfg.sessionData.desktops}/share/xsessions";
-      XauthPath = "${pkgs.xauth}/bin/xauth";
       DisplayCommand = toString Xsetup;
       DisplayStopCommand = toString Xstop;
       EnableHiDPI = cfg.enableHidpi;
+      ServerPath = toString xserverWrapper;
+      SessionCommand = toString dmcfg.sessionData.wrapper;
+      SessionDir = "${dmcfg.sessionData.desktops}/share/xsessions";
+      XauthPath = "${pkgs.xauth}/bin/xauth";
+      XephyrPath = "${pkgs.xorg-server.out}/bin/Xephyr";
     };
   }
   // optionalAttrs dmcfg.autoLogin.enable {
     Autologin = {
-      User = dmcfg.autoLogin.user;
-      Session = autoLoginSessionName;
       Relogin = cfg.autoLogin.relogin;
+      Session = autoLoginSessionName;
+      User = dmcfg.autoLogin.user;
     };
   };
 
@@ -126,20 +125,22 @@ let
       "--no-lockscreen"
       "--locale1"
     ];
+
     # This is basically the upstream default, but with Weston referenced by full path
     # and the configuration generated from NixOS options.
     weston =
       let
         westonIni = (pkgs.formats.ini { }).generate "weston.ini" {
+          keyboard = {
+            keymap_layout = xcfg.xkb.layout;
+            keymap_model = xcfg.xkb.model;
+            keymap_options = xcfg.xkb.options;
+            keymap_variant = xcfg.xkb.variant;
+          };
+
           libinput = {
             enable-tap = config.services.libinput.mouse.tapping;
             left-handed = config.services.libinput.mouse.leftHanded;
-          };
-          keyboard = {
-            keymap_model = xcfg.xkb.model;
-            keymap_layout = xcfg.xkb.layout;
-            keymap_variant = xcfg.xkb.variant;
-            keymap_options = xcfg.xkb.options;
           };
         };
       in
@@ -224,103 +225,125 @@ in
 
     services.displayManager.sddm = {
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to enable sddm as the display manager.
         '';
+
+        type = types.bool;
       };
 
       package = mkPackageOption pkgs [ "kdePackages" "sddm" ] { };
 
-      enableHidpi = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Whether to enable automatic HiDPI mode.
-        '';
-      };
+      # Configuration for automatic login specific to SDDM
+      autoLogin = {
+        minimumUid = mkOption {
+          default = 1000;
 
-      settings = mkOption {
-        type = iniFmt.type;
-        default = { };
-        example = {
-          Autologin = {
-            User = "john";
-            Session = "plasma.desktop";
-          };
+          description = ''
+            Minimum user ID for auto-login user.
+          '';
+
+          type = types.ints.u16;
         };
-        description = ''
-          Extra settings merged in and overwriting defaults in sddm.conf.
-        '';
-      };
 
-      theme = mkOption {
-        type = types.str;
-        default = "";
-        example = lib.literalExpression "\"\${pkgs.where-is-my-sddm-theme.override { variants = [ \"qt5\" ]; }}/share/sddm/themes/where_is_my_sddm_theme_qt5\"";
-        description = ''
-          Greeter theme to use.
-        '';
-      };
+        relogin = mkOption {
+          default = false;
 
-      extraPackages = mkOption {
-        type = types.listOf types.package;
-        default = [ ];
-        defaultText = "[]";
-        description = ''
-          Extra Qt plugins / QML libraries to add to the environment.
-        '';
+          description = ''
+            If true automatic login will kick in again on session exit (logout), otherwise it
+            will only log in automatically when the display-manager is started.
+          '';
+
+          type = types.bool;
+        };
       };
 
       autoNumlock = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Enable numlock at login.
         '';
+
+        type = types.bool;
+      };
+
+      enableHidpi = mkOption {
+        default = true;
+
+        description = ''
+          Whether to enable automatic HiDPI mode.
+        '';
+
+        type = types.bool;
+      };
+
+      extraPackages = mkOption {
+        default = [ ];
+        defaultText = "[]";
+
+        description = ''
+          Extra Qt plugins / QML libraries to add to the environment.
+        '';
+
+        type = types.listOf types.package;
+      };
+
+      settings = mkOption {
+        default = { };
+
+        description = ''
+          Extra settings merged in and overwriting defaults in sddm.conf.
+        '';
+
+        example = {
+          Autologin = {
+            Session = "plasma.desktop";
+            User = "john";
+          };
+        };
+
+        type = iniFmt.type;
       };
 
       setupScript = mkOption {
-        type = types.str;
         default = "";
+
+        description = ''
+          A script to execute when starting the display server. DEPRECATED, please
+          use {option}`services.xserver.displayManager.setupCommands`.
+        '';
+
         example = ''
           # workaround for using NVIDIA Optimus without Bumblebee
           xrandr --setprovideroutputsource modesetting NVIDIA-0
           xrandr --auto
         '';
-        description = ''
-          A script to execute when starting the display server. DEPRECATED, please
-          use {option}`services.xserver.displayManager.setupCommands`.
-        '';
+
+        type = types.str;
       };
 
       stopScript = mkOption {
-        type = types.str;
         default = "";
+
         description = ''
           A script to execute when stopping the display server.
         '';
+
+        type = types.str;
       };
 
-      # Configuration for automatic login specific to SDDM
-      autoLogin = {
-        relogin = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            If true automatic login will kick in again on session exit (logout), otherwise it
-            will only log in automatically when the display-manager is started.
-          '';
-        };
+      theme = mkOption {
+        default = "";
 
-        minimumUid = mkOption {
-          type = types.ints.u16;
-          default = 1000;
-          description = ''
-            Minimum user ID for auto-login user.
-          '';
-        };
+        description = ''
+          Greeter theme to use.
+        '';
+
+        example = lib.literalExpression "\"\${pkgs.where-is-my-sddm-theme.override { variants = [ \"qt5\" ]; }}/share/sddm/themes/where_is_my_sddm_theme_qt5\"";
+        type = types.str;
       };
 
       # Experimental Wayland support
@@ -328,16 +351,16 @@ in
         enable = mkEnableOption "experimental Wayland support";
 
         compositor = mkOption {
+          default = "weston";
           description = "The compositor to use: ${lib.concatStringsSep ", " (builtins.attrNames compositorCmds)}";
           type = types.enum (builtins.attrNames compositorCmds);
-          default = "weston";
         };
 
         compositorCommand = mkOption {
-          type = types.str;
-          internal = true;
           default = compositorCmds.${cfg.wayland.compositor};
           description = "Command used to start the selected compositor";
+          internal = true;
+          type = types.str;
         };
       };
     };
@@ -348,235 +371,240 @@ in
     assertions = [
       {
         assertion = xcfg.enable || cfg.wayland.enable;
+
         message = ''
           SDDM requires either services.xserver.enable or services.displayManager.sddm.wayland.enable to be true
         '';
       }
       {
         assertion = config.services.displayManager.autoLogin.enable -> autoLoginSessionName != null;
+
         message = ''
           SDDM auto-login requires that services.displayManager.defaultSession is set.
         '';
       }
     ];
 
-    services.displayManager = {
-      enable = true;
-      generic = {
-        enable = true;
-        execCmd = "exec /run/current-system/sw/bin/sddm";
-      };
+    environment = {
+      etc."sddm.conf.d/00-nixos.conf".source = cfgFile;
+
+      pathsToLink = [
+        "/share/sddm"
+      ];
+
+      systemPackages = [ sddm ];
     };
 
     security.pam.services = {
       sddm = {
-        useDefaultRules = false;
         rules = {
-          auth = utils.pam.autoOrderRules [
-            {
-              name = "login";
-              control = "substack";
-              modulePath = "login";
-            }
-          ];
           account = utils.pam.autoOrderRules [
             {
-              name = "login";
               control = "include";
               modulePath = "login";
-            }
-          ];
-          password = utils.pam.autoOrderRules [
-            {
               name = "login";
-              control = "substack";
-              modulePath = "login";
-            }
-          ];
-          session = utils.pam.autoOrderRules [
-            {
-              name = "login";
-              control = "include";
-              modulePath = "login";
-            }
-          ];
-        };
-      };
-
-      sddm-greeter = {
-        useDefaultRules = false;
-        rules = {
-          auth = utils.pam.autoOrderRules [
-            {
-              name = "sddm-user";
-              control = "required";
-              modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
-              settings.audit = true;
-              settings.quiet_success = true;
-              args = lib.mkAfter [
-                "user"
-                "="
-                "sddm"
-              ];
-            }
-            {
-              name = "permit";
-              control = "optional";
-              modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
             }
           ];
 
-          account = utils.pam.autoOrderRules [
+          auth = utils.pam.autoOrderRules [
             {
-              name = "sddm-user";
-              control = "required";
-              modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
-              settings.audit = true;
-              settings.quiet_success = true;
-              args = lib.mkAfter [
-                "user"
-                "="
-                "sddm"
-              ];
-            }
-            {
-              name = "unix";
-              control = "sufficient";
-              modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
+              control = "substack";
+              modulePath = "login";
+              name = "login";
             }
           ];
 
           password = utils.pam.autoOrderRules [
             {
-              name = "deny";
-              control = "required";
-              modulePath = "${config.security.pam.package}/lib/security/pam_deny.so";
+              control = "substack";
+              modulePath = "login";
+              name = "login";
             }
           ];
 
           session = utils.pam.autoOrderRules [
             {
-              name = "sddm-user";
-              control = "required";
-              modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
-              settings.audit = true;
-              settings.quiet_success = true;
-              args = lib.mkAfter [
-                "user"
-                "="
-                "sddm"
-              ];
-            }
-            {
-              name = "env";
-              control = "required";
-              modulePath = "${config.security.pam.package}/lib/security/pam_env.so";
-              settings.conffile = "/etc/pam/environment";
-              settings.readenv = 0;
-            }
-            {
-              name = "systemd";
-              control = "optional";
-              modulePath = "${config.systemd.package}/lib/security/pam_systemd.so";
-            }
-            {
-              name = "keyinit";
-              control = "optional";
-              modulePath = "${config.security.pam.package}/lib/security/pam_keyinit.so";
-              settings.force = true;
-              settings.revoke = true;
-            }
-            {
-              name = "permit";
-              control = "optional";
-              modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
+              control = "include";
+              modulePath = "login";
+              name = "login";
             }
           ];
         };
+
+        useDefaultRules = false;
       };
 
       sddm-autologin = {
-        useDefaultRules = false;
         rules = {
+          account = utils.pam.autoOrderRules [
+            {
+              control = "include";
+              modulePath = "sddm";
+              name = "sddm";
+            }
+          ];
+
           auth = utils.pam.autoOrderRules [
             {
-              name = "nologin";
               control = "requisite";
               modulePath = "${config.security.pam.package}/lib/security/pam_nologin.so";
+              name = "nologin";
             }
             {
-              name = "sddm-autologin-user";
-              control = "required";
-              modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
-              settings.quiet = true;
               args = lib.mkBefore [
                 "uid"
                 ">="
                 (toString cfg.autoLogin.minimumUid)
               ];
+
+              control = "required";
+              modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
+              name = "sddm-autologin-user";
+              settings.quiet = true;
             }
             {
-              name = "permit";
               control = "required";
               modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
-            }
-          ];
-
-          account = utils.pam.autoOrderRules [
-            {
-              name = "sddm";
-              control = "include";
-              modulePath = "sddm";
+              name = "permit";
             }
           ];
 
           password = utils.pam.autoOrderRules [
             {
-              name = "sddm";
               control = "include";
               modulePath = "sddm";
+              name = "sddm";
             }
           ];
 
           session = utils.pam.autoOrderRules [
             {
-              name = "sddm";
               control = "include";
               modulePath = "sddm";
+              name = "sddm";
             }
           ];
         };
+
+        useDefaultRules = false;
+      };
+
+      sddm-greeter = {
+        rules = {
+          account = utils.pam.autoOrderRules [
+            {
+              args = lib.mkAfter [
+                "user"
+                "="
+                "sddm"
+              ];
+
+              control = "required";
+              modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
+              name = "sddm-user";
+              settings.audit = true;
+              settings.quiet_success = true;
+            }
+            {
+              control = "sufficient";
+              modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
+              name = "unix";
+            }
+          ];
+
+          auth = utils.pam.autoOrderRules [
+            {
+              args = lib.mkAfter [
+                "user"
+                "="
+                "sddm"
+              ];
+
+              control = "required";
+              modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
+              name = "sddm-user";
+              settings.audit = true;
+              settings.quiet_success = true;
+            }
+            {
+              control = "optional";
+              modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
+              name = "permit";
+            }
+          ];
+
+          password = utils.pam.autoOrderRules [
+            {
+              control = "required";
+              modulePath = "${config.security.pam.package}/lib/security/pam_deny.so";
+              name = "deny";
+            }
+          ];
+
+          session = utils.pam.autoOrderRules [
+            {
+              args = lib.mkAfter [
+                "user"
+                "="
+                "sddm"
+              ];
+
+              control = "required";
+              modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
+              name = "sddm-user";
+              settings.audit = true;
+              settings.quiet_success = true;
+            }
+            {
+              control = "required";
+              modulePath = "${config.security.pam.package}/lib/security/pam_env.so";
+              name = "env";
+              settings.conffile = "/etc/pam/environment";
+              settings.readenv = 0;
+            }
+            {
+              control = "optional";
+              modulePath = "${config.systemd.package}/lib/security/pam_systemd.so";
+              name = "systemd";
+            }
+            {
+              control = "optional";
+              modulePath = "${config.security.pam.package}/lib/security/pam_keyinit.so";
+              name = "keyinit";
+              settings.force = true;
+              settings.revoke = true;
+            }
+            {
+              control = "optional";
+              modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
+              name = "permit";
+            }
+          ];
+        };
+
+        useDefaultRules = false;
       };
     };
 
-    users.users.sddm = {
-      createHome = true;
-      home = "/var/lib/sddm";
-      group = "sddm";
-      uid = config.ids.uids.sddm;
-    };
-
-    environment = {
-      etc."sddm.conf.d/00-nixos.conf".source = cfgFile;
-      pathsToLink = [
-        "/share/sddm"
-      ];
-      systemPackages = [ sddm ];
-    };
-
-    users.groups.sddm.gid = config.ids.gids.sddm;
-
     services = {
       dbus.packages = [ sddm ];
+
       xserver = {
         # To enable user switching, allow sddm to allocate displays dynamically.
         display = null;
       };
     };
 
-    systemd = {
-      tmpfiles.packages = [ sddm ];
+    services.displayManager = {
+      enable = true;
 
+      generic = {
+        enable = true;
+        execCmd = "exec /run/current-system/sw/bin/sddm";
+      };
+    };
+
+    systemd = {
       # We're not using the upstream unit, so copy these: https://github.com/sddm/sddm/blob/develop/services/sddm.service.in
       services.display-manager = {
         after = [
@@ -584,11 +612,23 @@ in
           "plymouth-quit.service"
           "systemd-logind.service"
         ];
+
         # sddm stores state in this directory, which should be mounted.
         unitConfig.RequiresMountsFor = [
           config.users.users.sddm.home
         ];
       };
+
+      tmpfiles.packages = [ sddm ];
+    };
+
+    users.groups.sddm.gid = config.ids.gids.sddm;
+
+    users.users.sddm = {
+      createHome = true;
+      group = "sddm";
+      home = "/var/lib/sddm";
+      uid = config.ids.uids.sddm;
     };
   };
 }

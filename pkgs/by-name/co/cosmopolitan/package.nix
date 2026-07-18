@@ -20,6 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DTL1dXH+LhaxWpiCrsNjV74Bw5+kPbhEAA2Z1NKiPDk=";
   };
 
+  outputs = [
+    "out"
+    "dist"
+  ];
+
   patches = [
     # make sure tests set PATH correctly
     (replaceVars ./fix-paths.patch {
@@ -27,16 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     bintools-unwrapped
     unzip
-  ];
-
-  strictDeps = true;
-
-  outputs = [
-    "out"
-    "dist"
   ];
 
   # slashes are significant because upstream uses o/$(MODE)/foo.o
@@ -48,13 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     "o//ape/ape.lds"
   ];
 
-  checkTarget = "o//test";
-
-  enableParallelBuilding = true;
-
   doCheck = true;
-  dontConfigure = true;
-  dontFixup = true;
 
   preCheck =
     let
@@ -80,6 +74,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  checkTarget = "o//test";
+  dontConfigure = true;
+  dontFixup = true;
+  enableParallelBuilding = true;
+
   passthru = {
     cosmocc = callPackage ./cosmocc.nix {
       cosmopolitan = finalAttrs.finalPackage;
@@ -87,11 +86,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://justine.lol/cosmopolitan/";
     description = "Your build-once run-anywhere c library";
+    homepage = "https://justine.lol/cosmopolitan/";
     license = lib.licenses.isc;
-    teams = [ lib.teams.cosmopolitan ];
     platforms = lib.platforms.x86_64;
     badPlatforms = lib.platforms.darwin;
+    teams = [ lib.teams.cosmopolitan ];
   };
 })

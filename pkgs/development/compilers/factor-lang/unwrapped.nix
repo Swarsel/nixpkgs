@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   curl,
   git,
+  makeWrapper,
   ncurses,
+  src,
   tzdata,
   unzip,
-
   # Version-specific attributes
   version,
-  src,
 }:
 
 let
@@ -18,9 +17,8 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "factor-lang";
-
   inherit src version;
+  pname = "factor-lang";
 
   patches = [
     # Use full path to image while bootstrapping
@@ -31,13 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./adjust-paths-in-unit-tests.patch
     # Avoid using /sbin/ldconfig
     ./ld.so.cache-from-env.patch
-  ];
-
-  nativeBuildInputs = [
-    git
-    makeWrapper
-    curl
-    unzip
   ];
 
   postPatch = ''
@@ -55,7 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '(defcustom fuel-factor-root-dir nil' "(defcustom fuel-factor-root-dir \"$out/lib/factor\""
   '';
 
-  dontConfigure = true;
+  nativeBuildInputs = [
+    git
+    makeWrapper
+    curl
+    unzip
+  ];
 
   preBuild = ''
     patchShebangs ./build.sh
@@ -64,8 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     export XDG_CACHE_HOME=$TMPDIR/.cache
     mkdir -p $XDG_CACHE_HOME
   '';
-
-  makeTarget = "linux-x86-64";
 
   postBuild = ''
     printf "First build from upstream boot image\n" >&2
@@ -90,9 +84,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+  makeTarget = "linux-x86-64";
+
   meta = {
-    homepage = "https://factorcode.org/";
     description = "Concatenative, stack-based programming language";
+
     longDescription = ''
       The Factor programming language is a concatenative, stack-based
       programming language with high-level features including dynamic types,
@@ -106,10 +103,14 @@ stdenv.mkDerivation (finalAttrs: {
       on all platforms. Full source code for the Factor project is available
       under a BSD license.
     '';
+
+    homepage = "https://factorcode.org/";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       spacefrogg
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 })

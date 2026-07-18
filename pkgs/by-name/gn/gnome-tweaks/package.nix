@@ -1,7 +1,5 @@
 {
   lib,
-  meson,
-  ninja,
   fetchurl,
   desktop-file-utils,
   gdk-pixbuf,
@@ -20,7 +18,9 @@
   libgudev,
   libnotify,
   libxml2,
+  meson,
   mutter,
+  ninja,
   pkg-config,
   python3Packages,
   wrapGAppsHook4,
@@ -29,12 +29,15 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gnome-tweaks";
   version = "49.0";
-  pyproject = false;
 
   src = fetchurl {
     url = "mirror://gnome/sources/gnome-tweaks/${lib.versions.major finalAttrs.version}/gnome-tweaks-${finalAttrs.version}.tar.xz";
     hash = "sha256-s5Cb3LSQW2hCfWq1geAfQ23/jlwKOJseCxRQDxiAbrs=";
   };
+
+  postPatch = ''
+    patchShebangs meson-postinstall.py
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -64,16 +67,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libnotify
   ];
 
-  pythonPath = with python3Packages; [
-    pygobject3
-  ];
-
-  postPatch = ''
-    patchShebangs meson-postinstall.py
-  '';
-
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
@@ -82,6 +75,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapPythonProgramsIn "$out/libexec" "$out ''${pythonPath[*]}"
   '';
 
+  dontWrapGApps = true;
+  pyproject = false;
+
+  pythonPath = with python3Packages; [
+    pygobject3
+  ];
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gnome-tweaks";
@@ -89,11 +89,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gnome-tweaks";
     description = "Tool to customize advanced GNOME 3 options";
-    mainProgram = "gnome-tweaks";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/gnome-tweaks";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-tweaks";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,31 +1,31 @@
 {
   lib,
+  cacert,
+  formats,
+  rqbit,
+  rsync,
   runCommand,
   transmission_4,
-  rqbit,
   writeShellScript,
-  formats,
-  cacert,
-  rsync,
 }:
 let
   urlRegexp = ".*xt=urn:bt[im]h:([^&]{64}|[^&]{40}).*";
 in
 {
+  hash,
   url,
+  backend ? "transmission",
+  config ? { },
+  flatten ? null,
+  meta ? { },
   name ?
     if (builtins.match urlRegexp url) == null then
       "bittorrent"
     else
       "bittorrent-" + builtins.head (builtins.match urlRegexp url),
-  config ? { },
-  hash,
-  backend ? "transmission",
-  recursiveHash ? true,
-  flatten ? null,
   postFetch ? "",
   postUnpack ? "",
-  meta ? { },
+  recursiveHash ? true,
 }:
 let
   # Default to flattening if no flatten argument was specified.
@@ -96,6 +96,11 @@ assert
 runCommand name
   {
     inherit meta;
+    # url will be written to the derivation, meaning it can be parsed and utilized
+    # by external tools, such as tools that may want to seed fetchtorrent calls
+    # in nixpkgs
+    inherit url;
+
     nativeBuildInputs = [
       cacert
     ]
@@ -107,14 +112,10 @@ runCommand name
       else
         throw "rqbit or transmission are the only available backends for fetchtorrent"
     );
-    outputHashAlgo = if hash != "" then null else "sha256";
-    outputHash = hash;
-    outputHashMode = if recursiveHash then "recursive" else "flat";
 
-    # url will be written to the derivation, meaning it can be parsed and utilized
-    # by external tools, such as tools that may want to seed fetchtorrent calls
-    # in nixpkgs
-    inherit url;
+    outputHash = hash;
+    outputHashAlgo = if hash != "" then null else "sha256";
+    outputHashMode = if recursiveHash then "recursive" else "flat";
   }
   (
     if (backend == "transmission") then

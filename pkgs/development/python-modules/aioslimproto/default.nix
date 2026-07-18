@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   pillow,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aioslimproto";
   version = "3.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -25,6 +24,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,9 +34,7 @@ buildPythonPackage (finalAttrs: {
     pillow
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aioslimproto" ];
 
   meta = {

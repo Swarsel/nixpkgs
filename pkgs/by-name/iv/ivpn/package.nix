@@ -1,15 +1,13 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  wirelesstools,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
+  wirelesstools,
 }:
 buildGoModule (finalAttrs: {
   pname = "ivpn";
   version = "3.15.6";
-
-  buildInputs = [ wirelesstools ];
 
   src = fetchFromGitHub {
     owner = "ivpn";
@@ -18,12 +16,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-C24klcr10i0lki74eNfJ4bappdIttp3S4FGg1wkAGcY=";
   };
 
-  __structuredAttrs = true;
-
-  modRoot = "cli";
+  buildInputs = [ wirelesstools ];
   vendorHash = "sha256-Qm3OZq3W8GyfkYP674Jzse7wDPWgXfc0bi8ZpYl4T1I=";
 
-  proxyVendor = true; # .c file
+  postInstall = ''
+    mv $out/bin/{cli,ivpn}
+  '';
+
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -32,10 +32,8 @@ buildGoModule (finalAttrs: {
     "-X github.com/ivpn/desktop-app/daemon/version._time=1970-01-01"
   ];
 
-  postInstall = ''
-    mv $out/bin/{cli,ivpn}
-  '';
-
+  modRoot = "cli";
+  proxyVendor = true; # .c file
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -43,9 +41,11 @@ buildGoModule (finalAttrs: {
     homepage = "https://www.ivpn.net/apps";
     changelog = "https://github.com/ivpn/desktop-app/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       kilyanni
     ];
+
     mainProgram = "ivpn";
   };
 })

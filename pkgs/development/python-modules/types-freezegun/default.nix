@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "types-freezegun";
   version = "1.1.10";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Module doesn't have tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "freezegun-stubs" ];
 
   meta = {

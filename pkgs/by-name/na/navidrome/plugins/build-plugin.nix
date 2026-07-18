@@ -1,16 +1,16 @@
 {
-  buildGoModule,
   lib,
+  buildGoModule,
   navidrome,
   zip,
 }:
 
 {
+  meta,
   pname,
   src,
-  version,
   vendorHash,
-  meta,
+  version,
   ...
 }@args:
 

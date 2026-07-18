@@ -20,22 +20,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "${finalAttrs.meta.mainProgram} -V";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
     description = "Simple, reliable and powerful terminal to ease connection to serial ports";
+
     longDescription = ''
       BootTerm is a simple, reliable and powerful terminal designed to
       ease connection to ephemeral serial ports as found on various SBCs,
       and typically USB-based ones.
     '';
+
     homepage = "https://github.com/wtarreau/bootterm";
     license = lib.licenses.mit;
-    mainProgram = "bt";
     maintainers = with lib.maintainers; [ deadbaed ];
     platforms = lib.platforms.unix;
+    mainProgram = "bt";
   };
 })

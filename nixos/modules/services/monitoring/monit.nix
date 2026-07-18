@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -11,37 +11,39 @@ in
 {
   options.services.monit = {
 
-    enable = lib.mkEnableOption "Monit";
-
     config = lib.mkOption {
-      type = lib.types.lines;
       default = "";
       description = "monitrc content";
+      type = lib.types.lines;
     };
+
+    enable = lib.mkEnableOption "Monit";
 
   };
 
   config = lib.mkIf cfg.enable {
 
-    environment.systemPackages = [ pkgs.monit ];
-
     environment.etc.monitrc = {
-      text = cfg.config;
       mode = "0400";
+      text = cfg.config;
     };
 
+    environment.systemPackages = [ pkgs.monit ];
+
     systemd.services.monit = {
-      description = "Pro-active monitoring utility for unix systems";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Pro-active monitoring utility for unix systems";
+      restartTriggers = [ config.environment.etc.monitrc.source ];
+
       serviceConfig = {
+        ExecReload = "${pkgs.monit}/bin/monit -c /etc/monitrc reload";
         ExecStart = "${pkgs.monit}/bin/monit -I -c /etc/monitrc";
         ExecStop = "${pkgs.monit}/bin/monit -c /etc/monitrc quit";
-        ExecReload = "${pkgs.monit}/bin/monit -c /etc/monitrc reload";
         KillMode = "process";
         Restart = "always";
       };
-      restartTriggers = [ config.environment.etc.monitrc.source ];
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

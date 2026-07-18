@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-regex-commit,
   hatchling,
   mashumaro,
@@ -19,9 +19,6 @@
 buildPythonPackage rec {
   pname = "habiticalib";
   version = "0.4.7";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "tr4nt0r";
@@ -29,22 +26,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ZZY7UnA4d4JNHGLMtaEGobAgzAwYDgL2SUGfxGABxTs=";
   };
-
-  build-system = [
-    hatch-regex-commit
-    hatchling
-  ];
-
-  pythonRelaxDeps = [
-    "orjson"
-  ];
-
-  dependencies = [
-    aiohttp
-    mashumaro
-    orjson
-    pillow
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -54,11 +35,30 @@ buildPythonPackage rec {
     syrupy
   ];
 
-  pythonImportsCheck = [ "habiticalib" ];
+  build-system = [
+    hatch-regex-commit
+    hatchling
+  ];
+
+  dependencies = [
+    aiohttp
+    mashumaro
+    orjson
+    pillow
+  ];
+
+  disabled = pythonOlder "3.12";
 
   disabledTests = [
     # AssertionError
     "test_generate_avatar"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "habiticalib" ];
+
+  pythonRelaxDeps = [
+    "orjson"
   ];
 
   meta = {

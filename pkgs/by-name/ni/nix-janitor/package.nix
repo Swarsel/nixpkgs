@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-MRhTkxPl0tlObbXO7/0cD2pbd9/uQCeRKV3DStGvZMQ=";
   };
 
-  cargoHash = "sha256-t4TZkwWIp/VYj4tMd5CdYuAQt3GquMRZ3wyAK3oic5k=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-t4TZkwWIp/VYj4tMd5CdYuAQt3GquMRZ3wyAK3oic5k=";
 
   postInstall = ''
     for shell in bash fish zsh; do
@@ -32,12 +31,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Tool to clean up old profile generations";
     homepage = "https://github.com/nobbz/nix-janitor";
     changelog = "https://github.com/NobbZ/nix-janitor/blob/${finalAttrs.version}/CHANGELOG.md";
-    description = "Tool to clean up old profile generations";
-    mainProgram = "janitor";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.nobbz ];
+    platforms = lib.platforms.linux;
+    mainProgram = "janitor";
   };
 })

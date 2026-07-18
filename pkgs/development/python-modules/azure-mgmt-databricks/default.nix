@@ -11,14 +11,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-databricks";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     hash = "sha256-cNETYtwtF/X7HbDP5lwa9VuPE28aDbmltR56z3YM9bk=";
+    extension = "zip";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +28,7 @@ buildPythonPackage rec {
     azure-mgmt-core
   ];
 
-  # Module has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Microsoft Azure Data Bricks Management Client Library";

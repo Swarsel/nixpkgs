@@ -3,18 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  zlib,
   nix-update-script,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "assimp";
   version = "6.0.5";
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "assimp";
@@ -23,6 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QWBi1pl5C76UtPhB6SmFipm9oEdnfhELMT3MqfV6oxg=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
   postPatch = ''
     # nix build sandbox does not set /var/tmp up:
     #   https://github.com/assimp/assimp/issues/6270
@@ -30,14 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'define TMP_PATH "/var/tmp/"' 'define TMP_PATH "/tmp/"'
   '';
 
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
     zlib
   ];
-
-  strictDeps = true;
-  enableParallelBuilding = true;
 
   cmakeFlags = [
     (lib.cmakeBool "ASSIMP_BUILD_ASSIMP_TOOLS" true)
@@ -52,21 +51,23 @@ stdenv.mkDerivation (finalAttrs: {
   #  error: implicit conversion from 'char16_t' to 'char32_t' may change the meaning of the represented code unit
   #  [-Werror,-Wcharacter-conversion]
   doCheck = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64;
+
   checkPhase = ''
     runHook preCheck
     bin/unit
     runHook postCheck
   '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/assimp/assimp/releases/tag/${finalAttrs.src.tag}";
     description = "Library to import various 3D model formats";
-    mainProgram = "assimp";
     homepage = "https://www.assimp.org/";
+    changelog = "https://github.com/assimp/assimp/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "assimp";
   };
 })

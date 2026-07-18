@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Small, single-file and POSIX-compatible substituion for systemd-sysusers";
     homepage = "https://github.com/eweOS/catnest";
     license = lib.licenses.mit;
-    mainProgram = "catnest";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "catnest";
   };
 })

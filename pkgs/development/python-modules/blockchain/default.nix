@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "blockchain";
   version = "1.4.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,10 +19,9 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ future ];
-
   # tests are interacting with the API and not mocking the calls
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "blockchain" ];
 
   meta = {

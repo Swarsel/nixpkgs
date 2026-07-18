@@ -1,7 +1,7 @@
 {
-  pkgs,
   lib,
   lua,
+  pkgs,
 }:
 let
   inherit (lib.generators) toLua;
@@ -32,57 +32,9 @@ in
 rec {
   inherit overrideLuarocks;
   inherit hasLuaModule requiredLuaModules;
-
-  luaPathList = [
-    "share/lua/${lua.luaversion}/?.lua"
-    "share/lua/${lua.luaversion}/?/init.lua"
-  ];
-  luaCPathList = [
-    "lib/lua/${lua.luaversion}/?.so"
-  ];
-
-  # generate paths without a prefix
-  luaPathRelStr = lib.concatStringsSep ";" luaPathList;
-  luaCPathRelStr = lib.concatStringsSep ";" luaCPathList;
-
+  genLuaCPathAbsStr = drv: lib.concatMapStringsSep ";" (x: "${drv}/${x}") luaCPathList;
   # generate LUA_(C)PATH value for a specific derivation, i.e., with absolute paths
   genLuaPathAbsStr = drv: lib.concatMapStringsSep ";" (x: "${drv}/${x}") luaPathList;
-  genLuaCPathAbsStr = drv: lib.concatMapStringsSep ";" (x: "${drv}/${x}") luaCPathList;
-
-  # Generate a LUA_PATH with absolute paths
-  # genLuaPathAbs = drv:
-  #   lib.concatStringsSep ";" (map (x: "${drv}/x") luaPathList);
-
-  luaAtLeast = lib.versionAtLeast lua.luaversion;
-  luaOlder = lib.versionOlder lua.luaversion;
-  isLua51 = (lib.versions.majorMinor lua.version) == "5.1";
-  isLua52 = (lib.versions.majorMinor lua.version) == "5.2";
-  isLua53 = lua.luaversion == "5.3";
-  isLuaJIT = lib.getName lua == "luajit";
-
-  /*
-    generates the relative path towards the folder where
-    seems stable even when using  lua_modules_path = ""
-
-    Example:
-     getDataFolder luaPackages.stdlib
-     => stdlib-41.2.2-1-rocks/stdlib/41.2.2-1/doc
-  */
-  getDataFolder = drv: "${drv.pname}-${drv.version}-rocks/${drv.pname}/${drv.version}";
-
-  /*
-    Convert derivation to a lua module.
-    so that luaRequireModules can be run later
-  */
-  toLuaModule =
-    drv:
-    drv.overrideAttrs (oldAttrs: {
-      # Use passthru in order to prevent rebuilds when possible.
-      passthru = (oldAttrs.passthru or { }) // {
-        luaModule = lua;
-        requiredLuaModules = requiredLuaModules drv.propagatedBuildInputs;
-      };
-    });
 
   /*
     generate a luarocks config conforming to:
@@ -109,11 +61,13 @@ rec {
     let
       rocksTrees = lib.imap0 (i: dep: {
         name = "dep-${toString i}";
-        root = "${dep}";
+
         # packages built by buildLuaPackage or luarocks doesn't contain rocksSubdir
         # hence a default here
         rocks_dir =
           if dep ? rocksSubdir then "${dep}/${dep.rocksSubdir}" else "${dep.pname}-${dep.version}-rocks";
+
+        root = "${dep}";
       }) requiredLuaRocks;
 
       # Explicitly point luarocks to the relevant locations for multiple-output
@@ -121,11 +75,11 @@ rec {
       # (https://github.com/luarocks/luarocks/issues/766)
       depVariables = zipAttrsWithLast (
         lib.lists.map (
-          { name, dep }:
+          { dep, name }:
           {
+            "${name}_BINDIR" = "${lib.getBin dep}/bin";
             "${name}_INCDIR" = "${lib.getDev dep}/include";
             "${name}_LIBDIR" = "${lib.getLib dep}/lib";
-            "${name}_BINDIR" = "${lib.getBin dep}/bin";
           }
         ) externalDeps'
       );
@@ -145,8 +99,8 @@ rec {
             [
               {
                 name = "current";
-                root = "${placeholder "out"}";
                 rocks_dir = "current";
+                root = "${placeholder "out"}";
               }
             ]
             ++ rocksTrees
@@ -156,10 +110,10 @@ rec {
           # Luajit provides some additional functionality built-in; this exposes
           # that to luarock's dependency system
           rocks_provided = {
-            jit = "${lua.luaversion}-1";
-            ffi = "${lua.luaversion}-1";
-            luaffi = "${lua.luaversion}-1";
             bit = "${lua.luaversion}-1";
+            ffi = "${lua.luaversion}-1";
+            jit = "${lua.luaversion}-1";
+            luaffi = "${lua.luaversion}-1";
           };
         }
         // {
@@ -176,4 +130,51 @@ rec {
       );
     in
     generatedConfig;
+
+  /*
+    generates the relative path towards the folder where
+    seems stable even when using  lua_modules_path = ""
+
+    Example:
+     getDataFolder luaPackages.stdlib
+     => stdlib-41.2.2-1-rocks/stdlib/41.2.2-1/doc
+  */
+  getDataFolder = drv: "${drv.pname}-${drv.version}-rocks/${drv.pname}/${drv.version}";
+  isLua51 = (lib.versions.majorMinor lua.version) == "5.1";
+  isLua52 = (lib.versions.majorMinor lua.version) == "5.2";
+  isLua53 = lua.luaversion == "5.3";
+  isLuaJIT = lib.getName lua == "luajit";
+  # Generate a LUA_PATH with absolute paths
+  # genLuaPathAbs = drv:
+  #   lib.concatStringsSep ";" (map (x: "${drv}/x") luaPathList);
+  luaAtLeast = lib.versionAtLeast lua.luaversion;
+
+  luaCPathList = [
+    "lib/lua/${lua.luaversion}/?.so"
+  ];
+
+  luaCPathRelStr = lib.concatStringsSep ";" luaCPathList;
+  luaOlder = lib.versionOlder lua.luaversion;
+
+  luaPathList = [
+    "share/lua/${lua.luaversion}/?.lua"
+    "share/lua/${lua.luaversion}/?/init.lua"
+  ];
+
+  # generate paths without a prefix
+  luaPathRelStr = lib.concatStringsSep ";" luaPathList;
+
+  /*
+    Convert derivation to a lua module.
+    so that luaRequireModules can be run later
+  */
+  toLuaModule =
+    drv:
+    drv.overrideAttrs (oldAttrs: {
+      # Use passthru in order to prevent rebuilds when possible.
+      passthru = (oldAttrs.passthru or { }) // {
+        luaModule = lua;
+        requiredLuaModules = requiredLuaModules drv.propagatedBuildInputs;
+      };
+    });
 }

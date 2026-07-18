@@ -1,11 +1,11 @@
 {
-  autoreconfHook,
-  fetchFromGitHub,
-  ghostscript,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
+  ghostscript,
   pkg-config,
   poppler,
-  stdenv,
   texliveMinimal,
 }:
 
@@ -24,10 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./gettext-0.25.patch
   ];
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    NIX_LDFLAGS = "-liconv";
-  };
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -39,6 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
     poppler
   ];
 
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    NIX_LDFLAGS = "-liconv";
+  };
+
   doCheck = true;
 
   nativeCheckInputs = [
@@ -47,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/trueroad/extractpdfmark";
     description = "Extract page mode and named destinations as PDFmark from PDF";
+    homepage = "https://github.com/trueroad/extractpdfmark";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.samueltardieu ];
     platforms = lib.platforms.all;

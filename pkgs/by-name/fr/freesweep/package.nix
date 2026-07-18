@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
-  ncurses,
   lib,
   stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
-  pkg-config,
   installShellFiles,
+  ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -41,10 +41,8 @@ stdenv.mkDerivation {
     pkg-config
     installShellFiles
   ];
+
   buildInputs = [ ncurses ];
-
-  enableParallelBuilding = true;
-
   preConfigure = "./autogen.sh";
 
   installPhase = ''
@@ -55,12 +53,14 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Console minesweeper-style game written in C for Unix-like systems";
-    mainProgram = "freesweep";
     homepage = "https://github.com/rwestlund/freesweep";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ lzcunt ];
     platforms = lib.platforms.unix;
+    mainProgram = "freesweep";
   };
 }

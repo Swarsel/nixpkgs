@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   lifx-emulator-core,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "lifx-async";
   version = "5.4.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Djelibeybi";
@@ -24,10 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-DWclqWrCoUfFC2gu1CbrqHxx4BFP1jV597c4llq2B5A=";
   };
-
-  build-system = [ hatchling ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     lifx-emulator-core
@@ -40,6 +35,9 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "lifx" ];
 
   meta = {

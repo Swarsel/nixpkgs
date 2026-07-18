@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  pkg-config,
   gobject-introspection,
-  wrapGAppsHook3,
-  gtk3,
   gst_all_1,
-  writableTmpDirAsHomeHook,
+  gtk3,
   gtksourceview4,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook3,
+  writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pychess";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pychess";
@@ -36,6 +35,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     gtksourceview4
   ];
 
+  preBuild = ''
+    export PYTHONPATH=./lib:$PYTHONPATH
+    python pgn2ecodb.py
+    python create_theme_preview.py
+  '';
+
+  # No tests available.
+  doCheck = false;
+
+  postInstall = ''
+    cp -r $out/share/pychess/* $out/lib/python*/
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -49,32 +65,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
-  preBuild = ''
-    export PYTHONPATH=./lib:$PYTHONPATH
-    python pgn2ecodb.py
-    python create_theme_preview.py
-  '';
-
-  postInstall = ''
-    cp -r $out/share/pychess/* $out/lib/python*/
-  '';
-
-  # No tests available.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pychess" ];
 
   meta = {
     description = "Advanced GTK chess client written in Python";
     homepage = "https://pychess.github.io/";
-    mainProgram = "pychess";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ lgbishop ];
+    platforms = lib.platforms.linux;
+    mainProgram = "pychess";
   };
 })

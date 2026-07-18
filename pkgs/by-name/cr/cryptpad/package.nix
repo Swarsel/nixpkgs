@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchurl,
+  fetchFromGitHub,
   bash,
   buildNpmPackage,
   coreutils,
-  fetchFromGitHub,
   fetchpatch,
-  fetchurl,
-  lib,
   makeBinaryWrapper,
   nixosTests,
   nodejs,
@@ -32,9 +32,9 @@ let
   # https://github.com/cryptpad/onlyoffice-builds/blob/main/build.sh
   onlyoffice_fetch =
     {
+      hash,
       rev ? null,
       version ? null,
-      hash,
       ...
     }:
     assert (
@@ -51,8 +51,8 @@ let
     # New method for v7+ versions that use ZIP releases
     else
       fetchurl {
-        url = "https://github.com/cryptpad/onlyoffice-editor/releases/download/${version}/onlyoffice-editor.zip";
         inherit hash;
+        url = "https://github.com/cryptpad/onlyoffice-editor/releases/download/${version}/onlyoffice-editor.zip";
       };
 
   onlyoffice_install = oo: ''
@@ -89,46 +89,46 @@ let
   '';
   onlyoffice_versions = [
     {
-      subdir = "v1";
-      rev = "4f370beb";
       hash = "sha256-TE/99qOx4wT2s0op9wi+SHwqTPYq/H+a9Uus9Zj4iSY=";
+      rev = "4f370beb";
+      subdir = "v1";
     }
     {
-      subdir = "v2b";
-      rev = "d9da72fd";
       hash = "sha256-SiRDRc2vnLwCVnvtk+C8PKw7IeuSzHBaJmZHogRe3hQ=";
+      rev = "d9da72fd";
+      subdir = "v2b";
     }
     {
-      subdir = "v4";
-      rev = "6ebc6938";
       hash = "sha256-eto1+8Tk/s3kbUCpbUh8qCS8EOq700FYG1/KiHyynaA=";
+      rev = "6ebc6938";
+      subdir = "v4";
     }
     {
-      subdir = "v5";
-      rev = "88a356f0";
       hash = "sha256-8j1rlAyHlKx6oAs2pIhjPKcGhJFj6ZzahOcgenyeOCc=";
+      rev = "88a356f0";
+      subdir = "v5";
     }
     {
-      subdir = "v6";
-      rev = "abd8a309";
       hash = "sha256-BZdExj2q/bqUD3k9uluOot2dlrWKA+vpad49EdgXKww=";
+      rev = "abd8a309";
+      subdir = "v6";
     }
     {
-      subdir = "v7";
       version = "v7.3.3.60+11";
       hash = "sha256-He8RwsaJPBhaxFklA7vSxxNUpmcM41lW859gQUUJWbQ=";
+      subdir = "v7";
     }
     {
-      subdir = "v8";
       version = "v8.3.3.23+5";
       hash = "sha256-+53jzvmGltD1yjXAimLl8zL1V4YDc1qF1PUFSeyiUm8=";
+      subdir = "v8";
     }
   ];
 
   x2t_version = "v7.3+1";
   x2t = fetchurl {
-    url = "https://github.com/cryptpad/onlyoffice-x2t-wasm/releases/download/${x2t_version}/x2t.zip";
     hash = "sha256-hrbxrI8RC1pBatGZ76TAiVfUbZid7+eRuXk6lmz7OgQ=";
+    url = "https://github.com/cryptpad/onlyoffice-x2t-wasm/releases/download/${x2t_version}/x2t.zip";
   };
   x2t_install = ''
     echo "Installing x2t"
@@ -147,20 +147,12 @@ buildNpmPackage {
     repo = "cryptpad";
     tag = version;
     hash = "sha256-C5vj8vgSzR81NJhCSlY9sEoSAQs3ckeoCrChrSTTIso=";
+
     # case-insensitive file results in different hash on darwin, delete to avoid collision
     postFetch = ''
       find $out -iname "funding.json" -delete
     '';
   };
-
-  npmDepsHash = "sha256-d/2JKGdC/tgDOo4Qr/0g83lh5gW6Varr0vkZUZe+WTA=";
-
-  nativeBuildInputs = [
-    makeBinaryWrapper
-    rdfind
-    unzip
-    bash
-  ];
 
   patches = [
     # fix httpSafePort setting
@@ -171,15 +163,14 @@ buildNpmPackage {
     ./0001-install-onlyoffice.sh-fix-check-for-new-install_vers.patch
   ];
 
-  # cryptpad build tries to write in cache dir
-  makeCacheWritable = true;
+  nativeBuildInputs = [
+    makeBinaryWrapper
+    rdfind
+    unzip
+    bash
+  ];
 
-  # 'npm build run' (scripts/build.js) generates a customize directory, but:
-  # - that is not installed by npm install
-  # - it embeds values from config into the directory, so needs to be
-  # run before starting the server (it's just a few quick replaces)
-  # Skip it here.
-  dontNpmBuild = true;
+  npmDepsHash = "sha256-d/2JKGdC/tgDOo4Qr/0g83lh5gW6Varr0vkZUZe+WTA=";
 
   postInstall = ''
     out_cryptpad="$out/lib/node_modules/cryptpad"
@@ -226,13 +217,21 @@ buildNpmPackage {
       --run "if ! [ -d customize ]; then \"${lib.getExe nodejs}\" \"$out_cryptpad/scripts/build.js\"; fi"
   '';
 
+  # 'npm build run' (scripts/build.js) generates a customize directory, but:
+  # - that is not installed by npm install
+  # - it embeds values from config into the directory, so needs to be
+  # run before starting the server (it's just a few quick replaces)
+  # Skip it here.
+  dontNpmBuild = true;
+  # cryptpad build tries to write in cache dir
+  makeCacheWritable = true;
   passthru.tests.cryptpad = nixosTests.cryptpad;
 
   meta = {
     description = "Collaborative office suite, end-to-end encrypted and open-source";
     homepage = "https://cryptpad.org/";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "cryptpad";
     maintainers = with lib.maintainers; [ martinetd ];
+    mainProgram = "cryptpad";
   };
 }

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
-  libGL,
-  libGLU,
   SDL,
   SDL_mixer,
   bulletml,
+  fetchpatch,
+  libGL,
+  libGLU,
 }:
 
 let
@@ -16,15 +16,16 @@ let
   debianPatch =
     patchname: hash:
     fetchpatch {
+      inherit hash;
       name = "${patchname}.patch";
       url = "https://sources.debian.org/data/main/r/rrootage/${version}-${debianRevision}/debian/patches/${patchname}.patch";
-      inherit hash;
     };
 
 in
 stdenv.mkDerivation {
-  pname = "rrootage";
   inherit version;
+  pname = "rrootage";
+
   src = fetchurl {
     url = "https://downloads.sourceforge.net/rrootage/rRootage-${version}.tar.gz";
     hash = "sha256-lk7b4hgC4+QNao2hm2ETLeys0Tv5pxushqvOASN5/wc=";
@@ -63,11 +64,6 @@ stdenv.mkDerivation {
     "-f makefile.lin"
   ];
 
-  hardeningDisable = [
-    "stackprotector"
-    "fortify"
-  ]; # buffer overflow without this
-
   installPhase = ''
     runHook preInstall
 
@@ -85,11 +81,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  hardeningDisable = [
+    "stackprotector"
+    "fortify"
+  ]; # buffer overflow without this
+
   meta = {
     description = "Abstract shooter created by Kenta Cho";
-    mainProgram = "rrootage";
     homepage = "https://rrootage.sourceforge.net/";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ fgaz ];
+    mainProgram = "rrootage";
   };
 }

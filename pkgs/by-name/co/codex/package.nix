@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  callPackage,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
   bubblewrap,
+  callPackage,
   clang,
   cmake,
   gitMinimal,
+  installShellFiles,
   libcap,
   libclang,
-  librusty_v8 ? callPackage ./librusty_v8.nix {
-    inherit (callPackage ./fetchers.nix { }) fetchLibrustyV8;
-  },
   livekit-libwebrtc,
   lld,
   makeBinaryWrapper,
   nix-update-script,
-  pkg-config,
   openssl,
+  pkg-config,
   ripgrep,
+  rustPlatform,
   versionCheckHook,
   installShellCompletions ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
+  librusty_v8 ? callPackage ./librusty_v8.nix {
+    inherit (callPackage ./fetchers.nix { }) fetchLibrustyV8;
+  },
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "codex";
@@ -34,27 +34,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "rust-v${finalAttrs.version}";
     hash = "sha256-NmYZxjNFPkRWN4rw+eeka10pJt6/oU3ZoLXBxj3dPRU=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/codex-rs";
-
-  cargoHash = "sha256-S4dsZXfmKvJItL2XYKyxfhqdCMATEG6oPjrtVRwkuYc=";
-
-  __structuredAttrs = true;
-
-  # Match upstream's release build for the codex binary, plus its
-  # codex-code-mode-host runtime companion for out-of-process V8 execution.
-  cargoBuildFlags = [
-    "--package"
-    "codex-cli"
-    "--package"
-    "codex-code-mode-host"
-  ];
-  cargoCheckFlags = [
-    "--package"
-    "codex-cli"
-    "--package"
-    "codex-code-mode-host"
-  ];
 
   postPatch = ''
     # webrtc-sys asks rustc to link libwebrtc statically by default,
@@ -85,6 +64,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libcap
   ];
 
+  cargoHash = "sha256-S4dsZXfmKvJItL2XYKyxfhqdCMATEG6oPjrtVRwkuYc=";
+
   # NOTE: set LIBCLANG_PATH so bindgen can locate libclang, and adjust
   # warning-as-error flags to avoid known false positives (GCC's
   # stringop-overflow in BoringSSL's a_bitstr.cc) while keeping Clang's
@@ -92,6 +73,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   env = {
     LIBCLANG_PATH = "${lib.getLib libclang}/lib";
     LK_CUSTOM_WEBRTC = lib.getDev livekit-libwebrtc;
+
     NIX_CFLAGS_COMPILE = toString (
       lib.optionals stdenv.cc.isGNU [
         "-Wno-error=stringop-overflow"
@@ -100,6 +82,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
         "-Wno-error=character-conversion"
       ]
     );
+
     RUSTY_V8_ARCHIVE = librusty_v8;
   }
   // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
@@ -123,14 +106,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/codex completion zsh)
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   postFixup = ''
     wrapProgram $out/bin/codex --prefix PATH : ${
       lib.makeBinPath ([ ripgrep ] ++ lib.optionals stdenv.hostPlatform.isLinux [ bubblewrap ])
     }
   '';
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  # Match upstream's release build for the codex binary, plus its
+  # codex-code-mode-host runtime companion for out-of-process V8 execution.
+  cargoBuildFlags = [
+    "--package"
+    "codex-cli"
+    "--package"
+    "codex-code-mode-host"
+  ];
+
+  cargoCheckFlags = [
+    "--package"
+    "codex-cli"
+    "--package"
+    "codex-code-mode-host"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/codex-rs";
 
   passthru = {
     updateScript = nix-update-script {
@@ -147,12 +150,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/openai/codex";
     changelog = "https://raw.githubusercontent.com/openai/codex/refs/tags/rust-v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "codex";
+
     maintainers = with lib.maintainers; [
       delafthi
       jeafleohj
       malo
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "codex";
   };
 })

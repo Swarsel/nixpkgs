@@ -28,10 +28,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "OBS Studio plugin that provides a dummy source to execute arbitrary commands when a scene is switched";
     homepage = "https://github.com/norihiro/command-source";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

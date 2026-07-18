@@ -1,17 +1,16 @@
 {
   lib,
-  asdf-standard,
-  asdf,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  asdf,
+  asdf-standard,
+  buildPythonPackage,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "asdf-coordinates-schemas";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asdf-format";
@@ -19,6 +18,9 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-GkYbUCuyDW2t8boYi+dknQ+0Pt6MjvU1PxOYcPfbFLw=";
   };
+
+  # Circular dependency with asdf-astropy
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -30,9 +32,7 @@ buildPythonPackage (finalAttrs: {
     asdf-standard
   ];
 
-  # Circular dependency with asdf-astropy
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "asdf_coordinates_schemas" ];
 
   meta = {

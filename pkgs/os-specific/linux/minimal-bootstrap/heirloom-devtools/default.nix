@@ -1,11 +1,11 @@
 {
   lib,
   fetchurl,
-  kaem,
-  tinycc,
+  coreutils,
   gnumake,
   gnupatch,
-  coreutils,
+  kaem,
+  tinycc,
 }:
 let
   pname = "heirloom-devtools";
@@ -23,13 +23,13 @@ let
   patches = [
     # Remove all kinds of wchar support. Mes Libc does not support wchar in any form
     (fetchurl {
-      url = "${liveBootstrap}/patches/yacc_remove_wchar.patch";
       sha256 = "0wgiz02bb7xzjy2gnbjp8y31qy6rc4b29v01zi32zh9lw54j68hc";
+      url = "${liveBootstrap}/patches/yacc_remove_wchar.patch";
     })
     # Similarly to yacc, remove wchar. See yacc patch for further information
     (fetchurl {
-      url = "${liveBootstrap}/patches/lex_remove_wchar.patch";
       sha256 = "168dfngi51ljjqgd55wbvmffaq61gk48gak50ymnl1br92qkp4zh";
+      url = "${liveBootstrap}/patches/lex_remove_wchar.patch";
     })
   ];
 in
@@ -47,13 +47,15 @@ kaem.runCommand "${pname}-${version}"
     meta = {
       description = "Portable yacc and lex derived from OpenSolaris";
       homepage = "https://heirloom.sourceforge.net/devtools.html";
+
       license = with lib.licenses; [
         cddl
         bsdOriginalUC
         caldera
       ];
-      teams = [ lib.teams.minimal-bootstrap ];
+
       platforms = lib.platforms.unix;
+      teams = [ lib.teams.minimal-bootstrap ];
     };
   }
   ''

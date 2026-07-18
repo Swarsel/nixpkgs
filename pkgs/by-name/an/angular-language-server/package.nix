@@ -1,25 +1,26 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  nodejs,
-  makeBinaryWrapper,
-  runCommand,
   angular-language-server,
-  writeShellApplication,
-  curl,
   common-updater-scripts,
+  curl,
   jq,
-  unzip,
+  makeBinaryWrapper,
+  nodejs,
+  runCommand,
+  stdenvNoCC,
   typescript,
+  unzip,
+  writeShellApplication,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "angular-language-server";
   version = "21.2.2";
+
   src = fetchurl {
-    name = "angular-language-server-${finalAttrs.version}.zip";
     url = "https://github.com/angular/angular/releases/download/vsix-${finalAttrs.version}/ng-template-${finalAttrs.version}.vsix";
     hash = "sha256-rpll3EsTGEuynrw7EsP3GeltG/vtYqgO8mvTCVyU1ao=";
+    name = "angular-language-server-${finalAttrs.version}.zip";
   };
 
   nativeBuildInputs = [
@@ -57,11 +58,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     updateScript = lib.getExe (writeShellApplication {
       name = "update-angular-language-server";
+
       runtimeInputs = [
         curl
         common-updater-scripts
         jq
       ];
+
       text = ''
         if [ -z "''${GITHUB_TOKEN:-}" ]; then
             echo "no GITHUB_TOKEN provided - you could meet API request limiting" >&2
@@ -83,11 +86,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "LSP for angular completions, AOT diagnostic, quick info and go to definitions";
     homepage = "https://github.com/angular/angular";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     changelog = "https://github.com/angular/angular/blob/${finalAttrs.version}/vscode-ng-language-service/CHANGELOG.md";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ tricktron ];
     platforms = lib.platforms.unix;
     mainProgram = "ngserver";
-    maintainers = with lib.maintainers; [ tricktron ];
   };
 })

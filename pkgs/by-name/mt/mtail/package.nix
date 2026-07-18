@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gotools,
 }:
 
@@ -17,18 +17,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-KX47oD7qLBpwItUVltysiekjy4wtpK13SVdvjSx9jmU=";
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-9XEg7Io3yi/6PKgc0oKmTWNYACOLf8FfKM/c15jXOUQ=";
-
   nativeBuildInputs = [
     gotools # goyacc
   ];
 
-  ldflags = [
-    "-X=main.Branch=main"
-    "-X=main.Version=${finalAttrs.version}"
-    "-X=main.Revision=${finalAttrs.src.rev}"
-  ];
+  vendorHash = "sha256-9XEg7Io3yi/6PKgc0oKmTWNYACOLf8FfKM/c15jXOUQ=";
+
+  preBuild = ''
+    GOOS= GOARCH= go generate ./...
+  '';
 
   # fails on darwin with: write unixgram -> <tmpdir>/rsyncd.log: write: message too long
   doCheck = !stdenv.hostPlatform.isDarwin;
@@ -38,9 +35,13 @@ buildGoModule (finalAttrs: {
     "-skip=TestExecMtail"
   ];
 
-  preBuild = ''
-    GOOS= GOARCH= go generate ./...
-  '';
+  ldflags = [
+    "-X=main.Branch=main"
+    "-X=main.Version=${finalAttrs.version}"
+    "-X=main.Revision=${finalAttrs.src.rev}"
+  ];
+
+  proxyVendor = true;
 
   meta = {
     description = "Tool for extracting metrics from application logs";

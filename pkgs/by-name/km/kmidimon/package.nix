@@ -1,18 +1,19 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  alsa-lib,
+  cmake,
   nix-update-script,
+  pandoc,
   qt6,
   qt6Packages,
-  cmake,
-  alsa-lib,
-  pandoc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "kmidimon";
   version = "1.4.1";
+
   src = fetchFromGitHub {
     owner = "pedrolcl";
     repo = "kmidimon";
@@ -40,12 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Drumstick MIDI Monitor";
+
     longDescription = ''
       Drumstick MIDI Monitor logs MIDI events coming from MIDI external ports or
       applications via the ALSA sequencer, and from SMF (Standard MIDI files) or
       WRK (Cakewalk/Sonar) files. It is especially useful for debugging MIDI
       software or your MIDI setup.
     '';
+
     homepage = "https://github.com/pedrolcl/kmidimon";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ qweered ];

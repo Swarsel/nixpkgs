@@ -1,18 +1,19 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   atk,
   autoPatchelfHook,
   bubblewrap,
   cairo,
   dpkg,
-  fetchurl,
   freetype,
   gdk-pixbuf,
   glib,
   gtk3,
   harfbuzz,
   lcms,
-  lib,
   libglvnd,
   libjack2,
   libjpeg8,
@@ -28,7 +29,6 @@
   makeBinaryWrapper,
   pango,
   pipewire,
-  stdenv,
   vulkan-loader,
   wrapGAppsHook3,
   writeShellScript,
@@ -41,9 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "6.0.11";
 
   src = fetchurl {
-    name = "bitwig-studio-${finalAttrs.version}.deb";
     url = "https://www.bitwig.com/dl/Bitwig%20Studio/${finalAttrs.version}/installer_linux";
     hash = "sha256-rnr/Z8y6klKrU2gT5/XT+sRryl/HZZZ04n565L0HPEw=";
+    name = "bitwig-studio-${finalAttrs.version}.deb";
   };
 
   strictDeps = true;
@@ -84,8 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     alsa-lib
   ];
-
-  dontWrapGApps = true; # we only want $gappsWrapperArgs here
 
   installPhase = ''
     runHook preInstall
@@ -135,23 +133,29 @@ stdenv.mkDerivation (finalAttrs: {
         --prefix PATH : ${lib.makeBinPath [ bubblewrap ]}
     '';
 
+  dontWrapGApps = true; # we only want $gappsWrapperArgs here
+
   meta = {
     description = "Digital audio workstation";
+
     longDescription = ''
       Bitwig Studio is a multi-platform music-creation system for
       production, performance and DJing, with a focus on flexible
       editing tools and a super-fast workflow.
     '';
+
     homepage = "https://www.bitwig.com/";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       bfortz
       eleina
       michalrus
       mrVanDalo
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    platforms = [ "x86_64-linux" ];
     mainProgram = "bitwig-studio";
   };
 })

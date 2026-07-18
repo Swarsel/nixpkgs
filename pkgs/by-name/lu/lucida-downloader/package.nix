@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   rustPlatform,
 }:
@@ -16,18 +16,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-284f3+yKkE37wZzmyW7qupvYwEkmLvco8lc5dFSiLAQ=";
   };
 
-  passthru.updateScript = nix-update-script { };
-
   cargoHash = "sha256-PT8E9AqvhChKk76AA2qsAf2ICy5maQ9SK96V/vkmwy8=";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Multithreaded client for downloading music for free with lucida";
     homepage = "https://github.com/jelni/lucida-downloader";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "lucida";
+
     maintainers = with lib.maintainers; [
       jelni
       surfaceflinger
     ];
+
+    mainProgram = "lucida";
   };
 })

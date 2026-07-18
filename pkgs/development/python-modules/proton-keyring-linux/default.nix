@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   keyring,
   proton-core,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "proton-keyring-linux";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ProtonVPN";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-deld1MjuTjgjXBCUuDzYABRjN4gT1mz+duV0Qj4IWCg=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,14 +32,11 @@ buildPythonPackage rec {
     proton-core
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "proton.keyring_linux.core"
     "proton.keyring_linux"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
   ];
 
   meta = {

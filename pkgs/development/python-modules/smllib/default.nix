@@ -1,8 +1,7 @@
 {
   lib,
-
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "smllib";
   version = "1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spacemanspiff2007";
@@ -19,9 +17,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jf9AFjt9xDg4DFYzdoL7rQdo/WdkM4km8fDdzVfbN5E=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+
   pythonImportsCheck = [
     "smllib"
   ];

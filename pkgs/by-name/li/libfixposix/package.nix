@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   getconf,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,12 +25,14 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ getconf ];
 
   meta = {
-    homepage = "https://github.com/sionescu/libfixposix";
     description = "Thin wrapper over POSIX syscalls and some replacement functionality";
+    homepage = "https://github.com/sionescu/libfixposix";
     license = lib.licenses.boost;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

@@ -16,6 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-LndLfORnypLqFgNMPEJ8jc2Fa2xWWgYS9rZ7gGFbwwo=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     fixDarwinDylibNames
   ];
@@ -23,12 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     gmp
   ];
-
-  __structuredAttrs = true;
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
 
   makeFlags = [
     "MODE=shared"
@@ -40,17 +36,19 @@ stdenv.mkDerivation (finalAttrs: {
     "library"
   ];
 
+  doCheck = true;
+
   preCheck = ''
     patchShebangs --build ./test
   '';
 
+  __structuredAttrs = true;
   checkTarget = "test";
-
-  doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
-    mainProgram = "frobby";
     description = "Software system and project for computations with monomial ideals";
+
     longDescription = ''
       Current functionality includes Euler characteristic, Hilbert series,
       maximal standard monomials, combinatorial optimization on monomial
@@ -62,9 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
       Monos, 4ti2, CoCoA4 and Singular. Thus Frobby can be used with any of
       those systems.
     '';
+
     homepage = "https://github.com/Macaulay2/frobby";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ coolcuber ];
     platforms = lib.platforms.unix;
+    mainProgram = "frobby";
   };
 })

@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyasuswrt";
   version = "0.1.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ollo69";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ aiohttp ];
-
   # Tests require physical hardware
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyasuswrt" ];
 
   meta = {

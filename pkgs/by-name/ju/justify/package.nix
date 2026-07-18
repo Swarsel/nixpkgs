@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
   cmake,
+  fetchFromGitea,
 }:
 
 stdenv.mkDerivation {
@@ -10,11 +10,11 @@ stdenv.mkDerivation {
   version = "unstable-2022-03-19";
 
   src = fetchFromGitea {
-    domain = "tildegit.org";
     owner = "jns";
     repo = "justify";
     rev = "0d397c20ed921c8e091bf18e548d174e15810e62";
     sha256 = "sha256-406OhJt2Ila/LIhfqJXhbFqFxJJiRyMVI4/VK8Y43kc=";
+    domain = "tildegit.org";
   };
 
   postPatch = ''
@@ -28,11 +28,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://tildegit.org/jns/justify";
     description = "Simple text alignment tool that supports left/right/center/fill justify alignment";
+    homepage = "https://tildegit.org/jns/justify";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ xfnw ];
     platforms = lib.platforms.unix;
     mainProgram = "justify";
-    maintainers = with lib.maintainers; [ xfnw ];
   };
 }

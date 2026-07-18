@@ -1,17 +1,15 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  pkg-config,
+  buildDunePackage,
   dune-configurator,
   lame,
+  pkg-config,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "lame";
   version = "0.3.7";
-
-  minimalOCamlVersion = "4.06";
 
   src = fetchFromGitHub {
     owner = "savonet";
@@ -23,10 +21,11 @@ buildDunePackage (finalAttrs: {
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dune-configurator ];
   propagatedBuildInputs = [ lame ];
+  minimalOCamlVersion = "4.06";
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-lame";
     description = "Bindings for the lame library which provides functions for encoding mp3 files";
+    homepage = "https://github.com/savonet/ocaml-lame";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ dandellion ];
   };

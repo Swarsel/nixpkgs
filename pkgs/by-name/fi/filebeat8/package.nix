@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,18 +17,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Xpth1SoXMXCUh/DFf3wA+Ql6SedtUB7tCYzDElpX5Lc=";
   };
 
-  proxyVendor = true; # darwin/linux hash mismatch
-
   vendorHash = "sha256-Wxk+eI0XfBpQqqUNuskyr+/bTRqT38hszdkz/LJweQo=";
-
-  subPackages = [ "filebeat" ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  proxyVendor = true; # darwin/linux hash mismatch
+  subPackages = [ "filebeat" ];
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { extraArgs = [ "--version-regex=v(8\\..*)" ]; };

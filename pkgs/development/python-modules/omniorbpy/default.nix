@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
+  buildPythonPackage,
   omniorb,
   pkg-config,
   python,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "omniorbpy";
   version = "4.3.2";
-  pyproject = false;
 
   src = fetchurl {
     url = "https://downloads.sourceforge.net/omniorb/omniORBpy-${version}.tar.bz2";
@@ -23,7 +22,6 @@ buildPythonPackage rec {
   ];
 
   nativeBuildInputs = [ pkg-config ];
-
   propagatedBuildInputs = [ omniorb ];
 
   configureFlags = [
@@ -38,6 +36,8 @@ buildPythonPackage rec {
     rm $out/${python.sitePackages}/omniidl_be/__pycache__/__init__.*.pyc
   '';
 
+  pyproject = false;
+
   # Ensure both python & cxx backends are available
   pythonImportsCheck = [
     "omniidl_be.cxx"
@@ -48,10 +48,12 @@ buildPythonPackage rec {
   meta = {
     description = "Python backend for omniorb";
     homepage = "http://omniorb.sourceforge.net";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
+
     maintainers = with lib.maintainers; [ nim65s ];
     platforms = lib.platforms.unix;
   };

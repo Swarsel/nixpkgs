@@ -11,9 +11,8 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "linux-kernel-latest-htmldocs";
-
   inherit (linux_latest) version src;
+  pname = "linux-kernel-latest-htmldocs";
 
   postPatch = ''
     patchShebangs \
@@ -22,10 +21,6 @@ stdenv.mkDerivation {
       tools/docs/sphinx-pre-install \
       tools/net/ynl/pyynl/ynl_gen_rst.py
   '';
-
-  env.FONTCONFIG_FILE = makeFontsConf {
-    fontDirectories = [ ];
-  };
 
   nativeBuildInputs = [
     graphviz
@@ -37,11 +32,15 @@ stdenv.mkDerivation {
     which
   ];
 
+  makeFlags = [ "htmldocs" ];
+
+  env.FONTCONFIG_FILE = makeFontsConf {
+    fontDirectories = [ ];
+  };
+
   preBuild = ''
     export XDG_CACHE_HOME="$(mktemp -d)"
   '';
-
-  makeFlags = [ "htmldocs" ];
 
   installPhase = ''
     mkdir -p $out/share/doc
@@ -50,10 +49,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
+    inherit (linux_latest.meta) license;
     description = "Linux kernel html documentation";
     homepage = "https://www.kernel.org/doc/htmldocs/";
-    platforms = lib.platforms.linux;
-    inherit (linux_latest.meta) license;
     maintainers = with lib.maintainers; [ sigmanificient ];
+    platforms = lib.platforms.linux;
   };
 }

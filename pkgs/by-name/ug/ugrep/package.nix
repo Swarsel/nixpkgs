@@ -2,29 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  antiword,
   boost,
   brotli,
   bzip2,
   bzip3,
+  exiftool,
+  # All we need is its `meta.priority` to ensure `ugrep`
+  # beats it.
+  gnugrep,
   lz4,
   makeWrapper,
+  pandoc,
   pcre2,
-  testers,
-  xz,
-  zlib,
-  zstd,
   # The `ugrep+` and `ug+` commands are the same as the
   # `ugrep` and `ug` commands, but also use filters to
   # search PDFs, documents, e-books, image metadata,
   # when these filter tools are present:
   poppler-utils, # Provides `pdftotext`.
-  antiword,
-  pandoc,
-  exiftool,
-  # Alleviates the need for users to pollute their
-  # environment with these packages, but grows the
-  # closure size massively; hence this is opt-in.
-  wrapWithFilterUtils ? false,
+  testers,
+  xz,
+  zlib,
+  zstd,
   # `ugrep` has a compatibility mode for the `gnugrep`
   # variants. When `$0` is one of the variants, `ugrep`
   # behaves like it to be drop-in compatible. This can
@@ -32,9 +31,10 @@
   # with `coreutils`. These will of course shadow the
   # `pkgs.gnugrep` binaries in `system-path`.
   createGrepReplacementLinks ? false,
-  # All we need is its `meta.priority` to ensure `ugrep`
-  # beats it.
-  gnugrep,
+  # Alleviates the need for users to pollute their
+  # environment with these packages, but grows the
+  # closure size massively; hence this is opt-in.
+  wrapWithFilterUtils ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -109,11 +109,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Ultra fast grep with interactive query UI";
     homepage = "https://github.com/Genivia/ugrep";
     changelog = "https://github.com/Genivia/ugrep/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       numkem
       mikaelfangel
     ];
-    license = lib.licenses.bsd3;
+
     platforms = lib.platforms.all;
     mainProgram = "ug";
   }

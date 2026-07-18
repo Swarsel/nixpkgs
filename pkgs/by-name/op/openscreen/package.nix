@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   copyDesktopItems,
-  makeWrapper,
-  makeDesktopItem,
-  xcbuild,
   electron_41,
-  nodejs_22,
+  makeDesktopItem,
+  makeWrapper,
   nix-update-script,
+  nodejs_22,
+  xcbuild,
 }:
 let
   electron = electron_41;
@@ -17,7 +17,6 @@ let
 in
 buildNpmPackage (finalAttrs: {
   inherit nodejs;
-
   pname = "openscreen";
   version = "1.4.0";
 
@@ -28,10 +27,6 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-ZBWDQVYDXJ/IQGhlmscmCOMjpl03kVIdMoJXOW8OjUI=";
   };
 
-  npmDepsHash = "sha256-SMAYgOwlZg9+/KZBUhVviOxEdMeL3Z2YdC8Hx8Q/ioY=";
-
-  npmRebuildFlags = [ "--ignore-scripts" ]; # Prevent running `node-gyp build`
-
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
@@ -40,6 +35,7 @@ buildNpmPackage (finalAttrs: {
     xcbuild
   ];
 
+  npmDepsHash = "sha256-SMAYgOwlZg9+/KZBUhVviOxEdMeL3Z2YdC8Hx8Q/ioY=";
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   buildPhase = ''
@@ -99,30 +95,34 @@ buildNpmPackage (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "openscreen";
-      desktopName = "OpenScreen";
-      comment = finalAttrs.meta.description;
-      icon = "openscreen";
-      exec = "openscreen %u";
       categories = [
         "AudioVideo"
         "Video"
         "Utility"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "OpenScreen";
+      exec = "openscreen %u";
+      icon = "openscreen";
+      name = "openscreen";
       terminal = false;
     })
   ];
 
+  npmRebuildFlags = [ "--ignore-scripts" ]; # Prevent running `node-gyp build`
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Free, open-source alternative to Screen Studio (sort of)";
     homepage = "https://openscreen.vercel.app";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Renna42
     ];
-    mainProgram = "openscreen";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "openscreen";
   };
 })

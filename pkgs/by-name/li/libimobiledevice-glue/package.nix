@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libplist,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,9 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cUcJARbZV9Yaqd9TP3NVmF9p8Pjz88a3GmAh4c4sEHo=";
   };
 
-  preAutoreconf = ''
-    export RELEASE_VERSION=${finalAttrs.version}
-  '';
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -32,18 +33,17 @@ stdenv.mkDerivation (finalAttrs: {
     libplist
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  preAutoreconf = ''
+    export RELEASE_VERSION=${finalAttrs.version}
+  '';
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/libimobiledevice/libimobiledevice-glue";
     description = "Library with common code used by the libraries and tools around the libimobiledevice project";
+    homepage = "https://github.com/libimobiledevice/libimobiledevice-glue";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

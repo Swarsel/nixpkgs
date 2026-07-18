@@ -1,33 +1,30 @@
 {
   lib,
+  stdenv,
   buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  pbr,
-  setuptools,
-
+  # tests
+  ddt,
   # dependencies
   debtcollector,
+  eventlet,
+  fetchPypi,
+  fixtures,
+  iana-etc,
   iso8601,
+  libredirect,
+  libxcrypt-legacy,
   netaddr,
   oslo-i18n,
+  oslotest,
   packaging,
+  # build-system
+  pbr,
   psutil,
   pyparsing,
   pytz,
-
-  # tests
-  ddt,
-  eventlet,
-  fixtures,
-  iana-etc,
-  libredirect,
-  libxcrypt-legacy,
-  oslotest,
   pyyaml,
   qemu-utils,
-  stdenv,
+  setuptools,
   stestr,
   testscenarios,
   tzdata,
@@ -36,12 +33,11 @@
 buildPythonPackage rec {
   pname = "oslo-utils";
   version = "10.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "oslo_utils";
     inherit version;
     hash = "sha256-Ib/Cm7TBzZr7TvdB+445Ro+lSF5gcX9PkPOtPc6KHyI=";
+    pname = "oslo_utils";
   };
 
   postPatch =
@@ -56,22 +52,6 @@ buildPythonPackage rec {
       # so instead of removing them one by one remove everything
       rm test-requirements.txt
     '';
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
-  dependencies = [
-    debtcollector
-    iso8601
-    netaddr
-    oslo-i18n
-    packaging
-    psutil
-    pyparsing
-    pytz
-  ];
 
   nativeCheckInputs = [
     ddt
@@ -100,6 +80,23 @@ buildPythonPackage rec {
     ")
   '';
 
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  dependencies = [
+    debtcollector
+    iso8601
+    netaddr
+    oslo-i18n
+    packaging
+    psutil
+    pyparsing
+    pytz
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "oslo_utils" ];
 
   meta = {

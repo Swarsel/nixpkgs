@@ -1,16 +1,16 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  nodejs_24,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
+  fetchFromGitHub,
   buildGoModule,
-  mage,
   dart-sass,
-  writeShellScriptBin,
+  fetchPnpmDeps,
+  mage,
   nixosTests,
+  nodejs_24,
+  pnpmConfigHook,
+  pnpm_10,
+  writeShellScriptBin,
 }:
 
 let
@@ -23,22 +23,13 @@ let
   };
 
   frontend = stdenv.mkDerivation (finalAttrs: {
-    pname = "vikunja-frontend";
     inherit version src;
+    pname = "vikunja-frontend";
 
-    sourceRoot = "${finalAttrs.src.name}/frontend";
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs)
-        pname
-        version
-        src
-        sourceRoot
-        ;
-      pnpm = pnpm_10;
-      fetcherVersion = 3;
-      hash = "sha256-cDGeIrCxZtcomu3YxikutjXpVe3EeUZ/L3+3y9yx67s=";
-    };
+    postPatch = ''
+      substituteInPlace src/version.json \
+        --replace-fail '"dev"' '"${finalAttrs.version}"'
+    '';
 
     nativeBuildInputs = [
       nodejs_24
@@ -47,19 +38,14 @@ let
       pnpm_10
     ];
 
-    postPatch = ''
-      substituteInPlace src/version.json \
-        --replace-fail '"dev"' '"${finalAttrs.version}"'
-    '';
-
-    doCheck = true;
-
     postBuild = ''
       # Force sass-embedded to use our dart-sass instead of bundled binaries.
       substituteInPlace node_modules/sass-embedded/dist/lib/src/compiler-path.js \
         --replace-fail 'compilerCommand = (() => {' 'compilerCommand = (() => { return ["${lib.getExe dart-sass}"];'
       pnpm run build
     '';
+
+    doCheck = true;
 
     checkPhase = ''
       pnpm run test:unit --run
@@ -68,6 +54,21 @@ let
     installPhase = ''
       cp -r dist/ $out
     '';
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs)
+        pname
+        version
+        src
+        sourceRoot
+        ;
+
+      fetcherVersion = 3;
+      hash = "sha256-cDGeIrCxZtcomu3YxikutjXpVe3EeUZ/L3+3y9yx67s=";
+      pnpm = pnpm_10;
+    };
+
+    sourceRoot = "${finalAttrs.src.name}/frontend";
   });
 
   # Injects a `t.Skip()` into a given test since there's apparently no other way to skip tests here.
@@ -84,6 +85,7 @@ let
 in
 buildGoModule {
   inherit src version;
+  inherit frontend;
   pname = "vikunja";
 
   nativeBuildInputs =
@@ -103,12 +105,6 @@ buildGoModule {
     ];
 
   vendorHash = "sha256-4UMnfbwL2JFnw9KZDO5sq6XCSBUD5ejeqp6vaTbYWJc=";
-
-  inherit frontend;
-
-  prePatch = ''
-    cp -r ${frontend} frontend/dist
-  '';
 
   postConfigure = ''
     # These tests need internet, so we skip them.
@@ -140,22 +136,28 @@ buildGoModule {
     runHook postInstall
   '';
 
+  prePatch = ''
+    cp -r ${frontend} frontend/dist
+  '';
+
   passthru = {
-    tests.vikunja = nixosTests.vikunja;
     frontend = frontend;
+    tests.vikunja = nixosTests.vikunja;
     updateScript = ./update.sh;
   };
 
   meta = {
-    changelog = "https://github.com/go-vikunja/vikunja/blob/v${version}/CHANGELOG.md";
     description = "Todo-app to organize your life";
     homepage = "https://vikunja.io/";
+    changelog = "https://github.com/go-vikunja/vikunja/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       leona
       adamcstephens
     ];
-    mainProgram = "vikunja";
+
     platforms = lib.platforms.linux;
+    mainProgram = "vikunja";
   };
 }

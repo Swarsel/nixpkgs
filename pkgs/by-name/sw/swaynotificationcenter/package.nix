@@ -2,8 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  testers,
-  wrapGAppsHook3,
   bash-completion,
   blueprint-compiler,
   dbus,
@@ -12,8 +10,8 @@
   gdk-pixbuf,
   glib,
   gobject-introspection,
-  gtk4-layer-shell,
   gtk4,
+  gtk4-layer-shell,
   gvfs,
   json-glib,
   libadwaita,
@@ -23,15 +21,17 @@
   librsvg,
   meson,
   ninja,
+  nix-update-script,
+  pantheon,
   pkg-config,
   python3,
+  sassc,
   scdoc,
+  testers,
   vala,
   wayland-scanner,
+  wrapGAppsHook3,
   xvfb-run,
-  sassc,
-  pantheon,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,8 +45,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-U5jsH2hSMTNMCtmo+lIXunam4M+B3xxMQU1SM3ZK5X0=";
   };
 
-  # build pkg-config is required to locate the native `scdoc` input
-  depsBuildBuild = [ pkg-config ];
+  postPatch = ''
+    chmod +x build-aux/meson/postinstall.py
+    patchShebangs build-aux/meson/postinstall.py
+    substituteInPlace src/functions.vala --replace "/usr/local/etc/xdg/swaync" "$out/etc/xdg/swaync"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     bash-completion
@@ -84,18 +89,14 @@ stdenv.mkDerivation (finalAttrs: {
     # systemd # ends with broken permission
   ];
 
-  postPatch = ''
-    chmod +x build-aux/meson/postinstall.py
-    patchShebangs build-aux/meson/postinstall.py
-    substituteInPlace src/functions.vala --replace "/usr/local/etc/xdg/swaync" "$out/etc/xdg/swaync"
-  '';
-
-  strictDeps = true;
+  # build pkg-config is required to locate the native `scdoc` input
+  depsBuildBuild = [ pkg-config ];
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "${xvfb-run}/bin/xvfb-run swaync --version";
+    package = finalAttrs.finalPackage;
   };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -103,11 +104,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/ErikReider/SwayNotificationCenter";
     changelog = "https://github.com/ErikReider/SwayNotificationCenter/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
-    mainProgram = "swaync";
+
     maintainers = with lib.maintainers; [
       berbiche
       pedrohlc
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "swaync";
   };
 })

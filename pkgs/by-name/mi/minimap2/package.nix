@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   installShellFiles,
+  nix-update-script,
   versionCheckHook,
   zlib,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -13,15 +13,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.31";
 
   src = fetchFromGitHub {
-    repo = "minimap2";
     owner = "lh3";
+    repo = "minimap2";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-RH9IvpmcDEnuFEXucORpzeWc+yJlAvW4r6RnaUT+//c=";
   };
 
-  buildInputs = [ zlib ];
-
   nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ zlib ];
 
   makeFlags =
     lib.optionals stdenv.hostPlatform.isAarch [ "arm_neon=1" ]
@@ -34,23 +33,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Versatile pairwise aligner for genomic and spliced nucleotide sequences";
+
     longDescription = ''
       Minimap2 is a versatile sequence alignment program that aligns
       DNA or mRNA sequences against a large reference database. It is
       particularly efficient for long reads and can handle various
       sequencing technologies including PacBio and Oxford Nanopore.
     '';
-    mainProgram = "minimap2";
+
     homepage = "https://lh3.github.io/minimap2";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.arcadio ];
+    platforms = lib.platforms.unix;
+    mainProgram = "minimap2";
   };
 })

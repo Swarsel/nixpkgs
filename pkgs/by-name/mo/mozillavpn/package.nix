@@ -1,12 +1,13 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   _experimental-update-script-combinators,
   buildGoModule,
   cargo,
   cmake,
-  fetchFromGitHub,
   fetchpatch,
   go,
-  lib,
   libcap,
   libgcrypt,
   libgpg-error,
@@ -18,65 +19,22 @@
   qt6,
   rustPlatform,
   rustc,
-  stdenv,
   wireguard-tools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mozillavpn";
   version = "2.38.0";
+
   src = fetchFromGitHub {
     owner = "mozilla-mobile";
     repo = "mozilla-vpn-client";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-IaMmW9ODlac/7Kqp9tEalVvLkUHaK786+HnTOqWVAk8=";
+    fetchSubmodules = true;
   };
+
   patches = [
-  ];
-
-  netfilter = buildGoModule {
-    pname = "${finalAttrs.pname}-netfilter";
-    inherit (finalAttrs)
-      version
-      src
-      patches
-      ;
-    modRoot = "linux/netfilter";
-    vendorHash = "sha256-RDSZdmQ31RW4PjZsula9V/asT36GJRdxlAHV/wX2DS8=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src patches;
-    hash = "sha256-Y4Y2ZZh9Kdj6zZCHgvLNdfB0ehaF5nDJSOjTLelmYrE=";
-  };
-
-  buildInputs = [
-    libcap
-    libgcrypt
-    libgpg-error
-    libsecret
-    polkit
-    qt6.qt5compat
-    qt6.qtbase
-    qt6.qtnetworkauth
-    qt6.qtsvg
-    qt6.qtwayland
-    qt6.qtwebsockets
-  ];
-  nativeBuildInputs = [
-    cargo
-    cmake
-    go
-    pkg-config
-    python3
-    python3.pkgs.glean-parser
-    python3.pkgs.pyyaml
-    python3.pkgs.setuptools
-    qt6.qttools
-    qt6.wrapQtAppsHook
-    rustPlatform.cargoSetupHook
-    rustc
   ];
 
   postPatch = ''
@@ -99,11 +57,62 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs scripts/utils/xlifftool.py
   '';
 
+  nativeBuildInputs = [
+    cargo
+    cmake
+    go
+    pkg-config
+    python3
+    python3.pkgs.glean-parser
+    python3.pkgs.pyyaml
+    python3.pkgs.setuptools
+    qt6.qttools
+    qt6.wrapQtAppsHook
+    rustPlatform.cargoSetupHook
+    rustc
+  ];
+
+  buildInputs = [
+    libcap
+    libgcrypt
+    libgpg-error
+    libsecret
+    polkit
+    qt6.qt5compat
+    qt6.qtbase
+    qt6.qtnetworkauth
+    qt6.qtsvg
+    qt6.qtwayland
+    qt6.qtwebsockets
+  ];
+
   cmakeFlags = [
     "-DQT_LCONVERT_EXECUTABLE=${qt6.qttools.dev}/bin/lconvert"
     "-DQT_LUPDATE_EXECUTABLE=${qt6.qttools.dev}/bin/lupdate"
     "-DQT_LRELEASE_EXECUTABLE=${qt6.qttools.dev}/bin/lrelease"
   ];
+
+  postInstall = ''
+    mkdir "$out/share/polkit-1/rules.d"
+    cp ../linux/org.mozilla.vpn.rules-others "$out/share/polkit-1/rules.d/org.mozilla.vpn.rules"
+  '';
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src patches;
+    hash = "sha256-Y4Y2ZZh9Kdj6zZCHgvLNdfB0ehaF5nDJSOjTLelmYrE=";
+  };
+
+  netfilter = buildGoModule {
+    inherit (finalAttrs)
+      version
+      src
+      patches
+      ;
+
+    pname = "${finalAttrs.pname}-netfilter";
+    vendorHash = "sha256-RDSZdmQ31RW4PjZsula9V/asT36GJRdxlAHV/wX2DS8=";
+    modRoot = "linux/netfilter";
+  };
 
   qtWrapperArgs = [
     "--prefix"
@@ -111,11 +120,6 @@ stdenv.mkDerivation (finalAttrs: {
     ":"
     (lib.makeBinPath [ wireguard-tools ])
   ];
-
-  postInstall = ''
-    mkdir "$out/share/polkit-1/rules.d"
-    cp ../linux/org.mozilla.vpn.rules-others "$out/share/polkit-1/rules.d/org.mozilla.vpn.rules"
-  '';
 
   passthru.updateScript = _experimental-update-script-combinators.sequence [
     (nix-update-script { })
@@ -127,10 +131,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Client for the Mozilla VPN service";
-    mainProgram = "mozillavpn";
     homepage = "https://vpn.mozilla.org/";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ andersk ];
     platforms = lib.platforms.linux;
+    mainProgram = "mozillavpn";
   };
 })

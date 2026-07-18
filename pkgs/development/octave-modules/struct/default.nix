@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,9 +14,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "Additional structure manipulation functions";
     homepage = "https://gnu-octave.github.io/packages/struct/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Additional structure manipulation functions";
   };
 }

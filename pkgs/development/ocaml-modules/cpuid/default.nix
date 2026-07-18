@@ -14,8 +14,8 @@ buildDunePackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pqwy/cpuid";
     description = "Detect CPU features from OCaml";
+    homepage = "https://github.com/pqwy/cpuid";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
   };

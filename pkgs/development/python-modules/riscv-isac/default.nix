@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   click,
   colorlog,
   gitpython,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "riscv-isac";
   version = "0.18.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "riscv-software-src";
@@ -43,15 +42,15 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "riscv_isac" ];
 
   meta = {
     description = "ISA coverage extraction tool";
-    mainProgram = "riscv_isac";
     homepage = "https://github.com/riscv/riscv-isac";
     changelog = "https://github.com/riscv-software-src/riscv-isac/blob/${version}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "riscv_isac";
   };
 }

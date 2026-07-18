@@ -1,14 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "txt2tags";
   version = "3.9";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "txt2tags";
@@ -16,8 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-PwPGJJg79ny13gEb1WmgIVHcXQppI/j5mhIyOZjR19k=";
   };
-
-  build-system = with python3.pkgs; [ setuptools ];
 
   postPatch = ''
     substituteInPlace test/lib.py \
@@ -30,17 +26,21 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ${python3.interpreter} test/run.py
   '';
 
+  build-system = with python3.pkgs; [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "txt2tags" ];
 
   meta = {
-    changelog = "https://github.com/txt2tags/txt2tags/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Convert between markup languages";
-    mainProgram = "txt2tags";
     homepage = "https://txt2tags.org/";
+    changelog = "https://github.com/txt2tags/txt2tags/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       dotlambda
       kovirobi
     ];
+
+    mainProgram = "txt2tags";
   };
 })

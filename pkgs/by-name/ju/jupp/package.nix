@@ -2,24 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
   gpm,
+  ncurses,
 }:
 
 stdenv.mkDerivation rec {
   pname = "jupp";
   version = "41";
-  srcName = "joe-3.1${pname}${version}";
 
   src = fetchurl {
+    hash = "sha256-e7jqivUZvv7/+T7DyeMhCNfyuDIWybx7Aa71CYhhyC8=";
+
     urls = [
       "https://www.mirbsd.org/MirOS/dist/jupp/${srcName}.tgz"
       "https://mbsd.evolvis.org/MirOS/dist/jupp/${srcName}.tgz"
     ];
-    hash = "sha256-e7jqivUZvv7/+T7DyeMhCNfyuDIWybx7Aa71CYhhyC8=";
   };
-
-  preConfigure = "chmod +x ./configure";
 
   buildInputs = [
     gpm
@@ -35,11 +33,12 @@ stdenv.mkDerivation rec {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  preConfigure = "chmod +x ./configure";
+  srcName = "joe-3.1${pname}${version}";
 
   meta = {
-    homepage = "http://www.mirbsd.org/jupp.htm";
-    downloadPage = "https://www.mirbsd.org/MirOS/dist/jupp/";
     description = "Portable fork of Joe's editor";
+
     longDescription = ''
       This is the portable version of JOE's Own Editor, which is currently
       developed at sourceforge, licenced under the GNU General Public License,
@@ -48,8 +47,11 @@ stdenv.mkDerivation rec {
       and has a lot of bugs fixed. It is based upon an older version of joe
       because these behave better overall.
     '';
+
+    homepage = "http://www.mirbsd.org/jupp.htm";
     license = lib.licenses.gpl1Only;
     maintainers = [ ];
     platforms = with lib.platforms; unix;
+    downloadPage = "https://www.mirbsd.org/MirOS/dist/jupp/";
   };
 }

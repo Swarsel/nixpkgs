@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "soco-cli";
   version = "0.4.85";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "avantrec";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-g/tUK6S9uk4PxE3xscJag8fPYA2PdsCccfP+7Wi1ji0=";
   };
 
+  # Tests wants to communicate with hardware
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -26,9 +27,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     uvicorn
   ];
 
-  # Tests wants to communicate with hardware
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "soco_cli" ];
 
   meta = {
@@ -36,7 +35,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/avantrec/soco-cli";
     changelog = "https://github.com/avantrec/soco-cli/blob/${finalAttrs.src.tag}/CHANGELOG.txt";
     license = lib.licenses.asl20;
-    mainProgram = "sonos";
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "sonos";
   };
 })

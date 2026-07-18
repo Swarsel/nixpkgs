@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   makeWrapper,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -27,11 +27,11 @@ rustPlatform.buildRustPackage rec {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/smudge/nightlight";
     description = "CLI tool for configuring Night Shift macOS";
+    homepage = "https://github.com/smudge/nightlight";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aspauldingcode ];
     platforms = lib.platforms.darwin;
-    license = lib.licenses.mit;
     mainProgram = "nightlight";
   };
 }

@@ -2,24 +2,20 @@
   lib,
   buildPythonPackage,
   fetchFromSourcehut,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  pyusb,
-  tqdm,
-  zeroconf,
-
   # tests
   pillow,
   pytestCheckHook,
+  # dependencies
+  pyusb,
+  # build-system
+  setuptools,
+  tqdm,
+  zeroconf,
 }:
 
 buildPythonPackage rec {
   pname = "pyatem";
   version = "0.13.0"; # check latest version in setup.py
-  pyproject = true;
 
   src = fetchFromSourcehut {
     owner = "~martijnbraam";
@@ -51,6 +47,7 @@ buildPythonPackage rec {
     popd
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "pyatem" ];
 
   meta = {

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  writeText,
-  ocamlPackages,
-  ledit,
   bash,
+  ledit,
+  makeBinaryWrapper,
+  ocamlPackages,
+  writeText,
 }:
 
 let
@@ -61,6 +61,7 @@ stdenv.mkDerivation {
     camlp5
     makeBinaryWrapper
   ];
+
   buildInputs = [
     bash
     ocaml
@@ -68,21 +69,13 @@ stdenv.mkDerivation {
     camlp5
     ledit
   ];
+
   propagatedBuildInputs = [
     camlp-streams
     fmt
     pcre2
     zarith
   ];
-
-  setupHook = writeText "hol-light-setup-hook.sh" ''
-    addHolLight () {
-      if test -d "''$1/lib/hol_light"; then
-        export HOLLIGHT_DIR="''$1/lib/hol_light"
-      fi
-    }
-    addEnvHooks "$targetOffset" addHolLight
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -120,16 +113,27 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  setupHook = writeText "hol-light-setup-hook.sh" ''
+    addHolLight () {
+      if test -d "''$1/lib/hol_light"; then
+        export HOLLIGHT_DIR="''$1/lib/hol_light"
+      fi
+    }
+    addEnvHooks "$targetOffset" addHolLight
+  '';
+
   meta = {
     description = "Interactive theorem prover based on Higher-Order Logic";
     homepage = "http://www.cl.cam.ac.uk/~jrh13/hol-light/";
-    mainProgram = "hol_light";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       vbgl
       mkannwischer
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "hol_light";
   };
 }

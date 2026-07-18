@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  libzen,
-  libmediainfo,
-  zlib,
-  qt6,
   cmake,
-  ninja,
   libcprime,
   libcsys,
+  libmediainfo,
+  libzen,
+  ninja,
+  qt6,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,10 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "File information tool from the C Suite";
-    mainProgram = "coreinfo";
     homepage = "https://gitlab.com/cubocore/coreapps/coreinfo";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "coreinfo";
   };
 })

@@ -1,24 +1,20 @@
 {
+  lib,
   backendStdenv,
-  cmake,
   cccl,
+  cmake,
+  cudaNamePrefix,
   cuda_cudart,
   cuda_nvcc,
-  cudaNamePrefix,
   flags,
-  lib,
   libcublas,
   saxpy,
 }:
 backendStdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
   pname = "saxpy";
   version = "0-unstable-2023-07-11";
-
   src = ./src;
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -36,19 +32,24 @@ backendStdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_CUDA_ARCHITECTURES" flags.cmakeCudaArchitecturesString)
   ];
 
+  __structuredAttrs = true;
+  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
+
   passthru.gpuCheck = saxpy.overrideAttrs (_: {
-    requiredSystemFeatures = [ "cuda" ];
     doInstallCheck = true;
+
     postInstallCheck = ''
       $out/bin/${saxpy.meta.mainProgram or (lib.getName saxpy)}
     '';
+
+    requiredSystemFeatures = [ "cuda" ];
   });
 
   meta = {
     description = "Simple (Single-precision AX Plus Y) FindCUDAToolkit.cmake example for testing cross-compilation";
     license = lib.licenses.mit;
-    teams = [ lib.teams.cuda ];
-    mainProgram = "saxpy";
     platforms = lib.platforms.unix;
+    mainProgram = "saxpy";
+    teams = [ lib.teams.cuda ];
   };
 })

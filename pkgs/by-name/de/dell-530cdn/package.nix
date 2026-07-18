@@ -1,8 +1,8 @@
 {
-  runCommand,
   fetchurl,
-  rpm,
   cpio,
+  rpm,
+  runCommand,
 }:
 let
   version = "1.3-1";
@@ -14,8 +14,8 @@ let
 in
 runCommand "Dell-5130cdn-Color-Laser-${version}"
   {
-    pname = "dell-5130cdn-color-laser";
     inherit version;
+    pname = "dell-5130cdn-color-laser";
   }
   ''
     mkdir -p usr/share/cups/model

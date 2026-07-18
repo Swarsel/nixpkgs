@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  python3,
   installShellFiles,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.5.0";
   pname = "weather";
+  version = "2.5.0";
 
   src = fetchurl {
     url = "https://fungi.yuggoth.org/weather/src/weather-${finalAttrs.version}.tar.xz";
@@ -19,9 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     installShellFiles
     python3.pkgs.wrapPython
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   # Upstream doesn't provide a setup.py or alike, so we follow:
   # http://fungi.yuggoth.org/weather/doc/install.rst#id3
@@ -44,12 +41,15 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage weather.1 weatherrc.5
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "http://fungi.yuggoth.org/weather";
     description = "Quick access to current weather conditions and forecasts";
-    mainProgram = "weather";
+    homepage = "http://fungi.yuggoth.org/weather";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.matthiasbeyer ];
     platforms = lib.platforms.unix;
+    mainProgram = "weather";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoLatestModule,
   fetchFromGitHub,
+  buildGoLatestModule,
   replaceVars,
   versionCheckHook,
 }:
@@ -25,31 +25,25 @@ buildGoLatestModule (finalAttrs: {
   ];
 
   vendorHash = "sha256-n3U2vX6ByF61oz6BWjMk0Ehwz3W/zMuUNM2+T0rbxPw=";
-
-  subPackages = [
-    "cmd/govulncheck"
-  ];
-
   # Vendoring breaks tests
   doCheck = false;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
+  subPackages = [
+    "cmd/govulncheck"
+  ];
 
   versionCheckProgramArg = [ "--version" ];
 
   meta = {
-    homepage = "https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck";
-    downloadPage = "https://github.com/golang/vuln";
-    changelog = "https://github.com/golang/vuln/releases/tag/${finalAttrs.src.tag}";
     description = "Database client and tools for the Go vulnerability database, also known as vuln";
-    mainProgram = "govulncheck";
+
     longDescription = ''
       Govulncheck reports known vulnerabilities that affect Go code. It uses
       static analysis of source code or a binary's symbol table to narrow down
@@ -71,10 +65,17 @@ buildGoLatestModule (finalAttrs: {
       example, a dependency with a Windows-specific vulnerability will not be
       reported for a Linux build.
     '';
+
+    homepage = "https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck";
+    changelog = "https://github.com/golang/vuln/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       jk
       SuperSandro2000
     ];
+
+    mainProgram = "govulncheck";
+    downloadPage = "https://github.com/golang/vuln";
   };
 })

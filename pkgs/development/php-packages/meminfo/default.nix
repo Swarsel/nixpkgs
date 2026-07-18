@@ -1,13 +1,13 @@
 {
-  buildPecl,
   lib,
   fetchFromGitHub,
+  buildPecl,
   nix-update-script,
 }:
 
 buildPecl rec {
-  version = "1.1.1-unstable-2022-03-25";
   pname = "meminfo";
+  version = "1.1.1-unstable-2022-03-25";
 
   src = fetchFromGitHub {
     owner = "BitOne";
@@ -17,7 +17,6 @@ buildPecl rec {
   };
 
   sourceRoot = "${src.name}/extension";
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {

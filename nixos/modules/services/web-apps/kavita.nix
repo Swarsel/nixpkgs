@@ -30,74 +30,81 @@ in
 
   options.services.kavita = {
     enable = lib.mkEnableOption "Kavita reading server";
-
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "kavita";
-      description = "User account under which Kavita runs.";
-    };
-
     package = lib.mkPackageOption pkgs "kavita" { };
 
     dataDir = lib.mkOption {
       default = "/var/lib/kavita";
-      type = lib.types.str;
       description = "The directory where Kavita stores its state.";
-    };
-
-    tokenKeyFile = lib.mkOption {
-      type = lib.types.path;
-      description = ''
-        A file containing the TokenKey, a secret with at 512+ bits.
-        It can be generated with `head -c 64 /dev/urandom | base64 --wrap=0`.
-      '';
+      type = lib.types.str;
     };
 
     settings = lib.mkOption {
       default = { };
+
       description = ''
         Kavita configuration options, as configured in {file}`appsettings.json`.
       '';
+
       type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-
         options = {
-          Port = lib.mkOption {
-            default = 5000;
-            type = lib.types.port;
-            description = "Port to bind to.";
-          };
-
           IpAddresses = lib.mkOption {
             default = "0.0.0.0,::";
-            type = lib.types.commas;
+
             description = ''
               IP Addresses to bind to. The default is to bind to all IPv4 and IPv6 addresses.
             '';
+
+            type = lib.types.commas;
+          };
+
+          Port = lib.mkOption {
+            default = 5000;
+            description = "Port to bind to.";
+            type = lib.types.port;
           };
         };
+
+        freeformType = settingsFormat.type;
       };
+    };
+
+    tokenKeyFile = lib.mkOption {
+      description = ''
+        A file containing the TokenKey, a secret with at 512+ bits.
+        It can be generated with `head -c 64 /dev/urandom | base64 --wrap=0`.
+      '';
+
+      type = lib.types.path;
+    };
+
+    user = lib.mkOption {
+      default = "kavita";
+      description = "User account under which Kavita runs.";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.kavita = {
-      description = "Kavita";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Kavita";
+
       preStart = ''
         install -m600 ${appsettings} ${lib.escapeShellArg cfg.dataDir}/config/appsettings.json
         ${pkgs.replace-secret}/bin/replace-secret '@TOKEN@' \
           ''${CREDENTIALS_DIRECTORY}/token \
           '${cfg.dataDir}/config/appsettings.json'
       '';
+
       serviceConfig = {
-        WorkingDirectory = cfg.dataDir;
-        LoadCredential = [ "token:${cfg.tokenKeyFile}" ];
         ExecStart = lib.getExe cfg.package;
+        LoadCredential = [ "token:${cfg.tokenKeyFile}" ];
         Restart = "always";
         User = cfg.user;
+        WorkingDirectory = cfg.dataDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.tmpfiles.rules = [
@@ -106,13 +113,14 @@ in
     ];
 
     users = {
+      groups.${cfg.user} = { };
+
       users.${cfg.user} = {
         description = "kavita service user";
-        isSystemUser = true;
         group = cfg.user;
         home = cfg.dataDir;
+        isSystemUser = true;
       };
-      groups.${cfg.user} = { };
     };
   };
 

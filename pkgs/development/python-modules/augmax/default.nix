@@ -1,17 +1,16 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   einops,
-  fetchFromGitHub,
   jax,
   jaxlib,
-  lib,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "augmax";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "khdlr";
@@ -20,6 +19,9 @@ buildPythonPackage rec {
     hash = "sha256-FXgkhZEAR1Y2LvVvV+IWMSQDWrLulLDsSKKuw4ER5wg=";
   };
 
+  # augmax does not have any tests at the time of writing (2022-02-19), but
+  # jaxlib is necessary for the pythonImportsCheckPhase.
+  nativeCheckInputs = [ jaxlib ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +29,7 @@ buildPythonPackage rec {
     jax
   ];
 
-  # augmax does not have any tests at the time of writing (2022-02-19), but
-  # jaxlib is necessary for the pythonImportsCheckPhase.
-  nativeCheckInputs = [ jaxlib ];
-
+  pyproject = true;
   pythonImportsCheck = [ "augmax" ];
 
   meta = {

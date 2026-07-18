@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pymysql,
   setuptools,
   setuptools-scm,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "aiomysql";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -27,10 +26,9 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ pymysql ];
-
   # Tests require MySQL database
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiomysql" ];
 
   meta = {

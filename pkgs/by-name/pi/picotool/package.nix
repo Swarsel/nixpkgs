@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libusb1,
-  pico-sdk,
-  mbedtls,
-  versionCheckHook,
   gitUpdater,
+  libusb1,
+  mbedtls,
+  pico-sdk,
+  pkg-config,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,14 +30,16 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "''$"'{PICO_SDK_PATH}/lib/mbedtls' '${mbedtls.src}'
   '';
 
-  buildInputs = [
-    libusb1
-    pico-sdk
-  ];
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
+  buildInputs = [
+    libusb1
+    pico-sdk
+  ];
+
   cmakeFlags = [
     "-DPICO_SDK_PATH=${pico-sdk}/lib/pico-sdk"
   ];
@@ -46,11 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm444 ../udev/60-picotool.rules -t $out/etc/udev/rules.d
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = gitUpdater { };
@@ -60,9 +64,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tool for interacting with RP2040/RP2350 device(s) in BOOTSEL mode, or with an RP2040/RP2350 binary";
     homepage = "https://github.com/raspberrypi/picotool";
     changelog = "https://github.com/raspberrypi/picotool/releases/tag/${finalAttrs.version}";
-    mainProgram = "picotool";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ muscaln ];
     platforms = lib.platforms.unix;
+    mainProgram = "picotool";
   };
 })

@@ -1,17 +1,18 @@
 {
   lib,
-  fetchFromGitLab,
   stdenv,
-  cmake,
+  fetchFromGitLab,
   boost,
-  shared-mime-info,
-  rrdtool,
+  cmake,
   kdePackages,
+  rrdtool,
+  shared-mime-info,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "kcollectd";
   version = "0.12.2";
+
   src = fetchFromGitLab {
     owner = "aerusso";
     repo = "kcollectd";
@@ -50,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Graphical frontend to collectd";
     homepage = "https://www.antonioerusso.com/projects/kcollectd/";
-    maintainers = with lib.maintainers; [ symphorien ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ symphorien ];
     platforms = lib.platforms.linux;
     mainProgram = "kcollectd";
   };

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cobble,
   funk,
+  gitUpdater,
   pytestCheckHook,
+  setuptools,
   spur,
   tempman,
-  gitUpdater,
 }:
 
 buildPythonPackage rec {
   pname = "mammoth";
   version = "1.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mwilliamson";
@@ -28,12 +27,6 @@ buildPythonPackage rec {
       --replace-fail 'read("README")' '""'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ cobble ];
-
-  pythonImportsCheck = [ "mammoth" ];
-
   nativeCheckInputs = [
     funk
     pytestCheckHook
@@ -45,6 +38,10 @@ buildPythonPackage rec {
     export PATH=$out/bin:$PATH
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ cobble ];
+  pyproject = true;
+  pythonImportsCheck = [ "mammoth" ];
   passthru.updateScript = gitUpdater { };
 
   meta = {

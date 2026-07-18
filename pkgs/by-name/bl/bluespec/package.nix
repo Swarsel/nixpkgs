@@ -1,31 +1,37 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  asciidoctor,
   autoconf,
   automake,
-  fontconfig,
-  libx11,
-  perl,
-  flex,
   bison,
-  pkg-config,
-  tcl,
-  tk,
+  buildPackages,
+  cctools,
+  dejagnu,
+  flex,
+  fontconfig,
+  ghc,
+  glibcLocales,
+  gmp,
+  gnugrep,
+  iverilog,
+  libx11,
   libxft,
+  makeBinaryWrapper,
+  perl,
+  pkg-config,
+  systemc,
+  targetPackages,
+  tcl,
+  texliveFull,
+  time,
+  tk,
+  which,
   yices, # bsc uses a patched version of yices
   zlib,
-  ghc,
-  gmp,
   gmp-static ? gmp.override { withStatic = true; },
-  iverilog,
-  asciidoctor,
-  texliveFull,
-  which,
-  makeBinaryWrapper,
-  cctools,
-  targetPackages,
   # install -m 644 lib/libstp.dylib /private/tmp/nix-build-bluespec-2024.07.drv-5/source/inst/lib/SAT
   # install: cannot stat 'lib/libstp.dylib': No such file or directory
   # https://github.com/B-Lang-org/bsc/pull/600 might fix it
@@ -34,12 +40,6 @@
   # With 23 core parallel 10 mins on r9 5900x
   # Broken on darwin currently
   withSuiteCheck ? false,
-  gnugrep,
-  time,
-  dejagnu,
-  systemc,
-  glibcLocales,
-  buildPackages,
 }:
 
 let
@@ -65,13 +65,6 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-gA/vfAkkM2cuArN99JZVYEWTIJqg82HlC+BHNVS5Ot0=";
   };
 
-  yices-src = fetchurl {
-    url = "https://github.com/B-Lang-org/bsc/releases/download/${version}/yices-src-for-bsc-${version}.tar.gz";
-    sha256 = "sha256-pyEdCJvmgwOYPMZEtw7aro76tSn/Y/2GcKTyARmIh4E=";
-  };
-
-  enableParallelBuilding = true;
-
   outputs = [
     "out"
   ]
@@ -82,11 +75,6 @@ stdenv.mkDerivation rec {
   # https://github.com/B-Lang-org/bsc/pull/278 is still applicable, but will probably not be applied as such
   # there is work ongoing: https://github.com/B-Lang-org/bsc/issues/595 https://github.com/B-Lang-org/bsc/pull/600
   patches = [ ./libstp_stub_makefile.patch ];
-
-  postUnpack = ''
-    tar -C $sourceRoot/ -xf ${yices-src}
-    chmod -R +rwX $sourceRoot/src/vendor/yices/v2.6/yices2
-  '';
 
   postPatch = ''
     patchShebangs \
@@ -136,25 +124,6 @@ stdenv.mkDerivation rec {
       testsuite/scripts/times-by-directory.pl
   '';
 
-  preBuild = ''
-    # allow running bsc to bootstrap
-    export LD_LIBRARY_PATH=$PWD/inst/lib/SAT
-
-    # use more cores for GHC building, 44 causes heap overflows in ghc, and
-    # there is not much speedup after 8..
-    if [[ $NIX_BUILD_CORES -gt 8 ]] ; then export GHCJOBS=8; else export GHCJOBS=$NIX_BUILD_CORES; fi
-  '';
-
-  buildInputs = yices.buildInputs ++ [
-    fontconfig
-    libx11 # tcltk
-    tcl
-    tk
-    which
-    libxft
-    zlib
-  ];
-
   nativeBuildInputs = [
     automake
     autoconf
@@ -177,6 +146,26 @@ stdenv.mkDerivation rec {
     cctools
   ];
 
+  buildInputs = yices.buildInputs ++ [
+    fontconfig
+    libx11 # tcltk
+    tcl
+    tk
+    which
+    libxft
+    zlib
+  ];
+
+  makeFlags = [
+    "NO_DEPS_CHECKS=1" # skip the subrepo check (this deriviation uses yices-src instead of the subrepo)
+    "NOGIT=1" # https://github.com/B-Lang-org/bsc/issues/12
+    "LDCONFIG=ldconfig" # https://github.com/SRI-CSL/yices2/blob/fda0a325ea7923f152ea9f9a5d20eddfd1d96224/Makefile.build#L66
+    (if withDocs then "release" else "install-src")
+  ]
+  ++ lib.optionals stubStp [
+    "STP_STUB=1" # uses yices as a SMT solver and stub out STP
+  ];
+
   env =
     lib.optionalAttrs (stdenv.cc.isClang) {
       NIX_CFLAGS_COMPILE = toString [
@@ -189,56 +178,16 @@ stdenv.mkDerivation rec {
       LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive";
     };
 
-  makeFlags = [
-    "NO_DEPS_CHECKS=1" # skip the subrepo check (this deriviation uses yices-src instead of the subrepo)
-    "NOGIT=1" # https://github.com/B-Lang-org/bsc/issues/12
-    "LDCONFIG=ldconfig" # https://github.com/SRI-CSL/yices2/blob/fda0a325ea7923f152ea9f9a5d20eddfd1d96224/Makefile.build#L66
-    (if withDocs then "release" else "install-src")
-  ]
-  ++ lib.optionals stubStp [
-    "STP_STUB=1" # uses yices as a SMT solver and stub out STP
-  ];
+  preBuild = ''
+    # allow running bsc to bootstrap
+    export LD_LIBRARY_PATH=$PWD/inst/lib/SAT
 
-  installPhase = ''
-    mkdir -p $out
-    mv inst/bin $out
-    mv inst/lib $out
-
-  ''
-  + lib.optionalString withDocs ''
-    # fragile, I know..
-    mkdir -p $doc/share/doc/bsc
-    mv inst/README $doc/share/doc/bsc
-    mv inst/ReleaseNotes.* $doc/share/doc/bsc
-    mv inst/doc/*.pdf $doc/share/doc/bsc
-  '';
-
-  postFixup = ''
-    # https://github.com/B-Lang-org/bsc/blob/65e3a87a17f6b9cf38cbb7b6ad7a4473f025c098/src/comp/bsc.hs#L1839
-    # `/bin/bsc` is a bash script which the script name to call the binary in the `/bin/core` directory
-    # thus wrapping `/bin/bsc` messes up the scriptname detection in it.
-    wrapProgram $out/bin/core/bsc \
-      --prefix PATH : ${
-        lib.makeBinPath (if stdenv.hostPlatform.isDarwin then [ cctools ] else [ targetPackages.stdenv.cc ])
-      }
+    # use more cores for GHC building, 44 causes heap overflows in ghc, and
+    # there is not much speedup after 8..
+    if [[ $NIX_BUILD_CORES -gt 8 ]] ; then export GHCJOBS=8; else export GHCJOBS=$NIX_BUILD_CORES; fi
   '';
 
   doCheck = true;
-  doInstallCheck = true;
-
-  # TODO To fix check-suite:
-  # On darwin
-  # ```
-  # FAIL: `Cpreprocess_line.bsv.bsc-out' differs from `Cpreprocess_line.bsv.bsc-out.expected'
-
-  # FAIL: `sysGCD.bsc-vcomp-out.filtered' differs from `empty.expected'
-
-  # FAIL: module `' in `ImpArgConnect3.bsv' should compile to Verilog
-  # Caught error in sed: sed: can't read mkArgImpConnect3.v: No such file or directory
-  # FAIL: `mkArgImpConnect3.v.filtered' differs from `mkArgImpConnect3.v.expected.filtered'
-  # ```
-
-  checkTarget = if withSuiteCheck then "checkparallel" else "check-smoke"; # this is the shortest check but "check-suite" tests much more
 
   nativeCheckInputs = [
     gmp-static
@@ -277,6 +226,22 @@ stdenv.mkDerivation rec {
     )
   '';
 
+  installPhase = ''
+    mkdir -p $out
+    mv inst/bin $out
+    mv inst/lib $out
+
+  ''
+  + lib.optionalString withDocs ''
+    # fragile, I know..
+    mkdir -p $doc/share/doc/bsc
+    mv inst/README $doc/share/doc/bsc
+    mv inst/ReleaseNotes.* $doc/share/doc/bsc
+    mv inst/doc/*.pdf $doc/share/doc/bsc
+  '';
+
+  doInstallCheck = true;
+
   installCheckPhase = ''
     output="$($out/bin/bsc 2>&1 || true)"
     echo "bsc output:"
@@ -284,19 +249,54 @@ stdenv.mkDerivation rec {
     echo "$output" | grep -q "to get help"
   '';
 
+  postFixup = ''
+    # https://github.com/B-Lang-org/bsc/blob/65e3a87a17f6b9cf38cbb7b6ad7a4473f025c098/src/comp/bsc.hs#L1839
+    # `/bin/bsc` is a bash script which the script name to call the binary in the `/bin/core` directory
+    # thus wrapping `/bin/bsc` messes up the scriptname detection in it.
+    wrapProgram $out/bin/core/bsc \
+      --prefix PATH : ${
+        lib.makeBinPath (if stdenv.hostPlatform.isDarwin then [ cctools ] else [ targetPackages.stdenv.cc ])
+      }
+  '';
+
+  # TODO To fix check-suite:
+  # On darwin
+  # ```
+  # FAIL: `Cpreprocess_line.bsv.bsc-out' differs from `Cpreprocess_line.bsv.bsc-out.expected'
+  # FAIL: `sysGCD.bsc-vcomp-out.filtered' differs from `empty.expected'
+  # FAIL: module `' in `ImpArgConnect3.bsv' should compile to Verilog
+  # Caught error in sed: sed: can't read mkArgImpConnect3.v: No such file or directory
+  # FAIL: `mkArgImpConnect3.v.filtered' differs from `mkArgImpConnect3.v.expected.filtered'
+  # ```
+  checkTarget = if withSuiteCheck then "checkparallel" else "check-smoke"; # this is the shortest check but "check-suite" tests much more
+  enableParallelBuilding = true;
+
+  postUnpack = ''
+    tar -C $sourceRoot/ -xf ${yices-src}
+    chmod -R +rwX $sourceRoot/src/vendor/yices/v2.6/yices2
+  '';
+
+  yices-src = fetchurl {
+    sha256 = "sha256-pyEdCJvmgwOYPMZEtw7aro76tSn/Y/2GcKTyARmIh4E=";
+    url = "https://github.com/B-Lang-org/bsc/releases/download/${version}/yices-src-for-bsc-${version}.tar.gz";
+  };
+
   meta = {
     description = "Toolchain for the Bluespec Hardware Definition Language";
     homepage = "https://github.com/B-Lang-org/bsc";
     license = lib.licenses.bsd3;
+
+    maintainers = with lib.maintainers; [
+      jcumming
+      thoughtpolice
+    ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ]
     ++ lib.platforms.darwin;
+
     mainProgram = "bsc";
-    maintainers = with lib.maintainers; [
-      jcumming
-      thoughtpolice
-    ];
   };
 }

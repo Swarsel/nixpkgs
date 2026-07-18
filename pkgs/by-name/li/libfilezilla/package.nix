@@ -5,10 +5,10 @@
   autoreconfHook,
   gettext,
   gnutls,
-  nettle,
-  pkg-config,
   libiconv,
   libxcrypt,
+  nettle,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,13 +40,15 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://lib.filezilla-project.org/";
     description = "Modern C++ library, offering some basic functionality to build high-performing, platform-independent programs";
+    homepage = "https://lib.filezilla-project.org/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       iedame
       pSub
     ];
+
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin;
   };

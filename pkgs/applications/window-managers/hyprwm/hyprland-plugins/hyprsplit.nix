@@ -1,13 +1,12 @@
 {
   lib,
-  meson,
   fetchFromGitHub,
-  ninja,
+  meson,
   mkHyprlandPlugin,
+  ninja,
   nix-update-script,
 }:
 mkHyprlandPlugin (finalAttrs: {
-  pluginName = "hyprsplit";
   version = "0.54.2";
 
   src = fetchFromGitHub {
@@ -22,12 +21,14 @@ mkHyprlandPlugin (finalAttrs: {
     ninja
   ];
 
+  pluginName = "hyprsplit";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/shezdy/hyprsplit";
     description = "Hyprland plugin for awesome / dwm like workspaces";
+    homepage = "https://github.com/shezdy/hyprsplit";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       aacebedo
       mrdev023

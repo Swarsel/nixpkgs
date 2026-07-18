@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,12 +20,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Automatically DRY up your Rust dependencies";
     homepage = "https://github.com/mainmatter/cargo-autoinherit";
+
     license = with lib.licenses; [
       asl20 # OR
       mit
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ matthiasbeyer ];
+    platforms = lib.platforms.unix;
     mainProgram = "cargo-autoinherit";
   };
 })

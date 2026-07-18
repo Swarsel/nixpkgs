@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-basic-ng";
   version = "1.0.0.beta2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pradyunsg";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ sphinx ];
-
   # no tests implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "sphinx_basic_ng" ];
 
   meta = {

@@ -9,8 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "linenoise";
   version = "1.5.1";
 
-  minimalOCamlVersion = "4.06";
-
   src = fetchFromGitHub {
     owner = "fxfactorial";
     repo = "ocaml-linenoise";
@@ -19,11 +17,12 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ result ];
+  minimalOCamlVersion = "4.06";
 
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "OCaml bindings to linenoise";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.vbgl ];
-    inherit (finalAttrs.src.meta) homepage;
   };
 })

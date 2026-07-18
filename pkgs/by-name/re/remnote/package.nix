@@ -16,7 +16,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
@@ -46,8 +45,8 @@ appimageTools.wrapType2 {
     description = "Note-taking application focused on learning and productivity";
     homepage = "https://remnote.com/";
     changelog = "https://feedback.remnote.com/changelog";
-    maintainers = with lib.maintainers; [ talal ];
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ talal ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "remnote";
   };

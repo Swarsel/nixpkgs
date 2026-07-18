@@ -1,20 +1,21 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   nix-update-script,
+  stdenvNoCC,
   versionCheckHook,
 }:
 
 let
   sources = {
-    "x86_64-linux" = {
-      suffix = "linux_amd64";
-      hash = "sha256-3TTVSCZcsUVfNzC9hWn0OLytMAOxL39f5IlqCReCw7g=";
-    };
     "aarch64-linux" = {
-      suffix = "linux_arm64";
       hash = "sha256-pHygFgvMdyh8NQeGwZ1iNkaU1q+pcxvn5/CaoO/amIc=";
+      suffix = "linux_arm64";
+    };
+
+    "x86_64-linux" = {
+      hash = "sha256-3TTVSCZcsUVfNzC9hWn0OLytMAOxL39f5IlqCReCw7g=";
+      suffix = "linux_amd64";
     };
   };
   inherit (stdenvNoCC.hostPlatform) system;
@@ -24,18 +25,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "pipekit";
   version = "6.65.5";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchurl {
-    url = "https://github.com/pipekit/cli/releases/download/v${finalAttrs.version}/cli_${finalAttrs.version}_${source.suffix}.tar.gz";
     inherit (source) hash;
+    url = "https://github.com/pipekit/cli/releases/download/v${finalAttrs.version}/cli_${finalAttrs.version}_${source.suffix}.tar.gz";
   };
 
-  sourceRoot = ".";
-
-  dontConfigure = true;
-  dontBuild = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -45,8 +40,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -54,9 +52,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://pipekit.io";
     changelog = "https://github.com/pipekit/cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.unfree;
-    mainProgram = "pipekit";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ jpz13 ];
     platforms = builtins.attrNames sources;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "pipekit";
   };
 })

@@ -4,17 +4,17 @@
   fetchFromGitHub,
   autoreconfHook,
   bison,
-  flex,
-  makeWrapper,
   buddy,
   cln,
   cvc4,
+  flex,
   gmpxx,
   libsigsegv,
-  tecla,
-  yices,
+  makeWrapper,
   # passthru.tests
   tamarin-prover,
+  tecla,
+  yices,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,18 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     yices
   ];
 
-  hardeningDisable = [
-    "stackprotector"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isi686 [
-    "pic"
-    "fortify"
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  configureScript = "../configure";
-
   configureFlags = [
     "--with-cvc4=yes"
     "--with-yices2=yes"
@@ -82,18 +70,26 @@ stdenv.mkDerivation (finalAttrs: {
     for n in "$out/bin/"*; do wrapProgram "$n" --suffix MAUDE_LIB ':' "$out/share/maude"; done
   '';
 
+  __darwinAllowLocalNetworking = true;
+  configureScript = "../configure";
+  enableParallelBuilding = true;
+
+  hardeningDisable = [
+    "stackprotector"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isi686 [
+    "pic"
+    "fortify"
+  ];
+
   passthru.tests = {
     # tamarin-prover only supports specific versions of maude explicitly
     inherit tamarin-prover;
   };
 
-  enableParallelBuilding = true;
-
   meta = {
-    homepage = "https://maude.cs.illinois.edu/";
     description = "High-level specification language";
-    mainProgram = "maude";
-    license = lib.licenses.gpl2Plus;
+
     longDescription = ''
       Maude is a high-performance reflective language and system
       supporting both equational and rewriting logic specification and
@@ -103,7 +99,11 @@ stdenv.mkDerivation (finalAttrs: {
       equational specification and programming, Maude also supports
       rewriting logic computation.
     '';
-    platforms = lib.platforms.unix;
+
+    homepage = "https://maude.cs.illinois.edu/";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.peti ];
+    platforms = lib.platforms.unix;
+    mainProgram = "maude";
   };
 })

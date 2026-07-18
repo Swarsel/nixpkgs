@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  replaceVars,
   nodejs,
-  setuptools,
   pytestCheckHook,
+  replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pytubefix";
   version = "10.3.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JuanBindez";
@@ -27,11 +26,9 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
 
   disabledTestPaths = [
     # Tests require network access
@@ -52,6 +49,7 @@ buildPythonPackage rec {
     "test_create_mock_html_json"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytubefix" ];
 
   meta = {

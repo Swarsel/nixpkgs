@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
@@ -23,17 +23,15 @@ stdenv.mkDerivation rec {
     ./fix-linux-6-16-build.patch
   ];
 
-  sourceRoot = "${src.name}/driver";
-  hardeningDisable = [ "pic" ];
   nativeBuildInputs = kernel.moduleBuildDependencies;
-
-  preBuild = ''
-    substituteInPlace Makefile --replace "KERNELDIR :=" "KERNELDIR ?="
-  '';
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNELDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
+
+  preBuild = ''
+    substituteInPlace Makefile --replace "KERNELDIR :=" "KERNELDIR ?="
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -41,15 +39,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  hardeningDisable = [ "pic" ];
+  sourceRoot = "${src.name}/driver";
+
   meta = {
-    homepage = "https://www.wch-ic.com/";
-    downloadPage = "https://github.com/WCHSoftGroup/ch9344ser_linux";
     description = "WCH CH9344/CH348 UART driver";
+
     longDescription = ''
       A kernel module for WinChipHead CH9344/CH348 USB To Multi Serial Ports controller.
     '';
+
+    homepage = "https://www.wch-ic.com/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ RadxaYuntian ];
+    platforms = lib.platforms.linux;
+    downloadPage = "https://github.com/WCHSoftGroup/ch9344ser_linux";
   };
 }

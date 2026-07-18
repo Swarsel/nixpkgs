@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-UO22uxPV8fqGix/8Nx5mLIQl8Y7fWE8ze7fbtoAehJE=";
 
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/$pname
+  '';
+
   ldflags = [
     "-s"
     "-X=main.version=${finalAttrs.version}"
   ];
-
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/$pname
-  '';
 
   meta = {
     description = "Command-line tool that helps to assess quantum readiness";

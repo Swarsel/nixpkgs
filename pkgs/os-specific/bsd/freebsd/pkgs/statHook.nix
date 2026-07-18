@@ -1,8 +1,8 @@
 {
   lib,
   makeSetupHook,
-  writeText,
   stat,
+  writeText,
 }:
 
 # stat isn't in POSIX, and NetBSD stat supports a completely

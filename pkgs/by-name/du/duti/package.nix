@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
 }:
@@ -8,6 +8,7 @@
 stdenv.mkDerivation {
   pname = "duti";
   version = "1.5.5pre";
+
   src = fetchFromGitHub {
     owner = "moretension";
     repo = "duti";
@@ -23,6 +24,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Command-line tool to select default applications for document types and URL schemes on Mac OS X";
+
     longDescription = ''
       duti is a command-line utility capable of setting default applications for
       various document types on Mac OS X, using Apple's Uniform Type Identifiers. A
@@ -30,12 +32,15 @@ stdenv.mkDerivation {
       a Microsoft Word document has a UTI of com.microsoft.word.doc. Using duti, the
       user can change which application acts as the default handler for a given UTI.
     '';
-    mainProgram = "duti";
+
+    homepage = "https://github.com/moretension/duti/";
+    license = lib.licenses.publicDomain;
+
     maintainers = with lib.maintainers; [
       n-hass
     ];
+
     platforms = lib.platforms.darwin;
-    license = lib.licenses.publicDomain;
-    homepage = "https://github.com/moretension/duti/";
+    mainProgram = "duti";
   };
 }

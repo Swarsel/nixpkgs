@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  perl,
-  which,
-  rdkafka,
-  jansson,
-  curl,
   avro-c,
   avro-cpp,
+  curl,
+  jansson,
   nix-update-script,
+  perl,
+  rdkafka,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "out"
   ];
+
+  postPatch = ''
+    patchShebangs configure lds-gen.pl
+    # Don't append the standard to CXXFLAGS, since we want to set it higher for avro-cpp.
+    substituteInPlace configure.self --replace-fail \
+      'mkl_mkvar_append CXXFLAGS CXXFLAGS "--std=c++11"' \
+      ":" # Do nothing, we set the standard ourselves.
+  '';
 
   nativeBuildInputs = [
     perl
@@ -55,17 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     "GEN_PKG_CONFIG=y"
   ];
 
-  postPatch = ''
-    patchShebangs configure lds-gen.pl
-    # Don't append the standard to CXXFLAGS, since we want to set it higher for avro-cpp.
-    substituteInPlace configure.self --replace-fail \
-      'mkl_mkvar_append CXXFLAGS CXXFLAGS "--std=c++11"' \
-      ":" # Do nothing, we set the standard ourselves.
-  '';
-
-  # Has a configure script but it’s not Autoconf so steal some bits from multiple-outputs.sh:
-  setOutputFlags = false;
-
   preConfigure = ''
     configureFlagsArray+=(
       "--libdir=''${!outputLib}/lib"
@@ -82,6 +79,8 @@ stdenv.mkDerivation (finalAttrs: {
     chmod -x ''${!outputInclude}/include/libserdes/*.h
   '';
 
+  # Has a configure script but it’s not Autoconf so steal some bits from multiple-outputs.sh:
+  setOutputFlags = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {

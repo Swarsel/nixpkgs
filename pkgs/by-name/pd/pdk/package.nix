@@ -1,8 +1,8 @@
 {
+  lib,
   bundlerApp,
   bundlerUpdateScript,
   gnumake,
-  lib,
   makeWrapper,
   pdk,
   testers,
@@ -10,32 +10,35 @@
 
 bundlerApp {
   pname = "pdk";
-  gemdir = ./.;
-  exes = [ "pdk" ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
     wrapProgram $out/bin/pdk --prefix PATH : ${lib.makeBinPath [ gnumake ]}
   '';
 
+  exes = [ "pdk" ];
+  gemdir = ./.;
+
   passthru = {
     tests.version = testers.testVersion {
-      package = pdk;
       version = (import ./gemset.nix).pdk.version;
+      package = pdk;
     };
+
     updateScript = bundlerUpdateScript "pdk";
   };
 
   meta = {
-    changelog = "https://github.com/puppetlabs/pdk/blob/main/CHANGELOG.md";
     description = "Puppet Development Kit";
     homepage = "https://github.com/puppetlabs/pdk";
+    changelog = "https://github.com/puppetlabs/pdk/blob/main/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "pdk";
+
     maintainers = with lib.maintainers; [
       netali
       anthonyroussel
     ];
+
+    mainProgram = "pdk";
   };
 }

@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  wrapWithXFileSearchPathHook,
-  xorgproto,
+  # run time dependencies
+  iceauth,
   libice,
   libsm,
   libx11,
   libxaw,
   libxt,
   makeBinaryWrapper,
-  writeScript,
-  # run time dependencies
-  iceauth,
+  pkg-config,
   smproxy,
   tab-window-manager,
+  wrapWithXFileSearchPathHook,
+  writeScript,
+  xorgproto,
   xterm,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -44,8 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxt
   ];
 
-  installFlags = [ "appdefaultdir=$(out)/share/X11/app-defaults" ];
-
   postInstall = ''
     wrapProgram $out/bin/xsm \
       --prefix PATH : ${
@@ -57,6 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
         ]
       }
   '';
+
+  installFlags = [ "appdefaultdir=$(out)/share/X11/app-defaults" ];
 
   passthru = {
     updateScript = writeScript "update-${finalAttrs.pname}" ''
@@ -71,6 +71,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "X Session Manager";
+
     longDescription = ''
       A session is a group of X applications, each of which has a particular state. xsm allows you
       to create arbitrary sessions - for example, you might have a "light" session, a "development"
@@ -79,10 +80,11 @@ stdenv.mkDerivation (finalAttrs: {
       state and exit the session. When you log back in to the system, you can load a specific
       session, and you can delete sessions you no longer want to keep.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xsm";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xsm";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xsm";
   };
 })

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   dash,
   dash-bootstrap-components,
   numpy,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "dash-bootstrap-templates";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AnnMarieW";
@@ -20,6 +19,10 @@ buildPythonPackage rec {
     tag = "V${version}";
     hash = "sha256-B7iyN4sJA6DmoLf3DpFEONDe5tUd4cBlDIH4E7JtULk=";
   };
+
+  # There are no tests.
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
@@ -31,10 +34,8 @@ buildPythonPackage rec {
     numpy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dash_bootstrap_templates" ];
-
-  # There are no tests.
-  doCheck = false;
 
   meta = {
     description = "Collection of 52 Plotly figure templates with a Bootstrap theme";

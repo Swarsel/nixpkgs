@@ -7,6 +7,8 @@
   deltachat-desktop,
   deltachat-repl,
   deltachat-rpc-server,
+  fixDarwinDylibNames,
+  libiconv,
   openssl,
   perl,
   pkg-config,
@@ -14,8 +16,6 @@
   rustPlatform,
   sqlcipher,
   sqlite,
-  fixDarwinDylibNames,
-  libiconv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,12 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./no-static-lib.patch
   ];
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    pname = "chatmail-core";
-    inherit (finalAttrs) version src;
-    hash = "sha256-aoPc5XvjwwuA9aOTvIOpTm15wozC9glJGqn3vPqsJF4=";
-  };
 
   nativeBuildInputs = [
     cmake
@@ -59,6 +53,11 @@ stdenv.mkDerivation (finalAttrs: {
     libiconv
   ];
 
+  env = {
+    CARGO_BUILD_RUSTFLAGS = "-C linker=${stdenv.cc.targetPrefix}cc";
+    CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTarget;
+  };
+
   nativeCheckInputs = with rustPlatform; [
     cargoCheckHook
   ];
@@ -71,9 +70,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace __FILE__ '"${placeholder "out"}/include/deltachat.h"'
   '';
 
-  env = {
-    CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTarget;
-    CARGO_BUILD_RUSTFLAGS = "-C linker=${stdenv.cc.targetPrefix}cc";
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) version src;
+    pname = "chatmail-core";
+    hash = "sha256-aoPc5XvjwwuA9aOTvIOpTm15wozC9glJGqn3vPqsJF4=";
   };
 
   passthru = {

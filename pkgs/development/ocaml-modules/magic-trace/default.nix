@@ -1,19 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  buildDunePackage,
-  ocaml-crunch,
   angstrom,
   async,
+  buildDunePackage,
   camlzip,
   cohttp,
-  cohttp_static_handler ? null,
   core,
-  core_unix ? null,
   fzf,
+  ocaml-crunch,
   owee,
   ppx_jane,
   re,
+  cohttp_static_handler ? null,
+  core_unix ? null,
   shell ? null,
   zstandard ? null,
 }:
@@ -21,8 +21,6 @@
 buildDunePackage (finalAttrs: {
   pname = "magic-trace";
   version = "1.2.4";
-
-  minimalOCamlVersion = "4.12";
 
   src = fetchFromGitHub {
     owner = "janestreet";
@@ -51,11 +49,13 @@ buildDunePackage (finalAttrs: {
     zstandard
   ];
 
+  minimalOCamlVersion = "4.12";
+
   meta = {
     description = "Collects and displays high-resolution traces of what a process is doing";
+    homepage = "https://github.com/janestreet/magic-trace";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.alizter ];
-    homepage = "https://github.com/janestreet/magic-trace";
     platforms = lib.platforms.linux;
     mainProgram = "magic-trace";
   };

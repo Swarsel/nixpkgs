@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   django,
   jinja2,
-
   # tests
   pytest-django,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-jinja";
   version = "2.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "niwinz";
@@ -26,13 +22,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-0gkv9xinHux8TRiNBLl/JgcimXU3CzysxzGR2jn7OZ4=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    jinja2
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -44,8 +33,15 @@ buildPythonPackage rec {
     export DJANGO_SETTINGS_MODULE=settings
   '';
 
-  enabledTestPaths = [
-    "testapp/tests.py"
+  postCheck = ''
+    popd
+  '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    jinja2
   ];
 
   disabledTests = lib.optionals (lib.versionAtLeast django.version "5.2") [
@@ -53,9 +49,11 @@ buildPythonPackage rec {
     "test_autoscape_with_form_errors"
   ];
 
-  postCheck = ''
-    popd
-  '';
+  enabledTestPaths = [
+    "testapp/tests.py"
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Simple and nonobstructive jinja2 integration with Django";

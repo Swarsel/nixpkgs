@@ -1,17 +1,17 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  unzip,
-  libxml2,
+  fetchurl,
+  fetchFromGitHub,
   gmp,
+  libxml2,
   m4,
-  uthash,
-  which,
-  pkg-config,
   perl,
   perlPackages,
-  fetchurl,
+  pkg-config,
+  unzip,
+  uthash,
+  which,
 }:
 
 let
@@ -20,12 +20,15 @@ let
   ObjectTinyRW = perlPackages.buildPerlPackage {
     pname = "Object-Tiny-RW";
     version = "1.07";
+
     src = fetchurl {
       url = "mirror://cpan/authors/id/S/SC/SCHWIGON/object-tiny-rw/Object-Tiny-RW-1.07.tar.gz";
       hash = "sha256-NbQIy9d4ZcMnRJJApPBSej+W6e/aJ8rkb5E7rD7GVgs=";
     };
+
     meta = {
       description = "Date object with as little code as possible (and rw accessors)";
+
       license = with lib.licenses; [
         artistic1
         gpl1Plus
@@ -36,16 +39,20 @@ let
   IteratorSimpleLookahead = perlPackages.buildPerlPackage {
     pname = "Iterator-Simple-Lookahead";
     version = "0.09";
+
     src = fetchurl {
       url = "mirror://cpan/authors/id/P/PS/PSCUST/Iterator-Simple-Lookahead-0.09.tar.gz";
       hash = "sha256-FmPE1xdU8LAXS21+H4DJaQ87qDi4Q4UkLawsUAqseZw=";
     };
+
     propagatedBuildInputs = with perlPackages; [
       ClassAccessor
       IteratorSimple
     ];
+
     meta = {
       description = "Simple iterator with lookahead and unget";
+
       license = with lib.licenses; [
         artistic1
         gpl2Only
@@ -56,10 +63,12 @@ let
   AsmPreproc = perlPackages.buildPerlPackage {
     pname = "Asm-Preproc";
     version = "1.03";
+
     src = fetchurl {
       url = "mirror://cpan/authors/id/P/PS/PSCUST/Asm-Preproc-1.03.tar.gz";
       hash = "sha256-pVTpIqGxZpBxZlAbXuGDapuOxsp3uM/AM5dKUxlej1M=";
     };
+
     propagatedBuildInputs = [
       IteratorSimpleLookahead
     ]
@@ -69,8 +78,10 @@ let
       DataDump
       FileSlurp
     ]);
+
     meta = {
       description = "Preprocessor to be called from an assembler";
+
       license = with lib.licenses; [
         artistic1
         gpl2Only
@@ -81,10 +92,12 @@ let
   CPUZ80Assembler = perlPackages.buildPerlPackage {
     pname = "CPU-Z80-Assembler";
     version = "2.25";
+
     src = fetchurl {
       url = "mirror://cpan/authors/id/P/PS/PSCUST/CPU-Z80-Assembler-2.25.tar.gz";
       hash = "sha256-cJ8Fl2KZw9/bnBDUzFuwwdw9x23OUvcftk78kw7abdU=";
     };
+
     buildInputs = [
       AsmPreproc
     ]
@@ -94,8 +107,10 @@ let
       PathTiny
       ClassAccessor
     ]);
+
     meta = {
       description = "Functions to assemble a set of Z80 assembly instructions";
+
       license = with lib.licenses; [
         artistic1
         gpl2Only
@@ -136,26 +151,6 @@ stdenv.mkDerivation (finalAttrs: {
     rm src/z80asm/t/z80asm_lib.t
   '';
 
-  # Parallel building is not working yet with the upstream Makefiles.
-  # Explicitly switch this off for now.
-  enableParallelBuilding = false;
-
-  doCheck = true;
-  checkPhase = ''
-    # Need to build libs first, Makefile deps not fully defined
-    make libs      $makeFlags
-    make testsuite $makeFlags
-    make -k test   $makeFlags
-  '';
-
-  short_rev = builtins.substring 0 7 finalAttrs.src.rev;
-  makeFlags = [
-    "git_rev=${finalAttrs.short_rev}"
-    "version=${finalAttrs.version}"
-    "PREFIX=$(out)"
-    "git_count=0"
-  ];
-
   nativeBuildInputs = [
     which
     unzip
@@ -185,23 +180,47 @@ stdenv.mkDerivation (finalAttrs: {
     gmp
   ];
 
+  makeFlags = [
+    "git_rev=${finalAttrs.short_rev}"
+    "version=${finalAttrs.version}"
+    "PREFIX=$(out)"
+    "git_count=0"
+  ];
+
+  doCheck = true;
+
+  checkPhase = ''
+    # Need to build libs first, Makefile deps not fully defined
+    make libs      $makeFlags
+    make testsuite $makeFlags
+    make -k test   $makeFlags
+  '';
+
   preInstall = ''
     mkdir -p $out/{bin,share}
   '';
+
+  # Parallel building is not working yet with the upstream Makefiles.
+  # Explicitly switch this off for now.
+  enableParallelBuilding = false;
 
   installTargets = [
     "libs"
     "install"
   ];
 
+  short_rev = builtins.substring 0 7 finalAttrs.src.rev;
+
   meta = {
-    homepage = "https://www.z88dk.org";
     description = "z80 Development Kit";
+    homepage = "https://www.z88dk.org";
     license = lib.licenses.clArtistic;
+
     maintainers = with lib.maintainers; [
       siraben
       hzeller
     ];
+
     platforms = lib.platforms.unix;
   };
 })

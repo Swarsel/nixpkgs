@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "vincenty";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "maurycyp";
@@ -17,11 +16,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-gzdaAtRjkhn0N/Dmk1tZc2GKRp1eveVbX+2G9cF+KNI=";
   };
 
-  build-system = [ setuptools ];
-
   # no tests implemented
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "vincenty" ];
 
   meta = {

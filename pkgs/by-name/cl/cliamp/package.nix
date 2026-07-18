@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
-  makeWrapper,
   alsa-lib,
-  libogg,
-  libvorbis,
+  buildGoModule,
   ffmpeg,
   flac,
+  libogg,
+  libvorbis,
+  makeWrapper,
+  nix-update-script,
+  pkg-config,
   yt-dlp,
 }:
 
@@ -25,8 +25,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-wRXF2bnl3xFJtuESJX2UVSsPwl4xo6E+k7nIdtzCULo=";
   };
 
-  vendorHash = "sha256-A2Ygc1a9e2flZzaNAEXvr8Ui1cE89TxBfUNALmDzIo0=";
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
@@ -40,6 +38,8 @@ buildGoModule (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     alsa-lib
   ];
+
+  vendorHash = "sha256-A2Ygc1a9e2flZzaNAEXvr8Ui1cE89TxBfUNALmDzIo0=";
 
   # macOS limits Unix socket paths to 104 bytes; use a shorter TMPDIR.
   preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -58,15 +58,14 @@ buildGoModule (finalAttrs: {
 
   # this is set due to failure of testset `net/http/httptest` on darwin
   __darwinAllowLocalNetworking = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal Winamp - a retro terminal music player inspired by Winamp 2.x";
     homepage = "https://github.com/bjarneo/cliamp";
     license = lib.licenses.mit;
-    platforms = with lib.platforms; darwin ++ linux;
     maintainers = with lib.maintainers; [ supermarin ];
+    platforms = with lib.platforms; darwin ++ linux;
     mainProgram = "cliamp";
   };
 })

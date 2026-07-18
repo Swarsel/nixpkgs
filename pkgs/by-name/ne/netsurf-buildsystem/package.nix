@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/";
     description = "NetSurf browser shared build system";
+    homepage = "https://www.netsurf-browser.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.unix;

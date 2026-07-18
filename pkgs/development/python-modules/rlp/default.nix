@@ -1,18 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  setuptools,
   buildPythonPackage,
   eth-utils,
   hypothesis,
-  pytestCheckHook,
   pydantic,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "rlp";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -20,8 +19,6 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-moerdcAJXqhlzDnTlvxL3Nzz485tOzJVCPlGrof80eQ=";
   };
-
-  build-system = [ setuptools ];
 
   propagatedBuildInputs = [ eth-utils ];
 
@@ -31,9 +28,10 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  pythonImportsCheck = [ "rlp" ];
-
+  build-system = [ setuptools ];
   disabledTests = [ "test_install_local_wheel" ];
+  pyproject = true;
+  pythonImportsCheck = [ "rlp" ];
 
   meta = {
     description = "RLP serialization library";

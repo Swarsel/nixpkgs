@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  makeBinaryWrapper,
   php,
   versionCheckHook,
-  makeBinaryWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,9 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    changelog = "https://github.com/phpstan/phpstan/releases/tag/${finalAttrs.version}";
     description = "PHP Static Analysis Tool";
-    homepage = "https://github.com/phpstan/phpstan";
+
     longDescription = ''
       PHPStan focuses on finding errors in your code without actually
       running it. It catches whole classes of bugs even before you write
@@ -47,11 +46,16 @@ stdenv.mkDerivation (finalAttrs: {
       sense that the correctness of each line of the code can be checked
       before you run the actual line.
     '';
+
+    homepage = "https://github.com/phpstan/phpstan";
+    changelog = "https://github.com/phpstan/phpstan/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "phpstan";
+
     maintainers = with lib.maintainers; [
       patka
       piotrkwiecinski
     ];
+
+    mainProgram = "phpstan";
   };
 })

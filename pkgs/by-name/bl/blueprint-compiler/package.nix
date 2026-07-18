@@ -1,29 +1,29 @@
 {
-  dbus,
-  fetchFromGitLab,
-  gobject-introspection,
   lib,
+  stdenv,
+  fetchFromGitLab,
+  dbus,
+  gnome,
+  gobject-introspection,
   libadwaita,
   meson,
   ninja,
   python3,
   runCommand,
-  stdenv,
   testers,
   wrapGAppsNoGuiHook,
   xvfb-run,
-  gnome,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "blueprint-compiler";
   version = "0.20.4";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "blueprint-compiler";
     rev = "v${finalAttrs.version}";
     hash = "sha256-dA+FQTRmTz6rl5ToZJ8CXY1Zd7Em7VwvF3U3Qoyvu80=";
+    domain = "gitlab.gnome.org";
   };
 
   postPatch = ''
@@ -50,13 +50,13 @@ stdenv.mkDerivation (finalAttrs: {
     gobject-introspection
   ];
 
+  # requires xvfb-run
+  doCheck = !stdenv.hostPlatform.isDarwin && false; # tests time out
+
   nativeCheckInputs = [
     dbus
     xvfb-run
   ];
-
-  # requires xvfb-run
-  doCheck = !stdenv.hostPlatform.isDarwin && false; # tests time out
 
   checkPhase = ''
     runHook preCheck
@@ -73,6 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
       version = testers.testVersion {
         package = finalAttrs.finalPackage;
       };
+
       # regression test that `blueprint-compiler` can be used in a standalone
       # context outside of nix builds, and doesn't rely on the setup hooks of
       # its propagated inputs for basic functionality.
@@ -81,6 +82,7 @@ stdenv.mkDerivation (finalAttrs: {
         ${lib.getExe finalAttrs.finalPackage} --help && touch $out
       '';
     };
+
     updateScript = gnome.updateScript {
       packageName = "blueprint-compiler";
     };
@@ -88,14 +90,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Markup language for GTK user interface files";
-    mainProgram = "blueprint-compiler";
     homepage = "https://gitlab.gnome.org/GNOME/blueprint-compiler";
     license = lib.licenses.lgpl3Plus;
+
     maintainers = with lib.maintainers; [
       benediktbroich
       ranfdev
     ];
-    teams = [ lib.teams.gnome ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "blueprint-compiler";
+    teams = [ lib.teams.gnome ];
   };
 })

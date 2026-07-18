@@ -1,11 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   darkdetect,
   poetry-core,
-
   pyqt5,
   pytest-mock,
   pytest-qt,
@@ -16,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyqtdarktheme";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "5yutan5";
@@ -26,9 +23,7 @@ buildPythonPackage rec {
   };
 
   patches = [ ./add-missing-argument-to-the-proxy-style-initializer.patch ];
-
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ darkdetect ];
 
   nativeCheckInputs = [
@@ -38,18 +33,19 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "qdarktheme" ];
-
-  prePatch = ''
-    sed -i 's#darkdetect = ".*"#darkdetect = "*"#' pyproject.toml
-  '';
-
   preCheck = ''
     export HOME=$(mktemp -d)
     export QT_PLUGIN_PATH="${qt5.qtbase.bin}/${qt5.qtbase.qtPluginPrefix}"
     export QT_QPA_PLATFORM_PLUGIN_PATH="${qt5.qtbase.bin}/lib/qt-${qt5.qtbase.version}/plugins";
     export QT_QPA_PLATFORM=offscreen
   '';
+
+  prePatch = ''
+    sed -i 's#darkdetect = ".*"#darkdetect = "*"#' pyproject.toml
+  '';
+
+  pyproject = true;
+  pythonImportsCheck = [ "qdarktheme" ];
 
   meta = {
     description = "Flat dark theme for PySide and PyQt";

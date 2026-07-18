@@ -2,9 +2,8 @@
 
 with ocamlPackages;
 buildDunePackage {
-  pname = "msat-bin";
-
   inherit (msat) version src;
+  pname = "msat-bin";
 
   buildInputs = [
     camlzip

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hidapi,
   loguru,
   pyserial,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "busylight-core";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JnyJny";
@@ -27,6 +26,11 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.7.19,<0.8" "uv_build"
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ uv-build ];
 
   dependencies = [
@@ -35,11 +39,7 @@ buildPythonPackage (finalAttrs: {
     pyserial
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "busylight_core" ];
 
   meta = {

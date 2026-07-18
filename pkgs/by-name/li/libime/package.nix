@@ -3,30 +3,30 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  kdePackages,
   boost,
-  python3,
+  cmake,
   fcitx5,
+  kdePackages,
+  pkg-config,
+  python3,
   zstd,
 }:
 
 let
   tableVer = "20240108";
   table = fetchurl {
-    url = "https://download.fcitx-im.org/data/table-${tableVer}.tar.zst";
     hash = "sha256-Pp2HsEo5PxMXI0csjqqGDdI8N4o9T2qQBVE7KpWzYUs=";
+    url = "https://download.fcitx-im.org/data/table-${tableVer}.tar.zst";
   };
   arpaVer = "20250113";
   arpa = fetchurl {
-    url = "https://download.fcitx-im.org/data/lm_sc.arpa-${arpaVer}.tar.zst";
     hash = "sha256-7oPs8g1S6LzNukz2zVcYPVPCV3E6Xrd+46Y9UPw3lt0=";
+    url = "https://download.fcitx-im.org/data/lm_sc.arpa-${arpaVer}.tar.zst";
   };
   dictVer = "20250327";
   dict = fetchurl {
-    url = "https://download.fcitx-im.org/data/dict-${dictVer}.tar.zst";
     hash = "sha256-fKa+R1TA1MJ7p3AsDc5lFlm9LKH6pcvyhI2BoAU8jBM=";
+    url = "https://download.fcitx-im.org/data/dict-${dictVer}.tar.zst";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -41,12 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  prePatch = ''
-    ln -s ${table} data/$(stripHash ${table})
-    ln -s ${arpa} data/$(stripHash ${arpa})
-    ln -s ${dict} data/$(stripHash ${dict})
-  '';
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -59,6 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
     boost
     fcitx5
   ];
+
+  prePatch = ''
+    ln -s ${table} data/$(stripHash ${table})
+    ln -s ${arpa} data/$(stripHash ${arpa})
+    ln -s ${dict} data/$(stripHash ${dict})
+  '';
 
   meta = {
     description = "Library to support generic input method implementation";

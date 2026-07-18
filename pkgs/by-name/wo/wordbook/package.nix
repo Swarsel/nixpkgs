@@ -1,22 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
+  appstream-glib,
+  desktop-file-utils,
+  espeak-ng,
+  gobject-introspection,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  libadwaita,
-  espeak-ng,
-  gobject-introspection,
+  python3,
   wrapGAppsHook4,
-  appstream-glib,
-  desktop-file-utils,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "wordbook";
   version = "0.4.0";
-  pyproject = false; # Built with meson
 
   src = fetchFromGitHub {
     owner = "fushinari";
@@ -39,14 +38,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     libadwaita
   ];
 
-  dependencies = with python3.pkgs; [
-    pygobject3
-    wn
-  ];
-
-  # prevent double wrapping
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=(
       --prefix PATH ":" "${lib.makeBinPath [ espeak-ng ]}"
@@ -54,12 +45,21 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     )
   '';
 
+  dependencies = with python3.pkgs; [
+    pygobject3
+    wn
+  ];
+
+  # prevent double wrapping
+  dontWrapGApps = true;
+  pyproject = false; # Built with meson
+
   meta = {
     description = "Offline English-English dictionary application built for GNOME";
-    mainProgram = "wordbook";
     homepage = "https://github.com/fushinari/Wordbook";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "wordbook";
   };
 })

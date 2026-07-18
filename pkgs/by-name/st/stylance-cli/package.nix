@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -17,17 +17,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-wqNQUCD7/q41GKIxjLFEGrlNru3SIN9mbUh+nApm1i8=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
 
   meta = {
     description = "Library and cli tool for working with scoped CSS in rust";
-    mainProgram = "stylance";
     homepage = "https://github.com/basro/stylance-rs";
     changelog = "https://github.com/basro/stylance-rs/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ dav-wolff ];
+    mainProgram = "stylance";
   };
 })

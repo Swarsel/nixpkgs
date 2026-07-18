@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,12 +17,12 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-wPySRFqm396YRqEUZNMkA19SxqBNApwr8hm0PRA5cO0=";
 
-  subPackages = [ "cmd/api-linter" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
+
+  subPackages = [ "cmd/api-linter" ];
 
   meta = {
     description = "Linter for APIs defined in protocol buffers";

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
-  requests,
+  buildPythonPackage,
   packaging,
   pydantic,
-  typing-extensions,
+  pytestCheckHook,
+  requests,
   requests-mock,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "marqo";
   version = "3.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "marqo-ai";
@@ -23,12 +22,18 @@ buildPythonPackage rec {
     hash = "sha256-phO7aR7kQJHw5qxrpMI5DtOaXlaHMsKfaC3UquyD/Rw=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     requests-mock
     typing-extensions
+  ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    packaging
+    pydantic
+    requests
   ];
 
   disabledTestPaths = [
@@ -57,15 +62,9 @@ buildPythonPackage rec {
     "tests/v2_tests/test_recommend.py"
   ];
 
-  dependencies = [
-    packaging
-    pydantic
-    requests
-  ];
-
-  pythonRemoveDeps = [ "urllib3" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "marqo" ];
+  pythonRemoveDeps = [ "urllib3" ];
 
   meta = {
     description = "Unified embedding generation and search engine";

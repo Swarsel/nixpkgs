@@ -1,25 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  gitMinimal,
-  libsForQt5,
-  perl,
-  flatbuffers,
-  protobuf,
-  mbedtls,
   alsa-lib,
+  cmake,
+  flatbuffers,
+  gitMinimal,
   hidapi,
   libcec,
   libftdi1,
+  libraspberrypi,
+  libsForQt5,
   libusb1,
   libx11,
   libxcb,
   libxrandr,
+  mbedtls,
+  perl,
+  protobuf,
   python3,
   withRPiDispmanx ? false,
-  libraspberrypi,
 }:
 
 stdenv.mkDerivation rec {
@@ -36,6 +36,13 @@ stdenv.mkDerivation rec {
     # * qmdnsengine - not in nixpkgs yet
     fetchSubmodules = true;
   };
+
+  nativeBuildInputs = [
+    cmake
+    gitMinimal
+    libsForQt5.wrapQtAppsHook
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin perl; # for macos bundle
 
   buildInputs = [
     alsa-lib
@@ -58,18 +65,6 @@ stdenv.mkDerivation rec {
   ++ lib.optional stdenv.hostPlatform.isLinux libcec
   ++ lib.optional withRPiDispmanx libraspberrypi;
 
-  nativeBuildInputs = [
-    cmake
-    gitMinimal
-    libsForQt5.wrapQtAppsHook
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin perl; # for macos bundle
-
-  patchPhase = ''
-    patchShebangs test/testrunner.sh
-    patchShebangs src/hyperiond/CMakeLists.txt
-  '';
-
   cmakeFlags = [
     "-DENABLE_DEPLOY_DEPENDENCIES=OFF"
     "-DUSE_SYSTEM_FLATBUFFERS_LIBS=ON"
@@ -85,18 +80,26 @@ stdenv.mkDerivation rec {
   ) "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"; # required to build dependencies/external/rpi_ws281x
 
   doCheck = true;
+
   checkPhase = ''
     cd ../ && ./test/testrunner.sh && cd -
+  '';
+
+  patchPhase = ''
+    patchShebangs test/testrunner.sh
+    patchShebangs src/hyperiond/CMakeLists.txt
   '';
 
   meta = {
     description = "Opensource Bias or Ambient Lighting implementation";
     homepage = "https://github.com/hyperion-project/hyperion.ng";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       algram
       kazenyuk
     ];
+
     platforms = lib.platforms.unix;
   };
 }

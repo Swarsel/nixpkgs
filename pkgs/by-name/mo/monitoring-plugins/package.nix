@@ -3,25 +3,25 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  runCommand,
   coreutils,
+  dnsutils,
   gnugrep,
   gnused,
+  libdbi,
+  libmysqlclient,
   lm_sensors,
   net-snmp,
+  openldap,
   openssh,
   openssl,
   perl,
-  dnsutils,
-  libdbi,
-  libmysqlclient,
-  uriparser,
-  zlib,
-  openldap,
+  pkg-config,
   procps,
+  runCommand,
   runtimeShell,
   unixtools,
+  uriparser,
+  zlib,
 }:
 
 let
@@ -65,10 +65,9 @@ stdenv.mkDerivation rec {
     )
   '';
 
-  configureFlags = [
-    "--libexecdir=${placeholder "out"}/bin"
-    "--with-mailq-command=/run/wrappers/bin/mailq"
-    "--with-sudo-command=/run/wrappers/bin/sudo"
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
   ];
 
   buildInputs = [
@@ -86,9 +85,10 @@ stdenv.mkDerivation rec {
     zlib
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
+  configureFlags = [
+    "--libexecdir=${placeholder "out"}/bin"
+    "--with-mailq-command=/run/wrappers/bin/mailq"
+    "--with-sudo-command=/run/wrappers/bin/sudo"
   ];
 
   enableParallelBuilding = true;
@@ -97,10 +97,12 @@ stdenv.mkDerivation rec {
     description = "Official monitoring plugins for Nagios/Icinga/Sensu and others";
     homepage = "https://www.monitoring-plugins.org";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       relrod
     ];
+
     platforms = lib.platforms.linux;
   };
 }

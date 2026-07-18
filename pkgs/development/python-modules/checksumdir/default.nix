@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "checksumdir";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "to-mc";
@@ -18,8 +17,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   doCheck = false; # Package does not contain tests
+  pyproject = true;
   pythonImportsCheck = [ "checksumdir" ];
 
   meta = {

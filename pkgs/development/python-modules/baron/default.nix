@@ -1,38 +1,33 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  setuptools,
-  rply,
-  pytestCheckHook,
+  fetchPypi,
   isPy3k,
+  pytestCheckHook,
+  rply,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "baron";
   version = "0.10.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-r4Iq1E1OtCXIUW30I5rE/bqf2zmO935JJM18m0BFvC8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ rply ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   doCheck = isPy3k;
-
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ rply ];
+  pyproject = true;
   pythonImportsCheck = [ "baron" ];
 
   meta = {
-    homepage = "https://github.com/PyCQA/baron";
     description = "Abstraction on top of baron, a FST for python to make writing refactoring code a realistic task";
+    homepage = "https://github.com/PyCQA/baron";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ marius851000 ];
   };

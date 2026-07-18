@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   SDL2,
   fluidsynth,
   libsndfile,
   libvorbis,
   mpg123,
+  pkg-config,
   qt5,
 }:
 
@@ -38,11 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://realnc.github.io/qtads/";
     description = "Multimedia interpreter for TADS games";
-    mainProgram = "qtads";
+    homepage = "https://realnc.github.io/qtads/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "qtads";
   };
 })

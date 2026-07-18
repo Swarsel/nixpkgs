@@ -2,38 +2,33 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python,
-  pythonAtLeast,
+  # Reverse dependency
+  astropy,
+  # native dependencies
+  blas,
   buildPythonPackage,
-  writeTextFile,
-
+  coreutils,
   # build-system
   cython,
   gfortran,
-  meson-python,
-  mesonEmulatorHook,
-  pkg-config,
-
-  # native dependencies
-  blas,
-  coreutils,
-  lapack,
-
-  openmpCheckPhaseHook,
-
-  # Reverse dependency
-  astropy,
-  numba,
-  pandas,
-  sage,
-  xarray,
-
   # tests
   hypothesis,
+  lapack,
+  meson-python,
+  mesonEmulatorHook,
+  numba,
+  openmpCheckPhaseHook,
+  pandas,
+  pkg-config,
   pytest-xdist,
   pytestCheckHook,
+  python,
+  pythonAtLeast,
+  sage,
   setuptools,
   typing-extensions,
+  writeTextFile,
+  xarray,
 }:
 
 # Verify these are compatible
@@ -42,14 +37,13 @@ assert blas.isILP64 == lapack.isILP64;
 buildPythonPackage (finalAttrs: {
   pname = "numpy";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "numpy";
     repo = "numpy";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-RiC1dLoDamK5B2VzHBL0V//K/Vix25q11wNGcl3Witk=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -61,6 +55,11 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace numpy/_core/tests/test_cpu_features.py \
       --replace-fail '/bin/true' '${lib.getExe' coreutils "true"}'
   '';
+
+  buildInputs = [
+    blas
+    lapack
+  ];
 
   mesonFlags = [
     # See https://numpy.org/devdocs/building/blas_lapack.html
@@ -82,24 +81,9 @@ buildPythonPackage (finalAttrs: {
     (lib.mesonOption "cpu-baseline" "none")
   ];
 
-  build-system = [
-    cython
-    gfortran
-    meson-python
-    pkg-config
-  ]
-  ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [ mesonEmulatorHook ];
-
-  buildInputs = [
-    blas
-    lapack
-  ];
-
   preBuild = ''
     ln -s ${finalAttrs.finalPackage.passthru.cfg} site.cfg
   '';
-
-  enableParallelBuilding = true;
 
   nativeCheckInputs = [
     hypothesis
@@ -107,18 +91,6 @@ buildPythonPackage (finalAttrs: {
     pytest-xdist
     setuptools
     typing-extensions
-  ];
-
-  # Enables any dependent package to easily find numpy.pc via standard
-  # pkg-config call. The `$out/include` symlink matches what's written in the
-  # numpy.pc file.
-  postInstall = ''
-    ln -s $out/${python.sitePackages}/numpy/_core/lib/pkgconfig $out/lib/pkgconfig
-    ln -s ${placeholder "out"}/${finalAttrs.passthru.coreIncludeInnerDir} $out/include
-  '';
-
-  propagatedNativeBuildInputs = [
-    openmpCheckPhaseHook
   ];
 
   preCheck = ''
@@ -130,6 +102,22 @@ buildPythonPackage (finalAttrs: {
   postCheck = ''
     popd
   '';
+
+  # Enables any dependent package to easily find numpy.pc via standard
+  # pkg-config call. The `$out/include` symlink matches what's written in the
+  # numpy.pc file.
+  postInstall = ''
+    ln -s $out/${python.sitePackages}/numpy/_core/lib/pkgconfig $out/lib/pkgconfig
+    ln -s ${placeholder "out"}/${finalAttrs.passthru.coreIncludeInnerDir} $out/include
+  '';
+
+  build-system = [
+    cython
+    gfortran
+    meson-python
+    pkg-config
+  ]
+  ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [ mesonEmulatorHook ];
 
   # https://github.com/numpy/numpy/blob/a277f6210739c11028f281b8495faf7da298dbef/numpy/_pytesttester.py#L180
   disabledTestMarks = [
@@ -174,37 +162,51 @@ buildPythonPackage (finalAttrs: {
     "test_validate_transcendentals"
   ];
 
+  enableParallelBuilding = true;
+
+  propagatedNativeBuildInputs = [
+    openmpCheckPhaseHook
+  ];
+
+  pyproject = true;
+
   passthru = {
     # just for backwards compatibility
     blas = blas.provider;
     blasImplementation = blas.implementation;
+
     buildConfig = {
       ${blas.implementation} = {
         include_dirs = "${lib.getDev blas}/include:${lib.getDev lapack}/include";
+        libraries = "lapack,lapacke,blas,cblas";
         library_dirs = "${blas}/lib:${lapack}/lib";
         runtime_library_dirs = "${blas}/lib:${lapack}/lib";
-        libraries = "lapack,lapacke,blas,cblas";
       };
-      lapack = {
-        include_dirs = "${lib.getDev lapack}/include";
-        library_dirs = "${lapack}/lib";
-        runtime_library_dirs = "${lapack}/lib";
-      };
+
       blas = {
         include_dirs = "${lib.getDev blas}/include";
         library_dirs = "${blas}/lib";
         runtime_library_dirs = "${blas}/lib";
       };
+
+      lapack = {
+        include_dirs = "${lib.getDev lapack}/include";
+        library_dirs = "${lapack}/lib";
+        runtime_library_dirs = "${lapack}/lib";
+      };
     };
+
     cfg = writeTextFile {
       name = "site.cfg";
       text = lib.generators.toINI { } finalAttrs.finalPackage.buildConfig;
     };
+
+    coreIncludeDir = "${finalAttrs.finalPackage}/${finalAttrs.finalPackage.passthru.coreIncludeInnerDir}";
     # Need to be defined with two variables for postInstall to use `placeholder
     # "out"` where here we have to use `${finalAttrs.finalPackage}`, that would
     # cause infinite recursion if used in postInstall too.
     coreIncludeInnerDir = "${python.sitePackages}/numpy/_core/include";
-    coreIncludeDir = "${finalAttrs.finalPackage}/${finalAttrs.finalPackage.passthru.coreIncludeInnerDir}";
+
     tests = {
       # NOTE: It is important to check these central dependent packages when
       # issuing Numpy PRs and especially version bumps (even minor version
@@ -221,9 +223,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/numpy/numpy/releases/tag/${finalAttrs.src.tag}";
     description = "Scientific tools for Python";
     homepage = "https://numpy.org/";
+    changelog = "https://github.com/numpy/numpy/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ doronbehar ];
   };

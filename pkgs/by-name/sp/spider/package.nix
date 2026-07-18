@@ -1,13 +1,13 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   nix-update-script,
   openssl,
   pkg-config,
   rust-jemalloc-sys,
   rustPlatform,
   sqlite,
-  stdenv,
   versionCheckHook,
   zstd,
 }:
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-zOHk9vZGf9f3VD6EN+EIfFdyFGWNtTOKWGrteH86DA4=";
   };
 
-  cargoHash = "sha256-LC5rrL+1HrxadsoSJ+3uvi3Wraud/mzCraIFZGFyk0o=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -36,6 +34,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
     zstd
   ];
+
+  cargoHash = "sha256-LC5rrL+1HrxadsoSJ+3uvi3Wraud/mzCraIFZGFyk0o=";
 
   env = {
     OPENSSL_NO_VENDOR = true;
@@ -66,18 +66,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/spider-rs/spider/releases/tag/v${finalAttrs.version}";
     description = "Web crawler and scraper, building blocks for data curation workloads";
     homepage = "https://github.com/spider-rs/spider";
+    changelog = "https://github.com/spider-rs/spider/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "spider";
+
     maintainers = with lib.maintainers; [
       j-mendez
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "spider";
   };
 })

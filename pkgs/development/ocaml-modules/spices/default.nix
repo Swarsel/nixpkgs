@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   colors,
   tty,
 }:
@@ -9,8 +9,6 @@
 buildDunePackage rec {
   pname = "spices";
   version = "0.0.2";
-
-  minimalOCamlVersion = "5.1";
 
   src = fetchurl {
     url = "https://github.com/leostera/minttea/releases/download/${version}/minttea-${version}.tbz";
@@ -23,6 +21,7 @@ buildDunePackage rec {
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "5.1";
 
   meta = {
     description = "Declarative styles for TUI applications";

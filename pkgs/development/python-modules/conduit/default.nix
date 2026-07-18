@@ -1,21 +1,17 @@
 {
   lib,
   stdenv,
-  pkgs,
   buildPythonPackage,
-
   # build-system
   cmake,
   ninja,
-  pip,
-  setuptools,
-
-  # nativeBuildInputs
-  openmpi,
-
   # dependencies
   numpy,
-
+  # nativeBuildInputs
+  openmpi,
+  pip,
+  pkgs,
+  setuptools,
   mpiSupport ? false,
 }:
 let
@@ -29,8 +25,6 @@ buildPythonPackage {
     # nativeBuildInputs
     buildInputs
     ;
-  pyproject = true;
-  __structuredAttrs = true;
 
   postPatch = (conduit.postPatch or "") + ''
     substituteInPlace pyproject.toml \
@@ -39,7 +33,15 @@ buildPythonPackage {
         "cmake"
   '';
 
+  nativeBuildInputs = conduit.nativeBuildInputs ++ [
+    # openmpi needs to be in nativeBuildInputs, otherwise cmake can't find it
+    openmpi
+  ];
+
   env.ENABLE_MPI = mpiSupport;
+  # No python tests
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     cmake
@@ -47,30 +49,24 @@ buildPythonPackage {
     pip
     setuptools
   ];
-  dontUseCmakeConfigure = true;
-
-  nativeBuildInputs = conduit.nativeBuildInputs ++ [
-    # openmpi needs to be in nativeBuildInputs, otherwise cmake can't find it
-    openmpi
-  ];
 
   dependencies = [
     numpy
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "conduit" ];
 
-  # No python tests
-  doCheck = false;
-
   meta = {
-    description = "Python bindings for the conduit library";
     inherit (conduit.meta)
       homepage
       changelog
       license
       platforms
       ;
+
+    description = "Python bindings for the conduit library";
     maintainers = with lib.maintainers; [ GaetanLepage ];
     # Cross-compilation is broken
     broken = stdenv.hostPlatform != stdenv.buildPlatform;

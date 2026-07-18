@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,10 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-gBURmodXkod4fukw6LWEY+MBxPcf4vn/f6K78UR77n0=";
-
-  modRoot = "./cmd";
-
   doCheck = false;
+  modRoot = "./cmd";
 
   subPackages = [
     "cowsay"
@@ -29,10 +27,12 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Cowsay reborn, written in Go";
     homepage = "https://github.com/Code-Hex/Neo-cowsay";
+
     license = with lib.licenses; [
       artistic1 # or
       gpl3
     ];
+
     mainProgram = "cowsay";
   };
 })

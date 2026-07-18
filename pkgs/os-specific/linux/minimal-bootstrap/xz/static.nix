@@ -1,17 +1,17 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
   binutils,
+  buildPlatform,
+  gawk,
   gcc,
+  gnugrep,
   gnumake,
   gnused,
-  gnugrep,
-  gawk,
   gnutar,
   gzip,
+  hostPlatform,
   musl,
 }:
 let
@@ -51,13 +51,15 @@ bash.runCommand "${pname}-${version}"
     meta = {
       description = "General-purpose data compression software, successor of LZMA";
       homepage = "https://tukaani.org/xz";
+
       license = with lib.licenses; [
         gpl2Plus
         lgpl21Plus
       ];
-      teams = [ lib.teams.minimal-bootstrap ];
+
       platforms = lib.platforms.unix;
       mainProgram = "xz";
+      teams = [ lib.teams.minimal-bootstrap ];
     };
   }
   ''

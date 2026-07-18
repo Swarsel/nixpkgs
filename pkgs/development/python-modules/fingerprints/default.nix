@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   normality,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "fingerprints";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alephdata";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-Q+XCsuGMHPtOqB0SauVuYInR5FGMuG6aNhqiAwTJvSI=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ normality ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
+  dependencies = [ normality ];
+  pyproject = true;
   pythonImportsCheck = [ "fingerprints" ];
 
   meta = {

@@ -16,8 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''sed -i "s|/usr|$out|" Makefile'';
 
   meta = {
-    homepage = "https://f00l.de/pcapfix/";
     description = "Repair your broken pcap and pcapng files";
+    homepage = "https://f00l.de/pcapfix/";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.all;
     mainProgram = "pcapfix";

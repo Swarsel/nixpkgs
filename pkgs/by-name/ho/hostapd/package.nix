@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libnl,
-  openssl,
   nixosTests,
+  openssl,
+  pkg-config,
   sqlite ? null,
 }:
 
@@ -18,26 +18,45 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Kz+stjL9T2XjL0v4Kna0tyxQH5laT2LjMCGf567RdHo=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  patches = [
+    (fetchurl {
+      sha256 = "08p5frxhpq1rp2nczkscapwwl8g9nc4fazhjpxic5bcbssc3sb00";
+      # Note: fetchurl seems to be unhappy with openwrt git
+      # server's URLs containing semicolons. Using the github mirror instead.
+      url = "https://raw.githubusercontent.com/openwrt/openwrt/eefed841b05c3cd4c65a78b50ce0934d879e6acf/package/network/services/hostapd/patches/300-noscan.patch";
+    })
+  ];
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libnl
     openssl
     sqlite
   ];
 
-  patches = [
-    (fetchurl {
-      # Note: fetchurl seems to be unhappy with openwrt git
-      # server's URLs containing semicolons. Using the github mirror instead.
-      url = "https://raw.githubusercontent.com/openwrt/openwrt/eefed841b05c3cd4c65a78b50ce0934d879e6acf/package/network/services/hostapd/patches/300-noscan.patch";
-      sha256 = "08p5frxhpq1rp2nczkscapwwl8g9nc4fazhjpxic5bcbssc3sb00";
-    })
-  ];
+  preInstall = "mkdir -p $out/bin";
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  postInstall = ''
+    install -vD hostapd.8 -t $man/share/man/man8
+    install -vD hostapd_cli.1 -t $man/share/man/man1
+  '';
+
+  __structuredAttrs = true;
+
+  configurePhase = ''
+    cd hostapd
+    cp -v defconfig .config
+    printf "%s" "$extraConfig" >> .config
+    cat -n .config
+    substituteInPlace Makefile --replace /usr/local $out
+    export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE $(pkg-config --cflags libnl-3.0)"
+  '';
 
   # Based on hostapd's defconfig. Only differences are tracked.
   extraConfig = ''
@@ -103,33 +122,16 @@ stdenv.mkDerivation (finalAttrs: {
     CONFIG_SQLITE=y
   '';
 
-  configurePhase = ''
-    cd hostapd
-    cp -v defconfig .config
-    printf "%s" "$extraConfig" >> .config
-    cat -n .config
-    substituteInPlace Makefile --replace /usr/local $out
-    export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE $(pkg-config --cflags libnl-3.0)"
-  '';
-
-  preInstall = "mkdir -p $out/bin";
-  postInstall = ''
-    install -vD hostapd.8 -t $man/share/man/man8
-    install -vD hostapd_cli.1 -t $man/share/man/man1
-  '';
-
   passthru.tests = {
     inherit (nixosTests) wpa_supplicant;
   };
 
-  __structuredAttrs = true;
-
   meta = {
-    homepage = "https://w1.fi/hostapd/";
     description = "User space daemon for access point and authentication servers";
+    homepage = "https://w1.fi/hostapd/";
     license = lib.licenses.bsd3;
-    mainProgram = "hostapd";
     maintainers = with lib.maintainers; [ oddlama ];
     platforms = lib.platforms.linux;
+    mainProgram = "hostapd";
   };
 })

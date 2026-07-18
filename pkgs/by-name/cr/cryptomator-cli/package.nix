@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   fuse3,
   installShellFiles,
-  zulu25,
-  lib,
   makeShellWrapper,
   maven,
   nix-update-script,
-  stdenv,
   versionCheckHook,
+  zulu25,
 }:
 
 let
@@ -25,20 +25,16 @@ maven.buildMavenPackage rec {
     hash = "sha256-rwARleKktGXmumIBmrPrfls4EywBqGBxOaB8/ka5ds0=";
   };
 
-  mvnJdk = jdk;
-  mvnParameters = "-Dmaven.test.skip=true";
-  mvnHash = "sha256-oMfgWQ6mID1me0OP+BIwGJShCV5r/ahHlcAJ+S1KRBA=";
-
-  env = {
-    APP_VERSION = version;
-    SEMVER_STR = version;
-  };
-
   nativeBuildInputs = [
     jdk
     makeShellWrapper
     installShellFiles
   ];
+
+  env = {
+    APP_VERSION = version;
+    SEMVER_STR = version;
+  };
 
   # Based on the build_linux.sh script and jpackage configuration
   installPhase = ''
@@ -80,11 +76,15 @@ maven.buildMavenPackage rec {
   '';
 
   doInstallCheck = true;
-  versionCheckProgramArg = "--version";
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  mvnHash = "sha256-oMfgWQ6mID1me0OP+BIwGJShCV5r/ahHlcAJ+S1KRBA=";
+  mvnJdk = jdk;
+  mvnParameters = "-Dmaven.test.skip=true";
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -92,17 +92,21 @@ maven.buildMavenPackage rec {
     homepage = "https://github.com/cryptomator/cli";
     changelog = "https://github.com/cryptomator/cli/releases/tag/${version}";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "cryptomator-cli";
-    maintainers = with lib.maintainers; [
-      masrlinu
-    ];
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # maven dependencies
     ];
+
+    maintainers = with lib.maintainers; [
+      masrlinu
+    ];
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
+
+    mainProgram = "cryptomator-cli";
   };
 }

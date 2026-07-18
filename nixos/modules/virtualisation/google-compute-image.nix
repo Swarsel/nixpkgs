@@ -24,12 +24,14 @@ in
     ./disk-size-option.nix
     ../image/file-options.nix
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2411;
       from = [
         "virtualisation"
         "googleComputeImage"
         "diskSize"
       ];
+
+      sinceRelease = 2411;
+
       to = [
         "virtualisation"
         "diskSize"
@@ -38,34 +40,38 @@ in
   ];
 
   options = {
+    virtualisation.googleComputeImage.buildMemSize = mkOption {
+      default = 1024;
+      description = "Memory size (in MiB) for the temporary VM used to build the image.";
+      type = types.int;
+    };
+
+    virtualisation.googleComputeImage.compressionLevel = mkOption {
+      default = 6;
+
+      description = ''
+        GZIP compression level of the resulting disk image (1-9).
+      '';
+
+      type = types.int;
+    };
+
     virtualisation.googleComputeImage.configFile = mkOption {
-      type = with types; nullOr str;
       default = null;
+
       description = ''
         A path to a configuration file which will be placed at `/etc/nixos/configuration.nix`
         and be used when switching to a new configuration.
         If set to `null`, a default configuration is used, where the only import is
         `<nixpkgs/nixos/modules/virtualisation/google-compute-image.nix>`.
       '';
-    };
 
-    virtualisation.googleComputeImage.compressionLevel = mkOption {
-      type = types.int;
-      default = 6;
-      description = ''
-        GZIP compression level of the resulting disk image (1-9).
-      '';
-    };
-
-    virtualisation.googleComputeImage.buildMemSize = mkOption {
-      type = types.int;
-      default = 1024;
-      description = "Memory size (in MiB) for the temporary VM used to build the image.";
+      type = with types; nullOr str;
     };
 
     virtualisation.googleComputeImage.contents = mkOption {
-      type = with types; listOf attrs;
       default = [ ];
+
       description = ''
         The files and directories to be placed in the image.
         This is a list of attribute sets {source, target, mode, user, group} where
@@ -76,6 +82,7 @@ in
         `mode', `user', and `group' are optional.
         When setting one of `user' or `group', the other needs to be set too.
       '';
+
       example = literalExpression ''
         [
           {
@@ -87,6 +94,8 @@ in
           }
         ];
       '';
+
+      type = with types; listOf attrs;
     };
 
     virtualisation.googleComputeImage.efi = mkEnableOption "EFI booting";
@@ -95,10 +104,11 @@ in
   #### implementation
   config = {
     boot.initrd.availableKernelModules = [ "nvme" ];
+
     boot.loader.grub = mkIf cfg.efi {
       device = mkForce "nodev";
-      efiSupport = true;
       efiInstallAsRemovable = true;
+      efiSupport = true;
     };
 
     fileSystems."/boot" = mkIf cfg.efi {
@@ -106,12 +116,19 @@ in
       fsType = "vfat";
     };
 
-    system.nixos.tags = [ "google-compute" ];
     image.extension = "raw.tar.gz";
-    system.build.image = config.system.build.googleComputeImage;
+
     system.build.googleComputeImage = import ../../lib/make-disk-image.nix {
-      name = "google-compute-image";
       inherit (config.image) baseName;
+      inherit (cfg) contents;
+      inherit (config.virtualisation) diskSize;
+      inherit config lib pkgs;
+      configFile = if cfg.configFile == null then defaultConfigFile else cfg.configFile;
+      format = "raw";
+      memSize = cfg.buildMemSize;
+      name = "google-compute-image";
+      partitionTableType = if cfg.efi then "efi" else "legacy";
+
       postVM = ''
         PATH=$PATH:${
           with pkgs;
@@ -130,14 +147,10 @@ in
         rm disk.raw
         popd
       '';
-      format = "raw";
-      configFile = if cfg.configFile == null then defaultConfigFile else cfg.configFile;
-      inherit (cfg) contents;
-      partitionTableType = if cfg.efi then "efi" else "legacy";
-      inherit (config.virtualisation) diskSize;
-      memSize = cfg.buildMemSize;
-      inherit config lib pkgs;
     };
+
+    system.build.image = config.system.build.googleComputeImage;
+    system.nixos.tags = [ "google-compute" ];
 
   };
 

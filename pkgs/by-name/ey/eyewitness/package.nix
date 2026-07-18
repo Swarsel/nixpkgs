@@ -1,17 +1,16 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  xvfb-run,
   firefox-esr,
   geckodriver,
   makeWrapper,
+  python3Packages,
+  xvfb-run,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "eye-witness";
   version = "20230525.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "redsiege";
@@ -19,6 +18,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-nSPpPbwqagc5EadQ4AHgLhjQ0kDjmbdcwE/PL5FDL4I=";
   };
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/{bin,share/eyewitness}
+    cp -R * $out/share/eyewitness
+
+    runHook postInstall
+  '';
 
   build-system =
     with python3Packages;
@@ -45,15 +53,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
       geckodriver
     ];
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/{bin,share/eyewitness}
-    cp -R * $out/share/eyewitness
-
-    runHook postInstall
-  '';
-
   fixupPhase = ''
     runHook preFixup
 
@@ -64,13 +63,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postFixup
   '';
 
+  pyproject = false;
+
   meta = {
     description = "Take screenshots of websites, and identify admin interfaces";
     homepage = "https://github.com/redsiege/EyeWitness";
     changelog = "https://github.com/redsiege/EyeWitness/blob/${finalAttrs.src.rev}/CHANGELOG";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ tochiaha ];
-    mainProgram = "eye-witness";
     platforms = lib.platforms.all;
+    mainProgram = "eye-witness";
   };
 })

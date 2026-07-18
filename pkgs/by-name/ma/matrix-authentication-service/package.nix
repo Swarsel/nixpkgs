@@ -1,21 +1,21 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
+  buildPackages,
+  cctools,
   fetchPnpmDeps,
+  nix-update-script,
+  nodejs,
+  open-policy-agent,
+  pkg-config,
   pnpm,
   pnpmConfigHook,
-  nodejs,
   python3,
-  pkg-config,
+  rustPlatform,
   sqlite,
-  zstd,
-  stdenv,
-  open-policy-agent,
-  cctools,
-  nix-update-script,
   versionCheckHook,
-  buildPackages,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,15 +29,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-0fvGhBxwXhSzWvNhflreEFoCBycM10vMkMf4sj95vfY=";
   };
 
-  cargoHash = "sha256-3V50qNvg24WZvQ9z7IZJAnPXHTibZ6o3EzUoinLU6Gw=";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    fetcherVersion = 4;
-    hash = "sha256-j2A2VCKQPfoyrNDtazu8hzUHpS130Ju/Cy3yfu9tC5I=";
-  };
-
-  pnpmRoot = "frontend";
+  postPatch = ''
+    substituteInPlace crates/config/src/sections/http.rs \
+      --replace-fail ./share/assets/    "$out/share/$pname/assets/"
+    substituteInPlace crates/config/src/sections/templates.rs \
+      --replace-fail ./share/templates/    "$out/share/$pname/templates/" \
+      --replace-fail ./share/translations/    "$out/share/$pname/translations/" \
+      --replace-fail ./share/manifest.json "$out/share/$pname/assets/manifest.json"
+    substituteInPlace crates/config/src/sections/policy.rs \
+      --replace-fail ./share/policy.wasm "$out/share/$pname/policy.wasm"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -54,27 +55,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  cargoHash = "sha256-3V50qNvg24WZvQ9z7IZJAnPXHTibZ6o3EzUoinLU6Gw=";
 
   env = {
-    ZSTD_SYS_USE_PKG_CONFIG = true;
     VERGEN_GIT_DESCRIBE = finalAttrs.version;
+    ZSTD_SYS_USE_PKG_CONFIG = true;
   };
-
-  buildNoDefaultFeatures = true;
-
-  buildFeatures = [ "dist" ];
-
-  postPatch = ''
-    substituteInPlace crates/config/src/sections/http.rs \
-      --replace-fail ./share/assets/    "$out/share/$pname/assets/"
-    substituteInPlace crates/config/src/sections/templates.rs \
-      --replace-fail ./share/templates/    "$out/share/$pname/templates/" \
-      --replace-fail ./share/translations/    "$out/share/$pname/translations/" \
-      --replace-fail ./share/manifest.json "$out/share/$pname/assets/manifest.json"
-    substituteInPlace crates/config/src/sections/policy.rs \
-      --replace-fail ./share/policy.wasm "$out/share/$pname/policy.wasm"
-  '';
 
   preBuild =
     let
@@ -99,8 +85,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cp -r translations   "$out/share/$pname/translations"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildFeatures = [ "dist" ];
+  buildNoDefaultFeatures = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-j2A2VCKQPfoyrNDtazu8hzUHpS130Ju/Cy3yfu9tC5I=";
+  };
+
+  pnpmRoot = "frontend";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       # avoid unstable pre‐releases
@@ -114,7 +112,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/element-hq/matrix-authentication-service";
     changelog = "https://github.com/element-hq/matrix-authentication-service/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    teams = [ lib.teams.matrix ];
     mainProgram = "mas-cli";
+    teams = [ lib.teams.matrix ];
   };
 })

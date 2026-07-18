@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  testers,
-  rustPlatform,
   fetchFromGitHub,
   inputmodule-control,
-  pkg-config,
   libudev-zero,
+  pkg-config,
+  rustPlatform,
+  testers,
   udevCheckHook,
 }:
 
@@ -21,21 +21,20 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-5sqTkaGqmKDDH7byDZ84rzB3FTu9AKsWxA6EIvUrLCU=";
   };
 
-  cargoHash = "sha256-s5k23p0Fo+DQvGpDvy/VmGNFK7ZysqLIyDPuUn6n724=";
-
-  buildAndTestSubdir = "inputmodule-control";
-
   nativeBuildInputs = [
     pkg-config
     udevCheckHook
   ];
-  buildInputs = [ libudev-zero ];
 
-  doInstallCheck = true;
+  buildInputs = [ libudev-zero ];
+  cargoHash = "sha256-s5k23p0Fo+DQvGpDvy/VmGNFK7ZysqLIyDPuUn6n724=";
 
   postInstall = ''
     install -Dm644 release/50-framework-inputmodule.rules $out/etc/udev/rules.d/50-framework-inputmodule.rules
   '';
+
+  doInstallCheck = true;
+  buildAndTestSubdir = "inputmodule-control";
 
   passthru.tests.version = testers.testVersion {
     package = inputmodule-control;
@@ -43,12 +42,12 @@ rustPlatform.buildRustPackage rec {
 
   meta = {
     description = "CLI tool to control Framework input modules like the LED matrix";
+    homepage = "https://github.com/FrameworkComputer/inputmodule-rs";
+    changelog = "https://github.com/FrameworkComputer/inputmodule-rs/releases/tag/${src.rev}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ Kitt3120 ];
     platforms = lib.platforms.linux;
     mainProgram = "inputmodule-control";
-    homepage = "https://github.com/FrameworkComputer/inputmodule-rs";
     downloadPage = "https://github.com/FrameworkComputer/inputmodule-rs/releases/tag/${src.rev}";
-    changelog = "https://github.com/FrameworkComputer/inputmodule-rs/releases/tag/${src.rev}";
-    maintainers = with lib.maintainers; [ Kitt3120 ];
   };
 }

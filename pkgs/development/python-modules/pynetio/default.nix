@@ -2,28 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pythonAtLeast,
+  setuptools,
   standard-telnetlib,
 }:
 
 buildPythonPackage rec {
   pname = "pynetio";
   version = "0.1.9.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Z6pLZPcQrPy3z/wCwCO2S4FvkJYKDZ6dy/IlwImPeb8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
+  pyproject = true;
   pythonImportsCheck = [ "pynetio" ];
 
   meta = {

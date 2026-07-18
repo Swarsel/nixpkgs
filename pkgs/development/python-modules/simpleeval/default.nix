@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "simpleeval";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "danthedeckie";
@@ -18,12 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-+YSPRaX4kulUgPeKspCvJn29iFTfrPTbmWi6pSe7LSw=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
   enabledTestPaths = [ "test_simpleeval.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "simpleeval" ];
 
   meta = {

@@ -79,8 +79,8 @@ in
   options = {
     services.mediagoblin = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable MediaGoblin.
 
@@ -90,69 +90,84 @@ in
           mediagoblin-gmg makeadmin admin
           ```
         '';
-      };
 
-      domain = lib.mkOption {
-        type = lib.types.str;
-        example = "mediagoblin.example.com";
-        description = "Domain under which mediagoblin will be served.";
-      };
-
-      createDatabaseLocally = lib.mkOption {
         type = lib.types.bool;
-        default = true;
-        example = false;
-        description = "Whether to configure a local postgres database and connect to it.";
       };
 
       package = lib.mkPackageOption pkgs "mediagoblin" { };
 
+      createDatabaseLocally = lib.mkOption {
+        default = true;
+        description = "Whether to configure a local postgres database and connect to it.";
+        example = false;
+        type = lib.types.bool;
+      };
+
+      domain = lib.mkOption {
+        description = "Domain under which mediagoblin will be served.";
+        example = "mediagoblin.example.com";
+        type = lib.types.str;
+      };
+
+      paste = {
+        port = lib.mkOption {
+          default = 6543;
+          description = "Port under which paste will listen.";
+          type = lib.types.port;
+        };
+
+        settings = lib.mkOption {
+          default = { };
+          description = "Settings which are written into `paste.ini`.";
+
+          type = lib.types.submodule {
+            freeformType = iniFormat.type;
+          };
+        };
+      };
+
       pluginPackages = lib.mkOption {
-        type = with lib.types; listOf package;
         default = [ ];
         description = "Plugins to add to the environment of MediaGoblin. They still need to be enabled in the config.";
+        type = with lib.types; listOf package;
       };
 
       settings = lib.mkOption {
-        description = "Settings which are written into `mediagoblin.ini`.";
         default = { };
-        type = lib.types.submodule {
-          freeformType = lib.types.anything;
+        description = "Settings which are written into `mediagoblin.ini`.";
 
+        type = lib.types.submodule {
           options = {
             mediagoblin = {
               allow_registration = lib.mkOption {
-                type = lib.types.bool;
                 default = false;
+
                 description = ''
                   Whether to enable user self registration. This is generally not recommend due to spammers.
                   See [upstream FAQ](https://docs.mediagoblin.org/en/stable/siteadmin/production-deployments.html#should-i-keep-open-registration-enabled).
                 '';
+
+                type = lib.types.bool;
               };
 
               email_debug_mode = lib.mkOption {
-                type = lib.types.bool;
                 default = true;
-                example = false;
+
                 description = ''
                   Disable email debug mode to start sending outgoing mails.
                   This requires configuring SMTP settings,
                   see the [upstream docs](https://docs.mediagoblin.org/en/stable/siteadmin/configuration.html#enabling-email-notifications)
                   for details.
                 '';
+
+                example = false;
+                type = lib.types.bool;
               };
 
               email_sender_address = lib.mkOption {
-                type = lib.types.str;
-                example = "noreply@example.org";
                 description = "Email address which notices are sent from.";
-              };
-
-              sql_engine = lib.mkOption {
+                example = "noreply@example.org";
                 type = lib.types.str;
-                default = "sqlite:///var/lib/mediagoblin/mediagoblin.db";
-                example = "postgresql:///mediagoblin";
-                description = "Database to use.";
               };
 
               plugins = lib.mkOption {
@@ -164,29 +179,23 @@ in
                     "mediagoblin.media_types.image" = { };
                   }
                 '';
+
                 description = ''
                   Plugins to enable. See [upstream docs](https://docs.mediagoblin.org/en/stable/siteadmin/plugins.html) for details.
                   Extra dependencies are automatically enabled.
                 '';
               };
+
+              sql_engine = lib.mkOption {
+                default = "sqlite:///var/lib/mediagoblin/mediagoblin.db";
+                description = "Database to use.";
+                example = "postgresql:///mediagoblin";
+                type = lib.types.str;
+              };
             };
           };
-        };
-      };
 
-      paste = {
-        port = lib.mkOption {
-          type = lib.types.port;
-          default = 6543;
-          description = "Port under which paste will listen.";
-        };
-
-        settings = lib.mkOption {
-          description = "Settings which are written into `paste.ini`.";
-          default = { };
-          type = lib.types.submodule {
-            freeformType = iniFormat.type;
-          };
+          freeformType = lib.types.anything;
         };
       };
     };
@@ -211,6 +220,7 @@ in
           "mediagoblin.plugins.geolocation" = { };
           "mediagoblin.plugins.processing_info" = { };
         };
+
         sql_engine = lib.mkIf cfg.createDatabaseLocally "postgresql:///mediagoblin";
       };
 
@@ -218,23 +228,28 @@ in
         enable = true;
         recommendedGzipSettings = true;
         recommendedProxySettings = true;
+
         virtualHosts = {
           # see https://git.sr.ht/~mediagoblin/mediagoblin/tree/bf61d38df21748aadb480c53fdd928647285e35f/item/nginx.conf.template
           "${cfg.domain}" = {
-            forceSSL = true;
             extraConfig = ''
               # https://git.sr.ht/~mediagoblin/mediagoblin/tree/bf61d38df21748aadb480c53fdd928647285e35f/item/Dockerfile.nginx.in#L5
               client_max_body_size 100M;
 
               more_set_headers X-Content-Type-Options nosniff;
             '';
+
+            forceSSL = true;
+
             locations = {
               "/".proxyPass = "http://127.0.0.1:${toString cfg.paste.port}";
+              "/mgoblin_media/".alias = "/var/lib/mediagoblin/user_dev/media/public/";
+
               "/mgoblin_static/".alias =
                 "${finalPackage}/${finalPackage.python.sitePackages}/mediagoblin/static/";
-              "/mgoblin_media/".alias = "/var/lib/mediagoblin/user_dev/media/public/";
-              "/theme_static/".alias = "/var/lib/mediagoblin/user_dev/theme_static/";
+
               "/plugin_static/".alias = "/var/lib/mediagoblin/user_dev/plugin_static/";
+              "/theme_static/".alias = "/var/lib/mediagoblin/user_dev/theme_static/";
             };
           };
         };
@@ -243,10 +258,11 @@ in
       postgresql = lib.mkIf cfg.createDatabaseLocally {
         enable = true;
         ensureDatabases = [ "mediagoblin" ];
+
         ensureUsers = [
           {
-            name = "mediagoblin";
             ensureDBOwnership = true;
+            name = "mediagoblin";
           }
         ];
       };
@@ -257,8 +273,8 @@ in
     systemd.services =
       let
         serviceDefaults = {
-          wantedBy = [ "multi-user.target" ];
           inherit path;
+
           serviceConfig = {
             AmbientCapabilities = "";
             CapabilityBoundingSet = [ "" ];
@@ -278,27 +294,33 @@ in
             ProtectKernelTunables = true;
             ProtectProc = "invisible";
             ProtectSystem = "strict";
+            RemoveIPC = true;
+
             RestrictAddressFamilies = [
               "AF_INET"
               "AF_INET6"
               "AF_UNIX"
             ];
-            RemoveIPC = true;
-            StateDirectory = "mediagoblin";
-            StateDirectoryMode = "0750";
-            User = "mediagoblin";
-            WorkingDirectory = "/var/lib/mediagoblin/";
+
             RestrictNamespaces = true;
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
+            StateDirectory = "mediagoblin";
+            StateDirectoryMode = "0750";
             SystemCallArchitectures = "native";
+
             SystemCallFilter = [
               "@system-service"
               "~@privileged"
               "@chown"
             ];
+
             UMask = "0027";
+            User = "mediagoblin";
+            WorkingDirectory = "/var/lib/mediagoblin/";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
 
         generatedPasteConfig = iniFormat.generate "paste.ini" cfg.paste.settings;
@@ -323,6 +345,7 @@ in
               )
             } /var/lib/mediagoblin/mediagoblin.ini
           '';
+
           serviceConfig = {
             Environment = [
               "CELERY_CONFIG_MODULE=mediagoblin.init.celery.from_celery"
@@ -331,8 +354,10 @@ in
               "MEDIAGOBLIN_CONFIG=/var/lib/mediagoblin/mediagoblin.ini"
               "PASTE_CONFIG=${pasteConfig}"
             ];
+
             ExecStart = "${lib.getExe' finalPackage "celery"} worker --loglevel=INFO";
           };
+
           unitConfig.Description = "MediaGoblin Celery";
         };
 
@@ -341,22 +366,27 @@ in
             "mediagoblin-celeryd.service"
             "postgresql.target"
           ];
-          requires = [
-            "mediagoblin-celeryd.service"
-            "postgresql.target"
-          ];
+
           preStart = ''
             cp --remove-destination ${pasteConfig} /var/lib/mediagoblin/paste.ini
             ${lib.getExe' finalPackage "gmg"} dbupdate
           '';
+
+          requires = [
+            "mediagoblin-celeryd.service"
+            "postgresql.target"
+          ];
+
           serviceConfig = {
             Environment = [
               "CELERY_ALWAYS_EAGER=false"
               "GI_TYPELIB_PATH=${GI_TYPELIB_PATH}"
               "GST_PLUGIN_PATH=${GST_PLUGIN_PATH}"
             ];
+
             ExecStart = "${lib.getExe' finalPackage "paster"} serve /var/lib/mediagoblin/paste.ini";
           };
+
           unitConfig.Description = "Mediagoblin";
         };
       };
@@ -369,12 +399,14 @@ in
 
     users = {
       groups.mediagoblin = { };
+
       users = {
         mediagoblin = {
           group = "mediagoblin";
           home = "/var/lib/mediagoblin";
           isSystemUser = true;
         };
+
         nginx.extraGroups = [ "mediagoblin" ];
       };
     };

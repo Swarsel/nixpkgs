@@ -14,30 +14,25 @@ let
   # as well as the "NFC Digital Protocol Technical Specification" can be found online.
   # These default settings have been specifically engineered for the Lenovo NXP1001 (NPC300) chipset.
   defaultSettings = {
-    # This block will be emitted into /etc/libnfc-nci.conf
-    nci = {
-      # Set up general logging
-      APPL_TRACE_LEVEL = "0x01";
-      PROTOCOL_TRACE_LEVEL = "0x01";
-      # Set up which NFC technologies are enabled (due to e.g. local regulation or patent law)
-      HOST_LISTEN_TECH_MASK = "0x07";
-      POLLING_TECH_MASK = "0xEF";
-      P2P_LISTEN_TECH_MASK = "0xC5";
-    };
     # This block will be emitted into /etc/libnfc-nxp-init.conf
     init = {
+      NXPLOG_EXTNS_LOGLEVEL = "0x01";
+      NXPLOG_FWDNLD_LOGLEVEL = "0x00";
       # Setup logging of the individual userland library components
       NXPLOG_GLOBAL_LOGLEVEL = "0x01";
-      NXPLOG_EXTNS_LOGLEVEL = "0x01";
       NXPLOG_NCIHAL_LOGLEVEL = "0x01";
-      NXPLOG_NCIX_LOGLEVEL = "0x01";
       NXPLOG_NCIR_LOGLEVEL = "0x01";
-      NXPLOG_FWDNLD_LOGLEVEL = "0x00";
+      NXPLOG_NCIX_LOGLEVEL = "0x01";
       NXPLOG_TML_LOGLEVEL = "0x01";
-      # Where to find the kernel device node
-      NXP_NFC_DEV_NODE = ''"/dev/pn544"'';
       # Enable the NXP proprietary features of the chip
       NXP_ACT_PROP_EXTN = "{2F, 02, 00}";
+      # Enable chip standby mode
+      NXP_CORE_STANDBY = "{2F, 00, 01, 01}";
+      # Enable NCI packet fragmentation on the I2C bus
+      NXP_I2C_FRAGMENTATION_ENABLED = "0x01";
+      # Where to find the kernel device node
+      NXP_NFC_DEV_NODE = ''"/dev/pn544"'';
+
       # Configure the NFC Forum profile:
       # 0xA0 0x44: POLL_PROFILE_SEL_CFG = 0x00 (Use NFC Forum profile default configuration values. Specifically, not EMVCo.)
       NXP_NFC_PROFILE_EXTN = ''
@@ -45,20 +40,25 @@ let
           A0, 44, 01, 00
         }
       '';
-      # Enable chip standby mode
-      NXP_CORE_STANDBY = "{2F, 00, 01, 01}";
-      # Enable NCI packet fragmentation on the I2C bus
-      NXP_I2C_FRAGMENTATION_ENABLED = "0x01";
     };
+
+    # This block will be emitted into /etc/libnfc-nci.conf
+    nci = {
+      # Set up general logging
+      APPL_TRACE_LEVEL = "0x01";
+      # Set up which NFC technologies are enabled (due to e.g. local regulation or patent law)
+      HOST_LISTEN_TECH_MASK = "0x07";
+      P2P_LISTEN_TECH_MASK = "0xC5";
+      POLLING_TECH_MASK = "0xEF";
+      PROTOCOL_TRACE_LEVEL = "0x01";
+    };
+
     # This block will be emitted into /etc/libnfc-nxp-pn547.conf as well as /etc/libnfc-nxp-pn548.conf
     # Which file is actually used is decided by the library at runtime depending on chip variant, both files are required.
     pn54x = {
       # Enable Mifare Classic reader functionality
       MIFARE_READER_ENABLE = "0x01";
-      # Configure clock source - use XTAL (hardware crystal) instead of PLL (synthetic clock)
-      NXP_SYS_CLK_SRC_SEL = "0x01";
-      NXP_SYS_CLK_FREQ_SEL = "0x00";
-      NXP_SYS_CLOCK_TO_CFG = "0x01";
+
       # Configure the non-propriety NCI settings in EEPROM:
       # 0x28: PN_NFC_DEP_SPEED = 0x00 (Data exchange: Highest Available Bit Rates)
       # 0x21: PI_BIT_RATE = 0x00 (Maximum allowed bit rate: 106 Kbit/s)
@@ -90,6 +90,7 @@ let
           18, 01, 01
         }
       '';
+
       # Configure the proprietary NXP extension to the NCI standard in EEPROM:
       # 0xA0 0x5E: JEWEL_RID_CFG = 0x01 (Enable sending RID to T1T on RF)
       # 0xA0 0x40: TAG_DETECTOR_CFG = 0x00 (Tag detector: Disable both AGC based detection and trace mode)
@@ -108,18 +109,25 @@ let
           00, 00, 00, 00, 00, 00, 00, 00
         }
       '';
-      # Firmware-specific protocol configuration parameters (one byte per protocol)
-      NXP_NFC_PROPRIETARY_CFG = "{05:FF:FF:06:81:80:70:FF:FF}";
+
       # Configure power supply of chip, use Lenovo driver configuration, which deviates a bit from the spec:
       # 0xA0 0x0E: PMU_CFG = [ 0x16, 0x09, 0x00 ] (VBAT1 connected to 5V, TVDD monitoring: 3.6V, TxLDO Voltage in reader and card mode: 3.3V)
       NXP_EXT_TVDD_CFG = "0x01";
+
       NXP_EXT_TVDD_CFG_1 = ''
         {20, 02, 07, 01,
           A0, 0E, 03, 16, 09, 00
         }
       '';
+
       # Use the default for NFA_EE_MAX_EE_SUPPORTED stack size (concerns HCI)
       NXP_NFC_MAX_EE_SUPPORTED = "0x00";
+      # Firmware-specific protocol configuration parameters (one byte per protocol)
+      NXP_NFC_PROPRIETARY_CFG = "{05:FF:FF:06:81:80:70:FF:FF}";
+      NXP_SYS_CLK_FREQ_SEL = "0x00";
+      # Configure clock source - use XTAL (hardware crystal) instead of PLL (synthetic clock)
+      NXP_SYS_CLK_SRC_SEL = "0x01";
+      NXP_SYS_CLOCK_TO_CFG = "0x01";
     };
   };
 
@@ -135,43 +143,29 @@ in
   options.hardware.nfc-nci = {
     enable = lib.mkEnableOption "PN5xx kernel module with udev rules, libnfc-nci userland, and optional ifdnfc-nci PC/SC driver";
 
+    enableIFD = lib.mkOption {
+      default = true;
+
+      description = ''
+        Register ifdnfc-nci as a serial reader with pcscd.
+      '';
+
+      type = lib.types.bool;
+    };
+
     settings = lib.mkOption {
       default = defaultSettings;
+
       description = ''
         Configuration to be written to the libncf-nci configuration files.
         To understand the configuration format, refer to <https://github.com/NXPNFCLinux/linux_libnfc-nci/tree/master/conf>.
       '';
-      type = lib.types.attrs;
-    };
 
-    enableIFD = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = ''
-        Register ifdnfc-nci as a serial reader with pcscd.
-      '';
+      type = lib.types.attrs;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [
-      pkgs.libnfc-nci
-    ]
-    ++ lib.optionals cfg.enableIFD [
-      pkgs.ifdnfc-nci
-    ];
-
-    environment.etc = {
-      "libnfc-nci.conf".text = generateSettings "nci";
-      "libnfc-nxp-init.conf".text = generateSettings "init";
-      "libnfc-nxp-pn547.conf".text = generateSettings "pn54x";
-      "libnfc-nxp-pn548.conf".text = generateSettings "pn54x";
-    };
-
-    services.udev.packages = [
-      config.boot.kernelPackages.nxp-pn5xx
-    ];
-
     boot.blacklistedKernelModules = [
       "nxp_nci_i2c"
       "nxp_nci"
@@ -185,10 +179,25 @@ in
       "nxp-pn5xx"
     ];
 
-    # libnfc-nci calls sched_setscheduler via pthread_setschedparam, which would be blocked by upstream SystemCallFilter=~@resources
-    systemd.services.pcscd.serviceConfig.SystemCallFilter = lib.mkIf cfg.enableIFD [
-      "sched_setscheduler"
+    environment.etc = {
+      "libnfc-nci.conf".text = generateSettings "nci";
+      "libnfc-nxp-init.conf".text = generateSettings "init";
+      "libnfc-nxp-pn547.conf".text = generateSettings "pn54x";
+      "libnfc-nxp-pn548.conf".text = generateSettings "pn54x";
+    };
+
+    environment.systemPackages = [
+      pkgs.libnfc-nci
+    ]
+    ++ lib.optionals cfg.enableIFD [
+      pkgs.ifdnfc-nci
     ];
+
+    # NFC chip looses power when system goes to sleep / hibernate,
+    # and needs to be re-initialized upon wakeup
+    powerManagement.resumeCommands = lib.mkIf cfg.enableIFD ''
+      systemctl restart pcscd.service
+    '';
 
     services.pcscd.readerConfigs = lib.mkIf cfg.enableIFD [
       ''
@@ -198,11 +207,14 @@ in
       ''
     ];
 
-    # NFC chip looses power when system goes to sleep / hibernate,
-    # and needs to be re-initialized upon wakeup
-    powerManagement.resumeCommands = lib.mkIf cfg.enableIFD ''
-      systemctl restart pcscd.service
-    '';
+    services.udev.packages = [
+      config.boot.kernelPackages.nxp-pn5xx
+    ];
+
+    # libnfc-nci calls sched_setscheduler via pthread_setschedparam, which would be blocked by upstream SystemCallFilter=~@resources
+    systemd.services.pcscd.serviceConfig.SystemCallFilter = lib.mkIf cfg.enableIFD [
+      "sched_setscheduler"
+    ];
   };
 
   meta.maintainers = with lib.maintainers; [ stargate01 ];

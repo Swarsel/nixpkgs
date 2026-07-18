@@ -1,25 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  ocaml,
-  findlib,
-  opaline,
   calendar,
   eliom,
+  findlib,
   js_of_ocaml-ppx_deriving_json,
+  ocaml,
+  opaline,
 }:
 
 stdenv.mkDerivation rec {
   pname = "ocsigen-toolkit";
-  name = "ocaml${ocaml.version}-${pname}-${version}";
   version = "4.2.0";
 
-  propagatedBuildInputs = [
-    calendar
-    js_of_ocaml-ppx_deriving_json
-    eliom
-  ];
+  src = fetchFromGitHub {
+    owner = "ocsigen";
+    repo = "ocsigen-toolkit";
+    tag = version;
+    hash = "sha256-wken+5hUewE0Nktl2PY1xMmVveSs8X0ihWD+MK4pzRQ=";
+  };
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
@@ -27,7 +30,11 @@ stdenv.mkDerivation rec {
     eliom
   ];
 
-  strictDeps = true;
+  propagatedBuildInputs = [
+    calendar
+    js_of_ocaml-ppx_deriving_json
+    eliom
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -38,19 +45,14 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  src = fetchFromGitHub {
-    owner = "ocsigen";
-    repo = "ocsigen-toolkit";
-    tag = version;
-    hash = "sha256-wken+5hUewE0Nktl2PY1xMmVveSs8X0ihWD+MK4pzRQ=";
-  };
+  name = "ocaml${ocaml.version}-${pname}-${version}";
 
   meta = {
-    homepage = "http://ocsigen.org/ocsigen-toolkit/";
+    inherit (ocaml.meta) platforms;
     description = "User interface widgets for Ocsigen applications";
+    homepage = "http://ocsigen.org/ocsigen-toolkit/";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.gal_bolle ];
-    inherit (ocaml.meta) platforms;
     broken = true;
   };
 

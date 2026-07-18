@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
   babel,
+  buildPythonPackage,
   html2text,
   lxml,
   packaging,
@@ -14,19 +14,18 @@
   python-jose,
   pyyaml,
   requests,
+  responses,
   rich,
   setuptools,
+  termcolor,
   testers,
   unidecode,
-  termcolor,
-  responses,
   woob,
 }:
 
 buildPythonPackage rec {
   pname = "woob";
   version = "3.7";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "woob";
@@ -35,13 +34,12 @@ buildPythonPackage rec {
     hash = "sha256-EZHzw+/BIIvmDXG4fF367wsdUTVTHWYb0d0U56ZXwOs=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "packaging"
-    "rich"
-    "requests"
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     babel
@@ -60,30 +58,32 @@ buildPythonPackage rec {
     termcolor
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-  ];
-
   disabledTests = [
     # require networking
     "test_ciphers"
     "test_verify"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "woob" ];
 
+  pythonRelaxDeps = [
+    "packaging"
+    "rich"
+    "requests"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = woob;
     version = "v${version}";
+    package = woob;
   };
 
   meta = {
-    changelog = "https://gitlab.com/woob/woob/-/blob/${src.rev}/ChangeLog";
     description = "Collection of applications and APIs to interact with websites";
-    mainProgram = "woob";
     homepage = "https://woob.tech";
+    changelog = "https://gitlab.com/woob/woob/-/blob/${src.rev}/ChangeLog";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ DamienCassou ];
+    mainProgram = "woob";
   };
 }

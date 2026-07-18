@@ -3,7 +3,7 @@
   json-glib,
 }:
 buildAstalModule {
-  name = "battery";
   buildInputs = [ json-glib ];
+  name = "battery";
   meta.description = "Astal module for upowerd devices (DBus proxy)";
 }

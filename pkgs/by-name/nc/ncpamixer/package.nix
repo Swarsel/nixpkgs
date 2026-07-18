@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   cmake,
-  ncurses,
   libpulseaudio,
+  ncurses,
   pandoc,
   pkg-config,
 }:
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch =
     let
       PandocMan = fetchurl {
-        url = "https://github.com/rnpgp/cmake-modules/raw/387084811ee01a69911fe86bcc644b7ed8ad6304/PandocMan.cmake";
         hash = "sha256-KI55Yc2IuQtmbptqkk6Hzr75gIE/uQdUbQsm/fDpaWg=";
+        url = "https://github.com/rnpgp/cmake-modules/raw/387084811ee01a69911fe86bcc644b7ed8ad6304/PandocMan.cmake";
       };
     in
     ''
@@ -60,8 +60,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Terminal mixer for PulseAudio inspired by pavucontrol";
     homepage = "https://github.com/fulhax/ncpamixer";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = lib.platforms.linux;
     mainProgram = "ncpamixer";
   };
 })

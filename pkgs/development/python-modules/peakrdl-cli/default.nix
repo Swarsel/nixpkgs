@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  gitUpdater,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  gitUpdater,
   setuptools,
   setuptools-scm,
   systemrdl-compiler,
@@ -13,15 +13,12 @@ buildPythonPackage (finalAttrs: {
   pname = "peakrdl-cli";
   version = "1.5.0";
 
-  pyproject = true;
-
   src = fetchFromGitHub {
     owner = "SystemRDL";
     repo = "PeakRDL";
     tag = "v${finalAttrs.version}";
     hash = "sha256-SqLhOzx0gUVG8k4ikNbx8p1vO/ZqTQ/KAtidRWM2SZI=";
   };
-  sourceRoot = "${finalAttrs.src.name}/peakrdl-cli";
 
   build-system = [
     setuptools
@@ -33,6 +30,8 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
+  sourceRoot = "${finalAttrs.src.name}/peakrdl-cli";
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

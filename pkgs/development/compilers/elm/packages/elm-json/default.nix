@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   curl,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pSt4ugP8r7s0ABT3Y9ZbWAG/ShsARtame2lTxXiCuws=";
   };
 
-  cargoPatches = [ ./use-system-ssl.patch ];
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -28,15 +26,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoHash = "sha256-BnL//AHaSnsugtMEnSTynpMyeNt5N7L6PG2wdWDw1y4=";
-
   # Tests perform networking and therefore can't work in sandbox
   doCheck = false;
+  cargoPatches = [ ./use-system-ssl.patch ];
 
   meta = {
     description = "Install, upgrade and uninstall Elm dependencies";
-    mainProgram = "elm-json";
     homepage = "https://github.com/zwilias/elm-json";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.turbomack ];
+    mainProgram = "elm-json";
   };
 })

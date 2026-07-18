@@ -1,6 +1,6 @@
 {
-  buildPecl,
   lib,
+  buildPecl,
   mpdecimal,
   php,
 }:
@@ -9,12 +9,10 @@ let
 in
 buildPecl {
   pname = "decimal";
-
   version = version;
-  hash = "sha256-it8w8hOLYwtCZoDYhaP5k5TD/pQLtj37K2lSESF80ok=";
-
   buildInputs = [ mpdecimal ];
   configureFlags = [ "--with-libmpdec-path=${mpdecimal}" ];
+  hash = "sha256-it8w8hOLYwtCZoDYhaP5k5TD/pQLtj37K2lSESF80ok=";
 
   meta = {
     description = "Arbitrary-precision decimal arithmetic for PHP";

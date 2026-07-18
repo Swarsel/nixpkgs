@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   autoreconfHook,
-  makeWrapper,
-  perlPackages,
-  ocamlPackages,
-  libxml2,
   libintl,
+  libxml2,
+  makeWrapper,
+  ocamlPackages,
+  perlPackages,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -28,6 +28,7 @@ stdenv.mkDerivation rec {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     makeWrapper
@@ -38,6 +39,7 @@ stdenv.mkDerivation rec {
     ocaml
     findlib
   ]);
+
   buildInputs = [
     libxml2
   ]
@@ -46,8 +48,6 @@ stdenv.mkDerivation rec {
     IOStringy
   ])
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libintl ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     wrapProgram $out/bin/hivexregedit \
@@ -58,10 +58,12 @@ stdenv.mkDerivation rec {
         --prefix "PATH" : "$out/bin"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Windows registry hive extraction library";
-    license = lib.licenses.lgpl2Only;
     homepage = "https://github.com/libguestfs/hivex";
+    license = lib.licenses.lgpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

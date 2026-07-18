@@ -1,24 +1,21 @@
 {
   lib,
   stdenv,
+  fetchurl,
+  addDriverRunpath,
+  autoPatchelfHook,
+  buildPythonPackage,
   config,
   cudaPackages,
-  buildPythonPackage,
-  fetchurl,
   python,
-  autoPatchelfHook,
-  zlib,
   rocmPackages,
-
+  zlib,
   rocmSupport ? config.rocmSupport,
-  addDriverRunpath,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "triton";
   version = "3.7.0";
-  format = "wheel";
-  __structuredAttrs = true;
 
   src =
     let
@@ -29,19 +26,11 @@ buildPythonPackage (finalAttrs: {
     in
     fetchurl srcs;
 
-  pythonRemoveDeps = [
-    "cmake"
-    # torch and triton refer to each other so this hook is included to mitigate that.
-    "torch"
-  ];
-
-  buildInputs = [ zlib ];
-
   nativeBuildInputs = [
     autoPatchelfHook
   ];
 
-  dontStrip = true;
+  buildInputs = [ zlib ];
 
   postFixup = ''
     mkdir -p $out/${python.sitePackages}/triton/third_party/cuda/bin/
@@ -64,10 +53,21 @@ buildPythonPackage (finalAttrs: {
         "return '${rocmPackages.clr}/lib/libamdhip64.so'"
   '';
 
+  __structuredAttrs = true;
+  dontStrip = true;
+  format = "wheel";
+
+  pythonRemoveDeps = [
+    "cmake"
+    # torch and triton refer to each other so this hook is included to mitigate that.
+    "torch"
+  ];
+
   meta = {
     description = "Language and compiler for custom Deep Learning operations";
     homepage = "https://github.com/triton-lang/triton/";
     changelog = "https://github.com/triton-lang/triton/releases/tag/v${finalAttrs.version}";
+
     # Includes NVIDIA's ptxas, but redistributions of the binary are not limited.
     # https://docs.nvidia.com/cuda/eula/index.html
     # triton's license is MIT.
@@ -76,7 +76,9 @@ buildPythonPackage (finalAttrs: {
       unfreeRedistributable
       mit
     ];
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       junjihashimoto

@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pipenv-poetry-migrate";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yhino";
@@ -16,9 +15,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-q+W+UyyL+sanLOYW6wTj4GVx756m0LZf/K2YOFIEyxY=";
   };
 
+  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
   build-system = [ python3Packages.poetry-core ];
-
-  pythonRelaxDeps = [ "typer" ];
 
   dependencies = with python3Packages; [
     setuptools # for pkg_resources
@@ -29,15 +27,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
   # typer for Click >= 8.2 removed "mix_stderr", upstream pins to 8.1.8
   # https://typer.tiangolo.com/release-notes/#0160
   disabledTestPaths = [ "tests/test_cli.py" ];
-
-  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
+  pyproject = true;
+  pythonRelaxDeps = [ "typer" ];
 
   meta = {
     description = "This is simple migration script, migrate pipenv to poetry";
-    mainProgram = "pipenv-poetry-migrate";
     homepage = "https://github.com/yhino/pipenv-poetry-migrate";
     changelog = "https://github.com/yhino/pipenv-poetry-migrate/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ gador ];
+    mainProgram = "pipenv-poetry-migrate";
   };
 })

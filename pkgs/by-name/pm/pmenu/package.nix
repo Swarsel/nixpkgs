@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeText,
   fontconfig,
   imlib2,
   libx11,
@@ -10,6 +9,7 @@
   libxft,
   libxinerama,
   libxrender,
+  writeText,
   conf ? null,
 }:
 
@@ -24,6 +24,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7NI5az3LxOYEnsts8Qqi3gvO3dXpNjPDOTW2c5Y25Lc=";
   };
 
+  postPatch =
+    let
+      configFile =
+        if lib.isDerivation conf || builtins.isPath conf then conf else writeText "config.h" conf;
+    in
+    lib.optionalString (conf != null) "mv ${configFile} config.h";
+
   buildInputs = [
     fontconfig
     imlib2
@@ -34,13 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxrender
   ];
 
-  postPatch =
-    let
-      configFile =
-        if lib.isDerivation conf || builtins.isPath conf then conf else writeText "config.h" conf;
-    in
-    lib.optionalString (conf != null) "mv ${configFile} config.h";
-
   makeFlags = [
     "INSTALL=install"
     "PREFIX=\${out}"
@@ -48,14 +48,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Pie-menu tool";
-    homepage = "https://github.com/phillbush/pmenu";
-    changelog = "https://github.com/phillbush/pmenu/releases/tag/v${finalAttrs.version}";
-    license = lib.licenses.mit;
+
     longDescription = ''
       πmenu is a pie menu utility for X. πmenu receives a menu specification in
       stdin, shows a menu for the user to select one of the options, and outputs
       the option selected to stdout.
     '';
+
+    homepage = "https://github.com/phillbush/pmenu";
+    changelog = "https://github.com/phillbush/pmenu/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "pmenu";

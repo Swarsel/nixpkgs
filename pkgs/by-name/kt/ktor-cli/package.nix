@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,8 +15,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-DZEEaTz55vIBU8Byl51cEWgXu2Wjmctz/9XBAKX8VKY=";
   };
 
-  subPackages = "cmd/ktor";
-
   vendorHash = "sha256-Cv/Jq4dWVzotfCCclrwufmC0I2pgPe/YHKWqcLzjt2E=";
 
   ldflags = [
@@ -24,6 +22,8 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X main.Version=${finalAttrs.version}"
   ];
+
+  subPackages = "cmd/ktor";
 
   meta = {
     description = "Command-line tool for creating Ktor projects";

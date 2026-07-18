@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
   cmake,
+  rocmUpdateScript,
   writeText,
 }:
 
@@ -23,24 +23,20 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ROCm";
     repo = "rocm-systems";
     rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-Y3WuDwruD5zKN2epwfUCZAGq5vgxCT27awJN8JxmOsY=";
+
     sparseCheckout = [
       "projects/rocm-core"
       "shared"
     ];
-    hash = "sha256-Y3WuDwruD5zKN2epwfUCZAGq5vgxCT27awJN8JxmOsY=";
   };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocm-core";
 
   patches = [
     ./env-rocm-path.patch
   ];
 
   nativeBuildInputs = [ cmake ];
-  env = {
-    ROCM_LIBPATCH_VERSION = "${lib.versions.major finalAttrs.version}${padIfSingle (lib.versions.minor finalAttrs.version)}${padIfSingle (lib.versions.patch finalAttrs.version)}";
-    BUILD_ID = "nixpkgs-${finalAttrs.env.ROCM_LIBPATCH_VERSION}";
-    ROCM_BUILD_ID = "${finalAttrs.env.BUILD_ID}";
-  };
+
   cmakeFlags = [
     "-DROCM_LIBPATCH_VERSION=${finalAttrs.env.ROCM_LIBPATCH_VERSION}"
     "-DROCM_VERSION=${finalAttrs.version}"
@@ -51,13 +47,14 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_INSTALL_BINDIR=bin"
   ];
 
-  setupHook = writeText "setupHook.sh" ''
-    export ROCM_VERSION="${finalAttrs.version}"
-    export ROCM_LIBPATCH_VERSION="${finalAttrs.env.ROCM_LIBPATCH_VERSION}"
-    export ROCM_BUILD_ID="${finalAttrs.env.ROCM_BUILD_ID}"
-  '';
+  env = {
+    BUILD_ID = "nixpkgs-${finalAttrs.env.ROCM_LIBPATCH_VERSION}";
+    ROCM_BUILD_ID = "${finalAttrs.env.BUILD_ID}";
+    ROCM_LIBPATCH_VERSION = "${lib.versions.major finalAttrs.version}${padIfSingle (lib.versions.minor finalAttrs.version)}${padIfSingle (lib.versions.patch finalAttrs.version)}";
+  };
 
   doInstallCheck = true;
+
   preInstallCheck =
     # Test that the CMake config file can be included and sets expected vars
     ''
@@ -82,6 +79,13 @@ stdenv.mkDerivation (finalAttrs: {
       env | grep '^ROCM'
     '';
 
+  setupHook = writeText "setupHook.sh" ''
+    export ROCM_VERSION="${finalAttrs.version}"
+    export ROCM_LIBPATCH_VERSION="${finalAttrs.env.ROCM_LIBPATCH_VERSION}"
+    export ROCM_BUILD_ID="${finalAttrs.env.ROCM_BUILD_ID}"
+  '';
+
+  sourceRoot = "${finalAttrs.src.name}/projects/rocm-core";
   passthru.ROCM_LIBPATCH_VERSION = finalAttrs.env.ROCM_LIBPATCH_VERSION;
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
@@ -89,7 +93,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Utility for getting the ROCm release version";
     homepage = "https://github.com/ROCm/rocm-systems/tree/develop/projects/rocm-core";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

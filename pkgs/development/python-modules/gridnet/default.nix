@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "gridnet";
   version = "5.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "klaasnicolaas";
@@ -42,6 +41,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gridnet" ];
 
   meta = {

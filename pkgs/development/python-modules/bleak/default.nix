@@ -1,13 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bluez,
   buildPythonPackage,
-  fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
   # dependencies
   bumble,
   dbus-fast,
@@ -17,12 +13,13 @@
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bleak";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hbldh";
@@ -44,6 +41,13 @@ buildPythonPackage (finalAttrs: {
         '"${lib.getExe' bluez "bluetoothctl"}"'
   '';
 
+  nativeCheckInputs = [
+    bumble
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ uv-build ];
 
   dependencies = [
@@ -57,13 +61,7 @@ buildPythonPackage (finalAttrs: {
     pyobjc-framework-libdispatch
   ];
 
-  nativeCheckInputs = [
-    bumble
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bleak" ];
 
   meta = {
@@ -71,7 +69,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/hbldh/bleak";
     changelog = "https://github.com/hbldh/bleak/blob/${finalAttrs.src.tag}/CHANGELOG.rst";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ rhendric ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

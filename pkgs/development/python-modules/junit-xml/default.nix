@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  six,
+  buildPythonPackage,
   pytestCheckHook,
+  six,
 }:
 
 buildPythonPackage {
   pname = "junit-xml";
   version = "1.9";
-  format = "setuptools";
 
   # Only a wheel on PyPI
   src = fetchFromGitHub {
@@ -21,13 +20,13 @@ buildPythonPackage {
   };
 
   propagatedBuildInputs = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Creates JUnit XML test result documents that can be read by tools such as Jenkins";
     homepage = "https://github.com/kyrus/python-junit-xml";
-    maintainers = with lib.maintainers; [ multun ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ multun ];
   };
 }

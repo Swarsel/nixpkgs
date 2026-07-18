@@ -2,10 +2,7 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
-  util-macros,
   autoreconfHook,
-  wrapWithXFileSearchPathHook,
   libx11,
   libxau,
   libxaw,
@@ -19,17 +16,20 @@
   libxrender,
   libxt,
   nix-update-script,
+  pkg-config,
+  util-macros,
+  wrapWithXFileSearchPathHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xdm";
   version = "1.1.17";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "xorg";
     repo = "app/xdm";
     tag = "xdm-${finalAttrs.version}";
     hash = "sha256-PhMctvL+Vp9uNmTtowMHzkoekieVCgNZCfUZ1XpjpyY=";
+    domain = "gitlab.freedesktop.org";
   };
 
   strictDeps = true;
@@ -66,12 +66,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   installFlags = [ "appdefaultdir=$(out)/share/X11/app-defaults" ];
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=xdm-(.*)" ]; };
 
   meta = {
     description = "X Display Manager with support for XDMCP, host chooser";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xdm";
+
     license = with lib.licenses; [
       mit
       mitOpenGroup
@@ -79,8 +79,9 @@ stdenv.mkDerivation (finalAttrs: {
       bsd3ClauseTso
       bsd2
     ];
-    mainProgram = "xdm";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xdm";
   };
 })

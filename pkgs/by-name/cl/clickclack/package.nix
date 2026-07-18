@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromSourcehut,
   SDL2,
+  fetchFromSourcehut,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Vibration/audio feedback tool to be used with virtual keyboards";
     homepage = "https://git.sr.ht/~proycon/clickclack";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ dotlambda ];
+    platforms = lib.platforms.linux;
     mainProgram = "clickclack";
   };
 })

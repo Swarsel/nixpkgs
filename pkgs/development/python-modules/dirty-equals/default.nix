@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pydantic,
   pytest-examples,
@@ -13,7 +13,6 @@ let
   dirty-equals = buildPythonPackage rec {
     pname = "dirty-equals";
     version = "0.11.0";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "samuelcolvin";
@@ -22,13 +21,7 @@ let
       hash = "sha256-JFKWrbMdxhvSBbjQ+S9HPW87CK+5ZZiXHg8Wltlv2YY=";
     };
 
-    build-system = [ hatchling ];
-
-    dependencies = [ pytz ];
-
     doCheck = false;
-
-    passthru.tests.pytest = dirty-equals.overrideAttrs { doCheck = true; };
 
     nativeCheckInputs = [
       pydantic
@@ -36,7 +29,11 @@ let
       pytestCheckHook
     ];
 
+    build-system = [ hatchling ];
+    dependencies = [ pytz ];
+    pyproject = true;
     pythonImportsCheck = [ "dirty_equals" ];
+    passthru.tests.pytest = dirty-equals.overrideAttrs { doCheck = true; };
 
     meta = {
       description = "Module for doing dirty (but extremely useful) things with equals";

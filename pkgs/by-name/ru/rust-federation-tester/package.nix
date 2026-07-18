@@ -1,9 +1,9 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
-  nixosTests,
+  fetchFromGitHub,
   cacert,
+  nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,18 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-KHRG+5AeK7h7k7LoTtcIjGmPYlVcV2ZwpJN8iDsBfHg=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
-
   cargoHash = "sha256-nTcE8eqQO0CFdeH0jjT6m1fd4qhG7e/CDpdZHkBq9f8=";
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
-  cargoBuildFlags = [
-    "-p"
-    "rust-federation-tester"
-    "-p"
-    "migration"
-  ];
-
   nativeCheckInputs = [ cacert ];
 
   checkFlags = map (test: "--skip=${test}") [
@@ -50,6 +40,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "test_generate_report"
     "test_concurrent_requests"
   ];
+
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "-p"
+    "rust-federation-tester"
+    "-p"
+    "migration"
+  ];
+
+  cargoTestFlags = finalAttrs.cargoBuildFlags;
 
   passthru.tests = {
     inherit (nixosTests) matrix-synapse;

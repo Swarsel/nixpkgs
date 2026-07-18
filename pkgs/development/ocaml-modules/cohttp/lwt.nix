@@ -3,20 +3,20 @@
   buildDunePackage,
   cohttp,
   ipaddr,
-  lwt,
-  uri,
-  ppx_sexp_conv,
   logs,
+  lwt,
+  ppx_sexp_conv,
   sexplib0,
+  uri,
 }:
 
 buildDunePackage {
-  pname = "cohttp-lwt";
   inherit (cohttp)
     version
     src
     ;
 
+  pname = "cohttp-lwt";
   buildInputs = [ ppx_sexp_conv ];
 
   propagatedBuildInputs = [

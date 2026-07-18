@@ -1,7 +1,7 @@
 {
-  version,
-  urls,
   sha256,
+  urls,
+  version,
   configureFlags ? [ ],
   patches ? [ ],
 }:
@@ -10,24 +10,24 @@
   lib,
   stdenv,
   fetchurl,
-  gmp,
   autoreconfHook,
   buildPackages,
+  gmp,
   updateAutotoolsGnuConfigScriptsHook,
 }:
 
 stdenv.mkDerivation {
-  pname = "isl";
   inherit version;
+  inherit patches;
+  inherit configureFlags;
+  pname = "isl";
 
   src = fetchurl {
     inherit urls sha256;
   };
 
-  inherit patches;
-
   strictDeps = true;
-  depsBuildBuild = lib.optionals (lib.versionAtLeast version "0.23") [ buildPackages.stdenv.cc ];
+
   nativeBuildInputs =
     lib.optionals (stdenv.hostPlatform.isRiscV && lib.versionOlder version "0.23") [
       autoreconfHook
@@ -36,18 +36,16 @@ stdenv.mkDerivation {
       # needed until config scripts are updated to not use /usr/bin/uname on FreeBSD native
       updateAutotoolsGnuConfigScriptsHook
     ];
+
   buildInputs = [ gmp ];
-
-  inherit configureFlags;
-
+  makeFlags = lib.optional stdenv.hostPlatform.isPE "LDFLAGS=-no-undefined";
+  depsBuildBuild = lib.optionals (lib.versionAtLeast version "0.23") [ buildPackages.stdenv.cc ];
   enableParallelBuilding = true;
 
-  makeFlags = lib.optional stdenv.hostPlatform.isPE "LDFLAGS=-no-undefined";
-
   meta = {
+    description = "Library for manipulating sets and relations of integer points bounded by linear constraints";
     homepage = "https://libisl.sourceforge.io/";
     license = lib.licenses.lgpl21;
-    description = "Library for manipulating sets and relations of integer points bounded by linear constraints";
     platforms = lib.platforms.all;
   };
 }

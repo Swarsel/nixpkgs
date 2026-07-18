@@ -4,12 +4,12 @@
   fetchFromGitHub,
   cmake,
   curl,
-  nlohmann_json,
+  curlpp,
   freeglut,
+  glm,
   libGL,
   libGLU,
-  curlpp,
-  glm,
+  nlohmann_json,
 }:
 
 stdenv.mkDerivation {
@@ -23,14 +23,14 @@ stdenv.mkDerivation {
     hash = "sha256-inCgsxrJkBNGmdGPd28XnOJYCiatL35TxDcfvZjA2cY=";
   };
 
-  nativeBuildInputs = [
-    cmake
-  ];
-
   postPatch = ''
     substituteInPlace src/main.cpp --replace-fail '/usr/local' "$out"
     substituteInPlace config.json --replace-fail '/usr/local' "$out"
   '';
+
+  nativeBuildInputs = [
+    cmake
+  ];
 
   buildInputs = [
     curl
@@ -47,7 +47,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/arf20/arftracksat";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    mainProgram = "arftracksat";
     platforms = lib.platforms.all;
+    mainProgram = "arftracksat";
   };
 }

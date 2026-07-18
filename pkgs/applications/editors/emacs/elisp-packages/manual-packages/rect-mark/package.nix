@@ -1,15 +1,15 @@
 {
   lib,
-  melpaBuild,
   fetchFromGitHub,
+  melpaBuild,
 }:
 
 let
   version = "1.4";
 in
 melpaBuild {
-  pname = "rect-mark";
   inherit version;
+  pname = "rect-mark";
 
   src = fetchFromGitHub {
     owner = "emacsmirror";
@@ -19,8 +19,8 @@ melpaBuild {
   };
 
   meta = {
-    homepage = "http://emacswiki.org/emacs/RectangleMark";
     description = "Mark a rectangle of text with highlighting";
+    homepage = "http://emacswiki.org/emacs/RectangleMark";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
   };

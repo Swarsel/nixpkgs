@@ -16,10 +16,10 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "http://micans.org/apparix";
     description = "Add directory bookmarks, distant listing, and distant editing to the command line";
-    maintainers = [ ];
+    homepage = "http://micans.org/apparix";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.all;
     mainProgram = "apparix";
   };

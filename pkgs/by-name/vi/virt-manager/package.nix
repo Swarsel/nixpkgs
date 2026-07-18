@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  python3,
+  adwaita-icon-theme,
+  dconf,
+  desktopToDarwinBundle,
+  docutils,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk-vnc,
+  gtksourceview4,
+  libayatana-appindicator,
+  libosinfo,
+  libvirt-glib,
   meson,
   ninja,
   pkg-config,
-  wrapGAppsHook4,
-  docutils,
-  desktopToDarwinBundle,
-  gtk-vnc,
+  python3,
   vte,
-  dconf,
-  gobject-introspection,
-  libvirt-glib,
-  gsettings-desktop-schemas,
-  libosinfo,
-  adwaita-icon-theme,
-  gtksourceview4,
-  libayatana-appindicator,
+  wrapGAppsHook4,
   xorriso,
-  spiceSupport ? true,
-  spice-gtk ? null,
   gst_all_1 ? null,
+  spice-gtk ? null,
+  spiceSupport ? true,
 }:
 
 let
@@ -45,10 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  mesonFlags = [
-    (lib.mesonBool "compile-schemas" false)
-    (lib.mesonEnable "tests" false)
-  ];
 
   nativeBuildInputs = [
     meson
@@ -80,6 +76,11 @@ stdenv.mkDerivation (finalAttrs: {
     spice-gtk
   ];
 
+  mesonFlags = [
+    (lib.mesonBool "compile-schemas" false)
+    (lib.mesonEnable "tests" false)
+  ];
+
   postInstall = ''
     if ! grep -q StartupWMClass= "$out/share/applications/virt-manager.desktop"; then
         echo "StartupWMClass=.virt-manager-wrapped" >> "$out/share/applications/virt-manager.desktop"
@@ -100,18 +101,22 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://virt-manager.org";
     description = "Desktop user interface for managing virtual machines";
+
     longDescription = ''
       The virt-manager application is a desktop user interface for managing
       virtual machines through libvirt. It primarily targets KVM VMs, but also
       manages Xen and LXC (linux containers).
     '';
+
+    homepage = "https://virt-manager.org";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
-    mainProgram = "virt-manager";
+
     maintainers = with lib.maintainers; [
       fpletz
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "virt-manager";
   };
 })

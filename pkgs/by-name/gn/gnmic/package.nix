@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   buildPackages,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,7 +18,19 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Yl88tIhFuApduc0t++B4y7Hap7//CznNPAx9+9k+dSY=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-QyLl9h8DIB6o6zQrWDMAj9on3kyDdp4v6utuB7uWCl8=";
+
+  postInstall =
+    let
+      emulator = stdenv.hostPlatform.emulator buildPackages;
+    in
+    ''
+      installShellCompletion --cmd gnmic \
+        --bash <(${emulator} $out/bin/gnmic completion bash) \
+        --fish <(${emulator} $out/bin/gnmic completion fish) \
+        --zsh  <(${emulator} $out/bin/gnmic completion zsh)
+    '';
 
   ldflags = [
     "-s"
@@ -30,19 +42,8 @@ buildGoModule (finalAttrs: {
     "-X"
     "github.com/openconfig/gnmic/pkg/version.Date=1970-01-01T00:00:00Z"
   ];
-  subPackages = [ "." ];
 
-  nativeBuildInputs = [ installShellFiles ];
-  postInstall =
-    let
-      emulator = stdenv.hostPlatform.emulator buildPackages;
-    in
-    ''
-      installShellCompletion --cmd gnmic \
-        --bash <(${emulator} $out/bin/gnmic completion bash) \
-        --fish <(${emulator} $out/bin/gnmic completion fish) \
-        --zsh  <(${emulator} $out/bin/gnmic completion zsh)
-    '';
+  subPackages = [ "." ];
 
   meta = {
     description = "gNMI CLI client and collector";

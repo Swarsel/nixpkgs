@@ -20,27 +20,30 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
   ];
 
-  enableParallelBuilding = true;
-
   # Checks require a database, which require registration (although sample
   # databases are available, downloading them for just 1 test seems excessive):
   doCheck = false;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Library to look up locations of host names and IP addresses";
-    mainProgram = "ip2location";
+
     longDescription = ''
       A C library to find the country, region, city,coordinates,
       zip code, time zone, ISP, domain name, connection type, area code,
       weather, MCC, MNC, mobile brand name, elevation and usage type of
       any IP address or host name in the IP2Location databases.
     '';
+
     homepage = "https://www.ip2location.com/developers/c";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl3Plus
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "ip2location";
   };
 })

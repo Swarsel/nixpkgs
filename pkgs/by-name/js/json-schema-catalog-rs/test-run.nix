@@ -1,14 +1,14 @@
 {
+  formats,
   json-schema-catalog-rs,
   runCommand,
   writeText,
-  formats,
 }:
 let
 
   sample = (formats.json { }).generate "example-schema.json" {
-    "$schema" = "http://json-schema.org/draft-07/schema#";
     "$id" = "https://example.com/example-2.9.json";
+    "$schema" = "http://json-schema.org/draft-07/schema#";
     "title" = "Example Schema";
   };
 
@@ -32,10 +32,11 @@ let
 in
 runCommand "json-schema-catalog-rs-test-run"
   {
+    inherit sample;
+
     nativeBuildInputs = [
       json-schema-catalog-rs
     ];
-    inherit sample;
   }
   ''
     set -u

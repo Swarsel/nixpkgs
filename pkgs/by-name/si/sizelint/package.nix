@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
   git,
+  installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,10 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
-  nativeCheckInputs = [ git ];
-
   cargoHash = "sha256-7cDZrRNTGPdzbvVNt3/HTp7PgoH2txX26RCxdpeo4dM=";
+  nativeCheckInputs = [ git ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd sizelint \

@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  removeReferencesTo,
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
-  gitMinimal,
-  perl,
-  python3,
   flex,
+  gitMinimal,
   hwloc,
   libevent,
-  zlib,
+  libtool,
+  perl,
+  pkg-config,
   pmix,
+  python3,
+  removeReferencesTo,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,21 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
       "prte_launch_agent = \"prted\"" "prte_launch_agent = \"$out/bin/prted\""
   '';
 
-  preConfigure = ''
-    ./autogen.pl
-    patchShebangs --build ./src/util/prte-convert-help.py
-  '';
-
-  postInstall = ''
-    moveToOutput "bin/prte_info" "''${!outputDev}"
-    moveToOutput "bin/prte-info" "''${!outputDev}"
-    # Fix a broken symlink, created due to FHS assumptions
-    rm "$out/bin/pcc"
-    ln -s ${lib.getDev pmix}/bin/pmixcc "''${!outputDev}"/bin/pcc
-
-    remove-references-to -t "''${!outputDev}" $(readlink -f $out/lib/libprrte${stdenv.hostPlatform.extensions.library})
-  '';
-
   nativeBuildInputs = [
     removeReferencesTo
     perl
@@ -84,6 +69,21 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-pmix=${lib.getDev pmix}"
     "--with-pmix-libdir=${lib.getLib pmix}/lib"
   ];
+
+  preConfigure = ''
+    ./autogen.pl
+    patchShebangs --build ./src/util/prte-convert-help.py
+  '';
+
+  postInstall = ''
+    moveToOutput "bin/prte_info" "''${!outputDev}"
+    moveToOutput "bin/prte-info" "''${!outputDev}"
+    # Fix a broken symlink, created due to FHS assumptions
+    rm "$out/bin/pcc"
+    ln -s ${lib.getDev pmix}/bin/pmixcc "''${!outputDev}"/bin/pcc
+
+    remove-references-to -t "''${!outputDev}" $(readlink -f $out/lib/libprrte${stdenv.hostPlatform.extensions.library})
+  '';
 
   enableParallelBuilding = true;
 

@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
   llvmPackages,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,19 +18,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-2oydjlPZLWlGNvahsRK7kG5gxEKEHMDNxteaOeYupPA=";
   };
 
-  cargoHash = "sha256-8pK6ZUlMNcczbmMJvQUsJKp0RoXnimnkbAc7SzrIcJQ=";
-
   nativeBuildInputs = [
     installShellFiles
   ]
   # TODO: Remove once #536365 reaches this branch
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ llvmPackages.lld ];
 
+  cargoHash = "sha256-8pK6ZUlMNcczbmMJvQUsJKp0RoXnimnkbAc7SzrIcJQ=";
+
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_CFLAGS_COMPILE = toString [
       "-framework"
       "AppKit"
     ];
+
     # TODO: Remove once #536365 reaches this branch
     NIX_CFLAGS_LINK = "-fuse-ld=lld";
   };
@@ -50,10 +51,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/topgrade-rs/topgrade";
     changelog = "https://github.com/topgrade-rs/topgrade/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       SuperSandro2000
       xyenon
     ];
+
     mainProgram = "topgrade";
   };
 })

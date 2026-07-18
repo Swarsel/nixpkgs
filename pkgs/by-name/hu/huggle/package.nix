@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  ncurses,
-  which,
   cmake,
-  qt6,
-  yaml-cpp,
   libirc,
+  ncurses,
+  pkg-config,
+  qt6,
+  which,
+  yaml-cpp,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,24 +23,11 @@ stdenv.mkDerivation rec {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [
-    qt6.wrapQtAppsHook
-    pkg-config
-    which
-    cmake
-  ];
-  buildInputs = [
-    ncurses
-    yaml-cpp
-    qt6.qtmultimedia
-    qt6.qtwebengine
-    libirc
-  ];
-
   patches = [
     ./00-remove-third-party.patch
     ./01-extensions.patch
   ];
+
   postPatch = ''
     rm -r src/3rd
     echo ${version} > src/huggle_core/version.txt
@@ -48,7 +35,20 @@ stdenv.mkDerivation rec {
     substituteInPlace src/CMakeLists.txt --replace '@libirc_includes@' '${libirc.out}'
   '';
 
-  cmakeBuildType = "None";
+  nativeBuildInputs = [
+    qt6.wrapQtAppsHook
+    pkg-config
+    which
+    cmake
+  ];
+
+  buildInputs = [
+    ncurses
+    yaml-cpp
+    qt6.qtmultimedia
+    qt6.qtwebengine
+    libirc
+  ];
 
   cmakeFlags = [
     "-S"
@@ -61,14 +61,15 @@ stdenv.mkDerivation rec {
     "-DHUGGLE_EXT=TRUE"
   ];
 
+  cmakeBuildType = "None";
   installTargets = [ "install" ];
 
   meta = {
     description = "Anti-vandalism tool for use on MediaWiki-based projects";
-    mainProgram = "huggle";
     homepage = "https://github.com/huggle/huggle3-qt-lx";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.fee1-dead ];
     platforms = lib.platforms.x86_64;
+    mainProgram = "huggle";
   };
 }

@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "pinboard";
   version = "2.1.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "lionheart";
@@ -18,12 +17,13 @@ buildPythonPackage rec {
 
   # tests require an API key
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python wrapper for Pinboard.in";
-    mainProgram = "pinboard";
-    maintainers = with lib.maintainers; [ djanatyn ];
-    license = lib.licenses.asl20;
     homepage = "https://github.com/lionheart/pinboard.py";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ djanatyn ];
+    mainProgram = "pinboard";
   };
 }

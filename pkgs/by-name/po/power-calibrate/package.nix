@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -23,10 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool to calibrate power consumption";
-    mainProgram = "power-calibrate";
     homepage = "https://github.com/ColinIanKing/power-calibrate";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "power-calibrate";
   };
 })

@@ -1,13 +1,10 @@
 {
-  withDPDK ? false,
-
   lib,
   stdenv,
-
+  fetchFromGitHub,
   autoconf,
   automake,
   dpdk,
-  fetchFromGitHub,
   installShellFiles,
   iproute2,
   libcap_ng,
@@ -26,6 +23,7 @@
   tcpdump,
   util-linux,
   which,
+  withDPDK ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,10 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  sphinxBuilders = [ "man" ];
-
-  sphinxRoot = "./Documentation";
-
   buildInputs = [
     libcap_ng
     openssl
@@ -83,8 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpcap
   ]);
 
-  preConfigure = "./boot.sh";
-
   configureFlags = [
     "--localstatedir=/var"
     "--sharedstatedir=/var"
@@ -92,14 +84,26 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ (lib.optionals withDPDK [ "--with-dpdk=shared" ]);
 
-  # Leave /var out of this!
-  installFlags = [
-    "LOGDIR=$(TMPDIR)/dummy"
-    "RUNDIR=$(TMPDIR)/dummy"
-    "PKIDIR=$(TMPDIR)/dummy"
-  ];
+  preConfigure = "./boot.sh";
+  doCheck = true;
 
-  enableParallelBuilding = true;
+  nativeCheckInputs = [
+    iproute2
+    openssl
+  ]
+  ++ (with python3.pkgs; [
+    netaddr
+    pyparsing
+    pytest
+    setuptools
+  ]);
+
+  preCheck = ''
+    export TESTSUITEFLAGS="-j$NIX_BUILD_CORES"
+    export RECHECK=yes
+
+    patchShebangs tests/
+  '';
 
   postInstall = ''
     # Install bash completions in correct location
@@ -121,24 +125,17 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PYTHONPATH : $out/share/openvswitch/python
   '';
 
-  doCheck = true;
-  preCheck = ''
-    export TESTSUITEFLAGS="-j$NIX_BUILD_CORES"
-    export RECHECK=yes
+  enableParallelBuilding = true;
 
-    patchShebangs tests/
-  '';
+  # Leave /var out of this!
+  installFlags = [
+    "LOGDIR=$(TMPDIR)/dummy"
+    "RUNDIR=$(TMPDIR)/dummy"
+    "PKIDIR=$(TMPDIR)/dummy"
+  ];
 
-  nativeCheckInputs = [
-    iproute2
-    openssl
-  ]
-  ++ (with python3.pkgs; [
-    netaddr
-    pyparsing
-    pytest
-    setuptools
-  ]);
+  sphinxBuilders = [ "man" ];
+  sphinxRoot = "./Documentation";
 
   passthru = {
     tests = {
@@ -150,8 +147,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://www.openvswitch.org/releases/NEWS-${finalAttrs.version}.txt";
     description = "Multilayer virtual switch";
+
     longDescription = ''
       Open vSwitch is a production quality, multilayer virtual switch
       licensed under the open source Apache 2.0 license. It is
@@ -162,17 +159,22 @@ stdenv.mkDerivation (finalAttrs: {
       support distribution across multiple physical servers similar
       to VMware's vNetwork distributed vswitch or Cisco's Nexus 1000V.
     '';
+
     homepage = "https://www.openvswitch.org/";
+    changelog = "https://www.openvswitch.org/releases/NEWS-${finalAttrs.version}.txt";
+
     license = with lib.licenses; [
       asl20
       lgpl21Plus # ovs-bugtool
       sissl11 # lib/sflow
     ];
+
     maintainers = with lib.maintainers; [
       adamcstephens
       booxter
       xddxdd
     ];
+
     platforms = lib.platforms.linux;
   };
 })

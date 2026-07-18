@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoconf,
   automake,
+  fetchpatch,
   libtool,
 }:
 
@@ -22,11 +22,15 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Improved C++17 compatibility
     (fetchpatch {
-      url = "https://github.com/quickfix/quickfix/commit/a46708090444826c5f46a5dbf2ba4b069b413c58.diff";
       sha256 = "1wlk4j0wmck0zm6a70g3nrnq8fz0id7wnyxn81f7w048061ldhyd";
+      url = "https://github.com/quickfix/quickfix/commit/a46708090444826c5f46a5dbf2ba4b069b413c58.diff";
     })
     ./disableUnitTests.patch
   ];
+
+  postPatch = ''
+    substituteInPlace bootstrap --replace-fail glibtoolize libtoolize
+  '';
 
   # autoreconfHook does not work
   nativeBuildInputs = [
@@ -34,12 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     automake
     libtool
   ];
-
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    substituteInPlace bootstrap --replace-fail glibtoolize libtoolize
-  '';
 
   preConfigure = ''
     ./bootstrap
@@ -49,6 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
   preBuild = ''
     substituteInPlace Makefile --replace 'UnitTest++' ' '
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "C++ Fix Engine Library";

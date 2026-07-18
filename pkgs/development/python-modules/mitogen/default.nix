@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mitogen";
   version = "0.3.50";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mitogen-hq";
@@ -17,11 +16,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-f6N9eGwhxa/Ls9NqTSqMh+zbLNBeFEUJXd9Km5aBGI8=";
   };
 
-  build-system = [ setuptools ];
-
   # Tests require network access and Docker support
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "mitogen" ];
 
   meta = {

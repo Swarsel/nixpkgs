@@ -17,9 +17,11 @@ buildNimPackage (finalAttrs: {
     hash = "sha256-ncH/1PV4vZY7JCUJ87FPz5bdrQsNlYxzGdc5BQNfQeA=";
   };
 
-  lockFile = ./lock.json;
-
   env.HOTTEXT_FONT_PATH = "${gentium-plus}/share/fonts/truetype/GentiumPlus-Regular.ttf";
+
+  postInstall = ''
+    cp -r $desktopItem/* $out
+  '';
 
   desktopItem = makeDesktopItem {
     categories = [ "Utility" ];
@@ -29,14 +31,12 @@ buildNimPackage (finalAttrs: {
     name = "hottext";
   };
 
-  postInstall = ''
-    cp -r $desktopItem/* $out
-  '';
+  lockFile = ./lock.json;
 
   meta = finalAttrs.src.meta // {
     description = "Simple RSVP speed-reading utility";
-    license = lib.licenses.unlicense;
     homepage = "https://git.sr.ht/~ehmry/hottext";
+    license = lib.licenses.unlicense;
     mainProgram = "hottext";
   };
 })

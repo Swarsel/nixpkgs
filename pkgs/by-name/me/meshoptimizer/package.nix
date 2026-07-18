@@ -9,15 +9,16 @@
 
 let
   basis_universal = fetchFromGitHub {
+    hash = "sha256-8SQhORPPLBeynlRWjpkXxleo5pgkNmEIjcXbptuo8es=";
     owner = "zeux";
     repo = "basis_universal";
     rev = "88e813c46b3ff42e56ef947b3fa11eeee7a504b0";
-    hash = "sha256-8SQhORPPLBeynlRWjpkXxleo5pgkNmEIjcXbptuo8es=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "meshoptimizer";
   version = "1.2";
+
   src = fetchFromGitHub {
     owner = "zeux";
     repo = "meshoptimizer";
@@ -25,13 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1dHT4+aOwIY3DUrj6JwcDizRPWwL/PWkEcpmA8zD/vE=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
   outputs = [
     "bin"
     "dev"
     "out"
   ];
+
+  nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
     "-DMESHOPT_BUILD_GLTFPACK=ON"
@@ -46,10 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Mesh optimization library that makes meshes smaller and faster to render";
     homepage = "https://github.com/zeux/meshoptimizer";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bouk
       lillycham
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "gltfpack";
   };

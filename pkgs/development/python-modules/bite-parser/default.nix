@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-asyncio,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "bite-parser";
   version = "0.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jgosmann";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-C508csRbjCeLgkp66TwDuxUtMITTmub5/TFv8x80HLA=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "bite" ];
 
   meta = {

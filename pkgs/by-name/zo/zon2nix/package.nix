@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zig_0_16,
   nix,
+  zig_0_16,
 }:
 let
   zig = zig_0_16;
@@ -32,14 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    inherit (zig.meta) platforms;
     description = "Convert the dependencies in `build.zig.zon` to a Nix expression";
-    mainProgram = "zon2nix";
     homepage = "https://github.com/nix-community/zon2nix";
     changelog = "https://github.com/nix-community/zon2nix/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       RossComputerGuy
     ];
-    inherit (zig.meta) platforms;
+
+    mainProgram = "zon2nix";
   };
 })

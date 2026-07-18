@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitMinimal,
   installShellFiles,
 }:
@@ -18,27 +18,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-HO2ByHyAVWM96JMegerysB13SqbZw/hE8uH5FHsHJao=";
   };
 
-  vendorHash = "sha256-f9eSrBhevZ+eS/ct28GoDfoGu1NT+hVLvZwi2euqBe0=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  # Pin so that we don't build the several other development tools
-  subPackages = ".";
-
+  vendorHash = "sha256-f9eSrBhevZ+eS/ct28GoDfoGu1NT+hVLvZwi2euqBe0=";
   env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/google/ko/pkg/commands.Version=${finalAttrs.version}"
-  ];
+  nativeCheckInputs = [ gitMinimal ];
 
   checkFlags = [
     # requires docker daemon, pulls and builds delve debugger
     "-skip=(TestNewPublisherCanPublish|TestDebugger)"
   ];
 
-  nativeCheckInputs = [ gitMinimal ];
   preCheck = ''
     # Feed in all the tests for testing
     # This is because subPackages above limits what is built to just what we
@@ -63,23 +52,36 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/ko completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/google/ko/pkg/commands.Version=${finalAttrs.version}"
+  ];
+
+  # Pin so that we don't build the several other development tools
+  subPackages = ".";
+
   meta = {
-    homepage = "https://github.com/ko-build/ko";
-    changelog = "https://github.com/ko-build/ko/releases/tag/v${finalAttrs.version}";
     description = "Build and deploy Go applications";
-    mainProgram = "ko";
+
     longDescription = ''
       ko is a simple, fast container image builder for Go applications.
       It's ideal for use cases where your image contains a single Go application without any/many dependencies on the OS base image (e.g. no cgo, no OS package dependencies).
       ko builds images by effectively executing go build on your local machine, and as such doesn't require docker to be installed. This can make it a good fit for lightweight CI/CD use cases.
       ko makes multi-platform builds easy, produces SBOMs by default, and includes support for simple YAML templating which makes it a powerful tool for Kubernetes applications.
     '';
+
+    homepage = "https://github.com/ko-build/ko";
+    changelog = "https://github.com/ko-build/ko/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       nickcao
       jk
       vdemeester
       developer-guy
     ];
+
+    mainProgram = "ko";
   };
 })

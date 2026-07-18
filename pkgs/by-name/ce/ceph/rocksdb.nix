@@ -1,10 +1,11 @@
 {
-  rocksdb,
   fetchFromGitHub,
+  rocksdb,
 }:
 
 rocksdb.overrideAttrs rec {
   version = "7.9.2";
+
   src = fetchFromGitHub {
     owner = "facebook";
     repo = "rocksdb";

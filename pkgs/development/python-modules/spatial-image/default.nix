@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  pytestCheckHook,
   numpy,
+  pytestCheckHook,
   xarray,
   xarray-dataclass,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "spatial-image";
   version = "1.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spatial-image";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-mhT86v4/5s4dFw9sDYm5Ba7sM0ME9ifN9KEzhxVigOc=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -29,8 +29,7 @@ buildPythonPackage rec {
     xarray-dataclass
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "spatial_image" ];
 
   meta = {

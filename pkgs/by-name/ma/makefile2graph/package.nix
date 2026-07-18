@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bash,
   gnumake,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
   makeFlags = [ "prefix=$(out)" ];
 
   fixupPhase = ''
@@ -31,10 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/lindenb/makefile2graph";
     description = "Creates a graph of dependencies from GNU-Make; Output is a graphiz-dot file or a Gexf-XML file";
-    maintainers = with lib.maintainers; [ cmcdragonkai ];
+    homepage = "https://github.com/lindenb/makefile2graph";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ cmcdragonkai ];
     platforms = lib.platforms.all;
   };
 })

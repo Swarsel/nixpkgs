@@ -2,29 +2,26 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   lilypond,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jianpu-ly";
   version = "1.870";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "jianpu_ly";
     hash = "sha256-1jhMoHqEkkuSrWzJ3yu/iPA9l29c0xTYN1/Mqaf8TdM=";
+    pname = "jianpu_ly";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ lilypond ];
-
-  pythonImportsCheck = [ "jianpu_ly" ];
 
   # no tests in shipped with upstream
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ lilypond ];
+  pyproject = true;
+  pythonImportsCheck = [ "jianpu_ly" ];
 
   meta = {
     description = "Assists with printing jianpu";

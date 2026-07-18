@@ -3,24 +3,24 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
-  util-macros,
-  xorgproto,
-  xorg-server,
   nix-update-script,
+  pkg-config,
   testers,
+  util-macros,
+  xorg-server,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-input-joystick";
   version = "1.6.4";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "driver";
     repo = "xf86-input-joystick";
     tag = "xf86-input-joystick-${finalAttrs.version}";
     hash = "sha256-JxSnhWx5V3/pdlu3mwRNrgicdfaUK5nIwBK3reqchQs=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
@@ -41,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
   configureFlags = [ "--with-sdkdir=${placeholder "out"}/include/xorg" ];
 
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version-regex=xf86-input-joystick-(.*)" ]; };
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    updateScript = nix-update-script { extraArgs = [ "--version-regex=xf86-input-joystick-(.*)" ]; };
   };
 
   meta = {
@@ -50,8 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/xorg/driver/xf86-input-joystick";
     license = lib.licenses.hpndSellVariant;
     maintainers = [ ];
-    pkgConfigModules = [ "xorg-joystick" ];
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin; # no darwin driver
+    pkgConfigModules = [ "xorg-joystick" ];
   };
 })

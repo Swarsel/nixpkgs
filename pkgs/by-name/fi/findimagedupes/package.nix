@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
+  installShellFiles,
   makeWrapper,
   perl,
   perlPackages,
-  installShellFiles,
 }:
 
 stdenv.mkDerivation rec {
@@ -19,6 +19,15 @@ stdenv.mkDerivation rec {
     tag = version;
     hash = "sha256-LJbZGuBVksfS7nVxgrMLSeygWuy9oDmw/pD8wAyr3f0=";
   };
+
+  # compiled files (findimagedupes.so etc) are written to $DIRECTORY/lib/auto/findimagedupes
+  # replace GraphicsMagick with ImageMagick, because perl bindings are not yet available
+  postPatch = ''
+    substituteInPlace findimagedupes \
+      --replace-fail "DIRECTORY => '/usr/local/lib/findimagedupes';" "DIRECTORY => '$out';" \
+      --replace-fail "Graphics::Magick" "Image::Magick" \
+      --replace-fail "my \$Id = '""';" "my \$Id = '${version}';"
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -38,15 +47,6 @@ stdenv.mkDerivation rec {
     InlineC
     ParseRecDescent
   ]);
-
-  # compiled files (findimagedupes.so etc) are written to $DIRECTORY/lib/auto/findimagedupes
-  # replace GraphicsMagick with ImageMagick, because perl bindings are not yet available
-  postPatch = ''
-    substituteInPlace findimagedupes \
-      --replace-fail "DIRECTORY => '/usr/local/lib/findimagedupes';" "DIRECTORY => '$out';" \
-      --replace-fail "Graphics::Magick" "Image::Magick" \
-      --replace-fail "my \$Id = '""';" "my \$Id = '${version}';"
-  '';
 
   # with DIRECTORY = "/tmp":
   # $ ./result/bin/findimagedupes
@@ -92,8 +92,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "http://www.jhnc.org/findimagedupes/";
     description = "Finds visually similar or duplicate images";
+    homepage = "http://www.jhnc.org/findimagedupes/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ stunkymonkey ];
   };

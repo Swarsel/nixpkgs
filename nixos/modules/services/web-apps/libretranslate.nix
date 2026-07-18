@@ -22,85 +22,57 @@ in
   options = {
     services.libretranslate = {
       enable = lib.mkEnableOption "LibreTranslate service";
-
       package = lib.mkPackageOption pkgs "libretranslate" { };
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "libretranslate";
-        description = "User account under which libretranslate runs.";
-      };
-
-      group = lib.mkOption {
-        type = lib.types.str;
-        default = "libretranslate";
-        description = "Group account under which libretranslate runs.";
-      };
-
-      host = lib.mkOption {
-        description = "The address the application should listen on.";
-        type = lib.types.str;
-        default = "127.0.0.1";
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 5000;
-        description = "The the application should listen on.";
+      configureNginx = lib.mkOption {
+        default = false;
+        description = "Configure nginx as a reverse proxy for LibreTranslate.";
+        type = lib.types.bool;
       };
 
       dataDir = lib.mkOption {
-        type = lib.types.path;
         default = "/var/lib/libretranslate";
-        example = "/srv/data/libretranslate";
         description = "The data directory.";
-      };
-
-      threads = lib.mkOption {
-        type = lib.types.nullOr lib.types.ints.positive;
-        default = null;
-        example = 8;
-        description = "Set number of threads.";
-      };
-
-      enableApiKeys = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        example = true;
-        description = "Whether to enable the API keys database.";
+        example = "/srv/data/libretranslate";
+        type = lib.types.path;
       };
 
       disableWebUI = lib.mkOption {
-        type = lib.types.bool;
         default = false;
-        example = true;
         description = "Whether to disable the Web UI.";
-      };
-
-      updateModels = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
         example = true;
-        description = "Update language models at startup";
+        type = lib.types.bool;
       };
 
       domain = lib.mkOption {
-        type = lib.types.str;
         default = "";
-        example = "libretranslate.example.com";
+
         description = ''
           The domain serving your LibreTranslate instance.
           Required for configure nginx as a reverse proxy.
         '';
+
+        example = "libretranslate.example.com";
+        type = lib.types.str;
       };
 
-      configureNginx = lib.mkOption {
-        type = lib.types.bool;
+      enableApiKeys = lib.mkOption {
         default = false;
-        description = "Configure nginx as a reverse proxy for LibreTranslate.";
+        description = "Whether to enable the API keys database.";
+        example = true;
+        type = lib.types.bool;
       };
 
       extraArgs = lib.mkOption {
+        default = { };
+        description = "Extra arguments passed to the LibreTranslate.";
+
+        example = {
+          debug = true;
+          disable-files-translation = true;
+          url-prefix = "translate";
+        };
+
         type =
           with lib.types;
           attrsOf (
@@ -115,13 +87,44 @@ in
               ]))
             ])
           );
-        default = { };
-        example = {
-          debug = true;
-          disable-files-translation = true;
-          url-prefix = "translate";
-        };
-        description = "Extra arguments passed to the LibreTranslate.";
+      };
+
+      group = lib.mkOption {
+        default = "libretranslate";
+        description = "Group account under which libretranslate runs.";
+        type = lib.types.str;
+      };
+
+      host = lib.mkOption {
+        default = "127.0.0.1";
+        description = "The address the application should listen on.";
+        type = lib.types.str;
+      };
+
+      port = lib.mkOption {
+        default = 5000;
+        description = "The the application should listen on.";
+        type = lib.types.port;
+      };
+
+      threads = lib.mkOption {
+        default = null;
+        description = "Set number of threads.";
+        example = 8;
+        type = lib.types.nullOr lib.types.ints.positive;
+      };
+
+      updateModels = lib.mkOption {
+        default = false;
+        description = "Update language models at startup";
+        example = true;
+        type = lib.types.bool;
+      };
+
+      user = lib.mkOption {
+        default = "libretranslate";
+        description = "User account under which libretranslate runs.";
+        type = lib.types.str;
       };
     };
   };
@@ -129,22 +132,39 @@ in
   config = lib.mkIf cfg.enable {
     environment.systemPackages = lib.mkIf cfg.enableApiKeys [ ltmanageKeysCli ];
 
-    systemd.tmpfiles.rules = lib.mkIf (cfg.dataDir != "/var/lib/libretranslate") [
-      "d '${cfg.dataDir}' 0750 ${cfg.user} ${cfg.group} - -"
-      "z '${cfg.dataDir}' 0750 ${cfg.user} ${cfg.group} - -"
-    ];
+    services.nginx = lib.mkIf cfg.configureNginx {
+      enable = true;
+
+      virtualHosts."${cfg.domain}" = {
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:${toString cfg.port}";
+        };
+
+        locations."= /favicon.ico" = {
+          alias = "${cfg.package.static-compressed}/share/libretranslate/static/favicon.ico";
+        };
+
+        locations."^~ /static/" = {
+          alias = "${cfg.package.static-compressed}/share/libretranslate/static/";
+        };
+
+        root = "/var/empty";
+      };
+    };
 
     systemd.services.libretranslate = {
-      description = "LibreTranslate service";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "LibreTranslate service";
+
       environment = {
         HOME = cfg.dataDir;
         PYTHONUNBUFFERED = "1"; # ensure stdout is logged to journal
       };
+
       serviceConfig = lib.mkMerge [
         {
-          Type = "simple";
+          CapabilityBoundingSet = "";
+
           ExecStart = ''
             ${cfg.package}/bin/libretranslate ${
               lib.cli.toCommandLineShellGNU { } (
@@ -158,38 +178,41 @@ in
               )
             }
           '';
-          WorkingDirectory = cfg.dataDir;
-          User = cfg.user;
+
           Group = cfg.group;
-          ProcSubset = "all";
-          ProtectProc = "invisible";
-          UMask = "0027";
-          CapabilityBoundingSet = "";
+          LockPersonality = true;
+          MemoryDenyWriteExecute = false;
           NoNewPrivileges = true;
-          ProtectSystem = "strict";
-          ProtectHome = true;
-          PrivateTmp = true;
           PrivateDevices = true;
+          PrivateMounts = true;
+          PrivateTmp = true;
           PrivateUsers = true;
-          ProtectHostname = true;
+          ProcSubset = "all";
           ProtectClock = true;
-          ProtectKernelTunables = true;
-          ProtectKernelModules = true;
-          ProtectKernelLogs = true;
           ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "invisible";
+          ProtectSystem = "strict";
+          RemoveIPC = true;
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
           ];
+
           RestrictNamespaces = true;
-          LockPersonality = true;
-          MemoryDenyWriteExecute = false;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-          RemoveIPC = true;
-          PrivateMounts = true;
           SystemCallArchitectures = "native";
           SystemCallFilter = [ "~@cpu-emulation @debug @keyring @mount @obsolete @privileged @setuid" ];
+          Type = "simple";
+          UMask = "0027";
+          User = cfg.user;
+          WorkingDirectory = cfg.dataDir;
         }
         (lib.mkIf (cfg.dataDir == "/var/lib/libretranslate") {
           StateDirectory = "libretranslate";
@@ -199,25 +222,17 @@ in
           ReadWritePaths = cfg.dataDir;
         })
       ];
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    services.nginx = lib.mkIf cfg.configureNginx {
-      enable = true;
-      virtualHosts."${cfg.domain}" = {
-        root = "/var/empty";
+    systemd.tmpfiles.rules = lib.mkIf (cfg.dataDir != "/var/lib/libretranslate") [
+      "d '${cfg.dataDir}' 0750 ${cfg.user} ${cfg.group} - -"
+      "z '${cfg.dataDir}' 0750 ${cfg.user} ${cfg.group} - -"
+    ];
 
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:${toString cfg.port}";
-        };
-
-        locations."= /favicon.ico" = {
-          alias = "${cfg.package.static-compressed}/share/libretranslate/static/favicon.ico";
-        };
-
-        locations."^~ /static/" = {
-          alias = "${cfg.package.static-compressed}/share/libretranslate/static/";
-        };
-      };
+    users.groups = lib.optionalAttrs (cfg.group == "libretranslate") {
+      libretranslate = { };
     };
 
     users.users = lib.optionalAttrs (cfg.user == "libretranslate") {
@@ -225,10 +240,6 @@ in
         group = cfg.group;
         isSystemUser = true;
       };
-    };
-
-    users.groups = lib.optionalAttrs (cfg.group == "libretranslate") {
-      libretranslate = { };
     };
   };
 }

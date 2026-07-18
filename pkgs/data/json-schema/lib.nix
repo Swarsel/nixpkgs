@@ -1,8 +1,8 @@
 {
   lib,
+  jq,
   json-schema-catalog-rs,
   runCommand,
-  jq,
 }:
 let
 
@@ -30,27 +30,30 @@ let
   */
   newCatalog =
     {
+      groups,
       name,
       displayName ? name,
-      groups,
-      version ? null,
       extraDescription ? null,
       meta ? { },
+      version ? null,
     }:
     let
       # lazyDerivation tidies up the package attributes
       package = lib.lazyDerivation {
         derivation = drv;
+
         passthru = {
-          name = "catalog-${name}";
           pname = "catalog-${name}";
           internals = drv;
+          name = "catalog-${name}";
         }
         // lib.optionalAttrs (version != null) {
           inherit version;
         };
+
         meta = {
           description = "JSON Schema Catalog for ${displayName}";
+
           longDescription =
             let
               licenses = lib.toList meta.license;
@@ -73,26 +76,32 @@ let
 
       drvArgs = {
         pname = name;
+
+        nativeBuildInputs = [
+          jq
+          json-schema-catalog-rs
+        ];
+
+        __structuredAttrs = true;
+
         catalogJson = builtins.toJSON {
-          name = displayName;
           groups = lib.mapAttrsToList (name: group: {
             inherit name;
             # TODO dedup the longest common prefix by putting it in baseLocation
             baseLocation = "/";
+
             schemas = lib.mapAttrsToList (id: location: {
               inherit id;
               inherit location;
             }) group;
           }) groups;
+
+          name = displayName;
         };
+
         passthru = {
           inherit groups;
         };
-        nativeBuildInputs = [
-          jq
-          json-schema-catalog-rs
-        ];
-        __structuredAttrs = true;
       }
       // lib.optionalAttrs (version != null) {
         inherit version;

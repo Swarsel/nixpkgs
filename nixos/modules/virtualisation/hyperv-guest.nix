@@ -28,6 +28,8 @@ in
 
   config = mkIf cfg.enable {
     boot = {
+      initrd.availableKernelModules = [ "hyperv_keyboard" ];
+
       initrd.kernelModules = [
         "hv_balloon"
         "hv_netvsc"
@@ -35,8 +37,6 @@ in
         "hv_utils"
         "hv_vmbus"
       ];
-
-      initrd.availableKernelModules = [ "hyperv_keyboard" ];
 
       kernelParams = [
         "elevator=noop"
@@ -48,8 +48,9 @@ in
     # enable hotadding cpu/memory
     services.udev.packages = lib.singleton (
       pkgs.writeTextFile {
-        name = "hyperv-cpu-and-memory-hotadd-udev-rules";
         destination = "/etc/udev/rules.d/99-hyperv-cpu-and-memory-hotadd.rules";
+        name = "hyperv-cpu-and-memory-hotadd-udev-rules";
+
         text = ''
           # Memory hotadd
           SUBSYSTEM=="memory", ACTION=="add", DEVPATH=="/devices/system/memory/memory[0-9]*", TEST=="state", ATTR{state}="online"

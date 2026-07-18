@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   fftw,
   hackrf,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -39,6 +39,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Calculate local oscillator frequency offset in hackrf devices";
+
     longDescription = ''
       Kalibrate, or kal, can scan for GSM base stations in a given frequency
       band and can use those GSM base stations to calculate the local
@@ -46,10 +47,11 @@ stdenv.mkDerivation {
 
       This package is for hackrf devices.
     '';
+
     homepage = "https://github.com/scateu/kalibrate-hackrf";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.mog ];
+    platforms = lib.platforms.linux;
     mainProgram = "kal-hackrf";
   };
 }

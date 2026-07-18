@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  buildDunePackage,
-  gmp,
-  pkg-config,
-  dune-configurator,
-  zarith,
-  integers,
-  stdlib-random,
   alcotest,
   bisect_ppx,
+  buildDunePackage,
+  dune-configurator,
+  gmp,
+  integers,
+  pkg-config,
+  stdlib-random,
+  zarith,
 }:
 
 buildDunePackage (
@@ -24,8 +24,6 @@ buildDunePackage (
       rev = "v${version}";
       hash = "sha256-/wPlS9JrQH+4kvEzsn2DCkAFhu0LMxlIIKQZ9jOJkco=";
     };
-
-    minimalOCamlVersion = "4.08";
 
     nativeBuildInputs = [
       gmp
@@ -43,12 +41,14 @@ buildDunePackage (
       stdlib-random
     ];
 
+    doCheck = true;
+
     checkInputs = [
       alcotest
       bisect_ppx
     ];
 
-    doCheck = true;
+    minimalOCamlVersion = "4.08";
 
     meta = {
       description = "Verifiable Delay Functions bindings to Chia's VDF";

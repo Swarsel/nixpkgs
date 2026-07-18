@@ -1,30 +1,30 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   copyDesktopItems,
-  makeDesktopItem,
+  curl,
+  expat,
+  fontconfig,
+  freetype,
+  libGL,
+  libjack2,
   libx11,
   libxcomposite,
   libxcursor,
+  libxdmcp,
+  libxext,
   libxinerama,
   libxrandr,
   libxtst,
-  libxdmcp,
-  libxext,
-  xvfb,
-  freetype,
-  fontconfig,
-  expat,
-  libGL,
-  libjack2,
-  curl,
+  makeDesktopItem,
   ninja,
-  writableTmpDirAsHomeHook,
   nix-update-script,
+  pkg-config,
+  writableTmpDirAsHomeHook,
+  xvfb,
   # Disable VST building by default, since its unfree
   enableVST2 ? false,
 }:
@@ -38,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-t9z+qnboGfHUcOp9WmfWXG7ss8VTkz8cv5qUMy//3AE=";
     fetchSubmodules = true;
+
     preFetch = ''
       # can't clone using ssh
       export GIT_CONFIG_COUNT=1
@@ -46,20 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "socalabs-voc";
-      desktopName = "Socalabs Voc";
-      comment = "Socalabs Wacky Vocal Synth Plugin (Standalone)";
-      icon = "Voc";
-      exec = "Voc";
-      categories = [
-        "Audio"
-        "AudioVideo"
-      ];
-    })
-  ];
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+    --replace-fail 'FORMATS Standalone VST VST3 AU LV2' 'FORMATS Standalone ${lib.optionalString enableVST2 "VST"} VST3 LV2'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
@@ -99,12 +92,16 @@ stdenv.mkDerivation (finalAttrs: {
     "-O2"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-    --replace-fail 'FORMATS Standalone VST VST3 AU LV2' 'FORMATS Standalone ${lib.optionalString enableVST2 "VST"} VST3 LV2'
-  '';
-
-  strictDeps = true;
+  env.NIX_LDFLAGS = toString [
+    "-lX11"
+    "-lXext"
+    "-lXcomposite"
+    "-lXcursor"
+    "-lXinerama"
+    "-lXrandr"
+    "-lXtst"
+    "-lXdmcp"
+  ];
 
   preBuild = ''
     cd ../Builds/ninja-gcc
@@ -130,15 +127,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  env.NIX_LDFLAGS = toString [
-    "-lX11"
-    "-lXext"
-    "-lXcomposite"
-    "-lXcursor"
-    "-lXinerama"
-    "-lXrandr"
-    "-lXtst"
-    "-lXdmcp"
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "AudioVideo"
+      ];
+
+      comment = "Socalabs Wacky Vocal Synth Plugin (Standalone)";
+      desktopName = "Socalabs Voc";
+      exec = "Voc";
+      icon = "Voc";
+      name = "socalabs-voc";
+      type = "Application";
+    })
   ];
 
   passthru.updateScript = nix-update-script { };
@@ -146,9 +148,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Socalabs Wacky Vocal Synthesizer Plugin";
     homepage = "https://socalabs.com/synths/voc-vocal-synth/";
-    mainProgram = "Voc";
-    platforms = lib.platforms.linux;
     license = [ lib.licenses.lgpl21 ] ++ lib.optional enableVST2 lib.licenses.unfree;
     maintainers = [ lib.maintainers.l1npengtul ];
+    platforms = lib.platforms.linux;
+    mainProgram = "Voc";
   };
 })

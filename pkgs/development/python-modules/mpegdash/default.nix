@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
 buildPythonPackage rec {
   pname = "mpegdash";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sangwonl";
@@ -25,6 +24,7 @@ buildPythonPackage rec {
     "test_xml2mpd_from_url"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mpegdash" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   drawio-headless,
   pandoc,
+  python3Packages,
   runCommand,
   texliveTeTeX,
 }:
@@ -19,15 +19,15 @@ let
   };
 
   pandoc-drawio-filter = python3Packages.buildPythonApplication {
-    format = "setuptools";
-    pname = "pandoc-drawio-filter";
-
     inherit src version;
+    pname = "pandoc-drawio-filter";
 
     propagatedBuildInputs = [
       drawio-headless
       python3Packages.pandocfilters
     ];
+
+    format = "setuptools";
 
     passthru.tests.example-doc =
       let
@@ -45,8 +45,8 @@ let
       '';
 
     meta = {
-      homepage = "https://github.com/tfc/pandoc-drawio-filter";
       description = "Pandoc filter which converts draw.io diagrams to PDF";
+      homepage = "https://github.com/tfc/pandoc-drawio-filter";
       license = lib.licenses.mit;
       maintainers = with lib.maintainers; [ tfc ];
       mainProgram = "pandoc-drawio";

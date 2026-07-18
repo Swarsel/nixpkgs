@@ -1,24 +1,25 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  msrest,
   azure-common,
   azure-mgmt-core,
+  buildPythonPackage,
+  fetchPypi,
+  msrest,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-reservations";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     hash = "sha256-BHCFEFst5jfyIEo0hm86belpxW7EygZCBJ8PTqzqHKc=";
+    extension = "zip";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +28,7 @@ buildPythonPackage rec {
     azure-mgmt-core
   ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "This is the Microsoft Azure Reservations Client Library";

@@ -1,31 +1,32 @@
 {
   lib,
-  buildPythonPackage,
-  dep-scan,
-
-  # build
-  setuptools,
-
   # deps
   appthreat-vulnerability-db,
+  buildPythonPackage,
   custom-json-diff,
+  dep-scan,
   ds-analysis-lib,
-  quart,
-  rich,
-
   # test
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  quart,
+  rich,
+  # build
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
-  pname = "ds-server-lib";
   inherit (dep-scan) version src;
-  pyproject = true;
+  pname = "ds-server-lib";
 
-  sourceRoot = "${src.name}/packages/server-lib";
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-asyncio
+  ];
 
   build-system = [
     setuptools
@@ -39,22 +40,18 @@ buildPythonPackage rec {
     rich
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "server_lib" ];
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-asyncio
-  ];
+  sourceRoot = "${src.name}/packages/server-lib";
 
   meta = {
-    description = "Server library for owasp depscan";
     inherit (dep-scan.meta)
       homepage
       license
       maintainers
       teams
       ;
+
+    description = "Server library for owasp depscan";
   };
 }

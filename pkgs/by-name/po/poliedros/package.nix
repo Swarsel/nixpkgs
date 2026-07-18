@@ -1,25 +1,24 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  ninja,
-  meson,
-  pkg-config,
-  wrapGAppsHook4,
-  glib,
-  desktop-file-utils,
   appstream-glib,
+  desktop-file-utils,
+  glib,
   gobject-introspection,
   libadwaita,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 let
   version = "1.5.3";
 in
 python3Packages.buildPythonApplication {
-  pname = "poliedros";
   inherit version;
-  pyproject = false;
+  pname = "poliedros";
 
   src = fetchFromGitHub {
     owner = "kriptolix";
@@ -39,14 +38,11 @@ python3Packages.buildPythonApplication {
     gobject-introspection
   ];
 
-  pythonPath = [ python3Packages.pygobject3 ];
-
   buildInputs = [ libadwaita ];
-
   dontWrapGApps = true;
-
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
-
+  pyproject = false;
+  pythonPath = [ python3Packages.pygobject3 ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -54,7 +50,7 @@ python3Packages.buildPythonApplication {
     homepage = "https://github.com/kriptolix/Poliedros";
     changelog = "https://github.com/kriptolix/Poliedros/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "poliedros";
     maintainers = [ lib.maintainers.da157 ];
+    mainProgram = "poliedros";
   };
 }

@@ -1,44 +1,41 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  buildPackages,
-  gettext,
-  pkg-config,
-  python3,
+  autoconf,
+  autoconf-archive,
+  automake,
   avahi,
+  buildPackages,
+  curl,
+  fetchpatch,
+  gawk,
+  gettext,
   libgphoto2,
   libieee1284,
   libjpeg,
   libpng,
   libtiff,
+  libtool,
   libusb1,
   libv4l,
-  net-snmp,
-  curl,
-  systemdLibs,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
   libxml2,
-  poppler,
-  gawk,
-  sane-drivers,
+  net-snmp,
   nixosTests,
-  autoconf,
-  automake,
-  libtool,
-  autoconf-archive,
-
+  pkg-config,
+  poppler,
+  python3,
+  sane-drivers,
+  systemdLibs,
   # List of { src name backend } attribute sets - see installFirmware below:
   extraFirmware ? [ ],
-
   # For backwards compatibility with older setups; use extraFirmware instead:
   gt68xxFirmware ? null,
-  snapscanFirmware ? null,
-
+  scanSnapDriversPackage ? sane-drivers.epjitsu,
   # Not included by default, scan snap drivers require fetching of unfree binaries.
   scanSnapDriversUnfree ? false,
-  scanSnapDriversPackage ? sane-drivers.epjitsu,
+  snapscanFirmware ? null,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,19 +49,25 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-e7Wjda+CobYatblvVCGkMAO2aWrdSCp7q+qIEGnGDCY=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
+
   patches = [
     # Fix hangs in tests, hopefully
     # FIXME: remove in next release
     (fetchpatch {
-      url = "https://gitlab.com/sane-project/backends/-/commit/8acc267d5f4049d8438456821137ae56e91baea9.patch";
       hash = "sha256-IyupDeH1MPvEBnGaUzBbCu106Gp7zXxlPGFAaiiINQI=";
+      url = "https://gitlab.com/sane-project/backends/-/commit/8acc267d5f4049d8438456821137ae56e91baea9.patch";
     })
     # Fix multipages scanning
     # https://gitlab.com/sane-project/backends/-/merge_requests/883
     (fetchpatch {
-      url = "https://gitlab.com/sane-project/backends/-/commit/fbf80b0fc1d262ed40d4b49dd53c14707083ef60.patch";
       hash = "sha256-9KKTr7p1vCgvGr6hFY83K5gbL7Ilm4Uzc86JIxv+ahI=";
       revert = true;
+      url = "https://gitlab.com/sane-project/backends/-/commit/fbf80b0fc1d262ed40d4b49dd53c14707083ef60.patch";
     })
   ];
 
@@ -72,30 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Do not create lock dir in install phase
     sed -i '/^install-lockpath:/!b;n;c\       # pass' backend/Makefile.am
   '';
-
-  preConfigure = ''
-    # create version files, so that autotools macros can use them:
-    # https://gitlab.com/sane-project/backends/-/issues/440
-    printf "%s\n" "$version" > .tarball-version
-    printf "%s\n" "$version" > .version
-
-    autoreconf -fiv
-
-    # Fixes for cross compilation
-    # https://github.com/NixOS/nixpkgs/issues/308283
-
-    # sane-desc will be used in postInstall so compile it for build
-    # https://github.com/void-linux/void-packages/blob/master/srcpkgs/sane/patches/sane-desc-cross.patch
-    patch -p1 -i ${./sane-desc-cross.patch}
-  '';
-
-  outputs = [
-    "out"
-    "doc"
-    "man"
-  ];
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   nativeBuildInputs = [
     autoconf
@@ -128,8 +107,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemdLibs
   ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--with-lockdir=/var/lock/sane"
   ]
@@ -142,19 +119,35 @@ stdenv.mkDerivation (finalAttrs: {
     "CFLAGS=-DHAVE_MMAP=${if stdenv.hostPlatform.isLinux then "1" else "0"}"
   ];
 
+  preConfigure = ''
+    # create version files, so that autotools macros can use them:
+    # https://gitlab.com/sane-project/backends/-/issues/440
+    printf "%s\n" "$version" > .tarball-version
+    printf "%s\n" "$version" > .version
+
+    autoreconf -fiv
+
+    # Fixes for cross compilation
+    # https://github.com/NixOS/nixpkgs/issues/308283
+
+    # sane-desc will be used in postInstall so compile it for build
+    # https://github.com/void-linux/void-packages/blob/master/srcpkgs/sane/patches/sane-desc-cross.patch
+    patch -p1 -i ${./sane-desc-cross.patch}
+  '';
+
   postInstall =
     let
       compatFirmware =
         extraFirmware
         ++ lib.optional (gt68xxFirmware != null) {
-          src = gt68xxFirmware.fw;
           inherit (gt68xxFirmware) name;
+          src = gt68xxFirmware.fw;
           backend = "gt68xx";
         }
         ++ lib.optional (snapscanFirmware != null) {
           src = snapscanFirmware;
-          name = "your-firmwarefile.bin";
           backend = "snapscan";
+          name = "your-firmwarefile.bin";
         };
 
       installFirmware = f: ''
@@ -178,11 +171,12 @@ stdenv.mkDerivation (finalAttrs: {
     ''
     + lib.concatStrings (map installFirmware compatFirmware);
 
+  doInstallCheck = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
   # parallel install creates a bad symlink at $out/lib/sane/libsane.so.1 which prevents finding plugins
   # https://github.com/NixOS/nixpkgs/issues/224569
   enableParallelInstalling = false;
-
-  doInstallCheck = true;
 
   passthru.tests = {
     inherit (nixosTests) sane;
@@ -190,6 +184,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "SANE (Scanner Access Now Easy) backends";
+
     longDescription = ''
       Collection of open-source SANE backends (device drivers).
       SANE is a universal scanner interface providing standardized access to
@@ -197,9 +192,10 @@ stdenv.mkDerivation (finalAttrs: {
       video- and still-cameras, frame-grabbers, etc. For a list of supported
       scanners, see http://www.sane-project.org/sane-backends.html.
     '';
+
     homepage = "http://www.sane-project.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = [ lib.maintainers.symphorien ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

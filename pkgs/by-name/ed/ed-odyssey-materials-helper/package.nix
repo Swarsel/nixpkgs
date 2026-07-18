@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  alsa-lib,
+  copyDesktopItems,
+  ffmpeg,
+  glib,
   gradle_9,
   jdk25,
-  wrapGAppsHook3,
-  libxxf86vm,
-  libxtst,
   libglvnd,
-  glib,
-  alsa-lib,
-  ffmpeg,
+  libxtst,
+  libxxf86vm,
   lsb-release,
-  copyDesktopItems,
   makeDesktopItem,
+  wrapGAppsHook3,
   writeScript,
   writeText,
 }:
@@ -31,12 +31,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-vQn45gHcMRLH5ta5+h3QXLODUlmDWeG1PSRRl/hgfiE=";
   };
 
-  nativeBuildInputs = [
-    gradle
-    wrapGAppsHook3
-    copyDesktopItems
-  ];
-
   patches = [
     # We'll set up the edomh: URL scheme in makeDesktopItem,
     # so this removes 1) the popup about it when you first start the program, 2) the option in the settings
@@ -46,6 +40,7 @@ stdenv.mkDerivation rec {
     ./eula.patch # EULA doesn't apply to nixpkgs build, only the upstream build, don't show it
     ./disable-broken-features.patch # some features require things not included in the source code, we'll disable/hide those
   ];
+
   postPatch = ''
     # oslib doesn't seem to do releases and hasn't had a change since 2021, so always use commit d6ee6549bb
     # it is not the latest commit because using a commit here whose hash starts with a number causes issues, but this works
@@ -65,19 +60,11 @@ stdenv.mkDerivation rec {
     echo "This nixpkgs-packaged version of Elite Dangerous Odyssey Materials Helper doesn't upload any data." > application/src/main/resources/text/privacy.txt
   '';
 
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  gradleFlags = [
-    "-Dorg.gradle.java.home=${jdk25}"
-    "--stacktrace"
+  nativeBuildInputs = [
+    gradle
+    wrapGAppsHook3
+    copyDesktopItems
   ];
-
-  gradleInitScript = writeText "empty-init-script.gradle" ""; # fixes build by making it possibly not reproducible, though it still seems to be
-
-  gradleBuildTask = "application:jpackage";
 
   preBuild = ''
     # required for the program to know its own version
@@ -95,8 +82,6 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
-
-  dontWrapGApps = true;
 
   postFixup = ''
     makeWrapper $out/share/ed-odyssey-materials-helper/bin/Elite\ Dangerous\ Odyssey\ Materials\ Helper $out/bin/ed-odyssey-materials-helper \
@@ -116,16 +101,26 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Helper for managing materials in Elite Dangerous Odyssey";
+      desktopName = "Elite Dangerous Odyssey Materials Helper";
+      exec = "ed-odyssey-materials-helper %u";
+      icon = "ed-odyssey-materials-helper";
+      mimeTypes = [ "x-scheme-handler/edomh" ];
       name = "ed-odyssey-materials-helper";
       type = "Application";
-      desktopName = "Elite Dangerous Odyssey Materials Helper";
-      comment = "Helper for managing materials in Elite Dangerous Odyssey";
-      icon = "ed-odyssey-materials-helper";
-      exec = "ed-odyssey-materials-helper %u";
-      categories = [ "Game" ];
-      mimeTypes = [ "x-scheme-handler/edomh" ];
     })
   ];
+
+  dontWrapGApps = true;
+  gradleBuildTask = "application:jpackage";
+
+  gradleFlags = [
+    "-Dorg.gradle.java.home=${jdk25}"
+    "--stacktrace"
+  ];
+
+  gradleInitScript = writeText "empty-init-script.gradle" ""; # fixes build by making it possibly not reproducible, though it still seems to be
 
   gradleUpdateScript = ''
     runHook preBuild
@@ -133,6 +128,11 @@ stdenv.mkDerivation rec {
     gradle application:nixDownloadDeps -Dos.family=linux -Dos.arch=amd64
     gradle application:nixDownloadDeps -Dos.family=linux -Dos.arch=aarch64
   '';
+
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
 
   passthru.updateScript = writeScript "update-ed-odyssey-materials-helper" ''
     #!/usr/bin/env nix-shell
@@ -145,21 +145,25 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Helper for managing materials in Elite Dangerous Odyssey";
     homepage = "https://github.com/jixxed/ed-odyssey-materials-helper";
-    downloadPage = "https://github.com/jixxed/ed-odyssey-materials-helper/releases/tag/${version}";
     changelog = "https://github.com/jixxed/ed-odyssey-materials-helper/releases/tag/${version}";
     license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # mitm cache
     ];
+
     maintainers = with lib.maintainers; [
       elfenermarcell
       toasteruwu
     ];
-    mainProgram = "ed-odyssey-materials-helper";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "ed-odyssey-materials-helper";
+    downloadPage = "https://github.com/jixxed/ed-odyssey-materials-helper/releases/tag/${version}";
   };
 }

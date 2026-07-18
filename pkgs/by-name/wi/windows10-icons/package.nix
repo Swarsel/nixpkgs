@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -27,8 +27,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontConfigure = true;
   dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Windows 10 icon theme";

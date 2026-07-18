@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nbmerge";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jbn";
@@ -17,11 +16,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   patches = [ ./pytest-compatibility.patch ];
-
-  build-system = [ python3Packages.setuptools ];
-
-  dependencies = [ python3Packages.nbformat ];
-
   nativeCheckInputs = [ python3Packages.pytestCheckHook ];
 
   postCheck = ''
@@ -29,11 +23,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     PATH=$PATH:$out/bin ./cli_tests.sh
   '';
 
+  build-system = [ python3Packages.setuptools ];
+  dependencies = [ python3Packages.nbformat ];
+  pyproject = true;
   pythonImportsCheck = [ "nbmerge" ];
 
   meta = {
-    description = "Tool to merge/concatenate Jupyter (IPython) notebooks";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Tool to merge/concatenate Jupyter (IPython) notebooks";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "nbmerge";

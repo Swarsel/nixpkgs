@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pymeeus,
-  pytz,
   pytestCheckHook,
+  pytz,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "convertdate";
   version = "2.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fitnr";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-YgLKUSg95j9rRejkmep+Levy5Rvnl/kXEiXuS7hazbY=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage (finalAttrs: {
     pytz
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "convertdate" ];
 
   meta = {

@@ -7,14 +7,9 @@
 }:
 
 buildPythonPackage {
-  pname = "sanic-testing-tests";
   inherit (sanic-testing) version;
-
+  pname = "sanic-testing-tests";
   src = sanic-testing.testsout;
-  pyproject = false;
-
-  dontBuild = true;
-  dontInstall = true;
 
   nativeCheckInputs = [
     pytest-asyncio
@@ -23,5 +18,8 @@ buildPythonPackage {
     setuptools
   ];
 
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
   pythonImportsCheck = [ "sanic_testing" ];
 }

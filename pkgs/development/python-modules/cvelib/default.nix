@@ -1,20 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   cve,
-  fetchFromGitHub,
+  hatchling,
   jsonschema,
   pytestCheckHook,
   requests,
-  hatchling,
   testers,
 }:
 
 buildPythonPackage rec {
   pname = "cvelib";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RedHatProductSecurity";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     hash = "sha256-lbwrZSzJaP+nKFwt7xiq/LTzgOuf8aELxjrxEKkYpfc=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -31,10 +31,8 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cvelib" ];
-
   passthru.tests.version = testers.testVersion { package = cve; };
 
   meta = {

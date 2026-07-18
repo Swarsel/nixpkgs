@@ -1,20 +1,18 @@
 {
+  lib,
+  stdenv,
   arrow-cpp,
   glib,
   gobject-introspection,
-  lib,
   meson,
   ninja,
   pkg-config,
   python3,
-  stdenv,
 }:
 
 stdenv.mkDerivation {
-  pname = "arrow-glib";
   inherit (arrow-cpp) src version;
-  sourceRoot = "${arrow-cpp.src.name}/c_glib";
-
+  pname = "arrow-glib";
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -29,6 +27,8 @@ stdenv.mkDerivation {
     arrow-cpp
     glib
   ];
+
+  sourceRoot = "${arrow-cpp.src.name}/c_glib";
 
   meta = {
     inherit (arrow-cpp.meta) license platforms;

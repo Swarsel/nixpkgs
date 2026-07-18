@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  jre_minimal,
-  pkg-config,
-  autoPatchelfHook,
   alsa-lib,
-  wayland,
-  libxcursor,
-  libxrandr,
-  libxi,
-  libx11,
-  libxcb,
-  vulkan-loader,
-  udev,
-  libxkbcommon,
-  openh264,
-  writeShellApplication,
+  autoPatchelfHook,
   curl,
   jq,
+  jre_minimal,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
   nix-update,
-  withX11 ? true,
+  openh264,
+  pkg-config,
+  rustPlatform,
+  udev,
+  vulkan-loader,
+  wayland,
+  writeShellApplication,
   withRuffleTools ? false,
+  withX11 ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -49,21 +49,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
                        "OpenH264Version(${major}, ${minor}, ${patch})"
     '';
 
-  cargoHash = "sha256-wQ2rM0O9X7xLZsIwdMrIApdDd5nSaDFj+e1TZkSPptU=";
-  cargoBuildFlags = lib.optional withRuffleTools "--workspace";
-
-  env =
-    let
-      tag = lib.strings.removePrefix "0.2.0-" finalAttrs.version;
-      versionDate = lib.strings.removePrefix "0.2.0-nightly-" finalAttrs.version;
-    in
-    {
-      VERGEN_IDEMPOTENT = "1";
-      VERGEN_GIT_SHA = tag;
-      VERGEN_GIT_COMMIT_DATE = versionDate;
-      VERGEN_GIT_COMMIT_TIMESTAMP = "${versionDate}T00:00:00Z";
-    };
-
   nativeBuildInputs = [
     jre_minimal
   ]
@@ -79,21 +64,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     (lib.getLib stdenv.cc.cc)
   ];
 
-  runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux (
-    [
-      wayland
-      libxkbcommon
-      vulkan-loader
-      openh264
-    ]
-    ++ lib.optionals withX11 [
-      libxcursor
-      libxrandr
-      libxi
-      libx11
-      libxcb
-    ]
-  );
+  cargoHash = "sha256-wQ2rM0O9X7xLZsIwdMrIApdDd5nSaDFj+e1TZkSPptU=";
+
+  env =
+    let
+      tag = lib.strings.removePrefix "0.2.0-" finalAttrs.version;
+      versionDate = lib.strings.removePrefix "0.2.0-nightly-" finalAttrs.version;
+    in
+    {
+      VERGEN_GIT_COMMIT_DATE = versionDate;
+      VERGEN_GIT_COMMIT_TIMESTAMP = "${versionDate}T00:00:00Z";
+      VERGEN_GIT_SHA = tag;
+      VERGEN_IDEMPOTENT = "1";
+    };
 
   postInstall = ''
     mv $out/bin/ruffle_desktop $out/bin/ruffle
@@ -111,14 +94,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
                    -t $out/share/metainfo/
   '';
 
+  cargoBuildFlags = lib.optional withRuffleTools "--workspace";
+
+  runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux (
+    [
+      wayland
+      libxkbcommon
+      vulkan-loader
+      openh264
+    ]
+    ++ lib.optionals withX11 [
+      libxcursor
+      libxrandr
+      libxi
+      libx11
+      libxcb
+    ]
+  );
+
   passthru = {
     updateScript = lib.getExe (writeShellApplication {
       name = "ruffle-update";
+
       runtimeInputs = [
         curl
         jq
         nix-update
       ];
+
       text = ''
         version="$( \
           curl https://api.github.com/repos/ruffle-rs/ruffle/releases?per_page=1 | \
@@ -131,6 +134,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cross platform Adobe Flash Player emulator";
+
     longDescription = ''
       Ruffle is a cross platform emulator for running and preserving
       Adobe Flash content. It is capable of running ActionScript 1, 2
@@ -141,17 +145,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
       `true` will build all the available packages in the ruffle
       project, including the `exporter` and `scanner` utilities.
     '';
+
     homepage = "https://ruffle.rs/";
-    downloadPage = "https://ruffle.rs/downloads";
+    changelog = "https://github.com/ruffle-rs/ruffle/releases/tag/${lib.strings.removePrefix "0.2.0-" finalAttrs.version}";
+
     license = [
       lib.licenses.mit
       lib.licenses.asl20
     ];
-    changelog = "https://github.com/ruffle-rs/ruffle/releases/tag/${lib.strings.removePrefix "0.2.0-" finalAttrs.version}";
+
     maintainers = [
       lib.maintainers.jchw
     ];
-    mainProgram = "ruffle";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "ruffle";
+    downloadPage = "https://ruffle.rs/downloads";
   };
 })

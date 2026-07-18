@@ -1,30 +1,36 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flexmock,
   git,
   pytestCheckHook,
   rpm,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "specfile";
   version = "0.39.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "packit";
     repo = "specfile";
     tag = finalAttrs.version;
+    hash = "sha256-z9HGnBLdtJ4uzm1DJFD0QN/DZNTdBbZcPx/kefCYnkc=";
+
     postFetch = ''
       # export-subst prevents reproducibility
       rm "$out/.git_archival.txt"
     '';
-    hash = "sha256-z9HGnBLdtJ4uzm1DJFD0QN/DZNTdBbZcPx/kefCYnkc=";
   };
+
+  nativeCheckInputs = [
+    git
+    flexmock
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -33,19 +39,14 @@ buildPythonPackage (finalAttrs: {
 
   dependencies = [ rpm ];
 
-  nativeCheckInputs = [
-    git
-    flexmock
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "specfile" ];
-
   disabledTests = [
     # AssertionError
     "test_update_tag"
     "test_shell_expansions"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "specfile" ];
 
   meta = {
     description = "Library for parsing and manipulating RPM spec files";

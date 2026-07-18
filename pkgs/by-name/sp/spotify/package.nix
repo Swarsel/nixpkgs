@@ -13,14 +13,16 @@ let
   updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://www.spotify.com/";
     description = "Play music from the Spotify music service";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://www.spotify.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "spotify";
   };
 

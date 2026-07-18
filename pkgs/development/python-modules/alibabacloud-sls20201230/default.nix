@@ -11,16 +11,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-sls20201230";
   version = "5.14.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_sls20201230";
     inherit (finalAttrs) version;
     hash = "sha256-tySehsqxNdVfTHan9603srbIuwOQDx6FLAB6S3Cc1YQ=";
+    pname = "alibabacloud_sls20201230";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,10 +29,8 @@ buildPythonPackage (finalAttrs: {
     darabonba-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_sls20201230" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Alibaba Cloud Log Service (20201230) SDK Library for Python";

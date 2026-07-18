@@ -6,23 +6,17 @@
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: {
       numpy = super.numpy_1;
     };
+
+    self = python;
   };
 in
 python.pkgs.buildPythonApplication rec {
-  pname = "linien-gui";
-  pyproject = true;
-
   inherit (python.pkgs.linien-common) src version;
+  pname = "linien-gui";
 
-  sourceRoot = "${src.name}/linien-gui";
-
-  build-system = with python.pkgs; [
-    setuptools
-  ];
   nativeBuildInputs = [
     qt5.wrapQtAppsHook
   ];
@@ -31,6 +25,14 @@ python.pkgs.buildPythonApplication rec {
   # with `QT_QPA_PLATFORM=wayland` in their environment.
   buildInputs = [
     qt5.qtwayland
+  ];
+
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  build-system = with python.pkgs; [
+    setuptools
   ];
 
   dependencies = with python.pkgs; [
@@ -44,10 +46,8 @@ python.pkgs.buildPythonApplication rec {
   ];
 
   dontWrapQtApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
+  pyproject = true;
+  sourceRoot = "${src.name}/linien-gui";
 
   passthru = {
     # Useful for creating .withPackages environments, see NOTE near
@@ -57,13 +57,15 @@ python.pkgs.buildPythonApplication rec {
 
   meta = {
     description = "Graphical user interface of the Linien spectroscopy lock application";
-    mainProgram = "linien";
     homepage = "https://github.com/linien-org/linien/tree/develop/linien-gui";
     changelog = "https://github.com/linien-org/linien/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       fsagbuya
       doronbehar
     ];
+
+    mainProgram = "linien";
   };
 }

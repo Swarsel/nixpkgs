@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gtk2,
   bison,
-  intltool,
-  flex,
-  netpbm,
-  imagemagick,
   dbus,
-  freetype,
+  flex,
   fontconfig,
-  libGLU,
+  freetype,
+  gd,
+  gnome2,
+  gtk2,
+  imagemagick,
+  intltool,
   libGL,
+  libGLU,
+  libxmu,
+  libxrender,
+  netpbm,
+  pkg-config,
   shared-mime-info,
   tcl,
   tk,
-  gnome2,
-  gd,
-  libxrender,
-  libxmu,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,8 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Printed Circuit Board editor";
     homepage = "https://sourceforge.net/projects/pcb/";
+    license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ mog ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2;
   };
 })

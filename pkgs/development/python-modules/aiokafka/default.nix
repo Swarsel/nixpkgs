@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   async-timeout,
   buildPythonPackage,
   cramjam,
   cython,
-  fetchFromGitHub,
   gssapi,
   packaging,
   setuptools,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aiokafka";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -24,12 +23,14 @@ buildPythonPackage rec {
     hash = "sha256-xmrNhtyFY+3CJhECIVZRMVx0sZbZ00RLiyZzOdPNNIs=";
   };
 
+  buildInputs = [ zlib ];
+  # Checks require running Kafka server
+  doCheck = false;
+
   build-system = [
     cython
     setuptools
   ];
-
-  buildInputs = [ zlib ];
 
   dependencies = [
     async-timeout
@@ -38,19 +39,18 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
-    snappy = [ cramjam ];
-    lz4 = [ cramjam ];
-    zstd = [ cramjam ];
-    gssapi = [ gssapi ];
     all = [
       cramjam
       gssapi
     ];
+
+    gssapi = [ gssapi ];
+    lz4 = [ cramjam ];
+    snappy = [ cramjam ];
+    zstd = [ cramjam ];
   };
 
-  # Checks require running Kafka server
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiokafka" ];
 
   meta = {

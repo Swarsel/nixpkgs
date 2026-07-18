@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  poetry-core,
+  buildPythonPackage,
   django,
-  sly,
+  fetchpatch,
   mock,
+  poetry-core,
   pytestCheckHook,
+  sly,
 }:
 
 buildPythonPackage rec {
   pname = "scim2-filter-parser";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "15five";
@@ -25,32 +24,32 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/15five/scim2-filter-parser/pull/43
     (fetchpatch {
+      hash = "sha256-PjJH1S5CDe/BMI0+mB34KdpNNcHfexBFYBmHolsWH4o=";
       name = "replace-poetry-with-poetry-core.patch";
       url = "https://github.com/15five/scim2-filter-parser/commit/675d85f3a3ff338e96a408827d64d9e893fa5255.patch";
-      hash = "sha256-PjJH1S5CDe/BMI0+mB34KdpNNcHfexBFYBmHolsWH4o=";
     })
   ];
-
-  build-system = [ poetry-core ];
 
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace "poetry.masonry.api" "poetry.core.masonry.api"
   '';
 
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.django-query;
+
+  build-system = [ poetry-core ];
   dependencies = [ sly ];
 
   optional-dependencies = {
     django-query = [ django ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "scim2_filter_parser" ];
-
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.django-query;
 
   meta = {
     description = "Customizable parser/transpiler for SCIM2.0 filters";

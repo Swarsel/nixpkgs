@@ -1,25 +1,24 @@
 {
-  stdenv,
   lib,
-  buildPackages,
+  stdenv,
   fetchurl,
-  fetchpatch,
   fetchFromGitLab,
-  enableStatic ? stdenv.hostPlatform.isStatic,
-  enableMinimal ? false,
+  buildPackages,
+  coreutils,
+  fetchpatch,
+  # For tests
+  hostname,
+  musl,
+  simple-http-server,
+  which,
+  zip,
   enableAppletSymlinks ? true,
+  enableMinimal ? false,
+  enableStatic ? stdenv.hostPlatform.isStatic,
+  extraConfig ? "",
   # Allow forcing musl without switching stdenv itself, e.g. for our bootstrapping:
   # nix build -f pkgs/top-level/release.nix stdenvBootstrapTools.x86_64-linux.dist
   useMusl ? stdenv.hostPlatform.libc == "musl",
-  musl,
-  extraConfig ? "",
-
-  # For tests
-  hostname,
-  coreutils,
-  zip,
-  which,
-  simple-http-server,
 }:
 
 assert stdenv.hostPlatform.libc == "musl" -> useMusl;
@@ -73,11 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-MxHf8y50ZJn03w1d8E1+s5Y4LX4Qi7klDntRm4NwQ6Q=";
   };
 
-  hardeningDisable = [
-    "format"
-  ]
-  ++ lib.optionals enableStatic [ "fortify" ];
-
   patches = [
     # Allow BusyBox to be invoked as "<something>-busybox". This is
     # necessary when it's run from the Nix store as <hash>-busybox during
@@ -88,29 +82,29 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-aarch64-sha1.patch
     # archival: disallow path traversals (CVE-2023-39810)
     (fetchpatch {
+      hash = "sha256-pOARbCwiucrkNITBoOMpLF3GniYvJiyBeBi2/Aw2JY8=";
       name = "CVE-2023-39810.patch";
       url = "https://git.busybox.net/busybox/patch/?id=9a8796436b9b0641e13480811902ea2ac57881d3";
-      hash = "sha256-pOARbCwiucrkNITBoOMpLF3GniYvJiyBeBi2/Aw2JY8=";
     })
     # tar: strip unsafe hardlink components - GNU tar does the same
     (fetchpatch {
-      name = "CVE-2026-26157_CVE-2026-26158.patch";
-      url = "https://git.busybox.net/busybox/patch/?id=3fb6b31c716669e12f75a2accd31bb7685b1a1cb";
       excludes = [ "networking/httpd_ratelimit_cgi.c" ]; # New since release.
       hash = "sha256-Msm9sDZrVx7ofunnvnTS73SPKUUpR3Tv5xZ/wBd+rts=";
+      name = "CVE-2026-26157_CVE-2026-26158.patch";
+      url = "https://git.busybox.net/busybox/patch/?id=3fb6b31c716669e12f75a2accd31bb7685b1a1cb";
     })
     # tar: only strip unsafe components from hardlinks, not symlinks
     # fix issue introduced by the previous patch (CVE-2026-26157_CVE-2026-26158.patch)
     (fetchpatch {
+      hash = "sha256-go/KHSsuMSm21nC0yvKEtAQs8Jnjjqdcs5i8RWBGwT4=";
       name = "CVE-2026-26157_CVE-2026-26158-2.patch";
       url = "https://github.com/vda-linux/busybox_mirror/commit/599f5dd8fac390c18b79cba4c14c334957605dae.patch";
-      hash = "sha256-go/KHSsuMSm21nC0yvKEtAQs8Jnjjqdcs5i8RWBGwT4=";
     })
     # syslogd: fix writing to local log file
     # https://lists.busybox.net/pipermail/busybox/2024-October/090969.html
     (fetchpatch {
-      url = "https://hg.slitaz.org/wok/raw-file/1cba565dc2a9/busybox/stuff/busybox-1.37-fix-syslogd.patch";
       hash = "sha256-NZRctLv1CpTfnR6+CA890YY8ljBQLGkkselyP5/TnsQ=";
+      url = "https://hg.slitaz.org/wok/raw-file/1cba565dc2a9/busybox/stuff/busybox-1.37-fix-syslogd.patch";
     })
     # https://lists.busybox.net/pipermail/busybox/2026-March/092010.html
     ./build-system-buffer-overflow.patch
@@ -121,9 +115,31 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) ./clang-cross.patch;
 
-  separateDebugInfo = true;
-
   postPatch = "patchShebangs .";
+  strictDeps = true;
+
+  buildInputs = lib.optionals (enableStatic && !useMusl && stdenv.cc.libc ? static) [
+    stdenv.cc.libc
+    stdenv.cc.libc.static
+  ];
+
+  makeFlags = [ "SKIP_STRIP=y" ];
+
+  postConfigure = lib.optionalString (useMusl && stdenv.hostPlatform.libc != "musl") ''
+    makeFlagsArray+=("CC=${stdenv.cc.targetPrefix}cc -isystem ${musl.dev}/include -B${musl}/lib -L${musl}/lib")
+  '';
+
+  doCheck = false; # Takes a while, requires extra dependencies
+
+  postInstall = ''
+    sed -e '
+    1 a busybox() { '$out'/bin/busybox "$@"; }\
+    logger() { '$out'/bin/logger "$@"; }\
+    ' ${debianDispatcherScript} > ${outDispatchPath}
+    sed -i 's|/sbin/resolvconf|"$(busybox which resolvconf)"|g' ${outDispatchPath}
+    chmod 555 ${outDispatchPath}
+    HOST_PATH=$out/bin patchShebangs --host ${outDispatchPath}
+  '';
 
   configurePhase = ''
     export KCONFIG_NOTIMESTAMP=1
@@ -182,34 +198,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  postConfigure = lib.optionalString (useMusl && stdenv.hostPlatform.libc != "musl") ''
-    makeFlagsArray+=("CC=${stdenv.cc.targetPrefix}cc -isystem ${musl.dev}/include -B${musl}/lib -L${musl}/lib")
-  '';
-
-  makeFlags = [ "SKIP_STRIP=y" ];
-
-  postInstall = ''
-    sed -e '
-    1 a busybox() { '$out'/bin/busybox "$@"; }\
-    logger() { '$out'/bin/logger "$@"; }\
-    ' ${debianDispatcherScript} > ${outDispatchPath}
-    sed -i 's|/sbin/resolvconf|"$(busybox which resolvconf)"|g' ${outDispatchPath}
-    chmod 555 ${outDispatchPath}
-    HOST_PATH=$out/bin patchShebangs --host ${outDispatchPath}
-  '';
-
-  strictDeps = true;
-
   depsBuildBuild = [ buildPackages.stdenv.cc ];
-
-  buildInputs = lib.optionals (enableStatic && !useMusl && stdenv.cc.libc ? static) [
-    stdenv.cc.libc
-    stdenv.cc.libc.static
-  ];
-
   enableParallelBuilding = true;
 
-  doCheck = false; # Takes a while, requires extra dependencies
+  hardeningDisable = [
+    "format"
+  ]
+  ++ lib.optionals enableStatic [ "fortify" ];
+
+  separateDebugInfo = true;
+
   passthru = {
     shellPath = "/bin/ash";
 
@@ -279,14 +277,16 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tiny versions of common UNIX utilities in a single small executable";
     homepage = "https://busybox.net/";
     license = lib.licenses.gpl2Only;
-    mainProgram = "busybox";
+
     maintainers = with lib.maintainers; [
       TethysSvensson
       qyliss
     ];
-    teams = [ lib.teams.security-review ];
+
     platforms = lib.platforms.linux;
-    priority = 15; # below systemd (halt, init, poweroff, reboot) and coreutils
+    mainProgram = "busybox";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "busybox" version;
+    priority = 15; # below systemd (halt, init, poweroff, reboot) and coreutils
+    teams = [ lib.teams.security-review ];
   };
 })

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   jre,
+  libGL,
+  libxxf86vm,
   makeWrapper,
   maven,
-  libGL,
   xdg-utils,
-  libxxf86vm,
   zip,
   zlib,
 }:
@@ -22,6 +22,14 @@ maven.buildMavenPackage rec {
     hash = "sha256-jDW74Hk+6vzCUm84wwMn5XBGPVlsJ3mQrjtuqMZssz0=";
   };
 
+  nativeBuildInputs = [
+    makeWrapper
+    zip
+  ];
+
+  # fix for "date 1980-01-01T00:00:00Z is not within the valid range 1980-01-01T00:00:02Z to 2099-12-31T23:59:59Z"
+  env.SOURCE_DATE_EPOCH = 315532802; # 1980-01-01T00:00:02Z
+
   preBuild = ''
     echo "${version}" > assets/assets/org/DarisaDesigns/version
     cd docs
@@ -31,29 +39,6 @@ maven.buildMavenPackage rec {
     cd ../..
   '';
 
-  mvnHash =
-    {
-      aarch64-linux = "sha256-o5dFk1pghCOaaxAto7e5kXn2mrVEGAtb9kTwQQN2N8o=";
-      x86_64-linux = "sha256-KYgeVBhqBjP6dqwpSzoqH8dfsL4WpJcSiHEMfgk0CNE=";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-  mvnFetchExtraArgs.env = {
-    inherit (env) SOURCE_DATE_EPOCH;
-  };
-
-  # fix for "date 1980-01-01T00:00:00Z is not within the valid range 1980-01-01T00:00:02Z to 2099-12-31T23:59:59Z"
-  env.SOURCE_DATE_EPOCH = 315532802; # 1980-01-01T00:00:02Z
-
-  mvnParameters = "-DskipTests";
-
-  nativeBuildInputs = [
-    makeWrapper
-    zip
-  ];
-  runtimeDeps = [
-    xdg-utils
-    zlib
-  ];
   installPhase = ''
     runHook preInstall
 
@@ -72,6 +57,24 @@ maven.buildMavenPackage rec {
 
     runHook postInstall
   '';
+
+  mvnFetchExtraArgs.env = {
+    inherit (env) SOURCE_DATE_EPOCH;
+  };
+
+  mvnHash =
+    {
+      aarch64-linux = "sha256-o5dFk1pghCOaaxAto7e5kXn2mrVEGAtb9kTwQQN2N8o=";
+      x86_64-linux = "sha256-KYgeVBhqBjP6dqwpSzoqH8dfsL4WpJcSiHEMfgk0CNE=";
+    }
+    .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
+  mvnParameters = "-DskipTests";
+
+  runtimeDeps = [
+    xdg-utils
+    zlib
+  ];
 
   meta = {
     description = "Conlang construction toolkit";

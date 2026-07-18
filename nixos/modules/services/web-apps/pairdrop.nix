@@ -27,42 +27,35 @@ in
 {
   options.services.pairdrop = {
     enable = mkEnableOption "pairdrop";
-
     package = mkPackageOption pkgs "pairdrop" { };
 
-    port = mkOption {
-      type = types.port;
-      default = 3000;
-      example = 3010;
-      description = "The port to listen on.";
-    };
-
-    rtcConfig = mkOption {
-      type = json.type;
-      default = null;
-      example = {
-        sdpSemantics = "unified-plan";
-        iceServers = [
-          {
-            urls = "stun:stun.example.com:19302";
-          }
-        ];
-      };
-      description = ''
-        Configuration for STUN/TURN servers.
-        This is converted to JSON and written into a file automatically.
-        If you want to provide a file path instead, set `RTC_CONFIG` in {option}`services.pairdrop.environment`.
-      '';
-    };
-
     environment = mkOption {
+      default = { };
+
       description = ''
         Additional configuration (environment variables) for PairDrop, see
         <https://github.com/schlagmichdoch/PairDrop/blob/master/docs/host-your-own.md#environment-variables>
         for supported values.
       '';
 
+      example = {
+        BLUESKY_BUTTON_ACTIVE = false;
+        CUSTOM_BUTTON_ACTIVE = false;
+        DEBUG_MODE = true;
+        DONATION_BUTTON_ACTIVE = false;
+        IPV6_LOCALIZE = 4;
+        MASTODON_BUTTON_ACTIVE = false;
+        PRIVACYPOLICY_BUTTON_ACTIVE = false;
+        RATE_LIMIT = 1;
+        RTC_CONFIG = "/etc/pairdrop/rtc-config.json";
+        SIGNALING_SERVER = "pairdrop.net";
+        TWITTER_BUTTON_ACTIVE = false;
+        WS_FALLBACK = true;
+      };
+
       type = types.submodule {
+        options = { };
+
         freeformType =
           with types;
           attrsOf (oneOf [
@@ -70,35 +63,40 @@ in
             int
             str
           ]);
-
-        options = { };
       };
+    };
 
-      default = { };
+    port = mkOption {
+      default = 3000;
+      description = "The port to listen on.";
+      example = 3010;
+      type = types.port;
+    };
+
+    rtcConfig = mkOption {
+      default = null;
+
+      description = ''
+        Configuration for STUN/TURN servers.
+        This is converted to JSON and written into a file automatically.
+        If you want to provide a file path instead, set `RTC_CONFIG` in {option}`services.pairdrop.environment`.
+      '';
 
       example = {
-        DEBUG_MODE = true;
-        RATE_LIMIT = 1;
-        IPV6_LOCALIZE = 4;
-        WS_FALLBACK = true;
-        SIGNALING_SERVER = "pairdrop.net";
-        RTC_CONFIG = "/etc/pairdrop/rtc-config.json";
+        iceServers = [
+          {
+            urls = "stun:stun.example.com:19302";
+          }
+        ];
 
-        DONATION_BUTTON_ACTIVE = false;
-        TWITTER_BUTTON_ACTIVE = false;
-        MASTODON_BUTTON_ACTIVE = false;
-        BLUESKY_BUTTON_ACTIVE = false;
-        CUSTOM_BUTTON_ACTIVE = false;
-        PRIVACYPOLICY_BUTTON_ACTIVE = false;
+        sdpSemantics = "unified-plan";
       };
+
+      type = json.type;
     };
   };
 
   config = mkIf cfg.enable {
-    warnings = optionals (cfg.rtcConfig != null && cfg.environment ? RTC_CONFIG) [
-      "Both services.pairdrop.rtcConfig and services.pairdrop.environment.RTC_CONFIG are set. The environment variable will take precedence."
-    ];
-
     systemd.services.pairdrop =
       let
         environment = {
@@ -111,25 +109,19 @@ in
       in
       {
         inherit environment;
-
-        description = "PairDrop: Transfer Files Cross-Platform";
         after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "PairDrop: Transfer Files Cross-Platform";
+
         serviceConfig = {
-          ExecStart = getExe cfg.package;
-
-          Type = "simple";
-          Restart = "on-failure";
-          RestartSec = 3;
-          DynamicUser = true;
-
           # Hardening
           CapabilityBoundingSet = "";
+          DynamicUser = true;
+          ExecStart = getExe cfg.package;
           NoNewPrivileges = true;
-          PrivateUsers = true;
-          PrivateTmp = true;
           PrivateDevices = true;
           PrivateMounts = true;
+          PrivateTmp = true;
+          PrivateUsers = true;
           ProtectClock = true;
           ProtectControlGroups = true;
           ProtectHome = true;
@@ -137,15 +129,26 @@ in
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
+          Restart = "on-failure";
+          RestartSec = 3;
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
+          Type = "simple";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
+
+    warnings = optionals (cfg.rtcConfig != null && cfg.environment ? RTC_CONFIG) [
+      "Both services.pairdrop.rtcConfig and services.pairdrop.environment.RTC_CONFIG are set. The environment variable will take precedence."
+    ];
   };
 
   meta.maintainers = with maintainers; [ diogotcorreia ];

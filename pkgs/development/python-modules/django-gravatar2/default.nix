@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "django-gravatar2";
   version = "1.4.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "django_gravatar2";
     inherit version;
     hash = "sha256-LbtWRl45Xdizkg1AF+J6R1aRLMKtmxG6SM8UOHGoA2Q=";
+    pname = "django_gravatar2";
   };
 
-  build-system = [ setuptools ];
-
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "django_gravatar" ];
 
   meta = {

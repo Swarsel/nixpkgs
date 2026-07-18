@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  libxxf86vm,
-  libxrandr,
+  buildGoModule,
+  libglvnd,
+  libx11,
+  libxcursor,
+  libxext,
   libxi,
   libxinerama,
-  libxext,
-  libxcursor,
-  libx11,
-  libglvnd,
+  libxrandr,
+  libxxf86vm,
   pkg-config,
   withGui ? true,
 }:
@@ -25,8 +25,6 @@ buildGoModule rec {
     hash = "sha256-nAvfWRXPYX5AcJ0S3QXlcOtEEIUQK0FZqSSBNxDtGu4=";
   };
 
-  vendorHash = "sha256-vxWvv7PE3VlU2Z9WEAvKiUgJCrK0a6QerMA3Vw+CLZo=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -40,6 +38,9 @@ buildGoModule rec {
     libglvnd
   ];
 
+  vendorHash = "sha256-vxWvv7PE3VlU2Z9WEAvKiUgJCrK0a6QerMA3Vw+CLZo=";
+  doCheck = false;
+
   ldflags = [
     "-s"
     "-w"
@@ -48,8 +49,6 @@ buildGoModule rec {
 
   # conditionally build with GUI or not (go2tv or go2tv-lite sub-packages)
   subPackages = [ "cmd/${pname}" ];
-
-  doCheck = false;
 
   meta = {
     description = "Cast media files to UPnP/DLNA Media Renderers and Smart TVs";

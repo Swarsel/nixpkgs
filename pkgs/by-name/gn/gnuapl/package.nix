@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  readline,
   gettext,
   ncurses,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,23 +41,17 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional stdenv.cc.isClang "-Wno-error=null-dereference"
   );
 
-  patchPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace src/LApack.cc --replace "malloc.h" "malloc/malloc.h"
-  '';
-
   postInstall = ''
     cp -r support-files/ $out/share/doc/
     find $out/share/doc/support-files -name 'Makefile*' -delete
   '';
 
+  patchPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace src/LApack.cc --replace "malloc.h" "malloc/malloc.h"
+  '';
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Free interpreter for the APL programming language";
-    homepage = "https://www.gnu.org/software/apl/";
-    license = lib.licenses.gpl3Plus;
-    maintainers = [ lib.maintainers.kovirobi ];
-    platforms = with lib.platforms; linux ++ darwin;
-    mainProgram = "apl";
 
     longDescription = ''
       GNU APL is a free interpreter for the programming language APL, with an
@@ -65,5 +59,12 @@ stdenv.mkDerivation (finalAttrs: {
       Language APL, Extended.  GNU APL was written and is being maintained by
       Jürgen Sauermann.
     '';
+
+    homepage = "https://www.gnu.org/software/apl/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.kovirobi ];
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "apl";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

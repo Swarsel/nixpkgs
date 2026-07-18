@@ -28,9 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     "USE_SYSTEM_MINIZIP=1"
   ];
 
-  # TEST 428/429 worksheet:worksheet_table15 *** buffer overflow detected ***: terminated
-  hardeningDisable = [ "fortify3" ];
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -38,6 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   checkTarget = "test";
+  # TEST 428/429 worksheet:worksheet_table15 *** buffer overflow detected ***: terminated
+  hardeningDisable = [ "fortify3" ];
 
   meta = {
     description = "C library for creating Excel XLSX files";

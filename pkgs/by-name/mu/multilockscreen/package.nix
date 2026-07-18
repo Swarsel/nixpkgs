@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchFromGitHub,
-  writeShellScriptBin,
-  imagemagick,
+  bc,
+  coreutils,
+  feh,
+  gnugrep,
+  gnused,
   i3lock-color,
+  imagemagick,
+  makeWrapper,
+  procps,
+  writeShellScriptBin,
   xdpyinfo,
   xrandr,
-  bc,
-  feh,
-  procps,
   xrdb,
   xset,
-  gnused,
-  gnugrep,
-  coreutils,
 }:
 let
   i3lock = writeShellScriptBin "i3lock" ''
@@ -57,14 +57,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Wrapper script for i3lock-color";
-    mainProgram = "multilockscreen";
+
     longDescription = ''
       multilockscreen is a wrapper script for i3lock-color.
       It allows you to cache background images for i3lock-color with a variety of different effects and adds a stylish indicator.
     '';
+
     homepage = "https://github.com/jeffmhubbard/multilockscreen";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ kylesferrazza ];
+    platforms = lib.platforms.linux;
+    mainProgram = "multilockscreen";
   };
 })

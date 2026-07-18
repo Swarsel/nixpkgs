@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ icu ];
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/dump-pe ../tests/assets/example.exe
   '';
@@ -28,11 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Principled, lightweight parser for Windows portable executable files";
     homepage = "https://github.com/trailofbits/pe-parse";
-    ${if lib.hasInfix "unstable" finalAttrs.version then null else "changelog"} =
-      "https://github.com/trailofbits/pe-parse/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ arturcygan ];
-    mainProgram = "dump-pe";
     platforms = lib.platforms.unix;
+    mainProgram = "dump-pe";
+
+    ${if lib.hasInfix "unstable" finalAttrs.version then null else "changelog"} =
+      "https://github.com/trailofbits/pe-parse/releases/tag/v${finalAttrs.version}";
   };
 })

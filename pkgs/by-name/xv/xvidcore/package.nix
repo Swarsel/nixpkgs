@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
-  yasm,
   autoconf,
   automake,
+  fetchpatch,
   libtool,
+  yasm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,19 +21,21 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix build with gcc15
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/xvidcore/raw/95382dbe529e5589a727fffceb620b0a89ff55f2/f/xvidcore-c23.patch";
       hash = "sha256-bGwWNmXIEIIw4Tc7lrMZ4jnhcQ+uKAsxL6fuAOosMVA=";
+      url = "https://src.fedoraproject.org/rpms/xvidcore/raw/95382dbe529e5589a727fffceb620b0a89ff55f2/f/xvidcore-c23.patch";
     })
   ];
 
-  preConfigure = ''
-    # Configure script is not in the root of the source directory
-    cd build/generic
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+  nativeBuildInputs = [ ] ++ lib.optional (!stdenv.hostPlatform.isDarwin) yasm;
+
+  buildInputs =
+    [ ]
     # Undocumented darwin hack
-    substituteInPlace configure --replace "-no-cpp-precomp" ""
-  '';
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      autoconf
+      automake
+      libtool
+    ];
 
   configureFlags =
     [ ]
@@ -46,16 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
       "--disable-assembly"
     ];
 
-  nativeBuildInputs = [ ] ++ lib.optional (!stdenv.hostPlatform.isDarwin) yasm;
-
-  buildInputs =
-    [ ]
+  preConfigure = ''
+    # Configure script is not in the root of the source directory
+    cd build/generic
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
     # Undocumented darwin hack
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      autoconf
-      automake
-      libtool
-    ];
+    substituteInPlace configure --replace "-no-cpp-precomp" ""
+  '';
 
   # Don't remove static libraries (e.g. 'libs/*.a') on darwin.  They're needed to
   # compile ffmpeg (and perhaps other things).

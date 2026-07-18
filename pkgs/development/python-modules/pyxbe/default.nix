@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-cov-stub,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyxbe";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mborgerson";
@@ -19,13 +18,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MtkY4vwPvlYoS4ws8MzIFR8D6ORVqFXA0JvOEspzmtQ=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "xbe" ];
 
   meta = {

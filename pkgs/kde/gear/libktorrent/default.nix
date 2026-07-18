@@ -1,16 +1,16 @@
 {
-  mkKdeDerivation,
-  doxygen,
-  qt5compat,
   boost,
+  doxygen,
   gmp,
   libgcrypt,
+  mkKdeDerivation,
+  qt5compat,
 }:
 mkKdeDerivation {
   pname = "libktorrent";
-
-  extraNativeBuildInputs = [ doxygen ];
   extraBuildInputs = [ qt5compat ];
+  extraNativeBuildInputs = [ doxygen ];
+
   extraPropagatedBuildInputs = [
     boost
     gmp

@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   openssl,
-  python3,
   pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,18 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2pn4xXPE2eY/STx+JERxJq6iW1O0wHbseSZodOKbGXU=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openssl
     python3
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
   configureFlags = [ "--with-ssl=${openssl.dev}" ];
 
   meta = {
-    homepage = "https://www.fetchmail.info/";
     description = "Full-featured remote-mail retrieval and forwarding utility";
+
     longDescription = ''
       A full-featured, robust, well-documented remote-mail retrieval and
       forwarding utility intended to be used over on-demand TCP/IP links
@@ -36,8 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
       all flavors of IMAP, ETRN, and ODMR. It can even support IPv6 and
       IPSEC.
     '';
-    platforms = lib.platforms.unix;
+
+    homepage = "https://www.fetchmail.info/";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.unix;
     mainProgram = "fetchmail";
   };
 })

@@ -11,7 +11,6 @@ buildPythonPackage (finalAttrs: {
   # If the versions come back into sync switch back to inheriting from c lib
   # inherit (libusbsio) version;
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -28,20 +27,21 @@ buildPythonPackage (finalAttrs: {
           'dllpath = "${lib.getLib libusbsio}/lib/" + dllname'
   '';
 
+  buildInputs = [ libusbsio ];
+  doCheck = false; # they require a device to be connected over USB
+
   build-system = [
     setuptools
   ];
 
-  buildInputs = [ libusbsio ];
-
-  doCheck = false; # they require a device to be connected over USB
-
+  pyproject = true;
   pythonImportsCheck = [ "libusbsio" ];
 
   meta = {
     description = "LIBUSBSIO Host Library for USB Enabled MCUs";
     homepage = "https://www.nxp.com/design/design-center/software/development-software/libusbsio-host-library-for-usb-enabled-mcus:LIBUSBSIO";
     license = lib.licenses.bsd3;
+
     maintainers = [
     ];
   };

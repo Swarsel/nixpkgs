@@ -16,16 +16,12 @@ stdenv.mkDerivation rec {
     hash = "sha256-TGSmlNz8kxsHlIhq4ZNDBU8uhpsZGK0oEp2qD4SndE8=";
   };
 
-  makefile = "Makefile";
-
   patches = [
     # make install fails because atasm.txt was moved; report to upstream
     ./0000-file-not-found.diff
     # select flags for compilation
     ./0001-select-flags.diff
   ];
-
-  dontConfigure = true;
 
   buildInputs = [
     zlib
@@ -55,11 +51,14 @@ stdenv.mkDerivation rec {
     mv docs/* $out/share/doc/${pname}
   '';
 
+  dontConfigure = true;
+  makefile = "Makefile";
+
   meta = {
-    homepage = "https://github.com/CycoPH/atasm";
     description = "Commandline 6502 assembler compatible with Mac/65";
-    license = lib.licenses.gpl2Plus;
+    homepage = "https://github.com/CycoPH/atasm";
     changelog = "https://github.com/CycoPH/atasm/releases/tag/V${version}";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; unix;
   };

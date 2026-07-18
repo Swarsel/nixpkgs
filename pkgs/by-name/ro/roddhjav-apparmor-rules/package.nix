@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -16,9 +16,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-fDjajIA06USViGWNKvnqg2V6dc1Hzqt/9q8PbKWvKxA=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/etc/apparmor.d
@@ -26,11 +23,13 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/roddhjav/apparmor.d";
     description = "Over 1500 AppArmor profiles aiming to confine most linux processes";
+
     longDescription = ''
       AppArmor.d is a set of over 1500 AppArmor profiles whose aim is to confine
       most Linux based applications and processes. Confines all system services, user services
@@ -38,10 +37,14 @@ stdenvNoCC.mkDerivation {
       If your DE is not listed in https://github.com/roddhjav/apparmor.d
       Do not use this, else it may break your system.
     '';
+
+    homepage = "https://github.com/roddhjav/apparmor.d";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       johnrtitor
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

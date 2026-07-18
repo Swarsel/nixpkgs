@@ -1,14 +1,13 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "deepsecrets";
   version = "1.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "avito-tech";
@@ -17,12 +16,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-VfIsPgStHcIYGbfrOs1mvgoq0ZoVSZwILFVBeMt/5Jc=";
   };
 
-  pythonRelaxDeps = [
-    "pyyaml"
-    "regex"
-    "mmh3"
-  ];
-
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -35,8 +29,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     regex
   ];
 
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
   disabledTests = [
     # assumes package is built in /app (docker?), and not /build/${finalAttrs.src.name} (nix sandbox)
     "test_1_cli"
@@ -44,7 +36,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_basic_info"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "deepsecrets" ];
+
+  pythonRelaxDeps = [
+    "pyyaml"
+    "regex"
+    "mmh3"
+  ];
 
   meta = {
     description = "Secrets scanner that understands code";

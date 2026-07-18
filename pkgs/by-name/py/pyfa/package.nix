@@ -1,14 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  gsettings-desktop-schemas,
   adwaita-icon-theme,
-  wrapGAppsHook3,
-  gobject-introspection,
-  gdk-pixbuf,
-  makeDesktopItem,
   copyDesktopItems,
+  gdk-pixbuf,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  makeDesktopItem,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 let
   version = "2.67.0";
@@ -16,7 +16,6 @@ in
 python3Packages.buildPythonApplication rec {
   inherit version;
   pname = "pyfa";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "pyfa-org";
@@ -25,34 +24,11 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-LS8KW6dZe/CYdA1LvZlq1vL8YllnDZkD9WEEDOToY1M=";
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "pyfa";
-      exec = "pyfa %U";
-      icon = "pyfa";
-      desktopName = "pyfa";
-      genericName = "Python fitting assistant for Eve Online";
-      categories = [ "Game" ];
-    })
-  ];
-
-  build-system = [ python3Packages.setuptools ];
-  dependencies = with python3Packages; [
-    wxpython
-    logbook
-    matplotlib
-    python-dateutil
-    requests
-    sqlalchemy_1_4
-    cryptography
-    markdown2
-    beautifulsoup4
-    pyaml
-    roman
-    numpy
-    python-jose
-    requests-cache
-    pygobject3
+  nativeBuildInputs = [
+    python3Packages.pyinstaller
+    gobject-introspection
+    wrapGAppsHook3
+    copyDesktopItems
   ];
 
   buildInputs = [
@@ -61,37 +37,6 @@ python3Packages.buildPythonApplication rec {
     gdk-pixbuf
   ];
 
-  dontWrapGApps = true;
-  nativeBuildInputs = [
-    python3Packages.pyinstaller
-    gobject-introspection
-    wrapGAppsHook3
-    copyDesktopItems
-  ];
-
-  #
-  # upstream does not include setup.py
-  #
-  patchPhase = ''
-    cat > setup.py <<EOF
-      from setuptools import setup
-      setup(
-        name = "pyfa",
-        version = "${version}",
-        scripts = ["pyfa.py"],
-        packages = setuptools.find_packages(),
-      )
-    EOF
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-
-    python3 db_update.py
-
-    runHook postConfigure
-  '';
-
   buildPhase = ''
     runHook preBuild
 
@@ -99,6 +44,8 @@ python3Packages.buildPythonApplication rec {
 
     runHook postBuild
   '';
+
+  doCheck = true;
 
   #
   # pyinstaller builds up dist/pyfa/pyfa binary and
@@ -119,6 +66,47 @@ python3Packages.buildPythonApplication rec {
     runHook postInstall
   '';
 
+  build-system = [ python3Packages.setuptools ];
+
+  configurePhase = ''
+    runHook preConfigure
+
+    python3 db_update.py
+
+    runHook postConfigure
+  '';
+
+  dependencies = with python3Packages; [
+    wxpython
+    logbook
+    matplotlib
+    python-dateutil
+    requests
+    sqlalchemy_1_4
+    cryptography
+    markdown2
+    beautifulsoup4
+    pyaml
+    roman
+    numpy
+    python-jose
+    requests-cache
+    pygobject3
+  ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      desktopName = "pyfa";
+      exec = "pyfa %U";
+      genericName = "Python fitting assistant for Eve Online";
+      icon = "pyfa";
+      name = "pyfa";
+    })
+  ];
+
+  dontWrapGApps = true;
+
   fixupPhase = ''
     runHook preFixup
 
@@ -128,18 +116,35 @@ python3Packages.buildPythonApplication rec {
     runHook postFixup
   '';
 
-  doCheck = true;
+  #
+  # upstream does not include setup.py
+  #
+  patchPhase = ''
+    cat > setup.py <<EOF
+      from setuptools import setup
+      setup(
+        name = "pyfa",
+        version = "${version}",
+        scripts = ["pyfa.py"],
+        packages = setuptools.find_packages(),
+      )
+    EOF
+  '';
+
+  pyproject = false;
 
   meta = {
     description = "Python fitting assistant, cross-platform fitting tool for EVE Online";
     homepage = "https://github.com/pyfa-org/Pyfa";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       toasteruwu
       cholli
       paschoal
     ];
-    mainProgram = "pyfa";
+
     platforms = lib.platforms.linux;
+    mainProgram = "pyfa";
   };
 }

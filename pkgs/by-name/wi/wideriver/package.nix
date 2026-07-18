@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
+  pkg-config,
   wayland,
   wayland-scanner,
-  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tiling window manager for the river wayland compositor, inspired by dwm and xmonad";
     homepage = "https://github.com/alex-courtis/wideriver";
     license = lib.licenses.gpl3Only;
-    mainProgram = "wideriver";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ clebs ];
+    platforms = lib.platforms.linux;
+    mainProgram = "wideriver";
   };
 })

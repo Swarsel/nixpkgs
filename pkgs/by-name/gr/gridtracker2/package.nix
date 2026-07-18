@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  copyDesktopItems,
-  buildNpmPackage,
-  electron,
   fetchFromGitLab,
+  buildNpmPackage,
+  copyDesktopItems,
+  electron,
   makeBinaryWrapper,
   makeDesktopItem,
   nix-update-script,
@@ -20,33 +20,13 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-LYBzoxLCJqbGI8j9nBDFfo9PPTiVDpbT6hM4TJEab1s=";
   };
 
-  npmDepsHash = "sha256-5h3bswjVf/8JHhwHRFTUfydN7XXtWbxNHTZ0mLL7RT8=";
-
   nativeBuildInputs = [
     makeBinaryWrapper
     copyDesktopItems
   ];
 
+  npmDepsHash = "sha256-5h3bswjVf/8JHhwHRFTUfydN7XXtWbxNHTZ0mLL7RT8=";
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = true;
-
-  makeCacheWritable = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "GridTracker2";
-      desktopName = "GridTracker2";
-      exec = "gridtracker2 %U";
-      terminal = false;
-      type = "Application";
-      icon = "gridtracker2";
-      startupWMClass = "GridTracker2";
-      comment = "A warehouse of amateur radio information";
-      categories = [
-        "HamRadio"
-        "Network"
-      ];
-    })
-  ];
 
   buildPhase = ''
     runHook preBuild
@@ -94,14 +74,33 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "HamRadio"
+        "Network"
+      ];
+
+      comment = "A warehouse of amateur radio information";
+      desktopName = "GridTracker2";
+      exec = "gridtracker2 %U";
+      icon = "gridtracker2";
+      name = "GridTracker2";
+      startupWMClass = "GridTracker2";
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
+  makeCacheWritable = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Warehouse of amateur radio information";
     homepage = "https://gridtracker.org/";
     license = lib.licenses.bsd3;
-    platforms = electron.meta.platforms;
     maintainers = with lib.maintainers; [ Cryolitia ];
+    platforms = electron.meta.platforms;
     mainProgram = "gridtracker2";
   };
 })

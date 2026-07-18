@@ -1,27 +1,23 @@
 {
   lib,
+  stdenv,
   buildPythonPackage,
   fetchPypi,
-  pythonAtLeast,
-  stdenv,
-
-  # build-system
-  setuptools,
-
   # propagates (optional, but unspecified)
   # https://github.com/joblib/joblib#dependencies
   lz4,
   psutil,
-
   # tests
   pytestCheckHook,
+  pythonAtLeast,
+  # build-system
+  setuptools,
   threadpoolctl,
 }:
 
 buildPythonPackage rec {
   pname = "joblib";
   version = "1.5.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -40,8 +36,6 @@ buildPythonPackage rec {
     threadpoolctl
   ];
 
-  enabledTestPaths = [ "joblib/test" ];
-
   disabledTests = [
     "test_disk_used" # test_disk_used is broken: https://github.com/joblib/joblib/issues/57
     "test_parallel_call_cached_function_defined_in_jupyter" # jupyter not available during tests
@@ -52,10 +46,13 @@ buildPythonPackage rec {
     "test_dispatch_multiprocessing" # test_dispatch_multiprocessing is broken only on Darwin.
   ];
 
+  enabledTestPaths = [ "joblib/test" ];
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/joblib/joblib/releases/tag/${version}";
     description = "Lightweight pipelining: using Python functions as pipeline jobs";
     homepage = "https://joblib.readthedocs.io/";
+    changelog = "https://github.com/joblib/joblib/releases/tag/${version}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

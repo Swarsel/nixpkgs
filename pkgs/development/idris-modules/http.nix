@@ -1,20 +1,14 @@
 {
-  build-idris-package,
+  lib,
   fetchFromGitHub,
+  build-idris-package,
+  bytes,
   contrib,
   lightyear,
-  bytes,
-  lib,
 }:
 build-idris-package {
   pname = "http";
   version = "2018-02-25";
-
-  idrisDeps = [
-    contrib
-    lightyear
-    bytes
-  ];
 
   src = fetchFromGitHub {
     owner = "uwap";
@@ -22,6 +16,12 @@ build-idris-package {
     rev = "dc4a31543f87c0bc44cbaa98192f0303cd8dd82e";
     sha256 = "1abrwi5ikymff4g7a0g5wskycvhpnn895z1z1bz9r71ks554ypl8";
   };
+
+  idrisDeps = [
+    contrib
+    lightyear
+    bytes
+  ];
 
   meta = {
     description = "HTTP library for idris";

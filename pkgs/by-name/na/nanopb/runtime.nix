@@ -1,35 +1,42 @@
 {
-  cmake,
   lib,
   stdenv,
+  bufferOnly,
+  c99StaticAssert,
+  cmake,
+  convertDoubleFloat,
+  enableMalloc,
+  encodeArraysUnpacked,
+  field32bit,
+  littleEndian8bit,
+  maxRequiredFields,
+  noErrmsg,
+  noPackedStructs,
+  noStaticAssert,
   protobuf,
   python3,
   src,
-  version,
-  enableMalloc,
-  noPackedStructs,
-  maxRequiredFields,
-  field32bit,
-  noErrmsg,
-  bufferOnly,
   systemHeader,
-  without64bit,
-  encodeArraysUnpacked,
-  convertDoubleFloat,
   validateUtf8,
-  littleEndian8bit,
-  c99StaticAssert,
-  noStaticAssert,
+  version,
+  without64bit,
 }:
 
 stdenv.mkDerivation {
-  pname = "nanopb-runtime";
   inherit src version;
+  pname = "nanopb-runtime";
 
   nativeBuildInputs = [
     cmake
     protobuf
     python3
+  ];
+
+  cmakeFlags = [
+    "-DBUILD_SHARED_LIBS=ON"
+    "-DBUILD_STATIC_LIBS=ON"
+    "-Dnanopb_BUILD_GENERATOR=OFF"
+    "-Dnanopb_BUILD_RUNTIME=ON"
   ];
 
   patchPhase =
@@ -108,11 +115,4 @@ stdenv.mkDerivation {
         ${compile_definitions "protobuf-nanopb-static"}
       EOF
     '';
-
-  cmakeFlags = [
-    "-DBUILD_SHARED_LIBS=ON"
-    "-DBUILD_STATIC_LIBS=ON"
-    "-Dnanopb_BUILD_GENERATOR=OFF"
-    "-Dnanopb_BUILD_RUNTIME=ON"
-  ];
 }

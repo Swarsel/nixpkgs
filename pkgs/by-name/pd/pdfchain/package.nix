@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  fetchDebianPatch,
   autoconf,
-  gtkmm3,
+  fetchDebianPatch,
   glib,
+  gtkmm3,
   pdftk,
   pkg-config,
   wrapGAppsHook3,
@@ -19,18 +19,6 @@ stdenv.mkDerivation rec {
     url = "mirror://sourceforge/pdfchain/pdfchain-${version}/pdfchain-${version}.tar.gz";
     hash = "sha256-Hu4Pk9voyc75+f5OwKEOCkXKjN5nzWzv+izmyEN1Lz0=";
   };
-
-  nativeBuildInputs = [
-    pkg-config
-    wrapGAppsHook3
-    autoconf
-  ];
-
-  buildInputs = [
-    gtkmm3
-    pdftk
-    glib
-  ];
 
   patches =
     let
@@ -47,16 +35,16 @@ stdenv.mkDerivation rec {
     in
     [
       (fetchDebianPatch' {
-        patch = "fix_crash_on_startup";
         hash = "sha256-1UyMHHGrmUIFhY53ILdMMsyocSIbcV6CKQ7sLVNhNQw=";
+        patch = "fix_crash_on_startup";
       })
       (fetchDebianPatch' {
-        patch = "fix_desktop_file";
         hash = "sha256-L6lhUs7GqVN1XOQO6bbz6BT29n4upsJtlHCAIGzk1Bw=";
+        patch = "fix_desktop_file";
       })
       (fetchDebianPatch' {
-        patch = "fix_spelling";
         hash = "sha256-sOUUslPfcOo2K3zuaLcux+CNdgfWM0phsfe6g4GUFes=";
+        patch = "fix_spelling";
       })
     ];
 
@@ -65,6 +53,18 @@ stdenv.mkDerivation rec {
         --replace '"pdftk"' '"${pdftk}/bin/pdftk"' \
         --replace "/usr/share" "$out/share"
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    wrapGAppsHook3
+    autoconf
+  ];
+
+  buildInputs = [
+    gtkmm3
+    pdftk
+    glib
+  ];
 
   meta = {
     description = "Graphical user interface for the PDF Toolkit (PDFtk)";

@@ -1,16 +1,14 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  pkg-config,
-  pybind11,
-
+  buildPythonPackage,
+  # optional dependencies
+  defusedxml,
   # native dependencies
   freetype,
+  # for passthru.tests
+  imageio,
   lcms2,
   libavif,
   libimagequant,
@@ -19,31 +17,27 @@
   libtiff,
   libwebp,
   libxcb,
-  openjpeg,
-  zlib-ng,
-
-  # optional dependencies
-  defusedxml,
-  olefile,
-
+  matplotlib,
   # tests
   numpy,
+  olefile,
+  openjpeg,
+  pilkit,
+  pkg-config,
+  pybind11,
+  pydicom,
   pytest-cov-stub,
   pytestCheckHook,
-
-  # for passthru.tests
-  imageio,
-  matplotlib,
-  pilkit,
-  pydicom,
   reportlab,
   sage,
+  # build-system
+  setuptools,
+  zlib-ng,
 }:
 
 buildPythonPackage rec {
   pname = "pillow";
   version = "12.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-pillow";
@@ -51,11 +45,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-kmUlgR+f75Y8DAKKPdEbchLLgg0m95oyVP53WTQni88=";
   };
-
-  build-system = [
-    setuptools
-    pybind11
-  ];
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -74,11 +63,6 @@ buildPythonPackage rec {
     zlib-ng
   ];
 
-  pypaBuildFlags = [
-    # Disable platform guessing, which tries various FHS paths
-    "--config-setting=--disable-platform-guessing"
-  ];
-
   preConfigure =
     let
       getLibAndInclude = pkg: ''"${pkg.out}/lib", "${lib.getDev pkg}/include"'';
@@ -95,18 +79,25 @@ buildPythonPackage rec {
       export CFLAGS="$CFLAGS -I${libxcb.dev}/include"
     '';
 
-  optional-dependencies = {
-    fpx = [ olefile ];
-    mic = [ olefile ];
-    xmp = [ defusedxml ];
-  };
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
     numpy
   ]
   ++ lib.concatAttrValues optional-dependencies;
+
+  build-system = [
+    setuptools
+    pybind11
+  ];
+
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # Crashes the interpreter
+    "Tests/test_imagetk.py"
+
+    # Checks for very precise color values on what's basically white
+    "Tests/test_file_avif.py::TestFileAvif::test_background_from_gif"
+  ];
 
   disabledTests = [
     # Code quality mismathch 9 vs 10
@@ -119,13 +110,18 @@ buildPythonPackage rec {
     "test_save"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # Crashes the interpreter
-    "Tests/test_imagetk.py"
+  optional-dependencies = {
+    fpx = [ olefile ];
+    mic = [ olefile ];
+    xmp = [ defusedxml ];
+  };
 
-    # Checks for very precise color values on what's basically white
-    "Tests/test_file_avif.py::TestFileAvif::test_background_from_gif"
+  pypaBuildFlags = [
+    # Disable platform guessing, which tries various FHS paths
+    "--config-setting=--disable-platform-guessing"
   ];
+
+  pyproject = true;
 
   passthru.tests = {
     inherit
@@ -139,15 +135,17 @@ buildPythonPackage rec {
   };
 
   meta = {
-    homepage = "https://python-pillow.github.io/";
-    changelog = "https://pillow.readthedocs.io/en/stable/releasenotes/${version}.html";
     description = "Friendly PIL fork (Python Imaging Library)";
+
     longDescription = ''
       The Python Imaging Library (PIL) adds image processing
       capabilities to your Python interpreter.  This library
       supports many file formats, and provides powerful image
       processing and graphics capabilities.
     '';
+
+    homepage = "https://python-pillow.github.io/";
+    changelog = "https://pillow.readthedocs.io/en/stable/releasenotes/${version}.html";
     license = lib.licenses.mit-cmu;
     maintainers = with lib.maintainers; [ hexa ];
   };

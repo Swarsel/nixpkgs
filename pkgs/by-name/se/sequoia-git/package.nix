@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
-  openssl,
-  nettle,
-  sqlite,
-  pkg-config,
-  installShellFiles,
-  gnupg,
   gitMinimal,
+  gnupg,
+  installShellFiles,
   libfaketime,
+  nettle,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sqlite,
   ...
 }:
 rustPlatform.buildRustPackage (final: {
@@ -23,7 +23,11 @@ rustPlatform.buildRustPackage (final: {
     hash = "sha256-1nSFzpz0Rl9uoE59teP3o7PduSmA20QEhe+fvTM6JGA=";
   };
 
-  cargoHash = "sha256-/9/nTqCRi74TMToWQjtnnzQ8en+nqKT8gUipNcHTxvs=";
+  nativeBuildInputs = [
+    pkg-config
+    rustPlatform.bindgenHook
+    installShellFiles
+  ];
 
   buildInputs = [
     openssl.dev
@@ -31,19 +35,14 @@ rustPlatform.buildRustPackage (final: {
     sqlite.dev
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    rustPlatform.bindgenHook
-    installShellFiles
-  ];
+  cargoHash = "sha256-/9/nTqCRi74TMToWQjtnnzQ8en+nqKT8gUipNcHTxvs=";
+  env.ASSET_OUT_DIR = "target";
 
   nativeCheckInputs = [
     gnupg
     gitMinimal
     libfaketime
   ];
-
-  env.ASSET_OUT_DIR = "target";
 
   postInstall = ''
     installManPage ${final.env.ASSET_OUT_DIR}/man-pages/*.1

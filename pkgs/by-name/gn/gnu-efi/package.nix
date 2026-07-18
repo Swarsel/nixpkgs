@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
-  pciutils,
+  buildPackages,
   fwupd-efi,
   ipxe,
+  pciutils,
   refind,
   syslinux,
 }:
@@ -23,9 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-oIj0aNY4xU5OcO69TTjh5FcWzzkFd6jbenwzVvTXjqo=";
   };
 
-  buildInputs = [ pciutils ];
+  postPatch = ''
+    substituteInPlace Make.defaults \
+      --replace "-Werror" ""
+  '';
 
-  hardeningDisable = [ "stackprotector" ];
+  buildInputs = [ pciutils ];
 
   makeFlags = [
     "PREFIX=\${out}"
@@ -33,10 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
   ];
 
-  postPatch = ''
-    substituteInPlace Make.defaults \
-      --replace "-Werror" ""
-  '';
+  hardeningDisable = [ "stackprotector" ];
 
   passthru.tests = {
     inherit
@@ -48,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "GNU EFI development toolchain";
     homepage = "https://github.com/ncroxon/gnu-efi";
+
     license = with lib.licenses; [
       # This is a mess, upstream is aware.
       # The source for these is Fedora's SPDX identifier for this package.
@@ -62,7 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
       gpl2Plus
       mit
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ lzcunt ];
+    platforms = lib.platforms.linux;
   };
 })

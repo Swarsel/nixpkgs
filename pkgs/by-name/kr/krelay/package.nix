@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,7 +17,9 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-IooNsDlXcZt3NLj8CLh1XgxduqalAizSXI6/a71nNlk=";
 
-  subPackages = [ "cmd/client" ];
+  postInstall = ''
+    mv $out/bin/client $out/bin/kubectl-relay
+  '';
 
   ldflags = [
     "-s"
@@ -25,9 +27,7 @@ buildGoModule (finalAttrs: {
     "-X github.com/knight42/krelay/pkg/constants.ClientVersion=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    mv $out/bin/client $out/bin/kubectl-relay
-  '';
+  subPackages = [ "cmd/client" ];
 
   meta = {
     description = "Drop-in replacement for `kubectl port-forward` with some enhanced features";

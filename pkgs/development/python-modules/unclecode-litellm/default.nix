@@ -21,16 +21,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "unclecode-litellm";
   version = "1.81.13";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "unclecode_litellm";
     inherit (finalAttrs) version;
     hash = "sha256-23DjTj6FnAoH8CywLqpkT4+ktOzF4vO+mli9fRw/7tw=";
+    pname = "unclecode_litellm";
   };
 
+  # tests require access network
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -48,11 +48,8 @@ buildPythonPackage (finalAttrs: {
     tokenizers
   ];
 
-  # tests require access network
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "litellm" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "0rd4krklpnvaimzblqx2ckab6lk4apkmvnqr618gnx8i5f4nyl6m";
   };
 
-  cargoHash = "sha256:12g3fcym8184py66fgwahpb9q05dm9r9rbhh4l50yd62gkmifc93";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256:12g3fcym8184py66fgwahpb9q05dm9r9rbhh4l50yd62gkmifc93";
 
   checkFlags = [
     # both assume `/usr/bin/sh` exists
@@ -31,14 +30,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage docs/man/ad.1
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
-
   meta = {
     description = "Adaptable text editor";
+
     longDescription = ''
       ad (pronounced A.D.) is an attempt at combining a modal
       editing interface of likes of vi and kakoune with the
@@ -50,12 +50,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       currently is not at all optimised or feature complete
       enough for use as your main text editor.
     '';
+
     homepage = "https://github.com/sminez/ad";
     license = lib.licenses.mit;
-    mainProgram = "ad";
     maintainers = with lib.maintainers; [ aleksana ];
     # rely on unix domain socket
     # https://github.com/sminez/ad/issues/28
     platforms = lib.platforms.unix;
+    mainProgram = "ad";
   };
 })

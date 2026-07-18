@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   click-log,
-  fetchFromGitHub,
   geopandas,
   networkx,
   numpy,
@@ -18,9 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "alphashape";
   version = "1.3.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "bellockk";
@@ -29,6 +26,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-T2wyU6fpiYRA1+9n//5EtOLhO1fzccQsie+gQj729Vs=";
   };
 
+  nativeCheckInputs = [
+    geopandas
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -42,17 +45,13 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  nativeCheckInputs = [
-    geopandas
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # TypeError
     "test_given_a_four_point_polygon_with_no_alpha_return_input"
     "test_given_a_point_return_a_point"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alphashape" ];
 
   meta = with lib; {

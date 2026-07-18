@@ -1,8 +1,8 @@
 {
-  mkKdeDerivation,
-  qtsvg,
-  qtcharts,
   kholidays,
+  mkKdeDerivation,
+  qtcharts,
+  qtsvg,
 }:
 mkKdeDerivation {
   pname = "kweather";
@@ -12,5 +12,6 @@ mkKdeDerivation {
     qtcharts
     kholidays
   ];
+
   meta.mainProgram = "kweather";
 }

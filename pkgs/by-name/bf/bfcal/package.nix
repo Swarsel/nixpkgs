@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromSourcehut,
+  libsForQt5,
   meson,
   ninja,
   pkg-config,
-  libsForQt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Quickly display a calendar";
-    mainProgram = "bfcal";
     homepage = "https://git.sr.ht/~bitfehler/bfcal";
     license = lib.licenses.gpl3Plus;
-    platforms = libsForQt5.qtbase.meta.platforms;
     maintainers = with lib.maintainers; [ laalsaas ];
+    platforms = libsForQt5.qtbase.meta.platforms;
+    mainProgram = "bfcal";
   };
 })

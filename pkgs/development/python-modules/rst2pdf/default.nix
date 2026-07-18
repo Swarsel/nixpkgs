@@ -1,39 +1,33 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  installShellFiles,
-  setuptools,
-  setuptools-scm,
-  wheel,
   docutils,
+  fetchPypi,
   importlib-metadata,
+  installShellFiles,
   jinja2,
   packaging,
+  pillow,
   pygments,
+  pymupdf,
+  pytestCheckHook,
   pyyaml,
   reportlab,
+  setuptools,
+  setuptools-scm,
   smartypants,
-  pillow,
-  pytestCheckHook,
-  pymupdf,
   sphinx,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "rst2pdf";
   version = "0.105";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-hX6HQQFOxQFfegCq+13Mu1Y3jvTB2lWoKNRLz1/zrNs=";
   };
-
-  pythonRelaxDeps = [
-    "packaging"
-    "reportlab"
-  ];
 
   outputs = [
     "out"
@@ -59,7 +53,8 @@ buildPythonPackage rec {
     pillow
   ];
 
-  pythonImportsCheck = [ "rst2pdf" ];
+  # Test suite fails: https://github.com/rst2pdf/rst2pdf/issues/1067
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -67,20 +62,25 @@ buildPythonPackage rec {
     sphinx
   ];
 
-  # Test suite fails: https://github.com/rst2pdf/rst2pdf/issues/1067
-  doCheck = false;
-
   postInstall = ''
     ${lib.getExe' docutils "rst2man"} doc/rst2pdf.rst rst2pdf.1
     installManPage rst2pdf.1
   '';
 
+  pyproject = true;
+  pythonImportsCheck = [ "rst2pdf" ];
+
+  pythonRelaxDeps = [
+    "packaging"
+    "reportlab"
+  ];
+
   meta = {
     description = "Convert reStructured Text to PDF via ReportLab";
-    mainProgram = "rst2pdf";
     homepage = "https://rst2pdf.org/";
     changelog = "https://github.com/rst2pdf/rst2pdf/blob/${version}/CHANGES.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "rst2pdf";
   };
 }

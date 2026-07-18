@@ -1,14 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   boost,
   cmake,
   ctestCheckHook,
   dbus,
   doxygen,
+  gitUpdater,
   graphviz,
   gtest,
   libxml2,
@@ -16,6 +15,7 @@
   pkg-config,
   process-cpp,
   properties-cpp,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -71,6 +71,12 @@ stdenv.mkDerivation (finalAttrs: {
     properties-cpp
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "DBUS_CPP_ENABLE_DOC_GENERATION" true)
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     ctestCheckHook
     dbus
@@ -80,14 +86,9 @@ stdenv.mkDerivation (finalAttrs: {
     gtest
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "DBUS_CPP_ENABLE_DOC_GENERATION" true)
-  ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  # DBus, parallelism messes with communication
-  enableParallelChecking = false;
+  preFixup = ''
+    moveToOutput libexec/examples $examples
+  '';
 
   disabledTests = [
     # Flaky flaky flaky. Spams D-Bus with hundreds of requests, and if any is dropped, the test fails.
@@ -98,15 +99,15 @@ stdenv.mkDerivation (finalAttrs: {
     "executor_test"
   ];
 
-  preFixup = ''
-    moveToOutput libexec/examples $examples
-  '';
+  # DBus, parallelism messes with communication
+  enableParallelChecking = false;
 
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
     updateScript = gitUpdater { };
   };
 
@@ -116,8 +117,9 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.com/ubports/development/core/lib-cpp/dbus-cpp/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ OPNA2608 ];
-    mainProgram = "dbus-cppc";
     platforms = lib.platforms.linux;
+    mainProgram = "dbus-cppc";
+
     pkgConfigModules = [
       "dbus-cpp"
     ];

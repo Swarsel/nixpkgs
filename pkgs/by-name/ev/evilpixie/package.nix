@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  giflib,
+  impy,
+  libjpeg,
+  libpng,
+  libsForQt5,
   meson,
   ninja,
   pkg-config,
-  libsForQt5,
-  libpng,
-  giflib,
-  libjpeg,
-  impy,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,12 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Pixel-oriented paint program, modelled on Deluxe Paint";
-    mainProgram = "evilpixie";
     homepage = "https://github.com/bcampbell/evilpixie"; # http://evilpixie.scumways.com/ is gone
-    downloadPage = "https://github.com/bcampbell/evilpixie/releases";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "evilpixie";
+
     # Undefined symbols for architecture x86_64:
     # "_bundle_path", referenced from: App::SetupPaths() in src_app.cpp.o
     broken =
@@ -53,5 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
       ||
         # https://github.com/bcampbell/evilpixie/issues/28
         stdenv.hostPlatform.isAarch64;
+
+    downloadPage = "https://github.com/bcampbell/evilpixie/releases";
   };
 })

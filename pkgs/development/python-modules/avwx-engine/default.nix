@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   geopy,
   hatchling,
   httpx,
@@ -20,37 +20,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "avwx-engine";
   version = "1.9.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "avwx-rest";
     repo = "avwx-engine";
     tag = finalAttrs.version;
     hash = "sha256-RJOXMbbBdcuWvNcQUGq5VHCpdWOVQoBjruQ96m1f1gc=";
-  };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    geopy
-    httpx
-    python-dateutil
-    xmltodict
-  ];
-
-  optional-dependencies = {
-    all = [
-      numpy
-      rapidfuzz
-      scipy
-      shapely
-    ];
-    fuzz = [ rapidfuzz ];
-    scipy = [
-      numpy
-      scipy
-    ];
-    shape = [ shapely ];
   };
 
   nativeCheckInputs = [
@@ -61,7 +36,14 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
-  pythonImportsCheck = [ "avwx" ];
+  build-system = [ hatchling ];
+
+  dependencies = [
+    geopy
+    httpx
+    python-dateutil
+    xmltodict
+  ];
 
   disabledTests = [
     # Tests require network access
@@ -69,6 +51,27 @@ buildPythonPackage (finalAttrs: {
     "test_nbm_all"
     "test_station_nearest_ip"
   ];
+
+  optional-dependencies = {
+    all = [
+      numpy
+      rapidfuzz
+      scipy
+      shapely
+    ];
+
+    fuzz = [ rapidfuzz ];
+
+    scipy = [
+      numpy
+      scipy
+    ];
+
+    shape = [ shapely ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "avwx" ];
 
   meta = {
     description = "Aviation Weather parsing engine";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -17,8 +17,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Resizable arrays for OCaml";
-    license = lib.licenses.lgpl2Only;
     homepage = "https://github.com/backtracking/vector";
+    license = lib.licenses.lgpl2Only;
     maintainers = [ lib.maintainers.vbgl ];
   };
 

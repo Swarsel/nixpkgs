@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  fetchFromBitbucket,
   autoreconfHook,
-
+  fetchFromBitbucket,
   # Reverse dependency
   sage,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.1";
   pname = "lrcalc";
+  version = "2.1";
 
   src = fetchFromBitbucket {
     owner = "asbuch";
@@ -19,19 +18,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0s3amf3z75hnrjyszdndrvk4wp5p630dcgyj341i6l57h43d1p4k";
   };
 
-  doCheck = true;
-
   nativeBuildInputs = [
     autoreconfHook
   ];
 
+  doCheck = true;
   passthru.tests = { inherit sage; };
 
   meta = {
     description = "Littlewood-Richardson calculator";
     homepage = "http://math.rutgers.edu/~asbuch/lrcalc/";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.sage ];
   };
 })

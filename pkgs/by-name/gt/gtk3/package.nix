@@ -1,72 +1,72 @@
 {
   lib,
   stdenv,
-  replaceVars,
   fetchurl,
-  pkg-config,
-  gettext,
+  at-spi2-atk,
+  atk,
+  buildPackages,
+  cairo,
+  cups,
   docbook-xsl-nons,
   docbook_xml_dtd_43,
+  expat,
+  fribidi,
+  gdk-pixbuf,
+  gettext,
+  glib,
+  gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
   gtk-doc,
+  isocodes,
+  libGL,
+  libepoxy,
+  libice,
+  libsm,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxfixes,
+  libxi,
+  libxinerama,
+  libxkbcommon,
+  libxml2,
+  libxrandr,
+  libxrender,
+  # TODO: Clean up on `staging`
+  llvmPackages,
+  makeWrapper,
   meson,
   mesonEmulatorHook,
   ninja,
-  python3,
-  makeWrapper,
-  shared-mime-info,
-  isocodes,
-  expat,
-  glib,
-  cairo,
   pango,
-  gdk-pixbuf,
-  atk,
-  at-spi2-atk,
-  gobject-introspection,
-  buildPackages,
+  pkg-config,
+  python3,
+  replaceVars,
+  sassc,
+  shared-mime-info,
+  testers,
+  tinysparql,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  broadwaySupport ? true,
+  compileSchemas ? stdenv.hostPlatform.emulatorAvailable buildPackages,
+  cupsSupport ? stdenv.hostPlatform.isLinux,
+  trackerSupport ? stdenv.hostPlatform.isLinux && (stdenv.buildPlatform == stdenv.hostPlatform),
+  waylandSupport ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  compileSchemas ? stdenv.hostPlatform.emulatorAvailable buildPackages,
-  fribidi,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxinerama,
-  libxfixes,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libsm,
-  libice,
-  libepoxy,
-  libxkbcommon,
-  libxml2,
-  gnome,
-  gsettings-desktop-schemas,
-  sassc,
-  trackerSupport ? stdenv.hostPlatform.isLinux && (stdenv.buildPlatform == stdenv.hostPlatform),
-  tinysparql,
   x11Support ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD,
-  waylandSupport ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD,
-  libGL,
-  wayland,
-  wayland-protocols,
   xineramaSupport ? stdenv.hostPlatform.isLinux,
-  cupsSupport ? stdenv.hostPlatform.isLinux,
-  cups,
-  broadwaySupport ? true,
-  wayland-scanner,
-  testers,
-  # TODO: Clean up on `staging`
-  llvmPackages,
 }:
 
 let
 
   gtkCleanImmodulesCache = replaceVars ./hooks/clean-immodules-cache.sh {
-    gtk_module_path = "gtk-3.0";
     gtk_binary_version = "3.0.0";
+    gtk_module_path = "gtk-3.0";
   };
 
 in
@@ -74,18 +74,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "gtk+3";
   version = "3.24.52";
-
-  outputs = [
-    "out"
-    "dev"
-  ]
-  ++ lib.optional withIntrospection "devdoc";
-  outputBin = "dev";
-
-  setupHooks = [
-    ./hooks/drop-icon-theme-cache.sh
-    gtkCleanImmodulesCache
-  ];
 
   src =
     let
@@ -95,6 +83,12 @@ stdenv.mkDerivation (finalAttrs: {
       url = "mirror://gnome/sources/gtk/${lib.versions.majorMinor version}/gtk-${version}.tar.xz";
       hash = "sha256-gJMfpHKne5oWT2dA48C0RPrGdwBUYy01p/+dZ55ee58=";
     };
+
+  outputs = [
+    "out"
+    "dev"
+  ]
+  ++ lib.optional withIntrospection "devdoc";
 
   patches = [
     ./patches/3.0-immodules.cache.patch
@@ -114,9 +108,30 @@ stdenv.mkDerivation (finalAttrs: {
     ./patches/3.0-darwin-x11.patch
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  postPatch = ''
+    # See https://github.com/NixOS/nixpkgs/issues/132259
+    substituteInPlace meson.build \
+      --replace "x11_enabled = false" ""
+
+    # this conditional gates the installation of share/gsettings-schemas/.../glib-2.0/schemas/gschemas.compiled.
+    substituteInPlace meson.build \
+      --replace 'if not meson.is_cross_build()' 'if ${lib.boolToString compileSchemas}'
+
+    files=(
+      build-aux/meson/post-install.py
+      demos/gtk-demo/geninclude.py
+      gdk/broadway/gen-c-array.py
+      gdk/gen-gdk-gresources-xml.py
+      gtk/cursor/dnd-copy.png
+      gtk/gen-gtk-gresources-xml.py
+      gtk/gen-rc.py
+      gtk/gentypefuncs.py
+    )
+
+    chmod +x ''${files[@]}
+    patchShebangs ''${files[@]}
+  '';
+
   nativeBuildInputs = [
     gettext
     makeWrapper
@@ -164,8 +179,8 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals trackerSupport [
       tinysparql
     ];
-  #TODO: colord?
 
+  #TODO: colord?
   propagatedBuildInputs = [
     at-spi2-atk
     atk
@@ -213,10 +228,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dintrospection=${lib.boolToString withIntrospection}"
   ];
 
-  doCheck = false; # needs X11
-
-  separateDebugInfo = stdenv.hostPlatform.isLinux;
-
   # These are the defines that'd you'd get with --enable-debug=minimum (default).
   # See: https://developer.gnome.org/gtk3/stable/gtk-building.html#extra-configuration-options
   env = {
@@ -231,29 +242,7 @@ stdenv.mkDerivation (finalAttrs: {
     OBJC_LD = "lld";
   };
 
-  postPatch = ''
-    # See https://github.com/NixOS/nixpkgs/issues/132259
-    substituteInPlace meson.build \
-      --replace "x11_enabled = false" ""
-
-    # this conditional gates the installation of share/gsettings-schemas/.../glib-2.0/schemas/gschemas.compiled.
-    substituteInPlace meson.build \
-      --replace 'if not meson.is_cross_build()' 'if ${lib.boolToString compileSchemas}'
-
-    files=(
-      build-aux/meson/post-install.py
-      demos/gtk-demo/geninclude.py
-      gdk/broadway/gen-c-array.py
-      gdk/gen-gdk-gresources-xml.py
-      gtk/cursor/dnd-copy.png
-      gtk/gen-gtk-gresources-xml.py
-      gtk/gen-rc.py
-      gtk/gentypefuncs.py
-    )
-
-    chmod +x ''${files[@]}
-    patchShebangs ''${files[@]}
-  '';
+  doCheck = false; # needs X11
 
   postInstall =
     lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
@@ -288,17 +277,31 @@ stdenv.mkDerivation (finalAttrs: {
       sed '/^# ModulesPath =/d' -i "$out"/lib/gtk-*/*/immodules.cache
     '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  outputBin = "dev";
+  separateDebugInfo = stdenv.hostPlatform.isLinux;
+
+  setupHooks = [
+    ./hooks/drop-icon-theme-cache.sh
+    gtkCleanImmodulesCache
+  ];
+
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = gnome.updateScript {
-      packageName = "gtk";
       attrPath = "gtk3";
       freeze = true;
+      packageName = "gtk";
     };
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Multi-platform toolkit for creating graphical user interfaces";
+
     longDescription = ''
       GTK is a highly usable, feature rich toolkit for creating
       graphical user interfaces which boasts cross platform
@@ -309,10 +312,13 @@ stdenv.mkDerivation (finalAttrs: {
       proprietary software with GTK without any license fees or
       royalties.
     '';
+
     homepage = "https://www.gtk.org/";
+    changelog = "https://gitlab.gnome.org/GNOME/gtk/-/raw/${finalAttrs.version}/NEWS";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
-    teams = [ lib.teams.gnome ];
+    platforms = lib.platforms.all;
+
     pkgConfigModules = [
       "gdk-3.0"
       "gtk+-3.0"
@@ -321,7 +327,7 @@ stdenv.mkDerivation (finalAttrs: {
       "gdk-x11-3.0"
       "gtk+-x11-3.0"
     ];
-    platforms = lib.platforms.all;
-    changelog = "https://gitlab.gnome.org/GNOME/gtk/-/raw/${finalAttrs.version}/NEWS";
+
+    teams = [ lib.teams.gnome ];
   };
 })

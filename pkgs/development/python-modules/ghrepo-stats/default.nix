@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   matplotlib,
   pygithub,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ghrepo-stats";
   version = "0.5.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mrbean-bremen";
@@ -33,15 +32,15 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "ghrepo_stats" ];
 
   meta = {
     description = "Python module and CLI tool for GitHub repo statistics";
-    mainProgram = "show-ghstats";
     homepage = "https://github.com/mrbean-bremen/ghrepo-stats";
     changelog = "https://github.com/mrbean-bremen/ghrepo-stats/blob/v${version}/CHANGES.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "show-ghstats";
   };
 }

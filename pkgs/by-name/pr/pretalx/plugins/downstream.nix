@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pretalx-downstream";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretalx";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pretalx_downstream" ];
 
   meta = {

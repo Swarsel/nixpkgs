@@ -1,19 +1,19 @@
 {
-  stdenvNoCC,
   lib,
   fetchzip,
-  openjfx21,
-  openjdk21,
-  makeDesktopItem,
-  wrapGAppsHook3,
   makeBinaryWrapper,
+  makeDesktopItem,
+  openjdk21,
+  openjfx21,
+  stdenvNoCC,
+  wrapGAppsHook3,
 }:
 
 let
   openjfx_jdk = openjfx21.override { withWebKit = true; };
   openjdk = openjdk21.override {
-    enableJavaFX = true;
     inherit openjfx_jdk;
+    enableJavaFX = true;
   };
 
   jvmArgs = [
@@ -25,8 +25,8 @@ let
   ];
 in
 stdenvNoCC.mkDerivation rec {
-  version = "3.0.12";
   pname = "minion";
+  version = "3.0.12";
 
   src = fetchzip {
     url = "https://cdn.mmoui.com/minion/v3/Minion${version}-java.zip";
@@ -38,8 +38,6 @@ stdenvNoCC.mkDerivation rec {
     makeBinaryWrapper
     wrapGAppsHook3
   ];
-
-  dontWrapGApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -56,21 +54,23 @@ stdenvNoCC.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "minion";
-      exec = "minion";
+      categories = [ "Game" ];
       comment = "MMO Addon manager for Elder Scrolls Online and World of Warcraft";
       desktopName = "Minion";
-      categories = [ "Game" ];
+      exec = "minion";
+      name = "minion";
     })
   ];
+
+  dontWrapGApps = true;
 
   meta = {
     description = "Addon manager for World of Warcraft and The Elder Scrolls Online";
     homepage = "https://minion.mmoui.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ patrickdag ];
     platforms = lib.platforms.linux;
     mainProgram = "minion";
-    maintainers = with lib.maintainers; [ patrickdag ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
   };
 }

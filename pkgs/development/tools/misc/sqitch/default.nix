@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  perlPackages,
+  stdenv,
   makeWrapper,
+  perlPackages,
   mysqlSupport ? false,
   postgresqlSupport ? false,
   sqliteSupport ? false,
@@ -23,11 +23,8 @@ in
 stdenv.mkDerivation {
   pname = "sqitch";
   version = sqitch.version;
-
-  nativeBuildInputs = [ makeWrapper ];
-
   src = sqitch;
-  dontBuild = true;
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -39,10 +36,13 @@ stdenv.mkDerivation {
       fi
     done
   '';
-  dontStrip = true;
+
   postFixup = ''
     wrapProgram $out/bin/sqitch --prefix PERL5LIB : ${lib.escapeShellArg (perlPackages.makeFullPerlPath modules)}
   '';
+
+  dontBuild = true;
+  dontStrip = true;
 
   meta = {
     inherit (sqitch.meta)
@@ -51,6 +51,7 @@ stdenv.mkDerivation {
       license
       platforms
       ;
+
     mainProgram = "sqitch";
   };
 }

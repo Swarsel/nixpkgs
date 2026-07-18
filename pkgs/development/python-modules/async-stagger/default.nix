@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-mock,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "async-stagger";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "twisteroidambassador";
@@ -20,19 +19,20 @@ buildPythonPackage rec {
     hash = "sha256-qLeTP5FWHho/CbXth3OQNW15Y8uibOh35KqskoIUTHQ=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
     pytest-mock
   ];
 
+  build-system = [ setuptools ];
+
   disabledTests = [
     # "OSError: [Errno 0] fileno not supported" during teardown
     "test_create_connected_sock_normal"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "async_stagger" ];
 
   meta = {

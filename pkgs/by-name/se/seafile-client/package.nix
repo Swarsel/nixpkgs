@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
   cmake,
-  qt6,
-  libuuid,
-  seafile-shared,
+  fetchpatch,
   jansson,
   libsearpc,
+  libuuid,
+  nix-update-script,
+  pkg-config,
+  qt6,
+  seafile-shared,
   withShibboleth ? true,
 }:
 
@@ -28,9 +28,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # https://github.com/NixOS/nixpkgs/issues/442063
     (fetchpatch {
+      hash = "sha256-N1fepqjTm/M17+TgwNTUecP/wGVlBuZEtTezFgJEeVM=";
       name = "fix_build_with_QT6.patch";
       url = "https://aur.archlinux.org/cgit/aur.git/plain/fix_build_with_QT6.diff?h=seafile-client&id=8bbd6e5017f03dbb368603b4313738b0d783ca2a";
-      hash = "sha256-N1fepqjTm/M17+TgwNTUecP/wGVlBuZEtTezFgJEeVM=";
     })
   ];
 
@@ -62,16 +62,19 @@ stdenv.mkDerivation (finalAttrs: {
     "--suffix PATH : ${lib.makeBinPath [ seafile-shared ]}"
   ];
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
+    description = "Desktop client for Seafile, the Next-generation Open Source Cloud Storage";
     homepage = "https://github.com/haiwen/seafile-client";
     changelog = "https://github.com/haiwen/seafile-client/releases/tag/${finalAttrs.src.tag}";
-    description = "Desktop client for Seafile, the Next-generation Open Source Cloud Storage";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       schmittlauch
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "seafile-applet";
   };
-  passthru.updateScript = nix-update-script { };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nodejs,
 }:
 
@@ -17,10 +17,9 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-rIL5x6VLfT+mGqjE3yHQs1Dp0SZt7ZlhmC3dzSJXGRM=";
-  npmPackFlags = [ "--ignore-scripts" ];
-  makeCacheWritable = true;
-
   doCheck = false;
+  makeCacheWritable = true;
+  npmPackFlags = [ "--ignore-scripts" ];
 
   meta = {
     description = "About A CLI interface for Marp and Marpit based converters";

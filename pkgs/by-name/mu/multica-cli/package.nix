@@ -1,13 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
 buildGoModule rec {
-  __structuredAttrs = true;
-
   pname = "multica-cli";
   version = "0.3.43";
 
@@ -18,13 +16,18 @@ buildGoModule rec {
     hash = "sha256-XzJIWvSLK83f2ey7MKNvQuPuDy44dMf2YkxaudnLnvc=";
   };
 
-  sourceRoot = "${src.name}/server";
-
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-+IZt3ZQDHEcLA1cOcN4j4cTtIbATzAowUL3i1ZQnzBc=";
-
-  subPackages = [ "cmd/multica" ];
-
   env.CGO_ENABLED = 0;
+
+  postInstall = ''
+    installShellCompletion --cmd multica \
+      --bash <($out/bin/multica completion bash) \
+      --zsh <($out/bin/multica completion zsh) \
+      --fish <($out/bin/multica completion fish)
+  '';
+
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -34,14 +37,8 @@ buildGoModule rec {
     "-X main.date=1970-01-01T00:00:00Z"
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = ''
-    installShellCompletion --cmd multica \
-      --bash <($out/bin/multica completion bash) \
-      --zsh <($out/bin/multica completion zsh) \
-      --fish <($out/bin/multica completion fish)
-  '';
+  sourceRoot = "${src.name}/server";
+  subPackages = [ "cmd/multica" ];
 
   meta = {
     description = "CLI for the Multica managed agents platform";

@@ -59,8 +59,8 @@
 {
   lib,
   stdenv,
-  postgresql,
   nix-update-script,
+  postgresql,
 }:
 
 lib.extendMkDerivation {
@@ -77,25 +77,9 @@ lib.extendMkDerivation {
       ...
     }@prevAttrs:
     {
-      passthru =
-        prevAttrs.passthru or { }
-        // lib.optionalAttrs enableUpdateScript {
-          updateScript =
-            prevAttrs.passthru.updateScript or (nix-update-script (
-              lib.optionalAttrs (lib.hasInfix "unstable" prevAttrs.version) {
-                extraArgs = [ "--version=branch" ];
-              }
-            ));
-        };
-
       strictDeps = true;
-      buildInputs = [ postgresql ] ++ prevAttrs.buildInputs or [ ];
       nativeBuildInputs = [ postgresql.pg_config ] ++ prevAttrs.nativeBuildInputs or [ ];
-
-      installFlags = [
-        "DESTDIR=${placeholder "out"}"
-      ]
-      ++ prevAttrs.installFlags or [ ];
+      buildInputs = [ postgresql ] ++ prevAttrs.buildInputs or [ ];
 
       postInstall = ''
         # DESTDIR + pg_config install the files into
@@ -148,5 +132,21 @@ lib.extendMkDerivation {
         fi
       ''
       + prevAttrs.postInstall or "";
+
+      installFlags = [
+        "DESTDIR=${placeholder "out"}"
+      ]
+      ++ prevAttrs.installFlags or [ ];
+
+      passthru =
+        prevAttrs.passthru or { }
+        // lib.optionalAttrs enableUpdateScript {
+          updateScript =
+            prevAttrs.passthru.updateScript or (nix-update-script (
+              lib.optionalAttrs (lib.hasInfix "unstable" prevAttrs.version) {
+                extraArgs = [ "--version=branch" ];
+              }
+            ));
+        };
     };
 }

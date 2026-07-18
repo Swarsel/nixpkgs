@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  setuptools,
-
   # dependencies
   aenum,
   aiohttp,
+  buildPythonPackage,
   fastjsonschema,
   flatlatex,
   fsspec,
+  # build-system
+  hatchling,
+  # tests
+  html2text,
   imagesize,
   ipykernel,
   jupyter-client,
@@ -26,25 +25,22 @@
   prompt-toolkit,
   pygments,
   pyperclip,
+  pytest-asyncio,
+  pytest-cov-stub,
+  pytestCheckHook,
   python-code-minimap,
+  python-magic,
+  setuptools,
   sixelcrop,
   timg,
   typing-extensions,
   universal-pathlib,
-
-  # tests
-  html2text,
-  pytest-asyncio,
-  pytest-cov-stub,
-  pytestCheckHook,
-  python-magic,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "euporie";
   version = "2.10.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joouha";
@@ -53,17 +49,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-JzCVpI1O+KM+V4fLw+vwAsFbUK5SXZvAZWffzojU0u0=";
   };
 
+  nativeCheckInputs = [
+    html2text
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    python-magic
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [
     hatchling
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "markdown-it-py"
-    "mdit-py-plugins"
-    "platformdirs"
-    "universal-pathlib"
-  ];
   dependencies = [
     aenum
     aiohttp
@@ -90,17 +89,18 @@ buildPythonPackage (finalAttrs: {
     universal-pathlib
   ];
 
-  nativeCheckInputs = [
-    html2text
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    python-magic
-    writableTmpDirAsHomeHook
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "markdown-it-py"
+    "mdit-py-plugins"
+    "platformdirs"
+    "universal-pathlib"
   ];
 
   meta = {
     description = "Jupyter notebooks in the terminal";
+
     longDescription = ''
       Similar to `jupyter lab` or `jupyter notebook`, This package
       can only be used inside a python environment. To quickly summon
@@ -109,14 +109,17 @@ buildPythonPackage (finalAttrs: {
       nix-shell -p 'python3.withPackages (ps: with ps; [ euporie ])'
       ```
     '';
+
     homepage = "https://euporie.readthedocs.io/";
-    downloadPage = "https://github.com/joouha/euporie";
     changelog = "https://github.com/joouha/euporie/blob/${finalAttrs.src.tag}/CHANGELOG.rst";
     license = lib.licenses.mit;
-    mainProgram = "euporie";
+
     maintainers = with lib.maintainers; [
       euxane
       renesat
     ];
+
+    mainProgram = "euporie";
+    downloadPage = "https://github.com/joouha/euporie";
   };
 })

@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
-  replaceVars,
+  borgbackup,
   cargo,
   desktop-file-utils,
   git,
-  itstool,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
-  rustc,
-  wrapGAppsHook4,
-  borgbackup,
   gtk4,
+  itstool,
   libadwaita,
   libsecret,
-  openssl,
+  meson,
+  ninja,
   nix-update-script,
+  openssl,
+  pkg-config,
+  python3,
+  replaceVars,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,16 +27,11 @@ stdenv.mkDerivation rec {
   version = "0.8.3";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "pika-backup";
     tag = version;
     hash = "sha256-oM59t0oJzW7EyvcGoEwrokhxk+inxMLznf4Z2IEg3ig=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-CWyZYnurIWiGzfUpa7OgmLU/CVRiAGbgFM0+frRfi9c=";
+    domain = "gitlab.gnome.org";
   };
 
   patches = [
@@ -70,6 +65,11 @@ stdenv.mkDerivation rec {
     openssl
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-CWyZYnurIWiGzfUpa7OgmLU/CVRiAGbgFM0+frRfi9c=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -80,7 +80,7 @@ stdenv.mkDerivation rec {
     changelog = "https://gitlab.gnome.org/World/pika-backup/-/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
-    teams = [ lib.teams.gnome-circle ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome-circle ];
   };
 }

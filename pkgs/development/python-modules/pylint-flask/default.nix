@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pylint-flask";
   version = "0.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -19,7 +18,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   buildInputs = [ pylint ];
 
   propagatedBuildInputs = [
@@ -30,7 +28,7 @@ buildPythonPackage rec {
   # Tests require a very old version of pylint
   # also tests are only available at GitHub, with an old release tag
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pylint_flask" ];
 
   meta = {

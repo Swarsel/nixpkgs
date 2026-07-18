@@ -9,7 +9,6 @@ let
   pyjsparser = buildPythonPackage {
     pname = "pyjsparser";
     version = "2.7.1";
-    format = "setuptools";
 
     src = fetchFromGitHub {
       owner = "PiotrDabkowski";
@@ -18,13 +17,14 @@ let
       hash = "sha256-Hqay9/qsjUfe62U7Q79l0Yy01L2Bnj5xNs6427k3Br8=";
     };
 
+    # js2py is needed for tests but it's unmaintained and insecure
+    doCheck = false;
+
     nativeCheckInputs = [
       pytestCheckHook
     ];
 
-    # js2py is needed for tests but it's unmaintained and insecure
-    doCheck = false;
-
+    format = "setuptools";
     pythonImportsCheck = [ "pyjsparser" ];
 
     meta = {

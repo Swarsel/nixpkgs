@@ -1,29 +1,25 @@
 {
-  buildDunePackage,
-  index,
-  ppx_irmin,
-  irmin,
-  optint,
-  fmt,
-  logs,
-  lwt,
-  mtime,
-  cmdliner,
-  checkseum,
-  rusage,
   alcotest,
   alcotest-lwt,
   astring,
+  buildDunePackage,
+  checkseum,
+  cmdliner,
+  fmt,
+  index,
+  irmin,
   irmin-test,
+  logs,
+  lwt,
+  mtime,
+  optint,
+  ppx_irmin,
+  rusage,
 }:
 
 buildDunePackage {
-  minimalOCamlVersion = "4.12";
-
-  pname = "irmin-pack";
-
   inherit (irmin) version src;
-
+  pname = "irmin-pack";
   nativeBuildInputs = [ ppx_irmin ];
 
   propagatedBuildInputs = [
@@ -39,6 +35,8 @@ buildDunePackage {
     rusage
   ];
 
+  doCheck = true;
+
   checkInputs = [
     astring
     alcotest
@@ -46,7 +44,7 @@ buildDunePackage {
     irmin-test
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.12";
 
   meta = irmin.meta // {
     description = "Irmin backend which stores values in a pack file";

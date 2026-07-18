@@ -1,24 +1,17 @@
 {
   lib,
-  ocaml,
-  buildDunePackage,
   fetchurl,
   alcotest,
+  buildDunePackage,
   domain_shims,
   mdx,
+  ocaml,
   thread-table,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "domain-local-await";
   version = "1.0.1";
-
-  minimalOCamlVersion = "5.0";
-
-  # Fix build with gcc15
-  env = lib.optionalAttrs (lib.versions.majorMinor ocaml.version == "5.0") {
-    NIX_CFLAGS_COMPILE = "-std=gnu11";
-  };
 
   src = fetchurl {
     url = "https://github.com/ocaml-multicore/domain-local-await/releases/download/${finalAttrs.version}/domain-local-await-${finalAttrs.version}.tbz";
@@ -29,8 +22,16 @@ buildDunePackage (finalAttrs: {
     thread-table
   ];
 
-  __darwinAllowLocalNetworking = true;
+  # Fix build with gcc15
+  env = lib.optionalAttrs (lib.versions.majorMinor ocaml.version == "5.0") {
+    NIX_CFLAGS_COMPILE = "-std=gnu11";
+  };
+
   doCheck = true;
+
+  nativeCheckInputs = [
+    mdx.bin
+  ];
 
   checkInputs = [
     alcotest
@@ -38,14 +39,13 @@ buildDunePackage (finalAttrs: {
     mdx
   ];
 
-  nativeCheckInputs = [
-    mdx.bin
-  ];
+  __darwinAllowLocalNetworking = true;
+  minimalOCamlVersion = "5.0";
 
   meta = {
+    description = "Scheduler independent blocking mechanism";
     homepage = "https://github.com/ocaml-multicore/ocaml-domain-local-await";
     changelog = "https://github.com/ocaml-multicore/ocaml-domain-local-await/raw/v${finalAttrs.version}/CHANGES.md";
-    description = "Scheduler independent blocking mechanism";
     license = with lib.licenses; [ isc ];
     maintainers = with lib.maintainers; [ toastal ];
   };

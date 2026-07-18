@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   numpy,
   pandas,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mean-average-precision";
   version = "2024.01.05.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bes-dev";
@@ -18,6 +17,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-qo160L+oJsHERVOV0qdiRIZPMjvSlUmMTrAzThfrQSs=";
   };
+
+  # No tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -28,12 +30,11 @@ buildPythonPackage rec {
     pandas
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "mean_average_precision"
   ];
-
-  # No tests
-  doCheck = false;
 
   meta = {
     description = "Mean Average Precision for Object Detection";

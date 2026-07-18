@@ -1,21 +1,20 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
-  fetchPypi,
   feedparser,
-  requests,
-  pillow,
-  tldextract,
+  fetchPypi,
   lxml,
   lxml-html-clean,
-  beautifulsoup4,
+  pillow,
   python-dateutil,
+  requests,
+  tldextract,
 }:
 
 buildPythonPackage rec {
   pname = "newspaper3k";
   version = "0.2.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "newspaper" ];
 
   meta = {

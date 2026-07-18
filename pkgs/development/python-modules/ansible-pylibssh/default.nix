@@ -14,12 +14,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "ansible-pylibssh";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "ansible_pylibssh";
     inherit (finalAttrs) version;
     hash = "sha256-pItebbIQYrxiWFSOaj5DYwQ9QBKPDmt5Z3Slm2p9voI=";
+    pname = "ansible_pylibssh";
   };
 
   build-system = [
@@ -32,7 +31,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ libssh ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pylibsshext" ];
 
   meta = {

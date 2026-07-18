@@ -1,15 +1,14 @@
 {
   lib,
-  pkgs,
-  python3Packages,
   fetchFromGitHub,
   nixosTests,
+  pkgs,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "steck";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "supakeen";
@@ -17,6 +16,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-5Spops8ERQ7TgFYH7n+c4hKdIQfjjujKaGhmhfAszgQ=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
 
   build-system = with python3Packages; [
     poetry-core
@@ -32,19 +35,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     toml
   ];
 
+  pyproject = true;
   pythonRelaxDeps = [ "termcolor" ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-  ];
-
   passthru.tests = nixosTests.pinnwand;
 
   meta = {
+    description = "Client for pinnwand pastebin";
     homepage = "https://github.com/supakeen/steck";
     license = lib.licenses.mit;
-    description = "Client for pinnwand pastebin";
-    mainProgram = "steck";
     maintainers = with lib.maintainers; [ hexa ];
+    mainProgram = "steck";
   };
 })

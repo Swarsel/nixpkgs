@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   automake,
+  autoreconfHook,
   fftwSinglePrec,
   ladspa-header,
   libxml2,
-  pkg-config,
   perlPackages,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,13 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-eOtIhNcuItREUShI8JRlBVKfMfovpdfIYu+m37v4KLE=";
   };
 
-  preBuild = ''
-    shopt -s globstar
-    for f in **/Makefile; do
-      substituteInPlace "$f" \
-        --replace-quiet 'ranlib' '${stdenv.cc.targetPrefix}ranlib'
-    done
-    shopt -u globstar
+  postPatch = ''
+    patchShebangs --build . ./metadata/ makestub.pl
+    cp ${automake}/share/automake-*/mkinstalldirs .
   '';
 
   nativeBuildInputs = [
@@ -46,14 +42,18 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
-  postPatch = ''
-    patchShebangs --build . ./metadata/ makestub.pl
-    cp ${automake}/share/automake-*/mkinstalldirs .
+  preBuild = ''
+    shopt -s globstar
+    for f in **/Makefile; do
+      substituteInPlace "$f" \
+        --replace-quiet 'ranlib' '${stdenv.cc.targetPrefix}ranlib'
+    done
+    shopt -u globstar
   '';
 
   meta = {
-    homepage = "http://plugin.org.uk/";
     description = "LADSPA format audio plugins";
+    homepage = "http://plugin.org.uk/";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.unix;

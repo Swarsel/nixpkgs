@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   installShellFiles,
   testers,
   triton,
@@ -18,17 +18,16 @@ buildNpmPackage rec {
     hash = "sha256-65GfN8nqr2hDz+QiBgIM/Jp5poITPUvHQYECjZMtBM4=";
   };
 
-  npmDepsHash = "sha256-oCtS2OG3fGit54ChiVwL2Y/S4XtBVjpGumKbZgn8f00=";
-
-  dontBuild = true;
-
   nativeBuildInputs = [ installShellFiles ];
+  npmDepsHash = "sha256-oCtS2OG3fGit54ChiVwL2Y/S4XtBVjpGumKbZgn8f00=";
 
   postInstall = ''
     installShellCompletion --cmd triton --bash <($out/bin/triton completion)
     # Strip timestamp from generated bash completion
     sed -i '/Bash completion generated.*/d' $out/share/bash-completion/completions/triton.bash
   '';
+
+  dontBuild = true;
 
   passthru = {
     tests.version = testers.testVersion {

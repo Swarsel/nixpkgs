@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   glib,
-  openssl,
   irssi,
+  openssl,
+  pkg-config,
 }:
 stdenv.mkDerivation {
   pname = "fish-irssi";

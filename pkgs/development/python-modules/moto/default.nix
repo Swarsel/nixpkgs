@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   antlr4-python3-runtime,
   aws-xray-sdk,
   boto3,
@@ -9,9 +10,8 @@
   crc32c,
   cryptography,
   docker,
-  fetchFromGitHub,
-  flask-cors,
   flask,
+  flask-cors,
   freezegun,
   graphql-core,
   jinja2,
@@ -37,7 +37,6 @@
 buildPythonPackage rec {
   pname = "moto";
   version = "5.1.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "getmoto";
@@ -46,251 +45,9 @@ buildPythonPackage rec {
     hash = "sha256-YYRXGsdAsPk/0U8VTOBBTBs84xjskar1IczWOxoEFLQ=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    boto3
-    botocore
-    cryptography
-    requests
-    xmltodict
-    werkzeug
-    python-dateutil
-    responses
-    jinja2
-  ];
-
-  optional-dependencies = {
-    all = [
-      antlr4-python3-runtime
-      joserfc
-      jsonpath-ng
-      docker
-      graphql-core
-      pyyaml
-      cfn-lint
-      jsonschema
-      openapi-spec-validator
-      pyparsing
-      py-partiql-parser
-      aws-xray-sdk
-      setuptools
-      multipart
-    ];
-    proxy = [
-      antlr4-python3-runtime
-      joserfc
-      jsonpath-ng
-      docker
-      graphql-core
-      pyyaml
-      cfn-lint
-      openapi-spec-validator
-      pyparsing
-      py-partiql-parser
-      aws-xray-sdk
-      setuptools
-      multipart
-    ];
-    server = [
-      antlr4-python3-runtime
-      joserfc
-      jsonpath-ng
-      docker
-      graphql-core
-      pyyaml
-      cfn-lint
-      openapi-spec-validator
-      pyparsing
-      py-partiql-parser
-      aws-xray-sdk
-      setuptools
-      flask
-      flask-cors
-    ];
-    acm = [ ];
-    acmpca = [ ];
-    amp = [ ];
-    apigateway = [
-      pyyaml
-      joserfc
-      openapi-spec-validator
-    ];
-    apigatewayv2 = [
-      pyyaml
-      openapi-spec-validator
-    ];
-    applicationautoscaling = [ ];
-    appsync = [
-      graphql-core
-    ];
-    athena = [ ];
-    autoscaling = [ ];
-    awslambda = [
-      docker
-    ];
-    awslambda_simple = [ ];
-    backup = [ ];
-    batch = [
-      docker
-    ];
-    batch_simple = [ ];
-    budgets = [ ];
-    ce = [ ];
-    cloudformation = [
-      joserfc
-      docker
-      graphql-core
-      pyyaml
-      cfn-lint
-      openapi-spec-validator
-      pyparsing
-      py-partiql-parser
-      aws-xray-sdk
-      setuptools
-    ];
-    cloudfront = [ ];
-    cloudtrail = [ ];
-    cloudwatch = [ ];
-    codebuild = [ ];
-    codecommit = [ ];
-    codepipeline = [ ];
-    cognitoidentity = [ ];
-    cognitoidp = [
-      joserfc
-    ];
-    comprehend = [ ];
-    config = [ ];
-    databrew = [ ];
-    datapipeline = [ ];
-    datasync = [ ];
-    dax = [ ];
-    dms = [ ];
-    ds = [ ];
-    dynamodb = [
-      docker
-      py-partiql-parser
-    ];
-    dynamodbstreams = [
-      docker
-      py-partiql-parser
-    ];
-    ebs = [ ];
-    ec2 = [ ];
-    ec2instanceconnect = [ ];
-    ecr = [ ];
-    ecs = [ ];
-    efs = [ ];
-    eks = [ ];
-    elasticache = [ ];
-    elasticbeanstalk = [ ];
-    elastictranscoder = [ ];
-    elb = [ ];
-    elbv2 = [ ];
-    emr = [ ];
-    emrcontainers = [ ];
-    emrserverless = [ ];
-    es = [ ];
-    events = [
-      jsonpath-ng
-    ];
-    firehose = [ ];
-    forecast = [ ];
-    glacier = [ ];
-    glue = [
-      pyparsing
-    ];
-    greengrass = [ ];
-    guardduty = [ ];
-    iam = [ ];
-    inspector2 = [ ];
-    iot = [ ];
-    iotdata = [ ];
-    ivs = [ ];
-    kinesis = [ ];
-    kinesisvideo = [ ];
-    kinesisvideoarchivedmedia = [ ];
-    kms = [ ];
-    logs = [ ];
-    managedblockchain = [ ];
-    mediaconnect = [ ];
-    medialive = [ ];
-    mediapackage = [ ];
-    mediastore = [ ];
-    mediastoredata = [ ];
-    meteringmarketplace = [ ];
-    mq = [ ];
-    opsworks = [ ];
-    organizations = [ ];
-    panorama = [ ];
-    personalize = [ ];
-    pinpoint = [ ];
-    polly = [ ];
-    quicksight = [
-      jsonschema
-    ];
-    ram = [ ];
-    rds = [ ];
-    redshift = [ ];
-    redshiftdata = [ ];
-    rekognition = [ ];
-    resourcegroups = [ ];
-    resourcegroupstaggingapi = [
-      joserfc
-      docker
-      graphql-core
-      pyyaml
-      cfn-lint
-      openapi-spec-validator
-      pyparsing
-      py-partiql-parser
-    ];
-    route53 = [ ];
-    route53resolver = [ ];
-    s3 = [
-      pyyaml
-      py-partiql-parser
-    ];
-    s3crc32c = [
-      pyyaml
-      py-partiql-parser
-      crc32c
-    ];
-    s3control = [ ];
-    sagemaker = [ ];
-    sdb = [ ];
-    scheduler = [ ];
-    secretsmanager = [ ];
-    servicediscovery = [ ];
-    servicequotas = [ ];
-    ses = [ ];
-    signer = [ ];
-    sns = [ ];
-    sqs = [ ];
-    ssm = [
-      pyyaml
-    ];
-    ssoadmin = [ ];
-    stepfunctions = [
-      antlr4-python3-runtime
-      jsonpath-ng
-    ];
-    sts = [ ];
-    support = [ ];
-    swf = [ ];
-    textract = [ ];
-    timestreamwrite = [ ];
-    transcribe = [ ];
-    wafv2 = [ ];
-    xray = [
-      aws-xray-sdk
-      setuptools
-    ];
-  };
-
-  __darwinAllowLocalNetworking = true;
+  # Some tests depend on AWS credentials environment variables to be set.
+  env.AWS_ACCESS_KEY_ID = "ak";
+  env.AWS_SECRET_ACCESS_KEY = "sk";
 
   nativeCheckInputs = [
     antlr4-python3-runtime
@@ -309,18 +66,58 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  # Some tests depend on AWS credentials environment variables to be set.
-  env.AWS_ACCESS_KEY_ID = "ak";
-  env.AWS_SECRET_ACCESS_KEY = "sk";
+  __darwinAllowLocalNetworking = true;
 
-  pytestFlags = [
-    # Matches upstream configuration, presumably due to expensive setup/teardown.
-    "--dist=loadscope"
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    boto3
+    botocore
+    cryptography
+    requests
+    xmltodict
+    werkzeug
+    python-dateutil
+    responses
+    jinja2
   ];
 
   disabledTestMarks = [
     "network"
     "requires_docker"
+  ];
+
+  disabledTestPaths = [
+    # Flaky under parallel execution, Connection Reset errors to localhost.
+    "tests/test_moto_api/recorder/test_recorder.py"
+
+    # Flaky under parallel execution
+    "tests/test_resourcegroupstaggingapi/*.py"
+
+    # Tries to access the network
+    "tests/test_batch/test_batch_jobs.py"
+
+    # Threading tests regularly blocks test execution
+    "tests/test_utilities/test_threaded_server.py"
+    "tests/test_s3/test_s3_bucket_policy.py"
+
+    # https://github.com/getmoto/moto/issues/7786
+    "tests/test_dynamodb/test_dynamodb_import_table.py"
+
+    # Infinite recursion with pycognito
+    "tests/test_cognitoidp/test_cognitoidp.py"
+
+    # botocore.exceptions.ParamValidationError: Parameter validation failed: Unknown parameter in input: "EnableWorkDocs", must be one of: [...]
+    "tests/test_workspaces/test_workspaces.py"
+
+    # Requires sagemaker which is broken on Python 3.14
+    "other_langs/tests_sagemaker_client/test_model_training.py"
+    "other_langs/tests_sagemaker_client/test_pipeline_session.py"
+
+    # Requires cfn-lint which is broken on Python 3.14
+    "tests/test_cloudformation/test_validate.py"
   ];
 
   disabledTests = [
@@ -366,35 +163,277 @@ buildPythonPackage rec {
     "test_start_and_fire_timer_decision"
   ];
 
-  disabledTestPaths = [
-    # Flaky under parallel execution, Connection Reset errors to localhost.
-    "tests/test_moto_api/recorder/test_recorder.py"
+  optional-dependencies = {
+    acm = [ ];
+    acmpca = [ ];
 
-    # Flaky under parallel execution
-    "tests/test_resourcegroupstaggingapi/*.py"
+    all = [
+      antlr4-python3-runtime
+      joserfc
+      jsonpath-ng
+      docker
+      graphql-core
+      pyyaml
+      cfn-lint
+      jsonschema
+      openapi-spec-validator
+      pyparsing
+      py-partiql-parser
+      aws-xray-sdk
+      setuptools
+      multipart
+    ];
 
-    # Tries to access the network
-    "tests/test_batch/test_batch_jobs.py"
+    amp = [ ];
 
-    # Threading tests regularly blocks test execution
-    "tests/test_utilities/test_threaded_server.py"
-    "tests/test_s3/test_s3_bucket_policy.py"
+    apigateway = [
+      pyyaml
+      joserfc
+      openapi-spec-validator
+    ];
 
-    # https://github.com/getmoto/moto/issues/7786
-    "tests/test_dynamodb/test_dynamodb_import_table.py"
+    apigatewayv2 = [
+      pyyaml
+      openapi-spec-validator
+    ];
 
-    # Infinite recursion with pycognito
-    "tests/test_cognitoidp/test_cognitoidp.py"
+    applicationautoscaling = [ ];
 
-    # botocore.exceptions.ParamValidationError: Parameter validation failed: Unknown parameter in input: "EnableWorkDocs", must be one of: [...]
-    "tests/test_workspaces/test_workspaces.py"
+    appsync = [
+      graphql-core
+    ];
 
-    # Requires sagemaker which is broken on Python 3.14
-    "other_langs/tests_sagemaker_client/test_model_training.py"
-    "other_langs/tests_sagemaker_client/test_pipeline_session.py"
+    athena = [ ];
+    autoscaling = [ ];
 
-    # Requires cfn-lint which is broken on Python 3.14
-    "tests/test_cloudformation/test_validate.py"
+    awslambda = [
+      docker
+    ];
+
+    awslambda_simple = [ ];
+    backup = [ ];
+
+    batch = [
+      docker
+    ];
+
+    batch_simple = [ ];
+    budgets = [ ];
+    ce = [ ];
+
+    cloudformation = [
+      joserfc
+      docker
+      graphql-core
+      pyyaml
+      cfn-lint
+      openapi-spec-validator
+      pyparsing
+      py-partiql-parser
+      aws-xray-sdk
+      setuptools
+    ];
+
+    cloudfront = [ ];
+    cloudtrail = [ ];
+    cloudwatch = [ ];
+    codebuild = [ ];
+    codecommit = [ ];
+    codepipeline = [ ];
+    cognitoidentity = [ ];
+
+    cognitoidp = [
+      joserfc
+    ];
+
+    comprehend = [ ];
+    config = [ ];
+    databrew = [ ];
+    datapipeline = [ ];
+    datasync = [ ];
+    dax = [ ];
+    dms = [ ];
+    ds = [ ];
+
+    dynamodb = [
+      docker
+      py-partiql-parser
+    ];
+
+    dynamodbstreams = [
+      docker
+      py-partiql-parser
+    ];
+
+    ebs = [ ];
+    ec2 = [ ];
+    ec2instanceconnect = [ ];
+    ecr = [ ];
+    ecs = [ ];
+    efs = [ ];
+    eks = [ ];
+    elasticache = [ ];
+    elasticbeanstalk = [ ];
+    elastictranscoder = [ ];
+    elb = [ ];
+    elbv2 = [ ];
+    emr = [ ];
+    emrcontainers = [ ];
+    emrserverless = [ ];
+    es = [ ];
+
+    events = [
+      jsonpath-ng
+    ];
+
+    firehose = [ ];
+    forecast = [ ];
+    glacier = [ ];
+
+    glue = [
+      pyparsing
+    ];
+
+    greengrass = [ ];
+    guardduty = [ ];
+    iam = [ ];
+    inspector2 = [ ];
+    iot = [ ];
+    iotdata = [ ];
+    ivs = [ ];
+    kinesis = [ ];
+    kinesisvideo = [ ];
+    kinesisvideoarchivedmedia = [ ];
+    kms = [ ];
+    logs = [ ];
+    managedblockchain = [ ];
+    mediaconnect = [ ];
+    medialive = [ ];
+    mediapackage = [ ];
+    mediastore = [ ];
+    mediastoredata = [ ];
+    meteringmarketplace = [ ];
+    mq = [ ];
+    opsworks = [ ];
+    organizations = [ ];
+    panorama = [ ];
+    personalize = [ ];
+    pinpoint = [ ];
+    polly = [ ];
+
+    proxy = [
+      antlr4-python3-runtime
+      joserfc
+      jsonpath-ng
+      docker
+      graphql-core
+      pyyaml
+      cfn-lint
+      openapi-spec-validator
+      pyparsing
+      py-partiql-parser
+      aws-xray-sdk
+      setuptools
+      multipart
+    ];
+
+    quicksight = [
+      jsonschema
+    ];
+
+    ram = [ ];
+    rds = [ ];
+    redshift = [ ];
+    redshiftdata = [ ];
+    rekognition = [ ];
+    resourcegroups = [ ];
+
+    resourcegroupstaggingapi = [
+      joserfc
+      docker
+      graphql-core
+      pyyaml
+      cfn-lint
+      openapi-spec-validator
+      pyparsing
+      py-partiql-parser
+    ];
+
+    route53 = [ ];
+    route53resolver = [ ];
+
+    s3 = [
+      pyyaml
+      py-partiql-parser
+    ];
+
+    s3control = [ ];
+
+    s3crc32c = [
+      pyyaml
+      py-partiql-parser
+      crc32c
+    ];
+
+    sagemaker = [ ];
+    scheduler = [ ];
+    sdb = [ ];
+    secretsmanager = [ ];
+
+    server = [
+      antlr4-python3-runtime
+      joserfc
+      jsonpath-ng
+      docker
+      graphql-core
+      pyyaml
+      cfn-lint
+      openapi-spec-validator
+      pyparsing
+      py-partiql-parser
+      aws-xray-sdk
+      setuptools
+      flask
+      flask-cors
+    ];
+
+    servicediscovery = [ ];
+    servicequotas = [ ];
+    ses = [ ];
+    signer = [ ];
+    sns = [ ];
+    sqs = [ ];
+
+    ssm = [
+      pyyaml
+    ];
+
+    ssoadmin = [ ];
+
+    stepfunctions = [
+      antlr4-python3-runtime
+      jsonpath-ng
+    ];
+
+    sts = [ ];
+    support = [ ];
+    swf = [ ];
+    textract = [ ];
+    timestreamwrite = [ ];
+    transcribe = [ ];
+    wafv2 = [ ];
+
+    xray = [
+      aws-xray-sdk
+      setuptools
+    ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    # Matches upstream configuration, presumably due to expensive setup/teardown.
+    "--dist=loadscope"
   ];
 
   meta = {

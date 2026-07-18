@@ -1,15 +1,19 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   android-tools,
   clang,
   dbus,
   expat,
-  fetchFromGitHub,
   fontconfig,
   freetype,
-  lib,
-  stdenv,
   libglvnd,
+  libx11,
+  libxcursor,
+  libxi,
   libxkbcommon,
+  libxrandr,
   makeWrapper,
   mold,
   nix-update-script,
@@ -17,10 +21,6 @@
   rustPlatform,
   wayland,
   writableTmpDirAsHomeHook,
-  libxrandr,
-  libxi,
-  libxcursor,
-  libx11,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -34,7 +34,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-TGelOjwqTzYShZxXyPTTfkjAreFmZmrCF7jtp1UAfDw=";
   };
 
-  cargoHash = "sha256-RutiCWTkXnF7W86SnXRs+vI7dELrbdZXI62J8suZv5g=";
+  nativeBuildInputs = [
+    makeWrapper
+    mold
+    pkg-config
+  ];
 
   buildInputs = [
     expat
@@ -42,11 +46,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     freetype
   ];
 
-  nativeBuildInputs = [
-    makeWrapper
-    mold
-    pkg-config
-  ];
+  cargoHash = "sha256-RutiCWTkXnF7W86SnXRs+vI7dELrbdZXI62J8suZv5g=";
 
   nativeCheckInputs = [
     clang
@@ -75,13 +75,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/Universal-Debloater-Alliance/universal-android-debloater-next-generation/releases/tag/v${finalAttrs.version}";
     description = "Tool to debloat non-rooted Android devices";
     homepage = "https://github.com/Universal-Debloater-Alliance/universal-android-debloater-next-generation";
+    changelog = "https://github.com/Universal-Debloater-Alliance/universal-android-debloater-next-generation/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "uad-ng";
     maintainers = with lib.maintainers; [ lavafroth ];
-    broken = with stdenv.hostPlatform; isDarwin && isx86_64;
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "uad-ng";
+    broken = with stdenv.hostPlatform; isDarwin && isx86_64;
   };
 })

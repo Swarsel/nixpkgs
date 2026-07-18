@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  requests,
   pytestCheckHook,
+  requests,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "zammad-py";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joeirimpan";
@@ -19,16 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-idPT3H2mlHoC8gHAQHOAcQJKciPZyagVEmojcKbj8ls=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     poetry-core
   ];
 
   dependencies = [
     requests
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -42,14 +41,16 @@ buildPythonPackage (finalAttrs: {
     "test_knowledge_bases_categories"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "zammad_py"
   ];
 
   meta = {
-    changelog = "https://github.com/joeirimpan/zammad_py/blob/${finalAttrs.src.tag}/HISTORY.md";
     description = "Python API client for accessing zammad REST API";
     homepage = "https://github.com/joeirimpan/zammad_py";
+    changelog = "https://github.com/joeirimpan/zammad_py/blob/${finalAttrs.src.tag}/HISTORY.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

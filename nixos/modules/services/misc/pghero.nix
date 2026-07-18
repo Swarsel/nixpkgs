@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   utils,
   ...
 }:
@@ -15,19 +15,31 @@ in
     enable = lib.mkEnableOption "PgHero service";
     package = lib.mkPackageOption pkgs "pghero" { };
 
-    listenAddress = lib.mkOption {
-      type = lib.types.str;
-      example = "[::1]:3000";
-      description = ''
-        `hostname:port` to listen for HTTP traffic.
+    environment = lib.mkOption {
+      default = { };
 
-        This is bound using the systemd socket activation.
+      description = ''
+        Environment variables to set for the service. Secrets should be
+        specified using {option}`environmentFile`.
       '';
+
+      type = lib.types.attrsOf lib.types.str;
+    };
+
+    environmentFiles = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        File to load environment variables from. Loaded variables override
+        values set in {option}`environment`.
+      '';
+
+      type = lib.types.listOf lib.types.path;
     };
 
     extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
       description = ''
         Additional command-line arguments for the systemd service.
 
@@ -35,11 +47,42 @@ in
 
         [Puma web server documentation]: https://puma.io/puma#configuration
       '';
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    extraGroups = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Additional groups for the systemd service.
+      '';
+
+      example = [ "tlskeys" ];
+      type = lib.types.listOf lib.types.str;
+    };
+
+    listenAddress = lib.mkOption {
+      description = ''
+        `hostname:port` to listen for HTTP traffic.
+
+        This is bound using the systemd socket activation.
+      '';
+
+      example = "[::1]:3000";
+      type = lib.types.str;
     };
 
     settings = lib.mkOption {
-      type = settingsFormat.type;
       default = { };
+
+      description = ''
+        PgHero configuration. Refer to the [PgHero documentation] for more
+        details.
+
+        [PgHero documentation]: https://github.com/ankane/pghero/blob/master/guides/Linux.md#multiple-databases
+      '';
+
       example = {
         databases = {
           primary = {
@@ -47,67 +90,34 @@ in
           };
         };
       };
-      description = ''
-        PgHero configuration. Refer to the [PgHero documentation] for more
-        details.
 
-        [PgHero documentation]: https://github.com/ankane/pghero/blob/master/guides/Linux.md#multiple-databases
-      '';
-    };
-
-    environment = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
-      default = { };
-      description = ''
-        Environment variables to set for the service. Secrets should be
-        specified using {option}`environmentFile`.
-      '';
-    };
-
-    environmentFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      default = [ ];
-      description = ''
-        File to load environment variables from. Loaded variables override
-        values set in {option}`environment`.
-      '';
-    };
-
-    extraGroups = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [ "tlskeys" ];
-      description = ''
-        Additional groups for the systemd service.
-      '';
+      type = settingsFormat.type;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.sockets.pghero = {
-      unitConfig.Description = "PgHero HTTP socket";
-      wantedBy = [ "sockets.target" ];
-      listenStreams = [ cfg.listenAddress ];
-    };
-
     systemd.services.pghero = {
-      description = "PgHero performance dashboard for PostgreSQL";
-      wantedBy = [ "multi-user.target" ];
-      requires = [ "pghero.socket" ];
       after = [
         "pghero.socket"
         "network.target"
       ];
 
+      description = "PgHero performance dashboard for PostgreSQL";
+
       environment = {
-        RAILS_ENV = "production";
         PGHERO_CONFIG_PATH = settingsFile;
+        RAILS_ENV = "production";
       }
       // cfg.environment;
 
+      requires = [ "pghero.socket" ];
+
       serviceConfig = {
-        Type = "notify";
-        WatchdogSec = "10";
+        CapabilityBoundingSet = [ "" ];
+        DeviceAllow = [ "" ];
+        DevicePolicy = "closed";
+        DynamicUser = true;
+        EnvironmentFile = cfg.environmentFiles;
 
         ExecStart = utils.escapeSystemdExecArgs (
           [
@@ -117,43 +127,47 @@ in
           ]
           ++ cfg.extraArgs
         );
-        Restart = "always";
 
-        WorkingDirectory = "${cfg.package}/share/pghero";
-
-        EnvironmentFile = cfg.environmentFiles;
-        SupplementaryGroups = cfg.extraGroups;
-
-        DynamicUser = true;
-        UMask = "0077";
-
-        ProtectHome = true;
-        ProtectProc = "invisible";
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        PrivateDevices = true;
+        PrivateUsers = true;
         ProcSubset = "pid";
         ProtectClock = true;
-        ProtectHostname = true;
         ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        PrivateUsers = true;
-        PrivateDevices = true;
-        RestrictRealtime = true;
-        RestrictNamespaces = true;
+        ProtectProc = "invisible";
+        Restart = "always";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
-        DeviceAllow = [ "" ];
-        DevicePolicy = "closed";
-        CapabilityBoundingSet = [ "" ];
-        MemoryDenyWriteExecute = true;
-        LockPersonality = true;
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        SupplementaryGroups = cfg.extraGroups;
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
         SystemCallFilter = [ "@system-service" ];
+        Type = "notify";
+        UMask = "0077";
+        WatchdogSec = "10";
+        WorkingDirectory = "${cfg.package}/share/pghero";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.sockets.pghero = {
+      listenStreams = [ cfg.listenAddress ];
+      unitConfig.Description = "PgHero HTTP socket";
+      wantedBy = [ "sockets.target" ];
     };
   };
 }

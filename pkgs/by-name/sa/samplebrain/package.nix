@@ -5,10 +5,10 @@
   fetchpatch,
   fftw,
   liblo,
+  libsForQt5,
   libsndfile,
   makeDesktopItem,
   portaudio,
-  libsForQt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fixes build with recent liblo, see https://gitlab.com/then-try-this/samplebrain/-/merge_requests/16
     (fetchpatch {
-      url = "https://gitlab.com/then-try-this/samplebrain/-/commit/032fd7c03931d1ca2d5c3d5e29901569aa2b2a86.patch";
       hash = "sha256-aaZJh/vx8fOqrJTuFzQ9+1mXvDQQXLy1k/2SwkMkVk4=";
+      url = "https://gitlab.com/then-try-this/samplebrain/-/commit/032fd7c03931d1ca2d5c3d5e29901569aa2b2a86.patch";
     })
   ];
 
@@ -43,29 +43,29 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qtbase
   ];
 
-  desktopItem = makeDesktopItem {
-    type = "Application";
-    desktopName = "samplebrain";
-    name = "samplebrain";
-    comment = "A sample masher designed by Aphex Twin";
-    exec = "samplebrain";
-    icon = "samplebrain";
-    categories = [ "Audio" ];
-  };
-
   installPhase = ''
     mkdir -p $out/bin
     cp samplebrain $out/bin
     install -m 444 -D desktop/samplebrain.svg $out/share/icons/hicolor/scalable/apps/samplebrain.svg
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [ "Audio" ];
+    comment = "A sample masher designed by Aphex Twin";
+    desktopName = "samplebrain";
+    exec = "samplebrain";
+    icon = "samplebrain";
+    name = "samplebrain";
+    type = "Application";
+  };
+
   meta = {
     description = "Custom sample mashing app";
-    mainProgram = "samplebrain";
     homepage = "https://thentrythis.org/projects/samplebrain";
     changelog = "https://gitlab.com/then-try-this/samplebrain/-/releases/v${finalAttrs.version}_release";
-    maintainers = with lib.maintainers; [ mitchmindtree ];
     license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ mitchmindtree ];
     platforms = lib.platforms.linux;
+    mainProgram = "samplebrain";
   };
 })

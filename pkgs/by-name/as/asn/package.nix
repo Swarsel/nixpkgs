@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  curl,
-  whois,
-  bind,
-  mtr,
-  jq,
-  ipcalc,
-  grepcidr,
-  nmap,
   aha,
+  bind,
+  curl,
+  grepcidr,
+  ipcalc,
+  jq,
+  makeWrapper,
+  mtr,
+  nmap,
+  whois,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,11 +50,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "OSINT command line tool for investigating network data";
+
     longDescription = ''
       ASN / RPKI validity / BGP stats / IPv4v6 / Prefix / URL / ASPath / Organization /
       IP reputation / IP geolocation / IP fingerprinting / Network recon /
       lookup API server / Web traceroute server
     '';
+
     homepage = "https://github.com/nitefood/asn";
     changelog = "https://github.com/nitefood/asn/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ mit ];

@@ -1,15 +1,14 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  installShellFiles,
   nixosTests,
   python3Packages,
-  installShellFiles,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "xandikos";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jelmer";
@@ -17,6 +16,13 @@ python3Packages.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-nK+od6mJRj6I6qFhQmwwf6x+0kfC07VRVNKY6fkbNjc=";
   };
+
+  nativeBuildInputs = [ installShellFiles ];
+  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
+
+  postInstall = ''
+    installManPage man/xandikos{,-milter}.8
+  '';
 
   build-system = with python3Packages; [
     setuptools
@@ -34,21 +40,14 @@ python3Packages.buildPythonApplication rec {
     vobject
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = ''
-    installManPage man/xandikos{,-milter}.8
-  '';
-
+  pyproject = true;
   passthru.tests.xandikos = nixosTests.xandikos;
-
-  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
 
   meta = {
     description = "Lightweight CalDAV/CardDAV server";
     homepage = "https://github.com/jelmer/xandikos";
-    license = lib.licenses.gpl3Plus;
     changelog = "https://github.com/jelmer/xandikos/blob/v${version}/NEWS";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ _0x4A6F ];
     mainProgram = "xandikos";
   };

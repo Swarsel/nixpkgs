@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "poetry-semver";
   version = "0.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Semantic versioning library for Python";

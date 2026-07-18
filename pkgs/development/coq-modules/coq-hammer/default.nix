@@ -1,13 +1,13 @@
 {
-  mkCoqDerivation,
   coq,
   coq-hammer-tactics,
+  mkCoqDerivation,
   version ? null,
 }:
 
 mkCoqDerivation {
   inherit version;
-  pname = "coq-hammer";
+
   inherit (coq-hammer-tactics)
     owner
     repo
@@ -16,16 +16,17 @@ mkCoqDerivation {
     releaseRev
     ;
 
-  buildFlags = [ "plugin" ];
-  installTargets = [ "install-plugin" ];
-  extraInstallFlags = [ "BINDIR=$(out)/bin/" ];
-
-  mlPlugin = true;
+  pname = "coq-hammer";
 
   propagatedBuildInputs = [
     coq.ocamlPackages.findlib
     coq-hammer-tactics
   ];
+
+  buildFlags = [ "plugin" ];
+  extraInstallFlags = [ "BINDIR=$(out)/bin/" ];
+  installTargets = [ "install-plugin" ];
+  mlPlugin = true;
 
   meta = coq-hammer-tactics.meta // {
     description = "General-purpose automated reasoning hammer tool for Coq";

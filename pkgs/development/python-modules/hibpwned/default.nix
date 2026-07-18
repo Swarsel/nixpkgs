@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "hibpwned";
   version = "1.3.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "plasticuproject";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-d3EhRu7HcvbyjWWHVSax0j39yE4+hJp8zvtyRKoh4sY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Test require network access
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "hibpwned" ];
 
   meta = {

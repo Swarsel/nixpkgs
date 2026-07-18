@@ -1,23 +1,24 @@
 {
   lib,
-  fetchPypi,
   fetchFromGitHub,
+  fetchPypi,
   python3,
-
   withE2BE ? true,
 }:
 
 let
   tulir-telethon = python3.pkgs.telethon.overrideAttrs (
     finalAttrs: previousAttrs: {
-      version = "1.99.0a6";
       pname = "tulir_telethon";
+      version = "1.99.0a6";
+
       src = fetchFromGitHub {
         owner = "tulir";
         repo = "Telethon";
         tag = "v${finalAttrs.version}";
         hash = "sha256-ulnA+xKbZDOTzXYmF9oBWNBNhgxSiF+mKx1ijoCyo/w=";
       };
+
       dontUsePytestCheck = true;
     }
   );
@@ -25,7 +26,6 @@ in
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "mautrix-telegram";
   version = "0.15.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mautrix";
@@ -34,14 +34,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-w3BqWyAJV/lZPoOFDzxhootpw451lYruwM9efwS6cEc=";
   };
 
-  build-system = with python3.pkgs; [ setuptools ];
-
   patches = [ ./0001-Re-add-entrypoint.patch ];
-
-  pythonRelaxDeps = [
-    "mautrix"
-    "ruamel.yaml"
-  ];
+  # has no tests
+  doCheck = false;
+  build-system = with python3.pkgs; [ setuptools ];
 
   dependencies =
     with python3.pkgs;
@@ -79,18 +75,24 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       unpaddedbase64
     ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "mautrix"
+    "ruamel.yaml"
+  ];
 
   meta = {
-    homepage = "https://github.com/mautrix/telegram";
     description = "Matrix-Telegram hybrid puppeting/relaybot bridge";
+    homepage = "https://github.com/mautrix/telegram";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       nyanloutre
       nickcao
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "mautrix-telegram";
   };
 })

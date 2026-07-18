@@ -2,22 +2,27 @@
   lib,
   stdenv,
   fetchurl,
+  fts,
+  libsepol,
   pcre2,
   pkg-config,
-  libsepol,
   enablePython ? false,
-  swig ? null,
   python3 ? null,
   python3Packages ? null,
-  fts,
+  swig ? null,
 }:
 
 assert enablePython -> swig != null && python3 != null && !stdenv.hostPlatform.isStatic;
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit (libsepol) se_url;
   pname = "libselinux";
   version = "3.10";
-  inherit (libsepol) se_url;
+
+  src = fetchurl {
+    url = "${finalAttrs.se_url}/${finalAttrs.version}/libselinux-${finalAttrs.version}.tar.gz";
+    hash = "sha256-HvIWxbVvt+ClHNKQl4ehdaF+45HgRniUgHhzU56+dms=";
+  };
 
   outputs = [
     "bin"
@@ -27,15 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional enablePython "py";
 
-  src = fetchurl {
-    url = "${finalAttrs.se_url}/${finalAttrs.version}/libselinux-${finalAttrs.version}.tar.gz";
-    hash = "sha256-HvIWxbVvt+ClHNKQl4ehdaF+45HgRniUgHhzU56+dms=";
-  };
-
   patches = [
     (fetchurl {
-      url = "https://git.yoctoproject.org/meta-selinux/plain/recipes-security/selinux/libselinux/0003-libselinux-restore-drop-the-obsolete-LSF-transitiona.patch?id=62b9c816a5000dc01b28e78213bde26b58cbca9d";
       hash = "sha256-RiEUibLVzfiRU6N/J187Cs1iPAih87gCZrlyRVI2abU=";
+      url = "https://git.yoctoproject.org/meta-selinux/plain/recipes-security/selinux/libselinux/0003-libselinux-restore-drop-the-obsolete-LSF-transitiona.patch?id=62b9c816a5000dc01b28e78213bde26b58cbca9d";
     })
   ];
 
@@ -49,25 +49,13 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.wheel
     swig
   ];
+
   buildInputs = [
     libsepol
     pcre2
     fts
   ]
   ++ lib.optionals enablePython [ python3 ];
-
-  # drop fortify here since package uses it by default, leading to compile error:
-  # command-line>:0:0: error: "_FORTIFY_SOURCE" redefined [-Werror]
-  hardeningDisable = [ "fortify" ];
-
-  env = {
-    NIX_CFLAGS_COMPILE = "-Wno-error -D_FILE_OFFSET_BITS=64";
-  }
-  //
-    lib.optionalAttrs (stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17")
-      {
-        NIX_LDFLAGS = "--undefined-version";
-      };
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -94,11 +82,18 @@ stdenv.mkDerivation (finalAttrs: {
     "PYTHON_SETUP_ARGS=--no-build-isolation"
   ];
 
+  env = {
+    NIX_CFLAGS_COMPILE = "-Wno-error -D_FILE_OFFSET_BITS=64";
+  }
+  //
+    lib.optionalAttrs (stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17")
+      {
+        NIX_LDFLAGS = "--undefined-version";
+      };
+
   preInstall = lib.optionalString enablePython ''
     mkdir -p $py/${python3.sitePackages}/selinux
   '';
-
-  installTargets = [ "install" ] ++ lib.optional enablePython "install-pywrap";
 
   preFixup = lib.optionalString enablePython ''
     mv $out/${python3.sitePackages}/selinux/* $py/${python3.sitePackages}/selinux/
@@ -117,6 +112,11 @@ stdenv.mkDerivation (finalAttrs: {
     ln -vsf selinux/_selinux.*${stdenv.hostPlatform.extensions.sharedLibrary}
     popd
   '';
+
+  # drop fortify here since package uses it by default, leading to compile error:
+  # command-line>:0:0: error: "_FORTIFY_SOURCE" redefined [-Werror]
+  hardeningDisable = [ "fortify" ];
+  installTargets = [ "install" ] ++ lib.optional enablePython "install-pywrap";
 
   meta = removeAttrs libsepol.meta [ "outputsToInstall" ] // {
     description = "SELinux core library";

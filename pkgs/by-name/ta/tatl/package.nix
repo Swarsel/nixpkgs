@@ -1,12 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   ocamlPackages,
 }:
 
 ocamlPackages.buildDunePackage rec {
-  duneVersion = "3";
   pname = "tatl";
   version = "1.0";
 
@@ -19,6 +18,7 @@ ocamlPackages.buildDunePackage rec {
 
   nativeBuildInputs = [ ocamlPackages.menhir ];
   propagatedBuildInputs = [ ocamlPackages.ocamlgraph ];
+  duneVersion = "3";
 
   meta = {
     description = "Implementation of a tableau-based decision procedure for the full Alternating-time Temporal Logic (ATL*)";

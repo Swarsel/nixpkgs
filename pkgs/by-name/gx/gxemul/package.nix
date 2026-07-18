@@ -14,24 +14,24 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-ecRDfG+MqQT0bTOsNgYqZf3PSpKiSEeOQIqxEpXPjoM=";
   };
 
-  buildInputs = [
-    libx11
-  ];
-
   patches = [
     # Fix compilation; remove when next release arrives
     ./0001-fix-attributes.patch
   ];
 
-  dontAddPrefix = true;
+  buildInputs = [
+    libx11
+  ];
 
   preConfigure = ''
     export PREFIX=${placeholder "out"}
   '';
 
+  dontAddPrefix = true;
+
   meta = {
-    homepage = "https://gavare.se/gxemul/";
     description = "Gavare's experimental emulator";
+
     longDescription = ''
       GXemul is a framework for full-system computer architecture
       emulation. Several real machines have been implemented within the
@@ -41,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
       controllers. The emulation is working well enough to allow several
       unmodified "guest" operating systems to run.
     '';
+
+    homepage = "https://gavare.se/gxemul/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.unix;

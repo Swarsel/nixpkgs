@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   bash,
   coreutils,
   diffstat,
@@ -11,6 +10,7 @@
   gawk,
   gnugrep,
   gnused,
+  makeWrapper,
   patch,
   perl,
   unixtools,
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-VV3f/eIto8htHK9anB+4oVKsK4RzBDe9OcwIhJyfSFI=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
@@ -43,8 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     unixtools.getopt
   ];
 
-  strictDeps = true;
-
   configureFlags = [
     # configure only looks in $PATH by default,
     # which does not include buildInputs if strictDeps is true
@@ -56,7 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://savannah.nongnu.org/projects/quilt";
     description = "Easily manage large numbers of patches";
 
     longDescription = ''
@@ -66,6 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
       and more.
     '';
 
+    homepage = "https://savannah.nongnu.org/projects/quilt";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ smancill ];
     platforms = lib.platforms.all;

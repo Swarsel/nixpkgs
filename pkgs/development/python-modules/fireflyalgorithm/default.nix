@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   poetry-core,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "fireflyalgorithm";
   version = "0.4.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firefly-cpp";
@@ -24,20 +23,18 @@ buildPythonPackage rec {
       --replace-fail 'numpy = "^1.26.1"' ""
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  dependencies = [ numpy ];
+  pyproject = true;
   pythonImportsCheck = [ "fireflyalgorithm" ];
 
   meta = {
     description = "Implementation of the stochastic nature-inspired algorithm for optimization";
-    mainProgram = "firefly-algorithm";
     homepage = "https://github.com/firefly-cpp/FireflyAlgorithm";
     changelog = "https://github.com/firefly-cpp/FireflyAlgorithm/blob/${version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ firefly-cpp ];
+    mainProgram = "firefly-algorithm";
   };
 }

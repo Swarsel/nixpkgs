@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   bash,
+  makeWrapper,
   openssh,
   procps,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   installPhase = ''
     mkdir -p $out/bin
     cp cmc $out/bin/cmc
@@ -32,12 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
         ]
       }
   '';
+
   meta = {
-    homepage = "https://github.com/TimidRobot/cmc";
     description = "Manages SSH ControlMaster sessions";
-    mainProgram = "cmc";
+    homepage = "https://github.com/TimidRobot/cmc";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ chordtoll ];
     platforms = lib.platforms.all;
+    mainProgram = "cmc";
   };
 })

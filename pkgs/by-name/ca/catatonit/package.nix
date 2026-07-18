@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  autoreconfHook,
+  stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   glibc,
   nixosTests,
 }:
@@ -18,20 +18,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-sc/T4WjCPFfwUWxlBx07mQTmcOApblHygfVT824HcJM=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = lib.optionals (!stdenv.hostPlatform.isMusl) [
     glibc
     glibc.static
   ];
 
-  enableParallelBuilding = true;
-  strictDeps = true;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     readelf -d $out/bin/catatonit | grep 'There is no dynamic section in this file.'
   '';
 
+  enableParallelBuilding = true;
   passthru.tests = { inherit (nixosTests) podman; };
 
   meta = {
@@ -39,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/openSUSE/catatonit";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ erosennin ];
-    teams = [ lib.teams.podman ];
     platforms = lib.platforms.linux;
     mainProgram = "catatonit";
+    teams = [ lib.teams.podman ];
   };
 })

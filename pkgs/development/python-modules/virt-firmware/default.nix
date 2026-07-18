@@ -1,19 +1,18 @@
 {
   lib,
-  pkgs,
   stdenv,
-  buildPythonPackage,
   fetchFromGitLab,
-  setuptools,
+  buildPythonPackage,
   cryptography,
-  pytestCheckHook,
   pefile,
+  pkgs,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "virt-firmware";
   version = "25.12";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "kraxel";
@@ -21,14 +20,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-sopmWZ8CdLuc0R+QN7MSoqT9kURzOyh9CgbreKuvANw=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    setuptools
-    cryptography
-    pefile
-  ];
 
   # tests require systemd-detect-virt
   doCheck = lib.meta.availableOn stdenv.hostPlatform pkgs.systemd;
@@ -38,8 +29,16 @@ buildPythonPackage (finalAttrs: {
     pkgs.systemd
   ];
 
-  enabledTestPaths = [ "tests/tests.py" ];
+  build-system = [ setuptools ];
 
+  dependencies = [
+    setuptools
+    cryptography
+    pefile
+  ];
+
+  enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "virt.firmware.efi" ];
 
   meta = {
@@ -47,6 +46,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://gitlab.com/kraxel/virt-firmware";
     changelog = "https://gitlab.com/kraxel/virt-firmware/-/tags/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       raitobezarius
     ];

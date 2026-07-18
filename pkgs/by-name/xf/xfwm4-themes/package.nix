@@ -19,8 +19,8 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://www.xfce.org/";
     description = "Themes for Xfce";
+    homepage = "https://www.xfce.org/";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];

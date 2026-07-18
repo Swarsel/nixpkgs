@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  copyDesktopItems,
+  electron,
   fetchPnpmDeps,
-  replaceVars,
+  makeDesktopItem,
+  makeWrapper,
   nodejs,
   pnpmConfigHook,
   pnpm_10,
-  electron,
-  makeWrapper,
+  replaceVars,
   slimevr-server,
-  copyDesktopItems,
-  makeDesktopItem,
   udevCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -25,14 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8ti1uyDtgf9JuWurAkE0Twj3/ROOd9ai94htEvoVo50=";
     # solarxr
     fetchSubmodules = true;
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    pname = "${finalAttrs.pname}-pnpm-deps";
-    inherit (finalAttrs) version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = "sha256-Y8TSsoXqRxexar9uFKHiIuogAuLSTMqK9blFbMVTwOE=";
   };
 
   patches = [
@@ -57,16 +49,13 @@ stdenv.mkDerivation (finalAttrs: {
     udevCheckHook
   ];
 
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+
   # solarxr needs to be installed after compiling its Typescript files. This isn't
   # done the first time, because `pnpmConfigHook` ignores `package.json` scripts.
   preBuild = ''
     pnpm --filter solarxr-protocol build
   '';
-
-  doCheck = false; # No tests
-  doInstallCheck = true; # Check udev
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   buildPhase = ''
     runHook preBuild
@@ -81,6 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
+
+  doCheck = false; # No tests
 
   installPhase = ''
     runHook preInstall
@@ -103,13 +94,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true; # Check udev
+
   desktopItems = [
     (makeDesktopItem {
-      name = "slimevr";
-      desktopName = "SlimeVR";
-      genericName = "Full-body tracking";
-      comment = finalAttrs.meta.description;
       categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "SlimeVR";
+      exec = "slimevr";
+      genericName = "Full-body tracking";
+      icon = "slimevr";
+
       keywords = [
         "FBT"
         "VR"
@@ -117,17 +112,24 @@ stdenv.mkDerivation (finalAttrs: {
         "VRChat"
         "IMU"
       ];
-      icon = "slimevr";
-      exec = "slimevr";
+
+      name = "slimevr";
     })
   ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) version src;
+    pname = "${finalAttrs.pname}-pnpm-deps";
+    fetcherVersion = 4;
+    hash = "sha256-Y8TSsoXqRxexar9uFKHiIuogAuLSTMqK9blFbMVTwOE=";
+    pnpm = pnpm_10;
+  };
 
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://slimevr.dev";
-    changelog = "https://github.com/SlimeVR/SlimeVR-Server/releases/tag/v${finalAttrs.version}";
     description = "App for facilitating full-body tracking in virtual reality";
+
     longDescription = ''
       App for SlimeVR ecosystem. It orchestrates communication between multiple sensors and integrations, like SteamVR.
 
@@ -146,16 +148,22 @@ stdenv.mkDerivation (finalAttrs: {
 
       More at https://docs.slimevr.dev/tools/index.html.
     '';
+
+    homepage = "https://slimevr.dev";
+    changelog = "https://github.com/SlimeVR/SlimeVR-Server/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       gale-username
       loucass003
     ];
+
     platforms = with lib.platforms; darwin ++ linux;
-    broken = stdenv.hostPlatform.isDarwin;
     mainProgram = "slimevr";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

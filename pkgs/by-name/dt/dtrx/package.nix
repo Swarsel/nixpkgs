@@ -1,30 +1,29 @@
 {
   lib,
   fetchFromGitHub,
-  gitUpdater,
-  python3Packages,
-  gnutar,
-  unzip,
-  lhasa,
-  rpm,
   binutils,
-  cpio,
-  gzip,
-  p7zip,
+  bzip2,
   cabextract,
+  cpio,
+  gitUpdater,
+  gnutar,
+  gzip,
+  lhasa,
+  lzip,
+  p7zip,
+  python3Packages,
+  rpm,
   unrar,
   unshield,
-  bzip2,
+  unzip,
   xz,
-  lzip,
-  unzipSupport ? false,
   unrarSupport ? false,
+  unzipSupport ? false,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dtrx";
   version = "8.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dtrx-py";
@@ -32,6 +31,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "sha256-FNSFEGIK0vDNlvqc8BKDCB/0hoxrITfeh59JcyzX3jY=";
   };
+
+  build-system = with python3Packages; [
+    setuptools
+  ];
 
   makeWrapperArgs =
     let
@@ -58,10 +61,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
       ''--prefix PATH : "${archivers}"''
     ];
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
+  pyproject = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {

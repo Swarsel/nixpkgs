@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cc65,
+  libusb1,
   ncurses,
   pkg-config,
-  libusb1,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,28 +23,30 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-dfu_bool.patch
   ];
 
-  makefile = "LINUX/Makefile";
+  nativeBuildInputs = [
+    cc65
+    pkg-config
+  ];
+
+  buildInputs = [
+    libusb1
+    ncurses
+  ];
+
   makeFlags = [
     "PREFIX=${placeholder "out"}"
     "ETCDIR=${placeholder "out"}/etc"
     "UDEVRULESDIR=${placeholder "out"}/etc/udev/rules.d/"
     "LDCONFIG=true"
   ];
-  installTargets = "install-all";
-
-  nativeBuildInputs = [
-    cc65
-    pkg-config
-  ];
-  buildInputs = [
-    libusb1
-    ncurses
-  ];
 
   doInstallCheck = true;
+  installTargets = "install-all";
+  makefile = "LINUX/Makefile";
 
   meta = {
     description = "Kernel driver and development library to control serial CBM devices";
+
     longDescription = ''
       Win 7/8/10, and Linux/i386/AMD64 kernel driver and development library to
       control serial CBM devices, such as the Commodore 1541 disk drive,
@@ -52,6 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
       disk copier included. Successor of cbm4linux. Also supports the XU1541
       and the XUM1541 devices (a.k.a. "ZoomFloppy").
     '';
+
     homepage = "https://spiro.trikaliotis.net/opencbm";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;

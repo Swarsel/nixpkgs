@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyctr";
   version = "0.7.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pycryptodomex ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyctr" ];
 
   meta = {

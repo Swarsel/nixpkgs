@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aioairzone-cloud";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Noltari";
@@ -18,14 +17,12 @@ buildPythonPackage rec {
     hash = "sha256-fWd5feCWE2o0HqvzGhGngWsIkXtS+VdZJ0d6B10Jq1E=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
-  pythonImportsCheck = [ "aioairzone_cloud" ];
-
   # Module has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
+  pythonImportsCheck = [ "aioairzone_cloud" ];
 
   meta = {
     description = "Library to control Airzone via Cloud API";

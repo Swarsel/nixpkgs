@@ -3,12 +3,12 @@
   stdenv,
   fetchFromCodeberg,
   gradle_9,
-  makeBinaryWrapper,
+  help2man,
   jdk25,
   jre25_minimal,
   libGL,
+  makeBinaryWrapper,
   nix-update-script,
-  help2man,
 }:
 let
   jre = jre25_minimal.override {
@@ -30,12 +30,20 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "gaiasky";
   version = "3.7.1";
+
   src = fetchFromCodeberg {
     owner = "gaiasky";
     repo = "gaiasky";
     tag = finalAttrs.version;
     hash = "sha256-UAVuivkeF234hoUyfCv7depspr3dyoyzYJDD0mKGAr4=";
   };
+
+  # The build output is stored in releases/gaiasky-version-version instead of releases/gaiasky-.
+  postPatch = ''
+    substituteInPlace build.gradle \
+      --replace-fail "def cmd = \"git describe --abbrev=0 --tags HEAD\"" "def cmd = \"echo ${finalAttrs.version}\"" \
+      --replace-fail "cmd = \"git rev-parse --short HEAD\"" "cmd = \"echo ${finalAttrs.version}\""
+  '';
 
   nativeBuildInputs = [
     gradle_9
@@ -48,30 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     jre
     libGL
   ];
-
-  __darwinAllowLocalNetworking = true;
-
-  gradleBuildTask = "core:dist";
-
-  # Gaiasky binary has to be executed to generate manpage.
-  # However, since since /usr/bin/env bash is hardcoded in the binary
-  # it errors out. It is generated in postBuild phase instead.
-  gradleFlags = [
-    "-x :core:generateManPage"
-    "-x :core:gzipManPage"
-  ];
-
-  mitmCache = gradle_9.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  # The build output is stored in releases/gaiasky-version-version instead of releases/gaiasky-.
-  postPatch = ''
-    substituteInPlace build.gradle \
-      --replace-fail "def cmd = \"git describe --abbrev=0 --tags HEAD\"" "def cmd = \"echo ${finalAttrs.version}\"" \
-      --replace-fail "cmd = \"git rev-parse --short HEAD\"" "cmd = \"echo ${finalAttrs.version}\""
-  '';
 
   postBuild = ''
     patchShebangs --build "releases/gaiasky-${finalAttrs.version}.${finalAttrs.version}"/gaiasky
@@ -104,6 +88,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true;
+  gradleBuildTask = "core:dist";
+
+  # Gaiasky binary has to be executed to generate manpage.
+  # However, since since /usr/bin/env bash is hardcoded in the binary
+  # it errors out. It is generated in postBuild phase instead.
+  gradleFlags = [
+    "-x :core:generateManPage"
+    "-x :core:gzipManPage"
+  ];
+
+  mitmCache = gradle_9.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -111,12 +111,15 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gaiasky.space";
     changelog = "https://codeberg.org/gaiasky/gaiasky/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mpl20;
-    maintainers = with lib.maintainers; [ reputable2772 ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # MITM Cache
       binaryNativeCode # LWJGL natives are pulled in.
     ];
+
+    maintainers = with lib.maintainers; [ reputable2772 ];
+
     platforms = [
       # No aarch64-linux, since upstream does not officially support it.
       "x86_64-linux"
@@ -124,6 +127,7 @@ stdenv.mkDerivation (finalAttrs: {
       # "x86_64-darwin"
       # "aarch64-darwin"
     ];
+
     mainProgram = "gaiasky";
   };
 })

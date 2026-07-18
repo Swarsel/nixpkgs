@@ -1,17 +1,10 @@
 {
   lib,
-  vscode-utils,
   lua-language-server,
+  vscode-utils,
 }:
 
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "lua";
-    publisher = "sumneko";
-    version = "3.18.2";
-    hash = "sha256-8mvauayksFk/3A7VMJ3EZYyRK8YLgX03W7bzEIdGkXQ=";
-  };
-
   # Running chmod in runtime will lock up extension
   # indefinitely if the binary is in nix store.
   postPatch = ''
@@ -23,6 +16,13 @@ vscode-utils.buildVscodeMarketplaceExtension {
     ln -sf ${lua-language-server}/bin/lua-language-server \
       $out/$installPrefix/server/bin/lua-language-server
   '';
+
+  mktplcRef = {
+    version = "3.18.2";
+    hash = "sha256-8mvauayksFk/3A7VMJ3EZYyRK8YLgX03W7bzEIdGkXQ=";
+    name = "lua";
+    publisher = "sumneko";
+  };
 
   meta = {
     description = "Lua language server provides various language features for Lua to make development easier and faster";

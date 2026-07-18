@@ -16,11 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://mrob.com/pub/ries/";
     description = "Tool to produce a list of equations that approximately solve to a given number";
-    mainProgram = "ries";
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ symphorien ];
+    homepage = "https://mrob.com/pub/ries/";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ symphorien ];
+    platforms = lib.platforms.all;
+    mainProgram = "ries";
   };
 })

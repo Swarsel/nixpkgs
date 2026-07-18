@@ -3,20 +3,20 @@
   stdenv,
   fetchurl,
   appstream,
+  desktop-file-utils,
   gettext,
   gnome,
-  libgtop,
   gtk4,
   libadwaita,
-  pango,
-  pcre2,
-  vte-gtk4,
-  desktop-file-utils,
+  libgtop,
   meson,
   ninja,
-  pkg-config,
-  wrapGAppsHook4,
   nixosTests,
+  pango,
+  pcre2,
+  pkg-config,
+  vte-gtk4,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -66,8 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/console";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ zhaofengli ];
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
     mainProgram = "kgx";
+    teams = [ lib.teams.gnome ];
   };
 })

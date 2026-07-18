@@ -4,9 +4,9 @@
   fetchFromSourcehut,
   meson,
   ninja,
+  pango,
   pkg-config,
   wayland,
-  pango,
   wayland-protocols,
   wayland-scanner,
   conf ? null,
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     wayland-scanner
   ];
+
   buildInputs = [
     pango
     wayland
@@ -45,8 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://git.sr.ht/~raphi/somebar";
     description = "dwm-like bar for dwl";
+    homepage = "https://git.sr.ht/~raphi/somebar";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ magnouvean ];
     platforms = lib.platforms.linux;

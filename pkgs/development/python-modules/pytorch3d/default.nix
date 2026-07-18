@@ -1,18 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  config,
   cudaPackages,
-
+  # dependencies
+  iopath,
   # build-system
   ninja,
   setuptools,
-
-  # dependencies
-  iopath,
   torch,
-
-  config,
   cudaSupport ? config.cudaSupport,
 }:
 
@@ -21,7 +18,6 @@ assert cudaSupport -> torch.cudaSupport;
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "pytorch3d";
   version = "0.7.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "facebookresearch";
@@ -34,16 +30,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     cudaPackages.cuda_nvcc
   ];
 
-  build-system = [
-    ninja
-    setuptools
-    torch
-  ];
-
-  dependencies = [
-    iopath
-    torch
-  ];
   buildInputs = [
     (lib.getOutput "cxxdev" torch)
   ];
@@ -59,6 +45,18 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     export MAX_JOBS=$NIX_BUILD_CORES
   '';
 
+  build-system = [
+    ninja
+    setuptools
+    torch
+  ];
+
+  dependencies = [
+    iopath
+    torch
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pytorch3d" ];
 
   passthru.tests.rotations-cuda =
@@ -79,6 +77,7 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     homepage = "https://github.com/facebookresearch/pytorch3d";
     changelog = "https://github.com/facebookresearch/pytorch3d/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       pbsds
       SomeoneSerge

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   colcon,
   notify2,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "colcon-notification";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -21,11 +20,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-gKi5xl2ln+6CCwynUzh+WI87A4KHcrwbjkLJ6LmOoxk=";
   };
-  build-system = [ setuptools ];
-  dependencies = [
-    colcon
-    notify2
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -33,13 +27,22 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [
-    "colcon_notification"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    colcon
+    notify2
   ];
 
   disabledTestPaths = [
     # Linting/formatting tests are not relevant and would require extra dependencies
     "test/test_flake8.py"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "colcon_notification"
   ];
 
   meta = {

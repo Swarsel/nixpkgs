@@ -6,12 +6,13 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "catt";
   version = "0.13.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-hlCB06l4nzafvcnBNCXWiJsJNmP8n731bQgq5xvUZvM=";
   };
+
+  doCheck = false; # attempts to access various URLs
 
   build-system = [
     python3Packages.poetry-core
@@ -25,7 +26,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.yt-dlp
   ];
 
-  doCheck = false; # attempts to access various URLs
+  pyproject = true;
 
   pythonImportsCheck = [
     "catt"

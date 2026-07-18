@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  curl,
   SDL2,
-  libGLU,
-  libGL,
-  glew,
-  ncurses,
+  autoreconfHook,
   c-ares,
+  curl,
+  glew,
+  libGL,
+  libGLU,
+  ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,7 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Multiplayer 3D Tank game";
     homepage = "https://bzflag.org/";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

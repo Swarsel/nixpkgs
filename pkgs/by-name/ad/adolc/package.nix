@@ -16,17 +16,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-oU229SuOl/gHoRT8kiWfd5XFiByjeypgdVWFLMYFHfA=";
   };
 
+  buildInputs = lib.optional stdenv.cc.isClang llvmPackages.openmp;
+
   configureFlags = [
     "--with-openmp-flag=-fopenmp"
     "--enable-sparse"
   ];
 
-  buildInputs = lib.optional stdenv.cc.isClang llvmPackages.openmp;
-
   meta = {
     description = "Automatic Differentiation of C/C++";
     homepage = "https://github.com/coin-or/ADOL-C";
-    maintainers = [ lib.maintainers.bzizou ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.bzizou ];
   };
 })

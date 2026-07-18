@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pylint-venv";
   version = "3.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jgosmann";
@@ -17,11 +16,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-dJWVfltze4zT0CowBZSn3alqR2Y8obKUCmO8Nfw+ahs=";
   };
 
-  build-system = [ poetry-core ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "pylint_venv" ];
 
   meta = {

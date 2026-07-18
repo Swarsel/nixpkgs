@@ -1,16 +1,16 @@
 {
   lib,
-  python3,
-  melpaBuild,
   fetchFromGitHub,
-  replaceVars,
-  fetchpatch,
   acm,
-  markdown-mode,
   basedpyright,
+  fetchpatch,
   git,
   go,
   gopls,
+  markdown-mode,
+  melpaBuild,
+  python3,
+  replaceVars,
   tempel,
   unstableGitUpdater,
   writableTmpDirAsHomeHook,
@@ -51,21 +51,13 @@ melpaBuild {
 
     # Revert using quelpa repo to get check inputs
     (fetchpatch {
-      url = "https://github.com/manateelazycat/lsp-bridge/commit/a999c8432817a806ed9ad74b5e918ab9612bd09b.patch";
-      revert = true;
       hash = "sha256-NK6hooWn78Hk26tcQbIwUiiJuQ/hhlbLK+pgiZT//fI=";
+      revert = true;
+      url = "https://github.com/manateelazycat/lsp-bridge/commit/a999c8432817a806ed9ad74b5e918ab9612bd09b.patch";
     })
   ];
 
-  packageRequires = [
-    acm
-    markdown-mode
-  ];
-
-  checkInputs = [
-    # Emacs packages
-    tempel
-  ];
+  doCheck = true;
 
   nativeCheckInputs = [
     # Executables
@@ -77,16 +69,11 @@ melpaBuild {
     writableTmpDirAsHomeHook
   ];
 
-  files = ''
-    ("*.el"
-     "lsp_bridge.py"
-     "core"
-     "langserver"
-     "multiserver"
-     "resources")
-  '';
+  checkInputs = [
+    # Emacs packages
+    tempel
+  ];
 
-  doCheck = true;
   checkPhase = ''
     runHook preCheck
 
@@ -99,12 +86,27 @@ melpaBuild {
 
   __darwinAllowLocalNetworking = true;
 
+  files = ''
+    ("*.el"
+     "lsp_bridge.py"
+     "core"
+     "langserver"
+     "multiserver"
+     "resources")
+  '';
+
+  packageRequires = [
+    acm
+    markdown-mode
+  ];
+
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
   meta = {
     description = "Blazingly fast LSP client for Emacs";
     homepage = "https://github.com/manateelazycat/lsp-bridge";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       fxttr
       kira-bruneau

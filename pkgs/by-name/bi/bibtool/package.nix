@@ -16,25 +16,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Perl for running test suite.
   buildInputs = [ perl ];
-
   # Uses K&R function definitions, which are not supported by GCC >= 14.
   # https://github.com/ge-ne/bibtool/pull/96
   env.NIX_CFLAGS_COMPILE = "-std=gnu89";
+  doCheck = true;
+  checkTarget = "test";
 
   installTargets = [
     "install"
     "install.man"
   ];
 
-  doCheck = true;
-  checkTarget = "test";
-
   meta = {
     description = "Tool for manipulating BibTeX bibliographies";
     homepage = "http://www.gerd-neugebauer.de/software/TeX/BibTool/index.en.html";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.rycee ];
+    platforms = lib.platforms.all;
     mainProgram = "bibtool";
   };
 })

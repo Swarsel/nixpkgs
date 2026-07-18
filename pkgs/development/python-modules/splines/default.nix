@@ -2,25 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   numpy,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "splines";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchPypi {
+    hash = "sha256-nZEIMD8POw4b6OAUxKckxnSmwFWKsQHhTdBMdFBcTrk=";
     pname = "splines";
     version = "0.3.3";
-    hash = "sha256-nZEIMD8POw4b6OAUxKckxnSmwFWKsQHhTdBMdFBcTrk=";
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ numpy ];
-
+  pyproject = true;
   pythonImportsCheck = [ "splines" ];
 
   meta = {

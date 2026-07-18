@@ -1,16 +1,15 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-  six,
-  beautifulsoup4,
   lxml,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "ofxparse";
   version = "0.21";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,9 +22,11 @@ buildPythonPackage rec {
     lxml
   ];
 
+  format = "setuptools";
+
   meta = {
-    homepage = "http://sites.google.com/site/ofxparse";
     description = "Tools for working with the OFX (Open Financial Exchange) file format";
+    homepage = "http://sites.google.com/site/ofxparse";
     license = lib.licenses.mit;
   };
 }

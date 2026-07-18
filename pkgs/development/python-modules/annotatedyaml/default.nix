@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   poetry-core,
   propcache,
   pytest-asyncio,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "annotatedyaml";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -25,6 +24,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-+4H3StCZ58TDV6LSXyeC6+Vn56W19+bIO4AdsJEfHI0=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-codspeed
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     cython
@@ -38,13 +44,7 @@ buildPythonPackage rec {
     voluptuous
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-codspeed
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "annotatedyaml" ];
 
   meta = {

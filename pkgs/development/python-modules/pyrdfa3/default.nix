@@ -11,13 +11,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyrdfa3";
   version = "3.6.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-D8KP8UJq+AWxAK/3Fi22pD+iFeN/krzpsRO0Zf61Y+o=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyRdfa" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   opentelemetry-api,
   opentelemetry-test-utils,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "opentelemetry-instrumentation";
   version = "0.64b0";
-  pyproject = true;
 
   # To avoid breakage, every package in opentelemetry-python-contrib must inherit this version, src, and meta
   src = fetchFromGitHub {
@@ -23,7 +22,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-dOcDzJD1xxCN7+Zrn+2mF/gbZjy/XC6uAKDhpfYLf98=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/opentelemetry-instrumentation";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -33,13 +35,6 @@ buildPythonPackage (finalAttrs: {
     wrapt
   ];
 
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "opentelemetry.instrumentation" ];
-
   disabledTests = [
     # bootstrap: error: argument -a/--action: invalid choice: 'pipenv' (choose from install, requirements)
     # RuntimeError: Patch is already started
@@ -48,6 +43,9 @@ buildPythonPackage (finalAttrs: {
     "test_run_unknown_cmd"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "opentelemetry.instrumentation" ];
+  sourceRoot = "${finalAttrs.src.name}/opentelemetry-instrumentation";
   passthru.updateScript = opentelemetry-api.updateScript;
 
   meta = {

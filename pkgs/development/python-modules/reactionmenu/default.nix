@@ -1,9 +1,9 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  setuptools,
-  discordpy,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  discordpy,
+  setuptools,
 }:
 let
   pname = "reactionmenu";
@@ -18,7 +18,6 @@ buildPythonPackage {
     tag = "v${version}";
     hash = "sha256-ftRrpNOJIa2DSBr9YOH3Bhn8iXE1Pgtv0f57/rsCqJU=";
   };
-  pyproject = true;
 
   build-system = [
     setuptools
@@ -28,14 +27,17 @@ buildPythonPackage {
     discordpy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "reactionmenu" ];
 
   meta = {
     description = "Library to create a discord.py 2.0+ paginator";
+
     longDescription = ''
       A Python library to create a discord.py 2.0+ paginator (reaction menu/buttons menu).
       Supports pagination with buttons, reactions, and category selection using selects.
     '';
+
     homepage = "https://github.com/Defxult/reactionmenu";
     changelog = "https://github.com/Defxult/reactionmenu/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;

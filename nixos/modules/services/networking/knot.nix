@@ -201,18 +201,17 @@ let
   mkConfigFile =
     configString:
     pkgs.writeTextFile {
-      name = "knot.conf";
-      text = (concatMapStringsSep "\n" (file: "include: ${file}") cfg.keyFiles) + "\n" + configString;
       checkPhase = lib.optionalString cfg.checkConfig ''
         ${cfg.package}/bin/knotc --config=$out conf-check
       '';
+
+      name = "knot.conf";
+      text = (concatMapStringsSep "\n" (file: "include: ${file}") cfg.keyFiles) + "\n" + configString;
     };
 
   socketFile = "/run/knot/knot.sock";
 
   knot-cli-wrappers = pkgs.stdenv.mkDerivation {
-    name = "knot-cli-wrappers";
-    nativeBuildInputs = [ pkgs.makeWrapper ];
     buildCommand = ''
       mkdir -p $out/bin
       makeWrapper ${cfg.package}/bin/knotc "$out/bin/knotc" \
@@ -231,20 +230,49 @@ let
       mkdir -p "$out/share"
       ln -s '${cfg.package}/share/man' "$out/share/"
     '';
+
+    name = "knot-cli-wrappers";
+    nativeBuildInputs = [ pkgs.makeWrapper ];
   };
 in
 {
+  imports = [
+    # Compatibility with NixOS 23.05.
+    (mkChangedOptionModule [ "services" "knot" "extraConfig" ] [ "services" "knot" "settingsFile" ] (
+      config: mkConfigFile config.services.knot.extraConfig
+    ))
+  ];
+
   options = {
     services.knot = {
       enable = mkEnableOption "Knot authoritative-only DNS server";
+      package = mkPackageOption pkgs "knot-dns" { };
+
+      checkConfig = mkOption {
+        # TODO: maybe we could do some checks even when private keys complicate this?
+        # conf-check fails hard on missing IPs/devices with XDP
+        default = cfg.keyFiles == [ ] && !cfg.enableXDP;
+
+        defaultText = ''
+          Disabled when the config uses `keyFiles` or `enableXDP`.
+        '';
+
+        description = ''
+          Toggles the configuration test at build time. It runs in a
+          sandbox, and therefore cannot be used in all scenarios.
+        '';
+
+        example = false;
+        type = types.bool;
+      };
 
       enableXDP = mkOption {
-        type = types.bool;
         default = lib.hasAttrByPath [ "xdp" "listen" ] cfg.settings;
+
         defaultText = ''
           Enabled when the `xdp.listen` setting is configured through `settings`.
         '';
-        example = true;
+
         description = ''
           Extends the systemd unit with permissions to allow for the use of
           the eXpress Data Path (XDP).
@@ -254,34 +282,24 @@ in
             when running in XDP mode.
           :::
         '';
-      };
 
-      checkConfig = mkOption {
+        example = true;
         type = types.bool;
-        # TODO: maybe we could do some checks even when private keys complicate this?
-        # conf-check fails hard on missing IPs/devices with XDP
-        default = cfg.keyFiles == [ ] && !cfg.enableXDP;
-        defaultText = ''
-          Disabled when the config uses `keyFiles` or `enableXDP`.
-        '';
-        example = false;
-        description = ''
-          Toggles the configuration test at build time. It runs in a
-          sandbox, and therefore cannot be used in all scenarios.
-        '';
       };
 
       extraArgs = mkOption {
-        type = types.listOf types.str;
         default = [ ];
+
         description = ''
           List of additional command line parameters for knotd
         '';
+
+        type = types.listOf types.str;
       };
 
       keyFiles = mkOption {
-        type = types.listOf types.path;
         default = [ ];
+
         description = ''
           A list of files containing additional configuration
           to be included using the include directive. This option
@@ -290,52 +308,41 @@ in
           Note that using this option will also disable configuration
           checks at build time.
         '';
+
+        type = types.listOf types.path;
       };
 
       settings = mkOption {
-        type = (pkgs.formats.yaml { }).type;
         default = { };
+
         description = ''
           Extra configuration as nix values.
         '';
+
+        type = (pkgs.formats.yaml { }).type;
       };
 
       settingsFile = mkOption {
-        type = types.nullOr types.path;
         default = null;
+
         description = ''
           As alternative to ``settings``, you can provide whole configuration
           directly in the almost-YAML format of Knot DNS.
           You might want to utilize ``pkgs.writeText "knot.conf" "longConfigString"`` for this.
         '';
-      };
 
-      package = mkPackageOption pkgs "knot-dns" { };
+        type = types.nullOr types.path;
+      };
     };
   };
-  imports = [
-    # Compatibility with NixOS 23.05.
-    (mkChangedOptionModule [ "services" "knot" "extraConfig" ] [ "services" "knot" "settingsFile" ] (
-      config: mkConfigFile config.services.knot.extraConfig
-    ))
-  ];
 
   config = mkIf config.services.knot.enable {
-    users.groups.knot = { };
-    users.users.knot = {
-      isSystemUser = true;
-      group = "knot";
-      description = "Knot daemon user";
-    };
-
     environment.etc."knot/knot.conf".source = configFile; # just for user's convenience
+    environment.systemPackages = [ knot-cli-wrappers ];
 
     systemd.services.knot = {
-      unitConfig.Documentation = "man:knotd(8) man:knot.conf(5) man:knotc(8) https://www.knot-dns.cz/docs/${cfg.package.version}/html/";
-      description = cfg.package.meta.description;
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network.target" ];
       after = [ "network.target" ];
+      description = cfg.package.meta.description;
 
       serviceConfig =
         let
@@ -352,7 +359,24 @@ in
             ];
         in
         {
-          Type = "notify";
+          AmbientCapabilities = [
+            "CAP_NET_BIND_SERVICE"
+          ]
+          ++ xdpCapabilities;
+
+          CapabilityBoundingSet = [
+            "CAP_NET_BIND_SERVICE"
+          ]
+          ++ xdpCapabilities;
+
+          DeviceAllow = "";
+          DevicePolicy = "closed";
+
+          ExecReload = escapeSystemdExecArgs [
+            "${knot-cli-wrappers}/bin/knotc"
+            "reload"
+          ];
+
           ExecStart = escapeSystemdExecArgs (
             [
               (lib.getExe cfg.package)
@@ -361,23 +385,8 @@ in
             ]
             ++ cfg.extraArgs
           );
-          ExecReload = escapeSystemdExecArgs [
-            "${knot-cli-wrappers}/bin/knotc"
-            "reload"
-          ];
-          User = "knot";
-          Group = "knot";
 
-          AmbientCapabilities = [
-            "CAP_NET_BIND_SERVICE"
-          ]
-          ++ xdpCapabilities;
-          CapabilityBoundingSet = [
-            "CAP_NET_BIND_SERVICE"
-          ]
-          ++ xdpCapabilities;
-          DeviceAllow = "";
-          DevicePolicy = "closed";
+          Group = "knot";
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
@@ -396,6 +405,7 @@ in
           ProtectSystem = "strict";
           RemoveIPC = true;
           Restart = "on-abort";
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
@@ -405,6 +415,7 @@ in
             "AF_NETLINK"
             "AF_XDP"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
@@ -412,6 +423,7 @@ in
           StateDirectory = "knot";
           StateDirectoryMode = "0700";
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
@@ -420,10 +432,23 @@ in
           ++ optionals (cfg.enableXDP) [
             "bpf"
           ];
+
+          Type = "notify";
           UMask = "0077";
+          User = "knot";
         };
+
+      unitConfig.Documentation = "man:knotd(8) man:knot.conf(5) man:knotc(8) https://www.knot-dns.cz/docs/${cfg.package.version}/html/";
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network.target" ];
     };
 
-    environment.systemPackages = [ knot-cli-wrappers ];
+    users.groups.knot = { };
+
+    users.users.knot = {
+      description = "Knot daemon user";
+      group = "knot";
+      isSystemUser = true;
+    };
   };
 }

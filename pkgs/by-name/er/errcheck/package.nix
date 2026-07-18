@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-mhpKZ47jaX3pp/5TOXADip0iPosIDl5FzpaID98rpHQ=";
-
   subPackages = [ "." ];
 
   meta = {
     description = "Checks for unchecked errors in go programs";
-    mainProgram = "errcheck";
     homepage = "https://github.com/kisielk/errcheck";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kalbasit ];
+    mainProgram = "errcheck";
   };
 })

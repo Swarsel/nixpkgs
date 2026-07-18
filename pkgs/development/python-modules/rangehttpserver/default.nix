@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytest7CheckHook,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "rangehttpserver";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "danvk";
@@ -21,13 +20,13 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ setuptools ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     pytest7CheckHook
     requests
   ];
 
+  __darwinAllowLocalNetworking = true;
+  pyproject = true;
   pythonImportsCheck = [ "RangeHTTPServer" ];
 
   meta = {

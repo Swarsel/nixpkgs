@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
-  python3,
-  perlPackages,
   makeWrapper,
+  perl,
+  perlPackages,
+  python3,
   versionCheckHook,
 }:
 
@@ -32,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fGuOqo8Bj1kDxx7Isu3aaAIBDjoMBr7WuZ+tlErjR4Y=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     makeWrapper
     perl
@@ -41,8 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     python3
   ];
-
-  strictDeps = true;
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -61,7 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
@@ -79,7 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/linux-test-project/lcov";
     changelog = "https://github.com/linux-test-project/lcov/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

@@ -1,14 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   poetry-core,
-
   # dependencies
   typing-extensions,
-
   # tests
   unittestCheckHook,
 }:
@@ -16,7 +13,6 @@
 buildPythonPackage rec {
   pname = "asserts";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "srittau";
@@ -24,6 +20,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-nSL28LaKWVkzOmyI1TpCXJxyKdqpvK/YHRLUJ77sRA8=";
   };
+
+  nativeCheckInputs = [
+    unittestCheckHook
+  ];
 
   build-system = [
     poetry-core
@@ -33,9 +33,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    unittestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "asserts"

@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  nodejs,
-  pnpm_9,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  installShellFiles,
-  versionCheckHook,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  fetchPnpmDeps,
+  installShellFiles,
   nixosTests,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_9,
+  versionCheckHook,
 }:
 
 let
@@ -24,22 +24,14 @@ let
   };
 
   frontend = stdenv.mkDerivation (finalAttrs: {
-    pname = "${pname}-frontend";
-
     inherit src version;
+    pname = "${pname}-frontend";
 
     nativeBuildInputs = [
       nodejs
       pnpmConfigHook
       pnpm_9
     ];
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs) pname version src;
-      pnpm = pnpm_9;
-      fetcherVersion = 3;
-      hash = "sha256-HypDGYb0MRCIDBHY8pVgwFoZQWC8us44cunORZRk3RM=";
-    };
 
     buildPhase = ''
       runHook preBuild
@@ -65,23 +57,23 @@ let
 
       runHook postInstall
     '';
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname version src;
+      fetcherVersion = 3;
+      hash = "sha256-HypDGYb0MRCIDBHY8pVgwFoZQWC8us44cunORZRk3RM=";
+      pnpm = pnpm_9;
+    };
   });
 in
 buildGoModule {
   inherit src pname version;
-
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-oAqYQzOUjly97H5L5PQ9I2SO2KqiUVxdJA+eoPrHD6Q=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
 
   preBuild = ''
     cp -r ${frontend}/* ./public
   '';
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd artalk \
@@ -92,6 +84,12 @@ buildGoModule {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   versionCheckProgramArg = "-v";
 
   passthru.tests = {

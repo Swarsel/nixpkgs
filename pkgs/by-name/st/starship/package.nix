@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  llvmPackages,
-  installShellFiles,
-  writableTmpDirAsHomeHook,
-  gitMinimal,
-  nixosTests,
   buildPackages,
+  gitMinimal,
+  installShellFiles,
+  llvmPackages,
+  nixosTests,
+  rustPlatform,
   tzdata,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -32,6 +32,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
+  cargoHash = "sha256-IO/H75FKU3/2oAJ8AKerGujMDfun8w4fV7gETMxWOt0=";
+
   env = {
     TZDIR = "${tzdata}/share/zoneinfo";
   }
@@ -41,6 +43,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # TODO: Remove once #536365 reaches this branch.
     NIX_CFLAGS_LINK = "-fuse-ld=lld";
   };
+
+  nativeCheckInputs = [
+    gitMinimal
+    writableTmpDirAsHomeHook
+  ];
 
   postInstall = ''
     presetdir=$out/share/starship/presets/
@@ -59,13 +66,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ''
   );
 
-  cargoHash = "sha256-IO/H75FKU3/2oAJ8AKerGujMDfun8w4fV7gETMxWOt0=";
-
-  nativeCheckInputs = [
-    gitMinimal
-    writableTmpDirAsHomeHook
-  ];
-
   passthru.tests = {
     inherit (nixosTests) starship;
   };
@@ -73,14 +73,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Minimal, blazing fast, and extremely customizable prompt for any shell";
     homepage = "https://starship.rs";
-    downloadPage = "https://github.com/starship/starship";
     changelog = "https://github.com/starship/starship/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       Frostman
       da157
       sigmasquadron
     ];
+
     mainProgram = "starship";
+    downloadPage = "https://github.com/starship/starship";
   };
 })

@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     gettext
     libev
@@ -35,13 +36,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/dlundquist/sniproxy";
     description = "Transparent TLS and HTTP layer 4 proxy with SNI support";
+    homepage = "https://github.com/dlundquist/sniproxy";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       womfoo
       raitobezarius
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "sniproxy";
   };

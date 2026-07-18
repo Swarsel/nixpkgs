@@ -1,9 +1,8 @@
 {
-  stdenv,
   lib,
-  unstick,
+  stdenv,
   fetchurl,
-  withQuesta ? true,
+  unstick,
   supportedDevices ? [
     "Arria II"
     "Cyclone V"
@@ -12,16 +11,17 @@
     "MAX II/V"
     "MAX 10 FPGA"
   ],
+  withQuesta ? true,
 }:
 
 let
   deviceIds = {
     "Arria II" = "arria_lite";
-    "Cyclone V" = "cyclonev";
-    "Cyclone IV" = "cyclone";
     "Cyclone 10 LP" = "cyclone10lp";
-    "MAX II/V" = "max";
+    "Cyclone IV" = "cyclone";
+    "Cyclone V" = "cyclonev";
     "MAX 10 FPGA" = "max10";
+    "MAX II/V" = "max";
   };
 
   supportedDeviceIds =
@@ -80,7 +80,6 @@ in
 stdenv.mkDerivation {
   inherit version;
   pname = "quartus-prime-lite-unwrapped";
-
   nativeBuildInputs = [ unstick ];
 
   buildCommand =
@@ -123,15 +122,17 @@ stdenv.mkDerivation {
     '';
 
   meta = {
-    homepage = "https://fpgasoftware.intel.com";
     description = "FPGA design and simulation software";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://fpgasoftware.intel.com";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       bjornfor
       kwohlfahrt
       zainkergaye
     ];
+
+    platforms = [ "x86_64-linux" ];
   };
 }

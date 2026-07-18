@@ -1,11 +1,11 @@
 {
-  fetchFromGitHub,
-  rustPlatform,
   lib,
-  versionCheckHook,
-  pkg-config,
-  nix-update-script,
+  fetchFromGitHub,
   git,
+  nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,23 +19,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Ryi5zLlOVNVtHhMZ5PglNFKVrrSlrcj3TOoeHKjGAic=";
   };
 
-  cargoHash = "sha256-VJ1vXEZkOYUGba8hfgdlNpT0QAvHDPdR+TNhDNprKNk=";
-
   nativeBuildInputs = [ pkg-config ];
-
+  cargoHash = "sha256-VJ1vXEZkOYUGba8hfgdlNpT0QAvHDPdR+TNhDNprKNk=";
   nativeCheckInputs = [ git ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "workset";
     description = "Manage git repos with working sets";
     homepage = "https://github.com/fossable/workset";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ cilki ];
+    platforms = lib.platforms.unix;
+    mainProgram = "workset";
   };
 })

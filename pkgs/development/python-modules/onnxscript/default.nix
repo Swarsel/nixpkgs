@@ -1,39 +1,33 @@
 {
   lib,
   stdenv,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  config,
   # dependencies
   ml-dtypes,
   numpy,
-  onnx,
-  onnx-ir,
-  packaging,
-  typing-extensions,
   # cuda-only:
   nvidia-ml-py,
-
+  onnx,
+  onnx-ir,
   # tests
   onnxruntime,
+  packaging,
   parameterized,
   pytestCheckHook,
+  # build-system
+  setuptools,
   torch,
   torchvision,
   tqdm,
-
+  typing-extensions,
   cudaSupport ? config.cudaSupport,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "onnxscript";
   version = "0.7.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -45,6 +39,22 @@ buildPythonPackage (finalAttrs: {
   env = {
     ONNX_SCRIPT_RELEASE = "1";
   };
+
+  # Importing onnxruntime in the sandbox crashes on aarch64-linux:
+  # Fatal Python error: Aborted
+  # See https://github.com/NixOS/nixpkgs/pull/481039
+  doCheck = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
+
+  nativeCheckInputs = [
+    onnxruntime
+    parameterized
+    pytestCheckHook
+    torch
+    torchvision
+    tqdm
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -62,19 +72,13 @@ buildPythonPackage (finalAttrs: {
     nvidia-ml-py
   ];
 
-  pythonImportsCheck = [ "onnxscript" ];
-
-  nativeCheckInputs = [
-    onnxruntime
-    parameterized
-    pytestCheckHook
-    torch
-    torchvision
-    tqdm
-  ];
-
-  enabledTestPaths = [
-    "tests"
+  disabledTestPaths = [
+    # google.protobuf.message.DecodeError: Error parsing message with type 'onnx.ModelProto'
+    "tests/ir/graph_view_test.py"
+    "tests/ir/serde_roundtrip_test.py"
+    "tests/optimizer/test_models.py"
+    # Wants GPU on ROCm
+    "tests/function_libs/torch_lib/ops_test.py"
   ];
 
   disabledTests = [
@@ -93,19 +97,12 @@ buildPythonPackage (finalAttrs: {
     "test_output_match_opinfo__split_with_sizes_cpu_bool"
   ];
 
-  disabledTestPaths = [
-    # google.protobuf.message.DecodeError: Error parsing message with type 'onnx.ModelProto'
-    "tests/ir/graph_view_test.py"
-    "tests/ir/serde_roundtrip_test.py"
-    "tests/optimizer/test_models.py"
-    # Wants GPU on ROCm
-    "tests/function_libs/torch_lib/ops_test.py"
+  enabledTestPaths = [
+    "tests"
   ];
 
-  # Importing onnxruntime in the sandbox crashes on aarch64-linux:
-  # Fatal Python error: Aborted
-  # See https://github.com/NixOS/nixpkgs/pull/481039
-  doCheck = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
+  pyproject = true;
+  pythonImportsCheck = [ "onnxscript" ];
 
   meta = {
     description = "Naturally author ONNX functions and models using a subset of Python";

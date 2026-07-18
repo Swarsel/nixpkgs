@@ -1,10 +1,10 @@
 {
-  qtModule,
-  stdenv,
   lib,
+  stdenv,
+  pkg-config,
+  qtModule,
   qtbase,
   udev,
-  pkg-config,
 }:
 
 qtModule {

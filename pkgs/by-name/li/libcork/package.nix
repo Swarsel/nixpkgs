@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  lib,
-  pkg-config,
   check,
+  cmake,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libcork";
@@ -40,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
-  buildInputs = [ check ];
 
+  buildInputs = [ check ];
   doCheck = false;
 
   postInstall = ''
@@ -49,11 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/dcreager/libcork";
     description = "Simple, easily embeddable cross-platform C library";
-    mainProgram = "cork-hash";
+    homepage = "https://github.com/dcreager/libcork";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ lovesegfault ];
+    platforms = lib.platforms.unix;
+    mainProgram = "cork-hash";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
   aws-rotate-key,
+  buildGoModule,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,8 +25,8 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru.tests.version = testers.testVersion {
-    package = aws-rotate-key;
     command = "AWS_SHARED_CREDENTIALS_FILE=/dev/null aws-rotate-key --version";
+    package = aws-rotate-key;
   };
 
   meta = {

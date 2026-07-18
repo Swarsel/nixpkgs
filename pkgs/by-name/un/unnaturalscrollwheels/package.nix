@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  nix-update-script,
   _7zz,
+  nix-update-script,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "unnaturalscrollwheels";
@@ -13,7 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/ther0n/UnnaturalScrollWheels/releases/download/${finalAttrs.version}/UnnaturalScrollWheels-${finalAttrs.version}.dmg";
     hash = "sha256-KJQnV/XWM+JpW3O29nyGo64Jte6Gw3I54bXfFSAkUrc=";
   };
-  sourceRoot = ".";
 
   # APFS format is unsupported by undmg
   nativeBuildInputs = [ _7zz ];
@@ -27,6 +26,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -35,10 +35,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     changelog = "https://github.com/ther0n/UnnaturalScrollWheels/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       emilytrau
       jesssullivan
     ];
+
     platforms = lib.platforms.darwin;
   };
 })

@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "heudiconv";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -30,6 +29,18 @@ buildPythonPackage rec {
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "versioningit ~=" "versioningit >="
+  '';
+
+  nativeCheckInputs = [
+    datalad
+    dcm2niix
+    pytestCheckHook
+    git
+    git-annex
+  ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
   '';
 
   build-system = [
@@ -46,20 +57,6 @@ buildPythonPackage rec {
     pydicom
   ];
 
-  nativeCheckInputs = [
-    datalad
-    dcm2niix
-    pytestCheckHook
-    git
-    git-annex
-  ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
-  pythonImportsCheck = [ "heudiconv" ];
-
   disabledTests = [
     # No such file or directory
     "test_bvals_are_zero"
@@ -67,6 +64,9 @@ buildPythonPackage rec {
     # tries to access internet
     "test_partial_xa_conversion"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "heudiconv" ];
 
   meta = {
     description = "Flexible DICOM converter for organizing imaging data";

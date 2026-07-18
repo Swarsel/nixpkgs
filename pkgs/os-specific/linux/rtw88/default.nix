@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
@@ -22,11 +22,10 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
+
   makeFlags = kernelModuleMakeFlags ++ [
     "KSRC=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -38,18 +37,22 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
   meta = {
     description = "Backport of the latest Realtek RTW88 driver from wireless-next for older kernels";
     homepage = "https://github.com/lwfinger/rtw88";
+
     license = with lib.licenses; [
       bsd3
       gpl2Only
     ];
+
     maintainers = with lib.maintainers; [
       tvorog
     ];
+
     platforms = lib.platforms.linux;
     broken = kernel.kernelOlder "4.20";
     priority = -1;

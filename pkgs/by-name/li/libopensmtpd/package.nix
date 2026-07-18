@@ -15,10 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./no-chown-while-installing.patch ];
-
-  buildInputs = [ libevent ];
-
   nativeBuildInputs = [ mandoc ];
+  buildInputs = [ libevent ];
 
   makeFlags = [
     "-f Makefile.gnu"

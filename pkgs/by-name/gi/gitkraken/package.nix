@@ -1,23 +1,21 @@
 {
   lib,
   stdenv,
-  buildPackages,
-  copyDesktopItems,
-  fetchzip,
-  makeDesktopItem,
-  makeWrapper,
   adwaita-icon-theme,
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
   atk,
+  buildPackages,
   cacert,
   cairo,
+  copyDesktopItems,
   cups,
   curlWithGnuTls,
   dbus,
   e2fsprogs,
   expat,
+  fetchzip,
   fontconfig,
   freetype,
   gdk-pixbuf,
@@ -26,25 +24,27 @@
   gtk3,
   krb5,
   libGL,
+  libdrm,
+  libgbm,
+  libgnome-keyring,
+  libuuid,
   libx11,
-  libxscrnsaver,
+  libxcb,
   libxcomposite,
   libxcursor,
   libxdamage,
   libxext,
   libxfixes,
   libxi,
-  libxrandr,
-  libxrender,
-  libxtst,
-  libdrm,
-  libgbm,
-  libgnome-keyring,
-  libuuid,
-  libxcb,
   libxkbcommon,
   libxkbfile,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
   libxshmfence,
+  libxtst,
+  makeDesktopItem,
+  makeWrapper,
   nspr,
   nss,
   openssl,
@@ -61,30 +61,32 @@ let
   throwSystem = throw "Unsupported system: ${stdenv.hostPlatform.system}";
 
   srcs = {
-    x86_64-linux = fetchzip {
-      url = "https://api.gitkraken.dev/releases/production/linux/x64/${version}/gitkraken-amd64.tar.gz";
-      hash = "sha256-CX/NxvLrxia92vSIjWXzIiBdTfhZ8TW7a5g1hEt+Y/k=";
+    aarch64-darwin = fetchzip {
+      hash = "sha256-JEgqJ6smqDG/2KFApRSYTuL1Ch1sIkhGDMjqVsgQUmc=";
+      url = "https://api.gitkraken.dev/releases/production/darwin/arm64/${version}/GitKraken-v${version}.zip";
     };
 
-    aarch64-darwin = fetchzip {
-      url = "https://api.gitkraken.dev/releases/production/darwin/arm64/${version}/GitKraken-v${version}.zip";
-      hash = "sha256-JEgqJ6smqDG/2KFApRSYTuL1Ch1sIkhGDMjqVsgQUmc=";
+    x86_64-linux = fetchzip {
+      hash = "sha256-CX/NxvLrxia92vSIjWXzIiBdTfhZ8TW7a5g1hEt+Y/k=";
+      url = "https://api.gitkraken.dev/releases/production/linux/x64/${version}/gitkraken-amd64.tar.gz";
     };
   };
 
   src = srcs.${stdenv.hostPlatform.system} or throwSystem;
 
   meta = {
-    homepage = "https://www.gitkraken.com/git-client";
     description = "Simplifying Git for any OS";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://www.gitkraken.com/git-client";
     license = lib.licenses.unfree;
-    platforms = builtins.attrNames srcs;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       nicolas-goudry
       Rishik-Y
       TurnrDev
     ];
+
+    platforms = builtins.attrNames srcs;
     mainProgram = "gitkraken";
   };
 
@@ -99,8 +101,79 @@ let
       passthru
       ;
 
+    nativeBuildInputs = [
+      copyDesktopItems
+      # override doesn't preserve splicing https://github.com/NixOS/nixpkgs/issues/132651
+      # Has to use `makeShellWrapper` from `buildPackages` even though `makeShellWrapper` from the inputs is spliced because `propagatedBuildInputs` would pick the wrong one because of a different offset.
+      (buildPackages.wrapGAppsHook3.override { makeWrapper = buildPackages.makeShellWrapper; })
+    ];
+
+    buildInputs = [
+      gtk3
+      adwaita-icon-theme
+    ];
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out/share/${pname}/
+      cp -R $src/* $out/share/${pname}
+
+      install -Dm444 gitkraken.png $out/share/icons/hicolor/512x512/apps/gitkraken.png
+
+      runHook postInstall
+    '';
+
+    preFixup = ''
+      gappsWrapperArgs+=(--add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}")
+    '';
+
+    postFixup = ''
+      pushd $out/share/${pname}
+      for file in gitkraken chrome-sandbox chrome_crashpad_handler; do
+        patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" $file
+      done
+
+      for file in $(find . -type f \( -name \*.node -o -name gitkraken -o -name git -o -name git-\* -o -name scalar -o -name \*.so\* \) ); do
+        patchelf --set-rpath ${libPath}:$out/share/${pname} $file || true
+      done
+      popd
+
+      # SSL and permissions fix for bundled nodegit
+      pushd $out/share/${pname}/resources/app.asar.unpacked/node_modules/@axosoft/nodegit/build/Release
+      mv nodegit-x64-ubuntu-20.node nodegit-x64-ubuntu-20-ssl-1.1.1.node
+      mv nodegit-x64-ubuntu-20-ssl-static.node nodegit-x64-ubuntu-20.node
+      chmod 755 nodegit-x64-ubuntu-20.node
+      popd
+
+      # Devendor bundled git
+      rm -rf $out/share/${pname}/resources/app.asar.unpacked/git
+      ln -s ${git} $out/share/${pname}/resources/app.asar.unpacked/git
+
+      # GitKraken expects the CA bundle to be located in the bundled git directory. Since we replace it with
+      # the one from nixpkgs, which doesn't provide a CA bundle, we need to explicitly set its location at runtime
+      makeWrapper $out/share/${pname}/gitkraken $out/bin/gitkraken \
+        --set GIT_SSL_CAINFO "${cacert}/etc/ssl/certs/ca-bundle.crt" \
+        "''${gappsWrapperArgs[@]}"
+    '';
+
+    desktopItems = [
+      (makeDesktopItem {
+        categories = [ "Development" ];
+        comment = "Unleash your repo";
+        desktopName = "GitKraken Desktop";
+        exec = "gitkraken";
+        genericName = "Git Client";
+        icon = "gitkraken";
+        name = "gitkraken";
+        startupWMClass = "GitKraken";
+      })
+    ];
+
     dontBuild = true;
     dontConfigure = true;
+    # avoid double-wrapping
+    dontWrapGApps = true;
 
     libPath = lib.makeLibraryPath [
       stdenv.cc.cc
@@ -147,77 +220,6 @@ let
       libGL
       zlib
     ];
-
-    desktopItems = [
-      (makeDesktopItem {
-        name = "gitkraken";
-        exec = "gitkraken";
-        icon = "gitkraken";
-        desktopName = "GitKraken Desktop";
-        genericName = "Git Client";
-        startupWMClass = "GitKraken";
-        categories = [ "Development" ];
-        comment = "Unleash your repo";
-      })
-    ];
-
-    nativeBuildInputs = [
-      copyDesktopItems
-      # override doesn't preserve splicing https://github.com/NixOS/nixpkgs/issues/132651
-      # Has to use `makeShellWrapper` from `buildPackages` even though `makeShellWrapper` from the inputs is spliced because `propagatedBuildInputs` would pick the wrong one because of a different offset.
-      (buildPackages.wrapGAppsHook3.override { makeWrapper = buildPackages.makeShellWrapper; })
-    ];
-    buildInputs = [
-      gtk3
-      adwaita-icon-theme
-    ];
-
-    # avoid double-wrapping
-    dontWrapGApps = true;
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out/share/${pname}/
-      cp -R $src/* $out/share/${pname}
-
-      install -Dm444 gitkraken.png $out/share/icons/hicolor/512x512/apps/gitkraken.png
-
-      runHook postInstall
-    '';
-
-    preFixup = ''
-      gappsWrapperArgs+=(--add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}")
-    '';
-
-    postFixup = ''
-      pushd $out/share/${pname}
-      for file in gitkraken chrome-sandbox chrome_crashpad_handler; do
-        patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" $file
-      done
-
-      for file in $(find . -type f \( -name \*.node -o -name gitkraken -o -name git -o -name git-\* -o -name scalar -o -name \*.so\* \) ); do
-        patchelf --set-rpath ${libPath}:$out/share/${pname} $file || true
-      done
-      popd
-
-      # SSL and permissions fix for bundled nodegit
-      pushd $out/share/${pname}/resources/app.asar.unpacked/node_modules/@axosoft/nodegit/build/Release
-      mv nodegit-x64-ubuntu-20.node nodegit-x64-ubuntu-20-ssl-1.1.1.node
-      mv nodegit-x64-ubuntu-20-ssl-static.node nodegit-x64-ubuntu-20.node
-      chmod 755 nodegit-x64-ubuntu-20.node
-      popd
-
-      # Devendor bundled git
-      rm -rf $out/share/${pname}/resources/app.asar.unpacked/git
-      ln -s ${git} $out/share/${pname}/resources/app.asar.unpacked/git
-
-      # GitKraken expects the CA bundle to be located in the bundled git directory. Since we replace it with
-      # the one from nixpkgs, which doesn't provide a CA bundle, we need to explicitly set its location at runtime
-      makeWrapper $out/share/${pname}/gitkraken $out/bin/gitkraken \
-        --set GIT_SSL_CAINFO "${cacert}/etc/ssl/certs/ca-bundle.crt" \
-        "''${gappsWrapperArgs[@]}"
-    '';
   };
 
   darwin = stdenv.mkDerivation {

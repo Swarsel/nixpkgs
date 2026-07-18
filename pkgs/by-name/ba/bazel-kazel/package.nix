@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,9 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-1+7Mx1Zh1WolqTpWNe560PRzRYaWVUVLvNvUOysaW5I=";
-
   doCheck = false;
-
   subPackages = [ "cmd/kazel" ];
 
   meta = {

@@ -1,30 +1,27 @@
 {
   lib,
   stdenv,
-  pkgs,
   fetchFromGitHub,
   buildPythonPackage,
   click,
   joblib,
+  # nativeCheckInputs
+  matplotlib,
+  # preInstallCheck
+  nltk,
+  numpy,
+  pkgs,
+  pyparsing,
+  pytest-mock,
+  pytestCheckHook,
   regex,
   setuptools,
   tqdm,
-
-  # preInstallCheck
-  nltk,
-
-  # nativeCheckInputs
-  matplotlib,
-  numpy,
-  pyparsing,
-  pytestCheckHook,
-  pytest-mock,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nltk";
   version = "3.9.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nltk";
@@ -39,6 +36,16 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'if not (target == scoped_root or target.is_relative_to(scoped_root)):' 'if not (target == scoped_root or target.is_relative_to(scoped_root) or target.is_relative_to("/nix/store")):'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    matplotlib
+    numpy
+    pyparsing
+    pytest-mock
+
+    pkgs.which
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -46,6 +53,15 @@ buildPythonPackage (finalAttrs: {
     joblib
     regex
     tqdm
+  ];
+
+  disabledTestPaths = [
+    "nltk/test/unit/test_downloader.py" # Touches network
+  ];
+
+  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
+    # ModuleNotFoundError: No module named '_tkinter'
+    "test_chartparser_app_uses_pickle_load_not_pickle_load_standard"
   ];
 
   # Use new passthru function to pass dependencies required for testing
@@ -87,25 +103,7 @@ buildPythonPackage (finalAttrs: {
     }
   '';
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    matplotlib
-    numpy
-    pyparsing
-    pytest-mock
-
-    pkgs.which
-  ];
-
-  disabledTestPaths = [
-    "nltk/test/unit/test_downloader.py" # Touches network
-  ];
-
-  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
-    # ModuleNotFoundError: No module named '_tkinter'
-    "test_chartparser_app_uses_pickle_load_not_pickle_load_standard"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nltk" ];
 
   passthru = {
@@ -115,9 +113,9 @@ buildPythonPackage (finalAttrs: {
 
   meta = {
     description = "Natural Language Processing ToolKit";
-    mainProgram = "nltk";
     homepage = "http://nltk.org/";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.bengsparks ];
+    mainProgram = "nltk";
   };
 })

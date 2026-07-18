@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "sseclient";
   version = "0.0.27";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,8 +22,8 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [ "event_stream" ];
+  format = "setuptools";
 
   meta = {
     description = "Client library for reading Server Sent Event streams";

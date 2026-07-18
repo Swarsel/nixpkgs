@@ -1,21 +1,20 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  six,
-  udev,
-  pytest,
-  mock,
-  hypothesis,
   docutils,
-  stdenvNoCC,
+  fetchPypi,
+  hypothesis,
+  mock,
+  pytest,
   setuptools,
+  six,
+  stdenvNoCC,
+  udev,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyudev";
   version = "0.24.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -25,14 +24,6 @@ buildPythonPackage (finalAttrs: {
   postPatch = lib.optionalString stdenvNoCC.hostPlatform.isLinux ''
     substituteInPlace src/pyudev/_ctypeslib/utils.py \
       --replace "find_library(name)" "'${lib.getLib udev}/lib/libudev.so'"
-  '';
-
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
-  checkPhase = ''
-    py.test
   '';
 
   # Bunch of failing tests
@@ -46,9 +37,17 @@ buildPythonPackage (finalAttrs: {
     docutils
   ];
 
+  checkPhase = ''
+    py.test
+  '';
+
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
+
   meta = {
-    homepage = "https://pyudev.readthedocs.org/";
     description = "Pure Python libudev binding";
+    homepage = "https://pyudev.readthedocs.org/";
     changelog = "https://github.com/pyudev/pyudev/blob/v${finalAttrs.version}/CHANGES.rst";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];

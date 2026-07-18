@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  makeFontsConf,
-  testers,
   cmake,
   cmake-extras,
   dbus,
   doxygen,
+  gitUpdater,
   glib,
   graphviz,
   gtest,
   libqtdbustest,
+  makeFontsConf,
   pkg-config,
   python3,
   qtbase,
   qtdeclarative,
+  testers,
   withDocumentation ? true,
 }:
 
@@ -82,13 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtdeclarative
   ];
 
-  nativeCheckInputs = [
-    dbus
-    python3
-  ];
-
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_QT6" withQt6)
     (lib.cmakeBool "NO_TESTS" (!finalAttrs.finalPackage.doCheck))
@@ -103,32 +96,43 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
+  nativeCheckInputs = [
+    dbus
+    python3
+  ];
+
   preCheck = ''
     # needs minimal plugin and QtTest QML
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
     export QML2_IMPORT_PATH=${lib.getBin qtdeclarative}/${qtbase.qtQmlPrefix}
   '';
 
+  dontWrapQtApps = true;
+
   passthru = {
     # https://gitlab.com/ubports/development/core/lomiri-api/-/issues/5
     tests = lib.optionalAttrs (!withQt6) {
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Lomiri API Library for integrating with the Lomiri shell";
     homepage = "https://gitlab.com/ubports/development/core/lomiri-api";
+
     changelog = "https://gitlab.com/ubports/development/core/lomiri-api/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = with lib.licenses; [
       lgpl3Only
       gpl3Only
     ];
-    teams = [ lib.teams.lomiri ];
+
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "liblomiri-api"
       "lomiri-shell-api${lib.optionalString withQt6 "-qt6"}"
@@ -136,5 +140,7 @@ stdenv.mkDerivation (finalAttrs: {
       "lomiri-shell-launcher${lib.optionalString withQt6 "-qt6"}"
       "lomiri-shell-notifications${lib.optionalString withQt6 "-qt6"}"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

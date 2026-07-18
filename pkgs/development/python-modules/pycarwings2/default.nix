@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  iso8601,
+  pycryptodome,
   pytestCheckHook,
   pyyaml,
-  iso8601,
   requests,
-  pycryptodome,
 }:
 
 buildPythonPackage rec {
   pname = "pycarwings2";
   version = "2.14";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "filcole";
@@ -20,6 +19,13 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-kqj/NZXqgPUsOnnzMPmIlICHek7RBxksmL3reNBK+bo=";
   };
+
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace "'pytest-runner'" ""
+    substituteInPlace setup.cfg \
+      --replace " --flake8 --cov=pycarwings2 --cache-clear --ignore=venv --verbose" ""
+  '';
 
   propagatedBuildInputs = [
     pyyaml
@@ -30,18 +36,12 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace "'pytest-runner'" ""
-    substituteInPlace setup.cfg \
-      --replace " --flake8 --cov=pycarwings2 --cache-clear --ignore=venv --verbose" ""
-  '';
-
   disabledTests = [
     # Test requires network access
     "test_bad_password"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pycarwings2" ];
 
   meta = {

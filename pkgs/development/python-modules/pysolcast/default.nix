@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   anyconfig,
   buildPythonPackage,
-  fetchFromGitHub,
   isodate,
   poetry-core,
   poetry-dynamic-versioning,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "pysolcast";
   version = "2.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mcaulifn";
@@ -24,9 +23,9 @@ buildPythonPackage rec {
     hash = "sha256-VNT86sZyQBNCA4jq+uYp2sBd/FLN0c5tp2u4/PjVGnA=";
   };
 
-  pythonRelaxDeps = [
-    "isodate"
-    "responses"
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
   ];
 
   build-system = [
@@ -41,12 +40,13 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pysolcast" ];
+
+  pythonRelaxDeps = [
+    "isodate"
+    "responses"
+  ];
 
   meta = {
     description = "Python library for interacting with the Solcast API";

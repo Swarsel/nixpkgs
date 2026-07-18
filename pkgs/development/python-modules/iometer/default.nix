@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aiohttp-sse-client,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   poetry-core,
   pytest-asyncio,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "iometer";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iometer-gmbh";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-50tq+z1+8CX58Yj6GztYXStHMG+IncOHDgwK8WhxVcQ=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -31,22 +36,17 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  pythonImportsCheck = [ "iometer" ];
-
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   enabledTestPaths = [
     "tests/test.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "iometer" ];
+
   meta = {
-    changelog = "https://github.com/iometer-gmbh/iometer.py/releases/tag/${finalAttrs.src.tag}";
     description = "Python client for interacting with IOmeter devices over HTTP";
     homepage = "https://github.com/iometer-gmbh/iometer.py";
+    changelog = "https://github.com/iometer-gmbh/iometer.py/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

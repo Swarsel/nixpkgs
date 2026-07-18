@@ -1,21 +1,22 @@
 {
   lib,
-  python3,
   fetchPypi,
   nix-update-script,
+  python3,
   versionCheckHook,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "snakefmt";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-cvdAXFVEegcuWoNWv/D3Etije73dt50O2EPOlFOnXQg=";
   };
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   build-system = with python3.pkgs; [ hatchling ];
 
   dependencies = with python3.pkgs; [
@@ -23,15 +24,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     click
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "snakefmt" ];
+
   pythonRelaxDeps = [
     "black"
     "click"
   ];
-
-  pythonImportsCheck = [ "snakefmt" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

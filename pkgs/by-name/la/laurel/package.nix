@@ -1,7 +1,7 @@
 {
-  acl,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  acl,
   rustPlatform,
 }:
 
@@ -16,8 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-4LIv9rdYTPPERgMT8mF6Ymdur9f4tzNkkkMHBePtAH0=";
   };
 
-  cargoHash = "sha256-AgyCiCsP3iuk0mRXkFAPDbXG12jE7uXfcGblpALbpMA=";
-
   postPatch = ''
     # Upstream started to redirect aarch64-unknown-linux-gnu to aarch64-linux-gnu-gcc
     # for their CI which breaks compiling on aarch64 in nixpkgs:
@@ -27,6 +25,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   nativeBuildInputs = [ rustPlatform.bindgenHook ];
   buildInputs = [ acl ];
+  cargoHash = "sha256-AgyCiCsP3iuk0mRXkFAPDbXG12jE7uXfcGblpALbpMA=";
 
   checkFlags = [
     # Nix' build sandbox does not allow setting ACLs:

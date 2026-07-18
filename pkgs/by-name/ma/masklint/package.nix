@@ -1,23 +1,23 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   makeWrapper,
-  withShell ? true,
+  nix-update-script,
+  rubocop,
+  ruff,
+  rustPlatform,
   shellcheck,
   withPython ? true,
-  ruff,
   withRuby ? true,
-  rubocop,
-  nix-update-script,
+  withShell ? true,
 }:
 
 let
   version = "0.4.1";
 in
 rustPlatform.buildRustPackage {
-  pname = "masklint";
   inherit version;
+  pname = "masklint";
 
   src = fetchFromGitHub {
     owner = "brumhard";
@@ -26,6 +26,7 @@ rustPlatform.buildRustPackage {
     hash = "sha256-PhhSJwzLTMFmisrdmsRjxWDBkBr+NjIkENHjdkTeviM=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   cargoHash = "sha256-WZwl7fdy1HNKQU1zCwifoOvmFRr/fnsvmIG2wf6ILPY=";
 
   nativeCheckInputs = [
@@ -33,8 +34,6 @@ rustPlatform.buildRustPackage {
     ruff # python
     rubocop # ruby
   ];
-
-  nativeBuildInputs = [ makeWrapper ];
 
   postInstall = (
     if (withShell || withPython || withRuby) then

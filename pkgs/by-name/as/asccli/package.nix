@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  git,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  git,
   versionCheckHook,
 }:
 
@@ -18,27 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-XBEDMUGwSh8P+dVKMebN3zD83e1odAN+Wy15yys0+2M=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-    "-X main.commit=${finalAttrs.src.rev}"
-    "-X main.date=1970-01-01T00:00:00Z"
-  ];
-
-  postInstall = ''
-    mv $out/bin/App-Store-Connect-CLI $out/bin/asc
-  '';
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
-  __darwinAllowLocalNetworking = true;
   nativeCheckInputs = [ git ];
-  preCheck = ''
-    export ASC_BYPASS_KEYCHAIN=1
-  '';
+
   checkFlags =
     let
       skippedTests = [
@@ -53,14 +34,36 @@ buildGoModule (finalAttrs: {
       "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$"
     ];
 
+  preCheck = ''
+    export ASC_BYPASS_KEYCHAIN=1
+  '';
+
+  postInstall = ''
+    mv $out/bin/App-Store-Connect-CLI $out/bin/asc
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.commit=${finalAttrs.src.rev}"
+    "-X main.date=1970-01-01T00:00:00Z"
+  ];
+
   meta = {
     description = "Scriptable CLI for the App Store Connect API";
     homepage = "https://asccli.sh";
     changelog = "https://github.com/rorkai/App-Store-Connect-CLI/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       DimitarNestorov
     ];
+
     mainProgram = "asc";
   };
 })

@@ -2,41 +2,41 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  meson,
-  ninja,
-  xxd,
-  gettext,
-  intltool,
-  gtk3,
-  lcms2,
-  exiv2,
-  libchamplain_libsoup3,
+  cfitsio,
   clutter-gtk,
-  ffmpegthumbnailer,
-  fbida,
-  libarchive,
   djvulibre,
-  libheif,
-  openjpeg,
-  libjxl,
-  libraw,
-  lua5_3,
-  poppler,
+  doxygen,
+  exiftool,
+  exiv2,
+  fbida,
+  ffmpegthumbnailer,
+  gettext,
+  gphoto2,
   gspell,
+  gtk3,
+  imagemagick,
+  intltool,
+  lcms2,
+  libarchive,
+  libchamplain_libsoup3,
+  libheif,
+  libjxl,
+  libnotify,
+  libraw,
   libtiff,
   libwebp,
-  gphoto2,
-  imagemagick,
-  yad,
-  exiftool,
-  zenity,
-  libnotify,
-  wrapGAppsHook3,
-  doxygen,
+  lua5_3,
+  meson,
+  ninja,
   nix-update-script,
   openexr,
-  cfitsio,
+  openjpeg,
+  pkg-config,
+  poppler,
+  wrapGAppsHook3,
+  xxd,
+  yad,
+  zenity,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -159,7 +159,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Lightweight GTK based image viewer";
-    mainProgram = "geeqie";
 
     longDescription = ''
       Geeqie is a lightweight GTK based image viewer for Unix like
@@ -171,15 +170,16 @@ stdenv.mkDerivation (finalAttrs: {
       initially based on GQview.
     '';
 
-    license = lib.licenses.gpl2Plus;
-
     homepage = "https://www.geeqie.org/";
     changelog = "https://github.com/BestImageViewer/geeqie/blob/${finalAttrs.src.tag}/NEWS";
+    license = lib.licenses.gpl2Plus;
 
     maintainers = with lib.maintainers; [
       pSub
       markus1189
     ];
+
     platforms = lib.platforms.gnu ++ lib.platforms.linux;
+    mainProgram = "geeqie";
   };
 })

@@ -1,27 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  dconf,
   desktop-file-utils,
   docbook-xsl-nons,
   gettext,
+  gitUpdater,
+  glib,
   gobject-introspection,
+  gsettings-desktop-schemas,
+  gspell,
   gtk-doc,
   itstool,
+  libgedit-amtk,
+  libgedit-gtksourceview,
+  libgedit-tepl,
+  libgee,
   meson,
   ninja,
   pkg-config,
   vala,
   wrapGAppsHook3,
-  dconf,
-  glib,
-  gsettings-desktop-schemas,
-  gspell,
-  libgedit-amtk,
-  libgedit-gtksourceview,
-  libgedit-tepl,
-  libgee,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,12 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.49.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    group = "World";
     owner = "gedit";
     repo = "enter-tex";
     tag = finalAttrs.version;
     hash = "sha256-CRxWN4eeB9uDdLtRh3aXHoN+gSlXSPDftGHcPtjgAzU=";
+    domain = "gitlab.gnome.org";
+    group = "World";
   };
 
   nativeBuildInputs = [
@@ -69,16 +69,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/gedit/enter-tex";
     description = "LaTeX editor for the GNOME desktop";
+    homepage = "https://gitlab.gnome.org/World/gedit/enter-tex";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       bobby285271
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux;
     mainProgram = "enter-tex";
   };

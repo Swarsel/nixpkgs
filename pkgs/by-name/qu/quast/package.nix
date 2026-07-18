@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  bash,
   python3Packages,
   zlib,
-  bash,
 }:
 
 let
@@ -15,26 +15,15 @@ in
 pythonPackages.buildPythonApplication rec {
   pname = "quast";
   version = "5.3.0";
-  format = "other";
 
   src = fetchurl {
     url = "https://github.com/ablab/quast/releases/download/quast_${version}/quast-${version}.tar.gz";
     hash = "sha256-rJ26A++dClHXqeLFaCYQTnjzQPYmOjrTk2SEQt68dOw=";
   };
 
-  pythonPath = with pythonPackages; [
-    simplejson
-    joblib
-    setuptools
-    distutils
-    matplotlib
-  ];
-
   buildInputs = [ zlib ] ++ pythonPath;
-
-  dontConfigure = true;
-
-  dontBuild = true;
+  # Tests need to download data files, so manual run after packaging is needed
+  doCheck = false;
 
   installPhase = ''
     substituteInPlace quast_libs/bedtools/Makefile \
@@ -55,19 +44,29 @@ pythonPackages.buildPythonApplication rec {
     ln -s $out/bin/quast.py $out/bin/quast
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   dontPatchELF = true;
+  format = "other";
 
-  # Tests need to download data files, so manual run after packaging is needed
-  doCheck = false;
+  pythonPath = with pythonPackages; [
+    simplejson
+    joblib
+    setuptools
+    distutils
+    matplotlib
+  ];
 
   meta = {
     description = "Evaluates genome assemblies by computing various metrics";
     homepage = "https://github.com/ablab/quast";
+    license = lib.licenses.gpl2;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode # source bundles binary dependencies
     ];
-    license = lib.licenses.gpl2;
+
     maintainers = [ lib.maintainers.bzizou ];
     platforms = lib.platforms.all;
   };

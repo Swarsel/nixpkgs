@@ -16,8 +16,6 @@ let
 in
 
 {
-  meta.teams = [ lib.teams.cosmic ];
-
   options.services.displayManager.cosmic-greeter = {
     enable = lib.mkEnableOption "COSMIC greeter";
     package = lib.mkPackageOption pkgs "cosmic-greeter" { };
@@ -30,30 +28,46 @@ in
       cfg.package
     ];
 
+    hardware.graphics.enable = true;
+
+    # Required for authentication
+    security.pam.services.cosmic-greeter = {
+      allowNullPassword = true;
+    };
+
+    services.accounts-daemon.enable = true;
+    services.dbus.packages = [ cfg.package ];
+
     services.greetd = {
       enable = true;
+
       settings = {
         default_session = {
-          user = "cosmic-greeter";
           command = ''${lib.getExe' pkgs.coreutils "env"} XCURSOR_THEME="''${XCURSOR_THEME:-Pop}" ${lib.getExe' cfg.package "cosmic-greeter-start"}'';
+          user = "cosmic-greeter";
         };
+
         initial_session = lib.mkIf (cfgAutoLogin.enable && (cfgAutoLogin.user != null)) {
-          user = cfgAutoLogin.user;
           command = ''${lib.getExe' pkgs.coreutils "env"} XCURSOR_THEME="''${XCURSOR_THEME:-Pop}" systemd-cat -t cosmic-session ${lib.getExe' pkgs.cosmic-session "start-cosmic"}'';
+          user = cfgAutoLogin.user;
         };
       };
     };
 
+    services.libinput.enable = true;
+
     # Daemon for querying background state and such
     systemd.services.cosmic-greeter-daemon = {
-      wantedBy = [ "multi-user.target" ];
       before = [ "greetd.service" ];
+
       serviceConfig = {
-        Type = "dbus";
         BusName = "com.system76.CosmicGreeter";
         ExecStart = lib.getExe' cfg.package "cosmic-greeter-daemon";
         Restart = "on-failure";
+        Type = "dbus";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.tmpfiles.settings.cosmic-greeter."/run/cosmic-greeter".d = {
@@ -64,23 +78,17 @@ in
 
     # The greeter user is hardcoded in `cosmic-greeter`
     users.groups.cosmic-greeter = { };
+
     users.users.cosmic-greeter = {
+      createHome = true;
       description = "COSMIC login greeter user";
-      isSystemUser = true;
+      extraGroups = [ "video" ];
+      group = "cosmic-greeter";
       home = "/var/lib/cosmic-greeter";
       homeMode = "0750";
-      createHome = true;
-      group = "cosmic-greeter";
-      extraGroups = [ "video" ];
+      isSystemUser = true;
     };
-    # Required for authentication
-    security.pam.services.cosmic-greeter = {
-      allowNullPassword = true;
-    };
-
-    hardware.graphics.enable = true;
-    services.accounts-daemon.enable = true;
-    services.dbus.packages = [ cfg.package ];
-    services.libinput.enable = true;
   };
+
+  meta.teams = [ lib.teams.cosmic ];
 }

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
+  nix-update-script,
   numpy,
-  setuptools,
-  wheel,
   pytestCheckHook,
   pyvista,
-  nix-update-script,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fast-simplification";
   version = "0.1.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyvista";
@@ -22,6 +21,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-MgAOGB4wJQ68GyotaxiR9Xdho+TckHKEglQvCE2TWVY=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyvista
+  ];
+
+  # make sure import the built version, not the source one
+  preCheck = ''
+    rm -r fast_simplification
+  '';
 
   build-system = [
     cython
@@ -34,21 +43,13 @@ buildPythonPackage (finalAttrs: {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyvista
-  ];
-
   disabledTests = [
     # need network to download data
     "test_collapses_louis"
     "test_human"
   ];
 
-  # make sure import the built version, not the source one
-  preCheck = ''
-    rm -r fast_simplification
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "fast_simplification"
@@ -61,6 +62,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/pyvista/fast-simplification";
     changelog = "https://github.com/pyvista/fast-simplification/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       yzx9
     ];

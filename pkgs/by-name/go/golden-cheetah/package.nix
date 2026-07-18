@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bison,
+  blas,
+  flex,
+  gsl,
+  libusb-compat-0_1,
+  makeDesktopItem,
   nix-update-script,
   qt6,
-  libusb-compat-0_1,
-  gsl,
-  blas,
-  bison,
-  flex,
   zlib,
-  makeDesktopItem,
 }:
 
 let
   desktopItem = makeDesktopItem {
-    name = "goldencheetah";
-    exec = "GoldenCheetah";
-    icon = "goldencheetah";
-    desktopName = "GoldenCheetah";
-    genericName = "GoldenCheetah";
-    comment = "Performance software for cyclists, runners and triathletes";
     categories = [ "Utility" ];
+    comment = "Performance software for cyclists, runners and triathletes";
+    desktopName = "GoldenCheetah";
+    exec = "GoldenCheetah";
+    genericName = "GoldenCheetah";
+    icon = "goldencheetah";
+    name = "goldencheetah";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,22 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-umy1EcLSoSDO5XFiGxfunniDr8RruyPvRTbypMbl7xU=";
   };
+
+  patches = [
+    # allow building with bison 3.7
+    # Included in https://github.com/GoldenCheetah/GoldenCheetah/pull/3590,
+    # which is periodically rebased but pre 3.6 release, as it'll break other CI systems
+    ./0001-Fix-building-with-bison-3.7.patch
+  ];
+
+  nativeBuildInputs = [
+    bison
+    flex
+  ]
+  ++ (with qt6; [
+    qmake
+    wrapQtAppsHook
+  ]);
 
   buildInputs =
     with qt6;
@@ -54,33 +70,11 @@ stdenv.mkDerivation (finalAttrs: {
       libusb-compat-0_1
       zlib
     ];
-  nativeBuildInputs = [
-    bison
-    flex
-  ]
-  ++ (with qt6; [
-    qmake
-    wrapQtAppsHook
-  ]);
-
-  patches = [
-    # allow building with bison 3.7
-    # Included in https://github.com/GoldenCheetah/GoldenCheetah/pull/3590,
-    # which is periodically rebased but pre 3.6 release, as it'll break other CI systems
-    ./0001-Fix-building-with-bison-3.7.patch
-  ];
 
   env.NIX_LDFLAGS = toString [
     "-lz"
     "-lgsl"
     "-lblas"
-  ];
-
-  qtWrapperArgs = [
-    "--prefix"
-    "LD_LIBRARY_PATH"
-    ":"
-    "${zlib.out}/lib"
   ];
 
   preConfigure = ''
@@ -114,14 +108,21 @@ stdenv.mkDerivation (finalAttrs: {
     else
       abort "unsupported platform";
 
+  qtWrapperArgs = [
+    "--prefix"
+    "LD_LIBRARY_PATH"
+    ":"
+    "${zlib.out}/lib"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Performance software for cyclists, runners and triathletes. Built from source and without API tokens";
     homepage = "https://github.com/GoldenCheetah/GoldenCheetah";
-    mainProgram = "GoldenCheetah";
-    platforms = with lib.platforms; darwin ++ linux;
-    maintainers = with lib.maintainers; [ adamcstephens ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ adamcstephens ];
+    platforms = with lib.platforms; darwin ++ linux;
+    mainProgram = "GoldenCheetah";
   };
 })

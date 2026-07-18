@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  makeWrapper,
-  writeShellScript,
-  curl,
-  common-updater-scripts,
-  gnused,
   cctools,
+  common-updater-scripts,
+  curl,
   darwin,
+  gnused,
+  makeWrapper,
   rcodesign,
+  writeShellScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,16 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     finalAttrs.passthru.sources.${stdenv.hostPlatform.system}
       or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
-  sourceRoot =
-    {
-      "aarch64-darwin" = "codegraph-darwin-arm64";
-      "aarch64-linux" = "codegraph-linux-arm64";
-      "x86_64-linux" = "codegraph-linux-x64";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -46,9 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     stdenv.cc.cc.lib
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -71,21 +59,36 @@ stdenv.mkDerivation (finalAttrs: {
     '${lib.getExe rcodesign}' sign --code-signature-flags linker-signed $out/lib/codegraph/node
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
+  sourceRoot =
+    {
+      "aarch64-darwin" = "codegraph-darwin-arm64";
+      "aarch64-linux" = "codegraph-linux-arm64";
+      "x86_64-linux" = "codegraph-linux-x64";
+    }
+    .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
   passthru = {
     sources = {
       "aarch64-darwin" = fetchurl {
-        url = "https://github.com/colbymchenry/codegraph/releases/download/v${finalAttrs.version}/codegraph-darwin-arm64.tar.gz";
         hash = "sha256-Smea5aXLn/+QDdWbt4baalgbf2j0z3E73t0TfjR9NNw=";
+        url = "https://github.com/colbymchenry/codegraph/releases/download/v${finalAttrs.version}/codegraph-darwin-arm64.tar.gz";
       };
+
       "aarch64-linux" = fetchurl {
-        url = "https://github.com/colbymchenry/codegraph/releases/download/v${finalAttrs.version}/codegraph-linux-arm64.tar.gz";
         hash = "sha256-DWLF6yci+NGdIPehvZdEReGNUpTLWb4Ragw9Vc6HWR8=";
+        url = "https://github.com/colbymchenry/codegraph/releases/download/v${finalAttrs.version}/codegraph-linux-arm64.tar.gz";
       };
+
       "x86_64-linux" = fetchurl {
-        url = "https://github.com/colbymchenry/codegraph/releases/download/v${finalAttrs.version}/codegraph-linux-x64.tar.gz";
         hash = "sha256-+1hf9QGNb6qkbSgrYfT2ibx5Z+2KG0Z6XFVt187ZtUI=";
+        url = "https://github.com/colbymchenry/codegraph/releases/download/v${finalAttrs.version}/codegraph-linux-x64.tar.gz";
       };
     };
+
     updateScript = writeShellScript "update-codegraph" ''
       set -o errexit
       export PATH="${
@@ -111,9 +114,9 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/colbymchenry/codegraph";
     changelog = "https://github.com/colbymchenry/codegraph/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "codegraph";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.gdifolco ];
     platforms = builtins.attrNames finalAttrs.passthru.sources;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "codegraph";
   };
 })

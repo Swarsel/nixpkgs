@@ -3,22 +3,21 @@
   stdenv,
   fetchurl,
   cmake,
-  libglut,
-  libGLU,
-  libGL,
-  glfw2,
+  fetchpatch,
   glew,
+  glfw2,
+  libGL,
+  libGLU,
+  libglut,
   libx11,
-  xorgproto,
   libxi,
   libxmu,
-  fetchpatch,
   libxrandr,
+  xorgproto,
 }:
 
 stdenv.mkDerivation rec {
   pname = "chipmunk";
-  majorVersion = "7";
   version = "${majorVersion}.0.3";
 
   src = fetchurl {
@@ -28,12 +27,13 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/slembcke/Chipmunk2D/commit/9a051e6fb970c7afe09ce2d564c163b81df050a8.patch";
       sha256 = "0ps8bjba1k544vcdx5w0qk7gcjq94yfigxf67j50s63yf70k2n70";
+      url = "https://github.com/slembcke/Chipmunk2D/commit/9a051e6fb970c7afe09ce2d564c163b81df050a8.patch";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libglut
     libGLU
@@ -52,11 +52,13 @@ stdenv.mkDerivation rec {
     cp demo/chipmunk_demos $out/bin
   '';
 
+  majorVersion = "7";
+
   meta = {
     description = "Fast and lightweight 2D game physics library";
-    mainProgram = "chipmunk_demos";
     homepage = "http://chipmunk2d.net/";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix; # supports Windows and MacOS as well, but those require more work
+    mainProgram = "chipmunk_demos";
   };
 }

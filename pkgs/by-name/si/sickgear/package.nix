@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
-  makeWrapper,
   libarchive,
+  makeWrapper,
+  python3,
 }:
 
 let
@@ -26,14 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jOQktr7KG/C/ap/cLGMCwWnceirGo3TuwxXNewE5I78=";
   };
 
-  dontBuild = true;
-  doCheck = false;
-
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     pythonEnv
     libarchive
   ];
+
+  doCheck = false;
 
   installPhase = ''
     mkdir -p $out/bin $out/opt/sickgear
@@ -43,11 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
       --suffix PATH : ${lib.makeBinPath [ libarchive ]}
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Most reliable stable TV fork of the great Sick-Beard to fully automate TV enjoyment with innovation";
-    mainProgram = "sickgear";
-    license = lib.licenses.gpl3;
     homepage = "https://github.com/SickGear/SickGear";
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ rembo10 ];
+    mainProgram = "sickgear";
   };
 })

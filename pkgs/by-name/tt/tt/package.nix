@@ -16,9 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-vKh19xYBeNqvVFilvA7NeQ34RM5VnwDs+Hu/pe3J0y4=";
   };
 
-  vendorHash = "sha256-edY2CcZXOIed0+7IA8kr4lAfuSJx/nHtmc734XzT4z4=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-edY2CcZXOIed0+7IA8kr4lAfuSJx/nHtmc734XzT4z4=";
 
   postInstall = ''
     mv $out/bin/src $out/bin/tt
@@ -29,7 +28,7 @@ buildGoModule (finalAttrs: {
     description = "Typing test in the terminal written in Go";
     homepage = "https://github.com/lemnos/tt";
     license = lib.licenses.mit;
-    mainProgram = "tt";
     maintainers = with lib.maintainers; [ vinetos ];
+    mainProgram = "tt";
   };
 })

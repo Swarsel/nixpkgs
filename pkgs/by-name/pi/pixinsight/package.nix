@@ -1,11 +1,10 @@
 {
   lib,
-  callPackage,
   buildFHSEnv,
-  cudaPackages,
+  callPackage,
   config,
+  cudaPackages,
   cudaSupport ? config.cudaSupport,
-
   # Provide support for built-in self-updates and plugin management
   #
   # PixInsight installs updates and plugins in its main installation location,
@@ -44,6 +43,62 @@ let
 in
 buildFHSEnv {
   inherit (pixinsight) pname version;
+
+  inherit (pixinsight.meta)
+    description
+    homepage
+    license
+    maintainers
+    platforms
+    sourceProvenance
+    hydraPlatforms
+    ;
+
+  extraBwrapArgs =
+    lib.optionals enableUpdates [
+      # Bind-mount mutable opt/ to /opt
+      ''--bind "${deployPath}"/opt /opt''
+    ]
+    ++ lib.optionals (!enableUpdates) [
+      # Bind-mount immutable opt/ to /opt
+      ''--ro-bind "${pixinsight}"/opt /opt''
+    ];
+
+  extraInstallCommands = ''
+    # Provide second binary matching upstream CLI command (`PixInsight`)
+    ln -s $out/bin/{pixinsight,PixInsight}
+
+    # Provide desktop integration files
+    ln -s {${pixinsight},$out}/share
+  '';
+
+  # Prepare mutable opt/ for self-update and plugin support
+  # Clear and redeploy whenever `pixinsight` store path changes
+  extraPreBwrapCmds = lib.optionalString enableUpdates ''
+    set -e
+
+    read -r DEPLOYED_PATH < "${storePathFile}" 2>/dev/null || DEPLOYED_PATH=""
+
+    if [ "$DEPLOYED_PATH" != "${pixinsight}" ]; then
+      echo "pixinsight: new PixInsight installation detected"
+      echo "pixinsight: deploying ${pixinsight}/opt/PixInsight to ${deployPath}/opt/PixInsight..."
+
+      mkdir -p "${deployPath}"/opt
+      rm -rf "${deployPath}"/opt/PixInsight
+      cp -R ${pixinsight}/opt/PixInsight "${deployPath}"/opt
+      chmod -R u+w "${deployPath}"/opt/PixInsight
+
+      echo "${pixinsight}" > "${storePathFile}"
+
+      echo "pixinsight: deployed successfully"
+    fi
+  '';
+
+  profile = lib.optionalString cudaSupport ''
+    export XLA_FLAGS=--xla_gpu_cuda_data_dir=${cudaPackages.cudatoolkit}
+  '';
+
+  runScript = "/opt/PixInsight/bin/PixInsight.sh";
 
   targetPkgs =
     pkgs:
@@ -112,64 +167,8 @@ buildFHSEnv {
       ])
     );
 
-  extraInstallCommands = ''
-    # Provide second binary matching upstream CLI command (`PixInsight`)
-    ln -s $out/bin/{pixinsight,PixInsight}
-
-    # Provide desktop integration files
-    ln -s {${pixinsight},$out}/share
-  '';
-
-  # Prepare mutable opt/ for self-update and plugin support
-  # Clear and redeploy whenever `pixinsight` store path changes
-  extraPreBwrapCmds = lib.optionalString enableUpdates ''
-    set -e
-
-    read -r DEPLOYED_PATH < "${storePathFile}" 2>/dev/null || DEPLOYED_PATH=""
-
-    if [ "$DEPLOYED_PATH" != "${pixinsight}" ]; then
-      echo "pixinsight: new PixInsight installation detected"
-      echo "pixinsight: deploying ${pixinsight}/opt/PixInsight to ${deployPath}/opt/PixInsight..."
-
-      mkdir -p "${deployPath}"/opt
-      rm -rf "${deployPath}"/opt/PixInsight
-      cp -R ${pixinsight}/opt/PixInsight "${deployPath}"/opt
-      chmod -R u+w "${deployPath}"/opt/PixInsight
-
-      echo "${pixinsight}" > "${storePathFile}"
-
-      echo "pixinsight: deployed successfully"
-    fi
-  '';
-
-  extraBwrapArgs =
-    lib.optionals enableUpdates [
-      # Bind-mount mutable opt/ to /opt
-      ''--bind "${deployPath}"/opt /opt''
-    ]
-    ++ lib.optionals (!enableUpdates) [
-      # Bind-mount immutable opt/ to /opt
-      ''--ro-bind "${pixinsight}"/opt /opt''
-    ];
-
-  profile = lib.optionalString cudaSupport ''
-    export XLA_FLAGS=--xla_gpu_cuda_data_dir=${cudaPackages.cudatoolkit}
-  '';
-
-  runScript = "/opt/PixInsight/bin/PixInsight.sh";
-
   passthru = {
     inherit libtensorflow-gpu;
     unwrapped = pixinsight;
   };
-
-  inherit (pixinsight.meta)
-    description
-    homepage
-    license
-    maintainers
-    platforms
-    sourceProvenance
-    hydraPlatforms
-    ;
 }

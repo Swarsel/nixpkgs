@@ -1,7 +1,7 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
+  clangStdenv,
   cmake,
   cppzmq,
   libuuid,

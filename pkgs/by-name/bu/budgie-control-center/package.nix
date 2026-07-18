@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
   accountsservice,
   budgie-desktop,
   colord,
@@ -17,11 +16,11 @@
   glib-networking,
   glibc,
   gnome,
-  gst_all_1,
   gnome-desktop,
   gnome-settings-daemon,
   gsettings-desktop-schemas,
   gsound,
+  gst_all_1,
   gtk3,
   ibus,
   libepoxy,
@@ -46,6 +45,7 @@
   nix-update-script,
   pkg-config,
   polkit,
+  replaceVars,
   samba,
   shadow,
   shared-mime-info,
@@ -62,8 +62,8 @@
 let
   introduction_list = (
     replaceVars ./introduction.list {
-      budgie_desktop = budgie-desktop;
       inherit wdisplays;
+      budgie_desktop = budgie-desktop;
     }
   );
 in
@@ -75,19 +75,20 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "BuddiesOfBudgie";
     repo = "budgie-control-center";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-UiKMYLQ44U4w9MdSTp/AJg3scOoSCeG6gXUBCrM9pc8=";
+    fetchSubmodules = true;
   };
 
   patches = [
     (replaceVars ./paths.patch {
-      budgie_desktop = budgie-desktop;
       inherit
         cups
         libgnomekbd
         shadow
         ;
+
       inherit networkmanagerapplet tzdata;
+      budgie_desktop = budgie-desktop;
     })
   ];
 
@@ -181,8 +182,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/BuddiesOfBudgie/budgie-control-center";
     changelog = "https://github.com/BuddiesOfBudgie/budgie-control-center/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.budgie ];
-    mainProgram = "budgie-control-center";
     platforms = lib.platforms.linux;
+    mainProgram = "budgie-control-center";
+    teams = [ lib.teams.budgie ];
   };
 })

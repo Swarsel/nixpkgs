@@ -1,16 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  sqlite,
+  buildGoModule,
   libtensorflow,
-  withTensorflow ? false,
   nixosTests,
+  sqlite,
+  withTensorflow ? false,
 }:
 buildGoModule (finalAttrs: {
   pname = "snips-sh";
   version = "0.10.1";
-  vendorHash = "sha256-OjcYz7RdCCWur8y+AhGVlQx3UeW+u6rmB73lDUYBsnM=";
 
   src = fetchFromGitHub {
     owner = "robherley";
@@ -19,21 +18,22 @@ buildGoModule (finalAttrs: {
     hash = "sha256-KPIit7U+630EQ8SeFArCR2qcXVdsjaO1LKZmDO86c0Y=";
   };
 
-  tags = (lib.optional (!withTensorflow) "noguesser");
-
   buildInputs = [ sqlite ] ++ (lib.optional withTensorflow libtensorflow);
-
+  vendorHash = "sha256-OjcYz7RdCCWur8y+AhGVlQx3UeW+u6rmB73lDUYBsnM=";
+  tags = (lib.optional (!withTensorflow) "noguesser");
   passthru.tests = nixosTests.snips-sh;
 
   meta = {
     description = "Passwordless, anonymous SSH-powered pastebin with a human-friendly TUI and web UI";
-    license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     homepage = "https://snips.sh";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jeremiahs
       matthiasbeyer
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "snips.sh";
   };
 })

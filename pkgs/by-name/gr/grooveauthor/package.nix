@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
-  fetchzip,
+  alsa-lib,
   autoPatchelfHook,
   copyDesktopItems,
-  makeDesktopItem,
-  wrapGAppsHook3,
-  alsa-lib,
   dotnetCorePackages,
+  fetchzip,
   gtk3,
   libGL,
+  makeDesktopItem,
+  stdenvNoCC,
+  wrapGAppsHook3,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "grooveauthor";
@@ -27,37 +27,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     autoPatchelfHook
     copyDesktopItems
     wrapGAppsHook3
-  ];
-
-  runtimeDependencies = [ gtk3 ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      desktopName = "GrooveAuthor";
-      name = finalAttrs.pname;
-      genericName = "Editor for StepMania";
-      icon = "GrooveAuthor";
-      exec = "GrooveAuthor";
-      categories = [
-        "AudioVideo"
-        "AudioVideoEditing"
-      ];
-      keywords = [
-        "GrooveAuthor"
-        "StepMania"
-        "ITG"
-        "ITGmania"
-        "DDR"
-        "PIU"
-        "Pump It Up"
-        "Dance"
-        "StepF2"
-        "StepP1"
-      ];
-      prefersNonDefaultGPU = true;
-      singleMainWindow = true;
-      terminal = false;
-    })
   ];
 
   installPhase = ''
@@ -80,16 +49,52 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     )
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "AudioVideo"
+        "AudioVideoEditing"
+      ];
+
+      desktopName = "GrooveAuthor";
+      exec = "GrooveAuthor";
+      genericName = "Editor for StepMania";
+      icon = "GrooveAuthor";
+
+      keywords = [
+        "GrooveAuthor"
+        "StepMania"
+        "ITG"
+        "ITGmania"
+        "DDR"
+        "PIU"
+        "Pump It Up"
+        "Dance"
+        "StepF2"
+        "StepP1"
+      ];
+
+      name = finalAttrs.pname;
+      prefersNonDefaultGPU = true;
+      singleMainWindow = true;
+      terminal = false;
+    })
+  ];
+
+  runtimeDependencies = [ gtk3 ];
+
   meta = {
     description = "GrooveAuthor is an editor for authoring StepMania charts";
     homepage = "https://github.com/PerryAsleep/GrooveAuthor";
+
     license = with lib.licenses; [
       mit
       mspl
     ];
+
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ ungeskriptet ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "GrooveAuthor";
   };
 })

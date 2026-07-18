@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cairo,
   elfutils,
-  fetchFromGitHub,
   fetchpatch,
   glib,
   gobject-introspection,
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     ./scons-nix-env.patch
     # fixes https://github.com/sahib/rmlint/issues/664
     (fetchpatch {
-      url = "https://github.com/sahib/rmlint/commit/f0ca57ec907f7199e3670038d60b4702d1e1d8e2.patch";
       hash = "sha256-715X+R2BcQIaUV76hoO+EXPfNheOfw4OIHsqSoruIUI=";
+      url = "https://github.com/sahib/rmlint/commit/f0ca57ec907f7199e3670038d60b4702d1e1d8e2.patch";
     })
   ];
 
@@ -71,6 +71,12 @@ stdenv.mkDerivation (finalAttrs: {
     elfutils
   ];
 
+  # in GUI mode, this shells out to itself, and tries to import python modules
+  postInstall = lib.optionalString withGui ''
+    gappsWrapperArgs+=(--prefix PATH : "$out/bin")
+    gappsWrapperArgs+=(--prefix PYTHONPATH : "$(toPythonPath $out):$(toPythonPath ${python3.pkgs.pygobject3}):$(toPythonPath ${python3.pkgs.pycairo})")
+  '';
+
   prePatch = ''
     # remove sources of nondeterminism
     substituteInPlace lib/cmdline.c \
@@ -82,24 +88,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Otherwise tries to access /usr.
   prefixKey = "--prefix=";
-
   sconsFlags = lib.optionals (!withGui) [ "--without-gui" ];
-
-  # in GUI mode, this shells out to itself, and tries to import python modules
-  postInstall = lib.optionalString withGui ''
-    gappsWrapperArgs+=(--prefix PATH : "$out/bin")
-    gappsWrapperArgs+=(--prefix PYTHONPATH : "$(toPythonPath $out):$(toPythonPath ${python3.pkgs.pygobject3}):$(toPythonPath ${python3.pkgs.pycairo})")
-  '';
 
   meta = {
     description = "Extremely fast tool to remove duplicates and other lint from your filesystem";
     homepage = "https://rmlint.readthedocs.org";
-    platforms = lib.platforms.unix;
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       aaschmid
       koral
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "rmlint";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  electron,
   dpkg,
+  electron,
   makeWrapper,
+  stdenvNoCC,
   commandLineArgs ? "",
 }:
 
@@ -44,10 +44,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Electron-based gaming hub";
     homepage = "https://github.com/Team-Falkor/falkor";
     license = with lib.licenses; [ mit ];
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ icedborn ];
     platforms = [ "x86_64-linux" ];
-    hydraPlatforms = [ ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     mainProgram = "falkor";
+    hydraPlatforms = [ ];
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  makeBinaryWrapper,
   git,
+  makeBinaryWrapper,
+  rustPlatform,
 }:
 
 let
@@ -22,9 +22,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-DkKei7PnQnF+0odsPwJJ/pwO/yqdZGRrJQcdIMQ/3uI=";
   };
 
-  cargoHash = "sha256-AIYDgjDYOwIi6KK5GzMF5UWYe9h7mGNONdwtlNygod4=";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  cargoHash = "sha256-AIYDgjDYOwIi6KK5GzMF5UWYe9h7mGNONdwtlNygod4=";
 
   postInstall = ''
     wrapProgram $out/bin/gitnapped \
@@ -34,11 +33,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Git commit timeline analyzer";
     homepage = "https://site.gitnapped.dev";
+    license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       nicknb
     ];
-    mainProgram = "gitnapped";
-    license = lib.licenses.agpl3Only;
+
     platforms = lib.platforms.unix;
+    mainProgram = "gitnapped";
   };
 })

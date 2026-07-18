@@ -30,21 +30,26 @@ in
     enableUserSlices = lib.mkEnableOption "oomd on all user slices (`user@.slice`) and all user owned slices";
 
     settings.OOM = lib.mkOption {
+      default = { };
+
       description = ''
         Settings option for systemd-oomd.
         See {manpage}`oomd.conf(5)` for available options.
       '';
-      type = lib.types.submodule {
-        freeformType = lib.types.attrsOf utils.systemdUtils.unitOptions.unitOption;
-      };
-      default = { };
+
       example = {
         DefaultMemoryPressureLimit = "60%";
+      };
+
+      type = lib.types.submodule {
+        freeformType = lib.types.attrsOf utils.systemdUtils.unitOptions.unitOption;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.etc."systemd/oomd.conf".text = utils.systemdUtils.lib.settingsToSections cfg.settings;
+
     systemd.additionalUpstreamSystemUnits = [
       "systemd-oomd.service"
       "systemd-oomd.socket"
@@ -52,34 +57,37 @@ in
 
     systemd.services.systemd-oomd.wantedBy = [ "multi-user.target" ];
 
-    environment.etc."systemd/oomd.conf".text = utils.systemdUtils.lib.settingsToSections cfg.settings;
-
-    users.users.systemd-oom = {
-      description = "systemd-oomd service user";
-      group = "systemd-oom";
-      isSystemUser = true;
-    };
-    users.groups.systemd-oom = { };
-
     systemd.slices."-".sliceConfig = lib.mkIf cfg.enableRootSlice {
       ManagedOOMMemoryPressure = "kill";
       ManagedOOMMemoryPressureLimit = lib.mkDefault "80%";
     };
+
     systemd.slices."system".sliceConfig = lib.mkIf cfg.enableSystemSlice {
       ManagedOOMMemoryPressure = "kill";
       ManagedOOMMemoryPressureLimit = lib.mkDefault "80%";
     };
+
     systemd.slices."user".sliceConfig = lib.mkIf cfg.enableUserSlices {
       ManagedOOMMemoryPressure = "kill";
       ManagedOOMMemoryPressureLimit = lib.mkDefault "80%";
     };
+
     systemd.user.units."slice" = lib.mkIf cfg.enableUserSlices {
+      overrideStrategy = "asDropin";
+
       text = ''
         [Slice]
         ManagedOOMMemoryPressure=kill
         ManagedOOMMemoryPressureLimit=80%
       '';
-      overrideStrategy = "asDropin";
+    };
+
+    users.groups.systemd-oom = { };
+
+    users.users.systemd-oom = {
+      description = "systemd-oomd service user";
+      group = "systemd-oom";
+      isSystemUser = true;
     };
   };
 }

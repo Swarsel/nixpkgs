@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-KtJfiQs+2XkFT2l/rpyjeGf/i15BsLFHjSQjzOZkRfg=";
   };
 
-  cargoHash = "sha256-4OFkqErFQ/VPvcHdBJTt877wpd1tALTH89U9u1V2KyY=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -27,11 +25,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  dontUseCargoParallelTests = true;
+  cargoHash = "sha256-4OFkqErFQ/VPvcHdBJTt877wpd1tALTH89U9u1V2KyY=";
 
   checkFlags = [
     "--skip=subcommand::server::tests::status" # test fails if it built from source tarball
   ];
+
+  dontUseCargoParallelTests = true;
 
   meta = {
     description = "Index, block explorer, and command-line wallet for Ordinals";

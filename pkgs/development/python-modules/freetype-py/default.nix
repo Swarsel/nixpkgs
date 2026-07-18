@@ -3,17 +3,16 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
+  freetype,
+  pytestCheckHook,
   replaceVars,
   setuptools,
   setuptools-scm,
-  freetype,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "freetype-py";
   version = "2.5.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,24 +26,24 @@ buildPythonPackage rec {
     })
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    cd tests
+  '';
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ freetype ];
-
-  preCheck = ''
-    cd tests
-  '';
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "freetype" ];
 
   meta = {
-    homepage = "https://github.com/rougier/freetype-py";
     description = "FreeType (high-level Python API)";
+    homepage = "https://github.com/rougier/freetype-py";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ goertzenator ];
   };

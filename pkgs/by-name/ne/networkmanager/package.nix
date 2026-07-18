@@ -2,61 +2,61 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
-  gettext,
-  pkg-config,
-  dbus,
-  gitUpdater,
-  libuuid,
-  polkit,
-  gnutls,
-  ppp,
-  dhcpcd,
-  iptables,
-  nftables,
-  python3,
-  vala,
-  libgcrypt,
-  dnsmasq,
-  bluez5,
-  readline,
-  libselinux,
   audit,
-  gobject-introspection,
-  perl,
-  modemmanager,
-  openresolv,
-  libndp,
-  newt,
-  ethtool,
-  gnused,
-  iputils,
-  kmod,
-  jansson,
-  elfutils,
-  gtk-doc,
-  libxslt,
-  docbook_xsl,
+  bluez5,
+  buildPackages,
+  curl,
+  dbus,
+  dhcpcd,
+  dnsmasq,
   docbook_xml_dtd_412,
   docbook_xml_dtd_42,
   docbook_xml_dtd_43,
-  curl,
-  meson,
-  mesonEmulatorHook,
-  ninja,
+  docbook_xsl,
+  elfutils,
+  ethtool,
+  gettext,
+  gitUpdater,
+  gnused,
+  gnutls,
+  gobject-introspection,
+  gtk-doc,
+  iptables,
+  iputils,
+  jansson,
+  kmod,
+  libgcrypt,
+  libndp,
   libnvme,
   libpsl,
+  libselinux,
+  libuuid,
+  libxslt,
+  meson,
+  mesonEmulatorHook,
   mobile-broadband-provider-info,
-  runtimeShell,
-  buildPackages,
+  modemmanager,
+  newt,
+  nftables,
+  ninja,
   nixosTests,
+  openresolv,
+  perl,
+  pkg-config,
+  polkit,
+  ppp,
+  python3,
+  readline,
+  replaceVars,
+  runtimeShell,
   systemd,
   udev,
   udevCheckHook,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
+  vala,
   # NBFT (NVMe Boot Firmware Table) support, opt-in due to closure size
   # https://github.com/NixOS/nixpkgs/pull/446121#discussion_r2380598419
   withNbft ? false,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 let
@@ -77,6 +77,86 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
     "man"
     "doc"
+  ];
+
+  patches = [
+    (replaceVars ./fix-paths.patch {
+      inherit
+        iputils
+        ethtool
+        gnused
+        ;
+
+      inherit runtimeShell;
+    })
+
+    # Meson does not support using different directories during build and
+    # for installation like Autotools did with flags passed to make install.
+    ./fix-install-paths.patch
+  ];
+
+  postPatch = ''
+    patchShebangs ./tools
+    patchShebangs libnm/generate-setting-docs.py
+
+    # TODO: submit upstream
+    substituteInPlace meson.build \
+      --replace "'vala', req" "'vala', native: false, req"
+  ''
+  + lib.optionalString withSystemd ''
+    substituteInPlace data/NetworkManager.service.in \
+      --replace-fail /usr/bin/busctl ${systemd}/bin/busctl
+  '';
+
+  nativeBuildInputs = [
+    meson
+    ninja
+    gettext
+    pkg-config
+    vala
+    gobject-introspection
+    perl
+    elfutils # used to find jansson soname
+    # Docs
+    gtk-doc
+    libxslt
+    docbook_xsl
+    docbook_xml_dtd_412
+    docbook_xml_dtd_42
+    docbook_xml_dtd_43
+    pythonForDocs
+    udevCheckHook
+  ]
+  ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    mesonEmulatorHook
+  ];
+
+  buildInputs = [
+    (if withSystemd then systemd else udev)
+    libselinux
+    audit
+    libpsl
+    libuuid
+    polkit
+    ppp
+    libndp
+    curl
+    mobile-broadband-provider-info
+    bluez5
+    dnsmasq
+    modemmanager
+    readline
+    newt
+    jansson
+    dbus # used to get directory paths with pkg-config during configuration
+  ]
+  ++ lib.optionals withNbft [
+    libnvme
+  ];
+
+  propagatedBuildInputs = [
+    gnutls
+    libgcrypt
   ];
 
   # Right now we hardcode quite a few paths at build time. Probably we should
@@ -129,87 +209,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dmobile_broadband_provider_info_database=${mobile-broadband-provider-info}/share/mobile-broadband-provider-info/serviceproviders.xml"
   ];
 
-  patches = [
-    (replaceVars ./fix-paths.patch {
-      inherit
-        iputils
-        ethtool
-        gnused
-        ;
-      inherit runtimeShell;
-    })
-
-    # Meson does not support using different directories during build and
-    # for installation like Autotools did with flags passed to make install.
-    ./fix-install-paths.patch
-  ];
-
-  buildInputs = [
-    (if withSystemd then systemd else udev)
-    libselinux
-    audit
-    libpsl
-    libuuid
-    polkit
-    ppp
-    libndp
-    curl
-    mobile-broadband-provider-info
-    bluez5
-    dnsmasq
-    modemmanager
-    readline
-    newt
-    jansson
-    dbus # used to get directory paths with pkg-config during configuration
-  ]
-  ++ lib.optionals withNbft [
-    libnvme
-  ];
-
-  propagatedBuildInputs = [
-    gnutls
-    libgcrypt
-  ];
-
-  nativeBuildInputs = [
-    meson
-    ninja
-    gettext
-    pkg-config
-    vala
-    gobject-introspection
-    perl
-    elfutils # used to find jansson soname
-    # Docs
-    gtk-doc
-    libxslt
-    docbook_xsl
-    docbook_xml_dtd_412
-    docbook_xml_dtd_42
-    docbook_xml_dtd_43
-    pythonForDocs
-    udevCheckHook
-  ]
-  ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
-    mesonEmulatorHook
-  ];
-
-  doCheck = false; # requires /sys, the net
-
-  postPatch = ''
-    patchShebangs ./tools
-    patchShebangs libnm/generate-setting-docs.py
-
-    # TODO: submit upstream
-    substituteInPlace meson.build \
-      --replace "'vala', req" "'vala', native: false, req"
-  ''
-  + lib.optionalString withSystemd ''
-    substituteInPlace data/NetworkManager.service.in \
-      --replace-fail /usr/bin/busctl ${systemd}/bin/busctl
-  '';
-
   preBuild = ''
     # Our gobject-introspection patches make the shared library paths absolute
     # in the GIR files. When building docs, the library is not yet installed,
@@ -219,37 +218,43 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $PWD/src/libnm-client-impl/libnm.so.0 ${placeholder "out"}/lib/libnm.so.0
   '';
 
+  doCheck = false; # requires /sys, the net
+  doInstallCheck = true;
+
   postFixup = lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
     cp -r ${buildPackages.networkmanager.devdoc} $devdoc
     cp -r ${buildPackages.networkmanager.man} $man
   '';
 
-  doInstallCheck = true;
-
   passthru = {
+    tests = {
+      inherit (nixosTests.networking) networkmanager;
+    };
+
     updateScript = gitUpdater {
       odd-unstable = true;
       url = "https://gitlab.freedesktop.org/NetworkManager/NetworkManager.git";
     };
-    tests = {
-      inherit (nixosTests.networking) networkmanager;
-    };
   };
 
   meta = {
-    homepage = "https://networkmanager.dev";
     description = "Network configuration and management tool";
-    license = lib.licenses.gpl2Plus;
+    homepage = "https://networkmanager.dev";
     changelog = "https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/raw/${finalAttrs.version}/NEWS";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       obadz
     ];
-    teams = [ lib.teams.freedesktop ];
+
     platforms = lib.platforms.linux;
+
     badPlatforms = [
       # Mandatory shared libraries.
       lib.systems.inspect.platformPatterns.isStatic
     ];
+
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "gnome" finalAttrs.version;
+    teams = [ lib.teams.freedesktop ];
   };
 })

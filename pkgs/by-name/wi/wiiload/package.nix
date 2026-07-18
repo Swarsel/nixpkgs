@@ -7,14 +7,8 @@
   zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.5.3";
   pname = "wiiload";
-
-  nativeBuildInputs = [
-    autoconf
-    automake
-  ];
-  buildInputs = [ zlib ];
+  version = "0.5.3";
 
   src = fetchFromGitHub {
     owner = "devkitPro";
@@ -28,13 +22,19 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-gcc15.patch
   ];
 
+  nativeBuildInputs = [
+    autoconf
+    automake
+  ];
+
+  buildInputs = [ zlib ];
   preConfigure = "./autogen.sh";
 
   meta = {
     description = "Load homebrew apps over network/usbgecko to your Wii";
-    mainProgram = "wiiload";
     homepage = "https://wiibrew.org/wiki/Wiiload";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ tomsmeets ];
+    mainProgram = "wiiload";
   };
 })

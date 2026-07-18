@@ -1,10 +1,10 @@
 {
-  metaFetch,
-  coq,
-  rocq-core,
   lib,
-  glib,
   adwaita-icon-theme,
+  coq,
+  glib,
+  metaFetch,
+  rocq-core,
   wrapGAppsHook3,
   version ? null,
 }:
@@ -25,6 +25,7 @@ let
     repo = "vsrocq";
   };
   fetch = metaFetch {
+    inherit location;
     release."2.3.0".rev = "v2.3.0";
     release."2.3.0".sha256 = "sha256-BZLxcCmSGFf04eUmlJXnyxmg4hTwpFaPaIik4VD444M=";
     release."2.3.3".rev = "v2.3.3";
@@ -33,15 +34,15 @@ let
     release."2.3.4".sha256 = "sha256-v1hQjE8U1o2VYOlUjH0seIsNG+NrMNZ8ixt4bQNyGvI=";
     release."2.4.3".rev = "v2.4.3";
     release."2.4.3".sha256 = "sha256-R/fpTiYZ9uvtKQcWD4jwUZPvUrcdvHc/wpoTrdkEQoQ=";
-    inherit location;
   };
   fetched = fetch (if version != null then version else defaultVersion);
 in
 ocamlPackages.buildDunePackage {
-  pname = "vsrocq-language-server";
   inherit (fetched) version;
+  pname = "vsrocq-language-server";
   src = "${fetched.src}/language-server";
   nativeBuildInputs = [ coq ];
+
   buildInputs = [
     coq
     glib
@@ -65,6 +66,7 @@ ocamlPackages.buildDunePackage {
     sel
     ppx_optcomp
   ]);
+
   preBuild = ''
     make dune-files
   '';
@@ -72,8 +74,8 @@ ocamlPackages.buildDunePackage {
   meta = {
     description = "Language server for the vsrocq vscode/codium extension";
     homepage = "https://github.com/rocq-prover/vsrocq";
-    maintainers = with lib.maintainers; [ cohencyril ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ cohencyril ];
   }
   // lib.optionalAttrs (fetched.broken or false) {
     broken = true;

@@ -2,37 +2,37 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
-  clr,
-  diffutils,
-  python3,
-  tensile,
-  boost,
-  msgpack-cxx,
-  libxml2,
-  gtest,
-  gfortran,
-  openmp,
-  gitMinimal,
   amd-blis,
-  zstd,
-  roctracer,
+  boost,
+  clr,
+  cmake,
+  diffutils,
+  fetchpatch,
+  gfortran,
+  gitMinimal,
+  gtest,
   hipblas-common,
   hipblaslt,
-  python3Packages,
-  rocm-smi,
+  libxml2,
+  msgpack-cxx,
+  openmp,
   pkg-config,
+  python3,
+  python3Packages,
   removeReferencesTo,
+  rocm-cmake,
+  rocm-smi,
+  rocmUpdateScript,
+  roctracer,
+  tensile,
+  zstd,
+  buildBenchmarks ? true,
   buildTensile ? true,
   buildTests ? true,
-  buildBenchmarks ? true,
-  tensileSepArch ? true,
-  tensileLazyLib ? true,
-  withHipBlasLt ? true,
   gpuTargets ? (clr.localGpuTargets or clr.gpuTargets),
+  tensileLazyLib ? true,
+  tensileSepArch ? true,
+  withHipBlasLt ? true,
 }:
 
 let
@@ -46,15 +46,43 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ROCm";
     repo = "rocm-libraries";
     rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-wrjcr2ASSF+bk5atjvKfIYSbg+vevo/a2W2ca9Nft/4=";
+
     sparseCheckout = [
       "projects/rocblas"
       "shared"
     ];
-    hash = "sha256-wrjcr2ASSF+bk5atjvKfIYSbg+vevo/a2W2ca9Nft/4=";
   };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocblas";
 
   outputs = [ "out" ] ++ lib.optional buildBenchmarks "benchmark" ++ lib.optional buildTests "test";
+
+  patches = [
+    (fetchpatch {
+      hash = "sha256-vAVVpTwt49lGHu2YopR1X68v5LwFOjUYuSC4ucBpFGg=";
+      name = "Extend-rocBLAS-HIP-ISA-compatibility.patch";
+      relative = "projects/rocblas";
+      url = "https://github.com/GZGavinZhao/rocm-libraries/commit/49f21f3cfe7eb4b8ac724eef81fa2cae97a3c22e.patch";
+    })
+  ];
+
+  # Pass $NIX_BUILD_CORES to Tensile
+  postPatch = ''
+    substituteInPlace cmake/build-options.cmake \
+      --replace-fail 'Tensile_CPU_THREADS ""' 'Tensile_CPU_THREADS "$ENV{NIX_BUILD_CORES}"'
+  ''
+  # Workaround: libblis detection uses broken absolute paths
+  # TODO: upstream a proper fix
+  + ''
+    substituteInPlace clients/CMakeLists.txt \
+      --replace-fail "if ( NOT WIN32 )" "if(OFF)" \
+      --replace-fail "else() # WIN32" "elseif(OFF)"
+  ''
+  # Fixes sh: line 1: /usr/bin/diff: No such file or directory
+  # /build/source/clients/gtest/../include/testing_logging.hpp:1117: Failure
+  + lib.optionalString buildTests ''
+    substituteInPlace clients/include/testing_logging.hpp \
+      --replace-fail "/usr/bin/diff" "${lib.getExe' diffutils "diff"}"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -95,12 +123,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.pyyaml
   ];
 
-  env.CXXFLAGS = "-fopenmp -I${lib.getDev boost}/include -I${hipblas-common}/include -I${roctracer}/include";
-  # Fails to link tests with undefined symbol: cblas_*
-  env.LDFLAGS =
-    "-Wl,--as-needed -lzstd" + lib.optionalString (buildTests || buildBenchmarks) " -lcblas";
-  env.TENSILE_ROCM_ASSEMBLER_PATH = "${stdenv.cc}/bin/clang++";
-
   cmakeFlags = [
     (lib.cmakeFeature "Boost_INCLUDE_DIR" "${lib.getDev boost}/include") # msgpack FindBoost fails to find boost
     (lib.cmakeFeature "CMAKE_EXECUTE_PROCESS_COMMAND_ECHO" "STDERR")
@@ -139,33 +161,13 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "Tensile_LAZY_LIBRARY_LOADING" tensileLazyLib)
   ];
 
-  patches = [
-    (fetchpatch {
-      name = "Extend-rocBLAS-HIP-ISA-compatibility.patch";
-      url = "https://github.com/GZGavinZhao/rocm-libraries/commit/49f21f3cfe7eb4b8ac724eef81fa2cae97a3c22e.patch";
-      hash = "sha256-vAVVpTwt49lGHu2YopR1X68v5LwFOjUYuSC4ucBpFGg=";
-      relative = "projects/rocblas";
-    })
-  ];
+  env.CXXFLAGS = "-fopenmp -I${lib.getDev boost}/include -I${hipblas-common}/include -I${roctracer}/include";
 
-  # Pass $NIX_BUILD_CORES to Tensile
-  postPatch = ''
-    substituteInPlace cmake/build-options.cmake \
-      --replace-fail 'Tensile_CPU_THREADS ""' 'Tensile_CPU_THREADS "$ENV{NIX_BUILD_CORES}"'
-  ''
-  # Workaround: libblis detection uses broken absolute paths
-  # TODO: upstream a proper fix
-  + ''
-    substituteInPlace clients/CMakeLists.txt \
-      --replace-fail "if ( NOT WIN32 )" "if(OFF)" \
-      --replace-fail "else() # WIN32" "elseif(OFF)"
-  ''
-  # Fixes sh: line 1: /usr/bin/diff: No such file or directory
-  # /build/source/clients/gtest/../include/testing_logging.hpp:1117: Failure
-  + lib.optionalString buildTests ''
-    substituteInPlace clients/include/testing_logging.hpp \
-      --replace-fail "/usr/bin/diff" "${lib.getExe' diffutils "diff"}"
-  '';
+  # Fails to link tests with undefined symbol: cblas_*
+  env.LDFLAGS =
+    "-Wl,--as-needed -lzstd" + lib.optionalString (buildTests || buildBenchmarks) " -lcblas";
+
+  env.TENSILE_ROCM_ASSEMBLER_PATH = "${stdenv.cc}/bin/clang++";
 
   postInstall =
     # tensile isn't needed at runtime and pulls in ~400MB of python deps
@@ -190,19 +192,20 @@ stdenv.mkDerivation (finalAttrs: {
       fi
     '';
 
+  enableParallelBuilding = true;
+  requiredSystemFeatures = [ "big-parallel" ];
+  sourceRoot = "${finalAttrs.src.name}/projects/rocblas";
+
   passthru = {
     amdgpu_targets = gpuTargets';
     updateScript = rocmUpdateScript { inherit finalAttrs; };
   };
 
-  enableParallelBuilding = true;
-  requiredSystemFeatures = [ "big-parallel" ];
-
   meta = {
     description = "BLAS implementation for ROCm platform";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/rocblas";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

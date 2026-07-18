@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   libconfig,
   lxqt-build-tools,
   pkg-config,
@@ -10,7 +11,6 @@
   qttools,
   qtx11extras,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,6 +23,11 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-GNS0GdkQOEFQHCeXFVNDdT35KCRhfwmkL78tpY71mz0=";
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -43,20 +48,15 @@ stdenv.mkDerivation rec {
       --replace-fail "DESTINATION \"\''${LXQT_ETC_XDG_DIR}" "DESTINATION \"etc/xdg"
   '';
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "https://github.com/lxqt/compton-conf";
     description = "GUI configuration tool for compton X composite manager";
-    mainProgram = "compton-conf";
+    homepage = "https://github.com/lxqt/compton-conf";
     license = lib.licenses.lgpl21Plus;
     platforms = with lib.platforms; unix;
+    mainProgram = "compton-conf";
+    broken = stdenv.hostPlatform.isDarwin;
     teams = [ lib.teams.lxqt ];
   };
 }

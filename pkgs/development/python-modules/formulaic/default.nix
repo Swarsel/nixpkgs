@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   interface-meta,
   narwhals,
   numpy,
   pandas,
+  polars,
+  pyarrow,
+  pytestCheckHook,
   scipy,
+  sympy,
   typing-extensions,
   wrapt,
-  pyarrow,
-  polars,
-  sympy,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "formulaic";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matthewwardrop";
@@ -31,6 +30,12 @@ buildPythonPackage rec {
 
   # project uses a version-file that is not present in tagged releases
   env.SETUPTOOLS_SCM_PRETEND_VERSION = version;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.arrow
+  ++ optional-dependencies.calculus;
 
   build-system = [
     hatchling
@@ -49,16 +54,11 @@ buildPythonPackage rec {
 
   optional-dependencies = {
     arrow = [ pyarrow ];
-    polars = [ polars ];
     calculus = [ sympy ];
+    polars = [ polars ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.arrow
-  ++ optional-dependencies.calculus;
-
+  pyproject = true;
   pythonImportsCheck = [ "formulaic" ];
 
   meta = {

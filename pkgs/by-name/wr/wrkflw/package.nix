@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  git,
-  openssl,
   docker,
+  git,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "wrkflw";
@@ -21,16 +21,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-2k2U90Sqe0AOmOMDfy9CPwlHx6pACZ4dKNO7P5IdRvo=";
   };
 
-  cargoHash = "sha256-fp+JFrIcnWXA9SyyVrjX/0nJdLnbySAN0c1VrTeRmMA=";
-
   nativeBuildInputs = [
     pkg-config
     git
   ];
+
   buildInputs = [
     openssl
     docker
   ];
+
+  cargoHash = "sha256-fp+JFrIcnWXA9SyyVrjX/0nJdLnbySAN0c1VrTeRmMA=";
 
   # Prepare the necessary environment for the tests
   preCheck = ''
@@ -40,11 +41,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
+
   __darwinAllowLocalNetworking = true;
+
   sandboxProfile = ''
     (allow mach-lookup
       (global-name "com.apple.SystemConfiguration.configd")
@@ -58,11 +62,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/bahdotsh/wrkflw";
     changelog = "https://github.com/bahdotsh/wrkflw/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       da157
       FKouhai
       tebriel
     ];
+
     mainProgram = "wrkflw";
   };
 })

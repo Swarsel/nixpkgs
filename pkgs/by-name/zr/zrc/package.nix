@@ -32,8 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Edd12321/zrc";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "zrc";
     platforms = lib.platforms.all;
+    mainProgram = "zrc";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

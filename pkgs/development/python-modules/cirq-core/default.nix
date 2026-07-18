@@ -1,45 +1,40 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   attrs,
+  buildPythonPackage,
   duet,
+  # tests
+  freezegun,
   matplotlib,
   networkx,
   numpy,
+  opt-einsum,
   pandas,
+  ply,
+  pytest-asyncio,
+  pytest-benchmark,
+  pytestCheckHook,
   requests,
   scipy,
+  # build-system
+  setuptools,
   sortedcontainers,
   sympy,
   tqdm,
   typing-extensions,
   autoray ? null,
-  opt-einsum,
-  ply,
   pylatex ? null,
   pyquil ? null,
   quimb ? null,
-
-  # tests
-  freezegun,
-  pytest-asyncio,
-  pytest-benchmark,
-  pytestCheckHook,
-
   withContribRequires ? false,
 }:
 
 buildPythonPackage rec {
   pname = "cirq-core";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "quantumlib";
@@ -48,9 +43,12 @@ buildPythonPackage rec {
     hash = "sha256-OAyBYzMEFyVMlxN5UjrKk1x2rSayLyAIAC5h96JeqK0=";
   };
 
-  sourceRoot = "${src.name}/${pname}";
-
-  pythonRelaxDeps = [ "matplotlib" ];
+  nativeCheckInputs = [
+    freezegun
+    pytest-asyncio
+    pytest-benchmark
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -77,13 +75,6 @@ buildPythonPackage rec {
     quimb
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    pytest-asyncio
-    pytest-benchmark
-    pytestCheckHook
-  ];
-
   disabledTestPaths = lib.optionals (!withContribRequires) [
     # Requires external (unpackaged) libraries, so untested
     "cirq/contrib/"
@@ -104,11 +95,16 @@ buildPythonPackage rec {
     "test_scalar_division"
   ];
 
+  pyproject = true;
+  pythonRelaxDeps = [ "matplotlib" ];
+  sourceRoot = "${src.name}/${pname}";
+
   meta = {
     description = "Framework for creating, editing, and invoking Noisy Intermediate Scale Quantum (NISQ) circuits";
     homepage = "https://github.com/quantumlib/cirq";
     changelog = "https://github.com/quantumlib/Cirq/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fab
     ];

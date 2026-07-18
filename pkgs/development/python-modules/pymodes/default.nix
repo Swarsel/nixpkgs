@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   hatchling,
   numpy,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pymodes";
   version = "2.21.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "junzis";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Tla5hJ7J/3R4r4fTQMUIpY+QGvLRuNMZfWU0RsAiuk0=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     cython
@@ -33,8 +34,7 @@ buildPythonPackage rec {
     pyzmq
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyModeS" ];
 
   meta = {

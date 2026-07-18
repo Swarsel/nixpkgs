@@ -1,10 +1,10 @@
 {
   lib,
-  melpaBuild,
-  fetchFromGitHub,
-  rustPlatform,
   stdenv,
+  fetchFromGitHub,
+  melpaBuild,
   nix-update-script,
+  rustPlatform,
 }:
 
 let
@@ -23,20 +23,19 @@ let
 
     cargoHash = "sha256-mjR8PehbhY1o/5L2l/OMh/NwjjmQXErPHh00cAD94pw=";
 
-    sourceRoot = "${finalAttrs.src.name}/core";
-
     postInstall = ''
       pushd $out/lib
       mv --verbose libtsc_dyn${libExt} tsc-dyn${libExt}
       echo -n $version > DYN-VERSION
       popd
     '';
+
+    sourceRoot = "${finalAttrs.src.name}/core";
   });
 in
 melpaBuild {
-  pname = "tsc";
   inherit (tsc-dyn) version src;
-
+  pname = "tsc";
   files = ''("core/*.el" "${tsc-dyn}/lib/*")'';
 
   passthru = {

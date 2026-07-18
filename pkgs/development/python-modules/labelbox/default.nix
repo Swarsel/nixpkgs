@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   geojson,
   google-api-core,
   hatchling,
@@ -42,11 +42,15 @@ let
 
   lbox-clients = buildPythonPackage {
     inherit src version pyproject;
-
     pname = "lbox-clients";
+    doCheck = true;
 
-    sourceRoot = "${src.name}/libs/lbox-clients";
+    nativeCheckInputs = [
+      pytestCheckHook
+      pytest-cov-stub
+    ];
 
+    __darwinAllowLocalNetworking = true;
     build-system = [ hatchling ];
 
     dependencies = [
@@ -54,28 +58,26 @@ let
       requests
     ];
 
-    nativeCheckInputs = [
-      pytestCheckHook
-      pytest-cov-stub
-    ];
-
-    doCheck = true;
-
-    __darwinAllowLocalNetworking = true;
+    sourceRoot = "${src.name}/libs/lbox-clients";
   };
 in
 buildPythonPackage rec {
   inherit src version pyproject;
-
   pname = "labelbox";
+  doCheck = true;
 
-  sourceRoot = "${src.name}/libs/labelbox";
+  nativeCheckInputs = [
+    nbconvert
+    nbformat
+    pytest-cov-stub
+    pytest-order
+    pytest-rerunfailures
+    pytest-xdist
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.data;
 
-  pythonRelaxDeps = [
-    "mypy"
-    "python-dateutil"
-  ];
-
+  __darwinAllowLocalNetworking = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -89,6 +91,14 @@ buildPythonPackage rec {
     geojson
     mypy
     pyyaml
+  ];
+
+  disabledTestPaths = [
+    # Requires network access
+    "tests/integration"
+    # Missing requirements
+    "tests/data"
+    "tests/unit/test_label_data_type.py"
   ];
 
   optional-dependencies = {
@@ -105,30 +115,14 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    nbconvert
-    nbformat
-    pytest-cov-stub
-    pytest-order
-    pytest-rerunfailures
-    pytest-xdist
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.data;
+  pythonImportsCheck = [ "labelbox" ];
 
-  disabledTestPaths = [
-    # Requires network access
-    "tests/integration"
-    # Missing requirements
-    "tests/data"
-    "tests/unit/test_label_data_type.py"
+  pythonRelaxDeps = [
+    "mypy"
+    "python-dateutil"
   ];
 
-  doCheck = true;
-
-  __darwinAllowLocalNetworking = true;
-
-  pythonImportsCheck = [ "labelbox" ];
+  sourceRoot = "${src.name}/libs/labelbox";
 
   meta = {
     description = "Platform API for LabelBox";

@@ -1,27 +1,35 @@
 {
   lib,
-  mkCoqDerivation,
-  which,
   coq,
   metacoq,
+  mkCoqDerivation,
+  which,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "RustExtraction";
-  repo = "coq-rust-extraction";
-  owner = "AU-COBRA";
-  domain = "github.com";
-
   inherit version;
+  pname = "RustExtraction";
+
+  postPatch = ''
+    patchShebangs ./process_extraction.sh
+    patchShebangs ./tests/process-extraction-examples.sh
+  '';
+
+  propagatedBuildInputs = [
+    coq.ocamlPackages.findlib
+    metacoq
+  ];
+
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
       inherit (lib.versions) range;
     in
@@ -36,26 +44,17 @@ mkCoqDerivation {
       ]
       null;
 
+  domain = "github.com";
+  mlPlugin = true;
+  owner = "AU-COBRA";
   release."0.1.0".hash = "sha256:+Of/DP2Vjsa7ASKswjlvqqhcmDhC9WrozridedNZQkY=";
   release."0.1.1".hash = "sha256:CPZ5J9knJ1aYoQ7RQN8YFSpxqJXjgQaxIA4F8G6X4tM=";
-
   releaseRev = v: "v${v}";
-
-  propagatedBuildInputs = [
-    coq.ocamlPackages.findlib
-    metacoq
-  ];
-
-  postPatch = ''
-    patchShebangs ./process_extraction.sh
-    patchShebangs ./tests/process-extraction-examples.sh
-  '';
-
-  mlPlugin = true;
+  repo = "coq-rust-extraction";
 
   meta = {
     description = "Framework for extracting Coq programs to Rust";
-    maintainers = with lib.maintainers; [ _4ever2 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ _4ever2 ];
   };
 }

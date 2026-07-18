@@ -12,20 +12,23 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "lzip";
   version = "1.26";
-  outputs = [
-    "out"
-    "man"
-    "info"
-  ];
 
   src = fetchurl {
     url = "mirror://savannah/lzip/lzip-${finalAttrs.version}.tar.gz";
     hash = "sha256-ZBzzCWFSXL47NAzIg0NsiFTp9QMvRZ9ETeR4K2IeZXI=";
   };
 
+  outputs = [
+    "out"
+    "man"
+    "info"
+  ];
+
   patches = lib.optionals stdenv.hostPlatform.isMinGW [
     ./mingw-install-exe-file.patch
   ];
+
+  strictDeps = true;
 
   configureFlags = [
     "CPPFLAGS=-DNDEBUG"
@@ -34,15 +37,13 @@ stdenv.mkDerivation (finalAttrs: {
     "CXX=${stdenv.cc.targetPrefix}c++"
   ];
 
-  setupHook = ./lzip-setup-hook.sh;
-
   doCheck = true;
   enableParallelBuilding = true;
-  strictDeps = true;
+  setupHook = ./lzip-setup-hook.sh;
 
   meta = {
-    homepage = "https://www.nongnu.org/lzip/lzip.html";
     description = "Lossless data compressor based on the LZMA algorithm";
+    homepage = "https://www.nongnu.org/lzip/lzip.html";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ vlaci ];
     platforms = lib.platforms.all;

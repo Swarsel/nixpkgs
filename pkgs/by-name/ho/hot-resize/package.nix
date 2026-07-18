@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  makeWrapper,
   btrfs-progs,
   cryptsetup,
   e2fsprogs,
-  util-linux,
-  xfsprogs,
-  versionCheckHook,
+  makeWrapper,
   nix-update-script,
+  rustPlatform,
+  util-linux,
+  versionCheckHook,
+  xfsprogs,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,11 +24,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-TMLtU2c5jkZEc14rII/+I1GtUzBnnZgPyPUgghqs7sM=";
   };
 
-  cargoHash = "sha256-z9jWAGhSjYFQ8EhK0V4JsxToLYbEB4TJvhJJfUTGZS0=";
-
   nativeBuildInputs = [
     makeWrapper
   ];
+
+  cargoHash = "sha256-z9jWAGhSjYFQ8EhK0V4JsxToLYbEB4TJvhJJfUTGZS0=";
 
   postInstall = ''
     wrapProgram $out/bin/hot-resize \
@@ -43,12 +43,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       }
   '';
 
-  __structuredAttrs = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
 
   passthru = {
     updateScript = nix-update-script { };

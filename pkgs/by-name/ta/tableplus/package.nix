@@ -1,6 +1,6 @@
 {
-  callPackage,
   stdenv,
+  callPackage,
 }:
 
 if stdenv.hostPlatform.isDarwin then

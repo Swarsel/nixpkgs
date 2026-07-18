@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
-  buildFHSEnv,
-  appimageTools,
   fetchurl,
+  appimageTools,
+  buildFHSEnv,
   desktop-file-utils,
   dpkg,
-  runScript ? "bitcometd",
-  writeShellScript,
   nix-update,
+  stdenvNoCC,
+  writeShellScript,
+  runScript ? "bitcometd",
 }:
 
 let
@@ -16,16 +16,18 @@ let
   version = "2.21.2";
 
   meta = {
-    homepage = "https://www.bitcomet.com";
     description = "BitTorrent download client";
-    mainProgram = "bitcometd";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://www.bitcomet.com";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
-    maintainers = [ ];
+
+    mainProgram = "bitcometd";
   };
 
   bitcomet = stdenvNoCC.mkDerivation {
@@ -38,15 +40,16 @@ let
           attrs.${stdenvNoCC.hostPlatform.system}
             or (throw "Unsupported system: ${stdenvNoCC.hostPlatform.system}");
         arch = selectSystem {
-          x86_64-linux = "x86_64";
           aarch64-linux = "arm64";
+          x86_64-linux = "x86_64";
         };
       in
       fetchurl {
         url = "https://download.bitcomet.com/linux/${arch}/BitComet-${version}-${arch}.deb";
+
         hash = selectSystem {
-          x86_64-linux = "sha256-qHPr4G921W1Pl7n0Wv98yLRbsAkJBrOcyg9kHHjtBGc=";
           aarch64-linux = "sha256-VC/dvAGmhqlmZT5XB41x/fTGvMZjYCuz/tSp9MYFUHo=";
+          x86_64-linux = "sha256-qHPr4G921W1Pl7n0Wv98yLRbsAkJBrOcyg9kHHjtBGc=";
         };
       };
 
@@ -71,17 +74,14 @@ let
 in
 buildFHSEnv {
   inherit pname version meta;
-
   executableName = "bitcometd";
-
-  runScript = "bitcometd";
-
-  targetPkgs = pkgs: [ bitcomet ] ++ appimageTools.defaultFhsEnvArgs.targetPkgs pkgs;
-
   multiPkgs = appimageTools.defaultFhsEnvArgs.multiPkgs;
+  runScript = "bitcometd";
+  targetPkgs = pkgs: [ bitcomet ] ++ appimageTools.defaultFhsEnvArgs.targetPkgs pkgs;
 
   passthru = {
     inherit bitcomet;
+
     updateScript = writeShellScript "update-bitcomet" ''
       latestVersion=$(curl --fail --silent https://www.cometbbs.com/t/linux%E5%86%85%E6%B5%8B%E7%89%88/88604 | grep -oP 'BitComet-\K[0-9]+\.[0-9]+\.[0-9]+(?=-x86_64\.deb)' | head -n1)
       ${lib.getExe nix-update} pkgsCross.gnu64.bitcomet.bitcomet --version $latestVersion

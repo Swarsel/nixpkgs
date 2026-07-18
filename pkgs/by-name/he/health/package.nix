@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  blueprint-compiler,
+  cargo,
+  libadwaita,
+  libsecret,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   rustPlatform,
   rustc,
-  cargo,
-  wrapGAppsHook4,
-  blueprint-compiler,
-  libadwaita,
-  libsecret,
   tinysparql,
-  nix-update-script,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,16 +21,11 @@ stdenv.mkDerivation rec {
   version = "0.95.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "health";
     rev = version;
     hash = "sha256-PrNPprSS98yN8b8yw2G6hzTSaoE65VbsM3q7FVB4mds=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-eR1ZGtTZQNhofFUEjI7IX16sMKPJmAl7aIFfPJukecg=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -56,6 +51,11 @@ stdenv.mkDerivation rec {
     ]
   );
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-eR1ZGtTZQNhofFUEjI7IX16sMKPJmAl7aIFfPJukecg=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -64,8 +64,8 @@ stdenv.mkDerivation rec {
     description = "Health tracking app for the GNOME desktop";
     homepage = "https://apps.gnome.org/app/dev.Cogitri.Health";
     license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.unix;
     mainProgram = "dev.Cogitri.Health";
     teams = [ lib.teams.gnome-circle ];
-    platforms = lib.platforms.unix;
   };
 }

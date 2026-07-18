@@ -1,26 +1,24 @@
 {
-  cmake,
   lib,
-  fetchFromGitHub,
-  ninja,
-  sdl3,
   stdenv,
-  testers,
-  libx11,
-  libGL,
-  nix-update-script,
-
+  fetchFromGitHub,
+  SDL2_gfx,
+  SDL2_image,
+  SDL2_mixer,
+  SDL2_net,
+  SDL2_sound,
   # passthru tests
   SDL2_ttf,
-  SDL2_net,
-  SDL2_gfx,
-  SDL2_sound,
-  SDL2_mixer,
-  SDL2_image,
-  sdl12-compat,
+  cmake,
   ffmpeg,
+  libGL,
+  libx11,
+  ninja,
+  nix-update-script,
   qemu,
-
+  sdl12-compat,
+  sdl3,
+  testers,
   x11Support ? !stdenv.hostPlatform.isAndroid && !stdenv.hostPlatform.isWindows,
 }:
 let
@@ -39,6 +37,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-IKfcF03I+kCewjdEcw7ANd6sCZvjNksIhBfJan9SSUY=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  patches = [
+    ./find-headers.patch
+  ];
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -49,18 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional x11Support libx11;
 
-  checkInputs = [ libGL ];
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  outputBin = "dev";
-
-  # SDL3 is dlopened at runtime, leave it in runpath
-  dontPatchELF = true;
-
   cmakeFlags = [
     (lib.cmakeBool "SDL2COMPAT_TESTS" finalAttrs.finalPackage.doCheck)
     (lib.cmakeFeature "CMAKE_INSTALL_RPATH" (lib.makeLibraryPath [ sdl3' ]))
@@ -69,13 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   # skip timing-based tests as those are flaky
   env.SDL_TESTS_QUICK = 1;
-
   doCheck = true;
-
-  patches = [
-    ./find-headers.patch
-  ];
-  setupHook = ./setup-hook.sh;
+  checkInputs = [ libGL ];
 
   postFixup = ''
     # allow as a drop in replacement for SDL2
@@ -83,10 +73,13 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $dev/lib/pkgconfig/sdl2-compat.pc $dev/lib/pkgconfig/sdl2.pc
   '';
 
+  # SDL3 is dlopened at runtime, leave it in runpath
+  dontPatchELF = true;
+  outputBin = "dev";
+  setupHook = ./setup-hook.sh;
+
   passthru = {
     tests = {
-      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
-
       inherit
         sdl12-compat
         SDL2_ttf
@@ -97,6 +90,8 @@ stdenv.mkDerivation (finalAttrs: {
         SDL2_image
         ffmpeg
         ;
+
+      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     }
     // lib.optionalAttrs stdenv.hostPlatform.isLinux {
       inherit qemu;
@@ -115,14 +110,18 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://libsdl.org";
     changelog = "https://github.com/libsdl-org/sdl2-compat/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.zlib;
+
     maintainers = with lib.maintainers; [
       nadiaholmquist
     ];
-    teams = [ lib.teams.sdl ];
+
     platforms = lib.platforms.all;
+
     pkgConfigModules = [
       "sdl2-compat"
       "sdl2"
     ];
+
+    teams = [ lib.teams.sdl ];
   };
 })

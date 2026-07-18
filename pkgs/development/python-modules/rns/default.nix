@@ -15,13 +15,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "rns";
   version = "1.3.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
+    hash = "sha256-1cHzlJOqm3WrZ7g5l9StW9NX5n6dYp/6KU4xov/eNH0=";
     pname = "rns";
     version = finalAttrs.version;
-    hash = "sha256-1cHzlJOqm3WrZ7g5l9StW9NX5n6dYp/6KU4xov/eNH0=";
   };
 
   patches = [
@@ -30,6 +28,8 @@ buildPythonPackage (finalAttrs: {
     })
   ];
 
+  nativeCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,10 +39,8 @@ buildPythonPackage (finalAttrs: {
     pyserial
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "RNS" ];
-
-  nativeCheckInputs = [ versionCheckHook ];
-
   versionCheckProgram = "${placeholder "out"}/bin/rncp";
 
   meta = {
@@ -50,6 +48,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://reticulum.network";
     changelog = "https://github.com/markqvist/Reticulum/blob/${finalAttrs.version}/Changelog.md";
     license = lib.licenses.reticulum;
+
     maintainers = with lib.maintainers; [
       drupol
       fab

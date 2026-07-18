@@ -11,75 +11,67 @@ in
 {
   options.services.osrm = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
       description = "Enable the OSRM service.";
+      type = lib.types.bool;
     };
 
     address = lib.mkOption {
-      type = lib.types.str;
       default = "0.0.0.0";
       description = "IP address on which the web server will listen.";
-    };
-
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 5000;
-      description = "Port on which the web server will run.";
-    };
-
-    threads = lib.mkOption {
-      type = lib.types.int;
-      default = 4;
-      description = "Number of threads to use.";
+      type = lib.types.str;
     };
 
     algorithm = lib.mkOption {
+      default = "MLD";
+      description = "Algorithm to use for the data. Must be one of CH, CoreCH, MLD";
+
       type = lib.types.enum [
         "CH"
         "CoreCH"
         "MLD"
       ];
-      default = "MLD";
-      description = "Algorithm to use for the data. Must be one of CH, CoreCH, MLD";
+    };
+
+    dataFile = lib.mkOption {
+      description = "Data file location";
+      example = "/var/lib/osrm/berlin-latest.osrm";
+      type = lib.types.path;
     };
 
     extraFlags = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+      description = "Extra command line arguments passed to osrm-routed";
+
       example = [
         "--max-table-size 1000"
         "--max-matching-size 1000"
       ];
-      description = "Extra command line arguments passed to osrm-routed";
+
+      type = lib.types.listOf lib.types.str;
     };
 
-    dataFile = lib.mkOption {
-      type = lib.types.path;
-      example = "/var/lib/osrm/berlin-latest.osrm";
-      description = "Data file location";
+    port = lib.mkOption {
+      default = 5000;
+      description = "Port on which the web server will run.";
+      type = lib.types.port;
+    };
+
+    threads = lib.mkOption {
+      default = 4;
+      description = "Number of threads to use.";
+      type = lib.types.int;
     };
 
   };
 
   config = lib.mkIf cfg.enable {
 
-    users.users.osrm = {
-      group = config.users.users.osrm.name;
-      description = "OSRM user";
-      createHome = false;
-      isSystemUser = true;
-    };
-
-    users.groups.osrm = { };
-
     systemd.services.osrm = {
-      description = "OSRM service";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "OSRM service";
 
       serviceConfig = {
-        User = config.users.users.osrm.name;
         ExecStart = ''
           ${pkgs.osrm-backend}/bin/osrm-routed \
             --ip ${cfg.address} \
@@ -89,7 +81,20 @@ in
             ${toString cfg.extraFlags} \
             ${cfg.dataFile}
         '';
+
+        User = config.users.users.osrm.name;
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.osrm = { };
+
+    users.users.osrm = {
+      createHome = false;
+      description = "OSRM user";
+      group = config.users.users.osrm.name;
+      isSystemUser = true;
     };
   };
 }

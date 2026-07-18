@@ -1,12 +1,12 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
-  vips,
   lib,
-  pkg-config,
+  fetchFromGitHub,
+  buildNpmPackage,
   jq,
   makeWrapper,
   nix-update-script,
+  pkg-config,
+  vips,
 }:
 buildNpmPackage rec {
   pname = "factoriolab";
@@ -19,13 +19,7 @@ buildNpmPackage rec {
     hash = "sha256-9RmCdU2LertIZ8crZZGHQbiev6T2dIcWkuAczQyIrJg=";
     fetchLFS = true;
   };
-  buildInputs = [ vips ];
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-  ];
 
-  npmDepsHash = "sha256-FX9zxq3kIQ5nxEPW57X53novtCFBPV5w9jg882EC2Lo=";
   # By default angular tries to optimize fonts by inlining them
   # which needs internet access during building to download said fonts.
   # Internet access during build would necessitate turning this into a fixed output derivation
@@ -36,6 +30,14 @@ buildNpmPackage rec {
     mv -f angular.json.new angular.json
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ];
+
+  buildInputs = [ vips ];
+  npmDepsHash = "sha256-FX9zxq3kIQ5nxEPW57X53novtCFBPV5w9jg882EC2Lo=";
+
   installPhase = ''
     runHook preInstall
 
@@ -45,12 +47,13 @@ buildNpmPackage rec {
 
     runHook postInstall
   '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Angular-based calculator for factory games like Factorio and Dyson Sphere Program";
     homepage = "https://github.com/factoriolab/factoriolab";
     changelog = "https://github.com/factoriolab/factoriolab/releases/tag/v${version}";
-    description = "Angular-based calculator for factory games like Factorio and Dyson Sphere Program";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ patrickdag ];
   };

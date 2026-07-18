@@ -2,13 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-
   cmake,
-  pkg-config,
-
   fmt,
   lzo,
+  nix-update-script,
+  pkg-config,
   zlib,
   zstd,
 }:
@@ -43,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/maharmstone/ntfs2btrfs";
     license = with lib.licenses; [ gpl2Only ];
     maintainers = with lib.maintainers; [ j1nxie ];
-    mainProgram = "ntfs2btrfs";
     platforms = lib.platforms.linux;
+    mainProgram = "ntfs2btrfs";
   };
 })

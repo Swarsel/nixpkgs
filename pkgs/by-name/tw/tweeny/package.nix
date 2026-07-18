@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
 }:
@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Modern C++ tweening library";
-    license = lib.licenses.mit;
     homepage = "http://mobius3.github.io/tweeny";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.doronbehar ];
     platforms = with lib.platforms; darwin ++ linux;
   };

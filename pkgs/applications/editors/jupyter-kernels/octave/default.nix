@@ -1,11 +1,11 @@
 {
   stdenv,
   callPackage,
-  runCommand,
+  imagemagick,
   makeWrapper,
   octave,
-  imagemagick,
   python3,
+  runCommand,
 }:
 
 # Jupyter console:
@@ -22,10 +22,25 @@ let
 in
 
 rec {
+  definition = {
+    argv = [
+      "${launcher}/bin/octave-kernel"
+      "-f"
+      "{connection_file}"
+    ];
+
+    displayName = "Octave";
+    language = "octave";
+    logo32 = sizedLogo "32";
+    logo64 = sizedLogo "64";
+  };
+
   launcher =
     runCommand "octave-kernel-launcher"
       {
         inherit octave;
+        nativeBuildInputs = [ makeWrapper ];
+
         python = python3.withPackages (ps: [
           ps.traitlets
           ps.jupyter-core
@@ -33,7 +48,6 @@ rec {
           ps.metakernel
           kernel
         ]);
-        nativeBuildInputs = [ makeWrapper ];
       }
       ''
         mkdir -p $out/bin
@@ -46,31 +60,17 @@ rec {
   sizedLogo =
     size:
     stdenv.mkDerivation {
-      pname = "octave-logo-${size}x${size}.png";
       inherit (octave) version;
-
+      pname = "octave-logo-${size}x${size}.png";
       src = octave.src;
-
-      nativeBuildInputs = [ imagemagick ];
       strictDeps = true;
-
-      dontConfigure = true;
-      dontInstall = true;
+      nativeBuildInputs = [ imagemagick ];
 
       buildPhase = ''
         magick ./libgui/src/icons/octave/128x128/logo.png -resize ${size}x${size} $out
       '';
-    };
 
-  definition = {
-    displayName = "Octave";
-    argv = [
-      "${launcher}/bin/octave-kernel"
-      "-f"
-      "{connection_file}"
-    ];
-    language = "octave";
-    logo32 = sizedLogo "32";
-    logo64 = sizedLogo "64";
-  };
+      dontConfigure = true;
+      dontInstall = true;
+    };
 }

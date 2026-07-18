@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  fetchpatch,
-  pkg-config,
   boost,
   doxygen,
+  fetchpatch,
+  fetchzip,
   librevenge,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libpagemaker";
@@ -17,19 +17,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fAtCNbP0fI2LxTOPPh5zbdF50wWhsrfSoNFPVU9tBas=";
   };
 
+  patches = [
+    (fetchpatch {
+      hash = "sha256-yZbiLAZHgzygGetiuoKiQS010pRfZTi2CbAAxQdCZbs=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/libpagemaker/-/raw/main/libpagemaker-0.0.4-const-ref-exception.patch?ref_type=heads";
+    })
+  ];
+
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     boost
     doxygen
     librevenge
-  ];
-
-  patches = [
-    (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/libpagemaker/-/raw/main/libpagemaker-0.0.4-const-ref-exception.patch?ref_type=heads";
-      hash = "sha256-yZbiLAZHgzygGetiuoKiQS010pRfZTi2CbAAxQdCZbs=";
-    })
   ];
 
   meta = {

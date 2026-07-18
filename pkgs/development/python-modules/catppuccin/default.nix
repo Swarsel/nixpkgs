@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   matplotlib,
   pygments,
-  rich,
   pytestCheckHook,
+  rich,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "catppuccin";
   version = "2.5.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "catppuccin";
@@ -27,6 +25,11 @@ buildPythonPackage (finalAttrs: {
     ./matplotlib-3.11.patch
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
   build-system = [ hatchling ];
 
   optional-dependencies = {
@@ -35,20 +38,17 @@ buildPythonPackage (finalAttrs: {
     rich = [ rich ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "catppuccin" ];
 
   meta = {
     description = "Soothing pastel theme for Python";
     homepage = "https://github.com/catppuccin/python";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fufexan
       tomasajt
     ];
-    license = lib.licenses.mit;
   };
 })

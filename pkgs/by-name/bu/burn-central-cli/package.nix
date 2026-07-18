@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  zlib,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,11 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  buildAndTestSubdir = "crates/burn-central-cli";
-
-  cargoHash = "sha256-c0DfH5wtm/aiK8Mcf7xqVqnFzByMKkbspF1reeGZNJw=";
 
   nativeBuildInputs = [
     pkg-config
@@ -36,21 +31,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-c0DfH5wtm/aiK8Mcf7xqVqnFzByMKkbspF1reeGZNJw=";
+  __structuredAttrs = true;
+  buildAndTestSubdir = "crates/burn-central-cli";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command-line tool for interacting with Burn Central";
+
     longDescription = ''
       The Burn Central CLI (burn) is the command-line tool for interacting
       with Burn Central, the centralized platform for experiment tracking,
       model sharing, and deployment for Burn users.
     '';
+
     homepage = "https://github.com/tracel-ai/tracel-cli";
     changelog = "https://github.com/tracel-ai/tracel-cli/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ kilyanni ];
     mainProgram = "burn";
   };

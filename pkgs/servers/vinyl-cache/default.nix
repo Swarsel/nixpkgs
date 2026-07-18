@@ -3,19 +3,19 @@
   stdenv,
   fetchurl,
   buildPackages,
-  pcre2,
+  coreutils,
+  groff,
   jemalloc,
+  libedit,
   libunwind,
   libxslt,
-  groff,
-  ncurses,
-  pkg-config,
-  readline,
-  libedit,
-  coreutils,
-  python3,
   makeWrapper,
+  ncurses,
   nixosTests,
+  pcre2,
+  pkg-config,
+  python3,
+  readline,
 }:
 
 let
@@ -36,19 +36,33 @@ let
   stateDir = "${stateDirPrefix}/vinyld";
   generic =
     {
-      version,
       hash,
+      version,
     }:
     stdenv.mkDerivation (finalAttrs: {
-      pname = "vinyl-cache";
       inherit version;
+      pname = "vinyl-cache";
 
       src = fetchurl {
-        url = "https://vinyl-cache.org/downloads/${finalAttrs.pname}-${version}.tgz";
         inherit hash;
+        url = "https://vinyl-cache.org/downloads/${finalAttrs.pname}-${version}.tgz";
       };
 
-      __structuredAttrs = true;
+      outputs = [
+        "out"
+        "dev"
+      ]
+      ++ lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+        "man"
+        "vhp_hufdec_h" # only used for cross compilation
+      ];
+
+      patches = [ ./0001-Makefile-do-not-create-VINYL_STATE_DIR.patch ];
+
+      postPatch = ''
+        substituteInPlace bin/vinyltest/vtest2/src/vtc_main.c --replace-fail /bin/rm "${coreutils}/bin/rm"
+      '';
+
       strictDeps = true;
 
       nativeBuildInputs = [
@@ -80,11 +94,8 @@ let
         "--with-statedir=${stateDirPrefix}"
       ];
 
-      patches = [ ./0001-Makefile-do-not-create-VINYL_STATE_DIR.patch ];
-
-      postPatch = ''
-        substituteInPlace bin/vinyltest/vtest2/src/vtc_main.c --replace-fail /bin/rm "${coreutils}/bin/rm"
-      '';
+      # https://github.com/varnishcache/varnish-cache/issues/1875
+      env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isi686 "-fexcess-precision=standard";
 
       postConfigure = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
         # prevent cache invalidation
@@ -111,33 +122,25 @@ let
         cp bin/vinyld/vhp_hufdec.h $vhp_hufdec_h
       '';
 
-      # https://github.com/varnishcache/varnish-cache/issues/1875
-      env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isi686 "-fexcess-precision=standard";
-
-      outputs = [
-        "out"
-        "dev"
-      ]
-      ++ lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
-        "man"
-        "vhp_hufdec_h" # only used for cross compilation
-      ];
+      __structuredAttrs = true;
 
       passthru = {
-        python = python3;
-        tests = nixosTests."vinyl-cache_${lib.versions.major version}";
         # pass-thru compile-time value for usage in module
         inherit stateDir;
+        python = python3;
+        tests = nixosTests."vinyl-cache_${lib.versions.major version}";
       };
 
       meta = {
         description = "Web application accelerator also known as a caching HTTP reverse proxy";
         homepage = "https://vinyl-cache.org";
         license = lib.licenses.bsd2;
+
         maintainers = [
           lib.maintainers.leona
           lib.maintainers.osnyx
         ];
+
         platforms = lib.platforms.unix;
         broken = stdenv.hostPlatform.isDarwin;
       };

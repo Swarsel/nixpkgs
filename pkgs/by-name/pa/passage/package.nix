@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  replaceVars,
   age,
-  unixtools,
   coreutils,
   findutils,
   gnugrep,
   gnused,
-  qrencode ? null,
-  wl-clipboard ? null,
+  makeBinaryWrapper,
+  replaceVars,
+  unixtools,
   git ? null,
-  xclip ? null,
+  qrencode ? null,
   # Used to pretty-print list of all stored passwords, but is not needed to fetch
   # or store password by its name. Most users would want this dependency.
   tree ? null,
+  wl-clipboard ? null,
+  xclip ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,6 +39,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeBinaryWrapper ];
 
+  # Using $0 is bad, it causes --help to mention ".passage-wrapped".
+  postInstall = ''
+    substituteInPlace $out/bin/passage --replace 'PROGRAM="''${0##*/}"' 'PROGRAM=passage'
+    wrapProgram $out/bin/passage --prefix PATH : $extraPath --argv0 $pname
+  '';
+
   extraPath = lib.makeBinPath (
     [
       age
@@ -57,12 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  # Using $0 is bad, it causes --help to mention ".passage-wrapped".
-  postInstall = ''
-    substituteInPlace $out/bin/passage --replace 'PROGRAM="''${0##*/}"' 'PROGRAM=passage'
-    wrapProgram $out/bin/passage --prefix PATH : $extraPath --argv0 $pname
-  '';
-
   installFlags = [
     "PREFIX=$(out)"
     "WITH_ALLCOMP=yes"
@@ -70,14 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Stores, retrieves, generates, and synchronizes passwords securely";
-    homepage = "https://github.com/FiloSottile/passage";
-    license = lib.licenses.gpl2Plus;
-    maintainers = with lib.maintainers; [
-      kaction
-      ma27
-    ];
-    platforms = lib.platforms.unix;
-    mainProgram = "passage";
 
     longDescription = ''
       passage is a fork of password-store (https://www.passwordstore.org) that uses
@@ -88,5 +80,16 @@ stdenv.mkDerivation (finalAttrs: {
       password store, allowing the user to add, remove, edit and synchronize
       passwords.
     '';
+
+    homepage = "https://github.com/FiloSottile/passage";
+    license = lib.licenses.gpl2Plus;
+
+    maintainers = with lib.maintainers; [
+      kaction
+      ma27
+    ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "passage";
   };
 })

@@ -13,8 +13,8 @@
 #   '';
 
 stdenv.mkDerivation {
-  version = "2020-11-15";
   pname = "zsh-command-time";
+  version = "2020-11-15";
 
   src = fetchFromGitHub {
     owner = "popstas";
@@ -24,17 +24,18 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
-  dontUnpack = true;
 
   installPhase = ''
     install -Dm0444 $src/command-time.plugin.zsh --target-directory=$out/share/zsh/plugins/command-time
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Plugin that output time: xx after long commands";
     homepage = "https://github.com/popstas/zsh-command-time";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ lassulus ];
+    platforms = lib.platforms.unix;
   };
 }

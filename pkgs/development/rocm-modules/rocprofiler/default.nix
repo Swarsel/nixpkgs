@@ -2,30 +2,34 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  symlinkJoin,
-  cmake,
+  aqlprofile,
   clang,
   clr,
-  aqlprofile,
-  rocm-core,
-  rocm-runtime,
-  rocm-device-libs,
-  roctracer,
-  rocdbgapi,
-  numactl,
+  cmake,
+  elfutils,
+  gtest,
   libpciaccess,
   libxml2,
   llvm,
-  elfutils,
   mpi,
-  gtest,
+  numactl,
   python3Packages,
+  rocdbgapi,
+  rocm-core,
+  rocm-device-libs,
+  rocm-runtime,
+  rocmUpdateScript,
+  roctracer,
+  symlinkJoin,
   gpuTargets ? clr.gpuTargets,
 }:
 
 let
   rocmtoolkit-merged = symlinkJoin {
+    postBuild = ''
+      rm -rf $out/nix-support
+    '';
+
     name = "rocmtoolkit-merged";
 
     paths = [
@@ -36,10 +40,6 @@ let
       rocdbgapi
       clr
     ];
-
-    postBuild = ''
-      rm -rf $out/nix-support
-    '';
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -50,14 +50,31 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ROCm";
     repo = "rocm-systems";
     rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-Wo0pymD8LsrdczdIUEEVe5x2Id//KIFkh40kliAQgWo=";
+    fetchSubmodules = true;
+
     sparseCheckout = [
       "projects/rocprofiler"
       "shared"
     ];
-    fetchSubmodules = true;
-    hash = "sha256-Wo0pymD8LsrdczdIUEEVe5x2Id//KIFkh40kliAQgWo=";
   };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocprofiler";
+
+  postPatch = ''
+    patchShebangs .
+
+    substituteInPlace cmake_modules/rocprofiler_utils.cmake \
+      --replace-fail 'function(ROCPROFILER_CHECKOUT_GIT_SUBMODULE)' 'function(ROCPROFILER_CHECKOUT_GIT_SUBMODULE)
+      return()'
+
+    substituteInPlace CMakeLists.txt \
+      --replace-fail 'set(ROCPROFILER_BUILD_TESTS ON)' ""
+
+    substituteInPlace tests-v2/featuretests/profiler/CMakeLists.txt \
+      --replace "--build-id=sha1" "--build-id=sha1 --rocm-path=${clr} --rocm-device-lib-path=${rocm-device-libs}/amdgcn/bitcode"
+
+    substituteInPlace test/CMakeLists.txt \
+      --replace "\''${ROCM_ROOT_DIR}/amdgcn/bitcode" "${rocm-device-libs}/amdgcn/bitcode"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -84,9 +101,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ rocmtoolkit-merged ];
 
-  #HACK: rocprofiler's cmake doesn't add these deps properly
-  env.CXXFLAGS = "-I${libpciaccess}/include -I${numactl.dev}/include -I${rocmtoolkit-merged}/include -I${elfutils.dev}/include -w";
-
   cmakeFlags = [
     "-DCMAKE_MODULE_PATH=${clr}/lib/cmake/hip"
     "-DHIP_ROOT_DIR=${clr}"
@@ -98,22 +112,8 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_INSTALL_INCLUDEDIR=include"
   ];
 
-  postPatch = ''
-    patchShebangs .
-
-    substituteInPlace cmake_modules/rocprofiler_utils.cmake \
-      --replace-fail 'function(ROCPROFILER_CHECKOUT_GIT_SUBMODULE)' 'function(ROCPROFILER_CHECKOUT_GIT_SUBMODULE)
-      return()'
-
-    substituteInPlace CMakeLists.txt \
-      --replace-fail 'set(ROCPROFILER_BUILD_TESTS ON)' ""
-
-    substituteInPlace tests-v2/featuretests/profiler/CMakeLists.txt \
-      --replace "--build-id=sha1" "--build-id=sha1 --rocm-path=${clr} --rocm-device-lib-path=${rocm-device-libs}/amdgcn/bitcode"
-
-    substituteInPlace test/CMakeLists.txt \
-      --replace "\''${ROCM_ROOT_DIR}/amdgcn/bitcode" "${rocm-device-libs}/amdgcn/bitcode"
-  '';
+  #HACK: rocprofiler's cmake doesn't add these deps properly
+  env.CXXFLAGS = "-I${libpciaccess}/include -I${numactl.dev}/include -I${rocmtoolkit-merged}/include -I${elfutils.dev}/include -w";
 
   postInstall = ''
     # Why do these have the executable bit set?
@@ -128,14 +128,15 @@ stdenv.mkDerivation (finalAttrs: {
       --add-needed libhsa-amd-aqlprofile64.so
   '';
 
-  passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
+  sourceRoot = "${finalAttrs.src.name}/projects/rocprofiler";
   passthru.rocmtoolkit-merged = rocmtoolkit-merged;
+  passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "Profiling with perf-counters and derived metrics";
     homepage = "https://github.com/ROCm/rocm-systems/tree/develop/projects/rocprofiler";
     license = with lib.licenses; [ mit ]; # mitx11
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

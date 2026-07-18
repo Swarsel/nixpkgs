@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "mccabe";
   version = "0.7.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ pytest ];
-
   # https://github.com/PyCQA/mccabe/issues/93
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "McCabe checker, plugin for flake8";

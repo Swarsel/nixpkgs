@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   lazarus,
   qmake,
   qtbase,
@@ -12,10 +12,8 @@ let
   qtVersion = lib.versions.major qtbase.version;
 in
 stdenv.mkDerivation {
-  pname = "libqtpas";
   inherit (lazarus) version src;
-
-  sourceRoot = "lazarus/lcl/interfaces/qt${qtVersion}/cbindings";
+  pname = "libqtpas";
 
   postPatch = ''
     substituteInPlace Qt${qtVersion}Pas.pro \
@@ -32,13 +30,16 @@ stdenv.mkDerivation {
   ];
 
   dontWrapQtApps = true;
+  sourceRoot = "lazarus/lcl/interfaces/qt${qtVersion}/cbindings";
 
   meta = {
+    inherit (lazarus.meta) license platforms;
     description = "Free Pascal Qt${qtVersion} binding library";
+
     homepage =
       "https://wiki.freepascal.org/Qt${qtVersion}_Interface"
       + lib.optionalString (qtVersion == "5") "#libqt5pas";
+
     maintainers = with lib.maintainers; [ sikmir ];
-    inherit (lazarus.meta) license platforms;
   };
 }

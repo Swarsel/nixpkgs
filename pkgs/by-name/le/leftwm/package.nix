@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   libx11,
   libxinerama,
+  rustPlatform,
 }:
 
 let
@@ -24,9 +24,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-eH7HuGZnWlXigTaUAc4S00+uOIEVftnBOD8x03KJLaE=";
   };
 
-  cargoHash = "sha256-nFyhpCp8xsYjRl+2bqPfWzq31pM/yYcDuxkWEjjcqwA=";
-
   buildInputs = rpathLibs;
+  cargoHash = "sha256-nFyhpCp8xsYjRl+2bqPfWzq31pM/yYcDuxkWEjjcqwA=";
 
   postInstall = ''
     for p in $out/bin/left*; do
@@ -41,13 +40,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Tiling window manager for the adventurer";
     homepage = "https://github.com/leftwm/leftwm";
+    changelog = "https://github.com/leftwm/leftwm/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       vuimuich
       yanganto
     ];
-    changelog = "https://github.com/leftwm/leftwm/blob/${finalAttrs.version}/CHANGELOG.md";
+
+    platforms = lib.platforms.linux;
     mainProgram = "leftwm";
   };
 })

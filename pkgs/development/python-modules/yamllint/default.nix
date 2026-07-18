@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pathspec,
   pytestCheckHook,
   pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "yamllint";
   version = "1.37.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adrienverge";
@@ -21,14 +20,13 @@ buildPythonPackage rec {
     hash = "sha256-CohqiBoQcgvGVP0Bt6U768BY1aIwh59YRsgzJfaDmP0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
     pyyaml
     pathspec
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # test failure reported upstream: https://github.com/adrienverge/yamllint/issues/373
@@ -43,6 +41,7 @@ buildPythonPackage rec {
     "test_run_with_locale"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "yamllint" ];
 
   meta = {

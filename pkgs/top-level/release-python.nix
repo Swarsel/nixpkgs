@@ -4,21 +4,21 @@
 */
 
 {
-  # The platforms for which we build Nixpkgs.
-  supportedSystems ? [
-    "aarch64-linux"
-    "x86_64-linux"
-  ],
   # Attributes passed to nixpkgs. Don't build packages marked as unfree.
   nixpkgsArgs ? {
+    __allowFileset = false;
+
     config = {
       allowAliases = false;
       allowUnfree = false;
       inHydra = true;
     };
-
-    __allowFileset = false;
   },
+  # The platforms for which we build Nixpkgs.
+  supportedSystems ? [
+    "aarch64-linux"
+    "x86_64-linux"
+  ],
 }:
 
 let
@@ -50,8 +50,6 @@ let
     pkgs-lib-tests = import ../pkgs-lib/tests { inherit pkgs; };
 
     tested = pkgs.releaseTools.aggregate {
-      name = "python-tested";
-      meta.description = "Release-critical packages from the python package sets";
       constituents = [
         jobs.nixos-render-docs.x86_64-linux # Used in nixos manual
         jobs.remarshal_0_17.x86_64-linux # Used in pkgs.formats.yaml_1_1
@@ -62,6 +60,9 @@ let
         jobs.python313Packages.requests.x86_64-linux # Almost ubiquous package
         jobs.python313Packages.sphinx.x86_64-linux # Document creation for many packages
       ];
+
+      name = "python-tested";
+      meta.description = "Release-critical packages from the python package sets";
     };
 
   }

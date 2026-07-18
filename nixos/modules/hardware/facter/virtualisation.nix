@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   options,
   ...
 }:
@@ -10,9 +10,40 @@ let
 in
 {
   options.hardware.facter.detected.virtualisation = {
+    hyperv.enable = lib.mkEnableOption "Enable the Facter Virtualisation Hyper-V module" // {
+      default = report.virtualisation or null == "microsoft";
+      defaultText = "environment dependent";
+    };
+
+    # no virtualisation detected
+    none.enable = lib.mkEnableOption "Enable the Facter Virtualisation None module" // {
+      default = report.virtualisation or null == "none";
+      defaultText = "environment dependent";
+    };
+
+    oracle.enable = lib.mkEnableOption "Enable the Facter Virtualisation Oracle module" // {
+      default = report.virtualisation or null == "oracle";
+      defaultText = "environment dependent";
+    };
+
+    parallels.enable = lib.mkEnableOption "Enable the Facter Virtualisation Parallels module" // {
+      default = report.virtualisation or null == "parallels";
+      defaultText = "environment dependent";
+    };
+
+    qemu.enable = lib.mkEnableOption "Enable the Facter Virtualisation Qemu module" // {
+      default = builtins.elem (report.virtualisation or null) [
+        "qemu"
+        "kvm"
+        "bochs"
+      ];
+
+      defaultText = "environment dependent";
+    };
+
     virtio_scsi.enable = lib.mkEnableOption "Enable the Facter Virtualisation Virtio SCSI module" // {
       default = lib.any (
-        { vendor, device, ... }:
+        { device, vendor, ... }:
         # vendor (0x1af4) Red Hat, Inc.
         (vendor.value or 0) == 6900
         &&
@@ -22,36 +53,36 @@ in
             4168
           ])
       ) (report.hardware.scsi or [ ]);
+
       defaultText = "hardware dependent";
-    };
-    oracle.enable = lib.mkEnableOption "Enable the Facter Virtualisation Oracle module" // {
-      default = report.virtualisation or null == "oracle";
-      defaultText = "environment dependent";
-    };
-    parallels.enable = lib.mkEnableOption "Enable the Facter Virtualisation Parallels module" // {
-      default = report.virtualisation or null == "parallels";
-      defaultText = "environment dependent";
-    };
-    qemu.enable = lib.mkEnableOption "Enable the Facter Virtualisation Qemu module" // {
-      default = builtins.elem (report.virtualisation or null) [
-        "qemu"
-        "kvm"
-        "bochs"
-      ];
-      defaultText = "environment dependent";
-    };
-    hyperv.enable = lib.mkEnableOption "Enable the Facter Virtualisation Hyper-V module" // {
-      default = report.virtualisation or null == "microsoft";
-      defaultText = "environment dependent";
-    };
-    # no virtualisation detected
-    none.enable = lib.mkEnableOption "Enable the Facter Virtualisation None module" // {
-      default = report.virtualisation or null == "none";
-      defaultText = "environment dependent";
     };
   };
 
   config = lib.mkIf config.hardware.facter.enable {
+
+    # virtio & qemu
+    boot.initrd = {
+      availableKernelModules = lib.mkMerge [
+        (lib.mkIf cfg.qemu.enable [
+          "virtio_net"
+          "virtio_pci"
+          "virtio_mmio"
+          "virtio_blk"
+          "9p"
+          "9pnet_virtio"
+        ])
+        (lib.mkIf cfg.virtio_scsi.enable [
+          "virtio_scsi"
+        ])
+      ];
+
+      kernelModules = lib.optionals cfg.qemu.enable [
+        "virtio_balloon"
+        "virtio_console"
+        "virtio_rng"
+        "virtio_gpu"
+      ];
+    };
 
     # KVM support
     boot.kernelModules =
@@ -71,41 +102,18 @@ in
         (lib.mkIf (hasCPUFeature "svm") [ "kvm-amd" ])
       ];
 
-    # virtio & qemu
-    boot.initrd = {
-      kernelModules = lib.optionals cfg.qemu.enable [
-        "virtio_balloon"
-        "virtio_console"
-        "virtio_rng"
-        "virtio_gpu"
-      ];
+    # parallels
+    hardware.parallels.enable = lib.mkIf cfg.parallels.enable (lib.mkDefault true);
 
-      availableKernelModules = lib.mkMerge [
-        (lib.mkIf cfg.qemu.enable [
-          "virtio_net"
-          "virtio_pci"
-          "virtio_mmio"
-          "virtio_blk"
-          "9p"
-          "9pnet_virtio"
-        ])
-        (lib.mkIf cfg.virtio_scsi.enable [
-          "virtio_scsi"
-        ])
-      ];
+    nixpkgs.config = lib.mkIf (!options.nixpkgs.pkgs.isDefined && cfg.parallels.enable) {
+      allowUnfreePackages = [ "prl-tools" ];
     };
 
     virtualisation = {
-      # oracle
-      virtualbox.guest.enable = lib.mkIf cfg.oracle.enable (lib.mkDefault true);
       # hyper-v
       hypervGuest.enable = lib.mkIf cfg.hyperv.enable (lib.mkDefault true);
-    };
-
-    # parallels
-    hardware.parallels.enable = lib.mkIf cfg.parallels.enable (lib.mkDefault true);
-    nixpkgs.config = lib.mkIf (!options.nixpkgs.pkgs.isDefined && cfg.parallels.enable) {
-      allowUnfreePackages = [ "prl-tools" ];
+      # oracle
+      virtualbox.guest.enable = lib.mkIf cfg.oracle.enable (lib.mkDefault true);
     };
   };
 }

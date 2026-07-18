@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mallard-ducktype";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "projectmallard";
@@ -16,8 +15,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-jHjzTBBRBh//bOrdnyCRmZRmpupgDaDRuZGAd75baco=";
   };
-
-  build-system = [ setuptools ];
 
   checkPhase = ''
     runHook preCheck
@@ -27,6 +24,8 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "mallard" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   flit-core,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "boltons";
   version = "25.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mahmoud";
@@ -21,23 +20,22 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-NRjfEKb0doJEtS5GyrF0dJYYr2u+ukogfUmmVnsHAwM=";
       name = "pytest9-compat.patch";
       url = "https://github.com/mahmoud/boltons/commit/a2af58548936c51a3d859f780e54ba170a6829bb.patch";
-      hash = "sha256-NRjfEKb0doJEtS5GyrF0dJYYr2u+ukogfUmmVnsHAwM=";
     })
   ];
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
   # Tests bind to localhost
   __darwinAllowLocalNetworking = true;
-
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "boltons" ];
 
   meta = {
     description = "Constructs, recipes, and snippets extending the Python standard library";
+
     longDescription = ''
       Boltons is a set of over 200 BSD-licensed, pure-Python utilities
       in the same spirit as - and yet conspicuously missing from - the
@@ -53,6 +51,7 @@ buildPythonPackage rec {
       - A full-featured TracebackInfo type, for representing stack
       traces, in tbutils
     '';
+
     homepage = "https://github.com/mahmoud/boltons";
     changelog = "https://github.com/mahmoud/boltons/blob/${version}/CHANGELOG.md";
     license = lib.licenses.bsd3;

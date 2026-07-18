@@ -1,25 +1,25 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   cmake,
   copyDesktopItems,
-  makeDesktopItem,
-  makeWrapper,
   expat,
   fontconfig,
   freetype,
   libGL,
-  udev,
-  libxkbcommon,
-  wayland,
-  vulkan-loader,
-  libxrandr,
-  libxi,
-  libxcursor,
   libx11,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  makeDesktopItem,
+  makeWrapper,
+  pkg-config,
+  rustPlatform,
+  udev,
+  vulkan-loader,
+  wayland,
 }:
 
 let
@@ -51,8 +51,6 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-1d+icjk1NamlvEx4Xb1Ao4d1hb/t5aBwho+yCtHF9y4=";
   };
 
-  cargoHash = "sha256-9CWJIRby6QWJmkYSHj2lFfEj0plX5iWxsdQs5sYww7Q=";
-
   nativeBuildInputs = [
     pkg-config
     cmake
@@ -65,33 +63,34 @@ rustPlatform.buildRustPackage rec {
     udev
   ];
 
-  buildAndTestSubdir = "liana-gui";
+  cargoHash = "sha256-9CWJIRby6QWJmkYSHj2lFfEj0plX5iWxsdQs5sYww7Q=";
+  doCheck = true;
 
   postInstall = ''
     install -Dm0644 ./liana-ui/static/logos/liana-app-icon.svg $out/share/icons/hicolor/scalable/apps/liana.svg
     wrapProgram $out/bin/liana-gui --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath runtimeLibs}"
   '';
 
+  buildAndTestSubdir = "liana-gui";
+
   desktopItems = [
     (makeDesktopItem {
-      name = "Liana";
+      comment = meta.description;
+      desktopName = "Liana";
       exec = "liana-gui";
       icon = "liana";
-      desktopName = "Liana";
-      comment = meta.description;
+      name = "Liana";
     })
   ];
 
-  doCheck = true;
-
   meta = {
-    mainProgram = "liana-gui";
     description = "Bitcoin wallet leveraging on-chain timelocks for safety and recovery";
     homepage = "https://wizardsardine.com/liana";
     changelog = "https://github.com/wizardsardine/liana/releases/tag/${src.rev}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ dunxen ];
     platforms = lib.platforms.linux;
+    mainProgram = "liana-gui";
     broken = stdenv.hostPlatform.isAarch64;
   };
 }

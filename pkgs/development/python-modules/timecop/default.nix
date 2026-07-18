@@ -9,14 +9,11 @@
 buildPythonPackage rec {
   pname = "timecop";
   version = "0.5.0dev";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-jYcA3gByT5RydMU8eK+PUnWe9TrRQ/chw+F6wTUqcX0=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [ unittestCheckHook ];
 
@@ -25,6 +22,8 @@ buildPythonPackage rec {
     sed -i 's/test_epoch/_test_epoch/' timecop/tests/test_freeze.py
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "timecop" ];
 
   meta = {

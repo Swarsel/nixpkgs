@@ -9,9 +9,8 @@ let
   ext = stdenv.hostPlatform.extensions.sharedLibrary;
 in
 buildGoModule {
-  pname = "librclone";
   inherit (rclone) version src vendorHash;
-
+  pname = "librclone";
   patches = rclone.patches or [ ];
 
   buildPhase = ''
@@ -29,9 +28,9 @@ buildGoModule {
   '';
 
   meta = {
+    inherit (rclone.meta) license platforms;
     description = "Rclone as a C library";
     homepage = "https://github.com/rclone/rclone/tree/master/librclone";
     maintainers = with lib.maintainers; [ dotlambda ];
-    inherit (rclone.meta) license platforms;
   };
 }

@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nodejs,
-  pnpm_10,
-  pnpmConfigHook,
   fetchPnpmDeps,
   makeWrapper,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  stdenvNoCC,
 }:
 let
   pnpm = pnpm_10;
@@ -23,31 +23,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-0M1ZSqNyLQECaO0cj4MpDGN5x8wVZeJczMViW5d9IXQ=";
   };
 
-  # The bundled cli.js imports transitive dependencies (e.g. @noble/curves)
-  # directly, so we need a flat node_modules tree for Node's resolver to
-  # find them.
-  pnpmInstallFlags = [ "--shamefully-hoist" ];
-  pnpmWorkspaces = [ "home-assistant-matter-hub..." ];
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmInstallFlags
-      pnpmWorkspaces
-      ;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-Bfg2c6gYTUv1rsBGriXUiftlOwGCzPdbdYgW9qhFSLw=";
-  };
-
-  __structuredAttrs = true;
   strictDeps = true;
-
-  # Workspace package.json files all carry "0.0.0"; the real version is
-  # injected at release time via APP_VERSION (consumed by vite for the
-  # frontend bundle and by the backend at runtime).
-  env.APP_VERSION = finalAttrs.version;
 
   nativeBuildInputs = [
     nodejs
@@ -55,6 +31,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     pnpmConfigHook
     makeWrapper
   ];
+
+  # Workspace package.json files all carry "0.0.0"; the real version is
+  # injected at release time via APP_VERSION (consumed by vite for the
+  # frontend bundle and by the backend at runtime).
+  env.APP_VERSION = finalAttrs.version;
 
   buildPhase = ''
     runHook preBuild
@@ -93,6 +74,28 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmInstallFlags
+      pnpmWorkspaces
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-Bfg2c6gYTUv1rsBGriXUiftlOwGCzPdbdYgW9qhFSLw=";
+  };
+
+  # The bundled cli.js imports transitive dependencies (e.g. @noble/curves)
+  # directly, so we need a flat node_modules tree for Node's resolver to
+  # find them.
+  pnpmInstallFlags = [ "--shamefully-hoist" ];
+  pnpmWorkspaces = [ "home-assistant-matter-hub..." ];
+
   passthru = {
     updateScript = nix-update-script {
       extraArgs = [ "--use-github-releases" ];
@@ -100,15 +103,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (nodejs.meta) platforms;
     description = "Publish your home-assistant instance using Matter";
     homepage = "https://riddix.github.io/home-assistant-matter-hub/";
     changelog = "https://github.com/RiDDiX/home-assistant-matter-hub/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kranzes
       marie
     ];
+
     mainProgram = "home-assistant-matter-hub";
-    inherit (nodejs.meta) platforms;
   };
 })

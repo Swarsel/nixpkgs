@@ -1,25 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cmake,
   ninja,
-  scikit-build,
-  pytest,
   numpy,
+  pytest,
+  scikit-build,
 }:
 
 buildPythonPackage rec {
   pname = "segyio";
   version = "1.9.14";
-  pyproject = false; # Built with cmake
-
-  postPatch = ''
-    # Fixing bug making one test fail in the python 3.10 build
-    substituteInPlace python/segyio/open.py --replace \
-    "cube_metrics = f.xfd.cube_metrics(iline, xline)" \
-    "cube_metrics = f.xfd.cube_metrics(int(iline), int(xline))"
-  '';
 
   src = fetchFromGitHub {
     owner = "equinor";
@@ -27,6 +19,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Gprxxz4wUDrThCghW1Z1dHTjeJCrcDxuwguVC+i+ydc=";
   };
+
+  postPatch = ''
+    # Fixing bug making one test fail in the python 3.10 build
+    substituteInPlace python/segyio/open.py --replace \
+    "cube_metrics = f.xfd.cube_metrics(iline, xline)" \
+    "cube_metrics = f.xfd.cube_metrics(int(iline), int(xline))"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -40,6 +39,8 @@ buildPythonPackage rec {
     pytest
     numpy
   ];
+
+  pyproject = false; # Built with cmake
 
   meta = {
     description = "Fast Python library for SEGY files";

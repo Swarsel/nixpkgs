@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   fetchpatch2,
-  six,
+  pytestCheckHook,
   setuptools_80,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "scales";
   version = "1.0.9";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,8 +21,8 @@ buildPythonPackage rec {
     # Use html module in Python 3 and cgi module in Python 2
     # https://github.com/Cue/scales/pull/47
     (fetchpatch2 {
-      url = "https://github.com/Cue/scales/commit/ee69d45f1a7f928f7b241702e9be06007444115e.patch?full_index=1";
       hash = "sha256-xBlgkh1mf+3J7GtNI0zGb7Sum8UYbTpUmM12sxK/fSU=";
+      url = "https://github.com/Cue/scales/commit/ee69d45f1a7f928f7b241702e9be06007444115e.patch?full_index=1";
     })
   ];
 
@@ -34,11 +33,10 @@ buildPythonPackage rec {
     done;
   '';
 
-  build-system = [ setuptools_80 ];
-
-  dependencies = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools_80 ];
+  dependencies = [ six ];
+  pyproject = true;
 
   meta = {
     description = "Stats for Python processes";

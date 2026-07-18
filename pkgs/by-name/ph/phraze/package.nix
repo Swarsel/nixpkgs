@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  testers,
+  installShellFiles,
   nix-update-script,
   phraze,
   rustPlatform,
-  installShellFiles,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,18 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Eeyf3+zJYMRbfeTj+LdxMGEeouvvky6cAmADFqIoRNo=";
   };
 
-  doCheck = true;
-
-  cargoHash = "sha256-NJOVWIUObmjjamRDZsj7V6xKsfRfUeUqCiKBv/vNiEY=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  passthru = {
-    updateScript = nix-update-script { };
-    tests = {
-      version = testers.testVersion { package = phraze; };
-    };
-  };
+  cargoHash = "sha256-NJOVWIUObmjjamRDZsj7V6xKsfRfUeUqCiKBv/vNiEY=";
+  doCheck = true;
 
   postInstall = ''
     installManPage target/man/phraze.1
@@ -41,15 +32,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh target/completions/_phraze
   '';
 
+  passthru = {
+    tests = {
+      version = testers.testVersion { package = phraze; };
+    };
+
+    updateScript = nix-update-script { };
+  };
+
   meta = {
     description = "Generate random passphrases";
     homepage = "https://github.com/sts10/phraze";
     changelog = "https://github.com/sts10/phraze/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       x123
       donovanglover
     ];
+
     mainProgram = "phraze";
   };
 })

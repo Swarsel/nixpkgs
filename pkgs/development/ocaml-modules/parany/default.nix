@@ -1,15 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   cpu,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "parany";
   version = "14.0.1";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "UnixJunkie";
@@ -19,11 +17,12 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ cpu ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://github.com/UnixJunkie/parany";
     description = "Generalized map/reduce for multicore computing";
-    maintainers = [ lib.maintainers.bcdarwin ];
+    homepage = "https://github.com/UnixJunkie/parany";
     license = lib.licenses.lgpl2;
+    maintainers = [ lib.maintainers.bcdarwin ];
   };
 })

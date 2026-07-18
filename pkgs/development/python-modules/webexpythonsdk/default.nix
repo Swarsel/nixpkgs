@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  poetry-core,
+  poetry-dynamic-versioning,
   pyjwt,
   pythonOlder,
   requests,
   requests-toolbelt,
-  poetry-core,
-  poetry-dynamic-versioning,
 }:
 
 buildPythonPackage rec {
   pname = "webexpythonsdk";
   version = "2.0.6";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "WebexCommunity";
@@ -23,6 +20,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-2yyGR5gCJVRsEnoPAr8tkMeG19vTfATl/ybuMydnplU=";
   };
+
+  # Tests require a Webex Teams test domain
+  doCheck = false;
 
   build-system = [
     poetry-core
@@ -35,9 +35,8 @@ buildPythonPackage rec {
     requests-toolbelt
   ];
 
-  # Tests require a Webex Teams test domain
-  doCheck = false;
-
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "webexpythonsdk" ];
 
   meta = {

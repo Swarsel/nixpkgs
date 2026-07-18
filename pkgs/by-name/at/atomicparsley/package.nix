@@ -17,21 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-VhrOMpGNMkNNYjcfCqlHI8gdApWr1ThtcxDwQ6gyV/g=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  buildInputs = [ zlib ];
-
-  installPhase = ''
-    runHook preInstall
-    install -D AtomicParsley $out/bin/AtomicParsley
-    runHook postInstall
-  '';
-
-  doCheck = true;
-
   postPatch = ''
     patchShebangs tests/test.sh
   '';
+
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ zlib ];
+  doCheck = true;
 
   # copying files so that we dont need to patch the test.sh
   checkPhase = ''
@@ -44,12 +36,18 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  installPhase = ''
+    runHook preInstall
+    install -D AtomicParsley $out/bin/AtomicParsley
+    runHook postInstall
+  '';
+
   meta = {
     description = "CLI program for reading, parsing and setting metadata into MPEG-4 files";
     homepage = "https://github.com/wez/atomicparsley";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ pjones ];
+    platforms = lib.platforms.unix;
     mainProgram = "AtomicParsley";
   };
 })

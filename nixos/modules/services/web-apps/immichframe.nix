@@ -20,28 +20,34 @@ in
     package = lib.mkPackageOption pkgs "immichframe" { };
 
     port = mkOption {
-      type = types.port;
       default = 3000;
       description = "The port that ImmichFrame will listen on.";
+      type = types.port;
     };
 
     settings = mkOption {
+      default = { };
+
+      description = ''
+        Configuration for ImmichFrame. See
+        <https://immichframe.online/docs/getting-started/configuration> for
+        options and defaults.
+      '';
+
       type = types.submodule {
-        freeformType = format.type;
         options = {
           Accounts = mkOption {
+            description = ''
+              Accounts configuration, multiple are permitted. See
+              <https://immichframe.online/docs/getting-started/configuration>.
+            '';
+
             type = types.listOf (
               types.submodule {
-                freeformType = format.type;
                 options = {
-                  ImmichServerUrl = mkOption {
-                    type = types.str;
-                    example = "http://photos.example.com";
-                    description = "The URL of your Immich server.";
-                  };
                   ApiKey = mkOption {
-                    type = types.nullOr types.str;
                     default = null;
+
                     description = ''
                       API key to talk to the Immich server.
                       Warning: it will be world-readable in /nix/store.
@@ -51,10 +57,13 @@ in
                       <https://immichframe.online/docs/getting-started/configuration#api-key-permissions>
                       for details on what permissions this key needs.
                     '';
+
+                    type = types.nullOr types.str;
                   };
+
                   ApiKeyFile = mkOption {
-                    type = types.nullOr types.externalPath;
                     default = null;
+
                     description = ''
                       File containing an API key to talk to the Immich server.
 
@@ -62,24 +71,25 @@ in
                       <https://immichframe.online/docs/getting-started/configuration#api-key-permissions>
                       for details on what permissions this key needs.
                     '';
+
+                    type = types.nullOr types.externalPath;
+                  };
+
+                  ImmichServerUrl = mkOption {
+                    description = "The URL of your Immich server.";
+                    example = "http://photos.example.com";
+                    type = types.str;
                   };
                 };
+
+                freeformType = format.type;
               }
             );
-
-            description = ''
-              Accounts configuration, multiple are permitted. See
-              <https://immichframe.online/docs/getting-started/configuration>.
-            '';
           };
         };
+
+        freeformType = format.type;
       };
-      default = { };
-      description = ''
-        Configuration for ImmichFrame. See
-        <https://immichframe.online/docs/getting-started/configuration> for
-        options and defaults.
-      '';
     };
   };
 
@@ -116,25 +126,30 @@ in
         settingsWithFixedSecretPaths = lib.recursiveUpdate cfg.settings settingsPatchWithCredentialPaths;
       in
       {
-        description = "Display your photos from Immich as a digital photo frame";
         after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "Display your photos from Immich as a digital photo frame";
+
         environment = {
           IMMICHFRAME_CONFIG_PATH = pkgs.runCommand "Config" { } ''
             mkdir $out
             ln -s ${format.generate "Settings.json" settingsWithFixedSecretPaths} $out/Settings.json
           '';
         };
+
         serviceConfig = {
+          DynamicUser = true;
           ExecStart = "${lib.getExe cfg.package} --urls=http://localhost:${toString cfg.port}";
+
           LoadCredential = lib.concatMapAttrsStringSep ":" (
             apiKeyFile: id: "${id}:${apiKeyFile}"
           ) apiKeyFileToId;
-          DynamicUser = true;
-          Type = "simple";
+
           Restart = "on-failure";
           RestartSec = 3;
+          Type = "simple";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
   };
 

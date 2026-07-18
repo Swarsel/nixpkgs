@@ -1,18 +1,16 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
+  nix-update-script,
   nushell,
   pkg-config,
-  nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "nu_plugin_formats";
   inherit (nushell) version src cargoHash;
-
+  pname = "nu_plugin_formats";
   nativeBuildInputs = [ pkg-config ] ++ lib.optionals stdenv.cc.isClang [ rustPlatform.bindgenHook ];
-
   buildAndTestSubdir = "crates/nu_plugin_formats";
 
   passthru.updateScript = nix-update-script {
@@ -22,11 +20,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Formats plugin for Nushell";
-    mainProgram = "nu_plugin_formats";
     homepage = "https://github.com/nushell/nushell/tree/${finalAttrs.version}/crates/nu_plugin_formats";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       viraptor
     ];
+
+    mainProgram = "nu_plugin_formats";
   };
 })

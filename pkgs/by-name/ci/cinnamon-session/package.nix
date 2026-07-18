@@ -1,4 +1,6 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   cinnamon-desktop,
   cinnamon-settings-daemon,
@@ -7,25 +9,23 @@
   gsettings-desktop-schemas,
   gtk3,
   libcanberra,
+  libexecinfo,
+  libx11,
+  libxau,
+  libxcomposite,
+  libxext,
+  libxrender,
   libxslt,
+  libxtst,
   meson,
   ninja,
+  pango,
   pkg-config,
   python3,
-  lib,
-  stdenv,
   systemd,
   wrapGAppsHook3,
   xapp,
-  libxtst,
-  libxrender,
-  libxext,
-  libxcomposite,
-  libxau,
-  libx11,
   xtrans,
-  libexecinfo,
-  pango,
 }:
 
 let
@@ -47,6 +47,22 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-rx7+tBXQ9kvnRYNxgF1QXyhk9NamUIjti/6GGrACYU0=";
   };
+
+  postPatch = ''
+    # patchShebangs requires executable file
+    chmod +x data/meson_install_schemas.py
+    patchShebangs data/meson_install_schemas.py
+  '';
+
+  nativeBuildInputs = [
+    meson
+    ninja
+    wrapGAppsHook3
+    libexecinfo
+    python3
+    pkg-config
+    libxslt
+  ];
 
   buildInputs = [
     # meson.build
@@ -73,26 +89,10 @@ stdenv.mkDerivation (finalAttrs: {
     pythonEnv # for cinnamon-session-quit
   ];
 
-  nativeBuildInputs = [
-    meson
-    ninja
-    wrapGAppsHook3
-    libexecinfo
-    python3
-    pkg-config
-    libxslt
-  ];
-
   mesonFlags = [
     # use locales from cinnamon-translations
     "--localedir=${cinnamon-translations}/share/locale"
   ];
-
-  postPatch = ''
-    # patchShebangs requires executable file
-    chmod +x data/meson_install_schemas.py
-    patchShebangs data/meson_install_schemas.py
-  '';
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -102,8 +102,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/linuxmint/cinnamon-session";
     description = "Cinnamon session manager";
+    homepage = "https://github.com/linuxmint/cinnamon-session";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

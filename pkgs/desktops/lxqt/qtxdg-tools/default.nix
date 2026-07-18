@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   libqtxdg,
   lxqt-build-tools,
   qtbase,
   qtsvg,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -37,11 +37,11 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/qtxdg-tools";
     description = "libqtxdg user tools";
-    mainProgram = "qtxdg-mat";
+    homepage = "https://github.com/lxqt/qtxdg-tools";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "qtxdg-mat";
     teams = [ lib.teams.lxqt ];
   };
 }

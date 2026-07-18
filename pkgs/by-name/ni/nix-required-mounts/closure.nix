@@ -5,14 +5,20 @@
 
 {
   lib,
-  runCommand,
-  python3Packages,
   allowedPatterns,
   formats,
+  python3Packages,
+  runCommand,
 }:
 runCommand "allowed-patterns.json"
   {
     nativeBuildInputs = [ python3Packages.python ];
+
+    env = {
+      shallowConfigPath = (formats.json { }).generate "shallow-config.json" allowedPatterns;
+      storeDir = "${builtins.storeDir}/";
+    };
+
     exportReferencesGraph = builtins.concatMap (
       name:
       builtins.concatMap (
@@ -29,10 +35,6 @@ runCommand "allowed-patterns.json"
         ]
       ) allowedPatterns.${name}.paths
     ) (builtins.attrNames allowedPatterns);
-    env = {
-      storeDir = "${builtins.storeDir}/";
-      shallowConfigPath = (formats.json { }).generate "shallow-config.json" allowedPatterns;
-    };
   }
   ''
     python ${./scripts/nix_required_mounts_closure.py}

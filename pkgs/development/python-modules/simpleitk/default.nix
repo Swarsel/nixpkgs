@@ -1,12 +1,12 @@
 {
   buildPythonPackage,
   cmake,
-  swig,
   elastix,
   itk,
   numpy,
-  simpleitk,
   scikit-build,
+  simpleitk,
+  swig,
 }:
 
 buildPythonPackage rec {
@@ -16,18 +16,13 @@ buildPythonPackage rec {
     src
     meta
     ;
-  pyproject = true;
-
-  sourceRoot = "${src.name}/Wrapping/Python";
-  preBuild = ''
-    make
-  '';
 
   nativeBuildInputs = [
     cmake
     swig
     scikit-build
   ];
+
   propagatedBuildInputs = [
     elastix
     itk
@@ -35,5 +30,11 @@ buildPythonPackage rec {
     numpy
   ];
 
+  preBuild = ''
+    make
+  '';
+
+  pyproject = true;
   pythonImportsCheck = [ "SimpleITK" ];
+  sourceRoot = "${src.name}/Wrapping/Python";
 }

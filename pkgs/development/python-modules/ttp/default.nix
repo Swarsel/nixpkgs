@@ -1,16 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cerberus,
   configparser,
   deepdiff,
-  fetchFromGitHub,
   geoip2,
   jinja2,
   netmiko,
   openpyxl,
-  pytestCheckHook,
   poetry-core,
+  pytestCheckHook,
   pyyaml,
   tabulate,
   ttp-templates,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "ttp";
   version = "0.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dmulyalin";
@@ -45,8 +44,6 @@ buildPythonPackage rec {
     tabulate
     yangson
   ];
-
-  pythonImportsCheck = [ "ttp" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -98,13 +95,15 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "test/pytest" ];
+  pyproject = true;
+  pythonImportsCheck = [ "ttp" ];
 
   meta = {
-    changelog = "https://github.com/dmulyalin/ttp/releases/tag/${version}";
     description = "Template Text Parser";
-    mainProgram = "ttp";
     homepage = "https://github.com/dmulyalin/ttp";
+    changelog = "https://github.com/dmulyalin/ttp/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "ttp";
   };
 }

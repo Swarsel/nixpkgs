@@ -5,22 +5,18 @@
   fetchPypi,
   fsspec,
   requests-kerberos,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dvc-webhdfs";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-bolIQ9Fc52agXGFt7anZvDYSSOk7+eozi5lublHqD+o=";
   };
-
-  # Prevent circular dependency
-  pythonRemoveDeps = [ "dvc" ];
 
   build-system = [
     setuptools
@@ -36,9 +32,12 @@ buildPythonPackage (finalAttrs: {
     kerberos = [ requests-kerberos ];
   };
 
+  pyproject = true;
+  # Prevent circular dependency
+  pythonRemoveDeps = [ "dvc" ];
+
   # Circular dependency
   # pythonImportsCheck = [ "dvc_webhdfs" ];
-
   meta = {
     description = "Webhdfs plugin for dvc";
     homepage = "https://pypi.org/project/dvc-webhdfs/";

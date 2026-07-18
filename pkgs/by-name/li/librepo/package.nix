@@ -2,30 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  python3,
-  pkg-config,
-  libxml2,
-  glib,
-  openssl,
-  zchunk,
-  curl,
   check,
+  cmake,
+  curl,
+  doxygen,
+  glib,
   gpgme,
   libselinux,
+  libxml2,
   nix-update-script,
-  doxygen,
+  openssl,
+  pkg-config,
+  python3,
+  zchunk,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.20.0";
   pname = "librepo";
-
-  outputs = [
-    "out"
-    "dev"
-    "py"
-  ];
+  version = "1.20.0";
 
   src = fetchFromGitHub {
     owner = "rpm-software-management";
@@ -33,6 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-KYBHImdGQgf/IZ5FMhzrbBTeZF76AIP3RjVPT3w0oT8=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "py"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -72,7 +72,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://rpm-software-management.github.io/librepo/";
     changelog = "https://github.com/rpm-software-management/dnf5/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

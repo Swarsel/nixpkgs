@@ -1,21 +1,20 @@
 {
   lib,
-  pkgs,
   stdenv,
   fetchFromGitHub,
-  pnpm_10,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  vscode-utils,
   nix-update-script,
+  nodejs,
+  pkgs,
+  pnpmConfigHook,
+  pnpm_10,
+  vscode-utils,
 }:
 
 let
   pnpm = pnpm_10;
 
   vsix = stdenv.mkDerivation (finalAttrs: {
-    name = "gitlens-${finalAttrs.version}.vsix";
     pname = "gitlens-vsix";
     version = "17.11.1";
 
@@ -26,25 +25,18 @@ let
       hash = "sha256-BN6qgPYhZ+FuYnwmV0S3y2vOR4ZLC+VGWuEEPqfOqi4=";
     };
 
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs) pname version src;
-      inherit pnpm;
-      fetcherVersion = 3;
-      hash = "sha256-Yuxuqr1BiviSw+dGNHLs2jAy8ADlBvRks6Kmy7FmCMw=";
-    };
-
     postPatch = ''
       substituteInPlace scripts/generateLicenses.mjs --replace-fail 'https://raw.githubusercontent.com/microsoft/vscode/refs/heads/main/LICENSE.txt' '${pkgs.vscode-json-languageserver.src}/LICENSE.txt'
       substituteInPlace package.json --replace-fail '"vscode:prepublish": "pnpm run bundle"' '"vscode:prepublish": "pnpm run bundle:turbo"'
     '';
+
+    strictDeps = true;
 
     nativeBuildInputs = [
       nodejs
       pnpmConfigHook
       pnpm
     ];
-
-    strictDeps = true;
 
     env.npm_config_manage_package_manager_versions = "false";
 
@@ -69,39 +61,51 @@ let
 
       runHook postInstall
     '';
+
+    name = "gitlens-${finalAttrs.version}.vsix";
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname version src;
+      inherit pnpm;
+      fetcherVersion = 3;
+      hash = "sha256-Yuxuqr1BiviSw+dGNHLs2jAy8ADlBvRks6Kmy7FmCMw=";
+    };
   });
 in
 vscode-utils.buildVscodeExtension (finalAttrs: {
-  pname = "gitlens";
   inherit (finalAttrs.src) version;
-
-  vscodeExtPublisher = "eamodio";
+  pname = "gitlens";
+  src = vsix;
   vscodeExtName = "gitlens";
+  vscodeExtPublisher = "eamodio";
   vscodeExtUniqueId = "${finalAttrs.vscodeExtPublisher}.${finalAttrs.vscodeExtName}";
 
-  src = vsix;
-
   passthru = {
-    vsix = finalAttrs.src;
     updateScript = nix-update-script {
       attrPath = "vscode-extensions.eamodio.gitlens.vsix";
     };
+
+    vsix = finalAttrs.src;
   };
 
   meta = {
-    changelog = "https://marketplace.visualstudio.com/items/eamodio.gitlens/changelog";
     description = "Visual Studio Code extension that improves its built-in Git capabilities";
+
     longDescription = ''
       Supercharge the Git capabilities built into Visual Studio Code — Visualize code authorship at a glance via Git
       blame annotations and code lens, seamlessly navigate and explore Git repositories, gain valuable insights via
       powerful comparison commands, and so much more
     '';
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens";
+
     homepage = "https://gitlens.amod.io/";
+    changelog = "https://marketplace.visualstudio.com/items/eamodio.gitlens/changelog";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       xiaoxiangmoe
       ratsclub
     ];
+
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens";
   };
 })

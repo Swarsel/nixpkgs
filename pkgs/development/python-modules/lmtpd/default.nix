@@ -9,10 +9,6 @@
 buildPythonPackage rec {
   pname = "lmtpd";
   version = "6.2.0";
-  pyproject = true;
-
-  # smtpd will be removed in version 3.12
-  disabled = pythonAtLeast "3.12";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,7 +16,9 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  # smtpd will be removed in version 3.12
+  disabled = pythonAtLeast "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "lmtpd" ];
 
   meta = {

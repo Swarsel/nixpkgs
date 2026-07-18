@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  installShellFiles,
-  tcl,
-  libiconv,
   fetchurl,
   buildPackages,
-  zlib,
+  ed,
+  installShellFiles,
+  libiconv,
   openssl,
   readline,
-  withInternalSqlite ? true,
   sqlite,
-  ed,
-  which,
+  tcl,
   tclPackages,
+  which,
+  zlib,
+  withInternalSqlite ? true,
   withJson ? true,
 }:
 
@@ -25,9 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.fossil-scm.org/home/tarball/version-${finalAttrs.version}/fossil-${finalAttrs.version}.tar.gz";
     hash = "sha256-y5joXR+QZAyYniRSHpD+vJjtjuPyZj2Lg6RFsVvMg9M=";
   };
-
-  # required for build time tool `./tools/translate.c`
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -44,10 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional stdenv.hostPlatform.isDarwin libiconv
   ++ lib.optional (!withInternalSqlite) sqlite;
 
-  enableParallelBuilding = true;
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   configureFlags =
     lib.optional (!withInternalSqlite) "--disable-internal-sqlite" ++ lib.optional withJson "--json";
 
@@ -55,15 +48,21 @@ stdenv.mkDerivation (finalAttrs: {
     export USER=nonexistent-but-specified-user
   '';
 
-  installFlags = [ "INSTALLDIR=$(out)/bin" ];
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   postInstall = ''
     installManPage fossil.1
     installShellCompletion --cmd fossil tools/fossil-autocomplete.{bash,zsh}
   '';
 
+  # required for build time tool `./tools/translate.c`
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+  installFlags = [ "INSTALLDIR=$(out)/bin" ];
+
   meta = {
     description = "Simple, high-reliability, distributed software configuration management";
+
     longDescription = ''
       Fossil is a software configuration management system.  Fossil is
       software that is designed to control and track the development of a
@@ -71,6 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
       many such systems in use today. Fossil strives to distinguish itself
       from the others by being extremely simple to setup and operate.
     '';
+
     homepage = "https://www.fossil-scm.org/";
     license = lib.licenses.bsd2;
     platforms = lib.platforms.all;

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Lightweight event loop library for Linux epoll() family APIs";
     homepage = "https://codedocs.xyz/troglobit/libuev/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ vifino ];
+    platforms = lib.platforms.linux;
   };
 })

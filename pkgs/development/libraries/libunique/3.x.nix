@@ -2,25 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   dbus,
   dbus-glib,
-  gtk3,
-  gobject-introspection,
-  gtk-doc,
   docbook_xml_dtd_45,
   docbook_xsl,
-  libxslt,
+  gobject-introspection,
+  gtk-doc,
+  gtk3,
   libxml2,
+  libxslt,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
 
-  majorVer = "3.0";
-  minorVer = "2";
-  version = "${majorVer}.${minorVer}";
   pname = "libunique3";
-  srcName = "libunique-${version}";
+  version = "${majorVer}.${minorVer}";
 
   src = fetchurl {
     url = "https://ftp.gnome.org/pub/GNOME/sources/libunique/${majorVer}/${srcName}.tar.xz";
@@ -31,6 +28,7 @@ stdenv.mkDerivation rec {
     pkg-config
     gobject-introspection
   ];
+
   buildInputs = [
     dbus
     dbus-glib
@@ -42,9 +40,13 @@ stdenv.mkDerivation rec {
     libxml2
   ];
 
+  majorVer = "3.0";
+  minorVer = "2";
+  srcName = "libunique-${version}";
+
   meta = {
-    homepage = "https://gitlab.gnome.org/Archive/unique";
     description = "Library for writing single instance applications";
+    homepage = "https://gitlab.gnome.org/Archive/unique";
     license = lib.licenses.lgpl21;
     maintainers = [ ];
     platforms = lib.platforms.linux;

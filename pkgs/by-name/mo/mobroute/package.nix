@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
   buildGoModule,
   fetchFromSourcehut,
   sqlite,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,13 +16,9 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-qQmOvo8fVZfAE0XzX1YPhfzXrBXEWwRkNNnhLQFd4ec=";
   };
-  vendorHash = "sha256-HcHPQq9KmqSB5RdmZDFR6BXsVoJ4XfBMClS8hR8weCU=";
 
   buildInputs = [ sqlite ];
-  tags = [
-    "libsqlite3"
-    "sqlite_math_functions"
-  ];
+  vendorHash = "sha256-HcHPQq9KmqSB5RdmZDFR6BXsVoJ4XfBMClS8hR8weCU=";
 
   preCheck = ''
     export HOME=$TMPDIR
@@ -32,8 +28,14 @@ buildGoModule (finalAttrs: {
     mv $out/bin/{cli,mobroute}
   '';
 
+  tags = [
+    "libsqlite3"
+    "sqlite_math_functions"
+  ];
+
   meta = {
     description = "General purpose public transportation router based on GTFS";
+
     longDescription = ''
       Mobroute is a general purpose public transportation router
       (e.g. trip planner) Go library and CLI that works
@@ -47,11 +49,12 @@ buildGoModule (finalAttrs: {
       into applications to get users from point-a to point-b via public transit
       without comprising privacy or user freedoms.
     '';
+
     homepage = "https://git.sr.ht/~mil/mobroute";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.McSinyx ];
-    mainProgram = "mobroute";
     platforms = lib.platforms.unix;
+    mainProgram = "mobroute";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

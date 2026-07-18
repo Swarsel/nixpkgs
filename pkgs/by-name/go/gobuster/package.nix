@@ -1,7 +1,7 @@
 {
   lib,
-  buildGo125Module,
   fetchFromGitHub,
+  buildGo125Module,
 }:
 
 buildGo125Module rec {
@@ -15,9 +15,8 @@ buildGo125Module rec {
     hash = "sha256-/woa0w/+aa1S2+Om5EK8I1XEI1mI47vNS1+GDnQHlTA=";
   };
 
-  __darwinAllowLocalNetworking = true;
-
   vendorHash = "sha256-rTN8omPTfSVfp/ythGWxVyq6rR7tJCN2znwMGixiw90=";
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -29,10 +28,12 @@ buildGo125Module rec {
     homepage = "https://github.com/OJ/gobuster";
     changelog = "https://github.com/OJ/gobuster/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fab
       pamplemousse
     ];
+
     mainProgram = "gobuster";
   };
 }

@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
+  adwaita-icon-theme,
+  brasero,
+  glib,
+  gnome,
+  gsettings-desktop-schemas,
+  gst_all_1,
+  gtk3,
+  isocodes,
+  itstool,
+  libcanberra-gtk3,
+  libdiscid,
+  libmusicbrainz,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  glib,
-  gtk3,
-  itstool,
-  libxml2,
-  brasero,
-  libcanberra-gtk3,
-  gnome,
-  adwaita-icon-theme,
-  gst_all_1,
-  libmusicbrainz,
-  libdiscid,
-  isocodes,
-  gsettings-desktop-schemas,
   wrapGAppsHook3,
 }:
 
@@ -64,10 +64,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Gnome CD Ripper";
-    mainProgram = "sound-juicer";
     homepage = "https://gitlab.gnome.org/GNOME/sound-juicer";
-    maintainers = [ lib.maintainers.bdimcheff ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.bdimcheff ];
     platforms = lib.platforms.linux;
+    mainProgram = "sound-juicer";
   };
 }

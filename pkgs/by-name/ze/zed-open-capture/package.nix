@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  libusb1,
-  hidapi,
-  opencv,
-  cmake,
-  pkg-config,
   fetchFromGitHub,
+  cmake,
+  hidapi,
+  libusb1,
+  opencv,
+  pkg-config,
   withExamples ? false,
 }:
 
@@ -21,15 +21,20 @@ stdenv.mkDerivation {
     sha256 = "sha256-ZjgJkCRbvLT7jjOcA8REiEpTg0Jh57du2aMwRk/OKLI=";
   };
 
-  buildInputs = [
-    libusb1
-    hidapi
-    opencv
-  ];
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
     pkg-config
+  ];
+
+  buildInputs = [
+    libusb1
+    hidapi
+    opencv
   ];
 
   # all but one example require opencv with UI support, so disable it.
@@ -37,11 +42,6 @@ stdenv.mkDerivation {
   cmakeFlags = lib.optionals (!withExamples) [
     "-DBUILD_EXAMPLES=OFF"
   ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   meta = {
     description = "Platform-agnostic camera and sensor capture API for the ZED 2, ZED 2i, and ZED Mini stereo cameras";

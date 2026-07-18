@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -16,23 +16,27 @@ in
     ./disk-size-option.nix
     ../image/file-options.nix
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2411;
       from = [
         "hyperv"
         "baseImageSize"
       ];
+
+      sinceRelease = 2411;
+
       to = [
         "virtualisation"
         "diskSize"
       ];
     })
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2505;
       from = [
         "virtualisation"
         "hyperv"
         "vmFileName"
       ];
+
+      sinceRelease = 2505;
+
       to = [
         "image"
         "fileName"
@@ -43,39 +47,29 @@ in
   options = {
     hyperv = {
       vmDerivationName = mkOption {
-        type = types.str;
         default = "nixos-hyperv-${config.system.nixos.label}-${pkgs.stdenv.hostPlatform.system}";
+
         description = ''
           The name of the derivation for the hyper-v appliance.
         '';
+
+        type = types.str;
       };
     };
   };
 
   config = {
-    # Use a priority just below mkOptionDefault (1500) instead of lib.mkDefault
-    # to avoid breaking existing configs using that.
-    virtualisation.diskSize = lib.mkOverride 1490 (4 * 1024);
+    boot.growPartition = true;
 
-    system.nixos.tags = [ "hyperv" ];
-    image.extension = "vhdx";
-    system.build.image = config.system.build.hypervImage;
-    system.build.hypervImage = import ../../lib/make-disk-image.nix {
-      name = cfg.vmDerivationName;
-      baseName = config.image.baseName;
-      postVM = ''
-        ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o subformat=dynamic -O vhdx $diskImage $out/${config.image.fileName}
-        rm $diskImage
-      '';
-      format = "raw";
-      inherit (config.virtualisation) diskSize;
-      partitionTableType = "efi";
-      inherit config lib pkgs;
+    boot.loader.grub = {
+      device = "nodev";
+      efiInstallAsRemovable = true;
+      efiSupport = true;
     };
 
     fileSystems."/" = {
-      device = "/dev/disk/by-label/nixos";
       autoResize = true;
+      device = "/dev/disk/by-label/nixos";
       fsType = "ext4";
     };
 
@@ -84,14 +78,27 @@ in
       fsType = "vfat";
     };
 
-    boot.growPartition = true;
+    image.extension = "vhdx";
 
-    boot.loader.grub = {
-      device = "nodev";
-      efiSupport = true;
-      efiInstallAsRemovable = true;
+    system.build.hypervImage = import ../../lib/make-disk-image.nix {
+      inherit (config.virtualisation) diskSize;
+      inherit config lib pkgs;
+      baseName = config.image.baseName;
+      format = "raw";
+      name = cfg.vmDerivationName;
+      partitionTableType = "efi";
+
+      postVM = ''
+        ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o subformat=dynamic -O vhdx $diskImage $out/${config.image.fileName}
+        rm $diskImage
+      '';
     };
 
+    system.build.image = config.system.build.hypervImage;
+    system.nixos.tags = [ "hyperv" ];
+    # Use a priority just below mkOptionDefault (1500) instead of lib.mkDefault
+    # to avoid breaking existing configs using that.
+    virtualisation.diskSize = lib.mkOverride 1490 (4 * 1024);
     virtualisation.hypervGuest.enable = true;
   };
 }

@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  cmake,
-  glib,
+  bluez,
   boost,
+  cmake,
+  desktopToDarwinBundle,
+  glib,
+  glibmm,
+  hidapi,
+  libftdi1,
+  libsForQt5,
+  libserialport,
   libsigrok,
   libsigrokdecode,
-  libserialport,
   libzip,
-  libftdi1,
-  hidapi,
-  glibmm,
+  pkg-config,
   python3,
-  bluez,
-  libsForQt5,
-  desktopToDarwinBundle,
 }:
 
 stdenv.mkDerivation {
@@ -55,13 +55,15 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Qt-based LA/scope/MSO GUI for sigrok (a signal analysis software suite)";
-    mainProgram = "pulseview";
     homepage = "https://sigrok.org/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       bjornfor
       vifino
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "pulseview";
   };
 }

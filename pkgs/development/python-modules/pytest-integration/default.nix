@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-integration";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jbwdevries";
@@ -21,12 +18,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Ziy+GEfljYDccx3mm63p7rhDUQVDXLbk7DxUW3npjiE=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  pythonImportsCheck = [ "pytest_integration" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -40,6 +31,13 @@ buildPythonPackage rec {
   postCheck = ''
     popd
   '';
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_integration" ];
 
   meta = {
     description = "Organizing test by unit test, quick integration or slow integration";

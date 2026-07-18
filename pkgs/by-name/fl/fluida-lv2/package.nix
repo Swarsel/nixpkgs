@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libx11,
   cairo,
-  lv2,
   fluidsynth,
+  libx11,
+  lv2,
+  pkg-config,
   writableTmpDirAsHomeHook,
 }:
 
@@ -18,9 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "brummer10";
     repo = "Fluida.lv2";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-5Oud5s81DIc7p/GAJT3i8FHHBh4y9uJqOxfchmX1nE4=";
     # submodule: https://github.com/brummer10/libxputty.git
     fetchSubmodules = true;
-    hash = "sha256-5Oud5s81DIc7p/GAJT3i8FHHBh4y9uJqOxfchmX1nE4=";
   };
 
   nativeBuildInputs = [
@@ -43,9 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/brummer10/Fluida.lv2/releases/tag/v${finalAttrs.version}";
     description = "Fluidsynth as LV2 plugin";
     homepage = "https://github.com/brummer10/Fluida.lv2";
+    changelog = "https://github.com/brummer10/Fluida.lv2/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ joostn ];
     platforms = [ "x86_64-linux" ];

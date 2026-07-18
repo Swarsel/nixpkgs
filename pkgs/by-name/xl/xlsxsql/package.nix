@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   buildPackages,
-  versionCheckHook,
+  installShellFiles,
   nix-update-script,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "xlsxsql";
@@ -19,16 +19,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-07Gnw1Y8TyxoOMMevnx4tGyk6k7n4o3gDaOPshsmcSE=";
   };
 
-  vendorHash = "sha256-3r7KY6boNYd2tJjMExiTZD1ZxQhm2UlP/Gyic8XMGrw=";
-
-  ldflags = [
-    "-X main.version=v${finalAttrs.version}"
-    "-X main.revision=${finalAttrs.src.rev}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-3r7KY6boNYd2tJjMExiTZD1ZxQhm2UlP/Gyic8XMGrw=";
 
   postInstall = lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (
     let
@@ -42,10 +37,16 @@ buildGoModule (finalAttrs: {
     ''
   );
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  ldflags = [
+    "-X main.version=v${finalAttrs.version}"
+    "-X main.revision=${finalAttrs.src.rev}"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

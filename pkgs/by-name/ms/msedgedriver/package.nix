@@ -1,8 +1,8 @@
 {
+  lib,
   autoPatchelfHook,
   fetchzip,
   glib,
-  lib,
   libxcb,
   nspr,
   nss,
@@ -19,14 +19,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
+  nativeBuildInputs = [ autoPatchelfHook ];
+
   buildInputs = [
     glib
     libxcb
     nspr
     nss
   ];
-
-  nativeBuildInputs = [ autoPatchelfHook ];
 
   installPhase =
     if stdenvNoCC.hostPlatform.isDarwin then
@@ -48,14 +48,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       '';
 
   meta = {
-    homepage = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver";
     description = "WebDriver implementation that controls an Edge browser running on the local machine";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ cholli ];
+
     platforms = [
       "x86_64-linux"
     ];
+
     mainProgram = "msedgedriver";
   };
 })

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "syrics";
   version = "0.1.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "akashrchandran";
@@ -27,6 +26,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tinytag
     tqdm
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "syrics"

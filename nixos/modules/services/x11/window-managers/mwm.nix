@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.motif ];
+
     services.xserver.windowManager.session = singleton {
       name = "mwm";
+
       start = ''
         ${pkgs.motif}/bin/mwm &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.motif ];
   };
 }

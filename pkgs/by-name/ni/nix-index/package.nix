@@ -1,20 +1,19 @@
 {
   lib,
-  symlinkJoin,
-  nix-index-unwrapped,
   makeWrapper,
   nix,
+  nix-index-unwrapped,
+  symlinkJoin,
 }:
 
 symlinkJoin {
   inherit (nix-index-unwrapped) pname version meta;
-
-  paths = [ nix-index-unwrapped ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
     wrapProgram $out/bin/nix-index \
       --prefix PATH : ${lib.makeBinPath [ nix ]}
   '';
+
+  paths = [ nix-index-unwrapped ];
 }

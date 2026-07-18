@@ -1,33 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
-  cmake,
-  ninja,
-  # build-system
-  hatchling,
-  scikit-build-core,
-  hatch-vcs,
-  nanobind,
   # deps
   antlr4-python3-runtime,
   atopile-easyeda2kicad,
   black,
+  buildPythonPackage,
   case-converter,
+  cmake,
   cookiecutter,
   dataclasses-json,
   deprecated,
   fastapi-github-oidc,
+  fetchpatch,
   freetype-py,
   gitpython,
+  hatch-vcs,
+  # build-system
+  hatchling,
+  hypothesis,
   kicad-python,
   kicadcliwrapper,
   matplotlib,
   mcp,
   more-itertools,
+  nanobind,
   natsort,
+  ninja,
   numpy,
   ordered-set,
   pathvalidate,
@@ -36,38 +35,33 @@
   psutil,
   pydantic-settings,
   pygls,
+  pytest-benchmark,
+  pytest-datafiles,
+  pytest-timeout,
+  pytest-xdist,
+  # tests
+  pytestCheckHook,
+  pythonOlder,
   questionary,
   requests,
   rich,
   ruamel-yaml,
   ruff,
+  scikit-build-core,
   semver,
   sexpdata,
   shapely,
   truststore,
   typer,
   urllib3,
-  zstd,
-  pythonOlder,
-
-  # tests
-  pytestCheckHook,
-
-  pytest-benchmark,
-  pytest-timeout,
-  pytest-datafiles,
-  pytest-xdist,
-  hypothesis,
-  writableTmpDirAsHomeHook,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
+  zstd,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "atopile";
   version = "0.12.5";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "atopile";
@@ -76,18 +70,55 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/1vkYGG3OHyeFpzbvRoAxUtLQLePKE2jwQx8o/CTErQ=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    pytestCheckHook
+    pytest-xdist
+    pytest-benchmark
+    pytest-datafiles
+    pytest-timeout
+    hypothesis
+    versionCheckHook
+  ];
+
+  preCheck = ''
+    # do not report worker logs to filee
+    substituteInPlace test/conftest.py \
+      --replace-fail "worker_id =" "worker_id = None #"
+
+    # unrecognized flags
+    substituteInPlace pyproject.toml \
+      --replace-fail "--html=artifacts/test-report.html" "" \
+      --replace-fail "--self-contained-html" "" \
+      --replace-fail "--numprocesses=auto" "" \
+
+    # Replace this function call that cause test to hang
+    substituteInPlace            \
+      test/cli/test_packages.py  \
+      test/library/test_names.py \
+      test/test_examples.py      \
+      test/test_parse_utils.py   \
+        --replace-fail "_repo_root()" "Path('$(pwd)')"
+
+    # Fix crash due to empty list in fixture tests
+    substituteInPlace            \
+      test/test_examples.py      \
+      test/test_parse_utils.py   \
+        --replace-fail "p.stem" "p.stem if isinstance(p, Path) else p"
+  '';
+
   build-system = [
     hatchling
     scikit-build-core
     hatch-vcs
     nanobind
-  ];
-
-  dontUseCmakeConfigure = true; # skip cmake configure invocation
-
-  nativeBuildInputs = [
-    cmake
-    ninja
   ];
 
   dependencies = [
@@ -129,51 +160,13 @@ buildPythonPackage (finalAttrs: {
     zstd
   ];
 
-  pythonRelaxDeps = [
-    "deprecated"
-    "posthog"
-    "prompt-toolkit"
+  disabled = pythonOlder "3.13";
+
+  disabledTestMarks = [
+    "slow"
+    "not_in_ci"
+    "regression"
   ];
-
-  pythonImportsCheck = [ "atopile" ];
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    pytestCheckHook
-    pytest-xdist
-    pytest-benchmark
-    pytest-datafiles
-    pytest-timeout
-    hypothesis
-    versionCheckHook
-  ];
-  versionCheckProgramArg = "--version";
-
-  preCheck = ''
-    # do not report worker logs to filee
-    substituteInPlace test/conftest.py \
-      --replace-fail "worker_id =" "worker_id = None #"
-
-    # unrecognized flags
-    substituteInPlace pyproject.toml \
-      --replace-fail "--html=artifacts/test-report.html" "" \
-      --replace-fail "--self-contained-html" "" \
-      --replace-fail "--numprocesses=auto" "" \
-
-    # Replace this function call that cause test to hang
-    substituteInPlace            \
-      test/cli/test_packages.py  \
-      test/library/test_names.py \
-      test/test_examples.py      \
-      test/test_parse_utils.py   \
-        --replace-fail "_repo_root()" "Path('$(pwd)')"
-
-    # Fix crash due to empty list in fixture tests
-    substituteInPlace            \
-      test/test_examples.py      \
-      test/test_parse_utils.py   \
-        --replace-fail "p.stem" "p.stem if isinstance(p, Path) else p"
-  '';
 
   disabledTestPaths = [
     # timouts
@@ -219,11 +212,8 @@ buildPythonPackage (finalAttrs: {
     "test_muster_specific_targets_with_dependencies"
   ];
 
-  disabledTestMarks = [
-    "slow"
-    "not_in_ci"
-    "regression"
-  ];
+  dontUseCmakeConfigure = true; # skip cmake configure invocation
+  pyproject = true;
 
   pytestFlags = [
     "--timeout=10" # any test taking long, timouts with more than 60s
@@ -231,15 +221,23 @@ buildPythonPackage (finalAttrs: {
     "--tb=line"
   ];
 
-  doCheck = true;
+  pythonImportsCheck = [ "atopile" ];
+
+  pythonRelaxDeps = [
+    "deprecated"
+    "posthog"
+    "prompt-toolkit"
+  ];
+
+  versionCheckProgramArg = "--version";
 
   meta = {
     description = "Design circuit boards with code";
     homepage = "https://atopile.io";
-    downloadPage = "https://github.com/atopile/atopile";
     changelog = "https://github.com/atopile/atopile/releases/tag/${finalAttrs.src.tag}";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ sigmanificient ];
     mainProgram = "ato";
+    downloadPage = "https://github.com/atopile/atopile";
   };
 })

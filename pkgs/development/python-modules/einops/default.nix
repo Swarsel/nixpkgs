@@ -1,11 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # tests
   jupyter,
   nbconvert,
@@ -20,8 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "einops";
   version = "0.8.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "arogozhnikov";
@@ -30,7 +26,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-d5Vbtkw/MChS2j2IC6j97wfVoKWZT9mU4OeXyEjm6ys=";
   };
 
-  build-system = [ hatchling ];
+  env.EINOPS_TEST_BACKENDS = "numpy";
 
   nativeCheckInputs = [
     jupyter
@@ -43,9 +39,9 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  env.EINOPS_TEST_BACKENDS = "numpy";
-
-  pythonImportsCheck = [ "einops" ];
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
 
   disabledTestPaths = [
     # skip folder with notebook samples that depend on large packages
@@ -53,7 +49,8 @@ buildPythonPackage (finalAttrs: {
     "scripts/"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "einops" ];
 
   meta = {
     description = "Flexible and powerful tensor operations for readable and reliable code";

@@ -1,83 +1,82 @@
 {
   channel,
   pname,
-  version,
-  url,
   sha256Hash,
+  url,
+  version,
 }:
 
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
-  runtimeShell,
+  androidenv,
   buildFHSEnv,
   cacert,
   coreutils,
   dbus,
   e2fsprogs,
   expat,
-  fetchurl,
-  findutils,
   file,
+  findutils,
+  fontconfig,
   fontsConf,
+  freetype,
   git,
+  glib,
   gnugrep,
   gnused,
   gnutar,
   gtk2,
-  glib,
   gzip,
-  fontconfig,
-  freetype,
-  libbsd,
-  libpulseaudio,
   libGL,
+  libbsd,
   libdrm,
+  libice,
   libpng,
-  libuuid,
+  libpulseaudio,
   libsecret,
+  libsm,
+  libuuid,
   libx11,
   libxcb,
-  libxkbcommon,
-  mesa-demos,
-  libxcb-wm,
-  libxcb-render-util,
-  libxcb-keysyms,
-  libxcb-image,
   libxcb-cursor,
-  libxkbfile,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-wm,
   libxcomposite,
   libxcursor,
   libxdamage,
   libxext,
   libxfixes,
   libxi,
+  libxkbcommon,
+  libxkbfile,
   libxrandr,
   libxrender,
   libxtst,
+  makeDesktopItem,
   makeWrapper,
+  mesa-demos,
   ncurses5,
   nspr,
   nss_latest,
   pciutils,
   pkgsi686Linux,
   ps,
+  runCommand,
+  runtimeShell,
   setxkbmap,
-  lib,
-  stdenv,
   systemd,
+  tiling_wm, # if we are using a tiling wm, need to set _JAVA_AWT_WM_NONREPARENTING in wrapper
   unzip,
   usbutils,
-  which,
-  runCommand,
   wayland,
+  which,
   xkeyboard_config,
-  libsm,
-  libice,
   zlib,
-  makeDesktopItem,
-  tiling_wm, # if we are using a tiling wm, need to set _JAVA_AWT_WM_NONREPARENTING in wrapper
-  androidenv,
-
   forceWayland ? false,
 }:
 
@@ -85,8 +84,8 @@ let
   filename = "android-studio-${version}-linux.tar.gz";
 
   androidStudio = stdenv.mkDerivation {
-    pname = "${pname}-unwrapped";
     inherit version;
+    pname = "${pname}-unwrapped";
 
     src = fetchurl {
       url = url;
@@ -97,9 +96,6 @@ let
       unzip
       makeWrapper
     ];
-
-    # Causes the shebangs in interpreter scripts deployed to mobile devices to be patched, which Android does not understand
-    dontPatchShebangs = true;
 
     installPhase = ''
       cp -r . $out
@@ -209,19 +205,23 @@ let
         ]
       }"
     '';
+
+    # Causes the shebangs in interpreter scripts deployed to mobile devices to be patched, which Android does not understand
+    dontPatchShebangs = true;
     meta.mainProgram = "studio";
   };
 
   desktopItem = makeDesktopItem {
-    name = pname;
-    exec = pname;
-    icon = pname;
-    desktopName = "Android Studio (${channel} channel)";
-    comment = "The official Android IDE";
     categories = [
       "Development"
       "IDE"
     ];
+
+    comment = "The official Android IDE";
+    desktopName = "Android Studio (${channel} channel)";
+    exec = pname;
+    icon = pname;
+    name = pname;
     startupNotify = true;
     startupWMClass = "jetbrains-studio";
   };
@@ -230,8 +230,9 @@ let
   # (e.g. `mksdcard`) have `/lib/ld-linux.so.2` set as the interpreter. An FHS
   # environment is used as a work around for that.
   fhsEnv = buildFHSEnv {
-    pname = "${pname}-fhs-env";
     inherit version;
+    pname = "${pname}-fhs-env";
+
     multiPkgs = pkgs: [
       ncurses5
 
@@ -250,6 +251,9 @@ let
     runCommand "${pname}-${version}"
       {
         inherit pname version;
+        allowSubstitutes = false;
+        preferLocalBuild = true;
+
         startScript =
           let
             hasAndroidSdk = androidSdk != null;
@@ -289,37 +293,56 @@ let
             ''}
             exec ${lib.getExe fhsEnv} ${lib.getExe androidStudio} "$@"
           '';
-        preferLocalBuild = true;
-        allowSubstitutes = false;
+
         passthru =
           let
             withSdk = androidSdk: mkAndroidStudioWrapper { inherit androidStudio androidSdk; };
           in
           {
-            unwrapped = androidStudio;
-            full = withSdk androidenv.androidPkgs.androidsdk;
             inherit withSdk;
+            full = withSdk androidenv.androidPkgs.androidsdk;
             sdk = androidSdk;
+            unwrapped = androidStudio;
+
             updateScript = [
               ./update.sh
               "${channel}"
             ];
           };
+
         meta = {
           description = "Official IDE for Android (${channel} channel)";
+
           longDescription = ''
             Android Studio is the official IDE for Android app development, based on
             IntelliJ IDEA.
           '';
+
           homepage =
             if channel == "stable" then
               "https://developer.android.com/studio/index.html"
             else
               "https://developer.android.com/studio/preview/index.html";
+
           license = with lib.licenses; [
             asl20
             unfree
           ]; # The code is under Apache-2.0, but:
+
+          sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+          maintainers =
+            rec {
+              beta = stable;
+              canary = stable;
+              dev = stable;
+
+              stable = with lib.maintainers; [
+                alapshin
+              ];
+            }
+            ."${channel}";
+
           # If one selects Help -> Licenses in Android Studio, the dialog shows the following:
           # "Android Studio includes proprietary code subject to separate license,
           # including JetBrains CLion(R) (www.jetbrains.com/clion) and IntelliJ(R)
@@ -328,28 +351,19 @@ let
           # binaries are also distributed as proprietary software (unlike the
           # source-code itself).
           platforms = [ "x86_64-linux" ];
-          maintainers =
+          mainProgram = pname;
+
+          teams =
             rec {
-              stable = with lib.maintainers; [
-                alapshin
-              ];
               beta = stable;
               canary = stable;
               dev = stable;
-            }
-            ."${channel}";
-          teams =
-            rec {
+
               stable = with lib.teams; [
                 android
               ];
-              beta = stable;
-              canary = stable;
-              dev = stable;
             }
             ."${channel}";
-          mainProgram = pname;
-          sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
         };
       }
       ''

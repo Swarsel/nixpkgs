@@ -1,25 +1,21 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-
-  pkg-config,
-
   alsa-lib,
   jack2,
   libogg,
   libopus,
   libopusenc,
   libshout,
-
   nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "tau-radio";
   version = "0.2.3";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tau-org";
@@ -28,7 +24,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-1SKlZ+htlCsO7ClZDbFbKyw8v9zgV5pKDEtL57D49f8=";
   };
 
-  cargoHash = "sha256-X1uHKYgt9ddvr/cBDW9HaHawG5uv2sU416jyL/XTPF4=";
+  postPatch = ''
+    # The opusenc crate hardcodes `*const i8`, but bindgen generates `*const c_char`,
+    # which is `u8` on `aarch64-linux`, causing a type mismatch on that platform
+    substituteInPlace $cargoDepsCopy/*/opusenc-*/src/comments.rs \
+      --replace-fail \
+        "picture.as_ptr() as *const i8," \
+        "picture.as_ptr() as *const std::ffi::c_char,"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -46,26 +49,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     jack2
   ];
 
+  cargoHash = "sha256-X1uHKYgt9ddvr/cBDW9HaHawG5uv2sU416jyL/XTPF4=";
   # fatal error: 'opus.h' file not found
   env.NIX_CFLAGS_COMPILE = "-I${libopus.dev}/include/opus";
-
-  postPatch = ''
-    # The opusenc crate hardcodes `*const i8`, but bindgen generates `*const c_char`,
-    # which is `u8` on `aarch64-linux`, causing a type mismatch on that platform
-    substituteInPlace $cargoDepsCopy/*/opusenc-*/src/comments.rs \
-      --replace-fail \
-        "picture.as_ptr() as *const i8," \
-        "picture.as_ptr() as *const std::ffi::c_char,"
-  '';
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Web radio - Hijacks audio device using CLAP and Ogg/Opus";
     homepage = "https://github.com/tau-org/tau-radio";
-    mainProgram = "tau-radio";
     license = lib.licenses.eupl12;
     maintainers = with lib.maintainers; [ eljamm ];
+    mainProgram = "tau-radio";
     teams = with lib.teams; [ ngi ];
   };
 })

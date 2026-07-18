@@ -1,31 +1,31 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   copyDesktopItems,
-  makeDesktopItem,
+  curl,
+  expat,
+  fontconfig,
+  freetype,
   imagemagick,
+  libGL,
+  libjack2,
   libx11,
   libxcomposite,
   libxcursor,
+  libxdmcp,
+  libxext,
   libxinerama,
   libxrandr,
   libxtst,
-  libxdmcp,
-  libxext,
-  xvfb,
-  freetype,
-  fontconfig,
-  expat,
-  libGL,
-  libjack2,
-  curl,
+  makeDesktopItem,
   ninja,
-  writableTmpDirAsHomeHook,
   nix-update-script,
+  pkg-config,
+  writableTmpDirAsHomeHook,
+  xvfb,
   # Disable VST building by default, since its unfree
   enableVST2 ? false,
 }:
@@ -41,20 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "socalabs-papu";
-      desktopName = "Socalabs PAPU";
-      comment = "Socalabs Nintendo Gameboy PAPU Emulation Plugin (Standalone)";
-      icon = "PAPU";
-      exec = "PAPU";
-      categories = [
-        "Audio"
-        "AudioVideo"
-      ];
-    })
-  ];
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+    --replace-fail 'FORMATS Standalone VST VST3 AU LV2' 'FORMATS Standalone ${lib.optionalString enableVST2 "VST"} VST3 LV2'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
@@ -89,12 +81,16 @@ stdenv.mkDerivation (finalAttrs: {
     "--preset ninja-gcc"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-    --replace-fail 'FORMATS Standalone VST VST3 AU LV2' 'FORMATS Standalone ${lib.optionalString enableVST2 "VST"} VST3 LV2'
-  '';
-
-  strictDeps = true;
+  env.NIX_LDFLAGS = toString [
+    "-lX11"
+    "-lXext"
+    "-lXcomposite"
+    "-lXcursor"
+    "-lXinerama"
+    "-lXrandr"
+    "-lXtst"
+    "-lXdmcp"
+  ];
 
   preBuild = ''
     cd ../Builds/ninja-gcc
@@ -121,25 +117,30 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.updateScript = nix-update-script { };
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "AudioVideo"
+      ];
 
-  env.NIX_LDFLAGS = toString [
-    "-lX11"
-    "-lXext"
-    "-lXcomposite"
-    "-lXcursor"
-    "-lXinerama"
-    "-lXrandr"
-    "-lXtst"
-    "-lXdmcp"
+      comment = "Socalabs Nintendo Gameboy PAPU Emulation Plugin (Standalone)";
+      desktopName = "Socalabs PAPU";
+      exec = "PAPU";
+      icon = "PAPU";
+      name = "socalabs-papu";
+      type = "Application";
+    })
   ];
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Socalabs Nintendo Gameboy PAPU Emulation Plugin";
     homepage = "https://socalabs.com/synths/papu/";
-    mainProgram = "PAPU";
-    platforms = lib.platforms.linux;
     license = [ lib.licenses.gpl2 ] ++ lib.optional enableVST2 lib.licenses.unfree;
     maintainers = [ lib.maintainers.l1npengtul ];
+    platforms = lib.platforms.linux;
+    mainProgram = "PAPU";
   };
 })

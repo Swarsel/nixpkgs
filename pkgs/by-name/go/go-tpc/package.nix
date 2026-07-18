@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -27,7 +27,7 @@ buildGoModule (finalAttrs: {
     description = "Toolbox to benchmark TPC workloads in Go";
     homepage = "https://github.com/pingcap/go-tpc";
     license = lib.licenses.asl20;
-    mainProgram = "go-tpc";
     maintainers = with lib.maintainers; [ lks ];
+    mainProgram = "go-tpc";
   };
 })

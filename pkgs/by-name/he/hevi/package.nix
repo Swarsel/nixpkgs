@@ -1,8 +1,8 @@
 {
-  callPackage,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  callPackage,
   zig_0_13,
 }:
 
@@ -29,11 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    inherit (zig.meta) platforms;
     description = "Hex viewer";
     homepage = "https://github.com/Arnau478/hevi";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.jmbaur ];
     mainProgram = "hevi";
-    inherit (zig.meta) platforms;
   };
 })

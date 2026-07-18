@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   udev,
 }:
 rustPlatform.buildRustPackage {
@@ -19,12 +19,12 @@ rustPlatform.buildRustPackage {
     hash = "sha256-C8eFQFHYIj2P+zPOKLVBNX97UDVbbcdjbqh5n53ktCU=";
   };
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    udev
-  ];
-
   nativeBuildInputs = [
     pkg-config
+  ];
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    udev
   ];
 
   cargoHash = "sha256-iLGoc6CKZGlq9bw1sL0jCVm9lGa0i/BXiseU1USGjfQ=";

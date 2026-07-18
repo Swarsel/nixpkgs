@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pnpm_10,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs-slim_24,
-  versionCheckHook,
   nix-update-script,
+  nodejs-slim_24,
+  pnpmConfigHook,
+  pnpm_10,
+  versionCheckHook,
 }:
 let
   nodejs-slim = nodejs-slim_24;
@@ -24,17 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-De/l8Z7+VAwkOZmAZZumqJBIMrDNhY9DM0fh4LuTWZM=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    pnpm = pnpm';
-    fetcherVersion = 3;
-    hash = "sha256-kd28ZK1c7a/h7ZNf0fQuJdNUiuvJ1a9qvQut4Ms4xuo=";
-  };
-
   nativeBuildInputs = [
     nodejs-slim
     pnpmConfigHook
@@ -43,6 +32,45 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [
     nodejs-slim
+  ];
+
+  buildPhase = ''
+    runHook preBuild
+
+    pnpm run build
+
+    # remove unneeded files
+    find dist -type f \( -name '*.cts' -or -name '*.mts' -or -name '*.ts' \) -delete
+
+    # remove devDependencies that are only required to build
+    #  and package the typescript code
+    CI=true pnpm prune --prod
+
+    # Clean up broken symlinks left behind by `pnpm prune`
+    # https://github.com/pnpm/pnpm/issues/3645
+    find node_modules -xtype l -delete
+
+    runHook postBuild
+  '';
+
+  # 8 / 85 tests are failing, I do not know why, while regular usage shows no issues.
+  doCheck = false;
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/{bin,lib/tsx}
+    cp -r {dist,node_modules} $out/lib/tsx
+    chmod +x $out/lib/tsx/dist/cli.mjs
+    ln -s $out/lib/tsx/dist/cli.mjs $out/bin/tsx
+
+    runHook postInstall
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
   ];
 
   patchPhase = ''
@@ -65,42 +93,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postPatch
   '';
 
-  buildPhase = ''
-    runHook preBuild
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
 
-    pnpm run build
-
-    # remove unneeded files
-    find dist -type f \( -name '*.cts' -or -name '*.mts' -or -name '*.ts' \) -delete
-
-    # remove devDependencies that are only required to build
-    #  and package the typescript code
-    CI=true pnpm prune --prod
-
-    # Clean up broken symlinks left behind by `pnpm prune`
-    # https://github.com/pnpm/pnpm/issues/3645
-    find node_modules -xtype l -delete
-
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/{bin,lib/tsx}
-    cp -r {dist,node_modules} $out/lib/tsx
-    chmod +x $out/lib/tsx/dist/cli.mjs
-    ln -s $out/lib/tsx/dist/cli.mjs $out/bin/tsx
-
-    runHook postInstall
-  '';
-
-  # 8 / 85 tests are failing, I do not know why, while regular usage shows no issues.
-  doCheck = false;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+    fetcherVersion = 3;
+    hash = "sha256-kd28ZK1c7a/h7ZNf0fQuJdNUiuvJ1a9qvQut4Ms4xuo=";
+    pnpm = pnpm';
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -108,10 +111,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "TypeScript Execute (tsx): The easiest way to run TypeScript in Node.js";
     homepage = "https://tsx.hirok.io/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sdedovic
       higherorderlogic
     ];
+
     mainProgram = "tsx";
   };
 })

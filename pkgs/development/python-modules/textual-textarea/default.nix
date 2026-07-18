@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   pyperclip,
+  # tests
+  pytest-asyncio,
+  pytestCheckHook,
   textual,
   tree-sitter,
   tree-sitter-python,
   tree-sitter-sql,
-
-  # tests
-  pytest-asyncio,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "textual-textarea";
   version = "0.17.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tconbeer";
@@ -30,11 +26,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-y+2WvqD96eYkDEJn5qCGfGFNiJFAcF4KWWNgAIZUqJo=";
   };
 
-  build-system = [ hatchling ];
-
-  pythonRelaxDeps = [
-    "textual"
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ hatchling ];
 
   dependencies = [
     pyperclip
@@ -45,11 +42,6 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ textual.optional-dependencies.syntax;
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # AssertionError: assert None == 'word'
     # https://github.com/tconbeer/textual-textarea/issues/312
@@ -57,7 +49,12 @@ buildPythonPackage (finalAttrs: {
     "test_autocomplete_with_types"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "textual_textarea" ];
+
+  pythonRelaxDeps = [
+    "textual"
+  ];
 
   meta = {
     description = "Text area (multi-line input) with syntax highlighting for Textual";

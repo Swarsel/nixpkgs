@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-batch";
   version = "18.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_batch";
     inherit version;
     hash = "sha256-MF61H7P3OyCSfvR7O2+T6eMtyTmHbARflwvThsB7p5w=";
+    pname = "azure_mgmt_batch";
   };
 
   nativeBuildInputs = [ setuptools ];
@@ -29,7 +28,7 @@ buildPythonPackage rec {
 
   # Tests are only available in mono repo
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.batch" ];
 
   meta = {

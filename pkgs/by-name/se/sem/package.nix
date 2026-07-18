@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,16 +16,17 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-XEr/vXamJ7GTRpXNdcVQ9PcUVvQ8EW3pmq/tEZMHSDo=";
-  subPackages = [ "." ];
+
+  postInstall = ''
+    install -m755 $out/bin/cli $out/bin/sem
+  '';
 
   ldflags = [
     "-X main.version=${finalAttrs.version}"
     "-X main.buildSource=nix"
   ];
 
-  postInstall = ''
-    install -m755 $out/bin/cli $out/bin/sem
-  '';
+  subPackages = [ "." ];
 
   meta = {
     description = "Cli to operate on semaphore ci (2.0)";

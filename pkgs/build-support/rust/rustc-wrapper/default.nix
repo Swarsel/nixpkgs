@@ -2,9 +2,9 @@
   lib,
   runCommand,
   rustc-unwrapped,
-  sysroot ? null,
   stdenvNoCC,
   shell ? stdenvNoCC.shell,
+  sysroot ? null,
 }:
 let
   sysrootFlag = lib.optionalString (sysroot != null) "--sysroot ${sysroot}";
@@ -31,9 +31,9 @@ let
 in
 runCommand "${rustc-unwrapped.pname}-wrapper-${rustc-unwrapped.version}"
   {
-    preferLocalBuild = true;
-    strictDeps = true;
     inherit (rustc-unwrapped) outputs;
+    strictDeps = true;
+    preferLocalBuild = true;
 
     passthru = {
       inherit (rustc-unwrapped)
@@ -46,6 +46,7 @@ runCommand "${rustc-unwrapped.pname}-wrapper-${rustc-unwrapped.version}"
         targetPlatformsWithHostTools
         badTargetPlatforms
         ;
+
       unwrapped = rustc-unwrapped;
     };
 

@@ -1,37 +1,37 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   docbook_xsl,
   gettext,
-  pkg-config,
-  xfce4-dev-tools,
-  wrapGAppsHook3,
+  gitUpdater,
   glib,
-  libxslt,
   gtk3,
   libxfce4ui,
   libxfce4util,
+  libxslt,
   perl,
-  gitUpdater,
+  pkg-config,
+  wrapGAppsHook3,
+  xfce4-dev-tools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "exo";
   version = "4.20.0";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "xfce";
     repo = "exo";
     tag = "exo-${finalAttrs.version}";
     hash = "sha256-mlGsFaKy96eEAYgYYqtEI4naq5ZSEe3V7nsWGAEucn0=";
+    domain = "gitlab.xfce.org";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     libxslt
@@ -54,8 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "exo-";
     odd-unstable = true;
+    rev-prefix = "exo-";
   };
 
   meta = {

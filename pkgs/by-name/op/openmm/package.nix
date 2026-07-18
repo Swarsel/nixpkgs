@@ -2,24 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  gfortran,
-  fftwSinglePrec,
-  doxygen,
-  swig,
-  graphviz,
-  enablePython ? false,
-  python3Packages,
-  enableOpencl ? true,
-  opencl-headers,
-  ocl-icd,
-  config,
-  enableCuda ? config.cudaSupport,
-  cudaPackages,
   autoAddDriverRunpath,
-
+  cmake,
+  config,
+  cudaPackages,
+  doxygen,
+  fftwSinglePrec,
+  gfortran,
+  graphviz,
   # passthru
   nix-update-script,
+  ocl-icd,
+  opencl-headers,
+  python3Packages,
+  swig,
+  enableCuda ? config.cudaSupport,
+  enableOpencl ? true,
+  enablePython ? false,
 }:
 
 let
@@ -28,9 +27,6 @@ in
 effectiveStdenv.mkDerivation (finalAttrs: {
   pname = "openmm";
   version = "8.5.2";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "openmm";
@@ -46,6 +42,8 @@ effectiveStdenv.mkDerivation (finalAttrs: {
       platforms/*/tests/Test*LangevinIntegrator.* \
       serialization/tests/TestSerializeIntegrator.cpp
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -115,6 +113,9 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "OPENMM_BUILD_RPMD_CUDA_LIB" true)
   ];
 
+  # Couldn't get CUDA to run properly in the sandbox
+  doCheck = !enableCuda && !enableOpencl;
+
   postInstall = lib.strings.optionalString enablePython ''
     export OPENMM_LIB_PATH=$out/lib
     export OPENMM_INCLUDE_PATH=$out/include
@@ -123,8 +124,7 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     ${python3Packages.python.pythonOnBuildForHost.interpreter} -m installer --prefix $out dist/*.whl
   '';
 
-  # Couldn't get CUDA to run properly in the sandbox
-  doCheck = !enableCuda && !enableOpencl;
+  __structuredAttrs = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -132,14 +132,16 @@ effectiveStdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Toolkit for molecular simulation using high performance GPU code";
-    mainProgram = "TestReferenceHarmonicBondForce";
     homepage = "https://openmm.org/";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl3Plus
       mit
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
+    mainProgram = "TestReferenceHarmonicBondForce";
   };
 })

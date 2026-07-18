@@ -1,19 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  clangStdenv,
-  pkg-config,
+  SDL2,
   alsa-lib,
   avahi,
   avahi-compat,
   bluez,
   boost,
-  fmt,
+  clangStdenv,
+  cmake,
   ffmpeg,
   fftw,
   flac,
+  fmt,
   git,
   gnutls,
   lame,
@@ -26,14 +25,15 @@
   lilv,
   lv2,
   mpg123,
+  ninja,
   pipewire,
+  pkg-config,
   portaudio,
   qt6,
   rapidfuzz-cpp,
   re2,
   rubberband,
   snappy,
-  SDL2,
   spdlog,
   suil,
   udev,
@@ -131,6 +131,14 @@ clangStdenv.mkDerivation (finalAttrs: {
     "-ludev"
   ];
 
+  installPhase = ''
+    runHook preInstall
+
+    cmake -DCMAKE_INSTALL_DO_STRIP=1 -DCOMPONENT=OssiaScore -P cmake_install.cmake
+
+    runHook postInstall
+  '';
+
   runtimeDependencies = [
     alsa-lib
     avahi
@@ -143,27 +151,23 @@ clangStdenv.mkDerivation (finalAttrs: {
     udev
   ];
 
-  installPhase = ''
-    runHook preInstall
-
-    cmake -DCMAKE_INSTALL_DO_STRIP=1 -DCOMPONENT=OssiaScore -P cmake_install.cmake
-
-    runHook postInstall
-  '';
-
   meta = {
-    homepage = "https://ossia.io/score/about.html";
     description = "Sequencer for audio-visual artists";
+
     longDescription = ''
       ossia score is a sequencer for audio-visual artists, designed to enable
       the creation of interactive shows, museum installations, intermedia
       digital artworks, interactive music and more in an intuitive user interface.
     '';
-    platforms = lib.platforms.linux;
+
+    homepage = "https://ossia.io/score/about.html";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       jcelerier
       minijackson
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

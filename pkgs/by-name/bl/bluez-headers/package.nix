@@ -20,24 +20,26 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mfFEVAxgcFkeTFO8uXfrQmZMYrezbLNaKc9y3tM5Yh0=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/include/
     cp -rv lib/* "$out/include/"
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://www.bluez.org/";
     description = "Official Linux Bluetooth protocol stack";
+    homepage = "https://www.bluez.org/";
     changelog = "https://git.kernel.org/pub/scm/bluetooth/bluez.git/tree/ChangeLog?h=${finalAttrs.version}";
+
     license = with lib.licenses; [
       bsd2
       gpl2Plus
       lgpl21Plus
       mit
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

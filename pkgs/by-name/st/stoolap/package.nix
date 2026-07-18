@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-ZWu1uu607n3wl3k7xcpS7cHbX7mifAX9gvo8KQmCB/E=";
-
   # On aarch64-darwin, dev target needs to set panic strategy to abort
   # However this must be set while the flag `-Zpanic_abort_tests` is also set,
   # which could only be done in Rust nightly toolchain.

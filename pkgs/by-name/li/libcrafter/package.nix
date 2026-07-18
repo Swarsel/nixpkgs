@@ -4,8 +4,8 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
   libpcap,
+  libtool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,23 +19,20 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-tCdN3+EzISVl+wp5umOFD+bgV+uUdabH+2LyxlV/W7Q=";
   };
 
-  preConfigure = "cd libcrafter";
-
-  configureScript = "./autogen.sh";
-
-  configureFlags = [ "--with-libpcap=yes" ];
-
   nativeBuildInputs = [
     autoconf
     automake
   ];
-  buildInputs = [ libtool ];
 
+  buildInputs = [ libtool ];
   propagatedBuildInputs = [ libpcap ];
+  configureFlags = [ "--with-libpcap=yes" ];
+  preConfigure = "cd libcrafter";
+  configureScript = "./autogen.sh";
 
   meta = {
-    homepage = "https://github.com/pellegre/libcrafter";
     description = "High level C++ network packet sniffing and crafting library";
+    homepage = "https://github.com/pellegre/libcrafter";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.unix;

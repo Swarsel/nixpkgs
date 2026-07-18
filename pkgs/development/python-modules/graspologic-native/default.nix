@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
+  buildPythonPackage,
   libiconv,
   pytestCheckHook,
+  rustPlatform,
 }:
 
 buildPythonPackage rec {
   pname = "graspologic-native";
   version = "1.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "graspologic-org";
@@ -19,27 +18,23 @@ buildPythonPackage rec {
     hash = "sha256-JIFg+JIxRKXgWLAGgOyKZTe2gXa8wZW5pEubTBLqwmQ=";
   };
 
-  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
-  buildAndTestSubdir = "packages/pyo3";
-
   nativeBuildInputs = [ rustPlatform.cargoSetupHook ];
-
   buildInputs = [ libiconv ];
-
-  build-system = [ rustPlatform.maturinBuildHook ];
-
-  pythonImportsCheck = [ "graspologic_native" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     cd packages/pyo3
   '';
+
+  build-system = [ rustPlatform.maturinBuildHook ];
+  buildAndTestSubdir = "packages/pyo3";
+  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
+  pyproject = true;
+  pythonImportsCheck = [ "graspologic_native" ];
 
   meta = {
     description = "Library of rust components to add additional capability to graspologic a python library for intelligently building networks and network embeddings, and for analyzing connected data";

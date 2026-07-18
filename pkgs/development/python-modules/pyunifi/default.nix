@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyunifi";
   version = "2.21";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
+  format = "setuptools";
 
   meta = {
     description = "API towards Ubiquity Networks UniFi controller";

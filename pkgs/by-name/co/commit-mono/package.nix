@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "commit-mono";
@@ -13,10 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  dontConfigure = true;
-  dontPatch = true;
-  dontBuild = true;
-  dontFixup = true;
   doCheck = false;
 
   installPhase = ''
@@ -25,6 +21,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     install -Dm644 CommitMono-${finalAttrs.version}/ttfautohint/*.ttf -t $out/share/fonts/truetype
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
 
   meta = {
     description = "Anonymous and neutral programming typeface focused on creating a better reading experience";

@@ -5,9 +5,8 @@
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
-  version = "0.9.8";
-  pyproject = true;
   pname = "canto-daemon";
+  version = "0.9.8";
 
   src = fetchFromGitHub {
     owner = "themoken";
@@ -16,16 +15,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sha256 = "0fmsdn28z09bvivdkqcla5bnalky7k744iir25z70bv4pz1jcvnk";
   };
 
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [ feedparser ];
-
   doCheck = false;
-
+  build-system = with python3Packages; [ setuptools ];
+  dependencies = with python3Packages; [ feedparser ];
+  pyproject = true;
   pythonImportsCheck = [ "canto_next" ];
 
   meta = {
     description = "Daemon for the canto Atom/RSS feed reader";
+
     longDescription = ''
       Canto is an Atom/RSS feed reader for the console that is meant to be
       quick, concise, and colorful. It's meant to allow you to crank through
@@ -34,9 +32,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
       unreadable white text. An interface with almost infinite customization
       and extensibility using the excellent Python programming language.
     '';
+
     homepage = "https://codezen.org/canto-ng/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ devhell ];
+    platforms = lib.platforms.linux;
   };
 })

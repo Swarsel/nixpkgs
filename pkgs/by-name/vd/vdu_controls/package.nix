@@ -1,17 +1,16 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  fetchpatch,
-  qt6,
   copyDesktopItems,
+  fetchpatch,
   installShellFiles,
+  python3,
+  qt6,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "vdu_controls";
   version = "2.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "digitaltrails";
@@ -24,15 +23,22 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     # Standardize installation with pypa/build. See:
     # https://github.com/digitaltrails/vdu_controls/pull/120
     (fetchpatch {
-      url = "https://github.com/digitaltrails/vdu_controls/commit/ef2ed07398fc88ccc18a11da3cf5ea1500a03cb6.patch";
       hash = "sha256-W0Iv3RXQFnHAzaXHh6ZvGARN4ShsNgOhg9FTpbvnfLo=";
+      url = "https://github.com/digitaltrails/vdu_controls/commit/ef2ed07398fc88ccc18a11da3cf5ea1500a03cb6.patch";
     })
   ];
 
-  build-system = [
-    python3.pkgs.setuptools
-    python3.pkgs.sphinx
+  nativeBuildInputs = [
+    qt6.wrapQtAppsHook
+    copyDesktopItems
+    installShellFiles
   ];
+
+  buildInputs = [
+    qt6.qtbase
+    qt6.qtwayland
+  ];
+
   # Replace FHS paths with out paths. Unfortunately it will be pretty hard to
   # change this behavior upstream, as they barely use any packaging system
   # whatsoever.
@@ -41,12 +47,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
         --replace-fail /usr/share/vdu_controls $out/share/vdu_controls
   '';
 
-  nativeBuildInputs = [
-    qt6.wrapQtAppsHook
-    copyDesktopItems
-    installShellFiles
-  ];
-  desktopItems = "vdu_controls.desktop";
   postInstall = ''
     install -Dm066 vdu_controls.png $out/share/icons/hicolor/256x256/apps/vdu_controls.png
     make -C docs man
@@ -57,18 +57,21 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     cp -r translations $out/share/vdu_controls
   '';
 
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  build-system = [
+    python3.pkgs.setuptools
+    python3.pkgs.sphinx
+  ];
+
   dependencies = [
     python3.pkgs.pyqt6
   ];
 
-  buildInputs = [
-    qt6.qtbase
-    qt6.qtwayland
-  ];
-
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
+  desktopItems = "vdu_controls.desktop";
+  pyproject = true;
 
   meta = {
     description = "VDU controls - a control panel for monitor brightness/contrast";

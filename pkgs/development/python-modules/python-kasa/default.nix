@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   asyncclick,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   hatchling,
   kasa-crypt,
   mashumaro,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "python-kasa";
   version = "0.10.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-kasa";
@@ -31,15 +30,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-OIkqNGTnIPoHYrE5NhAxSsRCTyMGvNADvIg28EuKsEw=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    aiohttp
-    asyncclick
-    cryptography
-    mashumaro
-  ];
 
   nativeCheckInputs = [
     pytest-asyncio
@@ -51,18 +41,14 @@ buildPythonPackage rec {
     voluptuous
   ];
 
-  optional-dependencies = {
-    shell = [
-      ptpython
-      rich
-    ];
-    speedups = [
-      kasa-crypt
-      orjson
-    ];
-  };
+  build-system = [ hatchling ];
 
-  pytestFlags = [ "--asyncio-mode=auto" ];
+  dependencies = [
+    aiohttp
+    asyncclick
+    cryptography
+    mashumaro
+  ];
 
   disabledTestPaths = [
     # Skip the examples tests
@@ -71,6 +57,20 @@ buildPythonPackage rec {
     "tests/test_cli.py"
   ];
 
+  optional-dependencies = {
+    shell = [
+      ptpython
+      rich
+    ];
+
+    speedups = [
+      kasa-crypt
+      orjson
+    ];
+  };
+
+  pyproject = true;
+  pytestFlags = [ "--asyncio-mode=auto" ];
   pythonImportsCheck = [ "kasa" ];
 
   meta = {

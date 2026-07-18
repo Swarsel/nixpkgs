@@ -2,30 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
+  buildDunePackage,
+  cppo,
   findlib,
   lambda-term,
-  cppo,
+  logs,
   makeWrapper,
-  buildDunePackage,
+  ocaml,
   xdg,
   zed,
-  logs,
 }:
 
 buildDunePackage rec {
   pname = "utop";
-
   version = "2.17.0";
-  propagatedBuildInputs = [
-    findlib
-    lambda-term
-    xdg
-    zed
-    logs
-  ];
-
-  minimalOCamlVersion = "4.11";
 
   src = fetchurl {
     url = "https://github.com/ocaml-community/utop/releases/download/${version}/utop-${version}.tbz";
@@ -37,6 +27,14 @@ buildDunePackage rec {
     cppo
   ];
 
+  propagatedBuildInputs = [
+    findlib
+    lambda-term
+    xdg
+    zed
+    logs
+  ];
+
   postFixup =
     let
       path = "etc/utop/env";
@@ -44,12 +42,9 @@ buildDunePackage rec {
       # derivation of just runtime deps so env vars created by
       # setup-hooks can be saved for use at runtime
       runtime = stdenv.mkDerivation {
-        pname = "utop-runtime-env";
         inherit version;
-
+        pname = "utop-runtime-env";
         buildInputs = [ findlib ] ++ propagatedBuildInputs;
-
-        dontUnpack = true;
 
         installPhase = ''
           mkdir -p "$out"/${path}
@@ -58,6 +53,8 @@ buildDunePackage rec {
             printf %s "''${!e}" > "$out"/${path}/$e
           done
         '';
+
+        dontUnpack = true;
       };
 
       get = key: ''$(cat "${runtime}/${path}/${key}")'';
@@ -78,19 +75,25 @@ buildDunePackage rec {
       done
     '';
 
+  minimalOCamlVersion = "4.11";
+
   meta = {
     description = "Universal toplevel for OCaml";
+
     longDescription = ''
       utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs. It supports line edition, history, real-time and context sensitive completion, colors, and more.
 
       It integrates with the tuareg mode in Emacs.
     '';
+
     homepage = "https://github.com/ocaml-community/utop";
     changelog = "https://github.com/ocaml-community/utop/blob/${version}/CHANGES.md";
     license = lib.licenses.bsd3;
-    platforms = ocaml.meta.platforms or [ ];
+
     maintainers = [
       lib.maintainers.gal_bolle
     ];
+
+    platforms = ocaml.meta.platforms or [ ];
   };
 }

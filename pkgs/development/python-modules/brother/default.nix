@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  freezegun,
+  buildPythonPackage,
   dacite,
+  freezegun,
   pysnmp,
   pytest-asyncio,
   pytest-error-for-skips,
@@ -16,9 +16,6 @@
 buildPythonPackage rec {
   pname = "brother";
   version = "6.1.1";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "bieniu";
@@ -26,13 +23,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-7m0fakQCckIpG8Tc09P81xzHlIgeal9L2BwerUvBuX8=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    dacite
-    pysnmp
-  ];
 
   nativeCheckInputs = [
     freezegun
@@ -42,6 +32,15 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    dacite
+    pysnmp
+  ];
+
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "brother" ];
 
   meta = {

@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "repren";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jlevy";
@@ -19,6 +18,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
   build-system = with python3Packages; [
     poetry-core
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Simple but flexible command-line tool for rewriting file contents";

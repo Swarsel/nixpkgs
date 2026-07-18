@@ -1,15 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "adif-multitool";
   version = "0.1.22";
-
-  vendorHash = "sha256-Fin0DUvpNPqKXpbDVekvWZYghJIpMLY9IRr2wdbZczc=";
-
-  proxyVendor = true;
 
   src = fetchFromGitHub {
     owner = "flwyd";
@@ -17,6 +13,9 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-UYnm4S4DP0c2ZkPkPScUHXdKiAz6JY9Lzdu4mAO49Dc=";
   };
+
+  vendorHash = "sha256-Fin0DUvpNPqKXpbDVekvWZYghJIpMLY9IRr2wdbZczc=";
+  proxyVendor = true;
 
   meta = {
     description = "Command-line program for working with ham logfiles";

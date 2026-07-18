@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "46.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "chergert";
     repo = "schemes";
     rev = finalAttrs.version;
     hash = "sha256-m82jR958f1g/4gSJ4NbNa4fwxVseH399Z8JpWr7tLh8=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -46,10 +46,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Edit GtkSourceView style-schemes for an application or platform";
-    mainProgram = "schemes";
     homepage = "https://gitlab.gnome.org/chergert/schemes";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ _0xMRTT ];
     platforms = lib.platforms.linux;
+    mainProgram = "schemes";
   };
 })

@@ -31,13 +31,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Recursive DNS/DNSCurve server and comandline tool";
     homepage = "https://github.com/janmojzis/dq";
     changelog = "https://github.com/janmojzis/dq/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       bsd0
       cc0
       mit
       mit0
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
   };
 })

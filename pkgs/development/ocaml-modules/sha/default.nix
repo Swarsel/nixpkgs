@@ -3,8 +3,8 @@
   fetchurl,
   buildDunePackage,
   ocaml,
-  stdlib-shims,
   ounit2,
+  stdlib-shims,
 }:
 
 buildDunePackage rec {
@@ -21,6 +21,7 @@ buildDunePackage rec {
   ];
 
   doCheck = lib.versionAtLeast ocaml.version "4.08";
+
   checkInputs = [
     ounit2
   ];

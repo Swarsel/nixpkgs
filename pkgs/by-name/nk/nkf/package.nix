@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull upstream fix for parllel build failures
     (fetchpatch {
       name = "parallel-install.patch";
-      url = "http://git.osdn.net/view?p=nkf/nkf.git;a=patch;h=9ccff5975bec7963e591e042e1ab1139252a4dc9";
       sha256 = "00f0x414gfch650b20w0yj5x2bd67hchmadl7v54lk3vdgkc6jwj";
+      url = "http://git.osdn.net/view?p=nkf/nkf.git;a=patch;h=9ccff5975bec7963e591e042e1ab1139252a4dc9";
     })
   ];
 
@@ -27,10 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool for converting encoding of Japanese text";
-    mainProgram = "nkf";
     homepage = "https://nkf.osdn.jp/";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.auntie ];
+    platforms = lib.platforms.unix;
+    mainProgram = "nkf";
   };
 })

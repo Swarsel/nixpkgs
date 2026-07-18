@@ -1,8 +1,8 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
-  lib,
   unstableGitUpdater,
 }:
 
@@ -17,14 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mp2gneTtm/PaCqz4JNOZgdKmFoV5ZRVwNYjHc4s2KuY=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  passthru.updateScript = unstableGitUpdater { };
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 3.3 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
   '';
+
+  nativeBuildInputs = [ cmake ];
+  passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Louvain Community Detection Library";

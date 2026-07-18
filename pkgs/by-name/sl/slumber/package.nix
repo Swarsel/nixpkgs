@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-vKo1KpDp/+LVx2Ap2GOiGsiBx03qUo5Z4YNoPFTc/3s=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -31,7 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://slumber.lucaspickering.me";
     changelog = "https://github.com/LucasPickering/slumber/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "slumber";
     maintainers = with lib.maintainers; [ javaes ];
+    mainProgram = "slumber";
   };
 })

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiofiles,
   aiohttp,
   boto3,
+  buildPythonPackage,
   paho-mqtt,
   pyopenssl,
   python-decouple,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "homelink-integration-api";
   version = "0.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Gentex-Corporation";
@@ -23,6 +22,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-N46c7SgEUQUs2UlNVjcCLpNBpUNI4WPDydl3gB+jmag=";
   };
 
+  # upstream tests require network access and AWS credentials
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +35,7 @@ buildPythonPackage (finalAttrs: {
     python-decouple
   ];
 
-  # upstream tests require network access and AWS credentials
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "homelink" ];
 
   meta = {

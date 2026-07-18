@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libmowgli,
-  pkg-config,
-  git,
-  gettext,
-  pcre2,
-  libidn,
-  libxcrypt,
   cracklib,
-  openssl,
+  gettext,
+  git,
+  libidn,
+  libmowgli,
+  libxcrypt,
   nix-update-script,
+  openssl,
+  pcre2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,9 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-reproducible-builds"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
+  enableParallelBuilding = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
@@ -65,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Set of services for IRC networks";
     homepage = "https://atheme.github.io/";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ leo60228 ];
+    platforms = lib.platforms.unix;
   };
 })

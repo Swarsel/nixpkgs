@@ -1,15 +1,13 @@
 {
   buildDunePackage,
   cmdliner,
-  odoc,
   ocamlformat-mlx-lib,
+  odoc,
   re,
 }:
 buildDunePackage {
-  pname = "ocamlformat-mlx";
-  minimalOcamlVersion = "4.08";
-
   inherit (ocamlformat-mlx-lib) version src meta;
+  pname = "ocamlformat-mlx";
 
   buildInputs = [
     cmdliner
@@ -17,4 +15,6 @@ buildDunePackage {
     odoc
     ocamlformat-mlx-lib
   ];
+
+  minimalOcamlVersion = "4.08";
 }

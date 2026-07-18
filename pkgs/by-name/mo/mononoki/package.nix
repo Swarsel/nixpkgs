@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -12,15 +12,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://github.com/madmalik/mononoki/releases/download/${finalAttrs.version}/mononoki.zip";
-    stripRoot = false;
     hash = "sha256-HQM9rzIJXLOScPEXZu0MzRlblLfbVVNJ+YvpONxXuwQ=";
+    stripRoot = false;
   };
 
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://github.com/madmalik/mononoki";
     description = "Font for programming and code review";
+    homepage = "https://github.com/madmalik/mononoki";
     license = lib.licenses.ofl;
     platforms = lib.platforms.all;
   };

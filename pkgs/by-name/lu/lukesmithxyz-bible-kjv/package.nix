@@ -1,8 +1,8 @@
 {
   lib,
-  gawk,
   stdenv,
   fetchFromGitHub,
+  gawk,
 }:
 
 stdenv.mkDerivation {
@@ -17,15 +17,14 @@ stdenv.mkDerivation {
   };
 
   buildInputs = [ gawk ];
-
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Read the Word of God from your terminal + Apocrypha";
-    mainProgram = "kjv";
     homepage = "https://lukesmith.xyz/articles/command-line-bibles";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.wesleyjrz ];
+    platforms = lib.platforms.unix;
+    mainProgram = "kjv";
   };
 }

@@ -2,11 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   apacheHttpd,
   apr,
   aprutil,
+  cmake,
   curl,
   db,
   fcgi,
@@ -19,6 +18,7 @@
   libtiff,
   pcre2,
   pixman,
+  pkg-config,
   proj,
   sqlite,
   zlib,
@@ -86,7 +86,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://mapserver.org/mapcache/";
     changelog = "https://www.mapserver.org/development/changelog/mapcache/";
     license = lib.licenses.mit;
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.geospatial ];
   };
 })

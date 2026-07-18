@@ -15,11 +15,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = if enableSigbusFix then [ ./sigbus_fix.patch ] else null;
-
   doCheck = true; # not cross;
 
   meta = {
-    homepage = "https://www.gnu.org/software/libsigsegv/";
     description = "Library to handle page faults in user mode";
 
     longDescription = ''
@@ -32,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
       more.
     '';
 
+    homepage = "https://www.gnu.org/software/libsigsegv/";
     license = lib.licenses.gpl2Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

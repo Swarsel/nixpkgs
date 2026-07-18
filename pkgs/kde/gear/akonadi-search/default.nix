@@ -1,17 +1,15 @@
 {
-  mkKdeDerivation,
-  sources,
-  corrosion,
-  xapian,
-  rustPlatform,
   cargo,
+  corrosion,
+  mkKdeDerivation,
+  rustPlatform,
   rustc,
+  sources,
+  xapian,
 }:
 mkKdeDerivation rec {
-  pname = "akonadi-search";
   inherit (sources.${pname}) version;
-
-  cargoRoot = "agent/rs/htmlparser";
+  pname = "akonadi-search";
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit pname version cargoRoot;
@@ -19,14 +17,16 @@ mkKdeDerivation rec {
     hash = "sha256-F9m2+WSrxjQgFDJ+//GCnMvzUD6734IGqnw7sRYIwTU=";
   };
 
-  extraNativeBuildInputs = [
-    rustPlatform.cargoSetupHook
-    cargo
-    rustc
-  ];
+  cargoRoot = "agent/rs/htmlparser";
 
   extraBuildInputs = [
     corrosion
     xapian
+  ];
+
+  extraNativeBuildInputs = [
+    rustPlatform.cargoSetupHook
+    cargo
+    rustc
   ];
 }

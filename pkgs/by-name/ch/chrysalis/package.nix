@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 
 let
@@ -16,12 +16,9 @@ in
 appimageTools.wrapType2 {
   inherit pname version src;
 
-  extraPkgs = pkgs: [ pkgs.glib ];
-
   # Also expose the udev rules here, so it can be used as:
   #   services.udev.packages = [ pkgs.chrysalis ];
   # to allow non-root modifications to the keyboards.
-
   extraInstallCommands = ''
     install -m 444 \
       -D ${appimageContents}/usr/lib/chrysalis/resources/static/udev/60-kaleidoscope.rules \
@@ -37,19 +34,22 @@ appimageTools.wrapType2 {
     cp -r ${appimageContents}/usr/share $out/share
   '';
 
+  extraPkgs = pkgs: [ pkgs.glib ];
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Graphical configurator for Kaleidoscope-powered keyboards";
     homepage = "https://github.com/keyboardio/Chrysalis";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       aw
       nshalman
     ];
+
     platforms = [ "x86_64-linux" ];
     # buildFHSEnv will create a symlink in $out/bin/chrysalis
     mainProgram = "chrysalis";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

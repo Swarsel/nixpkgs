@@ -1,9 +1,9 @@
 {
   lib,
-  perlPackages,
   fetchFromGitHub,
   makeWrapper,
   openssh,
+  perlPackages,
 }:
 
 perlPackages.buildPerlPackage {
@@ -22,11 +22,13 @@ perlPackages.buildPerlPackage {
   nativeBuildInputs = [
     makeWrapper
   ];
+
   buildInputs = with perlPackages; [
     GitRepository
     URI
     XMLParser
   ];
+
   propagatedBuildInputs = [
     openssh
   ];
@@ -50,7 +52,7 @@ perlPackages.buildPerlPackage {
     homepage = "https://github.com/kernkonzept/ham";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ aw ];
-    mainProgram = "ham";
     platforms = lib.platforms.unix;
+    mainProgram = "ham";
   };
 }

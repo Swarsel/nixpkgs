@@ -1,10 +1,10 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   jose,
-  uri,
   junit_alcotest,
+  uri,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -22,6 +22,7 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     junit_alcotest
   ];
@@ -30,6 +31,7 @@ buildDunePackage (finalAttrs: {
     description = "OpenID Connect implementation in OCaml";
     homepage = "https://github.com/ulrikstrid/ocaml-oidc";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       ulrikstrid
       toastal

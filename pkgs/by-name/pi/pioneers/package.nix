@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  gtk3,
   intltool,
   itstool,
-  gtk3,
   libxml2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

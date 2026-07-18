@@ -1,34 +1,35 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   dateparser,
   lupa,
   lxml,
   mediawiki-langcodes,
   psutil,
-  requests,
   pytestCheckHook,
+  requests,
+  setuptools,
   unstableGitUpdater,
 }:
 
 buildPythonPackage {
   pname = "wikitextprocessor";
   version = "0.4.96-unstable-2026-03-06";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tatuylonen";
     repo = "wikitextprocessor";
-    fetchSubmodules = true;
     rev = "9d9a410c45c06d30239bcc0d8c1a57718a3f7a2c";
     hash = "sha256-qhl9yRF2MUQvKXgcuxu20h6cEQofN1xMMb4JJZcFHS0=";
+    fetchSubmodules = true;
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
-  pythonRelaxDeps = [ "dateparser" ];
+  build-system = [ setuptools ];
 
   dependencies = [
     dateparser
@@ -39,12 +40,6 @@ buildPythonPackage {
     requests
   ];
 
-  pythonImportsCheck = [ "wikitextprocessor" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # It requires Internet
     "test_process_dump"
@@ -53,16 +48,21 @@ buildPythonPackage {
     "test_language_parser_function"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "wikitextprocessor" ];
+  pythonRelaxDeps = [ "dateparser" ];
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Parser and expander for Wikipedia, Wiktionary etc. dump files, with Lua execution support";
     homepage = "https://github.com/tatuylonen/wikitextprocessor";
+
     license = with lib.licenses; [
       mit
       cc-by-sa-40 # Needed for certain test files under Wiktionary licence
       gpl2Plus # Needed for certain files in lua/mediawiki-extensions-Scribunto/
     ];
+
     maintainers = with lib.maintainers; [ theobori ];
   };
 }

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   huggingface-hub,
   setuptools,
 }:
 buildPythonPackage rec {
   pname = "kernels";
   version = "0.11.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -16,6 +15,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-OUOCC7ViRWqRZIUpK31ItWsNc0F87dBpAg/Lql1LWp4=";
   };
+
+  # Tests require pervasive internet access
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -25,9 +27,7 @@ buildPythonPackage rec {
     huggingface-hub
   ];
 
-  # Tests require pervasive internet access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "kernels" ];
 
   meta = {

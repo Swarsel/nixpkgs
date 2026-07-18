@@ -6,13 +6,13 @@
 
 let
   desktopItem = pkgsi686Linux.makeDesktopItem {
-    name = "zsnes";
-    exec = "zsnes";
-    icon = "zsnes";
+    categories = [ "Game" ];
     comment = "A SNES emulator";
     desktopName = "zsnes";
+    exec = "zsnes";
     genericName = "zsnes";
-    categories = [ "Game" ];
+    icon = "zsnes";
+    name = "zsnes";
   };
 
 in
@@ -42,13 +42,7 @@ pkgsi686Linux.stdenv.mkDerivation {
     pkgsi686Linux.libGL
   ];
 
-  prePatch = ''
-    for i in $(cat debian/patches/series); do
-      echo "applying $i"
-      patch -p1 < "debian/patches/$i"
-    done
-  '';
-
+  configureFlags = [ "--enable-release" ];
   # Workaround build failure on -fno-common toolchains:
   #   ld: initc.o:(.bss+0x28): multiple definition of `HacksDisable'; cfg.o:(.bss+0x59e3): first defined here
   # Use pre-c++17 standard (c++17 forbids throw annotations)
@@ -60,10 +54,6 @@ pkgsi686Linux.stdenv.mkDerivation {
     sed -i "/^STRIP/d" configure
     sed -i "/\$STRIP/d" configure
   '';
-
-  configureFlags = [ "--enable-release" ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     function installIcon () {
@@ -79,10 +69,19 @@ pkgsi686Linux.stdenv.mkDerivation {
     ln -s ${desktopItem}/share/applications/* $out/share/applications/
   '';
 
+  enableParallelBuilding = true;
+
+  prePatch = ''
+    for i in $(cat debian/patches/series); do
+      echo "applying $i"
+      patch -p1 < "debian/patches/$i"
+    done
+  '';
+
   meta = {
     description = "Super Nintendo Entertainment System Emulator";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://www.zsnes.com";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.intersectLists lib.platforms.linux lib.platforms.x86;
     mainProgram = "zsnes";
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-cov-stub,
   pytest-mock,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-tado";
   version = "0.18.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wmalgadey";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jHPTu0/DYJXbSqiJXQzmiK6gmtJf88Y0BV1wj/X+qpc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytest-mock
@@ -33,10 +28,8 @@ buildPythonPackage (finalAttrs: {
     responses
   ];
 
-  disabledTests = [
-    # network access
-    "test_interface_with_tado_api"
-  ];
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   disabledTestPaths = [
     # network access
@@ -44,6 +37,12 @@ buildPythonPackage (finalAttrs: {
     "tests/test_my_zone.py"
   ];
 
+  disabledTests = [
+    # network access
+    "test_interface_with_tado_api"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "PyTado" ];
 
   meta = {

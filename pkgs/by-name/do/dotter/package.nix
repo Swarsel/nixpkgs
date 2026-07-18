@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  installShellFiles,
   nix-update-script,
   rustPlatform,
   which,
-  installShellFiles,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {

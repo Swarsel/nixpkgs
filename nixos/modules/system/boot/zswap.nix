@@ -25,16 +25,23 @@ in
   options.boot.zswap = {
     enable = mkEnableOption "Zswap (Compressed Cache for Swap Pages)";
 
+    acceptThresholdPercent = mkOption {
+      default = 90;
+
+      description = ''
+        Threshold percentage at which zswap starts accepting pages again after the pool becomes full (1-100).
+
+        This parameter provides hysteresis to prevent pool oscillation.
+        When the pool usage drops below this threshold, zswap starts accepting new pages.
+        Default is 90% as recommended by kernel documentation.
+      '';
+
+      type = types.ints.between 1 100;
+    };
+
     compressor = mkOption {
-      type = types.enum [
-        "zstd"
-        "lz4"
-        "lzo"
-        "lz4hc"
-        "deflate"
-        "842"
-      ];
       default = "zstd";
+
       description = ''
         Compression algorithm to use for zswap.
 
@@ -48,27 +55,20 @@ in
 
         Note: The chosen algorithm must be supported by your kernel configuration.
       '';
-    };
 
-    zpool = mkOption {
       type = types.enum [
-        "zsmalloc"
-        "zbud"
+        "zstd"
+        "lz4"
+        "lzo"
+        "lz4hc"
+        "deflate"
+        "842"
       ];
-      default = if zsmallocSupported then "zsmalloc" else "zbud";
-      defaultText = literalExpression "if kernel >= 6.3 then \"zsmalloc\" else \"zbud\"";
-      description = ''
-        Kernel zpool allocator.
-        'zsmalloc' is strongly recommended for kernels >= 6.3 as it offers the best density.
-        For older kernels, 'zbud' is the fallback.
-
-        Note: 'z3fold' was removed from Linux kernel 6.8 and later.
-      '';
     };
 
     maxPoolPercent = mkOption {
-      type = types.ints.between 1 100;
       default = 25;
+
       description = ''
         The maximum percentage of system memory that Zswap can occupy (1-100).
 
@@ -80,23 +80,13 @@ in
         - Low-memory systems: 30-50%
         - Server systems: 10-20%
       '';
-    };
 
-    acceptThresholdPercent = mkOption {
       type = types.ints.between 1 100;
-      default = 90;
-      description = ''
-        Threshold percentage at which zswap starts accepting pages again after the pool becomes full (1-100).
-
-        This parameter provides hysteresis to prevent pool oscillation.
-        When the pool usage drops below this threshold, zswap starts accepting new pages.
-        Default is 90% as recommended by kernel documentation.
-      '';
     };
 
     shrinkerEnabled = mkOption {
-      type = types.bool;
       default = true;
+
       description = ''
         Enable the zswap shrinker to reclaim memory when under pressure.
 
@@ -107,41 +97,34 @@ in
         It is recommended to keep this enabled for most workloads, especially
         on systems with limited memory.
       '';
+
+      type = types.bool;
+    };
+
+    zpool = mkOption {
+      default = if zsmallocSupported then "zsmalloc" else "zbud";
+      defaultText = literalExpression "if kernel >= 6.3 then \"zsmalloc\" else \"zbud\"";
+
+      description = ''
+        Kernel zpool allocator.
+        'zsmalloc' is strongly recommended for kernels >= 6.3 as it offers the best density.
+        For older kernels, 'zbud' is the fallback.
+
+        Note: 'z3fold' was removed from Linux kernel 6.8 and later.
+      '';
+
+      type = types.enum [
+        "zsmalloc"
+        "zbud"
+      ];
     };
   };
 
   config = mkIf cfg.enable {
-    # 1. Core configuration: kernel parameters for early boot
-    boot.kernelParams = [
-      "zswap.enabled=1"
-      "zswap.compressor=${cfg.compressor}"
-      "zswap.zpool=${cfg.zpool}"
-      "zswap.max_pool_percent=${toString cfg.maxPoolPercent}"
-      "zswap.accept_threshold_percent=${toString cfg.acceptThresholdPercent}"
-      "zswap.shrinker_enabled=${if cfg.shrinkerEnabled then "1" else "0"}"
-    ];
-
-    # 2. Dependency management: ensure required modules are included in initrd or kernel
-    # This ensures Zswap is ready early in the boot process (before swap is mounted)
-    boot.initrd.kernelModules = [
-      cfg.compressor
-      cfg.zpool
-    ];
-
-    # 3. Runtime configuration using boot.kernel.sysfs
-    # This ensures zswap parameters are properly set and maintained during system rebuilds
-    boot.kernel.sysfs.module.zswap.parameters = {
-      enabled = true;
-      compressor = cfg.compressor;
-      zpool = cfg.zpool;
-      max_pool_percent = cfg.maxPoolPercent;
-      accept_threshold_percent = cfg.acceptThresholdPercent;
-      shrinker_enabled = true;
-    };
-
     assertions = [
       {
         assertion = !config.zramSwap.enable;
+
         message = ''
           Conflicting options enabled: 'boot.zswap.enable' and 'zramSwap.enable'.
 
@@ -155,6 +138,7 @@ in
       }
       {
         assertion = config.swapDevices != [ ];
+
         message = ''
           Zswap requires at least one physical swap device to function as a backing store.
 
@@ -168,6 +152,7 @@ in
       }
       {
         assertion = (cfg.zpool == "zsmalloc") -> zsmallocSupported;
+
         message = ''
           Zswap allocator 'zsmalloc' is not supported on kernel version ${kernelVersion}.
           Support for zsmalloc in Zswap was added in Linux 6.3.
@@ -175,6 +160,34 @@ in
           Please use 'zbud' instead: boot.zswap.zpool = "zbud";
         '';
       }
+    ];
+
+    # 2. Dependency management: ensure required modules are included in initrd or kernel
+    # This ensures Zswap is ready early in the boot process (before swap is mounted)
+    boot.initrd.kernelModules = [
+      cfg.compressor
+      cfg.zpool
+    ];
+
+    # 3. Runtime configuration using boot.kernel.sysfs
+    # This ensures zswap parameters are properly set and maintained during system rebuilds
+    boot.kernel.sysfs.module.zswap.parameters = {
+      accept_threshold_percent = cfg.acceptThresholdPercent;
+      compressor = cfg.compressor;
+      enabled = true;
+      max_pool_percent = cfg.maxPoolPercent;
+      shrinker_enabled = true;
+      zpool = cfg.zpool;
+    };
+
+    # 1. Core configuration: kernel parameters for early boot
+    boot.kernelParams = [
+      "zswap.enabled=1"
+      "zswap.compressor=${cfg.compressor}"
+      "zswap.zpool=${cfg.zpool}"
+      "zswap.max_pool_percent=${toString cfg.maxPoolPercent}"
+      "zswap.accept_threshold_percent=${toString cfg.acceptThresholdPercent}"
+      "zswap.shrinker_enabled=${if cfg.shrinkerEnabled then "1" else "0"}"
     ];
   };
 

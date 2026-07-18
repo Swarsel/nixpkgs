@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "preshed";
   version = "3.0.13";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,13 +24,11 @@ buildPythonPackage rec {
     murmurhash
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # Tests have import issues with 3.0.8
   doCheck = false;
-
+  nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
   pythonImportsCheck = [ "preshed" ];
-
   # don't update to 4.0.0, version was yanked
   passthru.skipBulkUpdate = true;
 

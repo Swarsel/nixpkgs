@@ -1,26 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
+  copyDesktopItems,
   libsForQt5,
   makeDesktopItem,
-  copyDesktopItems,
 }:
 
 let
   # Based in desktop files from official packages:
   # https://github.com/congard/nvidia-system-monitor-qt/tree/master/package
   desktopItem = makeDesktopItem {
-    name = "nvidia-system-monitor-qt";
-    desktopName = "NVIDIA System Monitor";
-    icon = "qnvsm";
-    exec = "qnvsm";
     categories = [
       "System"
       "Utility"
       "Qt"
     ];
+
+    desktopName = "NVIDIA System Monitor";
+    exec = "qnvsm";
+    icon = "qnvsm";
+    name = "nvidia-system-monitor-qt";
   };
 in
 stdenv.mkDerivation rec {
@@ -34,12 +35,13 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-JHK7idyk5UxgDyt+SzvYjTLmlNzx6+Z+OPYsRD4NWPg=";
   };
 
-  buildInputs = [ libsForQt5.qtbase ];
   nativeBuildInputs = [
     cmake
     libsForQt5.wrapQtAppsHook
     copyDesktopItems
   ];
+
+  buildInputs = [ libsForQt5.qtbase ];
 
   cmakeFlags = [
     "-DIconPath=${placeholder "out"}/share/icons/hicolor/512x512/apps/qnvsm.png"
@@ -60,11 +62,11 @@ stdenv.mkDerivation rec {
   meta = rec {
     description = "Task Manager for Linux for NVIDIA graphics cards";
     homepage = "https://github.com/congard/nvidia-system-monitor-qt";
-    downloadPage = "${homepage}/releases";
     changelog = "${downloadPage}/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hacker1024 ];
-    mainProgram = "qnvsm";
     platforms = lib.platforms.linux;
+    mainProgram = "qnvsm";
+    downloadPage = "${homepage}/releases";
   };
 }

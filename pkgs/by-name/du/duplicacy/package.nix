@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -16,17 +16,18 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-4M/V4vP9XwHBkZ6UwsAxZ81YAzP4inuNC5yI+5ygQsA=";
-
   doCheck = false;
 
   meta = {
-    homepage = "https://duplicacy.com";
     description = "New generation cloud backup tool";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    homepage = "https://duplicacy.com";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       ffinkdevs
       devusb
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

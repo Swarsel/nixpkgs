@@ -17,9 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontUnpack = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/java
@@ -28,13 +25,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontUnpack = true;
+
   meta = {
     description = "Multiple alignment of coding sequences";
-    mainProgram = "macse";
     homepage = "https://bioweb.supagro.inra.fr/macse/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl2;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.bzizou ];
     platforms = lib.platforms.all;
+    mainProgram = "macse";
   };
 })

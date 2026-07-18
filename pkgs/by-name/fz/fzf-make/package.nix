@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  runtimeShell,
   bat,
   gnugrep,
   gnumake,
+  makeBinaryWrapper,
+  runtimeShell,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,9 +20,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ezE7plWdPqfENprOWhl5YQnoXk9khXsDtsYf6Lifk3w=";
   };
 
-  cargoHash = "sha256-uF+oV0ZvGsRy20DkNrVowyb+RoYVtYN4R/gOZ6WzHQw=";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  cargoHash = "sha256-uF+oV0ZvGsRy20DkNrVowyb+RoYVtYN4R/gOZ6WzHQw=";
 
   postInstall = ''
     wrapProgram $out/bin/fzf-make \
@@ -37,13 +36,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    description = "Fuzzy finder for Makefile";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Fuzzy finder for Makefile";
     changelog = "https://github.com/kyu08/fzf-make/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sigmanificient
     ];
+
     mainProgram = "fzf-make";
   };
 })

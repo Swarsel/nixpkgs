@@ -18,13 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jI+w/jCFslQSNeIS7mwb+LZSawU4XjbSNNgpvuShH1g=";
   };
 
-  buildInputs = [
-    alsa-lib
-    ladspa-header
-  ];
-
-  makeFlags = [ "DESTDIR=$(out)" ];
-
   # Borrowed from Arch Linux's AUR
   patches = [
     # Adds executable permissions to resulting libraries
@@ -35,6 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     sed -i 's#/usr/lib/ladspa/caps\.so#${caps}/lib/ladspa/caps\.so#g' ctl_equal.c pcm_equal.c
   '';
+
+  buildInputs = [
+    alsa-lib
+    ladspa-header
+  ];
+
+  makeFlags = [ "DESTDIR=$(out)" ];
 
   preInstall = ''
     mkdir -p "$out/lib/alsa-lib"

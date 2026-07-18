@@ -3,9 +3,9 @@
 # `--name` flag.
 {
   lib,
-  runCommandLocal,
   buildFactorApplication,
   buildFactorVocab,
+  runCommandLocal,
 }:
 
 let
@@ -23,23 +23,27 @@ let
   vocab = buildFactorVocab {
     inherit version;
     pname = "hello";
+
     src = fs.toSource {
-      root = ./extra;
       fileset = fs.difference (fs.fileFilter factorFilter ./extra/hello) ./extra/hello/cli;
+      root = ./extra;
     };
+
     vocabName = "hello";
   };
 
   app = buildFactorApplication {
     inherit version;
     pname = "hello-cli";
+
     src = fs.toSource {
-      root = ./extra;
       fileset = fs.fileFilter factorFilter ./extra/hello/cli;
+      root = ./extra;
     };
-    vocabName = "hello.cli";
+
     binName = "hello";
     extraVocabs = [ vocab ];
+    vocabName = "hello.cli";
   };
 in
 runCommandLocal "assert-factor-hello-world"

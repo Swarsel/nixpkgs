@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qt6,
   nix-update-script,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,10 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtwayland
   ];
 
-  qmakeFlags = [
-    "./example/qhexedit.pro"
-  ];
-
   # A custom installPhase is needed because no [native] build input provides an installPhase hook
   installPhase = ''
     runHook preInstall
@@ -46,6 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  qmakeFlags = [
+    "./example/qhexedit.pro"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -57,9 +57,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Hex Editor for Qt";
     homepage = "https://github.com/Simsys/qhexedit2";
     changelog = "https://github.com/Simsys/qhexedit2/releases";
-    mainProgram = "qhexedit";
     license = lib.licenses.lgpl21Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pandapip1 ];
+    platforms = lib.platforms.all;
+    mainProgram = "qhexedit";
   };
 })

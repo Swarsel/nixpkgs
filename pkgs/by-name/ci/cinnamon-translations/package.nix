@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/linuxmint/cinnamon-translations";
     description = "Translations files for the Cinnamon desktop";
+    homepage = "https://github.com/linuxmint/cinnamon-translations";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

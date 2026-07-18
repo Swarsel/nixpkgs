@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
   copyDesktopItems,
+  groff,
   installShellFiles,
+  libxext,
+  libxmu,
+  libxt,
+  makeDesktopItem,
   motif,
   openssl,
-  groff,
-  libxt,
-  libxmu,
-  libxext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,15 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-zWINscuRO7k/q3u1hngcIkfOpxX75HUxxB2X41igdBg=";
   };
+
+  patches = [
+    ./add-cross-compilation-support.patch
+  ];
+
+  postPatch = ''
+    cd GUI/xephem
+    substituteInPlace xephem.c splash.c --replace-fail '/etc/XEphem' '${placeholder "out"}/etc/XEphem'
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -38,30 +47,15 @@ stdenv.mkDerivation (finalAttrs: {
     libxt
   ];
 
-  patches = [
-    ./add-cross-compilation-support.patch
-  ];
-
-  postPatch = ''
-    cd GUI/xephem
-    substituteInPlace xephem.c splash.c --replace-fail '/etc/XEphem' '${placeholder "out"}/etc/XEphem'
-  '';
-
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
-  enableParallelBuilding = true;
-
-  doCheck = true;
-
-  checkFlags = "-C ../../tests";
-
-  checkTarget = "run-test";
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "AR=${stdenv.cc.targetPrefix}ar"
     "RANLIB=${stdenv.cc.targetPrefix}ranlib"
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  doCheck = true;
+  checkFlags = "-C ../../tests";
 
   installPhase = ''
     runHook preInstall
@@ -81,21 +75,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  checkTarget = "run-test";
+
   desktopItems = [
     (makeDesktopItem {
-      name = "xephem";
-      exec = "xephem";
-      icon = "XEphem";
-      desktopName = "XEphem";
       categories = [
         "Science"
         "Astronomy"
       ];
+
+      desktopName = "XEphem";
+      exec = "xephem";
+      icon = "XEphem";
+      name = "xephem";
     })
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Interactive astronomy program for all UNIX platforms";
+
     longDescription = ''
       Xephem is an interactive astronomical ephemeris program for X Windows systems. It computes
       heliocentric, geocentric and topocentric information for fixed celestial objects and objects
@@ -103,10 +103,11 @@ stdenv.mkDerivation (finalAttrs: {
       moons of Jupiter, Saturn and Earth; Mars' and Jupiter's central meridian longitude; Saturn's
       rings; and Jupiter's Great Red Spot.
     '';
-    mainProgram = "xephem";
+
     homepage = "https://xephem.github.io/XEphem/Site/xephem.html";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xephem";
   };
 })

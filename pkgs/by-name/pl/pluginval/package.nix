@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   fontconfig,
   freetype,
+  ladspa-header,
   libx11,
   libxcomposite,
   libxcursor,
@@ -15,12 +15,13 @@
   libxinerama,
   libxrandr,
   libxtst,
-  ladspa-header,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "pluginval";
   version = "1.0.4";
+
   src = fetchFromGitHub {
     owner = "Tracktion";
     repo = "pluginval";

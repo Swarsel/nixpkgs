@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   just,
-  pkg-config,
-  wayland,
   nix-update-script,
   nixosTests,
+  pkg-config,
+  rustPlatform,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,18 +22,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Jimw6YCRouG9FDlLBp15OOCRlywBIaP/K/bXLR7trQM=";
   };
 
-  cargoHash = "sha256-QWSPj7bxxWh5/KeNEtUsfDKg+JMONLjomrMcn57j6fw=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     just
     pkg-config
   ];
 
   buildInputs = [ wayland ];
-
+  cargoHash = "sha256-QWSPj7bxxWh5/KeNEtUsfDKg+JMONLjomrMcn57j6fw=";
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -45,6 +41,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "cargo-target-dir"
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -65,11 +63,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-randr";
     description = "Library and utility for displaying and configuring Wayland outputs";
+    homepage = "https://github.com/pop-os/cosmic-randr";
     license = lib.licenses.mpl20;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
     mainProgram = "cosmic-randr";
+    teams = [ lib.teams.cosmic ];
   };
 })

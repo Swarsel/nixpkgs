@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   php,
   versionCheckHook,
 }:
@@ -16,11 +16,10 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-g5e/yfvfq55MQDux3JRDvhaYEay68Q4u1VfIwDRgv7I=";
   };
 
-  composerLock = ./composer.lock;
   vendorHash = "sha256-tAS4EAFb3SyL3j6oIB+YTyZPQcrRbyDFt4QzOwEB8wU=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  composerLock = ./composer.lock;
   versionCheckProgramArg = "--version";
 
   meta = {

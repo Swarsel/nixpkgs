@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
-  pytest,
+  buildPythonPackage,
   decopatch,
   makefun,
-  six,
-  pytestCheckHook,
   numpy,
   pandas,
-  tabulate,
+  pytest,
   pytest-cases,
+  pytestCheckHook,
+  setuptools-scm,
+  six,
+  tabulate,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-harvest";
   version = "1.10.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "smarie";
@@ -56,6 +55,7 @@ buildPythonPackage rec {
     pytest-cases
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytest_harvest" ];
 
   meta = {

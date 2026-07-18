@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   drawille,
+  fetchPypi,
   matplotlib,
 }:
 
@@ -10,20 +10,18 @@ buildPythonPackage rec {
   pname = "drawilleplot";
   version = "0.1.0";
 
-  format = "setuptools";
-
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-ZEDroo7KkI2VxdESb2QDX+dPY4UahuuK9L0EddrxJjQ=";
   };
-
-  doCheck = false; # does not have any tests at all
 
   propagatedBuildInputs = [
     drawille
     matplotlib
   ];
 
+  doCheck = false; # does not have any tests at all
+  format = "setuptools";
   pythonImportsCheck = [ "drawilleplot" ];
 
   meta = {

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "zeekscript";
   version = "1.3.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zeek";
@@ -16,6 +15,12 @@ python3.pkgs.buildPythonApplication rec {
     hash = "sha256-yky9w1G4e/dfzOGHXqKGxRgD8Uw9X8oJDjT4avJ9wKM=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
+
+  checkInputs = with python3.pkgs; [ syrupy ];
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -24,12 +29,7 @@ python3.pkgs.buildPythonApplication rec {
     tree-sitter-zeek
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
-  checkInputs = with python3.pkgs; [ syrupy ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "zeekscript"
@@ -40,6 +40,7 @@ python3.pkgs.buildPythonApplication rec {
     homepage = "https://github.com/zeek/zeekscript";
     changelog = "https://github.com/zeek/zeekscript/blob/${src.rev}/CHANGES";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       fab
       tobim

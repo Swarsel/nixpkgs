@@ -7,7 +7,6 @@
 bundlerApp {
   pname = "waterfurnace_aurora";
 
-  gemdir = ./.;
   exes = [
     "aurora_fetch"
     "aurora_mock"
@@ -16,13 +15,14 @@ bundlerApp {
     "web_aid_tool"
   ];
 
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "waterfurnace_aurora";
 
   meta = {
     description = "Tools for communication with WaterFurnace Aurora control systems";
     homepage = "https://github.com/ccutrer/waterfurnace_aurora";
     license = lib.licenses.mit;
-    mainProgram = "aurora_mqtt_bridge";
     maintainers = with lib.maintainers; [ majiir ];
+    mainProgram = "aurora_mqtt_bridge";
   };
 }

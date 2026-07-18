@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,21 +19,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-m9426zuxp9GfbYoljW49BVgetLTqqcqGHCb7I+Yw+bc=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Formatter for the leptos view! macro";
-    mainProgram = "leptosfmt";
     homepage = "https://github.com/bram209/leptosfmt";
     changelog = "https://github.com/bram209/leptosfmt/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "leptosfmt";
   };
 })

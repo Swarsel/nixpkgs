@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  installShellFiles,
-  pandoc,
-  testers,
-  lsd,
   git,
+  installShellFiles,
+  lsd,
+  pandoc,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,12 +20,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-BDwptBRGy2IGc3FrgFZ1rt/e1bpKs1Y0C3H4JfqRqHc=";
   };
 
-  cargoHash = "sha256-TcC8ZY8Xv0076bLrprXGPh5nyGnR2NRnGeuTSEK4+Gg=";
-
   nativeBuildInputs = [
     installShellFiles
     pandoc
   ];
+
+  cargoHash = "sha256-TcC8ZY8Xv0076bLrprXGPh5nyGnR2NRnGeuTSEK4+Gg=";
+  nativeCheckInputs = [ git ];
 
   postInstall = ''
     pandoc --standalone --to man doc/lsd.md -o lsd.1
@@ -37,18 +38,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh $releaseDir/build/lsd-*/out/_lsd
   '';
 
-  nativeCheckInputs = [ git ];
-
   passthru.tests.version = testers.testVersion { package = lsd; };
 
   meta = {
-    homepage = "https://github.com/lsd-rs/lsd";
     description = "Next gen ls command";
+    homepage = "https://github.com/lsd-rs/lsd";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       zowoq
       SuperSandro2000
     ];
+
     mainProgram = "lsd";
   };
 })

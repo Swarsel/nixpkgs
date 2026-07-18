@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  pytestCheckHook,
   numpy,
+  pytestCheckHook,
   typing-extensions,
   xarray,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "xarray-dataclass";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xarray-contrib";
@@ -21,11 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-NHJvrkoRhq5cPSBBMWzrWVn+3sPvveMRgTXc/NdLfuA=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatchling
   ];
-
-  pythonRelaxDeps = [ "xarray" ];
 
   dependencies = [
     numpy
@@ -33,9 +32,9 @@ buildPythonPackage (finalAttrs: {
     xarray
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "xarray_dataclass" ];
+  pythonRelaxDeps = [ "xarray" ];
 
   meta = {
     description = "Xarray data creation made easy by dataclass";

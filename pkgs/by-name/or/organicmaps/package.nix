@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  pkg-config,
-  which,
-  python3,
-  rsync,
-  qt6,
-  libGLU,
-  libGL,
-  zlib,
-  icu,
-  freetype,
-  pugixml,
-  libxrandr,
-  libxinerama,
-  libxcursor,
-  gflags,
-  expat,
-  jansson,
   boost,
+  cmake,
+  expat,
   fast-float,
-  utf8cpp,
+  freetype,
+  gflags,
+  icu,
+  jansson,
+  libGL,
+  libGLU,
+  libxcursor,
+  libxinerama,
+  libxrandr,
+  ninja,
   nix-update-script,
+  pkg-config,
+  pugixml,
+  python3,
+  qt6,
+  rsync,
+  utf8cpp,
+  which,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -95,13 +95,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    # darwin: "invalid application of 'sizeof' to a function type"
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "https://organicmaps.app/";
     description = "Detailed Offline Maps for Travellers, Tourists, Hikers and Cyclists";
+    homepage = "https://organicmaps.app/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
     mainProgram = "OMaps";
+    # darwin: "invalid application of 'sizeof' to a function type"
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

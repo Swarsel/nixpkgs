@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -19,8 +19,8 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://abrudz.github.io/APL386/";
     description = "APL385 Unicode font evolved";
+    homepage = "https://abrudz.github.io/APL386/";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ sigmanificient ];
     platforms = lib.platforms.all;

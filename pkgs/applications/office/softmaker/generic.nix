@@ -1,39 +1,34 @@
 {
   lib,
   stdenv,
+  archive,
   autoPatchelfHook,
-  makeDesktopItem,
-  makeWrapper,
   copyDesktopItems,
-
+  # For fixing up execution of /bin/ls, which is necessary for
+  # product unlocking.
+  coreutils,
   # Dynamic Libraries
   curl,
+  edition,
   glib,
+  # Extra utilities used by the SoftMaker applications.
+  gnugrep,
   gst_all_1,
   libGL,
+  libredirect,
   libx11,
   libxext,
   libxmu,
   libxrandr,
   libxrender,
-
-  # For fixing up execution of /bin/ls, which is necessary for
-  # product unlocking.
-  coreutils,
-  libredirect,
-
-  # Extra utilities used by the SoftMaker applications.
-  gnugrep,
-  util-linux,
-  which,
-
+  makeDesktopItem,
+  makeWrapper,
   pname,
-  version,
-  edition,
-  suiteName,
   src,
-  archive,
-
+  suiteName,
+  util-linux,
+  version,
+  which,
   ...
 }:
 
@@ -45,7 +40,6 @@ let
 in
 stdenv.mkDerivation {
   inherit pname src;
-
   version = if edition != "" then "${edition}.${version}" else version;
 
   nativeBuildInputs = [
@@ -67,20 +61,6 @@ stdenv.mkDerivation {
     libxrender
     (lib.getLib stdenv.cc.cc)
   ];
-
-  dontBuild = true;
-  dontConfigure = true;
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    mkdir installer
-    tar -C installer -xf ${src}
-    mkdir ${pname}
-    tar -C ${pname} -xf installer/${archive}
-
-    runHook postUnpack
-  '';
 
   installPhase =
     let
@@ -153,12 +133,25 @@ stdenv.mkDerivation {
     '';
 
   desktopItems = builtins.attrValues desktopItems;
+  dontBuild = true;
+  dontConfigure = true;
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    mkdir installer
+    tar -C installer -xf ${src}
+    mkdir ${pname}
+    tar -C ${pname} -xf installer/${archive}
+
+    runHook postUnpack
+  '';
 
   meta = {
     description = "Office suite with a word processor, spreadsheet and presentation program";
     homepage = "https://www.softmaker.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ liberodark ];
     platforms = [ "x86_64-linux" ];
   };

@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  SDL2,
   cairo,
   cmake,
   fetchzip,
@@ -12,7 +13,6 @@
   makeBinaryWrapper,
   openssl,
   pixman,
-  SDL2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
+  nativeBuildInputs = [
+    cmake
+    makeBinaryWrapper
+  ];
+
   buildInputs = [
     cairo
     freetype
@@ -38,11 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
     pixman
     SDL2
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    makeBinaryWrapper
   ];
 
   cmakeFlags = [
@@ -95,16 +95,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Clean and innovative Smalltalk-inspired environment";
-    homepage = "https://pharo.org";
-    changelog = "https://github.com/pharo-project/pharo/releases/";
-    license = lib.licenses.mit;
+
     longDescription = ''
       Pharo's goal is to deliver a clean, innovative, free open-source
       Smalltalk-inspired environment. By providing a stable and small core
       system, excellent dev tools, and maintained releases, Pharo is an
       attractive platform to build and deploy mission critical applications.
     '';
-    mainProgram = "pharo";
+
+    homepage = "https://pharo.org";
+    changelog = "https://github.com/pharo-project/pharo/releases/";
+    license = lib.licenses.mit;
     platforms = lib.platforms.linux;
+    mainProgram = "pharo";
   };
 })

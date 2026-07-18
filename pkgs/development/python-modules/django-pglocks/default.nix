@@ -1,21 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
+  fetchPypi,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "django-pglocks";
   version = "1.0.4";
-  format = "setuptools";
-
-  meta = {
-    description = "PostgreSQL locking context managers and functions for Django";
-    homepage = "https://github.com/Xof/django-pglocks";
-    license = lib.licenses.mit;
-  };
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +16,7 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ django ];
+
   propagatedBuildInputs = [
     django
     six
@@ -30,4 +24,11 @@ buildPythonPackage rec {
 
   # tests need a postgres database
   doCheck = false;
+  format = "setuptools";
+
+  meta = {
+    description = "PostgreSQL locking context managers and functions for Django";
+    homepage = "https://github.com/Xof/django-pglocks";
+    license = lib.licenses.mit;
+  };
 }

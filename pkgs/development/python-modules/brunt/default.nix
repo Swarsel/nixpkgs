@@ -1,27 +1,33 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  setuptools-scm,
-  aiohttp,
-  requests,
   pytest-cov-stub,
   pytestCheckHook,
+  requests,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "brunt";
   version = "1.2.0";
 
-  pyproject = true;
-
-  __structuredAttrs = true;
-
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-5wRifce5wKUMZ66Q8dMgsU+Z8rL8m/HvBGGxQdzxvOk=";
   };
+
+  # tests require Brunt hardware
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -33,14 +39,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
-  # tests require Brunt hardware
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "brunt" ];
 
   meta = {

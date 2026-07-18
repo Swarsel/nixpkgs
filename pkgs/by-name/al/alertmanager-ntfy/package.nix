@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nixosTests,
+  buildGoModule,
   nix-update-script,
+  nixosTests,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,8 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-++jIi53fckPkU4ZVgR2DkSfHZlA39w5jx4TfAlcsKIM=";
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 

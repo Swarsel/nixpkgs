@@ -1,6 +1,5 @@
 {
   lib,
-  writeScript,
   stdenv,
   fetchurl,
   alsa-lib,
@@ -18,42 +17,43 @@
   gtk3,
   harfbuzz,
   libdrm,
+  libgbm,
   libgcrypt,
   libglvnd,
   libkrb5,
   libpulseaudio,
   libsecret,
-  udev,
-  libxcb,
-  libxkbcommon,
-  libxcrypt-legacy,
-  lshw,
-  libgbm,
-  nspr,
-  nss,
-  pango,
-  zlib,
-  zstd,
   libx11,
+  libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-util,
+  libxcb-wm,
   libxcomposite,
+  libxcrypt-legacy,
   libxcursor,
   libxdamage,
   libxext,
   libxfixes,
   libxi,
+  libxkbcommon,
   libxrandr,
   libxrender,
-  libxtst,
-  libxshmfence,
-  libxcb-util,
-  libxcb-image,
-  libxcb-keysyms,
-  libxcb-render-util,
-  libxcb-wm,
-  p7zip,
-  onetbb,
-  wayland,
   libxscrnsaver,
+  libxshmfence,
+  libxtst,
+  lshw,
+  nspr,
+  nss,
+  onetbb,
+  p7zip,
+  pango,
+  udev,
+  wayland,
+  writeScript,
+  zlib,
+  zstd,
 }:
 
 stdenv.mkDerivation rec {
@@ -64,6 +64,10 @@ stdenv.mkDerivation rec {
     url = "https://binaries.webex.com/WebexDesktop-Ubuntu-2004-Gold/20260625094602/Webex_ubuntu.7z";
     sha256 = "2420fda7e86883d53751c38a358dc61b3b9a731e20abda8b84dfcd367ecfc67f";
   };
+
+  postPatch = ''
+    substituteInPlace opt/Webex/bin/webex.desktop --replace /opt $out/opt
+  '';
 
   nativeBuildInputs = [
     p7zip
@@ -122,19 +126,6 @@ stdenv.mkDerivation rec {
     wayland
   ];
 
-  libPath = "$out/opt/Webex/lib:$out/opt/Webex/bin:${lib.makeLibraryPath buildInputs}";
-
-  unpackPhase = ''
-    7z x $src
-    mv Webex_ubuntu/opt .
-  '';
-
-  postPatch = ''
-    substituteInPlace opt/Webex/bin/webex.desktop --replace /opt $out/opt
-  '';
-
-  dontPatchELF = true;
-
   buildPhase = ''
     patchelf \
       --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
@@ -159,6 +150,14 @@ stdenv.mkDerivation rec {
     mv "$out/opt/Webex/bin/webex.desktop" "$out/share/applications/webex.desktop"
   '';
 
+  dontPatchELF = true;
+  libPath = "$out/opt/Webex/lib:$out/opt/Webex/bin:${lib.makeLibraryPath buildInputs}";
+
+  unpackPhase = ''
+    7z x $src
+    mv Webex_ubuntu/opt .
+  '';
+
   passthru.updateScript = writeScript "webex-update-script" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p curl jq common-updater-scripts
@@ -177,9 +176,9 @@ stdenv.mkDerivation rec {
   meta = {
     description = "All-in-one app to call, meet, message, and get work done";
     homepage = "https://webex.com/";
-    downloadPage = "https://www.webex.com/downloads.html";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ uvnikita ];
     platforms = [ "x86_64-linux" ];
+    downloadPage = "https://www.webex.com/downloads.html";
   };
 }

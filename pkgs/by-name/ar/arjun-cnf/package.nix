@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
+  boost,
   cmake,
   cryptominisat,
-  boost,
+  fetchpatch,
   louvain-community,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,12 +23,17 @@ stdenv.mkDerivation (finalAttrs: {
   # Can be removed after next release
   patches = [
     (fetchpatch {
-      url = "https://github.com/meelgroup/arjun/commit/34188760f1ab4b1b557c45ccaee8d2b9b6f0b901.patch";
       hash = "sha256-E/yk2ohHP2BAFg353r8EU01bZCqeEjvpJCrBsxPiOWM=";
+      url = "https://github.com/meelgroup/arjun/commit/34188760f1ab4b1b557c45ccaee8d2b9b6f0b901.patch";
     })
     # Based on https://github.com/meelgroup/arjun/commit/99c4ed4ad820674632c5d9bbcc98c001f8cac98f
     ./fix-red-clause.patch
   ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.3 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [ cmake ];
 
@@ -37,11 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     cryptominisat
     louvain-community
   ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.3 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   meta = {
     description = "CNF minimizer and minimal independent set calculator";

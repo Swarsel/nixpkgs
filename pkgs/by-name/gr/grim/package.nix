@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromGitLab,
   libjpeg,
   libpng,
@@ -8,7 +9,6 @@
   pixman,
   pkg-config,
   scdoc,
-  stdenv,
   wayland,
   wayland-protocols,
   wayland-scanner,
@@ -19,17 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.5.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "emersion";
     repo = "grim";
     rev = "v${finalAttrs.version}";
     hash = "sha256-oPo6zrS3gCnviIK0+gPvtal+6c7fNFWtXnAA0YfaS+U=";
+    domain = "gitlab.freedesktop.org";
   };
 
-  depsBuildBuild = [
-    # To find wayland-scanner
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -49,14 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   mesonFlags = [ (lib.mesonBool "werror" false) ];
 
-  strictDeps = true;
+  depsBuildBuild = [
+    # To find wayland-scanner
+    pkg-config
+  ];
 
   meta = {
-    homepage = "https://gitlab.freedesktop.org/emersion/grim";
     description = "Grab images from a Wayland compositor";
+    homepage = "https://gitlab.freedesktop.org/emersion/grim";
     license = lib.licenses.mit;
-    mainProgram = "grim";
     maintainers = with lib.maintainers; [ khaneliman ];
     platforms = lib.platforms.linux;
+    mainProgram = "grim";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jinja2,
   pandas,
   setuptools,
@@ -10,9 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tinyhtml";
   version = "1.3.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "niklasf";
@@ -20,10 +17,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-1DPQFszrNsGNEpEl4c1SNdnNfwi3bcHzCrOWdu+dTGA=";
   };
-
-  build-system = [
-    setuptools
-  ];
 
   nativeCheckInputs = [
     pandas
@@ -36,6 +29,14 @@ buildPythonPackage (finalAttrs: {
     python -m doctest README.rst
     runHook postCheck
   '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "tinyhtml"

@@ -1,13 +1,13 @@
 {
   lib,
-  testers,
   fetchurl,
-  writeShellScriptBin,
-  writeText,
-  jq,
-  moreutils,
   emptyFile,
   hello,
+  jq,
+  moreutils,
+  testers,
+  writeShellScriptBin,
+  writeText,
   ...
 }:
 let
@@ -53,29 +53,31 @@ let
       }))
       (
         {
-          url = "https://www.example.com/source";
           hash = emptyFile.outputHash;
           recursiveHash = true; # aligned with emptyFile
+          url = "https://www.example.com/source";
         }
         // args
       );
 in
 {
   flag-appending-curlOpts = testFlagAppending {
-    name = "test-fetchurl-flag-appending-curlOpts";
     curlOpts = "--foo --bar";
+    name = "test-fetchurl-flag-appending-curlOpts";
   };
 
   flag-appending-curlOptsList = testFlagAppending {
-    name = "test-fetchurl-flag-appending-curlOptsList";
     curlOptsList = [
       "--foo"
       "--bar"
     ];
+
+    name = "test-fetchurl-flag-appending-curlOptsList";
   };
 
   flag-appending-netrcPhase-curlOpts = testFlagAppending {
     name = "test-fetchurl-flag-appending-netrcPhase-curlOpts";
+
     netrcPhase = ''
       touch netrc
       curlOpts="$curlOpts --foo --bar"
@@ -84,10 +86,25 @@ in
 
   flag-appending-netrcPhase-curlOptsList = testFlagAppending {
     name = "test-fetchurl-flag-appending-netrcPhase-curlOptsList";
+
     netrcPhase = ''
       touch netrc
       curlOptsList+=("--foo" "--bar")
     '';
+  };
+
+  # Tests that hashedMirrors works
+  hashedMirrors = testers.invalidateFetcherByDrvHash fetchurl {
+    # No chance
+    curlOptsList = [
+      "--retry"
+      "0"
+    ];
+
+    # A file with this hash is definitely on tarballs.nixos.org
+    sha256 = "1j1y3cq6ys30m734axc0brdm2q9n2as4h32jws15r7w5fwr991km";
+    # Make sure that we can only download from hashed mirrors
+    url = "http://broken";
   };
 
   # Tests that we can send custom headers with spaces in them
@@ -96,38 +113,21 @@ in
       headerValue = "Test '\" <- These are some quotes";
     in
     testers.invalidateFetcherByDrvHash fetchurl {
-      url = "https://httpbin.org/headers";
-      sha256 = builtins.hashString "sha256" (headerValue + "\n");
       curlOptsList = [
         "-H"
         "Hello: ${headerValue}"
       ];
+
       postFetch = ''
         ${jq}/bin/jq -r '.headers.Hello' $out | ${moreutils}/bin/sponge $out
       '';
+
+      sha256 = builtins.hashString "sha256" (headerValue + "\n");
+      url = "https://httpbin.org/headers";
     };
-
-  # Tests that hashedMirrors works
-  hashedMirrors = testers.invalidateFetcherByDrvHash fetchurl {
-    # Make sure that we can only download from hashed mirrors
-    url = "http://broken";
-    # A file with this hash is definitely on tarballs.nixos.org
-    sha256 = "1j1y3cq6ys30m734axc0brdm2q9n2as4h32jws15r7w5fwr991km";
-
-    # No chance
-    curlOptsList = [
-      "--retry"
-      "0"
-    ];
-  };
 
   # Tests that downloadToTemp works with hashedMirrors
   no-skipPostFetch = testers.invalidateFetcherByDrvHash fetchurl {
-    # Make sure that we can only download from hashed mirrors
-    url = "http://broken";
-    # A file with this hash is definitely on tarballs.nixos.org
-    sha256 = "1j1y3cq6ys30m734axc0brdm2q9n2as4h32jws15r7w5fwr991km";
-
     # No chance
     curlOptsList = [
       "--retry"
@@ -135,6 +135,10 @@ in
     ];
 
     downloadToTemp = true;
+    # A file with this hash is definitely on tarballs.nixos.org
+    sha256 = "1j1y3cq6ys30m734axc0brdm2q9n2as4h32jws15r7w5fwr991km";
+    # Make sure that we can only download from hashed mirrors
+    url = "http://broken";
     # Usually postFetch is needed with downloadToTemp to populate $out from
     # $downloadedFile, but here we know that because the URL is broken, it will
     # have to fallback to fetching the previously-built derivation from
@@ -142,12 +146,6 @@ in
   };
 
   showURLs-urls-mirrors = testers.invalidateFetcherByDrvHash fetchurl (finalAttrs: {
-    name = "test-fetchurl-showURLs-urls-mirrors";
-    showURLs = true;
-    urls = [
-      "http://broken"
-    ]
-    ++ hello.src.urls;
     hash =
       let
         hashAlgo = lib.head (lib.splitString "-" lib.fakeHash);
@@ -157,24 +155,20 @@ in
       + builtins.hashString hashAlgo (
         lib.concatStringsSep " " (lib.concatMap fetchurl.resolveUrl finalAttrs.urls) + "\n"
       );
-  });
 
-  urls-simple = testers.invalidateFetcherByDrvHash fetchurl {
-    name = "test-fetchurl-urls-simple";
-    urls = [
-      "http://broken"
-      hello.src.resolvedUrl
-    ];
-    hash = hello.src.outputHash;
-  };
+    name = "test-fetchurl-showURLs-urls-mirrors";
+    showURLs = true;
 
-  urls-mirrors = testers.invalidateFetcherByDrvHash fetchurl rec {
-    name = "test-fetchurl-urls-simple";
     urls = [
       "http://broken"
     ]
     ++ hello.src.urls;
+  });
+
+  urls-mirrors = testers.invalidateFetcherByDrvHash fetchurl rec {
     hash = hello.src.outputHash;
+    name = "test-fetchurl-urls-simple";
+
     postFetch = hello.postFetch or "" + ''
       if ! diff -u ${
         builtins.toFile "urls-resolved-by-eval" (
@@ -185,5 +179,20 @@ in
         exit 1
       fi
     '';
+
+    urls = [
+      "http://broken"
+    ]
+    ++ hello.src.urls;
+  };
+
+  urls-simple = testers.invalidateFetcherByDrvHash fetchurl {
+    hash = hello.src.outputHash;
+    name = "test-fetchurl-urls-simple";
+
+    urls = [
+      "http://broken"
+      hello.src.resolvedUrl
+    ];
   };
 }

@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  equinox,
-  jax,
-  jaxtyping,
-  optax,
-  paramax,
-  tqdm,
-
   # tests
   beartype,
+  buildPythonPackage,
+  # dependencies
+  equinox,
+  # build-system
+  hatchling,
+  jax,
+  jaxtyping,
   numpyro,
+  optax,
+  paramax,
   pytest-xdist,
   pytestCheckHook,
+  tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "flowjax";
   version = "18.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "danielward27";
@@ -32,6 +28,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-c7KuU5SQe3NIkcYCRHJXk2dkAWUXp6l37nci5qX1s38=";
   };
+
+  nativeCheckInputs = [
+    beartype
+    numpyro
+    pytest-xdist
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -46,14 +49,8 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "flowjax" ];
-
-  nativeCheckInputs = [
-    beartype
-    numpyro
-    pytest-xdist
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Distributions, bijections and normalizing flows using Equinox and JAX";

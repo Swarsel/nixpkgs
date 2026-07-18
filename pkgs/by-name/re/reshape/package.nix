@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  postgresqlTestHook,
   postgresql,
+  postgresqlTestHook,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -32,10 +32,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Easy-to-use, zero-downtime schema migration tool for Postgres";
-    mainProgram = "reshape";
     homepage = "https://github.com/fabianlindfors/reshape";
     changelog = "https://github.com/fabianlindfors/reshape/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ilyakooo0 ];
+    mainProgram = "reshape";
   };
 })

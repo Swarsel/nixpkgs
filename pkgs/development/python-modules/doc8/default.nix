@@ -16,21 +16,19 @@
 buildPythonPackage rec {
   pname = "doc8";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-EmetMnWJcfvPmRRCQXo5Nce8nlJVDnNiLg5WulXqHUA=";
   };
 
-  pythonRelaxDeps = [ "docutils" ];
+  buildInputs = [ pbr ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools-scm
     wheel
   ];
-
-  buildInputs = [ pbr ];
 
   dependencies = [
     docutils
@@ -40,20 +38,21 @@ buildPythonPackage rec {
     pygments
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::PendingDeprecationWarning"
   ];
 
   pythonImportsCheck = [ "doc8" ];
+  pythonRelaxDeps = [ "docutils" ];
 
   meta = {
     description = "Style checker for Sphinx (or other) RST documentation";
-    mainProgram = "doc8";
     homepage = "https://github.com/pycqa/doc8";
     changelog = "https://github.com/PyCQA/doc8/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ onny ];
+    mainProgram = "doc8";
   };
 }

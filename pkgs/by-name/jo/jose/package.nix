@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  pkg-config,
-  ninja,
   asciidoc,
-  zlib,
   jansson,
+  meson,
+  ninja,
   openssl,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,32 +22,34 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-rMNPJaCtVpbwIkMQzBNpmRct6S/NelTwjmsuB0RP6R8=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "man"
+  ];
+
   nativeBuildInputs = [
     meson
     pkg-config
     ninja
     asciidoc
   ];
+
   buildInputs = [
     zlib
     jansson
     openssl
   ];
 
-  outputs = [
-    "out"
-    "dev"
-    "man"
-  ];
   enableParallelBuilding = true;
 
   meta = {
     description = "C-language implementation of Javascript Object Signing and Encryption";
-    mainProgram = "jose";
     homepage = "https://github.com/latchset/jose";
-    maintainers = [ ];
     license = lib.licenses.asl20;
+    maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "jose";
     # The last successful Darwin Hydra build was in 2024
     broken = stdenv.hostPlatform.isDarwin;
   };

@@ -8,20 +8,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-awscrt";
   version = "0.34.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_awscrt";
     inherit (finalAttrs) version;
     hash = "sha256-VZqgQlD2pBmmF9+3iPPhCQOq90cA7yPlIbZKQRuDuAM=";
+    pname = "types_awscrt";
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "awscrt-stubs" ];
 
   # Module has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "awscrt-stubs" ];
 
   meta = {
     description = "Type annotations and code completion for awscrt";

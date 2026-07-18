@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoPatchelfHook,
   cmake,
-  fetchFromGitHub,
   installShellFiles,
-  lib,
   libGL,
-  ninja,
-  stdenv,
-  tacent,
   libx11,
   libxcb,
+  ninja,
+  tacent,
   zenity,
 }:
 
@@ -39,8 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     zenity
   ];
 
-  runtimeDependencies = [ libGL ];
-
   cmakeFlags = [
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_TACENT" "${tacent.src}")
     (lib.cmakeBool "PACKAGE_NIX" true)
@@ -59,13 +57,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  runtimeDependencies = [ libGL ];
+
   meta = {
     description = "Image and texture viewer";
     homepage = "https://github.com/bluescan/tacentview";
     changelog = "https://github.com/bluescan/tacentview/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ PopeRigby ];
-    mainProgram = "tacentview";
     platforms = with lib.platforms; linux ++ windows;
+    mainProgram = "tacentview";
   };
 })

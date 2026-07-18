@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   mercurial,
+  stdenvNoCC,
 }:
 
 lib.extendMkDerivation {
@@ -10,26 +10,23 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      name ? null,
       url,
+      fetchSubrepos ? false,
+      hash ? null,
+      name ? null,
+      preferLocalBuild ? true,
       rev ? null,
       sha256 ? null,
-      hash ? null,
-      fetchSubrepos ? false,
-      preferLocalBuild ? true,
     }:
     # TODO: statically check if mercurial has https support if the url starts with https.
     {
-      name = "hg-archive" + (lib.optionalString (name != null) "-${name}");
-      builder = ./builder.sh;
+      inherit url rev hash;
+      inherit preferLocalBuild;
       nativeBuildInputs = [ mercurial ];
-
+      builder = ./builder.sh;
       impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+      name = "hg-archive" + (lib.optionalString (name != null) "-${name}");
 
-      subrepoClause = lib.optionalString fetchSubrepos "S";
-
-      outputHashAlgo = if finalAttrs.hash != null && finalAttrs.hash != "" then null else "sha256";
-      outputHashMode = "recursive";
       outputHash =
         if (hash != null && sha256 != null) then
           throw "Only one of sha256 or hash can be set"
@@ -43,8 +40,9 @@ lib.extendMkDerivation {
               ""
           );
 
-      inherit url rev hash;
-      inherit preferLocalBuild;
+      outputHashAlgo = if finalAttrs.hash != null && finalAttrs.hash != "" then null else "sha256";
+      outputHashMode = "recursive";
+      subrepoClause = lib.optionalString fetchSubrepos "S";
     };
 
   # No ellipsis

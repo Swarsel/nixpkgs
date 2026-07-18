@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
   cmake,
-  libxslt,
   docbook_xsl_ns,
+  installShellFiles,
   kdePackages,
-  libusb1,
   librsvg,
+  libusb1,
+  libxslt,
   yaml-cpp,
 }:
 
@@ -26,6 +26,20 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-epttTJbqOtkacIu7IfBCAG1aGk02+0Ncalo7wRz+44k=";
   };
+
+  postPatch =
+    let
+      file = "doc/docbook_man.${if isLinux then "debian" else "macports"}.xsl";
+      path =
+        if isLinux then
+          "/usr/share/xml/docbook/stylesheet/docbook-xsl"
+        else
+          "/opt/local/share/xsl/docbook-xsl-nons";
+    in
+    ''
+      substituteInPlace ${file} \
+        --replace ${path}/manpages/docbook\.xsl ${docbook_xsl_ns}/xml/xsl/docbook/manpages/docbook.xsl
+    '';
 
   nativeBuildInputs = [
     cmake
@@ -45,20 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     yaml-cpp
   ];
 
-  postPatch =
-    let
-      file = "doc/docbook_man.${if isLinux then "debian" else "macports"}.xsl";
-      path =
-        if isLinux then
-          "/usr/share/xml/docbook/stylesheet/docbook-xsl"
-        else
-          "/opt/local/share/xsl/docbook-xsl-nons";
-    in
-    ''
-      substituteInPlace ${file} \
-        --replace ${path}/manpages/docbook\.xsl ${docbook_xsl_ns}/xml/xsl/docbook/manpages/docbook.xsl
-    '';
-
   cmakeFlags = [
     "-DBUILD_MAN=ON"
     "-DCMAKE_INSTALL_FULL_MANDIR=share/man"
@@ -77,10 +77,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GUI application and command line tool for programming DMR radios";
     homepage = "https://dm3mat.darc.de/qdmr/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       _0x4A6F
       juliabru
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

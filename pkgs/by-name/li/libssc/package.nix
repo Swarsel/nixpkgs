@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromCodeberg,
+  glib,
+  libqmi,
   meson,
   ninja,
-  glib,
   pkg-config,
-  libqmi,
-  protobufc,
   protobuf,
+  protobufc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,14 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vc3phLAURKXAVD/o4uiGkBtJ3wsbLEfkwygMltEhqug=";
   };
 
-  buildInputs = [
-    glib
-    protobufc
-  ];
-
-  propagatedBuildInputs = [
-    libqmi
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     protobuf
@@ -39,14 +32,21 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
   ];
 
-  strictDeps = true;
+  buildInputs = [
+    glib
+    protobufc
+  ];
+
+  propagatedBuildInputs = [
+    libqmi
+  ];
 
   meta = {
     description = "Library for exposing Qualcomm Sensor Core sensors to Linux";
     homepage = "https://codeberg.org/DylanVanAssche/libssc";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    mainProgram = "libssc";
     platforms = lib.platforms.all;
+    mainProgram = "libssc";
   };
 })

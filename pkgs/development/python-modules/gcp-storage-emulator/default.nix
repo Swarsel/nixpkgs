@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   fs,
   google-cloud-storage,
   google-crc32c,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "gcp-storage-emulator";
   version = "2024.08.03";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oittaa";
@@ -22,6 +21,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Lp9Wvod0wSE2+cnvLXguhagT30ax9TivyR8gC/kB7w0=";
   };
+
+  nativeCheckInputs = [
+    google-cloud-storage
+    pytest-cov-stub
+    pytestCheckHook
+    requests
+  ];
 
   build-system = [
     setuptools
@@ -32,16 +38,11 @@ buildPythonPackage rec {
     google-crc32c
   ];
 
-  nativeCheckInputs = [
-    google-cloud-storage
-    pytest-cov-stub
-    pytestCheckHook
-    requests
-  ];
-
   disabledTests = [
     "test_invalid_crc32c_hash" # AssertionError
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "gcp_storage_emulator"

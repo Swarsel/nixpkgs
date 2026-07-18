@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "stevenblack-blocklist";
@@ -29,9 +29,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     "social"
   ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -54,12 +51,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Unified hosts file with base extensions";
     homepage = "https://github.com/StevenBlack/hosts";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       moni
       Guanran928

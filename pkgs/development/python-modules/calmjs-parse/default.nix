@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   ply,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "calmjs-parse";
   version = "1.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "calmjs";
@@ -24,6 +23,10 @@ buildPythonPackage rec {
       --replace-fail "env['PYTHONPATH'] = 'src'" "env['PYTHONPATH'] += ':src'"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +34,7 @@ buildPythonPackage rec {
     ply
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "calmjs.parse"
@@ -46,9 +47,9 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    changelog = "https://github.com/calmjs/calmjs.parse/blob/${src.tag}/CHANGES.rst";
     description = "Various parsers for ECMA standards";
     homepage = "https://github.com/calmjs/calmjs.parse";
+    changelog = "https://github.com/calmjs/calmjs.parse/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

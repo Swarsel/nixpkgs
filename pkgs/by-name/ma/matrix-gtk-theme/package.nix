@@ -1,17 +1,17 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gnome-shell,
-  sassc,
   gnome-themes-extra,
   gtk-engine-murrine,
+  sassc,
+  stdenvNoCC,
   unstableGitUpdater,
   colorVariants ? [ ],
+  iconVariants ? [ ],
   sizeVariants ? [ ],
   themeVariants ? [ ],
   tweakVariants ? [ ],
-  iconVariants ? [ ],
 }:
 
 let
@@ -79,21 +79,16 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants lib
       hash = "sha256-RJKHSBj33QR9ahkMd2HwG7FCUB8gtfTzIp0174TPHPE=";
     };
 
-    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+    postPatch = ''
+      patchShebangs themes/install.sh
+    '';
 
     nativeBuildInputs = [
       gnome-shell
       sassc
     ];
+
     buildInputs = [ gnome-themes-extra ];
-
-    dontBuild = true;
-
-    passthru.updateScript = unstableGitUpdater { };
-
-    postPatch = ''
-      patchShebangs themes/install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -112,6 +107,10 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants lib
       ''}
       runHook postInstall
     '';
+
+    dontBuild = true;
+    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+    passthru.updateScript = unstableGitUpdater { };
 
     meta = {
       description = "GTK theme based on the Matrix colour palette";

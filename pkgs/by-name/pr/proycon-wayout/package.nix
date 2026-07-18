@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  cairo,
+  cmake,
   fetchFromSourcehut,
   meson,
-  wayland-protocols,
-  wayland,
-  cairo,
-  pango,
-  scdoc,
   ninja,
-  cmake,
+  pango,
   pkg-config,
+  scdoc,
+  wayland,
+  wayland-protocols,
   wayland-scanner,
 }:
 
@@ -29,12 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace meson.build --replace "'werror=true'," "" # Build fails with -Werror, remove
   '';
 
-  postFixup = ''
-    mv $out/bin/wayout $out/bin/proycon-wayout # Avoid conflict with shinyzenith/wayout
-  '';
-
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     scdoc
     ninja
@@ -43,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     wayland-scanner
   ];
+
   buildInputs = [
     wayland-protocols
     wayland
@@ -50,12 +47,18 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
+  postFixup = ''
+    mv $out/bin/wayout $out/bin/proycon-wayout # Avoid conflict with shinyzenith/wayout
+  '';
+
+  depsBuildBuild = [ pkg-config ];
+
   meta = {
     description = "Takes text from standard input and outputs it to a desktop-widget on Wayland desktops";
     homepage = "https://git.sr.ht/~proycon/wayout";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ wentam ];
+    platforms = lib.platforms.linux;
     mainProgram = "proycon-wayout";
   };
 })

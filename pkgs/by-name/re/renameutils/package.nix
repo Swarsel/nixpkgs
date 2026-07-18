@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  readline,
   coreutils,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,19 +28,18 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "ls_program = xstrdup(\"ls\")" "ls_program = xstrdup(\"${coreutils}/bin/ls\")"
   '';
 
+  nativeBuildInputs = [ readline ];
   # Fix build with gcc 15
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
-  nativeBuildInputs = [ readline ];
 
   preConfigure = lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) ''
     export ac_cv_func_lstat64=no
   '';
 
   meta = {
-    homepage = "https://www.nongnu.org/renameutils/";
     description = "Set of programs to make renaming of files faster";
-    platforms = lib.platforms.unix;
+    homepage = "https://www.nongnu.org/renameutils/";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.unix;
   };
 })

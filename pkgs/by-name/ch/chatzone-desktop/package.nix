@@ -1,11 +1,11 @@
 {
   lib,
-  appimageTools,
   fetchurl,
-  stdenvNoCC,
-  makeDesktopItem,
+  appimageTools,
   copyDesktopItems,
+  makeDesktopItem,
   makeWrapper,
+  stdenvNoCC,
 }:
 
 let
@@ -19,31 +19,11 @@ let
 in
 stdenvNoCC.mkDerivation {
   inherit pname version;
-
   src = appimageTools.wrapType2 { inherit pname version src; };
 
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "chatzone";
-      exec = "chatzone-desktop";
-      icon = "chatzone-desktop";
-      terminal = false;
-      desktopName = "Chatzone";
-      genericName = "Ozon corporate messenger";
-      comment = "Chatzone Desktop application for Linux";
-      categories = [
-        "Network"
-        "InstantMessaging"
-        "Chat"
-      ];
-      startupWMClass = "Chatzone";
-      mimeTypes = [ "x-scheme-handler/mattermost" ];
-    })
   ];
 
   installPhase = ''
@@ -62,14 +42,34 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "InstantMessaging"
+        "Chat"
+      ];
+
+      comment = "Chatzone Desktop application for Linux";
+      desktopName = "Chatzone";
+      exec = "chatzone-desktop";
+      genericName = "Ozon corporate messenger";
+      icon = "chatzone-desktop";
+      mimeTypes = [ "x-scheme-handler/mattermost" ];
+      name = "chatzone";
+      startupWMClass = "Chatzone";
+      terminal = false;
+    })
+  ];
+
   meta = {
     description = "Ozon corporate messenger";
-    mainProgram = "chatzone-desktop";
     homepage = "https://apps.o3team.ru/";
-    downloadPage = "https://apps.o3team.ru/";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ lib.maintainers.progrm_jarvis ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "chatzone-desktop";
+    downloadPage = "https://apps.o3team.ru/";
   };
 }

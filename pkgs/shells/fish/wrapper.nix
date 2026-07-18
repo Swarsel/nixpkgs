@@ -1,7 +1,7 @@
 {
   lib,
-  writeShellApplication,
   fish,
+  writeShellApplication,
   writeTextFile,
 }:
 
@@ -97,12 +97,12 @@ lib.makeOverridable (
   */
   {
     completionDirs ? [ ],
-    functionDirs ? [ ],
     confDirs ? [ ],
-    pluginPkgs ? [ ],
+    functionDirs ? [ ],
     localConfig ? "",
-    shellAliases ? { },
+    pluginPkgs ? [ ],
     runtimeInputs ? [ ],
+    shellAliases ? { },
   }:
 
   let
@@ -111,8 +111,9 @@ lib.makeOverridable (
     );
 
     shellAliasesFishConfig = writeTextFile {
-      name = "wrapfish.aliases.fish";
       destination = "/share/fish/vendor_conf.d/aliases.fish";
+      name = "wrapfish.aliases.fish";
+
       text = ''
         status is-interactive; and begin
           # Aliases
@@ -122,8 +123,8 @@ lib.makeOverridable (
     };
 
     localFishConfig = writeTextFile {
-      name = "wrapfish.local.fish";
       destination = "/share/fish/vendor_conf.d/config.local.fish";
+      name = "wrapfish.local.fish";
       text = localConfig;
     };
 
@@ -142,6 +143,7 @@ lib.makeOverridable (
   writeShellApplication {
     inherit runtimeInputs;
     name = "fish";
+
     text = ''
       ${fish}/bin/fish --init-command "
         set --prepend fish_complete_path ${lib.escapeShellArgs complPath}

@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
-  installShellFiles,
   fetchpatch,
+  installShellFiles,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "watson";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -22,21 +21,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     # https://github.com/jazzband/Watson/pull/473
     (fetchpatch {
       name = "fix-completion.patch";
-      url = "https://github.com/jazzband/Watson/commit/43ad061a981eb401c161266f497e34df891a5038.patch";
       sha256 = "sha256-v8/asP1wooHKjyy9XXB4Rtf6x+qmGDHpRoHEne/ZCxc=";
+      url = "https://github.com/jazzband/Watson/commit/43ad061a981eb401c161266f497e34df891a5038.patch";
     })
   ];
 
   nativeBuildInputs = [ installShellFiles ];
-
-  build-system = with python3.pkgs; [ setuptools ];
-
-  dependencies = with python3.pkgs; [
-    arrow
-    click
-    click-didyoumean
-    requests
-  ];
 
   nativeCheckInputs = with python3.pkgs; [
     pytestCheckHook
@@ -51,16 +41,28 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     installShellCompletion --fish watson.fish
   '';
 
+  build-system = with python3.pkgs; [ setuptools ];
+
+  dependencies = with python3.pkgs; [
+    arrow
+    click
+    click-didyoumean
+    requests
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "watson" ];
 
   meta = {
-    homepage = "https://github.com/jazzband/Watson";
     description = "Wonderful CLI to track your time";
-    mainProgram = "watson";
+    homepage = "https://github.com/jazzband/Watson";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mguentner
       nathyong
     ];
+
+    mainProgram = "watson";
   };
 })

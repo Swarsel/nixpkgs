@@ -22,26 +22,29 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
-  buildInputs = [ gtest ];
 
+  buildInputs = [ gtest ];
   # C++17 required by latest gtest
   env.NIX_CFLAGS_COMPILE = "-std=c++17";
-
   doCheck = true;
 
   meta = {
     description = "C++ Core Guideline support library";
+
     longDescription = ''
       The Guideline Support Library (GSL) contains functions and types that are suggested for
       use by the C++ Core Guidelines maintained by the Standard C++ Foundation.
       This package contains Microsoft's implementation of GSL.
     '';
+
     homepage = "https://github.com/Microsoft/GSL";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       yuriaisaka
     ];
+
+    platforms = lib.platforms.all;
   };
 })

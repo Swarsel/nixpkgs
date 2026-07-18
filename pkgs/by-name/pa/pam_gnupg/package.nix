@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pam,
   gnupg,
+  pam,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,23 +18,25 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-6I9a841qohA42lhOgZf/hharnjkthuB8lRptPDxUgMI=";
   };
 
-  configureFlags = [
-    "--with-moduledir=${placeholder "out"}/lib/security"
-  ];
+  nativeBuildInputs = [ autoreconfHook ];
 
   buildInputs = [
     pam
     gnupg
   ];
 
-  nativeBuildInputs = [ autoreconfHook ];
+  configureFlags = [
+    "--with-moduledir=${placeholder "out"}/lib/security"
+  ];
 
   meta = {
     description = "Unlock GnuPG keys on login";
+
     longDescription = ''
       A PAM module that hands over your login password to gpg-agent. This can
       be useful if you are using a GnuPG-based password manager like pass.
     '';
+
     homepage = "https://github.com/cruegge/pam-gnupg";
     license = lib.licenses.gpl3;
     maintainers = [ ];

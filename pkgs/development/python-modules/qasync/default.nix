@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyqt6,
   pytestCheckHook,
   uv-build,
@@ -10,8 +10,6 @@
 buildPythonPackage rec {
   pname = "qasync";
   version = "0.28.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CabbageDevelopment";
@@ -25,20 +23,21 @@ buildPythonPackage rec {
       --replace-fail "uv_build>=0.8.3,<0.9.0" uv_build
   '';
 
-  build-system = [ uv-build ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pyqt6
   ];
 
-  pythonImportsCheck = [ "qasync" ];
+  build-system = [ uv-build ];
 
   # crashes the interpreter
   disabledTestPaths = [
     "tests/test_qeventloop.py"
     "tests/test_run.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "qasync" ];
 
   meta = {
     description = "Allows coroutines to be used in PyQt/PySide applications by providing an implementation of the PEP 3156 event-loop";

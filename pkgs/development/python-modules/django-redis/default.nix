@@ -2,28 +2,25 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-
   # propagated
   django,
   lz4,
   msgpack,
-  pyzstd,
-  redis,
-
   # testing
   pytest-cov-stub,
   pytest-django,
   pytest-mock,
   pytest-xdist,
   pytestCheckHook,
+  pyzstd,
+  redis,
   redisTestHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-redis";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -31,26 +28,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-QfiyeeDQSRp/TkOun/HAQaPbIUY9yKPoOOEhKBX9Tec=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    lz4
-    msgpack
-    pyzstd
-    redis
-  ];
-
-  optional-dependencies = {
-    hiredis = [ redis ] ++ redis.optional-dependencies.hiredis;
-  };
-
-  pythonImportsCheck = [ "django_redis" ];
-
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=tests.settings.sqlite
-  '';
 
   nativeCheckInputs = [
     pytest-cov-stub
@@ -62,11 +39,19 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  # https://github.com/jazzband/django-redis/issues/777
-  dontUsePytestXdist = true;
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=tests.settings.sqlite
+  '';
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    lz4
+    msgpack
+    pyzstd
+    redis
   ];
 
   disabledTests = [
@@ -74,7 +59,20 @@ buildPythonPackage rec {
     "test_delete_pattern_with_settings_default_scan_count"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  # https://github.com/jazzband/django-redis/issues/777
+  dontUsePytestXdist = true;
+
+  optional-dependencies = {
+    hiredis = [ redis ] ++ redis.optional-dependencies.hiredis;
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+  ];
+
+  pythonImportsCheck = [ "django_redis" ];
 
   meta = {
     description = "Full featured redis cache backend for Django";

@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   nixosTests,
+  withBackupTools ? true, # vmbackup, vmrestore
   withServer ? true, # the actual metrics server
   withVmAgent ? true, # Agent to collect metrics
   withVmAlert ? true, # Alert Manager
   withVmAuth ? true, # HTTP proxy for authentication
-  withBackupTools ? true, # vmbackup, vmrestore
   withVmctl ? true, # vmctl is used to migrate time series
 }:
 
@@ -23,8 +23,39 @@ buildGoModule (finalAttrs: {
     hash = "sha256-EWRVbUeugyLsExP3NyPVLd7v2kwbRg5OjFg2WAY1FuM=";
   };
 
+  postPatch = ''
+    # main module (github.com/VictoriaMetrics/VictoriaMetrics) does not contain package
+    # github.com/VictoriaMetrics/VictoriaMetrics/app/vmui/packages/vmui/web
+    #
+    # This appears to be some kind of test server for development purposes only.
+    rm -f app/vmui/packages/vmui/web/{go.mod,main.go}
+
+    # Relax go version to major.minor
+    sed -i -E 's/^(go[[:space:]]+[[:digit:]]+\.[[:digit:]]+)\.[[:digit:]]+$/\1/' go.mod
+    sed -i -E 's/^(## explicit; go[[:space:]]+[[:digit:]]+\.[[:digit:]]+)\.[[:digit:]]+$/\1/' vendor/modules.txt
+
+    # Increase timeouts in tests to prevent failure on heavily loaded builders
+    substituteInPlace lib/storage/storage_test.go \
+      --replace-fail "time.After(10 " "time.After(120 " \
+      --replace-fail "time.NewTimer(30 " "time.NewTimer(120 " \
+      --replace-fail "time.NewTimer(time.Second * 10)" "time.NewTimer(time.Second * 120)"
+  '';
+
   vendorHash = null;
   env.CGO_ENABLED = 0;
+
+  preCheck = ''
+    # `lib/querytracer/tracer_test.go` expects `buildinfo.Version` to be unset
+    export ldflags=''${ldflags//=${finalAttrs.version}/=}
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/VictoriaMetrics/VictoriaMetrics/lib/buildinfo.Version=${finalAttrs.version}"
+  ];
 
   subPackages =
     lib.optionals withServer [
@@ -46,53 +77,24 @@ buildGoModule (finalAttrs: {
       "app/vmrestore"
     ];
 
-  postPatch = ''
-    # main module (github.com/VictoriaMetrics/VictoriaMetrics) does not contain package
-    # github.com/VictoriaMetrics/VictoriaMetrics/app/vmui/packages/vmui/web
-    #
-    # This appears to be some kind of test server for development purposes only.
-    rm -f app/vmui/packages/vmui/web/{go.mod,main.go}
-
-    # Relax go version to major.minor
-    sed -i -E 's/^(go[[:space:]]+[[:digit:]]+\.[[:digit:]]+)\.[[:digit:]]+$/\1/' go.mod
-    sed -i -E 's/^(## explicit; go[[:space:]]+[[:digit:]]+\.[[:digit:]]+)\.[[:digit:]]+$/\1/' vendor/modules.txt
-
-    # Increase timeouts in tests to prevent failure on heavily loaded builders
-    substituteInPlace lib/storage/storage_test.go \
-      --replace-fail "time.After(10 " "time.After(120 " \
-      --replace-fail "time.NewTimer(30 " "time.NewTimer(120 " \
-      --replace-fail "time.NewTimer(time.Second * 10)" "time.NewTimer(time.Second * 120)"
-  '';
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/VictoriaMetrics/VictoriaMetrics/lib/buildinfo.Version=${finalAttrs.version}"
-  ];
-
-  preCheck = ''
-    # `lib/querytracer/tracer_test.go` expects `buildinfo.Version` to be unset
-    export ldflags=''${ldflags//=${finalAttrs.version}/=}
-  '';
-
-  __darwinAllowLocalNetworking = true;
-
   passthru = {
     tests = lib.recurseIntoAttrs nixosTests.victoriametrics;
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://victoriametrics.com/";
     description = "Fast, cost-effective and scalable time series database, long-term remote storage for Prometheus";
+    homepage = "https://victoriametrics.com/";
+    changelog = "https://github.com/VictoriaMetrics/VictoriaMetrics/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       yorickvp
       leona
       shawn8901
       ryan4yin
     ];
-    changelog = "https://github.com/VictoriaMetrics/VictoriaMetrics/releases/tag/v${finalAttrs.version}";
+
     mainProgram = "victoria-metrics";
   };
 })

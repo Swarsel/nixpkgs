@@ -1,13 +1,13 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  alsa-lib,
   autoreconfHook,
+  gettext,
+  gtk3,
   intltool,
   pkg-config,
-  gtk3,
-  alsa-lib,
-  gettext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,9 +39,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Lightweight volume control that sits in your systray";
     homepage = "https://nullwise.com/pages/volumeicon/volumeicon.html";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ bobvanderlinden ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ bobvanderlinden ];
+    platforms = lib.platforms.linux;
     mainProgram = "volumeicon";
   };
 })

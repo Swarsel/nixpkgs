@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,10 +18,10 @@ buildGoModule (finalAttrs: {
   vendorHash = null;
 
   meta = {
+    description = "Tool to convert PDF annotations to JSON";
     homepage = "https://github.com/mgmeyers/pdfannots2json";
     license = lib.licenses.agpl3Only;
-    description = "Tool to convert PDF annotations to JSON";
-    mainProgram = "pdfannots2json";
     maintainers = with lib.maintainers; [ _0nyr ];
+    mainProgram = "pdfannots2json";
   };
 })

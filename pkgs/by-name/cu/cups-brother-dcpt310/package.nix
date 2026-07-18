@@ -1,19 +1,19 @@
 {
-  stdenv,
-  stdenvNoCC,
   lib,
+  stdenv,
   fetchurl,
-  perl,
-  gnused,
-  dpkg,
-  makeWrapper,
   autoPatchelfHook,
-  libredirect,
-  gnugrep,
   coreutils,
-  ghostscript,
+  dpkg,
   file,
+  ghostscript,
+  gnugrep,
+  gnused,
+  libredirect,
+  makeWrapper,
+  perl,
   pkgsi686Linux,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -37,14 +37,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     libredirect
     pkgsi686Linux.stdenv.cc.cc.lib
   ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    dpkg-deb -x $src .
-
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -74,7 +66,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   # also uses this format string to print configuration locations.  Here the
   # wrapper output is processed to point into the correct location in the
   # store.
-
   postFixup = ''
     interpreter=${pkgsi686Linux.glibc.out}/lib/ld-linux.so.2
 
@@ -131,22 +122,35 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace \"\$"@"\" \"\$"@\" | LD_PRELOAD= ${gnused}/bin/sed -E '/^(function list :|resource file :).*/{s#/opt#$out/opt#}'"
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    dpkg-deb -x $src .
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Brother DCP-T310 printer driver";
+    homepage = "https://www.brother.com/";
+
     license = with lib.licenses; [
       unfree
       gpl2Plus
     ];
+
     sourceProvenance = with lib.sourceTypes; [
       binaryNativeCode
       fromSource
     ];
+
     maintainers = with lib.maintainers; [ inexcode ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    homepage = "https://www.brother.com/";
+
     downloadPage = "https://support.brother.com/g/b/downloadhowto.aspx?c=us_ot&lang=en&prod=dcpt310_all&os=128&dlid=dlf103618_000&flang=4&type3=10283";
   };
 })

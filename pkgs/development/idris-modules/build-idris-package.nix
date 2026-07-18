@@ -1,25 +1,25 @@
 # Build an idris package
 {
-  stdenv,
   lib,
-  gmp,
-  prelude,
+  stdenv,
   base,
-  with-packages,
+  gmp,
   idris,
+  prelude,
+  with-packages,
 }:
 {
-  idrisDeps ? [ ],
-  noPrelude ? false,
-  noBase ? false,
   pname,
   version,
-  ipkgName ? pname,
   extraBuildInputs ? [ ],
   idrisBuildOptions ? [ ],
-  idrisTestOptions ? [ ],
-  idrisInstallOptions ? [ ],
+  idrisDeps ? [ ],
   idrisDocOptions ? [ ],
+  idrisInstallOptions ? [ ],
+  idrisTestOptions ? [ ],
+  ipkgName ? pname,
+  noBase ? false,
+  noPrelude ? false,
   ...
 }@attrs:
 let
@@ -43,24 +43,16 @@ let
 in
 stdenv.mkDerivation (
   {
-    pname = "idris-${pname}";
     inherit version;
+    pname = "idris-${pname}";
 
     buildInputs = [
       idris-with-packages
       gmp
     ]
     ++ extraBuildInputs;
-    propagatedBuildInputs = allIdrisDeps;
 
-    # Some packages use the style
-    # opts = -i ../../path/to/package
-    # rather than the declarative pkgs attribute so we have to rewrite the path.
-    patchPhase = ''
-      runHook prePatch
-      sed -i ${ipkgName}.ipkg -e "/^opts/ s|-i \\.\\./|-i ${idris-with-packages}/libs/|g"
-      runHook postPatch
-    '';
+    propagatedBuildInputs = allIdrisDeps;
 
     buildPhase = ''
       runHook preBuild
@@ -93,6 +85,15 @@ stdenv.mkDerivation (
       fi
 
       runHook postInstall
+    '';
+
+    # Some packages use the style
+    # opts = -i ../../path/to/package
+    # rather than the declarative pkgs attribute so we have to rewrite the path.
+    patchPhase = ''
+      runHook prePatch
+      sed -i ${ipkgName}.ipkg -e "/^opts/ s|-i \\.\\./|-i ${idris-with-packages}/libs/|g"
+      runHook postPatch
     '';
 
   }

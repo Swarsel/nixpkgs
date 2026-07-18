@@ -1,8 +1,8 @@
 {
   lib,
-  eggDerivation,
   fetchFromGitHub,
   chickenEggs,
+  eggDerivation,
   fetchpatch,
 }:
 
@@ -22,8 +22,8 @@ eggDerivation rec {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/the-kenny/egg2nix/commit/7d20ed520b8fe4debeefc78271c8c836015f95dc.patch";
       hash = "sha256-emMnxu6HnpcDWcO7rAe0VOy2ZPfPhqj5bQv9foOkjY0=";
+      url = "https://github.com/the-kenny/egg2nix/commit/7d20ed520b8fe4debeefc78271c8c836015f95dc.patch";
     })
   ];
 
@@ -34,10 +34,10 @@ eggDerivation rec {
 
   meta = {
     description = "Generate nix-expression from CHICKEN scheme eggs";
-    mainProgram = "egg2nix";
     homepage = "https://github.com/the-kenny/egg2nix";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ corngood ];
+    platforms = lib.platforms.unix;
+    mainProgram = "egg2nix";
   };
 }

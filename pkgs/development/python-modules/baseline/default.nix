@@ -1,20 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   isPy3k,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "baseline";
   version = "1.2.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
-
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "dmgass";
@@ -23,21 +18,24 @@ buildPythonPackage {
     hash = "sha256-DQTd3OYo7gCaKAlnCKuwmHPq47kl44/lpk46f6MhT2I=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  disabled = !isPy3k;
+  pyproject = true;
   pythonImportsCheck = [ "baseline" ];
 
   meta = {
     description = "Easy String Baseline";
-    mainProgram = "baseline";
+
     longDescription = ''
       This tool streamlines creation and maintenance of tests which compare
       string output against a baseline.
     '';
+
     homepage = "https://github.com/dmgass/baseline";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dnr ];
+    mainProgram = "baseline";
   };
 }

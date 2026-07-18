@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -28,10 +28,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/skosch/Crimson";
     description = "Font family inspired by beautiful oldstyle typefaces";
+    homepage = "https://github.com/skosch/Crimson";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.rycee ];
+    platforms = lib.platforms.all;
   };
 }

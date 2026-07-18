@@ -1,10 +1,26 @@
 {
   lib,
+  _7zz,
+  chafa,
+  fd,
+  ffmpeg-headless,
+  # deps
+  file,
   formats,
-  runCommand,
+  fzf,
+  imagemagick,
+  # optional deps
+  jq,
   makeWrapper,
-
+  poppler-utils,
+  resvg,
+  ripgrep,
+  runCommand,
+  yazi-unwrapped,
+  zoxide,
   extraPackages ? [ ],
+  flavors ? { },
+  initLua ? null,
   optionalDeps ? [
     jq
     poppler-utils
@@ -18,28 +34,8 @@
     chafa
     resvg
   ],
-
-  # deps
-  file,
-  yazi-unwrapped,
-
-  # optional deps
-  jq,
-  poppler-utils,
-  _7zz,
-  ffmpeg-headless,
-  fd,
-  ripgrep,
-  fzf,
-  zoxide,
-  imagemagick,
-  chafa,
-  resvg,
-
-  settings ? { },
   plugins ? { },
-  flavors ? { },
-  initLua ? null,
+  settings ? { },
 }:
 
 let
@@ -94,6 +90,7 @@ in
 runCommand yazi-unwrapped.name
   {
     inherit (yazi-unwrapped) pname version;
+    nativeBuildInputs = [ makeWrapper ];
 
     meta = {
       inherit (yazi-unwrapped.meta)
@@ -105,8 +102,6 @@ runCommand yazi-unwrapped.name
         changelog
         ;
     };
-
-    nativeBuildInputs = [ makeWrapper ];
   }
   ''
     mkdir -p "$out/bin"

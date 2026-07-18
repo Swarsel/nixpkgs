@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchurl,
-  sqlite,
+  buildGoModule,
   installShellFiles,
   nixosTests,
+  sqlite,
 }:
 buildGoModule (finalAttrs: {
   pname = "honk";
@@ -14,17 +14,6 @@ buildGoModule (finalAttrs: {
     url = "https://humungus.tedunangst.com/r/honk/d/honk-${finalAttrs.version}.tgz";
     hash = "sha256-7dIui+VMHn916yMdhqN6Pk2P/s0vvXzVKFsTZ5wp12A=";
   };
-  vendorHash = null;
-
-  buildInputs = [
-    sqlite
-  ];
-
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
-  subPackages = [ "." ];
 
   # This susbtitution is not mandatory. It is only existing to have something
   # working out of the box. This value can be overridden by the user, by
@@ -34,6 +23,16 @@ buildGoModule (finalAttrs: {
       "var viewDir = \".\"" \
       "var viewDir = \"$out/share/honk\""
   '';
+
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
+  buildInputs = [
+    sqlite
+  ];
+
+  vendorHash = null;
 
   postInstall = ''
     mkdir -p $out/share/honk
@@ -50,16 +49,18 @@ buildGoModule (finalAttrs: {
     mv views $out/share/honk
   '';
 
+  subPackages = [ "." ];
+
   passthru.tests = {
     inherit (nixosTests) honk;
   };
 
   meta = {
-    changelog = "https://humungus.tedunangst.com/r/honk/v/v${finalAttrs.version}/f/docs/changelog.txt";
     description = "ActivityPub server with minimal setup and support costs";
     homepage = "https://humungus.tedunangst.com/r/honk";
+    changelog = "https://humungus.tedunangst.com/r/honk/v/v${finalAttrs.version}/f/docs/changelog.txt";
     license = lib.licenses.isc;
-    mainProgram = "honk";
     maintainers = with lib.maintainers; [ huyngo ];
+    mainProgram = "honk";
   };
 })

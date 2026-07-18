@@ -1,10 +1,6 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  makeWrapper,
-  pkg-config,
-
   dbus,
   fontconfig,
   libGL,
@@ -16,13 +12,15 @@
   libxinerama,
   libxkbcommon,
   libxrandr,
+  makeWrapper,
+  nix-update-script,
   openssl,
+  pkg-config,
+  rustPlatform,
   vulkan-loader,
   wayland,
   xdg-utils,
   zenity,
-
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -35,13 +33,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-yvmLI8T+ut0QwnHPw+0+XKvd+wWo0cJLcxSkz3oj/vE=";
   };
-
-  cargoHash = "sha256-/Q0P3re8w9O4a8MTZXmEiaJNURo1XeZhHk8adcUCNeQ=";
-
-  cargoBuildFlags = [
-    "--bin"
-    "twbm-gui"
-  ];
 
   nativeBuildInputs = [
     makeWrapper
@@ -65,6 +56,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland
   ];
 
+  cargoHash = "sha256-/Q0P3re8w9O4a8MTZXmEiaJNURo1XeZhHk8adcUCNeQ=";
   # Upstream does not currently ship tests.
   doCheck = false;
 
@@ -106,9 +98,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
       }
   '';
 
-  passthru.updateScript = nix-update-script { };
-
   __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "--bin"
+    "twbm-gui"
+  ];
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Tiny game backup and homebrew app manager for the Wii";
@@ -116,7 +113,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/mq1/TinyWiiBackupManager/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ yisraeldov ];
-    mainProgram = "TinyWiiBackupManager";
     platforms = lib.platforms.linux;
+    mainProgram = "TinyWiiBackupManager";
   };
 })

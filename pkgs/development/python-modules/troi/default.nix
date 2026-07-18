@@ -1,9 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   click,
   lb-matching-tools,
   liblistenbrainz,
@@ -12,22 +10,23 @@
   peewee,
   psycopg2-binary,
   py-sonic,
+  pytestCheckHook,
   python-dateutil,
   regex,
   requests,
+  requests-mock,
   scikit-learn,
+  setuptools,
+  setuptools-scm,
   spotipy,
   tqdm,
   ujson,
   unidecode,
-  pytestCheckHook,
-  requests-mock,
 }:
 
 buildPythonPackage rec {
   pname = "troi";
   version = "2026.03.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "metabrainz";
@@ -36,16 +35,14 @@ buildPythonPackage rec {
     hash = "sha256-wZeWdps60cOO5aIPZLGjZMsgEqAjnKuA56WKXVg9nuo=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [ "mutagen" ];
-  pythonRemoveDeps = [
-    # It's not used anywhere in the code.
-    # TODO: Remove in next update. See <https://github.com/metabrainz/troi-recommendation-playground/pull/179>
-    "countryinfo"
   ];
 
   dependencies = [
@@ -72,12 +69,15 @@ buildPythonPackage rec {
     # nmslib = [ "nmslib-metabrainz" ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "troi" ];
+  pythonRelaxDeps = [ "mutagen" ];
+
+  pythonRemoveDeps = [
+    # It's not used anywhere in the code.
+    # TODO: Remove in next update. See <https://github.com/metabrainz/troi-recommendation-playground/pull/179>
+    "countryinfo"
+  ];
 
   meta = {
     description = "ListenBrainz' empathic music recommendation/playlisting engine";

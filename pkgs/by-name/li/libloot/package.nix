@@ -2,35 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  rustPlatform,
-  rust-cbindgen,
-
-  cmake,
-  pkg-config,
-
-  withDocs ? true,
-  doxygen,
-  python3Packages,
-
   boost,
+  cmake,
+  doxygen,
   fmt,
   gtest,
   icu,
-  spdlog,
   onetbb,
+  pkg-config,
+  python3Packages,
+  rust-cbindgen,
+  rustPlatform,
+  spdlog,
+  withDocs ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libloot";
   version = "0.25.5";
-  # Note: don't forget to also update the package versions in the passthru section
-
-  outputs = [
-    "out"
-    "dev"
-  ]
-  ++ lib.optionals withDocs [ "doc" ];
 
   src = fetchFromGitHub {
     owner = "loot";
@@ -38,6 +27,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-l8AdqJ0lZH4rBcf4WV3ju+sIHYam6USXCXTqyRPzgeo=";
   };
+
+  # Note: don't forget to also update the package versions in the passthru section
+  outputs = [
+    "out"
+    "dev"
+  ]
+  ++ lib.optionals withDocs [ "doc" ];
 
   patches = [
     # don't try to build the rust FFI dependencies with cargo, since we build them separately
@@ -86,14 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "LIBLOOT_INSTALL_DOCS" withDocs)
   ];
 
-  postConfigure = lib.optionalString finalAttrs.finalPackage.doCheck ''
-    cp -r --no-preserve=all ${finalAttrs.passthru.testing-plugins} ../testing-plugins
-  '';
-
-  postBuild = lib.optionalString withDocs ''
-    sphinx-build -b html ../docs docs/html
-  '';
-
   env.GTEST_FILTER =
     let
       disabledTests = [
@@ -105,64 +93,35 @@ stdenv.mkDerivation (finalAttrs: {
     in
     "-${builtins.concatStringsSep ":" disabledTests}";
 
+  postConfigure = lib.optionalString finalAttrs.finalPackage.doCheck ''
+    cp -r --no-preserve=all ${finalAttrs.passthru.testing-plugins} ../testing-plugins
+  '';
+
+  postBuild = lib.optionalString withDocs ''
+    sphinx-build -b html ../docs docs/html
+  '';
+
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   passthru = {
-    testing-plugins = fetchFromGitHub {
-      owner = "Ortham";
-      repo = "testing-plugins";
-      tag = "1.6.2";
-      hash = "sha256-3Aa98EwqpuGA3YlsRF8luWzXVEFO/rs6JXisXdLyIK4=";
-    };
-
-    yaml-cpp-src = fetchFromGitHub {
-      owner = "loot";
-      repo = "yaml-cpp";
-      tag = "0.8.0+merge-key-support.2";
-
-      # fixes error: 'uint16_t' was not declared in this scope
-      postFetch = ''
-        sed -e '1i #include <cstdint>' -i "$out/src/emitterutils.cpp"
-      '';
-
-      hash = "sha256-5xbqOI4L3XCqx+4k6IcZUwOdHAfbBy7nZgRKGkRJabQ=";
-    };
-
     buildRustFFIPackage =
       args:
       rustPlatform.buildRustPackage (
         args
         // {
+          nativeBuildInputs = [ rust-cbindgen ];
+
           postConfigure = ''
             cp -r --no-preserve=all ${finalAttrs.passthru.testing-plugins} testing-plugins
           '';
 
-          nativeBuildInputs = [ rust-cbindgen ];
-
-          buildAndTestSubdir = "ffi";
-
           postBuild = ''
             cbindgen ffi/ -l "$lang" -o "$out/include/$header"
           '';
+
+          buildAndTestSubdir = "ffi";
         }
       );
-
-    libloadorder = finalAttrs.passthru.buildRustFFIPackage rec {
-      pname = "libloadorder";
-      version = "18.3.0";
-
-      src = fetchFromGitHub {
-        owner = "Ortham";
-        repo = "libloadorder";
-        tag = version;
-        hash = "sha256-/8WOEt9dxKFTTZbhf5nt81jo/yHuALPxh/IwAOehi9w=";
-      };
-
-      cargoHash = "sha256-re/cKqf/CAD7feNIEuou4ZP8BNkArd5CvREx1610jig=";
-
-      lang = "c++";
-      header = "libloadorder.hpp";
-    };
 
     esplugin = finalAttrs.passthru.buildRustFFIPackage rec {
       pname = "esplugin";
@@ -176,9 +135,24 @@ stdenv.mkDerivation (finalAttrs: {
       };
 
       cargoHash = "sha256-6sY2M7kjSYB3+6+zoMxPwdl+g7ARLHm9RdSODHQR8bE=";
-
-      lang = "c++";
       header = "esplugin.hpp";
+      lang = "c++";
+    };
+
+    libloadorder = finalAttrs.passthru.buildRustFFIPackage rec {
+      pname = "libloadorder";
+      version = "18.3.0";
+
+      src = fetchFromGitHub {
+        owner = "Ortham";
+        repo = "libloadorder";
+        tag = version;
+        hash = "sha256-/8WOEt9dxKFTTZbhf5nt81jo/yHuALPxh/IwAOehi9w=";
+      };
+
+      cargoHash = "sha256-re/cKqf/CAD7feNIEuou4ZP8BNkArd5CvREx1610jig=";
+      header = "libloadorder.hpp";
+      lang = "c++";
     };
 
     loot-condition-interpreter = finalAttrs.passthru.buildRustFFIPackage rec {
@@ -193,9 +167,28 @@ stdenv.mkDerivation (finalAttrs: {
       };
 
       cargoHash = "sha256-m/vRnAJyMQOosxnjSUgHIY1RCkdB5+HFVqqzYVEpgOI=";
-
-      lang = "c";
       header = "loot_condition_interpreter.h";
+      lang = "c";
+    };
+
+    testing-plugins = fetchFromGitHub {
+      hash = "sha256-3Aa98EwqpuGA3YlsRF8luWzXVEFO/rs6JXisXdLyIK4=";
+      owner = "Ortham";
+      repo = "testing-plugins";
+      tag = "1.6.2";
+    };
+
+    yaml-cpp-src = fetchFromGitHub {
+      hash = "sha256-5xbqOI4L3XCqx+4k6IcZUwOdHAfbBy7nZgRKGkRJabQ=";
+      owner = "loot";
+
+      # fixes error: 'uint16_t' was not declared in this scope
+      postFetch = ''
+        sed -e '1i #include <cstdint>' -i "$out/src/emitterutils.cpp"
+      '';
+
+      repo = "yaml-cpp";
+      tag = "0.8.0+merge-key-support.2";
     };
   };
 

@@ -1,15 +1,15 @@
 {
   lib,
-  python3,
-  fetchFromGitHub,
-  zlib,
-  nixosTests,
-  postgresqlTestHook,
-  postgresql,
-  yarn-berry_4,
-  nodejs,
   stdenv,
+  fetchFromGitHub,
+  nixosTests,
+  nodejs,
   pkgsBuildHost,
+  postgresql,
+  postgresqlTestHook,
+  python3,
+  yarn-berry_4,
+  zlib,
   server-mode ? true,
 }:
 
@@ -47,19 +47,6 @@ in
 
 pythonPackages.buildPythonApplication rec {
   inherit pname version src;
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
-    inherit missingHashes;
-    src = src + "/web";
-    hash = yarnHash;
-    patches = [ yarnPatch ];
-  };
-
-  # from Dockerfile
-  env.CPPFLAGS = "-DPNG_ARM_NEON_OPT=0";
-
-  format = "setuptools";
 
   patches = [
     # Expose setup.py for later use
@@ -88,57 +75,6 @@ pythonPackages.buildPythonApplication rec {
       substituteInPlace web/config.py \
         --replace-fail "SERVER_MODE = True" "SERVER_MODE = False"
     ''}
-  '';
-
-  dontYarnBerryInstallDeps = true;
-  preBuild = ''
-    # Adapted from pkg/pip/build.sh
-    echo Creating required directories...
-    mkdir -p pip-build/pgadmin4/docs
-
-    echo Building the documentation
-    cd docs/en_US
-    sphinx-build -W -b html -d _build/doctrees . _build/html
-
-    # Build the clean tree
-    cd ..
-    cp -r * ../pip-build/pgadmin4/docs
-    for DIR in `ls -d ??_??/`
-    do
-      if [ -d ''${DIR}_build/html ]; then
-          mkdir -p ../pip-build/pgadmin4/docs/''${DIR}_build
-          cp -R ''${DIR}_build/html ../pip-build/pgadmin4/docs/''${DIR}_build
-      fi
-    done
-    cd ../
-
-    echo Building the web frontend...
-    cd web
-    (
-      PATH=$PATH:${lib.makeBinPath [ pkgsBuildHost.git ]}
-      git apply ${yarnPatch}
-      export LD=$CC # https://github.com/imagemin/optipng-bin/issues/108
-      yarnBerryConfigHook
-    )
-    yarn webpacker
-    cp -r * ../pip-build/pgadmin4
-    # save some disk space
-    rm -rf ../pip-build/pgadmin4/node_modules
-
-    cd ..
-
-    echo Creating distro config...
-    echo HELP_PATH = \'../../docs/en_US/_build/html/\' > pip-build/pgadmin4/config_distro.py
-    echo MINIFY_HTML = False >> pip-build/pgadmin4/config_distro.py
-
-    echo Creating manifest...
-    echo recursive-include pgadmin4 \* > pip-build/MANIFEST.in
-
-    echo Building wheel...
-    cd pip-build
-    # copy non-standard setup.py to local directory
-    # so setuptools-build-hook can call it
-    cp -v ../pkg/pip/setup_pip.py setup.py
   '';
 
   nativeBuildInputs = with pythonPackages; [
@@ -207,9 +143,63 @@ pythonPackages.buildPythonApplication rec {
     setuptools
   ];
 
-  passthru.tests = {
-    inherit (nixosTests) pgadmin4;
-  };
+  # from Dockerfile
+  env.CPPFLAGS = "-DPNG_ARM_NEON_OPT=0";
+  # for replication testing in regression tests for PostgreSql >= 17
+  env.postgresqlExtraSettings = "wal_level = logical";
+
+  preBuild = ''
+    # Adapted from pkg/pip/build.sh
+    echo Creating required directories...
+    mkdir -p pip-build/pgadmin4/docs
+
+    echo Building the documentation
+    cd docs/en_US
+    sphinx-build -W -b html -d _build/doctrees . _build/html
+
+    # Build the clean tree
+    cd ..
+    cp -r * ../pip-build/pgadmin4/docs
+    for DIR in `ls -d ??_??/`
+    do
+      if [ -d ''${DIR}_build/html ]; then
+          mkdir -p ../pip-build/pgadmin4/docs/''${DIR}_build
+          cp -R ''${DIR}_build/html ../pip-build/pgadmin4/docs/''${DIR}_build
+      fi
+    done
+    cd ../
+
+    echo Building the web frontend...
+    cd web
+    (
+      PATH=$PATH:${lib.makeBinPath [ pkgsBuildHost.git ]}
+      git apply ${yarnPatch}
+      export LD=$CC # https://github.com/imagemin/optipng-bin/issues/108
+      yarnBerryConfigHook
+    )
+    yarn webpacker
+    cp -r * ../pip-build/pgadmin4
+    # save some disk space
+    rm -rf ../pip-build/pgadmin4/node_modules
+
+    cd ..
+
+    echo Creating distro config...
+    echo HELP_PATH = \'../../docs/en_US/_build/html/\' > pip-build/pgadmin4/config_distro.py
+    echo MINIFY_HTML = False >> pip-build/pgadmin4/config_distro.py
+
+    echo Creating manifest...
+    echo recursive-include pgadmin4 \* > pip-build/MANIFEST.in
+
+    echo Building wheel...
+    cd pip-build
+    # copy non-standard setup.py to local directory
+    # so setuptools-build-hook can call it
+    cp -v ../pkg/pip/setup_pip.py setup.py
+  '';
+
+  # sandboxing issues on aarch64-darwin, see https://github.com/NixOS/nixpkgs/issues/198495
+  doCheck = lib.meta.availableOn stdenv.buildPlatform postgresqlTestHook;
 
   nativeCheckInputs = [
     postgresqlTestHook
@@ -218,11 +208,6 @@ pythonPackages.buildPythonApplication rec {
     pythonPackages.selenium
   ];
 
-  # sandboxing issues on aarch64-darwin, see https://github.com/NixOS/nixpkgs/issues/198495
-  doCheck = lib.meta.availableOn stdenv.buildPlatform postgresqlTestHook;
-
-  # for replication testing in regression tests for PostgreSql >= 17
-  env.postgresqlExtraSettings = "wal_level = logical";
   checkPhase = ''
     runHook preCheck
 
@@ -261,10 +246,26 @@ pythonPackages.buildPythonApplication rec {
     runHook postCheck
   '';
 
+  dontYarnBerryInstallDeps = true;
+  format = "setuptools";
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
+    inherit missingHashes;
+    src = src + "/web";
+    patches = [ yarnPatch ];
+    hash = yarnHash;
+  };
+
+  passthru.tests = {
+    inherit (nixosTests) pgadmin4;
+  };
+
   meta = {
     description = "Administration and development platform for PostgreSQL${
       lib.optionalString (!server-mode) ". Desktop Mode"
     }";
+
     longDescription = ''
       pgAdmin 4 is designed to meet the needs of both novice and experienced Postgres users alike,
       providing a powerful graphical interface that simplifies the creation, maintenance and use of database objects.
@@ -283,11 +284,12 @@ pythonPackages.buildPythonApplication rec {
           ''
       }
     '';
+
     homepage = "https://www.pgadmin.org/";
-    license = lib.licenses.mit;
     changelog = "https://www.pgadmin.org/docs/pgadmin4/latest/release_notes_${lib.versions.major version}_${lib.versions.minor version}.html";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ gador ];
-    mainProgram = "pgadmin4";
     platforms = lib.platforms.unix;
+    mainProgram = "pgadmin4";
   };
 }

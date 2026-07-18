@@ -1,19 +1,18 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   click,
+  fetchPypi,
   prompt-toolkit,
   pygments,
   requests,
+  setuptools,
   sqlparse,
 }:
 
 buildPythonPackage rec {
   pname = "clickhouse-cli";
   version = "0.3.9";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,8 +23,6 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  pythonRelaxDeps = [ "sqlparse" ];
-
   propagatedBuildInputs = [
     click
     prompt-toolkit
@@ -34,13 +31,15 @@ buildPythonPackage rec {
     sqlparse
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "clickhouse_cli" ];
+  pythonRelaxDeps = [ "sqlparse" ];
 
   meta = {
     description = "Third-party client for the Clickhouse DBMS server";
-    mainProgram = "clickhouse-cli";
     homepage = "https://github.com/hatarist/clickhouse-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ivan-babrou ];
+    mainProgram = "clickhouse-cli";
   };
 }

@@ -13,44 +13,50 @@ in
     enable = lib.mkEnableOption "the deye-dummycloud service";
 
     mqttBrokerUrl = lib.mkOption {
-      type = lib.types.str;
       default = "mqtt://localhost";
       description = "MQTT broker URL";
-    };
-    mqttUsername = lib.mkOption {
       type = lib.types.str;
-      default = "";
-      description = "MQTT username";
     };
+
     mqttPassword = lib.mkOption {
-      type = lib.types.str;
       default = "";
       description = "MQTT password";
+      type = lib.types.str;
+    };
+
+    mqttUsername = lib.mkOption {
+      default = "";
+      description = "MQTT username";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.deye-dummycloud ];
+
     systemd.services.deye-dummycloud = {
-      description = "Dummycloud server for DEYE microinverters and bridge to mqtt";
-      wants = [ "network.target" ];
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Dummycloud server for DEYE microinverters and bridge to mqtt";
+
       serviceConfig = {
-        WorkingDirectory = "${pkgs.deye-dummycloud}/lib/node_modules/deye-dummycloud";
-        ExecStart = "${pkgs.lib.getExe pkgs.nodejs-slim} app.js";
-        Restart = "always";
-        User = "deye-dummycloud";
         DynamicUser = true;
-        ProtectSystem = "full";
-        ProtectHome = true;
+
         Environment = [
           "MQTT_BROKER_URL=${cfg.mqttBrokerUrl}"
           "MQTT_USERNAME=${cfg.mqttUsername}"
           "MQTT_PASSWORD=${cfg.mqttPassword}"
         ];
-      };
-    };
 
-    environment.systemPackages = [ pkgs.deye-dummycloud ];
+        ExecStart = "${pkgs.lib.getExe pkgs.nodejs-slim} app.js";
+        ProtectHome = true;
+        ProtectSystem = "full";
+        Restart = "always";
+        User = "deye-dummycloud";
+        WorkingDirectory = "${pkgs.deye-dummycloud}/lib/node_modules/deye-dummycloud";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network.target" ];
+    };
   };
 }

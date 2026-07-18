@@ -15,15 +15,19 @@ stdenv.mkDerivation rec {
   pname = "sratom";
   version = "0.6.22";
 
+  src = fetchurl {
+    url = "https://download.drobilla.net/${pname}-${version}.tar.xz";
+    hash = "sha256-Agm30PIslqu0FnIu1zWwkzvkeTHs/0qksm3td2C08lI=";
+  };
+
   outputs = [
     "out"
     "dev"
   ];
 
-  src = fetchurl {
-    url = "https://download.drobilla.net/${pname}-${version}.tar.xz";
-    hash = "sha256-Agm30PIslqu0FnIu1zWwkzvkeTHs/0qksm3td2C08lI=";
-  };
+  postPatch = ''
+    patchShebangs --build scripts/dox_to_sphinx.py
+  '';
 
   strictDeps = true;
 
@@ -38,10 +42,6 @@ stdenv.mkDerivation rec {
     serd
     sord
   ];
-
-  postPatch = ''
-    patchShebangs --build scripts/dox_to_sphinx.py
-  '';
 
   mesonFlags = [
     "-Ddocs=disabled"
@@ -63,8 +63,8 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://drobilla.net/software/sratom";
     description = "Library for serialising LV2 atoms to/from RDF";
+    homepage = "https://drobilla.net/software/sratom";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;

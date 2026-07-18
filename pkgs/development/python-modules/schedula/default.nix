@@ -1,64 +1,35 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  cryptography,
+  ddt,
   # optional-dependencies
   dill,
   flask,
   graphviz,
   multiprocess,
-  regex,
-  requests,
-  sphinx,
-  sphinx-click,
-
   # tests
   pytestCheckHook,
-  ddt,
-  cryptography,
+  pythonAtLeast,
+  regex,
+  requests,
   schedula,
+  # build-system
+  setuptools,
+  sphinx,
+  sphinx-click,
 }:
 
 buildPythonPackage rec {
   pname = "schedula";
   version = "1.5.78";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vinci1it2000";
     repo = "schedula";
     tag = "v${version}";
     hash = "sha256-fhcG2N524KlwaG+inOyQJaXKoMhmR6Yddff8CDi8lhk=";
-  };
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = rec {
-    # dev omitted, we have nativeCheckInputs for this
-    # form omitted, as it pulls in a kitchensink of deps, some not even packaged in nixpkgs
-    io = [ dill ];
-    parallel = [ multiprocess ];
-    plot = [
-      requests
-      graphviz
-      regex
-      flask
-    ];
-    sphinx = [
-      sphinx
-      sphinx-click
-    ]
-    ++ plot;
-    web = [
-      requests
-      regex
-      flask
-    ];
   };
 
   nativeCheckInputs = [
@@ -71,10 +42,7 @@ buildPythonPackage rec {
   ++ schedula.optional-dependencies.parallel
   ++ schedula.optional-dependencies.plot;
 
-  disabledTests = [
-    # FAILED tests/test_setup.py::TestSetup::test_long_description - ModuleNotFoundError: No module named 'sphinxcontrib.writers'
-    "test_long_description"
-  ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # ERROR tests/utils/test_form.py::TestDispatcherForm::test_form1 - ModuleNotFoundError: No module named 'chromedriver_autoinstaller'
@@ -97,6 +65,38 @@ buildPythonPackage rec {
     "tests/utils/test_io.py::TestDoctest::runTest"
   ];
 
+  disabledTests = [
+    # FAILED tests/test_setup.py::TestSetup::test_long_description - ModuleNotFoundError: No module named 'sphinxcontrib.writers'
+    "test_long_description"
+  ];
+
+  optional-dependencies = rec {
+    # dev omitted, we have nativeCheckInputs for this
+    # form omitted, as it pulls in a kitchensink of deps, some not even packaged in nixpkgs
+    io = [ dill ];
+    parallel = [ multiprocess ];
+
+    plot = [
+      requests
+      graphviz
+      regex
+      flask
+    ];
+
+    sphinx = [
+      sphinx
+      sphinx-click
+    ]
+    ++ plot;
+
+    web = [
+      requests
+      regex
+      flask
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "schedula" ];
 
   meta = {

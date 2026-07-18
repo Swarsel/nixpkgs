@@ -13,13 +13,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "15f8clcz49qsfijdmcz165ysp8v4ybsm57d3dxhhlnq1bp1i9w33";
   };
 
-  patchPhase = ''
-    sed -i Makefile -e 's/-static //'
-  '';
-
   installPhase = ''
     mkdir -p $out/bin
     cp fs_mark $out/bin/
+  '';
+
+  patchPhase = ''
+    sed -i Makefile -e 's/-static //'
   '';
 
   meta = {

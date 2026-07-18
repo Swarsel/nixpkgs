@@ -20,18 +20,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-qTVgFUgDctfHavejoHeW0wRi3BNsr8NV+rL/2kykBGY=";
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   preCheck = ''
     # Test fails
     substituteInPlace src/network.rs \
       --replace-fail 'Some("one.one.one.one".to_string())' 'None'
   '';
 
-  versionCheckProgram = [ "${placeholder "out"}/bin/arp-scan" ];
-
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgram = [ "${placeholder "out"}/bin/arp-scan" ];
   passthru.updateScript = gitUpdater { };
 
   meta = {

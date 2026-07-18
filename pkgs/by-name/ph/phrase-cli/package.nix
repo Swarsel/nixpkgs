@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,15 +17,15 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-vlssNVS1zTjYdp63NrR2rWOan5ng6t2BYEXv4L9q8Gc=";
 
-  ldflags = [ "-X=github.com/phrase/phrase-cli/cmd.PHRASE_CLIENT_VERSION=${finalAttrs.version}" ];
-
   postInstall = ''
     ln -s $out/bin/phrase-cli $out/bin/phrase
   '';
 
+  ldflags = [ "-X=github.com/phrase/phrase-cli/cmd.PHRASE_CLIENT_VERSION=${finalAttrs.version}" ];
+
   meta = {
-    homepage = "http://docs.phraseapp.com";
     description = "PhraseApp API v2 Command Line Client";
+    homepage = "http://docs.phraseapp.com";
     changelog = "https://github.com/phrase/phrase-cli/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ juboba ];

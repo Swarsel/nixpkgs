@@ -29,9 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    changelog = "https://github.com/knik0/faac/releases/tag/${finalAttrs.src.tag}";
     description = "Open source MPEG-4 and MPEG-2 AAC encoder";
     homepage = "https://github.com/knik0/faac";
+    changelog = "https://github.com/knik0/faac/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.unfreeRedistributable;
     maintainers = [ ];
     platforms = lib.platforms.all;

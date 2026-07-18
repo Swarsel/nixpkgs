@@ -1,30 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-  symlinkJoin,
-
-  # build-system
-  setuptools,
-  torch,
-
+  # nativeBuildInputs
+  autoAddDriverRunpath,
+  buildPythonPackage,
+  config,
+  cudaPackages,
+  # passthru
+  deep-gemm,
   # buildInputs
   fmt,
   pybind11,
-
-  # nativeBuildInputs
-  autoAddDriverRunpath,
-
   # tests
   pytestCheckHook,
+  replaceVars,
+  # build-system
+  setuptools,
+  symlinkJoin,
+  torch,
   writableTmpDirAsHomeHook,
-
-  # passthru
-  deep-gemm,
-
-  config,
-  cudaPackages,
   cudaSupport ? config.cudaSupport,
 }:
 
@@ -38,7 +32,6 @@ in
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "deep-gemm";
   version = "2.1.1.post3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deepseek-ai";
@@ -57,6 +50,7 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     (replaceVars ./patch-runtime-cuda-home-path.patch {
       cuda_home = symlinkJoin {
         name = "cuda-toolkit";
+
         paths = with cudaPackages; [
           (lib.getBin cuda_nvcc) # bin/nvcc, bin/ptxas, nvvm/, nvcc.profile
           (lib.getBin cutlass) # include/cute, include/cutlass
@@ -66,20 +60,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
         ];
       };
     })
-  ];
-
-  env = optionalAttrs cudaSupport {
-    CUDA_HOME = (getBin cudaPackages.cuda_nvcc).outPath;
-
-    LDFLAGS = toString [
-      # Fake libcuda.so (the real one is deployed impurely)
-      "-L${lib.getOutput "stubs" cudaPackages.cuda_cudart}/lib/stubs"
-    ];
-  };
-
-  build-system = [
-    setuptools
-    torch
   ];
 
   nativeBuildInputs = [
@@ -102,21 +82,35 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     ]
   );
 
+  env = optionalAttrs cudaSupport {
+    CUDA_HOME = (getBin cudaPackages.cuda_nvcc).outPath;
+
+    LDFLAGS = toString [
+      # Fake libcuda.so (the real one is deployed impurely)
+      "-L${lib.getOutput "stubs" cudaPackages.cuda_cudart}/lib/stubs"
+    ];
+  };
+
+  # Tests require GPU access
+  doCheck = false;
+
   nativeCheckInputs = [
     pytestCheckHook
     writableTmpDirAsHomeHook
   ];
 
-  # Tests require GPU access
-  doCheck = false;
+  build-system = [
+    setuptools
+    torch
+  ];
+
+  pyproject = true;
 
   passthru.gpuCheck = deep-gemm.overridePythonAttrs {
-    requiredSystemFeatures = [ "cuda" ];
-
+    doCheck = true;
     # dlopens libcuda.so at import time
     pythonImportsCheck = [ "deep_gemm" ];
-
-    doCheck = true;
+    requiredSystemFeatures = [ "cuda" ];
   };
 
   meta = {

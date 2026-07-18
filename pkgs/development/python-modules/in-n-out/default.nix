@@ -3,36 +3,33 @@
   buildPythonPackage,
   cython,
   fetchPypi,
+  hatch-vcs,
+  hatchling,
   pytestCheckHook,
   pythonAtLeast,
-  hatchling,
-  hatch-vcs,
   toolz,
 }:
 
 buildPythonPackage rec {
   pname = "in-n-out";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "in_n_out";
     inherit version;
     hash = "sha256-Q83it96YHUGm1wYYore9mJSBCVkipT6tTcdfK71d/+o=";
+    pname = "in_n_out";
   };
-
-  build-system = [
-    cython
-    hatchling
-    hatch-vcs
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
     toolz
   ];
 
-  pythonImportsCheck = [ "in_n_out" ];
+  build-system = [
+    cython
+    hatchling
+    hatch-vcs
+  ];
 
   disabledTestPaths = lib.optionals (pythonAtLeast "3.11") [
     # Fatal Python error
@@ -41,6 +38,9 @@ buildPythonPackage rec {
     "tests/test_providers.py"
     "tests/test_store.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "in_n_out" ];
 
   meta = {
     description = "Module for dependency injection and result processing";

@@ -1,17 +1,16 @@
 {
   lib,
   fetchFromGitHub,
-  pytestCheckHook,
-  poetry-core,
+  buildPythonPackage,
   colorama,
+  poetry-core,
+  pytestCheckHook,
   tabulate,
   unidecode,
-  buildPythonPackage,
 }:
 buildPythonPackage rec {
   pname = "cli-ui";
   version = "0.19.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "your-tools";
@@ -20,8 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-BLc55LkVQwZ18V/fD/lBYw6jgchE8n0ijDTSr8/Jkdk=";
   };
 
-  pythonRelaxDeps = [ "tabulate" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -30,9 +28,9 @@ buildPythonPackage rec {
     unidecode
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cli_ui" ];
+  pythonRelaxDeps = [ "tabulate" ];
 
   meta = {
     description = "Build Nice User Interfaces In The Terminal";

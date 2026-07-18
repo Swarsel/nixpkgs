@@ -9,13 +9,14 @@ buildDunePackage rec {
   version = "0.0.1";
 
   src = lib.fileset.toSource {
-    root = ./.;
     fileset = lib.fileset.unions [
       ./helloreason.opam
       ./helloreason.re
       ./dune-project
       ./dune
     ];
+
+    root = ./.;
   };
 
   nativeBuildInputs = [
@@ -27,8 +28,8 @@ buildDunePackage rec {
   ];
 
   doCheck = true;
-
   doInstallCheck = true;
+
   postInstallCheck = ''
     $out/bin/${pname} | grep -q "Hello From Reason" > /dev/null
   '';

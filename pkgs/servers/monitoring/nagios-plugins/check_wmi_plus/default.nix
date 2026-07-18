@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   makeWrapper,
   monitoring-plugins,
   perlPackages,
-  stdenv,
   txt2man,
   wmic-bin ? null,
 }:
@@ -23,6 +23,24 @@ stdenv.mkDerivation rec {
   };
 
   patches = [ ./wmiplus_fix_manpage.patch ];
+
+  postPatch = ''
+    substituteInPlace check_wmi_plus.pl \
+      --replace-fail /usr/bin/wmic                      ${wmic-bin}/bin/wmic \
+      --replace-fail /etc/check_wmi_plus                $out/etc/check_wmi_plus \
+      --replace-fail /opt/nagios/bin/plugins            $out/etc/check_wmi_plus \
+      --replace-fail /usr/lib/nagios/plugins            ${monitoring-plugins}/libexec \
+      --replace-fail '$base_dir/check_wmi_plus_help.pl' "$out/bin/check_wmi_plus_help.pl"
+
+    for f in *.pl ; do
+      substituteInPlace $f --replace /usr/bin/perl ${perlPackages.perl}/bin/perl
+    done
+  '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    txt2man
+  ];
 
   propagatedBuildInputs = with perlPackages; [
     BHooksEndOfScope
@@ -53,27 +71,7 @@ stdenv.mkDerivation rec {
     TryTiny
   ];
 
-  nativeBuildInputs = [
-    makeWrapper
-    txt2man
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
   doCheck = false; # no checks
-
-  postPatch = ''
-    substituteInPlace check_wmi_plus.pl \
-      --replace-fail /usr/bin/wmic                      ${wmic-bin}/bin/wmic \
-      --replace-fail /etc/check_wmi_plus                $out/etc/check_wmi_plus \
-      --replace-fail /opt/nagios/bin/plugins            $out/etc/check_wmi_plus \
-      --replace-fail /usr/lib/nagios/plugins            ${monitoring-plugins}/libexec \
-      --replace-fail '$base_dir/check_wmi_plus_help.pl' "$out/bin/check_wmi_plus_help.pl"
-
-    for f in *.pl ; do
-      substituteInPlace $f --replace /usr/bin/perl ${perlPackages.perl}/bin/perl
-    done
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -96,11 +94,14 @@ stdenv.mkDerivation rec {
     gzip $out/share/man/man1/check_wmi_plus.1
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Sensu/nagios plugin using WMI to query Windows hosts";
     homepage = "https://edcint.co.nz/checkwmiplus/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "check_wmi_plus";
     maintainers = with lib.maintainers; [ peterhoeg ];
+    mainProgram = "check_wmi_plus";
   };
 }

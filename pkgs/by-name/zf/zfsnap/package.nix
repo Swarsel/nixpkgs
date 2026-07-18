@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.0.0-beta3";
   pname = "zfsnap";
+  version = "2.0.0-beta3";
 
   src = fetchFromGitHub {
     owner = "zfsnap";
@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "0670a5sghvqx32c9gfsird15mg9nqcvwxsrfcjrwc0sj7br9bd2g";
   };
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postPatch = ''
     # Use zfs binaries from PATH, because often the zfs package from nixpkgs is
@@ -30,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "/bin/ls" "${coreutils}/bin/ls"
   '';
 
+  nativeBuildInputs = [ installShellFiles ];
+
   installPhase = ''
     mkdir -p $out/bin
     mv sbin/zfsnap.sh $out/bin/zfsnap
@@ -40,10 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Portable, performant script to make rolling ZFS snapshots easy";
-    mainProgram = "zfsnap";
     homepage = "https://github.com/zfsnap/zfsnap";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ woffs ];
     platforms = lib.platforms.linux;
+    mainProgram = "zfsnap";
   };
 })

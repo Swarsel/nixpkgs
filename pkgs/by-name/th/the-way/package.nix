@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-zsfk5APxbnssMKud9xGc70N+57LSc+vk6sSb2XzFUyA=";
   };
 
-  cargoHash = "sha256-GBr0z2iJuk86xkgZd2sAz+ISTRfESDt99g6ssxXhzhI=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-GBr0z2iJuk86xkgZd2sAz+ISTRfESDt99g6ssxXhzhI=";
   doCheck = !stdenv.hostPlatform.isDarwin;
-  useNextest = true;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     $out/bin/the-way config default tmp.toml
@@ -32,15 +29,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
   '';
 
+  useNextest = true;
+
   meta = {
     description = "Terminal code snippets manager";
-    mainProgram = "the-way";
     homepage = "https://github.com/out-of-cheese-error/the-way";
     changelog = "https://github.com/out-of-cheese-error/the-way/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       numkem
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "the-way";
   };
 })

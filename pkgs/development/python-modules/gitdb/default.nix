@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "gitdb";
   version = "4.0.12";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,13 +20,8 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  pythonRelaxDeps = [ "smmap" ];
-
   propagatedBuildInputs = [ smmap ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "gitdb" ];
 
   disabledTests = [
     # Tests need part which are not shipped with PyPI releases
@@ -40,6 +34,10 @@ buildPythonPackage rec {
     "test_pack_writing"
     "test_stream_reading"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "gitdb" ];
+  pythonRelaxDeps = [ "smmap" ];
 
   meta = {
     description = "Git Object Database";

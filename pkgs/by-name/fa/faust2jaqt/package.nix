@@ -1,13 +1,13 @@
 {
+  alsa-lib,
   bash,
+  buildPackages,
   faust,
   jack2,
-  qt5,
   libsndfile,
-  alsa-lib,
-  writeText,
-  buildPackages,
+  qt5,
   which,
+  writeText,
 }:
 let
   # Wrap the binary coming out of the the compilation script, so it knows QT_PLUGIN_PATH
@@ -26,13 +26,6 @@ let
 in
 faust.wrapWithBuildEnv {
 
-  baseName = "faust2jaqt";
-
-  scripts = [
-    "faust2jaqt"
-    "faust2jackserver"
-  ];
-
   buildInputs = [
     bash
   ];
@@ -45,8 +38,6 @@ faust.wrapWithBuildEnv {
     which
   ];
 
-  dontWrapQtApps = true;
-
   preFixup = ''
     for script in "$out"/bin/*; do
       # append the wrapping code to the compilation script
@@ -55,4 +46,12 @@ faust.wrapWithBuildEnv {
       sed -i "/QMAKE=/c\ QMAKE="${qt5.qtbase.dev}/bin/qmake"" $script
     done
   '';
+
+  baseName = "faust2jaqt";
+  dontWrapQtApps = true;
+
+  scripts = [
+    "faust2jaqt"
+    "faust2jackserver"
+  ];
 }

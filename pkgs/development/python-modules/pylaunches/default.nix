@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pylaunches";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ludeeus";
@@ -27,16 +26,15 @@ buildPythonPackage rec {
       --replace-fail 'version = "0"' 'version = "${version}"'
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aresponses
     pytestCheckHook
     pytest-asyncio
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pylaunches" ];
 
   meta = {

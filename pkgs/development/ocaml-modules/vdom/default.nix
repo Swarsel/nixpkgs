@@ -1,16 +1,15 @@
 {
   lib,
-  fetchzip,
   buildDunePackage,
-  js_of_ocaml-compiler,
+  fetchzip,
   gen_js_api,
+  js_of_ocaml-compiler,
   ojs,
 }:
 
 buildDunePackage rec {
   pname = "vdom";
   version = "0.3";
-  minimalOCamlVersion = "4.08";
 
   src = fetchzip {
     url = "https://github.com/LexiFi/ocaml-vdom/archive/refs/tags/${version}.tar.gz";
@@ -30,9 +29,11 @@ buildDunePackage rec {
     ojs
   ];
 
+  minimalOCamlVersion = "4.08";
+
   meta = {
-    homepage = "https://github.com/LexiFi/ocaml-vdom";
     description = "Elm architecture and (V)DOM for OCaml";
+    homepage = "https://github.com/LexiFi/ocaml-vdom";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jayesh-bhoot ];
   };

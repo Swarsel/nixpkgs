@@ -17,9 +17,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches =
     # fix build with linux headers >= 5.13
     lib.optional stdenv.hostPlatform.isLinux (fetchpatch {
+      hash = "sha256-Sh/0ZyiQpDvFZOWE9OCQ9+ocXurjzJvrE4WNWaGwAwk=";
       name = "fix-build-linux-headers-gte-5.13.patch";
       url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/net-dns/pdnsd/files/pdnsd-1.2.9a-linux-5.13_build_fix.patch?id=7ce35657f269c3b7016e8940ad36e59cf06e12a4";
-      hash = "sha256-Sh/0ZyiQpDvFZOWE9OCQ9+ocXurjzJvrE4WNWaGwAwk=";
     });
 
   postPatch = ''
@@ -27,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   configureFlags = [ "--enable-ipv6" ];
-
   # fix ipv6 on darwin
   env.CPPFLAGS = "-D__APPLE_USE_RFC_3542";
 
@@ -35,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Permanent DNS caching";
     homepage = "http://members.home.nl/p.a.rombouts/pdnsd";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

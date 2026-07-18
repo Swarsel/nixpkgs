@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beancount,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-bdd,
   pytestCheckHook,
   regex,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "beancount-plugin-utils";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Akuukis";
@@ -21,27 +20,26 @@ buildPythonPackage rec {
     hash = "sha256-oyfL2K/sS4zZ7cq1P36h0dTcW1m5GUyQ9+IyZGfpb2E=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ beancount ];
-
   nativeCheckInputs = [
     pytest-bdd
     pytestCheckHook
     regex
   ];
 
-  pytestFlags = [ "--fixtures" ];
+  build-system = [ setuptools ];
+  dependencies = [ beancount ];
 
   enabledTestPaths = [
     "tests/"
   ];
 
+  pyproject = true;
+  pytestFlags = [ "--fixtures" ];
   pythonImportsCheck = [ "beancount" ];
 
   meta = {
-    homepage = "https://github.com/Akuukis/beancount_plugin_utils";
     description = "Utils for beancount plugin writers - BeancountError, mark, metaset, etc";
+    homepage = "https://github.com/Akuukis/beancount_plugin_utils";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ alapshin ];
   };

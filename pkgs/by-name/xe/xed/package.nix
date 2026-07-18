@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
-  llvmPackages,
   installShellFiles,
+  llvmPackages,
   nix-update-script,
+  python3Packages,
 }:
 
 let
@@ -13,7 +13,6 @@ let
   mbuild = python3Packages.buildPythonPackage rec {
     pname = "mbuild";
     version = "2024.11.04";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "intelxed";
@@ -23,6 +22,7 @@ let
     };
 
     build-system = with python3Packages; [ setuptools ];
+    pyproject = true;
 
     meta = {
       description = "Python-based build system used for building XED";
@@ -80,6 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     inherit mbuild;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -89,11 +90,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isAarch64;
     description = "Intel X86 Encoder Decoder (Intel XED)";
     homepage = "https://intelxed.github.io/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ arturcygan ];
+    platforms = lib.platforms.unix;
+    broken = stdenv.hostPlatform.isAarch64;
   };
 })

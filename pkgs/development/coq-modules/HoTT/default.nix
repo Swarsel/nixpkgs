@@ -1,15 +1,14 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "HoTT";
-  repo = "Coq-HoTT";
-  owner = "HoTT";
   inherit version;
+  pname = "HoTT";
+
   defaultVersion =
     with lib.versions;
     lib.switch coq.coq-version [
@@ -18,7 +17,16 @@ mkCoqDerivation {
         out = coq.coq-version;
       }
     ] null;
-  releaseRev = v: "V${v}";
+
+  # versions of HoTT for Coq 8.17 and onwards will use dune
+  # opam-name = if lib.versions.isLe "8.17" coq.coq-version then "coq-hott" else null;
+  opam-name = "coq-hott";
+  owner = "HoTT";
+
+  patchPhase = ''
+    patchShebangs etc
+  '';
+
   release."8.14".hash = "sha256-7kXk2pmYsTNodHA+Qts3BoMsewvzmCbYvxw9Sgwyvq0=";
   release."8.15".hash = "sha256-JfeiRZVnrjn3SQ87y6dj9DWNwCzrkK3HBogeZARUn9g=";
   release."8.16".hash = "sha256-xcEbz4ZQ+U7mb0SEJopaczfoRc2GSgF2BGzUSWI0/HY=";
@@ -27,19 +35,13 @@ mkCoqDerivation {
   release."8.19".hash = "sha256-igG3mhR6uPXV+SCtPH9PBw/eAtTFFry6HPT5ypWj3tQ=";
   release."8.20".hash = "sha256-XHAvomi0of11j4x5gpTgD5Mw53eF1FpnCyBvdbV3g6I=";
   release."9.0".hash = "sha256-etdLH1qDyDc+ZM7K/65iib0MRlLhsnVmzWBCULUDD50=";
-
-  # versions of HoTT for Coq 8.17 and onwards will use dune
-  # opam-name = if lib.versions.isLe "8.17" coq.coq-version then "coq-hott" else null;
-  opam-name = "coq-hott";
+  releaseRev = v: "V${v}";
+  repo = "Coq-HoTT";
   useDune = lib.versions.isGe "8.17" coq.coq-version;
 
-  patchPhase = ''
-    patchShebangs etc
-  '';
-
   meta = {
-    homepage = "https://homotopytypetheory.org/";
     description = "Homotopy Type Theory library";
+
     longDescription = ''
       Homotopy Type Theory is an interpretation of Martin-Löf’s intensional
       type theory into abstract homotopy theory. Propositional equality is
@@ -55,6 +57,9 @@ mkCoqDerivation {
       Foundations library (which has since been incorporated into the Unimath
       library) and also cross-pollinates with the HoTT-Agda library.
     '';
+
+    homepage = "https://homotopytypetheory.org/";
+
     maintainers = with lib.maintainers; [
       alizter
       siddharthist

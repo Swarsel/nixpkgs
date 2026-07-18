@@ -37,80 +37,93 @@ in
       );
 
   options.services.fcgiwrap.instances = mkOption {
-    description = "Configuration for fcgiwrap instances.";
     default = { };
+    description = "Configuration for fcgiwrap instances.";
+
     type = types.attrsOf (
       types.submodule (
         { config, ... }:
         {
           options = {
+            process.group = mkOption {
+              default = null;
+              description = "Group as which this instance of fcgiwrap will be run.";
+              type = types.nullOr types.str;
+            };
+
             process.prefork = mkOption {
-              type = types.ints.positive;
               default = 1;
               description = "Number of processes to prefork.";
+              type = types.ints.positive;
             };
 
             process.user = mkOption {
-              type = types.nullOr types.str;
               default = null;
+
               description = ''
                 User as which this instance of fcgiwrap will be run.
                 Set to `null` (the default) to use a dynamically allocated user.
               '';
+
+              type = types.nullOr types.str;
             };
 
-            process.group = mkOption {
-              type = types.nullOr types.str;
+            socket.address = mkOption {
+              default = "/run/fcgiwrap-${config._module.args.name}.sock";
+
+              description = ''
+                Socket address.
+                In case of a UNIX socket, this should be its filesystem path.
+              '';
+
+              example = "1.2.3.4:5678";
+              type = types.str;
+            };
+
+            socket.group = mkOption {
               default = null;
-              description = "Group as which this instance of fcgiwrap will be run.";
+
+              description = ''
+                Group to be set as owner of the UNIX socket.
+              '';
+
+              type = types.nullOr types.str;
+            };
+
+            socket.mode = mkOption {
+              default = if config.socket.type == "unix" then "0600" else null;
+
+              defaultText = literalExpression ''
+                if config.socket.type == "unix" then "0600" else null
+              '';
+
+              description = ''
+                Mode to be set on the UNIX socket.
+                Defaults to private to the socket's owner.
+              '';
+
+              type = types.nullOr types.str;
             };
 
             socket.type = mkOption {
+              default = "unix";
+              description = "Socket type: 'unix', 'tcp' or 'tcp6'.";
+
               type = types.enum [
                 "unix"
                 "tcp"
                 "tcp6"
               ];
-              default = "unix";
-              description = "Socket type: 'unix', 'tcp' or 'tcp6'.";
-            };
-
-            socket.address = mkOption {
-              type = types.str;
-              default = "/run/fcgiwrap-${config._module.args.name}.sock";
-              example = "1.2.3.4:5678";
-              description = ''
-                Socket address.
-                In case of a UNIX socket, this should be its filesystem path.
-              '';
             };
 
             socket.user = mkOption {
-              type = types.nullOr types.str;
               default = null;
+
               description = ''
                 User to be set as owner of the UNIX socket.
               '';
-            };
 
-            socket.group = mkOption {
               type = types.nullOr types.str;
-              default = null;
-              description = ''
-                Group to be set as owner of the UNIX socket.
-              '';
-            };
-
-            socket.mode = mkOption {
-              type = types.nullOr types.str;
-              default = if config.socket.type == "unix" then "0600" else null;
-              defaultText = literalExpression ''
-                if config.socket.type == "unix" then "0600" else null
-              '';
-              description = ''
-                Mode to be set on the UNIX socket.
-                Defaults to private to the socket's owner.
-              '';
             };
           };
         }
@@ -146,7 +159,6 @@ in
 
     systemd.services = forEachInstance (cfg: {
       after = [ "nss-user-lookup.target" ];
-      wantedBy = optional (cfg.socket.type != "unix") "multi-user.target";
 
       serviceConfig = {
         ExecStart = ''
@@ -165,26 +177,29 @@ in
       // (
         if cfg.process.user != null then
           {
-            User = cfg.process.user;
             Group = cfg.process.group;
+            User = cfg.process.user;
           }
         else
           {
             DynamicUser = true;
           }
       );
+
+      wantedBy = optional (cfg.socket.type != "unix") "multi-user.target";
     });
 
     systemd.sockets = forEachInstance (
       cfg:
       mkIf (cfg.socket.type == "unix") {
-        wantedBy = [ "sockets.target" ];
         socketConfig = {
           ListenStream = cfg.socket.address;
-          SocketUser = cfg.socket.user;
           SocketGroup = cfg.socket.group;
           SocketMode = cfg.socket.mode;
+          SocketUser = cfg.socket.user;
         };
+
+        wantedBy = [ "sockets.target" ];
       }
     );
   };

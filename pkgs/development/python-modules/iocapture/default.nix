@@ -3,20 +3,22 @@
   buildPythonPackage,
   fetchPypi,
   flexmock,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "iocapture";
   version = "0.1.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "86670e1808bcdcd4f70112f43da72ae766f04cd8311d1071ce6e0e0a72e37ee8";
   };
+
+  # No tests in archive
+  doCheck = false;
 
   nativeCheckInputs = [
     flexmock
@@ -25,8 +27,7 @@ buildPythonPackage rec {
     six
   ];
 
-  # No tests in archive
-  doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Capture stdout, stderr easily";

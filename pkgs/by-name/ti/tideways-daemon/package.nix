@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  curl,
   common-updater-scripts,
-  writeShellApplication,
+  curl,
   gnugrep,
+  stdenvNoCC,
+  writeShellApplication,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -26,27 +26,32 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   passthru = {
     sources = {
-      "x86_64-linux" = fetchurl {
-        url = "https://tideways.s3.amazonaws.com/daemon/${finalAttrs.version}/tideways-daemon_linux_amd64-${finalAttrs.version}.tar.gz";
-        hash = "sha256-sm5xITxGSbcWiI4hhxkHKFleTQBeZZBTH823KQz3M5U=";
-      };
-      "aarch64-linux" = fetchurl {
-        url = "https://tideways.s3.amazonaws.com/daemon/${finalAttrs.version}/tideways-daemon_linux_aarch64-${finalAttrs.version}.tar.gz";
-        hash = "sha256-WxaJx/vkg139zm0xOzT+9FZRAk4v/YJcVHTXwDVcALE=";
-      };
       "aarch64-darwin" = fetchurl {
-        url = "https://tideways.s3.amazonaws.com/daemon/${finalAttrs.version}/tideways-daemon_macos_arm64-${finalAttrs.version}.tar.gz";
         hash = "sha256-RcNG7jPt+bYiP4hzV6vaxVgSstDM2oWjOmo9TmpKcWM=";
+        url = "https://tideways.s3.amazonaws.com/daemon/${finalAttrs.version}/tideways-daemon_macos_arm64-${finalAttrs.version}.tar.gz";
+      };
+
+      "aarch64-linux" = fetchurl {
+        hash = "sha256-WxaJx/vkg139zm0xOzT+9FZRAk4v/YJcVHTXwDVcALE=";
+        url = "https://tideways.s3.amazonaws.com/daemon/${finalAttrs.version}/tideways-daemon_linux_aarch64-${finalAttrs.version}.tar.gz";
+      };
+
+      "x86_64-linux" = fetchurl {
+        hash = "sha256-sm5xITxGSbcWiI4hhxkHKFleTQBeZZBTH823KQz3M5U=";
+        url = "https://tideways.s3.amazonaws.com/daemon/${finalAttrs.version}/tideways-daemon_linux_amd64-${finalAttrs.version}.tar.gz";
       };
     };
+
     updateScript = "${
       writeShellApplication {
         name = "update-tideways-daemon";
+
         runtimeInputs = [
           curl
           gnugrep
           common-updater-scripts
         ];
+
         text = ''
           NEW_VERSION=$(curl --fail -L -s https://tideways.com/profiler/downloads | grep -E 'https://tideways.s3.amazonaws.com/daemon/([0-9]+\.[0-9]+\.[0-9]+)/tideways-daemon_linux_amd64-\1.tar.gz' | grep -oP 'daemon/\K[0-9]+\.[0-9]+\.[0-9]+')
 
@@ -66,10 +71,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Tideways Daemon";
     homepage = "https://tideways.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "tideways-daemon";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ shyim ];
     platforms = lib.attrNames finalAttrs.passthru.sources;
+    mainProgram = "tideways-daemon";
   };
 })

@@ -1,46 +1,41 @@
 {
-  mkDerivation,
-  pkgsBuildBuild,
-  libjail,
-  libnetbsd,
-  libcapsicum,
-  libcasper,
-  libxo,
-  libncurses-tinfo,
-  libedit,
   lib,
   stdenv,
   bsdSetupHook,
-  freebsdSetupHook,
-  makeMinimal,
-  install,
-  tsort,
-  lorder,
-  mandoc,
-  groff,
   byacc,
+  freebsdSetupHook,
   gencat,
+  groff,
+  install,
+  libcapsicum,
+  libcasper,
+  libedit,
+  libjail,
+  libncurses-tinfo,
+  libnetbsd,
+  libxo,
+  lorder,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
+  pkgsBuildBuild,
+  tsort,
 }:
 mkDerivation {
   pname = "bins";
-  path = "bin";
-  extraPaths = [
-    "sys/conf"
-    "sys/sys/param.h"
-    "contrib/sendmail"
-    "contrib/tcsh"
-    "usr.bin/printf"
-    "lib/libsm"
+
+  outputs = [
+    "out"
+    "man"
+    "debug"
   ];
-  buildInputs = [
-    libjail
-    libnetbsd
-    libcapsicum
-    libcasper
-    libxo
-    libncurses-tinfo
-    libedit
-  ];
+
+  postPatch = ''
+    sed -E -i -e '/#define\tBSD.*/d' $BSDSRCDIR/sys/sys/param.h
+    sed -E -i -e '/^SYMLINKS.*/d' $BSDSRCDIR/bin/*/Makefile
+    sed -E -i -e 's/mktemp -t ka/mktemp -t kaXXXXXX/' $BSDSRCDIR/bin/sh/mkbuiltins $BSDSRCDIR/bin/sh/mktokens
+  '';
+
   nativeBuildInputs = [
     bsdSetupHook
     freebsdSetupHook
@@ -55,16 +50,14 @@ mkDerivation {
     gencat
   ];
 
-  MK_TESTS = "no";
-
-  postPatch = ''
-    sed -E -i -e '/#define\tBSD.*/d' $BSDSRCDIR/sys/sys/param.h
-    sed -E -i -e '/^SYMLINKS.*/d' $BSDSRCDIR/bin/*/Makefile
-    sed -E -i -e 's/mktemp -t ka/mktemp -t kaXXXXXX/' $BSDSRCDIR/bin/sh/mkbuiltins $BSDSRCDIR/bin/sh/mktokens
-  '';
-
-  NIX_CFLAGS_COMPILE = [
-    "-Wno-unterminated-string-initialization"
+  buildInputs = [
+    libjail
+    libnetbsd
+    libcapsicum
+    libcasper
+    libxo
+    libncurses-tinfo
+    libedit
   ];
 
   preBuild = ''
@@ -84,9 +77,20 @@ mkDerivation {
     appendToVar makeFlags "ROOTDIR=$out/root"
   '';
 
-  outputs = [
-    "out"
-    "man"
-    "debug"
+  MK_TESTS = "no";
+
+  NIX_CFLAGS_COMPILE = [
+    "-Wno-unterminated-string-initialization"
   ];
+
+  extraPaths = [
+    "sys/conf"
+    "sys/sys/param.h"
+    "contrib/sendmail"
+    "contrib/tcsh"
+    "usr.bin/printf"
+    "lib/libsm"
+  ];
+
+  path = "bin";
 }

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  airspy,
   cmake,
-  qt6,
   faad2,
+  libusb1,
   mpg123,
   portaudio,
-  libusb1,
+  qt6,
   rtl-sdr,
-  airspy,
   soapysdr-with-plugins,
 }:
 
@@ -52,9 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "DAB/DAB+ radio application";
     homepage = "https://github.com/KejPi/AbracaDABra";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ markuskowa ];
+    platforms = lib.platforms.linux;
     mainProgram = "AbracaDABra";
   };
 })

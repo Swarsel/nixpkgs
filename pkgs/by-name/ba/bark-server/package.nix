@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -29,12 +30,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-+WyTKyWVzJAgCQ6bXbOjrJUZkw5XVrvAdgALL2eXU64=";
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
   preBuild = ''
     ldflags+=" -X \"main.buildDate=$(<SOURCE_DATE_EPOCH)\""
     ldflags+=" -X main.commitID==$(<COMMIT)"
@@ -42,15 +37,19 @@ buildGoModule (finalAttrs: {
 
   # All tests require network
   doCheck = false;
-
   doInstallCheck = true;
-
-  versionCheckProgramArg = "-v";
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  versionCheckProgramArg = "-v";
   passthru.updateScript = nix-update-script { };
 
   meta = {

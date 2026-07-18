@@ -15,17 +15,19 @@ in
     services.hardware.pommed = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to use the pommed tool to handle Apple laptop
           keyboard hotkeys.
         '';
+
+        type = lib.types.bool;
       };
 
       configFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
+
         description = ''
           The path to the {file}`pommed.conf` file. Leave
           to null to use the default config file
@@ -34,24 +36,26 @@ in
           {file}`/etc/pommed.conf.pmac` for examples to
           build on.
         '';
+
+        type = lib.types.nullOr lib.types.path;
       };
     };
 
   };
 
   config = lib.mkIf cfg.enable {
+    environment.etc."pommed.conf".source =
+      if cfg.configFile == null then defaultConf else cfg.configFile;
+
     environment.systemPackages = [
       pkgs.polkit
       pkgs.pommed_light
     ];
 
-    environment.etc."pommed.conf".source =
-      if cfg.configFile == null then defaultConf else cfg.configFile;
-
     systemd.services.pommed = {
       description = "Pommed Apple Hotkeys Daemon";
-      wantedBy = [ "multi-user.target" ];
       serviceConfig.ExecStart = "${lib.getExe pkgs.pommed_light} -f";
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

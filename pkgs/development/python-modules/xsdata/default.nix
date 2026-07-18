@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-  ruff,
+  buildPythonPackage,
   click,
   jinja2,
+  lxml,
+  pytestCheckHook,
+  replaceVars,
+  requests,
+  ruff,
+  setuptools,
   toposort,
   typing-extensions,
-  lxml,
-  requests,
-  pytestCheckHook,
-  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "xsdata";
   version = "26.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tefra";
@@ -37,9 +36,14 @@ buildPythonPackage rec {
       --replace-fail "--benchmark-skip" ""
   '';
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [ setuptools ];
   dependencies = [ typing-extensions ];
+  disabledTestPaths = [ "tests/integration/benchmarks" ];
 
   optional-dependencies = {
     cli = [
@@ -47,16 +51,12 @@ buildPythonPackage rec {
       jinja2
       toposort
     ];
+
     lxml = [ lxml ];
     soap = [ requests ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  disabledTestPaths = [ "tests/integration/benchmarks" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "xsdata.formats.dataclass.context"
@@ -75,10 +75,10 @@ buildPythonPackage rec {
 
   meta = {
     description = "Naive XML & JSON bindings for Python";
-    mainProgram = "xsdata";
     homepage = "https://github.com/tefra/xsdata";
     changelog = "https://github.com/tefra/xsdata/blob/${src.tag}/CHANGES.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "xsdata";
   };
 }

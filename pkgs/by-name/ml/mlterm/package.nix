@@ -1,81 +1,30 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
+  SDL2, # for the "sdl" --with-gui option
   autoconf,
-  makeDesktopItem,
-  nixosTests,
-  vte,
-  harfbuzz, # can be replaced with libotf
-  fribidi,
-  m17n_lib,
-  libssh2, # build-in ssh
+  cairo,
   fcitx5,
   fcitx5-gtk,
-  ibus,
-  uim, # IME
-  wrapGAppsHook3, # color picker in mlconfig
+  fetchpatch,
+  fribidi,
   gdk-pixbuf,
   gtk3,
-  gtk ? gtk3,
-  # List of gui libraries to use. According to `./configure --help` ran on
-  # release 3.9.3, options are: (xlib|win32|fb|quartz|console|wayland|sdl2|beos)
-  enableGuis ? {
-    xlib = enableX11;
-    # From some reason, upstream's ./configure script disables compilation of the
-    # external tool `mlconfig` if `enableGuis.fb == true`. This behavior is not
-    # documentd in `./configure --help`, and it is reported here:
-    # https://github.com/arakiken/mlterm/issues/73
-    fb = false;
-    quartz = stdenv.hostPlatform.isDarwin;
-    wayland = stdenv.hostPlatform.isLinux;
-    sdl2 = true;
-  },
-  libxkbcommon,
-  wayland, # for the "wayland" --with-gui option
-  SDL2, # for the "sdl" --with-gui option
-  # List of typing engines, the default list enables compiling all of the
-  # available ones, as recorded on release 3.9.3
-  enableTypeEngines ? {
-    xcore = false; # Considered legacy
-    xft = enableX11;
-    cairo = true;
-  },
+  harfbuzz, # can be replaced with libotf
+  ibus,
+  libssh2, # build-in ssh
   libx11,
   libxft,
-  cairo,
-  # List of external tools to create, this default list includes all default
-  # tools, as recorded on release 3.9.3.
-  enableTools ? {
-    mlclient = true;
-    mlconfig = true;
-    mlcc = true;
-    mlterm-menu = true;
-    # Note that according to upstream's ./configure script, to disable
-    # mlimgloader you have to disable _all_ tools. See:
-    # https://github.com/arakiken/mlterm/issues/69
-    mlimgloader = true;
-    registobmp = true;
-    mlfc = true;
-  },
-  # Whether to enable the X window system
-  enableX11 ? stdenv.hostPlatform.isLinux,
-  # Most of the input methods and other build features are enabled by default,
-  # the following attribute set can be used to disable some of them. It's parsed
-  # when we set `configureFlags`. If you find other configure Flags that require
-  # dependencies, it'd be nice to make that contribution here.
-  enableFeatures ? {
-    uim = !stdenv.hostPlatform.isDarwin;
-    ibus = !stdenv.hostPlatform.isDarwin;
-    fcitx = !stdenv.hostPlatform.isDarwin;
-    m17n = !stdenv.hostPlatform.isDarwin;
-    ssh2 = true;
-    bidi = true;
-    # Open Type layout support, (substituting glyphs with opentype fonts)
-    otl = true;
-  },
+  libxkbcommon,
+  m17n_lib,
+  makeDesktopItem,
+  nixosTests,
+  pkg-config,
+  uim, # IME
+  vte,
+  wayland, # for the "wayland" --with-gui option
+  wrapGAppsHook3, # color picker in mlconfig
   # Configure the Exec directive in the generated .desktop file
   desktopBinary ? (
     if enableGuis.xlib then
@@ -87,6 +36,57 @@
     else
       throw "mlterm: couldn't figure out what desktopBinary to use."
   ),
+  # Most of the input methods and other build features are enabled by default,
+  # the following attribute set can be used to disable some of them. It's parsed
+  # when we set `configureFlags`. If you find other configure Flags that require
+  # dependencies, it'd be nice to make that contribution here.
+  enableFeatures ? {
+    bidi = true;
+    fcitx = !stdenv.hostPlatform.isDarwin;
+    ibus = !stdenv.hostPlatform.isDarwin;
+    m17n = !stdenv.hostPlatform.isDarwin;
+    # Open Type layout support, (substituting glyphs with opentype fonts)
+    otl = true;
+    ssh2 = true;
+    uim = !stdenv.hostPlatform.isDarwin;
+  },
+  # List of gui libraries to use. According to `./configure --help` ran on
+  # release 3.9.3, options are: (xlib|win32|fb|quartz|console|wayland|sdl2|beos)
+  enableGuis ? {
+    # From some reason, upstream's ./configure script disables compilation of the
+    # external tool `mlconfig` if `enableGuis.fb == true`. This behavior is not
+    # documentd in `./configure --help`, and it is reported here:
+    # https://github.com/arakiken/mlterm/issues/73
+    fb = false;
+    quartz = stdenv.hostPlatform.isDarwin;
+    sdl2 = true;
+    wayland = stdenv.hostPlatform.isLinux;
+    xlib = enableX11;
+  },
+  # List of external tools to create, this default list includes all default
+  # tools, as recorded on release 3.9.3.
+  enableTools ? {
+    mlcc = true;
+    mlclient = true;
+    mlconfig = true;
+    mlfc = true;
+    # Note that according to upstream's ./configure script, to disable
+    # mlimgloader you have to disable _all_ tools. See:
+    # https://github.com/arakiken/mlterm/issues/69
+    mlimgloader = true;
+    mlterm-menu = true;
+    registobmp = true;
+  },
+  # List of typing engines, the default list enables compiling all of the
+  # available ones, as recorded on release 3.9.3
+  enableTypeEngines ? {
+    cairo = true;
+    xcore = false; # Considered legacy
+    xft = enableX11;
+  },
+  # Whether to enable the X window system
+  enableX11 ? stdenv.hostPlatform.isLinux,
+  gtk ? gtk3,
 }:
 
 let
@@ -113,11 +113,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/arakiken/mlterm/commit/819366f9c3c015d1be501d626ca954ce3ce38a60.patch";
-      hash = "sha256-xI0CzXN3gfXZXrL1/tFgQDtpY5hnzGLPruidOuMrbPQ=";
       excludes = [
         "ChangeLog"
       ];
+
+      hash = "sha256-xI0CzXN3gfXZXrL1/tFgQDtpY5hnzGLPruidOuMrbPQ=";
+      url = "https://github.com/arakiken/mlterm/commit/819366f9c3c015d1be501d626ca954ce3ce38a60.patch";
     })
   ];
 
@@ -128,6 +129,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals enableTools.mlconfig [
     wrapGAppsHook3
   ];
+
   buildInputs = [
     gtk
     vte
@@ -172,13 +174,6 @@ stdenv.mkDerivation (finalAttrs: {
     uim
   ];
 
-  env = {
-    NIX_CFLAGS_COMPILE =
-      # GCC15 defaults to C23 which is stricter about prototypes
-      # There are upstream fixes, but they are not in 3.9.4 release
-      lib.optionalString stdenv.cc.isGNU " -std=c17 ";
-  };
-
   configureFlags = [
     (withFeaturesList "type-engines" enableTypeEngines)
     (withFeaturesList "tools" enableTools)
@@ -192,7 +187,12 @@ stdenv.mkDerivation (finalAttrs: {
   ++ [
   ];
 
-  enableParallelBuilding = true;
+  env = {
+    NIX_CFLAGS_COMPILE =
+      # GCC15 defaults to C23 which is stricter about prototypes
+      # There are upstream fixes, but they are not in 3.9.4 release
+      lib.optionalString stdenv.cc.isGNU " -std=c17 ";
+  };
 
   postInstall = ''
     install -D contrib/icon/mlterm-icon.svg "$out/share/icons/hicolor/scalable/apps/mlterm.svg"
@@ -206,39 +206,45 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   desktopItem = makeDesktopItem {
-    name = "mlterm";
-    exec = "${desktopBinary} %U";
-    icon = "mlterm";
-    type = "Application";
-    comment = "Multi Lingual TERMinal emulator";
-    desktopName = "mlterm";
-    genericName = "Terminal emulator";
     categories = [
       "System"
       "TerminalEmulator"
     ];
+
+    comment = "Multi Lingual TERMinal emulator";
+    desktopName = "mlterm";
+    exec = "${desktopBinary} %U";
+    genericName = "Terminal emulator";
+    icon = "mlterm";
+    name = "mlterm";
     startupNotify = false;
+    type = "Application";
   };
 
+  enableParallelBuilding = true;
+
   passthru = {
-    tests.test = nixosTests.terminal-emulators.mlterm;
     inherit
       enableTypeEngines
       enableTools
       enableGuis
       enableFeatures
       ;
+
+    tests.test = nixosTests.terminal-emulators.mlterm;
   };
 
   meta = {
     description = "Multi Lingual TERMinal emulator";
     homepage = "https://mlterm.sourceforge.net/";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       ramkromberg
       atemu
       doronbehar
     ];
+
     platforms = lib.platforms.all;
     mainProgram = desktopBinary;
   };

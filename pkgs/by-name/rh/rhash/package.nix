@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gettext,
   which,
   enableStatic ? stdenv.hostPlatform.isStatic,
-  gettext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.4.6";
   pname = "rhash";
+  version = "1.4.6";
 
   src = fetchFromGitHub {
     owner = "rhash";
@@ -21,11 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ which ];
   buildInputs = lib.optionals stdenv.hostPlatform.isFreeBSD [ gettext ];
 
-  # configure script is not autotools-based, doesn't support these options
-  dontAddStaticConfigureFlags = true;
-
-  configurePlatforms = [ ];
-
   configureFlags = [
     "--ar=${stdenv.cc.targetPrefix}ar"
     "--target=${stdenv.hostPlatform.config}"
@@ -35,8 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   checkTarget = "test-full";
+  configurePlatforms = [ ];
+  # configure script is not autotools-based, doesn't support these options
+  dontAddStaticConfigureFlags = true;
 
   installTargets = [
     "install"
@@ -47,10 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://rhash.sourceforge.net/";
     description = "Console utility and library for computing and verifying hash sums of files";
+    homepage = "https://rhash.sourceforge.net/";
     license = lib.licenses.bsd0;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

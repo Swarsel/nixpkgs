@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
+  bzip2,
   undmg,
   versionCheckHook,
   xz,
-  bzip2,
 }:
 
 let
@@ -19,24 +19,24 @@ stdenv.mkDerivation (finalAttrs: {
   src =
     let
       darwinDmg = fetchurl {
-        url = "https://desktop-release.q.us-east-1.amazonaws.com/${finalAttrs.version}/Kiro%20CLI.dmg";
         hash = "sha256-NDeyXQO9NBsK3xqAEcO1gGn9ta+ZVQ1GNwZ4hbGUe3Q=";
+        url = "https://desktop-release.q.us-east-1.amazonaws.com/${finalAttrs.version}/Kiro%20CLI.dmg";
       };
     in
     {
-      x86_64-linux = fetchurl {
-        url = "https://desktop-release.q.us-east-1.amazonaws.com/${finalAttrs.version}/kirocli-x86_64-linux.tar.gz";
-        hash = "sha256-cJl6CyYCzbLpB6m+W9Tx7enaPzijgjOBjdmG6CPMM8k=";
-      };
-      aarch64-linux = fetchurl {
-        url = "https://desktop-release.q.us-east-1.amazonaws.com/${finalAttrs.version}/kirocli-aarch64-linux.tar.gz";
-        hash = "sha256-39hKSRi1l5ruSqObViksJkufiCOvLTaIkQzT3sNQFQQ=";
-      };
       aarch64-darwin = darwinDmg;
+
+      aarch64-linux = fetchurl {
+        hash = "sha256-39hKSRi1l5ruSqObViksJkufiCOvLTaIkQzT3sNQFQQ=";
+        url = "https://desktop-release.q.us-east-1.amazonaws.com/${finalAttrs.version}/kirocli-aarch64-linux.tar.gz";
+      };
+
+      x86_64-linux = fetchurl {
+        hash = "sha256-cJl6CyYCzbLpB6m+W9Tx7enaPzijgjOBjdmG6CPMM8k=";
+        url = "https://desktop-release.q.us-east-1.amazonaws.com/${finalAttrs.version}/kirocli-x86_64-linux.tar.gz";
+      };
     }
     .${system} or (throw "Unsupported system: ${system}");
-
-  sourceRoot = if stdenv.hostPlatform.isDarwin then "Kiro CLI.app" else "kirocli";
 
   strictDeps = true;
 
@@ -53,12 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     xz
     bzip2
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -82,6 +76,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = if stdenv.hostPlatform.isDarwin then "Kiro CLI.app" else "kirocli";
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -89,15 +88,18 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://kiro.dev";
     license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       jamesward
       pmw
     ];
-    mainProgram = "kiro-cli";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "kiro-cli";
   };
 })

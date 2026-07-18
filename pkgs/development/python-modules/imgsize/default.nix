@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   rustPlatform,
 }:
@@ -9,18 +9,12 @@
 buildPythonPackage rec {
   pname = "imgsize";
   version = "4.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ojii";
     repo = "imgsize";
     tag = version;
     sha256 = "sha256-pHLYDC3UjrCKOdfgo2OreE5hGyIyWVSIsQR6piJZe6k=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-AXBd6cCpBVEYnU/uqynnO8wsVypV34r023kwzwSsbe4=";
   };
 
   nativeBuildInputs = [
@@ -38,6 +32,13 @@ buildPythonPackage rec {
       --replace-fail 'assert sys.prefix != sys.base_prefix, "must be in virtualenv"' "" \
       --replace-fail 'check_call(' "# "
   '';
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-AXBd6cCpBVEYnU/uqynnO8wsVypV34r023kwzwSsbe4=";
+  };
+
+  pyproject = true;
 
   meta = {
     description = "Pure Python image size library";

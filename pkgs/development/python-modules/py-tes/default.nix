@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
-  python-dateutil,
   pytestCheckHook,
+  python-dateutil,
   requests,
   requests-mock,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "py-tes";
   version = "1.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ohsu-comp-bio";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-/xgycSDFp17rPzC6ICf4e+vrIKWYPftDngx/u1/KHWk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,17 +36,13 @@ buildPythonPackage (finalAttrs: {
     sphinx-rtd-theme
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
-
-  pythonImportsCheck = [ "tes" ];
-
   disabledTestPaths = [
     # Tests require running funnel
     "tests/integration"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "tes" ];
 
   meta = {
     description = "Python SDK for the GA4GH Task Execution API";

@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  speexdsp,
   pkg-config,
+  speexdsp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.2.6";
   pname = "libebur128";
+  version = "1.2.6";
 
   src = fetchFromGitHub {
     owner = "jiixyj";
@@ -17,12 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-UKO2k+kKH/dwt2xfaYMrH/GXjEkIrnxh1kGG/3P5d3Y=";
   };
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  buildInputs = [ speexdsp ];
 
   # https://github.com/jiixyj/libebur128/issues/121
   postPatch = ''
@@ -43,6 +37,13 @@ stdenv.mkDerivation (finalAttrs: {
           'cmake_minimum_required(VERSION 3.10'
     done
   '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [ speexdsp ];
 
   meta = {
     description = "Implementation of the EBU R128 loudness standard";

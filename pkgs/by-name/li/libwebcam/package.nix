@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   cmake,
-  pkg-config,
   libxml2,
+  pkg-config,
   udevCheckHook,
 }:
 
@@ -20,13 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./uvcdynctrl_symlink_support_and_take_data_dir_from_env.patch
   ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    udevCheckHook
-  ];
-  buildInputs = [ libxml2 ];
 
   postPatch = ''
     substituteInPlace ./uvcdynctrl/CMakeLists.txt \
@@ -46,6 +39,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "cmake_minimum_required (VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    udevCheckHook
+  ];
+
+  buildInputs = [ libxml2 ];
+
   preConfigure = ''
     cmakeFlagsArray=(
       $cmakeFlagsArray
@@ -57,8 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Webcam-tools package";
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ jraygauthier ];
+    platforms = lib.platforms.linux;
   };
 })

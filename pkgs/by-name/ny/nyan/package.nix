@@ -32,11 +32,13 @@ stdenv.mkDerivation (finalAttrs: {
     flex
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckHooks = [
     versionCheckHook
   ];
+
   versionCheckProgram = "${placeholder "out"}/bin/nyancat";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -47,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://openage.sft.mx";
     changelog = "https://github.com/SFTtech/nyan/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    platforms = lib.platforms.unix;
     mainProgram = "nyancat";
   };
 })

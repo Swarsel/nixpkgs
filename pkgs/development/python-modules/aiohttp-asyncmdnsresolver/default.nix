@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiodns,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "aiohttp-asyncmdnsresolver";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-wqeWK7IoX2o+4Cmjq9nKh3rod0Y2C5dxP0Cju9Uk6hE=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -31,12 +36,7 @@ buildPythonPackage rec {
     zeroconf
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiohttp_asyncmdnsresolver" ];
 
   meta = {

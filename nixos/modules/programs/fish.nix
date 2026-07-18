@@ -28,8 +28,8 @@ let
   indentFishFile =
     name: text:
     pkgs.runCommandLocal name {
-      nativeBuildInputs = [ cfg.package ];
       inherit text;
+      nativeBuildInputs = [ cfg.package ];
       passAsFile = [ "text" ];
     } "fish --no-config -c 'fish_indent $textPath' > $out";
 
@@ -55,21 +55,25 @@ in
     programs.fish = {
       enable = lib.mkOption {
         default = false;
+
         description = ''
           Whether to configure fish as an interactive shell.
         '';
+
         type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "fish" { };
 
-      useBabelfish = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
+      extraCompletionPackages = lib.mkOption {
+        default = [ ];
+
         description = ''
-          If enabled, the configured environment will be translated to native fish using [babelfish](https://github.com/bouk/babelfish).
-          Otherwise, [foreign-env](https://github.com/oh-my-fish/plugin-foreign-env) will be used.
+          Additional packages to generate completions from, if {option}`programs.fish.generateCompletions` is enabled.
         '';
+
+        example = lib.literalExpression "config.users.users.alice.packages";
+        type = lib.types.listOf lib.types.package;
       };
 
       generateCompletions = lib.mkEnableOption "generating completion files from man pages" // {
@@ -77,115 +81,137 @@ in
         example = false;
       };
 
-      extraCompletionPackages = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        example = lib.literalExpression "config.users.users.alice.packages";
-        description = ''
-          Additional packages to generate completions from, if {option}`programs.fish.generateCompletions` is enabled.
-        '';
-      };
-
-      vendor.config.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether fish should source configuration snippets provided by other packages.
-        '';
-      };
-
-      vendor.completions.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether fish should use completion files provided by other packages.
-        '';
-      };
-
-      vendor.functions.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether fish should autoload fish functions provided by other packages.
-        '';
-      };
-
-      shellAbbrs = lib.mkOption {
-        default = { };
-        example = {
-          gco = "git checkout";
-          npu = "nix-prefetch-url";
-        };
-        description = ''
-          Set of fish abbreviations.
-        '';
-        type = with lib.types; attrsOf str;
-      };
-
-      shellAliases = lib.mkOption {
-        default = { };
-        description = ''
-          Set of aliases for fish shell, which overrides {option}`environment.shellAliases`.
-          See {option}`environment.shellAliases` for an option format description.
-        '';
-        type = with lib.types; attrsOf (nullOr (either str path));
-      };
-
-      shellInit = lib.mkOption {
+      interactiveShellInit = lib.mkOption {
         default = "";
+
         description = ''
-          Shell script code called during fish shell initialisation.
+          Shell script code called during interactive fish shell initialisation.
         '';
+
         type = lib.types.lines;
       };
 
       loginShellInit = lib.mkOption {
         default = "";
+
         description = ''
           Shell script code called during fish login shell initialisation.
         '';
-        type = lib.types.lines;
-      };
 
-      interactiveShellInit = lib.mkOption {
-        default = "";
-        description = ''
-          Shell script code called during interactive fish shell initialisation.
-        '';
         type = lib.types.lines;
       };
 
       promptInit = lib.mkOption {
         default = "";
+
         description = ''
           Shell script code used to initialise fish prompt.
         '';
+
         type = lib.types.lines;
+      };
+
+      shellAbbrs = lib.mkOption {
+        default = { };
+
+        description = ''
+          Set of fish abbreviations.
+        '';
+
+        example = {
+          gco = "git checkout";
+          npu = "nix-prefetch-url";
+        };
+
+        type = with lib.types; attrsOf str;
+      };
+
+      shellAliases = lib.mkOption {
+        default = { };
+
+        description = ''
+          Set of aliases for fish shell, which overrides {option}`environment.shellAliases`.
+          See {option}`environment.shellAliases` for an option format description.
+        '';
+
+        type = with lib.types; attrsOf (nullOr (either str path));
+      };
+
+      shellInit = lib.mkOption {
+        default = "";
+
+        description = ''
+          Shell script code called during fish shell initialisation.
+        '';
+
+        type = lib.types.lines;
+      };
+
+      useBabelfish = lib.mkOption {
+        default = false;
+
+        description = ''
+          If enabled, the configured environment will be translated to native fish using [babelfish](https://github.com/bouk/babelfish).
+          Otherwise, [foreign-env](https://github.com/oh-my-fish/plugin-foreign-env) will be used.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      vendor.completions.enable = lib.mkOption {
+        default = true;
+
+        description = ''
+          Whether fish should use completion files provided by other packages.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      vendor.config.enable = lib.mkOption {
+        default = true;
+
+        description = ''
+          Whether fish should source configuration snippets provided by other packages.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      vendor.functions.enable = lib.mkOption {
+        default = true;
+
+        description = ''
+          Whether fish should autoload fish functions provided by other packages.
+        '';
+
+        type = lib.types.bool;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    programs.fish.shellAliases = lib.mapAttrs (name: lib.mkDefault) cfge.shellAliases;
-
     # Required for man completions
     documentation.man.cache.enable = lib.mkDefault true;
     documentation.man.cache.generateAtRuntime = lib.mkDefault true;
 
     environment = lib.mkMerge [
       (lib.mkIf cfg.useBabelfish {
-        etc."fish/setEnvironment.fish".source =
-          babelfishTranslate config.system.build.setEnvironment "setEnvironment";
-        etc."fish/shellInit.fish".source = babelfishTranslate envShellInit "shellInit";
-        etc."fish/loginShellInit.fish".source = babelfishTranslate envLoginShellInit "loginShellInit";
         etc."fish/interactiveShellInit.fish".source =
           babelfishTranslate envInteractiveShellInit "interactiveShellInit";
+
+        etc."fish/loginShellInit.fish".source = babelfishTranslate envLoginShellInit "loginShellInit";
+
+        etc."fish/setEnvironment.fish".source =
+          babelfishTranslate config.system.build.setEnvironment "setEnvironment";
+
+        etc."fish/shellInit.fish".source = babelfishTranslate envShellInit "shellInit";
       })
 
       (lib.mkIf (!cfg.useBabelfish) {
-        etc."fish/foreign-env/shellInit".source = envShellInit;
-        etc."fish/foreign-env/loginShellInit".source = envLoginShellInit;
         etc."fish/foreign-env/interactiveShellInit".source = envInteractiveShellInit;
+        etc."fish/foreign-env/loginShellInit".source = envLoginShellInit;
+        etc."fish/foreign-env/shellInit".source = envShellInit;
       })
 
       {
@@ -324,8 +350,8 @@ in
                 cfge.systemPackages ++ cfg.extraCompletionPackages;
           in
           pkgs.buildEnv {
-            name = "system_fish-completions";
             ignoreCollisions = true;
+            name = "system_fish-completions";
             paths = map generateCompletions packages;
           };
       })
@@ -366,7 +392,10 @@ in
         end
       '';
 
+    programs.fish.shellAliases = lib.mapAttrs (name: lib.mkDefault) cfge.shellAliases;
+
   };
+
   meta.maintainers = with lib.maintainers; [
     llakala
     sigmasquadron

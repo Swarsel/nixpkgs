@@ -26,41 +26,62 @@ let
 in
 
 {
-  meta.maintainers = with lib.maintainers; [ defelo ];
-
   options.services.flap-alerted = {
     enable = lib.mkEnableOption "FlapAlerted";
-
     package = lib.mkPackageOption pkgs "flap-alerted" { };
 
     environmentFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
       default = [ ];
-      example = [ "/run/secrets/flap-alerted.env" ];
+
       description = ''
         Files to load environment variables from.
         This is useful to avoid putting secrets into the nix store.
         See <https://github.com/Kioubit/FlapAlerted> for a list of options.
       '';
+
+      example = [ "/run/secrets/flap-alerted.env" ];
+      type = lib.types.listOf lib.types.path;
     };
 
     extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
+      default = [ ];
+
       description = ''
         Extra command line arguments to pass to FlapAlerted.
         See <https://github.com/Kioubit/FlapAlerted> for a list of options.
       '';
-      default = [ ];
+
+      type = lib.types.listOf lib.types.str;
     };
 
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         Configuration of FlapAlerted.
         See <https://github.com/Kioubit/FlapAlerted> for a list of options.
       '';
-      default = { };
 
       type = lib.types.submodule {
+        options = {
+          asn = lib.mkOption {
+            description = "Your ASN number";
+            type = lib.types.ints.u32;
+          };
+
+          bgpListenAddress = lib.mkOption {
+            default = ":1790";
+            description = "Address to listen on for incoming BGP connections";
+            type = lib.types.str;
+          };
+
+          debug = lib.mkOption {
+            default = false;
+            description = "Enable debug mode (produces a lot of output)";
+            type = lib.types.bool;
+          };
+        };
+
         freeformType = lib.types.attrsOf (
           lib.types.nullOr (
             lib.types.oneOf [
@@ -70,49 +91,23 @@ in
             ]
           )
         );
-
-        options = {
-          asn = lib.mkOption {
-            type = lib.types.ints.u32;
-            description = "Your ASN number";
-          };
-
-          bgpListenAddress = lib.mkOption {
-            type = lib.types.str;
-            description = "Address to listen on for incoming BGP connections";
-            default = ":1790";
-          };
-
-          debug = lib.mkOption {
-            type = lib.types.bool;
-            description = "Enable debug mode (produces a lot of output)";
-            default = false;
-          };
-        };
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.flap-alerted = {
-      wantedBy = [ "multi-user.target" ];
-
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
 
       serviceConfig = {
-        User = "flap-alerted";
-        Group = "flap-alerted";
-        DynamicUser = true;
-
-        EnvironmentFile = cfg.environmentFiles;
-
-        ExecStart = lib.escapeShellArgs ([ (lib.getExe cfg.package) ] ++ settingsArgs ++ cfg.extraArgs);
-
         # Hardening
         AmbientCapabilities = "";
         CapabilityBoundingSet = [ "" ];
         DevicePolicy = "closed";
+        DynamicUser = true;
+        EnvironmentFile = cfg.environmentFiles;
+        ExecStart = lib.escapeShellArgs ([ (lib.getExe cfg.package) ] ++ settingsArgs ++ cfg.extraArgs);
+        Group = "flap-alerted";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -135,13 +130,21 @@ in
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
+
         UMask = "0077";
+        User = "flap-alerted";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ defelo ];
 }

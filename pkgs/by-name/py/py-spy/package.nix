@@ -25,9 +25,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5T6R2Neslw8rNYWJbXncLH78kH1o42fR6kidhip6/Bg=";
   };
 
-  cargoHash = "sha256-ZhtQjX15pZe3CM898LBj/79kXa6ESgPOSFkNghq0Ywo=";
-
-  buildFeatures = lib.optional supportsUnwind "unwind";
+  nativeBuildInputs = [
+    rustPlatform.bindgenHook
+  ];
 
   # https://github.com/benfred/remoteprocess/blob/v0.5.2/build.rs
   buildInputs = lib.optionals (supportsUnwind && stdenv.hostPlatform.isLinux) [
@@ -35,20 +35,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     (lib.getLib xz)
   ];
 
-  nativeBuildInputs = [
-    rustPlatform.bindgenHook
-  ];
+  cargoHash = "sha256-ZhtQjX15pZe3CM898LBj/79kXa6ESgPOSFkNghq0Ywo=";
 
   nativeCheckInputs = [
     (python3.withPackages (ps: [ ps.numpy ]))
   ];
 
+  buildFeatures = lib.optional supportsUnwind "unwind";
+
   meta = {
     description = "Sampling profiler for Python programs";
-    mainProgram = "py-spy";
     homepage = "https://github.com/benfred/py-spy";
     changelog = "https://github.com/benfred/py-spy/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "py-spy";
   };
 })

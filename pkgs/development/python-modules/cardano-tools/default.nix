@@ -2,21 +2,20 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  pexpect,
   poetry-core,
   # Python deps
   requests,
-  pexpect,
 }:
 
 buildPythonPackage rec {
   pname = "cardano-tools";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "cardano_tools";
     inherit version;
     hash = "sha256-RFyKXHafV+XgRJSsTjASCCw9DxvZqertf4NNN616Bp4=";
+    pname = "cardano_tools";
   };
 
   build-system = [ poetry-core ];
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     pexpect
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cardano_tools" ];
 
   meta = {

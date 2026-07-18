@@ -1,16 +1,15 @@
 {
   lib,
-  stdenvNoLibc,
   fetchurl,
-  automake,
   autoconf,
+  automake,
+  stdenvNoLibc,
 }:
 
 stdenvNoLibc.mkDerivation (finalAttrs: {
   pname = "avr-libc";
   version = "2.2.1";
 
-  tag_version = builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version;
   src = fetchurl {
     url = "https://github.com/avrdudes/avr-libc/releases/download/avr-libc-${finalAttrs.tag_version}-release/avr-libc-${finalAttrs.version}.tar.bz2";
     hash = "sha256-AGpjBsu8k4w721g6xU+T/n18jPl/nN6R+RxvsCc6tGU=";
@@ -21,11 +20,11 @@ stdenvNoLibc.mkDerivation (finalAttrs: {
     autoconf
   ];
 
+  dontPatchELF = true;
+  enableParallelBuilding = true;
   # Make sure we don't strip the libraries in lib/gcc/avr.
   stripDebugList = [ "bin" ];
-  dontPatchELF = true;
-
-  enableParallelBuilding = true;
+  tag_version = builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version;
 
   passthru = {
     incdir = "/avr/include";
@@ -36,10 +35,12 @@ stdenvNoLibc.mkDerivation (finalAttrs: {
     homepage = "https://github.com/avrdudes/avr-libc";
     changelog = "https://github.com/avrdudes/avr-libc/blob/avr-libc-${finalAttrs.tag_version}-release/NEWS";
     license = lib.licenses.bsd3;
-    platforms = [ "avr-none" ];
+
     maintainers = with lib.maintainers; [
       mguentner
       emilytrau
     ];
+
+    platforms = [ "avr-none" ];
   };
 })

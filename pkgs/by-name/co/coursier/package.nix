@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  jre,
-  writeScript,
   common-updater-scripts,
   coreutils,
   git,
   gnused,
+  jre,
+  makeWrapper,
   nix,
+  writeScript,
   zlib,
 }:
 
@@ -27,8 +27,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-eql18SRpcm1ruHhSEHr+C41vPIKxKknvQ8xmR8TgV8o=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -42,6 +40,8 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   passthru.updateScript = writeScript "update.sh" ''
     #!${stdenv.shell}
@@ -67,13 +67,15 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://get-coursier.io/";
     description = "Scala library to fetch dependencies from Maven / Ivy repositories";
-    mainProgram = "cs";
+    homepage = "https://get-coursier.io/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       adelbertc
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "cs";
   };
 }

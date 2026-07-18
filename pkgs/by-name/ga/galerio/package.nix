@@ -20,11 +20,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Simple generator for self-contained HTML flexbox galleries";
     homepage = "https://github.com/dbrgn/galerio";
-    maintainers = with lib.maintainers; [ dbrgn ];
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
+    maintainers = with lib.maintainers; [ dbrgn ];
     mainProgram = "galerio";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitLab,
+  buildGoModule,
   nix-update-script,
   sarif-converter,
   testers,
@@ -20,20 +20,21 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-vK+HhHlFWoWIrDEZzfRoqtJ3vKp0f4b8l8+LBlZuBJU=";
 
+  postInstall = ''
+    mv $out/bin/main $out/bin/sarif-converter
+  '';
+
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    mv $out/bin/main $out/bin/sarif-converter
-  '';
-
   passthru = {
     tests.version = testers.testVersion {
       package = sarif-converter;
     };
+
     updateScript = nix-update-script { };
   };
 

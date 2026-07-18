@@ -10,19 +10,19 @@ let
 
 in
 {
-  meta.maintainers = [ ];
-
   ###### interface
   options = {
     programs.dmrconfig = {
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Whether to configure system to enable use of dmrconfig. This
           enables the required udev rules and installs the program.
         '';
+
         relatedPackages = [ "dmrconfig" ];
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "dmrconfig" { };
@@ -34,4 +34,6 @@ in
     environment.systemPackages = [ cfg.package ];
     services.udev.packages = [ cfg.package ];
   };
+
+  meta.maintainers = [ ];
 }

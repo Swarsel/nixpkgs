@@ -1,38 +1,33 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  certifi,
-  python-dateutil,
-  requests,
-  six,
-  urllib3,
-  events,
-
   # optional-dependencies
   aiohttp,
-
   # tests
   botocore,
+  buildPythonPackage,
+  # dependencies
+  certifi,
+  events,
+  fetchpatch,
   mock,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
-  pyyaml,
+  python-dateutil,
   pytz,
+  pyyaml,
+  requests,
+  # build-system
+  setuptools,
+  six,
+  urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "opensearch-py";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "opensearch-project";
@@ -57,8 +52,6 @@ buildPythonPackage rec {
     urllib3
     events
   ];
-
-  optional-dependencies.async = [ aiohttp ];
 
   nativeCheckInputs = [
     botocore
@@ -95,6 +88,9 @@ buildPythonPackage rec {
     "test_redirect_failure_when_allow_redirect_false"
     "test_redirect_success_when_allow_redirect_true"
   ];
+
+  optional-dependencies.async = [ aiohttp ];
+  pyproject = true;
 
   meta = {
     description = "Python low-level client for OpenSearch";

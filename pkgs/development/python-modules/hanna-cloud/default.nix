@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycryptodome,
   requests,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "hanna-cloud";
   version = "0.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bestycame";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-UYwM1IbU4LlgBBEbMYX5ovf5/8N1SwyeKTHz6TYZZ24=";
   };
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  # upstream has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "hanna_cloud" ];
 
   meta = {

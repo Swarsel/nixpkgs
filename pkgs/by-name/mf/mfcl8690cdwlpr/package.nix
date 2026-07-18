@@ -1,7 +1,9 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   coreutils,
   dpkg,
-  fetchurl,
   file,
   ghostscript,
   gnugrep,
@@ -9,8 +11,6 @@
   makeWrapper,
   perl,
   pkgs,
-  lib,
-  stdenv,
   which,
 }:
 
@@ -27,9 +27,6 @@ stdenv.mkDerivation rec {
     dpkg
     makeWrapper
   ];
-
-  dontUnpack = true;
-  dontPatchELF = true;
 
   installPhase = ''
     dpkg-deb -x $src $out
@@ -62,14 +59,19 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  dontPatchELF = true;
+  dontUnpack = true;
+
   meta = {
     description = "Brother MFC-L8690CDW LPR printer driver";
     homepage = "https://www.brother.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

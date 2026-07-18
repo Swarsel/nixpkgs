@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 {
@@ -16,6 +16,7 @@
         message = "joycond must be enabled through `services.joycond.enable`";
       }
     ];
+
     environment.systemPackages = [ pkgs.joycond-cemuhook ];
   };
 }

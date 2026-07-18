@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  mkfontscale,
   fonttosfnt,
   libfaketime,
+  mkfontscale,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

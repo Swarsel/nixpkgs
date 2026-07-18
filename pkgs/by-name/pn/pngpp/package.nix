@@ -17,18 +17,9 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1qgf8j25r57wjqlnzdkm8ya5x1bmj6xjvapv8f2visqnmcbg52lr";
   };
 
-  doCheck = true;
-  checkTarget = "test";
-  preCheck = ''
-    patchShebangs test/test.sh
-    substituteInPlace test/test.sh --replace "exit 1" "exit 0"
-  '';
-
-  postCheck = "cat test/test.log";
-
   buildInputs = lib.optional docSupport doxygen;
-
   propagatedBuildInputs = [ libpng ];
+  makeFlags = lib.optional docSupport "docs";
 
   preConfigure =
     lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -38,15 +29,22 @@ stdenv.mkDerivation (finalAttrs: {
       sed "s|\(PNGPP := .\)|PREFIX := ''${out}\n\\1|" -i Makefile
     '';
 
-  makeFlags = lib.optional docSupport "docs";
+  doCheck = true;
 
+  preCheck = ''
+    patchShebangs test/test.sh
+    substituteInPlace test/test.sh --replace "exit 1" "exit 0"
+  '';
+
+  postCheck = "cat test/test.log";
+  checkTarget = "test";
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.nongnu.org/pngpp/";
     description = "C++ wrapper for libpng library";
+    homepage = "https://www.nongnu.org/pngpp/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.ramkromberg ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -3,21 +3,6 @@ name: paths:
 
 buildEnv {
   inherit name;
-  paths = [ qtbase ] ++ paths;
-
-  pathsToLink = [
-    "/metatypes"
-    "/bin"
-    "/mkspecs"
-    "/include"
-    "/lib"
-    "/share"
-    "/libexec"
-  ];
-  extraOutputsToInstall = [
-    "out"
-    "dev"
-  ];
 
   postBuild = ''
     for f in qmake qmake6; do
@@ -31,4 +16,21 @@ buildEnv {
     Qml2Imports = ${qtbase.qtQmlPrefix}
     EOF
   '';
+
+  extraOutputsToInstall = [
+    "out"
+    "dev"
+  ];
+
+  paths = [ qtbase ] ++ paths;
+
+  pathsToLink = [
+    "/metatypes"
+    "/bin"
+    "/mkspecs"
+    "/include"
+    "/lib"
+    "/share"
+    "/libexec"
+  ];
 }

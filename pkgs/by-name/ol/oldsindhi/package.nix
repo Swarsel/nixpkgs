@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -21,13 +21,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/MihailJP/oldsindhi";
     description = "Free Sindhi Khudabadi font";
-    maintainers = with lib.maintainers; [ mathnerd314 ];
+    homepage = "https://github.com/MihailJP/oldsindhi";
+
     license = with lib.licenses; [
       mit
       ofl
     ];
+
+    maintainers = with lib.maintainers; [ mathnerd314 ];
     platforms = lib.platforms.all;
   };
 })

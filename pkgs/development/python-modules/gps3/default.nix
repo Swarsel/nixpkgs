@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage {
   pname = "gps3";
   version = "unstable-2017-11-01";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "wadda";
@@ -18,6 +17,7 @@ buildPythonPackage {
 
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "gps3" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -18,9 +18,9 @@ buildNpmPackage rec {
   npmDepsHash = "sha256-42cM31C2c1Gr7HWOowMUTEUEyL0mGnyl5fyQECcz1Sw=";
 
   meta = {
-    changelog = "https://github.com/Rich-Harris/degit/blob/${src.rev}/CHANGELOG.md";
     description = "Make copies of git repositories";
     homepage = "https://github.com/Rich-Harris/degit";
+    changelog = "https://github.com/Rich-Harris/degit/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kidonng ];
     mainProgram = "degit";

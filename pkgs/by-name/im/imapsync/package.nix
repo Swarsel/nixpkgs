@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
   fetchurl,
   makeWrapper,
   perl,
   perlPackages,
-  stdenv,
   procps,
   versionCheckHook,
 }:
@@ -23,11 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace INSTALL.d/prerequisites_imapsync --replace-fail "PAR::Packer" ""
   '';
 
-  postInstall = ''
-    wrapProgram $out/bin/imapsync \
-      --set PERL5LIB $PERL5LIB \
-      --prefix PATH : ${lib.makeBinPath [ procps ]}
-  '';
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -73,7 +69,11 @@ stdenv.mkDerivation (finalAttrs: {
     perl
   ];
 
-  strictDeps = true;
+  postInstall = ''
+    wrapProgram $out/bin/imapsync \
+      --set PERL5LIB $PERL5LIB \
+      --prefix PATH : ${lib.makeBinPath [ procps ]}
+  '';
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
@@ -82,10 +82,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Mail folder synchronizer between IMAP servers";
     homepage = "https://imapsync.lamiral.info";
     license = lib.licenses.nlpl;
+
     maintainers = with lib.maintainers; [
       pSub
       motiejus
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "imapsync";
   };

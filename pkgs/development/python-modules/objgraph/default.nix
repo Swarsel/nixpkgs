@@ -13,9 +13,6 @@
 buildPythonPackage rec {
   pname = "objgraph";
   version = "3.6.2";
-  pyproject = true;
-
-  disabled = isPyPy;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,21 +25,24 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [
-    setuptools
-  ];
-
-  optional-dependencies = {
-    ipython = [ graphviz ];
-  };
-
-  pythonImportsCheck = [ "objgraph" ];
-
   checkPhase = ''
     runHook preCheck
     ${python.interpreter} tests.py
     runHook postCheck
   '';
+
+  build-system = [
+    setuptools
+  ];
+
+  disabled = isPyPy;
+
+  optional-dependencies = {
+    ipython = [ graphviz ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "objgraph" ];
 
   meta = {
     description = "Draws Python object reference graphs with graphviz";

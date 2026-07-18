@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  alsa-lib,
-  perl,
-  pkg-config,
   SDL2,
+  alsa-lib,
+  autoreconfHook,
   libx11,
   libxext,
-  utf8proc,
   nix-update-script,
+  perl,
+  pkg-config,
+  utf8proc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,19 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'git log' 'echo ${finalAttrs.version} #'
   '';
 
-  configureFlags = [
-    (lib.enableFeature true "dependency-tracking")
-    (lib.withFeature true "sdl2")
-    (lib.enableFeature true "sdl2-linking")
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    (lib.enableFeature true "alsa")
-    (lib.enableFeature true "alsa-linking")
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    (lib.enableFeature false "sdltest")
-  ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -63,7 +50,18 @@ stdenv.mkDerivation (finalAttrs: {
     libxext
   ];
 
-  enableParallelBuilding = true;
+  configureFlags = [
+    (lib.enableFeature true "dependency-tracking")
+    (lib.withFeature true "sdl2")
+    (lib.enableFeature true "sdl2-linking")
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    (lib.enableFeature true "alsa")
+    (lib.enableFeature true "alsa-linking")
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    (lib.enableFeature false "sdltest")
+  ];
 
   # Our Darwin SDL2 doesn't have a SDL2main to link against
   preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -71,14 +69,15 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '-lSDL2main' '-lSDL2'
   '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Music tracker application, free reimplementation of Impulse Tracker";
     homepage = "https://schismtracker.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "schismtracker";
   };
 })

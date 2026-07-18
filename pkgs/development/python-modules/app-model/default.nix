@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   in-n-out,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "app-model";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyapp-kit";
@@ -23,6 +22,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-zKaCxozT6OOPfrXMDic5d5DMb/I9tTiJFlX21Cc1yjY=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatch-vcs
@@ -37,8 +38,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "app_model" ];
 
   meta = {

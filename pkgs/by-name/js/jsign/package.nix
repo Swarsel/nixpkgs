@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch2,
-  makeBinaryWrapper,
   jre_headless,
+  makeBinaryWrapper,
   maven,
+  opensc,
   pcsclite,
   yubico-piv-tool,
-  opensc,
 }:
 
 let
@@ -27,10 +27,7 @@ maven.buildMavenPackage rec {
     hash = "sha256-r19w9k6Iuk6AQGC3l2yu6Ocn740BtE7DjtFLXUdhdw8=";
   };
 
-  mvnHash = "sha256-zxlwb2id8yAw/yxTjD6jyAkPJx9IazrPQYGacQGLEK8=";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
-
   # The tests try to access the network
   doCheck = false;
 
@@ -52,14 +49,18 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  mvnHash = "sha256-zxlwb2id8yAw/yxTjD6jyAkPJx9IazrPQYGacQGLEK8=";
+
   meta = {
     description = "Authenticode signing for Windows executables, installers & scripts";
     homepage = "https://ebourg.github.io/jsign";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       johnazoidberg
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "jsign";
     # Build doesn't work, upstream says running the .jar is supported on darwin though
     broken = stdenv.hostPlatform.isDarwin;

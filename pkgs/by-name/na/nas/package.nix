@@ -52,19 +52,19 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=incompatible-pointer-types"
   ];
 
-  installFlags = [
-    "LDLIBS=-lfl"
-    "DESTDIR=${placeholder "out"}"
-  ];
-
   postInstall = ''
     mv $out/${xorg-cf-files}/* $out
     rm -fr $out/nix
   '';
 
+  installFlags = [
+    "LDLIBS=-lfl"
+    "DESTDIR=${placeholder "out"}"
+  ];
+
   meta = {
-    homepage = "http://radscan.com/nas.html";
     description = "Network transparent, client/server audio transport system";
+    homepage = "http://radscan.com/nas.html";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;

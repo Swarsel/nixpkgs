@@ -1,13 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
+  buildPythonPackage,
   ipywidgets,
   lark,
   numpy,
   pyperclip,
+  pytestCheckHook,
+  setuptools,
   tqdm,
   typing-extensions,
 }:
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "pyzx";
   version = "0.10.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zxcalc";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     hash = "sha256-ovc+7EACfGHbqGtBwD01h7TdSaifOGQK5E4+judVvSI=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,17 +35,13 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  pythonRelaxDeps = [
-    "ipywidgets"
-    "lark"
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
   disabledTestPaths = [
     # too expensive, and print results instead of reporting failures:
     "tests/long_scalar_test.py"
     "tests/long_test.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyzx"
@@ -54,6 +50,11 @@ buildPythonPackage rec {
     "pyzx.routing"
     "pyzx.local_search"
     "pyzx.scripts"
+  ];
+
+  pythonRelaxDeps = [
+    "ipywidgets"
+    "lark"
   ];
 
   meta = {

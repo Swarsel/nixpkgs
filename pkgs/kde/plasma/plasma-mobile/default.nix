@@ -1,19 +1,12 @@
 {
   mkKdeDerivation,
   pkg-config,
+  plasma-workspace,
   qtsensors,
   qtwayland,
-  plasma-workspace,
 }:
 mkKdeDerivation {
   pname = "plasma-mobile";
-
-  extraNativeBuildInputs = [ pkg-config ];
-  extraBuildInputs = [
-    qtsensors
-    qtwayland
-  ];
-
   # FIXME: work around Qt 6.10 cmake API changes
   cmakeFlags = [ "-DQT_FIND_PRIVATE_MODULES=1" ];
 
@@ -23,5 +16,12 @@ mkKdeDerivation {
         "$out/libexec/plasma-dbus-run-session-if-needed" \
         "${plasma-workspace}/libexec/plasma-dbus-run-session-if-needed"
   '';
+
+  extraBuildInputs = [
+    qtsensors
+    qtwayland
+  ];
+
+  extraNativeBuildInputs = [ pkg-config ];
   passthru.providedSessions = [ "plasma-mobile" ];
 }

@@ -3,35 +3,48 @@
   stdenv,
   fetchurl,
   buildPackages,
-  pcre2,
+  coreutils,
+  groff,
   jemalloc,
+  libedit,
   libunwind,
   libxslt,
-  groff,
-  ncurses,
-  pkg-config,
-  readline,
-  libedit,
-  coreutils,
-  python3,
   makeWrapper,
+  ncurses,
   nixosTests,
+  pcre2,
+  pkg-config,
+  python3,
+  readline,
 }:
 
 let
   common =
     {
-      version,
       hash,
+      version,
     }:
     stdenv.mkDerivation rec {
-      pname = "varnish";
       inherit version;
+      pname = "varnish";
 
       src = fetchurl {
-        url = "https://vinyl-cache.org/_downloads/${pname}-${version}.tgz";
         inherit hash;
+        url = "https://vinyl-cache.org/_downloads/${pname}-${version}.tgz";
       };
+
+      outputs = [
+        "out"
+        "dev"
+      ]
+      ++ lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+        "man"
+        "vhp_hufdec_h" # only used for cross compilation
+      ];
+
+      postPatch = ''
+        substituteInPlace bin/varnishtest/vtest2/src/vtc_main.c --replace-fail /bin/rm "${coreutils}/bin/rm"
+      '';
 
       strictDeps = true;
 
@@ -63,10 +76,8 @@ let
       ];
 
       buildFlags = [ "localstatedir=/var/run" ];
-
-      postPatch = ''
-        substituteInPlace bin/varnishtest/vtest2/src/vtc_main.c --replace-fail /bin/rm "${coreutils}/bin/rm"
-      '';
+      # https://github.com/varnishcache/varnish-cache/issues/1875
+      env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isi686 "-fexcess-precision=standard";
 
       postConfigure = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
         # prevent cache invalidation
@@ -93,20 +104,9 @@ let
         cp bin/varnishd/vhp_hufdec.h $vhp_hufdec_h
       '';
 
-      # https://github.com/varnishcache/varnish-cache/issues/1875
-      env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isi686 "-fexcess-precision=standard";
-
-      outputs = [
-        "out"
-        "dev"
-      ]
-      ++ lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
-        "man"
-        "vhp_hufdec_h" # only used for cross compilation
-      ];
-
       passthru = {
         python = python3;
+
         tests =
           nixosTests."varnish${builtins.replaceStrings [ "." ] [ "" ] (lib.versions.majorMinor version)}";
       };
@@ -115,10 +115,12 @@ let
         description = "Web application accelerator also known as a caching HTTP reverse proxy";
         homepage = "https://www.varnish-cache.org";
         license = lib.licenses.bsd2;
+
         maintainers = [
           lib.maintainers.leona
           lib.maintainers.osnyx
         ];
+
         platforms = lib.platforms.unix;
         broken = stdenv.hostPlatform.isDarwin && version == "8.0.1"; # https://github.com/NixOS/nixpkgs/issues/495368
       };

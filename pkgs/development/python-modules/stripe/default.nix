@@ -2,21 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  requests,
   flit-core,
+  requests,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "stripe";
   version = "15.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-/wVSQlX1G/ffDlvEqZ29D3N6/QVYe3ZXyC4Nmcf8RaQ=";
   };
 
+  # Tests require network connectivity and there's no easy way to disable them
+  doCheck = false;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -24,9 +25,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Tests require network connectivity and there's no easy way to disable them
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "stripe" ];
 
   meta = {

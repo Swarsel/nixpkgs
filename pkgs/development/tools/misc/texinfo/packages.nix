@@ -1,31 +1,25 @@
 {
   lib,
   stdenv,
+  fetchurl,
+  bashNonInteractive,
   buildPackages,
   callPackage,
-  fetchurl,
-  perl,
-  libintl,
-  bashNonInteractive,
-  updateAutotoolsGnuConfigScriptsHook,
-  gawk,
   freebsd,
+  gawk,
   libiconv,
-
+  libintl,
+  ncurses,
+  perl,
+  procps,
+  updateAutotoolsGnuConfigScriptsHook,
   # we are a dependency of gcc, this simplifies bootstrapping
   interactive ? false,
-  ncurses,
-  procps,
 }:
 
 let
   meta = {
     description = "GNU documentation system";
-    homepage = "https://www.gnu.org/software/texinfo/";
-    changelog = "https://git.savannah.gnu.org/cgit/texinfo.git/plain/NEWS";
-    license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ oxij ];
 
     longDescription = ''
       Texinfo is the official documentation format of the GNU project.
@@ -42,6 +36,12 @@ let
       need revise only that one document.  The Texinfo system is
       well-integrated with GNU Emacs.
     '';
+
+    homepage = "https://www.gnu.org/software/texinfo/";
+    changelog = "https://git.savannah.gnu.org/cgit/texinfo.git/plain/NEWS";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ oxij ];
+    platforms = lib.platforms.all;
     mainProgram = "texi2any";
   };
   buildTexinfo = callPackage ./common.nix {

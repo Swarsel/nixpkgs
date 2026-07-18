@@ -4,7 +4,11 @@
 }:
 
 mkDerivation {
-  path = "gnu/lib/libexecinfo";
+  outputs = [
+    "out"
+    "man"
+  ];
+
   extraPaths = [
     "gnu/llvm/libunwind"
     "gnu/llvm/libcxx"
@@ -12,11 +16,6 @@ mkDerivation {
   ];
 
   libcMinimal = true;
-
-  outputs = [
-    "out"
-    "man"
-  ];
-
+  path = "gnu/lib/libexecinfo";
   meta.platforms = lib.platforms.openbsd;
 }

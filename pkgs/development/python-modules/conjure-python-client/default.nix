@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
+  buildPythonPackage,
   pytestCheckHook,
   pyyaml,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
-  version = "3.3.0";
   pname = "conjure-python-client";
-  pyproject = true;
+  version = "3.3.0";
 
   src = fetchFromGitHub {
     owner = "palantir";
@@ -25,14 +24,13 @@ buildPythonPackage rec {
     echo '__version__ = "${version}"' > ./conjure_python_client/_version.py
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pyyaml
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   # some tests depend on a code generator that isn't available in nixpkgs
   # https://github.com/palantir/conjure-python-client/blob/3.0.0/CONTRIBUTING.md?plain=1#L23
@@ -42,6 +40,7 @@ buildPythonPackage rec {
     "test/serde/test_decode_union.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "conjure_python_client" ];
 
   meta = {

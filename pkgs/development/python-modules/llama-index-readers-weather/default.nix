@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  llama-index-core,
   hatchling,
+  llama-index-core,
   pyowm,
   pytestCheckHook,
 }:
@@ -11,14 +11,16 @@
 buildPythonPackage rec {
   pname = "llama-index-readers-weather";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_readers_weather";
     inherit version;
     hash = "sha256-bqvt09YSRD8BQfZjwnMlsO5oSscjh+piQXbUUZGeXbs=";
+    pname = "llama_index_readers_weather";
   };
 
+  # Tests are only available in the mono repo
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -26,11 +28,7 @@ buildPythonPackage rec {
     pyowm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # Tests are only available in the mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.readers.weather" ];
 
   meta = {

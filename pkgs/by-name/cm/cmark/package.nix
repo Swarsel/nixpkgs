@@ -36,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "CommonMark parsing and rendering library and program in C";
-    mainProgram = "cmark";
     homepage = "https://github.com/commonmark/cmark";
     changelog = "https://github.com/commonmark/cmark/raw/${finalAttrs.version}/changelog.txt";
+    license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = lib.platforms.all;
-    license = lib.licenses.bsd2;
+    mainProgram = "cmark";
   };
 })

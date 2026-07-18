@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cffi,
-  srtp,
   openssl,
   pytestCheckHook,
+  setuptools,
+  srtp,
 }:
 
 buildPythonPackage rec {
   pname = "pylibsrtp";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aiortc";
@@ -20,6 +19,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-Q8EyGAJKkq14sqSEMWLB8arKvj/wuALK/XwOZ27F1nQ=";
   };
+
+  doCheck = true;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,8 +33,8 @@ buildPythonPackage rec {
     openssl
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-  doCheck = true;
+  pyproject = true;
+
   pythonImportsCheck = [
     "pylibsrtp"
   ];

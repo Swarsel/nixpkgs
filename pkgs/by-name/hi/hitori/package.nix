@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  cairo,
+  desktop-file-utils,
+  gettext,
+  glib,
+  gnome,
+  gtk3,
+  itstool,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  gnome,
-  glib,
-  gtk3,
-  cairo,
-  wrapGAppsHook3,
-  libxml2,
   python3,
-  gettext,
-  itstool,
-  desktop-file-utils,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/hitori/${lib.versions.major finalAttrs.version}/hitori-${finalAttrs.version}.tar.xz";
     hash = "sha256-QicL1PlSXRgNMVG9ckUzXcXPJIqYTgL2j/kw2nmeWDs=";
   };
+
+  postPatch = ''
+    chmod +x build-aux/meson_post_install.py
+    patchShebangs build-aux/meson_post_install.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -44,22 +49,17 @@ stdenv.mkDerivation (finalAttrs: {
     cairo
   ];
 
-  postPatch = ''
-    chmod +x build-aux/meson_post_install.py
-    patchShebangs build-aux/meson_post_install.py
-  '';
-
   passthru = {
     updateScript = gnome.updateScript { packageName = "hitori"; };
   };
 
   meta = {
+    description = "GTK application to generate and let you play games of Hitori";
     homepage = "https://gitlab.gnome.org/GNOME/hitori";
     changelog = "https://gitlab.gnome.org/GNOME/hitori/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "GTK application to generate and let you play games of Hitori";
-    mainProgram = "hitori";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "hitori";
+    teams = [ lib.teams.gnome ];
   };
 })

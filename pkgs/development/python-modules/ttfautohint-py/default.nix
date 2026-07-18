@@ -1,20 +1,19 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
+  distutils,
+  fonttools,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
-  distutils,
   ttfautohint,
-  fonttools,
 }:
 
 buildPythonPackage rec {
   pname = "ttfautohint-py";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fonttools";
@@ -28,7 +27,13 @@ buildPythonPackage rec {
       --replace-fail '_exe_full_path = None' '_exe_full_path = "${lib.getExe ttfautohint}"'
   '';
 
+  buildInputs = [ ttfautohint ];
   env.TTFAUTOHINTPY_BUNDLE_DLL = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    fonttools
+  ];
 
   build-system = [
     setuptools
@@ -36,13 +41,7 @@ buildPythonPackage rec {
     distutils
   ];
 
-  buildInputs = [ ttfautohint ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    fonttools
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ttfautohint" ];
 
   meta = {

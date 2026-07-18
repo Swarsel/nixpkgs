@@ -1,32 +1,32 @@
 {
   lib,
   stdenv,
-  config,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  gtest,
-  doCheck ? true,
-  cudaSupport ? config.cudaSupport or false,
-  openclSupport ? false,
-  mpiSupport ? false,
-  javaWrapper ? false,
-  hdfsSupport ? false,
-  pythonLibrary ? false,
-  rLibrary ? false,
-  cudaPackages,
-  opencl-headers,
-  ocl-icd,
-  boost,
-  llvmPackages,
-  openmpi,
-  openjdk,
-  swig,
-  hadoop,
   R,
-  rPackages,
+  boost,
+  cmake,
+  config,
+  cudaPackages,
+  fetchpatch,
+  gtest,
+  hadoop,
+  llvmPackages,
+  ocl-icd,
+  opencl-headers,
+  openjdk,
+  openmpi,
   pandoc,
   python3Packages,
+  rPackages,
+  swig,
+  cudaSupport ? config.cudaSupport or false,
+  doCheck ? true,
+  hdfsSupport ? false,
+  javaWrapper ? false,
+  mpiSupport ? false,
+  openclSupport ? false,
+  pythonLibrary ? false,
+  rLibrary ? false,
 }:
 
 assert doCheck -> !mpiSupport;
@@ -34,6 +34,7 @@ assert openclSupport -> !cudaSupport;
 assert cudaSupport -> !openclSupport;
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit doCheck;
   # prefix with r when building the R library
   # The R package build results in a special binary file
   # that contains a subset of the .so file use for the CLI
@@ -53,8 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "lightgbm-org";
     repo = "lightgbm";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-vq/TlM87i1GNq0Rpy0OTulT9LF+uvi4PhOUz7ZNeceA=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -62,9 +63,9 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/lightgbm-org/LightGBM/issues/6786
     # Patch taken from https://github.com/conda-forge/lightgbm-feedstock/pull/69
     (fetchpatch {
+      hash = "sha256-Hw2YmoduOPri7O1XV2p/3Ny4hC8xq7Jq4zoSuKhVeVQ=";
       name = "fix-boost-sha1";
       url = "https://raw.githubusercontent.com/conda-forge/lightgbm-feedstock/68ca96d25d8a6f7281310a4ad3b8d5cdd01f067b/recipe/patches/0003-boost-sha1.patch";
-      hash = "sha256-Hw2YmoduOPri7O1XV2p/3Ny4hC8xq7Jq4zoSuKhVeVQ=";
     })
   ];
 
@@ -152,15 +153,9 @@ stdenv.mkDerivation (finalAttrs: {
       (lib.cmakeBool "__BUILD_FOR_PYTHON" true)
     ];
 
-  configurePhase = lib.optionals rLibrary ''
-    export R_LIBS_SITE="$out/library:$R_LIBS_SITE''${R_LIBS_SITE:+:}"
-  '';
-
   # set the R package buildPhase to null because lightgbm has a
   # custom builder script that builds and installs in one step
   buildPhase = lib.optionals rLibrary "";
-
-  inherit doCheck;
 
   installPhase = ''
     runHook preInstall
@@ -210,6 +205,10 @@ stdenv.mkDerivation (finalAttrs: {
     fi
   '';
 
+  configurePhase = lib.optionals rLibrary ''
+    export R_LIBS_SITE="$out/library:$R_LIBS_SITE''${R_LIBS_SITE:+:}"
+  '';
+
   passthru = {
     tests = {
       pythonPackage = python3Packages.lightgbm;
@@ -218,11 +217,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Gradient boosting framework that uses tree based learning algorithms";
-    mainProgram = "lightgbm";
     homepage = "https://github.com/lightgbm-org/LightGBM";
     changelog = "https://github.com/lightgbm-org/LightGBM/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ nviets ];
+    platforms = lib.platforms.unix;
+    mainProgram = "lightgbm";
   };
 })

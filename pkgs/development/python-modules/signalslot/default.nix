@@ -1,27 +1,24 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   contexter,
   eventlet,
+  fetchPypi,
   mock,
   pytest-xdist,
   pytestCheckHook,
+  setuptools,
   six,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "signalslot";
   version = "0.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "signalslot";
     inherit (finalAttrs) version;
     hash = "sha256-ZNodibNGfCOa8xd3myN+cRa28rY3/ynNUia1kwjTIOU=";
+    pname = "signalslot";
   };
 
   postPatch = ''
@@ -30,13 +27,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "--cov-report html" ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    contexter
-    six
-  ];
-
   nativeCheckInputs = [
     eventlet
     mock
@@ -44,6 +34,15 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    contexter
+    six
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "signalslot" ];
 
   meta = {

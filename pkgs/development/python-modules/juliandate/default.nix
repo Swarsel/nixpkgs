@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "juliandate";
   version = "1.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "seanredmond";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-pOWyrPBFqKmG9oKbXY/L14LblIcc8KfZSqZAEQP29V8=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "juliandate" ];
 
   meta = {

@@ -2,19 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocaml,
-  findlib,
-  which,
-  sedlex,
-  easy-format,
-  xmlm,
   base64,
+  easy-format,
+  findlib,
+  ocaml,
+  sedlex,
+  which,
+  xmlm,
 }:
 
 stdenv.mkDerivation rec {
-  version = "0.6.16";
   pname = "piqi";
-  name = "ocaml${ocaml.version}-${pname}-${version}";
+  version = "0.6.16";
 
   src = fetchFromGitHub {
     owner = "alavrik";
@@ -23,11 +22,19 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-qE+yybTn+kzbY0h8udhZYO+GwQPI/J/6p3LMmF12cFU=";
   };
 
+  patches = [
+    ./no-stream.patch
+    ./no-ocamlpath-override.patch
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
     which
   ];
+
   propagatedBuildInputs = [
     sedlex
     xmlm
@@ -35,25 +42,19 @@ stdenv.mkDerivation rec {
     base64
   ];
 
-  strictDeps = true;
-
-  patches = [
-    ./no-stream.patch
-    ./no-ocamlpath-override.patch
-  ];
-
-  createFindlibDestdir = true;
-
   postBuild = "make -C piqilib piqilib.cma";
+  createFindlibDestdir = true;
 
   installTargets = [
     "install"
     "ocaml-install"
   ];
 
+  name = "ocaml${ocaml.version}-${pname}-${version}";
+
   meta = {
-    homepage = "https://piqi.org";
     description = "Universal schema language and a collection of tools built around it";
+    homepage = "https://piqi.org";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.maurer ];
     broken = lib.versionAtLeast ocaml.version "5.0";

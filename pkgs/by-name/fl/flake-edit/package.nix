@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   installShellFiles,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,15 +19,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-xEQ+zBU31KBmv2j19KB7pX2P4a1MLPT8BDbDGXBSySk=";
   };
 
-  cargoHash = "sha256-QAVu/fiuV818zTrSqy2k+2GMz18oYcrf6xLY/7bii2c=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
   ];
 
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-QAVu/fiuV818zTrSqy2k+2GMz18oYcrf6xLY/7bii2c=";
   env.ASSET_DIR = "target/assets";
 
   postInstall = ''

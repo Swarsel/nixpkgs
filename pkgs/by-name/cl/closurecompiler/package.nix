@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-GlloHdQBhil/++qld8+yyYpNmCACYxjW8QW0YtPTOVk=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
 
@@ -27,12 +25,14 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "-jar $out/share/java/closure-compiler-v${finalAttrs.version}.jar"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Tool for making JavaScript download and run faster";
-    mainProgram = "closure-compiler";
     homepage = "https://developers.google.com/closure/compiler/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.all;
+    mainProgram = "closure-compiler";
   };
 })

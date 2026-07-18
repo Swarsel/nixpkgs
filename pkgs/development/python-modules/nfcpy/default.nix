@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   libusb1,
   mock,
   ndeflib,
   pydes,
   pyserial,
-  pytest-tornasync,
   pytest-mock,
+  pytest-tornasync,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "nfcpy";
   version = "1.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "nfcpy";
@@ -38,8 +37,6 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "nfc" ];
-
   disabledTestPaths = [
     # AttributeError: 'NoneType' object has no attribute 'EC_KEY'
     "tests/test_llcp_llc.py"
@@ -47,6 +44,9 @@ buildPythonPackage rec {
     # Doesn't work on Hydra
     "tests/test_clf_udp.py"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "nfc" ];
 
   meta = {
     description = "Python module to read/write NFC tags or communicate with another NFC device";

@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://lwn.net/Articles/421072/";
     description = "'cat' replacement";
+    homepage = "https://lwn.net/Articles/421072/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ qknight ];
     platforms = lib.platforms.all;

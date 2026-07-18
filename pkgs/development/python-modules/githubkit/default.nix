@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   hishel,
   httpx,
   pydantic,
@@ -18,12 +18,12 @@ let
   mkGithubkitSchema =
     {
       pname,
-      version,
       src,
+      version,
     }:
     buildPythonPackage {
       inherit pname version src;
-      sourceRoot = "${src.name}/packages/${pname}";
+      build-system = [ uv-build ];
       pyproject = true;
 
       # circular dependencies
@@ -32,7 +32,7 @@ let
         "githubkit-schemas"
       ];
 
-      build-system = [ uv-build ];
+      sourceRoot = "${src.name}/packages/${pname}";
     };
 
 in
@@ -40,7 +40,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "githubkit";
   version = "0.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yanyongyu";
@@ -49,37 +48,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-zVUJWwmRx/2phkDWwWyazhPdwthsMMcE0S7E4R1TebQ=";
   };
 
-  passthru.schemas = {
-    githubkit-schemas = mkGithubkitSchema {
-      pname = "githubkit-schemas";
-      version = "26.6.14";
-      inherit (finalAttrs) src;
-    };
-
-    githubkit-schemas-2022-11-28 = mkGithubkitSchema {
-      pname = "githubkit-schemas-2022-11-28";
-      version = "26.6.14";
-      inherit (finalAttrs) src;
-    };
-
-    githubkit-schemas-2026-03-10 = mkGithubkitSchema {
-      pname = "githubkit-schemas-2026-03-10";
-      version = "26.6.14";
-      inherit (finalAttrs) src;
-    };
-
-    githubkit-schemas-ghec-2022-11-28 = mkGithubkitSchema {
-      pname = "githubkit-schemas-ghec-2022-11-28";
-      version = "26.6.14";
-      inherit (finalAttrs) src;
-    };
-
-    githubkit-schemas-ghec-2026-03-10 = mkGithubkitSchema {
-      pname = "githubkit-schemas-ghec-2026-03-10";
-      version = "26.6.14";
-      inherit (finalAttrs) src;
-    };
-  };
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   build-system = [ uv-build ];
 
@@ -95,21 +67,6 @@ buildPythonPackage (finalAttrs: {
   # for simplicity we just propagate all schemas, rather than litter pkgs/development/python-modules
   ++ lib.attrValues finalAttrs.passthru.schemas;
 
-  optional-dependencies = {
-    all = [ pyjwt ];
-    jwt = [ pyjwt ];
-    auth-app = [ pyjwt ];
-    auth-oauth-device = [ ];
-    auth = [ pyjwt ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
-  pythonImportsCheck = [ "githubkit" ];
-
   disabledTests = [
     # Tests require network access
     "test_graphql"
@@ -119,6 +76,49 @@ buildPythonPackage (finalAttrs: {
     "test_versioned_call"
     "test_versioned_async_call"
   ];
+
+  optional-dependencies = {
+    all = [ pyjwt ];
+    auth = [ pyjwt ];
+    auth-app = [ pyjwt ];
+    auth-oauth-device = [ ];
+    jwt = [ pyjwt ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "githubkit" ];
+
+  passthru.schemas = {
+    githubkit-schemas = mkGithubkitSchema {
+      inherit (finalAttrs) src;
+      pname = "githubkit-schemas";
+      version = "26.6.14";
+    };
+
+    githubkit-schemas-2022-11-28 = mkGithubkitSchema {
+      inherit (finalAttrs) src;
+      pname = "githubkit-schemas-2022-11-28";
+      version = "26.6.14";
+    };
+
+    githubkit-schemas-2026-03-10 = mkGithubkitSchema {
+      inherit (finalAttrs) src;
+      pname = "githubkit-schemas-2026-03-10";
+      version = "26.6.14";
+    };
+
+    githubkit-schemas-ghec-2022-11-28 = mkGithubkitSchema {
+      inherit (finalAttrs) src;
+      pname = "githubkit-schemas-ghec-2022-11-28";
+      version = "26.6.14";
+    };
+
+    githubkit-schemas-ghec-2026-03-10 = mkGithubkitSchema {
+      inherit (finalAttrs) src;
+      pname = "githubkit-schemas-ghec-2026-03-10";
+      version = "26.6.14";
+    };
+  };
 
   meta = {
     description = "GitHub SDK for Python";

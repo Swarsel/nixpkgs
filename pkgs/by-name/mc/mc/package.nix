@@ -3,26 +3,25 @@
   stdenv,
   fetchurl,
   buildPackages,
-  pkg-config,
-  glib,
-  gpm,
-  file,
-  e2fsprogs,
-  libice,
-  perl,
-  zip,
-  unzip,
-  gettext,
-  slang,
-  libssh2,
-  openssl,
   coreutils,
   darwin,
-  x11Support ? true,
+  e2fsprogs,
+  file,
+  gettext,
+  glib,
+  gpm,
+  libice,
+  libssh2,
   libx11,
-
+  openssl,
+  perl,
+  pkg-config,
+  slang,
+  unzip,
   # updater only
   writeScript,
+  zip,
+  x11Support ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://ftp.osuosl.org/pub/midnightcommander/mc-${finalAttrs.version}.tar.xz";
     hash = "sha256-yuFJ1C+ETlGF2MgdfbOROo+iFMZfhSIAqdiWtGivFkw=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  postPatch = ''
+    substituteInPlace src/filemanager/ext.c \
+      --replace /bin/rm ${coreutils}/bin/rm
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -60,8 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
     gpm
   ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     # used for vfs helpers at run time:
     "PERL=${perl}/bin/perl"
@@ -73,22 +80,14 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-configure-args"
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  postPatch = ''
-    substituteInPlace src/filemanager/ext.c \
-      --replace /bin/rm ${coreutils}/bin/rm
-  '';
-
   postFixup = lib.optionalString ((!stdenv.hostPlatform.isDarwin) && x11Support) ''
     # libX11.so is loaded dynamically so autopatch doesn't detect it
     patchelf \
       --add-needed ${libx11}/lib/libX11.so \
       $out/bin/mc
   '';
+
+  enableParallelBuilding = true;
 
   passthru.updateScript = writeScript "update-mc" ''
     #!/usr/bin/env nix-shell
@@ -103,10 +102,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "File Manager and User Shell for the GNU Project, known as Midnight Commander";
-    downloadPage = "https://ftp.osuosl.org/pub/midnightcommander/";
     homepage = "https://midnight-commander.org";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "mc";
+    downloadPage = "https://ftp.osuosl.org/pub/midnightcommander/";
   };
 })

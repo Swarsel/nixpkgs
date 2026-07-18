@@ -17,14 +17,10 @@ let
   launchd = sourceRelease "launchd";
 in
 mkAppleDerivation {
-  releaseName = "shell_cmds";
-
   outputs = [
     "out"
     "man"
   ];
-
-  xcodeHash = "sha256-sbgPFMMXgUp+F1IRLiaFto+PsfMHBd23KQ1sQK7tP7A=";
 
   postPatch = ''
     # Fix `mktemp` templates
@@ -39,10 +35,6 @@ mkAppleDerivation {
     done
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-I${launchd}/liblaunch";
-
-  depsBuildBuild = [ clang ];
-
   nativeBuildInputs = [
     bison
     pkg-config
@@ -56,13 +48,20 @@ mkAppleDerivation {
     libxo
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-I${launchd}/liblaunch";
+
   postInstall = ''
     # Patch the shebangs to use `sh` from shell_cmds.
     HOST_PATH="$out/bin" patchShebangs --host "$out/bin" "$out/libexec"
   '';
 
+  depsBuildBuild = [ clang ];
+  releaseName = "shell_cmds";
+  xcodeHash = "sha256-sbgPFMMXgUp+F1IRLiaFto+PsfMHBd23KQ1sQK7tP7A=";
+
   meta = {
     description = "Darwin shell commands and the Almquist shell";
+
     license = [
       lib.licenses.bsd2
       lib.licenses.bsd3

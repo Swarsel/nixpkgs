@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  nodejs,
   makeBinaryWrapper,
-  versionCheckHook,
   nix-update-script,
+  nodejs,
+  versionCheckHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "commitlint";
     tag = "v${finalAttrs.version}";
     hash = "sha256-i1Nom/piZHBPV7d8DwBsu/42CCopAu2OAOzlJTwNFP8=";
-  };
-
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-e51t2ODoBU19ADUZ4IJBsRs92XipmWCywJWMJ4EzRf8=";
   };
 
   nativeBuildInputs = [
@@ -85,19 +80,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-e51t2ODoBU19ADUZ4IJBsRs92XipmWCywJWMJ4EzRf8=";
+  };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/conventional-changelog/commitlint/releases/tag/${finalAttrs.src.tag}";
     description = "Lint your commit messages";
     homepage = "https://commitlint.js.org/";
+    changelog = "https://github.com/conventional-changelog/commitlint/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "commitlint";
     maintainers = [ ];
+    mainProgram = "commitlint";
   };
 })

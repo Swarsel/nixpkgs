@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  bzip2,
   bcftools,
+  buildPythonPackage,
+  bzip2,
   curl,
   cython,
   htslib,
   libdeflate,
-  xz,
-  pytestCheckHook,
-  setuptools,
-  samtools,
-  zlib,
   nix-update-script,
+  pytestCheckHook,
+  samtools,
+  setuptools,
+  xz,
+  zlib,
 }:
 
 buildPythonPackage rec {
   pname = "pysam";
   version = "0.23.3";
-  pyproject = true;
 
   # Fetching from GitHub instead of PyPi cause the 0.13 src release on PyPi is
   # missing some files which cause test failures.
@@ -30,11 +29,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-yOLnfuGQW+j0nHy4MRlwurZMpeRHTGmQ9eLmihcAGoQ=";
   };
-
-  build-system = [
-    cython
-    setuptools
-  ];
 
   nativeBuildInputs = [
     samtools
@@ -71,6 +65,13 @@ buildPythonPackage rec {
     rm -rf pysam
   '';
 
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "pysam"
     "pysam.bcftools"
@@ -84,11 +85,11 @@ buildPythonPackage rec {
 
   meta = {
     description = "Python module for reading, manipulating and writing genome data sets";
-    downloadPage = "https://github.com/pysam-developers/pysam";
-    changelog = "https://github.com/pysam-developers/pysam/releases/tag/${src.tag}";
     homepage = "https://pysam.readthedocs.io";
-    maintainers = with lib.maintainers; [ unode ];
+    changelog = "https://github.com/pysam-developers/pysam/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ unode ];
     platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/pysam-developers/pysam";
   };
 }

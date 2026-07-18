@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyserial,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "umodbus";
   version = "1.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "AdvancedClimateSystems";
@@ -19,11 +18,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pyserial ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __darwinAllowLocalNetworking = true;
+  format = "setuptools";
   pythonImportsCheck = [ "umodbus" ];
 
   meta = {

@@ -1,18 +1,17 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  systemd,
-  xrandr,
-  installShellFiles,
   desktop-file-utils,
+  installShellFiles,
+  python3,
+  systemd,
   udevCheckHook,
+  xrandr,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "autorandr";
   version = "1.15";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "phillipberndt";
@@ -21,11 +20,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-8FMfy3GCN4z/TnfefU2DbKqV3W35I29/SuGGqeOrjNg";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  patches = [ ./0001-don-t-use-sys.executable.patch ];
+
   nativeBuildInputs = [
     installShellFiles
     desktop-file-utils
     udevCheckHook
   ];
+
   propagatedBuildInputs = with python3.pkgs; [ packaging ];
 
   buildPhase = ''
@@ -33,13 +40,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace 'os.popen("xrandr' 'os.popen("${xrandr}/bin/xrandr' \
       --replace '["xrandr"]' '["${xrandr}/bin/xrandr"]'
   '';
-
-  patches = [ ./0001-don-t-use-sys.executable.patch ];
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -78,9 +78,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
+  pyproject = false;
+
   meta = {
-    homepage = "https://github.com/phillipberndt/autorandr/";
     description = "Automatically select a display configuration based on connected devices";
+    homepage = "https://github.com/phillipberndt/autorandr/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

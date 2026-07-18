@@ -16,19 +16,19 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-w/gTRritttShxrj6n6RzjCVin6TjJl+o/sVoBafAM+0=";
 
-  dontNpmBuild = true;
-
   # remove broken links to build tools
   postInstall = ''
     rm -r $out/lib/node_modules/mapscii/node_modules/.bin
   '';
+
+  dontNpmBuild = true;
 
   meta = {
     description = "Braille & ASCII world map renderer for your console";
     homepage = "https://github.com/rastapasta/mapscii";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kinzoku ];
-    mainProgram = "mapscii";
     platforms = lib.platforms.all;
+    mainProgram = "mapscii";
   };
 }

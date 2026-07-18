@@ -2,29 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchPnpmDeps,
-
   # build
   brotli,
   dart-sass,
   fd,
+  fetchPnpmDeps,
   jq,
+  # tests
+  nixosTests,
+  # runtime
+  nodejs_24,
   pnpmConfigHook,
   pnpm_10,
   which,
-
-  # runtime
-  nodejs_24,
-
-  # tests
-  nixosTests,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "peertube";
   version = "8.2.2";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "Chocobozzz";
@@ -39,12 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     "runner"
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-qrx8JtIAmn0JEsFwptrHlOL0IaYPJPLzjuDWNs7XFfc=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     brotli
@@ -147,6 +136,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-qrx8JtIAmn0JEsFwptrHlOL0IaYPJPLzjuDWNs7XFfc=";
+    pnpm = pnpm_10;
+  };
+
   passthru = {
     nodejs = nodejs_24;
     tests.peertube = nixosTests.peertube;
@@ -154,6 +152,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free software to take back control of your videos";
+
     longDescription = ''
       PeerTube aspires to be a decentralized and free/libre alternative to video
       broadcasting services.
@@ -168,19 +167,23 @@ stdenv.mkDerivation (finalAttrs: {
       though if the administrator of your instance had previously connected it
       with other instances.
     '';
-    license = lib.licenses.agpl3Plus;
+
     homepage = "https://joinpeertube.org/";
+    license = lib.licenses.agpl3Plus;
+
+    maintainers = with lib.maintainers; [
+      immae
+      izorkin
+      stevenroose
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       # feasible, looking for maintainer to help out
       # "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [
-      immae
-      izorkin
-      stevenroose
-    ];
+
     teams = with lib.teams; [
       ngi
     ];

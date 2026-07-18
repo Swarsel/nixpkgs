@@ -13,8 +13,8 @@ let
   toml = pkgs.formats.toml { };
   defaultConfig = {
     general = {
-      id = "br";
       config_dir = "/etc/scion";
+      id = "br";
     };
   };
   configFile = toml.generate "scion-router.toml" (recursiveUpdate defaultConfig cfg.settings);
@@ -22,34 +22,41 @@ in
 {
   options.services.scion.scion-router = {
     enable = mkEnableOption "the scion-router service";
+
     settings = mkOption {
       default = { };
-      type = toml.type;
-      example = literalExpression ''
-        {
-          general.id = "br";
-        }
-      '';
+
       description = ''
         scion-router configuration. Refer to
         <https://docs.scion.org/en/latest/manuals/common.html>
         for details on supported values.
       '';
+
+      example = literalExpression ''
+        {
+          general.id = "br";
+        }
+      '';
+
+      type = toml.type;
     };
   };
+
   config = mkIf cfg.enable {
     systemd.services.scion-router = {
-      description = "SCION Router";
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "SCION Router";
+
       serviceConfig = {
-        Type = "simple";
+        ${if globalCfg.stateless then "RuntimeDirectory" else "StateDirectory"} = "scion-router";
+        DynamicUser = true;
         ExecStart = "${globalCfg.package}/bin/scion-router --config ${configFile}";
         Restart = "on-failure";
-        DynamicUser = true;
-        ${if globalCfg.stateless then "RuntimeDirectory" else "StateDirectory"} = "scion-router";
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 }

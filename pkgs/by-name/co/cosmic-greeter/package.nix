@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  libcosmicAppHook,
   cmake,
-  just,
+  coreutils,
   cosmic-randr,
+  just,
+  libcosmicAppHook,
   libinput,
   linux-pam,
-  udev,
-  coreutils,
-  xkeyboard_config,
   nix-update-script,
   nixosTests,
   orca,
+  rustPlatform,
+  udev,
+  xkeyboard_config,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -34,15 +34,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace src/greeter.rs --replace-fail '/usr/bin/orca' '${lib.getExe orca}'
   '';
 
-  cargoHash = "sha256-mfY2hsMxBooRjmTB2jgUIKyKHBpGfZ9Qslwv+2aEQyg=";
-
-  cargoBuildFlags = [ "--all" ];
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  env.VERGEN_GIT_SHA = finalAttrs.src.tag;
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
     cmake
@@ -58,6 +49,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     orca
   ];
 
+  cargoHash = "sha256-mfY2hsMxBooRjmTB2jgUIKyKHBpGfZ9Qslwv+2aEQyg=";
+  env.VERGEN_GIT_SHA = finalAttrs.src.tag;
+
+  preFixup = ''
+    libcosmicAppWrapperArgs+=(
+      --prefix PATH : ${lib.makeBinPath [ cosmic-randr ]}
+      --set-default X11_BASE_RULES_XML ${xkeyboard_config}/share/X11/xkb/rules/base.xml
+      --set-default X11_BASE_EXTRA_RULES_XML ${xkeyboard_config}/share/X11/xkb/rules/extra.xml
+    )
+  '';
+
+  __structuredAttrs = true;
+  cargoBuildFlags = [ "--all" ];
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -70,13 +74,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
-  preFixup = ''
-    libcosmicAppWrapperArgs+=(
-      --prefix PATH : ${lib.makeBinPath [ cosmic-randr ]}
-      --set-default X11_BASE_RULES_XML ${xkeyboard_config}/share/X11/xkb/rules/base.xml
-      --set-default X11_BASE_EXTRA_RULES_XML ${xkeyboard_config}/share/X11/xkb/rules/extra.xml
-    )
-  '';
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -97,11 +95,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-greeter";
     description = "Greeter for the COSMIC Desktop Environment";
-    mainProgram = "cosmic-greeter";
+    homepage = "https://github.com/pop-os/cosmic-greeter";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-greeter";
+    teams = [ lib.teams.cosmic ];
   };
 })

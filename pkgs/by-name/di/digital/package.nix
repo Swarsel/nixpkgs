@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  makeDesktopItem,
   copyDesktopItems,
-  makeWrapper,
   jre,
+  makeDesktopItem,
+  makeWrapper,
   maven,
 }:
 
@@ -15,23 +15,26 @@ let
   buildDate = "2024-09-03T14:02:31+02:00"; # v0.31 commit date
 
   desktopItem = makeDesktopItem {
-    type = "Application";
-    name = pname;
-    desktopName = "Digital";
-    comment = "Easy-to-use digital logic designer and circuit simulator";
-    exec = pname;
-    icon = pname;
     categories = [
       "Education"
       "Electronics"
     ];
-    mimeTypes = [ "text/x-digital" ];
-    terminal = false;
+
+    comment = "Easy-to-use digital logic designer and circuit simulator";
+    desktopName = "Digital";
+    exec = pname;
+    icon = pname;
+
     keywords = [
       "simulator"
       "digital"
       "circuits"
     ];
+
+    mimeTypes = [ "text/x-digital" ];
+    name = pname;
+    terminal = false;
+    type = "Application";
   };
 
   # Use the "no-git-rev" maven profile, which deactivates the plugin that
@@ -43,6 +46,7 @@ let
 in
 maven.buildMavenPackage rec {
   inherit pname version jre;
+  inherit mvnParameters;
 
   src = fetchFromGitHub {
     owner = "hneemann";
@@ -50,9 +54,6 @@ maven.buildMavenPackage rec {
     rev = "v${version}";
     hash = "sha256-6XaM3U1x/yvoCrkJ2nMtBmj972gCFlWn3F4DM7TLWgw=";
   };
-
-  inherit mvnParameters;
-  mvnHash = "sha256-qFJvpxK6PDmMfeL5fKVHUzK2NRLcQhQ3PJbwv2hYZqY=";
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -85,13 +86,14 @@ maven.buildMavenPackage rec {
   '';
 
   desktopItems = [ desktopItem ];
+  mvnHash = "sha256-qFJvpxK6PDmMfeL5fKVHUzK2NRLcQhQ3PJbwv2hYZqY=";
 
   meta = {
-    homepage = "https://github.com/hneemann/Digital";
     description = pkgDescription;
-    mainProgram = "digital";
+    homepage = "https://github.com/hneemann/Digital";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ Dettorer ];
+    platforms = lib.platforms.all;
+    mainProgram = "digital";
   };
 }

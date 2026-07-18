@@ -7,20 +7,20 @@
 }:
 
 buildDunePackage {
-  pname = "dune-glob";
   inherit (dune) src version;
-
-  dontAddPrefix = true;
+  pname = "dune-glob";
 
   propagatedBuildInputs = [
     dune-private-libs
     re
   ];
 
+  dontAddPrefix = true;
+
   meta = {
     inherit (dune.meta) homepage;
     description = "Glob string matching language supported by dune";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

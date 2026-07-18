@@ -21,46 +21,53 @@ in
 {
   options.services.ustreamer = {
     enable = mkEnableOption "µStreamer, a lightweight MJPEG-HTTP streamer";
-
     package = mkPackageOption pkgs "ustreamer" { };
 
     autoStart = mkOption {
+      default = true;
+
       description = ''
         Wether to start µStreamer on boot. Disabling this will use socket
         activation. The service will stop gracefully after some inactivity.
         Disabling this will set `--exit-on-no-clients=300`
       '';
-      type = types.bool;
-      default = true;
+
       example = false;
+      type = types.bool;
+    };
+
+    device = mkOption {
+      default = "/dev/video0";
+
+      description = ''
+        The v4l2 device to stream.
+      '';
+
+      example = "/dev/v4l/by-id/usb-0000_Dummy_abcdef-video-index0";
+      type = types.path;
+    };
+
+    extraArgs = mkOption {
+      default = [ ];
+
+      description = ''
+        Extra arguments to pass to `ustreamer`. See {manpage}`ustreamer(1)`
+      '';
+
+      example = [ "--resolution=1920x1080" ];
+      type = with types; listOf str;
     };
 
     listenAddress = mkOption {
+      default = "0.0.0.0:8080";
+
       description = ''
         Address to expose the HTTP server. This accepts values for
         ListenStream= defined in {manpage}`systemd.socket(5)`
       '';
-      type = types.str;
-      default = "0.0.0.0:8080";
+
       example = "/run/ustreamer.sock";
-    };
-
-    device = mkOption {
-      description = ''
-        The v4l2 device to stream.
-      '';
-      type = types.path;
-      default = "/dev/video0";
-      example = "/dev/v4l/by-id/usb-0000_Dummy_abcdef-video-index0";
-    };
-
-    extraArgs = mkOption {
-      description = ''
-        Extra arguments to pass to `ustreamer`. See {manpage}`ustreamer(1)`
-      '';
-      type = with types; listOf str;
-      default = [ ];
-      example = [ "--resolution=1920x1080" ];
+      type = types.str;
     };
   };
 
@@ -73,11 +80,14 @@ in
     ];
 
     systemd.services."ustreamer" = {
-      description = "µStreamer, a lightweight MJPEG-HTTP streamer";
       after = [ "network.target" ];
+      description = "µStreamer, a lightweight MJPEG-HTTP streamer";
       requires = [ "ustreamer.socket" ];
-      wantedBy = mkIf cfg.autoStart [ "multi-user.target" ];
+
       serviceConfig = {
+        DeviceAllow = [ cfg.device ];
+        DynamicUser = true;
+
         ExecStart = utils.escapeSystemdExecArgs (
           [
             (getExe cfg.package)
@@ -85,25 +95,26 @@ in
           ]
           ++ cfg.extraArgs
         );
-        Restart = if cfg.autoStart then "always" else "on-failure";
-
-        DynamicUser = true;
-        SupplementaryGroups = [ "video" ];
 
         NoNewPrivileges = true;
         ProcSubset = "pid";
-        ProtectProc = "noaccess";
         ProtectClock = "yes";
-        DeviceAllow = [ cfg.device ];
+        ProtectProc = "noaccess";
+        Restart = if cfg.autoStart then "always" else "on-failure";
+        SupplementaryGroups = [ "video" ];
       };
+
+      wantedBy = mkIf cfg.autoStart [ "multi-user.target" ];
     };
 
     systemd.sockets."ustreamer" = {
-      wantedBy = [ "sockets.target" ];
       partOf = [ "ustreamer.service" ];
+
       socketConfig = {
         ListenStream = cfg.listenAddress;
       };
+
+      wantedBy = [ "sockets.target" ];
     };
   };
 }

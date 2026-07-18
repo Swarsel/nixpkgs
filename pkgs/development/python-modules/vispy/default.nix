@@ -2,9 +2,8 @@
   lib,
   stdenv,
   buildPythonPackage,
-  replaceVars,
-  fetchPypi,
   cython,
+  fetchPypi,
   fontconfig,
   freetype-py,
   hsluv,
@@ -13,6 +12,7 @@
   numpy,
   oldest-supported-numpy,
   packaging,
+  replaceVars,
   setuptools,
   setuptools-scm,
   wheel,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "vispy";
   version = "0.16.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -54,6 +53,7 @@ buildPythonPackage rec {
   ];
 
   doCheck = false; # otherwise runs OSX code on linux.
+  pyproject = true;
 
   pythonImportsCheck = [
     "vispy"

@@ -1,28 +1,22 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  pkg-config,
-  glib,
-  vala,
+  autoreconfHook,
   dee,
+  fetchgit,
+  glib,
   gobject-introspection,
-  libdbusmenu,
   gtk3,
   intltool,
+  libdbusmenu,
+  pkg-config,
   python3,
-  autoreconfHook,
+  vala,
 }:
 
 stdenv.mkDerivation {
   pname = "libunity";
   version = "unstable-2021-02-01";
-
-  outputs = [
-    "out"
-    "dev"
-    "py"
-  ];
 
   # Obtained from https://git.launchpad.net/ubuntu/+source/libunity/log/
   src = fetchgit {
@@ -30,6 +24,12 @@ stdenv.mkDerivation {
     rev = "import/7.1.4+19.04.20190319-5";
     sha256 = "LHUs6kl1srS6Xektx+jmm4SXLR47VuQ9IhYbBxf2Wc8=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "py"
+  ];
 
   patches = [
     # Fix builf with latest Vala
@@ -57,19 +57,19 @@ stdenv.mkDerivation {
     libdbusmenu
   ];
 
-  preConfigure = ''
-    intltoolize
-  '';
-
   configureFlags = [
     "--with-pygi-overrides-dir=${placeholder "py"}/${python3.sitePackages}/gi/overrides"
   ];
+
+  preConfigure = ''
+    intltoolize
+  '';
 
   meta = {
     description = "Library for instrumenting and integrating with all aspects of the Unity shell";
     homepage = "https://launchpad.net/libunity";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

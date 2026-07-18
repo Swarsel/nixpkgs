@@ -1,14 +1,14 @@
 {
-  buildNpmPackage,
   lib,
-  autoPatchelfHook,
-  electron,
+  stdenv,
   fetchFromGitHub,
+  autoPatchelfHook,
+  buildNpmPackage,
+  electron,
   gitUpdater,
   makeWrapper,
   ollama,
   pkg-config,
-  stdenv,
   vips,
 }:
 
@@ -23,13 +23,6 @@ buildNpmPackage rec {
     hash = "sha256-6z5QoJk81NEP115uW+2ah7vxpDz8XQUmMLESPsZT9uU=";
   };
 
-  makeCacheWritable = true; # sharp tries to build stuff in node_modules
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = true;
-
-  npmDepsHash = "sha256-jvGvhgNhY+wz/DFS7NDtmzKXbhHbNF3i0qVQoFFeB0M=";
-
-  dontNpmBuild = true; # missing script: build
-
   nativeBuildInputs = [
     makeWrapper
     electron
@@ -41,6 +34,9 @@ buildNpmPackage rec {
     (lib.getLib stdenv.cc.cc) # for libstdc++.so, required by onnxruntime
     vips # or it will try to download from the Internet
   ];
+
+  npmDepsHash = "sha256-jvGvhgNhY+wz/DFS7NDtmzKXbhHbNF3i0qVQoFFeB0M=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = true;
 
   installPhase = ''
     runHook preInstall
@@ -83,6 +79,8 @@ buildNpmPackage rec {
     }
   '';
 
+  dontNpmBuild = true; # missing script: build
+  makeCacheWritable = true; # sharp tries to build stuff in node_modules
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
@@ -91,7 +89,7 @@ buildNpmPackage rec {
     changelog = "https://github.com/BruceMacD/chatd/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "chatd";
     platforms = electron.meta.platforms;
+    mainProgram = "chatd";
   };
 }

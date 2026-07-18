@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "gokey";
@@ -17,8 +17,8 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-ntDQi2+7TGVdfgyOhKgaNCfCBK1o5sRC9gVVxonNU6c=";
 
   meta = {
-    homepage = "https://github.com/cloudflare/gokey";
     description = "Vault-less password store";
+    homepage = "https://github.com/cloudflare/gokey";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.confus ];
     mainProgram = "gokey";

@@ -1,27 +1,26 @@
 {
-  stdenv,
   lib,
-  replaceVars,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  glib,
   gtk3,
   gtk4,
-  networkmanager,
-  ppp,
-  xl2tpd,
-  strongswan,
-  libsecret,
-  withGnome ? true,
   libnma,
   libnma-gtk4,
-  glib,
-  openssl,
+  libsecret,
+  networkmanager,
   nss,
+  openssl,
+  pkg-config,
+  ppp,
+  replaceVars,
+  strongswan,
+  xl2tpd,
+  withGnome ? true,
 }:
 
 stdenv.mkDerivation rec {
-  name = "${pname}${lib.optionalString withGnome "-gnome"}-${version}";
   pname = "NetworkManager-l2tp";
   version = "1.52.0";
 
@@ -37,6 +36,8 @@ stdenv.mkDerivation rec {
       inherit strongswan xl2tpd;
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -69,17 +70,18 @@ stdenv.mkDerivation rec {
   ];
 
   enableParallelBuilding = true;
-  strictDeps = true;
+  name = "${pname}${lib.optionalString withGnome "-gnome"}-${version}";
 
   passthru = {
     networkManagerPlugin = "VPN/nm-l2tp-service.name";
   };
 
   meta = {
-    description = "L2TP plugin for NetworkManager";
     inherit (networkmanager.meta) platforms;
+    description = "L2TP plugin for NetworkManager";
     homepage = "https://github.com/nm-l2tp/NetworkManager-l2tp";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       obadz
     ];

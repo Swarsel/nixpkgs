@@ -1,19 +1,17 @@
 # SolidPython is an unmaintained library with old dependencies.
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-
+  fetchFromGitHub,
+  buildPythonPackage,
+  euclid3,
+  ply,
   poetry-core,
   prettytable,
-  ply,
   setuptools_80,
-  euclid3,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "solidpython";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SolidCode";
@@ -35,6 +33,12 @@ buildPythonPackage (finalAttrs: {
     prettytable
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "solid"
+  ];
+
   pythonRelaxDeps = [
     # SolidPython has PrettyTable pinned to a hyper-specific version due to
     # some ancient bug with Poetry. They aren't interested in unpinning because
@@ -48,15 +52,11 @@ buildPythonPackage (finalAttrs: {
     "pypng"
   ];
 
-  pythonImportsCheck = [
-    "solid"
-  ];
-
   meta = {
     description = "Python interface to the OpenSCAD declarative geometry language";
     homepage = "https://github.com/SolidCode/SolidPython";
     changelog = "https://github.com/SolidCode/SolidPython/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ jfly ];
     license = lib.licenses.lgpl21Plus;
+    maintainers = with lib.maintainers; [ jfly ];
   };
 })

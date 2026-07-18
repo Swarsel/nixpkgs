@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {

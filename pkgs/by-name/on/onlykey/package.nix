@@ -1,8 +1,8 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
-  fetchpatch2,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
+  fetchpatch2,
   makeDesktopItem,
   nix-update-script,
   nwjs,
@@ -22,29 +22,10 @@ buildNpmPackage (finalAttrs: {
   patches = [
     # Provides package-lock.json
     (fetchpatch2 {
-      url = "https://github.com/trustcrypto/OnlyKey-App/commit/b8918cec80f5feda50c24a0aec3d6fb914ea8481.patch";
       hash = "sha256-ULMZI7fo5SJGrfCRqZzZVoGOTDQ8q/NG/uXMjNkQ+qk=";
+      url = "https://github.com/trustcrypto/OnlyKey-App/commit/b8918cec80f5feda50c24a0aec3d6fb914ea8481.patch";
     })
   ];
-
-  desktopItem = makeDesktopItem {
-    name = "onlykey";
-    exec = "onlykey";
-    icon = "onlykey";
-    desktopName = "OnlyKey";
-    comment = finalAttrs.meta.description;
-    categories = [
-      "Utility"
-    ];
-    terminal = false;
-  };
-
-  npmDepsHash = "sha256-DpjB95KEHfAc4GBxY40uUjlN7ifBMUncufVTmTXqDo8=";
-
-  # when installing packages, nw tries to download nwjs in its postInstall
-  # script. There are currently no other postInstall scripts, so this
-  # should not break other things.
-  npmFlags = [ "--ignore-scripts" ];
 
   postPatch = ''
     # NW.js 0.102 in Chrome-packaged-app mode never advances
@@ -65,6 +46,8 @@ buildNpmPackage (finalAttrs: {
         "} else if (!localStorage.hasOwnProperty('autoLaunch')) {" \
         "} else if (false && !localStorage.hasOwnProperty('autoLaunch')) {"
   '';
+
+  npmDepsHash = "sha256-DpjB95KEHfAc4GBxY40uUjlN7ifBMUncufVTmTXqDo8=";
 
   postBuild = ''
     substituteInPlace build/package.json \
@@ -94,6 +77,24 @@ buildNpmPackage (finalAttrs: {
 
     runHook postInstall
   '';
+
+  desktopItem = makeDesktopItem {
+    categories = [
+      "Utility"
+    ];
+
+    comment = finalAttrs.meta.description;
+    desktopName = "OnlyKey";
+    exec = "onlykey";
+    icon = "onlykey";
+    name = "onlykey";
+    terminal = false;
+  };
+
+  # when installing packages, nw tries to download nwjs in its postInstall
+  # script. There are currently no other postInstall scripts, so this
+  # should not break other things.
+  npmFlags = [ "--ignore-scripts" ];
 
   passthru = {
     updateScript = nix-update-script { };

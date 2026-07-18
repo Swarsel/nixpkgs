@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
+  buildPythonPackage,
   pyusb,
+  setuptools,
   spidev,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "pixel-ring";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "respeaker";
@@ -30,15 +29,15 @@ buildPythonPackage rec {
     spidev
   ];
 
-  dontUsePythonImportsCheck = true; # requires SPI access
-
   doCheck = false; # no tests
+  dontUsePythonImportsCheck = true; # requires SPI access
+  pyproject = true;
 
   meta = {
     description = "RGB LED library for ReSpeaker 4 Mic Array, ReSpeaker V2 & ReSpeaker USB 6+1 Mic Array";
-    mainProgram = "pixel_ring_check";
     homepage = "https://github.com/respeaker/pixel_ring/tree/master";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ hexa ];
+    mainProgram = "pixel_ring_check";
   };
 }

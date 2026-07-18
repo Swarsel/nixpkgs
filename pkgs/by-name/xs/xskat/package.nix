@@ -2,25 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  libx11,
-  imake,
   gccmakedep,
+  imake,
+  libx11,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "xskat";
   version = "4.0";
 
-  nativeBuildInputs = [ gccmakedep ];
-  buildInputs = [
-    libx11
-    imake
-  ];
-
   src = fetchurl {
     url = "https://web.archive.org/web/20220331112433if_/https://www.xskat.de/xskat-${finalAttrs.version}.tar.gz";
     sha256 = "8ba52797ccbd131dce69b96288f525b0d55dee5de4008733f7a5a51deb831c10";
   };
+
+  nativeBuildInputs = [ gccmakedep ];
+
+  buildInputs = [
+    libx11
+    imake
+  ];
 
   env.NIX_CFLAGS_COMPILE = "-std=gnu17 -Wno-implicit-int";
 
@@ -37,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Famous german card game";
-    mainProgram = "xskat";
-    platforms = lib.platforms.unix;
-    license = lib.licenses.xskat;
     longDescription = "Play the german card game Skat against the AI or over IRC.";
     homepage = "https://web.archive.org/web/20221003060115/https://www.xskat.de/xskat.html";
+    license = lib.licenses.xskat;
+    platforms = lib.platforms.unix;
+    mainProgram = "xskat";
   };
 })

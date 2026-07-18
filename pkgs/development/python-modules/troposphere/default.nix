@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   awacs,
   buildPythonPackage,
   cfn-flip,
-  fetchFromGitHub,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "troposphere";
   version = "4.10.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "cloudtools";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     awacs
     unittestCheckHook
   ];
+
+  format = "setuptools";
 
   optional-dependencies = {
     policy = [ awacs ];

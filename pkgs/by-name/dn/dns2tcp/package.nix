@@ -19,13 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fixes gcc-10 build issues.
     (fetchpatch {
-      url = "https://salsa.debian.org/debian/dns2tcp/-/raw/86b518ce169e88488d71c6b0270d4fc814dc1fbc/debian/patches/01_fix_gcc10_issues.patch.";
       hash = "sha256-IGpUIajkhruou7meZZJEJ5nnsQ/hVflyPfAuh3J0otI=";
+      url = "https://salsa.debian.org/debian/dns2tcp/-/raw/86b518ce169e88488d71c6b0270d4fc814dc1fbc/debian/patches/01_fix_gcc10_issues.patch.";
     })
     # fixes some spelling errors.
     (fetchpatch {
-      url = "https://salsa.debian.org/debian/dns2tcp/-/raw/13481f37b7184e52b83cc0c41edfc6b20a5debed/debian/patches/fix_spelling_errors.patch";
       hash = "sha256-b65olctlwLOY2GnVb7i7axGFiR0iLoTYstXdtVkU3vQ=";
+      url = "https://salsa.debian.org/debian/dns2tcp/-/raw/13481f37b7184e52b83cc0c41edfc6b20a5debed/debian/patches/fix_spelling_errors.patch";
     })
   ];
 
@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tool for relaying TCP connections over DNS";
     homepage = "https://github.com/alex-sector/dns2tcp";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "dns2tcpc";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "dns2tcpc";
   };
 })

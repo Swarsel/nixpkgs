@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   cmake,
-  pkg-config,
   httrack,
-  qt6Packages,
   nix-update-script,
+  pkg-config,
+  qt6Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,16 +18,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-HfnUlJifpzWiP1rb+Kn3I/H6nYBeEB6cXVI5pu28K5E=";
   };
 
-  buildInputs = [
-    httrack
-    qt6Packages.qtbase
-    qt6Packages.qtmultimedia
-  ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
     qt6Packages.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    httrack
+    qt6Packages.qtbase
+    qt6Packages.qtmultimedia
   ];
 
   prePatch = ''
@@ -53,12 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Easy-to-use offline browser / website mirroring utility - QT frontend";
-    mainProgram = "httraqt";
     homepage = "https://httraqt.sourceforge.net";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.unix;
+    mainProgram = "httraqt";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

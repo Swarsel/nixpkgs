@@ -1,26 +1,25 @@
 {
   lib,
   stdenv,
-  cairo,
   fetchurl,
+  cairo,
   gst_all_1,
   jack2,
   ladspa-header,
   libGL,
   libGLU,
-  libxrandr,
   libsndfile,
+  libxrandr,
   lv2,
   php84,
   pkg-config,
-
-  buildVST3 ? true,
-  buildVST2 ? true,
   buildCLAP ? true,
-  buildLV2 ? true,
-  buildLADSPA ? true,
-  buildJACK ? true,
   buildGStreamer ? true,
+  buildJACK ? true,
+  buildLADSPA ? true,
+  buildLV2 ? true,
+  buildVST2 ? true,
+  buildVST3 ? true,
 }:
 
 let
@@ -41,16 +40,16 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "lsp-plugins";
   version = "1.2.33";
 
+  src = fetchurl {
+    url = "https://github.com/lsp-plugins/lsp-plugins/releases/download/${finalAttrs.version}/lsp-plugins-src-${finalAttrs.version}.tar.gz";
+    hash = "sha256-K2kiEFEYrIe9lCsP8+e/PIGAInsqtcTlDkjeuQrGib0=";
+  };
+
   outputs = [
     "out"
     "dev"
     "doc"
   ];
-
-  src = fetchurl {
-    url = "https://github.com/lsp-plugins/lsp-plugins/releases/download/${finalAttrs.version}/lsp-plugins-src-${finalAttrs.version}.tar.gz";
-    hash = "sha256-K2kiEFEYrIe9lCsP8+e/PIGAInsqtcTlDkjeuQrGib0=";
-  };
 
   # By default, GStreamer plugins are installed right alongside GStreamer itself
   # We can't do that in Nixpkgs, so lets install it to $out/lib like other plugins
@@ -84,6 +83,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-DLSP_NO_EXPERIMENTAL";
+  doCheck = true;
 
   configurePhase = ''
     runHook preConfigure
@@ -93,12 +93,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  doCheck = true;
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Collection of open-source audio plugins";
+
     longDescription = ''
       Compatible with the following formats:
 
@@ -183,13 +182,16 @@ stdenv.mkDerivation (finalAttrs: {
       - Matcher
       - Sidechain Matcher
     '';
+
     homepage = "https://lsp-plug.in";
     changelog = "https://github.com/lsp-plugins/lsp-plugins/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       magnetophon
       PowerUser64
     ];
-    license = lib.licenses.gpl2;
+
     platforms = lib.platforms.linux;
   };
 })

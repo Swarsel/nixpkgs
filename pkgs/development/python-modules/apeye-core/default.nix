@@ -1,33 +1,34 @@
 {
-  buildPythonPackage,
-  fetchPypi,
   lib,
-  hatchling,
-  hatch-requirements-txt,
+  buildPythonPackage,
   domdf-python-tools,
+  fetchPypi,
+  hatch-requirements-txt,
+  hatchling,
   idna,
 }:
 buildPythonPackage rec {
   pname = "apeye-core";
   version = "1.1.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "apeye_core";
     hash = "sha256-Xecu09AMybIP6lXlS3q49e+FAOszpTaLwWKlWF4jilU=";
+    pname = "apeye_core";
   };
-
-  build-system = [ hatchling ];
 
   nativeBuildInputs = [
     hatch-requirements-txt
   ];
 
+  build-system = [ hatchling ];
+
   dependencies = [
     domdf-python-tools
     idna
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Core (offline) functionality for the apeye library";

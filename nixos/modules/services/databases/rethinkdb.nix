@@ -19,14 +19,9 @@ in
 
       enable = lib.mkEnableOption "RethinkDB server";
 
-      #package = lib.mkOption {
-      #  default = pkgs.rethinkdb;
-      #  description = "Which RethinkDB derivation to use.";
-      #};
-
-      user = lib.mkOption {
-        default = "rethinkdb";
-        description = "User account under which RethinkDB runs.";
+      dbpath = lib.mkOption {
+        default = "/var/db/rethinkdb";
+        description = "Location where RethinkDB stores its data, 1 data directory per instance.";
       };
 
       group = lib.mkOption {
@@ -34,21 +29,23 @@ in
         description = "Group which rethinkdb user belongs to.";
       };
 
-      dbpath = lib.mkOption {
-        default = "/var/db/rethinkdb";
-        description = "Location where RethinkDB stores its data, 1 data directory per instance.";
-      };
-
       pidpath = lib.mkOption {
         default = "/run/rethinkdb";
         description = "Location where each instance's pid file is located.";
       };
 
+      #package = lib.mkOption {
+      #  default = pkgs.rethinkdb;
+      #  description = "Which RethinkDB derivation to use.";
+      #};
+      user = lib.mkOption {
+        default = "rethinkdb";
+        description = "User account under which RethinkDB runs.";
+      };
       #cfgpath = lib.mkOption {
       #  default = "/etc/rethinkdb/instances.d";
       #  description = "Location where RethinkDB stores it config files, 1 config file per instance.";
       #};
-
       # TODO: currently not used by our implementation.
       #instances = lib.mkOption {
       #  type = lib.types.attrsOf lib.types.str;
@@ -66,22 +63,8 @@ in
     environment.systemPackages = [ rethinkdb ];
 
     systemd.services.rethinkdb = {
-      description = "RethinkDB server";
-
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-
-      serviceConfig = {
-        # TODO: abstract away 'default', which is a per-instance directory name
-        #       allowing end user of this nix module to provide multiple instances,
-        #       and associated directory per instance
-        ExecStart = "${rethinkdb}/bin/rethinkdb -d ${cfg.dbpath}/default";
-        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-        User = cfg.user;
-        Group = cfg.group;
-        PIDFile = "${cfg.pidpath}/default.pid";
-        PermissionsStartOnly = true;
-      };
+      description = "RethinkDB server";
 
       preStart = ''
         if ! test -e ${cfg.dbpath}; then
@@ -93,12 +76,20 @@ in
             install -D -o ${cfg.user} -g ${cfg.group} /dev/null "${cfg.pidpath}/default.pid"
         fi
       '';
-    };
 
-    users.users.rethinkdb = lib.mkIf (cfg.user == "rethinkdb") {
-      name = "rethinkdb";
-      description = "RethinkDB server user";
-      isSystemUser = true;
+      serviceConfig = {
+        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+        # TODO: abstract away 'default', which is a per-instance directory name
+        #       allowing end user of this nix module to provide multiple instances,
+        #       and associated directory per instance
+        ExecStart = "${rethinkdb}/bin/rethinkdb -d ${cfg.dbpath}/default";
+        Group = cfg.group;
+        PIDFile = "${cfg.pidpath}/default.pid";
+        PermissionsStartOnly = true;
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups = lib.optionalAttrs (cfg.group == "rethinkdb") (
@@ -106,6 +97,12 @@ in
         name = "rethinkdb";
       }
     );
+
+    users.users.rethinkdb = lib.mkIf (cfg.user == "rethinkdb") {
+      description = "RethinkDB server user";
+      isSystemUser = true;
+      name = "rethinkdb";
+    };
 
   };
 

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   meson,
   ninja,
@@ -39,11 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Low level terminal interface library";
     homepage = "https://github.com/termpaint/termpaint";
-    platforms = lib.platforms.unix;
     license = lib.licenses.boost;
+
     maintainers = with lib.maintainers; [
       istoph
       textshell
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

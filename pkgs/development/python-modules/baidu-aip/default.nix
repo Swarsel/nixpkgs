@@ -1,22 +1,23 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   chardet,
+  fetchPypi,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "baidu-aip";
   version = "4.16.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-zNYjEVVwhqFAR7w7CR3rWYefUZcM+sPZ87KYfDDLxN0=";
   };
 
+  # Package has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -24,9 +25,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Package has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aip" ];
 
   meta = {

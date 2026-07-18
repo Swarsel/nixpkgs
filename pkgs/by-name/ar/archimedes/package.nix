@@ -19,16 +19,16 @@ stdenv.mkDerivation (finalAttrs: {
     #   https://savannah.gnu.org/bugs/index.php?62703
     (fetchpatch {
       name = "c99.patch";
-      url = "https://savannah.gnu.org/bugs/download.php?file_id=53393";
       sha256 = "1xmy1w4ln1gynldk3srdi2h0fxpx465dsa1yxc3rzrrjpxh6087f";
+      url = "https://savannah.gnu.org/bugs/download.php?file_id=53393";
     })
   ];
 
   meta = {
     description = "GNU package for semiconductor device simulations";
-    mainProgram = "archimedes";
     homepage = "https://www.gnu.org/software/archimedes";
     license = lib.licenses.gpl2Plus;
     platforms = with lib.platforms; linux;
+    mainProgram = "archimedes";
   };
 })

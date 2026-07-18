@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  fetchPnpmDeps,
   makeWrapper,
   nix-update-script,
   nodejs,
-  fetchPnpmDeps,
   pnpmConfigHook,
   pnpm_10,
+  stdenvNoCC,
   versionCheckHook,
 }:
 
@@ -27,27 +27,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-huyEQA+XhlGVxnxUzQH1aIZUE4EbCN6HakitzuDyR18=";
   };
 
-  nativeBuildInputs = [
-    makeWrapper
-    nodejs
-    pnpmConfigHook
-    pnpm
-  ];
-
-  pnpmWorkspaces = [ workspace ];
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      postPatch
-      ;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-wZvnRSALrupyhpSN8zNL3b6SZnVPXX3BdHrbzHUNtUg=";
-  };
-
   postPatch = ''
     # The `packageManager` attribute matches the version _exactly_, which makes
     # the build fail if it doesn't match exactly.
@@ -57,6 +36,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     substituteInPlace packages/compiler/scripts/generate-manifest.js \
       --replace-fail 'execSync("git rev-parse HEAD").toString().trim()' '"${finalAttrs.src.rev}"'
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    nodejs
+    pnpmConfigHook
+    pnpm
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -97,10 +83,27 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      postPatch
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-wZvnRSALrupyhpSN8zNL3b6SZnVPXX3BdHrbzHUNtUg=";
+  };
+
+  pnpmWorkspaces = [ workspace ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ ''--version-regex=typespec-stable@(\d+\.\d+\.\d+)'' ];
@@ -108,6 +111,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Language for defining cloud service APIs and shapes";
+
     longDescription = ''
       TypeSpec is a highly extensible language with primitives that can describe
       API shapes common among REST, OpenAPI, gRPC, and other protocols.
@@ -116,6 +120,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       formats, client and service code, documentation, and many other assets.
       All this while keeping your TypeSpec definition as a single source of truth.
     '';
+
     homepage = "https://typespec.io/";
     changelog = "https://github.com/microsoft/typespec/releases/tag/typespec-stable@${finalAttrs.version}";
     license = lib.licenses.mit;

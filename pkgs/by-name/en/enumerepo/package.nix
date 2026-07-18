@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,10 +24,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Tool to list all public repositories for (valid) GitHub usernames";
-    mainProgram = "enumerepo";
     homepage = "https://github.com/trickest/enumerepo";
     changelog = "https://github.com/trickest/enumerepo/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "enumerepo";
   };
 })

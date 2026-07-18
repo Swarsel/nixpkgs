@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pytestCheckHook,
   pythonAtLeast,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "typish";
   version = "1.9.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ramonhagenaars";
@@ -19,14 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-LnOg1dVs6lXgPTwRYg7uJ3LCdExYrCxS47UEJxKHhVU=";
   };
 
-  # Tests fail on Python 3.14
-  # TypeError: 'member_descriptor' object is not iterable
-  disabled = pythonAtLeast "3.14";
-
   nativeCheckInputs = [
     numpy
     pytestCheckHook
   ];
+
+  # Tests fail on Python 3.14
+  # TypeError: 'member_descriptor' object is not iterable
+  disabled = pythonAtLeast "3.14";
 
   disabledTestPaths = [
     # Requires a very old version of nptyping
@@ -39,6 +38,7 @@ buildPythonPackage rec {
     "test_get_origin"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "typish" ];
 
   meta = {

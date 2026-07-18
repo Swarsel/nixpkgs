@@ -21,6 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i '19i#include <sys/cdefs.h>' src/log.c
   '';
 
+  buildInputs = [ libressl ];
+
   configureFlags = [
     "--with-privsep-path=${privsepPath}"
     "--with-privsep-user=${privsepUser}"
@@ -29,18 +31,16 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-cacert=/etc/ssl/certs/ca-certificates.crt"
   ];
 
-  buildInputs = [ libressl ];
-
   installFlags = [
     "sysconfdir=\${out}/etc"
     "localstatedir=\${TMPDIR}"
   ];
 
   meta = {
+    description = "OpenBSD NTP daemon (Debian port)";
     homepage = "https://www.openntpd.org/";
     license = lib.licenses.bsd3;
-    description = "OpenBSD NTP daemon (Debian port)";
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.all;
   };
 })

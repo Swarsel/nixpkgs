@@ -1,20 +1,19 @@
 {
-  symlinkJoin,
   deadbeef,
   makeWrapper,
+  symlinkJoin,
   plugins ? [ ],
 }:
 
 symlinkJoin {
-  pname = "deadbeef-with-plugins";
   inherit (deadbeef) version;
-
-  paths = [ deadbeef ] ++ plugins;
-
+  pname = "deadbeef-with-plugins";
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
     wrapProgram $out/bin/deadbeef \
       --set DEADBEEF_PLUGIN_DIR "$out/lib/deadbeef"
   '';
+
+  paths = [ deadbeef ] ++ plugins;
 }

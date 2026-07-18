@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  intltool,
-  itstool,
-  libxml2,
-  gtk3,
-  openssl,
+  autoconf-archive,
+  autoreconfHook,
+  fetchpatch,
   gettext,
   gnome,
   gobject-introspection,
-  vala,
-  libgee,
-  fetchpatch,
-  autoreconfHook,
   gtk-doc,
-  autoconf-archive,
+  gtk3,
+  intltool,
+  itstool,
+  libgee,
+  libmysqlclient,
+  libpq,
+  libxml2,
+  openssl,
+  pkg-config,
+  vala,
   yelp-tools,
   mysqlSupport ? false,
-  libmysqlclient,
   postgresSupport ? false,
-  libpq,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,13 +36,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fix compile error with mysql
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/libgda/-/commit/9859479884fad5f39e6c37e8995e57c28b11b1b9.diff";
       hash = "sha256-G2PS8LkUXj7deofEn8lgpEMbYg4RLB5injS9VRizGpU=";
+      url = "https://gitlab.gnome.org/GNOME/libgda/-/commit/9859479884fad5f39e6c37e8995e57c28b11b1b9.diff";
     })
     (fetchpatch {
+      hash = "sha256-hIKuY5NEqOzntdlLb541bA4xZU5ypTRmV1u765K6KbM=";
       name = "CVE-2021-39359.patch";
       url = "https://src.fedoraproject.org/rpms/libgda5/raw/72bb769f12e861e27e883dac5fab34f1ba4bd97e/f/bebdffb4de586fb43fd07ac549121f4b22f6812d.patch";
-      hash = "sha256-hIKuY5NEqOzntdlLb541bA4xZU5ypTRmV1u765K6KbM=";
     })
 
     # Fix configure detection of features with c99.
@@ -53,13 +53,13 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Fix build with gettext 0.25
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/libgda5/raw/945495e5c6cdd98a5360eff77245421876a97a57/f/gettext.patch";
       hash = "sha256-DOCsCbx+HLZvlpMgSQrW5YoWl/EhDuQEln18YDqgCVk=";
+      url = "https://src.fedoraproject.org/rpms/libgda5/raw/945495e5c6cdd98a5360eff77245421876a97a57/f/gettext.patch";
     })
     # Fix conflicting types
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/libgda5/raw/76be2c07cb747ce30cc63da21662abb589814404/f/types.patch";
       hash = "sha256-LdvDQm7p0uWznBCD8qhJ5h44zNWLmI0BoqYPCeTBN9M=";
+      url = "https://src.fedoraproject.org/rpms/libgda5/raw/76be2c07cb747ce30cc63da21662abb589814404/f/types.patch";
     })
   ];
 
@@ -106,29 +106,29 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
   enableParallelBuilding = true;
-
   hardeningDisable = [ "format" ];
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "libgda";
       attrPath = "libgda5";
-      versionPolicy = "odd-unstable";
       freeze = true;
+      packageName = "libgda";
+      versionPolicy = "odd-unstable";
     };
   };
 
   meta = {
     description = "Database access library";
     homepage = "https://www.gnome-db.org/";
+
     license = with lib.licenses; [
       # library
       lgpl2Plus
       # CLI tools
       gpl2Plus
     ];
+
     maintainers = [ lib.maintainers.bot-wxt1221 ];
     platforms = lib.platforms.unix;
   };

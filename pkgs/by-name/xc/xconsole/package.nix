@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  wrapWithXFileSearchPathHook,
-  xorgproto,
   libx11,
   libxaw,
   libxmu,
   libxt,
+  pkg-config,
+  wrapWithXFileSearchPathHook,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xconsole";
@@ -52,8 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Displays /dev/console messages in an X window";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xconsole";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xconsole";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xconsole";
   };
 })

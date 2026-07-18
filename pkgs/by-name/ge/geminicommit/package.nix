@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   versionCheckHook,
 }:
 
@@ -18,11 +18,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-OgcbPnZ88snTky8Uzbq2LIwSpMv44JvE75MPbTih7+c=";
   };
 
-  vendorHash = "sha256-FFWptw1kSbl7f8DR3FrM0jAfr06NaJT+i/8ZaQjav/E=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-FFWptw1kSbl7f8DR3FrM0jAfr06NaJT+i/8ZaQjav/E=";
 
   postInstall =
     let
@@ -49,11 +49,11 @@ buildGoModule (finalAttrs: {
       done
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-
-  doInstallCheck = true;
 
   meta = {
     description = "CLI that generates git commit messages with Google Gemini AI";

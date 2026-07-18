@@ -2,24 +2,33 @@
   lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  setuptools-scm,
   cffi,
+  fetchPypi,
   numpy,
   portaudio,
   replaceVars,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "sounddevice";
   version = "0.5.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Ikh7ZRmMtb8iCHVRBbUk94rRc+Wra0Rb2rHJifZpjfM=";
   };
+
+  patches = [
+    (replaceVars ./fix-portaudio-library-path.patch {
+      portaudio = "${portaudio}/lib/libportaudio${stdenv.hostPlatform.extensions.sharedLibrary}";
+    })
+  ];
+
+  nativeBuildInputs = [ cffi ];
+  # No tests included nor upstream available.
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -32,18 +41,8 @@ buildPythonPackage rec {
     portaudio
   ];
 
-  nativeBuildInputs = [ cffi ];
-
-  # No tests included nor upstream available.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sounddevice" ];
-
-  patches = [
-    (replaceVars ./fix-portaudio-library-path.patch {
-      portaudio = "${portaudio}/lib/libportaudio${stdenv.hostPlatform.extensions.sharedLibrary}";
-    })
-  ];
 
   meta = {
     description = "Play and Record Sound with Python";

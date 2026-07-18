@@ -1,27 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system,
-  setuptools,
-
   # dependencies
   babel,
+  buildPythonPackage,
   langcodes,
-  tld,
-  urllib3,
-
   # tests
   pytest-httpserver,
   pytestCheckHook,
+  # build-system,
+  setuptools,
+  tld,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "courlan";
   version = "1.4.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "adbar";
@@ -45,6 +40,13 @@ buildPythonPackage (finalAttrs: {
           'courlan_bin = "${courlanBinPath}"'
     '';
 
+  nativeCheckInputs = [
+    pytest-httpserver
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -54,17 +56,10 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    pytest-httpserver
-    pytestCheckHook
-  ];
-
   # disable tests that require an internet connection
   disabledTests = [ "test_urlcheck" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "courlan" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Clean, filter and sample URLs to optimize data collection";

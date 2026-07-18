@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  qt6,
+  cubeb,
   curl,
   ffmpeg,
-  cubeb,
+  pkg-config,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "hypengw";
     repo = "Qcm";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-41GsG+NKCMw+LuRUf31ilRso/SkKYVV3IrMSviOZdWs=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -51,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Unofficial Qt client for netease cloud music";
     homepage = "https://github.com/hypengw/Qcm";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "Qcm";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "Qcm";
   };
 })

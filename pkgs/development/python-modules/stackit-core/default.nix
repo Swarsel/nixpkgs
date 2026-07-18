@@ -16,15 +16,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "stackit-core";
   version = "0.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "stackit_core";
     inherit (finalAttrs) version;
     hash = "sha256-uK+Rh3zbBg1paaMD2M8gvAszs0Wv2R9nnESphzgeLUc=";
+    pname = "stackit_core";
   };
+
+  # Tests are not included in PyPI release
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     poetry-core
@@ -39,11 +40,8 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "stackit.core" ];
-
-  # Tests are not included in PyPI release
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

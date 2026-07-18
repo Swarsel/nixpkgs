@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   fixDarwinDylibNames,
 }:
 
@@ -17,15 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-XMwQ7UaPC8YYu4yxsE4bbR3leYPfBHu5iixSLz05r3g=";
   };
 
-  nativeBuildInputs = [
-    cmake
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    fixDarwinDylibNames
-  ];
-
-  doCheck = true;
-
   # CMake 2.6 is deprecated and is no longer supported by CMake > 4
   # https://github.com/NixOS/nixpkgs/issues/445447
   postPatch = ''
@@ -37,15 +28,26 @@ stdenv.mkDerivation (finalAttrs: {
       "cmake_policy (SET CMP0048 NEW)"
   '';
 
+  nativeBuildInputs = [
+    cmake
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    fixDarwinDylibNames
+  ];
+
+  doCheck = true;
+
   meta = {
     description = "Advanced disassembly library";
     homepage = "http://www.capstone-engine.org";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       ris
     ];
-    mainProgram = "cstool";
+
     platforms = lib.platforms.unix;
+    mainProgram = "cstool";
   };
 })

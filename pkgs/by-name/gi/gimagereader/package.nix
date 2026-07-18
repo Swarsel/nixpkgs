@@ -2,36 +2,35 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cairomm,
   cmake,
-  pkg-config,
-  libuuid,
-  sane-backends,
-  podofo0,
-  libjpeg,
   djvulibre,
-  libxmlxx3,
-  libzip,
-  tesseract,
-  intltool,
-  poppler,
-  json-glib,
-  ninja,
-  python3,
   doxygen,
   enchant,
-
   # Gtk deps
   # upstream gImagereader supports Qt too
   gobject-introspection,
-  wrapGAppsHook3,
   gtkmm3,
   gtksourceview3,
   gtksourceviewmm,
   gtkspell3,
   gtkspellmm,
-  cairomm,
+  intltool,
+  json-glib,
   kdePackages,
+  libjpeg,
+  libuuid,
+  libxmlxx3,
+  libzip,
+  ninja,
+  pkg-config,
+  podofo0,
+  poppler,
+  python3,
   qt6Packages,
+  sane-backends,
+  tesseract,
+  wrapGAppsHook3,
   withQt6 ? false,
   wrapQtAppsHook ? null,
 }:
@@ -100,11 +99,11 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Simple Gtk/Qt front-end to tesseract-ocr";
-    mainProgram = if withQt6 then "gImageReader-qt6" else "gImageReader";
     homepage = "https://github.com/manisandro/gImageReader";
     changelog = "https://github.com/manisandro/gImageReader/blob/${version}/NEWS";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ teto ];
     platforms = lib.platforms.linux;
+    mainProgram = if withQt6 then "gImageReader-qt6" else "gImageReader";
   };
 }

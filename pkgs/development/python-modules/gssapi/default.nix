@@ -1,29 +1,24 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-
   # dependencies
   decorator,
-
+  k5test,
   # native dependencies
   krb5-c, # C krb5 library, not PyPI krb5
-
   # tests
   parameterized,
-  k5test,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "gssapi";
   version = "1.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pythongssapi";
@@ -43,14 +38,6 @@ buildPythonPackage (finalAttrs: {
     GSSAPI_SUPPORT_DETECT = "false";
   };
 
-  build-system = [
-    cython
-    krb5-c
-    setuptools
-  ];
-
-  dependencies = [ decorator ];
-
   # k5test is marked as broken on darwin
   doCheck = !stdenv.hostPlatform.isDarwin;
 
@@ -69,12 +56,20 @@ buildPythonPackage (finalAttrs: {
     popd
   '';
 
+  build-system = [
+    cython
+    krb5-c
+    setuptools
+  ];
+
+  dependencies = [ decorator ];
+  pyproject = true;
   pythonImportsCheck = [ "gssapi" ];
 
   meta = {
-    changelog = "https://github.com/pythongssapi/python-gssapi/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://github.com/pythongssapi/python-gssapi";
     description = "Python GSSAPI Wrapper";
+    homepage = "https://github.com/pythongssapi/python-gssapi";
+    changelog = "https://github.com/pythongssapi/python-gssapi/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
   };
 })

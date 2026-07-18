@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
   pkg-config,
   systemd,
-  coreutils,
   udevCheckHook,
 }:
 
@@ -27,28 +27,29 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /bin/ ${coreutils}/bin/
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    udevCheckHook
+  ];
+
+  buildInputs = [ systemd ];
+
   makeFlags = [
     "PREFIX="
     "DESTDIR=$(out)"
     "ENABLE_SYSTEMD=1"
   ];
 
+  doInstallCheck = true;
+
   installTargets = [
     "install"
     "install_udev_rules"
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    udevCheckHook
-  ];
-  buildInputs = [ systemd ];
-
-  doInstallCheck = true;
-
   meta = {
-    homepage = "https://github.com/Hummer12007/brightnessctl";
     description = "This program allows you read and control device brightness";
+    homepage = "https://github.com/Hummer12007/brightnessctl";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ megheaiulian ];
     platforms = lib.platforms.linux;

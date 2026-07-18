@@ -10,14 +10,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ykushcmd";
   version = "1.4.0";
 
-  buildInputs = [ libusb1 ];
-
   src = fetchFromGitHub {
     owner = "yepkit";
     repo = "ykush";
     tag = "v${finalAttrs.version}";
     hash = "sha256-+ssr1QHKjEdK8pFkmyHYwG9tY7YHaYcIIJUqaEXixOg=";
   };
+
+  buildInputs = [ libusb1 ];
 
   installPhase = ''
     runHook preInstall
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru.tests = {
     # We can't run any actual tests without hardware, but we can at least check the binary.
@@ -40,17 +40,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Control utility for YepKit USB hubs";
+
     longDescription = ''
       controls the features of YepKit USB hubs, allowing one to arbitrarily
       turn ports on and off and otherwise control the hub.
     '';
+
     homepage = "https://github.com/Yepkit/ykush";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       aiyion
       ktemkin
     ];
-    mainProgram = "ykushcmd";
+
     platforms = lib.platforms.linux;
+    mainProgram = "ykushcmd";
   };
 })

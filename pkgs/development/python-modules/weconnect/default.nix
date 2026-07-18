@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   ascii-magic,
   buildPythonPackage,
-  fetchFromGitHub,
   oauthlib,
   pillow,
   pyjwt,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "weconnect";
   version = "0.60.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tillsteinbach";
@@ -34,9 +33,9 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "required_plugins = pytest-cov" ""
   '';
 
-  pythonRelaxDeps = [
-    "oauthlib"
-    "requests"
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
   ];
 
   build-system = [ setuptools ];
@@ -54,12 +53,13 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "weconnect" ];
+
+  pythonRelaxDeps = [
+    "oauthlib"
+    "requests"
+  ];
 
   meta = {
     description = "Python client for the Volkswagen WeConnect Services";

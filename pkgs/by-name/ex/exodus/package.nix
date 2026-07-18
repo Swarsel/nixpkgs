@@ -1,41 +1,41 @@
 {
-  stdenv,
   lib,
-  requireFile,
-  unzip,
-  glib,
-  systemd,
-  nss,
-  nspr,
-  gtk3-x11,
-  pango,
+  stdenv,
+  alsa-lib,
+  at-spi2-atk,
+  at-spi2-core,
   atk,
   cairo,
-  gdk-pixbuf,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxshmfence,
-  libxcb,
-  xorg_sys_opengl,
-  util-linux,
-  alsa-lib,
-  dbus,
-  at-spi2-atk,
   cups,
-  vivaldi-ffmpeg-codecs,
-  libpulseaudio,
-  at-spi2-core,
-  libxkbcommon,
+  dbus,
+  gdk-pixbuf,
+  glib,
+  gtk3-x11,
   libgbm,
+  libpulseaudio,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxshmfence,
+  libxtst,
+  nspr,
+  nss,
+  pango,
+  requireFile,
+  systemd,
+  unzip,
+  util-linux,
+  vivaldi-ffmpeg-codecs,
+  xorg_sys_opengl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,9 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "26.1.5";
 
   src = requireFile {
-    name = "exodus-linux-x64-${finalAttrs.version}.zip";
     url = "https://downloads.exodus.com/releases/exodus-linux-x64-${finalAttrs.version}.zip";
     hash = "sha256-BClWuL4dTc1lESyEXuDtpGp1K/AxICbpQIaWYLrme1M=";
+    name = "exodus-linux-x64-${finalAttrs.version}.zip";
   };
 
   nativeBuildInputs = [ unzip ];
@@ -59,9 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/share/applications/exodus.desktop \
           --replace-fail 'Exec=bash -c "cd \\`dirname %k\\` && ./Exodus %u"' "Exec=Exodus %u"
   '';
-
-  dontPatchELF = true;
-  dontBuild = true;
 
   preFixup =
     let
@@ -108,16 +105,21 @@ stdenv.mkDerivation (finalAttrs: {
         $out/Exodus
     '';
 
+  dontBuild = true;
+  dontPatchELF = true;
+
   meta = {
-    homepage = "https://www.exodus.io/";
     description = "Top-rated cryptocurrency wallet with Trezor integration and built-in Exchange";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://www.exodus.io/";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       mmahut
       rople380
       Crafter
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

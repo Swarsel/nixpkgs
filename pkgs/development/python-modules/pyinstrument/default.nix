@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   wheel,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyinstrument";
   version = "5.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joerick";
@@ -25,15 +24,15 @@ buildPythonPackage rec {
 
   # Module import recursion
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyinstrument" ];
 
   meta = {
     description = "Call stack profiler for Python";
-    mainProgram = "pyinstrument";
     homepage = "https://github.com/joerick/pyinstrument";
     changelog = "https://github.com/joerick/pyinstrument/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ onny ];
+    mainProgram = "pyinstrument";
   };
 }

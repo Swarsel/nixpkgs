@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 let
@@ -17,51 +17,56 @@ in
   options = {
     services.ihaskell = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Autostart an IHaskell notebook service.";
+        type = lib.types.bool;
       };
 
       extraPackages = lib.mkOption {
-        type = lib.types.functionTo (lib.types.listOf lib.types.package);
         default = haskellPackages: [ ];
         defaultText = lib.literalExpression "haskellPackages: []";
+
+        description = ''
+          Extra packages available to ghc when running ihaskell. The
+          value must be a function which receives the attrset defined
+          in {var}`haskellPackages` as the sole argument.
+        '';
+
         example = lib.literalExpression ''
           haskellPackages: [
             haskellPackages.wreq
             haskellPackages.lens
           ]
         '';
-        description = ''
-          Extra packages available to ghc when running ihaskell. The
-          value must be a function which receives the attrset defined
-          in {var}`haskellPackages` as the sole argument.
-        '';
+
+        type = lib.types.functionTo (lib.types.listOf lib.types.package);
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
 
-    users.users.ihaskell = {
-      group = config.users.groups.ihaskell.name;
-      description = "IHaskell user";
-      home = "/var/lib/ihaskell";
-      createHome = true;
-      uid = config.ids.uids.ihaskell;
+    systemd.services.ihaskell = {
+      after = [ "network.target" ];
+      description = "IHaskell notebook instance";
+
+      serviceConfig = {
+        ExecStart = "${pkgs.runtimeShell} -c \"cd $HOME;${ihaskell}/bin/ihaskell-notebook\"";
+        Group = config.users.groups.ihaskell.name;
+        User = config.users.users.ihaskell.name;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups.ihaskell.gid = config.ids.gids.ihaskell;
 
-    systemd.services.ihaskell = {
-      description = "IHaskell notebook instance";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-      serviceConfig = {
-        User = config.users.users.ihaskell.name;
-        Group = config.users.groups.ihaskell.name;
-        ExecStart = "${pkgs.runtimeShell} -c \"cd $HOME;${ihaskell}/bin/ihaskell-notebook\"";
-      };
+    users.users.ihaskell = {
+      createHome = true;
+      description = "IHaskell user";
+      group = config.users.groups.ihaskell.name;
+      home = "/var/lib/ihaskell";
+      uid = config.ids.uids.ihaskell;
     };
   };
 }

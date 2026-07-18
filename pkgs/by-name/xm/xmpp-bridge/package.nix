@@ -1,10 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  pkg-config,
-  libstrophe,
+  fetchFromGitHub,
   installShellFiles,
+  libstrophe,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JXhVi2AiV/PmWPfoQJl/N92GAZQ9UxReAiCkiDxgdFY=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -26,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     libstrophe
   ];
-
-  strictDeps = true;
 
   # Makefile is hardcoded to install to /usr, install manually
   installPhase = ''
@@ -43,9 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Connect command-line programs to XMPP";
     homepage = "https://github.com/majewsky/xmpp-bridge";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "xmpp-bridge";
     maintainers = with lib.maintainers; [ gigahawk ];
     platforms = lib.platforms.unix;
+    mainProgram = "xmpp-bridge";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -6,14 +6,13 @@
 stdenv.mkDerivation {
   pname = "asmc-linux";
   version = "2.36.25";
+
   src = fetchFromGitHub {
     owner = "nidud";
     repo = "asmc_linux";
     rev = "4ee70bde4439bdd9c772d08527dba6d50f2e5a88";
     hash = "sha256-/yJC1OQGRgy9T/U2VB0MohSsD1ImLnHYM/8Y8fIWhVE=";
   };
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -22,6 +21,8 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "MASM-compatible assembler";

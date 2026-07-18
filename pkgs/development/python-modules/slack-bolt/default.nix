@@ -1,48 +1,43 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  slack-sdk,
-
   # optional-dependencies
   # - async
   aiohttp,
-  websockets,
   # - adapter
   bottle,
+  buildPythonPackage,
   chalice,
   cherrypy,
   django,
+  # tests
+  docker,
   falcon,
   fastapi,
   flask,
   gunicorn,
   moto,
   pyramid,
+  pytest-asyncio_0,
+  pytestCheckHook,
   sanic,
   sanic-testing,
+  # build-system
+  setuptools,
+  # dependencies
+  slack-sdk,
   starlette,
   tornado,
   uvicorn,
   websocket-client,
+  websockets,
   werkzeug,
-
-  # tests
-  docker,
-  pytest-asyncio_0,
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "slack-bolt";
   version = "1.29.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "slackapi";
@@ -50,38 +45,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-3U15V++q/x73LuEgw9uWaIGWulJmPkmkpUxxK1EXuzU=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ slack-sdk ];
-
-  optional-dependencies = {
-    async = [
-      aiohttp
-      websockets
-    ];
-    adapter = [
-      bottle
-      chalice
-      cherrypy
-      django
-      falcon
-      fastapi
-      flask
-      gunicorn
-      moto
-      pyramid
-      sanic
-      sanic-testing
-      starlette
-      tornado
-      uvicorn
-      websocket-client
-      werkzeug
-    ];
-  };
-
-  pythonImportsCheck = [ "slack_bolt" ];
 
   nativeCheckInputs = [
     docker
@@ -92,6 +55,8 @@ buildPythonPackage (finalAttrs: {
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ slack-sdk ];
 
   disabledTestPaths = [
     # boddle is not packaged as of 2023-07-15
@@ -111,6 +76,36 @@ buildPythonPackage (finalAttrs: {
     "test_parameter_overrides"
     "test_parameter_overrides"
   ];
+
+  optional-dependencies = {
+    adapter = [
+      bottle
+      chalice
+      cherrypy
+      django
+      falcon
+      fastapi
+      flask
+      gunicorn
+      moto
+      pyramid
+      sanic
+      sanic-testing
+      starlette
+      tornado
+      uvicorn
+      websocket-client
+      werkzeug
+    ];
+
+    async = [
+      aiohttp
+      websockets
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "slack_bolt" ];
 
   meta = {
     description = "Framework to build Slack apps using Python";

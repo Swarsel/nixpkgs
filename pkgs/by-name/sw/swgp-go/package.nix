@@ -1,7 +1,7 @@
 {
-  buildGo126Module,
   lib,
   fetchFromGitHub,
+  buildGo126Module,
   # doubles the binary size
   withPprof ? false,
 }:
@@ -18,6 +18,8 @@ buildGo126Module (finalAttrs: {
   };
 
   vendorHash = "sha256-r6h3s84n6sbsyNwF5dX9c/vl9p355SYPNg1pEVu8adU=";
+  # Tests try to do DNS lookups
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -28,17 +30,16 @@ buildGo126Module (finalAttrs: {
     "swgpgo_nopprof"
   ];
 
-  # Tests try to do DNS lookups
-  doCheck = false;
-
   meta = {
     description = "Simple WireGuard proxy with minimal overhead for WireGuard traffic";
     homepage = "https://github.com/database64128/swgp-go";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       flokli
       rvdp
     ];
+
     mainProgram = "swgp-go";
   };
 })

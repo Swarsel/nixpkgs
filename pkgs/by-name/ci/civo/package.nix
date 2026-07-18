@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,23 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-M9Y7EUa/xlHpMzQSEGOnAlk17Wv2WhMTk8pnfB4hW4Q=";
   };
 
-  vendorHash = "sha256-g8JU6mLm1L6zS03QrmQf5u77ekSX/x/U/NXCTXnTuh8=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-g8JU6mLm1L6zS03QrmQf5u77ekSX/x/U/NXCTXnTuh8=";
   env.CGO_ENABLED = 0;
-
   # Some lint checks fail
   doCheck = false;
-
-  ldflags = [
-    "-s"
-    "-X github.com/civo/cli/common.VersionCli=${finalAttrs.version}"
-    "-X github.com/civo/cli/common.CommitCli=${finalAttrs.src.rev}"
-    "-X github.com/civo/cli/common.DateCli=unknown"
-  ];
-
-  doInstallCheck = false;
 
   postInstall = ''
     mv $out/bin/cli $out/bin/civo
@@ -45,14 +33,25 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/civo completion zsh)
   '';
 
+  doInstallCheck = false;
+
+  ldflags = [
+    "-s"
+    "-X github.com/civo/cli/common.VersionCli=${finalAttrs.version}"
+    "-X github.com/civo/cli/common.CommitCli=${finalAttrs.src.rev}"
+    "-X github.com/civo/cli/common.DateCli=unknown"
+  ];
+
   meta = {
     description = "CLI for interacting with Civo resources";
-    mainProgram = "civo";
     homepage = "https://github.com/civo/cli";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       techknowlogick
       rytswd
     ];
+
+    mainProgram = "civo";
   };
 })

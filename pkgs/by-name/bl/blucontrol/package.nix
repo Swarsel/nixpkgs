@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  makeWrapper,
+  stdenv,
   haskellPackages,
+  makeWrapper,
   packages ? (_: [ ]),
 }:
 let
@@ -11,8 +11,8 @@ in
 stdenv.mkDerivation {
   pname = "blucontrol-with-packages";
   version = blucontrolEnv.version;
-
   nativeBuildInputs = [ makeWrapper ];
+  allowSubstitutes = false;
 
   buildCommand = ''
     makeWrapper ${blucontrolEnv}/bin/blucontrol $out/bin/blucontrol \
@@ -21,19 +21,20 @@ stdenv.mkDerivation {
 
   # trivial derivation
   preferLocalBuild = true;
-  allowSubstitutes = false;
 
   meta = {
     description = "Configurable blue light filter";
-    mainProgram = "blucontrol";
+
     longDescription = ''
       This application is a blue light filter, with the main focus on configurability.
       Configuration is done in Haskell in the style of xmonad.
       Blucontrol makes use of monad transformers and allows monadic calculation of gamma values and recoloring. The user chooses, what will be captured in the monadic state.
     '';
-    license = lib.licenses.bsd3;
+
     homepage = "https://github.com/jumper149/blucontrol";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jumper149 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "blucontrol";
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   pyjwt,
   pytest-aiohttp,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aioghost";
   version = "0.4.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "TryGhost";
@@ -23,13 +22,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4YmIsXegv23ZVpvewixJVR6IY8YqQzeLKDAjHTp937k=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    aiohttp
-    pyjwt
-  ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-aiohttp
@@ -37,6 +29,14 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    aiohttp
+    pyjwt
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "aioghost" ];
 
   meta = {

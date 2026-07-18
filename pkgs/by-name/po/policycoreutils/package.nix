@@ -3,17 +3,17 @@
   stdenv,
   fetchurl,
   gettext,
-  libsepol,
   libselinux,
   libsemanage,
+  libsepol,
   libxcrypt,
   pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit (libsepol) se_url;
   pname = "policycoreutils";
   version = "3.11";
-  inherit (libsepol) se_url;
 
   src = fetchurl {
     url = "${finalAttrs.se_url}/${finalAttrs.version}/policycoreutils-${finalAttrs.version}.tar.gz";
@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     gettext
     pkg-config
   ];
+
   buildInputs = [
     libsepol
     libselinux
@@ -48,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    inherit (libsepol.meta) homepage platforms maintainers;
     description = "SELinux policy core utilities";
     license = lib.licenses.gpl2Only;
-    inherit (libsepol.meta) homepage platforms maintainers;
   };
 })

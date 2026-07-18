@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  makeImpureTest,
   clr,
+  makeImpureTest,
   rocm-smi,
 }:
 # minimal hiprtc test that compiles a kernel using <type_traits> at runtime
@@ -12,9 +12,6 @@ let
   hiprtc-test = stdenv.mkDerivation {
     pname = "hiprtc-type-traits-test";
     version = "0";
-
-    dontUnpack = true;
-
     nativeBuildInputs = [ clr ];
 
     buildPhase = ''
@@ -29,11 +26,17 @@ let
       cp hiprtc-test $out/bin/
       runHook postInstall
     '';
+
+    dontUnpack = true;
   };
 in
 makeImpureTest {
+  nativeBuildInputs = [
+    hiprtc-test
+    rocm-smi
+  ];
+
   name = "hiprtc-type-traits";
-  testedPackage = "rocmPackages.clr";
 
   sandboxPaths = [
     "/sys"
@@ -41,15 +44,12 @@ makeImpureTest {
     "/dev/kfd"
   ];
 
-  nativeBuildInputs = [
-    hiprtc-test
-    rocm-smi
-  ];
-
   testScript = ''
     rocm-smi
     hiprtc-test
   '';
+
+  testedPackage = "rocmPackages.clr";
 
   meta = {
     teams = [ lib.teams.rocm ];

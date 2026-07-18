@@ -1,27 +1,24 @@
 {
   lib,
   stdenv,
-  pkg-config,
-  vala,
-  wrapGAppsHook3,
-  installShellFiles,
-  scdoc,
   at-spi2-atk,
   at-spi2-core,
   dbus,
   gtk3,
   ibus,
+  installShellFiles,
   libgee,
   libx11,
+  pkg-config,
+  scdoc,
   snippetexpanderd,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   inherit (snippetexpanderd) src version;
-
   pname = "snippetexpanderx";
-
-  sourceRoot = "${finalAttrs.src.name}/cmd/snippetexpanderx";
 
   nativeBuildInputs = [
     pkg-config
@@ -43,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "VERSION=${finalAttrs.src.rev}" ];
+  # There are no tests.
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -52,8 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  # There are no tests.
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/cmd/snippetexpanderx";
 
   meta = {
     description = "Your little expandable text snippet helper auto expander daemon";

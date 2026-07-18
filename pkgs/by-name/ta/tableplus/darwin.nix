@@ -1,19 +1,18 @@
 {
   lib,
+  stdenv,
   fetchurl,
   _7zz,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "tableplus";
   version = "662";
+
   src = fetchurl {
     url = "https://files.tableplus.com/macos/${finalAttrs.version}/TablePlus.dmg";
     hash = "sha256-VR0sSTZfRjjv+p4DcYciKBJG5DHIwj4KLhTHPGRsSX0=";
   };
-
-  sourceRoot = "TablePlus.app";
 
   nativeBuildInputs = [ _7zz ];
 
@@ -27,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  sourceRoot = "TablePlus.app";
 
   meta = {
     description = "Database management made easy";

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  fetchzip,
   autoconf269,
   automake,
+  fetchzip,
   gengetopt,
   gettext,
   gnulib,
@@ -11,9 +11,9 @@
   help2man,
   libtool,
   perl,
+  shishi,
   texinfo,
   withShishi ? !stdenv.hostPlatform.isDarwin,
-  shishi,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,12 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
   # https://lists.gnu.org/archive/html/help-libidn/2021-07/msg00009.html
   src = fetchzip {
     url = "https://gitweb.git.savannah.gnu.org/gitweb/?p=gss.git;a=snapshot;h=v${finalAttrs.version};sf=tgz";
-    extension = "tar.gz";
     hash = "sha256-yT19kwAhGzbIoMjRbrrsn6CyvkMH5v1nxxWpnGYmZUw=";
-  };
-
-  env = {
-    GNULIB_SRCDIR = gnulib.src;
+    extension = "tar.gz";
   };
 
   # krb5context test uses certificates that expired on 2024-07-11.
@@ -60,14 +56,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = lib.optional withShishi shishi;
 
+  configureFlags = [
+    "--${if withShishi then "enable" else "disable"}-kerberos5"
+  ];
+
+  env = {
+    GNULIB_SRCDIR = gnulib.src;
+  };
+
   preConfigure = ''
     patchShebangs doc/gdoc
     ./autogen.sh
   '';
-
-  configureFlags = [
-    "--${if withShishi then "enable" else "disable"}-kerberos5"
-  ];
 
   # Fixup .la files
   postInstall = lib.optionalString withShishi ''
@@ -75,11 +75,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.gnu.org/software/gss/";
     description = "Generic Security Service";
-    mainProgram = "gss";
+    homepage = "https://www.gnu.org/software/gss/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "gss";
   };
 })

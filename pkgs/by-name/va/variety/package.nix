@@ -1,29 +1,28 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  bash,
+  feh,
   gexiv2,
   gobject-introspection,
   gtk3,
   hicolor-icon-theme,
+  imagemagick,
   intltool,
+  libayatana-appindicator,
   libnotify,
   librsvg,
+  python3Packages,
   runtimeShell,
   wrapGAppsHook3,
-  fehSupport ? false,
-  feh,
-  imagemagickSupport ? true,
-  imagemagick,
   appindicatorSupport ? true,
-  libayatana-appindicator,
-  bash,
+  fehSupport ? false,
+  imagemagickSupport ? true,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "variety";
   version = "0.9.0-b1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "varietywalls";
@@ -46,6 +45,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     librsvg
   ]
   ++ lib.optional appindicatorSupport libayatana-appindicator;
+
+  doCheck = false;
+
+  postInstall = ''
+    mkdir -p $out/share/applications
+    intltool-merge --desktop-style po variety.desktop.in $out/share/applications/variety.desktop
+
+    mkdir -p $out/share/icons/hicolor/scalable/apps
+    cp variety/data/icons/scalable/apps/variety.svg $out/share/icons/hicolor/scalable/apps/variety.svg
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
 
   build-system = with python3Packages; [
     setuptools
@@ -70,14 +83,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ lib.optional fehSupport feh
     ++ lib.optional imagemagickSupport imagemagick;
 
-  doCheck = false;
-
   # Prevent double wrapping, let the Python wrapper use the args in preFixup.
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
 
   prePatch = ''
     substituteInPlace variety/VarietyWindow.py \
@@ -89,20 +96,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "{VARIETY_PATH}" "variety"
   '';
 
-  postInstall = ''
-    mkdir -p $out/share/applications
-    intltool-merge --desktop-style po variety.desktop.in $out/share/applications/variety.desktop
-
-    mkdir -p $out/share/icons/hicolor/scalable/apps
-    cp variety/data/icons/scalable/apps/variety.svg $out/share/icons/hicolor/scalable/apps/variety.svg
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "variety" ];
 
   meta = {
-    homepage = "https://github.com/varietywalls/variety";
     description = "Wallpaper manager for Linux systems";
-    mainProgram = "variety";
+
     longDescription = ''
       Variety is a wallpaper manager for Linux systems. It supports numerous
       desktops and wallpaper sources, including local files and online services:
@@ -115,11 +114,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
       Variety also includes a range of image effects, such as oil painting and
       blur, as well as options to layer quotes and a clock onto the background.
     '';
+
+    homepage = "https://github.com/varietywalls/variety";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       p3psi
       zfnmxt
       willfish
     ];
+
+    mainProgram = "variety";
   };
 })

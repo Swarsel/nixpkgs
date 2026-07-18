@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
   beartype,
+  buildPythonPackage,
+  feedparser,
   invoke,
   numpy,
   pandas,
-  feedparser,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nptyping";
   version = "2.5.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ramonhagenaars";
@@ -29,10 +26,6 @@ buildPythonPackage (finalAttrs: {
     ./numpy-2.0-compat.patch
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [
     beartype
     feedparser
@@ -41,10 +34,9 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  disabledTests = [
-    # tries to download data
-    "test_pandas_stubs_fork_is_synchronized"
-  ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
 
   disabledTestPaths = [
     # missing pyright import:
@@ -63,6 +55,12 @@ buildPythonPackage (finalAttrs: {
     "tests/test_lib_export.py"
   ];
 
+  disabledTests = [
+    # tries to download data
+    "test_pandas_stubs_fork_is_synchronized"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "nptyping" ];
 
   meta = {
@@ -70,6 +68,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/ramonhagenaars/nptyping";
     changelog = "https://github.com/ramonhagenaars/nptyping/blob/v${finalAttrs.version}/HISTORY.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bcdarwin
       pandapip1

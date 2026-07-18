@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  libiconv,
-  testers,
   gptman,
+  libiconv,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,10 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ebV61EilGggix6JSN/MW4Ka0itkSpvikLDSO005TTYY=";
   };
 
-  cargoHash = "sha256-v27tKdBPrtRwpNZRjyv8N7BpxOz6ZgFHaa5pe51YrTI=";
-
   buildInputs = lib.optional stdenv.hostPlatform.isDarwin libiconv;
-
+  cargoHash = "sha256-v27tKdBPrtRwpNZRjyv8N7BpxOz6ZgFHaa5pe51YrTI=";
   buildFeatures = [ "cli" ];
 
   passthru.tests.version = testers.testVersion {
@@ -32,10 +30,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "GPT manager that allows you to copy partitions from one disk to another and more";
     homepage = "https://github.com/rust-disk-partition-management/gptman";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [ akshgpt7 ];
     mainProgram = "gptman";
   };

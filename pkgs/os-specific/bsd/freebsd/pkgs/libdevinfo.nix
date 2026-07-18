@@ -3,13 +3,12 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "lib/libdevinfo";
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
 
+  path = "lib/libdevinfo";
   meta.platforms = lib.platforms.freebsd;
 }

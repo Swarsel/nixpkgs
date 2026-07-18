@@ -3,25 +3,25 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
+  libdrm,
+  libpciaccess,
+  nix-update-script,
   pkg-config,
   util-macros,
   xorg-server,
   xorgproto,
-  libdrm,
-  libpciaccess,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-video-sis";
   version = "0.12.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "driver";
     repo = "xf86-video-sis";
     tag = "xf86-video-sis-${finalAttrs.version}";
     hash = "sha256-C9OG/vWFIVXgRRAzn3AqE2ApABZOKT94CuIxgnOapjs=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
@@ -47,11 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "SiS and XGI video driver for the Xorg X server";
     homepage = "https://gitlab.freedesktop.org/xorg/driver/xf86-video-sis";
+
     license = with lib.licenses; [
       bsd3
       hpndSellVariant
       mit
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isAarch64;

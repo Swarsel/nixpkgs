@@ -1,23 +1,20 @@
 {
   lib,
   stdenv,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnetCorePackages,
+  buildDotnetModule,
   copyDesktopItems,
-  makeDesktopItem,
-  libicns,
-
+  dotnetCorePackages,
+  git,
   libGL,
+  libicns,
   libxcursor,
   libxext,
   libxi,
   libxrandr,
-
-  git,
-  xdg-utils,
-
+  makeDesktopItem,
   nix-update-script,
+  xdg-utils,
 }:
 
 buildDotnetModule (finalAttrs: {
@@ -34,41 +31,9 @@ buildDotnetModule (finalAttrs: {
 
   patches = [ ./fix-darwin-git-path.patch ];
 
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  dotnet-runtime = dotnetCorePackages.runtime_10_0;
-
-  nugetDeps = ./deps.json;
-
-  projectFile = [ "src/SourceGit.csproj" ];
-
-  executables = [ "SourceGit" ];
-
-  dotnetFlags = [
-    "-p:DisableUpdateDetection=true"
-    "-p:DisableAOT=true"
-  ];
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     copyDesktopItems
     libicns
-  ];
-
-  # these are dlopen-ed at runtime
-  # libxi is needed for right-click support
-  # libGL is needed for GPU-accelerated rendering (without it, Avalonia falls back to software rendering)
-  # not sure about what the other ones are needed for, but I'll include them anyways
-  runtimeDeps = [
-    libGL
-    libxcursor
-    libxext
-    libxi
-    libxrandr
-  ];
-
-  # Note: users can use `.overrideAttrs` to append to this list
-  runtimePathDeps = [
-    git
-    xdg-utils
   ];
 
   # add fallback binaries to use if the user doesn't already have them in their PATH
@@ -77,18 +42,6 @@ buildDotnetModule (finalAttrs: {
       --suffix PATH : ${lib.makeBinPath finalAttrs.runtimePathDeps}
     )
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "SourceGit";
-      exec = "SourceGit";
-      icon = "SourceGit";
-      desktopName = "SourceGit";
-      categories = [ "Development" ];
-      terminal = false;
-      comment = finalAttrs.meta.description;
-    })
-  ];
 
   postInstall =
     lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -113,14 +66,56 @@ buildDotnetModule (finalAttrs: {
       ln -s $out/bin/SourceGit $out/Applications/SourceGit.app/Contents/MacOS/SourceGit
     '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "SourceGit";
+      exec = "SourceGit";
+      icon = "SourceGit";
+      name = "SourceGit";
+      terminal = false;
+    })
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+
+  dotnetFlags = [
+    "-p:DisableUpdateDetection=true"
+    "-p:DisableAOT=true"
+  ];
+
+  executables = [ "SourceGit" ];
+  nugetDeps = ./deps.json;
+  projectFile = [ "src/SourceGit.csproj" ];
+
+  # these are dlopen-ed at runtime
+  # libxi is needed for right-click support
+  # libGL is needed for GPU-accelerated rendering (without it, Avalonia falls back to software rendering)
+  # not sure about what the other ones are needed for, but I'll include them anyways
+  runtimeDeps = [
+    libGL
+    libxcursor
+    libxext
+    libxi
+    libxrandr
+  ];
+
+  # Note: users can use `.overrideAttrs` to append to this list
+  runtimePathDeps = [
+    git
+    xdg-utils
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/sourcegit-scm/sourcegit/releases/tag/${finalAttrs.src.tag}";
     description = "Free & OpenSource GUI client for GIT users";
     homepage = "https://github.com/sourcegit-scm/sourcegit";
+    changelog = "https://github.com/sourcegit-scm/sourcegit/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "SourceGit";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "SourceGit";
   };
 })

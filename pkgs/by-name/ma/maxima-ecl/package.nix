@@ -1,6 +1,6 @@
 {
-  maxima,
   ecl,
+  maxima,
   lisp-compiler ? ecl,
   ...
 }@args:

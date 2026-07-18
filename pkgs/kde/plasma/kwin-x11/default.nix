@@ -1,16 +1,16 @@
 {
+  lcms2,
+  libcanberra,
+  libdisplay-info,
+  libgbm,
+  libxcvt,
   mkKdeDerivation,
   pkg-config,
+  python3,
   qt5compat,
   qtsensors,
   qttools,
   qtwayland,
-  libxcvt,
-  libcanberra,
-  libdisplay-info,
-  libgbm,
-  lcms2,
-  python3,
 }:
 mkKdeDerivation {
   pname = "kwin-x11";
@@ -23,10 +23,8 @@ mkKdeDerivation {
     patchShebangs src/plugins/strip-effect-metadata.py
   '';
 
-  extraNativeBuildInputs = [
-    pkg-config
-    python3
-  ];
+  # plugin QML relies on non-global imports
+  dontQmlLint = true;
 
   extraBuildInputs = [
     qt5compat
@@ -42,6 +40,8 @@ mkKdeDerivation {
     libxcvt
   ];
 
-  # plugin QML relies on non-global imports
-  dontQmlLint = true;
+  extraNativeBuildInputs = [
+    pkg-config
+    python3
+  ];
 }

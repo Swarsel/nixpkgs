@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -11,87 +11,6 @@ let
   settingsFormat = pkgs.formats.ini { };
 in
 {
-  options = {
-    i18n.inputMethod.fcitx5 = {
-      addons = lib.mkOption {
-        type = with lib.types; listOf package;
-        default = [ ];
-        example = lib.literalExpression "with pkgs; [ fcitx5-rime ]";
-        description = ''
-          Enabled Fcitx5 addons.
-        '';
-      };
-      waylandFrontend = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Use the Wayland input method frontend.
-          See [Using Fcitx 5 on Wayland](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland).
-        '';
-      };
-      quickPhrase = lib.mkOption {
-        type = with lib.types; attrsOf str;
-        default = { };
-        example = lib.literalExpression ''
-          {
-            smile = "（・∀・）";
-            angry = "(￣ー￣)";
-          }
-        '';
-        description = "Quick phrases.";
-      };
-      quickPhraseFiles = lib.mkOption {
-        type = with lib.types; attrsOf path;
-        default = { };
-        example = lib.literalExpression ''
-          {
-            words = ./words.mb;
-            numbers = ./numbers.mb;
-          }
-        '';
-        description = "Quick phrase files.";
-      };
-      settings = {
-        globalOptions = lib.mkOption {
-          type = lib.types.submodule {
-            freeformType = settingsFormat.type;
-          };
-          default = { };
-          description = ''
-            The global options in `config` file in ini format.
-          '';
-        };
-        inputMethod = lib.mkOption {
-          type = lib.types.submodule {
-            freeformType = settingsFormat.type;
-          };
-          default = { };
-          description = ''
-            The input method configure in `profile` file in ini format.
-          '';
-        };
-        addons = lib.mkOption {
-          type = with lib.types; (attrsOf anything);
-          default = { };
-          description = ''
-            The addon configures in `conf` folder in ini format with global sections.
-            Each item is written to the corresponding file.
-          '';
-          example = lib.literalExpression "{ pinyin.globalSection.EmojiEnabled = \"True\"; }";
-        };
-      };
-      ignoreUserConfig = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Ignore the user configures. **Warning**: When this is enabled, the
-          user config files are totally ignored and the user dict can't be saved
-          and loaded.
-        '';
-      };
-    };
-  };
-
   imports = [
     (lib.mkRemovedOptionModule [ "i18n" "inputMethod" "fcitx5" "enableRimeData" ] ''
       RIME data is now included in `fcitx5-rime` by default, and can be customized using `fcitx5-rime.override { rimeDataPkgs = ...; }`
@@ -101,8 +20,139 @@ in
     '')
   ];
 
+  options = {
+    i18n.inputMethod.fcitx5 = {
+      addons = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Enabled Fcitx5 addons.
+        '';
+
+        example = lib.literalExpression "with pkgs; [ fcitx5-rime ]";
+        type = with lib.types; listOf package;
+      };
+
+      ignoreUserConfig = lib.mkOption {
+        default = false;
+
+        description = ''
+          Ignore the user configures. **Warning**: When this is enabled, the
+          user config files are totally ignored and the user dict can't be saved
+          and loaded.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      quickPhrase = lib.mkOption {
+        default = { };
+        description = "Quick phrases.";
+
+        example = lib.literalExpression ''
+          {
+            smile = "（・∀・）";
+            angry = "(￣ー￣)";
+          }
+        '';
+
+        type = with lib.types; attrsOf str;
+      };
+
+      quickPhraseFiles = lib.mkOption {
+        default = { };
+        description = "Quick phrase files.";
+
+        example = lib.literalExpression ''
+          {
+            words = ./words.mb;
+            numbers = ./numbers.mb;
+          }
+        '';
+
+        type = with lib.types; attrsOf path;
+      };
+
+      settings = {
+        addons = lib.mkOption {
+          default = { };
+
+          description = ''
+            The addon configures in `conf` folder in ini format with global sections.
+            Each item is written to the corresponding file.
+          '';
+
+          example = lib.literalExpression "{ pinyin.globalSection.EmojiEnabled = \"True\"; }";
+          type = with lib.types; (attrsOf anything);
+        };
+
+        globalOptions = lib.mkOption {
+          default = { };
+
+          description = ''
+            The global options in `config` file in ini format.
+          '';
+
+          type = lib.types.submodule {
+            freeformType = settingsFormat.type;
+          };
+        };
+
+        inputMethod = lib.mkOption {
+          default = { };
+
+          description = ''
+            The input method configure in `profile` file in ini format.
+          '';
+
+          type = lib.types.submodule {
+            freeformType = settingsFormat.type;
+          };
+        };
+      };
+
+      waylandFrontend = lib.mkOption {
+        default = false;
+
+        description = ''
+          Use the Wayland input method frontend.
+          See [Using Fcitx 5 on Wayland](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland).
+        '';
+
+        type = lib.types.bool;
+      };
+    };
+  };
+
   config = lib.mkIf (imcfg.enable && imcfg.type == "fcitx5") {
-    i18n.inputMethod.package = fcitx5Package;
+    environment.etc =
+      let
+        optionalFile =
+          p: f: v:
+          lib.optionalAttrs (v != { }) {
+            "xdg/fcitx5/${p}".text = f v;
+          };
+      in
+      lib.attrsets.mergeAttrsList [
+        (optionalFile "config" (lib.generators.toINI { }) cfg.settings.globalOptions)
+        (optionalFile "profile" (lib.generators.toINI { }) cfg.settings.inputMethod)
+        (lib.concatMapAttrs (
+          name: value: optionalFile "conf/${name}.conf" (lib.generators.toINIWithGlobalSection { }) value
+        ) cfg.settings.addons)
+      ];
+
+    environment.sessionVariables = lib.mkIf cfg.ignoreUserConfig {
+      SKIP_FCITX_USER_PATH = "1";
+    };
+
+    environment.variables = {
+      QT_PLUGIN_PATH = [ "${fcitx5Package}/${pkgs.qt6.qtbase.qtPluginPrefix}" ];
+      XMODIFIERS = "@im=fcitx";
+    }
+    // lib.optionalAttrs (!cfg.waylandFrontend) {
+      GTK_IM_MODULE = "fcitx";
+      QT_IM_MODULE = "fcitx";
+    };
 
     i18n.inputMethod.fcitx5.addons =
       lib.optionals (cfg.quickPhrase != { }) [
@@ -122,33 +172,7 @@ in
           ) cfg.quickPhraseFiles
         ))
       ];
-    environment.etc =
-      let
-        optionalFile =
-          p: f: v:
-          lib.optionalAttrs (v != { }) {
-            "xdg/fcitx5/${p}".text = f v;
-          };
-      in
-      lib.attrsets.mergeAttrsList [
-        (optionalFile "config" (lib.generators.toINI { }) cfg.settings.globalOptions)
-        (optionalFile "profile" (lib.generators.toINI { }) cfg.settings.inputMethod)
-        (lib.concatMapAttrs (
-          name: value: optionalFile "conf/${name}.conf" (lib.generators.toINIWithGlobalSection { }) value
-        ) cfg.settings.addons)
-      ];
 
-    environment.variables = {
-      XMODIFIERS = "@im=fcitx";
-      QT_PLUGIN_PATH = [ "${fcitx5Package}/${pkgs.qt6.qtbase.qtPluginPrefix}" ];
-    }
-    // lib.optionalAttrs (!cfg.waylandFrontend) {
-      GTK_IM_MODULE = "fcitx";
-      QT_IM_MODULE = "fcitx";
-    };
-
-    environment.sessionVariables = lib.mkIf cfg.ignoreUserConfig {
-      SKIP_FCITX_USER_PATH = "1";
-    };
+    i18n.inputMethod.package = fcitx5Package;
   };
 }

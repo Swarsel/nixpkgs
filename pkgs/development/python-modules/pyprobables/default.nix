@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyprobables";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "barrust";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-wUeNmkDzDBXGtMBplS2Hv6rK+M3eijVpYtHMhjIpsy8=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "probables" ];
 
   meta = {

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "spython";
   version = "0.3.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "singularityhub";
@@ -23,11 +22,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"pytest-runner"' ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "spython" ];
+  disabledTestPaths = [
+    # Tests are looking for something that doesn't exist
+    "spython/tests/test_client.py"
+  ];
 
   disabledTests = [
     # Assertion errors
@@ -36,10 +37,8 @@ buildPythonPackage (finalAttrs: {
     "test_check_get_singularity_version"
   ];
 
-  disabledTestPaths = [
-    # Tests are looking for something that doesn't exist
-    "spython/tests/test_client.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "spython" ];
 
   meta = {
     description = "Streamlined singularity python client (spython) for singularity";

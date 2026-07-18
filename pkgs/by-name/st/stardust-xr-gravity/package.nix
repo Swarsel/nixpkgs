@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -26,11 +26,13 @@ rustPlatform.buildRustPackage {
     description = "Utility to launch apps and stardust clients at an offet";
     homepage = "https://stardustxr.org";
     license = lib.licenses.mit;
-    mainProgram = "gravity";
+
     maintainers = with lib.maintainers; [
       pandapip1
       technobaboo
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "gravity";
   };
 }

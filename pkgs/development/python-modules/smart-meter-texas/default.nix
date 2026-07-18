@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
   asn1,
+  buildPythonPackage,
   python-dateutil,
   setuptools,
   tenacity,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "smart-meter-texas";
   version = "0.5.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "grahamwetzler";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
       --replace-fail "pytest-runner" ""
   '';
 
+  # no tests implemented
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,8 +36,7 @@ buildPythonPackage rec {
     tenacity
   ];
 
-  # no tests implemented
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Connect to and retrieve data from the unofficial Smart Meter Texas API";

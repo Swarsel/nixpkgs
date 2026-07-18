@@ -2,6 +2,9 @@
 
 lib.makeScope pkgs.newScope (self: {
 
+  AlsaMixer-app = self.callPackage ./AlsaMixer-app.nix { };
+  cputnik = self.callPackage ./cputnik.nix { };
+
   dockapps-sources = {
     pname = "dockapps-sources";
     version = "2023-10-11"; # Shall correspond to src.rev
@@ -13,17 +16,9 @@ lib.makeScope pkgs.newScope (self: {
     };
   };
 
-  AlsaMixer-app = self.callPackage ./AlsaMixer-app.nix { };
-
-  cputnik = self.callPackage ./cputnik.nix { };
-
   libdockapp = self.callPackage ./libdockapp.nix { };
-
   wmCalClock = self.callPackage ./wmCalClock.nix { };
-
   wmcube = self.callPackage ./wmcube.nix { };
-
   wmsm-app = self.callPackage ./wmsm-app.nix { };
-
   wmsystemtray = self.callPackage ./wmsystemtray.nix { };
 })

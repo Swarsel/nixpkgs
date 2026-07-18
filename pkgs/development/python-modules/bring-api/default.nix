@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "bring-api";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miaucl";
@@ -24,14 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-EwOb+AkjpJSpINFmfWNDqRPF7MDpwDa0LK3LFj7U/sY=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    mashumaro
-    orjson
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -41,6 +32,15 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    mashumaro
+    orjson
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "bring_api" ];
 
   meta = {

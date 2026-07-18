@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   openstacksdk,
   osc-lib,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "python-otcextensions";
   version = "0.34.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "opentelekomcloud";
@@ -30,6 +29,14 @@ buildPythonPackage rec {
   };
 
   env.PBR_VERSION = version;
+
+  nativeCheckInputs = [
+    mock
+    oslotest
+    prometheus-client
+    requests-mock
+    stestrCheckHook
+  ];
 
   build-system = [
     pbr
@@ -45,14 +52,6 @@ buildPythonPackage rec {
     python-openstackclient
   ];
 
-  nativeCheckInputs = [
-    mock
-    oslotest
-    prometheus-client
-    requests-mock
-    stestrCheckHook
-  ];
-
   disabledTests = [
     # Requires networking
     "otcextensions.tests.unit.test_stats.TestNoStats.test_no_stats"
@@ -63,6 +62,8 @@ buildPythonPackage rec {
     "otcextensions.tests.unit.test_stats.TestStats.test_sfsturbo_share"
     "otcextensions.tests.unit.test_stats.TestStats.test_timeout"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "otcextensions"

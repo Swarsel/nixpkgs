@@ -5,8 +5,8 @@
 # Note: These are uninteresting generated smoke tests to verify basic functionality
 {
   lib,
-  runCommand,
   arelle,
+  runCommand,
 }:
 
 runCommand "arelle-test-cli${lib.optionalString (!arelle.hasGUI) "-headless"}"

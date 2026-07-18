@@ -6,9 +6,8 @@
 
 bundlerApp {
   pname = "krane";
-  gemdir = ./.;
   exes = [ "krane" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "krane";
 
   meta = {

@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  cargo,
-  meson,
-  ninja,
-  perl,
-  pkg-config,
-  gst_all_1,
-  openssl,
-  protobuf,
-  libspelling,
-  libsecret,
-  libadwaita,
-  gtksourceview5,
-  rustPlatform,
-  rustc,
   appstream,
   blueprint-compiler,
+  cargo,
   desktop-file-utils,
+  gst_all_1,
+  gtksourceview5,
+  libadwaita,
+  libsecret,
+  libspelling,
+  meson,
+  ninja,
+  openssl,
+  perl,
+  pkg-config,
+  protobuf,
+  rustPlatform,
+  rustc,
   wrapGAppsHook4,
 }:
 
@@ -31,11 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "flare";
     tag = finalAttrs.version;
     hash = "sha256-Vt83VsqylFSM2rUj5egu1FEFjaVLVUI8SeGHAXmgKW4=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-GlkrQtMGFqujEiwAVMts6nsPbQ2GTxwYIJsu6axeg0Q=";
   };
 
   nativeBuildInputs = [
@@ -67,13 +62,18 @@ stdenv.mkDerivation (finalAttrs: {
     gst_all_1.gst-plugins-bad
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-GlkrQtMGFqujEiwAVMts6nsPbQ2GTxwYIJsu6axeg0Q=";
+  };
+
   meta = {
-    changelog = "https://gitlab.com/schmiddi-on-mobile/flare/-/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Unofficial Signal GTK client";
-    mainProgram = "flare";
     homepage = "https://gitlab.com/schmiddi-on-mobile/flare";
+    changelog = "https://gitlab.com/schmiddi-on-mobile/flare/-/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
     platforms = lib.platforms.linux;
+    mainProgram = "flare";
   };
 })

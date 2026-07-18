@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pidgin,
   glib,
   json-glib,
+  pidgin,
   protobuf,
   protobufc,
 }:
@@ -21,6 +21,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ protobufc ];
+
   buildInputs = [
     pidgin
     glib
@@ -29,15 +30,15 @@ stdenv.mkDerivation {
   ];
 
   env = {
-    PKG_CONFIG_PURPLE_PLUGINDIR = "${placeholder "out"}/lib/purple-2";
     PKG_CONFIG_PURPLE_DATADIR = "${placeholder "out"}/share";
+    PKG_CONFIG_PURPLE_PLUGINDIR = "${placeholder "out"}/lib/purple-2";
   };
 
   meta = {
-    homepage = "https://github.com/EionRobb/purple-googlechat";
     description = "Native Google Chat support for pidgin";
+    homepage = "https://github.com/EionRobb/purple-googlechat";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
   _0install-solver,
   alcotest,
+  buildDunePackage,
   cudf,
 }:
 
@@ -24,13 +24,14 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
   ];
 
   meta = {
-    homepage = "https://github.com/ocaml-opam/opam-0install-cudf";
     description = "Opam solver using 0install backend using the CUDF interface";
+
     longDescription = ''
       Opam's default solver is designed to maintain a set of packages
       over time, minimising disruption when installing new programs and
@@ -44,6 +45,8 @@ buildDunePackage (finalAttrs: {
       solver library. The library uses the CUDF library in order to interface
       with opam as it is the format common used to talk to all the supported solvers.
     '';
+
+    homepage = "https://github.com/ocaml-opam/opam-0install-cudf";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.stepbrobd ];
   };

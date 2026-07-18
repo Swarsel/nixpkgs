@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
   addDriverRunpath,
+  autoPatchelfHook,
   makeWrapper,
   ocl-icd,
   vulkan-loader,
@@ -18,13 +18,11 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-KVsBE0ueWewmoVY/vzxX2sKhRTzityPNR+wmTwZBWiI=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   nativeBuildInputs = [
     autoPatchelfHook
     makeWrapper
   ];
+
   buildInputs = [ stdenv.cc.cc ];
 
   installPhase = ''
@@ -47,11 +45,14 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Cross-platform benchmark";
     homepage = "https://geekbench.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.michalrus ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "geekbench4";

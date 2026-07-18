@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   formats,
   libsForQt5,
+  stdenvNoCC,
   themeConfig ? null,
 }:
 
@@ -17,8 +17,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-C3qB9hFUeuT5+Dos2zFj5SyQegnghpoFV9wHvE9VoD8=";
   };
-
-  dontWrapQtApps = true;
 
   propagatedBuildInputs = [
     # avoid .dev outputs propagation
@@ -40,11 +38,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       ln -sf ${configFile} ${basePath}/theme.conf.user
     '';
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "Dark SDDM theme from the sugar family";
     homepage = "https://github.com/MarianArlt/sddm-sugar-dark";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ danid3v ];
+    platforms = lib.platforms.linux;
   };
 })

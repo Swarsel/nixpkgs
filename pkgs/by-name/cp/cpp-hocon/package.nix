@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
   curl,
   leatherman,
 }:
@@ -13,10 +13,10 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.3.0";
 
   src = fetchFromGitHub {
-    sha256 = "0b24anpwkmvbsn5klnr58vxksw00ci9pjhwzx7a61kplyhsaiydw";
-    rev = finalAttrs.version;
-    repo = "cpp-hocon";
     owner = "puppetlabs";
+    repo = "cpp-hocon";
+    rev = finalAttrs.version;
+    sha256 = "0b24anpwkmvbsn5klnr58vxksw00ci9pjhwzx7a61kplyhsaiydw";
   };
 
   postPatch = ''
@@ -34,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
       'list(APPEND BOOST_COMPONENTS thread date_time chrono filesystem program_options)'
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
-
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -43,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     curl
     leatherman
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;

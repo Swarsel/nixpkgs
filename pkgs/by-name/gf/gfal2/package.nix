@@ -4,22 +4,22 @@
   fetchFromGitHub,
   # Native build inputs
   cmake,
-  pkg-config,
-  # General build inputs
-  glib,
-  gtest,
-  json_c,
-  openldap,
   # Plugin build inputs
   cryptopp,
   davix-copy,
   dcap,
-  libssh2,
-  libuuid,
-  pugixml,
-  xrootd,
+  # General build inputs
+  glib,
   # For enablePluginStatus.https only
   gsoap,
+  gtest,
+  json_c,
+  libssh2,
+  libuuid,
+  openldap,
+  pkg-config,
+  pugixml,
+  xrootd,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "gfal2";
@@ -31,6 +31,87 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-Dt6xA7U4aPKFZmO2iAiYM99w5ZIZNQJ+JXzuVItIlBM=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = lib.unique (
+    [
+      glib
+      json_c
+      # gfal2 version older than 2.21.1 fails to see openldap 2.5+
+      # and will complain
+      # bin/ld: cannot find -lldap_r: No such file or directory
+      # See https://github.com/cern-fts/gfal2/blob/aa24462bb67e259e525f26fb5feb97050a8c5c61/RELEASE-NOTES
+      openldap
+      pugixml # Optional, for MDS Cache.
+    ]
+    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.dcap [ dcap ]
+    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.http [
+      cryptopp
+      davix-copy
+    ]
+    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.mock [ libuuid ]
+    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.sftp [ libssh2 ]
+    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.xrootd [
+      xrootd
+      libuuid
+    ]
+  );
+
+  cmakeFlags =
+    (map (
+      pluginName:
+      "-DPLUGIN_${lib.toUpper pluginName}=${
+        lib.toUpper (lib.boolToString finalAttrs.passthru.enablePluginStatus.${pluginName})
+      }"
+    ) (lib.attrNames finalAttrs.passthru.enablePluginStatus))
+    ++ [ "-DSKIP_TESTS=${lib.toUpper (lib.boolToString (!finalAttrs.finalPackage.doCheck))}" ]
+    ++ lib.optionals finalAttrs.finalPackage.doCheck [ "-DGTEST_INCLUDE_DIR=${gtest.dev}/include" ]
+    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.http [
+      "-DCRYPTOPP_INCLUDE_DIRS=${cryptopp.dev}/include/cryptopp"
+    ]
+    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.xrootd [
+      "-DXROOTD_INCLUDE_DIR=${xrootd.dev}/include/xrootd"
+    ];
+
+  preConfigure =
+    let
+      cmakeFiles = [
+        "CMakeLists.txt"
+        "src/CMakeLists.txt"
+        "src/core/CMakeLists.txt"
+        "src/core/transfer/CMakeLists.txt"
+        "src/plugins/CMakeLists.txt"
+        "src/plugins/dcap/CMakeLists.txt"
+        "src/plugins/file/CMakeLists.txt"
+        "src/plugins/gridftp/CMakeLists.txt"
+        "src/plugins/http/CMakeLists.txt"
+        "src/plugins/lfc/CMakeLists.txt"
+        "src/plugins/mock/CMakeLists.txt"
+        "src/plugins/rfio/CMakeLists.txt"
+        "src/plugins/sftp/CMakeLists.txt"
+        "src/plugins/srm/CMakeLists.txt"
+        "src/plugins/xrootd/CMakeLists.txt"
+        "src/utils/CMakeLists.txt"
+        "src/version/CMakeLists.txt"
+      ];
+    in
+    ''
+      for f in ${lib.escapeShellArgs cmakeFiles}; do
+        substituteInPlace "$f" \
+          --replace-fail 'cmake_minimum_required (VERSION 2.6)' \
+                         'cmake_minimum_required (VERSION 3.10)'
+      done
+    '';
+
+  doCheck = stdenv.hostPlatform.isLinux;
+
+  checkInputs = [
+    gtest
+  ];
 
   passthru.enablePluginStatus = {
     # TODO: Change back to `true` once dcap is fixed on Darwin.
@@ -80,89 +161,9 @@ stdenv.mkDerivation (finalAttrs: {
       });
     };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
-  buildInputs = lib.unique (
-    [
-      glib
-      json_c
-      # gfal2 version older than 2.21.1 fails to see openldap 2.5+
-      # and will complain
-      # bin/ld: cannot find -lldap_r: No such file or directory
-      # See https://github.com/cern-fts/gfal2/blob/aa24462bb67e259e525f26fb5feb97050a8c5c61/RELEASE-NOTES
-      openldap
-      pugixml # Optional, for MDS Cache.
-    ]
-    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.dcap [ dcap ]
-    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.http [
-      cryptopp
-      davix-copy
-    ]
-    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.mock [ libuuid ]
-    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.sftp [ libssh2 ]
-    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.xrootd [
-      xrootd
-      libuuid
-    ]
-  );
-
-  preConfigure =
-    let
-      cmakeFiles = [
-        "CMakeLists.txt"
-        "src/CMakeLists.txt"
-        "src/core/CMakeLists.txt"
-        "src/core/transfer/CMakeLists.txt"
-        "src/plugins/CMakeLists.txt"
-        "src/plugins/dcap/CMakeLists.txt"
-        "src/plugins/file/CMakeLists.txt"
-        "src/plugins/gridftp/CMakeLists.txt"
-        "src/plugins/http/CMakeLists.txt"
-        "src/plugins/lfc/CMakeLists.txt"
-        "src/plugins/mock/CMakeLists.txt"
-        "src/plugins/rfio/CMakeLists.txt"
-        "src/plugins/sftp/CMakeLists.txt"
-        "src/plugins/srm/CMakeLists.txt"
-        "src/plugins/xrootd/CMakeLists.txt"
-        "src/utils/CMakeLists.txt"
-        "src/version/CMakeLists.txt"
-      ];
-    in
-    ''
-      for f in ${lib.escapeShellArgs cmakeFiles}; do
-        substituteInPlace "$f" \
-          --replace-fail 'cmake_minimum_required (VERSION 2.6)' \
-                         'cmake_minimum_required (VERSION 3.10)'
-      done
-    '';
-
-  cmakeFlags =
-    (map (
-      pluginName:
-      "-DPLUGIN_${lib.toUpper pluginName}=${
-        lib.toUpper (lib.boolToString finalAttrs.passthru.enablePluginStatus.${pluginName})
-      }"
-    ) (lib.attrNames finalAttrs.passthru.enablePluginStatus))
-    ++ [ "-DSKIP_TESTS=${lib.toUpper (lib.boolToString (!finalAttrs.finalPackage.doCheck))}" ]
-    ++ lib.optionals finalAttrs.finalPackage.doCheck [ "-DGTEST_INCLUDE_DIR=${gtest.dev}/include" ]
-    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.http [
-      "-DCRYPTOPP_INCLUDE_DIRS=${cryptopp.dev}/include/cryptopp"
-    ]
-    ++ lib.optionals finalAttrs.passthru.enablePluginStatus.xrootd [
-      "-DXROOTD_INCLUDE_DIR=${xrootd.dev}/include/xrootd"
-    ];
-
-  doCheck = stdenv.hostPlatform.isLinux;
-
-  checkInputs = [
-    gtest
-  ];
-
   meta = {
     description = "Multi-protocol data management library by CERN";
+
     longDescription = ''
       GFAL (Grid File Access Library )
       is a C library providing an abstraction layer of
@@ -170,10 +171,11 @@ stdenv.mkDerivation (finalAttrs: {
       The complexity of the grid is hidden from the client side
       behind a simple common POSIX API.
     '';
+
     homepage = "https://github.com/cern-fts/gfal2";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ShamrockLee ];
+    platforms = lib.platforms.all;
     mainProgram = "gfal2";
   };
 })

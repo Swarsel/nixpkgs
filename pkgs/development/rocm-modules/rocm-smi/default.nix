@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  pkg-config,
-  libdrm,
   cmake,
+  libdrm,
+  pkg-config,
+  rocmUpdateScript,
   wrapPython,
 }:
 
@@ -17,22 +17,22 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ROCm";
     repo = "rocm-systems";
     rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-Si8SbeVKUBtqk6h2QJ9ssQV68bLq6TvESrYXJuArHd8=";
+
     sparseCheckout = [
       "projects/rocm-smi-lib"
       "shared"
     ];
-    hash = "sha256-Si8SbeVKUBtqk6h2QJ9ssQV68bLq6TvESrYXJuArHd8=";
   };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocm-smi-lib";
-
-  propagatedBuildInputs = [
-    libdrm
-  ];
 
   nativeBuildInputs = [
     cmake
     wrapPython
     pkg-config
+  ];
+
+  propagatedBuildInputs = [
+    libdrm
   ];
 
   cmakeFlags = [
@@ -60,6 +60,7 @@ stdenv.mkDerivation (finalAttrs: {
       ln -s ${libdrm.dev}/include/libdrm/ $out/include/
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/rocm-smi-lib";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
@@ -67,7 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/ROCm/rocm-systems/tree/develop/projects/rocm-smi-lib";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ lovesegfault ];
-    teams = [ lib.teams.rocm ];
     platforms = [ "x86_64-linux" ];
+    teams = [ lib.teams.rocm ];
   };
 })

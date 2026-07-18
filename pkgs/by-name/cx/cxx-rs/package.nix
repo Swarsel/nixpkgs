@@ -1,7 +1,7 @@
 {
-  cxx-rs,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  cxx-rs,
   rustPlatform,
   testers,
 }:
@@ -17,28 +17,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-PIeF9VuyJOIs1x02YETKIP0+nCG3RZXLMJdFNlgAFzo=";
   };
 
-  cargoLock.lockFile = ./Cargo.lock;
-
-  postPatch = ''
-    cp ${./Cargo.lock} Cargo.lock
-  '';
-
-  cargoBuildFlags = [
-    "--workspace"
-    "--exclude=demo"
-  ];
-
-  postBuild = ''
-    cargo doc --release
-  '';
-
-  cargoTestFlags = [ "--workspace" ];
-
   outputs = [
     "out"
     "doc"
     "dev"
   ];
+
+  postPatch = ''
+    cp ${./Cargo.lock} Cargo.lock
+  '';
+
+  cargoLock.lockFile = ./Cargo.lock;
+
+  postBuild = ''
+    cargo doc --release
+  '';
 
   postInstall = ''
     mkdir -p $doc
@@ -48,16 +41,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     install -D -m 0644 ./include/cxx.h $dev/include/rust
   '';
 
+  cargoBuildFlags = [
+    "--workspace"
+    "--exclude=demo"
+  ];
+
+  cargoTestFlags = [ "--workspace" ];
+
   passthru.tests.version = testers.testVersion {
-    package = cxx-rs;
     command = "cxxbridge --version";
+    package = cxx-rs;
   };
 
   meta = {
     description = "Safe FFI between Rust and C++";
-    mainProgram = "cxxbridge";
     homepage = "https://github.com/dtolnay/cxx";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ centromere ];
+    mainProgram = "cxxbridge";
   };
 })

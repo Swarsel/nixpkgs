@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-OpNv4jeenhZKj5gZCVy/U9kwWi0IUy2b5bSW9L5FvN4=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -22,6 +20,8 @@ stdenvNoCC.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Fallback font of last resort";

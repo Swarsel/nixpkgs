@@ -16,36 +16,16 @@ in
 {
   options = {
     services.unit = {
-      enable = mkEnableOption "Unit App Server";
-      package = mkPackageOption pkgs "unit" { };
-      user = mkOption {
-        type = types.str;
-        default = "unit";
-        description = "User account under which unit runs.";
-      };
-      group = mkOption {
-        type = types.str;
-        default = "unit";
-        description = "Group account under which unit runs.";
-      };
-      stateDir = mkOption {
-        type = types.path;
-        default = "/var/spool/unit";
-        description = "Unit data directory.";
-      };
-      logDir = mkOption {
-        type = types.path;
-        default = "/var/log/unit";
-        description = "Unit log directory.";
-      };
       config = mkOption {
-        type = types.str;
         default = ''
           {
             "listeners": {},
             "applications": {}
           }
         '';
+
+        description = "Unit configuration in JSON format. More details here <https://unit.nginx.org/configuration>";
+
         example = ''
           {
             "listeners": {
@@ -76,7 +56,35 @@ in
             }
           }
         '';
-        description = "Unit configuration in JSON format. More details here <https://unit.nginx.org/configuration>";
+
+        type = types.str;
+      };
+
+      enable = mkEnableOption "Unit App Server";
+      package = mkPackageOption pkgs "unit" { };
+
+      group = mkOption {
+        default = "unit";
+        description = "Group account under which unit runs.";
+        type = types.str;
+      };
+
+      logDir = mkOption {
+        default = "/var/log/unit";
+        description = "Unit log directory.";
+        type = types.path;
+      };
+
+      stateDir = mkOption {
+        default = "/var/spool/unit";
+        description = "Unit data directory.";
+        type = types.path;
+      };
+
+      user = mkOption {
+        default = "unit";
+        description = "User account under which unit runs.";
+        type = types.str;
       };
     };
   };
@@ -85,67 +93,80 @@ in
 
     environment.systemPackages = [ cfg.package ];
 
-    systemd.tmpfiles.rules = [
-      "d '${cfg.stateDir}' 0750 ${cfg.user} ${cfg.group} - -"
-      "d '${cfg.logDir}' 0750 ${cfg.user} ${cfg.group} - -"
-    ];
-
     systemd.services.unit = {
-      description = "Unit App Server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      preStart = ''
-        [ ! -e '${cfg.stateDir}/conf.json' ] || rm -f '${cfg.stateDir}/conf.json'
-      '';
+      description = "Unit App Server";
+
       postStart = ''
         ${pkgs.curl}/bin/curl -X PUT --data-binary '@${configFile}' --unix-socket '/run/unit/control.unit.sock' 'http://localhost/config'
       '';
+
+      preStart = ''
+        [ ! -e '${cfg.stateDir}/conf.json' ] || rm -f '${cfg.stateDir}/conf.json'
+      '';
+
       serviceConfig = {
-        Type = "forking";
-        PIDFile = "/run/unit/unit.pid";
         ExecStart = ''
           ${cfg.package}/bin/unitd --control 'unix:/run/unit/control.unit.sock' --pid '/run/unit/unit.pid' \
                                    --log '${cfg.logDir}/unit.log' --statedir '${cfg.stateDir}' --tmpdir '/tmp' \
                                    --user ${cfg.user} --group ${cfg.group}
         '';
+
         ExecStop = ''
           ${pkgs.curl}/bin/curl -X DELETE --unix-socket '/run/unit/control.unit.sock' 'http://localhost/config'
         '';
-        # Runtime directory and mode
-        RuntimeDirectory = "unit";
-        RuntimeDirectoryMode = "0750";
+
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        # Security
+        NoNewPrivileges = true;
+        PIDFile = "/run/unit/unit.pid";
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
+        PrivateUsers = false;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        # Sandboxing
+        ProtectSystem = "strict";
+
         # Access write directories
         ReadWritePaths = [
           cfg.stateDir
           cfg.logDir
         ];
-        # Security
-        NoNewPrivileges = true;
-        # Sandboxing
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        PrivateUsers = false;
-        ProtectHostname = true;
-        ProtectClock = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
-        ProtectControlGroups = true;
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
+
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
-        PrivateMounts = true;
+        # Runtime directory and mode
+        RuntimeDirectory = "unit";
+        RuntimeDirectoryMode = "0750";
         # System Call Filtering
         SystemCallArchitectures = "native";
+        Type = "forking";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.tmpfiles.rules = [
+      "d '${cfg.stateDir}' 0750 ${cfg.user} ${cfg.group} - -"
+      "d '${cfg.logDir}' 0750 ${cfg.user} ${cfg.group} - -"
+    ];
+
+    users.groups = optionalAttrs (cfg.group == "unit") {
+      unit = { };
     };
 
     users.users = optionalAttrs (cfg.user == "unit") {
@@ -153,10 +174,6 @@ in
         group = cfg.group;
         isSystemUser = true;
       };
-    };
-
-    users.groups = optionalAttrs (cfg.group == "unit") {
-      unit = { };
     };
 
   };

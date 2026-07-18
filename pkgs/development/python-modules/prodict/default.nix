@@ -1,14 +1,13 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  pytestCheckHook,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "prodict";
   version = "0.8.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ramazanpolat";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
 
   # make setuptools happy on case-sensitive filesystems
   postPatch = "if [[ ! -f README.md ]]; then mv README.MD README.md; fi";
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "prodict" ];
 
   meta = {

@@ -1,14 +1,14 @@
 {
   lib,
-  boost,
-  rustPlatform,
   fetchFromGitHub,
-  python3,
+  boost,
   gitMinimal,
-  versionCheckHook,
-  pkg-config,
-  nixVersions,
   nix-update-script,
+  nixVersions,
+  pkg-config,
+  python3,
+  rustPlatform,
+  versionCheckHook,
   enableNixImport ? false,
 }:
 
@@ -23,13 +23,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-D+OI00Ouwm0v65igIYSCGPXKCl6/SZsOyz1wFM1VAF4=";
   };
 
-  cargoHash = "sha256-hIeTHajL+h6xhuje8TmfgkkM9R+tGwYFzlnSwaN3nK8=";
-
-  cargoBuildFlags = [
-    "--package"
-    "nickel-lang-cli"
-    "--package"
-    "nickel-lang-lsp"
+  outputs = [
+    "out"
+    "nls"
   ];
 
   nativeBuildInputs = [
@@ -45,12 +41,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     boost
   ];
 
-  buildFeatures = lib.optionals enableNixImport [ "nix-experimental" ];
-
-  outputs = [
-    "out"
-    "nls"
-  ];
+  cargoHash = "sha256-hIeTHajL+h6xhuje8TmfgkkM9R+tGwYFzlnSwaN3nK8=";
 
   # This fixes the way comrak is defined as a dependency, without it the build fails:
   #
@@ -63,13 +54,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail "dep:comrak" "comrak"
   '';
 
-  cargoTestFlags = [
-    # Skip the py-nickel tests because linking them fails on aarch64, and we
-    # aren't packaging py-nickel anyway
-    "--workspace"
-    "--exclude=py-nickel"
-  ];
-
   checkFlags = lib.optionals enableNixImport [
     # libnixmain from Nix >= 2.31 tries to create /nix/var/nix/profiles on
     # initialisation, which is rejected by the build sandbox.
@@ -81,16 +65,33 @@ rustPlatform.buildRustPackage (finalAttrs: {
     mv $out/bin/nls $nls/bin/nls
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  buildFeatures = lib.optionals enableNixImport [ "nix-experimental" ];
+
+  cargoBuildFlags = [
+    "--package"
+    "nickel-lang-cli"
+    "--package"
+    "nickel-lang-lsp"
+  ];
+
+  cargoTestFlags = [
+    # Skip the py-nickel tests because linking them fails on aarch64, and we
+    # aren't packaging py-nickel anyway
+    "--workspace"
+    "--exclude=py-nickel"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://nickel-lang.org/";
     description = "Better configuration for less";
+
     longDescription = ''
       Nickel is the cheap configuration language.
 
@@ -99,13 +100,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
       that are then fed to another system. It is designed to have a simple,
       well-understood core: it is in essence JSON with functions.
     '';
+
+    homepage = "https://nickel-lang.org/";
     changelog = "https://github.com/nickel-lang/nickel/blob/${finalAttrs.version}/RELEASES.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       felschr
       matthiasbeyer
       yannham
     ];
+
     mainProgram = "nickel";
   };
 })

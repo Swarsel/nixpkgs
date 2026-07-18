@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "clangbuildanalyzer";
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Tool for analyzing Clang's -ftime-trace files";
     homepage = "https://github.com/aras-p/ClangBuildAnalyzer";
-    maintainers = [ ];
     license = lib.licenses.unlicense;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "ClangBuildAnalyzer";
   };

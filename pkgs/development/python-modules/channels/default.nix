@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   asgiref,
+  async-timeout,
   buildPythonPackage,
   daphne,
   django,
-  fetchFromGitHub,
-  async-timeout,
   pytest-asyncio,
   pytest-django,
   pytestCheckHook,
@@ -15,24 +15,12 @@
 buildPythonPackage rec {
   pname = "channels";
   version = "4.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django";
     repo = "channels";
     tag = version;
     hash = "sha256-KBjxaK2j9Xbz35IHqZK68cSLkUk4B7t+J7omcQAtuFM=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    asgiref
-    django
-  ];
-
-  optional-dependencies = {
-    daphne = [ daphne ];
   };
 
   nativeCheckInputs = [
@@ -43,11 +31,23 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    asgiref
+    django
+  ];
+
   # won't run in sandbox
   disabledTestPaths = [
     "tests/sample_project/tests/test_selenium.py"
   ];
 
+  optional-dependencies = {
+    daphne = [ daphne ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "channels" ];
 
   meta = {

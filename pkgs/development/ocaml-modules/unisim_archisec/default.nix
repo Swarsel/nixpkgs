@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage {
@@ -16,10 +16,10 @@ buildDunePackage {
   duneVersion = "3";
 
   meta = {
-    homepage = "https://binsec.github.io";
-    downloadPage = "https://github.com/binsec/unisim_archisec";
     description = "UNISIM-VP DBA decoder";
+    homepage = "https://binsec.github.io";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.david-hamelin ];
+    downloadPage = "https://github.com/binsec/unisim_archisec";
   };
 }

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  which,
-  pkg-config,
   mono,
+  pkg-config,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,16 +24,15 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     which
   ];
+
   buildInputs = [ mono ];
-
-  dontStrip = true;
-
   configureFlags = [ "--disable-docs" ];
+  dontStrip = true;
 
   meta = {
     description = "Library for reading and writing metadata in media files";
     homepage = "https://github.com/mono/taglib-sharp";
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl21;
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -12,71 +12,71 @@ in
   options = {
     services.jackett = {
       enable = lib.mkEnableOption "Jackett, API support for your favorite torrent trackers";
-
-      port = lib.mkOption {
-        default = 9117;
-        type = lib.types.port;
-        description = ''
-          Port serving the web interface
-        '';
-      };
+      package = lib.mkPackageOption pkgs "jackett" { };
 
       dataDir = lib.mkOption {
-        type = lib.types.str;
         default = "/var/lib/jackett/.config/Jackett";
         description = "The directory where Jackett stores its data files.";
-      };
-
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Open ports in the firewall for the Jackett web interface.";
-      };
-
-      user = lib.mkOption {
         type = lib.types.str;
-        default = "jackett";
-        description = "User account under which Jackett runs.";
       };
 
       group = lib.mkOption {
-        type = lib.types.str;
         default = "jackett";
         description = "Group under which Jackett runs.";
+        type = lib.types.str;
       };
 
-      package = lib.mkPackageOption pkgs "jackett" { };
+      openFirewall = lib.mkOption {
+        default = false;
+        description = "Open ports in the firewall for the Jackett web interface.";
+        type = lib.types.bool;
+      };
+
+      port = lib.mkOption {
+        default = 9117;
+
+        description = ''
+          Port serving the web interface
+        '';
+
+        type = lib.types.port;
+      };
+
+      user = lib.mkOption {
+        default = "jackett";
+        description = "User account under which Jackett runs.";
+        type = lib.types.str;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.tmpfiles.rules = [
-      "d '${cfg.dataDir}' 0700 ${cfg.user} ${cfg.group} - -"
-    ];
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
+    };
 
     systemd.services.jackett = {
-      description = "Jackett";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Jackett";
 
       serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-        ExecStart = "${cfg.package}/bin/Jackett --NoUpdates --Port ${toString cfg.port} --DataFolder '${cfg.dataDir}'";
-        Restart = "on-failure";
-
         # Sandboxing
         CapabilityBoundingSet = [
           "CAP_NET_BIND_SERVICE"
         ];
+
         ExecPaths = [
           "${builtins.storeDir}"
         ];
+
+        ExecStart = "${cfg.package}/bin/Jackett --NoUpdates --Port ${toString cfg.port} --DataFolder '${cfg.dataDir}'";
+        Group = cfg.group;
         LockPersonality = true;
+
         NoExecPaths = [
           "/"
         ];
+
         NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateMounts = true;
@@ -90,18 +90,24 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+
         ReadWritePaths = [
           cfg.dataDir
         ];
+
         RemoveIPC = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@clock"
@@ -113,12 +119,21 @@ in
           "~@mount"
           "~@swap"
         ];
+
+        Type = "simple";
         UMask = "0077";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
+    systemd.tmpfiles.rules = [
+      "d '${cfg.dataDir}' 0700 ${cfg.user} ${cfg.group} - -"
+    ];
+
+    users.groups = lib.mkIf (cfg.group == "jackett") {
+      jackett.gid = config.ids.gids.jackett;
     };
 
     users.users = lib.mkIf (cfg.user == "jackett") {
@@ -127,10 +142,6 @@ in
         home = cfg.dataDir;
         uid = config.ids.uids.jackett;
       };
-    };
-
-    users.groups = lib.mkIf (cfg.group == "jackett") {
-      jackett.gid = config.ids.gids.jackett;
     };
   };
 }

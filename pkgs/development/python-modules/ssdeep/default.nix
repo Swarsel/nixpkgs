@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cffi,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
   six,
@@ -12,9 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ssdeep";
   version = "3.4.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "DinoTools";
@@ -23,8 +20,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-I5ci5BS+B3OE0xdLSahu3HCh99jjhnRHJFz830SvFpg=";
   };
 
-  buildInputs = [ ssdeep ];
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace '"pytest-runner"' ""
+  '';
 
+  buildInputs = [ ssdeep ];
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,13 +35,7 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace '"pytest-runner"' ""
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "ssdeep" ];
 
   meta = {

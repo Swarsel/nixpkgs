@@ -1,23 +1,23 @@
 {
-  pkgsBuildBuild,
-  stdenv,
   lib,
+  stdenv,
+  libdrm,
+  pkg-config,
+  pkgsBuildBuild,
   qtModule,
   qtbase,
   qtdeclarative,
-  pkg-config,
-  libdrm,
 }:
 
 qtModule {
   pname = "qtwayland";
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ libdrm ];
 
   propagatedBuildInputs = [
     qtbase
     qtdeclarative
   ];
-  buildInputs = [ libdrm ];
-  nativeBuildInputs = [ pkg-config ];
 
   cmakeFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
     "-DQt6WaylandScannerTools_DIR=${pkgsBuildBuild.qt6.qtbase}/lib/cmake/Qt6WaylandScannerTools"

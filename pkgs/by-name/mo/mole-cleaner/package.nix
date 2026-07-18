@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   coreutils,
-  gawk,
   fd,
+  gawk,
+  makeWrapper,
   nix-update-script,
   versionCheckHook,
   writableTmpDirAsHomeHook,
@@ -42,26 +42,27 @@ buildGoModule (finalAttrs: {
     hash = "sha256-rIoVXEz4K0RFb1ir1gRCyDw5euNwQvLS0GwBsJhuApE=";
   };
 
-  vendorHash = "sha256-hLFlAy4AE1eNOxd4d75Mbo3ZKlwvNK7QV2DNVPd7NHc=";
-
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     makeWrapper
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-    coreutils
-    gawk
-  ];
+  vendorHash = "sha256-hLFlAy4AE1eNOxd4d75Mbo3ZKlwvNK7QV2DNVPd7NHc=";
 
   buildPhase = ''
     runHook preBuild
     go build -p "$NIX_BUILD_CORES" -o analyze ./cmd/analyze
     go build -p "$NIX_BUILD_CORES" -o status ./cmd/status
     runHook postBuild
+  '';
+
+  checkPhase = ''
+    runHook preCheck
+    # Keep buildGoModule's test behavior: tests can rely on their source paths.
+    export GOFLAGS="''${GOFLAGS//-trimpath/}"
+    mkdir -p "$TMPDIR/mole-test-bin"
+    ln -s ${duForTests} "$TMPDIR/mole-test-bin/du"
+    PATH="$TMPDIR/mole-test-bin:$PATH" go test ./...
+    runHook postCheck
   '';
 
   installPhase = ''
@@ -99,20 +100,15 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
-  checkPhase = ''
-    runHook preCheck
-    # Keep buildGoModule's test behavior: tests can rely on their source paths.
-    export GOFLAGS="''${GOFLAGS//-trimpath/}"
-    mkdir -p "$TMPDIR/mole-test-bin"
-    ln -s ${duForTests} "$TMPDIR/mole-test-bin/du"
-    PATH="$TMPDIR/mole-test-bin:$PATH" go test ./...
-    runHook postCheck
-  '';
-
   doInstallCheck = true;
-  versionCheckKeepEnvironment = "HOME PATH";
-  versionCheckProgram = "${placeholder "out"}/bin/mo";
-  versionCheckProgramArg = "--version";
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+    coreutils
+    gawk
+  ];
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/mo --help > /dev/null
@@ -120,6 +116,11 @@ buildGoModule (finalAttrs: {
     test ! -e $out/bin/mole
     runHook postInstallCheck
   '';
+
+  __structuredAttrs = true;
+  versionCheckKeepEnvironment = "HOME PATH";
+  versionCheckProgram = "${placeholder "out"}/bin/mo";
+  versionCheckProgramArg = "--version";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=^V(.*)$" ];
@@ -131,7 +132,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/tw93/Mole/releases/tag/V${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ IanHollow ];
-    mainProgram = "mo";
     platforms = lib.platforms.darwin;
+    mainProgram = "mo";
   };
 })

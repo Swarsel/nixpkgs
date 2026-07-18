@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hQdEZD84/cnLSzP5Xr9vbOGROQz4BjeVOnvbyhe6rfM=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/tools/pioasm";
-
   nativeBuildInputs = [
     cmake
     ninja
@@ -29,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "PIOASM_VERSION_STRING" finalAttrs.version)
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/tools/pioasm";
   passthru.updateScript = nix-update-script { };
 
   meta = {

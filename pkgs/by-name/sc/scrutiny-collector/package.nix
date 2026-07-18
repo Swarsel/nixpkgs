@@ -1,16 +1,16 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  makeWrapper,
-  smartmontools,
-  nixosTests,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  makeWrapper,
   nix-update-script,
+  nixosTests,
+  smartmontools,
 }:
 
 buildGoModule (finalAttrs: {
-  version = "0.9.2";
   pname = "scrutiny-collector";
+  version = "0.9.2";
 
   src = fetchFromGitHub {
     owner = "AnalogJ";
@@ -19,17 +19,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZQHTwJZBOYJ2De0CmyxXc4Fb2Vt+jKg+YpDDZhSt+cg=";
   };
 
-  subPackages = "collector/cmd/collector-metrics";
-
-  vendorHash = "sha256-Em8k2AFoZv4TD4HFkkNIdyPj7IBOFiUIKffkifWfZFY=";
-
   nativeBuildInputs = [ makeWrapper ];
-
+  vendorHash = "sha256-Em8k2AFoZv4TD4HFkkNIdyPj7IBOFiUIKffkifWfZFY=";
   env.CGO_ENABLED = 0;
-
-  ldflags = [ "-extldflags=-static" ];
-
-  tags = [ "static" ];
 
   installPhase = ''
     runHook preInstall
@@ -40,6 +32,9 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  ldflags = [ "-extldflags=-static" ];
+  subPackages = "collector/cmd/collector-metrics";
+  tags = [ "static" ];
   passthru.tests.scrutiny-collector = nixosTests.scrutiny;
   passthru.updateScript = nix-update-script { };
 
@@ -48,10 +43,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/AnalogJ/scrutiny";
     changelog = "https://github.com/AnalogJ/scrutiny/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       samasaur
       svistoi
     ];
+
     mainProgram = "scrutiny-collector-metrics";
   };
 })

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "markdown-anki-decks";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -18,6 +17,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail 'typer = "^0.4.0"' 'typer = "*"'
   '';
+
+  # No tests available on PyPI and there is only a failing version assertion test in the repo.
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     poetry-core
@@ -32,8 +34,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     typer
   ];
 
-  # No tests available on PyPI and there is only a failing version assertion test in the repo.
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "markdown_anki_decks"

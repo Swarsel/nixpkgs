@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -16,10 +16,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ libx11 ];
-
-  dontUnpack = true;
 
   buildPhase = ''
     cc -O2 -o RunningX $(pkg-config --cflags --libs x11) $src
@@ -30,12 +27,14 @@ stdenv.mkDerivation {
     cp -vai RunningX "$out/bin"
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.fiction.net/blong/programs/mutt/";
     description = "Program for testing if X is running";
+    homepage = "http://www.fiction.net/blong/programs/mutt/";
     license = lib.licenses.free;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
     mainProgram = "RunningX";
   };
 }

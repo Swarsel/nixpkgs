@@ -2,106 +2,91 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  fetchgit,
-
   # build dependencies
   autoconf-archive,
   autoreconfHook,
-  nukeReferences,
-  pkg-config,
-  python-setup-hook,
-
-  # high level switches
-  withMinimalDeps ? false,
-
+  # platform-specific dependencies
+  bashNonInteractive,
+  bluez-headers,
   # runtime dependencies
   bzip2,
-  withExpat ? !withMinimalDeps,
   expat,
+  fetchgit,
+  fetchpatch,
+  gdbm,
+  hash,
   libffi,
   libuuid,
   libxcrypt,
-  withMpdecimal ? !withMinimalDeps,
+  mailcap,
   mpdecimal,
   ncurses,
-  withOpenssl ? !withMinimalDeps,
+  nukeReferences,
   openssl,
-  withSqlite ? !withMinimalDeps,
-  sqlite,
-  xz,
-  zlib,
-  withZstd ? !withMinimalDeps,
-  zstd,
-
-  # platform-specific dependencies
-  bashNonInteractive,
-  windows,
-
-  # optional dependencies
-  bluezSupport ? !withMinimalDeps && stdenv.hostPlatform.isLinux,
-  bluez-headers,
-  mimetypesSupport ? !withMinimalDeps,
-  mailcap,
-  tzdata,
-  withGdbm ? !withMinimalDeps && !stdenv.hostPlatform.isWindows,
-  gdbm,
-  withReadline ? !withMinimalDeps && !stdenv.hostPlatform.isWindows,
-  readline,
-
-  # splicing/cross
-  pythonAttr ? "python${sourceVersion.major}${sourceVersion.minor}",
-  self,
+  passthruFun,
+  pkg-config,
   pkgsBuildBuild,
   pkgsBuildHost,
   pkgsBuildTarget,
   pkgsHostHost,
   pkgsTargetTarget,
-  __splices ? { },
-
+  python-setup-hook,
+  readline,
+  self,
   # build customization
   sourceVersion,
-  hash,
-  passthruFun,
-  stripConfig ? withMinimalDeps,
-  stripIdlelib ? withMinimalDeps,
-  stripTests ? withMinimalDeps,
-  stripTkinter ? withMinimalDeps,
-  rebuildBytecode ? !withMinimalDeps,
-  stripBytecode ? true,
-  includeSiteCustomize ? !withMinimalDeps,
-  static ? stdenv.hostPlatform.isStatic,
-  enableFramework ? false,
-  noldconfigPatch ? ./. + "/${sourceVersion.major}.${sourceVersion.minor}/no-ldconfig.patch",
-  enableGIL ? true,
-  enableDebug ? false,
-
-  # pgo (not reproducible) + -fno-semantic-interposition
-  # https://docs.python.org/3/using/configure.html#cmdoption-enable-optimizations
-  enableOptimizations ? false,
-
-  # improves performance, but remains reproducible
-  enableNoSemanticInterposition ? true,
-
-  # enabling LTO on 32bit arch causes downstream packages to fail when linking
-  enableLTO ?
-    !withMinimalDeps
-    && (stdenv.hostPlatform.isDarwin || (stdenv.hostPlatform.is64bit && stdenv.hostPlatform.isLinux)),
-
-  # enable asserts to ensure the build remains reproducible
-  reproducibleBuild ? false,
-
-  # for the Python package set
-  packageOverrides ? (self: super: { }),
-
+  sqlite,
   # tests
   testers,
-
+  tzdata,
+  windows,
+  xz,
+  zlib,
+  zstd,
+  __splices ? { },
   # allow pythonMinimal to prevent accidental dependencies it doesn't want
   # Having this as an option is useful to allow overriding, eg. adding things to
   # python3Minimal
   allowedReferenceNames ? if withMinimalDeps then [ "bashNonInteractive" ] else [ ],
-
+  # optional dependencies
+  bluezSupport ? !withMinimalDeps && stdenv.hostPlatform.isLinux,
+  enableDebug ? false,
+  enableFramework ? false,
+  enableGIL ? true,
+  # enabling LTO on 32bit arch causes downstream packages to fail when linking
+  enableLTO ?
+    !withMinimalDeps
+    && (stdenv.hostPlatform.isDarwin || (stdenv.hostPlatform.is64bit && stdenv.hostPlatform.isLinux)),
+  # improves performance, but remains reproducible
+  enableNoSemanticInterposition ? true,
+  # pgo (not reproducible) + -fno-semantic-interposition
+  # https://docs.python.org/3/using/configure.html#cmdoption-enable-optimizations
+  enableOptimizations ? false,
+  includeSiteCustomize ? !withMinimalDeps,
+  mimetypesSupport ? !withMinimalDeps,
+  noldconfigPatch ? ./. + "/${sourceVersion.major}.${sourceVersion.minor}/no-ldconfig.patch",
+  # for the Python package set
+  packageOverrides ? (self: super: { }),
+  # splicing/cross
+  pythonAttr ? "python${sourceVersion.major}${sourceVersion.minor}",
+  rebuildBytecode ? !withMinimalDeps,
+  # enable asserts to ensure the build remains reproducible
+  reproducibleBuild ? false,
+  static ? stdenv.hostPlatform.isStatic,
+  stripBytecode ? true,
+  stripConfig ? withMinimalDeps,
+  stripIdlelib ? withMinimalDeps,
+  stripTests ? withMinimalDeps,
+  stripTkinter ? withMinimalDeps,
+  withExpat ? !withMinimalDeps,
+  withGdbm ? !withMinimalDeps && !stdenv.hostPlatform.isWindows,
+  # high level switches
+  withMinimalDeps ? false,
+  withMpdecimal ? !withMinimalDeps,
+  withOpenssl ? !withMinimalDeps,
+  withReadline ? !withMinimalDeps && !stdenv.hostPlatform.isWindows,
+  withSqlite ? !withMinimalDeps,
+  withZstd ? !withMinimalDeps,
 }@inputs:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -160,6 +145,7 @@ let
         pythonOnBuildForHost = override pkgsBuildHost.${pythonAttr};
         pythonOnBuildForTarget = override pkgsBuildTarget.${pythonAttr};
         pythonOnHostForHost = override pkgsHostHost.${pythonAttr};
+
         pythonOnTargetForTarget = lib.optionalAttrs (lib.hasAttr pythonAttr pkgsTargetTarget) (
           override pkgsTargetTarget.${pythonAttr}
         );
@@ -213,10 +199,9 @@ let
         libPrefix
         pythonVersion
         ;
-      implementation = "cpython";
-      executable = "python${pythonVersion}${abiFlags}";
-      sitePackages = "lib/${libPrefix}/site-packages";
+
       inherit hasDistutilsCxxPatch pythonAttr;
+
       inherit (splices)
         pythonOnBuildForBuild
         pythonOnBuildForHost
@@ -225,11 +210,16 @@ let
         pythonOnTargetForTarget
         ;
 
+      executable = "python${pythonVersion}${abiFlags}";
+      implementation = "cpython";
+
       pythonABITags = [
         "abi3"
         "none"
         "cp${sourceVersion.major}${sourceVersion.minor}${abiFlags}"
       ];
+
+      sitePackages = "lib/${libPrefix}/site-packages";
     };
 
   version = with sourceVersion; "${major}.${minor}.${patch}${suffix}";
@@ -321,10 +311,11 @@ let
       pythonOnBuildForHost.interpreter;
 
   src = fetchurl {
+    inherit hash;
+
     url =
       with sourceVersion;
       "https://www.python.org/ftp/python/${major}.${minor}.${patch}/Python-${version}.tar.xz";
-    inherit hash;
   };
 
   # win32 is added by Fedora’s patch
@@ -344,9 +335,9 @@ let
           # the return value from distutils.util.get_platform()" fails.
           # https://peps.python.org/pep-0600/
           powerpc = "ppc";
-          powerpcle = "ppcle";
           powerpc64 = "ppc64";
           powerpc64le = "ppc64le";
+          powerpcle = "ppcle";
         }
         .${stdenv.hostPlatform.parsed.cpu.name} or stdenv.hostPlatform.parsed.cpu.name;
     in
@@ -356,19 +347,9 @@ let
 in
 with passthru;
 stdenv.mkDerivation (finalAttrs: {
-  pname = "python3";
   inherit src version;
-
   inherit nativeBuildInputs;
-  buildInputs =
-    lib.optionals (!stdenv.hostPlatform.isWindows) [
-      bashNonInteractive # only required for patchShebangs
-    ]
-    ++ buildInputs;
-
-  prePatch = optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace configure --replace-fail '`/usr/bin/arch`' '"i386"'
-  '';
+  pname = "python3";
 
   patches = [
     # Disable the use of ldconfig in ctypes.util.find_library (since
@@ -407,8 +388,8 @@ stdenv.mkDerivation (finalAttrs: {
         ./3.11/python-3.x-distutils-C++.patch
       else
         fetchpatch {
-          url = "https://bugs.python.org/file48016/python-3.x-distutils-C++.patch";
           sha256 = "1h18lnpx539h5lfxyk379dxwr8m2raigcjixkf133l4xy3f4bzi2";
+          url = "https://bugs.python.org/file48016/python-3.x-distutils-C++.patch";
         }
     )
   ]
@@ -432,10 +413,10 @@ stdenv.mkDerivation (finalAttrs: {
     let
       # https://src.fedoraproject.org/rpms/mingw-python3
       mingw-patch = fetchgit {
-        name = "mingw-python-patches";
-        url = "https://src.fedoraproject.org/rpms/mingw-python3.git";
-        rev = "3edecdbfb4bbf1276d09cd5e80e9fb3dd88c9511"; # for python 3.11.9 at the time of writing.
         hash = "sha256-kpXoIHlz53+0FAm/fK99ZBdNUg0u13erOr1XP2FSkQY=";
+        name = "mingw-python-patches";
+        rev = "3edecdbfb4bbf1276d09cd5e80e9fb3dd88c9511"; # for python 3.11.9 at the time of writing.
+        url = "https://src.fedoraproject.org/rpms/mingw-python3.git";
       };
     in
     (map (f: "${mingw-patch}/${f}") [
@@ -466,20 +447,11 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "@mime-types@" "${mailcap}"
     '';
 
-  env = {
-    CPPFLAGS = concatStringsSep " " (map (p: "-I${getDev p}/include") buildInputs);
-    LDFLAGS = concatStringsSep " " (map (p: "-L${getLib p}/lib") buildInputs);
-    LIBS = "${optionalString (!stdenv.hostPlatform.isDarwin && withLibxcrypt) "-lcrypt"}";
-    NIX_LDFLAGS = lib.optionalString (stdenv.cc.isGNU && !stdenv.hostPlatform.isStatic) (
-      {
-        "glibc" = "-lgcc_s";
-        "musl" = "-lgcc_eh";
-      }
-      ."${stdenv.hostPlatform.libc}" or ""
-    );
-    # Determinism: We fix the hashes of str, bytes and datetime objects.
-    PYTHONHASHSEED = 0;
-  };
+  buildInputs =
+    lib.optionals (!stdenv.hostPlatform.isWindows) [
+      bashNonInteractive # only required for patchShebangs
+    ]
+    ++ buildInputs;
 
   # https://docs.python.org/3/using/configure.html
   configureFlags = [
@@ -566,6 +538,23 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_func_dlopen=no"
   ];
 
+  env = {
+    CPPFLAGS = concatStringsSep " " (map (p: "-I${getDev p}/include") buildInputs);
+    LDFLAGS = concatStringsSep " " (map (p: "-L${getLib p}/lib") buildInputs);
+    LIBS = "${optionalString (!stdenv.hostPlatform.isDarwin && withLibxcrypt) "-lcrypt"}";
+
+    NIX_LDFLAGS = lib.optionalString (stdenv.cc.isGNU && !stdenv.hostPlatform.isStatic) (
+      {
+        "glibc" = "-lgcc_s";
+        "musl" = "-lgcc_eh";
+      }
+      ."${stdenv.hostPlatform.libc}" or ""
+    );
+
+    # Determinism: We fix the hashes of str, bytes and datetime objects.
+    PYTHONHASHSEED = 0;
+  };
+
   preConfigure = ''
     # Attempt to purify some of the host info collection
     sed -E -i -e 's/uname -r/echo/g' -e 's/uname -n/echo nixpkgs/g' config.guess
@@ -612,8 +601,6 @@ stdenv.mkDerivation (finalAttrs: {
     optionalString enableNoSemanticInterposition ''
       export CFLAGS_NODIST="-fno-semantic-interposition"
     '';
-
-  setupHook = python-setup-hook sitePackages;
 
   postInstall =
     let
@@ -785,19 +772,6 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
-  # Enforce that we don't have references to the OpenSSL -dev package, which we
-  # explicitly specify in our configure flags above.
-  disallowedReferences =
-    lib.optionals (withOpenssl && !static && !enableFramework) [
-      openssl.dev
-    ]
-    ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
-      # Ensure we don't have references to build-time packages.
-      # These typically end up in shebangs.
-      pythonOnBuildForHost
-      buildPackages.bashNonInteractive
-    ];
-
   # Optionally set allowedReferences to guarantee minimal dependencies
   # Allows python3Minimal to stay minimal and not have deps added by accident
   # Doesn't do anything if allowedReferenceNames is empty (was not set)
@@ -811,28 +785,48 @@ stdenv.mkDerivation (finalAttrs: {
       "out"
     ];
 
-  separateDebugInfo = true;
   __structuredAttrs = true;
+
+  # Enforce that we don't have references to the OpenSSL -dev package, which we
+  # explicitly specify in our configure flags above.
+  disallowedReferences =
+    lib.optionals (withOpenssl && !static && !enableFramework) [
+      openssl.dev
+    ]
+    ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+      # Ensure we don't have references to build-time packages.
+      # These typically end up in shebangs.
+      pythonOnBuildForHost
+      buildPackages.bashNonInteractive
+    ];
+
+  enableParallelBuilding = true;
+
+  prePatch = optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace configure --replace-fail '`/usr/bin/arch`' '"i386"'
+  '';
+
+  separateDebugInfo = true;
+  setupHook = python-setup-hook sitePackages;
 
   passthru = passthru // {
     doc = stdenv.mkDerivation {
       inherit src;
-      name = "python${pythonVersion}-${version}-doc";
-
-      dontConfigure = true;
-
-      dontBuild = true;
-
-      sphinxRoot = "Doc";
-
-      postInstallSphinx = ''
-        mv $out/share/doc/* $out/share/doc/python${pythonVersion}-${version}
-      '';
 
       nativeBuildInputs = with pkgsBuildBuild.python3.pkgs; [
         sphinxHook
         python-docs-theme
       ];
+
+      dontBuild = true;
+      dontConfigure = true;
+      name = "python${pythonVersion}-${version}-doc";
+
+      postInstallSphinx = ''
+        mv $out/share/doc/* $out/share/doc/python${pythonVersion}-${version}
+      '';
+
+      sphinxRoot = "Doc";
     };
 
     tests = passthru.tests // {
@@ -840,21 +834,9 @@ stdenv.mkDerivation (finalAttrs: {
     };
   };
 
-  enableParallelBuilding = true;
-
   meta = {
-    homepage = "https://www.python.org";
-    changelog =
-      let
-        majorMinor = lib.versions.majorMinor version;
-        dashedVersion = lib.replaceStrings [ "." "a" "b" ] [ "-" "-alpha-" "-beta-" ] version;
-      in
-      if sourceVersion.suffix == "" then
-        "https://docs.python.org/release/${version}/whatsnew/changelog.html"
-      else
-        "https://docs.python.org/${majorMinor}/whatsnew/changelog.html#python-${dashedVersion}";
-    donationPage = "https://www.python.org/psf/donations/";
     description = "High-level dynamically-typed programming language";
+
     longDescription = ''
       Python is a remarkably powerful dynamic programming language that
       is used in a wide variety of application domains. Some of its key
@@ -864,18 +846,35 @@ stdenv.mkDerivation (finalAttrs: {
       hierarchical packages; exception-based error handling; and very
       high level dynamic data types.
     '';
+
+    homepage = "https://www.python.org";
+
+    changelog =
+      let
+        majorMinor = lib.versions.majorMinor version;
+        dashedVersion = lib.replaceStrings [ "." "a" "b" ] [ "-" "-alpha-" "-beta-" ] version;
+      in
+      if sourceVersion.suffix == "" then
+        "https://docs.python.org/release/${version}/whatsnew/changelog.html"
+      else
+        "https://docs.python.org/${majorMinor}/whatsnew/changelog.html#python-${dashedVersion}";
+
     license = lib.licenses.psfl;
-    pkgConfigModules = [ "python3" ];
+
     platforms =
       lib.platforms.linux ++ lib.platforms.darwin ++ lib.platforms.windows ++ lib.platforms.freebsd;
+
     mainProgram = executable;
-    teams = [ lib.teams.python ];
+
     # static build on aarch64-darwin breaks with:
     # configure: error: C compiler cannot create executables
-
     # mingw patches only apply to Python 3.11 currently
     broken =
       (lib.versions.minor version != "11" && stdenv.hostPlatform.isWindows)
       || (stdenv.hostPlatform.isStatic && stdenv.hostPlatform.isDarwin);
+
+    donationPage = "https://www.python.org/psf/donations/";
+    pkgConfigModules = [ "python3" ];
+    teams = [ lib.teams.python ];
   };
 })

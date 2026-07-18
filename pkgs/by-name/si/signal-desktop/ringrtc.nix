@@ -1,20 +1,20 @@
 {
-  rustPlatform,
   lib,
   fetchFromGitHub,
   cmake,
-  protobuf,
-  webrtc,
-  pkg-config,
   cubeb,
+  pkg-config,
+  protobuf,
+  rustPlatform,
+  webrtc,
 }:
 let
   cubeb' = cubeb.override {
     alsaSupport = false;
-    pulseSupport = true;
-    jackSupport = false;
-    sndioSupport = false;
     enableShared = false;
+    jackSupport = false;
+    pulseSupport = true;
+    sndioSupport = false;
   };
 in
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,31 +28,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ekSXEaAyVzd5957qoFakD33UYrUmvxZL19M6uflPR5U=";
   };
 
-  cargoHash = "sha256-oNHT2owg3Ob2z8JxdYnICRdogK+XaasVgbF5RYYBJas=";
-
-  preConfigure = ''
-    # Check for matching webrtc version
-    grep 'webrtc.version=${webrtc.version}' config/version.properties
-  '';
-
-  cargoBuildFlags = [
-    "-p"
-    "ringrtc"
-    "--features"
-    "electron"
-  ];
-  doCheck = false;
-
-  env = {
-    LIBCUBEB_SYS_USE_PKG_CONFIG = 1;
-    LIBCUBEB_STATIC = 1;
-  };
-
   nativeBuildInputs = [
     protobuf
     cmake
     pkg-config
   ];
+
   buildInputs = [
     webrtc
     cubeb'
@@ -60,9 +41,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # Workaround for https://github.com/NixOS/nixpkgs/pull/394607
   ++ cubeb'.buildInputs;
 
+  cargoHash = "sha256-oNHT2owg3Ob2z8JxdYnICRdogK+XaasVgbF5RYYBJas=";
+
+  env = {
+    LIBCUBEB_STATIC = 1;
+    LIBCUBEB_SYS_USE_PKG_CONFIG = 1;
+  };
+
+  preConfigure = ''
+    # Check for matching webrtc version
+    grep 'webrtc.version=${webrtc.version}' config/version.properties
+  '';
+
+  doCheck = false;
+
+  cargoBuildFlags = [
+    "-p"
+    "ringrtc"
+    "--features"
+    "electron"
+  ];
+
   meta = {
-    homepage = "https://github.com/signalapp/ringrtc";
     description = "RingRTC library used by Signal";
+    homepage = "https://github.com/signalapp/ringrtc";
     license = lib.licenses.agpl3Only;
     platforms = lib.platforms.unix;
   };

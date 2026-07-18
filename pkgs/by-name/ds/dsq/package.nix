@@ -2,13 +2,13 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  nix-update-script,
-  testers,
-  python3,
   curl,
-  jq,
-  p7zip,
   dsq,
+  jq,
+  nix-update-script,
+  p7zip,
+  python3,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,11 +23,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-MbBR+OC1OGhZZGcZqc+Jzmabdc5ZfFEwzqP5YMrj6mY=";
-
-  ldflags = [
-    "-X"
-    "main.Version=${finalAttrs.version}"
-  ];
 
   nativeCheckInputs = [
     python3
@@ -51,17 +46,21 @@ buildGoModule (finalAttrs: {
     runHook postCheck
   '';
 
-  passthru = {
-    updateScript = nix-update-script { };
+  ldflags = [
+    "-X"
+    "main.Version=${finalAttrs.version}"
+  ];
 
+  passthru = {
     tests.version = testers.testVersion { package = dsq; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    mainProgram = "dsq";
     description = "Commandline tool for running SQL queries against JSON, CSV, Excel, Parquet, and more";
     homepage = "https://github.com/multiprocessio/dsq";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ liff ];
+    mainProgram = "dsq";
   };
 })

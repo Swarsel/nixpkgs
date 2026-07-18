@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  openssl,
   efivar,
   keyutils,
   libxcrypt,
+  openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,11 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/lcp/mokutil";
     description = "Utility to manipulate machines owner keys";
-    mainProgram = "mokutil";
+    homepage = "https://github.com/lcp/mokutil";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ nickcao ];
     platforms = lib.platforms.linux;
+    mainProgram = "mokutil";
   };
 })

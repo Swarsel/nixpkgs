@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest,
 }:
 
 buildPythonPackage rec {
   pname = "mergedeep";
   version = "1.3.4";
-  format = "setuptools";
 
   # PyPI tarball doesn't include tests directory
   src = fetchFromGitHub {
@@ -20,11 +19,12 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytest ];
   checkPhase = "pytest";
+  format = "setuptools";
   pythonImportsCheck = [ "mergedeep" ];
 
   meta = {
-    homepage = "https://github.com/clarketm/mergedeep";
     description = "Deep merge function for python";
+    homepage = "https://github.com/clarketm/mergedeep";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ris ];
   };

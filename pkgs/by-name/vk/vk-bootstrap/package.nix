@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  vulkan-headers,
-  glfw,
   catch2_3,
+  cmake,
+  glfw,
+  vulkan-headers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,21 +30,21 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-headers
   ];
 
+  cmakeFlags = [
+    "-DVK_BOOTSTRAP_INSTALL=1"
+  ];
+
+  doCheck = true;
+
   checkInputs = [
     glfw
     catch2_3
   ];
 
-  doCheck = true;
-
-  cmakeFlags = [
-    "-DVK_BOOTSTRAP_INSTALL=1"
-  ];
-
   meta = {
     description = "Vulkan Bootstrapping Library";
-    license = lib.licenses.mit;
     homepage = "https://github.com/charles-lunarg/vk-bootstrap";
+    license = lib.licenses.mit;
     platforms = lib.platforms.all;
   };
 })

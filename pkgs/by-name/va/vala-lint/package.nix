@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gettext,
   glib,
   json-glib,
   meson,
   ninja,
+  nix-update-script,
   pantheon,
   pkg-config,
   vala,
-  gettext,
   wrapGAppsNoGuiHook,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,15 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/vala-lang/vala-lint";
     description = "Check Vala code files for code-style errors";
+
     longDescription = ''
       Small command line tool and library for checking Vala code files for code-style errors.
       Based on the elementary Code-Style guidelines.
     '';
+
+    homepage = "https://github.com/vala-lang/vala-lint";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.vala-lint";
+    teams = [ lib.teams.pantheon ];
   };
 })

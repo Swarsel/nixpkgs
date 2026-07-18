@@ -2,31 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  pkg-config,
-  cmake,
-  bluez,
-  libusb1,
-  curl,
-  libiconv,
-  gettext,
-  sqlite,
   bash,
+  bluez,
+  cmake,
+  curl,
   dialog,
+  gettext,
+  glib,
+  libgudev,
+  libiconv,
+  libusb1,
+  pkg-config,
+  replaceVars,
+  sqlite,
   dbiSupport ? false,
   libdbi ? null,
   libdbi-drivers ? null,
-  postgresSupport ? false,
   libpq ? null,
-  libgudev,
-  glib,
+  postgresSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gammu";
   version = "1.43.2";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "gammu";
@@ -43,18 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     cmake
   ];
-
-  cmakeFlags = [
-    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
-    # Fix build with CMake 4
-    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10")
-  ];
-
-  strictDeps = true;
 
   buildInputs = [
     bash
@@ -73,11 +65,19 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals postgresSupport [ libpq ];
 
+  cmakeFlags = [
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+    # Fix build with CMake 4
+    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10")
+  ];
+
+  __structuredAttrs = true;
+
   meta = {
-    homepage = "https://wammu.eu/gammu/";
     description = "Command line utility and library to control mobile phones";
+    homepage = "https://wammu.eu/gammu/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

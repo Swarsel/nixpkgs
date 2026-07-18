@@ -4,17 +4,17 @@
   fetchFromGitLab,
   autoconf,
   automake,
+  getopt,
+  gnupg,
+  libmd,
+  libpaper,
   makeWrapper,
-  python3,
+  net-tools,
   perl,
   perlPackages,
-  libmd,
-  gnupg,
-  which,
-  getopt,
-  libpaper,
-  net-tools,
+  python3,
   qprint,
+  which,
   sendmailPath ? "/run/wrappers/bin/sendmail",
 }:
 
@@ -44,11 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.12";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "signing-party-team";
     repo = "signing-party";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-hUlMClx/TRmnC2Ah6MIsNGpZGI/KmgWt2z4XzbIAnag=";
+    domain = "salsa.debian.org";
   };
 
   # TODO: Get this patch upstream...
@@ -59,6 +59,22 @@ stdenv.mkDerivation (finalAttrs: {
       "/usr/sbin/sendmail" "${sendmailPath}"
   '';
 
+  # Perl is required for it's pod2man.
+  # Python and Perl are required for patching the script interpreter paths.
+  nativeBuildInputs = [
+    autoconf
+    automake
+    makeWrapper
+  ];
+
+  buildInputs = [
+    python3
+    perl
+    perlPackages.GnuPGInterface
+    libmd
+    gnupg
+  ];
+
   # One can use the following command to find all relevant Makefiles:
   # grep -R '$(DESTDIR)/usr' | cut -d: -f1 | sort -u | grep -v 'debian/rules'
   preBuild = ''
@@ -68,21 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace sig2dot/Makefile --replace '$(DESTDIR)/usr' "$out"
     substituteInPlace springgraph/Makefile --replace '$(DESTDIR)/usr' "$out"
   '';
-
-  # Perl is required for it's pod2man.
-  # Python and Perl are required for patching the script interpreter paths.
-  nativeBuildInputs = [
-    autoconf
-    automake
-    makeWrapper
-  ];
-  buildInputs = [
-    python3
-    perl
-    perlPackages.GnuPGInterface
-    libmd
-    gnupg
-  ];
 
   postInstall = ''
     # Install all tools which aren't handled by 'make install'.
@@ -278,8 +279,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://salsa.debian.org/signing-party-team/signing-party";
     description = "Collection of several projects relating to OpenPGP";
+
     longDescription = ''
       This is a collection of several projects relating to OpenPGP.
 
@@ -300,6 +301,9 @@ stdenv.mkDerivation (finalAttrs: {
       * keyart: creates a random ASCII art of a PGP key file
       * gpg-key2latex: generate LaTeX file with fingerprint paper slips
     '';
+
+    homepage = "https://salsa.debian.org/signing-party-team/signing-party";
+
     license = with lib.licenses; [
       bsd2
       bsd3
@@ -307,6 +311,7 @@ stdenv.mkDerivation (finalAttrs: {
       gpl2Plus
       gpl3Plus
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

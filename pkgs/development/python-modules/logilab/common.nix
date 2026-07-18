@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   mypy-extensions,
   pytestCheckHook,
   pytz,
@@ -12,23 +12,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "logilab-common";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "forge.extranet.logilab.fr";
     owner = "open-source";
     repo = "logilab-common";
     tag = finalAttrs.version;
     hash = "sha256-cKodCj9m3n4P54CZ2X+BXN62ewd9nHSZBMENlo8S1iY=";
+    domain = "forge.extranet.logilab.fr";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    setuptools
-    mypy-extensions
-    typing-extensions
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -38,6 +29,16 @@ buildPythonPackage (finalAttrs: {
   preCheck = ''
     export COLLECT_DEPRECATION_WARNINGS_PACKAGE_NAME=true
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    setuptools
+    mypy-extensions
+    typing-extensions
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Python packages and modules used by Logilab";

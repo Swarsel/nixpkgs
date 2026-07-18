@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -16,21 +16,22 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-fLT2hZT9o1Ka30EB/6oWwmalhVJ+swXLRFG99yRWd2c=";
   };
 
-  preInstall = "rm webfonts/Sniglet-webfont.ttf";
-
-  nativeBuildInputs = [ installFonts ];
-
   outputs = [
     "out"
     "webfont"
   ];
 
+  nativeBuildInputs = [ installFonts ];
+  preInstall = "rm webfonts/Sniglet-webfont.ttf";
+
   meta = {
     description = "Fun rounded display face that’s great for headlines";
+
     longDescription = ''
       A rounded display face that’s great for headlines. It comes with a full
       character set, so you can type in Icelandic or even French!
     '';
+
     homepage = "https://www.theleagueofmoveabletype.com/sniglet";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ minijackson ];

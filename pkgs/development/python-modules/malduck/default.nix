@@ -1,17 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   capstone,
   click,
   cryptography,
   dnfile,
-  fetchFromGitHub,
   pefile,
   pycryptodomex,
   pyelftools,
+  pytestCheckHook,
   pythonAtLeast,
   setuptools,
-  pytestCheckHook,
   typing-extensions,
   yara-python,
 }:
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "malduck";
   version = "4.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CERT-Polska";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     ./python-3.14-ctypes-layout.patch
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -47,8 +47,7 @@ buildPythonPackage rec {
     yara-python
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "malduck" ];
 
   meta = {

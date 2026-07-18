@@ -1,15 +1,14 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
   requests,
 }:
 
 buildKodiAddon rec {
   pname = "formula1";
-  namespace = "plugin.video.formula1";
   version = "2.0.7";
 
   src = fetchzip {
@@ -21,6 +20,8 @@ buildKodiAddon rec {
     requests
   ];
 
+  namespace = "plugin.video.formula1";
+
   passthru = {
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.formula1";
@@ -28,8 +29,8 @@ buildKodiAddon rec {
   };
 
   meta = {
-    homepage = "https://github.com/jaylinski/kodi-addon-formula1";
     description = "Videos from the Formula 1 website";
+    homepage = "https://github.com/jaylinski/kodi-addon-formula1";
     license = lib.licenses.mit;
     teams = [ lib.teams.kodi ];
   };

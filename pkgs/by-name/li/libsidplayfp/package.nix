@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeFontsConf,
-  gitUpdater,
-  testers,
   autoreconfHook,
-  docSupport ? true,
   doxygen,
+  gitUpdater,
   graphviz,
   libexsid,
   libgcrypt,
   libusb1,
+  makeFontsConf,
   perl,
   pkg-config,
+  testers,
   xa,
+  docSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "libsidplayfp";
     repo = "libsidplayfp";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-gOnLjOw9TN2b0ne7Otm5DZhV/2D1xjLxwnaYilnlBgc=";
+    fetchSubmodules = true;
   };
 
   outputs = [ "out" ] ++ lib.optionals docSupport [ "doc" ];
@@ -54,8 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     libusb1
   ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     (lib.strings.enableFeature true "hardsid")
     (lib.strings.withFeature true "gcrypt")
@@ -70,6 +68,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.strings.enableFeature finalAttrs.finalPackage.doCheck "tests")
   ];
 
+  buildFlags = [ "all" ] ++ lib.optionals docSupport [ "doc" ];
+
   # Make Doxygen happy with the setup, reduce log noise
   env.FONTCONFIG_FILE = lib.optionalString docSupport (makeFontsConf {
     fontDirectories = [ ];
@@ -80,8 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     export XDG_CACHE_HOME=$TMPDIR
   '';
 
-  buildFlags = [ "all" ] ++ lib.optionals docSupport [ "doc" ];
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   postInstall = lib.optionalString docSupport ''
@@ -89,30 +87,38 @@ stdenv.mkDerivation (finalAttrs: {
     mv docs/html $doc/share/doc/libsidplayfp/
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = gitUpdater {
-      rev-prefix = "v";
       ignoredVersions = "[a-zA-Z]";
+      rev-prefix = "v";
     };
   };
 
   meta = {
     description = "Library to play Commodore 64 music derived from libsidplay2";
+
     longDescription = ''
       libsidplayfp is a C64 music player library which integrates
       the reSID SID chip emulation into a cycle-based emulator
       environment, constantly aiming to improve emulation of the
       C64 system and the SID chips.
     '';
+
     homepage = "https://github.com/libsidplayfp/libsidplayfp";
     changelog = "https://github.com/libsidplayfp/libsidplayfp/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ gpl2Plus ];
+
     maintainers = with lib.maintainers; [
       ramkromberg
       OPNA2608
     ];
+
     platforms = lib.platforms.all;
+
     pkgConfigModules = [
       "libsidplayfp"
       "libstilview"

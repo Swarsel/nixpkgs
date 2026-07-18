@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  pkgs,
-  buildFishPlugin,
   fetchFromGitHub,
-  fd,
-  unixtools,
-  procps,
+  buildFishPlugin,
   clownfish,
+  fd,
   fishtape_3,
+  pkgs,
+  procps,
+  unixtools,
 }:
 let
   # we want `pkgs.fzf`, not `fishPlugins.fzf`
@@ -31,11 +31,7 @@ buildFishPlugin rec {
     unixtools.script
     procps
   ];
-  checkPlugins = [
-    clownfish
-    fishtape_3
-  ];
-  checkFunctionDirs = [ "./functions" ];
+
   checkPhase = ''
     # Disable git tests which inspect the project's git repo, which isn't
     # possible since we strip the impure .git from our build input
@@ -57,15 +53,24 @@ buildFishPlugin rec {
       ''script -c 'fish -c "fishtape tests/*/*.fish"' ''
   );
 
+  checkFunctionDirs = [ "./functions" ];
+
+  checkPlugins = [
+    clownfish
+    fishtape_3
+  ];
+
   meta = {
     description = "Augment your fish command line with fzf key bindings";
     homepage = "https://github.com/PatrickF1/fzf.fish";
     changelog = "https://github.com/PatrickF1/fzf.fish/releases/tag/${src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       euxane
       natsukium
     ];
+
     broken = stdenv.hostPlatform.isDarwin;
   };
 }

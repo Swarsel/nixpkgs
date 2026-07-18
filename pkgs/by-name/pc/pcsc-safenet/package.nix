@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  fetchzip,
+  stdenv,
   autoPatchelfHook,
   dpkg,
+  fetchzip,
   gtk3,
   openssl,
   pcsclite,
@@ -13,8 +13,6 @@ stdenv.mkDerivation rec {
   pname = "pcsc-safenet";
   version = "10.8.1050";
 
-  debName = "Installation/Standard/Ubuntu-2204/safenetauthenticationclient_${version}_amd64.deb";
-
   # extract debian package from larger zip file
   src = fetchzip {
     # URL version name is different that the version name of the .deb file inside
@@ -22,26 +20,15 @@ stdenv.mkDerivation rec {
     hash = "sha256-Wh2Ax4ZVFKqn0yDwZmwvtUqwQNYyBng08IPfemHzZC0=";
   };
 
-  dontBuild = true;
-  dontConfigure = true;
-
-  unpackPhase = ''
-    dpkg-deb -x "$src/$debName" .
-  '';
+  nativeBuildInputs = [
+    autoPatchelfHook
+    dpkg
+  ];
 
   buildInputs = [
     gtk3
     openssl
     pcsclite
-  ];
-
-  runtimeDependencies = [
-    openssl
-  ];
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    dpkg
   ];
 
   installPhase = ''
@@ -77,8 +64,6 @@ stdenv.mkDerivation rec {
     ln -sf ${lib.getLib openssl}/lib/libcrypto.so $out/lib/libcrypto.so.3
   '';
 
-  dontAutoPatchelf = true;
-
   # Patch DYN shared libraries (autoPatchElfHook only patches EXEC | INTERP).
   postFixup = ''
     autoPatchelf "$out"
@@ -91,12 +76,25 @@ stdenv.mkDerivation rec {
     done;
   '';
 
+  debName = "Installation/Standard/Ubuntu-2204/safenetauthenticationclient_${version}_amd64.deb";
+  dontAutoPatchelf = true;
+  dontBuild = true;
+  dontConfigure = true;
+
+  runtimeDependencies = [
+    openssl
+  ];
+
+  unpackPhase = ''
+    dpkg-deb -x "$src/$debName" .
+  '';
+
   meta = {
-    homepage = "https://safenet.gemalto.com/multi-factor-authentication/security-applications/authentication-client-token-management";
     description = "Safenet Authentication Client";
-    platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://safenet.gemalto.com/multi-factor-authentication/security-applications/authentication-client-token-management";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ wldhx ];
+    platforms = [ "x86_64-linux" ];
   };
 }

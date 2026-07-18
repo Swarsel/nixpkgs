@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   babel,
   buildPythonPackage,
   cssselect,
-  fetchFromGitHub,
   glibcLocales,
   isodate,
   leather,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "agate";
   version = "1.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wireservice";
@@ -28,6 +27,14 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-REo26vSWFzWsvJzmqlc5A5xEYA2TebQFW6jFRIbH53I=";
   };
+
+  nativeCheckInputs = [
+    cssselect
+    glibcLocales
+    lxml
+    pyicu
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -40,19 +47,12 @@ buildPythonPackage (finalAttrs: {
     pytimeparse
   ];
 
-  nativeCheckInputs = [
-    cssselect
-    glibcLocales
-    lxml
-    pyicu
-    pytestCheckHook
-  ];
-
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # Output is slightly different on macOS
     "test_cast_format_locale"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "agate" ];
 
   meta = {

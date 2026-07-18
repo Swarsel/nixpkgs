@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  libusb1,
+  fetchpatch,
   gtk3,
+  libusb1,
   pkg-config,
   wrapGAppsHook3,
   withGUI ? false,
@@ -33,19 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      name = "calloc-argument-order.patch";
-      url = "https://github.com/stlink-org/stlink/commit/6a6718b3342b6c5e282a4e33325b9f97908a0692.patch";
       includes = [ "src/stlink-lib/chipid.c" ];
+      name = "calloc-argument-order.patch";
       sha256 = "sha256-sAfcrDdoKy5Gl1o/PHEUr8uL9OBq0g1nfRe7Y0ijWAM=";
+      url = "https://github.com/stlink-org/stlink/commit/6a6718b3342b6c5e282a4e33325b9f97908a0692.patch";
     })
   ];
 
-  buildInputs = [
-    libusb1'
-  ]
-  ++ lib.optionals withGUI [
-    gtk3
-  ];
   nativeBuildInputs = [
     cmake
   ]
@@ -54,22 +48,31 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  doInstallCheck = true;
+  buildInputs = [
+    libusb1'
+  ]
+  ++ lib.optionals withGUI [
+    gtk3
+  ];
 
   cmakeFlags = [
     "-DSTLINK_MODPROBED_DIR=${placeholder "out"}/etc/modprobe.d"
     "-DSTLINK_UDEV_RULES_DIR=${placeholder "out"}/lib/udev/rules.d"
   ];
 
+  doInstallCheck = true;
+
   meta = {
     description = "In-circuit debug and programming for ST-Link devices";
     homepage = "https://github.com/stlink-org/stlink";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
-    badPlatforms = lib.platforms.darwin;
+
     maintainers = [
       lib.maintainers.bjornfor
       lib.maintainers.rongcuid
     ];
+
+    platforms = lib.platforms.unix;
+    badPlatforms = lib.platforms.darwin;
   };
 })

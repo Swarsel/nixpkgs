@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cython,
+  fetchPypi,
   matplotlib,
 }:
 
 buildPythonPackage rec {
   pname = "pycocotools";
   version = "2.0.11";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,13 +20,14 @@ buildPythonPackage rec {
     matplotlib
   ];
 
+  # has no tests
+  doCheck = false;
+  format = "setuptools";
+
   pythonImportsCheck = [
     "pycocotools.coco"
     "pycocotools.cocoeval"
   ];
-
-  # has no tests
-  doCheck = false;
 
   meta = {
     description = "Official APIs for the MS-COCO dataset";

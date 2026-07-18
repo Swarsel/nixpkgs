@@ -1,32 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
-  autoPatchelfHook,
-  makeWrapper,
-  wrapGAppsHook3,
   alsa-lib,
+  autoPatchelfHook,
   dbus,
+  dpkg,
   fontconfig,
   freetype,
   glib,
   gst_all_1,
   libGL,
+  libgbm,
   libinput,
   libpulseaudio,
   libsecret,
   libtiff,
+  libx11,
+  libxcb-cursor,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-wm,
   libxkbcommon,
-  libgbm,
+  makeWrapper,
   openssl,
   systemd,
-  libxcb-cursor,
-  libxcb-wm,
-  libxcb-render-util,
-  libxcb-keysyms,
-  libxcb-image,
-  libx11,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -72,11 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcb-render-util
   ];
 
-  libPath = lib.makeLibraryPath finalAttrs.buildInputs;
-
-  dontBuild = true;
-  dontConfigure = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -93,13 +88,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  libPath = lib.makeLibraryPath finalAttrs.buildInputs;
+
   meta = {
     description = "Video-conferencing application, specialized in virtual online meetings, seminars, training sessions and conferences";
     homepage = "https://alfaview.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
-    mainProgram = "alfaview";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "alfaview";
   };
 })

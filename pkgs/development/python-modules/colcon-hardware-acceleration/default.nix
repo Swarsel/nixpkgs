@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   colcon,
   pytest-cov-stub,
   pytestCheckHook,
-  setuptools,
   scspell,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "colcon-hardware-acceleration";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -22,18 +21,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-oDm9sAk280bGn+KJib5vkVD4k29FInzdZkB2WnOLNUE=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    colcon
-  ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
     scspell
     writableTmpDirAsHomeHook
   ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    colcon
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "colcon_hardware_acceleration"

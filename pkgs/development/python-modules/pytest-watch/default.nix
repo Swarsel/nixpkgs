@@ -1,9 +1,9 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  docopt,
   colorama,
+  docopt,
+  fetchPypi,
   pytest,
   watchdog,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-watch";
   version = "4.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -28,11 +27,12 @@ buildPythonPackage rec {
 
   # No Tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_watch" ];
 
   meta = {
-    homepage = "https://github.com/joeyespo/pytest-watch";
     description = "Local continuous test runner with pytest and watchdog";
+    homepage = "https://github.com/joeyespo/pytest-watch";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dmvianna ];
   };

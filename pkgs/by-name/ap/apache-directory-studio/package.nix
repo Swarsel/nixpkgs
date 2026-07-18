@@ -2,20 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  jdk,
-  makeWrapper,
   autoPatchelfHook,
-  makeDesktopItem,
   glib,
-  libsecret,
-  webkitgtk_4_1,
   imagemagick,
+  jdk,
+  libsecret,
+  makeDesktopItem,
+  makeWrapper,
+  webkitgtk_4_1,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "apache-directory-studio";
   version = "2.0.0-M17";
-  versionWithDate = "2.0.0.v20210717-M17";
 
   src =
     if stdenv.hostPlatform.system == "x86_64-linux" then
@@ -26,27 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     else
       throw "Unsupported system: ${stdenv.hostPlatform.system}";
 
-  desktopItem = makeDesktopItem {
-    name = "apache-directory-studio";
-    exec = "ApacheDirectoryStudio";
-    icon = "apache-directory-studio";
-    comment = "Eclipse-based LDAP browser and directory client";
-    desktopName = "Apache Directory Studio";
-    genericName = "Apache Directory Studio";
-    categories = [
-      "Java"
-      "Network"
-    ];
-  };
-
-  buildInputs = [
-    glib
-    libsecret
-  ];
   nativeBuildInputs = [
     makeWrapper
     autoPatchelfHook
     imagemagick
+  ];
+
+  buildInputs = [
+    glib
+    libsecret
   ];
 
   installPhase = ''
@@ -77,17 +64,35 @@ stdenv.mkDerivation (finalAttrs: {
     install -D -t "$out/share/applications" ${finalAttrs.desktopItem}/share/applications/*
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [
+      "Java"
+      "Network"
+    ];
+
+    comment = "Eclipse-based LDAP browser and directory client";
+    desktopName = "Apache Directory Studio";
+    exec = "ApacheDirectoryStudio";
+    genericName = "Apache Directory Studio";
+    icon = "apache-directory-studio";
+    name = "apache-directory-studio";
+  };
+
+  versionWithDate = "2.0.0.v20210717-M17";
+
   meta = {
     description = "Eclipse-based LDAP browser and directory client";
     homepage = "https://directory.apache.org/studio/";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.asl20;
+
+    maintainers = [ lib.maintainers.bjornfor ];
     # Upstream supports macOS and Windows too.
     platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.bjornfor ];
     mainProgram = "ApacheDirectoryStudio";
   };
 })

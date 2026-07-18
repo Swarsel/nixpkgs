@@ -14,6 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-RjkWNw+bNbs0QZwsCuPcTApHHbMuhZWvodFMAze2GqA=";
   };
 
+  patches = [ ./fix-install.patch ];
+
   postPatch = ''
     # Do not strip binary during install
     substituteInPlace Makefile.in \
@@ -21,19 +23,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ autoreconfHook ];
-
   # fdatasync is undocumented on darwin with no header file which breaks the build.
   # use fsync instead.
   configureFlags = lib.optional stdenv.hostPlatform.isDarwin "ac_cv_func_fdatasync=no";
-
-  patches = [ ./fix-install.patch ];
 
   meta = {
     description = "Secure file wiping utility";
     homepage = "https://wipe.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "wipe";
   };
 })

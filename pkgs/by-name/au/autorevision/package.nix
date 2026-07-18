@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   asciidoc,
-  libxml2,
-  docbook_xml_dtd_45,
-  libxslt,
-  docbook_xsl,
-  diffutils,
   coreutils,
+  diffutils,
+  docbook_xml_dtd_45,
+  docbook_xsl,
   gnugrep,
   gnused,
+  libxml2,
+  libxslt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     docbook_xsl
   ];
 
-  installFlags = [ "prefix=$(out)" ];
-
   postInstall = ''
     sed -e "s|\<cmp\>|${diffutils}/bin/cmp|g" \
         -e "s|\<cat\>|${coreutils}/bin/cat|g" \
@@ -41,12 +39,14 @@ stdenv.mkDerivation (finalAttrs: {
         -i "$out/bin/autorevision"
   '';
 
+  installFlags = [ "prefix=$(out)" ];
+
   meta = {
     description = "Extracts revision metadata from your VCS repository";
     homepage = "https://autorevision.github.io/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
     mainProgram = "autorevision";
   };
 })

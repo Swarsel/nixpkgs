@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  pandoc,
   capstone,
   elfutils,
   libtraceevent,
-  ncurses,
-  withLuaJIT ? false,
   luajit,
-  withPython ? false,
+  ncurses,
+  pandoc,
+  pkg-config,
   python3,
+  withLuaJIT ? false,
+  withPython ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     pandoc
   ];
+
   buildInputs = [
     capstone
     elfutils
@@ -53,10 +54,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Function (graph) tracer for user-space";
-    mainProgram = "uftrace";
     homepage = "https://github.com/namhyung/uftrace";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.nthorne ];
+    platforms = lib.platforms.linux;
+    mainProgram = "uftrace";
   };
 })

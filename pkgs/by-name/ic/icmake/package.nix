@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  makeWrapper,
   gcc,
+  makeWrapper,
   ncurses,
 }:
 
@@ -12,15 +12,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "9.03.01";
 
   src = fetchFromGitLab {
-    sha256 = "05r0a69w0hv2qhjpb2bxd0lmp2vv5r2d4iggg6ly4miam0i318jy";
-    rev = finalAttrs.version;
-    repo = "icmake";
     owner = "fbb-git";
+    repo = "icmake";
+    rev = finalAttrs.version;
+    sha256 = "05r0a69w0hv2qhjpb2bxd0lmp2vv5r2d4iggg6ly4miam0i318jy";
   };
-
-  setSourceRoot = ''
-    sourceRoot=$(echo */icmake)
-  '';
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ gcc ];
@@ -40,6 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
 
     wrapProgram $out/bin/icmbuild \
      --prefix PATH : ${ncurses}/bin
+  '';
+
+  setSourceRoot = ''
+    sourceRoot=$(echo */icmake)
   '';
 
   meta = {

@@ -8,17 +8,23 @@ let
   cfg = config.services.ebusd;
 in
 {
-  meta.maintainers = with lib.maintainers; [ nathan-gs ];
-
   options.services.ebusd = {
     enable = lib.mkEnableOption "ebusd, a daemon for communication with eBUS heating systems";
-
     package = lib.mkPackageOption pkgs "ebusd" { };
 
-    device = lib.mkOption {
+    configpath = lib.mkOption {
+      default = "https://ebus.github.io/";
+
+      description = ''
+        Directory to read CSV config files from. This can be a local folder or a URL.
+      '';
+
       type = lib.types.str;
+    };
+
+    device = lib.mkOption {
       default = "";
-      example = "IP:PORT";
+
       description = ''
         Use DEV as eBUS device [/dev/ttyUSB0].
         This can be either:
@@ -29,40 +35,19 @@ in
 
         Source: <https://github.com/john30/ebusd/wiki/2.-Run#device-options>
       '';
-    };
 
-    port = lib.mkOption {
-      default = 8888;
-      type = lib.types.port;
-      description = ''
-        The port on which to listen on
-      '';
-    };
-
-    readonly = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Only read from device, never write to it
-      '';
-    };
-
-    configpath = lib.mkOption {
+      example = "IP:PORT";
       type = lib.types.str;
-      default = "https://ebus.github.io/";
-      description = ''
-        Directory to read CSV config files from. This can be a local folder or a URL.
-      '';
     };
 
-    scanconfig = lib.mkOption {
-      type = lib.types.str;
-      default = "full";
+    extraArguments = lib.mkOption {
+      default = [ ];
+
       description = ''
-        Pick CSV config files matching initial scan ("none" or empty for no initial scan message, "full" for full scan, or a single hex address to scan, default is to send a broadcast ident message).
-        If combined with --checkconfig, you can add scan message data as arguments for checking a particular scan configuration, e.g. "FF08070400/0AB5454850303003277201". For further details on this option,
-        see [Automatic configuration](https://github.com/john30/ebusd/wiki/4.7.-Automatic-configuration).
+        Extra arguments to the ebus daemon
       '';
+
+      type = lib.types.listOf lib.types.str;
     };
 
     logs =
@@ -90,12 +75,14 @@ in
           area:
           lib.nameValuePair area (
             lib.mkOption {
-              type = lib.types.enum levels;
               default = "notice";
-              example = "debug";
+
               description = ''
                 Only write log for matching `AREA`s (${lib.concatStringsSep "|" areas}) below or equal to `LEVEL` (${lib.concatStringsSep "|" levels})
               '';
+
+              example = "debug";
+              type = lib.types.enum levels;
             }
           )
         ) areas
@@ -104,53 +91,85 @@ in
     mqtt = {
       enable = lib.mkEnableOption "support for MQTT";
 
+      home-assistant = lib.mkOption {
+        default = false;
+
+        description = ''
+          Adds the Home Assistant topics to MQTT, read more at [MQTT Integration](https://github.com/john30/ebusd/wiki/MQTT-integration)
+        '';
+
+        type = lib.types.bool;
+      };
+
       host = lib.mkOption {
-        type = lib.types.str;
         default = "localhost";
+
         description = ''
           Connect to MQTT broker on HOST.
         '';
+
+        type = lib.types.str;
+      };
+
+      password = lib.mkOption {
+        description = ''
+          The MQTT password.
+        '';
+
+        type = lib.types.str;
       };
 
       port = lib.mkOption {
         default = 1883;
-        type = lib.types.port;
+
         description = ''
           The port on which to connect to MQTT
         '';
-      };
 
-      home-assistant = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Adds the Home Assistant topics to MQTT, read more at [MQTT Integration](https://github.com/john30/ebusd/wiki/MQTT-integration)
-        '';
+        type = lib.types.port;
       };
 
       retain = lib.mkEnableOption "set the retain flag on all topics instead of only selected global ones";
 
       user = lib.mkOption {
-        type = lib.types.str;
         description = ''
           The MQTT user to use
         '';
-      };
 
-      password = lib.mkOption {
         type = lib.types.str;
-        description = ''
-          The MQTT password.
-        '';
       };
     };
 
-    extraArguments = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
+    port = lib.mkOption {
+      default = 8888;
+
       description = ''
-        Extra arguments to the ebus daemon
+        The port on which to listen on
       '';
+
+      type = lib.types.port;
+    };
+
+    readonly = lib.mkOption {
+      default = false;
+
+      description = ''
+        Only read from device, never write to it
+      '';
+
+      type = lib.types.bool;
+    };
+
+    scanconfig = lib.mkOption {
+      default = "full";
+
+      description = ''
+        Pick CSV config files matching initial scan ("none" or empty for no initial scan message, "full" for full scan, or a single hex address to scan, default is to send a broadcast ident message).
+        If combined with --checkconfig, you can add scan message data as arguments for checking a particular scan configuration, e.g. "FF08070400/0AB5454850303003277201". For further details on this option,
+        see [Automatic configuration](https://github.com/john30/ebusd/wiki/4.7.-Automatic-configuration).
+      '';
+
+      type = lib.types.str;
     };
   };
 
@@ -164,10 +183,20 @@ in
     in
     lib.mkIf cfg.enable {
       systemd.services.ebusd = {
-        description = "EBUSd Service";
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
+        description = "EBUSd Service";
+
         serviceConfig = {
+          # Hardening
+          CapabilityBoundingSet = "";
+
+          DeviceAllow = lib.optionals usesDev [
+            (lib.removePrefix "ens:" (lib.removePrefix "enh:" cfg.device))
+          ];
+
+          DevicePolicy = "closed";
+          DynamicUser = true;
+
           ExecStart =
             let
               args = lib.cli.toCommandLineShellGNU { } (
@@ -180,16 +209,17 @@ in
                       scanconfig
                       readonly
                       ;
+
                     foreground = true;
-                    updatecheck = "off";
                     log = lib.mapAttrsToList (name: value: "${name}:${value}") cfg.logs;
                     mqttretain = cfg.mqtt.retain;
+                    updatecheck = "off";
                   }
                   (lib.optionalAttrs cfg.mqtt.enable {
                     mqtthost = cfg.mqtt.host;
+                    mqttpass = cfg.mqtt.password;
                     mqttport = cfg.mqtt.port;
                     mqttuser = cfg.mqtt.user;
-                    mqttpass = cfg.mqtt.password;
                   })
                   (lib.optionalAttrs cfg.mqtt.home-assistant {
                     mqttint = "${cfg.package}/etc/ebusd/mqtt-hassio.cfg";
@@ -200,21 +230,13 @@ in
             in
             "${cfg.package}/bin/ebusd ${args} ${lib.escapeShellArgs cfg.extraArguments}";
 
-          DynamicUser = true;
-          Restart = "on-failure";
-
-          # Hardening
-          CapabilityBoundingSet = "";
-          DeviceAllow = lib.optionals usesDev [
-            (lib.removePrefix "ens:" (lib.removePrefix "enh:" cfg.device))
-          ];
-          DevicePolicy = "closed";
           LockPersonality = true;
           MemoryDenyWriteExecute = false;
           NoNewPrivileges = true;
           PrivateDevices = !usesDev;
-          PrivateUsers = true;
           PrivateTmp = true;
+          PrivateUsers = true;
+          ProcSubset = "pid";
           ProtectClock = true;
           ProtectControlGroups = true;
           ProtectHome = true;
@@ -223,24 +245,32 @@ in
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
           ProtectProc = "invisible";
-          ProcSubset = "pid";
           ProtectSystem = "strict";
           RemoveIPC = true;
+          Restart = "on-failure";
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
           SupplementaryGroups = [ "dialout" ];
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service @pkey"
             "~@privileged @resources"
           ];
+
           UMask = "0077";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
+
+  meta.maintainers = with lib.maintainers; [ nathan-gs ];
 }

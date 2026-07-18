@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  openssl,
   stdenv,
+  fetchFromGitHub,
   alsa-lib,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,10 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/GU1e01AjeS4AVBvQUi/GZKeQ0X+hnmt+kyW3gp0jgg=";
   };
 
-  cargoHash = "sha256-iuC0YBhzK8mATJekTgBDMiXATRdThem35p5AyDXQNGo=";
-
-  buildFeatures = [ "scrape" ] ++ lib.optionals stdenv.hostPlatform.isLinux [ "mpris" ];
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -35,10 +31,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     alsa-lib
   ];
 
+  cargoHash = "sha256-iuC0YBhzK8mATJekTgBDMiXATRdThem35p5AyDXQNGo=";
+
   checkFlags = [
     # Skip this test as it doesn't work in the nix sandbox
     "--skip=tests::tracks::list::download"
   ];
+
+  buildFeatures = [ "scrape" ] ++ lib.optionals stdenv.hostPlatform.isLinux [ "mpris" ];
 
   meta = {
     description = "Extremely simple lofi player";

@@ -2,17 +2,17 @@
 let
   buildFreshRssExtension =
     args@{
-      pname,
-      version,
-      src,
       FreshRssExtUniqueId,
-      configurePhase ? ''
-        runHook preConfigure
-        runHook postConfigure
-      '',
+      pname,
+      src,
+      version,
       buildPhase ? ''
         runHook preBuild
         runHook postBuild
+      '',
+      configurePhase ? ''
+        runHook preConfigure
+        runHook postConfigure
       '',
       dontPatchELF ? true,
       dontStrip ? true,
@@ -23,8 +23,6 @@ let
     stdenv.mkDerivation (
       (removeAttrs args [ "FreshRssExtUniqueId" ])
       // {
-        pname = "freshrss-extension-${pname}";
-
         inherit
           version
           src
@@ -35,7 +33,7 @@ let
           sourceRoot
           ;
 
-        installPrefix = "share/freshrss/extensions/xExtension-${FreshRssExtUniqueId}";
+        pname = "freshrss-extension-${pname}";
 
         installPhase = ''
           runHook preInstall
@@ -45,6 +43,8 @@ let
 
           runHook postInstall
         '';
+
+        installPrefix = "share/freshrss/extensions/xExtension-${FreshRssExtUniqueId}";
 
         passthru = passthru // {
           inherit FreshRssExtUniqueId;

@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   uri,
 }:
 
@@ -16,9 +16,8 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-/I233A86T+QEb2qbSHucgzRzYEjS08eKezSXOwz2ml0=";
   };
 
-  doCheck = true;
-
   propagatedBuildInputs = [ uri ];
+  doCheck = true;
 
   meta = {
     description = "Write HTML directly in your OCaml source files with editor support";

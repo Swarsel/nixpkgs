@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "aioserial";
   version = "1.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pyserial ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "aioserial" ];
 
   meta = {

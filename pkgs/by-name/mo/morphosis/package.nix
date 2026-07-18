@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitLab,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitLab,
   glib,
   gobject-introspection,
   gtk4,
@@ -21,14 +21,13 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "morphosis";
   version = "48.2";
-  pyproject = false;
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "morphosis";
     tag = finalAttrs.version;
     hash = "sha256-wDEhXIt1iup7QxKsmWUjQZGTEZhOuNjpLqzpqs+TPHo=";
+    domain = "gitlab.gnome.org";
   };
 
   strictDeps = true;
@@ -52,12 +51,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   dependencies = with python3Packages; [ pygobject3 ];
-
   dontWrapGApps = true;
+
   makeWrapperArgs = [
     "\${gappsWrapperArgs[@]}"
     "--prefix PATH : ${lib.makeBinPath [ pandoc ]}"
   ];
+
+  pyproject = false;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -68,7 +69,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://gitlab.gnome.org/World/morphosis";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "morphosis";
     platforms = lib.platforms.linux;
+    mainProgram = "morphosis";
   };
 })

@@ -3,25 +3,23 @@
   stdenv,
   clang,
   llvmPackages,
-  perl,
   makeWrapper,
+  perl,
   python3,
 }:
 
 stdenv.mkDerivation {
-  pname = "clang-analyzer";
   inherit (llvmPackages.clang-unwrapped) src version;
-
+  pname = "clang-analyzer";
   patches = [ ./0001-Fix-scan-build-to-use-NIX_CFLAGS_COMPILE.patch ];
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     clang
     llvmPackages.clang
     perl
     python3
   ];
-  nativeBuildInputs = [ makeWrapper ];
-
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p $out/share/scan-view $out/bin
@@ -37,15 +35,19 @@ stdenv.mkDerivation {
       --add-flags "--use-analyzer='${llvmPackages.clang}/bin/clang'"
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Clang Static Analyzer";
+
     longDescription = ''
       The Clang Static Analyzer is a source code analysis tool that finds bugs
       in C, C++, and Objective-C programs.
     '';
+
     homepage = "https://clang-analyzer.llvm.org/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.thoughtpolice ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  kubent,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  kubent,
   testers,
 }:
 
@@ -28,15 +28,15 @@ buildGoModule (finalAttrs: {
   subPackages = [ "cmd/kubent" ];
 
   passthru.tests.version = testers.testVersion {
-    package = kubent;
-    command = "kubent --version";
     version = "v${finalAttrs.version}";
+    command = "kubent --version";
+    package = kubent;
   };
 
   meta = {
     description = "Easily check your cluster for use of deprecated APIs";
-    changelog = "https://github.com/doitintl/kube-no-trouble/releases/tag/${finalAttrs.version}";
     homepage = "https://github.com/doitintl/kube-no-trouble";
+    changelog = "https://github.com/doitintl/kube-no-trouble/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     mainProgram = "kubent";
   };

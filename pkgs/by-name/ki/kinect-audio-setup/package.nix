@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchgit,
-  requireFile,
-  pkg-config,
   libusb1,
   p7zip,
+  pkg-config,
+  requireFile,
 }:
 
 let
@@ -19,24 +19,10 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "kinect-audio-setup";
-
   # On update: Make sure that the `firmwareURL` is still in sync with upstream.
   # If the project structure hasn't changed you can find the URL in the
   # `kinect_fetch_fw` file in the project source.
   version = "0.5";
-
-  # This is an MSI or CAB file
-  env.FIRMWARE = requireFile {
-    name = "UACFirmware";
-    sha256 = "08a2vpgd061cmc6h3h8i6qj3sjvjr1fwcnwccwywqypz3icn8xw1";
-    message = ''
-      In order to install the Kinect Audio Firmware, you need to download the
-      non-redistributable firmware from Microsoft.
-      The firmware is available at ${firmwareUrl} and the license at ${licenseUrl} .
-      Save the file as UACFirmware and use "nix-prefetch-url file://$PWD/UACFirmware" to
-      add it to the Nix store.
-    '';
-  };
 
   src = fetchgit {
     url = "git://git.ao2.it/kinect-audio-setup.git";
@@ -64,6 +50,20 @@ stdenv.mkDerivation (finalAttrs: {
     "LOADER_PATH=$(out)/libexec/kinect_upload_fw"
   ];
 
+  # This is an MSI or CAB file
+  env.FIRMWARE = requireFile {
+    message = ''
+      In order to install the Kinect Audio Firmware, you need to download the
+      non-redistributable firmware from Microsoft.
+      The firmware is available at ${firmwareUrl} and the license at ${licenseUrl} .
+      Save the file as UACFirmware and use "nix-prefetch-url file://$PWD/UACFirmware" to
+      add it to the Nix store.
+    '';
+
+    name = "UACFirmware";
+    sha256 = "08a2vpgd061cmc6h3h8i6qj3sjvjr1fwcnwccwywqypz3icn8xw1";
+  };
+
   buildPhase = ''
     runHook preBuild
     make -C kinect_upload_fw kinect_upload_fw $makeFlags "''${makeFlagsArray[@]}"
@@ -89,8 +89,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Tools to enable audio input from the Microsoft Kinect sensor device";
     homepage = "https://git.ao2.it/kinect-audio-setup.git";
+    license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ berbiche ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.unfree;
   };
 })

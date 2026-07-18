@@ -1,50 +1,30 @@
 {
-  pname,
-  version,
-  src,
-  meta,
-
-  pnpm-hash,
-  vendor-hash,
-
-  rustPlatform,
   cargo-tauri,
-  jq,
-  moreutils,
-  nodejs,
-  pkg-config,
-  pnpm_10,
   fetchPnpmDeps,
-  pnpmConfigHook,
-
   glib,
+  jq,
   kdePackages,
   libayatana-appindicator,
   libsForQt5,
   libsoup_3,
+  meta,
+  moreutils,
+  nodejs,
   openssl,
+  pkg-config,
+  pname,
+  pnpm-hash,
+  pnpmConfigHook,
+  pnpm_10,
+  rustPlatform,
+  src,
+  vendor-hash,
+  version,
   webkitgtk_4_1,
 }:
 rustPlatform.buildRustPackage {
   inherit version src meta;
   pname = "${pname}-unwrapped";
-
-  cargoHash = vendor-hash;
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit
-      pname
-      version
-      src
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = pnpm-hash;
-  };
-
-  env = {
-    OPENSSL_NO_VENDOR = 1;
-  };
 
   postPatch = ''
     # We disable the option to try to use the bleeding-edge version of mihomo
@@ -97,9 +77,27 @@ rustPlatform.buildRustPackage {
     webkitgtk_4_1
   ];
 
+  cargoHash = vendor-hash;
+
+  env = {
+    OPENSSL_NO_VENDOR = 1;
+  };
+
   # make sure the .desktop file name does not contain whitespace,
   # so that the service can register it as an auto-start item
   postInstall = ''
     mv $out/share/applications/Clash\ Verge.desktop $out/share/applications/clash-verge.desktop
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit
+      pname
+      version
+      src
+      ;
+
+    fetcherVersion = 4;
+    hash = pnpm-hash;
+    pnpm = pnpm_10;
+  };
 }

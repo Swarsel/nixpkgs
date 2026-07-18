@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   blas,
   boost,
@@ -99,16 +99,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Engineering and scientific problems algorithms";
-    mainProgram = "nvcc_wrapper";
+
     longDescription = ''
       The Trilinos Project is an effort to develop algorithms and enabling
       technologies within an object-oriented software framework for the
       solution of large-scale, complex multi-physics engineering and scientific
       problems.
     '';
+
     homepage = "https://trilinos.org";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fbeffa ];
     platforms = lib.platforms.all;
+    mainProgram = "nvcc_wrapper";
   };
 })

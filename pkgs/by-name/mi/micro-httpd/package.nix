@@ -20,11 +20,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "http://acme.com/software/micro_httpd/";
     description = "Really small HTTP server";
+    homepage = "http://acme.com/software/micro_httpd/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "micro_httpd";
   };
 }

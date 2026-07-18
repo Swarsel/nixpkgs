@@ -1,20 +1,19 @@
 {
   lib,
   fetchFromGitLab,
-  wrapGAppsHook3,
-  libxtst,
-  libx11,
   gobject-introspection,
   gtk3,
   libappindicator-gtk3,
-  slop,
+  libx11,
+  libxtst,
   python3,
+  slop,
+  wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "screenkey";
   version = "1.5";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "screenkey";
@@ -22,6 +21,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-kWktKzRyWHGd1lmdKhPwrJoSzAIN2E5TKyg30uhM4Ug=";
   };
+
+  # Fix CDLL python calls for non absolute paths of xorg libraries
+  postPatch = ''
+    substituteInPlace Screenkey/xlib.py \
+      --replace-fail libX11.so.6 ${lib.getLib libx11}/lib/libX11.so.6 \
+      --replace-fail libXtst.so.6 ${lib.getLib libxtst}/lib/libXtst.so.6
+  '';
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -34,6 +40,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     libappindicator-gtk3
   ];
 
+  # screenkey does not have any tests
+  doCheck = false;
+
+  preFixup = ''
+    makeWrapperArgs+=(
+      --prefix PATH ":" "${lib.makeBinPath [ slop ]}"
+      "''${gappsWrapperArgs[@]}"
+      )
+  '';
+
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -45,32 +61,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # Prevent double wrapping because of wrapGAppsHook3
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=(
-      --prefix PATH ":" "${lib.makeBinPath [ slop ]}"
-      "''${gappsWrapperArgs[@]}"
-      )
-  '';
-
-  # screenkey does not have any tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "Screenkey" ];
 
-  # Fix CDLL python calls for non absolute paths of xorg libraries
-  postPatch = ''
-    substituteInPlace Screenkey/xlib.py \
-      --replace-fail libX11.so.6 ${lib.getLib libx11}/lib/libX11.so.6 \
-      --replace-fail libXtst.so.6 ${lib.getLib libxtst}/lib/libXtst.so.6
-  '';
-
   meta = {
-    homepage = "https://www.thregr.org/~wavexx/software/screenkey/";
     description = "Screencast tool to display your keys inspired by Screenflick";
+    homepage = "https://www.thregr.org/~wavexx/software/screenkey/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "screenkey";
   };
 })

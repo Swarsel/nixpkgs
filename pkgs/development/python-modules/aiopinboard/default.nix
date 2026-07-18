@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   arrow,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   frozenlist,
   poetry-core,
   pytest-aiohttp,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "aiopinboard";
   version = "2024.01.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -41,6 +40,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiopinboard" ];
 
   meta = {

@@ -1,25 +1,23 @@
 {
+  lib,
   buildPythonPackage,
+  cssutils,
   fetchPypi,
   whey,
-  cssutils,
-  lib,
 }:
 buildPythonPackage rec {
   pname = "dict2css";
   version = "0.3.0.post1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "dict2css";
     hash = "sha256-icVEwhxMp0csP/+50309km9gYymv23Udwd5npBG3Bxk=";
+    pname = "dict2css";
   };
 
   build-system = [ whey ];
-
   dependencies = [ cssutils ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dict2css" ];
 
   meta = {

@@ -1,54 +1,49 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  texliveInfraOnly,
-
-  # build-system
-  hatchling,
-
-  # buildInputs
-  cairo,
-
+  audioop-lts,
   # dependencies
   av,
   beautifulsoup4,
+  buildPythonPackage,
+  # buildInputs
+  cairo,
   click,
   cloup,
   decorator,
+  # tests
+  ffmpeg,
+  # build-system
+  hatchling,
   isosurfaces,
+  # optional-dependencies
+  jupyterlab,
   manimpango,
   mapbox-earcut,
   moderngl,
   moderngl-window,
   networkx,
+  notebook,
   numpy,
   pillow,
   pycairo,
   pydub,
   pygments,
+  pytest-cov-stub,
+  pytest-xdist,
+  pytestCheckHook,
+  pythonAtLeast,
   rich,
   scipy,
   screeninfo,
   skia-pathops,
   srt,
   svgelements,
+  texliveInfraOnly,
   tqdm,
   typing-extensions,
-  watchdog,
-  pythonAtLeast,
-  audioop-lts,
-
-  # optional-dependencies
-  jupyterlab,
-  notebook,
-
-  # tests
-  ffmpeg,
-  pytest-cov-stub,
-  pytest-xdist,
-  pytestCheckHook,
   versionCheckHook,
+  watchdog,
 }:
 
 let
@@ -187,7 +182,6 @@ let
 in
 buildPythonPackage (finalAttrs: {
   pname = "manim";
-  pyproject = true;
   version = "0.20.1";
 
   src = fetchFromGitHub {
@@ -197,17 +191,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-rfPqKPbxT8UsxSin4DquDjPMAUEYmKixx2fBlr5mz8U=";
   };
 
+  patches = [ ./pytest-report-header.patch ];
+  buildInputs = [ cairo ];
+
+  nativeCheckInputs = [
+    ffmpeg
+    manim-tinytex
+    pytest-cov-stub
+    pytest-xdist
+    pytestCheckHook
+    versionCheckHook
+  ];
+
   build-system = [
     hatchling
   ];
 
-  patches = [ ./pytest-report-header.patch ];
-
-  buildInputs = [ cairo ];
-
-  pythonRelaxDeps = [
-    "skia-pathops"
-  ];
   dependencies = [
     av
     beautifulsoup4
@@ -239,14 +238,8 @@ buildPythonPackage (finalAttrs: {
     audioop-lts
   ];
 
-  optional-dependencies = {
-    jupyterlab = [
-      jupyterlab
-      notebook
-    ];
-    # TODO package dearpygui
-    # gui = [ dearpygui ];
-  };
+  # about 55 of ~600 tests failing mostly due to demand for display
+  disabledTests = import ./failing_tests.nix;
 
   makeWrapperArgs = [
     "--prefix"
@@ -258,35 +251,41 @@ buildPythonPackage (finalAttrs: {
     ])
   ];
 
-  nativeCheckInputs = [
-    ffmpeg
-    manim-tinytex
-    pytest-cov-stub
-    pytest-xdist
-    pytestCheckHook
-    versionCheckHook
-  ];
+  optional-dependencies = {
+    jupyterlab = [
+      jupyterlab
+      notebook
+    ];
+    # TODO package dearpygui
+    # gui = [ dearpygui ];
+  };
 
-  # about 55 of ~600 tests failing mostly due to demand for display
-  disabledTests = import ./failing_tests.nix;
-
+  pyproject = true;
   pythonImportsCheck = [ "manim" ];
+
+  pythonRelaxDeps = [
+    "skia-pathops"
+  ];
 
   meta = {
     description = "Animation engine for explanatory math videos - Community version";
+
     longDescription = ''
       Manim is an animation engine for explanatory math videos. It's used to
       create precise animations programmatically, as seen in the videos of
       3Blue1Brown on YouTube. This is the community maintained version of
       manim.
     '';
-    mainProgram = "manim";
-    changelog = "https://github.com/ManimCommunity/manim/releases/tag/${finalAttrs.src.tag}";
+
     homepage = "https://github.com/ManimCommunity/manim";
+    changelog = "https://github.com/ManimCommunity/manim/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       osbm
       ivyfanchiang
     ];
+
+    mainProgram = "manim";
   };
 })

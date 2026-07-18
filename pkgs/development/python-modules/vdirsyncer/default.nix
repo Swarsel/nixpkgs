@@ -1,51 +1,33 @@
 {
   lib,
+  aiohttp,
+  aiohttp-oauthlib,
+  aioresponses,
+  aiostream,
   buildPythonPackage,
-  fetchPypi,
-  fetchpatch,
   click,
   click-log,
-  requests,
+  fetchPypi,
+  fetchpatch,
   hypothesis,
-  pytestCheckHook,
+  nixosTests,
+  pytest-asyncio,
   pytest-cov-stub,
+  pytestCheckHook,
+  requests,
   setuptools,
   setuptools-scm,
-  aiostream,
-  aiohttp-oauthlib,
-  aiohttp,
-  pytest-asyncio,
   trustme,
-  aioresponses,
-  nixosTests,
   versionCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "vdirsyncer";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-/rGlM1AKlcFP0VVzOhBW/jWRklU9gsB8a6BPy/xAsS0=";
-  };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    click
-    click-log
-    requests
-    aiostream
-    aiohttp
-  ];
-
-  optional-dependencies = {
-    google = [ aiohttp-oauthlib ];
   };
 
   nativeCheckInputs = [
@@ -61,15 +43,34 @@ buildPythonPackage (finalAttrs: {
     export DETERMINISTIC_TESTS=true
   '';
 
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    click
+    click-log
+    requests
+    aiostream
+    aiohttp
+  ];
+
   disabledTests = [
     "test_create_collections" # Flaky test exceeds deadline on hydra: https://github.com/pimutils/vdirsyncer/issues/837
     "test_request_ssl"
     "test_verbosity"
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+  optional-dependencies = {
+    google = [ aiohttp-oauthlib ];
+  };
+
+  pyproject = true;
 
   passthru.tests = {
     inherit (nixosTests) vdirsyncer;

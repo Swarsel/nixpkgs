@@ -1,18 +1,18 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
+  buildPackages,
+  curl,
+  libuuid,
+  makeWrapper,
+  openssl,
   pandoc,
   pkg-config,
-  makeWrapper,
-  curl,
-  openssl,
   tpm2-tss,
-  libuuid,
   abrmdSupport ? true,
-  tpm2-abrmd ? null,
-  buildPackages,
   enableManpages ? buildPackages.pandoc.compiler.bootstrapAvailable,
+  tpm2-abrmd ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,12 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals enableManpages [
     pandoc
   ];
+
   buildInputs = [
     curl
     openssl
     tpm2-tss
     libuuid
   ];
+
+  # Unit tests disabled, as they rely on a dbus session
+  #configureFlags = [ "--enable-unit" ];
+  doCheck = false;
 
   preFixup =
     let
@@ -52,15 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
       wrapProgram $out/bin/tss2 --suffix LD_LIBRARY_PATH : "${ldLibraryPath}"
     '';
 
-  # Unit tests disabled, as they rely on a dbus session
-  #configureFlags = [ "--enable-unit" ];
-  doCheck = false;
-
   meta = {
     description = "Command line tools that provide access to a TPM 2.0 compatible device";
     homepage = "https://github.com/tpm2-software/tpm2-tools";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ scottstephens ];
+    platforms = lib.platforms.linux;
   };
 })

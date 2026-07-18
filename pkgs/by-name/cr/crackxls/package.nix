@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoconf,
   automake,
-  openssl,
-  libgsf,
   gmp,
+  libgsf,
+  openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/GavinSmith0123/crackxls2003/";
     description = "Used to break the encryption on old Microsoft Excel and Microsoft Word files";
-    mainProgram = "crackxls2003";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/GavinSmith0123/crackxls2003/";
     license = lib.licenses.gpl3;
+    platforms = lib.platforms.linux;
+    mainProgram = "crackxls2003";
   };
 })

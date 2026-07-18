@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Chat over SSH";
-    mainProgram = "ssh-chat";
     homepage = "https://github.com/shazow/ssh-chat";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "ssh-chat";
   };
 })

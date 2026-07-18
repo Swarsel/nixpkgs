@@ -1,25 +1,20 @@
 {
   lib,
   stdenv,
-  mkMesonLibrary,
-
   bison,
-  flex,
-  cmake, # for resolving toml11 dep
-
-  nix-util,
-  nix-store,
-  nix-fetchers,
-  boost,
   boehmgc,
+  boost,
+  cmake, # for resolving toml11 dep
+  flex,
   libcpuid,
+  mkMesonLibrary,
+  nix-fetchers,
+  nix-store,
+  nix-util,
   nlohmann_json,
   toml11,
-
   # Configuration Options
-
   version,
-
   # Whether to use garbage collection for the Nix language evaluator.
   #
   # If it is disabled, we just leak memory, but this is not as bad as it
@@ -33,14 +28,8 @@
 }:
 
 mkMesonLibrary (finalAttrs: {
-  pname = "nix-expr";
   inherit version;
-
-  workDir = ./.;
-
-  hardeningDisable = lib.optionals stdenv.hostPlatform.isMusl [
-    "fortify"
-  ];
+  pname = "nix-expr";
 
   nativeBuildInputs = [
     bison
@@ -65,6 +54,12 @@ mkMesonLibrary (finalAttrs: {
   mesonFlags = [
     (lib.mesonEnable "gc" enableGC)
   ];
+
+  hardeningDisable = lib.optionals stdenv.hostPlatform.isMusl [
+    "fortify"
+  ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix ++ lib.platforms.windows;

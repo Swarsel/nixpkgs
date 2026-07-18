@@ -17,13 +17,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-uCbJatmt1qYLuWdCATeCS4mNrpJ+UUBJa1rDgjE37Z0=";
   };
 
+  postPatch = ''
+    # compute the allocated size from the pointed type, to avoid the warning
+    substituteInPlace lcptools-v2/pconf_legacy.c \
+      --replace-fail "digest = malloc(SHA1_DIGEST_SIZE);" \
+        "digest = malloc(sizeof *digest);"
+  '';
+
   buildInputs = [
     openssl
     trousers
     zlib
   ];
-
-  enableParallelBuilding = true;
 
   preConfigure = ''
     substituteInPlace tboot/Makefile --replace /usr/bin/perl ${perl}/bin/perl
@@ -34,13 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace docs/Makefile --replace /usr/share /share
   '';
 
-  postPatch = ''
-    # compute the allocated size from the pointed type, to avoid the warning
-    substituteInPlace lcptools-v2/pconf_legacy.c \
-      --replace-fail "digest = malloc(SHA1_DIGEST_SIZE);" \
-        "digest = malloc(sizeof *digest);"
-  '';
-
+  enableParallelBuilding = true;
   installFlags = [ "DESTDIR=$(out)" ];
 
   meta = {
@@ -49,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://sourceforge.net/p/tboot/code/ci/v${finalAttrs.version}/tree/CHANGELOG";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ ak ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

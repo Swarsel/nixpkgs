@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gtk3,
-  gnome,
   adwaita-icon-theme,
+  desktop-file-utils,
   gdk-pixbuf,
-  librsvg,
-  libgnome-games-support,
   gettext,
+  gnome,
+  gtk3,
   itstool,
+  libgnome-games-support,
+  librsvg,
   libxml2,
-  wrapGAppsHook3,
   meson,
   ninja,
+  pkg-config,
   python3,
-  desktop-file-utils,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/tali/${lib.versions.major finalAttrs.version}/tali-${finalAttrs.version}.tar.xz";
     hash = "sha256-+p7eNm8KcuTKpSGJw6sLEMG1aoDHiFsBZgJVjETc59M=";
   };
+
+  postPatch = ''
+    chmod +x build-aux/meson_post_install.py
+    patchShebangs build-aux/meson_post_install.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -48,22 +53,17 @@ stdenv.mkDerivation (finalAttrs: {
     libgnome-games-support
   ];
 
-  postPatch = ''
-    chmod +x build-aux/meson_post_install.py
-    patchShebangs build-aux/meson_post_install.py
-  '';
-
   passthru = {
     updateScript = gnome.updateScript { packageName = "tali"; };
   };
 
   meta = {
+    description = "Sort of poker with dice and less money";
     homepage = "https://gitlab.gnome.org/GNOME/tali";
     changelog = "https://gitlab.gnome.org/GNOME/tali/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Sort of poker with dice and less money";
-    mainProgram = "tali";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "tali";
+    teams = [ lib.teams.gnome ];
   };
 })

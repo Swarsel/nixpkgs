@@ -18,7 +18,6 @@ stdenv.mkDerivation {
   };
 
   buildInputs = [ libusb1 ];
-
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   installPhase = ''
@@ -35,8 +34,8 @@ stdenv.mkDerivation {
     description = "Libusb based programming tool for 24Cxx serial EEPROMs using the WinChipHead CH341A IC";
     homepage = "https://github.com/command-tab/ch341eeprom";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ch341eeprom";
     maintainers = with lib.maintainers; [ xokdvium ];
     platforms = with lib.platforms; darwin ++ linux;
+    mainProgram = "ch341eeprom";
   };
 }

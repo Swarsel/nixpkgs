@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "gevent-socketio";
   version = "0.3.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,14 +17,11 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ versiontools ];
-
   buildInputs = [ gevent-websocket ];
-
   propagatedBuildInputs = [ gevent ];
-
   # Tests are not ported to Python 3
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "socketio" ];
 
   meta = {

@@ -1,18 +1,18 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
   fish,
   installShellFiles,
-  lib,
   makeWrapper,
   nix-update-script,
   nodejs,
   npmHooks,
-  stdenv,
+  testers,
   which,
   yarnBuildHook,
   yarnConfigHook,
-  testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "fish-lsp";
@@ -25,11 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kPGbEi0KCq/BsEq2RkFb5zfARncMIvXHniOUglNYk1s=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-WrH56oWTTDG1P/OHC5WjLCkZM3j6HEirAvhF+6Xd76I=";
-  };
-
   nativeBuildInputs = [
     yarnBuildHook
     yarnConfigHook
@@ -39,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     fish
   ];
-
-  yarnBuildScript = "build:npm";
 
   installPhase = ''
     runHook preInstall
@@ -70,8 +63,21 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doDist = false;
+  yarnBuildScript = "build:npm";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-WrH56oWTTDG1P/OHC5WjLCkZM3j6HEirAvhF+6Xd76I=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   passthru = {
+    tests = {
+      version = testers.testVersion {
+        version = finalAttrs.version;
+        package = finalAttrs.finalPackage;
+      };
+    };
+
     # fish-lsp adds tags for all its pre-release versions, which leads to
     # incorrect r-ryantm bumps. This regex allows a dash at the end followed by a
     # number (like `v1.0.9-1`). but it prevents matches with a dash followed by
@@ -82,24 +88,19 @@ stdenv.mkDerivation (finalAttrs: {
         "v(\\d+\\.\\d+\\.\\d+(?:-\\d+)?)$"
       ];
     };
-
-    tests = {
-      version = testers.testVersion {
-        package = finalAttrs.finalPackage;
-        version = finalAttrs.version;
-      };
-    };
   };
 
   meta = {
     description = "LSP implementation for the fish shell language";
     homepage = "https://github.com/ndonfris/fish-lsp";
     license = lib.licenses.mit;
-    mainProgram = "fish-lsp";
+
     maintainers = with lib.maintainers; [
       llakala
       petertriho
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "fish-lsp";
   };
 })

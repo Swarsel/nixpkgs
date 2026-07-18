@@ -14,13 +14,12 @@ stdenv.mkDerivation {
     sha256 = "0csl3sfpijdbq1j6wabx347lvn91a24a2jfx5b5pspfxz7gixli1";
   };
 
-  dontUnpack = true;
-
-  passthru.scripts = [ "buffer_autoset.py" ];
-
   installPhase = ''
     install -D $src $out/share/buffer_autoset.py
   '';
+
+  dontUnpack = true;
+  passthru.scripts = [ "buffer_autoset.py" ];
 
   meta = {
     inherit (weechat.meta) platforms;

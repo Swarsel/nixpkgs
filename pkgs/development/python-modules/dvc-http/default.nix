@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp-retry,
   buildPythonPackage,
-  fetchFromGitHub,
   dvc-objects,
   fsspec,
   funcy,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dvc-http";
   version = "2.32.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -21,6 +20,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-ru/hOFv/RcS/7SBpTJU8xFxdllmaiH4dV1ouS6GGKkY=";
   };
+
+  # Currently it's not possible to run the tests
+  # ModuleNotFoundError: No module named 'dvc.testing'
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -34,10 +37,7 @@ buildPythonPackage (finalAttrs: {
     funcy
   ];
 
-  # Currently it's not possible to run the tests
-  # ModuleNotFoundError: No module named 'dvc.testing'
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dvc_http" ];
 
   meta = {

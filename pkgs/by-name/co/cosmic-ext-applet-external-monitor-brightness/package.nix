@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  libcosmicAppHook,
   just,
-  pkg-config,
-  udev,
+  libcosmicAppHook,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  udev,
 }:
 rustPlatform.buildRustPackage {
   pname = "cosmic-ext-applet-external-monitor-brightness";
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-uEoLhVIv25KNoDD28HIIMutxR2nv+AIapSRlz+ETGuQ=";
   };
 
-  cargoHash = "sha256-ou7iukl1pHMfcJNemwLdZYYxugbJJQ53XpCYowUTj90=";
-
   nativeBuildInputs = [
     libcosmicAppHook
     just
@@ -29,7 +27,7 @@ rustPlatform.buildRustPackage {
   ];
 
   buildInputs = [ udev ];
-
+  cargoHash = "sha256-ou7iukl1pHMfcJNemwLdZYYxugbJJQ53XpCYowUTj90=";
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -53,8 +51,8 @@ rustPlatform.buildRustPackage {
     description = "Applet to control the brightness of external monitors";
     homepage = "https://github.com/cosmic-utils/cosmic-ext-applet-external-monitor-brightness";
     license = lib.licenses.gpl3Only;
-    mainProgram = "cosmic-ext-applet-external-monitor-brightness";
     maintainers = with lib.maintainers; [ HeitorAugustoLN ];
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-ext-applet-external-monitor-brightness";
   };
 }

@@ -1,24 +1,13 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-
-  # build-system
-  cargo,
-  rustc,
-
   # dependencies
   arro3-core,
   arviz,
-  obstore,
-  pandas,
-  platformdirs,
-  pyarrow,
-  xarray,
-  zarr,
-
+  buildPythonPackage,
+  # build-system
+  cargo,
   # tests
   # bridgestan, (not packaged)
   equinox,
@@ -26,18 +15,24 @@
   jax,
   jaxlib,
   numba,
-  pytest-timeout,
+  obstore,
+  pandas,
+  platformdirs,
+  pyarrow,
   pymc,
+  pytest-timeout,
   pytestCheckHook,
+  rustPlatform,
+  rustc,
   setuptools,
   writableTmpDirAsHomeHook,
+  xarray,
+  zarr,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nutpie";
   version = "0.16.11";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pymc-devs";
@@ -45,31 +40,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ZakNyVW06QONdBSZFonOc585ZPLHsIjbFlBnX+Kg2kc=";
   };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-n61ZrJtJFQ0G/7X59pKI8QNnOZPvDWiPmGC3tW3NQkk=";
-  };
-
-  build-system = [
-    cargo
-    rustPlatform.bindgenHook
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-    rustc
-  ];
-
-  dependencies = [
-    arro3-core
-    arviz
-    obstore
-    pandas
-    pyarrow
-    xarray
-    zarr
-  ];
-
-  pythonImportsCheck = [ "nutpie" ];
 
   nativeCheckInputs = [
     # bridgestan
@@ -86,15 +56,43 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  disabledTests = lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
-    # flaky (assert np.float64(0.0017554642626285276) > 0.01)
-    "test_normalizing_flow"
+  __structuredAttrs = true;
+
+  build-system = [
+    cargo
+    rustPlatform.bindgenHook
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+    rustc
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-n61ZrJtJFQ0G/7X59pKI8QNnOZPvDWiPmGC3tW3NQkk=";
+  };
+
+  dependencies = [
+    arro3-core
+    arviz
+    obstore
+    pandas
+    pyarrow
+    xarray
+    zarr
   ];
 
   disabledTestPaths = [
     # Require unpackaged bridgestan
     "tests/test_stan.py"
   ];
+
+  disabledTests = lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
+    # flaky (assert np.float64(0.0017554642626285276) > 0.01)
+    "test_normalizing_flow"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "nutpie" ];
 
   meta = {
     description = "Python wrapper for nuts-rs";

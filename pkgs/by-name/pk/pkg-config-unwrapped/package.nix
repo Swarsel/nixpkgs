@@ -20,7 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "doc"
   ];
-  strictDeps = true;
 
   # Process Requires.private properly, see
   # http://bugs.freedesktop.org/show_bug.cgi?id=4738, migrated to
@@ -42,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
       rm -f check/check-requires-private check/check-gtk check/missing
     '';
 
+  strictDeps = true;
   buildInputs = [ libiconv ];
 
   configureFlags = [
@@ -72,16 +72,15 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  enableParallelBuilding = true;
   doCheck = true;
-
   postInstall = ''rm -f "$out"/bin/*-pkg-config''; # clean the duplicate file
+  enableParallelBuilding = true;
 
   meta = {
     description = "Tool that allows packages to find out information about other packages";
     homepage = "http://pkg-config.freedesktop.org/wiki/";
-    platforms = lib.platforms.all;
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.all;
     mainProgram = "pkg-config";
   };
 })

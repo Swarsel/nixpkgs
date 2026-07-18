@@ -21,12 +21,13 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
-  env.NIX_CFLAGS_COMPILE = "-I${src}/${stdenv.hostPlatform.qemuArch}";
   makeFlags = [
     "KERNELDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     "INSTALL_MOD_PATH=$(out)"
   ]
   ++ extraFlags;
+
+  env.NIX_CFLAGS_COMPILE = "-I${src}/${stdenv.hostPlatform.qemuArch}";
 
   preInstall = ''
     mkdir -p $out/bin
@@ -39,10 +40,12 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/cyring/CoreFreq";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ mrene ];
-    mainProgram = "corefreq-cli";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "corefreq-cli";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   curlie,
   testers,
 }:
@@ -26,15 +26,15 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru.tests.version = testers.testVersion {
-    package = curlie;
     command = "curlie version";
+    package = curlie;
   };
 
   meta = {
     description = "Frontend to curl that adds the ease of use of httpie, without compromising on features and performance";
     homepage = "https://rs.github.io/curlie/";
-    maintainers = with lib.maintainers; [ ma27 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ ma27 ];
     mainProgram = "curlie";
   };
 })

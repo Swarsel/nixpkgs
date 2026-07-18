@@ -1,10 +1,10 @@
 {
-  runCommand,
+  kubectl,
   makeWrapper,
+  runCommand,
   tubekit-unwrapped,
   pname ? "tubekit",
   version ? tubekit-unwrapped.version,
-  kubectl,
 }:
 runCommand "${pname}-${version}"
   {

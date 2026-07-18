@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "kalamine";
   version = "0.40";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OneDeadKey";
@@ -29,6 +28,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tomli
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "kalamine" ];
 
   meta = {

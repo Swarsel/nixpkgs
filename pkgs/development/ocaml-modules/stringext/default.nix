@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  ocaml,
   buildDunePackage,
+  ocaml,
   ounit,
   qtest,
   # Optionally enable tests; test script use OCaml-4.01+ features
@@ -14,9 +14,10 @@ let
 in
 
 buildDunePackage {
+  inherit doCheck;
   pname = "stringext";
   version = version;
-  duneVersion = "3";
+
   src = fetchurl {
     url = "https://github.com/rgrinberg/stringext/releases/download/${version}/stringext-${version}.tbz";
     sha256 = "1sh6nafi3i9773j5mlwwz3kxfzdjzsfqj2qibxhigawy5vazahfv";
@@ -26,11 +27,12 @@ buildDunePackage {
     ounit
     qtest
   ];
-  inherit doCheck;
+
+  duneVersion = "3";
 
   meta = {
-    homepage = "https://github.com/rgrinberg/stringext";
     description = "Extra string functions for OCaml";
+    homepage = "https://github.com/rgrinberg/stringext";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vbgl ];
   };

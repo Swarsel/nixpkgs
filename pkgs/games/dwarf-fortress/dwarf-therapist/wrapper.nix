@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  writeText,
-  dwarf-therapist,
-  dwarf-fortress,
+  coreutils,
   dfhack,
+  dwarf-fortress,
+  dwarf-therapist,
+  expect,
   mkDfWrapper,
   replaceVars,
-  coreutils,
   wrapQtAppsHook,
-  expect,
+  writeText,
   xvfb-run,
 }:
 
@@ -38,23 +38,9 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "dwarf-therapist";
   inherit (dwarf-therapist) version meta maxDfVersion;
   inherit (dwarf-fortress) dfVersion;
-
-  wrapper = replaceVars ./dwarf-therapist.in {
-    stdenv_shell = "${stdenv.shell}";
-    rm = "${coreutils}/bin/rm";
-    ln = "${coreutils}/bin/ln";
-    cat = "${coreutils}/bin/cat";
-    mkdir = "${coreutils}/bin/mkdir";
-    dirname = "${coreutils}/bin/dirname";
-    therapist = "${dwarf-therapist}";
-    # replaced in buildCommand
-    install = null;
-  };
-
-  paths = [ dwarf-therapist ];
+  pname = "dwarf-therapist";
 
   nativeBuildInputs = [
     wrapQtAppsHook
@@ -64,8 +50,6 @@ stdenv.mkDerivation {
     xvfb-run
     dfHackWrapper
   ];
-
-  passthru = { inherit dwarf-fortress dwarf-therapist; };
 
   buildCommand =
     lib.optionalString unsupportedVersion ''
@@ -132,5 +116,20 @@ stdenv.mkDerivation {
       fi
     '';
 
+  paths = [ dwarf-therapist ];
   preferLocalBuild = true;
+
+  wrapper = replaceVars ./dwarf-therapist.in {
+    cat = "${coreutils}/bin/cat";
+    dirname = "${coreutils}/bin/dirname";
+    # replaced in buildCommand
+    install = null;
+    ln = "${coreutils}/bin/ln";
+    mkdir = "${coreutils}/bin/mkdir";
+    rm = "${coreutils}/bin/rm";
+    stdenv_shell = "${stdenv.shell}";
+    therapist = "${dwarf-therapist}";
+  };
+
+  passthru = { inherit dwarf-fortress dwarf-therapist; };
 }

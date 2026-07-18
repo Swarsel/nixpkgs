@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchpatch,
-  nixosTests,
   nix-update-script,
+  nixosTests,
   php,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -24,12 +24,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   # Remove this patch once upgraded past 1.2.52.
   patches = [
     (fetchpatch {
-      url = "https://github.com/kanboard/kanboard/commit/928c68aa2b7c00092dd71084d329b912e229f3d1.patch";
       hash = "sha256-K616dTwAsLJAJMqY+DJjebfi6MV5wSICbd1iy6VynlM=";
+      url = "https://github.com/kanboard/kanboard/commit/928c68aa2b7c00092dd71084d329b912e229f3d1.patch";
     })
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -40,11 +38,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = lib.optionalAttrs stdenvNoCC.hostPlatform.isLinux {
       inherit (nixosTests) kanboard;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

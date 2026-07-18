@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   blinker,
+  buildPythonPackage,
   flask,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "flask-principal";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pallets-eco";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-E9urzZc7/QtzAohSNAJsQtykrplb+MC189VGZI5kmEE=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,15 +27,13 @@ buildPythonPackage rec {
     blinker
   ];
 
+  enabledTestPaths = [ "test_principal.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "flask_principal" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "test_principal.py" ];
-
   meta = {
-    homepage = "http://packages.python.org/Flask-Principal/";
     description = "Identity management for flask";
+    homepage = "http://packages.python.org/Flask-Principal/";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest7CheckHook,
   pythonOlder,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "doubles";
   version = "1.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "uber";
@@ -19,14 +18,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-7yygZ00H2eIGuI/E0dh0j30hicJKBhCqyagY6XAJTCA=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    six
-  ];
 
   nativeCheckInputs = [
     pytest7CheckHook
@@ -36,6 +27,14 @@ buildPythonPackage rec {
     # imports coverage
     rm test/conftest.py
   '';
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    six
+  ];
 
   disabledTestPaths = [
     # nose is deprecated
@@ -58,6 +57,7 @@ buildPythonPackage rec {
     "test_variable_that_points_to_instance_method"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "doubles" ];
 
   meta = {

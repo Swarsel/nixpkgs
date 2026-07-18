@@ -1,4 +1,6 @@
 {
+  lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   appdirs,
@@ -6,8 +8,6 @@
   async-upnp-client,
   buildPythonPackage,
   deprecated,
-  fetchFromGitHub,
-  lib,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "python-linkplay";
   version = "0.2.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Velleman";
@@ -24,6 +23,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-UGYvaprqwEDxLQZUqyl0NXaDvwx1pDRoTjpRRS1KJPc=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,17 +40,13 @@ buildPythonPackage rec {
     deprecated
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "linkplay" ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/Velleman/python-linkplay/releases/tag/${src.tag}";
     description = "Python Library for Seamless LinkPlay Device Control";
     homepage = "https://github.com/Velleman/python-linkplay";
+    changelog = "https://github.com/Velleman/python-linkplay/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

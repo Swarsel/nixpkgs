@@ -1,22 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   djangorestframework,
-  fetchFromGitHub,
+  pyjwt,
   pytest-django,
   pytest-xdist,
   pytestCheckHook,
-  pyjwt,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-rest-registration";
   version = "0.9.0";
-  pyproject = true;
-
-  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "apragacz";
@@ -25,11 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-EaS1qN7GpfPPeSLwwQdVWSRO2dv0DG5LD7vnXckz4Bg=";
   };
 
-  dependencies = [
-    django
-    djangorestframework
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-django
@@ -37,12 +29,20 @@ buildPythonPackage rec {
     pyjwt
   ];
 
-  pythonImportsCheck = [ "rest_registration" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    djangorestframework
+  ];
 
   disabledTests = [
     # Failed: DID NOT RAISE <class 'rest_registration.utils.html.MLStripperParseFailed'>
     "test_convert_html_to_text_fails"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "rest_registration" ];
 
   meta = {
     description = "User-related REST API based on the awesome Django REST Framework";

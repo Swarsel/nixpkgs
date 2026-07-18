@@ -1,7 +1,7 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
+  clangStdenv,
   openssl,
   pkg-config,
   rustPlatform,
@@ -23,17 +23,12 @@ rustPlatform.buildRustPackage.override { inherit stdenv; } (finalAttrs: {
     hash = "sha256-0lun9HmJvpSWguckUtudDcNlBc/KgpHk/fBJnj4HSuo=";
   };
 
-  cargoHash = "sha256-cNIjTNuxHPofkTYpEb3+8Jhqz5AMAeXj7avNAAOG5D8=";
-
   # Hardcoded paths for C compiler and linker
   postPatch = ''
     rm .cargo/config.toml
   '';
 
-  cargoBuildFlags = [
-    "--package"
-    "pgdog"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -44,21 +39,24 @@ rustPlatform.buildRustPackage.override { inherit stdenv; } (finalAttrs: {
     openssl
   ];
 
-  strictDeps = true;
-
+  cargoHash = "sha256-cNIjTNuxHPofkTYpEb3+8Jhqz5AMAeXj7avNAAOG5D8=";
   # Several tests rely on networking
   doCheck = false;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoBuildFlags = [
+    "--package"
+    "pgdog"
+  ];
 
   meta = {
     description = "PostgreSQL connection pooler, load balancer, and database sharder";
     homepage = "https://pgdog.dev/";
     changelog = "https://github.com/pgdogdev/pgdog/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    mainProgram = "pgdog";
     maintainers = with lib.maintainers; [ EpicEric ];
     platforms = lib.platforms.all;
+    mainProgram = "pgdog";
   };
 })

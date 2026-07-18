@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,10 +20,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Creates a bootable disk image from a Rust OS kernel";
     homepage = "https://github.com/rust-osdev/bootimage";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ dbeckwith ];
   };
 })

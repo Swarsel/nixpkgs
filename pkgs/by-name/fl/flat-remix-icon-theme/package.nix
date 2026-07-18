@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
-  pantheon,
   gnome-icon-theme,
+  gtk3,
   hicolor-icon-theme,
   kdePackages,
+  pantheon,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -31,10 +31,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  dontFixup = true;
-  dontDropIconThemeCache = true;
-  dontWrapQtApps = true;
-
   installPhase = ''
     mkdir -p $out/share/icons
     mv Flat-Remix* $out/share/icons/
@@ -46,12 +42,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     recordPropagatedDependencies
   '';
 
+  dontDropIconThemeCache = true;
+  dontFixup = true;
+  dontWrapQtApps = true;
+
   meta = {
     description = "Flat remix is a pretty simple icon theme inspired on material design";
     homepage = "https://drasite.com/flat-remix";
     license = with lib.licenses; [ gpl3Only ];
+    maintainers = [ ];
     # breeze-icons and pantheon.elementary-icon-theme dependencies are restricted to linux
     platforms = lib.platforms.linux;
-    maintainers = [ ];
   };
 })

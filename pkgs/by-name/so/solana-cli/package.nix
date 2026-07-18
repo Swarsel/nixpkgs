@@ -1,20 +1,20 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  rustPlatform,
-  darwin,
-  udev,
-  protobuf,
-  installShellFiles,
-  pkg-config,
-  openssl,
-  nix-update-script,
-  versionCheckHook,
   clang,
+  darwin,
+  installShellFiles,
   libclang,
   libusb1,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  protobuf,
   rocksdb,
+  rustPlatform,
+  udev,
+  versionCheckHook,
   # Taken from https://github.com/anza-xyz/agave/blob/master/scripts/agave-build-lists.sh
   solanaPkgs ? [
     "solana"
@@ -37,44 +37,17 @@ let
   hash = "sha256-lbkuywAuLeTIoe/5zbKmxCbnNcEx96BiX6ftNJHutZE=";
 in
 rustPlatform.buildRustPackage rec {
-  pname = "solana-cli";
   inherit version;
+  pname = "solana-cli";
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "anza-xyz";
     repo = "agave";
     tag = "v${version}";
-    inherit hash;
   };
-
-  cargoHash = "sha256-lQl8q0xMpXOmUirqL3Eyb4JcmYGSZK6pPMxQHOav9Zk=";
 
   strictDeps = true;
-  cargoBuildFlags = map (n: "--bin=${n}") solanaPkgs;
-
-  env = {
-    RUSTFLAGS = "-Amismatched_lifetime_syntaxes -Adead_code -Aunused_parens -Aunused_imports";
-    LIBCLANG_PATH = "${libclang.lib}/lib";
-
-    # Used by build.rs in the rocksdb-sys crate. If we don't set these, it would
-    # try to build RocksDB from source.
-    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
-
-    # Require this on darwin otherwise the compiler starts rambling about missing
-    # cmath functions
-    CPPFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-isystem ${lib.getInclude stdenv.cc.libcxx}/include/c++/v1";
-    LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-L${lib.getLib stdenv.cc.libcxx}/lib";
-
-    # If set, always finds OpenSSL in the system, even if the vendored feature is enabled.
-    OPENSSL_NO_VENDOR = 1;
-  };
-
-  # Even tho the tests work, a shit ton of them try to connect to a local RPC
-  # or access internet in other ways, eventually failing due to Nix sandbox.
-  # Maybe we could restrict the check to the tests that don't require an RPC,
-  # but judging by the quantity of tests, that seems like a lengthty work and
-  # I'm not in the mood ((ΦωΦ))
-  doCheck = false;
 
   nativeBuildInputs = [
     installShellFiles
@@ -92,10 +65,28 @@ rustPlatform.buildRustPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ udev ];
 
-  doInstallCheck = true;
+  cargoHash = "sha256-lQl8q0xMpXOmUirqL3Eyb4JcmYGSZK6pPMxQHOav9Zk=";
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/solana";
+  env = {
+    # Require this on darwin otherwise the compiler starts rambling about missing
+    # cmath functions
+    CPPFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-isystem ${lib.getInclude stdenv.cc.libcxx}/include/c++/v1";
+    LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-L${lib.getLib stdenv.cc.libcxx}/lib";
+    LIBCLANG_PATH = "${libclang.lib}/lib";
+    # If set, always finds OpenSSL in the system, even if the vendored feature is enabled.
+    OPENSSL_NO_VENDOR = 1;
+    # Used by build.rs in the rocksdb-sys crate. If we don't set these, it would
+    # try to build RocksDB from source.
+    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
+    RUSTFLAGS = "-Amismatched_lifetime_syntaxes -Adead_code -Aunused_parens -Aunused_imports";
+  };
+
+  # Even tho the tests work, a shit ton of them try to connect to a local RPC
+  # or access internet in other ways, eventually failing due to Nix sandbox.
+  # Maybe we could restrict the check to the tests that don't require an RPC,
+  # but judging by the quantity of tests, that seems like a lengthty work and
+  # I'm not in the mood ((ΦωΦ))
+  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd solana \
@@ -110,18 +101,24 @@ rustPlatform.buildRustPackage rec {
     find . -name libsolana_program.rlib -exec cp {} $out/bin/deps \;
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoBuildFlags = map (n: "--bin=${n}") solanaPkgs;
+  versionCheckProgram = "${placeholder "out"}/bin/solana";
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Web-Scale Blockchain for fast, secure, scalable, decentralized apps and marketplaces";
     homepage = "https://solana.com";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       netfox
       happysalada
       aikooo7
       JacoMalan1
     ];
+
     platforms = lib.platforms.unix;
   };
-
-  passthru.updateScript = nix-update-script { };
 }

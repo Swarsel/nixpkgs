@@ -1,23 +1,23 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  libxkbcommon,
-  mpv-unwrapped,
-  vulkan-loader,
   stdenv,
+  fetchFromGitHub,
   alsa-lib,
-  wayland,
   libx11,
-  libxcursor,
-  libxi,
-  libxrandr,
-  libxinerama,
-  libxpresent,
-  libxfixes,
-  libxext,
   libxcb,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxi,
+  libxinerama,
+  libxkbcommon,
+  libxpresent,
+  libxrandr,
+  mpv-unwrapped,
+  pkg-config,
+  rustPlatform,
+  vulkan-loader,
+  wayland,
   yt-dlp,
 }:
 
@@ -31,8 +31,6 @@ rustPlatform.buildRustPackage rec {
     rev = version;
     hash = "sha256-RWPcbUg7/gggPuUZLyMJ/m2S5GGfrdE6SWyXERIXsdk=";
   };
-
-  cargoHash = "sha256-ESEFpGxqfDPOY1vrQk0IeOZiP8c5RNwPeKF3vRZRW0Q=";
 
   nativeBuildInputs = [
     pkg-config
@@ -55,9 +53,9 @@ rustPlatform.buildRustPackage rec {
     libxcb
   ];
 
-  propagatedUserEnvPkgs = [
-    yt-dlp
-  ];
+  cargoHash = "sha256-ESEFpGxqfDPOY1vrQk0IeOZiP8c5RNwPeKF3vRZRW0Q=";
+  # Floating-point exact-equality bugs upstream
+  doCheck = false;
 
   preFixup = ''
     patchelf \
@@ -78,15 +76,16 @@ rustPlatform.buildRustPackage rec {
       --add-needed libxkbcommon-x11.so
   '';
 
-  # Floating-point exact-equality bugs upstream
-  doCheck = false;
+  propagatedUserEnvPkgs = [
+    yt-dlp
+  ];
 
   meta = {
     description = "Video art software for VJs";
     homepage = "https://github.com/zbanks/radiance";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ magnetophon ];
-    mainProgram = "radiance";
     platforms = lib.platforms.linux;
+    mainProgram = "radiance";
   };
 }

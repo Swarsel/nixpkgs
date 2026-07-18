@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   qtbase,
 }:
 
@@ -21,8 +21,8 @@ stdenv.mkDerivation rec {
   patches = [
     # Fix for Qt 6.10, can likely be removed when version bump passes v1.5.0.
     (fetchpatch {
-      url = "https://github.com/QtExcel/QXlsx/commit/90d762625750c6b2c73f6cd96b633e9158aed72e.patch";
       hash = "sha256-/0xLrkjuJGZRocK1EyBhuaUmg0usueQz2F340DkQhb0=";
+      url = "https://github.com/QtExcel/QXlsx/commit/90d762625750c6b2c73f6cd96b633e9158aed72e.patch";
     })
   ];
 

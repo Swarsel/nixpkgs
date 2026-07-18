@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   deprecation,
   distro,
-  fetchFromGitHub,
   grpcio,
   hightime,
   numpy,
@@ -13,8 +13,8 @@
   protobuf,
   python-decouple,
   requests,
-  sphinx-rtd-theme,
   sphinx,
+  sphinx-rtd-theme,
   toml,
   tzlocal,
 }:
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "nidaqmx";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ni";
@@ -31,6 +30,8 @@ buildPythonPackage rec {
     hash = "sha256-Khydb14+yJKWYcO4pROfbainXw3bHceXK5Gc9GCIYNo=";
   };
 
+  # Tests require hardware
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -52,21 +53,20 @@ buildPythonPackage rec {
       sphinx-rtd-theme
       toml
     ];
+
     grpc = [
       grpcio
       protobuf
     ];
   };
 
-  # Tests require hardware
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "nidaqmx" ];
 
   meta = {
-    changelog = "https://github.com/ni/nidaqmx-python/releases/tag/${src.tag}";
     description = "API for interacting with the NI-DAQmx driver";
     homepage = "https://github.com/ni/nidaqmx-python";
+    changelog = "https://github.com/ni/nidaqmx-python/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fsagbuya ];
   };

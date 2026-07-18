@@ -1,8 +1,8 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
   alcotest,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
   popt,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,18 +17,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-c/4CQtAzatfG1Z3SfyB2OZmfJRMnyrZZTqSApsK7R+Q=";
   };
 
-  strictDeps = true;
-  nativeBuildInputs = [ python3 ];
-  buildInputs = [ popt ];
-
   postPatch = ''
     substituteInPlace Makefile --replace "#/usr/" "#"
     substituteInPlace Makefile --replace "/usr/" "/"
   '';
 
-  dontConfigure = true;
-
+  strictDeps = true;
+  nativeBuildInputs = [ python3 ];
+  buildInputs = [ popt ];
   makeFlags = [ "DESTDIR=${placeholder "out"}" ];
+  dontConfigure = true;
 
   # we don't install python stuff as it borks up directories
   installTargets = [
@@ -37,10 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/rhinstaller/isomd5sum";
     description = "Utilities for working with md5sum implanted in ISO images";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/rhinstaller/isomd5sum";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

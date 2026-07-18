@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  hatchling,
   lxml,
   pytestCheckHook,
   versionCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-ly";
   version = "0.9.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frescobaldi";
@@ -20,10 +19,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-diLg1rU+SmCutW1WJQtMJvpipU+k8GluvAqFfcv1GS4=";
   };
 
-  pythonImportsCheck = [ "ly" ];
-
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     lxml
     pytestCheckHook
@@ -31,10 +26,13 @@ buildPythonPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  build-system = [ hatchling ];
+  pyproject = true;
+  pythonImportsCheck = [ "ly" ];
 
   meta = {
-    changelog = "https://github.com/frescobaldi/python-ly/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Tool and library for manipulating LilyPond files";
+
     longDescription = ''
       This package provides a Python library ly containing various
       Python modules to parse, manipulate or create documents in
@@ -45,7 +43,9 @@ buildPythonPackage (finalAttrs: {
       The LilyPond format is a plain text input format that is used by
       the GNU music typesetter [LilyPond](https://lilypond.org).
     '';
+
     homepage = "https://pypi.org/project/python-ly";
+    changelog = "https://github.com/frescobaldi/python-ly/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ yiyu ];
     mainProgram = "ly";

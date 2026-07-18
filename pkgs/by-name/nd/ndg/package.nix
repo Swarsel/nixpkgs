@@ -1,17 +1,16 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
-  nix-update-script,
+  fetchFromGitHub,
   buildPackages,
+  installShellFiles,
+  nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ndg";
   version = "2.9.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "feel-co";
@@ -20,16 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-be9NxraQyoB4wLjiPHxpmklfJYuB+Qs/x69P395I1Fk=";
   };
 
-  cargoHash = "sha256-N0em5kNY94sdPv3Fcpprk09yx1yKo8GZMWND/FJSSIw=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  cargoBuildFlags = [
-    "-p"
-    "ndg"
-    "-p"
-    "xtask"
-  ];
+  cargoHash = "sha256-N0em5kNY94sdPv3Fcpprk09yx1yKo8GZMWND/FJSSIw=";
 
   checkFlags = [
     "--skip"
@@ -51,6 +42,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     + ''
       rm $out/bin/xtask
     '';
+
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "-p"
+    "ndg"
+    "-p"
+    "xtask"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

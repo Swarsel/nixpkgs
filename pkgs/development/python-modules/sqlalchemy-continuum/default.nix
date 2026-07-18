@@ -2,7 +2,6 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   flask,
   flask-login,
   flask-sqlalchemy,
@@ -10,30 +9,18 @@
   psycopg2,
   pymysql,
   pytestCheckHook,
+  setuptools,
   sqlalchemy,
 }:
 
 buildPythonPackage rec {
   pname = "sqlalchemy-continuum";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sqlalchemy_continuum";
     inherit version;
     hash = "sha256-MO+qJqDGMlrHDQNIR+bpcq5wYWtlU7sBaif37S8aEAM=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    sqlalchemy
-  ];
-
-  optional-dependencies = {
-    flask = [ flask ];
-    flask-login = [ flask-login ];
-    flask-sqlalchemy = [ flask-sqlalchemy ];
+    pname = "sqlalchemy_continuum";
   };
 
   nativeCheckInputs = [
@@ -51,6 +38,19 @@ buildPythonPackage rec {
     export DB=sqlite
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    sqlalchemy
+  ];
+
+  optional-dependencies = {
+    flask = [ flask ];
+    flask-login = [ flask-login ];
+    flask-sqlalchemy = [ flask-sqlalchemy ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "sqlalchemy_continuum" ];
 
   meta = {

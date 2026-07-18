@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
+  autoreconfHook,
+  curl,
   fetchgit,
   gnunet,
+  jq,
+  libgcrypt,
+  libtool,
+  makeWrapper,
+  nixosTests,
+  pkg-config,
   qrencode,
   taler-exchange,
   taler-wallet-core,
-  libtool,
-  pkg-config,
-  autoreconfHook,
-  makeWrapper,
-  jq,
-  libgcrypt,
   texinfo,
-  curl,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,13 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchgit {
     url = "https://git-www.taler.net/merchant.git";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-nrXokwZ0IFXAH3B12/FDAhhyE6JAiiJ59cuWLwLM684=";
+    fetchSubmodules = true;
   };
-
-  postUnpack = ''
-    ln -s ${taler-wallet-core}/spa.html $sourceRoot/contrib/
-  '';
 
   # Use an absolute path for `templates` and `spa` directories, else a relative
   # path to the `taler-exchange` package is used.
@@ -42,6 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'TALER_MHD_spa_load (TALER_MERCHANT_project_data (),' "TALER_MHD_spa_load_dir (\"$out/share/taler/merchant/spa/\");" \
       --replace-fail '"spa/");' ""
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -58,22 +56,13 @@ stdenv.mkDerivation (finalAttrs: {
     libtool
   ];
 
-  strictDeps = true;
-
   propagatedBuildInputs = [ gnunet ];
-
-  # From ./bootstrap
-  preAutoreconf = ''
-    pushd contrib
-    find wallet-core/backoffice/ -type f -printf '  %p \\\n' | sort > Makefile.am.ext
-    truncate -s -2 Makefile.am.ext
-    cat Makefile.am.in Makefile.am.ext >> Makefile.am
-    popd
-  '';
 
   configureFlags = [
     "ac_cv_path__libcurl_config=${lib.getDev curl}/bin/curl-config"
   ];
+
+  nativeCheckInputs = [ jq ];
 
   # NOTE: The executables that need database access fail to detect the
   # postgresql library in `$out/lib/taler`, so we need to wrap them.
@@ -84,6 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  doInstallCheck = true;
+
   postFixup = ''
     # - taler-merchant-dbinit expects `versioning.sql` under `share/taler/sql`
     # - taler-merchant-httpd expects `share/taler/merchant/templates`
@@ -92,18 +83,27 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/taler-merchant/sql $out/share/taler/sql/merchant
   '';
 
+  checkTarget = "check";
   enableParallelBuilding = true;
 
-  doInstallCheck = true;
+  postUnpack = ''
+    ln -s ${taler-wallet-core}/spa.html $sourceRoot/contrib/
+  '';
 
-  nativeCheckInputs = [ jq ];
-
-  checkTarget = "check";
+  # From ./bootstrap
+  preAutoreconf = ''
+    pushd contrib
+    find wallet-core/backoffice/ -type f -printf '  %p \\\n' | sort > Makefile.am.ext
+    truncate -s -2 Makefile.am.ext
+    cat Makefile.am.in Makefile.am.ext >> Makefile.am
+    popd
+  '';
 
   passthru.tests = nixosTests.taler.basic;
 
   meta = {
     description = "Merchant component for the GNU Taler electronic payment system";
+
     longDescription = ''
       This is the GNU Taler merchant backend. It provides the logic that should run
       at every GNU Taler merchant.  The GNU Taler merchant is a RESTful backend that
@@ -112,11 +112,12 @@ stdenv.mkDerivation (finalAttrs: {
       course, this applies mostly for digital goods, as the merchant does not need
       to know the customer's physical address.
     '';
+
     homepage = "https://taler.net/";
     changelog = "https://git-www.taler.net/merchant.git/tree/ChangeLog?h=v${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ astro ];
-    teams = with lib.teams; [ ngi ];
     platforms = lib.platforms.linux;
+    teams = with lib.teams; [ ngi ];
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   jinja2,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "junit2html";
   version = "31.1.4";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "inorton";
@@ -19,12 +18,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-GUlRGv4+tRslrvSWvb3Fe5DcMFeYgL7HCyAHzrksJeQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ jinja2 ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ jinja2 ];
+  pyproject = true;
   pythonImportsCheck = [ "junit2htmlreport" ];
 
   meta = {

@@ -2,22 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  requests,
-  websocket-client,
   pyjwt,
+  requests,
+  setuptools,
+  websocket-client,
 }:
 
 buildPythonPackage rec {
   pname = "triggercmd";
   version = "0.0.36";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-ky6U0iAoxQMewh+gB7gBG61PuxUnOONe92io6iygGQU=";
   };
 
+  # Tests require network access and authentication tokens
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     pyjwt
   ];
 
-  # Tests require network access and authentication tokens
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "triggercmd" ];
 
   meta = {

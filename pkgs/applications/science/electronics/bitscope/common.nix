@@ -1,4 +1,6 @@
 {
+  lib,
+  stdenv,
   atk,
   buildFHSEnv,
   cairo,
@@ -6,11 +8,9 @@
   gdk-pixbuf,
   glib,
   gtk2-x11,
+  libx11,
   makeWrapper,
   pango,
-  lib,
-  stdenv,
-  libx11,
 }:
 
 {
@@ -27,22 +27,19 @@ let
   pkg = stdenv.mkDerivation rec {
     inherit (attrs) version src;
 
-    name = "${toolName}-${version}";
-
-    meta =
-
-      {
-        homepage = "http://bitscope.com/software/";
-        sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-        license = lib.licenses.unfree;
-        platforms = [ "x86_64-linux" ];
-      }
-      // (attrs.meta or { });
-
     nativeBuildInputs = [
       makeWrapper
       dpkg
     ];
+
+    installPhase =
+      attrs.installPhase or ''
+        mkdir -p "$out/bin"
+        cp -a usr/* "$out/"
+        ${(wrapBinary libs) attrs.toolName}
+      '';
+
+    dontBuild = true;
 
     libs =
       attrs.libs or [
@@ -55,24 +52,27 @@ let
         libx11
       ];
 
-    dontBuild = true;
+    name = "${toolName}-${version}";
 
     unpackPhase =
       attrs.unpackPhase or ''
         dpkg-deb -x ${attrs.src} ./
       '';
 
-    installPhase =
-      attrs.installPhase or ''
-        mkdir -p "$out/bin"
-        cp -a usr/* "$out/"
-        ${(wrapBinary libs) attrs.toolName}
-      '';
+    meta =
+
+      {
+        homepage = "http://bitscope.com/software/";
+        license = lib.licenses.unfree;
+        sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+        platforms = [ "x86_64-linux" ];
+      }
+      // (attrs.meta or { });
   };
 in
 buildFHSEnv {
-  pname = attrs.toolName;
   inherit (attrs) version;
+  pname = attrs.toolName;
   runScript = "${pkg.outPath}/bin/${attrs.toolName}";
 }
 // {

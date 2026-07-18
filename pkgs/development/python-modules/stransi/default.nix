@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   hypothesis,
-  pytestCheckHook,
   ochre,
+  poetry-core,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "stransi";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "getcuia";
@@ -21,14 +20,14 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
+  propagatedBuildInputs = [ ochre ];
 
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
 
-  propagatedBuildInputs = [ ochre ];
-
+  pyproject = true;
   pythonImportsCheck = [ "stransi" ];
 
   meta = {

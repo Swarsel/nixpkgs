@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   _7zz,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -10,20 +10,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   version = "2.7.3";
 
   src = fetchurl {
-    name = "AirBuddy.dmg";
     url = "https://download.airbuddy.app/WebDownload/AirBuddy_v${finalAttrs.version}.dmg";
     hash = "sha256-cwvSFvaREbF+JvV5Y5dFaj6fZbzdzcjBgzdQ9WDcCFY=";
+    name = "AirBuddy.dmg";
   };
-
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
 
   # AirBuddy.dmg is APFS formatted, unpack with 7zz
   nativeBuildInputs = [ _7zz ];
-
-  sourceRoot = "AirBuddy.app";
 
   installPhase = ''
     runHook preInstall
@@ -34,17 +27,26 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+  sourceRoot = "AirBuddy.app";
+
   meta = {
     description = "Take Control of Your Wireless Devices on macOS";
+
     longDescription = ''
       Open your AirPods case next to your Mac to see the status right away, just like it works on your iPhone or iPad.
       AirBuddy lives in your Menu Bar and can also show battery information for your iPhone, iPad, Apple Watch, Mouse, Keyboard, and more.
     '';
+
     homepage = "https://v2.airbuddy.app";
     changelog = "https://support.airbuddy.app/articles/airbuddy-2-changelog";
     license = with lib.licenses; [ unfree ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ stepbrobd ];
+
     platforms = [
       "aarch64-darwin"
     ];

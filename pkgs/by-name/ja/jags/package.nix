@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  gfortran,
   blas,
+  gfortran,
   lapack,
 }:
 
@@ -30,10 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Just Another Gibbs Sampler";
-    mainProgram = "jags";
-    license = lib.licenses.gpl2;
     homepage = "http://mcmc-jags.sourceforge.net";
+    license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.andres ];
     platforms = lib.platforms.unix;
+    mainProgram = "jags";
   };
 })

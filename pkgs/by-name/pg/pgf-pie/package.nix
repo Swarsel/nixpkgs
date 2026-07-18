@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -25,8 +25,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/pgf-tikz/pgf-pie";
     description = "Some LaTeX macros for pie charts using the PGF/TikZ package";
+    homepage = "https://github.com/pgf-tikz/pgf-pie";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

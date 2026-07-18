@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pam,
   openldap,
+  pam,
   perl,
   unstableGitUpdater,
 }:
@@ -24,27 +24,30 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace vers_string --replace "cvslib.pl" "./cvslib.pl"
   '';
 
-  preInstall = "
-    substituteInPlace Makefile --replace '-o root -g root' ''
-  ";
-
   nativeBuildInputs = [ perl ];
+
   buildInputs = [
     pam
     openldap
   ];
 
+  preInstall = "
+    substituteInPlace Makefile --replace '-o root -g root' ''
+  ";
+
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://www.padl.com/OSS/pam_ldap.html";
+    inherit (pam.meta) platforms;
     description = "LDAP backend for PAM";
-    changelog = "https://github.com/PADL/pam_ldap/blob/master/ChangeLog";
+
     longDescription = ''
       The pam_ldap module provides the means for Solaris and Linux servers and
       workstations to authenticate against LDAP directories, and to change their
       passwords in the directory.'';
+
+    homepage = "https://www.padl.com/OSS/pam_ldap.html";
+    changelog = "https://github.com/PADL/pam_ldap/blob/master/ChangeLog";
     license = lib.licenses.gpl2;
-    inherit (pam.meta) platforms;
   };
 })

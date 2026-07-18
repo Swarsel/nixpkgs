@@ -1,9 +1,9 @@
 {
   lib,
-  buildNimPackage,
   fetchFromGitHub,
-  nim,
+  buildNimPackage,
   makeWrapper,
+  nim,
 }:
 
 buildNimPackage (finalAttrs: {
@@ -17,10 +17,6 @@ buildNimPackage (finalAttrs: {
     hash = "sha256-CMYkMkekVI0C1WUds+KBbRfjMte42kBAB2ddtQp8d+k=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  lockFile = ./lock.json;
-
   postPatch =
     # Trim comments from the Nimble file.
     ''
@@ -28,6 +24,8 @@ buildNimPackage (finalAttrs: {
         -e 's/[[:space:]]* # .*$//g' \
        -i balls.nimble
     '';
+
+  nativeBuildInputs = [ makeWrapper ];
 
   preCheck = ''
     echo 'path:"$projectDir/.."' > tests/nim.cfg
@@ -45,11 +43,13 @@ buildNimPackage (finalAttrs: {
         --append-flags '--path:"${finalAttrs.src}" ${toString pathFlags}'
     '';
 
+  lockFile = ./lock.json;
+
   meta = finalAttrs.src.meta // {
     description = "Testing framework with balls";
     homepage = "https://github.com/disruptek/balls";
-    mainProgram = "balls";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
+    mainProgram = "balls";
   };
 })

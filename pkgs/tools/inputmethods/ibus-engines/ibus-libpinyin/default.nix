@@ -3,22 +3,22 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  gettext,
-  gobject-introspection,
-  pkg-config,
-  wrapGAppsHook3,
-  sqlite,
-  libpinyin,
   db,
-  ibus,
+  gettext,
   glib,
+  gobject-introspection,
   gtk3,
-  python3,
-  lua,
-  opencc,
-  libsoup_3,
+  ibus,
   json-glib,
   libnotify,
+  libpinyin,
+  libsoup_3,
+  lua,
+  opencc,
+  pkg-config,
+  python3,
+  sqlite,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -38,11 +38,6 @@ stdenv.mkDerivation rec {
     gobject-introspection.setupHook
     pkg-config
     wrapGAppsHook3
-  ];
-
-  configureFlags = [
-    "--enable-cloud-input-mode"
-    "--enable-opencc"
   ];
 
   buildInputs = [
@@ -65,14 +60,21 @@ stdenv.mkDerivation rec {
     libnotify
   ];
 
+  configureFlags = [
+    "--enable-cloud-input-mode"
+    "--enable-opencc"
+  ];
+
   meta = {
-    isIbusEngine = true;
     description = "IBus interface to the libpinyin input method";
     homepage = "https://github.com/libpinyin/ibus-libpinyin";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       linsui
     ];
+
     platforms = lib.platforms.linux;
+    isIbusEngine = true;
   };
 }

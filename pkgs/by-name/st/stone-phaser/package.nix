@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
   cairo,
   libGL,
-  lv2,
-  libjack2,
   libgbm,
+  libjack2,
+  libx11,
+  lv2,
   pkg-config,
 }:
 
@@ -23,7 +23,16 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  postPatch = ''
+    patch -d dpf -p 1 -i "$src/resources/patch/DPF-bypass.patch"
+    patchShebangs ./dpf/utils/generate-ttl.sh
+
+    # Fix gcc-13 build failure due to missing includes
+    sed -e '1i #include <cstdint>' -i plugins/stone-phaser/ui/Color.h
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     cairo
@@ -33,22 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
     libgbm
   ];
 
-  postPatch = ''
-    patch -d dpf -p 1 -i "$src/resources/patch/DPF-bypass.patch"
-    patchShebangs ./dpf/utils/generate-ttl.sh
-
-    # Fix gcc-13 build failure due to missing includes
-    sed -e '1i #include <cstdint>' -i plugins/stone-phaser/ui/Color.h
-  '';
-
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
-    homepage = "https://github.com/jpcima/stone-phaser";
     description = "Classic analog phaser effect, made with DPF and Faust";
+    homepage = "https://github.com/jpcima/stone-phaser";
+    license = lib.licenses.boost;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.boost;
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

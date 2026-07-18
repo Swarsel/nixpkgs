@@ -1,15 +1,22 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
-  kubectl,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
+  kubectl,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "litmusctl";
   version = "1.26.0";
+
+  src = fetchFromGitHub {
+    owner = "litmuschaos";
+    repo = "litmusctl";
+    rev = "${finalAttrs.version}";
+    hash = "sha256-Zo21QH6uO1uKcLbuirLiIXS4qOI40zbamt1G9sL0IWg=";
+  };
 
   nativeBuildInputs = [
     installShellFiles
@@ -18,13 +25,6 @@ buildGoModule (finalAttrs: {
   buildInputs = [
     kubectl
   ];
-
-  src = fetchFromGitHub {
-    owner = "litmuschaos";
-    repo = "litmusctl";
-    rev = "${finalAttrs.version}";
-    hash = "sha256-Zo21QH6uO1uKcLbuirLiIXS4qOI40zbamt1G9sL0IWg=";
-  };
 
   vendorHash = "sha256-Lkvc8dBr/nvKczx83/KXKLe5FskGpI/17GIrl2y/E1I=";
 
@@ -39,10 +39,12 @@ buildGoModule (finalAttrs: {
     description = "Command-Line tool to manage Litmuschaos's agent plane";
     homepage = "https://github.com/litmuschaos/litmusctl";
     license = lib.licenses.asl20;
-    mainProgram = "litmusctl";
+
     maintainers = with lib.maintainers; [
       vinetos
       sailord
     ];
+
+    mainProgram = "litmusctl";
   };
 })

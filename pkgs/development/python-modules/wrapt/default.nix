@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
-  sphinxHook,
+  setuptools,
   sphinx-rtd-theme,
+  sphinxHook,
 }:
 
 buildPythonPackage rec {
   pname = "wrapt";
   version = "1.17.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GrahamDumpleton";
@@ -20,22 +19,21 @@ buildPythonPackage rec {
     hash = "sha256-QduT5bncXi4LeI034h5Pqtwybru0QcQIYI7cMchLy7c=";
   };
 
-  patches = [ ./pytest9-compat.patch ];
+  outputs = [
+    "out"
+    "doc"
+  ];
 
-  build-system = [ setuptools ];
+  patches = [ ./pytest9-compat.patch ];
 
   nativeBuildInputs = [
     sphinxHook
     sphinx-rtd-theme
   ];
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "wrapt" ];
 
   meta = {

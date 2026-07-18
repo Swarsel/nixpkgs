@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "hydrawiser";
   version = "0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ptcryan";
@@ -31,6 +30,7 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "hydrawiser" ];
 
   meta = {

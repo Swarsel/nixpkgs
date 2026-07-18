@@ -1,11 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  gitUpdater,
-  nixosTests,
-  runCommand,
   ayatana-indicator-messages,
   bash,
   cmake,
@@ -13,7 +9,9 @@
   dbus-glib,
   dbus-test-runner,
   dconf,
+  fetchpatch,
   gettext,
+  gitUpdater,
   glib,
   gnome-keyring,
   libnotify,
@@ -23,6 +21,7 @@
   lomiri-history-service,
   lomiri-url-dispatcher,
   makeWrapper,
+  nixosTests,
   pkg-config,
   protobuf,
   python3,
@@ -31,6 +30,7 @@
   qtfeedback,
   qtmultimedia,
   qtpim,
+  runCommand,
   telepathy,
   telepathy-glib,
   telepathy-mission-control,
@@ -57,24 +57,24 @@ stdenv.mkDerivation (finalAttrs: {
     # Fixes for test flakiness & newer libnotify compatibility
     # Remove when version > 0.6.2
     (fetchpatch {
+      hash = "sha256-E9THrqE77GXBY8ftwrkwFzFCTSa/YpkaHiX4ivjH6mM=";
       name = "0001-lomiri-telephony-service-new-libnotify-needs-spec_version.patch";
       url = "https://gitlab.com/ubports/development/core/lomiri-telephony-service/-/commit/6b0b51a4fcfafcd10ae5fe4928d49c9f73f14d12.patch";
-      hash = "sha256-E9THrqE77GXBY8ftwrkwFzFCTSa/YpkaHiX4ivjH6mM=";
     })
     (fetchpatch {
+      hash = "sha256-nLN+Evyq4Yf9GN2wSSPXmzEzTPXHDl+Pl5FKOiwdDY8=";
       name = "0002-lomiri-telephony-service-tests-depend-on-the-notification-mock.patch";
       url = "https://gitlab.com/ubports/development/core/lomiri-telephony-service/-/commit/8c5a3048492eb01354565f0892a61770eb27b957.patch";
-      hash = "sha256-nLN+Evyq4Yf9GN2wSSPXmzEzTPXHDl+Pl5FKOiwdDY8=";
     })
     (fetchpatch {
+      hash = "sha256-/JEkoEEivFwFoNOrcdDleAGOjdUwS4SlUovMr9trNQQ=";
       name = "0003-lomiri-telephony-service-approver-fix-race-condition-when-accepting-calls.patch";
       url = "https://gitlab.com/ubports/development/core/lomiri-telephony-service/-/commit/b3123f784ed692f9424c978e68867a8662d00083.patch";
-      hash = "sha256-/JEkoEEivFwFoNOrcdDleAGOjdUwS4SlUovMr9trNQQ=";
     })
     (fetchpatch {
+      hash = "sha256-Ie9kM7UHSjmORTOTNzZ1/qtM4ILkOnGjyQCXXo1PU88=";
       name = "0004-lomiri-telephony-service-Robustness-fixes-for-tests.patch";
       url = "https://gitlab.com/ubports/development/core/lomiri-telephony-service/-/commit/e886fbdd016327634e935986f2b63b90833295be.patch";
-      hash = "sha256-Ie9kM7UHSjmORTOTNzZ1/qtM4ILkOnGjyQCXXo1PU88=";
     })
   ];
 
@@ -136,16 +136,6 @@ stdenv.mkDerivation (finalAttrs: {
     telepathy-mission-control
   ];
 
-  nativeCheckInputs = [
-    dbus-test-runner
-    dconf
-    gnome-keyring
-    telepathy-mission-control
-    xvfb-run
-  ];
-
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     # These rely on libphonenumber reformatting inputs to certain results
     # Seem to be broken for a small amount of numbers, maybe libphonenumber version change?
@@ -160,8 +150,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  # Starts & talks to D-Bus services, breaks with parallelism
-  enableParallelChecking = false;
+  nativeCheckInputs = [
+    dbus-test-runner
+    dconf
+    gnome-keyring
+    telepathy-mission-control
+    xvfb-run
+  ];
 
   preCheck = ''
     export QT_QPA_PLATFORM=minimal
@@ -206,10 +201,15 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : "$out/bin"
   '';
 
+  dontWrapQtApps = true;
+  # Starts & talks to D-Bus services, breaks with parallelism
+  enableParallelChecking = false;
+
   passthru = {
     ayatana-indicators = {
       lomiri-indicator-telephony-service = [ "lomiri" ];
     };
+
     tests.vm = nixosTests.ayatana-indicators;
     updateScript = gitUpdater { };
   };
@@ -219,7 +219,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/lomiri-telephony-service";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-telephony-service/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.lomiri ];
   };
 })

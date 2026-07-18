@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchzip,
   ant,
+  fetchzip,
   jdk8,
   sharutils,
   stripJavaArchivesHook,
@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     stripJavaArchivesHook
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/freetts-${finalAttrs.version}";
-
   buildPhase = ''
     runHook preBuild
 
@@ -47,14 +45,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/freetts-${finalAttrs.version}";
+
   meta = {
     description = "Text to speech system based on Festival written in Java";
+
     longDescription = ''
       Text to speech system based on Festival written in Java.
       Can be used in combination with KDE accessibility.
     '';
+
     homepage = "http://freetts.sourceforge.net";
     license = lib.licenses.bsdOriginal;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # jsapi.jar is bundled in a self-extracting shell-script

@@ -17,12 +17,12 @@ buildDotnetModule rec {
   };
 
   dotnet-sdk = dotnetCorePackages.sdk_8_0_4xx;
-  projectFile = "src/gei/gei.csproj";
   nugetDeps = ./deps.json; # File generated with `nix-build -A gh-gei.passthru.fetch-deps`.
+  projectFile = "src/gei/gei.csproj";
 
   meta = {
-    homepage = "https://github.com/github/gh-gei";
     description = "Migration CLI for GitHub to GitHub migrations";
+    homepage = "https://github.com/github/gh-gei";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lafrenierejm ];
     mainProgram = "gei";

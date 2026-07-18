@@ -23,15 +23,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Set of JavaScript libraries to enhance the user interface of web sites";
+
     longDescription = ''
       script.aculo.us provides you with
       easy-to-use, cross-browser user
       interface JavaScript libraries to make
       your web sites and web applications fly.
     '';
+
     homepage = "https://script.aculo.us/";
-    downloadPage = "https://script.aculo.us/dist/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ das_j ];
+    downloadPage = "https://script.aculo.us/dist/";
   };
 })

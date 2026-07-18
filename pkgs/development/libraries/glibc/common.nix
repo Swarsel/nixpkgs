@@ -24,28 +24,28 @@
 # files.
 
 {
-  stdenv,
   lib,
-  buildPackages,
+  stdenv,
   fetchurl,
-  linuxHeaders ? null,
+  bison,
+  buildPackages,
+  gettext,
+  libidn2,
+  python3Minimal,
   gd ? null,
   libpng ? null,
-  libidn2,
-  bison,
-  gettext,
-  python3Minimal,
+  linuxHeaders ? null,
 }:
 
 {
   pname,
-  withLinuxHeaders ? false,
-  profilingLibraries ? false,
-  withGd ? false,
   enableCET ? false,
   enableCETRuntimeDefault ? false,
   extraBuildInputs ? [ ],
   extraNativeBuildInputs ? [ ],
+  profilingLibraries ? false,
+  withGd ? false,
+  withLinuxHeaders ? false,
   ...
 }@args:
 
@@ -63,7 +63,17 @@ stdenv.mkDerivation (
   {
     version = version + patchSuffix;
 
-    enableParallelBuilding = true;
+    # out as the first output is an exception exclusive to glibc
+    # getent is its own output, not kept in bin, since many things
+    # depend on getent but not on the locale generation tools in the bin
+    # output. This saves a couple of megabytes of closure size in many cases.
+    outputs = [
+      "out"
+      "bin"
+      "dev"
+      "static"
+      "getent"
+    ];
 
     patches = [
       /*
@@ -167,6 +177,24 @@ stdenv.mkDerivation (
       EOF
     '';
 
+    strictDeps = true;
+
+    nativeBuildInputs = [
+      bison
+      gettext
+      python3Minimal
+    ]
+    ++ extraNativeBuildInputs;
+
+    buildInputs = [
+      linuxHeaders
+    ]
+    ++ lib.optionals withGd [
+      gd
+      libpng
+    ]
+    ++ extraBuildInputs;
+
     configureFlags = [
       "-C"
       "--enable-add-ons"
@@ -215,50 +243,22 @@ stdenv.mkDerivation (
         "OBJDUMP=${stdenv.cc.bintools.bintools}/bin/objdump"
       ];
 
-    postInstall = (args.postInstall or "") + ''
-      moveToOutput bin/getent $getent
-    '';
-
-    installFlags = [ "sysconfdir=$(out)/etc" ];
-
-    # out as the first output is an exception exclusive to glibc
-
-    # getent is its own output, not kept in bin, since many things
-    # depend on getent but not on the locale generation tools in the bin
-    # output. This saves a couple of megabytes of closure size in many cases.
-    outputs = [
-      "out"
-      "bin"
-      "dev"
-      "static"
-      "getent"
-    ];
-
-    strictDeps = true;
-    depsBuildBuild = [ buildPackages.stdenv.cc ];
-    nativeBuildInputs = [
-      bison
-      gettext
-      python3Minimal
-    ]
-    ++ extraNativeBuildInputs;
-    buildInputs = [
-      linuxHeaders
-    ]
-    ++ lib.optionals withGd [
-      gd
-      libpng
-    ]
-    ++ extraBuildInputs;
-
     env = {
-      linuxHeaders = lib.optionalString withLinuxHeaders linuxHeaders;
       inherit (stdenv.hostPlatform) is64bit;
       # Needed to install share/zoneinfo/zone.tab.  Set to impure /bin/sh to
       # prevent a retained dependency on the bootstrap tools in the stdenv-linux
       # bootstrap.
       BASH_SHELL = "/bin/sh";
+      linuxHeaders = lib.optionalString withLinuxHeaders linuxHeaders;
     };
+
+    postInstall = (args.postInstall or "") + ''
+      moveToOutput bin/getent $getent
+    '';
+
+    depsBuildBuild = [ buildPackages.stdenv.cc ];
+    enableParallelBuilding = true;
+    installFlags = [ "sysconfdir=$(out)/etc" ];
 
     # Used by libgcc, elf-header, and others to determine ABI
     passthru = {
@@ -279,8 +279,8 @@ stdenv.mkDerivation (
 
     {
       src = fetchurl {
-        url = "mirror://gnu/glibc/glibc-${version}.tar.xz";
         inherit sha256;
+        url = "mirror://gnu/glibc/glibc-${version}.tar.xz";
       };
 
       # Remove absolute paths from `configure' & co.; build out-of-tree.
@@ -330,13 +330,11 @@ stdenv.mkDerivation (
       '';
 
       preBuild = lib.optionalString withGd "unset NIX_DONT_SET_RPATH";
-
       doCheck = false; # fails
 
       meta =
 
         {
-          homepage = "https://www.gnu.org/software/libc/";
           description = "GNU C Library";
 
           longDescription = ''
@@ -348,14 +346,16 @@ stdenv.mkDerivation (
             most systems with the Linux kernel.
           '';
 
+          homepage = "https://www.gnu.org/software/libc/";
           license = lib.licenses.lgpl2Plus;
 
           maintainers = with lib.maintainers; [
             ma27
             connorbaker
           ];
-          teams = [ lib.teams.security-review ];
+
           platforms = lib.platforms.linux;
+          teams = [ lib.teams.security-review ];
         }
         // (args.meta or { });
     }

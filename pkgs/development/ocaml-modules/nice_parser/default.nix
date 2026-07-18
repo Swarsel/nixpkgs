@@ -1,14 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   stdio,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "nice_parser";
   version = "1.0.0";
-  minimalOCamlVersion = "4.07";
 
   src = fetchFromGitHub {
     owner = "smolkaj";
@@ -20,6 +19,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [
     stdio
   ];
+
+  minimalOCamlVersion = "4.07";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;

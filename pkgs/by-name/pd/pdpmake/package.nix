@@ -15,19 +15,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   makeFlags = [ "PREFIX=$(out)" ];
-
   doCheck = true;
   checkTarget = "test";
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/rmyorston/pdpmake";
     description = "Public domain POSIX make";
+    homepage = "https://github.com/rmyorston/pdpmake";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ eownerdead ];
-    mainProgram = "pdpmake";
     platforms = lib.platforms.all;
     badPlatforms = lib.platforms.darwin; # Requires `uimensat`
+    mainProgram = "pdpmake";
   };
 })

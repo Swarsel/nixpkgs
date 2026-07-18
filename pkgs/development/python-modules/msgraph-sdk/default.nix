@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   azure-identity,
   buildPythonPackage,
-  fetchFromGitHub,
   flit-core,
   microsoft-kiota-abstractions,
   microsoft-kiota-authentication-azure,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "msgraph-sdk";
   version = "1.59.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoftgraph";
@@ -26,6 +25,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-nZp1oMmJS7Cm3WQcZIcl5QSa1NzpdXcEsI6RxQC1jTU=";
   };
 
+  # Module doesn't have tests
+  doCheck = false;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -40,9 +41,7 @@ buildPythonPackage (finalAttrs: {
     msgraph-core
   ];
 
-  # Module doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "msgraph" ];
 
   meta = {

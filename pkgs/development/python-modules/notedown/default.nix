@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   nbconvert,
   nbformat,
   notebook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "notedown";
   version = "1.5.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -29,12 +28,13 @@ buildPythonPackage rec {
 
   # No tests in pypi source
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/aaren/notedown";
     description = "Convert IPython Notebooks to markdown (and back)";
-    mainProgram = "notedown";
+    homepage = "https://github.com/aaren/notedown";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ vcanadi ];
+    mainProgram = "notedown";
   };
 }

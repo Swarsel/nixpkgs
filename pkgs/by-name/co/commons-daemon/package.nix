@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.5.1";
   pname = "commons-daemon";
+  version = "1.5.1";
 
   src = fetchurl {
     url = "mirror://apache/commons/daemon/binaries/commons-daemon-${finalAttrs.version}-bin.tar.gz";
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://commons.apache.org/proper/commons-daemon";
     description = "Apache Commons Daemon software is a set of utilities and Java support classes for running Java applications as server processes";
-    maintainers = with lib.maintainers; [ rsynnest ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://commons.apache.org/proper/commons-daemon";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ rsynnest ];
     platforms = with lib.platforms; unix;
   };
 })

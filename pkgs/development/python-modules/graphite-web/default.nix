@@ -1,38 +1,34 @@
 {
   lib,
   stdenv,
-  pkgs,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # dependencies
   cairocffi,
   django,
   django-tagging,
   gunicorn,
+  # tests
+  mock,
+  # passthru
+  nixosTests,
+  pkgs,
   pyparsing,
+  python,
   python-memcached,
   pytz,
+  redis,
+  rrdtool,
   six,
   txamqp,
   urllib3,
   whisper,
-
-  # tests
-  mock,
-  redis,
-  rrdtool,
   writableTmpDirAsHomeHook,
-  python,
-
-  # passthru
-  nixosTests,
 }:
 
 buildPythonPackage {
   pname = "graphite-web";
   version = "1.1.10-unstable-2025-02-24";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "graphite-project";
@@ -54,30 +50,10 @@ buildPythonPackage {
       --replace-fail "test_render_view" "_dont_test_render_view"
   '';
 
-  dependencies = [
-    cairocffi
-    django
-    django-tagging
-    gunicorn
-    pyparsing
-    python-memcached
-    pytz
-    six
-    txamqp
-    urllib3
-    whisper
-  ];
-
-  pythonRelaxDeps = [
-    "django"
-    "django-tagging"
-  ];
-
   env = {
     # Carbon-s default installation is /opt/graphite. This env variable ensures
     # carbon is installed as a regular Python module.
     GRAPHITE_NO_PREFIX = "True";
-
     REDIS_HOST = "127.0.0.1";
   };
 
@@ -114,7 +90,27 @@ buildPythonPackage {
 
   __darwinAllowLocalNetworking = true;
 
+  dependencies = [
+    cairocffi
+    django
+    django-tagging
+    gunicorn
+    pyparsing
+    python-memcached
+    pytz
+    six
+    txamqp
+    urllib3
+    whisper
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "graphite" ];
+
+  pythonRelaxDeps = [
+    "django"
+    "django-tagging"
+  ];
 
   passthru.tests = {
     inherit (nixosTests) graphite;
@@ -124,6 +120,7 @@ buildPythonPackage {
     description = "Enterprise scalable realtime graphing";
     homepage = "http://graphiteapp.org/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       basvandijk
     ];

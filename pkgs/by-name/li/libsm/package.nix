@@ -2,17 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libice,
   libuuid,
+  pkg-config,
+  testers,
+  writeScript,
   xorgproto,
   xtrans,
-  writeScript,
-  testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libsm";
   version = "1.2.6";
+
+  src = fetchurl {
+    url = "mirror://xorg/individual/lib/libSM-${finalAttrs.version}.tar.xz";
+    hash = "sha256-vnwKvbFcv9KaxiVzwcguh3+dQEetFTIefql9HkPYNb4=";
+  };
 
   outputs = [
     "out"
@@ -20,13 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  src = fetchurl {
-    url = "mirror://xorg/individual/lib/libSM-${finalAttrs.version}.tar.xz";
-    hash = "sha256-vnwKvbFcv9KaxiVzwcguh3+dQEetFTIefql9HkPYNb4=";
-  };
-
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -42,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -50,18 +51,19 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "X Session Management Library";
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libsm";
+
     license = with lib.licenses; [
       mit
       mitOpenGroup
     ];
+
     maintainers = [ ];
-    pkgConfigModules = [ "sm" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "sm" ];
   };
 })

@@ -1,15 +1,16 @@
 {
-  fetchFromGitHub,
   lib,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
   cmake,
   metee,
+  nix-update-script,
   udev,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "igsc";
   version = "1.3.0";
+
   src = fetchFromGitHub {
     owner = "intel";
     repo = "igsc";
@@ -17,11 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GdeGGrnkxJQlg+vVQan5rJW/rxlStD4TAmWxfloX0+k=";
   };
 
+  nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     metee
     udev
   ];
-  nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
     "-DMETEE_LIB_PATH=${metee}/lib"
@@ -31,12 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "igsc";
-    maintainers = with lib.maintainers; [ xddxdd ];
     description = "Intel graphics system controller firmware update library";
     homepage = "https://github.com/intel/igsc";
-    license = lib.licenses.asl20;
     changelog = "https://github.com/intel/igsc/releases/tag/V${finalAttrs.version}";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ xddxdd ];
     platforms = lib.platforms.linux;
+    mainProgram = "igsc";
   };
 })

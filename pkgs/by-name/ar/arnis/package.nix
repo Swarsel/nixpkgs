@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   cargo-tauri,
-  wrapGAppsHook4,
-  webkitgtk_4_1,
-  pkg-config,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  webkitgtk_4_1,
+  wrapGAppsHook4,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "arnis";
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mdBicZIHonfVs2r6eNRNdpr8saZ54k1m0czWRqBYvq4=";
   };
-
-  cargoHash = "sha256-G0lEKjF9xNF4zs/+yf/8fvZTRZOH6IGud0tpEB86IXE=";
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -36,14 +34,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-G0lEKjF9xNF4zs/+yf/8fvZTRZOH6IGud0tpEB86IXE=";
+
   checkFlags = [
     # Fail to run in sandbox environment
     "--skip=map_transformation::translate::translator::tests::test_translate_by_vector"
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgram =
     let
       binSubdirectory =
@@ -55,20 +58,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
           throw "Unsuported system";
     in
     "${placeholder "out"}/${binSubdirectory}/arnis";
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (cargo-tauri.hook.meta) platforms;
     description = "Real world location generator for Minecraft Java Edition";
+
     longDescription = ''
       Open source project written in Rust generates any chosen location from
       the real world in Minecraft Java Edition with a high level of detail.
     '';
+
     homepage = "https://github.com/louis-e/arnis";
     changelog = "https://github.com/louis-e/arnis/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    inherit (cargo-tauri.hook.meta) platforms;
     maintainers = with lib.maintainers; [ nartsiss ];
     mainProgram = "arnis";
   };

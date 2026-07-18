@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libsndfile,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -23,23 +23,24 @@ stdenv.mkDerivation {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ libsndfile ];
-
   configureFlags = [ "CFLAGS=-std=gnu17" ];
-
   doCheck = false; # fails with "../build-scripts/test-driver: line 107: -Mstrict: command not found"
 
   meta = {
     description = "MP2 encoder";
-    mainProgram = "twolame";
+
     longDescription = ''
       TwoLAME is an optimised MPEG Audio Layer 2 (MP2) encoder based on
       tooLAME by Mike Cheng, which in turn is based upon the ISO dist10
       code and portions of LAME.
     '';
+
     homepage = "https://www.twolame.org/";
     license = with lib.licenses; [ lgpl2Plus ];
-    platforms = with lib.platforms; unix;
     maintainers = [ ];
+    platforms = with lib.platforms; unix;
+    mainProgram = "twolame";
   };
 }

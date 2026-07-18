@@ -1,19 +1,19 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "fields";
   version = "5.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-MdSqA9jUTjXfE8Qx3jUTaZfwR6kkpZfYT3vCCeG+Vyc=";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "fields" ];
 
   meta = {

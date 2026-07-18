@@ -6,8 +6,8 @@
   cppo,
   cryptokit,
   ocurl,
-  yojson,
   ounit2,
+  yojson,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -18,6 +18,7 @@ buildDunePackage (finalAttrs: {
     owner = "astrada";
     repo = "gapi-ocaml";
     tag = "v${finalAttrs.version}";
+
     hash =
       {
         "0.4.7" = "sha256-uQJfrgF0oafURlamHslt9hX9MP4vFeVqDhuX7T/kjiY=";
@@ -42,7 +43,7 @@ buildDunePackage (finalAttrs: {
     description = "OCaml client for google services";
     homepage = "https://github.com/astrada/gapi-ocaml";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bennofs ];
+    platforms = lib.platforms.linux;
   };
 })

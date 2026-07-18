@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   hatchling,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "magic-filter";
   version = "1.0.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aiogram";
@@ -24,9 +23,8 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ hatchling ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "magic_filter" ];
 
   meta = {

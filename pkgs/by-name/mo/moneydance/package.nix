@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://infinitekind.com/stabledl/${
       lib.replaceStrings [ "_" ] [ "." ] finalAttrs.version
     }/moneydance-linux.tar.gz";
+
     hash = "sha256-xOdkuaN17ss9tTSXgU//s6cBm2jGEgP9eTtvW0k3VWQ=";
   };
 
@@ -32,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     (buildPackages.wrapGAppsHook3.override { makeWrapper = buildPackages.makeShellWrapper; })
   ];
+
   buildInputs = [ jdk ];
-  dontWrapGApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -71,23 +72,27 @@ stdenv.mkDerivation (finalAttrs: {
         --add-flags ${lib.escapeShellArg (lib.escapeShellArgs finalJvmFlags)}
     '';
 
+  dontWrapGApps = true;
+
   passthru = {
     inherit jdk;
   };
 
   meta = {
+    description = "Easy to use and full-featured personal finance app that doesn't compromise your privacy";
     homepage = "https://infinitekind.com/moneydance";
+
     changelog = "https://infinitekind.com/stabledl/${
       lib.replaceStrings [ "_" ] [ "." ] finalAttrs.version
     }/changelog-stable.txt";
-    description = "Easy to use and full-featured personal finance app that doesn't compromise your privacy";
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    maintainers = [ lib.maintainers.lucasbergman ];
     # Darwin refers to Zulu Java, which breaks the evaluation of this derivation
     # for some reason
     #
     # https://github.com/NixOS/nixpkgs/pull/306372#issuecomment-2111688236
     platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.lucasbergman ];
   };
 })

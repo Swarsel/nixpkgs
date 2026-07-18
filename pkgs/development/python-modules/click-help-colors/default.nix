@@ -1,15 +1,14 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
   click,
+  fetchPypi,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "click-help-colors";
   version = "0.9.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ click ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "click_help_colors" ];
 
   meta = {

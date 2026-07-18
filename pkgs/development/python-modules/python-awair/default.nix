@@ -1,20 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
-  pytest-asyncio,
   pytest-aiohttp,
+  pytest-asyncio,
   pytestCheckHook,
-  voluptuous,
   vcrpy,
+  voluptuous,
 }:
 
 buildPythonPackage rec {
   pname = "python-awair";
   version = "0.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ahayworth";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-ZET24T6MeCPPL1V84538U6Fb/ZVGv1hwcdTQi3Q+yMY=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    voluptuous
-  ];
-
   nativeCheckInputs = [
     pytest-aiohttp
     pytest-asyncio
@@ -37,12 +29,20 @@ buildPythonPackage rec {
     vcrpy
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+    voluptuous
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "python_awair" ];
 
   meta = {
-    changelog = "https://github.com/ahayworth/python_awair/releases/tag/${src.tag}";
     description = "Python library for the Awair API";
     homepage = "https://github.com/ahayworth/python_awair";
+    changelog = "https://github.com/ahayworth/python_awair/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
   };

@@ -10,17 +10,14 @@ buildPythonPackage rec {
   pname = "otpauth";
   version = "2.2.1";
 
-  pyproject = true;
-
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Fpp629cV/KaH9qZtAszb78Ip+0n4pjS5WNKG+QgTTVk=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "otpauth" ];
 
   meta = {

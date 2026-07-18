@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   dpkg,
-  makeWrapper,
   electron,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,9 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/headsetapp/headset-electron/releases/download/v${finalAttrs.version}/headset_${finalAttrs.version}_amd64.deb";
     hash = "sha256-81gsIq74sggauE6g8pM6z05KTmsbe49CZa9aRQEDwMo=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -37,12 +34,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Simple music player for YouTube and Reddit";
     homepage = "https://headsetapp.co/";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ muscaln ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "headset";
   };
 })

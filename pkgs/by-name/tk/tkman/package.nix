@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  fetchpatch,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
-  tk,
+  fetchpatch,
+  fetchzip,
   groff,
+  makeDesktopItem,
+  makeWrapper,
   rman,
+  tk,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,16 +20,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-S4ffz+7zmVy9+isz/8q+FV4wF5Rw2iL1ftY8RsJjRLs=";
   };
 
+  patches = [
+    (fetchpatch {
+      hash = "sha256-l97SY2/YnMgzHYKnVYCVJKV7oGLN1hXNpeHFlLVzTMA=";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-text/tkman/files/tkman-CVE-2008-5137.diff?id=dec60bb6900d6ebdaaa6aa1dcb845b30b739f9b5";
+    })
+  ];
+
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
-  ];
-
-  patches = [
-    (fetchpatch {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-text/tkman/files/tkman-CVE-2008-5137.diff?id=dec60bb6900d6ebdaaa6aa1dcb845b30b739f9b5";
-      hash = "sha256-l97SY2/YnMgzHYKnVYCVJKV7oGLN1hXNpeHFlLVzTMA=";
-    })
   ];
 
   makeFlags = [
@@ -59,20 +59,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "tkman";
-      desktopName = "TkMan";
+      categories = [ "Utility" ];
       comment = "Graphical man page and info viewer";
+      desktopName = "TkMan";
       exec = "tkman %f";
       icon = "tkman";
+      name = "tkman";
       terminal = false;
       type = "Application";
-      categories = [ "Utility" ];
     })
   ];
 
   meta = {
     description = "Graphical, hypertext manual page and Texinfo browser for UNIX";
-    mainProgram = "tkman";
+
     longDescription = ''
       TkMan is a graphical, hypertext manual page and Texinfo browser for UNIX.
       TkMan boasts hypertext links, unmatched online text formatting and display
@@ -85,9 +85,11 @@ stdenv.mkDerivation (finalAttrs: {
       list, lists of all pages in user configurable volumes, a comprehensive
       Preferences panel, and man page versioning support, among many other features.
     '';
+
     homepage = "https://tkman.sourceforge.net/index.html";
     license = lib.licenses.artistic1;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fgaz ];
+    platforms = lib.platforms.unix;
+    mainProgram = "tkman";
   };
 })

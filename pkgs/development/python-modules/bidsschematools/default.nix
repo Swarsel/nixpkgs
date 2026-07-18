@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-backend,
   acres,
+  buildPythonPackage,
   click,
+  pdm-backend,
   pyyaml,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bidsschematools";
   version = "1.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bids-standard";
@@ -19,8 +18,6 @@ buildPythonPackage (finalAttrs: {
     tag = "schema-${finalAttrs.version}";
     hash = "sha256-imgY2aDSQjS3Yjxv7iq31+qFrOCMXfYdS4Tt8lhMosI=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/tools/schemacode";
 
   build-system = [
     pdm-backend
@@ -32,9 +29,13 @@ buildPythonPackage (finalAttrs: {
     pyyaml
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "bidsschematools"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/tools/schemacode";
 
   meta = {
     description = "Python tools for working with the BIDS schema";

@@ -1,15 +1,15 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
+  makeWrapper,
   nix-update-script,
   openssl,
+  perl,
   pkg-config,
   rustPlatform,
-  stdenv,
   vimPlugins,
   vimUtils,
-  makeWrapper,
-  perl,
 }:
 let
   version = "0.1.2";
@@ -20,10 +20,8 @@ let
     hash = "sha256-x7OhVz4rWj2x1UsUm8iqkB5PQVAELvAYJ0yo2beU9TY=";
   };
   avante-nvim-lib = rustPlatform.buildRustPackage {
-    pname = "avante-nvim-lib";
     inherit version src;
-
-    cargoHash = "sha256-pTWCT2s820mjnfTscFnoSKC37RE7DAPKxP71QuM+JXQ=";
+    pname = "avante-nvim-lib";
 
     nativeBuildInputs = [
       pkg-config
@@ -35,8 +33,7 @@ let
       openssl
     ];
 
-    buildFeatures = [ "luajit" ];
-
+    cargoHash = "sha256-pTWCT2s820mjnfTscFnoSKC37RE7DAPKxP71QuM+JXQ=";
     # Allow undefined symbols on Darwin - they will be provided by Neovim's LuaJIT runtime
     env.RUSTFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-C link-arg=-undefined -C link-arg=dynamic_lookup";
 
@@ -47,19 +44,13 @@ let
       "--skip=test_roundtrip"
       "--skip=test_fetch_md"
     ];
+
+    buildFeatures = [ "luajit" ];
   };
 in
 vimUtils.buildVimPlugin {
-  pname = "avante.nvim";
   inherit version src;
-
-  dependencies = with vimPlugins; [
-    dressing-nvim
-    img-clip-nvim
-    nui-nvim
-    nvim-treesitter
-    plenary-nvim
-  ];
+  pname = "avante.nvim";
 
   postInstall =
     let
@@ -74,14 +65,13 @@ vimUtils.buildVimPlugin {
       cp ${avante-nvim-lib}/lib/libavante_html2md${ext} $out/lua/avante_html2md${ext}
     '';
 
-  passthru = {
-    updateScript = nix-update-script {
-      attrPath = "vimPlugins.avante-nvim.avante-nvim-lib";
-    };
-
-    # needed for the update script
-    inherit avante-nvim-lib;
-  };
+  dependencies = with vimPlugins; [
+    dressing-nvim
+    img-clip-nvim
+    nui-nvim
+    nvim-treesitter
+    plenary-nvim
+  ];
 
   nvimSkipModules = [
     # Requires setup with corresponding provider
@@ -92,10 +82,20 @@ vimUtils.buildVimPlugin {
     "avante.providers.vertex_claude"
   ];
 
+  passthru = {
+    # needed for the update script
+    inherit avante-nvim-lib;
+
+    updateScript = nix-update-script {
+      attrPath = "vimPlugins.avante-nvim.avante-nvim-lib";
+    };
+  };
+
   meta = {
     description = "Neovim plugin designed to emulate the behaviour of the Cursor AI IDE";
     homepage = "https://github.com/yetone/avante.nvim";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ttrei
       aarnphm

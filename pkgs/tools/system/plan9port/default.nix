@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  DarwinTools, # For building on Darwin
+  ed,
   fontconfig,
   freetype,
   libx11,
   libxext,
   libxt,
-  xorgproto,
   perl, # For building web manuals
   which,
-  ed,
-  DarwinTools, # For building on Darwin
+  xorgproto,
 }:
 
 stdenv.mkDerivation {
@@ -44,6 +44,7 @@ stdenv.mkDerivation {
   '';
 
   nativeBuildInputs = [ ed ];
+
   buildInputs = [
     perl
     which
@@ -63,6 +64,44 @@ stdenv.mkDerivation {
         DarwinTools
       ]
   );
+
+  buildPhase = ''
+    runHook preBuild
+    PLAN9_TARGET=$out/plan9 ./INSTALL -b
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    mkdir $out
+    cp -r . $out/plan9
+    cd $out/plan9
+
+    ./INSTALL -c
+    runHook postInstall
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    $out/bin/9 rc -c 'echo rc is working.'
+
+    # 9l can find and use its libs
+    cd $TMP
+    cat >test.c <<EOF
+    #include <u.h>
+    #include <libc.h>
+    #include <thread.h>
+    void
+    threadmain(int argc, char **argv)
+    {
+        threadexitsall(nil);
+    }
+    EOF
+    $out/bin/9 9c -o test.o test.c
+    $out/bin/9 9l -o test test.o
+    ./test
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -86,61 +125,28 @@ stdenv.mkDerivation {
     runHook postConfigure
   '';
 
-  buildPhase = ''
-    runHook preBuild
-    PLAN9_TARGET=$out/plan9 ./INSTALL -b
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-    mkdir $out
-    cp -r . $out/plan9
-    cd $out/plan9
-
-    ./INSTALL -c
-    runHook postInstall
-  '';
-
   dontPatchShebangs = true;
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    $out/bin/9 rc -c 'echo rc is working.'
-
-    # 9l can find and use its libs
-    cd $TMP
-    cat >test.c <<EOF
-    #include <u.h>
-    #include <libc.h>
-    #include <thread.h>
-    void
-    threadmain(int argc, char **argv)
-    {
-        threadexitsall(nil);
-    }
-    EOF
-    $out/bin/9 9c -o test.o test.c
-    $out/bin/9 9l -o test test.o
-    ./test
-  '';
-
   meta = {
-    homepage = "https://9fans.github.io/plan9port/";
     description = "Plan 9 from User Space";
+
     longDescription = ''
       Plan 9 from User Space (aka plan9port) is a port of many Plan 9 programs
       from their native Plan 9 environment to Unix-like operating systems.
     '';
+
+    homepage = "https://9fans.github.io/plan9port/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bbarker
       kovirobi
       matthewdargan
       ylh
     ];
-    mainProgram = "9";
+
     platforms = lib.platforms.unix;
+    mainProgram = "9";
   };
 }
 # TODO: investigate the mouse chording support patch

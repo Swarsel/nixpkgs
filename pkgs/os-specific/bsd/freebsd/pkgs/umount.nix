@@ -3,17 +3,17 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/umount";
-  extraPaths = [
-    "sbin/mount"
-    "usr.sbin/rpc.umntall"
-  ];
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
 
+  extraPaths = [
+    "sbin/mount"
+    "usr.sbin/rpc.umntall"
+  ];
+
+  path = "sbin/umount";
   meta.platforms = lib.platforms.freebsd;
 }

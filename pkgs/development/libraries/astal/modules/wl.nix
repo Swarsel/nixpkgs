@@ -1,6 +1,6 @@
 { buildAstalModule, wl-vapi-gen }:
 buildAstalModule {
-  name = "wl";
   nativeBuildInputs = [ wl-vapi-gen ];
+  name = "wl";
   meta.description = "Central wayland connection manager";
 }

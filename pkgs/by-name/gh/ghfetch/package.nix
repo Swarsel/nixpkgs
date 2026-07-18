@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,7 +21,7 @@ buildGoModule (finalAttrs: {
     description = "CLI tool to fetch GitHub user information and show like neofetch";
     homepage = "https://github.com/orangekame3/ghfetch";
     license = lib.licenses.mit;
-    mainProgram = "ghfetch";
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "ghfetch";
   };
 })

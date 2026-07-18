@@ -4,10 +4,10 @@
   fetchurl,
   atk,
   glibmm,
-  pkg-config,
   gnome,
   meson,
   ninja,
+  pkg-config,
   python3,
 }:
 
@@ -25,11 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  propagatedBuildInputs = [
-    atk
-    glibmm
-  ];
-
   nativeBuildInputs = [
     pkg-config
     meson
@@ -37,20 +32,25 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
   ];
 
+  propagatedBuildInputs = [
+    atk
+    glibmm
+  ];
+
   doCheck = true;
 
   passthru = {
     updateScript = gnome.updateScript {
+      freeze = true;
       packageName = "atkmm";
       versionPolicy = "odd-unstable";
-      freeze = true;
     };
   };
 
   meta = {
     description = "C++ wrappers for ATK accessibility toolkit";
-    license = lib.licenses.lgpl21Plus;
     homepage = "https://gtkmm.org";
+    license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.unix;
   };
 })

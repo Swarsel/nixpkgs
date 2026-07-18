@@ -1,20 +1,20 @@
 {
   buildDunePackage,
-  cohttp-lwt,
-  conduit-lwt-unix,
-  conduit-lwt,
-  ppx_sexp_conv,
+  cacert,
   cmdliner,
+  cohttp-lwt,
+  conduit-lwt,
+  conduit-lwt-unix,
   fmt,
   logs,
   magic-mime,
   ounit,
-  cacert,
+  ppx_sexp_conv,
 }:
 
 buildDunePackage {
-  pname = "cohttp-lwt-unix";
   inherit (cohttp-lwt) version src;
+  pname = "cohttp-lwt-unix";
 
   buildInputs = [
     cmdliner
@@ -33,6 +33,7 @@ buildDunePackage {
   # TODO(@sternenseemann): fail for unknown reason
   # https://github.com/mirage/ocaml-cohttp/issues/675#issuecomment-830692742
   doCheck = false;
+
   checkInputs = [
     ounit
     cacert

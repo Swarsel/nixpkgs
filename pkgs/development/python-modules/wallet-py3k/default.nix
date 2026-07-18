@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  replaceVars,
   openssl,
+  replaceVars,
   setuptools,
   six,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "wallet-py3k";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,12 +23,10 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
   doCheck = false; # no tests
-
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
   pythonImportsCheck = [ "wallet" ];
 
   meta = {

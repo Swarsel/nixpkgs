@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
+  curl,
   fetchgit,
   goocanvas_1,
-  pkg-config,
   gtk2,
-  libxml2,
-  curl,
-  libmicrohttpd,
-  libzip,
-  libusb1,
-  qrencode,
   json-glib,
-  php,
+  libmicrohttpd,
+  libusb1,
   libwebsockets,
+  libxml2,
+  libzip,
   openssl,
+  php,
+  pkg-config,
+  qrencode,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +35,19 @@ stdenv.mkDerivation (finalAttrs: {
           GIT_CONFIG_VALUE_0 = "git@github.com:";
         };
       });
+
+  # Use system php
+  # Disable git soft depend
+  # Disable dch changelog generation
+  # FixUp `install` phase output
+  postPatch = ''
+    substituteInPlace ./sources/common/network/web_server.cpp --replace-fail "php7.4" "${php}/bin/php"
+    substituteInPlace ./build/BellePoule/debian/bellepoule.desktop.template --replace-fail "/usr" "$out"
+    substituteInPlace ./build/BellePoule/Makefile \
+      --replace-fail "git" "#git" \
+      --replace-fail "dch" "echo Ignoring: dch" \
+      --replace-fail "/usr" ""
+  '';
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -58,19 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
     "V=1"
     "DESTDIR=$(out)"
   ];
-
-  # Use system php
-  # Disable git soft depend
-  # Disable dch changelog generation
-  # FixUp `install` phase output
-  postPatch = ''
-    substituteInPlace ./sources/common/network/web_server.cpp --replace-fail "php7.4" "${php}/bin/php"
-    substituteInPlace ./build/BellePoule/debian/bellepoule.desktop.template --replace-fail "/usr" "$out"
-    substituteInPlace ./build/BellePoule/Makefile \
-      --replace-fail "git" "#git" \
-      --replace-fail "dch" "echo Ignoring: dch" \
-      --replace-fail "/usr" ""
-  '';
 
   # Prepare release directory for buildPhase
   preBuild = ''

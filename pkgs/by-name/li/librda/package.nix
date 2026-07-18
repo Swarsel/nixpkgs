@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  testers,
   autoreconfHook,
   glib,
   gobject-introspection,
   gtk3,
   intltool,
   pkg-config,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,19 +48,18 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
+  enableParallelBuilding = true;
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Remote Desktop Awareness Shared Library";
     homepage = "https://github.com/ArcticaProject/librda";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "rdacheck";
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.linux;
+    mainProgram = "rdacheck";
+
     pkgConfigModules = [
       "rda"
     ];

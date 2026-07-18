@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   poetry-core,
   pytest-asyncio,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pyecoforest";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pjanuario";
@@ -22,16 +21,15 @@ buildPythonPackage rec {
     hash = "sha256-C8sFq0vsVsq6irWbRd0eq18tfKu0qRRBZHt23CiDTGU=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ httpx ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytestCheckHook
     respx
   ];
+
+  build-system = [ poetry-core ];
+  dependencies = [ httpx ];
 
   disabledTests = [
     # respx.models.AllMockedAssertionError
@@ -42,6 +40,7 @@ buildPythonPackage rec {
     "test_turn"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyecoforest" ];
 
   meta = {

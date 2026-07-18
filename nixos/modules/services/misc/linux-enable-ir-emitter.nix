@@ -25,13 +25,15 @@ in
       };
 
       device = lib.mkOption {
-        type = lib.types.str;
         default = "video2";
+
         description = ''
           IR camera device to depend on. For example, for `/dev/video2`
           the value would be `video2`. Find this with the command
           {command}`realpath /dev/v4l/by-path/<generated-driver-name>`.
         '';
+
+        type = lib.types.str;
       };
     };
   };
@@ -51,7 +53,9 @@ in
         ];
       in
       {
+        after = targets ++ [ "dev-${cfg.device}.device" ];
         description = "Enable the infrared emitter";
+
         # Added to match
         # https://github.com/EmixamPP/linux-enable-ir-emitter/blob/6.1.2/boot_service/systemd/linux-enable-ir-emitter.service
         # Prevents the program fail to detect the IR camera until a service
@@ -60,12 +64,11 @@ in
           ${pkgs.kmod}/bin/modprobe uvcvideo
           sleep 1
         '';
-        script = "${lib.getExe cfg.package} --verbose run";
-        serviceConfig.StateDirectory = "linux-enable-ir-emitter";
-        serviceConfig.LogsDirectory = "linux-enable-ir-emitter";
 
+        script = "${lib.getExe cfg.package} --verbose run";
+        serviceConfig.LogsDirectory = "linux-enable-ir-emitter";
+        serviceConfig.StateDirectory = "linux-enable-ir-emitter";
         wantedBy = targets ++ [ "multi-user.target" ];
-        after = targets ++ [ "dev-${cfg.device}.device" ];
       };
   };
 }

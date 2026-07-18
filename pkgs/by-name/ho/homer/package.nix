@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
   dart-sass,
+  fetchPnpmDeps,
   nix-update-script,
   nixosTests,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -20,17 +20,6 @@ stdenvNoCC.mkDerivation rec {
     repo = "homer";
     rev = "v${version}";
     hash = "sha256-XQjXRckrZ9LhAFp/v/OUJJ80odS5mXhQserPNx0mvwM=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit
-      pname
-      version
-      src
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-rDKnaIE1ZQ2I83RdlHWtgoMcDoFe7tE102LP2+SPmFg=";
   };
 
   nativeBuildInputs = [
@@ -64,11 +53,24 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit
+      pname
+      version
+      src
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-rDKnaIE1ZQ2I83RdlHWtgoMcDoFe7tE102LP2+SPmFg=";
+    pnpm = pnpm_10;
+  };
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       inherit (nixosTests.homer) caddy nginx;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -76,10 +78,12 @@ stdenvNoCC.mkDerivation rec {
     homepage = "https://github.com/bastienwirtz/homer";
     changelog = "https://github.com/bastienwirtz/homer/releases";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       stunkymonkey
       christoph-heiss
     ];
+
     platforms = lib.platforms.all;
   };
 }

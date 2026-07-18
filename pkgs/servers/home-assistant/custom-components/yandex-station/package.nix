@@ -1,15 +1,12 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  zeroconf,
-  pytestCheckHook,
+  buildHomeAssistantComponent,
   home-assistant,
-
+  pytestCheckHook,
+  zeroconf,
 }:
 buildHomeAssistantComponent rec {
-  owner = "AlexxIT";
-  domain = "yandex_station";
   version = "3.21.4";
 
   src = fetchFromGitHub {
@@ -19,8 +16,19 @@ buildHomeAssistantComponent rec {
     hash = "sha256-NbR8CqF7dr0q2nFZHi90IGmDELflcboeJTlVeYoBdvw=";
   };
 
+  nativeCheckInputs = [
+    home-assistant
+    pytestCheckHook
+  ]
+  ++ (home-assistant.getPackages "stream" home-assistant.python3Packages);
+
   dependencies = [
     zeroconf
+  ];
+
+  disabledTestPaths = [
+    # this test seems to be broken
+    "tests/test_local.py::test_track"
   ];
 
   disabledTests = [
@@ -28,20 +36,13 @@ buildHomeAssistantComponent rec {
     "test_sensor_qingping"
   ];
 
-  disabledTestPaths = [
-    # this test seems to be broken
-    "tests/test_local.py::test_track"
-  ];
-  nativeCheckInputs = [
-    home-assistant
-    pytestCheckHook
-  ]
-  ++ (home-assistant.getPackages "stream" home-assistant.python3Packages);
+  domain = "yandex_station";
+  owner = "AlexxIT";
 
   meta = {
-    changelog = "https://github.com/AlexxIT/YandexStation/releases/tag/${src.tag}";
     description = "Controlling Yandex.Station and other smart home devices with Alice from Home Assistant";
     homepage = "https://github.com/AlexxIT/YandexStation";
+    changelog = "https://github.com/AlexxIT/YandexStation/releases/tag/${src.tag}";
     license = lib.licenses.mit;
   };
 }

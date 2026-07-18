@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   buildGoModule,
-  lib,
   versionCheckHook,
 }:
 
@@ -17,33 +17,34 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-oOZeBCHpAasi9K77xA+8HxZErGWKwb4OaWzWhHagtQE=";
-
   doCheck = false;
-
-  ldflags = [
-    "-X main.Version=${finalAttrs.version}"
-  ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   postInstall = ''
     rm -f $out/bin/AndroidNDKBuild
     ln -s $out/bin/BaiduPCS-Go $out/bin/baidupcs-go || true
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  ldflags = [
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
   postVersionCheck = ''
     rm -f $out/bin/pcs_config.json
   '';
 
+  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
+
   meta = {
-    mainProgram = "BaiduPCS-Go";
-    maintainers = with lib.maintainers; [ xddxdd ];
     description = "Baidu Netdisk commandline client, mimicking Linux shell file handling commands";
     homepage = "https://github.com/qjfoidnh/BaiduPCS-Go";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ xddxdd ];
+    mainProgram = "BaiduPCS-Go";
   };
 })

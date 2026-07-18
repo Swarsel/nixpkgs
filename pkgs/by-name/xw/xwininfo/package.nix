@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
   libxcb,
-  xorgproto,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xwininfo";
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -41,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility to print information about windows on an X server";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xwininfo";
+
     license = with lib.licenses; [
       mit
       # mit-open-group with icu disclaimer ?!
@@ -48,8 +48,9 @@ stdenv.mkDerivation (finalAttrs: {
       mitOpenGroup
       hpndSellVariant
     ];
-    mainProgram = "xwininfo";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xwininfo";
   };
 })

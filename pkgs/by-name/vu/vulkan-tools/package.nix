@@ -4,8 +4,6 @@
   fetchFromGitHub,
   buildPackages,
   cmake,
-  pkg-config,
-  python3,
   glslang,
   libffi,
   libx11,
@@ -13,13 +11,15 @@
   libxcb,
   libxdmcp,
   libxrandr,
+  moltenvk,
+  pkg-config,
+  python3,
   vulkan-headers,
   vulkan-loader,
   vulkan-volk,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  moltenvk,
 }:
 
 stdenv.mkDerivation rec {
@@ -63,12 +63,6 @@ stdenv.mkDerivation rec {
     moltenvk.dev
   ];
 
-  libraryPath = lib.strings.makeLibraryPath [ vulkan-loader ];
-
-  dontPatchELF = true;
-
-  env.PKG_CONFIG_PATH = "${lib.getDev buildPackages.wayland-scanner}/lib/pkgconfig";
-
   cmakeFlags = [
     # Don't build the mock ICD as it may get used instead of other drivers, if installed
     "-DBUILD_ICD=OFF"
@@ -84,16 +78,22 @@ stdenv.mkDerivation rec {
     "-DBUILD_CUBE=OFF"
   ];
 
+  env.PKG_CONFIG_PATH = "${lib.getDev buildPackages.wayland-scanner}/lib/pkgconfig";
+  dontPatchELF = true;
+  libraryPath = lib.strings.makeLibraryPath [ vulkan-loader ];
+
   meta = {
     description = "Khronos official Vulkan Tools and Utilities";
+
     longDescription = ''
       This project provides Vulkan tools and utilities that can assist
       development by enabling developers to verify their applications correct
       use of the Vulkan API.
     '';
+
     homepage = "https://github.com/KhronosGroup/Vulkan-Tools";
-    platforms = lib.platforms.unix;
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.ralith ];
+    platforms = lib.platforms.unix;
   };
 }

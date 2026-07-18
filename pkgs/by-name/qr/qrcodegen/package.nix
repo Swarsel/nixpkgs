@@ -15,15 +15,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aci5SFBRNRrSub4XVJ2luHNZ2pAUegjgQ6pD9kpkaTY=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/c";
-
   nativeBuildInputs = lib.optionals stdenv.cc.isClang [
     stdenv.cc.cc.libllvm.out
   ];
 
   makeFlags = lib.optionals stdenv.cc.isClang [ "AR=llvm-ar" ];
-
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -47,9 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/c";
+
   meta = {
-    homepage = "https://www.nayuki.io/page/qr-code-generator-library";
     description = "High-quality QR Code generator library in many languages";
+    homepage = "https://www.nayuki.io/page/qr-code-generator-library";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;

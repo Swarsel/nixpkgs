@@ -1,31 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatch-vcs,
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   docopt,
   filelock,
+  # build-system
+  hatch-vcs,
+  hatchling,
   optuna,
   pyannote-core,
   pyannote-database,
+  # tests
+  pytestCheckHook,
   pyyaml,
   scipy,
   tqdm,
-
-  # tests
-  pytestCheckHook,
   versionCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pyannote-pipeline";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyannote";
@@ -40,6 +36,11 @@ buildPythonPackage rec {
         'version="Tunable pipelines"' \
         'version="${version}"'
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    versionCheckHook
+  ];
 
   build-system = [
     hatch-vcs
@@ -57,12 +58,8 @@ buildPythonPackage rec {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyannote.pipeline" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    versionCheckHook
-  ];
 
   meta = {
     description = "Tunable pipelines";

@@ -1,4 +1,4 @@
-{ callPackage, lib, ... }@args:
+{ lib, callPackage, ... }@args:
 callPackage ./generic.nix (
   args
   // lib.importJSON ./3.0.json

@@ -1,7 +1,8 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   gdb,
   ncurses,
   numpy,
@@ -10,13 +11,11 @@
   python,
   sage, # Reverse dependency
   setuptools,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "cython";
   version = "3.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cython";
@@ -25,25 +24,21 @@ buildPythonPackage rec {
     hash = "sha256-wes7UFSWW00tKTmp3Aqk0jDpMMRVHRIhonC6CD7pwB4=";
   };
 
-  build-system = [
-    setuptools
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
-  ];
-
-  nativeCheckInputs = [
-    gdb
-    numpy
-    ncurses
   ];
 
   # https://github.com/cython/cython/issues/2785
   # Temporary solution
   doCheck = false;
 
-  strictDeps = true;
+  nativeCheckInputs = [
+    gdb
+    numpy
+    ncurses
+  ];
 
   checkPhase =
     let
@@ -81,17 +76,22 @@ buildPythonPackage rec {
       runHook postCheck
     '';
 
-  passthru.tests = {
-    inherit pygame-ce sage;
-  };
+  build-system = [
+    setuptools
+  ];
 
+  pyproject = true;
   # Force code regeneration in source distributions
   # https://github.com/cython/cython/issues/5089
   setupHook = ./setup-hook.sh;
 
+  passthru.tests = {
+    inherit pygame-ce sage;
+  };
+
   meta = {
-    homepage = "https://cython.org";
     description = "Optimising static compiler for both the Python and the extended Cython programming languages";
+
     longDescription = ''
       Cython is an optimising static compiler for both the Python programming
       language and the extended Cython programming language (based on Pyrex). It
@@ -117,10 +117,12 @@ buildPythonPackage rec {
       attributes. This allows the compiler to generate very efficient C code
       from Cython code.
     '';
+
+    homepage = "https://cython.org";
     changelog = "https://github.com/cython/cython/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.asl20;
-    mainProgram = "cython";
     maintainers = [ ];
+    mainProgram = "cython";
   };
 }
 # TODO: investigate recursive loop when doCheck is true

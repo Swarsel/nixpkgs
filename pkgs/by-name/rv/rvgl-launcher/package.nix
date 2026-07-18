@@ -1,17 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitLab,
+  buildFHSEnv,
   copyDesktopItems,
   makeDesktopItem,
-  buildFHSEnv,
+  python3Packages,
 }:
 
 let
   unwrapped = python3Packages.buildPythonApplication (finalAttrs: {
     pname = "rvgl-launcher-unwrapped";
     version = "0.1.23.1030a4-rev1";
-    pyproject = true;
 
     src = fetchFromGitLab {
       owner = "re-volt";
@@ -21,8 +20,13 @@ let
     };
 
     strictDeps = true;
-    __structuredAttrs = true;
+    nativeBuildInputs = [ copyDesktopItems ];
 
+    postInstall = ''
+      install -Dm644 icons/icon.png $out/share/pixmaps/rvgl-launcher.png
+    '';
+
+    __structuredAttrs = true;
     build-system = with python3Packages; [ setuptools ];
 
     dependencies = with python3Packages; [
@@ -32,40 +36,42 @@ let
       packaging
     ];
 
-    postInstall = ''
-      install -Dm644 icons/icon.png $out/share/pixmaps/rvgl-launcher.png
-    '';
-
-    nativeBuildInputs = [ copyDesktopItems ];
-
     desktopItems = [
       (makeDesktopItem {
-        name = "rvgl-launcher";
-        desktopName = "RVGL Launcher";
-        icon = "rvgl-launcher";
-        exec = "rvgl-launcher";
-        comment = "Launcher and package manager for RVGL";
         categories = [ "Game" ];
+        comment = "Launcher and package manager for RVGL";
+        desktopName = "RVGL Launcher";
+        exec = "rvgl-launcher";
+        icon = "rvgl-launcher";
+        name = "rvgl-launcher";
       })
     ];
+
+    pyproject = true;
 
     meta = {
       description = "Launcher and package manager for RVGL";
       longDescription = "RVGL Launcher is a cross-platform installer, launcher and package manager for RVGL";
       homepage = "https://re-volt.gitlab.io/rvgl-launcher";
-      downloadPage = "https://gitlab.com/re-volt/rvgl-launcher";
       license = lib.licenses.gpl3Only;
       maintainers = with lib.maintainers; [ andrewfield ];
-      mainProgram = "rvgl-launcher";
       platforms = lib.platforms.linux;
+      mainProgram = "rvgl-launcher";
+      downloadPage = "https://gitlab.com/re-volt/rvgl-launcher";
     };
   });
 
 in
 (buildFHSEnv {
+  inherit (unwrapped) version meta;
   # The launcher works well with the unwrapped section but the game itself when launched seems to require an FHS environment.
   pname = "rvgl-launcher";
-  inherit (unwrapped) version meta;
+
+  extraInstallCommands = ''
+    mkdir -p $out/share/applications $out/share/pixmaps
+    ln -s ${unwrapped}/share/applications/rvgl-launcher.desktop $out/share/applications/rvgl-launcher.desktop
+    ln -s ${unwrapped}/share/pixmaps/rvgl-launcher.png $out/share/pixmaps/rvgl-launcher.png
+  '';
 
   runScript = "rvgl-launcher";
 
@@ -81,12 +87,6 @@ in
       fluidsynth
       gtk3
     ];
-
-  extraInstallCommands = ''
-    mkdir -p $out/share/applications $out/share/pixmaps
-    ln -s ${unwrapped}/share/applications/rvgl-launcher.desktop $out/share/applications/rvgl-launcher.desktop
-    ln -s ${unwrapped}/share/pixmaps/rvgl-launcher.png $out/share/pixmaps/rvgl-launcher.png
-  '';
 
   passthru = {
     inherit unwrapped;

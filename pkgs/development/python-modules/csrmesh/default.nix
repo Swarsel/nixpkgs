@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "csrmesh";
   version = "0.10.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
 
   # Project has no test
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "csrmesh" ];
 
   meta = {

@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  windows,
   autoconf,
   automake,
+  blas,
+  boehmgc,
   gettext,
-  libtool,
   gmp,
+  lapack,
+  libtool,
   mpfr,
   ntl,
-  blas,
-  lapack,
-  boehmgc,
+  windows,
   openblas ? null,
   withBlas ? true,
-  withNtl ? !ntl.meta.broken,
   withGc ? false,
+  withNtl ? !ntl.meta.broken,
 }:
 
 assert
@@ -33,15 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoconf
     automake
     gettext
     libtool
-  ];
-
-  propagatedBuildInputs = [
-    mpfr
   ];
 
   buildInputs = [
@@ -60,12 +57,9 @@ stdenv.mkDerivation (finalAttrs: {
     windows.pthreads
   ];
 
-  # We're not using autoreconfHook because flint's bootstrap
-  # script calls autoreconf, among other things.
-  preConfigure = ''
-    echo "Executing bootstrap.sh"
-    ./bootstrap.sh
-  '';
+  propagatedBuildInputs = [
+    mpfr
+  ];
 
   configureFlags = [
     "--with-gmp=${gmp}"
@@ -81,26 +75,37 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-gc=${boehmgc}"
   ];
 
+  # We're not using autoreconfHook because flint's bootstrap
+  # script calls autoreconf, among other things.
+  preConfigure = ''
+    echo "Executing bootstrap.sh"
+    ./bootstrap.sh
+  '';
+
+  doCheck = true;
   enableParallelBuilding = true;
   enableParallelChecking = true;
-  doCheck = true;
 
   meta = {
     description = "Fast Library for Number Theory";
+    homepage = "https://www.flintlib.org/";
     license = lib.licenses.lgpl3Plus;
+
     maintainers = [
       lib.maintainers.smasher164
       lib.maintainers.wegank
     ];
-    teams = [ lib.teams.sage ];
+
     platforms = lib.platforms.all;
-    homepage = "https://www.flintlib.org/";
-    downloadPage = "https://www.flintlib.org/downloads.html";
+
     # > checking for library containing cblas_dgemm... no
     broken =
       withBlas
       && stdenv.hostPlatform.isStatic
       && stdenv.hostPlatform.isLinux
       && stdenv.hostPlatform.isAarch64;
+
+    downloadPage = "https://www.flintlib.org/downloads.html";
+    teams = [ lib.teams.sage ];
   };
 })

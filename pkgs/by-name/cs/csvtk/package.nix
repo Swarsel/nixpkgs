@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   buildPackages,
+  installShellFiles,
 }:
 let
   version = "0.33.0";
 in
 buildGoModule {
-  pname = "csvtk";
   inherit version;
+  pname = "csvtk";
 
   src = fetchFromGitHub {
     owner = "shenwei356";
@@ -20,9 +20,8 @@ buildGoModule {
     hash = "sha256-Zacs1hw4pryVNxnrkLIoBNWo0jcKjtYdx6kW2LTFEIs=";
   };
 
-  vendorHash = "sha256-T9flXxly3i8SKQlhp4AF2FNCqgcnGAHxv5b7nqzM3DI=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-T9flXxly3i8SKQlhp4AF2FNCqgcnGAHxv5b7nqzM3DI=";
 
   postInstall =
     let
@@ -41,8 +40,8 @@ buildGoModule {
 
   meta = {
     description = "Cross-platform, efficient and practical CSV/TSV toolkit in Golang";
-    changelog = "https://github.com/shenwei356/csvtk/releases/tag/v${version}";
     homepage = "https://github.com/shenwei356/csvtk";
+    changelog = "https://github.com/shenwei356/csvtk/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
     mainProgram = "csvtk";

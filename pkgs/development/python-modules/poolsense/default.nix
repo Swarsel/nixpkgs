@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "poolsense";
   version = "0.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "poolsense" ];
 
   meta = {

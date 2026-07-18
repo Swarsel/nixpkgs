@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   addBinToPathHook,
   blessed,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
-  lib,
   pexpect,
   prettytable,
   pytest-asyncio,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "telnetlib3";
   version = "4.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jquast";
@@ -28,11 +27,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-qJ9fbly8nNCOppLxEnzmKTE0CbbORnkANvbioSZUgmk=";
   };
 
-  build-system = [ hatchling ];
-
-  pythonRelaxDeps = [
-    "wcwidth"
+  nativeCheckInputs = [
+    addBinToPathHook
+    pexpect
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-timeout
+    pytest-xdist
+    pytestCheckHook
+    trustme
   ];
+
+  build-system = [ hatchling ];
 
   dependencies = [
     blessed
@@ -46,23 +52,17 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "telnetlib3" ];
 
-  nativeCheckInputs = [
-    addBinToPathHook
-    pexpect
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-timeout
-    pytest-xdist
-    pytestCheckHook
-    trustme
+  pythonRelaxDeps = [
+    "wcwidth"
   ];
 
   meta = {
-    changelog = "https://github.com/jquast/telnetlib3/blob/${finalAttrs.src.tag}/docs/history.rst";
     description = "Feature-rich Telnet Server, Client, and Protocol library for Python";
     homepage = "https://github.com/jquast/telnetlib3";
+    changelog = "https://github.com/jquast/telnetlib3/blob/${finalAttrs.src.tag}/docs/history.rst";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.dotlambda ];
   };

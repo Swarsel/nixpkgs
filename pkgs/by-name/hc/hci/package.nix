@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   crun,
+  emptyDirectory,
   haskell,
   haskellPackages,
-  lib,
   makeWrapper,
-  stdenv,
-  emptyDirectory,
 }:
 let
   inherit (haskell.lib.compose)
@@ -19,14 +19,15 @@ let
 
   overrides = old: {
     hercules-ci-agent = overrideCabal (o: {
-      isLibrary = true;
-      isExecutable = false;
-      postInstall = ""; # ignore completions
-      enableSharedExecutables = false;
-      buildTarget = "lib:hercules-ci-agent hercules-ci-agent-unit-tests";
       configureFlags = o.configureFlags or [ ] ++ [
         "--bindir=${emptyDirectory}/hercules-ci-built-without-binaries/no-bin"
       ];
+
+      postInstall = ""; # ignore completions
+      buildTarget = "lib:hercules-ci-agent hercules-ci-agent-unit-tests";
+      enableSharedExecutables = false;
+      isExecutable = false;
+      isLibrary = true;
     }) old.hercules-ci-agent;
   };
 

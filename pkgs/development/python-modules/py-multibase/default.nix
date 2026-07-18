@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   morphys,
   pytestCheckHook,
   python-baseconv,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "py-multibase";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "multiformats";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-k5vQqrSe1glT2YIcD+FIhQTpCZQvx5D4z1n7omuypcI=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,8 +28,7 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "multibase" ];
 
   meta = {

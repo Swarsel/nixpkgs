@@ -1,7 +1,7 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
+  clangStdenv,
   cmake,
   robin-map,
 }:
@@ -19,20 +19,20 @@ clangStdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ robin-map ];
-
   cmakeFlags = [ "-DCMAKE_INSTALL_LIBDIR=lib" ];
 
   meta = {
-    broken = clangStdenv.hostPlatform.isDarwin;
     description = "Objective-C runtime for use with GNUstep";
     homepage = "https://gnustep.github.io/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ashalkhakov
       dblsaiko
     ];
+
     platforms = lib.platforms.unix;
+    broken = clangStdenv.hostPlatform.isDarwin;
   };
 })

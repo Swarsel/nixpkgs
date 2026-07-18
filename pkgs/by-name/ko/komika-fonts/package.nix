@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
   lib,
   fetchzip,
   installFonts,
+  stdenvNoCC,
   variants ? [
     "display"
     "hand"
@@ -15,8 +15,8 @@
 let
   fetchFont =
     {
-      url,
       hash,
+      url,
       curlOptsList ? [ ],
     }:
     fetchzip {
@@ -26,32 +26,38 @@ let
     };
   fontMap = {
     "display" = {
-      url = "https://www.1001fonts.com/download/komika-display.zip";
       hash = "sha256-6oNKuaoV+a/cFCKFXRV8gtWqvFtPGtrqg+vt8hQREMI=";
+      url = "https://www.1001fonts.com/download/komika-display.zip";
     };
+
     "hand" = {
-      url = "https://www.1001fonts.com/download/komika.zip";
       hash = "sha256-yb5SWQj7BRCLYHL31m25bhCOuo8qAvkRzGH6UIo3Bbs=";
+      url = "https://www.1001fonts.com/download/komika.zip";
     };
+
     "poster" = {
-      url = "https://www.1001freefonts.com/d/5010/komika-poster.zip";
-      hash = "sha256-k1uUfHSh9kymCJrfuPtKHejFeZGl2PxL4C/3hpoPIc4=";
       curlOptsList = [
         "-H"
         "Referer: https://www.1001freefonts.com/komika-poster.font"
       ];
+
+      hash = "sha256-k1uUfHSh9kymCJrfuPtKHejFeZGl2PxL4C/3hpoPIc4=";
+      url = "https://www.1001freefonts.com/d/5010/komika-poster.zip";
     };
+
     "text" = {
-      url = "https://www.1001fonts.com/download/komika-text.zip";
       hash = "sha256-FdeFGw6MlYVTiYdvbfjSlQYq+UlKZTJ79HAdEEjMPQs=";
+      url = "https://www.1001fonts.com/download/komika-text.zip";
     };
+
     "title" = {
-      url = "https://www.1001freefonts.com/d/5011/komika-title.zip";
-      hash = "sha256-M/1NgsHjLR/w/ZxWEb5cebqEI1VKgPvtk75bhAPaw20=";
       curlOptsList = [
         "-H"
         "Referer: https://www.1001freefonts.com/komika-title.font"
       ];
+
+      hash = "sha256-M/1NgsHjLR/w/ZxWEb5cebqEI1VKgPvtk75bhAPaw20=";
+      url = "https://www.1001freefonts.com/d/5011/komika-title.zip";
     };
 
   };
@@ -72,18 +78,18 @@ in
 stdenvNoCC.mkDerivation {
   pname = "komika-fonts";
   version = "0-unstable-2001-06-16";
+  nativeBuildInputs = [ installFonts ];
   sourceRoot = ".";
-
   srcs = map (variant: fetchFont fontMap.${variant}) selectedFonts;
 
-  nativeBuildInputs = [ installFonts ];
-
   meta = {
-    homepage = "https://pedroreina.net/apostrophiclab/";
     description = "First ever comic lettering super family";
+
     longDescription = ''
       50 fonts, covering everything the comic artist needs when it comes to lettering. 10 text faces, 10 display faces, 10 tiling faces, 10 hand variations, 9 poster faces, and 20 balloons in a font.
     '';
+
+    homepage = "https://pedroreina.net/apostrophiclab/";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ pancaek ];
     platforms = lib.platforms.all;

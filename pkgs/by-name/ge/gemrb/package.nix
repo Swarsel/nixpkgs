@@ -1,15 +1,13 @@
 {
   lib,
   stdenv,
-  runCommand,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  imagemagick,
-  gtest,
   SDL2,
   SDL2_mixer,
+  cmake,
   freetype,
+  gtest,
+  imagemagick,
   libGL,
   libiconv,
   libpng,
@@ -17,7 +15,9 @@
   libvorbis,
   libx11,
   openal,
+  pkg-config,
   python3,
+  runCommand,
   zlib,
   # the GLES backend on rpi is untested as I don't have the hardware
   backend ? if stdenv.hostPlatform.isx86 then "OpenGL" else "GLES",
@@ -49,8 +49,14 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "gemrb";
   inherit version src;
+  pname = "gemrb";
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ]
+  ++ lib.optionals (finalAttrs.finalPackage.doCheck or false) [ gtest ];
 
   buildInputs = [
     SDL2
@@ -67,12 +73,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ]
-  ++ lib.optionals (finalAttrs.finalPackage.doCheck or false) [ gtest ];
-
   cmakeFlags = [
     (lib.cmakeFeature "DATA_DIR" "${placeholder "out"}/share/gemrb")
     (lib.cmakeFeature "EXAMPLE_CONF_DIR" "${placeholder "out"}/share/doc/gemrb/examples")
@@ -85,21 +85,23 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "USE_TESTS" (finalAttrs.finalPackage.doCheck or false))
   ];
 
+  # a bunch of tests fail in our sandbox
+  doCheck = false;
+
   postInstall = ''
     cp -r ${icons}/share/icons $out/share/
   '';
 
-  # a bunch of tests fail in our sandbox
-  doCheck = false;
-
   meta = {
     description = "Reimplementation of the Infinity Engine, used by games such as Baldur's Gate";
+
     longDescription = ''
       GemRB (Game engine made with pre-Rendered Background) is a portable
       open-source implementation of Bioware's Infinity Engine. It was written to
       support pseudo-3D role playing games based on the Dungeons & Dragons
       ruleset (Baldur's Gate and Icewind Dale series, Planescape: Torment).
     '';
+
     homepage = "https://gemrb.org/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ peterhoeg ];

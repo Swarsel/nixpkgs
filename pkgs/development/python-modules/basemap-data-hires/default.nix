@@ -1,29 +1,27 @@
 {
   lib,
+  basemap,
   buildPythonPackage,
   setuptools,
-  basemap,
 }:
 
 buildPythonPackage rec {
-  pname = "basemap-data-hires";
-  pyproject = true;
   inherit (basemap) version src;
-
-  sourceRoot = "${src.name}/data/basemap_data_hires";
+  pname = "basemap-data-hires";
+  # no tests
+  doCheck = false;
 
   build-system = [
     setuptools
   ];
 
-  # no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "mpl_toolkits.basemap_data" ];
+  sourceRoot = "${src.name}/data/basemap_data_hires";
 
   meta = {
-    homepage = "https://matplotlib.org/basemap/";
     description = "High-resolution data assets for matplotlib basemap";
+    homepage = "https://matplotlib.org/basemap/";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ moraxyc ];
     teams = with lib.teams; [ geospatial ];

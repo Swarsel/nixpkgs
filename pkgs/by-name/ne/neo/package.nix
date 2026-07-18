@@ -18,14 +18,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = ''Simulates the digital rain from "The Matrix"'';
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       neo recreates the digital rain effect from "The Matrix". Streams of random
       characters will endlessly scroll down your terminal screen.
     '';
+
     homepage = "https://github.com/st3w/neo";
-    platforms = ncurses.meta.platforms;
+    license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.abbe ];
+    platforms = ncurses.meta.platforms;
     mainProgram = "neo";
   };
 })

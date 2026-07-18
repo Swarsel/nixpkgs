@@ -11,23 +11,23 @@ in
 
 package.overrideAttrs (
   finalAttrs: oldAttrs: {
+    # Point `nix edit`, etc. to the file that defines the attribute, not this
+    # entry point
+    pos = builtins.unsafeGetAttrPos "pname" finalAttrs;
+
     passthru = {
       updateScript = ./update.sh;
     }
     // oldAttrs.passthru or { };
 
-    # Point `nix edit`, etc. to the file that defines the attribute, not this
-    # entry point
-    pos = builtins.unsafeGetAttrPos "pname" finalAttrs;
-
     meta = {
       description = "Easy to get into fully moddable First Person Shooter with advanced movement mechanics";
       homepage = "https://krunker.io";
       license = lib.licenses.unfree;
-      maintainers = with lib.maintainers; [ getchoo ];
-      mainProgram = "krunker";
-      platforms = [ "x86_64-linux" ] ++ lib.platforms.darwin;
       sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+      maintainers = with lib.maintainers; [ getchoo ];
+      platforms = [ "x86_64-linux" ] ++ lib.platforms.darwin;
+      mainProgram = "krunker";
     }
     // oldAttrs.meta or { };
   }

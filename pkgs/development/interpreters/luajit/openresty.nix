@@ -1,11 +1,12 @@
 {
-  self,
-  callPackage,
   fetchFromGitHub,
+  callPackage,
   passthruFun,
+  self,
 }:
 
 callPackage ./default.nix rec {
+  inherit self passthruFun;
   version = "2.1-20251030";
 
   src = fetchFromGitHub {
@@ -26,6 +27,4 @@ callPackage ./default.nix rec {
       "powerpc64-linux"
     ];
   };
-
-  inherit self passthruFun;
 }

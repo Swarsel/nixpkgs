@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   ncurses,
-  pkg-config,
   nix-update-script,
+  pkg-config,
   scdoc,
 }:
 
@@ -23,18 +23,17 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     scdoc
   ];
-  buildInputs = [ ncurses ];
 
+  buildInputs = [ ncurses ];
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
   installFlags = [ "PREFIX=$(out)" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Grow bonsai trees in your terminal";
-    mainProgram = "cbonsai";
     homepage = "https://gitlab.com/jallbrit/cbonsai";
     license = with lib.licenses; [ gpl3Only ];
     platforms = lib.platforms.unix;
+    mainProgram = "cbonsai";
   };
 })

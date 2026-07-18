@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   fish,
-  runtimeShell,
   replaceVars,
+  runtimeShell,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,14 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./001-writable-omf-path.diff
   ];
 
+  strictDeps = true;
+
   buildInputs = [
     fish
   ];
-
-  strictDeps = true;
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -54,18 +51,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/oh-my-fish/oh-my-fish";
+    inherit (fish.meta) platforms;
     description = "Fish Shell Framework";
+
     longDescription = ''
       Oh My Fish provides core infrastructure to allow you to install packages
       which extend or modify the look of your shell. It's fast, extensible and
       easy to use.
     '';
+
+    homepage = "https://github.com/oh-my-fish/oh-my-fish";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "omf-install";
-    inherit (fish.meta) platforms;
   };
 })
 # TODO: customize the omf-install script

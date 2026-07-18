@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchpatch,
   fetchPypi,
+  fetchpatch,
   html5lib,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "mechanize";
   version = "0.4.10";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,19 +19,15 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-Xlx8ZwHkFbJqeWs+/fllYZt3CZRu9rD8bMHHPuUlRv4=";
       name = "fix-cookietests-python3.13.patch";
       url = "https://github.com/python-mechanize/mechanize/commit/0c1cd4b65697dee4e4192902c9a2965d94700502.patch";
-      hash = "sha256-Xlx8ZwHkFbJqeWs+/fllYZt3CZRu9rD8bMHHPuUlRv4=";
     })
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ html5lib ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "mechanize" ];
+  build-system = [ setuptools ];
+  dependencies = [ html5lib ];
 
   disabledTestPaths = [
     # Tests require network access
@@ -45,6 +40,9 @@ buildPythonPackage rec {
     "test_pickling"
     "test_password_manager"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mechanize" ];
 
   meta = {
     description = "Stateful programmatic web browsing in Python";

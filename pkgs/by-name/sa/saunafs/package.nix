@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  nixosTests,
   fetchFromGitHub,
-  cmake,
   asciidoctor,
-  pkg-config,
-  db,
-  curl,
-  jemalloc,
   boost186,
+  cmake,
+  curl,
+  db,
   fmt,
   fuse3,
+  gtest,
+  isa-l,
+  jemalloc,
+  judy,
+  libz,
+  nixosTests,
+  pkg-config,
+  prometheus-cpp,
   spdlog,
   yaml-cpp,
-  isa-l,
-  judy,
-  prometheus-cpp,
-  libz,
-  gtest,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,14 +32,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-b7sf6dMstxEoI7n4nqw4AKEcFvAPX+nLOgXf5jQTmqE=";
   };
 
-  patches = [
-    ./sfstool.patch
-  ];
-
   outputs = [
     "out"
     "man"
     "dev"
+  ];
+
+  patches = [
+    ./sfstool.patch
   ];
 
   nativeBuildInputs = [
@@ -47,6 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
     asciidoctor
     pkg-config
   ];
+
   buildInputs = [
     db
     curl
@@ -83,8 +84,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Distributed POSIX file system";
     homepage = "https://saunafs.com";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.linux;
   };
 })

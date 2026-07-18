@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pandas,
   poetry-core,
   pydantic,
   requests,
-  typing-extensions,
-  pandas,
   tqdm,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "cmsdials";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cms-DQM";
@@ -35,14 +34,15 @@ buildPythonPackage rec {
     tqdm = [ tqdm ];
   };
 
+  pyproject = true;
+  pythonImportsCheck = [ "cmsdials" ];
+
   pythonRelaxDeps = [
     # pydantic = "<2, >=1"pydantic = "<2, >=1"
     "pydantic"
     # typing-extensions = "<4.6.0, >=3.6.6"
     "typing-extensions"
   ];
-
-  pythonImportsCheck = [ "cmsdials" ];
 
   meta = {
     description = "Python API client interface to CMS DIALS service";

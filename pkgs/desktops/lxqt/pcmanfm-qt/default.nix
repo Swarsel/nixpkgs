@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   layer-shell-qt,
   libexif,
   libfm-qt,
@@ -12,11 +13,10 @@
   pkg-config,
   qtbase,
   qtimageformats,
+  qtsvg,
   qttools,
   qtwayland,
-  qtsvg,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -29,6 +29,10 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-KgYirooKoiUUkzEFsOScTZt/s1OTBLIjAYlW/Q0RQTk=";
   };
+
+  postPatch = ''
+    substituteInPlace config/pcmanfm-qt/lxqt/settings.conf.in --replace-fail @LXQT_SHARE_DIR@ /run/current-system/sw/share/lxqt
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -52,16 +56,12 @@ stdenv.mkDerivation rec {
 
   passthru.updateScript = gitUpdater { };
 
-  postPatch = ''
-    substituteInPlace config/pcmanfm-qt/lxqt/settings.conf.in --replace-fail @LXQT_SHARE_DIR@ /run/current-system/sw/share/lxqt
-  '';
-
   meta = {
-    homepage = "https://github.com/lxqt/pcmanfm-qt";
     description = "File manager and desktop icon manager (Qt port of PCManFM and libfm)";
-    mainProgram = "pcmanfm-qt";
+    homepage = "https://github.com/lxqt/pcmanfm-qt";
     license = lib.licenses.gpl2Plus;
     platforms = with lib.platforms; unix;
+    mainProgram = "pcmanfm-qt";
     teams = [ lib.teams.lxqt ];
   };
 }

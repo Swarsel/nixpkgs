@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "lmnotify";
   version = "0.0.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "lmnotify" ];
 
   meta = {

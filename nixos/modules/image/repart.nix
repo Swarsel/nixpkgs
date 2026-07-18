@@ -3,9 +3,9 @@
 
 {
   config,
-  options,
-  pkgs,
   lib,
+  pkgs,
+  options,
   utils,
   ...
 }:
@@ -19,42 +19,10 @@ let
     { config, ... }:
     {
       options = {
-        storePaths = lib.mkOption {
-          type = with lib.types; listOf path;
-          default = [ ];
-          description = "The store paths to include in the partition.";
-        };
-
-        # Superseded by `nixStorePrefix`. Unfortunately, `mkChangedOptionModule`
-        # does not support submodules.
-        stripNixStorePrefix = lib.mkOption {
-          default = "_mkMergedOptionModule";
-          visible = false;
-        };
-
-        nixStorePrefix = lib.mkOption {
-          type = lib.types.path;
-          default = "/nix/store";
-          description = ''
-            The prefix to use for store paths. Defaults to `/nix/store`. This is
-            useful when you want to build a partition that only contains store
-            paths and is mounted under `/nix/store` or if you want to create the
-            store paths below a parent path (e.g., `/@nix/nix/store`).
-          '';
-        };
-
         contents = lib.mkOption {
-          type =
-            with lib.types;
-            attrsOf (submodule {
-              options = {
-                source = lib.mkOption {
-                  type = types.path;
-                  description = "Path of the source file.";
-                };
-              };
-            });
           default = { };
+          description = "The contents to end up in the filesystem image.";
+
           example = lib.literalExpression ''
             {
               "/EFI/BOOT/BOOTX64.EFI".source =
@@ -63,10 +31,45 @@ let
               "/loader/entries/nixos.conf".source = systemdBootEntry;
             }
           '';
-          description = "The contents to end up in the filesystem image.";
+
+          type =
+            with lib.types;
+            attrsOf (submodule {
+              options = {
+                source = lib.mkOption {
+                  description = "Path of the source file.";
+                  type = types.path;
+                };
+              };
+            });
+        };
+
+        nixStorePrefix = lib.mkOption {
+          default = "/nix/store";
+
+          description = ''
+            The prefix to use for store paths. Defaults to `/nix/store`. This is
+            useful when you want to build a partition that only contains store
+            paths and is mounted under `/nix/store` or if you want to create the
+            store paths below a parent path (e.g., `/@nix/nix/store`).
+          '';
+
+          type = lib.types.path;
         };
 
         repartConfig = lib.mkOption {
+          description = ''
+            Specify the repart options for a partition as a structural setting.
+            See {manpage}`repart.d(5)`
+            for all available options.
+          '';
+
+          example = {
+            SizeMaxBytes = "2G";
+            SizeMinBytes = "512M";
+            Type = "home";
+          };
+
           type =
             with lib.types;
             attrsOf (oneOf [
@@ -75,16 +78,19 @@ let
               bool
               (listOf str)
             ]);
-          example = {
-            Type = "home";
-            SizeMinBytes = "512M";
-            SizeMaxBytes = "2G";
-          };
-          description = ''
-            Specify the repart options for a partition as a structural setting.
-            See {manpage}`repart.d(5)`
-            for all available options.
-          '';
+        };
+
+        storePaths = lib.mkOption {
+          default = [ ];
+          description = "The store paths to include in the partition.";
+          type = with lib.types; listOf path;
+        };
+
+        # Superseded by `nixStorePrefix`. Unfortunately, `mkChangedOptionModule`
+        # does not support submodules.
+        stripNixStorePrefix = lib.mkOption {
+          default = "_mkMergedOptionModule";
+          visible = false;
         };
       };
 
@@ -105,24 +111,28 @@ in
     ./repart-verity-store.nix
     ./file-options.nix
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2411;
       from = [
         "image"
         "repart"
         "imageFileBasename"
       ];
+
+      sinceRelease = 2411;
+
       to = [
         "image"
         "baseName"
       ];
     })
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2411;
       from = [
         "image"
         "repart"
         "imageFile"
       ];
+
+      sinceRelease = 2411;
+
       to = [
         "image"
         "fileName"
@@ -132,83 +142,6 @@ in
 
   options.image.repart = {
 
-    name = lib.mkOption {
-      type = lib.types.str;
-      description = ''
-          Name of the image.
-
-        If this option is unset but config.system.image.id is set,
-        config.system.image.id is used as the default value.
-      '';
-    };
-
-    version = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = config.system.image.version;
-      defaultText = lib.literalExpression "config.system.image.version";
-      description = "Version of the image";
-    };
-
-    compression = {
-      enable = lib.mkEnableOption "Image compression";
-
-      algorithm = lib.mkOption {
-        type = lib.types.enum [
-          "zstd"
-          "xz"
-          "zstd-seekable"
-        ];
-        default = "zstd";
-        description = "Compression algorithm";
-      };
-
-      level = lib.mkOption {
-        type = lib.types.int;
-        description = ''
-          Compression level. The available range depends on the used algorithm.
-        '';
-      };
-    };
-
-    seed = lib.mkOption {
-      type = with lib.types; nullOr str;
-      # Generated with `uuidgen`. Random but fixed to improve reproducibility.
-      default = "0867da16-f251-457d-a9e8-c31f9a3c220b";
-      description = ''
-        A UUID to use as a seed. You can set this to `random` to explicitly
-        randomize the partition UUIDs.
-        See {manpage}`systemd-repart(8)` for more information.
-      '';
-    };
-
-    split = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Enables generation of split artifacts from partitions. If enabled, for
-        each partition with SplitName= set, a separate output file containing
-        just the contents of that partition is generated.
-      '';
-    };
-
-    sectorSize = lib.mkOption {
-      type = with lib.types; nullOr int;
-      default = 512;
-      example = lib.literalExpression "4096";
-      description = ''
-        The sector size of the disk image produced by systemd-repart. This
-        value must be a power of 2 between 512 and 4096.
-      '';
-    };
-
-    imageSize = lib.mkOption {
-      type = lib.types.strMatching "^([0-9]+[KMGTP]?|auto)$";
-      default = "auto";
-      example = "512G";
-      description = "Size of the produced image in bytes with optional K, M, G, T suffix,
-        or 'auto' to determine the minimal size automatically";
-    };
-
     package = lib.mkPackageOption pkgs "systemd-repart" {
       # We use buildPackages so that repart images are built with the build
       # platform's systemd, allowing for cross-compiled systems to work.
@@ -216,12 +149,120 @@ in
         "buildPackages"
         "systemd"
       ];
+
       example = "pkgs.buildPackages.systemdMinimal.override { withCryptsetup = true; }";
     };
 
-    partitions = lib.mkOption {
-      type = with lib.types; attrsOf (submodule partitionOptions);
+    assertions = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Assertions only evaluated by the repart image, not by the system toplevel.
+      '';
+
+      internal = true;
+      type = options.assertions.type;
+      visible = false;
+    };
+
+    compression = {
+      enable = lib.mkEnableOption "Image compression";
+
+      algorithm = lib.mkOption {
+        default = "zstd";
+        description = "Compression algorithm";
+
+        type = lib.types.enum [
+          "zstd"
+          "xz"
+          "zstd-seekable"
+        ];
+      };
+
+      level = lib.mkOption {
+        description = ''
+          Compression level. The available range depends on the used algorithm.
+        '';
+
+        type = lib.types.int;
+      };
+    };
+
+    finalPartitions = lib.mkOption {
+      description = ''
+        Convenience option to access partitions with added closures.
+      '';
+
+      internal = true;
+      readOnly = true;
+      type = lib.types.attrs;
+    };
+
+    image = lib.mkOption {
+      description = ''
+        The image built by this module. Used as the default for `system.build.image`.
+      '';
+
+      internal = true;
+      readOnly = true;
+      type = lib.types.package;
+    };
+
+    imageSize = lib.mkOption {
+      default = "auto";
+
+      description = "Size of the produced image in bytes with optional K, M, G, T suffix,
+        or 'auto' to determine the minimal size automatically";
+
+      example = "512G";
+      type = lib.types.strMatching "^([0-9]+[KMGTP]?|auto)$";
+    };
+
+    mkfsOptions = lib.mkOption {
       default = { };
+
+      description = ''
+        Specify extra options for created file systems. The specified options
+        are converted to individual environment variables of the format
+        `SYSTEMD_REPART_MKFS_OPTIONS_<FSTYPE>`.
+
+        See [upstream systemd documentation](https://github.com/systemd/systemd/blob/v255/docs/ENVIRONMENT.md?plain=1#L575-L577)
+        for information about the usage of these environment variables.
+
+        The example would produce the following environment variable:
+        ```
+        SYSTEMD_REPART_MKFS_OPTIONS_VFAT="-S 512 -c"
+        ```
+      '';
+
+      example = lib.literalExpression ''
+        {
+          vfat = [ "-S 512" "-c" ];
+        }
+      '';
+
+      type = with lib.types; attrsOf (listOf str);
+    };
+
+    name = lib.mkOption {
+      description = ''
+          Name of the image.
+
+        If this option is unset but config.system.image.id is set,
+        config.system.image.id is used as the default value.
+      '';
+
+      type = lib.types.str;
+    };
+
+    partitions = lib.mkOption {
+      default = { };
+
+      description = ''
+        Specify partitions as a set of the names of the partitions with their
+        configuration as the key.
+      '';
+
       example = lib.literalExpression ''
         {
           "10-esp" = {
@@ -244,71 +285,64 @@ in
           };
         };
       '';
-      description = ''
-        Specify partitions as a set of the names of the partitions with their
-        configuration as the key.
-      '';
+
+      type = with lib.types; attrsOf (submodule partitionOptions);
     };
 
-    mkfsOptions = lib.mkOption {
-      type = with lib.types; attrsOf (listOf str);
-      default = { };
-      example = lib.literalExpression ''
-        {
-          vfat = [ "-S 512" "-c" ];
-        }
-      '';
+    sectorSize = lib.mkOption {
+      default = 512;
+
       description = ''
-        Specify extra options for created file systems. The specified options
-        are converted to individual environment variables of the format
-        `SYSTEMD_REPART_MKFS_OPTIONS_<FSTYPE>`.
-
-        See [upstream systemd documentation](https://github.com/systemd/systemd/blob/v255/docs/ENVIRONMENT.md?plain=1#L575-L577)
-        for information about the usage of these environment variables.
-
-        The example would produce the following environment variable:
-        ```
-        SYSTEMD_REPART_MKFS_OPTIONS_VFAT="-S 512 -c"
-        ```
+        The sector size of the disk image produced by systemd-repart. This
+        value must be a power of 2 between 512 and 4096.
       '';
+
+      example = lib.literalExpression "4096";
+      type = with lib.types; nullOr int;
     };
 
-    finalPartitions = lib.mkOption {
-      type = lib.types.attrs;
-      internal = true;
-      readOnly = true;
+    seed = lib.mkOption {
+      # Generated with `uuidgen`. Random but fixed to improve reproducibility.
+      default = "0867da16-f251-457d-a9e8-c31f9a3c220b";
+
       description = ''
-        Convenience option to access partitions with added closures.
+        A UUID to use as a seed. You can set this to `random` to explicitly
+        randomize the partition UUIDs.
+        See {manpage}`systemd-repart(8)` for more information.
       '';
+
+      type = with lib.types; nullOr str;
     };
 
-    image = lib.mkOption {
-      type = lib.types.package;
-      internal = true;
-      readOnly = true;
+    split = lib.mkOption {
+      default = false;
+
       description = ''
-        The image built by this module. Used as the default for `system.build.image`.
+        Enables generation of split artifacts from partitions. If enabled, for
+        each partition with SplitName= set, a separate output file containing
+        just the contents of that partition is generated.
       '';
+
+      type = lib.types.bool;
     };
 
-    assertions = lib.mkOption {
-      type = options.assertions.type;
-      default = [ ];
-      internal = true;
-      visible = false;
-      description = ''
-        Assertions only evaluated by the repart image, not by the system toplevel.
-      '';
+    version = lib.mkOption {
+      default = config.system.image.version;
+      defaultText = lib.literalExpression "config.system.image.version";
+      description = "Version of the image";
+      type = lib.types.nullOr lib.types.str;
     };
 
     warnings = lib.mkOption {
-      type = options.warnings.type;
       default = [ ];
-      internal = true;
-      visible = false;
+
       description = ''
         Warnings only evaluated by the repart image, not by the system toplevel.
       '';
+
+      internal = true;
+      type = options.warnings.type;
+      visible = false;
     };
 
   };
@@ -320,13 +354,14 @@ in
         versionInfix = if version != null then "_${version}" else "";
       in
       cfg.name + versionInfix;
+
     image.extension =
       let
         compressionSuffix =
           lib.optionalString cfg.compression.enable
             {
-              "zstd" = ".zst";
               "xz" = ".xz";
+              "zstd" = ".zst";
               "zstd-seekable" = ".zst";
             }
             ."${cfg.compression.algorithm}";
@@ -348,7 +383,23 @@ in
           });
       in
       {
-        name = lib.mkIf (config.system.image.id != null) (lib.mkOptionDefault config.system.image.id);
+        assertions = lib.mapAttrsToList (
+          fileName: partitionConfig:
+          let
+            inherit (partitionConfig) repartConfig;
+            labelLength = builtins.stringLength repartConfig.Label;
+          in
+          {
+            assertion = repartConfig ? Label -> GPTMaxLabelLength >= labelLength;
+
+            message = ''
+              The partition label '${repartConfig.Label}'
+              defined for '${fileName}' is ${toString labelLength} characters long,
+              but the maximum label length supported by UEFI is ${toString GPTMaxLabelLength}.
+            '';
+          }
+        ) cfg.partitions;
+
         compression = {
           # Generally default to slightly faster than default compression
           # levels under the assumption that most of the building will be done
@@ -356,8 +407,8 @@ in
           level =
             lib.mkOptionDefault
               {
-                "zstd" = 3;
                 "xz" = 3;
+                "zstd" = 3;
                 "zstd-seekable" = 3;
               }
               ."${cfg.compression.algorithm}";
@@ -379,8 +430,8 @@ in
 
             mkfsEnv = mkfsOptionsToEnv cfg.mkfsOptions;
             val = pkgs.callPackage ./repart-image.nix {
-              systemd = cfg.package;
               inherit (config.image) baseName;
+
               inherit (cfg)
                 name
                 version
@@ -391,26 +442,14 @@ in
                 sectorSize
                 finalPartitions
                 ;
+
               inherit fileSystems definitionsDirectory mkfsEnv;
+              systemd = cfg.package;
             };
           in
           lib.asserts.checkAssertWarn cfg.assertions cfg.warnings val;
 
-        assertions = lib.mapAttrsToList (
-          fileName: partitionConfig:
-          let
-            inherit (partitionConfig) repartConfig;
-            labelLength = builtins.stringLength repartConfig.Label;
-          in
-          {
-            assertion = repartConfig ? Label -> GPTMaxLabelLength >= labelLength;
-            message = ''
-              The partition label '${repartConfig.Label}'
-              defined for '${fileName}' is ${toString labelLength} characters long,
-              but the maximum label length supported by UEFI is ${toString GPTMaxLabelLength}.
-            '';
-          }
-        ) cfg.partitions;
+        name = lib.mkIf (config.system.image.id != null) (lib.mkOptionDefault config.system.image.id);
 
         warnings = lib.flatten (
           lib.mapAttrsToList (

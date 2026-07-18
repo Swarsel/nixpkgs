@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  SDL2,
   fetchurl,
-  gzip,
-  libvorbis,
-  libmad,
-  flac,
-  libopus,
-  opusfile,
-  libogg,
-  libGL,
+  SDL2,
+  copyDesktopItems,
   curl,
+  flac,
+  gzip,
+  libGL,
+  libmad,
+  libogg,
+  libopus,
+  libvorbis,
   libxmp,
+  makeDesktopItem,
   mpg123,
+  opusfile,
+  pkg-config,
   vulkan-headers,
   vulkan-loader,
-  copyDesktopItems,
-  makeDesktopItem,
-  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/andrei-drexler/ironwail/archive/refs/tags/v${finalAttrs.version}.tar.gz";
     hash = "sha256-TlEMuwmpQIoIyjyQo9T/h3T7rPHX+K8TqHKSt+UtMBg=";
   };
-
-  sourceRoot = "${finalAttrs.pname}-${finalAttrs.version}/Quake";
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -75,20 +73,21 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Makefile --replace-fail "/usr/local/games/quake" "$out/bin/ironwail"
   '';
 
-  enableParallelBuilding = true;
-
   desktopItems = [
     (makeDesktopItem {
-      name = "ironwail";
-      exec = "ironwail";
-      desktopName = "Ironwail";
       categories = [ "Game" ];
+      desktopName = "Ironwail";
+      exec = "ironwail";
+      name = "ironwail";
     })
   ];
 
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.pname}-${finalAttrs.version}/Quake";
+
   meta = {
     description = "Fork of the QuakeSpasm engine for iD software's Quake";
-    homepage = "https://github.com/andrei-drexler/ironwail";
+
     longDescription = ''
       Ironwail is a fork of QuakeSpasm with focus on high performance instead of
       compatibility.
@@ -99,9 +98,10 @@ stdenv.mkDerivation (finalAttrs: {
       larger levels with less performance impacts.
     '';
 
+    homepage = "https://github.com/andrei-drexler/ironwail";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.necrophcodr ];
+    platforms = lib.platforms.linux;
     mainProgram = "ironwail";
   };
 })

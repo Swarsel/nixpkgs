@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gettext,
+  gitUpdater,
+  glib,
+  gtk3,
+  libmpd,
+  libxfce4ui,
+  libxfce4util,
   meson,
   ninja,
   pkg-config,
   vala,
   wrapGAppsHook3,
-  libxfce4util,
-  libxfce4ui,
-  gtk3,
-  glib,
-  libmpd,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.4.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "xfmpc";
     tag = "xfmpc-${finalAttrs.version}";
     hash = "sha256-fYK8JbWFnkzFpgfmSHa6usnlke4G7pxmdSm7kEQsL5M=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -61,7 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.xfce.org/apps/xfmpc/-/blob/xfmpc-${finalAttrs.version}/NEWS";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ doronbehar ];
-    teams = [ lib.teams.xfce ];
     mainProgram = "xfmpc";
+    teams = [ lib.teams.xfce ];
   };
 })

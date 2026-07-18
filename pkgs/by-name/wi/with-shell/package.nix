@@ -26,8 +26,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/mchav/With";
     description = "Command prefixing for continuous workflow using a single tool";
+
     longDescription = ''
       with is a Bash script that starts an interactive shell with where every
       command is prefixed using <program>.
@@ -70,6 +70,8 @@ stdenv.mkDerivation {
 
       To exit use either :q or :exit.
     '';
+
+    homepage = "https://github.com/mchav/With";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;

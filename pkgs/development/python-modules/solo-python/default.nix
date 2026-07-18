@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit,
+  buildPythonPackage,
   click,
   cryptography,
   ecdsa,
   fido2,
+  flit,
   intelhex,
   pyserial,
   pyusb,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "solo-python";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "solokeys";
@@ -24,6 +23,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-XVPYr7JwxeZfZ68+vQ7a7MNiAfJ2bvMbM3R1ryVJ+OU=";
   };
+
+  preBuild = ''
+    export HOME=$TMPDIR
+  '';
 
   build-system = [ flit ];
 
@@ -38,9 +41,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  preBuild = ''
-    export HOME=$TMPDIR
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "solo"
@@ -53,11 +54,13 @@ buildPythonPackage (finalAttrs: {
   meta = {
     description = "Python tool and library for SoloKeys Solo 1";
     homepage = "https://github.com/solokeys/solo1-cli";
-    maintainers = with lib.maintainers; [ wucke13 ];
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
+    maintainers = with lib.maintainers; [ wucke13 ];
     # not compatible with fido2 >= 1.0.0
     # https://github.com/solokeys/solo1-cli/issues/157
     broken = lib.versionAtLeast fido2.version "1.0.0";

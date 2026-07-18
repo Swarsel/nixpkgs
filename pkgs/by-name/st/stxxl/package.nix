@@ -21,6 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-U6DQ5mI83pyTmq5/ga5rI8v0h2/iEnNl8mxhIOpbF1I=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.6.2 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
@@ -34,17 +39,12 @@ stdenv.mkDerivation (finalAttrs: {
     inherit parallelSupport;
   };
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.6.2 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
     description = "Implementation of the C++ standard template library STL for external memory (out-of-core) computations";
     homepage = "https://github.com/stxxl/stxxl";
     license = lib.licenses.boost;
     maintainers = [ ];
-    mainProgram = "stxxl_tool";
     platforms = lib.platforms.all;
+    mainProgram = "stxxl_tool";
   };
 })

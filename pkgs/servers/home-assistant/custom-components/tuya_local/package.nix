@@ -1,16 +1,13 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-
+  buildHomeAssistantComponent,
   # dependencies
   tinytuya,
   tuya-device-sharing-sdk,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "make-all";
-  domain = "tuya_local";
   version = "2026.7.1";
 
   src = fetchFromGitHub {
@@ -24,6 +21,9 @@ buildHomeAssistantComponent rec {
     tinytuya
     tuya-device-sharing-sdk
   ];
+
+  domain = "tuya_local";
+  owner = "make-all";
 
   meta = {
     description = "Local support for Tuya devices in Home Assistant";

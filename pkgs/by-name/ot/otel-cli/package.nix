@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  getent,
-  coreutils,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  coreutils,
+  getent,
+  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,6 +19,7 @@ buildGoModule (finalAttrs: {
     hash = "sha256-JYi9CbP4mUhX0zNjhi6QlBzLKcj2zdPwlyBSIYKp6vk=";
   };
 
+  patches = [ ./patches/bin-echo-patch.patch ];
   vendorHash = "sha256-fWQz7ZrU8gulhpOHSN8Prn4EMC0KXy942FZD/PMsLxc=";
 
   preCheck = ''
@@ -34,13 +35,11 @@ buildGoModule (finalAttrs: {
       }`'
   '';
 
-  patches = [ ./patches/bin-echo-patch.patch ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/equinix-labs/otel-cli";
     description = "Command-line tool for sending OpenTelemetry traces";
+    homepage = "https://github.com/equinix-labs/otel-cli";
     changelog = "https://github.com/equinix-labs/otel-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];

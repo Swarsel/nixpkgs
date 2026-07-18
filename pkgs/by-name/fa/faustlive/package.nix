@@ -2,13 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  pkg-config,
-  which,
   alsa-lib,
+  cmake,
   curl,
   faust,
+  fetchpatch,
   flac,
   gnutls,
   libjack2,
@@ -22,13 +20,16 @@
   libxcb,
   llvm,
   p11-kit,
+  pkg-config,
   qrencode,
   qt5,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "faustlive";
   version = "2.5.19";
+
   src = fetchFromGitHub {
     owner = "grame-cncm";
     repo = "faustlive";
@@ -37,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  postPatch = "cd Build";
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -73,18 +75,18 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
   ];
 
-  postPatch = "cd Build";
-
   meta = {
     description = "Standalone just-in-time Faust compiler";
-    mainProgram = "FaustLive";
+
     longDescription = ''
       FaustLive is a standalone just-in-time Faust compiler. It tries to bring
       together the convenience of a standalone interpreted language with the
       efficiency of a compiled language. It's ideal for fast prototyping.
     '';
+
     homepage = "https://faust.grame.fr/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ magnetophon ];
+    mainProgram = "FaustLive";
   };
 })

@@ -21,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Like `which`, for dynamic libraries";
-    mainProgram = "libwhich";
     homepage = "https://github.com/vtjnash/libwhich";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "libwhich";
   };
 })

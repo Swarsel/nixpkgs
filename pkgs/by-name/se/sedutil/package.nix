@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  systemdLibs,
   libnvme,
+  systemdLibs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

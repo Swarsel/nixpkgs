@@ -1,16 +1,16 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  adwaita-icon-theme,
+  autoreconfHook,
   gtk3,
-  pkg-config,
+  intltool,
   libgsf,
   libofx,
-  autoreconfHook,
-  intltool,
-  wrapGAppsHook3,
-  adwaita-icon-theme,
   nix-update-script,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Personnal accounting application";
-    mainProgram = "grisbi";
+
     longDescription = ''
       Grisbi is an application written by French developers, so it perfectly
       respects French accounting rules. Grisbi can manage multiple accounts,
@@ -51,9 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
       management and other information that make Grisbi adapted for
       associations.
     '';
+
     homepage = "https://grisbi.org";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ layus ];
     platforms = lib.platforms.linux;
+    mainProgram = "grisbi";
   };
 })

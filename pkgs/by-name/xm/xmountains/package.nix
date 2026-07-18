@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  xbitmaps,
-  libx11,
-  imake,
   gccmakedep,
+  imake,
+  libx11,
+  xbitmaps,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,14 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xAXEa2QQgWR88o6Zx9ZtXXFYerJByqQ1FojaVkru/O8=";
   };
 
-  buildInputs = [
-    xbitmaps
-    libx11
-  ];
-
   nativeBuildInputs = [
     imake
     gccmakedep
+  ];
+
+  buildInputs = [
+    xbitmaps
+    libx11
   ];
 
   installPhase = "install -Dm755 xmountains -t $out/bin";

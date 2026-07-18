@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   adb-shell,
   aiofiles,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   mock,
   pure-python-adb,
   pytestCheckHook,
@@ -14,26 +14,12 @@
 buildPythonPackage rec {
   pname = "androidtv";
   version = "0.0.75";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JeffLIrion";
     repo = "python-androidtv";
     tag = "v${version}";
     hash = "sha256-2WFfGGEZkM3fWyTo5P6H3ha04Qyx2OiYetlGWv0jXac=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    adb-shell
-    async-timeout
-    pure-python-adb
-  ];
-
-  optional-dependencies = {
-    async = [ aiofiles ];
-    inherit (adb-shell.optional-dependencies) usb;
   };
 
   nativeCheckInputs = [
@@ -43,11 +29,25 @@ buildPythonPackage rec {
   ++ optional-dependencies.async
   ++ optional-dependencies.usb;
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    adb-shell
+    async-timeout
+    pure-python-adb
+  ];
+
   disabledTests = [
     # Requires git but fails anyway
     "test_no_underscores"
   ];
 
+  optional-dependencies = {
+    inherit (adb-shell.optional-dependencies) usb;
+    async = [ aiofiles ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "androidtv" ];
 
   meta = {

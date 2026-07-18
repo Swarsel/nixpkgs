@@ -9,7 +9,6 @@
 python3Packages.buildPythonApplication rec {
   pname = "calibre-web";
   version = "0.6.26-unstable-2026-03-01";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "janeczku";
@@ -40,6 +39,7 @@ python3Packages.buildPythonApplication rec {
       --replace-fail 'cps = "calibreweb:main"' 'calibre-web = "calibreweb:main"'
   '';
 
+  nativeCheckInputs = lib.concatAttrValues optional-dependencies;
   build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
@@ -124,6 +124,9 @@ python3Packages.buildPythonApplication rec {
     ];
   };
 
+  pyproject = true;
+  pythonImportsCheck = [ "calibreweb" ];
+
   pythonRelaxDeps = [
     "apscheduler"
     "bleach"
@@ -139,10 +142,6 @@ python3Packages.buildPythonApplication rec {
     "wand"
   ];
 
-  nativeCheckInputs = lib.concatAttrValues optional-dependencies;
-
-  pythonImportsCheck = [ "calibreweb" ];
-
   passthru = {
     tests = lib.optionalAttrs stdenv.hostPlatform.isLinux { inherit (nixosTests) calibre-web; };
     updateScript = nix-update-script { };
@@ -156,7 +155,7 @@ python3Packages.buildPythonApplication rec {
     changelog = "https://github.com/janeczku/calibre-web/compare/0.6.26...${src.rev}";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
-    mainProgram = "calibre-web";
     platforms = lib.platforms.all;
+    mainProgram = "calibre-web";
   };
 }

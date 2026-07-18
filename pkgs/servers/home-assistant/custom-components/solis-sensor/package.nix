@@ -1,14 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  buildHomeAssistantComponent,
   aiofiles,
+  buildHomeAssistantComponent,
   nix-update-script,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "hultenvp";
-  domain = "solis";
   version = "4.0.1";
 
   src = fetchFromGitHub {
@@ -19,15 +17,15 @@ buildHomeAssistantComponent rec {
   };
 
   dependencies = [ aiofiles ];
-
+  domain = "solis";
   dontCheckManifest = true; # aiofiles version constraint mismatch
-
+  owner = "hultenvp";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Home Assistant integration for the SolisCloud PV Monitoring portal via SolisCloud API";
-    changelog = "https://github.com/hultenvp/solis-sensor/releases/tag/v${version}";
     homepage = "https://github.com/hultenvp/solis-sensor";
+    changelog = "https://github.com/hultenvp/solis-sensor/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

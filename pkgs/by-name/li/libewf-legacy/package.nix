@@ -1,12 +1,12 @@
 {
   lib,
-  fetchurl,
   stdenv,
-  zlib,
-  openssl,
-  libuuid,
-  pkg-config,
+  fetchurl,
   bzip2,
+  libuuid,
+  openssl,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     zlib
     openssl

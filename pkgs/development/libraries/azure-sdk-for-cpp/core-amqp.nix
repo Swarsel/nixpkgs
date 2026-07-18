@@ -1,22 +1,18 @@
 {
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  core,
   c-shared-utility,
+  cmake,
+  core,
   macro-utils-c,
-  umock-c,
-  nix-update-script,
   meta,
+  ninja,
+  nix-update-script,
+  umock-c,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "azure-sdk-for-cpp-core-amqp";
   version = "1.0.0-beta.11";
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -24,7 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "azure-core-amqp_1.0.0-beta.11";
     hash = "sha256-MQsz5Dmv1BwfUaN1VXMC3hPdMHihlgOBaukp5wgTNJc=";
   };
-  sourceRoot = "${finalAttrs.src.name}/sdk/core/azure-core-amqp";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     sed -i '/CMAKE_CXX_STANDARD/d' CMakeLists.txt
@@ -44,24 +44,26 @@ stdenv.mkDerivation (finalAttrs: {
     umock-c
   ];
 
-  env = {
-    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
-    NIX_CFLAGS_COMPILE = "-Wno-error";
-  };
-
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
     "-DDISABLE_RUST_IN_BUILD=ON"
     "-DWARNINGS_AS_ERRORS=OFF"
   ];
 
+  env = {
+    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
+    NIX_CFLAGS_COMPILE = "-Wno-error";
+  };
+
+  # See note in ./core.nix.
+  doCheck = false;
+
   postInstall = ''
     moveToOutput "share" "$dev"
     moveToOutput "share/$(basename "$sourceRoot")-cpp/copyright" "$out"
   '';
 
-  # See note in ./core.nix.
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/sdk/core/azure-core-amqp";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

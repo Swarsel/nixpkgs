@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  catch2_3,
   cmake,
   fftw,
-  catch2_3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,12 +19,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ fftw ];
-
-  nativeCheckInputs = [ catch2_3 ];
-
   doCheck = true;
+  nativeCheckInputs = [ catch2_3 ];
 
   meta = {
     description = "Musical key detection for digital audio (C++ library)";

@@ -3,21 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  git,
   ninja,
   python3,
-  git,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "directx-shader-compiler";
   version = "1.10.2605.24";
-
-  # Put headers in dev, there are lot of them which aren't necessary for
-  # using the compiler binary.
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -26,6 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vZDP4xnqEdswjvlLTO1jYKtQS1UAA0vGdP2ovB8HMaM=";
     fetchSubmodules = true;
   };
+
+  # Put headers in dev, there are lot of them which aren't necessary for
+  # using the compiler binary.
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Compiler to compile HLSL programs into DXIL and SPIR-V";
     homepage = "https://github.com/microsoft/DirectXShaderCompiler";
-    platforms = with lib.platforms; linux ++ darwin;
     license = lib.licenses.ncsa;
     maintainers = with lib.maintainers; [ Flakebi ];
+    platforms = with lib.platforms; linux ++ darwin;
   };
 })

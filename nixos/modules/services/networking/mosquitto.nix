@@ -54,30 +54,24 @@ let
     with lib.types;
     submodule {
       options = {
-        password = lib.mkOption {
-          type = uniq (nullOr str);
-          default = null;
-          description = ''
-            Specifies the (clear text) password for the MQTT User.
-          '';
-        };
+        acl = lib.mkOption {
+          default = [ ];
 
-        passwordFile = lib.mkOption {
-          type = uniq (nullOr path);
-          example = "/path/to/file";
-          default = null;
           description = ''
-            Specifies the path to a file containing the
-            clear text password for the MQTT user.
-            The file is securely passed to mosquitto by
-            leveraging systemd credentials. No special
-            permissions need to be set on this file.
+            Control client access to topics on the broker.
           '';
+
+          example = [
+            "read A/B"
+            "readwrite A/#"
+          ];
+
+          type = listOf str;
         };
 
         hashedPassword = lib.mkOption {
-          type = uniq (nullOr str);
           default = null;
+
           description = ''
             Specifies the hashed password for the MQTT User.
             To generate hashed password install the `mosquitto`
@@ -85,12 +79,13 @@ let
             the second field (after the `:`) from the generated
             file.
           '';
+
+          type = uniq (nullOr str);
         };
 
         hashedPasswordFile = lib.mkOption {
-          type = uniq (nullOr path);
-          example = "/path/to/file";
           default = null;
+
           description = ''
             Specifies the path to a file containing the
             hashed password for the MQTT user.
@@ -101,18 +96,34 @@ let
             leveraging systemd credentials. No special
             permissions need to be set on this file.
           '';
+
+          example = "/path/to/file";
+          type = uniq (nullOr path);
         };
 
-        acl = lib.mkOption {
-          type = listOf str;
-          example = [
-            "read A/B"
-            "readwrite A/#"
-          ];
-          default = [ ];
+        password = lib.mkOption {
+          default = null;
+
           description = ''
-            Control client access to topics on the broker.
+            Specifies the (clear text) password for the MQTT User.
           '';
+
+          type = uniq (nullOr str);
+        };
+
+        passwordFile = lib.mkOption {
+          default = null;
+
+          description = ''
+            Specifies the path to a file containing the
+            clear text password for the MQTT user.
+            The file is securely passed to mosquitto by
+            leveraging systemd credentials. No special
+            permissions need to be set on this file.
+          '';
+
+          example = "/path/to/file";
+          type = uniq (nullOr path);
         };
       };
     };
@@ -131,6 +142,7 @@ let
           u.hashedPassword
           u.hashedPasswordFile
         ] <= 1;
+
       message = "Cannot set more than one password option for user ${n} in ${prefix}";
     }) users;
 
@@ -222,29 +234,34 @@ let
     with lib.types;
     submodule {
       options = {
-        plugin = lib.mkOption {
-          type = path;
-          description = ''
-            Plugin path to load, should be a `.so` file.
-          '';
-        };
-
-        denySpecialChars = lib.mkOption {
-          type = bool;
-          description = ''
-            Automatically disallow all clients using `#`
-            or `+` in their name/id.
-          '';
-          default = true;
-        };
-
         options = lib.mkOption {
-          type = attrsOf optionType;
+          default = { };
+
           description = ''
             Options for the plugin. Each key turns into a `plugin_opt_*`
             line in the config.
           '';
-          default = { };
+
+          type = attrsOf optionType;
+        };
+
+        denySpecialChars = lib.mkOption {
+          default = true;
+
+          description = ''
+            Automatically disallow all clients using `#`
+            or `+` in their name/id.
+          '';
+
+          type = bool;
+        };
+
+        plugin = lib.mkOption {
+          description = ''
+            Plugin path to load, should be a `.so` file.
+          '';
+
+          type = path;
         };
       };
     };
@@ -307,76 +324,92 @@ let
     with lib.types;
     submodule {
       options = {
-        port = lib.mkOption {
-          type = port;
+        acl = lib.mkOption {
+          default = [ ];
+
           description = ''
-            Port to listen on. Must be set to 0 to listen on a unix domain socket.
+            Additional ACL items to prepend to the generated ACL file.
           '';
-          default = 1883;
+
+          example = [
+            "pattern read #"
+            "topic readwrite anon/report/#"
+          ];
+
+          type = listOf str;
         };
 
         address = lib.mkOption {
-          type = nullOr str;
+          default = null;
+
           description = ''
             Address to listen on. Listen on `0.0.0.0`/`::`
             when unset.
           '';
-          default = null;
+
+          type = nullOr str;
         };
 
         authPlugins = lib.mkOption {
-          type = listOf authPluginOptions;
+          default = [ ];
+
           description = ''
             Authentication plugin to attach to this listener.
             Refer to the [mosquitto.conf documentation](https://mosquitto.org/man/mosquitto-conf-5.html)
             for details on authentication plugins.
           '';
-          default = [ ];
-        };
 
-        users = lib.mkOption {
-          type = attrsOf userOptions;
-          example = {
-            john = {
-              password = "123456";
-              acl = [ "readwrite john/#" ];
-            };
-          };
-          description = ''
-            A set of users and their passwords and ACLs.
-          '';
-          default = { };
+          type = listOf authPluginOptions;
         };
 
         omitPasswordAuth = lib.mkOption {
-          type = bool;
+          default = false;
+
           description = ''
             Omits password checking, allowing anyone to log in with any user name unless
             other mandatory authentication methods (eg TLS client certificates) are configured.
           '';
-          default = false;
+
+          type = bool;
         };
 
-        acl = lib.mkOption {
-          type = listOf str;
+        port = lib.mkOption {
+          default = 1883;
+
           description = ''
-            Additional ACL items to prepend to the generated ACL file.
+            Port to listen on. Must be set to 0 to listen on a unix domain socket.
           '';
-          example = [
-            "pattern read #"
-            "topic readwrite anon/report/#"
-          ];
-          default = [ ];
+
+          type = port;
         };
 
         settings = lib.mkOption {
-          type = submodule {
-            freeformType = attrsOf optionType;
-          };
+          default = { };
+
           description = ''
             Additional settings for this listener.
           '';
+
+          type = submodule {
+            freeformType = attrsOf optionType;
+          };
+        };
+
+        users = lib.mkOption {
           default = { };
+
+          description = ''
+            A set of users and their passwords and ACLs.
+          '';
+
+          example = {
+            john = {
+              acl = [ "readwrite john/#" ];
+              password = "123456";
+            };
+          };
+
+          type = attrsOf userOptions;
         };
       };
     };
@@ -459,49 +492,58 @@ let
     submodule {
       options = {
         addresses = lib.mkOption {
-          type = listOf (submodule {
-            options = {
-              address = lib.mkOption {
-                type = str;
-                description = ''
-                  Address of the remote MQTT broker.
-                '';
-              };
-
-              port = lib.mkOption {
-                type = port;
-                description = ''
-                  Port of the remote MQTT broker.
-                '';
-                default = 1883;
-              };
-            };
-          });
           default = [ ];
+
           description = ''
             Remote endpoints for the bridge.
           '';
+
+          type = listOf (submodule {
+            options = {
+              address = lib.mkOption {
+                description = ''
+                  Address of the remote MQTT broker.
+                '';
+
+                type = str;
+              };
+
+              port = lib.mkOption {
+                default = 1883;
+
+                description = ''
+                  Port of the remote MQTT broker.
+                '';
+
+                type = port;
+              };
+            };
+          });
+        };
+
+        settings = lib.mkOption {
+          default = { };
+
+          description = ''
+            Additional settings for this bridge.
+          '';
+
+          type = submodule {
+            freeformType = attrsOf optionType;
+          };
         };
 
         topics = lib.mkOption {
-          type = listOf str;
+          default = [ ];
+
           description = ''
             Topic patterns to be shared between the two brokers.
             Refer to the [
             mosquitto.conf documentation](https://mosquitto.org/man/mosquitto-conf-5.html) for details on the format.
           '';
-          default = [ ];
-          example = [ "# both 2 local/topic/ remote/topic/" ];
-        };
 
-        settings = lib.mkOption {
-          type = submodule {
-            freeformType = attrsOf optionType;
-          };
-          description = ''
-            Additional settings for this bridge.
-          '';
-          default = { };
+          example = [ "# both 2 local/topic/ remote/topic/" ];
+          type = listOf str;
         };
       };
     };
@@ -561,37 +603,58 @@ let
 
   globalOptions = with lib.types; {
     enable = lib.mkEnableOption "the MQTT Mosquitto broker";
-
     package = lib.mkPackageOption pkgs "mosquitto" { };
 
     bridges = lib.mkOption {
-      type = attrsOf bridgeOptions;
       default = { };
+
       description = ''
         Bridges to build to other MQTT brokers.
       '';
+
+      type = attrsOf bridgeOptions;
     };
 
-    listeners = lib.mkOption {
-      type = listOf listenerOptions;
-      default = [ ];
+    dataDir = lib.mkOption {
+      default = "/var/lib/mosquitto";
+
       description = ''
-        Listeners to configure on this broker.
+        The data directory.
       '';
+
+      type = lib.types.path;
     };
 
     includeDirs = lib.mkOption {
-      type = listOf path;
+      default = [ ];
+
       description = ''
         Directories to be scanned for further config files to include.
         Directories will processed in the order given,
         `*.conf` files in the directory will be
         read in case-sensitive alphabetical order.
       '';
+
+      type = listOf path;
+    };
+
+    listeners = lib.mkOption {
       default = [ ];
+
+      description = ''
+        Listeners to configure on this broker.
+      '';
+
+      type = listOf listenerOptions;
     };
 
     logDest = lib.mkOption {
+      default = [ "stderr" ];
+
+      description = ''
+        Destinations to send log messages to.
+      '';
+
       type = listOf (
         either path (enum [
           "stdout"
@@ -601,13 +664,15 @@ let
           "dlt"
         ])
       );
-      description = ''
-        Destinations to send log messages to.
-      '';
-      default = [ "stderr" ];
     };
 
     logType = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Types of messages to log.
+      '';
+
       type = listOf (enum [
         "debug"
         "error"
@@ -620,36 +685,28 @@ let
         "none"
         "all"
       ]);
-      description = ''
-        Types of messages to log.
-      '';
-      default = [ ];
     };
 
     persistence = lib.mkOption {
-      type = bool;
+      default = true;
+
       description = ''
         Enable persistent storage of subscriptions and messages.
       '';
-      default = true;
-    };
 
-    dataDir = lib.mkOption {
-      default = "/var/lib/mosquitto";
-      type = lib.types.path;
-      description = ''
-        The data directory.
-      '';
+      type = bool;
     };
 
     settings = lib.mkOption {
-      type = submodule {
-        freeformType = attrsOf optionType;
-      };
+      default = { };
+
       description = ''
         Global configuration options for the mosquitto broker.
       '';
-      default = { };
+
+      type = submodule {
+        freeformType = attrsOf optionType;
+      };
     };
   };
 
@@ -658,6 +715,7 @@ let
     lib.flatten [
       {
         assertion = lib.versionAtLeast cfg.package.version "2.1";
+
         message = ''
           ${prefix}.package must be at least version 2.1, since the generated
           configuration relies on the acl-file and password-file plugins.
@@ -698,32 +756,23 @@ in
     assertions = globalAsserts "services.mosquitto" cfg;
 
     systemd.services.mosquitto = {
-      description = "Mosquitto MQTT Broker Daemon";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      serviceConfig = {
-        Type = "notify";
-        NotifyAccess = "main";
-        User = "mosquitto";
-        Group = "mosquitto";
-        RuntimeDirectory = "mosquitto";
-        WorkingDirectory = cfg.dataDir;
-        Restart = "on-failure";
-        ExecStart = "${cfg.package}/bin/mosquitto -c ${configFile}";
-        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+      description = "Mosquitto MQTT Broker Daemon";
 
-        # Credentials
-        SetCredential =
-          let
-            listenerCredentials =
-              listenerScope: listener:
-              usersCredentials listenerScope listener.users [
-                "password"
-                "hashedPassword"
-              ];
-          in
-          systemdCredentials cfg.listeners listenerCredentials;
+      preStart = lib.concatStringsSep "\n" (
+        lib.imap0 (idx: listener: ''
+          ${makePasswordFile (listenerScope idx) listener.users "${cfg.dataDir}/passwd-${toString idx}"}
+          install -m 0700 ${makeACLFile idx listener} ${cfg.dataDir}/acl-${toString idx}.conf
+        '') cfg.listeners
+      );
+
+      serviceConfig = {
+        # Hardening
+        CapabilityBoundingSet = "";
+        DevicePolicy = "closed";
+        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+        ExecStart = "${cfg.package}/bin/mosquitto -c ${configFile}";
+        Group = "mosquitto";
 
         LoadCredential =
           let
@@ -736,15 +785,14 @@ in
           in
           systemdCredentials cfg.listeners listenerCredentials;
 
-        # Hardening
-        CapabilityBoundingSet = "";
-        DevicePolicy = "closed";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
+        NotifyAccess = "main";
         PrivateDevices = true;
         PrivateTmp = true;
         PrivateUsers = true;
+        ProcSubset = "pid";
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -753,13 +801,8 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
-        ProcSubset = "pid";
         ProtectSystem = "strict";
-        ReadWritePaths = [
-          cfg.dataDir
-          "/tmp" # mosquitto_passwd creates files in /tmp before moving them
-        ]
-        ++ lib.filter path.check cfg.logDest;
+
         ReadOnlyPaths = map (p: "${p}") (
           cfg.includeDirs
           ++ lib.filter (v: v != null) (
@@ -783,46 +826,72 @@ in
             ]
           )
         );
+
+        ReadWritePaths = [
+          cfg.dataDir
+          "/tmp" # mosquitto_passwd creates files in /tmp before moving them
+        ]
+        ++ lib.filter path.check cfg.logDest;
+
         RemoveIPC = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
           "AF_NETLINK"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        RuntimeDirectory = "mosquitto";
+
+        # Credentials
+        SetCredential =
+          let
+            listenerCredentials =
+              listenerScope: listener:
+              usersCredentials listenerScope listener.users [
+                "password"
+                "hashedPassword"
+              ];
+          in
+          systemdCredentials cfg.listeners listenerCredentials;
+
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
-        UMask = "0077";
-      };
-      preStart = lib.concatStringsSep "\n" (
-        lib.imap0 (idx: listener: ''
-          ${makePasswordFile (listenerScope idx) listener.users "${cfg.dataDir}/passwd-${toString idx}"}
-          install -m 0700 ${makeACLFile idx listener} ${cfg.dataDir}/acl-${toString idx}.conf
-        '') cfg.listeners
-      );
-    };
 
-    users.users.mosquitto = {
-      description = "Mosquitto MQTT Broker Daemon owner";
-      group = "mosquitto";
-      uid = config.ids.uids.mosquitto;
-      home = cfg.dataDir;
-      createHome = true;
+        Type = "notify";
+        UMask = "0077";
+        User = "mosquitto";
+        WorkingDirectory = cfg.dataDir;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
     users.groups.mosquitto.gid = config.ids.gids.mosquitto;
 
+    users.users.mosquitto = {
+      createHome = true;
+      description = "Mosquitto MQTT Broker Daemon owner";
+      group = "mosquitto";
+      home = cfg.dataDir;
+      uid = config.ids.uids.mosquitto;
+    };
+
   };
 
   meta = {
-    maintainers = [ ];
     doc = ./mosquitto.md;
+    maintainers = [ ];
   };
 }

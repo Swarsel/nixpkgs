@@ -1,10 +1,10 @@
 {
+  meta,
+  pname,
+  src,
   stdenvNoCC,
   undmg,
-  pname,
   version,
-  src,
-  meta,
   ...
 }:
 stdenvNoCC.mkDerivation {
@@ -15,13 +15,7 @@ stdenvNoCC.mkDerivation {
     meta
     ;
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-
   nativeBuildInputs = [ undmg ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -31,4 +25,9 @@ stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatch = true;
+  sourceRoot = ".";
 }

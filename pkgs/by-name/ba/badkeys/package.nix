@@ -1,7 +1,7 @@
 {
   lib,
-  badkeys,
   fetchFromGitHub,
+  badkeys,
   python3Packages,
   testers,
 }:
@@ -9,7 +9,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "badkeys";
   version = "0.0.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "badkeys";
@@ -17,6 +16,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-sQPMil8MdGR9vauBgX+fAX/wdmSdqkchoxD4drGXR3I=";
   };
+
+  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
 
   build-system = with python3Packages; [
     setuptools
@@ -33,8 +34,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     paramiko
   ];
 
-  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "badkeys" ];
 
   passthru = {

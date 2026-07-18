@@ -10,15 +10,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "aliyun-python-sdk-core";
   version = "2.16.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-ZRyq1ZfrOdT61s+FEz3/6Sg31TvfYtudjzfatlCLuPk=";
   };
 
-  pythonRelaxDeps = true;
-
+  # All components are stored in a mono repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,10 +25,9 @@ buildPythonPackage (finalAttrs: {
     jmespath
   ];
 
-  # All components are stored in a mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aliyunsdkcore" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Core module of Aliyun Python SDK";

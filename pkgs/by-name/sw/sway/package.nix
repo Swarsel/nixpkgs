@@ -1,23 +1,22 @@
 {
   lib,
-  sway-unwrapped,
-  makeWrapper,
-  symlinkJoin,
-  writeShellScriptBin,
-  withBaseWrapper ? true,
-  extraSessionCommands ? "",
   dbus,
-  withGtkWrapper ? false,
-  wrapGAppsHook3,
   gdk-pixbuf,
   glib,
   gtk3,
+  makeWrapper,
+  sway-unwrapped,
+  symlinkJoin,
+  wrapGAppsHook3,
+  writeShellScriptBin,
+  dbusSupport ? true,
+  enableXWayland ? true,
   extraOptions ? [ ], # E.g.: [ "--verbose" ]
+  extraSessionCommands ? "",
   # Used by the NixOS module:
   isNixOS ? false,
-
-  enableXWayland ? true,
-  dbusSupport ? true,
+  withBaseWrapper ? true,
+  withGtkWrapper ? false,
 }:
 
 assert extraSessionCommands != "" -> withBaseWrapper;
@@ -52,11 +51,9 @@ let
   '';
 in
 symlinkJoin {
-  pname = replaceStrings [ "-unwrapped" ] [ "" ] sway.pname;
   inherit (sway) version;
-
-  paths = (optional withBaseWrapper baseWrapper) ++ [ sway ];
-
+  inherit (sway) meta;
+  pname = replaceStrings [ "-unwrapped" ] [ "" ] sway.pname;
   strictDeps = false;
   nativeBuildInputs = [ makeWrapper ] ++ (optional withGtkWrapper wrapGAppsHook3);
 
@@ -65,9 +62,6 @@ symlinkJoin {
     glib
     gtk3
   ];
-
-  # We want to run wrapProgram manually
-  dontWrapGApps = true;
 
   postBuild = ''
     ${optionalString withGtkWrapper "gappsWrapperArgsHook"}
@@ -79,10 +73,12 @@ symlinkJoin {
       }
   '';
 
+  # We want to run wrapProgram manually
+  dontWrapGApps = true;
+  paths = (optional withBaseWrapper baseWrapper) ++ [ sway ];
+
   passthru = {
     inherit (sway.passthru) tests;
     providedSessions = [ sway.meta.mainProgram ];
   };
-
-  inherit (sway) meta;
 }

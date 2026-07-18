@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoPatchelfHook,
+  copyDesktopItems,
+  electron,
   fetchPnpmDeps,
+  libpulseaudio,
+  makeDesktopItem,
+  makeWrapper,
+  nix-update-script,
+  nodejs,
+  pipewire,
   pnpmConfigHook,
   pnpm_10,
-  nodejs,
-  electron,
-  makeWrapper,
-  copyDesktopItems,
-  makeDesktopItem,
-  autoPatchelfHook,
-  pipewire,
-  libpulseaudio,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "legcord";
@@ -45,11 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.getLib stdenv.cc.cc)
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = "sha256-a0FvNwEAEAltQltgUf4tX0IGSdcYHkSodx4b9v5QQcg=";
+  env = {
+    ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
   };
 
   buildPhase = ''
@@ -102,33 +99,39 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
-  };
-
   desktopItems = [
     (makeDesktopItem {
-      name = "legcord";
-      genericName = "Internet Messenger";
+      categories = [
+        "Network"
+        "InstantMessaging"
+        "Chat"
+      ];
+
+      comment = finalAttrs.meta.description;
       desktopName = "Legcord";
       exec = "legcord %U";
+      genericName = "Internet Messenger";
       icon = "legcord";
-      comment = finalAttrs.meta.description;
+
       keywords = [
         "discord"
         "vencord"
         "electron"
         "chat"
       ];
-      categories = [
-        "Network"
-        "InstantMessaging"
-        "Chat"
-      ];
+
+      name = "legcord";
       startupWMClass = "Legcord";
       terminal = false;
     })
   ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-a0FvNwEAEAltQltgUf4tX0IGSdcYHkSodx4b9v5QQcg=";
+    pnpm = pnpm_10;
+  };
 
   passthru = {
     inherit (finalAttrs) pnpmDeps;
@@ -138,17 +141,20 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Lightweight, alternative desktop client for Discord";
     homepage = "https://legcord.app";
-    downloadPage = "https://github.com/Legcord/Legcord";
     license = lib.licenses.osl3;
+
     maintainers = with lib.maintainers; [
       wrmilling
       water-sucks
       nyabinary
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "legcord";
+    downloadPage = "https://github.com/Legcord/Legcord";
   };
 })

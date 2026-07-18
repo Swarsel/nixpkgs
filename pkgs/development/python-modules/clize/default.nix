@@ -6,8 +6,8 @@
   fetchPypi,
   od,
   pygments,
-  pythonAtLeast,
   python-dateutil,
+  pythonAtLeast,
   repeated-test,
   setuptools-scm,
   sigtools,
@@ -16,12 +16,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "clize";
   version = "5.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-BH9aRHNgJxirG4VnKn4VMDOHF41agcJ13EKd+sHstRA=";
   };
+
+  nativeCheckInputs = [
+    pygments
+    unittestCheckHook
+    python-dateutil
+    repeated-test
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -36,12 +42,8 @@ buildPythonPackage (finalAttrs: {
     datetime = [ python-dateutil ];
   };
 
-  nativeCheckInputs = [
-    pygments
-    unittestCheckHook
-    python-dateutil
-    repeated-test
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "clize" ];
 
   unittestFlags =
     let
@@ -60,8 +62,6 @@ buildPythonPackage (finalAttrs: {
       "-s clize/tests"
       "-k [!(${matchingPattern})]"
     ];
-
-  pythonImportsCheck = [ "clize" ];
 
   meta = {
     description = "Command-line argument parsing for Python";

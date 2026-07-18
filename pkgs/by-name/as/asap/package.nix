@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  fetchzip,
+  stdenv,
   SDL,
+  fetchzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     SDL
   ];
 
-  enableParallelBuilding = true;
-
   buildFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     # Only targets that don't need cito transpiler
@@ -32,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     "asap-sdl"
     "lib"
   ];
+
+  enableParallelBuilding = true;
 
   installFlags = [
     "prefix=${placeholder "dev"}"
@@ -42,16 +42,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://asap.sourceforge.net/";
-    mainProgram = "asap-sdl";
     description = "Another Slight Atari Player";
+
     longDescription = ''
       ASAP (Another Slight Atari Player) plays and converts 8-bit Atari POKEY
       music (*.sap, *.cmc, *.mpt, *.rmt, *.tmc, ...) on modern computers and
       mobile devices.
     '';
-    maintainers = with lib.maintainers; [ OPNA2608 ];
+
+    homepage = "https://asap.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.all;
+    mainProgram = "asap-sdl";
   };
 })

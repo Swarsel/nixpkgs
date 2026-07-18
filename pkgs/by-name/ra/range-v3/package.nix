@@ -25,19 +25,19 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isAarch64 "-DRANGE_V3_TESTS=OFF";
 
-  doCheck = !stdenv.hostPlatform.isAarch64;
-  checkTarget = "test";
-
   env = lib.optionalAttrs stdenv.cc.isGNU {
     NIX_CFLAGS_COMPILE = "-std=c++17";
   };
+
+  doCheck = !stdenv.hostPlatform.isAarch64;
+  checkTarget = "test";
 
   meta = {
     description = "Experimental range library for C++11/14/17";
     homepage = "https://github.com/ericniebler/range-v3";
     changelog = "https://github.com/ericniebler/range-v3/releases/tag/${finalAttrs.version}";
     license = lib.licenses.boost;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

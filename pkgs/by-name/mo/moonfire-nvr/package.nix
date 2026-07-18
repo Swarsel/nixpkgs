@@ -1,14 +1,14 @@
 {
   lib,
-  callPackage,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  callPackage,
+  moonfire-nvr,
   ncurses,
+  nix-update,
+  pkg-config,
+  rustPlatform,
   sqlite,
   testers,
-  moonfire-nvr,
-  nix-update,
   writeShellApplication,
 }:
 
@@ -23,12 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-QgsaiWcXeU4y7z9mcqUAl4mQ/M4p38yRjOB/4MKlpVA=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/server";
-
-  cargoHash = "sha256-TDFe5pD+8eSwvw0h9GLM+JfODlSBU1CO8fw4FVjy8xk=";
-
-  env.VERSION = "v${finalAttrs.version}";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -38,20 +32,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
+  cargoHash = "sha256-TDFe5pD+8eSwvw0h9GLM+JfODlSBU1CO8fw4FVjy8xk=";
+  env.VERSION = "v${finalAttrs.version}";
+  doCheck = false;
+
   postInstall = ''
     mkdir -p $out/lib
     ln -s ${moonfire-nvr.ui} $out/lib/ui
   '';
 
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/server";
 
   passthru = {
-    ui = callPackage ./ui.nix { };
     tests.version = testers.testVersion {
-      package = moonfire-nvr;
-      command = "moonfire-nvr --version";
       version = "Version: v${finalAttrs.version}";
+      command = "moonfire-nvr --version";
+      package = moonfire-nvr;
     };
+
+    ui = callPackage ./ui.nix { };
+
     updateScript = lib.getExe (writeShellApplication {
       name = "update-moonfire-nvr";
 

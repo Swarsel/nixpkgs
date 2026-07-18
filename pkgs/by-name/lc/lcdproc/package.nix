@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  makeWrapper,
-  pkg-config,
   doxygen,
+  fetchpatch,
   freetype,
-  libx11,
   libftdi,
   libusb-compat-0_1,
   libusb1,
+  libx11,
+  makeWrapper,
   ncurses,
   perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     #   https://github.com/lcdproc/lcdproc/pull/148
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://github.com/lcdproc/lcdproc/commit/fda5302878692da933dc03cd011f8ddffefa07a4.patch";
       sha256 = "0ld6p1r4rjsnjr63afw3lp5lx25jxjs07lsp9yc3q96r91r835cy";
+      url = "https://github.com/lcdproc/lcdproc/commit/fda5302878692da933dc03cd011f8ddffefa07a4.patch";
     })
   ];
 
@@ -45,10 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'output_GPL_notice();' '// output_GPL_notice();'
   '';
 
-  configureFlags = [
-    "--enable-lcdproc-menus"
-    "--enable-drivers=all"
-    "--with-pidfile-dir=/run"
+  nativeBuildInputs = [
+    autoreconfHook
+    doxygen
+    makeWrapper
+    pkg-config
   ];
 
   buildInputs = [
@@ -60,15 +61,11 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    doxygen
-    makeWrapper
-    pkg-config
+  configureFlags = [
+    "--enable-lcdproc-menus"
+    "--enable-drivers=all"
+    "--with-pidfile-dir=/run"
   ];
-
-  # In 0.5.9: gcc: error: libbignum.a: No such file or directory
-  enableParallelBuilding = false;
 
   postFixup = ''
     for f in $out/bin/*.pl ; do
@@ -80,6 +77,9 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/etc/LCDd.conf \
       --replace server/drivers/ $out/lib/lcdproc/
   '';
+
+  # In 0.5.9: gcc: error: libbignum.a: No such file or directory
+  enableParallelBuilding = false;
 
   meta = {
     description = "Client/server suite for controlling a wide variety of LCD devices";

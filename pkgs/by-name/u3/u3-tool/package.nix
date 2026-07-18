@@ -10,8 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "u3-tool";
   version = "1.0";
 
-  enableParallelBuilding = true;
-
   src = fetchFromGitHub {
     # original sourceforge mirror does not provide direct access to tag 1.0
     owner = "marcusrugger";
@@ -25,12 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Tool for controlling the special features of a 'U3 smart drive' USB Flash disk";
     homepage = "https://sourceforge.net/projects/u3-tool/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ makefu ];
+    platforms = lib.platforms.linux;
     mainProgram = "u3-tool";
   };
 })

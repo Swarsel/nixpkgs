@@ -3,19 +3,6 @@ name: paths:
 
 buildEnv {
   inherit name;
-  paths = [ qtbase ] ++ paths;
-
-  pathsToLink = [
-    "/bin"
-    "/mkspecs"
-    "/include"
-    "/lib"
-    "/share"
-  ];
-  extraOutputsToInstall = [
-    "out"
-    "dev"
-  ];
 
   postBuild = ''
     rm "$out/bin/qmake"
@@ -28,4 +15,19 @@ buildEnv {
     Documentation = ${qtbase.qtDocPrefix}
     EOF
   '';
+
+  extraOutputsToInstall = [
+    "out"
+    "dev"
+  ];
+
+  paths = [ qtbase ] ++ paths;
+
+  pathsToLink = [
+    "/bin"
+    "/mkspecs"
+    "/include"
+    "/lib"
+    "/share"
+  ];
 }

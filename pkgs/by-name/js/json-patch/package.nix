@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,13 +15,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-lRgz3Bw2mwQSfXvXmKUcWfexEf3YHBFy47tqWB6lzWs=";
   };
 
-  modRoot = "v5";
-
   vendorHash = "sha256-W6XVd68MS0ungMgam8jefYMVhyiN6/DB+bliFzs2rdk=";
-
   env.CGO_ENABLED = 0;
-
   ldflags = [ "-s" ];
+  modRoot = "v5";
 
   meta = {
     description = "CLI tool for applying RFC6902 patches";

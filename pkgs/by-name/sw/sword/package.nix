@@ -2,13 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  icu,
-  clucene-core,
-
   autoreconfHook,
   bzip2,
+  clucene-core,
   curl,
+  icu,
+  pkg-config,
   xz,
 }:
 
@@ -26,6 +25,13 @@ stdenv.mkDerivation (
       url = "https://www.crosswire.org/ftpmirror/pub/sword/source/v${lib.versions.majorMinor finalAttrs.version}/sword-${finalAttrs.version}.tar.gz";
       hash = "sha256-QkCc894vrxEIUj4sWsB0XSH57SpceO2HjuncwwNCa4o=";
     };
+
+    outputs = [
+      "out"
+      "dev"
+    ];
+
+    patches = lib.optional stdenv.hostPlatform.isWindows ./sword-1.9.0-diatheke-includes.patch;
 
     nativeBuildInputs = [
       pkg-config
@@ -47,21 +53,6 @@ stdenv.mkDerivation (
       xz
     ]);
 
-    outputs = [
-      "out"
-      "dev"
-    ];
-
-    prePatch = ''
-      patchShebangs .;
-    '';
-
-    preConfigure = lib.optionalString stdenv.hostPlatform.isWindows ''
-      substituteInPlace configure --replace-fail "-no-undefined" "-Wl,-no-undefined"
-    '';
-
-    patches = lib.optional stdenv.hostPlatform.isWindows ./sword-1.9.0-diatheke-includes.patch;
-
     configureFlags = [
       "--without-conf"
       "--enable-tests=no"
@@ -77,9 +68,6 @@ stdenv.mkDerivation (
     ];
 
     env = {
-      # When placed in nativeBuildInputs, icu.dev is finding the native ICU libs, but setting it
-      # explicitly here has it finding the platform appropriate version
-      ICU_CONFIG = lib.optionalString stdenv.hostPlatform.isWindows "${icu.dev}/bin/icu-config --noverify";
       CURL_CONFIG = lib.optionalString stdenv.hostPlatform.isWindows "${lib.getDev curlDep}/bin/curl-config";
 
       CXXFLAGS = (
@@ -98,11 +86,23 @@ stdenv.mkDerivation (
           ])
         )
       );
+
+      # When placed in nativeBuildInputs, icu.dev is finding the native ICU libs, but setting it
+      # explicitly here has it finding the platform appropriate version
+      ICU_CONFIG = lib.optionalString stdenv.hostPlatform.isWindows "${icu.dev}/bin/icu-config --noverify";
     };
+
+    preConfigure = lib.optionalString stdenv.hostPlatform.isWindows ''
+      substituteInPlace configure --replace-fail "-no-undefined" "-Wl,-no-undefined"
+    '';
+
+    prePatch = ''
+      patchShebangs .;
+    '';
 
     meta = {
       description = "Software framework that allows research manipulation of Biblical texts";
-      homepage = "https://www.crosswire.org/sword/";
+
       longDescription = ''
         The SWORD Project is the CrossWire Bible Society's free Bible software
         project. Its purpose is to create cross-platform open-source tools --
@@ -112,10 +112,14 @@ stdenv.mkDerivation (
         translators of the Bible, and have a growing collection of many hundred
         texts in around 100 languages.
       '';
+
+      homepage = "https://www.crosswire.org/sword/";
       license = lib.licenses.gpl2;
+
       maintainers = with lib.maintainers; [
         greg
       ];
+
       platforms = lib.platforms.all;
     };
   }

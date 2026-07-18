@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mUxEL9b67z/mG+0pcM5uQ/jPAfEUpJlXOXPmqDea+U4=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -35,12 +34,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Computes the surface area and volume of unions of many balls";
-    mainProgram = "DAlphaBall";
     homepage = "https://github.com/outpace-bio/DAlphaBall";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ aschleck ];
     platforms = lib.platforms.unix;
+    mainProgram = "DAlphaBall";
   };
 })

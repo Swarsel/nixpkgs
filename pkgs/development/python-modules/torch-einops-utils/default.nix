@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   einops,
-  fetchFromGitHub,
   hatchling,
   pytestCheckHook,
   torch,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "torch-einops-utils";
   version = "0.0.29";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lucidrains";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ja3HeBvAQRyGL2anqIQa2iiHhOZUhF73do7pvrTyRo0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "torch_einops_utils" ];
 
   meta = {

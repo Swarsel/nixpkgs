@@ -7,8 +7,8 @@
 
 {
   lib,
-  writeCBin,
   runCommand,
+  writeCBin,
 }:
 let
   output = "hello";

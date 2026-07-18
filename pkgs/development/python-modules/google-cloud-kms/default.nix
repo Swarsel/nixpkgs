@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
   google-api-core,
   grpc-google-iam-v1,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "google-cloud-kms";
   version = "3.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -25,7 +24,11 @@ buildPythonPackage rec {
     hash = "sha256-ywRS1BfK6s+gcU8QRem0cSnfZq4BUQ2ABNcgnOa01LI=";
   };
 
-  sourceRoot = "${src.name}/packages/google-cloud-kms";
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -37,14 +40,6 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  pythonRelaxDeps = [ "protobuf" ];
-
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Disable tests that need credentials
     "test_list_global_key_rings"
@@ -52,17 +47,21 @@ buildPythonPackage rec {
     "test_list_ekm_connections"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.kms"
     "google.cloud.kms_v1"
   ];
 
+  pythonRelaxDeps = [ "protobuf" ];
+  sourceRoot = "${src.name}/packages/google-cloud-kms";
+  # picks the wrong tag
+  passthru.skipBulkUpdate = true;
+
   passthru.updateScript = gitUpdater {
     rev-prefix = "google-cloud-kms-v";
   };
-
-  # picks the wrong tag
-  passthru.skipBulkUpdate = true;
 
   meta = {
     description = "Cloud Key Management Service (KMS) API API client library";

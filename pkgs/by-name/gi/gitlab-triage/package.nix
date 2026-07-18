@@ -6,9 +6,8 @@
 
 bundlerApp {
   pname = "gitlab-triage";
-  gemdir = ./.;
   exes = [ "gitlab-triage" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "gitlab-triage";
 
   meta = {

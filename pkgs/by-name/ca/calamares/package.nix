@@ -1,32 +1,25 @@
 {
   lib,
   stdenv,
-
-  writeShellScriptBin,
-  xdg-utils,
-
-  fetchFromCodeberg,
-
-  cmake,
-  ninja,
-  kdePackages,
-  qt6,
-
-  libpwquality,
-  libxcrypt,
-  parted,
-  yaml-cpp,
-
-  tzdata,
-  ckbcomp,
-  util-linux,
-  os-prober,
-  xkeyboard_config,
-
-  extraWrapperArgs ? [ ],
-
   # passthru.tests
   calamares-nixos,
+  ckbcomp,
+  cmake,
+  fetchFromCodeberg,
+  kdePackages,
+  libpwquality,
+  libxcrypt,
+  ninja,
+  os-prober,
+  parted,
+  qt6,
+  tzdata,
+  util-linux,
+  writeShellScriptBin,
+  xdg-utils,
+  xkeyboard_config,
+  yaml-cpp,
+  extraWrapperArgs ? [ ],
 }:
 
 let
@@ -57,6 +50,20 @@ stdenv.mkDerivation (finalAttrs: {
     ./dont-create-users.patch
   ];
 
+  postPatch = ''
+    substituteInPlace io.calamares.calamares.policy \
+      --replace-fail /usr/bin/calamares $out/bin/calamares
+
+    substituteInPlace src/modules/locale/SetTimezoneJob.cpp src/libcalamares/locale/TimeZone.cpp \
+      --replace-fail /usr/share/zoneinfo ${tzdata}/share/zoneinfo
+
+    substituteInPlace src/modules/keyboard/keyboardwidget/keyboardglobal.cpp \
+      --replace-fail /usr/share/X11/xkb/rules/base.lst ${xkeyboard_config}/share/X11/xkb/rules/base.lst
+
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "\''${POLKITQT-1_POLICY_FILES_INSTALL_DIR}" "$out/share/polkit-1/actions"
+  '';
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -81,22 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
     yaml-cpp
   ];
 
-  postPatch = ''
-    substituteInPlace io.calamares.calamares.policy \
-      --replace-fail /usr/bin/calamares $out/bin/calamares
-
-    substituteInPlace src/modules/locale/SetTimezoneJob.cpp src/libcalamares/locale/TimeZone.cpp \
-      --replace-fail /usr/share/zoneinfo ${tzdata}/share/zoneinfo
-
-    substituteInPlace src/modules/keyboard/keyboardwidget/keyboardglobal.cpp \
-      --replace-fail /usr/share/X11/xkb/rules/base.lst ${xkeyboard_config}/share/X11/xkb/rules/base.lst
-
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "\''${POLKITQT-1_POLICY_FILES_INSTALL_DIR}" "$out/share/polkit-1/actions"
-  '';
-
-  separateDebugInfo = true;
-
   qtWrapperArgs = [
     "--prefix PATH : ${
       lib.makeBinPath [
@@ -109,6 +100,8 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ extraWrapperArgs;
 
+  separateDebugInfo = true;
+
   passthru.tests = {
     inherit calamares-nixos;
   };
@@ -116,14 +109,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Distribution-independent installer framework";
     homepage = "https://calamares.io/";
+
     license = with lib.licenses; [
       gpl3Plus
       bsd2
       cc0
     ];
+
     maintainers = with lib.maintainers; [
       vlinkz
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "calamares";
   };

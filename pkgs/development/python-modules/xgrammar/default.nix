@@ -1,45 +1,55 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cmake,
-  ninja,
-  nanobind,
-  scikit-build-core,
-
   # dependencies
   mlx-lm,
+  nanobind,
+  ninja,
   numpy,
   pydantic,
+  # tests
+  pytestCheckHook,
+  scikit-build-core,
+  sentencepiece,
+  tiktoken,
   torch,
   transformers,
   triton,
-
-  # tests
-  pytestCheckHook,
-  sentencepiece,
-  tiktoken,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "xgrammar";
   version = "0.1.33";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mlc-ai";
     repo = "xgrammar";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-mliAmFBY3eLnUP+2HCRGX36KPUjaxn0Eb+2aKyDwdaM=";
+    fetchSubmodules = true;
   };
 
   patches = [
     ./0001-fix-find-nanobind-from-python-module.patch
+  ];
+
+  env = lib.optionalAttrs stdenv.hostPlatform.isLinux {
+    NIX_CFLAGS_COMPILE = toString [
+      # xgrammar hardcodes -flto=auto while using static linking, which can cause linker errors without this additional flag.
+      "-ffat-lto-objects"
+    ];
+  };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    sentencepiece
+    tiktoken
+    writableTmpDirAsHomeHook
   ];
 
   build-system = [
@@ -48,7 +58,6 @@ buildPythonPackage rec {
     nanobind
     scikit-build-core
   ];
-  dontUseCmakeConfigure = true;
 
   dependencies = [
     numpy
@@ -63,19 +72,11 @@ buildPythonPackage rec {
     mlx-lm
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    sentencepiece
-    tiktoken
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    # Requires internet access
+    "tests/python/test_structural_tag_converter.py"
+    "tests/python/test_structural_tag_for_model.py"
   ];
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isLinux {
-    NIX_CFLAGS_COMPILE = toString [
-      # xgrammar hardcodes -flto=auto while using static linking, which can cause linker errors without this additional flag.
-      "-ffat-lto-objects"
-    ];
-  };
 
   disabledTests = [
     # You are trying to access a gated repo.
@@ -96,12 +97,8 @@ buildPythonPackage rec {
     "test_json_schema_converter"
   ];
 
-  disabledTestPaths = [
-    # Requires internet access
-    "tests/python/test_structural_tag_converter.py"
-    "tests/python/test_structural_tag_for_model.py"
-  ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "xgrammar" ];
 
   meta = {

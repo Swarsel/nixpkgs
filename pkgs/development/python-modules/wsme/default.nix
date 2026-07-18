@@ -2,41 +2,32 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pbr,
-  setuptools,
-  importlib-metadata,
-  simplegeneric,
-  netaddr,
   # Test inputs
   flask,
   flask-restful,
+  importlib-metadata,
+  netaddr,
+  pbr,
   pecan,
+  pytestCheckHook,
+  setuptools,
+  simplegeneric,
   sphinx,
   transaction,
   webtest,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "wsme";
   version = "0.12.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "WSME";
     inherit (finalAttrs) version;
     hash = "sha256-m36yJErzxwSskUte0iGVS7aK3QqLKy84okSwZ7M3mS0=";
+    pname = "WSME";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ pbr ];
-
-  dependencies = [
-    importlib-metadata
-    simplegeneric
-    netaddr
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -48,12 +39,22 @@ buildPythonPackage (finalAttrs: {
     webtest
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    importlib-metadata
+    simplegeneric
+    netaddr
+  ];
+
   enabledTestPaths = [
     "wsme/tests"
     "tests/pecantest"
     "tests/test_sphinxext.py"
     "tests/test_flask.py"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Simplify the writing of REST APIs, and extend them with additional protocols";

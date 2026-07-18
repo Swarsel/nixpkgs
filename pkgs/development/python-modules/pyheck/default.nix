@@ -1,20 +1,19 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cargo,
-  fetchFromGitHub,
   libiconv,
   poetry-core,
   pytestCheckHook,
-  rustc,
   rustPlatform,
-  stdenv,
+  rustc,
 }:
 
 buildPythonPackage rec {
   pname = "pyheck";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kevinheavey";
@@ -22,8 +21,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-mfXkrCbBaJ0da+taKJvfyU5NS43tYJWqtTUXiCLVoGQ=";
   };
-
-  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
 
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
@@ -38,9 +35,9 @@ buildPythonPackage rec {
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
+  pyproject = true;
   pythonImportsCheck = [ "pyheck" ];
 
   meta = {

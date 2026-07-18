@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "cxxfilt";
   version = "0.3.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,7 +25,7 @@ buildPythonPackage rec {
 
   # no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "cxxfilt" ];
 
   meta = {

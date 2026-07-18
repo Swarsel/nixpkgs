@@ -23,13 +23,15 @@ stdenv.mkDerivation {
     description = ''
       Push ALL changes in a git repository
     '';
+
     longDescription = ''
       In the event of an emergency (fire, etc.), automatically commit all changes/files in a repository, pushing to all known remotes all commits and stashes.
     '';
+
     homepage = "https://github.com/qw3rtman/git-fire";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ swflint ];
+    platforms = lib.platforms.all;
     mainProgram = "git-fire";
   };
 }

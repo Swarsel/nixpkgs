@@ -47,37 +47,41 @@ let
     );
 
   latencyProfile = withDefaults {
-    latency = {
-      type = int;
-      description = "`sched_latency_ns`.";
-    };
-    nr-latency = {
-      type = int;
-      description = "`sched_nr_latency`.";
-    };
-    wakeup-granularity = {
-      type = float;
-      description = "`sched_wakeup_granularity_ns`.";
-    };
     bandwidth-size = {
-      type = int;
       description = "`sched_cfs_bandwidth_slice_us`.";
+      type = int;
     };
+
+    latency = {
+      description = "`sched_latency_ns`.";
+      type = int;
+    };
+
+    nr-latency = {
+      description = "`sched_nr_latency`.";
+      type = int;
+    };
+
     preempt = {
+      description = "Preemption mode.";
+
       type = enum [
         "none"
         "voluntary"
         "full"
       ];
-      description = "Preemption mode.";
+    };
+
+    wakeup-granularity = {
+      description = "`sched_wakeup_granularity_ns`.";
+      type = float;
     };
   };
   schedulerProfile = withDefaults {
-    nice = {
-      type = nullOr (ints.between (-20) 19);
-      description = "Niceness.";
-    };
     class = {
+      description = "CPU scheduler class.";
+      example = literalExpression "\"batch\"";
+
       type = nullOr (enum [
         "idle"
         "batch"
@@ -85,38 +89,48 @@ let
         "rr"
         "fifo"
       ]);
-      example = literalExpression "\"batch\"";
-      description = "CPU scheduler class.";
     };
-    prio = {
-      type = nullOr (ints.between 1 99);
-      example = literalExpression "49";
-      description = "CPU scheduler priority.";
-    };
+
     ioClass = {
+      description = "IO scheduler class.";
+      example = literalExpression "\"best-effort\"";
+
       type = nullOr (enum [
         "idle"
         "best-effort"
         "realtime"
       ]);
-      example = literalExpression "\"best-effort\"";
-      description = "IO scheduler class.";
     };
+
     ioPrio = {
-      type = nullOr (ints.between 0 7);
-      example = literalExpression "4";
       description = "IO scheduler priority.";
+      example = literalExpression "4";
+      type = nullOr (ints.between 0 7);
     };
+
     matchers = {
-      type = nullOr (listOf str);
       default = [ ];
+      description = "Process matchers.";
+
       example = literalExpression ''
         [
           "include cgroup=\"/user.slice/*.service\" parent=\"systemd\""
           "emacs"
         ]
       '';
-      description = "Process matchers.";
+
+      type = nullOr (listOf str);
+    };
+
+    nice = {
+      description = "Niceness.";
+      type = nullOr (ints.between (-20) 19);
+    };
+
+    prio = {
+      description = "CPU scheduler priority.";
+      example = literalExpression "49";
+      type = nullOr (ints.between 1 99);
     };
   };
 
@@ -148,111 +162,16 @@ in
       enable = lib.mkEnableOption "system76-scheduler";
 
       package = mkOption {
-        type = types.package;
         default = pkgs.system76-scheduler;
         defaultText = literalExpression "pkgs.system76-scheduler";
         description = "Which System76-Scheduler package to use.";
-      };
-
-      useStockConfig = mkOption {
-        type = bool;
-        default = true;
-        description = ''
-          Use the (reasonable and featureful) stock configuration.
-
-          When this option is `true`, `services.system76-scheduler.settings`
-          are ignored.
-        '';
-      };
-
-      settings = {
-        cfsProfiles = {
-          enable = mkOption {
-            type = bool;
-            default = true;
-            description = "Tweak CFS latency parameters when going on/off battery";
-          };
-
-          default = latencyProfile {
-            latency = 6;
-            nr-latency = 8;
-            wakeup-granularity = 1.0;
-            bandwidth-size = 5;
-            preempt = "voluntary";
-          };
-          responsive = latencyProfile {
-            latency = 4;
-            nr-latency = 10;
-            wakeup-granularity = 0.5;
-            bandwidth-size = 3;
-            preempt = "full";
-          };
-        };
-
-        processScheduler = {
-          enable = mkOption {
-            type = bool;
-            default = true;
-            description = "Tweak scheduling of individual processes in real time.";
-          };
-
-          useExecsnoop = mkOption {
-            type = bool;
-            default = true;
-            description = "Use execsnoop (otherwise poll the precess list periodically).";
-          };
-
-          refreshInterval = mkOption {
-            type = int;
-            default = 60;
-            description = "Process list poll interval, in seconds";
-          };
-
-          foregroundBoost = {
-            enable = mkOption {
-              type = bool;
-              default = true;
-              description = ''
-                Boost foreground process priorities.
-
-                (And de-boost background ones).  Note that this option needs cooperation
-                from the desktop environment to work.  On Gnome the client side is
-                implemented by the "System76 Scheduler" shell extension.
-              '';
-            };
-            foreground = schedulerProfile {
-              nice = 0;
-              ioClass = "best-effort";
-              ioPrio = 0;
-            };
-            background = schedulerProfile {
-              nice = 6;
-              ioClass = "idle";
-            };
-          };
-
-          pipewireBoost = {
-            enable = mkOption {
-              type = bool;
-              default = true;
-              description = "Boost Pipewire client priorities.";
-            };
-            profile = schedulerProfile {
-              nice = -6;
-              ioClass = "best-effort";
-              ioPrio = 0;
-            };
-          };
-        };
+        type = types.package;
       };
 
       assignments = mkOption {
-        type = types.attrsOf (
-          types.submodule {
-            options = schedulerProfile { };
-          }
-        );
         default = { };
+        description = "Process profile assignments.";
+
         example = literalExpression ''
           {
             nix-builds = {
@@ -265,49 +184,137 @@ in
             };
           }
         '';
-        description = "Process profile assignments.";
+
+        type = types.attrsOf (
+          types.submodule {
+            options = schedulerProfile { };
+          }
+        );
       };
 
       exceptions = mkOption {
-        type = types.listOf str;
         default = [ ];
+        description = "Processes that are left alone.";
+
         example = literalExpression ''
           [
             "include descends=\"schedtool\""
             "schedtool"
           ]
         '';
-        description = "Processes that are left alone.";
+
+        type = types.listOf str;
+      };
+
+      settings = {
+        cfsProfiles = {
+          enable = mkOption {
+            default = true;
+            description = "Tweak CFS latency parameters when going on/off battery";
+            type = bool;
+          };
+
+          default = latencyProfile {
+            bandwidth-size = 5;
+            latency = 6;
+            nr-latency = 8;
+            preempt = "voluntary";
+            wakeup-granularity = 1.0;
+          };
+
+          responsive = latencyProfile {
+            bandwidth-size = 3;
+            latency = 4;
+            nr-latency = 10;
+            preempt = "full";
+            wakeup-granularity = 0.5;
+          };
+        };
+
+        processScheduler = {
+          enable = mkOption {
+            default = true;
+            description = "Tweak scheduling of individual processes in real time.";
+            type = bool;
+          };
+
+          foregroundBoost = {
+            enable = mkOption {
+              default = true;
+
+              description = ''
+                Boost foreground process priorities.
+
+                (And de-boost background ones).  Note that this option needs cooperation
+                from the desktop environment to work.  On Gnome the client side is
+                implemented by the "System76 Scheduler" shell extension.
+              '';
+
+              type = bool;
+            };
+
+            background = schedulerProfile {
+              ioClass = "idle";
+              nice = 6;
+            };
+
+            foreground = schedulerProfile {
+              ioClass = "best-effort";
+              ioPrio = 0;
+              nice = 0;
+            };
+          };
+
+          pipewireBoost = {
+            enable = mkOption {
+              default = true;
+              description = "Boost Pipewire client priorities.";
+              type = bool;
+            };
+
+            profile = schedulerProfile {
+              ioClass = "best-effort";
+              ioPrio = 0;
+              nice = -6;
+            };
+          };
+
+          refreshInterval = mkOption {
+            default = 60;
+            description = "Process list poll interval, in seconds";
+            type = int;
+          };
+
+          useExecsnoop = mkOption {
+            default = true;
+            description = "Use execsnoop (otherwise poll the precess list periodically).";
+            type = bool;
+          };
+        };
+      };
+
+      useStockConfig = mkOption {
+        default = true;
+
+        description = ''
+          Use the (reasonable and featureful) stock configuration.
+
+          When this option is `true`, `services.system76-scheduler.settings`
+          are ignored.
+        '';
+
+        type = bool;
       };
     };
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-    services.dbus.packages = [ cfg.package ];
-
-    systemd.services.system76-scheduler = {
-      description = "Manage process priorities and CFS scheduler latencies for improved responsiveness on the desktop";
-      wantedBy = [ "multi-user.target" ];
-      path = [
-        # execsnoop needs those to extract kernel headers:
-        pkgs.kmod
-        pkgs.gnutar
-        pkgs.xz
-      ];
-      serviceConfig = {
-        Type = "dbus";
-        BusName = "com.system76.Scheduler";
-        ExecStart = "${cfg.package}/bin/system76-scheduler daemon";
-        ExecReload = "${cfg.package}/bin/system76-scheduler daemon reload";
-      };
-    };
-
     environment.etc = mkMerge [
       (mkIf cfg.useStockConfig {
         # No custom settings: just use stock configuration with a fix for Pipewire
         "system76-scheduler/config.kdl".source = "${cfg.package}/data/config.kdl";
         "system76-scheduler/process-scheduler/00-dist.kdl".source = "${cfg.package}/data/pop_os.kdl";
+
         "system76-scheduler/process-scheduler/01-fix-pipewire-paths.kdl".source =
           ../../../../pkgs/by-name/sy/system76-scheduler/01-fix-pipewire-paths.kdl;
       })
@@ -364,6 +371,29 @@ in
           + "\n}\n";
       }
     ];
+
+    environment.systemPackages = [ cfg.package ];
+    services.dbus.packages = [ cfg.package ];
+
+    systemd.services.system76-scheduler = {
+      description = "Manage process priorities and CFS scheduler latencies for improved responsiveness on the desktop";
+
+      path = [
+        # execsnoop needs those to extract kernel headers:
+        pkgs.kmod
+        pkgs.gnutar
+        pkgs.xz
+      ];
+
+      serviceConfig = {
+        BusName = "com.system76.Scheduler";
+        ExecReload = "${cfg.package}/bin/system76-scheduler daemon reload";
+        ExecStart = "${cfg.package}/bin/system76-scheduler daemon";
+        Type = "dbus";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 
   meta = {

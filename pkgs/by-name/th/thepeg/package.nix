@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
   boost,
   fastjet,
+  fetchpatch,
   gsl,
   hepmc3,
   lhapdf,
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Rivet 4 support
     (fetchpatch {
-      url = "https://github.com/hep-mirrors/thepeg/commit/d974704fe48876c13cb7f544cabcf6ef30c00f48.diff";
       hash = "sha256-HzyNigbhWzSpjvvYw3+LZvnrSoV6Pmzghw/5VY5nlqk=";
+      url = "https://github.com/hep-mirrors/thepeg/commit/d974704fe48876c13cb7f544cabcf6ef30c00f48.diff";
     })
   ];
 
@@ -57,6 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ veprbl ];
     platforms = lib.platforms.unix;
+
     badPlatforms = [
       # ../include/ThePEG/Config/std.h:101:12: error: no member named 'mem_fun' in namespace 'std'; did you mean 'mem_fn'?
       lib.systems.inspect.patterns.isDarwin

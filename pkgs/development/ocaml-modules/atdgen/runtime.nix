@@ -1,13 +1,13 @@
 {
-  buildDunePackage,
   atdgen-codec-runtime,
   biniou,
+  buildDunePackage,
   yojson,
 }:
 
 buildDunePackage {
-  pname = "atdgen-runtime";
   inherit (atdgen-codec-runtime) version src;
+  pname = "atdgen-runtime";
 
   propagatedBuildInputs = [
     biniou

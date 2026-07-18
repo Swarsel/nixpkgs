@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  qt6,
+  cmake,
   libarchive,
   libarchive-qt,
-  cmake,
-  ninja,
   libcprime,
   libcsys,
+  ninja,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Archiver from the C Suite to create and extract archives";
-    mainProgram = "corearchiver";
     homepage = "https://gitlab.com/cubocore/coreapps/corearchiver";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "corearchiver";
   };
 })

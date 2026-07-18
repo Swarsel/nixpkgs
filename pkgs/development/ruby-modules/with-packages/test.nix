@@ -16,8 +16,8 @@ let
   testWrapper =
     ruby:
     stdenv.mkDerivation {
-      name = "test-wrappedRuby-${ruby.name}";
       buildInputs = [ ((ruby.withPackages (ps: [ ])).wrappedRuby) ];
+
       buildCommand = ''
         cat <<'EOF' > test-ruby
         #!/usr/bin/env ruby
@@ -29,6 +29,8 @@ let
         [[ $(./test-ruby) = $(${ruby}/bin/ruby test-ruby) ]]
         touch $out
       '';
+
+      name = "test-wrappedRuby-${ruby.name}";
     };
 
   tests =
@@ -48,21 +50,25 @@ let
         deps = ruby.withPackages (g: [ g.${name} ]);
       in
       stdenv.mkDerivation {
-        name = "test-gem-${ruby.name}-${name}";
         buildInputs = [ deps ];
+
         buildCommand = ''
           INLINEDIR=$PWD ruby ${test}
           touch $out
         '';
+
+        name = "test-gem-${ruby.name}-${name}";
       }
     ) ruby.gems;
 in
 stdenv.mkDerivation {
-  name = "test-all-ruby-gems";
   buildInputs = builtins.foldl' (
     sum: ruby: sum ++ [ (testWrapper ruby) ] ++ (builtins.attrValues (tests ruby))
   ) [ ] rubyVersions;
+
   buildCommand = ''
     touch $out
   '';
+
+  name = "test-all-ruby-gems";
 }

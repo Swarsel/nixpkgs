@@ -10,6 +10,11 @@ let
 in
 {
   options.hardware.amdgpu = {
+    initrd.enable = lib.mkEnableOption ''
+      loading `amdgpu` kernelModule in stage 1.
+      Can fix lower resolution in boot screen during initramfs phase
+    '';
+
     legacySupport.enable = lib.mkEnableOption ''
       using `amdgpu` kernel driver instead of `radeon` for Southern Islands
       (Radeon HD 7000) series and Sea Islands (Radeon HD 8000)
@@ -17,18 +22,14 @@ in
       which is only available in the `radeon` driver
     '';
 
-    initrd.enable = lib.mkEnableOption ''
-      loading `amdgpu` kernelModule in stage 1.
-      Can fix lower resolution in boot screen during initramfs phase
-    '';
+    opencl.enable = lib.mkEnableOption "OpenCL support using ROCM runtime library";
 
     overdrive = {
       enable = lib.mkEnableOption "`amdgpu` overdrive mode for overclocking";
 
       ppfeaturemask = lib.mkOption {
-        type = lib.types.str;
         default = "0xfffd7fff";
-        example = "0xffffffff";
+
         description = ''
           Sets the `amdgpu.ppfeaturemask` kernel option. It can be used to enable the overdrive bit.
           Default is `0xfffd7fff` as it is less likely to cause flicker issues. Setting it to
@@ -36,16 +37,20 @@ in
           [the kernel documentation](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/gpu/drm/amd/include/amd_shared.h#n169)
           for more information.
         '';
+
+        example = "0xffffffff";
+        type = lib.types.str;
       };
     };
 
-    opencl.enable = lib.mkEnableOption "OpenCL support using ROCM runtime library";
     zluda.enable = lib.mkEnableOption "CUDA support using ZLUDA runtime library";
     zluda.package = lib.mkPackageOption pkgs "zluda" { };
   };
 
   config = lib.mkMerge [
     {
+      boot.initrd.kernelModules = lib.optionals cfg.initrd.enable [ "amdgpu" ];
+
       boot.kernelParams =
         lib.optionals cfg.legacySupport.enable [
           "amdgpu.si_support=1"
@@ -56,12 +61,11 @@ in
         ++ lib.optionals cfg.overdrive.enable [
           "amdgpu.ppfeaturemask=${cfg.overdrive.ppfeaturemask}"
         ];
-
-      boot.initrd.kernelModules = lib.optionals cfg.initrd.enable [ "amdgpu" ];
     }
     (lib.mkIf cfg.opencl.enable {
       hardware.graphics = {
         enable = lib.mkDefault true;
+
         extraPackages = [
           pkgs.rocmPackages.clr
           pkgs.rocmPackages.clr.icd

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bundlerEnv,
   bundlerUpdateScript,
-  writeText,
   krb5,
+  makeWrapper,
+  writeText,
   sslLegacyProvider ? false,
 }:
 let
   rubyEnv = bundlerEnv {
-    name = "evil-winrm";
     gemfile = ./Gemfile;
-    lockfile = ./Gemfile.lock;
     gemset = ./gemset.nix;
+    lockfile = ./Gemfile.lock;
+    name = "evil-winrm";
   };
   openssl_conf = writeText "openssl.conf" ''
     openssl_conf = openssl_init
@@ -67,9 +67,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "WinRM shell for hacking/pentesting";
-    mainProgram = "evil-winrm";
     homepage = "https://github.com/Hackplayers/evil-winrm";
     changelog = "https://github.com/Hackplayers/evil-winrm/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.lgpl3Plus;
+    mainProgram = "evil-winrm";
   };
 })

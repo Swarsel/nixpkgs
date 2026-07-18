@@ -12,15 +12,26 @@ let
   matrixOf =
     n: m: elemType:
     lib.mkOptionType rec {
-      name = "matrixOf";
-      description = "${toString n}×${toString m} matrix of ${elemType.description}s";
       check =
         xss:
         let
           listOfSize = l: xs: lib.isList xs && lib.length xs == l;
         in
         listOfSize n xss && lib.all (xs: listOfSize m xs && lib.all elemType.check xs) xss;
-      merge = lib.mergeOneOption;
+
+      description = "${toString n}×${toString m} matrix of ${elemType.description}s";
+
+      functor = (
+        lib.types.elemTypeFunctor "attrsWith" {
+          inherit
+            elemType
+            name
+            ;
+        }
+      );
+
+      getSubModules = elemType.getSubModules;
+
       getSubOptions =
         prefix:
         elemType.getSubOptions (
@@ -30,39 +41,35 @@ let
             "*"
           ]
         );
-      getSubModules = elemType.getSubModules;
+
+      merge = lib.mergeOneOption;
+      name = "matrixOf";
       substSubModules = mod: matrixOf n m (elemType.substSubModules mod);
-      functor = (
-        lib.types.elemTypeFunctor "attrsWith" {
-          inherit
-            elemType
-            name
-            ;
-        }
-      );
     };
 
   profileModule = lib.types.submodule {
     options = {
+      config = lib.mkOption {
+        default = { };
+        description = "Per output profile configuration.";
+        type = lib.types.attrsOf configModule;
+      };
+
       fingerprint = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
+        default = { };
+
         description = ''
           Output name to EDID mapping.
           Use `autorandr --fingerprint` to get current setup values.
         '';
-        default = { };
-      };
 
-      config = lib.mkOption {
-        type = lib.types.attrsOf configModule;
-        description = "Per output profile configuration.";
-        default = { };
+        type = lib.types.attrsOf lib.types.str;
       };
 
       hooks = lib.mkOption {
-        type = hooksModule;
-        description = "Profile hook scripts.";
         default = { };
+        description = "Profile hook scripts.";
+        type = hooksModule;
       };
     };
   };
@@ -70,53 +77,64 @@ let
   configModule = lib.types.submodule {
     options = {
       enable = lib.mkOption {
-        type = lib.types.bool;
-        description = "Whether to enable the output.";
         default = true;
+        description = "Whether to enable the output.";
+        type = lib.types.bool;
       };
 
       crtc = lib.mkOption {
-        type = lib.types.nullOr lib.types.ints.unsigned;
-        description = "Output video display controller.";
         default = null;
+        description = "Output video display controller.";
         example = 0;
+        type = lib.types.nullOr lib.types.ints.unsigned;
       };
 
-      primary = lib.mkOption {
-        type = lib.types.bool;
-        description = "Whether output should be marked as primary";
-        default = false;
-      };
-
-      position = lib.mkOption {
-        type = lib.types.str;
-        description = "Output position";
-        default = "";
-        example = "5760x0";
-      };
-
-      mode = lib.mkOption {
-        type = lib.types.str;
-        description = "Output resolution.";
-        default = "";
-        example = "3840x2160";
-      };
-
-      rate = lib.mkOption {
-        type = lib.types.str;
-        description = "Output framerate.";
-        default = "";
-        example = "60.00";
+      dpi = lib.mkOption {
+        default = null;
+        description = "Output DPI configuration.";
+        example = 96;
+        type = lib.types.nullOr lib.types.ints.positive;
       };
 
       gamma = lib.mkOption {
-        type = lib.types.str;
-        description = "Output gamma configuration.";
         default = "";
+        description = "Output gamma configuration.";
         example = "1.0:0.909:0.833";
+        type = lib.types.str;
+      };
+
+      mode = lib.mkOption {
+        default = "";
+        description = "Output resolution.";
+        example = "3840x2160";
+        type = lib.types.str;
+      };
+
+      position = lib.mkOption {
+        default = "";
+        description = "Output position";
+        example = "5760x0";
+        type = lib.types.str;
+      };
+
+      primary = lib.mkOption {
+        default = false;
+        description = "Whether output should be marked as primary";
+        type = lib.types.bool;
+      };
+
+      rate = lib.mkOption {
+        default = "";
+        description = "Output framerate.";
+        example = "60.00";
+        type = lib.types.str;
       };
 
       rotate = lib.mkOption {
+        default = null;
+        description = "Output rotate configuration.";
+        example = "left";
+
         type = lib.types.nullOr (
           lib.types.enum [
             "normal"
@@ -125,61 +143,11 @@ let
             "inverted"
           ]
         );
-        description = "Output rotate configuration.";
-        default = null;
-        example = "left";
-      };
-
-      transform = lib.mkOption {
-        type = lib.types.nullOr (matrixOf 3 3 lib.types.float);
-        default = null;
-        example = lib.literalExpression ''
-          [
-            [ 0.6 0.0 0.0 ]
-            [ 0.0 0.6 0.0 ]
-            [ 0.0 0.0 1.0 ]
-          ]
-        '';
-        description = ''
-          Refer to
-          {manpage}`xrandr(1)`
-          for the documentation of the transform matrix.
-        '';
-      };
-
-      dpi = lib.mkOption {
-        type = lib.types.nullOr lib.types.ints.positive;
-        description = "Output DPI configuration.";
-        default = null;
-        example = 96;
       };
 
       scale = lib.mkOption {
-        type = lib.types.nullOr (
-          lib.types.submodule {
-            options = {
-              method = lib.mkOption {
-                type = lib.types.enum [
-                  "factor"
-                  "pixel"
-                ];
-                description = "Output scaling method.";
-                default = "factor";
-                example = "pixel";
-              };
+        default = null;
 
-              x = lib.mkOption {
-                type = lib.types.either lib.types.float lib.types.ints.positive;
-                description = "Horizontal scaling factor/pixels.";
-              };
-
-              y = lib.mkOption {
-                type = lib.types.either lib.types.float lib.types.ints.positive;
-                description = "Vertical scaling factor/pixels.";
-              };
-            };
-          }
-        );
         description = ''
           Output scale configuration.
 
@@ -194,13 +162,60 @@ let
           This option is a shortcut version of the transform option and they are mutually
           exclusive.
         '';
-        default = null;
+
         example = lib.literalExpression ''
           {
             x = 1.25;
             y = 1.25;
           }
         '';
+
+        type = lib.types.nullOr (
+          lib.types.submodule {
+            options = {
+              method = lib.mkOption {
+                default = "factor";
+                description = "Output scaling method.";
+                example = "pixel";
+
+                type = lib.types.enum [
+                  "factor"
+                  "pixel"
+                ];
+              };
+
+              x = lib.mkOption {
+                description = "Horizontal scaling factor/pixels.";
+                type = lib.types.either lib.types.float lib.types.ints.positive;
+              };
+
+              y = lib.mkOption {
+                description = "Vertical scaling factor/pixels.";
+                type = lib.types.either lib.types.float lib.types.ints.positive;
+              };
+            };
+          }
+        );
+      };
+
+      transform = lib.mkOption {
+        default = null;
+
+        description = ''
+          Refer to
+          {manpage}`xrandr(1)`
+          for the documentation of the transform matrix.
+        '';
+
+        example = lib.literalExpression ''
+          [
+            [ 0.6 0.0 0.0 ]
+            [ 0.0 0.6 0.0 ]
+            [ 0.0 0.0 1.0 ]
+          ]
+        '';
+
+        type = lib.types.nullOr (matrixOf 3 3 lib.types.float);
       };
     };
   };
@@ -208,23 +223,25 @@ let
   hooksModule = lib.types.submodule {
     options = {
       postswitch = lib.mkOption {
-        type = lib.types.attrsOf hookType;
+        default = { };
         description = "Postswitch hook executed after mode switch.";
-        default = { };
-      };
-
-      preswitch = lib.mkOption {
         type = lib.types.attrsOf hookType;
-        description = "Preswitch hook executed before mode switch.";
-        default = { };
       };
 
       predetect = lib.mkOption {
-        type = lib.types.attrsOf hookType;
+        default = { };
+
         description = ''
           Predetect hook executed before autorandr attempts to run xrandr.
         '';
+
+        type = lib.types.attrsOf hookType;
+      };
+
+      preswitch = lib.mkOption {
         default = { };
+        description = "Preswitch hook executed before mode switch.";
+        type = lib.types.attrsOf hookType;
       };
     };
   };
@@ -239,11 +256,12 @@ let
     with profile;
     lib.mkMerge [
       {
-        "xdg/autorandr/${name}/setup".text = lib.concatStringsSep "\n" (
-          lib.mapAttrsToList fingerprintToString fingerprint
-        );
         "xdg/autorandr/${name}/config".text = lib.concatStringsSep "\n" (
           lib.mapAttrsToList configToString profile.config
+        );
+
+        "xdg/autorandr/${name}/setup".text = lib.concatStringsSep "\n" (
+          lib.mapAttrsToList fingerprintToString fingerprint
         );
       }
       (lib.mapAttrs' (hookToFile "${name}/postswitch.d") hooks.postswitch)
@@ -288,30 +306,20 @@ in
 
       defaultTarget = lib.mkOption {
         default = "default";
-        type = lib.types.str;
+
         description = ''
           Fallback if no monitor layout can be detected. See the docs
           (https://github.com/phillipberndt/autorandr/blob/v1.0/README.md#how-to-use)
           for further reference.
         '';
-      };
 
-      ignoreLid = lib.mkOption {
-        default = false;
-        type = lib.types.bool;
-        description = "Treat outputs as connected even if their lids are closed";
-      };
-
-      matchEdid = lib.mkOption {
-        default = false;
-        type = lib.types.bool;
-        description = "Match displays based on edid instead of name";
+        type = lib.types.str;
       };
 
       hooks = lib.mkOption {
-        type = hooksModule;
-        description = "Global hook scripts";
         default = { };
+        description = "Global hook scripts";
+
         example = lib.literalExpression ''
           {
             postswitch = {
@@ -337,11 +345,26 @@ in
             };
           }
         '';
+
+        type = hooksModule;
       };
+
+      ignoreLid = lib.mkOption {
+        default = false;
+        description = "Treat outputs as connected even if their lids are closed";
+        type = lib.types.bool;
+      };
+
+      matchEdid = lib.mkOption {
+        default = false;
+        description = "Match displays based on edid instead of name";
+        type = lib.types.bool;
+      };
+
       profiles = lib.mkOption {
-        type = lib.types.attrsOf profileModule;
-        description = "Autorandr profiles specification.";
         default = { };
+        description = "Autorandr profiles specification.";
+
         example = lib.literalExpression ''
           {
             "work" = {
@@ -366,6 +389,8 @@ in
             };
           }
         '';
+
+        type = lib.types.attrsOf profileModule;
       };
 
     };
@@ -374,25 +399,23 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    services.udev.packages = [ pkgs.autorandr ];
-
     environment = {
-      systemPackages = [ pkgs.autorandr ];
       etc = lib.mkMerge [
         (lib.mapAttrs' (hookToFile "postswitch.d") cfg.hooks.postswitch)
         (lib.mapAttrs' (hookToFile "preswitch.d") cfg.hooks.preswitch)
         (lib.mapAttrs' (hookToFile "predetect.d") cfg.hooks.predetect)
         (lib.mkMerge (lib.mapAttrsToList profileToFiles cfg.profiles))
       ];
+
+      systemPackages = [ pkgs.autorandr ];
     };
 
-    systemd.services.autorandr = {
-      wantedBy = [ "sleep.target" ];
-      description = "Autorandr execution hook";
-      after = [ "sleep.target" ];
+    services.udev.packages = [ pkgs.autorandr ];
 
-      startLimitIntervalSec = 5;
-      startLimitBurst = 1;
+    systemd.services.autorandr = {
+      after = [ "sleep.target" ];
+      description = "Autorandr execution hook";
+
       serviceConfig = {
         ExecStart = ''
           ${pkgs.autorandr}/bin/autorandr \
@@ -402,10 +425,15 @@ in
             ${lib.optionalString cfg.ignoreLid "--ignore-lid"} \
             ${lib.optionalString cfg.matchEdid "--match-edid"}
         '';
-        Type = "oneshot";
-        RemainAfterExit = false;
+
         KillMode = "process";
+        RemainAfterExit = false;
+        Type = "oneshot";
       };
+
+      startLimitBurst = 1;
+      startLimitIntervalSec = 5;
+      wantedBy = [ "sleep.target" ];
     };
 
   };

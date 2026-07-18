@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   libusb-compat-0_1,
+  unzip,
 }:
 
 let
@@ -24,7 +24,21 @@ stdenv.mkDerivation rec {
     sha256 = "0ik26sxgqgsqplksl87z61vwmx51k7plaqmrkdid7xidgfhfxr42";
   };
 
+  # Add support for SCL011 nPA (subsidized model for German eID)
+  patches = [ ./eid.patch ];
   nativeBuildInputs = [ unzip ];
+
+  installPhase = ''
+    mkdir -p $out/pcsc/drivers
+    cp -r proprietary/*.bundle $out/pcsc/drivers
+  '';
+
+  fixupPhase = ''
+    patchelf --set-rpath $libPath \
+      $out/pcsc/drivers/SCLGENERIC.bundle/Contents/Linux/libSCLGENERIC.so.${version};
+  '';
+
+  libPath = lib.makeLibraryPath [ libusb-compat-0_1 ];
 
   unpackPhase = ''
     unzip $src
@@ -32,28 +46,13 @@ stdenv.mkDerivation rec {
     export sourceRoot=$(readlink -e sclgeneric_${version}_linux_${arch}bit)
   '';
 
-  # Add support for SCL011 nPA (subsidized model for German eID)
-  patches = [ ./eid.patch ];
-
-  installPhase = ''
-    mkdir -p $out/pcsc/drivers
-    cp -r proprietary/*.bundle $out/pcsc/drivers
-  '';
-
-  libPath = lib.makeLibraryPath [ libusb-compat-0_1 ];
-
-  fixupPhase = ''
-    patchelf --set-rpath $libPath \
-      $out/pcsc/drivers/SCLGENERIC.bundle/Contents/Linux/libSCLGENERIC.so.${version};
-  '';
-
   meta = {
     description = "SCM Microsystems SCL011 chipcard reader user space driver";
     homepage = "https://www.scm-pc-card.de/index.php?lang=en&page=product&function=show_product&product_id=630";
-    downloadPage = "https://support.identiv.com/scl010-scl011/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ sephalon ];
     platforms = lib.platforms.linux;
+    downloadPage = "https://support.identiv.com/scl010-scl011/";
   };
 }

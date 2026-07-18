@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   bzip2,
-  enableNLS ? false,
   libnatspec,
+  enableNLS ? false,
 }:
 
 stdenv.mkDerivation rec {
@@ -15,16 +15,6 @@ stdenv.mkDerivation rec {
     url = "mirror://sourceforge/infozip/unzip${lib.replaceStrings [ "." ] [ "" ] version}.tar.gz";
     sha256 = "0dxx11knh3nk95p2gg2ak777dd11pr7jx5das2g49l262scrcv83";
   };
-
-  hardeningDisable = [
-    "format"
-    "strictflexarrays3"
-  ];
-
-  patchFlags = [
-    "-p1"
-    "-F3"
-  ];
 
   patches = [
     ./CVE-2014-8139.diff
@@ -38,19 +28,19 @@ stdenv.mkDerivation rec {
     ./CVE-2018-18384.patch
     ./dont-hardcode-cc.patch
     (fetchurl {
-      url = "https://github.com/madler/unzip/commit/41beb477c5744bc396fa1162ee0c14218ec12213.patch";
       name = "CVE-2019-13232-1.patch";
       sha256 = "04jzd6chg9fw4l5zadkfsrfm5llrd7vhd1dgdjjd29nrvkrjyn14";
+      url = "https://github.com/madler/unzip/commit/41beb477c5744bc396fa1162ee0c14218ec12213.patch";
     })
     (fetchurl {
-      url = "https://github.com/madler/unzip/commit/47b3ceae397d21bf822bc2ac73052a4b1daf8e1c.patch";
       name = "CVE-2019-13232-2.patch";
       sha256 = "0iy2wcjyvzwrjk02iszwcpg85fkjxs1bvb9isvdiywszav4yjs32";
+      url = "https://github.com/madler/unzip/commit/47b3ceae397d21bf822bc2ac73052a4b1daf8e1c.patch";
     })
     (fetchurl {
-      url = "https://github.com/madler/unzip/commit/6d351831be705cc26d897db44f878a978f4138fc.patch";
       name = "CVE-2019-13232-3.patch";
       sha256 = "1jvs7dkdqs97qnsqc6hk088alhv8j4c638k65dbib9chh40jd7pf";
+      url = "https://github.com/madler/unzip/commit/6d351831be705cc26d897db44f878a978f4138fc.patch";
     })
     ./06-initialize-the-symlink-flag.patch
     ./28-cve-2022-0529-and-cve-2022-0530.patch
@@ -60,9 +50,9 @@ stdenv.mkDerivation rec {
     ./CVE-2021-4217.patch
   ]
   ++ lib.optional enableNLS (fetchurl {
-    url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-arch/unzip/files/unzip-6.0-natspec.patch?id=56bd759df1d0c750a065b8c845e93d5dfa6b549d";
     name = "unzip-6.0-natspec.patch";
     sha256 = "67ab260ae6adf8e7c5eda2d1d7846929b43562943ec4aff629bd7018954058b1";
+    url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-arch/unzip/files/unzip-6.0-natspec.patch?id=56bd759df1d0c750a065b8c845e93d5dfa6b549d";
   });
 
   # gcc-15 uses c23 standard, which removed non-prototype function declarations.
@@ -73,7 +63,14 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ bzip2 ];
   buildInputs = [ bzip2 ] ++ lib.optional enableNLS libnatspec;
 
-  makefile = "unix/Makefile";
+  buildFlags = [
+    "generic"
+    "D_USE_BZ2=-DUSE_BZIP2"
+    "L_BZ2=-lbz2"
+  ]
+  # `lchmod` is not available on Linux, so we remove it to fix "not supported" errors (when the zip file contains symlinks).
+  # Alpine (musl) and Debian (glibc) also add this flag.
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ "LOCAL_UNZIP=-DNO_LCHMOD" ];
 
   env = {
     NIX_LDFLAGS = toString (
@@ -86,31 +83,34 @@ stdenv.mkDerivation rec {
     );
   };
 
-  buildFlags = [
-    "generic"
-    "D_USE_BZ2=-DUSE_BZIP2"
-    "L_BZ2=-lbz2"
-  ]
-  # `lchmod` is not available on Linux, so we remove it to fix "not supported" errors (when the zip file contains symlinks).
-  # Alpine (musl) and Debian (glibc) also add this flag.
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ "LOCAL_UNZIP=-DNO_LCHMOD" ];
-
   preConfigure = ''
     sed -i -e 's@CF="-O3 -Wall -I. -DASM_CRC $(LOC)"@CF="-O3 -Wall -I. -DASM_CRC -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 $(LOC)"@' unix/Makefile
   '';
+
+  hardeningDisable = [
+    "format"
+    "strictflexarrays3"
+  ];
 
   installFlags = [
     "prefix=${placeholder "out"}"
   ];
 
+  makefile = "unix/Makefile";
+
+  patchFlags = [
+    "-p1"
+    "-F3"
+  ];
+
   setupHook = ./setup-hook.sh;
 
   meta = {
-    homepage = "http://www.info-zip.org";
     description = "Extraction utility for archives compressed in .zip format";
+    homepage = "http://www.info-zip.org";
     license = lib.licenses.info-zip;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ RossComputerGuy ];
+    platforms = lib.platforms.all;
     mainProgram = "unzip";
   };
 }

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
+  ldc,
+  lz4,
   python3,
   which,
-  ldc,
   zlib,
-  lz4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,22 +22,23 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  patches = [
+    # remove on next release; add missing break
+    (fetchpatch {
+      hash = "sha256-9iJmR9rJgGKH1kSFTnUCqZ4IU+Xz923SIloeBiYmIk4=";
+      url = "https://github.com/biod/sambamba/commit/5fdcf6f3015cb17b805514397223f7513bc92613.patch";
+    })
+  ];
+
   nativeBuildInputs = [
     which
     python3
     ldc
   ];
+
   buildInputs = [
     zlib
     lz4
-  ];
-
-  patches = [
-    # remove on next release; add missing break
-    (fetchpatch {
-      url = "https://github.com/biod/sambamba/commit/5fdcf6f3015cb17b805514397223f7513bc92613.patch";
-      hash = "sha256-9iJmR9rJgGKH1kSFTnUCqZ4IU+Xz923SIloeBiYmIk4=";
-    })
   ];
 
   buildFlags = [
@@ -55,10 +56,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "SAM/BAM processing tool";
-    mainProgram = "sambamba";
     homepage = "https://lomereiter.github.io/sambamba/";
-    maintainers = with lib.maintainers; [ jbedo ];
     license = with lib.licenses; gpl2;
+    maintainers = with lib.maintainers; [ jbedo ];
     platforms = lib.platforms.x86_64;
+    mainProgram = "sambamba";
   };
 })

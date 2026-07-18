@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   openssl,
   pkg-config,
   rustPlatform,
-  fetchFromGitHub,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,11 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-9CPwIqUoOih4711vSEeV3AX1T1GGQ/AeYj7HnWI5UO8=";
   };
 
-  cargoHash = "sha256-98oyeVo3z49DGikhSBMB7QSiz6+I7GkvqJIpOusuEz4=";
-
-  buildInputs = [ openssl ];
-
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-98oyeVo3z49DGikhSBMB7QSiz6+I7GkvqJIpOusuEz4=";
 
   meta = {
     description = "Modern smart contract platform for Cardano";

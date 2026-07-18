@@ -1,19 +1,16 @@
 {
   lib,
-  buildNpmPackage,
+  stdenv,
   fetchFromGitHub,
-  nodejs_22,
+  buildNpmPackage,
   installShellFiles,
   makeWrapper,
-  stdenv,
+  nodejs_22,
 }:
 
 buildNpmPackage rec {
   pname = "clever-tools";
-
   version = "4.11.0";
-
-  nodejs = nodejs_22;
 
   src = fetchFromGitHub {
     owner = "CleverCloud";
@@ -22,12 +19,12 @@ buildNpmPackage rec {
     hash = "sha256-ma1EZL5xuUw8BrECFamSR1I8XJk8PERW7YJSj8JTp4w=";
   };
 
-  npmDepsHash = "sha256-9TPH+jRcM161MhabA9m0GcgAzc+yO1a1zh8vQHjZt7g=";
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
+
+  npmDepsHash = "sha256-9TPH+jRcM161MhabA9m0GcgAzc+yO1a1zh8vQHjZt7g=";
 
   buildPhase = ''
     runHook preBuild
@@ -52,12 +49,14 @@ buildNpmPackage rec {
       --zsh <($out/bin/clever --zsh-autocomplete-script $out/bin/clever)
   '';
 
+  nodejs = nodejs_22;
+
   meta = {
+    description = "Deploy on Clever Cloud and control your applications, add-ons, services from command line";
     homepage = "https://github.com/CleverCloud/clever-tools";
     changelog = "https://github.com/CleverCloud/clever-tools/blob/${version}/CHANGELOG.md";
-    description = "Deploy on Clever Cloud and control your applications, add-ons, services from command line";
     license = lib.licenses.asl20;
-    mainProgram = "clever";
     maintainers = [ lib.maintainers.floriansanderscc ];
+    mainProgram = "clever";
   };
 }

@@ -26,9 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/mathjax/MathJax/releases/tag/${finalAttrs.version}";
     description = "Beautiful and accessible math in all browsers";
     homepage = "https://www.mathjax.org/";
+    changelog = "https://github.com/mathjax/MathJax/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ pyrox0 ];
   };

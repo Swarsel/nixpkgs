@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   matplotlib,
   pydicom,
-  python-dateutil,
   pytestCheckHook,
+  python-dateutil,
+  setuptools,
   versionCheckHook,
 }:
 
@@ -14,11 +14,6 @@ let
   deid-data = buildPythonPackage {
     pname = "deid-data";
     version = "unstable-2022-12-06";
-    pyproject = true;
-
-    build-system = [ setuptools ];
-
-    dependencies = [ pydicom ];
 
     src = fetchFromGitHub {
       owner = "pydicom";
@@ -26,6 +21,10 @@ let
       rev = "5750d25a5048fba429b857c16bf48b0139759644";
       hash = "sha256-c8NBAN53NyF9dPB7txqYtM0ac0Y+Ch06fMA1LrIUkbc=";
     };
+
+    build-system = [ setuptools ];
+    dependencies = [ pydicom ];
+    pyproject = true;
 
     meta = {
       description = "Supplementary data for deid package";
@@ -38,7 +37,6 @@ in
 buildPythonPackage rec {
   pname = "deid";
   version = "0.4.6";
-  pyproject = true;
 
   # Pypi version has no tests
   src = fetchFromGitHub {
@@ -49,6 +47,12 @@ buildPythonPackage rec {
     hash = "sha256-Vk6MD3MNf1JejqACxjjHkFniK7YDgmdH7k1iQi+enEY=";
   };
 
+  nativeCheckInputs = [
+    deid-data
+    pytestCheckHook
+    versionCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -57,20 +61,15 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  nativeCheckInputs = [
-    deid-data
-    pytestCheckHook
-    versionCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "deid" ];
 
   meta = {
     description = "Best-effort anonymization for medical images";
-    mainProgram = "deid";
-    changelog = "https://github.com/pydicom/deid/blob/${src.rev}/CHANGELOG.md";
     homepage = "https://pydicom.github.io/deid";
+    changelog = "https://github.com/pydicom/deid/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bcdarwin ];
+    mainProgram = "deid";
   };
 }

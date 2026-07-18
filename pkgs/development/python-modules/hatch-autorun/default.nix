@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  build,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   pytestCheckHook,
-  build,
 }:
 
 buildPythonPackage rec {
   pname = "hatch-autorun";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ofek";
@@ -19,6 +18,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-79k3KolvmjGf8ubCQMhtOH5+OeqQrmz2Q6r0ZG98424=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    build
+  ];
 
   build-system = [
     hatch-vcs
@@ -29,18 +33,15 @@ buildPythonPackage rec {
     hatchling
   ];
 
-  pythonImportsCheck = [
-    "hatch_autorun"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    build
-  ];
-
   disabledTestPaths = [
     # requires network via invoking pip
     "tests/test_build.py"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "hatch_autorun"
   ];
 
   meta = {

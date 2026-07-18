@@ -9,8 +9,6 @@ let
   cfg = config.boot.initrd.nix-store-veritysetup;
 in
 {
-  meta.maintainers = with lib.maintainers; [ nikstur ];
-
   options.boot.initrd.nix-store-veritysetup = {
     enable = lib.mkEnableOption "nix-store-veritysetup";
   };
@@ -35,4 +33,6 @@ in
     };
 
   };
+
+  meta.maintainers = with lib.maintainers; [ nikstur ];
 }

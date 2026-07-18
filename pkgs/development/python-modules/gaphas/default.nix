@@ -2,9 +2,9 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  poetry-core,
   gobject-introspection,
   gtk3,
+  poetry-core,
   pycairo,
   pygobject3,
   typing-extensions,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "gaphas";
   version = "5.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gaphas" ];
 
   meta = {

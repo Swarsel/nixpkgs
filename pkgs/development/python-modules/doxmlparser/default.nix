@@ -6,12 +6,8 @@
   six,
 }:
 buildPythonPackage rec {
-  format = "setuptools";
   inherit (doxygen) version src;
   pname = "doxmlparser";
-
-  sourceRoot = "${src.name}/addon/doxmlparser";
-
   build-system = [ setuptools ];
 
   dependencies = [
@@ -19,7 +15,9 @@ buildPythonPackage rec {
     six
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "doxmlparser" ];
+  sourceRoot = "${src.name}/addon/doxmlparser";
 
   meta = {
     inherit (doxygen.meta)
@@ -28,6 +26,7 @@ buildPythonPackage rec {
       changelog
       platforms
       ;
+
     description = "Library to parse the XML output produced by doxygen";
   };
 }

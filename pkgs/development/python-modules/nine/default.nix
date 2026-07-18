@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "nine";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ poetry-core ];
+  pyproject = true;
 
   meta = {
     description = "Let's write Python 3 right now";

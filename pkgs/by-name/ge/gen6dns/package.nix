@@ -20,6 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ installShellFiles ];
 
+  configureFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    "ac_cv_func_malloc_0_nonnull=yes"
+  ];
+
+  makeFlags = [ "INSTALL_DIR=$(out)/bin" ];
+
   preInstall = ''
     mkdir -p $out/bin
   '';
@@ -27,12 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   postInstall = ''
     installManPage gen6dns.1
   '';
-
-  configureFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
-    "ac_cv_func_malloc_0_nonnull=yes"
-  ];
-
-  makeFlags = [ "INSTALL_DIR=$(out)/bin" ];
 
   meta = {
     description = "Tool to generate static DNS records (AAAA and PTR) for hosts using Stateless Address Autoconfig (SLAAC)";

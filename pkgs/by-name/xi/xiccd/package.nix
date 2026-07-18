@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libxrandr,
-  glib,
   colord,
+  glib,
+  libxrandr,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

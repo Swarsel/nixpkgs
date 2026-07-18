@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "26.06";
   pname = "intel-cmt-cat";
+  version = "26.06";
 
   src = fetchFromGitHub {
     owner = "intel";
@@ -15,12 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-4rpmbQzxLD7FrtIzE+iE4G0sU7Dvz4rWs4MSlJqZcok=";
   };
 
-  enableParallelBuilding = true;
-
   makeFlags = [
     "PREFIX=$(out)"
     "NOLDCONFIG=y"
   ];
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "User space software for Intel(R) Resource Director Technology";

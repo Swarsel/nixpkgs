@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
+  buildGoModule,
   libx11,
   makeWrapper,
+  nix-update-script,
   wl-clipboard,
 }:
 
@@ -20,12 +20,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-0Eiil0gaLlgQRcLIa2XbBF95+pGNGzAIiFRJ7X0r/W0=";
   };
 
-  vendorHash = "sha256-g/kGDK0QKZZAGczrXtVskqpsbES+MZGiuqycJ8YO6DA=";
-
-  env.CGO_ENABLED = 1;
-
-  ldflags = [
-    "-s"
+  # Clipboard support on Wayland
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    makeWrapper
   ];
 
   # Clipboard support on X11
@@ -33,10 +30,8 @@ buildGoModule (finalAttrs: {
     libx11
   ];
 
-  # Clipboard support on Wayland
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    makeWrapper
-  ];
+  vendorHash = "sha256-g/kGDK0QKZZAGczrXtVskqpsbES+MZGiuqycJ8YO6DA=";
+  env.CGO_ENABLED = 1;
 
   postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
     wrapProgram $out/bin/discordo \
@@ -47,6 +42,10 @@ buildGoModule (finalAttrs: {
       }
   '';
 
+  ldflags = [
+    "-s"
+  ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
@@ -55,10 +54,12 @@ buildGoModule (finalAttrs: {
     description = "Lightweight, secure, and feature-rich Discord terminal client";
     homepage = "https://github.com/ayn2op/discordo";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       arian-d
       siphc
     ];
+
     mainProgram = "discordo";
   };
 })

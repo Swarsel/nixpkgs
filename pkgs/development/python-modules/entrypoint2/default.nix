@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   easyprocess,
+  fetchPypi,
   path,
   pytestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "entrypoint2";
   version = "1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "entrypoint2" ];
 
   meta = {

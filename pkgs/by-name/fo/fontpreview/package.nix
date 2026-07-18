@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  xdotool,
   fzf,
-  imagemagick,
-  sxiv,
   getopt,
+  imagemagick,
+  makeWrapper,
+  sxiv,
+  xdotool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,10 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
   preInstall = "mkdir -p $out/bin";
-
-  installFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
     wrapProgram $out/bin/fontpreview \
@@ -40,9 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  installFlags = [ "PREFIX=$(out)" ];
+
   meta = {
-    homepage = "https://github.com/sdushantha/fontpreview";
     description = "Highly customizable and minimal font previewer written in bash";
+
     longDescription = ''
       fontpreview is a commandline tool that lets you quickly search for fonts
       that are installed on your machine and preview them. The fuzzy search
@@ -51,9 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
       all of the variables in this tool can be changed using the commandline
       flags or you can configure them using environment variables.
     '';
+
+    homepage = "https://github.com/sdushantha/fontpreview";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.erictapen ];
+    platforms = lib.platforms.unix;
     mainProgram = "fontpreview";
   };
 })

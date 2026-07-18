@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
   appdirs,
+  buildPythonPackage,
   py,
   pytestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "rply";
   version = "0.7.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "alex";
@@ -29,6 +28,8 @@ buildPythonPackage rec {
   preCheck = ''
     export HOME=$(mktemp -d)
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Python Lex/Yacc that works with RPython";

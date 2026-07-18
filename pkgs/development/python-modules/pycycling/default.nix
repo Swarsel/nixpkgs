@@ -1,27 +1,26 @@
 {
   lib,
+  bleak,
   buildPythonPackage,
   fetchPypi,
   setuptools,
-  bleak,
 }:
 
 buildPythonPackage rec {
   pname = "pycycling";
   version = "0.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-7vOjkXZ/IrsJ9JyqkbaeNcB59ZyfHQJLit5yPHoBUH4=";
   };
 
-  build-system = [ setuptools ];
-
   propagatedBuildInputs = [
     bleak
   ];
 
+  build-system = [ setuptools ];
+  format = "setuptools";
   pythonImportsCheck = [ pname ];
 
   meta = {

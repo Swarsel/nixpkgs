@@ -2,20 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   appstream,
   blueprint-compiler,
   desktop-file-utils,
   gettext,
+  gjs,
+  gtk4,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
   typescript,
   wrapGAppsHook4,
-
-  gjs,
-  gtk4,
-  libadwaita,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "flattool";
     repo = "ignition";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-egbpFpwYXhezeQbKSj75InFV3blj1GVzRgcku3ZF6Ag=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -66,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/flattool/ignition";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ tomasajt ];
-    mainProgram = "io.github.flattool.Ignition";
     platforms = lib.platforms.linux;
+    mainProgram = "io.github.flattool.Ignition";
   };
 })

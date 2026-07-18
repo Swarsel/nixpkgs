@@ -1,29 +1,28 @@
 {
+  lib,
+  fetchFromGitHub,
   build,
+  buildPythonPackage,
   bzip2,
   cmake,
   cython,
   editline,
   gitpython,
-  pytestCheckHook,
-  buildPythonPackage,
-  fetchFromGitHub,
   haskellPackages,
-  lib,
   libedit,
   libz,
   pcre2,
+  pytestCheckHook,
+  readline,
+  requests,
   scikit-build,
   setuptools,
   twine,
-  readline,
-  requests,
 }:
 
 buildPythonPackage rec {
   pname = "pcre2-py";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "grtetrault";
@@ -42,7 +41,16 @@ buildPythonPackage rec {
       --replace-fail "pcre2-8-static" "pcre2-8"
   '';
 
-  dontUseCmakeConfigure = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+    twine
+    gitpython
+  ];
+
+  postCheck = ''
+    cd $out
+    rm -rf *.t* *.py requirements Makefile LICENSE *.md
+  '';
 
   build-system = [
     cmake
@@ -66,18 +74,9 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    twine
-    gitpython
-  ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "pcre2" ];
-
-  postCheck = ''
-    cd $out
-    rm -rf *.t* *.py requirements Makefile LICENSE *.md
-  '';
 
   meta = {
     description = "Python bindings for the PCRE2 library created by Philip Hazel";

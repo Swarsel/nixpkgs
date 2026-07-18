@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  t61codec,
+  buildPythonPackage,
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
+  t61codec,
 }:
 
 buildPythonPackage rec {
   pname = "x690";
   version = "1.0.0post1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exhuma";
@@ -20,28 +19,29 @@ buildPythonPackage rec {
     hash = "sha256-HNKZq6VfqYAih2SrhGChC2jaQ76dhzKM/Mcr6pVYFE4=";
   };
 
-  build-system = [
-    setuptools
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
   ];
 
-  pythonRelaxDeps = [
-    "t61codec"
+  build-system = [
+    setuptools
   ];
 
   dependencies = [
     t61codec
   ];
 
-  pythonImportsCheck = [ "x690" ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # AssertionError: "<UnknownType 99 b'abc' TypeClass.APPLICATION/TypeNature.CONSTRUCTED/3>" != "<UnknownType 99 b'abc' application/constructed/3>"
     "test_repr"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "x690" ];
+
+  pythonRelaxDeps = [
+    "t61codec"
   ];
 
   meta = {

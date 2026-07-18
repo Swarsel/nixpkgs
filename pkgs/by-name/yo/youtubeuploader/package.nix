@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,24 +18,23 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-wVfJnN9QgF7c2aI3OghfJW9Z6McZ+irgMRSkWvVi1DM=";
-
-  passthru.updateScript = nix-update-script { };
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-X main.appVersion=${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "-version";
-  doInstallCheck = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Scripted uploads to Youtube using Golang";
     homepage = "https://github.com/porjo/youtubeuploader";
     changelog = "https://github.com/porjo/youtubeuploader/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "youtubeuploader";
     platforms = lib.platforms.unix;
+    mainProgram = "youtubeuploader";
   };
 })

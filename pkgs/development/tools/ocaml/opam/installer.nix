@@ -1,17 +1,17 @@
-{ opam, ocamlPackages }:
+{ ocamlPackages, opam }:
 
 ocamlPackages.buildDunePackage {
+  inherit (opam) version src;
   pname = "opam-installer";
 
-  inherit (opam) version src;
+  buildInputs = with ocamlPackages; [
+    opam-format
+    cmdliner
+  ];
 
   configureFlags = [
     "--disable-checks"
     "--prefix=$out"
-  ];
-  buildInputs = with ocamlPackages; [
-    opam-format
-    cmdliner
   ];
 
   meta = opam.meta // {

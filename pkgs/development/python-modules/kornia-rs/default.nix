@@ -2,22 +2,19 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
-  # nativeBuildInputs
-  rustPlatform,
   cmake,
   nasm,
-
   # tests
   numpy,
   pytestCheckHook,
+  # nativeBuildInputs
+  rustPlatform,
   torch,
 }:
 
 buildPythonPackage rec {
   pname = "kornia-rs";
   version = "0.1.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kornia";
@@ -33,36 +30,39 @@ buildPythonPackage rec {
     nasm # Only for dependencies.
   ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit
-      pname
-      version
-      src
-      ;
-    hash = "sha256-hnvPKm0ul1IXKFtVe1j0D6ogXQ44wpDFpeWn/p5ZKeA=";
-  };
-
-  maturinBuildFlags = [
-    "-m"
-    "kornia-py/Cargo.toml"
-  ];
-
-  dontUseCmakeConfigure = true; # We only want to use CMake to build some Rust dependencies.
-
   nativeCheckInputs = [
     numpy
     pytestCheckHook
     torch
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit
+      pname
+      version
+      src
+      ;
+
+    hash = "sha256-hnvPKm0ul1IXKFtVe1j0D6ogXQ44wpDFpeWn/p5ZKeA=";
+  };
+
   disabledTests = [
     # requires apriltag-imgs submodule
     "test_apriltag_decoder"
   ];
 
+  dontUseCmakeConfigure = true; # We only want to use CMake to build some Rust dependencies.
+
+  maturinBuildFlags = [
+    "-m"
+    "kornia-py/Cargo.toml"
+  ];
+
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/kornia/kornia-rs";
     description = "Python bindings to Low-level Computer Vision library in Rust";
+    homepage = "https://github.com/kornia/kornia-rs";
     changelog = "https://github.com/kornia/kornia-rs/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ chpatrick ];

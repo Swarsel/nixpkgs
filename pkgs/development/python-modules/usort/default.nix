@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   libcst,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "usort";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "facebook";
@@ -26,6 +25,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-hoBk8KAml/YOscno9605I3t4z10vQPlh22wH1XHcQqY=";
   };
+
+  nativeCheckInputs = [
+    unittestCheckHook
+    volatile
+  ];
 
   build-system = [
     hatch-vcs
@@ -42,11 +46,7 @@ buildPythonPackage (finalAttrs: {
     trailrunner
   ];
 
-  nativeCheckInputs = [
-    unittestCheckHook
-    volatile
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "usort" ];
 
   meta = {

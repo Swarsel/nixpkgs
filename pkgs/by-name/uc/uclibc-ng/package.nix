@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoLibc,
-  buildPackages,
   fetchurl,
+  buildPackages,
   gitUpdater,
-  linuxHeaders,
   libiconvReal,
+  linuxHeaders,
+  stdenvNoLibc,
   extraConfig ? "",
 }:
 
@@ -76,24 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-noEApEL3B5uXKMoobjA19n3wV4YGFm6i0e+GWkoS3bk=";
   };
 
-  configurePhase = ''
-    make defconfig ARCH=${stdenv.hostPlatform.linuxArch}
-    ${configParser}
-    cat << EOF | parseconfig
-    ${nixConfig}
-    ${extraConfig}
-    ${stdenv.hostPlatform.uclibc.extraConfig or ""}
-    EOF
-    ( set +o pipefail; yes "" | make oldconfig )
-  '';
-
-  hardeningDisable = [ "stackprotector" ];
-
-  # Cross stripping hurts.
-  dontStrip = isCross;
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   makeFlags = [
     "ARCH=${stdenv.hostPlatform.linuxArch}"
     "TARGET_ARCH=${stdenv.hostPlatform.linuxArch}"
@@ -102,10 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals isCross [
     "CROSS=${stdenv.cc.targetPrefix}"
   ];
-
-  # `make libpthread/nptl/sysdeps/unix/sysv/linux/lowlevelrwlock.h`:
-  # error: bits/sysnum.h: No such file or directory
-  enableParallelBuilding = false;
 
   installPhase = ''
     runHook preInstall
@@ -119,20 +97,39 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    make defconfig ARCH=${stdenv.hostPlatform.linuxArch}
+    ${configParser}
+    cat << EOF | parseconfig
+    ${nixConfig}
+    ${extraConfig}
+    ${stdenv.hostPlatform.uclibc.extraConfig or ""}
+    EOF
+    ( set +o pipefail; yes "" | make oldconfig )
+  '';
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  # Cross stripping hurts.
+  dontStrip = isCross;
+  # `make libpthread/nptl/sysdeps/unix/sysv/linux/lowlevelrwlock.h`:
+  # error: bits/sysnum.h: No such file or directory
+  enableParallelBuilding = false;
+  hardeningDisable = [ "stackprotector" ];
+
   passthru = {
     # Derivations may check for the existence of this attribute, to know what to
     # link to.
     libiconv = libiconvReal;
 
     updateScript = gitUpdater {
-      url = "https://git.uclibc-ng.org/git/uclibc-ng.git";
       rev-prefix = "v";
+      url = "https://git.uclibc-ng.org/git/uclibc-ng.git";
     };
   };
 
   meta = {
-    homepage = "https://uclibc-ng.org";
     description = "Embedded C library";
+
     longDescription = ''
       uClibc-ng is a small C library for developing embedded Linux systems. It
       is much smaller than the GNU C Library, but nearly all applications
@@ -148,6 +145,8 @@ stdenv.mkDerivation (finalAttrs: {
       processors. Alpha, FR-V, HPPA, IA64, LM32, NIOS2, Tile and Sparc64 are
       experimental and need more testing.
     '';
+
+    homepage = "https://uclibc-ng.org";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ aleclearmind ];
     platforms = lib.platforms.linux;

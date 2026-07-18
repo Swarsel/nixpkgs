@@ -1,20 +1,20 @@
 {
   lib,
-  callPackage,
-  buildGoModule,
   fetchFromGitHub,
-  withDpi ? true,
+  buildGoModule,
+  callPackage,
+  libflowmanager,
   libpcap,
   libprotoident,
-  libflowmanager,
   libtrace,
   ndpi,
+  nix-update-script,
   pkg-config,
   protobuf,
   protoc-gen-go,
-  yara-x,
   versionCheckHook,
-  nix-update-script,
+  yara-x,
+  withDpi ? true,
 }:
 let
   ndpi_4_14 = callPackage ./ndpi_4_14.nix { };
@@ -30,7 +30,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-hk0aPU+pQ+A90GvlFhCRpj4hRiFOcpcP64xznh50Kts=";
   };
 
-  vendorHash = "sha256-DLjSeSXwA4zPVg3ISPqEHTihIp9uVu7dXv9bTSepsaI=";
+  postPatch = ''
+    rm go.work go.work.sum
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -38,9 +40,32 @@ buildGoModule (finalAttrs: {
     protoc-gen-go
   ];
 
-  postPatch = ''
-    rm go.work go.work.sum
-  '';
+  buildInputs = [
+    libpcap
+    yara-x
+  ]
+  ++ lib.optionals withDpi [
+    ndpi_4_14
+    libprotoident
+    libflowmanager
+    libtrace
+  ];
+
+  vendorHash = "sha256-DLjSeSXwA4zPVg3ISPqEHTihIp9uVu7dXv9bTSepsaI=";
+
+  env = lib.optionalAttrs withDpi {
+    CGO_CFLAGS = toString [
+      "-I${ndpi_4_14}/include"
+      "-I${libprotoident}/include"
+    ];
+
+    CGO_LDFLAGS = toString [
+      "-L${ndpi_4_14}/lib"
+      "-lndpi"
+      "-L${libprotoident}/lib"
+      "-lprotoident"
+    ];
+  };
 
   preBuild = ''
     # satisfiy go:embed
@@ -57,46 +82,6 @@ buildGoModule (finalAttrs: {
     find types -name "*.go" -exec sed -i 's/Type_NC_\([A-Za-z0-9_]*\).String()/"NC_\1"/g' {} +
   '';
 
-  subPackages = [ "cmd" ];
-
-  buildInputs = [
-    libpcap
-    yara-x
-  ]
-  ++ lib.optionals withDpi [
-    ndpi_4_14
-    libprotoident
-    libflowmanager
-    libtrace
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  tags = lib.optionals (!withDpi) [
-    "nodpi"
-  ];
-
-  env = lib.optionalAttrs withDpi {
-    CGO_LDFLAGS = toString [
-      "-L${ndpi_4_14}/lib"
-      "-lndpi"
-      "-L${libprotoident}/lib"
-      "-lprotoident"
-    ];
-
-    CGO_CFLAGS = toString [
-      "-I${ndpi_4_14}/include"
-      "-I${libprotoident}/include"
-    ];
-  };
-
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/net
-  '';
-
   checkFlags =
     let
       skippedTests = [
@@ -108,19 +93,34 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/net";
-  doInstallCheck = true;
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/net
+  '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [ "cmd" ];
+
+  tags = lib.optionals (!withDpi) [
+    "nodpi"
+  ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/net";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Framework for secure and scalable network traffic analysis";
     homepage = "https://netcap.io";
-    downloadPage = "https://github.com/dreadl0ck/netcap";
     changelog = "https://github.com/dreadl0ck/netcap/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ felbinger ];
     mainProgram = "net";
+    downloadPage = "https://github.com/dreadl0ck/netcap";
   };
 })

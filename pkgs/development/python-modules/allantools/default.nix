@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   matplotlib,
   numpy,
   numpydoc,
   pytest,
-  scipy,
   pytestCheckHook,
+  scipy,
 }:
 
 buildPythonPackage rec {
   pname = "allantools";
   version = "2024.06";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aewallin";
@@ -22,6 +21,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-dF19aSpIioOm0BnwrLkMe/DtfgWSKFnX4c/Xs1O2Quw=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -35,9 +38,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "allantools"

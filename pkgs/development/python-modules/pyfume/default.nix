@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyfume";
   version = "0.3.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,13 +21,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "fst-pso"
-    "numpy"
-    "pandas"
-    "scipy"
-  ];
 
   propagatedBuildInputs = [
     fst-pso
@@ -41,8 +33,15 @@ buildPythonPackage rec {
 
   # Module has not test
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyfume" ];
+
+  pythonRelaxDeps = [
+    "fst-pso"
+    "numpy"
+    "pandas"
+    "scipy"
+  ];
 
   meta = {
     description = "Python package for fuzzy model estimation";

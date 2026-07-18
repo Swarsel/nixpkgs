@@ -20,24 +20,24 @@ in
       enable = mkEnableOption "Prosody Filer XMPP upload file server";
 
       settings = mkOption {
-        description = ''
-          Configuration for Prosody Filer.
-          Refer to <https://github.com/ThomasLeister/prosody-filer#configure-prosody-filer> for details on supported values.
-        '';
-
-        type = settingsFormat.type;
-
-        example = {
-          secret = "mysecret";
-          storeDir = "/srv/http/nginx/prosody-upload";
-        };
-
         defaultText = literalExpression ''
           {
             listenport = mkDefault "127.0.0.1:5050";
             uploadSubDir = mkDefault "upload/";
           }
         '';
+
+        description = ''
+          Configuration for Prosody Filer.
+          Refer to <https://github.com/ThomasLeister/prosody-filer#configure-prosody-filer> for details on supported values.
+        '';
+
+        example = {
+          secret = "mysecret";
+          storeDir = "/srv/http/nginx/prosody-upload";
+        };
+
+        type = settingsFormat.type;
       };
     };
   };
@@ -48,51 +48,56 @@ in
       uploadSubDir = mkDefault "upload/";
     };
 
-    users.users.prosody-filer = {
-      group = "prosody-filer";
-      isSystemUser = true;
-    };
-
-    users.groups.prosody-filer = { };
-
     systemd.services.prosody-filer = {
-      description = "Prosody file upload server";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Prosody file upload server";
 
       serviceConfig = {
-        User = "prosody-filer";
-        Group = "prosody-filer";
-        ExecStart = "${pkgs.prosody-filer}/bin/prosody-filer -config ${configFile}";
-        Restart = "on-failure";
         CapabilityBoundingSet = "";
+        ExecStart = "${pkgs.prosody-filer}/bin/prosody-filer -config ${configFile}";
+        Group = "prosody-filer";
+        LockPersonality = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
-        PrivateTmp = true;
         PrivateMounts = true;
-        ProtectHome = true;
-        ProtectClock = true;
-        ProtectProc = "noaccess";
+        PrivateTmp = true;
         ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        ProtectControlGroups = true;
-        ProtectHostname = true;
-        RestrictSUIDSGID = true;
-        RestrictRealtime = true;
-        RestrictNamespaces = true;
-        LockPersonality = true;
+        ProtectProc = "noaccess";
         RemoveIPC = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
+
+        User = "prosody-filer";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.prosody-filer = { };
+
+    users.users.prosody-filer = {
+      group = "prosody-filer";
+      isSystemUser = true;
     };
   };
 }

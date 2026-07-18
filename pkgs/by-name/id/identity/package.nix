@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitLab,
   appstream,
   blueprint-compiler,
   cargo,
   dav1d,
   desktop-file-utils,
-  fetchFromGitLab,
   glib,
   glycin-loaders,
   gst_all_1,
@@ -31,16 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "26.03";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "YaLTeR";
     repo = "identity";
     tag = "v${finalAttrs.version}";
     hash = "sha256-CVSUk0xhfsMM47L0BVQj69Jw2MhsElBI3mxETCWBqcU=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-AuIAfk6BipUHkIfRiLJf0tjadVxsEIKKvpZgKA11oJE=";
+    domain = "gitlab.gnome.org";
   };
 
   # The crate can't find our provided gstreamer-gl-egl-1.0.pc in the PKG_CONFIG_PATH otherwise.
@@ -83,13 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
     libwebp
   ];
 
-  mesonBuildType = "release";
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-  cargoCheckType = if (finalAttrs.mesonBuildType != "debug") then "release" else "debug";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   checkPhase = ''
     runHook preCheck
@@ -100,6 +89,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoCheckType = if (finalAttrs.mesonBuildType != "debug") then "release" else "debug";
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-AuIAfk6BipUHkIfRiLJf0tjadVxsEIKKvpZgKA11oJE=";
+  };
+
+  mesonBuildType = "release";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -107,8 +106,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/YaLTeR/identity";
     changelog = "https://gitlab.gnome.org/YaLTeR/identity/-/releases/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome-circle ];
-    mainProgram = "identity";
     platforms = lib.platforms.linux;
+    mainProgram = "identity";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

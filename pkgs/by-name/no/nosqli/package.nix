@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "NoSql Injection tool for finding vulnerable websites using MongoDB";
-    mainProgram = "nosqli";
     homepage = "https://github.com/Charlie-belmer/nosqli";
     license = with lib.licenses; [ agpl3Plus ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "nosqli";
   };
 })

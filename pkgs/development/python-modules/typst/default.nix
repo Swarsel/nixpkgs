@@ -1,19 +1,18 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cargo,
-  fetchFromGitHub,
   openssl,
   pkg-config,
-  rustc,
   rustPlatform,
+  rustc,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "typst";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "messense";
@@ -22,10 +21,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-9wHUikOf/WULPaGkCOXa0aXcSme+xbweC6IDwaJnwRk=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-TyLKnJUVbodCHQXhpjIr1numNDmeUkvpsKH1o5tWFCM=";
+  buildInputs = [ openssl ];
+
+  env = {
+    OPENSSL_NO_VENDOR = true;
   };
+
+  # Module has no tests
+  doCheck = false;
 
   build-system = [
     cargo
@@ -35,16 +38,13 @@ buildPythonPackage (finalAttrs: {
     rustc
   ];
 
-  buildInputs = [ openssl ];
-
-  pythonImportsCheck = [ "typst" ];
-
-  env = {
-    OPENSSL_NO_VENDOR = true;
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-TyLKnJUVbodCHQXhpjIr1numNDmeUkvpsKH1o5tWFCM=";
   };
 
-  # Module has no tests
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "typst" ];
 
   meta = {
     description = "Python binding to typst";

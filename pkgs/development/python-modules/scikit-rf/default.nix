@@ -1,68 +1,39 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  numpy,
-  scipy,
-  pandas,
-  matplotlib,
-  nbval,
-  pyvisa,
-  networkx,
-  ipython,
+  buildPythonPackage,
   ipykernel,
+  ipython,
   ipywidgets,
   jupyter-client,
-  sphinx-rtd-theme,
-  sphinx,
+  matplotlib,
   nbsphinx,
+  nbval,
+  networkx,
+  numpy,
   openpyxl,
-  setuptools,
-  pytestCheckHook,
+  pandas,
   pytest-cov-stub,
   pytest-mock,
+  pytestCheckHook,
+  pyvisa,
+  scipy,
+  setuptools,
+  sphinx,
+  sphinx-rtd-theme,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "scikit-rf";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scikit-rf";
     repo = "scikit-rf";
     tag = "v${version}";
     hash = "sha256-iOKTQOOJTsj6YIQaJVWFcp9HdUEj43aytpo7VzItxr8=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    numpy
-    scipy
-    pandas
-  ];
-
-  pythonRemoveDeps = [ "pre-commit" ];
-
-  optional-dependencies = {
-    plot = [ matplotlib ];
-    xlsx = [ openpyxl ];
-    netw = [ networkx ];
-    visa = [ pyvisa ];
-    docs = [
-      ipython
-      ipykernel
-      ipywidgets
-      jupyter-client
-      sphinx-rtd-theme
-      sphinx
-      nbsphinx
-      openpyxl
-      nbval
-    ];
   };
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin { MPLBACKEND = "Agg"; };
@@ -78,7 +49,13 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  pytestFlags = [ "-Wignore::pytest.PytestUnraisableExceptionWarning" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    numpy
+    scipy
+    pandas
+  ];
 
   disabledTests = [
     # numpy.exceptions.VisibleDeprecationWarning: dtype(): align should be
@@ -88,7 +65,29 @@ buildPythonPackage rec {
     "test_constructor_from_touchstone_special_encoding"
   ];
 
+  optional-dependencies = {
+    docs = [
+      ipython
+      ipykernel
+      ipywidgets
+      jupyter-client
+      sphinx-rtd-theme
+      sphinx
+      nbsphinx
+      openpyxl
+      nbval
+    ];
+
+    netw = [ networkx ];
+    plot = [ matplotlib ];
+    visa = [ pyvisa ];
+    xlsx = [ openpyxl ];
+  };
+
+  pyproject = true;
+  pytestFlags = [ "-Wignore::pytest.PytestUnraisableExceptionWarning" ];
   pythonImportsCheck = [ "skrf" ];
+  pythonRemoveDeps = [ "pre-commit" ];
 
   meta = {
     description = "Python library for RF/Microwave engineering";

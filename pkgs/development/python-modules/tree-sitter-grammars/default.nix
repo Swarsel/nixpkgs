@@ -1,15 +1,15 @@
 {
   lib,
   buildPythonPackage,
-  setuptools,
-  pytestCheckHook,
-  tree-sitter,
-  tree-sitter-config,
-  symlinkJoin,
-  writeTextDir,
+  grammarDrv,
   # `name`: grammar derivation pname in the format of `tree-sitter-<lang>`
   name,
-  grammarDrv,
+  pytestCheckHook,
+  setuptools,
+  symlinkJoin,
+  tree-sitter,
+  tree-sitter-config,
+  writeTextDir,
 }:
 let
   # Map nix style `0-unstable-YYYY-MM-DD` version identifiers to a PEP 440
@@ -32,19 +32,18 @@ let
   # it could cause a symbol mismatch at load time. This manually curated collection
   # of overrides ensures the binding can find the correct symbol
   langIdentOverrides = {
-    tree_sitter_org_nvim = "tree_sitter_org";
     tree_sitter_go_template_helm = "tree_sitter_helm";
+    tree_sitter_org_nvim = "tree_sitter_org";
   };
   langIdent = langIdentOverrides.${snakeCaseName} or snakeCaseName;
 in
 buildPythonPackage {
   inherit version;
   pname = drvPrefix;
-  pyproject = true;
-  build-system = [ setuptools ];
 
   src = symlinkJoin {
     name = "${drvPrefix}-source";
+
     paths = [
       (writeTextDir "${snakeCaseName}/__init__.py" /* python */ ''
         # AUTO-GENERATED DO NOT EDIT
@@ -187,8 +186,9 @@ buildPythonPackage {
     ];
   };
 
-  dependencies = [
-    tree-sitter-config
+  nativeCheckInputs = [
+    tree-sitter
+    pytestCheckHook
   ];
 
   preCheck = ''
@@ -196,16 +196,19 @@ buildPythonPackage {
     rm -r ${snakeCaseName}
   '';
 
-  nativeCheckInputs = [
-    tree-sitter
-    pytestCheckHook
+  build-system = [ setuptools ];
+
+  dependencies = [
+    tree-sitter-config
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ snakeCaseName ];
 
   meta = {
     description = "Python bindings for ${name}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       a-jay98
       adfaure

@@ -1,8 +1,8 @@
 {
   lib,
-  repoRevToNameMaybe,
   fetchgit,
   fetchzip,
+  repoRevToNameMaybe,
 }:
 
 lib.makeOverridable (
@@ -10,18 +10,18 @@ lib.makeOverridable (
   {
     owner,
     repo,
-    rev ? null,
-    tag ? null,
-    name ? repoRevToNameMaybe repo (lib.revOrTag rev tag) "gitlab",
-    protocol ? "https",
-    domain ? "gitlab.com",
-    group ? null,
-    fetchSubmodules ? false,
-    leaveDotGit ? false,
     deepClone ? false,
+    domain ? "gitlab.com",
+    fetchSubmodules ? false,
     forceFetchGit ? false,
-    sparseCheckout ? [ ],
+    group ? null,
+    leaveDotGit ? false,
+    name ? repoRevToNameMaybe repo (lib.revOrTag rev tag) "gitlab",
     private ? false,
+    protocol ? "https",
+    rev ? null,
+    sparseCheckout ? [ ],
+    tag ? null,
     varPrefix ? null,
     ... # For hash agility
   }@args:
@@ -68,6 +68,11 @@ lib.makeOverridable (
         throw "private token login is only supported for https"
       else
         {
+          netrcImpureEnvVars = [
+            "${varBase}USERNAME"
+            "${varBase}PASSWORD"
+          ];
+
           netrcPhase = ''
             if [ -z "''$${varBase}USERNAME" -o -z "''$${varBase}PASSWORD" ]; then
               echo "Error: Private fetchFromGitLab requires the nix building process (nix-daemon in multi user mode) to have the ${varBase}USERNAME and ${varBase}PASSWORD env vars set." >&2
@@ -99,10 +104,6 @@ lib.makeOverridable (
                 curlOpts="$curlOpts --header @./private-token"
               ''
           );
-          netrcImpureEnvVars = [
-            "${varBase}USERNAME"
-            "${varBase}PASSWORD"
-          ];
         }
     );
 
@@ -120,6 +121,7 @@ lib.makeOverridable (
               sparseCheckout
               leaveDotGit
               ;
+
             url = gitRepoUrl;
           }
         else
@@ -140,12 +142,13 @@ lib.makeOverridable (
 
   fetcher fetcherArgs
   // {
-    meta.homepage = "${protocol}://${domain}/${slug}/";
     inherit
       tag
       owner
       repo
       ;
+
     rev = revWithTag;
+    meta.homepage = "${protocol}://${domain}/${slug}/";
   }
 )

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pillow,
+  buildPythonPackage,
   click,
   click-default-group,
+  pillow,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "image-diff";
   version = "0.2.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -26,15 +25,15 @@ buildPythonPackage rec {
     click-default-group
   ];
 
-  pythonImportsCheck = [ "image_diff" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "image_diff" ];
 
   meta = {
     description = "CLI tool for comparing images";
-    mainProgram = "image-diff";
     homepage = "https://github.com/simonw/image-diff";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "image-diff";
   };
 }

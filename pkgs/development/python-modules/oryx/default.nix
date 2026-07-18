@@ -2,30 +2,31 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  poetry-core,
-
+  # tests
+  inference-gym,
   # dependencies
   jax,
   jaxlib,
-  tensorflow-probability,
-
-  # tests
-  inference-gym,
+  # build-system
+  poetry-core,
   pytestCheckHook,
+  tensorflow-probability,
 }:
 
 buildPythonPackage rec {
   pname = "oryx";
   version = "0.2.9";
-  pyproject = true;
 
   # No more tags on GitHub. See https://github.com/jax-ml/oryx/issues/95
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-HlKUnguTNfs7gSqIJ0n2EjjLXPUgtI2JsQM70wKMeXs=";
   };
+
+  nativeCheckInputs = [
+    inference-gym
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -35,11 +36,10 @@ buildPythonPackage rec {
     tensorflow-probability
   ];
 
-  pythonImportsCheck = [ "oryx" ];
-
-  nativeCheckInputs = [
-    inference-gym
-    pytestCheckHook
+  disabledTestPaths = [
+    # ValueError: Variable has already been reaped
+    "oryx/experimental/nn/normalization_test.py"
+    "oryx/experimental/nn/pooling_test.py"
   ];
 
   disabledTests = [
@@ -102,11 +102,8 @@ buildPythonPackage rec {
     "test_can_rewrite_nested_expression_into_single_einsum"
   ];
 
-  disabledTestPaths = [
-    # ValueError: Variable has already been reaped
-    "oryx/experimental/nn/normalization_test.py"
-    "oryx/experimental/nn/pooling_test.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "oryx" ];
 
   meta = {
     description = "Library for probabilistic programming and deep learning built on top of Jax";

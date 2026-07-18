@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
-  rustPlatform,
+  buildPackages,
   git,
-  nix-update-script,
   installShellFiles,
+  nix-update-script,
+  rustPlatform,
 }:
 let
   emulatorAvailable = stdenv.hostPlatform.emulatorAvailable buildPackages;
@@ -14,8 +14,8 @@ let
   version = "0.5.3";
 in
 rustPlatform.buildRustPackage {
-  pname = "git-prole";
   inherit version;
+  pname = "git-prole";
 
   src = fetchFromGitHub {
     owner = "9999years";
@@ -24,16 +24,14 @@ rustPlatform.buildRustPackage {
     hash = "sha256-QwLkByC8gdAnt6geZS285ErdH8nfV3vsWjMF4hTzq9Y=";
   };
 
-  buildFeatures = [ "clap_mangen" ];
+  nativeBuildInputs = [
+    installShellFiles
+  ];
 
   cargoHash = "sha256-qghc8HtJfpTYXAwC2xjq8lLlCu419Ttnu/AYapkAulI=";
 
   nativeCheckInputs = [
     git
-  ];
-
-  nativeBuildInputs = [
-    installShellFiles
   ];
 
   postInstall = lib.optionalString emulatorAvailable ''
@@ -49,14 +47,15 @@ rustPlatform.buildRustPackage {
       --zsh <(${emulator} $out/bin/git-prole completions zsh)
   '';
 
+  buildFeatures = [ "clap_mangen" ];
+  passthru.updateScript = nix-update-script { };
+
   meta = {
+    description = "`git-worktree(1)` manager";
     homepage = "https://github.com/9999years/git-prole";
     changelog = "https://github.com/9999years/git-prole/releases/tag/v${version}";
-    description = "`git-worktree(1)` manager";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers._9999years ];
     mainProgram = "git-prole";
   };
-
-  passthru.updateScript = nix-update-script { };
 }

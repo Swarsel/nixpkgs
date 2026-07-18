@@ -2,28 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fontconfig,
-  nix-update-script,
-  pythonSupport ? false,
-  python3Packages,
-
-  # nativeBuildInputs
-  cmake,
-  doxygen,
-  graphviz,
-
   # propagatedBuildInputs
   cereal,
-  eigen,
-  jrl-cmakemodules,
-  simde,
-
+  # nativeBuildInputs
+  cmake,
   # nativeCheckInputs
   ctestCheckHook,
-
+  doxygen,
+  eigen,
+  fontconfig,
+  graphviz,
+  jrl-cmakemodules,
   # checkInputs
   matio,
-
+  nix-update-script,
+  python3Packages,
+  simde,
+  pythonSupport ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "proxsuite";
@@ -36,20 +31,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qJZQV9vNLQ/rtPMRdAfjwrYExyyDC2OP8uVeywkQ56Y=";
   };
 
-  patches = [
-    # Set Python_VERSION to Python3_VERSION if not already set
-    ./fix-cmake-python-version.patch
-  ];
-
   outputs = [
     "doc"
     "out"
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_DOCUMENTATION" true)
-    (lib.cmakeBool "INSTALL_DOCUMENTATION" true)
-    (lib.cmakeBool "BUILD_PYTHON_INTERFACE" pythonSupport)
+  patches = [
+    # Set Python_VERSION to Python3_VERSION if not already set
+    ./fix-cmake-python-version.patch
   ];
 
   strictDeps = true;
@@ -72,6 +61,24 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals pythonSupport [ python3Packages.nanobind ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_DOCUMENTATION" true)
+    (lib.cmakeBool "INSTALL_DOCUMENTATION" true)
+    (lib.cmakeBool "BUILD_PYTHON_INTERFACE" pythonSupport)
+  ];
+
+  # Fontconfig error: Cannot load default config file: No such file: (null)
+  env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
+
+  env.NIX_CFLAGS_COMPILE = toString (
+    lib.optionals stdenv.cc.isClang [
+      "-Wno-error=missing-template-arg-list-after-template-kw"
+    ]
+  );
+
+  # Fontconfig error: No writable cache directories
+  preBuild = "export XDG_CACHE_HOME=$(mktemp -d)";
+  doCheck = true;
   nativeCheckInputs = [ ctestCheckHook ];
 
   checkInputs = [
@@ -87,21 +94,7 @@ stdenv.mkDerivation (finalAttrs: {
     "sparse maros meszaros using the API"
   ];
 
-  # Fontconfig error: Cannot load default config file: No such file: (null)
-  env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
-
-  env.NIX_CFLAGS_COMPILE = toString (
-    lib.optionals stdenv.cc.isClang [
-      "-Wno-error=missing-template-arg-list-after-template-kw"
-    ]
-  );
-
-  # Fontconfig error: No writable cache directories
-  preBuild = "export XDG_CACHE_HOME=$(mktemp -d)";
-
-  doCheck = true;
   pythonImportsCheck = [ "proxsuite" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

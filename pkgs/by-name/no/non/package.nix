@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  python3,
   cairo,
-  libjpeg,
-  ntk,
-  libjack2,
-  libsndfile,
   ladspa-header,
+  libjack2,
+  libjpeg,
   liblo,
   libsigcxx,
+  libsndfile,
   lrdf,
+  ntk,
+  pkg-config,
+  python3,
   waf,
 }:
 
@@ -48,6 +48,8 @@ stdenv.mkDerivation {
     lrdf
   ];
 
+  env.CXXFLAGS = "-std=c++14";
+
   # NOTE: non provides its own waf script that is incompatible with new
   # python versions. If the script is not present, wafHook will install
   # a compatible version from nixpkgs.
@@ -55,13 +57,11 @@ stdenv.mkDerivation {
     rm waf
   '';
 
-  env.CXXFLAGS = "-std=c++14";
-
   meta = {
     description = "Lightweight and lightning fast modular Digital Audio Workstation";
     homepage = "http://non.tuxfamily.org";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.nico202 ];
+    platforms = lib.platforms.linux;
   };
 }

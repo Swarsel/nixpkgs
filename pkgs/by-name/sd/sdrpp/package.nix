@@ -1,89 +1,83 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  airspy,
+  airspyhf,
+  boost,
   cmake,
-  pkg-config,
-  libx11,
-  glfw,
-  glew,
+  codec2,
   fftwFloat,
+  glew,
+  glfw,
+  hackrf,
+  libad9361,
+  libbladeRF,
+  libdlcr,
+  libiio,
+  libusb1,
+  libx11,
+  limesuite,
+  pkg-config,
+  portaudio,
+  rtaudio,
+  rtl-sdr-osmocom,
+  sdrplay,
+  soapysdr-with-plugins,
+  uhd,
   volk,
   zstd,
-
   # Sources
   airspy_source ? true,
-  airspy,
   airspyhf_source ? true,
-  airspyhf,
+  # Decoders
+  atv_decoder ? true,
+  # Sinks
+  audio_sink ? true,
   audio_source ? true,
   bladerf_source ? stdenv.hostPlatform.isLinux,
-  libbladeRF,
+  dab_decoder ? false,
+  # Misc
+  discord_presence ? true,
   dragonlabs_source ? true,
-  libdlcr,
+  falcon9_decoder ? false,
   file_source ? true,
+  frequency_manager ? true,
   hackrf_source ? true,
-  hackrf,
   hermes_source ? true,
+  iq_exporter ? true,
+  kg_sstv_decoder ? false,
   limesdr_source ? true,
-  limesuite,
+  m17_decoder ? false,
+  meteor_demodulator ? true,
+  network_sink ? true,
   network_source ? true,
+  pager_decoder ? true,
   # needs libperseus-sdr, not yet available in nixpks
   perseus_source ? false,
   plutosdr_source ? stdenv.hostPlatform.isLinux,
-  libiio,
-  libad9361,
+  portaudio_sink ? false,
+  radio ? true,
+  recorder ? true,
   rfspace_source ? true,
+  rigctl_client ? true,
+  rigctl_server ? true,
   rtl_sdr_source ? true,
-  rtl-sdr-osmocom,
-  libusb1,
   # osmocom better w/ rtlsdr v4
   rtl_tcp_source ? true,
+  scanner ? true,
   sdrplay_source ? false,
-  sdrplay,
   sdrpp_server_source ? true,
   soapy_source ? true,
-  soapysdr-with-plugins,
   spectran_http_source ? true,
   spyserver_source ? true,
   usrp_source ? false,
-  uhd,
-  boost,
-
-  # Sinks
-  audio_sink ? true,
-  rtaudio,
-  network_sink ? true,
-  portaudio_sink ? false,
-  portaudio,
-
-  # Decoders
-  atv_decoder ? true,
-  dab_decoder ? false,
-  falcon9_decoder ? false,
-  kg_sstv_decoder ? false,
-  m17_decoder ? false,
-  codec2,
-  meteor_demodulator ? true,
-  pager_decoder ? true,
-  radio ? true,
   vor_receiver ? false,
   weather_sat_decoder ? false,
-
-  # Misc
-  discord_presence ? true,
-  frequency_manager ? true,
-  iq_exporter ? true,
-  recorder ? true,
-  rigctl_client ? true,
-  rigctl_server ? true,
-  scanner ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "sdrpp";
-
-  upstreamVersion = "1.3.0";
   version = "${finalAttrs.upstreamVersion}-unstable-2026-03-24";
 
   src = fetchFromGitHub {
@@ -194,19 +188,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-fpermissive";
-
   hardeningDisable = lib.optional stdenv.cc.isClang "format";
+  upstreamVersion = "1.3.0";
 
   meta = {
     description = "Cross-Platform SDR Software";
     homepage = "https://github.com/AlexandreRouma/SDRPlusPlus";
     license = lib.licenses.gpl3Only;
-    # The DAB decoder is broken upstream. See: https://github.com/AlexandreRouma/SDRPlusPlus/issues/1511
-    broken = dab_decoder;
+
     maintainers = with lib.maintainers; [
       sikmir
       zaninime
     ];
+
     mainProgram = "sdrpp";
+    # The DAB decoder is broken upstream. See: https://github.com/AlexandreRouma/SDRPlusPlus/issues/1511
+    broken = dab_decoder;
   };
 })

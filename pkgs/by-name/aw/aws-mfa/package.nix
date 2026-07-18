@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   fetchpatch,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "aws-mfa";
   version = "0.0.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "broamski";
@@ -20,11 +19,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
   patches = [
     # https://github.com/broamski/aws-mfa/pull/87
     (fetchpatch {
+      hash = "sha256-Bv8ffPbDysz87wLg2Xip+0yxaBfbEmu+x6fSXI8BVjA=";
       name = "remove-duplicate-script.patch";
       url = "https://github.com/broamski/aws-mfa/commit/0d1624022c71cb92bb4436964b87f0b2ffd677ec.patch";
-      hash = "sha256-Bv8ffPbDysz87wLg2Xip+0yxaBfbEmu+x6fSXI8BVjA=";
     })
   ];
+
+  # package has no tests
+  doCheck = false;
 
   build-system = with python3Packages; [
     setuptools
@@ -34,8 +36,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     boto3
   ];
 
-  # package has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "awsmfa"
@@ -43,9 +44,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Manage AWS MFA Security Credentials";
-    mainProgram = "aws-mfa";
     homepage = "https://github.com/broamski/aws-mfa";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "aws-mfa";
   };
 })

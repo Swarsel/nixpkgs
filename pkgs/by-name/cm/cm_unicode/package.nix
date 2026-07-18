@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -25,13 +25,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://cm-unicode.sourceforge.io/";
     description = "Computer Modern Unicode fonts";
+    homepage = "https://cm-unicode.sourceforge.io/";
+    license = lib.licenses.ofl;
+
     maintainers = with lib.maintainers; [
       raskin
       rycee
     ];
-    license = lib.licenses.ofl;
+
     platforms = lib.platforms.all;
   };
 })

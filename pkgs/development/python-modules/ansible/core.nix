@@ -1,41 +1,38 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
-  pythonOlder,
-  installShellFiles,
-  docutils,
-  setuptools,
   ansible,
+  ansible-pylibssh,
+  buildPythonPackage,
   cryptography,
+  docutils,
+  installShellFiles,
   jinja2,
   junit-xml,
   lxml,
   ncclient,
   packaging,
   paramiko,
-  ansible-pylibssh,
   pexpect,
   psutil,
   pycrypto,
+  python,
+  pythonOlder,
+  pywinrm,
   pyyaml,
   requests,
   resolvelib,
   scp,
-  windowsSupport ? false,
-  pywinrm,
+  setuptools,
   xmltodict,
   # Additional packages to add to dependencies
   extraPackages ? _: [ ],
+  windowsSupport ? false,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ansible-core";
   version = "2.21.1";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "ansible";
@@ -59,6 +56,19 @@ buildPythonPackage (finalAttrs: {
     installShellFiles
     docutils
   ];
+
+  # internal import errors, missing dependencies
+  doCheck = false;
+
+  postInstall = ''
+    export HOME="$(mktemp -d)"
+    packaging/cli-doc/build.py man --output-dir=man
+    installManPage man/*
+  '';
+
+  postFixup = ''
+    patchPythonScript $out/${python.sitePackages}/ansible/cli/scripts/ansible_connection_cli_stub.py
+  '';
 
   build-system = [ setuptools ];
 
@@ -87,26 +97,16 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optionals windowsSupport [ pywinrm ]
   ++ extraPackages python.pkgs;
 
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonRelaxDeps = [ "resolvelib" ];
 
-  postInstall = ''
-    export HOME="$(mktemp -d)"
-    packaging/cli-doc/build.py man --output-dir=man
-    installManPage man/*
-  '';
-
-  postFixup = ''
-    patchPythonScript $out/${python.sitePackages}/ansible/cli/scripts/ansible_connection_cli_stub.py
-  '';
-
-  # internal import errors, missing dependencies
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/ansible/ansible/blob/v${finalAttrs.version}/changelogs/CHANGELOG-v${lib.versions.majorMinor finalAttrs.version}.rst";
     description = "Radically simple IT automation";
     homepage = "https://www.ansible.com";
+    changelog = "https://github.com/ansible/ansible/blob/v${finalAttrs.version}/changelogs/CHANGELOG-v${lib.versions.majorMinor finalAttrs.version}.rst";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       HarisDotParis
       robsliwi

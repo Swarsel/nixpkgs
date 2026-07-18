@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  jdk,
   ant,
-  git,
   coreutils,
-  hostname,
   gawk,
+  git,
+  hostname,
+  jdk,
   unzip,
 }:
 
@@ -21,27 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-vPzKrgnX6BCQmn9aOVWWpFLC6SbPBHZhZ+oL1LCbvmo=";
   };
-
-  nativeBuildInputs = [
-    ant
-    jdk
-    git # Required by build.xml to manage the build revision
-    unzip
-  ];
-
-  buildPhase = ''
-    runHook preBuild
-    ant rtg-tools.jar
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/bin
-    cp build/rtg-tools.jar $out/bin/RTG.jar
-    cp installer/rtg $out/bin/
-    runHook postInstall
-  '';
 
   postPatch = ''
     # Use a location outside nix (must be writable)
@@ -58,16 +37,37 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i '/# Now write the selection to local config/i mkdir -p $HOME/.config/rtg-tools' installer/rtg
   '';
 
+  nativeBuildInputs = [
+    ant
+    jdk
+    git # Required by build.xml to manage the build revision
+    unzip
+  ];
+
+  buildPhase = ''
+    runHook preBuild
+    ant rtg-tools.jar
+    runHook postBuild
+  '';
+
   checkPhase = ''
     ant runalltests
   '';
 
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/bin
+    cp build/rtg-tools.jar $out/bin/RTG.jar
+    cp installer/rtg $out/bin/
+    runHook postInstall
+  '';
+
   meta = {
-    homepage = "https://github.com/RealTimeGenomics/rtg-tools";
     description = "Useful utilities for dealing with VCF files and sequence data, especially vcfeval";
+    homepage = "https://github.com/RealTimeGenomics/rtg-tools";
     license = lib.licenses.bsd2;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ apraga ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "rtg";
   };
 })

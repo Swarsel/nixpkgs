@@ -1,12 +1,10 @@
 {
-  buildHomeAssistantComponent,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   alphaessopenapi,
+  buildHomeAssistantComponent,
 }:
 buildHomeAssistantComponent rec {
-  owner = "CharlesGillanders";
-  domain = "alphaess";
   version = "0.8.5";
 
   src = fetchFromGitHub {
@@ -19,6 +17,9 @@ buildHomeAssistantComponent rec {
   dependencies = [
     alphaessopenapi
   ];
+
+  domain = "alphaess";
+  owner = "CharlesGillanders";
 
   meta = {
     description = "Monitor your energy generation, storage, and usage data using the official API from Alpha ESS";

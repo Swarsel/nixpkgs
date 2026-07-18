@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
-  autoreconfHook,
+  stdenv,
   fetchurl,
+  autoreconfHook,
   file,
+  gettext,
   glib,
   gnome,
   gtk3,
   gtk4,
-  gettext,
   libnma,
   libnma-gtk4,
   libsecret,
@@ -22,12 +22,18 @@
 stdenv.mkDerivation rec {
   pname = "NetworkManager-sstp";
   version = "1.3.2";
-  name = "${pname}${lib.optionalString withGnome "-gnome"}-${version}";
 
   src = fetchurl {
     url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
     sha256 = "sha256-zd+g86cZLyibLhYLal6XzUb9wFu7kHROp0KzRM95Qng=";
   };
+
+  postPatch = ''
+    sed -i 's#/sbin/pppd#${ppp}/bin/pppd#' src/nm-sstp-service.c
+    sed -i 's#/sbin/sstpc#${sstp}/bin/sstpc#' src/nm-sstp-service.c
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -53,11 +59,6 @@ stdenv.mkDerivation rec {
     libnma-gtk4
   ];
 
-  postPatch = ''
-    sed -i 's#/sbin/pppd#${ppp}/bin/pppd#' src/nm-sstp-service.c
-    sed -i 's#/sbin/sstpc#${sstp}/bin/sstpc#' src/nm-sstp-service.c
-  '';
-
   configureFlags = [
     "--with-gnome=${lib.boolToYesNo withGnome}"
     "--with-gtk4=${lib.boolToYesNo withGnome}"
@@ -65,19 +66,20 @@ stdenv.mkDerivation rec {
     "--enable-absolute-paths"
   ];
 
-  strictDeps = true;
+  name = "${pname}${lib.optionalString withGnome "-gnome"}-${version}";
 
   passthru = {
-    updateScript = gnome.updateScript {
-      packageName = pname;
-      attrPath = "networkmanager-sstp";
-    };
     networkManagerPlugin = "VPN/nm-sstp-service.name";
+
+    updateScript = gnome.updateScript {
+      attrPath = "networkmanager-sstp";
+      packageName = pname;
+    };
   };
 
   meta = {
-    description = "NetworkManager's sstp plugin";
     inherit (networkmanager.meta) maintainers teams platforms;
+    description = "NetworkManager's sstp plugin";
     license = lib.licenses.gpl2Plus;
   };
 }

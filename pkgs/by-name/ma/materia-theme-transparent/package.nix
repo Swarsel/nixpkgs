@@ -18,7 +18,7 @@ materia-theme.overrideAttrs (oldAttrs: {
     description = "Transparent Material Design theme for GNOME/GTK based desktop environments";
     homepage = "https://github.com/ckissane/materia-theme-transparent";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.corbinwunderlich ];
+    platforms = lib.platforms.linux;
   };
 })

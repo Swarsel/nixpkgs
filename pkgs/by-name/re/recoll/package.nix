@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   antiword,
   aspell,
   bison,
@@ -18,6 +18,7 @@
   groff,
   gzip,
   libiconv,
+  libsForQt5,
   libwpd,
   libxslt,
   lyx,
@@ -29,7 +30,6 @@
   pkg-config,
   poppler-utils,
   python3Packages,
-  libsForQt5,
   unrtf,
   untex,
   unzip,
@@ -42,13 +42,13 @@
 
 let
   filters = {
+    antiword = antiword;
     # "binary-name = package" where:
     #  - "${package}/bin/${binary-name}" is the full path to the binary
     #  - occurrences of `"${binary-name}"` in recoll's filters should be fixed up
     awk = gawk;
-    antiword = antiword;
-    catppt = catdoc;
     catdvi = catdvi;
+    catppt = catdoc;
     djvused = djvulibre;
     djvutxt = djvulibre;
     egrep = gnugrep;
@@ -56,16 +56,16 @@ let
     gunzip = gzip;
     iconv = libiconv;
     pdftotext = poppler-utils;
+    perl = perl.passthru.withPackages (p: [ p.ImageExifTool ]);
     ps2ascii = ghostscript;
     sed = gnused;
     tar = gnutar;
-    unzip = unzip;
-    xls2csv = catdoc;
-    xsltproc = libxslt;
     unrtf = unrtf;
     untex = untex;
+    unzip = unzip;
     wpd2html = libwpd;
-    perl = perl.passthru.withPackages (p: [ p.ImageExifTool ]);
+    xls2csv = catdoc;
+    xsltproc = libxslt;
   };
   filterPath = lib.makeBinPath (map lib.getBin (builtins.attrValues filters));
   useInotify = if stdenv.hostPlatform.isLinux then "true" else "false";
@@ -79,33 +79,6 @@ stdenv.mkDerivation rec {
     url = "https://www.recoll.org/${pname}-${version}.tar.gz";
     hash = "sha256-irloDtMO9CBvtI+oEicUOy2myrGskieWoqNk5eapzU8=";
   };
-
-  mesonFlags = [
-    "-Drecollq=true"
-    "-Dwebkit=false"
-    "-Dsystemd=false"
-
-    # this leaks into the final `librecoll-*.so` binary, so we need
-    # to be sure it is taken from `pkgs.file` rather than `stdenv`,
-    # especially when cross-compiling
-    "-Dfile-command=${file}/bin/file"
-
-  ]
-  ++ lib.optionals (!withPython) [
-    "-Dpython-module=false"
-    "-Dpython-chm=false"
-  ]
-  ++ lib.optionals (!withGui) [
-    "-Dqtgui=false"
-    "-Dx11mon=false"
-  ]
-  ++ [
-    "-Dinotify=${useInotify}"
-  ];
-
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-fpermissive" # libxml2-2.12 changed const qualifiers
-  ];
 
   patches = [
     # use the same configure based build for darwin as linux
@@ -149,8 +122,31 @@ stdenv.mkDerivation rec {
     libiconv
   ];
 
-  qtWrapperArgs = [
-    "--prefix PATH : ${filterPath}"
+  mesonFlags = [
+    "-Drecollq=true"
+    "-Dwebkit=false"
+    "-Dsystemd=false"
+
+    # this leaks into the final `librecoll-*.so` binary, so we need
+    # to be sure it is taken from `pkgs.file` rather than `stdenv`,
+    # especially when cross-compiling
+    "-Dfile-command=${file}/bin/file"
+
+  ]
+  ++ lib.optionals (!withPython) [
+    "-Dpython-module=false"
+    "-Dpython-chm=false"
+  ]
+  ++ lib.optionals (!withGui) [
+    "-Dqtgui=false"
+    "-Dx11mon=false"
+  ]
+  ++ [
+    "-Dinotify=${useInotify}"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-fpermissive" # libxml2-2.12 changed const qualifiers
   ];
 
   # the filters search through ${PATH} using a sh proc 'checkcmds' for the
@@ -196,20 +192,27 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = false; # XXX: -j44 tried linking befoire librecoll had been created
 
+  qtWrapperArgs = [
+    "--prefix PATH : ${filterPath}"
+  ];
+
   meta = {
     description = "Full-text search tool";
+
     longDescription = ''
       Recoll is an Xapian frontend that can search through files, archive
       members, email attachments.
     '';
+
     homepage = "https://www.recoll.org";
     changelog = "https://www.recoll.org/pages/release-history.html";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       jcumming
     ];
 
+    platforms = lib.platforms.unix;
     # `Makefile.am` assumes the ability to run the hostPlatform's python binary at build time
     broken = withPython && (with stdenv; !buildPlatform.canExecute hostPlatform);
   };

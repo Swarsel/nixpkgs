@@ -1,49 +1,43 @@
 {
   lib,
   stdenv,
-  systemPlatform,
   buildDartApplication,
-  runCommand,
-  writeTextFile,
-  git,
-  which,
   dart,
-  version,
-  flutterSrc,
-  patches ? [ ],
-  pubspecLock,
   engineVersion,
+  flutterSrc,
+  git,
+  pubspecLock,
+  runCommand,
+  systemPlatform,
+  version,
+  which,
+  writeTextFile,
+  patches ? [ ],
 }:
 
 let
   # https://github.com/flutter/flutter/blob/17c92b7ba68ea609f4eb3405211d019c9dbc4d27/engine/src/flutter/tools/engine_tool/test/commands/stamp_command_test.dart#L125
   engine_stamp = writeTextFile {
     name = "engine_stamp";
+
     text = builtins.toJSON {
       build_date = "2025-06-27T12:30:00.000Z";
       build_time_ms = 1751027400000;
+      content_hash = "1111111111111111111111111111111111111111";
       git_revision = engineVersion;
       git_revision_date = "2025-06-27T17:11:53-07:00";
-      content_hash = "1111111111111111111111111111111111111111";
     };
   };
 
   dartEntryPoints."flutter_tools.snapshot" = "bin/flutter_tools.dart";
 in
 buildDartApplication.override { inherit dart; } {
-  pname = "flutter-tools";
   inherit version dartEntryPoints;
-  dartOutputType = "jit-snapshot";
-
-  src = flutterSrc;
-  sourceRoot = "${flutterSrc.name}/packages/flutter_tools";
-
   inherit patches;
-  # The given patches are made for the entire SDK source tree.
-  prePatch = ''
-    chmod --recursive u+w "../.."
-    pushd "../.."
-  '';
+  inherit pubspecLock;
+  pname = "flutter-tools";
+  src = flutterSrc;
+
   postPatch = ''
     popd
   ''
@@ -66,6 +60,7 @@ buildDartApplication.override { inherit dart; } {
     git
     which
   ];
+
   preConfigure = ''
     export HOME=.
     export FLUTTER_ROOT="$(realpath ../../)"
@@ -73,14 +68,21 @@ buildDartApplication.override { inherit dart; } {
     ln --symbolic '${dart}' "$FLUTTER_ROOT/bin/cache/dart-sdk"
   '';
 
-  dartCompileFlags = [ "--define=NIX_FLUTTER_HOST_PLATFORM=${systemPlatform}" ];
-
   # The Dart wrapper launchers are useless for the Flutter tool - it is designed
   # to be launched from a snapshot by the SDK.
   postInstall = ''
     pushd "$out"
     rm ${builtins.concatStringsSep " " (builtins.attrNames dartEntryPoints)}
     popd
+  '';
+
+  dartCompileFlags = [ "--define=NIX_FLUTTER_HOST_PLATFORM=${systemPlatform}" ];
+  dartOutputType = "jit-snapshot";
+
+  # The given patches are made for the entire SDK source tree.
+  prePatch = ''
+    chmod --recursive u+w "../.."
+    pushd "../.."
   '';
 
   sdkSourceBuilders = {
@@ -102,5 +104,5 @@ buildDartApplication.override { inherit dart; } {
       '';
   };
 
-  inherit pubspecLock;
+  sourceRoot = "${flutterSrc.name}/packages/flutter_tools";
 }

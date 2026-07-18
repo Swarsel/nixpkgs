@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   freezegun,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "property-cached";
   version = "1.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "althonos";
@@ -19,23 +18,25 @@ buildPythonPackage rec {
     hash = "sha256-8kityZ++1TS22Ff7a5x5bQi0QBaHsNaP4E/Man8A28A=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     freezegun
   ];
+
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # https://github.com/althonos/property-cached/pull/118
     "tests/test_coroutine_cached_property.py"
     "tests/test_async_cached_property.py"
   ];
+
   disabledTests = [
     # https://github.com/pydanny/cached-property/issues/131
     "test_threads_ttl_expiry"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "property_cached" ];
 
   meta = {

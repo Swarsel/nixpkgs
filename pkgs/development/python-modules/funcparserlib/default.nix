@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
   six,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "funcparserlib";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vlasovskikh";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     six
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "funcparserlib" ];
 
   meta = {

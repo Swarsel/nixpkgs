@@ -1,22 +1,22 @@
 {
   lib,
-  pnpm_10,
   stdenv,
-  rustPlatform,
+  fetchFromGitHub,
+  autoPatchelfHook,
   cargo-tauri,
-  glib-networking,
-  nodejs,
-  libgudev,
-  systemdLibs,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  openssl,
+  glib-networking,
+  libgudev,
   nix-update-script,
+  nodejs,
+  openssl,
   pkg-config,
+  pnpmConfigHook,
+  pnpm_10,
+  rustPlatform,
+  systemdLibs,
   webkitgtk_4_1,
   wrapGAppsHook4,
-  autoPatchelfHook,
-  fetchFromGitHub,
 }:
 let
   pnpm = pnpm_10;
@@ -24,6 +24,7 @@ in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "sftool-gui";
   version = "1.1.4-unstable-2026-04-16";
+
   src = fetchFromGitHub {
     owner = "OpenSiFli";
     repo = "sftool-gui";
@@ -37,16 +38,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # key, which we don't have.
     ./disable-bundling.patch
   ];
-
-  cargoHash = "sha256-hwQJnhWgPqQ3ZudCsEEuWoygYDcUKXgWz15dHZ+vR6Q=";
-  cargoRoot = "src-tauri";
-
-  pnpmDeps = fetchPnpmDeps {
-    fetcherVersion = 3;
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    hash = "sha256-DwDXfbwgt/OSNOQbzCBlathX9QDnbEsXZLsgB67LOEk=";
-  };
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -70,9 +61,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     systemdLibs
   ];
 
+  cargoHash = "sha256-hwQJnhWgPqQ3ZudCsEEuWoygYDcUKXgWz15dHZ+vR6Q=";
   # Set our Tauri source directory
   # And make sure we build there too
   buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-DwDXfbwgt/OSNOQbzCBlathX9QDnbEsXZLsgB67LOEk=";
+  };
 
   passthru = {
     inherit (finalAttrs) pnpmDeps;

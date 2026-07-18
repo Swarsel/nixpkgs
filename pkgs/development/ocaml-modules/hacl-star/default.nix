@@ -1,17 +1,15 @@
 {
-  buildDunePackage,
-  hacl-star-raw,
-  zarith,
-  cppo,
   alcotest,
-  secp256k1-internal,
-  qcheck-core,
+  buildDunePackage,
+  cppo,
   cstruct,
+  hacl-star-raw,
+  qcheck-core,
+  secp256k1-internal,
+  zarith,
 }:
 
 buildDunePackage {
-  pname = "hacl-star";
-
   inherit (hacl-star-raw)
     version
     src
@@ -19,15 +17,15 @@ buildDunePackage {
     doCheck
     ;
 
-  minimalOCamlVersion = "4.08";
+  pname = "hacl-star";
+
+  nativeBuildInputs = [
+    cppo
+  ];
 
   propagatedBuildInputs = [
     hacl-star-raw
     zarith
-  ];
-
-  nativeBuildInputs = [
-    cppo
   ];
 
   checkInputs = [
@@ -36,4 +34,6 @@ buildDunePackage {
     qcheck-core
     cstruct
   ];
+
+  minimalOCamlVersion = "4.08";
 }

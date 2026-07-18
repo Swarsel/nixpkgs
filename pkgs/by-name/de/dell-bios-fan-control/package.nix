@@ -17,10 +17,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ installShellFiles ];
 
-  hardeningDisable = [
-    "fortify"
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -29,12 +25,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  hardeningDisable = [
+    "fortify"
+  ];
+
   meta = {
     description = "Simple tool to enable or disable the SMBIOS (auto) fan control on various Dell laptops";
     homepage = "https://github.com/TomFreudenberg/dell-bios-fan-control";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "dell-bios-fan-control";
     maintainers = with lib.maintainers; [ rickyelopez ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "dell-bios-fan-control";
   };
 }

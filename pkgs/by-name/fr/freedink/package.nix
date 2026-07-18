@@ -1,19 +1,19 @@
 {
-  cxxtest,
-  fetchurl,
-  fontconfig,
-  glm,
-  help2man,
-  intltool,
   lib,
-  libzip,
-  pkg-config,
+  stdenv,
+  fetchurl,
   SDL2,
   SDL2_gfx,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
-  stdenv,
+  cxxtest,
+  fontconfig,
+  glm,
+  help2man,
+  intltool,
+  libzip,
+  pkg-config,
   zip,
   zlib,
 }:
@@ -112,11 +112,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free, portable and enhanced version of the Dink Smallwood game engine";
+
     longDescription = ''
       GNU FreeDink is a new and portable version of the Dink Smallwood
       game engine, which runs the original game as well as its D-Mods,
       with close compatibility, under multiple platforms.
     '';
+
     homepage = "https://gnu.org/software/freedink/"; # Formerly http://www.freedink.org
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ iedame ];

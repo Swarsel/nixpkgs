@@ -6,7 +6,6 @@
 python3Packages.buildPythonApplication {
   pname = "animdl";
   version = "1.7.27";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "justfoolingaround";
@@ -16,22 +15,7 @@ python3Packages.buildPythonApplication {
     hash = "sha256-kn6vCCFhJNlruxoO+PTHVIwTf1E5j1aSdBhrFuGzUq4=";
   };
 
-  pythonRemoveDeps = [
-    "comtypes" # windows only
-  ];
-
-  pythonRelaxDeps = [
-    "click"
-    "cssselect"
-    "httpx"
-    "lxml"
-    "packaging"
-    "pycryptodomex"
-    "regex"
-    "rich"
-    "tqdm"
-    "yarl"
-  ];
+  doCheck = true;
 
   build-system = with python3Packages; [
     poetry-core
@@ -54,13 +38,30 @@ python3Packages.buildPythonApplication {
     yarl
   ];
 
-  doCheck = true;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "click"
+    "cssselect"
+    "httpx"
+    "lxml"
+    "packaging"
+    "pycryptodomex"
+    "regex"
+    "rich"
+    "tqdm"
+    "yarl"
+  ];
+
+  pythonRemoveDeps = [
+    "comtypes" # windows only
+  ];
 
   meta = {
     description = "Highly efficient, powerful and fast anime scraper";
     homepage = "https://github.com/justfoolingaround/animdl";
     license = lib.licenses.gpl3Only;
-    mainProgram = "animdl";
     maintainers = with lib.maintainers; [ passivelemon ];
+    mainProgram = "animdl";
   };
 }

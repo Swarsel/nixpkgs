@@ -26,7 +26,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ libsForQt5.wrapQtAppsHook ];
-
   buildInputs = [ pythonEnv ];
 
   installPhase = ''
@@ -52,8 +51,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://launchpad.net/qarte";
     description = "Recorder for Arte TV Guide and Arte Concert";
+    homepage = "https://launchpad.net/qarte";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ vbgl ];
     platforms = lib.platforms.linux;

@@ -1,10 +1,10 @@
 {
   lib,
-  buildGo125Module,
+  stdenv,
   fetchFromGitHub,
+  buildGo125Module,
   nix-update-script,
   versionCheckHook,
-  stdenv,
 }:
 buildGo125Module (finalAttrs: {
   pname = "jjui";
@@ -19,16 +19,14 @@ buildGo125Module (finalAttrs: {
 
   vendorHash = "sha256-thGlfZ0SwHpynYydxu6Sg8OUe5kr7jiPKvl6BXS5BWA=";
 
-  ldflags = [ "-X main.Version=${finalAttrs.version}" ];
-
   checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
     "-skip=TestServerAskpass"
   ];
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  ldflags = [ "-X main.Version=${finalAttrs.version}" ];
   versionCheckProgramArg = "-version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -36,10 +34,12 @@ buildGo125Module (finalAttrs: {
     homepage = "https://github.com/idursun/jjui";
     changelog = "https://github.com/idursun/jjui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       adamcstephens
       adda
     ];
+
     mainProgram = "jjui";
   };
 })

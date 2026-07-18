@@ -1,37 +1,18 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
   qt6,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "veusz";
   version = "4.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-+txG1MQWbZaVq322p4ZctzanPw+geEf9ilu5kGQI3Qk=";
   };
-
-  nativeBuildInputs = [
-    python3Packages.sip
-    python3Packages.tomli
-    qt6.qmake
-    qt6.wrapQtAppsHook
-  ];
-
-  dontUseQmakeConfigure = true;
-
-  buildInputs = [ qt6.qtbase ];
-
-  # veusz is a script and not an ELF-executable, so wrapQtAppsHook will not wrap
-  # it automatically -> we have to do it explicitly
-  dontWrapQtApps = true;
-  preFixup = ''
-    wrapQtApp "$out/bin/veusz"
-  '';
 
   # vectorfield.vsz renders a PPM bitmap whose pixel values differ across Qt versions/platforms
   patches = [ ./skip-vectorfield-test.patch ];
@@ -44,13 +25,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
     patchShebangs tests/runselftest.py
   '';
 
-  # you can find these options at
-  # https://github.com/veusz/veusz/blob/53b99dffa999f2bc41fdc5335d7797ae857c761f/pyqtdistutils.py#L71
-  setupPyBuildFlags = [
-    # veusz tries to find a libinfix and fails without one
-    # but we simply don't need a libinfix, so set it to empty here
-    "--qt-libinfix="
+  nativeBuildInputs = [
+    python3Packages.sip
+    python3Packages.tomli
+    qt6.qmake
+    qt6.wrapQtAppsHook
   ];
+
+  buildInputs = [ qt6.qtbase ];
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    wrapQtApp "tests/runselftest.py"
+    QT_QPA_PLATFORM=minimal tests/runselftest.py
+
+    runHook postInstallCheck
+  '';
+
+  preFixup = ''
+    wrapQtApp "$out/bin/veusz"
+  '';
 
   dependencies = with python3Packages; [
     numpy
@@ -62,21 +57,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # optional TODO: add iminuit, pyemf and sampy
   ];
 
-  installCheckPhase = ''
-    runHook preInstallCheck
+  dontUseQmakeConfigure = true;
+  # veusz is a script and not an ELF-executable, so wrapQtAppsHook will not wrap
+  # it automatically -> we have to do it explicitly
+  dontWrapQtApps = true;
+  format = "setuptools";
 
-    wrapQtApp "tests/runselftest.py"
-    QT_QPA_PLATFORM=minimal tests/runselftest.py
-
-    runHook postInstallCheck
-  '';
+  # you can find these options at
+  # https://github.com/veusz/veusz/blob/53b99dffa999f2bc41fdc5335d7797ae857c761f/pyqtdistutils.py#L71
+  setupPyBuildFlags = [
+    # veusz tries to find a libinfix and fails without one
+    # but we simply don't need a libinfix, so set it to empty here
+    "--qt-libinfix="
+  ];
 
   meta = {
     description = "Scientific plotting and graphing program with a GUI";
-    mainProgram = "veusz";
     homepage = "https://veusz.github.io/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ laikq ];
+    platforms = lib.platforms.linux;
+    mainProgram = "veusz";
   };
 })

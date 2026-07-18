@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  libuv,
   libmicrohttpd,
+  libuv,
   openssl,
 }:
 
@@ -47,9 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Monero (XMR) Stratum protocol proxy";
-    mainProgram = "xmrig-proxy";
     homepage = "https://github.com/xmrig/xmrig-proxy";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ aij ];
+    mainProgram = "xmrig-proxy";
   };
 })

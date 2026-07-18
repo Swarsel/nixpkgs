@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
-  makeWrapper,
+  buildGoModule,
   go,
-  nodejs,
-  zlib,
-  nix-update-script,
   # Linux specific dependencies
   gtk3,
+  makeWrapper,
+  nix-update-script,
+  nodejs,
+  pkg-config,
   webkitgtk_4_1,
+  zlib,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,24 +25,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-XngfbEbXhPRRKbNp/aaVCleISABTs90d5JjmwIq7nsk=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/v2";
-
-  vendorHash = "sha256-dmSH5I+bOErmtCxQdjkJXp1x2G5bpElL1VK6aZOv69I=";
-
-  proxyVendor = true;
-
-  subPackages = [ "cmd/wails" ];
-
   # These packages are needed to build wails
   # and will also need to be used when building a wails app.
   nativeBuildInputs = [
     pkg-config
     makeWrapper
   ];
-
-  # Wails apps are built with Go, so we need to be able to
-  # add it in propagatedBuildInputs.
-  allowGoReference = true;
 
   # Following packages are required when wails used as a builder.
   propagatedBuildInputs = [
@@ -56,10 +44,7 @@ buildGoModule (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-dmSH5I+bOErmtCxQdjkJXp1x2G5bpElL1VK6aZOv69I=";
 
   # As Wails calls a compiler, certain apps and libraries need to be made available.
   postFixup = ''
@@ -84,6 +69,18 @@ buildGoModule (finalAttrs: {
       --set CGO_LDFLAGS "-L${lib.makeLibraryPath [ zlib ]}"
   '';
 
+  # Wails apps are built with Go, so we need to be able to
+  # add it in propagatedBuildInputs.
+  allowGoReference = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  proxyVendor = true;
+  sourceRoot = "${finalAttrs.src.name}/v2";
+  subPackages = [ "cmd/wails" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -91,7 +88,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://wails.io";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ thtrf ];
-    mainProgram = "wails";
     platforms = lib.platforms.unix;
+    mainProgram = "wails";
   };
 })

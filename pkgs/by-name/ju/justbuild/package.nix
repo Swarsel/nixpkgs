@@ -1,33 +1,29 @@
 {
-  gccStdenv,
-  fetchFromGitHub,
+  lib,
   fetchurl,
-  fetchpatch2,
-
-  fmt,
-  nlohmann_json,
+  fetchFromGitHub,
   cli11,
-  microsoft-gsl,
+  coreutils,
+  curl,
+  fetchpatch2,
+  fmt,
+  gccStdenv,
+  grpc,
+  jq,
+  justbuild,
+  libarchive,
   libgit2,
+  microsoft-gsl,
+  nix-update-script,
+  nlohmann_json,
   openssl,
-
+  pandoc,
   pkg-config,
   protobuf,
-  grpc,
-  pandoc,
   python3,
+  testers,
   unzip,
   wget,
-  lib,
-  jq,
-  coreutils,
-
-  curl,
-  libarchive,
-
-  nix-update-script,
-  testers,
-  justbuild,
 }:
 let
   stdenv = gccStdenv;
@@ -43,15 +39,19 @@ stdenv.mkDerivation rec {
     hash = "sha256-aeBIgbjSD9iVhwtkOOs63Xrpn8OshoABtOZhrjn3/jw=";
   };
 
-  bazelapi = fetchurl {
-    url = "https://github.com/bazelbuild/remote-apis/archive/9ef19c6b5fbf77d6dd9d84d75fbb5a20a6b62ef1.tar.gz";
-    hash = "sha256-zPV1ObY0fOsKp+k+5Duf/xrrSW02zAl9qRjEo172WDk=";
-  };
-
-  googleapi = fetchurl {
-    url = "https://github.com/googleapis/googleapis/archive/fe8ba054ad4f7eca946c2d14a63c3f07c0b586a0.tar.gz";
-    hash = "sha256:1r33jj8yipxjgiarddcxr1yc5kmn98rwrjl9qxfx0fzn1bsg04q5";
-  };
+  postPatch = ''
+    sed -i -e 's|\./bin/just-mr.py|${python3}/bin/python3 ./bin/just-mr.py|' bin/bootstrap.py
+    sed -i -e 's|#!/usr/bin/env python3|#!${python3}/bin/python3|' bin/parallel-bootstrap-traverser.py
+    jq '.repositories.protobuf.pkg_bootstrap.local_path = "${protobuf}"' etc/repos.in.json > etc/repos.in.json.patched
+    mv etc/repos.in.json.patched etc/repos.in.json
+    jq '.repositories.com_github_grpc_grpc.pkg_bootstrap.local_path = "${grpc}"' etc/repos.in.json > etc/repos.in.json.patched
+    mv etc/repos.in.json.patched etc/repos.in.json
+    jq '.unknown.PATH = []' etc/toolchain/CC/TARGETS > etc/toolchain/CC/TARGETS.patched
+    mv etc/toolchain/CC/TARGETS.patched etc/toolchain/CC/TARGETS
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    sed -i -e 's|-Wl,-z,stack-size=8388608|-Wl,-stack_size,0x800000|' bin/bootstrap.py
+  '';
 
   nativeBuildInputs = [
     # Tools for the bootstrap process
@@ -81,20 +81,6 @@ stdenv.mkDerivation rec {
     python3
   ];
 
-  postPatch = ''
-    sed -i -e 's|\./bin/just-mr.py|${python3}/bin/python3 ./bin/just-mr.py|' bin/bootstrap.py
-    sed -i -e 's|#!/usr/bin/env python3|#!${python3}/bin/python3|' bin/parallel-bootstrap-traverser.py
-    jq '.repositories.protobuf.pkg_bootstrap.local_path = "${protobuf}"' etc/repos.in.json > etc/repos.in.json.patched
-    mv etc/repos.in.json.patched etc/repos.in.json
-    jq '.repositories.com_github_grpc_grpc.pkg_bootstrap.local_path = "${grpc}"' etc/repos.in.json > etc/repos.in.json.patched
-    mv etc/repos.in.json.patched etc/repos.in.json
-    jq '.unknown.PATH = []' etc/toolchain/CC/TARGETS > etc/toolchain/CC/TARGETS.patched
-    mv etc/toolchain/CC/TARGETS.patched etc/toolchain/CC/TARGETS
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    sed -i -e 's|-Wl,-z,stack-size=8388608|-Wl,-stack_size,0x800000|' bin/bootstrap.py
-  '';
-
   /*
     The build phase follows the bootstrap procedure that is explained in
     https://github.com/just-buildsystem/justbuild/blob/master/INSTALL.md
@@ -111,7 +97,6 @@ stdenv.mkDerivation rec {
     current version of just, the next release will contain a fix from upstream.
     https://github.com/just-buildsystem/justbuild/commit/5abcd4140a91236c7bda1c21ce69e76a28da7c8a
   */
-
   buildPhase = ''
     runHook preBuild
 
@@ -167,22 +152,33 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  bazelapi = fetchurl {
+    hash = "sha256-zPV1ObY0fOsKp+k+5Duf/xrrSW02zAl9qRjEo172WDk=";
+    url = "https://github.com/bazelbuild/remote-apis/archive/9ef19c6b5fbf77d6dd9d84d75fbb5a20a6b62ef1.tar.gz";
+  };
+
+  googleapi = fetchurl {
+    hash = "sha256:1r33jj8yipxjgiarddcxr1yc5kmn98rwrjl9qxfx0fzn1bsg04q5";
+    url = "https://github.com/googleapis/googleapis/archive/fe8ba054ad4f7eca946c2d14a63c3f07c0b586a0.tar.gz";
+  };
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = justbuild;
-      command = "just version";
       version = builtins.replaceStrings [ "." ] [ "," ] version;
+      command = "just version";
+      package = justbuild;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Generic build tool";
     homepage = "https://github.com/just-buildsystem/justbuild";
     changelog = "https://github.com/just-buildsystem/justbuild/releases/tag/v${version}";
-    mainProgram = "just";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ clkamp ];
+    mainProgram = "just";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

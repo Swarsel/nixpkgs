@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  libpcap,
   bison,
-  flex,
   cyrus_sasl,
-  tcp_wrappers,
-  pkg-config,
-  perl,
-  libtirpc,
+  flex,
   libnsl,
+  libpcap,
+  libtirpc,
+  perl,
+  pkg-config,
+  tcp_wrappers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-uNTvi6zbrYHAivQMPkhlNCoqRW9GOkgKvCf3mInds80=";
   };
 
-  env.NIX_CFLAGS_COMPILE = toString [ "-I${libtirpc.dev}/include/tirpc" ];
-
   postPatch = ''
     for file in ./examples/*/*.pl; do
       substituteInPlace $file \
@@ -31,9 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  configureFlags = [ "--with-perl=${perl}/bin/perl" ];
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libpcap
     bison
@@ -43,8 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
     libnsl
   ];
 
+  configureFlags = [ "--with-perl=${perl}/bin/perl" ];
+  env.NIX_CFLAGS_COMPILE = toString [ "-I${libtirpc.dev}/include/tirpc" ];
+
   meta = {
     description = "Clients for ARGUS";
+
     longDescription = ''
       Clients for Audit Record Generation and
       Utilization System (ARGUS). The Argus Project is focused on developing all
@@ -57,6 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
       know what is going on in your network, right now or historically,
       you will find Argus a useful tool.
     '';
+
     homepage = "http://qosient.com/argus";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;

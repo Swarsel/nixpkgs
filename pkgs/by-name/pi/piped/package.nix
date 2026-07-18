@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildNpmPackage,
-  pnpm_10,
   fetchPnpmDeps,
   pnpmConfigHook,
-  fetchFromGitHub,
+  pnpm_10,
   unstableGitUpdater,
 }:
 let
@@ -22,7 +22,6 @@ buildNpmPackage rec {
   };
 
   nativeBuildInputs = [ pnpm ];
-  npmConfigHook = pnpmConfigHook;
 
   installPhase = ''
     runHook preInstall
@@ -30,7 +29,9 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  npmConfigHook = pnpmConfigHook;
   npmDeps = pnpmDeps;
+
   pnpmDeps = fetchPnpmDeps {
     inherit
       pname
@@ -38,6 +39,7 @@ buildNpmPackage rec {
       src
       pnpm
       ;
+
     fetcherVersion = 4;
     hash = "sha256-o5NKMMIVPkKiPx++ALcZ+3oN80DMQHPwQqGT4f4q5P8=";
   };
@@ -45,10 +47,10 @@ buildNpmPackage rec {
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/TeamPiped/Piped";
     description = "Efficient and privacy-friendly YouTube frontend";
-    maintainers = [ ];
+    homepage = "https://github.com/TeamPiped/Piped";
     license = [ lib.licenses.agpl3Plus ];
+    maintainers = [ ];
   };
 
 }

@@ -1,29 +1,29 @@
 {
-  fetchFromGitHub,
-  stdenv,
   lib,
-  pkg-config,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
-  ncurses,
+  callPackage,
   gnutls,
-  readline,
-  openssl,
-  perl,
-  sqlite,
-  libjpeg,
-  speex,
-  pcre2,
-  libuuid,
   ldns,
   libedit,
-  yasm,
-  which,
+  libjpeg,
   libsndfile,
   libtiff,
+  libuuid,
   libxcrypt,
-  callPackage,
-  modules ? null,
+  ncurses,
   nixosTests,
+  openssl,
+  pcre2,
+  perl,
+  pkg-config,
+  readline,
+  speex,
+  sqlite,
+  which,
+  yasm,
+  modules ? null,
 }:
 
 let
@@ -110,6 +110,7 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "freeswitch";
   version = "1.11.1";
+
   src = fetchFromGitHub {
     owner = "signalwire";
     repo = "freeswitch";
@@ -132,6 +133,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
@@ -139,6 +141,7 @@ stdenv.mkDerivation (finalAttrs: {
     which
     yasm
   ];
+
   buildInputs = [
     openssl
     ncurses
@@ -157,23 +160,18 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.unique (lib.concatMap (mod: mod.inputs) enabledModules);
 
-  enableParallelBuilding = true;
-
   env = {
+    CFLAGS = "-D_ANSI_SOURCE";
+    # Using c++14 because of build error
+    # gsm_at.h:94:32: error: ISO C++17 does not allow dynamic exception specifications
+    CXXFLAGS = "-std=c++14";
+
     NIX_CFLAGS_COMPILE = toString [
       "-Wno-error"
       # https://github.com/signalwire/freeswitch/issues/2495
       "-Wno-incompatible-pointer-types"
     ];
-
-    # Using c++14 because of build error
-    # gsm_at.h:94:32: error: ISO C++17 does not allow dynamic exception specifications
-    CXXFLAGS = "-std=c++14";
-
-    CFLAGS = "-D_ANSI_SOURCE";
   };
-
-  hardeningDisable = [ "format" ];
 
   preConfigure = ''
     ./bootstrap.sh
@@ -187,6 +185,8 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r conf $out/share/freeswitch/
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
   passthru.tests.freeswitch = nixosTests.freeswitch;
 
   meta = {

@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  # Dependencies
-  protobuf,
   coturn,
-  # Tests
-  versionCheckHook,
   nix-update-script,
   nixosTests,
+  # Dependencies
+  protobuf,
+  rustPlatform,
+  # Tests
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,29 +22,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-tvZWLyWxdSxAKVm92Zll0jpY+9x7YA9h9uBhmfVZfvA=";
   };
 
-  cargoHash = "sha256-BPqAX1ZbUygF+luLuPlV0eNf6KRdmm/YNJMCtnuqOPo=";
-
-  # By default, no features are enabled
-  # https://github.com/mycrl/turn-rs?tab=readme-ov-file#features-1
-  cargoBuildFlags = [ "--all-features" ];
-
   nativeBuildInputs = [
     protobuf
   ];
 
+  cargoHash = "sha256-BPqAX1ZbUygF+luLuPlV0eNf6KRdmm/YNJMCtnuqOPo=";
+  env.COTURN_UCLIENT_PATH = lib.getExe' coturn "turnutils_uclient";
   # Fix coturn needed
   nativeCheckInputs = [ coturn ];
-  env.COTURN_UCLIENT_PATH = lib.getExe' coturn "turnutils_uclient";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  # By default, no features are enabled
+  # https://github.com/mycrl/turn-rs?tab=readme-ov-file#features-1
+  cargoBuildFlags = [ "--all-features" ];
   versionCheckProgram = "${placeholder "out"}/bin/turn-server";
-  doInstallCheck = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.nixos = nixosTests.turn-rs;
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -52,8 +51,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/mycrl/turn-rs";
     changelog = "https://github.com/mycrl/turn-rs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "turn-server";
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.linux;
+    mainProgram = "turn-server";
   };
 })

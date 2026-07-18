@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  darwin,
   gpgme,
   libgpg-error,
-  pkg-config,
-  python3,
   libiconv,
-  darwin,
-  x11Support ? true,
   libxcb,
   libxkbcommon,
+  pkg-config,
+  python3,
+  rustPlatform,
+  x11Support ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,8 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-DTVtMwKAZjPwT6c7FYoaT12Axoz3j1cMFKjDDsaHyjk=";
   };
-
-  cargoHash = "sha256-d2PYJajDKukwDERSjQcPSJaYbZDftNLBYEXq+7ZdlKw=";
 
   nativeBuildInputs = [
     gpgme # for gpgme-config
@@ -47,15 +45,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     darwin.libresolv
   ];
 
+  cargoHash = "sha256-d2PYJajDKukwDERSjQcPSJaYbZDftNLBYEXq+7ZdlKw=";
+
   meta = {
     description = "Terminal user interface for GnuPG";
     homepage = "https://github.com/orhun/gpg-tui";
     changelog = "https://github.com/orhun/gpg-tui/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dotlambda
       matthiasbeyer
     ];
+
     mainProgram = "gpg-tui";
   };
 })

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
+  installShellFiles,
   ncurses,
   pkg-config,
+  versionCheckHook,
   zig_0_15,
   zstd,
-  installShellFiles,
-  versionCheckHook,
   pie ? stdenv.hostPlatform.isDarwin,
 }:
 
@@ -31,29 +31,29 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  zigBuildFlags = lib.optional pie "-Dpie=true";
-
   postInstall = ''
     installManPage ncdu.1
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  zigBuildFlags = lib.optional pie "-Dpie=true";
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://dev.yorhel.nl/ncdu";
+    inherit (zig_0_15.meta) platforms;
     description = "Disk usage analyzer with an ncurses interface";
+    homepage = "https://dev.yorhel.nl/ncdu";
     changelog = "https://dev.yorhel.nl/ncdu/changes2";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pSub
       rodrgz
       defelo
       ryan4yin
     ];
-    inherit (zig_0_15.meta) platforms;
+
     mainProgram = "ncdu";
   };
 })

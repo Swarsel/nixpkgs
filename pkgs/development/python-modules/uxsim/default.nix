@@ -1,11 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
-  qt5,
-  python,
+  buildPythonPackage,
   dill,
   matplotlib,
   networkx,
@@ -13,13 +9,16 @@
   pandas,
   pillow,
   pyqt5,
+  python,
+  qt5,
   scipy,
+  setuptools,
   tqdm,
+  wheel,
 }:
 buildPythonPackage rec {
   pname = "uxsim";
   version = "1.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "toruseo";
@@ -29,6 +28,14 @@ buildPythonPackage rec {
   };
 
   patches = [ ./add-qt-plugin-path-to-env.patch ];
+
+  # QT_PLUGIN_PATH is required to be set for the program to produce its images
+  # our patch sets it to $NIX_QT_PLUGIN_PATH if QT_PLUGIN_PATH is not set
+  # and here we replace this string with the actual path to qt plugins
+  postInstall = ''
+    substituteInPlace $out/${python.sitePackages}/uxsim/__init__.py \
+      --replace-fail '$NIX_QT_PLUGIN_PATH' '${qt5.qtbase.bin}/${qt5.qtbase.qtPluginPrefix}'
+  '';
 
   build-system = [ setuptools ];
 
@@ -44,20 +51,13 @@ buildPythonPackage rec {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "uxsim" ];
 
-  # QT_PLUGIN_PATH is required to be set for the program to produce its images
-  # our patch sets it to $NIX_QT_PLUGIN_PATH if QT_PLUGIN_PATH is not set
-  # and here we replace this string with the actual path to qt plugins
-  postInstall = ''
-    substituteInPlace $out/${python.sitePackages}/uxsim/__init__.py \
-      --replace-fail '$NIX_QT_PLUGIN_PATH' '${qt5.qtbase.bin}/${qt5.qtbase.qtPluginPrefix}'
-  '';
-
   meta = {
-    changelog = "https://github.com/toruseo/UXsim/releases/tag/${src.tag}";
     description = "Vehicular traffic flow simulator in road network, written in pure Python";
     homepage = "https://github.com/toruseo/UXsim";
+    changelog = "https://github.com/toruseo/UXsim/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vinnymeller ];
   };

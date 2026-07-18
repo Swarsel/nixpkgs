@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  installShellFiles,
   alsa-lib,
+  installShellFiles,
   libjack2,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-MLc4OYsArdOWmoAqh2XTi3yQjI1uE7VwvTQ5D0Z1rfI=";
   };
 
-  cargoHash = "sha256-sWyMJLyRFYPjnnaKWidVRwgNFlJbhcTBkciwF53e758=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -30,6 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     alsa-lib
     libjack2
   ];
+
+  cargoHash = "sha256-sWyMJLyRFYPjnnaKWidVRwgNFlJbhcTBkciwF53e758=";
 
   postInstall = ''
     installManPage target/man/asak.1
@@ -45,8 +45,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/chaosprint/asak";
     changelog = "https://github.com/chaosprint/asak/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "asak";
     maintainers = with lib.maintainers; [ anas ];
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "asak";
   };
 })

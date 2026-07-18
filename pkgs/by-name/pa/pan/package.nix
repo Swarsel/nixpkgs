@@ -3,22 +3,22 @@
   stdenv,
   fetchFromGitLab,
   cmake,
-  pkg-config,
-  gtk3,
-  gspell,
-  gmime3,
+  gcr,
   gettext,
+  gmime3,
+  gnupg,
+  gnutls,
+  gspell,
+  gtk3,
   intltool,
   itstool,
-  libxml2,
   libnotify,
-  gnutls,
-  wrapGAppsHook3,
-  gnupg,
-  spellChecking ? true,
-  gnomeSupport ? true,
   libsecret,
-  gcr,
+  libxml2,
+  pkg-config,
+  wrapGAppsHook3,
+  gnomeSupport ? true,
+  spellChecking ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,11 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.165";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "pan";
     tag = "v${finalAttrs.version}";
     hash = "sha256-y9ejT/XTMoWMLSIOePEtPCUy51JThJrBBOCdSUTk2yc=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -70,15 +70,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GTK-based Usenet newsreader good at both text and binaries";
-    mainProgram = "pan";
     homepage = "http://pan.rebelbase.com";
-    maintainers = with lib.maintainers; [
-      aleksana
-    ];
-    platforms = lib.platforms.linux;
+
     license = with lib.licenses; [
       gpl2Only
       fdl11Only
     ];
+
+    maintainers = with lib.maintainers; [
+      aleksana
+    ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "pan";
   };
 })

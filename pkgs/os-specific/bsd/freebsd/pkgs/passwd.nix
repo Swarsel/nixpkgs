@@ -1,15 +1,9 @@
 {
   lib,
-  mkDerivation,
   libpam,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/passwd";
-
-  buildInputs = [
-    libpam
-  ];
-
   outputs = [
     "out"
     "man"
@@ -20,6 +14,11 @@ mkDerivation {
     sed -E -i -e '/BINOWN|BINMODE|PRECIOUSPROG/d' $BSDSRCDIR/usr.bin/passwd/Makefile
   '';
 
-  meta.platforms = lib.platforms.freebsd;
+  buildInputs = [
+    libpam
+  ];
+
+  path = "usr.bin/passwd";
   meta.mainProgram = "passwd";
+  meta.platforms = lib.platforms.freebsd;
 }

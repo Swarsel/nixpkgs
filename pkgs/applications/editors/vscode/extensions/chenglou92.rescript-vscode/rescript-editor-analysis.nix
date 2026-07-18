@@ -9,8 +9,6 @@ ocamlPackages.buildDunePackage (finalAttrs: {
   pname = "analysis";
   version = "1.72.0";
 
-  minimalOCamlVersion = "4.10";
-
   src = fetchFromGitHub {
     owner = "rescript-lang";
     repo = "rescript-vscode";
@@ -19,9 +17,12 @@ ocamlPackages.buildDunePackage (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     ocamlPackages.cppo
   ];
+
+  minimalOCamlVersion = "4.10";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -34,11 +35,13 @@ ocamlPackages.buildDunePackage (finalAttrs: {
     description = "Analysis binary for the ReScript VSCode plugin";
     homepage = "https://github.com/rescript-lang/rescript-vscode";
     changelog = "https://github.com/rescript-lang/rescript-vscode/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jayesh-bhoot
       RossSmyth
     ];
-    license = lib.licenses.mit;
+
     mainProgram = "rescript-editor-analysis";
   };
 })

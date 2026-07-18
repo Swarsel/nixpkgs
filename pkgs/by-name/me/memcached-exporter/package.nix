@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,19 +16,20 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Um2HUUfaA2tKnX82R0qmW0N+va56GGlED2OoTea3icU=";
-
   # Tests touch the network
   doCheck = false;
 
   meta = {
-    changelog = "https://github.com/prometheus/memcached_exporter/releases/tag/${finalAttrs.src.tag}";
     description = "Exports metrics from memcached servers for consumption by Prometheus";
     homepage = "https://github.com/prometheus/memcached_exporter";
+    changelog = "https://github.com/prometheus/memcached_exporter/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "memcached_exporter";
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched
     ];
+
+    mainProgram = "memcached_exporter";
   };
 })

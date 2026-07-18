@@ -1,14 +1,14 @@
 {
   buildDunePackage,
   findlib,
-  ocsipersist-pgsql,
   ocsigen_server,
+  ocsipersist-pgsql,
   xml-light,
 }:
 
 buildDunePackage {
-  pname = "ocsipersist-pgsql-config";
   inherit (ocsipersist-pgsql) version src;
+  pname = "ocsipersist-pgsql-config";
 
   propagatedBuildInputs = [
     findlib

@@ -2,14 +2,12 @@
   lib,
   fetchFromGitHub,
   makeBinaryWrapper,
+  nix-update-script,
   ripgrep,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "okapi-ed";
   version = "0.5.0";
 
@@ -20,18 +18,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-1cfnEhJiCtESp+a7vEANocPgxQVr88FJf3EYLjuaIDI=";
   };
 
-  cargoHash = "sha256-+vb0ju5FUOWAUTysUYh95d0o8fzdaPlfwszGcTUPQzo=";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  cargoHash = "sha256-+vb0ju5FUOWAUTysUYh95d0o8fzdaPlfwszGcTUPQzo=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = ''
     wrapProgram "$out/bin/okapi" \
       --prefix PATH : "${lib.makeBinPath [ ripgrep ]}"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -39,11 +36,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/nk9/okapi";
     changelog = "https://github.com/nk9/okapi/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "okapi";
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       toelke
       nadir-ishiguro
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "okapi";
   };
 })

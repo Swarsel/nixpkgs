@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "merkletools";
   version = "1.0.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Tierion";
@@ -24,7 +23,7 @@ buildPythonPackage rec {
   '';
 
   checkInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "merkletools" ];
 
   meta = {

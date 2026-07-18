@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -19,39 +19,34 @@ let
           --prefix PATH : "${lib.makeBinPath [ pkgs.nodejs ]}"
       '';
   securityOptions = {
-    NoNewPrivileges = true;
-
     AmbientCapabilities = "";
     CapabilityBoundingSet = "";
-
     DeviceAllow = "";
-
     LockPersonality = true;
-
-    PrivateTmp = true;
+    NoNewPrivileges = true;
     PrivateDevices = true;
+    PrivateTmp = true;
     PrivateUsers = true;
-
     ProtectClock = true;
     ProtectControlGroups = true;
     ProtectHostname = true;
     ProtectKernelLogs = true;
     ProtectKernelModules = true;
     ProtectKernelTunables = true;
-
     RemoveIPC = true;
 
-    RestrictNamespaces = true;
     RestrictAddressFamilies = [
       "AF_INET"
       "AF_INET6"
       "AF_UNIX"
     ];
+
+    RestrictNamespaces = true;
     RestrictRealtime = true;
     RestrictSUIDSGID = true;
-
     SystemCallArchitectures = "native";
     SystemCallErrorNumber = "EPERM";
+
     SystemCallFilter = [
       "@system-service"
       "~@cpu-emulation"
@@ -68,49 +63,60 @@ in
   options = {
     services.dgraph = {
       enable = lib.mkEnableOption "Dgraph native GraphQL database with a graph backend";
-
       package = lib.mkPackageOption pkgs "dgraph" { };
-
-      settings = lib.mkOption {
-        type = settingsFormat.type;
-        default = { };
-        description = ''
-          Contents of the dgraph config. For more details see <https://dgraph.io/docs/deploy/config>
-        '';
-      };
 
       alpha = {
         host = lib.mkOption {
-          type = lib.types.str;
           default = "localhost";
+
           description = ''
             The host which dgraph alpha will be run on.
           '';
+
+          type = lib.types.str;
         };
+
         port = lib.mkOption {
-          type = lib.types.port;
           default = 7080;
+
           description = ''
             The port which to run dgraph alpha on.
           '';
+
+          type = lib.types.port;
         };
 
+      };
+
+      settings = lib.mkOption {
+        default = { };
+
+        description = ''
+          Contents of the dgraph config. For more details see <https://dgraph.io/docs/deploy/config>
+        '';
+
+        type = settingsFormat.type;
       };
 
       zero = {
         host = lib.mkOption {
-          type = lib.types.str;
           default = "localhost";
+
           description = ''
             The host which dgraph zero will be run on.
           '';
+
+          type = lib.types.str;
         };
+
         port = lib.mkOption {
-          type = lib.types.port;
           default = 5080;
+
           description = ''
             The port which to run dgraph zero on.
           '';
+
+          type = lib.types.port;
         };
       };
 
@@ -122,44 +128,49 @@ in
       badger.compression = lib.mkDefault "zstd:3";
     };
 
-    systemd.services.dgraph-zero = {
-      description = "Dgraph native GraphQL database with a graph backend. Zero controls node clustering";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        StateDirectory = "dgraph-zero";
-        WorkingDirectory = "/var/lib/dgraph-zero";
-        DynamicUser = true;
-        ExecStart = "${cfg.package}/bin/dgraph zero --my ${cfg.zero.host}:${toString cfg.zero.port}";
-        Restart = "on-failure";
-      }
-      // securityOptions;
-    };
-
     systemd.services.dgraph-alpha = {
-      description = "Dgraph native GraphQL database with a graph backend. Alpha serves data";
       after = [
         "network.target"
         "dgraph-zero.service"
       ];
+
+      description = "Dgraph native GraphQL database with a graph backend. Alpha serves data";
       requires = [ "dgraph-zero.service" ];
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
-        StateDirectory = "dgraph-alpha";
-        WorkingDirectory = "/var/lib/dgraph-alpha";
         DynamicUser = true;
         ExecStart = "${dgraphWithNode}/bin/dgraph alpha --config ${configFile} --my ${cfg.alpha.host}:${toString cfg.alpha.port} --zero ${cfg.zero.host}:${toString cfg.zero.port}";
+
         ExecStop = ''
           ${pkgs.curl}/bin/curl --data "mutation { shutdown { response { message code } } }" \
               --header 'Content-Type: application/graphql' \
               -X POST \
               http://localhost:8080/admin
         '';
+
         Restart = "on-failure";
+        StateDirectory = "dgraph-alpha";
+        WorkingDirectory = "/var/lib/dgraph-alpha";
       }
       // securityOptions;
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.dgraph-zero = {
+      after = [ "network.target" ];
+      description = "Dgraph native GraphQL database with a graph backend. Zero controls node clustering";
+
+      serviceConfig = {
+        DynamicUser = true;
+        ExecStart = "${cfg.package}/bin/dgraph zero --my ${cfg.zero.host}:${toString cfg.zero.port}";
+        Restart = "on-failure";
+        StateDirectory = "dgraph-zero";
+        WorkingDirectory = "/var/lib/dgraph-zero";
+      }
+      // securityOptions;
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

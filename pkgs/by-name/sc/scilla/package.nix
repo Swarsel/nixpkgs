@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,22 +17,22 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-nI79Gx6Vs7wyqK9pCSbsFGmKBsqcmCNk2LpQ5fi79h4=";
 
-  ldflags = [
-    "-w"
-    "-s"
-  ];
-
   checkFlags = [
     # requires network access
     "-skip=TestIPToHostname"
   ];
 
+  ldflags = [
+    "-w"
+    "-s"
+  ];
+
   meta = {
     description = "Information gathering tool for DNS, ports and more";
-    mainProgram = "scilla";
     homepage = "https://github.com/edoardottt/scilla";
     changelog = "https://github.com/edoardottt/scilla/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "scilla";
   };
 })

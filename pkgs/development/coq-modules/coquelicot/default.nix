@@ -1,19 +1,24 @@
 {
   lib,
-  mkCoqDerivation,
   autoconf,
   coq,
-  stdlib,
   mathcomp-boot,
+  mkCoqDerivation,
+  stdlib,
   version ? null,
 }:
 
 let
   derivation = mkCoqDerivation {
-    pname = "coquelicot";
-    owner = "coquelicot";
-    domain = "gitlab.inria.fr";
     inherit version;
+    pname = "coquelicot";
+    nativeBuildInputs = [ autoconf ];
+
+    propagatedBuildInputs = [
+      stdlib
+      mathcomp-boot
+    ];
+
     defaultVersion =
       let
         case = case: out: { inherit case out; };
@@ -29,28 +34,25 @@ let
         (case (range "8.8" "8.13") "3.1.0")
         (case (range "8.5" "8.9") "3.0.2")
       ] null;
-    release."3.4.4".hash = "sha256-xuL1ZpAfiBvQwXGjS7aN2N7KqSZlw+ywB8HvL9/Bjqs=";
-    release."3.4.3".hash = "sha256-bzzAIENU2OYTtmdBU9Xw8zyBvz9vqTiqjWSm7RnXXRA=";
-    release."3.4.2".hash = "sha256-aBTF8ZKu67Rb3ryCqFyejUXf/65KgG8i5je/ZMFSrj4=";
-    release."3.4.1".hash = "sha256-REhvIBl3EaL8CQqI34Gn7Xjf9NhPI3nrUAO26pSLbm0=";
-    release."3.4.0".hash = "sha256-LIj2SwTvVBxSAO58VYCQix/uxQQe8ey6hqFOSh3PNcg=";
-    release."3.3.1".hash = "sha256-YCvd4aIt2BxLKBYSWzN7aqo0AuY7z8oADmKvybhYBQI=";
-    release."3.3.0".hash = "sha256-bh9qP/EhWrHpTe2GMGG3S2vgBSSK088mFfhAIGejVoU=";
-    release."3.2.0".hash = "sha256:07w7dbl8x7xxnbr2q39wrdh054gvi3daqjpdn1jm53crsl1fjxm4";
-    release."3.1.0".hash = "sha256:02i0djar13yk01hzaqprcldhhscn9843x9nf6x3jkv4wv1jwnx9f";
-    release."3.0.2".hash = "sha256:1rqfbbskgz7b1bcpva8wh3v3456sq2364y804f94sc8y5sij23nl";
-    releaseRev = v: "coquelicot-${v}";
 
-    nativeBuildInputs = [ autoconf ];
-    propagatedBuildInputs = [
-      stdlib
-      mathcomp-boot
-    ];
+    domain = "gitlab.inria.fr";
+    owner = "coquelicot";
+    release."3.0.2".hash = "sha256:1rqfbbskgz7b1bcpva8wh3v3456sq2364y804f94sc8y5sij23nl";
+    release."3.1.0".hash = "sha256:02i0djar13yk01hzaqprcldhhscn9843x9nf6x3jkv4wv1jwnx9f";
+    release."3.2.0".hash = "sha256:07w7dbl8x7xxnbr2q39wrdh054gvi3daqjpdn1jm53crsl1fjxm4";
+    release."3.3.0".hash = "sha256-bh9qP/EhWrHpTe2GMGG3S2vgBSSK088mFfhAIGejVoU=";
+    release."3.3.1".hash = "sha256-YCvd4aIt2BxLKBYSWzN7aqo0AuY7z8oADmKvybhYBQI=";
+    release."3.4.0".hash = "sha256-LIj2SwTvVBxSAO58VYCQix/uxQQe8ey6hqFOSh3PNcg=";
+    release."3.4.1".hash = "sha256-REhvIBl3EaL8CQqI34Gn7Xjf9NhPI3nrUAO26pSLbm0=";
+    release."3.4.2".hash = "sha256-aBTF8ZKu67Rb3ryCqFyejUXf/65KgG8i5je/ZMFSrj4=";
+    release."3.4.3".hash = "sha256-bzzAIENU2OYTtmdBU9Xw8zyBvz9vqTiqjWSm7RnXXRA=";
+    release."3.4.4".hash = "sha256-xuL1ZpAfiBvQwXGjS7aN2N7KqSZlw+ywB8HvL9/Bjqs=";
+    releaseRev = v: "coquelicot-${v}";
     useMelquiondRemake.logpath = "Coquelicot";
 
     meta = {
-      homepage = "http://coquelicot.saclay.inria.fr/";
       description = "Coq library for Reals";
+      homepage = "http://coquelicot.saclay.inria.fr/";
       license = lib.licenses.lgpl3;
       maintainers = [ lib.maintainers.vbgl ];
     };

@@ -11,8 +11,8 @@ let
   SHLIB_EXT = stdenv.hostPlatform.extensions.sharedLibrary;
 in
 stdenv.mkDerivation {
-  pname = "tinyxml";
   inherit version;
+  pname = "tinyxml";
 
   src = fetchurl {
     url = "mirror://sourceforge/project/tinyxml/tinyxml/${version}/tinyxml_2_6_2.zip";
@@ -30,24 +30,21 @@ stdenv.mkDerivation {
     ./2.6.2-cxx.patch
 
     (fetchpatch {
+      hash = "sha256-ow4LmLQV24SAU6M1J8PXpW5c95+el3t8weM9JK5xJfg=";
       name = "CVE-2023-34194.patch";
       url = "https://salsa.debian.org/debian/tinyxml/-/raw/2366e1f23d059d4c20c43c54176b6bd78d6a83fc/debian/patches/CVE-2023-34194.patch";
-      hash = "sha256-ow4LmLQV24SAU6M1J8PXpW5c95+el3t8weM9JK5xJfg=";
     })
     (fetchpatch {
+      hash = "sha256-pIM0uOnUQOW93w/PEPuW3yKq1mdvNT/ClCYVc2hLoY8=";
       name = "CVE-2021-42260.patch";
       url = "https://salsa.debian.org/debian/tinyxml/-/raw/dc332a9f4e05496c8342b778c14b256083beb1ee/debian/patches/CVE-2021-42260.patch";
-      hash = "sha256-pIM0uOnUQOW93w/PEPuW3yKq1mdvNT/ClCYVc2hLoY8=";
     })
   ];
 
+  nativeBuildInputs = [ unzip ];
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-mmacosx-version-min=10.9";
   preConfigure = "export LD=${stdenv.cc.targetPrefix}c++";
 
-  hardeningDisable = [ "format" ];
-
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-mmacosx-version-min=10.9";
-
-  nativeBuildInputs = [ unzip ];
   buildPhase = ''
     # use STL (xbmc requires it)
     sed '1i#define TIXML_USE_STL 1' -i tinyxml.h
@@ -63,6 +60,7 @@ stdenv.mkDerivation {
   '';
 
   doCheck = true;
+
   checkPhase = ''
     ./xmltest
     result=$?
@@ -88,6 +86,8 @@ stdenv.mkDerivation {
   + lib.optionalString stdenv.hostPlatform.isDarwin ''
     install_name_tool -id $out/lib/libtinyxml.dylib $out/lib/libtinyxml.dylib
   '';
+
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Simple, small, C++ XML parser that can be easily integrating into other programs";

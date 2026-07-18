@@ -3,17 +3,17 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gamemode,
+  gamescope,
+  icoextract,
+  icoutils,
+  icu,
+  mangohud,
   pkg-config,
   qt6,
   qt6Packages,
-  icu,
-  icoextract,
-  icoutils,
   umu-launcher,
   winetricks,
-  mangohud,
-  gamescope,
-  gamemode,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "nero-umu";
@@ -25,12 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-dwM9ZRgNBLA16faO68pSnNsfWC4Naom6QRg1RYwXxLA=";
   };
-
-  #Replace quazip git submodule with pre-packaged quazip
-  postUnpack = ''
-    rmdir source/lib/quazip/
-    ln -s ${qt6Packages.quazip.src} source/lib/quazip
-  '';
 
   nativeBuildInputs = [
     cmake
@@ -44,16 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qt5compat
     qt6Packages.quazip
     icu
-  ];
-
-  runtimeDeps = [
-    icoextract
-    icoutils
-    winetricks
-    umu-launcher
-    mangohud
-    gamescope
-    gamemode
   ];
 
   cmakeFlags = [
@@ -76,16 +60,34 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  #Replace quazip git submodule with pre-packaged quazip
+  postUnpack = ''
+    rmdir source/lib/quazip/
+    ln -s ${qt6Packages.quazip.src} source/lib/quazip
+  '';
+
+  runtimeDeps = [
+    icoextract
+    icoutils
+    winetricks
+    umu-launcher
+    mangohud
+    gamescope
+    gamemode
+  ];
+
   meta = {
-    homepage = "https://github.com/SeongGino/Nero-umu";
     description = "Fast and efficient Proton prefix runner and manager using umu as backend";
+    homepage = "https://github.com/SeongGino/Nero-umu";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "nero-umu";
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       ern775
       blghnks
       keenanweaver
     ];
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "nero-umu";
   };
 })

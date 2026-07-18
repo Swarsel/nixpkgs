@@ -17,25 +17,24 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-KgKrJcdYPwY6bSxa/r5HCUCeMnJ0GXSgNo8MKLDooFQ=";
   };
 
-  vendorHash = null;
+  nativeBuildInputs = [
+    go-md2man
+    installShellFiles
+  ];
 
+  vendorHash = null;
   doCheck = false;
+
+  postInstall = ''
+    make docs SHELL="$SHELL"
+    installManPage doc/man/*.[1-9]
+  '';
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  nativeBuildInputs = [
-    go-md2man
-    installShellFiles
-  ];
-
-  postInstall = ''
-    make docs SHELL="$SHELL"
-    installManPage doc/man/*.[1-9]
-  '';
 
   meta = {
     description = "Modifies Open Container images";

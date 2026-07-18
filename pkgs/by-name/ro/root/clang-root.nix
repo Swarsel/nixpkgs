@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  fetchgit,
+  stdenv,
   apple-sdk,
   cmake,
+  fetchgit,
   git,
   llvm_20,
   pkg-config,
@@ -20,23 +20,20 @@ stdenv.mkDerivation rec {
     hash = "sha256-EXBUI1+DWkqTH4KdVoqxPjG8WyL0P5AEemLvBJqaVrQ=";
   };
 
+  patches = [
+    ./Fix-find_package-LLVM-overwriting-LLVM_LINK_LLVM_DYLIB.patch
+  ];
+
   nativeBuildInputs = [
     cmake
     pkg-config
     git
   ];
+
   buildInputs = [
     llvm_20
     python3
   ];
-
-  patches = [
-    ./Fix-find_package-LLVM-overwriting-LLVM_LINK_LLVM_DYLIB.patch
-  ];
-
-  preConfigure = ''
-    cd clang
-  '';
 
   cmakeFlags = [
     "-DCLANG_BUILD_TOOLS=OFF"
@@ -54,4 +51,8 @@ stdenv.mkDerivation rec {
     else
       lib.optional (stdenv.cc.libc != null) "-DC_INCLUDE_DIRS=${lib.getDev stdenv.cc.libc}/include"
   );
+
+  preConfigure = ''
+    cd clang
+  '';
 }

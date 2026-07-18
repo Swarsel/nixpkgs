@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  writeScript,
   cdrtools,
   dvdauthor,
   ffmpeg,
   imagemagick,
   lame,
   mjpegtools,
+  runtimeShell,
   sox,
   vorbis-tools,
-  runtimeShell,
+  writeScript,
 }:
 
 let
@@ -60,13 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "17c09aqvippiji2sd0pcxjg3nb1mnh9k5nia4gn5lhcvngjcp1q5";
   };
 
-  patchPhase = ''
-    # fix upstream typos
-    substituteInPlace dvd-slideshow \
-      --replace "version='0.8.4-1'" "version='0.8.4-2'" \
-      --replace "mymyecho" "myecho"
-  '';
-
   installPhase = ''
     mkdir -p "$out/bin"
     cp dvd-slideshow         "$out/bin/dvd-slideshow.real"
@@ -86,11 +79,18 @@ stdenv.mkDerivation (finalAttrs: {
     cp -a man "$out/"
   '';
 
+  patchPhase = ''
+    # fix upstream typos
+    substituteInPlace dvd-slideshow \
+      --replace "version='0.8.4-1'" "version='0.8.4-2'" \
+      --replace "mymyecho" "myecho"
+  '';
+
   meta = {
     description = "Suite of command line programs that creates a slideshow-style video from groups of pictures";
     homepage = "https://dvd-slideshow.sourceforge.net/wiki/Main_Page";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.robbinch ];
+    platforms = lib.platforms.linux;
   };
 })

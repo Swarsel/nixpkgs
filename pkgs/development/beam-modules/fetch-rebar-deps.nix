@@ -6,19 +6,16 @@
 
 {
   name,
-  version,
   sha256,
   src,
+  version,
   meta ? { },
 }:
 
 stdenv.mkDerivation {
-  pname = "rebar-deps-${name}";
   inherit version;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontFixup = true;
+  inherit meta;
+  pname = "rebar-deps-${name}";
 
   buildPhase = ''
     cp -r ${src} src
@@ -37,10 +34,11 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+  dontFixup = true;
+  dontUnpack = true;
+  impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+  outputHash = sha256;
   outputHashAlgo = "sha256";
   outputHashMode = "recursive";
-  outputHash = sha256;
-
-  impureEnvVars = lib.fetchers.proxyImpureEnvVars;
-  inherit meta;
 }

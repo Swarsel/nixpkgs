@@ -1,29 +1,29 @@
 {
   lib,
   stdenv,
-  writeTextFile,
-  writeScript,
   fetchurl,
-  unzip,
+  atk,
   autoconf,
   automake,
-  libtool_1_5,
-  makeWrapper,
+  cairo,
   cups,
-  jbigkit,
-  libjpeg,
-  libgcrypt,
+  gdk-pixbuf,
+  ghostscript,
   glib,
   gtk3,
-  gdk-pixbuf,
-  pango,
-  cairo,
-  atk,
-  pkg-config,
-  libxml2_13,
+  jbigkit,
+  libgcrypt,
+  libjpeg,
   libredirect,
-  ghostscript,
+  libtool_1_5,
+  libxml2_13,
+  makeWrapper,
+  pango,
+  pkg-config,
   pkgs,
+  unzip,
+  writeScript,
+  writeTextFile,
   zlib,
 }:
 
@@ -45,8 +45,8 @@ let
 
   versionNoDots = builtins.replaceStrings [ "." ] [ "" ] version;
   src_canon = fetchurl {
-    url = "https://gdlp01.c-wss.com/gds/${dl}/linux-UFRII-drv-v${versionNoDots}-${suffix1}-${suffix2}.tar.gz";
     hash = "sha256-6QJaaABubEaERpJxfVGxghB8yIb2pCaQZ6+VoqjmYrk=";
+    url = "https://gdlp01.c-wss.com/gds/${dl}/linux-UFRII-drv-v${versionNoDots}-${suffix1}-${suffix2}.tar.gz";
   };
 
   buildInputs = [
@@ -65,8 +65,9 @@ let
   ];
 
   convertSpec = writeTextFile {
-    name = "convert-spec.awk";
     checkPhase = "awk -f $target < /dev/null";
+    name = "convert-spec.awk";
+
     text = ''
       $1 == "%" phase { inPhase = 1; next }
       inPhase && /^%/ { exit }
@@ -102,20 +103,10 @@ let
   };
 in
 stdenv.mkDerivation rec {
-  pname = "canon-cups-ufr2";
   inherit version;
+  inherit buildInputs;
+  pname = "canon-cups-ufr2";
   src = src_canon;
-
-  # we can't let patchelf remove unnecessary RPATHs because the driver uses dlopen to load libjpeg and libgcrypt
-  dontPatchELF = true;
-
-  postUnpack = ''
-    export sourceRoot=$PWD/$sourceRoot
-    (
-      cd $sourceRoot
-      tar -xf Sources/cnrdrvcups-lb-${version}-1.${suffix2}.tar.xz
-    )
-  '';
 
   patches = [
     ./replace_incorrect_int_with_char.patch
@@ -144,25 +135,6 @@ stdenv.mkDerivation rec {
     libtool_1_5
     pkg-config
   ];
-
-  inherit buildInputs;
-
-  configureScript = writeScript "canon-cups-ufr2-configure" ''
-    set -eu
-    # Update old automake files
-    for dir in \
-      cnrdrvcups-common-${version}/{backend,buftool,cngplp,cnjbig,rasterfilter} \
-      cnrdrvcups-lb-${version}/{cngplp/files,cngplp,cpca,pdftocpca}
-    do
-      echo autoreconf $dir
-      pushd "$dir"
-      # For some reason, autoreconf fails to create ltmain.sh on first run.
-      autoreconf --force --install --warnings=none || autoreconf --force --install --warnings=none
-      popd
-    done
-
-    awk -f ${convertSpec} -v phase=setup cnrdrvcups-lb.spec | bash -eux
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -207,11 +179,39 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  configureScript = writeScript "canon-cups-ufr2-configure" ''
+    set -eu
+    # Update old automake files
+    for dir in \
+      cnrdrvcups-common-${version}/{backend,buftool,cngplp,cnjbig,rasterfilter} \
+      cnrdrvcups-lb-${version}/{cngplp/files,cngplp,cpca,pdftocpca}
+    do
+      echo autoreconf $dir
+      pushd "$dir"
+      # For some reason, autoreconf fails to create ltmain.sh on first run.
+      autoreconf --force --install --warnings=none || autoreconf --force --install --warnings=none
+      popd
+    done
+
+    awk -f ${convertSpec} -v phase=setup cnrdrvcups-lb.spec | bash -eux
+  '';
+
+  # we can't let patchelf remove unnecessary RPATHs because the driver uses dlopen to load libjpeg and libgcrypt
+  dontPatchELF = true;
+
+  postUnpack = ''
+    export sourceRoot=$PWD/$sourceRoot
+    (
+      cd $sourceRoot
+      tar -xf Sources/cnrdrvcups-lb-${version}-1.${suffix2}.tar.xz
+    )
+  '';
+
   meta = {
     description = "CUPS Linux drivers for Canon printers";
     homepage = "http://www.canon.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ lluchs ];
   };
 }

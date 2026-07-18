@@ -1,25 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  pytorch-lightning,
-  torch,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
   pythonAtLeast,
+  # dependencies
+  pytorch-lightning,
+  # build-system
+  setuptools,
+  torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "finetuning-scheduler";
   version = "2.10.0.post0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "speediedan";
@@ -28,22 +24,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-OeIpbxEjhvUzToy1jH9JcontSMfeozFjisTJCa0f4P0=";
   };
 
+  # needed while lightning is installed as package `pytorch-lightning` rather than`lightning`:
+  env.PACKAGE_NAME = "pytorch";
+  nativeCheckInputs = [ pytestCheckHook ];
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "pytorch-lightning"
-  ];
 
   dependencies = [
     pytorch-lightning
     torch
   ];
 
-  # needed while lightning is installed as package `pytorch-lightning` rather than`lightning`:
-  env.PACKAGE_NAME = "pytorch";
-
-  nativeCheckInputs = [ pytestCheckHook ];
-  enabledTestPaths = [ "tests" ];
   disabledTests = [
     # AssertionError: assert 'lightning @ git+' in 'lightning>=2.5.0,<2.5.6'
     "test_get_lightning_requirement"
@@ -58,9 +49,13 @@ buildPythonPackage (finalAttrs: {
     "test_fts_frozen_bn_track_running_stats"
   ];
 
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "finetuning_scheduler" ];
 
-  __darwinAllowLocalNetworking = true;
+  pythonRelaxDeps = [
+    "pytorch-lightning"
+  ];
 
   meta = {
     description = "PyTorch Lightning extension for foundation model experimentation with flexible fine-tuning schedules";

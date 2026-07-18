@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
-  fetchFromSourcehut,
-  pkg-config,
-  meson,
-  ninja,
-  lv2,
-  lilv,
+  stdenv,
   curl,
   elfutils,
+  fetchFromSourcehut,
   libx11,
+  lilv,
+  lv2,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,11 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.16.2";
 
   src = fetchFromSourcehut {
-    domain = "open-music-kontrollers.ch";
     owner = "~hp";
     repo = "lv2lint";
     tag = finalAttrs.version;
     hash = "sha256-NkzbKteLZ+P+Py+CMOYYipvu6psDslWnM1MAV1XB0TM=";
+    domain = "open-music-kontrollers.ch";
   };
 
   nativeBuildInputs = [

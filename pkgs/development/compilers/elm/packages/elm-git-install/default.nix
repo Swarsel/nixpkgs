@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -17,15 +17,13 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-/oVW5gm1llA1+AXkzkjlqBEGLaMFyA+zc8HI9nt8Y0Q=";
-
   dontNpmBuild = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/robinheghan/elm-git-install/blob/${finalAttrs.version}/CHANGES.md";
     description = "Install private Elm packages from any git url";
     homepage = "https://github.com/robinheghan/elm-git-install";
+    changelog = "https://github.com/robinheghan/elm-git-install/blob/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     mainProgram = "elm-git-install";

@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  autoreconfHook,
-  pkg-config,
-  libpulseaudio,
   alsa-lib,
-  libcap,
+  autoreconfHook,
   config,
+  fetchpatch,
+  libcap,
+  libpulseaudio,
+  pkg-config,
   usePulseAudio ? config.pulseaudio or (lib.meta.availableOn stdenv.hostPlatform libpulseaudio),
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.2.2";
   pname = "libao";
+  version = "1.2.2";
 
   # the github mirror is more up to date than downloads.xiph.org
   src = fetchFromGitHub {
@@ -24,25 +24,25 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0svgk4sc9kdhcsfyvbvgm5vpbg3sfr6z5rliflrw49v3x2i4vxq5";
   };
 
-  patches = [
-    # add header time.h for nanosecond
-    (fetchpatch {
-      name = "nanosecond-header.patch";
-      url = "https://github.com/xiph/libao/commit/1f998f5d6d77674dad01b181811638578ad68242.patch";
-      hash = "sha256-cvlyhQq1YS4pVya44LfsKD1R6iSOONsHJGRbP5LlanQ=";
-    })
-  ];
-
-  configureFlags = [
-    "--disable-broken-oss"
-    "--enable-alsa-mmap"
-  ];
-
   outputs = [
     "out"
     "dev"
     "man"
     "doc"
+  ];
+
+  patches = [
+    # add header time.h for nanosecond
+    (fetchpatch {
+      hash = "sha256-cvlyhQq1YS4pVya44LfsKD1R6iSOONsHJGRbP5LlanQ=";
+      name = "nanosecond-header.patch";
+      url = "https://github.com/xiph/libao/commit/1f998f5d6d77674dad01b181811638578ad68242.patch";
+    })
+  ];
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
   ];
 
   buildInputs =
@@ -53,9 +53,9 @@ stdenv.mkDerivation (finalAttrs: {
       libcap
     ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
+  configureFlags = [
+    "--disable-broken-oss"
+    "--enable-alsa-mmap"
   ];
 
   enableParallelBuilding = true;
@@ -66,6 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
       programs to output audio using a simple API on a wide variety of
       platforms.
     '';
+
     homepage = "https://xiph.org/ao/";
     license = lib.licenses.gpl2;
     maintainers = [ ];

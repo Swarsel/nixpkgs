@@ -1,16 +1,15 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitHub,
+  buildPythonPackage,
+  nix-update-script,
   setuptools,
   wheel,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "systemdunitparser";
   version = "0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sgallagher";
@@ -23,6 +22,8 @@ buildPythonPackage rec {
     setuptools
     wheel
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "SystemdUnitParser"

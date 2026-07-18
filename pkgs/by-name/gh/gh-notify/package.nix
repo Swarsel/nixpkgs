@@ -1,16 +1,16 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  makeWrapper,
+  bat,
+  delta,
+  fzf,
   gh,
   gnugrep,
-  fzf,
+  makeWrapper,
   python3,
-  withDelta ? false,
-  delta,
+  stdenvNoCC,
   withBat ? false,
-  bat,
+  withDelta ? false,
 }:
 let
   binPath = lib.makeBinPath (
@@ -48,11 +48,11 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/meiji163/gh-notify";
     description = "GitHub CLI extension to display GitHub notifications";
-    maintainers = with lib.maintainers; [ loicreynier ];
+    homepage = "https://github.com/meiji163/gh-notify";
     license = lib.licenses.unlicense;
-    mainProgram = "gh-notify";
+    maintainers = with lib.maintainers; [ loicreynier ];
     platforms = lib.platforms.all;
+    mainProgram = "gh-notify";
   };
 }

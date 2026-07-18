@@ -2,41 +2,41 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   pyocd,
   pyocd-pemicro,
-  spsdk,
-
   # tests
   pytestCheckHook,
-  writableTmpDirAsHomeHook,
-
+  # build-system
+  setuptools,
+  spsdk,
   # passthru
   spsdk-pyocd,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "spsdk-pyocd";
   version = "0.3.4";
-  pyproject = true;
 
   # Latest tag missing on GitHub
   src = fetchPypi {
-    pname = "spsdk_pyocd";
     inherit version;
     hash = "sha256-jvzXu6z9oo2oGoiDgCWWcU3yX/PuWm56MJzIcMWCgTM=";
+    pname = "spsdk_pyocd";
   };
+
+  # Cyclic dependency with spsdk
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    spsdk
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "pyocd"
   ];
 
   dependencies = [
@@ -49,20 +49,16 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    spsdk
-    writableTmpDirAsHomeHook
-  ];
+  pyproject = true;
 
-  # Cyclic dependency with spsdk
-  doCheck = false;
+  pythonRelaxDeps = [
+    "pyocd"
+  ];
 
   passthru.tests = {
     pytest = spsdk-pyocd.overridePythonAttrs {
-      pythonImportsCheck = [ "spsdk_pyocd" ];
-
       doCheck = true;
+      pythonImportsCheck = [ "spsdk_pyocd" ];
     };
   };
 

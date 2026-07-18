@@ -1,7 +1,7 @@
 {
+  lib,
   fetchurl,
   jdk17_headless,
-  lib,
   makeWrapper,
   stdenvNoCC,
   unzip,
@@ -37,8 +37,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Run HTTP requests from a terminal, e.g. for HTTP request testing";
     homepage = "https://www.jetbrains.com/help/idea/http-client-cli.html";
     license = lib.licenses.unfree;
-    mainProgram = "ijhttp";
-    platforms = lib.platforms.all;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    platforms = lib.platforms.all;
+    mainProgram = "ijhttp";
   };
 })

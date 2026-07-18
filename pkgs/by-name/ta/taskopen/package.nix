@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  which,
-  perl,
-  perlPackages,
   buildNimPackage,
   git,
+  makeWrapper,
+  perl,
+  perlPackages,
+  which,
 }:
 
 buildNimPackage (finalAttrs: {
@@ -33,10 +33,10 @@ buildNimPackage (finalAttrs: {
 
   meta = {
     description = "Script for taking notes and open urls with taskwarrior";
-    mainProgram = "taskopen";
     homepage = "https://github.com/ValiValpas/taskopen";
-    platforms = lib.platforms.all;
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.winpat ];
+    platforms = lib.platforms.all;
+    mainProgram = "taskopen";
   };
 })

@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
   fetchzip,
-  lib,
-  makeWrapper,
   jre,
+  makeWrapper,
   stripJavaArchivesHook,
   versionCheckHook,
 }:
@@ -22,13 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     stripJavaArchivesHook
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   buildInputs = [ jre ];
-
-  dontBuild = true;
-  doInstallCheck = true;
-
-  versionCheckProgram = "${placeholder "out"}/bin/jib";
 
   installPhase = ''
     runHook preInstall
@@ -40,14 +34,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontBuild = true;
+  versionCheckProgram = "${placeholder "out"}/bin/jib";
+
   meta = {
     description = "Container image builder for Java using Jib CLI";
     homepage = "https://github.com/GoogleContainerTools/jib";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       sxmair
     ];
+
     mainProgram = "jib";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

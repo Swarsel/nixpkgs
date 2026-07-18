@@ -1,16 +1,15 @@
 {
-  mkKdeDerivation,
-  qtquick3d,
-  pkg-config,
-  pipewire,
   ffmpeg,
   libgbm,
   libva,
+  mkKdeDerivation,
+  pipewire,
+  pkg-config,
+  qtquick3d,
 }:
 mkKdeDerivation {
   pname = "kpipewire";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtquick3d
     pipewire
@@ -18,4 +17,6 @@ mkKdeDerivation {
     libgbm
     libva
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 }

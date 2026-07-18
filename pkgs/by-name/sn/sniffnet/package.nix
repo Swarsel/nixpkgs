@@ -1,30 +1,26 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  pkg-config,
-
-  # buildInputs
-  libpcap,
-  openssl,
   alsa-lib,
   expat,
   fontconfig,
-  vulkan-loader,
-  libxrandr,
-  libxi,
-  libxcursor,
+  # buildInputs
+  libpcap,
   libx11,
-
+  libxcursor,
+  libxi,
   # wrapper
   libxkbcommon,
-  wayland,
-
+  libxrandr,
+  openssl,
+  # nativeBuildInputs
+  pkg-config,
+  rustPlatform,
   # tests
   versionCheckHook,
+  vulkan-loader,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -37,8 +33,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ifXccpoyz+NnZDjbRXlVZXfd2TLvOhGVB504hDyIjnE=";
   };
-
-  cargoHash = "sha256-Tw32dOzFkO/cOlLdTfHeybhmbidgsnfYMIeHhfrrtVc=";
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -60,6 +54,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rustPlatform.bindgenHook
   ];
 
+  cargoHash = "sha256-Tw32dOzFkO/cOlLdTfHeybhmbidgsnfYMIeHhfrrtVc=";
+
   # requires internet access
   checkFlags = [
     "--skip=secondary_threads::check_updates::tests::fetch_latest_release_from_github"
@@ -76,6 +72,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace 'Exec=/usr/bin/sniffnet' 'Exec=sniffnet'
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     patchelf $out/bin/sniffnet \
       --add-rpath ${
@@ -88,21 +90,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
       }
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   meta = {
     description = "Cross-platform application to monitor your network traffic with ease";
     homepage = "https://github.com/gyulyvgc/sniffnet";
     changelog = "https://github.com/gyulyvgc/sniffnet/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = [ ];
-    teams = [ lib.teams.ngi ];
     mainProgram = "sniffnet";
+    teams = [ lib.teams.ngi ];
   };
 })

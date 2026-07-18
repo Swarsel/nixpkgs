@@ -40,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Implementation of the Precision Time Protocol (PTP) according to IEEE standard 1588 for Linux";
     homepage = "https://linuxptp.nwtime.org";
-    maintainers = [ lib.maintainers.markuskowa ];
     license = lib.licenses.gpl2Only;
+    maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux;
   };
 })

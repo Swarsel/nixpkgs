@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
-  jdupes,
   adwaita-icon-theme,
-  hicolor-icon-theme,
-  numix-icon-theme-circle,
   gitUpdater,
+  gtk3,
+  hicolor-icon-theme,
+  jdupes,
+  numix-icon-theme-circle,
+  stdenvNoCC,
   colorVariants ? [ ],
 }:
 
@@ -43,6 +43,10 @@ lib.checkListOfEnum "${pname}: color variants"
       hash = "sha256-ahnp25wTCTrOtJUbAIv7vvVC2am+idEokoRomRe5aKU=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       gtk3
       jdupes
@@ -53,21 +57,6 @@ lib.checkListOfEnum "${pname}: color variants"
       hicolor-icon-theme
       numix-icon-theme-circle
     ];
-
-    dontDropIconThemeCache = true;
-
-    # These fixup steps are slow and unnecessary for this package.
-    # Package may install many small files.
-    dontPatchELF = true;
-    dontRewriteSymlinks = true;
-    dontWrapQtApps = true;
-
-    # FIXME: https://github.com/yeyushengfan258/Reversal-icon-theme/issues/108
-    dontCheckForBrokenSymlinks = true;
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -85,13 +74,21 @@ lib.checkListOfEnum "${pname}: color variants"
       runHook postInstall
     '';
 
+    # FIXME: https://github.com/yeyushengfan258/Reversal-icon-theme/issues/108
+    dontCheckForBrokenSymlinks = true;
+    dontDropIconThemeCache = true;
+    # These fixup steps are slow and unnecessary for this package.
+    # Package may install many small files.
+    dontPatchELF = true;
+    dontRewriteSymlinks = true;
+    dontWrapQtApps = true;
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "Colorful Design Rectangle icon theme";
       homepage = "https://github.com/yeyushengfan258/Reversal-icon-theme";
       license = lib.licenses.gpl3Plus;
-      platforms = lib.platforms.all;
       maintainers = with lib.maintainers; [ romildo ];
+      platforms = lib.platforms.all;
     };
   }

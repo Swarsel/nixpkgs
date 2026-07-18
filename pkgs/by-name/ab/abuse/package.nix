@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchFromGitHub,
-  makeDesktopItem,
-  copyDesktopItems,
-  cmake,
   SDL2,
   SDL2_mixer,
+  cmake,
+  copyDesktopItems,
+  fetchzip,
   freepats,
+  makeDesktopItem,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,28 +22,26 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-eneu0HxEoM//Ju2XMHnDMZ/igeVMPSLg7IaxR2cnJrk=";
   };
 
-  data = fetchzip {
-    url = "http://abuse.zoy.org/raw-attachment/wiki/download/abuse-0.8.tar.gz";
-    hash = "sha256-SOrtBNLWskN7Tqa0B3+KjlZlqPjC64Jp02Pk7to2hFg=";
-  };
+  nativeBuildInputs = [
+    copyDesktopItems
+    cmake
+  ];
+
+  buildInputs = [
+    SDL2
+    SDL2_mixer
+    freepats
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10")
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${lib.getDev SDL2}/include/SDL2";
 
   preConfigure = ''
     cp --reflink=auto -r ${finalAttrs.data}/data/sfx ${finalAttrs.data}/data/music data/
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "abuse";
-      exec = "abuse";
-      icon = "abuse";
-      desktopName = "Abuse";
-      comment = "Side-scroller action game that pits you against ruthless alien killers";
-      categories = [
-        "Game"
-        "ActionGame"
-      ];
-    })
-  ];
 
   postInstall = ''
     mkdir $out/etc
@@ -56,20 +54,24 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm644 ${finalAttrs.data}/doc/abuse.png -t $out/share/icons/hicolor/32x32/apps
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-I${lib.getDev SDL2}/include/SDL2";
+  data = fetchzip {
+    hash = "sha256-SOrtBNLWskN7Tqa0B3+KjlZlqPjC64Jp02Pk7to2hFg=";
+    url = "http://abuse.zoy.org/raw-attachment/wiki/download/abuse-0.8.tar.gz";
+  };
 
-  cmakeFlags = [
-    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10")
-  ];
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "ActionGame"
+      ];
 
-  nativeBuildInputs = [
-    copyDesktopItems
-    cmake
-  ];
-  buildInputs = [
-    SDL2
-    SDL2_mixer
-    freepats
+      comment = "Side-scroller action game that pits you against ruthless alien killers";
+      desktopName = "Abuse";
+      exec = "abuse";
+      icon = "abuse";
+      name = "abuse";
+    })
   ];
 
   meta = {

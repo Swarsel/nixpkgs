@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  vala,
-  pkg-config,
-  gettext,
-  ninja,
   alsa-lib,
-  xfce4-panel,
+  gettext,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  vala,
+  xfce4-panel,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,11 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/equeim/xfce4-alsa-plugin";
     description = "Simple ALSA volume control for xfce4-panel";
+    homepage = "https://github.com/equeim/xfce4-alsa-plugin";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ProxyVT ];
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];
   };
 })

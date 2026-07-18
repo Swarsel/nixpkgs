@@ -1,93 +1,90 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
+  asciidoctor, # manpages
+  cjson,
+  cmake,
+  cpputest,
+  curl,
+  enchant,
+  gettext,
+  gnutls,
+  guile,
+  libargon2,
+  libgcrypt,
+  libiconv,
+  libresolv,
+  libxml2,
+  lua5_3,
   ncurses,
   openssl,
-  cjson,
-  enchant,
-  gnutls,
-  gettext,
-  zlib,
-  curl,
-  pkg-config,
-  libgcrypt,
-  cmake,
-  libresolv,
-  libiconv,
-  asciidoctor, # manpages
-  enableTests ? !stdenv.hostPlatform.isDarwin,
-  cpputest,
-  guileSupport ? true,
-  guile,
-  luaSupport ? true,
-  lua5_3,
-  perlSupport ? true,
-  perl,
-  pythonSupport ? true,
-  python3Packages,
-  rubySupport ? true,
-  ruby,
-  tclSupport ? true,
-  tcl,
-  phpSupport ? !stdenv.hostPlatform.isDarwin,
-  php,
-  systemdLibs,
-  libxml2,
   pcre2,
-  libargon2,
-  extraBuildInputs ? [ ],
-  writeScript,
+  perl,
+  php,
+  pkg-config,
+  python3Packages,
+  ruby,
+  systemdLibs,
+  tcl,
   versionCheckHook,
+  writeScript,
+  zlib,
+  enableTests ? !stdenv.hostPlatform.isDarwin,
+  extraBuildInputs ? [ ],
+  guileSupport ? true,
+  luaSupport ? true,
+  perlSupport ? true,
+  phpSupport ? !stdenv.hostPlatform.isDarwin,
+  pythonSupport ? true,
+  rubySupport ? true,
+  tclSupport ? true,
 }:
 
 let
   inherit (python3Packages) python;
   php-embed = php.override {
-    embedSupport = true;
     apxs2Support = false;
+    embedSupport = true;
   };
   plugins = [
     {
-      name = "perl";
-      enabled = perlSupport;
-      cmakeFlag = "ENABLE_PERL";
       buildInputs = [ perl ];
+      cmakeFlag = "ENABLE_PERL";
+      enabled = perlSupport;
+      name = "perl";
     }
     {
-      name = "tcl";
-      enabled = tclSupport;
-      cmakeFlag = "ENABLE_TCL";
       buildInputs = [ tcl ];
+      cmakeFlag = "ENABLE_TCL";
+      enabled = tclSupport;
+      name = "tcl";
     }
     {
-      name = "ruby";
-      enabled = rubySupport;
-      cmakeFlag = "ENABLE_RUBY";
       buildInputs = [ ruby ];
+      cmakeFlag = "ENABLE_RUBY";
+      enabled = rubySupport;
+      name = "ruby";
     }
     {
-      name = "guile";
-      enabled = guileSupport;
-      cmakeFlag = "ENABLE_GUILE";
       buildInputs = [ guile ];
+      cmakeFlag = "ENABLE_GUILE";
+      enabled = guileSupport;
+      name = "guile";
     }
     {
-      name = "lua";
-      enabled = luaSupport;
-      cmakeFlag = "ENABLE_LUA";
       buildInputs = [ lua5_3 ];
+      cmakeFlag = "ENABLE_LUA";
+      enabled = luaSupport;
+      name = "lua";
     }
     {
-      name = "python";
-      enabled = pythonSupport;
-      cmakeFlag = "ENABLE_PYTHON3";
       buildInputs = [ python ];
+      cmakeFlag = "ENABLE_PYTHON3";
+      enabled = pythonSupport;
+      name = "python";
     }
     {
-      name = "php";
-      enabled = phpSupport;
-      cmakeFlag = "ENABLE_PHP";
       buildInputs = [
         php-embed.unwrapped.dev
         libxml2
@@ -95,6 +92,10 @@ let
         libargon2
       ]
       ++ lib.optionals stdenv.hostPlatform.isLinux [ systemdLibs ];
+
+      cmakeFlag = "ENABLE_PHP";
+      enabled = phpSupport;
+      name = "php";
     }
   ];
   enabledPlugins = builtins.filter (p: p.enabled) plugins;
@@ -112,27 +113,16 @@ stdenv.mkDerivation rec {
     hash = "sha256-XH2VOfqGyZ6nalUaiJqSusIeq3uyeQ29NGRS0AsQw3w=";
   };
 
-  # Why is this needed? https://github.com/weechat/weechat/issues/2031
-  patches = lib.optionals gettext.gettextNeedsLdflags [
-    ./gettext-intl.patch
-  ];
-
   outputs = [
     "out"
     "man"
   ]
   ++ map (p: p.name) enabledPlugins;
 
-  cmakeFlags = [
-    (lib.cmakeBool "ENABLE_MAN" true)
-    (lib.cmakeBool "ENABLE_DOC" true)
-    (lib.cmakeBool "ENABLE_DOC_INCOMPLETE" true)
-    (lib.cmakeBool "ENABLE_TESTS" enableTests)
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    (lib.cmakeFeature "ICONV_LIBRARY" "${libiconv}/lib/libiconv.dylib")
-  ]
-  ++ map (p: lib.cmakeBool p.cmakeFlag p.enabled) plugins;
+  # Why is this needed? https://github.com/weechat/weechat/issues/2031
+  patches = lib.optionals gettext.gettextNeedsLdflags [
+    ./gettext-intl.patch
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -157,6 +147,17 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.concatMap (p: p.buildInputs) enabledPlugins
   ++ extraBuildInputs;
+
+  cmakeFlags = [
+    (lib.cmakeBool "ENABLE_MAN" true)
+    (lib.cmakeBool "ENABLE_DOC" true)
+    (lib.cmakeBool "ENABLE_DOC_INCOMPLETE" true)
+    (lib.cmakeBool "ENABLE_TESTS" enableTests)
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    (lib.cmakeFeature "ICONV_LIBRARY" "${libiconv}/lib/libiconv.dylib")
+  ]
+  ++ map (p: lib.cmakeBool p.cmakeFlag p.enabled) plugins;
 
   env.NIX_CFLAGS_COMPILE =
     "-I${python}/include/${python.libPrefix}"
@@ -190,17 +191,19 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://weechat.org/";
-    changelog = "https://github.com/weechat/weechat/releases/tag/v${version}";
     description = "Fast, light and extensible chat client";
+
     longDescription = ''
       You can find more documentation as to how to customize this package
       (e.g. adding python modules for scripts that would require them, etc.)
       on https://nixos.org/nixpkgs/manual/#sec-weechat .
     '';
+
+    homepage = "https://weechat.org/";
+    changelog = "https://github.com/weechat/weechat/releases/tag/v${version}";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ abbe ];
-    mainProgram = "weechat";
     platforms = lib.platforms.unix;
+    mainProgram = "weechat";
   };
 }

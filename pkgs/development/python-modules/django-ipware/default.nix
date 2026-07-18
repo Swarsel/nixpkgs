@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
+  fetchPypi,
   python-ipware,
 }:
 
 buildPythonPackage rec {
   pname = "django-ipware";
   version = "7.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +22,10 @@ buildPythonPackage rec {
 
   # django.core.exceptions.ImproperlyConfigured: Requested setting IPWARE_TRUSTED_PROXY_LIST, but settings are not configured. You must either define the environment variable DJANGO_SETTINGS_MODULE or call settings.configure() before accessing settings.
   doCheck = false;
+  format = "setuptools";
 
   # pythonImportsCheck fails with:
   # django.core.exceptions.ImproperlyConfigured: Requested setting IPWARE_META_PRECEDENCE_ORDER, but settings are not configured. You must either define the environment variable DJANGO_SETTINGS_MODULE or call settings.configure() before accessing settings.
-
   meta = {
     description = "Django application to retrieve user's IP address";
     homepage = "https://github.com/un33k/django-ipware";

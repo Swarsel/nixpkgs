@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   SDL2,
   callPackage,
-  zlib,
+  fetchpatch2,
   nix-update-script,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "x16-emulator";
   version = "48";
-  # nixpkgs-update: no auto update
 
+  # nixpkgs-update: no auto update
   src = fetchFromGitHub {
     owner = "X16Community";
     repo = "x16-emulator";
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   # TODO: Remove for next release as it should already be included in upstream
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/X16Community/x16-emulator/commit/3da83c93d46a99635cf73a6f9fdcf1bd4a4ae04f.patch";
       hash = "sha256-DZItqq7B1lXZ6VFsQUdQKn0wt1HaX4ymq2pI2DamY3w=";
+      url = "https://github.com/X16Community/x16-emulator/commit/3da83c93d46a99635cf73a6f9fdcf1bd4a4ae04f.patch";
     })
   ];
 
@@ -34,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Makefile \
       --replace-fail '/bin/echo' 'echo'
   '';
-
-  dontConfigure = true;
 
   buildInputs = [
     SDL2
@@ -51,12 +49,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   passthru = {
     # upstream project recommends emulator and rom to be synchronized; passing
     # through the version is useful to ensure this
     inherit (finalAttrs) version;
     emulator = finalAttrs.finalPackage;
     rom = callPackage ./rom.nix { };
+
     run = (callPackage ./run.nix { }) {
       inherit (finalAttrs.finalPackage) emulator rom;
     };
@@ -65,13 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://cx16forum.com/";
+    inherit (SDL2.meta) platforms;
     description = "Official emulator of CommanderX16 8-bit computer";
+    homepage = "https://cx16forum.com/";
     changelog = "https://github.com/X16Community/x16-emulator/blob/${finalAttrs.src.rev}/RELEASES.md";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ pluiedev ];
     mainProgram = "x16emu";
-    inherit (SDL2.meta) platforms;
     broken = stdenv.hostPlatform.isAarch64; # ofborg fails to compile it
   };
 })

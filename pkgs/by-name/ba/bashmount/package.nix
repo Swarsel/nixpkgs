@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   coreutils,
   cryptsetup,
   eject,
   gnugrep,
   gnused,
   less,
+  makeWrapper,
   udisks,
   util-linux,
 }:
@@ -59,11 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/jamielinux/bashmount";
     description = "Menu-driven bash script for the management of removable media with udisks";
-    mainProgram = "bashmount";
-    maintainers = [ lib.maintainers.koral ];
+    homepage = "https://github.com/jamielinux/bashmount";
     license = lib.licenses.gpl2Only;
+    maintainers = [ lib.maintainers.koral ];
     platforms = lib.platforms.all;
+    mainProgram = "bashmount";
   };
 })

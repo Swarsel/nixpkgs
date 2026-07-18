@@ -1,15 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "go-symbols";
   version = "0.1.1";
-
-  vendorHash = "sha256-8unWnxTQzPY8tKBtss9qQG+ksWyheKxKRlg65F0vWWU=";
 
   src = fetchFromGitHub {
     owner = "acroca";
@@ -21,19 +19,23 @@ buildGoModule (finalAttrs: {
   patches = [
     # Migrate to Go modules
     (fetchpatch {
-      url = "https://github.com/acroca/go-symbols/commit/414c2283696b50fc5009055e5bc2590ce45f4400.patch";
       hash = "sha256-9lndJhyN8eaovjQlfSRGP8lC4F+pAXUoR2AvYvhSx2U=";
+      url = "https://github.com/acroca/go-symbols/commit/414c2283696b50fc5009055e5bc2590ce45f4400.patch";
     })
   ];
 
+  vendorHash = "sha256-8unWnxTQzPY8tKBtss9qQG+ksWyheKxKRlg65F0vWWU=";
+
   meta = {
     description = "Utility for extracting a JSON representation of the package symbols from a go source tree";
-    mainProgram = "go-symbols";
     homepage = "https://github.com/acroca/go-symbols";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       luftmensch-luftmensch
       vdemeester
     ];
-    license = lib.licenses.mit;
+
+    mainProgram = "go-symbols";
   };
 })

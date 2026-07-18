@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -36,70 +36,84 @@ in
     with types;
     {
       enable = mkEnableOption "RustDesk, a remote access and remote control software, allowing maintenance of computers and other devices";
-
       package = mkPackageOption pkgs "rustdesk-server" { };
 
       openFirewall = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Open the connection ports.
           TCP (${lib.concatStringsSep ", " (map toString TCPPorts)})
           UDP (${lib.concatStringsSep ", " (map toString UDPPorts)})
         '';
-      };
 
-      signal = {
-        enable = mkOption {
-          type = bool;
-          default = true;
-          description = ''
-            Whether to enable the RustDesk signal server.
-          '';
-        };
-
-        relayHosts = mkOption {
-          type = listOf str;
-          default = [ ];
-          # reference: https://rustdesk.com/docs/en/self-host/rustdesk-server-pro/relay/
-          description = ''
-            The relay server IP addresses or DNS names of the RustDesk relay.
-          '';
-        };
-
-        extraArgs = mkOption {
-          type = listOf str;
-          default = [ ];
-          example = [
-            "-k"
-            "_"
-          ];
-          description = ''
-            A list of extra command line arguments to pass to the `hbbs` process.
-          '';
-        };
-
+        type = types.bool;
       };
 
       relay = {
         enable = mkOption {
-          type = bool;
           default = true;
+
           description = ''
             Whether to enable the RustDesk relay server.
           '';
+
+          type = bool;
         };
+
         extraArgs = mkOption {
-          type = listOf str;
           default = [ ];
+
+          description = ''
+            A list of extra command line arguments to pass to the `hbbr` process.
+          '';
+
           example = [
             "-k"
             "_"
           ];
-          description = ''
-            A list of extra command line arguments to pass to the `hbbr` process.
-          '';
+
+          type = listOf str;
         };
+      };
+
+      signal = {
+        enable = mkOption {
+          default = true;
+
+          description = ''
+            Whether to enable the RustDesk signal server.
+          '';
+
+          type = bool;
+        };
+
+        extraArgs = mkOption {
+          default = [ ];
+
+          description = ''
+            A list of extra command line arguments to pass to the `hbbs` process.
+          '';
+
+          example = [
+            "-k"
+            "_"
+          ];
+
+          type = listOf str;
+        };
+
+        relayHosts = mkOption {
+          default = [ ];
+
+          # reference: https://rustdesk.com/docs/en/self-host/rustdesk-server-pro/relay/
+          description = ''
+            The relay server IP addresses or DNS names of the RustDesk relay.
+          '';
+
+          type = listOf str;
+        };
+
       };
 
     };
@@ -110,15 +124,11 @@ in
       serviceDefaults = {
         enable = true;
         requiredBy = [ "rustdesk.target" ];
+
         serviceConfig = {
-          Slice = "system-rustdesk.slice";
-          User = "rustdesk";
-          Group = "rustdesk";
           DynamicUser = "yes";
           Environment = [ ];
-          WorkingDirectory = "/var/lib/rustdesk";
-          StateDirectory = "rustdesk";
-          StateDirectoryMode = "0750";
+          Group = "rustdesk";
           LockPersonality = true;
           PrivateDevices = true;
           PrivateMounts = true;
@@ -132,31 +142,26 @@ in
           ProtectKernelTunables = true;
           ProtectProc = "invisible";
           RestrictNamespaces = true;
+          Slice = "system-rustdesk.slice";
+          StateDirectory = "rustdesk";
+          StateDirectoryMode = "0750";
+          User = "rustdesk";
+          WorkingDirectory = "/var/lib/rustdesk";
         };
       };
     in
     lib.mkIf cfg.enable {
-      users.users.rustdesk = {
-        description = "System user for RustDesk";
-        isSystemUser = true;
-        group = "rustdesk";
-      };
-      users.groups.rustdesk = { };
-
       networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall TCPPorts;
       networking.firewall.allowedUDPPorts = lib.mkIf cfg.openFirewall UDPPorts;
 
-      systemd.slices.system-rustdesk = {
-        enable = true;
-        description = "RustDesk Remote Desktop Slice";
-      };
-
-      systemd.targets.rustdesk = {
-        enable = true;
-        description = "Target designed to group RustDesk Signal & RustDesk Relay";
-        after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
-      };
+      systemd.services.rustdesk-relay = lib.mkIf cfg.relay.enable (
+        lib.mkMerge [
+          serviceDefaults
+          {
+            serviceConfig.ExecStart = "${cfg.package}/bin/hbbr ${lib.escapeShellArgs cfg.relay.extraArgs}";
+          }
+        ]
+      );
 
       systemd.services.rustdesk-signal =
         let
@@ -171,14 +176,25 @@ in
           ]
         );
 
-      systemd.services.rustdesk-relay = lib.mkIf cfg.relay.enable (
-        lib.mkMerge [
-          serviceDefaults
-          {
-            serviceConfig.ExecStart = "${cfg.package}/bin/hbbr ${lib.escapeShellArgs cfg.relay.extraArgs}";
-          }
-        ]
-      );
+      systemd.slices.system-rustdesk = {
+        enable = true;
+        description = "RustDesk Remote Desktop Slice";
+      };
+
+      systemd.targets.rustdesk = {
+        enable = true;
+        after = [ "network.target" ];
+        description = "Target designed to group RustDesk Signal & RustDesk Relay";
+        wantedBy = [ "multi-user.target" ];
+      };
+
+      users.groups.rustdesk = { };
+
+      users.users.rustdesk = {
+        description = "System user for RustDesk";
+        group = "rustdesk";
+        isSystemUser = true;
+      };
     };
 
   meta.maintainers = with lib.maintainers; [ ppom ];

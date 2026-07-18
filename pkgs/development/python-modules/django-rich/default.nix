@@ -1,24 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-
-  # dependencies
-  django,
-  rich,
-
+  buildPythonPackage,
   # tests
   coverage,
+  # dependencies
+  django,
   pytest-django,
   pytest-randomly,
   pytestCheckHook,
+  rich,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-rich";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adamchainz";
@@ -27,13 +24,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Nd787s55ozqiSGdU8/2S3xbPF0rJuLTyvGqs8Fhu3n8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    rich
-  ];
-
   nativeCheckInputs = [
     coverage
     pytest-django
@@ -41,6 +31,14 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    rich
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "django_rich" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   click,
   pycryptodome,
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "micloud";
   version = "0.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Squachen";
@@ -29,14 +28,14 @@ buildPythonPackage rec {
 
   # tests require credentials
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "micloud" ];
 
   meta = {
     description = "Xiaomi cloud connect library";
-    mainProgram = "micloud";
     homepage = "https://github.com/Squachen/micloud";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "micloud";
   };
 }

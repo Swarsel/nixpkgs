@@ -16,7 +16,12 @@ in
 buildPythonPackage {
   inherit pname version;
 
-  pyproject = true;
+  src = fetchPypi {
+    inherit pname version;
+    hash = "sha256-hcZi8n290GZkgIM074Z1Ne2gOS5WDmX8fPR+BJGZyzU=";
+  };
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     isodate
@@ -26,19 +31,13 @@ buildPythonPackage {
     pyyaml
   ];
 
-  build-system = [ poetry-core ];
-
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-hcZi8n290GZkgIM074Z1Ne2gOS5WDmX8fPR+BJGZyzU=";
-  };
-
+  pyproject = true;
   pythonImportsCheck = [ "dataconf" ];
 
   meta = {
     description = "Simple dataclasses configuration management for Python with hocon/json/yaml/properties/env-vars/dict/cli support";
-    changelog = "https://github.com/zifeo/dataconf/blob/main/CHANGELOG.md";
     homepage = "https://github.com/zifeo/dataconf";
+    changelog = "https://github.com/zifeo/dataconf/blob/main/CHANGELOG.md";
     license = lib.licenses.mpl20;
     maintainers = [ lib.maintainers.Nebucatnetzer ];
   };

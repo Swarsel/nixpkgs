@@ -1,25 +1,26 @@
 {
   lib,
   buildPythonPackage,
-  flet-client-flutter,
-
-  # build-system
-  poetry-core,
-
   flet,
+  flet-client-flutter,
   flet-desktop,
   flet-web,
+  # build-system
+  poetry-core,
   qrcode,
   toml,
   watchdog,
 }:
 
 buildPythonPackage rec {
-  pname = "flet-cli";
   inherit (flet-client-flutter) version src;
-  pyproject = true;
+  pname = "flet-cli";
 
-  sourceRoot = "${src.name}/sdk/python/packages/flet-cli";
+  postInstall = ''
+    mkdir -p $out/bin
+    makeWrapper ${flet}/bin/flet $out/bin/flet \
+      --prefix PYTHONPATH : $PYTHONPATH
+  '';
 
   build-system = [ poetry-core ];
 
@@ -32,11 +33,6 @@ buildPythonPackage rec {
     watchdog
   ];
 
-  pythonRelaxDeps = [
-    "qrcode"
-    "watchdog"
-  ];
-
   makeWrapperArgs = [
     "--prefix"
     "PYTHONPATH"
@@ -44,22 +40,26 @@ buildPythonPackage rec {
     "$PYTHONPATH"
   ];
 
-  postInstall = ''
-    mkdir -p $out/bin
-    makeWrapper ${flet}/bin/flet $out/bin/flet \
-      --prefix PYTHONPATH : $PYTHONPATH
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "flet_cli" ];
+
+  pythonRelaxDeps = [
+    "qrcode"
+    "watchdog"
+  ];
+
+  sourceRoot = "${src.name}/sdk/python/packages/flet-cli";
 
   meta = {
     description = "Command-line interface tool for Flet, a framework for building interactive multi-platform applications using Python";
     homepage = "https://flet.dev/";
     changelog = "https://github.com/flet-dev/flet/releases/tag/v${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       heyimnova
     ];
+
     mainProgram = "flet";
   };
 }

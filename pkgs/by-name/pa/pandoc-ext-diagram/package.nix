@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-NuHru6uYewuFksWGlWkvQRc6NDC5S4mnnmJlDQbVF+c=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -24,6 +22,8 @@ stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Generate diagrams from embedded code; supports Mermaid, Dot/GraphViz, PlantUML, Asymptote, D2, CeTZ, and TikZ";

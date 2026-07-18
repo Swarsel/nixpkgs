@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  setuptools,
   boilerpy3,
+  buildPythonPackage,
   cdxj-indexer,
+  fetchpatch,
   frictionless,
   pytest-cov,
-  pyyaml,
-  shortuuid,
   pytestCheckHook,
+  pyyaml,
+  setuptools,
+  shortuuid,
 }:
 
 buildPythonPackage rec {
   pname = "wacz";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "webrecorder";
@@ -28,9 +27,9 @@ buildPythonPackage rec {
   patches = [
     # <https://github.com/webrecorder/py-wacz/pull/47>
     (fetchpatch {
+      hash = "sha256-zH6BKhsq9ybjzaWcNbVkk1sWh8vVCkv7Qxuwl0MQhNM=";
       name = "clean-up-deps.patch";
       url = "https://github.com/webrecorder/py-wacz/compare/1e8f724a527f28855eedeb0d969ee39b00b2a80a...9d3ad60f125247b8a4354511d9123b85ce6a23c5.patch";
-      hash = "sha256-zH6BKhsq9ybjzaWcNbVkk1sWh8vVCkv7Qxuwl0MQhNM=";
     })
   ];
 
@@ -38,6 +37,11 @@ buildPythonPackage rec {
     substituteInPlace setup.py \
       --replace "pytest-runner" ""
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov
+  ];
 
   build-system = [
     setuptools
@@ -52,21 +56,18 @@ buildPythonPackage rec {
   ]
   ++ frictionless.optional-dependencies.json;
 
+  disabledTests = [
+    # authsign is not packaged
+    "test_verify_signed"
+  ];
+
   optional-dependencies = {
     # signing = [
     #   authsign # not packaged
     # ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov
-  ];
-
-  disabledTests = [
-    # authsign is not packaged
-    "test_verify_signed"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "wacz"

@@ -1,26 +1,18 @@
 {
-  buildPackages,
-  stdenvNoLibc,
-  overrideCC,
-  mkDerivation,
   boot-config,
+  buildPackages,
+  mkDerivation,
+  overrideCC,
   pkgsBuildTarget,
+  stdenvNoLibc,
   baseConfig ? "GENERIC",
 }:
 (mkDerivation.override {
   stdenvNoLibc = overrideCC stdenvNoLibc buildPackages.llvmPackages_18.clangNoLibc;
 })
   {
-    path = "sys/arch/amd64";
     pname = "sys";
-    extraPaths = [ "sys" ];
-    noLibc = true;
-
     patches = [ ./initpath.patch ];
-
-    extraNativeBuildInputs = [
-      boot-config
-    ];
 
     postPatch =
       # The in-kernel debugger (DDB) requires compiler flags not supported by clang, disable it
@@ -40,6 +32,10 @@
           sed -E -i -e 's/^PAGE_SIZE=.*$/PAGE_SIZE=4096/g' -e '/^random_uniform/a echo 0; return 0;' $BSDSRCDIR/sys/conf/makegap.sh
           sed -E -i -e 's/^v=.*$/v=0 u=nixpkgs h=nixpkgs t=`date -d @1`/g' $BSDSRCDIR/sys/conf/newvers.sh
         '';
+
+    env.NIX_CFLAGS_COMPILE = "-Wno-unused-command-line-argument -Wno-visibility";
+    # stand is in a separate package
+    env.SKIPDIR = "stand";
 
     postConfigure = ''
       export BSDOBJDIR=$TMP/obj
@@ -68,7 +64,11 @@
         echo 'includes:' >>Makefile
       '';
 
-    # stand is in a separate package
-    env.SKIPDIR = "stand";
-    env.NIX_CFLAGS_COMPILE = "-Wno-unused-command-line-argument -Wno-visibility";
+    extraNativeBuildInputs = [
+      boot-config
+    ];
+
+    extraPaths = [ "sys" ];
+    noLibc = true;
+    path = "sys/arch/amd64";
   }

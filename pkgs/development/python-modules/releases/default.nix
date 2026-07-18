@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   semantic-version,
   sphinx,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "releases";
   version = "2.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bitprophet";
@@ -29,7 +28,7 @@ buildPythonPackage rec {
 
   # Test suite doesn't run. See https://github.com/bitprophet/releases/issues/95.
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "releases" ];
 
   meta = {

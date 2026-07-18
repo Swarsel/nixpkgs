@@ -1,11 +1,11 @@
 # This file defines cabal2nix-unstable, used by maintainers/scripts/haskell/regenerate-hackage-packages.sh.
 {
-  mkDerivation,
+  lib,
+  Cabal,
   aeson,
   ansi-terminal,
   base,
   bytestring,
-  Cabal,
   containers,
   deepseq,
   directory,
@@ -17,7 +17,7 @@
   hpack,
   language-nix,
   lens,
-  lib,
+  mkDerivation,
   monad-par,
   monad-par-extras,
   mtl,
@@ -36,13 +36,42 @@
 mkDerivation {
   pname = "cabal2nix";
   version = "2.21.3-unstable-2026-03-30";
+
   src = fetchzip {
     url = "https://github.com/NixOS/cabal2nix/archive/41239bcc0622a0975c6705a03a44dfeffeb56f23.tar.gz";
     sha256 = "01qj6cvaif0810v83r6izcj1bbfpcqqxw4wybq04qsq92sqybpw2";
   };
-  postUnpack = "sourceRoot+=/cabal2nix; echo source root reset to $sourceRoot";
-  isLibrary = true;
+
+  preCheck = ''
+    export PATH="$PWD/dist/build/cabal2nix:$PATH"
+    export HOME="$TMPDIR/home"
+  '';
+
+  description = "Convert Cabal files into Nix build instructions";
+
+  executableHaskellDepends = [
+    aeson
+    base
+    bytestring
+    Cabal
+    containers
+    directory
+    distribution-nixpkgs
+    filepath
+    hopenssl
+    language-nix
+    lens
+    monad-par
+    monad-par-extras
+    mtl
+    optparse-applicative
+    pretty
+  ];
+
+  homepage = "https://github.com/nixos/cabal2nix#readme";
   isExecutable = true;
+  isLibrary = true;
+
   libraryHaskellDepends = [
     aeson
     ansi-terminal
@@ -69,24 +98,10 @@ mkDerivation {
     transformers
     yaml
   ];
-  executableHaskellDepends = [
-    aeson
-    base
-    bytestring
-    Cabal
-    containers
-    directory
-    distribution-nixpkgs
-    filepath
-    hopenssl
-    language-nix
-    lens
-    monad-par
-    monad-par-extras
-    mtl
-    optparse-applicative
-    pretty
-  ];
+
+  license = lib.licensesSpdx."BSD-3-Clause";
+  postUnpack = "sourceRoot+=/cabal2nix; echo source root reset to $sourceRoot";
+
   testHaskellDepends = [
     base
     Cabal
@@ -100,11 +115,4 @@ mkDerivation {
     tasty
     tasty-golden
   ];
-  preCheck = ''
-    export PATH="$PWD/dist/build/cabal2nix:$PATH"
-    export HOME="$TMPDIR/home"
-  '';
-  homepage = "https://github.com/nixos/cabal2nix#readme";
-  description = "Convert Cabal files into Nix build instructions";
-  license = lib.licensesSpdx."BSD-3-Clause";
 }

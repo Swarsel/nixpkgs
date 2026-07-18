@@ -38,7 +38,6 @@ in
 
     hardware.enableAllFirmware = lib.mkOption {
       default = false;
-      example = true;
 
       description = ''
         Whether to enable all firmware, including [unfree packages that must be explictly allowed](https://nixos.org/manual/nixpkgs/unstable/#sec-allow-unfree).
@@ -46,6 +45,7 @@ in
         Alternatively, use the {option}`hardware.enableRedistributableFirmware` option.
       '';
 
+      example = true;
       type = lib.types.bool;
     };
 

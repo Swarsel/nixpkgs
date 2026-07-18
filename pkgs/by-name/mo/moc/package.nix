@@ -1,56 +1,56 @@
 {
   lib,
   stdenv,
-  fetchsvn,
-  fetchpatch2,
-  pkg-config,
-  autoreconfHook,
-  autoconf-archive,
-  gettext,
-  ncurses,
-  db,
-  popt,
-  libtool,
-  libiconv,
-  # Sound sub-systems
-  alsaSupport ? (!stdenv.hostPlatform.isDarwin),
   alsa-lib,
-  pulseSupport ? true,
-  libpulseaudio,
-  jackSupport ? true,
-  libjack2,
-  ossSupport ? true,
-  # Audio formats
-  aacSupport ? true,
+  autoconf-archive,
+  autoreconfHook,
+  curl,
+  db,
   faad2,
-  libid3tag,
-  flacSupport ? true,
+  fetchpatch2,
+  fetchsvn,
+  ffmpeg,
   flac,
-  midiSupport ? true,
-  timidity,
-  modplugSupport ? true,
-  libmodplug,
-  mp3Support ? true,
+  gettext,
+  libiconv,
+  libid3tag,
+  libjack2,
   libmad,
-  musepackSupport ? true,
+  libmodplug,
   libmpc,
   libmpcdec,
-  taglib,
-  vorbisSupport ? true,
-  libvorbis,
-  speexSupport ? true,
-  speex,
-  ffmpegSupport ? true,
-  ffmpeg,
-  sndfileSupport ? true,
+  libpulseaudio,
+  libsamplerate,
   libsndfile,
-  wavpackSupport ? true,
+  libtool,
+  libvorbis,
+  ncurses,
+  pkg-config,
+  popt,
+  speex,
+  taglib,
+  timidity,
   wavpack,
+  # Audio formats
+  aacSupport ? true,
+  # Sound sub-systems
+  alsaSupport ? (!stdenv.hostPlatform.isDarwin),
   # Misc
   curlSupport ? true,
-  curl,
+  ffmpegSupport ? true,
+  flacSupport ? true,
+  jackSupport ? true,
+  midiSupport ? true,
+  modplugSupport ? true,
+  mp3Support ? true,
+  musepackSupport ? true,
+  ossSupport ? true,
+  pulseSupport ? true,
   samplerateSupport ? true,
-  libsamplerate,
+  sndfileSupport ? true,
+  speexSupport ? true,
+  vorbisSupport ? true,
+  wavpackSupport ? true,
   withDebug ? false,
 }:
 
@@ -67,16 +67,16 @@ stdenv.mkDerivation {
   patches = [
     # FFmpeg 6 support
     (fetchpatch2 {
-      url = "https://cygwin.com/cgit/cygwin-packages/moc/plain/Support-for-recent-ffmpeg-change.patch?id=ab70f1306b8416852915be4347003aac3bdc216";
       hash = "sha256-5hLEFBJ+7Nvxn6pNj4bngcg2qJsCzxiuP6yEj+7tvs0=";
       stripLen = 1;
+      url = "https://cygwin.com/cgit/cygwin-packages/moc/plain/Support-for-recent-ffmpeg-change.patch?id=ab70f1306b8416852915be4347003aac3bdc216";
     })
 
     # FFmpeg 7 support
     (fetchpatch2 {
-      url = "https://cygwin.com/cgit/cygwin-packages/moc/plain/ffmpeg-7.0.patch?id=ab70f1306b8416852915be4347003aac3bdc216e";
       hash = "sha256-dYw6DNyw61MGfv+GdBz5Dtrr9fVph1tf7vxexWONwF8=";
       stripLen = 1;
+      url = "https://cygwin.com/cgit/cygwin-packages/moc/plain/ffmpeg-7.0.patch?id=ab70f1306b8416852915be4347003aac3bdc216e";
     })
 
     ./use-ax-check-compile-flag.patch
@@ -159,10 +159,12 @@ stdenv.mkDerivation {
     description = "Terminal audio player designed to be powerful and easy to use";
     homepage = "http://moc.daper.net/";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       aethelz
       pSub
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "mocp";
   };

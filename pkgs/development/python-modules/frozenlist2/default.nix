@@ -9,8 +9,6 @@ buildPythonPackage rec {
   pname = "frozenlist2";
   version = "1.0.0";
 
-  pyproject = true;
-
   src = fetchFromGitHub {
     owner = "rohanpm";
     repo = "frozenlist2";
@@ -19,7 +17,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "frozenlist2" ];
 
   meta = {

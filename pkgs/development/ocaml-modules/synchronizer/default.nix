@@ -1,16 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  alcotest,
   buildDunePackage,
   prelude,
-  alcotest,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "synchronizer";
   version = "0.3";
-
-  minimalOCamlVersion = "5.2";
 
   src = fetchFromGitHub {
     owner = "OCamlPro";
@@ -27,9 +25,11 @@ buildDunePackage (finalAttrs: {
     alcotest
   ];
 
+  minimalOCamlVersion = "5.2";
+
   meta = {
-    homepage = "https://github.com/OCamlPro/synchronizer";
     description = "Synchronizer to make datastructures thread-safe";
+    homepage = "https://github.com/OCamlPro/synchronizer";
     changelog = "https://raw.githubusercontent.com/OCamlPro/synchronizer/${finalAttrs.src.rev}/CHANGES.md";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ redianthus ];

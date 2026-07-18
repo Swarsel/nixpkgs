@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
+  nix-update-script,
   rustPlatform,
   sqlite,
-  nix-update-script,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-oS+NfEQKAcfZwYQkftMJAUz7fG1nleruAROMUUbBP3Y=";
   };
 
-  cargoHash = "sha256-mHqXIFI2KJOMnxdG3X4DHDozFDPmqw4f//ori3Dc7us=";
-
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
   ];
@@ -28,8 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
+  cargoHash = "sha256-mHqXIFI2KJOMnxdG3X4DHDozFDPmqw4f//ori3Dc7us=";
   __structuredAttrs = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

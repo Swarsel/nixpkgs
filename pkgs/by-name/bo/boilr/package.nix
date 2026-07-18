@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   clangStdenv,
   gtk3,
-  libxrandr,
-  libxi,
-  libxcursor,
+  libGL,
   libx11,
   libxcb,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  openssl,
   perl,
   pkg-config,
-  openssl,
+  rustPlatform,
   speechd-minimal,
-  libxkbcommon,
-  libGL,
   wayland,
 }:
 let
@@ -48,14 +48,13 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } rec {
     hash = "sha256-qCY/I3ACrs5mWpgN+xmWi42rF9Mzqxxce2DIA+R1RNs=";
   };
 
-  cargoHash = "sha256-9B2NcFO/Bj553yaOMi7oBZJTFtCQmBnJkU9nK+vjThU=";
-
   nativeBuildInputs = [
     perl
     pkg-config
   ];
 
   buildInputs = rpathLibs;
+  cargoHash = "sha256-9B2NcFO/Bj553yaOMi7oBZJTFtCQmBnJkU9nK+vjThU=";
 
   postInstall = ''
     patchelf --add-rpath "${lib.makeLibraryPath rpathLibs}" $out/bin/boilr
@@ -68,12 +67,14 @@ rustPlatform.buildRustPackage.override { stdenv = clangStdenv; } rec {
   meta = {
     description = "Automatically adds (almost) all your games to your Steam library (including image art)";
     homepage = "https://github.com/PhilipK/BoilR";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ foolnotion ];
+    platforms = lib.platforms.linux;
     mainProgram = "boilr";
   };
 }

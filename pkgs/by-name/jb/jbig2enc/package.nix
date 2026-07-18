@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  leptonica,
-  zlib,
-  libwebp,
+  autoreconfHook,
   giflib,
+  leptonica,
   libjpeg,
   libpng,
   libtiff,
-  python3,
-  autoreconfHook,
+  libwebp,
   pkg-config,
+  python3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,9 +57,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Encoder for the JBIG2 image compression format";
+    homepage = "https://github.com/agl/jbig2enc";
     license = lib.licenses.asl20;
     platforms = lib.platforms.all;
-    homepage = "https://github.com/agl/jbig2enc";
     mainProgram = "jbig2";
   };
 })

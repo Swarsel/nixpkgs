@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   configparser,
   decorator,
-  fetchFromGitHub,
   mock,
   oauthlib,
   pyjwt,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "databricks-cli";
   version = "0.18.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "databricks";
@@ -50,6 +49,7 @@ buildPythonPackage rec {
     "integration/workspace/test_integration.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "databricks_cli" ];
 
   meta = {

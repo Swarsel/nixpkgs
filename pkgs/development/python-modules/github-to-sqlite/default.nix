@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   isPy3k,
   pytestCheckHook,
   pyyaml,
   requests,
   requests-mock,
-  sqlite-utils,
   setuptools,
+  sqlite-utils,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "github-to-sqlite";
   version = "2.9";
-  pyproject = true;
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "dogsheep";
@@ -23,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-KwLaaZxBBzRhiBv4p8Imb5XI1hyka9rmr/rxA6wDc7Q=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,18 +35,15 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
-
+  disabled = !isPy3k;
   disabledTests = [ "test_scrape_dependents" ];
+  pyproject = true;
 
   meta = {
     description = "Save data from GitHub to a SQLite database";
-    mainProgram = "github-to-sqlite";
     homepage = "https://github.com/dogsheep/github-to-sqlite";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ sarcasticadmin ];
+    mainProgram = "github-to-sqlite";
   };
 })

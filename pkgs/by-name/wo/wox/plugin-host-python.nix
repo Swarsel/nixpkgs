@@ -1,19 +1,12 @@
 {
-  python3Packages,
   callPackage,
+  python3Packages,
   wox,
   writableTmpDirAsHomeHook,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
-  pname = "wox-plugin-host-python";
   inherit (wox) version src;
-  pyproject = true;
-
-  sourceRoot = "${finalAttrs.src.name}/wox.plugin.host.python";
-
-  build-system = with python3Packages; [
-    hatchling
-  ];
+  pname = "wox-plugin-host-python";
 
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
@@ -25,11 +18,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     finalAttrs.passthru.plugin-python
   ];
 
+  build-system = with python3Packages; [
+    hatchling
+  ];
+
   dependencies = with python3Packages; [
     loguru
     websockets
     finalAttrs.passthru.plugin-python
   ];
+
+  pyproject = true;
+  sourceRoot = "${finalAttrs.src.name}/wox.plugin.host.python";
 
   passthru = {
     plugin-python = callPackage ./plugin-python.nix { };

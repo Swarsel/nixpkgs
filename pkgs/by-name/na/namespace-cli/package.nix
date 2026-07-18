@@ -17,24 +17,24 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-joxaA0x1Ldn82O5k+H9A1rsirBkfpOw+83E4GHCwKb8=";
 
-  subPackages = [
-    "cmd/nsc"
-    "cmd/ns"
-    "cmd/docker-credential-nsc"
-  ];
-
   ldflags = [
     "-s"
     "-w"
     "-X namespacelabs.dev/foundation/internal/cli/version.Tag=v${finalAttrs.version}"
   ];
 
+  subPackages = [
+    "cmd/nsc"
+    "cmd/ns"
+    "cmd/docker-credential-nsc"
+  ];
+
   meta = {
-    mainProgram = "nsc";
-    maintainers = with lib.maintainers; [ techknowlogick ];
-    license = lib.licenses.asl20;
-    changelog = "https://github.com/namespacelabs/foundation/releases/tag/v${finalAttrs.version}";
-    homepage = "https://github.com/namespacelabs/foundation";
     description = "Command line interface for the Namespaces platform";
+    homepage = "https://github.com/namespacelabs/foundation";
+    changelog = "https://github.com/namespacelabs/foundation/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ techknowlogick ];
+    mainProgram = "nsc";
   };
 })

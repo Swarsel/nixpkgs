@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cffi,
-  fetchFromGitHub,
   inflection,
   jinja2,
-  lib,
   pysdl2,
   setuptools,
   vulkan-loader,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "vulkan";
   version = "1.3.275.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "realitix";
@@ -46,6 +45,8 @@ buildPythonPackage rec {
     cffi
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "vulkan"
   ];
@@ -54,10 +55,12 @@ buildPythonPackage rec {
     description = "Ultimate Python binding for Vulkan API";
     homepage = "https://github.com/realitix/vulkan";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       grimmauld
       getchoo
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

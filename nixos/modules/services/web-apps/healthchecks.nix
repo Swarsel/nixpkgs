@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   buildEnv,
   ...
 }:
@@ -46,49 +46,9 @@ in
 
     package = mkPackageOption pkgs "healthchecks" { };
 
-    user = mkOption {
-      default = defaultUser;
-      type = types.str;
-      description = ''
-        User account under which healthchecks runs.
-
-        ::: {.note}
-        If left as the default value this user will automatically be created
-        on system activation, otherwise you are responsible for
-        ensuring the user exists before the healthchecks service starts.
-        :::
-      '';
-    };
-
-    group = mkOption {
-      default = defaultUser;
-      type = types.str;
-      description = ''
-        Group account under which healthchecks runs.
-
-        ::: {.note}
-        If left as the default value this group will automatically be created
-        on system activation, otherwise you are responsible for
-        ensuring the group exists before the healthchecks service starts.
-        :::
-      '';
-    };
-
-    listenAddress = mkOption {
-      type = types.str;
-      default = "localhost";
-      description = "Address the server will listen on.";
-    };
-
-    port = mkOption {
-      type = types.port;
-      default = 8000;
-      description = "Port the server will listen on.";
-    };
-
     dataDir = mkOption {
-      type = types.str;
       default = "/var/lib/healthchecks";
+
       description = ''
         The directory used to store all data for healthchecks.
 
@@ -98,12 +58,36 @@ in
         directory exists with appropriate ownership and permissions.
         :::
       '';
+
+      type = types.str;
     };
 
-    settingsFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      description = opt.settings.description;
+    group = mkOption {
+      default = defaultUser;
+
+      description = ''
+        Group account under which healthchecks runs.
+
+        ::: {.note}
+        If left as the default value this group will automatically be created
+        on system activation, otherwise you are responsible for
+        ensuring the group exists before the healthchecks service starts.
+        :::
+      '';
+
+      type = types.str;
+    };
+
+    listenAddress = mkOption {
+      default = "localhost";
+      description = "Address the server will listen on.";
+      type = types.str;
+    };
+
+    port = mkOption {
+      default = 8000;
+      description = "Port the server will listen on.";
+      type = types.port;
     };
 
     settings = lib.mkOption {
@@ -129,32 +113,51 @@ in
 
         If the same variable is set in both `settings` and `settingsFile` the value from `settingsFile` has priority.
       '';
+
       type = types.submodule (settings: {
-        freeformType = types.attrsOf types.str;
         options = {
           ALLOWED_HOSTS = lib.mkOption {
-            type = types.listOf types.str;
+            apply = lib.concatStringsSep ",";
             default = [ "*" ];
             description = "The host/domain names that this site can serve.";
-            apply = lib.concatStringsSep ",";
+            type = types.listOf types.str;
           };
 
-          SECRET_KEY_FILE = mkOption {
-            type = types.nullOr types.path;
-            description = "Path to a file containing the secret key.";
-            default = null;
+          DB = mkOption {
+            default = "sqlite";
+            description = "Database engine to use.";
+
+            type = types.enum [
+              "sqlite"
+              "postgres"
+              "mysql"
+            ];
+          };
+
+          DB_NAME = mkOption {
+            default = if settings.config.DB == "sqlite" then "${cfg.dataDir}/healthchecks.sqlite" else "hc";
+
+            defaultText = lib.literalExpression ''
+              if config.${settings.options.DB} == "sqlite"
+              then "''${config.${opt.dataDir}}/healthchecks.sqlite"
+              else "hc"
+            '';
+
+            description = "Database name.";
+            type = types.str;
           };
 
           DEBUG = mkOption {
-            type = types.bool;
+            apply = boolToPython;
             default = false;
             description = "Enable debug mode.";
-            apply = boolToPython;
+            type = types.bool;
           };
 
           REGISTRATION_OPEN = mkOption {
-            type = types.bool;
+            apply = boolToPython;
             default = false;
+
             description = ''
               A boolean that controls whether site visitors can create new accounts.
               Set it to false if you are setting up a private Healthchecks instance,
@@ -163,79 +166,66 @@ in
               If you close new user registration, you can still selectively invite
               users to your team account.
             '';
-            apply = boolToPython;
+
+            type = types.bool;
           };
 
-          DB = mkOption {
-            type = types.enum [
-              "sqlite"
-              "postgres"
-              "mysql"
-            ];
-            default = "sqlite";
-            description = "Database engine to use.";
-          };
-
-          DB_NAME = mkOption {
-            type = types.str;
-            default = if settings.config.DB == "sqlite" then "${cfg.dataDir}/healthchecks.sqlite" else "hc";
-            defaultText = lib.literalExpression ''
-              if config.${settings.options.DB} == "sqlite"
-              then "''${config.${opt.dataDir}}/healthchecks.sqlite"
-              else "hc"
-            '';
-            description = "Database name.";
+          SECRET_KEY_FILE = mkOption {
+            default = null;
+            description = "Path to a file containing the secret key.";
+            type = types.nullOr types.path;
           };
         };
+
+        freeformType = types.attrsOf types.str;
       });
+    };
+
+    settingsFile = lib.mkOption {
+      default = null;
+      description = opt.settings.description;
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    user = mkOption {
+      default = defaultUser;
+
+      description = ''
+        User account under which healthchecks runs.
+
+        ::: {.note}
+        If left as the default value this user will automatically be created
+        on system activation, otherwise you are responsible for
+        ensuring the user exists before the healthchecks service starts.
+        :::
+      '';
+
+      type = types.str;
     };
   };
 
   config = mkIf cfg.enable {
     environment.systemPackages = [ healthchecksManageScript ];
 
-    systemd.targets.healthchecks = {
-      description = "Target for all Healthchecks services";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
-      after = [
-        "network.target"
-        "network-online.target"
-      ];
-    };
-
     systemd.services =
       let
         commonConfig = {
-          WorkingDirectory = cfg.dataDir;
-          User = cfg.user;
-          Group = cfg.group;
           EnvironmentFile = [
             environmentFile
           ]
           ++ lib.optional (cfg.settingsFile != null) cfg.settingsFile;
+
+          Group = cfg.group;
           StateDirectory = mkIf (cfg.dataDir == "/var/lib/healthchecks") "healthchecks";
           StateDirectoryMode = mkIf (cfg.dataDir == "/var/lib/healthchecks") "0750";
+          User = cfg.user;
+          WorkingDirectory = cfg.dataDir;
         };
       in
       {
-        healthchecks-migration = {
-          description = "Healthchecks migrations";
-          wantedBy = [ "healthchecks.target" ];
-
-          serviceConfig = commonConfig // {
-            Restart = "on-failure";
-            Type = "oneshot";
-            ExecStart = ''
-              ${pkg}/opt/healthchecks/manage.py migrate
-            '';
-          };
-        };
-
         healthchecks = {
-          description = "Healthchecks WSGI Service";
-          wantedBy = [ "healthchecks.target" ];
           after = [ "healthchecks-migration.service" ];
+          description = "Healthchecks WSGI Service";
 
           preStart = ''
             ${pkg}/opt/healthchecks/manage.py collectstatic --no-input
@@ -244,53 +234,86 @@ in
           + lib.optionalString (cfg.settings.DEBUG != "True") "${pkg}/opt/healthchecks/manage.py compress";
 
           serviceConfig = commonConfig // {
-            Restart = "always";
             ExecStart = ''
               ${pkgs.python3Packages.gunicorn}/bin/gunicorn hc.wsgi \
                 --bind ${cfg.listenAddress}:${toString cfg.port} \
                 --pythonpath ${pkg}/opt/healthchecks
             '';
+
+            Restart = "always";
           };
+
+          wantedBy = [ "healthchecks.target" ];
+        };
+
+        healthchecks-migration = {
+          description = "Healthchecks migrations";
+
+          serviceConfig = commonConfig // {
+            ExecStart = ''
+              ${pkg}/opt/healthchecks/manage.py migrate
+            '';
+
+            Restart = "on-failure";
+            Type = "oneshot";
+          };
+
+          wantedBy = [ "healthchecks.target" ];
         };
 
         healthchecks-sendalerts = {
-          description = "Healthchecks Alert Service";
-          wantedBy = [ "healthchecks.target" ];
           after = [ "healthchecks.service" ];
+          description = "Healthchecks Alert Service";
 
           serviceConfig = commonConfig // {
-            Restart = "always";
             ExecStart = ''
               ${pkg}/opt/healthchecks/manage.py sendalerts
             '';
+
+            Restart = "always";
           };
+
+          wantedBy = [ "healthchecks.target" ];
         };
 
         healthchecks-sendreports = {
-          description = "Healthchecks Reporting Service";
-          wantedBy = [ "healthchecks.target" ];
           after = [ "healthchecks.service" ];
+          description = "Healthchecks Reporting Service";
 
           serviceConfig = commonConfig // {
-            Restart = "always";
             ExecStart = ''
               ${pkg}/opt/healthchecks/manage.py sendreports --loop
             '';
+
+            Restart = "always";
           };
+
+          wantedBy = [ "healthchecks.target" ];
         };
       };
 
-    users.users = optionalAttrs (cfg.user == defaultUser) {
-      ${defaultUser} = {
-        description = "healthchecks service owner";
-        isSystemUser = true;
-        group = defaultUser;
-      };
+    systemd.targets.healthchecks = {
+      after = [
+        "network.target"
+        "network-online.target"
+      ];
+
+      description = "Target for all Healthchecks services";
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
     users.groups = optionalAttrs (cfg.user == defaultUser) {
       ${defaultUser} = {
         members = [ defaultUser ];
+      };
+    };
+
+    users.users = optionalAttrs (cfg.user == defaultUser) {
+      ${defaultUser} = {
+        description = "healthchecks service owner";
+        group = defaultUser;
+        isSystemUser = true;
       };
     };
   };

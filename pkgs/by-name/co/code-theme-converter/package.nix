@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  stdenvNoCC,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "code-theme-converter";
@@ -20,17 +20,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-b6b0s6FXyHwoAJnPTaLu9fMQJVpBSqfGBk/KqDbaK9U=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-M8zLr/BPQfS50ZsTwN/YdJAlYUtS9edE/jh+l1wBqR8=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
     yarnInstallHook
     nodejs
   ];
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-M8zLr/BPQfS50ZsTwN/YdJAlYUtS9edE/jh+l1wBqR8=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

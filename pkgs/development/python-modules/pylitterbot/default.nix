@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiointercept,
   aioresponses,
   buildPythonPackage,
   deepdiff,
   fastmcp,
-  fetchFromGitHub,
   hatchling,
   pycognito,
   pyjwt,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pylitterbot";
   version = "2025.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "natekspencer";
@@ -29,6 +28,15 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-KKedO+NN/yeFYIGuiAJbch4SJ1QBsRfehVWx0y3SltQ=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-aiohttp
+    pytest-cov-stub
+    pytest-freezegun
+    pytest-timeout
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -44,15 +52,7 @@ buildPythonPackage (finalAttrs: {
     pyjwt
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-aiohttp
-    pytest-cov-stub
-    pytest-freezegun
-    pytest-timeout
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pylitterbot" ];
 
   meta = {

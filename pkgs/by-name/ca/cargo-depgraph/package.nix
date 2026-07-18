@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromSourcehut,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,12 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Create dependency graphs for cargo projects using `cargo metadata` and graphviz";
-    mainProgram = "cargo-depgraph";
     homepage = "https://sr.ht/~jplatte/cargo-depgraph";
     changelog = "https://git.sr.ht/~jplatte/cargo-depgraph/tree/${finalAttrs.src.rev}/item/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-depgraph";
   };
 })

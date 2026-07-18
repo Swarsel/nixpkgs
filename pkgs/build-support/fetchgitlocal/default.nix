@@ -1,7 +1,7 @@
 {
-  runCommand,
-  git,
   lib,
+  git,
+  runCommand,
 }:
 
 lib.makeOverridable (

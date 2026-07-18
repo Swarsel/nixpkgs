@@ -23,9 +23,9 @@ stdenv.mkDerivation rec {
   meta = {
     description = "System-wide monitoring for newrelic";
     homepage = "https://newrelic.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

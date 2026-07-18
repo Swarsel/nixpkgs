@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  texliveInfraOnly,
-
-  # build-system
-  setuptools,
-
   # dependencies
   addict,
   appdirs,
+  buildPythonPackage,
   colour,
   diskcache,
+  # tests
+  ffmpeg,
   fonttools,
   ipython,
   isosurfaces,
@@ -30,15 +27,15 @@
   rich,
   scipy,
   screeninfo,
+  # build-system
+  setuptools,
   skia-pathops,
   svgelements,
   sympy,
+  texliveInfraOnly,
   tqdm,
   typing-extensions,
   validators,
-
-  # tests
-  ffmpeg,
 }:
 
 let
@@ -167,7 +164,6 @@ let
 in
 buildPythonPackage {
   pname = "manimgl";
-  pyproject = true;
   version = "1.7.2";
 
   # Using hash rev because the tarball for the tag v1.7.2 gives the source to 1.7.1
@@ -177,6 +173,8 @@ buildPythonPackage {
     rev = "0c69ab6a32d4193f03ba9a604278eb3ce9699518";
     hash = "sha256-mh55R0uTuPz86+dJNlHcgJP1KWXoBYi2p8NUCnu4gEo=";
   };
+
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -224,23 +222,27 @@ buildPythonPackage {
     ])
   ];
 
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Animation engine for explanatory math videos";
+
     longDescription = ''
       Manim is an engine for precise programmatic animations, designed for creating
       explanatory math videos, as seen in the videos of 3Blue1Brown on Youtube.
       This is the original version that is maintained by Grant Sanderson which is
       based on OpenGL.
     '';
-    changelog = "https://3b1b.github.io/manim/development/changelog.html";
+
     homepage = "https://github.com/3b1b/manim";
+    changelog = "https://3b1b.github.io/manim/development/changelog.html";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       L0L1P0P
       osbm
     ];
+
     mainProgram = "manimgl";
   };
 }

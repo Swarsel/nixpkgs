@@ -2,26 +2,21 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
+  pytest-asyncio,
   # tests
   pytestCheckHook,
-  pytest-asyncio,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "gmqtt";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-vt/se6wmtrTOHwxMMs/z1mNSalTIgtMj1BVg/DubRKI=";
   };
-
-  build-system = [ setuptools ];
 
   # Tests require local socket connection which is forbidden in the sandbox
   doCheck = false;
@@ -30,6 +25,9 @@ buildPythonPackage rec {
     pytestCheckHook
     pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "gmqtt" ];
 
   meta = {

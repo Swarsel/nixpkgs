@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  netsurf-buildsystem,
   libiconv,
+  netsurf-buildsystem,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,9 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/projects/libparserutils/";
-    description = "Parser building library for netsurf browser";
-    license = lib.licenses.mit;
     inherit (netsurf-buildsystem.meta) maintainers platforms;
+    description = "Parser building library for netsurf browser";
+    homepage = "https://www.netsurf-browser.org/projects/libparserutils/";
+    license = lib.licenses.mit;
   };
 })

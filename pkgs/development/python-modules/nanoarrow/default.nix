@@ -1,21 +1,17 @@
 {
   lib,
   buildPythonPackage,
-  nanoarrow-c,
-
   # build-system
   cython,
   meson,
   meson-python,
-
+  nanoarrow-c,
   # nativeBuildInputs
   pkg-config,
-
+  pytestCheckHook,
   # buildInputs
   zlib,
   zstd-c,
-
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
@@ -25,15 +21,6 @@ buildPythonPackage (finalAttrs: {
     src
     postPatch
     ;
-  pyproject = true;
-
-  sourceRoot = "${finalAttrs.src.name}/python";
-
-  build-system = [
-    cython
-    meson
-    meson-python
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -49,15 +36,24 @@ buildPythonPackage (finalAttrs: {
     (lib.mesonOption "force_fallback_for" "flatcc")
   ];
 
-  pythonImportsCheck = [ "nanoarrow" ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
+  build-system = [
+    cython
+    meson
+    meson-python
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "nanoarrow" ];
+  sourceRoot = "${finalAttrs.src.name}/python";
+
   meta = nanoarrow-c.meta // {
     description = "Python bindings to the nanoarrow C library";
     homepage = "https://github.com/apache/arrow-nanoarrow/tree/main/python";
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       doronbehar

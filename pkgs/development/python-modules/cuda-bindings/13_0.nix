@@ -1,20 +1,9 @@
 {
-  replaceVars,
   cudaLibPaths,
+  replaceVars,
 }:
 {
   version = "13.0.3";
-  sourceHash = "sha256-Uq1oQWtilocQPh6cZ3P/L/L6caCHv17u1y67sm5fhhA=";
-
-  nvidiaLibsPatch = replaceVars ./patch-nvidia-libs-paths_13_0.patch {
-    inherit (cudaLibPaths)
-      libcudart
-      libcufile
-      libnvjitlink
-      libnvrtc
-      libnvvm
-      ;
-  };
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -37,4 +26,16 @@
     "test_set_stats_level"
     "test_stats_start_stop"
   ];
+
+  nvidiaLibsPatch = replaceVars ./patch-nvidia-libs-paths_13_0.patch {
+    inherit (cudaLibPaths)
+      libcudart
+      libcufile
+      libnvjitlink
+      libnvrtc
+      libnvvm
+      ;
+  };
+
+  sourceHash = "sha256-Uq1oQWtilocQPh6cZ3P/L/L6caCHv17u1y67sm5fhhA=";
 }

@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
-  nodejs-slim,
-  pnpm_11,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpmBuildHook,
   fetchFromGitHub,
-  nix-update-script,
-  runCommand,
   emmet-language-server,
+  fetchPnpmDeps,
+  nix-update-script,
+  nodejs-slim,
+  pnpmBuildHook,
+  pnpmConfigHook,
+  pnpm_11,
+  runCommand,
+  stdenvNoCC,
 }:
 let
   pnpm = pnpm_11;
@@ -23,13 +23,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     repo = "emmet-language-server";
     tag = "v${finalAttrs.version}";
     hash = "sha256-EY/xfrf6sGnZPbkbf9msauOoZ0h0EjLSwQC0aiS/Kco=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-FbwciSGn/W8xQhTU2rHdYIX01wUAqcgY67za8n5AMcM=";
   };
 
   nativeBuildInputs = [
@@ -62,9 +55,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru = {
-    updateScript = nix-update-script { };
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-FbwciSGn/W8xQhTU2rHdYIX01wUAqcgY67za8n5AMcM=";
+  };
 
+  passthru = {
     tests.smoke = runCommand "emmet-language-server-smoke-test" { } ''
       INIT_REQUEST='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"processId":null,"rootUri":"file:///tmp","workspaceFolders":[{"uri":"file:///tmp","name":"test"}],"capabilities":{}}}'
       CONTENT_LENGTH=''${#INIT_REQUEST}
@@ -79,6 +77,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       echo "$RESPONSE" | grep -q '"capabilities"'
       touch $out
     '';
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -86,9 +86,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/olrtg/emmet-language-server";
     changelog = "https://github.com/olrtg/emmet-language-server/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gepbird
     ];
+
     mainProgram = "emmet-language-server";
   };
 })

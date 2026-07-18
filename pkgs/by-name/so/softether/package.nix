@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bash,
+  ncurses,
   openssl,
   readline,
-  ncurses,
   zlib,
-  bash,
   dataDir ? "/var/lib/softether",
 }:
 
@@ -27,6 +27,15 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
     zlib
     bash
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-Wno-incompatible-pointer-types"
+    "-Wno-implicit-function-declaration"
+
+    # Fix build with gcc15 (-std=gnu23)
+    "-std=gnu17"
+
   ];
 
   preConfigure = ''
@@ -50,20 +59,12 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/bin/vpnserver --replace-fail /var/lib/softether/vpnserver/vpnserver $out/var/lib/softether/vpnserver/vpnserver
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-Wno-incompatible-pointer-types"
-    "-Wno-implicit-function-declaration"
-
-    # Fix build with gcc15 (-std=gnu23)
-    "-std=gnu17"
-
-  ];
-
   meta = {
     description = "Open-Source Free Cross-platform Multi-protocol VPN Program";
     homepage = "https://www.softether.org/";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.rick68 ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

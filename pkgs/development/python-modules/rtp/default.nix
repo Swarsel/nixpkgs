@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "rtp";
   version = "0.0.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,13 +23,14 @@ buildPythonPackage rec {
     unittestCheckHook
   ];
 
+  format = "setuptools";
+  pythonImportsCheck = [ "rtp" ];
+
   unittestFlagsArray = [
     "-s"
     "tests"
     "-v"
   ];
-
-  pythonImportsCheck = [ "rtp" ];
 
   meta = {
     description = "Library for decoding/encoding rtp packets";

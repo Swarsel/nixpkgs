@@ -2,18 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   autoconf,
   automake,
-  libtool,
-  pkg-config,
-
   libimobiledevice,
   libplist,
+  libtool,
   libusb1,
-  openssl,
-
   nix-update-script,
+  openssl,
+  pkg-config,
   testers,
 }:
 
@@ -21,17 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ios-webkit-debug-proxy";
   version = "1.9.2";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "google";
     repo = "ios-webkit-debug-proxy";
     rev = "v${finalAttrs.version}";
     hash = "sha256-42hNAMokjfo7Vi1xclFcjUmioMFQW64HYTMvvTVk5hY=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Examples compilation breaks with --disable-static, see https://github.com/google/ios-webkit-debug-proxy/issues/399
@@ -59,21 +56,23 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "DevTools proxy (Chrome Remote Debugging Protocol) for iOS devices (Safari Remote Web Inspector)";
+
     longDescription = ''
       The ios_webkit_debug_proxy (aka iwdp) proxies requests from usbmuxd
       daemon over a websocket connection, allowing developers to send commands
       to MobileSafari and UIWebViews on real and simulated iOS devices.
     '';
+
     homepage = "https://github.com/google/ios-webkit-debug-proxy";
     changelog = "https://github.com/google/ios-webkit-debug-proxy/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.bsd3;
-    mainProgram = "ios_webkit_debug_proxy";
     maintainers = with lib.maintainers; [ abustany ];
+    mainProgram = "ios_webkit_debug_proxy";
   };
 })

@@ -9,24 +9,24 @@
 buildPythonPackage (finalAttrs: {
   pname = "vine";
   version = "5.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-i2LpgdNcQQSSEc9ioKEkLYwe6b0Vuxls44rv1nmeYeA=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # https://github.com/celery/vine/issues/106
     "t/unit/test_synchronization.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "vine" ];
 
   meta = {

@@ -1,19 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  checkOutput,
   cmake,
   cpptrace,
   src,
-  checkOutput,
   static,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  name = "cpptrace-findpackage-integration-test";
-
   inherit src;
-
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     (cpptrace.override { inherit static; })
   ];
@@ -39,4 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
       ''
     ]
   );
+
+  name = "cpptrace-findpackage-integration-test";
 })

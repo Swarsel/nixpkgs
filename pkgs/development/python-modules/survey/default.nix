@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "survey";
   version = "5.4.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     setuptools-scm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "survey" ];
 
   meta = {

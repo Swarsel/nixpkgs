@@ -5,9 +5,9 @@
 
 amule.override (
   {
+    mainProgram = "amulecmd";
     monolithic = false;
     textClient = true;
-    mainProgram = "amulecmd";
   }
   // removeAttrs args [ "amule" ]
 )

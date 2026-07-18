@@ -1,16 +1,16 @@
 {
   lib,
   buildDunePackage,
-  ocaml,
+  cppo,
   cstruct,
-  sexplib,
-  ppxlib,
+  cstruct-sexp,
+  cstruct-unix,
+  ocaml,
   ocaml-migrate-parsetree-2,
   ounit,
-  cppo,
   ppx_sexp_conv,
-  cstruct-unix,
-  cstruct-sexp,
+  ppxlib,
+  sexplib,
 }:
 
 if lib.versionOlder (cstruct.version or "1") "3" then
@@ -18,10 +18,8 @@ if lib.versionOlder (cstruct.version or "1") "3" then
 else
 
   buildDunePackage {
-    pname = "ppx_cstruct";
     inherit (cstruct) version src meta;
-
-    minimalOCamlVersion = "4.08";
+    pname = "ppx_cstruct";
 
     propagatedBuildInputs = [
       cstruct
@@ -31,6 +29,7 @@ else
 
     doCheck = !lib.versionAtLeast ocaml.version "5.1";
     nativeCheckInputs = [ cppo ];
+
     checkInputs = [
       ounit
       ppx_sexp_conv
@@ -38,4 +37,6 @@ else
       cstruct-unix
       ocaml-migrate-parsetree-2
     ];
+
+    minimalOCamlVersion = "4.08";
   }

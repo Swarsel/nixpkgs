@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,15 +16,14 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-9sbTK7nV8m4uaUZy6DL/0r+JUlBoTkIpgYy7sacf130=";
-
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   meta = {
-    changelog = "https://github.com/paaatrick/playball/releases/tag/v${version}";
     description = "Watch MLB games from the comfort of your own terminal";
-    mainProgram = "playball";
     homepage = "https://github.com/paaatrick/playball";
+    changelog = "https://github.com/paaatrick/playball/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nickthegroot ];
+    mainProgram = "playball";
   };
 }

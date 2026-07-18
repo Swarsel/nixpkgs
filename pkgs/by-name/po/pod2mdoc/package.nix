@@ -28,11 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuild = true;
 
   meta = {
-    homepage = "https://mandoc.bsd.lv/pod2mdoc/";
     description = "Converter from POD into mdoc";
+    homepage = "https://mandoc.bsd.lv/pod2mdoc/";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ramkromberg ];
+    platforms = lib.platforms.all;
     mainProgram = "pod2mdoc";
   };
 })

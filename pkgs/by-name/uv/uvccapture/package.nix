@@ -7,8 +7,8 @@
 
 let
   debianPatches = fetchurl {
-    url = "mirror://debian/pool/main/u/uvccapture/uvccapture_0.5-3.debian.tar.gz";
     sha256 = "0m29by13nw1r8sch366qzdxg5rsd1k766kqg1nj2pdb8f7pwjh9r";
+    url = "mirror://debian/pool/main/u/uvccapture/uvccapture_0.5-3.debian.tar.gz";
   };
 
 in
@@ -23,18 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libjpeg ];
-
-  patchPhase = ''
-    tar xvf "${debianPatches}"
-    for fname in debian/patches/fix_videodev_include_FTBFS.patch \
-                 debian/patches/warnings.patch \
-                 debian/patches/numbuffers.patch
-    do
-        echo "Applying patch $fname"
-        patch < "$fname"
-    done
-  '';
-
   makeFlags = [ "PREFIX=$(out)/bin/" ];
 
   preInstall = ''
@@ -47,11 +35,22 @@ stdenv.mkDerivation (finalAttrs: {
     cp -v debian/uvccapture.1 "$out/share/man/man1/"
   '';
 
+  patchPhase = ''
+    tar xvf "${debianPatches}"
+    for fname in debian/patches/fix_videodev_include_FTBFS.patch \
+                 debian/patches/warnings.patch \
+                 debian/patches/numbuffers.patch
+    do
+        echo "Applying patch $fname"
+        patch < "$fname"
+    done
+  '';
+
   meta = {
     description = "Capture image from USB webcam at a specified interval";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
     mainProgram = "uvccapture";
   };
 })

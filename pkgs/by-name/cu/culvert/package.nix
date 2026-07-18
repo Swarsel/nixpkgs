@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  dtc,
   meson,
   ninja,
   pkg-config,
-  dtc,
 }:
 
 stdenv.mkDerivation {
@@ -35,11 +35,11 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/amboar/culvert";
     description = "Test and Debug Tool for BMC AHB Interfaces ";
-    mainProgram = "culvert";
+    homepage = "https://github.com/amboar/culvert";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.baloo ];
     platforms = lib.platforms.linux;
+    mainProgram = "culvert";
   };
 }

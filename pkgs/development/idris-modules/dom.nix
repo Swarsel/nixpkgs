@@ -1,20 +1,14 @@
 {
-  build-idris-package,
-  fetchFromGitHub,
-  idrisscript,
-  html,
-  xhr,
   lib,
+  fetchFromGitHub,
+  build-idris-package,
+  html,
+  idrisscript,
+  xhr,
 }:
 build-idris-package {
   pname = "dom";
   version = "2017-04-22";
-
-  idrisDeps = [
-    idrisscript
-    html
-    xhr
-  ];
 
   src = fetchFromGitHub {
     owner = "pierrebeaucamp";
@@ -22,6 +16,12 @@ build-idris-package {
     rev = "6e5a2d143f62ef422358924ee7db6e8147cdc531";
     sha256 = "16z9mykw2d9rjikn07kd6igb53jgaqi8zby4nc4n0gmplmhwdx4x";
   };
+
+  idrisDeps = [
+    idrisscript
+    html
+    xhr
+  ];
 
   meta = {
     description = "Idris library to interact with the DOM";

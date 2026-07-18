@@ -1,17 +1,16 @@
 {
   lib,
-  fetchPypi,
+  absl-py,
   buildPythonPackage,
   dm-tree,
+  fetchPypi,
   numpy,
-  absl-py,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "dm-env";
   version = "1.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,7 +24,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "dm_env" ];
 
   meta = {

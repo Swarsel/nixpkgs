@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "btrpa-scan";
   version = "0.6.0-unstable-2026-02-18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "HackingDave";
@@ -25,16 +24,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     flask-socketio
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "btrpa_scan" ];
 
   meta = {
     description = "Bluetooth Low Energy (BLE) scanner";
     homepage = "https://github.com/HackingDave/btrpa-scan";
     changelog = "https://github.com/HackingDave/btrpa-scan/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ fab ];
     mainProgram = "btrpa-scan";
   };

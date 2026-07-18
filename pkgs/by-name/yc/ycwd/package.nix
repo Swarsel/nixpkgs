@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -17,15 +17,14 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-gZpLBsS6b7l5EkPvn5CHqlwfZvKKLIZFMEC51T9GQFU=";
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Helps replace xcwd on Wayland compositors";
     homepage = "https://github.com/blinry/ycwd";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ lenny ];
+    platforms = lib.platforms.linux;
     mainProgram = "ycwd";
   };
 }

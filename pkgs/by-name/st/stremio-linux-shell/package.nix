@@ -1,14 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
-  nix-update-script,
-
-  # nativeBuildInputs
-  pkg-config,
-  wrapGAppsHook4,
-
+  # Wrapper
+  addDriverRunpath,
   # buildInputs
   bashNonInteractive,
   glib-networking,
@@ -17,19 +11,19 @@
   libepoxy,
   libsoup_3,
   mpv,
-  webkitgtk_6_0,
-
-  # Wrapper
-  addDriverRunpath,
+  nix-update-script,
   nodejs,
+  # nativeBuildInputs
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "stremio-linux-shell";
   version = "1.1.2";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Stremio";
@@ -37,8 +31,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jo+9KDX/a46jPTmYhiFNgp5fDKhoAsML/+m7u3ituEQ=";
   };
-
-  cargoHash = "sha256-hZ9neZD+aB7bth4UTsWJXIKGSbo/c3wZRtfOIp7LvwY=";
 
   patches = [
     ./out-path.patch
@@ -48,6 +40,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace data/com.stremio.Stremio.service data/stremio.sh build.rs \
       --subst-var out
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -65,6 +59,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_6_0
   ];
 
+  cargoHash = "sha256-hZ9neZD+aB7bth4UTsWJXIKGSbo/c3wZRtfOIp7LvwY=";
+
   postInstall = ''
     install -Dm644 data/icons/com.stremio.Stremio.svg $out/share/icons/hicolor/scalable/apps/com.stremio.Stremio.svg
     install -Dm644 data/com.stremio.Stremio.desktop $out/share/applications/com.stremio.Stremio.desktop
@@ -77,8 +73,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     mv $out/bin/stremio-linux-shell $out/libexec/stremio/stremio
   '';
 
-  # Avoid also wrapping `$out/libexec/stremio/stremio`
-  dontWrapGApps = true;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   # Node.js is required to run `server.js`
   # Add to `wrapGApp` arguments to avoid two layers of wrapping.
@@ -91,9 +87,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --prefix SERVER_PATH : "$out/libexec/stremio/server.js"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  # Avoid also wrapping `$out/libexec/stremio/stremio`
+  dontWrapGApps = true;
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script {
@@ -104,23 +101,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Client for Stremio on Linux";
     homepage = "https://www.stremio.com/";
-    downloadPage = "https://github.com/Stremio/stremio-linux-shell";
     changelog = "https://github.com/Stremio/stremio-linux-shell/releases/tag/${finalAttrs.src.tag}";
+
     license =
       with lib.licenses;
       AND [
         gpl3Only
         unfree # server.js
       ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       obfuscatedCode # server.js
     ];
+
     maintainers = with lib.maintainers; [
       thunze
       fazzi
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "stremio";
+    downloadPage = "https://github.com/Stremio/stremio-linux-shell";
   };
 })

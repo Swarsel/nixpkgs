@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   cmake,
 }:
 
@@ -21,8 +21,8 @@ stdenv.mkDerivation {
     # Fix build with CMake 4
     # Upstream repo is archived, so we take a patch from Debian
     (fetchurl {
-      url = "https://salsa.debian.org/science-team/fasttext/-/raw/b2a0e52d302b32b6786b1a8fb9c0b21ca23e2be9/debian/patches/fix-ftbfs-cmake4.patch";
       hash = "sha256-I5w+/4SNyp2FtHGYBWU2Fi76vmJpG4nbgsb0akVddAs=";
+      url = "https://salsa.debian.org/science-team/fasttext/-/raw/b2a0e52d302b32b6786b1a8fb9c0b21ca23e2be9/debian/patches/fix-ftbfs-cmake4.patch";
     })
   ];
 
@@ -30,10 +30,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Library for text classification and representation learning";
-    mainProgram = "fasttext";
     homepage = "https://fasttext.cc/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "fasttext";
   };
 }

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  _7zz,
   appimageTools,
   undmg,
-  _7zz,
 }:
 let
   pname = "paperlib";
@@ -13,12 +13,13 @@ let
     fetchurl
       {
         aarch64-darwin = {
-          url = "https://github.com/Future-Scholars/paperlib/releases/download/release-electron-${version}/Paperlib_${version}_arm.dmg";
           hash = "sha256-KNMPUeCNtODHzMJhCwI4SJPRfa87RmAe6CRRazgRZCQ=";
+          url = "https://github.com/Future-Scholars/paperlib/releases/download/release-electron-${version}/Paperlib_${version}_arm.dmg";
         };
+
         x86_64-linux = {
-          url = "https://github.com/Future-Scholars/paperlib/releases/download/release-electron-${version}/Paperlib_${version}.AppImage";
           hash = "sha256-uBYhiUL4YWwnLLPvXMoXjlQqlqFep/OpwwnmPx7s5dY=";
+          url = "https://github.com/Future-Scholars/paperlib/releases/download/release-electron-${version}/Paperlib_${version}.AppImage";
         };
       }
       .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
@@ -28,16 +29,18 @@ let
   };
 
   meta = {
-    homepage = "https://github.com/Future-Scholars/paperlib";
     description = "Open-source academic paper management tool";
+    homepage = "https://github.com/Future-Scholars/paperlib";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ ByteSudoer ];
+
     platforms = [
       "aarch64-darwin"
       "x86_64-linux"
     ];
+
     mainProgram = "paperlib";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 in
 if stdenv.hostPlatform.isDarwin then
@@ -50,8 +53,6 @@ if stdenv.hostPlatform.isDarwin then
       passthru
       ;
 
-    sourceRoot = ".";
-
     nativeBuildInputs = if stdenv.hostPlatform.isAarch64 then [ _7zz ] else [ undmg ];
 
     installPhase = ''
@@ -62,6 +63,8 @@ if stdenv.hostPlatform.isDarwin then
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   }
 else
   appimageTools.wrapType2 {

@@ -1,27 +1,22 @@
 {
-  config,
   lib,
-
-  fetchFromGitHub,
   stdenv,
-
-  nix-update-script,
-
-  enableCuda ? config.cudaSupport,
-
+  fetchFromGitHub,
+  # buildInputs
+  blas,
+  config,
   # nativeBuildInputs
   cudaPackages,
   gfortran,
-  meson,
-  ninja,
-  pkg-config,
-
-  # buildInputs
-  blas,
   hwloc,
   lapack,
   llvmPackages,
+  meson,
   metis,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  enableCuda ? config.cudaSupport,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,11 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     cudaPackages.cuda_nvcc
   ];
 
-  propagatedBuildInputs = lib.optionals enableCuda [
-    cudaPackages.cuda_cudart
-    cudaPackages.libcublas
-  ];
-
   buildInputs = [
     blas
     (hwloc.override { inherit enableCuda; })
@@ -65,6 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ llvmPackages.openmp ];
 
+  propagatedBuildInputs = lib.optionals enableCuda [
+    cudaPackages.cuda_cudart
+    cudaPackages.libcublas
+  ];
+
   mesonFlags = [ (lib.mesonBool "tests" true) ];
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
@@ -72,7 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   doCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

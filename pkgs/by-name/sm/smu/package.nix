@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -15,18 +15,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1jm7lhnzjx4q7gcwlkvsbffcy0zppywyh50d71ami6dnq182vvcc";
   };
 
-  # _FORTIFY_SOURCE requires compiling with optimization (-O)
-  env.NIX_CFLAGS_COMPILE = "-O";
-
   makeFlags = [
     "PREFIX=${placeholder "out"}"
   ];
 
+  # _FORTIFY_SOURCE requires compiling with optimization (-O)
+  env.NIX_CFLAGS_COMPILE = "-O";
+
   meta = {
     description = "Simple markup - markdown like syntax";
-    mainProgram = "smu";
     homepage = "https://github.com/Gottox/smu";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "smu";
   };
 })

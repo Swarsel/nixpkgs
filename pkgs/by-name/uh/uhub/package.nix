@@ -4,8 +4,8 @@
   fetchFromGitHub,
   cmake,
   openssl,
-  sqlite,
   pkg-config,
+  sqlite,
   systemd,
   tlsSupport ? false,
 }:
@@ -23,22 +23,23 @@ stdenv.mkDerivation {
     hash = "sha256-CdTTf82opnpjd7I9TTY+JDEZSfdGFPE0bq/xsafwm/w=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  buildInputs = [
-    sqlite
-    systemd
-  ]
-  ++ lib.optional tlsSupport openssl;
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "/usr/lib/uhub/" "$out/plugins" \
       --replace-fail "/etc/uhub" "$TMPDIR" \
       --replace-fail "cmake_minimum_required (VERSION 2.8.2)" "cmake_minimum_required(VERSION 3.10)"
   '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [
+    sqlite
+    systemd
+  ]
+  ++ lib.optional tlsSupport openssl;
 
   cmakeFlags = [
     "-DSYSTEMD_SUPPORT=ON"

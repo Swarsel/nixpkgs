@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   requests-mock,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyfibaro";
   version = "0.8.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rappenze";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-KdlndW066TDxZpkIP0Oa3Lii0mBpwELfHtoGKiwh6GE=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytestCheckHook
     requests-mock
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "pyfibaro" ];
 
   meta = {

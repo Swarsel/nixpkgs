@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
-  bootstrapped-pip,
   fetchFromGitHub,
+  bootstrapped-pip,
+  buildPythonPackage,
+  pretend,
   scripttest,
   virtualenv,
-  pretend,
 }:
 
 buildPythonPackage rec {
   pname = "pip";
   version = "20.3.4";
-  format = "other";
 
   src = fetchFromGitHub {
     owner = "pypa";
@@ -22,10 +21,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ bootstrapped-pip ];
-
-  # pip detects that we already have bootstrapped_pip "installed", so we need
-  # to force it a little.
-  pipInstallFlags = [ "--ignore-installed" ];
+  # Pip wants pytest, but tests are not distributed
+  doCheck = false;
 
   nativeCheckInputs = [
     scripttest
@@ -33,16 +30,20 @@ buildPythonPackage rec {
     pretend
   ];
 
-  # Pip wants pytest, but tests are not distributed
-  doCheck = false;
+  format = "other";
+  # pip detects that we already have bootstrapped_pip "installed", so we need
+  # to force it a little.
+  pipInstallFlags = [ "--ignore-installed" ];
 
   meta = {
     description = "PyPA recommended tool for installing Python packages";
-    license = with lib.licenses; [ mit ];
     homepage = "https://pip.pypa.io/";
+    license = with lib.licenses; [ mit ];
+
     knownVulnerabilities = [
       "CVE-2021-28363"
     ];
+
     priority = 10;
   };
 }

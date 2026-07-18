@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-rFBnGh9S1/CrCRHRRFDrNejC+BLt0OQmss0ePZ25HW8=";
   };
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
 
@@ -24,6 +22,7 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru = { inherit pname version; };
 
   meta = {

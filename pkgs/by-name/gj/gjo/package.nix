@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Small utility to create JSON objects";
-    mainProgram = "gjo";
     homepage = "https://github.com/skanehira/gjo";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ doronbehar ];
+    mainProgram = "gjo";
   };
 })

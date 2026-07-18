@@ -5,8 +5,8 @@
 
 qtModule {
   pname = "qttranslations";
-  nativeBuildInputs = [ qttools ];
-  separateDebugInfo = false;
   outputs = [ "out" ];
+  nativeBuildInputs = [ qttools ];
   allowedReferences = [ "out" ];
+  separateDebugInfo = false;
 }

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libxaw,
   libxmu,
   libxt,
+  pkg-config,
   wrapWithXFileSearchPathHook,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "viewres";
@@ -50,8 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Displays a tree showing the widget class hierarchy of the Athena Widget Set (libxaw)";
     homepage = "https://gitlab.freedesktop.org/xorg/app/viewres";
     license = lib.licenses.x11;
-    mainProgram = "viewres";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "viewres";
   };
 })

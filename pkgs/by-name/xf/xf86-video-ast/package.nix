@@ -3,24 +3,24 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
+  libpciaccess,
+  nix-update-script,
   pkg-config,
   util-macros,
   xorg-server,
   xorgproto,
-  libpciaccess,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-video-ast";
   version = "1.2.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "driver";
     repo = "xf86-video-ast";
     tag = "xf86-video-ast-${finalAttrs.version}";
     hash = "sha256-Xz9ZvngAsEb/9+YOGOkJQIbFzofKw+2V6sST8Ry2tvo=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;

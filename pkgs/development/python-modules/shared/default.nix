@@ -11,13 +11,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "shared";
   version = "0.0.32";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-cwityVwNqxTQyZY1zYBJ0fAEzH/vc5bT/kcyPDTsWMY=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,10 +27,8 @@ buildPythonPackage (finalAttrs: {
     probed
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "shared" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Data exchange and persistence based on human-readable files";

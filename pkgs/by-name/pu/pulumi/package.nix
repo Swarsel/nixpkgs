@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
-  git,
+  _experimental-update-script-combinators,
+  buildGoModule,
   buildPackages,
   # passthru
   callPackage,
-  testers,
+  git,
+  installShellFiles,
+  nix-update-script,
   pulumi,
   pulumiPackages,
   python3Packages,
-  nix-update-script,
-  _experimental-update-script-combinators,
+  testers,
 }:
 buildGoModule (finalAttrs: {
   pname = "pulumi";
@@ -28,31 +28,9 @@ buildGoModule (finalAttrs: {
     name = "pulumi";
   };
 
-  vendorHash = "sha256-BaFw8EnPd2GPA/p9wm8XpVy/iE8gqbteRnMQC8Z4NHQ=";
-
-  sourceRoot = "${finalAttrs.src.name}/pkg";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-BaFw8EnPd2GPA/p9wm8XpVy/iE8gqbteRnMQC8Z4NHQ=";
   nativeCheckInputs = [ git ];
-
-  # https://github.com/pulumi/pulumi/blob/3ec1aa75d5bf7103b283f46297321a9a4b1a8a33/.goreleaser.yml#L20-L26
-  tags = [ "osusergo" ];
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/pulumi/pulumi/sdk/v3/go/common/version.Version=v${finalAttrs.version}"
-  ];
-
-  excludedPackages = [
-    "util/generate"
-    "codegen/gen_program_test"
-  ];
-
-  # Required for user.Current implementation with osusergo on Darwin.
-  preCheck = ''
-    export HOME=$TMPDIR USER=nixbld
-  '';
 
   checkFlags = [
     # The tests require `version.Version` (i.e. ldflags) to be unset.
@@ -121,15 +99,10 @@ buildGoModule (finalAttrs: {
     }$"
   ];
 
-  # Allow tests that bind or connect to localhost on macOS.
-  __darwinAllowLocalNetworking = true;
-
-  # Use pulumi from the previous stage if we can’t execute compiled binary.
-  pulumiExe =
-    if stdenv.buildPlatform.canExecute stdenv.hostPlatform then
-      "${placeholder "out"}/bin/pulumi"
-    else
-      "${buildPackages.pulumi}/bin/pulumi";
+  # Required for user.Current implementation with osusergo on Darwin.
+  preCheck = ''
+    export HOME=$TMPDIR USER=nixbld
+  '';
 
   postInstall = ''
     for shell in bash fish zsh; do
@@ -138,9 +111,59 @@ buildGoModule (finalAttrs: {
     done
   '';
 
+  # Allow tests that bind or connect to localhost on macOS.
+  __darwinAllowLocalNetworking = true;
+
+  excludedPackages = [
+    "util/generate"
+    "codegen/gen_program_test"
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/pulumi/pulumi/sdk/v3/go/common/version.Version=v${finalAttrs.version}"
+  ];
+
+  # Use pulumi from the previous stage if we can’t execute compiled binary.
+  pulumiExe =
+    if stdenv.buildPlatform.canExecute stdenv.hostPlatform then
+      "${placeholder "out"}/bin/pulumi"
+    else
+      "${buildPackages.pulumi}/bin/pulumi";
+
+  sourceRoot = "${finalAttrs.src.name}/pkg";
+  # https://github.com/pulumi/pulumi/blob/3ec1aa75d5bf7103b283f46297321a9a4b1a8a33/.goreleaser.yml#L20-L26
+  tags = [ "osusergo" ];
+
   passthru = {
     pkgs = callPackage ./plugins.nix { };
-    withPackages = callPackage ./with-packages.nix { };
+
+    tests = {
+      # Test building packages that reuse our version and src.
+      inherit (pulumiPackages) pulumi-go pulumi-nodejs pulumi-python;
+
+      version = testers.testVersion {
+        version = "v${finalAttrs.version}";
+        command = "PULUMI_SKIP_UPDATE_CHECK=1 pulumi version";
+        package = pulumi;
+      };
+
+      pulumiTestHookShellcheck = testers.shellcheck {
+        src = ./extra/pulumi-test-hook.sh;
+        name = "pulumi-test-hook-shellcheck";
+      };
+
+      pythonPackage = python3Packages.pulumi;
+
+      pythonPackageProtobuf5 =
+        (python3Packages.overrideScope (
+          final: _: {
+            protobuf = final.protobuf5;
+          }
+        )).pulumi;
+    };
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (nix-update-script {
@@ -156,39 +179,21 @@ buildGoModule (finalAttrs: {
         extraArgs = [ "--version=skip" ];
       })
     ];
-    tests = {
-      version = testers.testVersion {
-        package = pulumi;
-        version = "v${finalAttrs.version}";
-        command = "PULUMI_SKIP_UPDATE_CHECK=1 pulumi version";
-      };
 
-      # Test building packages that reuse our version and src.
-      inherit (pulumiPackages) pulumi-go pulumi-nodejs pulumi-python;
-      pythonPackage = python3Packages.pulumi;
-      pythonPackageProtobuf5 =
-        (python3Packages.overrideScope (
-          final: _: {
-            protobuf = final.protobuf5;
-          }
-        )).pulumi;
-
-      pulumiTestHookShellcheck = testers.shellcheck {
-        name = "pulumi-test-hook-shellcheck";
-        src = ./extra/pulumi-test-hook.sh;
-      };
-    };
+    withPackages = callPackage ./with-packages.nix { };
   };
 
   meta = {
-    homepage = "https://www.pulumi.com";
     description = "Cloud development platform that makes creating cloud programs easy and productive";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    homepage = "https://www.pulumi.com";
     license = lib.licenses.asl20;
-    mainProgram = "pulumi";
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
+
     maintainers = with lib.maintainers; [
       veehaitch
       tie
     ];
+
+    mainProgram = "pulumi";
   };
 })

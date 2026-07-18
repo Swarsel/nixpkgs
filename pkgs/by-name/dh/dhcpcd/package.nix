@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  udev,
   freebsd,
-  runtimeShellPackage,
-  runtimeShell,
   nixosTests,
+  pkg-config,
+  runtimeShell,
+  runtimeShellPackage,
+  udev,
+  enablePrivSep ? false,
   # Always tries to do dynamic linking for udev.
   withUdev ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isStatic,
-  enablePrivSep ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,7 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-tJV533j/nQT/PP5KVPJCgTo0Lu8NNMIGnJBvYUG8ufw=";
   };
 
+  postPatch = ''
+    substituteInPlace hooks/dhcpcd-run-hooks.in --replace /bin/sh ${runtimeShell}
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     runtimeShellPackage # So patchShebangs finds a bash suitable for the installed scripts
   ]
@@ -35,10 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     freebsd.libcapsicum
     freebsd.libcasper
   ];
-
-  postPatch = ''
-    substituteInPlace hooks/dhcpcd-run-hooks.in --replace /bin/sh ${runtimeShell}
-  '';
 
   configureFlags = [
     "--sysconfdir=/etc"
@@ -51,6 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional enablePrivSep "--privsepuser=dhcpcd";
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
+  # Check that the udev plugin got built.
+  postInstall = lib.optionalString withUdev "[ -e ${placeholder "out"}/lib/dhcpcd/dev/udev.so ]";
 
   # Hack to make installation succeed.  dhcpcd will still use /var/lib
   # at runtime.
@@ -58,9 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     "DBDIR=$(TMPDIR)/db"
     "SYSCONFDIR=${placeholder "out"}/etc"
   ];
-
-  # Check that the udev plugin got built.
-  postInstall = lib.optionalString withUdev "[ -e ${placeholder "out"}/lib/dhcpcd/dev/udev.so ]";
 
   passthru.tests = {
     inherit (nixosTests.networking.scripted)
@@ -74,9 +74,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Client for the Dynamic Host Configuration Protocol (DHCP)";
     homepage = "https://roy.marples.name/projects/dhcpcd";
-    platforms = lib.platforms.linux ++ lib.platforms.freebsd ++ lib.platforms.openbsd;
     license = lib.licenses.bsd2;
     maintainers = [ ];
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd ++ lib.platforms.openbsd;
     mainProgram = "dhcpcd";
   };
 })

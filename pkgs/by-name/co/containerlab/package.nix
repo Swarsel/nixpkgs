@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   versionCheckHook,
 }:
@@ -17,25 +17,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-1BE3PZvXUYSMvs65MS5kT3xp0P7pPjTXJKq6dEcmKqw=";
   };
 
-  vendorHash = "sha256-x9G80vupcewg0FtIAnWSTQiPPWDIvfjqSpmmjAradwA=";
-
   nativeBuildInputs = [
     installShellFiles
     versionCheckHook
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/srl-labs/containerlab/cmd.Version=${finalAttrs.version}"
-    "-X github.com/srl-labs/containerlab/cmd.commit=${finalAttrs.src.rev}"
-    "-X github.com/srl-labs/containerlab/cmd.date=1970-01-01T00:00:00Z"
-  ];
-
-  preCheck = ''
-    # Fix failed TestLabelsInit test
-    export USER="runner"
-  '';
+  vendorHash = "sha256-x9G80vupcewg0FtIAnWSTQiPPWDIvfjqSpmmjAradwA=";
 
   checkFlags = [
     # Not available in sandbox:
@@ -43,6 +30,11 @@ buildGoModule (finalAttrs: {
     # - /proc/modules needed for KernelModulesLoaded
     "-skip=^TestVerifyLinks$|^TestIsKernelModuleLoaded$"
   ];
+
+  preCheck = ''
+    # Fix failed TestLabelsInit test
+    export USER="runner"
+  '';
 
   postInstall = ''
     local INSTALL="$out/bin/containerlab"
@@ -53,6 +45,15 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/srl-labs/containerlab/cmd.Version=${finalAttrs.version}"
+    "-X github.com/srl-labs/containerlab/cmd.commit=${finalAttrs.src.rev}"
+    "-X github.com/srl-labs/containerlab/cmd.date=1970-01-01T00:00:00Z"
+  ];
+
   versionCheckProgramArg = "version";
 
   meta = {
@@ -60,8 +61,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://containerlab.dev/";
     changelog = "https://github.com/srl-labs/containerlab/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ _0x4A6F ];
+    platforms = lib.platforms.linux;
     mainProgram = "containerlab";
   };
 })

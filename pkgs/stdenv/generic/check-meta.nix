@@ -200,17 +200,17 @@ let
   remediation_env_var =
     allow_attr:
     {
+      NonSource = "NIXPKGS_ALLOW_NONSOURCE";
       Unfree = "NIXPKGS_ALLOW_UNFREE";
       UnsupportedSystem = "NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM";
-      NonSource = "NIXPKGS_ALLOW_NONSOURCE";
     }
     .${allow_attr};
   remediation_phrase =
     allow_attr:
     {
+      NonSource = "packages not built from source";
       Unfree = "unfree packages";
       UnsupportedSystem = "packages that are unsupported for this system";
-      NonSource = "packages not built from source";
     }
     .${allow_attr};
   remediate_predicate = predicateConfigAttr: attrs: ''
@@ -318,64 +318,62 @@ let
       platforms = listOf (either str attrs); # see lib.meta.platformMatch
     in
     record {
+      inherit platforms;
+      version = str;
+      available = any;
+      badPlatforms = platforms;
+      branch = str;
+      # Automatically turns into meta.problems.broken, see ./problems.nix
+      broken = bool;
+      changelog = either str (listOf str);
       # These keys are documented
       description = str;
-      mainProgram = str;
-      longDescription = str;
-      branch = str;
-      homepage = either str (listOf str);
       donationPage = str;
       downloadPage = str;
-      changelog = either str (listOf str);
+      executables = listOf str;
+      homepage = either str (listOf str);
+      hydraPlatforms = listOf str;
+      identifiers = attrs;
+      insecure = bool;
+      isBuildPythonPackage = platforms;
+      isFcitxEngine = bool;
+      isGutenprint = bool;
+      # Needed for Hydra to expose channel tarballs:
+      # https://github.com/NixOS/hydra/blob/53335323ae79ca1a42643f58e520b376898ce641/doc/manual/src/jobs.md#meta-fields
+      isHydraChannel = bool;
+      isIbusEngine = bool;
+      knownVulnerabilities = listOf str;
+
       license =
         let
           # TODO disallow `str` licenses, use a module
           licenseType = either (both attrs (not derivation)) str;
         in
         either licenseType (listOf licenseType);
-      sourceProvenance = listOf attrs;
+
+      longDescription = str;
+      mainProgram = str;
       maintainers = listOf attrs; # TODO use the maintainer type from lib/tests/maintainer-module.nix
-      nonTeamMaintainers = listOf attrs; # TODO use the maintainer type from lib/tests/maintainer-module.nix
-      teams = listOf attrs; # TODO similar to maintainers, use a teams type
-      priority = int;
-      pkgConfigModules = listOf str;
-      inherit platforms;
-      hydraPlatforms = listOf str;
-      # Automatically turns into meta.problems.broken, see ./problems.nix
-      broken = bool;
-      unfree = bool;
-      unsupported = bool;
-      insecure = bool;
-      # This is checked in more detail further down
-      problems = problemsType;
-      timeout = int;
-      knownVulnerabilities = listOf str;
-      badPlatforms = platforms;
-
-      # Needed for Hydra to expose channel tarballs:
-      # https://github.com/NixOS/hydra/blob/53335323ae79ca1a42643f58e520b376898ce641/doc/manual/src/jobs.md#meta-fields
-      isHydraChannel = bool;
-
+      # Used for the original location of the maintainer and team attributes to assist with pings.
+      maintainersPosition = any;
       # Weirder stuff that doesn't appear in the documentation?
       maxSilent = int;
       name = str;
-      version = str;
-      tag = str;
-      executables = listOf str;
+      nonTeamMaintainers = listOf attrs; # TODO use the maintainer type from lib/tests/maintainer-module.nix
       outputsToInstall = listOf str;
+      pkgConfigModules = listOf str;
       position = str;
-      available = any;
-      isBuildPythonPackage = platforms;
+      priority = int;
+      # This is checked in more detail further down
+      problems = problemsType;
       schedulingPriority = int;
-      isFcitxEngine = bool;
-      isIbusEngine = bool;
-      isGutenprint = bool;
-
-      # Used for the original location of the maintainer and team attributes to assist with pings.
-      maintainersPosition = any;
+      sourceProvenance = listOf attrs;
+      tag = str;
+      teams = listOf attrs; # TODO similar to maintainers, use a teams type
       teamsPosition = any;
-
-      identifiers = attrs;
+      timeout = int;
+      unfree = bool;
+      unsupported = bool;
     };
 
   checkMeta = config.checkMeta;
@@ -411,38 +409,39 @@ let
     # Note that this is not a full type check and functions below still need to by careful about their inputs!
     if checkMeta && !metaType.verify attrs.meta then
       {
-        reason = "unknown-meta";
         msg = "has an invalid meta attrset:${
           concatMapStrings (x: "\n  - " + x) (metaType.errors "${getName attrs}.meta" attrs.meta)
         }\n";
+
+        reason = "unknown-meta";
         remediation = "";
       }
 
     # --- Put checks that cannot be ignored here ---
     else if checkMeta && checkOutputsToInstall attrs then
       {
-        reason = "broken-outputs";
         msg = "has invalid meta.outputsToInstall";
+        reason = "broken-outputs";
         remediation = remediateOutputsToInstall attrs;
       }
 
     # --- Put checks that can be ignored here ---
     else if hasDeniedUnfreeLicense attrs && !(allowlist != [ ] && hasAllowlistedLicense attrs) then
       {
-        reason = "unfree";
         msg = "has an unfree license (‘${showLicense attrs.meta.license}’)";
+        reason = "unfree";
         remediation = remediate_allowlist "Unfree" (remediate_predicate "allowUnfreePredicate" attrs);
       }
     else if blocklist != [ ] && hasBlocklistedLicense attrs then
       {
-        reason = "blocklisted";
         msg = "has a blocklisted license (‘${showLicense attrs.meta.license}’)";
+        reason = "blocklisted";
         remediation = "";
       }
     else if !allowNonSource && hasDeniedNonSourceProvenance attrs then
       {
-        reason = "non-source";
         msg = "contains elements not built from source (‘${showSourceType attrs.meta.sourceProvenance}’)";
+        reason = "non-source";
         remediation = remediate_allowlist "NonSource" (remediate_predicate "allowNonSourcePredicate" attrs);
       }
     else if hasUnsupportedPlatform' attrs && !allowUnsupportedSystem then
@@ -453,19 +452,20 @@ let
         };
       in
       {
-        reason = "unsupported";
         msg = ''
           is not available on the requested hostPlatform:
             hostPlatform.system = "${hostPlatform.system}"
             package.meta.platforms = ${toPretty' (attrs.meta.platforms or [ ])}
             package.meta.badPlatforms = ${toPretty' (attrs.meta.badPlatforms or [ ])}
         '';
+
+        reason = "unsupported";
         remediation = remediate_allowlist "UnsupportedSystem" "";
       }
     else if hasDisallowedInsecure attrs then
       {
-        reason = "insecure";
         msg = "is marked as insecure";
+        reason = "insecure";
         remediation = remediate_insecure attrs;
       }
     else
@@ -480,17 +480,17 @@ let
     (length values == 11) && !any (v: v == null) values;
   makeCPE =
     {
-      part,
-      vendor,
-      product,
-      version,
-      update,
       edition,
       language,
-      sw_edition,
-      target_sw,
-      target_hw,
       other,
+      part,
+      product,
+      sw_edition,
+      target_hw,
+      target_sw,
+      update,
+      vendor,
+      version,
     }:
     "cpe:2.3:${part}:${vendor}:${product}:${version}:${update}:${edition}:${language}:${sw_edition}:${target_sw}:${target_hw}:${other}";
   possibleCPEPartsFuns = [
@@ -513,8 +513,8 @@ let
       hasUnsupportedPlatform' = hasUnsupportedPlatform hostPlatform;
     in
     {
-      validity,
       attrs,
+      validity,
       pos ? null,
       references ? [ ],
     }:
@@ -525,6 +525,10 @@ let
       teamsPosition = builtins.unsafeGetAttrPos "teams" (attrs.meta or { });
     in
     {
+      # CI scripts look at these to determine pings. Note that we should filter nulls out of this,
+      # or nix-env complains: https://github.com/NixOS/nix/blob/2.18.8/src/nix-env/nix-env.cc#L963
+      ${if maintainersPosition == null then null else "maintainersPosition"} = maintainersPosition;
+      ${if teamsPosition == null then null else "teamsPosition"} = teamsPosition;
       # `name` derivation attribute includes cross-compilation cruft,
       # is under assert, and is sanitized.
       # Let's have a clean always accessible version here.
@@ -551,45 +555,34 @@ let
         )
       ]
       ++ optional (hasOutput "man") "man";
-
-      # CI scripts look at these to determine pings. Note that we should filter nulls out of this,
-      # or nix-env complains: https://github.com/NixOS/nix/blob/2.18.8/src/nix-env/nix-env.cc#L963
-      ${if maintainersPosition == null then null else "maintainersPosition"} = maintainersPosition;
-      ${if teamsPosition == null then null else "teamsPosition"} = teamsPosition;
     }
     // attrs.meta or { }
     // {
       # Fill `meta.position` to identify the source location of the package.
       ${if pos == null then null else "position"} = pos.file + ":" + toString pos.line;
 
-      # Maintainers should be inclusive of teams.
-      # Note that there may be external consumers of this API (repology, for instance) -
-      # if you add a new maintainer or team attribute please ensure that this expectation is still met.
-      maintainers = unique (
-        attrs.meta.maintainers or [ ] ++ concatMap (team: team.members or [ ]) attrs.meta.teams or [ ]
-      );
+      available =
+        validity.valid != "no"
+        && ((config.checkMetaRecursively or false) -> all (d: d.meta.available or true) references);
 
-      # Needed for CI to be able to avoid requesting reviews from individual
-      # team members.
-      # Prefer nonTeamMaintainers in case meta is copied from another package
-      nonTeamMaintainers = attrs.meta.nonTeamMaintainers or attrs.meta.maintainers or [ ];
+      broken = isMarkedBroken attrs;
 
       identifiers =
         let
           # nix-env writes a warning for each derivation that has null in its meta values, so
           # fields without known values are removed from the result
           defaultCPEParts = {
-            part = "a";
             #vendor = null;
             ${if attrs.pname or null != null then "product" else null} = attrs.pname;
             #version = null;
             #update = null;
             edition = "*";
-            sw_edition = "*";
-            target_sw = "*";
-            target_hw = "*";
             language = "*";
             other = "*";
+            part = "a";
+            sw_edition = "*";
+            target_hw = "*";
+            target_sw = "*";
           };
 
           cpeParts = defaultCPEParts // attrs.meta.identifiers.cpeParts or { };
@@ -610,8 +603,8 @@ let
                   guessedParts = cpeParts // result.value;
                 in
                 optional (result.success && hasAllCPEParts guessedParts) {
-                  cpeParts = guessedParts;
                   cpe = makeCPE guessedParts;
+                  cpeParts = guessedParts;
                 }
               ) possibleCPEPartsFuns;
 
@@ -638,6 +631,7 @@ let
               possibleCPEs
               purls
               ;
+
             ${if cpe != null then "cpe" else null} = cpe;
             ${if purl != null then "purl" else null} = purl;
           };
@@ -647,25 +641,31 @@ let
           inherit v1 purlParts;
         };
 
-      # Expose the result of the checks for everyone to see.
-      unfree = hasUnfreeLicense attrs;
-      broken = isMarkedBroken attrs;
-      unsupported = hasUnsupportedPlatform' attrs;
       insecure = isMarkedInsecure attrs;
 
-      problems = completeMetaProblems config attrs;
+      # Maintainers should be inclusive of teams.
+      # Note that there may be external consumers of this API (repology, for instance) -
+      # if you add a new maintainer or team attribute please ensure that this expectation is still met.
+      maintainers = unique (
+        attrs.meta.maintainers or [ ] ++ concatMap (team: team.members or [ ]) attrs.meta.teams or [ ]
+      );
 
-      available =
-        validity.valid != "no"
-        && ((config.checkMetaRecursively or false) -> all (d: d.meta.available or true) references);
+      # Needed for CI to be able to avoid requesting reviews from individual
+      # team members.
+      # Prefer nonTeamMaintainers in case meta is copied from another package
+      nonTeamMaintainers = attrs.meta.nonTeamMaintainers or attrs.meta.maintainers or [ ];
+      problems = completeMetaProblems config attrs;
+      # Expose the result of the checks for everyone to see.
+      unfree = hasUnfreeLicense attrs;
+      unsupported = hasUnsupportedPlatform' attrs;
     };
 
   handle =
     {
       attrs,
       meta,
-      warnings ? [ ],
       error ? null,
+      warnings ? [ ],
     }:
     let
       withError =
@@ -702,7 +702,7 @@ let
     let
       checkValidity' = checkValidity hostPlatform;
     in
-    { meta, attrs }:
+    { attrs, meta }:
     let
       invalid = checkValidity' attrs;
       problems = checkProblems attrs;
@@ -710,24 +710,26 @@ let
     if invalid == null then
       if problems == null then
         {
-          valid = "yes";
           handled = true;
+          valid = "yes";
         }
       else
         {
-          valid = if problems.error == null then "warn" else "no";
           handled = handle {
             inherit attrs meta;
             inherit (problems) error warnings;
           };
+
+          valid = if problems.error == null then "warn" else "no";
         }
     else
       {
-        valid = "no";
         handled = handle {
           inherit attrs meta;
           error = invalid;
         };
+
+        valid = "no";
       };
 
 in

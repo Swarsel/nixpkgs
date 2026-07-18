@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
+  libosmocore,
   lksctp-tools,
   pkg-config,
-  libosmocore,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,9 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Osmocom network / socket interface library";
     homepage = "https://osmocom.org/projects/libosmo-netif/wiki";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       markuskowa
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

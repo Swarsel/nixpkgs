@@ -1,34 +1,29 @@
 {
   lib,
-  stdenvNoLibc,
-  mkDerivation,
-  fetchpatch,
   bsdSetupHook,
-  openbsdSetupHook,
-  makeMinimal,
-  install,
-  flex,
   byacc,
-  gencat,
-  lorder,
-  tsort,
-  rpcgen,
   csu,
+  fetchpatch,
+  flex,
+  gencat,
   include,
+  install,
+  lorder,
+  makeMinimal,
+  mkDerivation,
+  openbsdSetupHook,
+  rpcgen,
+  stdenvNoLibc,
+  tsort,
 }:
 
 mkDerivation {
-  noLibc = true;
-  path = "lib/libc";
   pname = "libcMinimal-openbsd";
+
   outputs = [
     "out"
     "dev"
     "man"
-  ];
-  extraPaths = [
-    "lib/csu/os-note-elf.h"
-    "sys/arch"
   ];
 
   patches = [
@@ -36,11 +31,16 @@ mkDerivation {
     ./disable-librebuild.patch
     # Do not produce ctags, can do that separately.
     (fetchpatch {
+      hash = "sha256-2fqabJZLUvXUIWe5WZ4NrTOwgQCXqH49Wo0hAPu5lu0=";
       name = "skip-tags.patch";
       url = "https://marc.info/?l=openbsd-tech&m=171575286706032&q=raw";
-      hash = "sha256-2fqabJZLUvXUIWe5WZ4NrTOwgQCXqH49Wo0hAPu5lu0=";
     })
   ];
+
+  # -fret-clean requires OpenBSD-specific patches to the compiler.
+  postPatch = ''
+    find . -type f -exec sed -i 's/-fret-clean//g' {} \;
+  '';
 
   nativeBuildInputs = [
     bsdSetupHook
@@ -57,6 +57,11 @@ mkDerivation {
     csu
   ];
 
+  makeFlags = [
+    "COMPILER_VERSION=clang"
+    "LIBC_TAGS=no"
+  ];
+
   env.NIX_CFLAGS_COMPILE = toString [
     "-B${csu}/lib"
     "-Wno-error"
@@ -68,16 +73,6 @@ mkDerivation {
   env.NIX_LDFLAGS = lib.optionalString (
     stdenvNoLibc.hostPlatform.linker == "lld"
   ) "--undefined-version";
-
-  makeFlags = [
-    "COMPILER_VERSION=clang"
-    "LIBC_TAGS=no"
-  ];
-
-  # -fret-clean requires OpenBSD-specific patches to the compiler.
-  postPatch = ''
-    find . -type f -exec sed -i 's/-fret-clean//g' {} \;
-  '';
 
   postInstall = ''
     pushd ${include}
@@ -92,5 +87,12 @@ mkDerivation {
     popd
   '';
 
+  extraPaths = [
+    "lib/csu/os-note-elf.h"
+    "sys/arch"
+  ];
+
+  noLibc = true;
+  path = "lib/libc";
   meta.platforms = lib.platforms.openbsd;
 }

@@ -33,91 +33,110 @@ let
       options = {
 
         enable = lib.mkOption {
-          type = lib.types.bool;
           default = false;
+
           description = ''
             Enables nylon as a running service upon activation.
           '';
-        };
 
-        name = lib.mkOption {
-          type = lib.types.str;
-          default = "";
-          description = "The name of this nylon instance.";
-        };
-
-        nrConnections = lib.mkOption {
-          type = lib.types.int;
-          default = 10;
-          description = ''
-            The number of allowed simultaneous connections to the daemon, default 10.
-          '';
-        };
-
-        logging = lib.mkOption {
           type = lib.types.bool;
-          default = false;
-          description = ''
-            Enable logging, default is no logging.
-          '';
-        };
-
-        verbosity = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = ''
-            Enable verbose output, default is to not be verbose.
-          '';
         };
 
         acceptInterface = lib.mkOption {
-          type = lib.types.str;
           default = "lo";
+
           description = ''
             Tell nylon which interface to listen for client requests on, default is "lo".
           '';
-        };
 
-        bindInterface = lib.mkOption {
           type = lib.types.str;
-          default = "enp3s0f0";
-          description = ''
-            Tell nylon which interface to use as an uplink, default is "enp3s0f0".
-          '';
-        };
-
-        port = lib.mkOption {
-          type = lib.types.port;
-          default = 1080;
-          description = ''
-            What port to listen for client requests, default is 1080.
-          '';
         };
 
         allowedIPRanges = lib.mkOption {
-          type = with lib.types; listOf str;
           default = [
             "192.168.0.0/16"
             "127.0.0.1/8"
             "172.16.0.1/12"
             "10.0.0.0/8"
           ];
+
           description = ''
             Allowed client IP ranges are evaluated first, defaults to ARIN IPv4 private ranges:
               [ "192.168.0.0/16" "127.0.0.0/8" "172.16.0.0/12" "10.0.0.0/8" ]
           '';
+
+          type = with lib.types; listOf str;
+        };
+
+        bindInterface = lib.mkOption {
+          default = "enp3s0f0";
+
+          description = ''
+            Tell nylon which interface to use as an uplink, default is "enp3s0f0".
+          '';
+
+          type = lib.types.str;
         };
 
         deniedIPRanges = lib.mkOption {
-          type = with lib.types; listOf str;
           default = [ "0.0.0.0/0" ];
+
           description = ''
             Denied client IP ranges, these gets evaluated after the allowed IP ranges, defaults to all IPv4 addresses:
               [ "0.0.0.0/0" ]
             To block all other access than the allowed.
           '';
+
+          type = with lib.types; listOf str;
+        };
+
+        logging = lib.mkOption {
+          default = false;
+
+          description = ''
+            Enable logging, default is no logging.
+          '';
+
+          type = lib.types.bool;
+        };
+
+        name = lib.mkOption {
+          default = "";
+          description = "The name of this nylon instance.";
+          type = lib.types.str;
+        };
+
+        nrConnections = lib.mkOption {
+          default = 10;
+
+          description = ''
+            The number of allowed simultaneous connections to the daemon, default 10.
+          '';
+
+          type = lib.types.int;
+        };
+
+        port = lib.mkOption {
+          default = 1080;
+
+          description = ''
+            What port to listen for client requests, default is 1080.
+          '';
+
+          type = lib.types.port;
+        };
+
+        verbosity = lib.mkOption {
+          default = false;
+
+          description = ''
+            Enable verbose output, default is to not be verbose.
+          '';
+
+          type = lib.types.bool;
         };
       };
+
       config = {
         name = lib.mkDefault name;
       };
@@ -125,15 +144,17 @@ let
 
   mkNamedNylon = cfg: {
     "nylon-${cfg.name}" = {
-      description = "Nylon, a lightweight SOCKS proxy server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Nylon, a lightweight SOCKS proxy server";
+
       serviceConfig = {
-        User = "nylon";
-        Group = "nylon";
-        WorkingDirectory = homeDir;
         ExecStart = "${pkgs.nylon}/bin/nylon -f -c ${configFile cfg}";
+        Group = "nylon";
+        User = "nylon";
+        WorkingDirectory = homeDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 
@@ -152,8 +173,8 @@ in
     services.nylon = lib.mkOption {
       default = { };
       description = "Collection of named nylon instances";
-      type = with lib.types; attrsOf (submodule nylonOpts);
       internal = true;
+      type = with lib.types; attrsOf (submodule nylonOpts);
     };
 
   };
@@ -162,17 +183,16 @@ in
 
   config = lib.mkIf (lib.length enabledNylons > 0) {
 
-    users.users.nylon = {
-      group = "nylon";
-      description = "Nylon SOCKS Proxy";
-      home = homeDir;
-      createHome = true;
-      uid = config.ids.uids.nylon;
-    };
-
+    systemd.services = lib.foldr (a: b: a // b) { } nylonUnits;
     users.groups.nylon.gid = config.ids.gids.nylon;
 
-    systemd.services = lib.foldr (a: b: a // b) { } nylonUnits;
+    users.users.nylon = {
+      createHome = true;
+      description = "Nylon SOCKS Proxy";
+      group = "nylon";
+      home = homeDir;
+      uid = config.ids.uids.nylon;
+    };
 
   };
 }

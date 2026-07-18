@@ -1,11 +1,11 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   makeBinaryWrapper,
-  nodejs_22,
   nix-update-script,
   nixosTests,
+  nodejs_22,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "send";
@@ -18,28 +18,23 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-tfntox8Sw3xzlCOJgY/LThThm+mptYY5BquYDjzHonQ=";
   };
 
+  nativeBuildInputs = [
+    makeBinaryWrapper
+  ];
+
+  npmDepsHash = "sha256-QInXcYpZcAOJMS6QFtIapftyWsqA80ef+OiKJ9XEs98=";
+
+  env = {
+    NODE_OPTIONS = "--openssl-legacy-provider";
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true";
+  };
+
   # @dannycoates/express-ws uses the unmaintained esm loader, which fails on nodejs_22.
   postConfigure = ''
     patch -p1 \
       --directory=node_modules/@dannycoates \
       < ${./dannycoates-express-ws-drop-esm-loader.patch}
   '';
-
-  nodejs = nodejs_22;
-
-  npmDepsFetcherVersion = 2;
-  npmDepsHash = "sha256-QInXcYpZcAOJMS6QFtIapftyWsqA80ef+OiKJ9XEs98=";
-
-  nativeBuildInputs = [
-    makeBinaryWrapper
-  ];
-
-  env = {
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true";
-    NODE_OPTIONS = "--openssl-legacy-provider";
-  };
-
-  npmPackFlags = [ "--ignore-scripts" ];
 
   postInstall = ''
     cp -r dist $out/lib/node_modules/send/
@@ -50,22 +45,29 @@ buildNpmPackage (finalAttrs: {
       --set "NODE_ENV" "production"
   '';
 
+  nodejs = nodejs_22;
+  npmDepsFetcherVersion = 2;
+  npmPackFlags = [ "--ignore-scripts" ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       inherit (nixosTests) send;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "File Sharing Experiment";
-    changelog = "https://github.com/timvisee/send/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/timvisee/send";
+    changelog = "https://github.com/timvisee/send/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       moraxyc
       MrSom3body
     ];
+
     mainProgram = "send";
   };
 })

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   hidapi,
-  udev,
-  pkg-config,
   nix-update-script,
+  pkg-config,
+  udev,
   versionCheckHook,
 }:
 
@@ -20,21 +20,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-WqyAaoiiuHbLAgfGpl4M3AHyWFl8KPGA/OaO2E/uix0=";
   };
 
-  postUnpack = ''
-    cp --no-preserve=mode -r ${hidapi.src} hidapi
-    export HIDAPI_DIR=$PWD/hidapi
-  '';
-
-  env.HIDAPITESTER_VERSION = finalAttrs.version;
+  nativeBuildInputs = [
+    pkg-config
+  ];
 
   buildInputs = [
     udev
     hidapi
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-  ];
+  env.HIDAPITESTER_VERSION = finalAttrs.version;
 
   installPhase = ''
     runHook preInstall
@@ -42,17 +37,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.updateScript = nix-update-script { };
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  postUnpack = ''
+    cp --no-preserve=mode -r ${hidapi.src} hidapi
+    export HIDAPI_DIR=$PWD/hidapi
+  '';
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple command-line program to test HIDAPI";
     homepage = "https://github.com/todbot/hidapitester";
     changelog = "https://github.com/todbot/hidapitester/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ lykos153 ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ lykos153 ];
     mainProgram = "hidapitester";
   };
 })

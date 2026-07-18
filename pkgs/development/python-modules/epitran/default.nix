@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  unittestCheckHook,
-
+  buildPythonPackage,
+  jamo,
+  marisa-trie,
+  panphon,
+  regex,
+  requests,
   setuptools,
   setuptools-scm,
-
-  jamo,
-  regex,
-  panphon,
-  marisa-trie,
-  requests,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "epitran";
   version = "1.35.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dmort27";
@@ -26,6 +22,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-O9AzL+snaL0WawsL00v0nnuUZqqC0gAmrlJWLsDnfyU=";
   };
+
+  nativeCheckInputs = [ unittestCheckHook ];
 
   build-system = [
     setuptools
@@ -40,17 +38,17 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
-  unittestFlagsArray = [
-    "-s"
-    "test"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "epitran"
     "epitran.backoff"
     "epitran.vector"
+  ];
+
+  unittestFlagsArray = [
+    "-s"
+    "test"
   ];
 
   meta = {

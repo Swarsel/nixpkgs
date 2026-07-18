@@ -1,14 +1,13 @@
 {
-  python3Packages,
   fetchurl,
   anki,
+  python3Packages,
   qt6,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mnemosyne";
   version = "2.10.1";
-  format = "setuptools";
 
   src = fetchurl {
     url = "mirror://sourceforge/project/mnemosyne-proj/mnemosyne/mnemosyne-${finalAttrs.version}/Mnemosyne-${finalAttrs.version}.tar.gz";
@@ -44,15 +43,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
   '';
 
   dontWrapQtApps = true;
+  format = "setuptools";
 
   makeWrapperArgs = [
     "\${qtWrapperArgs[@]}"
   ];
 
   meta = {
-    homepage = "https://mnemosyne-proj.org/";
     description = "Spaced-repetition software";
-    mainProgram = "mnemosyne";
+
     longDescription = ''
       The Mnemosyne Project has two aspects:
 
@@ -78,5 +77,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
       results will be used to improve the scheduling algorithms behind the
       software even further.
     '';
+
+    homepage = "https://mnemosyne-proj.org/";
+    mainProgram = "mnemosyne";
   };
 })

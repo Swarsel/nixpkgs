@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   curl,
-  fetchFromGitHub,
   git,
   libevent,
-  libtool,
   libsForQt5,
-  qrencode,
-  udev,
+  libtool,
   libusb1,
   makeWrapper,
   pkg-config,
+  qrencode,
+  udev,
+  udevCheckHook,
+  writeText,
   udevRule51 ? ''
     SUBSYSTEM=="usb", TAG+="uaccess", TAG+="udev-acl", SYMLINK+="dbb%n", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="2402"
   '',
   udevRule52 ? ''
     KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="2402", TAG+="uaccess", TAG+="udev-acl", SYMLINK+="dbbf%n"
   '',
-  udevCheckHook,
-  writeText,
 }:
 
 # Enabling the digitalbitbox program
@@ -84,24 +84,18 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qtmultimedia
   ];
 
+  configureFlags = [
+    "--enable-libusb"
+  ];
+
   env = {
-    LUPDATE = "${libsForQt5.qttools.dev}/bin/lupdate";
     LRELEASE = "${libsForQt5.qttools.dev}/bin/lrelease";
+    LUPDATE = "${libsForQt5.qttools.dev}/bin/lupdate";
     MOC = "${libsForQt5.qtbase.dev}/bin/moc";
     QTDIR = libsForQt5.qtbase.dev;
     RCC = "${libsForQt5.qtbase.dev}/bin/rcc";
     UIC = "${libsForQt5.qtbase.dev}/bin/uic";
   };
-
-  configureFlags = [
-    "--enable-libusb"
-  ];
-
-  hardeningDisable = [
-    "format"
-  ];
-
-  qtWrapperArgs = [ "--prefix LD_LIBRARY_PATH : $out/lib" ];
 
   postInstall = ''
     mkdir -p "$out/lib"
@@ -116,6 +110,8 @@ stdenv.mkDerivation (finalAttrs: {
     ${copyUdevRuleToOutput "52-hid-digitalbox.rules" udevRule52}
   '';
 
+  doInstallCheck = true;
+
   # remove forbidden references to $TMPDIR
   preFixup = ''
     for f in "$out"/{bin,lib}/*; do
@@ -127,10 +123,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  doInstallCheck = true;
+  hardeningDisable = [
+    "format"
+  ];
+
+  qtWrapperArgs = [ "--prefix LD_LIBRARY_PATH : $out/lib" ];
 
   meta = {
     description = "QT based application for the Digital Bitbox hardware wallet";
+
     longDescription = ''
       Digital Bitbox provides dbb-app, a GUI tool, and dbb-cli, a CLI tool, to manage Digital Bitbox devices.
 
@@ -147,6 +148,7 @@ stdenv.mkDerivation (finalAttrs: {
 
       to the configuration which installs the package and enables the hardware module.
     '';
+
     homepage = "https://digitalbitbox.com/";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;

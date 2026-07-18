@@ -1,20 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  netbox,
+  buildPythonPackage,
   django,
   netaddr,
+  netbox,
   python,
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "netbox-floorplan-plugin";
   version = "0.9.1";
-  pyproject = true;
-  __structuredAttrs = true;
-
-  disabled = python.pythonVersion != netbox.python.pythonVersion;
 
   src = fetchFromGitHub {
     owner = "netbox-community";
@@ -22,8 +18,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-0EeE5NrImbCs6xqrSTGupXOuv455EfNXgcLVix2HTPs=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     netbox
@@ -35,6 +29,10 @@ buildPythonPackage (finalAttrs: {
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  disabled = python.pythonVersion != netbox.python.pythonVersion;
+  pyproject = true;
   pythonImportsCheck = [ "netbox_floorplan" ];
 
   meta = {

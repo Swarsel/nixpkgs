@@ -1,21 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # nativeBuildInputs
-  setuptools,
-  # nativeCheckInputs
-  pytestCheckHook,
   # install_requires
   appdirs,
   beautifulsoup4,
+  buildPythonPackage,
   cachecontrol,
   distro,
   feedparser,
   packaging,
+  # nativeCheckInputs
+  pytestCheckHook,
   python-dateutil,
   pyyaml,
   requests,
+  # nativeBuildInputs
+  setuptools,
   tqdm,
   urllib3,
 }:
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "lastversion";
   version = "3.6.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dvershinin";
@@ -31,6 +30,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-5losSZnAW16KznXKtH+hy8Ii6j/B5tMOSQFx6Sv3DT0=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  # CLI tests expect the output bin/ in PATH
+  preCheck = ''
+    PATH="$out/bin:$PATH"
+  '';
 
   build-system = [ setuptools ];
 
@@ -49,17 +55,6 @@ buildPythonPackage rec {
   ]
   ++ cachecontrol.optional-dependencies.filecache;
 
-  pythonRelaxDeps = [
-    "cachecontrol" # Use newer cachecontrol that uses filelock instead of lockfile
-    "urllib3" # The cachecontrol and requests incompatibility issue is closed
-  ];
-
-  pythonRemoveDeps = [
-    "lockfile" # "cachecontrol" now uses filelock
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [
     "tests/test_cli.py"
   ];
@@ -68,12 +63,17 @@ buildPythonPackage rec {
     "test_cli_format"
   ];
 
-  # CLI tests expect the output bin/ in PATH
-  preCheck = ''
-    PATH="$out/bin:$PATH"
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "lastversion" ];
+
+  pythonRelaxDeps = [
+    "cachecontrol" # Use newer cachecontrol that uses filelock instead of lockfile
+    "urllib3" # The cachecontrol and requests incompatibility issue is closed
+  ];
+
+  pythonRemoveDeps = [
+    "lockfile" # "cachecontrol" now uses filelock
+  ];
 
   meta = {
     description = "Find the latest release version of an arbitrary project";

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   getent,
   installShellFiles,
 }:
@@ -18,15 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-G5kadNskSwKBxSuvs58aJUM7+lraevk2GKH/sncslTo=";
   };
 
-  vendorHash = "sha256-+IiDWoT9E4SCkmOwPQMTM7AdrXVA6OJa0Fg9Xjq42gI=";
-
-  env.GOWORK = "off";
-
-  subPackages = [ "cmd/kn" ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [ "-X knative.dev/client/pkg/commands/version.Version=v${finalAttrs.version}" ];
+  vendorHash = "sha256-+IiDWoT9E4SCkmOwPQMTM7AdrXVA6OJa0Fg9Xjq42gI=";
+  env.GOWORK = "off";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd kn \
@@ -44,12 +38,15 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [ "-X knative.dev/client/pkg/commands/version.Version=v${finalAttrs.version}" ];
+  subPackages = [ "cmd/kn" ];
+
   meta = {
     description = "Create Knative resources interactively from the command line or from within scripts";
-    mainProgram = "kn";
     homepage = "https://github.com/knative/client";
     changelog = "https://github.com/knative/client/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "kn";
   };
 })

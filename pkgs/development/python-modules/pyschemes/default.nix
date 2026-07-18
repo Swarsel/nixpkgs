@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "pyschemes";
   version = "0-unstable-2022-09-12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spy16";
@@ -18,10 +17,9 @@ buildPythonPackage {
     hash = "sha256-jv6dlZlLuJlTqw2V21BUEhCIc/UGvyjbhggw82eGMz0=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyschemes" ];
 
   meta = {

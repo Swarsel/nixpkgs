@@ -1,8 +1,8 @@
 {
   lib,
-  skawarePackages,
-  skalibs,
   execline,
+  skalibs,
+  skawarePackages,
   writeTextFile,
 }:
 
@@ -11,24 +11,7 @@ let
 in
 skawarePackages.buildPackage {
   inherit version;
-
   pname = "execline";
-  # ATTN: also check whether there is a new manpages version
-  sha256 = "sha256-vmNTMpepPDb9JnGVEXtOZoaHpSb4NFF6jbR9hbbH7Go=";
-
-  # Maintainer of manpages uses following versioning scheme: for every
-  # upstream $version he tags manpages release as ${version}.1, and,
-  # in case of extra fixes to manpages, new tags in form ${version}.2,
-  # ${version}.3 and so on are created.
-  manpages = skawarePackages.buildManPages {
-    pname = "execline-man-pages";
-    version = "2.9.9.1.1";
-    sha256 = "sha256-SMQLeiS03fW9HGDmk+MMfUbnvRGqTzXc/4CuS5LW18U=";
-    description = "Port of the documentation for the execline suite to mdoc";
-    maintainers = [ lib.maintainers.sternenseemann ];
-  };
-
-  description = "Small scripting language, to be used in place of a shell in non-interactive scripts";
 
   outputs = [
     "bin"
@@ -77,23 +60,42 @@ skawarePackages.buildPackage {
       -lskarnet
   '';
 
+  description = "Small scripting language, to be used in place of a shell in non-interactive scripts";
+
+  # Maintainer of manpages uses following versioning scheme: for every
+  # upstream $version he tags manpages release as ${version}.1, and,
+  # in case of extra fixes to manpages, new tags in form ${version}.2,
+  # ${version}.3 and so on are created.
+  manpages = skawarePackages.buildManPages {
+    pname = "execline-man-pages";
+    version = "2.9.9.1.1";
+    description = "Port of the documentation for the execline suite to mdoc";
+    maintainers = [ lib.maintainers.sternenseemann ];
+    sha256 = "sha256-SMQLeiS03fW9HGDmk+MMfUbnvRGqTzXc/4CuS5LW18U=";
+  };
+
+  # ATTN: also check whether there is a new manpages version
+  sha256 = "sha256-vmNTMpepPDb9JnGVEXtOZoaHpSb4NFF6jbR9hbbH7Go=";
+
   # Write an execline script.
   # Documented in ../../../../doc/build-helpers/trivial-build-helpers.chapter.md
   passthru.writeScript =
     name: options: script:
     writeTextFile {
       inherit name;
-      text = ''
-        #!${execline}/bin/execlineb ${toString options}
-        ${script}
-      '';
 
-      executable = true;
-      derivationArgs.nativeBuildInputs = [ execline ];
       checkPhase = ''
         echo redirfd -w 1 /dev/null echo >test.el
         cat <$target >>test.el
         execlineb -W test.el
+      '';
+
+      derivationArgs.nativeBuildInputs = [ execline ];
+      executable = true;
+
+      text = ''
+        #!${execline}/bin/execlineb ${toString options}
+        ${script}
       '';
     };
 }

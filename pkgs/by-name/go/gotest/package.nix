@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Zq8alVfojJbrzw3fpYnYDxAMc/rYO9WIuRb1OcNcBaw=";
-
   subPackages = [ "." ];
 
   meta = {
     description = "go test with colors";
-    mainProgram = "gotest";
     homepage = "https://github.com/rakyll/gotest";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "gotest";
   };
 })

@@ -2,18 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  asciidoc,
-  pkg-config,
-  inetutils,
-  tcl,
-
-  sqlite,
-  readline,
   SDL2,
   SDL2_gfx,
+  asciidoc,
+  inetutils,
   openssl,
-
+  pkg-config,
+  readline,
+  sqlite,
+  tcl,
   SDLSupport ? true,
 }:
 
@@ -57,9 +54,10 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ (lib.optional SDLSupport "--with-ext=sdl");
 
-  enableParallelBuilding = true;
-
   doCheck = true;
+  # test posix-1.6 needs the "hostname" command
+  nativeCheckInputs = [ inetutils ];
+
   preCheck = ''
     # test exec2-3.2 fails depending on platform or sandboxing (?)
     rm tests/exec2.test
@@ -70,18 +68,19 @@ stdenv.mkDerivation (finalAttrs: {
     rm tests/timer.test
   '';
 
-  # test posix-1.6 needs the "hostname" command
-  nativeCheckInputs = [ inetutils ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Open source small-footprint implementation of the Tcl programming language";
     homepage = "http://jim.tcl.tk/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
-    mainProgram = "jimsh";
+
     maintainers = with lib.maintainers; [
       dbohdan
       fgaz
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "jimsh";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
-  pkg-config,
   fontconfig,
   libxkbcommon,
+  pkg-config,
+  rustPlatform,
   wayland,
 }:
 
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-W0lhhImSXtYJDeMbxyEioYu/Bh7ZclwR1/5DzNbxM8o=";
   };
 
-  cargoHash = "sha256-xqj9USqVG7g2zT2P3VxDVt8fFDtyUnZOdT6gYZh4cRI=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -31,12 +29,14 @@ rustPlatform.buildRustPackage {
     wayland
   ];
 
+  cargoHash = "sha256-xqj9USqVG7g2zT2P3VxDVt8fFDtyUnZOdT6gYZh4cRI=";
+
   meta = {
     description = "Sleek notification daemon for Wayland";
     homepage = "https://gitlab.com/snakedye/salut/-/wikis/Home";
     license = lib.licenses.mpl20;
     maintainers = [ ];
-    mainProgram = "salut";
     platforms = lib.platforms.linux;
+    mainProgram = "salut";
   };
 }

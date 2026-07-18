@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
+  buildPythonPackage,
   pillow,
+  python,
 }:
 
 buildPythonPackage rec {
   pname = "python-ev3dev2";
   version = "2.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ev3dev";
@@ -29,6 +28,8 @@ buildPythonPackage rec {
     chmod -R g+rw ./tests/fake-sys/devices/**/*
     ${python.interpreter} -W ignore::ResourceWarning tests/api_tests.py
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Python language bindings for ev3dev";

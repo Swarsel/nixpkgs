@@ -1,9 +1,9 @@
 {
-  mkKdeDerivation,
-  qt5compat,
   gmp,
   libmpc,
+  mkKdeDerivation,
   mpfr,
+  qt5compat,
 }:
 mkKdeDerivation {
   pname = "kcalc";
@@ -14,5 +14,6 @@ mkKdeDerivation {
     libmpc
     mpfr
   ];
+
   meta.mainProgram = "kcalc";
 }

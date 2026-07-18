@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  makeWrapper,
   fixup-yarn-lock,
-  yarn,
+  makeWrapper,
   nodejs,
+  yarn,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,27 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+WZbs10+id+nohTZzLjEofb6k8PMGd73YhY3FUTXx5Q=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-++MqWIUntXQwOYpgAJ3nhAtZ5nxmEreioVHQokYkw7w=";
-  };
-
   nativeBuildInputs = [
     makeWrapper
     fixup-yarn-lock
     yarn
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME=$(mktemp -d)
-    yarn config --offline set yarn-offline-mirror "$offlineCache"
-    fixup-yarn-lock yarn.lock
-    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
-
-    runHook postConfigure
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -56,12 +40,28 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME=$(mktemp -d)
+    yarn config --offline set yarn-offline-mirror "$offlineCache"
+    fixup-yarn-lock yarn.lock
+    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
+
+    runHook postConfigure
+  '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-++MqWIUntXQwOYpgAJ3nhAtZ5nxmEreioVHQokYkw7w=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   meta = {
     description = "Download illusts from pixiv.net";
     homepage = "https://github.com/Tsuk1ko/pxder";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "pxder";
     maintainers = with lib.maintainers; [ vanilla ];
     platforms = lib.platforms.all;
+    mainProgram = "pxder";
   };
 })

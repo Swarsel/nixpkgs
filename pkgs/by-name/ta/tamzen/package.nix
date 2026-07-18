@@ -1,8 +1,8 @@
 {
-  fetchFromGitHub,
-  mkfontscale,
   lib,
   stdenv,
+  fetchFromGitHub,
+  mkfontscale,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Bitmapped programming font based on Tamsyn";
+
     longDescription = ''
       Tamzen is a monospace bitmap font. It is programmatically forked
       from Tamsyn version 1.11, which backports glyphs from older
@@ -34,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
       Tamzen also has fonts that additionally provide the Powerline
       symbols.
     '';
+
     homepage = "https://github.com/sunaku/tamzen-font";
     license = lib.licenses.free;
     maintainers = with lib.maintainers; [ wishfort36 ];

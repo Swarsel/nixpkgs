@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pijuice";
   version = "1.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "PiSupply";
@@ -27,6 +26,11 @@ buildPythonPackage rec {
     ./patch-shebang.diff
   ];
 
+  propagatedBuildInputs = [
+    smbus-cffi
+    urwid
+  ];
+
   env = {
     PIJUICE_BUILD_BASE = 1;
     PIJUICE_VERSION = version;
@@ -36,10 +40,8 @@ buildPythonPackage rec {
     cd Software/Source
   '';
 
-  propagatedBuildInputs = [
-    smbus-cffi
-    urwid
-  ];
+  # no tests
+  doCheck = false;
 
   # Remove the following files from the package:
   #
@@ -54,14 +56,13 @@ buildPythonPackage rec {
     mv $out/bin/pijuice_cli.py $out/bin/pijuice_cli
   '';
 
-  # no tests
-  doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Library and resources for PiJuice HAT for Raspberry Pi";
-    mainProgram = "pijuice_cli";
     homepage = "https://github.com/PiSupply/PiJuice";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ hexagonal-sun ];
+    mainProgram = "pijuice_cli";
   };
 }

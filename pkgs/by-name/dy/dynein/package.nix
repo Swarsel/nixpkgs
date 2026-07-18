@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   cmake,
   openssl,
   pkg-config,
@@ -18,11 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-GU/zZ7IJPfpRbrWjrVwPDSFjFfMLoG/c8DDWlN6nZ94=";
   };
 
-  # Use system openssl.
-  env.OPENSSL_NO_VENDOR = 1;
-
-  cargoHash = "sha256-PA7Hvn+vYBD80thkIamwOhw4lJWAmU/TQBnwJro4r7c=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -31,6 +26,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-PA7Hvn+vYBD80thkIamwOhw4lJWAmU/TQBnwJro4r7c=";
+  # Use system openssl.
+  env.OPENSSL_NO_VENDOR = 1;
 
   preBuild = ''
     export CMAKE=${lib.getDev cmake}/bin/cmake
@@ -44,10 +43,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "DynamoDB CLI written in Rust";
-    mainProgram = "dy";
     homepage = "https://github.com/awslabs/dynein";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "dy";
   };
 })

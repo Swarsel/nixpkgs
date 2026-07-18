@@ -1,13 +1,14 @@
 {
   lib,
-  mkDerivation,
   libufs,
   libutil,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/growfs";
-  extraPaths = [
-    "sbin/mount"
+  outputs = [
+    "out"
+    "man"
+    "debug"
   ];
 
   buildInputs = [
@@ -15,14 +16,13 @@ mkDerivation {
     libutil
   ];
 
-  outputs = [
-    "out"
-    "man"
-    "debug"
-  ];
-
   MK_TESTS = "no";
 
+  extraPaths = [
+    "sbin/mount"
+  ];
+
+  path = "sbin/growfs";
   meta.mainProgram = "growfs";
   meta.platforms = lib.platforms.freebsd;
 }

@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  protobuf,
-  rustfmt,
-  pkg-config,
   openssl,
+  pkg-config,
+  protobuf,
+  rustPlatform,
+  rustfmt,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,23 +19,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-UrzH9xmhVq12TcSUQ1AihCG1sNGcy/N8LDsZINVKFkY=";
   };
 
-  cargoHash = "sha256-lod5I94T4wGwXEDtvh2AyaDYM0byCfaSBP8emKV7+3M=";
-
-  buildAndTestSubdir = "teos";
-
   nativeBuildInputs = [
     protobuf
     rustfmt
   ];
 
+  cargoHash = "sha256-lod5I94T4wGwXEDtvh2AyaDYM0byCfaSBP8emKV7+3M=";
+  __darwinAllowLocalNetworking = true;
+  buildAndTestSubdir = "teos";
   passthru.updateScript = ./update.sh;
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
+    description = "Lightning watchtower compliant with BOLT13, written in Rust";
     homepage = "https://github.com/talaia-labs/rust-teos";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ seberm ];
-    description = "Lightning watchtower compliant with BOLT13, written in Rust";
   };
 })

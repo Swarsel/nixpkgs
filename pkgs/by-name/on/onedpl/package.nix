@@ -1,17 +1,14 @@
 {
   lib,
-  intelLlvmStdenv,
   fetchFromGitHub,
   cmake,
-  onetbb,
+  intelLlvmStdenv,
   nix-update-script,
+  onetbb,
 }:
 intelLlvmStdenv.mkDerivation (finalAttrs: {
   pname = "onedpl";
   version = "2022.11.1";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "uxlfoundation";
@@ -19,6 +16,8 @@ intelLlvmStdenv.mkDerivation (finalAttrs: {
     tag = "oneDPL-${finalAttrs.version}-release";
     hash = "sha256-NfyV34mdKfCxlU+l6ETKWcC9MwvVEgwcBedtLe6WCV4=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -35,6 +34,7 @@ intelLlvmStdenv.mkDerivation (finalAttrs: {
   # Build times for the tests are excessive
   # and to be truly meaningful, they'd require a GPU
   doCheck = false;
+  __structuredAttrs = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

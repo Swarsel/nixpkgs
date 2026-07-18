@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  protobuf,
+  buildGoModule,
   git,
-  testers,
   installShellFiles,
+  protobuf,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,19 +19,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-GrGtJzZoyyEoIyqc8iItH7/LhXNEuTKbDl+gdB/5bHw=";
   };
 
-  vendorHash = "sha256-8FJtJ/mHldia6t5yIPUfCvOlsKJSzT/vVcF+WxRO1Mo=";
-
   patches = [
     # Skip a test that requires networking to be available to work.
     ./skip_broken_tests.patch
   ];
 
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-8FJtJ/mHldia6t5yIPUfCvOlsKJSzT/vVcF+WxRO1Mo=";
 
   nativeCheckInputs = [
     git # Required for TestGitCloner
@@ -55,9 +49,6 @@ buildGoModule (finalAttrs: {
     export PATH="$PATH:$GOPATH/bin"
   '';
 
-  # Allow tests that bind or connect to localhost on macOS.
-  __darwinAllowLocalNetworking = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -80,18 +71,28 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  # Allow tests that bind or connect to localhost on macOS.
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
+    description = "Create consistent Protobuf APIs that preserve compatibility and comply with design best-practices";
     homepage = "https://buf.build";
     changelog = "https://github.com/bufbuild/buf/releases/tag/v${finalAttrs.version}";
-    description = "Create consistent Protobuf APIs that preserve compatibility and comply with design best-practices";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       hythera
       jk
       lrewega
     ];
+
     mainProgram = "buf";
   };
 })

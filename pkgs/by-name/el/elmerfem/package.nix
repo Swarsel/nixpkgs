@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blas,
   cmake,
   gfortran,
-  mpi,
-  blas,
-  liblapack,
-  pkg-config,
   libGL,
   libGLU,
-  opencascade-occt,
-  qt6Packages,
-  onetbb,
-  vtkWithQt6,
+  liblapack,
   llvmPackages,
+  mpi,
+  onetbb,
+  opencascade-occt,
+  pkg-config,
+  qt6Packages,
+  vtkWithQt6,
 }:
 stdenv.mkDerivation {
   pname = "elmerfem";
@@ -26,8 +26,6 @@ stdenv.mkDerivation {
     rev = "2f7360ddf491c34f19fea9a723f340cca0fbe1d4";
     hash = "sha256-2vzIFGh8+YrMxb5px6+aQyTerOAJmHOh2I7eterY6zI=";
   };
-
-  hardeningDisable = [ "format" ];
 
   nativeBuildInputs = [
     cmake
@@ -50,12 +48,6 @@ stdenv.mkDerivation {
   ]
   ++ lib.optional stdenv.cc.isClang llvmPackages.openmp;
 
-  preConfigure = ''
-    patchShebangs ./
-  '';
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
-
   cmakeFlags = [
     (lib.cmakeFeature "ELMER_INSTALL_LIB_DIR" "${placeholder "out"}/lib")
     (lib.cmakeBool "WITH_OpenMP" true)
@@ -73,15 +65,25 @@ stdenv.mkDerivation {
     (lib.cmakeFeature "QWT_INCLUDE_DIR" "${qt6Packages.qwt}/lib/qwt.framework/Headers")
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
+
+  preConfigure = ''
+    patchShebangs ./
+  '';
+
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "https://elmerfem.org";
     description = "Finite element software for multiphysical problems";
-    platforms = lib.platforms.unix;
+    homepage = "https://elmerfem.org";
+    license = lib.licenses.lgpl21;
+
     maintainers = with lib.maintainers; [
       wulfsta
       broke
     ];
-    license = lib.licenses.lgpl21;
+
+    platforms = lib.platforms.unix;
   };
 
 }

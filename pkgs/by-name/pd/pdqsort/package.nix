@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   stdenv, # for tests
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -27,11 +27,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   # The benchmark takes too long to run as a regular checkPhase here.
   passthru.tests.bench = stdenv.mkDerivation {
-    pname = "pdqsort-bench";
-
     inherit (finalAttrs) version src;
-
+    pname = "pdqsort-bench";
     doCheck = true;
+
     checkPhase = ''
       c++ bench/bench.cpp -o bench/bench
       ./bench/bench > $out

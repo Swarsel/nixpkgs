@@ -1,7 +1,7 @@
 {
   lib,
-  callPackage,
   fetchurl,
+  callPackage,
   jdk_headless,
   makeWrapper,
   stdenvNoCC,
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "mirror://apache/maven/maven-3/${finalAttrs.version}/binaries/apache-maven-${finalAttrs.version}-bin.tar.gz";
     hash = "sha256-gP/KIq7Z6LlxOiMvM5T9gdfyAyLfde/bKwR9vT46I7s=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -33,6 +31,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  sourceRoot = ".";
 
   passthru =
     let
@@ -59,46 +59,52 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         );
     in
     {
+      inherit mkBuildMavenPackage;
+
       buildMaven = callPackage ./build-maven.nix {
         maven = finalAttrs.finalPackage;
       };
-
-      inherit mkBuildMavenPackage;
 
       buildMavenPackage = mkBuildMavenPackage finalAttrs.finalPackage;
 
       tests = {
         version = testers.testVersion {
-          package = finalAttrs.finalPackage;
           command = ''
             env MAVEN_OPTS="-Dmaven.repo.local=$TMPDIR/m2" \
               mvn --version
           '';
+
+          package = finalAttrs.finalPackage;
         };
       };
     };
 
   meta = {
-    homepage = "https://maven.apache.org/";
+    inherit (jdk_headless.meta) platforms;
     description = "Build automation tool (used primarily for Java projects)";
+
     longDescription = ''
       Apache Maven is a software project management and comprehension
       tool. Based on the concept of a project object model (POM), Maven can
       manage a project's build, reporting and documentation from a central piece
       of information.
     '';
+
+    homepage = "https://maven.apache.org/";
     changelog = "https://maven.apache.org/docs/${finalAttrs.version}/release-notes.html";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.asl20;
-    mainProgram = "mvn";
+
     maintainers = with lib.maintainers; [
       tricktron
       britter
     ];
+
+    mainProgram = "mvn";
     teams = [ lib.teams.java ];
-    inherit (jdk_headless.meta) platforms;
   };
 })

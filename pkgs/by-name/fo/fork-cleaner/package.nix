@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 let
   version = "2.4.0";
 in
 buildGoModule {
-  pname = "fork-cleaner";
   inherit version;
+  pname = "fork-cleaner";
 
   src = fetchFromGitHub {
     owner = "caarlos0";

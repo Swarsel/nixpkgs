@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  libtool,
   gettext,
+  libtool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,10 +15,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AFOgcYPQaUg70GJhS8YcuAgMV32mHN9+ExsGThoa8Yg=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+    "man"
+  ];
+
   postPatch = ''
     substituteInPlace Makefile \
       --replace-fail /usr/bin/install install
   '';
+
+  buildInputs = [
+    stdenv.cc.libc.linuxHeaders
+    libtool
+    gettext
+  ];
 
   makeFlags = [
     "bindir=$(out)/bin"
@@ -29,19 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     "localedir=$(out)/share/locale"
     "docdir=$(man)/share/doc/packages/cpufrequtils"
     "confdir=$(out)/etc/"
-  ];
-
-  buildInputs = [
-    stdenv.cc.libc.linuxHeaders
-    libtool
-    gettext
-  ];
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-    "man"
   ];
 
   meta = {

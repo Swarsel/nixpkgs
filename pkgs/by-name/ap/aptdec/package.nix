@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libpng,
   libsndfile,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,13 +34,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "NOAA APT satellite imagery decoding library";
-    mainProgram = "aptdec";
     homepage = "https://github.com/Xerbo/aptdec";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       aciceri
       alexwinter
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "aptdec";
   };
 })

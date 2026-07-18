@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -17,19 +17,19 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-8M9hze71bQWhyxcXeI/EOr0SQ+tx8Lb9LfvnGxYYo0A=";
 
-  dontNpmBuild = true;
-
   postInstall = ''
     # Remove broken symlinks
     find "$out/lib/node_modules" -xtype l -delete
   '';
 
+  dontNpmBuild = true;
+
   meta = {
-    changelog = "https://github.com/mapbox/carto/blob/${src.rev}/CHANGELOG.md";
     description = "Mapnik stylesheet compiler";
     homepage = "https://github.com/mapbox/carto";
+    changelog = "https://github.com/mapbox/carto/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "carto";
     maintainers = with lib.maintainers; [ Luflosi ];
+    mainProgram = "carto";
   };
 }

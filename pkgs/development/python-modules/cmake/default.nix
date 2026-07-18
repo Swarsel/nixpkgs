@@ -1,16 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  flit-core,
   cmake,
+  flit-core,
 }:
 
 buildPythonPackage {
-  pname = "cmake";
   inherit (cmake) version;
-  pyproject = true;
-
+  inherit (cmake) setupHooks;
+  pname = "cmake";
   src = ./stub;
+  nativeBuildInputs = [ flit-core ];
 
   postUnpack = ''
     substituteInPlace "$sourceRoot/pyproject.toml" \
@@ -21,18 +21,17 @@ buildPythonPackage {
       --subst-var-by CMAKE_BIN_DIR "${cmake}/bin"
   '';
 
-  inherit (cmake) setupHooks;
-
-  nativeBuildInputs = [ flit-core ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cmake" ];
 
   meta = {
     description = "CMake is an open-source, cross-platform family of tools designed to build, test and package software";
+
     longDescription = ''
       This is a stub of the cmake package on PyPI that uses the cmake program
       provided by nixpkgs instead of downloading cmake from the web.
     '';
+
     homepage = "https://github.com/scikit-build/cmake-python-distributions";
     license = lib.licenses.asl20;
   };

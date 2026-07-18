@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   telnetlib3,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pylutron";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thecynic";
@@ -24,15 +23,12 @@ buildPythonPackage (finalAttrs: {
       --replace-fail TEMPLATE_VERSION ${finalAttrs.version}
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ telnetlib3 ];
-
-  pythonImportsCheck = [ "pylutron" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ telnetlib3 ];
   enabledTestPaths = [ "tests" ];
+  pyproject = true;
+  pythonImportsCheck = [ "pylutron" ];
 
   meta = {
     description = "Python library for controlling a Lutron RadioRA 2 system";

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
   copyDesktopItems,
-  pkg-config,
-  libsForQt5,
   libogg,
-  libvorbis,
   libresample,
+  libsForQt5,
+  libvorbis,
+  makeDesktopItem,
+  pkg-config,
   portaudio,
   portmidi,
 }:
@@ -25,7 +25,6 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -44,17 +43,6 @@ stdenv.mkDerivation {
     portmidi
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "wahjam";
-      desktopName = "Wahjam";
-      icon = "net.jammr.jammr";
-      exec = "wahjam";
-      comment = "Play with musicians over the internet";
-      categories = [ "AudioVideo" ];
-    })
-  ];
-
   installPhase = ''
     mkdir -p $out/bin
     mkdir -p $out/share/icons/hicolor/scalable/apps
@@ -65,12 +53,25 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "AudioVideo" ];
+      comment = "Play with musicians over the internet";
+      desktopName = "Wahjam";
+      exec = "wahjam";
+      icon = "net.jammr.jammr";
+      name = "wahjam";
+    })
+  ];
+
   meta = {
     description = "Software for musicians to play together over the internet";
-    mainProgram = "wahjam";
     homepage = "https://github.com/wahjam/wahjam";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ caseyavila ];
+    platforms = lib.platforms.linux;
+    mainProgram = "wahjam";
   };
 }

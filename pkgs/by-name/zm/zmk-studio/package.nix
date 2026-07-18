@@ -1,21 +1,19 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  fetchNpmDeps,
-  npm-lockfile-fix,
-
   cargo-tauri,
+  fetchNpmDeps,
+  glib-networking,
   makeBinaryWrapper,
   nodejs,
+  npm-lockfile-fix,
   npmHooks,
   pkg-config,
-  wrapGAppsHook3,
-
-  glib-networking,
+  rustPlatform,
   udev,
   webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,13 +24,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "zmkfirmware";
     repo = "zmk-studio";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-7UwY+272JNqzQf1juOzDkiW2DNKHC5xg4cGguwAgwNc=";
 
     postFetch = ''
       # add missing integrity fields to lockfile
       ${lib.getExe npm-lockfile-fix} $out/package-lock.json
     '';
-
-    hash = "sha256-7UwY+272JNqzQf1juOzDkiW2DNKHC5xg4cGguwAgwNc=";
   };
 
   patches = [
@@ -51,17 +48,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace vite.config.ts \
       --replace-fail 'download: "./download.html",' ""
   '';
-
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = "src-tauri";
-
-  cargoHash = "sha256-BNX2vhsHaSk3eiadVPH6To0CgbOEGJ1JVKkW3Hw7QH0=";
-
-  npmDeps = fetchNpmDeps {
-    name = "zmk-studio-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src patches;
-    hash = "sha256-htCqTX/w1GP3b8wBD9p60Lwpjr2V7sv05unRv2IrP1A=";
-  };
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -82,17 +68,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-BNX2vhsHaSk3eiadVPH6To0CgbOEGJ1JVKkW3Hw7QH0=";
+
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     makeWrapper "$out/Applications/ZMK Studio.app/Contents/MacOS/zmk-studio" "$out/bin/zmk-studio"
   '';
+
+  buildAndTestSubdir = "src-tauri";
+  cargoRoot = "src-tauri";
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src patches;
+    hash = "sha256-htCqTX/w1GP3b8wBD9p60Lwpjr2V7sv05unRv2IrP1A=";
+    name = "zmk-studio-${finalAttrs.version}-npm-deps";
+  };
 
   meta = {
     description = "Tool for runtime keymap updates on ZMK-powered devices without reflashing firmware";
     homepage = "https://github.com/zmkfirmware/zmk-studio";
     changelog = "https://github.com/zmkfirmware/zmk-studio/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "zmk-studio";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "zmk-studio";
   };
 })

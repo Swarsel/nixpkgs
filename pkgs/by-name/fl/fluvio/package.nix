@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  perl,
-  kubernetes-helm,
   gitMinimal,
   installShellFiles,
+  kubernetes-helm,
+  perl,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,7 +19,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7kGMOAzBGrMOMj4Fyvy9xVwTGEkee5W7JAldbyTV298=";
   };
 
-  cargoHash = "sha256-OAw/nftF63WyE3E+zaVCYYXh37p6HB0ib7WModfXKBA=";
+  # Patch to make cargoAuditable work
+  postPatch = ''
+    substituteInPlace crates/fluvio-cli-common/Cargo.toml \
+      --replace-fail '"dep:fluvio-sc-schema"' '"fluvio-sc-schema"'
+  '';
 
   nativeBuildInputs = [
     # Necessary because of a hard dependency to the openssl-src rust crate
@@ -30,24 +34,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gitMinimal
   ];
 
-  cargoBuildFlags = [
-    "-p"
-    "fluvio-cli"
-    "-p"
-    "fluvio-run"
-  ];
-  cargoTestFlags = [
-    "-p"
-    "fluvio-cli"
-    "-p"
-    "fluvio-run"
-  ];
-
-  # Patch to make cargoAuditable work
-  postPatch = ''
-    substituteInPlace crates/fluvio-cli-common/Cargo.toml \
-      --replace-fail '"dep:fluvio-sc-schema"' '"fluvio-sc-schema"'
-  '';
+  cargoHash = "sha256-OAw/nftF63WyE3E+zaVCYYXh37p6HB0ib7WModfXKBA=";
 
   # asset generation
   preBuild = ''
@@ -61,12 +48,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/fluvio completions zsh)
   '';
 
+  cargoBuildFlags = [
+    "-p"
+    "fluvio-cli"
+    "-p"
+    "fluvio-run"
+  ];
+
+  cargoTestFlags = [
+    "-p"
+    "fluvio-cli"
+    "-p"
+    "fluvio-run"
+  ];
+
   meta = {
     description = "Event stream processing for developers";
     homepage = "https://fluvio.io/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ aporro ];
-    mainProgram = "fluvio";
     platforms = lib.platforms.unix;
+    mainProgram = "fluvio";
   };
 })

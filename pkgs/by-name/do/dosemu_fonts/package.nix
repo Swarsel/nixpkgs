@@ -32,9 +32,9 @@ stdenv.mkDerivation (finalAttrs: {
     ${mkfontscale}/bin/mkfontscale
   '';
 
+  outputHash = "1miqv0ral5vazx721wildjlzvji5r7pbgm39c0cpj5ywafaikxr8";
   outputHashAlgo = "sha256";
   outputHashMode = "recursive";
-  outputHash = "1miqv0ral5vazx721wildjlzvji5r7pbgm39c0cpj5ywafaikxr8";
 
   meta = {
     description = "Various fonts from the DOSEmu project";

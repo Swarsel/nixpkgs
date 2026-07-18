@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python-dateutil,
   python-mimeparse,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "django-tastypie";
   version = "0.15.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-tastypie";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-KmBI8kHcmRfbNIfBEz5pHyseWcWnfP3tq6GAPi4tdhE=";
   };
 
+  # Tests requires a Django instance
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     python-mimeparse
   ];
 
-  # Tests requires a Django instance
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tastypie" ];
 
   meta = {

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   kdePackages,
+  ninja,
   nix-update-script,
 }:
 
@@ -42,12 +42,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "bluejay";
     description = "Bluetooth manager written in Qt";
     homepage = "https://github.com/EbonJaeger/bluejay";
     changelog = "https://github.com/EbonJaeger/bluejay/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "bluejay";
   };
 })

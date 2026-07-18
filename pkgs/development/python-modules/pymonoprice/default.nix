@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyserial,
   pyserial-asyncio-fast,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pymonoprice";
   version = "0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "etsinko";
@@ -25,6 +24,7 @@ buildPythonPackage rec {
     ./python-3.14-compat.patch
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,8 +32,7 @@ buildPythonPackage rec {
     pyserial-asyncio-fast
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pymonoprice" ];
 
   meta = {

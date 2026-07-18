@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitLab,
+  gnupg,
   installShellFiles,
-  pkg-config,
   nettle,
   openssl,
+  pkg-config,
+  rustPlatform,
   sqlite,
-  gnupg,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "sequoia-wot";
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "47a8fe9fe42319cae7a1185a2370e2e07f7e2898";
     hash = "sha256-yL5Rod35M+wWfK3Ido+EPtyRKsOqEYmUW7v17oF6iZs=";
   };
-
-  cargoHash = "sha256-ykQbFoMH9+HILSlqhPuuW0xaNnUpXiSbhzQfNo66IKc=";
 
   nativeBuildInputs = [
     pkg-config
@@ -37,24 +35,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     nettle
   ];
 
-  buildFeatures = [
-    # Upstream uses the sequoia-openpgp crate, which doesn't force you to use a
-    # specific crypto backend. As recommended by sequoia-openpgp's crate
-    # docs[1], upstream uses `target.'cfg(not(windows))'.dev-dependencies` to
-    # choose a different backend when the target platform is Windows or not. We
-    # propagate this logic here as well.
-    #
-    # [1]: https://crates.io/crates/sequoia-openpgp#user-content-intermediate-crate
-    (
-      if stdenv.targetPlatform.isWindows then
-        "sequoia-openpgp/crypto-cng"
-      else
-        "sequoia-openpgp/crypto-nettle"
-    )
-  ];
-
+  cargoHash = "sha256-ykQbFoMH9+HILSlqhPuuW0xaNnUpXiSbhzQfNo66IKc=";
   doCheck = true;
-
   nativeCheckInputs = [ gnupg ];
 
   # Install shell completion files and manual pages. Unfortunately it is hard to
@@ -78,14 +60,32 @@ rustPlatform.buildRustPackage (finalAttrs: {
       target/*/release/build/sequoia-wot-*/out/sq-wot-path.1
   '';
 
+  buildFeatures = [
+    # Upstream uses the sequoia-openpgp crate, which doesn't force you to use a
+    # specific crypto backend. As recommended by sequoia-openpgp's crate
+    # docs[1], upstream uses `target.'cfg(not(windows))'.dev-dependencies` to
+    # choose a different backend when the target platform is Windows or not. We
+    # propagate this logic here as well.
+    #
+    # [1]: https://crates.io/crates/sequoia-openpgp#user-content-intermediate-crate
+    (
+      if stdenv.targetPlatform.isWindows then
+        "sequoia-openpgp/crypto-cng"
+      else
+        "sequoia-openpgp/crypto-nettle"
+    )
+  ];
+
   meta = {
     description = "Rust CLI tool for authenticating bindings and exploring a web of trust";
     homepage = "https://gitlab.com/sequoia-pgp/sequoia-wot";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       doronbehar
       Cryolitia
     ];
+
     mainProgram = "sq-wot";
   };
 })

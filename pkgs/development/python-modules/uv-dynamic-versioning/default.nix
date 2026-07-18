@@ -1,35 +1,42 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   dunamai,
-  jinja2,
-  tomlkit,
-
   # tests
   gitpython,
+  # build-system
+  hatchling,
+  jinja2,
   pytestCheckHook,
+  tomlkit,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "uv-dynamic-versioning";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ninoseki";
     repo = "uv-dynamic-versioning";
     tag = "v${version}";
+    hash = "sha256-MI4LRo9XDmafXQ/xN1G8vtrBVE20qviwspMo5vIabFI=";
     # Tests perform mock operations on the local repo
     leaveDotGit = true;
-    hash = "sha256-MI4LRo9XDmafXQ/xN1G8vtrBVE20qviwspMo5vIabFI=";
   };
+
+  nativeCheckInputs = [
+    gitpython
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  preCheck = ''
+    git config --global user.email "nobody@example.com"
+    git config --global user.name "Nobody"
+  '';
 
   build-system = [
     hatchling
@@ -42,19 +49,10 @@ buildPythonPackage rec {
     tomlkit
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "uv_dynamic_versioning"
-  ];
-
-  preCheck = ''
-    git config --global user.email "nobody@example.com"
-    git config --global user.name "Nobody"
-  '';
-
-  nativeCheckInputs = [
-    gitpython
-    pytestCheckHook
-    writableTmpDirAsHomeHook
   ];
 
   setupHook = ./setup-hook.sh;

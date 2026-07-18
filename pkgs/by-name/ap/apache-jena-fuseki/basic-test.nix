@@ -1,7 +1,7 @@
 {
-  runCommand,
   apache-jena-fuseki,
   curl,
+  runCommand,
 }:
 runCommand "fuseki-test-${apache-jena-fuseki.name}"
   {

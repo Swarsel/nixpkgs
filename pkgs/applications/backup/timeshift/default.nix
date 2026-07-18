@@ -1,6 +1,6 @@
 {
-  callPackage,
   btrfs-progs,
+  callPackage,
   coreutils,
   cron,
   debianutils,
@@ -28,6 +28,7 @@ in
   (oldAttrs: {
     meta = oldAttrs.meta // {
       description = oldAttrs.meta.description;
+
       longDescription = oldAttrs.meta.longDescription + ''
         This package comes with runtime dependencies of command utilities provided by rsync, coreutils, mount, umount, psmisc, cron and btrfs.
         If you want to use the commands provided by the system, use timeshift-minimal instead.

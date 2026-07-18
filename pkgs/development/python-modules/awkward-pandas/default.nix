@@ -1,27 +1,27 @@
 {
   lib,
+  # dependencies
+  awkward,
   buildPythonPackage,
   fetchPypi,
-
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  awkward,
   pandas,
 }:
 
 buildPythonPackage rec {
   pname = "awkward-pandas";
   version = "2023.8.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "awkward_pandas";
     inherit version;
     hash = "sha256-Vre3NSQVAkI6ya+0nbDdO7WQWlGlPN/kdunUMWqXX94=";
+    pname = "awkward_pandas";
   };
+
+  # There are no tests in the Pypi archive
+  doCheck = false;
 
   build-system = [
     hatch-vcs
@@ -33,12 +33,11 @@ buildPythonPackage rec {
     pandas
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "awkward_pandas"
   ];
-
-  # There are no tests in the Pypi archive
-  doCheck = false;
 
   meta = {
     description = "Awkward Array Pandas Extension";

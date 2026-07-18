@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  gtk3,
-  gtkdatabox,
+  alsa-lib,
+  comedilib,
   fftw,
   gnum4,
-  comedilib,
-  alsa-lib,
+  gtk3,
+  gtkdatabox,
   pkg-config,
 }:
 
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     gnum4
   ];
+
   buildInputs = [
     gtk3
     gtkdatabox
@@ -36,10 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Oscilloscope through the sound card";
-    mainProgram = "xoscope";
     homepage = "https://xoscope.sourceforge.net";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; linux;
+    mainProgram = "xoscope";
   };
 })

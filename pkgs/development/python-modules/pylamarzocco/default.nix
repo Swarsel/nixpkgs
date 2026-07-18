@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   mashumaro,
   pytest-asyncio,
   pytestCheckHook,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pylamarzocco";
   version = "2.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zweckj";
@@ -25,6 +24,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-9wqSF67MNxnGvDDDVY9epI3hoV8M20L3Fyz80/x8G74=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,13 +42,7 @@ buildPythonPackage (finalAttrs: {
     mashumaro
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pylamarzocco" ];
 
   meta = {

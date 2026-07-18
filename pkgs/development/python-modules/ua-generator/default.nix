@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
   charset-normalizer,
-  fetchFromGitHub,
   idna,
   nix-update-script,
   pytestCheckHook,
@@ -14,9 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ua-generator";
   version = "2.1.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "iamdual";
@@ -25,6 +22,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-mpwyhR50a0F8J9VUyOoYNF20IbOKaDl+JpQ1qkLIt6s=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,10 +33,8 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ua_generator" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,13 +1,12 @@
 {
   buildDunePackage,
-  eqaf,
   cstruct,
+  eqaf,
 }:
 
 buildDunePackage {
-  pname = "eqaf-cstruct";
-
   inherit (eqaf) src version meta;
+  pname = "eqaf-cstruct";
 
   propagatedBuildInputs = [
     cstruct

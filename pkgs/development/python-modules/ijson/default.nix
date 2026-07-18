@@ -11,21 +11,17 @@
 buildPythonPackage rec {
   pname = "ijson";
   version = "3.5.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-r0C9GoX1XbC4swcVyFh2Ewa9ktVZAUhjb3XDMJ5udr0=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ yajl ];
-
-  dependencies = [ cffi ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ cffi ];
+  pyproject = true;
   pythonImportsCheck = [ "ijson" ];
 
   meta = {

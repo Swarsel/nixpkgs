@@ -1,7 +1,6 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   cargo-bundle,
   copyDesktopItems,
   fetchFromGitea,
@@ -11,6 +10,7 @@
   makeDesktopItem,
   nix-update-script,
   pkg-config,
+  rustPlatform,
   wrapGAppsHook4,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,14 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "1.2.2";
 
   src = fetchFromGitea {
-    domain = "git.uku3lig.net";
     owner = "uku";
     repo = "tyrolienne";
     tag = finalAttrs.version;
     hash = "sha256-JdXamx+pwUEJWSbPFvROrx/XJojZ5sC+MEH0QVpKD+Y=";
+    domain = "git.uku3lig.net";
   };
-
-  cargoHash = "sha256-JM4Y0FyqVYqChpPh9p/QulfV8IesUJ0p/ooxAJLfo6I=";
 
   nativeBuildInputs = [
     pkg-config
@@ -40,7 +38,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ libadwaita ];
-
+  cargoHash = "sha256-JM4Y0FyqVYqChpPh9p/QulfV8IesUJ0p/ooxAJLfo6I=";
   # Tests are disabled because there are none, avoids having to recompile everything twice
   doCheck = false;
 
@@ -75,13 +73,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "net.uku3lig.tyrolienne";
-      desktopName = "Tyrolienne";
-      type = "Application";
       comment = "Compresses and uploads videos to Zipline";
+      desktopName = "Tyrolienne";
       exec = "tyrolienne";
       icon = "net.uku3lig.tyrolienne";
+      name = "net.uku3lig.tyrolienne";
       terminal = false;
+      type = "Application";
     })
   ];
 
@@ -91,8 +89,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Simple tool to convert, upload, and embed videos to Zipline";
     homepage = "https://git.uku3lig.net/uku/tyrolienne";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ uku3lig ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "tyrolienne";
   };
 })

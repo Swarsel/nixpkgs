@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,9 +16,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-/DhvUvcvopYGAdLCAqsLxTs09q0sqOd1BglxaM4as/0=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-sIBD7Diqx16X7OHNpVCgD1XVByu8TGwFlIR6FIITTlc=";
 
-  nativeBuildInputs = [ installShellFiles ];
+  postInstall = ''
+    completions_dir=$TMPDIR/fga_completions
+    mkdir $completions_dir
+    $out/bin/fga completion bash > $completions_dir/fga.bash
+    $out/bin/fga completion zsh > $completions_dir/_fga.zsh
+    $out/bin/fga completion fish > $completions_dir/fga.fish
+    installShellCompletion $completions_dir/*
+  '';
 
   ldflags =
     let
@@ -32,20 +40,11 @@ buildGoModule (finalAttrs: {
       "-X ${buildInfoPkg}.Date=19700101"
     ];
 
-  postInstall = ''
-    completions_dir=$TMPDIR/fga_completions
-    mkdir $completions_dir
-    $out/bin/fga completion bash > $completions_dir/fga.bash
-    $out/bin/fga completion zsh > $completions_dir/_fga.zsh
-    $out/bin/fga completion fish > $completions_dir/fga.fish
-    installShellCompletion $completions_dir/*
-  '';
-
   meta = {
     description = "Cross-platform CLI to interact with an OpenFGA server";
     homepage = "https://github.com/openfga/cli";
     license = lib.licenses.asl20;
-    mainProgram = "fga";
     maintainers = with lib.maintainers; [ jlesquembre ];
+    mainProgram = "fga";
   };
 })

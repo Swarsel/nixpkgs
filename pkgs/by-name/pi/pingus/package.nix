@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  makeWrapper,
-  libGL,
-  libGLU,
   SDL2,
   SDL2_image,
+  argpp,
+  cmake,
   fmt,
+  geomcpp,
   gtest,
+  libGL,
+  libGLU,
   libpng,
   libsigcxx,
-  argpp,
-  geomcpp,
   logmich,
+  makeWrapper,
+  pkg-config,
   priocpp,
   strutcpp,
   tinycmmc,
@@ -75,12 +75,14 @@ stdenv.mkDerivation {
   meta = {
     description = "Puzzle game with mechanics similar to Lemmings";
     homepage = "https://pingus.seul.org/";
-    mainProgram = "pingus";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       raskin
       SchweGELBin
     ];
-    license = lib.licenses.gpl3;
+
+    platforms = lib.platforms.linux;
+    mainProgram = "pingus";
   };
 }

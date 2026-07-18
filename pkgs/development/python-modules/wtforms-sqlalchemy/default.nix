@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
   sqlalchemy,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "wtforms-sqlalchemy";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wtforms";
@@ -19,6 +18,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-E2F8lOcgne2yGEyn6g8j3mHr045eOyKu77DFGwWTPkc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -29,10 +32,7 @@ buildPythonPackage rec {
     wtforms
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wtforms_sqlalchemy" ];
 
   meta = {

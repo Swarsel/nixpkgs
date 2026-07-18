@@ -54,89 +54,21 @@ let
     || (instance.token != null && instance.tokenFile == null);
 in
 {
-  meta.maintainers = pkgs.gitea-actions-runner.meta.maintainers;
-
   options.services.gitea-actions-runner = with types; {
     package = mkPackageOption pkgs "gitea-actions-runner" { };
 
     instances = mkOption {
       default = { };
+
       description = ''
         Gitea Actions Runner instances.
       '';
+
       type = attrsOf (submodule {
         options = {
           enable = mkEnableOption "Gitea Actions Runner instance";
 
-          name = mkOption {
-            type = str;
-            example = literalExpression "config.networking.hostName";
-            description = ''
-              The name identifying the runner instance towards the Gitea/Forgejo instance.
-            '';
-          };
-
-          url = mkOption {
-            type = str;
-            example = "https://forge.example.com";
-            description = ''
-              Base URL of your Gitea/Forgejo instance.
-            '';
-          };
-
-          token = mkOption {
-            type = nullOr str;
-            default = null;
-            description = ''
-              Plain token to register at the configured Gitea/Forgejo instance.
-            '';
-          };
-
-          tokenFile = mkOption {
-            type = nullOr (either str path);
-            default = null;
-            description = ''
-              Path to an environment file, containing the `TOKEN` environment
-              variable, that holds a token to register at the configured
-              Gitea/Forgejo instance.
-            '';
-          };
-
-          labels = mkOption {
-            type = listOf str;
-            example = literalExpression ''
-              [
-                # provide a debian base with nodejs for actions
-                "debian-latest:docker://node:18-bullseye"
-                # fake the ubuntu name, because node provides no ubuntu builds
-                "ubuntu-latest:docker://node:18-bullseye"
-                # provide native execution on the host
-                #"native:host"
-              ]
-            '';
-            description = ''
-              Labels used to map jobs to their runtime environment. Changing these
-              labels currently requires a new registration token.
-
-              Many common actions require bash, git and nodejs, as well as a filesystem
-              that follows the filesystem hierarchy standard.
-            '';
-          };
-          settings = mkOption {
-            description = ''
-              Configuration for gitea-runner daemon.
-              See <https://gitea.com/gitea/runner/src/branch/main/internal/pkg/config/config.example.yaml> for an example configuration
-            '';
-
-            type = types.submodule {
-              freeformType = settingsFormat.type;
-            };
-
-            default = { };
-          };
-
           hostPackages = mkOption {
-            type = listOf package;
             default = with pkgs; [
               bash
               coreutils
@@ -147,6 +79,7 @@ in
               nodejs
               wget
             ];
+
             defaultText = literalExpression ''
               with pkgs; [
                 bash
@@ -159,10 +92,89 @@ in
                 wget
               ]
             '';
+
             description = ''
               List of packages, that are available to actions, when the runner is configured
               with a host execution label.
             '';
+
+            type = listOf package;
+          };
+
+          labels = mkOption {
+            description = ''
+              Labels used to map jobs to their runtime environment. Changing these
+              labels currently requires a new registration token.
+
+              Many common actions require bash, git and nodejs, as well as a filesystem
+              that follows the filesystem hierarchy standard.
+            '';
+
+            example = literalExpression ''
+              [
+                # provide a debian base with nodejs for actions
+                "debian-latest:docker://node:18-bullseye"
+                # fake the ubuntu name, because node provides no ubuntu builds
+                "ubuntu-latest:docker://node:18-bullseye"
+                # provide native execution on the host
+                #"native:host"
+              ]
+            '';
+
+            type = listOf str;
+          };
+
+          name = mkOption {
+            description = ''
+              The name identifying the runner instance towards the Gitea/Forgejo instance.
+            '';
+
+            example = literalExpression "config.networking.hostName";
+            type = str;
+          };
+
+          settings = mkOption {
+            default = { };
+
+            description = ''
+              Configuration for gitea-runner daemon.
+              See <https://gitea.com/gitea/runner/src/branch/main/internal/pkg/config/config.example.yaml> for an example configuration
+            '';
+
+            type = types.submodule {
+              freeformType = settingsFormat.type;
+            };
+          };
+
+          token = mkOption {
+            default = null;
+
+            description = ''
+              Plain token to register at the configured Gitea/Forgejo instance.
+            '';
+
+            type = nullOr str;
+          };
+
+          tokenFile = mkOption {
+            default = null;
+
+            description = ''
+              Path to an environment file, containing the `TOKEN` environment
+              variable, that holds a token to register at the configured
+              Gitea/Forgejo instance.
+            '';
+
+            type = nullOr (either str path);
+          };
+
+          url = mkOption {
+            description = ''
+              Base URL of your Gitea/Forgejo instance.
+            '';
+
+            example = "https://forge.example.com";
+            type = str;
           };
         };
       });
@@ -194,8 +206,7 @@ in
           in
           nameValuePair "gitea-runner-${escapeSystemdPath name}" {
             inherit (instance) enable;
-            description = "Gitea Actions Runner";
-            wants = [ "network-online.target" ];
+
             after = [
               "network-online.target"
             ]
@@ -205,9 +216,9 @@ in
             ++ optionals wantsPodman [
               "podman.service"
             ];
-            wantedBy = [
-              "multi-user.target"
-            ];
+
+            description = "Gitea Actions Runner";
+
             environment =
               optionalAttrs (instance.token != null) {
                 TOKEN = "${instance.token}";
@@ -218,21 +229,17 @@ in
               // {
                 HOME = "/var/lib/gitea-runner/${name}";
               };
+
             path =
               with pkgs;
               [
                 coreutils
               ]
               ++ lib.optionals wantsHost instance.hostPackages;
+
             serviceConfig = {
               DynamicUser = true;
-              User = "gitea-runner";
-              StateDirectory = "gitea-runner";
-              WorkingDirectory = "-/var/lib/gitea-runner/${name}";
-
-              # gitea-runner might fail when gitea is restarted during upgrade.
-              Restart = "on-failure";
-              RestartSec = 2;
+              ExecStart = "${getExe cfg.package} daemon --config ${configFile}";
 
               ExecStartPre = [
                 (pkgs.writeShellScript "gitea-register-runner-${name}" ''
@@ -267,7 +274,12 @@ in
 
                 '')
               ];
-              ExecStart = "${getExe cfg.package} daemon --config ${configFile}";
+
+              # gitea-runner might fail when gitea is restarted during upgrade.
+              Restart = "on-failure";
+              RestartSec = 2;
+              StateDirectory = "gitea-runner";
+
               SupplementaryGroups =
                 optionals wantsDocker [
                   "docker"
@@ -275,12 +287,23 @@ in
                 ++ optionals wantsPodman [
                   "podman"
                 ];
+
+              User = "gitea-runner";
+              WorkingDirectory = "-/var/lib/gitea-runner/${name}";
             }
             // optionalAttrs (instance.tokenFile != null) {
               EnvironmentFile = instance.tokenFile;
             };
+
+            wantedBy = [
+              "multi-user.target"
+            ];
+
+            wants = [ "network-online.target" ];
           };
       in
       mapAttrs' mkRunnerService cfg.instances;
   };
+
+  meta.maintainers = pkgs.gitea-actions-runner.meta.maintainers;
 }

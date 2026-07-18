@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
+  coreutils,
   getopt,
   git,
-  coreutils,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,17 +33,19 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/petervanderdoes/gitflow-avh";
     description = "Extend git with the Gitflow branching model";
-    mainProgram = "git-flow";
+
     longDescription = ''
       A set of scripts that provide high-level repository operations
       for managing feature/release/hotfix branches in a Git repository,
       particularly suited to be utilised to follow Vincent Driessen's
       branching model.
     '';
+
+    homepage = "https://github.com/petervanderdoes/gitflow-avh";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "git-flow";
   };
 })

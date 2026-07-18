@@ -16,12 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-k8tkM3/hRSWwsgLiv9+n06INYpk6tz0hMZtOcOlQfLw=";
   };
 
-  __structuredAttrs = true;
-
   strictDeps = true;
-
   buildInputs = [ glibc.static ];
-
   buildFlags = [ "zapper" ];
 
   installPhase = ''
@@ -32,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Zaps arguments and environment from the process list";
     homepage = "https://github.com/hackerschoice/zapper";
@@ -39,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/hackerschoice/zapper/issues/4
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "zapper";
     platforms = lib.platforms.all;
+    mainProgram = "zapper";
   };
 })

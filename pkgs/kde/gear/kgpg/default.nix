@@ -1,12 +1,11 @@
 {
+  gpgme,
   mkKdeDerivation,
   pkg-config,
-  gpgme,
 }:
 mkKdeDerivation {
   pname = "kgpg";
-
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [ gpgme ];
+  extraNativeBuildInputs = [ pkg-config ];
   meta.mainProgram = "kgpg";
 }

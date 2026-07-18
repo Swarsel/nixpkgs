@@ -1,22 +1,24 @@
 {
   lib,
+  bleak,
+  bleak-retry-connector,
   buildPythonPackage,
   fetchPypi,
   poetry-core,
-  bleak,
-  bleak-retry-connector,
 }:
 
 buildPythonPackage rec {
   pname = "medcom-ble";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "medcom_ble";
     inherit version;
     hash = "sha256-PQ0ZOFLGVllz/Jxw2CN6D5Ypza5/Ck3dtk3DuB+eHiA=";
+    pname = "medcom_ble";
   };
+
+  # Package has no tests
+  doCheck = false;
 
   build-system = [
     poetry-core
@@ -27,8 +29,7 @@ buildPythonPackage rec {
     bleak-retry-connector
   ];
 
-  # Package has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "medcom_ble"

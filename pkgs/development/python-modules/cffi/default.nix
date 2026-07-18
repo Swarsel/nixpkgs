@@ -1,19 +1,18 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
   libffi,
   pkg-config,
   pycparser,
   pytestCheckHook,
   setuptools,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "cffi";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-cffi";
@@ -23,15 +22,12 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
-  build-system = [ setuptools ];
-
   buildInputs = [ libffi ];
-
+  doCheck = !(stdenv.hostPlatform.isMusl || stdenv.hostPlatform.useLLVM or false);
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
   # Some dependent packages expect to have pycparser available when using cffi.
   dependencies = [ pycparser ];
-
-  doCheck = !(stdenv.hostPlatform.isMusl || stdenv.hostPlatform.useLLVM or false);
 
   disabledTests = [
     # parse errror
@@ -42,14 +38,14 @@ buildPythonPackage rec {
     "test_unknown_name"
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/python-cffi/cffi/releases/tag/v${version}";
     description = "Foreign Function Interface for Python calling C code";
-    downloadPage = "https://github.com/python-cffi/cffi";
     homepage = "https://cffi.readthedocs.org/";
+    changelog = "https://github.com/python-cffi/cffi/releases/tag/v${version}";
     license = lib.licenses.mit0;
+    downloadPage = "https://github.com/python-cffi/cffi";
     teams = [ lib.teams.python ];
   };
 }

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  click,
+  loguru,
   poetry-core,
   poetry-dynamic-versioning,
-  loguru,
   python-dateutil,
   pyyaml,
   tqdm,
-  click,
 }:
 
 buildPythonPackage rec {
   pname = "bubop";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bergercookie";
@@ -40,6 +39,7 @@ buildPythonPackage rec {
     click
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bubop" ];
 
   meta = {

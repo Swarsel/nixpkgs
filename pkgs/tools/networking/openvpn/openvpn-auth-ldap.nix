@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   autoreconfHook,
+  fetchpatch2,
   gnustep-base,
-  re2c,
   openldap,
   openssl,
   openvpn,
+  re2c,
 }:
 
 stdenv.mkDerivation rec {
@@ -25,14 +25,14 @@ stdenv.mkDerivation rec {
   patches = [
     ./auth-ldap-fix-conftest.patch
     (fetchpatch2 {
+      hash = "sha256-SXuo1D/WywKO5hCsmoeDdTsR7EelxFxJAKmlAQJ6vuE=";
       name = "fix-cve-2024-28820";
       url = "https://patch-diff.githubusercontent.com/raw/threerings/openvpn-auth-ldap/pull/92.patch";
-      hash = "sha256-SXuo1D/WywKO5hCsmoeDdTsR7EelxFxJAKmlAQJ6vuE=";
     })
     (fetchpatch2 {
+      hash = "sha256-VwUwRBBfxgxEO4PKC/97vEN4e6XcUG6esc0Khu+iDxM=";
       name = "gcc-15-fix";
       url = "https://sources.debian.org/data/main/o/openvpn-auth-ldap/2.0.4-5/debian/patches/gcc-15.patch";
-      hash = "sha256-VwUwRBBfxgxEO4PKC/97vEN4e6XcUG6esc0Khu+iDxM=";
     })
   ];
 
@@ -72,10 +72,12 @@ stdenv.mkDerivation rec {
   meta = {
     description = "LDAP authentication plugin for OpenVPN";
     homepage = "https://github.com/threerings/openvpn-auth-ldap";
+
     license = [
       lib.licenses.asl20
       lib.licenses.bsd3
     ];
+
     maintainers = [ lib.maintainers.benley ];
     platforms = lib.platforms.unix;
   };

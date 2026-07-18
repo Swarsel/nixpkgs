@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   distro,
-  fetchFromGitHub,
   pyasyncore,
   pysnmp,
   pysnmplib,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "blocksat-cli";
   version = "2.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Blockstream";
@@ -32,8 +31,7 @@ buildPythonPackage rec {
     mv setup_cli.py setup.py
   '';
 
-  pythonRelaxDeps = [ "pyasyncore" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -46,7 +44,7 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals (pythonAtLeast "3.12") [ pyasyncore ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabledTestPaths = [ "blocksatgui/tests/" ];
 
   disabledTests = [
     "test_monitor_get_stats"
@@ -59,9 +57,9 @@ buildPythonPackage rec {
     "test_clearsign_verification"
   ];
 
-  disabledTestPaths = [ "blocksatgui/tests/" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "blocksatcli" ];
+  pythonRelaxDeps = [ "pyasyncore" ];
 
   meta = {
     description = "Blockstream Satellite CLI";

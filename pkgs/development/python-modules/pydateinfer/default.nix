@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unittestCheckHook,
+  argparse,
+  buildPythonPackage,
   pytz,
   pyyaml,
-  argparse,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pydateinfer";
   version = "0.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "wdm0006";
@@ -22,12 +21,14 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ pytz ];
 
-  preCheck = "cd dateinfer";
   nativeCheckInputs = [
     unittestCheckHook
     pyyaml
     argparse
   ];
+
+  preCheck = "cd dateinfer";
+  format = "setuptools";
   pythonImportsCheck = [ "dateinfer" ];
 
   meta = {

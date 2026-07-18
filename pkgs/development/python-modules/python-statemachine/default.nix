@@ -2,34 +2,29 @@
   lib,
   stdenv,
   buildPythonPackage,
+  docutils,
   fetchPypi,
   hatchling,
-  pytestCheckHook,
+  jsonschema,
+  pydot,
   pytest-asyncio,
   pytest-benchmark,
+  pytest-django,
   pytest-mock,
   pytest-timeout,
-  pytest-django,
-  pydot,
-  docutils,
+  pytestCheckHook,
   pyyaml,
-  jsonschema,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-statemachine";
   version = "3.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "python_statemachine";
     inherit (finalAttrs) version;
     hash = "sha256-RLmMubsQgYke9u+pB8gh0FyuUxSiuZcT5W1Wqcli3gg=";
+    pname = "python_statemachine";
   };
-
-  build-system = [ hatchling ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -44,7 +39,8 @@ buildPythonPackage (finalAttrs: {
     jsonschema
   ];
 
-  pytestFlags = [ "--benchmark-disable" ];
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
 
   disabledTestPaths = [
     # quite slow
@@ -75,11 +71,12 @@ buildPythonPackage (finalAttrs: {
     "test_each_sm_instance_gets_own_group"
   ];
 
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
   pythonImportsCheck = [ "statemachine" ];
 
   meta = {
     description = "Expressive statecharts and FSMs for modern Python";
-
     homepage = "https://github.com/fgmacedo/python-statemachine";
     changelog = "https://github.com/fgmacedo/python-statemachine/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

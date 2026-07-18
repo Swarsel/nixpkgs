@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lxml,
   pytestCheckHook,
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "robotframework-requests";
   version = "0.9.7";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "MarketSquare";
@@ -20,17 +19,17 @@ buildPythonPackage rec {
     hash = "sha256-NRhf3delcqUw9vWRPL6pJzpcmRMDou2pHmUHMstF8hw=";
   };
 
+  buildInputs = [ pytestCheckHook ];
+
   propagatedBuildInputs = [
     lxml
     requests
     robotframework
   ];
 
-  buildInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "RequestsLibrary" ];
-
   enabledTestPaths = [ "utests" ];
+  format = "setuptools";
+  pythonImportsCheck = [ "RequestsLibrary" ];
 
   meta = {
     description = "Robot Framework keyword library wrapper around the HTTP client library requests";

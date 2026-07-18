@@ -1,15 +1,13 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   rustPlatform,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "klog-rs";
   version = "0.6.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tobifroe";
@@ -31,13 +29,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "tests::test_start_pod_logs_spawns_task"
   ];
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Tool to tail logs of multiple Kubernetes pods simultaneously";
     homepage = "https://github.com/tobifroe/klog";
     changelog = "https://github.com/tobifroe/klog/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "klog";
     maintainers = with lib.maintainers; [ tobifroe ];
+    mainProgram = "klog";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

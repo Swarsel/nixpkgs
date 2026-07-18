@@ -17,31 +17,32 @@ let
   inetSocket = with types; {
     options = {
       addr = mkOption {
-        type = nullOr str;
         default = null;
-        example = "127.0.0.1";
         description = "The address to bind to. Localhost if null";
+        example = "127.0.0.1";
+        type = nullOr str;
       };
+
       port = mkOption {
-        type = port;
         default = 10030;
         description = "Tcp port to bind to";
+        type = port;
       };
     };
   };
 
   unixSocket = with types; {
     options = {
-      path = mkOption {
-        type = path;
-        default = "/run/postgrey.sock";
-        description = "Path of the unix socket";
-      };
-
       mode = mkOption {
-        type = str;
         default = "0777";
         description = "Mode of the unix socket";
+        type = str;
+      };
+
+      path = mkOption {
+        default = "/run/postgrey.sock";
+        description = "Path of the unix socket";
+        type = path;
       };
     };
   };
@@ -92,87 +93,104 @@ in
   options = {
     services.postgrey = with types; {
       enable = mkOption {
-        type = bool;
         default = false;
         description = "Whether to run the Postgrey daemon";
+        type = bool;
       };
+
+      IPv4CIDR = mkOption {
+        default = 24;
+        description = "Strip N bits from IPv4 addresses if lookupBySubnet is true";
+        type = ints.unsigned;
+      };
+
+      IPv6CIDR = mkOption {
+        default = 64;
+        description = "Strip N bits from IPv6 addresses if lookupBySubnet is true";
+        type = ints.unsigned;
+      };
+
+      autoWhitelist = mkOption {
+        default = 5;
+        description = "Whitelist clients after successful delivery of N messages";
+        type = nullOr ints.positive;
+      };
+
+      delay = mkOption {
+        default = 300;
+        description = "Greylist for N seconds";
+        type = ints.unsigned;
+      };
+
+      greylistAction = mkOption {
+        default = "DEFER_IF_PERMIT";
+        description = "Response status for greylisted messages (see {manpage}`access(5)`)";
+        type = str;
+      };
+
+      greylistHeader = mkOption {
+        default = "X-Greylist: delayed %%t seconds by postgrey-%%v at %%h; %%d";
+        description = "Prepend header to greylisted mails; use %%t for seconds delayed due to greylisting, %%v for the version of postgrey, %%d for the date, and %%h for the host";
+        type = str;
+      };
+
+      greylistText = mkOption {
+        default = "Greylisted for %%s seconds";
+        description = "Response status text for greylisted messages; use %%s for seconds left until greylisting is over and %%r for mail domain of recipient";
+        type = str;
+      };
+
+      lookupBySubnet = mkOption {
+        default = true;
+        description = "Strip the last N bits from IP addresses, determined by IPv4CIDR and IPv6CIDR";
+        type = bool;
+      };
+
+      maxAge = mkOption {
+        default = 35;
+        description = "Delete entries from whitelist if they haven't been seen for N days";
+        type = ints.unsigned;
+      };
+
+      privacy = mkOption {
+        default = true;
+        description = "Store data using one-way hash functions (SHA1)";
+        type = bool;
+      };
+
+      retryWindow = mkOption {
+        default = 2;
+        description = "Allow N days for the first retry. Use string with appended 'h' to specify time in hours";
+        example = "12h";
+        type = either str ints.unsigned;
+      };
+
       socket = mkOption {
-        type = socket;
         default = {
-          path = "/run/postgrey.sock";
           mode = "0777";
+          path = "/run/postgrey.sock";
         };
+
+        description = "Socket to bind to";
+
         example = {
           addr = "127.0.0.1";
           port = 10030;
         };
-        description = "Socket to bind to";
+
+        type = socket;
       };
-      greylistText = mkOption {
-        type = str;
-        default = "Greylisted for %%s seconds";
-        description = "Response status text for greylisted messages; use %%s for seconds left until greylisting is over and %%r for mail domain of recipient";
-      };
-      greylistAction = mkOption {
-        type = str;
-        default = "DEFER_IF_PERMIT";
-        description = "Response status for greylisted messages (see {manpage}`access(5)`)";
-      };
-      greylistHeader = mkOption {
-        type = str;
-        default = "X-Greylist: delayed %%t seconds by postgrey-%%v at %%h; %%d";
-        description = "Prepend header to greylisted mails; use %%t for seconds delayed due to greylisting, %%v for the version of postgrey, %%d for the date, and %%h for the host";
-      };
-      delay = mkOption {
-        type = ints.unsigned;
-        default = 300;
-        description = "Greylist for N seconds";
-      };
-      maxAge = mkOption {
-        type = ints.unsigned;
-        default = 35;
-        description = "Delete entries from whitelist if they haven't been seen for N days";
-      };
-      retryWindow = mkOption {
-        type = either str ints.unsigned;
-        default = 2;
-        example = "12h";
-        description = "Allow N days for the first retry. Use string with appended 'h' to specify time in hours";
-      };
-      lookupBySubnet = mkOption {
-        type = bool;
-        default = true;
-        description = "Strip the last N bits from IP addresses, determined by IPv4CIDR and IPv6CIDR";
-      };
-      IPv4CIDR = mkOption {
-        type = ints.unsigned;
-        default = 24;
-        description = "Strip N bits from IPv4 addresses if lookupBySubnet is true";
-      };
-      IPv6CIDR = mkOption {
-        type = ints.unsigned;
-        default = 64;
-        description = "Strip N bits from IPv6 addresses if lookupBySubnet is true";
-      };
-      privacy = mkOption {
-        type = bool;
-        default = true;
-        description = "Store data using one-way hash functions (SHA1)";
-      };
-      autoWhitelist = mkOption {
-        type = nullOr ints.positive;
-        default = 5;
-        description = "Whitelist clients after successful delivery of N messages";
-      };
+
       whitelistClients = mkOption {
-        type = listOf path;
         default = [ ];
         description = "Client address whitelist files (see {manpage}`postgrey(8)`)";
-      };
-      whitelistRecipients = mkOption {
         type = listOf path;
+      };
+
+      whitelistRecipients = mkOption {
         default = [ ];
         description = "Recipient address whitelist files (see {manpage}`postgrey(8)`)";
+        type = listOf path;
       };
     };
   };
@@ -180,21 +198,6 @@ in
   config = mkIf cfg.enable {
 
     environment.systemPackages = [ pkgs.postgrey ];
-
-    users = {
-      users = {
-        postgrey = {
-          description = "Postgrey Daemon";
-          uid = config.ids.uids.postgrey;
-          group = "postgrey";
-        };
-      };
-      groups = {
-        postgrey = {
-          gid = config.ids.gids.postgrey;
-        };
-      };
-    };
 
     systemd.services.postgrey =
       let
@@ -207,16 +210,10 @@ in
             }${toString cfg.socket.port}";
       in
       {
-        description = "Postfix Greylisting Service";
-        wantedBy = [ "multi-user.target" ];
         before = [ "postfix.service" ];
+        description = "Postfix Greylisting Service";
+
         serviceConfig = {
-          Type = "simple";
-          ExecStartPre = [
-            "${lib.getExe' pkgs.coreutils "mkdir"} -p /var/postgrey"
-            "${lib.getExe' pkgs.coreutils "chown"} postgrey:postgrey /var/postgrey"
-            "${lib.getExe' pkgs.coreutils "chmod"} 0770 /var/postgrey"
-          ];
           ExecStart = ''
             ${pkgs.postgrey}/bin/postgrey \
                       ${bind-flag} \
@@ -237,11 +234,37 @@ in
                       ${concatMapStringsSep " " (x: "--whitelist-clients=" + x) cfg.whitelistClients} \
                       ${concatMapStringsSep " " (x: "--whitelist-recipients=" + x) cfg.whitelistRecipients}
           '';
+
+          ExecStartPre = [
+            "${lib.getExe' pkgs.coreutils "mkdir"} -p /var/postgrey"
+            "${lib.getExe' pkgs.coreutils "chown"} postgrey:postgrey /var/postgrey"
+            "${lib.getExe' pkgs.coreutils "chmod"} 0770 /var/postgrey"
+          ];
+
           Restart = "always";
           RestartSec = 5;
           TimeoutSec = 10;
+          Type = "simple";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
+
+    users = {
+      groups = {
+        postgrey = {
+          gid = config.ids.gids.postgrey;
         };
       };
+
+      users = {
+        postgrey = {
+          description = "Postgrey Daemon";
+          group = "postgrey";
+          uid = config.ids.uids.postgrey;
+        };
+      };
+    };
 
   };
 

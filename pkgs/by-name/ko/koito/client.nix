@@ -1,24 +1,17 @@
 {
+  stdenv,
+  gzip,
+  nodejs,
   src,
   version,
-  stdenv,
   yarn-berry_4,
-  nodejs,
-  gzip,
 }:
 let
   yarn = yarn-berry_4;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "koito-frontend";
   inherit src version;
-  sourceRoot = "${finalAttrs.src.name}/client";
-
-  missingHashes = ./missing-hashes.json;
-  offlineCache = yarn.fetchYarnBerryDeps {
-    inherit (finalAttrs) src sourceRoot missingHashes;
-    hash = "sha256-VIlWld21GScJ/2UUkKQISM9jyU9wCVwwDNKkge+K044=";
-  };
+  pname = "koito-frontend";
 
   nativeBuildInputs = [
     nodejs
@@ -44,4 +37,13 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn.fetchYarnBerryDeps {
+    inherit (finalAttrs) src sourceRoot missingHashes;
+    hash = "sha256-VIlWld21GScJ/2UUkKQISM9jyU9wCVwwDNKkge+K044=";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/client";
 })

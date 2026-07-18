@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,9 +23,9 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
+    description = "Age based repository file encryption gitops tool";
     homepage = "https://github.com/slok/agebox";
     changelog = "https://github.com/slok/agebox/releases/tag/v${finalAttrs.version}";
-    description = "Age based repository file encryption gitops tool";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lesuisse ];
     mainProgram = "agebox";

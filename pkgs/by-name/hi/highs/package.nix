@@ -19,27 +19,28 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   nativeBuildInputs = [
     clang
     cmake
   ];
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/ERGO-Code/HiGHS";
     description = "Linear optimization software";
+    homepage = "https://github.com/ERGO-Code/HiGHS";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
-    mainProgram = "highs";
+
     maintainers = with lib.maintainers; [
       galabovaa
       silky
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "highs";
   };
 })

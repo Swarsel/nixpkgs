@@ -1,13 +1,11 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   smllib,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "marq24";
-  domain = "tibber_local";
   version = "2026.6.2";
 
   src = fetchFromGitHub {
@@ -21,11 +19,14 @@ buildHomeAssistantComponent rec {
     smllib
   ];
 
+  domain = "tibber_local";
+  owner = "marq24";
+
   meta = {
-    changelog = "https://github.com/marq24/ha-tibber-pulse-local/releases/tag/${version}";
     description = "Local/LAN Tibber Pulse IR/Bridge Integration for Home Assistant";
     homepage = "https://github.com/marq24/ha-tibber-pulse-local";
-    maintainers = with lib.maintainers; [ hensoko ];
+    changelog = "https://github.com/marq24/ha-tibber-pulse-local/releases/tag/${version}";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ hensoko ];
   };
 }

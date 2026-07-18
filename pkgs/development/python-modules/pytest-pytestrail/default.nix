@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   pytest,
+  setuptools-scm,
   testrail-api,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-pytestrail";
   version = "0.10.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "tolstislon";
@@ -20,14 +19,11 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ testrail-api ];
-
   # all tests require network access
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_pytestrail" ];
 
   meta = {

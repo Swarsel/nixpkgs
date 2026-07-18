@@ -1,34 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-  numpy,
-  lxml,
-
+  buildPythonPackage,
+  charset-normalizer,
   # optional deps
   colorlog,
-  manifold3d,
-  charset-normalizer,
-  jsonschema,
-  networkx,
-  svg-path,
-  pycollada,
-  shapely,
-  xxhash,
-  rtree,
-  httpx,
-  scipy,
-  pillow,
-  mapbox-earcut,
   embreex,
+  httpx,
+  jsonschema,
+  lxml,
+  manifold3d,
+  mapbox-earcut,
+  networkx,
+  numpy,
+  pillow,
+  pycollada,
+  pytestCheckHook,
+  rtree,
+  scipy,
+  setuptools,
+  shapely,
+  svg-path,
+  xxhash,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "trimesh";
   version = "4.12.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mikedh";
@@ -37,9 +35,34 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Zef/BCheJWJNkK+ligeAMmuI3EX4uGfcNNbEJ9BNngY=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    lxml
+    pytestCheckHook
+  ]
+  # embreex is maintained by trimesh devs
+  ++ lib.optionals embreex.meta.available [
+    embreex
+    rtree
+  ];
 
+  build-system = [ setuptools ];
   dependencies = [ numpy ];
+
+  disabledTests = [
+    # requires loading models which aren't part of the Pypi tarball
+    "test_load"
+  ]
+  ++ lib.optionals embreex.meta.available [
+    # requires manifold3d
+    "test_contains_cavity"
+  ];
+
+  enabledTestPaths = [
+    "tests/test_minimal.py"
+  ]
+  ++ lib.optionals embreex.meta.available [
+    "tests/test_ray.py"
+  ];
 
   optional-dependencies = {
     easy = [
@@ -65,31 +88,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    lxml
-    pytestCheckHook
-  ]
-  # embreex is maintained by trimesh devs
-  ++ lib.optionals embreex.meta.available [
-    embreex
-    rtree
-  ];
-
-  disabledTests = [
-    # requires loading models which aren't part of the Pypi tarball
-    "test_load"
-  ]
-  ++ lib.optionals embreex.meta.available [
-    # requires manifold3d
-    "test_contains_cavity"
-  ];
-
-  enabledTestPaths = [
-    "tests/test_minimal.py"
-  ]
-  ++ lib.optionals embreex.meta.available [
-    "tests/test_ray.py"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "trimesh"
@@ -110,9 +109,11 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://trimesh.org/";
     changelog = "https://github.com/mikedh/trimesh/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "trimesh";
+
     maintainers = with lib.maintainers; [
       pbsds
     ];
+
+    mainProgram = "trimesh";
   };
 })

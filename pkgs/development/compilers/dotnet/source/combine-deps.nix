@@ -1,6 +1,6 @@
 {
-  list,
   baseRid,
+  list,
   otherRids,
   pkgs ? import ../../../../.. { },
 }:
@@ -27,10 +27,10 @@ let
       replace = replaceStrings [ ".${baseRid}" ] [ ".${rid}" ];
     in
     rec {
-      pname = replace package.pname;
       inherit (package) version;
-      url = replace package.url;
+      pname = replace package.pname;
       sha256 = builtins.hashFile "sha256" (builtins.fetchurl url);
+      url = replace package.url;
     };
 
   expandPackage =

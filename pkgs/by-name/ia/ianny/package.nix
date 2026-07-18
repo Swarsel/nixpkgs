@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   dbus,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,15 +17,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-CPtVk8sG3LcJBgmPc/kYZZXW0Lt2OPJGzkLKac+/1ZI=";
   };
 
-  cargoHash = "sha256-R8NEsGKaoYMssl1OkHXGV+1/oVPkZsbfdgLfRHp+ApA=";
-
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ dbus.dev ];
-
   postPatch = ''
     substituteInPlace src/main.rs \
       --replace-fail '/usr/share/locale' $out/share/locale
   '';
+
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ dbus.dev ];
+  cargoHash = "sha256-R8NEsGKaoYMssl1OkHXGV+1/oVPkZsbfdgLfRHp+ApA=";
 
   preFixup = ''
     mkdir -p $out/etc/xdg/autostart
@@ -37,8 +36,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Desktop utility that helps preventing repetitive strain injuries by keeping track of usage patterns and periodically informing the user to take breaks";
     homepage = "https://github.com/zefr0x/ianny";
     license = lib.licenses.gpl3;
-    mainProgram = "ianny";
     maintainers = with lib.maintainers; [ max-amb ];
     platforms = lib.platforms.linux;
+    mainProgram = "ianny";
   };
 })

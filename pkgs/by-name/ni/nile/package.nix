@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   gitUpdater,
   python3Packages,
-  fetchFromGitHub,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nile";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "imLinguin";
@@ -16,6 +15,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-tzf3sqD7P32AXzZu/WDauOSsEe/xhCh6x4KGQ1YnJqw=";
   };
+
+  postPatch = ''
+    echo "$pyprojectAppendix" >> pyproject.toml
+  '';
 
   build-system = with python3Packages; [ setuptools ];
 
@@ -29,13 +32,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     platformdirs
   ];
 
+  pyproject = true;
+
   pyprojectAppendix = ''
     [tool.setuptools.packages.find]
     include = ["nile*"]
-  '';
-
-  postPatch = ''
-    echo "$pyprojectAppendix" >> pyproject.toml
   '';
 
   pythonImportsCheck = [ "nile" ];
@@ -49,7 +50,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/imLinguin/nile";
     changelog = "https://github.com/imLinguin/nile/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "nile";
     maintainers = with lib.maintainers; [ theobori ];
+    mainProgram = "nile";
   };
 })

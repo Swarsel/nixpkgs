@@ -14,6 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-h7XmHr06Rx/E8s3XEkwrEd1mOfT+sflBpdL1EQ0Fzjk=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [ cmake ];
 
   installPhase = ''
@@ -27,16 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
     description = "Quality Tetrahedral Mesh Generator and 3D Delaunay Triangulator";
-    mainProgram = "tetgen";
     homepage = "http://tetgen.org/";
     license = lib.licenses.agpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "tetgen";
   };
 })

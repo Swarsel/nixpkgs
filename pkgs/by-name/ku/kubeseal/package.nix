@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,20 +17,20 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-poYkK62v0faGZnyYWQtUdf0eWTyWf+R/r1/+Wc8EeOA=";
 
-  subPackages = [ "cmd/kubeseal" ];
-
   ldflags = [
     "-s"
     "-w"
     "-X main.VERSION=${finalAttrs.version}"
   ];
 
+  subPackages = [ "cmd/kubeseal" ];
+
   meta = {
     description = "Kubernetes controller and tool for one-way encrypted Secrets";
-    mainProgram = "kubeseal";
     homepage = "https://github.com/bitnami/sealed-secrets";
     changelog = "https://github.com/bitnami/sealed-secrets/blob/v${finalAttrs.version}/RELEASE-NOTES.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ groodt ];
+    mainProgram = "kubeseal";
   };
 })

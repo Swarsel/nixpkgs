@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   fetchpatch2,
-  pkg-config,
-  libglut,
   gtk2,
   gtkglext,
+  libGL,
+  libGLU,
+  libglut,
   libjpeg_turbo,
   libtheora,
   libxmu,
   lua,
-  libGLU,
-  libGL,
   perl,
-  autoreconfHook,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -30,8 +30,8 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/CelestiaProject/Celestia/commit/94894bed3bf98d41c5097e7829d491d8ff8d4a62.patch?full_index=1";
       hash = "sha256-hEZ6BhSEx6Qm+fLisc63xSCDT6GX92AHD0BuldOhzFk=";
+      url = "https://github.com/CelestiaProject/Celestia/commit/94894bed3bf98d41c5097e7829d491d8ff8d4a62.patch?full_index=1";
     })
   ];
 
@@ -44,6 +44,7 @@ stdenv.mkDerivation rec {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     libglut
     gtk2
@@ -65,14 +66,16 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://celestiaproject.space/";
     description = "Real-time 3D simulation of space";
-    mainProgram = "celestia";
+    homepage = "https://celestiaproject.space/";
     changelog = "https://github.com/CelestiaProject/Celestia/releases/tag/${version}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       returntoreality
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "celestia";
   };
 }

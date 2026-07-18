@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 
@@ -75,208 +75,134 @@ in
 
   options.services.picom = {
     enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether or not to enable Picom as the X.org composite manager.
       '';
+
+      type = types.bool;
     };
 
     package = mkPackageOption pkgs "picom" { };
 
-    fade = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Fade windows in and out.
-      '';
-    };
-
-    fadeDelta = mkOption {
-      type = types.ints.positive;
-      default = 10;
-      example = 5;
-      description = ''
-        Time between fade animation step (in ms).
-      '';
-    };
-
-    fadeSteps = mkOption {
-      type = pairOf (types.numbers.between 0.01 1);
-      default = [
-        0.028
-        0.03
-      ];
-      example = [
-        0.04
-        0.04
-      ];
-      description = ''
-        Opacity change between fade steps (in and out).
-      '';
-    };
-
-    fadeExclude = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [
-        "window_type *= 'menu'"
-        "name ~= 'Firefox$'"
-        "focused = 1"
-      ];
-      description = ''
-        List of conditions of windows that should not be faded.
-        See {manpage}`picom(1)` man page for more examples.
-      '';
-    };
-
-    shadow = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Draw window shadows.
-      '';
-    };
-
-    shadowOffsets = mkOption {
-      type = pairOf types.int;
-      default = [
-        (-15)
-        (-15)
-      ];
-      example = [
-        (-10)
-        (-15)
-      ];
-      description = ''
-        Left and right offset for shadows (in pixels).
-      '';
-    };
-
-    shadowOpacity = mkOption {
-      type = types.numbers.between 0 1;
-      default = 0.75;
-      example = 0.8;
-      description = ''
-        Window shadows opacity.
-      '';
-    };
-
-    shadowExclude = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [
-        "window_type *= 'menu'"
-        "name ~= 'Firefox$'"
-        "focused = 1"
-      ];
-      description = ''
-        List of conditions of windows that should have no shadow.
-        See {manpage}`picom(1)` man page for more examples.
-      '';
-    };
-
     activeOpacity = mkOption {
-      type = types.numbers.between 0 1;
       default = 1.0;
-      example = 0.8;
+
       description = ''
         Opacity of active windows.
       '';
-    };
 
-    inactiveOpacity = mkOption {
-      type = types.numbers.between 0.1 1;
-      default = 1.0;
       example = 0.8;
-      description = ''
-        Opacity of inactive windows.
-      '';
-    };
-
-    menuOpacity = mkOption {
       type = types.numbers.between 0 1;
-      default = 1.0;
-      example = 0.8;
-      description = ''
-        Opacity of dropdown and popup menu.
-      '';
-    };
-
-    wintypes = mkOption {
-      type = types.attrs;
-      default = {
-        popup_menu = {
-          opacity = cfg.menuOpacity;
-        };
-        dropdown_menu = {
-          opacity = cfg.menuOpacity;
-        };
-      };
-      defaultText = literalExpression ''
-        {
-          popup_menu = { opacity = config.${opt.menuOpacity}; };
-          dropdown_menu = { opacity = config.${opt.menuOpacity}; };
-        }
-      '';
-      example = { };
-      description = ''
-        Rules for specific window types.
-      '';
-    };
-
-    opacityRules = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [
-        "95:class_g = 'URxvt' && !_NET_WM_STATE@:32a"
-        "0:_NET_WM_STATE@:32a *= '_NET_WM_STATE_HIDDEN'"
-      ];
-      description = ''
-        Rules that control the opacity of windows, in format PERCENT:PATTERN.
-      '';
     };
 
     backend = mkOption {
+      default = "xrender";
+
+      description = ''
+        Backend to use: `egl`, `glx`, `xrender` or `xr_glx_hybrid`.
+      '';
+
       type = types.enum [
         "egl"
         "glx"
         "xrender"
         "xr_glx_hybrid"
       ];
-      default = "xrender";
-      description = ''
-        Backend to use: `egl`, `glx`, `xrender` or `xr_glx_hybrid`.
-      '';
     };
 
-    vSync = mkOption {
-      type =
-        with types;
-        either bool (enum [
-          "none"
-          "drm"
-          "opengl"
-          "opengl-oml"
-          "opengl-swc"
-          "opengl-mswc"
-        ]);
+    fade = mkOption {
       default = false;
-      apply =
-        x:
-        let
-          res = x != "none";
-          msg =
-            "The type of services.picom.vSync has changed to bool:"
-            + " interpreting ${x} as ${boolToString res}";
-        in
-        if isBool x then x else warn msg res;
 
       description = ''
-        Enable vertical synchronization. Chooses the best method
-        (drm, opengl, opengl-oml, opengl-swc, opengl-mswc) automatically.
-        The bool value should be used, the others are just for backwards compatibility.
+        Fade windows in and out.
       '';
+
+      type = types.bool;
+    };
+
+    fadeDelta = mkOption {
+      default = 10;
+
+      description = ''
+        Time between fade animation step (in ms).
+      '';
+
+      example = 5;
+      type = types.ints.positive;
+    };
+
+    fadeExclude = mkOption {
+      default = [ ];
+
+      description = ''
+        List of conditions of windows that should not be faded.
+        See {manpage}`picom(1)` man page for more examples.
+      '';
+
+      example = [
+        "window_type *= 'menu'"
+        "name ~= 'Firefox$'"
+        "focused = 1"
+      ];
+
+      type = types.listOf types.str;
+    };
+
+    fadeSteps = mkOption {
+      default = [
+        0.028
+        0.03
+      ];
+
+      description = ''
+        Opacity change between fade steps (in and out).
+      '';
+
+      example = [
+        0.04
+        0.04
+      ];
+
+      type = pairOf (types.numbers.between 0.01 1);
+    };
+
+    inactiveOpacity = mkOption {
+      default = 1.0;
+
+      description = ''
+        Opacity of inactive windows.
+      '';
+
+      example = 0.8;
+      type = types.numbers.between 0.1 1;
+    };
+
+    menuOpacity = mkOption {
+      default = 1.0;
+
+      description = ''
+        Opacity of dropdown and popup menu.
+      '';
+
+      example = 0.8;
+      type = types.numbers.between 0 1;
+    };
+
+    opacityRules = mkOption {
+      default = [ ];
+
+      description = ''
+        Rules that control the opacity of windows, in format PERCENT:PATTERN.
+      '';
+
+      example = [
+        "95:class_g = 'URxvt' && !_NET_WM_STATE@:32a"
+        "0:_NET_WM_STATE@:32a *= '_NET_WM_STATE_HIDDEN'"
+      ];
+
+      type = types.listOf types.str;
     };
 
     settings =
@@ -314,8 +240,14 @@ in
 
       in
       mkOption {
-        type = topLevel;
         default = { };
+
+        description = ''
+          Picom settings. Use this option to configure Picom settings not exposed
+          in a NixOS option or to bypass one.  For the available options see the
+          CONFIGURATION FILES section at {manpage}`picom(1)`.
+        '';
+
         example = literalExpression ''
           blur =
             { method = "gaussian";
@@ -323,61 +255,168 @@ in
               deviation = 5.0;
             };
         '';
-        description = ''
-          Picom settings. Use this option to configure Picom settings not exposed
-          in a NixOS option or to bypass one.  For the available options see the
-          CONFIGURATION FILES section at {manpage}`picom(1)`.
-        '';
+
+        type = topLevel;
       };
+
+    shadow = mkOption {
+      default = false;
+
+      description = ''
+        Draw window shadows.
+      '';
+
+      type = types.bool;
+    };
+
+    shadowExclude = mkOption {
+      default = [ ];
+
+      description = ''
+        List of conditions of windows that should have no shadow.
+        See {manpage}`picom(1)` man page for more examples.
+      '';
+
+      example = [
+        "window_type *= 'menu'"
+        "name ~= 'Firefox$'"
+        "focused = 1"
+      ];
+
+      type = types.listOf types.str;
+    };
+
+    shadowOffsets = mkOption {
+      default = [
+        (-15)
+        (-15)
+      ];
+
+      description = ''
+        Left and right offset for shadows (in pixels).
+      '';
+
+      example = [
+        (-10)
+        (-15)
+      ];
+
+      type = pairOf types.int;
+    };
+
+    shadowOpacity = mkOption {
+      default = 0.75;
+
+      description = ''
+        Window shadows opacity.
+      '';
+
+      example = 0.8;
+      type = types.numbers.between 0 1;
+    };
+
+    vSync = mkOption {
+      apply =
+        x:
+        let
+          res = x != "none";
+          msg =
+            "The type of services.picom.vSync has changed to bool:"
+            + " interpreting ${x} as ${boolToString res}";
+        in
+        if isBool x then x else warn msg res;
+
+      default = false;
+
+      description = ''
+        Enable vertical synchronization. Chooses the best method
+        (drm, opengl, opengl-oml, opengl-swc, opengl-mswc) automatically.
+        The bool value should be used, the others are just for backwards compatibility.
+      '';
+
+      type =
+        with types;
+        either bool (enum [
+          "none"
+          "drm"
+          "opengl"
+          "opengl-oml"
+          "opengl-swc"
+          "opengl-mswc"
+        ]);
+    };
+
+    wintypes = mkOption {
+      default = {
+        dropdown_menu = {
+          opacity = cfg.menuOpacity;
+        };
+
+        popup_menu = {
+          opacity = cfg.menuOpacity;
+        };
+      };
+
+      defaultText = literalExpression ''
+        {
+          popup_menu = { opacity = config.${opt.menuOpacity}; };
+          dropdown_menu = { opacity = config.${opt.menuOpacity}; };
+        }
+      '';
+
+      description = ''
+        Rules for specific window types.
+      '';
+
+      example = { };
+      type = types.attrs;
+    };
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+
     services.picom.settings = mkDefaultAttrs {
-      # fading
-      fading = cfg.fade;
+      # opacity
+      active-opacity = cfg.activeOpacity;
+      # other options
+      backend = cfg.backend;
       fade-delta = cfg.fadeDelta;
+      fade-exclude = cfg.fadeExclude;
       fade-in-step = elemAt cfg.fadeSteps 0;
       fade-out-step = elemAt cfg.fadeSteps 1;
-      fade-exclude = cfg.fadeExclude;
-
+      # fading
+      fading = cfg.fade;
+      inactive-opacity = cfg.inactiveOpacity;
+      opacity-rule = cfg.opacityRules;
       # shadows
       shadow = cfg.shadow;
+      shadow-exclude = cfg.shadowExclude;
       shadow-offset-x = elemAt cfg.shadowOffsets 0;
       shadow-offset-y = elemAt cfg.shadowOffsets 1;
       shadow-opacity = cfg.shadowOpacity;
-      shadow-exclude = cfg.shadowExclude;
-
-      # opacity
-      active-opacity = cfg.activeOpacity;
-      inactive-opacity = cfg.inactiveOpacity;
-
-      wintypes = cfg.wintypes;
-
-      opacity-rule = cfg.opacityRules;
-
-      # other options
-      backend = cfg.backend;
       vsync = cfg.vSync;
+      wintypes = cfg.wintypes;
     };
 
     systemd.user.services.picom = {
       description = "Picom composite manager";
-      wantedBy = [ "graphical-session.target" ];
-      partOf = [ "graphical-session.target" ];
 
       # Temporarily fixes corrupt colours with Mesa 18
       environment = mkIf (cfg.backend == "glx") {
         allow_rgb10_configs = "false";
       };
 
+      partOf = [ "graphical-session.target" ];
+
       serviceConfig = {
         ExecStart = "${getExe cfg.package} --config ${configFile}";
-        RestartSec = 3;
         Restart = "always";
+        RestartSec = 3;
       };
-    };
 
-    environment.systemPackages = [ cfg.package ];
+      wantedBy = [ "graphical-session.target" ];
+    };
   };
 
   meta.maintainers = with lib.maintainers; [ rnhmjoj ];

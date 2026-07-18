@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -15,22 +15,24 @@ buildNpmPackage rec {
     hash = "sha256-olgOUbVHHj9vD7upswqVJYBRIRb+kg6uXC2y5shnM+g=";
   };
 
+  npmDepsHash = "sha256-cJ11l2NF/sCzPw/eQNFon5oKRM+KPoy4lxLz0yivHTo=";
+
   preBuild = ''
     npm run prepublishOnly
   '';
 
-  npmDepsHash = "sha256-cJ11l2NF/sCzPw/eQNFon5oKRM+KPoy4lxLz0yivHTo=";
-
   meta = {
-    changelog = "https://github.com/rcjsuen/dockerfile-language-server/blob/${src.tag}/CHANGELOG.md";
     description = "Language server for Dockerfiles powered by Node.js, TypeScript, and VSCode technologies";
     homepage = "https://github.com/rcjsuen/dockerfile-language-server";
+    changelog = "https://github.com/rcjsuen/dockerfile-language-server/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "docker-langserver";
+
     maintainers = with lib.maintainers; [
       rvolosatovs
       net-mist
       dlugoschvincent
     ];
+
+    mainProgram = "docker-langserver";
   };
 }

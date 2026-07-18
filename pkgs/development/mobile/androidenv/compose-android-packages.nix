@@ -1,13 +1,13 @@
 {
-  callPackage,
-  stdenv,
-  stdenvNoCC,
   lib,
+  stdenv,
   fetchurl,
+  callPackage,
+  meta,
   ruby,
+  stdenvNoCC,
   writeText,
   licenseAccepted ? false,
-  meta,
 }:
 
 let
@@ -29,75 +29,30 @@ let
     );
 in
 {
-  repoJson ? ./repo.json,
-  repoXmls ? null,
-  repo ? (
-    # Reads the repo JSON. If repoXmls is provided, will build a repo JSON into the Nix store.
-    if repoXmls != null then
-      let
-        # Uses update.rb to create a repo spec.
-        mkRepoJson =
-          {
-            packages ? [ ],
-            images ? [ ],
-            addons ? [ ],
-          }:
-          let
-            mkRepoRuby = (
-              ruby.withPackages (
-                pkgs: with pkgs; [
-                  slop
-                  curb
-                  nokogiri
-                ]
-              )
-            );
-            mkRepoRubyArguments = lib.lists.flatten [
-              (map (package: [
-                "--packages"
-                "${package}"
-              ]) packages)
-              (map (image: [
-                "--images"
-                "${image}"
-              ]) images)
-              (map (addon: [
-                "--addons"
-                "${addon}"
-              ]) addons)
-            ];
-          in
-          stdenvNoCC.mkDerivation {
-            name = "androidenv-repo-json";
-            buildInputs = [ mkRepoRuby ];
-            preferLocalBuild = true;
-            unpackPhase = "true";
-            buildPhase = ''
-              env ruby -e 'load "${./update.rb}"' -- ${lib.escapeShellArgs mkRepoRubyArguments} --input /dev/null --output repo.json
-            '';
-            installPhase = ''
-              mv repo.json $out
-            '';
-          };
-        repoXmlSpec = {
-          packages = repoXmls.packages or [ ];
-          images = repoXmls.images or [ ];
-          addons = repoXmls.addons or [ ];
-        };
-      in
-      lib.importJSON "${mkRepoJson repoXmlSpec}"
-    else
-      lib.importJSON repoJson
-  ),
-  cmdLineToolsVersion ? "latest",
-  toolsVersion ? "latest",
-  platformToolsVersion ? "latest",
+  abiVersions ? [
+    "x86"
+    "x86_64"
+    "armeabi-v7a"
+    "arm64-v8a"
+  ],
   buildToolsVersions ? [ "latest" ],
-  includeEmulator ? false,
+  cmakeVersions ? [ "latest" ],
+  cmdLineToolsVersion ? "latest",
   emulatorVersion ? "latest",
-  minPlatformVersion ? null,
+  extraLicenses ? [ ],
+  # cmake has precompiles on x86_64 and Darwin platforms. Default to true there for compatibility.
+  includeCmake ? stdenv.hostPlatform.isx86_64 || stdenv.hostPlatform.isDarwin,
+  includeEmulator ? false,
+  includeExtras ? [ ],
+  includeNDK ? false,
+  includeSources ? false,
+  includeSystemImages ? false,
   maxPlatformVersion ? "latest",
+  minPlatformVersion ? null,
+  ndkVersion ? "latest",
+  ndkVersions ? [ ndkVersion ],
   numLatestPlatformVersions ? 1,
+  platformToolsVersion ? "latest",
   platformVersions ?
     if minPlatformVersion != null && maxPlatformVersion != null then
       # Range between min and max, inclusive.
@@ -135,28 +90,76 @@ in
       in
       # Ditto, see above.
       if lib.length range == 1 then lib.singleton repo.latest.platforms else range,
-  includeSources ? false,
-  includeSystemImages ? false,
+  repo ? (
+    # Reads the repo JSON. If repoXmls is provided, will build a repo JSON into the Nix store.
+    if repoXmls != null then
+      let
+        # Uses update.rb to create a repo spec.
+        mkRepoJson =
+          {
+            addons ? [ ],
+            images ? [ ],
+            packages ? [ ],
+          }:
+          let
+            mkRepoRuby = (
+              ruby.withPackages (
+                pkgs: with pkgs; [
+                  slop
+                  curb
+                  nokogiri
+                ]
+              )
+            );
+            mkRepoRubyArguments = lib.lists.flatten [
+              (map (package: [
+                "--packages"
+                "${package}"
+              ]) packages)
+              (map (image: [
+                "--images"
+                "${image}"
+              ]) images)
+              (map (addon: [
+                "--addons"
+                "${addon}"
+              ]) addons)
+            ];
+          in
+          stdenvNoCC.mkDerivation {
+            buildInputs = [ mkRepoRuby ];
+
+            buildPhase = ''
+              env ruby -e 'load "${./update.rb}"' -- ${lib.escapeShellArgs mkRepoRubyArguments} --input /dev/null --output repo.json
+            '';
+
+            installPhase = ''
+              mv repo.json $out
+            '';
+
+            name = "androidenv-repo-json";
+            preferLocalBuild = true;
+            unpackPhase = "true";
+          };
+        repoXmlSpec = {
+          addons = repoXmls.addons or [ ];
+          images = repoXmls.images or [ ];
+          packages = repoXmls.packages or [ ];
+        };
+      in
+      lib.importJSON "${mkRepoJson repoXmlSpec}"
+    else
+      lib.importJSON repoJson
+  ),
+  repoJson ? ./repo.json,
+  repoXmls ? null,
   systemImageTypes ? [
     "google_apis"
     "google_apis_playstore"
   ],
-  abiVersions ? [
-    "x86"
-    "x86_64"
-    "armeabi-v7a"
-    "arm64-v8a"
-  ],
-  # cmake has precompiles on x86_64 and Darwin platforms. Default to true there for compatibility.
-  includeCmake ? stdenv.hostPlatform.isx86_64 || stdenv.hostPlatform.isDarwin,
-  cmakeVersions ? [ "latest" ],
-  includeNDK ? false,
-  ndkVersion ? "latest",
-  ndkVersions ? [ ndkVersion ],
+  toolsVersion ? "latest",
   useGoogleAPIs ? false,
   useGoogleTVAddOns ? false,
-  includeExtras ? [ ],
-  extraLicenses ? [ ],
 }:
 
 let
@@ -166,18 +169,18 @@ let
   # Determine the Android os identifier from Nix's system identifier
   os =
     {
-      x86_64-linux = "linux";
-      aarch64-linux = "linux";
       aarch64-darwin = "macosx";
+      aarch64-linux = "linux";
+      x86_64-linux = "linux";
     }
     .${stdenv.hostPlatform.system} or "all";
 
   # Determine the Android arch identifier from Nix's system identifier
   arch =
     {
-      x86_64-linux = "x64";
-      aarch64-linux = "aarch64";
       aarch64-darwin = "aarch64";
+      aarch64-linux = "aarch64";
+      x86_64-linux = "x64";
     }
     .${stdenv.hostPlatform.system} or "all";
 
@@ -205,10 +208,11 @@ let
             map (
               archive:
               (fetchurl {
-                pname = packageInfo.name;
-                version = packageInfo.revision;
                 inherit (archive) url sha1;
                 inherit meta;
+                pname = packageInfo.name;
+                version = packageInfo.revision;
+
                 passthru = {
                   info = packageInfo;
                 };
@@ -229,10 +233,10 @@ let
 
   # Converts the repo attrset into fetch calls.
   allArchives = {
-    packages = fetchArchives repo.packages;
-    system-images = fetchArchives repo.images;
     addons = fetchArchives repo.addons;
     extras = fetchArchives repo.extras;
+    packages = fetchArchives repo.packages;
+    system-images = fetchArchives repo.images;
   };
 
   # Lift the archives to the package level for easy search,
@@ -359,8 +363,8 @@ let
     {
       name,
       plugins,
-      rootName ? name,
       check ? true,
+      rootName ? name,
     }:
     lib.optionalString (shouldLink check plugins) ''
       mkdir -p ${rootName}
@@ -372,9 +376,9 @@ let
   # Function that automatically links the default NDK plugin.
   linkNdkPlugin =
     {
+      check,
       name,
       plugin,
-      check,
     }:
     lib.optionalString (shouldLink check [ plugin ]) ''
       ln -s ${plugin}/libexec/android-sdk/${name} ${name}
@@ -392,7 +396,7 @@ let
     '';
 
   linkSystemImages =
-    { images, check }:
+    { check, images }:
     lib.optionalString (shouldLink check images) ''
       mkdir -p system-images
       ${lib.concatMapStrings (system-image: ''
@@ -406,9 +410,9 @@ let
   # Links all plugins related to a requested platform
   linkPlatformPlugins =
     {
+      check,
       name,
       plugins,
-      check,
     }:
     lib.optionalString (shouldLink check plugins) ''
       mkdir -p ${name}
@@ -419,23 +423,197 @@ let
 
 in
 lib.recurseIntoAttrs rec {
-  deployAndroidPackages = callPackage ./deploy-androidpackages.nix {
+  all = allPackages;
+
+  # This derivation deploys the tools package and symlinks all the desired
+  # plugins that we want to use. If the license isn't accepted, prints all the licenses
+  # requested and throws.
+  androidsdk = callPackage ./cmdline-tools.nix {
     inherit
-      stdenv
-      lib
-      mkLicenses
-      meta
+      deployAndroidPackage
       os
       arch
+      meta
       ;
+
+    postInstall =
+      if !licenseAccepted then
+        throw ''
+          ${builtins.concatStringsSep "\n\n" (mkLicenseTexts licenseNames)}
+
+          You must accept the following licenses:
+          ${lib.concatMapStringsSep "\n" (str: "  - ${str}") licenseNames}
+
+          a)
+            by setting nixpkgs config option 'android_sdk.accept_license = true;'.
+          b)
+            by an environment variable for a single invocation of the nix tools.
+              $ export NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE=1
+        ''
+      else
+        ''
+          # Symlink all requested plugins
+          ${linkPlugin {
+            name = "platform-tools";
+            plugin = platform-tools;
+          }}
+          ${linkPlugin {
+            check = toolsVersion != null;
+            name = "tools";
+            plugin = tools;
+          }}
+          ${linkPlugins {
+            name = "build-tools";
+            plugins = build-tools;
+          }}
+          ${linkPlugin {
+            check = includeEmulator;
+            name = "emulator";
+            plugin = emulator;
+          }}
+          ${linkPlugins {
+            name = "platforms";
+            plugins = platforms;
+          }}
+          ${linkPlatformPlugins {
+            check = includeSources;
+            name = "sources";
+            plugins = sources;
+          }}
+          ${linkPlugins {
+            check = includeCmake;
+            name = "cmake";
+            plugins = cmake;
+          }}
+          ${linkNdkPlugins {
+            check = includeNDK;
+            name = "ndk-bundle";
+            plugins = ndk-bundles;
+            rootName = "ndk";
+          }}
+          ${linkNdkPlugin {
+            check = includeNDK;
+            name = "ndk-bundle";
+            plugin = ndk-bundle;
+          }}
+          ${linkSystemImages {
+            check = includeSystemImages;
+            images = system-images;
+          }}
+          ${linkPlatformPlugins {
+            check = useGoogleAPIs;
+            name = "add-ons";
+            plugins = google-apis;
+          }}
+          ${linkPlatformPlugins {
+            check = useGoogleTVAddOns;
+            name = "add-ons";
+            plugins = google-tv-addons;
+          }}
+
+          # Link extras
+          ${lib.concatMapStrings (
+            identifier:
+            let
+              package = allArchives.extras.${identifier};
+              path = package.path;
+              extras = callPackage ./extras.nix {
+                inherit
+                  deployAndroidPackage
+                  package
+                  os
+                  arch
+                  meta
+                  ;
+              };
+            in
+            ''
+              targetDir=$(dirname ${path})
+              mkdir -p $targetDir
+              ln -s ${extras}/libexec/android-sdk/${path} $targetDir
+            ''
+          ) includeExtras}
+
+          # Expose common executables in bin/
+          mkdir -p $out/bin
+
+          for i in ${platform-tools}/bin/*; do
+              ln -s $i $out/bin
+          done
+
+          ${lib.optionalString (shouldLink includeEmulator [ emulator ]) ''
+            for i in ${emulator}/bin/*; do
+                ln -s $i $out/bin
+            done
+          ''}
+
+          find "$ANDROID_HOME/${cmdline-tools-package.path}/bin" -type f -executable | while read i; do
+              ln -s $i $out/bin
+          done
+
+          # Write licenses
+          mkdir -p licenses
+          ${lib.concatMapStrings (
+            licenseName:
+            let
+              licenseHashes = builtins.concatStringsSep "\n" (mkLicenseHashes licenseName);
+              licenseHashFile = writeText "androidenv-${licenseName}" licenseHashes;
+            in
+            ''
+              ln -s ${licenseHashFile} licenses/${licenseName}
+            ''
+          ) licenseNames}
+        '';
+
+    package = cmdline-tools-package;
   };
+
+  build-tools = map (
+    version:
+    callPackage ./build-tools.nix {
+      inherit
+        deployAndroidPackage
+        os
+        arch
+        meta
+        ;
+
+      postInstall = ''
+        ${linkPlugin {
+          check = toolsVersion != null;
+          name = "tools";
+          plugin = tools;
+        }}
+      '';
+
+      package = checkVersion allArchives.packages "build-tools" version;
+    }
+  ) (parseVersions repo "build-tools" buildToolsVersions);
+
+  cmake = map (
+    version:
+    callPackage ./cmake.nix {
+      inherit
+        deployAndroidPackage
+        os
+        arch
+        meta
+        ;
+
+      package = checkVersion allArchives.packages "cmake" version;
+    }
+  ) (parseVersions repo "cmake" cmakeVersions);
+
+  cmdline-tools-package = checkVersion allArchives.packages "cmdline-tools" (
+    parseVersion repo "cmdline-tools" cmdLineToolsVersion
+  );
 
   deployAndroidPackage = (
     {
       package,
       buildInputs ? [ ],
-      patchInstructions ? "",
       meta ? { },
+      patchInstructions ? "",
       ...
     }@args:
     let
@@ -451,6 +629,7 @@ lib.recurseIntoAttrs rec {
       {
         inherit buildInputs;
         packages = [ package ];
+
         patchesInstructions = {
           "${package.name}" = patchInstructions;
         };
@@ -459,62 +638,16 @@ lib.recurseIntoAttrs rec {
     )
   );
 
-  all = allPackages;
-
-  platform-tools = callPackage ./platform-tools.nix {
+  deployAndroidPackages = callPackage ./deploy-androidpackages.nix {
     inherit
-      deployAndroidPackage
+      stdenv
+      lib
+      mkLicenses
+      meta
       os
       arch
-      meta
       ;
-    package = checkVersion allArchives.packages "platform-tools" (
-      parseVersion repo "platform-tools" platformToolsVersion
-    );
   };
-
-  tools = callPackage ./tools.nix {
-    inherit
-      deployAndroidPackage
-      os
-      arch
-      meta
-      ;
-    package = checkVersion allArchives.packages "tools" (parseVersion repo "tools" toolsVersion);
-
-    postInstall = ''
-      ${linkPlugin {
-        name = "platform-tools";
-        plugin = platform-tools;
-      }}
-      ${linkPlugin {
-        name = "emulator";
-        plugin = emulator;
-        check = includeEmulator;
-      }}
-    '';
-  };
-
-  build-tools = map (
-    version:
-    callPackage ./build-tools.nix {
-      inherit
-        deployAndroidPackage
-        os
-        arch
-        meta
-        ;
-      package = checkVersion allArchives.packages "build-tools" version;
-
-      postInstall = ''
-        ${linkPlugin {
-          name = "tools";
-          plugin = tools;
-          check = toolsVersion != null;
-        }}
-      '';
-    }
-  ) (parseVersions repo "build-tools" buildToolsVersions);
 
   emulator = callPackage ./emulator.nix {
     inherit
@@ -523,16 +656,78 @@ lib.recurseIntoAttrs rec {
       arch
       meta
       ;
-    package = checkVersion allArchives.packages "emulator" (
-      parseVersion repo "emulator" emulatorVersion
-    );
 
     postInstall = ''
       ${linkSystemImages {
-        images = system-images;
         check = includeSystemImages;
+        images = system-images;
       }}
     '';
+
+    package = checkVersion allArchives.packages "emulator" (
+      parseVersion repo "emulator" emulatorVersion
+    );
+  };
+
+  # Makes a Google API bundle from supported versions.
+  google-apis = map (
+    version:
+    deployAndroidPackage {
+      package = (checkVersion allArchives "addons" version).google_apis;
+    }
+  ) (lib.filter (hasVersion allArchives "addons") platformVersions');
+
+  # Makes a Google TV addons bundle from supported versions.
+  google-tv-addons = map (
+    version:
+    deployAndroidPackage {
+      package = (checkVersion allArchives "addons" version).google_tv_addon;
+    }
+  ) (lib.filter (hasVersion allArchives "addons") platformVersions');
+
+  # The "default" NDK bundle.
+  ndk-bundle = if ndk-bundles == [ ] then null else lib.head ndk-bundles;
+
+  # All NDK bundles.
+  ndk-bundles =
+    let
+      # Creates a NDK bundle.
+      makeNdkBundle =
+        package:
+        callPackage ./ndk-bundle {
+          inherit
+            deployAndroidPackage
+            os
+            arch
+            platform-tools
+            meta
+            package
+            ;
+        };
+    in
+    lib.flatten (
+      map (
+        version:
+        let
+          package = makeNdkBundle (
+            allArchives.packages.ndk-bundle.${version} or allArchives.packages.ndk.${version}
+          );
+        in
+        lib.optional (shouldLink includeNDK [ package ]) package
+      ) (parseVersions repo "ndk" ndkVersions)
+    );
+
+  platform-tools = callPackage ./platform-tools.nix {
+    inherit
+      deployAndroidPackage
+      os
+      arch
+      meta
+      ;
+
+    package = checkVersion allArchives.packages "platform-tools" (
+      parseVersion repo "platform-tools" platformToolsVersion
+    );
   };
 
   # This is a list of the chosen API levels, as integers.
@@ -590,6 +785,7 @@ lib.recurseIntoAttrs rec {
           instructions = lib.listToAttrs (
             map (package: {
               name = package.name;
+
               value = lib.optionalString (lib.hasPrefix "google_apis" type) ''
                 # Patch 'google_apis' system images so they're recognized by the sdk.
                 # Without this, `android list targets` shows 'Tag/ABIs : no ABIs' instead
@@ -607,75 +803,7 @@ lib.recurseIntoAttrs rec {
     ) platformVersions'
   );
 
-  cmake = map (
-    version:
-    callPackage ./cmake.nix {
-      inherit
-        deployAndroidPackage
-        os
-        arch
-        meta
-        ;
-      package = checkVersion allArchives.packages "cmake" version;
-    }
-  ) (parseVersions repo "cmake" cmakeVersions);
-
-  # All NDK bundles.
-  ndk-bundles =
-    let
-      # Creates a NDK bundle.
-      makeNdkBundle =
-        package:
-        callPackage ./ndk-bundle {
-          inherit
-            deployAndroidPackage
-            os
-            arch
-            platform-tools
-            meta
-            package
-            ;
-        };
-    in
-    lib.flatten (
-      map (
-        version:
-        let
-          package = makeNdkBundle (
-            allArchives.packages.ndk-bundle.${version} or allArchives.packages.ndk.${version}
-          );
-        in
-        lib.optional (shouldLink includeNDK [ package ]) package
-      ) (parseVersions repo "ndk" ndkVersions)
-    );
-
-  # The "default" NDK bundle.
-  ndk-bundle = if ndk-bundles == [ ] then null else lib.head ndk-bundles;
-
-  # Makes a Google API bundle from supported versions.
-  google-apis = map (
-    version:
-    deployAndroidPackage {
-      package = (checkVersion allArchives "addons" version).google_apis;
-    }
-  ) (lib.filter (hasVersion allArchives "addons") platformVersions');
-
-  # Makes a Google TV addons bundle from supported versions.
-  google-tv-addons = map (
-    version:
-    deployAndroidPackage {
-      package = (checkVersion allArchives "addons" version).google_tv_addon;
-    }
-  ) (lib.filter (hasVersion allArchives "addons") platformVersions');
-
-  cmdline-tools-package = checkVersion allArchives.packages "cmdline-tools" (
-    parseVersion repo "cmdline-tools" cmdLineToolsVersion
-  );
-
-  # This derivation deploys the tools package and symlinks all the desired
-  # plugins that we want to use. If the license isn't accepted, prints all the licenses
-  # requested and throws.
-  androidsdk = callPackage ./cmdline-tools.nix {
+  tools = callPackage ./tools.nix {
     inherit
       deployAndroidPackage
       os
@@ -683,135 +811,18 @@ lib.recurseIntoAttrs rec {
       meta
       ;
 
-    package = cmdline-tools-package;
+    postInstall = ''
+      ${linkPlugin {
+        name = "platform-tools";
+        plugin = platform-tools;
+      }}
+      ${linkPlugin {
+        check = includeEmulator;
+        name = "emulator";
+        plugin = emulator;
+      }}
+    '';
 
-    postInstall =
-      if !licenseAccepted then
-        throw ''
-          ${builtins.concatStringsSep "\n\n" (mkLicenseTexts licenseNames)}
-
-          You must accept the following licenses:
-          ${lib.concatMapStringsSep "\n" (str: "  - ${str}") licenseNames}
-
-          a)
-            by setting nixpkgs config option 'android_sdk.accept_license = true;'.
-          b)
-            by an environment variable for a single invocation of the nix tools.
-              $ export NIXPKGS_ACCEPT_ANDROID_SDK_LICENSE=1
-        ''
-      else
-        ''
-          # Symlink all requested plugins
-          ${linkPlugin {
-            name = "platform-tools";
-            plugin = platform-tools;
-          }}
-          ${linkPlugin {
-            name = "tools";
-            plugin = tools;
-            check = toolsVersion != null;
-          }}
-          ${linkPlugins {
-            name = "build-tools";
-            plugins = build-tools;
-          }}
-          ${linkPlugin {
-            name = "emulator";
-            plugin = emulator;
-            check = includeEmulator;
-          }}
-          ${linkPlugins {
-            name = "platforms";
-            plugins = platforms;
-          }}
-          ${linkPlatformPlugins {
-            name = "sources";
-            plugins = sources;
-            check = includeSources;
-          }}
-          ${linkPlugins {
-            name = "cmake";
-            plugins = cmake;
-            check = includeCmake;
-          }}
-          ${linkNdkPlugins {
-            name = "ndk-bundle";
-            rootName = "ndk";
-            plugins = ndk-bundles;
-            check = includeNDK;
-          }}
-          ${linkNdkPlugin {
-            name = "ndk-bundle";
-            plugin = ndk-bundle;
-            check = includeNDK;
-          }}
-          ${linkSystemImages {
-            images = system-images;
-            check = includeSystemImages;
-          }}
-          ${linkPlatformPlugins {
-            name = "add-ons";
-            plugins = google-apis;
-            check = useGoogleAPIs;
-          }}
-          ${linkPlatformPlugins {
-            name = "add-ons";
-            plugins = google-tv-addons;
-            check = useGoogleTVAddOns;
-          }}
-
-          # Link extras
-          ${lib.concatMapStrings (
-            identifier:
-            let
-              package = allArchives.extras.${identifier};
-              path = package.path;
-              extras = callPackage ./extras.nix {
-                inherit
-                  deployAndroidPackage
-                  package
-                  os
-                  arch
-                  meta
-                  ;
-              };
-            in
-            ''
-              targetDir=$(dirname ${path})
-              mkdir -p $targetDir
-              ln -s ${extras}/libexec/android-sdk/${path} $targetDir
-            ''
-          ) includeExtras}
-
-          # Expose common executables in bin/
-          mkdir -p $out/bin
-
-          for i in ${platform-tools}/bin/*; do
-              ln -s $i $out/bin
-          done
-
-          ${lib.optionalString (shouldLink includeEmulator [ emulator ]) ''
-            for i in ${emulator}/bin/*; do
-                ln -s $i $out/bin
-            done
-          ''}
-
-          find "$ANDROID_HOME/${cmdline-tools-package.path}/bin" -type f -executable | while read i; do
-              ln -s $i $out/bin
-          done
-
-          # Write licenses
-          mkdir -p licenses
-          ${lib.concatMapStrings (
-            licenseName:
-            let
-              licenseHashes = builtins.concatStringsSep "\n" (mkLicenseHashes licenseName);
-              licenseHashFile = writeText "androidenv-${licenseName}" licenseHashes;
-            in
-            ''
-              ln -s ${licenseHashFile} licenses/${licenseName}
-            ''
-          ) licenseNames}
-        '';
+    package = checkVersion allArchives.packages "tools" (parseVersion repo "tools" toolsVersion);
   };
 }

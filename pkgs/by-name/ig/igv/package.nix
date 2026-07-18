@@ -2,19 +2,22 @@
   lib,
   stdenv,
   fetchzip,
+  igv,
   jdk21,
   testers,
   wrapGAppsHook3,
-  igv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "igv";
   version = "2.19.8";
+
   src = fetchzip {
     url = "https://data.broadinstitute.org/igv/projects/downloads/${lib.versions.majorMinor finalAttrs.version}/IGV_${finalAttrs.version}.zip";
     sha256 = "sha256-WVf/y0+Hk3OIz+hlCTJ81Ui/s6vthFLJWLuBJAOGzaQ=";
   };
+
+  nativeBuildInputs = [ wrapGAppsHook3 ];
 
   installPhase = ''
     mkdir -pv $out/{share,bin}
@@ -32,20 +35,21 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x $out/bin/igv
     chmod +x $out/bin/igvtools
   '';
-  nativeBuildInputs = [ wrapGAppsHook3 ];
 
   passthru.tests.version = testers.testVersion {
     package = igv;
   };
 
   meta = {
-    homepage = "https://www.broadinstitute.org/igv/";
     description = "Visualization tool for interactive exploration of genomic datasets";
+    homepage = "https://www.broadinstitute.org/igv/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = [
       lib.maintainers.mimame
       lib.maintainers.rollf
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

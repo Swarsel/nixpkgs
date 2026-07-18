@@ -1,56 +1,34 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  hidapi,
-  pyusb,
-
   # tests
   click,
+  fetchPypi,
+  # dependencies
+  hidapi,
   pytestCheckHook,
+  pyusb,
+  # build-system
+  setuptools,
   spsdk,
-  writableTmpDirAsHomeHook,
-
   # passthru
   spsdk-mcu-link,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "spsdk-mcu-link";
   version = "0.6.6";
-  pyproject = true;
 
   # Latest tag missing on GitHub
   src = fetchPypi {
-    pname = "spsdk_mcu_link";
     inherit version;
     hash = "sha256-KISqhJJFtHFCDOFs+Zx0ghX0lGK5tazVqEIOT9gyAQs=";
+    pname = "spsdk_mcu_link";
   };
 
-  build-system = [
-    setuptools
-  ];
-
-  pythonRemoveDeps = [
-    # unpackaged
-    "libusb_package"
-    "wasmtime"
-  ];
-
-  pythonRelaxDeps = [
-    "hidapi"
-    "pyusb"
-  ];
-
-  dependencies = [
-    hidapi
-    pyusb
-  ];
+  # Cyclic dependency with spsdk
+  doCheck = false;
 
   nativeCheckInputs = [
     click
@@ -59,16 +37,35 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  # Cyclic dependency with spsdk
-  doCheck = false;
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    hidapi
+    pyusb
+  ];
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "hidapi"
+    "pyusb"
+  ];
+
+  pythonRemoveDeps = [
+    # unpackaged
+    "libusb_package"
+    "wasmtime"
+  ];
 
   passthru.tests = {
     pytest = spsdk-mcu-link.overridePythonAttrs {
+      doCheck = true;
+
       pythonImportsCheck = [
         "spsdk_mcu_link"
       ];
-
-      doCheck = true;
     };
   };
 

@@ -1,18 +1,19 @@
 {
   lib,
-  pkgs,
   stdenv,
   fetchurl,
-  makeWrapper,
   libglvnd,
   libnotify,
+  makeWrapper,
   openjdk25, # 2025-12-25: pkgs.jre points to java 21 and there is no equivalent for jre25
+  pkgs,
   zip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "14.4.2";
   pname = "mediathekview";
+  version = "14.4.2";
+
   src = fetchurl {
     url = "https://download.mediathekview.de/stabil/MediathekView-${finalAttrs.version}-linux.tar.gz";
     sha256 = "sha256-sDZSXYzak2RKQiW1OGpgSvFlkZrttsoOxVqRaodol24=";
@@ -52,6 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   doInstallCheck = true;
+
   # sanity to ensure that mediathek can actually start
   # unfortunately the executable does not print its own version
   installCheckPhase = ''
@@ -63,10 +65,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Offers access to the Mediathek of different tv stations (ARD, ZDF, Arte, etc.)";
     homepage = "https://mediathekview.de/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3Plus;
-    mainProgram = "mediathek";
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ makefu ];
     platforms = lib.platforms.linux;
+    mainProgram = "mediathek";
   };
 })

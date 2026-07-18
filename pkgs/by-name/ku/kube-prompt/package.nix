@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Interactive kubernetes client featuring auto-complete";
-    mainProgram = "kube-prompt";
-    license = lib.licenses.mit;
     homepage = "https://github.com/c-bata/kube-prompt";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vdemeester ];
+    mainProgram = "kube-prompt";
   };
 })

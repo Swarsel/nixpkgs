@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
+  nix-update-script,
   versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
@@ -15,38 +15,19 @@ buildGoModule (finalAttrs: {
     owner = "seaweedfs";
     repo = "seaweedfs";
     tag = finalAttrs.version;
+    hash = "sha256-cgjSdtdAk+C5Z3MXVfzcHZZ5ry60Y7n1OE0aIFb3/qI=";
     leaveDotGit = true;
+
     postFetch = ''
       pushd "$out"
       git rev-parse --short HEAD 2>/dev/null >$out/COMMIT
       find "$out" -name .git -print0 | xargs -0 rm -rf
       popd
     '';
-    hash = "sha256-cgjSdtdAk+C5Z3MXVfzcHZZ5ry60Y7n1OE0aIFb3/qI=";
   };
 
-  vendorHash = "sha256-Irc0AW/aZ5NApe3+teMDTAOswr8Wd9wxTWyZYKv2RFo=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "weed" ];
-
-  tags = [
-    "elastic"
-    "gocdk"
-    "rclone"
-    "sqlite"
-    "tarantool"
-    "tikv"
-    "ydb"
-  ];
-
-  ldflags = [
-    "-s"
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    "-extldflags=-static"
-  ];
+  vendorHash = "sha256-Irc0AW/aZ5NApe3+teMDTAOswr8Wd9wxTWyZYKv2RFo=";
 
   env = {
     CGO_ENABLED = if stdenv.hostPlatform.isDarwin then 1 else 0;
@@ -73,12 +54,32 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
 
+  ldflags = [
+    "-s"
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    "-extldflags=-static"
+  ];
+
+  subPackages = [ "weed" ];
+
+  tags = [
+    "elastic"
+    "gocdk"
+    "rclone"
+    "sqlite"
+    "tarantool"
+    "tikv"
+    "ydb"
+  ];
+
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple and highly scalable distributed file system";
+
     longDescription = ''
       SeaweedFS is a versatile and efficient storage system designed to meet the
       needs of modern sysadmins managing a mix of blob, object, file, and data
@@ -87,13 +88,16 @@ buildGoModule (finalAttrs: {
       dataset. This makes it an excellent choice for environments where speed
       and efficiency are critical.
     '';
+
     homepage = "https://github.com/seaweedfs/seaweedfs";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       azahi
       cmacrae
       wozeparrot
     ];
+
     mainProgram = "weed";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   typing-extensions,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pygobject-stubs";
   version = "2.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pygobject";
@@ -18,12 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-3gWz/mWAMoXAHMfCFv3ri680iuMm0WLtGyMODujq31M=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
   # This package does not include any tests.
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
 
   meta = {
     description = "PEP 561 Typing Stubs for PyGObject";

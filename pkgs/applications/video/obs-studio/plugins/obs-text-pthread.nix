@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   cairo,
+  cmake,
   obs-studio,
   pango,
   pkg-config,
@@ -24,6 +24,7 @@ stdenv.mkDerivation rec {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     cairo
     obs-studio
@@ -38,10 +39,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "Rich text source plugin for OBS Studio";
     homepage = "https://github.com/norihiro/obs-text-pthread";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

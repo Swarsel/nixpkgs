@@ -1,15 +1,14 @@
 {
   buildDunePackage,
-  letsencrypt,
   emile,
   http-mirage-client,
+  letsencrypt,
   paf,
 }:
 
 buildDunePackage {
-  pname = "letsencrypt-mirage";
-
   inherit (letsencrypt) version src;
+  pname = "letsencrypt-mirage";
 
   propagatedBuildInputs = [
     emile

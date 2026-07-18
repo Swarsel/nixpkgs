@@ -1,19 +1,19 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  fetchpatch,
   bash,
-  makeWrapper,
   bc,
-  jq,
+  busybox,
   coreutils,
+  fetchpatch,
+  file,
+  gnugrep, # We can't use busybox's 'grep' as it doesn't support perl '-P' expressions.
+  jq,
+  makeWrapper,
+  stdenvNoCC,
+  syslinux,
   util-linux,
   wimlib,
-  file,
-  syslinux,
-  busybox,
-  gnugrep, # We can't use busybox's 'grep' as it doesn't support perl '-P' expressions.
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -29,22 +29,21 @@ stdenvNoCC.mkDerivation rec {
 
   patches = [
     (fetchpatch {
-      url = "https://code.opensuse.org/package/bootiso/raw/3799710e3da40c1b429ea1a2ce3896d18d08a5c5/f/syslinux-lib-root.patch";
       sha256 = "sha256-x2EJppQsPPymSrjRwEy7mylW+2OKcGzKsKF3y7fzrB8=";
+      url = "https://code.opensuse.org/package/bootiso/raw/3799710e3da40c1b429ea1a2ce3896d18d08a5c5/f/syslinux-lib-root.patch";
     })
   ];
-
-  strictDeps = true;
-  buildInputs = [ bash ];
-  nativeBuildInputs = [ makeWrapper ];
-
-  makeFlags = [ "prefix=${placeholder "out"}" ];
 
   postPatch = ''
     substituteInPlace bootiso \
       --replace "\$(basename \"\$0\")" "bootiso" \
       --replace "/usr/share/syslinux" "${syslinux}/share/syslinux"
   '';
+
+  strictDeps = true;
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ bash ];
+  makeFlags = [ "prefix=${placeholder "out"}" ];
 
   postInstall = ''
     wrapProgram $out/bin/bootiso \

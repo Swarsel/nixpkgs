@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
+  fetchpatch,
   pcsclite,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -14,22 +14,13 @@ stdenv.mkDerivation {
   version = "0.2.7";
 
   src = fetchFromGitLab {
-    domain = "code.videolan.org";
     owner = "videolan";
     repo = "aribb25";
     # tag = version; FIXME: uncomment in next release
     rev = "c14938692b313b5ba953543fd94fd1cad0eeef18"; # 0.2.7 with build fixes
     sha256 = "1kb9crfqib0npiyjk4zb63zqlzbhqm35nz8nafsvdjd71qbd2amp";
+    domain = "code.videolan.org";
   };
-
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ pcsclite ];
-
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-deprecated-non-prototype";
 
   patches =
     let
@@ -38,13 +29,13 @@ stdenv.mkDerivation {
     [
       (fetchpatch {
         name = "make-cli-pipes-work-1.patch";
-        url = url "0425184dbf3fdaf59854af5f530da88b2196a57b";
         sha256 = "0ysm2jivpnqxz71vw1102616qxww2gx005i0c5lhi6jbajqsa1cd";
+        url = url "0425184dbf3fdaf59854af5f530da88b2196a57b";
       })
       (fetchpatch {
         name = "make-cli-pipes-work-2.patch";
-        url = url "cebabeab2bda065dca1c9f033b42d391be866d86";
         sha256 = "1283kqv1r4rbaba0sv2hphkhcxgjkmh8ndlcd24fhx43nn63hd28";
+        url = url "cebabeab2bda065dca1c9f033b42d391be866d86";
       })
     ];
 
@@ -53,12 +44,20 @@ stdenv.mkDerivation {
       --replace-fail 'static void show_usage();' 'static void show_usage(int exit_code);'
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ pcsclite ];
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-deprecated-non-prototype";
+
   meta = {
     description = "Sample implementation of the ARIB STD-B25 standard";
     homepage = "https://code.videolan.org/videolan/aribb25";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ midchildan ];
-    mainProgram = "b25";
     platforms = lib.platforms.all;
+    mainProgram = "b25";
   };
 }

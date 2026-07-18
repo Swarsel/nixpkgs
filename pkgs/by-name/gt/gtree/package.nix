@@ -1,7 +1,7 @@
 {
   lib,
-  buildGo126Module,
   fetchFromGitHub,
+  buildGo126Module,
   gtree,
   nix-update-script,
   testers,
@@ -22,15 +22,15 @@ buildGo126Module (finalAttrs: {
 
   vendorHash = "sha256-Vd5VKKl79Qu5R7jOYS1CTtQuAis9vWUbpBWnEI7sgpk=";
 
-  subPackages = [
-    "cmd/gtree"
-  ];
-
   ldflags = [
     "-s"
     "-w"
     "-X=main.Version=${finalAttrs.version}"
     "-X=main.Revision=${finalAttrs.src.tag}"
+  ];
+
+  subPackages = [
+    "cmd/gtree"
   ];
 
   passthru = {
@@ -39,15 +39,16 @@ buildGo126Module (finalAttrs: {
         package = gtree;
       };
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Generate directory trees and directories using Markdown or programmatically";
-    mainProgram = "gtree";
     homepage = "https://github.com/ddddddO/gtree";
     changelog = "https://github.com/ddddddO/gtree/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ hythera ];
+    mainProgram = "gtree";
   };
 })

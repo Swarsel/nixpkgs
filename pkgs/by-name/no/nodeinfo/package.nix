@@ -1,12 +1,11 @@
 {
   lib,
-  fetchFromCodeberg,
   buildGoModule,
+  fetchFromCodeberg,
 }:
 buildGoModule (finalAttrs: {
   pname = "nodeinfo";
   version = "1.0.0";
-  vendorHash = "sha256-P0klk3YWa2qprCUNUjiuF+Akxh246WCu4vwUAZmSDCw=";
 
   src = fetchFromCodeberg {
     owner = "thefederationinfo";
@@ -15,21 +14,23 @@ buildGoModule (finalAttrs: {
     hash = "sha256-XwK3QeVDQMZD5G79XPJTAJyilVgYFVgZORHYTBI0gIQ=";
   };
 
-  modRoot = "./cli";
-  tags = [ "extension" ];
+  vendorHash = "sha256-P0klk3YWa2qprCUNUjiuF+Akxh246WCu4vwUAZmSDCw=";
+  env.CGO_ENABLED = 0;
+
   ldflags = [
     "-s"
     "-w"
   ];
 
-  env.CGO_ENABLED = 0;
+  modRoot = "./cli";
+  tags = [ "extension" ];
 
   meta = {
-    mainProgram = "nodeinfo";
     description = "Command line tool to query nodeinfo based on a given domain";
     homepage = "https://codeberg.org/thefederationinfo/nodeinfo-go";
     changelog = "https://codeberg.org/thefederationinfo/nodeinfo-go/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers._6543 ];
+    mainProgram = "nodeinfo";
   };
 })

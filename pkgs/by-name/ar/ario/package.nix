@@ -3,15 +3,15 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
-  intltool,
   avahi,
   curl,
   dbus-glib,
   gettext,
   gtk3,
+  intltool,
   libmpdclient,
   libxml2,
+  pkg-config,
   taglib,
   wrapGAppsHook3,
 }:
@@ -43,22 +43,22 @@ stdenv.mkDerivation rec {
     taglib
   ];
 
-  preAutoreconf = ''
-    gettextize --force --copy
-  '';
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     for file in $out/lib/ario/plugins/*.dylib; do
       ln -s $file $out/lib/ario/plugins/$(basename $file .dylib).so
     done
   '';
 
+  preAutoreconf = ''
+    gettextize --force --copy
+  '';
+
   meta = {
     description = "GTK client for MPD (Music player daemon)";
-    mainProgram = "ario";
     homepage = "https://ario-player.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.garrison ];
     platforms = lib.platforms.all;
+    mainProgram = "ario";
   };
 }

@@ -1,30 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   attrs,
   babel,
+  buildPythonPackage,
   frictionless,
   isodate,
   jsonschema,
   language-tags,
+  pytest-cov-stub,
+  pytest-mock,
+  pytestCheckHook,
   python-dateutil,
   rdflib,
   requests,
+  requests-mock,
   rfc3986,
   setuptools,
   termcolor,
   uritemplate,
-  pytestCheckHook,
-  pytest-cov-stub,
-  pytest-mock,
-  requests-mock,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "csvw";
   version = "3.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cldf";
@@ -37,6 +36,13 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace src/csvw/__main__.py \
       --replace-fail "'frictionless'" "'${lib.getExe frictionless}'"
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-mock
+    requests-mock
+  ];
 
   build-system = [ setuptools ];
 
@@ -55,14 +61,10 @@ buildPythonPackage (finalAttrs: {
     language-tags
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-mock
-    requests-mock
+  disabledTestPaths = [
+    # Missing manifest-json.jsonld
+    "tests/test_conformance.py"
   ];
-
-  pythonRelaxDeps = [ "rfc3986" ];
 
   disabledTests = [
     # this test is flaky on darwin because it depends on the resolution of filesystem mtimes
@@ -70,12 +72,9 @@ buildPythonPackage (finalAttrs: {
     "test_write_file_exists"
   ];
 
-  disabledTestPaths = [
-    # Missing manifest-json.jsonld
-    "tests/test_conformance.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "csvw" ];
+  pythonRelaxDeps = [ "rfc3986" ];
 
   meta = {
     description = "CSV on the Web";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ZyMO+KCqoePF6MqHFt8X4tZR4nBhuSPgJDrX+emM6jc=";
+  doCheck = false;
 
   ldflags =
     let
@@ -28,8 +29,6 @@ buildGoModule (finalAttrs: {
       "-X ${t}.commit=${finalAttrs.src.rev}"
       "-X ${t}.date=unknown"
     ];
-
-  doCheck = false;
 
   meta = {
     description = "List command for AWS resources";

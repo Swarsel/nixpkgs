@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "daff";
   version = "1.4.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # there are no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "daff" ];
 
   meta = {

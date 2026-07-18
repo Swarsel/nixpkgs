@@ -9,17 +9,17 @@
   flex,
   glslang,
   libpng,
+  libx11,
+  libxcb,
+  libxext,
+  libxfixes,
   libxml2,
+  libxshmfence,
   llvmPackages,
   meson,
   ninja,
   pkg-config,
   python3Packages,
-  libxfixes,
-  libxext,
-  libx11,
-  libxcb,
-  libxshmfence,
   spirv-llvm-translator,
   spirv-tools,
   zlib,
@@ -54,14 +54,14 @@ stdenv.mkDerivation {
     meta
     ;
 
-  patches = [
-    # Required to build KosmicKrisp
-    ./opencl.patch
-  ];
-
   outputs = [
     "out"
     "dev"
+  ];
+
+  patches = [
+    # Required to build KosmicKrisp
+    ./opencl.patch
   ];
 
   nativeBuildInputs = [
@@ -98,8 +98,6 @@ stdenv.mkDerivation {
     zlib
   ];
 
-  mesonAutoFeatures = "disabled";
-
   mesonFlags = [
     "--sysconfdir=/etc"
     "--datadir=${placeholder "out"}/share"
@@ -125,11 +123,12 @@ stdenv.mkDerivation {
     (lib.mesonOption "glx" "dri")
   ];
 
-  mesonBuildType = "release";
-
   postFixup = ''
     install_name_tool -add_rpath "$out/lib" "$out/lib/libGL.dylib"
   '';
+
+  mesonAutoFeatures = "disabled";
+  mesonBuildType = "release";
 
   passthru = {
     # needed to pass evaluation of bad platforms

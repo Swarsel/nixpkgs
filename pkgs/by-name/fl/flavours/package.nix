@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  libiconv,
   installShellFiles,
+  libiconv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SOsHvcfDdUpb0x5VZ1vZJnGaIiWWOPgnAwKYNXzfUfI=";
   };
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
-  cargoHash = "sha256-9/2kiLuIyErwZ1O9457WkYbwlsbPY3P8wlH2hW0W1xU=";
-
   nativeBuildInputs = [ installShellFiles ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
+  cargoHash = "sha256-9/2kiLuIyErwZ1O9457WkYbwlsbPY3P8wlH2hW0W1xU=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd flavours \
@@ -36,10 +34,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/Misterio77/flavours";
     changelog = "https://github.com/Misterio77/flavours/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       moni
       misterio77
     ];
+
     mainProgram = "flavours";
   };
 })

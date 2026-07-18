@@ -4,9 +4,9 @@
   fetchFromGitHub,
   cmake,
   krb5,
-  liburcu,
-  libtirpc,
   libnsl,
+  libtirpc,
+  liburcu,
   prometheus-cpp-lite,
   rdma-core,
 }:
@@ -37,6 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     krb5
     liburcu
@@ -61,8 +62,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Transport-independent RPC (TI-RPC)";
     homepage = "https://github.com/nfs-ganesha/ntirpc";
+    license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.bsd3;
   };
 })

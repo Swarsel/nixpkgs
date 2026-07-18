@@ -35,16 +35,6 @@ in
       '';
     };
 
-    timerConfig = utils.systemdUtils.unitOptions.timerOptions.options.timerConfig // {
-      default = { };
-      description = ''
-        The timer configuration for performing the update.
-
-        By default, the upstream configuration is used:
-        <https://github.com/systemd/systemd/blob/main/units/systemd-sysupdate.timer>
-      '';
-    };
-
     reboot = {
       enable = lib.mkEnableOption "automatically rebooting after an update" // {
         description = ''
@@ -66,6 +56,7 @@ in
 
       timerConfig = utils.systemdUtils.unitOptions.timerOptions.options.timerConfig // {
         default = { };
+
         description = ''
           The timer configuration for rebooting after an update.
 
@@ -75,47 +66,64 @@ in
       };
     };
 
-    transfers = lib.mkOption {
-      type = with lib.types; attrsOf format.type;
+    timerConfig = utils.systemdUtils.unitOptions.timerOptions.options.timerConfig // {
       default = { };
-      example = {
-        "10-uki" = {
-          Transfer = {
-            ProtectVersion = "%A";
-          };
 
-          Source = {
-            Type = "url-file";
-            Path = "https://download.example.com/";
-            MatchPattern = [
-              "nixos_@v+@l-@d.efi"
-              "nixos_@v+@l.efi"
-              "nixos_@v.efi"
-            ];
-          };
+      description = ''
+        The timer configuration for performing the update.
 
-          Target = {
-            Type = "regular-file";
-            Path = "/EFI/Linux";
-            PathRelativeTo = "boot";
-            MatchPattern = ''
-              nixos_@v+@l-@d.efi"; \
-              nixos_@v+@l.efi \
-              nixos_@v.efi
-            '';
-            Mode = "0444";
-            TriesLeft = 3;
-            TriesDone = 0;
-            InstancesMax = 2;
-          };
-        };
-      };
+        By default, the upstream configuration is used:
+        <https://github.com/systemd/systemd/blob/main/units/systemd-sysupdate.timer>
+      '';
+    };
+
+    transfers = lib.mkOption {
+      default = { };
+
       description = ''
         Specify transfers as a set of the names of the transfer files as the
         key and the configuration as its value. The configuration can use all
         upstream options. See {manpage}`sysupdate.d(5)`
         for all available options.
       '';
+
+      example = {
+        "10-uki" = {
+          Source = {
+            MatchPattern = [
+              "nixos_@v+@l-@d.efi"
+              "nixos_@v+@l.efi"
+              "nixos_@v.efi"
+            ];
+
+            Path = "https://download.example.com/";
+            Type = "url-file";
+          };
+
+          Target = {
+            InstancesMax = 2;
+
+            MatchPattern = ''
+              nixos_@v+@l-@d.efi"; \
+              nixos_@v+@l.efi \
+              nixos_@v.efi
+            '';
+
+            Mode = "0444";
+            Path = "/EFI/Linux";
+            PathRelativeTo = "boot";
+            TriesDone = 0;
+            TriesLeft = 3;
+            Type = "regular-file";
+          };
+
+          Transfer = {
+            ProtectVersion = "%A";
+          };
+        };
+      };
+
+      type = with lib.types; attrsOf format.type;
     };
 
   };
@@ -127,6 +135,8 @@ in
         message = "Cannot enable systemd-sysupdate with systemd package not built with sysupdate support";
       }
     ];
+
+    environment.etc = sysupdateTransfers;
 
     systemd.additionalUpstreamSystemUnits = [
       "systemd-sysupdate.service"
@@ -143,16 +153,15 @@ in
 
     systemd.timers = {
       "systemd-sysupdate" = {
-        wantedBy = [ "timers.target" ];
         timerConfig = cfg.timerConfig;
-      };
-      "systemd-sysupdate-reboot" = lib.mkIf cfg.reboot.enable {
         wantedBy = [ "timers.target" ];
+      };
+
+      "systemd-sysupdate-reboot" = lib.mkIf cfg.reboot.enable {
         timerConfig = cfg.reboot.timerConfig;
+        wantedBy = [ "timers.target" ];
       };
     };
-
-    environment.etc = sysupdateTransfers;
   };
 
   meta.maintainers = with lib.maintainers; [

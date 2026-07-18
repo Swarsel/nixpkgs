@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  binutils,
   fetchpatch,
   gnugrep,
-  binutils,
   makeBinaryWrapper,
   php,
-  testers,
   phpPackages,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/adsr/phpspy/commit/8854e60ac38cfd2455d4a3d797f283eb3940cb7b.patch";
       hash = "sha256-IMO9GV0Z8PDEAVhLevg5jGh/PHcbNq3f3fMGFaKoLL4=";
+      url = "https://github.com/adsr/phpspy/commit/8854e60ac38cfd2455d4a3d797f283eb3940cb7b.patch";
     })
   ];
 
@@ -58,16 +58,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests.version = testers.testVersion {
     version = "v${finalAttrs.version}";
-    package = phpPackages.phpspy;
     command = "phpspy -v";
+    package = phpPackages.phpspy;
   };
 
   meta = {
     description = "Low-overhead sampling profiler for PHP";
     homepage = "https://github.com/adsr/phpspy";
     license = lib.licenses.mit;
-    mainProgram = "phpspy";
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "phpspy";
   };
 })

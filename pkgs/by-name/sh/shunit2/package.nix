@@ -1,13 +1,13 @@
 {
   lib,
-  resholve,
   fetchFromGitHub,
   bash,
   coreutils,
-  gnused,
-  gnugrep,
   findutils,
+  gnugrep,
+  gnused,
   ncurses,
+  resholve,
 }:
 
 resholve.mkDerivation (finalAttrs: {
@@ -28,25 +28,25 @@ resholve.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/shunit2
   '';
 
   solutions = {
     shunit = {
-      # Caution: see __SHUNIT_CMD_ECHO_ESC before changing
-      interpreter = "${bash}/bin/sh";
-      scripts = [ "bin/shunit2" ];
-      inputs = [
-        coreutils
-        gnused
-        gnugrep
-        findutils
-        ncurses
+      execer = [
+        # drop after https://github.com/abathur/binlore/issues/2
+        "cannot:${ncurses}/bin/tput"
       ];
+
       # resholve's Nix API is analogous to the CLI flags
       # documented in 'man resholve'
       fake = {
+        # shunit2 is both bash and zsh compatible, and in
+        # some zsh-specific code it uses this non-bash builtin
+        builtin = [ "setopt" ];
+
         # "missing" functions shunit2 expects the user to declare
         function = [
           "oneTimeSetUp"
@@ -56,13 +56,10 @@ resholve.mkDerivation (finalAttrs: {
           "suite"
           "noexec"
         ];
-        # shunit2 is both bash and zsh compatible, and in
-        # some zsh-specific code it uses this non-bash builtin
-        builtin = [ "setopt" ];
       };
+
       fix = {
-        # stray absolute path; make it resolve from coreutils
-        "/usr/bin/od" = true;
+        "$SHUNIT_CMD_TPUT" = [ "tput" ]; # from ncurses
         /*
           Caution: this one is contextually debatable. shunit2
           sets this variable after testing whether `echo -e test`
@@ -71,34 +68,47 @@ resholve.mkDerivation (finalAttrs: {
           the interpreter later, I guess we _could_ break it.
         */
         "$__SHUNIT_CMD_ECHO_ESC" = [ "echo -e" ];
-        "$SHUNIT_CMD_TPUT" = [ "tput" ]; # from ncurses
+        # stray absolute path; make it resolve from coreutils
+        "/usr/bin/od" = true;
       };
+
+      inputs = [
+        coreutils
+        gnused
+        gnugrep
+        findutils
+        ncurses
+      ];
+
+      # Caution: see __SHUNIT_CMD_ECHO_ESC before changing
+      interpreter = "${bash}/bin/sh";
+
       keep = {
+        # dynamic based on CLI flag
+        "$_SHUNIT_LINENO_" = true;
+
         # dynamically defined in shunit2:_shunit_mktempFunc
         eval = [
           "shunit_condition_"
           "_shunit_test_"
           "_shunit_prepForSourcing"
         ];
-
-        # dynamic based on CLI flag
-        "$_SHUNIT_LINENO_" = true;
       };
-      execer = [
-        # drop after https://github.com/abathur/binlore/issues/2
-        "cannot:${ncurses}/bin/tput"
-      ];
+
+      scripts = [ "bin/shunit2" ];
     };
   };
 
   meta = {
-    homepage = "https://github.com/kward/shunit2";
     description = "XUnit based unit test framework for Bourne based shell scripts";
+    homepage = "https://github.com/kward/shunit2";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       abathur
       utdemir
     ];
-    license = lib.licenses.asl20;
+
     platforms = lib.platforms.unix;
     mainProgram = "shunit2";
   };

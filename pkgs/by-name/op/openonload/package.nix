@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   coreutils,
-  libpcap,
-  which,
   libcap,
+  libmnl,
+  libpcap,
   makeWrapper,
   nix-update-script,
   perl,
-  libmnl,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-wyvTtOjD6fwuT2OGGhr10F0Q7hXE97mGREhq7Ns14hw=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     which
     makeWrapper
@@ -33,41 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpcap
   ];
 
-  configurePhase = ''
-    runHook preConfigure
-    export PATH="$PWD/scripts:$PATH"
-    patchShebangs --build \
-      scripts/ \
-      src/driver/
-    substituteInPlace \
-      scripts/mmaketool \
-      scripts/onload \
-      scripts/onload_build \
-      scripts/onload_install \
-      scripts/shell-fns/fns \
-      scripts/shell-fns/mmake-fns \
-      --replace-fail "/bin/pwd" "${coreutils}/bin/pwd"
-    substituteInPlace \
-      scripts/mmaketool \
-      scripts/onload_install \
-      scripts/sfcaffinity_config \
-      --replace-fail "/bin/ls" "${coreutils}/bin/ls"
-
-    # Disable compiler checks that are disabled for Ubuntu: https://github.com/Xilinx-CNS/onload/blob/713eff9c3a105c51fb062527e01e1663c4e61e28/scripts/mmakebuildtree#L337-L344
-    substituteInPlace scripts/mmakebuildtree \
-    --replace-fail 'W_NO_UNUSED_RESULT=
-    ' ""
-    export W_NO_UNUSED_RESULT=1 W_NO_IGNORED_ATTRIBUTES=1
-
-    # Patch unit tests to be run during check phase
-    substituteInPlace src/tests/onload/{oof,cplane_unit,cplane_sysunit,onload_remote_monitor/internal_tests}/mmake.mk \
-      --replace-fail '/usr/bin/timeout' '${coreutils}/bin/timeout'
-
-    # Honor NIX_BUILD_CORES in onload_build script
-    substituteInPlace scripts/onload_build --replace-fail 'nproc' 'echo "$NIX_BUILD_CORES"'
-    runHook postConfigure
-  '';
-
   # This only builds the 64 bit libraries, not the kernel module.
   buildPhase = ''
     runHook preBuild
@@ -76,12 +47,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
   nativeCheckInputs = [
     perl
   ];
+
   checkInputs = [
     libmnl
   ];
+
   checkPhase = ''
     runHook preCheck
     # Build all tests in parallel, the script does it in sequence
@@ -89,12 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     scripts/run_unit_tests.sh
     runHook postCheck
   '';
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -143,6 +111,41 @@ stdenv.mkDerivation (finalAttrs: {
     # directory from RPATH. This doesn't break the binary because the library
     # is also available from other RPATH entries.
     rm -v build/gnu_x86_64/lib/cplane/*.so*
+  '';
+
+  configurePhase = ''
+    runHook preConfigure
+    export PATH="$PWD/scripts:$PATH"
+    patchShebangs --build \
+      scripts/ \
+      src/driver/
+    substituteInPlace \
+      scripts/mmaketool \
+      scripts/onload \
+      scripts/onload_build \
+      scripts/onload_install \
+      scripts/shell-fns/fns \
+      scripts/shell-fns/mmake-fns \
+      --replace-fail "/bin/pwd" "${coreutils}/bin/pwd"
+    substituteInPlace \
+      scripts/mmaketool \
+      scripts/onload_install \
+      scripts/sfcaffinity_config \
+      --replace-fail "/bin/ls" "${coreutils}/bin/ls"
+
+    # Disable compiler checks that are disabled for Ubuntu: https://github.com/Xilinx-CNS/onload/blob/713eff9c3a105c51fb062527e01e1663c4e61e28/scripts/mmakebuildtree#L337-L344
+    substituteInPlace scripts/mmakebuildtree \
+    --replace-fail 'W_NO_UNUSED_RESULT=
+    ' ""
+    export W_NO_UNUSED_RESULT=1 W_NO_IGNORED_ATTRIBUTES=1
+
+    # Patch unit tests to be run during check phase
+    substituteInPlace src/tests/onload/{oof,cplane_unit,cplane_sysunit,onload_remote_monitor/internal_tests}/mmake.mk \
+      --replace-fail '/usr/bin/timeout' '${coreutils}/bin/timeout'
+
+    # Honor NIX_BUILD_CORES in onload_build script
+    substituteInPlace scripts/onload_build --replace-fail 'nproc' 'echo "$NIX_BUILD_CORES"'
+    runHook postConfigure
   '';
 
   passthru.updateScript = nix-update-script { };

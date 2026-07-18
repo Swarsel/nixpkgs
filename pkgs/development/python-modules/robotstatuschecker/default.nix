@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  robotframework,
+  buildPythonPackage,
   python,
+  robotframework,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "robotstatuschecker";
   version = "4.1.1";
-  pyproject = true;
 
   # no tests included in PyPI tarball
   src = fetchFromGitHub {
@@ -20,10 +19,6 @@ buildPythonPackage rec {
     hash = "sha256-YyiGd3XSIe+4PEL2l9LYDGH3lt1iRAAJflcBGYXaBzY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ robotframework ];
-
   checkPhase = ''
     runHook preCheck
 
@@ -31,6 +26,10 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ robotframework ];
+  pyproject = true;
 
   meta = {
     description = "Tool for checking that Robot Framework test cases have expected statuses and log messages";

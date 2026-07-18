@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   sabnzbd,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "sabctools";
   version = "9.6.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,7 +16,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sabctools" ];
 
   passthru.tests = {

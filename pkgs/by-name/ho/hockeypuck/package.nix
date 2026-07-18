@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -16,10 +16,9 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-m1PI6YRFf2ZKvtsGtmTcERiB/7aZdhAcQODREb2K7ro=";
   };
 
-  modRoot = "src/hockeypuck/";
   vendorHash = null;
   doCheck = false; # Uses networking for tests
-
+  modRoot = "src/hockeypuck/";
   passthru.tests = nixosTests.hockeypuck;
 
   meta = {

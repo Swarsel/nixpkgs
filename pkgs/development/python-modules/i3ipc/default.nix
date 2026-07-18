@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   coreutils,
-  setuptools,
-  python-xlib,
   fontconfig,
-  pytestCheckHook,
-  writableTmpDirAsHomeHook,
+  i3,
   pytest-asyncio,
   pytest-timeout,
   pytest-xvfb,
-  i3,
-  xvfb,
+  pytestCheckHook,
+  python-xlib,
+  setuptools,
+  writableTmpDirAsHomeHook,
   xdpyinfo,
+  xvfb,
 }:
 
 buildPythonPackage rec {
   pname = "i3ipc";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "altdesktop";
@@ -40,9 +39,6 @@ buildPythonPackage rec {
       --replace-fail /bin/true ${coreutils}/bin/true
   '';
 
-  build-system = [ setuptools ];
-  dependencies = [ python-xlib ];
-
   # Fontconfig error: Cannot load default config file
   env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
 
@@ -57,6 +53,9 @@ buildPythonPackage rec {
     xvfb
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ python-xlib ];
+
   disabledTestPaths = [
     # Timeout
     "test/test_shutdown_event.py::TestShutdownEvent::test_shutdown_event_reconnect"
@@ -66,6 +65,7 @@ buildPythonPackage rec {
     "test/aio/test_workspace.py::TestWorkspace::test_workspace"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "i3ipc" ];
 
   meta = {

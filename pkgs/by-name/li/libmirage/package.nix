@@ -1,28 +1,28 @@
 {
+  lib,
   stdenv,
-  cmake,
-  pkg-config,
-  gobject-introspection,
-  vala,
-  glib,
-  libsndfile,
-  flac,
-  libogg,
-  libvorbis,
-  libopus,
-  zlib,
+  fetchurl,
   bzip2,
-  xz,
-  libsamplerate,
+  cmake,
+  flac,
+  glib,
+  gobject-introspection,
+  intltool,
   libgcrypt,
   libgpg-error,
-  intltool,
-  util-linux,
+  libogg,
+  libopus,
+  libsamplerate,
   libselinux,
   libsepol,
-  fetchurl,
-  lib,
+  libsndfile,
+  libvorbis,
+  pkg-config,
+  util-linux,
+  vala,
   writeScript,
+  xz,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,10 +34,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-wMAzJpEue1QnDllWheFk3ZX+8pSkYw13s+GU0G/AOfs=";
   };
 
-  env = {
-    PKG_CONFIG_GOBJECT_INTROSPECTION_1_0_GIRDIR = "${placeholder "out"}/share/gir-1.0";
-    PKG_CONFIG_GOBJECT_INTROSPECTION_1_0_TYPELIBDIR = "${placeholder "out"}/lib/girepository-1.0";
-  };
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    intltool
+    gobject-introspection
+    vala
+  ];
 
   buildInputs = [
     glib
@@ -53,19 +56,16 @@ stdenv.mkDerivation (finalAttrs: {
     libgpg-error
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    intltool
-    gobject-introspection
-    vala
-  ];
-
   propagatedBuildInputs = [
     util-linux
     libselinux
     libsepol
   ];
+
+  env = {
+    PKG_CONFIG_GOBJECT_INTROSPECTION_1_0_GIRDIR = "${placeholder "out"}/share/gir-1.0";
+    PKG_CONFIG_GOBJECT_INTROSPECTION_1_0_TYPELIBDIR = "${placeholder "out"}/lib/girepository-1.0";
+  };
 
   passthru = {
     updateScript = writeScript "update-libmirage" ''
@@ -82,10 +82,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    maintainers = with lib.maintainers; [ bendlas ];
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     description = "CD-ROM image access library";
     homepage = "https://cdemu.sourceforge.io/about/libmirage/";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ bendlas ];
+    platforms = lib.platforms.linux;
   };
 })

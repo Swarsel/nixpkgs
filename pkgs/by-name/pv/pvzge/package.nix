@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   fetchFromGitHub,
   copyDesktopItems,
-  makeWrapper,
-  makeDesktopItem,
   desktopToDarwinBundle,
   electron,
   imagemagick,
+  makeDesktopItem,
+  makeWrapper,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,11 +23,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-sirarRJyQUHk8Fx3B9uXJjCqgRXX+SYqxpj+/N8v7y8=";
   };
 
-  iconSrc = fetchurl {
-    url = "https://raw.githubusercontent.com/Gzh0821/pvzg_site/refs/tags/${finalAttrs.version}/src/.vuepress/public/pvz_logo.webp";
-    hash = "sha256-PkUS4iESw+R8o+tZMDJ+PTyu6PTmKeRkq/VG3+egsQY=";
-    meta.license = lib.licenses.unfree;
-  };
+  postPatch = ''
+    sed -i "s|<title>.*</title>|<title>PvZ2: Gardendless</title>|" docs/index.html
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -35,14 +33,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     imagemagick
   ]
   ++ lib.optional stdenvNoCC.hostPlatform.isDarwin desktopToDarwinBundle;
-
-  postPatch = ''
-    sed -i "s|<title>.*</title>|<title>PvZ2: Gardendless</title>|" docs/index.html
-  '';
-
-  dontConfigure = true;
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -80,26 +70,35 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "pvzge";
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "PvZ2: Gardendless";
       exec = finalAttrs.meta.mainProgram;
       icon = "pvzge";
-      desktopName = "PvZ2: Gardendless";
-      comment = finalAttrs.meta.description;
-      categories = [ "Game" ];
+      name = "pvzge";
     })
   ];
+
+  dontBuild = true;
+  dontConfigure = true;
+
+  iconSrc = fetchurl {
+    hash = "sha256-PkUS4iESw+R8o+tZMDJ+PTyu6PTmKeRkq/VG3+egsQY=";
+    url = "https://raw.githubusercontent.com/Gzh0821/pvzg_site/refs/tags/${finalAttrs.version}/src/.vuepress/public/pvz_logo.webp";
+    meta.license = lib.licenses.unfree;
+  };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Completely remastered PvZ2 for all desktop platforms";
     homepage = "https://pvzge.com";
-    downloadPage = "https://pvzge.com/en/download";
     # upstream repo has GPL-3.0 in the LICENSE file,
     # but only obfuscated code is available, and it contains proprietary assets
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ ulysseszhan ];
     platforms = lib.platforms.all;
     mainProgram = "pvzge";
+    downloadPage = "https://pvzge.com/en/download";
   };
 })

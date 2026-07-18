@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
   angstrom,
+  buildDunePackage,
   ptime,
   seq,
   timedesc-tzdb,
@@ -18,8 +18,6 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-hXdijGY0qu+pLR2XtK/KL9gXvCstbZedo1379lqA1r0=";
   };
 
-  sourceRoot = ".";
-
   propagatedBuildInputs = [
     angstrom
     ptime
@@ -27,6 +25,8 @@ buildDunePackage (finalAttrs: {
     timedesc-tzdb
     timedesc-tzlocal
   ];
+
+  sourceRoot = ".";
 
   meta = {
     description = "OCaml date time handling library";

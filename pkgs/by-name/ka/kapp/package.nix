@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
   kapp,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,17 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Fs15mvxg3MxQpis1f9eOGOE516THazTIKs0ZiqV15Xk=";
   };
 
-  vendorHash = null;
-
-  subPackages = [ "cmd/kapp" ];
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-X carvel.dev/kapp/pkg/kapp/version.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
+  env.CGO_ENABLED = 0;
 
   postInstall = ''
     for shell in bash fish zsh; do
@@ -36,6 +28,12 @@ buildGoModule (finalAttrs: {
       installShellCompletion kapp.$shell
     done
   '';
+
+  ldflags = [
+    "-X carvel.dev/kapp/pkg/kapp/version.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/kapp" ];
 
   passthru.tests.version = testers.testVersion {
     package = kapp;

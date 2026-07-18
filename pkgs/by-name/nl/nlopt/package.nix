@@ -2,35 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  nix-update-script,
-  # Optionally build Python bindings
-  withPython ? false,
-  python3,
-  python3Packages,
-  # Optionally build Octave bindings
-  withOctave ? false,
-  octave,
-  # Optionally build Java bindings
-  withJava ? false,
-  jdk,
-  # Required for building the Python and Java bindings
-  swig,
-  # Optionally exclude Luksan solvers to allow licensing under MIT
-  withoutLuksanSolvers ? false,
-
-  # Builds docs on-demand
-  withDocs ? false,
-
-  # Build static on-demand
-  withStatic ? stdenv.hostPlatform.isStatic,
-
   # v2.8.0 introduced a regression where testing on Linux platforms fails with a buffer overflow
   # when compiled with -D_FORTIFY_SOURCE=3.
   # This was deemed to be a compiler false positive by the library's author in https://github.com/stevengj/nlopt/issues/563.
   # Building with `clangStdenv` prevents this from occurring.
   clangStdenv,
+  cmake,
+  fetchpatch,
+  jdk,
+  nix-update-script,
+  octave,
+  python3,
+  python3Packages,
+  # Required for building the Python and Java bindings
+  swig,
+  # Builds docs on-demand
+  withDocs ? false,
+  # Optionally build Java bindings
+  withJava ? false,
+  # Optionally build Octave bindings
+  withOctave ? false,
+  # Optionally build Python bindings
+  withPython ? false,
+  # Build static on-demand
+  withStatic ? stdenv.hostPlatform.isStatic,
+  # Optionally exclude Luksan solvers to allow licensing under MIT
+  withoutLuksanSolvers ? false,
 }:
 let
   buildPythonBindingsEnv = python3.withPackages (p: [ p.numpy ]);
@@ -111,11 +108,11 @@ clangStdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Free open-source library for nonlinear optimization";
     homepage = "https://nlopt.readthedocs.io/en/latest/";
     changelog = "https://github.com/stevengj/nlopt/releases/tag/v${finalAttrs.version}";
-    description = "Free open-source library for nonlinear optimization";
     license = if withoutLuksanSolvers then lib.licenses.mit else lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bengsparks ];
+    platforms = lib.platforms.all;
   };
 })

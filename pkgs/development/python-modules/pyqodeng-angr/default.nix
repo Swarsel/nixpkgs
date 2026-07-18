@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   future,
   pygments,
   pyside6,
-  pytestCheckHook,
   pytest-xdist,
+  pytestCheckHook,
   qtpy,
   setuptools,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyqodeng-angr";
   version = "2.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "angr";
@@ -28,15 +27,6 @@ buildPythonPackage rec {
       --replace-quiet 'PySide6-Essentials' 'PySide6'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    pygments
-    future
-    qtpy
-    pyside6
-  ];
-
   # Tests appear to be broken with pyside6
   doCheck = false;
 
@@ -46,6 +36,16 @@ buildPythonPackage rec {
     pyside6
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    pygments
+    future
+    qtpy
+    pyside6
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pyqodeng" ];
 
   meta = {

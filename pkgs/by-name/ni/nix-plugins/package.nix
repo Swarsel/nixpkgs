@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nixVersions,
-  nixComponents ? nixVersions.nixComponents_2_31,
-  cmake,
-  pkg-config,
   boost,
+  cmake,
+  nixVersions,
+  pkg-config,
+  nixComponents ? nixVersions.nixComponents_2_31,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

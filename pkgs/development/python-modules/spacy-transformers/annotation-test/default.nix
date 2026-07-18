@@ -6,17 +6,13 @@
 }:
 
 stdenv.mkDerivation {
-  name = "spacy-transformers-annotation-test";
-
   src = lib.fileset.toSource {
-    root = ./.;
     fileset = lib.fileset.unions [
       ./annotate.py
     ];
-  };
 
-  dontConfigure = true;
-  dontBuild = true;
+    root = ./.;
+  };
 
   nativeCheckInputs = [
     pytest
@@ -31,5 +27,8 @@ stdenv.mkDerivation {
     touch $out
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  name = "spacy-transformers-annotation-test";
   meta.timeout = 60;
 }

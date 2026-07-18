@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build dependencies
-  poetry-core,
-
   # dependencies
   appdirs,
   babelfish,
+  buildPythonPackage,
   chardet,
   click,
   jsonschema,
+  # build dependencies
+  poetry-core,
   pysrt,
-  pyyaml,
-
   # tests
   pytestCheckHook,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "cleanit";
   version = "0.4.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ratoaq2";
@@ -31,6 +27,7 @@ buildPythonPackage rec {
     hash = "sha256-5fzBcOr6PGp847S7qLsXgYKxPcGW4mM5B5QNBSvH7BM=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -43,11 +40,9 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  pythonRelaxDeps = [ "chardet" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cleanit" ];
+  pythonRelaxDeps = [ "chardet" ];
 
   meta = {
     description = "Command line tool that helps you to keep your subtitles clean";

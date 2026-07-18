@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pynacl,
   requests,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pynuki";
   version = "1.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pschmitt";
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pynuki" ];
 
   meta = {

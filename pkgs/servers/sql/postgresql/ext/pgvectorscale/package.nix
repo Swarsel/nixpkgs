@@ -1,13 +1,14 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPgrxExtension,
   cargo-pgrx_0_16_1,
   postgresql,
-  fetchFromGitHub,
-  lib,
   postgresqlTestExtension,
 }:
 
 buildPgrxExtension (finalAttrs: {
+  inherit postgresql;
   pname = "pgvectorscale";
   version = "0.9.0";
 
@@ -18,9 +19,10 @@ buildPgrxExtension (finalAttrs: {
     hash = "sha256-whGTJI73wifYkleC+aAbDV4nhwls3uFs1xKcB0zLDRo=";
   };
 
-  doCheck = false;
-
   cargoHash = "sha256-uaRKUtsUdZPcrQLAixCiEphXQqdsRhi8nSfh9b3w0ao=";
+  doCheck = false;
+  cargo-pgrx = cargo-pgrx_0_16_1;
+
   cargoPatches = [
     ./add-Cargo.lock.patch
   ];
@@ -30,12 +32,22 @@ buildPgrxExtension (finalAttrs: {
     "vectorscale"
   ];
 
-  inherit postgresql;
-  cargo-pgrx = cargo-pgrx_0_16_1;
-
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
-    withPackages = [ "pgvector" ];
+
+    asserts = [
+      {
+        description = "Expected vector of row with ID=10 to have an euclidean distance from [1,2,3] of 1.";
+        expected = "10";
+        query = "SELECT id FROM document_embedding WHERE embedding <-> '[1,2,3]' = 1";
+      }
+      {
+        description = "Expected vector of row with ID=20 to have an euclidean distance from [1,2,3] of 2.";
+        expected = "20";
+        query = "SELECT id FROM document_embedding WHERE embedding <-> '[1,2,3]' = 2";
+      }
+    ];
+
     sql = ''
       CREATE EXTENSION vectorscale CASCADE;
       CREATE TABLE document_embedding  (
@@ -50,31 +62,23 @@ buildPgrxExtension (finalAttrs: {
       CREATE INDEX document_embedding_idx ON document_embedding
       USING diskann (embedding vector_cosine_ops);
     '';
-    asserts = [
-      {
-        query = "SELECT id FROM document_embedding WHERE embedding <-> '[1,2,3]' = 1";
-        expected = "10";
-        description = "Expected vector of row with ID=10 to have an euclidean distance from [1,2,3] of 1.";
-      }
-      {
-        query = "SELECT id FROM document_embedding WHERE embedding <-> '[1,2,3]' = 2";
-        expected = "20";
-        description = "Expected vector of row with ID=20 to have an euclidean distance from [1,2,3] of 2.";
-      }
-    ];
+
+    withPackages = [ "pgvector" ];
   };
 
   meta = {
-    # Upstream removed support for PostgreSQL 13 on 0.9.0: https://github.com/timescale/pgvectorscale/releases/tag/0.9.0
-    broken = lib.versionOlder postgresql.version "14";
+    description = "Complement to pgvector for high performance, cost efficient vector search on large workloads";
     homepage = "https://github.com/timescale/pgvectorscale";
+    changelog = "https://github.com/timescale/pgvectorscale/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.postgresql;
+
     maintainers = [
       lib.maintainers.leona
       lib.maintainers.osnyx
     ];
-    description = "Complement to pgvector for high performance, cost efficient vector search on large workloads";
-    license = lib.licenses.postgresql;
+
     platforms = postgresql.meta.platforms;
-    changelog = "https://github.com/timescale/pgvectorscale/releases/tag/${finalAttrs.version}";
+    # Upstream removed support for PostgreSQL 13 on 0.9.0: https://github.com/timescale/pgvectorscale/releases/tag/0.9.0
+    broken = lib.versionOlder postgresql.version "14";
   };
 })

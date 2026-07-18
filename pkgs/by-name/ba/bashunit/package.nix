@@ -1,18 +1,18 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   bash,
   bc,
+  coreutils,
   gitMinimal,
   gnugrep,
   jq,
-  which,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
-  coreutils,
   makeBinaryWrapper,
   nix-update-script,
+  stdenvNoCC,
+  versionCheckHook,
+  which,
+  writableTmpDirAsHomeHook,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -41,19 +41,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  installPhase = ''
-    runHook preInstall
-    install -m755 -D bin/bashunit $out/bin/bashunit
-    runHook postInstall
-  '';
-
   doCheck = true;
+
   nativeCheckInputs = [
     bc
     gitMinimal
     jq
     which
   ];
+
   checkPhase = ''
     runHook preCheck
     patchShebangs bin/bashunit
@@ -67,6 +63,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  installPhase = ''
+    runHook preInstall
+    install -m755 -D bin/bashunit $out/bin/bashunit
+    runHook postInstall
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   postFixup = ''
     wrapProgram $out/bin/bashunit \
       --prefix PATH : "${
@@ -78,11 +87,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       }"
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
-  doInstallCheck = true;
   versionCheckKeepEnvironment = [
     "HOME"
   ];

@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,12 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SL8c0eLsmBfUcmhC8uuUbupDTFLQWdeqRG3ImE1smvI=";
   };
 
-  cargoHash = "sha256-q/JbaFr1ISe0OiKeGBQQlZ2TaMTJkLABilibcp98svM=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-q/JbaFr1ISe0OiKeGBQQlZ2TaMTJkLABilibcp98svM=";
   passthru.updateScript = nix-update-script { };
 
   meta = {

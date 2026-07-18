@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 let
   version = "0.34.1";
 in
 rustPlatform.buildRustPackage {
-  pname = "tinty";
   inherit version;
+  pname = "tinty";
 
   src = fetchFromGitHub {
     owner = "tinted-theming";
@@ -20,13 +20,10 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-4+oPOPgPSVgGlvVj4s5qKvW5p630pJnXL5LpOI2IVQQ=";
-
   # Pretty much all tests require internet access
   doCheck = false;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -34,11 +31,13 @@ rustPlatform.buildRustPackage {
     homepage = "https://github.com/tinted-theming/tinty";
     changelog = "https://github.com/tinted-theming/tinty/blob/refs/tags/v${version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       pluiedev
       cohei
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "tinty";
   };
 }

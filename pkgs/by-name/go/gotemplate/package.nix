@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
 
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-iNH0YmmZ/Qlc7WDoIbORd+uVg0rbQVKL6hX7YvbL0BE=";
-
   # This is the value reported when running `gotemplate --version`,
   # see https://github.com/coveooss/gotemplate/issues/262
   ldflags = [ "-X main.version=${finalAttrs.version}" ];
@@ -24,10 +23,10 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "CLI for go text/template";
     homepage = "https://github.com/coveooss/gotemplate";
-    mainProgram = "gotemplate";
     changelog = "https://github.com/coveooss/gotemplate/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.giorgiga ];
+    mainProgram = "gotemplate";
   };
 
 })

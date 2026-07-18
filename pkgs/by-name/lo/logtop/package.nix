@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   ncurses,
-  uthash,
   pkg-config,
+  uthash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,36 +12,40 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.7";
 
   src = fetchFromGitHub {
-    rev = "logtop-${finalAttrs.version}";
     owner = "JulienPalard";
     repo = "logtop";
+    rev = "logtop-${finalAttrs.version}";
     sha256 = "1f8vk9gybldxvc0kwz38jxmwvzwangsvlfslpsx8zf04nvbkqi12";
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     ncurses
     uthash
   ];
 
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-  installFlags = [ "DESTDIR=$(out)" ];
 
   postConfigure = ''
     substituteInPlace Makefile --replace /usr ""
   '';
 
+  installFlags = [ "DESTDIR=$(out)" ];
+
   meta = {
     description = "Displays a real-time count of strings received from stdin";
+
     longDescription = ''
       logtop displays a real-time count of strings received from stdin.
       It can be useful in some cases, like getting the IP flooding your
       server or the top buzzing article of your blog
     '';
-    license = lib.licenses.bsd2;
+
     homepage = "https://github.com/JulienPalard/logtop";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.starcraft66 ];
+    platforms = lib.platforms.unix;
     mainProgram = "logtop";
   };
 })

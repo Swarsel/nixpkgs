@@ -1,30 +1,58 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeWrapper,
-  patchelf,
-  bintools,
-  dpkg,
+  # For Vulkan support (--enable-features=Vulkan)
+  addDriverRunpath,
+  adwaita-icon-theme,
   # Linked dynamic libraries
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
   atk,
+  bintools,
+  ## Gentoo
+  bzip2,
+  # Edge AAD sync
+  cacert,
   cairo,
+  # Command line programs
+  coreutils,
   cups,
+  # Additional dependencies according to other distros
+  ## Ubuntu
+  curl,
   dbus,
+  dpkg,
   expat,
+  ## Arch Linux.
+  flac,
   fontconfig,
   freetype,
   gcc-unwrapped,
   gdk-pixbuf,
   glib,
+  gsettings-desktop-schemas,
   gtk3,
   gtk4,
+  harfbuzz,
+  icu,
+  libcap,
   libdrm,
+  liberation_ttf,
+  # Loaded at runtime.
+  libexif,
+  libgbm,
   libglvnd,
   libkrb5,
+  libopus,
+  libpng,
+  # Necessary for USB audio devices.
+  libpulseaudio,
+  libsecret,
+  # Edge Specific
+  libuuid,
+  # For video acceleration via VA-API (--enable-features=VaapiVideoDecoder)
+  libva,
   libx11,
   libxcb,
   libxcomposite,
@@ -39,57 +67,29 @@
   libxscrnsaver,
   libxshmfence,
   libxtst,
-  libgbm,
+  makeWrapper,
   nspr,
   nss,
   pango,
-  pipewire,
-  vulkan-loader,
-  wayland, # ozone/wayland
-  # Command line programs
-  coreutils,
-  # command line arguments which are always set e.g "--disable-gpu"
-  commandLineArgs ? "",
-  # Will crash without.
-  systemd,
-  # Loaded at runtime.
-  libexif,
+  patchelf,
   pciutils,
-  # Additional dependencies according to other distros
-  ## Ubuntu
-  curl,
-  liberation_ttf,
-  util-linux,
-  wget,
-  xdg-utils,
-  ## Arch Linux.
-  flac,
-  harfbuzz,
-  icu,
-  libopus,
-  libpng,
-  snappy,
-  speechd-minimal,
-  ## Gentoo
-  bzip2,
-  libcap,
-  # Necessary for USB audio devices.
-  libpulseaudio,
-  pulseSupport ? true,
-  adwaita-icon-theme,
-  gsettings-desktop-schemas,
-  # For video acceleration via VA-API (--enable-features=VaapiVideoDecoder)
-  libva,
-  libvaSupport ? true,
-  # For Vulkan support (--enable-features=Vulkan)
-  addDriverRunpath,
+  pipewire,
   # For QT support
   qt6,
-  # Edge AAD sync
-  cacert,
-  libsecret,
-  # Edge Specific
-  libuuid,
+  snappy,
+  speechd-minimal,
+  stdenvNoCC,
+  # Will crash without.
+  systemd,
+  util-linux,
+  vulkan-loader,
+  wayland, # ozone/wayland
+  wget,
+  xdg-utils,
+  # command line arguments which are always set e.g "--disable-gpu"
+  commandLineArgs ? "",
+  libvaSupport ? true,
+  pulseSupport ? true,
   # Create a symlink at $out/bin/microsoft-edge-stable
   withSymlink ? true,
 }:
@@ -191,9 +191,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     gsettings-desktop-schemas
   ];
 
-  rpath = lib.makeLibraryPath deps + ":" + lib.makeSearchPathOutput "lib" "lib64" deps;
-  binpath = lib.makeBinPath deps;
-
   installPhase = ''
     runHook preInstall
 
@@ -265,14 +262,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  binpath = lib.makeBinPath deps;
+  rpath = lib.makeLibraryPath deps + ":" + lib.makeSearchPathOutput "lib" "lib64" deps;
   passthru.updateScript = ./update.py;
 
   meta = {
-    changelog = "https://learn.microsoft.com/en-us/deployedge/microsoft-edge-relnote-stable-channel";
     description = "Web browser from Microsoft";
     homepage = "https://www.microsoft.com/en-us/edge";
+    changelog = "https://learn.microsoft.com/en-us/deployedge/microsoft-edge-relnote-stable-channel";
     license = lib.licenses.unfree;
-    mainProgram = "microsoft-edge";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       cholli
       ulrikstrid
@@ -281,7 +281,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       jonhermansen
       iedame
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "microsoft-edge";
   };
 })

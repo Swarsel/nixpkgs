@@ -24,24 +24,15 @@ let
     };
 
     patches = lib.optional stdenv.hostPlatform.isDarwin ./darwin.patch;
-
     strictDeps = true;
     nativeBuildInputs = [ which ];
+
     buildInputs = [
       zlib
       xz
       zstd
       lz4
       lzo
-    ];
-
-    preBuild = ''
-      cd squashfs-tools
-    '';
-
-    installFlags = [
-      "INSTALL_DIR=${placeholder "out"}/bin"
-      "INSTALL_MANPAGES_DIR=${placeholder "out"}/share/man/man1"
     ];
 
     makeFlags = [
@@ -56,13 +47,22 @@ let
 
     env.NIX_CFLAGS_COMPILE = lib.optionalString bigEndian "-DFIX_BE";
 
+    preBuild = ''
+      cd squashfs-tools
+    '';
+
     postInstall = lib.optionalString bigEndian ''
       mv $out/bin/sasquatch{,-v4be}
     '';
 
+    installFlags = [
+      "INSTALL_DIR=${placeholder "out"}/bin"
+      "INSTALL_MANPAGES_DIR=${placeholder "out"}/share/man/man1"
+    ];
+
     meta = {
-      homepage = "https://github.com/onekey-sec/sasquatch";
       description = "Set of patches to the standard unsquashfs utility (part of squashfs-tools) that attempts to add support for as many hacked-up vendor-specific SquashFS implementations as possible";
+      homepage = "https://github.com/onekey-sec/sasquatch";
       license = lib.licenses.gpl2Plus;
       maintainers = with lib.maintainers; [ vlaci ];
       platforms = lib.platforms.unix;

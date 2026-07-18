@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "meater-python";
   version = "0.0.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "meater" ];
 
   meta = {

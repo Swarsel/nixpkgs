@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   curl,
-  python3,
+  fetchpatch,
   perl,
+  python3,
   trurl,
   versionCheckHook,
 }:
@@ -21,10 +21,16 @@ stdenv.mkDerivation rec {
     hash = "sha256-VCMT4WgZ6LG7yiKaRy7KTgTkbACVXb4rw62lWnVAuP0=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "man"
+  ];
+
   patches = [
     (fetchpatch {
-      url = "https://github.com/curl/trurl/commit/f22a2c45956f35702e437fb83ac05376f1956ec5.patch";
       hash = "sha256-7CkUs5tMk77WKc7SlgE2NslHtU5cViKSGhHj3IBlpWo=";
+      url = "https://github.com/curl/trurl/commit/f22a2c45956f35702e437fb83ac05376f1956ec5.patch";
     })
     # https://github.com/curl/trurl/pull/441
     ./tests-uppercase-hex.patch
@@ -34,30 +40,22 @@ stdenv.mkDerivation rec {
     patchShebangs scripts/*
   '';
 
-  outputs = [
-    "out"
-    "dev"
-    "man"
-  ];
-  separateDebugInfo = stdenv.hostPlatform.isLinux;
-
-  enableParallelBuilding = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     curl
     perl
   ];
+
   buildInputs = [ curl ];
   makeFlags = [ "PREFIX=$(out)" ];
-
-  strictDeps = true;
-
   doCheck = true;
   nativeCheckInputs = [ python3 ];
-  checkTarget = "test";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  checkTarget = "test";
+  enableParallelBuilding = true;
+  separateDebugInfo = stdenv.hostPlatform.isLinux;
 
   meta = {
     description = "Command line tool for URL parsing and manipulation";

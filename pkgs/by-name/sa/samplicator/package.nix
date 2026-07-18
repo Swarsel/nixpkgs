@@ -9,8 +9,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "samplicator";
   version = "1.3.8rc1";
 
-  nativeBuildInputs = [ autoreconfHook ];
-
   src = fetchFromGitHub {
     owner = "sleinen";
     repo = "samplicator";
@@ -18,11 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0fv5vldmwd6qrdv2wkk946dk9rn9nrv3c84ldvvqqn1spxfzgirm";
   };
 
+  nativeBuildInputs = [ autoreconfHook ];
+
   meta = {
     description = "Send copies of (UDP) datagrams to multiple receivers";
     homepage = "https://github.com/sleinen/samplicator/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "samplicate";
     platforms = lib.platforms.unix;
+    mainProgram = "samplicate";
   };
 })

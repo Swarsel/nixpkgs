@@ -58,120 +58,113 @@ in
 
   options.services.avahi = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to run the Avahi daemon, which allows Avahi clients
         to use Avahi's service discovery facilities and also allows
         the local machine to advertise its presence and services
         (through the mDNS responder implemented by `avahi-daemon`).
       '';
+
+      type = lib.types.bool;
     };
 
     package = lib.mkPackageOption pkgs "avahi" { };
 
-    hostName = lib.mkOption {
-      type = lib.types.str;
-      default = config.networking.hostName;
-      defaultText = lib.literalExpression "config.networking.hostName";
-      description = ''
-        Host name advertised on the LAN. If not set, avahi will use the value
-        of {option}`config.networking.hostName`.
-      '';
-    };
-
-    domainName = lib.mkOption {
-      type = lib.types.str;
-      default = "local";
-      description = ''
-        Domain name for all advertisements.
-      '';
-    };
-
-    browseDomains = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [
-        "0pointer.de"
-        "zeroconf.org"
-      ];
-      description = ''
-        List of non-local DNS domains to be browsed.
-      '';
-    };
-
-    ipv4 = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Whether to use IPv4.";
-    };
-
-    ipv6 = lib.mkOption {
-      type = lib.types.bool;
-      default = config.networking.enableIPv6;
-      defaultText = lib.literalExpression "config.networking.enableIPv6";
-      description = "Whether to use IPv6.";
-    };
-
     allowInterfaces = lib.mkOption {
-      type = lib.types.nullOr (lib.types.listOf lib.types.str);
       default = null;
+
       description = ''
         List of network interfaces that should be used by the {command}`avahi-daemon`.
         Other interfaces will be ignored. If `null`, all local interfaces
         except loopback and point-to-point will be used.
       '';
+
+      type = lib.types.nullOr (lib.types.listOf lib.types.str);
     };
 
-    denyInterfaces = lib.mkOption {
-      type = lib.types.nullOr (lib.types.listOf lib.types.str);
+    allowPointToPoint = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to use POINTTOPOINT interfaces. Might make mDNS unreliable due to usually large
+        latencies with such links and opens a potential security hole by allowing mDNS access from Internet
+        connections.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    browseDomains = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        List of non-local DNS domains to be browsed.
+      '';
+
+      example = [
+        "0pointer.de"
+        "zeroconf.org"
+      ];
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    cacheEntriesMax = lib.mkOption {
       default = null;
+
+      description = ''
+        Number of resource records to be cached per interface. Use 0 to
+        disable caching. Avahi daemon defaults to 4096 if not set.
+      '';
+
+      type = lib.types.nullOr lib.types.int;
+    };
+
+    debug = lib.mkEnableOption "debug logging";
+
+    denyInterfaces = lib.mkOption {
+      default = null;
+
       description = ''
         List of network interfaces that should be ignored by the
         {command}`avahi-daemon`. Other unspecified interfaces will be used,
         unless {option}`allowInterfaces` is set. This option takes precedence
         over {option}`allowInterfaces`.
       '';
+
+      type = lib.types.nullOr (lib.types.listOf lib.types.str);
     };
 
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
+    domainName = lib.mkOption {
+      default = "local";
+
       description = ''
-        Whether to open the firewall for UDP port 5353.
-        Disabling this setting also disables discovering of network devices.
+        Domain name for all advertisements.
       '';
+
+      type = lib.types.str;
     };
 
-    allowPointToPoint = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
+    extraConfig = lib.mkOption {
+      default = "";
+
       description = ''
-        Whether to use POINTTOPOINT interfaces. Might make mDNS unreliable due to usually large
-        latencies with such links and opens a potential security hole by allowing mDNS access from Internet
-        connections.
+        Extra config to append to avahi-daemon.conf.
       '';
-    };
 
-    wideArea = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Whether to enable wide-area service discovery.
-
-        It is recommended to keep this options disabled as it exposes the system to `CVE-2024-52615`/`GHSA-x6vp-f33h-h32g`.
-      '';
-    };
-
-    reflector = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Reflect incoming mDNS requests to all allowed network interfaces.";
+      type = lib.types.lines;
     };
 
     extraServiceFiles = lib.mkOption {
-      type = with lib.types; attrsOf (either str path);
       default = { };
+
+      description = ''
+        Specify custom service definitions which are placed in the avahi service directory.
+        See the {manpage}`avahi.service(5)` manpage for detailed information.
+      '';
+
       example = lib.literalExpression ''
         {
           ssh = "''${pkgs.avahi}/etc/avahi/services/ssh.service";
@@ -188,68 +181,50 @@ in
           ''';
         }
       '';
-      description = ''
-        Specify custom service definitions which are placed in the avahi service directory.
-        See the {manpage}`avahi.service(5)` manpage for detailed information.
-      '';
+
+      type = with lib.types; attrsOf (either str path);
     };
 
-    publish = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to allow publishing in general.";
-      };
+    hostName = lib.mkOption {
+      default = config.networking.hostName;
+      defaultText = lib.literalExpression "config.networking.hostName";
 
-      userServices = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to publish user services. Will set `addresses=true`.";
-      };
+      description = ''
+        Host name advertised on the LAN. If not set, avahi will use the value
+        of {option}`config.networking.hostName`.
+      '';
 
-      addresses = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to register mDNS address records for all local IP addresses.";
-      };
+      type = lib.types.str;
+    };
 
-      hinfo = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to register a mDNS HINFO record which contains information about the
-          local operating system and CPU.
-        '';
-      };
+    ipv4 = lib.mkOption {
+      default = true;
+      description = "Whether to use IPv4.";
+      type = lib.types.bool;
+    };
 
-      workstation = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to register a service of type "_workstation._tcp" on the local LAN.
-        '';
-      };
-
-      domain = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to announce the locally used domain name for browsing by other hosts.";
-      };
+    ipv6 = lib.mkOption {
+      default = config.networking.enableIPv6;
+      defaultText = lib.literalExpression "config.networking.enableIPv6";
+      description = "Whether to use IPv6.";
+      type = lib.types.bool;
     };
 
     nssmdns4 = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable the mDNS NSS (Name Service Switch) plug-in for IPv4.
         Enabling it allows applications to resolve names in the `.local`
         domain by transparently querying the Avahi daemon.
       '';
+
+      type = lib.types.bool;
     };
 
     nssmdns6 = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable the mDNS NSS (Name Service Switch) plug-in for IPv6.
         Enabling it allows applications to resolve names in the `.local`
@@ -260,11 +235,13 @@ in
         most user want to leave this option disabled to avoid long timeouts when applications first resolve the none existing IPv6 address.
         :::
       '';
+
+      type = lib.types.bool;
     };
 
     nssmdnsFull = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable the full mDNS NSS (Name Service Switch) plug-in.
 
@@ -282,52 +259,112 @@ in
         ping.
         :::
       '';
+
+      type = lib.types.bool;
     };
 
-    cacheEntriesMax = lib.mkOption {
-      type = lib.types.nullOr lib.types.int;
-      default = null;
+    openFirewall = lib.mkOption {
+      default = true;
+
       description = ''
-        Number of resource records to be cached per interface. Use 0 to
-        disable caching. Avahi daemon defaults to 4096 if not set.
+        Whether to open the firewall for UDP port 5353.
+        Disabling this setting also disables discovering of network devices.
       '';
+
+      type = lib.types.bool;
     };
 
-    extraConfig = lib.mkOption {
-      type = lib.types.lines;
-      default = "";
+    publish = {
+      enable = lib.mkOption {
+        default = false;
+        description = "Whether to allow publishing in general.";
+        type = lib.types.bool;
+      };
+
+      addresses = lib.mkOption {
+        default = false;
+        description = "Whether to register mDNS address records for all local IP addresses.";
+        type = lib.types.bool;
+      };
+
+      domain = lib.mkOption {
+        default = false;
+        description = "Whether to announce the locally used domain name for browsing by other hosts.";
+        type = lib.types.bool;
+      };
+
+      hinfo = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to register a mDNS HINFO record which contains information about the
+          local operating system and CPU.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      userServices = lib.mkOption {
+        default = false;
+        description = "Whether to publish user services. Will set `addresses=true`.";
+        type = lib.types.bool;
+      };
+
+      workstation = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to register a service of type "_workstation._tcp" on the local LAN.
+        '';
+
+        type = lib.types.bool;
+      };
+    };
+
+    reflector = lib.mkOption {
+      default = false;
+      description = "Reflect incoming mDNS requests to all allowed network interfaces.";
+      type = lib.types.bool;
+    };
+
+    wideArea = lib.mkOption {
+      default = false;
+
       description = ''
-        Extra config to append to avahi-daemon.conf.
-      '';
-    };
+        Whether to enable wide-area service discovery.
 
-    debug = lib.mkEnableOption "debug logging";
+        It is recommended to keep this options disabled as it exposes the system to `CVE-2024-52615`/`GHSA-x6vp-f33h-h32g`.
+      '';
+
+      type = lib.types.bool;
+    };
   };
 
   config = lib.mkIf cfg.enable {
-    warnings = [
-      (lib.mkIf cfg.wideArea "Enabling `services.avahi.wideArea` exposes this system to `CVE-2024-52615`.")
-    ];
-
     assertions = [
       {
         assertion = cfg.nssmdnsFull -> (cfg.nssmdns4 || cfg.nssmdns6);
+
         message = ''
           `services.avahi.nssmdnsFull` requires one or both of `services.avahi.nssmdns4` and/or `services.avahi.nssmdns6` to be enabled.
         '';
       }
     ];
 
-    users.users.avahi = {
-      description = "avahi-daemon privilege separation user";
-      home = "/var/empty";
-      group = "avahi";
-      isSystemUser = true;
-    };
+    environment.etc = (
+      lib.mapAttrs' (
+        n: v:
+        lib.nameValuePair "avahi/services/${n}.service" {
+          ${if lib.types.path.check v then "source" else "text"} = v;
+        }
+      ) cfg.extraServiceFiles
+    );
 
-    users.groups.avahi = { };
+    environment.systemPackages = [ cfg.package ];
+    networking.firewall.allowedUDPPorts = lib.mkIf cfg.openFirewall [ 5353 ];
+    services.dbus.enable = true;
+    services.dbus.packages = [ cfg.package ];
 
-    system.nssModules = lib.optional (cfg.nssmdns4 || cfg.nssmdns6) pkgs.nssmdns;
     system.nssDatabases.hosts =
       let
         mdns =
@@ -347,34 +384,11 @@ in
         ]
       );
 
-    environment.systemPackages = [ cfg.package ];
-
-    environment.etc = (
-      lib.mapAttrs' (
-        n: v:
-        lib.nameValuePair "avahi/services/${n}.service" {
-          ${if lib.types.path.check v then "source" else "text"} = v;
-        }
-      ) cfg.extraServiceFiles
-    );
-
-    systemd.sockets.avahi-daemon = {
-      description = "Avahi mDNS/DNS-SD Stack Activation Socket";
-      listenStreams = [ "/run/avahi-daemon/socket" ];
-      wantedBy = [ "sockets.target" ];
-      after = [
-        # Ensure that `/run/avahi-daemon` owned by `avahi` is created by `systemd.tmpfiles.rules` before the `avahi-daemon.socket`,
-        # otherwise `avahi-daemon.socket` will automatically create it owned by `root`, which will cause `avahi-daemon.service` to fail.
-        "systemd-tmpfiles-setup.service"
-      ];
-    };
-
-    systemd.tmpfiles.rules = [ "d /run/avahi-daemon - avahi avahi -" ];
+    system.nssModules = lib.optional (cfg.nssmdns4 || cfg.nssmdns6) pkgs.nssmdns;
 
     systemd.services.avahi-daemon = {
       description = "Avahi mDNS/DNS-SD Stack";
-      wantedBy = [ "multi-user.target" ];
-      requires = [ "avahi-daemon.socket" ];
+
       documentation = [
         "man:avahi-daemon(8)"
         "man:avahi-daemon.conf(5)"
@@ -391,12 +405,10 @@ in
         cfg.package
       ];
 
+      requires = [ "avahi-daemon.socket" ];
+
       serviceConfig = {
-        NotifyAccess = "main";
         BusName = "org.freedesktop.Avahi";
-        Type = "dbus";
-        ExecStart = "${cfg.package}/sbin/avahi-daemon --syslog -f ${avahiDaemonConf} ${lib.optionalString cfg.debug "--debug"}";
-        ConfigurationDirectory = "avahi/services";
 
         # Hardening
         CapabilityBoundingSet = [
@@ -405,10 +417,14 @@ in
           "CAP_SETUID"
           "CAP_SETGID"
         ];
+
+        ConfigurationDirectory = "avahi/services";
         DevicePolicy = "closed";
+        ExecStart = "${cfg.package}/sbin/avahi-daemon --syslog -f ${avahiDaemonConf} ${lib.optionalString cfg.debug "--debug"}";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
+        NotifyAccess = "main";
         PrivateDevices = true;
         PrivateTmp = true;
         PrivateUsers = false;
@@ -422,28 +438,56 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_NETLINK"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "@chown setgroups setresuid"
         ];
+
+        Type = "dbus";
         UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    services.dbus.enable = true;
-    services.dbus.packages = [ cfg.package ];
+    systemd.sockets.avahi-daemon = {
+      after = [
+        # Ensure that `/run/avahi-daemon` owned by `avahi` is created by `systemd.tmpfiles.rules` before the `avahi-daemon.socket`,
+        # otherwise `avahi-daemon.socket` will automatically create it owned by `root`, which will cause `avahi-daemon.service` to fail.
+        "systemd-tmpfiles-setup.service"
+      ];
 
-    networking.firewall.allowedUDPPorts = lib.mkIf cfg.openFirewall [ 5353 ];
+      description = "Avahi mDNS/DNS-SD Stack Activation Socket";
+      listenStreams = [ "/run/avahi-daemon/socket" ];
+      wantedBy = [ "sockets.target" ];
+    };
+
+    systemd.tmpfiles.rules = [ "d /run/avahi-daemon - avahi avahi -" ];
+    users.groups.avahi = { };
+
+    users.users.avahi = {
+      description = "avahi-daemon privilege separation user";
+      group = "avahi";
+      home = "/var/empty";
+      isSystemUser = true;
+    };
+
+    warnings = [
+      (lib.mkIf cfg.wideArea "Enabling `services.avahi.wideArea` exposes this system to `CVE-2024-52615`.")
+    ];
   };
 }

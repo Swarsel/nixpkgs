@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "txdbus";
   version = "1.1.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,13 +19,15 @@ buildPythonPackage rec {
     six
     twisted
   ];
+
+  format = "setuptools";
   pythonImportsCheck = [ "txdbus" ];
 
   meta = {
     description = "Native Python implementation of DBus for Twisted";
     homepage = "https://github.com/cocagne/txdbus";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

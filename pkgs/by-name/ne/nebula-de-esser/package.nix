@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  libGL,
-  libx11,
-  libxcursor,
-  libxrandr,
-  libxinerama,
-  libxi,
-  libxcb,
-  libxkbcommon,
+  autoPatchelfHook,
   fontconfig,
   freetype,
-  autoPatchelfHook,
+  libGL,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxi,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,9 +28,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-vV7Qc5WxGvb6h3o1CXTLYZzpWSc3ASt8cq3opI3qjEg=";
   };
 
-  cargoHash = "sha256-swhj9JQsDCFYzB/+qKffcdcIOAZ1HXmrgZ/Iy/rxG1M=";
-
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -53,10 +50,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     freetype
   ];
 
-  cargoBuildFlags = [
-    "--package"
-    "xtask"
-  ];
+  cargoHash = "sha256-swhj9JQsDCFYzB/+qKffcdcIOAZ1HXmrgZ/Iy/rxG1M=";
 
   postBuild = ''
     cargo run --release --package xtask -- bundle nebula_desser --release
@@ -75,6 +69,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "--package"
+    "xtask"
+  ];
 
   meta = {
     description = "Nebula De-Esser - Rust de-esser plugin for CLAP and VST3";

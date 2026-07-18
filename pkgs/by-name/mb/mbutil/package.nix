@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "mbutil";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mapbox";
@@ -17,22 +16,23 @@ python3Packages.buildPythonApplication rec {
   };
 
   patches = [ ./migrate_to_pytest.patch ];
-
+  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
   build-system = [ python3Packages.setuptools ];
 
-  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
-  enabledTestPaths = [ "test/test.py" ];
   disabledTests = [
     # sqlite3.OperationalError: database is locked
     "test_utf8grid_disk_to_mbtiles"
   ];
 
+  enabledTestPaths = [ "test/test.py" ];
+  pyproject = true;
+
   meta = {
     description = "Importer and exporter for MBTiles";
-    mainProgram = "mb-util";
     homepage = "https://github.com/mapbox/mbutil";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
+    mainProgram = "mb-util";
   };
 }

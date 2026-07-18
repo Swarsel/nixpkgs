@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  django-taggit,
-  django,
   fetchFromGitHub,
+  buildPythonPackage,
+  django,
+  django-taggit,
   pytestCheckHook,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "django-autocomplete-light";
   version = "3.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yourlabs";
@@ -20,8 +19,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ctNbbmTUgrkLGCo7tgPIJpLn7RmkZSuj54/5RBe/sdA=";
   };
 
+  # Too many un-packaged dependencies
+  doCheck = false;
   build-system = [ setuptools ];
-
   dependencies = [ django ];
 
   optional-dependencies = {
@@ -31,9 +31,7 @@ buildPythonPackage (finalAttrs: {
     # gfk = [ django-querysetsequence ];
   };
 
-  # Too many un-packaged dependencies
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dal" ];
 
   meta = {

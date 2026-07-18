@@ -1,20 +1,20 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   alsa-lib,
   autoconf-archive,
   autoreconfHook,
-  fetchFromGitHub,
   fltk,
   libGL,
   libGLU,
   libao,
   libarchive,
   libepoxy,
+  libsamplerate,
   makeWrapper,
   pkg-config,
-  libsamplerate,
-  stdenv,
   unzip,
   wrapGAppsHook3,
   xdg-utils,
@@ -31,6 +31,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sKemwbmEr637KL951wsmDxLFDvWh+0K+exdDd0+Iq1c=";
   };
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    SDL2
+    autoconf-archive
+    autoreconfHook
+    fltk
+    pkg-config
+    makeWrapper
+    wrapGAppsHook3
+    unzip
+  ];
+
   buildInputs = [
     SDL2
     alsa-lib
@@ -45,19 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     libsamplerate
   ];
 
-  nativeBuildInputs = [
-    SDL2
-    autoconf-archive
-    autoreconfHook
-    fltk
-    pkg-config
-    makeWrapper
-    wrapGAppsHook3
-    unzip
-  ];
-
-  strictDeps = true;
-
   preInstall = ''
     mkdir -p $out/{bin,share/nestopia}
   '';
@@ -70,12 +70,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://0ldsk00l.ca/nestopia/";
     description = "Cross-platform Nestopia emulator core with a GUI";
+    homepage = "http://0ldsk00l.ca/nestopia/";
     changelog = "https://raw.githubusercontent.com/0ldsk00l/nestopia/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "nestopia";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "nestopia";
   };
 })

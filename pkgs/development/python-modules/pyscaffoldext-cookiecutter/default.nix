@@ -1,26 +1,25 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  setuptools-scm,
-  wheel,
-  cookiecutter,
-  importlib-metadata,
-  pyscaffold,
   configupdater,
+  cookiecutter,
+  fetchPypi,
+  importlib-metadata,
   pre-commit,
+  pyscaffold,
   pytest,
   pytest-cov,
   pytest-xdist,
+  setuptools,
+  setuptools-scm,
   tox,
   virtualenv,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "pyscaffoldext-cookiecutter";
   version = "0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -52,6 +51,7 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "pyscaffoldext.cookiecutter" ];
 
   meta = {

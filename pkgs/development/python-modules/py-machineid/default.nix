@@ -8,20 +8,18 @@
 buildPythonPackage rec {
   pname = "py-machineid";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "py_machineid";
     inherit version;
     hash = "sha256-ipAqAProxtZDP0Y2l8IdxM6YxuVaLgU1wCczGaywBHo=";
+    pname = "py_machineid";
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "machineid" ];
 
   # Tests are not present in Pypi archive
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "machineid" ];
 
   meta = {
     description = "Get the unique machine ID of any host (without admin privileges)";

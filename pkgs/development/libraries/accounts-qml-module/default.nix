@@ -1,8 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  unstableGitUpdater,
   accounts-qt,
   dbus-test-runner,
   pkg-config,
@@ -11,6 +10,7 @@
   qtdeclarative,
   qttools,
   signond,
+  unstableGitUpdater,
   xvfb-run,
 }:
 
@@ -71,23 +71,16 @@ stdenv.mkDerivation (finalAttrs: {
     signond
   ];
 
-  nativeCheckInputs = [
-    dbus-test-runner
-    xvfb-run
-  ];
-
-  dontWrapQtApps = true;
-
-  qmakeFlags = lib.optionals withQt6 [
-    # No qdoc in Qt6 qttools?
-    "CONFIG+=no_docs"
-  ];
-
   postConfigure = ''
     make qmake_all
   '';
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  nativeCheckInputs = [
+    dbus-test-runner
+    xvfb-run
+  ];
 
   preCheck = ''
     # Needs xcb platform plugin
@@ -102,6 +95,13 @@ stdenv.mkDerivation (finalAttrs: {
   postFixup = lib.optionalString (!withQt6) ''
     moveToOutput share/accounts-qml-module/doc $doc
   '';
+
+  dontWrapQtApps = true;
+
+  qmakeFlags = lib.optionals withQt6 [
+    # No qdoc in Qt6 qttools?
+    "CONFIG+=no_docs"
+  ];
 
   passthru.updateScript = unstableGitUpdater {
     tagPrefix = "VERSION_";

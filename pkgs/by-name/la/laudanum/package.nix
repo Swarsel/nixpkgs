@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -25,8 +25,8 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Collection of injectable files, designed to be used in a pentest when SQL injection flaws are found and are in multiple languages for different environments";
     homepage = "https://github.com/junk13/laudanum";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
-    license = lib.licenses.gpl2Plus;
   };
 }

@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   fetchurl,
   fetchpatch,
-  stdenv,
   systemd,
-  lib,
 }:
 
 stdenv.mkDerivation rec {
@@ -15,30 +15,23 @@ stdenv.mkDerivation rec {
     sha256 = "0iv4iwgs3sjnqnwd7dpcw6s7i4ar9q89vgsms32clx14fdqjrqch";
   };
 
-  unpackPhase = ''
-    runHook preUnpack
-    cp $src nscd.c
-    chmod u+w nscd.c
-    runHook postUnpack
-  '';
-
   patches = [
     # Patches from Debian that have not (yet) been included upstream, but are useful to us
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/u/${pname}/${version}-1/debian/patches/change_invalidate_request_info_output";
       sha256 = "17whakazpisiq9nnw3zybaf7v3lqkww7n6jkx0igxv4z2r3mby6l";
+      url = "https://sources.debian.org/data/main/u/${pname}/${version}-1/debian/patches/change_invalidate_request_info_output";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/u/${pname}/${version}-1/debian/patches/support_large_numbers_in_config";
       sha256 = "0jrqb4cwclwirpqfb6cvnmiff3sm2jhxnjwxa7h0wx78sg0y3bpp";
+      url = "https://sources.debian.org/data/main/u/${pname}/${version}-1/debian/patches/support_large_numbers_in_config";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/u/${pname}/${version}-1/debian/patches/no_debug_on_invalidate";
       sha256 = "0znwzb522zgikb0mm7awzpvvmy0wf5z7l3jgjlkdpgj0scxgz86w";
+      url = "https://sources.debian.org/data/main/u/${pname}/${version}-1/debian/patches/no_debug_on_invalidate";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/u/${pname}/${version}-1/debian/patches/notify_systemd_about_successful_startup";
       sha256 = "1ipwmbfwm65yisy74nig9960vxpjx683l3skgxfgssfx1jb9z2mc";
+      url = "https://sources.debian.org/data/main/u/${pname}/${version}-1/debian/patches/notify_systemd_about_successful_startup";
     })
 
     # The original unscd would crash, because it is not allowed to create its
@@ -72,12 +65,19 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+    cp $src nscd.c
+    chmod u+w nscd.c
+    runHook postUnpack
+  '';
+
   meta = {
-    homepage = "https://busybox.net/~vda/unscd/";
     description = "Less buggy replacement for the glibc name service cache daemon";
-    mainProgram = "nscd";
+    homepage = "https://busybox.net/~vda/unscd/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "nscd";
   };
 }

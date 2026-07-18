@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  vala,
-  pkg-config,
   desktop-file-utils,
   glib,
   gtk4,
   json-glib,
   libadwaita,
   libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
   wrapGAppsHook4,
 }:
 
@@ -51,10 +51,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Track each task's time in a simple inobtrusive way";
     homepage = "https://github.com/lainsce/khronos";
-    maintainers = with lib.maintainers; [ xiorcale ];
-    teams = [ lib.teams.pantheon ];
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ xiorcale ];
+    platforms = lib.platforms.linux;
     mainProgram = "io.github.lainsce.Khronos";
+    teams = [ lib.teams.pantheon ];
   };
 })

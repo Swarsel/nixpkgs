@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -29,12 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-DWITH_BENCHMARKS=Off"
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Fast and memory efficient c++ flat hash map/set";
     homepage = "https://github.com/ktprime/emhash";
     changelog = "https://github.com/ktprime/emhash/releases/tag/v${finalAttrs.version}";
-    description = "Fast and memory efficient c++ flat hash map/set";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kilyanni ];
     platforms = lib.platforms.all;

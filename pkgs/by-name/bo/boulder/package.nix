@@ -2,9 +2,9 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  testers,
   minica,
   nix-update-script,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,41 +15,34 @@ buildGoModule (finalAttrs: {
     owner = "letsencrypt";
     repo = "boulder";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-nqSBFaPhu+TRPY33Rh3El7IJbKDPI133qgsupVpx/Lg=";
     leaveDotGit = true;
+
     postFetch = ''
       pushd $out
       git rev-parse --short=8 HEAD 2>/dev/null >$out/COMMIT
       find $out -name .git -print0 | xargs -0 rm -rf
       popd
     '';
-    hash = "sha256-nqSBFaPhu+TRPY33Rh3El7IJbKDPI133qgsupVpx/Lg=";
   };
-
-  vendorHash = null;
 
   postPatch = ''
     # We already built the application with custom settings. This fails, so we have to disable it.
     substituteInPlace test/certs/generate.sh --replace-fail 'make build' ""
   '';
 
-  subPackages = [ "cmd/boulder" ];
-
-  excludedPackages = [ "test/integration" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/letsencrypt/boulder/core.BuildHost=nixbld@localhost"
-  ];
+  vendorHash = null;
 
   preBuild = ''
     ldflags+=" -X \"github.com/letsencrypt/boulder/core.BuildID=${finalAttrs.version} +$(cat COMMIT)\""
     ldflags+=" -X \"github.com/letsencrypt/boulder/core.BuildTime=$(date -u -d @0)\""
   '';
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ minica ];
+
+  checkFlags = [
+    "-skip ${lib.strings.concatStringsSep "|" finalAttrs.disabledTests}"
+  ];
 
   preCheck = ''
     # Test all targets.
@@ -58,6 +51,14 @@ buildGoModule (finalAttrs: {
     mkdir test/certs/webpki
     bash test/certs/generate.sh
   '';
+
+  postInstall = ''
+    for i in $($out/bin/boulder --list); do
+      ln -s $out/bin/boulder $out/bin/$i
+    done
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   # Tests that fail or require additional services.
   disabledTests = [
@@ -328,27 +329,28 @@ buildGoModule (finalAttrs: {
     "Test_sendError"
   ];
 
-  checkFlags = [
-    "-skip ${lib.strings.concatStringsSep "|" finalAttrs.disabledTests}"
+  excludedPackages = [ "test/integration" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/letsencrypt/boulder/core.BuildHost=nixbld@localhost"
   ];
 
-  postInstall = ''
-    for i in $($out/bin/boulder --list); do
-      ln -s $out/bin/boulder $out/bin/$i
-    done
-  '';
+  subPackages = [ "cmd/boulder" ];
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       version = finalAttrs.version;
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/letsencrypt/boulder";
     description = "ACME-based certificate authority, written in Go";
+
     longDescription = ''
       This is an implementation of an ACME-based CA. The ACME protocol allows
       the CA to automatically verify that an applicant for a certificate
@@ -356,8 +358,10 @@ buildGoModule (finalAttrs: {
       revoke certificates for their domains. Boulder is the software that runs
       Let's Encrypt.
     '';
+
+    homepage = "https://github.com/letsencrypt/boulder";
     license = lib.licenses.mpl20;
-    mainProgram = "boulder";
     maintainers = with lib.maintainers; [ miniharinn ];
+    mainProgram = "boulder";
   };
 })

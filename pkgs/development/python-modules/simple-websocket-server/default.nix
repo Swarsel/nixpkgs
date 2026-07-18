@@ -1,13 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage {
   pname = "simple-websocket-server";
   version = "20180414";
-  format = "setuptools";
+
   src = fetchFromGitHub {
     owner = "dpallot";
     repo = "simple-websocket-server";
@@ -16,6 +16,7 @@ buildPythonPackage {
   };
 
   doCheck = false; # no tests
+  format = "setuptools";
 
   meta = {
     description = "Python based websocket server that is simple and easy to use";

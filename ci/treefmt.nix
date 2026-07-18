@@ -142,6 +142,18 @@
         includes = [ "*.nix" ];
       };
 
+      # pedantix reorders function arguments and attribute-set bindings
+      # deterministically; per-directory pedantix.toml files select the
+      # nixpkgs-package / nixos-module presets. It only reorders here
+      # (formatter = "off" in those configs); nixfmt handles layout.
+      # See https://github.com/swarsel/pedantix
+      pedantix = {
+        command = "/home/swarsel/Documents/Private/pedantix/target/release/pedantix";
+        includes = [ "*.nix" ];
+        # Run before nixfmt so nixfmt cleans up after the reordering.
+        priority = -2;
+      };
+
       yamlfmt = {
         command = lib.getExe pkgs.yamlfmt;
         excludes = [

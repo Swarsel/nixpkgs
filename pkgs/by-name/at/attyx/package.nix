@@ -3,10 +3,6 @@
   stdenv,
   fetchFromGitHub,
   callPackage,
-
-  pkg-config,
-  zig_0_15,
-
   fontconfig,
   freetype,
   glfw,
@@ -15,6 +11,8 @@
   libxcursor,
   libxi,
   libxrandr,
+  pkg-config,
+  zig_0_15,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "attyx";
@@ -26,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-WB3qMFmVmv/FkZX60MTKFewk3kEA3yDEoaUFL2LY1bQ=";
   };
-
-  deps = callPackage ./build.zig.zon.nix { };
 
   nativeBuildInputs = [
     pkg-config
@@ -45,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
+  deps = callPackage ./build.zig.zon.nix { };
+
   zigBuildFlags = [
     "--system"
     "${finalAttrs.deps}"
@@ -56,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/semos-labs/attyx/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sophronesis ];
-    mainProgram = "attyx";
     platforms = lib.platforms.linux;
+    mainProgram = "attyx";
   };
 })

@@ -17,20 +17,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "pecan";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-L5+86obo2/Gi0olUIlVHY0oonbcgHndkUWpdzobBFt4=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    mako
-    setuptools
-    webob
-  ];
 
   nativeCheckInputs = [
     genshi
@@ -41,6 +32,16 @@ buildPythonPackage (finalAttrs: {
     virtualenv
     webtest
   ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    mako
+    setuptools
+    webob
+  ];
+
+  pyproject = true;
 
   pytestFlags = [
     "--pyargs"

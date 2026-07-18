@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromCodeberg,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-L0qwHWxMf/Nd0B2FWLIpKLgrs2LRyTOwuG/7keMI2zE=";
 
   meta = {
-    homepage = "https://codeberg.org/valpackett/evscript";
     description = "Tiny sandboxed Dyon scripting environment for evdev input devices";
-    mainProgram = "evscript";
+    homepage = "https://codeberg.org/valpackett/evscript";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ milesbreslin ];
     platforms = lib.platforms.linux;
+    mainProgram = "evscript";
   };
 })

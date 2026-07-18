@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
-  rfc3986,
-  pytestCheckHook,
+  buildPythonPackage,
   hypothesis,
-  requests,
   pytest-httpserver,
   pytest-xdist,
+  pytestCheckHook,
+  requests,
+  rfc3986,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "jschon";
   version = "0.11.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "marksparkza";
@@ -25,6 +24,18 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    hypothesis
+    requests
+    pytest-httpserver
+    #pytest-benchmark # not needed for distribution
+    pytest-xdist # not used upstream, but massive speedup
+  ];
+
+  # used in checks
+  __darwinAllowLocalNetworking = true;
+
   build-system = [
     setuptools
     wheel
@@ -33,6 +44,17 @@ buildPythonPackage rec {
   dependencies = [
     rfc3986
   ];
+
+  disabledTestPaths = [
+    "tests/test_benchmarks.py"
+  ];
+
+  disabledTests = [
+    # flaky, timing sensitive
+    "test_keyword_dependency_resolution"
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "jschon"
@@ -49,27 +71,6 @@ buildPythonPackage rec {
     "jschon.uri"
     "jschon.utils"
   ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    hypothesis
-    requests
-    pytest-httpserver
-    #pytest-benchmark # not needed for distribution
-    pytest-xdist # not used upstream, but massive speedup
-  ];
-
-  disabledTests = [
-    # flaky, timing sensitive
-    "test_keyword_dependency_resolution"
-  ];
-
-  disabledTestPaths = [
-    "tests/test_benchmarks.py"
-  ];
-
-  # used in checks
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Object-oriented JSON Schema implementation for Python";

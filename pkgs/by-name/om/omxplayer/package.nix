@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  raspberrypifw,
-  pcre,
+  fetchFromGitHub,
   boost,
   freetype,
+  pcre,
+  raspberrypifw,
   zlib,
 }:
 
@@ -20,7 +20,6 @@ let
       sha256 = "03s1zsprz5p6gjgwwqcf7b6cvzwwid6l8k7bamx9i0f1iwkgdm0j";
     };
 
-    configurePlatforms = [ ];
     configureFlags = [
       "--arch=${stdenv.hostPlatform.parsed.cpu.name}"
     ]
@@ -64,11 +63,12 @@ let
       "--enable-cross-compile"
     ];
 
+    configurePlatforms = [ ];
     enableParallelBuilding = true;
 
     meta = {
-      homepage = "http://www.ffmpeg.org/";
       description = "Complete, cross-platform solution to record, convert and stream audio and video";
+      homepage = "http://www.ffmpeg.org/";
     };
   };
 in
@@ -88,11 +88,6 @@ stdenv.mkDerivation {
     export INCLUDES="-I${raspberrypifw}/include/interface/vcos/pthreads -I${raspberrypifw}/include/interface/vmcs_host/linux/"
   '';
 
-  installPhase = ''
-    mkdir -p $out/bin
-    cp omxplayer.bin $out/bin
-  '';
-
   buildInputs = [
     raspberrypifw
     ffmpeg
@@ -102,9 +97,14 @@ stdenv.mkDerivation {
     zlib
   ];
 
+  installPhase = ''
+    mkdir -p $out/bin
+    cp omxplayer.bin $out/bin
+  '';
+
   meta = {
-    homepage = "https://github.com/huceke/omxplayer";
     description = "Commandline OMX player for the Raspberry Pi";
+    homepage = "https://github.com/huceke/omxplayer";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.arm;
   };

@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  curl,
   stdenv,
-  testers,
-  static-server,
+  fetchFromGitHub,
+  buildGoModule,
+  curl,
   replaceVars,
+  static-server,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,8 +20,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-AZcNh/kF6IdAceA7qe+nhRlwU4yGh19av/S1Zt7iKIs=";
   };
 
-  vendorHash = "sha256-1p3dCLLo+MTPxf/Y3zjxTagUi+tq7nZSj4ZB/aakJGY=";
-
   patches = [
     # patch out debug.ReadBuidlInfo since version information is not available with buildGoModule
     (replaceVars ./version.patch {
@@ -29,25 +27,26 @@ buildGoModule (finalAttrs: {
     })
   ];
 
+  vendorHash = "sha256-1p3dCLLo+MTPxf/Y3zjxTagUi+tq7nZSj4ZB/aakJGY=";
+  # tests sometimes fail with SIGQUIT on darwin
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
   nativeCheckInputs = [
     curl
   ];
+
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  # tests sometimes fail with SIGQUIT on darwin
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   passthru.tests = {
     version = testers.testVersion {
       package = static-server;
     };
   };
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Simple, zero-configuration HTTP server CLI for serving static files";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pyyaml,
   requests,
@@ -12,7 +12,6 @@ let
 in
 buildPythonPackage {
   inherit version pname;
-  pyproject = true;
 
   # Pypi source package doesn't contain tests
   src = fetchFromGitHub {
@@ -28,6 +27,8 @@ buildPythonPackage {
     pyyaml
     requests
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Simple client to fetch prompts from Prompt Hub using its REST API";

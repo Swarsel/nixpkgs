@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  immich-go,
   nix-update-script,
   testers,
-  immich-go,
   writableTmpDirAsHomeHook,
 }:
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
     repo = "immich-go";
     tag = "v${finalAttrs.version}";
     hash = "sha256-bMbLMlLZpzFP7Zh9kqWzEELt3MdOR8HMkH0gTU8qD9U=";
-
     # Inspired by: https://github.com/NixOS/nixpkgs/blob/f2d7a289c5a5ece8521dd082b81ac7e4a57c2c5c/pkgs/applications/graphics/pdfcpu/default.nix#L20-L32
     # The intention here is to write the information into files in the `src`'s
     # `$out`, and use them later in other phases (in this case `preBuild`).
@@ -24,6 +23,7 @@ buildGoModule (finalAttrs: {
     # afterwards, imitating the default behavior of `leaveDotGit = false`.
     # More info about git log format can be found at `git-log(1)` manpage.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git log -1 --pretty=%H > "COMMIT"
@@ -34,6 +34,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-BwrP+eG+XPcTAbSKhJk0BOrfBlNeLHEeRhq49ZkQhwY=";
 
+  preBuild = ''
+    ldflags+=" -X github.com/simulot/immich-go/Commit=$(cat COMMIT)"
+    ldflags+=" -X github.com/simulot/immich-go/Date=$(cat SOURCE_DATE)"
+  '';
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
   # options used by upstream:
   # https://github.com/simulot/immich-go/blob/v0.25.0/.goreleaser.yaml
   ldflags = [
@@ -43,39 +54,33 @@ buildGoModule (finalAttrs: {
     "-X github.com/simulot/immich-go/app.Version=${finalAttrs.version}"
   ];
 
-  preBuild = ''
-    ldflags+=" -X github.com/simulot/immich-go/Commit=$(cat COMMIT)"
-    ldflags+=" -X github.com/simulot/immich-go/Date=$(cat SOURCE_DATE)"
-  '';
-
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-  ];
-
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
     tests.versionTest = testers.testVersion {
-      package = immich-go;
-      command = "immich-go --version";
       version = finalAttrs.version;
+      command = "immich-go --version";
+      package = immich-go;
     };
+
+    updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
   };
 
   meta = {
     description = "Immich client tool for bulk-uploads";
+
     longDescription = ''
       Immich-Go is an open-source tool designed to streamline uploading
       large photo collections to your self-hosted Immich server.
     '';
+
     homepage = "https://github.com/simulot/immich-go";
-    mainProgram = "immich-go";
+    changelog = "https://github.com/simulot/immich-go/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       diogotcorreia
       kai-tub
     ];
-    changelog = "https://github.com/simulot/immich-go/releases/tag/${finalAttrs.src.tag}";
+
+    mainProgram = "immich-go";
   };
 })

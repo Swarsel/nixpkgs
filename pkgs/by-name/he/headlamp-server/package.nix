@@ -1,15 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
   pname = "headlamp-server";
   version = "0.42.0";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "kubernetes-sigs";
@@ -18,13 +15,17 @@ buildGoModule rec {
     hash = "sha256-SBPSh6dsKvMw1C80THri0mNPoTMgcrjONk455S/g9v0=";
   };
 
-  modRoot = "backend";
-
+  strictDeps = true;
   vendorHash = "sha256-dBU053QtUEMWjzkOEHzELH3j7PJOKuoBZCVZFmZ5z7E=";
+
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/headlamp-server
+  '';
+
+  __structuredAttrs = true;
 
   # Don't embed frontend - Electron serves it directly. This also prevents
   # the server from auto-opening a browser window.
-
   ldflags = [
     "-s"
     "-w"
@@ -32,11 +33,8 @@ buildGoModule rec {
     "-X github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig.AppName=Headlamp"
   ];
 
+  modRoot = "backend";
   subPackages = [ "cmd" ];
-
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/headlamp-server
-  '';
 
   meta = {
     description = "An easy-to-use and extensible Kubernetes web UI";

@@ -1,29 +1,28 @@
 {
   lib,
-  pkgs,
-  stdenvNoCC,
+  fetchurl,
   appimageTools,
   autoPatchelfHook,
-  makeWrapper,
   gobject-introspection,
-  openssl,
   lttng-ust,
+  makeWrapper,
   mtdev,
-  xsel,
-  xclip,
-  zenity,
-  fetchurl,
   nix-update-script,
+  openssl,
+  pkgs,
+  stdenvNoCC,
+  xclip,
+  xsel,
+  zenity,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "archipelago";
   version = "0.6.7";
+
   src = fetchurl {
     url = "https://github.com/ArchipelagoMW/Archipelago/releases/download/${finalAttrs.version}/Archipelago_${finalAttrs.version}_linux-x86_64.AppImage";
     hash = "sha256-a5UazzqGu7q4Zg1AYHnbQjCTQNdcNaL/gZUjYV3Rk5Q=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -31,26 +30,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = finalAttrs.runtimeDependencies;
-
-  runtimeDependencies = [
-    gobject-introspection
-    lttng-ust
-    openssl
-  ]
-  ++ appimageTools.defaultFhsEnvArgs.targetPkgs pkgs
-  ++ appimageTools.defaultFhsEnvArgs.multiPkgs pkgs;
-
-  libraryPath = lib.makeLibraryPath [
-    mtdev
-  ];
-
-  binPath = lib.makeBinPath [
-    xsel
-    xclip
-    zenity
-  ];
-
-  appimageContents = appimageTools.extractType2 { inherit (finalAttrs) pname version src; };
 
   installPhase = ''
     runHook preInstall
@@ -84,6 +63,28 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       $out/lib/opt/Archipelago/EnemizerCLI/libcoreclrtraceptprovider.so
   '';
 
+  appimageContents = appimageTools.extractType2 { inherit (finalAttrs) pname version src; };
+
+  binPath = lib.makeBinPath [
+    xsel
+    xclip
+    zenity
+  ];
+
+  dontUnpack = true;
+
+  libraryPath = lib.makeLibraryPath [
+    mtdev
+  ];
+
+  runtimeDependencies = [
+    gobject-introspection
+    lttng-ust
+    openssl
+  ]
+  ++ appimageTools.defaultFhsEnvArgs.targetPkgs pkgs
+  ++ appimageTools.defaultFhsEnvArgs.multiPkgs pkgs;
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -91,11 +92,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://archipelago.gg";
     changelog = "https://github.com/ArchipelagoMW/Archipelago/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "archipelago";
+
     maintainers = with lib.maintainers; [
       pyrox0
       iqubic
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "archipelago";
   };
 })

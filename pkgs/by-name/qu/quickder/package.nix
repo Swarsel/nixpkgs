@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   fetchFromGitLab,
-  python3,
+  arpa2cm,
+  arpa2common,
   cmake,
   doxygen,
-  graphviz,
-  quickmem,
-  arpa2common,
-  arpa2cm,
   ensureNewerSourcesForZipFilesHook,
+  graphviz,
+  python3,
+  quickmem,
 }:
 
 let
@@ -19,6 +19,7 @@ let
       packageOverrides = self: super: {
         pyparsing = super.pyparsing.overridePythonAttrs (old: rec {
           version = "3.1.2";
+
           src = fetchFromGitHub {
             owner = "pyparsing";
             repo = "pyparsing";
@@ -44,6 +45,10 @@ stdenv.mkDerivation rec {
     hash = "sha256-f+ph5PL+uWRkswpOLDwZFWjh938wxoJ6xocJZ2WZLEk=";
   };
 
+  postPatch = ''
+    substituteInPlace setup.py --replace 'pyparsing==' 'pyparsing>='
+  '';
+
   nativeBuildInputs = [
     cmake
     doxygen
@@ -65,10 +70,6 @@ stdenv.mkDerivation rec {
     ))
     quickmem
   ];
-
-  postPatch = ''
-    substituteInPlace setup.py --replace 'pyparsing==' 'pyparsing>='
-  '';
 
   doCheck = true;
 

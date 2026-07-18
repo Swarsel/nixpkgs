@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  python3Packages,
-  qt5,
   fetchFromGitHub,
   dos2unix,
+  python3Packages,
+  qt5,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,20 +18,13 @@ stdenv.mkDerivation rec {
     sha256 = "07snhwmqqp52vdgr66vx50zxx0nmpmns5cdjgh50hzlhji2z1fl9";
   };
 
-  buildInputs = [ python3Packages.python ];
-
-  pythonPath = with python3Packages; [
-    pyqt5.dev
-    pyserial
-  ];
-
   nativeBuildInputs = [
     python3Packages.wrapPython
     qt5.wrapQtAppsHook
     dos2unix
   ];
 
-  dontBuild = true;
+  buildInputs = [ python3Packages.python ];
 
   installPhase = ''
     mkdir -p $out/opt/sumorobot-manager
@@ -48,11 +41,18 @@ stdenv.mkDerivation rec {
     wrapPythonProgramsIn "$out/opt" "''${pythonPath[*]}"
   '';
 
+  dontBuild = true;
+
+  pythonPath = with python3Packages; [
+    pyqt5.dev
+    pyserial
+  ];
+
   meta = {
     description = "Desktop App for managing SumoRobots";
-    mainProgram = "sumorobot-manager";
     homepage = "https://www.robokoding.com/kits/sumorobot/sumomanager/";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "sumorobot-manager";
   };
 }

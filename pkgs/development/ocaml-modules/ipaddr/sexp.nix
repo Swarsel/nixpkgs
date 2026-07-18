@@ -7,20 +7,18 @@
 }:
 
 buildDunePackage {
-  pname = "ipaddr-sexp";
-
   inherit (ipaddr) version src;
-
-  duneVersion = "3";
-
+  pname = "ipaddr-sexp";
   propagatedBuildInputs = [ ipaddr ];
+  doCheck = true;
 
   checkInputs = [
     ipaddr-cstruct
     ounit2
     ppx_sexp_conv
   ];
-  doCheck = true;
+
+  duneVersion = "3";
 
   meta = ipaddr.meta // {
     description = "Library for manipulation of IP address representations usnig sexp";

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
   build,
+  buildPythonPackage,
   gitMinimal,
   pytest-cov-stub,
   pytest-mock,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "poetry-core";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-poetry";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-i9EucMsoX8Z0iyhNDVYaczv1CSY/KaZpMjn/FGzIJU4=";
   };
+
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-int-conversion";
 
   nativeCheckInputs = [
     build
@@ -49,17 +50,15 @@ buildPythonPackage rec {
     "test_dist_info_date_time_default_value"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "poetry.core" ];
-
   # Allow for packages to use PEP420's native namespace
   pythonNamespaces = [ "poetry" ];
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-int-conversion";
-
   meta = {
-    changelog = "https://github.com/python-poetry/poetry-core/blob/${src.tag}/CHANGELOG.md";
     description = "Poetry PEP 517 Build Backend";
     homepage = "https://github.com/python-poetry/poetry-core/";
+    changelog = "https://github.com/python-poetry/poetry-core/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     teams = [ lib.teams.python ];
   };

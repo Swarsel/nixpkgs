@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,16 +19,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://linukz.org/cd-discid.shtml";
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     description = "Command-line utility to get CDDB discid information from a CD-ROM disc";
-    mainProgram = "cd-discid";
 
     longDescription = ''
       cd-discid is a backend utility to get CDDB discid information
       from a CD-ROM disc.  It was originally designed for cdgrab (now
       abcde), but can be used for any purpose requiring CDDB data.
     '';
+
+    homepage = "http://linukz.org/cd-discid.shtml";
+    license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.unix;
+    mainProgram = "cd-discid";
   };
 })

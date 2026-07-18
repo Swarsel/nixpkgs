@@ -8,17 +8,15 @@ buildPythonPackage rec {
   pname = "sansio-multipart";
   version = "0.3";
 
-  format = "setuptools";
-
   src = fetchPypi {
-    pname = "sansio_multipart";
     inherit version;
     sha256 = "6e95b2e64039a95d0f2cd8f3360eaf418d6b9018fb2215d82d399d62d6122dc3";
+    pname = "sansio_multipart";
   };
 
   # upstream has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "sansio_multipart" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,20 +16,20 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-dxC00wr51c48yxdCUWsL44RMmk+pBmqXkUQqjP90GNU=";
-
-  sourceRoot = "${finalAttrs.src.name}/cmd/jwx";
-
   env.GOEXPERIMENT = "jsonv2";
+  sourceRoot = "${finalAttrs.src.name}/cmd/jwx";
 
   meta = {
     description = "Implementation of various JWx (Javascript Object Signing and Encryption/JOSE) technologies";
-    mainProgram = "jwx";
     homepage = "https://github.com/lestrrat-go/jwx";
     changelog = "https://github.com/lestrrat-go/jwx/blob/v${finalAttrs.version}/Changes";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       arianvp
       flokli
     ];
+
+    mainProgram = "jwx";
   };
 })

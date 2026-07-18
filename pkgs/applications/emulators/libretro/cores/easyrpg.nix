@@ -1,12 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  mkLibretroCore,
-  nix-update-script,
   asciidoctor,
   cmake,
   doxygen,
-  pkg-config,
   flac,
   fluidsynth,
   fmt,
@@ -20,16 +17,18 @@
   libsysprof-capture,
   libvorbis,
   libxmp,
+  mkLibretroCore,
   mpg123,
+  nix-update-script,
   nlohmann_json,
   opusfile,
   pcre2,
   pixman,
+  pkg-config,
   speexdsp,
   wildmidi,
 }:
 mkLibretroCore rec {
-  core = "easyrpg";
   # liblcf needs to be updated before this.
   version = "0.8.1.1";
 
@@ -41,12 +40,14 @@ mkLibretroCore rec {
     fetchSubmodules = true;
   };
 
-  extraNativeBuildInputs = [
-    asciidoctor
-    cmake
-    doxygen
-    pkg-config
+  cmakeFlags = [
+    "-DBUILD_SHARED_LIBS=ON"
+    "-DPLAYER_TARGET_PLATFORM=libretro"
+    "-DCMAKE_INSTALL_DATADIR=${placeholder "out"}/share"
   ];
+
+  core = "easyrpg";
+
   extraBuildInputs = [
     flac # needed by libsndfile
     fluidsynth
@@ -69,13 +70,15 @@ mkLibretroCore rec {
     speexdsp
     wildmidi
   ];
-  cmakeFlags = [
-    "-DBUILD_SHARED_LIBS=ON"
-    "-DPLAYER_TARGET_PLATFORM=libretro"
-    "-DCMAKE_INSTALL_DATADIR=${placeholder "out"}/share"
-  ];
-  makefile = "Makefile";
 
+  extraNativeBuildInputs = [
+    asciidoctor
+    cmake
+    doxygen
+    pkg-config
+  ];
+
+  makefile = "Makefile";
   # Since liblcf needs to be updated before this, we should not
   # use the default unstableGitUpdater.
   passthru.updateScript = nix-update-script { };

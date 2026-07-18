@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
-  findlib,
-  topkg,
-  ocamlbuild,
-  cmdliner,
-  odoc,
   b0,
+  cmdliner,
+  findlib,
+  ocaml,
+  ocamlbuild,
+  odoc,
+  topkg,
 }:
 
 {
   pname,
   version,
-  nativeBuildInputs ? [ ],
   buildInputs ? [ ],
+  nativeBuildInputs ? [ ],
   ...
 }@args:
 
@@ -25,16 +25,14 @@ else
   stdenv.mkDerivation (
     {
 
-      dontAddStaticConfigureFlags = true;
-      configurePlatforms = [ ];
-      strictDeps = true;
       inherit (topkg) buildPhase installPhase;
+      strictDeps = true;
+      configurePlatforms = [ ];
+      dontAddStaticConfigureFlags = true;
 
     }
     // (removeAttrs args [ "minimalOCamlVersion" ])
     // {
-
-      name = "ocaml${ocaml.version}-${pname}-${version}";
 
       nativeBuildInputs = [
         ocaml
@@ -43,7 +41,9 @@ else
         topkg
       ]
       ++ nativeBuildInputs;
+
       buildInputs = [ topkg ] ++ buildInputs;
+      name = "ocaml${ocaml.version}-${pname}-${version}";
 
       meta = (args.meta or { }) // {
         platforms = args.meta.platforms or ocaml.meta.platforms;

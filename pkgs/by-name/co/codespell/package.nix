@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "codespell";
   version = "2.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "codespell-project";
@@ -38,19 +37,23 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_basic"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "codespell_lib" ];
 
   meta = {
     description = "Fix common misspellings in source code";
-    mainProgram = "codespell";
     homepage = "https://github.com/codespell-project/codespell";
+
     license = with lib.licenses; [
       gpl2Only
       cc-by-sa-30
     ];
+
     maintainers = with lib.maintainers; [
       johnazoidberg
       SuperSandro2000
     ];
+
+    mainProgram = "codespell";
   };
 })

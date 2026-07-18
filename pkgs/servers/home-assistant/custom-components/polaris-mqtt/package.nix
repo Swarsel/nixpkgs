@@ -1,12 +1,10 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "samoswall";
-  domain = "polaris";
   version = "1.1.5";
 
   src = fetchFromGitHub {
@@ -15,6 +13,9 @@ buildHomeAssistantComponent rec {
     tag = "v${version}";
     hash = "sha256-NViyBWTN18DQV3WywD6AXdoOw6W+PgMIV5tuKyRgN2w=";
   };
+
+  domain = "polaris";
+  owner = "samoswall";
 
   meta = {
     description = "Polaris IQ Home devices integration to Home Assistant";

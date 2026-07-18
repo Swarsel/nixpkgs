@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch,
   gtest,
@@ -7,7 +8,6 @@
   nasm,
   ninja,
   pkg-config,
-  stdenv,
   windows,
 }:
 
@@ -30,11 +30,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # https://github.com/cisco/openh264/pull/3867
     (fetchpatch {
+      hash = "sha256-pJvh9eRxFZQ+ob4WPu/x+jr1CCpgnug1uBViLfAtBDg=";
       name = "freebsd-configure.patch";
       url = "https://github.com/cisco/openh264/commit/ea8a1ad5791ee5c4e2ecf459aec235128d69b35b.patch";
-      hash = "sha256-pJvh9eRxFZQ+ob4WPu/x+jr1CCpgnug1uBViLfAtBDg=";
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -50,14 +52,13 @@ stdenv.mkDerivation (finalAttrs: {
     windows.pthreads
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://www.openh264.org";
     description = "Codec library which supports H.264 encoding and decoding";
+    homepage = "https://www.openh264.org";
     changelog = "https://github.com/cisco/openh264/releases/tag/${finalAttrs.src.rev}";
     license = with lib.licenses; [ bsd2 ];
     maintainers = [ ];
+
     # See meson.build
     platforms =
       lib.platforms.windows

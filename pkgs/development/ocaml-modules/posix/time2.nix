@@ -2,14 +2,13 @@
   lib,
   buildDunePackage,
   posix-base,
-  posix-types,
   posix-errno,
+  posix-types,
 }:
 
 buildDunePackage {
-  pname = "posix-time2";
-
   inherit (posix-base) version src;
+  pname = "posix-time2";
 
   propagatedBuildInputs = [
     posix-base

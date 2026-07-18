@@ -10,11 +10,12 @@ in
 {
   options.services.heapster = {
     enable = lib.mkEnableOption "Heapster monitoring";
+    package = lib.mkPackageOption pkgs "heapster" { };
 
-    source = lib.mkOption {
-      description = "Heapster metric source";
-      example = "kubernetes:https://kubernetes.default";
-      type = lib.types.str;
+    extraOpts = lib.mkOption {
+      default = "";
+      description = "Heapster extra options";
+      type = lib.types.separatedString " ";
     };
 
     sink = lib.mkOption {
@@ -23,18 +24,15 @@ in
       type = lib.types.str;
     };
 
-    extraOpts = lib.mkOption {
-      description = "Heapster extra options";
-      default = "";
-      type = lib.types.separatedString " ";
+    source = lib.mkOption {
+      description = "Heapster metric source";
+      example = "kubernetes:https://kubernetes.default";
+      type = lib.types.str;
     };
-
-    package = lib.mkPackageOption pkgs "heapster" { };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.heapster = {
-      wantedBy = [ "multi-user.target" ];
       after = [
         "cadvisor.service"
         "kube-apiserver.service"
@@ -44,13 +42,16 @@ in
         ExecStart = "${cfg.package}/bin/heapster --source=${cfg.source} --sink=${cfg.sink} ${cfg.extraOpts}";
         User = "heapster";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    users.users.heapster = {
-      isSystemUser = true;
-      group = "heapster";
-      description = "Heapster user";
-    };
     users.groups.heapster = { };
+
+    users.users.heapster = {
+      description = "Heapster user";
+      group = "heapster";
+      isSystemUser = true;
+    };
   };
 }

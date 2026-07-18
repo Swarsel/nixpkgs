@@ -1,14 +1,14 @@
 {
+  lib,
+  fetchFromGitHub,
   bison,
   clangStdenv,
   cmake,
   cmocka,
   doxygen,
-  fetchFromGitHub,
   flex,
   gitMinimal,
   lcov,
-  lib,
   libbpf,
   libelf,
   libnl,
@@ -29,6 +29,12 @@ clangStdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mlJQIvOWF8WL4pX8KTKM1ddEFva+dvj5m2S3sWQJsKE=";
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     bison
@@ -56,15 +62,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     "-DNO_BENCHMARKS=1"
   ];
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
-  # invalid with -target bpf
-  hardeningDisable = [ "zerocallusedregs" ];
-
   preFixup = ''
     substituteInPlace $out/lib/systemd/system/bpfilter.service --replace-fail /usr/sbin/bpfilter $out/bin/bpfilter
 
@@ -72,6 +69,8 @@ clangStdenv.mkDerivation (finalAttrs: {
     substituteInPlace $lib/lib/pkgconfig/bpfilter.pc --replace-fail \''${prefix}/ ""
   '';
 
+  # invalid with -target bpf
+  hardeningDisable = [ "zerocallusedregs" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -80,7 +79,7 @@ clangStdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/facebook/bpfilter/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.jmbaur ];
-    mainProgram = "bpfilter";
     platforms = lib.platforms.linux;
+    mainProgram = "bpfilter";
   };
 })

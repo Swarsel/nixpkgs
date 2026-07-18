@@ -1,19 +1,13 @@
 {
-  build-idris-package,
+  lib,
   fetchFromGitHub,
+  build-idris-package,
   contrib,
   lightyear,
-  lib,
 }:
 build-idris-package {
   pname = "yaml";
   version = "2018-01-25";
-
-  ipkgName = "Yaml";
-  idrisDeps = [
-    contrib
-    lightyear
-  ];
 
   src = fetchFromGitHub {
     owner = "Heather";
@@ -21,6 +15,13 @@ build-idris-package {
     rev = "5afa51ffc839844862b8316faba3bafa15656db4";
     sha256 = "1g4pi0swmg214kndj85hj50ccmckni7piprsxfdzdfhg87s0avw7";
   };
+
+  idrisDeps = [
+    contrib
+    lightyear
+  ];
+
+  ipkgName = "Yaml";
 
   meta = {
     description = "Idris YAML lib";

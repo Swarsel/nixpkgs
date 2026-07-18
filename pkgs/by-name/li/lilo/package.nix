@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   dev86,
   sharutils,
@@ -9,20 +9,16 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "lilo";
   version = "24.2";
+
   src = fetchurl {
     url = "https://www.joonet.de/lilo/ftp/sources/lilo-${finalAttrs.version}.tar.gz";
     hash = "sha256-4VjxneRWDJNevgUHwht5v/F2GLkjDYB2/oxf/5/b1bE=";
   };
+
   nativeBuildInputs = [
     dev86
     sharutils
   ];
-
-  # Workaround build failure on -fno-common toolchains:
-  #   ld: identify.o:(.bss+0x0): multiple definition of `identify';
-  #     common.o:(.bss+0x160): first defined here
-  # Without -std=gnu17, compilation fails with an error on incompatible pointer types
-  env.NIX_CFLAGS_COMPILE = "-fcommon -std=gnu17";
 
   makeFlags = [
     "DESTDIR=${placeholder "out"}"
@@ -31,11 +27,17 @@ stdenv.mkDerivation (finalAttrs: {
     "MAN_DIR=/share/man"
   ];
 
+  # Workaround build failure on -fno-common toolchains:
+  #   ld: identify.o:(.bss+0x0): multiple definition of `identify';
+  #     common.o:(.bss+0x160): first defined here
+  # Without -std=gnu17, compilation fails with an error on incompatible pointer types
+  env.NIX_CFLAGS_COMPILE = "-fcommon -std=gnu17";
+
   meta = {
-    homepage = "https://www.joonet.de/lilo/";
     description = "Linux bootloader";
+    homepage = "https://www.joonet.de/lilo/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ kaction ];
+    platforms = lib.platforms.linux;
   };
 })

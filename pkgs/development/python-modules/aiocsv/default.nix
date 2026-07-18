@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiocsv";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MKuranowski";
@@ -22,12 +21,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-WENNtQKvpUuoYai6r8nTRamwCOloVA42YoAA3JGK9B8=";
   };
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
-  dependencies = [ typing-extensions ];
+  preBuild = ''
+    export CYTHONIZE=1
+  '';
 
   nativeCheckInputs = [
     aiofiles
@@ -35,16 +31,20 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  preBuild = ''
-    export CYTHONIZE=1
-  '';
+  build-system = [
+    cython
+    setuptools
+  ];
 
-  pythonImportsCheck = [ "aiocsv" ];
+  dependencies = [ typing-extensions ];
 
   disabledTestPaths = [
     # Import issue
     "tests/test_parser.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aiocsv" ];
 
   meta = {
     description = "Library for for asynchronous CSV reading/writing";

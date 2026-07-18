@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,16 +16,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-S6GeFwxyrlHzsXWz66jrNa+mtoACn7w2oY3M9XjPusk=";
-
   doCheck = false;
-
-  subPackages = [ "cmd/grpcui" ];
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
+
+  subPackages = [ "cmd/grpcui" ];
 
   meta = {
     description = "Interactive web UI for gRPC, along the lines of postman";

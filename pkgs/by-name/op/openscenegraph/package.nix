@@ -1,63 +1,63 @@
 {
-  stdenv,
   lib,
-  fetchFromGitHub,
-  fetchpatch,
+  stdenv,
   fetchurl,
+  fetchFromGitHub,
+  SDL2,
+  asio,
+  boost,
   cmake,
-  pkg-config,
+  collada-dom,
+  curl,
   doxygen,
+  fetchpatch,
+  ffmpeg,
+  fltk,
+  freetype,
+  gdal,
+  giflib,
+  glib,
+  libGL,
+  libGLU,
+  libjpeg,
+  liblas,
+  libpng,
+  librsvg,
+  libtiff,
+  libvncserver,
   libx11,
   libxinerama,
-  libxrandr,
-  libGLU,
-  libGL,
-  glib,
   libxml2,
-  pcre,
-  zlib,
-  boost,
-  jpegSupport ? true,
-  libjpeg,
-  exrSupport ? false,
-  openexr,
-  gifSupport ? true,
-  giflib,
-  pngSupport ? true,
-  libpng,
-  tiffSupport ? true,
-  libtiff,
-  gdalSupport ? false,
-  gdal,
-  curlSupport ? true,
-  curl,
-  colladaSupport ? false,
-  collada-dom,
-  opencascadeSupport ? false,
-  opencascade-occt,
-  ffmpegSupport ? false,
-  ffmpeg,
-  nvttSupport ? false,
-  nvidia-texture-tools,
-  freetypeSupport ? true,
-  freetype,
-  svgSupport ? false,
-  librsvg,
-  pdfSupport ? false,
-  poppler,
-  vncSupport ? false,
-  libvncserver,
-  lasSupport ? false,
-  liblas,
-  luaSupport ? false,
+  libxrandr,
   lua,
-  sdlSupport ? false,
-  SDL2,
+  nvidia-texture-tools,
+  opencascade-occt,
+  openexr,
+  pcre,
+  pkg-config,
+  poppler,
+  zlib,
+  colladaSupport ? false,
+  curlSupport ? true,
+  exrSupport ? false,
+  ffmpegSupport ? false,
+  freetypeSupport ? true,
+  gdalSupport ? false,
+  gifSupport ? true,
+  jpegSupport ? true,
+  lasSupport ? false,
+  luaSupport ? false,
+  nvttSupport ? false,
+  opencascadeSupport ? false,
+  pdfSupport ? false,
+  pngSupport ? true,
   restSupport ? false,
-  asio,
+  sdlSupport ? false,
+  svgSupport ? false,
+  tiffSupport ? true,
+  vncSupport ? false,
   withApps ? false,
   withExamples ? false,
-  fltk,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -70,6 +70,31 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "OpenSceneGraph-${finalAttrs.version}";
     sha256 = "00i14h82qg3xzcyd8p02wrarnmby3aiwmz0z43l50byc9f8i05n1";
   };
+
+  patches = [
+    (fetchpatch {
+      hash = "sha256-VR8YKOV/YihB5eEGZOGaIfJNrig1EPS/PJmpKsK284c=";
+      name = "opencascade-api-patch";
+      url = "https://github.com/openscenegraph/OpenSceneGraph/commit/bc2daf9b3239c42d7e51ecd7947d31a92a7dc82b.patch";
+    })
+    # OpenEXR 3 support: https://github.com/openscenegraph/OpenSceneGraph/issues/1075
+    (fetchurl {
+      hash = "sha256-fdNbkg6Vp7DeDBTe5Zso8qJ5v9uPSXHpQ5XlGkvputk=";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/dev-games/openscenegraph/files/openscenegraph-3.6.5-openexr3.patch?id=0f642d8f09b589166f0e0c0fc84df7673990bf3f";
+    })
+    # Fix compiling with libtiff when libtiff is compiled using CMake
+    (fetchurl {
+      hash = "sha256-YGG/DIHU1f6StbeerZoZrNDm348wYB3ydmVIIGTM7fU=";
+      url = "https://github.com/openscenegraph/OpenSceneGraph/commit/9da8d428f6666427c167b951b03edd21708e1f43.patch";
+    })
+  ];
+
+  # ref. https://github.com/openscenegraph/OpenSceneGraph/pull/1373
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail \
+      "CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)" \
+      "CMAKE_MINIMUM_REQUIRED(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -115,48 +140,26 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals withExamples [ fltk ]
     ++ lib.optional (restSupport || colladaSupport) boost;
 
-  env = lib.optionalAttrs colladaSupport { COLLADA_DIR = collada-dom; };
-
-  patches = [
-    (fetchpatch {
-      name = "opencascade-api-patch";
-      url = "https://github.com/openscenegraph/OpenSceneGraph/commit/bc2daf9b3239c42d7e51ecd7947d31a92a7dc82b.patch";
-      hash = "sha256-VR8YKOV/YihB5eEGZOGaIfJNrig1EPS/PJmpKsK284c=";
-    })
-    # OpenEXR 3 support: https://github.com/openscenegraph/OpenSceneGraph/issues/1075
-    (fetchurl {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/dev-games/openscenegraph/files/openscenegraph-3.6.5-openexr3.patch?id=0f642d8f09b589166f0e0c0fc84df7673990bf3f";
-      hash = "sha256-fdNbkg6Vp7DeDBTe5Zso8qJ5v9uPSXHpQ5XlGkvputk=";
-    })
-    # Fix compiling with libtiff when libtiff is compiled using CMake
-    (fetchurl {
-      url = "https://github.com/openscenegraph/OpenSceneGraph/commit/9da8d428f6666427c167b951b03edd21708e1f43.patch";
-      hash = "sha256-YGG/DIHU1f6StbeerZoZrNDm348wYB3ydmVIIGTM7fU=";
-    })
-  ];
-
-  # ref. https://github.com/openscenegraph/OpenSceneGraph/pull/1373
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail \
-      "CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)" \
-      "CMAKE_MINIMUM_REQUIRED(VERSION 3.10)"
-  '';
-
   cmakeFlags =
     lib.optional (!withApps) "-DBUILD_OSG_APPLICATIONS=OFF"
     ++ lib.optional withExamples "-DBUILD_OSG_EXAMPLES=ON";
 
+  env = lib.optionalAttrs colladaSupport { COLLADA_DIR = collada-dom; };
+
   meta = {
     description = "3D graphics toolkit";
     homepage = "http://www.openscenegraph.org/";
-    maintainers = with lib.maintainers; [
-      aanderse
-      raskin
-    ];
-    platforms = with lib.platforms; linux ++ darwin;
+
     license = with lib.licenses; [
       lgpl21Only
       wxWindowsException31
     ];
+
+    maintainers = with lib.maintainers; [
+      aanderse
+      raskin
+    ];
+
+    platforms = with lib.platforms; linux ++ darwin;
   };
 })

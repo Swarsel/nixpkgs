@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,18 +16,20 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-4gzxKmnl8MOPcdzkwhReZ/cfbjfICY9kxousveoHYR0=";
-
   modRoot = ".";
+
   subPackages = [
     "cmd/mapcidr"
   ];
 
   meta = {
     description = "Small utility program to perform multiple operations for a given subnet/CIDR ranges";
+
     longDescription = ''
       mapCIDR is developed to ease load distribution for mass scanning
       operations, it can be used both as a library and as independent CLI tool.
     '';
+
     homepage = "https://github.com/projectdiscovery/mapcidr";
     changelog = "https://github.com/projectdiscovery/mapcidr/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

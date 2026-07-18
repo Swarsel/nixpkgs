@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  sqlite,
   libiconv,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sqlite,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7LKpOO+PVGGtFJh1dZW/n/zovTxxZbb2VQwzgmjZhIY=";
   };
 
-  cargoHash = "sha256-PECQ6KoHLPgUosC7gxniIoLHA5tWb0JfAUm93XFCcpk=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -32,9 +30,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
+  cargoHash = "sha256-PECQ6KoHLPgUosC7gxniIoLHA5tWb0JfAUm93XFCcpk=";
+
   env = {
-    OPENSSL_NO_VENDOR = 1;
     LIBGIT2_NO_VENDOR = 0;
+    OPENSSL_NO_VENDOR = 1;
   };
 
   meta = {
@@ -42,7 +42,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://gitlab.com/ttyperacer/terminal-typeracer";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ yoctocell ];
-    mainProgram = "typeracer";
     platforms = lib.platforms.unix;
+    mainProgram = "typeracer";
   };
 })

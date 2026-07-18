@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "linode";
   version = "0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/ghickman/linode";
     description = "Thin python wrapper around Linode's API";
+    homepage = "https://github.com/ghickman/linode";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

@@ -1,12 +1,12 @@
 {
   lib,
-  ocaml,
-  buildDunePackage,
   fetchFromGitHub,
   alcotest,
+  buildDunePackage,
+  ocaml,
+  ppxlib,
   reason,
   result,
-  ppxlib,
   yojson,
 }:
 
@@ -34,18 +34,19 @@ buildDunePackage (finalAttrs: {
     yojson
   ];
 
+  doCheck = true;
   checkInputs = [ alcotest ];
 
-  doCheck = true;
-
   meta = {
-    broken = lib.versionAtLeast ocaml.version "5.4";
-    homepage = "https://github.com/reasonml-community/graphql_ppx";
     description = "GraphQL PPX rewriter for Bucklescript/ReasonML";
+    homepage = "https://github.com/reasonml-community/graphql_ppx";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Zimmi48
       jtcoolen
     ];
+
+    broken = lib.versionAtLeast ocaml.version "5.4";
   };
 })

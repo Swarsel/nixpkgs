@@ -11,10 +11,10 @@
 {
   lib,
   stdenv,
+  engine,
   packageAttrs,
   patchEngine,
   wrapLaunchGame,
-  engine,
 }:
 
 let
@@ -22,36 +22,15 @@ let
 in
 stdenv.mkDerivation (
   {
-    pname = "openra_2019";
     inherit version;
-
+    pname = "openra_2019";
     src = engine.src;
-
     postPatch = patchEngine "." version;
-
-    configurePhase = ''
-      runHook preConfigure
-
-      make version VERSION=${lib.escapeShellArg version}
-
-      runHook postConfigure
-    '';
 
     buildFlags = [
       "DEBUG=false"
       "default"
       "man-page"
-    ];
-
-    checkTarget = "nunit test";
-
-    installTargets = [
-      "install"
-      "install-linux-icons"
-      "install-linux-desktop"
-      "install-linux-appdata"
-      "install-linux-mime"
-      "install-man-page"
     ];
 
     postInstall = ''
@@ -63,6 +42,25 @@ stdenv.mkDerivation (
         '') engine.mods
       )}
     '';
+
+    checkTarget = "nunit test";
+
+    configurePhase = ''
+      runHook preConfigure
+
+      make version VERSION=${lib.escapeShellArg version}
+
+      runHook postConfigure
+    '';
+
+    installTargets = [
+      "install"
+      "install-linux-icons"
+      "install-linux-desktop"
+      "install-linux-appdata"
+      "install-linux-mime"
+      "install-man-page"
+    ];
 
     meta = packageAttrs.meta // engine.meta;
   }

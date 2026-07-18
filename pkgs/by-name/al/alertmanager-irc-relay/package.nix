@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,14 +24,16 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Alertmanager IRC Relay is a bot relaying Prometheus alerts to IRC";
-    mainProgram = "alertmanager-irc-relay";
+
     longDescription = ''
       Alertmanager IRC Relay is a bot relaying Prometheus alerts to IRC.
       Alerts are received from Prometheus using Webhooks and are relayed to an
       IRC channel
     '';
+
     homepage = "https://github.com/google/alertmanager-irc-relay";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ymatsiuk ];
+    mainProgram = "alertmanager-irc-relay";
   };
 })

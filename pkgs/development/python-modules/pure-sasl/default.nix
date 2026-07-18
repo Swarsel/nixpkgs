@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build system
-  setuptools,
-
-  # optional dependencies
-  pykerberos,
-
+  buildPythonPackage,
   # test dependencies
   mock,
+  # optional dependencies
+  pykerberos,
   pytestCheckHook,
+  # build system
+  setuptools,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "pure-sasl";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thobbs";
@@ -27,24 +23,26 @@ buildPythonPackage rec {
     hash = "sha256-AHoZ3QZLr0JLE8+a2zkB06v2wRknxhgm/tcEPXaJX/U=";
   };
 
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    gssapi = [ pykerberos ];
-  };
-
-  pythonImportsCheck = [
-    "puresasl"
-    "puresasl.client"
-    "puresasl.mechanisms"
-  ];
-
   nativeCheckInputs = [
     mock
     pytestCheckHook
     six
   ]
   ++ lib.concatAttrValues optional-dependencies;
+
+  build-system = [ setuptools ];
+
+  optional-dependencies = {
+    gssapi = [ pykerberos ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "puresasl"
+    "puresasl.client"
+    "puresasl.mechanisms"
+  ];
 
   meta = {
     description = "Reasonably high-level SASL client written in pure Python";

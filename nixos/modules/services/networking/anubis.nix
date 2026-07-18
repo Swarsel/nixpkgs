@@ -60,6 +60,7 @@ let
               lib.attrByPath (lib.splitString "." path)
                 (throw "This is a bug in the Anubis module. Please report this as an issue.")
                 cfg.defaultOptions;
+
             defaultText = lib.literalExpression "config.services.anubis.defaultOptions.${path}";
           }
         );
@@ -74,51 +75,48 @@ let
         enable = lib.mkEnableOption "this instance of Anubis" // {
           default = true;
         };
-        user = mkDefaultOption "user" {
-          default = "anubis";
-          description = ''
-            The user under which Anubis is run.
 
-            This module utilizes systemd's DynamicUser feature. See the corresponding section in
-            {manpage}`systemd.exec(5)` for more details.
-          '';
-          type = types.str;
+        extraFlags = mkDefaultOption "extraFlags" {
+          default = [ ];
+          description = "A list of extra flags to be passed to Anubis.";
+          example = [ "-metrics-bind \"\"" ];
+          type = types.listOf types.str;
         };
+
         group = mkDefaultOption "group" {
           default = "anubis";
+
           description = ''
             The group under which Anubis is run.
 
             This module utilizes systemd's DynamicUser feature. See the corresponding section in
             {manpage}`systemd.exec(5)` for more details.
           '';
+
           type = types.str;
         };
 
         policy = lib.mkOption {
           default = { };
+
           description = ''
             Anubis policy configuration.
 
             See [the documentation](https://anubis.techaro.lol/docs/admin/policies) for details.
           '';
+
           type = types.submodule {
             options = {
-              useDefaultBotRules = mkDefaultOption "policy.useDefaultBotRules" {
-                type = types.bool;
-                default = true;
-                description = ''
-                  Whether to include Anubis's default bot detection rules via the
-                  `(data)/meta/default-config.yaml` import.
-
-                  Set to `false` to define your own bot rules from scratch using
-                  {option}`extraBots`.
-                '';
-              };
-
               extraBots = mkDefaultOption "policy.extraBots" {
-                type = types.listOf jsonFormat.type;
                 default = [ ];
+
+                description = ''
+                  Additional bot rules appended to the policy.
+
+                  When {option}`useDefaultBotRules` is `true`, these rules are added after
+                  Anubis's default rules. When `false`, only these rules are used.
+                '';
+
                 example = lib.literalExpression ''
                   [
                     {
@@ -128,26 +126,13 @@ let
                     }
                   ]
                 '';
-                description = ''
-                  Additional bot rules appended to the policy.
 
-                  When {option}`useDefaultBotRules` is `true`, these rules are added after
-                  Anubis's default rules. When `false`, only these rules are used.
-                '';
+                type = types.listOf jsonFormat.type;
               };
 
               settings = mkDefaultOption "policy.settings" {
-                type = jsonFormat.type;
                 default = { };
-                example = lib.literalExpression ''
-                  {
-                    dnsbl = false;
-                    store = {
-                      backend = "bbolt";
-                      parameters.path = "/var/lib/anubis/data.bdb";
-                    };
-                  }
-                '';
+
                 description = ''
                   Additional policy settings merged into the policy file.
 
@@ -157,28 +142,144 @@ let
                   See [the documentation](https://anubis.techaro.lol/docs/admin/policies) for
                   available options.
                 '';
+
+                example = lib.literalExpression ''
+                  {
+                    dnsbl = false;
+                    store = {
+                      backend = "bbolt";
+                      parameters.path = "/var/lib/anubis/data.bdb";
+                    };
+                  }
+                '';
+
+                type = jsonFormat.type;
+              };
+
+              useDefaultBotRules = mkDefaultOption "policy.useDefaultBotRules" {
+                default = true;
+
+                description = ''
+                  Whether to include Anubis's default bot detection rules via the
+                  `(data)/meta/default-config.yaml` import.
+
+                  Set to `false` to define your own bot rules from scratch using
+                  {option}`extraBots`.
+                '';
+
+                type = types.bool;
               };
             };
           };
         };
 
-        extraFlags = mkDefaultOption "extraFlags" {
-          default = [ ];
-          description = "A list of extra flags to be passed to Anubis.";
-          example = [ "-metrics-bind \"\"" ];
-          type = types.listOf types.str;
-        };
-
         settings = lib.mkOption {
           default = { };
+
           description = ''
             Freeform configuration via environment variables for Anubis.
 
             See [the documentation](https://anubis.techaro.lol/docs/admin/installation) for a complete list of
             available environment variables.
           '';
+
           type = types.submodule [
             {
+              options = {
+                # BIND and METRICS_BIND are defined in instance specific options, since global defaults don't make sense
+                BIND_NETWORK = mkDefaultOption "settings.BIND_NETWORK" {
+                  default = "unix";
+
+                  description = ''
+                    The network family that Anubis should bind to.
+
+                    Accepts anything supported by Go's [`net.Listen`](https://pkg.go.dev/net#Listen).
+
+                    Common values are `tcp` and `unix`.
+                  '';
+
+                  example = "tcp";
+                  type = types.str;
+                };
+
+                DIFFICULTY = mkDefaultOption "settings.DIFFICULTY" {
+                  default = 4;
+
+                  description = ''
+                    The difficulty required for clients to solve the challenge.
+
+                    Currently, this means the amount of leading zeros in a successful response.
+                  '';
+
+                  example = 5;
+                  type = types.int;
+                };
+
+                METRICS_BIND_NETWORK = mkDefaultOption "settings.METRICS_BIND_NETWORK" {
+                  default = "unix";
+
+                  description = ''
+                    The network family that the metrics server should bind to.
+
+                    Accepts anything supported by Go's [`net.Listen`](https://pkg.go.dev/net#Listen).
+
+                    Common values are `tcp` and `unix`.
+                  '';
+
+                  example = "tcp";
+                  type = types.str;
+                };
+
+                OG_PASSTHROUGH = mkDefaultOption "settings.OG_PASSTHROUGH" {
+                  default = false;
+
+                  description = ''
+                    Whether to enable Open Graph tag passthrough.
+
+                    This enables social previews of resources protected by
+                    Anubis without having to exempt each scraper individually.
+                  '';
+
+                  type = types.bool;
+                };
+
+                # generated by default
+                POLICY_FNAME = mkDefaultOption "settings.POLICY_FNAME" {
+                  default = null;
+
+                  description = ''
+                    The policy file to use. Leave this as `null` to use the policy generated from
+                    {option}`services.anubis.instances.<name>.policy`.
+                  '';
+
+                  type = types.nullOr types.path;
+                };
+
+                SERVE_ROBOTS_TXT = mkDefaultOption "settings.SERVE_ROBOTS_TXT" {
+                  default = false;
+
+                  description = ''
+                    Whether to serve a default robots.txt that denies access to common AI bots by name and all other
+                    bots by wildcard.
+                  '';
+
+                  type = types.bool;
+                };
+
+                WEBMASTER_EMAIL = mkDefaultOption "settings.WEBMASTER_EMAIL" {
+                  default = null;
+
+                  description = ''
+                    If set, shows a contact email address when rendering error pages.
+
+                    This email address will be how users can get in contact with administrators.
+                  '';
+
+                  example = "alice@example.com";
+                  type = types.nullOr types.str;
+                };
+              };
+
               freeformType =
                 with types;
                 attrsOf (
@@ -188,85 +289,22 @@ let
                     bool
                   ])
                 );
-
-              options = {
-                # BIND and METRICS_BIND are defined in instance specific options, since global defaults don't make sense
-                BIND_NETWORK = mkDefaultOption "settings.BIND_NETWORK" {
-                  default = "unix";
-                  description = ''
-                    The network family that Anubis should bind to.
-
-                    Accepts anything supported by Go's [`net.Listen`](https://pkg.go.dev/net#Listen).
-
-                    Common values are `tcp` and `unix`.
-                  '';
-                  example = "tcp";
-                  type = types.str;
-                };
-                METRICS_BIND_NETWORK = mkDefaultOption "settings.METRICS_BIND_NETWORK" {
-                  default = "unix";
-                  description = ''
-                    The network family that the metrics server should bind to.
-
-                    Accepts anything supported by Go's [`net.Listen`](https://pkg.go.dev/net#Listen).
-
-                    Common values are `tcp` and `unix`.
-                  '';
-                  example = "tcp";
-                  type = types.str;
-                };
-                DIFFICULTY = mkDefaultOption "settings.DIFFICULTY" {
-                  default = 4;
-                  description = ''
-                    The difficulty required for clients to solve the challenge.
-
-                    Currently, this means the amount of leading zeros in a successful response.
-                  '';
-                  type = types.int;
-                  example = 5;
-                };
-                SERVE_ROBOTS_TXT = mkDefaultOption "settings.SERVE_ROBOTS_TXT" {
-                  default = false;
-                  description = ''
-                    Whether to serve a default robots.txt that denies access to common AI bots by name and all other
-                    bots by wildcard.
-                  '';
-                  type = types.bool;
-                };
-                OG_PASSTHROUGH = mkDefaultOption "settings.OG_PASSTHROUGH" {
-                  default = false;
-                  description = ''
-                    Whether to enable Open Graph tag passthrough.
-
-                    This enables social previews of resources protected by
-                    Anubis without having to exempt each scraper individually.
-                  '';
-                  type = types.bool;
-                };
-                WEBMASTER_EMAIL = mkDefaultOption "settings.WEBMASTER_EMAIL" {
-                  default = null;
-                  description = ''
-                    If set, shows a contact email address when rendering error pages.
-
-                    This email address will be how users can get in contact with administrators.
-                  '';
-                  example = "alice@example.com";
-                  type = types.nullOr types.str;
-                };
-
-                # generated by default
-                POLICY_FNAME = mkDefaultOption "settings.POLICY_FNAME" {
-                  default = null;
-                  description = ''
-                    The policy file to use. Leave this as `null` to use the policy generated from
-                    {option}`services.anubis.instances.<name>.policy`.
-                  '';
-                  type = types.nullOr types.path;
-                };
-              };
             }
             (lib.optionalAttrs (!isDefault) (instanceSpecificOptions name))
           ];
+        };
+
+        user = mkDefaultOption "user" {
+          default = "anubis";
+
+          description = ''
+            The user under which Anubis is run.
+
+            This module utilizes systemd's DynamicUser feature. See the corresponding section in
+            {manpage}`systemd.exec(5)` for more details.
+          '';
+
+          type = types.str;
         };
       };
     };
@@ -276,6 +314,7 @@ let
       # see other options above
       BIND = lib.mkOption {
         default = "${runtimeDirectoryPrefix name}anubis.sock";
+
         description = ''
           The address that Anubis listens to. See Go's [`net.Listen`](https://pkg.go.dev/net#Listen) for syntax.
           When using unix sockets:
@@ -284,11 +323,14 @@ let
 
           Defaults to Unix domain sockets. To use TCP sockets, set this to a TCP address and `BIND_NETWORK` to `"tcp"`.
         '';
+
         example = ":8080";
         type = types.str;
       };
+
       METRICS_BIND = lib.mkOption {
         default = "${runtimeDirectoryPrefix name}anubis-metrics.sock";
+
         description = ''
           The address Anubis' metrics server listens to. See Go's [`net.Listen`](https://pkg.go.dev/net#Listen) for
           syntax.
@@ -303,15 +345,18 @@ let
           Defaults to Unix domain sockets. To use TCP sockets, set this to a TCP address and `METRICS_BIND_NETWORK` to
           `"tcp"`.
         '';
+
         example = "127.0.0.1:8081";
         type = types.str;
       };
+
       TARGET = lib.mkOption {
         description = ''
           The reverse proxy target that Anubis is protecting. This is a required option.
 
           The usage of Unix domain sockets is supported by the following syntax: `unix:///path/to/socket.sock`.
         '';
+
         example = "http://127.0.0.1:8000";
         type = types.str;
       };
@@ -329,17 +374,18 @@ in
     };
 
     instances = lib.mkOption {
+      # Merge defaultOptions into each instance
+      apply = lib.mapAttrs (_: lib.recursiveUpdate cfg.defaultOptions);
       default = { };
+
       description = ''
         An attribute set of Anubis instances.
 
         The attribute name may be an empty string, in which case the `-<name>` suffix is not added to the service name
         and socket paths.
       '';
-      type = types.attrsOf (types.submodule (commonSubmodule false));
 
-      # Merge defaultOptions into each instance
-      apply = lib.mapAttrs (_: lib.recursiveUpdate cfg.defaultOptions);
+      type = types.attrsOf (types.submodule (commonSubmodule false));
     };
   };
 
@@ -355,6 +401,7 @@ in
           assertion = lib.all (attrs: validInstanceUnixSocketAddrs attrs.name attrs.value) (
             lib.attrsToList enabledInstances
           );
+
           message = ''
             When using unix sockets in services.anubis.instances.<name>.settings.BIND and services.anubis.instances.<name>.settings.METRICS_BIND:
               - use the prefix "${runtimeDirectoryPrefix ""}" if the instance name is the empty string,
@@ -363,24 +410,11 @@ in
         }
       ];
 
-    users.users = lib.mkIf (cfg.defaultOptions.user == "anubis") {
-      anubis = {
-        isSystemUser = true;
-        group = cfg.defaultOptions.group;
-      };
-    };
-
-    users.groups = lib.mkIf (cfg.defaultOptions.group == "anubis") {
-      anubis = { };
-    };
-
     systemd.services = lib.mapAttrs' (
       name: instance:
       lib.nameValuePair "${instanceName name}" {
-        description = "Anubis (${if name == "" then "default" else name} instance)";
-        wantedBy = [ "multi-user.target" ];
         after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
+        description = "Anubis (${if name == "" then "default" else name} instance)";
 
         environment = lib.mapAttrs (lib.const (lib.generators.mkValueStringDefault { })) (
           lib.filterAttrs (_: v: v != null) (
@@ -396,55 +430,75 @@ in
         );
 
         serviceConfig = {
-          User = instance.user;
-          Group = instance.group;
+          AmbientCapabilities = "";
+          CapabilityBoundingSet = null;
           DynamicUser = true;
 
           ExecStart = lib.concatStringsSep " " (
             (lib.singleton (lib.getExe cfg.package)) ++ instance.extraFlags
           );
-          RuntimeDirectory = if instanceUsesUnixSockets instance then "anubis/${instanceName name}" else null;
+
+          Group = instance.group;
+          LockPersonality = true;
+          MemoryDenyWriteExecute = true;
           # hardening
           NoNewPrivileges = true;
-          CapabilityBoundingSet = null;
-          SystemCallFilter = [
-            "@system-service"
-            "~@privileged"
-          ];
-          SystemCallArchitectures = "native";
-          MemoryDenyWriteExecute = true;
-          AmbientCapabilities = "";
-          PrivateMounts = true;
-          PrivateUsers = true;
-          PrivateTmp = true;
           PrivateDevices = true;
-          ProtectHome = true;
+          PrivateMounts = true;
+          PrivateTmp = true;
+          PrivateUsers = true;
           ProtectClock = true;
+          ProtectControlGroups = "strict";
+          ProtectHome = true;
           ProtectHostname = true;
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
           ProtectProc = "invisible";
           ProtectSystem = "strict";
-          ProtectControlGroups = "strict";
-          LockPersonality = true;
           RemoveIPC = true;
-          RestrictRealtime = true;
-          RestrictSUIDSGID = true;
-          RestrictNamespaces = true;
+
           RestrictAddressFamilies = [
             "AF_UNIX"
             "AF_INET"
             "AF_INET6"
           ];
+
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          RuntimeDirectory = if instanceUsesUnixSockets instance then "anubis/${instanceName name}" else null;
+          SystemCallArchitectures = "native";
+
+          SystemCallFilter = [
+            "@system-service"
+            "~@privileged"
+          ];
+
+          User = instance.user;
         };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       }
     ) enabledInstances;
+
+    users.groups = lib.mkIf (cfg.defaultOptions.group == "anubis") {
+      anubis = { };
+    };
+
+    users.users = lib.mkIf (cfg.defaultOptions.user == "anubis") {
+      anubis = {
+        group = cfg.defaultOptions.group;
+        isSystemUser = true;
+      };
+    };
   };
+
+  meta.doc = ./anubis.md;
 
   meta.maintainers = with lib.maintainers; [
     soopyc
     nullcube
   ];
-  meta.doc = ./anubis.md;
 }

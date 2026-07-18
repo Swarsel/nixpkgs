@@ -19,9 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs ./shfm
   '';
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     install -D shfm --target-directory $out/bin/
@@ -29,9 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/dylanaraps/shfm";
     description = "POSIX-shell based file manager";
+    homepage = "https://github.com/dylanaraps/shfm";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;

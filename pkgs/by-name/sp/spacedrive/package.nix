@@ -2,8 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  undmg,
-  nix-update-script,
   #linux required
   autoPatchelfHook,
   dpkg,
@@ -11,6 +9,8 @@
   glib,
   gst_all_1,
   libsoup_3,
+  nix-update-script,
+  undmg,
   webkitgtk_4_1,
   xdotool,
 }:
@@ -23,34 +23,38 @@ let
     fetchurl
       {
         aarch64-darwin = {
-          url = "https://github.com/spacedriveapp/spacedrive/releases/download/${version}/Spacedrive-darwin-aarch64.dmg";
           hash = "sha256-0Bj6GjsxLUgLlycA33pXIvItoqFtatjJl2Z/ZwjnC0c=";
+          url = "https://github.com/spacedriveapp/spacedrive/releases/download/${version}/Spacedrive-darwin-aarch64.dmg";
         };
+
         x86_64-linux = {
-          url = "https://github.com/spacedriveapp/spacedrive/releases/download/${version}/Spacedrive-linux-x86_64.deb";
           hash = "sha256-MLCAHNLJ/9bdCBLBBssrpk98uvKTfHs9YGxmxJ11/oY=";
+          url = "https://github.com/spacedriveapp/spacedrive/releases/download/${version}/Spacedrive-linux-x86_64.deb";
         };
       }
       .${stdenv.system} or (throw "${pname}-${version}: ${stdenv.system} is unsupported.");
 
   meta = {
-    broken = true;
     description = "Open source file manager, powered by a virtual distributed filesystem";
     homepage = "https://www.spacedrive.com";
     changelog = "https://github.com/spacedriveapp/spacedrive/releases/tag/${version}";
-    platforms = [
-      "aarch64-darwin"
-      "x86_64-linux"
-    ];
     license = lib.licenses.agpl3Plus;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       DataHearth
       heisfer
       mikaelfangel
       stepbrobd
     ];
+
+    platforms = [
+      "aarch64-darwin"
+      "x86_64-linux"
+    ];
+
     mainProgram = "spacedrive";
+    broken = true;
   };
 
   passthru.updateScript = nix-update-script { };
@@ -65,8 +69,6 @@ if stdenv.hostPlatform.isDarwin then
       passthru
       ;
 
-    sourceRoot = "Spacedrive.app";
-
     nativeBuildInputs = [ undmg ];
 
     installPhase = ''
@@ -79,6 +81,8 @@ if stdenv.hostPlatform.isDarwin then
 
       runHook postInstall
     '';
+
+    sourceRoot = "Spacedrive.app";
   }
 
 else

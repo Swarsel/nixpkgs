@@ -22,7 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/herumi/xbyak";
     changelog = "https://github.com/herumi/xbyak/blob/v${finalAttrs.version}/doc/changelog.md";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.ryand56 ];
+    platforms = lib.platforms.all;
   };
 })

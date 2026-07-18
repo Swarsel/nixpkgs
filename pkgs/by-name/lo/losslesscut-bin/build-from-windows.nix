@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  hash,
   p7zip,
   pname,
+  stdenvNoCC,
   version,
-  hash,
   metaCommon ? { },
 }:
 
@@ -13,19 +13,11 @@ stdenvNoCC.mkDerivation {
   inherit pname version;
 
   src = fetchurl {
-    url = "https://github.com/mifi/lossless-cut/releases/download/v${version}/LosslessCut-win-x64.7z";
     inherit hash;
+    url = "https://github.com/mifi/lossless-cut/releases/download/v${version}/LosslessCut-win-x64.7z";
   };
 
   nativeBuildInputs = [ p7zip ];
-
-  unpackPhase = ''
-    runHook preUnpack
-    7z x "$src" -o"$sourceRoot"
-    runHook postUnpack
-  '';
-
-  sourceRoot = "LosslessCut-win-x64";
 
   installPhase = ''
     runHook preInstall
@@ -34,6 +26,14 @@ stdenvNoCC.mkDerivation {
     mv "$sourceRoot" "$out/libexec"
     ln -s "$out/libexec/$(basename "$sourceRoot")/LosslessCut.exe" "$out/bin/LosslessCut.exe"
     runHook postInstall
+  '';
+
+  sourceRoot = "LosslessCut-win-x64";
+
+  unpackPhase = ''
+    runHook preUnpack
+    7z x "$src" -o"$sourceRoot"
+    runHook postUnpack
   '';
 
   meta = metaCommon // {

@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   buildPackages,
   cmake,
   docbook-xsl-nons,
   docbook_xml_dtd_45,
   gettext,
+  gitUpdater,
   glib,
   glibcLocales,
-  withExamples ? true,
+  gtk-doc,
   gtk3,
+  pkg-config,
+  testers,
+  validatePkgConfig,
   # Uses gtkdoc-scan* tools, which produces a binary linked against lib for hostPlatform and executes it to generate docs
   withDocumentation ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
-  gtk-doc,
-  pkg-config,
-  validatePkgConfig,
+  withExamples ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -68,18 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ];
 
-  # Tests need to be able to check locale
-  env.LC_ALL = lib.optionalString finalAttrs.finalPackage.doCheck "en_US.UTF-8";
-
-  nativeCheckInputs = [
-    glibcLocales
-  ];
-
-  makeFlags = [
-    # gtkdoc-scan runs ld, can't find qsort & strncpy symbols
-    "LD=${stdenv.cc.targetPrefix}cc"
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "WANT_DOC" withDocumentation)
     (lib.cmakeBool "WANT_DEMO" withExamples)
@@ -92,36 +80,51 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_CROSSCOMPILING_EMULATOR" (stdenv.hostPlatform.emulator buildPackages))
   ];
 
+  makeFlags = [
+    # gtkdoc-scan runs ld, can't find qsort & strncpy symbols
+    "LD=${stdenv.cc.targetPrefix}cc"
+  ];
+
+  # Tests need to be able to check locale
+  env.LC_ALL = lib.optionalString finalAttrs.finalPackage.doCheck "en_US.UTF-8";
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  nativeCheckInputs = [
+    glibcLocales
+  ];
+
   preInstall = lib.optionalString withDocumentation ''
     # gtkdoc-mkhtml generates images without write permissions, errors out during install
     chmod +w doc/reference/html/*
   '';
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Parse and query the geonames database dump";
-    mainProgram = "geonames-demo";
     homepage = "https://gitlab.com/ubports/development/core/geonames";
     changelog = "https://gitlab.com/ubports/development/core/geonames/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.all;
+    mainProgram = "geonames-demo";
+
     # Cross requires hostPlatform emulation during build
     # https://gitlab.com/ubports/development/core/geonames/-/issues/1
     broken =
       !lib.systems.equals stdenv.buildPlatform stdenv.hostPlatform
       && !stdenv.hostPlatform.emulatorAvailable buildPackages;
+
     pkgConfigModules = [
       "geonames"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

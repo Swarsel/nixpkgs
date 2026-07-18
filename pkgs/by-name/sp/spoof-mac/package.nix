@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage {
   pname = "spoof-mac";
   version = "0-unstable-2018-01-27";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "feross";
@@ -17,10 +16,9 @@ python3Packages.buildPythonPackage {
   };
 
   propagatedBuildInputs = [ python3Packages.docopt ];
-
   # No tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "spoofmac" ];
 
   meta = {

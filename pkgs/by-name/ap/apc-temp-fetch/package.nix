@@ -1,18 +1,17 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "apc-temp-fetch";
   version = "0.0.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "APC-Temp-fetch";
     inherit (finalAttrs) version;
     hash = "sha256-lXGj/xrOkdMMYvuyVVSCojjQlzISFUT14VTn//iOARo=";
+    pname = "APC-Temp-fetch";
   };
 
   build-system = with python3Packages; [
@@ -22,6 +21,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
   dependencies = with python3Packages; [
     requests
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "APC_Temp_fetch"

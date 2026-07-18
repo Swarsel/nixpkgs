@@ -1,16 +1,13 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
-
   fetchFromGitHub,
-  replaceVars,
-
+  buildNpmPackage,
   copyDesktopItems,
-  makeWrapper,
-  makeDesktopItem,
-
   electron_42,
+  makeDesktopItem,
+  makeWrapper,
+  replaceVars,
   commandLineArgs ? "",
 }:
 
@@ -27,28 +24,6 @@ buildNpmPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-0hUm7BfjI4x22DsAPX/VZo+IKInSl6hhylTK0awPhYo=";
   };
-
-  desktopItems = [
-    (makeDesktopItem {
-      categories = [
-        "Utility"
-        "AudioVideo"
-        "Audio"
-        "Player"
-        "Music"
-      ];
-      desktopName = "LX Music Desktop";
-      exec = "lx-music-desktop";
-      genericName = "Music Player";
-      icon = "lx-music-desktop";
-      mimeTypes = [ "x-scheme-handler/lxmusic" ];
-      name = "lx-music-desktop";
-      startupNotify = false;
-      startupWMClass = "lx-music-desktop";
-      terminal = false;
-      type = "Application";
-    })
-  ];
 
   patches = [
     # set electron version and dist dir
@@ -71,14 +46,7 @@ buildNpmPackage (finalAttrs: {
   ];
 
   npmDepsHash = "sha256-1gizfbnkdG84VxB2MaoGoIEQoydiVHbGeWmy2A03FCI=";
-
-  makeCacheWritable = true;
-
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  # we haven't set up npm_config_nodedir at this point
-  # and electron-rebuild will rebuild the native libs later anyway
-  npmFlags = [ "--ignore-scripts" ];
 
   preBuild = ''
     # delete prebuilt libs
@@ -97,8 +65,6 @@ buildNpmPackage (finalAttrs: {
 
     npm rebuild --no-progress --verbose
   '';
-
-  npmBuildScript = "pack:dir";
 
   installPhase = ''
     runHook preInstall
@@ -122,9 +88,38 @@ buildNpmPackage (finalAttrs: {
       --add-flags ${lib.escapeShellArg commandLineArgs}
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "AudioVideo"
+        "Audio"
+        "Player"
+        "Music"
+      ];
+
+      desktopName = "LX Music Desktop";
+      exec = "lx-music-desktop";
+      genericName = "Music Player";
+      icon = "lx-music-desktop";
+      mimeTypes = [ "x-scheme-handler/lxmusic" ];
+      name = "lx-music-desktop";
+      startupNotify = false;
+      startupWMClass = "lx-music-desktop";
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
+  makeCacheWritable = true;
+  npmBuildScript = "pack:dir";
+  # we haven't set up npm_config_nodedir at this point
+  # and electron-rebuild will rebuild the native libs later anyway
+  npmFlags = [ "--ignore-scripts" ];
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Music software based on Electron and Vue";
+
     longDescription = ''
       Some functionalities (e.g. lyrics window) are broken when lx-music-desktop
       runs using a Wayland ozone platform due to Electron's lack of support
@@ -132,12 +127,14 @@ buildNpmPackage (finalAttrs: {
       `NIXOS_OZONE_WL` and passing `--ozone-platform=x11` from the command line
       to restore the expected behavior.
     '';
+
     homepage = "https://github.com/lyswhut/lx-music-desktop";
     changelog = "https://github.com/lyswhut/lx-music-desktop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = electron.meta.platforms;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "lx-music-desktop";
     maintainers = with lib.maintainers; [ starryreverie ];
+    platforms = electron.meta.platforms;
+    mainProgram = "lx-music-desktop";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

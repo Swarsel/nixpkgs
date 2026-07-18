@@ -1,30 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   cuda-bindings,
   cuda-pathfinder,
   networkx,
   numpy,
   pydot,
-  scipy,
-  treelib,
-
   # tests
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
   torch,
+  treelib,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nvidia-cutlass";
   version = "4.2.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "NVIDIA";
@@ -33,14 +28,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-XicHeV9ni9bSOWcUJM8HrCuz61mVK1EdZ9uxNvgWmvk=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    torch
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
 
-  pythonRemoveDeps = [
-    # Replaced with the cuda-python sub-packages we actually need
-    "cuda-python"
-  ];
   dependencies = [
     cuda-bindings
     cuda-pathfinder
@@ -51,19 +49,21 @@ buildPythonPackage (finalAttrs: {
     treelib
   ];
 
+  enabledTestPaths = [
+    "test"
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "cutlass_cppgen"
     "cutlass_library"
     "pycute"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    torch
-  ];
-
-  enabledTestPaths = [
-    "test"
+  pythonRemoveDeps = [
+    # Replaced with the cuda-python sub-packages we actually need
+    "cuda-python"
   ];
 
   meta = {

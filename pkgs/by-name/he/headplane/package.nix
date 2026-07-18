@@ -1,16 +1,16 @@
 {
-  buildGoModule,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   fetchPnpmDeps,
   git,
   headplane-agent,
-  lib,
   makeWrapper,
   nixosTests,
   nodejs_22,
-  pnpm_10,
   pnpmConfigHook,
-  stdenv,
+  pnpm_10,
 }:
 let
   pname = "headplane";
@@ -25,17 +25,18 @@ let
   };
 
   headplaneSshWasm = buildGoModule {
-    pname = "headplane-ssh-wasm";
     inherit version src;
-    subPackages = [ "cmd/hp_ssh" ];
+    pname = "headplane-ssh-wasm";
     vendorHash = "sha256-MvrqKMD+A+qBZmzQv+T9920U5uJop+pjfJpZdm2ZqEA=";
     env.CGO_ENABLED = 0;
-    doCheck = false;
+
     buildPhase = ''
       export GOOS=js
       export GOARCH=wasm
       go build -o hp_ssh.wasm ./cmd/hp_ssh
     '';
+
+    doCheck = false;
 
     installPhase = ''
       runHook preInstall
@@ -62,13 +63,13 @@ let
       install -Dm444 "$wasm_exec" "$out/wasm_exec.js"
       runHook postInstall
     '';
+
+    subPackages = [ "cmd/hp_ssh" ];
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit pname version src;
-
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     git
@@ -77,13 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpm_10
     pnpmConfigHook
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    hash = pnpmDepsHash;
-    fetcherVersion = 3;
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -107,6 +101,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = pnpmDepsHash;
+    pnpm = pnpm_10;
+  };
+
   passthru = {
     agent = headplane-agent;
     tests = { inherit (nixosTests) headplane; };
@@ -117,11 +120,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/tale/headplane";
     changelog = "https://github.com/tale/headplane/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       igor-ramazanov
       stealthbadger747
     ];
-    mainProgram = "headplane";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "headplane";
   };
 })

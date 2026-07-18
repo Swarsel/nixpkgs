@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
+  fetchFromGitHub,
   black,
-  jinja2,
+  buildPythonPackage,
   dirty-equals,
   fastapi,
-  fetchFromGitHub,
+  jinja2,
   pdm-backend,
   pydantic,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "sqlmodel";
   version = "0.0.38";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tiangolo";
@@ -23,13 +22,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-GjTqsZVvuTIYxzs7d0bFE6mKPQR4ZlZywGguzOVwHnk=";
   };
-
-  build-system = [ pdm-backend ];
-
-  dependencies = [
-    pydantic
-    sqlalchemy
-  ];
 
   nativeCheckInputs = [
     black
@@ -39,13 +31,21 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "sqlmodel" ];
+  build-system = [ pdm-backend ];
+
+  dependencies = [
+    pydantic
+    sqlalchemy
+  ];
 
   disabledTestPaths = [
     # Coverage
     "docs_src/tutorial/"
     "tests/test_tutorial/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sqlmodel" ];
 
   meta = {
     description = "Module to work with SQL databases";

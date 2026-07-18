@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
+  buildPythonPackage,
   pyloggermanager,
-  requests,
   pym3u8downloader, # For package tests
+  pytestCheckHook,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pym3u8downloader";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coldsofttech";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-VfNzHysvEVUNx8OK28v2l3QYTMn0ydE/LH+DBXpLfE8=";
   };
 
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,15 +28,12 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pym3u8downloader" ];
-
-  doCheck = false;
 
   passthru = {
     tests = {
       pytest = pym3u8downloader.overridePythonAttrs (previousPythonAttrs: {
-        TEST_SERVER_PORT = "8000";
-
         postPatch = previousPythonAttrs.postPatch or "" + ''
           # Patch test data location
           substituteInPlace tests/commonclass.py \
@@ -49,7 +46,6 @@ buildPythonPackage rec {
         '';
 
         doCheck = true;
-
         nativeCheckInputs = [ pytestCheckHook ];
 
         preCheck = previousPythonAttrs.preCheck or "" + ''
@@ -60,12 +56,15 @@ buildPythonPackage rec {
         postCheck = previousPythonAttrs.postCheck or "" + ''
           kill -s TERM "$TEST_SERVER_PID"
         '';
+
+        TEST_SERVER_PORT = "8000";
       });
     };
   };
 
   meta = {
     description = "Python class to download and concatenate video files from M3U8 playlists";
+
     longDescription = ''
       M3U8 Downloader is a Python class designed to
       download and concatenate video files from M3U8 playlists.
@@ -74,6 +73,7 @@ buildPythonPackage rec {
       concatenate them into a single video file,
       and manage various error conditions.
     '';
+
     homepage = "https://github.com/coldsofttech/pym3u8downloader";
     changelog = "https://github.com/coldsofttech/pym3u8downloader/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;

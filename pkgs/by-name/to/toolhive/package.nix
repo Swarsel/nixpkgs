@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   testers,
   toolhive,
@@ -19,6 +19,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ooPLPnGqyqi8e+zzu2MVjS+v7LgTfvdXbbuUp1asRNQ=";
+  doCheck = true;
 
   # Build only the main CLI and operator binaries
   subPackages = [
@@ -26,27 +27,28 @@ buildGoModule (finalAttrs: {
     "cmd/thv-operator"
   ];
 
-  doCheck = true;
-
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       version = testers.testVersion {
-        package = toolhive;
-        command = "thv version";
         version = "ToolHive build-unknown";
+        command = "thv version";
+        package = toolhive;
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Run any MCP server — securely, instantly, anywhere";
+
     longDescription = ''
       ToolHive is an open-source tool for deploying Model Context Protocol (MCP)
       servers with a focus on security and ease of use. It provides a CLI to
       discover and deploy MCP servers, run servers in isolated containers,
       manage server configurations, and auto-configure clients like GitHub Copilot.
     '';
+
     homepage = "https://github.com/stacklok/toolhive";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ thrix ];

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxext,
   libxmu,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xset";
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -44,10 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "User preference utility for X servers";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xset";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xset";
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "xset";
   };
 })

@@ -7,10 +7,13 @@
 }:
 
 mkRocqDerivation {
-  pname = "relation-algebra";
-  owner = "damien-pous";
-
   inherit version;
+  pname = "relation-algebra";
+
+  propagatedBuildInputs = [
+    stdlib
+  ];
+
   defaultVersion =
     lib.switch
       [ rocq-core.rocq-version ]
@@ -22,22 +25,16 @@ mkRocqDerivation {
       ]
       null;
 
-  releaseRev = v: "v${v}";
-
-  release."1.8.0".sha256 = "sha256-RnY+a57KnStACteaT5dKQoCCH0qp7/W+4qoaApIilj0=";
-
-  propagatedBuildInputs = [
-    stdlib
-  ];
-
   dontConfigure = true;
-
   mlPlugin = true;
+  owner = "damien-pous";
+  release."1.8.0".sha256 = "sha256-RnY+a57KnStACteaT5dKQoCCH0qp7/W+4qoaApIilj0=";
+  releaseRev = v: "v${v}";
 
   meta = {
     description = "Relation algebra library for Rocq";
-    maintainers = with lib.maintainers; [ siraben ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.unix;
   };
 }

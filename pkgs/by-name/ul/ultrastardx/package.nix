@@ -1,26 +1,26 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
-  pkg-config,
-  lua,
-  fpc,
-  portaudio,
-  freetype,
-  libpng,
   SDL2,
-  SDL2_image,
   SDL2_gfx,
+  SDL2_image,
   SDL2_mixer,
   SDL2_net,
   SDL2_ttf,
+  autoreconfHook,
   ffmpeg,
+  fpc,
+  freetype,
+  libGL,
+  libGLU,
+  libpng,
+  libx11,
+  lua,
+  pkg-config,
+  portaudio,
   sqlite,
   zlib,
-  libx11,
-  libGLU,
-  libGL,
 }:
 
 let
@@ -58,6 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     fpc
     libpng
@@ -76,13 +77,15 @@ stdenv.mkDerivation (finalAttrs: {
   dontPatchELF = true;
 
   meta = {
-    homepage = "https://usdx.eu/";
     description = "Free and open source karaoke game";
-    mainProgram = "ultrastardx";
+    homepage = "https://usdx.eu/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       diogotcorreia
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "ultrastardx";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,14 +15,14 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-n/YYajbQo+s1ssPAbS4gUdFYBHNmoNBKcEM/kcAZR94=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/cmd/tar2ext4";
   vendorHash = null;
+  sourceRoot = "${finalAttrs.src.name}/cmd/tar2ext4";
 
   meta = {
     description = "Convert a tar archive to an ext4 image";
     homepage = "https://github.com/microsoft/hcsshim";
-    maintainers = with lib.maintainers; [ qyliss ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ qyliss ];
     mainProgram = "tar2ext4";
   };
 })

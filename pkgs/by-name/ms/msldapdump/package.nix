@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "msldapdump";
   version = "0-unstable-2023-06-12";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "dievus";
@@ -21,7 +20,8 @@ python3.pkgs.buildPythonApplication {
     ldap3
   ];
 
-  dontBuild = true;
+  # Project has no tests
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -35,8 +35,8 @@ python3.pkgs.buildPythonApplication {
     runHook postInstall
   '';
 
-  # Project has no tests
-  doCheck = false;
+  dontBuild = true;
+  pyproject = false;
 
   meta = {
     description = "LDAP enumeration tool";

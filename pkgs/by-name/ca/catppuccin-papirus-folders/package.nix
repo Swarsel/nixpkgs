@@ -1,13 +1,13 @@
 {
-  stdenvNoCC,
   lib,
-  fetchFromGitHub,
   fetchurl,
-  gtk3,
+  fetchFromGitHub,
   getent,
+  gtk3,
   papirus-icon-theme,
-  flavor ? "mocha",
+  stdenvNoCC,
   accent ? "blue",
+  flavor ? "mocha",
 }:
 let
   validAccents = [
@@ -38,9 +38,9 @@ let
   # Per instructions in the papirus-folders project.
   papirus-folders-rev = "0f838ee5679229e3a3e97e3b333c222c9e9615b4";
   papirus-folders-script = fetchurl {
-    url = "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-folders/${papirus-folders-rev}/papirus-folders";
-    sha256 = "sha256-NJpXdf1ymnvQzRwUl3OalLzs3sXWVFTp5jN2B3vtUk0=";
     executable = true;
+    sha256 = "sha256-NJpXdf1ymnvQzRwUl3OalLzs3sXWVFTp5jN2B3vtUk0=";
+    url = "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-folders/${papirus-folders-rev}/papirus-folders";
   };
 in
 lib.checkListOfEnum "${pname}: accent colors" validAccents [ accent ] lib.checkListOfEnum
@@ -59,18 +59,15 @@ lib.checkListOfEnum "${pname}: accent colors" validAccents [ accent ] lib.checkL
       sha256 = "sha256-FiZdwzsaMhS+5EYTcVU1LVax2H1FidQw97xZklNH2R4=";
     };
 
-    # This takes a horribly long time, and there's nothing to fixup in
-    # this package.
-    dontFixup = true;
-    nativeBuildInputs = [
-      gtk3
-      getent
-    ];
-
     postPatch = ''
       cp ${papirus-folders-script} ./papirus-folders
       patchShebangs ./papirus-folders
     '';
+
+    nativeBuildInputs = [
+      gtk3
+      getent
+    ];
 
     installPhase = ''
       runHook preInstall
@@ -85,11 +82,15 @@ lib.checkListOfEnum "${pname}: accent colors" validAccents [ accent ] lib.checkL
       runHook postInstall
     '';
 
+    # This takes a horribly long time, and there's nothing to fixup in
+    # this package.
+    dontFixup = true;
+
     meta = {
       description = "Soothing pastel theme for Papirus Icon Theme folders";
       homepage = "https://github.com/catppuccin/papirus-folders";
       license = lib.licenses.mit;
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ rubyowo ];
+      platforms = lib.platforms.linux;
     };
   }

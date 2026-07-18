@@ -1,14 +1,14 @@
 {
-  cmake,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   glm,
   httplib,
-  lib,
   openssl,
   plog,
   runCommand,
   sdl3,
-  stdenv,
   unstableGitUpdater,
   writeShellScript,
   zlib,
@@ -21,11 +21,14 @@ stdenv.mkDerivation rec {
   # 3 that supports the -additionaldir command-line option, we can stop using
   # an unstable version of Descent 3.
   version = "1.5.0-beta-unstable-2026-01-21";
+
   src = fetchFromGitHub {
     owner = "DescentDevelopers";
     repo = "Descent3";
     rev = "156cba8aafd997d27deb0902ba6026bcdcc1cfaf";
+    hash = "sha256-NsZPGgIzI2mE3mJ7eoczaNDkGZUpMUMBRLK2qt2WPgk=";
     leaveDotGit = true;
+
     # Descent 3 is supposed to display its Git commit hash in the bottom right
     # corner of the main menu. That feature only works if either the .git
     # directory or a git-hash.txt file exists at build time. We don’t want .git
@@ -50,11 +53,10 @@ stdenv.mkDerivation rec {
       git rev-parse --verify HEAD | tr --delete '\n' > git-hash.txt
       rm -r .git
     '';
-    hash = "sha256-NsZPGgIzI2mE3mJ7eoczaNDkGZUpMUMBRLK2qt2WPgk=";
   };
 
-  hardeningDisable = [ "format" ];
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     glm
     httplib
@@ -63,13 +65,17 @@ stdenv.mkDerivation rec {
     sdl3
     zlib
   ];
+
   cmakeFlags = [ "-DFORCE_PORTABLE_INSTALL=OFF" ];
+
   # This is a workaround for a problem that will eventually get fixed upstream.
   postInstall = ''
     cd "$out"
     mv lib/* share/
     rmdir lib
   '';
+
+  hardeningDisable = [ "format" ];
 
   passthru = {
     # The idea here is to make sure that we don’t forget to update meta.license
@@ -96,8 +102,10 @@ stdenv.mkDerivation rec {
         55d65dbf5d785111cf7029941cb7f72dbef084509e6126bcc58b6bb20203f8c6  THIRD_PARTY.md
       EOF
     '';
+
     updateScript = unstableGitUpdater {
       shallowClone = false;
+
       # unstableGitUpdater assumes that the version number should be 0 if there
       # isn’t any tags in the repo’s default branch. For most packages, that is
       # the correct decision, but for Descent 3 it’s not. Descent 3’s source
@@ -132,6 +140,7 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Game engine for a 6DOF first-person shooter";
     homepage = "https://github.com/DescentDevelopers/Descent3";
+
     license = with lib.licenses; [
       # See LICENSE and header that’s at the top of many source files.
       gpl3Plus
@@ -139,9 +148,10 @@ stdenv.mkDerivation rec {
       isc
       mit
     ];
-    mainProgram = "Descent3";
+
     maintainers = [ lib.maintainers.jayman2000 ];
     platforms = lib.platforms.all;
+
     badPlatforms = [
       # Descent 3 stores modules in HOG2 archives. It extracts those modules
       # and then tries to dlopen() them at runtime.
@@ -154,5 +164,7 @@ stdenv.mkDerivation rec {
       # [1]: <https://logs.ofborg.org/?key=nixos/nixpkgs.355710&attempt_id=747dd630-5068-4ba9-9c50-6f150634ef1a>
     ]
     ++ lib.platforms.darwin;
+
+    mainProgram = "Descent3";
   };
 }

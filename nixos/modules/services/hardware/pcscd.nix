@@ -39,40 +39,27 @@ in
       defaultText = lib.literalExpression "if config.security.polkit.enable then pkgs.pcscliteWithPolkit else pkgs.pcsclite";
     };
 
-    plugins = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
-      defaultText = lib.literalExpression "[ pkgs.ccid ]";
-      example = lib.literalExpression "[ pkgs.pcsc-cyberjack ]";
-      description = "Plugin packages to be used for PCSC-Lite.";
-    };
+    extendReaderNames = lib.mkOption {
+      default = null;
 
-    readerConfigs = lib.mkOption {
-      type = lib.types.listOf lib.types.lines;
-      default = [ ];
-      example = [
-        ''
-          FRIENDLYNAME      "Some serial reader"
-          DEVICENAME        /dev/ttyS0
-          LIBPATH           /path/to/serial_reader.so
-          CHANNELID         1
-        ''
-      ];
       description = ''
-        Configuration for devices that aren't hotpluggable.
-
-        See {manpage}`reader.conf(5)` for valid options.
+        String to append to every reader name. The special variable `$HOSTNAME`
+        will be expanded to the current host name.
       '';
+
+      example = " $HOSTNAME";
+      type = lib.types.nullOr lib.types.str;
     };
 
     extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
       description = "Extra command line arguments to be passed to the PCSC daemon.";
+      type = lib.types.listOf lib.types.str;
     };
 
     ignoreReaderNames = lib.mkOption {
-      type = lib.types.listOf (lib.types.strMatching "[^:]+");
       default = [ ];
+
       description = ''
         List of reader name patterns for the PCSC daemon to ignore.
 
@@ -84,46 +71,62 @@ in
         ACTION!="remove|unbind", SUBSYSTEM=="usb", ATTR{idVendor}=="20a0", ENV{PCSCLITE_IGNORE}="1"
         ```
       '';
+
       example = [
         "Nitrokey"
         "YubiKey"
       ];
+
+      type = lib.types.listOf (lib.types.strMatching "[^:]+");
     };
 
-    extendReaderNames = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
+    plugins = lib.mkOption {
+      defaultText = lib.literalExpression "[ pkgs.ccid ]";
+      description = "Plugin packages to be used for PCSC-Lite.";
+      example = lib.literalExpression "[ pkgs.pcsc-cyberjack ]";
+      type = lib.types.listOf lib.types.package;
+    };
+
+    readerConfigs = lib.mkOption {
+      default = [ ];
+
       description = ''
-        String to append to every reader name. The special variable `$HOSTNAME`
-        will be expanded to the current host name.
+        Configuration for devices that aren't hotpluggable.
+
+        See {manpage}`reader.conf(5)` for valid options.
       '';
-      example = " $HOSTNAME";
+
+      example = [
+        ''
+          FRIENDLYNAME      "Some serial reader"
+          DEVICENAME        /dev/ttyS0
+          LIBPATH           /path/to/serial_reader.so
+          CHANNELID         1
+        ''
+      ];
+
+      type = lib.types.listOf lib.types.lines;
     };
   };
 
   config = lib.mkIf config.services.pcscd.enable {
     environment.etc."reader.conf".source = cfgFile;
-
     environment.systemPackages = [ cfg.package ];
-    systemd.packages = [ cfg.package ];
-
     services.pcscd.plugins = [ pkgs.ccid ];
-
     services.udev.packages = [ pkgs.ccid ];
-
-    systemd.sockets.pcscd.wantedBy = [ "sockets.target" ];
+    systemd.packages = [ cfg.package ];
 
     systemd.services.pcscd = {
       environment = {
-        PCSCLITE_HP_DROPDIR = pluginEnv;
+        PCSCLITE_FILTER_EXTEND_READER_NAMES = lib.mkIf (
+          cfg.extendReaderNames != null
+        ) cfg.extendReaderNames;
 
         PCSCLITE_FILTER_IGNORE_READER_NAMES = lib.mkIf (cfg.ignoreReaderNames != [ ]) (
           lib.concatStringsSep ":" cfg.ignoreReaderNames
         );
 
-        PCSCLITE_FILTER_EXTEND_READER_NAMES = lib.mkIf (
-          cfg.extendReaderNames != null
-        ) cfg.extendReaderNames;
+        PCSCLITE_HP_DROPDIR = pluginEnv;
       };
 
       # If the cfgFile is empty and not specified (in which case the default
@@ -140,11 +143,12 @@ in
       ];
     };
 
-    users.users.pcscd = {
-      isSystemUser = true;
-      group = "pcscd";
-    };
-
+    systemd.sockets.pcscd.wantedBy = [ "sockets.target" ];
     users.groups.pcscd = { };
+
+    users.users.pcscd = {
+      group = "pcscd";
+      isSystemUser = true;
+    };
   };
 }

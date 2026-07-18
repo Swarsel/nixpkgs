@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
-  lib,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pypaperless";
   version = "5.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tb1337";
@@ -28,15 +27,6 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    aiohttp
-    yarl
-  ];
-
-  pythonImportsCheck = [ "pypaperless" ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
@@ -44,10 +34,20 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    aiohttp
+    yarl
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pypaperless" ];
+
   meta = {
-    changelog = "https://github.com/tb1337/paperless-api/releases/tag/${src.tag}";
     description = "Little api client for paperless(-ngx)";
     homepage = "https://github.com/tb1337/paperless-api";
+    changelog = "https://github.com/tb1337/paperless-api/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

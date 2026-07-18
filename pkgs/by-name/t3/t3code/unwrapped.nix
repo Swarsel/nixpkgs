@@ -1,25 +1,25 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  cacert,
   cctools,
   copyDesktopItems,
   electron_41,
-  fetchFromGitHub,
+  fetchPnpmDeps,
   installShellFiles,
-  lib,
   libicns,
   makeBinaryWrapper,
   makeDesktopItem,
   nix-update-script,
   node-gyp,
   nodejs,
+  pnpmBuildHook,
+  pnpmConfigHook,
+  pnpm_10,
   python3,
-  stdenv,
   writeDarwinBundle,
   xcbuild,
-  fetchPnpmDeps,
-  pnpm_10,
-  pnpmConfigHook,
-  pnpmBuildHook,
-  cacert,
 }:
 
 stdenv.mkDerivation (
@@ -38,8 +38,6 @@ stdenv.mkDerivation (
   {
     pname = "t3code-unwrapped";
     version = "0.0.28";
-    strictDeps = true;
-    __structuredAttrs = true;
 
     src = fetchFromGitHub {
       owner = "pingdotgg";
@@ -53,6 +51,8 @@ stdenv.mkDerivation (
         --replace-fail 'const host = process.env.HOST?.trim() || "localhost";' \
                        'const host = process.env.HOST?.trim() || "127.0.0.1";'
     '';
+
+    strictDeps = true;
 
     nativeBuildInputs = [
       installShellFiles
@@ -73,29 +73,6 @@ stdenv.mkDerivation (
       xcbuild
     ];
 
-    pnpmWorkspaces = [
-      # `...` suffix is used to also include other workspace packages that are
-      # directly or indirectly depended on by the listed packages, such as
-      # `@t3tools/contracts` and `@t3tools/shared`.
-      "@t3tools/monorepo"
-      "t3..."
-      "@t3tools/desktop..."
-      "@t3tools/scripts..."
-    ];
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit pnpm;
-      inherit (finalAttrs)
-        pname
-        version
-        src
-        pnpmWorkspaces
-        ;
-
-      fetcherVersion = 4;
-      hash = "sha256-+JqW/iI0wdRPxyL7y6ggD/+AvwwZXs9+fSUtG/SgW9s=";
-    };
-
     preBuild = ''
       node scripts/update-release-package-versions.ts ${finalAttrs.version}
 
@@ -106,21 +83,9 @@ stdenv.mkDerivation (
       pnpm rebuild --pending "''${pnpmInstallFlags[@]}" --filter '!@t3tools/monorepo'
     '';
 
-    pnpmBuildScript = "build:desktop";
-
     postBuild = ''
       pnpm vp cache clean
     '';
-
-    # Many dependencies vendors many prebuilt native artifacts for non-host
-    # platforms, and some of those binaries are statically linked. Let fixup
-    # handle wrappers, shebangs, and stripping, but skip patchelf on the
-    # vendored tree.
-    dontPatchELF = true;
-    # The tmpdir audit hook also shells out to patchelf while scanning every
-    # vendored ELF for leaked build paths. That produces spurious warnings on
-    # some dependencies' static foreign-platform binaries.
-    noAuditTmpdir = true;
 
     installPhase = ''
       runHook preInstall
@@ -179,17 +144,54 @@ stdenv.mkDerivation (
       done
     '';
 
+    __structuredAttrs = true;
+
     desktopItems = [
       (makeDesktopItem {
-        name = "t3code";
-        desktopName = appName;
-        comment = "Minimal web GUI for coding agents";
-        exec = "t3code-desktop %U";
-        terminal = false;
-        icon = "t3code";
-        startupWMClass = "t3code";
         categories = [ "Development" ];
+        comment = "Minimal web GUI for coding agents";
+        desktopName = appName;
+        exec = "t3code-desktop %U";
+        icon = "t3code";
+        name = "t3code";
+        startupWMClass = "t3code";
+        terminal = false;
       })
+    ];
+
+    # Many dependencies vendors many prebuilt native artifacts for non-host
+    # platforms, and some of those binaries are statically linked. Let fixup
+    # handle wrappers, shebangs, and stripping, but skip patchelf on the
+    # vendored tree.
+    dontPatchELF = true;
+    # The tmpdir audit hook also shells out to patchelf while scanning every
+    # vendored ELF for leaked build paths. That produces spurious warnings on
+    # some dependencies' static foreign-platform binaries.
+    noAuditTmpdir = true;
+    pnpmBuildScript = "build:desktop";
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit pnpm;
+
+      inherit (finalAttrs)
+        pname
+        version
+        src
+        pnpmWorkspaces
+        ;
+
+      fetcherVersion = 4;
+      hash = "sha256-+JqW/iI0wdRPxyL7y6ggD/+AvwwZXs9+fSUtG/SgW9s=";
+    };
+
+    pnpmWorkspaces = [
+      # `...` suffix is used to also include other workspace packages that are
+      # directly or indirectly depended on by the listed packages, such as
+      # `@t3tools/contracts` and `@t3tools/shared`.
+      "@t3tools/monorepo"
+      "t3..."
+      "@t3tools/desktop..."
+      "@t3tools/scripts..."
     ];
 
     passthru = {
@@ -200,17 +202,19 @@ stdenv.mkDerivation (
     };
 
     meta = {
+      inherit (nodejs.meta) platforms;
       description = "Minimal web GUI for coding agents";
       homepage = "https://t3.codes";
-      downloadPage = "https://t3.codes/download";
       changelog = "https://github.com/pingdotgg/t3code/releases/tag/${finalAttrs.src.tag}";
       license = lib.licenses.mit;
+
       maintainers = with lib.maintainers; [
         iamanaws
         qweered
       ];
+
       mainProgram = "t3code-desktop";
-      inherit (nodejs.meta) platforms;
+      downloadPage = "https://t3.codes/download";
     };
   }
 )

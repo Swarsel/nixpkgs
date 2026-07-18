@@ -1,21 +1,22 @@
 {
-  pname,
-  version,
-  variant,
-  src,
-  patches ? _: [ ],
   meta,
+  pname,
+  src,
+  variant,
+  version,
+  patches ? _: [ ],
 }:
 
 {
   lib,
   stdenv,
-  libxaw3d,
   acl,
   alsa-lib,
   apple-sdk,
   autoreconfHook,
   cairo,
+  # test
+  callPackage,
   dbus,
   emacsPackagesFor,
   fetchpatch,
@@ -29,12 +30,6 @@
   gtk3-x11,
   harfbuzz,
   imagemagick,
-  libxaw,
-  libxcursor,
-  libxft,
-  libxi,
-  libxpm,
-  libxrandr,
   libgccjit,
   libjpeg,
   libotf,
@@ -43,7 +38,16 @@
   libselinux,
   libtiff,
   libwebp,
+  libxaw,
+  libxaw3d,
+  libxcursor,
+  libxft,
+  libxi,
   libxml2,
+  libxpm,
+  libxrandr,
+  # TODO: Clean up on `staging`
+  llvmPackages,
   m17n_lib,
   mailcap,
   mailutils,
@@ -52,57 +56,19 @@
   ncurses,
   nixosTests,
   pkg-config,
+  replaceVars,
   sigtool,
   sqlite,
-  replaceVars,
   systemdLibs,
-  tree-sitter,
   texinfo,
+  tree-sitter,
   webkitgtk_4_1,
   wrapGAppsHook3,
   zlib,
-
-  # Boolean flags
-  withNativeCompilation ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
   noGui ? false,
-  srcRepo ? true,
-  withAcl ? false,
-  withAlsaLib ? false,
-  withAthena ? false,
-  withCairo ? withX,
-  withCsrc ? true,
-  withDbus ? stdenv.hostPlatform.isLinux,
-  # https://github.com/emacs-mirror/emacs/blob/emacs-30.2/etc/NEWS#L52-L56
-  withGcMarkTrace ? false,
-  withGTK3 ? withPgtk && !noGui,
-  withGlibNetworking ? withPgtk || withGTK3 || (withX && withXwidgets),
-  withGpm ? stdenv.hostPlatform.isLinux,
-  # https://github.com/emacs-mirror/emacs/blob/emacs-27.2/etc/NEWS#L118-L120
-  withImageMagick ? false,
-  withMailutils ? true,
-  withMotif ? false,
-  withNS ? stdenv.hostPlatform.isDarwin && !(variant == "macport" || noGui),
-  withPgtk ? false,
-  withSelinux ? stdenv.hostPlatform.isLinux,
-  withSQLite3 ? true,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
-  withToolkitScrollBars ? true,
-  withTreeSitter ? true,
-  withWebP ? true,
-  withX ? !(stdenv.hostPlatform.isDarwin || noGui || withPgtk),
-  withXinput2 ? withX,
-  withXwidgets ?
-    !noGui
-    && (withGTK3 || withPgtk || withNS || variant == "macport")
-    && (stdenv.hostPlatform.isDarwin || lib.versions.major version != "30"),
-  # XXX: - upstream bug 66068 precludes newer versions of webkit2gtk (https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-09/msg00695.html)
-  # XXX: - Apple_SDK WebKit is compatible with Emacs.
-  # XXX: - upstream bug 80728 lifts the webkit2gtk version check added in upstream bug 66068
-  withSmallJaDic ? false,
-  withCompressInstall ? true,
-
   # Options
   siteStart ? ./site-start.el,
+  srcRepo ? true,
   toolkit ? (
     if withGTK3 then
       "gtk3"
@@ -113,11 +79,42 @@
     else
       "lucid"
   ),
-
-  # test
-  callPackage,
-  # TODO: Clean up on `staging`
-  llvmPackages,
+  withAcl ? false,
+  withAlsaLib ? false,
+  withAthena ? false,
+  withCairo ? withX,
+  withCompressInstall ? true,
+  withCsrc ? true,
+  withDbus ? stdenv.hostPlatform.isLinux,
+  withGTK3 ? withPgtk && !noGui,
+  # https://github.com/emacs-mirror/emacs/blob/emacs-30.2/etc/NEWS#L52-L56
+  withGcMarkTrace ? false,
+  withGlibNetworking ? withPgtk || withGTK3 || (withX && withXwidgets),
+  withGpm ? stdenv.hostPlatform.isLinux,
+  # https://github.com/emacs-mirror/emacs/blob/emacs-27.2/etc/NEWS#L118-L120
+  withImageMagick ? false,
+  withMailutils ? true,
+  withMotif ? false,
+  withNS ? stdenv.hostPlatform.isDarwin && !(variant == "macport" || noGui),
+  # Boolean flags
+  withNativeCompilation ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
+  withPgtk ? false,
+  withSQLite3 ? true,
+  withSelinux ? stdenv.hostPlatform.isLinux,
+  # XXX: - upstream bug 66068 precludes newer versions of webkit2gtk (https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-09/msg00695.html)
+  # XXX: - Apple_SDK WebKit is compatible with Emacs.
+  # XXX: - upstream bug 80728 lifts the webkit2gtk version check added in upstream bug 66068
+  withSmallJaDic ? false,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
+  withToolkitScrollBars ? true,
+  withTreeSitter ? true,
+  withWebP ? true,
+  withX ? !(stdenv.hostPlatform.isDarwin || noGui || withPgtk),
+  withXinput2 ? withX,
+  withXwidgets ?
+    !noGui
+    && (withGTK3 || withPgtk || withNS || variant == "macport")
+    && (stdenv.hostPlatform.isDarwin || lib.versions.major version != "30"),
 }:
 
 assert (withGTK3 && !withNS && variant != "macport") -> withX || withPgtk;
@@ -144,6 +141,9 @@ let
   withWebkitgtk = withXwidgets && stdenv.hostPlatform.isLinux;
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit version;
+  inherit src;
+
   pname =
     pname
     + (
@@ -158,9 +158,6 @@ stdenv.mkDerivation (finalAttrs: {
       else
         ""
     );
-  inherit version;
-
-  inherit src;
 
   patches =
     patches fetchpatch
@@ -357,13 +354,6 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  # Emacs needs to find movemail at run time, see info (emacs) Movemail
-  propagatedUserEnvPkgs = lib.optionals withMailutils [
-    mailutils
-  ];
-
-  hardeningDisable = [ "format" ];
-
   configureFlags = [
     (lib.enableFeature false "build-details") # for a (more) reproducible build
     (lib.withFeature true "modules")
@@ -417,12 +407,10 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.withFeature withSelinux "selinux")
   ];
 
-  __structuredAttrs = true;
-
   env =
     lib.optionalAttrs withNativeCompilation {
-      NATIVE_FULL_AOT = "1";
       LIBRARY_PATH = lib.concatStringsSep ":" libGccJitLibraryPaths;
+      NATIVE_FULL_AOT = "1";
     }
     // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
       # workaround for ld64 hardening issue
@@ -434,13 +422,6 @@ stdenv.mkDerivation (finalAttrs: {
         # See https://github.com/NixOS/nixpkgs/issues/127902
         + lib.optionalString (variant == "macport") " -isystem ${./macport-noescape-noop}";
     };
-
-  enableParallelBuilding = true;
-
-  installTargets = [
-    "tags"
-    "install"
-  ];
 
   postInstall = ''
     mkdir -p $out/share/emacs/site-lisp
@@ -487,6 +468,20 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --add-needed "libXcursor.so.1" "$out/bin/emacs"
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+
+  installTargets = [
+    "tags"
+    "install"
+  ];
+
+  # Emacs needs to find movemail at run time, see info (emacs) Movemail
+  propagatedUserEnvPkgs = lib.optionals withMailutils [
+    mailutils
+  ];
+
   setupHook = ./setup-hook.sh;
 
   passthru = {
@@ -494,8 +489,10 @@ stdenv.mkDerivation (finalAttrs: {
     inherit withTreeSitter;
     inherit withXwidgets;
     pkgs = lib.recurseIntoAttrs (emacsPackagesFor finalAttrs.finalPackage);
+
     tests = {
       inherit (nixosTests) emacs-daemon;
+
       withPackages = callPackage ./build-support/wrapper-test.nix {
         emacs = finalAttrs.finalPackage;
       };

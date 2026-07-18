@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   protobuf,
 }:
 
 buildPythonPackage rec {
   pname = "pycomfoconnect";
   version = "0.5.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "michaelarnauts";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ protobuf ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pycomfoconnect" ];
 
   meta = {

@@ -5,11 +5,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "3.1";
-
-  date = "April2012";
-
   pname = "nvidia-cg-toolkit";
+  version = "3.1";
 
   src =
     if stdenv.hostPlatform.system == "x86_64-linux" then
@@ -41,6 +38,8 @@ stdenv.mkDerivation rec {
     mkdir -p "$out/share/doc/$name/"
     cp -v -r local/Cg/* "$out/share/doc/$name/"
   '';
+
+  date = "April2012";
 
   meta = {
     homepage = "https://developer.nvidia.com/cg-toolkit";

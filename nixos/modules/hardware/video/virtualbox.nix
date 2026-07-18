@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ config, lib, ... }:
 let
   inherit (config.boot) kernelPackages;
   inherit (config.services.xserver) videoDrivers;
@@ -8,6 +8,7 @@ in
     assertions = [
       {
         assertion = lib.versionOlder kernelPackages.kernel.version "7.0";
+
         message = ''
           The `virtualbox` video driver provided by VirtualBox Guest Additions has been deprecated upstream for Linux kernel 7.0+.
         '';

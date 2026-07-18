@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   asn1crypto,
   asysocks,
   buildPythonPackage,
-  fetchFromGitHub,
   kerbad,
   setuptools,
   unicrypto,
@@ -12,7 +12,6 @@
 buildPythonPackage {
   pname = "badauth";
   version = "0.1.4-unstable-2025-10-09";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CravateRouge";
@@ -21,6 +20,8 @@ buildPythonPackage {
     hash = "sha256-p7V5WkQ48b1IqCPwmJfbCiyqekfp9zW41J81JHyZNUQ=";
   };
 
+  # Module doesn't have tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage {
     unicrypto
   ];
 
-  # Module doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "badauth" ];
 
   meta = {

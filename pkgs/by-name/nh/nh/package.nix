@@ -1,9 +1,9 @@
 {
   lib,
-  symlinkJoin,
   makeBinaryWrapper,
   nh-unwrapped,
   nix-output-monitor,
+  symlinkJoin,
 }:
 let
   unwrapped = nh-unwrapped;
@@ -12,12 +12,8 @@ let
   ];
 in
 symlinkJoin {
-  pname = "nh";
   inherit (unwrapped) version;
-
-  paths = [
-    unwrapped
-  ];
+  pname = "nh";
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -27,6 +23,10 @@ symlinkJoin {
     wrapProgram $out/bin/nh \
       --prefix PATH : ${lib.makeBinPath runtimeDeps}
   '';
+
+  paths = [
+    unwrapped
+  ];
 
   meta = {
     inherit (unwrapped.meta)

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "py-radix";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mjschultz";
@@ -17,9 +16,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-++QuZEwOHKjOsIbwLmDy30PvyG0Xe29l45PvOF+YWYw=";
   };
 
-  pythonImportsCheck = [ "radix" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "radix" ];
 
   meta = {
     description = "Python radix tree implementation for IPv4 and IPv6 prefix matching";

@@ -1,8 +1,8 @@
 {
   lib,
   fetchzip,
-  stdenvNoCC,
   makeWrapper,
+  stdenvNoCC,
 }:
 let
   build = "536";
@@ -16,9 +16,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-K46XQvhLs8rnQ0psveL2dZ/+bTZnaeWVLtrUm29RQYU=";
     stripRoot = false;
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -34,14 +31,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Powerful macOS menu bar customization tool";
     homepage = "https://swiftbar.app";
     changelog = "https://github.com/swiftbar/SwiftBar/releases/tag/v${finalAttrs.version}";
-    mainProgram = "SwiftBar";
     license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ matteopacini ];
+    platforms = lib.platforms.darwin;
+    mainProgram = "SwiftBar";
   };
 })

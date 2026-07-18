@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  gitUpdater,
   glib,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
   gspell,
   gtk3,
   gtksourceview4,
   libxfce4ui,
+  meson,
+  ninja,
+  pkg-config,
+  polkit,
+  wrapGAppsHook3,
   xfconf,
   enablePolkit ? true,
-  polkit,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,11 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.7.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "mousepad";
     tag = "mousepad-${finalAttrs.version}";
     hash = "sha256-zoPzMqXfY3ir8MOYXTr+ZNmxISdMgKQEWwIgsVD9oMw=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -53,15 +53,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Use the GSettings keyfile backend rather than the default
   mesonFlags = [ "-Dkeyfile-settings=true" ];
-
   passthru.updateScript = gitUpdater { rev-prefix = "mousepad-"; };
 
   meta = {
     description = "Simple text editor for Xfce";
     homepage = "https://gitlab.xfce.org/apps/mousepad";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "mousepad";
     teams = [ lib.teams.xfce ];
-    platforms = lib.platforms.linux;
   };
 })

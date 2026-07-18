@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   amqp,
   azure-identity,
   azure-servicebus,
@@ -7,9 +8,8 @@
   boto3,
   buildPythonPackage,
   confluent-kafka,
-  fetchFromGitHub,
-  google-cloud-pubsub,
   google-cloud-monitoring,
+  google-cloud-pubsub,
   grpcio,
   hypothesis,
   kazoo,
@@ -32,7 +32,6 @@
 buildPythonPackage rec {
   pname = "kombu";
   version = "5.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "celery";
@@ -40,6 +39,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-J0cEQsMHKethrfDVDDvIjc/iZpoCYLH9INHtgKmH9Pk=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -50,44 +55,6 @@ buildPythonPackage rec {
     vine
   ];
 
-  optional-dependencies = {
-    msgpack = [ msgpack ];
-    yaml = [ pyyaml ];
-    redis = [ redis ];
-    mongodb = [ pymongo ];
-    sqs = [
-      boto3
-      urllib3
-      pycurl
-    ];
-    zookeeper = [ kazoo ];
-    sqlalchemy = [ sqlalchemy ];
-    azurestoragequeues = [
-      azure-identity
-      azure-storage-queue
-    ];
-    azureservicebus = [ azure-servicebus ];
-    confluentkafka = [ confluent-kafka ];
-    gcpubsub = [
-      google-cloud-pubsub
-      google-cloud-monitoring
-      grpcio
-      protobuf
-    ];
-    # pyro4 doesn't support Python 3.11
-    #pyro = [
-    #  pyro4
-    #];
-  };
-
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  pythonImportsCheck = [ "kombu" ];
-
   disabledTests = [
     # Disable pyro4 test
     "test_driver_version"
@@ -96,6 +63,45 @@ buildPythonPackage rec {
     # Broken on latest redis-py, see https://github.com/celery/kombu/issues/2362
     "test_connparams_health_check_interval_supported"
   ];
+
+  optional-dependencies = {
+    azureservicebus = [ azure-servicebus ];
+
+    azurestoragequeues = [
+      azure-identity
+      azure-storage-queue
+    ];
+
+    confluentkafka = [ confluent-kafka ];
+
+    gcpubsub = [
+      google-cloud-pubsub
+      google-cloud-monitoring
+      grpcio
+      protobuf
+    ];
+
+    mongodb = [ pymongo ];
+    msgpack = [ msgpack ];
+    redis = [ redis ];
+    sqlalchemy = [ sqlalchemy ];
+
+    sqs = [
+      boto3
+      urllib3
+      pycurl
+    ];
+
+    yaml = [ pyyaml ];
+    zookeeper = [ kazoo ];
+    # pyro4 doesn't support Python 3.11
+    #pyro = [
+    #  pyro4
+    #];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "kombu" ];
 
   meta = {
     description = "Messaging library for Python";

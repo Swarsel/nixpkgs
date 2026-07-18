@@ -1,47 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   bitstruct,
-  pyparsing,
-
+  buildPythonPackage,
+  diskcache,
   # optional-dependencies
   prompt-toolkit,
-  diskcache,
-
+  pyparsing,
   # tests
   pytest-xdist,
   pytestCheckHook,
+  # build-system
+  setuptools,
   versionCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "asn1tools";
   version = "0.167.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eerimoq";
     repo = "asn1tools";
     tag = version;
     hash = "sha256-86bdBYlAVJfd3EY8s0t6ZDRA/qZVWuHD4Jxa1n1Ke5E=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    bitstruct
-    pyparsing
-  ];
-
-  optional-dependencies = {
-    shell = [ prompt-toolkit ];
-    cache = [ diskcache ];
   };
 
   nativeCheckInputs = [
@@ -51,7 +34,12 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pythonImportsCheck = [ "asn1tools" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    bitstruct
+    pyparsing
+  ];
 
   disabledTests = [
     # assert exact error message of pyparsing which changed and no longer matches
@@ -68,6 +56,14 @@ buildPythonPackage rec {
     "test_command_line_generate_c_source_uper"
     "test_command_line_generate_rust_source_uper"
   ];
+
+  optional-dependencies = {
+    cache = [ diskcache ];
+    shell = [ prompt-toolkit ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "asn1tools" ];
 
   meta = {
     description = "ASN.1 parsing, encoding and decoding";

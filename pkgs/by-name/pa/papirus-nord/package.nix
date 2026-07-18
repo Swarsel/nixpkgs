@@ -1,10 +1,10 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  gtk3,
   getent,
+  gtk3,
   papirus-icon-theme,
+  stdenvNoCC,
   accent ? "frostblue1",
 }:
 let
@@ -46,14 +46,14 @@ lib.checkListOfEnum "${pname}: accent colors" validAccents [ accent ]
       sha256 = "sha256-KwwTDGJQ4zN9XH/pKFQDQ+EgyuSCFhN2PQAI35G+3YM=";
     };
 
+    postPatch = ''
+      patchShebangs ./papirus-folders
+    '';
+
     nativeBuildInputs = [
       gtk3
       getent
     ];
-
-    postPatch = ''
-      patchShebangs ./papirus-folders
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -74,7 +74,7 @@ lib.checkListOfEnum "${pname}: accent colors" validAccents [ accent ]
       description = "Nord version of Papirus Icon Theme";
       homepage = "https://github.com/Adapta-Projects/Papirus-Nord";
       license = lib.licenses.gpl2Plus;
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ aacebedo ];
+      platforms = lib.platforms.linux;
     };
   }

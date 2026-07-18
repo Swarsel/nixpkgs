@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  perl,
-  zlib,
-  libxml2,
-  eigen,
-  python3,
-  cairo,
-  pkg-config,
-  swig,
-  rapidjson,
   boost,
-  maeparser,
+  cairo,
+  cmake,
   coordgenlibs,
   ctestCheckHook,
+  eigen,
+  libxml2,
+  maeparser,
+  ninja,
+  perl,
+  pkg-config,
+  python3,
+  rapidjson,
+  swig,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -55,14 +55,16 @@ stdenv.mkDerivation {
     coordgenlibs
   ];
 
-  nativeCheckInputs = [
-    ctestCheckHook
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "RUN_SWIG" true)
     (lib.cmakeBool "PYTHON_BINDINGS" true)
     (lib.cmakeFeature "PYTHON_INSTDIR" "${placeholder "out"}/${python3.sitePackages}")
+  ];
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    ctestCheckHook
   ];
 
   disabledTests = [
@@ -73,15 +75,13 @@ stdenv.mkDerivation {
     "test_align_5"
   ];
 
-  doCheck = true;
-
   dontUseNinjaCheck = true;
 
   meta = {
     description = "Toolbox designed to speak the many languages of chemical data";
     homepage = "http://openbabel.org";
-    platforms = lib.platforms.all;
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ danielbarter ];
+    platforms = lib.platforms.all;
   };
 }

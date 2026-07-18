@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "9.2";
   pname = "tab";
+  version = "9.2";
 
   src = fetchFromGitHub {
     owner = "ivan-tkatchev";
@@ -21,11 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     sed '1i#include <cstring>' -i deps.h
   '';
 
-  nativeCheckInputs = [ python3 ];
-
   doCheck = !stdenv.hostPlatform.isDarwin;
-
-  checkTarget = "test";
+  nativeCheckInputs = [ python3 ];
 
   installPhase = ''
     runHook preInstall
@@ -36,12 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  checkTarget = "test";
+
   meta = {
     description = "Programming language/shell calculator";
-    mainProgram = "tab";
     homepage = "https://tab-lang.xyz";
     license = lib.licenses.boost;
     maintainers = with lib.maintainers; [ mstarzyk ];
     platforms = with lib.platforms; unix;
+    mainProgram = "tab";
   };
 })

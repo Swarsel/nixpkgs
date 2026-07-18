@@ -2,31 +2,26 @@
   lib,
   fetchFromGitLab,
   buildPythonPackage,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  # checkInputs
+  declinate,
   # dependencies
   lz4,
   numpy,
-  ruamel-yaml,
-  safelz4,
-  typing-extensions,
-  zstandard,
-
   # nativeCheckInputs
   pytestCheckHook,
-
-  # checkInputs
-  declinate,
+  pythonAtLeast,
+  ruamel-yaml,
+  safelz4,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  typing-extensions,
+  zstandard,
 }:
 
 buildPythonPackage rec {
   pname = "rosbags";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "ternaris";
@@ -34,6 +29,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-CSRJIGLhQwuaGatfWIbnYNdjUva+klBYPyDbjHfUNlM=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  checkInputs = [
+    declinate
+  ];
 
   build-system = [
     setuptools
@@ -49,11 +50,7 @@ buildPythonPackage rec {
   ]
   ++ lib.optional (pythonAtLeast "3.14") safelz4;
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  checkInputs = [
-    declinate
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "rosbags"

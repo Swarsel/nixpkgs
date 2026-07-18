@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpm_10,
-  nodejs,
   makeBinaryWrapper,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 let
   pnpm = pnpm_10;
@@ -21,20 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "language-tools";
     tag = "svelte-check-${finalAttrs.version}";
     hash = "sha256-+KDl7tTyXo6QMQpMGA4hSChDaPrfqfVKJXGunTlo9Rg=";
-  };
-
-  pnpmWorkspaces = [ "svelte-check..." ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      ;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-43AIkVzpcq/Y+QO2k7pkr6CN340idXJEpie0gVdxra8=";
   };
 
   nativeBuildInputs = [
@@ -68,6 +54,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-43AIkVzpcq/Y+QO2k7pkr6CN340idXJEpie0gVdxra8=";
+  };
+
+  pnpmWorkspaces = [ "svelte-check..." ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--use-github-releases"
@@ -78,10 +79,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Svelte code checker";
-    downloadPage = "https://www.npmjs.com/package/svelte-check";
     homepage = "https://github.com/sveltejs/language-tools";
     license = lib.licenses.mit;
-    mainProgram = "svelte-check";
     maintainers = [ ];
+    mainProgram = "svelte-check";
+    downloadPage = "https://www.npmjs.com/package/svelte-check";
   };
 })

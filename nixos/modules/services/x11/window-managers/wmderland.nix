@@ -15,16 +15,7 @@ in
   options.services.xserver.windowManager.wmderland = {
     enable = mkEnableOption "wmderland";
 
-    extraSessionCommands = mkOption {
-      default = "";
-      type = types.lines;
-      description = ''
-        Shell commands executed just before wmderland is started.
-      '';
-    };
-
     extraPackages = mkOption {
-      type = with types; listOf package;
       default = with pkgs; [
         rofi
         dunst
@@ -33,6 +24,7 @@ in
         feh
         rxvt-unicode
       ];
+
       defaultText = literalExpression ''
         with pkgs; [
           rofi
@@ -43,15 +35,35 @@ in
           rxvt-unicode
         ]
       '';
+
       description = ''
         Extra packages to be installed system wide.
       '';
+
+      type = with types; listOf package;
+    };
+
+    extraSessionCommands = mkOption {
+      default = "";
+
+      description = ''
+        Shell commands executed just before wmderland is started.
+      '';
+
+      type = types.lines;
     };
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [
+      pkgs.wmderland
+      pkgs.wmderlandc
+    ]
+    ++ cfg.extraPackages;
+
     services.xserver.windowManager.session = singleton {
       name = "wmderland";
+
       start = ''
         ${cfg.extraSessionCommands}
 
@@ -59,10 +71,5 @@ in
         waitPID=$!
       '';
     };
-    environment.systemPackages = [
-      pkgs.wmderland
-      pkgs.wmderlandc
-    ]
-    ++ cfg.extraPackages;
   };
 }

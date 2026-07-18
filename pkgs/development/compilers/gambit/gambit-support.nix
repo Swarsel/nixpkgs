@@ -1,11 +1,14 @@
-{ pkgs, lib }:
+{ lib, pkgs }:
 
 rec {
+  export-gambopt = params: "export GAMBOPT=${params.buildRuntimeOptions} ;";
+  gambit-bootstrap = import ./bootstrap.nix pkgs;
+
   stable-params = {
-    stable = true;
-    defaultRuntimeOptions = "iL,fL,-L,tL";
     buildRuntimeOptions = "i8,f8,-8,t8";
-    targets = "js"; # arm,java,js,php,python,riscv-32,riscv-64,ruby,x86,x86-64
+    defaultRuntimeOptions = "iL,fL,-L,tL";
+    extraOptions = [ "CFLAGS=-foptimize-sibling-calls" ];
+
     #fixStamp = _: _: _: "";
     fixStamp = git-version: stampYmd: stampHms: ''
       echo "Fixing timestamp recipe in Makefile"
@@ -17,30 +20,30 @@ rec {
         --replace "echo > stamp.h;" "(echo '#define ___STAMP_VERSION \"v${git-version}\"'; echo '#define ___STAMP_YMD ${toString stampYmd}'; echo '#define ___STAMP_HMS ${toString stampHms}';) > stamp.h;";
       grep -i ' version=\|echo..#define ___STAMP_VERSION' include/makefile.in # XXX DEBUG -- REMOVE ME
     '';
+
     modules = true;
-    extraOptions = [ "CFLAGS=-foptimize-sibling-calls" ];
+    stable = true;
+    targets = "js"; # arm,java,js,php,python,riscv-32,riscv-64,ruby,x86,x86-64
   };
 
   unstable-params = stable-params // {
-    stable = false;
     extraOptions = [ ]; # "CFLAGS=-foptimize-sibling-calls" not necessary in latest unstable
+    stable = false;
   };
-
-  export-gambopt = params: "export GAMBOPT=${params.buildRuntimeOptions} ;";
-
-  gambit-bootstrap = import ./bootstrap.nix pkgs;
 
   meta = {
     description = "Optimizing Scheme to C compiler";
     homepage = "http://gambitscheme.org";
     license = lib.licenses.lgpl21Only; # dual, also asl20
-    # NB regarding platforms: continuously tested on Linux x86_64 and regularly tested on macOS x86_64.
-    # *should* work everywhere.
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       raskin
       fare
     ];
+
+    # NB regarding platforms: continuously tested on Linux x86_64 and regularly tested on macOS x86_64.
+    # *should* work everywhere.
+    platforms = lib.platforms.unix;
   };
 }

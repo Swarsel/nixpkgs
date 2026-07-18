@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  nix-update-script,
+  rustPlatform,
   stdenvNoCC,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,38 +18,39 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Tnu5Ophc20+fhAfqfRgfuJVdWojBBPThNPNlcefDVrs=";
   };
 
-  cargoHash = "sha256-J1zGm5F+as/B7lXbiZVBWD4/axfRBFSDL0MEUOQ09GI=";
-
   nativeBuildInputs = lib.optionals stdenvNoCC.hostPlatform.isDarwin [
     rustPlatform.bindgenHook
   ];
 
+  cargoHash = "sha256-J1zGm5F+as/B7lXbiZVBWD4/axfRBFSDL0MEUOQ09GI=";
   # Most tests require sandbox-incompatible operations:
   # - Integration tests (server_test, server_missing_host) require network and curl binary
   # - test_handler requires temporary filesystem writes
   # - Only test_engine could run in sandbox, but selective enablement adds maintenance burden
   doCheck = false;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Serve a Nushell closure over HTTP";
+
     longDescription = ''
       http-nu is a tool that allows you to serve Nushell closures over HTTP,
       making it easy to create web services using Nushell's powerful scripting
       capabilities.
     '';
+
     homepage = "https://github.com/cablehead/http-nu";
     changelog = "https://github.com/cablehead/http-nu/blob/v${finalAttrs.version}/changes/v${finalAttrs.version}.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cablehead
       cboecking
     ];
+
     mainProgram = "http-nu";
   };
 })

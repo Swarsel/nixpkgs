@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 buildNpmPackage rec {
@@ -29,8 +29,8 @@ buildNpmPackage rec {
 
   meta = {
     description = "A unified, high-performance i18next CLI";
-    changelog = "https://github.com/i18next/i18next-cli/blob/v${version}/CHANGELOG.md";
     homepage = "https://www.locize.com/blog/i18next-cli";
+    changelog = "https://github.com/i18next/i18next-cli/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.pbek ];
     mainProgram = "i18next-cli";

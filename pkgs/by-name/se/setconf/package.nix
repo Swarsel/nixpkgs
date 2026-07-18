@@ -17,16 +17,15 @@ let
     };
 
     build-system = with python3Packages; [ setuptools ];
-
     pyproject = true;
 
     meta = {
-      homepage = "https://github.com/xyproto/setconf";
       description = "Small utility for changing settings in configuration textfiles";
+      homepage = "https://github.com/xyproto/setconf";
       changelog = "https://github.com/xyproto/setconf/releases/tag/${self.src.rev}";
-      mainProgram = "setconf";
-      maintainers = [ ];
       license = lib.licenses.gpl2Only;
+      maintainers = [ ];
+      mainProgram = "setconf";
     };
   };
 in

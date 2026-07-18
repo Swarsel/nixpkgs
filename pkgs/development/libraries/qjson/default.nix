@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "0.9.0";
   pname = "qjson";
+  version = "0.9.0";
 
   src = fetchFromGitHub {
     owner = "flavio";
@@ -28,10 +28,9 @@ stdenv.mkDerivation rec {
       ""
   '';
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-register";
-
   nativeBuildInputs = [ cmake ];
   buildInputs = [ qtbase ];
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-register";
   dontWrapQtApps = true;
 
   meta = {

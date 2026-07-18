@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
   # Python deps
   six,
-  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mando";
   version = "0.8.2";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rubik";
@@ -22,11 +20,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   propagatedBuildInputs = [ six ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "mando" ];
 
   meta = {

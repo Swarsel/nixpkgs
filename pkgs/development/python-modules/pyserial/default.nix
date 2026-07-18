@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyserial";
   version = "3.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -22,15 +21,14 @@ buildPythonPackage rec {
   ];
 
   doCheck = !stdenv.hostPlatform.isDarwin; # broken on darwin
-
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "serial" ];
 
   unittestFlagsArray = [
     "-s"
     "test"
   ];
-
-  pythonImportsCheck = [ "serial" ];
 
   meta = {
     description = "Python serial port extension";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fixtures,
   pytestCheckHook,
   requests,
@@ -15,24 +15,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "podman";
   version = "5.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "containers";
     repo = "podman-py";
     tag = "v${finalAttrs.version}";
     hash = "sha256-i4eWC1MyBdc+en3W3+4fdeDP79Z2hsk9SIg3PfG0mI0=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    requests
-    urllib3
-  ];
-
-  optional-dependencies = {
-    progress_bar = [ rich ];
   };
 
   nativeCheckInputs = [
@@ -42,7 +30,19 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [ "podman" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    requests
+    urllib3
+  ];
+
+  disabledTestPaths = [
+    # Access to the host's filesystem
+    "podman/tests/integration/test_container_create.py"
+    "podman/tests/unit/test_utils.py"
+    "podman/tests/integration/test_volumes.py"
+  ];
 
   disabledTests = [
     # Integration tests require a running container setup
@@ -58,12 +58,12 @@ buildPythonPackage (finalAttrs: {
     "VolumesIntegrationTest"
   ];
 
-  disabledTestPaths = [
-    # Access to the host's filesystem
-    "podman/tests/integration/test_container_create.py"
-    "podman/tests/unit/test_utils.py"
-    "podman/tests/integration/test_volumes.py"
-  ];
+  optional-dependencies = {
+    progress_bar = [ rich ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "podman" ];
 
   meta = {
     description = "Python bindings for Podman's RESTful API";

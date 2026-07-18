@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
+  buildPythonPackage,
   flask,
   flask-httpauth,
-  pytz,
-  six,
   pymongo,
+  pytestCheckHook,
+  pytz,
+  setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "medallion";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oasis-open";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     six
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "medallion" ];
 
   meta = {

@@ -1,12 +1,12 @@
 {
   lib,
-  swiftPackages,
   fetchFromGitHub,
   actool,
   lld,
   makeWrapper,
   nix-update-script,
   rcodesign,
+  swiftPackages,
 }:
 
 let
@@ -31,15 +31,20 @@ let
   #   xcassets:        .xcassets directory compiled with actool into Assets.car
   frameworks = [
     {
+      localizations = shortcutRecorderDir;
       name = "ShortcutRecorder";
+
       objc = {
-        moduleMap = ./stubs/ShortcutRecorder.modulemap;
         headerGlob = ''"${shortcutRecorderDir}"/include/ShortcutRecorder/*.h'';
-        sourceGlob = ''"${shortcutRecorderDir}"/*.m'';
+
         includes = [
           "${shortcutRecorderDir}/include"
           "${shortcutRecorderDir}/include/ShortcutRecorder"
         ];
+
+        moduleMap = ./stubs/ShortcutRecorder.modulemap;
+        sourceGlob = ''"${shortcutRecorderDir}"/*.m'';
+
         sysFrameworks = [
           "Carbon"
           "AppKit"
@@ -47,13 +52,14 @@ let
           "CoreData"
         ];
       };
+
       # ShortcutRecorder looks up its own bundle via SRBundle() by identifier
       plistOverrides = {
         CFBundleIdentifier = "com.kulakov.ShortcutRecorder";
-        CFBundleVersion = "3.1";
         CFBundleShortVersionString = "3.1";
+        CFBundleVersion = "3.1";
       };
-      localizations = shortcutRecorderDir;
+
       xcassets = "${shortcutRecorderDir}/Images.xcassets";
     }
     # Updates are managed by Nix, and upstream's AppCenter package depends on
@@ -69,7 +75,7 @@ let
     }
     {
       name = "AppCenterCrashes";
-      stubSrc = ./stubs/AppCenterCrashesStub.swift;
+
       stubExtraFlags = [
         "-I"
         "$buildDir"
@@ -77,6 +83,8 @@ let
         "$buildDir"
         "-lAppCenter"
       ];
+
+      stubSrc = ./stubs/AppCenterCrashesStub.swift;
     }
   ];
 
@@ -168,8 +176,8 @@ let
     nixLog "Building ${fw.name} (stub)"
     ${swiftFrameworkLink {
       inherit (fw) name;
-      sourcesExpr = "${fw.stubSrc}";
       extraFlags = fw.stubExtraFlags or [ ];
+      sourcesExpr = "${fw.stubSrc}";
     }}
   '';
 
@@ -236,7 +244,7 @@ let
 
   # Compile an xcassets catalog into Assets.car in destDir
   compileAssetCatalog =
-    { destDir, catalog }:
+    { catalog, destDir }:
     ''
       actool --compile "${destDir}" \
         --platform macosx --minimum-deployment-target ${deploymentTarget} \
@@ -257,8 +265,8 @@ let
       cp -R "${fw.localizations}"/*.lproj "$fwDir/Resources/"
     ''}
     ${lib.optionalString (fw ? xcassets) (compileAssetCatalog {
-      destDir = "$fwDir/Resources";
       catalog = fw.xcassets;
+      destDir = "$fwDir/Resources";
     })}
   '';
 in
@@ -272,14 +280,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-izPiRGV8bD67rvOyNWShcpTbUujn6WHnzenPAMAlKoU=";
   };
-
-  nativeBuildInputs = [
-    swift
-    actool
-    lld
-    makeWrapper
-    rcodesign
-  ];
 
   patches = [
     # Swift 5.10 compatibility: count(where:), .extraLarge, Liquid Glass
@@ -308,7 +308,13 @@ stdenv.mkDerivation (finalAttrs: {
         'getTimestamps(key).filter { $0 >= threshold }.count'
   '';
 
-  dontConfigure = true;
+  nativeBuildInputs = [
+    swift
+    actool
+    lld
+    makeWrapper
+    rcodesign
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -390,22 +396,27 @@ stdenv.mkDerivation (finalAttrs: {
       "$out/Applications/AltTab.app"
   '';
 
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Windows alt-tab on macOS";
     homepage = "https://alt-tab.app";
+
     license = with lib.licenses; [
       gpl3Plus
       cc-by-40 # ShortcutRecorder
     ];
-    mainProgram = "alt-tab";
+
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       _4evy
       emilytrau
       Br1ght0ne
     ];
+
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+    mainProgram = "alt-tab";
   };
 })

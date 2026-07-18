@@ -1,14 +1,14 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  makeDesktopItem,
-  jdk17,
-  gradle_9,
-  which,
   copyDesktopItems,
   fetchpatch,
+  gradle_9,
+  jdk17,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  stdenvNoCC,
+  which,
 }:
 
 let
@@ -32,8 +32,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   patches = [
     # Gradle 9.5 compatibility. Remove on next version bump.
     (fetchpatch {
-      url = "https://github.com/freeplane/freeplane/commit/34189b58bbdf0027185a212e2d6bd9e289782ef2.patch";
       hash = "sha256-gVCKXme+pB7PV0yBoDMPg6ltCaTGYh1lspEKgwVkDgc=";
+      url = "https://github.com/freeplane/freeplane/commit/34189b58bbdf0027185a212e2d6bd9e289782ef2.patch";
     })
   ];
 
@@ -44,46 +44,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     copyDesktopItems
   ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  gradleFlags = [
-    "-Dorg.gradle.java.home=${jdk}"
-    "-x"
-    "test"
-  ];
-
-  # share/freeplane/core/org.freeplane.core/META-INF doesn't
-  # always get generated with parallel building enabled
-  enableParallelBuilding = false;
-
   preBuild = "mkdir -p freeplane/build";
-
-  gradleBuildTask = "build";
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "freeplane";
-      desktopName = "freeplane";
-      genericName = "Mind-mapper";
-      exec = "freeplane";
-      icon = "freeplane";
-      comment = finalAttrs.meta.description;
-      mimeTypes = [
-        "application/x-freemind"
-        "application/x-freeplane"
-        "text/x-troff-mm"
-      ];
-      categories = [
-        "2DGraphics"
-        "Chart"
-        "Graphics"
-        "Office"
-      ];
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -106,12 +67,53 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "2DGraphics"
+        "Chart"
+        "Graphics"
+        "Office"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "freeplane";
+      exec = "freeplane";
+      genericName = "Mind-mapper";
+      icon = "freeplane";
+
+      mimeTypes = [
+        "application/x-freemind"
+        "application/x-freeplane"
+        "text/x-troff-mm"
+      ];
+
+      name = "freeplane";
+    })
+  ];
+
+  # share/freeplane/core/org.freeplane.core/META-INF doesn't
+  # always get generated with parallel building enabled
+  enableParallelBuilding = false;
+  gradleBuildTask = "build";
+
+  gradleFlags = [
+    "-Dorg.gradle.java.home=${jdk}"
+    "-x"
+    "test"
+  ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
+
   meta = {
     description = "Mind-mapping software";
     homepage = "https://freeplane.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "freeplane";
   };
 })

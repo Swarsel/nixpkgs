@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   colorama,
   pytest,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytest-resource-path";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yukihiko-shinoda";
@@ -20,14 +19,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Y/mB5Gmkt3Rt8rRBOFZrWIREnpEiSxf/MChqymXDNws=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ colorama ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ colorama ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_resource_path" ];
 
   meta = {

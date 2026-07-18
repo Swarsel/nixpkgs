@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   torch,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "geotorch";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lezcano";
@@ -19,17 +18,18 @@ buildPythonPackage rec {
     hash = "sha256-mMVgN8ZmedSz5VxAAE7vdvmZXiP5y3GkO60o5hCSHn8=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     torch
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "geotorch" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Constrained optimization toolkit for PyTorch";

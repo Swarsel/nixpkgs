@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  libxml2,
-  libpeas,
   glib,
+  gspell,
   gtk3,
   gtksourceview4,
-  gspell,
-  xapp,
-  xapp-symbolic-icons,
+  intltool,
+  itstool,
+  libpeas,
+  libxml2,
+  meson,
+  ninja,
   pkg-config,
   python3,
   python3Packages,
-  meson,
-  ninja,
   versionCheckHook,
   wrapGAppsHook3,
-  intltool,
-  itstool,
+  xapp,
+  xapp-symbolic-icons,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -60,24 +60,27 @@ stdenv.mkDerivation (finalAttrs: {
     xapp
   ];
 
+  doInstallCheck = true;
+
   preFixup = ''
     gappsWrapperArgs+=(
       --prefix XDG_DATA_DIRS : "${lib.makeSearchPath "share" [ xapp-symbolic-icons ]}"
     )
   '';
 
-  doInstallCheck = true;
   versionCheckProgram = "${placeholder "out"}/bin/xed";
 
   meta = {
     description = "Light weight text editor from Linux Mint";
     homepage = "https://github.com/linuxmint/xed";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       tu-maurice
       bobby285271
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "xed";
   };
 })

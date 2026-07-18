@@ -58,8 +58,8 @@ stdenv.mkDerivation {
     description = "Morse Micro Wi-Fi driver";
     homepage = "https://github.com/MorseMicro/morse_driver";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ govindsi ];
+    platforms = lib.platforms.linux;
     broken = kernel.kernelOlder "6.1" || kernel.kernelAtLeast "6.12.56";
   };
 }

@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  setuptools,
-  requests,
-  pytestCheckHook,
   aiohttp,
+  buildPythonPackage,
+  fetchpatch,
   pytest-asyncio,
   pytest-cov-stub,
+  pytestCheckHook,
   python,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "py-consul";
   version = "1.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "criteo";
@@ -26,13 +25,24 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
-      url = "https://salsa.debian.org/python-team/packages/python-consul/-/raw/master/debian/patches/avoir-usr-requirements.txt.patch";
       hash = "sha256-lB9Irzuc2IpbQOIP/C3JQ4iYqugf1U6CVlAEXrrFUfI=";
+      url = "https://salsa.debian.org/python-team/packages/python-consul/-/raw/master/debian/patches/avoir-usr-requirements.txt.patch";
     })
 
     # conftest.py always imports docker, even if related tests are disabled
     ./disable-docker-tests.patch
   ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+  ];
+
+  # Exclude sphinx config from installation
+  postInstall = ''
+    rm -r $out/${python.sitePackages}/docs
+  '';
 
   build-system = [
     setuptools
@@ -41,17 +51,6 @@ buildPythonPackage rec {
   dependencies = [
     requests
     aiohttp
-  ];
-
-  # Exclude sphinx config from installation
-  postInstall = ''
-    rm -r $out/${python.sitePackages}/docs
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
   ];
 
   # Most tests want to run a consul docker container ("hashicorp/consul:{version}" in conftest.py)
@@ -113,12 +112,14 @@ buildPythonPackage rec {
     "test_agent_service_connect"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "consul" ];
 
   meta = {
     description = "Python client for Consul (https://www.consul.io/)";
     homepage = "https://github.com/criteo/py-consul";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       panicgh
     ];

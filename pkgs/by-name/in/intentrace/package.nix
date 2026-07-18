@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   rustPlatform,
 }:
 
@@ -24,11 +24,13 @@ rustPlatform.buildRustPackage {
     description = "Prettified Linux syscall tracing tool (like strace)";
     homepage = "https://github.com/sectordistrict/intentrace";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
-    mainProgram = "intentrace";
+
     maintainers = with lib.maintainers; [
       cloudripper
       jk
     ];
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "intentrace";
   };
 }

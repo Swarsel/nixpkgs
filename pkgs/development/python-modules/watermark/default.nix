@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   importlib-metadata,
   ipython,
   py3nvml,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "watermark";
   version = "2.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rasbt";
@@ -20,6 +19,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-WeHMzSt4HUJZ9M9/Yu1h3VB5GuD/I9x+v6VyUhsmFhU=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -32,11 +36,7 @@ buildPythonPackage rec {
     gpu = [ py3nvml ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "watermark" ];
 
   meta = {

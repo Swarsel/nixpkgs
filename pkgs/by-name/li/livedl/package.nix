@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,10 +16,9 @@ buildGoModule {
     sha256 = "1zax215jp6sl47m8ahssyyrbzn96dh74srq9g61jc76sq10xg329";
   };
 
-  modRoot = "src";
-
-  proxyVendor = true;
   vendorHash = "sha256-C7lUusq/cWBCnA2wP9fzQglJCXvQyvFG4JY13H0cP6g=";
+  modRoot = "src";
+  proxyVendor = true;
 
   meta = {
     description = "Command-line tool to download nicovideo.jp livestreams";
@@ -27,7 +26,7 @@ buildGoModule {
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wakira ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    broken = stdenv.hostPlatform.isDarwin; # build fails with go > 1.17
     mainProgram = "livedl";
+    broken = stdenv.hostPlatform.isDarwin; # build fails with go > 1.17
   };
 }

@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  makeWrapper,
-  installShellFiles,
-  python3,
+  fetchFromGitHub,
   android-tools,
-  pulseaudio,
   coreutils,
+  installShellFiles,
+  makeWrapper,
+  pulseaudio,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -63,20 +63,22 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru.apk = fetchurl {
-    url = "https://github.com/gdzx/audiosource/releases/download/v${finalAttrs.version}/audiosource.apk";
     hash = "sha256:cd48532829f41060d3c9909daa5563a669394eb9dd00baf303b6db1b5b2db1fa";
+    url = "https://github.com/gdzx/audiosource/releases/download/v${finalAttrs.version}/audiosource.apk";
   };
 
   meta = {
     description = "Use an Android device as a USB microphone";
     homepage = "https://github.com/gdzx/audiosource";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ ikci ];
-    mainProgram = "audiosource";
-    platforms = lib.platforms.linux;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
+
+    maintainers = with lib.maintainers; [ ikci ];
+    platforms = lib.platforms.linux;
+    mainProgram = "audiosource";
   };
 })

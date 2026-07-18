@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,10 +24,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Your personal markdown scribe with template-engine and Git(Hub) & RSS powers";
-    mainProgram = "markscribe";
     homepage = "https://github.com/muesli/markscribe";
     changelog = "https://github.com/muesli/markscribe/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "markscribe";
   };
 })

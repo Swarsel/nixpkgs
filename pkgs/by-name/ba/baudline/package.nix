@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  libxmu,
-  libxt,
+  libjack2,
   libx11,
   libxext,
+  libxmu,
+  libxt,
   libxxf86vm,
-  libjack2,
   makeWrapper,
 }:
 
@@ -41,10 +41,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  # Prebuilt binary distribution.
-  # "patchelf --set-rpath" seems to break the application (cannot start), using
-  # LD_LIBRARY_PATH wrapper script instead.
-  dontBuild = true;
   installPhase = ''
     mkdir -p "$out/bin"
     mkdir -p "$out/libexec/baudline"
@@ -61,8 +57,14 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  # Prebuilt binary distribution.
+  # "patchelf --set-rpath" seems to break the application (cannot start), using
+  # LD_LIBRARY_PATH wrapper script instead.
+  dontBuild = true;
+
   meta = {
     description = "Scientific signal analysis application";
+
     longDescription = ''
       Baudline is a time-frequency browser designed for scientific
       visualization of the spectral domain.  Signal analysis is performed by
@@ -74,16 +76,18 @@ stdenv.mkDerivation rec {
       displays, and continuous capture tools for hunting down and studying
       elusive signal characteristics.
     '';
+
     homepage = "http://www.baudline.com/";
     # See http://www.baudline.com/faq.html#licensing_terms.
     # (Do NOT (re)distribute on hydra.)
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ lib.maintainers.bjornfor ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ lib.maintainers.bjornfor ];
   };
 
 }

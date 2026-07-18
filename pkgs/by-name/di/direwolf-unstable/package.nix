@@ -3,9 +3,9 @@
   fetchFromGitHub,
   direwolf,
   nix-update-script,
-  hamlibSupport ? true,
-  gpsdSupport ? true,
   extraScripts ? false,
+  gpsdSupport ? true,
+  hamlibSupport ? true,
 }:
 
 (direwolf.override {
@@ -22,6 +22,5 @@
     };
 
     dontVersionCheck = true;
-
     passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch=dev" ]; };
   })

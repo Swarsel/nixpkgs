@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  rustPlatform,
-  pkg-config,
+  fetchFromGitHub,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-leptos";
@@ -17,11 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-w1kd/eOjNHYAramUvHdgj0ogFqgHDQ1P+ItKTTLL9hU=";
   };
 
-  cargoHash = "sha256-p0mku5B9RtU0E7ny1Izhr2diBLgDH8HR2/B92MvBfws=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-p0mku5B9RtU0E7ny1Izhr2diBLgDH8HR2/B92MvBfws=";
 
   env = {
     OPENSSL_NO_VENDOR = 1;
@@ -31,16 +29,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     CRATE_CC_NO_DEFAULTS = 1;
   };
 
+  doCheck = false; # Check phase tries to query crates.io
   # https://github.com/leptos-rs/cargo-leptos#dependencies
   buildFeatures = [ "no_downloads" ]; # cargo-leptos will try to install missing dependencies on its own otherwise
-  doCheck = false; # Check phase tries to query crates.io
 
   meta = {
     description = "Build tool for the Leptos web framework";
-    mainProgram = "cargo-leptos";
     homepage = "https://github.com/leptos-rs/cargo-leptos";
     changelog = "https://github.com/leptos-rs/cargo-leptos/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ benwis ];
+    mainProgram = "cargo-leptos";
   };
 })

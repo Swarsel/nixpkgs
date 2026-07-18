@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   git,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "git-delete-merged-branches";
   version = "7.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hartwork";
@@ -17,6 +16,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sha256 = "sha256-wy5SLaw6QBvbmcFFgtIQ9MhGliW2/ZmCozEa2ZF0Lnc=";
   };
 
+  nativeCheckInputs = [ git ] ++ (with python3Packages; [ parameterized ]);
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -24,7 +24,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     prompt-toolkit
   ];
 
-  nativeCheckInputs = [ git ] ++ (with python3Packages; [ parameterized ]);
+  pyproject = true;
 
   meta = {
     description = "Command-line tool to delete merged Git branches";

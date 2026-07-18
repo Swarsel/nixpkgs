@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   runCommand,
   super,
 }:
@@ -36,11 +36,11 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/brimdata/super/releases/tag/v${finalAttrs.version}";
     description = "Analytics database that puts JSON and relational tables on equal footing";
     homepage = "https://superdb.org";
+    changelog = "https://github.com/brimdata/super/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "super";
     maintainers = with lib.maintainers; [ hythera ];
+    mainProgram = "super";
   };
 })

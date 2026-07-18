@@ -17,14 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jnMGOncnH+ffgtyNzA8tZPtxPCR/yq9jmPsJZE4BhXo=";
   };
 
-  nativeBuildInputs = [
-    meson
-    ninja
-  ];
-
   outputs = [
     "out"
     "dev"
+  ];
+
+  nativeBuildInputs = [
+    meson
+    ninja
   ];
 
   meta = {

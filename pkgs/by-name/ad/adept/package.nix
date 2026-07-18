@@ -1,9 +1,9 @@
 {
   lib,
-  autoconf,
-  automake,
   stdenv,
   fetchurl,
+  autoconf,
+  automake,
   pkg-config,
 }:
 
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Combined array and automatic differentiation library in C++";
     homepage = "https://www.met.reading.ac.uk/clouds/adept/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       athas
     ];

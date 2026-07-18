@@ -16,8 +16,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-KJ5W2VW7q+1JxyBUcqsRxGzYE4cOADxm/Gu1oVvr3R4=";
+  env.CGO_ENABLED = 0;
 
-  subPackages = [ "cmd/bee" ];
+  postInstall = ''
+    mkdir -p $out/lib/systemd/system
+    cp packaging/bee.service $out/lib/systemd/system/
+    cp packaging/bee-get-addr $out/bin/
+    chmod +x $out/bin/bee-get-addr
+    patchShebangs $out/bin/
+  '';
 
   ldflags = [
     "-s"
@@ -29,19 +36,11 @@ buildGoModule (finalAttrs: {
     "-X github.com/ethersphere/bee/v2/pkg/postage/listener.batchFactorOverridePublic=5"
   ];
 
-  env.CGO_ENABLED = 0;
-
-  postInstall = ''
-    mkdir -p $out/lib/systemd/system
-    cp packaging/bee.service $out/lib/systemd/system/
-    cp packaging/bee-get-addr $out/bin/
-    chmod +x $out/bin/bee-get-addr
-    patchShebangs $out/bin/
-  '';
+  subPackages = [ "cmd/bee" ];
 
   meta = {
-    homepage = "https://github.com/ethersphere/bee";
     description = "Ethereum Swarm Bee";
+
     longDescription = ''
       A decentralised storage and communication system for a sovereign digital society.
 
@@ -51,6 +50,8 @@ buildGoModule (finalAttrs: {
 
       Bee is a Swarm node implementation, written in Go.
     '';
+
+    homepage = "https://github.com/ethersphere/bee";
     license = with lib.licenses; [ bsd3 ];
     maintainers = [ ];
   };

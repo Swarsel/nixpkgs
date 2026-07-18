@@ -4,18 +4,9 @@
   pulumi,
 }:
 buildGoModule (finalAttrs: {
-  pname = "pulumi-go";
   inherit (pulumi) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/sdk/go/pulumi-language-go";
-
+  pname = "pulumi-go";
   vendorHash = "sha256-jwsdMSLDn2PNJFIIVhqwBLH7acFTOFLPgVNMKbI5DZE=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/pulumi/pulumi/sdk/v3/go/common/version.Version=${finalAttrs.version}"
-  ];
 
   checkFlags = [
     "-skip=^${
@@ -28,13 +19,23 @@ buildGoModule (finalAttrs: {
     }$"
   ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/pulumi/pulumi/sdk/v3/go/common/version.Version=${finalAttrs.version}"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/sdk/go/pulumi-language-go";
+
   meta = {
-    homepage = "https://www.pulumi.com/docs/iac/languages-sdks/go/";
     description = "Language host for Pulumi programs written in Go";
+    homepage = "https://www.pulumi.com/docs/iac/languages-sdks/go/";
     license = lib.licenses.asl20;
-    mainProgram = "pulumi-language-go";
+
     maintainers = with lib.maintainers; [
       tie
     ];
+
+    mainProgram = "pulumi-language-go";
   };
 })

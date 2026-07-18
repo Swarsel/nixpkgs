@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-templates-github,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "llm-templates-github";
   version = "0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ llm ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_templates_github" ];
-
   passthru.tests = llm.mkPluginTest llm-templates-github;
 
   meta = {

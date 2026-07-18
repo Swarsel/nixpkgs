@@ -2,52 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
   apple-sdk_26,
   cereal,
+  gitUpdater,
   glslang,
+  # TODO: Clean up on `staging`
+  llvmPackages,
   spirv-cross,
   spirv-headers,
   spirv-tools,
   vulkan-headers,
   xcbuildHook,
-  enableStatic ? stdenv.hostPlatform.isStatic,
   # MoltenVK supports using private APIs to implement some Vulkan functionality.
   # Applications that use private APIs can’t be distributed on the App Store,
   # but that’s not really a concern for nixpkgs, so use them by default.
   # See: https://github.com/KhronosGroup/MoltenVK/blob/main/README.md#metal_private_api
   enablePrivateAPIUsage ? true,
-  # TODO: Clean up on `staging`
-  llvmPackages,
+  enableStatic ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "MoltenVK";
   version = "1.4.1";
-
-  strictDeps = true;
-
-  buildInputs = [
-    apple-sdk_26
-    cereal
-    glslang
-    spirv-cross
-    spirv-headers
-    spirv-tools
-    vulkan-headers
-  ];
-
-  nativeBuildInputs = [
-    xcbuildHook
-    # TODO: Clean up on `staging`
-    llvmPackages.lld
-  ];
-
-  outputs = [
-    "out"
-    "bin"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "KhronosGroup";
@@ -55,6 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-7S10p/XrQ/oMXuCnOU6gqnWMGMfP5vhimec1ThxmuIE=";
   };
+
+  outputs = [
+    "out"
+    "bin"
+    "dev"
+  ];
 
   postPatch = ''
     # Update the deployment target for the minimum target used by nixpkgs.
@@ -103,6 +85,24 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s "${glslang.src}" "build/include/glslang"
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    xcbuildHook
+    # TODO: Clean up on `staging`
+    llvmPackages.lld
+  ];
+
+  buildInputs = [
+    apple-sdk_26
+    cereal
+    glslang
+    spirv-cross
+    spirv-headers
+    spirv-tools
+    vulkan-headers
+  ];
+
   env.NIX_CFLAGS_COMPILE = toString (
     # MoltenVK does its own checks for availability by probing the version at runtime and checking the MSL version.
     [ "-Wno-error=unguarded-availability" ]
@@ -141,19 +141,6 @@ stdenv.mkDerivation (finalAttrs: {
       -I$NIX_BUILD_TOP/$sourceRoot/build/include \
       -I$NIX_BUILD_TOP/$sourceRoot/Common"
   '';
-
-  xcbuildFlags = [
-    "-configuration"
-    "Release"
-    "-project"
-    "MoltenVKPackaging.xcodeproj"
-    "-scheme"
-    "MoltenVK Package (macOS only)"
-    "-destination"
-    "generic/platform=macOS"
-    "-arch"
-    stdenv.hostPlatform.darwinArch
-  ];
 
   postBuild =
     if enableStatic then
@@ -208,17 +195,30 @@ stdenv.mkDerivation (finalAttrs: {
 
   __structuredAttrs = true;
 
+  xcbuildFlags = [
+    "-configuration"
+    "Release"
+    "-project"
+    "MoltenVKPackaging.xcodeproj"
+    "-scheme"
+    "MoltenVK Package (macOS only)"
+    "-destination"
+    "generic/platform=macOS"
+    "-arch"
+    stdenv.hostPlatform.darwinArch
+  ];
+
   passthru.updateScript = gitUpdater {
-    rev-prefix = "v";
     ignoredVersions = ".*-(beta|rc).*";
+    rev-prefix = "v";
   };
 
   meta = {
     description = "Vulkan Portability implementation built on top of Apple’s Metal API";
     homepage = "https://github.com/KhronosGroup/MoltenVK";
     changelog = "https://github.com/KhronosGroup/MoltenVK/releases";
-    maintainers = [ lib.maintainers.reckenrode ];
     license = lib.licenses.asl20;
+    maintainers = [ lib.maintainers.reckenrode ];
     platforms = lib.platforms.darwin;
   };
 })

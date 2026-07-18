@@ -37,13 +37,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Web-based news feed (RSS/Atom) aggregator";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://tt-rss.org";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       gileri
       globin
       zohl
     ];
+
     platforms = lib.platforms.all;
   };
 })

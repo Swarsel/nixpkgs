@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   faketty,
-  fetchFromGitHub,
   fetchYarnDeps,
   fixup-yarn-lock,
   go,
   makeWrapper,
-  nodejs,
   nix-update-script,
+  nodejs,
   patchelf,
   removeReferencesTo,
   testers,
-  yarn,
   versionCheckHook,
+  yarn,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,35 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-k3xAaJiqldRZubAFrRuNM1e+3kH/5vv0maEeT/gdqK0=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-9nhv31ljJ8DphOot3TAsYhbV6cx7Ovfe+ll+V2vJWx8=";
-  };
-
-  hcl2json-go-modules =
-    (buildGoModule {
-      pname = "cdktn-hcl2json-go-modules";
-      inherit (finalAttrs) version src;
-      modRoot = "packages/@cdktn/hcl2json";
-      vendorHash = "sha256-OiKPq0CHkOxJaFzgsaNJ02tasvHtHWylmaPRPayJob4=";
-      proxyVendor = true;
-      doCheck = false;
-      env.GOWORK = "off";
-    }).goModules;
-
-  hcltools-go-modules =
-    (buildGoModule {
-      pname = "cdktn-hcltools-go-modules";
-      inherit (finalAttrs) version src;
-      modRoot = "packages/@cdktn/hcl-tools";
-      vendorHash = "sha256-orGxkYEQVtTKvXb7/FD/CLwqSINgBQFTF5arbR0xAvE=";
-      proxyVendor = true;
-      doCheck = false;
-      env.GOWORK = "off";
-    }).goModules;
+  postPatch = ''
+    # wasm_exec has moved to lib in newer versions of Go
+    substituteInPlace packages/@cdktn/hcl-tools/prebuild.sh \
+      --replace-fail "misc/wasm/wasm_exec.js" "lib/wasm/wasm_exec.js"
+    substituteInPlace packages/@cdktn/hcl2json/prebuild.sh \
+      --replace-fail "misc/wasm/wasm_exec.js" "lib/wasm/wasm_exec.js"
+  '';
 
   strictDeps = true;
-  disallowedReferences = [ go ];
 
   nativeBuildInputs = [
     faketty
@@ -69,14 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     yarn
   ];
 
-  postPatch = ''
-    # wasm_exec has moved to lib in newer versions of Go
-    substituteInPlace packages/@cdktn/hcl-tools/prebuild.sh \
-      --replace-fail "misc/wasm/wasm_exec.js" "lib/wasm/wasm_exec.js"
-    substituteInPlace packages/@cdktn/hcl2json/prebuild.sh \
-      --replace-fail "misc/wasm/wasm_exec.js" "lib/wasm/wasm_exec.js"
-  '';
-
   preConfigure = ''
     export GOCACHE=$TMPDIR/go-cache
     export GOPATH=$TMPDIR/go
@@ -85,18 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Stop the build from trying to write checkpoints to /var/empty/
     export CHECKPOINT_DISABLE=1
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME=$(mktemp -d)
-    yarn config --offline set yarn-offline-mirror $offlineCache
-    fixup-yarn-lock yarn.lock
-    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
-    patchShebangs node_modules packages
-
-    runHook postConfigure
   '';
 
   buildPhase = ''
@@ -110,6 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -143,13 +104,54 @@ stdenv.mkDerivation (finalAttrs: {
       "$out/lib/node_modules/cdktn-cli/node_modules/@cdktn/hcl2json/main.wasm"
   '';
 
+  # Tries to write to /var/empty/.terraform.d on darwin
+  # even with writableTmpDirAsHomeHook and CHECKPOINT_DISABLE=1
+  doInstallCheck = stdenv.hostPlatform.isLinux;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  # Tries to write to /var/empty/.terraform.d on darwin
-  # even with writableTmpDirAsHomeHook and CHECKPOINT_DISABLE=1
-  doInstallCheck = stdenv.hostPlatform.isLinux;
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME=$(mktemp -d)
+    yarn config --offline set yarn-offline-mirror $offlineCache
+    fixup-yarn-lock yarn.lock
+    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
+    patchShebangs node_modules packages
+
+    runHook postConfigure
+  '';
+
+  disallowedReferences = [ go ];
+
+  hcl2json-go-modules =
+    (buildGoModule {
+      inherit (finalAttrs) version src;
+      pname = "cdktn-hcl2json-go-modules";
+      vendorHash = "sha256-OiKPq0CHkOxJaFzgsaNJ02tasvHtHWylmaPRPayJob4=";
+      env.GOWORK = "off";
+      doCheck = false;
+      modRoot = "packages/@cdktn/hcl2json";
+      proxyVendor = true;
+    }).goModules;
+
+  hcltools-go-modules =
+    (buildGoModule {
+      inherit (finalAttrs) version src;
+      pname = "cdktn-hcltools-go-modules";
+      vendorHash = "sha256-orGxkYEQVtTKvXb7/FD/CLwqSINgBQFTF5arbR0xAvE=";
+      env.GOWORK = "off";
+      doCheck = false;
+      modRoot = "packages/@cdktn/hcl-tools";
+      proxyVendor = true;
+    }).goModules;
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-9nhv31ljJ8DphOot3TAsYhbV6cx7Ovfe+ll+V2vJWx8=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script {
     # Skip pre-releases
@@ -164,8 +166,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://cdktn.io";
     changelog = "https://github.com/open-constructs/cdk-terrain/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mpl20;
-    mainProgram = "cdktn";
     maintainers = with lib.maintainers; [ deejayem ];
     platforms = lib.platforms.unix;
+    mainProgram = "cdktn";
   };
 })

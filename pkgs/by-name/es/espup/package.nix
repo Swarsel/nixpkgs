@@ -1,17 +1,17 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  installShellFiles,
-  bzip2,
-  openssl,
-  xz,
-  zstd,
   stdenv,
+  fetchFromGitHub,
+  bzip2,
+  installShellFiles,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
   testers,
   writableTmpDirAsHomeHook,
-  nix-update-script,
+  xz,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,8 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Qpn50VbcIibe0B1N5GU2AOFLt3NWjxEVimCrhhdY6EU=";
   };
 
-  cargoHash = "sha256-Apvy+jPA7xyw43Q2RSVc65TNHQMGcCz/I/qadiJkBss=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -38,6 +36,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xz
     zstd
   ];
+
+  cargoHash = "sha256-Apvy+jPA7xyw43Q2RSVc65TNHQMGcCz/I/qadiJkBss=";
 
   env = {
     OPENSSL_NO_VENDOR = true;
@@ -59,23 +59,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Tool for installing and maintaining Espressif Rust ecosystem";
     homepage = "https://github.com/esp-rs/espup/";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       knightpp
       beeb
     ];
+
     mainProgram = "espup";
   };
 })

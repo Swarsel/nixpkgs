@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildPackages,
+  fetchurl,
   bash,
   bashInteractive,
+  buildPackages,
   busybox,
   coreutils,
   cpio,
   dpkg,
   e2fsprogs,
-  fetchurl,
   glibc,
   kmod,
   linux,
@@ -24,7 +24,6 @@
   writeText,
   xz,
   zstd,
-
   # ----------------------------
   # The following  arguments form the "interface" of `pkgs.vmTools`.
   # ----------------------------
@@ -46,7 +45,6 @@
   # with `pkgs.aggregateModules [ ... ]`) to make extra kernel modules
   # available inside the VM without replacing the boot kernel.
   kernelModules ? kernel,
-  storeDir ? builtins.storeDir,
   rootModules ? [
     "virtio_pci"
     "virtio_mmio"
@@ -57,6 +55,7 @@
     "virtiofs"
     "crc32c"
   ],
+  storeDir ? builtins.storeDir,
 }:
 
 let
@@ -65,9 +64,9 @@ let
   qemu = buildPackages.qemu_kvm;
 
   modulesClosure = makeModulesClosure {
-    kernel = lib.getOutput "modules" kernelModules;
     inherit rootModules;
     firmware = kernelModules;
+    kernel = lib.getOutput "modules" kernelModules;
   };
 
   hd = "vda"; # either "sda" or "vda"
@@ -76,6 +75,7 @@ let
     runCommand "initrd-utils"
       {
         nativeBuildInputs = [ buildPackages.nukeReferences ];
+
         allowedReferences = [
           "out"
           modulesClosure
@@ -346,10 +346,10 @@ let
   # A bash script fragment that produces a disk image at `destination`.
   createEmptyImage =
     {
-      # Disk image size in MiB (1024*1024 bytes)
-      size,
       # Name that will be written to ${destination}/nix-support/full-name
       fullName,
+      # Disk image size in MiB (1024*1024 bytes)
+      size,
       # Where to write the image files, defaulting to $out
       destination ? "$out",
     }:
@@ -402,23 +402,25 @@ let
     drv:
     lib.overrideDerivation drv (
       {
-        memSize ? 512,
-        QEMU_OPTS ? "",
         args,
         builder,
+        QEMU_OPTS ? "",
+        memSize ? 512,
         ...
       }:
       {
-        requiredSystemFeatures = [ "kvm" ];
-        builder = "${bash}/bin/sh";
+        env.QEMU_OPTS = "${QEMU_OPTS} -m ${toString memSize} -object memory-backend-memfd,id=mem,size=${toString memSize}M,share=on -machine memory-backend=mem";
+        __structuredAttrs = true;
+
         args = [
           "-e"
           (vmRunCommand qemuCommandLinux)
         ];
+
+        builder = "${bash}/bin/sh";
         origArgs = args;
         origBuilder = builder;
-        env.QEMU_OPTS = "${QEMU_OPTS} -m ${toString memSize} -object memory-backend-memfd,id=mem,size=${toString memSize}M,share=on -machine memory-backend=mem";
-        __structuredAttrs = true;
+        requiredSystemFeatures = [ "kvm" ];
       }
     );
 
@@ -429,8 +431,8 @@ let
     }:
     runInLinuxVM (
       stdenv.mkDerivation {
-        name = "extract-file";
         buildInputs = [ util-linux ];
+
         buildCommand = ''
           ln -s ${kernelModules}/lib /lib
           ${kmod}/bin/modprobe loop
@@ -448,6 +450,8 @@ let
             mount -o loop,ro ${lib.optionalString (fs != null) "-t ${fs} "}${file} tmp
           cp -Rv tmp/* $out/ || exit 0
         '';
+
+        name = "extract-file";
       }
     );
 
@@ -458,11 +462,11 @@ let
     }:
     runInLinuxVM (
       stdenv.mkDerivation {
-        name = "extract-file-mtd";
         buildInputs = [
           util-linux
           mtdutils
         ];
+
         buildCommand = ''
           ln -s ${kernelModules}/lib /lib
           ${kmod}/bin/modprobe mtd
@@ -480,6 +484,8 @@ let
 
           cp -R tmp/* $out/
         '';
+
+        name = "extract-file-mtd";
       }
     );
 
@@ -494,18 +500,10 @@ let
     drv:
     runInLinuxVM (
       lib.overrideDerivation drv (attrs: {
+        # Don't run Nix-specific build steps like patchelf.
+        fixupPhase = "true";
         mountDisk = attrs.mountDisk or true;
-
-        /*
-          Mount `image' as the root FS, but use a temporary copy-on-write
-          image since we don't want to (and can't) write to `image'.
-        */
-        preVM = ''
-          diskImage=$(pwd)/disk-image.qcow2
-          origImage=${attrs.diskImage}
-          if test -d "$origImage"; then origImage="$origImage/disk-image.qcow2"; fi
-          ${qemu}/bin/qemu-img create -F ${attrs.diskImageFormat} -b "$origImage" -f qcow2 $diskImage
-        '';
+        origPostHook = lib.optionalString (attrs ? postHook) attrs.postHook;
 
         /*
           Inside the VM, run the stdenv setup script normally, but at the
@@ -518,10 +516,16 @@ let
           eval "$origPostHook"
         '';
 
-        origPostHook = lib.optionalString (attrs ? postHook) attrs.postHook;
-
-        # Don't run Nix-specific build steps like patchelf.
-        fixupPhase = "true";
+        /*
+          Mount `image' as the root FS, but use a temporary copy-on-write
+          image since we don't want to (and can't) write to `image'.
+        */
+        preVM = ''
+          diskImage=$(pwd)/disk-image.qcow2
+          origImage=${attrs.diskImage}
+          if test -d "$origImage"; then origImage="$origImage/disk-image.qcow2"; fi
+          ${qemu}/bin/qemu-img create -F ${attrs.diskImageFormat} -b "$origImage" -f qcow2 $diskImage
+        '';
       })
     );
 
@@ -532,16 +536,16 @@ let
 
   fillDiskWithRPMs =
     {
-      size ? 4096,
-      rpms,
-      name,
       fullName,
-      preInstall ? "",
-      postInstall ? "",
-      runScripts ? true,
-      createRootFS ? defaultCreateRootFS,
+      name,
+      rpms,
       QEMU_OPTS ? "",
+      createRootFS ? defaultCreateRootFS,
       memSize ? 512,
+      postInstall ? "",
+      preInstall ? "",
+      runScripts ? true,
+      size ? 4096,
       unifiedSystemDir ? false,
     }:
 
@@ -555,7 +559,6 @@ let
           QEMU_OPTS
           memSize
           ;
-        preVM = createEmptyImage { inherit size fullName; };
 
         buildCommand = ''
           ${createRootFS}
@@ -610,6 +613,7 @@ let
           ${util-linux}/bin/umount /mnt
         '';
 
+        preVM = createEmptyImage { inherit size fullName; };
         passthru = { inherit fullName; };
       }
     );
@@ -652,30 +656,6 @@ let
     runInLinuxImage (
       stdenv.mkDerivation (
         {
-          prePhases = [
-            "prepareImagePhase"
-            "sysInfoPhase"
-          ];
-          dontConfigure = true;
-
-          outDir = "rpms/${attrs.diskImage.name}";
-
-          prepareImagePhase = ''
-            if test -n "$extraRPMs"; then
-              for rpmdir in $extraRPMs ; do
-                rpm -iv $(ls $rpmdir/rpms/*/*.rpm | grep -v 'src\.rpm' | sort | head -1)
-              done
-            fi
-          '';
-
-          sysInfoPhase = ''
-            echo "System/kernel: $(uname -a)"
-            if test -e /etc/fedora-release; then echo "Fedora release: $(cat /etc/fedora-release)"; fi
-            if test -e /etc/SuSE-release; then echo "SUSE release: $(cat /etc/SuSE-release)"; fi
-            echo "installed RPM packages"
-            rpm -qa --qf "%{Name}-%{Version}-%{Release} (%{Arch}; %{Distribution}; %{Vendor})\n"
-          '';
-
           buildPhase = ''
             eval "$preBuild"
 
@@ -709,6 +689,30 @@ let
 
             eval "$postInstall"
           ''; # */
+
+          dontConfigure = true;
+          outDir = "rpms/${attrs.diskImage.name}";
+
+          prePhases = [
+            "prepareImagePhase"
+            "sysInfoPhase"
+          ];
+
+          prepareImagePhase = ''
+            if test -n "$extraRPMs"; then
+              for rpmdir in $extraRPMs ; do
+                rpm -iv $(ls $rpmdir/rpms/*/*.rpm | grep -v 'src\.rpm' | sort | head -1)
+              done
+            fi
+          '';
+
+          sysInfoPhase = ''
+            echo "System/kernel: $(uname -a)"
+            if test -e /etc/fedora-release; then echo "Fedora release: $(cat /etc/fedora-release)"; fi
+            if test -e /etc/SuSE-release; then echo "SUSE release: $(cat /etc/SuSE-release)"; fi
+            echo "installed RPM packages"
+            rpm -qa --qf "%{Name}-%{Version}-%{Release} (%{Arch}; %{Distribution}; %{Vendor})\n"
+          '';
         }
         // attrs
       )
@@ -723,14 +727,14 @@ let
 
   fillDiskWithDebs =
     {
-      size ? 4096,
       debs,
-      name,
       fullName,
-      postInstall ? null,
-      createRootFS ? defaultCreateRootFS,
+      name,
       QEMU_OPTS ? "",
+      createRootFS ? defaultCreateRootFS,
       memSize ? 512,
+      postInstall ? null,
+      size ? 4096,
       ...
     }@args:
 
@@ -743,11 +747,6 @@ let
             QEMU_OPTS
             memSize
             ;
-
-          debsFlat = lib.flatten debs;
-          debsGrouped = map toString debs;
-
-          preVM = createEmptyImage { inherit size fullName; };
 
           buildCommand = ''
             ${createRootFS}
@@ -821,6 +820,9 @@ let
             ${util-linux}/bin/umount /mnt
           '';
 
+          debsFlat = lib.flatten debs;
+          debsGrouped = map toString debs;
+          preVM = createEmptyImage { inherit size fullName; };
           passthru = { inherit fullName; };
         }
         // args
@@ -836,21 +838,22 @@ let
   rpmClosureGenerator =
     {
       name,
+      packages,
       packagesLists,
       urlPrefixes,
-      packages,
       archs ? [ ],
     }:
     assert (builtins.length packagesLists) == (builtins.length urlPrefixes);
     runCommand "${name}.nix"
       {
+        inherit archs;
+
         nativeBuildInputs = [
           buildPackages.perl
           buildPackages.perlPackages.URI
           buildPackages.perlPackages.XMLSimple
           buildPackages.zstd
         ];
-        inherit archs;
       }
       ''
         ${lib.concatImapStrings (i: pl: ''
@@ -890,26 +893,26 @@ let
 
   makeImageFromRPMDist =
     {
-      name,
       fullName,
-      size ? 4096,
-      urlPrefix ? "",
-      urlPrefixes ? [ urlPrefix ],
-      packagesList ? "",
-      packagesLists ? [ packagesList ],
+      name,
       packages,
-      extraPackages ? [ ],
-      preInstall ? "",
-      postInstall ? "",
+      QEMU_OPTS ? "",
       archs ? [
         "noarch"
         "i386"
       ],
-      runScripts ? true,
       createRootFS ? defaultCreateRootFS,
-      QEMU_OPTS ? "",
+      extraPackages ? [ ],
       memSize ? 512,
+      packagesList ? "",
+      packagesLists ? [ packagesList ],
+      postInstall ? "",
+      preInstall ? "",
+      runScripts ? true,
+      size ? 4096,
       unifiedSystemDir ? false,
+      urlPrefix ? "",
+      urlPrefixes ? [ urlPrefix ],
     }:
 
     fillDiskWithRPMs {
@@ -925,6 +928,7 @@ let
         QEMU_OPTS
         memSize
         ;
+
       rpms = import (rpmClosureGenerator {
         inherit
           name
@@ -932,6 +936,7 @@ let
           urlPrefixes
           archs
           ;
+
         packages = packages ++ extraPackages;
       }) { inherit fetchurl; };
     };
@@ -944,9 +949,9 @@ let
   debClosureGenerator =
     {
       name,
+      packages,
       packagesLists,
       urlPrefix,
-      packages,
     }:
 
     runCommand "${name}.nix"
@@ -986,19 +991,19 @@ let
 
   makeImageFromDebDist =
     {
-      name,
       fullName,
-      size ? 4096,
+      name,
+      packages,
       urlPrefix,
+      QEMU_OPTS ? "",
+      createRootFS ? defaultCreateRootFS,
+      extraDebs ? [ ],
+      extraPackages ? [ ],
+      memSize ? 512,
       packagesList ? "",
       packagesLists ? [ packagesList ],
-      packages,
-      extraPackages ? [ ],
       postInstall ? "",
-      extraDebs ? [ ],
-      createRootFS ? defaultCreateRootFS,
-      QEMU_OPTS ? "",
-      memSize ? 512,
+      size ? 4096,
       ...
     }@args:
 
@@ -1019,6 +1024,7 @@ let
           QEMU_OPTS
           memSize
           ;
+
         debs = import expr { inherit fetchurl; } ++ extraDebs;
       }
       // args
@@ -1030,180 +1036,70 @@ let
   # The set of supported RPM-based distributions.
 
   rpmDistros = {
-    fedora42x86_64 = {
-      name = "fedora-42-x86_64";
-      fullName = "Fedora 42 (x86_64)";
-      packagesList = fetchurl {
-        url = "https://dl.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os/repodata/cd483b35df017d68b73a878a392bbf666a43d75db54c386e4720bc369eb5c3a3-primary.xml.zst";
-        hash = "sha256-zUg7Nd8BfWi3OoeKOSu/ZmpD1121TDhuRyC8Np61w6M=";
-      };
-      urlPrefix = "https://dl.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os";
+    alma10x86_64 = {
       archs = [
         "noarch"
         "x86_64"
       ];
-      packages = commonFedoraPackages;
-      unifiedSystemDir = true;
-    };
 
-    fedora43x86_64 = {
-      name = "fedora-43-x86_64";
-      fullName = "Fedora 43 (x86_64)";
-      packagesList = fetchurl {
-        url = "https://dl.fedoraproject.org/pub/fedora/linux/releases/43/Everything/x86_64/os/repodata/fffa3e9f63fffd3d21b8ea5e9bb0fe349a7ed1d4e09777a618cec93a2bcc305f-primary.xml.zst";
-        hash = "sha256-//o+n2P//T0huOpem7D+NJp+0dTgl3emGM7JOivMMF8=";
-      };
-      urlPrefix = "https://dl.fedoraproject.org/pub/fedora/linux/releases/43/Everything/x86_64/os";
-      archs = [
-        "noarch"
-        "x86_64"
-      ];
-      packages = commonFedoraPackages ++ [ "gpgverify" ];
-      unifiedSystemDir = true;
-    };
+      fullName = "AlmaLinux 10.0 (x86_64)";
+      name = "alma-10.0-x86_64";
 
-    # Rocky Linux's /pub/rocky/9/ URL is rolling and changes with each minor release. We use the
-    # vault instead, which provides stable URLs for specific minor versions.
-    rocky9x86_64 = {
-      name = "rocky-9.6-x86_64";
-      fullName = "Rocky Linux 9.6 (x86_64)";
-      packagesLists = [
-        (fetchurl {
-          url = "https://dl.rockylinux.org/vault/rocky/9.6/BaseOS/x86_64/os/repodata/9965e429a90787a87a07eed62872d046411fb7dded524b96d74c4ce1eade327a-primary.xml.gz";
-          hash = "sha256-mWXkKakHh6h6B+7WKHLQRkEft93tUkuW10xM4ereMno=";
-        })
-        (fetchurl {
-          url = "https://dl.rockylinux.org/vault/rocky/9.6/AppStream/x86_64/os/repodata/8cc9f795679c3365c06b6135f685ebf4188a5863a5f52f09f8cabd4f09c4dfa1-primary.xml.gz";
-          hash = "sha256-jMn3lWecM2XAa2E19oXr9BiKWGOl9S8J+Mq9TwnE36E=";
-        })
-      ];
-      urlPrefixes = [
-        "https://dl.rockylinux.org/vault/rocky/9.6/BaseOS/x86_64/os"
-        "https://dl.rockylinux.org/vault/rocky/9.6/AppStream/x86_64/os"
-      ];
-      archs = [
-        "noarch"
-        "x86_64"
-      ];
-      packages = commonRockyPackages ++ [
-        "annobin"
-      ];
-      unifiedSystemDir = true;
-    };
-
-    # Rocky Linux's /pub/rocky/10/ URL is rolling and changes with each minor release. We use the
-    # vault instead, which provides stable URLs for specific minor versions.
-    rocky10x86_64 = {
-      name = "rocky-10.0-x86_64";
-      fullName = "Rocky Linux 10.0 (x86_64)";
-      packagesLists = [
-        (fetchurl {
-          url = "https://dl.rockylinux.org/vault/rocky/10.0/BaseOS/x86_64/os/repodata/484d5c43cdb1058dd1328a6b891f45c85f1cb2620c528f2ef423d4b9feb9e2f0-primary.xml.gz";
-          hash = "sha256-SE1cQ82xBY3RMopriR9FyF8csmIMUo8u9CPUuf654vA=";
-        })
-        (fetchurl {
-          url = "https://dl.rockylinux.org/vault/rocky/10.0/AppStream/x86_64/os/repodata/32c93064142d89f3f19c11e92642c5abd8368418f7ab3f3bdd752e4afa9b5b23-primary.xml.gz";
-          hash = "sha256-MskwZBQtifPxnBHpJkLFq9g2hBj3qz873XUuSvqbWyM=";
-        })
-      ];
-      urlPrefixes = [
-        "https://dl.rockylinux.org/vault/rocky/10.0/BaseOS/x86_64/os"
-        "https://dl.rockylinux.org/vault/rocky/10.0/AppStream/x86_64/os"
-      ];
-      archs = [
-        "noarch"
-        "x86_64"
-      ];
-      packages = commonRockyPackages ++ [
+      packages = commonAlmaPackages ++ [
         "annobin-plugin-gcc"
       ];
+
+      packagesLists = [
+        (fetchurl {
+          hash = "sha256-TYhpX6fMtimIl/qWgqwd7UYo3zQv/ggxKEYiXkRp4+Q=";
+          url = "https://vault.almalinux.org/10.0/BaseOS/x86_64/os/repodata/4d88695fa7ccb6298897fa9682ac1ded4628df342ffe08312846225e4469e3e4-primary.xml.gz";
+        })
+        (fetchurl {
+          hash = "sha256-EawyBluubywkUYA0WGkPxVDnn5Ok6p9DiTDwwiiWR5E=";
+          url = "https://vault.almalinux.org/10.0/AppStream/x86_64/os/repodata/11ac32065bae6f2c2451803458690fc550e79f93a4ea9f438930f0c228964791-primary.xml.gz";
+        })
+      ];
+
       unifiedSystemDir = true;
+
+      urlPrefixes = [
+        "https://vault.almalinux.org/10.0/BaseOS/x86_64/os"
+        "https://vault.almalinux.org/10.0/AppStream/x86_64/os"
+      ];
     };
 
     # AlmaLinux's repo.almalinux.org URLs are rolling and change with each minor release.
     # We use vault.almalinux.org instead, which provides stable URLs for specific versions.
     alma9x86_64 = {
-      name = "alma-9.6-x86_64";
+      archs = [
+        "noarch"
+        "x86_64"
+      ];
+
       fullName = "AlmaLinux 9.6 (x86_64)";
+      name = "alma-9.6-x86_64";
+
+      packages = commonAlmaPackages ++ [
+        "annobin"
+      ];
+
       packagesLists = [
         (fetchurl {
-          url = "https://vault.almalinux.org/9.6/BaseOS/x86_64/os/repodata/26d6cf944c86ef850773e61919e892a375ff10bb2254003e1d71673db9900b07-primary.xml.gz";
           hash = "sha256-JtbPlEyG74UHc+YZGeiSo3X/ELsiVAA+HXFnPbmQCwc=";
+          url = "https://vault.almalinux.org/9.6/BaseOS/x86_64/os/repodata/26d6cf944c86ef850773e61919e892a375ff10bb2254003e1d71673db9900b07-primary.xml.gz";
         })
         (fetchurl {
-          url = "https://vault.almalinux.org/9.6/AppStream/x86_64/os/repodata/afb5d18b78d819d826d3d0e32ba439da7b9e0fd91d726dd833366496b1b8ca20-primary.xml.gz";
           hash = "sha256-r7XRi3jYGdgm09DjK6Q52nueD9kdcm3YMzZklrG4yiA=";
+          url = "https://vault.almalinux.org/9.6/AppStream/x86_64/os/repodata/afb5d18b78d819d826d3d0e32ba439da7b9e0fd91d726dd833366496b1b8ca20-primary.xml.gz";
         })
       ];
+
+      unifiedSystemDir = true;
+
       urlPrefixes = [
         "https://vault.almalinux.org/9.6/BaseOS/x86_64/os"
         "https://vault.almalinux.org/9.6/AppStream/x86_64/os"
       ];
-      archs = [
-        "noarch"
-        "x86_64"
-      ];
-      packages = commonAlmaPackages ++ [
-        "annobin"
-      ];
-      unifiedSystemDir = true;
-    };
-
-    alma10x86_64 = {
-      name = "alma-10.0-x86_64";
-      fullName = "AlmaLinux 10.0 (x86_64)";
-      packagesLists = [
-        (fetchurl {
-          url = "https://vault.almalinux.org/10.0/BaseOS/x86_64/os/repodata/4d88695fa7ccb6298897fa9682ac1ded4628df342ffe08312846225e4469e3e4-primary.xml.gz";
-          hash = "sha256-TYhpX6fMtimIl/qWgqwd7UYo3zQv/ggxKEYiXkRp4+Q=";
-        })
-        (fetchurl {
-          url = "https://vault.almalinux.org/10.0/AppStream/x86_64/os/repodata/11ac32065bae6f2c2451803458690fc550e79f93a4ea9f438930f0c228964791-primary.xml.gz";
-          hash = "sha256-EawyBluubywkUYA0WGkPxVDnn5Ok6p9DiTDwwiiWR5E=";
-        })
-      ];
-      urlPrefixes = [
-        "https://vault.almalinux.org/10.0/BaseOS/x86_64/os"
-        "https://vault.almalinux.org/10.0/AppStream/x86_64/os"
-      ];
-      archs = [
-        "noarch"
-        "x86_64"
-      ];
-      packages = commonAlmaPackages ++ [
-        "annobin-plugin-gcc"
-      ];
-      unifiedSystemDir = true;
-    };
-
-    # Oracle provides versioned URLs for baseos (e.g., OL9/7/baseos/base/) but not for appstream.
-    # We can't mix versioned baseos with rolling appstream due to package version dependencies,
-    # so we use rolling URLs for both. These may need hash updates when Oracle releases new versions.
-    oracle9x86_64 = {
-      name = "oracle-9-x86_64";
-      fullName = "Oracle Linux 9 (x86_64)";
-      packagesLists = [
-        (fetchurl {
-          url = "https://yum.oracle.com/repo/OracleLinux/OL9/baseos/latest/x86_64/repodata/bc292d67f73fc606db1872d5ba8804da06a514efe64523247035f0d3b678fb63-primary.xml.gz";
-          hash = "sha256-vCktZ/c/xgbbGHLVuogE2galFO/mRSMkcDXw07Z4+2M=";
-        })
-        (fetchurl {
-          url = "https://yum.oracle.com/repo/OracleLinux/OL9/appstream/x86_64/repodata/6fabacadf7cdf22cbb21dc296f58e6b852d5b8ec9a927e214231477ef90083f9-primary.xml.gz";
-          hash = "sha256-b6usrffN8iy7Idwpb1jmuFLVuOyakn4hQjFHfvkAg/k=";
-        })
-      ];
-      urlPrefixes = [
-        "https://yum.oracle.com/repo/OracleLinux/OL9/baseos/latest/x86_64"
-        "https://yum.oracle.com/repo/OracleLinux/OL9/appstream/x86_64"
-      ];
-      archs = [
-        "noarch"
-        "x86_64"
-      ];
-      packages = commonOraclePackages ++ [
-        "annobin"
-      ];
-      unifiedSystemDir = true;
     };
 
     # Amazon Linux 2023 uses GUID-based URLs that don't allow directory listing.
@@ -1215,21 +1111,166 @@ let
     #      which tracks the repository URLs from the official Docker image
     # Release notes: https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes.html
     amazon2023x86_64 = {
-      name = "amazon-2023-x86_64";
-      fullName = "Amazon Linux 2023 (x86_64)";
-      packagesList = fetchurl {
-        url = "https://cdn.amazonlinux.com/al2023/core/guids/6fa961924efb4835a7e8de43c89726dca28a5cf5906f891262d8f78a31ea3aaf/x86_64/repodata/primary.xml.gz";
-        hash = "sha256-Ezdsc8a2aOIbyXvQ/nyanWe1fl089VgtfegaPcu2oo4=";
-      };
-      urlPrefix = "https://cdn.amazonlinux.com/al2023/core/guids/6fa961924efb4835a7e8de43c89726dca28a5cf5906f891262d8f78a31ea3aaf/x86_64";
       archs = [
         "noarch"
         "x86_64"
       ];
+
+      fullName = "Amazon Linux 2023 (x86_64)";
+      name = "amazon-2023-x86_64";
+
       packages = commonAmazonPackages ++ [
         "annobin-plugin-gcc"
       ];
+
+      packagesList = fetchurl {
+        hash = "sha256-Ezdsc8a2aOIbyXvQ/nyanWe1fl089VgtfegaPcu2oo4=";
+        url = "https://cdn.amazonlinux.com/al2023/core/guids/6fa961924efb4835a7e8de43c89726dca28a5cf5906f891262d8f78a31ea3aaf/x86_64/repodata/primary.xml.gz";
+      };
+
       unifiedSystemDir = true;
+      urlPrefix = "https://cdn.amazonlinux.com/al2023/core/guids/6fa961924efb4835a7e8de43c89726dca28a5cf5906f891262d8f78a31ea3aaf/x86_64";
+    };
+
+    fedora42x86_64 = {
+      archs = [
+        "noarch"
+        "x86_64"
+      ];
+
+      fullName = "Fedora 42 (x86_64)";
+      name = "fedora-42-x86_64";
+      packages = commonFedoraPackages;
+
+      packagesList = fetchurl {
+        hash = "sha256-zUg7Nd8BfWi3OoeKOSu/ZmpD1121TDhuRyC8Np61w6M=";
+        url = "https://dl.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os/repodata/cd483b35df017d68b73a878a392bbf666a43d75db54c386e4720bc369eb5c3a3-primary.xml.zst";
+      };
+
+      unifiedSystemDir = true;
+      urlPrefix = "https://dl.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os";
+    };
+
+    fedora43x86_64 = {
+      archs = [
+        "noarch"
+        "x86_64"
+      ];
+
+      fullName = "Fedora 43 (x86_64)";
+      name = "fedora-43-x86_64";
+      packages = commonFedoraPackages ++ [ "gpgverify" ];
+
+      packagesList = fetchurl {
+        hash = "sha256-//o+n2P//T0huOpem7D+NJp+0dTgl3emGM7JOivMMF8=";
+        url = "https://dl.fedoraproject.org/pub/fedora/linux/releases/43/Everything/x86_64/os/repodata/fffa3e9f63fffd3d21b8ea5e9bb0fe349a7ed1d4e09777a618cec93a2bcc305f-primary.xml.zst";
+      };
+
+      unifiedSystemDir = true;
+      urlPrefix = "https://dl.fedoraproject.org/pub/fedora/linux/releases/43/Everything/x86_64/os";
+    };
+
+    # Oracle provides versioned URLs for baseos (e.g., OL9/7/baseos/base/) but not for appstream.
+    # We can't mix versioned baseos with rolling appstream due to package version dependencies,
+    # so we use rolling URLs for both. These may need hash updates when Oracle releases new versions.
+    oracle9x86_64 = {
+      archs = [
+        "noarch"
+        "x86_64"
+      ];
+
+      fullName = "Oracle Linux 9 (x86_64)";
+      name = "oracle-9-x86_64";
+
+      packages = commonOraclePackages ++ [
+        "annobin"
+      ];
+
+      packagesLists = [
+        (fetchurl {
+          hash = "sha256-vCktZ/c/xgbbGHLVuogE2galFO/mRSMkcDXw07Z4+2M=";
+          url = "https://yum.oracle.com/repo/OracleLinux/OL9/baseos/latest/x86_64/repodata/bc292d67f73fc606db1872d5ba8804da06a514efe64523247035f0d3b678fb63-primary.xml.gz";
+        })
+        (fetchurl {
+          hash = "sha256-b6usrffN8iy7Idwpb1jmuFLVuOyakn4hQjFHfvkAg/k=";
+          url = "https://yum.oracle.com/repo/OracleLinux/OL9/appstream/x86_64/repodata/6fabacadf7cdf22cbb21dc296f58e6b852d5b8ec9a927e214231477ef90083f9-primary.xml.gz";
+        })
+      ];
+
+      unifiedSystemDir = true;
+
+      urlPrefixes = [
+        "https://yum.oracle.com/repo/OracleLinux/OL9/baseos/latest/x86_64"
+        "https://yum.oracle.com/repo/OracleLinux/OL9/appstream/x86_64"
+      ];
+    };
+
+    # Rocky Linux's /pub/rocky/10/ URL is rolling and changes with each minor release. We use the
+    # vault instead, which provides stable URLs for specific minor versions.
+    rocky10x86_64 = {
+      archs = [
+        "noarch"
+        "x86_64"
+      ];
+
+      fullName = "Rocky Linux 10.0 (x86_64)";
+      name = "rocky-10.0-x86_64";
+
+      packages = commonRockyPackages ++ [
+        "annobin-plugin-gcc"
+      ];
+
+      packagesLists = [
+        (fetchurl {
+          hash = "sha256-SE1cQ82xBY3RMopriR9FyF8csmIMUo8u9CPUuf654vA=";
+          url = "https://dl.rockylinux.org/vault/rocky/10.0/BaseOS/x86_64/os/repodata/484d5c43cdb1058dd1328a6b891f45c85f1cb2620c528f2ef423d4b9feb9e2f0-primary.xml.gz";
+        })
+        (fetchurl {
+          hash = "sha256-MskwZBQtifPxnBHpJkLFq9g2hBj3qz873XUuSvqbWyM=";
+          url = "https://dl.rockylinux.org/vault/rocky/10.0/AppStream/x86_64/os/repodata/32c93064142d89f3f19c11e92642c5abd8368418f7ab3f3bdd752e4afa9b5b23-primary.xml.gz";
+        })
+      ];
+
+      unifiedSystemDir = true;
+
+      urlPrefixes = [
+        "https://dl.rockylinux.org/vault/rocky/10.0/BaseOS/x86_64/os"
+        "https://dl.rockylinux.org/vault/rocky/10.0/AppStream/x86_64/os"
+      ];
+    };
+
+    # Rocky Linux's /pub/rocky/9/ URL is rolling and changes with each minor release. We use the
+    # vault instead, which provides stable URLs for specific minor versions.
+    rocky9x86_64 = {
+      archs = [
+        "noarch"
+        "x86_64"
+      ];
+
+      fullName = "Rocky Linux 9.6 (x86_64)";
+      name = "rocky-9.6-x86_64";
+
+      packages = commonRockyPackages ++ [
+        "annobin"
+      ];
+
+      packagesLists = [
+        (fetchurl {
+          hash = "sha256-mWXkKakHh6h6B+7WKHLQRkEft93tUkuW10xM4ereMno=";
+          url = "https://dl.rockylinux.org/vault/rocky/9.6/BaseOS/x86_64/os/repodata/9965e429a90787a87a07eed62872d046411fb7dded524b96d74c4ce1eade327a-primary.xml.gz";
+        })
+        (fetchurl {
+          hash = "sha256-jMn3lWecM2XAa2E19oXr9BiKWGOl9S8J+Mq9TwnE36E=";
+          url = "https://dl.rockylinux.org/vault/rocky/9.6/AppStream/x86_64/os/repodata/8cc9f795679c3365c06b6135f685ebf4188a5863a5f52f09f8cabd4f09c4dfa1-primary.xml.gz";
+        })
+      ];
+
+      unifiedSystemDir = true;
+
+      urlPrefixes = [
+        "https://dl.rockylinux.org/vault/rocky/9.6/BaseOS/x86_64/os"
+        "https://dl.rockylinux.org/vault/rocky/9.6/AppStream/x86_64/os"
+      ];
     };
 
   };
@@ -1237,240 +1278,264 @@ let
   # The set of supported Dpkg-based distributions.
 
   debDistros = {
-    # Ubuntu's snapshot service returns the same data for 22.04 regardless of the timestamp in the
-    # URL. The hashes don't change between mirror://ubuntu and snapshot.ubuntu.com, so this is fine.
-    ubuntu2204i386 = {
-      name = "ubuntu-22.04-jammy-i386";
-      fullName = "Ubuntu 22.04 Jammy (i386)";
-      packagesLists = [
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy/main/binary-i386/Packages.xz";
-          hash = "sha256-iZBmwT0ep4v+V3sayybbOgZBOFFZwPGpOKtmuLMMVPQ=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy/universe/binary-i386/Packages.xz";
-          hash = "sha256-DO2LdpZ9rDDBhWj2gvDWd0TJJVZHxKsYTKTi6GXjm1E=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-updates/main/binary-i386/Packages.xz";
-          hash = "sha256-g95BtOoMxacZEHMBbcMes4a1P9HKf/QGOMOPr+OKayo=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-updates/universe/binary-i386/Packages.xz";
-          hash = "sha256-VbazaDDJKSUyQchGmw5f+FYAr4PIXWZJSBF0WVC5j+0=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-security/main/binary-i386/Packages.xz";
-          hash = "sha256-SkP4PqjUAbEMtktR5WQm/3jQl9O0T2VOVTP9QIYIVkQ=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-security/universe/binary-i386/Packages.xz";
-          hash = "sha256-citjk8LAGSRlXgOXgf3oe9vBCUC6/DJGhRJl/3ppN9c=";
-        })
-      ];
-      urlPrefix = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z";
-      packages = commonDebPackages ++ [
-        "diffutils"
-        "libc-bin"
-      ];
-    };
-
-    ubuntu2204x86_64 = {
-      name = "ubuntu-22.04-jammy-amd64";
-      fullName = "Ubuntu 22.04 Jammy (amd64)";
-      packagesLists = [
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy/main/binary-amd64/Packages.xz";
-          hash = "sha256-N8tX8VVMv6ccWinun/7hipqMF4K7BWjgh0t/9M6PnBE=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy/universe/binary-amd64/Packages.xz";
-          hash = "sha256-0pyyTJP+xfQyVXBrzn60bUd5lSA52MaKwbsUpvNlXOI=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-updates/main/binary-amd64/Packages.xz";
-          hash = "sha256-I57YuLZ458RljXfp1xFxqQLGNJh9uu8kQC0hc88XZro=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-updates/universe/binary-amd64/Packages.xz";
-          hash = "sha256-ZXobWMi7tkakZ89GoyKpiRhRxMRXud0DOerSfzz5CPE=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-security/main/binary-amd64/Packages.xz";
-          hash = "sha256-cifTPY1iyckkaLd7dp+VPRlF0viWKrWXhM8HVWaMuUw=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-security/universe/binary-amd64/Packages.xz";
-          hash = "sha256-LTSOGbzkv0KrF2JM6oVT1Ml2KQkySXMbKNMBb9AyfQM=";
-        })
-      ];
-      urlPrefix = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z";
-      packages = commonDebPackages ++ [
-        "diffutils"
-        "libc-bin"
-      ];
-    };
-
-    ubuntu2404x86_64 = {
-      name = "ubuntu-24.04-noble-amd64";
-      fullName = "Ubuntu 24.04 Noble (amd64)";
-      packagesLists = [
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble/main/binary-amd64/Packages.xz";
-          hash = "sha256-KmoZnhAxpcJ5yzRmRtWUmT81scA91KgqqgMjmA3ZJFE=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble/universe/binary-amd64/Packages.xz";
-          hash = "sha256-upBX+huRQ4zIodJoCNAMhTif4QHQwUliVN+XI2QFWZo=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble-updates/main/binary-amd64/Packages.xz";
-          hash = "sha256-leBJ29a2C2qdIPdjSSuwkHKUSq8GEC9L0DgdxHWZ55s=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble-updates/universe/binary-amd64/Packages.xz";
-          hash = "sha256-CWYA0A4ytptWdClW3ACdIH4hKscblDh5OgxExP4VdJA=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble-security/main/binary-amd64/Packages.xz";
-          hash = "sha256-TYs8ugCYqzOleH2OebdrpB8E68PfxB+7sRb+PlfANEo=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble-security/universe/binary-amd64/Packages.xz";
-          hash = "sha256-bK9R8CUjLQ1V4GP7/KqZooSnKHF5+T5SuBs0butC82M=";
-        })
-      ];
-      urlPrefix = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z";
-      packages = commonDebPackages ++ [
-        "diffutils"
-        "libc-bin"
-      ];
-    };
-
-    ubuntu2604x86_64 = {
-      name = "ubuntu-26.04-resolute-amd64";
-      fullName = "Ubuntu 26.04 Resolute (amd64)";
-      packagesLists = [
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute/main/binary-amd64/Packages.xz";
-          hash = "sha256-7ZrEHLJj767MWgagdC3FZXDi+1/5TE8uSy+9zd1zzyQ=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute/universe/binary-amd64/Packages.xz";
-          hash = "sha256-FYe+htZtOFQjJSFeDhCfdb1pXI8k15Os4nYgOKatWB4=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute-updates/main/binary-amd64/Packages.xz";
-          hash = "sha256-xaUdPgtH3jCgTJXYUbksMHvzt6jj6YfdzSAb+91tQNw=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute-updates/universe/binary-amd64/Packages.xz";
-          hash = "sha256-gXEKlgpgyrcnIhYwz1vxypFNX50EMbwhmidbDvUruKc=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute-security/main/binary-amd64/Packages.xz";
-          hash = "sha256-tzAvbwp+/6snpL8TtbtTx2kEL2f+XfGAwDCl/r6ka6Y=";
-        })
-        (fetchurl {
-          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute-security/universe/binary-amd64/Packages.xz";
-          hash = "sha256-gXEKlgpgyrcnIhYwz1vxypFNX50EMbwhmidbDvUruKc=";
-        })
-      ];
-      urlPrefix = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z";
-      packages = commonDebPackages ++ [
-        "diffutils"
-        "libc-bin"
-      ];
-    };
-
     debian11i386 = {
-      name = "debian-11.11-bullseye-i386";
       fullName = "Debian 11.11 Bullseye (i386)";
-      packagesList = fetchurl {
-        url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bullseye/main/binary-i386/Packages.xz";
-        hash = "sha256-kUg1VBUO6co/5bKloxncta49191oCeF05Hm399+UuDA=";
-      };
-      urlPrefix = "https://snapshot.debian.org/archive/debian/20260105T082626Z";
+      name = "debian-11.11-bullseye-i386";
       packages = commonDebianPackages;
+
+      packagesList = fetchurl {
+        hash = "sha256-kUg1VBUO6co/5bKloxncta49191oCeF05Hm399+UuDA=";
+        url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bullseye/main/binary-i386/Packages.xz";
+      };
+
+      urlPrefix = "https://snapshot.debian.org/archive/debian/20260105T082626Z";
     };
 
     debian11x86_64 = {
-      name = "debian-11.11-bullseye-amd64";
       fullName = "Debian 11.11 Bullseye (amd64)";
-      packagesList = fetchurl {
-        url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bullseye/main/binary-amd64/Packages.xz";
-        hash = "sha256-HDQFREKX6thkcRwY5kvOSBDbY7SDQKL52BGC2fI1rXE=";
-      };
-      urlPrefix = "https://snapshot.debian.org/archive/debian/20260105T082626Z";
+      name = "debian-11.11-bullseye-amd64";
       packages = commonDebianPackages;
+
+      packagesList = fetchurl {
+        hash = "sha256-HDQFREKX6thkcRwY5kvOSBDbY7SDQKL52BGC2fI1rXE=";
+        url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bullseye/main/binary-amd64/Packages.xz";
+      };
+
+      urlPrefix = "https://snapshot.debian.org/archive/debian/20260105T082626Z";
     };
 
     debian12i386 = {
-      name = "debian-12.12-bookworm-i386";
       fullName = "Debian 12.12 Bookworm (i386)";
+      name = "debian-12.12-bookworm-i386";
+      packages = commonDebianPackages;
+
       packagesLists = [
         (fetchurl {
-          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bookworm/main/binary-i386/Packages.xz";
           hash = "sha256-nIijsNoHUYkrL6eiwN4FCLHnJy/Bv/RMvnbMIHvieVI=";
+          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bookworm/main/binary-i386/Packages.xz";
         })
         (fetchurl {
-          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bookworm-backports/main/binary-i386/Packages.xz";
           hash = "sha256-/ja7+DNIKc2ZUIXiocTjLbaD2EPsfeyZcd5ndEMapp4=";
+          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bookworm-backports/main/binary-i386/Packages.xz";
         })
       ];
+
       urlPrefix = "https://snapshot.debian.org/archive/debian/20260105T082626Z";
-      packages = commonDebianPackages;
     };
 
     debian12x86_64 = {
-      name = "debian-12.12-bookworm-amd64";
       fullName = "Debian 12.12 Bookworm (amd64)";
+      name = "debian-12.12-bookworm-amd64";
+      packages = commonDebianPackages;
+
       packagesLists = [
         (fetchurl {
-          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bookworm/main/binary-amd64/Packages.xz";
           hash = "sha256-PfjQeu3tXmXZhH7foSD6WyFrvY4PfwSN/v5pBeShIBE=";
+          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bookworm/main/binary-amd64/Packages.xz";
         })
         (fetchurl {
-          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bookworm-backports/main/binary-amd64/Packages.xz";
           hash = "sha256-S3NSvw1kX2zxzMh+WYhY58VUR7iLrTEIuXwwSK6itIs=";
+          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/bookworm-backports/main/binary-amd64/Packages.xz";
         })
       ];
+
       urlPrefix = "https://snapshot.debian.org/archive/debian/20260105T082626Z";
-      packages = commonDebianPackages;
     };
 
     debian13i386 = {
-      name = "debian-13.2-trixie-i386";
       fullName = "Debian 13.2 Trixie (i386)";
+      name = "debian-13.2-trixie-i386";
+      packages = commonDebianPackages;
+
       packagesLists = [
         (fetchurl {
-          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/trixie/main/binary-i386/Packages.xz";
           hash = "sha256-9zozvFZoWiv3wNe9rb+kPwSOgc5G5f4zmNpdoet5A78=";
+          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/trixie/main/binary-i386/Packages.xz";
         })
         (fetchurl {
-          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/trixie-backports/main/binary-i386/Packages.xz";
           hash = "sha256-hEBAQ73Jnv8zp9YvNXWLEObyrSlQNBNBj/XoofJL7eI=";
+          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/trixie-backports/main/binary-i386/Packages.xz";
         })
       ];
+
       urlPrefix = "https://snapshot.debian.org/archive/debian/20260105T082626Z";
-      packages = commonDebianPackages;
     };
 
     debian13x86_64 = {
-      name = "debian-13.2-trixie-amd64";
       fullName = "Debian 13.2 Trixie (amd64)";
+      name = "debian-13.2-trixie-amd64";
+      packages = commonDebianPackages;
+
       packagesLists = [
         (fetchurl {
-          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/trixie/main/binary-amd64/Packages.xz";
           hash = "sha256-g7f+tKljUXAC4gxJfzSC8+j0GbiwRZjonv25tYuvxtU=";
+          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/trixie/main/binary-amd64/Packages.xz";
         })
         (fetchurl {
-          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/trixie-backports/main/binary-amd64/Packages.xz";
           hash = "sha256-9OoR36FsyK7MQMLHLFMRJ9O11WKq9JCfGwnprpztxNw=";
+          url = "https://snapshot.debian.org/archive/debian/20260105T082626Z/dists/trixie-backports/main/binary-amd64/Packages.xz";
         })
       ];
+
       urlPrefix = "https://snapshot.debian.org/archive/debian/20260105T082626Z";
-      packages = commonDebianPackages;
+    };
+
+    # Ubuntu's snapshot service returns the same data for 22.04 regardless of the timestamp in the
+    # URL. The hashes don't change between mirror://ubuntu and snapshot.ubuntu.com, so this is fine.
+    ubuntu2204i386 = {
+      fullName = "Ubuntu 22.04 Jammy (i386)";
+      name = "ubuntu-22.04-jammy-i386";
+
+      packages = commonDebPackages ++ [
+        "diffutils"
+        "libc-bin"
+      ];
+
+      packagesLists = [
+        (fetchurl {
+          hash = "sha256-iZBmwT0ep4v+V3sayybbOgZBOFFZwPGpOKtmuLMMVPQ=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy/main/binary-i386/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-DO2LdpZ9rDDBhWj2gvDWd0TJJVZHxKsYTKTi6GXjm1E=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy/universe/binary-i386/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-g95BtOoMxacZEHMBbcMes4a1P9HKf/QGOMOPr+OKayo=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-updates/main/binary-i386/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-VbazaDDJKSUyQchGmw5f+FYAr4PIXWZJSBF0WVC5j+0=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-updates/universe/binary-i386/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-SkP4PqjUAbEMtktR5WQm/3jQl9O0T2VOVTP9QIYIVkQ=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-security/main/binary-i386/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-citjk8LAGSRlXgOXgf3oe9vBCUC6/DJGhRJl/3ppN9c=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-security/universe/binary-i386/Packages.xz";
+        })
+      ];
+
+      urlPrefix = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z";
+    };
+
+    ubuntu2204x86_64 = {
+      fullName = "Ubuntu 22.04 Jammy (amd64)";
+      name = "ubuntu-22.04-jammy-amd64";
+
+      packages = commonDebPackages ++ [
+        "diffutils"
+        "libc-bin"
+      ];
+
+      packagesLists = [
+        (fetchurl {
+          hash = "sha256-N8tX8VVMv6ccWinun/7hipqMF4K7BWjgh0t/9M6PnBE=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy/main/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-0pyyTJP+xfQyVXBrzn60bUd5lSA52MaKwbsUpvNlXOI=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy/universe/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-I57YuLZ458RljXfp1xFxqQLGNJh9uu8kQC0hc88XZro=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-updates/main/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-ZXobWMi7tkakZ89GoyKpiRhRxMRXud0DOerSfzz5CPE=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-updates/universe/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-cifTPY1iyckkaLd7dp+VPRlF0viWKrWXhM8HVWaMuUw=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-security/main/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-LTSOGbzkv0KrF2JM6oVT1Ml2KQkySXMbKNMBb9AyfQM=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/jammy-security/universe/binary-amd64/Packages.xz";
+        })
+      ];
+
+      urlPrefix = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z";
+    };
+
+    ubuntu2404x86_64 = {
+      fullName = "Ubuntu 24.04 Noble (amd64)";
+      name = "ubuntu-24.04-noble-amd64";
+
+      packages = commonDebPackages ++ [
+        "diffutils"
+        "libc-bin"
+      ];
+
+      packagesLists = [
+        (fetchurl {
+          hash = "sha256-KmoZnhAxpcJ5yzRmRtWUmT81scA91KgqqgMjmA3ZJFE=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble/main/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-upBX+huRQ4zIodJoCNAMhTif4QHQwUliVN+XI2QFWZo=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble/universe/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-leBJ29a2C2qdIPdjSSuwkHKUSq8GEC9L0DgdxHWZ55s=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble-updates/main/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-CWYA0A4ytptWdClW3ACdIH4hKscblDh5OgxExP4VdJA=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble-updates/universe/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-TYs8ugCYqzOleH2OebdrpB8E68PfxB+7sRb+PlfANEo=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble-security/main/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-bK9R8CUjLQ1V4GP7/KqZooSnKHF5+T5SuBs0butC82M=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z/dists/noble-security/universe/binary-amd64/Packages.xz";
+        })
+      ];
+
+      urlPrefix = "https://snapshot.ubuntu.com/ubuntu/20260101T000000Z";
+    };
+
+    ubuntu2604x86_64 = {
+      fullName = "Ubuntu 26.04 Resolute (amd64)";
+      name = "ubuntu-26.04-resolute-amd64";
+
+      packages = commonDebPackages ++ [
+        "diffutils"
+        "libc-bin"
+      ];
+
+      packagesLists = [
+        (fetchurl {
+          hash = "sha256-7ZrEHLJj767MWgagdC3FZXDi+1/5TE8uSy+9zd1zzyQ=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute/main/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-FYe+htZtOFQjJSFeDhCfdb1pXI8k15Os4nYgOKatWB4=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute/universe/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-xaUdPgtH3jCgTJXYUbksMHvzt6jj6YfdzSAb+91tQNw=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute-updates/main/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-gXEKlgpgyrcnIhYwz1vxypFNX50EMbwhmidbDvUruKc=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute-updates/universe/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-tzAvbwp+/6snpL8TtbtTx2kEL2f+XfGAwDCl/r6ka6Y=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute-security/main/binary-amd64/Packages.xz";
+        })
+        (fetchurl {
+          hash = "sha256-gXEKlgpgyrcnIhYwz1vxypFNX50EMbwhmidbDvUruKc=";
+          url = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z/dists/resolute-security/universe/binary-amd64/Packages.xz";
+        })
+      ];
+
+      urlPrefix = "https://snapshot.ubuntu.com/ubuntu/20260515T222303Z";
     };
   };
 

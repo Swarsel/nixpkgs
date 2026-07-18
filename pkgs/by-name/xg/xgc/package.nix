@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libxaw,
   libxt,
+  pkg-config,
   wrapWithXFileSearchPathHook,
   writeScript,
 }:
@@ -45,12 +45,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Demo to show various features of the X11 core protocol graphics primitives";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xgc";
+
     license = with lib.licenses; [
       x11
       mit
     ];
-    mainProgram = "xgc";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xgc";
   };
 })

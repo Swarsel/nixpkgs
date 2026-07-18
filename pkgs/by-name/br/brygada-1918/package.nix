@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -15,9 +15,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-ePehnBYFlm+iExf2Sy25PsIWvtHlys2hcCZ4cHT+H1k=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,11 +25,14 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Digital revival of the Brygada serif typeface";
     homepage = "https://brygada1918.eu/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ oidro ];
+    platforms = lib.platforms.all;
   };
 }

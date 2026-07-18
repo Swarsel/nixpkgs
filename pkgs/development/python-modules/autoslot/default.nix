@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "autoslot";
   version = "2025.11.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cjrh";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-mPGfBUSKkskiiokqo/TJWdDzuvcg/LDULx+Gx8LexV8=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "autoslot" ];
 
   meta = {

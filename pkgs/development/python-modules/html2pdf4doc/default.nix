@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pypdf,
   requests,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "html2pdf4doc";
   version = "0.0.33";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mettta";
@@ -21,6 +20,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-d5Y1llC7Yb1Vw2tvxAhgIw7wk18mFJ+sm8Rrr+UwxUI=";
   };
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -33,12 +36,8 @@ buildPythonPackage rec {
     webdriver-manager
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "html2pdf4doc" ];
-
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
-
   versionCheckProgramArg = "-v";
 
   meta = {

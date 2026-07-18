@@ -1,11 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   callPackage,
-  pbr,
-  setuptools,
-
   # direct
   cryptography,
   dogpile-cache,
@@ -13,20 +10,20 @@
   jsonpatch,
   keystoneauth1,
   munch,
+  openstackdocstheme,
   os-service-types,
+  pbr,
   platformdirs,
   psutil,
   pyyaml,
-
+  setuptools,
   # docs
   sphinxHook,
-  openstackdocstheme,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "openstacksdk";
   version = "4.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -34,6 +31,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-nMpUNLz7OosoGd5rozWcOcOEf3jdEHo5dhxmOv0xONw=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   patches = [
     ./fix-pyproject.patch
@@ -45,23 +47,18 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "'sphinxcontrib.rsvgconverter'," "#'sphinxcontrib.rsvgconverter',"
   '';
 
+  nativeBuildInputs = [
+    openstackdocstheme
+    sphinxHook
+  ];
+
   env.PBR_VERSION = finalAttrs.version;
+  # Checks moved to 'passthru.tests' to workaround slowness
+  doCheck = false;
 
   build-system = [
     pbr
     setuptools
-  ];
-
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  sphinxBuilders = [ "man" ];
-
-  nativeBuildInputs = [
-    openstackdocstheme
-    sphinxHook
   ];
 
   dependencies = [
@@ -77,12 +74,7 @@ buildPythonPackage (finalAttrs: {
     pyyaml
   ];
 
-  # Checks moved to 'passthru.tests' to workaround slowness
-  doCheck = false;
-
-  passthru.tests = {
-    tests = callPackage ./tests.nix { };
-  };
+  pyproject = true;
 
   # Non-exhaustive imports
   pythonImportsCheck = [
@@ -92,12 +84,18 @@ buildPythonPackage (finalAttrs: {
     "openstack.test"
   ];
 
+  sphinxBuilders = [ "man" ];
+
+  passthru.tests = {
+    tests = callPackage ./tests.nix { };
+  };
+
   meta = {
     description = "SDK for building applications to work with OpenStack clouds.";
-    mainProgram = "openstack";
     homepage = "https://docs.openstack.org/openstacksdk/latest/";
-    downloadPage = "https://github.com/openstack/openstacksdk/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+    mainProgram = "openstack";
+    downloadPage = "https://github.com/openstack/openstacksdk/releases/tag/${finalAttrs.src.tag}";
     teams = [ lib.teams.openstack ];
   };
 })

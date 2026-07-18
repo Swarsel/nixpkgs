@@ -1,25 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   haversine,
-  python-dateutil,
-  requests,
-  xmltodict,
-
   # testing
   pytestCheckHook,
+  python-dateutil,
+  requests,
+  # build-system
+  setuptools,
+  xmltodict,
 }:
 
 buildPythonPackage rec {
   pname = "georss-client";
   version = "2026.6.1";
-  pyproject = true;
+
   src = fetchFromGitHub {
     owner = "exxamalte";
     repo = "python-georss-client";
@@ -27,6 +24,7 @@ buildPythonPackage rec {
     hash = "sha256-3JaFZY6c5wlJs2yE3KJITJIeCgifzurW7chOfQubQ5w=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,8 +34,7 @@ buildPythonPackage rec {
     xmltodict
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "georss_client" ];
 
   meta = {

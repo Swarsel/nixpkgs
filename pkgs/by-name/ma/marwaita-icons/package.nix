@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gtk3,
   hicolor-icon-theme,
-  pantheon,
   kdePackages,
+  pantheon,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -29,12 +29,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     pantheon.elementary-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-  dontWrapQtApps = true;
-
-  # FIXME: https://github.com/darkomarko42/Marwaita-Icons/issues/3
-  dontCheckForBrokenSymlinks = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -48,11 +42,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # FIXME: https://github.com/darkomarko42/Marwaita-Icons/issues/3
+  dontCheckForBrokenSymlinks = true;
+  dontDropIconThemeCache = true;
+  dontWrapQtApps = true;
+
   meta = {
     description = "Icon pack for linux";
     homepage = "https://github.com/darkomarko42/Marwaita-Icons";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
   };
 })

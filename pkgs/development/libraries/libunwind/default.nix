@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
   buildPackages,
-  xz,
   testers,
+  xz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ed+FUPApDxNHxznXMhiTeNr8yRxRDSCyJJdIhouGNho=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "devman"
+  ];
+
   postPatch =
     if (stdenv.cc.isClang || stdenv.hostPlatform.isStatic) then
       ''
@@ -30,12 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
       '';
 
   nativeBuildInputs = [ autoreconfHook ];
-
-  outputs = [
-    "out"
-    "dev"
-    "devman"
-  ];
+  propagatedBuildInputs = [ xz ];
 
   configureFlags = [
     # Starting from 1.8.1 libunwind installs testsuite by default.
@@ -47,9 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     "LATEX2MAN=${buildPackages.coreutils}/bin/true"
   ];
 
-  propagatedBuildInputs = [ xz ];
-
-  enableParallelBuilding = true;
+  doCheck = false; # fails
 
   postInstall = ''
     find $out -name \*.la | while read file; do
@@ -57,7 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  doCheck = false; # fails
+  enableParallelBuilding = true;
 
   passthru.tests.pkg-config = testers.hasPkgConfigModules {
     package = finalAttrs.finalPackage;
@@ -65,16 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.nongnu.org/libunwind";
     description = "Portable and efficient API to determine the call-chain of a program";
+    homepage = "https://www.nongnu.org/libunwind";
+    license = lib.licenses.mit;
     maintainers = [ ];
-    pkgConfigModules = [
-      "libunwind"
-      "libunwind-coredump"
-      "libunwind-generic"
-      "libunwind-ptrace"
-      "libunwind-setjmp"
-    ];
+
     # https://github.com/libunwind/libunwind#libunwind
     platforms = [
       "aarch64-linux"
@@ -96,6 +90,13 @@ stdenv.mkDerivation (finalAttrs: {
       "x86_64-linux"
       "x86_64-solaris"
     ];
-    license = lib.licenses.mit;
+
+    pkgConfigModules = [
+      "libunwind"
+      "libunwind-coredump"
+      "libunwind-generic"
+      "libunwind-ptrace"
+      "libunwind-setjmp"
+    ];
   };
 })

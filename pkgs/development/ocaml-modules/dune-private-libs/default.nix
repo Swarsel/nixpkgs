@@ -6,17 +6,14 @@
 }:
 
 buildDunePackage {
-  pname = "dune-private-libs";
-
   inherit (dune) src version;
-
-  dontAddPrefix = true;
-
+  pname = "dune-private-libs";
   propagatedBuildInputs = [ stdune ];
+  dontAddPrefix = true;
 
   meta = {
     description = "Private libraries of Dune";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

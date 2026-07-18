@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeBinaryWrapper,
 }:
 
@@ -16,19 +16,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-X+1euWp4W53axbiBpL82bUPfod/JNhGVGWgOqKyhz6A=";
   };
 
-  vendorHash = null;
-
-  env.CGO_ENABLED = 0;
-
-  subPackages = [
-    "cmd/slim"
-    "cmd/slim-sensor"
-  ];
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  vendorHash = null;
+  env.CGO_ENABLED = 0;
 
   preBuild = ''
     go generate ./...
+  '';
+
+  # docker-slim tries to create its state dir next to the binary (inside the nix
+  # store), so we set it to use the working directory at the time of invocation
+  postInstall = ''
+    wrapProgram "$out/bin/slim" --add-flags '--state-path "$(pwd)"'
   '';
 
   ldflags = [
@@ -38,17 +37,17 @@ buildGoModule (finalAttrs: {
     "-X github.com/slimtoolkit/slim/pkg/version.appVersionRev=${finalAttrs.src.rev}"
   ];
 
-  # docker-slim tries to create its state dir next to the binary (inside the nix
-  # store), so we set it to use the working directory at the time of invocation
-  postInstall = ''
-    wrapProgram "$out/bin/slim" --add-flags '--state-path "$(pwd)"'
-  '';
+  subPackages = [
+    "cmd/slim"
+    "cmd/slim-sensor"
+  ];
 
   meta = {
     description = "Minify and secure Docker containers";
     homepage = "https://slimtoolkit.org/";
     changelog = "https://github.com/slimtoolkit/slim/raw/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mbrgm
     ];

@@ -1,8 +1,9 @@
 {
   lib,
+  async-timeout,
   buildPythonPackage,
   fetchFromCodeberg,
-  async-timeout,
+  fetchpatch,
   httpx,
   httpx-socks,
   proxy-py,
@@ -12,13 +13,11 @@
   python-socks,
   rencode,
   setuptools,
-  fetchpatch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiobtclientrpc";
   version = "5.0.1";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "plotski";
@@ -30,12 +29,17 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # compatibility with python3.14: fix retrival of non-running event loop
     (fetchpatch {
-      url = "https://codeberg.org/plotski/aiobtclientrpc/commit/1328e281d28f17c9b2c092539b4ab7402f1082b3.patch";
       hash = "sha256-ixHyG/w2h7tkaVYxmvpInfNW4AxVTn4Bflztzt1TOwM=";
+      url = "https://codeberg.org/plotski/aiobtclientrpc/commit/1328e281d28f17c9b2c092539b4ab7402f1082b3.patch";
     })
   ];
 
-  pythonRelaxDeps = [ "async-timeout" ];
+  nativeCheckInputs = [
+    proxy-py
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -45,13 +49,6 @@ buildPythonPackage (finalAttrs: {
     httpx-socks
     python-socks
     rencode
-  ];
-
-  nativeCheckInputs = [
-    proxy-py
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -70,7 +67,9 @@ buildPythonPackage (finalAttrs: {
     "test_DelugeRPCRequest_equality"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiobtclientrpc" ];
+  pythonRelaxDeps = [ "async-timeout" ];
 
   meta = {
     description = "Asynchronous low-level communication with BitTorrent clients";

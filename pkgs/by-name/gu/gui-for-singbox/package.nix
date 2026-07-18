@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  buildGo126Module,
   fetchFromGitHub,
   autoPatchelfHook,
+  buildGo126Module,
   copyDesktopItems,
-  glib-networking,
-  nodejs,
-  pkg-config,
-  pnpm_10,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  wrapGAppsHook3,
-  wails,
-  webkitgtk_4_1,
+  glib-networking,
   makeDesktopItem,
   nix-update-script,
+  nodejs,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_10,
+  wails,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 let
@@ -38,9 +38,6 @@ let
 
   frontend = stdenv.mkDerivation (finalAttrs: {
     inherit pname version src;
-
-    sourceRoot = "${finalAttrs.src.name}/frontend";
-
     patches = [ ./frontend-runtime-path.patch ];
 
     nativeBuildInputs = [
@@ -48,18 +45,6 @@ let
       pnpmConfigHook
       pnpm_10
     ];
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs)
-        pname
-        version
-        src
-        sourceRoot
-        ;
-      pnpm = pnpm_10;
-      fetcherVersion = 3;
-      hash = "sha256-BrDO9xdMuMnhXPAd9QvtU4R1W1WacnsVcGde+WFjvGA=";
-    };
 
     buildPhase = ''
       runHook preBuild
@@ -77,6 +62,21 @@ let
       runHook postInstall
     '';
 
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs)
+        pname
+        version
+        src
+        sourceRoot
+        ;
+
+      fetcherVersion = 3;
+      hash = "sha256-BrDO9xdMuMnhXPAd9QvtU4R1W1WacnsVcGde+WFjvGA=";
+      pnpm = pnpm_10;
+    };
+
+    sourceRoot = "${finalAttrs.src.name}/frontend";
+
     meta = metaCommon // {
       description = "GUI program developed by vue3";
       platforms = lib.platforms.all;
@@ -86,10 +86,7 @@ in
 
 buildGo126Module {
   inherit pname version src;
-
   patches = [ ./xdg-path-and-restart-patch.patch ];
-
-  vendorHash = "sha256-Xi/EgMLex25p2tmRHEldCv6hgUKIpLJTmrMpHPGLY5M=";
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -104,6 +101,8 @@ buildGo126Module {
     webkitgtk_4_1
   ];
 
+  vendorHash = "sha256-Xi/EgMLex25p2tmRHEldCv6hgUKIpLJTmrMpHPGLY5M=";
+
   preBuild = ''
     cp -r ${frontend} frontend/dist
   '';
@@ -116,18 +115,6 @@ buildGo126Module {
     runHook postBuild
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "gui-for-singbox";
-      exec = "GUI.for.SingBox";
-      icon = "gui-for-singbox";
-      genericName = "GUI.for.SingBox";
-      desktopName = "GUI.for.SingBox";
-      categories = [ "Network" ];
-      keywords = [ "Proxy" ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -137,8 +124,21 @@ buildGo126Module {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Network" ];
+      desktopName = "GUI.for.SingBox";
+      exec = "GUI.for.SingBox";
+      genericName = "GUI.for.SingBox";
+      icon = "gui-for-singbox";
+      keywords = [ "Proxy" ];
+      name = "gui-for-singbox";
+    })
+  ];
+
   passthru = {
     inherit frontend;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -151,7 +151,7 @@ buildGo126Module {
 
   meta = metaCommon // {
     description = "SingBox GUI program developed by vue3 + wails";
-    mainProgram = "GUI.for.SingBox";
     platforms = lib.platforms.linux;
+    mainProgram = "GUI.for.SingBox";
   };
 }

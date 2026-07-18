@@ -1,10 +1,10 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   bash,
-  perl,
   nixosTests,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,23 +18,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
   buildInputs = [ bash ];
-
   # Make sure that Rush looks for rush.rc in a directory that users can
   # modify easily.
   configureFlags = [ "--sysconfdir=/etc" ];
-  # Prevent “make install” from trying to copy something to
-  # /etc/rush.rc.
-  installFlags = [ "sysconfdir=$(out)/etc" ];
+  doCheck = true;
+
   postInstall = ''
     substituteInPlace $out/bin/rush-po \
       --replace "exec perl" "exec ${lib.getExe perl}"
   '';
 
-  doCheck = true;
+  # Prevent “make install” from trying to copy something to
+  # /etc/rush.rc.
+  installFlags = [ "sysconfdir=$(out)/etc" ];
+
+  passthru = {
+    shellPath = "/bin/rush";
+    tests = { inherit (nixosTests) rush; };
+  };
 
   meta = {
-    mainProgram = "rush";
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Restricted User Shell";
 
     longDescription = ''
@@ -53,15 +56,13 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://www.gnu.org/software/rush/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
 
     maintainers = with lib.maintainers; [
       c4f3z1n
     ];
-  };
 
-  passthru = {
-    shellPath = "/bin/rush";
-    tests = { inherit (nixosTests) rush; };
+    platforms = lib.platforms.all;
+    mainProgram = "rush";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

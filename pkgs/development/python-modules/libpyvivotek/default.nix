@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "libpyvivotek";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "HarlemSquirrel";
@@ -20,15 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-ai+FlvyrdeLyg/PJU8T0fTtbdnlyGo6mE4AM2oRATj8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytestCheckHook
     vcrpy
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "libpyvivotek" ];
 
   meta = {

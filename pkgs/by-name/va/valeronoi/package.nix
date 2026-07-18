@@ -21,6 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5KXVSIqWDkXnpO+qgBzFtbJb444RW8dIVXp8Y/aAOrk=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    qt6Packages.wrapQtAppsHook
+  ];
+
   buildInputs = [
     boost
     cgal
@@ -33,22 +38,19 @@ stdenv.mkDerivation (finalAttrs: {
     qtsvg
   ]);
 
-  nativeBuildInputs = [
-    cmake
-    qt6Packages.wrapQtAppsHook
-  ];
-
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/ccoors/Valeronoi/";
     description = "WiFi mapping companion app for Valetudo";
+    homepage = "https://github.com/ccoors/Valeronoi/";
     license = lib.licenses.gpl3Only;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       nova-madeline
       maeve
     ];
+
+    platforms = [ "x86_64-linux" ];
     mainProgram = "valeronoi";
   };
 })

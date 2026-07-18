@@ -1,22 +1,21 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   netifaces,
   pytest-asyncio,
   pytestCheckHook,
-  urllib3,
   setuptools,
   tenacity,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pydaikin";
   version = "2.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fredrike";
@@ -25,8 +24,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-sTcdgbthDAyyWLxPtS344xR8a7UoN+zrfes6FXSo9g4=";
   };
 
-  __darwinAllowLocalNetworking = true;
+  nativeCheckInputs = [
+    aresponses
+    freezegun
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,19 +41,13 @@ buildPythonPackage (finalAttrs: {
     tenacity
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    freezegun
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Failed: async def functions are not natively supported.
     "test_power_sensors"
     "test_device_factory"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pydaikin" ];
 
   meta = {

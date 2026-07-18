@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  libgcrypt,
+  openssl,
   pkg-config,
   ucommon,
-  openssl,
-  libgcrypt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   propagatedBuildInputs = [
     ucommon
     openssl

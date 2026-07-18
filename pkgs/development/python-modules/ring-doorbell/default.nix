@@ -5,8 +5,8 @@
   aioresponses,
   asyncclick,
   buildPythonPackage,
-  fetchpatch,
   fetchPypi,
+  fetchpatch,
   firebase-messaging,
   freezegun,
   hatchling,
@@ -24,28 +24,36 @@
 buildPythonPackage (finalAttrs: {
   pname = "ring-doorbell";
   version = "0.9.14";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "ring_doorbell";
     inherit (finalAttrs) version;
     hash = "sha256-M99nwMuo0OziuJpNzuZgK69HtE+/wbOgheij1UwBaRc=";
+    pname = "ring_doorbell";
   };
 
   patches = [
     # https://github.com/python-ring-doorbell/python-ring-doorbell/pull/494
     (fetchpatch {
-      name = "replace-async-timeout-with-asyncio.timeout.patch";
-      url = "https://github.com/python-ring-doorbell/python-ring-doorbell/commit/771243153921ec2cfb5f103b08ed08cccbe2e760.patch";
       excludes = [
         ".github/workflows/ci.yml"
         "uv.lock"
       ];
+
       hash = "sha256-l6CUg3J6FZ0c0v0SSqvndjl4XeBhGFy/uWHPkExCM50=";
+      name = "replace-async-timeout-with-asyncio.timeout.patch";
+      url = "https://github.com/python-ring-doorbell/python-ring-doorbell/commit/771243153921ec2cfb5f103b08ed08cccbe2e760.patch";
     })
   ];
 
-  pythonRelaxDeps = [ "requests-oauthlib" ];
+  nativeCheckInputs = [
+    aioresponses
+    freezegun
+    pytest-asyncio
+    pytest-freezer
+    pytest-mock
+    pytest-socket
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -60,17 +68,9 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    freezegun
-    pytest-asyncio
-    pytest-freezer
-    pytest-mock
-    pytest-socket
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ring_doorbell" ];
+  pythonRelaxDeps = [ "requests-oauthlib" ];
 
   meta = {
     description = "Library to communicate with Ring Door Bell";

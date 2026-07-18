@@ -3,13 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  testers,
-
-  static ? stdenv.hostPlatform.isStatic,
-
   lz4,
+  testers,
   zlib-ng,
   zstd,
+  static ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,20 +55,21 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelChecking = false;
 
   passthru.tests = {
-    pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     cmake-config = testers.hasCmakeConfigModules {
       moduleNames = [ "Blosc2" ];
       package = finalAttrs.finalPackage;
     };
+
+    pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Fast, compressed, persistent binary data store library for C";
     homepage = "https://www.blosc.org";
     changelog = "https://github.com/Blosc/c-blosc2/releases/tag/v${finalAttrs.version}";
-    pkgConfigModules = [ "blosc2" ];
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ris ];
+    platforms = lib.platforms.all;
+    pkgConfigModules = [ "blosc2" ];
   };
 })

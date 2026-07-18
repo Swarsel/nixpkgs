@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
   protobuf,
 }:
@@ -17,10 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-T6SjjyHC4j5du2P4Emcfq/ZFbuCpMPPJFJTHb/FNMAo=";
   };
 
-  vendorHash = "sha256-W924cy6bd3V/ep3JmzUCV7iuYNukEetr90SKmLMH0j8=";
-
   nativeBuildInputs = [ makeWrapper ];
-
+  vendorHash = "sha256-W924cy6bd3V/ep3JmzUCV7iuYNukEetr90SKmLMH0j8=";
   doCheck = false;
 
   postInstall = ''
@@ -32,10 +30,10 @@ buildGoModule (finalAttrs: {
   subPackages = [ "cmd/prototool" ];
 
   meta = {
-    homepage = "https://github.com/uber/prototool";
     description = "Your Swiss Army Knife for Protocol Buffers";
-    mainProgram = "prototool";
-    maintainers = [ ];
+    homepage = "https://github.com/uber/prototool";
     license = lib.licenses.mit;
+    maintainers = [ ];
+    mainProgram = "prototool";
   };
 })

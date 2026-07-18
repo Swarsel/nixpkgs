@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
+  cfitsio,
+  darwin,
+  getopt,
+  gfortran,
+  groff,
   gtk2-x11,
+  makeWrapper,
+  ncurses,
+  perl,
   pkg-config,
   python3,
-  gfortran,
-  cfitsio,
-  getopt,
-  perl,
-  groff,
   which,
-  darwin,
-  ncurses,
-  makeWrapper,
 }:
 
 let
@@ -26,8 +26,8 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "4.5-01";
   pname = "imager";
+  version = "4.5-01";
 
   src = fetchurl {
     # The recommended download link is on Nextcloud instance that
@@ -36,6 +36,20 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://cloud.univ-grenoble-alpes.fr/s/J6yEqA6yZ8tX9da/download?path=%2F&files=imager-may25.tar.gz";
     hash = "sha256-E3JjdVGEQ0I/ogYj0G1OZxfQ3hA+sRgA4LAfHK52Sec=";
   };
+
+  patches = [
+    # Use Clang as the default compiler on Darwin.
+    ./clang.patch
+    # Replace hardcoded cpp with GAG_CPP (see below).
+    ./cpp-darwin.patch
+    # Fix the numpy header detection with numpy > 2.0.0
+    # Patch submitted upstream, it will be included in the next release.
+    ./numpy-header.patch
+  ];
+
+  postPatch = ''
+    substituteInPlace utilities/main/gag-makedepend.pl --replace-fail '/usr/bin/perl' ${lib.getExe perl}
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -54,32 +68,13 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  patches = [
-    # Use Clang as the default compiler on Darwin.
-    ./clang.patch
-    # Replace hardcoded cpp with GAG_CPP (see below).
-    ./cpp-darwin.patch
-    # Fix the numpy header detection with numpy > 2.0.0
-    # Patch submitted upstream, it will be included in the next release.
-    ./numpy-header.patch
-  ];
+  # Workaround for https://github.com/NixOS/nixpkgs/issues/304528
+  env.GAG_CPP = if stdenv.hostPlatform.isDarwin then "${gfortran.outPath}/bin/cpp" else "cpp";
 
   env.NIX_CFLAGS_COMPILE = toString [
     (lib.optionals stdenv.cc.isClang "-Wno-unused-command-line-argument")
     "-std=gnu17"
   ];
-
-  # Workaround for https://github.com/NixOS/nixpkgs/issues/304528
-  env.GAG_CPP = if stdenv.hostPlatform.isDarwin then "${gfortran.outPath}/bin/cpp" else "cpp";
-
-  postPatch = ''
-    substituteInPlace utilities/main/gag-makedepend.pl --replace-fail '/usr/bin/perl' ${lib.getExe perl}
-  '';
-
-  configurePhase = ''
-    source admin/gildas-env.sh -c gfortran -o openmp
-    echo "gag_doc:        $out/share/doc/" >> kernel/etc/gag.dico.lcl
-  '';
 
   postInstall = ''
     cp -a ../gildas-exe/* $out
@@ -94,8 +89,14 @@ stdenv.mkDerivation (finalAttrs: {
        --set LD_LIBRARY_PATH $out/libexec/lib/
   '';
 
+  configurePhase = ''
+    source admin/gildas-env.sh -c gfortran -o openmp
+    echo "gag_doc:        $out/share/doc/" >> kernel/etc/gag.dico.lcl
+  '';
+
   meta = {
     description = "Interferometric imaging package";
+
     longDescription = ''
       IMAGER is an interferometric imaging package in the GILDAS software,
       tailored for usage simplicity and efficiency for multi-spectral data sets.
@@ -106,6 +107,7 @@ stdenv.mkDerivation (finalAttrs: {
       File saving is done ultimately once the data analysis process is complete,
       which offers an optimum use of the disk bandwidth.
     '';
+
     homepage = "https://imager.oasu.u-bordeaux.fr";
     license = lib.licenses.free;
     maintainers = [ lib.maintainers.smaret ];

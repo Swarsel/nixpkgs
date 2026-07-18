@@ -5,9 +5,9 @@
 
 amule.override (
   {
-    monolithic = false;
     httpServer = true;
     mainProgram = "amuleweb";
+    monolithic = false;
   }
   // removeAttrs args [ "amule" ]
 )

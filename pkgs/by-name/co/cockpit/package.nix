@@ -15,9 +15,9 @@
   git,
   glib,
   glib-networking,
-  gobject-introspection,
   gnused,
   gnutls,
+  gobject-introspection,
   hostname,
   iproute2,
   json-glib,
@@ -26,9 +26,10 @@
   libxcrypt,
   libxslt,
   makeWrapper,
-  nodejs,
-  nixosTests,
   nix-update-script,
+  nixos-icons,
+  nixosTests,
+  nodejs,
   openssh,
   openssl,
   pam,
@@ -42,7 +43,6 @@
   xmlto,
   # Enables lightweight NixOS branding, replacing the default Cockpit icons
   withBranding ? true,
-  nixos-icons,
 }:
 
 let
@@ -62,39 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TAX0N6ZQWGr17GpyJS23Q5ES3USU2hxSiI867n6G17I=";
     fetchSubmodules = true;
   };
-
-  nativeBuildInputs = [
-    asciidoctor
-    autoreconfHook
-    makeWrapper
-    docbook_xml_dtd_43
-    docbook_xsl
-    findutils
-    gettext
-    git
-    (lib.getBin libxslt)
-    nodejs
-    openssl
-    pam
-    pkg-config
-    python3Packages.setuptools
-    systemd
-    xmlto
-  ];
-
-  buildInputs = [
-    (lib.getDev glib)
-    libxcrypt
-    gnutls
-    json-glib
-    krb5
-    libssh
-    polkit
-    udev
-    python3Packages.pygobject3
-    python3Packages.pip
-    bashInteractive
-  ];
 
   postPatch = ''
     # Instead of requiring Internet access to do an npm install to generate the package-lock.json
@@ -171,6 +138,39 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/usr/lib/polkit-1/polkit-agent-helper-1" "/run/wrappers/bin/polkit-agent-helper-1"
   '';
 
+  nativeBuildInputs = [
+    asciidoctor
+    autoreconfHook
+    makeWrapper
+    docbook_xml_dtd_43
+    docbook_xsl
+    findutils
+    gettext
+    git
+    (lib.getBin libxslt)
+    nodejs
+    openssl
+    pam
+    pkg-config
+    python3Packages.setuptools
+    systemd
+    xmlto
+  ];
+
+  buildInputs = [
+    (lib.getDev glib)
+    libxcrypt
+    gnutls
+    json-glib
+    krb5
+    libssh
+    polkit
+    udev
+    python3Packages.pygobject3
+    python3Packages.pip
+    bashInteractive
+  ];
+
   configureFlags = [
     "--enable-prefix-only=yes"
     "--disable-pcp" # TODO: figure out how to package its dependency
@@ -185,6 +185,27 @@ stdenv.mkDerivation (finalAttrs: {
     }"
     "--with-admin-group=root" # TODO: really? Maybe "wheel"?
   ];
+
+  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
+
+  checkInputs = [
+    bashInteractive
+    cacert
+    dbus
+    glib-networking
+    openssh
+  ];
+
+  preCheck = ''
+    export GIO_EXTRA_MODULES=$GIO_EXTRA_MODULES:${glib-networking}/lib/gio/modules
+    export G_DEBUG=fatal-criticals
+    export G_MESSAGES_DEBUG=cockpit-ws,cockpit-wrapper,cockpit-bridge
+    export PATH=$PATH:$(pwd)
+
+    make check -j$NIX_BUILD_CORES || true
+    npm run eslint
+    npm run stylelint
+  '';
 
   enableParallelBuilding = true;
 
@@ -253,45 +274,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postFixup
   '';
 
-  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
-
-  checkInputs = [
-    bashInteractive
-    cacert
-    dbus
-    glib-networking
-    openssh
-  ];
-
-  preCheck = ''
-    export GIO_EXTRA_MODULES=$GIO_EXTRA_MODULES:${glib-networking}/lib/gio/modules
-    export G_DEBUG=fatal-criticals
-    export G_MESSAGES_DEBUG=cockpit-ws,cockpit-wrapper,cockpit-bridge
-    export PATH=$PATH:$(pwd)
-
-    make check -j$NIX_BUILD_CORES || true
-    npm run eslint
-    npm run stylelint
-  '';
-
   passthru = {
     inherit python3Packages;
-    tests = { inherit (nixosTests) cockpit; };
-    updateScript = nix-update-script { };
+
     cockpitPath = [
       glib
       gobject-introspection
       python3Packages.python
       python3Packages.pygobject3
     ];
+
+    tests = { inherit (nixosTests) cockpit; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Web-based graphical interface for servers";
-    mainProgram = "cockpit-bridge";
     homepage = "https://cockpit-project.org/";
     changelog = "https://cockpit-project.org/blog/cockpit-${finalAttrs.version}.html";
     license = lib.licenses.lgpl21;
+    mainProgram = "cockpit-bridge";
     teams = [ lib.teams.cockpit ];
   };
 })

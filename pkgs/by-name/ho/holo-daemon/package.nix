@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  protobuf,
-  pcre2,
-  pkgs,
   nix-update-script,
+  pcre2,
+  pkg-config,
+  pkgs,
+  protobuf,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,39 +21,41 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-zZrse46NJb8gD4BtM20FfdtRdxVNLZ+/51dy2nuiOd8=";
   };
 
-  cargoHash = "sha256-cHJzwI7FDVA1iwqg+x9sMlao22SGQoOuq+MB0XtYsEc=";
-
-  # Use rust nightly features
-  env.RUSTC_BOOTSTRAP = 1;
-
   nativeBuildInputs = [
     cmake
     pkg-config
     protobuf
   ];
+
   buildInputs = [
     pcre2
   ];
 
+  cargoHash = "sha256-cHJzwI7FDVA1iwqg+x9sMlao22SGQoOuq+MB0XtYsEc=";
+  # Use rust nightly features
+  env.RUSTC_BOOTSTRAP = 1;
+
   passthru = {
-    updateScript = nix-update-script { };
     services.default = {
+      holo-daemon.package = lib.mkDefault finalAttrs.finalPackage;
+
       imports = [
         (lib.modules.importApply ./service.nix {
           inherit pkgs;
         })
       ];
-      holo-daemon.package = lib.mkDefault finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "`holo` daemon that provides the routing protocols, tools and policies";
     homepage = "https://github.com/holo-routing/holo";
-    teams = with lib.teams; [ ngi ];
-    maintainers = with lib.maintainers; [ themadbit ];
     license = lib.licenses.mit;
-    mainProgram = "holod";
+    maintainers = with lib.maintainers; [ themadbit ];
     platforms = lib.platforms.linux;
+    mainProgram = "holod";
+    teams = with lib.teams; [ ngi ];
   };
 })

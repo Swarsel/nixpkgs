@@ -2,13 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  polkit,
-  vala,
-  wrapGAppsHook3,
+  ctags,
   editorconfig-core-c,
   granite,
   gsettings-desktop-schemas,
@@ -20,8 +14,14 @@
   libhandy,
   libpeas2,
   libsoup_3,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  polkit,
+  vala,
   vte,
-  ctags,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -78,7 +78,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/code";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.code";
+    teams = [ lib.teams.pantheon ];
   };
 }

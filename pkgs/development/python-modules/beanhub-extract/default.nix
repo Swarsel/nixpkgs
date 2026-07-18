@@ -3,16 +3,15 @@
   fetchFromGitHub,
   buildPythonPackage,
   hatchling,
-  pytestCheckHook,
   iso8601,
   pytest-lazy-fixture,
+  pytestCheckHook,
   pytz,
 }:
 
 buildPythonPackage rec {
   pname = "beanhub-extract";
   version = "0.1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LaunchPlatform";
@@ -21,21 +20,21 @@ buildPythonPackage rec {
     hash = "sha256-CpR4NNXr6Ag8dCI+NB+4hvAtFBjKJTNkXMps2E+6L7Q=";
   };
 
-  build-system = [ hatchling ];
+  nativeCheckInputs = [
+    pytest-lazy-fixture
+    pytestCheckHook
+  ];
 
-  pythonRelaxDeps = [ "pytz" ];
+  build-system = [ hatchling ];
 
   dependencies = [
     iso8601
     pytz
   ];
 
-  nativeCheckInputs = [
-    pytest-lazy-fixture
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "beanhub_extract" ];
+  pythonRelaxDeps = [ "pytz" ];
 
   meta = {
     description = "Simple library for extracting all kind of bank account transaction export files, mostly for beanhub-import to ingest and generate transactions";

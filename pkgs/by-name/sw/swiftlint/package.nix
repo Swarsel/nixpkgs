@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  unzip,
   installShellFiles,
-  versionCheckHook,
   runCommand,
+  stdenvNoCC,
+  unzip,
+  versionCheckHook,
 }:
 let
   sources = lib.importJSON ./sources.json;
@@ -14,24 +14,18 @@ let
       or (throw "Unsupported platform: ${stdenvNoCC.hostPlatform.system}");
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "swiftlint";
   inherit (sources) version;
+  pname = "swiftlint";
 
   src = fetchurl {
-    url = "https://github.com/realm/SwiftLint/releases/download/${finalAttrs.version}/${platform.filename}";
     inherit (platform) hash;
+    url = "https://github.com/realm/SwiftLint/releases/download/${finalAttrs.version}/${platform.filename}";
   };
-
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [
     unzip
     installShellFiles
   ];
-
-  sourceRoot = ".";
 
   installPhase =
     let
@@ -52,9 +46,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatch = true;
+  sourceRoot = ".";
 
   passthru = {
-    updateScript = ./update.sh;
     tests = {
       lint =
         runCommand "swiftlint-test-lint"
@@ -71,18 +68,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
             touch $out
           '';
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Tool to enforce Swift style and conventions";
     homepage = "https://realm.github.io/SwiftLint/";
     license = lib.licenses.mit;
-    mainProgram = "swiftlint";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       matteopacini
       DimitarNestorov
     ];
+
     platforms = lib.attrNames sources.platforms;
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    mainProgram = "swiftlint";
   };
 })

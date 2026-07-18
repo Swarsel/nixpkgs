@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  equinox,
-  jax,
-  jaxtyping,
-
   # tests
   beartype,
+  buildPythonPackage,
+  # dependencies
+  equinox,
+  # build-system
+  hatchling,
+  jax,
+  jaxtyping,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "paramax";
   version = "0.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "danielward27";
@@ -27,6 +23,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-UPSnFtypQYtnDRl2GCoy+OQ8Ws7eX+iPsd8WWBsgmlo=";
   };
+
+  nativeCheckInputs = [
+    beartype
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -38,12 +39,8 @@ buildPythonPackage (finalAttrs: {
     jaxtyping
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "paramax" ];
-
-  nativeCheckInputs = [
-    beartype
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Small library of paramaterizations and parameter constraints for PyTrees";

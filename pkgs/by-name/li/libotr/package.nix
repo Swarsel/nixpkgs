@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkgsHostTarget,
-  libgcrypt,
   autoreconfHook,
+  libgcrypt,
+  pkgsHostTarget,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,24 +16,25 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1x8rliydhbibmzwdbyr7pd7n87m2jmxnqkpvaalnf4154hj1hfwb";
   };
 
-  patches = [ ./fix-regtest-client.patch ];
-
   outputs = [
     "bin"
     "out"
     "dev"
   ];
 
+  patches = [ ./fix-regtest-client.patch ];
+
   nativeBuildInputs = [
     autoreconfHook
     pkgsHostTarget.libgcrypt.dev # for libgcrypt-config
   ];
+
   propagatedBuildInputs = [ libgcrypt ];
 
   meta = {
+    description = "Library for Off-The-Record Messaging";
     homepage = "http://www.cypherpunks.ca/otr/";
     license = lib.licenses.lgpl21;
-    description = "Library for Off-The-Record Messaging";
     platforms = lib.platforms.unix;
   };
 })

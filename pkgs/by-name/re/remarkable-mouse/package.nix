@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
@@ -15,9 +15,6 @@ python3Packages.buildPythonApplication {
     hash = "sha256-0X/7SIfSnlEL98fxJBAYrHAkRmdtymqA7xBmVoa5VIw=";
   };
 
-  pyproject = true;
-  build-system = with python3Packages; [ setuptools ];
-
   propagatedBuildInputs = with python3Packages; [
     screeninfo
     paramiko
@@ -28,6 +25,8 @@ python3Packages.buildPythonApplication {
 
   # no tests
   doCheck = false;
+  build-system = with python3Packages; [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "remarkable_mouse" ];
 
   meta = {

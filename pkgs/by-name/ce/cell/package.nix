@@ -1,15 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cell";
   version = "0.5.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "garritfra";
@@ -19,10 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-4qWI1dKv84Ga6A2ImkI3rRypqm+UkDNzD94Gxl43wj0=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

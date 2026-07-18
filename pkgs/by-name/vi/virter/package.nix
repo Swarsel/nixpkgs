@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  dnsmasq,
-  makeWrapper,
-  installShellFiles,
-  writableTmpDirAsHomeHook,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  dnsmasq,
+  installShellFiles,
+  makeWrapper,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,21 +20,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Kjk/kLDWwFDgr+PnwBNgsZEP/C4YS8/i1l1lTndpS8Q=";
   };
 
-  vendorHash = "sha256-h/4yQmSPoeAm0p7bYv7xQVk316zl7PB1IcRQlOEDHVQ=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/LINBIT/virter/cmd.version=${finalAttrs.version}"
-    "-X github.com/LINBIT/virter/cmd.builddate=builtByNix"
-    "-X github.com/LINBIT/virter/cmd.githash=builtByNix"
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
     writableTmpDirAsHomeHook
   ];
+
+  vendorHash = "sha256-h/4yQmSPoeAm0p7bYv7xQVk316zl7PB1IcRQlOEDHVQ=";
+  # requires network access
+  doCheck = false;
 
   postInstall = ''
     wrapProgram $out/bin/virter \
@@ -47,8 +41,13 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/virter completion zsh)
   '';
 
-  # requires network access
-  doCheck = false;
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/LINBIT/virter/cmd.version=${finalAttrs.version}"
+    "-X github.com/LINBIT/virter/cmd.builddate=builtByNix"
+    "-X github.com/LINBIT/virter/cmd.githash=builtByNix"
+  ];
 
   meta = {
     description = "Command line tool for simple creation and cloning of virtual machines based on libvirt";

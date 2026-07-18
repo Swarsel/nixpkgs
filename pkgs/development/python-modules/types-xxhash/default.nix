@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "types-xxhash";
   version = "3.0.5.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +17,8 @@ buildPythonPackage rec {
   build-system = [
     setuptools
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Typing stubs for xxhash";

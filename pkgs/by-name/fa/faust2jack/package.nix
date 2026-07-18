@@ -1,22 +1,15 @@
 {
+  alsa-lib,
   bash,
   faust,
   gtk2,
   jack2,
-  alsa-lib,
-  opencv,
   libsndfile,
+  opencv,
   which,
 }:
 
 faust.wrapWithBuildEnv {
-
-  baseName = "faust2jack";
-
-  scripts = [
-    "faust2jack"
-    "faust2jackconsole"
-  ];
 
   buildInputs = [
     bash # required for some scripts
@@ -29,6 +22,13 @@ faust.wrapWithBuildEnv {
     opencv
     libsndfile
     which
+  ];
+
+  baseName = "faust2jack";
+
+  scripts = [
+    "faust2jack"
+    "faust2jackconsole"
   ];
 
 }

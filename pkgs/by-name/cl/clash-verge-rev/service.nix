@@ -1,11 +1,12 @@
 {
-  rustPlatform,
   fetchFromGitHub,
   meta,
   procps,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
+  inherit meta;
   pname = "clash-verge-service-ipc";
   version = "2.3.0";
 
@@ -27,21 +28,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-WhH2o5wN5vYW8jZl+hWbnk1xqHu61ibAr4+/CI3YKHg=";
 
-  buildFeatures = [
-    "standalone"
-  ];
-
   nativeCheckInputs = [
     procps
   ];
+
   # build test helper binaries for tests
   preCheck = ''
     cargo build --features=standalone,test
   '';
+
+  buildFeatures = [
+    "standalone"
+  ];
+
   checkFeatures = [
     "standalone"
     "test"
     "client"
   ];
-  inherit meta;
 })

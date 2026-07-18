@@ -21,8 +21,8 @@ stdenv.mkDerivation {
   patches = [
     # Add PERL as processor for file.
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/magicrescue/-/raw/6331d088a159ae21ad4ab5f18b9bf892ebe18ce3/debian/patches/020_add-Perl-preprocessor.patch";
       hash = "sha256-XX3Rlv/qKB2y/csuaPiliv4cu9KKHNpG/E88VSVP0sg=";
+      url = "https://salsa.debian.org/pkg-security-team/magicrescue/-/raw/6331d088a159ae21ad4ab5f18b9bf892ebe18ce3/debian/patches/020_add-Perl-preprocessor.patch";
     })
   ];
 
@@ -33,10 +33,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Find and recover deleted files on block devices";
-    mainProgram = "magicrescue";
     homepage = "https://github.com/jbj/magicrescue";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "magicrescue";
   };
 }

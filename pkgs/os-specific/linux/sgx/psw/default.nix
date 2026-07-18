@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchFromGitHub,
   cmake,
@@ -10,10 +10,10 @@
   git,
   makeWrapper,
   nixosTests,
-  protobuf,
-  python3,
   ocaml,
   ocamlPackages,
+  protobuf,
+  python3,
   which,
   debug ? false,
 }:
@@ -21,8 +21,6 @@ stdenv.mkDerivation rec {
   pname = "sgx-psw";
   # Version as given in se_version.h
   version = "2.27.100.1";
-  # Version as used in the Git tag
-  versionTag = "2.27";
 
   src = fetchFromGitHub {
     owner = "intel";
@@ -31,50 +29,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-hNmh4IgNJDNqt2xF8zBnD/x+saMyMk5hZLA3aOqzqEA=";
     fetchSubmodules = true;
   };
-
-  # Extract Intel-provided, pre-built enclaves and libs.
-  postUnpack =
-    let
-      # Fetch the pre-built, Intel-signed Architectural Enclaves (AE). They help
-      # run user application enclaves, verify launch policies, produce remote
-      # attestation quotes, and do platform certification.
-      ae.prebuilt = fetchurl {
-        url = "https://download.01.org/intel-sgx/sgx-linux/${versionTag}/prebuilt_ae_${versionTag}.tar.gz";
-        hash = "sha256-Hlh96rYOyml2y50d8ASKz6U97Fl0hbGYECeZiG9nMSQ=";
-      };
-
-      # Pre-built ipp-crypto with mitigations.
-      optlib.prebuilt = fetchurl {
-        url = "https://download.01.org/intel-sgx/sgx-linux/${versionTag}/optimized_libs_${versionTag}.tar.gz";
-        hash = "sha256-7mDTaLtpOQLHQ6Fv+FWJ2k/veJZPXIcuj7kOdRtRqhg=";
-      };
-
-      # Fetch the Data Center Attestation Primitives (DCAP) platform enclaves
-      # and pre-built sgxssl.
-      dcap = rec {
-        version = "1.24";
-        filename = "prebuilt_dcap_${version}.tar.gz";
-        prebuilt = fetchurl {
-          url = "https://download.01.org/intel-sgx/sgx-dcap/${version}/linux/${filename}";
-          hash = "sha256-sc/eYIPdhwAyDk2Zh1HU6yuFlobqVy/4++m5OnQE3Bc=";
-        };
-      };
-    in
-    ''
-      # Make sure this is the right version of linux-sgx
-      grep -q '"${version}"' "$src/common/inc/internal/se_version.h" \
-        || (echo "Could not find expected version ${version} in linux-sgx source" >&2 && exit 1)
-
-      tar -xzvf ${ae.prebuilt}     -C $sourceRoot/
-      tar -xzvf ${optlib.prebuilt} -C $sourceRoot/
-
-      # Make sure we use the correct version of prebuilt DCAP
-      grep -q 'ae_file_name=${dcap.filename}' "$src/external/dcap_source/QuoteGeneration/download_prebuilt.sh" \
-        || (echo "Could not find expected prebuilt DCAP ${dcap.filename} in linux-sgx source" >&2 && exit 1)
-
-      tar -xzvf ${dcap.prebuilt} -C $sourceRoot/external/dcap_source prebuilt/
-      tar -xzvf ${dcap.prebuilt} -C $sourceRoot/external/dcap_source/QuoteGeneration psw/
-    '';
 
   patches = [
     # There's a `make preparation` step that downloads some prebuilt binaries
@@ -153,7 +107,7 @@ stdenv.mkDerivation rec {
     protobuf
   ];
 
-  dontUseCmakeConfigure = true;
+  buildFlags = [ "psw_install_pkg" ] ++ lib.optionals debug [ "DEBUG=1" ];
 
   preBuild = ''
     # Build `sgx_edger8r`, the enclave .edl -> .h file codegen tool.
@@ -169,13 +123,6 @@ stdenv.mkDerivation rec {
     ln -s $build_dir $SGX_SDK/lib
     ln -s $build_dir $SGX_SDK/lib64
   '';
-
-  buildFlags = [ "psw_install_pkg" ] ++ lib.optionals debug [ "DEBUG=1" ];
-
-  installFlags = [
-    "-C linux/installer/common/psw/output"
-    "DESTDIR=$(TMPDIR)/install"
-  ];
 
   postInstall = ''
     installDir=$TMPDIR/install
@@ -229,13 +176,6 @@ stdenv.mkDerivation rec {
     rmdir $sgxPswDir || (echo "Error: The directory $installDir still contains unhandled files: $(ls -A $installDir)" >&2 && exit 1)
   '';
 
-  stripDebugList = [
-    "lib"
-    "bin"
-    # Also strip binaries/libs in the `aesm` directory
-    "aesm"
-  ];
-
   postFixup = ''
     # Move the SGX enclaves back after everything else has been stripped.
     mv $TMPDIR/enclaves/*.signed.so* $out/aesm/
@@ -264,6 +204,68 @@ stdenv.mkDerivation rec {
                      "${coreutils}/bin/kill"
   '';
 
+  dontUseCmakeConfigure = true;
+
+  installFlags = [
+    "-C linux/installer/common/psw/output"
+    "DESTDIR=$(TMPDIR)/install"
+  ];
+
+  # Extract Intel-provided, pre-built enclaves and libs.
+  postUnpack =
+    let
+      # Fetch the pre-built, Intel-signed Architectural Enclaves (AE). They help
+      # run user application enclaves, verify launch policies, produce remote
+      # attestation quotes, and do platform certification.
+      ae.prebuilt = fetchurl {
+        hash = "sha256-Hlh96rYOyml2y50d8ASKz6U97Fl0hbGYECeZiG9nMSQ=";
+        url = "https://download.01.org/intel-sgx/sgx-linux/${versionTag}/prebuilt_ae_${versionTag}.tar.gz";
+      };
+
+      # Pre-built ipp-crypto with mitigations.
+      optlib.prebuilt = fetchurl {
+        hash = "sha256-7mDTaLtpOQLHQ6Fv+FWJ2k/veJZPXIcuj7kOdRtRqhg=";
+        url = "https://download.01.org/intel-sgx/sgx-linux/${versionTag}/optimized_libs_${versionTag}.tar.gz";
+      };
+
+      # Fetch the Data Center Attestation Primitives (DCAP) platform enclaves
+      # and pre-built sgxssl.
+      dcap = rec {
+        version = "1.24";
+        filename = "prebuilt_dcap_${version}.tar.gz";
+
+        prebuilt = fetchurl {
+          hash = "sha256-sc/eYIPdhwAyDk2Zh1HU6yuFlobqVy/4++m5OnQE3Bc=";
+          url = "https://download.01.org/intel-sgx/sgx-dcap/${version}/linux/${filename}";
+        };
+      };
+    in
+    ''
+      # Make sure this is the right version of linux-sgx
+      grep -q '"${version}"' "$src/common/inc/internal/se_version.h" \
+        || (echo "Could not find expected version ${version} in linux-sgx source" >&2 && exit 1)
+
+      tar -xzvf ${ae.prebuilt}     -C $sourceRoot/
+      tar -xzvf ${optlib.prebuilt} -C $sourceRoot/
+
+      # Make sure we use the correct version of prebuilt DCAP
+      grep -q 'ae_file_name=${dcap.filename}' "$src/external/dcap_source/QuoteGeneration/download_prebuilt.sh" \
+        || (echo "Could not find expected prebuilt DCAP ${dcap.filename} in linux-sgx source" >&2 && exit 1)
+
+      tar -xzvf ${dcap.prebuilt} -C $sourceRoot/external/dcap_source prebuilt/
+      tar -xzvf ${dcap.prebuilt} -C $sourceRoot/external/dcap_source/QuoteGeneration psw/
+    '';
+
+  stripDebugList = [
+    "lib"
+    "bin"
+    # Also strip binaries/libs in the `aesm` directory
+    "aesm"
+  ];
+
+  # Version as used in the Git tag
+  versionTag = "2.27";
+
   passthru.tests = {
     service = nixosTests.aesmd;
   };
@@ -271,12 +273,14 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Intel SGX Architectural Enclave Service Manager";
     homepage = "https://github.com/intel/linux-sgx";
+    license = [ lib.licenses.bsd3 ];
+
     maintainers = with lib.maintainers; [
       phlip9
       veehaitch
       citadelcore
     ];
+
     platforms = [ "x86_64-linux" ];
-    license = [ lib.licenses.bsd3 ];
   };
 }

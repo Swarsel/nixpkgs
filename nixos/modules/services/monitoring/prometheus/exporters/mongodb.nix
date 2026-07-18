@@ -20,39 +20,36 @@ let
     ;
 in
 {
-  port = 9216;
   extraOpts = {
-    uri = mkOption {
-      type = types.str;
-      default = "mongodb://localhost:27017/test";
-      example = "mongodb://localhost:27017/test";
-      description = "MongoDB URI to connect to.";
-    };
     collStats = mkOption {
-      type = types.listOf types.str;
       default = [ ];
-      example = [
-        "db1.coll1"
-        "db2"
-      ];
+
       description = ''
         List of comma separared databases.collections to get $collStats
       '';
-    };
-    indexStats = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
+
       example = [
         "db1.coll1"
         "db2"
       ];
-      description = ''
-        List of comma separared databases.collections to get $indexStats
-      '';
-    };
-    collector = mkOption {
+
       type = types.listOf types.str;
+    };
+
+    collectAll = mkOption {
+      default = false;
+
+      description = ''
+        Enable all collectors. Same as specifying all --collector.<name>
+      '';
+
+      type = types.bool;
+    };
+
+    collector = mkOption {
       default = [ ];
+      description = "Enabled collectors";
+
       example = [
         "diagnosticdata"
         "replicasetstatus"
@@ -63,25 +60,44 @@ in
         "dbstats"
         "profile"
       ];
-      description = "Enabled collectors";
+
+      type = types.listOf types.str;
     };
-    collectAll = mkOption {
-      type = types.bool;
-      default = false;
+
+    indexStats = mkOption {
+      default = [ ];
+
       description = ''
-        Enable all collectors. Same as specifying all --collector.<name>
+        List of comma separared databases.collections to get $indexStats
       '';
+
+      example = [
+        "db1.coll1"
+        "db2"
+      ];
+
+      type = types.listOf types.str;
     };
+
     telemetryPath = mkOption {
-      type = types.str;
       default = "/metrics";
-      example = "/metrics";
       description = "Metrics expose path";
+      example = "/metrics";
+      type = types.str;
+    };
+
+    uri = mkOption {
+      default = "mongodb://localhost:27017/test";
+      description = "MongoDB URI to connect to.";
+      example = "mongodb://localhost:27017/test";
+      type = types.str;
     };
   };
+
+  port = 9216;
+
   serviceOpts = {
     serviceConfig = {
-      RuntimeDirectory = "prometheus-mongodb-exporter";
       ExecStart = ''
         ${getExe pkgs.prometheus-mongodb-exporter} \
           --mongodb.uri="${cfg.uri}" \
@@ -105,6 +121,8 @@ in
           --web.telemetry-path="${cfg.telemetryPath}" \
           ${escapeShellArgs cfg.extraFlags}
       '';
+
+      RuntimeDirectory = "prometheus-mongodb-exporter";
     };
   };
 }

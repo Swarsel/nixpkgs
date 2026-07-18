@@ -1,17 +1,15 @@
 {
   lib,
-  python,
   makePythonHook,
   makeWrapper,
+  python,
 }:
 
 makePythonHook {
-  name = "wrap-python-hook";
   propagatedBuildInputs = [ makeWrapper ];
-  substitutions.sitePackages = python.sitePackages;
+  name = "wrap-python-hook";
   substitutions.executable = python.interpreter;
-  substitutions.python = python.pythonOnBuildForHost;
-  substitutions.pythonHost = python;
+
   substitutions.magicalSedExpression =
     let
       # Looks weird? Of course, it's between single quoted shell strings.
@@ -63,4 +61,8 @@ makePythonHook {
         /^[^# ]/i ${lib.replaceStrings [ "\n" ] [ ";" ] preamble}
       }
     '';
+
+  substitutions.python = python.pythonOnBuildForHost;
+  substitutions.pythonHost = python;
+  substitutions.sitePackages = python.sitePackages;
 } ./wrap.sh

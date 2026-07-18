@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "jxmlease";
   version = "1.0.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,13 +16,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ lxml ];
-
   # tests broken in expat bump
   # https://github.com/Juniper/jxmlease/issues/26
   doCheck = false;
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  format = "setuptools";
   unittestFlagsArray = [ "-v" ];
 
   meta = {

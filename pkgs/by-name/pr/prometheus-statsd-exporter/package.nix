@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -14,6 +14,8 @@ buildGoModule rec {
     rev = "v${version}";
     hash = "sha256-h58yD+jmvUCvYsJqNcBSR1f+5YgDyMbLDd3I0HW9/kA=";
   };
+
+  vendorHash = "sha256-QKDvoctvvdijQ+ZlClqTyJZfDzqAIikAwOQds9+NQIc=";
 
   ldflags =
     let
@@ -29,16 +31,16 @@ buildGoModule rec {
       "-X ${t}.BuildDate=unknown"
     ];
 
-  vendorHash = "sha256-QKDvoctvvdijQ+ZlClqTyJZfDzqAIikAwOQds9+NQIc=";
-
   meta = {
     description = "Receives StatsD-style metrics and exports them to Prometheus";
-    mainProgram = "statsd_exporter";
     homepage = "https://github.com/prometheus/statsd_exporter";
     changelog = "https://github.com/prometheus/statsd_exporter/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       benley
     ];
+
+    mainProgram = "statsd_exporter";
   };
 }

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchzip,
-  libGLU,
   libGL,
-  libxrandr,
+  libGLU,
   libx11,
+  libxrandr,
   libxxf86vm,
   zlib,
 }:
@@ -17,7 +17,6 @@ in
 stdenv.mkDerivation {
   pname = common.pname;
   version = common.version;
-
   src = common.src;
 
   postPatch = ''
@@ -26,21 +25,6 @@ stdenv.mkDerivation {
   + lib.optionalString stdenv.hostPlatform.isAarch64 ''
     substituteInPlace source/Irrlicht/Makefile \
       --replace "-DIRRLICHT_EXPORTS=1" "-DIRRLICHT_EXPORTS=1 -DPNG_ARM_NEON_OPT=0"
-  '';
-
-  preConfigure = ''
-    cd source/Irrlicht
-  '';
-
-  preBuild = ''
-    makeFlagsArray+=(sharedlib NDEBUG=1 LDFLAGS="-lX11 -lGL -lXxf86vm")
-  '';
-
-  enableParallelBuilding = true;
-
-  preInstall = ''
-    sed -i s,/usr/local/lib,$out/lib, Makefile
-    mkdir -p $out/lib
   '';
 
   buildInputs = [
@@ -52,10 +36,25 @@ stdenv.mkDerivation {
   ]
   ++ lib.optional stdenv.hostPlatform.isAarch64 zlib;
 
+  preConfigure = ''
+    cd source/Irrlicht
+  '';
+
+  preBuild = ''
+    makeFlagsArray+=(sharedlib NDEBUG=1 LDFLAGS="-lX11 -lGL -lXxf86vm")
+  '';
+
+  preInstall = ''
+    sed -i s,/usr/local/lib,$out/lib, Makefile
+    mkdir -p $out/lib
+  '';
+
+  enableParallelBuilding = true;
+
   meta = {
+    description = "Open source high performance realtime 3D engine written in C++";
     homepage = "https://irrlicht.sourceforge.io/";
     license = lib.licenses.zlib;
-    description = "Open source high performance realtime 3D engine written in C++";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     # The last successful Darwin Hydra build was in 2023
     broken = stdenv.hostPlatform.isDarwin;

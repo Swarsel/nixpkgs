@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  makeWrapper,
   fftw,
   lapack,
+  makeWrapper,
   openblas,
-  runCommandLocal,
   raspa,
   raspa-data,
+  runCommandLocal,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "raspa";
@@ -21,6 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-i8Y+pejiOuyPNJto+/0CmRoAnMljCrnDFx8qDh4I/68=";
   };
+
+  # Prepare for the Python binding packaging.
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -35,21 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # K&R `T func()` declarations whose definitions take real args
   env.CFLAGS = "-std=gnu17";
-
-  # Prepare for the Python binding packaging.
-  strictDeps = true;
-
-  enableParallelBuilding = true;
-
-  preAutoreconf = ''
-    mkdir "m4"
-  '';
-
-  postAutoreconf = ''
-    automake --add-missing
-    autoconf
-  '';
-
   doCheck = true;
 
   # Wrap with RASPA_DIR
@@ -58,6 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
   postInstall = ''
     wrapProgram "$out/bin/simulate" \
       --set RASPA_DIR "$out"
+  '';
+
+  enableParallelBuilding = true;
+
+  postAutoreconf = ''
+    automake --add-missing
+    autoconf
+  '';
+
+  preAutoreconf = ''
+    mkdir "m4"
   '';
 
   passthru.tests.run-an-example = runCommandLocal "raspa-test-run-an-example" { } ''
@@ -75,8 +74,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "General purpose classical molecular simulation package";
     homepage = "https://iraspa.org/raspa/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ShamrockLee ];
+    platforms = lib.platforms.all;
     mainProgram = "simulate";
   };
 })

@@ -2,28 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  apacheHttpd,
   autoreconfHook,
-  pkg-config,
+  coreutils,
   libx11,
   libxcomposite,
+  libxext,
   libxft,
   libxmu,
   libxrandr,
-  libxext,
   libxscrnsaver,
-  pam,
-  coreutils,
   makeWrapper,
-
-  # boolean flags
-  withXscreensaver ? true,
+  pam,
+  pamtester,
+  pandoc,
+  pkg-config,
   xscreensaver,
   withDocs ? false,
-  pandoc,
   withHtaccess ? false,
-  apacheHttpd,
   withPamtester ? false,
-  pamtester,
+  # boolean flags
+  withXscreensaver ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

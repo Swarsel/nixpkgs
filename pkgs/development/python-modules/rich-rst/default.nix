@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pygments,
   pytestCheckHook,
   rich,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "rich-rst";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wasi-master";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-M4ngZNYPasEqqfRay8aGHDII+LkwLhBp5kF9ryJ5LwQ=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -29,8 +30,7 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "rich_rst" ];
 
   meta = {

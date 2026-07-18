@@ -2,23 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-
-  # Build-time dependencies
-  makeWrapper,
-  file,
-  makeDesktopItem,
-  imagemagick,
   copyDesktopItems,
-
+  file,
   # Runtime dependencies
   fontconfig,
   freetype,
+  imagemagick,
+  libglvnd,
   libx11,
   libxext,
   libxinerama,
   libxrandr,
   libxrender,
-  libglvnd,
+  makeDesktopItem,
+  # Build-time dependencies
+  makeWrapper,
   openal,
 }:
 
@@ -35,46 +33,13 @@ let
 in
 
 stdenv.mkDerivation rec {
-  pname = "unigine-valley";
   inherit version;
+  pname = "unigine-valley";
 
   src = fetchurl {
     url = "https://assets.unigine.com/d/Unigine_Valley-${version}.run";
     hash = "sha256-L7R6nEXQbLTEi76VUoUyhS2LFeTdgdaTaIQVWGn/1+8=";
   };
-
-  sourceRoot = "Unigine_Valley-${version}";
-  instPath = "lib/unigine/valley";
-
-  nativeBuildInputs = [
-    file
-    makeWrapper
-    imagemagick
-    copyDesktopItems
-  ];
-
-  libPath = lib.makeLibraryPath [
-    stdenv.cc.cc # libstdc++.so.6
-    fontconfig
-    freetype
-    libx11
-    libxext
-    libxinerama
-    libxrandr
-    libxrender
-    libglvnd
-    openal
-  ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    cp $src extractor.run
-    chmod +x extractor.run
-    ./extractor.run --target $sourceRoot
-
-    runHook postUnpack
-  '';
 
   postPatch = ''
     # Patch ELF files.
@@ -83,6 +48,13 @@ stdenv.mkDerivation rec {
       patchelf --set-interpreter ${stdenv.cc.libc}/lib/ld-linux-x86-64.so.2 $elf || true
     done
   '';
+
+  nativeBuildInputs = [
+    file
+    makeWrapper
+    imagemagick
+    copyDesktopItems
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -121,26 +93,54 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Valley";
+      desktopName = "Valley Benchmark";
       exec = "valley";
       genericName = "A GPU Stress test tool from the UNIGINE";
       icon = "Valley";
-      desktopName = "Valley Benchmark";
+      name = "Valley";
     })
   ];
 
+  instPath = "lib/unigine/valley";
+
+  libPath = lib.makeLibraryPath [
+    stdenv.cc.cc # libstdc++.so.6
+    fontconfig
+    freetype
+    libx11
+    libxext
+    libxinerama
+    libxrandr
+    libxrender
+    libglvnd
+    openal
+  ];
+
+  sourceRoot = "Unigine_Valley-${version}";
   stripDebugList = [ "${instPath}/bin" ];
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    cp $src extractor.run
+    chmod +x extractor.run
+    ./extractor.run --target $sourceRoot
+
+    runHook postUnpack
+  '';
 
   meta = {
     description = "Unigine Valley GPU benchmarking tool";
     homepage = "https://unigine.com/products/benchmarks/valley/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree; # see also: $out/$instPath/documentation/License.pdf
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     mainProgram = "valley";
   };
 }

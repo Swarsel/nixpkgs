@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   opt-einsum,
-  torch,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "opt-einsum-fx";
   version = "0.1.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Linux-cpp-lisp";
@@ -26,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-HamDghqmdX4Q+4zXQvCly588p3TaYFCSnzgEKLVMXSo=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -36,11 +37,8 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "opt_einsum_fx" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Einsum optimization using opt_einsum and PyTorch FX graph rewriting";

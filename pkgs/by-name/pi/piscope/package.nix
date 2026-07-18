@@ -2,14 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  # buildInputs
+  gtk3,
+  installShellFiles,
   # nativeBuildInputs
   pkg-config,
   wrapGAppsHook3,
-  installShellFiles,
-
-  # buildInputs
-  gtk3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "V${finalAttrs.version}";
     hash = "sha256-VDrx/RLSpMhyD64PmdeWVacb9LleHakcy7D6zFxeyhw=";
   };
+
   # Fix FHS paths
   postPatch = ''
     substituteInPlace piscope.c \
@@ -33,9 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
     installShellFiles
   ];
+
   buildInputs = [
     gtk3
   ];
+
   # Upstream's Makefile assumes FHS
   installPhase = ''
     runHook preInstall
@@ -47,8 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://abyz.me.uk/rpi/pigpio/piscope.html";
     description = "Logic analyser (digital waveform viewer) for the Raspberry";
+    homepage = "http://abyz.me.uk/rpi/pigpio/piscope.html";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ doronbehar ];
     platforms = lib.platforms.linux;

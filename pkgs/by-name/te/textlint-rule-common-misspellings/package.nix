@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   fetchFromGitHub,
   fetchYarnDeps,
   fixup-yarn-lock,
   nodejs,
-  yarn,
+  stdenvNoCC,
   textlint,
   textlint-rule-common-misspellings,
+  yarn,
 }:
 
 # there is no lock file in this package, but it is old and stable enough
@@ -23,8 +23,6 @@ let
       hash = "sha256-+4QxmGjoF0mBldN4XQMvoK8YDS4PBV9/c+/BPf4FbkM=";
     };
 
-    dontBuild = true;
-
     installPhase = ''
       runHook preInstall
 
@@ -33,6 +31,8 @@ let
 
       runHook postInstall
     '';
+
+    dontBuild = true;
   });
 
   textlint-rule-helper = stdenvNoCC.mkDerivation (finalAttrs: {
@@ -46,28 +46,11 @@ let
       hash = "sha256-SVeL/3KC/yazSGsmn5We8fJAuVqfcspzN7i2a4+EOlI=";
     };
 
-    offlineCache = fetchYarnDeps {
-      yarnLock = "${finalAttrs.src}/yarn.lock";
-      hash = "sha256-UN56VuUHl7aS+QLON8ZROTSCGKKCn/8xuIkR46LyY+U=";
-    };
-
     nativeBuildInputs = [
       fixup-yarn-lock
       nodejs
       yarn
     ];
-
-    configurePhase = ''
-      runHook preConfigure
-
-      export HOME=$(mktemp -d)
-      yarn config --offline set yarn-offline-mirror "$offlineCache"
-      fixup-yarn-lock yarn.lock
-      yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
-      patchShebangs node_modules
-
-      runHook postConfigure
-    '';
 
     buildPhase = ''
       runHook preBuild
@@ -87,6 +70,23 @@ let
 
       runHook postInstall
     '';
+
+    configurePhase = ''
+      runHook preConfigure
+
+      export HOME=$(mktemp -d)
+      yarn config --offline set yarn-offline-mirror "$offlineCache"
+      fixup-yarn-lock yarn.lock
+      yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
+      patchShebangs node_modules
+
+      runHook postConfigure
+    '';
+
+    offlineCache = fetchYarnDeps {
+      hash = "sha256-UN56VuUHl7aS+QLON8ZROTSCGKKCn/8xuIkR46LyY+U=";
+      yarnLock = "${finalAttrs.src}/yarn.lock";
+    };
   });
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -97,8 +97,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://registry.npmjs.org/textlint-rule-common-misspellings/-/textlint-rule-common-misspellings-${finalAttrs.version}.tgz";
     hash = "sha256-5QVb5T2yGuunNhRQG5brJQyicRRbO8XewzjO2RzN0bI=";
   };
-
-  dontBuild = true;
 
   buildInputs = [
     misspellings
@@ -119,6 +117,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   passthru.tests = textlint.testPackages {
     rule = textlint-rule-common-misspellings;
     testFile = ./test.md;
@@ -129,7 +129,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/io-monad/textlint-rule-common-misspellings";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ natsukium ];
-    mainProgram = "textlint-rule-common-misspellings";
     platforms = textlint.meta.platforms;
+    mainProgram = "textlint-rule-common-misspellings";
   };
 })

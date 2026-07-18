@@ -24,16 +24,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
   nativeCheckInputs = [ lzip ];
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.nongnu.org/lzip/lziprecover.html";
     description = "Data recovery tool for lzip compressed files";
+    homepage = "https://www.nongnu.org/lzip/lziprecover.html";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       vlaci
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "lziprecover";
   };

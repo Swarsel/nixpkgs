@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  replaceVars,
   fetchFromGitHub,
   gnused,
   ncurses,
-  xprop,
+  replaceVars,
   rlwrap,
+  xprop,
 }:
 
 stdenv.mkDerivation {
@@ -20,20 +20,20 @@ stdenv.mkDerivation {
     sha256 = "1dxzsnir3158p8y2128s08r9ca0ywr9mcznivmhn1lycw8mg4nfl";
   };
 
+  patches = [
+    (replaceVars ./paths.patch {
+      rlwrap = "${rlwrap}/bin/rlwrap";
+      sed = "${gnused}/bin/sed";
+      tput = "${ncurses}/bin/tput";
+      xprop = "${xprop}/bin/xprop";
+    })
+  ];
+
   buildInputs = [
     gnused
     xprop
     rlwrap
     ncurses
-  ];
-
-  patches = [
-    (replaceVars ./paths.patch {
-      sed = "${gnused}/bin/sed";
-      xprop = "${xprop}/bin/xprop";
-      rlwrap = "${rlwrap}/bin/rlwrap";
-      tput = "${ncurses}/bin/tput";
-    })
   ];
 
   buildPhase = ''
@@ -45,8 +45,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/stumpwm/stumpwm-contrib";
     description = "STUMPwm Interactive SHell";
+    homepage = "https://github.com/stumpwm/stumpwm-contrib";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.unix;
     mainProgram = "stumpish";

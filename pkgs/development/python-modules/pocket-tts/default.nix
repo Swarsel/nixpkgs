@@ -1,15 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   beartype,
+  buildPythonPackage,
   einops,
   fastapi,
+  # build-system
+  hatchling,
   huggingface-hub,
   numpy,
   pydantic,
@@ -18,21 +16,18 @@
   safetensors,
   scipy,
   sentencepiece,
+  # optional-dependencies
+  soundfile,
   torch,
+  torchao,
   typer,
   typing-extensions,
   uvicorn,
-
-  # optional-dependencies
-  soundfile,
-  torchao,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pocket-tts";
   version = "2.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "kyutai-labs";
@@ -41,14 +36,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-TonwnbH1FQMoK7SyKiCyEVIn9TY8drUyN2ZOq8JpXj4=";
   };
 
+  # All tests are failing as the model cannot be downloaded from the sandbox
+  doCheck = false;
+  __structuredAttrs = true;
+
   build-system = [
     hatchling
   ];
 
-  pythonRelaxDeps = [
-    "beartype"
-    "python-multipart"
-  ];
   dependencies = [
     beartype
     einops
@@ -71,15 +66,19 @@ buildPythonPackage (finalAttrs: {
     audio = [
       soundfile
     ];
+
     quantize = [
       torchao
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "pocket_tts" ];
 
-  # All tests are failing as the model cannot be downloaded from the sandbox
-  doCheck = false;
+  pythonRelaxDeps = [
+    "beartype"
+    "python-multipart"
+  ];
 
   meta = {
     description = "Lightweight text-to-speech (TTS) application designed to run efficiently on CPUs";

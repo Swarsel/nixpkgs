@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   iso4217,
   pyserial,
   pyserial-asyncio-fast,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aioraven";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cottsay";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-rGqaDJtpdDWd8fxdfwU+rmgwEzZyYHfbiZxUlWoH2ks=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,11 +34,7 @@ buildPythonPackage rec {
     pyserial-asyncio-fast
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aioraven" ];
 
   meta = {

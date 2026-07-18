@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  ruby,
-  rake,
   fetchFromGitHub,
   fetchpatch,
+  rake,
+  ruby,
   testers,
 }:
 
@@ -20,19 +20,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ rake ];
-
-  nativeCheckInputs = [ ruby ];
-
   # Necessary so it uses `gcc` instead of `ld` for linking.
   # https://github.com/mruby/mruby/blob/e502fd88b988b0a8d9f31b928eb322eae269c45a/tasks/toolchains/gcc.rake#L30
   preBuild = "unset LD";
+  doCheck = true;
+  nativeCheckInputs = [ ruby ];
 
   installPhase = ''
     mkdir $out
     cp -R include build/host/{bin,lib} $out
   '';
-
-  doCheck = true;
 
   checkTarget = "test";
 
@@ -45,11 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Embeddable implementation of the Ruby language";
     homepage = "https://mruby.org";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nicknovitski
       nomadium
     ];
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.all;
     mainProgram = "mruby";
     broken = stdenv.hostPlatform.isDarwin;

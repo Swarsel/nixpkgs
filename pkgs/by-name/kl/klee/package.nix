@@ -1,40 +1,33 @@
 {
   lib,
-  llvmPackages_18,
-  callPackage,
   fetchFromGitHub,
+  callPackage,
   cmake,
-  python3,
-  z3,
-  stp,
   cryptominisat,
   gperftools,
-  sqlite,
   gtest,
   lit,
+  llvmPackages_18,
   nix-update-script,
-
-  # Build KLEE in debug mode. Defaults to false.
-  debug ? false,
-
-  # Include debug info in the build. Defaults to true.
-  includeDebugInfo ? true,
-
+  python3,
+  sqlite,
+  stp,
+  z3,
   # Enable KLEE asserts. Defaults to true, since LLVM is built with them.
   asserts ? false,
-
+  # Build KLEE in debug mode. Defaults to false.
+  debug ? false,
   # Build the KLEE runtime in debug mode. Defaults to true, as this improves
   # stack traces of the software under test.
   debugRuntime ? true,
-
-  # Enable runtime asserts. Default false.
-  runtimeAsserts ? false,
-
-  # Klee uclibc. Defaults to the bundled version.
-  kleeuClibc ? null,
-
   # Extra klee-uclibc config for the default klee-uclibc.
   extraKleeuClibcConfig ? { },
+  # Include debug info in the build. Defaults to true.
+  includeDebugInfo ? true,
+  # Klee uclibc. Defaults to the bundled version.
+  kleeuClibc ? null,
+  # Enable runtime asserts. Default false.
+  runtimeAsserts ? false,
 }:
 
 let
@@ -42,8 +35,8 @@ let
   chosenKleeuClibc =
     if kleeuClibc == null then
       callPackage ./klee-uclibc.nix {
-        llvmPackages = llvmPackages;
         inherit extraKleeuClibcConfig debugRuntime runtimeAsserts;
+        llvmPackages = llvmPackages;
       }
     else
       kleeuClibc;
@@ -76,23 +69,6 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     z3
   ];
 
-  nativeCheckInputs = [
-    gtest
-
-    # Should appear BEFORE lit, since lit passes through python rather
-    # than the python environment we make.
-    kleePython
-    (lit.override { python = kleePython; })
-  ];
-
-  cmakeBuildType =
-    if debug then
-      "Debug"
-    else if !debug && includeDebugInfo then
-      "RelWithDebInfo"
-    else
-      "MinSizeRel";
-
   cmakeFlags =
     let
       onOff = val: if val then "ON" else "OFF";
@@ -112,9 +88,6 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
       "-DGTEST_INCLUDE_DIR=${gtest.src}/googletest/include"
       "-Wno-dev"
     ];
-
-  # Silence various warnings during the compilation of fortified bitcode.
-  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-macro-redefined" ];
 
   env.FILECHECK_OPTS = "--dump-input-filter=all";
 
@@ -218,32 +191,52 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     "KLEE :: regression/2016-11-24-bitcast-weak-alias.c"
   ];
 
+  # Silence various warnings during the compilation of fortified bitcode.
+  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-macro-redefined" ];
+  doCheck = true;
+
+  nativeCheckInputs = [
+    gtest
+
+    # Should appear BEFORE lit, since lit passes through python rather
+    # than the python environment we make.
+    kleePython
+    (lit.override { python = kleePython; })
+  ];
+
+  __structuredAttrs = true;
+
+  cmakeBuildType =
+    if debug then
+      "Debug"
+    else if !debug && includeDebugInfo then
+      "RelWithDebInfo"
+    else
+      "MinSizeRel";
+
+  enableParallelBuilding = true;
+  # https://github.com/klee/klee/issues/1690
+  hardeningDisable = [ "fortify" ];
+
   prePatch = ''
     patchShebangs --build .
   '';
 
-  # https://github.com/klee/klee/issues/1690
-  hardeningDisable = [ "fortify" ];
-
-  enableParallelBuilding = true;
-  doCheck = true;
-
   passthru = {
+    # Let the user access the chosen uClibc outside the derivation.
+    uclibc = chosenKleeuClibc;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
         "v(\\d\\.\\d)"
       ];
     };
-    # Let the user access the chosen uClibc outside the derivation.
-    uclibc = chosenKleeuClibc;
   };
 
-  __structuredAttrs = true;
-
   meta = {
-    mainProgram = "klee";
     description = "Symbolic virtual machine built on top of LLVM";
+
     longDescription = ''
       KLEE is a symbolic virtual machine built on top of the LLVM compiler
       infrastructure. Currently, there are two primary components:
@@ -263,10 +256,12 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
       that matches a computed test input, including setting up files, pipes,
       environment variables, and passing command line arguments.
     '';
+
     homepage = "https://klee.github.io";
     license = lib.licenses.ncsa;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ numinit ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "klee";
     # Upstream is still working on support for LLVM ≥ 16; see:
     #
     # * <https://github.com/klee/klee/pull/1664>

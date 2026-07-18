@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "xan";
@@ -15,7 +15,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-WGva0hf0eB/4VUPsNQZJnAW2uWctsVLqSsYkuoreMog=";
-
   # FIXME: tests fail and I do not have the time to investigate. Temporarily disable
   # tests so that we can manually run and test the package for packaging purposes.
   doCheck = false;

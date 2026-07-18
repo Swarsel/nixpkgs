@@ -2,10 +2,10 @@
 # nix-build -A tests.stdenv
 
 {
-  stdenv,
-  pkgs,
   lib,
+  stdenv,
   config,
+  pkgs,
   testers,
 }:
 
@@ -22,10 +22,11 @@ let
   # use a early stdenv so when hacking on stdenv this test can be run quickly
   bootStdenv = earlyPkgs.stdenv.__bootPackages.stdenv.__bootPackages.stdenv or earlyPkgs.stdenv;
   pkgsStructured = import pkgs.path {
+    inherit (stdenv.hostPlatform) system;
+
     config = config // {
       structuredAttrsByDefault = true;
     };
-    inherit (stdenv.hostPlatform) system;
   };
   bootStdenvStructuredAttrsByDefault =
     pkgsStructured.stdenv.__bootPackages.stdenv.__bootPackages.stdenv.__bootPackages.stdenv.__bootPackages.stdenv
@@ -73,11 +74,11 @@ let
     stdenv'.mkDerivation (
       {
         inherit name;
+
         env = {
           string = "testing-string";
         };
 
-        passAsFile = [ "buildCommand" ];
         buildCommand = ''
           declare -p string
           echo "env.string = $string"
@@ -85,6 +86,8 @@ let
           [[ "$(declare -p string)" == 'declare -x string="testing-string"' ]] || (echo "'\$string' was not exported" && false)
           touch $out
         '';
+
+        passAsFile = [ "buildCommand" ];
       }
       // extraAttrs
     );
@@ -98,11 +101,11 @@ let
     stdenv'.mkDerivation (
       {
         inherit name;
+
         env = {
           string = "testing-string";
         };
 
-        passAsFile = [ "buildCommand" ] ++ lib.optionals (extraAttrs ? extraTest) [ "extraTest" ];
         buildCommand = ''
           declare -p string
           appendToVar string hello
@@ -131,6 +134,8 @@ let
 
           touch $out
         '';
+
+        passAsFile = [ "buildCommand" ] ++ lib.optionals (extraAttrs ? extraTest) [ "extraTest" ];
       }
       // extraAttrs
     );
@@ -145,13 +150,6 @@ let
       {
         inherit name;
 
-        string = "a *";
-        list = [
-          "c"
-          "d"
-        ];
-
-        passAsFile = [ "buildCommand" ] ++ lib.optionals (extraAttrs ? extraTest) [ "extraTest" ];
         buildCommand = ''
           declare -A associativeArray=(["X"]="Y")
           [[ $(concatTo nowhere associativeArray 2>&1) =~ "trying to use" ]] || (echo "concatTo did not throw concatenating associativeArray" && false)
@@ -185,6 +183,14 @@ let
 
           touch $out
         '';
+
+        list = [
+          "c"
+          "d"
+        ];
+
+        passAsFile = [ "buildCommand" ] ++ lib.optionals (extraAttrs ? extraTest) [ "extraTest" ];
+        string = "a *";
       }
       // extraAttrs
     );
@@ -194,10 +200,6 @@ let
     stdenv'.mkDerivation {
       inherit name;
 
-      # NOTE: Testing with "&" as separator is intentional, because unquoted
-      # "&" has a special meaning in the "${var//pattern/replacement}" syntax.
-      # Cf. https://github.com/NixOS/nixpkgs/pull/318614#discussion_r1706191919
-      passAsFile = [ "buildCommand" ];
       buildCommand = ''
         declare -A associativeArray=(["X"]="Y")
         [[ $(concatStringsSep ";" associativeArray 2>&1) =~ "trying to use" ]] || (echo "concatStringsSep did not throw concatenating associativeArray" && false)
@@ -220,11 +222,16 @@ let
 
         touch $out
       '';
+
+      # NOTE: Testing with "&" as separator is intentional, because unquoted
+      # "&" has a special meaning in the "${var//pattern/replacement}" syntax.
+      # Cf. https://github.com/NixOS/nixpkgs/pull/318614#discussion_r1706191919
+      passAsFile = [ "buildCommand" ];
     };
 
   testInputDerivationDep = stdenv.mkDerivation {
-    name = "test-input-derivation-dependency";
     buildCommand = "touch $out";
+    name = "test-input-derivation-dependency";
   };
   testInputDerivation =
     attrs:
@@ -240,231 +247,11 @@ let
 in
 
 {
-  # tests for hooks in `stdenv.defaultNativeBuildInputs`
-  hooks = lib.recurseIntoAttrs (
-    import ./hooks.nix {
-      stdenv = bootStdenv;
-      pkgs = earlyPkgs;
-      inherit initialPath initialBash lib;
-    }
-  );
-
-  outputs-no-out =
-    runCommand "outputs-no-out-assert"
-      {
-        result = earlierPkgs.testers.testBuildFailure (
-          bootStdenv.mkDerivation {
-            NIX_DEBUG = 1;
-            name = "outputs-no-out";
-            outputs = [ "foo" ];
-            buildPhase = ":";
-            installPhase = ''
-              touch $foo
-            '';
-          }
-        );
-
-        # Assumption: the first output* variable to be configured is
-        #   _overrideFirst outputDev "dev" "out"
-        expectedMsg = "error: _assignFirst: could not find a non-empty variable whose name to assign to outputDev.\n       The following variables were all unset or empty:\n           dev out";
-      }
-      ''
-        grep -F "$expectedMsg" $result/testBuildFailure.log >/dev/null
-        touch $out
-      '';
-
-  test-env-attrset = testEnvAttrset {
-    name = "test-env-attrset";
-    stdenv' = bootStdenv;
-  };
-
-  # Check that mkDerivation rejects MD5 hashes
-  rejectedHashes = lib.recurseIntoAttrs {
-    md5 =
-      let
-        drv = runCommand "md5 outputHash rejected" {
-          outputHash = "md5-fPt7dxVVP7ffY3MxkQdwVw==";
-        } "true";
-      in
-      assert !(builtins.tryEval drv).success;
-      { };
-  };
-
-  test-inputDerivation =
-    let
-      inherit
-        (stdenv.mkDerivation {
-          dep1 = derivation {
-            name = "dep1";
-            builder = "/bin/sh";
-            args = [
-              "-c"
-              ": > $out"
-            ];
-            inherit (stdenv.buildPlatform) system;
-          };
-          dep2 = derivation {
-            name = "dep2";
-            builder = "/bin/sh";
-            args = [
-              "-c"
-              ": > $out"
-            ];
-            inherit (stdenv.buildPlatform) system;
-          };
-          passAsFile = [ "dep2" ];
-        })
-        inputDerivation
-        ;
-    in
-    runCommand "test-inputDerivation"
-      {
-        exportReferencesGraph = [
-          "graph"
-          inputDerivation
-        ];
-      }
-      ''
-        grep ${inputDerivation.dep1} graph
-        grep ${inputDerivation.dep2} graph
-        touch $out
-      '';
-
-  test-inputDerivation-fixed-output =
-    let
-      inherit
-        (stdenv.mkDerivation {
-          dep1 = derivation {
-            name = "dep1";
-            builder = "/bin/sh";
-            args = [
-              "-c"
-              ": > $out"
-            ];
-            inherit (stdenv.buildPlatform) system;
-          };
-          dep2 = derivation {
-            name = "dep2";
-            builder = "/bin/sh";
-            args = [
-              "-c"
-              ": > $out"
-            ];
-            inherit (stdenv.buildPlatform) system;
-          };
-          name = "meow";
-          outputHash = "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=";
-          outputHashMode = "flat";
-          outputHashAlgo = "sha256";
-          buildCommand = ''
-            touch $out
-          '';
-          passAsFile = [ "dep2" ];
-        })
-        inputDerivation
-        ;
-    in
-    runCommand "test-inputDerivation"
-      {
-        exportReferencesGraph = [
-          "graph"
-          inputDerivation
-        ];
-      }
-      ''
-        grep ${inputDerivation.dep1} graph
-        grep ${inputDerivation.dep2} graph
-        touch $out
-      '';
-
-  test-inputDerivation-structured = testInputDerivation {
-    name = "test-inDrv-structured";
-    __structuredAttrs = true;
-  };
-
-  test-inputDerivation-allowedReferences = testInputDerivation {
-    name = "test-inDrv-allowedReferences";
-    allowedReferences = [ ];
-  };
-
-  test-inputDerivation-disallowedReferences = testInputDerivation {
-    name = "test-inDrv-disallowedReferences";
-    disallowedReferences = [ "${testInputDerivationDep}" ];
-  };
-
-  test-inputDerivation-allowedRequisites = testInputDerivation {
-    name = "test-inDrv-allowedRequisites";
-    allowedRequisites = [ ];
-  };
-
-  test-inputDerivation-disallowedRequisites = testInputDerivation {
-    name = "test-inDrv-disallowedRequisites";
-    disallowedRequisites = [ "${testInputDerivationDep}" ];
-  };
-
-  test-inputDerivation-structured-allowedReferences = testInputDerivation {
-    name = "test-inDrv-structured-allowedReferences";
-    __structuredAttrs = true;
-    outputChecks.out.allowedReferences = [ ];
-  };
-
-  test-inputDerivation-structured-disallowedReferences = testInputDerivation {
-    name = "test-inDrv-structured-disallowedReferences";
-    __structuredAttrs = true;
-    outputChecks.out.disallowedReferences = [ "${testInputDerivationDep}" ];
-  };
-
-  test-inputDerivation-structured-allowedRequisites = testInputDerivation {
-    name = "test-inDrv-structured-allowedRequisites";
-    __structuredAttrs = true;
-    outputChecks.out.allowedRequisites = [ ];
-  };
-
-  test-inputDerivation-structured-disallowedRequisites = testInputDerivation {
-    name = "test-inDrv-structured-disallowedRequisites";
-    __structuredAttrs = true;
-    outputChecks.out.disallowedRequisites = [ "${testInputDerivationDep}" ];
-  };
-
-  test-prepend-append-to-var = testPrependAndAppendToVar {
-    name = "test-prepend-append-to-var";
-    stdenv' = bootStdenv;
-  };
-
-  test-concat-to = testConcatTo {
-    name = "test-concat-to";
-    stdenv' = bootStdenv;
-  };
-
-  test-concat-strings-sep = testConcatStringsSep {
-    name = "test-concat-strings-sep";
-    stdenv' = bootStdenv;
-  };
-
-  test-structured-env-attrset = testEnvAttrset {
-    name = "test-structured-env-attrset";
-    stdenv' = bootStdenv;
-    extraAttrs = {
-      __structuredAttrs = true;
-    };
-  };
-
-  test-cc-wrapper-substitutions = ccWrapperSubstitutionsTest {
-    name = "test-cc-wrapper-substitutions";
-    stdenv' = bootStdenv;
-  };
-
-  tests-stdenv-gcc-stageCompare = pkgs.callPackage ./gcc-stageCompare.nix { };
-
   ensure-no-execve-in-setup-sh =
     derivation {
-      name = "ensure-no-execve-in-setup-sh";
       inherit (stdenv.hostPlatform) system;
-      builder = "${initialBash}/bin/bash";
       PATH = "${pkgs.strace}/bin:${lib.strings.makeSearchPath "bin" initialPath}";
-      initialPath = initialPath ++ [
-        pkgs.strace
-      ];
+
       args = [
         "-c"
         ''
@@ -494,18 +281,73 @@ in
           touch $out
         ''
       ];
+
+      builder = "${initialBash}/bin/bash";
+
+      initialPath = initialPath ++ [
+        pkgs.strace
+      ];
+
+      name = "ensure-no-execve-in-setup-sh";
     }
     // {
       meta = { };
     };
 
+  # tests for hooks in `stdenv.defaultNativeBuildInputs`
+  hooks = lib.recurseIntoAttrs (
+    import ./hooks.nix {
+      inherit initialPath initialBash lib;
+      pkgs = earlyPkgs;
+      stdenv = bootStdenv;
+    }
+  );
+
+  outputs-no-out =
+    runCommand "outputs-no-out-assert"
+      {
+        # Assumption: the first output* variable to be configured is
+        #   _overrideFirst outputDev "dev" "out"
+        expectedMsg = "error: _assignFirst: could not find a non-empty variable whose name to assign to outputDev.\n       The following variables were all unset or empty:\n           dev out";
+
+        result = earlierPkgs.testers.testBuildFailure (
+          bootStdenv.mkDerivation {
+            outputs = [ "foo" ];
+            buildPhase = ":";
+
+            installPhase = ''
+              touch $foo
+            '';
+
+            NIX_DEBUG = 1;
+            name = "outputs-no-out";
+          }
+        );
+      }
+      ''
+        grep -F "$expectedMsg" $result/testBuildFailure.log >/dev/null
+        touch $out
+      '';
+
+  # Check that mkDerivation rejects MD5 hashes
+  rejectedHashes = lib.recurseIntoAttrs {
+    md5 =
+      let
+        drv = runCommand "md5 outputHash rejected" {
+          outputHash = "md5-fPt7dxVVP7ffY3MxkQdwVw==";
+        } "true";
+      in
+      assert !(builtins.tryEval drv).success;
+      { };
+  };
+
   structuredAttrsByDefault = lib.recurseIntoAttrs {
 
     hooks = lib.recurseIntoAttrs (
       import ./hooks.nix {
-        stdenv = bootStdenvStructuredAttrsByDefault;
-        pkgs = earlyPkgs;
         inherit initialBash initialPath lib;
+        pkgs = earlyPkgs;
+        stdenv = bootStdenvStructuredAttrsByDefault;
       }
     );
 
@@ -514,60 +356,13 @@ in
       stdenv' = bootStdenvStructuredAttrsByDefault;
     };
 
-    test-structured-env-attrset = testEnvAttrset {
-      name = "test-structured-env-attrset-structuredAttrsByDefault";
+    test-concat-strings-sep = testConcatStringsSep {
+      name = "test-concat-strings-sep-structuredAttrsByDefault";
       stdenv' = bootStdenvStructuredAttrsByDefault;
-    };
-
-    test-prepend-append-to-var = testPrependAndAppendToVar {
-      name = "test-prepend-append-to-var-structuredAttrsByDefault";
-      stdenv' = bootStdenvStructuredAttrsByDefault;
-      extraAttrs = {
-        # will be a bash indexed array in attrs.sh
-        # declare -a list=('a' 'b' )
-        # and a json array in attrs.json
-        # "list":["a","b"]
-        list = [
-          "a"
-          "b"
-        ];
-        # will be a bash associative array(dictionary) in attrs.sh
-        # declare -A array=(['a']='1' ['b']='2' )
-        # and a json object in attrs.json
-        # {"array":{"a":"1","b":"2"}
-        array = {
-          a = "1";
-          b = "2";
-        };
-        extraTest = ''
-          declare -p array
-          array+=(["c"]="3")
-          declare -p array
-
-          [[ "''${array[c]}" == "3" ]] || (echo "c element of '\$array' was not '3'" && false)
-
-          declare -p list
-          prependToVar list hello
-          # test that quoted strings work
-          appendToVar list "world"
-          declare -p list
-
-          [[ "''${list[0]}" == "hello" ]] || (echo "first element of '\$list' was not 'hello'" && false)
-          [[ "''${list[1]}" == "a" ]] || (echo "first element of '\$list' was not 'a'" && false)
-          [[ "''${list[-1]}" == "world" ]] || (echo "last element of '\$list' was not 'world'" && false)
-        '';
-      };
     };
 
     test-concat-to = testConcatTo {
-      name = "test-concat-to-structuredAttrsByDefault";
-      stdenv' = bootStdenvStructuredAttrsByDefault;
       extraAttrs = {
-        # test that whitespace is kept in the bash array for structuredAttrs
-        listWithSpaces = [
-          "c c"
-          "d d"
-        ];
         extraTest = ''
           declare -a flagsWithSpaces
           concatTo flagsWithSpaces string listWithSpaces
@@ -577,11 +372,15 @@ in
           [[ "''${flagsWithSpaces[2]}" == "c c" ]] || (echo "'\$flagsWithSpaces[2]' was not 'c c'" && false)
           [[ "''${flagsWithSpaces[3]}" == "d d" ]] || (echo "'\$flagsWithSpaces[3]' was not 'd d'" && false)
         '';
-      };
-    };
 
-    test-concat-strings-sep = testConcatStringsSep {
-      name = "test-concat-strings-sep-structuredAttrsByDefault";
+        # test that whitespace is kept in the bash array for structuredAttrs
+        listWithSpaces = [
+          "c c"
+          "d d"
+        ];
+      };
+
+      name = "test-concat-to-structuredAttrsByDefault";
       stdenv' = bootStdenvStructuredAttrsByDefault;
     };
 
@@ -628,18 +427,28 @@ in
         '';
       in
       bootStdenvStructuredAttrsByDefault.mkDerivation {
-        name = "test-golden-example-structuredAttrsByDefault";
+        inherit goldenSh;
+        inherit goldenJson;
         nativeBuildInputs = [ earlyPkgs.jq ];
 
-        EXAMPLE_BOOL_TRUE = true;
+        EXAMPLE_ATTRS = {
+          foo = "bar";
+        };
+
         EXAMPLE_BOOL_FALSE = false;
+        EXAMPLE_BOOL_TRUE = true;
         EXAMPLE_INT = 123;
         EXAMPLE_INT_NEG = -123;
-        EXAMPLE_STR = "foo bar";
+
         EXAMPLE_LIST = [
           "foo"
           "bar"
         ];
+
+        EXAMPLE_NESTED_ATTRS = {
+          foo.bar = "baz";
+        };
+
         EXAMPLE_NESTED_LIST = [
           [
             "foo"
@@ -647,15 +456,8 @@ in
           ]
           [ "baz" ]
         ];
-        EXAMPLE_ATTRS = {
-          foo = "bar";
-        };
-        EXAMPLE_NESTED_ATTRS = {
-          foo.bar = "baz";
-        };
 
-        inherit goldenSh;
-        inherit goldenJson;
+        EXAMPLE_STR = "foo bar";
 
         buildCommand = ''
           mkdir -p $out
@@ -664,6 +466,241 @@ in
           diff $out/sh $goldenSh
           diff $out/json $goldenJson
         '';
+
+        name = "test-golden-example-structuredAttrsByDefault";
       };
+
+    test-prepend-append-to-var = testPrependAndAppendToVar {
+      extraAttrs = {
+        # will be a bash associative array(dictionary) in attrs.sh
+        # declare -A array=(['a']='1' ['b']='2' )
+        # and a json object in attrs.json
+        # {"array":{"a":"1","b":"2"}
+        array = {
+          a = "1";
+          b = "2";
+        };
+
+        extraTest = ''
+          declare -p array
+          array+=(["c"]="3")
+          declare -p array
+
+          [[ "''${array[c]}" == "3" ]] || (echo "c element of '\$array' was not '3'" && false)
+
+          declare -p list
+          prependToVar list hello
+          # test that quoted strings work
+          appendToVar list "world"
+          declare -p list
+
+          [[ "''${list[0]}" == "hello" ]] || (echo "first element of '\$list' was not 'hello'" && false)
+          [[ "''${list[1]}" == "a" ]] || (echo "first element of '\$list' was not 'a'" && false)
+          [[ "''${list[-1]}" == "world" ]] || (echo "last element of '\$list' was not 'world'" && false)
+        '';
+
+        # will be a bash indexed array in attrs.sh
+        # declare -a list=('a' 'b' )
+        # and a json array in attrs.json
+        # "list":["a","b"]
+        list = [
+          "a"
+          "b"
+        ];
+      };
+
+      name = "test-prepend-append-to-var-structuredAttrsByDefault";
+      stdenv' = bootStdenvStructuredAttrsByDefault;
+    };
+
+    test-structured-env-attrset = testEnvAttrset {
+      name = "test-structured-env-attrset-structuredAttrsByDefault";
+      stdenv' = bootStdenvStructuredAttrsByDefault;
+    };
   };
+
+  test-cc-wrapper-substitutions = ccWrapperSubstitutionsTest {
+    name = "test-cc-wrapper-substitutions";
+    stdenv' = bootStdenv;
+  };
+
+  test-concat-strings-sep = testConcatStringsSep {
+    name = "test-concat-strings-sep";
+    stdenv' = bootStdenv;
+  };
+
+  test-concat-to = testConcatTo {
+    name = "test-concat-to";
+    stdenv' = bootStdenv;
+  };
+
+  test-env-attrset = testEnvAttrset {
+    name = "test-env-attrset";
+    stdenv' = bootStdenv;
+  };
+
+  test-inputDerivation =
+    let
+      inherit
+        (stdenv.mkDerivation {
+          dep1 = derivation {
+            inherit (stdenv.buildPlatform) system;
+
+            args = [
+              "-c"
+              ": > $out"
+            ];
+
+            builder = "/bin/sh";
+            name = "dep1";
+          };
+
+          dep2 = derivation {
+            inherit (stdenv.buildPlatform) system;
+
+            args = [
+              "-c"
+              ": > $out"
+            ];
+
+            builder = "/bin/sh";
+            name = "dep2";
+          };
+
+          passAsFile = [ "dep2" ];
+        })
+        inputDerivation
+        ;
+    in
+    runCommand "test-inputDerivation"
+      {
+        exportReferencesGraph = [
+          "graph"
+          inputDerivation
+        ];
+      }
+      ''
+        grep ${inputDerivation.dep1} graph
+        grep ${inputDerivation.dep2} graph
+        touch $out
+      '';
+
+  test-inputDerivation-allowedReferences = testInputDerivation {
+    allowedReferences = [ ];
+    name = "test-inDrv-allowedReferences";
+  };
+
+  test-inputDerivation-allowedRequisites = testInputDerivation {
+    allowedRequisites = [ ];
+    name = "test-inDrv-allowedRequisites";
+  };
+
+  test-inputDerivation-disallowedReferences = testInputDerivation {
+    disallowedReferences = [ "${testInputDerivationDep}" ];
+    name = "test-inDrv-disallowedReferences";
+  };
+
+  test-inputDerivation-disallowedRequisites = testInputDerivation {
+    disallowedRequisites = [ "${testInputDerivationDep}" ];
+    name = "test-inDrv-disallowedRequisites";
+  };
+
+  test-inputDerivation-fixed-output =
+    let
+      inherit
+        (stdenv.mkDerivation {
+          buildCommand = ''
+            touch $out
+          '';
+
+          dep1 = derivation {
+            inherit (stdenv.buildPlatform) system;
+
+            args = [
+              "-c"
+              ": > $out"
+            ];
+
+            builder = "/bin/sh";
+            name = "dep1";
+          };
+
+          dep2 = derivation {
+            inherit (stdenv.buildPlatform) system;
+
+            args = [
+              "-c"
+              ": > $out"
+            ];
+
+            builder = "/bin/sh";
+            name = "dep2";
+          };
+
+          name = "meow";
+          outputHash = "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=";
+          outputHashAlgo = "sha256";
+          outputHashMode = "flat";
+          passAsFile = [ "dep2" ];
+        })
+        inputDerivation
+        ;
+    in
+    runCommand "test-inputDerivation"
+      {
+        exportReferencesGraph = [
+          "graph"
+          inputDerivation
+        ];
+      }
+      ''
+        grep ${inputDerivation.dep1} graph
+        grep ${inputDerivation.dep2} graph
+        touch $out
+      '';
+
+  test-inputDerivation-structured = testInputDerivation {
+    __structuredAttrs = true;
+    name = "test-inDrv-structured";
+  };
+
+  test-inputDerivation-structured-allowedReferences = testInputDerivation {
+    __structuredAttrs = true;
+    name = "test-inDrv-structured-allowedReferences";
+    outputChecks.out.allowedReferences = [ ];
+  };
+
+  test-inputDerivation-structured-allowedRequisites = testInputDerivation {
+    __structuredAttrs = true;
+    name = "test-inDrv-structured-allowedRequisites";
+    outputChecks.out.allowedRequisites = [ ];
+  };
+
+  test-inputDerivation-structured-disallowedReferences = testInputDerivation {
+    __structuredAttrs = true;
+    name = "test-inDrv-structured-disallowedReferences";
+    outputChecks.out.disallowedReferences = [ "${testInputDerivationDep}" ];
+  };
+
+  test-inputDerivation-structured-disallowedRequisites = testInputDerivation {
+    __structuredAttrs = true;
+    name = "test-inDrv-structured-disallowedRequisites";
+    outputChecks.out.disallowedRequisites = [ "${testInputDerivationDep}" ];
+  };
+
+  test-prepend-append-to-var = testPrependAndAppendToVar {
+    name = "test-prepend-append-to-var";
+    stdenv' = bootStdenv;
+  };
+
+  test-structured-env-attrset = testEnvAttrset {
+    extraAttrs = {
+      __structuredAttrs = true;
+    };
+
+    name = "test-structured-env-attrset";
+    stdenv' = bootStdenv;
+  };
+
+  tests-stdenv-gcc-stageCompare = pkgs.callPackage ./gcc-stageCompare.nix { };
 }

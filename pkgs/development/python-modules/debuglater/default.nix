@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
   dill,
-  fetchFromGitHub,
   numpy,
   pandas,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "debuglater";
   version = "1.4.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ploomber";
@@ -23,16 +22,18 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ colorama ];
 
-  optional-dependencies = {
-    all = [ dill ];
-  };
-
   nativeCheckInputs = [
     numpy
     pandas
     pytestCheckHook
   ]
   ++ optional-dependencies.all;
+
+  format = "setuptools";
+
+  optional-dependencies = {
+    all = [ dill ];
+  };
 
   pythonImportsCheck = [ "debuglater" ];
 

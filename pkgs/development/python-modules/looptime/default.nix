@@ -1,19 +1,18 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
-  stdenv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "looptime";
   version = "0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nolar";
@@ -22,17 +21,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-nQNGE/o5QNAw4OSs+O5oWiq+JX+ShV6njOHkn1IlvtE=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  pythonImportsCheck = [ "looptime" ];
-
   nativeCheckInputs = [
     async-timeout
     pytest-asyncio
     pytestCheckHook
+  ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
   ];
 
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -49,10 +46,13 @@ buildPythonPackage (finalAttrs: {
     "tests/test_time_on_io_idle.py::test_stepping_with_no_limit"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "looptime" ];
+
   meta = {
-    changelog = "https://github.com/nolar/looptime/releases/tag/${finalAttrs.src.tag}";
     description = "Time dilation & contraction in asyncio event loops (in tests)";
     homepage = "https://github.com/nolar/looptime";
+    changelog = "https://github.com/nolar/looptime/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dotlambda ];
   };

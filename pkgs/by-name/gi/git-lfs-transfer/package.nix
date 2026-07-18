@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule {
   pname = "git-lfs-transfer";
@@ -18,9 +18,9 @@ buildGoModule {
 
   meta = {
     description = "Server-side implementation of the Git LFS pure-SSH protocol";
-    mainProgram = "git-lfs-transfer";
     homepage = "https://github.com/charmbracelet/git-lfs-transfer";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ chn ];
+    mainProgram = "git-lfs-transfer";
   };
 }

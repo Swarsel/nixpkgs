@@ -1,19 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   buildPythonPackage,
   certifi,
   docutils,
   fastapi,
-  fetchFromGitHub,
   httpx,
   ifaddr,
   itsdangerous,
   jinja2,
   libsass,
-  lxml-html-clean,
   lxml,
+  lxml-html-clean,
   markdown2,
   matplotlib,
   orjson,
@@ -48,7 +48,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "nicegui";
   version = "3.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zauberzeug";
@@ -57,13 +56,21 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-pm8jUDdpRvPDVwHXHGwuqPogpE/HMS19uJ5beWch7TE=";
   };
 
-  pythonRelaxDeps = [
-    "idna"
-    "lxml"
-    "orjson"
-    "python-multipart"
-    "requests"
-  ];
+  # chromedriver release doesn't seems to be supported, try with next release
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pandas
+    pkgs.chromedriver
+    polars
+    pyecharts
+    pytest-asyncio
+    pytest-selenium
+    pytestCheckHook
+    webdriver-manager
+    writableTmpDirAsHomeHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [
     poetry-core
@@ -104,27 +111,20 @@ buildPythonPackage (finalAttrs: {
     matplotlib = [ matplotlib ];
     native = [ pywebview ];
     plotly = [ plotly ];
-    sass = [ libsass ];
     redis = [ redis ];
+    sass = [ libsass ];
   };
 
-  nativeCheckInputs = [
-    pandas
-    pkgs.chromedriver
-    polars
-    pyecharts
-    pytest-asyncio
-    pytest-selenium
-    pytestCheckHook
-    webdriver-manager
-    writableTmpDirAsHomeHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "nicegui" ];
 
-  # chromedriver release doesn't seems to be supported, try with next release
-  doCheck = false;
+  pythonRelaxDeps = [
+    "idna"
+    "lxml"
+    "orjson"
+    "python-multipart"
+    "requests"
+  ];
 
   meta = {
     description = "Module to create web-based user interfaces";

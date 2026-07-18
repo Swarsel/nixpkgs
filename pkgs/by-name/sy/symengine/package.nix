@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   cmake,
-  gmp,
+  fetchpatch2,
   flint,
-  mpfr,
+  gmp,
   libmpc,
+  mpfr,
   withShared ? !stdenv.hostPlatform.isStatic,
 }:
 
@@ -30,12 +30,12 @@ stdenv.mkDerivation (finalAttrs: {
   # upgrade supported cmake version in SymEngineConfig.cmake
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/symengine/symengine/commit/c149b874b8ff947e51e8e58670a0d37daf588f86.patch?full_index=1";
       hash = "sha256-LqkJRPdsbE8OE8G6AkpWX9B+GqnOQjUNPHpKKIcCL3Q=";
+      url = "https://github.com/symengine/symengine/commit/c149b874b8ff947e51e8e58670a0d37daf588f86.patch?full_index=1";
     })
     (fetchpatch2 {
-      url = "https://github.com/symengine/symengine/commit/186f72e208220efd12362c336a49378076f63f30.patch?full_index=1";
       hash = "sha256-CuQra9K3MTxm8M0bt3LooJz9HgW0/Jy6ydRBCvEgkO4=";
+      url = "https://github.com/symengine/symengine/commit/186f72e208220efd12362c336a49378076f63f30.patch?full_index=1";
     })
   ];
 
@@ -63,8 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Fast symbolic manipulation library";
     homepage = "https://github.com/symengine/symengine";
-    platforms = with lib.platforms; unix ++ windows;
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ costrouc ];
+    platforms = with lib.platforms; unix ++ windows;
   };
 })

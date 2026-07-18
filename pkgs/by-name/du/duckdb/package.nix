@@ -4,21 +4,21 @@
   fetchFromGitHub,
   cmake,
   ninja,
-  openssl,
   openjdk11,
+  openssl,
   python3,
   unixodbc,
+  versionCheckHook,
   withJdbc ? false,
   withOdbc ? false,
-  versionCheckHook,
 }:
 
 let
   versions = lib.importJSON ./versions.json;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "duckdb";
   inherit (versions) rev version;
+  pname = "duckdb";
 
   src = fetchFromGitHub {
     # to update run:
@@ -40,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     python3
   ];
+
   buildInputs = [
     openssl
   ]
@@ -56,7 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   installCheckPhase =
@@ -161,20 +161,22 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstallCheck
     '';
 
-  passthru.updateScript = ./update.sh;
   passthru.pythonHash = versions.python_hash;
+  passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/duckdb/duckdb/releases/tag/v${finalAttrs.version}";
     description = "Embeddable SQL OLAP Database Management System";
     homepage = "https://duckdb.org/";
+    changelog = "https://github.com/duckdb/duckdb/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "duckdb";
+
     maintainers = with lib.maintainers; [
       cameronraysmith
       costrouc
       cpcloud
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "duckdb";
   };
 })

@@ -1,19 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
-  installFonts,
   gitUpdater,
+  installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "beedii";
   version = "1.0.0";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchzip {
     url = "https://github.com/webkul/beedii/releases/download/v${finalAttrs.version}/beedii.zip";
@@ -21,26 +16,31 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  sourceRoot = "${finalAttrs.src.name}/Fonts";
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
   nativeBuildInputs = [ installFonts ];
+  sourceRoot = "${finalAttrs.src.name}/Fonts";
 
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/webkul/beedii";
-    rev-prefix = "v";
-
     # This version does not include font files in the released assets.
     # https://github.com/webkul/beedii/issues/1
     ignoredVersions = "^1\\.2\\.0$";
+    rev-prefix = "v";
+    url = "https://github.com/webkul/beedii";
   };
 
   meta = {
     description = "Free Hand Drawn Emoji Font";
     homepage = "https://github.com/webkul/beedii";
     license = lib.licenses.cc0;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
+    platforms = lib.platforms.all;
   };
 })

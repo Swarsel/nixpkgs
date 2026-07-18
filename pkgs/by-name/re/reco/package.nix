@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   blueprint-compiler,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
+  gst_all_1,
   libadwaita,
   libgee,
-  ryokucha,
+  meson,
+  ninja,
   pantheon,
-  gst_all_1,
+  pkg-config,
+  ryokucha,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,8 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Audio recorder focused on being concise and simple to use";
     homepage = "https://github.com/ryonakano/reco";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "com.github.ryonakano.reco";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "com.github.ryonakano.reco";
   };
 })

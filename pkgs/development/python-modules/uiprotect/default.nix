@@ -1,46 +1,42 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   aiofiles,
   aiohttp,
+  # tests
+  aiosqlite,
   aiozoneinfo,
+  asttokens,
   av,
+  buildPythonPackage,
   convertertools,
   dateparser,
+  ffmpeg,
   orjson,
   packaging,
   pillow,
   platformdirs,
+  # build-system
+  poetry-core,
   propcache,
   pydantic,
   pydantic-extra-types,
   pyjwt,
-  rich,
-  typer,
-  yarl,
-
-  # tests
-  aiosqlite,
-  asttokens,
-  ffmpeg,
   pytest-asyncio,
   pytest-benchmark,
   pytest-cov-stub,
   pytest-timeout,
   pytest-xdist,
   pytestCheckHook,
+  rich,
+  typer,
+  yarl,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "uiprotect";
   version = "15.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "uilibs";
@@ -49,18 +45,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-H5ymzsqdCcL9C4suW2Gk1Op7UmmwztqNrB1VeGIFUFE=";
   };
 
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "orjson"
-    "packaging"
-    "platformdirs"
-    "propcache"
-    "pydantic"
-    "pyjwt"
-    "rich"
-    "typer"
+  nativeCheckInputs = [
+    aiosqlite
+    asttokens
+    ffmpeg # Required for command ffprobe
+    pytest-asyncio
+    pytest-benchmark
+    pytest-cov-stub
+    pytest-timeout
+    pytest-xdist
+    pytestCheckHook
   ];
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     aiofiles
@@ -82,21 +79,20 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aiosqlite
-    asttokens
-    ffmpeg # Required for command ffprobe
-    pytest-asyncio
-    pytest-benchmark
-    pytest-cov-stub
-    pytest-timeout
-    pytest-xdist
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pytestFlags = [ "--benchmark-disable" ];
-
   pythonImportsCheck = [ "uiprotect" ];
+
+  pythonRelaxDeps = [
+    "orjson"
+    "packaging"
+    "platformdirs"
+    "propcache"
+    "pydantic"
+    "pyjwt"
+    "rich"
+    "typer"
+  ];
 
   meta = {
     description = "Python API for UniFi Protect (Unofficial)";

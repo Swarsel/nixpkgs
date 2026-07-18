@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libGL,
+  libsForQt5,
   pkg-config,
   qbs,
-  libsForQt5,
   zlib,
   zstd,
-  libGL,
 }:
 
 let
@@ -31,18 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Pq36xfaKtloyf0bneBE2xC/9twO/0qLq533dDbAyBCU=";
   };
 
-  nativeBuildInputs = [
-    pkg-config
-    qbs
-    libsForQt5.wrapQtAppsHook
-  ];
-  buildInputs = [
-    qtEnv
-    zlib
-    zstd
-    libGL
-  ];
-
   outputs = [
     "out"
     "dev"
@@ -50,15 +38,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  configurePhase = ''
-    runHook preConfigure
+  nativeBuildInputs = [
+    pkg-config
+    qbs
+    libsForQt5.wrapQtAppsHook
+  ];
 
-    qbs setup-qt --settings-dir . ${qtEnv}/bin/qmake qtenv
-    qbs config --settings-dir . defaultProfile qtenv
-    qbs resolve --settings-dir . config:release qbs.installPrefix:/ projects.Tiled.installHeaders:true
-
-    runHook postConfigure
-  '';
+  buildInputs = [
+    qtEnv
+    zlib
+    zstd
+    libGL
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -82,17 +73,30 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "Exec=tmxrasterizer" "Exec=$out/bin/tmxrasterizer"
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    qbs setup-qt --settings-dir . ${qtEnv}/bin/qmake qtenv
+    qbs config --settings-dir . defaultProfile qtenv
+    qbs resolve --settings-dir . config:release qbs.installPrefix:/ projects.Tiled.installHeaders:true
+
+    runHook postConfigure
+  '';
+
   meta = {
     description = "Free, easy to use and flexible tile map editor";
     homepage = "https://www.mapeditor.org/";
+
     license = with lib.licenses; [
       bsd2 # libtiled and tmxviewer
       gpl2Plus # all the rest
     ];
+
     maintainers = with lib.maintainers; [
       dywedir
       ryan4yin
     ];
+
     platforms = lib.platforms.linux;
   };
 })

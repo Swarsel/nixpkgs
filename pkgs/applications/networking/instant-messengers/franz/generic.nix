@@ -1,53 +1,53 @@
 {
-  stdenv,
   lib,
-  makeWrapper,
-  wrapGAppsHook3,
-  autoPatchelfHook,
-  dpkg,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  atk,
-  glib,
-  pango,
-  gdk-pixbuf,
-  cairo,
-  freetype,
-  fontconfig,
-  gtk3,
-  dbus,
-  nss,
-  nspr,
+  stdenv,
   alsa-lib,
+  atk,
+  autoPatchelfHook,
+  cairo,
   cups,
+  dbus,
+  dpkg,
   expat,
-  udev,
-  libnotify,
-  xdg-utils,
+  fontconfig,
+  freetype,
+  gdk-pixbuf,
+  glib,
+  gtk3,
+  libappindicator-gtk3,
   libgbm,
   libglvnd,
-  libappindicator-gtk3,
-  pipewire,
+  libnotify,
   libpulseaudio,
+  libx11,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxtst,
+  makeWrapper,
+  nspr,
+  nss,
+  pango,
+  pipewire,
+  udev,
+  wrapGAppsHook3,
+  xdg-utils,
 }:
 
 # Helper function for building a derivation for Franz and forks.
 
 {
-  pname,
-  name,
-  version,
-  src,
   meta,
+  name,
+  pname,
+  src,
+  version,
   extraBuildInputs ? [ ],
   ...
 }@args:
@@ -70,15 +70,13 @@ stdenv.mkDerivation (
       meta
       ;
 
-    # Don't remove runtime deps.
-    dontPatchELF = true;
-
     nativeBuildInputs = [
       autoPatchelfHook
       makeWrapper
       wrapGAppsHook3
       dpkg
     ];
+
     buildInputs =
       extraBuildInputs
       ++ [
@@ -114,15 +112,6 @@ stdenv.mkDerivation (
         pipewire
         libpulseaudio
       ];
-    runtimeDependencies = [
-      libglvnd
-      (lib.getLib stdenv.cc.cc)
-      (lib.getLib udev)
-      libnotify
-      libappindicator-gtk3
-      pipewire
-      libpulseaudio
-    ];
 
     installPhase = ''
       mkdir -p $out/bin
@@ -135,8 +124,6 @@ stdenv.mkDerivation (
         --replace /opt/${name}/${pname} ${pname}
     '';
 
-    dontWrapGApps = true;
-
     postFixup = ''
       # make xdg-open overridable at runtime
       wrapProgramShell $out/opt/${name}/${pname} \
@@ -145,6 +132,20 @@ stdenv.mkDerivation (
         --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations,WebRTCPipeWireCapturer --enable-wayland-ime=true}}" \
         "''${gappsWrapperArgs[@]}"
     '';
+
+    # Don't remove runtime deps.
+    dontPatchELF = true;
+    dontWrapGApps = true;
+
+    runtimeDependencies = [
+      libglvnd
+      (lib.getLib stdenv.cc.cc)
+      (lib.getLib udev)
+      libnotify
+      libappindicator-gtk3
+      pipewire
+      libpulseaudio
+    ];
   }
   // cleanedArgs
 )

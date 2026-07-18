@@ -19,11 +19,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-8bCk6c/EyghsHKLinWGIJhbl76j3V/rzTmrCWh+5cIU=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeCheckInputs = [
     gitMinimal
     gitSetupHook
@@ -46,6 +41,11 @@ buildGoModule (finalAttrs: {
       ];
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Terminal-based to-do application built with Bubble Tea";

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  nix,
-  writeShellApplication,
   _experimental-update-script-combinators,
   alsa-lib,
   cmake,
-  libpulseaudio,
+  gitUpdater,
+  libjack2,
   libmt32emu,
+  libpulseaudio,
+  nix,
   pkg-config,
   portaudio,
-  withJack ? stdenv.hostPlatform.isUnix,
-  libjack2,
   qt6Packages,
+  writeShellApplication,
+  withJack ? stdenv.hostPlatform.isUnix,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -69,30 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    # Otherwise x.y.z in version != x_y_z in tag, and bump to same version is attempted
-    unfixVersionScript = writeShellApplication {
-      name = "unfix-mt32emu-qt-version";
-
-      runtimeInputs = [
-        nix
-      ];
-
-      text = ''
-        export UPDATE_NIX_ATTR_PATH="''${UPDATE_NIX_ATTR_PATH:-mt32emu-qt}"
-
-        preUpdateScriptVersion="$(nix-instantiate . --eval --strict -A "$UPDATE_NIX_ATTR_PATH.version" | cut -d'"' -f2)"
-        unfixedVersion="''${preUpdateScriptVersion//\./_}"
-
-        pkgFile="$(nix-instantiate --eval -E "with import ./. {}; (builtins.unsafeGetAttrPos \"version\" $UPDATE_NIX_ATTR_PATH).file" | cut -d'"' -f2)"
-
-        sed -i -e "s/version = \"$preUpdateScriptVersion\"/version = \"$unfixedVersion\"/g" "$pkgFile"
-      '';
-    };
-
-    updateTagScript = gitUpdater {
-      rev-prefix = "mt32emu_qt_";
-    };
-
     # gitUpdater lacks an option for modifying new tag
     fixVersionScript = writeShellApplication {
       name = "fix-mt32emu-qt-version";
@@ -113,24 +89,50 @@ stdenv.mkDerivation (finalAttrs: {
       '';
     };
 
+    # Otherwise x.y.z in version != x_y_z in tag, and bump to same version is attempted
+    unfixVersionScript = writeShellApplication {
+      name = "unfix-mt32emu-qt-version";
+
+      runtimeInputs = [
+        nix
+      ];
+
+      text = ''
+        export UPDATE_NIX_ATTR_PATH="''${UPDATE_NIX_ATTR_PATH:-mt32emu-qt}"
+
+        preUpdateScriptVersion="$(nix-instantiate . --eval --strict -A "$UPDATE_NIX_ATTR_PATH.version" | cut -d'"' -f2)"
+        unfixedVersion="''${preUpdateScriptVersion//\./_}"
+
+        pkgFile="$(nix-instantiate --eval -E "with import ./. {}; (builtins.unsafeGetAttrPos \"version\" $UPDATE_NIX_ATTR_PATH).file" | cut -d'"' -f2)"
+
+        sed -i -e "s/version = \"$preUpdateScriptVersion\"/version = \"$unfixedVersion\"/g" "$pkgFile"
+      '';
+    };
+
     updateScript = _experimental-update-script-combinators.sequence [
       (lib.getExe finalAttrs.passthru.unfixVersionScript)
       (finalAttrs.passthru.updateTagScript.command)
       (lib.getExe finalAttrs.passthru.fixVersionScript)
     ];
+
+    updateTagScript = gitUpdater {
+      rev-prefix = "mt32emu_qt_";
+    };
   };
 
   meta = {
-    homepage = "https://munt.sourceforge.net/";
     description = "Synthesizer application built on Qt and libmt32emu";
-    mainProgram = "mt32emu-qt";
+
     longDescription = ''
       mt32emu-qt is a synthesiser application that facilitates both realtime
       synthesis and conversion of pre-recorded SMF files to WAVE making use of
       the mt32emu library and the Qt framework.
     '';
+
+    homepage = "https://munt.sourceforge.net/";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.all;
+    mainProgram = "mt32emu-qt";
   };
 })

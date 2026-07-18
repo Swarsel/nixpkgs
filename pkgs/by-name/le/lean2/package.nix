@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchFromGitHub,
   cmake,
+  fetchpatch,
   gmp,
-  mpfr,
-  python3,
   jemalloc,
-  ninja,
   makeWrapper,
+  mpfr,
+  ninja,
+  python3,
 }:
 
 stdenv.mkDerivation {
@@ -27,8 +27,8 @@ stdenv.mkDerivation {
     # https://github.com/leanprover/lean2/pull/13
     (fetchpatch {
       name = "lean2-fix-compilation-error.patch";
-      url = "https://github.com/collares/lean2/commit/09b316ce75fd330b3b140d138bcdae2b0e909234.patch";
       sha256 = "060mvqn9y8lsn4l20q9rhamkymzsgh0r1vzkjw78gnj8kjw67jl5";
+      url = "https://github.com/collares/lean2/commit/09b316ce75fd330b3b140d138bcdae2b0e909234.patch";
     })
   ];
 
@@ -50,6 +50,7 @@ stdenv.mkDerivation {
     makeWrapper
     ninja
   ];
+
   buildInputs = [
     gmp
     mpfr
@@ -57,12 +58,12 @@ stdenv.mkDerivation {
     jemalloc
   ];
 
+  cmakeFlags = [ "-GNinja" ];
+
   preConfigure = ''
     patchShebangs bin/leantags
     cd src
   '';
-
-  cmakeFlags = [ "-GNinja" ];
 
   postInstall = ''
     wrapProgram $out/bin/linja --prefix PATH : $out/bin:${ninja}/bin
@@ -72,11 +73,13 @@ stdenv.mkDerivation {
     description = "Automatic and interactive theorem prover (version with HoTT support)";
     homepage = "http://leanprover.github.io";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
     ];
-    broken = stdenv.hostPlatform.isAarch64;
+
+    platforms = lib.platforms.unix;
     mainProgram = "lean";
+    broken = stdenv.hostPlatform.isAarch64;
   };
 }

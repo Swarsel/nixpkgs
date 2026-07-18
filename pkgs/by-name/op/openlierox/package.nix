@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL,
+  SDL_image,
+  SDL_mixer,
   cmake,
-  pkg-config,
   curl,
   gd,
   libx11,
   libxml2,
   libzip,
-  SDL,
-  SDL_image,
-  SDL_mixer,
+  pkg-config,
   zlib,
 }:
 
@@ -63,7 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeFlags = [ "-DSYSTEM_DATA_DIR=${placeholder "out"}/share" ];
-
   env.NIX_CFLAGS_COMPILE = "-I${lib.getDev libxml2}/include/libxml2";
 
   installPhase = ''
@@ -81,8 +80,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Real-time game with Worms-like shooting";
     homepage = "http://openlierox.net";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "openlierox";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.linux;
+    mainProgram = "openlierox";
   };
 })

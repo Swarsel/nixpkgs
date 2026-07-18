@@ -2,17 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  withJson ? true,
-  withHttps ? true,
-  withWebsockets ? true,
-  withCurl ? true,
-  withLogger ? true,
-  withUwsc ? withWebsockets, # uwsc depends on websockets
-
   # nativeBuildInputs
   cmake,
-
   # Optional dependencies
   curl,
   gnutls,
@@ -21,6 +12,12 @@
   orcania,
   yder,
   zlib,
+  withCurl ? true,
+  withHttps ? true,
+  withJson ? true,
+  withLogger ? true,
+  withUwsc ? withWebsockets, # uwsc depends on websockets
+  withWebsockets ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

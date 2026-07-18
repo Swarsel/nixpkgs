@@ -2,107 +2,88 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  python3Packages,
-  zlib,
-  pkg-config,
-  glib,
-  buildPackages,
-  pixman,
-  vde2,
-  alsa-lib,
-  flex,
-  bison,
-  lzo,
-  snappy,
-  libaio,
-  libtasn1,
-  gnutls,
-  curl,
-  dtc,
-  ninja,
-  meson,
-  perl,
-  makeWrapper,
-  removeReferencesTo,
-  attr,
-  libcap,
-  libcap_ng,
-  socat,
-  libslirp,
-  libcbor,
-  darwin,
-  apple-sdk_15,
-  guestAgentSupport ?
-    (with stdenv.hostPlatform; isLinux || isNetBSD || isOpenBSD || isSunOS || isWindows) && !minimal,
-  numaSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAarch32 && !minimal,
-  numactl,
-  seccompSupport ? stdenv.hostPlatform.isLinux && !minimal,
-  libseccomp,
-  alsaSupport ? lib.hasSuffix "linux" stdenv.hostPlatform.system && !nixosTestRunner && !minimal,
-  pulseSupport ? !stdenv.hostPlatform.isDarwin && !nixosTestRunner && !minimal,
-  libpulseaudio,
-  pipewireSupport ? !stdenv.hostPlatform.isDarwin && !nixosTestRunner && !minimal,
-  pipewire,
-  sdlSupport ? !stdenv.hostPlatform.isDarwin && !nixosTestRunner && !minimal,
   SDL2,
   SDL2_image,
-  jackSupport ? !stdenv.hostPlatform.isDarwin && !nixosTestRunner && !minimal,
-  libjack2,
-  gtkSupport ? !stdenv.hostPlatform.isDarwin && !xenSupport && !nixosTestRunner && !minimal,
-  gtk3,
+  alsa-lib,
+  apple-sdk_15,
+  attr,
+  bison,
+  buildPackages,
+  canokey-qemu,
+  capstone,
+  ceph,
+  curl,
+  darwin,
+  dtc,
+  fetchpatch,
+  flex,
+  fuse3,
   gettext,
-  vte,
-  wrapGAppsHook3,
-  vncSupport ? !nixosTestRunner && !minimal,
+  gitUpdater,
+  glib,
+  glusterfs,
+  gnutls,
+  gtk3,
+  libaio,
+  libcacard,
+  libcap,
+  libcap_ng,
+  libcbor,
+  libdrm,
+  libepoxy,
+  libgbm,
+  libiscsi,
+  libjack2,
   libjpeg,
   libpng,
-  smartcardSupport ? !nixosTestRunner && !minimal,
-  libcacard,
-  spiceSupport ? true && !nixosTestRunner && !minimal,
+  libpulseaudio,
+  libseccomp,
+  libslirp,
+  libtasn1,
+  libu2f-emu,
+  liburing,
+  libuuid,
+  # TODO: Clean up on `staging`.
+  llvmPackages,
+  lzo,
+  makeWrapper,
+  meson,
+  ncurses,
+  ninja,
+  numactl,
+  perl,
+  pipewire,
+  pixman,
+  pkg-config,
+  python3Packages,
+  qemu-utils, # for tests attribute
+  removeReferencesTo,
+  rutabaga_gfx,
+  samba,
+  snappy,
+  socat,
   spice,
   spice-protocol,
-  ncursesSupport ? !nixosTestRunner && !minimal,
-  ncurses,
-  usbredirSupport ? spiceSupport,
   usbredir,
-  xenSupport ? false,
-  xen,
-  cephSupport ? false,
-  ceph,
-  glusterfsSupport ? false,
-  glusterfs,
-  libuuid,
-  openGLSupport ? sdlSupport,
-  libgbm,
-  libepoxy,
-  libdrm,
-  rutabagaSupport ?
-    openGLSupport && !minimal && lib.meta.availableOn stdenv.hostPlatform rutabaga_gfx,
-  rutabaga_gfx,
-  virglSupport ? openGLSupport,
-  virglrenderer,
-  libiscsiSupport ? !minimal,
-  libiscsi,
-  smbdSupport ? false,
-  samba,
-  tpmSupport ? !minimal,
-  uringSupport ? stdenv.hostPlatform.isLinux && !userOnly,
-  liburing,
-  fuseSupport ? stdenv.hostPlatform.isLinux && !minimal,
-  fuse3,
-  canokeySupport ? false,
-  canokey-qemu,
-  u2fEmuSupport ? false,
-  libu2f-emu,
-  capstoneSupport ? !minimal,
-  capstone,
-  valgrindSupport ? false,
   valgrind-light,
-  pluginsSupport ? !stdenv.hostPlatform.isStatic,
+  vde2,
+  virglrenderer,
+  vte,
+  wrapGAppsHook3,
+  xen,
+  zlib,
+  alsaSupport ? lib.hasSuffix "linux" stdenv.hostPlatform.system && !nixosTestRunner && !minimal,
+  canokeySupport ? false,
+  capstoneSupport ? !minimal,
+  cephSupport ? false,
+  enableBlobs ? !minimal || toolsOnly,
   enableDocs ? !minimal || toolsOnly,
   enableTools ? !minimal || toolsOnly,
-  enableBlobs ? !minimal || toolsOnly,
+  fuseSupport ? stdenv.hostPlatform.isLinux && !minimal,
+  glusterfsSupport ? false,
+  gtkSupport ? !stdenv.hostPlatform.isDarwin && !xenSupport && !nixosTestRunner && !minimal,
+  guestAgentSupport ?
+    (with stdenv.hostPlatform; isLinux || isNetBSD || isOpenBSD || isSunOS || isWindows) && !minimal,
   hostCpuOnly ? false,
   hostCpuTargets ? (
     if toolsOnly then
@@ -117,15 +98,33 @@
     else
       null
   ),
-  nixosTestRunner ? false,
-  toolsOnly ? false,
-  userOnly ? false,
+  jackSupport ? !stdenv.hostPlatform.isDarwin && !nixosTestRunner && !minimal,
+  libiscsiSupport ? !minimal,
   minimal ? toolsOnly || userOnly,
-  gitUpdater,
-  qemu-utils, # for tests attribute
-
-  # TODO: Clean up on `staging`.
-  llvmPackages,
+  ncursesSupport ? !nixosTestRunner && !minimal,
+  nixosTestRunner ? false,
+  numaSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAarch32 && !minimal,
+  openGLSupport ? sdlSupport,
+  pipewireSupport ? !stdenv.hostPlatform.isDarwin && !nixosTestRunner && !minimal,
+  pluginsSupport ? !stdenv.hostPlatform.isStatic,
+  pulseSupport ? !stdenv.hostPlatform.isDarwin && !nixosTestRunner && !minimal,
+  rutabagaSupport ?
+    openGLSupport && !minimal && lib.meta.availableOn stdenv.hostPlatform rutabaga_gfx,
+  sdlSupport ? !stdenv.hostPlatform.isDarwin && !nixosTestRunner && !minimal,
+  seccompSupport ? stdenv.hostPlatform.isLinux && !minimal,
+  smartcardSupport ? !nixosTestRunner && !minimal,
+  smbdSupport ? false,
+  spiceSupport ? true && !nixosTestRunner && !minimal,
+  toolsOnly ? false,
+  tpmSupport ? !minimal,
+  u2fEmuSupport ? false,
+  uringSupport ? stdenv.hostPlatform.isLinux && !userOnly,
+  usbredirSupport ? spiceSupport,
+  userOnly ? false,
+  valgrindSupport ? false,
+  virglSupport ? openGLSupport,
+  vncSupport ? !nixosTestRunner && !minimal,
+  xenSupport ? false,
 }:
 
 assert lib.assertMsg (
@@ -144,6 +143,7 @@ stdenv.mkDerivation (finalAttrs: {
     + lib.optionalString nixosTestRunner "-for-vm-tests"
     + lib.optionalString toolsOnly "-utils"
     + lib.optionalString userOnly "-user";
+
   version = "11.0.1";
 
   src = fetchurl {
@@ -151,10 +151,32 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DSNfWCAnjZFKMVXsJ6+OQljWl+qJKJVXCAfWnAy4zWQ=";
   };
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
+  outputs = [ "out" ] ++ lib.optional enableDocs "doc" ++ lib.optional guestAgentSupport "ga";
+
+  patches = [
+    ./fix-qemu-ga.patch
+
+    # On macOS, QEMU uses `Rez(1)` and `SetFile(1)` to attach its icon
+    # to the binary. Unfortunately, those commands are proprietary,
+    # deprecated since Xcode 6, and operate on resource forks, which
+    # these days are stored in extended attributes, which aren’t
+    # supported in the Nix store. So we patch out the calls.
+    ./skip-macos-icon.patch
+
+    # Workaround for upstream issue with nested virtualisation: https://gitlab.com/qemu-project/qemu/-/issues/1008
+    (fetchpatch {
+      revert = true;
+      sha256 = "sha256-oC+bRjEHixv1QEFO9XAm4HHOwoiT+NkhknKGPydnZ5E=";
+      url = "https://gitlab.com/qemu-project/qemu/-/commit/3e4546d5bd38a1e98d4bd2de48631abf0398a3a2.diff";
+    })
   ]
-  ++ lib.optionals hexagonSupport [ pkg-config ];
+  ++ lib.optional nixosTestRunner ./force-uid0-on-9p.patch;
+
+  postPatch = ''
+    # Otherwise tries to ensure /var/run exists.
+    sed -i "/install_emptydir(get_option('localstatedir') \/ 'run')/d" \
+        qga/meson.build
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -261,54 +283,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals valgrindSupport [ valgrind-light ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_15 ];
 
-  dontUseMesonConfigure = true; # meson's configurePhase isn't compatible with qemu build
-  dontAddStaticConfigureFlags = true;
-
-  outputs = [ "out" ] ++ lib.optional enableDocs "doc" ++ lib.optional guestAgentSupport "ga";
-  separateDebugInfo = true;
-
-  patches = [
-    ./fix-qemu-ga.patch
-
-    # On macOS, QEMU uses `Rez(1)` and `SetFile(1)` to attach its icon
-    # to the binary. Unfortunately, those commands are proprietary,
-    # deprecated since Xcode 6, and operate on resource forks, which
-    # these days are stored in extended attributes, which aren’t
-    # supported in the Nix store. So we patch out the calls.
-    ./skip-macos-icon.patch
-
-    # Workaround for upstream issue with nested virtualisation: https://gitlab.com/qemu-project/qemu/-/issues/1008
-    (fetchpatch {
-      url = "https://gitlab.com/qemu-project/qemu/-/commit/3e4546d5bd38a1e98d4bd2de48631abf0398a3a2.diff";
-      sha256 = "sha256-oC+bRjEHixv1QEFO9XAm4HHOwoiT+NkhknKGPydnZ5E=";
-      revert = true;
-    })
-  ]
-  ++ lib.optional nixosTestRunner ./force-uid0-on-9p.patch;
-
-  postPatch = ''
-    # Otherwise tries to ensure /var/run exists.
-    sed -i "/install_emptydir(get_option('localstatedir') \/ 'run')/d" \
-        qga/meson.build
-  '';
-
-  preConfigure = ''
-    unset CPP # intereferes with dependency calculation
-    # this script isn't marked as executable b/c it's indirectly used by meson. Needed to patch its shebang
-    chmod +x ./scripts/shaderinclude.py
-    patchShebangs .
-    # avoid conflicts with libc++ include for <version>
-    mv VERSION QEMU_VERSION
-    substituteInPlace configure \
-      --replace-fail '$source_path/VERSION' '$source_path/QEMU_VERSION'
-    substituteInPlace meson.build \
-      --replace-fail "'VERSION'" "'QEMU_VERSION'"
-    substituteInPlace docs/conf.py \
-      --replace-fail "'../VERSION'" "'../QEMU_VERSION'"
-    substituteInPlace python/qemu/machine/machine.py \
-      --replace-fail /var/tmp "$TMPDIR"
-  '';
-
   configureFlags = [
     "--disable-strip" # We'll strip ourselves after separating debug info.
     "--enable-gnutls" # auto detection only works when building with --enable-system
@@ -349,46 +323,37 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional userOnly "--disable-system"
   ++ lib.optional stdenv.hostPlatform.isStatic "--static";
 
-  dontWrapGApps = true;
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    NIX_CFLAGS_LINK = "-fuse-ld=lld";
+  };
 
-  # QEMU attaches entitlements with codesign and strip removes those,
-  # voiding the entitlements and making it non-operational.
-  # The alternative is to re-sign with entitlements after stripping:
-  # * https://github.com/qemu/qemu/blob/v6.1.0/scripts/entitlement.sh#L25
-  dontStrip = stdenv.hostPlatform.isDarwin;
-
-  postFixup = ''
-    # the .desktop is both invalid and pointless
-    rm -f $out/share/applications/qemu.desktop
-  ''
-  + lib.optionalString guestAgentSupport ''
-    # move qemu-ga (guest agent) to separate output
-    mkdir -p $ga/bin
-    mv $out/bin/qemu-ga $ga/bin/
-    ln -s $ga/bin/qemu-ga $out/bin
-    remove-references-to -t $out $ga/bin/qemu-ga
-  ''
-  + lib.optionalString gtkSupport ''
-    # wrap GTK Binaries
-    for f in $out/bin/qemu-system-*; do
-      wrapGApp $f
-    done
-  ''
-  + lib.optionalString stdenv.hostPlatform.isStatic ''
-    # HACK: Otherwise the result will have the entire buildInputs closure
-    # injected by the pkgsStatic stdenv
-    # <https://github.com/NixOS/nixpkgs/issues/83667>
-    rm -f $out/nix-support/propagated-build-inputs
+  preConfigure = ''
+    unset CPP # intereferes with dependency calculation
+    # this script isn't marked as executable b/c it's indirectly used by meson. Needed to patch its shebang
+    chmod +x ./scripts/shaderinclude.py
+    patchShebangs .
+    # avoid conflicts with libc++ include for <version>
+    mv VERSION QEMU_VERSION
+    substituteInPlace configure \
+      --replace-fail '$source_path/VERSION' '$source_path/QEMU_VERSION'
+    substituteInPlace meson.build \
+      --replace-fail "'VERSION'" "'QEMU_VERSION'"
+    substituteInPlace docs/conf.py \
+      --replace-fail "'../VERSION'" "'../QEMU_VERSION'"
+    substituteInPlace python/qemu/machine/machine.py \
+      --replace-fail /var/tmp "$TMPDIR"
   '';
-  preBuild = "cd build";
 
+  preBuild = "cd build";
   # tests can still timeout on slower systems
   doCheck = false;
+
   nativeCheckInputs = [
     python3Packages.pygdbmi
     python3Packages.qemu-qmp
     socat
   ];
+
   preCheck = ''
     # time limits are a little meagre for a build machine that's
     # potentially under load.
@@ -431,38 +396,75 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/bin/qemu-system-${stdenv.hostPlatform.qemuArch} $out/bin/qemu-kvm
   '';
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    NIX_CFLAGS_LINK = "-fuse-ld=lld";
-  };
+  postFixup = ''
+    # the .desktop is both invalid and pointless
+    rm -f $out/share/applications/qemu.desktop
+  ''
+  + lib.optionalString guestAgentSupport ''
+    # move qemu-ga (guest agent) to separate output
+    mkdir -p $ga/bin
+    mv $out/bin/qemu-ga $ga/bin/
+    ln -s $ga/bin/qemu-ga $out/bin
+    remove-references-to -t $out $ga/bin/qemu-ga
+  ''
+  + lib.optionalString gtkSupport ''
+    # wrap GTK Binaries
+    for f in $out/bin/qemu-system-*; do
+      wrapGApp $f
+    done
+  ''
+  + lib.optionalString stdenv.hostPlatform.isStatic ''
+    # HACK: Otherwise the result will have the entire buildInputs closure
+    # injected by the pkgsStatic stdenv
+    # <https://github.com/NixOS/nixpkgs/issues/83667>
+    rm -f $out/nix-support/propagated-build-inputs
+  '';
+
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ]
+  ++ lib.optionals hexagonSupport [ pkg-config ];
+
+  dontAddStaticConfigureFlags = true;
+  # QEMU attaches entitlements with codesign and strip removes those,
+  # voiding the entitlements and making it non-operational.
+  # The alternative is to re-sign with entitlements after stripping:
+  # * https://github.com/qemu/qemu/blob/v6.1.0/scripts/entitlement.sh#L25
+  dontStrip = stdenv.hostPlatform.isDarwin;
+  dontUseMesonConfigure = true; # meson's configurePhase isn't compatible with qemu build
+  dontWrapGApps = true;
+  # Builds in ~3h with 2 cores, and ~20m with a big-parallel builder.
+  requiredSystemFeatures = [ "big-parallel" ];
+  separateDebugInfo = true;
 
   passthru = {
     qemu-system-i386 = "bin/qemu-system-i386";
+
     tests = lib.optionalAttrs (!toolsOnly) {
       qemu-tests = finalAttrs.finalPackage.overrideAttrs (_: {
         doCheck = true;
       });
+
       qemu-utils-builds = qemu-utils;
     };
+
     updateScript = gitUpdater {
+      ignoredVersions = "(alpha|beta|rc).*";
+      rev-prefix = "v";
       # No nicer place to find latest release.
       url = "https://gitlab.com/qemu-project/qemu.git";
-      rev-prefix = "v";
-      ignoredVersions = "(alpha|beta|rc).*";
     };
   };
-
-  # Builds in ~3h with 2 cores, and ~20m with a big-parallel builder.
-  requiredSystemFeatures = [ "big-parallel" ];
 
   meta =
 
     {
-      homepage = "https://www.qemu.org/";
       description = "Generic and open source machine emulator and virtualizer";
+      homepage = "https://www.qemu.org/";
       license = lib.licenses.gpl2Plus;
       maintainers = with lib.maintainers; [ qyliss ];
-      teams = lib.optionals xenSupport xen.meta.teams;
       platforms = with lib.systems.inspect; patternLogicalAnd patterns.is64bit patterns.isUnix;
+      teams = lib.optionals xenSupport xen.meta.teams;
     }
     # toolsOnly: Does not have qemu-kvm and there's no main support tool
     # userOnly: There's one qemu-<arch> for every architecture
@@ -471,6 +473,8 @@ stdenv.mkDerivation (finalAttrs: {
     }
     # userOnly: https://qemu.readthedocs.io/en/master/user/main.html#supported-operating-systems
     // lib.optionalAttrs userOnly {
+      description = "QEMU User space emulator - launch executables compiled for one CPU on another CPU";
+
       platforms =
         with lib.systems.inspect;
         patternLogicalAnd patterns.is64bit [
@@ -479,6 +483,5 @@ stdenv.mkDerivation (finalAttrs: {
           patterns.isOpenBSD
           patterns.isNetBSD
         ];
-      description = "QEMU User space emulator - launch executables compiled for one CPU on another CPU";
     };
 })

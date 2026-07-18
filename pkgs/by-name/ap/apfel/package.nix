@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     swig
   ];
+
   buildInputs = [
     gfortran
     lhapdf
@@ -42,13 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-DAPFEL_Python_SITEARCH=autoprefix"
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-DAPFEL_VERSION=${finalAttrs.version}";
   doCheck = true;
+
   nativeCheckInputs = [
     lhapdf.pdf_sets.NNPDF23_nlo_as_0118
     lhapdf.pdf_sets.NNPDF31_nnlo_as_0118
   ];
-
-  env.NIX_CFLAGS_COMPILE = "-DAPFEL_VERSION=${finalAttrs.version}";
 
   meta = {
     description = "PDF Evolution Library";

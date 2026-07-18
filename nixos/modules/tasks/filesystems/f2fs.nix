@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -13,8 +13,6 @@ in
 {
   config = mkIf (config.boot.supportedFilesystems.f2fs or false) {
 
-    system.fsPackages = [ pkgs.f2fs-tools ];
-
     boot.initrd.availableKernelModules = mkIf inInitrd [
       "f2fs"
       "crc32"
@@ -25,5 +23,6 @@ in
     '';
 
     boot.initrd.systemd.initrdBin = mkIf inInitrd [ pkgs.f2fs-tools ];
+    system.fsPackages = [ pkgs.f2fs-tools ];
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   bellows,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   frozendict,
   looptime,
@@ -14,22 +14,19 @@
   pytestCheckHook,
   pythonOlder,
   setuptools,
+  zha,
+  zha-quirks,
   zigpy,
   zigpy-deconz,
   zigpy-xbee,
   zigpy-zigate,
   zigpy-ziggurat,
   zigpy-znp,
-  zha,
-  zha-quirks,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "zha";
   version = "2.0.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "zigpy";
@@ -50,6 +47,18 @@ buildPythonPackage (finalAttrs: {
     pyprojectVersionPatchHook
   ];
 
+  doCheck = false; # infinite recursion with zhaquirks
+
+  nativeCheckInputs = [
+    freezegun
+    looptime
+    pytest-asyncio_0
+    pytest-timeout
+    pytest-xdist
+    pytestCheckHook
+    zha-quirks
+  ];
+
   build-system = [
     setuptools
   ];
@@ -66,19 +75,7 @@ buildPythonPackage (finalAttrs: {
     zigpy-znp
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    looptime
-    pytest-asyncio_0
-    pytest-timeout
-    pytest-xdist
-    pytestCheckHook
-    zha-quirks
-  ];
-
-  pythonImportsCheck = [ "zha" ];
-
-  doCheck = false; # infinite recursion with zhaquirks
+  disabled = pythonOlder "3.12";
 
   disabledTests = [
     # Tests are long-running and often keep hanging
@@ -107,6 +104,9 @@ buildPythonPackage (finalAttrs: {
     "test_background"
     "test_gateway_startup_failure" # Failed first attempt, passed second, flaky
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "zha" ];
 
   passthru.tests = {
     pytest = zha.overridePythonAttrs { doCheck = true; };

@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "mongoquery";
   version = "1.4.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "mongoquery" ];
 
   meta = {

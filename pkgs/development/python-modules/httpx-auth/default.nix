@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   pyjwt,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "httpx-auth";
   version = "0.23.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Colin-b";
@@ -39,14 +38,15 @@ buildPythonPackage rec {
     time-machine
   ];
 
+  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+
   pytestFlags = [
     # tests use a 6-byte HMAC key; pyjwt 2.11+ warns and upstream sets filterwarnings=error.
     "-Wignore::jwt.warnings.InsecureKeyLengthWarning"
   ];
 
   pythonImportsCheck = [ "httpx_auth" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Authentication classes to be used with httpx";

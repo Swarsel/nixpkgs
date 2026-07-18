@@ -1,13 +1,13 @@
 {
-  coreutils,
+  lib,
+  stdenv,
   fetchurl,
+  coreutils,
   gawk,
   gnused,
   jdk8,
-  lib,
   makeDesktopItem,
   makeWrapper,
-  stdenv,
   writeScript,
   writeTextFile,
   recommendedUdevRules ? true,
@@ -21,38 +21,9 @@ stdenv.mkDerivation rec {
     url = "https://www.roomeqwizard.com/installers/REW_linux_no_jre_${
       lib.replaceStrings [ "." ] [ "_" ] version
     }.sh";
+
     sha256 = "sha256-qaGkKVoiBJ2UWVKAMqbuqNFi6FGcblMxAbYwhf/71CY=";
   };
-
-  dontUnpack = true;
-
-  desktopItem = makeDesktopItem {
-    name = pname;
-    exec = pname;
-    icon = pname;
-    desktopName = "REW";
-    genericName = "Software for audio measurements";
-    categories = [ "AudioVideo" ];
-  };
-
-  responseFile = writeTextFile {
-    name = "response.varfile";
-    text = ''
-      createDesktopLinkAction$Boolean=false
-      executeLauncherAction$Boolean=false
-      mem$Integer=1
-      opengl$Boolean=false
-      sys.adminRights$Boolean=false
-      sys.installationDir=INSTALLDIR
-      sys.languageId=en
-      sys.programGroupDisabled$Boolean=true
-    '';
-  };
-
-  udevRules = ''
-    # MiniDSP UMIK-1 calibrated USB microphone
-    SUBSYSTEM=="usb", ATTR{idVendor}=="2752", ATTR{idProduct}=="0007", TAG+="uaccess"
-  '';
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -94,6 +65,37 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [ "AudioVideo" ];
+    desktopName = "REW";
+    exec = pname;
+    genericName = "Software for audio measurements";
+    icon = pname;
+    name = pname;
+  };
+
+  dontUnpack = true;
+
+  responseFile = writeTextFile {
+    name = "response.varfile";
+
+    text = ''
+      createDesktopLinkAction$Boolean=false
+      executeLauncherAction$Boolean=false
+      mem$Integer=1
+      opengl$Boolean=false
+      sys.adminRights$Boolean=false
+      sys.installationDir=INSTALLDIR
+      sys.languageId=en
+      sys.programGroupDisabled$Boolean=true
+    '';
+  };
+
+  udevRules = ''
+    # MiniDSP UMIK-1 calibrated USB microphone
+    SUBSYSTEM=="usb", ATTR{idVendor}=="2752", ATTR{idProduct}=="0007", TAG+="uaccess"
+  '';
+
   passthru.updateScript = writeScript "${pname}-update.sh" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p curl common-updater-scripts nixpkgs-fmt coreutils perl
@@ -114,17 +116,21 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.roomeqwizard.com/";
-    license = lib.licenses.unfree;
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [
-      zaninime
-    ];
     description = "Room Acoustics Software";
+
     longDescription = ''
       REW is free software for room acoustic measurement, loudspeaker
       measurement and audio device measurement.
     '';
+
+    homepage = "https://www.roomeqwizard.com/";
+    license = lib.licenses.unfree;
+
+    maintainers = with lib.maintainers; [
+      zaninime
+    ];
+
+    platforms = lib.platforms.all;
     mainProgram = "roomeqwizard";
   };
 }

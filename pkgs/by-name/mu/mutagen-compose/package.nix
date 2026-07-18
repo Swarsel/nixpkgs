@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,19 +16,16 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-+lF59qWdC5hnVehM0EDR1pyKXmodtWJSUVIfAIlAWeA=";
-
   doCheck = false;
-
   subPackages = [ "cmd/mutagen-compose" ];
-
   tags = [ "mutagencompose" ];
 
   meta = {
     description = "Compose with Mutagen integration";
     homepage = "https://mutagen.io/";
     changelog = "https://github.com/mutagen-io/mutagen-compose/releases/tag/v${finalAttrs.version}";
-    maintainers = [ lib.maintainers.matthewpi ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.matthewpi ];
     mainProgram = "mutagen-compose";
   };
 })

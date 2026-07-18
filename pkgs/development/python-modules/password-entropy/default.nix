@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "password-entropy";
   version = "1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alistratov";
@@ -18,13 +17,15 @@ buildPythonPackage rec {
     hash = "sha256-w721Y/zRMH3fsU0XtaGSDoj1GKqOW/IOGUfimoq4r2E=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     flit-core
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "data_password_entropy"

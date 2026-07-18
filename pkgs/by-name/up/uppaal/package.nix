@@ -1,38 +1,24 @@
 {
   lib,
-  stdenvNoCC,
+  copyDesktopItems,
   fetchzip,
-  makeWrapper,
+  gdk-pixbuf,
   jdk17,
   makeDesktopItem,
-  copyDesktopItems,
-  wrapGAppsHook3,
+  makeWrapper,
   shared-mime-info,
-  gdk-pixbuf,
+  stdenvNoCC,
+  wrapGAppsHook3,
 }:
 
 stdenvNoCC.mkDerivation rec {
   pname = "uppaal";
   version = "5.0";
-  subversion = "0";
-  platform = "linux64";
 
   src = fetchzip {
     url = "https://download.uppaal.org/uppaal-${version}/uppaal-${version}.${subversion}/uppaal-${version}.${subversion}-${platform}.zip";
     hash = "sha256-o71mP2/sDNRpmA1Qx59cvx6t4pk5pP0lrn1CogN3PuM=";
   };
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "uppaal";
-      exec = "uppaal %U";
-      icon = "uppaal";
-      comment = "real-time modelling and verification tool";
-      desktopName = "Uppaal";
-      genericName = "Uppaal";
-      categories = [ "Development" ];
-    })
-  ];
 
   nativeBuildInputs = [
     makeWrapper
@@ -45,8 +31,6 @@ stdenvNoCC.mkDerivation rec {
     gdk-pixbuf
     shared-mime-info
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -70,13 +54,29 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      comment = "real-time modelling and verification tool";
+      desktopName = "Uppaal";
+      exec = "uppaal %U";
+      genericName = "Uppaal";
+      icon = "uppaal";
+      name = "uppaal";
+    })
+  ];
+
+  dontBuild = true;
+  platform = "linux64";
+  subversion = "0";
+
   meta = {
     description = "Integrated tool environment for modeling, validation and verification of real-time systems";
     homepage = "https://uppaal.org/";
     license = lib.licenses.unfreeRedistributable;
-    platforms = with lib.platforms; linux ++ darwin ++ windows;
-    broken = !(stdenvNoCC.hostPlatform.isLinux && stdenvNoCC.hostPlatform.isx86_64);
     maintainers = with lib.maintainers; [ mortenmunk ];
+    platforms = with lib.platforms; linux ++ darwin ++ windows;
     mainProgram = "uppaal";
+    broken = !(stdenvNoCC.hostPlatform.isLinux && stdenvNoCC.hostPlatform.isx86_64);
   };
 }

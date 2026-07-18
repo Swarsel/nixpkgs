@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  SDL2,
+  catch2_3,
   cmake,
   libGL,
-  SDL2,
   libGLU,
-  catch2_3,
 }:
 
 stdenv.mkDerivation {
@@ -29,10 +29,7 @@ stdenv.mkDerivation {
       --replace 'include_directories(''${SDL2_LIBRARY}/Headers)' 'include_directories(${lib.getInclude SDL2}/include/SDL2)'
   '';
 
-  doCheck = true;
-
   nativeBuildInputs = [ cmake ];
-  checkInputs = [ catch2_3 ];
 
   buildInputs = [
     libGL
@@ -40,12 +37,15 @@ stdenv.mkDerivation {
     libGLU
   ];
 
+  doCheck = true;
+  checkInputs = [ catch2_3 ];
+
   meta = {
-    homepage = "https://github.com/recastnavigation/recastnavigation";
     description = "Navigation-mesh Toolset for Games";
-    mainProgram = "RecastDemo";
+    homepage = "https://github.com/recastnavigation/recastnavigation";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ marius851000 ];
     platforms = lib.platforms.all;
+    mainProgram = "RecastDemo";
   };
 }

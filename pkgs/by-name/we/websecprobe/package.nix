@@ -1,19 +1,22 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "websecprobe";
   version = "0.0.12";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "WebSecProbe";
     inherit (finalAttrs) version;
     hash = "sha256-RX4tc6JaUVaNx8nidn8eMcbsmbcSY+VZbup6c6P7oOs=";
+    pname = "WebSecProbe";
   };
+
+  postInstall = ''
+    mv $out/bin/WebSecProbe $out/bin/$pname
+  '';
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -22,10 +25,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tabulate
   ];
 
-  postInstall = ''
-    mv $out/bin/WebSecProbe $out/bin/$pname
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "WebSecProbe" ];
 
   meta = {
@@ -34,7 +34,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/spyboy-productions/WebSecProbe/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "websecprobe";
     platforms = lib.platforms.linux;
+    mainProgram = "websecprobe";
   };
 })

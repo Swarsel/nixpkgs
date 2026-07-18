@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dask,
   fastparquet,
-  fetchFromGitHub,
   pandas,
   pyarrow,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "intake-parquet";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "intake";
@@ -27,8 +26,7 @@ buildPythonPackage rec {
     rm versioneer.py
   '';
 
-  # Break circular dependency
-  pythonRemoveDeps = [ "intake" ];
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -42,10 +40,11 @@ buildPythonPackage rec {
     pyarrow
   ];
 
-  doCheck = false;
+  pyproject = true;
+  # Break circular dependency
+  pythonRemoveDeps = [ "intake" ];
 
   #pythonImportsCheck = [ "intake_parquet" ];
-
   meta = {
     description = "Parquet plugin for Intake";
     homepage = "https://github.com/intake/intake-parquet";

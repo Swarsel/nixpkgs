@@ -1,28 +1,24 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cython,
+  fetchPypi,
   jinja2,
   numpy,
   pyparsing,
-  setuptools,
-  sympy,
   pytest,
-  pythonOlder,
   pytest-xdist,
-  setuptools-scm,
   python,
+  pythonOlder,
   scipy,
+  setuptools,
+  setuptools-scm,
+  sympy,
 }:
 
 buildPythonPackage rec {
   pname = "brian2";
   version = "2.10.1";
-  pyproject = true;
-
-  # https://github.com/python/cpython/issues/117692
-  disabled = pythonOlder "3.12";
 
   src = fetchPypi {
     inherit pname version;
@@ -41,6 +37,19 @@ buildPythonPackage rec {
       --replace-fail "distutils" "setuptools._distutils"
   '';
 
+  nativeCheckInputs = [
+    pytest
+    pytest-xdist
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+    # Cython cache lies in home directory
+    export HOME=$(mktemp -d)
+    cd $HOME && ${python.interpreter} -c "import brian2;assert brian2.test()"
+    runHook postCheck
+  '';
+
   build-system = [
     setuptools-scm
   ];
@@ -55,18 +64,9 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [
-    pytest
-    pytest-xdist
-  ];
-
-  checkPhase = ''
-    runHook preCheck
-    # Cython cache lies in home directory
-    export HOME=$(mktemp -d)
-    cd $HOME && ${python.interpreter} -c "import brian2;assert brian2.test()"
-    runHook postCheck
-  '';
+  # https://github.com/python/cpython/issues/117692
+  disabled = pythonOlder "3.12";
+  pyproject = true;
 
   meta = {
     description = "Clock-driven simulator for spiking neural networks";

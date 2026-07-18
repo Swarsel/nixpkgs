@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   makeWrapper,
   python3,
   runCommand,
-  stdenv,
   stress-ng,
 }:
 
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-t7PnBwpGh53+ZqTbnm8lYaNBtUgLev9kbvFlbfSCBrU=";
   };
 
-  nativeCheckInputs = [ python3 ];
-  # these tests cover use as a build-time-linked library
-  checkTarget = "test";
-  doCheck = true;
-
   buildPhase = ''
     runHook preBuild
 
@@ -31,6 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
+
+  doCheck = true;
+  nativeCheckInputs = [ python3 ];
 
   installPhase = ''
     runHook preInstall
@@ -45,14 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # these tests cover use as a build-time-linked library
+  checkTarget = "test";
   separateDebugInfo = true;
 
   passthru = {
-    updateScript = ./update.sh;
     ld-preload-tests = stdenv.mkDerivation {
-      name = "${finalAttrs.pname}-ld-preload-tests";
       inherit (finalAttrs) src;
-
       nativeBuildInputs = [ makeWrapper ];
 
       # reuse the projects tests to cover use with LD_PRELOAD. we have
@@ -76,12 +73,16 @@ stdenv.mkDerivation (finalAttrs: {
         makeWrapper ${python3.interpreter} $out/bin/run-tests \
           --add-flags "-I -m unittest discover --start-directory $out/test"
       '';
+
+      name = "${finalAttrs.pname}-ld-preload-tests";
     };
+
     tests = {
       ld-preload = runCommand "ld-preload-test-run" { } ''
         ${finalAttrs.finalPackage}/bin/preload-hardened-malloc ${finalAttrs.passthru.ld-preload-tests}/bin/run-tests
         touch $out
       '';
+
       # to compensate for the lack of tests of correct normal malloc operation
       stress = runCommand "stress-test-run" { } ''
         ${finalAttrs.finalPackage}/bin/preload-hardened-malloc ${stress-ng}/bin/stress-ng \
@@ -92,22 +93,28 @@ stdenv.mkDerivation (finalAttrs: {
         touch $out
       '';
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://github.com/GrapheneOS/hardened_malloc";
     description = "Hardened allocator designed for modern systems";
-    mainProgram = "preload-hardened-malloc";
+
     longDescription = ''
       This is a security-focused general purpose memory allocator providing the malloc API
       along with various extensions. It provides substantial hardening against heap
       corruption vulnerabilities yet aims to provide decent overall performance.
     '';
+
+    homepage = "https://github.com/GrapheneOS/hardened_malloc";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ris ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "preload-hardened-malloc";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -18,6 +18,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -27,22 +28,16 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  vendorHash = "sha256-gHlrpseovxAv+YdHipUwuIhUDoK05oizMfUpQTHqi6M=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
-    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
-  ];
+  vendorHash = "sha256-gHlrpseovxAv+YdHipUwuIhUDoK05oizMfUpQTHqi6M=";
 
   # ldflags based on metadata from git and source
   preBuild = ''
     ldflags+=" -X sigs.k8s.io/release-utils/version.gitCommit=$(cat COMMIT)"
     ldflags+=" -X sigs.k8s.io/release-utils/version.buildDate=$(cat SOURCE_DATE_EPOCH)"
   '';
+
+  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd bom \
@@ -52,6 +47,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/bom --help
@@ -59,12 +55,17 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  doCheck = false;
+  ldflags = [
+    "-s"
+    "-w"
+    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
+    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
+  ];
 
   meta = {
+    description = "Utility to generate SPDX-compliant Bill of Materials manifests";
     homepage = "https://github.com/kubernetes-sigs/bom";
     changelog = "https://github.com/kubernetes-sigs/bom/releases/tag/v${finalAttrs.version}";
-    description = "Utility to generate SPDX-compliant Bill of Materials manifests";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ developer-guy ];
     mainProgram = "bom";

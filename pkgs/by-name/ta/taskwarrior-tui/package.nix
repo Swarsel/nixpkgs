@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,10 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-8Gpf8D7XocdcHuJKLqfT1QeqkIa7cQHEAoTkKIl/RrU=";
   };
 
-  cargoHash = "sha256-u0W1qVj0SRYVtnoWMqxeuBC9QvibogL4quiQLxzM8LM=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-u0W1qVj0SRYVtnoWMqxeuBC9QvibogL4quiQLxzM8LM=";
   # Because there's a test that requires terminal access
   doCheck = false;
 

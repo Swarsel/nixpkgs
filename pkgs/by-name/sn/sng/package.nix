@@ -1,10 +1,10 @@
 {
   lib,
-  asciidoctor,
+  stdenv,
   fetchurl,
+  asciidoctor,
   libpng,
   netpbm,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,14 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yb37gPWhfbGquTN7rtZKjr6lwN34KRXGiHuM+4fs5h4=";
   };
 
-  nativeBuildInputs = [ asciidoctor ];
-
-  buildInputs = [ libpng ];
-
   outputs = [
     "out"
     "man"
   ];
+
+  strictDeps = true;
+  nativeBuildInputs = [ asciidoctor ];
+  buildInputs = [ libpng ];
 
   makeFlags = [
     "prefix=$(out)"
@@ -31,15 +31,15 @@ stdenv.mkDerivation (finalAttrs: {
     "RGBTXT=${netpbm.out}/share/netpbm/misc/rgb.txt"
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://sng.sourceforge.net/";
     description = "Minilanguage designed to represent the entire contents of a PNG file in an editable form";
+    homepage = "https://sng.sourceforge.net/";
     license = lib.licenses.zlib;
-    mainProgram = "sng";
+
     maintainers = [
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "sng";
   };
 })

@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   appdirs,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   importlib-resources,
-  lib,
   pyserial,
   pytestCheckHook,
   pyyaml,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "heatmiserv3";
   version = "2.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "andylockran";
@@ -22,13 +21,8 @@ buildPythonPackage rec {
     hash = "sha256-mwzW52g3Uz7zxL9R5zePDyxMSramEiaiVm6VPlNyNts=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
-
-  pythonRemoveDeps = [
-    # https://github.com/andylockran/heatmiserV3/pull/113
-    "pytest"
-    "pytest-cov"
-  ];
 
   dependencies = [
     appdirs
@@ -37,9 +31,14 @@ buildPythonPackage rec {
     pyyaml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "heatmiserv3" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pythonRemoveDeps = [
+    # https://github.com/andylockran/heatmiserV3/pull/113
+    "pytest"
+    "pytest-cov"
+  ];
 
   meta = {
     description = "Library to interact with Heatmiser Themostats using V3 protocol";

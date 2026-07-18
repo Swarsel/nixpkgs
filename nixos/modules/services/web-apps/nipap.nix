@@ -16,11 +16,11 @@ let
   dataDir = "/var/lib/nipap";
 
   defaultServiceConfig = {
-    WorkingDirectory = dataDir;
-    User = cfg.user;
     Group = config.users.users."${cfg.user}".group;
     Restart = "on-failure";
     RestartSec = 30;
+    User = cfg.user;
+    WorkingDirectory = dataDir;
   };
 
   escapedHost = host: if lib.hasInfix ":" host then "[${host}]" else host;
@@ -29,89 +29,62 @@ in
   options.services.nipap = {
     enable = lib.mkEnableOption "global Neat IP Address Planner (NIPAP) configuration";
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      description = "User to use for running NIPAP services.";
-      default = defaultUser;
-    };
-
-    settings = lib.mkOption {
-      description = ''
-        Configuration options to set in /etc/nipap/nipap.conf.
-      '';
-
-      default = { };
-
-      type = lib.types.submodule {
-        freeformType = iniFmt.type;
-
-        options = {
-          nipapd = {
-            listen = lib.mkOption {
-              type = lib.types.str;
-              default = "::1";
-              description = "IP address to bind nipapd to.";
-            };
-            port = lib.mkOption {
-              type = lib.types.port;
-              default = 1337;
-              description = "Port to bind nipapd to.";
-            };
-
-            foreground = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = "Remain in foreground rather than forking to background.";
-            };
-            debug = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = "Enable debug logging.";
-            };
-
-            db_host = lib.mkOption {
-              type = lib.types.str;
-              default = "";
-              description = "PostgreSQL host to connect to. Empty means use UNIX socket.";
-            };
-            db_name = lib.mkOption {
-              type = lib.types.str;
-              default = cfg.user;
-              defaultText = defaultUser;
-              description = "Name of database to use on PostgreSQL server.";
-            };
-          };
-
-          auth = {
-            default_backend = lib.mkOption {
-              type = lib.types.str;
-              default = defaultAuthBackend;
-              description = "Name of auth backend to use by default.";
-            };
-            auth_cache_timeout = lib.mkOption {
-              type = lib.types.int;
-              default = 3600;
-              description = "Seconds to store cached auth entries for.";
-            };
-          };
+    authBackendSettings = lib.mkOption {
+      default = {
+        "${defaultAuthBackend}" = {
+          db_path = "${dataDir}/local_auth.db";
+          type = "SqliteAuth";
         };
       };
-    };
 
-    authBackendSettings = lib.mkOption {
       description = ''
         auth.backends options to set in /etc/nipap/nipap.conf.
       '';
 
-      default = {
-        "${defaultAuthBackend}" = {
-          type = "SqliteAuth";
-          db_path = "${dataDir}/local_auth.db";
-        };
-      };
-
       type = lib.types.submodule {
         freeformType = iniFmt.type;
+      };
+    };
+
+    nipap-www = {
+      enable = lib.mkEnableOption "nipap-www server";
+      package = lib.mkPackageOption pkgs "nipap-www" { };
+
+      host = lib.mkOption {
+        default = "::";
+        description = "Host to bind to.";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      port = lib.mkOption {
+        default = 21337;
+        description = "Port to bind to.";
+        type = lib.types.nullOr lib.types.port;
+      };
+
+      umask = lib.mkOption {
+        default = "0";
+        description = "umask for files written by Gunicorn, including UNIX socket.";
+        type = lib.types.str;
+      };
+
+      unixSocket = lib.mkOption {
+        default = null;
+        description = "Path to UNIX socket to bind to.";
+        example = "/run/nipap/nipap-www.sock";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      workers = lib.mkOption {
+        default = 4;
+        description = "Number of worker processes for Gunicorn to fork.";
+        type = lib.types.int;
+      };
+
+      xmlrpcURIFile = lib.mkOption {
+        default = null;
+        description = "Path to file containing XMLRPC URI for use by web UI - this is a secret, since it contains auth credentials. If null, it will be initialized assuming that the auth database is local.";
+        type = lib.types.nullOr lib.types.path;
       };
     };
 
@@ -120,93 +93,130 @@ in
       package = lib.mkPackageOption pkgs "nipap" { };
 
       database.createLocally = lib.mkOption {
-        type = lib.types.bool;
         default = true;
         description = "Create a nipap database automatically.";
+        type = lib.types.bool;
       };
     };
 
-    nipap-www = {
-      enable = lib.mkEnableOption "nipap-www server";
-      package = lib.mkPackageOption pkgs "nipap-www" { };
+    settings = lib.mkOption {
+      default = { };
 
-      xmlrpcURIFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = "Path to file containing XMLRPC URI for use by web UI - this is a secret, since it contains auth credentials. If null, it will be initialized assuming that the auth database is local.";
-      };
+      description = ''
+        Configuration options to set in /etc/nipap/nipap.conf.
+      '';
 
-      workers = lib.mkOption {
-        type = lib.types.int;
-        default = 4;
-        description = "Number of worker processes for Gunicorn to fork.";
-      };
-      umask = lib.mkOption {
-        type = lib.types.str;
-        default = "0";
-        description = "umask for files written by Gunicorn, including UNIX socket.";
-      };
+      type = lib.types.submodule {
+        options = {
+          auth = {
+            auth_cache_timeout = lib.mkOption {
+              default = 3600;
+              description = "Seconds to store cached auth entries for.";
+              type = lib.types.int;
+            };
 
-      unixSocket = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = "Path to UNIX socket to bind to.";
-        example = "/run/nipap/nipap-www.sock";
+            default_backend = lib.mkOption {
+              default = defaultAuthBackend;
+              description = "Name of auth backend to use by default.";
+              type = lib.types.str;
+            };
+          };
+
+          nipapd = {
+            db_host = lib.mkOption {
+              default = "";
+              description = "PostgreSQL host to connect to. Empty means use UNIX socket.";
+              type = lib.types.str;
+            };
+
+            db_name = lib.mkOption {
+              default = cfg.user;
+              defaultText = defaultUser;
+              description = "Name of database to use on PostgreSQL server.";
+              type = lib.types.str;
+            };
+
+            debug = lib.mkOption {
+              default = false;
+              description = "Enable debug logging.";
+              type = lib.types.bool;
+            };
+
+            foreground = lib.mkOption {
+              default = true;
+              description = "Remain in foreground rather than forking to background.";
+              type = lib.types.bool;
+            };
+
+            listen = lib.mkOption {
+              default = "::1";
+              description = "IP address to bind nipapd to.";
+              type = lib.types.str;
+            };
+
+            port = lib.mkOption {
+              default = 1337;
+              description = "Port to bind nipapd to.";
+              type = lib.types.port;
+            };
+          };
+        };
+
+        freeformType = iniFmt.type;
       };
-      host = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = "::";
-        description = "Host to bind to.";
-      };
-      port = lib.mkOption {
-        type = lib.types.nullOr lib.types.port;
-        default = 21337;
-        description = "Port to bind to.";
-      };
+    };
+
+    user = lib.mkOption {
+      default = defaultUser;
+      description = "User to use for running NIPAP services.";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       {
-        systemd.tmpfiles.rules = [
-          "d '${dataDir}' - ${cfg.user} ${config.users.users."${cfg.user}".group} - -"
-        ];
-
         environment.etc."nipap/nipap.conf" = {
           source = configFile;
         };
 
-        services.nipap.settings = lib.attrsets.mapAttrs' (name: value: {
-          name = "auth.backends.${name}";
-          inherit value;
-        }) cfg.authBackendSettings;
-
-        services.nipap.nipapd.enable = lib.mkDefault true;
-        services.nipap.nipap-www.enable = lib.mkDefault true;
-
         environment.systemPackages = [
           cfg.nipapd.package
         ];
+
+        services.nipap.nipap-www.enable = lib.mkDefault true;
+        services.nipap.nipapd.enable = lib.mkDefault true;
+
+        services.nipap.settings = lib.attrsets.mapAttrs' (name: value: {
+          inherit value;
+          name = "auth.backends.${name}";
+        }) cfg.authBackendSettings;
+
+        systemd.tmpfiles.rules = [
+          "d '${dataDir}' - ${cfg.user} ${config.users.users."${cfg.user}".group} - -"
+        ];
       }
       (lib.mkIf (cfg.user == defaultUser) {
+        users.groups."${defaultUser}" = { };
+
         users.users."${defaultUser}" = {
-          isSystemUser = true;
           group = defaultUser;
           home = dataDir;
+          isSystemUser = true;
         };
-        users.groups."${defaultUser}" = { };
       })
       (lib.mkIf (cfg.nipapd.enable && cfg.nipapd.database.createLocally) {
         services.postgresql = {
           enable = true;
-          extensions = ps: with ps; [ ip4r ];
+          ensureDatabases = [ cfg.settings.nipapd.db_name ];
+
           ensureUsers = [
             {
               name = cfg.user;
             }
           ];
-          ensureDatabases = [ cfg.settings.nipapd.db_name ];
+
+          extensions = ps: with ps; [ ip4r ];
         };
 
         systemd.services.postgresql.serviceConfig.ExecStartPost =
@@ -230,22 +240,24 @@ in
             pkg = cfg.nipapd.package;
           in
           {
-            description = "Neat IP Address Planner";
             after = [
               "network.target"
               "systemd-tmpfiles-setup.service"
             ]
             ++ lib.optional (cfg.settings.nipapd.db_host == "") "postgresql.target";
-            requires = lib.optional (cfg.settings.nipapd.db_host == "") "postgresql.target";
-            wantedBy = [ "multi-user.target" ];
+
+            description = "Neat IP Address Planner";
+
             preStart = lib.optionalString (cfg.settings.auth.default_backend == defaultAuthBackend) ''
               # Create/upgrade local auth database
               umask 077
               ${pkg}/bin/nipap-passwd create-database >/dev/null 2>&1
               ${pkg}/bin/nipap-passwd upgrade-database >/dev/null 2>&1
             '';
+
+            requires = lib.optional (cfg.settings.nipapd.db_host == "") "postgresql.target";
+
             serviceConfig = defaultServiceConfig // {
-              KillSignal = "SIGINT";
               ExecStart = ''
                 ${pkg}/bin/nipapd \
                   --auto-install-db \
@@ -253,7 +265,11 @@ in
                   --foreground \
                   --no-pid-file
               '';
+
+              KillSignal = "SIGINT";
             };
+
+            wantedBy = [ "multi-user.target" ];
           };
       })
       (lib.mkIf cfg.nipap-www.enable {
@@ -261,6 +277,7 @@ in
           {
             assertion =
               cfg.nipap-www.xmlrpcURIFile == null -> cfg.settings.auth.default_backend == defaultAuthBackend;
+
             message = "If no XMLRPC URI secret file is specified, then the default auth backend must be in use to automatically generate credentials.";
           }
         ];
@@ -273,17 +290,18 @@ in
             pkg = cfg.nipap-www.package;
           in
           {
-            description = "Neat IP Address Planner web server";
             after = [
               "network.target"
               "systemd-tmpfiles-setup.service"
             ]
             ++ lib.optional cfg.nipapd.enable "nipapd.service";
-            wantedBy = [ "multi-user.target" ];
+
+            description = "Neat IP Address Planner web server";
+
             environment = {
               PYTHONPATH = pkg.pythonPath;
             };
-            serviceConfig = defaultServiceConfig;
+
             script =
               let
                 bind =
@@ -324,6 +342,9 @@ in
                   --bind ${bind} --umask ${cfg.nipap-www.umask} \
                   "nipapwww:create_app()"
               '';
+
+            serviceConfig = defaultServiceConfig;
+            wantedBy = [ "multi-user.target" ];
           };
       })
     ]

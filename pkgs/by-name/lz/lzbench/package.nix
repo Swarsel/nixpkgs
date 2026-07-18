@@ -15,22 +15,24 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-/rRLD7lK8YGyx6dHxw5BPydf2YigZn/dF5NF2Q2Misg=";
   };
 
-  enableParallelBuilding = true;
-
   installPhase = ''
     mkdir -p $out/bin
     cp lzbench $out/bin
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "In-memory benchmark of open-source LZ77/LZSS/LZMA compressors";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Only
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [ videl ];
+    platforms = lib.platforms.all;
     mainProgram = "lzbench";
   };
 })

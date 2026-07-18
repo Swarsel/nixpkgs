@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   autoPatchelfHook,
+  cmake,
   gitUpdater,
   kwindowsystem,
   layer-shell-qt,
-  libxdmcp,
   libpthread-stubs,
   libqtxdg,
+  libxdmcp,
   lxqt-build-tools,
   perl,
   pkg-config,
@@ -55,11 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/screengrab";
     description = "Crossplatform tool for fast making screenshots";
-    mainProgram = "screengrab";
+    homepage = "https://github.com/lxqt/screengrab";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "screengrab";
     teams = [ lib.teams.lxqt ];
   };
 })

@@ -1,25 +1,25 @@
 {
   lib,
   stdenv,
-  # The unwrapped libreoffice derivation
-  unwrapped,
-  makeWrapper,
-  lndir,
-  runCommand,
+  # some scripts need these when used in conjunction with firejail
+  coreutils,
+  dbus,
+  dconf,
+  gdk-pixbuf,
+  gnugrep,
   # For Emulating wrapGAppsHook3
   gsettings-desktop-schemas,
   hicolor-icon-theme,
-  dconf,
   librsvg,
-  gdk-pixbuf,
-  # some scripts need these when used in conjunction with firejail
-  coreutils,
-  gnugrep,
+  lndir,
+  makeWrapper,
+  runCommand,
+  unixodbc,
+  # The unwrapped libreoffice derivation
+  unwrapped,
+  dbusVerify ? stdenv.hostPlatform.isLinux,
   # Configuration options for the wrapper
   extraMakeWrapperArgs ? [ ],
-  dbusVerify ? stdenv.hostPlatform.isLinux,
-  dbus,
-  unixodbc,
 }:
 
 let
@@ -127,16 +127,19 @@ in
 runCommand "${unwrapped.name}-wrapped"
   {
     inherit (unwrapped) meta pname version;
-    paths = [ unwrapped ];
+
     nativeBuildInputs = [
       makeWrapper
       lndir
     ];
+
+    paths = [ unwrapped ];
+
     passthru = {
       inherit unwrapped;
+      inherit (unwrapped) kdeIntegration;
       # For backwards compatibility:
       libreoffice = lib.warn "libreoffice: Use the unwrapped attributed, using libreoffice.libreoffice is deprecated." unwrapped;
-      inherit (unwrapped) kdeIntegration;
     };
   }
   (

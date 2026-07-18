@@ -3,18 +3,18 @@
   stdenv,
   fetchFromGitHub,
   inkscape,
+  libsForQt5,
   meson,
   ninja,
+  nvramtool,
+  pkg-config,
+  systemd,
+  yaml-cpp,
   # We will resolve pkexec from the path because it has a setuid wrapper on
   # NixOS meaning that we cannot just use the path from the nix store.
   # Using the path to the wrapper here would make the package incompatible
   # with non-NixOS systems.
   pkexecPath ? "pkexec",
-  pkg-config,
-  yaml-cpp,
-  nvramtool,
-  systemd,
-  libsForQt5,
 }:
 
 stdenv.mkDerivation {
@@ -27,19 +27,6 @@ stdenv.mkDerivation {
     rev = "944b575dc873c78627c352f9c1a1493981431a58";
     sha256 = "sha256-ReWQNzeoyTF66hVnevf6Kkrnt0/PqRHd3oyyPYtx+0M=";
   };
-
-  nativeBuildInputs = [
-    inkscape
-    meson
-    ninja
-    pkg-config
-    libsForQt5.wrapQtAppsHook
-  ];
-  buildInputs = [
-    yaml-cpp
-    libsForQt5.qtbase
-    libsForQt5.qtsvg
-  ];
 
   postPatch = ''
     substituteInPlace src/application/*.cpp \
@@ -54,6 +41,20 @@ stdenv.mkDerivation {
       --replace '/usr/sbin/reboot' '${lib.getBin systemd}/reboot'
   '';
 
+  nativeBuildInputs = [
+    inkscape
+    meson
+    ninja
+    pkg-config
+    libsForQt5.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    yaml-cpp
+    libsForQt5.qtbase
+    libsForQt5.qtsvg
+  ];
+
   postFixup = ''
     substituteInPlace $out/share/applications/coreboot-configurator.desktop \
       --replace '/usr/bin/coreboot-configurator' 'coreboot-configurator'
@@ -63,8 +64,8 @@ stdenv.mkDerivation {
     description = "Simple GUI to change settings in Coreboot's CBFS";
     homepage = "https://support.starlabs.systems/kb/guides/coreboot-configurator";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ danth ];
+    platforms = lib.platforms.linux;
     mainProgram = "coreboot-configurator";
   };
 }

@@ -8,10 +8,11 @@ let
   '';
 
   linkCheck = testers.lycheeLinkCheck rec {
-    site = sitePkg + "/dist";
     remap = {
       "https://exampl[e]\\.com" = site;
     };
+
+    site = sitePkg + "/dist";
   };
 
   failure = testers.testBuildFailure linkCheck;

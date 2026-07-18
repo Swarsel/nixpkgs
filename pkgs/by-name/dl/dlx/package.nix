@@ -21,8 +21,6 @@ stdenv.mkDerivation {
     )
   '';
 
-  hardeningDisable = [ "format" ];
-
   installPhase = ''
     mkdir -p $out/include/dlx $out/share/dlx/{examples,doc} $out/bin
     mv masm mon dasm $out/bin/
@@ -31,9 +29,11 @@ stdenv.mkDerivation {
     mv README.txt MANUAL.TXT $out/share/dlx/doc/
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "https://www.davidviner.com/dlx.html?name=DLX+Simulator";
     description = "DLX simulator written in C";
+    homepage = "https://www.davidviner.com/dlx.html?name=DLX+Simulator";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
   };

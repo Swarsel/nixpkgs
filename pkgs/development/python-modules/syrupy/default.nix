@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   hypothesis,
+  invoke,
   pydantic,
   pytest,
   pytest-xdist,
-  invoke,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "syrupy";
   version = "5.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "syrupy-project";
@@ -21,8 +20,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-tivRKADRYyyNmNOOd0w2qTseA3t7TMwkAkQ/Kr6wp6U=";
   };
-
-  build-system = [ hatchling ];
 
   buildInputs = [ pytest ];
 
@@ -41,12 +38,14 @@ buildPythonPackage (finalAttrs: {
     runHook postCheck
   '';
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "syrupy" ];
 
   meta = {
-    changelog = "https://github.com/syrupy-project/syrupy/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Pytest Snapshot Test Utility";
     homepage = "https://github.com/syrupy-project/syrupy";
+    changelog = "https://github.com/syrupy-project/syrupy/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

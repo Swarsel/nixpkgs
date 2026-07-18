@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  libjpeg,
-  libGLU,
-  libGL,
-  libglut,
-  zlib,
   cmake,
+  libGL,
+  libGLU,
+  libglut,
+  libjpeg,
+  libpng,
   libx11,
   libxml2,
-  libpng,
   libxxf86vm,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,19 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/freepv/freepv-${finalAttrs.version}.tar.gz";
     sha256 = "1w19abqjn64w47m35alg7bcdl1p97nf11zn64cp4p0dydihmhv56";
   };
-
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    libjpeg
-    libGLU
-    libGL
-    libglut
-    zlib
-    libx11
-    libxml2
-    libpng
-    libxxf86vm
-  ];
 
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -51,6 +38,20 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/libfreepv/pngReader.cpp \
       --replace png_set_gray_1_2_4_to_8 png_set_expand_gray_1_2_4_to_8
   '';
+
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    libjpeg
+    libGLU
+    libGL
+    libglut
+    zlib
+    libx11
+    libxml2
+    libpng
+    libxxf86vm
+  ];
 
   env.NIX_CFLAGS_COMPILE = "-fpermissive -Wno-narrowing";
 

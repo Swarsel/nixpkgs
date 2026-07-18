@@ -1,16 +1,14 @@
 {
-  buildDunePackage,
   async_kernel,
   async_unix,
+  buildDunePackage,
   caqti,
   core_kernel,
 }:
 
 buildDunePackage {
-  pname = "caqti-async";
   inherit (caqti) version src;
-
-  minimalOCamlVersion = "5.0";
+  pname = "caqti-async";
 
   propagatedBuildInputs = [
     async_kernel
@@ -18,6 +16,8 @@ buildDunePackage {
     caqti
     core_kernel
   ];
+
+  minimalOCamlVersion = "5.0";
 
   meta = caqti.meta // {
     description = "Async support for Caqti";

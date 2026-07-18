@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildNpmPackage,
   electron_42,
-  fetchFromGitHub,
   jq,
   makeDesktopItem,
 }:
@@ -25,13 +25,9 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-SNBNjMmOVkOpLGnzrXotUecQuEKii8bg22GPA1wiF3s=";
   };
 
-  npmDepsHash = "sha256-KgMf4qWM8HeaZ6UQNVqLjbFZvlFZ/Y2YydI/dtGaeEw=";
-
   nativeBuildInputs = [ jq ];
-
+  npmDepsHash = "sha256-KgMf4qWM8HeaZ6UQNVqLjbFZvlFZ/Y2YydI/dtGaeEw=";
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  makeCacheWritable = true;
 
   preBuild = ''
     if [[ $(jq --raw-output '.devDependencies.electron' < package.json | grep -E --only-matching '^[0-9]+') != ${lib.escapeShellArg (lib.versions.major electron.version)} ]]; then
@@ -39,10 +35,6 @@ buildNpmPackage (finalAttrs: {
       exit 1
     fi
   '';
-
-  # Do not run the default build script, it tries to do way too much that
-  # wouldn't work on NixOS and require patching.
-  dontNpmBuild = true;
 
   postBuild = ''
     npm exec electron-builder -- \
@@ -80,22 +72,27 @@ buildNpmPackage (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Netron";
-      exec = "netron %U";
       inherit icon;
+      categories = [ "Development" ];
       comment = description;
       desktopName = "Netron";
-      categories = [ "Development" ];
+      exec = "netron %U";
+      name = "Netron";
     })
   ];
 
+  # Do not run the default build script, it tries to do way too much that
+  # wouldn't work on NixOS and require patching.
+  dontNpmBuild = true;
+  makeCacheWritable = true;
+
   meta = {
-    changelog = "https://github.com/lutzroeder/netron/releases/tag/v${finalAttrs.version}";
     inherit description;
     homepage = "https://netron.app";
+    changelog = "https://github.com/lutzroeder/netron/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ flokli ];
-    mainProgram = "netron";
     platforms = electron.meta.platforms;
+    mainProgram = "netron";
   };
 })

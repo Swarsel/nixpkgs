@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication rec {
   pname = "check-openvpn";
   version = "0.0.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "liquidat";
@@ -18,12 +17,13 @@ python3Packages.buildPythonApplication rec {
 
   # no tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Nagios/icinga/sensu check plugin for OpenVPN";
     homepage = "https://github.com/liquidat/nagios-icinga-openvpn";
     license = lib.licenses.mit;
-    mainProgram = "check_openvpn";
     maintainers = with lib.maintainers; [ peterhoeg ];
+    mainProgram = "check_openvpn";
   };
 }

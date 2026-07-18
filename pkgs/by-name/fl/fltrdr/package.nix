@@ -15,16 +15,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "fltrdr";
   version = "0.3.1";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
-    repo = "fltrdr";
     owner = "octobanana";
+    repo = "fltrdr";
     tag = finalAttrs.version;
     hash = "sha256-UpunS1PvcJTd1jzWFhBzKZ8z0fj+xfeDaO2yj/eJ7O4=";
   };
 
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    sed -i '/stdc++fs/d' CMakeLists.txt
+  '';
+
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -32,12 +34,9 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    sed -i '/stdc++fs/d' CMakeLists.txt
-  '';
+  __structuredAttrs = true;
 
   meta = {
-    homepage = "https://octobanana.com/software/fltrdr";
     description = "TUI text reader for the terminal";
 
     longDescription = ''
@@ -50,9 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
       setting.
     '';
 
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    homepage = "https://octobanana.com/software/fltrdr";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.matthiasbeyer ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "fltrdr";
   };
 })

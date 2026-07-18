@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   six,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "flatten-json";
   version = "0.1.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "amirziai";
@@ -19,12 +18,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ViOLbfJtFWkDQ5cGNYerTk2BqVg5f5B3hZ96t0uvhpk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
   pythonImportsCheck = [ "flatten_json" ];
 
   meta = {

@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  pkg-config,
-  util-linux,
-  libGL,
-  freetype,
-  pugixml,
   SDL2,
   SDL2_image,
-  openal,
+  bc,
+  cmake,
+  enet,
+  freetype,
+  imagemagick,
+  inkscape,
+  libGL,
+  libGLU,
   libogg,
   libvorbis,
-  libGLU,
-  enet,
-  synfigstudio,
-  inkscape,
-  imagemagick,
+  openal,
+  pkg-config,
   pngquant,
+  pugixml,
+  synfigstudio,
+  util-linux,
   xz,
-  bc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,6 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free platform-based fighting game";
+
     longDescription = ''
       Hikou no mizu (ハイクの水) is a free platform-based fighting game,
       licensed under the GNU GPL v3 (program) and the LAL (graphics).
@@ -73,13 +74,16 @@ stdenv.mkDerivation (finalAttrs: {
       The characters use natural powers such as water or lightning,
       but they can also (mostly for now) fight the traditional way!
     '';
+
     homepage = "https://hikounomizu.org/";
-    downloadPage = "https://hikounomizu.org/download.html";
-    maintainers = with lib.maintainers; [ fgaz ];
+
     license = [
       lib.licenses.gpl3Plus
       lib.licenses.lal13
     ];
+
+    maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    downloadPage = "https://hikounomizu.org/download.html";
   };
 })

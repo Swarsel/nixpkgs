@@ -1,11 +1,9 @@
 { buildDunePackage, cohttp }:
 
 buildDunePackage {
-  pname = "cohttp-top";
   inherit (cohttp) version src;
-
+  pname = "cohttp-top";
   propagatedBuildInputs = [ cohttp ];
-
   doCheck = true;
 
   meta = cohttp.meta // {

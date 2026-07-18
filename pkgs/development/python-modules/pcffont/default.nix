@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  nix-update-script,
-  uv-build,
   bdffont,
+  buildPythonPackage,
+  nix-update-script,
+  pytestCheckHook,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "pcffont";
   version = "0.0.25";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "TakWolf";
@@ -20,24 +19,23 @@ buildPythonPackage rec {
     hash = "sha256-xxTOw7Fdey5YKDY1kq3EiAjW2jNHIU3wFDKvHdPgAQc=";
   };
 
-  build-system = [ uv-build ];
-
-  dependencies = [ bdffont ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ uv-build ];
+  dependencies = [ bdffont ];
+  pyproject = true;
   pythonImportsCheck = [ "pcffont" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/TakWolf/pcffont";
     description = "Library for manipulating Portable Compiled Format (PCF) Fonts";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/TakWolf/pcffont";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       TakWolf
       h7x4
     ];
+
+    platforms = lib.platforms.all;
   };
 }

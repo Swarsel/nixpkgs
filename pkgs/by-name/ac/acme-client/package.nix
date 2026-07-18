@@ -1,7 +1,7 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
+  gccStdenv,
   libbsd,
   libressl,
   pkg-config,
@@ -34,12 +34,14 @@ gccStdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Secure ACME/Let's Encrypt client";
     homepage = "https://git.wolfsden.cz/acme-client-portable";
-    platforms = lib.platforms.unix;
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       pmahoney
       kybe236
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "acme-client";
   };
 })

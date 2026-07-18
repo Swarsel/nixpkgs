@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   gjs,
   glib,
   gtk4,
@@ -59,7 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/diegopvlk/Dosage";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "io.github.diegopvlk.Dosage";
     platforms = lib.platforms.linux;
+    mainProgram = "io.github.diegopvlk.Dosage";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-WlXYGvzbdcGb7qWB3L00oJpMZROmKq6zDrtSj6OwtYA=";
-
   cargoBuildFlags = [ "--package uu_hostname" ];
 
   passthru.updateScript = nix-update-script {
@@ -28,8 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Rust reimplementation of the hostname project";
     homepage = "https://github.com/uutils/hostname";
     license = lib.licenses.mit;
-    mainProgram = "hostname";
     maintainers = with lib.maintainers; [ kyehn ];
     platforms = lib.platforms.unix;
+    mainProgram = "hostname";
   };
 })

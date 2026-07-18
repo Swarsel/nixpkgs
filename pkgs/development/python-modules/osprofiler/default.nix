@@ -16,13 +16,17 @@
 buildPythonPackage rec {
   pname = "osprofiler";
   version = "4.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-d6jaKyO7X5BIBUvVzMRdCshFdMqKiO8SC4+sbohk4kw=";
   };
 
+  # NOTE(vinetos): OSProfiler depends on jeager-client which use opentracing
+  # Opentracing and jeager-client are archived since 2022.
+  # As this package is made only to support old OpenStack clients and bindings,
+  # We do not really care
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,12 +40,7 @@ buildPythonPackage rec {
     webob
   ];
 
-  # NOTE(vinetos): OSProfiler depends on jeager-client which use opentracing
-  # Opentracing and jeager-client are archived since 2022.
-  # As this package is made only to support old OpenStack clients and bindings,
-  # We do not really care
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "osprofiler" ];
 
   meta = {

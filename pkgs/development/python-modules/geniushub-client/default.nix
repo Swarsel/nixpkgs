@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "geniushub-client";
   version = "0.7.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "manzanotti";
@@ -25,9 +24,8 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ aiohttp ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "geniushubclient" ];
 
   meta = {

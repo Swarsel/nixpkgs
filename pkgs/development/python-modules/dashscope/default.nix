@@ -1,25 +1,24 @@
 {
   # Basic
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # Build system
-  setuptools,
   # Dependencies
   aiohttp,
-  requests,
-  websocket-client,
-  cryptography,
+  buildPythonPackage,
   certifi,
+  cryptography,
   # Test
   pytestCheckHook,
+  requests,
+  # Build system
+  setuptools,
   tiktoken,
+  websocket-client,
 }:
 
 buildPythonPackage rec {
   pname = "dashscope";
   version = "1.25.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dashscope";
@@ -27,16 +26,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-VR7Auso+0al9qAE3IDFAPl5zIX0Yp9OfJchR+Q9DB1o=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    requests
-    websocket-client
-    cryptography
-    certifi
-  ];
 
   # Specify the version explicitly
   postPatch = ''
@@ -49,7 +38,15 @@ buildPythonPackage rec {
     tiktoken
   ];
 
-  pythonImportsCheck = [ "dashscope" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    requests
+    websocket-client
+    cryptography
+    certifi
+  ];
 
   disabledTests = [
     # Needs network access and/or API key
@@ -63,6 +60,9 @@ buildPythonPackage rec {
     "TestWebSocketAsyncRequest"
     "TestWebSocketSyncRequest"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dashscope" ];
 
   meta = {
     description = "Python SDK for dashscope";

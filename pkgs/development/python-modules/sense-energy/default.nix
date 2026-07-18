@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
-  ciso8601,
   async-timeout,
+  buildPythonPackage,
+  ciso8601,
   kasa-crypt,
   orjson,
   requests,
+  setuptools,
   websocket-client,
   websockets,
 }:
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "sense-energy";
   version = "0.14.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scottbonline";
@@ -30,6 +29,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "{{VERSION_PLACEHOLDER}}" "${finalAttrs.version}"
   '';
 
+  # no tests implemented
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -43,9 +44,7 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
-  # no tests implemented
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sense_energy" ];
 
   meta = {

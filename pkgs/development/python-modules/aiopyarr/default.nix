@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
   ciso8601,
-  fetchFromGitHub,
   orjson,
   pytest-asyncio,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiopyarr";
   version = "23.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tkdrob";
@@ -23,18 +22,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-CzNB6ymvDTktiOGdcdCvWLVQ3mKmbdMpc/vezSXCpG4=";
   };
 
-  build-system = [ setuptools ];
-
   postPatch = ''
     substituteInPlace setup.py \
       --replace-fail 'version="master"' 'version="${finalAttrs.version}"'
   '';
-
-  dependencies = [
-    aiohttp
-    ciso8601
-    orjson
-  ];
 
   nativeCheckInputs = [
     aresponses
@@ -42,6 +33,15 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    ciso8601
+    orjson
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "aiopyarr" ];
 
   meta = {

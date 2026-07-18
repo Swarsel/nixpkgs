@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  aiohttp,
   buildPythonPackage,
   poetry-core,
-  aiohttp,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "apykuma";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PerchunPak";
@@ -17,6 +16,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Dxlyi0syoq+sfgjMLWHhpeKhDFgpfQrp18DJeBjrAEg=";
   };
+
+  # has no tests
+  doCheck = false;
 
   build-system = [
     poetry-core
@@ -26,8 +28,7 @@ buildPythonPackage (finalAttrs: {
     aiohttp
   ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "apykuma"

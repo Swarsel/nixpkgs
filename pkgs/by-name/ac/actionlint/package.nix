@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   makeWrapper,
   python3Packages,
@@ -13,8 +13,6 @@ buildGoModule (finalAttrs: {
   pname = "actionlint";
   version = "1.7.12";
 
-  subPackages = [ "cmd/actionlint" ];
-
   src = fetchFromGitHub {
     owner = "rhysd";
     repo = "actionlint";
@@ -22,13 +20,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-mACSb3sYQtkijzk10mPi2ndy3zakonW1jlU7D/DV+SM=";
   };
 
-  vendorHash = "sha256-bPhjeC6xcemV4KZx+Kc/Wbdz6Be6WsiolFTrJ7TURA0=";
-
   nativeBuildInputs = [
     makeWrapper
     ronn
     installShellFiles
   ];
+
+  vendorHash = "sha256-bPhjeC6xcemV4KZx+Kc/Wbdz6Be6WsiolFTrJ7TURA0=";
 
   postInstall = ''
     ronn --roff man/actionlint.1.ronn
@@ -48,9 +46,11 @@ buildGoModule (finalAttrs: {
     "-X github.com/rhysd/actionlint.version=${finalAttrs.version}"
   ];
 
+  subPackages = [ "cmd/actionlint" ];
+
   meta = {
-    homepage = "https://rhysd.github.io/actionlint/";
     description = "Static checker for GitHub Actions workflow files";
+    homepage = "https://rhysd.github.io/actionlint/";
     changelog = "https://github.com/rhysd/actionlint/raw/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];

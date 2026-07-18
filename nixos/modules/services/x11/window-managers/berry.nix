@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.berry ];
+
     services.xserver.windowManager.session = singleton {
       name = "berry";
+
       start = ''
         ${pkgs.berry}/bin/berry &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.berry ];
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage {
   pname = "bdt";
@@ -20,7 +20,7 @@ rustPlatform.buildRustPackage {
     description = "CLI tool to query parquet, json and avro files";
     homepage = "https://github.com/datafusion-contrib/bdt";
     license = lib.licenses.asl20;
-    mainProgram = "bdt";
     maintainers = with lib.maintainers; [ matthiasq ];
+    mainProgram = "bdt";
   };
 }

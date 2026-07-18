@@ -1,8 +1,8 @@
 {
   lib,
   fetchCrate,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "starship-jj";
@@ -20,10 +20,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Starship plugin for jj";
     homepage = "https://gitlab.com/lanastara_foss/starship-jj";
     changelog = "https://gitlab.com/lanastara_foss/starship-jj/-/blob/${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nemith
     ];
-    license = lib.licenses.mit;
+
     mainProgram = "starship-jj";
   };
 })

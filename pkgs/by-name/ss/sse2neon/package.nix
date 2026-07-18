@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vb9k+KjiGodVngza0R18LjfPTlsqFbzqXZqefm6KHj0=";
   };
 
-  hardeningDisable = [ "fortify" ];
-
   doCheck = true;
 
   installPhase = ''
@@ -27,11 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  hardeningDisable = [ "fortify" ];
+
   meta = {
     description = "C/C++ header file that converts Intel SSE intrinsics to Arm/Aarch64 NEON intrinsics";
     homepage = "https://github.com/DLTcollab/sse2neon";
-    platforms = lib.platforms.unix;
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.gador ];
+    platforms = lib.platforms.unix;
   };
 })

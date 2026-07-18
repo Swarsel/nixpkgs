@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   rustPlatform,
   setuptools-rust,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "matrix-http-rendezvous-synapse";
   version = "0.1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matrix-org";
@@ -22,16 +21,6 @@ buildPythonPackage rec {
     cp ${./rendezvous-Cargo.lock} Cargo.lock
   '';
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit
-      pname
-      version
-      src
-      postPatch
-      ;
-    hash = "sha256-CDUyH08s96xUy0VhK+4ym0w9IgAq9P1UjUipVjlpl9c=";
-  };
-
   nativeBuildInputs = [
     setuptools-rust
   ]
@@ -42,6 +31,18 @@ buildPythonPackage rec {
 
   buildAndTestSubdir = "synapse";
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit
+      pname
+      version
+      src
+      postPatch
+      ;
+
+    hash = "sha256-CDUyH08s96xUy0VhK+4ym0w9IgAq9P1UjUipVjlpl9c=";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "matrix_http_rendezvous_synapse" ];
 
   meta = {

@@ -19,12 +19,12 @@ stdenv.mkDerivation {
 
   patches = [ ./tar-1.30.diff ]; # quicktun master seems not to need this
 
-  buildInputs = [ libsodium ];
-
   postPatch = ''
     substituteInPlace build.sh \
       --replace "cc=\"cc\"" "cc=\"$CC\""
   '';
+
+  buildInputs = [ libsodium ];
 
   buildPhase = ''
     runHook preBuild
@@ -42,11 +42,11 @@ stdenv.mkDerivation {
   passthru.tests.quicktun = nixosTests.quicktun;
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Very simple, yet secure VPN software";
     homepage = "http://wiki.ucis.nl/QuickTun";
+    license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ h7x4 ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.bsd2;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   kwindowsystem,
   liblxqt,
   libqtxdg,
@@ -12,7 +13,6 @@
   qttools,
   qtwayland,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -45,11 +45,11 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-openssh-askpass";
     description = "GUI to query passwords on behalf of SSH agents";
+    homepage = "https://github.com/lxqt/lxqt-openssh-askpass";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.lxqt ];
     mainProgram = "lxqt-openssh-askpass";
+    teams = [ lib.teams.lxqt ];
   };
 }

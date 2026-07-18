@@ -14,10 +14,8 @@ stdenv.mkDerivation {
     hash = "sha256-xHOEo1ZJG1GCcEKqaXLDpfRRQxpbSy0bzicKju9hG40=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   doCheck = true;
+
   checkPhase = ''
     find . -iregex '.*\.\(ps\|eps\|pdf\)' | while read f; do
       echo "Rendering $f"
@@ -35,4 +33,7 @@ stdenv.mkDerivation {
   installPhase = ''
     touch $out
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 }

@@ -20,15 +20,16 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Make installable
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/qm-dsp/raw/6eb385e2f970c4150f9c8eba73b558318475ed15/f/qm-dsp-install.patch";
       sha256 = "071g30p17ya0pknzqa950pb93vrgp2024ray8axn22c44gvy147c";
+      url = "https://src.fedoraproject.org/rpms/qm-dsp/raw/6eb385e2f970c4150f9c8eba73b558318475ed15/f/qm-dsp-install.patch";
     })
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/qm-dsp/raw/6eb385e2f970c4150f9c8eba73b558318475ed15/f/qm-dsp-flags.patch";
-      sha256 = "127n6j5bsp94kf2m1zqfvkf4iqk1h5f7w778bk7w02vi45nm4x6q";
       postFetch = ''
         sed -i 's~/Makefile~/build/linux/Makefile.linux32~g' "$out"
       '';
+
+      sha256 = "127n6j5bsp94kf2m1zqfvkf4iqk1h5f7w778bk7w02vi45nm4x6q";
+      url = "https://src.fedoraproject.org/rpms/qm-dsp/raw/6eb385e2f970c4150f9c8eba73b558318475ed15/f/qm-dsp-flags.patch";
     })
   ];
 
@@ -36,19 +37,19 @@ stdenv.mkDerivation (finalAttrs: {
     kissfft
   ];
 
-  makefile = "build/linux/Makefile.linux32";
-
   makeFlags = [
     "PREFIX=${placeholder "out"}"
     "LIBDIR=${placeholder "out"}/lib"
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${lib.getInclude kissfft}/include/kissfft";
 
   postInstall = ''
     mv $out/include/qm-dsp/* $out/include
     rmdir $out/include/qm-dsp
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-I${lib.getInclude kissfft}/include/kissfft";
+  makefile = "build/linux/Makefile.linux32";
 
   meta = {
     description = "C++ library of functions for DSP and Music Informatics purposes";

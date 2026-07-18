@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
-  ruby_3_4,
-  bundlerEnv,
+  stdenv,
   bundlerApp,
+  bundlerEnv,
   bundlerUpdateScript,
   installShellFiles,
+  ruby_3_4,
 }:
 
 let
@@ -13,12 +13,13 @@ let
 
   ttBundlerApp = (bundlerApp.override { ruby = ruby_3_4; }) {
     inherit pname;
-    gemdir = ./.;
+
     exes = [
       "t"
       "timetrap"
     ];
 
+    gemdir = ./.;
     passthru.updateScript = bundlerUpdateScript "timetrap";
   };
 
@@ -32,9 +33,6 @@ in
 stdenv.mkDerivation {
   inherit pname;
   inherit (ttBundlerApp) version;
-
-  dontUnpack = true;
-
   nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
@@ -52,18 +50,22 @@ stdenv.mkDerivation {
     done
   '';
 
+  dontUnpack = true;
+
+  passthru = {
+    updateScript = ttBundlerApp.passthru.updateScript;
+  };
+
   meta = {
     description = "Simple command line time tracker written in ruby";
     homepage = "https://github.com/samg/timetrap";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jerith666
       nicknovitski
     ];
-    platforms = lib.platforms.unix;
-  };
 
-  passthru = {
-    updateScript = ttBundlerApp.passthru.updateScript;
+    platforms = lib.platforms.unix;
   };
 }

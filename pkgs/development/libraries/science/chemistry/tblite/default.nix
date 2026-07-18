@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gfortran,
-  buildType ? "meson",
-  meson,
-  ninja,
-  cmake,
-  pkg-config,
   blas,
+  cmake,
+  dftd4,
+  gfortran,
   lapack,
   mctc-lib,
+  meson,
   mstore,
-  toml-f,
   multicharge,
-  dftd4,
-  simple-dftd3,
+  ninja,
+  pkg-config,
   python3,
+  simple-dftd3,
+  toml-f,
+  buildType ? "meson",
 }:
 
 assert !blas.isILP64 && !lapack.isILP64;
@@ -30,8 +30,6 @@ assert (
 stdenv.mkDerivation (finalAttrs: {
   pname = "tblite";
   version = "0.6.0";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "tblite";
@@ -39,6 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-z0g+bf6APqNLB9mDE49FelitQ9ptZXdFQuYeXIT0NIw=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./0001-fix-multicharge-dep-needed-for-static-compilation.patch
@@ -59,6 +62,8 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace config/meson.build \
         --replace-fail "lib_deps += cc.find_library('quadmath')" ""
     '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gfortran
@@ -83,10 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
     simple-dftd3
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  doCheck = buildType == "meson";
 
   nativeCheckInputs = [
     # Runs python test drivers (test/*/tester.py) during checkPhase, so it must be available on the
@@ -98,18 +100,20 @@ stdenv.mkDerivation (finalAttrs: {
     "-j1" # Tests hang when multiple are run in parallel
   ];
 
-  doCheck = buildType == "meson";
+  __structuredAttrs = true;
 
   meta = {
     description = "Light-weight tight-binding framework";
-    mainProgram = "tblite";
+    homepage = "https://github.com/tblite/tblite";
+    changelog = "https://github.com/tblite/tblite/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl3Plus
     ];
-    homepage = "https://github.com/tblite/tblite";
-    changelog = "https://github.com/tblite/tblite/releases/tag/${finalAttrs.src.tag}";
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
+    mainProgram = "tblite";
   };
 })

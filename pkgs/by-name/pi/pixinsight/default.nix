@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  requireFile,
   bubblewrap,
-  fakeroot,
-  unixtools,
   cudaSupport,
+  fakeroot,
+  requireFile,
+  unixtools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -13,18 +13,10 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.9.4-20260621";
 
   src = requireFile {
-    name = "PI-linux-x64-${finalAttrs.version}-c.tar.xz";
     url = "http://pixinsight.com";
     hash = "sha256-ITJq6q7rLBYe1+6jk2ZtpOSu5M5Z5bRzFPu06PPd7UI=";
+    name = "PI-linux-x64-${finalAttrs.version}-c.tar.xz";
   };
-
-  nativeBuildInputs = [
-    bubblewrap
-    fakeroot
-    unixtools.script
-  ];
-
-  sourceRoot = ".";
 
   # Patch installer binary with correct interpreter and rpath
   postPatch = ''
@@ -33,8 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
       --set-rpath ${lib.getLib stdenv.cc.cc}/lib
   '';
 
-  dontConfigure = true;
-  dontBuild = true;
+  nativeBuildInputs = [
+    bubblewrap
+    fakeroot
+    unixtools.script
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -74,16 +69,22 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "Exec=/opt/PixInsight/bin/PixInsight.sh" "Exec=pixinsight"
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
+
   meta = {
     description = "Scientific image processing program for astrophotography";
     homepage = "https://pixinsight.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       sheepforce
       kulczwoj
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     hydraPlatforms = [ ];
   };
 })

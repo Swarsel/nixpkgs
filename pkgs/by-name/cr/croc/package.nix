@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   callPackage,
   installShellFiles,
   nixosTests,
-  stdenv,
   versionCheckHook,
 }:
 
@@ -20,13 +20,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-+KG1PHUymeoAj92UAn/sitQF6xC1xwl+cdisxy2ZtPs=";
   };
 
-  vendorHash = "sha256-rwGunSDIgetBsk97LxQz0WHpzMDMMESHC1OhBWRuVjI=";
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-rwGunSDIgetBsk97LxQz0WHpzMDMMESHC1OhBWRuVjI=";
 
   postInstall = ''
     installShellCompletion --cmd croc \
@@ -39,20 +37,24 @@ buildGoModule (finalAttrs: {
     --zsh src/install/zsh_autocomplete
   '';
 
-  passthru = {
-    tests = {
-      local-relay = callPackage ./test-local-relay.nix { };
-      inherit (nixosTests) croc;
-    };
-  };
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  subPackages = [ "." ];
+
+  passthru = {
+    tests = {
+      inherit (nixosTests) croc;
+      local-relay = callPackage ./test-local-relay.nix { };
+    };
+  };
 
   meta = {
     description = "Easily and securely send things from one computer to another";
+
     longDescription = ''
       Croc is a command line tool written in Go that allows any two computers to
       simply and securely transfer files and folders.
@@ -65,14 +67,17 @@ buildGoModule (finalAttrs: {
       - Allows resuming transfers that are interrupted
       - Does not require a server or port-forwarding
     '';
+
     homepage = "https://github.com/schollz/croc";
     changelog = "https://github.com/schollz/croc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       equirosa
       ryan4yin
       kaynetik
     ];
+
     mainProgram = "croc";
   };
 })

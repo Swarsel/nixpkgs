@@ -1,31 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
+  buildPythonPackage,
   nix-update-script,
-  testers,
-  pysail,
-
-  protoc,
   protobuf,
+  protoc,
+  pysail,
+  rustPlatform,
+  testers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pysail";
   version = "0.6.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lakehq";
     repo = "sail";
     tag = "v${finalAttrs.version}";
     hash = "sha256-DpkoC7uShuReOBN5tjvcCSH1LH/e+fj3gp47idsEGEg=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname src version;
-    hash = "sha256-byjxrJN+Q+Rn3pq/FWXxzheZyUs+aoTvfileahqinuA=";
   };
 
   # The `generate-import-lib` PyO3 feature only matters when building Windows
@@ -46,20 +39,28 @@ buildPythonPackage (finalAttrs: {
     protobuf
   ];
 
+  # The test suite requires a running Spark Connect server and many
+  # heavyweight optional dependencies (pyspark-client, duckdb, ...).
+  doCheck = false;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname src version;
+    hash = "sha256-byjxrJN+Q+Rn3pq/FWXxzheZyUs+aoTvfileahqinuA=";
+  };
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "pysail"
     "pysail._native"
   ];
 
-  # The test suite requires a running Spark Connect server and many
-  # heavyweight optional dependencies (pyspark-client, duckdb, ...).
-  doCheck = false;
-
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = pysail;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -67,7 +68,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/lakehq/sail";
     changelog = "https://github.com/lakehq/sail/blob/${finalAttrs.src.tag}/docs/reference/changelog/index.md";
     license = lib.licenses.asl20;
-    mainProgram = "sail";
     maintainers = [ lib.maintainers.davidlghellin ];
+    mainProgram = "sail";
   };
 })

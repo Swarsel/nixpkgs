@@ -2,16 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  rustPlatform,
-  pkg-config,
-  openssl,
-
-  makeWrapper,
-
   addDriverRunpath,
   alsa-lib,
+  flite,
   glfw3-minecraft,
+  jdk17,
+  jdk21,
+  jdk25,
+  jdk8,
   libGL,
   libjack2,
   libpulseaudio,
@@ -20,22 +18,18 @@
   libxext,
   libxrandr,
   libxxf86vm,
+  makeWrapper,
   openal,
+  openssl,
+  pciutils,
   pipewire,
+  pkg-config,
+  rustPlatform,
   udev,
   vulkan-loader,
-
-  textToSpeechSupport ? stdenv.hostPlatform.isLinux,
-  flite,
-
-  pciutils,
   xrandr,
-
-  jdk25,
-  jdk21,
-  jdk17,
-  jdk8,
-
+  additionalLibs ? [ ],
+  additionalPrograms ? [ ],
   # can be overriden to reduce the closure size
   jvms ? [
     jdk25
@@ -43,9 +37,7 @@
     jdk17
     jdk8
   ],
-
-  additionalLibs ? [ ],
-  additionalPrograms ? [ ],
+  textToSpeechSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 let
@@ -96,22 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-P/ah7pwOdbgRDgpvhEDcNA1RiDzG2nYZCR13vzljLd8=";
   };
 
-  dontUnpack = true;
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-Ub9XVc6gcu6fEiOheew9Uh3LqdaSzVKITboDTK+MQUI=";
-  };
-
-  unwrapped = rustPlatform.buildRustPackage {
-    name = "portablemc-${finalAttrs.version}-unwrapped";
-    inherit (finalAttrs) src cargoDeps;
-
-    nativeBuildInputs = [ pkg-config ];
-
-    buildInputs = [ openssl ];
-  };
-
   strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
 
@@ -128,12 +104,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-Ub9XVc6gcu6fEiOheew9Uh3LqdaSzVKITboDTK+MQUI=";
+  };
+
+  dontUnpack = true;
+
+  unwrapped = rustPlatform.buildRustPackage {
+    inherit (finalAttrs) src cargoDeps;
+    nativeBuildInputs = [ pkg-config ];
+    buildInputs = [ openssl ];
+    name = "portablemc-${finalAttrs.version}-unwrapped";
+  };
+
   meta = {
-    homepage = "https://github.com/theorzr/portablemc";
     description = "Cross platform command line utility for launching Minecraft quickly and reliably with included support for Mojang versions and popular mod loaders";
+    homepage = "https://github.com/theorzr/portablemc";
     changelog = "https://github.com/theorzr/portablemc/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "portablemc";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "portablemc";
   };
 })

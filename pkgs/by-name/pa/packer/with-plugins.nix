@@ -1,9 +1,9 @@
 {
   lib,
+  linkFarm,
+  makeBinaryWrapper,
   packer,
   packerPlugins,
-  makeBinaryWrapper,
-  linkFarm,
   stdenvNoCC,
 }:
 lib.extendMkDerivation {
@@ -17,9 +17,9 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      selector ? (_: [ ]),
       name ? "packer-with-plugins",
       nativeBuildInputs ? [ makeBinaryWrapper ],
+      selector ? (_: [ ]),
       ...
     }:
     let
@@ -39,16 +39,15 @@ lib.extendMkDerivation {
     in
     {
       inherit name nativeBuildInputs;
-      __structuredAttrs = true;
       strictDeps = true;
-
-      meta.mainProgram = "packer";
-
-      dontUnpack = true;
+      __structuredAttrs = true;
 
       buildCommand = ''
         makeWrapper "${packer}/bin/packer" "$out/bin/packer" \
           --set PACKER_PLUGIN_PATH "${pluginFarm}"
       '';
+
+      dontUnpack = true;
+      meta.mainProgram = "packer";
     };
 }

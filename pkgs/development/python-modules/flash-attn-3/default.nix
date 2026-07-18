@@ -1,18 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  ninja,
-  setuptools,
-  torch,
-
+  buildPythonPackage,
   # dependencies
   einops,
-
+  # build-system
+  ninja,
   # passthru
   nix-update-script,
+  setuptools,
+  torch,
 }:
 
 let
@@ -21,8 +18,6 @@ in
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "flash-attn-3";
   version = "3.0.0-unstable-2026-06-10";
-  pyproject = true;
-  __structuredAttrs = true;
 
   # We fetch the vendored CUTLASS submodule rather than relying on `cudaPackages.cutlass`.
   # FA3 reaches deep into private cute/cutlass internals and is likely to be incompatible with
@@ -37,8 +32,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     hash = "sha256-6HxeLAahkWO5pghszfLS6i8Ju67sAxjWnDk0RYRuY88=";
     fetchSubmodules = true;
   };
-
-  sourceRoot = "${finalAttrs.src.name}/hopper";
 
   postPatch =
     # The submodule is fetched by fetchFromGitHub, no need to update it at build time
@@ -56,25 +49,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
           'if False:'
     '';
 
-  preConfigure = ''
-    export MAX_JOBS="$NIX_BUILD_CORES"
-    export NVCC_THREADS=2
-  '';
-
-  env = {
-    FLASH_ATTENTION_FORCE_BUILD = "TRUE";
-    FLASH_ATTENTION_SKIP_CUDA_BUILD = "FALSE";
-
-    # 8.0;9.0;12.0
-    TORCH_CUDA_ARCH_LIST = lib.concatStringsSep ";" cudaCapabilities;
-  };
-
-  build-system = [
-    ninja
-    setuptools
-    torch
-  ];
-
   nativeBuildInputs = [
     cudaPackages.cuda_nvcc
   ];
@@ -83,18 +57,41 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     cudaPackages.cuda_cudart # cuda_runtime.h cuda_runtime_api.h
   ];
 
+  env = {
+    FLASH_ATTENTION_FORCE_BUILD = "TRUE";
+    FLASH_ATTENTION_SKIP_CUDA_BUILD = "FALSE";
+    # 8.0;9.0;12.0
+    TORCH_CUDA_ARCH_LIST = lib.concatStringsSep ";" cudaCapabilities;
+  };
+
+  preConfigure = ''
+    export MAX_JOBS="$NIX_BUILD_CORES"
+    export NVCC_THREADS=2
+  '';
+
+  # Tests require access to a physical GPU
+  doCheck = false;
+  __structuredAttrs = true;
+
+  build-system = [
+    ninja
+    setuptools
+    torch
+  ];
+
   dependencies = [
     einops
     torch
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "flash_attn_config"
     "flash_attn_interface"
   ];
 
-  # Tests require access to a physical GPU
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/hopper";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

@@ -6,9 +6,9 @@
 
 buildWasmBindgenCli rec {
   src = fetchCrate {
+    hash = "sha256-H6Is3fiZVxZCfOMWK5dWMSrtn50VGv0sfdnsT+cTtyk=";
     pname = "wasm-bindgen-cli";
     version = "0.2.126";
-    hash = "sha256-H6Is3fiZVxZCfOMWK5dWMSrtn50VGv0sfdnsT+cTtyk=";
   };
 
   cargoDeps = rustPlatform.fetchCargoVendor {

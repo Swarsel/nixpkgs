@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   coreutils,
   gawk,
   git,
   gnugrep,
+  makeWrapper,
   ncurses,
   util-linux,
 }:
@@ -16,17 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.8.0";
 
   src = fetchFromGitHub {
-    repo = "git-quick-stats";
     owner = "git-quick-stats";
+    repo = "git-quick-stats";
     rev = finalAttrs.version;
     sha256 = "sha256-YVvlrlNRDDci7fH9LW4NxZcIkakVgvKe9FhJ2gCfoXg=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  installFlags = [
-    "PREFIX=${placeholder "out"}"
-  ];
 
   postInstall =
     let
@@ -43,12 +39,16 @@ stdenv.mkDerivation (finalAttrs: {
       wrapProgram $out/bin/git-quick-stats --suffix PATH : ${path}
     '';
 
+  installFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
+
   meta = {
-    homepage = "https://github.com/git-quick-stats/git-quick-stats";
     description = "Simple and efficient way to access various statistics in git repository";
-    platforms = lib.platforms.all;
-    maintainers = [ lib.maintainers.kmein ];
+    homepage = "https://github.com/git-quick-stats/git-quick-stats";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.kmein ];
+    platforms = lib.platforms.all;
     mainProgram = "git-quick-stats";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitMinimal,
   installShellFiles,
 }:
@@ -17,9 +17,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-iLYhVv6QMZStuNtxvvIylFSVb1zLfC58NU2QJChFfug=";
   };
 
-  vendorHash = "sha256-qztAkP+CHhryhfv1uKHEpDutofMwHGun7Vr30BHWAOE=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-qztAkP+CHhryhfv1uKHEpDutofMwHGun7Vr30BHWAOE=";
 
   nativeCheckInputs = [
     gitMinimal
@@ -40,6 +39,16 @@ buildGoModule (finalAttrs: {
       "-skip=^${lib.concatStringsSep "$|^" integrationTests}$"
     ];
 
+  postInstall = ''
+    installShellCompletion \
+      --cmd git-bug \
+      --bash misc/completion/bash/git-bug \
+      --zsh misc/completion/zsh/git-bug \
+      --fish misc/completion/fish/git-bug
+
+    installManPage doc/man/*
+  '';
+
   excludedPackages = [
     "doc"
     "misc"
@@ -51,24 +60,16 @@ buildGoModule (finalAttrs: {
     "-X github.com/git-bug/git-bug/commands.GitExactTag=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    installShellCompletion \
-      --cmd git-bug \
-      --bash misc/completion/bash/git-bug \
-      --zsh misc/completion/zsh/git-bug \
-      --fish misc/completion/fish/git-bug
-
-    installManPage doc/man/*
-  '';
-
   meta = {
     description = "Distributed bug tracker embedded in Git";
     homepage = "https://github.com/git-bug/git-bug";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       royneary
       DeeUnderscore
     ];
+
     mainProgram = "git-bug";
   };
 })

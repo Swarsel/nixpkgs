@@ -1,14 +1,12 @@
 {
-  stdenv,
-  libusb-compat-0_1,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  libusb-compat-0_1,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "micronucleus";
   version = "2.6";
-
-  sourceRoot = "${finalAttrs.src.name}/commandline";
 
   src = fetchFromGitHub {
     owner = "micronucleus";
@@ -18,6 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libusb-compat-0_1 ];
+
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "STATIC="
@@ -30,14 +29,18 @@ stdenv.mkDerivation (finalAttrs: {
     cp 49-micronucleus.rules $out/lib/udev
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/commandline";
+
   meta = {
     description = "Upload tool for micronucleus";
-    mainProgram = "micronucleus";
     homepage = "https://github.com/micronucleus/micronucleus";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       cab404
       kuflierl
     ];
+
+    mainProgram = "micronucleus";
   };
 })

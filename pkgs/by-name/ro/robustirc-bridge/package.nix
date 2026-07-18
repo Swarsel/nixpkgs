@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -26,9 +26,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Bridge to robustirc.net-IRC-Network";
-    mainProgram = "robustirc-bridge";
     homepage = "https://robustirc.net/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.hax404 ];
+    mainProgram = "robustirc-bridge";
   };
 })

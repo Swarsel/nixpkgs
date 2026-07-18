@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools-scm,
-  fonttools,
   fontpens,
+  fonttools,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "defcon";
   version = "0.12.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,13 +26,14 @@ buildPythonPackage rec {
   ++ fonttools.optional-dependencies.unicode;
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "defcon" ];
+  format = "setuptools";
 
   optional-dependencies = {
-    pens = [ fontpens ];
     lxml = [ fonttools ] ++ fonttools.optional-dependencies.lxml;
+    pens = [ fontpens ];
   };
+
+  pythonImportsCheck = [ "defcon" ];
 
   meta = {
     description = "Set of UFO based objects for use in font editing applications";

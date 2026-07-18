@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  wrapGAppsHook3,
   gtk2,
   hamlib_4,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     hamlib_4
     gtk2
@@ -37,17 +38,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple Ham Radio control (CAT) program based on Hamlib";
-    mainProgram = "grig";
+
     longDescription = ''
       Grig is a graphical user interface for the Ham Radio Control Libraries.
       It is intended to be simple and generic, presenting the user with the
       same interface regardless of which radio they use.
     '';
+
     homepage = "https://groundstation.sourceforge.net/grig/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       mafo
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "grig";
   };
 })

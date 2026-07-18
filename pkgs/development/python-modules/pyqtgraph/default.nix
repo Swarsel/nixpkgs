@@ -1,26 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   colorama,
-  scipy,
-  numpy,
-  pyopengl,
-
-  # buildInputs
-  pyqt6,
-
-  # tests
-  qt6,
-  pytestCheckHook,
   freefont_ttf,
   makeFontsConf,
+  numpy,
+  pyopengl,
+  # buildInputs
+  pyqt6,
+  pytestCheckHook,
+  # tests
+  qt6,
+  scipy,
+  # build-system
+  setuptools,
 }:
 
 let
@@ -29,8 +25,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "pyqtgraph";
   version = "0.14.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pyqtgraph";
@@ -39,16 +33,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-T5rhaBtcKP/sYjCmYNMYR0BGttkiLhWTfEbZNeAdJJ0=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    colorama
-    numpy
-    scipy
-    pyopengl
-  ];
   buildInputs = [
     # Not propagating it so that every consumer of this package will be able to
     # use any of the upstream supported Qt Library, See:
@@ -65,9 +49,17 @@ buildPythonPackage (finalAttrs: {
     export FONTCONFIG_FILE=${fontsConf}
   '';
 
-  enabledTestPaths = [
-    # we only want to run unittests
-    "tests"
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    colorama
+    numpy
+    scipy
+    pyopengl
   ];
 
   disabledTests = [
@@ -88,15 +80,24 @@ buildPythonPackage (finalAttrs: {
     "test_rescaleData"
   ];
 
+  enabledTestPaths = [
+    # we only want to run unittests
+    "tests"
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Scientific Graphics and GUI Library for Python";
     homepage = "https://www.pyqtgraph.org/";
     changelog = "https://github.com/pyqtgraph/pyqtgraph/blob/${finalAttrs.src.tag}/CHANGELOG";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       koral
       doronbehar
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  warcio,
-  surt,
-  py3amf,
+  buildPythonPackage,
   multipart,
+  py3amf,
   pytestCheckHook,
+  setuptools,
+  surt,
+  warcio,
 }:
 
 buildPythonPackage rec {
   pname = "cdxj-indexer";
   version = "1.4.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "webrecorder";
@@ -21,6 +20,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-E3b/IfjngyXhWvRYP9CkQGvBFeC8pAm4KxZA9MwOo4s=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -33,18 +36,16 @@ buildPythonPackage rec {
     multipart
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "cdxj_indexer"
+  ];
+
   pythonRemoveDeps = [
     # Transitive dependency that does not need to be pinned
     # Proposed fix in <https://github.com/webrecorder/cdxj-indexer/pull/25>
     "idna"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [
-    "cdxj_indexer"
   ];
 
   meta = {

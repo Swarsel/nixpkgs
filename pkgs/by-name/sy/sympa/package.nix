@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  perl,
   fetchFromGitHub,
   autoreconfHook,
   nixosTests,
+  perl,
 }:
 
 let
@@ -80,6 +80,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-XvLTO2Wau34zMoi+5d16JnWd/K96w2py9xC5oLlRfRM=";
   };
 
+  patches = [
+    ./make-docs.patch
+    ./gettext-0.25.patch
+  ];
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    perlEnv
+  ];
+
   configureFlags = [
     "--enable-fhs"
     "--without-initdir"
@@ -92,15 +104,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--sysconfdir=${dataDir}/etc"
     "--with-spooldir=${dataDir}/spool"
     "--with-expldir=${dataDir}/list_data"
-  ];
-  nativeBuildInputs = [
-    autoreconfHook
-    perlEnv
-  ];
-  strictDeps = true;
-  patches = [
-    ./make-docs.patch
-    ./gettext-0.25.patch
   ];
 
   preInstall = ''
@@ -124,9 +127,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open source mailing list manager";
     homepage = "https://www.sympa.org";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       sorki
     ];
+
     platforms = lib.platforms.all;
   };
 })

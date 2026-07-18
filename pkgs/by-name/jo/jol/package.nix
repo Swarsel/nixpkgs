@@ -1,9 +1,9 @@
 {
-  maven,
   lib,
   fetchFromGitHub,
   jre_minimal,
   makeWrapper,
+  maven,
   nix-update-script,
 }:
 maven.buildMavenPackage (finalAttrs: {
@@ -17,14 +17,12 @@ maven.buildMavenPackage (finalAttrs: {
     hash = "sha256-ZJFuY2QYB8eUS3y3VRMGGwklCS93HHVkNe/dhyIx0SY=";
   };
 
-  mvnHash = "sha256-VXYY7XWRuSjju9mgQ6cvHlJwOK2BklE9j/uj0yczjcI=";
-
-  nativeBuildInputs = [ makeWrapper ];
-
   postPatch = ''
     substituteInPlace jol-cli/src/main/java/org/openjdk/jol/Main.java \
       --replace-fail 'Usage: jol-cli.jar' 'Usage: jol-cli'
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -36,30 +34,37 @@ maven.buildMavenPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  mvnHash = "sha256-VXYY7XWRuSjju9mgQ6cvHlJwOK2BklE9j/uj0yczjcI=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (jre_minimal.meta) platforms;
     description = "Java Object Layout (JOL)";
+
     longDescription = ''
       JOL (Java Object Layout) is the tiny toolbox to analyze object layout in JVMs.
       These tools are using Unsafe, JVMTI, and Serviceability Agent (SA) heavily to decode the actual object layout, footprint, and references.
       This makes JOL much more accurate than other tools relying on heap dumps, specification assumptions, etc.
     '';
+
     homepage = "https://openjdk.org/projects/code-tools/jol/";
     changelog = "https://github.com/openjdk/jol/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2Plus
       classpathException20
     ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
-    mainProgram = "jol-cli";
+
     maintainers = with lib.maintainers; [
       debling
       progrm_jarvis
     ];
-    inherit (jre_minimal.meta) platforms;
+
+    mainProgram = "jol-cli";
   };
 })

@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "panacotta";
   version = "0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "u1f35c";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "panacotta" ];
 
   meta = {

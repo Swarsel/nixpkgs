@@ -1,7 +1,7 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
 }:
 let
   pname = "notion-app-enhanced";

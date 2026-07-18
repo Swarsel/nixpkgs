@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -9,6 +9,7 @@ let
 
   confFile = pkgs.writeTextFile {
     name = "pgmanage.conf";
+
     text = ''
       connection_file = ${pgmanageConnectionsFile}
 
@@ -37,6 +38,7 @@ let
 
   pgmanageConnectionsFile = pkgs.writeTextFile {
     name = "pgmanage-connections.conf";
+
     text = lib.concatStringsSep "\n" (
       lib.mapAttrsToList (name: conn: "${name}: ${conn}") cfg.connections
     );
@@ -49,16 +51,22 @@ in
 
   options.services.pgmanage = {
     enable = lib.mkEnableOption "PostgreSQL Administration for the web";
-
     package = lib.mkPackageOption pkgs "pgmanage" { };
 
+    allowCustomConnections = lib.mkOption {
+      default = false;
+
+      description = ''
+        This tells pgmanage whether or not to allow anyone to use a custom
+        connection from the login screen.
+      '';
+
+      type = lib.types.bool;
+    };
+
     connections = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
       default = { };
-      example = {
-        nuc-server = "hostaddr=192.168.0.100 port=5432 dbname=postgres";
-        mini-server = "hostaddr=127.0.0.1 port=5432 dbname=postgres sslmode=require";
-      };
+
       description = ''
         pgmanage requires at least one PostgreSQL server be defined.
 
@@ -70,37 +78,89 @@ in
         username or password, it will be removed by pgmanage before attempting to
         connect to a database.
       '';
-    };
 
-    allowCustomConnections = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        This tells pgmanage whether or not to allow anyone to use a custom
-        connection from the login screen.
-      '';
-    };
+      example = {
+        mini-server = "hostaddr=127.0.0.1 port=5432 dbname=postgres sslmode=require";
+        nuc-server = "hostaddr=192.168.0.100 port=5432 dbname=postgres";
+      };
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 8080;
-      description = ''
-        This tells pgmanage what port to listen on for browser requests.
-      '';
+      type = lib.types.attrsOf lib.types.str;
     };
 
     localOnly = lib.mkOption {
-      type = lib.types.bool;
       default = true;
+
       description = ''
         This tells pgmanage whether or not to set the listening socket to local
         addresses only.
       '';
+
+      type = lib.types.bool;
+    };
+
+    logLevel = lib.mkOption {
+      default = "error";
+
+      description = ''
+        Verbosity of logs
+      '';
+
+      type = lib.types.enum [
+        "error"
+        "warn"
+        "notice"
+        "info"
+      ];
+    };
+
+    loginGroup = lib.mkOption {
+      default = null;
+
+      description = ''
+        This tells pgmanage to only allow users in a certain PostgreSQL group to
+        login to pgmanage. Note that a connection will be made to PostgreSQL in
+        order to test if the user is a member of the login group.
+      '';
+
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    loginTimeout = lib.mkOption {
+      default = 3600;
+
+      description = ''
+        Number of seconds of inactivity before user is automatically logged
+        out.
+      '';
+
+      type = lib.types.int;
+    };
+
+    port = lib.mkOption {
+      default = 8080;
+
+      description = ''
+        This tells pgmanage what port to listen on for browser requests.
+      '';
+
+      type = lib.types.port;
+    };
+
+    sqlRoot = lib.mkOption {
+      default = "/var/lib/pgmanage";
+
+      description = ''
+        This tells pgmanage where to put the SQL file history. All tabs are saved
+        to this location so that if you get disconnected from pgmanage you
+        don't lose your work.
+      '';
+
+      type = lib.types.str;
     };
 
     superOnly = lib.mkOption {
-      type = lib.types.bool;
       default = true;
+
       description = ''
         This tells pgmanage whether or not to only allow super users to
         login. The recommended value is true and will restrict users who are not
@@ -108,53 +168,13 @@ in
         pgmanage. Note that a connection will be made to PostgreSQL in order to
         test if the user is a superuser.
       '';
-    };
 
-    loginGroup = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = ''
-        This tells pgmanage to only allow users in a certain PostgreSQL group to
-        login to pgmanage. Note that a connection will be made to PostgreSQL in
-        order to test if the user is a member of the login group.
-      '';
-    };
-
-    loginTimeout = lib.mkOption {
-      type = lib.types.int;
-      default = 3600;
-      description = ''
-        Number of seconds of inactivity before user is automatically logged
-        out.
-      '';
-    };
-
-    sqlRoot = lib.mkOption {
-      type = lib.types.str;
-      default = "/var/lib/pgmanage";
-      description = ''
-        This tells pgmanage where to put the SQL file history. All tabs are saved
-        to this location so that if you get disconnected from pgmanage you
-        don't lose your work.
-      '';
+      type = lib.types.bool;
     };
 
     tls = lib.mkOption {
-      type = lib.types.nullOr (
-        lib.types.submodule {
-          options = {
-            cert = lib.mkOption {
-              type = lib.types.str;
-              description = "TLS certificate";
-            };
-            key = lib.mkOption {
-              type = lib.types.str;
-              description = "TLS key";
-            };
-          };
-        }
-      );
       default = null;
+
       description = ''
         These options tell pgmanage where the TLS Certificate and Key files
         reside. If you use these options then you'll only be able to access
@@ -166,45 +186,53 @@ in
         up this configuration in:
         <https://github.com/pgManage/pgManage/blob/master/INSTALL_NGINX.md>
       '';
-    };
 
-    logLevel = lib.mkOption {
-      type = lib.types.enum [
-        "error"
-        "warn"
-        "notice"
-        "info"
-      ];
-      default = "error";
-      description = ''
-        Verbosity of logs
-      '';
+      type = lib.types.nullOr (
+        lib.types.submodule {
+          options = {
+            cert = lib.mkOption {
+              description = "TLS certificate";
+              type = lib.types.str;
+            };
+
+            key = lib.mkOption {
+              description = "TLS key";
+              type = lib.types.str;
+            };
+          };
+        }
+      );
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.pgmanage = {
-      description = "pgmanage - PostgreSQL Administration for the web";
-      wants = [ "postgresql.target" ];
       after = [ "postgresql.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "pgmanage - PostgreSQL Administration for the web";
+
       serviceConfig = {
-        User = pgmanage;
-        Group = pgmanage;
         ExecStart =
           "${cfg.package}/sbin/pgmanage -c ${confFile}"
           + lib.optionalString cfg.localOnly " --local-only=true";
+
+        Group = pgmanage;
+        User = pgmanage;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "postgresql.target" ];
     };
+
     users = {
-      users.${pgmanage} = {
+      groups.${pgmanage} = {
         name = pgmanage;
+      };
+
+      users.${pgmanage} = {
+        createHome = true;
         group = pgmanage;
         home = cfg.sqlRoot;
-        createHome = true;
         isSystemUser = true;
-      };
-      groups.${pgmanage} = {
         name = pgmanage;
       };
     };

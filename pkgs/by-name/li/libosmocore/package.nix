@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   gnutls,
   libmnl,
   liburing,
@@ -29,11 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     echo "${finalAttrs.version}" > .tarball-version
   '';
 
-  propagatedBuildInputs = [
-    talloc
-    libmnl
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -48,15 +43,22 @@ stdenv.mkDerivation (finalAttrs: {
     pcsclite
   ];
 
+  propagatedBuildInputs = [
+    talloc
+    libmnl
+  ];
+
   enableParallelBuilding = true;
 
   meta = {
     description = "Set of Osmocom core libraries";
     homepage = "https://github.com/osmocom/libosmocore";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       mog
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

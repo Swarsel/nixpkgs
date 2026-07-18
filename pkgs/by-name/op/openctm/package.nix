@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libglut,
   gtk2,
   libGLU,
+  libglut,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,14 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [
-    libglut
-    libGLU
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ gtk2 ];
-
   postPatch =
     lib.optionalString stdenv.hostPlatform.isLinux ''
       substituteInPlace "tools/tinyxml/Makefile.linux" \
@@ -49,6 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-warn "g++" "${stdenv.cc.targetPrefix}c++"
     '';
 
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    libglut
+    libGLU
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ gtk2 ];
+
   makeFlags = [
     "BINDIR=$(bin)/bin/"
     "INCDIR=$(dev)/include/"
@@ -56,9 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
     "MAN1DIR=$(man)/share/man//man1"
   ];
 
-  makefile = if stdenv.hostPlatform.isDarwin then "Makefile.macosx" else "Makefile.linux";
-
   preInstall = "mkdir -p $bin/bin $dev/include $out/lib $man/share/man/man1";
+  makefile = if stdenv.hostPlatform.isDarwin then "Makefile.macosx" else "Makefile.linux";
 
   meta = {
     description = "File format, software library and a tool set for compression of 3D triangle meshes";

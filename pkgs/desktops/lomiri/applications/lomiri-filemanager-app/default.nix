@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   biometryd,
   cmake,
   gettext,
+  gitUpdater,
   lomiri-content-hub,
   lomiri-thumbnailer,
   lomiri-ui-extras,
   lomiri-ui-toolkit,
+  nixosTests,
   pkg-config,
   python3,
   qtbase,
@@ -81,12 +81,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "File Manager application for Ubuntu Touch devices";
     homepage = "https://gitlab.com/ubports/development/apps/lomiri-filemanager-app";
+
     changelog = "https://gitlab.com/ubports/development/apps/lomiri-filemanager-app/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
     mainProgram = "lomiri-filemanager-app";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

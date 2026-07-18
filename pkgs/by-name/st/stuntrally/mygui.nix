@@ -1,23 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  ninja,
   boost,
+  cmake,
   freetype,
   libuuid,
-  ois,
-  ogre-next,
   libx11,
+  ninja,
+  ogre-next,
+  ois,
+  pkg-config,
 }:
 stdenv.mkDerivation {
   pname = "mygui";
   version = "0-unstable-2024-02-01";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "cryham";
@@ -33,6 +30,8 @@ stdenv.mkDerivation {
       --replace-fail 'cmake_minimum_required(VERSION 2.6)' \
                      'cmake_minimum_required(VERSION 3.10)'
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -55,6 +54,8 @@ stdenv.mkDerivation {
     (lib.cmakeBool "MYGUI_DONT_USE_OBSOLETE" true)
     (lib.cmakeFeature "MYGUI_RENDERSYSTEM" "8")
   ];
+
+  __structuredAttrs = true;
 
   meta = {
     description = "Library for creating GUIs for games and 3D applications (Stunt Rally fork)";

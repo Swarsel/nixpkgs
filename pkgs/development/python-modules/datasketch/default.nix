@@ -1,30 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # build
-  hatchling,
+  aiounittest,
+  buildPythonPackage,
   # runtime
   cassandra-driver,
+  # build
+  hatchling,
+  mock,
   motor,
   numpy,
   pybloomfilter3,
-  redis,
-  scipy,
-  # check
-  pytestCheckHook,
-  aiounittest,
-  mock,
   pymongo,
   pytest-asyncio,
   pytest-rerunfailures,
-
+  # check
+  pytestCheckHook,
+  redis,
+  scipy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "datasketch";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ekzhu";
@@ -38,24 +36,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "--cov-report=xml" ""
   '';
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    numpy
-    scipy
-  ];
-
-  optional-dependencies = rec {
-    cassandra = [ cassandra-driver ];
-    redis = [ redis ];
-    experimental_aio = [
-      motor
-      aiounittest
-    ];
-    bloom = [ pybloomfilter3 ];
-    all = cassandra ++ redis ++ experimental_aio ++ bloom;
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
     cassandra-driver
@@ -68,20 +48,43 @@ buildPythonPackage (finalAttrs: {
     pytest-asyncio
   ];
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    numpy
+    scipy
+  ];
+
   disabledTestPaths = [
     # these tests import mockredis, which has been abandoned for many years
     "test/test_lsh.py"
     "test/test_lshensemble.py"
   ];
+
   disabledTests = [
     # flaky
     "test_soft_remove_and_pop_and_clean"
   ];
 
+  optional-dependencies = rec {
+    all = cassandra ++ redis ++ experimental_aio ++ bloom;
+    bloom = [ pybloomfilter3 ];
+    cassandra = [ cassandra-driver ];
+
+    experimental_aio = [
+      motor
+      aiounittest
+    ];
+
+    redis = [ redis ];
+  };
+
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/ekzhu/datasketch/releases/tag/v${finalAttrs.version}";
     description = "MinHash, LSH, LSH Forest, Weighted MinHash, HyperLogLog, HyperLogLog++, LSH Ensemble and HNSW";
     homepage = "https://ekzhu.com/datasketch/";
+    changelog = "https://github.com/ekzhu/datasketch/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jokatzke ];
   };

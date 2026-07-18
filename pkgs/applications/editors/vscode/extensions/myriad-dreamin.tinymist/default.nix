@@ -1,20 +1,12 @@
 {
-  jq,
   lib,
+  jq,
   moreutils,
   tinymist,
   vscode-utils,
 }:
 
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "tinymist";
-    publisher = "myriad-dreamin";
-    inherit (tinymist) version;
-    hash = "sha256-FLWUeRPoqzHjwBrf0OOejaAVY+KBOpNBb9OJMdfLr04=";
-  };
-
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -29,12 +21,21 @@ vscode-utils.buildVscodeMarketplaceExtension {
     jq '.contributes.configuration.properties."tinymist.serverPath".default = "${lib.getExe tinymist}"' package.json | sponge package.json
   '';
 
+  __structuredAttrs = true;
+
+  mktplcRef = {
+    inherit (tinymist) version;
+    hash = "sha256-FLWUeRPoqzHjwBrf0OOejaAVY+KBOpNBb9OJMdfLr04=";
+    name = "tinymist";
+    publisher = "myriad-dreamin";
+  };
+
   meta = {
-    changelog = "https://marketplace.visualstudio.com/items/myriad-dreamin.tinymist/changelog";
     description = "VSCode extension for providing an integration solution for Typst";
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=myriad-dreamin.tinymist";
     homepage = "https://github.com/myriad-dreamin/tinymist";
+    changelog = "https://marketplace.visualstudio.com/items/myriad-dreamin.tinymist/changelog";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=myriad-dreamin.tinymist";
   };
 }

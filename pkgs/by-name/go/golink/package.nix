@@ -1,8 +1,8 @@
 {
-  git,
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  git,
 }:
 
 buildGoModule rec {
@@ -18,17 +18,17 @@ buildGoModule rec {
 
   vendorHash = "sha256-QIAkmqXWH3X2dIoWyVcqFXVHBwzyv1dNPfdkzD5LuSE=";
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   overrideModAttrs = old: {
     # netdb.go allows /etc/protocols and /etc/services to not exist and happily proceeds, but it panic()s if they exist but return permission denied.
     postBuild = ''
       patch -p0 < ${./darwin-sandbox-fix.patch}
     '';
   };
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
 
   meta = {
     description = "Private shortlink service for tailnets";

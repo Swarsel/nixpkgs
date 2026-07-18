@@ -1,28 +1,25 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  django,
+  django-filter,
+  djangorestframework,
   graphene,
   graphql-core,
-  django,
-  djangorestframework,
-  promise,
-  text-unidecode,
-
-  django-filter,
   mock,
+  promise,
   py,
   pytest-django,
   pytest-random-order,
   pytest7CheckHook,
+  text-unidecode,
 }:
 
 buildPythonPackage rec {
   pname = "graphene-django";
   version = "3.2.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "graphql-python";
@@ -45,10 +42,6 @@ buildPythonPackage rec {
     text-unidecode
   ];
 
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=examples.django_test_settings
-  '';
-
   nativeCheckInputs = [
     django-filter
     mock
@@ -57,6 +50,10 @@ buildPythonPackage rec {
     pytest-random-order
     pytest7CheckHook
   ];
+
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=examples.django_test_settings
+  '';
 
   disabledTests =
     lib.optionals (lib.versionAtLeast django.version "6.0") [
@@ -67,6 +64,8 @@ buildPythonPackage rec {
       # this test touches files in the "/" directory and fails in darwin sandbox
       "test_should_filepath_convert_string"
     ];
+
+  format = "setuptools";
 
   meta = {
     description = "Integrate GraphQL into your Django project";

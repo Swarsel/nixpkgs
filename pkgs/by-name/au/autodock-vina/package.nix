@@ -21,10 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AQJl/EUAkdIQJZSN27sbjG7dYbQxeEb8Pd+p2kKRnvA=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/build/${
-    if stdenv.hostPlatform.isDarwin then "mac" else "linux"
-  }/release";
-
   buildInputs = [
     boost'
   ]
@@ -45,6 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/build/${
+    if stdenv.hostPlatform.isDarwin then "mac" else "linux"
+  }/release";
 
   passthru.boost = boost';
 

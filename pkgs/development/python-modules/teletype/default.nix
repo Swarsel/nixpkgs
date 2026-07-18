@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "teletype";
   version = "1.3.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   # no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "teletype" ];
 
   meta = {

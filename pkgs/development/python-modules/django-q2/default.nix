@@ -1,5 +1,7 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   arrow,
   blessed,
   bson,
@@ -8,19 +10,16 @@
   django,
   django-picklefield,
   django-redis,
-  fetchFromGitHub,
   hiredis,
   poetry-core,
   pytest-django,
   pytestCheckHook,
   redisTestHook,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "django-q2";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-q2";
@@ -28,6 +27,23 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-VwB3pvDAGsMvcKblRnmCYHzvEBCz8E13Qov4LjWEqxc=";
   };
+
+  env = {
+    MONGO_HOST = "127.0.0.1";
+    REDIS_HOST = "127.0.0.1";
+  };
+
+  nativeCheckInputs = [
+    blessed
+    croniter
+    django-redis
+    hiredis
+    pytest-django
+    pytestCheckHook
+    redisTestHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     poetry-core
@@ -40,22 +56,12 @@ buildPythonPackage rec {
     django-picklefield
   ];
 
-  nativeCheckInputs = [
-    blessed
-    croniter
-    django-redis
-    hiredis
-    pytest-django
-    pytestCheckHook
-    redisTestHook
+  disabledTestPaths = [
+    "django_q/tests/test_commands.py"
+    #  assert 0 == 1 where 0 = <django_q.cluster.Sentinel object at 0x7ffff3861e50>.reincarnations
+    "django_q/tests/test_cluster.py::test_recycle"
+    "django_q/tests/test_cluster.py::test_max_rss"
   ];
-
-  pythonImportsCheck = [ "django_q" ];
-
-  env = {
-    MONGO_HOST = "127.0.0.1";
-    REDIS_HOST = "127.0.0.1";
-  };
 
   disabledTests = [
     # requires a running mongodb
@@ -72,16 +78,9 @@ buildPythonPackage rec {
     "test_redis_connection"
   ];
 
-  disabledTestPaths = [
-    "django_q/tests/test_commands.py"
-    #  assert 0 == 1 where 0 = <django_q.cluster.Sentinel object at 0x7ffff3861e50>.reincarnations
-    "django_q/tests/test_cluster.py::test_recycle"
-    "django_q/tests/test_cluster.py::test_max_rss"
-  ];
-
+  pyproject = true;
   pytestFlags = [ "-vv" ];
-
-  __darwinAllowLocalNetworking = true;
+  pythonImportsCheck = [ "django_q" ];
 
   meta = {
     description = "Multiprocessing distributed task queue for Django based on Django-Q";

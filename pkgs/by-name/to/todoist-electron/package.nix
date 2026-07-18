@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  appimageTools,
   fetchurl,
+  appimageTools,
   asar,
   makeWrapper,
 }:
@@ -32,8 +32,6 @@ appimageTools.wrapAppImage {
   inherit pname version;
   src = appimageContents;
 
-  extraPkgs = pkgs: [ pkgs.hidapi ];
-
   # Add desktop convencience stuff
   extraInstallCommands = ''
     install -D --mode 0644 ${appimageContents}/todoist.desktop -t $out/share/applications
@@ -47,15 +45,19 @@ appimageTools.wrapAppImage {
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
 
+  extraPkgs = pkgs: [ pkgs.hidapi ];
+
   meta = {
     description = "To-Do List App & Task Manager";
     homepage = "https://www.todoist.com";
     license = lib.licenses.unfree;
-    mainProgram = "todoist-electron";
+
     maintainers = with lib.maintainers; [
       kylesferrazza
       pokon548
     ];
+
     platforms = lib.attrNames sources;
+    mainProgram = "todoist-electron";
   };
 }

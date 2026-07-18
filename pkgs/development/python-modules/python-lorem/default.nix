@@ -2,27 +2,28 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "python-lorem";
   version = "1.3.0.post3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "python_lorem";
     hash = "sha256-Vw1TKheXg+AkhksnmWUfdIo+Jt7X7m1pS2f0Kfe8pv0=";
+    pname = "python_lorem";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "lorem"

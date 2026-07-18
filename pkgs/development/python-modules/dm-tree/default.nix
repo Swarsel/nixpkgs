@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  cmake,
-  pybind11,
-
   # buildInputs
   abseil-cpp,
-
-  # build-system
-  setuptools,
-
   # dependencies
   absl-py,
   attrs,
+  buildPythonPackage,
+  # nativeBuildInputs
+  cmake,
   numpy,
+  pybind11,
+  # build-system
+  setuptools,
   wrapt,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "dm-tree";
   version = "0.1.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deepmind";
@@ -30,6 +25,7 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-L1DOwgJriFoS0rf6g+f3qcw94Q/ia4N6kZ1ai6F/Qng=";
   };
+
   # Allows to forward cmake args through the conventional `cmakeFlags`
   postPatch = ''
     substituteInPlace setup.py \
@@ -37,11 +33,6 @@ buildPythonPackage (finalAttrs: {
         "cmake_args = [" \
         'cmake_args = [ *os.environ.get("cmakeFlags", "").split(),'
   '';
-  cmakeFlags = [
-    (lib.cmakeBool "USE_SYSTEM_ABSEIL" true)
-    (lib.cmakeBool "USE_SYSTEM_PYBIND11" true)
-  ];
-  dontUseCmakeConfigure = true;
 
   nativeBuildInputs = [
     cmake
@@ -51,6 +42,11 @@ buildPythonPackage (finalAttrs: {
   buildInputs = [
     abseil-cpp
     pybind11
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "USE_SYSTEM_ABSEIL" true)
+    (lib.cmakeBool "USE_SYSTEM_PYBIND11" true)
   ];
 
   build-system = [ setuptools ];
@@ -64,6 +60,8 @@ buildPythonPackage (finalAttrs: {
     wrapt
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "tree" ];
 
   meta = {
@@ -71,6 +69,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/deepmind/tree";
     changelog = "https://github.com/google-deepmind/tree/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       samuela
       ndl

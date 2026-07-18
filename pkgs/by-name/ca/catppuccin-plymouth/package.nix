@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
   variant ? "macchiato",
 }:
@@ -28,8 +28,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-2hGe8VOj1EhpwX51q8AcTfuVBByEHskBj89FX5YZqXc=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/themes/catppuccin-${variant}";
-
   installPhase = ''
     runHook preInstall
 
@@ -40,16 +38,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/themes/catppuccin-${variant}";
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Soothing pastel theme for Plymouth";
     homepage = "https://github.com/catppuccin/plymouth";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       johnrtitor
       spectre256
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

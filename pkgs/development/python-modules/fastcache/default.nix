@@ -9,17 +9,15 @@
 buildPythonPackage rec {
   pname = "fastcache";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-beGxbnAzW3veJmcH60AaOq7CIPtmxdE7Aqvw6ri+eCs=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytest ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "fastcache" ];
 
   meta = {

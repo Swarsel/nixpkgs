@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 let
@@ -10,11 +10,11 @@ let
 
   mkFont =
     {
-      width,
-      variant ? "",
       hash,
-      isNF ? false,
+      width,
       hinted ? true,
+      isNF ? false,
+      variant ? "",
     }:
     let
       fileName = "IoskeleyMono${if variant != "" then "-${variant}" else ""}${
@@ -35,23 +35,23 @@ let
       inherit pname version;
 
       src = fetchzip {
+        inherit hash;
         url = "https://github.com/ahatem/IoskeleyMono/releases/download/${version}/${fileName}";
         stripRoot = false;
-        inherit hash;
       };
 
+      nativeBuildInputs = [ installFonts ];
       sourceRoot = if isNF then "source/${width}" else "source/${width}/${hintDir}";
 
-      nativeBuildInputs = [ installFonts ];
-
       meta = {
-        homepage = "https://github.com/ahatem/IoskeleyMono";
         description = "Iosevka configuration mimicking Berkeley Mono, ${width} width${
           if variant != "" then ", ${variant} variant" else ""
         }${if isNF then ", Nerd Font patched" else ""}${if !hinted then ", unhinted" else ""}";
+
+        homepage = "https://github.com/ahatem/IoskeleyMono";
         license = lib.licenses.ofl;
-        platforms = lib.platforms.all;
         maintainers = with lib.maintainers; [ nuexq ];
+        platforms = lib.platforms.all;
       };
     };
 
@@ -77,8 +77,8 @@ let
 
           value = mkFont (
             {
-              width = w;
               inherit hinted;
+              width = w;
             }
             // (removeAttrs args [
               "suffix"
@@ -106,37 +106,37 @@ mkWidths {
 
 # Term
 // mkWidths {
+  hash = "sha256-E7I7gmu9EOaCKn4JOFkCjHP/I/1wadRkZoCxVfm+b1k=";
   suffix = "term";
   variant = "Term";
-  hash = "sha256-E7I7gmu9EOaCKn4JOFkCjHP/I/1wadRkZoCxVfm+b1k=";
   withHinting = true;
 }
 
 // mkWidths {
+  hash = "sha256-GiMI2YTl20K+zUObcFNzgP1ivm7pH2zHWFG15gFgasg=";
+  isNF = true;
   suffix = "term-NF";
   variant = "Term";
-  isNF = true;
-  hash = "sha256-GiMI2YTl20K+zUObcFNzgP1ivm7pH2zHWFG15gFgasg=";
 }
 
 # NL
 // mkWidths {
+  hash = "sha256-dNOpQJ1VOrjcKS/UtPXKUP9W0gaxFMvH4aa+xK2hg2w=";
   suffix = "NL";
   variant = "NL";
-  hash = "sha256-dNOpQJ1VOrjcKS/UtPXKUP9W0gaxFMvH4aa+xK2hg2w=";
   withHinting = true;
 }
 
 // mkWidths {
+  hash = "sha256-N7mtM/aQwps77u907z8Rop3RftRGR4K8zDXFX8xWq5w=";
+  isNF = true;
   suffix = "NL-NF";
   variant = "NL";
-  isNF = true;
-  hash = "sha256-N7mtM/aQwps77u907z8Rop3RftRGR4K8zDXFX8xWq5w=";
 }
 
 # Nerd Font Standard
 // mkWidths {
-  suffix = "NF";
-  isNF = true;
   hash = "sha256-Nt8EaVhKvlb9BMKQe4l5iNGcPLzKba6KScIWZbcL8gA=";
+  isNF = true;
+  suffix = "NF";
 }

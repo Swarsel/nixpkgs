@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
-  requests,
+  buildPythonPackage,
   cryptography,
+  pytestCheckHook,
+  requests,
   responses,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "python-transip";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "roaldnefs";
@@ -19,6 +18,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-HjlUwItkR81dyFGfY/YbHXI5k/IWUgzfikw5i4+yNWU=";
   };
+
+  nativeCheckInputs = [
+    responses
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -29,13 +33,10 @@ buildPythonPackage rec {
     cryptography
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "transip"
-  ];
-
-  nativeCheckInputs = [
-    responses
-    pytestCheckHook
   ];
 
   meta = {

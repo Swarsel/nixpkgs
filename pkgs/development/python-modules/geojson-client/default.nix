@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   geojson,
   haversine,
+  pytestCheckHook,
   pytz,
   requests,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "geojson-client";
   version = "0.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -29,7 +28,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "geojson_client" ];
 
   meta = {

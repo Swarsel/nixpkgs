@@ -28,9 +28,9 @@ appimageTools.wrapType2 {
     description = "One for all free music in China";
     homepage = "http://listen1.github.io/listen1/";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     mainProgram = "listen1";
   };
 }

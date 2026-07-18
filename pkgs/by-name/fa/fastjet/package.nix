@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://gitlab.com/fastjet/fastjet/-/commit/57ff0184c7cf578bbcdee3667aeaa64288cbae1a.diff";
       hash = "sha256-uz8q7s+YAmbB4oXB+wyaSLo4gWSbEEPdATGDBrxT0vg=";
+      url = "https://gitlab.com/fastjet/fastjet/-/commit/57ff0184c7cf578bbcdee3667aeaa64288cbae1a.diff";
     })
   ];
 
@@ -38,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Software package for jet finding in pp and e+e− collisions";
-    mainProgram = "fastjet-config";
-    license = lib.licenses.gpl2Plus;
     homepage = "http://fastjet.fr/";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
+    mainProgram = "fastjet-config";
   };
 })

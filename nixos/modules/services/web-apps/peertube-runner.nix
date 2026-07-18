@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -13,8 +13,8 @@ let
 
   env = {
     NODE_ENV = "production";
-    XDG_CONFIG_HOME = "/var/lib/peertube-runner";
     XDG_CACHE_HOME = "/var/cache/peertube-runner";
+    XDG_CONFIG_HOME = "/var/lib/peertube-runner";
     # peertube-runner makes its IPC socket in $XDG_DATA_HOME.
     XDG_DATA_HOME = "/run/peertube-runner";
   };
@@ -24,22 +24,87 @@ in
     enable = lib.mkEnableOption "peertube-runner";
     package = lib.mkPackageOption pkgs [ "peertube" "runner" ] { };
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "prunner";
-      example = "peertube-runner";
-      description = "User account under which peertube-runner runs.";
+    enabledJobTypes = lib.mkOption {
+      default = [
+        "vod-web-video-transcoding"
+        "vod-hls-transcoding"
+        "vod-audio-merge-transcoding"
+        "live-rtmp-hls-transcoding"
+        "video-studio-transcoding"
+        "video-transcription"
+      ];
+
+      description = "Job types that this runner will execute.";
+      example = [ "video-transcription" ];
+      type = with lib.types; nonEmptyListOf str;
     };
+
     group = lib.mkOption {
-      type = lib.types.str;
       default = "prunner";
-      example = "peertube-runner";
       description = "Group under which peertube-runner runs.";
+      example = "peertube-runner";
+      type = lib.types.str;
+    };
+
+    instancesToRegister = lib.mkOption {
+      default = { };
+      description = "PeerTube instances to register this runner with.";
+
+      example = {
+        personal = {
+          registrationTokenFile = "/run/secrets/my-peertube-instance-registration-token";
+          runnerDescription = "Runner for video transcription";
+          runnerName = "Transcription";
+          url = "https://mypeertubeinstance.com";
+        };
+      };
+
+      type =
+        with lib.types;
+        attrsOf (submodule {
+          options = {
+            registrationTokenFile = lib.mkOption {
+              description = ''
+                Path to a file containing a registration token for the PeerTube instance.
+
+                See how to generate registration tokens at <https://docs.joinpeertube.org/admin/remote-runners#manage-remote-runners>.
+              '';
+
+              example = "/run/secrets/my-peertube-instance-registration-token";
+              type = lib.types.path;
+            };
+
+            runnerDescription = lib.mkOption {
+              default = null;
+              description = "Runner description declared to the PeerTube instance.";
+              example = "Runner for video transcription";
+              type = with lib.types; nullOr str;
+            };
+
+            runnerName = lib.mkOption {
+              description = "Runner name declared to the PeerTube instance.";
+              example = "Transcription";
+              type = lib.types.str;
+            };
+
+            url = lib.mkOption {
+              description = "URL of the PeerTube instance.";
+              example = "https://mypeertubeinstance.com";
+              type = lib.types.str;
+            };
+          };
+        });
     };
 
     settings = lib.mkOption {
-      type = settingsFormat.type;
       default = { };
+
+      description = ''
+        Configuration for peertube-runner.
+
+        See available configuration options at <https://docs.joinpeertube.org/maintain/tools#configuration>.
+      '';
+
       example = lib.literalExpression ''
         {
           jobs.concurrency = 4;
@@ -50,68 +115,15 @@ in
           transcription.model = "large-v3";
         }
       '';
-      description = ''
-        Configuration for peertube-runner.
 
-        See available configuration options at <https://docs.joinpeertube.org/maintain/tools#configuration>.
-      '';
-    };
-    instancesToRegister = lib.mkOption {
-      type =
-        with lib.types;
-        attrsOf (submodule {
-          options = {
-            url = lib.mkOption {
-              type = lib.types.str;
-              example = "https://mypeertubeinstance.com";
-              description = "URL of the PeerTube instance.";
-            };
-            registrationTokenFile = lib.mkOption {
-              type = lib.types.path;
-              example = "/run/secrets/my-peertube-instance-registration-token";
-              description = ''
-                Path to a file containing a registration token for the PeerTube instance.
-
-                See how to generate registration tokens at <https://docs.joinpeertube.org/admin/remote-runners#manage-remote-runners>.
-              '';
-            };
-            runnerName = lib.mkOption {
-              type = lib.types.str;
-              example = "Transcription";
-              description = "Runner name declared to the PeerTube instance.";
-            };
-            runnerDescription = lib.mkOption {
-              type = with lib.types; nullOr str;
-              default = null;
-              example = "Runner for video transcription";
-              description = "Runner description declared to the PeerTube instance.";
-            };
-          };
-        });
-      default = { };
-      example = {
-        personal = {
-          url = "https://mypeertubeinstance.com";
-          registrationTokenFile = "/run/secrets/my-peertube-instance-registration-token";
-          runnerName = "Transcription";
-          runnerDescription = "Runner for video transcription";
-        };
-      };
-      description = "PeerTube instances to register this runner with.";
+      type = settingsFormat.type;
     };
 
-    enabledJobTypes = lib.mkOption {
-      type = with lib.types; nonEmptyListOf str;
-      default = [
-        "vod-web-video-transcoding"
-        "vod-hls-transcoding"
-        "vod-audio-merge-transcoding"
-        "live-rtmp-hls-transcoding"
-        "video-studio-transcoding"
-        "video-transcription"
-      ];
-      example = [ "video-transcription" ];
-      description = "Job types that this runner will execute.";
+    user = lib.mkOption {
+      default = "prunner";
+      description = "User account under which peertube-runner runs.";
+      example = "peertube-runner";
+      type = lib.types.str;
     };
   };
 
@@ -119,23 +131,13 @@ in
     assertions = [
       {
         assertion = !(cfg.settings ? registeredInstances);
+
         message = ''
           `services.peertube-runner.settings.registeredInstances` cannot be used.
           Instead, registered instances can be configured with `services.peertube-runner.instancesToRegister`.
         '';
       }
     ];
-    warnings = lib.optional (cfg.instancesToRegister == { }) ''
-      `services.peertube-runner.instancesToRegister` is empty.
-      Instances cannot be manually registered using the command line.
-    '';
-
-    services.peertube-runner.settings = {
-      transcription = lib.mkIf (lib.elem "video-transcription" cfg.enabledJobTypes) {
-        engine = lib.mkDefault "whisper-ctranslate2";
-        enginePath = lib.mkDefault (lib.getExe pkgs.whisper-ctranslate2);
-      };
-    };
 
     environment.systemPackages = [
       (pkgs.writeShellScriptBin "peertube-runner" ''
@@ -149,14 +151,20 @@ in
       '')
     ];
 
+    services.peertube-runner.settings = {
+      transcription = lib.mkIf (lib.elem "video-transcription" cfg.enabledJobTypes) {
+        engine = lib.mkDefault "whisper-ctranslate2";
+        enginePath = lib.mkDefault (lib.getExe pkgs.whisper-ctranslate2);
+      };
+    };
+
     systemd.services.peertube-runner = {
-      description = "peertube-runner daemon";
       after = [
         "network.target"
         (lib.mkIf config.services.peertube.enable "peertube.service")
       ];
-      wantedBy = [ "multi-user.target" ];
 
+      description = "peertube-runner daemon";
       environment = env;
       path = [ pkgs.ffmpeg-headless ];
 
@@ -219,37 +227,45 @@ in
           lib.concatMapStringsSep " " (jobType: "--enable-job ${jobType}") cfg.enabledJobTypes
         }
       '';
+
       serviceConfig = {
-        Type = "notify";
-        NotifyAccess = "all"; # for systemd-notify
-        Restart = "always";
-        RestartSec = 5;
-        SyslogIdentifier = "prunner";
-        User = cfg.user;
-        Group = cfg.group;
-        StateDirectory = "peertube-runner";
-        StateDirectoryMode = "0700";
         CacheDirectory = "peertube-runner";
         CacheDirectoryMode = "0700";
+        CapabilityBoundingSet = "~CAP_SYS_ADMIN";
+        Group = cfg.group;
+        NoNewPrivileges = true;
+        NotifyAccess = "all"; # for systemd-notify
+        ProtectHome = true;
+        ProtectSystem = "full";
+        Restart = "always";
+        RestartSec = 5;
         RuntimeDirectory = "peertube-runner";
         RuntimeDirectoryMode = "0700";
-
-        ProtectSystem = "full";
-        NoNewPrivileges = true;
-        ProtectHome = true;
-        CapabilityBoundingSet = "~CAP_SYS_ADMIN";
+        StateDirectory = "peertube-runner";
+        StateDirectoryMode = "0700";
+        SyslogIdentifier = "prunner";
+        Type = "notify";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups = lib.mkIf (cfg.group == "prunner") {
+      ${cfg.group} = { };
     };
 
     users.users = lib.mkIf (cfg.user == "prunner") {
       ${cfg.user} = {
-        isSystemUser = true;
         group = cfg.group;
+        isSystemUser = true;
       };
     };
-    users.groups = lib.mkIf (cfg.group == "prunner") {
-      ${cfg.group} = { };
-    };
+
+    warnings = lib.optional (cfg.instancesToRegister == { }) ''
+      `services.peertube-runner.instancesToRegister` is empty.
+      Instances cannot be manually registered using the command line.
+    '';
   };
 
   meta.teams = [ lib.teams.ngi ];

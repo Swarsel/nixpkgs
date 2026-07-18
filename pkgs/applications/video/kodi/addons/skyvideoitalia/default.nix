@@ -1,17 +1,16 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
-  requests,
   inputstreamhelper,
+  rel,
+  requests,
   simplecache,
 }:
 
 buildKodiAddon rec {
   pname = "skyvideoitalia";
-  namespace = "plugin.video.skyvideoitalia";
   version = "1.0.4";
 
   src = fetchzip {
@@ -25,6 +24,8 @@ buildKodiAddon rec {
     simplecache
   ];
 
+  namespace = "plugin.video.skyvideoitalia";
+
   passthru = {
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.skyvideoitalia";
@@ -32,8 +33,8 @@ buildKodiAddon rec {
   };
 
   meta = {
-    homepage = "https://www.github.com/nixxo/plugin.video.skyvideoitalia";
     description = "Show video content from the website of Sky Italia (video.sky.it). News, sport, entertainment and much more";
+    homepage = "https://www.github.com/nixxo/plugin.video.skyvideoitalia";
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.kodi ];
   };

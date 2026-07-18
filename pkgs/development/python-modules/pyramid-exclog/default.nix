@@ -8,16 +8,15 @@
 buildPythonPackage rec {
   pname = "pyramid-exclog";
   version = "1.1";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "pyramid_exclog";
     inherit version;
     hash = "sha256-Tl2rYH/GifNfB9w4nG9UIqAQz0O6kujCED/4iZnPKDw=";
+    pname = "pyramid_exclog";
   };
 
   propagatedBuildInputs = [ pyramid ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyramid_exclog" ];
 
   meta = {

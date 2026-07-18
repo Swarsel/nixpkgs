@@ -2,16 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libpng,
-  gzip,
-  fftw,
-  blas,
-  lapack,
-  python3,
-  mpich,
-  cmake,
   autoAddDriverRunpath,
+  blas,
+  cmake,
+  fftw,
+  gzip,
+  lapack,
+  libpng,
+  mpich,
   pkg-config,
+  python3,
+  # Extra `buildInputs` - meant for packages that require more inputs
+  extraBuildInputs ? [ ],
+  # Extra cmakeFlags to add as "-D${attr}=${value}"
+  extraCmakeFlags ? { },
   # Available list of packages can be found near here:
   #
   # - https://github.com/lammps/lammps/blob/develop/cmake/CMakeLists.txt#L222
@@ -29,33 +33,26 @@
     MANYBODY = true;
     MC = true;
     MISC = true;
+    ML-SNAP = true;
     MOLECULE = true;
+    MPIIO = true;
     OPT = true;
     PERI = true;
+    PYTHON = true;
     QEQ = true;
+    REAXFF = true;
     REPLICA = true;
     RIGID = true;
     SHOCK = true;
-    ML-SNAP = true;
     SRD = true;
-    REAXFF = true;
-    PYTHON = true;
-    MPIIO = true;
   },
-  # Extra cmakeFlags to add as "-D${attr}=${value}"
-  extraCmakeFlags ? { },
-  # Extra `buildInputs` - meant for packages that require more inputs
-  extraBuildInputs ? [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  pname = "lammps";
   # LAMMPS has weird versioning convention. Updates should go smoothly with:
   # nix-update --commit lammps --version-regex 'stable_(.*)'
   version = "22Jul2025_update4";
-  pname = "lammps";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "lammps";
@@ -63,9 +60,9 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "stable_${finalAttrs.version}";
     hash = "sha256-QH63nh7J3NjfdfpN7J96Q+9ZGqj8cA0YwEmgTuBbGmg=";
   };
-  preConfigure = ''
-    cd cmake
-  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -80,17 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     mpich
   ];
 
-  passthru = {
-    inherit packages;
-    inherit extraCmakeFlags;
-    inherit extraBuildInputs;
-  };
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED_LIBS" true)
-  ]
-  ++ (lib.mapAttrsToList (n: v: lib.cmakeBool "PKG_${n}" v) packages)
-  ++ (lib.mapAttrsToList (n: v: "-D${n}=${v}") extraCmakeFlags);
-
   buildInputs = [
     fftw
     libpng
@@ -100,6 +86,16 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals packages.PYTHON [ python3 ]
   ++ extraBuildInputs;
+
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED_LIBS" true)
+  ]
+  ++ (lib.mapAttrsToList (n: v: lib.cmakeBool "PKG_${n}" v) packages)
+  ++ (lib.mapAttrsToList (n: v: "-D${n}=${v}") extraCmakeFlags);
+
+  preConfigure = ''
+    cd cmake
+  '';
 
   postInstall = ''
     # For backwards compatibility
@@ -111,8 +107,17 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/vim-plugins/lammps $out/share/nvim/site
   '';
 
+  __structuredAttrs = true;
+
+  passthru = {
+    inherit packages;
+    inherit extraCmakeFlags;
+    inherit extraBuildInputs;
+  };
+
   meta = {
     description = "Classical Molecular Dynamics simulation code";
+
     longDescription = ''
       LAMMPS is a classical molecular dynamics simulation code designed to
       run efficiently on parallel computers. It was developed at Sandia
@@ -120,17 +125,20 @@ stdenv.mkDerivation (finalAttrs: {
       funding from the DOE. It is an open-source code, distributed freely
       under the terms of the GNU Public License (GPL).
     '';
+
     homepage = "https://www.lammps.org";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
-    # compiling lammps with 64 bit support blas and lapack might cause runtime
-    # segfaults. In anycase both blas and lapack should have the same #bits
-    # support.
-    broken = (blas.isILP64 && lapack.isILP64);
+
     maintainers = with lib.maintainers; [
       costrouc
       doronbehar
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "lmp";
+    # compiling lammps with 64 bit support blas and lapack might cause runtime
+    # segfaults. In anycase both blas and lapack should have the same #bits
+    # support.
+    broken = (blas.isILP64 && lapack.isILP64);
   };
 })

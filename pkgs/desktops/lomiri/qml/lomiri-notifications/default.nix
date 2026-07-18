@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
   cmake,
   dbus,
+  gitUpdater,
   libqtdbustest,
   lomiri-api,
   pkg-config,
@@ -55,16 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtdeclarative
   ];
 
-  nativeCheckInputs = [
-    dbus
-  ];
-
-  checkInputs = [
-    libqtdbustest
-  ];
-
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.strings.cmakeBool "ENABLE_QT6" withQt6)
     # In case anything still depends on deprecated hints
@@ -73,13 +63,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  # Deals with DBus
-  enableParallelChecking = false;
+  nativeCheckInputs = [
+    dbus
+  ];
+
+  checkInputs = [
+    libqtdbustest
+  ];
 
   preCheck = ''
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
   '';
 
+  dontWrapQtApps = true;
+  # Deals with DBus
+  enableParallelChecking = false;
   passthru.updateScript = gitUpdater { };
 
   meta = {
@@ -87,7 +85,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/lomiri-notifications";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-notifications/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.lomiri ];
   };
 })

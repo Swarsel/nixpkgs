@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blas,
   cmake,
   eigen,
-  suitesparse,
-  blas,
   lapack,
   libGLU,
   libsForQt5,
   spdlog,
+  suitesparse,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,19 +23,19 @@ stdenv.mkDerivation rec {
     hash = "sha256-MW1IO1P2e3KgurOW5ZfHlxK0m5sF0JhdLmvQNEHWEtI=";
   };
 
-  # Removes a reference to gcc that is only used in a debug message
-  patches = [ ./remove-compiler-reference.patch ];
-
   outputs = [
     "out"
     "dev"
   ];
-  separateDebugInfo = true;
+
+  # Removes a reference to gcc that is only used in a debug message
+  patches = [ ./remove-compiler-reference.patch ];
 
   nativeBuildInputs = [
     cmake
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     eigen
     suitesparse
@@ -45,9 +45,8 @@ stdenv.mkDerivation rec {
     libsForQt5.qtbase
     libsForQt5.libqglviewer
   ];
-  propagatedBuildInputs = [ spdlog ];
 
-  dontWrapQtApps = true;
+  propagatedBuildInputs = [ spdlog ];
 
   cmakeFlags = [
     # Detection script is broken
@@ -62,14 +61,19 @@ stdenv.mkDerivation rec {
     "-DDISABLE_SSE4_A=${if stdenv.hostPlatform.sse4_aSupport then "OFF" else "ON"}"
   ];
 
+  dontWrapQtApps = true;
+  separateDebugInfo = true;
+
   meta = {
     description = "General Framework for Graph Optimization";
     homepage = "https://github.com/RainerKuemmerle/g2o";
+
     license = with lib.licenses; [
       bsd3
       lgpl3
       gpl3
     ];
+
     maintainers = with lib.maintainers; [ lopsided98 ];
     platforms = lib.platforms.all;
     # fatal error: 'qglviewer.h' file not found

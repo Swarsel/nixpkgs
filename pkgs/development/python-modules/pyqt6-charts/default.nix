@@ -2,23 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  sip,
+  mesa,
   pyqt-builder,
-  qt6Packages,
   pyqt6,
   python,
-  mesa,
+  qt6Packages,
+  sip,
 }:
 
 buildPythonPackage rec {
   pname = "pyqt6-charts";
   version = "6.11.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pyqt6_charts";
     inherit version;
     hash = "sha256-EJHNkZgGo84F0idnKfeb5Oy9CpOVAKiJkCbD71dpxlA=";
+    pname = "pyqt6_charts";
   };
 
   # fix include path and increase verbosity
@@ -30,7 +29,13 @@ buildPythonPackage rec {
       pyproject.toml
   '';
 
-  enableParallelBuilding = true;
+  nativeBuildInputs = with qt6Packages; [
+    qtcharts
+    qmake
+  ];
+
+  buildInputs = with qt6Packages; [ qtcharts ];
+
   # HACK: paralellize compilation of make calls within pyqt's setup.py
   # pkgs/stdenv/generic/setup.sh doesn't set this for us because
   # make gets called by python code and not its build phase
@@ -41,7 +46,8 @@ buildPythonPackage rec {
     export MAKEFLAGS+="''${enableParallelBuilding:+-j$NIX_BUILD_CORES}"
   '';
 
-  dontWrapQtApps = true;
+  # has no tests
+  doCheck = false;
 
   build-system = [
     sip
@@ -52,25 +58,17 @@ buildPythonPackage rec {
     pyqt6
   ];
 
-  nativeBuildInputs = with qt6Packages; [
-    qtcharts
-    qmake
-  ];
-
-  buildInputs = with qt6Packages; [ qtcharts ];
-
   dontConfigure = true;
-
-  # has no tests
-  doCheck = false;
-
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+  pyproject = true;
   pythonImportsCheck = [ "PyQt6.QtCharts" ];
 
   meta = {
+    inherit (mesa.meta) platforms;
     description = "Python bindings for Qt6 QtCharts";
     homepage = "https://riverbankcomputing.com/";
     license = lib.licenses.gpl3Only;
-    inherit (mesa.meta) platforms;
     maintainers = with lib.maintainers; [ dandellion ];
   };
 }

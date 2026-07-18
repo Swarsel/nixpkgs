@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   alsa-lib,
   libpulseaudio,
@@ -19,7 +19,6 @@ in
 stdenv.mkDerivation rec {
   pname = "fmod";
   version = "4.44.64";
-  shortVersion = builtins.replaceStrings [ "." ] [ "" ] version;
 
   src = fetchurl (
     if stdenv.hostPlatform.isLinux then
@@ -36,10 +35,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ undmg ];
 
-  dontStrip = true;
-  dontPatchELF = true;
-  dontBuild = true;
-
   installPhase =
     lib.optionalString stdenv.hostPlatform.isLinux ''
       install -Dm755 api/lib/libfmodex${bits}-${version}.so $out/lib/libfmodex-${version}.so
@@ -54,14 +49,20 @@ stdenv.mkDerivation rec {
       cp -r api/inc $out/include
     '';
 
+  dontBuild = true;
+  dontPatchELF = true;
+  dontStrip = true;
+  shortVersion = builtins.replaceStrings [ "." ] [ "" ] version;
+
   meta = {
     description = "Programming library and toolkit for the creation and playback of interactive audio";
     homepage = "http://www.fmod.org/";
     license = lib.licenses.unfreeRedistributable;
+    maintainers = [ lib.maintainers.lassulus ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ lib.maintainers.lassulus ];
   };
 }

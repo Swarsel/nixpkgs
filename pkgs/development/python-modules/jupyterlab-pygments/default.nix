@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "jupyterlab-pygments";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "jupyterlab_pygments";
     inherit version;
     hash = "sha256-chrKTZApJSsRz6nRheW1r01Udyu4By+bcDb0FwBU010=";
+    pname = "jupyterlab_pygments";
   };
 
   # jupyterlab is not necessary since we get the source from pypi
@@ -31,11 +30,10 @@ buildPythonPackage rec {
     hatchling
   ];
 
+  propagatedBuildInputs = [ pygments ];
   # no tests exist on upstream repo
   doCheck = false;
-
-  propagatedBuildInputs = [ pygments ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jupyterlab_pygments" ];
 
   meta = {

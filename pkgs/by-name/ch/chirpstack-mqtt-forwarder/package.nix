@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
-  versionCheckHook,
   protobuf,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage rec {
   pname = "chirpstack-mqtt-forwarder";
@@ -18,17 +18,15 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-AFyvXLXGs1jeOJM8tSKBNbTVYr5SRUscqnUlSvU9iuA=";
   };
 
+  nativeBuildInputs = [ protobuf ];
   cargoHash = "sha256-mRmvKOqfzqUvPexRbd9TRS2lunpne7+wO57bsYZ3dXw=";
 
-  nativeBuildInputs = [ protobuf ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
   checkFlags = [
     "--skip=end_to_end" # Depends on internet connectivity
   ];
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

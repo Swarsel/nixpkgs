@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -20,11 +20,11 @@ rustPlatform.buildRustPackage {
   meta = {
     description = "Fortran linter written in Rust inspired by Ruff";
     homepage = "https://fortitude.readthedocs.io/en/stable/";
-    downloadPage = "https://github.com/PlasmaFAIR/fortitude";
     changelog = "https://github.com/PlasmaFAIR/fortitude/blob/main/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "fortitude";
     maintainers = with lib.maintainers; [ loicreynier ];
     platforms = with lib.platforms; windows ++ darwin ++ linux;
+    mainProgram = "fortitude";
+    downloadPage = "https://github.com/PlasmaFAIR/fortitude";
   };
 }

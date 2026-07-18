@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   dotnetCorePackages,
-  wrapGAppsHook3,
-  glib,
   glew,
+  glib,
   gtk3,
-  libxrandr,
-  libxi,
   libxcursor,
+  libxi,
+  libxrandr,
   nix-update-script,
+  wrapGAppsHook3,
 }:
 
 buildDotnetModule rec {
@@ -25,13 +25,23 @@ buildDotnetModule rec {
     hash = "sha256-KF7iFvVRmsWFMkFiVE4QosQmpqYeFx7yqIw7u0Cf80o=";
   };
 
-  sourceRoot = "${src.name}/Source";
+  nativeBuildInputs = [ wrapGAppsHook3 ];
 
-  dotnet-sdk = dotnetCorePackages.sdk_10_0_1xx;
+  postInstall = ''
+    install -Dm644 LoadByOS/LinuxConfigApp/libation_glass.svg $out/share/icons/hicolor/scalable/apps/libation.svg
+    install -Dm644 LoadByOS/LinuxConfigApp/Libation.desktop $out/share/applications/libation.desktop
+  '';
 
+  preFixup = ''
+    wrapDotnetProgram $out/lib/libation/Libation $out/bin/libation
+    wrapDotnetProgram $out/lib/libation/LibationCli $out/bin/libationcli
+    wrapDotnetProgram $out/lib/libation/Hangover $out/bin/hangover
+  '';
+
+  # wrap manually, because we need lower case executables
+  dontDotnetFixup = true;
   dotnet-runtime = dotnetCorePackages.runtime_10_0;
-
-  nugetDeps = ./deps.json;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0_1xx;
 
   dotnetFlags = [
     "-p:PublishReadyToRun=false"
@@ -39,13 +49,13 @@ buildDotnetModule rec {
     "-p:RuntimeIdentifier="
   ];
 
+  nugetDeps = ./deps.json;
+
   projectFile = [
     "LibationAvalonia/LibationAvalonia.csproj"
     "LibationCli/LibationCli.csproj"
     "HangoverAvalonia/HangoverAvalonia.csproj"
   ];
-
-  nativeBuildInputs = [ wrapGAppsHook3 ];
 
   runtimeDeps = [
     # For Avalonia UI
@@ -59,31 +69,20 @@ buildDotnetModule rec {
     glib
   ];
 
-  postInstall = ''
-    install -Dm644 LoadByOS/LinuxConfigApp/libation_glass.svg $out/share/icons/hicolor/scalable/apps/libation.svg
-    install -Dm644 LoadByOS/LinuxConfigApp/Libation.desktop $out/share/applications/libation.desktop
-  '';
-
-  # wrap manually, because we need lower case executables
-  dontDotnetFixup = true;
-
-  preFixup = ''
-    wrapDotnetProgram $out/lib/libation/Libation $out/bin/libation
-    wrapDotnetProgram $out/lib/libation/LibationCli $out/bin/libationcli
-    wrapDotnetProgram $out/lib/libation/Hangover $out/bin/hangover
-  '';
-
+  sourceRoot = "${src.name}/Source";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/rmcrackan/Libation/releases/tag/v${version}";
     description = "Audible audiobook manager";
     homepage = "https://github.com/rmcrackan/Libation";
+    changelog = "https://github.com/rmcrackan/Libation/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "libation";
+
     maintainers = with lib.maintainers; [
       tomasajt
       tebriel
     ];
+
+    mainProgram = "libation";
   };
 }

@@ -1,15 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pytube";
   version = "15.0.0";
-
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pytube";
@@ -20,8 +18,6 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  disabledTests = [ "test_streaming" ];
-
   disabledTestPaths = [
     "tests/test_extract.py"
     "tests/test_query.py"
@@ -29,13 +25,15 @@ buildPythonPackage rec {
     "tests/test_main.py"
   ];
 
+  disabledTests = [ "test_streaming" ];
+  format = "setuptools";
   pythonImportsCheck = [ "pytube" ];
 
   meta = {
     description = "Python 3 library for downloading YouTube Videos";
-    mainProgram = "pytube";
     homepage = "https://github.com/nficano/pytube";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "pytube";
   };
 }

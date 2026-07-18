@@ -1,23 +1,17 @@
 {
   lib,
   mkMesonLibrary,
-
-  openssl,
-
-  nix-util,
-  nix-store,
   nix-expr,
-
+  nix-store,
+  nix-util,
+  openssl,
   # Configuration Options
-
   version,
 }:
 
 mkMesonLibrary (finalAttrs: {
-  pname = "nix-main";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-main";
 
   propagatedBuildInputs =
     lib.optionals (lib.versionAtLeast version "2.28") [
@@ -28,6 +22,8 @@ mkMesonLibrary (finalAttrs: {
       nix-store
       openssl
     ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix ++ lib.platforms.windows;

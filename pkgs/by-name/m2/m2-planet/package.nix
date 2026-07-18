@@ -22,9 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${m2libc}/include/M2libc M2libc
   '';
 
-  # Upstream overrides the optimisation to be -O0, which is incompatible with fortify. Let's disable it.
-  hardeningDisable = [ "fortify" ];
-
   installPhase = ''
     runHook preInstall
 
@@ -33,12 +30,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Upstream overrides the optimisation to be -O0, which is incompatible with fortify. Let's disable it.
+  hardeningDisable = [ "fortify" ];
+
   meta = {
+    inherit (m2libc.meta) platforms;
     description = "PLAtform NEutral Transpiler";
     homepage = "https://github.com/oriansj/M2-Planet";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.minimal-bootstrap ];
-    inherit (m2libc.meta) platforms;
     mainProgram = "M2-Planet";
+    teams = [ lib.teams.minimal-bootstrap ];
   };
 })

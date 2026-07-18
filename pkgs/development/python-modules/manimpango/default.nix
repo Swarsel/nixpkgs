@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pkg-config,
-  setuptools,
-  pango,
+  buildPythonPackage,
   cython,
+  pango,
+  pkg-config,
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "manimpango";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ManimCommunity";
@@ -28,13 +27,7 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ pango ];
-
-  build-system = [
-    setuptools
-    cython
-  ];
 
   nativeCheckInputs = [
     pytest-cov-stub
@@ -45,6 +38,12 @@ buildPythonPackage rec {
     rm -r manimpango
   '';
 
+  build-system = [
+    setuptools
+    cython
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "manimpango" ];
 
   meta = {

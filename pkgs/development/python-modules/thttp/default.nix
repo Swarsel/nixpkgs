@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "thttp";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sesh";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "thttp" ];
 
   meta = {

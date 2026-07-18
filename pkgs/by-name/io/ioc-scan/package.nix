@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ioc-scan";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cisagov";
@@ -15,8 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-oqXK98Im6OVItjSF8NCrGroE3w3k7QFzqpC2EEpa7N0=";
   };
-
-  build-system = with python3.pkgs; [ setuptools ];
 
   propagatedBuildInputs = with python3.pkgs; [ docopt ];
 
@@ -26,6 +23,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = with python3.pkgs; [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ioc_scan" ];
 
   meta = {

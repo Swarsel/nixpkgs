@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  wrapGAppsHook3,
   buildGoModule,
-  glib,
-  pkg-config,
   cairo,
+  glib,
   gtk3,
-  xcur2png,
   libx11,
+  pkg-config,
+  wrapGAppsHook3,
+  xcur2png,
   zlib,
 }:
 
@@ -22,13 +22,6 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-YAFZZIUd/nvDwa3dXBoBL+dmPOVgJKv/taOjLMP4owI=";
   };
-
-  vendorHash = "sha256-9jyR7RLpqdDvwgqlrvToKQlClRbk9ELxapbgb/OUB4I=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -44,6 +37,7 @@ buildGoModule (finalAttrs: {
     gtk3
   ];
 
+  vendorHash = "sha256-9jyR7RLpqdDvwgqlrvToKQlClRbk9ELxapbgb/OUB4I=";
   env.CGO_ENABLED = 1;
 
   postInstall = ''
@@ -62,12 +56,17 @@ buildGoModule (finalAttrs: {
     )
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
-    homepage = "https://github.com/nwg-piotr/nwg-look";
     description = "GTK settings editor, designed to work properly in wlroots-based Wayland environment";
+    homepage = "https://github.com/nwg-piotr/nwg-look";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ max-amb ];
+    platforms = lib.platforms.linux;
     mainProgram = "nwg-look";
   };
 })

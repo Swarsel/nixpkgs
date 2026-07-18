@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
   blas,
+  cmake,
+  hdf5,
   lapack,
   superlu,
-  hdf5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,7 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AYLWfWlJ5DR6C8YvyMJ5O+frIDxx8Z7f+T+MRf1KgZA=";
   };
 
+  patches = [ ./use-unix-config-on-OS-X.patch ];
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     blas
     lapack
@@ -31,15 +33,15 @@ stdenv.mkDerivation (finalAttrs: {
     "-DDETECT_HDF5=ON"
   ];
 
-  patches = [ ./use-unix-config-on-OS-X.patch ];
-
   meta = {
     description = "C++ linear algebra library";
     homepage = "https://arma.sourceforge.net";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       juliendehos
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

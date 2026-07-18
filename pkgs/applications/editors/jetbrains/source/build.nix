@@ -1,44 +1,44 @@
 {
-  fetchFromGitHub,
-  fetchurl,
-  fetchzip,
   lib,
-  linkFarm,
-  makeWrapper,
-  runCommand,
   stdenv,
-  stdenvNoCC,
-  rustPlatform,
-  callPackage,
-
+  fetchurl,
+  fetchFromGitHub,
   ant,
+  callPackage,
   cmake,
+  fetchzip,
   fsnotifier,
   glib,
   glibc,
   jetbrains,
   kotlin,
   libdbusmenu,
+  libx11,
+  linkFarm,
+  makeWrapper,
   maven,
   p7zip,
   pkg-config,
-  libx11,
+  runCommand,
+  rustPlatform,
+  stdenvNoCC,
 }:
 {
-  version,
+  androidHash,
   buildNumber,
   buildType,
   ideaHash,
-  androidHash,
   jpsHash,
-  restarterHash,
+  kotlin-jps-plugin,
   mvnDeps,
   repositories,
-  kotlin-jps-plugin,
+  restarterHash,
+  version,
 }:
 let
   kotlin' = kotlin.overrideAttrs (oldAttrs: {
     version = "2.2.20";
+
     src = fetchurl {
       url = oldAttrs.src.url;
       hash = "sha256-gfAmTJBztcu9s/+EGM8sXawHaHn8FW+hpkYvWlrMRCA=";
@@ -48,17 +48,17 @@ let
   jbr = jetbrains.jdk-no-jcef-21;
 
   ideaSrc = fetchFromGitHub {
+    hash = ideaHash;
     owner = "jetbrains";
     repo = "intellij-community";
     rev = "${buildType}/${version}";
-    hash = ideaHash;
   };
 
   androidSrc = fetchFromGitHub {
+    hash = androidHash;
     owner = "jetbrains";
     repo = "android";
     rev = "${buildType}/${version}";
-    hash = androidHash;
   };
 
   src = runCommand "source" { } ''
@@ -69,15 +69,18 @@ let
 
   libdbusmenu-jb = libdbusmenu.overrideAttrs (old: {
     version = "jetbrains-fork";
+
     src = fetchFromGitHub {
       owner = "jetbrains";
       repo = "libdbusmenu";
       rev = "d8a49303f908a272e6670b7cee65a2ba7c447875";
       hash = "sha256-u87ZgbfeCPJ0qG8gsom3gFaZxbS5NcHEodb0EVakk60=";
     };
+
     configureFlags = old.configureFlags ++ [
       "--enable-static"
     ];
+
     installPhase = ''
       runHook preInstall
 
@@ -89,27 +92,29 @@ let
   });
 
   libdbm = stdenv.mkDerivation {
+    inherit src;
     pname = "libdbm";
     version = buildNumber;
-    nativeBuildInputs = [
-      cmake
-      pkg-config
-    ];
-    buildInputs = [
-      glib
-      libx11
-      libdbusmenu
-    ];
-    inherit src;
-    sourceRoot = "${src.name}/native/LinuxGlobalMenu";
     patches = [ ../patches/libdbm-headers.patch ];
+
     postPatch = ''
       # Fix the build with CMake 4.
       substituteInPlace CMakeLists.txt \
         --replace-fail 'cmake_minimum_required(VERSION 2.6.0)' 'cmake_minimum_required(VERSION 3.10)'
       cp ${libdbusmenu-jb}/lib/libdbusmenu-glib.a libdbusmenu-glib.a
     '';
-    passthru.patched-libdbusmenu = libdbusmenu-jb;
+
+    nativeBuildInputs = [
+      cmake
+      pkg-config
+    ];
+
+    buildInputs = [
+      glib
+      libx11
+      libdbusmenu
+    ];
+
     installPhase = ''
       runHook preInstall
 
@@ -118,37 +123,41 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = "${src.name}/native/LinuxGlobalMenu";
+    passthru.patched-libdbusmenu = libdbusmenu-jb;
   };
 
   restarter = rustPlatform.buildRustPackage {
+    inherit src;
     pname = "restarter";
     version = buildNumber;
-    inherit src;
-    sourceRoot = "${src.name}/native/restarter";
-
-    cargoHash = restarterHash;
 
     # Allow static linking
     buildInputs = [
       glibc
       glibc.static
     ];
+
+    cargoHash = restarterHash;
+    sourceRoot = "${src.name}/native/restarter";
   };
 
   jpsRepo = callPackage ./jps_repo.nix { inherit jpsHash src jbr; };
 
   jps-bootstrap = stdenvNoCC.mkDerivation {
+    inherit src;
     pname = "jps-bootstrap";
     version = buildNumber;
-    inherit src;
-    sourceRoot = "${src.name}/platform/jps-bootstrap";
+    patches = [ ../patches/kotlinc-path.patch ];
+    postPatch = "sed -i 's|KOTLIN_PATH_HERE|${kotlin'}|' src/main/java/org/jetbrains/jpsBootstrap/KotlinCompiler.kt";
+
     nativeBuildInputs = [
       ant
       makeWrapper
       jbr
     ];
-    patches = [ ../patches/kotlinc-path.patch ];
-    postPatch = "sed -i 's|KOTLIN_PATH_HERE|${kotlin'}|' src/main/java/org/jetbrains/jpsBootstrap/KotlinCompiler.kt";
+
     buildPhase = ''
       runHook preBuild
 
@@ -157,6 +166,7 @@ let
 
       runHook postBuild
     '';
+
     installPhase = ''
       runHook preInstall
 
@@ -168,19 +178,23 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = "${src.name}/platform/jps-bootstrap";
   };
 
   artefactsJson = lib.importJSON mvnDeps;
   mkRepoEntry = entry: {
     name = ".m2/repository/" + entry.path;
+
     path = fetchurl {
+      # Do not try to retry 4xx errors
+      curlOptsList = [ "--no-retry-all-errors" ];
+      sha256 = entry.hash;
+
       urls = lib.concatMap (url: [
         "https://cache-redirector.jetbrains.com/${url}/${entry.url}"
         "https://${url}/${entry.url}"
       ]) repositories;
-      # Do not try to retry 4xx errors
-      curlOptsList = [ "--no-retry-all-errors" ];
-      sha256 = entry.hash;
     };
   };
   mvnRepo = linkFarm "intellij-deps" (map mkRepoEntry artefactsJson);
@@ -197,6 +211,8 @@ let
       version = kotlin-jps-plugin.version;
     in
     fetchurl {
+      hash = kotlin-jps-plugin.hash;
+
       urls = map (
         url:
         lib.concatStringsSep "/" [
@@ -207,7 +223,6 @@ let
           "${artefactId}-${version}.jar"
         ]
       ) repoUrls;
-      hash = kotlin-jps-plugin.hash;
     };
 
   targetClass =
@@ -222,26 +237,20 @@ let
       "OpenSourceCommunityInstallersBuildTarget";
 
   xplat-launcher = fetchzip {
+    hash = "sha256-ttrQZUbBvvyH1BSVt1yWOoD82WwRi/hkoRfrsdCjwTA=";
+    stripRoot = false;
+
     urls = [
       "https://cache-redirector.jetbrains.com/intellij-dependencies/org/jetbrains/intellij/deps/launcher/242.22926/launcher-242.22926.tar.gz"
       "https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/org/jetbrains/intellij/deps/launcher/242.22926/launcher-242.22926.tar.gz"
     ];
-    hash = "sha256-ttrQZUbBvvyH1BSVt1yWOoD82WwRi/hkoRfrsdCjwTA=";
-    stripRoot = false;
   };
 
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "${buildType}-oss";
   inherit version buildNumber;
-  name = "${finalAttrs.pname}-${version}.tar.gz";
   inherit src;
-  nativeBuildInputs = [
-    p7zip
-    jbr
-    jps-bootstrap
-  ];
-  repo = mvnRepo;
+  pname = "${buildType}-oss";
 
   patches = [
     ../patches/no-download.patch
@@ -278,6 +287,28 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     echo '${buildNumber}.SNAPSHOT' > build.txt
   '';
 
+  nativeBuildInputs = [
+    p7zip
+    jbr
+    jps-bootstrap
+  ];
+
+  buildPhase = ''
+    runHook preBuild
+
+    java \
+      -Djps.kotlin.home=${kotlin'} \
+      "@java_argfile"
+
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    mv out/*/artifacts/*-no-jbr.tar.gz $out
+    runHook postInstall
+  '';
+
   configurePhase = ''
     runHook preConfigure
 
@@ -297,20 +328,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postConfigure
   '';
-  buildPhase = ''
-    runHook preBuild
 
-    java \
-      -Djps.kotlin.home=${kotlin'} \
-      "@java_argfile"
-
-    runHook postBuild
-  '';
-  installPhase = ''
-    runHook preInstall
-    mv out/*/artifacts/*-no-jbr.tar.gz $out
-    runHook postInstall
-  '';
+  name = "${finalAttrs.pname}-${version}.tar.gz";
+  repo = mvnRepo;
 
   passthru = {
     inherit

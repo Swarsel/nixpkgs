@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoAddDriverRunpath,
   cudaPackages,
-  fetchFromGitHub,
   versionCheckHook,
 }:
 
@@ -15,11 +15,10 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "primesearch";
     repo = "mfaktc";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-t1YaNHFndgNJ5VnUXI8cDJ62bBL7M6Q+by2XKlUleyc=";
+    fetchSubmodules = true;
   };
 
-  enableParallelBuilding = true;
   buildInputs = [
     cudaPackages.cuda_nvcc
     cudaPackages.cuda_cudart
@@ -41,23 +40,27 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  enableParallelBuilding = true;
   versionCheckProgramArg = "-h";
 
   meta = {
     description = "Trial Factoring program using CUDA for GIMPS";
+
     longDescription = ''
       CUDA Program for trial factoring Mersenne primes. Intented for use with GIMPS through autoprimenet.py.
       Note that the mfaktc.ini file, which is in $out/share, must be symlinked to your working directory.
     '';
+
     homepage = "https://github.com/primesearch/mfaktc";
-    downloadPage = "https://github.com/primesearch/mfaktc/releases/tag/${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ dstremur ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ dstremur ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "mfaktc";
+    downloadPage = "https://github.com/primesearch/mfaktc/releases/tag/${finalAttrs.version}";
   };
 })

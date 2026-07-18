@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libtool,
   gettext,
-  pkg-config,
-  vala,
   gnome-common,
   gobject-introspection,
-  libgee,
   json-glib,
-  skkDictionaries,
+  libgee,
+  libtool,
   libxkbcommon,
+  pkg-config,
+  skkDictionaries,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,13 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Dciz5VeflaX2eYt1B90NpgLKNtCHY/CDabuCx+T/SS0=";
   };
 
-  env = {
-    NIX_CFLAGS_COMPILE = toString [
-      "-Wno-error=int-conversion"
-    ];
-  };
-
-  buildInputs = [ libxkbcommon ];
   nativeBuildInputs = [
     vala
     gnome-common
@@ -40,12 +33,19 @@ stdenv.mkDerivation (finalAttrs: {
     gettext
     pkg-config
   ];
+
+  buildInputs = [ libxkbcommon ];
+
   propagatedBuildInputs = [
     libgee
     json-glib
   ];
 
-  configureScript = "./autogen.sh";
+  env = {
+    NIX_CFLAGS_COMPILE = toString [
+      "-Wno-error=int-conversion"
+    ];
+  };
 
   # link SKK-JISYO.L from skkdicts for the bundled tool `skk`
   preInstall = ''
@@ -54,11 +54,12 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${skkDictionaries.l}/share/skk/SKK-JISYO.L $dictDir/
   '';
 
+  configureScript = "./autogen.sh";
   enableParallelBuilding = true;
 
   meta = {
     description = "Library to deal with Japanese kana-to-kanji conversion method";
-    mainProgram = "skk";
+
     longDescription = ''
       Libskk is a library that implements basic features of SKK including:
       new word registration, completion, numeric conversion, abbrev mode, kuten input,
@@ -67,9 +68,11 @@ stdenv.mkDerivation (finalAttrs: {
       as well as various dictionary types including: file dictionary (such as SKK-JISYO.[SML]),
       user dictionary, skkserv, and CDB format dictionary.
     '';
+
     homepage = "https://github.com/ueno/libskk";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ yuriaisaka ];
     platforms = lib.platforms.linux;
+    mainProgram = "skk";
   };
 })

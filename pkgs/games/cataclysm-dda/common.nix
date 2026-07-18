@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  pkg-config,
-  gettext,
-  ncurses,
-  tiles,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
-  libx11,
-  freetype,
-  zlib,
   debug,
+  freetype,
+  gettext,
+  libx11,
+  ncurses,
+  pkg-config,
+  tiles,
   useXdgDir,
+  zlib,
 }:
 
 let
@@ -21,6 +21,12 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "cataclysm-dda";
+
+  postPatch = ''
+    patchShebangs lang/compile_mo.sh
+    substituteInPlace data/fontdata.json \
+      --replace-fail 'data/font/' 'font/'
+  '';
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -37,14 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     freetype
   ]
   ++ lib.optional (!tiles) ncurses;
-
-  postPatch = ''
-    patchShebangs lang/compile_mo.sh
-    substituteInPlace data/fontdata.json \
-      --replace-fail 'data/font/' 'font/'
-  '';
-
-  env.NIX_CFLAGS_COMPILE = optionalString stdenv.hostPlatform.isDarwin "-Wno-missing-noreturn";
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -63,6 +61,8 @@ stdenv.mkDerivation (finalAttrs: {
     "CLANG=1"
     "OSX_MIN=${stdenv.hostPlatform.darwinMinVersion}"
   ];
+
+  env.NIX_CFLAGS_COMPILE = optionalString stdenv.hostPlatform.isDarwin "-Wno-missing-noreturn";
 
   postInstall =
     optionalString tiles ''
@@ -85,13 +85,13 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru = {
-    isTiles = tiles;
     isCurses = !tiles;
+    isTiles = tiles;
   };
 
   meta = {
     description = "Free post-apocalyptic zombie-infested roguelike";
-    mainProgram = "cataclysm-tiles";
+
     longDescription = ''
       Cataclysm: Dark Days Ahead is a roguelike set in a post-apocalyptic world.
       Surviving is difficult: you have been thrown, ill-equipped, into a
@@ -115,13 +115,17 @@ stdenv.mkDerivation (finalAttrs: {
       substances or radiation, now more closely resemble insects, birds or fish
       than their original form.
     '';
+
     homepage = "https://cataclysmdda.org/";
     license = lib.licenses.cc-by-sa-30;
+
     maintainers = with lib.maintainers; [
       mnacamura
       DeeUnderscore
       philocalyst
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "cataclysm-tiles";
   };
 })

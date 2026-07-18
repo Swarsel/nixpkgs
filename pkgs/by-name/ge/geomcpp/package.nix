@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   glm,
@@ -19,11 +19,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-M4a6P6J/PBDklpOiR81Nah0STlXFI48+mQkNqMBicKQ=";
   };
 
+  postPatch = ''
+    echo $version > VERSION
+  '';
+
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     gtest
     tinycmmc
   ];
+
   propagatedBuildInputs = [ glm ];
 
   cmakeFlags = [
@@ -34,15 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    echo $version > VERSION
-  '';
-
   meta = {
     description = "Collection of point, size and rect classes";
     homepage = "https://github.com/Grumbel/geomcpp";
+    license = lib.licenses.free;
     maintainers = [ lib.maintainers.SchweGELBin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.free;
   };
 })

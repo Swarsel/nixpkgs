@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
+  buildPythonPackage,
   numpy,
   pandas,
-  xarray,
+  pytestCheckHook,
+  setuptools,
   traitlets,
+  xarray,
 }:
 
 buildPythonPackage rec {
   pname = "traittypes";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter-widgets";
@@ -22,10 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-RwEZs4QFK+IrPFPBI7+jnQSFQryQFzEbrnOF8OyExuk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ traitlets ];
-
   nativeCheckInputs = [
     numpy
     pandas
@@ -33,11 +28,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ traitlets ];
+
   disabledTests = [
     # AssertionError; see https://github.com/jupyter-widgets/traittypes/issues/55
     "test_initial_values"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "traittypes" ];
 
   meta = {

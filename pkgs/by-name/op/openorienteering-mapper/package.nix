@@ -84,14 +84,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.openorienteering.org/apps/mapper/";
     description = "Orienteering mapmaking program";
+    homepage = "https://www.openorienteering.org/apps/mapper/";
     changelog = "https://github.com/OpenOrienteering/mapper/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       mpickering
       sikmir
     ];
+
     platforms = with lib.platforms; unix;
     mainProgram = "Mapper";
   };

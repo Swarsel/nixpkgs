@@ -1,28 +1,52 @@
 {
-  go,
-  cacert,
-  gitMinimal,
   lib,
   stdenv,
+  cacert,
+  gitMinimal,
+  go,
 }:
 
 lib.extendMkDerivation {
   constructDrv = stdenv.mkDerivation;
+
   excludeDrvArgNames = [
     "overrideModAttrs"
   ];
+
   extendDrvArgs =
     finalAttrs:
     {
-      nativeBuildInputs ? [ ], # Native build inputs used for the derivation.
-      passthru ? { },
-
-      # A function to override the `goModules` derivation.
-      overrideModAttrs ? (finalAttrs: previousAttrs: { }),
-
+      # Go build flags.
+      GOFLAGS ? [ ],
+      # Do not enable this without good reason
+      # IE: programs coupled with the compiler.
+      allowGoReference ? false,
+      # Instead of building binary targets with 'go install', build test binaries with 'go test'.
+      # The binaries found in $out/bin can be executed as go tests outside of the sandbox.
+      # This is mostly useful outside of nixpkgs, for example to build integration/e2e tests
+      # that won't run within the sandbox.
+      buildTestBinaries ? false,
+      # Whether to delete the vendor folder supplied with the source.
+      deleteVendor ? false,
+      # We want parallel builds by default.
+      enableParallelBuilding ? true,
+      # The go.sum file to track which can cause rebuilds.
+      goSum ? null,
+      # Go linker flags.
+      ldflags ? [ ],
+      # Meta data for the final derivation.
+      meta ? { },
       # Directory to the `go.mod` and `go.sum` relative to the `src`.
       modRoot ? "./",
-
+      nativeBuildInputs ? [ ], # Native build inputs used for the derivation.
+      # A function to override the `goModules` derivation.
+      overrideModAttrs ? (finalAttrs: previousAttrs: { }),
+      passthru ? { },
+      # Whether to fetch (go mod download) and proxy the vendor directory.
+      # This is useful if your code depends on c code and go mod tidy does not
+      # include the needed sources to build or if any dependency has case-insensitive
+      # conflicts which will produce platform dependant `vendorHash` checksums.
+      proxyVendor ? false,
       # The SRI hash of the vendored dependencies.
       # If `null`, it means the project either has no external dependencies
       # or the vendored dependencies are already present in the source tree.
@@ -32,40 +56,6 @@ lib.extendMkDerivation {
         else
           "buildGoModule: vendorHash is missing"
       ),
-
-      # The go.sum file to track which can cause rebuilds.
-      goSum ? null,
-
-      # Whether to delete the vendor folder supplied with the source.
-      deleteVendor ? false,
-
-      # Whether to fetch (go mod download) and proxy the vendor directory.
-      # This is useful if your code depends on c code and go mod tidy does not
-      # include the needed sources to build or if any dependency has case-insensitive
-      # conflicts which will produce platform dependant `vendorHash` checksums.
-      proxyVendor ? false,
-
-      # We want parallel builds by default.
-      enableParallelBuilding ? true,
-
-      # Do not enable this without good reason
-      # IE: programs coupled with the compiler.
-      allowGoReference ? false,
-
-      # Meta data for the final derivation.
-      meta ? { },
-
-      # Go linker flags.
-      ldflags ? [ ],
-      # Go build flags.
-      GOFLAGS ? [ ],
-
-      # Instead of building binary targets with 'go install', build test binaries with 'go test'.
-      # The binaries found in $out/bin can be executed as go tests outside of the sandbox.
-      # This is mostly useful outside of nixpkgs, for example to build integration/e2e tests
-      # that won't run within the sandbox.
-      buildTestBinaries ? false,
-
       ...
     }@args:
     {
@@ -76,153 +66,16 @@ lib.extendMkDerivation {
         proxyVendor
         goSum
         ;
-      goModules =
-        if (finalAttrs.vendorHash == null) then
-          ""
-        else
-          (stdenv.mkDerivation {
-            name =
-              let
-                prefix = "${finalAttrs.name or "${finalAttrs.pname}-${finalAttrs.version}"}-";
 
-                # If "goSum" is supplied then it can cause "goModules" to rebuild.
-                # Attach the hash name of the "go.sum" file so we can rebuild when it changes.
-                suffix = lib.optionalString (
-                  finalAttrs.goSum != null
-                ) "-${(lib.removeSuffix "-go.sum" (lib.removePrefix "${builtins.storeDir}/" finalAttrs.goSum))}";
-              in
-              "${prefix}go-modules${suffix}";
-
-            nativeBuildInputs = (finalAttrs.nativeBuildInputs or [ ]) ++ [
-              go
-              gitMinimal
-              cacert
-            ];
-
-            inherit (finalAttrs) src modRoot goSum;
-
-            # The following inheritance behavior is not trivial to expect, and some may
-            # argue it's not ideal. Changing it may break vendor hashes in Nixpkgs and
-            # out in the wild. In anycase, it's documented in:
-            # doc/languages-frameworks/go.section.md.
-            prePatch = finalAttrs.prePatch or "";
-            patches = finalAttrs.patches or [ ];
-            patchFlags = finalAttrs.patchFlags or [ ];
-            postPatch = finalAttrs.postPatch or "";
-            preBuild = finalAttrs.preBuild or "";
-            postBuild = finalAttrs.modPostBuild or "";
-            sourceRoot = finalAttrs.sourceRoot or "";
-            setSourceRoot = finalAttrs.setSourceRoot or "";
-            env = finalAttrs.env or { };
-
-            impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-              "GIT_PROXY_COMMAND"
-              "SOCKS_SERVER"
-              "GOPROXY"
-            ];
-
-            configurePhase =
-              args.modConfigurePhase or ''
-                runHook preConfigure
-                export GOCACHE=$TMPDIR/go-cache
-                export GOPATH="$TMPDIR/go"
-                cd "$modRoot"
-                runHook postConfigure
-              '';
-
-            buildPhase =
-              args.modBuildPhase or (
-                ''
-                  runHook preBuild
-                ''
-                + lib.optionalString finalAttrs.deleteVendor ''
-                  if [ ! -d vendor ]; then
-                    echo "vendor folder does not exist, 'deleteVendor' is not needed"
-                    exit 10
-                  else
-                    rm -rf vendor
-                  fi
-                ''
-                + ''
-                  if [ -d vendor ]; then
-                    echo "vendor folder exists, please set 'vendorHash = null;' in your expression"
-                    exit 10
-                  fi
-
-                  export GIT_SSL_CAINFO=$NIX_SSL_CERT_FILE
-                  ${
-                    if finalAttrs.proxyVendor then
-                      ''
-                        mkdir -p "$GOPATH/pkg/mod/cache/download"
-                        go mod download
-                      ''
-                    else
-                      ''
-                        if (( "''${NIX_DEBUG:-0}" >= 1 )); then
-                          goModVendorFlags+=(-v)
-                        fi
-                        go mod vendor "''${goModVendorFlags[@]}"
-                      ''
-                  }
-
-                  mkdir -p vendor
-
-                  runHook postBuild
-                ''
-              );
-
-            installPhase =
-              args.modInstallPhase or ''
-                runHook preInstall
-
-                ${
-                  if finalAttrs.proxyVendor then
-                    ''
-                      rm -rf "$GOPATH/pkg/mod/cache/download/sumdb"
-                      cp -r --reflink=auto "$GOPATH/pkg/mod/cache/download" $out
-                    ''
-                  else
-                    ''
-                      cp -r --reflink=auto vendor $out
-                    ''
-                }
-
-                if ! [ "$(ls -A $out)" ]; then
-                  echo "vendor folder is empty, please set 'vendorHash = null;' in your expression"
-                  exit 10
-                fi
-
-                runHook postInstall
-              '';
-
-            dontFixup = true;
-
-            outputHashMode = "recursive";
-            outputHash = finalAttrs.vendorHash;
-            # Handle empty `vendorHash`; avoid error:
-            # empty hash requires explicit hash algorithm.
-            outputHashAlgo = if finalAttrs.vendorHash == "" then "sha256" else null;
-            # in case an overlay clears passthru by accident, don't fail evaluation
-          }).overrideAttrs
-            (
-              let
-                pos = builtins.unsafeGetAttrPos "passthru" finalAttrs;
-                posString =
-                  if pos == null then "unknown" else "${pos.file}:${toString pos.line}:${toString pos.column}";
-              in
-              finalAttrs.passthru.overrideModAttrs
-                or (lib.warn "buildGoModule: ${finalAttrs.name or finalAttrs.pname}: passthru.overrideModAttrs missing after overrideAttrs. Last overridden at ${posString}." overrideModAttrs)
-            );
-
+      inherit enableParallelBuilding;
+      inherit allowGoReference;
+      strictDeps = true;
       nativeBuildInputs = [ go ] ++ nativeBuildInputs;
 
       env = args.env or { } // {
         inherit (go) GOOS GOARCH;
-
-        GO111MODULE = "on";
-        GOTOOLCHAIN = "local";
-
         CGO_ENABLED = args.env.CGO_ENABLED or go.CGO_ENABLED;
+        GO111MODULE = "on";
 
         GOFLAGS = toString (
           GOFLAGS
@@ -235,44 +88,9 @@ lib.extendMkDerivation {
               "`-trimpath` is added by default to GOFLAGS by buildGoModule when allowGoReference isn't set to true"
               (lib.optional (!finalAttrs.allowGoReference) "-trimpath")
         );
+
+        GOTOOLCHAIN = "local";
       };
-
-      inherit enableParallelBuilding;
-
-      # If not set to an explicit value, set the buildid empty for reproducibility.
-      ldflags = ldflags ++ lib.optional (!lib.any (lib.hasPrefix "-buildid=") ldflags) "-buildid=";
-
-      configurePhase =
-        args.configurePhase or (
-          ''
-            runHook preConfigure
-
-            export GOCACHE=$TMPDIR/go-cache
-            export GOPATH="$TMPDIR/go"
-            export GOPROXY=off
-            export GOSUMDB=off
-            if [ -f "$NIX_CC_FOR_TARGET/nix-support/dynamic-linker" ]; then
-              export GO_LDSO=$(cat $NIX_CC_FOR_TARGET/nix-support/dynamic-linker)
-            fi
-            cd "$modRoot"
-          ''
-          + lib.optionalString (finalAttrs.vendorHash != null) ''
-            ${
-              if finalAttrs.proxyVendor then
-                ''
-                  export GOPROXY="file://$goModules"
-                ''
-              else
-                ''
-                  rm -rf vendor
-                  cp -r --reflink=auto "$goModules" vendor
-                ''
-            }
-          ''
-          + ''
-            runHook postConfigure
-          ''
-        );
 
       buildPhase =
         args.buildPhase or (
@@ -365,6 +183,7 @@ lib.extendMkDerivation {
         );
 
       doCheck = args.doCheck or (!buildTestBinaries);
+
       checkPhase =
         args.checkPhase or ''
           runHook preCheck
@@ -389,10 +208,181 @@ lib.extendMkDerivation {
           runHook postInstall
         '';
 
-      strictDeps = true;
+      configurePhase =
+        args.configurePhase or (
+          ''
+            runHook preConfigure
 
-      inherit allowGoReference;
+            export GOCACHE=$TMPDIR/go-cache
+            export GOPATH="$TMPDIR/go"
+            export GOPROXY=off
+            export GOSUMDB=off
+            if [ -f "$NIX_CC_FOR_TARGET/nix-support/dynamic-linker" ]; then
+              export GO_LDSO=$(cat $NIX_CC_FOR_TARGET/nix-support/dynamic-linker)
+            fi
+            cd "$modRoot"
+          ''
+          + lib.optionalString (finalAttrs.vendorHash != null) ''
+            ${
+              if finalAttrs.proxyVendor then
+                ''
+                  export GOPROXY="file://$goModules"
+                ''
+              else
+                ''
+                  rm -rf vendor
+                  cp -r --reflink=auto "$goModules" vendor
+                ''
+            }
+          ''
+          + ''
+            runHook postConfigure
+          ''
+        );
+
       disallowedReferences = lib.optional (!finalAttrs.allowGoReference) go;
+
+      goModules =
+        if (finalAttrs.vendorHash == null) then
+          ""
+        else
+          (stdenv.mkDerivation {
+            inherit (finalAttrs) src modRoot goSum;
+            patches = finalAttrs.patches or [ ];
+            postPatch = finalAttrs.postPatch or "";
+
+            nativeBuildInputs = (finalAttrs.nativeBuildInputs or [ ]) ++ [
+              go
+              gitMinimal
+              cacert
+            ];
+
+            env = finalAttrs.env or { };
+            preBuild = finalAttrs.preBuild or "";
+
+            buildPhase =
+              args.modBuildPhase or (
+                ''
+                  runHook preBuild
+                ''
+                + lib.optionalString finalAttrs.deleteVendor ''
+                  if [ ! -d vendor ]; then
+                    echo "vendor folder does not exist, 'deleteVendor' is not needed"
+                    exit 10
+                  else
+                    rm -rf vendor
+                  fi
+                ''
+                + ''
+                  if [ -d vendor ]; then
+                    echo "vendor folder exists, please set 'vendorHash = null;' in your expression"
+                    exit 10
+                  fi
+
+                  export GIT_SSL_CAINFO=$NIX_SSL_CERT_FILE
+                  ${
+                    if finalAttrs.proxyVendor then
+                      ''
+                        mkdir -p "$GOPATH/pkg/mod/cache/download"
+                        go mod download
+                      ''
+                    else
+                      ''
+                        if (( "''${NIX_DEBUG:-0}" >= 1 )); then
+                          goModVendorFlags+=(-v)
+                        fi
+                        go mod vendor "''${goModVendorFlags[@]}"
+                      ''
+                  }
+
+                  mkdir -p vendor
+
+                  runHook postBuild
+                ''
+              );
+
+            postBuild = finalAttrs.modPostBuild or "";
+
+            installPhase =
+              args.modInstallPhase or ''
+                runHook preInstall
+
+                ${
+                  if finalAttrs.proxyVendor then
+                    ''
+                      rm -rf "$GOPATH/pkg/mod/cache/download/sumdb"
+                      cp -r --reflink=auto "$GOPATH/pkg/mod/cache/download" $out
+                    ''
+                  else
+                    ''
+                      cp -r --reflink=auto vendor $out
+                    ''
+                }
+
+                if ! [ "$(ls -A $out)" ]; then
+                  echo "vendor folder is empty, please set 'vendorHash = null;' in your expression"
+                  exit 10
+                fi
+
+                runHook postInstall
+              '';
+
+            configurePhase =
+              args.modConfigurePhase or ''
+                runHook preConfigure
+                export GOCACHE=$TMPDIR/go-cache
+                export GOPATH="$TMPDIR/go"
+                cd "$modRoot"
+                runHook postConfigure
+              '';
+
+            dontFixup = true;
+
+            impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
+              "GIT_PROXY_COMMAND"
+              "SOCKS_SERVER"
+              "GOPROXY"
+            ];
+
+            name =
+              let
+                prefix = "${finalAttrs.name or "${finalAttrs.pname}-${finalAttrs.version}"}-";
+
+                # If "goSum" is supplied then it can cause "goModules" to rebuild.
+                # Attach the hash name of the "go.sum" file so we can rebuild when it changes.
+                suffix = lib.optionalString (
+                  finalAttrs.goSum != null
+                ) "-${(lib.removeSuffix "-go.sum" (lib.removePrefix "${builtins.storeDir}/" finalAttrs.goSum))}";
+              in
+              "${prefix}go-modules${suffix}";
+
+            outputHash = finalAttrs.vendorHash;
+            # Handle empty `vendorHash`; avoid error:
+            # empty hash requires explicit hash algorithm.
+            outputHashAlgo = if finalAttrs.vendorHash == "" then "sha256" else null;
+            outputHashMode = "recursive";
+            patchFlags = finalAttrs.patchFlags or [ ];
+            # The following inheritance behavior is not trivial to expect, and some may
+            # argue it's not ideal. Changing it may break vendor hashes in Nixpkgs and
+            # out in the wild. In anycase, it's documented in:
+            # doc/languages-frameworks/go.section.md.
+            prePatch = finalAttrs.prePatch or "";
+            setSourceRoot = finalAttrs.setSourceRoot or "";
+            sourceRoot = finalAttrs.sourceRoot or "";
+            # in case an overlay clears passthru by accident, don't fail evaluation
+          }).overrideAttrs
+            (
+              let
+                pos = builtins.unsafeGetAttrPos "passthru" finalAttrs;
+                posString =
+                  if pos == null then "unknown" else "${pos.file}:${toString pos.line}:${toString pos.column}";
+              in
+              finalAttrs.passthru.overrideModAttrs
+                or (lib.warn "buildGoModule: ${finalAttrs.name or finalAttrs.pname}: passthru.overrideModAttrs missing after overrideAttrs. Last overridden at ${posString}." overrideModAttrs)
+            );
+
+      # If not set to an explicit value, set the buildid empty for reproducibility.
+      ldflags = ldflags ++ lib.optional (!lib.any (lib.hasPrefix "-buildid=") ldflags) "-buildid=";
 
       passthru = {
         inherit go;

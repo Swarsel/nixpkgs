@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   makeWrapper,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -16,16 +16,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  unpackCmd = "unzip -q $curSrc -x '__MACOSX/*'";
 
   nativeBuildInputs = [
     makeWrapper
     unzip
   ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -37,6 +32,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  sourceRoot = ".";
+  unpackCmd = "unzip -q $curSrc -x '__MACOSX/*'";
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -44,9 +42,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://orionbrowser.com/";
     changelog = "https://orionbrowser.com/updates/orion-release-notes";
     license = lib.licenses.unfree;
-    mainProgram = "orion";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ pradyuman ];
     platforms = [ "aarch64-darwin" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "orion";
   };
 })

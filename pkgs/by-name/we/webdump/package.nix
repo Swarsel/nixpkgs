@@ -1,7 +1,7 @@
 {
   lib,
-  fetchgit,
   stdenv,
+  fetchgit,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "webdump";
@@ -16,8 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
-    homepage = "https://www.codemadness.org/git/webdump";
     description = "HTML to plain-text converter for webpages";
+    homepage = "https://www.codemadness.org/git/webdump";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ eyenx ];
     mainProgram = "webdump";

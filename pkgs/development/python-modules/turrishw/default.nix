@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "turrishw";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "turris-cz";
@@ -19,13 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-LQ1ebcVQo7jixAKOPg/oNBnRU8AZebHANfDU4lamB8g=";
   };
 
-  build-system = [ hatchling ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # Tests don't work on darwin
   doCheck = !stdenv.hostPlatform.isDarwin;
-
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "turrishw" ];
 
   meta = {

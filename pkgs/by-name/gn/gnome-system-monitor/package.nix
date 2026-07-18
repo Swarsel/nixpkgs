@@ -1,26 +1,26 @@
 {
   lib,
   stdenv,
-  gettext,
   fetchurl,
-  pkg-config,
-  gtkmm4,
+  adwaita-icon-theme,
   bash,
   catch2_3,
-  gtk4,
-  libadwaita,
+  gdk-pixbuf,
+  gettext,
   glib,
-  wrapGAppsHook4,
+  gnome,
+  gsettings-desktop-schemas,
+  gtk4,
+  gtkmm4,
+  itstool,
+  libadwaita,
+  libgtop,
+  librsvg,
   meson,
   ninja,
-  gsettings-desktop-schemas,
-  itstool,
-  gnome,
-  adwaita-icon-theme,
-  librsvg,
-  gdk-pixbuf,
-  libgtop,
+  pkg-config,
   systemd,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -76,11 +76,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/SystemMonitor/";
     description = "System Monitor shows you what programs are running and how much processor time, memory, and disk space are being used";
-    mainProgram = "gnome-system-monitor";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://apps.gnome.org/SystemMonitor/";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-system-monitor";
+    teams = [ lib.teams.gnome ];
   };
 })

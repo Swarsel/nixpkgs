@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchPnpmDeps,
+  nodejs,
   pnpmConfigHook,
   pnpm_10,
-  nodejs,
+  stdenvNoCC,
 }:
 let
   pnpm = pnpm_10;
@@ -21,25 +21,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-D76gZR2yEZJrfaesomrpyMg/OPRfVjdDUwcl0EqqNmg=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-L+lLJICyh7BhW9CF0+yhYginUx95EQ4de9gXQl8XmOo=";
-  };
-
-  nativeBuildInputs = [
-    pnpmConfigHook
-    pnpm
-    nodejs
-  ];
-
   # Upstream tries to get the version via git; since Nix' fetchers don't give us
   # the .git directory this'll fail, so we provide it manually
   postPatch = ''
     substituteInPlace package.json \
       --replace-fail 'VERSION=$(git describe --tags)' 'VERSION=${finalAttrs.version}'
   '';
+
+  nativeBuildInputs = [
+    pnpmConfigHook
+    pnpm
+    nodejs
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -57,6 +50,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-L+lLJICyh7BhW9CF0+yhYginUx95EQ4de9gXQl8XmOo=";
+  };
 
   meta = {
     description = "Home Assistant Lovelace card that wraps other cards in a collapsible expander";

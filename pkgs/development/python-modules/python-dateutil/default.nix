@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "python-dateutil";
   version = "2.9.0.post0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,11 +21,10 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ six ];
-
   # cyclic dependency: tests need freezegun, which depends on python-dateutil
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "dateutil.easter"
@@ -39,13 +37,15 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    changelog = "https://github.com/dateutil/dateutil/blob/${version}/NEWS";
     description = "Powerful extensions to the standard datetime module";
     homepage = "https://github.com/dateutil/dateutil/";
+    changelog = "https://github.com/dateutil/dateutil/blob/${version}/NEWS";
+
     license = with lib.licenses; [
       asl20
       bsd3
     ];
+
     maintainers = with lib.maintainers; [ dotlambda ];
   };
 }

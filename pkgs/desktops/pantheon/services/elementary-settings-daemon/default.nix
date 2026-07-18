@@ -2,11 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
   accountsservice,
   dbus,
   desktop-file-utils,
@@ -17,11 +12,16 @@
   glib,
   gnome-settings-daemon,
   gobject-introspection,
-  gtk3,
   granite,
+  gtk3,
   libgee,
+  meson,
+  ninja,
+  nix-update-script,
   packagekit,
+  pkg-config,
   systemd,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -70,8 +70,8 @@ stdenv.mkDerivation rec {
     description = "Settings daemon for Pantheon";
     homepage = "https://github.com/elementary/settings-daemon";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
     mainProgram = "io.elementary.settings-daemon";
+    teams = [ lib.teams.pantheon ];
   };
 }

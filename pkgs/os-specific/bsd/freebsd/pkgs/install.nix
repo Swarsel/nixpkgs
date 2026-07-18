@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  mkDerivation,
-  writeShellScript,
-  freebsd-lib,
-  bsdSetupHook,
-  freebsdSetupHook,
-  makeMinimal,
-  mandoc,
-  groff,
   boot-install,
-  install,
+  bsdSetupHook,
   compatIfNeeded,
+  freebsd-lib,
+  freebsdSetupHook,
+  groff,
+  install,
   libmd,
   libnetbsd,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
+  writeShellScript,
 }:
 
 # HACK: to ensure parent directories exist. This emulates GNU
@@ -31,8 +31,12 @@ let
   };
 in
 mkDerivation {
-  path = "usr.bin/xinstall";
-  extraPaths = [ "contrib/mtree" ];
+  outputs = [
+    "out"
+    "man"
+    "test"
+  ];
+
   nativeBuildInputs = [
     bsdSetupHook
     freebsdSetupHook
@@ -41,7 +45,7 @@ mkDerivation {
     groff
     (if stdenv.hostPlatform == stdenv.buildPlatform then boot-install else install)
   ];
-  skipIncludesPhase = true;
+
   buildInputs =
     compatIfNeeded
     ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [
@@ -50,6 +54,7 @@ mkDerivation {
     ++ [
       libnetbsd
     ];
+
   makeFlags = [
     "STRIP=-s" # flag to install, not command
     "MK_WERROR=no"
@@ -59,15 +64,15 @@ mkDerivation {
     "BOOTSTRAPPING=1"
     "INSTALL=boot-install"
   ];
+
   postInstall = ''
     install -C -m 0550 ${binstall} $out/bin/binstall
     substituteInPlace $out/bin/binstall --subst-var out
     mv $out/bin/install $out/bin/xinstall
     ln -s ./binstall $out/bin/install
   '';
-  outputs = [
-    "out"
-    "man"
-    "test"
-  ];
+
+  extraPaths = [ "contrib/mtree" ];
+  path = "usr.bin/xinstall";
+  skipIncludesPhase = true;
 }

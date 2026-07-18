@@ -45,10 +45,10 @@ let
       gemdir + "/gemset.nix";
 
   gems = bundlerEnv {
-    name = "whatweb-env";
     inherit ruby_3_4;
     inherit gemdir;
     inherit gemfile lockfile gemset;
+    name = "whatweb-env";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -62,16 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-0oU3DAAwJRGUrrzxZUm8TZ1dlsufzTlonkgdVYsh4mQ=";
   };
 
-  prePatch = ''
-    substituteInPlace Makefile \
-      --replace "/usr/local" "$out" \
-      --replace "/usr" "$out" \
-      --replace "bundle install" "echo 'Skipping bundle install in nix build'"
-  '';
-
   buildInputs = [ gems ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   installPhase = ''
     runHook preInstall
@@ -89,15 +80,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  prePatch = ''
+    substituteInPlace Makefile \
+      --replace "/usr/local" "$out" \
+      --replace "/usr" "$out" \
+      --replace "bundle install" "echo 'Skipping bundle install in nix build'"
+  '';
+
   passthru = {
     withMongo = withMongo;
     withRchardet = withRchardet;
   };
 
-  doInstallCheck = true;
-
   meta = {
     description = "Next generation web scanner";
+
     longDescription = ''
       WhatWeb is a website fingerprinting tool that identifies web technologies such as CMSs, blogging platforms,
       analytics packages, JavaScript libraries, web servers, and embedded devices. With over 1800 plugins, it detects software
@@ -114,10 +114,11 @@ stdenv.mkDerivation (finalAttrs: {
 
       This build includes character set detection capabilities, which may impact performance.
     '';
-    mainProgram = "whatweb";
+
     homepage = "https://github.com/urbanadventurer/whatweb";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "whatweb";
   };
 })

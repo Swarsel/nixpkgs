@@ -20,8 +20,6 @@ stdenv.mkDerivation {
 
   strictDeps = true;
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     meson
     ninja
@@ -35,18 +33,21 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Compact interpreter for a minimal lisp/scheme dialect";
     homepage = "https://git.sr.ht/~ft/femtolisp";
+
     license = with lib.licenses; [
       mit
       bsd3
     ];
+
     maintainers = with lib.maintainers; [ moody ];
-    broken = stdenv.hostPlatform.isDarwin;
     platforms = lib.platforms.unix;
     mainProgram = "sl";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

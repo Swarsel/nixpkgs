@@ -1,7 +1,7 @@
 {
-  buildDunePackage,
-  fetchurl,
   lib,
+  fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage rec {
@@ -14,7 +14,6 @@ buildDunePackage rec {
   };
 
   doCheck = true;
-
   duneVersion = "3";
 
   meta = {

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   zlib,
 }:
 
@@ -20,26 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      # https://github.com/seryrzu/tandem_aligner/pull/4
-      url = "https://github.com/seryrzu/tandem_aligner/commit/8b516c94f90aaa9cb84278aa811285d4204b03a9.patch";
       hash = "sha256-kD46SykXklG/avK0+sc61YKFw9Bes8ZgFAjVXmcpN8k=";
       stripLen = 1;
+      # https://github.com/seryrzu/tandem_aligner/pull/4
+      url = "https://github.com/seryrzu/tandem_aligner/commit/8b516c94f90aaa9cb84278aa811285d4204b03a9.patch";
     })
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/tandem_aligner";
-
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ zlib ];
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/bin
-    cp src/projects/tandem_aligner/tandem_aligner $out/bin
-    runHook postInstall
-  '';
-
   doCheck = true;
 
   # adapted from target test_launch in Makefile
@@ -55,6 +44,15 @@ stdenv.mkDerivation (finalAttrs: {
     diff $TMPDIR/test_launch/cigar.txt $src/tandem_aligner/test_dataset/true_cigar.txt
     runHook postCheck
   '';
+
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/bin
+    cp src/projects/tandem_aligner/tandem_aligner $out/bin
+    runHook postInstall
+  '';
+
+  sourceRoot = "${finalAttrs.src.name}/tandem_aligner";
 
   meta = {
     description = "Parameter-free algorithm for sequence alignment";

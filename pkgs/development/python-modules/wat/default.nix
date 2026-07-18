@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   nuclear,
   pydantic,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "wat";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "igrek51";
@@ -20,18 +19,19 @@ buildPythonPackage rec {
     hash = "sha256-ns5eF5jsmwCvx9jnTLG9w0ujH3cPAjzy9bRMgQHVKj4=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     nuclear
     pydantic
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "wat" ];
 
   meta = {
-    homepage = "https://igrek51.github.io/wat/";
     description = "Deep inspection of python objects";
+    homepage = "https://igrek51.github.io/wat/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ parras ];
   };

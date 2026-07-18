@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "pyflic";
   version = "2.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "soldag";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # Project thas no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyflic" ];
 
   meta = {

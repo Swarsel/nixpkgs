@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
   testers,
+  zlib,
 }:
 
 assert stdenv.hostPlatform == stdenv.buildPlatform -> zlib != null;
@@ -17,25 +17,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tGNfFbitzMitCTTupIXvWcxMriTQ8DAKmpQeUZdP/Mc=";
   };
 
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace pngconf.h --replace-fail '<fp.h>' '<math.h>'
-  '';
-
   outputs = [
     "out"
     "dev"
     "man"
   ];
 
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace pngconf.h --replace-fail '<fp.h>' '<math.h>'
+  '';
+
   propagatedBuildInputs = [ zlib ];
-
   configureFlags = [ "--enable-static" ];
-
   postInstall = ''mv "$out/bin" "$dev/bin"'';
 
   passthru = {
     inherit zlib;
-
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
@@ -44,11 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "http://www.libpng.org/pub/png/libpng.html";
     license = lib.licenses.libpng;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     branch = "1.2";
+
     pkgConfigModules = [
       "libpng"
       "libpng12"
     ];
-    platforms = lib.platforms.unix;
   };
 })

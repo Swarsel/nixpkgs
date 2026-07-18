@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitUpdater,
 }:
 
@@ -16,12 +16,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-DK0kbvM11t64nGkrzThZgSruHTCHAPP374YPWmoM50g=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/v2";
-
   vendorHash = "sha256-VpNr06IiVKpMsJXzcKCuNfJ+T+zeA9dMBMp6jeCRgn8=";
-
   doCheck = false; # uses network to fetch data sources
-
+  sourceRoot = "${finalAttrs.src.name}/v2";
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
@@ -29,7 +26,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/glitchedgitz/cook";
     changelog = "https://github.com/glitchedgitz/cook/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "cook";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "cook";
   };
 })

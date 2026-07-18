@@ -16,15 +16,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1yldkhsdzm0a41a0i881bin2jklhp85y3ah245jd6fz3npcx7l85";
   };
 
+  buildInputs = [ jdk ];
+
   env = {
     JAVA_HOME = jdk;
     PREFIX = "\${out}";
   };
 
-  buildInputs = [ jdk ];
-
   meta = {
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
+    platforms = lib.platforms.linux;
   };
 })

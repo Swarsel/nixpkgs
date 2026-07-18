@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
   meson,
   ninja,
-  boost,
   pandoc,
   pkg-config,
-  xercesc,
-  xalanc,
   qt6,
   wrapGAppsHook3,
+  xalanc,
+  xercesc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -56,22 +56,24 @@ stdenv.mkDerivation (finalAttrs: {
     xalanc
   ];
 
-  dontWrapGApps = true;
-
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+
   meta = {
     description = "Open source beer recipe creation tool";
-    mainProgram = "brewtarget";
     homepage = "https://www.brewtarget.beer";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       avnik
       mmahut
       ilkecan
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "brewtarget";
   };
 })

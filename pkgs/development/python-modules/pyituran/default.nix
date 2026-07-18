@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pyituran";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "shmuelzon";
@@ -25,15 +24,14 @@ buildPythonPackage rec {
       --replace-fail 'os.environ["VERSION"]' '"${version}"'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pyituran" ];
 
   meta = {

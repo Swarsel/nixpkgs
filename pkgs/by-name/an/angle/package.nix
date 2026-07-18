@@ -1,23 +1,23 @@
 {
-  stdenv,
-  gn,
-  ninja,
-  llvmPackages_21,
-  gclient2nix,
-  pkg-config,
-  glib,
-  python3,
-  symlinkJoin,
   lib,
-  libxi,
-  libxext,
-  libx11,
-  libxcb,
-  wayland,
-  pciutils,
-  libGL,
+  stdenv,
   apple-sdk_15,
   fixDarwinDylibNames,
+  gclient2nix,
+  glib,
+  gn,
+  libGL,
+  libx11,
+  libxcb,
+  libxext,
+  libxi,
+  llvmPackages_21,
+  ninja,
+  pciutils,
+  pkg-config,
+  python3,
+  symlinkJoin,
+  wayland,
   xcbuild,
 }:
 let
@@ -25,17 +25,12 @@ let
   llvmMajorVersion = lib.versions.major llvmPackages.llvm.version;
   arch = stdenv.hostPlatform.parsed.cpu.name;
   triplet = lib.getAttr arch {
-    "x86_64" = "x86_64-unknown-linux-gnu";
     "aarch64" = "aarch64-unknown-linux-gnu";
     "riscv64" = "riscv64-unknown-linux-gnu";
+    "x86_64" = "x86_64-unknown-linux-gnu";
   };
 
   clang = symlinkJoin {
-    name = "angle-clang-llvm-join";
-    paths = [
-      llvmPackages.llvm
-      llvmPackages.clang
-    ];
     postBuild =
       if stdenv.hostPlatform.isDarwin then
         ''
@@ -51,63 +46,18 @@ let
           ln -s $out/resource-root/lib/linux \
             $out/lib/clang/${llvmMajorVersion}/lib/${triplet}
         '';
+
+    name = "angle-clang-llvm-join";
+
+    paths = [
+      llvmPackages.llvm
+      llvmPackages.clang
+    ];
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "angle";
   version = "7258";
-
-  gclientDeps = gclient2nix.importGclientDeps ./info.json;
-  sourceRoot = "src";
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    gn
-    ninja
-    gclient2nix.gclientUnpackHook
-    pkg-config
-    python3
-    llvmPackages.bintools
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    fixDarwinDylibNames
-    xcbuild
-  ];
-
-  buildInputs =
-    lib.optionals stdenv.hostPlatform.isLinux [
-      glib
-      libxcb.dev
-      libx11.dev
-      libxext.dev
-      libxi
-      wayland.dev
-      pciutils
-      libGL
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      apple-sdk_15
-    ];
-
-  gnFlags = [
-    "is_debug=false"
-    "use_sysroot=false"
-    "clang_base_path=\"${clang}\""
-    "angle_build_tests=false"
-    "concurrent_links=1"
-    "use_custom_libcxx=true"
-    "angle_enable_swiftshader=false"
-    "angle_enable_wgpu=false"
-    # On darwin during linking:
-    # clang++: error: argument unused during compilation: '-stdlib=libc++'
-    "treat_warnings_as_errors=false"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isRiscV64 [
-    # Force clang on riscv64 because default gcc toolchain is unavailable.
-    "is_clang=true"
-  ];
-
-  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-headerpad_max_install_names";
 
   patches = [
     # https://issues.chromium.org/issues/432275627
@@ -139,6 +89,38 @@ stdenv.mkDerivation (finalAttrs: {
     # For sandboxed build on darwin.
     patchShebangs build/toolchain/apple
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    gn
+    ninja
+    gclient2nix.gclientUnpackHook
+    pkg-config
+    python3
+    llvmPackages.bintools
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    fixDarwinDylibNames
+    xcbuild
+  ];
+
+  buildInputs =
+    lib.optionals stdenv.hostPlatform.isLinux [
+      glib
+      libxcb.dev
+      libx11.dev
+      libxext.dev
+      libxi
+      wayland.dev
+      pciutils
+      libGL
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      apple-sdk_15
+    ];
+
+  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-headerpad_max_install_names";
 
   installPhase = ''
     runHook preInstall
@@ -191,20 +173,46 @@ stdenv.mkDerivation (finalAttrs: {
         $out/lib/libGLESv1_CM.dylib
   '';
 
+  gclientDeps = gclient2nix.importGclientDeps ./info.json;
+
+  gnFlags = [
+    "is_debug=false"
+    "use_sysroot=false"
+    "clang_base_path=\"${clang}\""
+    "angle_build_tests=false"
+    "concurrent_links=1"
+    "use_custom_libcxx=true"
+    "angle_enable_swiftshader=false"
+    "angle_enable_wgpu=false"
+    # On darwin during linking:
+    # clang++: error: argument unused during compilation: '-stdlib=libc++'
+    "treat_warnings_as_errors=false"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isRiscV64 [
+    # Force clang on riscv64 because default gcc toolchain is unavailable.
+    "is_clang=true"
+  ];
+
+  sourceRoot = "src";
+
   meta = {
     description = "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android";
+
     longDescription = ''
       The goal of ANGLE is to allow users of multiple operating systems
       to seamlessly run WebGL and other OpenGL ES content by translating
       OpenGL ES API calls to one of the hardware-supported APIs available
       for that platform.
     '';
+
     homepage = "https://angleproject.org";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       jess
       jk
     ];
-    license = lib.licenses.bsd3;
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

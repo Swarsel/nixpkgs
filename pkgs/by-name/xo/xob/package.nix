@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libxrender,
-  libx11,
   libconfig,
+  libx11,
+  libxrender,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     libxrender
@@ -29,7 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "prefix=$(out)" ];
 
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Lightweight overlay bar for the X Window System";
+
     longDescription = ''
       A lightweight configurable overlay volume/backlight/progress/anything bar
       for the X Window System (and Wayland compositors with XWayland). Each
@@ -39,10 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
       alternate color to account for special states (e.g. muted audio). There
       is also support for overflows (when the value exceeds the maximum).
     '';
-    inherit (finalAttrs.src.meta) homepage;
+
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ florentc ];
+    platforms = lib.platforms.unix;
     mainProgram = "xob";
   };
 })

@@ -1,14 +1,14 @@
 {
-  stdenvNoCC,
-  dpkg,
-  makeWrapper,
-  electron,
-  asar,
   lib,
-  version,
-  pname,
-  passthru,
+  asar,
+  dpkg,
+  electron,
+  makeWrapper,
   meta,
+  passthru,
+  pname,
+  stdenvNoCC,
+  version,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -19,16 +19,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     meta
     ;
 
+  src = passthru.sources.${stdenvNoCC.hostPlatform.system};
+
   nativeBuildInputs = [
     dpkg
     makeWrapper
     asar
   ];
-
-  src = passthru.sources.${stdenvNoCC.hostPlatform.system};
-
-  dontConfigure = true;
-  dontBuild = true;
 
   # Rebuild the ASAR archive, hardcoding the resourcesPath
   preInstall = ''
@@ -56,4 +53,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --set-default ELECTRON_IS_DEV 0 \
       --inherit-argv0
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 })

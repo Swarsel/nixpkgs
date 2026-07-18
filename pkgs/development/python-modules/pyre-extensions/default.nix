@@ -12,12 +12,11 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "pyre_extensions"; # changed pname on 0.0.31?
     hash = "sha256-U5ZxXxTqVsTV/QqIxXyn5E+qRo+QWQnt195K2Q7YXlU=";
+    pname = "pyre_extensions"; # changed pname on 0.0.31?
   };
 
   propagatedBuildInputs = [
@@ -25,6 +24,7 @@ buildPythonPackage {
     typing-inspect
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pyre_extensions" ];
 
   meta = {

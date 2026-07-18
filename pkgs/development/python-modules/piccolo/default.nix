@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiosqlite,
   asyncpg,
   black,
   buildPythonPackage,
   colorama,
   email-validator,
-  fetchFromGitHub,
   httpx,
   inflection,
   jinja2,
@@ -24,31 +24,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "piccolo";
   version = "1.35.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "piccolo-orm";
     repo = "piccolo";
     tag = finalAttrs.version;
     hash = "sha256-YyBn9cRloKHCmbVAkG5ruByLbBnTLo0bpPpXwFCmus0=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    black
-    colorama
-    inflection
-    jinja2
-    pydantic
-    targ
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    orjson = [ orjson ];
-    postgres = [ asyncpg ];
-    sqlite = [ aiosqlite ];
   };
 
   nativeCheckInputs = [
@@ -61,7 +42,17 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
-  pythonImportsCheck = [ "piccolo" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    black
+    colorama
+    inflection
+    jinja2
+    pydantic
+    targ
+    typing-extensions
+  ];
 
   disabledTests = [
     # Timing issues
@@ -95,6 +86,15 @@ buildPythonPackage (finalAttrs: {
     "test_warn_if_are_conflicting_objects"
     "test_warn_if_is_conflicting"
   ];
+
+  optional-dependencies = {
+    orjson = [ orjson ];
+    postgres = [ asyncpg ];
+    sqlite = [ aiosqlite ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "piccolo" ];
 
   meta = {
     description = "ORM and query builder which supports asyncio";

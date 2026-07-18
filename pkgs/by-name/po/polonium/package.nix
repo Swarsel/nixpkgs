@@ -19,20 +19,12 @@ buildNpmPackage (finalAttrs: {
 
   npmDepsHash = "sha256-T8dW+ctRlN8fIJtPKy0niWcCuQTd3GV5MbmaZf8CqZk=";
 
-  __structuredAttrs = true;
-
-  dontConfigure = true;
-
   # the installer does a bunch of stuff that fails in our sandbox, so just build here and then we
   # manually do the install
   buildFlags = [
     "res"
     "src"
   ];
-
-  dontNpmBuild = true;
-
-  dontWrapQtApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -43,16 +35,23 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontConfigure = true;
+  dontNpmBuild = true;
+  dontWrapQtApps = true;
+
   meta = {
+    inherit (kdePackages.kwin.meta) platforms;
     description = "Auto-tiler that uses KWin 6.0+ tiling functionality";
     homepage = "https://polonium.vaughanm.xyz/";
-    downloadPage = "https://github.com/zeroxoneafour/polonium/releases";
     changelog = "https://github.com/zeroxoneafour/polonium/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nelind
       HeitorAugustoLN
     ];
-    inherit (kdePackages.kwin.meta) platforms;
+
+    downloadPage = "https://github.com/zeroxoneafour/polonium/releases";
   };
 })

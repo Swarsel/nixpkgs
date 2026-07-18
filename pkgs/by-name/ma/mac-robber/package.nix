@@ -16,9 +16,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # add GCC hardening.
     (fetchurl {
+      hash = "sha256-1ma6Vh1MTE6WlCcm2KzRLK/ZV3hAw7xP25yi7TrIqLI=";
       name = "10_add-GCC-hardening.patch";
       url = "https://salsa.debian.org/pkg-security-team/mac-robber/-/raw/b6a59d78e2f58fbfab7f1b3ed9b72531d28693ca/debian/patches/10_add-GCC-hardening.patch";
-      hash = "sha256-1ma6Vh1MTE6WlCcm2KzRLK/ZV3hAw7xP25yi7TrIqLI=";
     })
   ];
 
@@ -35,10 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Digital investigation tool that collects data from allocated files in a mounted file system";
-    mainProgram = "mac-robber";
     homepage = "https://www.sleuthkit.org/mac-robber/";
+    license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Only;
+    mainProgram = "mac-robber";
   };
 })

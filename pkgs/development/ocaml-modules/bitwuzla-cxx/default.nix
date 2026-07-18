@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   zarith,
 }:
 
@@ -10,10 +10,8 @@ let
 in
 
 buildDunePackage {
-  pname = "bitwuzla-cxx";
   inherit version;
-
-  minimalOCamlVersion = "4.12";
+  pname = "bitwuzla-cxx";
 
   src = fetchurl {
     url = "https://github.com/bitwuzla/ocaml-bitwuzla/releases/download/${version}/bitwuzla-cxx-${version}.tbz";
@@ -21,6 +19,7 @@ buildDunePackage {
   };
 
   propagatedBuildInputs = [ zarith ];
+  minimalOCamlVersion = "4.12";
 
   meta = {
     description = "OCaml binding for the SMT solver Bitwuzla C++ API";

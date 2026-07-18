@@ -32,17 +32,19 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://panthema.net/2013/disk-filltest";
     description = "Simple program to detect bad disks by filling them with random data";
+
     longDescription = ''
       disk-filltest is a tool to check storage disks for coming failures by
       write files with pseudo-random data to the current directory until the
       disk is full, read the files again and verify the sequence written. It
       also can measure read/write speed while filling the disk.
     '';
+
+    homepage = "https://panthema.net/2013/disk-filltest";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "disk-filltest";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "disk-filltest";
   };
 })

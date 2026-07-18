@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  replaceVars,
+  fetchurl,
+  fetchFromGitHub,
   addDriverRunpath,
   callPackage,
-  python313Packages,
-  fetchFromGitHub,
-  fetchurl,
   ffmpeg-headless,
-  sqlite-vec,
   frigate,
-  nixosTests,
   go2rtc,
+  nixosTests,
+  python313Packages,
+  replaceVars,
+  sqlite-vec,
 }:
 
 let
   version = "0.17.2";
 
   src = fetchFromGitHub {
-    name = "frigate-${version}-source";
     owner = "blakeblackshear";
     repo = "frigate";
     tag = "v${version}";
     hash = "sha256-8ujG5rVGqIJxM+IiQKvudrA0xqfz+3Uisl/zXwARPpY=";
+    name = "frigate-${version}-source";
   };
 
   frigate-web = callPackage ./web.nix {
@@ -31,8 +31,11 @@ let
 
   python3Packages = python313Packages.overrideScope (
     self: super: {
+      huggingface-hub = super.huggingface-hub_0;
+
       joserfc = super.joserfc.overridePythonAttrs (oldAttrs: {
         version = "1.1.0";
+
         src = fetchFromGitHub {
           owner = "authlib";
           repo = "joserfc";
@@ -41,7 +44,6 @@ let
         };
       });
 
-      huggingface-hub = super.huggingface-hub_0;
       transformers = super.transformers_4;
     }
   );
@@ -51,19 +53,19 @@ let
   # Tensorflow audio model
   # https://github.com/blakeblackshear/frigate/blob/v0.15.0/docker/main/Dockerfile#L125
   tflite_audio_model = fetchurl {
-    url = "https://www.kaggle.com/api/v1/models/google/yamnet/tfLite/classification-tflite/1/download";
     hash = "sha256-G5cbITJ2AnOl+49dxQToZ4OyeFO7MTXVVa4G8eHjZfM=";
+    url = "https://www.kaggle.com/api/v1/models/google/yamnet/tfLite/classification-tflite/1/download";
   };
 
   # Tensorflow Lite models
   # https://github.com/blakeblackshear/frigate/blob/v0.15.0/docker/main/Dockerfile#L115-L117
   tflite_cpu_model = fetchurl {
-    url = "https://github.com/google-coral/test_data/raw/release-frogfish/ssdlite_mobiledet_coco_qat_postprocess.tflite";
     hash = "sha256-kLszpjTgQZFMwYGapd+ZgY5sOWxNLblSwP16nP/Eck8=";
+    url = "https://github.com/google-coral/test_data/raw/release-frogfish/ssdlite_mobiledet_coco_qat_postprocess.tflite";
   };
   tflite_edgetpu_model = fetchurl {
-    url = "https://github.com/google-coral/test_data/raw/release-frogfish/ssdlite_mobiledet_coco_qat_postprocess_edgetpu.tflite";
     hash = "sha256-Siviu7YU5XbVbcuRT6UnUr8PE0EVEnENNV2X+qGzVkE=";
+    url = "https://github.com/google-coral/test_data/raw/release-frogfish/ssdlite_mobiledet_coco_qat_postprocess_edgetpu.tflite";
   };
 
   # TODO: OpenVino model
@@ -71,16 +73,14 @@ let
   # https://github.com/blakeblackshear/frigate/blob/v0.15.0/docker/main/Dockerfile#L120-L123
   # Convert https://www.kaggle.com/models/tensorflow/ssdlite-mobilenet-v2 with https://github.com/blakeblackshear/frigate/blob/v0.15.0/docker/main/build_ov_model.py into OpenVino IR format
   coco_91cl_bkgr = fetchurl {
-    url = "https://github.com/openvinotoolkit/open_model_zoo/raw/master/data/dataset_classes/coco_91cl_bkgr.txt";
     hash = "sha256-5Cj2vEiWR8Z9d2xBmVoLZuNRv4UOuxHSGZQWTJorXUQ=";
+    url = "https://github.com/openvinotoolkit/open_model_zoo/raw/master/data/dataset_classes/coco_91cl_bkgr.txt";
   };
 in
 python3Packages.buildPythonApplication rec {
-  pname = "frigate";
   inherit version;
-  pyproject = false;
-
   inherit src;
+  pname = "frigate";
 
   patches = [
     # Always lookup ffmpeg from config setting
@@ -148,7 +148,35 @@ python3Packages.buildPythonApplication rec {
       --replace-fail "/audio-labelmap.txt" "${placeholder "out"}/share/frigate/audio-labelmap.txt"
   '';
 
-  dontBuild = true;
+  nativeCheckInputs = with python3Packages; [
+    ffmpeg-headless
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    # Unavailable in the build sandbox
+    substituteInPlace frigate/const.py \
+      --replace-fail "/var/lib/frigate" "$TMPDIR/" \
+      --replace-fail "/var/cache/frigate" "$TMPDIR"
+  '';
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/${python.sitePackages}/frigate
+    cp -R frigate/* $out/${python.sitePackages}/frigate/
+
+    mkdir -p $out/share/frigate
+    cp -R {migrations,labelmap.txt,audio-labelmap.txt} $out/share/frigate/
+
+    tar --extract --gzip --file ${tflite_audio_model}
+    cp --no-preserve=mode ./1.tflite $out/share/frigate/cpu_audio_model.tflite
+
+    cp --no-preserve=mode ${coco_91cl_bkgr} $out/share/frigate/coco_91cl_bkgr.txt
+    sed -i 's/truck/car/g' $out/share/frigate/coco_91cl_bkgr.txt
+
+    runHook postInstall
+  '';
 
   dependencies = with python3Packages; [
     # docker/main/requirements-wheel.txt
@@ -220,36 +248,6 @@ python3Packages.buildPythonApplication rec {
     ws4py
   ];
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/${python.sitePackages}/frigate
-    cp -R frigate/* $out/${python.sitePackages}/frigate/
-
-    mkdir -p $out/share/frigate
-    cp -R {migrations,labelmap.txt,audio-labelmap.txt} $out/share/frigate/
-
-    tar --extract --gzip --file ${tflite_audio_model}
-    cp --no-preserve=mode ./1.tflite $out/share/frigate/cpu_audio_model.tflite
-
-    cp --no-preserve=mode ${coco_91cl_bkgr} $out/share/frigate/coco_91cl_bkgr.txt
-    sed -i 's/truck/car/g' $out/share/frigate/coco_91cl_bkgr.txt
-
-    runHook postInstall
-  '';
-
-  nativeCheckInputs = with python3Packages; [
-    ffmpeg-headless
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    # Unavailable in the build sandbox
-    substituteInPlace frigate/const.py \
-      --replace-fail "/var/lib/frigate" "$TMPDIR/" \
-      --replace-fail "/var/cache/frigate" "$TMPDIR"
-  '';
-
   disabledTests = [
     # Test needs network access
     "test_plus_labelmap"
@@ -260,24 +258,31 @@ python3Packages.buildPythonApplication rec {
     "test_unconfigured_role_can_access_any_stream"
   ];
 
+  dontBuild = true;
+  pyproject = false;
+
   passthru = {
-    web = frigate-web;
     inherit python;
     pythonPath = (python3Packages.makePythonPath dependencies) + ":${frigate}/${python.sitePackages}";
+
     tests = {
       inherit (nixosTests) frigate;
     };
+
+    web = frigate-web;
   };
 
   meta = {
-    changelog = "https://github.com/blakeblackshear/frigate/releases/tag/${src.tag}";
     description = "NVR with realtime local object detection for IP cameras";
+
     longDescription = ''
       A complete and local NVR designed for Home Assistant with AI
       object detection. Uses OpenCV and Tensorflow to perform realtime
       object detection locally for IP cameras.
     '';
+
     homepage = "https://github.com/blakeblackshear/frigate";
+    changelog = "https://github.com/blakeblackshear/frigate/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

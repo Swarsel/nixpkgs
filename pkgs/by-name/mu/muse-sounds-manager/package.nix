@@ -4,18 +4,18 @@
   fetchurl,
   autoPatchelfHook,
   fontconfig,
-  zlib,
   icu,
+  libice,
+  libsm,
   libx11,
   libxext,
   libxi,
   libxrandr,
-  libice,
-  libsm,
+  makeWrapper,
   openssl,
   unzip,
   xdg-utils,
-  makeWrapper,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -46,17 +46,6 @@ stdenv.mkDerivation rec {
   ]
   ++ runtimeDependencies;
 
-  runtimeDependencies = map lib.getLib [
-    icu
-    libx11
-    libxext
-    libxi
-    libxrandr
-    libice
-    libsm
-    openssl
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -76,15 +65,28 @@ stdenv.mkDerivation rec {
 
   dontStrip = true;
 
+  runtimeDependencies = map lib.getLib [
+    icu
+    libx11
+    libxext
+    libxi
+    libxrandr
+    libice
+    libsm
+    openssl
+  ];
+
   meta = {
     description = "Manage Muse Sounds (Muse Hub) libraries for MuseScore";
     homepage = "https://musescore.org/";
     license = lib.licenses.unfree;
-    mainProgram = "muse-sounds-manager";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       sarunint
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "muse-sounds-manager";
   };
 }

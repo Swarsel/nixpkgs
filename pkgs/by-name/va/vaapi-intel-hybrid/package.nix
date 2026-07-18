@@ -4,12 +4,12 @@
   fetchurl,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   cmrt,
+  libGL,
   libdrm,
   libva,
   libx11,
-  libGL,
+  pkg-config,
   wayland,
 }:
 
@@ -27,10 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # driver_init: load libva-x11.so for any ABI version
     (fetchurl {
-      url = "https://github.com/01org/intel-hybrid-driver/pull/26.diff";
       sha256 = "1ql4mbi5x1d2a5c8mkjvciaq60zj8nhx912992winbhfkyvpb3gx";
+      url = "https://github.com/01org/intel-hybrid-driver/pull/26.diff";
     })
   ];
+
+  postPatch = ''
+    patchShebangs ./src/shaders/gpp.py
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -46,28 +50,24 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
   ];
 
-  enableParallelBuilding = true;
-
-  # Workaround build failure on -fno-common toolchains like upstream gcc-10.
-  env.NIX_CFLAGS_COMPILE = "-fcommon";
-
   configureFlags = [
     "--enable-drm"
     "--enable-x11"
     "--enable-wayland"
   ];
 
-  postPatch = ''
-    patchShebangs ./src/shaders/gpp.py
-  '';
+  # Workaround build failure on -fno-common toolchains like upstream gcc-10.
+  env.NIX_CFLAGS_COMPILE = "-fcommon";
 
   preConfigure = ''
     sed -i -e "s,LIBVA_DRIVERS_PATH=.*,LIBVA_DRIVERS_PATH=$out/lib/dri," configure
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://01.org/linuxmedia";
     description = "Intel driver for the VAAPI library with partial HW acceleration";
+    homepage = "https://01.org/linuxmedia";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tadfisher ];
     platforms = lib.platforms.linux;

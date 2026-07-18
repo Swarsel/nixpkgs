@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  testers,
   pkg-config,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,7 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ pkg-config ];
-  enableParallelBuilding = true;
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"
@@ -33,7 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     "lib"
   ];
 
-  checkTarget = "test";
+  doCheck = true;
+
+  preCheck = ''
+    export LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH
+  '';
 
   postInstall = ''
     mkdir -p "$dev/lib/pkgconfig"
@@ -46,12 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
-  doCheck = true;
-
-  preCheck = ''
-    export LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH
-  '';
-
+  checkTarget = "test";
+  enableParallelBuilding = true;
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
@@ -59,7 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/jedisct1/libhydrogen";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.tanya1866 ];
-    pkgConfigModules = [ "libhydrogen" ];
     platforms = lib.platforms.all;
+    pkgConfigModules = [ "libhydrogen" ];
   };
 })

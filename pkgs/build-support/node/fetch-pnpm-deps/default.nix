@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
+  cacert,
   callPackage,
   jq,
-  moreutils,
-  cacert,
   makeSetupHook,
+  moreutils,
   pnpm,
   pnpm-fixup-state-db,
   sqlite,
+  stdenvNoCC,
   writableTmpDirAsHomeHook,
   yq,
   zstd,
@@ -24,13 +24,13 @@ in
 {
   fetchPnpmDeps = lib.makeOverridable (
     {
-      hash ? "",
       pname,
+      fetcherVersion ? null,
+      hash ? "",
       pnpm ? pnpmLatest,
+      pnpmInstallFlags ? [ ],
       pnpmWorkspaces ? [ ],
       prePnpmInstall ? "",
-      pnpmInstallFlags ? [ ],
-      fetcherVersion ? null,
       ...
     }@args:
     let
@@ -74,8 +74,6 @@ in
       (
         args'
         // {
-          name = "${pname}-pnpm-deps";
-
           nativeBuildInputs = [
             cacert
             jq
@@ -88,9 +86,6 @@ in
             zstd
           ]
           ++ args.nativeBuildInputs or [ ];
-
-          impureEnvVars =
-            lib.fetchers.proxyImpureEnvVars ++ [ "NIX_NPM_REGISTRY" ] ++ args.impureEnvVars or [ ];
 
           installPhase = ''
             runHook preInstall
@@ -154,6 +149,9 @@ in
             runHook postInstall
           '';
 
+          dontBuild = true;
+          dontConfigure = true;
+
           fixupPhase = ''
             runHook preFixup
 
@@ -214,14 +212,16 @@ in
             runHook postFixup
           '';
 
+          impureEnvVars =
+            lib.fetchers.proxyImpureEnvVars ++ [ "NIX_NPM_REGISTRY" ] ++ args.impureEnvVars or [ ];
+
+          name = "${pname}-pnpm-deps";
+          outputHashMode = "recursive";
+
           passthru = args.passthru or { } // {
             inherit fetcherVersion;
             serve = throw "fetchPnpmDeps: `serve` has been deprecated as it was removed in pnpm 11 and only had a niche use case."; # Added 2026-06-04
           };
-
-          dontConfigure = true;
-          dontBuild = true;
-          outputHashMode = "recursive";
         }
         // hash'
       )
@@ -229,16 +229,19 @@ in
   );
 
   pnpmConfigHook = makeSetupHook {
-    name = "pnpm-config-hook";
     propagatedBuildInputs = [
       sqlite
       writableTmpDirAsHomeHook
       zstd
     ];
+
+    name = "pnpm-config-hook";
+
     substitutions = {
       npmArch = stdenvNoCC.targetPlatform.node.arch;
       npmPlatform = stdenvNoCC.targetPlatform.node.platform;
     };
+
     meta.license = lib.licenses.mit;
   } ./pnpm-config-hook.sh;
 }

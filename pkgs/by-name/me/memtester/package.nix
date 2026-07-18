@@ -8,15 +8,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "memtester";
   version = "4.7.1";
 
-  preConfigure = ''
-    echo "$CC" > conf-cc
-    echo "$CC" > conf-ld
-  '';
-
   src = fetchurl {
     url = "https://pyropus.ca/software/memtester/old-versions/memtester-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-5CfeZj970i0evuivElBqhSwBC9T8vKHg5rApctKYtbs=";
   };
+
+  preConfigure = ''
+    echo "$CC" > conf-cc
+    echo "$CC" > conf-ld
+  '';
 
   installFlags = [ "INSTALLPATH=$(out)" ];
 

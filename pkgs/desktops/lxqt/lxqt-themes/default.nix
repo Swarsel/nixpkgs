@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  lxqt-build-tools,
   gitUpdater,
+  lxqt-build-tools,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,8 +26,8 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-themes";
     description = "Themes, graphics and icons for LXQt";
+    homepage = "https://github.com/lxqt/lxqt-themes";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxqt ];

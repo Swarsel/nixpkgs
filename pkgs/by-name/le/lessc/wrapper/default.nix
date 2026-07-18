@@ -1,14 +1,22 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   lessc,
+  makeWrapper,
   plugins ? [ ],
 }:
 
 stdenv.mkDerivation {
+  inherit (lessc)
+    version
+    src
+    passthru
+    meta
+    ;
+
   pname = "lessc-with-plugins";
   nativeBuildInputs = [ makeWrapper ];
+
   buildPhase = ''
     mkdir -p $out/bin
 
@@ -17,11 +25,4 @@ stdenv.mkDerivation {
   '';
 
   doUnpack = false;
-
-  inherit (lessc)
-    version
-    src
-    passthru
-    meta
-    ;
 }

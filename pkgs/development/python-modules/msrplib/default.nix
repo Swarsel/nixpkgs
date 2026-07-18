@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unstableGitUpdater,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "msrplib";
   version = "0.21.0-unstable-2026-07-09";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AGProjects";
@@ -19,21 +18,22 @@ buildPythonPackage {
     hash = "sha256-HmIuJl/H94GX0caT+uKriz8RMkpzuFgsPPyPhwo3kHM=";
   };
 
+  # only test requires networking
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
 
-  # only test requires networking
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "msrplib" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "MSRP (RFC4975) client library";
     homepage = "https://github.com/AGProjects/python3-msrplib";
     license = lib.licenses.lgpl21Plus;
+
     teams = [
       lib.teams.ngi
     ];

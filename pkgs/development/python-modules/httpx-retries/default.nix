@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-fancy-pypi-readme,
   hatchling,
   httpx,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "httpx-retries";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "will-ockmore";
@@ -21,18 +20,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-9AQqyveBAqD159J1VhIhp8GrZJLQhJ22A5cFjpaa7o0=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [
     hatch-fancy-pypi-readme
     hatchling
   ];
 
   dependencies = [ httpx ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "httpx_retries" ];
 
   meta = {

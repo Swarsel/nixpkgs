@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   callPackage,
   gitUpdater,
 }:
@@ -19,13 +19,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-    "-X github.com/cloudflare/cloudflared/cmd/cloudflared/updater.BuiltForPackageManager=nixpkgs"
-  ];
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   preCheck = ''
     # Workaround for: sshgen_test.go:74: mkdir /homeless-shelter/.cloudflared: no such file or directory
@@ -75,7 +69,12 @@ buildGoModule (finalAttrs: {
       --replace-warn "TestSupportedCurvesNegotiation" "SkipSupportedCurvesNegotiation"
   '';
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+    "-X github.com/cloudflare/cloudflared/cmd/cloudflared/updater.BuiltForPackageManager=nixpkgs"
+  ];
 
   passthru = {
     tests = callPackage ./tests.nix { inherit (finalAttrs) version; };
@@ -84,6 +83,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Client for various Cloudflare services, including Tunnel, Access, and DNS over HTTPS";
+
     longDescription = ''
       Contains the command-line client for Cloudflare Tunnel, a tunneling daemon that proxies traffic from the Cloudflare network to your origins.
       This daemon sits between Cloudflare network and your origin (e.g. a webserver). Cloudflare attracts client requests and sends them to you
@@ -98,11 +98,11 @@ buildGoModule (finalAttrs: {
       You can instead use [WARP client](https://developers.cloudflare.com/cloudflare-one/team-and-resources/devices/warp/) (`pkgs.cloudflare-warp` or `services.cloudflare-warp` on NixOS)
       to access private origins behind Tunnels for Layer 4 traffic without requiring `cloudflared access` commands on the client side.
     '';
+
     homepage = "https://www.cloudflare.com/products/tunnel";
-    downloadPage = "https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/";
     changelog = "https://raw.githubusercontent.com/cloudflare/cloudflared/refs/tags/${finalAttrs.version}/RELEASE_NOTES";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
+
     maintainers = with lib.maintainers; [
       bbigras
       enorris
@@ -112,6 +112,9 @@ buildGoModule (finalAttrs: {
       wrbbz
       ryand56
     ];
+
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
     mainProgram = "cloudflared";
+    downloadPage = "https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/";
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
-  testers,
+  buildGoModule,
   callPackage,
   ejson2env,
+  nix-update-script,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -28,18 +28,19 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       version = testers.testVersion { package = ejson2env; };
       decryption = callPackage ./test-decryption.nix { };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Decrypt EJSON secrets and export them as environment variables";
     homepage = "https://github.com/Shopify/ejson2env";
-    maintainers = with lib.maintainers; [ viraptor ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ viraptor ];
     mainProgram = "ejson2env";
   };
 })

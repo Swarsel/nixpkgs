@@ -1,27 +1,24 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchPypi,
   portalocker,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
-  version = "0.11.10";
-  pyproject = true;
   pname = "applicationinsights";
-
-  __structuredAttrs = true;
+  version = "0.11.10";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-C3YfPvBoCs9HMZBt/BgH+qbypXFornRZLbAISmCZ97M=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
-
   dependencies = [ portalocker ];
-
+  pyproject = true;
   pythonImportsCheck = [ "applicationinsights" ];
 
   meta = {

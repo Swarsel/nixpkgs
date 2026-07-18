@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   python3,
-  lib,
 }:
 
 let
@@ -12,10 +12,8 @@ in
 stdenv.mkDerivation {
   pname = "auto-patchelf";
   version = "0-unstable-2024-08-14";
-
-  buildInputs = [ pythonEnv ];
-
   src = ./source;
+  buildInputs = [ pythonEnv ];
 
   buildPhase = ''
     runHook preBuild
@@ -35,12 +33,14 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Automatically patch ELF binaries using patchelf";
-    mainProgram = "auto-patchelf";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       Scrumplex
       layus
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "auto-patchelf";
   };
 }

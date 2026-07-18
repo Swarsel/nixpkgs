@@ -1,7 +1,8 @@
 {
-  bzip2,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  bzip2,
   libbacktrace,
   libpq,
   libssh2,
@@ -10,12 +11,11 @@
   lz4,
   meson,
   ninja,
+  nixosTests,
   pkg-config,
   python3,
-  stdenv,
   zlib,
   zstd,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,7 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://pgbackrest.org";
     changelog = "https://github.com/pgbackrest/pgbackrest/releases/tag/release%2F${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "pgbackrest";
     maintainers = with lib.maintainers; [ zaninime ];
+    mainProgram = "pgbackrest";
   };
 })

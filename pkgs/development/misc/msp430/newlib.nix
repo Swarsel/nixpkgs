@@ -1,17 +1,15 @@
 {
-  stdenvNoCC,
   lndir,
-  newlib,
   msp430GccSupport,
+  newlib,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
-  pname = "msp430-${newlib.pname}";
   inherit (newlib) version;
   inherit newlib;
   inherit msp430GccSupport;
-
-  preferLocalBuild = true;
+  pname = "msp430-${newlib.pname}";
   allowSubstitutes = false;
 
   buildCommand = ''
@@ -20,6 +18,8 @@ stdenvNoCC.mkDerivation {
     ${lndir}/bin/lndir -silent $msp430GccSupport/include $out/${newlib.incdir}
     ${lndir}/bin/lndir -silent $msp430GccSupport/lib $out/${newlib.libdir}
   '';
+
+  preferLocalBuild = true;
 
   passthru = {
     inherit (newlib) incdir libdir;

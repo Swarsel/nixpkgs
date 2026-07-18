@@ -1,10 +1,10 @@
 {
   lib,
   buildPythonPackage,
+  click,
   fetchPypi,
   pytestCheckHook,
   setuptools,
-  click,
 }:
 
 let
@@ -14,28 +14,27 @@ in
 buildPythonPackage rec {
   pname = libName;
   version = "3.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = snakeLibName;
     hash = "sha256-uZUAHJsuG0zqDPXzhAp8eRiKjLutBT1pNXK9jBwexGA=";
+    pname = snakeLibName;
   };
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    cli = [ click ];
-  };
-
-  pythonImportsCheck = [ snakeLibName ];
 
   nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.cli;
+  build-system = [ setuptools ];
 
   disabledTests = [
     "test_generate_categories" # touches network
     "test_generate_confusables" # touches network
   ];
+
+  optional-dependencies = {
+    cli = [ click ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ snakeLibName ];
 
   meta =
     let

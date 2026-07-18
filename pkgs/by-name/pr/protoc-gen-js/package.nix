@@ -1,11 +1,11 @@
 {
-  stdenv,
-  gcc14Stdenv,
   lib,
-  buildBazelPackage,
-  bazel_7,
+  stdenv,
   fetchFromGitHub,
+  bazel_7,
+  buildBazelPackage,
   cctools,
+  gcc14Stdenv,
 }:
 
 let
@@ -29,20 +29,25 @@ buildBazelPackage' rec {
     hash = "sha256-eIOtVRnHv2oz4xuVc4aL6JmhpvlODQjXHt1eJHsjnLg=";
   };
 
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    LIBTOOL = "${cctools}/bin/libtool";
+  };
+
   bazel = bazel_7;
-  bazelTargets = [ "generator:protoc-gen-js" ];
+
   bazelBuildFlags = lib.optionals stdenv.cc.isClang [
     "--cxxopt=-x"
     "--cxxopt=c++"
     "--host_cxxopt=-x"
     "--host_cxxopt=c++"
   ];
-  removeRulesCC = false;
-  removeLocalConfigCC = false;
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    LIBTOOL = "${cctools}/bin/libtool";
-  };
+  bazelTargets = [ "generator:protoc-gen-js" ];
+
+  buildAttrs.installPhase = ''
+    mkdir -p $out/bin
+    install -Dm755 bazel-bin/generator/protoc-gen-js $out/bin/
+  '';
 
   fetchAttrs = {
     preInstall = ''
@@ -52,21 +57,21 @@ buildBazelPackage' rec {
     hash = "sha256-znkwUs984vbinz/BLo1uxQ+PvxkpXo719lJu4TD1Vmg=";
   };
 
-  buildAttrs.installPhase = ''
-    mkdir -p $out/bin
-    install -Dm755 bazel-bin/generator/protoc-gen-js $out/bin/
-  '';
+  removeLocalConfigCC = false;
+  removeRulesCC = false;
 
   meta = {
     description = "Protobuf plugin for generating JavaScript code";
-    mainProgram = "protoc-gen-js";
     homepage = "https://github.com/protocolbuffers/protobuf-javascript";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     license = with lib.licenses; [
       asl20
       bsd3
     ];
+
     sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "protoc-gen-js";
   };
 }

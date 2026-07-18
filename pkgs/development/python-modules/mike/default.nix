@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  git,
   importlib-metadata,
   importlib-resources,
   jinja2,
   mkdocs,
   pyparsing,
+  pytestCheckHook,
   pyyaml,
   pyyaml-env-tag,
-  verspec,
-  versionCheckHook,
-  pytestCheckHook,
-  git,
+  setuptools,
   shtab,
-  stdenv,
+  versionCheckHook,
+  verspec,
 }:
 
 buildPythonPackage rec {
   pname = "mike";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jimporter";
@@ -29,26 +28,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-+QFtInHma433XI4EcMTpFKZVdk+x2JREo73qM35G0pQ=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    importlib-metadata
-    importlib-resources
-    jinja2
-    mkdocs
-    pyparsing
-    pyyaml
-    pyyaml-env-tag
-    verspec
-  ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -66,6 +45,26 @@ buildPythonPackage rec {
       --replace-fail "/home/nonexist" "$(mktemp -d)"
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    importlib-metadata
+    importlib-resources
+    jinja2
+    mkdocs
+    pyparsing
+    pyyaml
+    pyyaml-env-tag
+    verspec
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "mike" ];
 
   meta = {

@@ -1,12 +1,12 @@
 {
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   libffi,
   libxml2,
   llvmPackages,
   sphinx,
-  stdenv,
   testers,
   zlib,
   # Boolean flags
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-nLYh6qb/dc+K1tsCVSm/iBzaJPtKPF1Q66yCpLFM6v4=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ cmake ] ++ lib.optionals (withManual || withHTML) [ sphinx ];
 
   buildInputs = [
@@ -49,8 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  strictDeps = true;
-
   # darwin clang adds `-isysroot` when $SDKROOT is set. this confuses the
   # regular expressions for the disabled tests below.
   checkPhase = ''
@@ -62,11 +61,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
-    homepage = "https://github.com/CastXML/CastXML";
     description = "C-family Abstract Syntax Tree XML Output";
+    homepage = "https://github.com/CastXML/CastXML";
     license = lib.licenses.asl20;
-    mainProgram = "castxml";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "castxml";
   };
 })

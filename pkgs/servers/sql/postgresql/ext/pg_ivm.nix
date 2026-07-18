@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -20,8 +20,8 @@ postgresqlBuildExtension (finalAttrs: {
     description = "Materialized views with IVM (Incremental View Maintenance) for PostgreSQL";
     homepage = "https://github.com/sraoss/pg_ivm";
     changelog = "https://github.com/sraoss/pg_ivm/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.postgresql;
     maintainers = [ ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.postgresql;
   };
 })

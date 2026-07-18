@@ -1,15 +1,15 @@
 {
   lib,
-  buildGo126Module,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  buildGo126Module,
   nixosTests,
 }:
 
 let
   hlsJs = fetchurl {
-    url = "https://cdn.jsdelivr.net/npm/hls.js@v1.6.15/dist/hls.min.js";
     hash = "sha256-QTqD4rsMd+0L8L4QXVOdF+9F39mEoLE+zTsUqQE4OTg=";
+    url = "https://cdn.jsdelivr.net/npm/hls.js@v1.6.15/dist/hls.min.js";
   };
 in
 buildGo126Module (finalAttrs: {
@@ -23,8 +23,6 @@ buildGo126Module (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qhW2q3PoOXBRtW4YXKMIYbQG4LypVLcSeV/uQ66hOgg=";
   };
-
-  vendorHash = "sha256-dWMwD1jG7+69d00T/T+7jY6MgodGuBpSBDwEHSGOKLQ=";
 
   postPatch = ''
     cp ${hlsJs} internal/servers/hls/hls.min.js
@@ -43,20 +41,20 @@ buildGo126Module (finalAttrs: {
       --replace-fail '(linux && arm) || (linux && arm64)' 'linux && !linux'
   '';
 
-  subPackages = [ "." ];
-
+  vendorHash = "sha256-dWMwD1jG7+69d00T/T+7jY6MgodGuBpSBDwEHSGOKLQ=";
   # Tests need docker
   doCheck = false;
+  subPackages = [ "." ];
 
   passthru.tests = {
     inherit (nixosTests) mediamtx;
   };
 
   meta = {
-    description = "SRT, WebRTC, RTSP, RTMP, LL-HLS media server and media proxy";
     inherit (finalAttrs.src.meta) homepage;
+    description = "SRT, WebRTC, RTSP, RTMP, LL-HLS media server and media proxy";
     license = lib.licenses.mit;
-    mainProgram = "mediamtx";
     maintainers = with lib.maintainers; [ fpletz ];
+    mainProgram = "mediamtx";
   };
 })

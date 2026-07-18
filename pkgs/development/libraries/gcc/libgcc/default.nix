@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoLibs,
   buildPackages,
   gcc,
   glibc,
   libiberty,
+  stdenvNoLibs,
 }:
 
 let
@@ -26,27 +26,29 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libgcc";
   inherit (gcc.cc) src version;
+  pname = "libgcc";
 
   outputs = [
     "out"
     "dev"
   ];
 
-  strictDeps = true;
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-  nativeBuildInputs = [ libiberty ];
-  buildInputs = [ glibc ];
-
-  postUnpack = ''
-    mkdir -p ./build
-    buildRoot=$(readlink -e "./build")
-  '';
-
   postPatch = gcc.cc.passthru.forceLibgccToBuildCrtStuff + ''
     sourceRoot=$(readlink -e "./libgcc")
   '';
+
+  strictDeps = true;
+  nativeBuildInputs = [ libiberty ];
+  buildInputs = [ glibc ];
+
+  configureFlags = [
+    "cross_compiling=true"
+    "--disable-gcov"
+    "--with-glibc-version=${glibc.version}"
+  ];
+
+  makeFlags = [ "MULTIBUILDTOP:=../" ];
 
   preConfigure = ''
     # Drop in libiberty, as external builds are not expected
@@ -133,22 +135,22 @@ stdenv.mkDerivation (finalAttrs: {
     export LD_FOR_TARGET=${stdenv.cc.bintools}/bin/$LD_FOR_TARGET
   '';
 
-  configurePlatforms = [
-    "build"
-    "host"
-  ];
-  configureFlags = [
-    "cross_compiling=true"
-    "--disable-gcov"
-    "--with-glibc-version=${glibc.version}"
-  ];
-
-  makeFlags = [ "MULTIBUILDTOP:=../" ];
-
   postInstall = ''
     moveToOutput "lib/gcc/${stdenv.hostPlatform.config}/${finalAttrs.version}/include" "$dev"
     mkdir -p "$out/lib" "$dev/include"
     ln -s "$out/lib/gcc/${stdenv.hostPlatform.config}/${finalAttrs.version}"/* "$out/lib"
     ln -s "$dev/lib/gcc/${stdenv.hostPlatform.config}/${finalAttrs.version}/include"/* "$dev/include/"
+  '';
+
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
+  postUnpack = ''
+    mkdir -p ./build
+    buildRoot=$(readlink -e "./build")
   '';
 })

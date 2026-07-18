@@ -2,21 +2,21 @@
   lib,
   stdenv,
   autoreconfHook,
-  pkg-config,
-  libzip,
-  glib,
-  libusb1,
-  libftdi1,
-  check,
-  libserialport,
-  doxygen,
-  glibmm,
-  python3,
-  hidapi,
-  libieee1284,
   bluez,
-  sigrok-firmware-fx2lafw,
+  check,
+  doxygen,
   fetchgit,
+  glib,
+  glibmm,
+  hidapi,
+  libftdi1,
+  libieee1284,
+  libserialport,
+  libusb1,
+  libzip,
+  pkg-config,
+  python3,
+  sigrok-firmware-fx2lafw,
 }:
 stdenv.mkDerivation {
   pname = "libsigrok";
@@ -28,7 +28,7 @@ stdenv.mkDerivation {
     hash = "sha256-j79Wx5FFFKptcwtIjQ0Cvtzl46lnow6bExpMNzI8KlM=";
   };
 
-  enableParallelBuilding = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -36,6 +36,7 @@ stdenv.mkDerivation {
     pkg-config
     python3
   ];
+
   buildInputs = [
     libzip
     glib
@@ -51,8 +52,6 @@ stdenv.mkDerivation {
     bluez
   ];
 
-  strictDeps = true;
-
   postInstall = ''
     mkdir -p $out/etc/udev/rules.d
     cp contrib/*.rules $out/etc/udev/rules.d
@@ -62,6 +61,7 @@ stdenv.mkDerivation {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -73,19 +73,25 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Core library of the sigrok signal analysis software suite";
+
     longDescription = "
       Core library of the sigrok signal analysis software suite
 
       Please note that if you are using slogic devices you must overlay libsigrok-sipeed as this library for your device to work
     ";
+
     homepage = "https://sigrok.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       bjornfor
       vifino
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

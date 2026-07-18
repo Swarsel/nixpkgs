@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     automake
     gettext
   ];
+
   buildInputs = [ ncurses ];
 
   preConfigure =
@@ -38,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   meta = {
-    homepage = "https://gitlab.com/psmisc/psmisc";
     description = "Set of small useful utilities that use the proc filesystem (such as fuser, killall and pstree)";
-    platforms = lib.platforms.linux;
+    homepage = "https://gitlab.com/psmisc/psmisc";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ryantm ];
+    platforms = lib.platforms.linux;
   };
 })

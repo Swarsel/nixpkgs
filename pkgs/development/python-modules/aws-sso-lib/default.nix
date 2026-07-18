@@ -1,21 +1,20 @@
 {
   lib,
+  aws-error-utils,
+  boto3,
   buildPythonPackage,
   fetchPypi,
   poetry-core,
-  aws-error-utils,
-  boto3,
 }:
 
 buildPythonPackage rec {
   pname = "aws-sso-lib";
   version = "1.14.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "aws_sso_lib";
     inherit version;
     hash = "sha256-sCA6ZMy2a6ePme89DrZpr/57wyP2q5yqyX81whoDzqU=";
+    pname = "aws_sso_lib";
   };
 
   build-system = [
@@ -26,6 +25,8 @@ buildPythonPackage rec {
     aws-error-utils
     boto3
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "aws_sso_lib"

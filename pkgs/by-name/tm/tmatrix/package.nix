@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   installShellFiles,
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     installShellFiles
   ];
+
   buildInputs = [ ncurses ];
 
   postInstall = ''
@@ -30,12 +31,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Terminal based replica of the digital rain from The Matrix";
+
     longDescription = ''
       TMatrix is a program that simulates the digital rain form The Matrix.
       It's focused on being the most accurate replica of the digital rain effect
       achievable on a typical terminal, while also being customizable and
       performant.
     '';
+
     homepage = "https://github.com/M4444/TMatrix";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.all;

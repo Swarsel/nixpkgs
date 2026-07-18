@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   gitUpdater,
+  ninja,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   passthru = {
     updateScript = gitUpdater { rev-prefix = "v"; };
   };

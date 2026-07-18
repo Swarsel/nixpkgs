@@ -4,12 +4,12 @@
   fetchFromGitHub,
   boost,
   bzip2,
+  delly,
   htslib,
   llvmPackages,
+  runCommand,
   xz,
   zlib,
-  delly,
-  runCommand,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -61,10 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Structural variant caller for mapped DNA sequenced data";
-    homepage = "https://github.com/dellytools/delly";
-    mainProgram = "delly";
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
+
     longDescription = ''
       Delly is an integrated structural variant (SV) prediction method
       that can discover, genotype and visualize deletions, tandem duplications,
@@ -73,5 +70,10 @@ stdenv.mkDerivation (finalAttrs: {
       split-reads and read-depth to sensitively and accurately delineate
       genomic rearrangements throughout the genome.
     '';
+
+    homepage = "https://github.com/dellytools/delly";
+    license = lib.licenses.bsd3;
+    platforms = lib.platforms.unix;
+    mainProgram = "delly";
   };
 })

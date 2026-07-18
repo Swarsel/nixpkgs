@@ -1,22 +1,21 @@
 {
   lib,
   buildPythonPackage,
+  docutils,
   fetchPypi,
   setuptools,
-  wheel,
-  docutils,
   sphinx,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-togglebutton";
   version = "0.4.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "sphinx_togglebutton";
     hash = "sha256-yHDfvTvG4Rm1D/mjemT4mRkCJp6FZyiTHH2Jh36NSz0=";
+    pname = "sphinx_togglebutton";
   };
 
   nativeBuildInputs = [
@@ -29,6 +28,7 @@ buildPythonPackage rec {
     sphinx
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_togglebutton" ];
 
   meta = {

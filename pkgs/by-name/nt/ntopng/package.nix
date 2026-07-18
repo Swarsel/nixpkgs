@@ -1,11 +1,14 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
+  cmake,
   curl,
   expat,
-  fetchFromGitHub,
   git,
+  gtest,
+  hiredis,
   json_c,
   libcap,
   libmaxminddb,
@@ -17,13 +20,10 @@
   openssl,
   pkg-config,
   rdkafka,
-  gtest,
   rrdtool,
-  hiredis,
   sqlite,
   which,
   zeromq,
-  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,11 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BYJtsEuxmo6jzqCoC/A5vDAiFSGqy8XFyqooGDTZE40=";
     fetchSubmodules = true;
   };
-
-  preConfigure = ''
-    substituteInPlace Makefile.in \
-      --replace "/bin/rm" "rm"
-  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -70,12 +65,15 @@ stdenv.mkDerivation (finalAttrs: {
     zeromq
   ];
 
-  autoreconfPhase = "bash autogen.sh";
-
   configureFlags = [
     "--with-ndpi-includes=${ndpi}/include/ndpi"
     "--with-ndpi-static-lib=${ndpi}/lib/"
   ];
+
+  preConfigure = ''
+    substituteInPlace Makefile.in \
+      --replace "/bin/rm" "rm"
+  '';
 
   preBuild = ''
     sed -e "s|\(#define CONST_BIN_DIR \).*|\1\"$out/bin\"|g" \
@@ -93,6 +91,7 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r doc/README.geolocation.md "$out/share/ntopng/doc/"
   '';
 
+  autoreconfPhase = "bash autogen.sh";
   dontUseCmakeConfigure = true;
   enableParallelBuilding = true;
 
@@ -101,8 +100,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.ntop.org/products/traffic-analysis/ntop/";
     changelog = "https://github.com/ntop/ntopng/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "ntopng";
   };
 })

@@ -2,17 +2,17 @@
 # PKG_CONFIG_PATH_FOR_BUILD work properly.
 
 {
-  stdenvNoCC,
   lib,
   buildPackages,
-  replaceVars,
-  makeSetupHook,
   expand-response-params,
+  makeSetupHook,
   pkg-config,
+  replaceVars,
+  stdenvNoCC,
   baseBinName ? "pkg-config",
-  propagateDoc ? pkg-config != null && pkg-config ? man,
-  extraPackages ? [ ],
   extraBuildCommands ? "",
+  extraPackages ? [ ],
+  propagateDoc ? pkg-config != null && pkg-config ? man,
 }:
 
 let
@@ -43,19 +43,10 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = targetPrefix + pkg-config.pname + "-wrapper";
   inherit (pkg-config) version;
-
-  enableParallelBuilding = true;
-
-  preferLocalBuild = true;
-
+  pname = targetPrefix + pkg-config.pname + "-wrapper";
   outputs = [ "out" ] ++ optionals propagateDoc ([ "man" ] ++ optional (pkg-config ? doc) "doc");
-
   strictDeps = true;
-  dontBuild = true;
-  dontConfigure = true;
-  dontUnpack = true;
 
   installPhase =
     let
@@ -96,35 +87,6 @@ stdenv.mkDerivation {
       ln -s ${pkg-config}/share $out/share
     '';
 
-  setupHooks =
-    let
-      roleHook = makeSetupHook rec {
-        name = "pkg-config-role-hook";
-        substitutions = {
-          inherit
-            name
-            suffixSalt
-            wrapperName
-            ;
-        };
-        meta.license = lib.licenses.mit;
-      } ../setup-hooks/role.bash;
-      setupHook = makeSetupHook {
-        name = "pkgs-config-setup-hook";
-        substitutions = {
-          inherit
-            targetPrefix
-            baseBinName
-            ;
-        };
-        meta.license = lib.licenses.mit;
-      } ./setup-hook.sh;
-    in
-    [
-      "${roleHook}/nix-support/setup-hook"
-      "${setupHook}/nix-support/setup-hook"
-    ];
-
   postFixup =
     let
       addFlags = replaceVars ./add-flags.sh { inherit suffixSalt; };
@@ -133,6 +95,7 @@ stdenv.mkDerivation {
           suffixSalt
           wrapperName
           ;
+
         inherit (targetPlatform) darwinMinVersion;
         expandResponseParams = "${expand-response-params}/bin/expand-response-params";
       };
@@ -170,6 +133,45 @@ stdenv.mkDerivation {
     ##
     + extraBuildCommands;
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  enableParallelBuilding = true;
+  preferLocalBuild = true;
+
+  setupHooks =
+    let
+      roleHook = makeSetupHook rec {
+        name = "pkg-config-role-hook";
+
+        substitutions = {
+          inherit
+            name
+            suffixSalt
+            wrapperName
+            ;
+        };
+
+        meta.license = lib.licenses.mit;
+      } ../setup-hooks/role.bash;
+      setupHook = makeSetupHook {
+        name = "pkgs-config-setup-hook";
+
+        substitutions = {
+          inherit
+            targetPrefix
+            baseBinName
+            ;
+        };
+
+        meta.license = lib.licenses.mit;
+      } ./setup-hook.sh;
+    in
+    [
+      "${roleHook}/nix-support/setup-hook"
+      "${setupHook}/nix-support/setup-hook"
+    ];
+
   passthru = {
     inherit
       targetPrefix
@@ -192,7 +194,7 @@ stdenv.mkDerivation {
     ))
     // {
       description = attrByPath [ "meta" "description" ] "pkg-config" pkg-config_ + " (wrapper script)";
-      priority = 10;
       mainProgram = wrapperBinName;
+      priority = 10;
     };
 }

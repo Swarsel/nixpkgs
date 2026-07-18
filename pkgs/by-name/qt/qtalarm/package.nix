@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  copyDesktopItems,
   kdePackages,
-  qt6,
   makeDesktopItem,
   nix-update-script,
-  copyDesktopItems,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-IN/XdR8J5uMIAjb1G2kzuLDtO972RLKSy3Ceh9CcHWw=";
   };
+
+  nativeBuildInputs = [
+    qt6.wrapQtAppsHook
+    qt6.qmake
+    copyDesktopItems
+  ];
 
   buildInputs = [
     kdePackages.qtbase
@@ -46,35 +52,31 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [
-    qt6.wrapQtAppsHook
-    qt6.qmake
-    copyDesktopItems
-  ];
-
-  passthru.updateScript = nix-update-script { };
-
   desktopItems = [
     (makeDesktopItem {
-      name = "QTalarm";
-      exec = "qtalarm";
-      icon = "qtalarm";
-      desktopName = "QTalarm";
-      genericName = "Nifty alarm clock";
       categories = [
         "Application"
         "Utility"
       ];
+
+      desktopName = "QTalarm";
+      exec = "qtalarm";
+      genericName = "Nifty alarm clock";
+      icon = "qtalarm";
+      name = "QTalarm";
       terminal = false;
     })
   ];
+
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Nifty alarm clock written in QT";
-    changelog = "https://github.com/CountMurphy/QTalarm/releases/tag/${finalAttrs.version}";
     homepage = "https://github.com/CountMurphy/QTalarm";
+    changelog = "https://github.com/CountMurphy/QTalarm/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "qtalarm";
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.unix;
+    mainProgram = "qtalarm";
   };
 })

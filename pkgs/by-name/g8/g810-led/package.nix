@@ -24,18 +24,16 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "/etc/g810-led/profile" "${profile}"
   '';
 
-  # GCC 13 cannot find `uint16_t` and other similar types by default anymore
-  env.CXXFLAGS = "-include cstdint";
+  nativeBuildInputs = [
+    udevCheckHook
+  ];
 
   buildInputs = [
     hidapi
   ];
 
-  nativeBuildInputs = [
-    udevCheckHook
-  ];
-
-  doInstallCheck = true;
+  # GCC 13 cannot find `uint16_t` and other similar types by default anymore
+  env.CXXFLAGS = "-include cstdint";
 
   installPhase = ''
     runHook preInstall
@@ -51,6 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  doInstallCheck = true;
 
   meta = {
     description = "Linux LED controller for some Logitech G Keyboards";

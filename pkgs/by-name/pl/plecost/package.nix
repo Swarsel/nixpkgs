@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   fetchpatch,
+  python3Packages,
   unstableGitUpdater,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "plecost";
   version = "0-unstable-2022-08-03";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iniqua";
@@ -19,6 +18,8 @@ python3Packages.buildPythonApplication {
     hash = "sha256-cXXFLoiLZpo3qiAPztavns4EkOG2aC6UKMf0N4Eun/w=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -28,18 +29,15 @@ python3Packages.buildPythonApplication {
     lxml
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "plecost_lib" ];
-
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
   meta = {
     description = "Vulnerability fingerprinting and vulnerability finder for Wordpress blog engine";
-    mainProgram = "plecost";
     homepage = "https://github.com/iniqua/plecost";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ emilytrau ];
+    mainProgram = "plecost";
   };
 }

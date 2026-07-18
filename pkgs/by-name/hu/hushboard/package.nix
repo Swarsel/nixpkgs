@@ -1,21 +1,20 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  fetchpatch,
   gobject-introspection,
   gtk3,
   libappindicator,
   libpulseaudio,
   librsvg,
-  wrapGAppsHook3,
   nix-update-script,
-  fetchpatch,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "hushboard";
   version = "0-unstable-2024-04-28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stuartlangridge";
@@ -27,12 +26,17 @@ python3Packages.buildPythonApplication {
   patches = [
     # https://github.com/stuartlangridge/hushboard/pull/30
     (fetchpatch {
-      url = "https://github.com/stuartlangridge/hushboard/commit/b17b58cd00eb9af8184f8dcb010bbae7f9bc470c.patch";
       hash = "sha256-C03hq2ttXY8DJzrarQvFIzo29d+owZVIHZRA28fq7Z8=";
+      url = "https://github.com/stuartlangridge/hushboard/commit/b17b58cd00eb9af8184f8dcb010bbae7f9bc470c.patch";
     })
   ];
 
-  build-system = with python3Packages; [ setuptools ];
+  postPatch = ''
+    substituteInPlace hushboard/_pulsectl.py \
+      --replace-fail "ctypes.util.find_library('libpulse') or 'libpulse.so.0'" "'${libpulseaudio}/lib/libpulse.so.0'"
+    substituteInPlace snap/gui/hushboard.desktop \
+      --replace-fail "\''${SNAP}/hushboard/icons/hushboard.svg" "hushboard"
+  '';
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -52,12 +56,8 @@ python3Packages.buildPythonApplication {
     python-xlib
   ];
 
-  postPatch = ''
-    substituteInPlace hushboard/_pulsectl.py \
-      --replace-fail "ctypes.util.find_library('libpulse') or 'libpulse.so.0'" "'${libpulseaudio}/lib/libpulse.so.0'"
-    substituteInPlace snap/gui/hushboard.desktop \
-      --replace-fail "\''${SNAP}/hushboard/icons/hushboard.svg" "hushboard"
-  '';
+  # no tests
+  doCheck = false;
 
   postInstall = ''
     # Fix tray icon, see e.g. https://github.com/NixOS/nixpkgs/pull/43421
@@ -70,21 +70,21 @@ python3Packages.buildPythonApplication {
     cp hushboard-512.png $out/share/icons/hicolor/512x512/apps/hushboard.png
   '';
 
-  passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
-
-  # no tests
-  doCheck = false;
+  build-system = with python3Packages; [ setuptools ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "hushboard"
   ];
 
+  passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
+
   meta = {
+    description = "Mute your microphone while typing";
     homepage = "https://kryogenix.org/code/hushboard/";
     license = lib.licenses.mit;
-    description = "Mute your microphone while typing";
-    mainProgram = "hushboard";
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "hushboard";
   };
 }

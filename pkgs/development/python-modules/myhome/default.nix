@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytestCheckHook,
   python-dateutil,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "myhome";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "speijnik";
@@ -30,7 +29,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "myhome" ];
 
   meta = {

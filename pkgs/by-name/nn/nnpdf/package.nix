@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   apfel,
+  cmake,
   gsl,
   lhapdf,
   libarchive,
-  yaml-cpp,
+  pkg-config,
   python3,
   sqlite,
   swig,
+  yaml-cpp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,10 +59,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Open-source machine learning framework for global analyses of parton distributions";
-    mainProgram = "evolven3fit";
     homepage = "https://docs.nnpdf.science/";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.veprbl ];
     platforms = lib.platforms.unix;
+    mainProgram = "evolven3fit";
   };
 })

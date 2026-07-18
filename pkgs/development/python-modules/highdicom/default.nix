@@ -1,9 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
-  pytestCheckHook,
   numpy,
   pillow,
   pydicom,
@@ -11,6 +10,7 @@
   pylibjpeg,
   pylibjpeg-libjpeg,
   pylibjpeg-openjpeg,
+  pytestCheckHook,
   setuptools,
   typing-extensions,
 }:
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "highdicom";
   version = "0.27.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MGHComputationalPathology";
@@ -30,10 +29,18 @@ buildPythonPackage rec {
   patches = [
     # Fix time-of-day-dependent failure in series_time validation.
     (fetchpatch2 {
-      url = "https://github.com/ImagingDataCommons/highdicom/commit/e9e3f2514a74b0d4be736cff222c934ef66d67ff.patch?full_index=1";
       hash = "sha256-1h9xmcezxuvHw54t4kLahDB62d0XHzEyrmHmPf6NW7M=";
+      url = "https://github.com/ImagingDataCommons/highdicom/commit/e9e3f2514a74b0d4be736cff222c934ef66d67ff.patch?full_index=1";
     })
   ];
+
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.libjpeg;
+
+  preCheck = ''
+    export HOME=$TMP/test-home
+    mkdir -p $HOME/.pydicom/
+    ln -s ${pydicom.passthru.pydicom-data}/data_store/data $HOME/.pydicom/data
+  '';
 
   build-system = [
     setuptools
@@ -55,12 +62,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.libjpeg;
-  preCheck = ''
-    export HOME=$TMP/test-home
-    mkdir -p $HOME/.pydicom/
-    ln -s ${pydicom.passthru.pydicom-data}/data_store/data $HOME/.pydicom/data
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "highdicom"

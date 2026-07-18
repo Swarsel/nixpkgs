@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rendercv";
   version = "2.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rendercv";
@@ -15,6 +14,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-iYfUoSN5HiDsAwkx44KbmHPN+vcYAra1zyfxTwziYkI=";
   };
+
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail "uv_build>=0.10.3,<0.11.0" "uv_build"
+  '';
+
+  doCheck = true;
+
+  nativeCheckInputs = with python3Packages; [
+    pytest-xdist
+    pytestCheckHook
+  ];
 
   build-system = with python3Packages; [ uv-build ];
 
@@ -35,22 +46,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     packaging
   ];
 
-  pythonRelaxDeps = [
-    "phonenumbers"
-  ];
-
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail "uv_build>=0.10.3,<0.11.0" "uv_build"
-  '';
-
-  pythonImportsCheck = [ "rendercv" ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytest-xdist
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # It fails due to missing internet resources
     "tests/renderer/test_pdf_png.py"
@@ -59,7 +54,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "tests/test_generated_files.py"
   ];
 
-  doCheck = true;
+  pyproject = true;
+  pythonImportsCheck = [ "rendercv" ];
+
+  pythonRelaxDeps = [
+    "phonenumbers"
+  ];
 
   meta = {
     description = "Typst-based CV/resume generator";

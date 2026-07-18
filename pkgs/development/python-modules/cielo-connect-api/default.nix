@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cielo-connect-api";
   version = "1.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cielo-connect";
@@ -19,9 +18,8 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ aiohttp ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cieloconnectapi" ];
 
   meta = {

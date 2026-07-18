@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
   lib,
   fetchFromGitHub,
+  buildNpmPackage,
   pkg-config,
   vips,
 }:
@@ -17,11 +17,10 @@ buildNpmPackage rec {
     hash = "sha256-7W7rvJPVcRtXcQt+wWAvrl0DOIh7zEfXZdFDcH23/ls=";
   };
 
-  npmDepsHash = "sha256-STZ/+vmiUAOZ8+yeaFg+428pZ/iZZXXUeGx6gLmnDQ8=";
-
   # For 'sharp' dependency, otherwise it will try to build it
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ vips ];
+  npmDepsHash = "sha256-STZ/+vmiUAOZ8+yeaFg+428pZ/iZZXXUeGx6gLmnDQ8=";
 
   installPhase = ''
     runHook preInstall
@@ -34,7 +33,7 @@ buildNpmPackage rec {
   meta = {
     description = "Web client for Snapcast";
     homepage = "https://github.com/badaix/snapweb";
-    maintainers = with lib.maintainers; [ ettom ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ ettom ];
   };
 }

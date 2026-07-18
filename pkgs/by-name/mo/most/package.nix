@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  slang,
   ncurses,
+  slang,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
+  buildInputs = [
+    slang
+    ncurses
+  ];
+
+  configureFlags = [ "--with-slang=${slang.dev}" ];
+
   makeFlags = [
     "DOC_DIR=${placeholder "doc"}/share/doc/most"
   ];
@@ -32,22 +39,17 @@ stdenv.mkDerivation (finalAttrs: {
       -e "s|/bin/rm|rm|"
   '';
 
-  configureFlags = [ "--with-slang=${slang.dev}" ];
-
-  buildInputs = [
-    slang
-    ncurses
-  ];
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Terminal pager similar to 'more' and 'less'";
+
     longDescription = ''
       MOST is a powerful paging program for Unix, VMS, MSDOS, and win32
       systems. Unlike other well-known paging programs most supports multiple
       windows and can scroll left and right. Why settle for less?
     '';
+
     homepage = "https://www.jedsoft.org/most/index.html";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;

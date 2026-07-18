@@ -1,9 +1,9 @@
 {
+  lib,
   buildDotnetModule,
+  dotnet-sdk,
   emptyDirectory,
   fetchNupkg,
-  dotnet-sdk,
-  lib,
 }:
 
 fnOrAttrs:
@@ -14,28 +14,28 @@ buildDotnetModule (
     {
       pname,
       version,
-      # Name of the nuget package to install, if different from pname
-      nugetName ? pname,
-      # Hash of the nuget package to install, will be given on first build
-      # nugetHash uses SRI hash and should be preferred
-      nugetHash ? "",
-      nugetSha256 ? "",
-      # Additional nuget deps needed by the tool package
-      nugetDeps ? (_: [ ]),
+      # The dotnet runtime to use, dotnet tools need a full SDK to function
+      dotnet-runtime ? dotnet-sdk,
       # Executables to wrap into `$out/bin`, same as in `buildDotnetModule`, but with
       # a default of `pname` instead of null, to avoid auto-wrapping everything
       executables ? pname,
-      # The dotnet runtime to use, dotnet tools need a full SDK to function
-      dotnet-runtime ? dotnet-sdk,
+      # Additional nuget deps needed by the tool package
+      nugetDeps ? (_: [ ]),
+      # Hash of the nuget package to install, will be given on first build
+      # nugetHash uses SRI hash and should be preferred
+      nugetHash ? "",
+      # Name of the nuget package to install, if different from pname
+      nugetName ? pname,
+      nugetSha256 ? "",
       ...
     }@args:
     let
       nupkg = fetchNupkg {
-        pname = nugetName;
         inherit version;
-        sha256 = nugetSha256;
+        pname = nugetName;
         hash = nugetHash;
         installable = true;
+        sha256 = nugetSha256;
       };
     in
     args
@@ -48,14 +48,7 @@ buildDotnetModule (
         ;
 
       src = emptyDirectory;
-
       buildInputs = [ nupkg ];
-
-      dotnetGlobalTool = true;
-
-      useDotnetFromEnv = true;
-
-      dontBuild = true;
 
       installPhase = ''
         runHook preInstall
@@ -69,9 +62,13 @@ buildDotnetModule (
         runHook postInstall
       '';
 
+      dontBuild = true;
+      dotnetGlobalTool = true;
+      useDotnetFromEnv = true;
+
       passthru = {
-        updateScript = ./update.sh;
         nupkg = nupkg;
+        updateScript = ./update.sh;
       }
       // args.passthru or { };
     }

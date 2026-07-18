@@ -8,8 +8,6 @@
 buildDunePackage (finalAttrs: {
   pname = "reactiveData";
   version = "0.3.1";
-  duneVersion = "3";
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "ocsigen";
@@ -19,6 +17,8 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ react ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "OCaml module for functional reactive programming (FRP) based on React";

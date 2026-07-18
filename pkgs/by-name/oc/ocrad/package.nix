@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  libpng,
   lzip,
   texinfo,
-  libpng,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Optical character recognition (OCR) program & library";
+
     longDescription = ''
       GNU Ocrad is an OCR (Optical Character Recognition) program based on
       a feature extraction method.  It reads images in pbm (bitmap), pgm

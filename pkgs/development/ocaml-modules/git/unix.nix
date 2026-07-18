@@ -1,47 +1,46 @@
 {
-  buildDunePackage,
-  git,
-  rresult,
-  bigstringaf,
-  fmt,
-  bos,
-  fpath,
-  uri,
-  digestif,
-  logs,
-  lwt,
-  astring,
-  cmdliner,
-  decompress,
-  domain-name,
-  ipaddr,
-  mtime,
-  tcpip,
-  mirage-flow,
   alcotest,
   alcotest-lwt,
+  astring,
   base64,
-  cstruct,
-  ke,
-  mirage-crypto-rng,
-  git-binary,
-  mimic,
-  tls,
+  bigstringaf,
+  bos,
+  buildDunePackage,
   cacert,
-  happy-eyeballs-lwt,
+  cmdliner,
+  cstruct,
+  decompress,
+  digestif,
+  domain-name,
+  fmt,
+  fpath,
+  git,
+  git-binary,
   git-mirage,
+  happy-eyeballs-lwt,
+  ipaddr,
+  ke,
+  logs,
+  lwt,
+  mimic,
+  mirage-crypto-rng,
+  mirage-flow,
+  mtime,
+  rresult,
+  tcpip,
+  tls,
+  uri,
 }:
 
 buildDunePackage {
-  pname = "git-unix";
   inherit (git) version src;
-
-  minimalOCamlVersion = "4.08";
+  pname = "git-unix";
 
   buildInputs = [
     cmdliner
     tcpip
   ];
+
   propagatedBuildInputs = [
     rresult
     bigstringaf
@@ -63,6 +62,10 @@ buildDunePackage {
     happy-eyeballs-lwt
     git-mirage
   ];
+
+  doCheck = true;
+  nativeCheckInputs = [ git-binary ];
+
   checkInputs = [
     alcotest
     alcotest-lwt
@@ -73,11 +76,11 @@ buildDunePackage {
     mtime
     cacert # sets up NIX_SSL_CERT_FILE
   ];
-  nativeCheckInputs = [ git-binary ];
-  doCheck = true;
+
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    description = "Unix backend for the Git protocol(s)";
     inherit (git.meta) homepage license maintainers;
+    description = "Unix backend for the Git protocol(s)";
   };
 }

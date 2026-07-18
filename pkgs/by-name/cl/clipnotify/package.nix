@@ -1,9 +1,9 @@
 {
-  libx11,
-  libxfixes,
   lib,
   stdenv,
   fetchFromGitHub,
+  libx11,
+  libxfixes,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "clipnotify";
@@ -27,10 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    description = "Notify on new X clipboard events";
     inherit (finalAttrs.src.meta) homepage;
-    maintainers = with lib.maintainers; [ jb55 ];
+    description = "Notify on new X clipboard events";
     license = lib.licenses.publicDomain;
+    maintainers = with lib.maintainers; [ jb55 ];
     mainProgram = "clipnotify";
   };
 })

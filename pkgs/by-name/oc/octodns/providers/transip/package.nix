@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   octodns,
   pytestCheckHook,
-  setuptools,
   python-transip,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "octodns-transip";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "octodns";
@@ -18,6 +17,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-O9KhHjCdRt5lejwEqpv0OCwIXaqWVc2/u4ghzbYMiBA=";
   };
+
+  env.OCTODNS_RELEASE = 1;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -28,14 +33,10 @@ buildPythonPackage rec {
     python-transip
   ];
 
-  env.OCTODNS_RELEASE = 1;
+  pyproject = true;
 
   pythonImportsCheck = [
     "octodns_transip"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {

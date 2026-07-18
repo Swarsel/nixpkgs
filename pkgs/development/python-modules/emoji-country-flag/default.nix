@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   emoji,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "emoji-country-flag";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cvzi";
@@ -19,10 +18,6 @@ buildPythonPackage rec {
     hash = "sha256-Te3RJ+rHkr3q93C7hLE5xCZz91QC2IsFR0FluVEJOv4=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -30,6 +25,11 @@ buildPythonPackage rec {
     emoji
   ];
 
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "flag" ];
 
   meta = {
@@ -37,6 +37,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/cvzi/flag";
     changelog = "https://github.com/cvzi/flag/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       skohtv
       aleksana

@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aiomqtt,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
-  lib,
   poetry-core,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "letpot";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jpelgrom";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-w4WS0AyNd4dNtA/fBKieDW2YXwBFltRkJvaGemRjsv4=";
   };
 
+  nativeCheckInputs = [
+    freezegun
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,18 +34,13 @@ buildPythonPackage (finalAttrs: {
     aiomqtt
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "letpot" ];
 
-  nativeCheckInputs = [
-    freezegun
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/jpelgrom/python-letpot/releases/tag/${finalAttrs.src.tag}";
     description = "Asynchronous Python client for LetPot hydroponic gardens";
     homepage = "https://github.com/jpelgrom/python-letpot";
+    changelog = "https://github.com/jpelgrom/python-letpot/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

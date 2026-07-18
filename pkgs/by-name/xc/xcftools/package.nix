@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
+  fetchpatch,
+  gettext,
   libpng,
   perl,
-  gettext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,17 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "19i0x7yhlw6hd2gp013884zchg63yzjdj4hpany011il0n26vgqy";
   };
 
-  buildInputs = [
-    libpng
-    perl
-    gettext
-  ];
-
   patches = [
     (fetchpatch {
       name = "CVE-2019-5086.CVE-2019-5087.patch";
-      url = "https://github.com/gladk/xcftools/commit/59c38e3e45b9112c2bcb4392bccf56e297854f8a.patch";
       sha256 = "sha256-a1Biv6viXzTSaLDzinOyu0HdDTUPsKITsdKu9B9Y8GE=";
+      url = "https://github.com/gladk/xcftools/commit/59c38e3e45b9112c2bcb4392bccf56e297854f8a.patch";
     })
   ];
 
@@ -44,9 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
     sed -e '1i#include <stdlib.h>' -i xcf-general.c
   '';
 
+  buildInputs = [
+    libpng
+    perl
+    gettext
+  ];
+
   meta = {
-    homepage = "http://henning.makholm.net/software";
     description = "Command-line tools for converting Gimp XCF files";
+
     longDescription = ''
       A set of fast command-line tools for extracting information from
       the Gimp's native file format XCF.
@@ -58,6 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
       These tools work independently of the Gimp engine and do not
       require the Gimp to even be installed.
     '';
+
+    homepage = "http://henning.makholm.net/software";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
   };

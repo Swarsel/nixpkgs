@@ -1,19 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nix-update-script,
   installFonts,
+  nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "lora";
   version = "3.021";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "cyrealtype";
@@ -22,10 +17,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-v9wE9caI9HTCfO01Yf+s6KajF7WpnL12nu+IuOV7T+w=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
-  passthru.updateScript = nix-update-script { };
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
   nativeBuildInputs = [ installFonts ];
 
@@ -36,11 +31,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Lora Font: well-balanced contemporary serif with roots in calligraphy";
     homepage = "https://github.com/cyrealtype/Lora-Cyrillic";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ofalvai ];
+    platforms = lib.platforms.all;
   };
 })

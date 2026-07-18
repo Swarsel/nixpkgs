@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   bison,
   curl,
-  fetchFromGitHub,
   ffmpeg-headless,
   flex,
   gperf,
@@ -18,7 +19,6 @@
   libuuid,
   libxml2,
   pkg-config,
-  stdenv,
   zlib,
 }:
 
@@ -33,8 +33,8 @@ stdenv.mkDerivation {
     # we try to closely match the commit used in the last music-assistant release from
     # https://github.com/music-assistant/server/tree/stable/music_assistant/providers/airplay/bin
     rev = "6aeceb49e4e37d044f09be9369b082fc26bcfa19";
-    fetchSubmodules = true;
     hash = "sha256-Z2LzRhtQpuXPK6KibnxCqP0V6CulzkwNVHX1V7AFnDA=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -66,7 +66,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/music-assistant/cliairplay";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
-    mainProgram = "cliap2";
     platforms = lib.platforms.unix;
+    mainProgram = "cliap2";
   };
 }

@@ -1,35 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  h5py,
+  # dependencies
+  numpy,
+  pandas,
+  # tests
+  pytestCheckHook,
   pythonAtLeast,
-
+  pytorch-lightning,
+  pyyaml,
+  requests,
+  runstats,
+  scikit-image,
   # build system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  numpy,
-  scikit-image,
-  torchvision,
   torch,
-  runstats,
-  pytorch-lightning,
-  h5py,
-  pyyaml,
   torchmetrics,
-  pandas,
-
-  # tests
-  pytestCheckHook,
-  requests,
+  torchvision,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fastmri";
   version = "0.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "facebookresearch";
@@ -49,6 +44,13 @@ buildPythonPackage (finalAttrs: {
     rm -rf banding_removal
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
     setuptools-scm
@@ -67,9 +69,9 @@ buildPythonPackage (finalAttrs: {
     pandas
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests
+  disabledTestPaths = [
+    # much older version of pytorch-lightning is used
+    "tests/test_modules.py"
   ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
@@ -78,11 +80,7 @@ buildPythonPackage (finalAttrs: {
     "test_varnet_scripting"
   ];
 
-  disabledTestPaths = [
-    # much older version of pytorch-lightning is used
-    "tests/test_modules.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "fastmri" ];
 
   meta = {

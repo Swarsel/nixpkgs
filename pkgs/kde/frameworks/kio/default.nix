@@ -1,10 +1,10 @@
 {
+  acl,
+  attr,
+  kauth,
   mkKdeDerivation,
   qt5compat,
   qttools,
-  kauth,
-  acl,
-  attr,
 }:
 mkKdeDerivation {
   pname = "kio";

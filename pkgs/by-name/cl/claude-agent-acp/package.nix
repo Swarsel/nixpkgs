@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  makeWrapper,
+  buildNpmPackage,
   claude-code,
+  makeWrapper,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -17,9 +17,8 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-9bnUVYfE3iMOcHFg9PK25MoMla978/YbkZLzWgVkd84=";
   };
 
-  npmDepsHash = "sha256-cqglQ/XW+E1U0CzhUBltKduwKdgvjH3hrPRb5MZJovM=";
-
   nativeBuildInputs = [ makeWrapper ];
+  npmDepsHash = "sha256-cqglQ/XW+E1U0CzhUBltKduwKdgvjH3hrPRb5MZJovM=";
 
   postInstall = ''
     wrapProgram $out/bin/claude-agent-acp \
@@ -30,10 +29,12 @@ buildNpmPackage (finalAttrs: {
     description = "ACP-compatible coding agent powered by the Claude Agent SDK";
     homepage = "https://github.com/agentclientprotocol/claude-agent-acp";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       amadejkastelic
       storopoli
     ];
+
     mainProgram = "claude-agent-acp";
   };
 })

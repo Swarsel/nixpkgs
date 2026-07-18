@@ -12,8 +12,6 @@ let
   xnu = sourceRelease "xnu";
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "diskdev_cmds-deps-private-headers";
-
     buildCommand = ''
       install -D -t "$out/include" \
         '${Libc}/include/_bounds.h'
@@ -38,17 +36,15 @@ let
         --replace-fail ', bridgeos(4.0)' "" \
         --replace-fail ', bridgeos' ""
     '';
+
+    name = "diskdev_cmds-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "diskdev_cmds";
-
   outputs = [
     "out"
     "man"
   ];
-
-  xcodeHash = "sha256-mlTUd9eTBQhJa1hzAKzBpw6+702C4dwUjwZvJs/EKyw=";
 
   postPatch =
     # Fix incompatible pointer to integer conversion. The last parameter is size_t not a pointer.
@@ -58,13 +54,14 @@ mkAppleDerivation {
         --replace-fail 'sysctlbyname ("vfs.generic.apfs.rosp", &is_rosp, &rospsize, NULL, NULL);' 'sysctlbyname ("vfs.generic.apfs.rosp", &is_rosp, &rospsize, NULL, 0);'
     '';
 
-  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
-
   buildInputs = [
     apple-sdk.privateFrameworksHook
     libutil
     removefile
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
+  releaseName = "diskdev_cmds";
+  xcodeHash = "sha256-mlTUd9eTBQhJa1hzAKzBpw6+702C4dwUjwZvJs/EKyw=";
   meta.description = "Disk commands for Darwin";
 }

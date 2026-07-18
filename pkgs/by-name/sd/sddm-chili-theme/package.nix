@@ -35,8 +35,6 @@ stdenv.mkDerivation {
     libsForQt5.qtquickcontrols.out
   ];
 
-  dontWrapQtApps = true;
-
   preInstall = configureTheme;
 
   postInstall = ''
@@ -45,15 +43,19 @@ stdenv.mkDerivation {
     mv * $out/share/sddm/themes/chili/
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
-    license = lib.licenses.gpl3;
-    maintainers = with lib.maintainers; [ sents ];
-    homepage = "https://github.com/MarianArlt/sddm-chili";
     description = "Chili login theme for SDDM";
+
     longDescription = ''
       Chili is hot, just like a real chili!
       Spice up the login experience for your users, your family and yourself.
       Chili reduces all the clutter and leaves you with a clean, easy to use, login interface with a modern yet classy touch.
     '';
+
+    homepage = "https://github.com/MarianArlt/sddm-chili";
+    license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ sents ];
   };
 }

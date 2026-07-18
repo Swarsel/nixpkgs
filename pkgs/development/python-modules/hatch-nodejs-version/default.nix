@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   hatchling,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "hatch-nodejs-version";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "agoose77";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ hatchling ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "hatch_nodejs_version" ];
 
   meta = {

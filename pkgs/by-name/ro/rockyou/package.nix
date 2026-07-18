@@ -3,8 +3,8 @@
   stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
-  pname = "rockyou";
   inherit (seclists) version src;
+  pname = "rockyou";
 
   installPhase = ''
     runHook preInstall

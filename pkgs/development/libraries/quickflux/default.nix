@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   qtbase,
@@ -47,9 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtquickcontrols2
   ];
 
-  # Only a QML module
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
   ];
@@ -59,6 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/lib/cmake/QuickFlux/QuickFluxTargets.cmake \
       --replace "\''${_IMPORT_PREFIX}/include" '${placeholder "dev"}/include'
   '';
+
+  # Only a QML module
+  dontWrapQtApps = true;
 
   meta = {
     description = "Flux implementation for QML";

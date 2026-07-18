@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  _7zz,
   fetchurl,
+  _7zz,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/alin23/Lunar/releases/download/v${finalAttrs.version}/Lunar-${finalAttrs.version}.dmg";
     hash = "sha256-CqxhLUL/Vnt665xcZFaXg/MWywca6j/pr03oLoyofYQ=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [ _7zz ];
 
@@ -28,20 +26,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Defacto app for controlling monitors";
     homepage = "https://lunar.fyi/";
     changelog = "https://github.com/alin23/Lunar/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       unfree
     ];
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ delafthi ];
+
     platforms = [
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

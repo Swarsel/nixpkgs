@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  vala,
+  glib,
+  gtk3,
+  libgee,
   meson,
   ninja,
   pkg-config,
-  glib,
-  libgee,
-  gtk3,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Simple Cairo Chart Library for GTK and Vala";
     homepage = "https://github.com/dcharles525/Caroline";
-    maintainers = with lib.maintainers; [ grindhold ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ grindhold ];
     platforms = lib.platforms.unix;
   };
 })

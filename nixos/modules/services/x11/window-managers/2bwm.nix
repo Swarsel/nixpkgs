@@ -25,15 +25,16 @@ in
 
   config = mkIf cfg.enable {
 
+    environment.systemPackages = [ pkgs._2bwm ];
+
     services.xserver.windowManager.session = singleton {
       name = "2bwm";
+
       start = ''
         ${pkgs._2bwm}/bin/2bwm &
         waitPID=$!
       '';
     };
-
-    environment.systemPackages = [ pkgs._2bwm ];
 
   };
 

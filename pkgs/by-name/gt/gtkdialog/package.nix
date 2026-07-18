@@ -4,8 +4,8 @@
   fetchFromGitHub,
   bison,
   flex,
-  gtk3,
   gtk-layer-shell,
+  gtk3,
   meson,
   ninja,
   pkg-config,
@@ -47,11 +47,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/puppylinux-woof-CE/gtkdialog";
     description = "Small utility for fast and easy GUI building from many scripted and compiled languages";
-    mainProgram = "gtkdialog";
-    maintainers = with lib.maintainers; [ aleksana ];
+    homepage = "https://github.com/puppylinux-woof-CE/gtkdialog";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "gtkdialog";
   };
 })

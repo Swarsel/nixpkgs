@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-  poetry-core,
   more-itertools,
+  poetry-core,
   pytestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "class-doc";
   version = "0.2.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "danields761";
@@ -23,18 +22,16 @@ buildPythonPackage {
   patches = [
     # https://github.com/danields761/class-doc/pull/2
     (fetchpatch {
+      hash = "sha256-shWPRaZkvtJ1Ae17aCOm6eLs905jxwq84SWOrChEs7M=";
       name = "poetry-to-poetry-core.patch";
       url = "https://github.com/danields761/class-doc/commit/03b224ad0a6190c30e4932fa2ccd4a7f0c5c4b5d.patch";
-      hash = "sha256-shWPRaZkvtJ1Ae17aCOm6eLs905jxwq84SWOrChEs7M=";
     })
   ];
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ more-itertools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "class_doc" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -12,7 +12,6 @@ in
   options = {
     programs.iotop = {
       enable = lib.mkEnableOption "iotop + setcap wrapper";
-
       package = lib.mkPackageOption pkgs "iotop" { example = "iotop-c"; };
 
       enableDelayacct = lib.mkEnableOption ''
@@ -22,13 +21,13 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    boot.kernel.sysctl = lib.mkIf cfg.enableDelayacct { "kernel.task_delayacct" = 1; };
+
     security.wrappers.iotop = {
-      owner = "root";
-      group = "root";
       capabilities = "cap_net_admin+p";
+      group = "root";
+      owner = "root";
       source = lib.getExe cfg.package;
     };
-
-    boot.kernel.sysctl = lib.mkIf cfg.enableDelayacct { "kernel.task_delayacct" = 1; };
   };
 }

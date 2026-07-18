@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
+  pkg-config,
   writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -16,9 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ libx11 ];
 
   passthru = {
@@ -34,18 +32,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Device Color Characterization utility for X Color Management System";
+
     longDescription = ''
       xcmsdb is used to load, query, or remove Device Color Characterization data stored in
       properties on the root window of the screen as specified in section 7, Device Color
       Characterization, of the X11 Inter-Client Communication Conventions Manual (ICCCM).
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xcmsdb";
+
     license = with lib.licenses; [
       hpnd
       mitOpenGroup
     ];
-    mainProgram = "xcmsdb";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xcmsdb";
   };
 })

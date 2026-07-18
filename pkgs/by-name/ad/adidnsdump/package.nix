@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "adidnsdump";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dirkjanm";
@@ -23,6 +22,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ldap3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "adidnsdump" ];
 
   meta = {

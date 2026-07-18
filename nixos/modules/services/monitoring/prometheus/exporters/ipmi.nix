@@ -18,27 +18,33 @@ let
     ;
 in
 {
-  port = 9290;
-
   extraOpts = {
     configFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         Path to configuration file.
       '';
+
+      type = types.nullOr types.path;
     };
 
     webConfigFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         Path to configuration file that can enable TLS or authentication.
       '';
+
+      type = types.nullOr types.path;
     };
   };
 
+  port = 9290;
+
   serviceOpts.serviceConfig = {
+    ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
     ExecStart =
       with cfg;
       concatStringsSep " " (
@@ -55,7 +61,6 @@ in
         ++ extraFlags
       );
 
-    ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
     RestrictAddressFamilies = [
       "AF_INET"
       "AF_INET6"

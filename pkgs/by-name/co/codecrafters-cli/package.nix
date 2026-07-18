@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
 }:
 
@@ -19,19 +19,15 @@ buildGoModule (finalAttrs: {
     # commit SHA, and remove the directory afterwards since it is not needed
     # after that.
     leaveDotGit = true;
+
     postFetch = ''
       git -C $"$out" rev-parse --short=7 HEAD > $out/COMMIT
       rm -rf $out/.git
     '';
   };
 
+  nativeBuildInputs = [ git ];
   vendorHash = "sha256-LfchGzJPgPVa4wTXoViIEx8B17HMoPPME/2RLkatGUQ=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/codecrafters-io/cli/internal/utils.Version=${finalAttrs.version}"
-  ];
 
   # ldflags based on metadata from git
   preBuild = ''
@@ -42,13 +38,17 @@ buildGoModule (finalAttrs: {
   # include setting up a global gitignore which doesn't work.
   doCheck = false;
 
-  nativeBuildInputs = [ git ];
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/codecrafters-io/cli/internal/utils.Version=${finalAttrs.version}"
+  ];
 
   meta = {
     description = "CodeCrafters CLI to run tests";
-    mainProgram = "codecrafters";
     homepage = "https://github.com/codecrafters-io/cli";
-    maintainers = with lib.maintainers; [ builditluc ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ builditluc ];
+    mainProgram = "codecrafters";
   };
 })

@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "linecache2";
   version = "1.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +17,7 @@ buildPythonPackage rec {
   buildInputs = [ pbr ];
   # circular dependencies for tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Backport of linecache to older supported Pythons";

@@ -1,18 +1,16 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
   installShellFiles,
-  stdenv,
-  versionCheckHook,
   makeWrapper,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "gh";
   version = "2.96.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "cli";
@@ -21,12 +19,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-+Roh0eR3Cm+ktLRHwWkvTiEvMGxsj7ngODJnjajL2x4=";
   };
 
-  vendorHash = "sha256-pQNepOGVEHF8rwdgnaUCnFe/mzDxabYqhouN2V0WkOo=";
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
+
+  vendorHash = "sha256-pQNepOGVEHF8rwdgnaUCnFe/mzDxabYqhouN2V0WkOo=";
 
   # N.B.: using the Makefile is intentional.
   # We pass "nixpkgs" for build.Date to avoid `gh --version` reporting a very old date.
@@ -35,6 +33,9 @@ buildGoModule (finalAttrs: {
     make GO_LDFLAGS="-s -w -X github.com/cli/cli/v${lib.versions.major finalAttrs.version}/internal/build.Date=nixpkgs" GH_VERSION=${finalAttrs.version} bin/gh ${lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) "manpages"}
     runHook postBuild
   '';
+
+  # most tests require network access
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -54,22 +55,22 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
-  # most tests require network access
-  doCheck = false;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   meta = {
     description = "GitHub CLI tool";
     homepage = "https://cli.github.com/";
     changelog = "https://github.com/cli/cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "gh";
+
     maintainers = with lib.maintainers; [
       mdaniels5757
       zowoq
       savtrip
     ];
+
+    mainProgram = "gh";
   };
 })

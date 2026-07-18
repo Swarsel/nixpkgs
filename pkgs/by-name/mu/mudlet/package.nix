@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  git,
-  pkg-config,
-  which,
   assimp,
   boost,
+  cmake,
   discord-rpc,
+  fetchpatch,
+  git,
   hunspell,
   libGLU,
   libsecret,
   libzip,
   lua5_1,
   pipewire,
+  pkg-config,
   pugixml,
   qt6Packages,
+  which,
   yajl,
   withDiscordRpc ? false,
 }:
@@ -40,16 +40,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "mudlet";
   version = "4.22.0";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "Mudlet";
     repo = "Mudlet";
     rev = "Mudlet-${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-on0LBf+FY91R4IEDcEM/at+J07MOStc7V1yT+khxVoM=";
+    fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -102,16 +101,20 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=(--chdir "$out")
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Crossplatform mud client";
     homepage = "https://www.mudlet.org/";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       wyvie
       pstn
       felixalbrigtsen
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
-    license = lib.licenses.gpl2Plus;
     mainProgram = "mudlet";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  flutter338,
   fetchFromGitHub,
+  flutter338,
 }:
 
 let
@@ -15,9 +15,8 @@ let
   };
 in
 flutter338.buildFlutterApplication {
-  pname = "badgemagic-app";
   inherit version src;
-
+  pname = "badgemagic-app";
   pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   meta = {
@@ -25,10 +24,12 @@ flutter338.buildFlutterApplication {
     homepage = "https://github.com/fossasia/badgemagic-app";
     license = with lib.licenses; [ asl20 ];
     maintainers = [ lib.maintainers.matthewcroughan ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "badgemagic";
   };
 }

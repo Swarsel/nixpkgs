@@ -27,7 +27,7 @@ in
     boot.loader.generic-extlinux-compatible = {
       enable = mkOption {
         default = false;
-        type = types.bool;
+
         description = ''
           Whether to generate an extlinux-compatible configuration file
           under `/boot/extlinux.conf`.  For instance,
@@ -36,11 +36,65 @@ in
           See [U-boot's documentation](https://u-boot.readthedocs.io/en/latest/develop/distro.html)
           for more information.
         '';
+
+        type = types.bool;
+      };
+
+      configurationLimit = mkOption {
+        default = 20;
+
+        description = ''
+          Maximum number of configurations in the boot menu.
+        '';
+
+        example = 10;
+        type = types.int;
+      };
+
+      mirroredBoots = mkOption {
+        default = [ { path = "/boot"; } ];
+
+        description = ''
+          Mirror the boot configuration to multiple paths.
+        '';
+
+        example = [
+          { path = "/boot1"; }
+          { path = "/boot2"; }
+        ];
+
+        type =
+          with types;
+          listOf (submodule {
+            options = {
+              path = mkOption {
+                description = ''
+                  The path to the boot directory where the extlinux-compatible
+                  configuration files will be written.
+                '';
+
+                example = "/boot1";
+                type = types.str;
+              };
+            };
+          });
+      };
+
+      populateCmd = mkOption {
+        description = ''
+          Contains the builder command used to populate an image,
+          honoring all options except the `-c <path-to-default-configuration>`
+          argument.
+          Useful to have for sdImage.populateRootCommands
+        '';
+
+        readOnly = true;
+        type = types.str;
       };
 
       useGenerationDeviceTree = mkOption {
         default = true;
-        type = types.bool;
+
         description = ''
           Whether to generate Device Tree-related directives in the
           extlinux configuration.
@@ -51,52 +105,8 @@ in
           Note that this affects all generations, regardless of the
           setting value used in their configurations.
         '';
-      };
 
-      configurationLimit = mkOption {
-        default = 20;
-        example = 10;
-        type = types.int;
-        description = ''
-          Maximum number of configurations in the boot menu.
-        '';
-      };
-
-      mirroredBoots = mkOption {
-        default = [ { path = "/boot"; } ];
-        example = [
-          { path = "/boot1"; }
-          { path = "/boot2"; }
-        ];
-        description = ''
-          Mirror the boot configuration to multiple paths.
-        '';
-
-        type =
-          with types;
-          listOf (submodule {
-            options = {
-              path = mkOption {
-                example = "/boot1";
-                type = types.str;
-                description = ''
-                  The path to the boot directory where the extlinux-compatible
-                  configuration files will be written.
-                '';
-              };
-            };
-          });
-      };
-
-      populateCmd = mkOption {
-        type = types.str;
-        readOnly = true;
-        description = ''
-          Contains the builder command used to populate an image,
-          honoring all options except the `-c <path-to-default-configuration>`
-          argument.
-          Useful to have for sdImage.populateRootCommands
-        '';
+        type = types.bool;
       };
 
     };
@@ -119,19 +129,19 @@ in
       );
     in
     mkIf cfg.enable {
-      system.build.installBootLoader = installBootLoader;
-      system.boot.loader.id = "generic-extlinux-compatible";
-
-      boot.loader.generic-extlinux-compatible.populateCmd = "${populateBuilder} ${builderArgs}";
-
       assertions = [
         {
           assertion = cfg.mirroredBoots != [ ];
+
           message = ''
             You must not remove all elements from option 'boot.loader.generic-extlinux-compatible.mirroredBoots',
             otherwise the system will not be bootable.
           '';
         }
       ];
+
+      boot.loader.generic-extlinux-compatible.populateCmd = "${populateBuilder} ${builderArgs}";
+      system.boot.loader.id = "generic-extlinux-compatible";
+      system.build.installBootLoader = installBootLoader;
     };
 }

@@ -14,24 +14,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-eVYvjo2wKW2g9/9hL9nbQa1FRWDMMqMHok0V/adPHVY=";
   };
 
-  qmakeFlags = [
-    "trunk.pro"
-    "toolsstatic.pro"
-  ];
-
-  enableParallelBuilding = true;
+  postPatch = ''
+    sed -i "/dpkg-buildflags/d" tools.pro
+    patchShebangs create_version_file.sh
+  '';
 
   nativeBuildInputs = [
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
   ];
-  dontWrapQtApps = true;
-  buildInputs = [ libsForQt5.qtbase ];
 
-  postPatch = ''
-    sed -i "/dpkg-buildflags/d" tools.pro
-    patchShebangs create_version_file.sh
-  '';
+  buildInputs = [ libsForQt5.qtbase ];
 
   preConfigure = ''
     ./create_version_file.sh
@@ -45,12 +38,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+
+  qmakeFlags = [
+    "trunk.pro"
+    "toolsstatic.pro"
+  ];
+
   meta = {
     description = "Small programming toolbox";
-    mainProgram = "libguytools";
     homepage = "https://libguytools.sourceforge.io";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "libguytools";
   };
 })

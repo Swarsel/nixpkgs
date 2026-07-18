@@ -1,23 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  pkg-config,
+  cppunit,
   glfw,
   libvgm,
   libx11,
   libxau,
   libxdmcp,
-  cppunit,
+  pkg-config,
+  unstableGitUpdater,
 }:
 let
   libvgm' = libvgm.override {
-    withAllEmulators = false;
     emulators = [
       "_PRESET_SMD"
     ];
+
     enableLibplayer = false;
+    withAllEmulators = false;
   };
 in
 stdenv.mkDerivation {
@@ -28,8 +29,8 @@ stdenv.mkDerivation {
     owner = "superctr";
     repo = "mmlgui";
     rev = "9803a154c5fdbe6e88956e391ea0d5c4eae18cdc";
-    fetchSubmodules = true;
     hash = "sha256-3HMSVSgqusIhFf7jheyC2ytoJqSsJA8yYUnhxvdteq0=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -68,17 +69,15 @@ stdenv.mkDerivation {
     libxdmcp
   ];
 
-  checkInputs = [
-    cppunit
-  ];
-
   makeFlags = [
     "RELEASE=1"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  checkInputs = [
+    cppunit
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -90,13 +89,15 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   passthru.updateScript = unstableGitUpdater {
     url = "https://github.com/superctr/mmlgui.git";
   };
 
   meta = {
-    homepage = "https://github.com/superctr/mmlgui";
     description = "MML (Music Macro Language) editor and compiler GUI, powered by the ctrmml framework";
+    homepage = "https://github.com/superctr/mmlgui";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.all;

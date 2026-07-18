@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   qtbase,
@@ -17,11 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-F+NTVYIB55GlB+p9mgDvJD86n0xOOKMGCRDM8TtnMpo=";
   };
 
-  dontWrapQtApps = true;
-
-  cmakeFlags = [
-    "-DQT_DEFAULT_MAJOR_VERSION=${lib.versions.major qtbase.version}"
-  ];
   nativeBuildInputs = [
     cmake
   ];
@@ -30,9 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     qtbase
   ];
 
+  cmakeFlags = [
+    "-DQT_DEFAULT_MAJOR_VERSION=${lib.versions.major qtbase.version}"
+  ];
+
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "https://github.com/Skycoder42/QHotkey";
     description = "Global shortcut/hotkey for Desktop Qt-Applications";
+    homepage = "https://github.com/Skycoder42/QHotkey";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ dmkhitaryan ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;

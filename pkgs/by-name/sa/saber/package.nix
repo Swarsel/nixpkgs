@@ -1,20 +1,20 @@
 {
   lib,
-  flutter341,
   fetchFromGitHub,
-  gst_all_1,
-  libunwind,
-  orc,
-  webkitgtk_4_1,
-  autoPatchelfHook,
-  libxmu,
-  jdk,
-  zlib,
-  runCommand,
-  yq-go,
   _experimental-update-script-combinators,
-  nix-update-script,
+  autoPatchelfHook,
   dart,
+  flutter341,
+  gst_all_1,
+  jdk,
+  libunwind,
+  libxmu,
+  nix-update-script,
+  orc,
+  runCommand,
+  webkitgtk_4_1,
+  yq-go,
+  zlib,
 }:
 
 let
@@ -34,12 +34,14 @@ let
   };
 in
 flutter341.buildFlutterApplication {
-  pname = "saber";
   inherit version src;
+  pname = "saber";
 
-  gitHashes = lib.importJSON ./git-hashes.json;
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  postPatch = ''
+    patchShebangs patches/pre/remove_proprietary_dependencies.sh patches/pre/remove_dev_dependencies.sh
+    patches/pre/remove_proprietary_dependencies.sh
+    patches/pre/remove_dev_dependencies.sh
+  '';
 
   nativeBuildInputs = [ autoPatchelfHook ];
 
@@ -52,14 +54,6 @@ flutter341.buildFlutterApplication {
     libxmu
     jdk
   ];
-
-  postPatch = ''
-    patchShebangs patches/pre/remove_proprietary_dependencies.sh patches/pre/remove_dev_dependencies.sh
-    patches/pre/remove_proprietary_dependencies.sh
-    patches/pre/remove_dev_dependencies.sh
-  '';
-
-  flutterBuildFlags = [ "--dart-define=DIRTY=false" ];
 
   env.ZLIB_ROOT = zlib-root;
 
@@ -74,6 +68,10 @@ flutter341.buildFlutterApplication {
     patchelf --shrink-rpath --allowed-rpath-prefixes "$NIX_STORE" $out/app/saber/lib/lib*.so
   '';
 
+  flutterBuildFlags = [ "--dart-define=DIRTY=false" ];
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   passthru = {
     pubspecSource =
       runCommand "pubspec.lock.json"
@@ -84,6 +82,7 @@ flutter341.buildFlutterApplication {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (
@@ -100,6 +99,7 @@ flutter341.buildFlutterApplication {
           "--output"
           ./git-hashes.json
         ];
+
         supportedFeatures = [ ];
       }
     ];
@@ -108,12 +108,14 @@ flutter341.buildFlutterApplication {
   meta = {
     description = "Cross-platform open-source app built for handwriting";
     homepage = "https://github.com/saber-notes/saber";
-    mainProgram = "saber";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = [ ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "saber";
   };
 }

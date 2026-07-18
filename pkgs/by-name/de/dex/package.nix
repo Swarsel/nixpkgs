@@ -18,9 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ sphinx ];
   buildInputs = [ python3 ];
+
   makeFlags = [
     "PREFIX=$(out)"
     "VERSION=$(version)"
@@ -29,9 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Program to generate and execute DesktopEntry files of the Application type";
     homepage = "https://github.com/jceb/dex";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.linux;
     mainProgram = "dex";
   };
 })

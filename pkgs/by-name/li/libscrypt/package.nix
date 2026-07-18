@@ -16,11 +16,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildFlags = lib.optional stdenv.hostPlatform.isDarwin "LDFLAGS= LDFLAGS_EXTRA= CFLAGS_EXTRA=";
-
+  doCheck = true;
   installFlags = [ "PREFIX=$(out)" ];
   installTargets = lib.optional stdenv.hostPlatform.isDarwin "install-osx";
-
-  doCheck = true;
 
   meta = {
     description = "Shared library that implements scrypt() functionality";

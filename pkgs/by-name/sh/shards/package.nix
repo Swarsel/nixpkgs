@@ -15,19 +15,18 @@ crystal.buildCrystalPackage rec {
     hash = "sha256-LOdI389nVsFXkKPKco1C+O710kBlWImzCvdBBYEsWQQ=";
   };
 
+  # tries to execute git which fails spectacularly
+  doCheck = false;
+  crystalBinaries.shards.src = "./src/shards.cr";
   # we cannot use `make` or `shards` here as it would introduce a cyclical dependency
   format = "crystal";
   shardsFile = ./shards.nix;
-  crystalBinaries.shards.src = "./src/shards.cr";
-
-  # tries to execute git which fails spectacularly
-  doCheck = false;
 
   meta = {
+    inherit (crystal.meta) homepage platforms;
     description = "Dependency manager for the Crystal language";
-    mainProgram = "shards";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ peterhoeg ];
-    inherit (crystal.meta) homepage platforms;
+    mainProgram = "shards";
   };
 }

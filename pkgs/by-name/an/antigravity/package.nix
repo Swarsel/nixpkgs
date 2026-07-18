@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildVscode,
   fetchurl,
-  writeShellScript,
+  buildVscode,
   coreutils,
+  writeShellScript,
   commandLineArgs ? "",
   useVSCodeRipgrep ? stdenv.hostPlatform.isDarwin,
 }:
@@ -20,19 +20,7 @@ buildVscode {
   inherit commandLineArgs useVSCodeRipgrep;
   inherit (information) version vscodeVersion;
   pname = "antigravity";
-
-  executableName = "antigravity";
-  longName = "Antigravity";
-  shortName = "Antigravity";
-  libraryName = "antigravity";
-  iconName = "antigravity";
-
   src = fetchurl { inherit (source) url sha256; };
-
-  sourceRoot = if hostPlatform.isDarwin then "Antigravity.app" else "Antigravity";
-
-  tests = { };
-  updateScript = ./update.js;
 
   # When running inside an FHS environment, try linking Google Chrome or Chromium
   # to the hardcoded Playwright search path: /opt/google/chrome/chrome
@@ -40,10 +28,12 @@ buildVscode {
     args:
     args
     // {
-      extraBwrapArgs = (args.extraBwrapArgs or [ ]) ++ [ "--tmpfs /opt/google/chrome" ];
       extraBuildCommands = (args.extraBuildCommands or "") + ''
         mkdir -p "$out/opt/google/chrome"
       '';
+
+      extraBwrapArgs = (args.extraBwrapArgs or [ ]) ++ [ "--tmpfs /opt/google/chrome" ];
+
       runScript = writeShellScript "antigravity-wrapper" ''
         for candidate in google-chrome-stable google-chrome chromium-browser chromium; do
           if target=$(command -v "$candidate"); then
@@ -55,22 +45,34 @@ buildVscode {
       '';
     };
 
+  executableName = "antigravity";
+  iconName = "antigravity";
+  libraryName = "antigravity";
+  longName = "Antigravity";
+  shortName = "Antigravity";
+  sourceRoot = if hostPlatform.isDarwin then "Antigravity.app" else "Antigravity";
+  tests = { };
+  updateScript = ./update.js;
+
   meta = {
-    mainProgram = "antigravity";
     description = "Agentic development platform, evolving the IDE into the agent-first era";
     homepage = "https://antigravity.google";
-    downloadPage = "https://antigravity.google/download";
     changelog = "https://antigravity.google/changelog";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    maintainers = with lib.maintainers; [
+      xiaoxiangmoe
+      Zaczero
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [
-      xiaoxiangmoe
-      Zaczero
-    ];
+
+    mainProgram = "antigravity";
+    downloadPage = "https://antigravity.google/download";
   };
 }

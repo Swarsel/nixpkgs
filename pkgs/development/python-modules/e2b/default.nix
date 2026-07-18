@@ -1,16 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   attrs,
+  buildPythonPackage,
   httpcore,
   httpx,
   packaging,
+  # build-system
+  poetry-core,
   protobuf,
   python-dateutil,
   typing-extensions,
@@ -19,7 +17,6 @@
 buildPythonPackage rec {
   pname = "e2b";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "e2b-dev";
@@ -28,14 +25,12 @@ buildPythonPackage rec {
     hash = "sha256-6THRc4rv/mzOWbsN1FpUu56kjvHvVBssK2glNoGdSzI=";
   };
 
-  sourceRoot = "${src.name}/packages/python-sdk";
+  # Tests require an API key
+  # e2b.exceptions.AuthenticationException: API key is required, please visit the Team tab at https://e2b.dev/dashboard to get your API key.
+  doCheck = false;
 
   build-system = [
     poetry-core
-  ];
-
-  pythonRelaxDeps = [
-    "protobuf"
   ];
 
   dependencies = [
@@ -48,11 +43,14 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "e2b" ];
 
-  # Tests require an API key
-  # e2b.exceptions.AuthenticationException: API key is required, please visit the Team tab at https://e2b.dev/dashboard to get your API key.
-  doCheck = false;
+  pythonRelaxDeps = [
+    "protobuf"
+  ];
+
+  sourceRoot = "${src.name}/packages/python-sdk";
 
   meta = {
     description = "E2B SDK that give agents cloud environments";

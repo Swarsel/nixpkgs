@@ -1,35 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  nixosTests,
-  testers,
+  boost,
   cmake,
   cmake-extras,
-  pkg-config,
-  wrapQtAppsHook,
+  glib,
+  glm,
   gsettings-qt,
   gtest,
-  libqtdbustest,
   libqtdbusmock,
+  libqtdbustest,
   libuuid,
   lomiri-api,
   lomiri-app-launch,
   lomiri-url-dispatcher,
   lttng-ust,
   mir_2_15,
+  nixosTests,
+  pkg-config,
   process-cpp,
+  properties-cpp,
+  protobuf,
   qtbase,
   qtdeclarative,
   qtsensors,
+  testers,
   valgrind,
-  protobuf,
-  glm,
-  boost,
-  properties-cpp,
-  glib,
   validatePkgConfig,
   wayland,
+  wrapQtAppsHook,
   xwayland,
 }:
 
@@ -108,23 +108,23 @@ stdenv.mkDerivation (finalAttrs: {
     xwayland
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "NO_TESTS" (!finalAttrs.finalPackage.doCheck))
+    (lib.cmakeBool "WITH_MIR2" true)
+  ];
+
+  # Tests currently unavailable when building with Mir2
+  doCheck = false;
+
   checkInputs = [
     gtest
     libqtdbustest
     libqtdbusmock
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "NO_TESTS" (!finalAttrs.finalPackage.doCheck))
-    (lib.cmakeBool "WITH_MIR2" true)
-  ];
-
   postInstall = ''
     glib-compile-schemas $out/share/glib-2.0/schemas
   '';
-
-  # Tests currently unavailable when building with Mir2
-  doCheck = false;
 
   passthru.tests = nixosTests.lomiri // {
     pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -134,8 +134,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "QPA plugin to make Qt a Mir server";
     homepage = "https://gitlab.com/ubports/development/core/qtmir";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
     pkgConfigModules = [ "qtmirserver" ];
+    teams = [ lib.teams.lomiri ];
   };
 })

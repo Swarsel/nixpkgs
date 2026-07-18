@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  nix-update-script,
-  buildDunePackage,
   base,
+  buildDunePackage,
+  nix-update-script,
   ppx_sexp_conv,
 }:
 
@@ -18,8 +18,6 @@ buildDunePackage rec {
     sha256 = "sha256-faJ8ZQ7AWDHWfyQ2jq6+8TMe4G4NLjqHxYzLzt2LGh4=";
   };
 
-  minimalOCamlVersion = "5.1";
-
   # base v0.17 compatibility
   patches = [ ./tdigest.patch ];
 
@@ -28,11 +26,12 @@ buildDunePackage rec {
     ppx_sexp_conv
   ];
 
+  minimalOCamlVersion = "5.1";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/SGrondin/${pname}";
     description = "OCaml implementation of the T-Digest algorithm";
+    homepage = "https://github.com/SGrondin/${pname}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ niols ];
   };

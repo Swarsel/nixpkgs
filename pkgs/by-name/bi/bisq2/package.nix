@@ -1,26 +1,24 @@
 {
-  stdenv,
   lib,
-  makeBinaryWrapper,
+  stdenv,
   fetchurl,
-  makeDesktopItem,
-  copyDesktopItems,
-  imagemagick,
-  zulu25,
-  dpkg,
-  writeShellScript,
-  tor,
-  zip,
-  gnupg,
-  coreutils,
-
-  # Used by the bundled webcam-app
-  libv4l,
-
   # Used by the testing package bisq2-webcam-app
   callPackage,
+  copyDesktopItems,
+  coreutils,
+  dpkg,
+  gnupg,
+  imagemagick,
+  # Used by the bundled webcam-app
+  libv4l,
+  makeBinaryWrapper,
+  makeDesktopItem,
   socat,
+  tor,
   unzip,
+  writeShellScript,
+  zip,
+  zulu25,
 }:
 
 let
@@ -40,14 +38,14 @@ let
   # as indicated in the file
   # https://github.com/bisq-network/bisq2/releases/download/v${version}/signingkey.asc
   publicKey = {
-    "E222AA02" = fetchurl {
-      url = "https://github.com/bisq-network/bisq2/releases/download/v${version}/E222AA02.asc";
-      hash = "sha256-31uBpe/+0QQwFyAsoCt1TUWRm0PHfCFOGOx1M16efoE=";
+    "387C8307" = fetchurl {
+      hash = "sha256-PrRYZLT0xv82dUscOBgQGKNf6zwzWUDhriAffZbNpmI=";
+      url = "https://github.com/bisq-network/bisq2/releases/download/v${version}/387C8307.asc";
     };
 
-    "387C8307" = fetchurl {
-      url = "https://github.com/bisq-network/bisq2/releases/download/v${version}/387C8307.asc";
-      hash = "sha256-PrRYZLT0xv82dUscOBgQGKNf6zwzWUDhriAffZbNpmI=";
+    "E222AA02" = fetchurl {
+      hash = "sha256-31uBpe/+0QQwFyAsoCt1TUWRm0PHfCFOGOx1M16efoE=";
+      url = "https://github.com/bisq-network/bisq2/releases/download/v${version}/E222AA02.asc";
     };
   };
 
@@ -63,20 +61,18 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit version;
-
   pname = "bisq2";
 
   # nixpkgs-update: no auto update
   src = fetchurl {
     url = "https://github.com/bisq-network/bisq2/releases/download/v${version}/Bisq-${version}.deb";
     hash = "sha256-Ts0u1Rapgfz/z17U3VSN17/rdACr/KOGmiZjWnGJmcw=";
-
+    downloadToTemp = true;
     # Verify the upstream Debian package prior to extraction.
     # See https://bisq.wiki/Bisq_2#Installation
     # This ensures that a successful build of this Nix package requires the Debian
     # package to pass verification.
     nativeBuildInputs = [ gnupg ];
-    downloadToTemp = true;
 
     postFetch = ''
       pushd $(mktemp -d)
@@ -92,11 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
-  signature = fetchurl {
-    url = "https://github.com/bisq-network/bisq2/releases/download/v${version}/Bisq-${version}.deb.asc";
-    hash = "sha256-/+HDj28uOFQwkrrzKfcQW0T5/qTIeB30Zd10EjeGhlU=";
-  };
-
   nativeBuildInputs = [
     copyDesktopItems
     dpkg
@@ -105,36 +96,6 @@ stdenv.mkDerivation (finalAttrs: {
     zip
     gnupg
   ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "bisq2";
-      exec = "bisq2";
-      icon = "bisq2";
-      desktopName = "Bisq 2";
-      genericName = "Decentralized bitcoin exchange";
-      categories = [
-        "Network"
-        "P2P"
-      ];
-    })
-
-    (makeDesktopItem {
-      name = "bisq2-hidpi";
-      exec = "bisq2-hidpi";
-      icon = "bisq2";
-      desktopName = "Bisq 2 (HiDPI)";
-      genericName = "Decentralized bitcoin exchange";
-      categories = [
-        "Network"
-        "P2P"
-      ];
-    })
-  ];
-
-  unpackPhase = ''
-    dpkg -x $src .
-  '';
 
   buildPhase = ''
     # Replace the Tor binary embedded in tor.jar (which is in the zip archive tor.zip)
@@ -168,27 +129,69 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "P2P"
+      ];
+
+      desktopName = "Bisq 2";
+      exec = "bisq2";
+      genericName = "Decentralized bitcoin exchange";
+      icon = "bisq2";
+      name = "bisq2";
+    })
+
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "P2P"
+      ];
+
+      desktopName = "Bisq 2 (HiDPI)";
+      exec = "bisq2-hidpi";
+      genericName = "Decentralized bitcoin exchange";
+      icon = "bisq2";
+      name = "bisq2-hidpi";
+    })
+  ];
+
+  signature = fetchurl {
+    hash = "sha256-/+HDj28uOFQwkrrzKfcQW0T5/qTIeB30Zd10EjeGhlU=";
+    url = "https://github.com/bisq-network/bisq2/releases/download/v${version}/Bisq-${version}.deb.asc";
+  };
+
+  unpackPhase = ''
+    dpkg -x $src .
+  '';
+
   # The bisq2.webcam-app package is for maintainers to test scanning QR codes.
   passthru.webcam-app = callPackage ./webcam-app.nix {
     inherit
       jdk
       libraryPath
       ;
+
     bisq2 = finalAttrs.finalPackage.out;
   };
 
   meta = {
     description = "Decentralized bitcoin exchange network";
     homepage = "https://bisq.network";
-    mainProgram = "bisq2";
+    license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
     ];
-    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [ emmanuelrosa ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "bisq2";
   };
 })

@@ -1,36 +1,33 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  gitUpdater,
-
   # dependencies
   attrs,
   beautifulsoup4,
+  buildPythonPackage,
   defusedxml,
   devpi-common,
   devpi-server,
   docutils,
+  gitUpdater,
+  packaging-legacy,
   pygments,
   pyramid,
   pyramid-chameleon,
+  pytest-cov-stub,
+  # tests
+  pytestCheckHook,
   readme-renderer,
   setuptools,
   tomli,
-  whoosh,
-
-  # tests
-  pytestCheckHook,
-  pytest-cov-stub,
-  packaging-legacy,
   webtest,
+  whoosh,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "devpi-web";
   version = "5.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "devpi";
@@ -39,12 +36,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7uYHkrACVRaSqhCflbN3TrGtAnw7ifdkiiLnuGd8bnw=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/web";
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail ', "setuptools_changelog_shortener"' ""
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    packaging-legacy
+    webtest
+  ];
 
   build-system = [ setuptools ];
 
@@ -64,24 +66,20 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ readme-renderer.optional-dependencies.md;
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    packaging-legacy
-    webtest
-  ];
-
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # https://github.com/devpi/devpi/issues/1114
     "test_dont_index_deleted_mirror"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "devpi_web" ];
+  sourceRoot = "${finalAttrs.src.name}/web";
 
   # devpi uses a monorepo for server, common, client and web
   passthru = {
     # bulk updater selects wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
       # devpi uses a monorepo for server, common, client and web
       rev-prefix = "web-";
@@ -89,10 +87,11 @@ buildPythonPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/devpi/devpi";
     description = "Web view for devpi-server";
+    homepage = "https://github.com/devpi/devpi";
     changelog = "https://github.com/devpi/devpi/blob/${finalAttrs.src.tag}/common/CHANGELOG";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       confus
     ];

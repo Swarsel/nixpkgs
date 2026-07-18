@@ -1,40 +1,35 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   anytree,
+  buildPythonPackage,
   cgen,
+  # tests
+  click,
   cloudpickle,
   codepy,
+  gcc,
   llvmPackages,
+  matplotlib,
   multidict,
   numpy,
   packaging,
   psutil,
   py-cpuinfo,
-  sympy,
-
-  # tests
-  click,
-  gcc,
-  matplotlib,
   pytest-xdist,
   pytestCheckHook,
   scipy,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  sympy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "devito";
   version = "4.8.22";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "devitocodes";
@@ -50,9 +45,16 @@ buildPythonPackage (finalAttrs: {
     ./fix-codepy-compat.patch
   ];
 
-  pythonRemoveDeps = [ "pip" ];
+  nativeCheckInputs = [
+    click
+    gcc
+    matplotlib
+    pytest-xdist
+    pytestCheckHook
+    scipy
+  ];
 
-  pythonRelaxDeps = true;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -73,55 +75,10 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
 
-  nativeCheckInputs = [
-    click
-    gcc
-    matplotlib
-    pytest-xdist
-    pytestCheckHook
-    scipy
-  ];
-
-  pytestFlags = [
-    "-x"
-  ];
-
   disabledTestMarks = [
     # Tests marked as 'parallel' require mpi and fail in the sandbox:
     # FileNotFoundError: [Errno 2] No such file or directory: 'mpiexec'
     "parallel"
-  ];
-
-  disabledTests = [
-    # Download dataset from the internet
-    "test_gs_2d_float"
-    "test_gs_2d_int"
-
-    # Numerical precision issue: assert Data(False)
-    "test_cire_n_strides"
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
-    # FAILED tests/test_unexpansion.py::Test2Pass::test_v0 - assert False
-    "test_v0"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # FAILED tests/test_caching.py::TestCaching::test_special_symbols - ValueError: not enough values to unpack (expected 3, got 2)
-    "test_special_symbols"
-
-    # FAILED tests/test_unexpansion.py::Test2Pass::test_v0 - codepy.CompileError: module compilation failed
-    "test_v0"
-
-    # AssertionError: assert(np.allclose(grad_u.data, grad_v.data, rtol=tolerance, atol=tolerance))
-    "test_gradient_equivalence"
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
-    # Numerical tests
-    "test_lm_fb"
-    "test_lm_ds"
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) [
-    # Numerical error
-    "test_pow_precision"
   ];
 
   disabledTestPaths =
@@ -158,7 +115,47 @@ buildPythonPackage (finalAttrs: {
       "tests/test_interpolation.py::TestSubDomainInterpolation::test_inject_subdomain"
     ];
 
+  disabledTests = [
+    # Download dataset from the internet
+    "test_gs_2d_float"
+    "test_gs_2d_int"
+
+    # Numerical precision issue: assert Data(False)
+    "test_cire_n_strides"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
+    # FAILED tests/test_unexpansion.py::Test2Pass::test_v0 - assert False
+    "test_v0"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # FAILED tests/test_caching.py::TestCaching::test_special_symbols - ValueError: not enough values to unpack (expected 3, got 2)
+    "test_special_symbols"
+
+    # FAILED tests/test_unexpansion.py::Test2Pass::test_v0 - codepy.CompileError: module compilation failed
+    "test_v0"
+
+    # AssertionError: assert(np.allclose(grad_u.data, grad_v.data, rtol=tolerance, atol=tolerance))
+    "test_gradient_equivalence"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
+    # Numerical tests
+    "test_lm_fb"
+    "test_lm_ds"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) [
+    # Numerical error
+    "test_pow_precision"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-x"
+  ];
+
   pythonImportsCheck = [ "devito" ];
+  pythonRelaxDeps = true;
+  pythonRemoveDeps = [ "pip" ];
 
   meta = {
     description = "Code generation framework for automated finite difference computation";

@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   hypothesis,
   pytestCheckHook,
   unstableGitUpdater,
@@ -10,7 +10,6 @@
 buildPythonPackage {
   pname = "senf";
   version = "1.5.1-unstable-2026-03-20";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "quodlibet";
@@ -30,11 +29,12 @@ buildPythonPackage {
     "test_expanduser_user"
   ];
 
+  format = "setuptools";
+  pythonImportsCheck = [ "senf" ];
+
   passthru.updateScript = unstableGitUpdater {
     tagPrefix = "v";
   };
-
-  pythonImportsCheck = [ "senf" ];
 
   meta = {
     description = "Consistent filename handling for all Python versions and platforms";

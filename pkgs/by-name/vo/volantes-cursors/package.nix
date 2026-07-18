@@ -17,21 +17,22 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     inkscape
     xcursorgen
   ];
-
-  makeTargets = [ "build" ];
 
   makeFlags = [
     "DESTDIR=$(out)"
     "PREFIX="
   ];
 
+  makeTargets = [ "build" ];
+
   meta = {
-    homepage = "https://www.pling.com/p/1356095/";
     description = "Classic cursor theme with a flying style";
+    homepage = "https://www.pling.com/p/1356095/";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ jordanisaacs ];
     platforms = lib.platforms.unix;

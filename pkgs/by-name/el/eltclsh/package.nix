@@ -1,10 +1,10 @@
 {
   lib,
-  fetchgit,
-  automake,
   autoconf,
-  libtool,
+  automake,
+  fetchgit,
   libedit,
+  libtool,
   tcl,
   tk,
 }:
@@ -24,12 +24,11 @@ tcl.mkTclDerivation rec {
     autoconf
     libtool
   ];
+
   buildInputs = [
     libedit
     tk
   ];
-
-  preConfigure = "NOCONFIGURE=1 ./autogen.sh";
 
   configureFlags = [
     "--enable-tclshrl"
@@ -38,6 +37,8 @@ tcl.mkTclDerivation rec {
     "--with-includes=${libedit.dev}/include/readline"
     "--with-libtool=${libtool}"
   ];
+
+  preConfigure = "NOCONFIGURE=1 ./autogen.sh";
 
   meta = {
     description = "Interactive shell for the TCL programming language based on editline";

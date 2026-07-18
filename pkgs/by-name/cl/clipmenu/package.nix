@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
   clipnotify,
   coreutils,
   gawk,
+  makeWrapper,
   util-linux,
   xdotool,
   xsel,
@@ -26,12 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
       -e "s,/usr/bin,$out/bin,"
   '';
 
-  makeFlags = [ "PREFIX=$(out)" ];
   nativeBuildInputs = [
     makeWrapper
     xsel
     clipnotify
   ];
+
+  makeFlags = [ "PREFIX=$(out)" ];
 
   postFixup = ''
     sed -i "$out/bin/clipctl" -e 's,clipmenud\$,\.clipmenud-wrapped\$,'
@@ -53,9 +54,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    description = "Clipboard management using dmenu";
     inherit (finalAttrs.src.meta) homepage;
-    maintainers = with lib.maintainers; [ jb55 ];
+    description = "Clipboard management using dmenu";
     license = lib.licenses.publicDomain;
+    maintainers = with lib.maintainers; [ jb55 ];
   };
 })

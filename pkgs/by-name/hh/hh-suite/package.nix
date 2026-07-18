@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
+  llvmPackages,
+  mpi,
   xxd,
   enableMpi ? false,
-  mpi,
-  llvmPackages,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "hh-suite";
@@ -20,29 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kjNqJddioCZoh/cZL3YNplweIGopWIGzCYQOnKDqZmw=";
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   patches = [
     # Should be removable as soon as this upstream PR is merged: https://github.com/soedinglab/hh-suite/pull/357
     (fetchpatch {
+      hash = "sha256-Msdmj9l8voPYXK0SSwUA6mEbFLBhTjjE/Kjp0VL4Kf4=";
       name = "fix-gcc13-build-issues.patch";
       url = "https://github.com/soedinglab/hh-suite/commit/cec47cba5dcd580e668b1ee507c9282fbdc8e7d7.patch";
-      hash = "sha256-Msdmj9l8voPYXK0SSwUA6mEbFLBhTjjE/Kjp0VL4Kf4=";
     })
   ];
-
-  nativeBuildInputs = [
-    cmake
-    xxd
-  ];
-  cmakeFlags =
-    lib.optional stdenv.hostPlatform.isx86 "-DHAVE_SSE2=1"
-    ++ lib.optional stdenv.hostPlatform.isAarch "-DHAVE_ARM8=1"
-    ++ lib.optional stdenv.hostPlatform.avx2Support "-DHAVE_AVX2=1"
-    ++ lib.optional stdenv.hostPlatform.sse4_1Support "-DHAVE_SSE4_1=1";
-
-  buildInputs = lib.optional stdenv.cc.isClang llvmPackages.openmp ++ lib.optional enableMpi mpi;
 
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -50,6 +35,23 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace lib/ffindex/CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    xxd
+  ];
+
+  buildInputs = lib.optional stdenv.cc.isClang llvmPackages.openmp ++ lib.optional enableMpi mpi;
+
+  cmakeFlags =
+    lib.optional stdenv.hostPlatform.isx86 "-DHAVE_SSE2=1"
+    ++ lib.optional stdenv.hostPlatform.isAarch "-DHAVE_ARM8=1"
+    ++ lib.optional stdenv.hostPlatform.avx2Support "-DHAVE_AVX2=1"
+    ++ lib.optional stdenv.hostPlatform.sse4_1Support "-DHAVE_SSE4_1=1";
+
+  __structuredAttrs = true;
 
   meta = {
     description = "Remote protein homology detection suite";

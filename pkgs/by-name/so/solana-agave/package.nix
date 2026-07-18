@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
-  rustPlatform,
-  rustfmt,
-  installShellFiles,
-  pkg-config,
   apple-sdk_15,
-  udev,
-  openssl,
-  libz,
-  protobuf,
+  buildPackages,
+  clang,
   cmake,
   gnumake,
-  clang,
+  installShellFiles,
+  libz,
   llvm,
   llvmPackages,
-  rocksdb,
   nix-update-script,
+  openssl,
+  pkg-config,
+  protobuf,
+  rocksdb,
+  rustPlatform,
+  rustfmt,
+  udev,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -32,8 +32,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-lbkuywAuLeTIoe/5zbKmxCbnNcEx96BiX6ftNJHutZE=";
   };
 
-  cargoHash = "sha256-lQl8q0xMpXOmUirqL3Eyb4JcmYGSZK6pPMxQHOav9Zk=";
-
   nativeBuildInputs = [
     installShellFiles
     protobuf
@@ -46,6 +44,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pkg-config
     rustfmt
   ];
+
   buildInputs = [
     openssl
     libz
@@ -54,17 +53,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_15 ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ udev ];
 
-  doInstallCheck = false;
+  cargoHash = "sha256-lQl8q0xMpXOmUirqL3Eyb4JcmYGSZK6pPMxQHOav9Zk=";
 
   env = {
     # If set, always finds OpenSSL in the system, even if the vendored feature is enabled.
     OPENSSL_NO_VENDOR = 1;
-    # Agave uses deny(warnings) which breaks when nixpkgs updates rustc.
-    # Cap lints to warnings so the build doesn't fail on new compiler lints.
-    RUSTFLAGS = "--cap-lints warn";
     # Use the pre-built rocksdb from nixpkgs instead of compiling from source.
     # This avoids GCC 13+ compatibility issues with missing <cstdint> includes.
     ROCKSDB_LIB_DIR = "${rocksdb}/lib";
+    # Agave uses deny(warnings) which breaks when nixpkgs updates rustc.
+    # Cap lints to warnings so the build doesn't fail on new compiler lints.
+    RUSTFLAGS = "--cap-lints warn";
   };
 
   # Disabling tests because:
@@ -81,19 +80,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
   #
   # Almost certainly caused by the ledger-tool test calling `Command::cargo_bin` which assumes a good bit about the current environment.
   doCheck = false;
+  doInstallCheck = false;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Solana Network Validator";
     homepage = "https://github.com/anza-xyz/agave";
     changelog = "https://github.com/anza-xyz/agave/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       TomMD
     ];
+
     mainProgram = "agave";
   };
-
-  passthru.updateScript = nix-update-script { };
 })

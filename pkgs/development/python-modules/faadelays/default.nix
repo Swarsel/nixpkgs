@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "faadelays";
   version = "2023.9.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,18 +16,16 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "faadelays" ];
 
   meta = {
-    changelog = "https://github.com/ntilley905/faadelays/releases/tag/v${version}";
     description = "Python package to retrieve FAA airport status";
     homepage = "https://github.com/ntilley905/faadelays";
+    changelog = "https://github.com/ntilley905/faadelays/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
   };

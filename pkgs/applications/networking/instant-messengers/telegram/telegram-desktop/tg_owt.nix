@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  abseil-cpp,
+  apple-sdk_15,
   cmake,
-  ninja,
-  python3,
-  libjpeg,
-  openssl,
-  libopus,
-  ffmpeg_6,
-  openh264,
   crc32c,
+  ffmpeg_6,
+  glib,
+  libGL,
+  libdrm,
+  libgbm,
+  libjpeg,
+  libopus,
   libvpx,
   libx11,
-  libxtst,
   libxcomposite,
   libxdamage,
   libxext,
-  libxrender,
-  libxrandr,
   libxi,
-  glib,
-  abseil-cpp,
+  libxrandr,
+  libxrender,
+  libxtst,
+  ninja,
+  openh264,
+  openssl,
   pipewire,
-  libgbm,
-  libdrm,
-  libGL,
-  apple-sdk_15,
+  pkg-config,
+  python3,
   unstableGitUpdater,
 }:
 
@@ -43,6 +43,11 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
   ];
 
@@ -53,11 +58,6 @@ stdenv.mkDerivation {
       --replace-fail '"libgbm.so.1"' '"${lib.getLib libgbm}/lib/libgbm.so.1"' \
       --replace-fail '"libdrm.so.2"' '"${lib.getLib libdrm}/lib/libdrm.so.2"'
   '';
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   nativeBuildInputs = [
     pkg-config

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
+  fixDarwinDylibNames,
+  freetype,
+  glib,
+  harfbuzz,
+  ninja,
   nix-update-script,
+  plutosvg,
+  sdl3,
   testers,
   validatePkgConfig,
-  sdl3,
-  cmake,
-  freetype,
-  harfbuzz,
-  glib,
-  ninja,
-  plutosvg,
-  fixDarwinDylibNames,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  doCheck = true;
 
   nativeBuildInputs = [
     cmake
@@ -50,14 +49,17 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "SDLTTF_PLUTOSVG" true)
   ];
 
+  doCheck = true;
+
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
         "release-(3\\..*)"
       ];
     };
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -65,12 +67,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/libsdl-org/SDL_ttf";
     changelog = "https://github.com/libsdl-org/SDL_ttf/releases/tag/${toString finalAttrs.src.tag}";
     license = lib.licenses.zlib;
+
     maintainers = with lib.maintainers; [
       charain
       Emin017
     ];
-    teams = [ lib.teams.sdl ];
-    pkgConfigModules = [ "sdl3-ttf" ];
+
     platforms = lib.platforms.all;
+    pkgConfigModules = [ "sdl3-ttf" ];
+    teams = [ lib.teams.sdl ];
   };
 })

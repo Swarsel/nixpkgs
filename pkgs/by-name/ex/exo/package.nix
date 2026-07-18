@@ -2,36 +2,40 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
-  replaceVars,
-  macmon,
-
-  # pyo3-bindings
-  rustPlatform,
-
   # dashboard
   buildNpmPackage,
   fetchNpmDeps,
-
-  writableTmpDirAsHomeHook,
-
+  macmon,
   nix-update-script,
+  python3Packages,
+  replaceVars,
+  # pyo3-bindings
+  rustPlatform,
+  writableTmpDirAsHomeHook,
 }:
 let
   version = "1.0.71";
   src = fetchFromGitHub {
-    name = "exo";
     owner = "exo-explore";
     repo = "exo";
     tag = "v${version}";
     hash = "sha256-k3jtrJCxLx8nq1R70CtZWFyNVXEa5Ltw0MgdA0qFVXA=";
+    name = "exo";
   };
 
   pyo3-bindings = python3Packages.buildPythonPackage (finalAttrs: {
-    pname = "exo-pyo3-bindings";
     inherit version src;
-    pyproject = true;
+    pname = "exo-pyo3-bindings";
 
+    nativeBuildInputs = [
+      rustPlatform.cargoSetupHook
+      rustPlatform.maturinBuildHook
+    ];
+
+    # Bypass rust nightly features not being available on rust stable
+    env.RUSTC_BOOTSTRAP = 1;
+    # The only test is failing
+    doCheck = false;
     buildAndTestSubdir = "rust/exo_pyo3_bindings";
 
     cargoDeps = rustPlatform.fetchCargoVendor {
@@ -39,24 +43,12 @@ let
       hash = "sha256-gwOdA2sHz8n4GfNjK+OYmttXUTle4WYmAE2Y0KXYrwg=";
     };
 
-    # Bypass rust nightly features not being available on rust stable
-    env.RUSTC_BOOTSTRAP = 1;
-
-    nativeBuildInputs = [
-      rustPlatform.cargoSetupHook
-      rustPlatform.maturinBuildHook
-    ];
-
-    # The only test is failing
-    doCheck = false;
+    pyproject = true;
   });
 
   dashboard = buildNpmPackage (finalAttrs: {
-    pname = "exo-dashboard";
     inherit src version;
-
-    sourceRoot = "${finalAttrs.src.name}/dashboard";
-    npmDepsFetcherVersion = 3;
+    pname = "exo-dashboard";
 
     npmDeps = fetchNpmDeps {
       inherit (finalAttrs)
@@ -65,16 +57,18 @@ let
         src
         sourceRoot
         ;
+
       fetcherVersion = 3;
       hash = "sha256-gBWJP0dF2zDEWLYxfKYQSn9O5hVRkcviDv9oP267pQQ=";
     };
+
+    npmDepsFetcherVersion = 3;
+    sourceRoot = "${finalAttrs.src.name}/dashboard";
   });
 in
 python3Packages.buildPythonApplication (finalAttrs: {
-  pname = "exo";
-  pyproject = true;
-
   inherit version src;
+  pname = "exo";
 
   patches = [
     (replaceVars ./inject-dashboard-path.patch {
@@ -101,16 +95,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
         '"${lib.getExe macmon}"'
   '';
 
+  nativeCheckInputs = [
+    python3Packages.pytest-asyncio
+    python3Packages.pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  # Otherwise fails with 'import file mismatch'
+  preCheck = ''
+    rm src/exo/__init__.py
+  '';
+
+  # 'resources' are not getting copied to the installation directory, so we do it manually
+  # FileNotFoundError: Unable to locate resources. Did you clone the repo properly?
+  postInstall = ''
+    cp -r resources $out/${python3Packages.python.sitePackages}/exo/
+  '';
+
   build-system = with python3Packages; [
     uv-build
   ];
 
-  pythonRelaxDeps = true;
-
-  pythonRemoveDeps = [
-    "types-aiofiles"
-    "uuid"
-  ];
   dependencies =
     with python3Packages;
     [
@@ -153,27 +158,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ sqlalchemy.optional-dependencies.asyncio;
 
-  # 'resources' are not getting copied to the installation directory, so we do it manually
-  # FileNotFoundError: Unable to locate resources. Did you clone the repo properly?
-  postInstall = ''
-    cp -r resources $out/${python3Packages.python.sitePackages}/exo/
-  '';
-
-  pythonImportsCheck = [
-    "exo"
-    "exo.main"
+  disabledTestPaths = [
+    # All tests hang indefinitely
+    "src/exo/worker/tests/unittests/test_mlx/test_tokenizers.py"
   ];
-
-  nativeCheckInputs = [
-    python3Packages.pytest-asyncio
-    python3Packages.pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  # Otherwise fails with 'import file mismatch'
-  preCheck = ''
-    rm src/exo/__init__.py
-  '';
 
   disabledTests = [
     # AttributeError: type object 'builtins.Keypair' has no attribute 'generate_ed25519'
@@ -207,15 +195,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_composed_call_works"
   ];
 
-  disabledTestPaths = [
-    # All tests hang indefinitely
-    "src/exo/worker/tests/unittests/test_mlx/test_tokenizers.py"
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "exo"
+    "exo.main"
+  ];
+
+  pythonRelaxDeps = true;
+
+  pythonRemoveDeps = [
+    "types-aiofiles"
+    "uuid"
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
-    exo-pyo3-bindings = pyo3-bindings;
     exo-dashboard = dashboard;
+    exo-pyo3-bindings = pyo3-bindings;
+    updateScript = nix-update-script { };
   };
 
   meta = {

@@ -1,79 +1,29 @@
 {
   lib,
+  buildPlatform,
   kaem,
   mes-libc,
-  buildPlatform,
 }:
 
 rec {
 
-  # Recompile libc: crt{1,n,i}, libtcc.a, libc.a, libgetopt.a
-  recompileLibc =
-    {
-      tcc,
-      pname,
-      version,
-      src,
-      libtccOptions,
-      libtccSources ? [
-        "${src}/lib/libtcc1.c"
-        "${src}/lib/va_list.c"
-      ],
-      libtccObjects ? [
-        "libtcc1.o"
-        "va_list.o"
-      ],
-    }:
-    let
-
-      crt = kaem.runCommand "crt" { } ''
-        mkdir -p ''${out}/lib
-        ${tcc}/bin/tcc ${mes-libc.CFLAGS} -c -o ''${out}/lib/crt1.o ${mes-libc}/lib/crt1.c
-        ${tcc}/bin/tcc ${mes-libc.CFLAGS} -c -o ''${out}/lib/crtn.o ${mes-libc}/lib/crtn.c
-        ${tcc}/bin/tcc ${mes-libc.CFLAGS} -c -o ''${out}/lib/crti.o ${mes-libc}/lib/crti.c
-      '';
-
-      library =
-        let
-          compileCmd = options: source: "${tcc}/bin/tcc ${options} -c ${source}";
-        in
-        libName: options: sources: objs:
-        kaem.runCommand "${libName}.a" { } ''
-          ${lib.strings.concatMapStringsSep "\n" (compileCmd options) sources}
-          ${tcc}/bin/tcc -ar cr ''${out} ${lib.strings.concatStringsSep " " objs}
-        '';
-
-      libtcc1 = library "libtcc1" libtccOptions libtccSources libtccObjects;
-      libc = library "libc" mes-libc.CFLAGS [ "${mes-libc}/lib/libc.c" ] [ "libc.o" ];
-      libgetopt = library "libgetopt" mes-libc.CFLAGS [ "${mes-libc}/lib/libgetopt.c" ] [ "libgetopt.o" ];
-    in
-    kaem.runCommand "${pname}-libs-${version}" { } ''
-      mkdir -p ''${out}/lib
-      cp ${crt}/lib/crt1.o ''${out}/lib
-      cp ${crt}/lib/crtn.o ''${out}/lib
-      cp ${crt}/lib/crti.o ''${out}/lib
-      cp ${libtcc1} ''${out}/lib/libtcc1.a
-      cp ${libc} ''${out}/lib/libc.a
-      cp ${libgetopt} ''${out}/lib/libgetopt.a
-    '';
-
   buildTinyccMes =
     {
-      pname,
-      version,
-      src,
-      prev,
       buildOptions,
-      libtccSources ? [
-        "${src}/lib/libtcc1.c"
-        "${src}/lib/va_list.c"
-      ],
+      libtccBuildOptions,
+      meta,
+      pname,
+      prev,
+      src,
+      version,
       libtccObjects ? [
         "libtcc1.o"
         "va_list.o"
       ],
-      libtccBuildOptions,
-      meta,
+      libtccSources ? [
+        "${src}/lib/libtcc1.c"
+        "${src}/lib/va_list.c"
+      ],
     }:
     let
       tccTarget =
@@ -95,17 +45,19 @@ rec {
         kaem.runCommand "${pname}-${version}"
           {
             inherit pname version meta;
+
             passthru.tests = {
-              get-version =
-                result:
-                kaem.runCommand "${pname}-get-version-${version}" { } ''
-                  ${result}/bin/tcc -version
-                  mkdir ''${out}
-                '';
               chain =
                 result:
                 kaem.runCommand "${pname}-chain-${version}" { } ''
                   echo ${prev.compiler.tests.chain or prev.compiler.tests.get-version};
+                  ${result}/bin/tcc -version
+                  mkdir ''${out}
+                '';
+
+              get-version =
+                result:
+                kaem.runCommand "${pname}-get-version-${version}" { } ''
                   ${result}/bin/tcc -version
                   mkdir ''${out}
                 '';
@@ -149,10 +101,61 @@ rec {
           libtccSources
           libtccObjects
           ;
+
         tcc = compiler;
       };
     in
     {
       inherit prev compiler libs;
     };
+
+  # Recompile libc: crt{1,n,i}, libtcc.a, libc.a, libgetopt.a
+  recompileLibc =
+    {
+      libtccOptions,
+      pname,
+      src,
+      tcc,
+      version,
+      libtccObjects ? [
+        "libtcc1.o"
+        "va_list.o"
+      ],
+      libtccSources ? [
+        "${src}/lib/libtcc1.c"
+        "${src}/lib/va_list.c"
+      ],
+    }:
+    let
+
+      crt = kaem.runCommand "crt" { } ''
+        mkdir -p ''${out}/lib
+        ${tcc}/bin/tcc ${mes-libc.CFLAGS} -c -o ''${out}/lib/crt1.o ${mes-libc}/lib/crt1.c
+        ${tcc}/bin/tcc ${mes-libc.CFLAGS} -c -o ''${out}/lib/crtn.o ${mes-libc}/lib/crtn.c
+        ${tcc}/bin/tcc ${mes-libc.CFLAGS} -c -o ''${out}/lib/crti.o ${mes-libc}/lib/crti.c
+      '';
+
+      library =
+        let
+          compileCmd = options: source: "${tcc}/bin/tcc ${options} -c ${source}";
+        in
+        libName: options: sources: objs:
+        kaem.runCommand "${libName}.a" { } ''
+          ${lib.strings.concatMapStringsSep "\n" (compileCmd options) sources}
+          ${tcc}/bin/tcc -ar cr ''${out} ${lib.strings.concatStringsSep " " objs}
+        '';
+
+      libtcc1 = library "libtcc1" libtccOptions libtccSources libtccObjects;
+      libc = library "libc" mes-libc.CFLAGS [ "${mes-libc}/lib/libc.c" ] [ "libc.o" ];
+      libgetopt = library "libgetopt" mes-libc.CFLAGS [ "${mes-libc}/lib/libgetopt.c" ] [ "libgetopt.o" ];
+    in
+    kaem.runCommand "${pname}-libs-${version}" { } ''
+      mkdir -p ''${out}/lib
+      cp ${crt}/lib/crt1.o ''${out}/lib
+      cp ${crt}/lib/crtn.o ''${out}/lib
+      cp ${crt}/lib/crti.o ''${out}/lib
+      cp ${libtcc1} ''${out}/lib/libtcc1.a
+      cp ${libc} ''${out}/lib/libc.a
+      cp ${libgetopt} ''${out}/lib/libgetopt.a
+    '';
 }

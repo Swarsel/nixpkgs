@@ -1,27 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
+  buildPythonPackage,
+  mdformat,
   mdformat-beautysh,
   mdformat-footnote,
   mdformat-front-matters,
   mdformat-gfm,
   mdformat-simple-breaks,
-  mdformat,
   mdit-py-plugins,
   more-itertools,
   pytest-snapshot,
   pytestCheckHook,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mdformat-mkdocs";
   version = "5.2.0b0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KyleKing";
@@ -35,6 +32,11 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.9.10" "uv_build"
   '';
 
+  nativeCheckInputs = [
+    pytest-snapshot
+    pytestCheckHook
+  ];
+
   build-system = [
     uv-build
   ];
@@ -44,6 +46,11 @@ buildPythonPackage (finalAttrs: {
     mdformat-gfm
     mdit-py-plugins
     more-itertools
+  ];
+
+  disabledTestPaths = [
+    # AssertionError: assert ParsedText(lines=[LineResult(parsed=ParsedLine(line_...
+    "tests/format/test_parsed_result.py"
   ];
 
   optional-dependencies = {
@@ -59,16 +66,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-snapshot
-    pytestCheckHook
-  ];
-
-  disabledTestPaths = [
-    # AssertionError: assert ParsedText(lines=[LineResult(parsed=ParsedLine(line_...
-    "tests/format/test_parsed_result.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mdformat_mkdocs" ];
 
   meta = {

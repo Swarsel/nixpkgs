@@ -19,9 +19,6 @@ maven.buildMavenPackage rec {
     hash = "sha256-X85Yv6yx1Hpl3vNDHtv6u38Err668dkAx1lqpoGnALg=";
   };
 
-  mvnParameters = "-Dmaven.test.skip=true -Dmaven.buildNumber.skip=true";
-  mvnHash = "sha256-sCVWNzh8m3KvJyYzE2Mn+gbJTSt1/yX44dE4s7HkygU=";
-
   nativeBuildInputs = [
     makeWrapper
   ];
@@ -38,16 +35,20 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  mvnHash = "sha256-sCVWNzh8m3KvJyYzE2Mn+gbJTSt1/yX44dE4s7HkygU=";
+  mvnParameters = "-Dmaven.test.skip=true -Dmaven.buildNumber.skip=true";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://schemaspy.org";
     description = "Document your database simply and easily";
-    mainProgram = "schemaspy";
+    homepage = "https://schemaspy.org";
     license = lib.licenses.lgpl3Plus;
+
     maintainers = with lib.maintainers; [
       jraygauthier
       anthonyroussel
     ];
+
+    mainProgram = "schemaspy";
   };
 }

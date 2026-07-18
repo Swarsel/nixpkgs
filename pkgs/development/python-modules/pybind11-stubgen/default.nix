@@ -1,16 +1,13 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pybind11-stubgen";
   version = "2.5.5";
-  pyproject = true;
-
-  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "sizmailov";
@@ -24,13 +21,14 @@ buildPythonPackage (finalAttrs: {
   # This process requires network access and takes considerable time to complete.
   # Therefore, I disabled the check phase.
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pybind11_stubgen" ];
 
   meta = {
-    changelog = "https://github.com/sizmailov/pybind11-stubgen/releases/tag/v${finalAttrs.version}";
     description = "Generates stubs for python modules";
     homepage = "https://github.com/sizmailov/pybind11-stubgen";
+    changelog = "https://github.com/sizmailov/pybind11-stubgen/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3Lbnl;
     maintainers = with lib.maintainers; [ qbisi ];
   };

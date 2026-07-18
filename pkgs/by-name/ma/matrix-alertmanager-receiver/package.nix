@@ -1,15 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "matrix-alertmanager-receiver";
   version = "2026.7.8";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "metio";
@@ -19,18 +18,19 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-hVJZ+SoWCe9juq5ut7yHr+4nshORH1uHLIPCzpB+4Nc=";
-
   env.CGO_ENABLED = "0";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
     "-X main.matrixAlertmanagerReceiverVersion=${finalAttrs.version}"
   ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

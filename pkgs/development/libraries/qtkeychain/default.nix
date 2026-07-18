@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  libsecret,
   pkg-config,
   qtbase,
   qttools,
-  libsecret,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,19 +20,17 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-6Aw+hy3WCTr3iEiZns7aH82nkVSG/KMqEA2LE0XZ7Zo=";
   };
 
-  dontWrapQtApps = true;
-
-  cmakeFlags = [
-    "-DBUILD_WITH_QT6=${if lib.versions.major qtbase.version == "6" then "ON" else "OFF"}"
-    "-DQT_TRANSLATIONS_DIR=share/qt/translations"
-  ];
-
   nativeBuildInputs = [ cmake ] ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ pkg-config ] # for finding libsecret
   ;
 
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ libsecret ] ++ [
     qtbase
     qttools
+  ];
+
+  cmakeFlags = [
+    "-DBUILD_WITH_QT6=${if lib.versions.major qtbase.version == "6" then "ON" else "OFF"}"
+    "-DQT_TRANSLATIONS_DIR=share/qt/translations"
   ];
 
   doInstallCheck = true;
@@ -47,6 +45,8 @@ stdenv.mkDerivation rec {
 
     runHook postInstallCheck
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "Platform-independent Qt API for storing passwords securely";

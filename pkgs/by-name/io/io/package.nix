@@ -2,36 +2,36 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  zlib,
-  sqlite,
-  gmp,
-  libffi,
   cairo,
-  ncurses,
+  cmake,
+  fetchpatch,
   freetype,
-  libGLU,
-  libGL,
-  libpng,
-  libtiff,
-  libjpeg,
-  readline,
-  libsndfile,
-  libxml2,
-  libglut,
-  libsamplerate,
-  pcre,
-  libevent,
-  libedit,
-  yajl,
-  python3,
-  openssl,
   glfw,
-  pkg-config,
-  libpthread-stubs,
-  libxdmcp,
+  gmp,
+  libGL,
+  libGLU,
+  libedit,
+  libevent,
+  libffi,
+  libglut,
+  libjpeg,
   libmemcached,
+  libpng,
+  libpthread-stubs,
+  libsamplerate,
+  libsndfile,
+  libtiff,
+  libxdmcp,
+  libxml2,
+  ncurses,
+  openssl,
+  pcre,
+  pkg-config,
+  python3,
+  readline,
+  sqlite,
+  yajl,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -42,15 +42,15 @@ stdenv.mkDerivation {
     owner = "IoLanguage";
     repo = "io";
     tag = "2019.05.22-alpha";
-    fetchSubmodules = true;
     hash = "sha256-6w0JZE9H30X5j83YgSn7hG2l0LdhdRZfe/kWpx1/aoM=";
+    fetchSubmodules = true;
   };
 
   patches = [
     (fetchpatch {
       name = "check-for-sysctl-h.patch";
-      url = "https://github.com/IoLanguage/io/pull/446/commits/9f3e4d87b6d4c1bf583134d55d1cf92d3464c49f.patch";
       sha256 = "9f06073ac17f26c2ef6298143bdd1babe7783c228f9667622aa6c91bb7ec7fa0";
+      url = "https://github.com/IoLanguage/io/pull/446/commits/9f3e4d87b6d4c1bf583134d55d1cf92d3464c49f.patch";
     })
   ];
 
@@ -117,9 +117,11 @@ stdenv.mkDerivation {
     description = "Io programming language";
     homepage = "https://iolanguage.org/";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 }

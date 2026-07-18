@@ -1,51 +1,40 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # nativeBuildInputs
   cargo,
-  pkg-config,
-  rustPlatform,
-  rustc,
-
-  # buildInputs
-  openssl,
-
-  # build-system
-  setuptools-rust,
-  setuptools-scm,
-
+  # optional-dependencies
+  datasets,
   # dependencies
   interegular,
   jsonschema,
-
-  # optional-dependencies
-  datasets,
   numpy,
+  # buildInputs
+  openssl,
+  pkg-config,
   pydantic,
-  scipy,
-  torch,
-  transformers,
-
   # tests
   pytestCheckHook,
+  rustPlatform,
+  rustc,
+  scipy,
+  # build-system
+  setuptools-rust,
+  setuptools-scm,
+  torch,
+  transformers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "outlines-core";
   version = "0.2.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dottxt-ai";
     repo = "outlines-core";
     tag = finalAttrs.version;
     hash = "sha256-XmXD2tWG2277bC318Bn9RqeEE7j9VdauvWnBmFS8Lsk=";
-  };
-
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ./Cargo.lock;
   };
 
   postPatch = ''
@@ -69,14 +58,41 @@ buildPythonPackage (finalAttrs: {
     openssl
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  preCheck = ''
+    rm -rf outlines_core
+  '';
+
   build-system = [
     setuptools-rust
     setuptools-scm
   ];
 
+  cargoDeps = rustPlatform.importCargoLock {
+    lockFile = ./Cargo.lock;
+  };
+
   dependencies = [
     interegular
     jsonschema
+  ];
+
+  disabledTestPaths = [
+    # Downloads from Hugging Face Hub
+    "tests/test_kernels.py"
+  ];
+
+  disabledTests = [
+    # Tests that need to download from Hugging Face Hub.
+    "test_complex_serialization"
+    "test_create_fsm_index_tokenizer"
+    "test_from_pretrained"
+    "test_pickling_from_pretrained_with_revision"
+    "test_reduced_vocabulary_with_rare_tokens"
   ];
 
   optional-dependencies = {
@@ -90,30 +106,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "outlines_core" ];
-
-  preCheck = ''
-    rm -rf outlines_core
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  disabledTests = [
-    # Tests that need to download from Hugging Face Hub.
-    "test_complex_serialization"
-    "test_create_fsm_index_tokenizer"
-    "test_from_pretrained"
-    "test_pickling_from_pretrained_with_revision"
-    "test_reduced_vocabulary_with_rare_tokens"
-  ];
-
-  disabledTestPaths = [
-    # Downloads from Hugging Face Hub
-    "tests/test_kernels.py"
-  ];
 
   meta = {
     description = "Structured text generation (core)";

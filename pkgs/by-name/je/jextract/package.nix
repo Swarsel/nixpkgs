@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeBinaryWrapper,
   gradle,
   jdk25,
   llvmPackages,
+  makeBinaryWrapper,
 }:
 
 stdenv.mkDerivation {
@@ -19,23 +19,16 @@ stdenv.mkDerivation {
     hash = "sha256-RAK7A0BCFaYe/q1nCdvXk091bhSj9DKxg2uQfABk4eo=";
   };
 
+  patches = [
+    ./copy_lib_clang.patch
+  ];
+
   nativeBuildInputs = [
     gradle
     makeBinaryWrapper
   ];
 
-  gradleFlags = [
-    "-Pllvm_home=${lib.getLib llvmPackages.libclang}"
-    "-Pjdk_home=${jdk25}"
-  ];
-
-  patches = [
-    ./copy_lib_clang.patch
-  ];
-
   doCheck = true;
-
-  gradleCheckTask = "verify";
 
   installPhase = ''
     runHook preInstall
@@ -47,15 +40,24 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  gradleCheckTask = "verify";
+
+  gradleFlags = [
+    "-Pllvm_home=${lib.getLib llvmPackages.libclang}"
+    "-Pjdk_home=${jdk25}"
+  ];
+
   meta = {
     description = "Tool which mechanically generates Java bindings from a native library headers";
-    mainProgram = "jextract";
     homepage = "https://github.com/openjdk/jextract";
-    platforms = jdk25.meta.platforms;
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       jlesquembre
       sharzy
     ];
+
+    platforms = jdk25.meta.platforms;
+    mainProgram = "jextract";
   };
 }

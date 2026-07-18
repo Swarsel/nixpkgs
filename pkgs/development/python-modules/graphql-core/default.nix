@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  pytest-describe,
   pytest-asyncio,
+  pytest-describe,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "graphql-core";
   version = "3.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "graphql-python";
@@ -29,26 +28,27 @@ buildPythonPackage rec {
       --replace-fail "addopts = --benchmark-disable" ""
   '';
 
-  build-system = [
-    poetry-core
-  ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-describe
     pytestCheckHook
   ];
 
+  build-system = [
+    poetry-core
+  ];
+
   disabledTestPaths = [
     "tests/benchmarks"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "graphql" ];
 
   meta = {
-    changelog = "https://github.com/graphql-python/graphql-core/releases/tag/${src.tag}";
     description = "Port of graphql-js to Python";
     homepage = "https://github.com/graphql-python/graphql-core";
+    changelog = "https://github.com/graphql-python/graphql-core/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kamadorueda ];
   };

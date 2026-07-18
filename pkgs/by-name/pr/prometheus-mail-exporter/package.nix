@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nixosTests,
 }:
@@ -17,9 +17,8 @@ buildGoModule {
     hash = "sha256-P7LZi2iXZJaY5AEJBeAVszq/DN9SFxNfeQaflnF6+ng=";
   };
 
-  vendorHash = "sha256-QOOf00uCdC8fl7V/+Q8X90yQ7xc0Tb6M9dXisdGEisM=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-QOOf00uCdC8fl7V/+Q8X90yQ7xc0Tb6M9dXisdGEisM=";
 
   postInstall = ''
     installManPage $src/man/mailexporter.1
@@ -30,12 +29,14 @@ buildGoModule {
 
   meta = {
     description = "Export Prometheus-style metrics about mail server functionality";
-    mainProgram = "mailexporter";
     homepage = "https://github.com/cherti/mailexporter";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       globin
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "mailexporter";
   };
 }

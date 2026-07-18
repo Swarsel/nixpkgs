@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  copyDesktopItems,
+  gradle,
+  jdk25,
+  jre25_minimal,
   makeBinaryWrapper,
   makeDesktopItem,
-  jdk25,
-  gradle,
-  copyDesktopItems,
-  jre25_minimal,
 }:
 
 let
@@ -41,24 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-stsU8QwXSrjVpEeMhgrbAKfjIzTDF32uVxluBTbF7ag=";
   };
 
-  gradleBuildTask = "dist";
-
-  nativeBuildInputs = [
-    makeBinaryWrapper
-    jdk25
-    gradle
-    copyDesktopItems
-  ];
-
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  gradleFlags = [ "--no-configuration-cache" ];
-
   postPatch = ''
     # Disable telemetry and contact options by default
     substituteInPlace src/main/java/app/freerouting/settings/UserProfileSettings.java \
@@ -66,6 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/main/java/app/freerouting/settings/UserProfileSettings.java \
       --replace-fail 'public Boolean isContactAllowed = true;' 'public Boolean isContactAllowed = false;'
   '';
+
+  nativeBuildInputs = [
+    makeBinaryWrapper
+    jdk25
+    gradle
+    copyDesktopItems
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -82,33 +71,48 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = finalAttrs.pname;
-      exec = "freerouting";
-      icon = "freerouting";
-      desktopName = "Freerouting";
-      comment = finalAttrs.meta.description;
       categories = [
         "Electricity"
         "Engineering"
         "Graphics"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Freerouting";
+      exec = "freerouting";
+      icon = "freerouting";
+      name = finalAttrs.pname;
     })
   ];
 
+  gradleBuildTask = "dist";
+  gradleFlags = [ "--no-configuration-cache" ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   meta = {
     description = "Advanced PCB auto-router";
-    homepage = "https://www.freerouting.org";
-    changelog = "https://github.com/freerouting/freerouting/releases/tag/v${finalAttrs.version}";
+
     longDescription = ''
       Freerouting is an advanced autorouter for all PCB programs that support
       the standard Specctra or Electra DSN interface. '';
+
+    homepage = "https://www.freerouting.org";
+    changelog = "https://github.com/freerouting/freerouting/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       srounce
       Misaka13514
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "freerouting";
   };

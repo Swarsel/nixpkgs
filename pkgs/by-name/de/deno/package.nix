@@ -1,31 +1,29 @@
 {
-  stdenv,
   lib,
-  callPackage,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
+  callPackage,
   cmake,
-  yq,
-  protobuf,
-  installShellFiles,
-  makeBinaryWrapper,
-  versionCheckHook,
-  librusty_v8 ? callPackage ./rusty-v8 { },
-  libffi,
-  sqlite,
-  lld,
-  writableTmpDirAsHomeHook,
-
   # Test deps
   curl,
-  nodejs,
-  git,
-  python3,
-  esbuild,
-  runCommand,
-
   # self for passthru
   deno,
+  esbuild,
+  git,
+  installShellFiles,
+  libffi,
+  lld,
+  makeBinaryWrapper,
+  nodejs,
+  protobuf,
+  python3,
+  runCommand,
+  rustPlatform,
+  sqlite,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
+  yq,
+  librusty_v8 ? callPackage ./rusty-v8 { },
 }:
 
 let
@@ -35,37 +33,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "deno";
   version = "2.9.2";
 
-  __structuredAttrs = true;
+  src = fetchFromGitHub {
+    owner = "denoland";
+    repo = "deno";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-MZ3GDqC54OYeSwg1tA9FQJrorZL/sc8KdABAkJ3RkoQ=";
+    fetchSubmodules = true; # required for tests
+  };
 
   outputs = [
     "out"
     "denort"
   ];
 
-  src = fetchFromGitHub {
-    owner = "denoland";
-    repo = "deno";
-    tag = "v${finalAttrs.version}";
-    fetchSubmodules = true; # required for tests
-    hash = "sha256-MZ3GDqC54OYeSwg1tA9FQJrorZL/sc8KdABAkJ3RkoQ=";
-  };
-
-  cargoHash = "sha256-hyvjzQoeOUeH+OpfTyjMVmUTtBuQ5c57/qea8pUpZek=";
-
   patches = [
     ./patches/0002-tests-replace-hardcoded-paths.patch
     ./patches/0003-tests-linux-no-chown.patch
     ./patches/0004-tests-darwin-fixes.patch
   ];
+
   postPatch = ''
     # Use patched nixpkgs libffi in order to fix https://github.com/libffi/libffi/pull/857
     tomlq -ti '.workspace.dependencies.libffi = { "version": .workspace.dependencies.libffi, "features": ["system"] }' Cargo.toml
   '';
-
-  buildInputs = [
-    libffi
-    sqlite
-  ];
 
   # uses zlib-ng but can't dynamically link yet
   # https://github.com/rust-lang/libz-sys/issues/158
@@ -82,73 +72,39 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ lld ];
 
+  buildInputs = [
+    libffi
+    sqlite
+  ];
+
+  cargoHash = "sha256-hyvjzQoeOUeH+OpfTyjMVmUTtBuQ5c57/qea8pUpZek=";
+
   configureFlags = lib.optionals stdenv.cc.isClang [
     # This never worked with clang, but became a hard error recently: https://github.com/llvm/llvm-project/commit/3d5b610c864c8f5980eaa16c22b71ff1cf462fae
     "--disable-multi-os-directory"
   ];
 
   buildFlags = [ "--package=cli" ];
-
-  # Disable the default feature `upgrade` (which controls the self-update subcommand and update checks)
-  buildNoDefaultFeatures = true;
-  buildFeatures = [
-    "__vendored_zlib_ng"
-  ];
-
   # work around "error: unknown warning group '-Wunused-but-set-parameter'"
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-unknown-warning-option";
   # The v8 package will try to download a `librusty_v8.a` release at build time to our read-only filesystem
   # To avoid this we pre-download the file and export it via RUSTY_V8_ARCHIVE
   env.RUSTY_V8_ARCHIVE = librusty_v8;
-
   # Don't run checks on hydra as they've been observed to be flakey for us and
   # other distros CI: https://gitlab.alpinelinux.org/alpine/aports/-/blob/bec8b026686323b496365b825ad14fdf4473adf2/community/deno/APKBUILD#L79
   # We haven't reproduced it on local machines, could be related to doing other
   # builds simultaneously.
   # A build with tests (+ librusty_v8 tests) is included in `deno.passhtru.tests`
   doCheck = false;
-  # check related config is left in the main package so if someone uses
-  # `overrideAttrs` to always build with tests, it'll all work.
-  preCheck =
-    # Provide esbuild binary at `./third_party/prebuilt/` just like upstream:
-    # https://github.com/denoland/deno_third_party/tree/master/prebuilt
-    # https://github.com/denoland/deno/blob/main/tests/util/server/src/servers/npm_registry.rs#L402
-    let
-      platform =
-        if stdenv.hostPlatform.isLinux then
-          "linux64"
-        else if stdenv.hostPlatform.isDarwin then
-          "mac"
-        else
-          throw "Unsupported platform";
-      arch =
-        if stdenv.hostPlatform.isAarch64 then
-          "aarch64"
-        else if stdenv.hostPlatform.isx86_64 then
-          "x64"
-        else
-          throw "Unsupported architecture";
-    in
-    ''
-      mkdir -p ./third_party/prebuilt/${platform}
-      cp ${lib.getExe esbuild} ./third_party/prebuilt/${platform}/esbuild-${arch}
-    ''
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      # Unset the env var defined by bintools-wrapper because it triggers Deno's sandbox protection in some tests.
-      # ref: https://github.com/denoland/deno/pull/25271
-      unset LD_DYLD_PATH
-    '';
 
-  cargoTestFlags = [
-    "--lib" # unit tests
-    "--test=integration_test"
-    # Test targets not included here:
-    # - node_compat: there are tons of network access in them and it's not trivial to skip test cases.
-    # - specs: this target uses a custom test harness that doesn't implement the --skip flag.
-    #   refs:
-    #   - https://github.com/denoland/deno/blob/2212d7d814914e43f43dfd945ee24197f50fa6fa/tests/Cargo.toml#L25
-    #   - https://github.com/denoland/file_test_runner/blob/9c78319a4e4c6180dde0e9e6c2751017176e65c9/src/collection/mod.rs#L49
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    curl
+    nodejs
+    git
+    python3
   ];
+
   checkFlags = [
     # Internet access
     "--skip=check::ts_no_recheck_on_redirect"
@@ -213,15 +169,37 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=tests::test_userspace_resolver"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    curl
-    nodejs
-    git
-    python3
-  ];
+  # check related config is left in the main package so if someone uses
+  # `overrideAttrs` to always build with tests, it'll all work.
+  preCheck =
+    # Provide esbuild binary at `./third_party/prebuilt/` just like upstream:
+    # https://github.com/denoland/deno_third_party/tree/master/prebuilt
+    # https://github.com/denoland/deno/blob/main/tests/util/server/src/servers/npm_registry.rs#L402
+    let
+      platform =
+        if stdenv.hostPlatform.isLinux then
+          "linux64"
+        else if stdenv.hostPlatform.isDarwin then
+          "mac"
+        else
+          throw "Unsupported platform";
+      arch =
+        if stdenv.hostPlatform.isAarch64 then
+          "aarch64"
+        else if stdenv.hostPlatform.isx86_64 then
+          "x64"
+        else
+          throw "Unsupported architecture";
+    in
+    ''
+      mkdir -p ./third_party/prebuilt/${platform}
+      cp ${lib.getExe esbuild} ./third_party/prebuilt/${platform}/esbuild-${arch}
+    ''
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      # Unset the env var defined by bintools-wrapper because it triggers Deno's sandbox protection in some tests.
+      # ref: https://github.com/denoland/deno/pull/25271
+      unset LD_DYLD_PATH
+    '';
 
   preInstall = ''
     # Delete generated shared libraries that aren't needed in the final package
@@ -250,30 +228,53 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = canExecute;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  buildFeatures = [
+    "__vendored_zlib_ng"
+  ];
+
+  # Disable the default feature `upgrade` (which controls the self-update subcommand and update checks)
+  buildNoDefaultFeatures = true;
+
+  cargoTestFlags = [
+    "--lib" # unit tests
+    "--test=integration_test"
+    # Test targets not included here:
+    # - node_compat: there are tons of network access in them and it's not trivial to skip test cases.
+    # - specs: this target uses a custom test harness that doesn't implement the --skip flag.
+    #   refs:
+    #   - https://github.com/denoland/deno/blob/2212d7d814914e43f43dfd945ee24197f50fa6fa/tests/Cargo.toml#L25
+    #   - https://github.com/denoland/file_test_runner/blob/9c78319a4e4c6180dde0e9e6c2751017176e65c9/src/collection/mod.rs#L49
+  ];
 
   passthru = {
-    updateScript = ./update.sh;
+    inherit librusty_v8;
+
     tests = (import ./tests { inherit deno runCommand lib; }) // {
       build-with-unit-tests = deno.overrideAttrs (fa: {
-        # The tools test suite requires building the test server
-        dontBuild = false;
         # Many tests depend on prebuilt binaries being present at `./third_party/prebuilt`.
         # We provide nixpkgs binaries for these for all platforms, but the test runner itself only handles
         # these four arch+platform combinations.
         doCheck =
           stdenv.hostPlatform.isDarwin
           || (stdenv.hostPlatform.isLinux && (stdenv.hostPlatform.isAarch64 || stdenv.hostPlatform.isx86_64));
+
+        # The tools test suite requires building the test server
+        dontBuild = false;
       });
+
       # Also include librusty_v8 tests
       librusty_v8-tests = librusty_v8.passthru.tests;
     };
-    inherit librusty_v8;
+
+    updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://deno.com/";
-    changelog = "https://github.com/denoland/deno/releases/tag/v${finalAttrs.version}";
     description = "Secure runtime for JavaScript and TypeScript";
+
     longDescription = ''
       Deno aims to be a productive and secure scripting environment for the modern programmer.
       Deno will always be distributed as a single executable.
@@ -283,19 +284,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
       Among other things, Deno is a great replacement for utility scripts that may have been historically written with
       bash or python.
     '';
+
+    homepage = "https://deno.com/";
+    changelog = "https://github.com/denoland/deno/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "deno";
+
     maintainers = with lib.maintainers; [
       jk
       ofalvai
       mynacol
       anish
     ];
-    maxSilent = 14400; # 4h, double the default of 7200s; sometimes needed for x86_64-darwin on hydra
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "deno";
+    maxSilent = 14400; # 4h, double the default of 7200s; sometimes needed for x86_64-darwin on hydra
   };
 })

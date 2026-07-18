@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "base36";
   version = "0.1.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tonyseek";
@@ -20,8 +17,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Jd9bQxTlb2ZsWmtHmCtx8FdWZMRqfvyFfnV+oNOs1hw=";
   };
 
-  build-system = [ setuptools ];
-
   postPatch = ''
     substituteInPlace setup.cfg \
       --replace-fail "[pytest]" "[tool:pytest]" \
@@ -29,8 +24,10 @@ buildPythonPackage (finalAttrs: {
   '';
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
   enabledTestPaths = [ "test_base36.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "base36" ];
 
   meta = {

@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   kwindowsystem,
   liblxqt,
   libqtxdg,
@@ -13,7 +14,6 @@
   qtwayland,
   tzdata,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,6 +26,18 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-SNEOqyLIDlOio4LttsCUgC/EnGcCSDTwPxhJo1lEvJE=";
   };
+
+  postPatch = ''
+    for f in lxqt-admin-{time,user}/CMakeLists.txt; do
+      substituteInPlace $f --replace-fail \
+        "\''${POLKITQT-1_POLICY_FILES_INSTALL_DIR}" \
+        "$out/share/polkit-1/actions"
+    done
+
+    # patch timezone database file location
+    substituteInPlace lxqt-admin-time/timeadmindialog.cpp \
+      --replace-fail "/usr/share/zoneinfo/zone.tab" "${tzdata}/share/zoneinfo/zone.tab"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -49,23 +61,11 @@ stdenv.mkDerivation rec {
     "-DLIBSYSTEMD_FOUND=TRUE"
   ];
 
-  postPatch = ''
-    for f in lxqt-admin-{time,user}/CMakeLists.txt; do
-      substituteInPlace $f --replace-fail \
-        "\''${POLKITQT-1_POLICY_FILES_INSTALL_DIR}" \
-        "$out/share/polkit-1/actions"
-    done
-
-    # patch timezone database file location
-    substituteInPlace lxqt-admin-time/timeadmindialog.cpp \
-      --replace-fail "/usr/share/zoneinfo/zone.tab" "${tzdata}/share/zoneinfo/zone.tab"
-  '';
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-admin";
     description = "LXQt system administration tool";
+    homepage = "https://github.com/lxqt/lxqt-admin";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxqt ];

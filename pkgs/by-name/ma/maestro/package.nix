@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  makeWrapper,
   jre_headless,
+  makeWrapper,
+  unzip,
   writeScript,
 }:
 
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NECCX1FPU3xqlrz13plXgMKkp/g6QyCP3JXU8f7PrTs=";
   };
 
-  dontUnpack = true;
   nativeBuildInputs = [
     unzip
     makeWrapper
@@ -34,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/maestro --prefix PATH : "${lib.makeBinPath [ jre_headless ]}"
   '';
 
+  dontUnpack = true;
+
   passthru.updateScript = writeScript "update-maestro" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p curl jq common-updater-scripts
@@ -47,11 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Mobile UI Automation tool";
     homepage = "https://maestro.mobile.dev/";
-    license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     changelog = "https://github.com/mobile-dev-inc/maestro/blob/main/CHANGELOG.md";
+    license = lib.licenses.asl20;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ SubhrajyotiSen ];
+    platforms = lib.platforms.all;
     mainProgram = "maestro";
   };
 })

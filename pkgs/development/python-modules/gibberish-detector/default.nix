@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "gibberish-detector";
   version = "0.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "domanchi";
@@ -18,14 +17,14 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "gibberish_detector" ];
 
   meta = {
     description = "Python module to detect gibberish strings";
-    mainProgram = "gibberish-detector";
     homepage = "https://github.com/domanchi/gibberish-detector";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "gibberish-detector";
   };
 }

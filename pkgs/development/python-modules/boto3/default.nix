@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   botocore,
+  buildPythonPackage,
   jmespath,
-  s3transfer,
-
   # tests
   pytest-xdist,
   pytestCheckHook,
+  s3transfer,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "boto3";
   inherit (botocore) version; # N.B: botocore, boto3, awscli needs to be updated in lockstep, bump botocore version for updating these.
-  pyproject = true;
+  pname = "boto3";
 
   src = fetchFromGitHub {
     owner = "boto";
@@ -27,6 +23,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-fzwVxbn4+5zkcAKQ9+bEbNSdwcPKZqsNIJZPqhV+n8w=";
   };
+
+  nativeCheckInputs = [
+    pytest-xdist
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -38,13 +39,6 @@ buildPythonPackage (finalAttrs: {
     s3transfer
   ];
 
-  nativeCheckInputs = [
-    pytest-xdist
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "boto3" ];
-
   disabledTestPaths = [
     # Integration tests require networking
     "tests/integration"
@@ -54,16 +48,21 @@ buildPythonPackage (finalAttrs: {
     crt = botocore.optional-dependencies.crt;
   };
 
+  pyproject = true;
+  pythonImportsCheck = [ "boto3" ];
+
   meta = {
     description = "AWS SDK for Python";
-    homepage = "https://github.com/boto/boto3";
-    changelog = "https://github.com/boto/boto3/blob/${finalAttrs.version}/CHANGELOG.rst";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       Boto3 is the Amazon Web Services (AWS) Software Development Kit (SDK) for
       Python, which allows Python developers to write software that makes use of
       services like Amazon S3 and Amazon EC2.
     '';
+
+    homepage = "https://github.com/boto/boto3";
+    changelog = "https://github.com/boto/boto3/blob/${finalAttrs.version}/CHANGELOG.rst";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ anthonyroussel ];
   };
 })

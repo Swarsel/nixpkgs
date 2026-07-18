@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  hwdata,
+  meson,
+  netbsd,
+  ninja,
+  pkg-config,
   testers,
   writeScript,
-  pkg-config,
-  meson,
-  ninja,
   zlib,
-  netbsd,
-  hwdata,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,6 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -53,18 +55,18 @@ stdenv.mkDerivation (finalAttrs: {
 
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Generic PCI access library";
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libpciaccess";
+
     license = with lib.licenses; [
       mit
       isc
       x11
     ];
-    pkgConfigModules = [ "pciaccess" ];
+
     # https://gitlab.freedesktop.org/xorg/lib/libpciaccess/-/blob/6cd5a4afbb70868c7746de8d50dea59e02e9acf2/configure.ac#L108-114
     platforms =
       with lib.platforms;
@@ -74,9 +76,12 @@ stdenv.mkDerivation (finalAttrs: {
       ++ linux
       ++ lib.platforms.netbsd # otherwise netbsd from the function arguments is used
       ++ openbsd;
+
     badPlatforms = [
       # mandatory shared library
       lib.systems.inspect.platformPatterns.isStatic
     ];
+
+    pkgConfigModules = [ "pciaccess" ];
   };
 })

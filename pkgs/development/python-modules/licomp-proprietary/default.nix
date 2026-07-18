@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  jsonschema,
   # dependencies
   licomp,
-
   # tests
   pytestCheckHook,
-  jsonschema,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "licomp-proprietary";
   version = "0.5.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "hesa";
@@ -26,6 +21,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-elEy/BOcuvo29ciRRSNQABWoBrOhRPDCNoaypuvWsx0=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    jsonschema
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -35,10 +37,7 @@ buildPythonPackage (finalAttrs: {
     licomp
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    jsonschema
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "licomp_proprietary"
@@ -48,10 +47,12 @@ buildPythonPackage (finalAttrs: {
     description = "Implementation of Licomp for linking a Propriettary licensed module";
     homepage = "https://github.com/hesa/licomp-proprietary";
     changelog = "https://github.com/hesa/licomp-proprietary/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       cc-by-40
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ eljamm ];
     teams = with lib.teams; [ ngi ];
   };

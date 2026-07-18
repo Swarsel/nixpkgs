@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  installShellFiles,
-  udev,
   coreutils,
+  installShellFiles,
+  pkg-config,
+  rustPlatform,
+  udev,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -19,14 +19,13 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-XPIHGDpq2x+P8i8b4nLlobR/BysdZX+7N9Pu2l/U4Gs=";
   };
 
-  cargoHash = "sha256-K9nfDIEoI/p8DDKe2sFQjFn12zzb5VhKX4mTc0+Y8dE=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
 
   buildInputs = [ udev ];
+  cargoHash = "sha256-K9nfDIEoI/p8DDKe2sFQjFn12zzb5VhKX4mTc0+Y8dE=";
 
   postInstall = ''
     installShellCompletion \

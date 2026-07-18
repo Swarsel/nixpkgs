@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   pytest-asyncio,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-opendata-transport";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-ecosystem";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-CN+zy2x+4IKdAcpa2vIrOGXW39d+anU4HGPU83dGif0=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opendata_transport" ];
 
   meta = {

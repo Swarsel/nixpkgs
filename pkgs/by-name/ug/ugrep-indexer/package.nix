@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Utility that recursively indexes files to speed up recursive grepping";
     homepage = "https://github.com/Genivia/ugrep-indexer";
     changelog = "https://github.com/Genivia/ugrep-indexer/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ mikaelfangel ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ mikaelfangel ];
     platforms = lib.platforms.all;
   };
 })

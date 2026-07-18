@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pyjwt,
   pypasser,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "tami4edgeapi";
   version = "3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Guy293";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-rhJ8L6qLDnO50Xp2eqquRinDTQjMxWVSjNL5GQI1gvM=";
   };
 
+  # Package has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Package has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "Tami4EdgeAPI" ];
 
   meta = {

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
-  unzip,
   jre,
+  makeDesktopItem,
   runtimeShell,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -13,13 +13,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.2";
 
   src = fetchurl {
-    sha256 = "15pgqgyw46yd2i367ax9940pfyvinyw2m8apmwhrn0ix5nywa7ni";
     url = "mirror://sourceforge/swingsane/swingsane-${finalAttrs.version}-bin.zip";
+    sha256 = "15pgqgyw46yd2i367ax9940pfyvinyw2m8apmwhrn0ix5nywa7ni";
   };
 
   nativeBuildInputs = [ unzip ];
-
-  dontConfigure = true;
 
   installPhase =
     let
@@ -30,13 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
       '';
 
       desktopItem = makeDesktopItem {
-        name = "swingsane";
-        exec = "swingsane";
-        icon = "swingsane";
-        desktopName = "SwingSane";
-        genericName = "Scan from local or remote SANE servers";
-        comment = finalAttrs.meta.description;
         categories = [ "Office" ];
+        comment = finalAttrs.meta.description;
+        desktopName = "SwingSane";
+        exec = "swingsane";
+        genericName = "Scan from local or remote SANE servers";
+        icon = "swingsane";
+        name = "swingsane";
       };
 
     in
@@ -53,8 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
       cp -v -r ${desktopItem}/share/applications $out/share
     '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Java GUI for SANE scanner servers (saned)";
+
     longDescription = ''
       SwingSane is a powerful, cross platform, open source Java front-end for
       using both local and remote Scanner Access Now Easy (SANE) servers.
@@ -64,9 +65,10 @@ stdenv.mkDerivation (finalAttrs: {
       simultaneous scan jobs, image transformation jobs (deskew, binarize,
       crop, etc), PDF and PNG output.
     '';
+
     homepage = "http://swingsane.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.all;
     mainProgram = "swingsane";
   };

@@ -1,18 +1,22 @@
 {
   lib,
-  mkCoqDerivation,
+  QuickChick,
   coq,
   itree-io,
   json,
-  QuickChick,
+  mkCoqDerivation,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "async-test";
-  owner = "liyishuai";
-  repo = "coq-async-test";
   inherit version;
+  pname = "async-test";
+
+  propagatedBuildInputs = [
+    itree-io
+    json
+    QuickChick
+  ];
 
   defaultVersion =
     let
@@ -24,16 +28,15 @@ mkCoqDerivation {
         out = "0.1.0";
       }
     ] null;
+
+  owner = "liyishuai";
+
   release = {
     "0.1.0".hash = "sha256-0DBUS20337tpBi64mlJIWTQvIAdUvWbFCM9Sat7MEA8=";
   };
-  releaseRev = v: "v${v}";
 
-  propagatedBuildInputs = [
-    itree-io
-    json
-    QuickChick
-  ];
+  releaseRev = v: "v${v}";
+  repo = "coq-async-test";
 
   meta = {
     description = "From interaction trees to asynchronous tests";

@@ -1,10 +1,10 @@
 {
-  pkgs,
   lib,
-  glibcLocales,
-  python3,
-  fetchpatch,
   fetchFromGitHub,
+  fetchpatch,
+  glibcLocales,
+  pkgs,
+  python3,
   # Usage: bumblebee-status.override { plugins = p: [p.arandr p.bluetooth2]; };
   plugins ? p: [ ],
 }:
@@ -20,9 +20,8 @@ let
   selectedPlugins = plugins allPlugins;
 in
 python3.pkgs.buildPythonPackage {
-  pname = "bumblebee-status";
   inherit version;
-  pyproject = true;
+  pname = "bumblebee-status";
 
   src = fetchFromGitHub {
     owner = "tobi-wan-kenobi";
@@ -35,17 +34,12 @@ python3.pkgs.buildPythonPackage {
     # fix build with Python 3.12
     # https://github.com/tobi-wan-kenobi/bumblebee-status/pull/1019
     (fetchpatch {
-      url = "https://github.com/tobi-wan-kenobi/bumblebee-status/commit/2fe8f1ff1444daf155b18318005f33a76a5d64b4.patch";
       hash = "sha256-BC1cgQDMJkhuEgq8NJ28521CHbEfqIMueHkFXXlZz2w=";
+      url = "https://github.com/tobi-wan-kenobi/bumblebee-status/commit/2fe8f1ff1444daf155b18318005f33a76a5d64b4.patch";
     })
   ];
 
-  build-system = with python3.pkgs; [
-    setuptools
-  ];
-
   buildInputs = lib.concatMap (p: p.buildInputs or [ ]) selectedPlugins;
-
   propagatedBuildInputs = lib.concatMap (p: p.propagatedBuildInputs or [ ]) selectedPlugins;
 
   nativeCheckInputs = with python3.pkgs; [
@@ -79,12 +73,18 @@ python3.pkgs.buildPythonPackage {
     cp -r ./themes $out/${python3.sitePackages}
   '';
 
+  build-system = with python3.pkgs; [
+    setuptools
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Modular, theme-able status line generator for the i3 window manager";
     homepage = "https://github.com/tobi-wan-kenobi/bumblebee-status";
-    mainProgram = "bumblebee-status";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ jamerrq ];
+    platforms = lib.platforms.linux;
+    mainProgram = "bumblebee-status";
   };
 }

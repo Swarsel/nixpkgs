@@ -6,22 +6,23 @@
   cryptography,
   fetchPypi,
   msrest,
+  python-dateutil,
   requests,
   setuptools,
-  python-dateutil,
 }:
 
 buildPythonPackage rec {
   pname = "azure-multiapi-storage";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_multiapi_storage";
     inherit version;
     hash = "sha256-iULj9O2+3dI82hms7nlgdvvNGkDkb5qhEQ/9oxTjHFU=";
+    pname = "azure_multiapi_storage";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,15 +34,14 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  # fix namespace
-  pythonNamespaces = [ "azure.multiapi" ];
-
-  # no tests included
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.multiapi.storagev2"
   ];
+
+  # fix namespace
+  pythonNamespaces = [ "azure.multiapi" ];
 
   meta = {
     description = "Microsoft Azure Storage Client Library for Python with multi API version support";

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,11 +16,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-JVRl0BCuU6duFcFZr3Rs8dgS+ikwCKe5/z3JgjAikiw=";
   };
 
-  cargoLock.lockFile = ./Cargo.lock;
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
+
+  cargoLock.lockFile = ./Cargo.lock;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--generate-lockfile" ];
@@ -30,10 +30,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Program for terminal background color detection";
     homepage = "https://github.com/dalance/termbg";
     changelog = "https://github.com/dalance/termbg/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ pinpox ];
     mainProgram = "termbg";
   };

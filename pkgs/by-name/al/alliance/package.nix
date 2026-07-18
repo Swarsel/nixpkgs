@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  xorgproto,
-  motif,
-  libx11,
-  libxt,
-  libxpm,
+  autoconf,
+  automake,
   bison,
   flex,
-  automake,
-  autoconf,
   libtool,
+  libx11,
+  libxpm,
+  libxt,
+  motif,
   unstableGitUpdater,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,7 +26,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-b2uaYZEzHMB3qCMRVANNnjTxr6OYb1Unswxjq5knYzM=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/alliance/src";
+  postPatch = ''
+    # texlive for docs seems extreme
+    substituteInPlace autostuff \
+      --replace "$newdirs documentation" "$newdirs"
+
+    substituteInPlace sea/src/DEF_grammar_lex.l --replace "ifndef FLEX_BETA" \
+      "if (YY_FLEX_MAJOR_VERSION <= 2) && (YY_FLEX_MINOR_VERSION < 6)"
+
+    ./autostuff
+  '';
 
   nativeBuildInputs = [
     libtool
@@ -34,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoconf
     flex
   ];
+
   buildInputs = [
     xorgproto
     motif
@@ -50,17 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
   # To avoid compiler error in LoadDataBase.c:366:27
   env.NIX_CFLAGS_COMPILE = "-std=gnu99 -Wno-incompatible-pointer-types";
 
-  postPatch = ''
-    # texlive for docs seems extreme
-    substituteInPlace autostuff \
-      --replace "$newdirs documentation" "$newdirs"
-
-    substituteInPlace sea/src/DEF_grammar_lex.l --replace "ifndef FLEX_BETA" \
-      "if (YY_FLEX_MAJOR_VERSION <= 2) && (YY_FLEX_MINOR_VERSION < 6)"
-
-    ./autostuff
-  '';
-
   postInstall = ''
     sed -i "s|ALLIANCE_TOP|$out|" distrib/*.desktop
     mkdir -p $out/share/applications
@@ -69,6 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
     cp -p distrib/*.png $out/icons/hicolor/48x48/apps/
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/alliance/src";
   passthru.updateScript = unstableGitUpdater { tagPrefix = "v"; };
 
   meta = {

@@ -1,21 +1,21 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  dbus,
-  gdk-pixbuf,
-  libnotify,
-  makeWrapper,
-  pkg-config,
-  libx11,
-  enableAlsaUtils ? true,
   alsa-utils,
   coreutils,
-  enableNetwork ? true,
+  dbus,
   dnsutils,
+  gdk-pixbuf,
   iproute2,
-  wirelesstools,
+  libnotify,
+  libx11,
+  makeWrapper,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  wirelesstools,
+  enableAlsaUtils ? true,
+  enableNetwork ? true,
 }:
 
 let
@@ -46,6 +46,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     dbus
     gdk-pixbuf
@@ -66,11 +67,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/Gerschtli/dwm-status";
     changelog = "https://github.com/Gerschtli/dwm-status/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gepbird
       gerschtli
     ];
-    mainProgram = "dwm-status";
+
     platforms = lib.platforms.linux;
+    mainProgram = "dwm-status";
   };
 })

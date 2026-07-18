@@ -1,21 +1,21 @@
 {
+  lib,
+  fetchFromGitHub,
+  _cuda,
   autoAddDriverRunpath,
   backendStdenv,
-  _cuda,
-  cmake,
   cccl,
-  cuda_culibos,
+  cmake,
+  cudaAtLeast,
+  cudaNamePrefix,
+  cudaOlder,
   cuda_cudart,
+  cuda_culibos,
   cuda_nvcc,
   cuda_nvrtc,
   cuda_nvtx,
   cuda_profiler_api,
-  cudaAtLeast,
-  cudaNamePrefix,
-  cudaOlder,
-  fetchFromGitHub,
   flags,
-  lib,
   libcublas,
   libcudla,
   libcufft,
@@ -27,10 +27,6 @@
   libnvjpeg,
 }:
 backendStdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
   pname = "cuda-samples";
   version = if cudaAtLeast "13" then "13.0" else "12.8";
 
@@ -41,11 +37,73 @@ backendStdenv.mkDerivation (finalAttrs: {
     owner = "NVIDIA";
     repo = "cuda-samples";
     tag = "v${finalAttrs.version}";
+
     hash = lib.getAttr finalAttrs.version {
-      "13.0" = "sha256-bOcAE/OzOI6MWTh+bFZfq1en6Yawu+HI8W+xK+XaCqg=";
       "12.8" = "sha256-Ba0Fi0v/sQ+1iJ4mslgyIAE+oK5KO0lMoTQCC91vpiA=";
+      "13.0" = "sha256-bOcAE/OzOI6MWTh+bFZfq1en6Yawu+HI8W+xK+XaCqg=";
     };
   };
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoAddDriverRunpath
+    cmake
+    cuda_nvcc
+  ];
+
+  buildInputs = [
+    cccl
+    cuda_cudart
+    cuda_nvrtc
+    cuda_nvtx
+    cuda_profiler_api
+    libcublas
+    libcufft
+    libcurand
+    libcusolver
+    libcusparse
+    libnpp
+    libnvjitlink
+    libnvjpeg
+  ]
+  ++ lib.optionals libcudla.meta.available [ libcudla ]
+  ++ lib.optionals (cudaAtLeast "13") [ cuda_culibos ];
+
+  cmakeFlags = [
+    (lib.cmakeFeature "CMAKE_CUDA_ARCHITECTURES" flags.cmakeCudaArchitecturesString)
+    (lib.cmakeBool "BUILD_TEGRA" backendStdenv.hasJetsonCudaCapability)
+  ];
+
+  # TODO(@connorbaker):
+  # For some reason, using the combined find command doesn't delete directories:
+  # find "$PWD/Samples" \
+  #     \( -type d -name CMakeFiles \) \
+  #     -o \( -type f -name cmake_install.cmake \) \
+  #     -o \( -type f -name Makefile \) \
+  #     -exec rm -rf {} +
+  installPhase = ''
+    runHook preInstall
+
+    pushd "$NIX_BUILD_TOP/$sourceRoot/''${cmakeBuildDir:?}" >/dev/null
+
+    nixLog "deleting CMake related files"
+
+    find "$PWD/Samples" -type d -name CMakeFiles -exec rm -rf {} +
+    find "$PWD/Samples" -type f -name cmake_install.cmake -exec rm -rf {} +
+    find "$PWD/Samples" -type f -name Makefile -exec rm -rf {} +
+
+    nixLog "copying $PWD/Samples to $out/"
+    mkdir -p "$out"
+    cp -rv "$PWD/Samples"/* "$out/"
+
+    popd >/dev/null
+
+    runHook postInstall
+  '';
+
+  __structuredAttrs = true;
+  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
 
   prePatch =
     let
@@ -177,71 +235,17 @@ backendStdenv.mkDerivation (finalAttrs: {
       unset -v path
     '';
 
-  nativeBuildInputs = [
-    autoAddDriverRunpath
-    cmake
-    cuda_nvcc
-  ];
-
-  buildInputs = [
-    cccl
-    cuda_cudart
-    cuda_nvrtc
-    cuda_nvtx
-    cuda_profiler_api
-    libcublas
-    libcufft
-    libcurand
-    libcusolver
-    libcusparse
-    libnpp
-    libnvjitlink
-    libnvjpeg
-  ]
-  ++ lib.optionals libcudla.meta.available [ libcudla ]
-  ++ lib.optionals (cudaAtLeast "13") [ cuda_culibos ];
-
-  cmakeFlags = [
-    (lib.cmakeFeature "CMAKE_CUDA_ARCHITECTURES" flags.cmakeCudaArchitecturesString)
-    (lib.cmakeBool "BUILD_TEGRA" backendStdenv.hasJetsonCudaCapability)
-  ];
-
-  # TODO(@connorbaker):
-  # For some reason, using the combined find command doesn't delete directories:
-  # find "$PWD/Samples" \
-  #     \( -type d -name CMakeFiles \) \
-  #     -o \( -type f -name cmake_install.cmake \) \
-  #     -o \( -type f -name Makefile \) \
-  #     -exec rm -rf {} +
-  installPhase = ''
-    runHook preInstall
-
-    pushd "$NIX_BUILD_TOP/$sourceRoot/''${cmakeBuildDir:?}" >/dev/null
-
-    nixLog "deleting CMake related files"
-
-    find "$PWD/Samples" -type d -name CMakeFiles -exec rm -rf {} +
-    find "$PWD/Samples" -type f -name cmake_install.cmake -exec rm -rf {} +
-    find "$PWD/Samples" -type f -name Makefile -exec rm -rf {} +
-
-    nixLog "copying $PWD/Samples to $out/"
-    mkdir -p "$out"
-    cp -rv "$PWD/Samples"/* "$out/"
-
-    popd >/dev/null
-
-    runHook postInstall
-  '';
-
   meta = {
     description = "Samples for CUDA Developers which demonstrates features in CUDA Toolkit";
     homepage = "https://github.com/NVIDIA/cuda-samples";
     license = lib.licenses.nvidiaCuda;
+    maintainers = [ lib.maintainers.connorbaker ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
-    maintainers = [ lib.maintainers.connorbaker ];
+
     teams = [ lib.teams.cuda ];
   };
 })

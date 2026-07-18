@@ -17,8 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0z5p03vk15i6h870azfjgyfgxhv31q2vq6rfhnybrnkxq2wqzwhk";
   };
 
-  nativeBuildInputs = [ cmake ];
+  outputs = [
+    "out"
+    "dev"
+  ];
 
+  nativeBuildInputs = [ cmake ];
   buildInputs = [ openssl ];
 
   cmakeFlags = [
@@ -26,16 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.10"
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   meta = {
     description = "Signal Protocol C Library";
     homepage = "https://github.com/signalapp/libsignal-protocol-c";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

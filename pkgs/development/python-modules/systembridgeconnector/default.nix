@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   incremental,
   packaging,
-  systembridgemodels,
   pytest-aiohttp,
   pytest-socket,
   pytestCheckHook,
+  setuptools,
   syrupy,
+  systembridgemodels,
 }:
 
 buildPythonPackage rec {
   pname = "systembridgeconnector";
   version = "5.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "timmo001";
@@ -24,6 +23,15 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-gkZRvS0abfXFEz2oRuaGJRmhFoxe92F3czNkahNdTm8=";
   };
+
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytest-socket
+    pytestCheckHook
+    syrupy
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     incremental
@@ -35,17 +43,6 @@ buildPythonPackage rec {
     packaging
     systembridgemodels
   ];
-
-  pythonImportsCheck = [ "systembridgeconnector" ];
-
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytest-socket
-    pytestCheckHook
-    syrupy
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   disabledTests = [
     "test_execute_command"
@@ -59,10 +56,13 @@ buildPythonPackage rec {
     "test_wait_for_response_timeout"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "systembridgeconnector" ];
+
   meta = {
-    changelog = "https://github.com/timmo001/system-bridge-connector/releases/tag/${version}";
     description = "This is the connector package for the System Bridge project";
     homepage = "https://github.com/timmo001/system-bridge-connector";
+    changelog = "https://github.com/timmo001/system-bridge-connector/releases/tag/${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

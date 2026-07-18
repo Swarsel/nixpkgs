@@ -1,4 +1,4 @@
-{ stdenvNoCC, fetchurl }:
+{ fetchurl, stdenvNoCC }:
 
 stdenvNoCC.mkDerivation rec {
   pname = "lmodern";

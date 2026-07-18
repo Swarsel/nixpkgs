@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
-  pkg-config,
+  fetchFromGitHub,
   libx11,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ROCZDa5eyGF9yE+zdZ4snzdz8+jk+H6ZnqsnCe8JtJw=";
   };
 
-  cargoHash = "sha256-wG1uB/oOUUAQVpGXe7sTqt9tLmFoLrOAmeat/d1xOM8=";
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     pkg-config
   ];
@@ -27,6 +25,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     libx11
   ];
+
+  cargoHash = "sha256-wG1uB/oOUUAQVpGXe7sTqt9tLmFoLrOAmeat/d1xOM8=";
 
   meta = {
     description = "Keyboard tester in terminal";

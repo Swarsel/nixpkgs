@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   bluetooth-data-tools,
   bluetooth-sensor-state-data,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   home-assistant-bluetooth,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ruuvitag-ble";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-/xtNT36s7vdU0+1QFW2Of6v3OIQ9e6ZA9K3t9rPw5o8=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -32,11 +36,7 @@ buildPythonPackage (finalAttrs: {
     sensor-state-data
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ruuvitag_ble" ];
 
   meta = {

@@ -1,30 +1,30 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitLab,
   afl-persistent,
+  buildDunePackage,
   pprint,
   version ? "20250922",
 }:
 
 buildDunePackage {
-  pname = "monolith";
   inherit version;
-
-  minimalOCamlVersion = "4.12";
+  pname = "monolith";
 
   src = fetchFromGitLab {
-    domain = "gitlab.inria.fr";
     owner = "fpottier";
     repo = "monolith";
     tag = version;
     hash = "sha256-uYUbrWSE99556jiCgDUc8xDaob3rFPXLBMPM3lN6Xh8=";
+    domain = "gitlab.inria.fr";
   };
 
   propagatedBuildInputs = [
     afl-persistent
     pprint
   ];
+
+  minimalOCamlVersion = "4.12";
 
   meta = {
     description = "Facilities for testing an OCaml library";

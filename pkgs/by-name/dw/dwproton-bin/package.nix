@@ -1,15 +1,13 @@
 {
   lib,
   fetchzip,
-  writeScript,
   proton-ge-bin,
-
+  writeScript,
   steamDisplayName ? "dwproton",
 }:
 proton-ge-bin.overrideAttrs (
   finalAttrs: _: {
     inherit steamDisplayName;
-
     pname = "dwproton-bin";
     version = "dwproton-11.0-7";
 
@@ -36,13 +34,16 @@ proton-ge-bin.overrideAttrs (
 
         (This is intended for use in the `programs.steam.extraCompatPackages` option only.)
       '';
+
       homepage = "https://dawn.wine/dawn-winery/dwproton";
       license = lib.licenses.bsd3;
+      sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
       maintainers = with lib.maintainers; [
         Renna42
       ];
+
       platforms = [ "x86_64-linux" ];
-      sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     };
   }
 )

@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   libgit2,
   openssl,
+  pkg-config,
+  rustPlatform,
   zlib,
 }:
 
@@ -12,16 +12,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ffizer";
   version = "2.13.10";
 
-  buildFeatures = [ "cli" ];
-
   src = fetchFromGitHub {
     owner = "ffizer";
     repo = "ffizer";
     rev = finalAttrs.version;
     hash = "sha256-BaTqkfNiRLHgg3In/5zh4u5ThD+wfW7R3tjy/qsPVag=";
   };
-
-  cargoHash = "sha256-QbT6QxYP6ykDKtEWfFva16ms7b2wNOS+TrvPJV9ys2A=";
 
   nativeBuildInputs = [
     pkg-config
@@ -33,12 +29,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-QbT6QxYP6ykDKtEWfFva16ms7b2wNOS+TrvPJV9ys2A=";
   env.OPENSSL_NO_VENDOR = true;
 
   checkFlags = [
     # requires internet access
     "--skip=run_test_samples_tests_data_template_2"
   ];
+
+  buildFeatures = [ "cli" ];
 
   meta = {
     description = "Files and folders initializer / generator based on templates";

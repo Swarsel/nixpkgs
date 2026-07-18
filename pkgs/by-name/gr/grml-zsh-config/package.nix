@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   asciidoctor,
   txt2tags,
 }:
@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     asciidoctor
     txt2tags
@@ -39,14 +40,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "grml's zsh setup";
     homepage = "https://grml.org/zsh/";
+
     license = with lib.licenses; [
       gpl2Plus
       gpl2Only
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       msteen
       rvolosatovs
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

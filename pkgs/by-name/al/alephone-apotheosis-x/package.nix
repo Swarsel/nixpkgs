@@ -8,14 +8,13 @@ alephone.makeWrapper {
   pname = "apotheosis-x";
   version = "1.1";
   desktopName = "Marathon-Apotheosis-X";
+  sourceRoot = "Apotheosis X 1.1";
 
   zip = requireFile {
+    hash = "sha256-4Y/RQQeN4VTpig8ZyxUpVHwzN8W8ciTBCkSzND8SMbs=";
     name = "Apotheosis_X_1.1.zip";
     url = "https://www.moddb.com/mods/apotheosis-x/downloads";
-    hash = "sha256-4Y/RQQeN4VTpig8ZyxUpVHwzN8W8ciTBCkSzND8SMbs=";
   };
-
-  sourceRoot = "Apotheosis X 1.1";
 
   meta = {
     description = "Total conversion for Marathon Infinity running on the Aleph One engine";

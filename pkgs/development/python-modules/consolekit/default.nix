@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "consolekit";
   version = "1.12.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -37,6 +36,7 @@ buildPythonPackage rec {
     terminals = [ psutil ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "consolekit" ];
 
   meta = {

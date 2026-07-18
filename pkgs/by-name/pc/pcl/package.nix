@@ -1,35 +1,30 @@
 {
   lib,
   stdenv,
-  config,
   fetchFromGitHub,
-  fetchpatch,
-
-  # nativeBuildInputs
-  cmake,
-  qt6,
-  pkg-config,
-
-  # buildInputs
-  eigen,
-  libxt,
-  libpcap,
-  libusb1,
-  llvmPackages,
-  nanoflann,
-
   # nativeBuildInputs
   boost,
+  # nativeBuildInputs
+  cmake,
+  config,
+  cudaPackages,
+  # buildInputs
+  eigen,
+  fetchpatch,
   flann,
+  gitUpdater,
+  libpcap,
   libpng,
   libtiff,
+  libusb1,
+  libxt,
+  llvmPackages,
+  nanoflann,
+  pkg-config,
   qhull,
+  qt6,
   vtk,
-
-  gitUpdater,
-
   cudaSupport ? config.cudaSupport,
-  cudaPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,20 +40,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-5vg8VjxoAfEOx9n7Tby1DXe1u4rn+zharkefUovLHv0=";
       # see https://github.com/NixOS/nixpkgs/issues/485826 to be removed at next release after 1.15.1
       name = "boost-1.89.patch";
       url = "https://github.com/PointCloudLibrary/pcl/commit/99333442ac63971297b4cdd05fab9d2bd2ff57a4.patch";
-      hash = "sha256-5vg8VjxoAfEOx9n7Tby1DXe1u4rn+zharkefUovLHv0=";
     })
   ];
-
-  strictDeps = true;
 
   # remove attempt to prevent (x86/x87-specific) extended precision use
   # when SSE not detected
   postPatch = lib.optionalString (!stdenv.hostPlatform.isx86) ''
     sed -i '/-ffloat-store/d' cmake/pcl_find_sse.cmake
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -94,19 +89,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "pcl-";
     ignoredVersions = "rc";
+    rev-prefix = "pcl-";
   };
 
   meta = {
-    homepage = "https://pointclouds.org/";
     description = "Open project for 2D/3D image and point cloud processing";
+    homepage = "https://pointclouds.org/";
     changelog = "https://github.com/PointCloudLibrary/pcl/blob/pcl-${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       usertam
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
   };
 })

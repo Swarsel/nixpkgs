@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.60";
   pname = "ocproxy";
+  version = "1.60";
 
   src = fetchFromGitHub {
     owner = "cernekee";
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoconf
     automake
   ];
+
   buildInputs = [ libevent ];
 
   preConfigure = ''
@@ -31,10 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "OpenConnect proxy";
+
     longDescription = ''
       ocproxy is a user-level SOCKS and port forwarding proxy for OpenConnect
       based on lwIP.
     '';
+
     homepage = "https://github.com/cernekee/ocproxy";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.joko ];

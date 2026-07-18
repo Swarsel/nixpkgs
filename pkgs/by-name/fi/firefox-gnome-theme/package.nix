@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,9 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-UdfMivNMwCCqQsYDg5pSz8X2IOaOrIZLIIy+Bg3CO2o=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   # patching the install script for nix:
   # - point to the nix store
@@ -55,18 +52,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "GNOME theme for Firefox";
+
     longDescription = ''
       A GNOME theme for Firefox.
       This theme follows latest GNOME Adwaita style.
     '';
+
     homepage = "https://github.com/rafaelmardojai/firefox-gnome-theme";
-    downloadPage = "https://github.com/rafaelmardojai/firefox-gnome-theme/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.unlicense;
     maintainers = [ lib.maintainers.nekowinston ];
     platforms = lib.platforms.all;
+    downloadPage = "https://github.com/rafaelmardojai/firefox-gnome-theme/releases/tag/v${finalAttrs.version}";
   };
 })

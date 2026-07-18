@@ -5,8 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "linol-lwt";
   inherit (linol) version src;
+  pname = "linol-lwt";
 
   propagatedBuildInputs = [
     linol

@@ -1,20 +1,20 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  gtk4,
-  libadwaita,
-  libsoup_3,
-  glib-networking,
   alsa-lib,
-  pkg-config,
-  wrapGAppsHook4,
   ffmpeg,
   glib,
+  glib-networking,
+  gtk4,
+  libadwaita,
   libpulseaudio,
-  versionCheckHook,
+  libsoup_3,
   nix-update-script,
   pipewire,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,8 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-U7THM8fagZREkleH6DWiusP3KcAtu/OrAg9USdCGRec=";
   };
-
-  cargoHash = "sha256-O0YjeZCOe+cXjxUAgMT1l621rid4pexMZ3MbLDGxQsM=";
 
   nativeBuildInputs = [
     pkg-config
@@ -47,11 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pipewire
   ];
 
-  preFixup = ''
-    gappsWrapperArgs+=(
-      --prefix PATH : "${lib.makeBinPath [ ffmpeg ]}"
-    )
-  '';
+  cargoHash = "sha256-O0YjeZCOe+cXjxUAgMT1l621rid4pexMZ3MbLDGxQsM=";
 
   postInstall = ''
     mv packaging/rootfs/usr/share $out/share
@@ -60,6 +54,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --prefix PATH : "${lib.makeBinPath [ ffmpeg ]}"
+    )
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -67,8 +67,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/marin-m/SongRec";
     changelog = "https://github.com/marin-m/SongRec/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ tomasrivera ];
+    platforms = lib.platforms.linux;
     mainProgram = "songrec";
   };
 })

@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,17 +16,17 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-2Feb2+7UJ+39waO9rFyT3ZDlEdS5s3uLuxUiDh4iuJE=";
   };
 
+  vendorHash = null;
+
   ldflags = [
     "-X main.Version=${finalAttrs.version}"
   ];
 
-  vendorHash = null;
-
   meta = {
     description = "Print x509 certificate info";
-    mainProgram = "certinfo";
     homepage = "https://github.com/pete911/certinfo";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jakuzure ];
+    mainProgram = "certinfo";
   };
 })

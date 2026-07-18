@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-
-  # build-system
-  setuptools,
-
   # dependencies
   flask,
-
   # tests
   markdown,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "flask-api";
   version = "3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "flask-api";
@@ -29,14 +25,13 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-vaCZ4gVlfQXyeksA44ydkjz2FxODHt3gTTP+ukJwEGY=";
       # werkzeug 3.0 support
       url = "https://github.com/flask-api/flask-api/commit/9c998897f67d8aa959dc3005d7d22f36568b6938.patch";
-      hash = "sha256-vaCZ4gVlfQXyeksA44ydkjz2FxODHt3gTTP+ukJwEGY=";
     })
   ];
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ flask ];
 
   nativeCheckInputs = [
@@ -44,10 +39,12 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
+
   meta = {
+    description = "Browsable web APIs for Flask";
     homepage = "https://github.com/flask-api/flask-api";
     changelog = "https://github.com/flask-api/flask-api/releases/tag/v${version}";
-    description = "Browsable web APIs for Flask";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ nickcao ];
   };

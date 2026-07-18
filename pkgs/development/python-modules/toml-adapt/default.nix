@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   poetry-core,
   pytestCheckHook,
   toml,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "toml-adapt";
   version = "0.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firefly-cpp";
@@ -28,7 +27,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "toml_adapt" ];
 
   meta = {

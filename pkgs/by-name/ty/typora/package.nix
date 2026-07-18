@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  undmg,
-  dpkg,
-  autoPatchelfHook,
-  makeShellWrapper,
   # dependencies
   alsa-lib,
-  nss,
-  gtk3,
-  libgbm,
-  libGL,
+  autoPatchelfHook,
   # runtime dependencies
   cups,
   dbus,
+  dpkg,
+  gtk3,
+  libGL,
+  libgbm,
+  makeShellWrapper,
+  nss,
   pango,
+  undmg,
 }:
 
 let
@@ -24,28 +24,34 @@ let
 
   passthru = {
     sources = {
-      x86_64-linux = fetchurl {
-        urls = [
-          "https://download.typora.io/linux/typora_${version}_amd64.deb"
-          "https://downloads.typoraio.cn/linux/typora_${version}_amd64.deb"
-        ];
-        hash = "sha256-EwVqMinvC26R5ULDGiiONwS3sH3GBJ/sPr2pnqfQR5s=";
-      };
-      aarch64-linux = fetchurl {
-        urls = [
-          "https://download.typora.io/linux/typora_${version}_arm64.deb"
-          "https://downloads.typoraio.cn/linux/typora_${version}_arm64.deb"
-        ];
-        hash = "sha256-3/eS9xAC7+V55grhHPLU/9+JefkXgIyKlEh3vRkqZUo=";
-      };
       aarch64-darwin = fetchurl {
+        hash = "sha256-kXnzhuu3ItF9mV0x+v7+hbYNCOo1DAfIzYMHwAL+LHM=";
+
         urls = [
           "https://download.typora.io/mac/Typora-${version}.dmg"
           "https://downloads.typoraio.cn/mac/Typora-${version}.dmg"
         ];
-        hash = "sha256-kXnzhuu3ItF9mV0x+v7+hbYNCOo1DAfIzYMHwAL+LHM=";
+      };
+
+      aarch64-linux = fetchurl {
+        hash = "sha256-3/eS9xAC7+V55grhHPLU/9+JefkXgIyKlEh3vRkqZUo=";
+
+        urls = [
+          "https://download.typora.io/linux/typora_${version}_arm64.deb"
+          "https://downloads.typoraio.cn/linux/typora_${version}_arm64.deb"
+        ];
+      };
+
+      x86_64-linux = fetchurl {
+        hash = "sha256-EwVqMinvC26R5ULDGiiONwS3sH3GBJ/sPr2pnqfQR5s=";
+
+        urls = [
+          "https://download.typora.io/linux/typora_${version}_amd64.deb"
+          "https://downloads.typoraio.cn/linux/typora_${version}_amd64.deb"
+        ];
       };
     };
+
     updateScript = ./update.sh;
   };
 
@@ -58,10 +64,12 @@ let
     homepage = "https://typora.io/";
     changelog = "https://typora.io/releases/all";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       npulidomateo
       chillcicada
     ];
+
     platforms = builtins.attrNames passthru.sources;
   }
   // lib.optionalAttrs stdenv.hostPlatform.isLinux {
@@ -81,7 +89,6 @@ if stdenv.hostPlatform.isDarwin then
       ;
 
     nativeBuildInputs = [ undmg ];
-    sourceRoot = ".";
 
     installPhase = ''
       runHook preInstall
@@ -91,6 +98,8 @@ if stdenv.hostPlatform.isDarwin then
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   }
 else
 
@@ -116,12 +125,6 @@ else
       libgbm
     ];
 
-    runtimeDependencies = map lib.getLib [
-      cups
-      dbus
-      pango
-    ];
-
     installPhase = ''
       runHook preInstall
 
@@ -138,4 +141,10 @@ else
 
       runHook postInstall
     '';
+
+    runtimeDependencies = map lib.getLib [
+      cups
+      dbus
+      pango
+    ];
   }

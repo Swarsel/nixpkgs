@@ -1,16 +1,16 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitLab,
+  bpftools,
+  clangStdenv,
   cmake,
+  elfutils,
+  libbpf,
+  nlohmann_json,
+  pcre2,
   pkg-config,
   spdlog,
-  nlohmann_json,
   systemd,
-  libbpf,
-  elfutils,
-  bpftools,
-  pcre2,
   zlib,
   withBpf ? true,
 }:
@@ -23,8 +23,8 @@ clangStdenv.mkDerivation (finalAttrs: {
     owner = "ananicy-cpp";
     repo = "ananicy-cpp";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-Nl7Ugj5VPHwW85GJ44luUc2e95kFCanQhDRopGH9nTU=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -53,21 +53,15 @@ clangStdenv.mkDerivation (finalAttrs: {
     elfutils
   ];
 
-  # BPF A call to built-in function '__stack_chk_fail' is not supported.
-  hardeningDisable = [
-    "stackprotector"
-    "zerocallusedregs"
-  ];
-
   cmakeFlags = [
     (lib.mapAttrsToList lib.cmakeBool {
+      "BPF_BUILD_LIBBPF" = false;
+      "ENABLE_REGEX_SUPPORT" = true;
+      "ENABLE_SYSTEMD" = true;
+      "USE_BPF_PROC_IMPL" = withBpf;
+      "USE_EXTERNAL_FMTLIB" = true;
       "USE_EXTERNAL_JSON" = true;
       "USE_EXTERNAL_SPDLOG" = true;
-      "USE_EXTERNAL_FMTLIB" = true;
-      "USE_BPF_PROC_IMPL" = withBpf;
-      "BPF_BUILD_LIBBPF" = false;
-      "ENABLE_SYSTEMD" = true;
-      "ENABLE_REGEX_SUPPORT" = true;
     })
     (lib.cmakeFeature "VERSION" finalAttrs.version)
   ];
@@ -77,15 +71,23 @@ clangStdenv.mkDerivation (finalAttrs: {
     rm -rf "$out"/lib/cmake
   '';
 
+  # BPF A call to built-in function '__stack_chk_fail' is not supported.
+  hardeningDisable = [
+    "stackprotector"
+    "zerocallusedregs"
+  ];
+
   meta = {
-    homepage = "https://gitlab.com/ananicy-cpp/ananicy-cpp";
     description = "Rewrite of ananicy in c++ for lower cpu and memory usage";
+    homepage = "https://gitlab.com/ananicy-cpp/ananicy-cpp";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       artturin
       johnrtitor
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "ananicy-cpp";
   };
 })

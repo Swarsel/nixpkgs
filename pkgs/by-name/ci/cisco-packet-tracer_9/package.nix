@@ -1,7 +1,7 @@
 {
+  lib,
   appimageTools,
   dpkg,
-  lib,
   libpng,
   libxkbfile,
   requireFile,
@@ -11,15 +11,15 @@
 
 let
   appimage = stdenvNoCC.mkDerivation {
-    pname = "cisco-packet-tracer-appimage";
     inherit version;
+    pname = "cisco-packet-tracer-appimage";
 
     src =
       let
         sources = {
           "9.0.0" = {
-            name = "CiscoPacketTracer_900_Ubuntu_64bit.deb";
             hash = "sha256-3ZrA1Mf8N9y2j2J/18fm+m1CAMFEklJuVhi5vRcu2SA=";
+            name = "CiscoPacketTracer_900_Ubuntu_64bit.deb";
           };
         };
       in
@@ -43,15 +43,9 @@ let
 
 in
 appimageTools.wrapType2 rec {
-  pname = "cisco-packet-tracer";
   inherit version;
-
+  pname = "cisco-packet-tracer";
   src = appimage;
-
-  extraPkgs = _: [
-    libpng
-    libxkbfile
-  ];
 
   extraBwrapArgs = [
     # fixes launch on wayland when the user sets QT_QPA_PLATFORM=wayland:
@@ -80,15 +74,22 @@ appimageTools.wrapType2 rec {
       done
     '';
 
+  extraPkgs = _: [
+    libpng
+    libxkbfile
+  ];
+
   meta = {
     description = "Network simulation tool from Cisco";
     homepage = "https://www.netacad.com/courses/packet-tracer";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       gepbird
     ];
-    mainProgram = "packettracer9";
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "packettracer9";
   };
 }

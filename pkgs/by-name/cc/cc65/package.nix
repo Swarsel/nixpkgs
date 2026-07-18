@@ -1,7 +1,7 @@
 {
   lib,
-  gccStdenv,
   fetchFromGitHub,
+  gccStdenv,
 }:
 
 gccStdenv.mkDerivation rec {
@@ -16,12 +16,11 @@ gccStdenv.mkDerivation rec {
   };
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://cc65.github.io/";
     description = "C compiler for processors of 6502 family";
+
     longDescription = ''
       cc65 is a complete cross development package for 65(C)02 systems,
       including a powerful macro assembler, a C compiler, linker, librarian and
@@ -55,6 +54,8 @@ gccStdenv.mkDerivation rec {
       The libraries are fairly portable, so creating a version for other 6502s
       shouldn't be too much work.
     '';
+
+    homepage = "https://cc65.github.io/";
     license = lib.licenses.zlib;
     maintainers = [ ];
     platforms = lib.platforms.unix;

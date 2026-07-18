@@ -6,19 +6,24 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "3.26.4";
   pname = "dxflib";
+  version = "3.26.4";
+
   src = fetchurl {
     url = "https://qcad.org/archives/dxflib/dxflib-${version}-src.tar.gz";
     sha256 = "0pwic33mj6bp4axai5jiyn4xqf31y0xmb1i0pcf55b2h9fav8zah";
   };
+
   nativeBuildInputs = [
     qmake
   ];
-  dontWrapQtApps = true;
+
   preConfigure = ''
     sed -i 's/CONFIG += staticlib/CONFIG += shared/' dxflib.pro
   '';
+
+  doCheck = true;
+
   installPhase = ''
     install -d -m 0755 $out/lib
     cp -pr *${stdenv.hostPlatform.extensions.sharedLibrary}* $out/lib
@@ -37,12 +42,13 @@ stdenv.mkDerivation rec {
     Cflags: -I${placeholder "out"}/include/dxflib
     EOF
   '';
-  doCheck = true;
+
+  dontWrapQtApps = true;
 
   meta = {
+    description = "DXF file format library";
     homepage = "https://qcad.org/en/90-dxflib";
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
-    description = "DXF file format library";
   };
 }

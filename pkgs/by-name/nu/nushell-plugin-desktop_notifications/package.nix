@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,15 +17,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-csBlo1Gly1LbvMxfmydmLlzhQh7ul2haLr7IAq/GlbI=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Nushell plugin for sending desktop notifications";
-    mainProgram = "nu_plugin_desktop_notifications";
     homepage = "https://github.com/FMotalleb/nu_plugin_desktop_notifications";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ timon ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "nu_plugin_desktop_notifications";
   };
 })

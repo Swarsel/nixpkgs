@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   hatchling,
   pytestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "kml2geojson";
   version = "5.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mrcagney";
@@ -19,12 +18,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-50hKosd4tgTV5GUXHAdTsz4S5QFtM7FTqUHy5TGcq0c=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ click ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
+  dependencies = [ click ];
+  pyproject = true;
   pythonImportsCheck = [ "kml2geojson" ];
 
   meta = {

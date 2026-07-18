@@ -17,27 +17,23 @@ let
   };
 
   deps = bundlerEnv {
-    name = "github-linguist-dep";
-    gemfile = "${src}/Gemfile";
-    lockfile = ./Gemfile.lock;
-    gemset = ./gemset.nix;
     inherit ruby;
+    gemfile = "${src}/Gemfile";
+    gemset = ./gemset.nix;
+    lockfile = ./Gemfile.lock;
+    name = "github-linguist-dep";
   };
 
   ruby = ruby_3_4;
 
 in
 buildRubyGem rec {
-  name = "${gemName}-${version}";
   inherit
     gemName
     version
     src
     ruby
     ;
-
-  doInstallCheck = true;
-  dontBuild = false;
 
   postInstall = ''
     export GEM_PATH="${deps}/lib/ruby/gems/${ruby.version.libDir}"
@@ -51,15 +47,21 @@ buildRubyGem rec {
       --set GEM_PATH "${deps}/lib/ruby/gems/${ruby.version.libDir}"
   '';
 
+  doInstallCheck = true;
+  dontBuild = false;
+  name = "${gemName}-${version}";
+
   passthru = {
     inherit ruby deps;
   };
 
   meta = {
     description = "Language savant Ruby library";
+
     longDescription = ''
       A Ruby library that is used on GitHub.com to detect blob languages, ignore binary or vendored files, suppress generated files in diffs, and generate language breakdown graphs.
     '';
+
     homepage = "https://github.com/github-linguist/linguist";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ Cryolitia ];

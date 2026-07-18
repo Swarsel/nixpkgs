@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   gitUpdater,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "tempman";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mwilliamson";
@@ -24,13 +23,11 @@ buildPythonPackage rec {
       --replace-fail 'read("README")' '""'
   '';
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "tempman" ];
-
   # Disabling tests, they rely on dependencies that are outdated and not supported
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "tempman" ];
   passthru.updateScript = gitUpdater { };
 
   meta = {

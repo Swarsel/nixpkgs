@@ -8,8 +8,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "clock-rs";
   version = "0.2.0";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "Oughie";
     repo = "clock-rs";
@@ -18,9 +16,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-K5AdTjRz1GEWmbqW/D/7faYABUo71tpiyyOrCjHd1GM=";
+  __structuredAttrs = true;
 
   meta = {
     description = "Modern, digital clock that effortlessly runs in your terminal";
+
     longDescription = ''
       clock-rs is a terminal-based clock written in Rust, designed to be a new alternative to tty-clock.
       It supports all major platforms and offers several improvements, which include:
@@ -29,10 +29,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       - Many additional features such as a timer and a stopwatch,
       - And greater flexibility as well as better user experience!
     '';
+
     homepage = "https://github.com/Oughie/clock-rs";
     license = lib.licenses.asl20;
-    mainProgram = "clock-rs";
     maintainers = [ lib.maintainers.oughie ];
     platforms = lib.platforms.all;
+    mainProgram = "clock-rs";
   };
 })

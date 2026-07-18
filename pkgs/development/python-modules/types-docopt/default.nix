@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "types-docopt";
   version = "0.6.11.20241107";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "docopt-stubs" ];
 
   meta = {

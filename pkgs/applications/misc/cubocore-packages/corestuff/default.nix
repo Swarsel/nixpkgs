@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  kdePackages,
-  libxcomposite,
   cmake,
-  ninja,
+  kdePackages,
   libcprime,
   libcsys,
+  libxcomposite,
+  ninja,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,11 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Activity viewer from the C Suite";
-    mainProgram = "corestuff";
     homepage = "https://gitlab.com/cubocore/coreapps/corestuff";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "corestuff";
     # Address boundary error
     broken = true;
   };

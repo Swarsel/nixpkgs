@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-  procps,
   stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
+  procps,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "setproctitle";
   version = "1.3.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dvarrazzo";
@@ -20,12 +19,12 @@ buildPythonPackage rec {
     hash = "sha256-dfOdtfOXRAoCQLW307+YMsFIWRv4CupbKUxckev1oUw=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     procps
   ];
+
+  build-system = [ setuptools ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # Setting the process title fails on macOS in the Nix builder environment (regardless of sandboxing)
@@ -35,6 +34,7 @@ buildPythonPackage rec {
     "test_thread_fork_segfault"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "setproctitle" ];
 
   meta = {

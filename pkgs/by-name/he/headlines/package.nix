@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  cmake,
-  pkg-config,
-  libmicrohttpd,
-  curl,
-  openssl,
-  jsoncpp,
-  libxml2,
-  gst_all_1,
-  boost,
-  websocketpp,
-  libadwaita,
-  gtkmm4,
-  libsecret,
   fetchFromGitLab,
+  boost,
+  cmake,
+  curl,
+  ffmpeg,
+  gst_all_1,
+  gtkmm4,
+  jsoncpp,
+  libadwaita,
+  libmicrohttpd,
+  libsecret,
+  libxml2,
+  openssl,
+  pkg-config,
+  websocketpp,
   wrapGAppsHook4,
   xdg-utils,
   youtube-dl,
-  ffmpeg,
 }:
 
 stdenv.mkDerivation rec {
@@ -74,8 +74,8 @@ stdenv.mkDerivation rec {
     description = "GTK4 / Libadwaita Reddit client written in C++";
     homepage = "https://gitlab.com/caveman250/Headlines";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ chuangzhu ];
+    platforms = lib.platforms.linux;
     mainProgram = "headlines";
   };
 }

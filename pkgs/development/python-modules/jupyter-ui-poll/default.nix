@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   ipython,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "jupyter-ui-poll";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Kirill888";
@@ -18,11 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-Q+y0Xr7wuo8ZwCHEELSi0QSXa8DLtfZ8XQc48eOk4bw=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ ipython ];
-
   doCheck = false; # no tests in package :(
+  build-system = [ flit-core ];
+  dependencies = [ ipython ];
+  pyproject = true;
   pythonImportsCheck = [ "jupyter_ui_poll" ];
 
   meta = {

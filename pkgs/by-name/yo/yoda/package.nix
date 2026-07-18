@@ -4,9 +4,9 @@
   fetchFromGitLab,
   autoreconfHook,
   bash,
+  makeWrapper,
   python3,
   root,
-  makeWrapper,
   zlib,
   withRootSupport ? false,
 }:
@@ -21,6 +21,16 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "yoda-${finalAttrs.version}";
     hash = "sha256-cgThoxqPX6dVyGNTLXatW3uQV+41o38fTfkvHXsDs9A=";
   };
+
+  postPatch = ''
+    touch pyext/yoda/*.{pyx,pxd}
+    patchShebangs .
+
+    substituteInPlace pyext/yoda/plotting/script_generator.py \
+      --replace '/usr/bin/env python' '${python3.interpreter}'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = with python3.pkgs; [
     autoreconfHook
@@ -39,20 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withRootSupport [ root ];
 
   propagatedBuildInputs = [ zlib ];
-
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-DWITH_OSX";
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    touch pyext/yoda/*.{pyx,pxd}
-    patchShebangs .
-
-    substituteInPlace pyext/yoda/plotting/script_generator.py \
-      --replace '/usr/bin/env python' '${python3.interpreter}'
-  '';
 
   postInstall = ''
     patchShebangs --build $out/bin/yoda-config
@@ -61,18 +58,17 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  hardeningDisable = [ "format" ];
-
   doInstallCheck = true;
-
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
   installCheckTarget = "check";
 
   meta = {
     description = "Provides small set of data analysis (specifically histogramming) classes";
-    license = lib.licenses.gpl3Only;
     homepage = "https://yoda.hepforge.org";
     changelog = "https://gitlab.com/hepcedar/yoda/-/blob/yoda-${finalAttrs.version}/ChangeLog";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
   };
 })

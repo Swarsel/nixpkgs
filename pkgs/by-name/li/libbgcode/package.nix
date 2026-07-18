@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  heatshrink,
-  zlib,
   boost,
   catch2_3,
+  cmake,
+  heatshrink,
+  pkg-config,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libbgcode";
@@ -31,22 +31,22 @@ stdenv.mkDerivation (finalAttrs: {
     boost
   ];
 
-  checkInputs = [
-    catch2_3
-  ];
-
-  doCheck = true;
-
   cmakeFlags = [
     (lib.cmakeBool "LibBGCode_BUILD_TESTS" finalAttrs.finalPackage.doCheck)
   ];
 
+  doCheck = true;
+
+  checkInputs = [
+    catch2_3
+  ];
+
   meta = {
-    homepage = "https://github.com/prusa3d/libbgcode";
     description = "Prusa Block & Binary G-code reader / writer / converter";
-    mainProgram = "bgcode";
+    homepage = "https://github.com/prusa3d/libbgcode";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ lach ];
     platforms = lib.platforms.unix;
+    mainProgram = "bgcode";
   };
 })

@@ -1,21 +1,16 @@
 {
   lib,
-  mkDerivation,
   libcMinimal,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/librthread";
-
-  libcMinimal = true;
-
   outputs = [
     "out"
     "dev"
   ];
 
   makeFlags = [ "LIBCSRCDIR=../libc" ];
-
   env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
   extraPaths = [
@@ -24,5 +19,7 @@ mkDerivation {
     #"sys"
   ];
 
+  libcMinimal = true;
+  path = "lib/librthread";
   meta.platforms = lib.platforms.openbsd;
 }

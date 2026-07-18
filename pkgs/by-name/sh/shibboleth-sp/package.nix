@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  fetchpatch,
   autoreconfHook,
   boost,
   fcgi,
-  openssl,
-  opensaml-cpp,
+  fetchFromCodeberg,
+  fetchpatch,
   log4shib,
+  opensaml-cpp,
+  openssl,
   pkg-config,
+  unstableGitUpdater,
   xercesc,
   xml-security-c,
   xml-tooling-c,
-  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,16 +35,16 @@ stdenv.mkDerivation (finalAttrs: {
   # See https://shibboleth.atlassian.net/browse/SSPCPP-998 for a related discussion.
   patches = lib.optionals (stdenv.cc.isClang && lib.versionAtLeast stdenv.cc.version "19") [
     (fetchpatch {
+      hash = "sha256-ZF0jsZJoHaxaPPjVbT6Wlq+wjyPQLTnEKcUxONji/hE=";
       name = "char-traits-ambig-1";
       url = "https://codeberg.org/Shibboleth/cpp-sp/commit/49cd05fa6d9935a45069fa555db7a26ca77d23db.diff";
-      hash = "sha256-ZF0jsZJoHaxaPPjVbT6Wlq+wjyPQLTnEKcUxONji/hE=";
     })
 
     (fetchpatch {
+      hash = "sha256-4iGwCGpGwAkriOwQmh5AgvHLX1o39NuQ2l4sAJbD2bc=";
+      includes = [ "shibsp/util/IPRange.cpp" ];
       name = "char-traits-ambig-2";
       url = "https://codeberg.org/Shibboleth/cpp-sp/commit/793663a67aaa4e9a4aa9172728d924f8cec45cf6.diff";
-      includes = [ "shibsp/util/IPRange.cpp" ];
-      hash = "sha256-4iGwCGpGwAkriOwQmh5AgvHLX1o39NuQ2l4sAJbD2bc=";
     })
   ];
 
@@ -52,6 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     boost
     fcgi
@@ -74,14 +75,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://shibboleth.net/products/service-provider.html";
     description = "Enables SSO and Federation web applications written with any programming language or framework";
-    platforms = lib.platforms.unix;
+    homepage = "https://shibboleth.net/products/service-provider.html";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ drawbu ];
+    platforms = lib.platforms.unix;
   };
 })

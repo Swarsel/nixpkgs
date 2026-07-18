@@ -1,38 +1,36 @@
 {
-  stdenv,
   lib,
-  pkgs,
+  stdenv,
   fetchurl,
   bash,
   buildEnv,
   coreutils,
   findutils,
-  gnugrep,
-  gnused,
   getopt,
   git,
-  tree,
+  gnugrep,
   gnupg,
-  openssl,
-  which,
+  gnused,
+  makeWrapper,
   openssh,
+  openssl,
+  pass,
+  pkgs,
   procps,
   qrencode,
-  makeWrapper,
-  pass,
-
-  xclip ? null,
-  xdotool ? null,
+  tree,
+  which,
   dmenu ? null,
-  x11Support ? !stdenv.hostPlatform.isDarwin,
-  dmenuSupport ? (x11Support || waylandSupport),
-  waylandSupport ? false,
-  wl-clipboard ? null,
-  ydotool ? null,
   dmenu-wayland ? null,
-
+  dmenuSupport ? (x11Support || waylandSupport),
   # For backwards-compatibility
   tombPluginSupport ? false,
+  waylandSupport ? false,
+  wl-clipboard ? null,
+  x11Support ? !stdenv.hostPlatform.isDarwin,
+  xclip ? null,
+  xdotool ? null,
+  ydotool ? null,
 }:
 
 assert x11Support -> xclip != null;
@@ -55,8 +53,6 @@ let
       ++ lib.optional tombPluginSupport passExtensions.tomb;
     in
     buildEnv {
-      name = "pass-env";
-      paths = selected;
       nativeBuildInputs = [ makeWrapper ];
       buildInputs = lib.concatMap (x: x.buildInputs) selected;
 
@@ -76,13 +72,16 @@ let
         wrapProgram $out/bin/pass \
           --set SYSTEM_EXTENSION_DIR "$out/lib/password-store/extensions"
       '';
+
+      name = "pass-env";
+      paths = selected;
       meta.mainProgram = "pass";
     };
 in
 
 stdenv.mkDerivation rec {
-  version = "1.7.4";
   pname = "password-store";
+  version = "1.7.4";
 
   src = fetchurl {
     url = "https://git.zx2c4.com/password-store/snapshot/${pname}-${version}.tar.xz";
@@ -95,18 +94,66 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin ./no-darwin-getopt.patch;
 
-  nativeBuildInputs = [ makeWrapper ];
+  # Turn "check" into "installcheck", since we want to test our pass,
+  # not the one before the fixup.
+  postPatch = ''
+    patchShebangs tests
 
+    substituteInPlace src/password-store.sh \
+      --replace "@out@" "$out"
+
+    # the turning
+    sed -i -e 's@^PASS=.*''$@PASS=$out/bin/pass@' \
+           -e 's@^GPGS=.*''$@GPG=${gnupg}/bin/gpg2@' \
+           -e '/which gpg/ d' \
+      tests/setup.sh
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # 'pass edit' uses hdid, which is not available from the sandbox.
+    rm -f tests/t0200-edit-tests.sh
+    rm -f tests/t0010-generate-tests.sh
+    rm -f tests/t0020-show-tests.sh
+    rm -f tests/t0050-mv-tests.sh
+    rm -f tests/t0100-insert-tests.sh
+    rm -f tests/t0300-reencryption.sh
+    rm -f tests/t0400-grep.sh
+  '';
+
+  nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ bash ];
+  doCheck = false;
+
+  postInstall = lib.optionalString dmenuSupport ''
+    cp "contrib/dmenu/passmenu" "$out/bin/"
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ git ];
+
+  postFixup = ''
+    # Fix program name in --help
+    substituteInPlace $out/bin/pass \
+      --replace 'PROGRAM="''${0##*/}"' "PROGRAM=pass"
+
+    # Ensure all dependencies are in PATH
+    wrapProgram $out/bin/pass \
+      --prefix PATH : "${wrapperPathPrefix}" \
+      --suffix PATH : "${wrapperPathSuffix}"
+  ''
+  + lib.optionalString dmenuSupport ''
+    # We just wrap passmenu with the same PATH as pass. It doesn't
+    # need all the tools in there but it doesn't hurt either.
+    wrapProgram $out/bin/passmenu \
+      --prefix PATH : "$out/bin:${wrapperPathPrefix}" \
+      --suffix PATH : "${wrapperPathSuffix}"
+  '';
+
+  installCheckTarget = "test";
 
   installFlags = [
     "PREFIX=$(out)"
     "WITH_ALLCOMP=yes"
   ];
-
-  postInstall = lib.optionalString dmenuSupport ''
-    cp "contrib/dmenu/passmenu" "$out/bin/"
-  '';
 
   wrapperPathPrefix = lib.makeBinPath (
     [
@@ -139,55 +186,6 @@ stdenv.mkDerivation rec {
     gnupg
   ];
 
-  postFixup = ''
-    # Fix program name in --help
-    substituteInPlace $out/bin/pass \
-      --replace 'PROGRAM="''${0##*/}"' "PROGRAM=pass"
-
-    # Ensure all dependencies are in PATH
-    wrapProgram $out/bin/pass \
-      --prefix PATH : "${wrapperPathPrefix}" \
-      --suffix PATH : "${wrapperPathSuffix}"
-  ''
-  + lib.optionalString dmenuSupport ''
-    # We just wrap passmenu with the same PATH as pass. It doesn't
-    # need all the tools in there but it doesn't hurt either.
-    wrapProgram $out/bin/passmenu \
-      --prefix PATH : "$out/bin:${wrapperPathPrefix}" \
-      --suffix PATH : "${wrapperPathSuffix}"
-  '';
-
-  # Turn "check" into "installcheck", since we want to test our pass,
-  # not the one before the fixup.
-  postPatch = ''
-    patchShebangs tests
-
-    substituteInPlace src/password-store.sh \
-      --replace "@out@" "$out"
-
-    # the turning
-    sed -i -e 's@^PASS=.*''$@PASS=$out/bin/pass@' \
-           -e 's@^GPGS=.*''$@GPG=${gnupg}/bin/gpg2@' \
-           -e '/which gpg/ d' \
-      tests/setup.sh
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # 'pass edit' uses hdid, which is not available from the sandbox.
-    rm -f tests/t0200-edit-tests.sh
-    rm -f tests/t0010-generate-tests.sh
-    rm -f tests/t0020-show-tests.sh
-    rm -f tests/t0050-mv-tests.sh
-    rm -f tests/t0100-insert-tests.sh
-    rm -f tests/t0300-reencryption.sh
-    rm -f tests/t0400-grep.sh
-  '';
-
-  doCheck = false;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ git ];
-  installCheckTarget = "test";
-
   passthru = {
     extensions = passExtensions;
     withExtensions = env;
@@ -195,16 +193,6 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Stores, retrieves, generates, and synchronizes passwords securely";
-    homepage = "https://www.passwordstore.org/";
-    license = lib.licenses.gpl2Plus;
-    mainProgram = "pass";
-    maintainers = with lib.maintainers; [
-      fpletz
-      tadfisher
-      globin
-      ryan4yin
-    ];
-    platforms = lib.platforms.unix;
 
     longDescription = ''
       pass is a very simple password store that keeps passwords inside gpg2
@@ -213,5 +201,18 @@ stdenv.mkDerivation rec {
       manipulating the password store, allowing the user to add, remove, edit,
       synchronize, generate, and manipulate passwords.
     '';
+
+    homepage = "https://www.passwordstore.org/";
+    license = lib.licenses.gpl2Plus;
+
+    maintainers = with lib.maintainers; [
+      fpletz
+      tadfisher
+      globin
+      ryan4yin
+    ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "pass";
   };
 }

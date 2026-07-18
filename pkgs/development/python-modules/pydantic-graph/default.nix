@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-  uv-dynamic-versioning,
-
   # dependencies
   httpx,
   logfire-api,
   pydantic,
   typing-inspection,
+  uv-dynamic-versioning,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pydantic-graph";
   version = "2.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydantic";
@@ -26,7 +23,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-KwuhRZWGOofglR5SVsUOijtgYnhVV3Fc9DLtUwL+KSU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/pydantic_graph";
+  doCheck = false; # no tests
 
   build-system = [
     hatchling
@@ -40,16 +37,18 @@ buildPythonPackage (finalAttrs: {
     typing-inspection
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "pydantic_graph"
   ];
 
-  doCheck = false; # no tests
+  sourceRoot = "${finalAttrs.src.name}/pydantic_graph";
 
   meta = {
-    changelog = "https://github.com/pydantic/pydantic-ai/releases/tag/${finalAttrs.src.tag}";
     description = "GenAI Agent Framework, the Pydantic way";
     homepage = "https://github.com/pydantic/pydantic-ai";
+    changelog = "https://github.com/pydantic/pydantic-ai/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

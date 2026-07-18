@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  gitUpdater,
   bencodetools,
   flac,
+  gitUpdater,
   lame,
   libao,
   libzakalwe,
   makeWrapper,
-  python3,
   pkg-config,
+  python3,
   sox,
   vorbis-tools,
   which,
@@ -61,10 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.strings.withFeature false "write-audio")
   ];
 
-  enableParallelBuilding = true;
-
-  hardeningDisable = [ "format" ];
-
   postInstall = ''
     wrapProgram $out/bin/mod2ogg2.sh \
       --prefix PATH : $out/bin:${
@@ -80,6 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/bin/mod2ogg2{.sh,}
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
   passthru.updateScript = gitUpdater { rev-prefix = "uade-"; };
 
   meta = {
@@ -91,7 +89,7 @@ stdenv.mkDerivation (finalAttrs: {
     # Let's make it easy and flag the whole package as unfree.
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ OPNA2608 ];
-    mainProgram = "uade123";
     platforms = lib.platforms.unix;
+    mainProgram = "uade123";
   };
 })

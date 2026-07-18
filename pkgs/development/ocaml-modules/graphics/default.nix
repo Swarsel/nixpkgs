@@ -19,14 +19,15 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     libx11
     libxft
   ];
 
   meta = {
-    homepage = "https://github.com/ocaml/graphics";
     description = "Set of portable drawing primitives";
+    homepage = "https://github.com/ocaml/graphics";
     license = lib.licenses.lgpl2;
   };
 })

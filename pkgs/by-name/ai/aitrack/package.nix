@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  opencv,
-  spdlog,
-  onnxruntime,
   libsForQt5,
+  onnxruntime,
+  opencv,
+  pkg-config,
+  spdlog,
 }:
 stdenv.mkDerivation {
   pname = "aitrack";
@@ -18,6 +18,11 @@ stdenv.mkDerivation {
     rev = "00bcca9b685abf3a19e4eab653198ca2b1895ae4";
     sha256 = "sha256-pPvYVLUPYdjtJKdxqZI+JN7OZ4xw9gZ3baYTnJUSTGE=";
   };
+
+  postPatch = ''
+    substituteInPlace Client/src/Main.cpp \
+      --replace "/usr/share/" "$out/share/"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -32,11 +37,6 @@ stdenv.mkDerivation {
     onnxruntime
   ];
 
-  postPatch = ''
-    substituteInPlace Client/src/Main.cpp \
-      --replace "/usr/share/" "$out/share/"
-  '';
-
   postInstall = ''
     install -Dt $out/bin aitrack
     install -Dt $out/share/aitrack/models models/*
@@ -45,9 +45,9 @@ stdenv.mkDerivation {
   meta = {
     description = "6DoF Head tracking software";
     homepage = "https://github.com/mdk97/aitrack-linux";
-    mainProgram = "aitrack";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ck3d ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.mit;
+    mainProgram = "aitrack";
   };
 }

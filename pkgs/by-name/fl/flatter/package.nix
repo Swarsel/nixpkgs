@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  cmake,
   blas,
-  gmp,
-  mpfr,
-  fplll,
+  cmake,
   eigen,
+  fplll,
+  gmp,
   llvmPackages,
+  mpfr,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation {
@@ -46,8 +46,8 @@ stdenv.mkDerivation {
     description = "Fast lattice reduction of integer lattice bases";
     homepage = "https://github.com/keeganryan/flatter";
     license = lib.licenses.lgpl3Only;
-    mainProgram = "flatter";
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ josephsurin ];
+    platforms = lib.platforms.all;
+    mainProgram = "flatter";
   };
 }

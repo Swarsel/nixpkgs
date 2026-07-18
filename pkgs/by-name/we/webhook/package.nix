@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,18 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  subPackages = [ "." ];
-
   doCheck = false;
-
+  subPackages = [ "." ];
   passthru.tests = { inherit (nixosTests) webhook; };
 
   meta = {
     description = "Incoming webhook server that executes shell commands";
-    mainProgram = "webhook";
     homepage = "https://github.com/adnanh/webhook";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "webhook";
   };
 })

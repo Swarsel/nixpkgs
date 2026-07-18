@@ -1,22 +1,16 @@
 {
   stdenv,
   fetchurl,
+  qmake,
+  qtbase,
   qtdeclarative,
   qttools,
-  qtbase,
-  qmake,
 }:
 
 stdenv.mkDerivation rec {
   pname = "qtinstaller";
-
-  propagatedBuildInputs = [
-    qtdeclarative
-    qttools
-  ];
-  nativeBuildInputs = [ qmake ];
-
   version = "2.0.3";
+
   src = fetchurl {
     url = "http://download.qt.io/official_releases/qt-installer-framework/${version}/qt-installer-framework-opensource-${version}-src.tar.gz";
     sha256 = "003gwjg02isw8qjyka377g1ahlisfyi44l6xfa4hvvdgqqq0hy2f";
@@ -29,9 +23,14 @@ stdenv.mkDerivation rec {
     "doc"
   ];
 
-  setOutputFlags = false;
+  nativeBuildInputs = [ qmake ];
+
+  propagatedBuildInputs = [
+    qtdeclarative
+    qttools
+  ];
+
   env.NIX_QT_SUBMODULE = true;
-  dontWrapQtApps = true;
 
   installPhase = ''
     mkdir -p $out/{bin,lib,share/qt-installer-framework}
@@ -53,8 +52,11 @@ stdenv.mkDerivation rec {
     moveToOutput "lib/libinstaller.so.1.0.0" "$out"
   '';
 
+  dontWrapQtApps = true;
+  setOutputFlags = false;
+
   meta = {
-    description = "Qt installer framework";
     inherit (qtbase.meta) platforms license homepage;
+    description = "Qt installer framework";
   };
 }

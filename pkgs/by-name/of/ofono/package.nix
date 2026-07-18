@@ -1,32 +1,32 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  testers,
   autoreconfHook,
-  pkg-config,
-  glib,
+  bluez,
   dbus,
   ell,
-  systemd,
-  bluez,
+  fetchzip,
+  glib,
   mobile-broadband-provider-info,
+  pkg-config,
   python3,
+  systemd,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "ofono";
   version = "2.19";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchzip {
     url = "https://git.kernel.org/pub/scm/network/ofono/ofono.git/snapshot/ofono-${finalAttrs.version}.tar.gz";
     hash = "sha256-OFoEl4Ve5DCNYsDfQpO26tZQTUz1192v0oECsXvHTG8=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [ ./0001-Search-connectors-in-OFONO_PLUGIN_PATH.patch ];
 
@@ -58,13 +58,10 @@ stdenv.mkDerivation (finalAttrs: {
     "--sysconfdir=/etc"
   ];
 
-  installFlags = [ "sysconfdir=${placeholder "out"}/etc" ];
-
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   enableParallelBuilding = true;
   enableParallelChecking = false;
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
+  installFlags = [ "sysconfdir=${placeholder "out"}/etc" ];
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
@@ -75,6 +72,7 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "ofonod";
+
     pkgConfigModules = [
       "ofono"
     ];

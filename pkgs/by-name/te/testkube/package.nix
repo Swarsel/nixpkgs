@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "testkube";
@@ -29,7 +29,7 @@ buildGoModule (finalAttrs: {
     description = "Kubernetes-native framework for test definition and execution";
     homepage = "https://github.com/kubeshop/testkube/";
     license = lib.licenses.mit;
-    mainProgram = "kubectl-testkube";
     maintainers = with lib.maintainers; [ mathstlouis ];
+    mainProgram = "kubectl-testkube";
   };
 })

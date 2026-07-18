@@ -1,39 +1,29 @@
 {
   lib,
   stdenv,
-  buildBazelPackage,
   fetchFromGitHub,
   bazel_7,
-  jdk,
   bison,
-  flex,
-  python3,
+  buildBazelPackage,
   cctools,
+  flex,
+  jdk,
+  python3,
 }:
 
 let
   system = stdenv.hostPlatform.system;
   registry = fetchFromGitHub {
+    hash = "sha256-BsxP3GrS98ubIAkFx/c4pB1i97ZZL2TijS+2ORnooww=";
     owner = "bazelbuild";
     repo = "bazel-central-registry";
     rev = "3f863a3f35f31b61982d813835d8637b3d93d87a";
-    hash = "sha256-BsxP3GrS98ubIAkFx/c4pB1i97ZZL2TijS+2ORnooww=";
   };
   GIT_DATE = "2025-08-29";
   GIT_VERSION = "v0.0-4023-gc1271a00";
 in
 buildBazelPackage {
   pname = "verible";
-
-  env = {
-    # These environment variables are read in bazel/build-version.py to create
-    # a build string shown in the tools --version output.
-    # If env variables not set, it would attempt to extract it from .git/.
-    inherit GIT_DATE GIT_VERSION;
-  }
-  // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    LIBTOOL = "${cctools}/bin/libtool";
-  };
 
   # Derive nix package version from GIT_VERSION: "v1.2-345-abcde" -> "1.2.345"
   version = builtins.concatStringsSep "." (
@@ -46,33 +36,6 @@ buildBazelPackage {
     tag = GIT_VERSION;
     hash = "sha256-N+yjRcVxFI56kP3zq+qFHNXZLTtVnQaVnseZS13YN0s=";
   };
-
-  bazel = bazel_7;
-  bazelFlags = [
-    "--//bazel:use_local_flex_bison"
-    "--registry"
-    "file://${registry}"
-  ];
-
-  fetchAttrs = {
-    preInstall = ''
-      rm -rf $bazelOut/external/rules_shell~~sh_configure~local_config_shell
-    '';
-    hash =
-      {
-        aarch64-linux = "sha256-KsXrwRIiCft/WaT0uj28gOj5ahhTKxcaiosbY7Mo3JY=";
-        x86_64-linux = "sha256-X7/W2iOTXruRO2wx9J5tGYvy2IuZ6mXiRAmUI5Eq9Vc=";
-        aarch64-darwin = "sha256-Zn22un/KaHdTEA/ucaentR7t/krmnZQk3A+jfbPVYnA=";
-      }
-      .${system} or (throw "No hash for system: ${system}");
-  };
-
-  nativeBuildInputs = [
-    jdk # bazel uses that.
-    bison # We use local flex and bison as WORKSPACE sources fail
-    flex # .. to compile with newer glibc
-    python3
-  ];
 
   postPatch = ''
     patchShebangs \
@@ -87,13 +50,36 @@ buildBazelPackage {
       verible/verilog/tools
   '';
 
-  removeRulesCC = false;
-  bazelTargets = [ ":install-binaries" ];
-  bazelBuildFlags = [ "-c opt" ];
+  nativeBuildInputs = [
+    jdk # bazel uses that.
+    bison # We use local flex and bison as WORKSPACE sources fail
+    flex # .. to compile with newer glibc
+    python3
+  ];
+
+  env = {
+    # These environment variables are read in bazel/build-version.py to create
+    # a build string shown in the tools --version output.
+    # If env variables not set, it would attempt to extract it from .git/.
+    inherit GIT_DATE GIT_VERSION;
+  }
+  // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    LIBTOOL = "${cctools}/bin/libtool";
+  };
 
   doCheck = true;
-  bazelTestTargets = [ "//..." ];
+  bazel = bazel_7;
+  bazelBuildFlags = [ "-c opt" ];
+
+  bazelFlags = [
+    "--//bazel:use_local_flex_bison"
+    "--registry"
+    "file://${registry}"
+  ];
+
+  bazelTargets = [ ":install-binaries" ];
   bazelTestFlags = [ "-c opt" ];
+  bazelTestTargets = [ "//..." ];
 
   buildAttrs = {
     installPhase = ''
@@ -102,10 +88,27 @@ buildBazelPackage {
     '';
   };
 
+  fetchAttrs = {
+    preInstall = ''
+      rm -rf $bazelOut/external/rules_shell~~sh_configure~local_config_shell
+    '';
+
+    hash =
+      {
+        aarch64-darwin = "sha256-Zn22un/KaHdTEA/ucaentR7t/krmnZQk3A+jfbPVYnA=";
+        aarch64-linux = "sha256-KsXrwRIiCft/WaT0uj28gOj5ahhTKxcaiosbY7Mo3JY=";
+        x86_64-linux = "sha256-X7/W2iOTXruRO2wx9J5tGYvy2IuZ6mXiRAmUI5Eq9Vc=";
+      }
+      .${system} or (throw "No hash for system: ${system}");
+  };
+
+  removeRulesCC = false;
+
   meta = {
     description = "Suite of SystemVerilog developer tools. Including a style-linter, indexer, formatter, and language server";
     homepage = "https://github.com/chipsalliance/verible";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       hzeller
       newam

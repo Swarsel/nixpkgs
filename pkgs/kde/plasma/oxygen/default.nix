@@ -1,7 +1,7 @@
 {
+  libsForQt5,
   mkKdeDerivation,
   qtbase,
-  libsForQt5,
 }:
 mkKdeDerivation {
   pname = "oxygen";
@@ -11,6 +11,16 @@ mkKdeDerivation {
     "dev"
     "qt5"
   ];
+
+  # Move Qt5 plugin to Qt5 plugin path
+  postInstall = ''
+    mkdir -p $qt5/${libsForQt5.qtbase.qtPluginPrefix}/styles
+    mv $out/${qtbase.qtPluginPrefix}/styles/oxygen5.so $qt5/${libsForQt5.qtbase.qtPluginPrefix}/styles
+
+    moveToOutput bin/oxygen-demo5 $qt5
+    moveToOutput 'lib/liboxygenstyle5*' $qt5
+    moveToOutput 'lib/liboxygenstyleconfig5*' $qt5
+  '';
 
   # We can't add qt5 stuff to dependencies or the hooks blow up,
   # so manually point everything to everything. Oof.
@@ -42,14 +52,4 @@ mkKdeDerivation {
     "-DKF5WidgetsAddons_DIR=${libsForQt5.__internalKF5.kwidgetsaddons.dev}/lib/cmake/KF5WidgetsAddons"
     "-DKF5WindowSystem_DIR=${libsForQt5.__internalKF5.kwindowsystem.dev}/lib/cmake/KF5WindowSystem"
   ];
-
-  # Move Qt5 plugin to Qt5 plugin path
-  postInstall = ''
-    mkdir -p $qt5/${libsForQt5.qtbase.qtPluginPrefix}/styles
-    mv $out/${qtbase.qtPluginPrefix}/styles/oxygen5.so $qt5/${libsForQt5.qtbase.qtPluginPrefix}/styles
-
-    moveToOutput bin/oxygen-demo5 $qt5
-    moveToOutput 'lib/liboxygenstyle5*' $qt5
-    moveToOutput 'lib/liboxygenstyleconfig5*' $qt5
-  '';
 }

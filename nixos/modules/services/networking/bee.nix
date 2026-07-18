@@ -10,13 +10,7 @@ let
   configFile = format.generate "bee.yaml" cfg.settings;
 in
 {
-  meta = {
-    # doc = ./bee.xml;
-    maintainers = [ ];
-  };
-
   ### interface
-
   options = {
     services.bee = {
       enable = lib.mkEnableOption "Ethereum Swarm Bee";
@@ -25,48 +19,55 @@ in
         example = "bee-unstable";
       };
 
+      daemonNiceLevel = lib.mkOption {
+        default = 0;
+
+        description = ''
+          Daemon process priority for bee.
+          0 is the default Unix process priority, 19 is the lowest.
+        '';
+
+        type = lib.types.int;
+      };
+
+      group = lib.mkOption {
+        default = "bee";
+
+        description = ''
+          Group the bee binary should execute under.
+        '';
+
+        type = lib.types.str;
+      };
+
       settings = lib.mkOption {
-        type = format.type;
         description = ''
           Ethereum Swarm Bee configuration. Refer to
           <https://gateway.ethswarm.org/bzz/docs.swarm.eth/docs/installation/configuration/>
           for details on supported values.
         '';
-      };
 
-      daemonNiceLevel = lib.mkOption {
-        type = lib.types.int;
-        default = 0;
-        description = ''
-          Daemon process priority for bee.
-          0 is the default Unix process priority, 19 is the lowest.
-        '';
+        type = format.type;
       };
 
       user = lib.mkOption {
-        type = lib.types.str;
         default = "bee";
+
         description = ''
           User the bee binary should execute under.
         '';
-      };
 
-      group = lib.mkOption {
         type = lib.types.str;
-        default = "bee";
-        description = ''
-          Group the bee binary should execute under.
-        '';
       };
     };
   };
 
   ### implementation
-
   config = lib.mkIf cfg.enable {
     assertions = [
       {
         assertion = (lib.hasAttr "password" cfg.settings) != true;
+
         message = ''
           `services.bee.settings.password` is insecure. Use `services.bee.settings.password-file` or `systemd.services.bee.serviceConfig.EnvironmentFile` instead.
         '';
@@ -74,6 +75,7 @@ in
       {
         assertion =
           (lib.hasAttr "swap-endpoint" cfg.settings) || (cfg.settings.swap-enable or true == false);
+
         message = ''
           In a swap-enabled network a working Ethereum blockchain node is required. You must specify one using `services.bee.settings.swap-endpoint`, or disable `services.bee.settings.swap-enable` = false.
         '';
@@ -81,31 +83,15 @@ in
     ];
 
     services.bee.settings = {
+      clef-signer-enable = lib.mkDefault true;
       data-dir = lib.mkDefault "/var/lib/bee";
       password-file = lib.mkDefault "/var/lib/bee/password";
-      clef-signer-enable = lib.mkDefault true;
       swap-endpoint = lib.mkDefault "https://rpc.slock.it/goerli";
     };
 
     systemd.packages = [ cfg.package ]; # include the upstream bee.service file
 
-    systemd.tmpfiles.rules = [
-      "d '${cfg.settings.data-dir}' 0750 ${cfg.user} ${cfg.group}"
-    ];
-
     systemd.services.bee = {
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        Nice = cfg.daemonNiceLevel;
-        User = cfg.user;
-        Group = cfg.group;
-        ExecStart = [
-          "" # this hides/overrides what's in the original entry
-          "${cfg.package}/bin/bee --config=${configFile} start"
-        ];
-      };
-
       preStart = with cfg.settings; ''
                 if ! test -f ${password-file}; then
                   < /dev/urandom tr -dc _A-Z-a-z-0-9 2> /dev/null | head -c32 | install -m 600 /dev/stdin ${password-file}
@@ -124,19 +110,41 @@ in
         After you finish configuration run 'sudo bee-get-addr'."
                 fi
       '';
+
+      serviceConfig = {
+        ExecStart = [
+          "" # this hides/overrides what's in the original entry
+          "${cfg.package}/bin/bee --config=${configFile} start"
+        ];
+
+        Group = cfg.group;
+        Nice = cfg.daemonNiceLevel;
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    users.users = lib.optionalAttrs (cfg.user == "bee") {
-      bee = {
-        group = cfg.group;
-        home = cfg.settings.data-dir;
-        isSystemUser = true;
-        description = "Daemon user for Ethereum Swarm Bee";
-      };
-    };
+    systemd.tmpfiles.rules = [
+      "d '${cfg.settings.data-dir}' 0750 ${cfg.user} ${cfg.group}"
+    ];
 
     users.groups = lib.optionalAttrs (cfg.group == "bee") {
       bee = { };
     };
+
+    users.users = lib.optionalAttrs (cfg.user == "bee") {
+      bee = {
+        description = "Daemon user for Ethereum Swarm Bee";
+        group = cfg.group;
+        home = cfg.settings.data-dir;
+        isSystemUser = true;
+      };
+    };
+  };
+
+  meta = {
+    # doc = ./bee.xml;
+    maintainers = [ ];
   };
 }

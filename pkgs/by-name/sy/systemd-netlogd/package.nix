@@ -21,17 +21,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "systemd-netlogd";
   version = "1.4.4";
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "systemd";
     repo = "systemd-netlogd";
     tag = "v${finalAttrs.version}";
     hash = "sha256-Kgr6KZp2SSLG8xnqXNWsDgIa9rNnBGcN+TkuAbr+yAA=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   # Fixup a few installation paths
   postPatch = ''
@@ -82,12 +82,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (systemd.meta) platforms;
     description = "Forwards messages from the journal to other hosts over the network";
     homepage = "https://github.com/systemd/systemd-netlogd";
     changelog = "https://github.com/systemd/systemd-netlogd/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ getchoo ];
     mainProgram = "systemd-netlogd";
-    inherit (systemd.meta) platforms;
   };
 })

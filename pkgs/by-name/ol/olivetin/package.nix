@@ -1,17 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  buildGoModule,
-  stdenvNoCC,
-  writableTmpDirAsHomeHook,
   buf,
+  buildGoModule,
+  buildNpmPackage,
+  grpc-gateway,
+  installShellFiles,
+  nixosTests,
   protoc-gen-go,
   protoc-gen-go-grpc,
-  grpc-gateway,
-  buildNpmPackage,
-  installShellFiles,
+  stdenvNoCC,
   versionCheckHook,
-  nixosTests,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,22 +26,28 @@ buildGoModule (finalAttrs: {
   };
 
   patches = [ ./update-go-sum.patch ];
-
-  modRoot = "service";
-
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-xSroaS6fwHrQ0s09uD3bkBZWWxbIndiOGL2JPvKzC6E=";
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
+  preBuild = ''
+    ln -s ${finalAttrs.gen} gen
+    substituteInPlace internal/config/config.go \
+      --replace-fail 'config.WebUIDir = "./webui"' 'config.WebUIDir = "${finalAttrs.webui}"'
+    substituteInPlace internal/httpservers/webuiServer_test.go \
+      --replace-fail '"../webui/"' '"${finalAttrs.webui}"'
+  '';
 
+  postInstall = ''
+    installManPage ../var/manpage/OliveTin.1.gz
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   __darwinAllowLocalNetworking = true;
 
   gen = stdenvNoCC.mkDerivation {
-    pname = "olivetin-gen";
     inherit (finalAttrs) version src;
+    pname = "olivetin-gen";
 
     nativeBuildInputs = [
       writableTmpDirAsHomeHook
@@ -74,17 +80,23 @@ buildGoModule (finalAttrs: {
         sed -i -E 's|//.*protoc-gen-go(-grpc)? +v.*$||' {} +
     '';
 
-    outputHashMode = "recursive";
     outputHash = "sha256-fTsJE9ymtJ0TU2OhXLE+XfEOckFMG7IPi0IHHAmN84s=";
+    outputHashMode = "recursive";
   };
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  modRoot = "service";
+  versionCheckProgramArg = "-version";
+
   webui = buildNpmPackage {
-    pname = "olivetin-webui";
     inherit (finalAttrs) version src;
-
+    pname = "olivetin-webui";
     npmDepsHash = "sha256-a1BBNlGusdMlmDXgclGqkO8AywSd4DTQKkuBVzuzAfE=";
-
-    sourceRoot = "${finalAttrs.src.name}/webui.dev";
 
     buildPhase = ''
       runHook preBuild
@@ -102,44 +114,31 @@ buildGoModule (finalAttrs: {
 
       runHook postInstall
     '';
+
+    sourceRoot = "${finalAttrs.src.name}/webui.dev";
   };
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  preBuild = ''
-    ln -s ${finalAttrs.gen} gen
-    substituteInPlace internal/config/config.go \
-      --replace-fail 'config.WebUIDir = "./webui"' 'config.WebUIDir = "${finalAttrs.webui}"'
-    substituteInPlace internal/httpservers/webuiServer_test.go \
-      --replace-fail '"../webui/"' '"${finalAttrs.webui}"'
-  '';
-
-  postInstall = ''
-    installManPage ../var/manpage/OliveTin.1.gz
-  '';
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-version";
-  doInstallCheck = true;
-
   passthru = {
+    releaseSeries = "2k";
+
     tests.olivetin = nixosTests.olivetin.extendNixOS {
       module = {
         services.olivetin.package = finalAttrs.finalPackage;
       };
     };
-    releaseSeries = "2k";
+
     updateScript = ./update.sh;
   };
 
   meta = {
     description = "Gives safe and simple access to predefined shell commands from a web interface";
     homepage = "https://www.olivetin.app/";
-    downloadPage = "https://github.com/OliveTin/OliveTin";
     changelog = "https://github.com/OliveTin/OliveTin/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ defelo ];
     mainProgram = "OliveTin";
+    downloadPage = "https://github.com/OliveTin/OliveTin";
+
     knownVulnerabilities = [
       "CVE-2026-27626: OS Command Injection via password argument type and webhook JSON extraction bypasses shell safety checks"
       "CVE-2026-28342: Unauthenticated Denial of Service via Memory Exhaustion in PasswordHash API Endpoint"

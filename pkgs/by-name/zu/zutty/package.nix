@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchgit,
-  pkg-config,
   freetype,
-  wafHook,
-  python3,
-  libxmu,
   glew,
-  ucs-fonts,
+  libxmu,
   nixosTests,
+  pkg-config,
+  python3,
+  ucs-fonts,
+  wafHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "zutty";
@@ -52,8 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://tomscii.sig7.se/zutty/";
     description = "X terminal emulator rendering through OpenGL ES Compute Shaders";
+    homepage = "https://tomscii.sig7.se/zutty/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.rolfschr ];
     platforms = lib.platforms.linux;

@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
   git,
+  gtk3,
+  nix-update-script,
   python3,
   sassc,
-  nix-update-script,
+  stdenvNoCC,
   accents ? [ "blue" ],
   size ? "standard",
   tweaks ? [ ],
@@ -71,8 +71,8 @@ lib.checkListOfEnum "${pname}: theme accent" validAccents accents lib.checkListO
       owner = "catppuccin";
       repo = "gtk";
       tag = "v${version}";
-      fetchSubmodules = true;
       hash = "sha256-q5/VcFsm3vNEw55zq/vcM11eo456SYE5TQA3g2VQjGc=";
+      fetchSubmodules = true;
     };
 
     patches = [
@@ -89,9 +89,6 @@ lib.checkListOfEnum "${pname}: theme accent" validAccents accents lib.checkListO
       (python3.withPackages (ps: [ ps.catppuccin ]))
     ];
 
-    dontConfigure = true;
-    dontBuild = true;
-
     installPhase = ''
       runHook preInstall
 
@@ -106,17 +103,21 @@ lib.checkListOfEnum "${pname}: theme accent" validAccents accents lib.checkListO
       runHook postInstall
     '';
 
+    dontBuild = true;
+    dontConfigure = true;
     passthru.updateScript = nix-update-script { };
 
     meta = {
       description = "Soothing pastel theme for GTK";
       homepage = "https://github.com/catppuccin/gtk";
       license = lib.licenses.gpl3Plus;
-      platforms = lib.platforms.all;
+
       maintainers = with lib.maintainers; [
         fufexan
         dixslyf
         isabelroses
       ];
+
+      platforms = lib.platforms.all;
     };
   }

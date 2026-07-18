@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
+  cargo-geiger,
+  curl,
   # darwin dependencies
   libiconv,
-  curl,
+  openssl,
+  pkg-config,
+  rustPlatform,
   # testing
   testers,
-  cargo-geiger,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,14 +24,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-dZ71WbTKsR6g5UhWuJNfNAAqNNxbTgwL5fsgkm50BaM=";
   };
 
-  cargoHash = "sha256-GgCmUNOwvyTB82Y/ddgJIAb1SpO4mRPjECqCagJ8GmE=";
-
   postPatch = ''
     # https://github.com/geiger-rs/cargo-geiger/pull/562
     # Fix unused import warning which is treated as an error
     substituteInPlace cargo-geiger/tests/integration_tests.rs \
       --replace-fail "use std::env;" ""
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+  ]
+  # curl-sys wants to run curl-config on darwin
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ curl.dev ];
 
   buildInputs = [
     openssl
@@ -40,15 +44,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
     curl
   ];
-  nativeBuildInputs = [
-    pkg-config
-  ]
-  # curl-sys wants to run curl-config on darwin
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ curl.dev ];
 
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
+  cargoHash = "sha256-GgCmUNOwvyTB82Y/ddgJIAb1SpO4mRPjECqCagJ8GmE=";
 
   # skip tests with networking or other failures
   checkFlags = [
@@ -70,30 +67,39 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_package_update_readme::case_5"
   ];
 
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
   passthru.tests.version = testers.testVersion {
     package = cargo-geiger;
   };
 
   meta = {
     description = "Detects usage of unsafe Rust in a Rust crate and its dependencies";
+
     longDescription = ''
       A cargo plugin that detects the usage of unsafe Rust in a Rust crate and
       its dependencies. It provides information to aid auditing and guide
       dependency selection but it can not help you decide when and why unsafe
       code is appropriate.
     '';
+
     homepage = "https://github.com/geiger-rs/cargo-geiger";
     changelog = "https://github.com/geiger-rs/cargo-geiger/blob/cargo-geiger-${finalAttrs.version}/CHANGELOG.md";
-    mainProgram = "cargo-geiger";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       evanjs
       gepbird
       jk
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-geiger";
   };
 })

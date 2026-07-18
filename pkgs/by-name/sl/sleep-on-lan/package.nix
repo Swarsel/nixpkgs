@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,7 +15,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-WooFGIdXIIoJPMqmPpnT+bc+P+IARMSxa3CvXY9++mw=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
   vendorHash = "sha256-JqDDG53khtDdMLVOscwqi0oGviF+3DMkv5tkHvp1gJc=";
 
   ldflags = [
@@ -25,12 +24,14 @@ buildGoModule (finalAttrs: {
     "-X main.BuildVersionLabel=nixpkgs"
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
-    homepage = "https://github.com/SR-G/sleep-on-lan";
     description = "Multi-platform process allowing to sleep on LAN a Linux or Windows computer, through wake-on-lan (reversed) magic packets or through HTTP REST requests";
+    homepage = "https://github.com/SR-G/sleep-on-lan";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ devusb ];
+    platforms = lib.platforms.linux;
     mainProgram = "sleep-on-lan";
   };
 })

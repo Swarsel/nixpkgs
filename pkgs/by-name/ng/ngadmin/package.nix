@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
   readline,
-  withReadline ? true,
   enableEmu ? true,
   enableSpy ? true,
+  withReadline ? true,
 }:
 
 stdenv.mkDerivation {
@@ -21,11 +21,13 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ autoreconfHook ] ++ lib.optional withReadline readline;
-  enableParallelBuilding = true;
+
   configureFlags =
     lib.optional (!withReadline) "--without-readline"
     ++ lib.optional enableEmu "--enable-emu"
     ++ lib.optional enableSpy "--enable-spy";
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Netgear switch (NSDP) administration tool";

@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  nixosTests,
   fetchpatch,
+  nixosTests,
 }:
 
 buildGoModule rec {
@@ -18,7 +18,8 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-7toFgKj1paxFzSM0vSxIBLVJQ2YOxqhdAtvyEIpCUnQ=";
-
+  # network required
+  doCheck = false;
   excludedPackages = [ "./test" ];
 
   ldflags = [
@@ -30,9 +31,6 @@ buildGoModule rec {
   tags = [
     "with_gvisor"
   ];
-
-  # network required
-  doCheck = false;
 
   passthru.tests = {
     mihomo = nixosTests.mihomo;

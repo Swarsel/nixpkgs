@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aiohttp-jinja2";
   version = "1.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -25,13 +24,6 @@ buildPythonPackage rec {
     ./aiohttp-3.14.patch
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    jinja2
-  ];
-
   nativeCheckInputs = [
     pytest-aiohttp
     pytest-cov-stub
@@ -39,6 +31,14 @@ buildPythonPackage rec {
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    jinja2
+  ];
+
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::DeprecationWarning"

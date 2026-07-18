@@ -1,12 +1,12 @@
 {
   lib,
-  fetchPypi,
-  buildPythonPackage,
-  pytestCheckHook,
-  pkgs,
   awkward,
+  buildPythonPackage,
+  fetchPypi,
   numpy,
+  pkgs,
   pybind11,
+  pytestCheckHook,
   python,
   setuptools,
   setuptools-scm,
@@ -32,12 +32,11 @@ in
 buildPythonPackage rec {
   pname = "fastjet";
   version = "3.5.1.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "fastjet";
     inherit version;
     hash = "sha256-dDvlFBZrTWhpNhngKuAvu9zpbcLWvz7IpRQsmctvaW0=";
+    pname = "fastjet";
   };
 
   # unvendor fastjet/fastjet-contrib
@@ -55,6 +54,15 @@ buildPythonPackage rec {
 
   strictDeps = true;
 
+  buildInputs = [
+    pybind11
+    fastjet-contrib
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -67,14 +75,7 @@ buildPythonPackage rec {
     vector
   ];
 
-  buildInputs = [
-    pybind11
-    fastjet-contrib
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
     description = "Jet-finding in the Scikit-HEP ecosystem";

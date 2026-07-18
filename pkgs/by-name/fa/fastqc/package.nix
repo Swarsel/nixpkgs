@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  jre,
-  perl,
-  makeWrapper,
-  imagemagick,
-  makeDesktopItem,
   copyDesktopItems,
   desktopToDarwinBundle,
+  fetchzip,
+  imagemagick,
+  jre,
+  makeDesktopItem,
+  makeWrapper,
+  perl,
   testers,
 }:
 
@@ -21,30 +21,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TenRG2x8ivJ2HM2ZpLaJShp0yI0Qc6K5lW5/NJFAa1I";
   };
 
-  dontBuild = true;
-
   nativeBuildInputs = [
     makeWrapper
     imagemagick
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux copyDesktopItems # postInstallHook
   ++ lib.optional stdenv.hostPlatform.isDarwin desktopToDarwinBundle; # fixupOutputHook
+
   buildInputs = [
     jre
     perl
   ];
-
-  desktopItem = (
-    makeDesktopItem {
-      name = "FastQC";
-      exec = "fastqc";
-      icon = "fastqc";
-      desktopName = "FastQC";
-      comment = finalAttrs.meta.description;
-      categories = [ "Science" ];
-    }
-  );
-  desktopItems = [ finalAttrs.desktopItem ];
 
   installPhase = ''
     runHook preInstall
@@ -64,13 +51,28 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper $out/FastQC/fastqc $out/bin/fastqc --prefix PATH : ${jre}/bin
   '';
 
+  desktopItem = (
+    makeDesktopItem {
+      categories = [ "Science" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "FastQC";
+      exec = "fastqc";
+      icon = "fastqc";
+      name = "FastQC";
+    }
+  );
+
+  desktopItems = [ finalAttrs.desktopItem ];
+  dontBuild = true;
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     version = "v${finalAttrs.version}";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Quality control application for high throughput sequence data";
+
     longDescription = ''
       FastQC aims to provide a simple way to do some quality control checks on raw sequence data coming from high throughput sequencing pipelines. It provides a modular set of analyses which you can use to give a quick impression of whether your data has any problems of which you should be aware before doing any further analysis.
 
@@ -82,14 +84,17 @@ stdenv.mkDerivation (finalAttrs: {
       - Export of results to an HTML based permanent report
       - Offline operation to allow automated generation of reports without running the interactive application
     '';
+
     homepage = "https://www.bioinformatics.babraham.ac.uk/projects/fastqc/";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     license = with lib.licenses; [
       gpl3Plus
       asl20
     ];
+
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ lib.maintainers.dflores ];
-    mainProgram = "fastqc";
     platforms = lib.platforms.unix;
+    mainProgram = "fastqc";
   };
 })

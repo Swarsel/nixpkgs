@@ -19,13 +19,15 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ autoreconfHook ];
 
   meta = {
-    homepage = "https://github.com/Parchive/par2cmdline";
     description = "PAR 2.0 compatible file verification and repair tool";
+
     longDescription = ''
       par2cmdline is a program for creating and using PAR2 files to detect
       damage in data files and repair them if necessary. It can be used with
       any kind of file.
     '';
+
+    homepage = "https://github.com/Parchive/par2cmdline";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;

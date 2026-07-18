@@ -2,13 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkgsCross,
   makeWrapper,
+  pkgsCross,
   python3Packages,
-
+  pid ? "0000",
   # Default FSIJ IDs
   vid ? "234b",
-  pid ? "0000",
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,12 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.2";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "gnuk-team";
     repo = "gnuk/gnuk";
     rev = "release/${finalAttrs.version}";
     hash = "sha256-qY/dwkcPJiPx/+inSxH7w7a0v3cWUQDX+NYJwUjnkMY=";
     fetchSubmodules = true;
+    domain = "salsa.debian.org";
   };
 
   nativeBuildInputs = [
@@ -35,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     pyusb
     colorama
   ];
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   configureFlags = [ "--vidpid=${vid}:${pid}" ];
 
@@ -61,12 +58,14 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x $out/bin/{unlock,flash}
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
-    homepage = "https://www.fsij.org/category/gnuk.html";
     description = "Implementation of USB cryptographic token for gpg";
+    homepage = "https://www.fsij.org/category/gnuk.html";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     broken = true; # Needs Picolib, which is not packaged in Nixpkgs.
   };
 })

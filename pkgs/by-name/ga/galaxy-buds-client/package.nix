@@ -1,8 +1,9 @@
 {
   lib,
   stdenv,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
+  copyDesktopItems,
   dotnetCorePackages,
   fontconfig,
   glib,
@@ -11,9 +12,8 @@
   libxkbcommon,
   libxt,
   libxtst,
-  makeWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
   nix-update-script,
 }:
 
@@ -28,14 +28,6 @@ buildDotnetModule rec {
     hash = "sha256-jPVrSkf6Bybwc5glkxId5VeWkwLBoTjOzM3CCgO6h9I=";
   };
 
-  projectFile = [ "GalaxyBudsClient/GalaxyBudsClient.csproj" ];
-  nugetDeps = ./deps.json;
-  dotnet-sdk = dotnetCorePackages.sdk_10_0_1xx;
-  dotnet-runtime = dotnetCorePackages.runtime_10_0;
-  dotnetFlags =
-    lib.optionals stdenv.hostPlatform.isx86_64 [ "-p:Runtimeidentifier=linux-x64" ]
-    ++ lib.optionals stdenv.hostPlatform.isAarch64 [ "-p:Runtimeidentifier=linux-arm64" ];
-
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
@@ -44,14 +36,6 @@ buildDotnetModule rec {
   buildInputs = [
     (lib.getLib stdenv.cc.cc)
     fontconfig
-  ];
-
-  runtimeDeps = [
-    libglvnd
-    libxinerama
-    libxkbcommon
-    libxt
-    libxtst
   ];
 
   postFixup = ''
@@ -67,16 +51,34 @@ buildDotnetModule rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = meta.mainProgram;
-      exec = meta.mainProgram;
-      icon = meta.mainProgram;
-      desktopName = meta.mainProgram;
-      genericName = "Galaxy Buds Client";
-      comment = meta.description;
-      type = "Application";
       categories = [ "Settings" ];
+      comment = meta.description;
+      desktopName = meta.mainProgram;
+      exec = meta.mainProgram;
+      genericName = "Galaxy Buds Client";
+      icon = meta.mainProgram;
+      name = meta.mainProgram;
       startupNotify = true;
+      type = "Application";
     })
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0_1xx;
+
+  dotnetFlags =
+    lib.optionals stdenv.hostPlatform.isx86_64 [ "-p:Runtimeidentifier=linux-x64" ]
+    ++ lib.optionals stdenv.hostPlatform.isAarch64 [ "-p:Runtimeidentifier=linux-arm64" ];
+
+  nugetDeps = ./deps.json;
+  projectFile = [ "GalaxyBudsClient/GalaxyBudsClient.csproj" ];
+
+  runtimeDeps = [
+    libglvnd
+    libxinerama
+    libxkbcommon
+    libxt
+    libxtst
   ];
 
   passthru = {

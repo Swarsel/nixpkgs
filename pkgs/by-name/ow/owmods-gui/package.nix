@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
-  libsoup_3,
+  stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
+  cargo-tauri,
   dbus,
   glib,
   glib-networking,
+  jq,
   librsvg,
-  webkitgtk_4_1,
-  pkg-config,
-  cargo-tauri,
-  wrapGAppsHook3,
-  rustPlatform,
-  buildNpmPackage,
-  fetchFromGitHub,
+  libsoup_3,
   makeBinaryWrapper,
   mono,
-  jq,
-  wrapWithMono ? true,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
+  wrapWithMono ? true,
 }:
 let
   pname = "owmods-gui";
@@ -29,23 +29,21 @@ let
     hash = "sha256-2jf9yjvWvE6If2ChdbgdLwSJtyj4AYSKkV9E7jgQ3G8=";
   };
   frontend = buildNpmPackage {
-    pname = "owmods-gui-ui";
     inherit version;
-
-    env.VITE_VERSION_SUFFIX = "-nix";
-
+    pname = "owmods-gui-ui";
     src = "${src}/owmods_gui/frontend";
-
-    packageJSON = "${src}/owmods_gui/frontend/package.json";
     npmDepsHash = "sha256-Ske3EFiLDPMLI2ln65pZL22pExT/OfT0v0x+TxiZjQo=";
+    env.VITE_VERSION_SUFFIX = "-nix";
 
     postBuild = ''
       cp -r ../dist/ $out
     '';
+
+    distDir = "../dist";
     distPhase = "true";
     dontInstall = true;
     installInPlace = true;
-    distDir = "../dist";
+    packageJSON = "${src}/owmods_gui/frontend/package.json";
 
     meta = {
       description = "Web frontend for the Outer Wilds Mod Manager";
@@ -57,12 +55,11 @@ in
 rustPlatform.buildRustPackage {
   inherit pname version src;
 
-  cargoHash = "sha256-UsqkamsWyJ+SUOD8Ab0wZIfcL6NBe0kKbLXSm7rFOGM=";
-
-  buildNoDefaultFeatures = true;
-  buildFeatures = [
-    "custom-protocol"
-  ];
+  postPatch = ''
+    ${lib.getExe jq} \
+      'del(.plugins.tauri.updater) | .build.frontendDist = "${frontend}" | del(.build.beforeBuildCommand) | .bundle.createUpdaterArtifacts = false' owmods_gui/backend/tauri.conf.json > owmods_gui/backend/new.tauri.conf.json;
+    mv owmods_gui/backend/new.tauri.conf.json owmods_gui/backend/tauri.conf.json
+  '';
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -84,22 +81,24 @@ rustPlatform.buildRustPackage {
     webkitgtk_4_1
   ];
 
-  buildAndTestSubdir = "owmods_gui/backend";
-
-  preFixup = lib.optionalString (
-    stdenv.hostPlatform.isLinux && wrapWithMono
-  ) "gappsWrapperArgs+=(--prefix PATH : '${mono}/bin')";
-
-  postPatch = ''
-    ${lib.getExe jq} \
-      'del(.plugins.tauri.updater) | .build.frontendDist = "${frontend}" | del(.build.beforeBuildCommand) | .bundle.createUpdaterArtifacts = false' owmods_gui/backend/tauri.conf.json > owmods_gui/backend/new.tauri.conf.json;
-    mv owmods_gui/backend/new.tauri.conf.json owmods_gui/backend/tauri.conf.json
-  '';
+  cargoHash = "sha256-UsqkamsWyJ+SUOD8Ab0wZIfcL6NBe0kKbLXSm7rFOGM=";
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p "$out/bin"
     makeWrapper "$out/Applications/Outer Wilds Mod Manager.app/Contents/MacOS/owmods_gui" "$out/bin/owmods_gui" ${lib.optionalString wrapWithMono "--set MONO_BINARY ${lib.getExe mono}"}
   '';
+
+  preFixup = lib.optionalString (
+    stdenv.hostPlatform.isLinux && wrapWithMono
+  ) "gappsWrapperArgs+=(--prefix PATH : '${mono}/bin')";
+
+  buildAndTestSubdir = "owmods_gui/backend";
+
+  buildFeatures = [
+    "custom-protocol"
+  ];
+
+  buildNoDefaultFeatures = true;
 
   passthru = {
     inherit frontend;
@@ -117,15 +116,17 @@ rustPlatform.buildRustPackage {
   meta = {
     description = "GUI version of the mod manager for Outer Wilds Mod Loader";
     homepage = "https://github.com/ow-mods/ow-mod-man/tree/main/owmods_gui";
-    downloadPage = "https://github.com/ow-mods/ow-mod-man/releases/tag/gui_v${version}";
     changelog = "https://github.com/ow-mods/ow-mod-man/releases/tag/gui_v${version}";
-    mainProgram = "owmods_gui";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       bwc9876
       locochoco
       spoonbaker
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "owmods_gui";
+    downloadPage = "https://github.com/ow-mods/ow-mod-man/releases/tag/gui_v${version}";
   };
 }

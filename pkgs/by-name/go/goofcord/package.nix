@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
   bun,
-  nodejs_24,
+  callPackage,
+  copyDesktopItems,
   electron,
-  nix-update-script,
-  libxkbcommon,
   libx11,
   libxcb,
+  libxkbcommon,
   libxtst,
-  makeShellWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  makeShellWrapper,
+  nix-update-script,
+  nodejs_24,
 }:
 let
   patchcordAddon = callPackage ./patchcord-addon.nix { };
@@ -45,24 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.getLib stdenv.cc.cc)
   ];
 
-  node-modules = callPackage ./node-modules.nix { nodejs = nodejs_24; };
-
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
     GOOFCORD_PATCHCORD_PATH = "${patchcordAddon}/bin/patchcord";
     GOOFCORD_VENBIND_PATH = "${venbindAddon}/lib/libvenbind.so";
   };
-
-  configurePhase = ''
-    runHook preConfigure
-
-    cp -R ${finalAttrs.node-modules} node_modules
-    chmod -R u+w node_modules
-    patchShebangs node_modules/.bin
-    patchShebangs node_modules/@typescript/native-preview/bin
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -109,29 +96,45 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    cp -R ${finalAttrs.node-modules} node_modules
+    chmod -R u+w node_modules
+    patchShebangs node_modules/.bin
+    patchShebangs node_modules/@typescript/native-preview/bin
+
+    runHook postConfigure
+  '';
+
   desktopItems = [
     (makeDesktopItem {
-      name = "goofcord";
-      genericName = "Internet Messenger";
+      categories = [
+        "Network"
+        "InstantMessaging"
+        "Chat"
+      ];
+
+      comment = finalAttrs.meta.description;
       desktopName = "GoofCord";
       exec = "goofcord %U";
+      genericName = "Internet Messenger";
       icon = "goofcord";
-      comment = finalAttrs.meta.description;
+
       keywords = [
         "discord"
         "vencord"
         "electron"
         "chat"
       ];
-      categories = [
-        "Network"
-        "InstantMessaging"
-        "Chat"
-      ];
+
+      name = "goofcord";
       startupWMClass = "GoofCord";
       terminal = false;
     })
   ];
+
+  node-modules = callPackage ./node-modules.nix { nodejs = nodejs_24; };
 
   passthru = {
     updateScript = nix-update-script { };
@@ -140,14 +143,16 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Highly configurable and privacy-focused Discord client";
     homepage = "https://github.com/Milkshiift/GoofCord";
-    downloadPage = "https://github.com/Milkshiift/GoofCord";
     license = lib.licenses.osl3;
+
     maintainers = with lib.maintainers; [
       nyabinary
       miniharinn
       baba
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "goofcord";
+    downloadPage = "https://github.com/Milkshiift/GoofCord";
   };
 })

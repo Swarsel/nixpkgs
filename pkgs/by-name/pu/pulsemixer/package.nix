@@ -2,11 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
   libpulseaudio,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit libpulseaudio;
   pname = "pulsemixer";
   version = "1.5.1";
 
@@ -16,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "1jagx9zmz5pfsld8y2rj2kqg6ww9f6vqiawfy3vhqc49x3xx92p4";
   };
-
-  inherit libpulseaudio;
 
   buildInputs = [ python3 ];
 

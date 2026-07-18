@@ -1,34 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
   # dependencies
   black,
+  buildPythonPackage,
   click,
+  # build-system
+  flit-core,
   libcst,
   moreorless,
-  tomlkit,
-  trailrunner,
-  typing-extensions,
-  usort,
-
   # optional-dependencies
   pygls,
   ruff-api,
-
+  tomlkit,
+  trailrunner,
+  typing-extensions,
   # tests
   unittestCheckHook,
+  usort,
   versionCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "ufmt";
   version = "2.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "omnilib";
@@ -36,6 +31,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-46H4oFuCC4BNONGWD4TU/HTNzc8+v8itUCXvDnsMxsk=";
   };
+
+  nativeCheckInputs = [
+    unittestCheckHook
+    versionCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ flit-core ];
 
@@ -55,12 +56,7 @@ buildPythonPackage rec {
     ruff = [ ruff-api ];
   };
 
-  nativeCheckInputs = [
-    unittestCheckHook
-    versionCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "ufmt" ];
 
   meta = {

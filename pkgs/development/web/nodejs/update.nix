@@ -1,22 +1,22 @@
 {
   lib,
-  writeScript,
+  fetchurl,
   common-updater-scripts,
   coreutils,
   curl,
-  fetchurl,
   gnugrep,
   gnupg,
   jq,
   majorVersion,
   runtimeShell,
+  writeScript,
 }:
 
 let
   rev = "890d535527789c9ebccdccdafd708f60dbd56786"; # should be the HEAD of nodejs/release-keys
   pubring = fetchurl {
-    url = "https://github.com/nodejs/release-keys/raw/${rev}/gpg-only-active-keys/pubring.kbx";
     hash = "sha256-jm+JUhoGlORF9C3s0CL0g2nGNPG1vLWXUTW2nIhimug=";
+    url = "https://github.com/nodejs/release-keys/raw/${rev}/gpg-only-active-keys/pubring.kbx";
   };
 in
 writeScript "update-nodejs" ''

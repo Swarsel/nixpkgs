@@ -2,15 +2,15 @@
   lib,
   fetchurl,
   cmake,
-  gfortran,
   gccStdenv,
+  gfortran,
   lhapdf,
 }:
 let
   stdenv = gccStdenv;
   lhapdf' = lhapdf.override {
-    stdenv = gccStdenv;
     python3 = null;
+    stdenv = gccStdenv;
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     gfortran
   ];
+
   buildInputs = [ lhapdf' ];
 
   cmakeFlags = [

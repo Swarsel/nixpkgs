@@ -29,12 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "MSGPACK_BUILD_TESTS" finalAttrs.finalPackage.doCheck)
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   checkInputs = [
     gtest
     zlib
   ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   meta = {
     description = "MessagePack implementation for C";

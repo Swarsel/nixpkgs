@@ -1,32 +1,30 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
   # build-system
   cmake,
-  scikit-build-core,
-  pybind11,
-  pathspec,
+  fetchPypi,
   ninja,
-  pyproject-metadata,
-
   # dependencies
   numpy,
-
+  pathspec,
+  pybind11,
+  pyproject-metadata,
   # tests
   pytestCheckHook,
+  scikit-build-core,
 }:
 
 buildPythonPackage rec {
   pname = "iminuit";
   version = "2.32.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-oys00YZllZvnWta9sd2ARZu5RGbGK0VWMcAFaKzN99I=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     cmake
@@ -38,19 +36,19 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ numpy ];
-
   dontUseCmakeConfigure = true;
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
+    description = "Python interface for the Minuit2 C++ library";
     homepage = "https://github.com/scikit-hep/iminuit";
     changelog = "https://github.com/scikit-hep/iminuit/releases/tag/v${version}";
-    description = "Python interface for the Minuit2 C++ library";
+
     license = with lib.licenses; [
       mit
       lgpl2Only
     ];
+
     maintainers = with lib.maintainers; [ veprbl ];
   };
 }

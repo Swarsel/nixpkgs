@@ -7,7 +7,6 @@
 }:
 
 buildDunePackage {
-  pname = "eio_linux";
   inherit (eio)
     meta
     src
@@ -15,9 +14,7 @@ buildDunePackage {
     version
     ;
 
-  minimalOCamlVersion = "5.0";
-
-  dontStrip = true;
+  pname = "eio_linux";
 
   propagatedBuildInputs = [
     eio
@@ -25,4 +22,7 @@ buildDunePackage {
     logs
     uring
   ];
+
+  dontStrip = true;
+  minimalOCamlVersion = "5.0";
 }

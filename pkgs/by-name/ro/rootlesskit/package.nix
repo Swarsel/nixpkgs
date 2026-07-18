@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   nixosTests,
 }:
@@ -20,13 +20,13 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-sEKneHvQjVBido+Z5k1XjW7qWuqGOZQQX9BMX4DGb6M=";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = nixosTests.docker-rootless;
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/rootless-containers/rootlesskit";
     description = ''Kind of Linux-native "fake root" utility, made for mainly running Docker and Kubernetes as an unprivileged user'';
+    homepage = "https://github.com/rootless-containers/rootlesskit";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.linux;

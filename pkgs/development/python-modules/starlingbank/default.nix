@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "starlingbank";
   version = "3.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-pqWnRyCAc50KQmbqYq9Mje+PWXCFmTAjs8jA13YM0nA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "starlingbank" ];
 
   meta = {

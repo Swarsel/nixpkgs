@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   astroid,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools-scm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "asttokens";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gristlabs";
@@ -19,11 +18,16 @@ buildPythonPackage rec {
     hash = "sha256-1qkkNpjX89TmGD0z0KA2y+UbiHuEOaXzZ6hs9nw7EeM=";
   };
 
-  build-system = [ setuptools-scm ];
-
   nativeCheckInputs = [
     astroid
     pytestCheckHook
+  ];
+
+  build-system = [ setuptools-scm ];
+
+  disabledTestPaths = [
+    # incompatible with astroid 2.11.0, pins <= 2.5.3
+    "tests/test_astroid.py"
   ];
 
   disabledTests = [
@@ -31,11 +35,7 @@ buildPythonPackage rec {
     "test_slices"
   ];
 
-  disabledTestPaths = [
-    # incompatible with astroid 2.11.0, pins <= 2.5.3
-    "tests/test_astroid.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "asttokens" ];
 
   meta = {

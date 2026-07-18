@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ config, lib, ... }:
 let
   facterLib = import ../lib.nix lib;
   cfg = config.hardware.facter.detected.graphics.amd;
@@ -9,9 +9,11 @@ in
       default = builtins.elem "amdgpu" (
         facterLib.collectDrivers (config.hardware.facter.report.hardware.graphics_card or [ ])
       );
+
       defaultText = "hardware dependent";
     };
   };
+
   config = lib.mkIf (config.hardware.facter.enable && cfg.enable) {
     services.xserver.videoDrivers = [ "modesetting" ];
   };

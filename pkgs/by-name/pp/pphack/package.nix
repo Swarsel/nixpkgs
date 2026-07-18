@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,15 +17,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-RZJXl2GC9vJq5Ui9hlyKEkiq9HeMQeJIvsH6tOUp4Sg=";
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  doInstallCheck = true;
 
   meta = {
     description = "Client-Side Prototype Pollution Scanner";

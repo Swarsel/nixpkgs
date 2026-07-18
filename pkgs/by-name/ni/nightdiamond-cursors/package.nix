@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -23,10 +23,10 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/vimlinuz/NightDiamond-cursors";
     description = "NightDiamond cursor themes";
+    homepage = "https://github.com/vimlinuz/NightDiamond-cursors";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ vimlinuz ];
+    platforms = lib.platforms.linux;
   };
 }

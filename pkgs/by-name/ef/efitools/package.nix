@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
+  buildPackages,
+  efitools,
+  fetchzip,
   gnu-efi,
+  help2man,
   openssl,
-  sbsigntool,
   perl,
   perlPackages,
-  help2man,
-  fetchzip,
   pkgsCross,
-  efitools,
-  buildPackages,
+  sbsigntool,
 }:
 let
   isCross = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
@@ -18,22 +18,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "efitools";
   version = "1.9.2";
-
-  buildInputs = [
-    gnu-efi
-    openssl
-  ];
-
-  nativeBuildInputs = [
-    perl
-    perlPackages.FileSlurp
-    help2man
-    openssl
-    sbsigntool
-  ]
-  ++ lib.optionals isCross [
-    efitools
-  ];
 
   src = fetchzip {
     url = "https://git.kernel.org/pub/scm/linux/kernel/git/jejb/efitools.git/snapshot/efitools-v${finalAttrs.version}.tar.gz";
@@ -66,6 +50,22 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Make.rules --replace-fail 'nm -D' '$(NM) -D'
     patchShebangs .
   '';
+
+  nativeBuildInputs = [
+    perl
+    perlPackages.FileSlurp
+    help2man
+    openssl
+    sbsigntool
+  ]
+  ++ lib.optionals isCross [
+    efitools
+  ];
+
+  buildInputs = [
+    gnu-efi
+    openssl
+  ];
 
   makeFlags = [
     "ARCH=${stdenv.hostPlatform.parsed.cpu.name}"

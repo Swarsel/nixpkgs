@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  flex,
   bison,
-  sendmailPath ? "/run/wrappers/bin/sendmail",
+  flex,
   versionCheckHook,
+  sendmailPath ? "/run/wrappers/bin/sendmail",
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,23 +28,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--with-mta=${sendmailPath}" ];
-
   # test.c:43:11: error: implicit declaration of function 'gets'; did you mean 'fgets'?
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
-
-  enableParallelBuilding = true;
-
   doCheck = true;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://petidomo.sourceforge.net/";
     description = "Simple and easy to administer mailing list server";
+    homepage = "https://petidomo.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "petidomo";
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.peti ];
+    platforms = lib.platforms.unix;
+    mainProgram = "petidomo";
   };
 })

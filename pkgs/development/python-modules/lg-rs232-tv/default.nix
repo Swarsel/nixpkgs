@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
-  serialx,
   aiowebostv,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-timeout,
   pytestCheckHook,
+  serialx,
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lg-rs232-tv";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -27,8 +26,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.8.4,<0.9.0" "uv_build"
   '';
 
-  build-system = [ uv-build ];
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-timeout
+    pytestCheckHook
+  ];
 
+  build-system = [ uv-build ];
   dependencies = [ serialx ];
 
   optional-dependencies = {
@@ -36,12 +40,7 @@ buildPythonPackage (finalAttrs: {
     remote = [ aiowebostv ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-timeout
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "lg_rs232_tv" ];
 
   meta = {

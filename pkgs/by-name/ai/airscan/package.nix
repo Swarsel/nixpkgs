@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Package to scan paper documents using the Apple AirScan (eSCL) protocol";
-    mainProgram = "airscan1";
     homepage = "https://github.com/stapelberg/airscan";
     changelog = "https://github.com/stapelberg/airscan/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ johannwagner ];
+    mainProgram = "airscan1";
   };
 })

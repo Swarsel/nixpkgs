@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,10 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-WS9fC4pDCNsc2mQPiMk/eHYqG+tF+/J/6RaMYM0/ql0=";
-
-  modRoot = "tools/goctl";
-  subPackages = [ "." ];
-
   doCheck = true;
 
   ldflags = [
@@ -27,13 +23,18 @@ buildGoModule (finalAttrs: {
     "-w"
   ];
 
+  modRoot = "tools/goctl";
+  subPackages = [ "." ];
+
   meta = {
     description = "CLI handcuffle of go-zero, a cloud-native Go microservices framework";
+
     longDescription = ''
       goctl is a go-zero's built-in handcuffle that is a major
       lever to increase development efficiency, generating code,
       document, deploying k8s yaml, dockerfile, etc.
     '';
+
     homepage = "https://go-zero.dev";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cococolanosugar ];

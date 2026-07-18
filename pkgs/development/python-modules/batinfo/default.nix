@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "batinfo";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nicolargo";
@@ -23,11 +22,8 @@ buildPythonPackage rec {
       --replace-fail "self.assertEquals" "self.assertEqual"
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "batinfo" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Tests are a bit outdated
@@ -35,6 +31,9 @@ buildPythonPackage rec {
     "test_batinfo_charge_now"
     "test_batinfo_name_default"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "batinfo" ];
 
   passthru = {
     # Upstream has a broken 2.0 tag that causes this package to get downgraded to 0.2

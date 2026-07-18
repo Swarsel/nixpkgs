@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   doxygen,
-  fetchFromGitHub,
   gettext,
   gnutls,
   libabigail,
@@ -22,10 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8lumfZXIYeFTjtakj1s+gxoVaDMzoKlQMYgpq4BIc+U=";
   };
 
-  postUnpack = ''
-    touch ${finalAttrs.src.name}/config.rpath
-  '';
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -39,13 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
     nettle
   ];
 
+  postUnpack = ''
+    touch ${finalAttrs.src.name}/config.rpath
+  '';
+
   meta = {
     description = "Simple RADIUS client library";
     homepage = "https://github.com/radcli/radcli";
     changelog = "https://github.com/radcli/radcli/blob/${finalAttrs.version}/NEWS";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "radcli";
     platforms = lib.platforms.all;
+    mainProgram = "radcli";
   };
 })

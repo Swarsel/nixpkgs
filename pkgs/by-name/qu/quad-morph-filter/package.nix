@@ -2,22 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  cmake,
-  pkg-config,
-
   alsa-lib,
+  cmake,
   freetype,
   juce,
-  xsimd,
-
   libx11,
   libxcursor,
   libxext,
   libxinerama,
   libxrandr,
-
   nix-update-script,
+  pkg-config,
+  xsimd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,9 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "V${finalAttrs.version}";
     hash = "sha256-xz97h8j411r7g6fSVDo8E4ARLyIP++qK26aTvDqP+Yo=";
   };
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   # FilterVisualizer writes a per-pixel response curve into a fixed
   # std::array<float,1024>, assuming the editor is <=1024px wide. The standalone
@@ -58,10 +51,13 @@ stdenv.mkDerivation (finalAttrs: {
     printf '\ntarget_compile_definitions(QuadMorphFilter PUBLIC JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)\n' >> CMakeLists.txt
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     alsa-lib
     freetype
@@ -79,8 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     # find_package against the xsimd in buildInputs instead of the network.
     (lib.cmakeFeature "FETCHCONTENT_TRY_FIND_PACKAGE_MODE" "ALWAYS")
   ];
-
-  cmakeBuildType = "RelWithDebInfo";
 
   # JUCE dlopens these at runtime, standalone executable crashes without them.
   # Must go through `env`: with __structuredAttrs only `env` entries are
@@ -104,6 +98,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+  cmakeBuildType = "RelWithDebInfo";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

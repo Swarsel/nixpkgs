@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
-  nix-update-script,
-  esbuild,
   buildGoModule,
+  esbuild,
+  fetchYarnDeps,
+  nix-update-script,
+  nodejs,
+  stdenvNoCC,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 let
   esbuild' =
@@ -23,12 +23,14 @@ let
           args
           // {
             inherit version;
+
             src = fetchFromGitHub {
               owner = "evanw";
               repo = "esbuild";
               rev = "v${version}";
               hash = "sha256-WpnWdx0Oi1KBWiS/CEd88hYU/3ka1x1AA71ipYJgT5A=";
             };
+
             vendorHash = "sha256-2ABWPqhK2Cf4ipQH7XvRrd+ZscJhYPc3SV2cGT0apdg=";
           }
         );
@@ -45,13 +47,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-AUulj0tcgkXrQS9k1zhB0LKWJxvIlVtxSQK+nYGm73s=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-FPxvwqx7TfJBM+O8TY64swJVYlWIbCvVbzVJYthHjO0=";
-  };
-
-  yarnBuildScript = "prepare";
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -61,6 +56,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   env.ESBUILD_BINARY_PATH = lib.getExe esbuild';
+  yarnBuildScript = "prepare";
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-FPxvwqx7TfJBM+O8TY64swJVYlWIbCvVbzVJYthHjO0=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

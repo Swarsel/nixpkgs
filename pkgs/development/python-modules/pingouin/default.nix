@@ -1,34 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # test framework
-  pytestCheckHook,
-
+  buildPythonPackage,
   # dependencies
   matplotlib,
+  # optional dependencies
+  mpmath,
   numpy,
   pandas,
   pandas-flavor,
+  # test framework
+  pytestCheckHook,
   scikit-learn,
   scipy,
   seaborn,
+  # build-system
+  setuptools,
   statsmodels,
   tabulate,
-
-  # optional dependencies
-  mpmath,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pingouin";
   version = "0.6.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "raphaelvallat";
@@ -36,6 +30,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-22nVAw6qbYwumwVJr/ZZD2HSpgD+9onnMe/hULjQHZI=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.extras;
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -53,20 +54,17 @@ buildPythonPackage (finalAttrs: {
     tabulate
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "pingouin"
+  ];
+
   passthru.optional-dependencies = {
     extras = [
       mpmath
     ];
   };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.extras;
-
-  pythonImportsCheck = [
-    "pingouin"
-  ];
 
   meta = {
     description = "Statistical package in Python based on Pandas";

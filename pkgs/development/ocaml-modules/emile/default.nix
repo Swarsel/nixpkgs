@@ -1,22 +1,19 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  alcotest,
   angstrom,
-  ipaddr,
   base64,
+  buildDunePackage,
+  cmdliner,
+  ipaddr,
   pecu,
   uutf,
-  alcotest,
-  cmdliner,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "emile";
   version = "1.1";
-
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/dinosaure/emile/releases/download/v${finalAttrs.version}/emile-v${finalAttrs.version}.tbz";
@@ -35,11 +32,13 @@ buildDunePackage (finalAttrs: {
 
   doCheck = true;
   checkInputs = [ alcotest ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Parser of email address according RFC822";
-    license = lib.licenses.mit;
     homepage = "https://github.com/dinosaure/emile";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sternenseemann ];
   };
 })

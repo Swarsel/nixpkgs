@@ -26,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/risacher/sunwait";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
-    mainProgram = "sunwait";
     platforms = lib.platforms.all;
+    mainProgram = "sunwait";
   };
 })

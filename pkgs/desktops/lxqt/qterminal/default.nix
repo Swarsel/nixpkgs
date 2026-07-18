@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   layer-shell-qt,
   lxqt-build-tools,
+  nixosTests,
   qtbase,
   qtermwidget,
   qttools,
   qtwayland,
   wrapQtAppsHook,
-  gitUpdater,
-  nixosTests,
 }:
 
 stdenv.mkDerivation rec {
@@ -39,16 +39,15 @@ stdenv.mkDerivation rec {
     qtwayland
   ];
 
+  passthru.tests.test = nixosTests.terminal-emulators.qterminal;
   passthru.updateScript = gitUpdater { };
 
-  passthru.tests.test = nixosTests.terminal-emulators.qterminal;
-
   meta = {
-    homepage = "https://github.com/lxqt/qterminal";
     description = "Lightweight Qt-based terminal emulator";
-    mainProgram = "qterminal";
+    homepage = "https://github.com/lxqt/qterminal";
     license = lib.licenses.gpl2Plus;
     platforms = with lib.platforms; unix;
+    mainProgram = "qterminal";
     teams = [ lib.teams.lxqt ];
   };
 }

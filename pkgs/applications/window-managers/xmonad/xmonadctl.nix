@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   ghcWithPackages,
   haskellPackages,
   ...
@@ -13,9 +13,8 @@ let
   ]);
 in
 stdenv.mkDerivation {
-  pname = "xmonadctl";
-
   inherit (haskellPackages.xmonad-contrib) src version;
+  pname = "xmonadctl";
 
   installPhase = ''
     runHook preInstall
@@ -26,11 +25,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    platforms = lib.platforms.unix;
     description = "Send commands to a running instance of xmonad";
-    mainProgram = "xmonadctl";
     homepage = "https://github.com/xmonad/xmonad-contrib";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.ajgrf ];
+    platforms = lib.platforms.unix;
+    mainProgram = "xmonadctl";
   };
 }

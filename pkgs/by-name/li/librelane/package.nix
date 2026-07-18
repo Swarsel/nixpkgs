@@ -1,21 +1,18 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  nix-update-script,
-
-  # nativeBuildInputs
-  makeWrapper,
-
-  # dependencies
-  pdk-ciel,
-
   # wrapper runtime dependencies
   abc-verifier,
   klayout,
   magic-vlsi,
+  # nativeBuildInputs
+  makeWrapper,
   netgen-vlsi,
+  nix-update-script,
   openroad,
+  # dependencies
+  pdk-ciel,
+  python3Packages,
   ruby,
   verilator,
   yosys,
@@ -24,7 +21,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "librelane";
   version = "3.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "librelane";
@@ -33,36 +29,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-y1h2KEbK2rSn54uDuCfH9ouo2FLTFbVxpgOqnR+kwhM=";
   };
 
-  build-system = [
-    python3Packages.poetry-core
-  ];
-
   nativeBuildInputs = [
     makeWrapper
-  ];
-
-  pythonRelaxDeps = [
-    "click"
-  ];
-
-  dependencies = with python3Packages; [
-    click
-    cloup
-    deprecated
-    httpx
-    libparse-python
-    lxml
-    numpy
-    pandas
-    pdk-ciel
-    psutil
-    python3Packages.klayout
-    pyyaml
-    rapidfuzz
-    rich
-    semver
-    tkinter
-    yamlcore
   ];
 
   postInstall = ''
@@ -91,6 +59,36 @@ python3Packages.buildPythonApplication (finalAttrs: {
         ]
       }
   '';
+
+  build-system = [
+    python3Packages.poetry-core
+  ];
+
+  dependencies = with python3Packages; [
+    click
+    cloup
+    deprecated
+    httpx
+    libparse-python
+    lxml
+    numpy
+    pandas
+    pdk-ciel
+    psutil
+    python3Packages.klayout
+    pyyaml
+    rapidfuzz
+    rich
+    semver
+    tkinter
+    yamlcore
+  ];
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "click"
+  ];
 
   passthru = {
     updateScript = nix-update-script {

@@ -2,16 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   cmake,
-  glslang,
-  pkg-config,
-  libsForQt5,
-  makeWrapper,
-  wrapGAppsHook4,
-
   cups,
+  # runtime
+  dmidecode,
+  gawk,
+  glslang,
   gtk3,
+  iperf,
   json-glib,
   lerc,
   libdatrie,
@@ -19,33 +17,30 @@
   libepoxy,
   libnghttp2,
   libpsl,
+  libsForQt5,
   libselinux,
   libsepol,
   libsoup_3,
   libsysprof-capture,
   libthai,
-  libxkbcommon,
   libxdmcp,
+  libxkbcommon,
   libxtst,
-  pcre2,
-  sqlite,
-  util-linux,
-  vulkan-headers,
-  wayland,
-
-  # runtime
-  dmidecode,
-  gawk,
-  iperf,
+  makeWrapper,
   mesa-demos,
+  nix-update-script,
+  pcre2,
+  pkg-config,
+  sqlite,
   sysbench,
   udisks,
+  util-linux,
+  vulkan-headers,
   vulkan-tools,
+  wayland,
+  wrapGAppsHook4,
   xdg-utils,
   xrandr,
-
-  nix-update-script,
-
   printingSupport ? true,
 }:
 
@@ -106,17 +101,26 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
   ];
 
-  hardeningDisable = [ "fortify" ];
-
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_INSTALL_DATAROOTDIR" "${placeholder "out"}/share")
     (lib.cmakeFeature "CMAKE_INSTALL_SERVICEDIR" "${placeholder "out"}/lib")
   ];
 
-  dontWrapQtApps = true;
   preFixup = ''
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
   '';
+
+  postFixup = ''
+    wrapProgram $out/bin/hardinfo2 \
+      --prefix PATH : ${lib.makeBinPath finalAttrs.runtimeDeps} \
+      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath finalAttrs.runtimeLibs}
+
+      substituteInPlace $out/lib/systemd/system/hardinfo2.service \
+        --replace-fail "ExecStart=/usr/bin/hwinfo2_fetch_sysdata" "ExecStart=$out/bin/hwinfo2_fetch_sysdata"
+  '';
+
+  dontWrapQtApps = true;
+  hardeningDisable = [ "fortify" ];
 
   runtimeDeps = [
     # system stats
@@ -136,34 +140,27 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   runtimeLibs = lib.optionals printingSupport [ cups ];
-
-  postFixup = ''
-    wrapProgram $out/bin/hardinfo2 \
-      --prefix PATH : ${lib.makeBinPath finalAttrs.runtimeDeps} \
-      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath finalAttrs.runtimeLibs}
-
-      substituteInPlace $out/lib/systemd/system/hardinfo2.service \
-        --replace-fail "ExecStart=/usr/bin/hwinfo2_fetch_sysdata" "ExecStart=$out/bin/hwinfo2_fetch_sysdata"
-  '';
-
   # account for tags having a release- prefix
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=release-(.*)" ]; };
 
   meta = {
     description = "System information and benchmarks for Linux systems";
     homepage = "http://www.hardinfo2.org/";
-    downloadPage = "https://github.com/hardinfo2/hardinfo2/";
     changelog = "https://github.com/hardinfo2/hardinfo2/releases/tag/release-${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2Plus
       gpl3Plus
       lgpl2Plus
     ];
+
     maintainers = with lib.maintainers; [
       sigmanificient
       jk
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "hardinfo2";
+    downloadPage = "https://github.com/hardinfo2/hardinfo2/";
   };
 })

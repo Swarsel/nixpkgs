@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   fontconfig,
   freetype,
-  libxrender,
-  libxext,
-  libx11,
-  libsm,
   libice,
+  libsm,
+  libx11,
+  libxext,
+  libxrender,
+  perl,
   which,
 }:
 
@@ -21,6 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.logicalshift.co.uk/unix/zoom/zoom-${finalAttrs.version}.tar.gz";
     hash = "sha256-8pZ/HAVV341K6QRDUC0UzzO2rGW2AvSZ++Pp445V27w=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     perl
@@ -37,15 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
     libxrender
   ];
 
-  strictDeps = true;
+  env.CFLAGS = "-fgnu89-inline";
   __structuredAttrs = true;
   enableParallelBuilding = true;
 
-  env.CFLAGS = "-fgnu89-inline";
-
   meta = {
-    homepage = "https://www.logicalshift.co.uk/unix/zoom/";
     description = "Player for Z-Code, TADS and HUGO stories or games";
+
     longDescription = ''
       Zoom is a player for Z-Code, TADS and HUGO stories or games. These are
       usually text adventures ('interactive fiction'), and were first created
@@ -53,6 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
       released many interactive fiction stories before their ambitions to enter
       the database market finally brought them low.
     '';
+
+    homepage = "https://www.logicalshift.co.uk/unix/zoom/";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.linux;
     mainProgram = "zoom";

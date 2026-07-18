@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  rustPlatform,
-
-  # dependencies
-  pydantic,
-
+  buildPythonPackage,
   # optional-dependencies
   fastapi,
+  # dependencies
+  pydantic,
+  # build-system
+  rustPlatform,
   uvicorn,
 }:
 
 buildPythonPackage rec {
   pname = "openai-harmony";
   version = "0.0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openai";
@@ -26,15 +22,18 @@ buildPythonPackage rec {
     hash = "sha256-CaEldCrjBkjwsVeTzpiAFl/llAnUwJGTlU8Pt8YTV1E=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-HeUK/S9nUDRTVkLf8CPrHfjBbyGZezZGu5P8XkfStVQ=";
-  };
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
   ];
+
+  # Tests require internet access
+  doCheck = false;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-HeUK/S9nUDRTVkLf8CPrHfjBbyGZezZGu5P8XkfStVQ=";
+  };
 
   dependencies = [
     pydantic
@@ -47,10 +46,8 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "openai_harmony" ];
-
-  # Tests require internet access
-  doCheck = false;
 
   meta = {
     description = "Renderer for the harmony response format to be used with gpt-oss";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
   makeWrapper,
 }:
@@ -24,21 +24,19 @@ buildGoModule (finalAttrs: {
   '';
 
   nativeBuildInputs = [ makeWrapper ];
-
   vendorHash = null;
+  doCheck = false; # tests want to actually download from github
 
   postFixup = ''
     wrapProgram $out/bin/${finalAttrs.meta.mainProgram} \
       --prefix PATH : "${lib.makeBinPath [ git ]}"
   '';
 
-  doCheck = false; # tests want to actually download from github
-
   meta = {
     description = "Backup your GitHub repositories with a simple command-line application written in Go";
     homepage = "https://github.com/qvl/ghbackup";
     license = lib.licenses.mit;
-    mainProgram = "ghbackup";
     maintainers = with lib.maintainers; [ lenny ];
+    mainProgram = "ghbackup";
   };
 })

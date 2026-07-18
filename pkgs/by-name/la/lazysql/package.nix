@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   lazysql,
   libx11,
+  testers,
   darwin ? null,
 }:
 
@@ -20,17 +20,16 @@ buildGoModule rec {
     hash = "sha256-Grr1R88XguW/jT5Vj/m11Cr+Im2+mnVZw23QrO1ZzMk=";
   };
 
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libx11 ];
   vendorHash = "sha256-FbAt/HsjoxqAKWQqqWN2xuyyTG2Ic4DcyEU4O0rjpQE=";
 
   ldflags = [
     "-X main.version=${version}"
   ];
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libx11 ];
-
   passthru.tests.version = testers.testVersion {
-    package = lazysql;
     command = "lazysql --version";
+    package = lazysql;
   };
 
   meta = {

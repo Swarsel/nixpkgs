@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.4.0";
   pname = "nginx-config-formatter";
+  version = "1.4.0";
 
   src = fetchFromGitHub {
     owner = "slomkowski";
@@ -16,13 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-HB1knL/q1G2z6RyVCsOyIKpp4O6x68/93ccvox1FKGQ=";
   };
 
+  strictDeps = true;
   buildInputs = [ python3 ];
-
+  doCheck = true;
   nativeCheckInputs = [ python3 ];
 
-  strictDeps = true;
-
-  doCheck = true;
   checkPhase = ''
     python3 $src/test_nginxfmt.py
   '';
@@ -33,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   # We can't do a version check because there is no version command
   # but we do want to check that python3 is available
   installCheckPhase = ''
@@ -41,9 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Nginx config file formatter";
-    maintainers = with lib.maintainers; [ Baughn ];
-    license = lib.licenses.asl20;
     homepage = "https://github.com/slomkowski/nginx-config-formatter";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ Baughn ];
     mainProgram = "nginxfmt";
   };
 })

@@ -1,19 +1,18 @@
 {
-  runCommand,
-  mcat-unwrapped,
-  makeWrapper,
   lib,
   chromium,
   ffmpeg-headless,
+  makeWrapper,
+  mcat-unwrapped,
+  runCommand,
   useChromium ? false,
   useFfmpeg ? false,
 }:
 
 runCommand "mcat"
   {
-    pname = "mcat";
     inherit (mcat-unwrapped) version meta;
-
+    pname = "mcat";
     nativeBuildInputs = [ makeWrapper ];
   }
   ''

@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   aiohttp,
   alive-progress,
   ast-serialize,
@@ -10,7 +13,6 @@
   cryptography,
   debugpy,
   diskcache,
-  fetchFromGitHub,
   fetchpatch,
   glib,
   gn,
@@ -20,7 +22,6 @@
   json5,
   jsonschema,
   lark,
-  lib,
   libnl,
   mobly,
   mypy,
@@ -52,7 +53,6 @@
   sphinx,
   sphinx-argparse,
   sphinx-design,
-  stdenv,
   tabulate,
   tomli,
   tornado,
@@ -71,9 +71,10 @@ stdenv.mkDerivation rec {
     owner = "home-assistant-libs";
     repo = "chip-wheels";
     tag = version;
+    hash = "sha256-SfhsM2RPghFPx0qtoHsXVymwmOWFiEGAyLx6FeB++dg=";
     fetchSubmodules = false;
     leaveDotGit = true;
-    hash = "sha256-SfhsM2RPghFPx0qtoHsXVymwmOWFiEGAyLx6FeB++dg=";
+
     postFetch = ''
       cd $out
       # Download connectedhomeip.
@@ -93,52 +94,24 @@ stdenv.mkDerivation rec {
     '';
   };
 
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    gn
-    pkg-config
-    ninja
-    clang-tools
-    zap-chip
-    # gdbus-codegen
-    glib
-    pkgconfig
-    python
-    # dependencies of build scripts
-    click
-    jinja2
-    lark
-    python-path
-    setuptools
-    build
-    pip-tools
-  ];
-
-  propagatedBuildInputs = [
-    openssl
-    glib
-    libnl
-  ];
-
   patches = [
     (fetchpatch {
-      # Fix building with newer gn version
-      name = "pw_protobuf_compiler-Create-a-new-includes.txt-for-each-toolchain.patch";
-      # https://pigweed-review.googlesource.com/c/pigweed/pigweed/+/300272
-      url = "https://pigweed.googlesource.com/pigweed/pigweed/+/b66729b90fcb9df2ee4818f6d4fff59385cdbc80^!?format=TEXT";
       decode = "base64 -d";
-      stripLen = 1;
       extraPrefix = "connectedhomeip/third_party/pigweed/repo/";
       hash = "sha256-6ss3j8j69w7EMio9mFP/EL2oPqQ2sLh67eWsJjHdDa8=";
+      # Fix building with newer gn version
+      name = "pw_protobuf_compiler-Create-a-new-includes.txt-for-each-toolchain.patch";
+      stripLen = 1;
+      # https://pigweed-review.googlesource.com/c/pigweed/pigweed/+/300272
+      url = "https://pigweed.googlesource.com/pigweed/pigweed/+/b66729b90fcb9df2ee4818f6d4fff59385cdbc80^!?format=TEXT";
     })
     # fix `ModuleNotFoundError: No module named 'matter'`
     # https://github.com/project-chip/connectedhomeip/pull/39826
     (fetchpatch {
-      url = "https://github.com/project-chip/connectedhomeip/commit/78c6a7e15658f66658eb9f780e1a0c0c176a67d7.patch";
-      stripLen = 1;
       extraPrefix = "connectedhomeip/";
       hash = "sha256-s5t9DvmZVpnVelrN9+Ekn0OJl/VouXUGKCgu/PTLHBI=";
+      stripLen = 1;
+      url = "https://github.com/project-chip/connectedhomeip/commit/78c6a7e15658f66658eb9f780e1a0c0c176a67d7.patch";
     })
   ];
 
@@ -176,22 +149,34 @@ stdenv.mkDerivation rec {
       --replace-fail '-e ''${PW_PROJECT_ROOT}/scripts/py_matter_yamltests' ""
   '';
 
-  # the python parts of the build system work as follows
-  # gn calls pigweed to read a dozen different files to generate
-  # a file looking like requirements.txt. It then calls pip
-  # to install this computed list of dependencies into a virtualenv.
-  # Of course, pip fails in the sandbox, because it cannot download
-  # the python packages.
-  # The documented way of doing offline builds is to create a folder
-  # with wheel files for all dependencies and point pip to it
-  # via its configuration file or environment variables.
-  # https://pigweed.dev/python_build.html#installing-offline
-  # The wheel of a python package foo is available as foo.dist.
-  # So that would be easy, but we also need wheels for transitive dependencies.
-  # the function saturateDependencies below computes this transitive closure.
-  #
-  # yes this list of dependencies contains both build tools and proper dependencies.
-  env.PIP_NO_INDEX = "1";
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    gn
+    pkg-config
+    ninja
+    clang-tools
+    zap-chip
+    # gdbus-codegen
+    glib
+    pkgconfig
+    python
+    # dependencies of build scripts
+    click
+    jinja2
+    lark
+    python-path
+    setuptools
+    build
+    pip-tools
+  ];
+
+  propagatedBuildInputs = [
+    openssl
+    glib
+    libnl
+  ];
+
   env.PIP_FIND_LINKS =
     let
       dependencies = [
@@ -248,14 +233,44 @@ stdenv.mkDerivation rec {
         key = dep.name;
       };
       saturatedDependencies = lib.genericClosure {
-        startSet = map toItem (filterNull dependencies);
         operator = item: map toItem (filterNull ((item.dep).propagatedBuildInputs or [ ]));
+        startSet = map toItem (filterNull dependencies);
       };
       saturatedDependencyList = lib.filter (dep: dep ? dist && dep != null) (
         map (item: item.dep) saturatedDependencies
       );
     in
     lib.concatMapStringsSep " " (dep: "file://${dep.dist}") saturatedDependencyList;
+
+  # the python parts of the build system work as follows
+  # gn calls pigweed to read a dozen different files to generate
+  # a file looking like requirements.txt. It then calls pip
+  # to install this computed list of dependencies into a virtualenv.
+  # Of course, pip fails in the sandbox, because it cannot download
+  # the python packages.
+  # The documented way of doing offline builds is to create a folder
+  # with wheel files for all dependencies and point pip to it
+  # via its configuration file or environment variables.
+  # https://pigweed.dev/python_build.html#installing-offline
+  # The wheel of a python package foo is available as foo.dist.
+  # So that would be easy, but we also need wheels for transitive dependencies.
+  # the function saturateDependencies below computes this transitive closure.
+  #
+  # yes this list of dependencies contains both build tools and proper dependencies.
+  env.PIP_NO_INDEX = "1";
+
+  preBuild = ''
+    export NIX_CFLAGS_COMPILE="$($PKG_CONFIG --cflags glib-2.0) -O2 -Wno-error"
+    export NIX_CFLAGS_LINK="$($PKG_CONFIG --libs gio-2.0) $($PKG_CONFIG --libs gobject-2.0) $($PKG_CONFIG --libs glib-2.0)"
+  '';
+
+  installPhase = ''
+    runHook preInstall
+
+    cp -r controller/python $out
+
+    runHook postInstall
+  '';
 
   gnFlags = [
     ''chip_project_config_include_dirs=["//.."]''
@@ -274,20 +289,7 @@ stdenv.mkDerivation rec {
     ''target_ar="${stdenv.cc.targetPrefix}ar"''
   ];
 
-  preBuild = ''
-    export NIX_CFLAGS_COMPILE="$($PKG_CONFIG --cflags glib-2.0) -O2 -Wno-error"
-    export NIX_CFLAGS_LINK="$($PKG_CONFIG --libs gio-2.0) $($PKG_CONFIG --libs gobject-2.0) $($PKG_CONFIG --libs glib-2.0)"
-  '';
-
   ninjaFlags = [ "chip-repl" ];
-
-  installPhase = ''
-    runHook preInstall
-
-    cp -r controller/python $out
-
-    runHook postInstall
-  '';
 
   meta = {
     description = "Python wheels for APIs and tools related to CHIP";

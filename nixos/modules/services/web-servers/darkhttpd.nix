@@ -32,61 +32,72 @@ in
   options.services.darkhttpd = {
     enable = lib.mkEnableOption "DarkHTTPd web server";
 
-    port = mkOption {
-      default = 80;
-      type = port;
-      description = ''
-        Port to listen on.
-        Pass 0 to let the system choose any free port for you.
-      '';
-    };
-
     address = mkOption {
       default = "127.0.0.1";
-      type = str;
+
       description = ''
         Address to listen on.
         Pass `all` to listen on all interfaces.
       '';
-    };
 
-    rootDir = mkOption {
-      type = path;
-      description = ''
-        Path from which to serve files.
-      '';
-    };
-
-    hideServerId = mkOption {
-      type = bool;
-      default = true;
-      description = ''
-        Don't identify the server type in headers or directory listings.
-      '';
+      type = str;
     };
 
     extraArgs = mkOption {
-      type = listOf str;
       default = [ ];
+
       description = ''
         Additional configuration passed to the executable.
       '';
+
+      type = listOf str;
+    };
+
+    hideServerId = mkOption {
+      default = true;
+
+      description = ''
+        Don't identify the server type in headers or directory listings.
+      '';
+
+      type = bool;
+    };
+
+    port = mkOption {
+      default = 80;
+
+      description = ''
+        Port to listen on.
+        Pass 0 to let the system choose any free port for you.
+      '';
+
+      type = port;
+    };
+
+    rootDir = mkOption {
+      description = ''
+        Path from which to serve files.
+      '';
+
+      type = path;
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.darkhttpd = {
-      description = "Dark HTTPd";
-      wants = [ "network.target" ];
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Dark HTTPd";
+
       serviceConfig = {
+        AmbientCapabilities = lib.mkIf (cfg.port < 1024) [ "CAP_NET_BIND_SERVICE" ];
         DynamicUser = true;
         ExecStart = "${pkgs.darkhttpd}/bin/darkhttpd ${args}";
-        AmbientCapabilities = lib.mkIf (cfg.port < 1024) [ "CAP_NET_BIND_SERVICE" ];
         Restart = "on-failure";
         RestartSec = "2s";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network.target" ];
     };
   };
 }

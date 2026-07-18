@@ -1,20 +1,20 @@
-{ testers, fetchFromBitbucket, ... }:
+{ fetchFromBitbucket, testers, ... }:
 {
   withEncodedWhitespace = testers.invalidateFetcherByDrvHash fetchFromBitbucket {
     name = "withWhitespace";
     owner = "tetov";
     repo = "fetchbitbucket_tester";
-    tag = "tag%20with%20encoded%20spaces";
     sha256 = "sha256-Nf1Cvbx7Sbab8EeSSBU5baLBiuFYiQtITED+f4tfjC0=";
+    tag = "tag%20with%20encoded%20spaces";
   };
 
   withEncodedWhitespaceGit = testers.invalidateFetcherByDrvHash fetchFromBitbucket {
+    forceFetchGit = true;
     name = "withWhitespaceGit";
     owner = "tetov";
     repo = "fetchbitbucket_tester";
-    tag = "tag%20with%20encoded%20spaces";
     sha256 = "sha256-Nf1Cvbx7Sbab8EeSSBU5baLBiuFYiQtITED+f4tfjC0=";
-    forceFetchGit = true;
+    tag = "tag%20with%20encoded%20spaces";
   };
 
   withoutWhitespace = testers.invalidateFetcherByDrvHash fetchFromBitbucket {

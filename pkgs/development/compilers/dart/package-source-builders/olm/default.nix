@@ -1,24 +1,16 @@
 {
-  stdenv,
   lib,
-  writeScript,
+  stdenv,
   olm,
+  writeScript,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation rec {
-  pname = "olm";
   inherit version src;
   inherit (src) passthru;
-
-  setupHook = writeScript "${pname}-setup-hook" ''
-    olmFixupHook() {
-      runtimeDependencies+=('${lib.getLib olm}')
-    }
-
-    preFixupHooks+=(olmFixupHook)
-  '';
+  pname = "olm";
 
   installPhase = ''
     runHook preInstall
@@ -27,5 +19,13 @@ stdenv.mkDerivation rec {
     ln -s '${src}'/* "$out"
 
     runHook postInstall
+  '';
+
+  setupHook = writeScript "${pname}-setup-hook" ''
+    olmFixupHook() {
+      runtimeDependencies+=('${lib.getLib olm}')
+    }
+
+    preFixupHooks+=(olmFixupHook)
   '';
 }

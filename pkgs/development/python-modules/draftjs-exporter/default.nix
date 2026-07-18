@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   html5lib,
-  lib,
   lxml,
   python,
 }:
@@ -11,21 +11,12 @@
 buildPythonPackage rec {
   pname = "draftjs-exporter";
   version = "5.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
-    repo = "draftjs_exporter";
     owner = "springload";
+    repo = "draftjs_exporter";
     tag = "v${version}";
     sha256 = "sha256-AR8CK75UdtEThE68WSE6DFSqryI509GTW1fBl1SL29w=";
-  };
-
-  optional-dependencies = {
-    lxml = [ lxml ];
-    html5lib = [
-      beautifulsoup4
-      html5lib
-    ];
   };
 
   checkInputs = optional-dependencies.lxml ++ optional-dependencies.html5lib;
@@ -37,6 +28,17 @@ buildPythonPackage rec {
 
     ${python.interpreter} -m unittest discover
   '';
+
+  format = "setuptools";
+
+  optional-dependencies = {
+    html5lib = [
+      beautifulsoup4
+      html5lib
+    ];
+
+    lxml = [ lxml ];
+  };
 
   pythonImportsCheck = [ "draftjs_exporter" ];
 

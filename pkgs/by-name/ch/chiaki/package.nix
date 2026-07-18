@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  cmake,
-  pkg-config,
-  ffmpeg,
-  libopus,
   SDL2,
+  cmake,
+  fetchgit,
+  ffmpeg,
   libevdev,
-  udev,
-  nanopb,
+  libopus,
   libsForQt5,
+  nanopb,
+  pkg-config,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchgit {
     url = "https://git.sr.ht/~thestr4ng3r/chiaki";
     rev = "ab55cf4c95f7723faae08a546fbe14e0f6bddf45";
-    fetchSubmodules = true;
     hash = "sha256-GYhbq3QCyykMu5K1ITJ+XqNU593Gn3eBTM9coKmh/Vk=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -48,12 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   installCheckPhase = "$out/bin/chiaki --help";
 
   meta = {
-    homepage = "https://git.sr.ht/~thestr4ng3r/chiaki";
     description = "Free and Open Source PlayStation Remote Play Client";
+    homepage = "https://git.sr.ht/~thestr4ng3r/chiaki";
     license = lib.licenses.agpl3Only;
     maintainers = [ ];
     platforms = lib.platforms.all;

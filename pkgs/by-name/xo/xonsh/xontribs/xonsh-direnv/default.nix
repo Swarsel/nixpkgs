@@ -1,17 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
+  buildPythonPackage,
   direnv,
   nix-update-script,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "xonsh-direnv";
   version = "1.6.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "74th";
@@ -28,6 +26,7 @@ buildPythonPackage rec {
     direnv
   ];
 
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

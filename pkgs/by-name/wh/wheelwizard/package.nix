@@ -1,14 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
+  avalonia,
   buildDotnetModule,
   desktop-file-utils,
   dotnetCorePackages,
-  fetchFromGitHub,
-  makeDesktopItem,
-  makeWrapper,
-  avalonia,
   # Runtime dependencies
   libglvnd,
+  makeDesktopItem,
+  makeWrapper,
   # passthru
   nix-update-script,
 }:
@@ -22,16 +22,10 @@ buildDotnetModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-8Dex2PDgwnxKguf0jtC1T0+jm7bA7jDfvspwkiqJgUg";
   };
+
   postPatch = ''
     rm .config/dotnet-tools.json
   '';
-
-  projectFile = "WheelWizard";
-  buildType = "Release";
-  dotnet-sdk = dotnetCorePackages.sdk_8_0-bin;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0-bin;
-  nugetDeps = ./deps.json;
-  mapNuGetDependencies = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -40,10 +34,6 @@ buildDotnetModule (finalAttrs: {
 
   buildInputs = [
     avalonia
-  ];
-
-  runtimeDeps = [
-    libglvnd
   ];
 
   installPhase = ''
@@ -64,13 +54,25 @@ buildDotnetModule (finalAttrs: {
     rm $out/bin/*.{so,dylib}
   '';
 
+  buildType = "Release";
+
   desktopItem = makeDesktopItem {
-    name = "wheelwizard";
-    exec = "WheelWizard";
+    categories = [ "Game" ];
     comment = "WheelWizard, Retro Rewind Launcher";
     desktopName = "Wheel Wizard";
-    categories = [ "Game" ];
+    exec = "WheelWizard";
+    name = "wheelwizard";
   };
+
+  dotnet-runtime = dotnetCorePackages.runtime_8_0-bin;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0-bin;
+  mapNuGetDependencies = true;
+  nugetDeps = ./deps.json;
+  projectFile = "WheelWizard";
+
+  runtimeDeps = [
+    libglvnd
+  ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -78,8 +80,8 @@ buildDotnetModule (finalAttrs: {
     description = "WheelWizard, Retro Rewind Launcher";
     homepage = "https://github.com/TeamWheelWizard/WheelWizard";
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ DerHalbGrieche ];
     platforms = lib.platforms.linux;
     mainProgram = "WheelWizard";
-    maintainers = with lib.maintainers; [ DerHalbGrieche ];
   };
 })

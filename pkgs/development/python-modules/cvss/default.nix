@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jsonschema,
-  unittestCheckHook,
   setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "cvss";
   version = "3.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RedHatProductSecurity";
@@ -19,18 +18,18 @@ buildPythonPackage rec {
     hash = "sha256-udUs76wfvC9LfjlKyWmuPV0RT2P/COTwYw3hgDt3tPs=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     jsonschema
     unittestCheckHook
   ];
 
-  pythonImportsCheck = [ "cvss" ];
-
   preCheck = ''
     cd tests
   '';
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "cvss" ];
 
   meta = {
     description = "Library for CVSS2/3/4";

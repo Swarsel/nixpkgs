@@ -1,25 +1,21 @@
 {
   lib,
-
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   buildPythonPackage,
-  python,
-
   # nativeBuildInputs
   cmake,
-  pybind11,
-
-  # propagatedBuildInputs
-  meshlab,
-  numpy,
-
+  fetchpatch,
+  glew,
   # buildInputs
   libsForQt5,
   libsm,
   llvmPackages,
-  glew,
+  # propagatedBuildInputs
+  meshlab,
+  numpy,
+  pybind11,
+  python,
   vcg,
 }:
 
@@ -29,7 +25,6 @@ in
 buildPythonPackage {
   inherit version;
   pname = "pymeshlab";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "cnr-isti-vclab";
@@ -43,19 +38,16 @@ buildPythonPackage {
     # ref. https://github.com/cnr-isti-vclab/PyMeshLab/pull/445
     # merged upstream
     (fetchpatch {
-      url = "https://github.com/cnr-isti-vclab/PyMeshLab/commit/b363caae4362746b3f9e9326fe7b72a2ec7824d9.patch";
       hash = "sha256-euKfOx/T0qdeMx79dpEalzmdWsr4nbDFJfKdksvULBw=";
+      url = "https://github.com/cnr-isti-vclab/PyMeshLab/commit/b363caae4362746b3f9e9326fe7b72a2ec7824d9.patch";
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
     pybind11
-  ];
-
-  propagatedBuildInputs = [
-    meshlab
-    numpy
   ];
 
   buildInputs = [
@@ -68,7 +60,10 @@ buildPythonPackage {
     llvmPackages.openmp
   ];
 
-  dontWrapQtApps = true;
+  propagatedBuildInputs = [
+    meshlab
+    numpy
+  ];
 
   cmakeFlags = [
     "-DCMAKE_INSTALL_PREFIX=${placeholder "out"}/${python.sitePackages}/pymeshlab"
@@ -96,10 +91,10 @@ buildPythonPackage {
       $out/${python.sitePackages}/pymeshlab/pmeshlab.*.so
   '';
 
-  pythonImportsCheck = [ "pymeshlab" ];
-
-  strictDeps = true;
   __structuredAttrs = true;
+  dontWrapQtApps = true;
+  pyproject = false;
+  pythonImportsCheck = [ "pymeshlab" ];
 
   meta = {
     description = "Open source mesh processing python library";

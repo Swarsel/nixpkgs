@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "temescal";
   version = "0.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pycryptodome ];
-
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "temescal" ];
 
   meta = {

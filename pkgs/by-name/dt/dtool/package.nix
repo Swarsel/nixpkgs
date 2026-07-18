@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,7 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-C0H5cIMMfUPJ2iJCUs1jEu3Ln8CdDgbgstMnH/f9FRY=";
   # FIXME: remove patch when upstream version of rustc-serialize is updated
   cargoPatches = [ ./rustc-serialize-fix.patch ];
-
   checkType = "debug";
 
   meta = {

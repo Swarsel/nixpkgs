@@ -1,11 +1,11 @@
 {
-  nix-update-script,
   lib,
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   fuse3,
+  nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [ fuse3 ];
 
   # Put the unionfs mount helper in place as mount.unionfs-fuse. This makes it
@@ -54,11 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "FUSE UnionFS implementation";
     homepage = "https://github.com/rpodgorny/unionfs-fuse";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

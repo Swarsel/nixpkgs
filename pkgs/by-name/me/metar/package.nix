@@ -19,8 +19,8 @@ stdenv.mkDerivation {
   buildInputs = [ curl ];
 
   meta = {
-    homepage = "https://github.com/keesL/metar";
     description = "Downloads weather reports and optionally decodes them";
+
     longDescription = ''
       METAR reports are meteorogical weather reports for aviation. Metar is a small
       program which downloads weather reports for user-specified stations and
@@ -31,6 +31,8 @@ stdenv.mkDerivation {
       more work in the area of clouds need to be done, as support for Cumulus or
       Cumulunimbus is not yet decoded.
     '';
+
+    homepage = "https://github.com/keesL/metar";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ zalakain ];
     mainProgram = "metar";

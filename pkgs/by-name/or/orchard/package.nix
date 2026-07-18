@@ -18,6 +18,7 @@ buildGoModule rec {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -25,22 +26,13 @@ buildGoModule rec {
     '';
   };
 
-  vendorHash = "sha256-yFqYNfBHvUiBQ6OZlNq4aUBg48g8VnuIBYEAKKrb6Y4=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-w"
-    "-s"
-    "-X github.com/cirruslabs/orchard/internal/version.Version=${version}"
-  ];
+  vendorHash = "sha256-yFqYNfBHvUiBQ6OZlNq4aUBg48g8VnuIBYEAKKrb6Y4=";
 
   # ldflags based on metadata from git and source
   preBuild = ''
     ldflags+=" -X github.com/cirruslabs/orchard/internal/version.Commit=$(cat COMMIT)"
   '';
-
-  subPackages = [ "cmd/orchard" ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     export HOME="$(mktemp -d)"
@@ -50,11 +42,19 @@ buildGoModule rec {
       --fish <($out/bin/orchard completion fish)
   '';
 
+  ldflags = [
+    "-w"
+    "-s"
+    "-X github.com/cirruslabs/orchard/internal/version.Version=${version}"
+  ];
+
+  subPackages = [ "cmd/orchard" ];
+
   meta = {
-    mainProgram = "orchard";
     description = "Orchestrator for running Tart Virtual Machines on a cluster of Apple Silicon devices";
     homepage = "https://github.com/cirruslabs/orchard";
     license = lib.licenses.fairsource09;
     maintainers = with lib.maintainers; [ techknowlogick ];
+    mainProgram = "orchard";
   };
 }

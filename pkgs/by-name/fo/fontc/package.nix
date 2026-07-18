@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,10 +15,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-FLvEgIFgLE++59j5LeCRC4ptgRhAiDF7hani4Yh8kn0=";
-
   # skip `cargo test` because source code from crates.io doesn't include necessary resources for testing
   doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

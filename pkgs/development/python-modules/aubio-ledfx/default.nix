@@ -1,7 +1,8 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   ffmpeg-headless,
   libsamplerate,
   libsndfile,
@@ -11,13 +12,11 @@
   pytestCheckHook,
   rubberband,
   setuptools,
-  stdenv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aubio-ledfx";
   version = "0.4.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LedFx";
@@ -25,13 +24,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ec6QiTj1AOza+ggJPl3EULNDB/rrpCDZW0HaSywy/4E=";
   };
-
-  build-system = [
-    meson-python
-    setuptools
-  ];
-
-  dependencies = [ numpy ];
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -48,6 +40,13 @@ buildPythonPackage (finalAttrs: {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
+  build-system = [
+    meson-python
+    setuptools
+  ];
+
+  dependencies = [ numpy ];
+  pyproject = true;
   pythonImportsCheck = [ "aubio" ];
 
   meta = {

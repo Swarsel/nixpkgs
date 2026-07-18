@@ -1,38 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # optional-dependencies
+  anthropic,
+  buildPythonPackage,
+  chatlas,
+  google-generativeai,
   # build-system
   hatch-vcs,
   hatchling,
-
   # dependencies
   htmltools,
-
-  # optional-dependencies
-  anthropic,
-  chatlas,
-  google-generativeai,
   langchain-core,
   ollama,
   openai,
-  pydantic,
-  tokenizers,
-
   # tests
   pillow,
   playwright,
+  pydantic,
   pytest-playwright,
   pytestCheckHook,
   shiny,
   shinychat,
+  tokenizers,
 }:
 
 buildPythonPackage rec {
   pname = "shinychat";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "posit-dev";
@@ -41,35 +36,8 @@ buildPythonPackage rec {
     hash = "sha256-d+wcZuokZ8uH/z/IthH6h2SDD81NJg1cn6+jwYwfcxE=";
   };
 
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
-  pythonRemoveDeps = [
-    "shiny" # circular dependency
-  ];
-  dependencies = [
-    htmltools
-  ];
-
-  optional-dependencies = {
-    providers = [
-      anthropic
-      chatlas
-      google-generativeai
-      langchain-core
-      ollama
-      openai
-      pydantic
-      tokenizers
-    ];
-  };
-
-  pythonImportsCheck = [
-    # ImportError: cannot import name 'Chat' from partially initialized module 'shinychat' (most likely due to a circular import)
-    # "shinychat"
-  ];
+  # Circular dependency with shiny
+  doCheck = false;
 
   nativeCheckInputs = [
     pillow
@@ -79,6 +47,15 @@ buildPythonPackage rec {
     shiny
   ]
   ++ lib.concatAttrValues optional-dependencies;
+
+  build-system = [
+    hatch-vcs
+    hatchling
+  ];
+
+  dependencies = [
+    htmltools
+  ];
 
   disabledTests = [
     # AssertionError: assert False
@@ -112,8 +89,30 @@ buildPythonPackage rec {
     "test_validate_stream_shiny_ui"
   ];
 
-  # Circular dependency with shiny
-  doCheck = false;
+  optional-dependencies = {
+    providers = [
+      anthropic
+      chatlas
+      google-generativeai
+      langchain-core
+      ollama
+      openai
+      pydantic
+      tokenizers
+    ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    # ImportError: cannot import name 'Chat' from partially initialized module 'shinychat' (most likely due to a circular import)
+    # "shinychat"
+  ];
+
+  pythonRemoveDeps = [
+    "shiny" # circular dependency
+  ];
+
   passthru.tests.pytest = shinychat.overridePythonAttrs {
     doCheck = true;
   };
@@ -121,9 +120,9 @@ buildPythonPackage rec {
   meta = {
     description = "Chat UI component for Shiny";
     homepage = "https://posit-dev.github.io/shinychat";
-    downloadPage = "https://github.com/posit-dev/shinychat";
     changelog = "https://github.com/posit-dev/shinychat/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    downloadPage = "https://github.com/posit-dev/shinychat";
   };
 }

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  libx11,
-  xorgproto,
-  imake,
   gccmakedep,
-  libxt,
-  libxmu,
+  imake,
+  libice,
+  libsm,
+  libx11,
   libxaw,
   libxext,
-  libsm,
-  libice,
-  libxpm,
+  libxmu,
   libxp,
+  libxpm,
+  libxt,
+  xorgproto,
 }:
 
 stdenv.mkDerivation {
@@ -24,8 +24,6 @@ stdenv.mkDerivation {
     url = "https://ronja.twibright.com/utils/vncrec-twibright.tgz";
     sha256 = "1yp6r55fqpdhc8cgrgh9i0mzxmkls16pgf8vfcpng1axr7cigyhc";
   };
-
-  hardeningDisable = [ "format" ];
 
   postPatch = ''
     substituteInPlace vncpasswd/vncpasswd.c \
@@ -40,6 +38,7 @@ stdenv.mkDerivation {
     imake
     gccmakedep
   ];
+
   buildInputs = [
     libx11
     xorgproto
@@ -57,6 +56,9 @@ stdenv.mkDerivation {
     "BINDIR=${placeholder "out"}/bin"
     "MANDIR=${placeholder "out"}/share/man"
   ];
+
+  hardeningDisable = [ "format" ];
+
   installTargets = [
     "install"
     "install.man"
@@ -65,8 +67,8 @@ stdenv.mkDerivation {
   meta = {
     description = "VNC recorder";
     homepage = "http://ronja.twibright.com/utils/vncrec/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "vncrec";
   };
 }

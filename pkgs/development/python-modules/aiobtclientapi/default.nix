@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromCodeberg,
   aiobtclientrpc,
   async-timeout,
+  buildPythonPackage,
+  fetchFromCodeberg,
   httpx,
-  torf,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
   setuptools,
+  torf,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiobtclientapi";
   version = "1.1.4";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "plotski";
@@ -24,8 +23,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ga3EyKhfdEKkjFktUlgLSX54QbTc/a48vmWjmRqa+4w=";
   };
 
-  pythonRelaxDeps = [
-    "async-timeout"
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
   ];
 
   build-system = [
@@ -39,22 +40,21 @@ buildPythonPackage (finalAttrs: {
     torf
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
+  disabledTestPaths = [
+    # AttributeError
+    "tests/clients_test/rtorrent_test/rtorrent_api_test.py"
   ];
-
-  pythonImportsCheck = [ "aiobtclientapi" ];
 
   disabledTests = [
     # Timing-sensitive, e.g. "AssertionError: assert 9 <= 7"
     "test_Monitor_block_until_timeout"
   ];
 
-  disabledTestPaths = [
-    # AttributeError
-    "tests/clients_test/rtorrent_test/rtorrent_api_test.py"
+  pyproject = true;
+  pythonImportsCheck = [ "aiobtclientapi" ];
+
+  pythonRelaxDeps = [
+    "async-timeout"
   ];
 
   meta = {

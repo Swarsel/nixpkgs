@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -69,10 +69,11 @@ in
   options = {
     services.atticd = {
       enable = lib.mkEnableOption "the atticd, the Nix Binary Cache server";
-
       package = lib.mkPackageOption pkgs "attic-server" { };
 
       environmentFile = lib.mkOption {
+        default = null;
+
         description = ''
           Path to an EnvironmentFile containing required environment
           variables:
@@ -80,36 +81,23 @@ in
           - ATTIC_SERVER_TOKEN_RS256_SECRET_BASE64: The base64-encoded RSA PEM PKCS1 of the
             RS256 JWT secret. Generate it with `openssl genrsa -traditional 4096 | base64 -w0`.
         '';
-        type = types.nullOr types.path;
-        default = null;
-      };
 
-      user = lib.mkOption {
-        description = ''
-          The user under which attic runs.
-        '';
-        type = types.str;
-        default = "atticd";
+        type = types.nullOr types.path;
       };
 
       group = lib.mkOption {
+        default = "atticd";
+
         description = ''
           The group under which attic runs.
         '';
-        type = types.str;
-        default = "atticd";
-      };
 
-      settings = lib.mkOption {
-        description = ''
-          Structured configurations of atticd.
-          See <https://github.com/zhaofengli/attic/blob/main/server/src/config-template.toml>
-        '';
-        type = format.type;
-        default = { };
+        type = types.str;
       };
 
       mode = lib.mkOption {
+        default = "monolithic";
+
         description = ''
           Mode in which to run the server.
 
@@ -123,12 +111,33 @@ in
 
           There are several other supported modes that perform one-off operations, but these are the only ones that make sense to run via the NixOS module.
         '';
+
         type = lib.types.enum [
           "monolithic"
           "api-server"
           "garbage-collector"
         ];
-        default = "monolithic";
+      };
+
+      settings = lib.mkOption {
+        default = { };
+
+        description = ''
+          Structured configurations of atticd.
+          See <https://github.com/zhaofengli/attic/blob/main/server/src/config-template.toml>
+        '';
+
+        type = format.type;
+      };
+
+      user = lib.mkOption {
+        default = "atticd";
+
+        description = ''
+          The user under which attic runs.
+        '';
+
+        type = types.str;
       };
     };
   };
@@ -137,6 +146,7 @@ in
     assertions = [
       {
         assertion = cfg.environmentFile != null;
+
         message = ''
           <option>services.atticd.environmentFile</option> is not set.
 
@@ -149,12 +159,16 @@ in
       }
     ];
 
+    environment.systemPackages = [
+      atticadmWrapper
+    ];
+
     services.atticd.settings = {
       chunking = lib.mkDefault {
-        nar-size-threshold = 65536;
-        min-size = 16384; # 16 KiB
         avg-size = 65536; # 64 KiB
         max-size = 262144; # 256 KiB
+        min-size = 16384; # 16 KiB
+        nar-size-threshold = 65536;
       };
 
       database.url = lib.mkDefault "sqlite:///var/lib/atticd/server.db?mode=rwc";
@@ -162,30 +176,23 @@ in
       # "storage" is internally tagged
       # if the user sets something the whole thing must be replaced
       storage = lib.mkDefault {
-        type = "local";
         path = "/var/lib/atticd/storage";
+        type = "local";
       };
     };
 
     systemd.services.atticd = {
-      wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ] ++ lib.optionals hasLocalPostgresDB [ "postgresql.target" ];
       requires = lib.optionals hasLocalPostgresDB [ "postgresql.target" ];
-      wants = [ "network-online.target" ];
 
       serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} -f ${checkedConfigFile} --mode ${cfg.mode}";
-        EnvironmentFile = cfg.environmentFile;
-        StateDirectory = "atticd"; # for usage with local storage and sqlite
-        DynamicUser = true;
-        User = cfg.user;
-        Group = cfg.group;
-        Restart = "on-failure";
-        RestartSec = 10;
-
         CapabilityBoundingSet = [ "" ];
         DeviceAllow = "";
         DevicePolicy = "closed";
+        DynamicUser = true;
+        EnvironmentFile = cfg.environmentFile;
+        ExecStart = "${lib.getExe cfg.package} -f ${checkedConfigFile} --mode ${cfg.mode}";
+        Group = cfg.group;
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -202,33 +209,42 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+
         ReadWritePaths =
           let
             path = cfg.settings.storage.path;
             isDefaultStateDirectory = path == "/var/lib/atticd" || lib.hasPrefix "/var/lib/atticd/" path;
           in
           lib.optionals (cfg.settings.storage.type or "" == "local" && !isDefaultStateDirectory) [ path ];
+
         RemoveIPC = true;
+        Restart = "on-failure";
+        RestartSec = 10;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "atticd"; # for usage with local storage and sqlite
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@resources"
           "~@privileged"
         ];
-        UMask = "0077";
-      };
-    };
 
-    environment.systemPackages = [
-      atticadmWrapper
-    ];
+        UMask = "0077";
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
+    };
   };
 }

@@ -1,14 +1,15 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   aubio,
   cmake,
   dssi,
-  fetchurl,
   flac,
-  libjack2,
   ladspa-header,
   ladspaPlugins,
+  libjack2,
   liblo,
   libmad,
   libsamplerate,
@@ -22,7 +23,6 @@
   qt6,
   rubberband,
   serd,
-  stdenv,
   sord,
   sratom,
   suil,
@@ -76,8 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://qtractor.sourceforge.io";
     changelog = "https://github.com/rncbc/qtractor/blob/v${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "qtractor";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "qtractor";
   };
 })

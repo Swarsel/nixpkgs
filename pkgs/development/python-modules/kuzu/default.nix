@@ -1,9 +1,9 @@
 {
   lib,
   buildPythonPackage,
+  cmake,
   fetchPypi,
   setuptools-scm,
-  cmake,
 }:
 
 buildPythonPackage rec {
@@ -15,15 +15,13 @@ buildPythonPackage rec {
     hash = "sha256-576jyjDEu0Ynku7cqn8hJcgAskO7SocuHu3BaRfBlno=";
   };
 
-  pyproject = true;
-
   nativeBuildInputs = [
     setuptools-scm
     cmake
   ];
 
   dontUseCmakeConfigure = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "kuzu" ];
 
   meta = {

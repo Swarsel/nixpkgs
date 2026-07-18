@@ -3,17 +3,17 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/tip";
-  extraPaths = [
-    "usr.bin/Makefile.inc"
-  ];
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
 
-  meta.platforms = lib.platforms.freebsd;
+  extraPaths = [
+    "usr.bin/Makefile.inc"
+  ];
+
+  path = "usr.bin/tip";
   meta.mainProgram = "tip";
+  meta.platforms = lib.platforms.freebsd;
 }

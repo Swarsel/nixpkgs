@@ -1,31 +1,35 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 let
   # bepasty 1.2 needs xstatic-font-awesome < 5, see
   # https://github.com/bepasty/bepasty-server/issues/305
   bepastyPython = python3.override {
-    self = bepastyPython;
     packageOverrides = self: super: {
       xstatic-bootstrap = super.xstatic-bootstrap.overridePythonAttrs (oldAttrs: rec {
         version = "4.5.3.1";
+
         src = oldAttrs.src.override {
-          pname = "XStatic-Bootstrap";
           inherit version;
           hash = "sha256-z2fSBUN7MlCKiLaafnxbviylqK5xCXORpqb1EOv9KCA=";
+          pname = "XStatic-Bootstrap";
         };
       });
+
       xstatic-font-awesome = super.xstatic-font-awesome.overridePythonAttrs (oldAttrs: rec {
         version = "4.7.0.0";
+
         src = oldAttrs.src.override {
           inherit version;
           hash = "sha256-4B+0gMqqfHlj3LMyikcA5jG+9gcNsOi2hYFtIg5oX2w=";
         };
       });
     };
+
+    self = bepastyPython;
   };
 in
 
@@ -36,7 +40,13 @@ in
 bepastyPython.pkgs.buildPythonPackage rec {
   pname = "bepasty";
   version = "1.2.2";
-  pyproject = true;
+
+  src = fetchPypi {
+    inherit pname version;
+    hash = "sha256-teazPj+IrgbVeUkWqgWhpIldgfCTbZYJAqn5Q5blcm8=";
+  };
+
+  buildInputs = with bepastyPython.pkgs; [ setuptools-scm ];
 
   propagatedBuildInputs = with bepastyPython.pkgs; [
     flask
@@ -53,13 +63,6 @@ bepastyPython.pkgs.buildPythonPackage rec {
     xstatic-jquery-ui
     xstatic-pygments
   ];
-
-  buildInputs = with bepastyPython.pkgs; [ setuptools-scm ];
-
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-teazPj+IrgbVeUkWqgWhpIldgfCTbZYJAqn5Q5blcm8=";
-  };
 
   nativeCheckInputs = with bepastyPython.pkgs; [
     build
@@ -81,10 +84,13 @@ bepastyPython.pkgs.buildPythonPackage rec {
     "src/bepasty/tests/test_website.py"
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/bepasty/bepasty-server";
     description = "Binary pastebin server";
+    homepage = "https://github.com/bepasty/bepasty-server";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       aither64
       makefu

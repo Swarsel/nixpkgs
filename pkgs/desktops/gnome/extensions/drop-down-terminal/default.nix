@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
   gjs,
-  vte,
   gnome,
+  replaceVars,
+  vte,
 }:
 
 stdenv.mkDerivation {
@@ -17,11 +17,6 @@ stdenv.mkDerivation {
     repo = "gs-extensions-drop-down-terminal";
     rev = "a59669afdb395b3315619f62c1f740f8b2f0690d";
     sha256 = "0igfxgrjdqq6z6xg4rsawxn261pk25g5dw2pm3bhwz5sqsy4bq3i";
-  };
-
-  passthru = {
-    extensionUuid = "drop-down-terminal@gs-extensions.zzrough.org";
-    extensionPortalSlug = "drop-down-terminal";
   };
 
   patches = [
@@ -37,10 +32,15 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  passthru = {
+    extensionPortalSlug = "drop-down-terminal";
+    extensionUuid = "drop-down-terminal@gs-extensions.zzrough.org";
+  };
+
   meta = {
     description = "Configurable drop down terminal shell";
+    homepage = "https://github.com/zzrough/gs-extensions-drop-down-terminal";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ ericdallo ];
-    homepage = "https://github.com/zzrough/gs-extensions-drop-down-terminal";
   };
 }

@@ -2,29 +2,30 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
-  version ? if lib.versionAtLeast ocaml.version "4.14" then "0.10.0" else "0.8.0",
-  topkg,
   buildTopkgPackage,
-  cmdlinerSupport ? true,
   cmdliner,
-  fmtSupport ? lib.versionAtLeast ocaml.version "4.08",
   fmt,
-  jsooSupport ? true,
   js_of_ocaml-compiler,
-  lwtSupport ? true,
   lwt,
+  ocaml,
+  topkg,
+  cmdlinerSupport ? true,
+  fmtSupport ? lib.versionAtLeast ocaml.version "4.08",
+  jsooSupport ? true,
+  lwtSupport ? true,
+  version ? if lib.versionAtLeast ocaml.version "4.14" then "0.10.0" else "0.8.0",
 }:
 let
   param =
     {
-      "0.8.0" = {
-        minimalOCamlVersion = "4.03";
-        hash = "sha256-mmFRQJX6QvMBIzJiO2yNYF1Ce+qQS2oNF3+OwziCNtg=";
-      };
       "0.10.0" = {
-        minimalOCamlVersion = "4.14";
         hash = "sha256-dg7CkcEo11t0gmCRM3dk+SW1ykFLAuLTNqCze/MN9Oo=";
+        minimalOCamlVersion = "4.14";
+      };
+
+      "0.8.0" = {
+        hash = "sha256-mmFRQJX6QvMBIzJiO2yNYF1Ce+qQS2oNF3+OwziCNtg=";
+        minimalOCamlVersion = "4.03";
       };
     }
     .${version};
@@ -34,24 +35,24 @@ let
 
   optional_deps = [
     {
-      pkg = js_of_ocaml-compiler;
       enable_flag = "--with-js_of_ocaml-compiler";
       enabled = jsooSupport;
+      pkg = js_of_ocaml-compiler;
     }
     {
-      pkg = fmt;
       enable_flag = "--with-fmt";
       enabled = fmtSupport;
+      pkg = fmt;
     }
     {
-      pkg = lwt;
       enable_flag = "--with-lwt";
       enabled = lwtSupport;
+      pkg = lwt;
     }
     {
-      pkg = cmdliner;
       enable_flag = "--with-cmdliner";
       enabled = cmdlinerSupport;
+      pkg = cmdliner;
     }
   ];
   enable_flags = lib.concatMap (d: [
@@ -65,19 +66,18 @@ buildTopkgPackage {
   inherit (param) minimalOCamlVersion;
 
   src = fetchurl {
-    url = "${webpage}/releases/${pname}-${version}.tbz";
     inherit (param) hash;
+    url = "${webpage}/releases/${pname}-${version}.tbz";
   };
 
   buildInputs = optional_buildInputs;
-
   buildPhase = "${topkg.run} build ${lib.escapeShellArgs enable_flags}";
 
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "Logging infrastructure for OCaml";
     homepage = webpage;
-    inherit (ocaml.meta) platforms;
-    maintainers = with lib.maintainers; [ sternenseemann ];
     license = lib.licenses.isc;
+    maintainers = with lib.maintainers; [ sternenseemann ];
   };
 }

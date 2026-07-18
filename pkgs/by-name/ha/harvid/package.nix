@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  which,
-  unixtools,
   cctools,
   ffmpeg,
   libjpeg,
   libpng,
   nix-update-script,
+  pkg-config,
+  unixtools,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-p0W+rKHH/iuGOcRjl6b4s6jQYkm7bqWCz849SDI/7fQ=";
   };
+
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace libharvid/Makefile \
+      --replace-fail /usr/bin/libtool ${cctools}/bin/libtool
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -37,22 +42,17 @@ stdenv.mkDerivation (finalAttrs: {
     libpng
   ];
 
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace libharvid/Makefile \
-      --replace-fail /usr/bin/libtool ${cctools}/bin/libtool
-  '';
-
   makeFlags = [
     "PREFIX=$(out)"
     "VERSION=v${finalAttrs.version}"
   ];
 
   enableParallelBuilding = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Decodes still images from movie files and serves them via HTTP";
+
     longDescription = ''
       harvid's intended use-case is to efficiently provide frame-accurate data
       and act as second level cache for rendering the video-timeline in Ardour,
@@ -60,10 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
       requires a high-performance frame-accurate online image extraction
       processor.
     '';
+
     homepage = "http://x42.github.io/harvid";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.mitchmindtree ];
+    platforms = lib.platforms.unix;
     mainProgram = "harvid";
   };
 })

@@ -1,17 +1,17 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
   accountsservice,
   dbus,
   glib,
   gst_all_1,
   gtk4,
-  pango,
   librsvg,
   nix-update-script,
+  pango,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,14 +25,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-WLngdmv5qrHaJ5P2mN/KO3YijwWOs1wKSliaAf3okvs=";
   };
 
-  cargoHash = "sha256-Jt8vGJzCYtpIPWxHHIc4x8zwjTF9tiM4YbBy9o9pxX4=";
-
-  buildFeatures = [ "gtk4_8" ];
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook4
   ];
+
   buildInputs = [
     accountsservice
     dbus
@@ -45,6 +42,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     librsvg
   ];
 
+  cargoHash = "sha256-Jt8vGJzCYtpIPWxHHIc4x8zwjTF9tiM4YbBy9o9pxX4=";
+  buildFeatures = [ "gtk4_8" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

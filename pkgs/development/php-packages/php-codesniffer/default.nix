@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   php,
 }:
 
@@ -18,10 +18,10 @@ php.buildComposerProject2 (finalAttrs: {
   vendorHash = "sha256-h+EVwPtIeXnVHEMCMYJFwuqeWXvZaYLTxrb/RKycIx0=";
 
   meta = {
-    changelog = "https://github.com/PHPCSStandards/PHP_CodeSniffer/releases/tag/${finalAttrs.version}";
     description = "PHP coding standard tool";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/PHPCSStandards/PHP_CodeSniffer/";
+    changelog = "https://github.com/PHPCSStandards/PHP_CodeSniffer/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ javaguirre ];
     teams = [ lib.teams.php ];
   };

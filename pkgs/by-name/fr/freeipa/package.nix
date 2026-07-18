@@ -1,41 +1,41 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  pkg-config,
+  _389-ds-base,
   autoconf,
   automake,
-  krb5,
-  openldap,
-  popt,
-  cyrus_sasl,
+  bind,
   curl,
-  xmlrpc_c,
+  cyrus_sasl,
   ding-libs,
-  p11-kit,
+  fetchpatch,
   gettext,
+  jansson,
+  jre,
+  krb5,
+  lesscpy,
+  libpwquality,
+  libunistring,
+  libuuid,
+  libverto,
   nspr,
   nss,
-  _389-ds-base,
+  openldap,
+  p11-kit,
+  pkg-config,
+  popt,
+  python3Packages,
+  rhino,
+  runtimeShell,
+  samba4,
+  sssd,
   svrcore,
-  libuuid,
+  systemd,
   talloc,
   tevent,
-  samba4,
-  libunistring,
-  libverto,
-  libpwquality,
-  systemd,
-  python3Packages,
-  bind,
-  sssd,
-  jre,
-  rhino,
-  lesscpy,
-  jansson,
-  runtimeShell,
   versionCheckHook,
+  xmlrpc_c,
 }:
 
 let
@@ -84,16 +84,32 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-PROnPc/1qS3hcO8s5sel55tsyZ1VPjEKLcua8Pd4DP0=";
       name = "support-pyca-44.0";
       url = "https://github.com/freeipa/freeipa/pull/7619/commits/2dc4133920fe58ce414c545102c74173d40d1997.patch";
-      hash = "sha256-PROnPc/1qS3hcO8s5sel55tsyZ1VPjEKLcua8Pd4DP0=";
     })
     (fetchpatch {
+      hash = "sha256-AyMK0hjXMrFK4/qIcjPMFH9DKvnvYOK2QS83Otcc+l4=";
       name = "fix-tripledes-cipher-warnings";
       url = "https://github.com/freeipa/freeipa/pull/7619/commits/e2bf6e4091c7b5320ec6387dab2d5cabe4a9a42d.patch";
-      hash = "sha256-AyMK0hjXMrFK4/qIcjPMFH9DKvnvYOK2QS83Otcc+l4=";
     })
   ];
+
+  postPatch = ''
+    patchShebangs makeapi makeaci install/ui/util
+
+    substituteInPlace ipasetup.py.in \
+      --replace 'int(v)' 'int(v.replace("post", ""))'
+
+    substituteInPlace client/ipa-join.c \
+      --replace /usr/sbin/ipa-getkeytab $out/bin/ipa-getkeytab
+
+    substituteInPlace ipaplatform/nixos/paths.py \
+      --subst-var out \
+      --subst-var-by bind ${bind.dnsutils} \
+      --subst-var-by curl ${curl} \
+      --subst-var-by kerberos ${kerberos}
+  '';
 
   nativeBuildInputs = [
     python3Packages.wrapPython
@@ -132,34 +148,16 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ pythonInputs;
 
-  postPatch = ''
-    patchShebangs makeapi makeaci install/ui/util
-
-    substituteInPlace ipasetup.py.in \
-      --replace 'int(v)' 'int(v.replace("post", ""))'
-
-    substituteInPlace client/ipa-join.c \
-      --replace /usr/sbin/ipa-getkeytab $out/bin/ipa-getkeytab
-
-    substituteInPlace ipaplatform/nixos/paths.py \
-      --subst-var out \
-      --subst-var-by bind ${bind.dnsutils} \
-      --subst-var-by curl ${curl} \
-      --subst-var-by kerberos ${kerberos}
-  '';
-
-  env.NIX_CFLAGS_COMPILE = "-I${_389-ds-base}/include/dirsrv";
-  pythonPath = pythonInputs;
-
   # Building and installing the server fails with silent Rhino errors, skipping
   # for now. Need a newer Rhino version.
   #buildFlags = [ "client" "server" ]
-
   configureFlags = [
     "--with-systemdsystemunitdir=$out/lib/systemd/system"
     "--with-ipaplatform=nixos"
     "--disable-server"
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${_389-ds-base}/include/dirsrv";
 
   postInstall = ''
     echo "
@@ -169,19 +167,23 @@ stdenv.mkDerivation (finalAttrs: {
     " > $out/sbin/ipa-client-install
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   postFixup = ''
     wrapPythonPrograms
     rm -rf $out/etc/ipa $out/var/lib/ipa-client/sysrestore
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+  pythonPath = pythonInputs;
   versionCheckProgram = "${placeholder "out"}/bin/ipa";
-  doInstallCheck = true;
 
   meta = {
     description = "Identity, Policy and Audit system";
+
     longDescription = ''
       IPA is an integrated solution to provide centrally managed Identity (users,
       hosts, services), Authentication (SSO, 2FA), and Authorization
@@ -189,12 +191,15 @@ stdenv.mkDerivation (finalAttrs: {
       features for further integration with Linux based clients (SUDO, automount)
       and integration with Active Directory based infrastructures (Trusts).
     '';
+
     homepage = "https://www.freeipa.org/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       s1341
       benley
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "ipa";
   };

@@ -1,15 +1,15 @@
 {
   lib,
   aiobotocore,
-  botocore-stubs,
   botocore,
+  botocore-stubs,
   buildPythonPackage,
   fetchPypi,
   setuptools,
   types-aiobotocore-accessanalyzer,
   types-aiobotocore-account,
-  types-aiobotocore-acm-pca,
   types-aiobotocore-acm,
+  types-aiobotocore-acm-pca,
   types-aiobotocore-aiops,
   types-aiobotocore-alexaforbusiness,
   types-aiobotocore-amp,
@@ -34,22 +34,22 @@
   types-aiobotocore-arc-zonal-shift,
   types-aiobotocore-athena,
   types-aiobotocore-auditmanager,
-  types-aiobotocore-autoscaling-plans,
   types-aiobotocore-autoscaling,
-  types-aiobotocore-backup-gateway,
+  types-aiobotocore-autoscaling-plans,
   types-aiobotocore-backup,
+  types-aiobotocore-backup-gateway,
   types-aiobotocore-backupstorage,
   types-aiobotocore-batch,
   types-aiobotocore-billingconductor,
   types-aiobotocore-braket,
   types-aiobotocore-budgets,
   types-aiobotocore-ce,
+  types-aiobotocore-chime,
   types-aiobotocore-chime-sdk-identity,
   types-aiobotocore-chime-sdk-media-pipelines,
   types-aiobotocore-chime-sdk-meetings,
   types-aiobotocore-chime-sdk-messaging,
   types-aiobotocore-chime-sdk-voice,
-  types-aiobotocore-chime,
   types-aiobotocore-cleanrooms,
   types-aiobotocore-cloud9,
   types-aiobotocore-cloudcontrol,
@@ -60,8 +60,8 @@
   types-aiobotocore-cloudhsmv2,
   types-aiobotocore-cloudsearch,
   types-aiobotocore-cloudsearchdomain,
-  types-aiobotocore-cloudtrail-data,
   types-aiobotocore-cloudtrail,
+  types-aiobotocore-cloudtrail-data,
   types-aiobotocore-cloudwatch,
   types-aiobotocore-codeartifact,
   types-aiobotocore-codebuild,
@@ -73,9 +73,9 @@
   types-aiobotocore-codeguru-security,
   types-aiobotocore-codeguruprofiler,
   types-aiobotocore-codepipeline,
+  types-aiobotocore-codestar,
   types-aiobotocore-codestar-connections,
   types-aiobotocore-codestar-notifications,
-  types-aiobotocore-codestar,
   types-aiobotocore-cognito-identity,
   types-aiobotocore-cognito-idp,
   types-aiobotocore-cognito-sync,
@@ -83,8 +83,8 @@
   types-aiobotocore-comprehendmedical,
   types-aiobotocore-compute-optimizer,
   types-aiobotocore-config,
-  types-aiobotocore-connect-contact-lens,
   types-aiobotocore-connect,
+  types-aiobotocore-connect-contact-lens,
   types-aiobotocore-connectcampaigns,
   types-aiobotocore-connectcases,
   types-aiobotocore-connectparticipant,
@@ -103,17 +103,17 @@
   types-aiobotocore-discovery,
   types-aiobotocore-dlm,
   types-aiobotocore-dms,
-  types-aiobotocore-docdb-elastic,
   types-aiobotocore-docdb,
+  types-aiobotocore-docdb-elastic,
   types-aiobotocore-drs,
   types-aiobotocore-ds,
   types-aiobotocore-dynamodb,
   types-aiobotocore-dynamodbstreams,
   types-aiobotocore-ebs,
-  types-aiobotocore-ec2-instance-connect,
   types-aiobotocore-ec2,
-  types-aiobotocore-ecr-public,
+  types-aiobotocore-ec2-instance-connect,
   types-aiobotocore-ecr,
+  types-aiobotocore-ecr-public,
   types-aiobotocore-ecs,
   types-aiobotocore-efs,
   types-aiobotocore-eks,
@@ -123,15 +123,15 @@
   types-aiobotocore-elastictranscoder,
   types-aiobotocore-elb,
   types-aiobotocore-elbv2,
+  types-aiobotocore-emr,
   types-aiobotocore-emr-containers,
   types-aiobotocore-emr-serverless,
-  types-aiobotocore-emr,
   types-aiobotocore-entityresolution,
   types-aiobotocore-es,
   types-aiobotocore-events,
   types-aiobotocore-evidently,
-  types-aiobotocore-finspace-data,
   types-aiobotocore-finspace,
+  types-aiobotocore-finspace-data,
   types-aiobotocore-firehose,
   types-aiobotocore-fis,
   types-aiobotocore-fms,
@@ -160,16 +160,16 @@
   types-aiobotocore-inspector,
   types-aiobotocore-inspector2,
   types-aiobotocore-internetmonitor,
+  types-aiobotocore-iot,
   types-aiobotocore-iot-data,
   types-aiobotocore-iot-jobs-data,
   types-aiobotocore-iot-roborunner,
-  types-aiobotocore-iot,
   types-aiobotocore-iot1click-devices,
   types-aiobotocore-iot1click-projects,
   types-aiobotocore-iotanalytics,
   types-aiobotocore-iotdeviceadvisor,
-  types-aiobotocore-iotevents-data,
   types-aiobotocore-iotevents,
+  types-aiobotocore-iotevents-data,
   types-aiobotocore-iotfleethub,
   types-aiobotocore-iotfleetwise,
   types-aiobotocore-iotsecuretunneling,
@@ -177,19 +177,19 @@
   types-aiobotocore-iotthingsgraph,
   types-aiobotocore-iottwinmaker,
   types-aiobotocore-iotwireless,
-  types-aiobotocore-ivs-realtime,
   types-aiobotocore-ivs,
+  types-aiobotocore-ivs-realtime,
   types-aiobotocore-ivschat,
   types-aiobotocore-kafka,
   types-aiobotocore-kafkaconnect,
-  types-aiobotocore-kendra-ranking,
   types-aiobotocore-kendra,
+  types-aiobotocore-kendra-ranking,
   types-aiobotocore-keyspaces,
+  types-aiobotocore-kinesis,
   types-aiobotocore-kinesis-video-archived-media,
   types-aiobotocore-kinesis-video-media,
   types-aiobotocore-kinesis-video-signaling,
   types-aiobotocore-kinesis-video-webrtc-storage,
-  types-aiobotocore-kinesis,
   types-aiobotocore-kinesisanalytics,
   types-aiobotocore-kinesisanalyticsv2,
   types-aiobotocore-kinesisvideo,
@@ -200,9 +200,9 @@
   types-aiobotocore-lex-runtime,
   types-aiobotocore-lexv2-models,
   types-aiobotocore-lexv2-runtime,
+  types-aiobotocore-license-manager,
   types-aiobotocore-license-manager-linux-subscriptions,
   types-aiobotocore-license-manager-user-subscriptions,
-  types-aiobotocore-license-manager,
   types-aiobotocore-lightsail,
   types-aiobotocore-location,
   types-aiobotocore-logs,
@@ -213,19 +213,19 @@
   types-aiobotocore-machinelearning,
   types-aiobotocore-macie,
   types-aiobotocore-macie2,
-  types-aiobotocore-managedblockchain-query,
   types-aiobotocore-managedblockchain,
+  types-aiobotocore-managedblockchain-query,
   types-aiobotocore-marketplace-catalog,
   types-aiobotocore-marketplace-entitlement,
   types-aiobotocore-marketplacecommerceanalytics,
   types-aiobotocore-mediaconnect,
   types-aiobotocore-mediaconvert,
   types-aiobotocore-medialive,
-  types-aiobotocore-mediapackage-vod,
   types-aiobotocore-mediapackage,
+  types-aiobotocore-mediapackage-vod,
   types-aiobotocore-mediapackagev2,
-  types-aiobotocore-mediastore-data,
   types-aiobotocore-mediastore,
+  types-aiobotocore-mediastore-data,
   types-aiobotocore-mediatailor,
   types-aiobotocore-medical-imaging,
   types-aiobotocore-memorydb,
@@ -255,16 +255,16 @@
   types-aiobotocore-osis,
   types-aiobotocore-outposts,
   types-aiobotocore-panorama,
-  types-aiobotocore-payment-cryptography-data,
   types-aiobotocore-payment-cryptography,
+  types-aiobotocore-payment-cryptography-data,
+  types-aiobotocore-personalize,
   types-aiobotocore-personalize-events,
   types-aiobotocore-personalize-runtime,
-  types-aiobotocore-personalize,
   types-aiobotocore-pi,
-  types-aiobotocore-pinpoint-email,
-  types-aiobotocore-pinpoint-sms-voice-v2,
-  types-aiobotocore-pinpoint-sms-voice,
   types-aiobotocore-pinpoint,
+  types-aiobotocore-pinpoint-email,
+  types-aiobotocore-pinpoint-sms-voice,
+  types-aiobotocore-pinpoint-sms-voice-v2,
   types-aiobotocore-pipes,
   types-aiobotocore-polly,
   types-aiobotocore-pricing,
@@ -273,16 +273,16 @@
   types-aiobotocore-qapps,
   types-aiobotocore-qbusiness,
   types-aiobotocore-qconnect,
-  types-aiobotocore-qldb-session,
   types-aiobotocore-qldb,
+  types-aiobotocore-qldb-session,
   types-aiobotocore-quicksight,
   types-aiobotocore-ram,
   types-aiobotocore-rbin,
-  types-aiobotocore-rds-data,
   types-aiobotocore-rds,
+  types-aiobotocore-rds-data,
+  types-aiobotocore-redshift,
   types-aiobotocore-redshift-data,
   types-aiobotocore-redshift-serverless,
-  types-aiobotocore-redshift,
   types-aiobotocore-rekognition,
   types-aiobotocore-resiliencehub,
   types-aiobotocore-resource-explorer-2,
@@ -290,23 +290,23 @@
   types-aiobotocore-resourcegroupstaggingapi,
   types-aiobotocore-robomaker,
   types-aiobotocore-rolesanywhere,
+  types-aiobotocore-route53,
   types-aiobotocore-route53-recovery-cluster,
   types-aiobotocore-route53-recovery-control-config,
   types-aiobotocore-route53-recovery-readiness,
-  types-aiobotocore-route53,
   types-aiobotocore-route53domains,
   types-aiobotocore-route53resolver,
   types-aiobotocore-rum,
   types-aiobotocore-s3,
   types-aiobotocore-s3control,
   types-aiobotocore-s3outposts,
+  types-aiobotocore-sagemaker,
   types-aiobotocore-sagemaker-a2i-runtime,
   types-aiobotocore-sagemaker-edge,
   types-aiobotocore-sagemaker-featurestore-runtime,
   types-aiobotocore-sagemaker-geospatial,
   types-aiobotocore-sagemaker-metrics,
   types-aiobotocore-sagemaker-runtime,
-  types-aiobotocore-sagemaker,
   types-aiobotocore-savingsplans,
   types-aiobotocore-scheduler,
   types-aiobotocore-schemas,
@@ -316,32 +316,32 @@
   types-aiobotocore-securitylake,
   types-aiobotocore-serverlessrepo,
   types-aiobotocore-service-quotas,
-  types-aiobotocore-servicecatalog-appregistry,
   types-aiobotocore-servicecatalog,
+  types-aiobotocore-servicecatalog-appregistry,
   types-aiobotocore-servicediscovery,
   types-aiobotocore-ses,
   types-aiobotocore-sesv2,
   types-aiobotocore-shield,
   types-aiobotocore-signer,
   types-aiobotocore-simspaceweaver,
-  types-aiobotocore-sms-voice,
   types-aiobotocore-sms,
+  types-aiobotocore-sms-voice,
   types-aiobotocore-snow-device-management,
   types-aiobotocore-snowball,
   types-aiobotocore-sns,
   types-aiobotocore-sqs,
+  types-aiobotocore-ssm,
   types-aiobotocore-ssm-contacts,
   types-aiobotocore-ssm-incidents,
   types-aiobotocore-ssm-sap,
-  types-aiobotocore-ssm,
+  types-aiobotocore-sso,
   types-aiobotocore-sso-admin,
   types-aiobotocore-sso-oidc,
-  types-aiobotocore-sso,
   types-aiobotocore-stepfunctions,
   types-aiobotocore-storagegateway,
   types-aiobotocore-sts,
-  types-aiobotocore-support-app,
   types-aiobotocore-support,
+  types-aiobotocore-support-app,
   types-aiobotocore-swf,
   types-aiobotocore-synthetics,
   types-aiobotocore-textract,
@@ -354,8 +354,8 @@
   types-aiobotocore-verifiedpermissions,
   types-aiobotocore-voice-id,
   types-aiobotocore-vpc-lattice,
-  types-aiobotocore-waf-regional,
   types-aiobotocore-waf,
+  types-aiobotocore-waf-regional,
   types-aiobotocore-wafv2,
   types-aiobotocore-wellarchitected,
   types-aiobotocore-wisdom,
@@ -363,8 +363,8 @@
   types-aiobotocore-worklink,
   types-aiobotocore-workmail,
   types-aiobotocore-workmailmessageflow,
-  types-aiobotocore-workspaces-web,
   types-aiobotocore-workspaces,
+  types-aiobotocore-workspaces-web,
   types-aiobotocore-xray,
   typing-extensions,
 }:
@@ -372,14 +372,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-aiobotocore";
   version = "3.7.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_aiobotocore";
     inherit (finalAttrs) version;
     hash = "sha256-/jXeUsEuX9uJymCzmJdm5/6Cfj0ulfz0WD6RWBlFIFw=";
+    pname = "types_aiobotocore";
   };
 
+  # Package has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -392,12 +393,15 @@ buildPythonPackage (finalAttrs: {
     account = [ types-aiobotocore-account ];
     acm = [ types-aiobotocore-acm ];
     acm-pca = [ types-aiobotocore-acm-pca ];
+
     aiobotocore = [
       aiobotocore
       botocore
     ];
+
     aiops = [ types-aiobotocore-aiops ];
     alexaforbusiness = [ types-aiobotocore-alexaforbusiness ];
+
     all = [
       types-aiobotocore-accessanalyzer
       types-aiobotocore-account
@@ -760,6 +764,7 @@ buildPythonPackage (finalAttrs: {
       types-aiobotocore-workspaces-web
       types-aiobotocore-xray
     ];
+
     amp = [ types-aiobotocore-amp ];
     amplify = [ types-aiobotocore-amplify ];
     amplifybackend = [ types-aiobotocore-amplifybackend ];
@@ -876,6 +881,7 @@ buildPythonPackage (finalAttrs: {
     emr-serverless = [ types-aiobotocore-emr-serverless ];
     entityresolution = [ types-aiobotocore-entityresolution ];
     es = [ types-aiobotocore-es ];
+
     essential = [
       types-aiobotocore-cloudformation
       types-aiobotocore-dynamodb
@@ -885,6 +891,7 @@ buildPythonPackage (finalAttrs: {
       types-aiobotocore-s3
       types-aiobotocore-sqs
     ];
+
     events = [ types-aiobotocore-events ];
     evidently = [ types-aiobotocore-evidently ];
     finspace = [ types-aiobotocore-finspace ];
@@ -1122,8 +1129,7 @@ buildPythonPackage (finalAttrs: {
     xray = [ types-aiobotocore-xray ];
   };
 
-  # Package has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Type annotations for aiobotocore generated with mypy-boto3-builder";

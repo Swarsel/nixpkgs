@@ -1,24 +1,19 @@
 {
   stdenv,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  nodejs,
   meta,
-  version,
+  nodejs,
   src,
+  version,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "listmonk-frontend";
   inherit version;
-
+  inherit meta;
+  pname = "listmonk-frontend";
   src = "${src}/frontend";
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${src}/frontend/yarn.lock";
-    hash = "sha256-R2xHcHksTtFfFh41FLeBhpuz84ceixGt6oz6SQWWyMQ=";
-  };
 
   nativeBuildInputs = [
     yarnConfigHook
@@ -32,5 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     cp node_modules/altcha/dist/altcha.umd.cjs $out/altcha.umd.js
   '';
 
-  inherit meta;
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-R2xHcHksTtFfFh41FLeBhpuz84ceixGt6oz6SQWWyMQ=";
+    yarnLock = "${src}/frontend/yarn.lock";
+  };
 })

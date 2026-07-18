@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   nixosTests,
   postgresql,
@@ -19,18 +19,18 @@ postgresqlBuildExtension (finalAttrs: {
   };
 
   makeFlags = [ "USE_PGXS=1" ];
+  passthru.tests = nixosTests.postgresql.wal2json.passthru.override postgresql;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=^wal2json_(\\d+)_(\\d+)$" ];
   };
-  passthru.tests = nixosTests.postgresql.wal2json.passthru.override postgresql;
 
   meta = {
     description = "PostgreSQL JSON output plugin for changeset extraction";
     homepage = "https://github.com/eulerto/wal2json";
     changelog = "https://github.com/eulerto/wal2json/releases/tag/${finalAttrs.src.rev}";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ euank ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.bsd3;
   };
 })

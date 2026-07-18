@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
-  chromium, # Can be overwritten to be (potentially) any Chromium implementation
+  stdenv,
   fetchFromGitHub,
+  chromium, # Can be overwritten to be (potentially) any Chromium implementation
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   makeWrapper,
   nix-update-script,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "google-lighthouse";
@@ -22,14 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-diZT1SOCSpuiQfAS7kjGxea2imVAJyKYxf2WFBsE/H0=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-Rp+LCYRZ5jVGiR1L8Wyd5juw8GPrwnUH2chrxrrwE6k=";
-  };
-
-  yarnBuildScript = "build-report";
-
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -51,6 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doDist = false;
+  yarnBuildScript = "build-report";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-Rp+LCYRZ5jVGiR1L8Wyd5juw8GPrwnUH2chrxrrwE6k=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -58,7 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Automated auditing, performance metrics, and best practices for the web";
     homepage = "https://developer.chrome.com/docs/lighthouse/overview";
     license = lib.licenses.asl20;
-    mainProgram = "lighthouse";
     maintainers = with lib.maintainers; [ theCapypara ];
+    mainProgram = "lighthouse";
   };
 })

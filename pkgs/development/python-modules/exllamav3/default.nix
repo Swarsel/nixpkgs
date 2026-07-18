@@ -3,22 +3,20 @@
   fetchFromGitHub,
   buildPythonPackage,
   cudaPackages,
-  nix-update-script,
-
-  setuptools,
-
   flash-attn,
   flash-linear-attention,
   formatron,
   kbnf,
   marisa-trie,
   ninja,
+  nix-update-script,
   numpy,
   pillow,
   pydantic,
   pyyaml,
   rich,
   safetensors,
+  setuptools,
   tokenizers,
   torch,
   typing-extensions,
@@ -30,7 +28,6 @@ in
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "exllamav3";
   version = "0.0.43";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "turboderp-org";
@@ -38,14 +35,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-68v8ptvtOzRTnnRXrgU0emqmbCO0pECidgJ36bwm8/s=";
   };
-
-  pythonRelaxDeps = [
-    "pydantic"
-  ];
-
-  build-system = [
-    setuptools
-  ];
 
   nativeBuildInputs = [
     ninja
@@ -57,6 +46,20 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     cudaPackages.libcublas # cublas_v2.h
     cudaPackages.libcusolver # cusolverDn.h
     cudaPackages.libcurand # curand_kernel.h
+  ];
+
+  env = lib.optionalAttrs torch.cudaSupport {
+    CUDA_HOME = lib.getDev cudaPackages.cuda_nvcc;
+    # exllamav3 only supports turing or newer GPUs
+    # https://github.com/turboderp-org/exllamav3/issues/44
+    TORCH_CUDA_ARCH_LIST = lib.concatStringsSep ";" newerThanTuring;
+  };
+
+  # Tests require GPU hardware and external model files
+  doCheck = false;
+
+  build-system = [
+    setuptools
   ];
 
   dependencies = [
@@ -77,17 +80,12 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     xformers
   ];
 
-  env = lib.optionalAttrs torch.cudaSupport {
-    CUDA_HOME = lib.getDev cudaPackages.cuda_nvcc;
-    # exllamav3 only supports turing or newer GPUs
-    # https://github.com/turboderp-org/exllamav3/issues/44
-    TORCH_CUDA_ARCH_LIST = lib.concatStringsSep ";" newerThanTuring;
-  };
-
+  pyproject = true;
   pythonImportsCheck = [ "exllamav3" ];
 
-  # Tests require GPU hardware and external model files
-  doCheck = false;
+  pythonRelaxDeps = [
+    "pydantic"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -96,11 +94,13 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     homepage = "https://github.com/turboderp-org/exllamav3";
     changelog = "https://github.com/turboderp-org/exllamav3/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ BatteredBunny ];
+
     platforms = [
       "x86_64-windows"
       "x86_64-linux"
     ];
+
     broken = !torch.cudaSupport; # Package requires CUDA for functionality
-    maintainers = with lib.maintainers; [ BatteredBunny ];
   };
 })

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "traderepublic-portfolio-downloader";
@@ -27,8 +27,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/dhojayev/traderepublic-portfolio-downloader";
     changelog = "https://github.com/dhojayev/traderepublic-portfolio-downloader/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3;
-    mainProgram = "traderepublic-portfolio-downloader";
     maintainers = with lib.maintainers; [ seineeloquenz ];
     platforms = lib.platforms.linux;
+    mainProgram = "traderepublic-portfolio-downloader";
   };
 })

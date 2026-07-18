@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
-  unzip,
+  stdenv,
   fetchurl,
-  makeBinaryWrapper,
+  asar,
+  autoPatchelfHook,
+  copyDesktopItems,
   # use specific electron since it has to load a compiled module
   electron_41,
-  autoPatchelfHook,
+  makeBinaryWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  unzip,
   wrapGAppsHook3,
-  asar,
 }:
 
 let
@@ -18,8 +18,8 @@ let
   version = "0.103.0";
 
   triliumSource = os: arch: hash: {
-    url = "https://github.com/TriliumNext/Trilium/releases/download/v${version}/TriliumNotes-v${version}-${os}-${arch}.zip";
     inherit hash;
+    url = "https://github.com/TriliumNext/Trilium/releases/download/v${version}/TriliumNotes-v${version}-${os}-${arch}.zip";
   };
 
   linuxSource = triliumSource "linux";
@@ -31,9 +31,9 @@ let
   aarch64-darwin.hash = "sha256-dMlgJgDuxZH1jnvLalmgDUMVCdWQ8AviGt86aeMbGVY=";
 
   sources = {
-    x86_64-linux = linuxSource "x64" x86_64-linux.hash;
-    aarch64-linux = linuxSource "arm64" aarch64-linux.hash;
     aarch64-darwin = darwinSource "arm64" aarch64-darwin.hash;
+    aarch64-linux = linuxSource "arm64" aarch64-linux.hash;
+    x86_64-linux = linuxSource "x64" x86_64-linux.hash;
   };
 
   src = fetchurl sources.${stdenv.hostPlatform.system};
@@ -43,12 +43,14 @@ let
     homepage = "https://triliumnotes.org/";
     license = lib.licenses.agpl3Plus;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       eliandoran
       fliegendewurst
     ];
-    mainProgram = "trilium";
+
     platforms = lib.attrNames sources;
+    mainProgram = "trilium";
   };
 
   linux = stdenv.mkDerivation {
@@ -75,18 +77,6 @@ let
 
     buildInputs = [
       (lib.getLib stdenv.cc.cc)
-    ];
-
-    desktopItems = [
-      (makeDesktopItem {
-        name = "Trilium";
-        exec = "trilium";
-        icon = "trilium";
-        comment = meta.description;
-        desktopName = "Trilium Notes";
-        categories = [ "Office" ];
-        startupWMClass = "Trilium Notes";
-      })
     ];
 
     installPhase = ''
@@ -117,8 +107,19 @@ let
       runHook postInstall
     '';
 
-    dontWrapGApps = true;
+    desktopItems = [
+      (makeDesktopItem {
+        categories = [ "Office" ];
+        comment = meta.description;
+        desktopName = "Trilium Notes";
+        exec = "trilium";
+        icon = "trilium";
+        name = "Trilium";
+        startupWMClass = "Trilium Notes";
+      })
+    ];
 
+    dontWrapGApps = true;
     passthru.updateScript = ./update.sh;
   };
 

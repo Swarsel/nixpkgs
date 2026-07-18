@@ -33,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       ls-color = runCommand "${finalAttrs.pname}-test-ls-color" { } ''
         set -x
@@ -51,10 +50,13 @@ stdenv.mkDerivation (finalAttrs: {
         set +x
       '';
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Make programs think their stdout is a tty / terminal";
+
     longDescription = ''
       `stdoutisatty command` makes `command` think their stdout is a terminal,
       even if it is actually being piped into another program (e.g. `less`).
@@ -63,10 +65,11 @@ stdenv.mkDerivation (finalAttrs: {
       For example, `stdoutisatty ls --color=auto | less` will always show
       colored output, despite being piped into a pager.
     '';
+
     homepage = "https://github.com/lilydjwg/stdoutisatty";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ bryango ];
-    mainProgram = "stdoutisatty";
     platforms = lib.platforms.linux;
+    mainProgram = "stdoutisatty";
   };
 })

@@ -17,20 +17,20 @@ stdenv.mkDerivation {
     sha256 = "sha256-u2jwVOC9QM2JHsdAVBuEpqqdiBAVs+IWnpp48A5Xk28=";
   };
 
+  patches = [
+    # port to python 3
+    (fetchpatch {
+      hash = "sha256-IG3KXvOFZfi8dhVuKDYo0onl6ruEe24aFHBgSoMKf9c=";
+      url = "https://salsa.debian.org/fonts-team/fonts-monoid/-/raw/master/debian/patches/0002-fontbuilder.py-Fix-FTBFS-with-non-int-bearing-value.patch";
+    })
+  ];
+
   nativeBuildInputs = [
     (python3.withPackages (
       pp: with pp; [
         fontforge
       ]
     ))
-  ];
-
-  patches = [
-    # port to python 3
-    (fetchpatch {
-      url = "https://salsa.debian.org/fonts-team/fonts-monoid/-/raw/master/debian/patches/0002-fontbuilder.py-Fix-FTBFS-with-non-int-bearing-value.patch";
-      hash = "sha256-IG3KXvOFZfi8dhVuKDYo0onl6ruEe24aFHBgSoMKf9c=";
-    })
   ];
 
   buildPhase = ''
@@ -49,13 +49,15 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "http://larsenwork.com/monoid";
     description = "Customisable coding font with alternates, ligatures and contextual positioning";
+    homepage = "http://larsenwork.com/monoid";
+
     license = [
       lib.licenses.ofl
       lib.licenses.mit
     ];
-    platforms = lib.platforms.all;
+
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.all;
   };
 }

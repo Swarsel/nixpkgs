@@ -5,10 +5,10 @@
   autoreconfHook,
   bison,
   flex,
+  libxml2,
   perl, # for pod2man
   pkg-config,
   readline,
-  libxml2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,9 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "hercules-team";
     repo = "augeas";
     tag = "release-${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-U5tm3LDUeI/idHtL2Zy33BigkyvHunXPjToDC59G9VE=";
+    fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # already have the submodules so don't fail when .git doesn't exist.
@@ -32,7 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./bootstrap --gnulib-srcdir=.gnulib
   '';
 
-  configureFlags = lib.optionals stdenv.buildPlatform.isDarwin [ "--disable-gnulib-tests" ];
   nativeBuildInputs = [
     autoreconfHook
     bison
@@ -46,9 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
-  # Makefile doesn't specify dependencies on parser.h correctly
-  enableParallelBuilding = false;
-
+  configureFlags = lib.optionals stdenv.buildPlatform.isDarwin [ "--disable-gnulib-tests" ];
   doCheck = true;
 
   checkPhase = ''
@@ -58,18 +60,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  # Makefile doesn't specify dependencies on parser.h correctly
+  enableParallelBuilding = false;
 
   meta = {
     description = "Configuration editing tool";
-    license = lib.licenses.lgpl21Only;
     homepage = "https://augeas.net/";
     changelog = "https://github.com/hercules-team/augeas/releases/tag/release-${finalAttrs.version}";
-    mainProgram = "augtool";
+    license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ skyethepinkcat ];
     platforms = lib.platforms.unix;
+    mainProgram = "augtool";
   };
 })

@@ -1,27 +1,27 @@
 {
-  pname,
-  version,
-  hash,
+  lib,
+  fetchurl,
   autoPatchelfHook,
   copyDesktopItems,
-  fetchurl,
+  dbus,
   fontconfig,
   freetype,
-  lib,
+  hash,
   libGL,
+  libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-wm,
   libxkbcommon,
   makeDesktopItem,
   makeWrapper,
+  pname,
   stdenvNoCC,
   unzip,
+  version,
   writeShellApplication,
-  libxcb-wm,
-  libxcb-render-util,
-  libxcb-keysyms,
-  libxcb-image,
-  libxcb,
   zlib,
-  dbus,
   metaCommon ? { },
 }:
 
@@ -29,12 +29,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   inherit pname version;
 
   src = fetchurl {
-    name = "WinBox_Linux-${finalAttrs.version}.zip";
-    url = "https://download.mikrotik.com/routeros/winbox/${finalAttrs.version}/WinBox_Linux.zip";
     inherit hash;
+    url = "https://download.mikrotik.com/routeros/winbox/${finalAttrs.version}/WinBox_Linux.zip";
+    name = "WinBox_Linux-${finalAttrs.version}.zip";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -71,17 +69,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "winbox";
-      desktopName = "WinBox";
+      categories = [ "Utility" ];
       comment = "GUI administration for Mikrotik RouterOS";
+      desktopName = "WinBox";
       exec = "WinBox";
       icon = "winbox";
-      categories = [ "Utility" ];
+      name = "winbox";
     })
   ];
 
   migrationScript = writeShellApplication {
     name = "winbox-migrate";
+
     text = ''
       XDG_DATA_HOME=''${XDG_DATA_HOME:-$HOME/.local/share}
       targetFile="$XDG_DATA_HOME/MikroTik/WinBox/Addresses.cdb"
@@ -118,6 +117,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       install -Dvm644 "$selectedSourceFile" "$targetFile"
     '';
   };
+
+  sourceRoot = ".";
 
   meta = metaCommon // {
     platforms = [ "x86_64-linux" ];

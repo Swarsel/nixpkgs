@@ -2,21 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-
   # build-time deps
   cmake,
   ninja,
-
+  nix-update-script,
+  qhull,
   # run-time deps
   zlib,
-  qhull,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libgdstk";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "heitzmann";
@@ -35,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     qhull
   ];
 
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -42,10 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/heitzmann/gdstk";
     changelog = "https://github.com/heitzmann/gdstk/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.boost;
+
     maintainers = with lib.maintainers; [
       eljamm
       gonsolo
     ];
+
     teams = with lib.teams; [ ngi ];
   };
 })

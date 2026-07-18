@@ -20,11 +20,11 @@ in
     environment.systemPackages = [ pkgs.autoenv ];
 
     programs = {
-      zsh.interactiveShellInit = ''
+      bash.interactiveShellInit = ''
         source ${cfg.package}/share/autoenv/activate.sh
       '';
 
-      bash.interactiveShellInit = ''
+      zsh.interactiveShellInit = ''
         source ${cfg.package}/share/autoenv/activate.sh
       '';
     };

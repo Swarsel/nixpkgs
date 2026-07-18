@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  pkg-config,
+  stdenv,
   fetchFromGitHub,
-  libxrandr,
-  libx11,
-  xorgproto,
-  libdrm,
   SDL2,
+  libdrm,
+  libx11,
+  libxrandr,
+  pkg-config,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,14 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2
   ];
 
+  env = {
+    PREFIX = "$(out)";
+  };
+
+  preInstall = ''
+    install -Dm755 switchres $out/bin/switchres
+  '';
+
   patchPhase = ''
     runHook prePatch
 
@@ -45,21 +53,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postPatch
   '';
 
-  env = {
-    PREFIX = "$(out)";
-  };
-
-  preInstall = ''
-    install -Dm755 switchres $out/bin/switchres
-  '';
-
   meta = {
     description = "Modeline generation engine for emulation";
     homepage = "https://github.com/antonioginer/switchres";
     changelog = "https://github.com/antonioginer/switchres/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
-    mainProgram = "switchres";
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.linux;
+    mainProgram = "switchres";
   };
 })

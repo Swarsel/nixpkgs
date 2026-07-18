@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitLab,
-  python3,
   nix-update-script,
+  python3,
 }:
 python3.pkgs.buildPythonApplication {
   pname = "yaookctl";
@@ -15,10 +15,7 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-EWKKwPnR15qkRuhuGRyj5otwUVX+sOmRei4WfN3aRpQ=";
   };
 
-  pyproject = true;
   build-system = [ python3.pkgs.setuptools ];
-
-  dontCheckRuntimeDeps = true;
 
   dependencies = with python3.pkgs; [
     babel
@@ -29,15 +26,18 @@ python3.pkgs.buildPythonApplication {
     typing-extensions
   ];
 
+  dontCheckRuntimeDeps = true;
+  pyproject = true;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
 
   meta = {
-    homepage = "https://gitlab.com/yaook/yaookctl";
     description = "Toolbox for interacting with Yaook clusters";
+    homepage = "https://gitlab.com/yaook/yaookctl";
     license = lib.licenses.mit;
-    mainProgram = "yaookctl";
     maintainers = with lib.maintainers; [ lykos153 ];
+    mainProgram = "yaookctl";
   };
 }

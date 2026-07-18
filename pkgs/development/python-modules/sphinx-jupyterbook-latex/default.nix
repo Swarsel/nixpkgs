@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
-  packaging,
-  sphinx,
+  buildPythonPackage,
   click,
+  defusedxml,
+  flit-core,
   myst-parser,
+  packaging,
   pytest-regressions,
   pytestCheckHook,
+  sphinx,
   sphinx-external-toc,
   sphinxcontrib-bibtex,
   texsoup,
-  defusedxml,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sphinx-jupyterbook-latex";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "executablebooks";
@@ -56,6 +55,7 @@ buildPythonPackage (finalAttrs: {
     "test_build_with_ext"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_jupyterbook_latex" ];
 
   meta = {

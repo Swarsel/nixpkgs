@@ -6,36 +6,21 @@
 }:
 
 {
-  asserts ? [ ],
   finalPackage,
   sql,
+  asserts ? [ ],
   withPackages ? [ ],
   ...
 }@extraArgs:
 stdenvNoCC.mkDerivation (
   {
-    name = "${finalPackage.name}-test-extension";
-    dontUnpack = true;
     doCheck = true;
+
     nativeCheckInputs = [
       postgresqlTestHook
       (postgresql.withPackages (ps: [ finalPackage ] ++ (map (p: ps."${p}") withPackages)))
     ];
-    postgresqlTestUserOptions = "LOGIN SUPERUSER";
-    sql =
-      sql
-      + lib.concatMapStrings (
-        {
-          query,
-          expected,
-          description,
-        }:
-        ''
-          DO $$ BEGIN
-            ASSERT (${query}) = (${expected}), '${lib.replaceStrings [ "'" ] [ "''" ] description}';
-          END $$;
-        ''
-      ) asserts;
+
     checkPhase = ''
       runHook preCheck
       sqlPath=$TMPDIR/test.sql
@@ -43,8 +28,27 @@ stdenvNoCC.mkDerivation (
       psql -a -v ON_ERROR_STOP=1 -f "$sqlPath"
       runHook postCheck
     '';
+
     installPhase = "touch $out";
     __structuredAttrs = true;
+    dontUnpack = true;
+    name = "${finalPackage.name}-test-extension";
+    postgresqlTestUserOptions = "LOGIN SUPERUSER";
+
+    sql =
+      sql
+      + lib.concatMapStrings (
+        {
+          description,
+          expected,
+          query,
+        }:
+        ''
+          DO $$ BEGIN
+            ASSERT (${query}) = (${expected}), '${lib.replaceStrings [ "'" ] [ "''" ] description}';
+          END $$;
+        ''
+      ) asserts;
   }
   // lib.removeAttrs extraArgs [
     "asserts"

@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildPackages,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  buildPackages,
+  installShellFiles,
   nix-update-script,
   versionCheckHook,
-  installShellFiles,
   writableTmpDirAsHomeHook,
 }:
 buildGoModule (finalAttrs: {
@@ -20,17 +20,11 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-XPJy5dDQllnffz8BxJ6BYoFZCf7/x8a/6K6o0mRmKsI=";
   };
 
-  vendorHash = "sha256-JMViyQHqq2bkKuOcw+lbjkomoRv0kIqxMfE1Uu7rgfs=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/simonwhitaker/gibo/cmd.version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-JMViyQHqq2bkKuOcw+lbjkomoRv0kIqxMfE1Uu7rgfs=";
 
   postInstall = lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (
     let
@@ -45,19 +39,26 @@ buildGoModule (finalAttrs: {
   );
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
-  versionCheckProgramArg = "version";
-  versionCheckKeepEnvironment = [ "HOME" ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/simonwhitaker/gibo/cmd.version=${finalAttrs.version}"
+  ];
+
+  versionCheckKeepEnvironment = [ "HOME" ];
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Shell script for easily accessing gitignore boilerplates";
     homepage = "https://github.com/simonwhitaker/gibo";
     license = lib.licenses.unlicense;
-    description = "Shell script for easily accessing gitignore boilerplates";
     platforms = lib.platforms.unix;
     mainProgram = "gibo";
   };

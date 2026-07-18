@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -47,95 +47,14 @@ in
     enable = mkEnableOption "Broadcast Box";
     package = mkPackageOption pkgs "broadcast-box" { };
 
-    web = {
-      host = mkOption {
-        type = types.str;
-        default = "";
-        example = "127.0.0.1";
-        description = ''
-          Host address the HTTP server listens on. By default the server
-          listens on all interfaces.
-        '';
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 8080;
-        description = ''
-          Port the HTTP server listens on.
-        '';
-      };
-
-      openFirewall = mkEnableOption ''
-        opening the HTTP server port and, if enabled, the HTTPS redirect server
-        port in the firewall.
-      '';
-    };
-
     openFirewall = mkEnableOption ''
       opening WebRTC traffic ports in the firewall. Randomly selected ports
       will not be opened.
     '';
 
     settings = mkOption {
-      visible = "shallow";
-
-      type = types.submodule {
-        freeformType =
-          with types;
-          attrsOf (
-            nullOr (oneOf [
-              bool
-              int
-              str
-            ])
-          );
-        options = {
-          TCP_MUX_ADDRESS = mkOption {
-            type = with types; nullOr (strMatching ".*:[0-9]+");
-            default = null;
-          };
-
-          DISABLE_STATUS = mkOption {
-            type = types.bool;
-            default = true;
-          };
-
-          UDP_MUX_PORT = mkOption {
-            type = with types; nullOr port;
-            default = null;
-          };
-
-          UDP_WHEP_PORT = mkOption {
-            type = with types; nullOr port;
-            default = null;
-          };
-
-          UDP_WHIP_PORT = mkOption {
-            type = with types; nullOr port;
-            default = null;
-          };
-
-          ENABLE_HTTP_REDIRECT = mkOption {
-            type = types.bool;
-            default = false;
-          };
-
-          HTTPS_REDIRECT_PORT = mkOption {
-            type = with types; nullOr port;
-            default = if settings.ENABLE_HTTP_REDIRECT then 80 else null;
-          };
-        };
-      };
-
       default = {
         DISABLE_STATUS = true;
-      };
-
-      example = {
-        DISABLE_STATUS = true;
-        INCLUDE_PUBLIC_IP_IN_NAT_1_TO_1_IP = true;
-        UDP_MUX_PORT = 3000;
       };
 
       description = ''
@@ -148,6 +67,92 @@ in
         by default.
         :::
       '';
+
+      example = {
+        DISABLE_STATUS = true;
+        INCLUDE_PUBLIC_IP_IN_NAT_1_TO_1_IP = true;
+        UDP_MUX_PORT = 3000;
+      };
+
+      type = types.submodule {
+        options = {
+          DISABLE_STATUS = mkOption {
+            default = true;
+            type = types.bool;
+          };
+
+          ENABLE_HTTP_REDIRECT = mkOption {
+            default = false;
+            type = types.bool;
+          };
+
+          HTTPS_REDIRECT_PORT = mkOption {
+            default = if settings.ENABLE_HTTP_REDIRECT then 80 else null;
+            type = with types; nullOr port;
+          };
+
+          TCP_MUX_ADDRESS = mkOption {
+            default = null;
+            type = with types; nullOr (strMatching ".*:[0-9]+");
+          };
+
+          UDP_MUX_PORT = mkOption {
+            default = null;
+            type = with types; nullOr port;
+          };
+
+          UDP_WHEP_PORT = mkOption {
+            default = null;
+            type = with types; nullOr port;
+          };
+
+          UDP_WHIP_PORT = mkOption {
+            default = null;
+            type = with types; nullOr port;
+          };
+        };
+
+        freeformType =
+          with types;
+          attrsOf (
+            nullOr (oneOf [
+              bool
+              int
+              str
+            ])
+          );
+      };
+
+      visible = "shallow";
+    };
+
+    web = {
+      host = mkOption {
+        default = "";
+
+        description = ''
+          Host address the HTTP server listens on. By default the server
+          listens on all interfaces.
+        '';
+
+        example = "127.0.0.1";
+        type = types.str;
+      };
+
+      openFirewall = mkEnableOption ''
+        opening the HTTP server port and, if enabled, the HTTPS redirect server
+        port in the firewall.
+      '';
+
+      port = mkOption {
+        default = 8080;
+
+        description = ''
+          Port the HTTP server listens on.
+        '';
+
+        type = types.port;
+      };
     };
   };
 
@@ -155,6 +160,7 @@ in
     assertions = [
       {
         assertion = !(settings ? HTTP_ADDRESS);
+
         message = ''
           The Broadcast Box `HTTP_ADDRESS` variable should not be used. Instead
           use the `host` and `port` options.
@@ -162,6 +168,7 @@ in
       }
       {
         assertion = httpRedirect -> settings ? SSL_CERT && settings ? SSL_KEY;
+
         message = ''
           The Broadcast Box `ENABLE_HTTP_REDIRECT` variable requires `SSL_CERT`
           and `SSL_KEY` to be configured.
@@ -169,6 +176,7 @@ in
       }
       {
         assertion = httpRedirect -> httpPort == 443;
+
         message = ''
           Broadcast Box HTTP redirect only works if the HTTP server listen port
           is 443.
@@ -176,12 +184,14 @@ in
       }
       {
         assertion = allUnique (tcpPorts ++ webPorts);
+
         message = ''
           Broadcast Box configuration contains duplicate TCP ports.
         '';
       }
       {
         assertion = all (name: (match "[A-Z0-9_]+" name) != null) (attrNames settings);
+
         message =
           let
             offenders = filter (name: (match "[A-Z0-9_]+" name) == null) (attrNames settings);
@@ -193,13 +203,14 @@ in
       }
     ];
 
+    networking.firewall = {
+      allowedTCPPorts = optionals cfg.openFirewall tcpPorts ++ optionals cfg.web.openFirewall webPorts;
+      allowedUDPPorts = optionals cfg.openFirewall udpPorts;
+    };
+
     systemd.services.broadcast-box = {
-      description = "Broadcast Box";
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-      startLimitBurst = 3;
-      startLimitIntervalSec = 180;
+      description = "Broadcast Box";
 
       environment =
         (mapAttrs (
@@ -221,52 +232,55 @@ in
           priviledgedPort = any (p: p > 0 && p < 1024) (udpPorts ++ tcpPorts ++ webPorts);
         in
         {
-          ExecStart = "${getExe cfg.package}";
-          Restart = "always";
-          RestartSec = "10s";
-
+          AmbientCapabilities = mkIf priviledgedPort [ "CAP_NET_BIND_SERVICE" ];
+          CapabilityBoundingSet = if priviledgedPort then [ "CAP_NET_BIND_SERVICE" ] else "";
+          DeviceAllow = "";
           DynamicUser = true;
+          ExecStart = "${getExe cfg.package}";
           LockPersonality = true;
+          MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
-          PrivateUsers = !priviledgedPort;
           PrivateDevices = true;
           PrivateMounts = true;
           PrivateTmp = true;
-          ProtectSystem = "strict";
-          ProtectHome = true;
-          ProtectControlGroups = true;
+          PrivateUsers = !priviledgedPort;
+          ProcSubset = "pid";
           ProtectClock = true;
-          ProtectProc = "invisible";
+          ProtectControlGroups = true;
+          ProtectHome = true;
           ProtectHostname = true;
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
-          ProcSubset = "pid";
+          ProtectProc = "invisible";
+          ProtectSystem = "strict";
           RemoveIPC = true;
+          Restart = "always";
+          RestartSec = "10s";
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
             "AF_NETLINK"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
           ];
-          CapabilityBoundingSet = if priviledgedPort then [ "CAP_NET_BIND_SERVICE" ] else "";
-          AmbientCapabilities = mkIf priviledgedPort [ "CAP_NET_BIND_SERVICE" ];
-          DeviceAllow = "";
-          MemoryDenyWriteExecute = true;
+
           UMask = "0077";
         };
-    };
 
-    networking.firewall = {
-      allowedTCPPorts = optionals cfg.openFirewall tcpPorts ++ optionals cfg.web.openFirewall webPorts;
-      allowedUDPPorts = optionals cfg.openFirewall udpPorts;
+      startLimitBurst = 3;
+      startLimitIntervalSec = 180;
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

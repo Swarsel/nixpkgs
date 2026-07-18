@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 # Source Serif Pro got renamed to Source Serif 4 (see
@@ -29,10 +29,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://adobe-fonts.github.io/source-serif/";
     description = "Typeface for setting text in many sizes, weights, and languages. Designed to complement Source Sans";
+    homepage = "https://adobe-fonts.github.io/source-serif/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

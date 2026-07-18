@@ -6,18 +6,18 @@
   libtool,
   libxml2,
   minizip,
-  pcsclite,
   opensc,
   openssl,
+  pcsclite,
   pkg-config,
-  zlib,
   xmlsec,
   xxd,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "4.4.0";
   pname = "libdigidocpp";
+  version = "4.4.0";
 
   src = fetchFromGitHub {
     owner = "open-eid";
@@ -25,6 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Rf4ex9UT+Bspkf+WNNpYpdIt7y+QjAZ+eg786FZ0ZsA=";
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+    "bin"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -40,13 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
     zlib
     xmlsec
-  ];
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-    "bin"
   ];
 
   cmakeFlags = [
@@ -68,12 +68,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library for creating DigiDoc signature files";
-    mainProgram = "digidoc-tool";
     homepage = "https://www.id.ee/";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = [
       lib.maintainers.flokli
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "digidoc-tool";
   };
 })

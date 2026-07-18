@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  gnome,
+  gtk3,
   meson,
   ninja,
   pkg-config,
-  xdg-user-dirs,
   wrapGAppsHook3,
-  gtk3,
-  gnome,
+  xdg-user-dirs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-voJd5/iRddterQzTdE0nYRCccJQyUahwkiWRYwJVIKk=";
   };
 
+  postPatch = ''
+    # Fetch “xdg-user-dirs” translations from correct localedir.
+    substituteInPlace update.c --replace-fail \
+      'bindtextdomain ("xdg-user-dirs", GLIBLOCALEDIR);' \
+      'bindtextdomain ("xdg-user-dirs", "${lib.getLib xdg-user-dirs}/share/locale");'
+
+    patchShebangs meson_custom_install_desktop_file.sh
+  '';
+
   nativeBuildInputs = [
     meson
     ninja
@@ -30,15 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ gtk3 ];
 
-  postPatch = ''
-    # Fetch “xdg-user-dirs” translations from correct localedir.
-    substituteInPlace update.c --replace-fail \
-      'bindtextdomain ("xdg-user-dirs", GLIBLOCALEDIR);' \
-      'bindtextdomain ("xdg-user-dirs", "${lib.getLib xdg-user-dirs}/share/locale");'
-
-    patchShebangs meson_custom_install_desktop_file.sh
-  '';
-
   preFixup = ''
     gappsWrapperArgs+=(--prefix PATH : "${lib.makeBinPath [ xdg-user-dirs ]}")
   '';
@@ -48,11 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/xdg-user-dirs-gtk";
     description = "Companion to xdg-user-dirs that integrates it into the GNOME desktop and GTK applications";
+    homepage = "https://gitlab.gnome.org/GNOME/xdg-user-dirs-gtk";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
     mainProgram = "xdg-user-dirs-gtk-update";
+    teams = [ lib.teams.gnome ];
   };
 })

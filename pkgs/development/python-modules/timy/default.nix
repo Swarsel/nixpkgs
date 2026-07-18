@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "timy";
   version = "0.4.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ramonsaraiva";
@@ -20,6 +19,8 @@ buildPythonPackage {
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Minimalist measurement of python code time";

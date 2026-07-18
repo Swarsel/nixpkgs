@@ -2,14 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
-
-  # javascript
-  fetchPnpmDeps,
-  nodejs,
-  pnpm_10,
-  pnpmConfigHook,
-
   # python
   a2wsgi,
   aiosqlite,
@@ -27,7 +19,10 @@
   cryptography,
   deprecated,
   dill,
+  enabledProviders,
   fastapi,
+  # javascript
+  fetchPnpmDeps,
   flit-core,
   fsspec,
   gitdb,
@@ -47,12 +42,15 @@
   methodtools,
   msgspec,
   natsort,
+  nodejs,
   opentelemetry-api,
   opentelemetry-exporter-otlp,
   packaging,
   pathspec,
   pendulum,
   pluggy,
+  pnpmConfigHook,
+  pnpm_10,
   psutil,
   pydantic,
   pygments,
@@ -86,8 +84,7 @@
   universal-pathlib,
   uuid6,
   uvicorn,
-
-  enabledProviders,
+  writableTmpDirAsHomeHook,
 }:
 buildPythonPackage (
   finalAttrs:
@@ -95,28 +92,14 @@ buildPythonPackage (
     inherit (finalAttrs) src version;
 
     airflowUi = stdenv.mkDerivation (uiAttrs: {
-      pname = "airflow-ui-assets";
       inherit src version;
-      sourceRoot = "${src.name}/airflow-core/src/airflow/ui";
-
-      # vite build resolves "localhost" during the build, which the darwin
-      # sandbox blocks by default (getaddrinfo ENOTFOUND localhost).
-      __darwinAllowLocalNetworking = stdenv.hostPlatform.isDarwin;
+      pname = "airflow-ui-assets";
 
       nativeBuildInputs = [
         nodejs
         pnpm_10
         pnpmConfigHook
       ];
-
-      pnpmDeps = fetchPnpmDeps {
-        pname = "airflow-ui";
-        inherit src version;
-        pnpm = pnpm_10;
-        sourceRoot = uiAttrs.sourceRoot;
-        fetcherVersion = 3;
-        hash = "sha256-bKdZ4Y+enrXYuSpJ85eFHl2EM+QfZsMTGqQZ9yLfGEc=";
-      };
 
       buildPhase = ''
         pnpm install
@@ -127,29 +110,32 @@ buildPythonPackage (
         mkdir -p $out/share/airflow/ui
         cp -r dist $out/share/airflow/ui/
       '';
+
+      # vite build resolves "localhost" during the build, which the darwin
+      # sandbox blocks by default (getaddrinfo ENOTFOUND localhost).
+      __darwinAllowLocalNetworking = stdenv.hostPlatform.isDarwin;
+
+      pnpmDeps = fetchPnpmDeps {
+        inherit src version;
+        pname = "airflow-ui";
+        fetcherVersion = 3;
+        hash = "sha256-bKdZ4Y+enrXYuSpJ85eFHl2EM+QfZsMTGqQZ9yLfGEc=";
+        pnpm = pnpm_10;
+        sourceRoot = uiAttrs.sourceRoot;
+      };
+
+      sourceRoot = "${src.name}/airflow-core/src/airflow/ui";
     });
 
     airflowSimpleAuthUi = stdenv.mkDerivation (simpleUiAttrs: {
-      pname = "airflow-simple-ui-assets";
       inherit src version;
-      sourceRoot = "${src.name}/airflow-core/src/airflow/api_fastapi/auth/managers/simple/ui";
-
-      __darwinAllowLocalNetworking = stdenv.hostPlatform.isDarwin;
+      pname = "airflow-simple-ui-assets";
 
       nativeBuildInputs = [
         nodejs
         pnpm_10
         pnpmConfigHook
       ];
-
-      pnpmDeps = fetchPnpmDeps {
-        pname = "simple-auth-manager-ui";
-        inherit src version;
-        pnpm = pnpm_10;
-        sourceRoot = simpleUiAttrs.sourceRoot;
-        fetcherVersion = 3;
-        hash = "sha256-Ye8jRs9jgsf3YUd3JPldEcTzQFmgS4cvkOVP6tuZw+8=";
-      };
 
       buildPhase = ''
         pnpm install
@@ -160,6 +146,19 @@ buildPythonPackage (
         mkdir -p $out/share/airflow/simple-ui
         cp -r dist $out/share/airflow/simple-ui/
       '';
+
+      __darwinAllowLocalNetworking = stdenv.hostPlatform.isDarwin;
+
+      pnpmDeps = fetchPnpmDeps {
+        inherit src version;
+        pname = "simple-auth-manager-ui";
+        fetcherVersion = 3;
+        hash = "sha256-Ye8jRs9jgsf3YUd3JPldEcTzQFmgS4cvkOVP6tuZw+8=";
+        pnpm = pnpm_10;
+        sourceRoot = simpleUiAttrs.sourceRoot;
+      };
+
+      sourceRoot = "${src.name}/airflow-core/src/airflow/api_fastapi/auth/managers/simple/ui";
     });
 
     requiredProviders = [
@@ -175,32 +174,27 @@ buildPythonPackage (
     buildProvider =
       provider:
       buildPythonPackage {
+        inherit src;
         pname = "apache-airflow-providers-${provider}";
         version = providers.${provider}.version;
+        buildInputs = [ flit-core ];
+        dependencies = map (dep: python.pkgs.${dep}) providers.${provider}.deps;
         pyproject = true;
 
-        inherit src;
-        sourceRoot = "${src.name}/providers/${lib.replaceStrings [ "_" ] [ "/" ] provider}";
-
-        buildInputs = [ flit-core ];
-
-        dependencies = map (dep: python.pkgs.${dep}) providers.${provider}.deps;
+        pythonRelaxDeps = [
+          "flit-core"
+        ];
 
         pythonRemoveDeps = [
           "apache-airflow"
         ];
 
-        pythonRelaxDeps = [
-          "flit-core"
-        ];
+        sourceRoot = "${src.name}/providers/${lib.replaceStrings [ "_" ] [ "/" ] provider}";
       };
 
     taskSdk = buildPythonPackage {
-      pname = "task-sdk";
       inherit src version;
-      pyproject = true;
-
-      sourceRoot = "${src.name}/task-sdk";
+      pname = "task-sdk";
 
       postPatch = ''
         # resolve cyclic dependency
@@ -246,14 +240,14 @@ buildPythonPackage (
         tenacity
         types-requests
       ];
+
+      pyproject = true;
+      sourceRoot = "${src.name}/task-sdk";
     };
 
     airflowCore = buildPythonPackage {
-      pname = "apache-airflow-core";
       inherit src version;
-      pyproject = true;
-
-      sourceRoot = "${src.name}/airflow-core";
+      pname = "apache-airflow-core";
 
       postPatch = ''
         # remove cyclic dependency
@@ -347,15 +341,14 @@ buildPythonPackage (
       ]
       ++ (map buildProvider requiredProviders);
 
+      pyproject = true;
       pythonRelaxDeps = [ "starlette" ];
+      sourceRoot = "${src.name}/airflow-core";
     };
   in
   {
     pname = "apache-airflow";
     version = "3.3.0";
-
-    strictDeps = true;
-    __structuredAttrs = true;
 
     src = fetchFromGitHub {
       owner = "apache";
@@ -363,8 +356,6 @@ buildPythonPackage (
       tag = finalAttrs.version;
       hash = "sha256-1DRaJCJ488BKUOEFaFMGnZjS2yxBx4pwHvIP67juu54=";
     };
-
-    pyproject = true;
 
     postPatch = ''
       # relax dependencies
@@ -374,7 +365,25 @@ buildPythonPackage (
       sed -i -E 's/"pathspec==[^"]+"/"pathspec"/' pyproject.toml
     '';
 
+    strictDeps = true;
     nativeBuildInputs = [ writableTmpDirAsHomeHook ];
+
+    postInstall = ''
+      # Create a symlink to the airflow-core package
+      mkdir -p $out/bin
+      ln -s ${airflowCore}/bin/airflow $out/bin/airflow
+    '';
+
+    installCheckPhase = ''
+      runHook preInstallCheck
+
+      $out/bin/airflow version
+      $out/bin/airflow db reset -y
+
+      runHook postInstallCheck
+    '';
+
+    __structuredAttrs = true;
 
     build-system = [
       gitdb
@@ -394,29 +403,16 @@ buildPythonPackage (
     ]
     ++ (map buildProvider enabledProviders);
 
-    postInstall = ''
-      # Create a symlink to the airflow-core package
-      mkdir -p $out/bin
-      ln -s ${airflowCore}/bin/airflow $out/bin/airflow
-    '';
-
-    installCheckPhase = ''
-      runHook preInstallCheck
-
-      $out/bin/airflow version
-      $out/bin/airflow db reset -y
-
-      runHook postInstallCheck
-    '';
+    pyproject = true;
 
     pythonImportsCheck = [
       "airflow"
     ]
     ++ lib.concatMap (provider: providers.${provider}.imports) (requiredProviders ++ enabledProviders);
 
-    passthru.updateScript = ./update.sh;
-    passthru.airflowUi = airflowUi;
     passthru.airflowSimpleAuthUi = airflowSimpleAuthUi;
+    passthru.airflowUi = airflowUi;
+    passthru.updateScript = ./update.sh;
 
     # Note on testing the web UI:
     # You can (manually) test the web UI as follows:
@@ -428,15 +424,16 @@ buildPythonPackage (
     #
     # Then navigate to the localhost URL using the credentials printed, try
     # triggering the 'example_bash_operator' DAG and see if it reports success.
-
     meta = {
       description = "Platform to programmatically author, schedule and monitor workflows";
       homepage = "https://airflow.apache.org/";
       changelog = "https://airflow.apache.org/docs/apache-airflow/${finalAttrs.version}/release_notes.html";
       license = lib.licenses.asl20;
+
       maintainers = with lib.maintainers; [
         taranarmo
       ];
+
       mainProgram = "airflow";
     };
   }

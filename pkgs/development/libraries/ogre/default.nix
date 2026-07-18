@@ -2,21 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  unzip,
   SDL2,
   boost,
+  cmake,
   freetype,
-  libpng,
-  ois,
-  pugixml,
-  zziplib,
-  # linux
-  libglut,
   libGL,
   libGLU,
+  # linux
+  libglut,
   libice,
+  libpng,
   libsm,
   libx11,
   libxaw,
@@ -25,20 +20,25 @@
   libxrender,
   libxt,
   libxxf86vm,
+  nvidia_cg_toolkit,
+  ois,
+  pkg-config,
+  pugixml,
+  unzip,
   xorgproto,
+  zziplib,
   # optional
   withNvidiaCg ? false,
-  nvidia_cg_toolkit,
   withSamples ? false,
 }:
 
 let
   common =
     {
-      version,
       hash,
-      imguiVersion,
       imguiHash,
+      imguiVersion,
+      version,
     }:
     let
       imgui.src = fetchFromGitHub {
@@ -49,14 +49,14 @@ let
       };
     in
     stdenv.mkDerivation {
-      pname = "ogre";
       inherit version;
+      pname = "ogre";
 
       src = fetchFromGitHub {
+        inherit hash;
         owner = "OGRECave";
         repo = "ogre";
         rev = "v${version}";
-        inherit hash;
       };
 
       postPatch = ''
@@ -110,29 +110,31 @@ let
       meta = {
         description = "3D Object-Oriented Graphics Rendering Engine";
         homepage = "https://www.ogre3d.org/";
+        license = lib.licenses.mit;
+
         maintainers = with lib.maintainers; [
           raskin
           wegank
         ];
+
         platforms = lib.platforms.unix;
-        license = lib.licenses.mit;
       };
     };
 in
 {
-  ogre_14 = common {
-    version = "14.5.2";
-    hash = "sha256-qI5z6a5WD1WCQZarogQb4c9KRac/szQLsvs/9/5BNCI=";
-    # https://github.com/OGRECave/ogre/blob/v14.5.2/Components/Overlay/CMakeLists.txt
-    imguiVersion = "1.91.9b";
-    imguiHash = "sha256-dkukDP0HD8CHC2ds0kmqy7KiGIh4148hMCyA1QF3IMo=";
-  };
-
   ogre_13 = common {
     version = "13.6.5";
     hash = "sha256-8VQqePrvf/fleHijVIqWWfwOusGjVR40IIJ13o+HwaE=";
+    imguiHash = "sha256-H5rqXZFw+2PfVMsYvAK+K+pxxI8HnUC0GlPhooWgEYM=";
     # https://github.com/OGRECave/ogre/blob/v13.6.5/Components/Overlay/CMakeLists.txt
     imguiVersion = "1.87";
-    imguiHash = "sha256-H5rqXZFw+2PfVMsYvAK+K+pxxI8HnUC0GlPhooWgEYM=";
+  };
+
+  ogre_14 = common {
+    version = "14.5.2";
+    hash = "sha256-qI5z6a5WD1WCQZarogQb4c9KRac/szQLsvs/9/5BNCI=";
+    imguiHash = "sha256-dkukDP0HD8CHC2ds0kmqy7KiGIh4148hMCyA1QF3IMo=";
+    # https://github.com/OGRECave/ogre/blob/v14.5.2/Components/Overlay/CMakeLists.txt
+    imguiVersion = "1.91.9b";
   };
 }

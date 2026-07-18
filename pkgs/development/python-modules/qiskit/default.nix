@@ -1,20 +1,19 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   cargo,
-  rustPlatform,
-  rustc,
-  libiconv,
-
   dill,
+  libiconv,
   matplotlib,
   numpy,
   pillow,
   pydot,
   pylatexenc,
   python-constraint,
+  rustPlatform,
+  rustc,
   rustworkx,
   scipy,
   seaborn,
@@ -30,7 +29,6 @@
 buildPythonPackage rec {
   pname = "qiskit";
   version = "2.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Qiskit";
@@ -45,12 +43,12 @@ buildPythonPackage rec {
     rustPlatform.cargoSetupHook
   ];
 
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
+
   build-system = [
     setuptools
     setuptools-rust
   ];
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit src pname version;
@@ -67,6 +65,19 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
+    crosstalk-pass = [
+      z3-solver
+    ];
+
+    csp-layout-pass = [
+      python-constraint
+    ];
+
+    qpy-compat = [
+      symengine
+      sympy
+    ];
+
     visualization = [
       matplotlib
       pillow
@@ -75,17 +86,9 @@ buildPythonPackage rec {
       seaborn
       sympy
     ];
-    crosstalk-pass = [
-      z3-solver
-    ];
-    csp-layout-pass = [
-      python-constraint
-    ];
-    qpy-compat = [
-      symengine
-      sympy
-    ];
   };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "qiskit"
@@ -95,14 +98,16 @@ buildPythonPackage rec {
 
   meta = {
     description = "Software for developing quantum computing programs";
+
     longDescription = ''
       Open-source SDK for working with quantum computers at the level of
       extended quantum circuits, operators, and primitives.
     '';
+
     homepage = "https://www.ibm.com/quantum/qiskit";
-    downloadPage = "https://github.com/QISKit/qiskit/releases";
     changelog = "https://docs.quantum.ibm.com/api/qiskit/release-notes";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    downloadPage = "https://github.com/QISKit/qiskit/releases";
   };
 }

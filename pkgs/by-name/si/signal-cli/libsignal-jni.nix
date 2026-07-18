@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   cmake,
+  gitMinimal,
+  jdk,
+  llvmPackages,
+  perl,
   pkg-config,
   protobuf,
-  perl,
-  jdk,
-  gitMinimal,
-  llvmPackages,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-FOppsfocUvUfWa6AfBPOxAnntGJkzTbnPwqMzzbHnWQ=";
   };
 
-  cargoHash = "sha256-wsXlCpNwO+E6rVNaD2R51Mi0sZUv2lhllGxDxzyptYA=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -34,25 +32,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gitMinimal # needed by boring-sys build script
   ];
 
-  LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
-
-  # bindgen needs to find C headers (stdlib.h etc.)
-  # On Linux, libc headers are in a separate .dev output; on Darwin they
-  # come from the SDK and libclang already knows where to find them.
-  BINDGEN_EXTRA_CLANG_ARGS =
-    if stdenv.hostPlatform.isDarwin then
-      "-isystem ${llvmPackages.libclang.lib}/lib/clang/${lib.versions.major llvmPackages.libclang.version}/include"
-    else
-      "-isystem ${stdenv.cc.libc.dev}/include -isystem ${llvmPackages.libclang.lib}/lib/clang/${lib.versions.major llvmPackages.libclang.version}/include";
-
-  buildAndTestSubdir = "rust/bridge/jni";
-
-  cargoBuildFlags = [
-    "-p"
-    "libsignal-jni"
-  ];
-
-  RUSTFLAGS = "--cfg aes_armv8 --cfg tokio_unstable";
+  cargoHash = "sha256-wsXlCpNwO+E6rVNaD2R51Mi0sZUv2lhllGxDxzyptYA=";
 
   env = {
     BORING_BSSL_SOURCE_EXTERNAL = "0";
@@ -66,6 +46,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
     runHook postInstall
   '';
+
+  # bindgen needs to find C headers (stdlib.h etc.)
+  # On Linux, libc headers are in a separate .dev output; on Darwin they
+  # come from the SDK and libclang already knows where to find them.
+  BINDGEN_EXTRA_CLANG_ARGS =
+    if stdenv.hostPlatform.isDarwin then
+      "-isystem ${llvmPackages.libclang.lib}/lib/clang/${lib.versions.major llvmPackages.libclang.version}/include"
+    else
+      "-isystem ${stdenv.cc.libc.dev}/include -isystem ${llvmPackages.libclang.lib}/lib/clang/${lib.versions.major llvmPackages.libclang.version}/include";
+
+  LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
+  RUSTFLAGS = "--cfg aes_armv8 --cfg tokio_unstable";
+  buildAndTestSubdir = "rust/bridge/jni";
+
+  cargoBuildFlags = [
+    "-p"
+    "libsignal-jni"
+  ];
 
   meta = {
     description = "Signal Protocol JNI native library";

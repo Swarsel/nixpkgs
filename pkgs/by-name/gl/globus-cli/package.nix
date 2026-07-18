@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   installShellFiles,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "globus-cli";
   version = "3.41.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "globus";
@@ -17,26 +16,6 @@ python3Packages.buildPythonApplication rec {
     tag = version;
     hash = "sha256-bTS4dXQU49asmPmgUnf4VjAWJ34+1YbXmCJ4KOeOoMI=";
   };
-
-  build-system = with python3Packages; [
-    flit-core
-    ruamel-yaml
-    flit-core
-  ];
-
-  dependencies = with python3Packages; [
-    globus-sdk
-    click
-    jmespath
-    packaging
-    typing-extensions
-    requests
-  ];
-
-  pythonRelaxDeps = [
-    "globus-sdk"
-    "jmespath"
-  ];
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -57,8 +36,6 @@ python3Packages.buildPythonApplication rec {
     versionCheckHook
   ];
 
-  versionCheckProgramArg = "version";
-
   postInstall = ''
     mkdir -p completions/{bash,zsh}
     $out/bin/globus --bash-completer > completions/bash/globus
@@ -68,12 +45,36 @@ python3Packages.buildPythonApplication rec {
       --zsh completions/zsh/_globus
   '';
 
+  build-system = with python3Packages; [
+    flit-core
+    ruamel-yaml
+    flit-core
+  ];
+
+  dependencies = with python3Packages; [
+    globus-sdk
+    click
+    jmespath
+    packaging
+    typing-extensions
+    requests
+  ];
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "globus-sdk"
+    "jmespath"
+  ];
+
+  versionCheckProgramArg = "version";
+
   meta = {
-    mainProgram = "globus";
     description = "Command-line interface to Globus REST APIs, including the Transfer API and the Globus Auth API";
     homepage = "https://github.com/globus/globus-cli";
     changelog = "https://github.com/globus/globus-cli/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.richardjacton ];
+    mainProgram = "globus";
   };
 }

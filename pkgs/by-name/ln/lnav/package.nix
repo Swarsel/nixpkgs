@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pcre2,
-  sqlite,
-  readline,
-  zlib,
-  bzip2,
   autoconf,
   automake,
-  curl,
   buildPackages,
-  re2c,
+  bzip2,
+  cargo,
+  curl,
   gpm,
   libarchive,
+  libunistring,
   nix-update-script,
-  cargo,
+  pcre2,
+  re2c,
+  readline,
   rustPlatform,
   rustc,
-  libunistring,
+  sqlite,
+  zlib,
   prqlSupport ? stdenv.hostPlatform == stdenv.buildPlatform,
 }:
 
@@ -33,13 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BP4QiGO6x2o+9hRvoB4gz1IfQbr/yLVHgT9PWX/k/3c=";
   };
 
-  enableParallelBuilding = true;
-
-  separateDebugInfo = true;
+  outputs = [
+    "out"
+    "man"
+  ];
 
   strictDeps = true;
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   nativeBuildInputs = [
     autoconf
@@ -67,29 +66,27 @@ stdenv.mkDerivation (finalAttrs: {
     gpm
   ];
 
+  preConfigure = ''
+    ./autogen.sh
+  '';
+
   cargoDeps = rustPlatform.fetchCargoVendor {
     src = "${finalAttrs.src}/src/third-party/lnav-rs-ext";
     hash = "sha256-Dy+V45X27dy2TN3JRic6nLmmG11I1Pw7m+vYKYJMnQs=";
   };
 
   cargoRoot = "src/third-party/lnav-rs-ext";
-
-  preConfigure = ''
-    ./autogen.sh
-  '';
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+  separateDebugInfo = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=^v(\\d+(?:\\.\\d+)*)$" ];
   };
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   meta = {
-    homepage = "https://github.com/tstack/lnav";
     description = "Logfile Navigator";
+
     longDescription = ''
       The log file navigator, lnav, is an enhanced log file viewer that takes
       advantage of any semantic information that can be gleaned from the files
@@ -99,14 +96,18 @@ stdenv.mkDerivation (finalAttrs: {
       hotkeys for navigating through the file. It is hoped that these features
       will allow the user to quickly and efficiently zero in on problems.
     '';
-    downloadPage = "https://github.com/tstack/lnav/releases";
+
+    homepage = "https://github.com/tstack/lnav";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       dochang
       symphorien
       pcasaretto
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "lnav";
+    downloadPage = "https://github.com/tstack/lnav/releases";
   };
 })

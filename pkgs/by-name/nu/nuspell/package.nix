@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
+  buildPackages,
+  callPackage,
+  catch2_3,
   cmake,
   ctestCheckHook,
   doxygen,
-  buildPackages,
-  pkg-config,
   icu,
-  catch2_3,
+  pkg-config,
   testers,
   enableManpages ? buildPackages.pandoc.compiler.bootstrapAvailable,
 }:
@@ -25,6 +25,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CAyM3bzIP0aYNEu94I7I1qlglPx9HJSnEkgEfjNGfvc=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     doxygen
@@ -32,52 +40,42 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional enableManpages buildPackages.pandoc;
 
-  strictDeps = true;
   buildInputs = [ catch2_3 ];
-
   propagatedBuildInputs = [ icu ];
-
   cmakeFlags = lib.optional (!enableManpages) "-DBUILD_DOCS=OFF";
+  doCheck = true;
 
   nativeCheckInputs = [
     ctestCheckHook
   ];
 
-  doCheck = true;
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
   passthru = {
-    withDicts = callPackage ./wrapper.nix { nuspell = finalAttrs.finalPackage; };
-
     tests = {
-      wrapper = testers.testVersion {
-        package = finalAttrs.finalPackage.withDicts (d: [ d.en_US ]);
+      cmake = testers.hasCmakeConfigModules {
+        version = finalAttrs.version;
+        moduleNames = [ "Nuspell" ];
+        package = finalAttrs.finalPackage;
+        versionCheck = true;
       };
 
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
-      cmake = testers.hasCmakeConfigModules {
-        moduleNames = [ "Nuspell" ];
-        package = finalAttrs.finalPackage;
-        version = finalAttrs.version;
-        versionCheck = true;
+      wrapper = testers.testVersion {
+        package = finalAttrs.finalPackage.withDicts (d: [ d.en_US ]);
       };
     };
+
+    withDicts = callPackage ./wrapper.nix { nuspell = finalAttrs.finalPackage; };
   };
 
   meta = {
     description = "Free and open source C++ spell checking library";
+    homepage = "https://nuspell.github.io/";
+    changelog = "https://github.com/nuspell/nuspell/blob/v${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.lgpl3Plus;
+    maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.all;
     mainProgram = "nuspell";
     pkgConfigModules = [ "nuspell" ];
-    homepage = "https://nuspell.github.io/";
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ fpletz ];
-    license = lib.licenses.lgpl3Plus;
-    changelog = "https://github.com/nuspell/nuspell/blob/v${finalAttrs.version}/CHANGELOG.md";
   };
 })

@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ledfx";
   version = "2.1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LedFx";
@@ -23,12 +22,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail '"ledfx",' "\"$out/bin/ledfx\","
   '';
 
-  pythonRelaxDeps = true;
-
-  pythonRemoveDeps = [
-    # not packaged
-    "rpi-ws281x"
-    "xled"
+  nativeCheckInputs = with python3.pkgs; [
+    lifx-emulator-core
+    pytest-asyncio
+    pytest-order
+    pytest-timeout
+    pytestCheckHook
   ];
 
   build-system = with python3.pkgs; [
@@ -77,21 +76,22 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyflac
   ];
 
+  disabledTests = [
+    # requires internet
+    "TestURLDownloadWithExternalURL"
+  ];
+
   optional-dependencies = {
     hue = with python3.pkgs; [ python-mbedtls ];
   };
 
-  nativeCheckInputs = with python3.pkgs; [
-    lifx-emulator-core
-    pytest-asyncio
-    pytest-order
-    pytest-timeout
-    pytestCheckHook
-  ];
+  pyproject = true;
+  pythonRelaxDeps = true;
 
-  disabledTests = [
-    # requires internet
-    "TestURLDownloadWithExternalURL"
+  pythonRemoveDeps = [
+    # not packaged
+    "rpi-ws281x"
+    "xled"
   ];
 
   meta = {

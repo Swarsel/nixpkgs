@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   vulkan-loader,
 }:
 
@@ -18,9 +18,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-w9vXC7L7IP4QLPFS1IgPOKSm7fT7W0R+NsHTdAfIupg=";
   };
 
-  cargoHash = "sha256-F1dUv1SR6cf1o6a2JG2i2fCgjZpGsG20mskIrf3oiHY=";
-
-  enableParallelBuilding = true;
+  postPatch = ''
+    substituteInPlace distribution/hayabusa.service \
+      --replace "/usr/local" "$out"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -31,21 +32,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     vulkan-loader
   ];
 
-  postPatch = ''
-    substituteInPlace distribution/hayabusa.service \
-      --replace "/usr/local" "$out"
-  '';
+  cargoHash = "sha256-F1dUv1SR6cf1o6a2JG2i2fCgjZpGsG20mskIrf3oiHY=";
 
   postInstall = ''
     install -Dm444 distribution/hayabusa.service -t $out/lib/systemd/system/
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Swift rust fetch program";
     homepage = "https://github.com/notarin/hayabusa";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ Notarin ];
-    mainProgram = "hayabusa";
     platforms = lib.platforms.linux;
+    mainProgram = "hayabusa";
   };
 })

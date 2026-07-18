@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   certifi,
   cryptography,
   ecdsa,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pysatochip";
   version = "0.17.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "toporin";
@@ -31,7 +30,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ certifi ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pysatochip" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  writeScript,
   callPackage,
+  stdenvNoCC,
+  writeScript,
 }:
 
 let
@@ -23,13 +23,15 @@ let
       };
     in
     fetchurl {
-      name = "postman-${version}.${if stdenvNoCC.hostPlatform.isLinux then "tar.gz" else "zip"}";
       url = "https://dl.pstmn.io/download/version/${version}/${system}";
+
       hash = selectSystem {
         aarch64-darwin = "sha256-rZLqbcX5ZRNeDUyEWcsLWMr3KXsnXRKBRmLZKMH9gIs=";
         aarch64-linux = "sha256-sMJohqgY8DrC7DLgU9AQofLWMhebznAJSLFe5D65c4M=";
         x86_64-linux = "sha256-PsTFM5UwX104G8YIwAy1OY4EgNhspupkPJ53y3qwGUc=";
       };
+
+      name = "postman-${version}.${if stdenvNoCC.hostPlatform.isLinux then "tar.gz" else "zip"}";
     };
 
   passthru.updateScript = writeScript "update-postman" ''
@@ -49,24 +51,29 @@ let
   '';
 
   meta = {
+    description = "API Development Environment";
+    homepage = "https://www.getpostman.com";
+
     changelog = "https://www.postman.com/release-notes/postman-app/#${
       lib.replaceStrings [ "." ] [ "-" ] version
     }";
-    description = "API Development Environment";
-    homepage = "https://www.getpostman.com";
+
     license = lib.licenses.postman;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       Crafter
       evanjs
       johnrichardrinehart
       tricktron
     ];
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"
       "x86_64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     mainProgram = "postman";
   };
 in

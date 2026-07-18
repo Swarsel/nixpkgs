@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
-  lib,
 }:
 
 stdenv.mkDerivation {
@@ -27,8 +27,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
-  hardeningDisable = [ "pic" ];
-
   makeFlags = kernelModuleMakeFlags ++ [
     "KVER=${kernel.modDirVersion}"
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
@@ -39,6 +37,7 @@ stdenv.mkDerivation {
   '';
 
   enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
 
   meta = {
     description = "Linux kernel vendor specific hardware reset module";

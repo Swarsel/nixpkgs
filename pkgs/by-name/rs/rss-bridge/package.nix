@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nixosTests,
   nix-update-script,
+  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     tests = {
       inherit (nixosTests.rss-bridge) caddy nginx;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -33,10 +34,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "RSS feed for websites missing it";
     homepage = "https://github.com/RSS-Bridge/rss-bridge";
     license = lib.licenses.unlicense;
+
     maintainers = with lib.maintainers; [
       dawidsowa
       mynacol
     ];
+
     platforms = lib.platforms.all;
   };
 })

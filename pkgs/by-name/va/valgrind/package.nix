@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
-  perl,
+  fetchpatch,
   gdb,
+  perl,
   writeScript,
 }:
 
@@ -18,32 +18,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-XViRUuuAccAv6rjOarcZ5DGh+8PisXAPVDJjKouSZNw=";
   };
 
-  patches = [
-    # Fix checks on Musl.
-    # https://bugs.kde.org/show_bug.cgi?id=453929
-    (fetchpatch {
-      url = "https://bugsfiles.kde.org/attachment.cgi?id=148912";
-      sha256 = "Za+7K93pgnuEUQ+jDItEzWlN0izhbynX2crSOXBBY/I=";
-    })
-    # https://bugs.kde.org/show_bug.cgi?id=511548
-    (fetchpatch {
-      url = "https://bugsfiles.kde.org/attachment.cgi?id=186451";
-      hash = "sha256-IGmyHwwGoy00hcz3XxQSDcwcU8zHLBJ9dfqTvWDQ520=";
-    })
-    (fetchpatch {
-      name = "reallocarray-test-musl.patch";
-      url = "https://sourceware.org/git/?p=valgrind.git;a=patch;h=991961ece87e4cdc0771a05c956c55baa437bb07";
-      hash = "sha256-U16384rLXMhLE5Em9z8FKYbshPlnq8l9ejC2+epL7M4=";
-    })
-
-    # Fix build on armv7l.
-    # see also https://bugs.kde.org/show_bug.cgi?id=454346
-    (fetchpatch {
-      url = "https://git.yoctoproject.org/poky/plain/meta/recipes-devtools/valgrind/valgrind/use-appropriate-march-mcpu-mfpu-for-ARM-test-apps.patch?id=b7a9250590a16f1bdc8c7b563da428df814d4292";
-      sha256 = "sha256-sBZzn98Sf/ETFv8ubivgA6Y6fBNcyR8beB3ICDAyAH0=";
-    })
-  ];
-
   outputs = [
     "out"
     "dev"
@@ -51,8 +25,36 @@ stdenv.mkDerivation rec {
     "doc"
   ];
 
-  hardeningDisable = [
-    "stackprotector"
+  patches = [
+    # Fix checks on Musl.
+    # https://bugs.kde.org/show_bug.cgi?id=453929
+    (fetchpatch {
+      sha256 = "Za+7K93pgnuEUQ+jDItEzWlN0izhbynX2crSOXBBY/I=";
+      url = "https://bugsfiles.kde.org/attachment.cgi?id=148912";
+    })
+    # https://bugs.kde.org/show_bug.cgi?id=511548
+    (fetchpatch {
+      hash = "sha256-IGmyHwwGoy00hcz3XxQSDcwcU8zHLBJ9dfqTvWDQ520=";
+      url = "https://bugsfiles.kde.org/attachment.cgi?id=186451";
+    })
+    (fetchpatch {
+      hash = "sha256-U16384rLXMhLE5Em9z8FKYbshPlnq8l9ejC2+epL7M4=";
+      name = "reallocarray-test-musl.patch";
+      url = "https://sourceware.org/git/?p=valgrind.git;a=patch;h=991961ece87e4cdc0771a05c956c55baa437bb07";
+    })
+
+    # Fix build on armv7l.
+    # see also https://bugs.kde.org/show_bug.cgi?id=454346
+    (fetchpatch {
+      sha256 = "sha256-sBZzn98Sf/ETFv8ubivgA6Y6fBNcyR8beB3ICDAyAH0=";
+      url = "https://git.yoctoproject.org/poky/plain/meta/recipes-devtools/valgrind/valgrind/use-appropriate-march-mcpu-mfpu-for-ARM-test-apps.patch?id=b7a9250590a16f1bdc8c7b563da428df814d4292";
+    })
+  ];
+
+  # Perl is also a native build input.
+  nativeBuildInputs = [
+    autoreconfHook
+    perl
   ];
 
   # GDB is needed to provide a sane default for `--db-command'.
@@ -62,20 +64,11 @@ stdenv.mkDerivation rec {
     perl
   ];
 
-  # Perl is also a native build input.
-  nativeBuildInputs = [
-    autoreconfHook
-    perl
-  ];
-
-  enableParallelBuilding = true;
-  separateDebugInfo = stdenv.hostPlatform.isLinux;
+  configureFlags = lib.optional stdenv.hostPlatform.isx86_64 "--enable-only64bit";
 
   preConfigure = lib.optionalString stdenv.hostPlatform.isFreeBSD ''
     substituteInPlace configure --replace-fail '`uname -r`' ${stdenv.cc.libc.version}-
   '';
-
-  configureFlags = lib.optional stdenv.hostPlatform.isx86_64 "--enable-only64bit";
 
   doCheck = true;
 
@@ -87,6 +80,14 @@ stdenv.mkDerivation rec {
         --replace 'obj:/usr/lib' 'obj:*/lib'
     done
   '';
+
+  enableParallelBuilding = true;
+
+  hardeningDisable = [
+    "stackprotector"
+  ];
+
+  separateDebugInfo = stdenv.hostPlatform.isLinux;
 
   passthru = {
     updateScript = writeScript "update-valgrind" ''
@@ -104,7 +105,6 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://valgrind.org/";
     description = "Debugging and profiling tool suite";
 
     longDescription = ''
@@ -115,15 +115,17 @@ stdenv.mkDerivation rec {
       Valgrind to build new tools.
     '';
 
+    homepage = "https://valgrind.org/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "valgrind";
 
     platforms =
       with lib.platforms;
       lib.intersectLists (x86 ++ power ++ s390x ++ armv7 ++ aarch64 ++ mips ++ riscv64) (
         darwin ++ freebsd ++ illumos ++ linux
       );
+
     badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
+    mainProgram = "valgrind";
     # See: <https://hydra.nixos.org/build/128521440/nixlog/2>
     #
     # Darwin‐specific derivation logic has been removed, check the

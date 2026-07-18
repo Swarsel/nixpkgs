@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   cython,
-  poetry-core,
-  setuptools,
-  numpy,
-  pydicom,
-  pylibjpeg-data,
-  pylibjpeg,
   libjpeg-tools,
+  numpy,
+  poetry-core,
+  pydicom,
+  pylibjpeg,
+  pylibjpeg-data,
+  pytestCheckHook,
+  setuptools,
 }:
 
 let
   self = buildPythonPackage {
     pname = "pylibjpeg-libjpeg";
     version = "2.4.0";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "pydicom";
@@ -34,13 +33,7 @@ let
       chmod u+w lib/libjpeg
     '';
 
-    build-system = [
-      cython
-      poetry-core
-      setuptools
-    ];
-
-    dependencies = [ numpy ];
+    doCheck = false; # circular test dependency with `pylibjpeg` and `pydicom`
 
     nativeCheckInputs = [
       pydicom
@@ -49,13 +42,19 @@ let
       pytestCheckHook
     ];
 
-    doCheck = false; # circular test dependency with `pylibjpeg` and `pydicom`
+    build-system = [
+      cython
+      poetry-core
+      setuptools
+    ];
+
+    dependencies = [ numpy ];
+    pyproject = true;
+    pythonImportsCheck = [ "libjpeg" ];
 
     passthru.tests.check = self.overridePythonAttrs (_: {
       doCheck = true;
     });
-
-    pythonImportsCheck = [ "libjpeg" ];
 
     meta = {
       description = "JPEG, JPEG-LS and JPEG XT plugin for pylibjpeg";

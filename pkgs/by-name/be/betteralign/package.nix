@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,10 +15,10 @@ buildGoModule (finalAttrs: {
     repo = "betteralign";
     tag = "v${finalAttrs.version}";
     hash = "sha256-deKu4ZTaLhmqbNZRD/fyhNN8dDikQTS+PHSHhmSNUJQ=";
-
     # Trick for getting accurate commit, source date and timestamp for ldflags
     # Required by upstream https://github.com/dkorunic/betteralign/blob/346baa9c9dd024bfe55302c9d7d0ca46b2734c1c/.goreleaser.yml
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -29,13 +29,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-JIInHtRrdCA0sevYpjVbljvEhTZLbC+Le3NEj9ULICg=";
-
   env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s -w"
-    "-X main.Version=${finalAttrs.version}"
-  ];
 
   preBuild = ''
     ldflags+=" -X main.Commit=$(cat COMMIT)"
@@ -43,22 +37,29 @@ buildGoModule (finalAttrs: {
     ldflags+=" -X main.Timestamp=$(cat SOURCE_TIMESTAMP)"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-V";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
+  ldflags = [
+    "-s -w"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
+  versionCheckProgramArg = "-V";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Make your Go programs use less memory (maybe)";
+
     longDescription = ''
       betteralign is a tool to detect structs that would use less
       memory if their fields were sorted and optionally sort such fields.
     '';
+
     homepage = "https://github.com/dkorunic/betteralign";
     changelog = "https://github.com/dkorunic/betteralign/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "betteralign";
     maintainers = with lib.maintainers; [ cterence ];
+    mainProgram = "betteralign";
   };
 })

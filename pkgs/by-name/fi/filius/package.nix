@@ -1,11 +1,11 @@
 {
   lib,
-  maven,
   fetchFromGitLab,
-  makeWrapper,
   jre,
-  wrapGAppsHook3,
+  makeWrapper,
+  maven,
   nix-update-script,
+  wrapGAppsHook3,
 }:
 
 maven.buildMavenPackage rec {
@@ -19,12 +19,6 @@ maven.buildMavenPackage rec {
     hash = "sha256-sIcYjbWONg8Cq+dHpoBYj07cyHV7oX06Xh1zK0CHn64=";
   };
 
-  mvnHash = "sha256-41NirfgR9EhHLRT3V6P5KrakYKZ6dJTlXZu6rgCAK3I=";
-  mvnParameters = "-Plinux";
-
-  # tests want to create an X11 window which isn't often feasible
-  doCheck = false;
-
   postPatch = ''
     substituteInPlace src/deb/filius.desktop \
       --replace-fail 'Exec=/usr/share/filius/filius.sh' 'Exec=filius'
@@ -34,6 +28,9 @@ maven.buildMavenPackage rec {
     makeWrapper
     wrapGAppsHook3
   ];
+
+  # tests want to create an X11 window which isn't often feasible
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -65,13 +62,13 @@ maven.buildMavenPackage rec {
     cp src/deb/filius.desktop $out/share/applications/
   '';
 
+  mvnHash = "sha256-41NirfgR9EhHLRT3V6P5KrakYKZ6dJTlXZu6rgCAK3I=";
+  mvnParameters = "-Plinux";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://www.lernsoftware-filius.de/";
-    # note, the gitlab repo page is *not* the homepage and there is not meta attribute for their git forge page
-    downloadPage = "https://www.lernsoftware-filius.de/Herunterladen";
     description = "A computer network simulator for secondary schools";
+
     longDescription = ''
       With the software tool Filius, you can design computer networks yourself,
       simulate the exchange of messages in them and thus explore their structure
@@ -79,13 +76,19 @@ maven.buildMavenPackage rec {
       schools (general education). Filius enables learning activities that
       are designed to support discovery-based learning in particular.
     '';
+
+    homepage = "https://www.lernsoftware-filius.de/";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Only
     ];
+
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = with lib.maintainers; [ annaaurora ];
     platforms = lib.platforms.all;
     mainProgram = "filius";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    # note, the gitlab repo page is *not* the homepage and there is not meta attribute for their git forge page
+    downloadPage = "https://www.lernsoftware-filius.de/Herunterladen";
   };
 }

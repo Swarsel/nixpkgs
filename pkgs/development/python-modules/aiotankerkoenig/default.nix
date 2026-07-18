@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
+  hatchling,
   mashumaro,
   orjson,
-  hatchling,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiotankerkoenig";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jpbede";
@@ -31,6 +30,14 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -40,14 +47,7 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiotankerkoenig" ];
 
   meta = {

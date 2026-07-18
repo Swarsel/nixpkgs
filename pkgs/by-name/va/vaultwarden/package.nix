@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  callPackage,
-  rustPlatform,
   fetchFromGitHub,
-  nixosTests,
-  pkg-config,
-  openssl,
+  callPackage,
   libiconv,
-  dbBackend ? "sqlite_system",
   libmysqlclient,
   libpq,
+  nixosTests,
+  openssl,
+  pkg-config,
+  rustPlatform,
   sqlite,
+  dbBackend ? "sqlite_system",
 }:
 
 let
@@ -29,12 +29,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-jc2f7Ia2c+U1cQBXmyzfQAgFMFoAPexLejs6/FKaN9I=";
   };
 
-  cargoHash = "sha256-sjWBM9SsI/7AQ8SuFiTR19l8kqp3rhy64Uh/1TatH6A=";
-
-  # used for "Server Installed" version in admin panel
-  env.VW_VERSION = finalAttrs.version;
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openssl
   ]
@@ -45,6 +41,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optional (dbBackend == "postgresql") libpq
   ++ lib.optional (dbBackend == "sqlite_system") sqlite;
 
+  cargoHash = "sha256-sjWBM9SsI/7AQ8SuFiTR19l8kqp3rhy64Uh/1TatH6A=";
+  # used for "Server Installed" version in admin panel
+  env.VW_VERSION = finalAttrs.version;
   buildFeatures = dbBackend;
 
   passthru = {
@@ -58,10 +57,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/dani-garcia/vaultwarden";
     changelog = "https://github.com/dani-garcia/vaultwarden/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       dotlambda
       SuperSandro2000
     ];
+
     mainProgram = "vaultwarden";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -32,7 +32,7 @@ buildNpmPackage (finalAttrs: {
     description = "Control any light or switch entity";
     homepage = "https://github.com/ljmerza/light-entity-card";
     changelog = "https://github.com/ljmerza/light-entity-card/releases/tag/${finalAttrs.src.tag}";
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
   };
 })

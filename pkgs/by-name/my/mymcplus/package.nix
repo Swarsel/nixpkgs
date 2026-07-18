@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mymcplus";
   version = "3.0.5";
-  pyproject = true;
 
   src = fetchFromSourcehut {
     owner = "~thestr4ng3r";
@@ -28,13 +27,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wxpython
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mymcplus" ];
 
   meta = {
-    homepage = "https://git.sr.ht/~thestr4ng3r/mymcplus";
     description = "PlayStation 2 memory card manager";
-    mainProgram = "mymcplus";
+    homepage = "https://git.sr.ht/~thestr4ng3r/mymcplus";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    mainProgram = "mymcplus";
   };
 })

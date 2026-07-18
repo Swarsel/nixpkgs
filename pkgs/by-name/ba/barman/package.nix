@@ -3,16 +3,15 @@
   stdenv,
   fetchFromGitHub,
   file,
+  nix-update-script,
   python3Packages,
   rsync,
   versionCheckHook,
-  nix-update-script,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "barman";
   version = "3.19.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EnterpriseDB";
@@ -30,6 +29,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     substituteInPlace barman/encryption.py \
       --replace-fail '"file"' '"${lib.getExe file}"'
   '';
+
+  nativeCheckInputs = [
+    python3Packages.lz4
+    python3Packages.mock
+    python3Packages.pytestCheckHook
+    python3Packages.zstandard
+    rsync
+    versionCheckHook
+  ];
 
   build-system = with python3Packages; [
     distutils
@@ -51,15 +59,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python-snappy
   ];
 
-  nativeCheckInputs = [
-    python3Packages.lz4
-    python3Packages.mock
-    python3Packages.pytestCheckHook
-    python3Packages.zstandard
-    rsync
-    versionCheckHook
-  ];
-
   disabledTests = [
     # Assertion error
     "test_help_output"
@@ -70,6 +69,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # FsOperationFailed
     "test_get_file_mode"
   ];
+
+  pyproject = true;
 
   passthru = {
     updateScript = nix-update-script {
@@ -84,9 +85,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     description = "Backup and Recovery Manager for PostgreSQL";
     homepage = "https://www.pgbarman.org/";
     changelog = "https://github.com/EnterpriseDB/barman/blob/${finalAttrs.src.tag}/RELNOTES.md";
-    mainProgram = "barman";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "barman";
   };
 })

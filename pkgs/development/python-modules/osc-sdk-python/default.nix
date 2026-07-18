@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   ruamel-yaml,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "osc-sdk-python";
   version = "0.38.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "outscale";
@@ -29,15 +28,14 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  # Only keep test not requiring access and secret keys
+  enabledTestPaths = [ "tests/test_net.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "osc_sdk_python" ];
 
   pythonRelaxDeps = [
     "ruamel.yaml"
   ];
-
-  # Only keep test not requiring access and secret keys
-  enabledTestPaths = [ "tests/test_net.py" ];
-
-  pythonImportsCheck = [ "osc_sdk_python" ];
 
   meta = {
     description = "SDK to perform actions on Outscale API";

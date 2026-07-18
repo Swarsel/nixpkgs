@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pybind11,
-  setuptools,
-
-  # dependencies
-  numpy,
-
+  buildPythonPackage,
   # tests
   cirq-core,
   matplotlib,
   networkx,
+  # dependencies
+  numpy,
   pandas,
+  # build-system
+  pybind11,
   pytest-xdist,
   pytestCheckHook,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "stim";
   version = "1.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "quantumlib";
@@ -54,13 +50,6 @@ buildPythonPackage rec {
       --replace-fail "nx.testing.assert_graphs_equal" "assert nx.utils.edges_equal"
   '';
 
-  build-system = [
-    pybind11
-    setuptools
-  ];
-
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [
     cirq-core
     matplotlib
@@ -71,7 +60,18 @@ buildPythonPackage rec {
     scipy
   ];
 
-  pythonImportsCheck = [ "stim" ];
+  build-system = [
+    pybind11
+    setuptools
+  ];
+
+  dependencies = [ numpy ];
+
+  disabledTests = [
+    # AssertionError: Sample rate 1.0 is over 5 standard deviations away from 1.0.
+    "test_frame_simulator_sampling_noisy_gates_agrees_with_cirq_data"
+    "test_tableau_simulator_sampling_noisy_gates_agrees_with_cirq_data"
+  ];
 
   enableParallelBuilding = true;
 
@@ -81,18 +81,15 @@ buildPythonPackage rec {
     "glue/cirq"
   ];
 
-  disabledTests = [
-    # AssertionError: Sample rate 1.0 is over 5 standard deviations away from 1.0.
-    "test_frame_simulator_sampling_noisy_gates_agrees_with_cirq_data"
-    "test_tableau_simulator_sampling_noisy_gates_agrees_with_cirq_data"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "stim" ];
 
   meta = {
     description = "Tool for high performance simulation and analysis of quantum stabilizer circuits, especially quantum error correction (QEC) circuits";
-    mainProgram = "stim";
     homepage = "https://github.com/quantumlib/stim";
     changelog = "https://github.com/quantumlib/Stim/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ chrispattison ];
+    mainProgram = "stim";
   };
 }

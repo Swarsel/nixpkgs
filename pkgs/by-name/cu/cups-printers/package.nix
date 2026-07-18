@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "cups-printers";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "audius";
@@ -16,12 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-Fne7V9dEZwdV6OsQPg2gzrz/wloAOOuwlx3CqXOyWBc=";
   };
 
-  pythonRelaxDeps = [
-    "rich"
-    "typer"
-    "validators"
-  ];
-
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -31,10 +26,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     validators
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "cups_printers" ];
+
+  pythonRelaxDeps = [
+    "rich"
+    "typer"
+    "validators"
+  ];
 
   meta = {
     description = "Tool for interacting with a CUPS server";

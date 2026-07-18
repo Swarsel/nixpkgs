@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  bun,
   fetchFromGitHub,
+  bun,
   nix-update-script,
+  stdenvNoCC,
   writableTmpDirAsHomeHook,
 }:
 let
@@ -17,20 +17,13 @@ let
   };
 
   node_modules = stdenvNoCC.mkDerivation {
-    pname = "${pname}-node_modules";
     inherit version src;
-
-    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-      "GIT_PROXY_COMMAND"
-      "SOCKS_SERVER"
-    ];
+    pname = "${pname}-node_modules";
 
     nativeBuildInputs = [
       bun
       writableTmpDirAsHomeHook
     ];
-
-    dontConfigure = true;
 
     buildPhase = ''
       runHook preBuild
@@ -54,8 +47,14 @@ let
       runHook postInstall
     '';
 
+    dontConfigure = true;
     # NOTE: Required else we get errors that our fixed-output derivation references store paths
     dontFixup = true;
+
+    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
+      "GIT_PROXY_COMMAND"
+      "SOCKS_SERVER"
+    ];
 
     outputHash = "sha256-aL2kNCYF6Y4QnEvlpQ9U5Qe+K8a1J2X7BvJqE+BnRcY=";
     outputHashAlgo = "sha256";
@@ -71,14 +70,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ;
 
   nativeBuildInputs = [ bun ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    cp -R ${node_modules}/. .
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -98,6 +89,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    cp -R ${node_modules}/. .
+
+    runHook postConfigure
+  '';
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version=branch"
@@ -110,7 +109,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Comprehensive open-source database of AI model specifications, pricing, and capabilities";
     homepage = "https://github.com/anomalyco/models.dev";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ delafthi ];
+    platforms = lib.platforms.unix;
   };
 })

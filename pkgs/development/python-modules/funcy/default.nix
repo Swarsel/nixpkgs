@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "funcy";
   version = "2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # No tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Collection of fancy functional tools focused on practicality";

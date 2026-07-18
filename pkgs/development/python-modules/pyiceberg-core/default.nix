@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-
+  buildPythonPackage,
   # tests
   datafusion,
   fastavro,
   pyarrow,
   pyiceberg,
-  pytestCheckHook,
-
   # passthru
   pyiceberg-core,
+  pytestCheckHook,
+  rustPlatform,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyiceberg-core";
   version = "0.9.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "apache";
@@ -28,24 +24,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-PE19tUEk3VmJ9h4JiBVYgbAVuQ3EzSngESj+CZc7ODs=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/bindings/python";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      ;
-    hash = "sha256-aEk+K9dWwgkiE7Wx2J+rF3JLQ5deTqRm2sfFSphyALY=";
-  };
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
   ];
 
-  pythonImportsCheck = [ "pyiceberg_core" ];
+  # Circular dependency on pyiceberg
+  doCheck = false;
 
   nativeCheckInputs = [
     datafusion
@@ -57,13 +42,27 @@ buildPythonPackage (finalAttrs: {
   ++ pyiceberg.optional-dependencies.pyarrow
   ++ pyiceberg.optional-dependencies.sql-sqlite;
 
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      ;
+
+    hash = "sha256-aEk+K9dWwgkiE7Wx2J+rF3JLQ5deTqRm2sfFSphyALY=";
+  };
+
   disabledTests = [
     # AttributeError: 'function' object has no attribute 'cache_clear'
     "test_read_manifest_entry"
   ];
 
-  # Circular dependency on pyiceberg
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "pyiceberg_core" ];
+  sourceRoot = "${finalAttrs.src.name}/bindings/python";
 
   passthru.tests.pytest = pyiceberg-core.overridePythonAttrs {
     doCheck = true;

@@ -1,8 +1,8 @@
 {
-  fetchFromGitHub,
-  perl,
   lib,
   stdenv,
+  fetchFromGitHub,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ perl ];
-
-  dontBuild = false;
   doCheck = false;
 
   installPhase = ''
@@ -27,10 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     cp sec.man $out/share/man/man1/sec.1
   '';
 
+  dontBuild = false;
+
   meta = {
+    description = "Simple Event Correlator";
     homepage = "https://simple-evcorr.github.io";
     license = lib.licenses.gpl2Plus;
-    description = "Simple Event Correlator";
     maintainers = [ lib.maintainers.tv ];
     platforms = lib.platforms.all;
     mainProgram = "sec";

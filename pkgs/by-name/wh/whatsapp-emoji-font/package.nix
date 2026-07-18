@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   imagemagick,
   nix-update-script,
   nototools,
   pngquant,
+  stdenvNoCC,
   which,
   zopfli,
 }:
@@ -15,17 +15,11 @@ stdenvNoCC.mkDerivation rec {
   version = "2.26.8.72-1";
 
   src = fetchFromGitHub {
-    tag = version;
     owner = "dmlls";
     repo = "whatsapp-emoji-linux";
+    tag = version;
     hash = "sha256-72qqW68kmAqm2+Z5ldWMHEJL8LXpE93A32VsmW+dbY8=";
   };
-
-  makeFlags = [
-    "PREFIX=$(out)"
-  ];
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     imagemagick
@@ -35,13 +29,18 @@ stdenvNoCC.mkDerivation rec {
     zopfli
   ];
 
+  makeFlags = [
+    "PREFIX=$(out)"
+  ];
+
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "WhatsApp Emoji for GNU/Linux";
     homepage = "https://github.com/dmlls/whatsapp-emoji-linux";
-    maintainers = [ lib.maintainers.lucasew ];
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    maintainers = [ lib.maintainers.lucasew ];
   };
 }

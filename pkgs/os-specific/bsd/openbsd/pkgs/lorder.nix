@@ -1,15 +1,13 @@
 {
   lib,
-  mkDerivation,
   bsdSetupHook,
-  openbsdSetupHook,
-  makeMinimal,
   install,
+  makeMinimal,
+  mkDerivation,
+  openbsdSetupHook,
 }:
 
 mkDerivation {
-  noCC = true;
-  path = "usr.bin/lorder";
   nativeBuildInputs = [
     bsdSetupHook
     openbsdSetupHook
@@ -17,5 +15,7 @@ mkDerivation {
     install
   ];
 
+  noCC = true;
+  path = "usr.bin/lorder";
   meta.platforms = lib.platforms.unix;
 }

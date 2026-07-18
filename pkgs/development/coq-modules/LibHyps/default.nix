@@ -1,23 +1,22 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "LibHyps";
-  owner = "Matafou";
   inherit version;
+  pname = "LibHyps";
+  propagatedBuildInputs = [ stdlib ];
+  configureScript = "./configure.sh";
   defaultVersion = if (lib.versions.range "8.11" "9.0") coq.version then "2.0.8" else null;
+  owner = "Matafou";
+
   release = {
     "2.0.8".hash = "sha256-u8T7ZWfgYNFBsIPss0uUS0oBvdlwPp3t5yYIMjYzfLc=";
   };
-
-  configureScript = "./configure.sh";
-
-  propagatedBuildInputs = [ stdlib ];
 
   releaseRev = (v: "libhyps-${v}");
 

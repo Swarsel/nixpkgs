@@ -4,17 +4,17 @@
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  pkg-config,
   gettext,
+  gitUpdater,
   glib,
   glib-networking,
-  libxml2,
-  gtk3,
   gtk-doc,
+  gtk3,
   libsoup_3,
-  tzdata,
+  libxml2,
   mate-common,
-  gitUpdater,
+  pkg-config,
+  tzdata,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libmateweather";
@@ -63,13 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   preFixup = "rm -f $out/share/icons/mate/icon-theme.cache";
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/libmateweather";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/libmateweather";
   };
 
   meta = {

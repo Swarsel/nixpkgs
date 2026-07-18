@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   redis,
   redisTestHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "walrus";
   version = "0.9.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coleifer";
@@ -20,18 +19,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-AgaqDZHjUX/oLjzisWjZcrGL9QXQf73WW+hfK2WMQJ8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ redis ];
-
   nativeCheckInputs = [
     unittestCheckHook
     redisTestHook
   ];
 
-  pythonImportsCheck = [ "walrus" ];
-
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ redis ];
+  pyproject = true;
+  pythonImportsCheck = [ "walrus" ];
 
   meta = {
     description = "Lightweight Python utilities for working with Redis";

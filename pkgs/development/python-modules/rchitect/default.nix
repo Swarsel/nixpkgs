@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  R,
+  buildPythonPackage,
   cffi,
   packaging,
-  pytestCheckHook,
   pytest-mock,
-  R,
+  pytestCheckHook,
   rPackages,
   setuptools,
   setuptools-scm,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "rchitect";
   version = "0.4.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "randy3k";
@@ -29,11 +28,6 @@ buildPythonPackage rec {
     substituteInPlace setup.py \
       --replace '"pytest-runner"' ""
   '';
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
 
   propagatedBuildInputs = [
     cffi
@@ -53,6 +47,12 @@ buildPythonPackage rec {
     cd $TMPDIR
   '';
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "rchitect" ];
 
   meta = {

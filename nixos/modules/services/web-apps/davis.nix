@@ -67,40 +67,11 @@ let
 in
 {
   options.services.davis = {
-    enable = lib.mkEnableOption "Davis is a caldav and carddav server";
-
-    user = lib.mkOption {
-      default = "davis";
-      description = "User davis runs as.";
-      type = lib.types.str;
-    };
-
-    group = lib.mkOption {
-      default = "davis";
-      description = "Group davis runs as.";
-      type = lib.types.str;
-    };
-
-    package = lib.mkPackageOption pkgs "davis" { };
-
-    dataDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/davis";
-      description = ''
-        Davis data directory.
-      '';
-    };
-
-    hostname = lib.mkOption {
-      type = lib.types.str;
-      example = "davis.yourdomain.org";
-      description = ''
-        Domain of the host to serve davis under. You may want to change it if you
-        run Davis on a different URL than davis.yourdomain.
-      '';
-    };
-
     config = lib.mkOption {
+      default = { };
+      description = "";
+      example = "";
+
       type = lib.types.attrsOf (
         lib.types.nullOr (
           lib.types.either
@@ -115,118 +86,156 @@ in
               lib.types.submodule {
                 options = {
                   _secret = lib.mkOption {
+                    description = ''
+                      The path to a file containing the value the
+                      option should be set to in the final
+                      configuration file.
+                    '';
+
                     type = lib.types.nullOr (
                       lib.types.oneOf [
                         lib.types.str
                         lib.types.path
                       ]
                     );
-                    description = ''
-                      The path to a file containing the value the
-                      option should be set to in the final
-                      configuration file.
-                    '';
                   };
                 };
               }
             )
         )
       );
-      default = { };
-
-      example = "";
-      description = "";
     };
 
+    enable = lib.mkEnableOption "Davis is a caldav and carddav server";
+    package = lib.mkPackageOption pkgs "davis" { };
+
     adminLogin = lib.mkOption {
-      type = lib.types.str;
       default = "root";
+
       description = ''
         Username for the admin account.
       '';
+
+      type = lib.types.str;
     };
+
     adminPasswordFile = lib.mkOption {
-      type = lib.types.path;
       description = ''
         The full path to a file that contains the admin's password. Must be
         readable by the user.
       '';
+
       example = "/run/secrets/davis-admin-pass";
+      type = lib.types.path;
     };
 
     appSecretFile = lib.mkOption {
-      type = lib.types.path;
       description = ''
         A file containing the Symfony APP_SECRET - Its value should be a series
         of characters, numbers and symbols chosen randomly and the recommended
         length is around 32 characters. Can be generated with <code>cat
         /dev/urandom | tr -dc a-zA-Z0-9 | fold -w 48 | head -n 1</code>.
       '';
+
       example = "/run/secrets/davis-appsecret";
+      type = lib.types.path;
+    };
+
+    dataDir = lib.mkOption {
+      default = "/var/lib/davis";
+
+      description = ''
+        Davis data directory.
+      '';
+
+      type = lib.types.path;
     };
 
     database = {
+      createLocally = lib.mkOption {
+        default = true;
+        description = "Create the database and database user locally.";
+        type = lib.types.bool;
+      };
+
       driver = lib.mkOption {
+        default = "sqlite";
+        description = "Database type, required in all circumstances.";
+
         type = lib.types.enum [
           "sqlite"
           "postgresql"
           "mysql"
         ];
-        default = "sqlite";
-        description = "Database type, required in all circumstances.";
       };
+
+      name = lib.mkOption {
+        default = "davis";
+        description = "Database name, only used when the database is created locally.";
+        type = lib.types.nullOr lib.types.str;
+      };
+
       urlFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
-        example = "/run/secrets/davis-db-url";
+
         description = ''
           A file containing the database connection url. If set then it
           overrides all other database settings (except driver). This is
           mandatory if you want to use an external database, that is when
           `services.davis.database.createLocally` is `false`.
         '';
+
+        example = "/run/secrets/davis-db-url";
+        type = lib.types.nullOr lib.types.path;
       };
-      name = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = "davis";
-        description = "Database name, only used when the database is created locally.";
-      };
-      createLocally = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Create the database and database user locally.";
-      };
+    };
+
+    group = lib.mkOption {
+      default = "davis";
+      description = "Group davis runs as.";
+      type = lib.types.str;
+    };
+
+    hostname = lib.mkOption {
+      description = ''
+        Domain of the host to serve davis under. You may want to change it if you
+        run Davis on a different URL than davis.yourdomain.
+      '';
+
+      example = "davis.yourdomain.org";
+      type = lib.types.str;
     };
 
     mail = {
       dsn = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
         default = null;
         description = "Mail DSN for sending emails. Mutually exclusive with `services.davis.mail.dsnFile`.";
         example = "smtp://username:password@example.com:25";
+        type = lib.types.nullOr lib.types.str;
       };
+
       dsnFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
         default = null;
-        example = "/run/secrets/davis-mail-dsn";
         description = "A file containing the mail DSN for sending emails.  Mutually exclusive with `servies.davis.mail.dsn`.";
-      };
-      inviteFromAddress = lib.mkOption {
+        example = "/run/secrets/davis-mail-dsn";
         type = lib.types.nullOr lib.types.str;
+      };
+
+      inviteFromAddress = lib.mkOption {
         default = null;
         description = "Email address to send invitations from.";
         example = "no-reply@dav.example.com";
+        type = lib.types.nullOr lib.types.str;
       };
     };
 
     nginx = lib.mkOption {
-      type = lib.types.nullOr (
-        lib.types.submodule (
-          lib.recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) {
-          }
-        )
-      );
       default = { };
+
+      description = ''
+        Use this option to customize an nginx virtual host. To disable the nginx set this to null.
+      '';
+
       example = ''
         {
           serverAliases = [
@@ -237,12 +246,30 @@ in
           enableACME = true;
         }
       '';
-      description = ''
-        Use this option to customize an nginx virtual host. To disable the nginx set this to null.
-      '';
+
+      type = lib.types.nullOr (
+        lib.types.submodule (
+          lib.recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) {
+          }
+        )
+      );
     };
 
     poolConfig = lib.mkOption {
+      default = {
+        "pm" = "dynamic";
+        "pm.max_children" = 32;
+        "pm.max_requests" = 500;
+        "pm.max_spare_servers" = 4;
+        "pm.min_spare_servers" = 2;
+        "pm.start_servers" = 2;
+      };
+
+      description = ''
+        Options for the davis PHP pool. See the documentation on <literal>php-fpm.conf</literal>
+        for details on configuration directives.
+      '';
+
       type = lib.types.attrsOf (
         lib.types.oneOf [
           lib.types.str
@@ -250,27 +277,18 @@ in
           lib.types.bool
         ]
       );
-      default = {
-        "pm" = "dynamic";
-        "pm.max_children" = 32;
-        "pm.start_servers" = 2;
-        "pm.min_spare_servers" = 2;
-        "pm.max_spare_servers" = 4;
-        "pm.max_requests" = 500;
-      };
-      description = ''
-        Options for the davis PHP pool. See the documentation on <literal>php-fpm.conf</literal>
-        for details on configuration directives.
-      '';
+    };
+
+    user = lib.mkOption {
+      default = "davis";
+      description = "User davis runs as.";
+      type = lib.types.str;
     };
   };
 
   config =
     let
       defaultServiceConfig = {
-        ReadWritePaths = "${cfg.dataDir}";
-        User = user;
-        UMask = 77;
         DeviceAllow = "";
         LockPersonality = true;
         NoNewPrivileges = true;
@@ -287,16 +305,21 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+        ReadWritePaths = "${cfg.dataDir}";
         RemoveIPC = true;
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@resources"
           "~@privileged"
         ];
+
+        UMask = 77;
+        User = user;
         WorkingDirectory = "${cfg.package}/";
       };
     in
@@ -315,20 +338,21 @@ in
           message = "services.davis.mail.dsn and services.davis.mail.dsnFile cannot both be set.";
         }
       ];
+
       services.davis.config = {
-        APP_ENV = "prod";
-        APP_CACHE_DIR = "${cfg.dataDir}/var/cache";
-        APP_LOG_DIR = "${cfg.dataDir}/var/log";
-        LOG_FILE_PATH = "%kernel.logs_dir%/%kernel.environment%.log";
-        DATABASE_DRIVER = db.driver;
-        INVITE_FROM_ADDRESS = mail.inviteFromAddress;
-        APP_SECRET._secret = cfg.appSecretFile;
         ADMIN_LOGIN = cfg.adminLogin;
         ADMIN_PASSWORD._secret = cfg.adminPasswordFile;
+        APP_CACHE_DIR = "${cfg.dataDir}/var/cache";
+        APP_ENV = "prod";
+        APP_LOG_DIR = "${cfg.dataDir}/var/log";
+        APP_SECRET._secret = cfg.appSecretFile;
         APP_TIMEZONE = config.time.timeZone;
-        WEBDAV_ENABLED = false;
         CALDAV_ENABLED = true;
         CARDDAV_ENABLED = true;
+        DATABASE_DRIVER = db.driver;
+        INVITE_FROM_ADDRESS = mail.inviteFromAddress;
+        LOG_FILE_PATH = "%kernel.logs_dir%/%kernel.environment%.log";
+        WEBDAV_ENABLED = false;
       }
       // (
         if mail.dsn != null then
@@ -359,152 +383,48 @@ in
           { DATABASE_URL._secret = db.urlFile; }
       );
 
-      users = {
-        users = lib.mkIf (user == "davis") {
-          davis = {
-            description = "Davis service user";
-            group = cfg.group;
-            isSystemUser = true;
-            home = cfg.dataDir;
-          };
-        };
-        groups = lib.mkIf (group == "davis") { davis = { }; };
-      };
+      services.mysql = lib.mkIf mysqlLocal {
+        enable = true;
+        package = lib.mkDefault pkgs.mariadb;
+        ensureDatabases = [ db.name ];
 
-      systemd.tmpfiles.rules = [
-        "d ${cfg.dataDir}                            0710 ${user} ${group} - -"
-        "d ${cfg.dataDir}/var                        0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/var/log                    0700 ${user} ${group} - -"
-        "d ${cfg.dataDir}/var/cache                  0700 ${user} ${group} - -"
-      ];
+        ensureUsers = [
+          {
+            ensurePermissions = {
+              "${db.name}.*" = "ALL PRIVILEGES";
+            };
 
-      services.phpfpm.pools.davis = {
-        inherit user group;
-        phpOptions = ''
-          log_errors = on
-        '';
-        phpEnv = {
-          ENV_DIR = "${cfg.dataDir}";
-          APP_CACHE_DIR = "${cfg.dataDir}/var/cache";
-          APP_LOG_DIR = "${cfg.dataDir}/var/log";
-        };
-        phpPackage = lib.mkDefault cfg.package.passthru.php;
-        settings = {
-          "listen.mode" = "0660";
-          "pm" = "dynamic";
-          "pm.max_children" = 256;
-          "pm.start_servers" = 10;
-          "pm.min_spare_servers" = 5;
-          "pm.max_spare_servers" = 20;
-        }
-        // (
-          if cfg.nginx != null then
-            {
-              "listen.owner" = config.services.nginx.user;
-              "listen.group" = config.services.nginx.group;
-            }
-          else
-            { }
-        )
-        // cfg.poolConfig;
-      };
-
-      # Reading the user-provided secret files requires root access
-      systemd.services.davis-env-setup = {
-        description = "Setup davis environment";
-        before = [
-          "phpfpm-davis.service"
-          "davis-db-migrate.service"
+            name = user;
+          }
         ];
-        wantedBy = [ "multi-user.target" ];
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
-        path = [ pkgs.replace-secret ];
-        restartTriggers = [
-          cfg.package
-          davisEnv
-        ];
-        script = ''
-          # error handling
-          set -euo pipefail
-          # create .env file with the upstream values
-          install -T -m 0600 -o ${user} ${cfg.package}/env-upstream "${cfg.dataDir}/.env"
-          # create .env.local file with the user-provided values
-          install -T -m 0600 -o ${user} ${davisEnv} "${cfg.dataDir}/.env.local"
-          ${secretReplacements}
-        '';
       };
-
-      systemd.services.davis-db-migrate = {
-        description = "Migrate davis database";
-        before = [ "phpfpm-davis.service" ];
-        after =
-          lib.optional mysqlLocal "mysql.service"
-          ++ lib.optional pgsqlLocal "postgresql.target"
-          ++ [ "davis-env-setup.service" ];
-        requires =
-          lib.optional mysqlLocal "mysql.service"
-          ++ lib.optional pgsqlLocal "postgresql.target"
-          ++ [ "davis-env-setup.service" ];
-        wantedBy = [ "multi-user.target" ];
-        serviceConfig = defaultServiceConfig // {
-          Type = "oneshot";
-          RemainAfterExit = true;
-          Environment = [
-            "ENV_DIR=${cfg.dataDir}"
-            "APP_CACHE_DIR=${cfg.dataDir}/var/cache"
-            "APP_LOG_DIR=${cfg.dataDir}/var/log"
-          ];
-          EnvironmentFile = "${cfg.dataDir}/.env.local";
-        };
-        restartTriggers = [
-          cfg.package
-          davisEnv
-        ];
-        script = ''
-          set -euo pipefail
-          ${cfg.package}/bin/console cache:clear --no-debug
-          ${cfg.package}/bin/console cache:warmup --no-debug
-          ${cfg.package}/bin/console doctrine:migrations:migrate
-        '';
-      };
-
-      systemd.services.phpfpm-davis.after = [
-        "davis-env-setup.service"
-        "davis-db-migrate.service"
-      ];
-      systemd.services.phpfpm-davis.requires = [
-        "davis-env-setup.service"
-        "davis-db-migrate.service"
-      ]
-      ++ lib.optional mysqlLocal "mysql.service"
-      ++ lib.optional pgsqlLocal "postgresql.target";
-      systemd.services.phpfpm-davis.serviceConfig.ReadWritePaths = [ cfg.dataDir ];
 
       services.nginx = lib.mkIf (cfg.nginx != null) {
         enable = lib.mkDefault true;
+
         virtualHosts = {
           "${cfg.hostname}" = lib.mkMerge [
             cfg.nginx
             {
-              root = lib.mkForce "${cfg.package}/public";
               extraConfig = ''
                 charset utf-8;
                 index index.php;
               '';
+
               locations = {
                 "/" = {
                   extraConfig = ''
                     try_files $uri $uri/ /index.php$is_args$args;
                   '';
                 };
-                "~* ^/.well-known/(caldav|carddav)$" = {
+
+                "~ /(\\.ht)" = {
                   extraConfig = ''
-                    return 302 https://$host/dav/;
+                    deny all;
+                    return 404;
                   '';
                 };
+
                 "~ ^(.+\\.php)(.*)$" = {
                   extraConfig = ''
                     try_files                $fastcgi_script_name =404;
@@ -518,41 +438,173 @@ in
                     fastcgi_param            X-Forwarded-Port $http_x_forwarded_port;
                   '';
                 };
-                "~ /(\\.ht)" = {
+
+                "~* ^/.well-known/(caldav|carddav)$" = {
                   extraConfig = ''
-                    deny all;
-                    return 404;
+                    return 302 https://$host/dav/;
                   '';
                 };
               };
+
+              root = lib.mkForce "${cfg.package}/public";
             }
           ];
         };
       };
 
-      services.mysql = lib.mkIf mysqlLocal {
-        enable = true;
-        package = lib.mkDefault pkgs.mariadb;
-        ensureDatabases = [ db.name ];
-        ensureUsers = [
-          {
-            name = user;
-            ensurePermissions = {
-              "${db.name}.*" = "ALL PRIVILEGES";
-            };
-          }
-        ];
+      services.phpfpm.pools.davis = {
+        inherit user group;
+
+        phpEnv = {
+          APP_CACHE_DIR = "${cfg.dataDir}/var/cache";
+          APP_LOG_DIR = "${cfg.dataDir}/var/log";
+          ENV_DIR = "${cfg.dataDir}";
+        };
+
+        phpOptions = ''
+          log_errors = on
+        '';
+
+        phpPackage = lib.mkDefault cfg.package.passthru.php;
+
+        settings = {
+          "listen.mode" = "0660";
+          "pm" = "dynamic";
+          "pm.max_children" = 256;
+          "pm.max_spare_servers" = 20;
+          "pm.min_spare_servers" = 5;
+          "pm.start_servers" = 10;
+        }
+        // (
+          if cfg.nginx != null then
+            {
+              "listen.group" = config.services.nginx.group;
+              "listen.owner" = config.services.nginx.user;
+            }
+          else
+            { }
+        )
+        // cfg.poolConfig;
       };
 
       services.postgresql = lib.mkIf pgsqlLocal {
         enable = true;
         ensureDatabases = [ db.name ];
+
         ensureUsers = [
           {
-            name = user;
             ensureDBOwnership = true;
+            name = user;
           }
         ];
+      };
+
+      systemd.services.davis-db-migrate = {
+        after =
+          lib.optional mysqlLocal "mysql.service"
+          ++ lib.optional pgsqlLocal "postgresql.target"
+          ++ [ "davis-env-setup.service" ];
+
+        before = [ "phpfpm-davis.service" ];
+        description = "Migrate davis database";
+
+        requires =
+          lib.optional mysqlLocal "mysql.service"
+          ++ lib.optional pgsqlLocal "postgresql.target"
+          ++ [ "davis-env-setup.service" ];
+
+        restartTriggers = [
+          cfg.package
+          davisEnv
+        ];
+
+        script = ''
+          set -euo pipefail
+          ${cfg.package}/bin/console cache:clear --no-debug
+          ${cfg.package}/bin/console cache:warmup --no-debug
+          ${cfg.package}/bin/console doctrine:migrations:migrate
+        '';
+
+        serviceConfig = defaultServiceConfig // {
+          Environment = [
+            "ENV_DIR=${cfg.dataDir}"
+            "APP_CACHE_DIR=${cfg.dataDir}/var/cache"
+            "APP_LOG_DIR=${cfg.dataDir}/var/log"
+          ];
+
+          EnvironmentFile = "${cfg.dataDir}/.env.local";
+          RemainAfterExit = true;
+          Type = "oneshot";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
+
+      # Reading the user-provided secret files requires root access
+      systemd.services.davis-env-setup = {
+        before = [
+          "phpfpm-davis.service"
+          "davis-db-migrate.service"
+        ];
+
+        description = "Setup davis environment";
+        path = [ pkgs.replace-secret ];
+
+        restartTriggers = [
+          cfg.package
+          davisEnv
+        ];
+
+        script = ''
+          # error handling
+          set -euo pipefail
+          # create .env file with the upstream values
+          install -T -m 0600 -o ${user} ${cfg.package}/env-upstream "${cfg.dataDir}/.env"
+          # create .env.local file with the user-provided values
+          install -T -m 0600 -o ${user} ${davisEnv} "${cfg.dataDir}/.env.local"
+          ${secretReplacements}
+        '';
+
+        serviceConfig = {
+          RemainAfterExit = true;
+          Type = "oneshot";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
+
+      systemd.services.phpfpm-davis.after = [
+        "davis-env-setup.service"
+        "davis-db-migrate.service"
+      ];
+
+      systemd.services.phpfpm-davis.requires = [
+        "davis-env-setup.service"
+        "davis-db-migrate.service"
+      ]
+      ++ lib.optional mysqlLocal "mysql.service"
+      ++ lib.optional pgsqlLocal "postgresql.target";
+
+      systemd.services.phpfpm-davis.serviceConfig.ReadWritePaths = [ cfg.dataDir ];
+
+      systemd.tmpfiles.rules = [
+        "d ${cfg.dataDir}                            0710 ${user} ${group} - -"
+        "d ${cfg.dataDir}/var                        0700 ${user} ${group} - -"
+        "d ${cfg.dataDir}/var/log                    0700 ${user} ${group} - -"
+        "d ${cfg.dataDir}/var/cache                  0700 ${user} ${group} - -"
+      ];
+
+      users = {
+        groups = lib.mkIf (group == "davis") { davis = { }; };
+
+        users = lib.mkIf (user == "davis") {
+          davis = {
+            description = "Davis service user";
+            group = cfg.group;
+            home = cfg.dataDir;
+            isSystemUser = true;
+          };
+        };
       };
     };
 

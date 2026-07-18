@@ -1,22 +1,19 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  pythonAtLeast,
-
-  # runtime
-  six,
-
+  fetchFromGitHub,
+  buildPythonPackage,
   # tests
   freezegun,
   pytest-mock,
   pytestCheckHook,
+  pythonAtLeast,
+  # runtime
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "lomond";
   version = "0.3.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "wildfoundry";
@@ -38,6 +35,11 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  disabledTestPaths = [
+    # requires tornado_4, which is not compatible with python3.10
+    "tests/test_integration.py"
+  ];
+
   disabledTests = [
     # Makes HTTP requests
     "test_proxy"
@@ -48,10 +50,7 @@ buildPythonPackage rec {
     "test_that_on_ping_responds_with_pong"
   ];
 
-  disabledTestPaths = [
-    # requires tornado_4, which is not compatible with python3.10
-    "tests/test_integration.py"
-  ];
+  format = "setuptools";
 
   meta = {
     description = "Websocket Client Library";

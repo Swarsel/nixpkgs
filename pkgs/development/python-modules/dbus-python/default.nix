@@ -1,19 +1,17 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  # native dependencies
+  dbus,
+  dbus-glib,
+  fetchPypi,
   fetchpatch,
   isPyPy,
-  python,
-
   # build-system
   meson,
   meson-python,
   pkg-config,
-
-  # native dependencies
-  dbus,
-  dbus-glib,
+  python,
 }:
 
 lib.fix (
@@ -21,26 +19,23 @@ lib.fix (
   buildPythonPackage rec {
     pname = "dbus-python";
     version = "1.4.0";
-    pyproject = true;
-
-    disabled = isPyPy;
-
-    outputs = [
-      "out"
-      "dev"
-    ];
 
     src = fetchPypi {
       inherit pname version;
       hash = "sha256-mRZm5Jj2Db8+Sbi3Z49VWbimUDT99hquYs3s232Jx3A=";
     };
 
+    outputs = [
+      "out"
+      "dev"
+    ];
+
     patches = [
       # reduce required dependencies
       # https://gitlab.freedesktop.org/dbus/dbus-python/-/merge_requests/23
       (fetchpatch {
-        url = "https://gitlab.freedesktop.org/dbus/dbus-python/-/commit/d5e19698a8d6e1485f05b67a5b2daa2392819aaf.patch";
         hash = "sha256-Rmj/ByRLiLnIF3JsMBElJugxsG8IARcBdixLhoWgIYU=";
+        url = "https://gitlab.freedesktop.org/dbus/dbus-python/-/commit/d5e19698a8d6e1485f05b67a5b2daa2392819aaf.patch";
       })
     ];
 
@@ -64,6 +59,15 @@ lib.fix (
     ];
 
     mesonFlags = [ (lib.mesonBool "tests" finalPackage.doInstallCheck) ];
+    nativeCheckInputs = [ dbus.out ];
+
+    checkPhase = ''
+      runHook preCheck
+
+      meson test -C build --no-rebuild --print-errorlogs --timeout-multiplier 0
+
+      runHook postCheck
+    '';
 
     # workaround bug in meson-python
     # https://github.com/mesonbuild/meson-python/issues/240
@@ -77,22 +81,15 @@ lib.fix (
       ln -s $dev/include/*/dbus_python/dbus-1.0/ $dev/include/dbus-1.0
     '';
 
-    nativeCheckInputs = [ dbus.out ];
-
-    checkPhase = ''
-      runHook preCheck
-
-      meson test -C build --no-rebuild --print-errorlogs --timeout-multiplier 0
-
-      runHook postCheck
-    '';
+    disabled = isPyPy;
+    pyproject = true;
 
     meta = {
       description = "Python DBus bindings";
       homepage = "https://gitlab.freedesktop.org/dbus/dbus-python";
       license = lib.licenses.mit;
-      platforms = dbus.meta.platforms;
       maintainers = [ ];
+      platforms = dbus.meta.platforms;
     };
   }
 )

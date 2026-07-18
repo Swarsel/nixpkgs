@@ -1,18 +1,18 @@
 {
-  coreutils,
-  fetchFromGitHub,
-  gnused,
   lib,
   stdenv,
-  maven,
-  makeWrapper,
-  openjdk,
-  libGL,
+  fetchFromGitHub,
   alsa-lib,
-  makeDesktopItem,
   copyDesktopItems,
+  coreutils,
+  gnused,
   imagemagick,
+  libGL,
+  makeDesktopItem,
+  makeWrapper,
+  maven,
   nix-update-script,
+  openjdk,
 }:
 
 let
@@ -30,59 +30,16 @@ let
 
 in
 maven.buildMavenPackage {
-  pname = "forge-mtg";
   inherit version src patches;
-
-  mvnHash = "sha256-OmjrAwYzvW8ejR3/bUVQhy05vACVTG19Bznpl1SbaYs=";
-
-  doCheck = false; # Needs a running Xorg
+  pname = "forge-mtg";
 
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
     imagemagick
   ];
-  desktopItems = [
-    (makeDesktopItem {
-      name = "forge";
-      exec = "forge";
-      actions = {
-        forge-adventure = {
-          exec = "forge-adventure";
-          name = "Play Adventure";
-        };
-        forge-adventure-editor = {
-          exec = "forge-adventure-editor";
-          name = "Adventure Editor";
-        };
-        forge-classic = {
-          exec = "forge";
-          name = "Play Classic";
-        };
-      };
-      icon = "forge-mtg";
-      comment = "Magic: the Gathering card game with rules enforcement";
-      desktopName = "Forge MTG";
-      genericName = "Card Game";
-      categories = [
-        "Game"
-        "BoardGame"
-      ];
-      keywords = [
-        "Magic"
-        "MTG"
-        "Card Game"
-        "Trading Card Game"
-        "TCG"
-      ];
-    })
-  ];
 
-  mvnParameters = lib.escapeShellArgs [
-    "-pl"
-    ":adventure-editor,:forge-gui-desktop,:forge-gui-mobile-dev" # forge-gui-mobile-dev is required for forge-adventure
-    "--also-make"
-  ];
+  doCheck = false; # Needs a running Xorg
 
   installPhase = ''
     runHook preInstall
@@ -132,12 +89,63 @@ maven.buildMavenPackage {
     done
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      actions = {
+        forge-adventure = {
+          exec = "forge-adventure";
+          name = "Play Adventure";
+        };
+
+        forge-adventure-editor = {
+          exec = "forge-adventure-editor";
+          name = "Adventure Editor";
+        };
+
+        forge-classic = {
+          exec = "forge";
+          name = "Play Classic";
+        };
+      };
+
+      categories = [
+        "Game"
+        "BoardGame"
+      ];
+
+      comment = "Magic: the Gathering card game with rules enforcement";
+      desktopName = "Forge MTG";
+      exec = "forge";
+      genericName = "Card Game";
+      icon = "forge-mtg";
+
+      keywords = [
+        "Magic"
+        "MTG"
+        "Card Game"
+        "Trading Card Game"
+        "TCG"
+      ];
+
+      name = "forge";
+    })
+  ];
+
+  mvnHash = "sha256-OmjrAwYzvW8ejR3/bUVQhy05vACVTG19Bznpl1SbaYs=";
+
+  mvnParameters = lib.escapeShellArgs [
+    "-pl"
+    ":adventure-editor,:forge-gui-desktop,:forge-gui-mobile-dev" # forge-gui-mobile-dev is required for forge-adventure
+    "--also-make"
+  ];
+
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Magic: the Gathering card game with rules enforcement";
     homepage = "https://card-forge.github.io/forge";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       dyegoaurelio
     ];

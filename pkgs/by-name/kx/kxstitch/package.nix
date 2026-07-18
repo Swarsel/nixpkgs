@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  fetchgit,
+  stdenv,
   cmake,
+  fetchgit,
   imagemagick,
   kdePackages,
   pkg-config,
@@ -18,16 +18,6 @@ stdenv.mkDerivation {
     hash = "sha256-B81nwInFWcQVDJU6VINII8crVPtV5zYBXADVVe+wCu4=";
   };
 
-  buildInputs = with kdePackages; [
-    qtbase
-    kconfig
-    kconfigwidgets
-    kcompletion
-    kio
-    ktextwidgets
-    kxmlgui
-  ];
-
   nativeBuildInputs = [
     cmake
     imagemagick
@@ -38,6 +28,16 @@ stdenv.mkDerivation {
     wrapQtAppsHook
   ]);
 
+  buildInputs = with kdePackages; [
+    qtbase
+    kconfig
+    kconfigwidgets
+    kcompletion
+    kio
+    ktextwidgets
+    kxmlgui
+  ];
+
   postInstall = ''
     install -D $src/org.kde.kxstitch.desktop $out/share/applications/org.kde.kxstitch.desktop
 
@@ -47,10 +47,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://invent.kde.org/graphics/kxstitch";
     description = "Cross stitch pattern and chart creation";
-    maintainers = with lib.maintainers; [ eliandoran ];
+    homepage = "https://invent.kde.org/graphics/kxstitch";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ eliandoran ];
     platforms = lib.platforms.linux;
     mainProgram = "kxstitch";
   };

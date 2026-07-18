@@ -3,26 +3,26 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  python3,
-  jq,
   expat,
+  jq,
   jsoncpp,
-  libx11,
-  libxdmcp,
-  libxrandr,
   libffi,
+  libx11,
   libxcb,
-  pkg-config,
-  wayland,
-  which,
   libxcb-keysyms,
   libxcb-wm,
+  libxdmcp,
+  libxrandr,
+  pkg-config,
+  python3,
+  qt6,
   valijson,
   vulkan-headers,
   vulkan-loader,
   vulkan-utility-libraries,
+  wayland,
+  which,
   writeText,
-  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -87,13 +87,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "LunarG Vulkan Tools and Utilities";
+
     longDescription = ''
       Tools to aid in Vulkan development including useful layers, trace and
       replay, and tests.
     '';
+
     homepage = "https://github.com/LunarG/VulkanTools";
-    platforms = lib.platforms.linux;
     license = lib.licenses.asl20;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.sawfish ];
+
     services.xserver.windowManager.session = singleton {
       name = "sawfish";
+
       start = ''
         ${pkgs.sawfish}/bin/sawfish &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.sawfish ];
   };
 }

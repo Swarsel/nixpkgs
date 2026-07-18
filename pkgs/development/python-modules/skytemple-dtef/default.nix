@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pillow,
   pytestCheckHook,
+  setuptools,
   skytemple-files,
 }:
 
 buildPythonPackage rec {
   pname = "skytemple-dtef";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SkyTemple";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-IsAHXl9HfjWDXi/n6Alndi+GnAr7pmbjz6wrBECra0Q=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     skytemple-files
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "skytemple_dtef" ];
 
   meta = {

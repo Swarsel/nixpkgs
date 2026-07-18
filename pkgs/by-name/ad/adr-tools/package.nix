@@ -2,10 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
-  makeWrapper,
-  nix-update-script,
-
+  # tests
+  adr-tools,
   bash,
   bashInteractive,
   coreutils,
@@ -14,9 +12,9 @@
   getopt,
   gnugrep,
   gnused,
-
-  # tests
-  adr-tools,
+  installShellFiles,
+  makeWrapper,
+  nix-update-script,
   runCommand,
 }:
 
@@ -41,18 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     bashInteractive
   ];
 
-  checkInputs = [ getopt ];
-
-  dontConfigure = true;
-  dontBuild = true;
   doCheck = true;
-
-  # patch makefile and shebangs so checks can run
-  patchPhase = ''
-    substituteInPlace Makefile --replace-fail '/bin:/usr/bin' '$${HOST_PATH}'
-    patchShebangs src/
-    patchShebangs approve
-  '';
+  checkInputs = [ getopt ];
 
   checkPhase = ''
     make check
@@ -73,6 +61,16 @@ stdenv.mkDerivation (finalAttrs: {
       ]
     }
     installShellCompletion --bash autocomplete/adr
+  '';
+
+  dontBuild = true;
+  dontConfigure = true;
+
+  # patch makefile and shebangs so checks can run
+  patchPhase = ''
+    substituteInPlace Makefile --replace-fail '/bin:/usr/bin' '$${HOST_PATH}'
+    patchShebangs src/
+    patchShebangs approve
   '';
 
   passthru = {
@@ -109,7 +107,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/npryce/adr-tools";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ adamcstephens ];
-    mainProgram = "adr";
     platforms = lib.platforms.all;
+    mainProgram = "adr";
   };
 })

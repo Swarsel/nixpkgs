@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   beautifulsoup4,
+  buildPythonPackage,
   click,
   gtts-token,
   mock,
   pytest,
   requests,
+  setuptools,
   six,
   testfixtures,
   twine,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "gtts";
   version = "2.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pndurette";
@@ -27,11 +26,21 @@ buildPythonPackage rec {
     hash = "sha256-ryTR7cESDO9pH5r2FBz+6JuNMEQr39hil/FSklgaIGg=";
   };
 
+  # majority of tests just try to call out to Google's Translate API endpoint
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytest
+    mock
+    testfixtures
+  ];
+
+  checkPhase = ''
+    pytest
+  '';
+
   build-system = [ setuptools ];
 
-  pythonRelaxDeps = [
-    "click"
-  ];
   dependencies = [
     beautifulsoup4
     click
@@ -42,26 +51,19 @@ buildPythonPackage rec {
     twine
   ];
 
-  nativeCheckInputs = [
-    pytest
-    mock
-    testfixtures
-  ];
-
-  # majority of tests just try to call out to Google's Translate API endpoint
-  doCheck = false;
-  checkPhase = ''
-    pytest
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "gtts" ];
+
+  pythonRelaxDeps = [
+    "click"
+  ];
 
   meta = {
     description = "Python library and CLI tool to interface with Google Translate text-to-speech API";
-    mainProgram = "gtts-cli";
     homepage = "https://gtts.readthedocs.io";
     changelog = "https://gtts.readthedocs.io/en/latest/changelog.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ unode ];
+    mainProgram = "gtts-cli";
   };
 }

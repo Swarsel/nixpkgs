@@ -1,63 +1,31 @@
 {
   lib,
   fetchFromGitHub,
-  writeText,
-
+  cmake,
+  curl,
+  git,
+  ninja,
+  openssl,
+  pkg-config,
+  postgresql,
   postgresqlBuildExtension,
   postgresqlTestExtension,
-  postgresql,
-
-  openssl,
-  curl,
-
-  cmake,
-  ninja,
-  pkg-config,
   python3,
-  git,
   which,
+  writeText,
 }:
 
 postgresqlBuildExtension (finalAttrs: {
   pname = "pg_duckdb";
   version = "1.1.1";
 
-  # duckdbVersionFull is used to set OVERRIDE_GIT_DESCRIBE, which effectively suppresses
-  # build script attempts to use git to figure it out.
-  # To get the version first run `git submodule update --init --recursive` inside pg_duckdb/,
-  # then run `git describe --tags --long --match "v*.*.*"` inside pg_duckdb/third_party/duckdb
-  duckdbVersion = "1.4.3";
-  duckdbVersionFull = "${finalAttrs.duckdbVersion}-0-gd1dc88f950";
-
   src = fetchFromGitHub {
     owner = "duckdb";
     repo = "pg_duckdb";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-B/9U1j29zqNMNgK2t2MFJemCrLgQo1qRrCacSjPzYdg=";
+    fetchSubmodules = true;
   };
-
-  nativeBuildInputs = [
-    cmake
-    ninja
-    pkg-config
-    python3
-    git
-    which
-  ];
-
-  # Avoid build errors by suppressing these hooks.
-  # Extension build scripts drive cmake and ninja themselves.
-  dontUseCmakeConfigure = true;
-  dontUseNinjaBuild = true;
-  dontUseNinjaInstall = true;
-  dontUseNinjaCheck = true;
-
-  # curl is required by httpfs (duckdb-httpfs/vcpkg.json), but not included in postgresql.buildInputs
-  buildInputs = postgresql.buildInputs ++ [
-    openssl
-    curl
-  ];
 
   # 1. Disable calling `git submodule update --init --recursive` from Makefile:
   # submodules are already in place thanks to fetchFromGitHub's fetchSubmodules option.
@@ -77,15 +45,20 @@ postgresqlBuildExtension (finalAttrs: {
         'PG_DUCKDB_LINK_FLAGS += -Wl,-rpath,$(PG_LIB)/ -L$(DUCKDB_BUILD_DIR)/src -L$(PG_LIB) -lstdc++ -llz4 -lssl -lcrypto'
   '';
 
-  # Download httpfs extension source code and override pg_duckdb's attempt to
-  # get it using git in pg_duckdb_extensions.cmake by using EXTENSION_CONFIGS
-  httpfsSrc = fetchFromGitHub {
-    owner = "duckdb";
-    repo = "duckdb-httpfs";
-    rev = "9c7d34977b10346d0b4cbbde5df807d1dab0b2bf";
-    fetchSubmodules = true;
-    hash = "sha256-/gR99nrks2nRmfk1ypZCSAKpok1DGizXgNz0u5Bw3Jk=";
-  };
+  nativeBuildInputs = [
+    cmake
+    ninja
+    pkg-config
+    python3
+    git
+    which
+  ];
+
+  # curl is required by httpfs (duckdb-httpfs/vcpkg.json), but not included in postgresql.buildInputs
+  buildInputs = postgresql.buildInputs ++ [
+    openssl
+    curl
+  ];
 
   makeFlags =
     let
@@ -104,11 +77,36 @@ postgresqlBuildExtension (finalAttrs: {
       "EXTENSION_CONFIGS=${httpfsCmake};../pg_duckdb_extensions.cmake"
     ];
 
+  # Avoid build errors by suppressing these hooks.
+  # Extension build scripts drive cmake and ninja themselves.
+  dontUseCmakeConfigure = true;
+  dontUseNinjaBuild = true;
+  dontUseNinjaCheck = true;
+  dontUseNinjaInstall = true;
+  # duckdbVersionFull is used to set OVERRIDE_GIT_DESCRIBE, which effectively suppresses
+  # build script attempts to use git to figure it out.
+  # To get the version first run `git submodule update --init --recursive` inside pg_duckdb/,
+  # then run `git describe --tags --long --match "v*.*.*"` inside pg_duckdb/third_party/duckdb
+  duckdbVersion = "1.4.3";
+  duckdbVersionFull = "${finalAttrs.duckdbVersion}-0-gd1dc88f950";
+
+  # Download httpfs extension source code and override pg_duckdb's attempt to
+  # get it using git in pg_duckdb_extensions.cmake by using EXTENSION_CONFIGS
+  httpfsSrc = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-/gR99nrks2nRmfk1ypZCSAKpok1DGizXgNz0u5Bw3Jk=";
+    owner = "duckdb";
+    repo = "duckdb-httpfs";
+    rev = "9c7d34977b10346d0b4cbbde5df807d1dab0b2bf";
+  };
+
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
+
     postgresqlExtraSettings = ''
       shared_preload_libraries = 'pg_duckdb'
     '';
+
     sql = ''
       CREATE EXTENSION pg_duckdb;
       SELECT duckdb.raw_query('SELECT 42');

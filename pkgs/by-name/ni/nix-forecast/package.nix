@@ -20,16 +20,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-GTINiV+oHmu1/DmQsE7UjfAFFtH26LK35TveW437lPA=";
   };
 
-  cargoHash = "sha256-FQph9QOc0JrVjdilUxjRc77/obICK7fgzcDuqAoE2cs=";
-
   nativeBuildInputs = [
     installShellFiles
     makeBinaryWrapper
   ];
 
-  # TODO: Re-enable next update
-  # doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-FQph9QOc0JrVjdilUxjRc77/obICK7fgzcDuqAoE2cs=";
+
+  env = {
+    COMPLETION_DIR = "completions";
+  };
 
   # NOTE: Yes, we specifically need Nix. Lix does not have the newer
   # `path-info --json` output used internally
@@ -42,9 +42,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh completions/_nix-forecast
   '';
 
-  env = {
-    COMPLETION_DIR = "completions";
-  };
+  # TODO: Re-enable next update
+  # doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
     updateScript = nix-update-script { };

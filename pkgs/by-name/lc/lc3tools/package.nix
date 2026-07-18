@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   flex,
-  tk,
   ncurses,
   readline,
+  tk,
+  unzip,
 }:
 
 stdenv.mkDerivation {
@@ -34,6 +34,7 @@ stdenv.mkDerivation {
   ];
 
   nativeBuildInputs = [ unzip ];
+
   buildInputs = [
     flex
     tk
@@ -42,14 +43,11 @@ stdenv.mkDerivation {
   ];
 
   env = {
+    INCLUDES = "${flex}/include:${ncurses}/include:${readline}/include";
     # lumetta published this a while ago but handrolled his configure
     # jank in the original packaging makes this necessary:
     LIBS = "${flex}/lib:${ncurses}/lib:${readline}/lib";
-    INCLUDES = "${flex}/include:${ncurses}/include:${readline}/include";
   };
-
-  # it doesn't take `--prefix`
-  prefixKey = "--installdir ";
 
   postInstall = ''
     mkdir -p $out/{bin,share/lc3tools}
@@ -58,16 +56,21 @@ stdenv.mkDerivation {
     mv -t $out/bin $out/lc3*
   '';
 
+  # it doesn't take `--prefix`
+  prefixKey = "--installdir ";
+
   meta = {
+    description = "Toolchain and emulator for the LC-3 architecture";
+
     longDescription = ''
       The LC-3 tools package contains the lc3as assembler, the lc3sim simulator,
       and lc3sim-tk, a Tcl/Tk-based GUI frontend to the simulator.
     '';
-    description = "Toolchain and emulator for the LC-3 architecture";
+
     homepage = "https://highered.mheducation.com/sites/0072467509/student_view0/lc-3_simulator.html";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ anna328p ];
-    mainProgram = "lc3sim-tk";
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "lc3sim-tk";
   };
 }

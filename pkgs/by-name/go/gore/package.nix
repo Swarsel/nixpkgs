@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-oS5LJfLFrmHEwayoD+HygfamZpmerIL1i4QtoRL4Om4=";
-
   doCheck = false;
 
   meta = {
     description = "Yet another Go REPL that works nicely";
-    mainProgram = "gore";
     homepage = "https://github.com/x-motemen/gore";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "gore";
   };
 })

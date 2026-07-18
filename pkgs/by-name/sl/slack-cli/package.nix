@@ -6,14 +6,14 @@
 # upstream and other distributions.
 
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  curl,
-  jq,
   coreutils,
+  curl,
   gnugrep,
   gnused,
+  jq,
   runtimeShell,
 }:
 
@@ -27,8 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "022yr3cpfg0v7cxi62zzk08vp0l3w851qpfh6amyfgjiynnfyddl";
   };
-
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p "$out/bin"
@@ -58,11 +56,13 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x "$out/bin/slack"
   '';
 
+  dontBuild = true;
+
   meta = {
     homepage = "https://github.com/rockymadden/slack-cli";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "slack";
     platforms = lib.platforms.unix;
+    mainProgram = "slack";
   };
 })

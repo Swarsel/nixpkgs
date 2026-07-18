@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp-retry,
   asyncssh,
   buildPythonPackage,
   dulwich,
-  fetchFromGitHub,
   fsspec,
   funcy,
   gitpython,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "scmrepo";
   version = "3.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -27,6 +26,9 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-E7BHdLDS57r/UbSA62lfr3z+5sqFTPRzwfFLIITeSs0=";
   };
+
+  # Requires a running Docker instance
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -46,9 +48,7 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  # Requires a running Docker instance
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "scmrepo" ];
 
   meta = {

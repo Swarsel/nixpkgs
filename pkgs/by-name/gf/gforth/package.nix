@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildPackages,
   autoreconfHook,
+  buildPackages,
   gitUpdater,
-  texinfo,
   libffi,
+  texinfo,
   writableTmpDirAsHomeHook,
 }:
 
@@ -45,8 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     libffi
   ];
 
-  passthru = { inherit bootForth; };
-
   configureFlags = [
     "--with-lispdir=${lispDir}"
   ]
@@ -62,16 +60,16 @@ stdenv.mkDerivation (finalAttrs: {
     "CROSS_PREFIX=${stdenv.hostPlatform.config}-"
   ];
 
-  env = lib.optionalAttrs (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) {
-    # Tell gforth's libcc to prefix compiler commands with the cross-compilation target
-    CROSS_PREFIX = "${stdenv.hostPlatform.config}-";
-  };
-
   makeFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
     "DITCENGINE=${buildPackages.gforth}/bin/gforth-ditc"
     "GFORTH=${buildPackages.gforth}/bin/gforth"
     "ENGINE=${buildPackages.gforth}/bin/gforth" # for ./preforth
   ];
+
+  env = lib.optionalAttrs (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) {
+    # Tell gforth's libcc to prefix compiler commands with the cross-compilation target
+    CROSS_PREFIX = "${stdenv.hostPlatform.config}-";
+  };
 
   preConfigure = ''
     mkdir -p ${lispDir}
@@ -87,18 +85,19 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's/^\(all:.*\) check/\1/' Makefile
   '';
 
+  passthru = { inherit bootForth; };
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Forth implementation of the GNU project";
     homepage = "https://www.gnu.org/software/gforth";
-    downloadPage = "https://github.com/forthy42/gforth";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ rafaelrc ];
+    platforms = lib.platforms.all;
+    mainProgram = "gforth";
     # segfault when running ./gforthmi on aarch64 darwin
     # The last successful Darwin Hydra build was in 2023
     broken = stdenv.hostPlatform.isDarwin;
-    platforms = lib.platforms.all;
-    mainProgram = "gforth";
-    maintainers = with lib.maintainers; [ rafaelrc ];
+    downloadPage = "https://github.com/forthy42/gforth";
   };
 })

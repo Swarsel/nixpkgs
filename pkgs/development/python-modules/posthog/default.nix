@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   anthropic,
   backoff,
   buildPythonPackage,
   distro,
-  fetchFromGitHub,
   freezegun,
   mock,
   monotonic,
@@ -23,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "posthog";
   version = "7.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PostHog";
@@ -31,6 +30,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-GmwFI23HUp9/p6o+UFCES7WwvnexrBrVTDhLd/YYWOs=";
   };
+
+  nativeCheckInputs = [
+    anthropic
+    freezegun
+    mock
+    openai
+    parameterized
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -44,17 +53,10 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    anthropic
-    freezegun
-    mock
-    openai
-    parameterized
-    pytest-asyncio
-    pytestCheckHook
+  disabledTestPaths = [
+    # Missing parts
+    "posthog/test/integrations/test_middleware.py"
   ];
-
-  pythonImportsCheck = [ "posthog" ];
 
   disabledTests = [
     "test_load_feature_flags_wrong_key"
@@ -73,10 +75,8 @@ buildPythonPackage (finalAttrs: {
     "test_clean_pydantic"
   ];
 
-  disabledTestPaths = [
-    # Missing parts
-    "posthog/test/integrations/test_middleware.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "posthog" ];
 
   meta = {
     description = "Module for interacting with PostHog";

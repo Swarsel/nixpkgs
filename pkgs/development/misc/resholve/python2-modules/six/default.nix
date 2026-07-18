@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "six";
   version = "1.16.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,6 +14,7 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python 2 and 3 compatibility library";

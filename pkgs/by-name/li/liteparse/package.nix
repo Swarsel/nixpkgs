@@ -4,8 +4,8 @@
   buildNpmPackage,
   makeBinaryWrapper,
   nix-update-script,
-  versionCheckHook,
   tesseract,
+  versionCheckHook,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -19,10 +19,8 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-hbCD9kXuI3Zh4S69FCXtNQxVFWpP172YwJ95BY/INBw=";
   };
 
-  npmDepsHash = "sha256-KhtwPl1J9ZZMT9xT5bQJjPa3fYTvi9oRnxijCm0o+2c=";
-  npmBuildScript = "build";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  npmDepsHash = "sha256-KhtwPl1J9ZZMT9xT5bQJjPa3fYTvi9oRnxijCm0o+2c=";
 
   postInstall = ''
     wrapProgram $out/bin/lit \
@@ -35,7 +33,7 @@ buildNpmPackage (finalAttrs: {
   #    versionCheckHook
   #  ];
   doInstallCheck = true;
-
+  npmBuildScript = "build";
   passthru.updateScript = nix-update-script { };
 
   meta = {

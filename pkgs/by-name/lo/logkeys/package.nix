@@ -4,10 +4,10 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  which,
-  procps,
   kbd,
   nixosTests,
+  procps,
+  which,
 }:
 
 stdenv.mkDerivation {
@@ -21,33 +21,35 @@ stdenv.mkDerivation {
     sha256 = "1k6kj0913imwh53lh6hrhqmrpygqg2h462raafjsn7gbd3vkgx8n";
   };
 
-  nativeBuildInputs = [
-    autoconf
-    automake
-  ];
-  buildInputs = [
-    which
-    procps
-    kbd
-  ];
-
   postPatch = ''
     substituteInPlace src/Makefile.am --replace 'root' '$(id -u)'
     substituteInPlace configure.ac --replace '/dev/input' '/tmp'
     sed -i '/chmod u+s/d' src/Makefile.am
   '';
 
-  preConfigure = "./autogen.sh";
+  nativeBuildInputs = [
+    autoconf
+    automake
+  ];
 
+  buildInputs = [
+    which
+    procps
+    kbd
+  ];
+
+  preConfigure = "./autogen.sh";
   passthru.tests.nixos = nixosTests.logkeys;
 
   meta = {
     description = "GNU/Linux keylogger that works";
-    license = lib.licenses.gpl3;
     homepage = "https://github.com/kernc/logkeys";
+    license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       mikoim
     ];
+
     platforms = lib.platforms.linux;
   };
 }

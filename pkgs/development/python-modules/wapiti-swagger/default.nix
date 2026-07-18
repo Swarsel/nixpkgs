@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pyyaml,
+  buildPythonPackage,
   pytestCheckHook,
+  pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "wapiti-swagger";
   version = "0.1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wapiti-scanner";
@@ -18,6 +17,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-On4R5+9+6w8CdZYQ8oxAfuxWTQZotkxjrIf497lETfw=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -27,11 +30,8 @@ buildPythonPackage rec {
     pyyaml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "wapiti_swagger" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Library for parsing and generating request bodies from Swagger/OpenAPI specifications";

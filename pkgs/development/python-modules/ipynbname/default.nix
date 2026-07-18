@@ -2,28 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   ipykernel,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ipynbname";
   version = "2025.8.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-3Mg2fGTEqfC6pqzqPlCf1mlr9dgcmrzrOG4q1u/KyTU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ ipykernel ];
-
-  pythonImportsCheck = [ "ipynbname" ];
-
   # upstream has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ ipykernel ];
+  pyproject = true;
+  pythonImportsCheck = [ "ipynbname" ];
 
   meta = {
     description = "Simply returns either notebook filename or the full path to the notebook";

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   poetry-core,
   pytest-aiohttp,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "aioeafm";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Jc2k";
@@ -24,15 +23,11 @@ buildPythonPackage rec {
   patches = [
     # Switch to poetry-core, https://github.com/Jc2k/aioeafm/pull/4
     (fetchpatch {
+      hash = "sha256-cG/vQI1XQO8LVvWsHrAj8KlPGRulvO7Ny+k0CKUpPqQ=";
       name = "use-poetry-core.patch";
       url = "https://github.com/Jc2k/aioeafm/commit/549590e2ed465be40e2406416d89b8a8cd8c6185.patch";
-      hash = "sha256-cG/vQI1XQO8LVvWsHrAj8KlPGRulvO7Ny+k0CKUpPqQ=";
     })
   ];
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
 
   doCheck = false; # Failed: async def functions are not natively supported.
 
@@ -41,6 +36,9 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aioeafm" ];
 
   meta = {

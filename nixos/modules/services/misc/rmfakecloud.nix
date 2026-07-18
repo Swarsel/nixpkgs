@@ -13,57 +13,11 @@ in
   options = {
     services.rmfakecloud = {
       enable = lib.mkEnableOption "rmfakecloud remarkable self-hosted cloud";
-
       package = lib.mkPackageOption pkgs "rmfakecloud" { };
 
-      storageUrl = lib.mkOption {
-        type = lib.types.str;
-        example = "https://local.appspot.com";
-        description = ''
-          URL used by the tablet to access the rmfakecloud service.
-        '';
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 3000;
-        description = ''
-          Listening port number.
-        '';
-      };
-
-      logLevel = lib.mkOption {
-        type = lib.types.enum [
-          "info"
-          "debug"
-          "warn"
-          "error"
-        ];
-        default = "info";
-        description = ''
-          Logging level.
-        '';
-      };
-
-      extraSettings = lib.mkOption {
-        type = with lib.types; attrsOf str;
-        default = { };
-        example = {
-          DATADIR = "/custom/path/for/rmfakecloud/data";
-        };
-        description = ''
-          Extra settings in the form of a set of key-value pairs.
-          For tokens and secrets, use `environmentFile` instead.
-
-          Available settings are listed on
-          https://ddvk.github.io/rmfakecloud/install/configuration/.
-        '';
-      };
-
       environmentFile = lib.mkOption {
-        type = with lib.types; nullOr path;
         default = null;
-        example = "/etc/secrets/rmfakecloud.env";
+
         description = ''
           Path to an environment file loaded for the rmfakecloud service.
 
@@ -71,18 +25,74 @@ in
           world-readable Nix store. Since this file is read by systemd, it may
           have permission 0400 and be owned by root.
         '';
+
+        example = "/etc/secrets/rmfakecloud.env";
+        type = with lib.types; nullOr path;
+      };
+
+      extraSettings = lib.mkOption {
+        default = { };
+
+        description = ''
+          Extra settings in the form of a set of key-value pairs.
+          For tokens and secrets, use `environmentFile` instead.
+
+          Available settings are listed on
+          https://ddvk.github.io/rmfakecloud/install/configuration/.
+        '';
+
+        example = {
+          DATADIR = "/custom/path/for/rmfakecloud/data";
+        };
+
+        type = with lib.types; attrsOf str;
+      };
+
+      logLevel = lib.mkOption {
+        default = "info";
+
+        description = ''
+          Logging level.
+        '';
+
+        type = lib.types.enum [
+          "info"
+          "debug"
+          "warn"
+          "error"
+        ];
+      };
+
+      port = lib.mkOption {
+        default = 3000;
+
+        description = ''
+          Listening port number.
+        '';
+
+        type = lib.types.port;
+      };
+
+      storageUrl = lib.mkOption {
+        description = ''
+          URL used by the tablet to access the rmfakecloud service.
+        '';
+
+        example = "https://local.appspot.com";
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.rmfakecloud = {
+      after = [ "network-online.target" ];
       description = "rmfakecloud remarkable self-hosted cloud";
 
       environment = {
-        STORAGE_URL = cfg.storageUrl;
-        PORT = toString cfg.port;
         LOGLEVEL = cfg.logLevel;
+        PORT = toString cfg.port;
+        STORAGE_URL = cfg.storageUrl;
       }
       // cfg.extraSettings;
 
@@ -103,46 +113,44 @@ in
         ${cfg.package}/bin/rmfakecloud
       '';
 
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" ];
-
       serviceConfig = {
-        Type = "simple";
-        Restart = "always";
-
-        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
-
         AmbientCapabilities = lib.mkIf (cfg.port < 1024) [ "CAP_NET_BIND_SERVICE" ];
-
-        DynamicUser = true;
-        PrivateDevices = true;
-        ProtectHome = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
         CapabilityBoundingSet = [ "" ];
         DevicePolicy = "closed";
+        DynamicUser = true;
+        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
+        PrivateDevices = true;
+        ProcSubset = "pid";
         ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
         ProtectHostname = true;
         ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
         ProtectProc = "invisible";
-        ProcSubset = "pid";
         RemoveIPC = true;
+        Restart = "always";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
-        SystemCallArchitectures = "native";
-        WorkingDirectory = serviceDataDir;
         StateDirectory = baseNameOf serviceDataDir;
+        SystemCallArchitectures = "native";
+        Type = "simple";
         UMask = "0027";
+        WorkingDirectory = serviceDataDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

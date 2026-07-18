@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   zstd,
 }:
 
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-QYu4PXWQGagj7r8lLs0IngIXzt6B8uq2qonycaGDg6g=";
   };
 
-  cargoHash = "sha256-3EbZv4mguNT3FtqcDBJriqRGGzz/093AMHqH6c2xYvQ=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -26,6 +24,8 @@ rustPlatform.buildRustPackage {
   buildInputs = [
     zstd
   ];
+
+  cargoHash = "sha256-3EbZv4mguNT3FtqcDBJriqRGGzz/093AMHqH6c2xYvQ=";
 
   meta = {
     description = "Unzip implementation, support for parallel decompression, automatic detection encoding";

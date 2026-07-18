@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   httplib2,
   nix-update-script,
   setuptools,
@@ -13,9 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "httplib2shim";
   version = "0.0.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "GoogleCloudPlatform";
@@ -24,6 +21,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-1dBrO8vkqJKsz+ADZNRtjUr+eVRGdt4iN1GFrse1sFc=";
   };
 
+  # Tests require a network access
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,11 +33,8 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  # Tests require a network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "httplib2shim" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

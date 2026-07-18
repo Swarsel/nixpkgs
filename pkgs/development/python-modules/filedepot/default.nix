@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   anyascii,
   buildPythonPackage,
-  fetchFromGitHub,
   flaky,
   google-cloud-storage,
   legacy-cgi,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "filedepot";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "amol-";
@@ -27,14 +26,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-693H/u+Wg2G9sdoUkC6DQo9WkmIlKnh8NKv3ufK/eyQ=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    anyascii
-    legacy-cgi
-    google-cloud-storage
-  ];
 
   nativeCheckInputs = [
     flaky
@@ -44,6 +35,14 @@ buildPythonPackage rec {
     pytestCheckHook
     requests
     sqlalchemy
+  ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    anyascii
+    legacy-cgi
+    google-cloud-storage
   ];
 
   disabledTestPaths = [
@@ -57,7 +56,7 @@ buildPythonPackage rec {
   ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.13") [ "test_notexisting" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "depot" ];
 
   meta = {

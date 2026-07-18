@@ -1,13 +1,13 @@
 {
   lib,
-  fetchgit,
-  SDL,
   stdenv,
+  SDL,
   alsa-lib,
+  fetchgit,
   libGL,
+  libmad,
   libogg,
   libvorbis,
-  libmad,
   xdelta,
 }:
 
@@ -17,8 +17,8 @@ stdenv.mkDerivation {
 
   src = fetchgit {
     url = "https://git.code.sf.net/p/uhexen2/uhexen2";
-    sha256 = "0crdihbnb92awkikn15mzdpkj1x9s34xixf1r7fxxf762m60niks";
     rev = "4ef664bc41e3998b0d2a55ff1166dadf34c936be";
+    sha256 = "0crdihbnb92awkikn15mzdpkj1x9s34xixf1r7fxxf762m60niks";
   };
 
   buildInputs = [
@@ -30,6 +30,8 @@ stdenv.mkDerivation {
     libmad
     xdelta
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   preBuild = ''
     makeFiles=(
@@ -44,8 +46,6 @@ stdenv.mkDerivation {
         "h2patch"
     )
   '';
-
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   buildPhase = ''
     runHook preBuild
@@ -72,17 +72,19 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Cross-platform port of Hexen II game";
+
     longDescription = ''
       Hammer of Thyrion (uHexen2) is a cross-platform port of Raven Software's Hexen II source.
       It is based on an older linux port, Anvil of Thyrion.
       HoT includes countless bug fixes, improved music, sound and video modes, opengl improvements,
       support for many operating systems and architectures, and documentation among many others.
     '';
+
     homepage = "https://uhexen2.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ xdhampus ];
     platforms = lib.platforms.all;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

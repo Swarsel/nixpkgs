@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   bzip2,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,29 +15,30 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0j2zm3z271x5aw63mwhr3vymzn45p2vvrlrpm9cz2nywna41b0hq";
   };
 
-  buildInputs = [ bzip2 ];
   patches = [
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/b/bsdiff/4.3-22/debian/patches/20-CVE-2014-9862.patch";
       sha256 = "sha256-3UuUfNvShQ8fLqxCKUTb/n4BmjL4+Nl7aEqCxYrrERQ=";
+      url = "https://sources.debian.org/data/main/b/bsdiff/4.3-22/debian/patches/20-CVE-2014-9862.patch";
     })
     ./CVE-2020-14315.patch
     ./include-systypes.patch
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/b/bsdiff/4.3-22/debian/patches/30-bug-632585-mmap-src-file-instead-of-malloc-read-it.patch";
       sha256 = "sha256-esbhz2/efUiuQDuF7LGfSeEn3/f1WbqCxQpTs2A0ulI=";
+      url = "https://sources.debian.org/data/main/b/bsdiff/4.3-22/debian/patches/30-bug-632585-mmap-src-file-instead-of-malloc-read-it.patch";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/b/bsdiff/4.3-22/debian/patches/31-bug-632585-mmap-dst-file-instead-of-malloc-read-it.patch";
       sha256 = "sha256-Of4aOcI0rsgdRzPqyw2VRn2p9wQuo3hdlgDTBdXGzoc=";
+      url = "https://sources.debian.org/data/main/b/bsdiff/4.3-22/debian/patches/31-bug-632585-mmap-dst-file-instead-of-malloc-read-it.patch";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/b/bsdiff/4.3-22/debian/patches/32-bug-632585-use-int32_t-instead-off_t-for-file-size.patch";
       sha256 = "sha256-SooFnFK4uKNXvXQb/LEcH8GocnRtkryExI4b3BZTsAY=";
+      url = "https://sources.debian.org/data/main/b/bsdiff/4.3-22/debian/patches/32-bug-632585-use-int32_t-instead-off_t-for-file-size.patch";
     })
   ];
+
+  buildInputs = [ bzip2 ];
 
   buildPhase = ''
     $CC -O3 -lbz2 bspatch.c -o bspatch
@@ -58,7 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Efficient binary diff/patch tool";
     homepage = "https://www.daemonology.net/bsdiff/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.thoughtpolice ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-httpbin,
+  pytestCheckHook,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "requests-random-user-agent";
   version = "2025.01.19";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DavidWittman";
@@ -20,13 +19,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-El/aibqEyx5diVTOe/4PEFB7KRfKqUJGPar6j6hZyIc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "requests_random_user_agent" ];
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   disabledTests = [
     # Tests require network access
@@ -34,6 +29,9 @@ buildPythonPackage (finalAttrs: {
     "test_request_different_without_session"
     "test_request_without_session"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "requests_random_user_agent" ];
 
   meta = {
     description = "Configures the requests library to randomly select a desktop User-Agent";

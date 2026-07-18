@@ -18,20 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./mutex_no_nameclash.patch ];
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     alsa-lib
     gtkmm2
     libjack2
   ];
-  nativeBuildInputs = [ pkg-config ];
 
   meta = {
     description = "Minimal loop based midi sequencer";
     homepage = "http://www.filter24.org/seq24";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "seq24";
   };
 })

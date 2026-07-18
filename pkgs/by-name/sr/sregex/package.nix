@@ -21,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/openresty/sregex";
     description = "Non-backtracking NFA/DFA-based Perl-compatible regex engine matching on large data streams";
-    mainProgram = "sregex-cli";
+    homepage = "https://github.com/openresty/sregex";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "sregex-cli";
   };
 })

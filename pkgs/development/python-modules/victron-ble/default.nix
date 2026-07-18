@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   bleak,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   pycryptodome,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "victron-ble";
   version = "0.9.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "keshavdv";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-ALdNM6U9bEX/KHcQu+7vM8Z42dEdxYtuxQRZMf10DyI=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +29,7 @@ buildPythonPackage rec {
     pycryptodome
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "victron_ble" ];
 
   meta = {

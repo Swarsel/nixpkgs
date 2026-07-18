@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "aenum";
   version = "3.1.16";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,8 +23,6 @@ buildPythonPackage rec {
     pyparsing
     pytestCheckHook
   ];
-
-  pythonImportsCheck = [ "aenum" ];
 
   disabledTests = [
     # https://github.com/ethanfurman/aenum/issues/27
@@ -41,6 +38,9 @@ buildPythonPackage rec {
     # AttributeError: <enum 'Color'> has no attribute 'value'. Did you mean: 'blue'?
     "test_extend_enum_shadow_property_stdlib"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aenum" ];
 
   meta = {
     description = "Advanced Enumerations (compatible with Python's stdlib Enum), NamedTuples, and NamedConstants";

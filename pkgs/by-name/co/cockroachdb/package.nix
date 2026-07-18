@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchzip,
   buildFHSEnv,
+  fetchzip,
 }:
 
 let
@@ -17,12 +17,13 @@ let
   # nix flake prefetch <url>
   srcs = {
     aarch64-linux = fetchzip {
-      url = "https://binaries.cockroachdb.com/cockroach-v${version}.linux-arm64.tgz";
       hash = "sha256-cwczzmSKKQs/DN6WZ/FF6nJC82Pu47akeDqWdBMgdz0=";
+      url = "https://binaries.cockroachdb.com/cockroach-v${version}.linux-arm64.tgz";
     };
+
     x86_64-linux = fetchzip {
-      url = "https://binaries.cockroachdb.com/cockroach-v${version}.linux-amd64.tgz";
       hash = "sha256-goCBE+zv9KArdoMsI48rlISurUM0bL/l1OEYWQKqzv0=";
+      url = "https://binaries.cockroachdb.com/cockroach-v${version}.linux-amd64.tgz";
     };
   };
   src =
@@ -32,28 +33,32 @@ in
 buildFHSEnv {
   inherit pname version;
 
-  runScript = "${src}/cockroach";
-
   extraInstallCommands = ''
     cp -P $out/bin/cockroachdb $out/bin/cockroach
   '';
 
+  runScript = "${src}/cockroach";
+
   meta = {
-    homepage = "https://www.cockroachlabs.com";
     description = "Scalable, survivable, strongly-consistent SQL database";
+    homepage = "https://www.cockroachlabs.com";
+
     license = with lib.licenses; [
       bsl11
       mit
       cockroachdb-community-license
     ];
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = [
-      "aarch64-linux"
-      "x86_64-linux"
-    ];
+
     maintainers = with lib.maintainers; [
       rushmorem
       thoughtpolice
+    ];
+
+    platforms = [
+      "aarch64-linux"
+      "x86_64-linux"
     ];
   };
 }

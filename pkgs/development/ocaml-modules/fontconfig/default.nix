@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   fontconfig,
   ocaml,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -24,13 +24,14 @@ stdenv.mkDerivation {
       --replace String.capitalize String.capitalize_ascii
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     ocaml
   ];
-  buildInputs = [ fontconfig ];
 
-  strictDeps = true;
+  buildInputs = [ fontconfig ];
 
   makeFlags = [
     "OCAML_STDLIB_DIR=$(out)/lib/ocaml/${lib.getVersion ocaml}/site-lib/"
@@ -41,7 +42,7 @@ stdenv.mkDerivation {
     description = "Fontconfig bindings for OCaml";
     homepage = "https://github.com/flh/ocaml-fontconfig";
     license = lib.licenses.gpl2Plus;
-    platforms = ocaml.meta.platforms;
     maintainers = with lib.maintainers; [ vbgl ];
+    platforms = ocaml.meta.platforms;
   };
 }

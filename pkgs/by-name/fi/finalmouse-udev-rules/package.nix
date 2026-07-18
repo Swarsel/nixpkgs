@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation {
@@ -15,8 +15,6 @@ stdenv.mkDerivation {
     hash = "sha256-+tStBzGrPop0zKNf0qIp2PCrVRy2CcFpIrvgft9YkbE=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -25,13 +23,17 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://github.com/teamfinalmouse/xpanel-linux-permissions";
     description = "udev rules that give NixOS permission to communicate with Finalmouse mice";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/teamfinalmouse/xpanel-linux-permissions";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       emilia
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

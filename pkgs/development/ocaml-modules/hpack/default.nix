@@ -1,8 +1,8 @@
 {
-  buildDunePackage,
   lib,
   fetchurl,
   angstrom,
+  buildDunePackage,
   faraday,
 }:
 
@@ -15,8 +15,6 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-DYm28XgXUpTnogciO+gdW4P8Mbl1Sb7DTwQyo7KoBw8=";
   };
 
-  minimalOCamlVersion = "4.08";
-
   propagatedBuildInputs = [
     angstrom
     faraday
@@ -24,11 +22,13 @@ buildDunePackage (finalAttrs: {
 
   # circular dependency
   doCheck = false;
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    license = lib.licenses.bsd3;
     description = "HPACK (Header Compression for HTTP/2) implementation in OCaml";
     homepage = "https://github.com/anmonteiro/ocaml-h2";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       sternenseemann
     ];

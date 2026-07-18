@@ -2,18 +2,17 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  lz4,
   keyring,
+  lz4,
   pbkdf2,
-  pycryptodomex,
   pyaes,
+  pycryptodomex,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "browser-cookie3";
   version = "0.20.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "borisbabic";
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     hash = "sha256-3EmFx+9LQFuS26mUPH/etc6hkUXqmNOOipbldhjorDE=";
   };
 
+  # No tests implemented
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,9 +33,7 @@ buildPythonPackage rec {
     pycryptodomex
   ];
 
-  # No tests implemented
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "browser_cookie3" ];
 
   meta = {

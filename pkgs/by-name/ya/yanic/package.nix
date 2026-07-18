@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,15 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-6jGuqqUr9DJyPYAVBBHc5qtfJIbvjGndT2Y+RSLMzhY=";
   };
 
-  vendorHash = "sha256-TcmkPBHxpmTgXNW8gPkzMpjPGCQu/HrZqAu9jDpPEjo=";
-
-  ldflags = [
-    "-X github.com/FreifunkBremen/yanic/cmd.VERSION=${finalAttrs.version}"
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-TcmkPBHxpmTgXNW8gPkzMpjPGCQu/HrZqAu9jDpPEjo=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd yanic \
@@ -33,6 +26,12 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/yanic completion fish) \
       --zsh <($out/bin/yanic completion zsh)
   '';
+
+  ldflags = [
+    "-X github.com/FreifunkBremen/yanic/cmd.VERSION=${finalAttrs.version}"
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Tool to collect and aggregate respondd data";

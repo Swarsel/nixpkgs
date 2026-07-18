@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,17 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-9BbPHqAZKw8Rpjpdd/e9ip3V0Eh06tEFt/skQ97ij4g=";
   };
 
-  vendorHash = "sha256-+p1gIqklTyd/AU1q0zbQN4BwxOM910fBFmkqvbFAbZA=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/guumaster/hostctl/cmd/hostctl/actions.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-+p1gIqklTyd/AU1q0zbQN4BwxOM910fBFmkqvbFAbZA=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd hostctl \
@@ -35,12 +29,20 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/hostctl completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/guumaster/hostctl/cmd/hostctl/actions.version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "CLI tool to manage the /etc/hosts file";
+
     longDescription = ''
       This tool gives you more control over the use of your hosts file.
       You can have multiple profiles and switch them on/off as you need.
     '';
+
     homepage = "https://guumaster.github.io/hostctl/";
     license = lib.licenses.mit;
     maintainers = [ ];

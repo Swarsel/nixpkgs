@@ -1,20 +1,25 @@
 {
-  mkDerivation,
   bsdSetupHook,
-  netbsdSetupHook,
-  makeMinimal,
-  install,
-  tsort,
-  lorder,
-  mandoc,
-  statHook,
-  nbperf,
-  tic,
   compatIfNeeded,
+  install,
+  lorder,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
+  nbperf,
+  netbsdSetupHook,
+  statHook,
+  tic,
+  tsort,
 }:
 
 mkDerivation {
-  path = "lib/libterminfo";
+  postPatch = ''
+    substituteInPlace $COMPONENT_PATH/term.c --replace /usr/share $out/share
+    substituteInPlace $COMPONENT_PATH/setupterm.c \
+      --replace '#include <curses.h>' 'void use_env(bool);'
+  '';
+
   nativeBuildInputs = [
     bsdSetupHook
     netbsdSetupHook
@@ -27,18 +32,18 @@ mkDerivation {
     nbperf
     tic
   ];
+
   buildInputs = compatIfNeeded;
-  SHLIBINSTALLDIR = "$(out)/lib";
-  postPatch = ''
-    substituteInPlace $COMPONENT_PATH/term.c --replace /usr/share $out/share
-    substituteInPlace $COMPONENT_PATH/setupterm.c \
-      --replace '#include <curses.h>' 'void use_env(bool);'
-  '';
+
   postBuild = ''
     make -C $BSDSRCDIR/share/terminfo $makeFlags BINDIR=$out/share
   '';
+
   postInstall = ''
     make -C $BSDSRCDIR/share/terminfo $makeFlags BINDIR=$out/share install
   '';
+
+  SHLIBINSTALLDIR = "$(out)/lib";
   extraPaths = [ "share/terminfo" ];
+  path = "lib/libterminfo";
 }

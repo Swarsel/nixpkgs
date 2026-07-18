@@ -1,10 +1,10 @@
 {
-  stdenv,
-  pkgs,
-  fetchurl,
-  zlib,
-  gmp,
   lib,
+  stdenv,
+  fetchurl,
+  gmp,
+  pkgs,
+  zlib,
 }:
 
 # from justinwoo/easy-purescript-nix
@@ -31,17 +31,19 @@ stdenv.mkDerivation rec {
     let
       url = "https://github.com/${pname}/${pname}/releases/download/v${version}/";
       sources = {
-        "x86_64-linux" = fetchurl {
-          url = url + "linux64.tar.gz";
-          sha256 = "1w4jgjpfhaw3gkx9sna64lq9m030x49w4lwk01ik5ci0933imzj3";
-        };
-        "aarch64-linux" = fetchurl {
-          url = url + "linux-arm64.tar.gz";
-          sha256 = "1ws5h337xq0l06zrs9010h6wj2hq5cqk5ikp9arq7hj7lxf43vn5";
-        };
         "aarch64-darwin" = fetchurl {
-          url = url + "macos-arm64.tar.gz";
           sha256 = "0bi231z1yhb7kjfn228wjkj6rv9lgpagz9f4djr2wy3kqgck4xg0";
+          url = url + "macos-arm64.tar.gz";
+        };
+
+        "aarch64-linux" = fetchurl {
+          sha256 = "1ws5h337xq0l06zrs9010h6wj2hq5cqk5ikp9arq7hj7lxf43vn5";
+          url = url + "linux-arm64.tar.gz";
+        };
+
+        "x86_64-linux" = fetchurl {
+          sha256 = "1w4jgjpfhaw3gkx9sna64lq9m030x49w4lwk01ik5ci0933imzj3";
+          url = url + "linux64.tar.gz";
         };
       };
     in
@@ -52,8 +54,6 @@ stdenv.mkDerivation rec {
     zlib
     gmp
   ];
-  libPath = lib.makeLibraryPath buildInputs;
-  dontStrip = true;
 
   installPhase = ''
     mkdir -p $out/bin
@@ -67,28 +67,35 @@ stdenv.mkDerivation rec {
     $PURS --bash-completion-script $PURS > $out/share/bash-completion/completions/purs-completion.bash
   '';
 
+  dontStrip = true;
+  libPath = lib.makeLibraryPath buildInputs;
+
   passthru = {
-    updateScript = ./update.sh;
     tests = {
       minimal-module = pkgs.callPackage ./test-minimal-module { };
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Strongly-typed functional programming language that compiles to JavaScript";
     homepage = "https://www.purescript.org/";
+    changelog = "https://github.com/purescript/purescript/releases/tag/v${version}";
     license = lib.licenses.bsd3;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       justinwoo
       cdepillabout
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "purs";
-    changelog = "https://github.com/purescript/purescript/releases/tag/v${version}";
   };
 }

@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nix-update-script,
   gdk-pixbuf,
   gtk-engine-murrine,
   gtk_engines,
   librsvg,
+  nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -26,10 +26,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/themes
@@ -37,13 +33,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "New version for Marwaita GTK theme";
     homepage = "https://www.pling.com/p/2044790/";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
   };
 })

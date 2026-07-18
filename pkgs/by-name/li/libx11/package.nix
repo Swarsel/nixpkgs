@@ -3,17 +3,22 @@
   stdenv,
   fetchurl,
   buildPackages,
-  pkg-config,
-  xorgproto,
   libpthread-stubs,
   libxcb,
-  xtrans,
-  writeScript,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
+  xtrans,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libx11";
   version = "1.8.13";
+
+  src = fetchurl {
+    url = "mirror://xorg/individual/lib/libX11-${finalAttrs.version}.tar.xz";
+    hash = "sha256-aWBvSFwsB8FO9k91t7sybUhYevM3ldmrPmB8C1+U8Rw=";
+  };
 
   outputs = [
     "out"
@@ -21,15 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  src = fetchurl {
-    url = "mirror://xorg/individual/lib/libX11-${finalAttrs.version}.tar.xz";
-    hash = "sha256-aWBvSFwsB8FO9k91t7sybUhYevM3ldmrPmB8C1+U8Rw=";
-  };
-
   strictDeps = true;
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -54,7 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
     rm -r $out/share/doc
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -63,12 +64,12 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Core X11 protocol client library (aka \"Xlib\")";
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libx11";
+
     license = with lib.licenses; [
       mit
       mitOpenGroup
@@ -85,11 +86,13 @@ stdenv.mkDerivation (finalAttrs: {
       # upstream issue: https://gitlab.freedesktop.org/xorg/lib/libx11/-/issues/217
       # unfree
     ];
+
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "x11"
       "x11-xcb"
     ];
-    platforms = lib.platforms.unix;
   };
 })

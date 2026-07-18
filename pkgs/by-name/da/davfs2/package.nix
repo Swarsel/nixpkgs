@@ -19,14 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-pTaBYetQVWUdfl6BgMFgbaleeMlBtruKkobfeSPPy6k=";
   };
 
-  nativeBuildInputs = [
-    autoreconfHook269
-  ];
-
-  buildInputs = [
-    zlib
-  ];
-
   patches = [
     ./fix-sysconfdir.patch
     ./disable-suid.patch
@@ -38,15 +30,21 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
+  nativeBuildInputs = [
+    autoreconfHook269
+  ];
+
+  buildInputs = [
+    zlib
+  ];
+
   configureFlags = [
     "--sysconfdir=/etc"
     "--with-neon=${lib.getLib neon}"
   ];
 
   meta = {
-    homepage = "https://savannah.nongnu.org/projects/davfs2";
     description = "Mount WebDAV shares like a typical filesystem";
-    license = lib.licenses.gpl3Plus;
 
     longDescription = ''
       Web Distributed Authoring and Versioning (WebDAV), an extension to
@@ -56,7 +54,9 @@ stdenv.mkDerivation (finalAttrs: {
       with no built-in support for WebDAV.
     '';
 
-    platforms = lib.platforms.linux;
+    homepage = "https://savannah.nongnu.org/projects/davfs2";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   docbook_xml_dtd_43,
   docbook_xsl,
-  fetchFromGitHub,
   gettext,
   gmp,
   gtk-doc,
@@ -13,7 +14,6 @@
   pcre2,
   pkg-config,
   python3Packages,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     docbook_xml_dtd_43
@@ -45,18 +47,11 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.python
   ];
 
-  nativeInstallCheckInputs = [
-    python3Packages.pythonImportsCheckHook
-  ];
-
   buildInputs = [
     gmp
     mpfr
     pcre2
   ];
-
-  doInstallCheck = true;
-  strictDeps = true;
 
   postInstall = ''
     substituteInPlace $out/${python3Packages.python.sitePackages}/bytesize/bytesize.py \
@@ -66,16 +61,21 @@ stdenv.mkDerivation (finalAttrs: {
     ${python3Packages.python.pythonOnBuildForHost.interpreter} -m compileall $out/${python3Packages.python.sitePackages}/bytesize
   '';
 
-  pythonImportsCheck = [ "bytesize" ];
+  doInstallCheck = true;
 
+  nativeInstallCheckInputs = [
+    python3Packages.pythonImportsCheckHook
+  ];
+
+  pythonImportsCheck = [ "bytesize" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/storaged-project/libbytesize";
     description = "Tiny library providing a C 'class' for working with arbitrary big sizes in bytes";
+    homepage = "https://github.com/storaged-project/libbytesize";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "bscalc";
     maintainers = [ lib.maintainers.PlasmaPower ];
     platforms = lib.platforms.linux;
+    mainProgram = "bscalc";
   };
 })

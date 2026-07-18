@@ -54,19 +54,6 @@ in
     services.xserver.windowManager = {
 
       session = mkOption {
-        internal = true;
-        default = [ ];
-        example = [
-          {
-            name = "wmii";
-            start = "...";
-          }
-        ];
-        description = ''
-          Internal option used to add some common line to window manager
-          scripts before forwarding the value to the
-          `displayManager`.
-        '';
         apply = map (
           d:
           d
@@ -74,6 +61,23 @@ in
             manage = "window";
           }
         );
+
+        default = [ ];
+
+        description = ''
+          Internal option used to add some common line to window manager
+          scripts before forwarding the value to the
+          `displayManager`.
+        '';
+
+        example = [
+          {
+            name = "wmii";
+            start = "...";
+          }
+        ];
+
+        internal = true;
       };
 
     };

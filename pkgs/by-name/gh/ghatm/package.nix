@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "ghatm";
@@ -18,16 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MX1VilyfxJ9GKIkDSGeAE007DyjPkWL5W4b08EqAyC4=";
   };
 
-  vendorHash = "sha256-CQ2HAyBuULKbmGdJ9RmPYFr2nZYxDePoJu+k8cjKxpk=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-    "-X main.commit=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-CQ2HAyBuULKbmGdJ9RmPYFr2nZYxDePoJu+k8cjKxpk=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd ghatm \
@@ -36,19 +28,26 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/ghatm completion fish)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-  versionCheckProgramArg = "version";
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.commit=v${finalAttrs.version}"
+  ];
+
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/suzuki-shunsuke/ghatm/releases/tag/v${finalAttrs.version}";
     description = "Set timeout-minutes to all GitHub Actions jobs";
     homepage = "https://github.com/suzuki-shunsuke/ghatm";
+    changelog = "https://github.com/suzuki-shunsuke/ghatm/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "ghatm";
     maintainers = with lib.maintainers; [ HeitorAugustoLN ];
     platforms = lib.platforms.all;
+    mainProgram = "ghatm";
   };
 })

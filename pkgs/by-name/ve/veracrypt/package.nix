@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  makeself,
-  yasm,
-  fuse3,
-  wxwidgets_3_2,
-  lvm2,
-  replaceVars,
+  btrfs-progs,
   e2fsprogs,
   exfat,
+  fuse3,
+  lvm2,
+  makeself,
   ntfs3g,
-  btrfs-progs,
   pcsclite,
+  pkg-config,
+  replaceVars,
   wrapGAppsHook3,
+  wxwidgets_3_2,
+  yasm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,21 +30,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (replaceVars ./fix-paths.patch {
+      btrfs = "${btrfs-progs}/bin/mkfs.btrfs";
+      exfat = "${exfat}/bin/mkfs.exfat";
       ext2 = "${e2fsprogs}/bin/mkfs.ext2";
       ext3 = "${e2fsprogs}/bin/mkfs.ext3";
       ext4 = "${e2fsprogs}/bin/mkfs.ext4";
-      exfat = "${exfat}/bin/mkfs.exfat";
       ntfs = "${ntfs3g}/bin/mkfs.ntfs";
-      btrfs = "${btrfs-progs}/bin/mkfs.btrfs";
     })
 
     # https://github.com/veracrypt/VeraCrypt/commit/2cca2e1dafa405addc3af8724baf8563f352ac1c
     ./nix-system-paths.patch
   ];
-
-  sourceRoot = "${finalAttrs.src.name}/src";
-
-  buildFlags = [ "WITHFUSE3=1" ];
 
   nativeBuildInputs = [
     makeself
@@ -52,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     yasm
     wrapGAppsHook3
   ];
+
   buildInputs = [
     fuse3
     lvm2
@@ -59,7 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     pcsclite
   ];
 
-  enableParallelBuilding = true;
+  buildFlags = [ "WITHFUSE3=1" ];
 
   installPhase = ''
     install -Dm 755 Main/veracrypt "$out/bin/veracrypt"
@@ -71,15 +68,20 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "Icon=veracrypt" "Icon=veracrypt.xpm"
   '';
 
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Free Open-Source filesystem on-the-fly encryption";
     homepage = "https://www.veracrypt.fr/";
+
     license =
       with lib.licenses;
       AND [
         asl20 # and
         unfree # TrueCrypt License version 3.0
       ];
+
     maintainers = [ lib.maintainers.ryand56 ];
     platforms = lib.platforms.linux;
   };

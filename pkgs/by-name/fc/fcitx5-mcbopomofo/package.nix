@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  kdePackages,
-  gettext,
-  json_c,
-  icu,
-  fmt,
-  gtest,
   fcitx5,
+  fmt,
+  gettext,
+  gtest,
+  icu,
+  json_c,
+  kdePackages,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-yeqNiRiV/RXyFAlEfvsTLcw+AD/qZNvPLr34Cvqe360=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -40,8 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     icu
     json_c
   ];
-
-  strictDeps = true;
 
   cmakeFlags = [
     "-DCMAKE_BUILD_TYPE=Release"

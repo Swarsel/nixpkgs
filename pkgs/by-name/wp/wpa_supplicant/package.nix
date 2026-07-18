@@ -2,25 +2,24 @@
   lib,
   stdenv,
   fetchurl,
+  dbus,
   fetchpatch,
-  openssl,
-  pkg-config,
   libnl,
   nixosTests,
+  openssl,
+  pcsclite,
+  pkg-config,
+  readline,
   wpa_supplicant_gui,
   dbusSupport ? !stdenv.hostPlatform.isStatic,
-  dbus,
-  withReadline ? true,
-  readline,
-  withPcsclite ? !stdenv.hostPlatform.isStatic,
-  pcsclite,
   unprivileged ? true,
+  withPcsclite ? !stdenv.hostPlatform.isStatic,
+  withReadline ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.11";
-
   pname = "wpa_supplicant";
+  version = "2.11";
 
   src = fetchurl {
     url = "https://w1.fi/releases/wpa_supplicant-${finalAttrs.version}.tar.gz";
@@ -29,25 +28,65 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      name = "revert-change-breaking-auth-broadcom.patch";
-      url = "https://w1.fi/cgit/hostap/patch/?id=41638606054a09867fe3f9a2b5523aa4678cbfa5";
       hash = "sha256-X6mBbj7BkW66aYeSCiI3JKBJv10etLQxaTRfRgwsFmM=";
+      name = "revert-change-breaking-auth-broadcom.patch";
       revert = true;
+      url = "https://w1.fi/cgit/hostap/patch/?id=41638606054a09867fe3f9a2b5523aa4678cbfa5";
     })
     (fetchpatch {
+      hash = "sha256-5ti5OzgnZUFznjU8YH8Cfktrj4YBzsbbrEbNvec+ppQ=";
       name = "suppress-ctrl-event-signal-change.patch";
       url = "https://w1.fi/cgit/hostap/patch/?id=c330b5820eefa8e703dbce7278c2a62d9c69166a";
-      hash = "sha256-5ti5OzgnZUFznjU8YH8Cfktrj4YBzsbbrEbNvec+ppQ=";
     })
     (fetchpatch {
+      hash = "sha256-leCk0oexNBZyVK5Q5gR4ZcgWxa0/xt/aU+DssTa0UwE=";
       name = "ensure-full-key-match";
       url = "https://git.w1.fi/cgit/hostap/patch/?id=1ce37105da371c8b9cf3f349f78f5aac77d40836";
-      hash = "sha256-leCk0oexNBZyVK5Q5gR4ZcgWxa0/xt/aU+DssTa0UwE=";
     })
     ./unsurprising-ext-password.patch
     ./multiple-configs.patch
   ]
   ++ lib.optional unprivileged ./unprivileged-daemon.patch;
+
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    openssl
+    libnl
+  ]
+  ++ lib.optional dbusSupport dbus
+  ++ lib.optional withReadline readline
+  ++ lib.optional withPcsclite pcsclite;
+
+  preBuild = ''
+    for manpage in wpa_supplicant/doc/docbook/wpa_supplicant.conf* ; do
+      substituteInPlace "$manpage" --replace /usr/share/doc $out/share/doc
+    done
+    cd wpa_supplicant
+    cp -v defconfig .config
+    echo "$extraConfig" >> .config
+    cat -n .config
+    substituteInPlace Makefile --replace /usr/local $out
+    export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE \
+      -I$(echo "${lib.getDev libnl}"/include/libnl*/) \
+      ${lib.optionalString withPcsclite "-I${lib.getDev pcsclite}/include/PCSC/"}"
+  '';
+
+  postInstall = ''
+    mkdir -p $out/share/man/man5 $out/share/man/man8
+    cp -v "doc/docbook/"*.5 $out/share/man/man5/
+    cp -v "doc/docbook/"*.8 $out/share/man/man8/
+  ''
+  + lib.optionalString dbusSupport ''
+    mkdir -p $out/share/dbus-1/system.d $out/share/dbus-1/system-services $out/etc/systemd/system
+    cp -v "dbus/"*service $out/share/dbus-1/system-services
+    cp -v dbus/dbus-wpa_supplicant.conf $out/share/dbus-1/system.d
+    cp -v "systemd/"*.service $out/etc/systemd/system
+  ''
+  + ''
+    rm $out/share/man/man8/wpa_priv.8
+    install -Dm444 wpa_supplicant.conf $out/share/doc/wpa_supplicant/wpa_supplicant.conf.example
+  '';
 
   # TODO: Patch epoll so that the dbus actually responds
   # TODO: Figure out how to get privsep working, currently getting SIGBUS
@@ -126,57 +165,19 @@ stdenv.mkDerivation (finalAttrs: {
       ''
   );
 
-  preBuild = ''
-    for manpage in wpa_supplicant/doc/docbook/wpa_supplicant.conf* ; do
-      substituteInPlace "$manpage" --replace /usr/share/doc $out/share/doc
-    done
-    cd wpa_supplicant
-    cp -v defconfig .config
-    echo "$extraConfig" >> .config
-    cat -n .config
-    substituteInPlace Makefile --replace /usr/local $out
-    export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE \
-      -I$(echo "${lib.getDev libnl}"/include/libnl*/) \
-      ${lib.optionalString withPcsclite "-I${lib.getDev pcsclite}/include/PCSC/"}"
-  '';
-
-  buildInputs = [
-    openssl
-    libnl
-  ]
-  ++ lib.optional dbusSupport dbus
-  ++ lib.optional withReadline readline
-  ++ lib.optional withPcsclite pcsclite;
-
-  nativeBuildInputs = [ pkg-config ];
-
-  postInstall = ''
-    mkdir -p $out/share/man/man5 $out/share/man/man8
-    cp -v "doc/docbook/"*.5 $out/share/man/man5/
-    cp -v "doc/docbook/"*.8 $out/share/man/man8/
-  ''
-  + lib.optionalString dbusSupport ''
-    mkdir -p $out/share/dbus-1/system.d $out/share/dbus-1/system-services $out/etc/systemd/system
-    cp -v "dbus/"*service $out/share/dbus-1/system-services
-    cp -v dbus/dbus-wpa_supplicant.conf $out/share/dbus-1/system.d
-    cp -v "systemd/"*.service $out/etc/systemd/system
-  ''
-  + ''
-    rm $out/share/man/man8/wpa_priv.8
-    install -Dm444 wpa_supplicant.conf $out/share/doc/wpa_supplicant/wpa_supplicant.conf.example
-  '';
-
   passthru.tests = {
     inherit (nixosTests) wpa_supplicant;
     inherit wpa_supplicant_gui; # inherits the src+version updates
   };
 
   meta = {
-    homepage = "https://w1.fi/wpa_supplicant/";
     description = "Tool for connecting to WPA and WPA2-protected wireless networks";
+    homepage = "https://w1.fi/wpa_supplicant/";
     license = lib.licenses.bsd3;
+
     maintainers = [
     ];
+
     platforms = lib.platforms.linux;
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "w1.fi" finalAttrs.version;
   };

@@ -35,6 +35,13 @@ in
       highlighters = lib.mkOption {
         default = [ "main" ];
 
+        description = ''
+          Specifies the highlighters to be used by zsh-syntax-highlighting.
+
+          The following defined options can be found here:
+          https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters.md
+        '';
+
         # https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters.md
         type = lib.types.listOf (
           lib.types.enum [
@@ -47,24 +54,10 @@ in
             "line"
           ]
         );
-
-        description = ''
-          Specifies the highlighters to be used by zsh-syntax-highlighting.
-
-          The following defined options can be found here:
-          https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters.md
-        '';
       };
 
       patterns = lib.mkOption {
         default = { };
-        type = lib.types.attrsOf lib.types.str;
-
-        example = lib.literalExpression ''
-          {
-            "rm -rf *" = "fg=white,bold,bg=red";
-          }
-        '';
 
         description = ''
           Specifies custom patterns to be highlighted by zsh-syntax-highlighting.
@@ -72,16 +65,18 @@ in
           Please refer to the docs for more information about the usage:
           https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters/pattern.md
         '';
-      };
-      styles = lib.mkOption {
-        default = { };
-        type = lib.types.attrsOf lib.types.str;
 
         example = lib.literalExpression ''
           {
-            "alias" = "fg=magenta,bold";
+            "rm -rf *" = "fg=white,bold,bg=red";
           }
         '';
+
+        type = lib.types.attrsOf lib.types.str;
+      };
+
+      styles = lib.mkOption {
+        default = { };
 
         description = ''
           Specifies custom styles to be highlighted by zsh-syntax-highlighting.
@@ -89,22 +84,31 @@ in
           Please refer to the docs for more information about the usage:
           https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters/main.md
         '';
+
+        example = lib.literalExpression ''
+          {
+            "alias" = "fg=magenta,bold";
+          }
+        '';
+
+        type = lib.types.attrsOf lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.zsh-syntax-highlighting ];
-
     assertions = [
       {
         assertion =
           builtins.length (builtins.attrNames cfg.patterns) > 0 -> builtins.elem "pattern" cfg.highlighters;
+
         message = ''
           When highlighting patterns, "pattern" needs to be included in the list of highlighters.
         '';
       }
     ];
+
+    environment.systemPackages = [ pkgs.zsh-syntax-highlighting ];
 
     programs.zsh.interactiveShellInit = lib.mkAfter (
       lib.concatStringsSep "\n" (

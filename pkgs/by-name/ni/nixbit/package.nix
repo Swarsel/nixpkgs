@@ -1,14 +1,14 @@
 {
-  cmake,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   installShellFiles,
   kdePackages,
-  lib,
   libgit2,
   ninja,
   pkg-config,
   qt6,
-  stdenv,
   xvfb-run,
 }:
 

@@ -1,40 +1,40 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 let
   fonts = [
     {
-      name = "azuki";
       downloadVersion = "121";
       hash = "sha256-AMpEJDD8lN0qWJ5C0y4V+/2JE/pKQrUHGfKHcnV+dhA=";
+      name = "azuki";
     }
     {
-      name = "azuki-b";
       downloadVersion = "B120";
       hash = "sha256-GoXnDX9H6D1X0QEgrD2jmQp7ek081PpO+xR3OdIY8Ck=";
+      name = "azuki-b";
     }
     {
-      name = "azuki-l";
       downloadVersion = "L120";
       hash = "sha256-rvWvSuvLnK3m2+iyKPQyIB1UGjg8dAW5oygjsLCQZ48=";
+      name = "azuki-l";
     }
     {
-      name = "azuki-lb";
       downloadVersion = "LB100";
       hash = "sha256-zpGomVshCe2W2Z2C5UGtVrJ2k7F//MftndSHPHmG290=";
+      name = "azuki-lb";
     }
     {
-      name = "azuki-lp";
       downloadVersion = "LP100";
       hash = "sha256-Q/ND3dv8q7WTQx4oYVY5pTiGl4Ht89oA+tuCyfPOLUk=";
+      name = "azuki-lp";
     }
     {
-      name = "azuki-p";
       downloadVersion = "P100";
       hash = "sha256-s4uodxyXP5R7jwkzjmg6qJZCllJ/MtgkkVOeELI8hLI=";
+      name = "azuki-p";
     }
   ];
 
@@ -42,21 +42,6 @@ in
 stdenvNoCC.mkDerivation {
   pname = "azuki";
   version = "0-unstable-2021-07-02";
-
-  sourceRoot = "azuki";
-
-  srcs = map (
-    {
-      name,
-      downloadVersion,
-      hash,
-    }:
-    fetchzip {
-      url = "https://azukifont.com/font/azukifont${downloadVersion}.zip";
-      stripRoot = false;
-      inherit name hash;
-    }
-  ) fonts;
 
   installPhase = ''
     runHook preInstall
@@ -68,11 +53,26 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  sourceRoot = "azuki";
+
+  srcs = map (
+    {
+      downloadVersion,
+      hash,
+      name,
+    }:
+    fetchzip {
+      inherit name hash;
+      stripRoot = false;
+      url = "https://azukifont.com/font/azukifont${downloadVersion}.zip";
+    }
+  ) fonts;
+
   meta = {
-    homepage = "http://azukifont.com/font/azuki.html";
     description = "Azuki Font";
+    homepage = "http://azukifont.com/font/azuki.html";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ nyadiia ];
+    platforms = lib.platforms.all;
   };
 }

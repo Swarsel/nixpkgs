@@ -1,22 +1,22 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   fetchpatch,
-  installShellFiles,
   git,
-  spdx-license-list-data,
+  installShellFiles,
+  python3,
   replaceVars,
-  writableTmpDirAsHomeHook,
+  spdx-license-list-data,
   udevCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: {
       marshmallow = super.marshmallow.overridePythonAttrs (oldAttrs: rec {
         version = "3.26.1";
+
         src = fetchFromGitHub {
           owner = "marshmallow-code";
           repo = "marshmallow";
@@ -32,6 +32,8 @@ let
         ];
       });
     };
+
+    self = python;
   };
   python3Packages = python.pkgs;
 in
@@ -39,7 +41,6 @@ with python3Packages;
 buildPythonApplication rec {
   pname = "platformio";
   version = "6.1.19";
-  pyproject = true;
 
   # pypi tarballs don't contain tests - https://github.com/platformio/platformio-core/issues/1964
   src = fetchFromGitHub {
@@ -63,11 +64,11 @@ buildPythonApplication rec {
     })
     ./missing-udev-rules-nixos.patch
     (fetchpatch {
+      hash = "sha256-yq+/QHCkhAkFND11MbKFiiWT3oF1cHhgWj5JkYjwuY0=";
+      revert = true;
       # restore PYTHONPATH when calling scons
       # https://github.com/platformio/platformio-core/commit/097de2be98af533578671baa903a3ae825d90b94
       url = "https://github.com/platformio/platformio-core/commit/097de2be98af533578671baa903a3ae825d90b94.patch";
-      hash = "sha256-yq+/QHCkhAkFND11MbKFiiWT3oF1cHhgWj5JkYjwuY0=";
-      revert = true;
     })
     ./builder-prioritize-python-env-in-path.patch
   ];
@@ -85,9 +86,39 @@ buildPythonApplication rec {
     udevCheckHook
   ];
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    jsondiff
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
-  pythonRelaxDeps = true;
+  preCheck = ''
+    export PATH=$PATH:$out/bin
+  '';
+
+  # Install udev rules into a separate output so all of platformio-core is not a dependency if
+  # you want to use the udev rules on NixOS but not install platformio in your system packages.
+  postInstall = ''
+    mkdir -p $udev/lib/udev/rules.d
+    cp platformio/assets/system/99-platformio-udev.rules $udev/lib/udev/rules.d/99-platformio-udev.rules
+
+    # Avoid platformio writing state into /build/.home when generating completions.
+    export HOME=$TMPDIR
+    export PLATFORMIO_CORE_DIR=$TMPDIR/platformio-core
+    mkdir -p "$PLATFORMIO_CORE_DIR"
+
+    installShellCompletion --cmd platformio \
+      --bash <(_PLATFORMIO_COMPLETE=bash_source $out/bin/platformio) \
+      --zsh <(_PLATFORMIO_COMPLETE=zsh_source $out/bin/platformio) \
+      --fish <(_PLATFORMIO_COMPLETE=fish_source $out/bin/platformio)
+
+    installShellCompletion --cmd pio \
+      --bash <(_PIO_COMPLETE=bash_source $out/bin/pio) \
+      --zsh <(_PIO_COMPLETE=zsh_source $out/bin/pio) \
+      --fish <(_PIO_COMPLETE=fish_source $out/bin/pio)
+  '';
+
+  build-system = [ setuptools ];
 
   dependencies = [
     aiofiles
@@ -121,42 +152,6 @@ buildPythonApplication rec {
   ]
   ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
     chardet
-  ];
-
-  preCheck = ''
-    export PATH=$PATH:$out/bin
-  '';
-
-  nativeCheckInputs = [
-    jsondiff
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  # Install udev rules into a separate output so all of platformio-core is not a dependency if
-  # you want to use the udev rules on NixOS but not install platformio in your system packages.
-  postInstall = ''
-    mkdir -p $udev/lib/udev/rules.d
-    cp platformio/assets/system/99-platformio-udev.rules $udev/lib/udev/rules.d/99-platformio-udev.rules
-
-    # Avoid platformio writing state into /build/.home when generating completions.
-    export HOME=$TMPDIR
-    export PLATFORMIO_CORE_DIR=$TMPDIR/platformio-core
-    mkdir -p "$PLATFORMIO_CORE_DIR"
-
-    installShellCompletion --cmd platformio \
-      --bash <(_PLATFORMIO_COMPLETE=bash_source $out/bin/platformio) \
-      --zsh <(_PLATFORMIO_COMPLETE=zsh_source $out/bin/platformio) \
-      --fish <(_PLATFORMIO_COMPLETE=fish_source $out/bin/platformio)
-
-    installShellCompletion --cmd pio \
-      --bash <(_PIO_COMPLETE=bash_source $out/bin/pio) \
-      --zsh <(_PIO_COMPLETE=zsh_source $out/bin/pio) \
-      --fish <(_PIO_COMPLETE=fish_source $out/bin/pio)
-  '';
-
-  enabledTestPaths = [
-    "tests"
   ];
 
   disabledTestPaths = [
@@ -242,20 +237,29 @@ buildPythonApplication rec {
     "test_metadata_dump"
   ];
 
+  enabledTestPaths = [
+    "tests"
+  ];
+
+  pyproject = true;
+  pythonRelaxDeps = true;
+
   passthru = {
     python = python3Packages.python;
   };
 
   meta = {
-    changelog = "https://github.com/platformio/platformio-core/releases/tag/${src.tag}";
     description = "Open source ecosystem for IoT development";
-    downloadPage = "https://github.com/platformio/platformio-core";
     homepage = "https://platformio.org";
+    changelog = "https://github.com/platformio/platformio-core/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mog
       makefu
     ];
+
     mainProgram = "platformio";
+    downloadPage = "https://github.com/platformio/platformio-core";
   };
 }

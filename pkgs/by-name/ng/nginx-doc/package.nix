@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   libxml2,
   libxslt,
-  fetchFromGitHub,
 }:
 
 # Upstream maintains documentation (sources of https://nginx.org) in separate
@@ -15,12 +15,14 @@
 stdenv.mkDerivation {
   pname = "nginx-doc-unstable";
   version = "0-unstable-2026-05-15";
+
   src = fetchFromGitHub {
     owner = "nginx";
     repo = "nginx.org";
     rev = "7884e3ae20269c6aa718dc104c0c578f797e5269";
     hash = "sha256-ut2LRZg2gyGPbili7XcOH0wZ/nI3ArA2RGWJKcZTBOk=";
   };
+
   nativeBuildInputs = [
     libxslt
     libxml2
@@ -42,8 +44,8 @@ stdenv.mkDerivation {
     description = "Reverse proxy and lightweight webserver (documentation)";
     homepage = "https://nginx.org/";
     license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ kaction ];
     platforms = lib.platforms.all;
     priority = 6;
-    maintainers = with lib.maintainers; [ kaction ];
   };
 }

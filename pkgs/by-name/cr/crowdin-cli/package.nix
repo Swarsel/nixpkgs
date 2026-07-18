@@ -51,11 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
-    mainProgram = "crowdin";
-    homepage = "https://github.com/crowdin/crowdin-cli/";
     description = "Command-line client for the Crowdin API";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://github.com/crowdin/crowdin-cli/";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ DamienCassou ];
+    mainProgram = "crowdin";
   };
 })

@@ -1,13 +1,14 @@
 {
   lib,
-  runCommandLocal,
   bitlbee,
+  runCommandLocal,
 }:
 
 plugins:
 runCommandLocal "bitlbee-plugins"
   {
     inherit plugins;
+
     buildInputs = [
       bitlbee
     ]

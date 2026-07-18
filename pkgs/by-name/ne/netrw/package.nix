@@ -14,6 +14,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "netrw";
   version = "1.3.2";
 
+  src = fetchurl {
+    sha256 = "1gnl80i5zkyj2lpnb4g0q0r5npba1x6cnafl2jb3i3pzlfz1bndr";
+
+    urls = [
+      "https://mamuti.net/files/netrw/netrw-${finalAttrs.version}.tar.bz2"
+      "http://www.sourcefiles.org/Networking/FTP/Other/netrw-${finalAttrs.version}.tar.bz2"
+    ];
+  };
+
+  buildInputs =
+    lib.optional (checksumType == "mhash") libmhash ++ lib.optional (checksumType == "openssl") openssl;
+
   configureFlags = [
     # This is to add "#include" directives for stdlib.h, stdio.h and string.h.
     "ac_cv_header_stdc=yes"
@@ -21,21 +33,10 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-checksum=${checksumType}"
   ];
 
-  buildInputs =
-    lib.optional (checksumType == "mhash") libmhash ++ lib.optional (checksumType == "openssl") openssl;
-
-  src = fetchurl {
-    urls = [
-      "https://mamuti.net/files/netrw/netrw-${finalAttrs.version}.tar.bz2"
-      "http://www.sourcefiles.org/Networking/FTP/Other/netrw-${finalAttrs.version}.tar.bz2"
-    ];
-    sha256 = "1gnl80i5zkyj2lpnb4g0q0r5npba1x6cnafl2jb3i3pzlfz1bndr";
-  };
-
   meta = {
     description = "Simple tool for transporting data over the network";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://mamuti.net/netrw/index.en.html";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
   };
 })

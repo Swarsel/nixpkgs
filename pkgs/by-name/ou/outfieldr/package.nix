@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitLab,
   stdenv,
+  fetchFromGitLab,
   zig_0_14,
 }:
 
@@ -24,11 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    inherit (zig.meta) platforms;
     description = "TLDR client written in Zig";
     homepage = "https://gitlab.com/ve-nt/outfieldr";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hasnep ];
     mainProgram = "tldr";
-    inherit (zig.meta) platforms;
   };
 })

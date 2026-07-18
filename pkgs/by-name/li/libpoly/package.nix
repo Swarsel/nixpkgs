@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gmp,
   cmake,
+  gmp,
   python3,
 }:
 
@@ -16,10 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "libpoly";
     # they've pushed to the release branch, use explicit tag
     tag = "v${finalAttrs.version}";
+
     hash =
       {
-        "0.2.1" = "sha256-uDWDio+RzJrgGKbWfT6S6voaJrJR0PzPfyr+33dr0ds=";
         "0.2.0" = "sha256-gE2O1YfiVab/aIqheoMP8GhE+N3yho7kb5EP56pzjW8=";
+        "0.2.1" = "sha256-uDWDio+RzJrgGKbWfT6S6voaJrJR0PzPfyr+33dr0ds=";
       }
       ."${finalAttrs.version}";
   };
@@ -28,6 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/CMakeLists.txt \
       --replace-warn " -Werror " " "
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -38,11 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
     gmp
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://github.com/SRI-CSL/libpoly";
     description = "C library for manipulating polynomials";
+    homepage = "https://github.com/SRI-CSL/libpoly";
     license = lib.licenses.lgpl3;
     platforms = lib.platforms.all;
   };

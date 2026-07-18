@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  makeWrapper,
   boost,
-  portmidi,
-  sqlite,
-  freetype,
-  libpng,
-  pngpp,
-  zlib,
-  wxwidgets_3_2,
-  wxsqlite3,
+  cmake,
+  fetchpatch,
   fluidsynth,
   fontconfig,
-  soundfont-fluid,
+  freetype,
+  libpng,
+  makeWrapper,
   openlilylib-fonts,
+  pkg-config,
+  pngpp,
+  portmidi,
+  soundfont-fluid,
+  sqlite,
+  wxsqlite3,
+  wxwidgets_3_2,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,10 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "lenmus";
     rev = "113787fe4d755e7e406b5ea4bd2cfb9eae0e56a3";
     hash = "sha256-tDvSgdeFx5xEjExnDhoXgvuvk7+oEPgbt4DJajckvLc=";
-  };
-
-  env = {
-    NIX_CFLAGS_COMPILE = "-fpermissive";
   };
 
   postPatch = ''
@@ -64,17 +60,21 @@ stdenv.mkDerivation (finalAttrs: {
     fontconfig
   ];
 
-  preConfigure = ''
-    mkdir res/fonts
-    ln -s ${openlilylib-fonts.bravura}/share/lilypond/*/fonts/otf/Bravura.otf res/fonts/Bravura.otf
-    ln -s ${soundfont-fluid}/share/soundfonts/FluidR3_GM2-2.sf2 res/sounds/FluidR3_GM.sf2
-  '';
-
   cmakeFlags = [
     "-DCMAKE_INSTALL_PREFIX=${placeholder "out"}"
     "-DLENMUS_INSTALL_SOUNDFONT=ON"
     "-DMAN_INSTALL_DIR=${placeholder "out"}/share/man"
   ];
+
+  env = {
+    NIX_CFLAGS_COMPILE = "-fpermissive";
+  };
+
+  preConfigure = ''
+    mkdir res/fonts
+    ln -s ${openlilylib-fonts.bravura}/share/lilypond/*/fonts/otf/Bravura.otf res/fonts/Bravura.otf
+    ln -s ${soundfont-fluid}/share/soundfonts/FluidR3_GM2-2.sf2 res/sounds/FluidR3_GM.sf2
+  '';
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/{Applications,bin}
@@ -85,11 +85,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Program for learning music";
+
     longDescription = ''
       LenMus Phonascus is a free open source program (GPL v3) for learning music.
       It allows you to focus on specific skills and exercises, on both theory and aural training.
       The different activities can be customized to meet your needs
     '';
+
     homepage = "http://www.lenmus.org/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ramkromberg ];

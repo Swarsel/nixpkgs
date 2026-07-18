@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   cargo,
-  rustc,
   clippy,
   gcc,
   makeWrapper,
+  pkg-config,
+  rustPlatform,
+  rustc,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,6 +21,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-dUQIzNPxmKbhew9VjFIW7bY0D1IkuJ5+hRY2/CwmYhY=";
   };
 
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ];
+
   cargoHash = "sha256-AvwulWEqZMywaG7lEmT8nn9s2hda+bbIV1rnVXnKH8o=";
 
   # Disabled test that does not work well in an isolated environment
@@ -28,11 +33,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=run_compilation_success"
     "--skip=run_test_success"
     "--skip=init"
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
   ];
 
   postFixup = ''

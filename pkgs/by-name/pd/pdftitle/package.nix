@@ -1,16 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   pdfminer,
-
+  python3Packages,
   withOpenai ? false,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pdftitle";
   version = "0.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "metebalci";
@@ -29,6 +27,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ lib.optional withOpenai openai;
 
+  pyproject = true;
   pythonImportsCheck = [ "pdftitle" ];
 
   meta = {

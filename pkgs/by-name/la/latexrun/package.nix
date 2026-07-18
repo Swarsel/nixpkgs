@@ -1,13 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   python3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "latexrun";
   version = "0-unstable-2015-11-18";
+
   src = fetchFromGitHub {
     owner = "aclements";
     repo = "latexrun";
@@ -17,19 +18,20 @@ stdenvNoCC.mkDerivation {
 
   buildInputs = [ python3 ];
 
-  dontBuild = true;
   installPhase = ''
     mkdir -p $out/bin
     cp latexrun $out/bin/latexrun
     chmod +x $out/bin/latexrun
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "21st century LaTeX wrapper";
-    mainProgram = "latexrun";
     homepage = "https://github.com/aclements/latexrun";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.lucus16 ];
     platforms = lib.platforms.all;
+    mainProgram = "latexrun";
   };
 }

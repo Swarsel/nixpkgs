@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  writeText,
-  vulkan-headers,
-  vulkan-utility-libraries,
   jq,
   libx11,
-  libxrandr,
   libxcb,
+  libxrandr,
+  pkg-config,
+  vulkan-headers,
+  vulkan-utility-libraries,
   wayland,
+  writeText,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,11 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
   ];
 
-  # Help vulkan-loader find the validation layers
-  setupHook = writeText "setup-hook" ''
-    addToSearchPath XDG_DATA_DIRS @out@/share
-  '';
-
   # Tests are not for gpu-less and headless environments
   cmakeFlags = [
     "-DBUILD_TESTS=false"
@@ -59,11 +54,16 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # Help vulkan-loader find the validation layers
+  setupHook = writeText "setup-hook" ''
+    addToSearchPath XDG_DATA_DIRS @out@/share
+  '';
+
   meta = {
     description = "Layers providing Vulkan features when native support is unavailable";
     homepage = "https://github.com/KhronosGroup/Vulkan-ExtensionLayer/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.asl20;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

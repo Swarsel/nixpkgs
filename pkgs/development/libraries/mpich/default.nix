@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoconf,
   automake,
+  # either libfabric or ucx work for ch4backend on linux. On darwin, neither of
+  # these libraries currently build so this argument is ignored on Darwin.
+  ch4backend,
   gfortran,
   hwloc,
   openssh,
   perl,
+  pmix,
   python3,
   removeReferencesTo,
-  # either libfabric or ucx work for ch4backend on linux. On darwin, neither of
-  # these libraries currently build so this argument is ignored on Darwin.
-  ch4backend,
+  # PMIX support is likely incompatible with process managers (`--with-pm`)
+  # https://github.com/NixOS/nixpkgs/pull/274804#discussion_r1432601476
+  pmixSupport ? false,
   # Process managers to build (`--with-pm`),
   # cf. https://github.com/pmodels/mpich/blob/b80a6d7c24defe7cdf6c57c52430f8075a0a41d6/README.vin#L562-L586
   withPm ? [
     "hydra"
     "gforker"
   ],
-  pmix,
-  # PMIX support is likely incompatible with process managers (`--with-pm`)
-  # https://github.com/NixOS/nixpkgs/pull/274804#discussion_r1432601476
-  pmixSupport ? false,
 }:
 
 let
@@ -53,6 +53,14 @@ stdenv.mkDerivation rec {
     hash = "sha256-jBgyoT3azwcWhQafX639Hyh3op4aYoZSiSxlIRsfMyc=";
   };
 
+  outputs = [
+    "out"
+    "bin"
+    "dev"
+    "doc"
+    "man"
+  ];
+
   patches = [
     # Disables ROMIO test which was enabled in
     # https://github.com/pmodels/mpich/commit/09686f45d77b7739f7aef4c2c6ef4c3060946595
@@ -61,13 +69,21 @@ stdenv.mkDerivation rec {
     ./disable-romio-tests.patch
   ];
 
-  outputs = [
-    "out"
-    "bin"
-    "dev"
-    "doc"
-    "man"
+  nativeBuildInputs = [
+    autoconf
+    automake
+    gfortran
+    python3
+    removeReferencesTo
   ];
+
+  buildInputs = [
+    perl
+    openssh
+    hwloc
+  ]
+  ++ lib.optional (!stdenv.hostPlatform.isDarwin) ch4backend
+  ++ lib.optional pmixSupport pmix;
 
   configureFlags = [
     "--enable-shared"
@@ -86,23 +102,6 @@ stdenv.mkDerivation rec {
   ++ lib.optionals pmixSupport [
     "--with-pmix"
   ];
-
-  enableParallelBuilding = true;
-
-  nativeBuildInputs = [
-    autoconf
-    automake
-    gfortran
-    python3
-    removeReferencesTo
-  ];
-  buildInputs = [
-    perl
-    openssh
-    hwloc
-  ]
-  ++ lib.optional (!stdenv.hostPlatform.isDarwin) ch4backend
-  ++ lib.optional pmixSupport pmix;
 
   # test_double_serializer.test fails on darwin
   doCheck = !stdenv.hostPlatform.isDarwin;
@@ -148,10 +147,9 @@ stdenv.mkDerivation rec {
       $(find "$bin"/bin -type f)
   '';
 
-  meta = {
-    # As far as we know, --with-pmix silently disables all of `--with-pm`
-    broken = pmixSupport && withPm != [ ];
+  enableParallelBuilding = true;
 
+  meta = {
     description = "Implementation of the Message Passing Interface (MPI) standard";
 
     longDescription = ''
@@ -159,9 +157,12 @@ stdenv.mkDerivation rec {
       the Message Passing Interface (MPI) standard, both version 1 and
       version 2.
     '';
+
     homepage = "http://www.mcs.anl.gov/mpi/mpich2/";
     license = lib.licenses.mpich2;
     maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    # As far as we know, --with-pmix silently disables all of `--with-pm`
+    broken = pmixSupport && withPm != [ ];
   };
 }

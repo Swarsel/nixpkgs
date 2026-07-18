@@ -1,10 +1,10 @@
 {
   lib,
-  flutter338,
   fetchFromGitHub,
   autoPatchelfHook,
-  writeShellScript,
+  flutter338,
   nix-update,
+  writeShellScript,
   yq-go,
 }:
 
@@ -12,8 +12,8 @@ let
   version = "1.2.6";
 in
 flutter338.buildFlutterApplication {
-  pname = "proxypin";
   inherit version;
+  pname = "proxypin";
 
   src = fetchFromGitHub {
     owner = "wanghongenpin";
@@ -21,10 +21,6 @@ flutter338.buildFlutterApplication {
     tag = "v${version}";
     hash = "sha256-QZn2o6J1w0d/Ro3IC3cls5JD+b7RpoT6mOf34rbImFc=";
   };
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  gitHashes = lib.importJSON ./git-hashes.json;
 
   postPatch = ''
     substituteInPlace linux/my_application.cc \
@@ -40,6 +36,9 @@ flutter338.buildFlutterApplication {
     install -D --mode=0644 linux/proxy-pin.desktop $out/share/applications/proxypin.desktop
     install -D --mode=0644 assets/icon.png $out/share/icons/hicolor/256x256/apps/proxypin.png
   '';
+
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   passthru.updateScript = writeShellScript "update-proxypin" ''
     ${lib.getExe nix-update} --use-github-releases proxypin
@@ -58,9 +57,9 @@ flutter338.buildFlutterApplication {
   meta = {
     description = "Capture HTTP(S) traffic software";
     homepage = "https://github.com/wanghongenpin/proxypin";
-    mainProgram = "ProxyPin";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ProxyPin";
   };
 }

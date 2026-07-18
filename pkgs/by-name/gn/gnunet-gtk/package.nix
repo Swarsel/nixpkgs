@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-rsQzMvOoQEuushd0jBGQt9j6zXj2G1SMax8d4QoDV6s=";
   };
 
+  postPatch = "patchShebangs pixmaps/icon-theme-installer";
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -41,8 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--with-gnunet=${gnunet}" ];
-
-  postPatch = "patchShebangs pixmaps/icon-theme-installer";
 
   postInstall = ''
     ln -s $out/share/gnunet-gtk/gnunet_logo.png $out/share/gnunet/gnunet-logo-color.png

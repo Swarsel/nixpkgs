@@ -5,13 +5,13 @@
 
 {
   lib,
-  writeShellScript,
   writeDarwinBundle,
+  writeShellScript,
 }:
 
 {
-  name, # The name of the Application file.
   exec, # Executable file.
+  name, # The name of the Application file.
   icon ? "", # Optional icon file.
 }:
 

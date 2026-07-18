@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   gobject-introspection,
-  setuptools,
-  pillow,
-  six,
-  pygobject3,
   gtk3,
-  stdenv,
-  python-xlib,
   libayatana-appindicator,
+  pillow,
+  pygobject3,
   pyobjc-framework-Quartz,
-  xvfb-run,
   pytest,
+  python-xlib,
+  setuptools,
+  six,
+  xvfb-run,
 }:
 
 buildPythonPackage rec {
   pname = "pystray";
   version = "0.19.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "moses-palmer";
@@ -33,8 +32,8 @@ buildPythonPackage rec {
     # fix test_menu_construct_from_none test case
     # https://github.com/moses-palmer/pystray/pull/133
     (fetchpatch {
-      url = "https://github.com/moses-palmer/pystray/commit/813007e3034d950d93a2f3e5b029611c3c9c98ad.patch";
       hash = "sha256-m2LfZcWXSfgxb73dac21VDdMDVz3evzcCz5QjdnfM1U=";
+      url = "https://github.com/moses-palmer/pystray/commit/813007e3034d950d93a2f3e5b029611c3c9c98ad.patch";
     })
   ];
 
@@ -70,14 +69,18 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/moses-palmer/pystray";
     description = "This library allows you to create a system tray icon";
+    homepage = "https://github.com/moses-palmer/pystray";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl3Plus
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [ jojosch ];
+    platforms = lib.platforms.all;
   };
 }

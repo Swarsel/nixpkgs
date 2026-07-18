@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  esbuild,
-  buildGoModule,
   fetchFromGitHub,
-  fetchgit,
-  srcOnly,
-  removeReferencesTo,
-  nodejs-slim_24,
-  pnpm_11,
+  buildGoModule,
+  esbuild,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  python3,
+  fetchgit,
   gitMinimal,
   jq,
+  nodejs-slim_24,
+  pnpmConfigHook,
+  pnpm_11,
+  python3,
+  removeReferencesTo,
+  srcOnly,
   zip,
 }:
 let
@@ -26,12 +26,14 @@ let
         args
         // rec {
           version = "0.19.9";
+
           src = fetchFromGitHub {
             owner = "evanw";
             repo = "esbuild";
             rev = "v${version}";
             hash = "sha256-GiQTB/P+7uVGZfUaeM7S/5lGvfHlTl/cFt7XbNfE0qw=";
           };
+
           vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
         }
       );
@@ -52,12 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/KxB4uBbJbnFUPAc6a++bfTwl2CM1ZYjxPTDYwRh21Q=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm';
-    fetcherVersion = 4;
-    hash = "sha256-ZoxAZ5f3Szz2goGOE5yn/aCZ5fuhDt1owZ/o1kvX7d0=";
-  };
+  postPatch = ''
+    patchShebangs packages/*/*.mjs
+    substituteInPlace pnpm-lock.yaml \
+      --replace-fail "esbuild: 0.12.29" "esbuild: ${esbuild'.version}"
+  '';
 
   nativeBuildInputs = [
     customPython
@@ -74,20 +75,7 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs-slim_24
   ];
 
-  # Make a fake git repo with a commit.
-  # Without this, the package does not build.
-  postUnpack = ''
-    git init -b master
-    git config user.email "root@localhost"
-    git config user.name "root"
-    git commit --allow-empty -m "Initial commit"
-  '';
-
-  postPatch = ''
-    patchShebangs packages/*/*.mjs
-    substituteInPlace pnpm-lock.yaml \
-      --replace-fail "esbuild: 0.12.29" "esbuild: ${esbuild'.version}"
-  '';
+  env.ESBUILD_BINARY_PATH = lib.getExe esbuild';
 
   preConfigure = ''
     ./bootstrap
@@ -112,16 +100,30 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs --build $out/bin/taler-helper-sqlite3
   '';
 
-  env.ESBUILD_BINARY_PATH = lib.getExe esbuild';
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-ZoxAZ5f3Szz2goGOE5yn/aCZ5fuhDt1owZ/o1kvX7d0=";
+    pnpm = pnpm';
+  };
+
+  # Make a fake git repo with a commit.
+  # Without this, the package does not build.
+  postUnpack = ''
+    git init -b master
+    git config user.email "root@localhost"
+    git config user.name "root"
+    git commit --allow-empty -m "Initial commit"
+  '';
 
   meta = {
-    homepage = "https://git-www.taler.net/taler-typescript-core.git";
     description = "CLI wallet for GNU Taler written in TypeScript and Anastasis Web UI";
+    homepage = "https://git-www.taler.net/taler-typescript-core.git";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.ngi ];
     platforms = lib.platforms.linux;
     mainProgram = "taler-wallet-cli";
     # ./configure doesn't understand --build / --host
     broken = stdenv.buildPlatform != stdenv.hostPlatform;
+    teams = [ lib.teams.ngi ];
   };
 })

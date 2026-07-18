@@ -1,36 +1,32 @@
 {
   lib,
   stdenv,
-
-  writableTmpDirAsHomeHook,
-  cargo,
   fetchFromGitHub,
+  callPackage,
+  cargo,
+  imagemagick,
   installShellFiles,
+  jq,
   lame,
+  mesa,
   mpv-unwrapped,
   ninja,
-  callPackage,
   nixosTests,
   nodejs,
-  jq,
   protobuf_31,
   python3,
   python3Packages,
   qt6,
   rsync,
+  runCommand,
   rustPlatform,
+  swift,
   uv,
+  wrapGAppsHook3,
+  writableTmpDirAsHomeHook,
   writeShellScriptBin,
   yarn,
   yarn-berry_4,
-  runCommand,
-
-  wrapGAppsHook3,
-
-  swift,
-
-  mesa,
-  imagemagick,
 }:
 
 let
@@ -136,8 +132,9 @@ let
 in
 
 python3Packages.buildPythonApplication (finalAttrs: {
-  pyproject = false;
   inherit pname version;
+  inherit src;
+  inherit cargoDeps;
 
   outputs = [
     "out"
@@ -145,8 +142,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "man"
     "lib"
   ];
-
-  inherit src;
 
   patches = [
     ./patches/disable-auto-update.patch
@@ -159,14 +154,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # https://github.com/ankitects/anki/blob/main/package.json#L99
     ./patches/yarn-4.14-support.patch
   ];
-
-  inherit cargoDeps;
-
-  missingHashes = ./missing-hashes.json;
-  yarnOfflineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = yarnHash;
-  };
 
   nativeBuildInputs = [
     uv
@@ -194,41 +181,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux qt6.qtwayland;
 
-  nativeCheckInputs = with python3Packages; [
-    pytest
-    mock
-    astroid
-  ];
-
-  # tests fail with too many open files
-  # TODO: verify if this is still true (I can't, no mac)
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  checkFlags = [
-    # this test is flaky, see https://github.com/ankitects/anki/issues/3619
-    # also remove from anki-sync-server when removing this
-    "--skip=deckconfig::update::test::should_keep_at_least_one_remaining_relearning_step"
-  ];
-
-  dontUseNinjaInstall = false;
-  dontWrapQtApps = true;
-  dontWrapGApps = stdenv.hostPlatform.isLinux;
-
   env = {
-    # Activate optimizations
-    RELEASE = true;
-
+    NODE_BINARY = lib.getExe nodejs;
     # https://github.com/ankitects/anki/blob/24.11/docs/linux.md#packaging-considerations
     OFFLINE_BUILD = "1";
-    NODE_BINARY = lib.getExe nodejs;
     PROTOC_BINARY = lib.getExe protobuf_31;
     PYTHON_BINARY = lib.getExe python3;
+    # Activate optimizations
+    RELEASE = true;
     UV_BINARY = lib.getExe uv;
-    UV_NO_MANAGED_PYTHON = "1";
-    UV_SYSTEM_PYTHON = true;
-    UV_PYTHON_DOWNLOADS = "never";
-    UV_OFFLINE = "1";
     UV_FIND_LINKS = "${uvWheels}";
+    UV_NO_MANAGED_PYTHON = "1";
+    UV_OFFLINE = "1";
+    UV_PYTHON_DOWNLOADS = "never";
+    UV_SYSTEM_PYTHON = true;
   };
 
   buildPhase = ''
@@ -274,6 +240,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     YARN_BINARY="${lib.getExe noInstallYarn}" PIP_USER=1 \
       ./ninja build wheels
   '';
+
+  # tests fail with too many open files
+  # TODO: verify if this is still true (I can't, no mac)
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = with python3Packages; [
+    pytest
+    mock
+    astroid
+  ];
+
+  checkFlags = [
+    # this test is flaky, see https://github.com/ankitects/anki/issues/3619
+    # also remove from anki-sync-server when removing this
+    "--skip=deckconfig::update::test::should_keep_at_least_one_remaining_relearning_step"
+  ];
 
   # mimic https://github.com/ankitects/anki/blob/76d8807315fcc2675e7fa44d9ddf3d4608efc487/build/ninja_gen/src/python.rs#L232-L250
   checkPhase =
@@ -333,14 +315,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
+  dontUseNinjaInstall = false;
+  dontWrapGApps = stdenv.hostPlatform.isLinux;
+  dontWrapQtApps = true;
+  missingHashes = ./missing-hashes.json;
+  pyproject = false;
+
+  yarnOfflineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = yarnHash;
+  };
+
   passthru = {
-    withAddons = ankiAddons: callPackage ./with-addons.nix { inherit ankiAddons; };
     tests.anki-sync-server = nixosTests.anki-sync-server;
+    withAddons = ankiAddons: callPackage ./with-addons.nix { inherit ankiAddons; };
   };
 
   meta = {
+    inherit (mesa.meta) platforms;
     description = "Spaced repetition flashcard program";
-    mainProgram = "anki";
+
     longDescription = ''
       Anki is a program which makes remembering things easy. Because it is a lot
       more efficient than traditional study methods, you can either greatly
@@ -353,13 +347,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
       people's names and faces, brushing up on geography, mastering long poems,
       or even practicing guitar chords!
     '';
+
     homepage = "https://apps.ankiweb.net";
     license = lib.licenses.agpl3Plus;
-    inherit (mesa.meta) platforms;
+
     maintainers = with lib.maintainers; [
       euank
       junestepp
       oxij
     ];
+
+    mainProgram = "anki";
   };
 })

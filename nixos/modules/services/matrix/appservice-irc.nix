@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -15,15 +15,16 @@ let
   configFile =
     pkgs.runCommand "matrix-appservice-irc.yml"
       {
+        config = builtins.toJSON cfg.settings;
+
         # Because this program will be run at build time, we need `nativeBuildInputs`
         nativeBuildInputs = [
           (pkgs.python3.withPackages (ps: [ ps.jsonschema ]))
           pkgs.remarshal
         ];
-        preferLocalBuild = true;
 
-        config = builtins.toJSON cfg.settings;
         passAsFile = [ "config" ];
+        preferLocalBuild = true;
       }
       ''
         # The schema is given as yaml, we need to convert it to json
@@ -37,168 +38,187 @@ in
   options.services.matrix-appservice-irc = with lib.types; {
     enable = lib.mkEnableOption "the Matrix/IRC bridge";
 
-    port = lib.mkOption {
-      type = port;
-      description = "The port to listen on";
-      default = 8009;
+    localpart = lib.mkOption {
+      default = "appservice-irc";
+      description = "The user_id localpart to assign to the appservice";
+      type = str;
     };
 
     needBindingCap = lib.mkOption {
-      type = bool;
-      description = "Whether the daemon needs to bind to ports below 1024 (e.g. for the ident service)";
       default = false;
+      description = "Whether the daemon needs to bind to ports below 1024 (e.g. for the ident service)";
+      type = bool;
     };
 
     passwordEncryptionKeyLength = lib.mkOption {
-      type = ints.unsigned;
-      description = "Length of the key to encrypt IRC passwords with";
       default = 4096;
+      description = "Length of the key to encrypt IRC passwords with";
       example = 8192;
+      type = ints.unsigned;
+    };
+
+    port = lib.mkOption {
+      default = 8009;
+      description = "The port to listen on";
+      type = port;
     };
 
     registrationUrl = lib.mkOption {
-      type = str;
       description = ''
         The URL where the application service is listening for homeserver requests,
         from the Matrix homeserver perspective.
       '';
-      example = "http://localhost:8009";
-    };
 
-    localpart = lib.mkOption {
+      example = "http://localhost:8009";
       type = str;
-      description = "The user_id localpart to assign to the appservice";
-      default = "appservice-irc";
     };
 
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         Configuration for the appservice, see
         <https://github.com/matrix-org/matrix-appservice-irc/blob/${pkgs.matrix-appservice-irc.version}/config.sample.yaml>
         for supported values
       '';
-      default = { };
+
       type = submodule {
-        freeformType = jsonType;
-
         options = {
-          homeserver = lib.mkOption {
-            description = "Homeserver configuration";
+          database = lib.mkOption {
             default = { };
-            type = submodule {
-              freeformType = jsonType;
+            description = "Configuration for the database";
 
+            type = submodule {
               options = {
-                url = lib.mkOption {
+                connectionString = lib.mkOption {
+                  default = "nedb://var/lib/matrix-appservice-irc/data";
+                  description = "The database connection string";
+                  example = "postgres://username:password@host:port/databasename";
                   type = str;
-                  description = "The URL to the home server for client-server API calls";
                 };
 
-                domain = lib.mkOption {
+                engine = lib.mkOption {
+                  default = "nedb";
+                  description = "Which database engine to use";
+                  example = "postgres";
                   type = str;
+                };
+              };
+
+              freeformType = jsonType;
+            };
+          };
+
+          homeserver = lib.mkOption {
+            default = { };
+            description = "Homeserver configuration";
+
+            type = submodule {
+              options = {
+                domain = lib.mkOption {
                   description = ''
                     The 'domain' part for user IDs on this home server. Usually
                     (but not always) is the "domain name" part of the homeserver URL.
                   '';
+
+                  type = str;
+                };
+
+                url = lib.mkOption {
+                  description = "The URL to the home server for client-server API calls";
+                  type = str;
                 };
               };
-            };
-          };
 
-          database = lib.mkOption {
-            default = { };
-            description = "Configuration for the database";
-            type = submodule {
               freeformType = jsonType;
-
-              options = {
-                engine = lib.mkOption {
-                  type = str;
-                  description = "Which database engine to use";
-                  default = "nedb";
-                  example = "postgres";
-                };
-
-                connectionString = lib.mkOption {
-                  type = str;
-                  description = "The database connection string";
-                  default = "nedb://var/lib/matrix-appservice-irc/data";
-                  example = "postgres://username:password@host:port/databasename";
-                };
-              };
             };
           };
 
           ircService = lib.mkOption {
             default = { };
             description = "IRC bridge configuration";
+
             type = submodule {
-              freeformType = jsonType;
-
               options = {
-                passwordEncryptionKeyPath = lib.mkOption {
-                  type = str;
-                  description = ''
-                    Location of the key with which IRC passwords are encrypted
-                    for storage. Will be generated on first run if not present.
-                  '';
-                  default = "/var/lib/matrix-appservice-irc/passkey.pem";
-                };
-
-                servers = lib.mkOption {
-                  type = submodule { freeformType = jsonType; };
-                  description = "IRC servers to connect to";
-                };
-
                 mediaProxy = {
+                  bindPort = lib.mkOption {
+                    default = 11111;
+
+                    description = ''
+                      Port that the media proxy binds to.
+                    '';
+
+                    type = port;
+                  };
+
+                  publicUrl = lib.mkOption {
+                    description = ''
+                      URL under which the media proxy is publicly acccessible.
+                    '';
+
+                    example = "https://matrix.example.com/media";
+                    type = str;
+                  };
+
                   signingKeyPath = lib.mkOption {
-                    type = path;
                     default = "/var/lib/matrix-appservice-irc/media-signingkey.jwk";
+
                     description = ''
                       Path to the signing key file for authenticated media.
                     '';
+
+                    type = path;
                   };
+
                   ttlSeconds = lib.mkOption {
-                    type = ints.unsigned;
                     default = 3600;
-                    example = 0;
+
                     description = ''
                       Lifetime in seconds, that generated URLs stay valid.
 
                       Set the lifetime to 0 to prevent URLs from becoming invalid.
                     '';
-                  };
-                  bindPort = lib.mkOption {
-                    type = port;
-                    default = 11111;
-                    description = ''
-                      Port that the media proxy binds to.
-                    '';
-                  };
-                  publicUrl = lib.mkOption {
-                    type = str;
-                    example = "https://matrix.example.com/media";
-                    description = ''
-                      URL under which the media proxy is publicly acccessible.
-                    '';
+
+                    example = 0;
+                    type = ints.unsigned;
                   };
                 };
+
+                passwordEncryptionKeyPath = lib.mkOption {
+                  default = "/var/lib/matrix-appservice-irc/passkey.pem";
+
+                  description = ''
+                    Location of the key with which IRC passwords are encrypted
+                    for storage. Will be generated on first run if not present.
+                  '';
+
+                  type = str;
+                };
+
+                servers = lib.mkOption {
+                  description = "IRC servers to connect to";
+                  type = submodule { freeformType = jsonType; };
+                };
               };
+
+              freeformType = jsonType;
             };
           };
         };
+
+        freeformType = jsonType;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.matrix-appservice-irc = {
-      description = "Matrix-IRC bridge";
-      before = [ "matrix-synapse.service" ]; # So the registration can be used by Synapse
       after = lib.optionals (cfg.settings.database.engine == "postgres") [
         "postgresql.target"
       ];
-      wantedBy = [ "multi-user.target" ];
+
+      before = [ "matrix-synapse.service" ]; # So the registration can be used by Synapse
+      description = "Matrix-IRC bridge";
 
       preStart = ''
         umask 077
@@ -239,39 +259,40 @@ in
       '';
 
       serviceConfig = rec {
-        Type = "simple";
+        AmbientCapabilities = CapabilityBoundingSet;
+        CapabilityBoundingSet = [ "CAP_CHOWN" ] ++ lib.optional (cfg.needBindingCap) "CAP_NET_BIND_SERVICE";
         ExecStart = "${bin} --config ${configFile} --file ${registrationFile} --port ${toString cfg.port}";
-
-        ProtectHome = true;
+        Group = "matrix-appservice-irc";
+        LockPersonality = true;
+        NoNewPrivileges = true;
         PrivateDevices = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
+        PrivateMounts = true;
         ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        # AF_UNIX is required to connect to a postgres socket.
+        RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6";
+        RestrictRealtime = true;
         StateDirectory = "matrix-appservice-irc";
         StateDirectoryMode = "755";
+        SystemCallArchitectures = "native";
 
-        User = "matrix-appservice-irc";
-        Group = "matrix-appservice-irc";
-
-        CapabilityBoundingSet = [ "CAP_CHOWN" ] ++ lib.optional (cfg.needBindingCap) "CAP_NET_BIND_SERVICE";
-        AmbientCapabilities = CapabilityBoundingSet;
-        NoNewPrivileges = true;
-
-        LockPersonality = true;
-        RestrictRealtime = true;
-        PrivateMounts = true;
         SystemCallFilter = [
           "@system-service @pkey"
           "~@privileged @resources"
           "@chown"
         ];
-        SystemCallArchitectures = "native";
-        # AF_UNIX is required to connect to a postgres socket.
-        RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6";
+
+        Type = "simple";
+        User = "matrix-appservice-irc";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups.matrix-appservice-irc = { };
+
     users.users.matrix-appservice-irc = {
       description = "Service user for the Matrix-IRC bridge";
       group = "matrix-appservice-irc";

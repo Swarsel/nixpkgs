@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "1.3.2";
   pname = "libmaa";
+  version = "1.3.2";
 
   src = fetchurl {
     url = "mirror://sourceforge/dict/libmaa-${version}.tar.gz";
@@ -16,7 +16,6 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ libtool ];
   # configureFlags = [ "--datadir=/run/current-system/share/dictd" ];
-
   env.NIX_CFLAGS_COMPILE = "-Wno-error=format-truncation";
 
   meta = {

@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  clang,
   cmake,
-  ninja,
-  pkg-config,
-  sdl3,
-  sdl3-image,
-  libpulseaudio,
-  pipewire,
+  curl,
   fftwFloat,
   freetype,
   glew,
   libGL,
-  curl,
-  yaml-cpp,
   libebur128,
-  clang,
+  libpulseaudio,
+  ninja,
+  pipewire,
+  pkg-config,
+  sdl3,
+  sdl3-image,
+  yaml-cpp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-IzJXFbsbpRszJEpU98exK4EKGU8kHH51BZzokJwzPzU=";
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail " -march=native" "" \
+      --replace-fail " -mtune=native" "" \
+      --replace-fail "-Wl,-s" "" \
+      --replace-fail " -s" "" \
+      --replace-fail 'set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "Installation prefix" FORCE)' ""
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -51,24 +62,14 @@ stdenv.mkDerivation (finalAttrs: {
     libebur128
   ];
 
-  strictDeps = true;
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail " -march=native" "" \
-      --replace-fail " -mtune=native" "" \
-      --replace-fail "-Wl,-s" "" \
-      --replace-fail " -s" "" \
-      --replace-fail 'set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "Installation prefix" FORCE)' ""
-  '';
-
   cmakeFlags = [
     "-G Ninja"
     "-DCMAKE_CXX_COMPILER=clang++"
     "-DCMAKE_C_COMPILER=clang"
     "-DCMAKE_BUILD_TYPE=Release"
   ];
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Real-time audio visualizer inspired by MiniMeters";

@@ -1,16 +1,17 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  stdenvNoCC,
+  fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  stdenvNoCC,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "tcld";
   version = "0.55.0";
+
   src = fetchFromGitHub {
     owner = "temporalio";
     repo = "tcld";
@@ -19,6 +20,7 @@ buildGoModule (finalAttrs: {
     # Populate values from the git repository; by doing this in 'postFetch' we
     # can delete '.git' afterwards and the 'src' should stay reproducible.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       # Replicate 'COMMIT' and 'DATE' variables from upstream's Makefile.
@@ -28,14 +30,10 @@ buildGoModule (finalAttrs: {
     '';
   };
 
+  # FIXME: Remove after https://github.com/temporalio/tcld/pull/447 lands.
+  patches = [ ./compgen.patch ];
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-GOko8nboj7eN4W84dqP3yLD6jK7GA0bANV0Tj+1GpgY=";
-
-  subPackages = [ "cmd/tcld" ];
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/temporalio/tcld/app.version=${finalAttrs.version}"
-  ];
 
   # ldflags based on metadata from git.
   preBuild = ''
@@ -43,25 +41,28 @@ buildGoModule (finalAttrs: {
     ldflags+=" -X=github.com/temporalio/tcld/app.commit=$(cat COMMIT)"
   '';
 
-  # FIXME: Remove after https://github.com/temporalio/tcld/pull/447 lands.
-  patches = [ ./compgen.patch ];
-
   checkFlags = [
     # This test appears to require network access and does not work in the sandbox.
     "-skip=^TestFxDependencyInjection$"
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
   postInstall = lib.optionalString (stdenvNoCC.buildPlatform.canExecute stdenvNoCC.hostPlatform) ''
     installShellCompletion --cmd tcld --bash ${./bash_autocomplete}
     installShellCompletion --cmd tcld --zsh ${./zsh_autocomplete}
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/temporalio/tcld/app.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/tcld" ];
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -69,9 +70,11 @@ buildGoModule (finalAttrs: {
     homepage = "https://www.github.com/temporalio/tcld";
     changelog = "https://github.com/temporalio/tcld/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jkachmar
     ];
+
     mainProgram = "tcld";
   };
 })

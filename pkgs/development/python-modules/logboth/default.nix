@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "logboth";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "zehkira";
@@ -16,8 +15,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-B+J7l8/IR7I85CTxcW3hFqOVHP6ig9MsNd72x4JGsYY=";
   };
-
-  build-system = [ setuptools ];
 
   checkPhase = ''
     runHook preInstallCheck
@@ -27,6 +24,8 @@ buildPythonPackage (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "logboth" ];
 
   meta = {

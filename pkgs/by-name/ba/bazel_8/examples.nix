@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
-  bazel_8,
-  libgcc,
-  cctools,
   stdenv,
-  jdk_headless,
+  fetchFromGitHub,
+  bazel_8,
   callPackage,
+  cctools,
+  jdk_headless,
+  libgcc,
   zlib,
 }:
 let
@@ -25,54 +25,21 @@ let
   };
 in
 {
-  java = bazelPackage {
-    inherit src registry;
-    sourceRoot = "source/java-tutorial";
-    name = "java-tutorial";
-    targets = [ "//:ProjectRunner" ];
-    bazel = bazel_8;
-    commandArgs = [
-      "--extra_toolchains=@@rules_java++toolchains+local_jdk//:all"
-      "--tool_java_runtime_version=local_jdk_21"
-    ];
-    env = {
-      JAVA_HOME = jdk_headless.home;
-      USE_BAZEL_VERSION = bazel_8.version;
-    };
-    installPhase = ''
-      mkdir $out
-      cp bazel-bin/ProjectRunner.jar $out/
-    '';
-    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
-    bazelRepoCacheFOD = {
-      outputHash =
-        {
-          aarch64-darwin = "sha256-FwHsg9P65Eu/n8PV7UW90bvBNG+U67zizRy6Krk32Yg=";
-          aarch64-linux = "sha256-W8h2tCIauGnEvPpXje19bZUE/izHaCQ0Wj4nMaP3nkc=";
-          x86_64-linux = "sha256-VBckTQAK5qeyi2ublk+Dcga5O5XZg3bfHR6Yaw6vSp0=";
-        }
-        .${stdenv.hostPlatform.system};
-      outputHashAlgo = "sha256";
-    };
-  };
   cpp = bazelPackage {
     inherit src registry;
-    sourceRoot = "source/cpp-tutorial/stage3";
-    name = "cpp-tutorial";
-    targets = [ "//main:hello-world" ];
-    bazel = bazel_8;
+    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
+
+    env = {
+      USE_BAZEL_VERSION = bazel_8.version;
+    };
+
     installPhase = ''
       mkdir $out
       cp bazel-bin/main/hello-world $out/
     '';
-    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
-    commandArgs = lib.optionals (stdenv.hostPlatform.isDarwin) [
-      "--host_cxxopt=-xc++"
-      "--cxxopt=-xc++"
-    ];
-    env = {
-      USE_BAZEL_VERSION = bazel_8.version;
-    };
+
+    bazel = bazel_8;
+
     bazelRepoCacheFOD = {
       outputHash =
         {
@@ -81,28 +48,79 @@ in
           x86_64-linux = "sha256-l6qJU0zGIKl12TYYsG5b+upswUA0hGE+VtQ9QnKpBh8=";
         }
         .${stdenv.hostPlatform.system};
+
       outputHashAlgo = "sha256";
     };
+
+    commandArgs = lib.optionals (stdenv.hostPlatform.isDarwin) [
+      "--host_cxxopt=-xc++"
+      "--cxxopt=-xc++"
+    ];
+
+    name = "cpp-tutorial";
+    sourceRoot = "source/cpp-tutorial/stage3";
+    targets = [ "//main:hello-world" ];
   };
-  rust = bazelPackage {
+
+  java = bazelPackage {
     inherit src registry;
-    sourceRoot = "source/rust-examples/01-hello-world";
-    name = "rust-examples-01-hello-world";
-    targets = [ "//:bin" ];
-    bazel = bazel_8;
+    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
+
     env = {
+      JAVA_HOME = jdk_headless.home;
       USE_BAZEL_VERSION = bazel_8.version;
     };
+
     installPhase = ''
       mkdir $out
-      cp bazel-bin/bin $out/hello-world
+      cp bazel-bin/ProjectRunner.jar $out/
     '';
+
+    bazel = bazel_8;
+
+    bazelRepoCacheFOD = {
+      outputHash =
+        {
+          aarch64-darwin = "sha256-FwHsg9P65Eu/n8PV7UW90bvBNG+U67zizRy6Krk32Yg=";
+          aarch64-linux = "sha256-W8h2tCIauGnEvPpXje19bZUE/izHaCQ0Wj4nMaP3nkc=";
+          x86_64-linux = "sha256-VBckTQAK5qeyi2ublk+Dcga5O5XZg3bfHR6Yaw6vSp0=";
+        }
+        .${stdenv.hostPlatform.system};
+
+      outputHashAlgo = "sha256";
+    };
+
+    commandArgs = [
+      "--extra_toolchains=@@rules_java++toolchains+local_jdk//:all"
+      "--tool_java_runtime_version=local_jdk_21"
+    ];
+
+    name = "java-tutorial";
+    sourceRoot = "source/java-tutorial";
+    targets = [ "//:ProjectRunner" ];
+  };
+
+  rust = bazelPackage {
+    inherit src registry;
+    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
+
     buildInputs = [
       zlib
       libgcc
     ];
-    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
+
+    env = {
+      USE_BAZEL_VERSION = bazel_8.version;
+    };
+
+    installPhase = ''
+      mkdir $out
+      cp bazel-bin/bin $out/hello-world
+    '';
+
     autoPatchelfIgnoreMissingDeps = [ "librustc_driver-*.so" ];
+    bazel = bazel_8;
+
     bazelVendorDepsFOD = {
       outputHash =
         {
@@ -111,7 +129,12 @@ in
           x86_64-linux = "sha256-kBnSlFRfYsotZTRMrTNhk8/106+BLzwuU6MIRXlD1jE=";
         }
         .${stdenv.hostPlatform.system};
+
       outputHashAlgo = "sha256";
     };
+
+    name = "rust-examples-01-hello-world";
+    sourceRoot = "source/rust-examples/01-hello-world";
+    targets = [ "//:bin" ];
   };
 }

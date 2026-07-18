@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,10 +23,10 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/guptarohit/asciigraph";
     description = "Lightweight ASCII line graph ╭┈╯ command line app";
-    mainProgram = "asciigraph";
+    homepage = "https://github.com/guptarohit/asciigraph";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ mmahut ];
+    mainProgram = "asciigraph";
   };
 })

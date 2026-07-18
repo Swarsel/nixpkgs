@@ -2,22 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  buildPackages,
-  cmake,
-  zlib,
-  c-ares,
-  pkg-config,
-  re2,
-  openssl,
-  protobuf,
-  grpc,
   abseil-cpp,
+  arrow-cpp,
+  buildPackages,
+  c-ares,
+  cmake,
+  fetchpatch,
+  grpc,
   libnsl,
-
+  openssl,
+  pkg-config,
+  protobuf,
   # tests
   python3,
-  arrow-cpp,
+  re2,
+  zlib,
 }:
 
 # This package should be updated together with all related python grpc packages
@@ -26,6 +25,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "grpc";
   version = "1.81.0"; # N.B: if you change this, please update:
+
   # pythonPackages.grpcio
   # pythonPackages.grpcio-channelz
   # pythonPackages.grpcio-health-checking
@@ -33,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   # pythonPackages.grpcio-status
   # pythonPackages.grpcio-testing
   # pythonPackages.grpcio-tools
-
   src = fetchFromGitHub {
     owner = "grpc";
     repo = "grpc";
@@ -44,10 +43,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-Lm0GQsz/UjBbXXEE14lT0dcRzVmCKycrlrdBJj+KLu8=";
       # armv6l support, https://github.com/grpc/grpc/pull/21341
       name = "grpc-link-libatomic.patch";
       url = "https://github.com/lopsided98/grpc/commit/a9b917666234f5665c347123d699055d8c2537b2.patch";
-      hash = "sha256-Lm0GQsz/UjBbXXEE14lT0dcRzVmCKycrlrdBJj+KLu8=";
     })
   ];
 
@@ -56,17 +55,19 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ]
   ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) grpc;
+
+  buildInputs = [
+    openssl
+    protobuf
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ libnsl ];
+
   propagatedBuildInputs = [
     c-ares
     re2
     zlib
     abseil-cpp
   ];
-  buildInputs = [
-    openssl
-    protobuf
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ libnsl ];
 
   cmakeFlags = [
     "-DgRPC_ZLIB_PROVIDER=package"
@@ -97,6 +98,16 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  env.NIX_CFLAGS_COMPILE = toString (
+    [
+      "-Wno-error"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      # Workaround for https://github.com/llvm/llvm-project/issues/48757
+      "-Wno-elaborated-enum-base"
+    ]
+  );
+
   # CMake creates a build directory by default, this conflicts with the
   # basel BUILD file on case-insensitive filesystems.
   preConfigure = ''
@@ -112,16 +123,6 @@ stdenv.mkDerivation (finalAttrs: {
     export LD_LIBRARY_PATH=$(pwd)''${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString (
-    [
-      "-Wno-error"
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      # Workaround for https://github.com/llvm/llvm-project/issues/48757
-      "-Wno-elaborated-enum-base"
-    ]
-  );
-
   enableParallelBuilding = true;
 
   passthru.tests = {
@@ -131,10 +132,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C based gRPC (C++, Python, Ruby, Objective-C, PHP, C#)";
+    homepage = "https://grpc.io/";
+    changelog = "https://github.com/grpc/grpc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
-    homepage = "https://grpc.io/";
     platforms = lib.platforms.all;
-    changelog = "https://github.com/grpc/grpc/releases/tag/v${finalAttrs.version}";
   };
 })

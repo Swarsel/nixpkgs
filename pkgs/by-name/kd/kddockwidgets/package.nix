@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
-  spdlog,
   fmt,
   nlohmann_json,
+  qt6,
+  spdlog,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,27 +21,30 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     spdlog
     fmt
     nlohmann_json
   ];
+
   propagatedBuildInputs = with qt6; [
     qtbase
     qtdeclarative
   ];
 
   cmakeFlags = [ (lib.strings.cmakeBool "KDDockWidgets_QT6" true) ];
-
   dontWrapQtApps = true;
 
   meta = {
     description = "KDAB's Dock Widget Framework for Qt";
     homepage = "https://www.kdab.com/development-resources/qt-tools/kddockwidgets";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Only
     ];
+
     maintainers = with lib.maintainers; [
       sledgehammervampire
       tmarkus

@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   huggingface-hub,
   numpy,
   safetensors,
+  # build-system
+  setuptools,
   tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "staticvectors";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "neuml";
@@ -24,6 +21,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-p3m22qLxQYma0WtkTE/GzHXkxNHjatqLOdeHh4vtyVc=";
   };
+
+  # no tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -36,10 +36,8 @@ buildPythonPackage rec {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "staticvectors" ];
-
-  # no tests
-  doCheck = false;
 
   meta = {
     description = "Work with static vector models";

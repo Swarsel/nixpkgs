@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   pkgs,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "greenbone-feed-sync";
   version = "25.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "greenbone";
@@ -17,6 +16,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-lpbbAODk/uLg1nbSPj9Ico5/8klM5Fm5tyXeRQao7N8=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [
+    pkgs.rsync
+    pontos
+    pytestCheckHook
+  ];
+
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -24,12 +29,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     shtab
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pkgs.rsync
-    pontos
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "greenbone.feed.sync" ];
 
   meta = {

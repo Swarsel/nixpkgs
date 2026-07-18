@@ -102,29 +102,53 @@ in
     enable = mkEnableOption "DankMaterialShell greeter";
 
     package = mkOption {
-      type = types.package;
       default = if cfgDms.enable then cfgDms.package else pkgs.dms-shell;
+
       defaultText = literalExpression ''
         if config.programs.dms-shell.enable
         then config.programs.dms-shell.package
         else pkgs.dms-shell;
       '';
+
       description = ''
         The DankMaterialShell package to use for the greeter.
 
         Defaults to the package from `programs.dms-shell` if it is enabled,
         otherwise defaults to `pkgs.dms-shell`.
       '';
+
+      type = types.package;
     };
 
     compositor = {
+      customConfig = mkOption {
+        default = "";
+
+        description = ''
+          Custom compositor configuration to use for the greeter session.
+
+          This configuration is written to a file and passed to the compositor
+          when launching the greeter. The format and available options depend
+          on the selected compositor.
+
+          Leave empty to use the system's default compositor configuration.
+        '';
+
+        example = ''
+          # Niri example
+          input {
+              keyboard {
+                  xkb {
+                      layout "us"
+                  }
+              }
+          }
+        '';
+
+        type = types.lines;
+      };
+
       name = mkOption {
-        type = types.enum [
-          "niri"
-          "hyprland"
-          "sway"
-        ];
-        example = "niri";
         description = ''
           The Wayland compositor to run the greeter in.
 
@@ -136,42 +160,20 @@ in
           - hyprland: A dynamic tiling Wayland compositor
           - sway: An i3-compatible Wayland compositor
         '';
-      };
 
-      customConfig = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          # Niri example
-          input {
-              keyboard {
-                  xkb {
-                      layout "us"
-                  }
-              }
-          }
-        '';
-        description = ''
-          Custom compositor configuration to use for the greeter session.
+        example = "niri";
 
-          This configuration is written to a file and passed to the compositor
-          when launching the greeter. The format and available options depend
-          on the selected compositor.
-
-          Leave empty to use the system's default compositor configuration.
-        '';
+        type = types.enum [
+          "niri"
+          "hyprland"
+          "sway"
+        ];
       };
     };
 
     configFiles = mkOption {
-      type = types.listOf types.path;
       default = [ ];
-      example = literalExpression ''
-        [
-          "/home/user/.config/DankMaterialShell/settings.json"
-          "/home/user/.local/state/DankMaterialShell/session.json"
-        ]
-      '';
+
       description = ''
         List of DankMaterialShell configuration files to copy into the greeter
         data directory at `/var/lib/dms-greeter`.
@@ -184,12 +186,20 @@ in
         standard XDG locations.
         :::
       '';
+
+      example = literalExpression ''
+        [
+          "/home/user/.config/DankMaterialShell/settings.json"
+          "/home/user/.local/state/DankMaterialShell/session.json"
+        ]
+      '';
+
+      type = types.listOf types.path;
     };
 
     configHome = mkOption {
-      type = types.nullOr types.str;
       default = null;
-      example = "/home/alice";
+
       description = ''
         Path to a user's home directory from which to copy DankMaterialShell
         configuration files.
@@ -202,39 +212,47 @@ in
         If your configuration files are in non-standard locations, use the
         {option}`configFiles` option instead.
       '';
-    };
 
-    quickshell = {
-      package = mkOption {
-        type = types.package;
-        default = if cfgDms.enable then cfgDms.quickshell.package else pkgs.quickshell;
-        defaultText = literalExpression ''
-          if config.programs.dms-shell.enable
-          then config.programs.dms-shell.quickshell.package
-          else pkgs.quickshell;
-        '';
-        description = ''
-          The Quickshell package to use for the greeter.
-
-          Defaults to the quickshell package from `programs.dms-shell` if it is enabled,
-          otherwise defaults to `pkgs.quickshell`.
-        '';
-      };
+      example = "/home/alice";
+      type = types.nullOr types.str;
     };
 
     logs = {
-      save = mkEnableOption "saving logs from the DMS greeter to a file";
-
       path = mkOption {
-        type = types.path;
         default = "/tmp/dms-greeter.log";
-        example = "/var/log/dms-greeter.log";
+
         description = ''
           File path where DMS greeter logs will be saved.
 
           This is useful for debugging greeter issues. Logs will include
           output from both the greeter and the compositor.
         '';
+
+        example = "/var/log/dms-greeter.log";
+        type = types.path;
+      };
+
+      save = mkEnableOption "saving logs from the DMS greeter to a file";
+    };
+
+    quickshell = {
+      package = mkOption {
+        default = if cfgDms.enable then cfgDms.quickshell.package else pkgs.quickshell;
+
+        defaultText = literalExpression ''
+          if config.programs.dms-shell.enable
+          then config.programs.dms-shell.quickshell.package
+          else pkgs.quickshell;
+        '';
+
+        description = ''
+          The Quickshell package to use for the greeter.
+
+          Defaults to the quickshell package from `programs.dms-shell` if it is enabled,
+          otherwise defaults to `pkgs.quickshell`.
+        '';
+
+        type = types.package;
       };
     };
   };
@@ -243,6 +261,7 @@ in
     assertions = [
       {
         assertion = config.programs.${cfg.compositor.name}.enable or false;
+
         message = ''
           DankMaterialShell greeter: The compositor "${cfg.compositor.name}" is not enabled.
 
@@ -252,26 +271,13 @@ in
       }
       {
         assertion = cfgAutoLogin.enable -> sessionData.autologinSession != null;
+
         message = ''
           dms-greeter auto-login requires services.displayManager.defaultSession to be set,
           or at least one session in services.displayManager.sessionPackages.
         '';
       }
     ];
-
-    services.greetd = {
-      enable = mkDefault true;
-      settings = {
-        default_session = {
-          user = "dms-greeter";
-          command = getExe greeterScript;
-        };
-        initial_session = mkIf (cfgAutoLogin.enable && (cfgAutoLogin.user != null)) {
-          inherit (cfgAutoLogin) user;
-          command = ''${getExe pkgs.bash} -lc "${pkgs.systemd}/bin/systemd-cat $(<${autoLoginCommand})"'';
-        };
-      };
-    };
 
     environment.systemPackages = [ cfg.package ];
 
@@ -281,11 +287,30 @@ in
       material-symbols
     ];
 
-    systemd.tmpfiles.settings."10-dms-greeter".${cacheDir}.d = {
-      user = "dms-greeter";
-      group = "dms-greeter";
-      mode = "0750";
+    hardware.graphics.enable = mkDefault true;
+    security.pam.services.dms-greeter = { };
+
+    services.displayManager.dms-greeter.configFiles = lib.mkIf (
+      cfg.configHome != null
+    ) configFilesFromHome;
+
+    services.greetd = {
+      enable = mkDefault true;
+
+      settings = {
+        default_session = {
+          command = getExe greeterScript;
+          user = "dms-greeter";
+        };
+
+        initial_session = mkIf (cfgAutoLogin.enable && (cfgAutoLogin.user != null)) {
+          inherit (cfgAutoLogin) user;
+          command = ''${getExe pkgs.bash} -lc "${pkgs.systemd}/bin/systemd-cat $(<${autoLoginCommand})"'';
+        };
+      };
     };
+
+    services.libinput.enable = mkDefault true;
 
     systemd.services.greetd.preStart =
       let
@@ -343,25 +368,23 @@ in
         chown dms-greeter:dms-greeter * || :
       '';
 
-    services.displayManager.dms-greeter.configFiles = lib.mkIf (
-      cfg.configHome != null
-    ) configFilesFromHome;
-
-    users.groups.dms-greeter = { };
-    users.users.dms-greeter = {
-      description = "DankMaterialShell greeter user";
-      isSystemUser = true;
-      home = cacheDir;
-      homeMode = "0750";
-      createHome = true;
+    systemd.tmpfiles.settings."10-dms-greeter".${cacheDir}.d = {
       group = "dms-greeter";
-      extraGroups = [ "video" ];
+      mode = "0750";
+      user = "dms-greeter";
     };
 
-    security.pam.services.dms-greeter = { };
+    users.groups.dms-greeter = { };
 
-    hardware.graphics.enable = mkDefault true;
-    services.libinput.enable = mkDefault true;
+    users.users.dms-greeter = {
+      createHome = true;
+      description = "DankMaterialShell greeter user";
+      extraGroups = [ "video" ];
+      group = "dms-greeter";
+      home = cacheDir;
+      homeMode = "0750";
+      isSystemUser = true;
+    };
   };
 
   meta.teams = [ lib.teams.danklinux ];

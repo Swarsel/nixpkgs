@@ -1,25 +1,42 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   cmake,
+  gitUpdater,
   oniguruma,
   openssl,
-  zlib,
   perl,
-  gitUpdater,
+  pkg-config,
+  rustPlatform,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "lsp-ai";
   version = "0.7.1";
+
   src = fetchFromGitHub {
     owner = "SilasMarvin";
     repo = "lsp-ai";
     tag = "v${finalAttrs.version}";
     hash = "sha256-mBbaJn4u+Wlu/Y4G4a6YUBWnmN143INAGm0opiAjnIk=";
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+    perl
+  ];
+
+  buildInputs = [
+    oniguruma
+    openssl
+    zlib
+  ];
+
+  cargoHash = "sha256-KR6BmYj3q9w0yGHFq9+l1x989XjiG3mkaZiyDGCYWPA=";
+  # use system oniguruma since the bundled one fails to build with gcc15
+  env.RUSTONIG_SYSTEM_LIBONIG = 1;
 
   checkFlags = [
     # These integ tests require an account and network usage to work
@@ -48,23 +65,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_refactor_action_sequence"
   ];
 
-  cargoHash = "sha256-KR6BmYj3q9w0yGHFq9+l1x989XjiG3mkaZiyDGCYWPA=";
-
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-    perl
-  ];
-
-  buildInputs = [
-    oniguruma
-    openssl
-    zlib
-  ];
-
-  # use system oniguruma since the bundled one fails to build with gcc15
-  env.RUSTONIG_SYSTEM_LIBONIG = 1;
-
   cargoBuildFlags = [ "-p lsp-ai" ];
 
   passthru.updateScript = gitUpdater {
@@ -74,9 +74,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Open-source language server that serves as a backend for AI-powered functionality";
     homepage = "https://github.com/SilasMarvin/lsp-ai";
-    mainProgram = "lsp-ai";
     changelog = "https://github.com/SilasMarvin/lsp-ai/releases/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ projectinitiative ];
+    mainProgram = "lsp-ai";
   };
 })

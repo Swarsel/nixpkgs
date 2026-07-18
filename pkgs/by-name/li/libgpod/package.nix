@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  perlPackages,
-  gtk-doc,
-  intltool,
   autoreconfHook,
-  pkg-config,
-  glib,
-  libxml2,
-  sqlite,
-  sg3_utils,
+  fetchpatch,
   gdk-pixbuf,
-  taglib,
-  libimobiledevice,
-  monoSupport ? false,
-  mono,
-  udevCheckHook,
+  glib,
+  gtk-doc,
   gtk-sharp-2_0,
+  intltool,
+  libimobiledevice,
+  libxml2,
+  mono,
+  perlPackages,
+  pkg-config,
+  sg3_utils,
+  sqlite,
+  taglib,
+  udevCheckHook,
+  monoSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,9 +37,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-aVkuYE1N/jdEhVhiXEVhApvOC+8csIMMpP20rAJwEVQ=";
       name = "libplist-2.3.0-compatibility.patch";
       url = "https://sourceforge.net/p/gtkpod/patches/48/attachment/libplist-2.3.0-compatibility.patch";
-      hash = "sha256-aVkuYE1N/jdEhVhiXEVhApvOC+8csIMMpP20rAJwEVQ=";
     })
   ];
 
@@ -47,20 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     # support libplist 2.2
     substituteInPlace configure.ac --replace 'libplist >= 1.0' 'libplist-2.0 >= 2.2'
   '';
-
-  preAutoreconf = ''
-    gettextize --force --copy
-    intltoolize --force --copy
-  '';
-
-  configureFlags = [
-    "--without-hal"
-    "--enable-udev"
-    "--with-udev-dir=${placeholder "out"}/lib/udev"
-  ]
-  ++ lib.optionals monoSupport [ "--with-mono" ];
-
-  dontStrip = monoSupport;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -89,7 +75,12 @@ stdenv.mkDerivation (finalAttrs: {
     libimobiledevice
   ];
 
-  doInstallCheck = true;
+  configureFlags = [
+    "--without-hal"
+    "--enable-udev"
+    "--with-udev-dir=${placeholder "out"}/lib/udev"
+  ]
+  ++ lib.optionals monoSupport [ "--with-mono" ];
 
   env = lib.optionalAttrs stdenv.cc.isGNU {
     NIX_CFLAGS_COMPILE = toString [
@@ -98,12 +89,20 @@ stdenv.mkDerivation (finalAttrs: {
     ];
   };
 
+  doInstallCheck = true;
+  dontStrip = monoSupport;
+
+  preAutoreconf = ''
+    gettextize --force --copy
+    intltoolize --force --copy
+  '';
+
   meta = {
-    homepage = "https://sourceforge.net/projects/gtkpod/";
     description = "Library used by gtkpod to access the contents of an ipod";
-    mainProgram = "ipod-read-sysinfo-extended";
+    homepage = "https://sourceforge.net/projects/gtkpod/";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ipod-read-sysinfo-extended";
   };
 })

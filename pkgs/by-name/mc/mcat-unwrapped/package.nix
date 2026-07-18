@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
   buildPackages,
+  installShellFiles,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mcat-unwrapped";
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7QjnbdxUFeRDkIGnAcY2Wf8fLKuj1RuVbu0SUebOc5A=";
   };
 
-  cargoHash = "sha256-JnSycAz/jFs9JgA3tqYZn64yNK0bv5SXEYyUOXjC4ug=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  cargoHash = "sha256-JnSycAz/jFs9JgA3tqYZn64yNK0bv5SXEYyUOXjC4ug=";
 
   checkFlags = [
     # Requires network access: the test embeds a remote URL in the SVG.
@@ -53,9 +53,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/Skardyy/mcat";
     changelog = "https://github.com/Skardyy/mcat/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "mcat";
+
     maintainers = with lib.maintainers; [
       louis-thevenet
     ];
+
+    mainProgram = "mcat";
   };
 })

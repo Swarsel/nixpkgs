@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
   pytz,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ciso8601";
   version = "2.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "closeio";
@@ -19,15 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-14HiCn8BPALPaW53k118lHb5F4oG9mMNN6sdLdKB6v0=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytz
   ];
 
+  build-system = [ setuptools ];
   enabledTestPaths = [ "tests/tests.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ciso8601" ];
 
   meta = {

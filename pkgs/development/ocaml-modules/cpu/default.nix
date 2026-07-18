@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  buildDunePackage,
   fetchFromGitHub,
   autoconf,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -17,19 +17,19 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-O0pvNRONlprQ4XVG3858cnDo0WDJWOaEfH3DFeAzOe4=";
   };
 
+  nativeBuildInputs = [ autoconf ];
+
   preConfigure = ''
     autoconf
     autoheader
   '';
 
-  nativeBuildInputs = [ autoconf ];
-
   hardeningDisable = lib.optional stdenv.hostPlatform.isDarwin "strictoverflow";
 
   meta = {
-    homepage = "https://github.com/UnixJunkie/cpu";
     description = "Core pinning library";
-    maintainers = [ lib.maintainers.bcdarwin ];
+    homepage = "https://github.com/UnixJunkie/cpu";
     license = lib.licenses.lgpl2;
+    maintainers = [ lib.maintainers.bcdarwin ];
   };
 })

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libwpd,
-  zlib,
-  librevenge,
   boost,
+  librevenge,
+  libwpd,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,21 +18,24 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tV/alEDR4HBjDrJIfYuGl89BLCFKJ8runfac7HwATeM=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libwpd
     zlib
     librevenge
     boost
   ];
-  nativeBuildInputs = [ pkg-config ];
 
   meta = {
-    homepage = "https://libwpg.sourceforge.net";
     description = "C++ library to parse WPG";
+    homepage = "https://libwpg.sourceforge.net";
+
     license = with lib.licenses; [
       lgpl21
       mpl20
     ];
+
     platforms = lib.platforms.all;
   };
 })

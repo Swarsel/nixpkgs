@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   autoreconfHook,
-  zlib,
-  libpng,
+  fetchpatch2,
   libjpeg,
+  libpng,
   libwebp,
   nix-update-script,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix tests not failing even when they should.
     # https://github.com/jsummers/imageworsener/pull/46
     (fetchpatch2 {
-      url = "https://github.com/jsummers/imageworsener/commit/91c7c79d86f55920193d17a7b87631b14ac7779f.patch?full_index=1";
       hash = "sha256-8vxht0FiQFOdglwaO0ZQpg5BNYXXHROkznZ+Caxm/v0=";
+      url = "https://github.com/jsummers/imageworsener/commit/91c7c79d86f55920193d17a7b87631b14ac7779f.patch?full_index=1";
     })
   ];
 
@@ -39,11 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     rm tests/expected/*.jpg
   '';
 
-  postInstall = ''
-    mkdir -p $out/share/doc/imageworsener
-    cp readme.txt technical.txt $out/share/doc/imageworsener
-  '';
-
+  strictDeps = true;
   nativeBuildInputs = [ autoreconfHook ];
 
   buildInputs = [
@@ -53,18 +49,20 @@ stdenv.mkDerivation (finalAttrs: {
     libwebp
   ];
 
-  strictDeps = true;
-
   doCheck = true;
 
-  enableParallelBuilding = true;
+  postInstall = ''
+    mkdir -p $out/share/doc/imageworsener
+    cp readme.txt technical.txt $out/share/doc/imageworsener
+  '';
 
   __structuredAttrs = true;
-
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Raster image scaling and processing utility";
+
     longDescription = ''
       ImageWorsener is a cross-platform command-line utility and library for
       image scaling and other image processing. It has full support for PNG,
@@ -72,15 +70,18 @@ stdenv.mkDerivation (finalAttrs: {
       GIF, and limited support for some other image formats. It’s not as
       fast or memory-efficient as some utilities, but it’s very accurate.
     '';
+
     homepage = "https://entropymine.com/imageworsener/";
     changelog = "${finalAttrs.src.meta.homepage}/blob/${finalAttrs.src.rev}/changelog.txt";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
     license = lib.licenses.mit;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
+
     maintainers = [
       lib.maintainers.emily
       lib.maintainers.smitop
     ];
-    mainProgram = "imagew";
+
     platforms = lib.platforms.all;
+    mainProgram = "imagew";
   };
 })

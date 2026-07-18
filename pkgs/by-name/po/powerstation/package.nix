@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  udev,
-  pciutils,
   cmake,
+  pciutils,
+  pkg-config,
+  rustPlatform,
+  udev,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-thUV6Gwz0Kwfwa6QHwY7amGMNclc3Drn4Kq1gkPFhGk=";
   };
 
-  cargoHash = "sha256-yiESPVWUTpdXI8bij5qdd7KS3zSkA2TR1/klfsb9vps=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -32,6 +30,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pciutils
   ];
 
+  cargoHash = "sha256-yiESPVWUTpdXI8bij5qdd7KS3zSkA2TR1/klfsb9vps=";
+
   postInstall = ''
     cp -r rootfs/usr/* $out/
   '';
@@ -39,8 +39,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Open source TDP control and performance daemon with DBus interface";
     homepage = "https://github.com/ShadowBlip/PowerStation";
-    license = lib.licenses.gpl3Plus;
     changelog = "https://github.com/ShadowBlip/PowerStation/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ shadowapex ];
     mainProgram = "powerstation";
   };

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -11,22 +11,14 @@ buildGoModule (finalAttrs: {
   version = "0.22.1";
 
   src = fetchFromGitHub {
-    rev = "v${finalAttrs.version}";
     owner = "derailed";
     repo = "popeye";
+    rev = "v${finalAttrs.version}";
     sha256 = "sha256-CbVYQIE7kjUah+SDEjs5Qz+n4+f3HriQNxYPqDcdr/I=";
   };
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/derailed/popeye/cmd.version=${finalAttrs.version}"
-    "-X github.com/derailed/popeye/cmd.commit=${finalAttrs.version}"
-  ];
-
-  vendorHash = "sha256-Xhn1iOqzCY8fW2lODXwqY4XQZTAPWXaZ0XM5j02bnCs=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-Xhn1iOqzCY8fW2lODXwqY4XQZTAPWXaZ0XM5j02bnCs=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd popeye \
@@ -36,16 +28,24 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/popeye version | grep ${finalAttrs.version} > /dev/null
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/derailed/popeye/cmd.version=${finalAttrs.version}"
+    "-X github.com/derailed/popeye/cmd.commit=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Kubernetes cluster resource sanitizer";
-    mainProgram = "popeye";
     homepage = "https://github.com/derailed/popeye";
     changelog = "https://github.com/derailed/popeye/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "popeye";
   };
 })

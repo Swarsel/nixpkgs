@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   installShellFiles,
-  fetchFromGitHub,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,19 +17,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-2114PK3xcIykC4QTTzj54S4EjHVbcxpy8D7C735xdew=";
   };
 
-  vendorHash = "sha256-v3rozaY/kp/M4K397c+qtktIPyJJ+RIvPtPvd9qVpwU=";
-
-  env.GOWORK = "off";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.Version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-v3rozaY/kp/M4K397c+qtktIPyJJ+RIvPtPvd9qVpwU=";
+  env.GOWORK = "off";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     $out/bin/pop man > pop.1
@@ -40,14 +33,22 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/pop completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.Version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Send emails from your terminal";
     homepage = "https://github.com/charmbracelet/pop";
     changelog = "https://github.com/charmbracelet/pop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       caarlos0
     ];
+
     mainProgram = "pop";
   };
 })

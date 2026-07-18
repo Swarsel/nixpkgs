@@ -1,11 +1,11 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
   fetchpatch,
-  qmake,
-  pkg-config,
   gtk2,
+  mkDerivation,
+  pkg-config,
+  qmake,
 }:
 
 mkDerivation {
@@ -22,13 +22,13 @@ mkDerivation {
   patches = [
     (fetchpatch rec {
       name = "0001-fix-build-against-Qt-5.15.patch";
-      url = "https://aur.archlinux.org/cgit/aur.git/plain/${name}?h=qt5-styleplugins";
       sha256 = "j0CgfutqFawy11IqFnlrkfMsMD01NjX/MkfVEVxj1QM=";
+      url = "https://aur.archlinux.org/cgit/aur.git/plain/${name}?h=qt5-styleplugins";
     })
     (fetchpatch rec {
       name = "0002-fix-gtk2-background.patch";
-      url = "https://aur.archlinux.org/cgit/aur.git/plain/${name}?h=qt5-styleplugins";
       sha256 = "qUOkNckrSUEzXY1PUZKfbiCjhNyB5ZBw2IN/j32GKM4=";
+      url = "https://aur.archlinux.org/cgit/aur.git/plain/${name}?h=qt5-styleplugins";
     })
   ];
 
@@ -36,6 +36,7 @@ mkDerivation {
     pkg-config
     qmake
   ];
+
   buildInputs = [ gtk2 ];
 
   meta = {

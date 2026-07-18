@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,6 +19,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "dust";
     tag = "v${finalAttrs.version}";
     hash = "sha256-80UcDIXnRvpmIcpDGwrMo9KGgPVafuUOIBIozDHctTo=";
+
     # Remove unicode file names which leads to different checksums on HFS+
     # vs. other filesystems because of unicode normalisation.
     postFetch = ''
@@ -26,9 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     '';
   };
 
-  cargoHash = "sha256-dXlyoBYsgnyKvoNh60uR1itDB/fqzIQtZ1R/gv28CMY=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-dXlyoBYsgnyKvoNh60uR1itDB/fqzIQtZ1R/gv28CMY=";
 
   checkFlags = [
     # disable tests that depend on the unicode files we removed above
@@ -46,10 +46,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion completions/dust.{bash,fish} --zsh completions/_dust
   '';
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/dust";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -57,9 +56,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/bootandy/dust";
     changelog = "https://github.com/bootandy/dust/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       defelo
     ];
+
     mainProgram = "dust";
   };
 })

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  libowfat,
   libcap,
-  zlib,
-  openssl,
+  libowfat,
   libxcrypt,
+  openssl,
+  zlib,
 }:
 
 let
   version = "0.16";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "gatling";
   inherit version;
+  pname = "gatling";
 
   src = fetchurl {
     url = "https://www.fefe.de/gatling/gatling-${finalAttrs.version}.tar.xz";
@@ -29,6 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
     libxcrypt
   ];
 
+  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=incompatible-pointer-types" ];
+
+  buildPhase = ''
+    make gatling
+  '';
+
   configurePhase = ''
     runHook preConfigure
 
@@ -39,12 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postConfigure
   '';
-
-  buildPhase = ''
-    make gatling
-  '';
-
-  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=incompatible-pointer-types" ];
 
   meta = {
     description = "High performance web server";

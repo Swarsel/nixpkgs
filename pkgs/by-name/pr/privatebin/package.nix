@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nixosTests,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -29,9 +29,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/PrivateBin/PrivateBin/releases/tag/${finalAttrs.version}";
     description = "Minimalist, open source online pastebin where the server has zero knowledge of pasted data";
     homepage = "https://privatebin.info";
+    changelog = "https://github.com/PrivateBin/PrivateBin/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       # privatebin
       zlib
@@ -42,6 +43,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       asl20
       cc-by-40
     ];
+
     maintainers = with lib.maintainers; [
       savyajha
       defelo

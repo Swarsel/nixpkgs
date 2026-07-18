@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   btrfs-progs,
   buildGoModule,
-  fetchFromGitHub,
   lvm2,
   pkg-config,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MC9GeJeVG7ROkpmOW2HD/fWMMnHo43q4Du9MzWTk2cg=";
   };
 
-  vendorHash = "sha256-JY64fqzNBpo9Jwo8sWsWTVVAO5zzwxwXy0A2bgqJHuU=";
-
-  proxyVendor = true;
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -32,31 +28,35 @@ buildGoModule (finalAttrs: {
     lvm2
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/cli";
-
+  vendorHash = "sha256-JY64fqzNBpo9Jwo8sWsWTVVAO5zzwxwXy0A2bgqJHuU=";
   env.CGO_ENABLED = "0";
+
+  postInstall = ''
+    mv $out/bin/cli $out/bin/kubeclarity
+  '';
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  postInstall = ''
-    mv $out/bin/cli $out/bin/kubeclarity
-  '';
+  proxyVendor = true;
+  sourceRoot = "${finalAttrs.src.name}/cli";
 
   meta = {
     description = "Kubernetes runtime scanner";
-    mainProgram = "kubeclarity";
+
     longDescription = ''
       KubeClarity is a vulnerabilities scanning and CIS Docker benchmark tool that
       allows users to get an accurate and immediate risk assessment of their
       kubernetes clusters. Kubei scans all images that are being used in a
       Kubernetes cluster, including images of application pods and system pods.
     '';
+
     homepage = "https://github.com/openclarity/kubeclarity";
     changelog = "https://github.com/openclarity/kubeclarity/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "kubeclarity";
   };
 })

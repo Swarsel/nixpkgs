@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  buildNpmPackage,
   buildGoModule,
+  buildNpmPackage,
   replaceVars,
 }:
 
@@ -19,17 +19,28 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-8zZlhVptJq8y3k2DBghJ0lPNcIcaZYkrxN67b6dNBPs=";
 
-  subPackages = [ "." ];
+  preBuild = ''
+    cp -r ${finalAttrs.frontend}/client_bundle .
+    cp ${finalAttrs.frontend}/public_version.ts .
+  '';
+
+  installPhase = ''
+    runHook preInstall
+
+    install -Dm755 "$GOPATH/bin/silverbullet" $out/bin/silverbullet
+
+    runHook postInstall
+  '';
 
   frontend = buildNpmPackage {
-    pname = "silverbullet-frontend";
     inherit (finalAttrs) version src;
-
-    npmDepsHash = "sha256-Twcv3I3scF09onJQdYsc1zOFzMFPOEyPF7VPYa7LBko=";
+    pname = "silverbullet-frontend";
 
     patches = [
       (replaceVars ./override-public-version.patch { inherit (finalAttrs) version; })
     ];
+
+    npmDepsHash = "sha256-Twcv3I3scF09onJQdYsc1zOFzMFPOEyPF7VPYa7LBko=";
 
     postBuild = ''
       npm run build:plug-compile
@@ -45,30 +56,20 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  preBuild = ''
-    cp -r ${finalAttrs.frontend}/client_bundle .
-    cp ${finalAttrs.frontend}/public_version.ts .
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    install -Dm755 "$GOPATH/bin/silverbullet" $out/bin/silverbullet
-
-    runHook postInstall
-  '';
-
+  subPackages = [ "." ];
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/silverbulletmd/silverbullet/blob/${finalAttrs.version}/website/CHANGELOG.md";
     description = "Open-source, self-hosted, offline-capable Personal Knowledge Management (PKM) web application";
     homepage = "https://silverbullet.md";
+    changelog = "https://github.com/silverbulletmd/silverbullet/blob/${finalAttrs.version}/website/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aorith
       CnTeng
     ];
+
     mainProgram = "silverbullet";
   };
 })

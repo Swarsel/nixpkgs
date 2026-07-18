@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
+  buildPythonPackage,
   flit-core,
   gevent,
   mock,
   psutil,
   pytest-cov-stub,
   pytestCheckHook,
+  pythonAtLeast,
   pyyaml,
   pyzmq,
   tornado,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "kantoku";
   version = "0.18.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bentoml";
@@ -26,14 +25,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-pI79B7TDZwL4Jz5e7PDPIf8iIGiwCOKFI2jReUt8UNg=";
   };
-
-  build-system = [ flit-core ];
-
-  dependencies = [
-    psutil
-    pyzmq
-    tornado
-  ];
 
   nativeCheckInputs = [
     gevent
@@ -43,7 +34,14 @@ buildPythonPackage (finalAttrs: {
     pyyaml
   ];
 
-  pythonImportsCheck = [ "circus" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ flit-core ];
+
+  dependencies = [
+    psutil
+    pyzmq
+    tornado
+  ];
 
   disabledTests = [
     # AssertionError
@@ -62,7 +60,8 @@ buildPythonPackage (finalAttrs: {
     "test_handler"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "circus" ];
 
   meta = {
     description = "A Process & Socket Manager built with zmq";

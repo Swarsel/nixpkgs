@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  wcwidth,
-
   # tests
   pytest-lazy-fixtures,
   pytestCheckHook,
+  # dependencies
+  wcwidth,
 }:
 
 buildPythonPackage rec {
   pname = "prettytable";
   version = "3.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -27,18 +23,18 @@ buildPythonPackage rec {
     hash = "sha256-MvKa6M2kfD3rUl+kxsD87ieBzmDtahoMQJUNWsofCBc=";
   };
 
+  nativeCheckInputs = [
+    pytest-lazy-fixtures
+    pytestCheckHook
+  ];
+
   build-system = [
     hatch-vcs
     hatchling
   ];
 
   dependencies = [ wcwidth ];
-
-  nativeCheckInputs = [
-    pytest-lazy-fixtures
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "prettytable" ];
 
   meta = {

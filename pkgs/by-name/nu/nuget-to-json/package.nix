@@ -1,26 +1,26 @@
 {
   lib,
-  runtimeShell,
-  replaceVarsWith,
-  nix,
-  coreutils,
-  jq,
-  xmlstarlet,
-  curl,
-  gnugrep,
-  gawk,
   cacert,
+  coreutils,
+  curl,
+  gawk,
+  gnugrep,
+  jq,
+  nix,
+  replaceVarsWith,
+  runtimeShell,
+  xmlstarlet,
 }:
 
 replaceVarsWith {
-  name = "nuget-to-json";
-  dir = "bin";
-
   src = ./nuget-to-json.sh;
+  dir = "bin";
   isExecutable = true;
+  name = "nuget-to-json";
 
   replacements = {
     inherit runtimeShell cacert;
+
     binPath = lib.makeBinPath [
       nix
       coreutils

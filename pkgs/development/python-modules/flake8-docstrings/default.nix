@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flake8,
   pydocstyle,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "flake8-docstrings";
   version = "1.7.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "PyCQA";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "flake8_docstrings" ];
 
   meta = {

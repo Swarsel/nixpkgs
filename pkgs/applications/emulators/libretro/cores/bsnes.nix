@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "bsnes";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-XYCzXAFkSFNMlRjzH4zR3lpRguOqvAJM4TBcL9Feog8=";
   };
 
+  core = "bsnes";
   makefile = "Makefile";
 
   meta = {

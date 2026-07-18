@@ -1,27 +1,25 @@
 {
   lib,
   fetchurl,
+  at-spi2-core,
   desktop-file-utils,
+  gettext,
+  gnome,
+  gobject-introspection,
+  gtk3,
+  itstool,
+  librsvg,
+  libwnck,
   meson,
   ninja,
   pkg-config,
-  gnome,
-  gtk3,
-  wrapGAppsHook3,
-  gobject-introspection,
-  itstool,
   python3,
-  at-spi2-core,
-  gettext,
-  libwnck,
-  librsvg,
+  wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "accerciser";
   version = "3.48.0";
-
-  pyproject = false;
 
   src = fetchurl {
     url = "mirror://gnome/sources/accerciser/${lib.versions.majorMinor finalAttrs.version}/accerciser-${finalAttrs.version}.tar.xz";
@@ -56,11 +54,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools # for pkg_resources
   ];
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  dontWrapGApps = true;
+  pyproject = false;
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -70,12 +69,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
+    description = "Interactive Python accessibility explorer";
     homepage = "https://gitlab.gnome.org/GNOME/accerciser";
     changelog = "https://gitlab.gnome.org/GNOME/accerciser/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Interactive Python accessibility explorer";
-    mainProgram = "accerciser";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.bsd3;
     platforms = lib.platforms.linux;
+    mainProgram = "accerciser";
+    teams = [ lib.teams.gnome ];
   };
 })

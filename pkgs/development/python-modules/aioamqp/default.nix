@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pamqp,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "aioamqp";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Polyconseil";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-fssPknJn1tLtzb+2SFyZjfdhUdD8jqkwlInoi5uaplk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pamqp ];
-
   # Tests assume rabbitmq server running
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pamqp ];
+  pyproject = true;
   pythonImportsCheck = [ "aioamqp" ];
 
   meta = {

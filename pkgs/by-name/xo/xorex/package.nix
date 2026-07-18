@@ -1,12 +1,11 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "xorex";
   version = "0.3.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Neo23x0";
@@ -14,6 +13,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "rBsOSXWnHRhpLmq20XBuGx8gGBM8ouMyOISkbzUcvE4=";
   };
+
+  propagatedBuildInputs = with python3.pkgs; [
+    colorama
+    pefile
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -25,16 +29,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
-  propagatedBuildInputs = with python3.pkgs; [
-    colorama
-    pefile
-  ];
+  pyproject = false;
 
   meta = {
     description = "XOR Key Extractor";
-    mainProgram = "xorex";
     homepage = "https://github.com/Neo23x0/xorex";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "xorex";
   };
 })

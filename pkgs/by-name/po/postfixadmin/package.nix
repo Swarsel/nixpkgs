@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   php84,
 }:
 
@@ -18,9 +18,6 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-mr5FBURTGP2J3JMlcexXjz4GFJNqPR4rZyqHVN7+6iM=";
   };
 
-  # Upstream does not ship a lock file, we have to maintain our own for now.
-  # https://github.com/postfixadmin/postfixadmin/issues/948
-  composerLock = ./composer.lock;
   vendorHash = "sha256-uyHEfWCC6V4d+ez7FbqBKrh4IfbQ2pgD4UvbdGEfobI=";
 
   postInstall = ''
@@ -30,14 +27,17 @@ php.buildComposerProject2 (finalAttrs: {
     ln -sf /var/cache/postfixadmin/templates_c "$out_dir"
   '';
 
+  # Upstream does not ship a lock file, we have to maintain our own for now.
+  # https://github.com/postfixadmin/postfixadmin/issues/948
+  composerLock = ./composer.lock;
   passthru.phpPackage = php;
 
   meta = {
-    changelog = "https://github.com/postfixadmin/postfixadmin/releases/tag/${finalAttrs.src.tag}";
     description = "Web based virtual user administration interface for Postfix mail servers";
     homepage = "https://postfixadmin.sourceforge.io/";
-    maintainers = with lib.maintainers; [ yayayayaka ];
+    changelog = "https://github.com/postfixadmin/postfixadmin/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ yayayayaka ];
     platforms = lib.platforms.all;
   };
 })

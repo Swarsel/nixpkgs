@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -27,8 +27,8 @@ stdenvNoCC.mkDerivation rec {
     description = "Fetch written in posix shell without any external commands";
     homepage = "https://github.com/eepykate/fet.sh";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ elkowar ];
+    platforms = lib.platforms.all;
     mainProgram = "fet.sh";
   };
 }

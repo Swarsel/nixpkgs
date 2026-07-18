@@ -1,9 +1,8 @@
 {
-  mkKdeDerivation,
-
   alsa-lib,
   libcanberra,
   libpulseaudio,
+  mkKdeDerivation,
 }:
 mkKdeDerivation {
   pname = "kmix";

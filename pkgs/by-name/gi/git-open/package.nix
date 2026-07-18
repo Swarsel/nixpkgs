@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  xdg-utils,
-  gnugrep,
   fetchFromGitHub,
+  gnugrep,
   installShellFiles,
   makeWrapper,
   pandoc,
+  xdg-utils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,11 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/paulirish/git-open";
     description = "Open the GitHub page or website for a repository in your browser";
+    homepage = "https://github.com/paulirish/git-open";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = lib.platforms.all;
     mainProgram = "git-open";
   };
 })

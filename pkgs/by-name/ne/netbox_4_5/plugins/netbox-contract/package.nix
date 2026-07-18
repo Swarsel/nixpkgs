@@ -1,21 +1,17 @@
 {
   lib,
-  buildPythonPackage,
-  python,
   fetchFromGitHub,
-  setuptools,
-  python-dateutil,
+  buildPythonPackage,
   drf-yasg,
-  netbox,
   netaddr,
+  netbox,
+  python,
+  python-dateutil,
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "netbox-contract";
   version = "2.4.6";
-  pyproject = true;
-  __structuredAttrs = true;
-
-  disabled = python.pythonVersion != netbox.python.pythonVersion;
 
   src = fetchFromGitHub {
     owner = "mlebreuil";
@@ -23,13 +19,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-e8DYjU2UtlWu044e4b5eJWOA/fXDRKLl5AVtaepG0sg=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    python-dateutil
-    drf-yasg
-  ];
 
   # running tests requires initialized django project
   nativeCheckInputs = [
@@ -41,6 +30,16 @@ buildPythonPackage (finalAttrs: {
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    python-dateutil
+    drf-yasg
+  ];
+
+  disabled = python.pythonVersion != netbox.python.pythonVersion;
+  pyproject = true;
   pythonImportsCheck = [ "netbox_contract" ];
 
   meta = {
@@ -48,7 +47,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/mlebreuil/netbox-contract";
     changelog = "https://github.com/mlebreuil/netbox-contract/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ felbinger ];
+    platforms = lib.platforms.linux;
   };
 })

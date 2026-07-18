@@ -26,9 +26,6 @@ stdenv.mkDerivation {
     kwin
   ];
 
-  dontBuild = true;
-  dontWrapQtApps = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -36,6 +33,9 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontWrapQtApps = true;
 
   meta = {
     description = "KWin script that automatically adds/removes virtual desktops";

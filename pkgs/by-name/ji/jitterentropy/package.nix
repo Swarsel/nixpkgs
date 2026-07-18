@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
 }:
 
@@ -17,12 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sJWgPx3GbvnBBVlCML/eRtUoMXux38tpWi1ZKhz41xY=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
   outputs = [
     "out"
     "dev"
   ];
+
+  nativeBuildInputs = [ cmake ];
 
   # disable internal timer thread and only use processor high-resolution timer
   # this also fixes the rng-tools build
@@ -41,14 +41,17 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Provides a noise source using the CPU execution timing jitter";
     homepage = "https://github.com/smuellerDD/jitterentropy-library";
     changelog = "https://github.com/smuellerDD/jitterentropy-library/raw/v${finalAttrs.version}/CHANGES.md";
+
     license = with lib.licenses; [
       bsd3 # OR
       gpl2Only
     ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       johnazoidberg
       thillux
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

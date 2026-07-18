@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "mujson";
   version = "1.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
 
   # No tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "mujson" ];
 
   meta = {

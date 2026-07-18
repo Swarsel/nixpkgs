@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -18,11 +18,11 @@ buildGoModule rec {
 
   vendorHash = "sha256-WTDE+MYL8CjeNvGHRNiMgBFrydDJWIcG8TYvbQTH/6o=";
 
-  subPackages = [ "." ];
-
   postFixup = lib.optionals (!stdenv.hostPlatform.isDarwin) ''
     mv $out/bin/SNOWCRASH $out/bin/${pname}
   '';
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Polyglot payload generator";

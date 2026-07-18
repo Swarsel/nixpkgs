@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  hatch-fancy-pypi-readme,
   # build-system
   hatchling,
-  hatch-fancy-pypi-readme,
   # dependencies
   lxml,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "yaxmldiff";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "latk";
@@ -22,14 +21,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-AOXnK1d+b/ae50ofBfgxiDS6Dj6TIeHMrE9ME95Yj1Q=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatchling
     hatch-fancy-pypi-readme
   ];
 
   dependencies = [ lxml ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Yet Another XML Differ";

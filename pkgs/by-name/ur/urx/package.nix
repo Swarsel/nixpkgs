@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   sqlite,
   versionCheckHook,
 }:
@@ -18,15 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-mGFTCKsubT+gIUxdgRAhE69WtgMghkKII/73Auffrt4=";
   };
 
-  cargoHash = "sha256-PRP+iGH3fzfPOUQZAaIab7BSAUGZyxF1MX7tbfAIDks=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ sqlite ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  __structuredAttrs = true;
+  cargoHash = "sha256-PRP+iGH3fzfPOUQZAaIab7BSAUGZyxF1MX7tbfAIDks=";
 
   checkFlags = [
     # Tests require network access
@@ -40,7 +34,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   versionCheckProgramArg = [ "--version" ];
 
   meta = {

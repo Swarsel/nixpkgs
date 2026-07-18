@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  setuptools,
-  mock,
   boto3,
+  buildPythonPackage,
   envs,
+  fetchpatch,
+  mock,
   python-jose,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "warrant";
   version = "0.6.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   # move to fetchPyPi when https://github.com/capless/warrant/issues/97 is fixed
   src = fetchFromGitHub {
@@ -28,13 +25,11 @@ buildPythonPackage {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-7IRvDoqQXUKlUHSmb/f28Y5m+2FULFXAb30O5bCIeNM=";
       name = "fix-pip10-compat.patch";
       url = "https://github.com/capless/warrant/commit/ae17d17d9888b9218a8facf6f6ad0bf4adae9a12.patch";
-      hash = "sha256-7IRvDoqQXUKlUHSmb/f28Y5m+2FULFXAb30O5bCIeNM=";
     })
   ];
-
-  build-system = [ setuptools ];
 
   # this needs to go when 0.6.2 or later is released
   postPatch = ''
@@ -42,7 +37,11 @@ buildPythonPackage {
       --replace-fail "python-jose-cryptodome>=1.3.2" "python-jose>=2.0.0"
   '';
 
+  # all the checks are failing
+  doCheck = false;
   nativeCheckInputs = [ mock ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
   dependencies = [
     boto3
@@ -51,9 +50,7 @@ buildPythonPackage {
     requests
   ];
 
-  # all the checks are failing
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "warrant" ];
 
   meta = {

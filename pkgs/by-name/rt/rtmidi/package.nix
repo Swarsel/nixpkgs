@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
+  alsa-lib,
   cmake,
+  fetchpatch,
+  libjack2,
   pkg-config,
   alsaSupport ? stdenv.hostPlatform.isLinux,
-  alsa-lib,
-  jackSupport ? true,
-  libjack2,
   coremidiSupport ? stdenv.hostPlatform.isDarwin,
+  jackSupport ? true,
 }:
 
 stdenv.mkDerivation rec {

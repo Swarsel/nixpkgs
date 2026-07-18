@@ -2,11 +2,11 @@
   lib,
   stdenv,
   cmake,
+  llvm,
   ninja,
+  python3,
   zlib,
   zstd,
-  llvm,
-  python3,
 }:
 
 let
@@ -19,13 +19,14 @@ let
       throw "Unsupported ROCm LLVM platform";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "rocm-device-libs";
   # In-tree with ROCm LLVM
   inherit (llvm.llvm) version;
+  pname = "rocm-device-libs";
   src = llvm.llvm.monorepoSrc;
-  sourceRoot = "${finalAttrs.src.name}/amd/device-libs";
-  strictDeps = true;
-  __structuredAttrs = true;
+
+  patches = [
+    ./cmake.patch
+  ];
 
   postPatch =
     # Use our sysrooted toolchain instead of direct clang target
@@ -34,9 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail '$<TARGET_FILE:clang>' "${llvm.rocm-toolchain}/bin/clang"
     '';
 
-  patches = [
-    ./cmake.patch
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -56,12 +55,15 @@ stdenv.mkDerivation (finalAttrs: {
     "-DLLVM_TARGETS_TO_BUILD=AMDGPU;${llvmNativeTarget}"
   ];
 
+  __structuredAttrs = true;
+  sourceRoot = "${finalAttrs.src.name}/amd/device-libs";
+
   meta = {
     description = "Set of AMD-specific device-side language runtime libraries";
     homepage = "https://github.com/ROCm/ROCm-Device-Libs";
     license = lib.licenses.ncsa;
     maintainers = with lib.maintainers; [ lovesegfault ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

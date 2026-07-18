@@ -14,9 +14,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    license = lib.licenses.gpl2Plus;
     description = "Validating XML parser written in C";
     homepage = "https://www.cogsci.ed.ac.uk/~richard/rxp.html";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
     mainProgram = "rxp";
   };

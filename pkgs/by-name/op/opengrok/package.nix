@@ -31,11 +31,11 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Source code search and cross reference engine";
-    mainProgram = "opengrok";
     homepage = "https://opengrok.github.io/OpenGrok/";
     changelog = "https://github.com/oracle/opengrok/releases/tag/${version}";
     license = lib.licenses.cddl;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "opengrok";
   };
 }

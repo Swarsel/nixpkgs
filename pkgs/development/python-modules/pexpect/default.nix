@@ -2,17 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   ptyprocess,
-
   # Reverse dependency
   sage,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pexpect";
   version = "4.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,22 +18,17 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
+  propagatedBuildInputs = [ ptyprocess ];
   # Wants to run pythonin a subprocess
   doCheck = false;
-
-  propagatedBuildInputs = [ ptyprocess ];
+  pyproject = true;
 
   passthru.tests = {
     inherit sage;
   };
 
   meta = {
-    homepage = "http://www.noah.org/wiki/Pexpect";
     description = "Automate interactive console applications such as ssh, ftp, etc";
-    downloadPage = "https://github.com/pexpect/pexpect";
-    license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ zimbatm ];
 
     longDescription = ''
       Pexpect is similar to the Don Libes "Expect" system, but Pexpect
@@ -52,5 +45,10 @@ buildPythonPackage rec {
       does it require C extensions to be compiled. It should work on
       any platform that supports the standard Python pty module.
     '';
+
+    homepage = "http://www.noah.org/wiki/Pexpect";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ zimbatm ];
+    downloadPage = "https://github.com/pexpect/pexpect";
   };
 }

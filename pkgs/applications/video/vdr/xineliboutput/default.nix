@@ -1,24 +1,24 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  vdr,
+  avahi,
+  dbus-glib,
+  ffmpeg,
+  libGLU,
   libcap,
-  libvdpau,
-  xine-lib,
-  libjpeg,
   libextractor,
   libglvnd,
-  libGLU,
+  libjpeg,
+  libvdpau,
   libx11,
   libxext,
-  libxrender,
   libxrandr,
-  ffmpeg,
-  avahi,
-  wayland,
+  libxrender,
   makeWrapper,
-  dbus-glib,
+  vdr,
+  wayland,
+  xine-lib,
 }:
 let
   makeXinePluginPath = l: lib.concatStringsSep ":" (map (p: "${p}/lib/xine/plugins") l);
@@ -36,28 +36,6 @@ let
       # pkg-config is called with opengl, which do not contain needed glx symbols
       substituteInPlace configure \
         --replace "X11  opengl" "X11  gl"
-    '';
-
-    # configure don't accept argument --prefix
-    dontAddPrefix = true;
-
-    postConfigure = ''
-      sed -i config.mak \
-        -e 's,XINEPLUGINDIR=/[^/]*/[^/]*/[^/]*/,XINEPLUGINDIR=/,'
-    '';
-
-    makeFlags = [ "DESTDIR=$(out)" ];
-
-    postFixup = ''
-      for f in $out/bin/*; do
-        wrapProgram $f \
-          --prefix XINE_PLUGIN_PATH ":" "${
-            makeXinePluginPath [
-              "$out"
-              xine-lib
-            ]
-          }"
-      done
     '';
 
     nativeBuildInputs = [ makeWrapper ];
@@ -81,17 +59,39 @@ let
       wayland
     ];
 
+    makeFlags = [ "DESTDIR=$(out)" ];
+
+    postConfigure = ''
+      sed -i config.mak \
+        -e 's,XINEPLUGINDIR=/[^/]*/[^/]*/[^/]*/,XINEPLUGINDIR=/,'
+    '';
+
+    postFixup = ''
+      for f in $out/bin/*; do
+        wrapProgram $f \
+          --prefix XINE_PLUGIN_PATH ":" "${
+            makeXinePluginPath [
+              "$out"
+              xine-lib
+            ]
+          }"
+      done
+    '';
+
+    # configure don't accept argument --prefix
+    dontAddPrefix = true;
+
     passthru.requiredXinePlugins = [
       xine-lib
       self
     ];
 
     meta = {
-      homepage = "https://sourceforge.net/projects/xineliboutput/";
-      description = "Xine-lib based software output device for VDR";
-      maintainers = [ lib.maintainers.ck3d ];
-      license = lib.licenses.gpl2;
       inherit (vdr.meta) platforms;
+      description = "Xine-lib based software output device for VDR";
+      homepage = "https://sourceforge.net/projects/xineliboutput/";
+      license = lib.licenses.gpl2;
+      maintainers = [ lib.maintainers.ck3d ];
     };
   };
 in

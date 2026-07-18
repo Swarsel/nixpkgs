@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   poetry-core,
   pytest-aiohttp,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aiowatttime";
   version = "2024.06.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -32,8 +31,6 @@ buildPythonPackage rec {
     yarl
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     aresponses
     pytest-aiohttp
@@ -41,9 +38,10 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
   # Ignore the examples directory as the files are prefixed with test_
   disabledTestPaths = [ "examples/" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiowatttime" ];
 
   meta = {

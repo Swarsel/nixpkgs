@@ -1,15 +1,14 @@
 {
+  lib,
   buildPythonPackage,
   cryptography,
   django,
   fetchPypi,
-  lib,
   poetry-core,
 }:
 buildPythonPackage rec {
   pname = "django-encrypted-model-fields";
   version = "0.6.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     django
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "encrypted_model_fields" ];
 
   meta = {

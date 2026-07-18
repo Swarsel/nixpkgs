@@ -4,8 +4,8 @@
   fetchFromGitHub,
   accountsservice,
   budgie-desktop,
-  gtk3,
   gtk-layer-shell,
+  gtk3,
   intltool,
   libgee,
   libpeas2,
@@ -28,6 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZvT114F0g+3zpskyb4Bn6grAXHWtMqRqb9MzfF0WLQ8=";
   };
 
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace-fail "dependency('budgie-2.0', version: '>= 3')" "dependency('budgie-3.0')"
+  '';
+
   nativeBuildInputs = [
     intltool
     meson
@@ -45,11 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpeas2
     sassc
   ];
-
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace-fail "dependency('budgie-2.0', version: '>= 3')" "dependency('budgie-3.0')"
-  '';
 
   passthru = {
     updateScript = nix-update-script { };

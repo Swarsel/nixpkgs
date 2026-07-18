@@ -1,24 +1,20 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-
-  # build-system
-  setuptools,
-
+  fetchFromGitHub,
+  buildPythonPackage,
   # dependencies
   fastapi,
-  natsort,
-
   # test dependencies
   httpx,
+  natsort,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fastapi-versionizer";
   version = "4.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alexschimpf";
@@ -27,21 +23,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Kj7tjy8TDV9MYhqJdVUBRohkIsYoqbQX5qnnkNBJPig=";
   };
 
+  nativeCheckInputs = [
+    httpx
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     fastapi
     natsort
-  ];
-
-  pythonImportsCheck = [
-    "fastapi_versionizer"
-    "fastapi_versionizer.versionizer"
-  ];
-
-  nativeCheckInputs = [
-    httpx
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
@@ -50,15 +41,24 @@ buildPythonPackage (finalAttrs: {
     "tests/test_with_root_path.py"
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "fastapi_versionizer"
+    "fastapi_versionizer.versionizer"
+  ];
+
   meta = {
-    changelog = "https://github.com/alexschimpf/fastapi-versionizer/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "API versionizer for FastAPI web applications";
-    downloadPage = "https://github.com/alexschimpf/fastapi-versionizer/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/alexschimpf/fastapi-versionizer";
+    changelog = "https://github.com/alexschimpf/fastapi-versionizer/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched
     ];
+
+    downloadPage = "https://github.com/alexschimpf/fastapi-versionizer/releases/tag/${finalAttrs.src.tag}";
   };
 })

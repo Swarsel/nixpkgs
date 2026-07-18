@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -20,8 +20,8 @@ postgresqlBuildExtension (finalAttrs: {
     description = "Run Cron jobs through PostgreSQL";
     homepage = "https://github.com/citusdata/pg_cron";
     changelog = "https://github.com/citusdata/pg_cron/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.postgresql;
     maintainers = with lib.maintainers; [ thoughtpolice ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.postgresql;
   };
 })

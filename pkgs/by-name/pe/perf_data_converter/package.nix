@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  buildBazelPackage,
   fetchFromGitHub,
   bazel_7,
-  jdk,
+  buildBazelPackage,
   elfutils,
+  jdk,
   libcap,
 }:
 
 let
   system = stdenv.hostPlatform.system;
   registry = fetchFromGitHub {
+    hash = "sha256-SLtrNU5uEt8rRJDUdV/IaI37CujsTHLlE31l2zYoRss=";
     owner = "bazelbuild";
     repo = "bazel-central-registry";
     rev = "dc643526b97838ffe421b833dd8b9c95e71702e8";
-    hash = "sha256-SLtrNU5uEt8rRJDUdV/IaI37CujsTHLlE31l2zYoRss=";
   };
 in
 buildBazelPackage {
@@ -29,24 +29,6 @@ buildBazelPackage {
     hash = "sha256-3YaaEQBlNenJihlEkAI3s4WyjOpWpV9rsfLyvubvfMU=";
   };
 
-  bazel = bazel_7;
-  bazelFlags = [
-    "--registry"
-    "file://${registry}"
-  ];
-
-  fetchAttrs = {
-    preInstall = ''
-      rm -rf $bazelOut/external/rules_shell~~sh_configure~local_config_shell
-    '';
-    hash =
-      {
-        aarch64-linux = "sha256-BlNTjS78QNuoiyIUFDmY5HeqIRJRVZQfrk5Y7+Q2DGo=";
-        x86_64-linux = "sha256-jOepM+Lor5RRIQEmdkwf3IJ1AAfbVq2VjMuwqjyfOio=";
-      }
-      .${system} or (throw "No hash for system: ${system}");
-  };
-
   nativeBuildInputs = [ jdk ];
 
   buildInputs = [
@@ -54,12 +36,16 @@ buildBazelPackage {
     libcap
   ];
 
-  removeRulesCC = false;
-
-  bazelBuildFlags = [ "-c opt" ];
-  bazelTargets = [ "src:perf_to_profile" ];
-
   doCheck = true;
+  bazel = bazel_7;
+  bazelBuildFlags = [ "-c opt" ];
+
+  bazelFlags = [
+    "--registry"
+    "file://${registry}"
+  ];
+
+  bazelTargets = [ "src:perf_to_profile" ];
   bazelTestTargets = [ "src:all" ];
 
   buildAttrs = {
@@ -69,6 +55,21 @@ buildBazelPackage {
       runHook postInstall
     '';
   };
+
+  fetchAttrs = {
+    preInstall = ''
+      rm -rf $bazelOut/external/rules_shell~~sh_configure~local_config_shell
+    '';
+
+    hash =
+      {
+        aarch64-linux = "sha256-BlNTjS78QNuoiyIUFDmY5HeqIRJRVZQfrk5Y7+Q2DGo=";
+        x86_64-linux = "sha256-jOepM+Lor5RRIQEmdkwf3IJ1AAfbVq2VjMuwqjyfOio=";
+      }
+      .${system} or (throw "No hash for system: ${system}");
+  };
+
+  removeRulesCC = false;
 
   meta = {
     description = "Tool to convert Linux perf files to the profile.proto format used by pprof";

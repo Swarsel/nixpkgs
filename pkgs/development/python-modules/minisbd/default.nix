@@ -1,19 +1,18 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  # build-system
-  hatchling,
+  buildPythonPackage,
   # dependencies
   filelock,
+  # build-system
+  hatchling,
   numpy,
   onnxruntime,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "minisbd";
   version = "0.9.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LibreTranslate";
@@ -29,6 +28,8 @@ buildPythonPackage (finalAttrs: {
     numpy
     onnxruntime
   ];
+
+  pyproject = true;
 
   # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
   # terminate called after throwing an instance of 'onnxruntime::OnnxRuntimeException'

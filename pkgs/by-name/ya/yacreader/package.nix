@@ -3,18 +3,18 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   ctestCheckHook,
-  libGLU,
-  libunarr,
   expat,
-  libdeflate,
   lerc,
-  xz,
+  libGLU,
+  libdeflate,
+  libunarr,
   libwebp,
-  qtwebapp,
   pipewire,
+  pkg-config,
   qt6Packages,
+  qtwebapp,
+  xz,
   onlyServer ? false,
 }:
 let
@@ -41,20 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     rm -rf third_party/QtWebApp
   '';
 
-  # Pipewire is dlopen'd, so we must tell it where to look
-  preConfigure = ''
-    qtWrapperArgs+=("--prefix" "LD_LIBRARY_PATH" ":" "${lib.makeLibraryPath [ pipewire ]}")
-  '';
-
   strictDeps = true;
-  __structuredAttrs = true;
-
-  cmakeFlags = [
-    # force unarr backend on all platforms
-    (lib.cmakeBool "BUILD_SERVER_STANDALONE" onlyServer)
-    (lib.cmakeFeature "PDF_BACKEND" "poppler")
-    (lib.cmakeFeature "DECOMPRESSION_BACKEND" "unarr")
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -79,7 +66,20 @@ stdenv.mkDerivation (finalAttrs: {
     qtPackages.qt5compat
   ];
 
+  cmakeFlags = [
+    # force unarr backend on all platforms
+    (lib.cmakeBool "BUILD_SERVER_STANDALONE" onlyServer)
+    (lib.cmakeFeature "PDF_BACKEND" "poppler")
+    (lib.cmakeFeature "DECOMPRESSION_BACKEND" "unarr")
+  ];
+
+  # Pipewire is dlopen'd, so we must tell it where to look
+  preConfigure = ''
+    qtWrapperArgs+=("--prefix" "LD_LIBRARY_PATH" ":" "${lib.makeLibraryPath [ pipewire ]}")
+  '';
+
   doCheck = true;
+
   nativeCheckInputs = [
     ctestCheckHook
   ];
@@ -107,11 +107,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Comic reader for cross-platform reading and managing your digital comic collection";
     homepage = "https://www.yacreader.com";
     license = lib.licenses.gpl3;
-    mainProgram = "YACReader";
     maintainers = [ ];
+    mainProgram = "YACReader";
   };
 })

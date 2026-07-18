@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 let
   src = fetchFromGitHub {
@@ -16,24 +16,27 @@ rustPlatform.buildRustPackage {
   pname = "krakatau2";
   version = "0-unstable-2025-02-01";
 
+  postPatch = ''
+    ln -s ${./Cargo.lock} Cargo.lock
+  '';
+
   cargoLock = {
     lockFile = ./Cargo.lock;
+
     outputHashes = {
       "zip-0.6.4" = "sha256-x56JHdFdoLNhT/TC9sQQD4Ouu2LZ+D5CrS1mMyFVJBg=";
     };
   };
 
-  postPatch = ''
-    ln -s ${./Cargo.lock} Cargo.lock
-  '';
-
   meta = {
     inherit (src.meta) homepage;
     description = "Java decompiler, assembler, and disassembler";
     license = lib.licenses.gpl3Only;
-    mainProgram = "krak2";
+
     maintainers = with lib.maintainers; [
       rhendric
     ];
+
+    mainProgram = "krak2";
   };
 }

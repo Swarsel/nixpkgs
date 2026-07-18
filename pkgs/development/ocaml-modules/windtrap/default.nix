@@ -7,7 +7,6 @@
 buildDunePackage {
   pname = "windtrap";
   version = "0.1.0";
-  minimalOCamlVersion = "5.0";
 
   src = fetchurl {
     url = "https://github.com/invariant-hq/windtrap/releases/download/0.1.0/windtrap-0.1.0.tbz";
@@ -21,6 +20,8 @@ buildDunePackage {
   preCheck = ''
     unset HOME
   '';
+
+  minimalOCamlVersion = "5.0";
 
   meta = {
     description = "Unit tests, property-based tests, snapshot tests, and expect tests in a single package with one API.";

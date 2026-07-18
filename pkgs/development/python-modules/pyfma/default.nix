@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   numpy,
   pybind11,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pyfma";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nschloe";
@@ -24,19 +23,16 @@ buildPythonPackage rec {
   patches = [
     # Replace deprecated np.find_common_type calls with np.promote_types, https://github.com/nschloe/pyfma/pull/17
     (fetchpatch {
-      url = "https://github.com/nschloe/pyfma/commit/e12d69d97a97657ab4fec3e8f2b2859f4360bc03.patch";
       hash = "sha256-BsQe4hpo+Cripa0FRGFnRBs1oQ1GZA1+ZYzycy5M4Ek=";
+      url = "https://github.com/nschloe/pyfma/commit/e12d69d97a97657ab4fec3e8f2b2859f4360bc03.patch";
     })
   ];
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pybind11 ];
-
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
+  pyproject = true;
   pythonImportsCheck = [ "pyfma" ];
 
   meta = {

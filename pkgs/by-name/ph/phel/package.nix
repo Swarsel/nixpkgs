@@ -17,16 +17,15 @@ php.buildComposerProject2 (finalAttrs: {
   };
 
   vendorHash = "sha256-GYBriug9CmIsZkyG1xEmqyu1K3NDiskDnxeHWIZzM7o=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    changelog = "https://github.com/phel-lang/phel-lang/releases/tag/v${finalAttrs.version}";
     description = "Functional programming language that compiles to PHP. A Lisp dialect inspired by Clojure and Janet";
     homepage = "https://github.com/phel-lang/phel-lang";
+    changelog = "https://github.com/phel-lang/phel-lang/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "phel";
     maintainers = [ ];
+    mainProgram = "phel";
   };
 })

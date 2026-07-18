@@ -8,10 +8,10 @@
   gtk3,
   libconfuse,
   makeWrapper,
+  nixosTests,
   pcre2,
   pkg-config,
   vte,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "tilda-${finalAttrs.version}";
     hash = "sha256-Gseti810JwhYQSaGdE2KRRqnwNmthNBiFvXH9DyVpak=";
   };
+
+  # with -std=c99, the build fails due to implicit function declaration errors
+  # for the popen() and pclose() calls in src/tilda-lock-files.c
+  postPatch = ''
+    substituteInPlace configure.ac --replace-fail -std=c99 -std=gnu99
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -42,12 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
   # ugly hack for xgettext to work during build
   env.LD_LIBRARY_PATH = "${lib.getLib expat}/lib";
 
-  # with -std=c99, the build fails due to implicit function declaration errors
-  # for the popen() and pclose() calls in src/tilda-lock-files.c
-  postPatch = ''
-    substituteInPlace configure.ac --replace-fail -std=c99 -std=gnu99
-  '';
-
   # The config locking scheme relies on the binary being called "tilda"
   # (`pgrep -C tilda`), so a simple `wrapProgram` won't suffice:
   postInstall = ''
@@ -60,11 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.test = nixosTests.terminal-emulators.tilda;
 
   meta = {
-    homepage = "https://github.com/lanoxx/tilda/";
     description = "Gtk based drop down terminal for Linux and Unix";
-    mainProgram = "tilda";
+    homepage = "https://github.com/lanoxx/tilda/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "tilda";
   };
 })

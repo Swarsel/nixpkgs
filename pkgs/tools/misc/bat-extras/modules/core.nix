@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   bash,
   bat,
   fish,
@@ -22,14 +22,12 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
-  # bat needs to be in the PATH during building so EXECUTABLE_BAT picks it up
-  nativeBuildInputs = [ bat ];
-
-  dontConfigure = true;
-
   postPatch = ''
     patchShebangs --build test.sh test/shimexec .test-framework/bin/best.sh
   '';
+
+  # bat needs to be in the PATH during building so EXECUTABLE_BAT picks it up
+  nativeBuildInputs = [ bat ];
 
   buildPhase = ''
     runHook preBuild
@@ -39,6 +37,7 @@ stdenv.mkDerivation {
 
   # Run the library tests as they don't have external dependencies
   doCheck = true;
+
   nativeCheckInputs = [
     bash
     fish
@@ -46,6 +45,7 @@ stdenv.mkDerivation {
     zsh
   ]
   ++ (lib.optionals stdenv.hostPlatform.isDarwin [ getconf ]);
+
   checkPhase = ''
     runHook preCheck
     # test list repeats suites. Unique them
@@ -68,20 +68,22 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontConfigure = true;
   # A few random files have shebangs. Don't patch them, they don't make it into the final output.
   # The per-script derivations will go ahead and patch the files they actually install.
   dontPatchShebangs = true;
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Bash scripts that integrate bat with various command line tools";
     homepage = "https://github.com/eth-p/bat-extras";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       bbigras
       PerchunPak
     ];
+
     platforms = lib.platforms.all;
   };
 }

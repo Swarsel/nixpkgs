@@ -2,15 +2,13 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
-  ppxlib,
   menhir,
+  ppxlib,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "mlx";
   version = "0.11";
-
-  minimalOCamlVersion = "4.14";
 
   src = fetchFromGitHub {
     owner = "ocaml-mlx";
@@ -23,6 +21,8 @@ buildDunePackage (finalAttrs: {
     ppxlib
     menhir
   ];
+
+  minimalOCamlVersion = "4.14";
 
   meta = {
     description = "OCaml syntax dialect which adds JSX syntax expressions";

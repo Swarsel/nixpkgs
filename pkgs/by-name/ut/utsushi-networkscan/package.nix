@@ -7,15 +7,15 @@
 
 stdenv.mkDerivation rec {
   pname = "imagescan-plugin-networkscan";
-  imagescanVersion = "3.65.0";
   version = "1.1.4";
 
   src = fetchurl {
+    sha256 = "sha256-fxi63sV+YJOlv1aVTfCPIXOPfNAo+R7zNPvA11sFmMk=";
+
     urls = [
       "https://buzo.eu/mirror/epson/imagescan-bundle-fedora-32-${imagescanVersion}.x64.rpm.tar.gz"
       "https://web.archive.org/web/20221027001620if_/https://download2.ebz.epson.net/imagescanv3/fedora/latest1/rpm/x64/imagescan-bundle-fedora-32-${imagescanVersion}.x64.rpm.tar.gz"
     ];
-    sha256 = "sha256-fxi63sV+YJOlv1aVTfCPIXOPfNAo+R7zNPvA11sFmMk=";
   };
 
   nativeBuildInputs = [ rpmextract ];
@@ -29,11 +29,13 @@ stdenv.mkDerivation rec {
       $out/libexec/utsushi/networkscan
   '';
 
+  imagescanVersion = "3.65.0";
+
   meta = {
-    homepage = "https://support.epson.net/linux/en/imagescanv3.php";
     description = "Network scan plugin for ImageScan v3";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://support.epson.net/linux/en/imagescanv3.php";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
   };

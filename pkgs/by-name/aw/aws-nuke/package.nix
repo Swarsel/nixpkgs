@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
-  versionCheckHook,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,18 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-1C7vA/5fUw+RHK1m3MvxY6bTzG1m3PpsXTNow4mkWL4=";
   };
 
-  vendorHash = "sha256-q1ASHG4KWlU8tLjHireMqmkW33Q2hy+ikOTWQPOYIXo=";
-
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/ekristen/aws-nuke/v${lib.versions.major finalAttrs.version}/pkg/common.SUMMARY=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-q1ASHG4KWlU8tLjHireMqmkW33Q2hy+ikOTWQPOYIXo=";
   doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -46,10 +36,17 @@ buildGoModule (finalAttrs: {
     versionCheckHook
   ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/ekristen/aws-nuke/v${lib.versions.major finalAttrs.version}/pkg/common.SUMMARY=${finalAttrs.version}"
+  ];
+
   postInstallCheck = ''
     $out/bin/aws-nuke resource-types | grep "IAMUser"
   '';
 
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

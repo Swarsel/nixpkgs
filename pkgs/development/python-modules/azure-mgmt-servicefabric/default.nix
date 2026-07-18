@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-servicefabric";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,10 +25,10 @@ buildPythonPackage rec {
     azure-mgmt-core
   ];
 
-  pythonNamespaces = [ "azure.mgmt" ];
-
   # Module has no tests
   doCheck = false;
+  pyproject = true;
+  pythonNamespaces = [ "azure.mgmt" ];
 
   meta = {
     description = "This is the Microsoft Azure Service Fabric Management Client Library";

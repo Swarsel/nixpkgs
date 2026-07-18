@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  withoutTargetLibc,
+  hostIsTarget,
   libcCross,
   threadsCross,
-  hostIsTarget,
+  withoutTargetLibc,
 }:
 
 {

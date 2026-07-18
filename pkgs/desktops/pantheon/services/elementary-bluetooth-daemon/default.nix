@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  granite,
+  gtk3,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   vala,
   wrapGAppsHook3,
-  granite,
-  gtk3,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,8 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Send and receive files via bluetooth";
     homepage = "https://github.com/elementary/bluetooth-daemon";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
     mainProgram = "io.elementary.bluetooth";
+    teams = [ lib.teams.pantheon ];
   };
 })

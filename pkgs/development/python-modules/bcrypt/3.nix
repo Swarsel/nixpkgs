@@ -1,17 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  setuptools,
-  fetchPypi,
   cffi,
+  fetchPypi,
   pytestCheckHook,
+  setuptools,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "bcrypt";
   version = "3.2.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -25,10 +24,9 @@ buildPythonPackage rec {
     cffi
   ];
 
-  propagatedNativeBuildInputs = [ cffi ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  propagatedNativeBuildInputs = [ cffi ];
+  pyproject = true;
   pythonImportsCheck = [ "bcrypt" ];
 
   meta = {

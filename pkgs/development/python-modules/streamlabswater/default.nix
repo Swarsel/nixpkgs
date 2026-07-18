@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "streamlabswater";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "streamlabswater" ];
 
   meta = {

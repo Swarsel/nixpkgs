@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  cmake,
-  zlib,
   bzip2,
-  libiconv,
-  libxml2,
-  openssl,
-  ncurses,
-  curl,
-  libmilter,
-  pcre2,
-  libmspack,
-  systemd,
-  json_c,
-  check,
-  rustc,
-  rust-bindgen,
-  rustfmt,
   cargo,
+  check,
+  cmake,
+  curl,
+  json_c,
+  libiconv,
+  libmilter,
+  libmspack,
+  libxml2,
+  ncurses,
+  openssl,
+  pcre2,
+  pkg-config,
   python3,
+  rust-bindgen,
+  rustc,
+  rustfmt,
+  systemd,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,7 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./use-non-existent-file-with-proper-permissions.patch
   ];
 
-  enableParallelBuilding = true;
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -48,6 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
     cargo
     python3
   ];
+
   buildInputs = [
     zlib
     bzip2
@@ -77,14 +77,18 @@ stdenv.mkDerivation (finalAttrs: {
     python3.pkgs.pytest
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://www.clamav.net";
     description = "Antivirus engine designed for detecting Trojans, viruses, malware and other malicious threats";
+    homepage = "https://www.clamav.net";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       robberer
       qknight
     ];
+
     platforms = lib.platforms.unix;
   };
 })

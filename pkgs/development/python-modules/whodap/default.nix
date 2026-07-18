@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  httpx,
   pytest-asyncio,
   pytestCheckHook,
-  httpx,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "whodap";
   version = "0.1.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pogzyb";
@@ -26,20 +25,20 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "wheel==0.46.3" "wheel"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ httpx ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ httpx ];
 
   disabledTestPaths = [
     # Requires network access
     "tests/test_client.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "whodap" ];
 
   meta = {

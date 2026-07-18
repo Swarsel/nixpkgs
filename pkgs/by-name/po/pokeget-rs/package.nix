@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,7 +22,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Better rust version of pokeget";
     homepage = "https://github.com/talwat/pokeget-rs";
     license = lib.licenses.mit;
-    mainProgram = "pokeget";
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "pokeget";
   };
 })

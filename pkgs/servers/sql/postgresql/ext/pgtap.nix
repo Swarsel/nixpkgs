@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   perl,
   perlPackages,
   postgresql,
   postgresqlBuildExtension,
   postgresqlTestHook,
-  stdenv,
   which,
 }:
 
@@ -28,13 +28,26 @@ postgresqlBuildExtension (finalAttrs: {
   ];
 
   passthru.tests.extension = stdenv.mkDerivation {
-    name = "pgtap-test";
-    dontUnpack = true;
     doCheck = true;
+
     nativeCheckInputs = [
       postgresqlTestHook
       (postgresql.withPackages (_: [ finalAttrs.finalPackage ]))
     ];
+
+    checkPhase = ''
+      runHook preCheck
+      sqlPath=$TMPDIR/test.sql
+      printf "%s" "$sql" > $sqlPath
+      psql -a -v ON_ERROR_STOP=1 -f $sqlPath
+      runHook postCheck
+    '';
+
+    installPhase = "touch $out";
+    __structuredAttrs = true;
+    dontUnpack = true;
+    name = "pgtap-test";
+
     sql = ''
       CREATE EXTENSION pgtap;
 
@@ -44,28 +57,21 @@ postgresqlBuildExtension (finalAttrs: {
       SELECT * FROM finish();
       ROLLBACK;
     '';
-    checkPhase = ''
-      runHook preCheck
-      sqlPath=$TMPDIR/test.sql
-      printf "%s" "$sql" > $sqlPath
-      psql -a -v ON_ERROR_STOP=1 -f $sqlPath
-      runHook postCheck
-    '';
-    installPhase = "touch $out";
-    __structuredAttrs = true;
   };
 
   meta = {
+    inherit (postgresql.meta) platforms;
     description = "Unit testing framework for PostgreSQL";
+
     longDescription = ''
       pgTAP is a unit testing framework for PostgreSQL written in PL/pgSQL and PL/SQL.
       It includes a comprehensive collection of TAP-emitting assertion functions,
       as well as the ability to integrate with other TAP-emitting test frameworks.
       It can also be used in the xUnit testing style.
     '';
-    maintainers = [ ];
+
     homepage = "https://pgtap.org";
-    inherit (postgresql.meta) platforms;
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 })

@@ -8,9 +8,6 @@
 buildPythonPackage rec {
   pname = "manifestparser";
   version = "1.1";
-  format = "setuptools";
-
-  disabled = isPy3k;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +15,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ ];
+  disabled = isPy3k;
+  format = "setuptools";
 
   meta = {
     description = "Mozilla test manifest handling";

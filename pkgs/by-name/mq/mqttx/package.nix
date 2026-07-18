@@ -15,12 +15,13 @@ let
     "https://github.com/emqx/MQTTX/releases/download/v${version}/MQTTX-${version}${suffix}.AppImage";
   sources = {
     "aarch64-linux" = fetchurl {
-      url = suffixedUrl "-arm64";
       hash = "sha256-IfxPrr4VjSGFOWjrpiwwq9OKQ33J1YIJKK0ILF9nTXw=";
+      url = suffixedUrl "-arm64";
     };
+
     "x86_64-linux" = fetchurl {
-      url = suffixedUrl "";
       hash = "sha256-TUtW2heIjTB+mb8U8v90Saz98alha3aFjqHotWW4tgw=";
+      url = suffixedUrl "";
     };
   };
 
@@ -35,8 +36,6 @@ in
 appimageTools.wrapType2 {
   inherit pname version src;
 
-  extraPkgs = pkgs: [ pkgs.libxshmfence ];
-
   extraInstallCommands = ''
     install -m 444 -D ${appimageContents}/${pname}.desktop $out/share/applications/${pname}.desktop
     install -m 444 -D ${appimageContents}/${pname}.png $out/share/icons/hicolor/1024x1024/apps/${pname}.png
@@ -48,13 +47,15 @@ appimageTools.wrapType2 {
       --replace-fail 'Exec=AppRun' 'Exec=${pname}'
   '';
 
+  extraPkgs = pkgs: [ pkgs.libxshmfence ];
+
   meta = {
     description = "Powerful cross-platform MQTT 5.0 Desktop, CLI, and WebSocket client tools";
     homepage = "https://mqttx.app/";
     changelog = "https://github.com/emqx/MQTTX/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "mqttx";
   };
 }

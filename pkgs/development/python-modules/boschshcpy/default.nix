@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   getmac,
   requests,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "boschshcpy";
   version = "0.4.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tschamm";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-VYraW9zeTQn2fvc1pdpF8Tx+iFRxoNQ6b98VphGao7k=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage (finalAttrs: {
     zeroconf
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "boschshcpy" ];
 
   meta = {

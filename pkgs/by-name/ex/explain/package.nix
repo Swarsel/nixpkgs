@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  libtool,
+  acl,
   autoreconfHook,
   bison,
-  groff,
-  ghostscript,
+  fetchpatch,
   gettext,
-  acl,
+  ghostscript,
+  groff,
   libcap,
+  libtool,
   lsof,
 }:
 stdenv.mkDerivation rec {
@@ -22,6 +22,14 @@ stdenv.mkDerivation rec {
     hash = "sha256-KIY7ZezMdJNOI3ysQTZMs8GALDbJ4jGO0EF0YP7oP4A=";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+    "man"
+    "doc"
+  ];
+
   patches =
     let
       debian-src = "https://sources.debian.org/data/main";
@@ -29,9 +37,9 @@ stdenv.mkDerivation rec {
       debian-patch =
         fname: hash:
         fetchpatch {
+          hash = hash;
           name = fname;
           url = "${debian-src}/libe/libexplain/${debian-ver}/debian/patches/${fname}";
-          hash = hash;
         };
     in
     [
@@ -58,26 +66,19 @@ stdenv.mkDerivation rec {
     ghostscript
     gettext
   ];
+
   buildInputs = [
     acl
     libcap
     lsof
   ];
 
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-    "man"
-    "doc"
-  ];
-
   meta = {
     description = "Library and utility to explain system call errors";
-    mainProgram = "explain";
     homepage = "https://libexplain.sourceforge.net";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ McSinyx ];
     platforms = lib.platforms.unix;
+    mainProgram = "explain";
   };
 }

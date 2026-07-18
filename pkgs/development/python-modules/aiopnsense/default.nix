@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   awesomeversion,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-timeout,
@@ -16,9 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiopnsense";
   version = "1.1.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.14";
 
   src = fetchFromGitHub {
     owner = "Snuffy2";
@@ -26,14 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Ffp0CTYqqeeB8462luTvpa2dp2QOxztkipretBqaKig=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    awesomeversion
-    python-dateutil
-  ];
 
   nativeCheckInputs = [
     aiohttp
@@ -43,6 +32,16 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    awesomeversion
+    python-dateutil
+  ];
+
+  disabled = pythonOlder "3.14";
+  pyproject = true;
   pythonImportsCheck = [ "aiopnsense" ];
 
   meta = {

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
   buildPackages,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
+  installShellFiles,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "volta";
@@ -20,9 +20,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ZI+3/Xbkg/JaZMLhrJEjaSwjs44fOaiRReM2DUTnkkc=";
   };
 
+  buildInputs = [ installShellFiles ];
   cargoHash = "sha256-xlqsubkaX2A6d5MIcGf9E0b11Gzneksgku0jvW+UdbE=";
 
-  buildInputs = [ installShellFiles ];
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+  ];
 
   postInstall =
     let
@@ -35,15 +38,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --zsh <(${emulator} $out/bin/volta completions zsh)
     '';
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-  ];
+  # Tries to create /var/empty/.volta as $HOME is not writable
+  doInstallCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  # Tries to create /var/empty/.volta as $HOME is not writable
-  doInstallCheck = !stdenv.hostPlatform.isDarwin;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -51,6 +51,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Hassle-Free JavaScript Tool Manager";
+
     longDescription = ''
       With Volta, you can select a Node engine once and then stop worrying
       about it. You can switch between projects and stop having to manually
@@ -61,6 +62,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       Note: Volta cannot be used on NixOS out of the box because it downloads
       Node binaries that assume shared libraries are in FHS standard locations.
     '';
+
     homepage = "https://volta.sh/";
     changelog = "https://github.com/volta-cli/volta/blob/main/RELEASES.md";
     license = with lib.licenses; [ bsd2 ];

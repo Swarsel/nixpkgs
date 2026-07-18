@@ -1,9 +1,9 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   jinja2,
-  lib,
   markdown,
   pygments,
   pymdown-extensions,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "md2pdf";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jmaupetit";
@@ -27,29 +26,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-EZIiuyy2FhHgpCh95/KbYfQpxyPQfDHnB/Q5yo2xVac=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    jinja2
-    markdown
-    pygments
-    pymdown-extensions
-    python-frontmatter
-    weasyprint
-  ];
-
-  optional-dependencies = {
-    cli = [
-      typer
-      watchfiles
-    ];
-    latex = [
-      # FIXME package markdown-latex
-    ];
-  };
-
-  pythonImportsCheck = [ "md2pdf" ];
 
   nativeCheckInputs = [
     pypdf
@@ -62,6 +38,17 @@ buildPythonPackage rec {
     export PATH="$out/bin:$PATH"
   '';
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    jinja2
+    markdown
+    pygments
+    pymdown-extensions
+    python-frontmatter
+    weasyprint
+  ];
+
   disabledTests = [
     # AssertionError caused by
     #     glyph rendered for Unicode string unsupported by fonts: "👋" (U+1F44B)
@@ -70,12 +57,26 @@ buildPythonPackage rec {
     "test_generate_pdf_with_jinja_frontmatter_input"
   ];
 
+  optional-dependencies = {
+    cli = [
+      typer
+      watchfiles
+    ];
+
+    latex = [
+      # FIXME package markdown-latex
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "md2pdf" ];
+
   meta = {
-    changelog = "https://github.com/jmaupetit/md2pdf/blob/${src.tag}/CHANGELOG.md";
     description = "Markdown to PDF conversion tool";
     homepage = "https://github.com/jmaupetit/md2pdf";
+    changelog = "https://github.com/jmaupetit/md2pdf/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "md2pdf";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "md2pdf";
   };
 }

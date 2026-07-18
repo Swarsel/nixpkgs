@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
+  SDL,
+  SDL_gfx,
+  SDL_image,
+  SDL_mixer,
+  autoreconfHook,
   copyDesktopItems,
   imagemagick,
-  autoreconfHook,
-  SDL,
-  SDL_mixer,
-  SDL_image,
-  SDL_gfx,
-  libvorbis,
   libjpeg,
   libpng,
+  libvorbis,
+  makeDesktopItem,
   zlib,
 }:
 
@@ -27,11 +27,16 @@ stdenv.mkDerivation rec {
     sha256 = "027wns25nyyc8afyhyp5a8wn13x9nlzmnqzqyyma1055xjy5imis";
   };
 
+  postPatch = ''
+    touch NEWS
+  '';
+
   nativeBuildInputs = [
     copyDesktopItems
     imagemagick
     autoreconfHook
   ];
+
   buildInputs = [
     SDL
     SDL_image
@@ -43,10 +48,6 @@ stdenv.mkDerivation rec {
     zlib
   ];
 
-  postPatch = ''
-    touch NEWS
-  '';
-
   # DOes not build on -std=c23 due to `bool` collision.
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
@@ -57,25 +58,26 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
-      exec = pname;
-      icon = pname;
-      desktopName = "Freedroid Classic";
-      comment = "A clone of the classic game 'Paradroid' on Commodore 64";
       categories = [
         "Game"
         "ArcadeGame"
       ];
+
+      comment = "A clone of the classic game 'Paradroid' on Commodore 64";
+      desktopName = "Freedroid Classic";
+      exec = pname;
+      icon = pname;
+      name = pname;
     })
   ];
 
   meta = {
     description = "Clone of the classic game 'Paradroid' on Commodore 64";
-    mainProgram = "freedroid";
     homepage = "https://github.com/ReinhardPrix/FreedroidClassic";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ iblech ];
     platforms = lib.platforms.unix;
+    mainProgram = "freedroid";
     # Builds but fails to render to the screen at runtime.
     broken = stdenv.hostPlatform.isDarwin;
   };

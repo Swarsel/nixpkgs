@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  qt6,
   installShellFiles,
+  qt6,
   enableGui ? true,
 }:
 
@@ -15,8 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "Skarsnik";
     repo = "QUsb2snes";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-521L4awWr4L2W12vAZUMheq4plXUXKYo4d3S6AfHgPA=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -24,16 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.wrapQtAppsHook
     installShellFiles
   ];
+
   buildInputs = [
     qt6.qtbase
     qt6.qtwebsockets
     qt6.qtserialport
   ];
-  qmakeFlags = [
-    "QUsb2snes.pro"
-    "CONFIG+=release"
-  ]
-  ++ lib.optional (!enableGui) "QUSB2SNES_NOGUI=1";
 
   installPhase = ''
     runHook preInstall
@@ -44,13 +40,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  qmakeFlags = [
+    "QUsb2snes.pro"
+    "CONFIG+=release"
+  ]
+  ++ lib.optional (!enableGui) "QUSB2SNES_NOGUI=1";
+
   meta = {
     description = "Websocket server that provides a unified protocol for accessing SNES (or SNES emulators) software";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://skarsnik.github.io/QUsb2snes/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ alexland7219 ];
     platforms = lib.platforms.linux;
     badPlatforms = lib.platforms.darwin;
     mainProgram = "QUsb2Snes";
-    maintainers = with lib.maintainers; [ alexland7219 ];
   };
 })

@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   antlr4-python3-runtime,
   buildPythonPackage,
   colorama,
-  fetchFromGitHub,
   gitUpdater,
-  lib,
   markdown,
   setuptools,
   setuptools-scm,
@@ -14,8 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "systemrdl-compiler";
   version = "1.32.2";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SystemRDL";
@@ -36,6 +34,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

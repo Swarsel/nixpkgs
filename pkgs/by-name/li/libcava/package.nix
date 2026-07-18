@@ -1,9 +1,9 @@
 {
-  cava,
   fetchFromGitHub,
-  nix-update-script,
+  cava,
   meson,
   ninja,
+  nix-update-script,
 }:
 cava.overrideAttrs (old: rec {
   pname = "libcava";
@@ -22,17 +22,16 @@ cava.overrideAttrs (old: rec {
     ninja
   ];
 
+  dontVersionCheck = true; # no `bin/cava`
   # Automatically enable all optional dependencies
   # (instead, Nix sets this option to "enabled" which
   # forces all optional dependencies to be required
   # or disabled individually)
   mesonAutoFeatures = "auto";
-
-  dontVersionCheck = true; # no `bin/cava`
   passthru.updateScript = nix-update-script { };
 
   meta = old.meta // {
-    homepage = "https://github.com/LukashonakV/cava";
     description = "Fork of CAVA to build it as a shared library";
+    homepage = "https://github.com/LukashonakV/cava";
   };
 })

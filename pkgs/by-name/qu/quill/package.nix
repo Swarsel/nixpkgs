@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  openssl,
+  buildPackages,
   libiconv,
-  udev,
+  openssl,
   pkg-config,
   protobuf,
-  buildPackages,
+  rustPlatform,
+  udev,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -22,14 +22,20 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-lCDKM9zzGcey4oWp6imiHvGSNRor0xhlmlhRkSXFLlU=";
   };
 
-  ic = fetchFromGitHub {
-    owner = "dfinity";
-    repo = "ic";
-    rev = "2f9ae6bf5eafed03599fd29475100aca9f78ae81";
-    hash = "sha256-QWJFsWZ9miWN4ql4xFXMQM1Y71nzgGCL57yAa0j7ch4=";
-  };
+  nativeBuildInputs = [
+    pkg-config
+    protobuf
+  ];
 
-  registry = "file://local-registry";
+  buildInputs = [
+    openssl
+    udev
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    libiconv
+  ];
+
+  cargoHash = "sha256-rpsbQYA6RBYSo2g+YhYG02CYlboRQvIwMqPAybayCOs=";
 
   preBuild = ''
     export REGISTRY_TRANSPORT_PROTO_INCLUDES=${ic}/rs/registry/transport/proto
@@ -44,26 +50,21 @@ rustPlatform.buildRustPackage rec {
     export OPENSSL_LIB_DIR=${lib.getLib openssl}/lib
   '';
 
-  cargoHash = "sha256-rpsbQYA6RBYSo2g+YhYG02CYlboRQvIwMqPAybayCOs=";
+  ic = fetchFromGitHub {
+    hash = "sha256-QWJFsWZ9miWN4ql4xFXMQM1Y71nzgGCL57yAa0j7ch4=";
+    owner = "dfinity";
+    repo = "ic";
+    rev = "2f9ae6bf5eafed03599fd29475100aca9f78ae81";
+  };
 
-  nativeBuildInputs = [
-    pkg-config
-    protobuf
-  ];
-  buildInputs = [
-    openssl
-    udev
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    libiconv
-  ];
+  registry = "file://local-registry";
 
   meta = {
+    description = "Minimalistic ledger and governance toolkit for cold wallets on the Internet Computer";
     homepage = "https://github.com/dfinity/quill";
     changelog = "https://github.com/dfinity/quill/releases/tag/v${version}";
-    description = "Minimalistic ledger and governance toolkit for cold wallets on the Internet Computer";
-    mainProgram = "quill";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ imalison ];
+    mainProgram = "quill";
   };
 }

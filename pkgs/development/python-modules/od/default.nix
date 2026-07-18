@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "od";
   version = "2.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ repeated-test ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "od" ];
 
   meta = {

@@ -1,17 +1,16 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   buildPythonPackage,
+  libiconv,
   pytestCheckHook,
   rustPlatform,
-  stdenv,
-  libiconv,
 }:
 
 buildPythonPackage rec {
   pname = "py-bip39-bindings";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "polkascan";
@@ -20,22 +19,21 @@ buildPythonPackage rec {
     hash = "sha256-jpBlupIjlH2LJkSm3tzxrH5wT2+eziugNMR4B01gSdE=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-qX4ydIT2+8dJQIVSYzO8Rg8PP61cu7ZjanPkmI34IUY=";
-  };
-
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
-  enabledTestPaths = [ "tests.py" ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-qX4ydIT2+8dJQIVSYzO8Rg8PP61cu7ZjanPkmI34IUY=";
+  };
 
+  enabledTestPaths = [ "tests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "bip39" ];
 
   meta = {

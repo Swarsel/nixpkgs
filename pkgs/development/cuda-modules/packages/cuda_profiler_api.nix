@@ -1,6 +1,5 @@
 { buildRedist }:
 buildRedist {
-  redistName = "cuda";
   pname = "cuda_profiler_api";
 
   outputs = [
@@ -9,5 +8,6 @@ buildRedist {
     "include"
   ];
 
+  redistName = "cuda";
   meta.description = "API for profiling CUDA runtime";
 }

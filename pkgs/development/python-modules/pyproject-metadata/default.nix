@@ -10,23 +10,19 @@
 buildPythonPackage rec {
   pname = "pyproject-metadata";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pyproject_metadata";
     inherit version;
     hash = "sha256-f1vQ7zmLYBaVVssX6iYdcVyvf4VhI4FR9RsjBQhLqNQ=";
+    pname = "pyproject_metadata";
   };
-
-  build-system = [ flit-core ];
-
-  dependencies = [ packaging ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   # Many broken tests, and missing test files
   doCheck = false;
-
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ flit-core ];
+  dependencies = [ packaging ];
+  pyproject = true;
   pythonImportsCheck = [ "pyproject_metadata" ];
 
   meta = {

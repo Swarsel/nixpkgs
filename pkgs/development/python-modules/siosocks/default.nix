@@ -3,8 +3,8 @@
   buildPythonPackage,
   fetchPypi,
   pytest-asyncio,
-  pytest-trio,
   pytest-mock,
+  pytest-trio,
   pytestCheckHook,
   setuptools,
   trio,
@@ -13,22 +13,27 @@
 buildPythonPackage rec {
   pname = "siosocks";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-uja79vWhPYOhhTUBIh+XpS4GnrYJy0/XpDXXQjnyHWM=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ trio ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-mock
     pytestCheckHook
     pytest-trio
+  ];
+
+  build-system = [ setuptools ];
+  dependencies = [ trio ];
+
+  disabledTestPaths = [
+    # Timeout on Hydra
+    "tests/test_trio.py"
+    "tests/test_sansio.py"
+    "tests/test_socketserver.py"
   ];
 
   disabledTests = [
@@ -38,13 +43,7 @@ buildPythonPackage rec {
     "test_connection_socks_failed"
   ];
 
-  disabledTestPaths = [
-    # Timeout on Hydra
-    "tests/test_trio.py"
-    "tests/test_sansio.py"
-    "tests/test_socketserver.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "siosocks" ];
 
   meta = {

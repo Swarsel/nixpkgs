@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "gdata";
   version = "2.0.18";
-  format = "setuptools";
 
   src = fetchurl {
     url = "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/gdata-python-client/${pname}-${version}.tar.gz";
@@ -16,10 +15,11 @@ buildPythonPackage rec {
 
   # Fails with "error: invalid command 'test'"
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/google/gdata-python-client";
     description = "Python client library for Google data APIs";
+    homepage = "https://github.com/google/gdata-python-client";
     license = lib.licenses.asl20;
   };
 }

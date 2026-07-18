@@ -1,7 +1,7 @@
 {
-  appimageTools,
-  fetchurl,
   lib,
+  fetchurl,
+  appimageTools,
   makeWrapper,
   writeScript,
 }:
@@ -17,6 +17,7 @@ let
 
   appimageContents = appimageTools.extract {
     inherit pname version src;
+
     postExtract = ''
       substituteInPlace $out/fiddler-everywhere.desktop \
         --replace-fail 'Exec=AppRun' 'Exec=fiddler-everywhere'
@@ -25,9 +26,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-
-  extraPkgs = pkgs: [ pkgs.icu ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
@@ -38,6 +36,8 @@ appimageTools.wrapType2 {
     done
     wrapProgram $out/bin/fiddler-everywhere --set DESKTOPINTEGRATION false
   '';
+
+  extraPkgs = pkgs: [ pkgs.icu ];
 
   passthru.updateScript = writeScript "update-fiddler-everywhere" ''
     #!/usr/bin/env nix-shell
@@ -54,11 +54,11 @@ appimageTools.wrapType2 {
   meta = {
     description = "Web debugging proxy by Telerik";
     homepage = "https://www.telerik.com/fiddler/fiddler-everywhere";
-    downloadPage = "https://www.telerik.com/download/fiddler-everywhere";
     changelog = "https://www.telerik.com/support/whats-new/fiddler-everywhere/release-history";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ RoGreat ];
-    mainProgram = "fiddler-everywhere";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "fiddler-everywhere";
+    downloadPage = "https://www.telerik.com/download/fiddler-everywhere";
   };
 }

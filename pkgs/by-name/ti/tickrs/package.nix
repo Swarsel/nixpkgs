@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   zlib,
 }:
 
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-JqX+PEob99O1VRYbw7RH6KGA1CXYyepkM9Uc5jkWlrM=";
   };
 
-  cargoHash = "sha256-CbLRq/jsCqZ3Uz1WeEL2ARUXlmlDIrmZNTiyZRo8QLw=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     zlib
   ];
+
+  cargoHash = "sha256-CbLRq/jsCqZ3Uz1WeEL2ARUXlmlDIrmZNTiyZRo8QLw=";
 
   env = {
     OPENSSL_NO_VENDOR = true;

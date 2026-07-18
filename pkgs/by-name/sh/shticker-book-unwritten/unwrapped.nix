@@ -1,8 +1,8 @@
 {
-  rustPlatform,
   fetchCrate,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -11,13 +11,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    crateName = "shticker_book_unwritten";
     hash = "sha256-jI2uL8tMUmjZ5jPkCV2jb98qtKwi9Ti4NVCPfuO3iB4=";
+    crateName = "shticker_book_unwritten";
   };
 
-  cargoHash = "sha256-0eumZoAL8/nkeFS+sReCAYKHiXiqZHfdC/9Ao5U6/SQ=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-0eumZoAL8/nkeFS+sReCAYKHiXiqZHfdC/9Ao5U6/SQ=";
 })

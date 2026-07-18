@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -32,63 +32,72 @@ in
       enable = mkEnableOption "pdnsd";
 
       cacheDir = mkOption {
-        type = types.str;
         default = "/var/cache/pdnsd";
         description = "Directory holding the pdnsd cache";
-      };
-
-      globalConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Global configuration that should be added to the global directory
-          of {file}`pdnsd.conf`.
-        '';
-      };
-
-      serverConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Server configuration that should be added to the server directory
-          of {file}`pdnsd.conf`.
-        '';
+        type = types.str;
       };
 
       extraConfig = mkOption {
-        type = types.lines;
         default = "";
+
         description = ''
           Extra configuration directives that should be added to
           {file}`pdnsd.conf`.
         '';
+
+        type = types.lines;
+      };
+
+      globalConfig = mkOption {
+        default = "";
+
+        description = ''
+          Global configuration that should be added to the global directory
+          of {file}`pdnsd.conf`.
+        '';
+
+        type = types.lines;
+      };
+
+      serverConfig = mkOption {
+        default = "";
+
+        description = ''
+          Server configuration that should be added to the server directory
+          of {file}`pdnsd.conf`.
+        '';
+
+        type = types.lines;
       };
     };
   };
 
   config = mkIf cfg.enable {
-    users.users.${pdnsdUser} = {
-      uid = config.ids.uids.pdnsd;
-      group = pdnsdGroup;
-      description = "pdnsd user";
+    systemd.services.pdnsd = {
+      after = [ "network.target" ];
+      description = "pdnsd";
+
+      preStart = ''
+        mkdir -p "${cfg.cacheDir}"
+        touch "${cfg.cacheDir}/pdnsd.cache"
+        chown -R ${pdnsdUser}:${pdnsdGroup} "${cfg.cacheDir}"
+      '';
+
+      serviceConfig = {
+        ExecStart = "${pdnsd}/bin/pdnsd -c ${pdnsdConf}";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups.${pdnsdGroup} = {
       gid = config.ids.gids.pdnsd;
     };
 
-    systemd.services.pdnsd = {
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-      preStart = ''
-        mkdir -p "${cfg.cacheDir}"
-        touch "${cfg.cacheDir}/pdnsd.cache"
-        chown -R ${pdnsdUser}:${pdnsdGroup} "${cfg.cacheDir}"
-      '';
-      description = "pdnsd";
-      serviceConfig = {
-        ExecStart = "${pdnsd}/bin/pdnsd -c ${pdnsdConf}";
-      };
+    users.users.${pdnsdUser} = {
+      description = "pdnsd user";
+      group = pdnsdGroup;
+      uid = config.ids.uids.pdnsd;
     };
   };
 }

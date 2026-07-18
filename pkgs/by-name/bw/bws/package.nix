@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  pkg-config,
   oniguruma,
   openssl,
-  stdenv,
-  python3,
   perl,
+  pkg-config,
+  python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "bws-v${finalAttrs.version}";
     hash = "sha256-cdiTdgNvUDN0/KzMDEiHo+GIYkUaWEZTAnWahBrMZ4I=";
   };
-
-  cargoHash = "sha256-zT6yPRxPuIf0E7OoUH4qQkUPADsYdkPirJ8dR/o5fV0=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -39,10 +37,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-zT6yPRxPuIf0E7OoUH4qQkUPADsYdkPirJ8dR/o5fV0=";
+
   env = {
     PYO3_PYTHON = "${python3}/bin/python3";
     RUSTONIG_SYSTEM_LIBONIG = true;
   };
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    for shell in bash fish zsh; do
+      installShellCompletion --cmd bws --"$shell" <($out/bin/bws completions "$shell")
+    done
+  '';
 
   cargoBuildFlags = [
     "--package"
@@ -53,12 +59,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--package"
     "bws"
   ];
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    for shell in bash fish zsh; do
-      installShellCompletion --cmd bws --"$shell" <($out/bin/bws completions "$shell")
-    done
-  '';
 
   meta = {
     description = "Bitwarden Secrets Manager CLI";

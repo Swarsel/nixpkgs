@@ -11,6 +11,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "icon-lang";
   version = "9.5.25a";
+
   src = fetchFromGitHub {
     owner = "gtownsend";
     repo = "icon";
@@ -23,6 +24,13 @@ stdenv.mkDerivation (finalAttrs: {
     libxpm
     libxt
   ];
+
+  installPhase = ''
+    make Install dest=$out
+    rm $out/README
+    mkdir -p $out/share/doc
+    mv $out/doc $out/share/doc/icon
+  '';
 
   configurePhase =
     let
@@ -43,20 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
     in
     "make ${target} name=${platform}";
 
-  installPhase = ''
-    make Install dest=$out
-    rm $out/README
-    mkdir -p $out/share/doc
-    mv $out/doc $out/share/doc/icon
-  '';
-
   meta = {
     description = "Very high level general-purpose programming language";
+    homepage = "https://www.cs.arizona.edu/icon/";
+    license = lib.licenses.publicDomain;
     maintainers = with lib.maintainers; [ yurrriq ];
+
     platforms =
       with lib.platforms;
       linux ++ darwin ++ freebsd ++ netbsd ++ openbsd ++ cygwin ++ illumos;
-    license = lib.licenses.publicDomain;
-    homepage = "https://www.cs.arizona.edu/icon/";
   };
 })

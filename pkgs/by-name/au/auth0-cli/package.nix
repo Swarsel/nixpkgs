@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-tRr0bCzijVG3+2n67jo7SNe4Oxxci0sRXhQct2645cI=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-ZwGIYjaCQikHMoy3bSnvNEk+REnKO6JdCiiSh8L0SDg=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/auth0/auth0-cli/internal/buildinfo.Version=v${finalAttrs.version}"
-    "-X=github.com/auth0/auth0-cli/internal/buildinfo.Revision=0000000"
-  ];
 
   preCheck = ''
     # Feed in all tests for testing
@@ -36,8 +30,6 @@ buildGoModule (finalAttrs: {
       --replace-fail "TestFetchUniversalLoginBrandingData" "SkipFetchUniversalLoginBrandingData"
   '';
 
-  nativeBuildInputs = [ installShellFiles ];
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd auth0 \
       --bash <($out/bin/auth0 completion bash) \
@@ -45,9 +37,16 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/auth0 completion zsh)
   '';
 
-  subPackages = [ "cmd/auth0" ];
-
   __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/auth0/auth0-cli/internal/buildinfo.Version=v${finalAttrs.version}"
+    "-X=github.com/auth0/auth0-cli/internal/buildinfo.Revision=0000000"
+  ];
+
+  subPackages = [ "cmd/auth0" ];
 
   meta = {
     description = "Supercharge your developer workflow";

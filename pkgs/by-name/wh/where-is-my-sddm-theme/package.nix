@@ -1,11 +1,10 @@
 {
   lib,
-  formats,
-  stdenvNoCC,
   fetchFromGitHub,
-  qt6,
+  formats,
   libsForQt5,
-  variants ? [ "qt6" ],
+  qt6,
+  stdenvNoCC,
   /*
     An example of how you can override the background on the NixOS logo
 
@@ -19,6 +18,7 @@
       ];
   */
   themeConfig ? null,
+  variants ? [ "qt6" ],
 }:
 
 let
@@ -42,8 +42,6 @@ lib.checkListOfEnum "where-is-my-sddm-theme: variant" validVariants variants
       tag = "v${finalAttrs.version}";
       hash = "sha256-+R0PX84SL2qH8rZMfk3tqkhGWPR6DpY1LgX9bifNYCg=";
     };
-
-    dontWrapQtApps = true;
 
     propagatedBuildInputs =
       # avoid .dev outputs propagation
@@ -73,11 +71,13 @@ lib.checkListOfEnum "where-is-my-sddm-theme: variant" validVariants variants
       ''
     );
 
+    dontWrapQtApps = true;
+
     meta = {
       description = "Most minimalistic SDDM theme among all themes";
       homepage = "https://github.com/stepanzubkov/where-is-my-sddm-theme";
       license = lib.licenses.mit;
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ name-snrl ];
+      platforms = lib.platforms.linux;
     };
   })

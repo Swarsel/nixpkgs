@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   capstone,
   filebytes,
   keystone-engine,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "ropper";
   version = "1.13.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sashs";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-MOAbACLDdeKCMV4K/n1rAQlxDN0JoDIiUF6Zr3yPw8o=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,8 +32,7 @@ buildPythonPackage rec {
     ropchain = [ keystone-engine ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ropper" ];
 
   meta = {

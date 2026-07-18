@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   mbstrdecoder,
-  python-dateutil,
-  pytz,
   packaging,
   pytestCheckHook,
+  python-dateutil,
+  pytz,
+  setuptools-scm,
   tcolorpy,
 }:
 
 buildPythonPackage rec {
   pname = "typepy";
   version = "1.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thombashi";
@@ -23,8 +22,13 @@ buildPythonPackage rec {
     hash = "sha256-lgwXoEtv2nBRKiWQH5bDrAIfikKN3cOqcHLEdnSAMpc=";
   };
 
-  build-system = [ setuptools-scm ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    tcolorpy
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [ setuptools-scm ];
   dependencies = [ mbstrdecoder ];
 
   optional-dependencies = {
@@ -35,12 +39,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    tcolorpy
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "typepy" ];
 
   meta = {

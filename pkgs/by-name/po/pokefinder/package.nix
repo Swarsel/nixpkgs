@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  copyDesktopItems,
-  makeDesktopItem,
   fetchFromGitHub,
   cmake,
+  copyDesktopItems,
+  gitUpdater,
+  iconConvTools,
+  makeDesktopItem,
   python3,
   qt6,
-  iconConvTools,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,6 +51,22 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
+  nativeBuildInputs = [
+    cmake
+    qt6.wrapQtAppsHook
+    (python3.withPackages (ps: [ ps.zstandard ]))
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    copyDesktopItems
+    iconConvTools
+  ];
+
+  buildInputs = [
+    qt6.qtbase
+    qt6.qttools
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ qt6.qtwayland ];
+
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isAarch "-flax-vector-conversions";
 
   installPhase = ''
@@ -68,43 +84,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [
-    cmake
-    qt6.wrapQtAppsHook
-    (python3.withPackages (ps: [ ps.zstandard ]))
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    copyDesktopItems
-    iconConvTools
-  ];
-
   desktopItems = [
     (makeDesktopItem {
-      name = "pokefinder";
-      exec = "PokeFinder";
-      icon = "pokefinder";
+      categories = [ "Utility" ];
       comment = "Cross platform Pokémon RNG tool";
       desktopName = "PokéFinder";
-      categories = [ "Utility" ];
+      exec = "PokeFinder";
+      icon = "pokefinder";
+      name = "pokefinder";
     })
   ];
-
-  buildInputs = [
-    qt6.qtbase
-    qt6.qttools
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ qt6.qtwayland ];
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";
   };
 
   meta = {
-    homepage = "https://github.com/Admiral-Fish/PokeFinder";
     description = "Cross platform Pokémon RNG tool";
-    mainProgram = "PokeFinder";
+    homepage = "https://github.com/Admiral-Fish/PokeFinder";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ leo60228 ];
+    platforms = lib.platforms.all;
+    mainProgram = "PokeFinder";
   };
 })

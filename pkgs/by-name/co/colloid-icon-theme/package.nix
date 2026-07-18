@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
   gtk3,
   hicolor-icon-theme,
   jdupes,
-  schemeVariants ? [ ],
+  stdenvNoCC,
   colorVariants ? [ ], # default is blue
+  schemeVariants ? [ ],
 }:
 
 let
@@ -53,6 +53,10 @@ lib.checkListOfEnum "colloid-icon-theme: scheme variants"
       hash = "sha256-CzFEMY3oJE3sHdIMQQi9qizG8jKo72gR8FlVK0w0p74=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       gtk3
       jdupes
@@ -61,17 +65,6 @@ lib.checkListOfEnum "colloid-icon-theme: scheme variants"
     propagatedBuildInputs = [
       hicolor-icon-theme
     ];
-
-    dontDropIconThemeCache = true;
-
-    # These fixup steps are slow and unnecessary for this package.
-    # Package may install almost 400 000 small files.
-    dontPatchELF = true;
-    dontRewriteSymlinks = true;
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -91,13 +84,18 @@ lib.checkListOfEnum "colloid-icon-theme: scheme variants"
       find $out/share/icons -xtype l -delete
     '';
 
+    dontDropIconThemeCache = true;
+    # These fixup steps are slow and unnecessary for this package.
+    # Package may install almost 400 000 small files.
+    dontPatchELF = true;
+    dontRewriteSymlinks = true;
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "Colloid icon theme";
       homepage = "https://github.com/vinceliuice/colloid-icon-theme";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.unix;
       maintainers = with lib.maintainers; [ romildo ];
+      platforms = lib.platforms.unix;
     };
   }

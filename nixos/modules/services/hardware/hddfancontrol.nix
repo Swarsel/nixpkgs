@@ -10,8 +10,6 @@ let
 in
 
 {
-  meta.maintainers = with lib.maintainers; [ jadewilk ];
-
   imports = [
     (lib.mkRemovedOptionModule [
       "services"
@@ -45,74 +43,12 @@ in
     services.hddfancontrol.package = lib.mkPackageOption pkgs "hddfancontrol" { };
 
     services.hddfancontrol.settings = lib.mkOption {
-      type = lib.types.attrsWith {
-        placeholder = "drive-bay-name";
-        elemType = (
-          lib.types.submodule (
-            { ... }:
-            {
-              options = {
-                disks = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
-                  default = [ ];
-                  description = ''
-                    Drive(s) to get temperature from
-
-                    Can also use command substitution to automatically grab all matching drives; such as all scsi (sas) drives
-                  '';
-                  example = [
-                    "/dev/sda"
-                    "`find /dev/disk/by-id -name \"scsi*\" -and -not -name \"*-part*\" -printf \"%p \"`"
-                  ];
-                };
-
-                pwmPaths = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
-                  default = [ ];
-                  description = ''
-                    PWM filepath(s) to control fan speed (under /sys), followed by initial and fan-stop PWM values
-                    Can also use command substitution to ensure the correct hwmonX is selected on every boot
-                  '';
-                  example = [
-                    "/sys/class/hwmon/hwmon2/pwm1:30:10"
-                    "`echo /sys/devices/platform/nct6775.656/hwmon/hwmon[[:print:]]`/pwm4:80:20"
-                  ];
-                };
-
-                logVerbosity = lib.mkOption {
-                  type = lib.types.enum [
-                    "TRACE"
-                    "DEBUG"
-                    "INFO"
-                    "WARN"
-                    "ERROR"
-                  ];
-                  default = "INFO";
-                  description = ''
-                    Verbosity of the log level
-                  '';
-                };
-
-                extraArgs = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
-                  default = [ ];
-                  description = ''
-                    Extra commandline arguments for hddfancontrol
-                  '';
-                  example = [
-                    "--min-fan-speed-prct=10"
-                    "--interval=1min"
-                  ];
-                };
-              };
-            }
-          )
-        );
-      };
       default = { };
+
       description = ''
         Parameter-sets for each instance of hddfancontrol.
       '';
+
       example = lib.literalExpression ''
         {
           harddrives = {
@@ -141,6 +77,83 @@ in
           };
         }
       '';
+
+      type = lib.types.attrsWith {
+        elemType = (
+          lib.types.submodule (
+            { ... }:
+            {
+              options = {
+                disks = lib.mkOption {
+                  default = [ ];
+
+                  description = ''
+                    Drive(s) to get temperature from
+
+                    Can also use command substitution to automatically grab all matching drives; such as all scsi (sas) drives
+                  '';
+
+                  example = [
+                    "/dev/sda"
+                    "`find /dev/disk/by-id -name \"scsi*\" -and -not -name \"*-part*\" -printf \"%p \"`"
+                  ];
+
+                  type = lib.types.listOf lib.types.str;
+                };
+
+                extraArgs = lib.mkOption {
+                  default = [ ];
+
+                  description = ''
+                    Extra commandline arguments for hddfancontrol
+                  '';
+
+                  example = [
+                    "--min-fan-speed-prct=10"
+                    "--interval=1min"
+                  ];
+
+                  type = lib.types.listOf lib.types.str;
+                };
+
+                logVerbosity = lib.mkOption {
+                  default = "INFO";
+
+                  description = ''
+                    Verbosity of the log level
+                  '';
+
+                  type = lib.types.enum [
+                    "TRACE"
+                    "DEBUG"
+                    "INFO"
+                    "WARN"
+                    "ERROR"
+                  ];
+                };
+
+                pwmPaths = lib.mkOption {
+                  default = [ ];
+
+                  description = ''
+                    PWM filepath(s) to control fan speed (under /sys), followed by initial and fan-stop PWM values
+                    Can also use command substitution to ensure the correct hwmonX is selected on every boot
+                  '';
+
+                  example = [
+                    "/sys/class/hwmon/hwmon2/pwm1:30:10"
+                    "`echo /sys/devices/platform/nct6775.656/hwmon/hwmon[[:print:]]`/pwm4:80:20"
+                  ];
+
+                  type = lib.types.listOf lib.types.str;
+                };
+              };
+            }
+          )
+        );
+
+        placeholder = "drive-bay-name";
+      };
     };
   };
 
@@ -157,27 +170,29 @@ in
         ];
 
       createService = cnf: {
+        after = [ "hddtemp.service" ];
         description = "HDD fan control";
         documentation = [ "man:hddfancontrol(1)" ];
-        after = [ "hddtemp.service" ];
-        wants = [ "hddtemp.service" ];
+
         script =
           let
             argString = lib.strings.concatStringsSep " " (args cnf);
           in
           "${lib.getExe cfg.package} -v ${cnf.logVerbosity} daemon ${argString}";
+
         serviceConfig = {
           CPUSchedulingPolicy = "rr";
           CPUSchedulingPriority = 49;
-
-          ProtectSystem = "strict";
-          PrivateTmp = true;
-          ProtectHome = true;
-          SystemCallArchitectures = "native";
           MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
+          PrivateTmp = true;
+          ProtectHome = true;
+          ProtectSystem = "strict";
+          SystemCallArchitectures = "native";
         };
+
         wantedBy = [ "multi-user.target" ];
+        wants = [ "hddtemp.service" ];
       };
 
       services = lib.attrsets.mergeAttrsList [
@@ -190,14 +205,15 @@ in
       ];
     in
     {
-      systemd.packages = [ cfg.package ];
-
       hardware.sensor.hddtemp = {
         enable = true;
         drives = lib.lists.flatten (lib.attrsets.catAttrs "disks" (lib.attrsets.attrValues cfg.settings));
       };
 
+      systemd.packages = [ cfg.package ];
       systemd.services = services;
     }
   );
+
+  meta.maintainers = with lib.maintainers; [ jadewilk ];
 }

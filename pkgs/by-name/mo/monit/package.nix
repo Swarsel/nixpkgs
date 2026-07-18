@@ -4,12 +4,12 @@
   fetchurl,
   bison,
   flex,
-  zlib,
   libxcrypt,
-  usePAM ? stdenv.hostPlatform.isLinux,
-  pam,
-  useSSL ? true,
   openssl,
+  pam,
+  zlib,
+  usePAM ? stdenv.hostPlatform.isLinux,
+  useSSL ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,14 +54,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://mmonit.com/monit/";
     description = "Monitoring system";
+    homepage = "https://mmonit.com/monit/";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       wmertens
       ryantm
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "monit";
   };

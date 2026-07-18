@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "nonestorage";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nonebot";
@@ -17,12 +16,11 @@ buildPythonPackage rec {
     hash = "sha256-Y8Ywpp5/FRT8jIhSaMtuzMXs3UJROh5SrFdIZD7ysBA=";
   };
 
-  build-system = [ hatchling ];
-
-  pythonImportsCheck = [ "nonestorage" ];
-
   # no test
   doCheck = false;
+  build-system = [ hatchling ];
+  pyproject = true;
+  pythonImportsCheck = [ "nonestorage" ];
 
   meta = {
     description = "Simple library that provides local storage folder detect";

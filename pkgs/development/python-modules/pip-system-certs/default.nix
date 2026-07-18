@@ -2,20 +2,19 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools-scm,
   git-versioner,
   pip,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pip-system-certs";
   version = "5.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "pip_system_certs";
     hash = "sha256-Gci/mVe8zn1pxNvC0LLvE94ZhNU/UKWQEubbutCvZ8Y=";
+    pname = "pip_system_certs";
   };
 
   build-system = [
@@ -24,6 +23,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ pip ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pip_system_certs.wrapt_requests"

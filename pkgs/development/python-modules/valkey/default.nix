@@ -2,27 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   buildPythonPackage,
-  pythonOlder,
-
-  # build-system
-  setuptools,
-
-  # optional-dependencies
-  cryptography,
-  libvalkey,
-  pyopenssl,
-  requests,
-
   # tests
   cachetools,
+  # optional-dependencies
+  cryptography,
+  fetchpatch,
+  libvalkey,
   mock,
   packaging,
-  pytestCheckHook,
+  pyopenssl,
   pytest-asyncio,
   pytest-timeout,
+  pytestCheckHook,
+  pythonOlder,
   redisTestHook,
+  requests,
+  # build-system
+  setuptools,
   ujson,
   uvloop,
 }:
@@ -30,7 +27,6 @@
 buildPythonPackage rec {
   pname = "valkey";
   version = "6.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "valkey-io";
@@ -42,39 +38,18 @@ buildPythonPackage rec {
   patches = [
     # valkey 9.0 compat
     (fetchpatch {
-      url = "https://github.com/valkey-io/valkey-py/commit/c01505e547f614f278b882a016557b6ed652bb9f.patch";
       hash = "sha256-rvA65inIioqdc+QV4KaaUv1I/TMZUq0TWaFJcJiy8NU=";
+      url = "https://github.com/valkey-io/valkey-py/commit/c01505e547f614f278b882a016557b6ed652bb9f.patch";
     })
     # valkey 9.1 compat
     (fetchpatch {
-      url = "https://github.com/valkey-io/valkey-py/commit/df5c44903dc8e2dda733e5576324ba0ff8c4c6a0.patch";
       hash = "sha256-0wsWuaOYWBgf6BjlJuciZYRbugYfchTU2khQX7rtRJg=";
+      url = "https://github.com/valkey-io/valkey-py/commit/df5c44903dc8e2dda733e5576324ba0ff8c4c6a0.patch";
     })
     (fetchpatch {
-      url = "https://github.com/valkey-io/valkey-py/commit/046c7fb9e8260c2d69d05141b1519903c4e40efe.patch";
       hash = "sha256-/yN1y0hbmBR6o6ab4h0qkn/qhU6jASOIeqWhxUi5w/I=";
+      url = "https://github.com/valkey-io/valkey-py/commit/046c7fb9e8260c2d69d05141b1519903c4e40efe.patch";
     })
-  ];
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    libvalkey = [ libvalkey ];
-    ocsp = [
-      cryptography
-      pyopenssl
-      requests
-    ];
-  };
-
-  pythonImportsCheck = [
-    "valkey"
-    "valkey.client"
-    "valkey.cluster"
-    "valkey.connection"
-    "valkey.exceptions"
-    "valkey.sentinel"
-    "valkey.utils"
   ];
 
   nativeCheckInputs = [
@@ -90,9 +65,17 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
   disabledTestMarks = [
     "onlycluster"
     "ssl"
+  ];
+
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # AttributeError: Can't get local object 'TestMultiprocessing.test_valkey_client.<locals>.target'
+    "tests/test_multiprocessing.py"
   ];
 
   disabledTests = [
@@ -112,12 +95,27 @@ buildPythonPackage rec {
     "test_valkey_from_pool"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # AttributeError: Can't get local object 'TestMultiprocessing.test_valkey_client.<locals>.target'
-    "tests/test_multiprocessing.py"
-  ];
+  optional-dependencies = {
+    libvalkey = [ libvalkey ];
 
-  __darwinAllowLocalNetworking = true;
+    ocsp = [
+      cryptography
+      pyopenssl
+      requests
+    ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "valkey"
+    "valkey.client"
+    "valkey.cluster"
+    "valkey.connection"
+    "valkey.exceptions"
+    "valkey.sentinel"
+    "valkey.utils"
+  ];
 
   meta = {
     description = "Python client for Redis key-value store";

@@ -1,27 +1,23 @@
 {
   lib,
-  awscrt,
-  cacert,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  awscrt,
+  buildPythonPackage,
+  cacert,
   # dependencies
   jmespath,
-  python-dateutil,
-  urllib3,
-
   # tests
   jsonschema,
   pytestCheckHook,
+  python-dateutil,
+  # build-system
+  setuptools,
+  urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "botocore";
   version = "1.42.31"; # N.B: if you change this, change boto3 and awscli to a matching version
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "boto";
@@ -34,6 +30,11 @@ buildPythonPackage rec {
     ln -sf ${cacert}/etc/ssl/certs/ca-no-trust-rules-bundle.crt botocore/cacert.pem
   '';
 
+  nativeCheckInputs = [
+    jsonschema
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -44,11 +45,6 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    jsonschema
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # Integration tests require networking
     "tests/integration"
@@ -57,11 +53,12 @@ buildPythonPackage rec {
     "tests/functional"
   ];
 
-  pythonImportsCheck = [ "botocore" ];
-
   optional-dependencies = {
     crt = [ awscrt ];
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "botocore" ];
 
   meta = {
     description = "Low-level interface to a growing number of Amazon Web Services";

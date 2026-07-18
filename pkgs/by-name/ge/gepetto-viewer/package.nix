@@ -1,11 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   cmake,
   darwin,
   doxygen,
-  fetchFromGitHub,
   fontconfig,
-  lib,
   jrl-cmakemodules,
   libsForQt5,
   makeWrapper,
@@ -14,7 +15,6 @@
   pkg-config,
   python3Packages,
   qgv,
-  stdenv,
   runCommand,
 }:
 let
@@ -29,21 +29,11 @@ let
       hash = "sha256-nbA+JNogtlktkByUD2Urx3kJpe/8jgIjO59XXOAPpNs=";
     };
 
-    cmakeFlags = [
-      (lib.cmakeBool "BUILD_PY_QCUSTOM_PLOT" (!stdenv.hostPlatform.isDarwin))
-      (lib.cmakeBool "BUILD_PY_QGV" (!stdenv.hostPlatform.isDarwin))
-    ];
-
     outputs = [
       "out"
       "dev"
       "bin"
       "doc"
-    ];
-
-    buildInputs = [
-      python3Packages.boost
-      libsForQt5.qtbase
     ];
 
     nativeBuildInputs = [
@@ -57,6 +47,11 @@ let
       darwin.autoSignDarwinBinariesHook
     ];
 
+    buildInputs = [
+      python3Packages.boost
+      libsForQt5.qtbase
+    ];
+
     propagatedBuildInputs = [
       jrl-cmakemodules
       openscenegraph
@@ -64,8 +59,16 @@ let
       qgv
     ];
 
-    doCheck = true;
+    cmakeFlags = [
+      (lib.cmakeBool "BUILD_PY_QCUSTOM_PLOT" (!stdenv.hostPlatform.isDarwin))
+      (lib.cmakeBool "BUILD_PY_QGV" (!stdenv.hostPlatform.isDarwin))
+    ];
 
+    # Fontconfig error: Cannot load default config file: No such file: (null)
+    env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
+    # Fontconfig error: No writable cache directories
+    preBuild = "export XDG_CACHE_HOME=$(mktemp -d)";
+    doCheck = true;
     # wrapQtAppsHook uses isMachO, which fails to detect binaries without this
     # ref. https://github.com/NixOS/nixpkgs/pull/138334
     preFixup = lib.optionalString stdenv.hostPlatform.isDarwin "export LC_ALL=C";
@@ -81,18 +84,15 @@ let
       wrapQtApp $bin/bin/gepetto-gui
     '';
 
-    # Fontconfig error: Cannot load default config file: No such file: (null)
-    env.FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
-
-    # Fontconfig error: No writable cache directories
-    preBuild = "export XDG_CACHE_HOME=$(mktemp -d)";
-
     passthru.withPlugins =
       plugins:
       runCommand "gepetto-gui"
         {
           inherit (finalAttrs) version;
           pname = "gepetto-gui";
+          nativeBuildInputs = [ makeWrapper ];
+          propagatedBuildInputs = plugins;
+
           meta = {
             # can't just "inherit (gepetto-viewer) meta;" because:
             # error: derivation '/nix/store/…-gepetto-gui.drv' does not have wanted outputs 'bin'
@@ -105,8 +105,6 @@ let
               platforms
               ;
           };
-          nativeBuildInputs = [ makeWrapper ];
-          propagatedBuildInputs = plugins;
         }
         ''
           makeWrapper ${lib.getExe gepetto-viewer} $out/bin/gepetto-gui \
@@ -118,8 +116,8 @@ let
       homepage = "https://github.com/gepetto/gepetto-viewer";
       license = lib.licenses.lgpl3Only;
       maintainers = [ lib.maintainers.nim65s ];
-      mainProgram = "gepetto-gui";
       platforms = lib.platforms.unix;
+      mainProgram = "gepetto-gui";
       broken = true; # TODO @nim65s
     };
   });

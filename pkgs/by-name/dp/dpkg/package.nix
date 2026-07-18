@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  perl,
-  gnutar,
-  zlib,
+  autoreconfHook,
   bzip2,
-  xz,
-  zstd,
+  coreutils,
+  diffutils,
+  fetchgit,
+  glibc,
+  gnutar,
   libmd,
   makeWrapper,
-  coreutils,
-  autoreconfHook,
+  perl,
   pkg-config,
-  diffutils,
   versionCheckHook,
-  glibc,
+  xz,
+  zlib,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,7 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchgit {
     url = "https://git.launchpad.net/ubuntu/+source/dpkg";
     tag = "applied/${finalAttrs.version}";
+    hash = "sha256-8Joo/pcizlbtuuiUL8ev6/00ru+lh8/hzEPsO7fm2R0=";
     leaveDotGit = true;
+
     # Fix filename conflict on case-insensitive filesystems
     postFetch = ''
       pushd $out
@@ -37,37 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
       rm -rf .git
       popd
     '';
-    hash = "sha256-8Joo/pcizlbtuuiUL8ev6/00ru+lh8/hzEPsO7fm2R0=";
   };
-
-  configureFlags = [
-    "--disable-dselect"
-    "--disable-start-stop-daemon"
-    "--with-admindir=/var/lib/dpkg"
-    "PERL_LIBDIR=$(out)/${perl.libPrefix}"
-    "TAR=${gnutar}/bin/tar"
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin "--disable-linker-optimisations";
-
-  enableParallelBuilding = true;
-
-  preConfigure = ''
-    # Nice: dpkg has a circular dependency on itself. Its configure
-    # script calls scripts/dpkg-architecture, which calls "dpkg" in
-    # $PATH. It doesn't actually use its result, but fails if it
-    # isn't present, so make a dummy available.
-    touch $TMPDIR/dpkg
-    chmod +x $TMPDIR/dpkg
-    PATH=$TMPDIR:$PATH
-
-    for i in $(find . -name Makefile.in); do
-      substituteInPlace $i --replace-quiet "install-data-local:" "disabled:" ;
-    done
-
-    # Skip check broken when cross-compiling.
-    substituteInPlace configure \
-      --replace-fail 'as_fn_error $? "cannot find a GNU tar program"' "#"
-  '';
 
   postPatch = ''
     patchShebangs --host .
@@ -106,6 +78,13 @@ stdenv.mkDerivation (finalAttrs: {
            --replace-fail '"ldconfig"' \"${glibc.bin}/bin/ldconfig\"
       '';
 
+  nativeBuildInputs = [
+    makeWrapper
+    perl
+    autoreconfHook
+    pkg-config
+  ];
+
   buildInputs = [
     perl
     zlib
@@ -114,12 +93,33 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
     libmd
   ];
-  nativeBuildInputs = [
-    makeWrapper
-    perl
-    autoreconfHook
-    pkg-config
-  ];
+
+  configureFlags = [
+    "--disable-dselect"
+    "--disable-start-stop-daemon"
+    "--with-admindir=/var/lib/dpkg"
+    "PERL_LIBDIR=$(out)/${perl.libPrefix}"
+    "TAR=${gnutar}/bin/tar"
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin "--disable-linker-optimisations";
+
+  preConfigure = ''
+    # Nice: dpkg has a circular dependency on itself. Its configure
+    # script calls scripts/dpkg-architecture, which calls "dpkg" in
+    # $PATH. It doesn't actually use its result, but fails if it
+    # isn't present, so make a dummy available.
+    touch $TMPDIR/dpkg
+    chmod +x $TMPDIR/dpkg
+    PATH=$TMPDIR:$PATH
+
+    for i in $(find . -name Makefile.in); do
+      substituteInPlace $i --replace-quiet "install-data-local:" "disabled:" ;
+    done
+
+    # Skip check broken when cross-compiling.
+    substituteInPlace configure \
+      --replace-fail 'as_fn_error $? "cannot find a GNU tar program"' "#"
+  '';
 
   postInstall = ''
     for i in $out/bin/*; do
@@ -135,15 +135,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  enableParallelBuilding = true;
   setupHook = ./setup-hook.sh;
 
   meta = {
     description = "Debian package manager";
     homepage = "https://wiki.debian.org/Teams/Dpkg";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ siriobalmelli ];
+    platforms = lib.platforms.unix;
     mainProgram = "dpkg";
   };
 })

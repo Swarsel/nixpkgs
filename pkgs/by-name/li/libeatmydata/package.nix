@@ -31,12 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     strace
     which
   ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   enableParallelBuilding = true;
 
@@ -44,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Small LD_PRELOAD library to disable fsync and friends";
     homepage = "https://www.flamingspork.com/projects/libeatmydata/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "eatmydata";
     platforms = lib.platforms.unix;
+    mainProgram = "eatmydata";
   };
 })

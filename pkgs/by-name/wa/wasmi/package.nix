@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,10 +24,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Efficient and versatile WebAssembly interpreter for embedded systems";
     homepage = "https://github.com/wasmi-labs/wasmi";
     changelog = "https://github.com/wasmi-labs/wasmi/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ iamanaws ];
     mainProgram = "wasmi_cli";
   };

@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
-
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-idzip";
   version = "0.3.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bauman";
@@ -20,9 +17,8 @@ buildPythonPackage rec {
     hash = "sha256-LAai0yRenGhBRdgTKA/T0bBrL0Aq+idFHt0NDMSLHMk=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # need third-party files
@@ -41,12 +37,14 @@ buildPythonPackage rec {
     "test_bufferedio_compat"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Seekable, gzip compatible, compression format";
-    mainProgram = "idzip";
     homepage = "https://github.com/bauman/python-idzip";
     changelog = "https://github.com/bauman/python-idzip/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vizid ];
+    mainProgram = "idzip";
   };
 }

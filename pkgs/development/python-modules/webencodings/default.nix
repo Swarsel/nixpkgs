@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchPypi,
   pytest,
 }:
@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "webencodings";
   version = "0.5.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +19,8 @@ buildPythonPackage rec {
   checkPhase = ''
     py.test webencodings/tests.py
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Character encoding aliases for legacy web content";

@@ -1,32 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  coreutils,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   ansible-compat,
   ansible-core,
+  buildPythonPackage,
+  coreutils,
   packaging,
-  pytest-xdist,
-
   # buildInputs
   pytest,
-
+  pytest-xdist,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-ansible";
   version = "26.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ansible";
@@ -40,41 +35,23 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '/usr/bin/env' '${lib.getExe' coreutils "env"}'
   '';
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [
-    ansible-core
-    ansible-compat
-    packaging
-    pytest-xdist
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
     writableTmpDirAsHomeHook
   ];
 
-  enabledTestPaths = [ "tests/" ];
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
 
-  disabledTests = [
-    # pytest unrecognized arguments in test_pool.py
-    "test_ansible_test"
-    # Host unreachable in the inventory
-    "test_become"
-    # [Errno -3] Temporary failure in name resolution
-    "test_connection_failure_v2"
-    "test_connection_failure_extra_inventory_v2"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # These tests fail in the Darwin sandbox
-    "test_ansible_facts"
-    "test_func"
-    "test_param_override_with_marker"
+  dependencies = [
+    ansible-core
+    ansible-compat
+    packaging
+    pytest-xdist
   ];
 
   disabledTestPaths = [
@@ -99,6 +76,24 @@ buildPythonPackage (finalAttrs: {
     "tests/test_adhoc.py"
   ];
 
+  disabledTests = [
+    # pytest unrecognized arguments in test_pool.py
+    "test_ansible_test"
+    # Host unreachable in the inventory
+    "test_become"
+    # [Errno -3] Temporary failure in name resolution
+    "test_connection_failure_v2"
+    "test_connection_failure_extra_inventory_v2"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # These tests fail in the Darwin sandbox
+    "test_ansible_facts"
+    "test_func"
+    "test_param_override_with_marker"
+  ];
+
+  enabledTestPaths = [ "tests/" ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_ansible" ];
 
   meta = {
@@ -106,6 +101,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/jlaska/pytest-ansible";
     changelog = "https://github.com/ansible-community/pytest-ansible/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       robsliwi
     ];

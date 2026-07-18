@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   lv2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,10 +31,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/unclechu/MIDI-Trigger";
     description = "LV2 plugin which generates MIDI notes by detected audio signal peaks";
-    maintainers = with lib.maintainers; [ unclechu ];
+    homepage = "https://github.com/unclechu/MIDI-Trigger";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ unclechu ];
     platforms = lib.platforms.unix;
   };
 })

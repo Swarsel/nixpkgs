@@ -2,20 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
+  bash,
   bc,
   check,
   curl,
-
-  withEncryption ? true,
+  fetchpatch,
   libgcrypt,
   libgpg-error,
-
-  withUuid ? true,
   libuuid,
-
   withBashBuiltins ? true,
-  bash,
+  withEncryption ? true,
+  withUuid ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,16 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-NazWrrwZhD8aKzpj6IC6zrD1J4qxrOZh5XpQLZ14yTw=";
       name = "configure-big_sur.diff";
       url = "https://github.com/Homebrew/formula-patches/raw/03cf8088210822aa2c1ab544ed58ea04c897d9c4/libtool/configure-big_sur.diff";
-      hash = "sha256-NazWrrwZhD8aKzpj6IC6zrD1J4qxrOZh5XpQLZ14yTw=";
     })
-  ];
-
-  hardeningDisable = lib.optional stdenv.cc.isClang "format";
-
-  configureFlags = lib.optionals withBashBuiltins [
-    "--with-bash-headers=${bash.dev}/include/bash"
   ];
 
   buildInputs = [
@@ -55,6 +46,10 @@ stdenv.mkDerivation (finalAttrs: {
     bash.dev
   ];
 
+  configureFlags = lib.optionals withBashBuiltins [
+    "--with-bash-headers=${bash.dev}/include/bash"
+  ];
+
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals stdenv.cc.isClang [
       "-Wno-error=implicit-function-declaration"
@@ -65,21 +60,25 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  doCheck = true;
+
   nativeCheckInputs = [
     bc
     check
   ];
 
-  doCheck = true;
+  hardeningDisable = lib.optional stdenv.cc.isClang "format";
 
   meta = {
-    homepage = "https://www.gnu.org/software/recutils/";
     description = "Tools and libraries to access human-editable, text-based databases";
+
     longDescription = ''
       GNU Recutils is a set of tools and libraries to access human-editable,
       text-based databases called recfiles. The data is stored as a sequence of
       records, each record containing an arbitrary number of named fields.
     '';
+
+    homepage = "https://www.gnu.org/software/recutils/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;

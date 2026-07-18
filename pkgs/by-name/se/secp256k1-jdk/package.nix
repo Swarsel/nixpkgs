@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  maven,
   jdk25,
+  maven,
 }:
 
 maven.buildMavenPackage (finalAttrs: {
@@ -16,15 +16,7 @@ maven.buildMavenPackage (finalAttrs: {
     hash = "sha256-kIWBgJ9OueNNDRKf1HHaxt6PFxK2iCuO0TFr8swbiL0=";
   };
 
-  mvnJdk = jdk25;
-  mvnGoal = "deploy"; # The secp256k1-jdk POM targets a `local-staging` repository using a file URL
-  mvnOffline = false; # We need actions not allowed in Maven offline mode, but Nix sandboxing will still be enforced
-  mvnParameters = "-Drevision=${finalAttrs.version}"; # make snapshot builds reproducible
-  mvnHash = "sha256-87iDewdy/7lSyvROf1YyrsgvVUJtaivdHdSLig3Ea1Y=";
-
   strictDeps = true;
-  __structuredAttrs = true;
-  buildOffline = true;
   doCheck = false;
 
   installPhase = ''
@@ -44,22 +36,35 @@ maven.buildMavenPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  buildOffline = true;
+  mvnGoal = "deploy"; # The secp256k1-jdk POM targets a `local-staging` repository using a file URL
+  mvnHash = "sha256-87iDewdy/7lSyvROf1YyrsgvVUJtaivdHdSLig3Ea1Y=";
+  mvnJdk = jdk25;
+  mvnOffline = false; # We need actions not allowed in Maven offline mode, but Nix sandboxing will still be enforced
+  mvnParameters = "-Drevision=${finalAttrs.version}"; # make snapshot builds reproducible
+
   meta = {
-    changelog = "https://github.com/bitcoinj/secp256k1-jdk/blob/master/CHANGELOG.adoc";
     description = "Java library providing Elliptic Curve Cryptography on curve secp256k1";
+
     longDescription = ''
       secp256k1-jdk is a Java library providing Elliptic Curve Cryptography using the SECG curve secp256k1.
       It provides ECDSA and Schnorr message signing, verification, and other functions.
     '';
+
     homepage = "https://github.com/bitcoinj/secp256k1-jdk";
+    changelog = "https://github.com/bitcoinj/secp256k1-jdk/blob/master/CHANGELOG.adoc";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [
-      msgilligan
-    ];
-    platforms = jdk25.meta.platforms;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # dependencies pulled via FOD from Maven Central
     ];
+
+    maintainers = with lib.maintainers; [
+      msgilligan
+    ];
+
+    platforms = jdk25.meta.platforms;
   };
 })

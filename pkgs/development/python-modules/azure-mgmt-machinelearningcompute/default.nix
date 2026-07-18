@@ -1,27 +1,27 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  msrest,
-  msrestazure,
   azure-common,
   azure-mgmt-nspkg,
+  buildPythonPackage,
+  fetchPypi,
+  msrest,
+  msrestazure,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-machinelearningcompute";
   version = "0.4.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
-    extension = "zip";
     hash = "sha256-elL4VZERTvM6WZ2rvvhA2HK39Zm3gj5ZavlJDsUbhz8=";
+    extension = "zip";
   };
 
+  # has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,8 +31,7 @@ buildPythonPackage (finalAttrs: {
     azure-mgmt-nspkg
   ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "This is the Microsoft Azure Machine Learning Compute Management Client Library";

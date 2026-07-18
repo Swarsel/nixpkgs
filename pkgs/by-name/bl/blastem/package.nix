@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchhg,
-  pkg-config,
-  makeBinaryWrapper,
   SDL2,
+  fetchhg,
   glew,
   gtk3,
+  makeBinaryWrapper,
+  pkg-config,
   testers,
 }:
 
@@ -42,7 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
   # Luckily, menu.bin doesn't need to be present for the emulator to function
 
   makeFlags = [ "HOST_ZLIB=1" ];
-
   env.NIX_CFLAGS_COMPILE = "-I${lib.getDev SDL2}/include/SDL2";
 
   installPhase = ''
@@ -60,20 +59,22 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
-    command = "blastem -v";
     version = "0.6.3-pre"; # remove line when moving to a stable version
+    command = "blastem -v";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Fast and accurate Genesis emulator";
     homepage = "https://www.retrodev.com/blastem/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "blastem";
     maintainers = with lib.maintainers; [ tomasajt ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "blastem";
   };
 })

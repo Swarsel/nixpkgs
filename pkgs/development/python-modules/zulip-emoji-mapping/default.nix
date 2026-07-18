@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "zulip-emoji-mapping";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GearKite";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
   build-system = [
     setuptools
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "zulip_emoji_mapping"

@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  rustPlatform,
+  fetchFromGitHub,
   cargo,
-  rustc,
-  nix-update,
   curl,
-  writeShellApplication,
+  fixDarwinDylibNames,
   installShellFiles,
-  llvmPackages_22,
   libffi,
   libxml2,
-  fixDarwinDylibNames,
+  llvmPackages_22,
+  nix-update,
+  rustPlatform,
+  rustc,
+  writeShellApplication,
   withLLVM ?
     stdenv.hostPlatform.isLinux || (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64),
   withV8 ? (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64),
@@ -26,9 +26,9 @@ let
 
   # Per-platform hashes, auto-updated via the general updateScript
   v8Hashes = {
+    "v8-darwin-aarch64.tar.xz" = "sha256-Vk0ys6MjHSa8Gjd7XN0Jj4gyxORU0yP7hEmYk1ENeq4=";
     "v8-linux-amd64.tar.xz" = "sha256-VOGZOKA07neIixDPJ3BLGeMX37/o9o16X4rYlo/nMbo=";
     "v8-linux-musl.tar.xz" = "sha256-drD0YfCA56zej5PFR1olfdUMOOlgYo8LGbxWEJ1NusY=";
-    "v8-darwin-aarch64.tar.xz" = "sha256-Vk0ys6MjHSa8Gjd7XN0Jj4gyxORU0yP7hEmYk1ENeq4=";
   };
 
   v8Prebuilt =
@@ -44,17 +44,18 @@ let
           throw "withV8 = true is not supported on ${stdenv.hostPlatform.system}";
     in
     stdenv.mkDerivation {
-      name = "wasmer-v8-prebuilt-${v8Version}";
       src = fetchurl {
         url = "https://github.com/wasmerio/v8-custom-builds/releases/download/${v8Version}/${assetName}";
         hash = v8Hashes.${assetName};
       };
-      sourceRoot = ".";
-      dontBuild = true;
+
       installPhase = ''
         cp -r . $out
       '';
 
+      dontBuild = true;
+      name = "wasmer-v8-prebuilt-${v8Version}";
+      sourceRoot = ".";
       meta.sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     };
 in
@@ -63,9 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "wasmer";
   version = "7.2.0";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "wasmerio";
     repo = "wasmer";
@@ -73,26 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-HiMxBABLkX0i5jGowZU7dWhW46hvtcvbX7rskL3i+iY=";
     fetchSubmodules = true;
   };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-+O/JbgozCHF/QBABMtxqkGFQYtAQwu6OUDoD5EZZmXs=";
-  };
-
-  nativeBuildInputs = [
-    cargo
-    rustc
-    rustPlatform.cargoSetupHook
-    rustPlatform.bindgenHook
-    installShellFiles
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
-
-  buildInputs = lib.optionals withLLVM [
-    llvmPackages_22.llvm
-    libffi
-    libxml2
-  ];
 
   postPatch =
     lib.optionalString stdenv.hostPlatform.isDarwin
@@ -111,6 +89,23 @@ stdenv.mkDerivation (finalAttrs: {
             --replace-fail 'install-capi-lib ' ""
         ''
       );
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cargo
+    rustc
+    rustPlatform.cargoSetupHook
+    rustPlatform.bindgenHook
+    installShellFiles
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
+
+  buildInputs = lib.optionals withLLVM [
+    llvmPackages_22.llvm
+    libffi
+    libxml2
+  ];
 
   makeFlags = [
     "WASMER_INSTALL_PREFIX=${placeholder "out"}"
@@ -136,6 +131,9 @@ stdenv.mkDerivation (finalAttrs: {
       V8_LIB_DIR = "${v8Prebuilt}/lib";
     };
 
+  # Tests are failing due to `Cannot allocate memory` and other reasons
+  doCheck = false;
+
   postInstall =
     lib.optionalString stdenv.hostPlatform.isDarwin ''
       install -Dm755 target/release/libwasmer.dylib $out/lib/libwasmer.dylib
@@ -150,33 +148,43 @@ stdenv.mkDerivation (finalAttrs: {
         --zsh <(exec -a wasmer $out/bin/wasmer gen-completions zsh)
     '';
 
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-+O/JbgozCHF/QBABMtxqkGFQYtAQwu6OUDoD5EZZmXs=";
+  };
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "update-wasmer";
+
     runtimeInputs = [
       nix-update
       curl
     ];
+
     text = builtins.readFile ./update.sh;
   });
 
-  # Tests are failing due to `Cannot allocate memory` and other reasons
-  doCheck = false;
-
   meta = {
-    sourceProvenance = with lib.sourceTypes; [ fromSource ] ++ lib.optional withV8 binaryNativeCode;
     description = "Universal WebAssembly Runtime";
-    mainProgram = "wasmer";
+
     longDescription = ''
       Wasmer is a standalone WebAssembly runtime for running WebAssembly outside
       of the browser, supporting WASI and Emscripten. Wasmer can be used
       standalone (via the CLI) and embedded in different languages, running in
       x86 and ARM devices.
     '';
+
     homepage = "https://wasmer.io/";
     license = lib.licenses.mit;
-    platforms = with lib.platforms; linux ++ darwin;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ] ++ lib.optional withV8 binaryNativeCode;
+
     maintainers = with lib.maintainers; [
       nickcao
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "wasmer";
   };
 })

@@ -1,38 +1,31 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   callPackage,
-
+  fabulous,
+  getkey,
   isPy3k,
   isPyPy,
-
   openpaperwork-core,
   openpaperwork-gtk,
   paperwork-backend,
-  fabulous,
-  rich,
-  getkey,
-  psutil,
-  shared-mime-info,
-  setuptools-scm,
-
   pkgs,
+  psutil,
+  rich,
+  setuptools-scm,
+  shared-mime-info,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "paperwork-shell";
   inherit (callPackage ./src.nix { }) version src;
-  pyproject = true;
+  pname = "paperwork-shell";
 
-  sourceRoot = "${finalAttrs.src.name}/paperwork-shell";
+  nativeBuildInputs = [
+    pkgs.gettext
+    pkgs.which
+    setuptools-scm
+  ];
 
-  # Python 2.x is not supported.
-  disabled = !isPy3k && !isPyPy;
-
-  patchPhase = ''
-    chmod a+w -R ..
-    patchShebangs ../tools
-  '';
   propagatedBuildInputs = [
     openpaperwork-core
     paperwork-backend
@@ -42,30 +35,36 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
+  preBuild = ''
+    make l10n_compile
+  '';
+
   nativeCheckInputs = [
     shared-mime-info
     openpaperwork-gtk
   ];
-
-  nativeBuildInputs = [
-    pkgs.gettext
-    pkgs.which
-    setuptools-scm
-  ];
-
-  preBuild = ''
-    make l10n_compile
-  '';
 
   preCheck = ''
     export HOME=$(mktemp -d)
     "$out/bin/paperwork-cli" chkdeps
   '';
 
+  # Python 2.x is not supported.
+  disabled = !isPy3k && !isPyPy;
+
+  patchPhase = ''
+    chmod a+w -R ..
+    patchShebangs ../tools
+  '';
+
+  pyproject = true;
+  sourceRoot = "${finalAttrs.src.name}/paperwork-shell";
+
   meta = {
     description = "CLI for Paperwork";
     homepage = "https://openpaper.work/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aszlig
       symphorien

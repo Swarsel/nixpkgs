@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   pkg-config,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
   systemd,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-int -Wno-error=implicit-function-declaration";
 
   meta = {
-    homepage = "http://www.liblogging.org/";
     description = "Lightweight signal-safe logging library";
-    mainProgram = "stdlogctl";
+    homepage = "http://www.liblogging.org/";
     license = lib.licenses.bsd2;
     platforms = lib.platforms.all;
+    mainProgram = "stdlogctl";
   };
 })

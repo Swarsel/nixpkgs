@@ -1,19 +1,18 @@
 {
   lib,
-  beancount,
-  click,
-  buildPythonPackage,
   fetchFromGitHub,
+  beancount,
+  buildPythonPackage,
+  click,
   fetchpatch2,
-  python-dateutil,
   pytestCheckHook,
+  python-dateutil,
   setuptools,
   tatsu-lts,
 }:
 buildPythonPackage rec {
   pname = "beanquery";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "beancount";
@@ -24,12 +23,13 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-hWL1CDsBSbMqufEQrtEncmyUr5L5VJI+i4xQtnAvQd8=";
       name = "beancount-workaround.patch";
       url = "https://github.com/beancount/beanquery/commit/aa0776285a25baeedf151e9f582bef0314f76004.patch?full_index=1";
-      hash = "sha256-hWL1CDsBSbMqufEQrtEncmyUr5L5VJI+i4xQtnAvQd8=";
     })
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,19 +39,21 @@ buildPythonPackage rec {
     tatsu-lts
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "beanquery"
   ];
 
   meta = {
-    homepage = "https://github.com/beancount/beanquery";
     description = "Beancount Query Language";
+
     longDescription = ''
       A customizable light-weight SQL query tool that works on tabular data,
       including Beancount.
     '';
+
+    homepage = "https://github.com/beancount/beanquery";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ alapshin ];
     mainProgram = "bean-query";

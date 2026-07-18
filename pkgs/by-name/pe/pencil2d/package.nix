@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qt5,
-  git,
   ffmpeg_6,
+  git,
   nix-update-script,
+  qt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-OZlDx+L3kIIp9c2iXvfxLKEJntOA6sji5ugwZXnUqRA=";
     leaveDotGit = true;
+
     postFetch = ''
       # Obtain the last commit ID and its timestamp, then zap .git for reproducibility
       cd $out
@@ -37,6 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
     git
   ];
 
+  buildInputs = with qt5; [
+    qtbase
+    qtmultimedia
+    qtsvg
+    qtwayland
+    ffmpeg_6
+  ];
+
   qmakeFlags = [
     "pencil2d.pro"
     "CONFIG+=release"
@@ -47,21 +56,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.updateScript = nix-update-script { };
 
-  buildInputs = with qt5; [
-    qtbase
-    qtmultimedia
-    qtsvg
-    qtwayland
-    ffmpeg_6
-  ];
-
   meta = {
     description = "Easy, intuitive tool to make 2D hand-drawn animations";
     homepage = "https://www.pencil2d.org/";
-    downloadPage = "https://github.com/pencil2d/pencil";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ agvantibo ];
     platforms = lib.platforms.linux;
     mainProgram = "pencil2d";
+    downloadPage = "https://github.com/pencil2d/pencil";
   };
 })

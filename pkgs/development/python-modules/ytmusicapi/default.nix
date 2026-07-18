@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ytmusicapi";
   version = "1.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sigma67";
@@ -18,12 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-9K61PJz+edCdLv8HiuASV4Bn3Tpw4JsCbIQNn24LjSU=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ requests ];
-
   doCheck = false; # requires network access
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "ytmusicapi" ];
 
   meta = {

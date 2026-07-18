@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   cmake,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,11 +23,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-warn 'LANGUAGES CXX' 'LANGUAGES NONE'
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
   ];
-
-  strictDeps = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -37,7 +37,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     changelog = "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "vulkan-memory-allocator";
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "vulkan-memory-allocator";
   };
 })

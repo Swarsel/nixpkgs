@@ -16,43 +16,32 @@ let
 in
 {
   options.services.speechd = {
-    # FIXME: figure out how to deprecate this EXTREMELY CAREFULLY
-    # default guessed conservatively in ../misc/graphical-desktop.nix
-    enable = mkEnableOption "speech-dispatcher speech synthesizer daemon";
-
-    package = mkPackageOption pkgs "speechd" { };
-
     config = mkOption {
-      type = with lib.types; nullOr lines;
       default = null;
+
       description = ''
         System wide configuration file for Speech Dispatcher. This will be used if no user configuration file is found.
       '';
+
       example = ''
         AddModule "module_name" "module_binary" "module_config"
       '';
+
+      type = with lib.types; nullOr lines;
     };
 
-    modules = mkOption {
-      type = with lib.types; submodule { freeformType = attrsOf lines; };
-      default = { };
-      description = ''
-        Configuration files of output modules.
-      '';
-      example = {
-        generic-epos = ''
-          AddVoice        "cs"  "male1"   "kadlec"
-          AddVoice        "sk"  "male1"   "bob"
-        '';
-      };
-    };
+    # FIXME: figure out how to deprecate this EXTREMELY CAREFULLY
+    # default guessed conservatively in ../misc/graphical-desktop.nix
+    enable = mkEnableOption "speech-dispatcher speech synthesizer daemon";
+    package = mkPackageOption pkgs "speechd" { };
 
     clients = mkOption {
-      type = with lib.types; submodule { freeformType = attrsOf lines; };
       default = { };
+
       description = ''
         Client specific configuration.
       '';
+
       example = {
         emacs = ''
           BeginClient "emacs:*"
@@ -61,13 +50,30 @@ in
           EndClient
         '';
       };
+
+      type = with lib.types; submodule { freeformType = attrsOf lines; };
+    };
+
+    modules = mkOption {
+      default = { };
+
+      description = ''
+        Configuration files of output modules.
+      '';
+
+      example = {
+        generic-epos = ''
+          AddVoice        "cs"  "male1"   "kadlec"
+          AddVoice        "sk"  "male1"   "bob"
+        '';
+      };
+
+      type = with lib.types; submodule { freeformType = attrsOf lines; };
     };
   };
 
   config = mkIf cfg.enable {
     environment = {
-      systemPackages = [ cfg.package ];
-
       etc =
         if cfg.config == null then
           { speech-dispatcher.source = "${cfg.package}/etc/speech-dispatcher"; }
@@ -83,6 +89,8 @@ in
             name = "speech-dispatcher/clients/${name}.conf";
             value.text = value;
           }) cfg.clients);
+
+      systemPackages = [ cfg.package ];
     };
 
     systemd.packages = [ cfg.package ];

@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitea,
-  pkg-config,
   git,
   libmicrohttpd,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,11 +12,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.2.4";
 
   src = fetchFromGitea {
-    domain = "git.tkolb.de";
     owner = "Public";
     repo = "fileshare";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-00MxPivZngQ2I7Hopz2MipJFnbvSZU0HF2wZucmEWQ4=";
+    domain = "git.tkolb.de";
   };
 
   postPatch = ''
@@ -26,15 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail gcc "${stdenv.cc.targetPrefix}cc"
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
   nativeBuildInputs = [
     pkg-config
     git
   ];
-  buildInputs = [ libmicrohttpd ];
 
+  buildInputs = [ libmicrohttpd ];
   makeFlags = [ "BUILD=release" ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   installPhase = ''
     mkdir -p $out/bin

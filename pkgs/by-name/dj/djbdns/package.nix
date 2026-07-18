@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  glibc,
   dns-root-data,
+  glibc,
   nixosTests,
 }:
 
@@ -11,15 +11,15 @@ let
   version = "1.05";
 
   manSrc = fetchurl {
-    url = "http://smarden.org/pape/djb/manpages/djbdns-${version}-man-20031023.tar.gz";
     sha256 = "0sg51gjy6j1hnrra406q1qhf5kvk1m00y8qqhs6r0a699gqmh75s";
+    url = "http://smarden.org/pape/djb/manpages/djbdns-${version}-man-20031023.tar.gz";
   };
 
 in
 
 stdenv.mkDerivation {
-  pname = "djbdns";
   inherit version;
+  pname = "djbdns";
 
   src = fetchurl {
     url = "https://cr.yp.to/djbdns/djbdns-${version}.tar.gz";

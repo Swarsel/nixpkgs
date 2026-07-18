@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   karton-core,
   unittestCheckHook,
   yara-python,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "karton-yaramatcher";
   version = "1.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "CERT-Polska";
@@ -25,15 +24,15 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ unittestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "karton.yaramatcher" ];
 
   meta = {
     description = "File and analysis artifacts yara matcher for the Karton framework";
-    mainProgram = "karton-yaramatcher";
     homepage = "https://github.com/CERT-Polska/karton-yaramatcher";
     changelog = "https://github.com/CERT-Polska/karton-yaramatcher/releases/tag/v${version}";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "karton-yaramatcher";
   };
 }

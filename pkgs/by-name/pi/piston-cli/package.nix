@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  versionCheckHook,
   gitUpdater,
+  python3Packages,
+  versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "piston-cli";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Shivansh-007";
@@ -17,6 +16,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-5S+1YGoPMprWnlsTGGPHtlQT974TsFgct3jVPngTT1k=";
   };
+
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail 'piston = "piston:main"' 'piston = "piston.cli:cli_app"'
+  '';
+
+  nativeCheckInputs = [ versionCheckHook ];
 
   build-system = [
     python3Packages.poetry-core
@@ -35,10 +41,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     more-itertools
   ];
 
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail 'piston = "piston:main"' 'piston = "piston.cli:cli_app"'
-  '';
+  pyproject = true;
+  pythonImportsCheck = [ "piston" ];
 
   pythonRelaxDeps = [
     "rich"
@@ -47,19 +51,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "requests-cache"
   ];
 
-  nativeCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/piston";
-
-  pythonImportsCheck = [ "piston" ];
-
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Piston api tool";
     homepage = "https://github.com/Shivansh-007/piston-cli";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    platforms = lib.platforms.unix;
     mainProgram = "piston";
   };
 })

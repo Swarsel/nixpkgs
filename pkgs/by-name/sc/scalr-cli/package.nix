@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,21 +17,21 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-TUf+0Z0yBDOpzMuETn+FCAPXWvQltjRhwQ3Xz0X6YOI=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   preConfigure = ''
     # Set the version.
     substituteInPlace main.go --replace '"0.0.0"' '"${finalAttrs.version}"'
   '';
 
+  doCheck = false; # Skip tests as they require creating actual Scalr resources.
+
   postInstall = ''
     mv $out/bin/cli $out/bin/scalr
   '';
 
-  doCheck = false; # Skip tests as they require creating actual Scalr resources.
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Command-line tool that communicates directly with the Scalr API";

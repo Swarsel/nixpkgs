@@ -1,20 +1,17 @@
 {
   lib,
-  ocaml,
   buildDunePackage,
+  ocaml,
   pbrt,
-  stdlib-shims,
   pbrt_services,
+  stdlib-shims,
 }:
 
 buildDunePackage {
-  pname = "ocaml-protoc";
-
   inherit (pbrt) version src;
-
+  pname = "ocaml-protoc";
   buildInputs = [ stdlib-shims ];
   propagatedBuildInputs = [ pbrt ];
-
   doCheck = lib.versionAtLeast ocaml.version "5.1";
   checkInputs = [ pbrt_services ];
 

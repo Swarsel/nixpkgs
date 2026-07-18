@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   fetchpatch2,
-  pkg-config,
   ncurses,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5XLRANBRtT8LyyS4EhKgZS+Hc3xFg/+N3rZJTVvVrpo=";
   };
 
-  cargoHash = "sha256-kK9na2Pk3Hl4TYYVVUfeBv6DDDkrD7mIv7eVHXkS5QY=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -28,11 +26,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-kK9na2Pk3Hl4TYYVVUfeBv6DDDkrD7mIv7eVHXkS5QY=";
+
   meta = {
     description = "Curses-based mediawiki browser";
     homepage = "https://github.com/oppiliappan/taizen";
-    maintainers = with lib.maintainers; [ liberodark ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ liberodark ];
     mainProgram = "taizen";
   };
 })

@@ -1,10 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cacert,
   cargo-tauri,
   desktop-file-utils,
-  fetchFromGitHub,
+  fetchPnpmDeps,
   gradle_9,
   jdk17,
   makeBinaryWrapper,
@@ -13,9 +14,8 @@
   nodejs,
   openssl,
   pkg-config,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
   replaceVars,
   runCommand,
   rustPlatform,
@@ -67,20 +67,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail '1.0.0-local' '${finalAttrs.version}'
   '';
 
-  cargoHash = "sha256-HeEdvmf7ZR5/suanmJMYN3F/O/Xrk9Qza4l4kGahpf0=";
-
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-pbEKD8xkO7+//m0PBcAL62q0LC5YEKR+wOPGnzXIRJk=";
-  };
-
   nativeBuildInputs = [
     cacert # Required for turbo
     cargo-tauri.hook
@@ -97,33 +83,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ openssl ] ++ lib.optional stdenv.hostPlatform.isLinux webkitgtk_4_1;
-
-  gradleFlags = [
-    "-Dfile.encoding=utf-8"
-    "--no-configuration-cache"
-  ];
-
-  dontUseGradleBuild = true;
-  dontUseGradleCheck = true;
-
-  # Tests fail on other, unrelated packages in the monorepo
-  cargoTestFlags = [
-    "--package"
-    "theseus_gui"
-  ];
-
-  # Required for mitmCache
-  __darwinAllowLocalNetworking = true;
+  cargoHash = "sha256-HeEdvmf7ZR5/suanmJMYN3F/O/Xrk9Qza4l4kGahpf0=";
 
   env = {
-    TURBO_BINARY_PATH = lib.getExe turbo;
     # Cidre requires a target version of at least 10.15
     NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-mmacosx-version-min=10.15";
+    TURBO_BINARY_PATH = lib.getExe turbo;
   };
-
-  preGradleUpdate = ''
-    cd packages/app-lib/java
-  '';
 
   # Required for the exe wrapper above
   preBuild = ''
@@ -148,35 +114,74 @@ rustPlatform.buildRustPackage (finalAttrs: {
         $out/share/applications/Modrinth\ App.desktop
     '';
 
+  # Required for mitmCache
+  __darwinAllowLocalNetworking = true;
+
+  # Tests fail on other, unrelated packages in the monorepo
+  cargoTestFlags = [
+    "--package"
+    "theseus_gui"
+  ];
+
+  dontUseGradleBuild = true;
+  dontUseGradleCheck = true;
+
+  gradleFlags = [
+    "-Dfile.encoding=utf-8"
+    "--no-configuration-cache"
+  ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-pbEKD8xkO7+//m0PBcAL62q0LC5YEKR+wOPGnzXIRJk=";
+    pnpm = pnpm_10;
+  };
+
+  preGradleUpdate = ''
+    cd packages/app-lib/java
+  '';
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Modrinth's game launcher";
+
     longDescription = ''
       A unique, open source launcher that allows you to play your favorite mods,
       and keep them up to date, all in one neat little package
     '';
+
     homepage = "https://modrinth.com";
+
     license = with lib.licenses; [
       gpl3Plus
       unfreeRedistributable
     ];
+
+    sourceProvenance = with lib.sourceTypes; [
+      fromSource
+      binaryBytecode # mitm cache
+    ];
+
     maintainers = with lib.maintainers; [
       getchoo
       hythera
       encode42
     ];
-    mainProgram = "ModrinthApp";
+
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "ModrinthApp";
     # This builds on architectures like aarch64, but the launcher itself does not support them yet.
     # Darwin is the only exception
     # See https://github.com/modrinth/code/issues/776#issuecomment-1742495678
     broken = !stdenv.hostPlatform.isx86_64 && !stdenv.hostPlatform.isDarwin;
-    sourceProvenance = with lib.sourceTypes; [
-      fromSource
-      binaryBytecode # mitm cache
-    ];
   };
 })

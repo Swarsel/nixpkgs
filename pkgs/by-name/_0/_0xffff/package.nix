@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   libusb-compat-0_1,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "0xFFFF";
@@ -18,18 +18,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   buildInputs = [ libusb-compat-0_1 ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   installFlags = [
     "DESTDIR=$(out)"
     "PREFIX="
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "-h";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -37,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/pali/0xFFFF";
     changelog = "https://github.com/pali/0xFFFF/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ungeskriptet ];
+    platforms = lib.platforms.linux;
     mainProgram = "0xFFFF";
   };
 })

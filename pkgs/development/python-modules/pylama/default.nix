@@ -1,27 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-  git,
+  buildPythonPackage,
   eradicate,
+  git,
   mccabe,
   mypy,
   pycodestyle,
   pydocstyle,
   pyflakes,
-  vulture,
-  setuptools_80,
   pylint,
   pytestCheckHook,
+  replaceVars,
+  setuptools_80,
+  vulture,
 }:
 
 let
   pylama = buildPythonPackage rec {
     pname = "pylama";
     version = "8.4.1";
-
-    format = "setuptools";
 
     src = fetchFromGitHub {
       owner = "klen";
@@ -64,6 +62,7 @@ let
       "test_radon" # FIXME package radon
     ];
 
+    format = "setuptools";
     pythonImportsCheck = [ "pylama.main" ];
 
     passthru.tests = {
@@ -74,11 +73,11 @@ let
 
     meta = {
       description = "Code audit tool for python";
-      mainProgram = "pylama";
       homepage = "https://github.com/klen/pylama";
       changelog = "https://github.com/klen/pylama/blob/${version}/Changelog";
       license = lib.licenses.mit;
       maintainers = with lib.maintainers; [ dotlambda ];
+      mainProgram = "pylama";
     };
   };
 in

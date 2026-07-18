@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  autoreconfHook,
-  fig2dev,
-  readline,
-  libx11,
-  bluez,
   SDL2,
+  autoreconfHook,
+  bluez,
+  fetchFromCodeberg,
+  fig2dev,
+  libx11,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-07sRUFKJ4CYMtQhRu18PElvNQN2DyKkRJUt7oIhenkA=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   postPatch = ''
     chmod -R u+w examples/compiler
@@ -57,9 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r ../examples $out/share/.
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
-    homepage = "https://x11-basic.codeberg.page";
     description = "Basic interpreter and compiler with graphics capabilities";
+    homepage = "https://x11-basic.codeberg.page";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ edwtjo ];
     platforms = lib.platforms.unix;

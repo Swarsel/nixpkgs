@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   mashumaro,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "python-google-drive-api";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tronikos";
@@ -20,6 +19,10 @@ buildPythonPackage rec {
     hash = "sha256-3es2rmndahH+DMEEwjBxyZKd27qDZIocPbzScF7B5fA=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,11 +30,8 @@ buildPythonPackage rec {
     mashumaro
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "google_drive_api" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python client library for Google Drive API";

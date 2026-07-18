@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  SDL2_image,
+  SDL2_mixer,
   fetchFromBitbucket,
-  pkg-config,
   glib,
   gtk3,
-  SDL2_mixer,
-  SDL2_image,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,9 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = " -I${lib.getInclude SDL2_image}/include/SDL2";
-
   doCheck = true;
-
   checkTarget = "check";
 
   meta = {
@@ -41,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://bitbucket.org/czirkoszoltan/gdash/src/master/ChangeLog";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.kupac ];
-    mainProgram = "gdash";
     platforms = lib.platforms.all;
+    mainProgram = "gdash";
     # Fails on darwin with:
     # ld: symbol(s) not found for architecture x86_64
     # clang++: error: linker command failed with exit code 1

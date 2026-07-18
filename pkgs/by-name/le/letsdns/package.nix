@@ -1,17 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  python3Packages,
+  versionCheckHook,
 }:
 let
   version = "1.2.2";
 in
 python3Packages.buildPythonApplication {
-  pname = "letsdns";
   inherit version;
-  pyproject = true;
+  pname = "letsdns";
 
   src = fetchFromGitHub {
     owner = "LetsDNS";
@@ -20,13 +19,17 @@ python3Packages.buildPythonApplication {
     hash = "sha256-tSr1cjgDq7h9pCP2NXG0MegRYsdvTiG8lSedoTRvp6g=";
   };
 
-  build-system = [
-    python3Packages.setuptools
-  ];
+  env = {
+    UNITTEST_CONF = "tests/citest.conf";
+  };
 
   nativeCheckInputs = [
     python3Packages.pytestCheckHook
     versionCheckHook
+  ];
+
+  build-system = [
+    python3Packages.setuptools
   ];
 
   dependencies = with python3Packages; [
@@ -40,19 +43,16 @@ python3Packages.buildPythonApplication {
     "tests/test_action.py"
   ];
 
-  env = {
-    UNITTEST_CONF = "tests/citest.conf";
-  };
-
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Manage DANE TLSA records in DNS servers";
     homepage = "https://www.letsdns.de/";
-    downloadPage = "https://github.com/LetsDNS/letsdns";
     changelog = "https://github.com/LetsDNS/letsdns/releases/tag/${version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ rseichter ];
     mainProgram = "letsdns";
+    downloadPage = "https://github.com/LetsDNS/letsdns";
   };
 }

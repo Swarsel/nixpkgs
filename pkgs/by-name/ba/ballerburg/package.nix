@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  fetchgit,
-  cmake,
   SDL,
-  makeDesktopItem,
+  cmake,
   copyDesktopItems,
+  fetchgit,
   imagemagick,
+  makeDesktopItem,
 }:
 
 let
   icon = fetchurl {
-    url = "https://baller.tuxfamily.org/king.png";
     hash = "sha256-HoL02xd4XkiegF/CueBDV4ppbR+6iUPllRwRow+CAvc=";
+    url = "https://baller.tuxfamily.org/king.png";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -44,17 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_FIND_FRAMEWORK=LAST"
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Ballerburg";
-      desktopName = "Ballerburg SDL";
-      exec = "_NET_WM_ICON=ballerburg ballerburg";
-      comment = finalAttrs.meta.description;
-      icon = "ballerburg";
-      categories = [ "Game" ];
-    })
-  ];
-
   postInstall = ''
     # Generate and install icon files
     for size in 16 32 48 64 72 96 128 192 512 1024; do
@@ -65,15 +54,28 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "Ballerburg SDL";
+      exec = "_NET_WM_ICON=ballerburg ballerburg";
+      icon = "ballerburg";
+      name = "Ballerburg";
+    })
+  ];
+
   meta = {
     description = "Classic cannon combat game";
-    mainProgram = "ballerburg";
+
     longDescription = ''
       Two castles, separated by a mountain, try to defeat each other with their cannonballs,
       either by killing the opponent's king or by weakening the opponent enough so that the king capitulates.'';
+
     homepage = "https://baller.tuxfamily.org/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ j0hax ];
     platforms = lib.platforms.all;
+    mainProgram = "ballerburg";
   };
 })

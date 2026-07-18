@@ -1,12 +1,10 @@
 {
   lib,
-  mkDiscoursePlugin,
   fetchFromGitHub,
+  mkDiscoursePlugin,
 }:
 
 mkDiscoursePlugin {
-  bundlerEnvArgs.gemdir = ./.;
-  name = "discourse-prometheus";
   src = fetchFromGitHub {
     owner = "discourse";
     repo = "discourse-prometheus";
@@ -21,9 +19,12 @@ mkDiscoursePlugin {
     ./spec-import-fix-abi-version.patch
   ];
 
+  bundlerEnvArgs.gemdir = ./.;
+  name = "discourse-prometheus";
+
   meta = {
+    description = "Official Discourse Plugin for Prometheus Monitoring";
     homepage = "https://github.com/discourse/discourse-prometheus";
     license = lib.licenses.mit;
-    description = "Official Discourse Plugin for Prometheus Monitoring";
   };
 }

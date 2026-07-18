@@ -1,23 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-
-  # optional-dependencies
-  ruff,
-
   # tests
   addBinToPathHook,
-  versionCheckHook,
-
   nix-update-script,
+  python3Packages,
+  # optional-dependencies
+  ruff,
+  versionCheckHook,
 }:
 
 let
   nbqa = python3Packages.buildPythonApplication rec {
     pname = "nbqa";
     version = "1.9.1";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "nbQA-dev";
@@ -25,32 +21,6 @@ let
       tag = version;
       hash = "sha256-qVNJ8f8vUlTCi5DbvG70orcSnulH60UcI5iABtXYUog=";
     };
-
-    build-system = with python3Packages; [
-      setuptools
-    ];
-
-    optional-dependencies.toolchain =
-      (with python3Packages; [
-        black
-        blacken-docs
-        flake8
-        isort
-        jupytext
-        mypy
-        pylint
-        pyupgrade
-      ])
-      ++ [
-        ruff
-      ];
-
-    dependencies = with python3Packages; [
-      autopep8
-      ipython
-      tokenize-rt
-      tomli
-    ];
 
     # Force using the Ruff executable rather than the Python package
     postPatch = ''
@@ -76,6 +46,22 @@ let
         versionCheckHook
       ];
 
+    build-system = with python3Packages; [
+      setuptools
+    ];
+
+    dependencies = with python3Packages; [
+      autopep8
+      ipython
+      tokenize-rt
+      tomli
+    ];
+
+    disabledTestPaths = [
+      # Test data not found
+      "tests/test_include_exclude.py"
+    ];
+
     disabledTests = [
       # Test data not found
       "test_black_multiple_files"
@@ -92,12 +78,26 @@ let
       "test_ruff_works"
     ];
 
-    disabledTestPaths = [
-      # Test data not found
-      "tests/test_include_exclude.py"
-    ];
+    optional-dependencies.toolchain =
+      (with python3Packages; [
+        black
+        blacken-docs
+        flake8
+        isort
+        jupytext
+        mypy
+        pylint
+        pyupgrade
+      ])
+      ++ [
+        ruff
+      ];
+
+    pyproject = true;
 
     passthru = {
+      updateScript = nix-update-script { };
+
       # selector is a function mapping pythonPackages to a list of code quality
       # tools, e.g. nbqa.withTools (ps: [ ps.black ])
       withTools =
@@ -105,18 +105,16 @@ let
         nbqa.overridePythonAttrs (
           { dependencies, ... }:
           {
-            dependencies = dependencies ++ selector python3Packages;
             doCheck = false;
+            dependencies = dependencies ++ selector python3Packages;
           }
         );
-
-      updateScript = nix-update-script { };
     };
 
     meta = {
+      description = "Run ruff, isort, pyupgrade, mypy, pylint, flake8, black, blacken-docs, and more on Jupyter Notebooks";
       homepage = "https://github.com/nbQA-dev/nbQA";
       changelog = "https://nbqa.readthedocs.io/en/latest/history.html";
-      description = "Run ruff, isort, pyupgrade, mypy, pylint, flake8, black, blacken-docs, and more on Jupyter Notebooks";
       license = lib.licenses.mit;
       maintainers = with lib.maintainers; [ l0b0 ];
       mainProgram = "nbqa";

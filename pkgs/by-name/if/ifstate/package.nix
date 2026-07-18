@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  yq,
-  python3Packages,
-  fetchFromCodeberg,
   ethtool,
+  fetchFromCodeberg,
   iproute2,
   libbpf,
   nixosTests,
+  python3Packages,
+  yq,
   withBpf ? false,
   withConfigValidation ? true,
   withShellColor ? false,
@@ -22,9 +22,14 @@ let
     hash = "sha256-/kibcWSGg7AqkjvQAzhSs+aoRHE/YoYhTqVjw4NWNgA=";
   };
   docs = stdenv.mkDerivation {
+    inherit version src;
     pname = "ifstate-docs";
 
-    inherit version src;
+    postPatch = ''
+      # git-revision-date requires a git repository
+      # privacy and social plugin require internet
+      yq -yi 'del(.plugins[] | select((type == "object" and (has("git-revision-date-localized") or has("social"))) or (type == "string" and . == "privacy")))' mkdocs.yaml
+    '';
 
     nativeBuildInputs = [ yq ];
 
@@ -41,12 +46,6 @@ let
         ++ mkdocs-material.optional-dependencies.imaging
       );
 
-    postPatch = ''
-      # git-revision-date requires a git repository
-      # privacy and social plugin require internet
-      yq -yi 'del(.plugins[] | select((type == "object" and (has("git-revision-date-localized") or has("social"))) or (type == "string" and . == "privacy")))' mkdocs.yaml
-    '';
-
     buildPhase = ''
       runHook preBuild
       mkdir -p $out
@@ -55,10 +54,8 @@ let
     '';
   };
   self = python3Packages.buildPythonApplication rec {
-    pname = "ifstate";
     inherit version src;
-
-    pyproject = true;
+    pname = "ifstate";
 
     postPatch = ''
       substituteInPlace libifstate/routing/__init__.py \
@@ -71,6 +68,9 @@ let
       substituteInPlace libifstate/bpf/ctypes.py \
         --replace-fail 'libbpf.so.1' '${libbpf}/lib/libbpf.so.1'
     '';
+
+    # has no unit tests
+    doCheck = false;
 
     build-system = with python3Packages; [
       setuptools
@@ -86,18 +86,18 @@ let
       ++ lib.optional withConfigValidation jsonschema
       ++ lib.optional withShellColor pygments;
 
-    pythonRemoveDeps = lib.optional (!withConfigValidation) "jsonschema";
-
-    # has no unit tests
-    doCheck = false;
+    pyproject = true;
 
     pythonImportsCheck = [
       "libifstate"
       "ifstate"
     ];
 
+    pythonRemoveDeps = lib.optional (!withConfigValidation) "jsonschema";
+
     passthru = {
-      tests = nixosTests.ifstate;
+      inherit docs;
+
       features = {
         inherit
           withBpf
@@ -105,18 +105,19 @@ let
           withShellColor
           ;
       };
+
       # needed for access in schema validaten in module
       jsonschema = "${self}/${python3Packages.python.sitePackages}/libifstate/schema/2/ifstate.conf.schema.json";
-      inherit docs;
+      tests = nixosTests.ifstate;
     };
 
     meta = {
       description = "Manage host interface settings in a declarative manner";
       homepage = "https://ifstate.net";
       changelog = "https://codeberg.org/liske/ifstate/src/tag/${src.tag}/CHANGELOG.md";
-      platforms = lib.platforms.linux;
       license = lib.licenses.gpl3Plus;
       maintainers = with lib.maintainers; [ marcel ];
+      platforms = lib.platforms.linux;
       mainProgram = "ifstatecli";
     };
   };

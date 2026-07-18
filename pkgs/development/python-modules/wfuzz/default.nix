@@ -1,25 +1,24 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   chardet,
   colorama,
   distutils,
-  fetchFromGitHub,
+  fetchpatch2,
+  legacy-cgi,
   netaddr,
   pycurl,
   pyparsing,
   pytestCheckHook,
   setuptools,
   six,
-  fetchpatch2,
-  legacy-cgi,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "wfuzz";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xmendez";
@@ -32,13 +31,27 @@ buildPythonPackage (finalAttrs: {
     # replace use of imp module for Python >= 3.12
     # https://github.com/xmendez/wfuzz/pull/365
     (fetchpatch2 {
-      url = "https://github.com/xmendez/wfuzz/commit/f4c028b9ada4c36dabf3bc752f69f6ddc110920f.patch?full_index=1";
       hash = "sha256-t7pUMcdFmwAsGUNBRdZr+Jje/yR0yzeGIgeYNEq4hFE=";
+      url = "https://github.com/xmendez/wfuzz/commit/f4c028b9ada4c36dabf3bc752f69f6ddc110920f.patch?full_index=1";
     })
     # replace removed `pipes` stdlib module with `shlex` for Python >= 3.13
     # https://github.com/xmendez/wfuzz/issues/380
     ./python-313-shlex.patch
   ];
+
+  nativeCheckInputs = [
+    netaddr
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  postInstall = ''
+    mkdir -p $out/share/wordlists/wfuzz
+    cp -R -T "wordlist" "$out/share/wordlists/wfuzz"
+  '';
 
   build-system = [ setuptools ];
 
@@ -54,15 +67,6 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isWindows [ colorama ];
 
-  nativeCheckInputs = [
-    netaddr
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
   disabledTestPaths = [
     # The tests are requiring a local web server
     "tests/test_acceptance.py"
@@ -71,27 +75,27 @@ buildPythonPackage (finalAttrs: {
     "tests/test_moduleman.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "wfuzz" ];
 
-  postInstall = ''
-    mkdir -p $out/share/wordlists/wfuzz
-    cp -R -T "wordlist" "$out/share/wordlists/wfuzz"
-  '';
-
   meta = {
-    changelog = "https://github.com/xmendez/wfuzz/releases/tag/${finalAttrs.src.tag}";
     description = "Web content fuzzer to facilitate web applications assessments";
+
     longDescription = ''
       Wfuzz provides a framework to automate web applications security assessments
       and could help you to secure your web applications by finding and exploiting
       web application vulnerabilities.
     '';
+
     homepage = "https://wfuzz.readthedocs.io";
+    changelog = "https://github.com/xmendez/wfuzz/releases/tag/${finalAttrs.src.tag}";
     license = with lib.licenses; [ gpl2Only ];
+
     maintainers = with lib.maintainers; [
       bad3r
       pamplemousse
     ];
+
     mainProgram = "wfuzz";
   };
 })

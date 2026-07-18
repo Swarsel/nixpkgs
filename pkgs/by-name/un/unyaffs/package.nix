@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   versionCheckHook,
 }:
 
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "-V";
 
   meta = {

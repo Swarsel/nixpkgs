@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.astro.caltech.edu/~mcs/tecla/";
     description = "Command-line editing library";
+
     longDescription = ''
       The tecla library provides UNIX and LINUX programs with interactive
       command line editing facilities, similar to those of the UNIX tcsh
@@ -53,10 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
       Makefile, and specific discussions of thread safety are presented in the
       included man pages.
     '';
+
+    homepage = "https://www.astro.caltech.edu/~mcs/tecla/";
     changelog = "https://sites.astro.caltech.edu/~mcs/tecla/release.html";
     license = with lib.licenses; [ mit ];
-    mainProgram = "enhance";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "enhance";
   };
 })

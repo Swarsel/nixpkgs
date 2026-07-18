@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bidict,
   buildPythonPackage,
-  fetchFromGitHub,
   h5py,
   joblib,
   matplotlib,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "biosppy";
   version = "2.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scientisst";
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     hash = "sha256-ED25/4WmLbXfEfa4KuUJMN+Fc9hd/AdUqgw8mwQes8Y=";
   };
 
+  doCheck = false; # no tests
   build-system = [ setuptools ];
 
   dependencies = [
@@ -51,7 +51,7 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ tkinter ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   pythonImportsCheck = [
     "biosppy"

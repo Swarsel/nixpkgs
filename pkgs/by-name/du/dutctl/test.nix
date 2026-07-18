@@ -1,9 +1,8 @@
 {
+  dutctl,
+  expect,
   runCommand,
   writeScriptBin,
-  expect,
-
-  dutctl,
 }:
 let
   dutctl-test =

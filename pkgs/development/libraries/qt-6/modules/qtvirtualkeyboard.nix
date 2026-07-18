@@ -1,19 +1,20 @@
 {
+  hunspell,
+  pkg-config,
   qtModule,
   qtbase,
   qtdeclarative,
   qtsvg,
-  hunspell,
-  pkg-config,
 }:
 
 qtModule {
   pname = "qtvirtualkeyboard";
+  nativeBuildInputs = [ pkg-config ];
+
   propagatedBuildInputs = [
     qtbase
     qtdeclarative
     qtsvg
     hunspell
   ];
-  nativeBuildInputs = [ pkg-config ];
 }

@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
-  version = "0.4.1";
-  format = "setuptools";
   pname = "vimwiki-markdown";
+  version = "0.4.1";
 
   src = fetchPypi {
     inherit version pname;
@@ -18,6 +17,8 @@ python3Packages.buildPythonApplication rec {
     markdown
     pygments
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Vimwiki markdown plugin";

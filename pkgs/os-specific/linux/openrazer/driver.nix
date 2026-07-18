@@ -1,10 +1,10 @@
 {
-  coreutils,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  coreutils,
   kernel,
   kernelModuleMakeFlags,
-  stdenv,
-  lib,
   udevCheckHook,
   util-linux,
 }:
@@ -19,14 +19,11 @@ stdenv.mkDerivation (
   // {
     pname = "openrazer";
     version = "${common.version}-${kernel.version}";
-
     nativeBuildInputs = [ udevCheckHook ] ++ kernel.moduleBuildDependencies;
 
     makeFlags = kernelModuleMakeFlags ++ [
       "KERNELDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     ];
-
-    doInstallCheck = true;
 
     installPhase = ''
       runHook preInstall
@@ -50,6 +47,7 @@ stdenv.mkDerivation (
       runHook postInstall
     '';
 
+    doInstallCheck = true;
     enableParallelBuilding = true;
 
     meta = common.meta // {

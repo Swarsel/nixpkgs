@@ -5,10 +5,10 @@
   cryptography,
   fetchPypi,
   h2,
+  hatchling,
   httpcore,
   httpx,
   idna,
-  hatchling,
   pytestCheckHook,
   trio,
 }:
@@ -16,33 +16,13 @@
 buildPythonPackage rec {
   pname = "dnspython";
   version = "2.8.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-GB08aZZFLLEYnEBGxhWZuEpahuCZVi/9530mmE/ybQ8=";
   };
 
-  build-system = [ hatchling ];
-
-  optional-dependencies = {
-    doh = [
-      httpx
-      h2
-      httpcore
-    ];
-    idna = [ idna ];
-    dnssec = [ cryptography ];
-    trio = [ trio ];
-    doq = [ aioquic ];
-  };
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  disabledTests = [
-    # dns.exception.SyntaxError: protocol not found
-    "test_misc_good_WKS_text"
-  ];
 
   # disable network on all builds (including darwin)
   # see https://github.com/NixOS/nixpkgs/issues/356803
@@ -50,6 +30,28 @@ buildPythonPackage rec {
     export NO_INTERNET=1
   '';
 
+  build-system = [ hatchling ];
+
+  disabledTests = [
+    # dns.exception.SyntaxError: protocol not found
+    "test_misc_good_WKS_text"
+  ];
+
+  optional-dependencies = {
+    dnssec = [ cryptography ];
+
+    doh = [
+      httpx
+      h2
+      httpcore
+    ];
+
+    doq = [ aioquic ];
+    idna = [ idna ];
+    trio = [ trio ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "dns" ];
 
   meta = {

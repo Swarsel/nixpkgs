@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   AvailabilityVersions,
   apple-sdk,
   bison,
@@ -10,13 +11,11 @@
   mkAppleDerivation,
   perl,
   python3,
-  stdenv,
   unifdef,
 }:
 
 mkAppleDerivation {
   pname = "xnuHeaders";
-  releaseName = "xnu";
 
   postPatch = ''
     rm bsd/sys/make_symbol_aliasing.sh
@@ -59,42 +58,36 @@ mkAppleDerivation {
     python3
   ];
 
+  buildFlags = [ "exporthdrs" ];
+
   env = {
     ARCHS = stdenv.hostPlatform.darwinArch;
     ARCH_CONFIGS = stdenv.hostPlatform.darwinArch;
-    PLATFORM = "MacOSX";
-    RC_DARWIN_KERNEL_VERSION = "25.3.0";
-
-    DSTROOT = placeholder "out";
-
-    SDKROOT_RESOLVED = apple-sdk.sdkroot;
-    SDKVERSION = stdenv.hostPlatform.darwinMinVersion;
-
     CTFCONVERT = "echo";
     CTFINSERT = "echo";
     CTFMERGE = "echo";
+    DSTROOT = placeholder "out";
     DSYMUTIL = "dsymutil";
-    IIG = "echo";
-    LIBTOOL = "echo";
-    LIPO = "echo";
-    MIG = "mig";
-    MIGCOM = "${lib.getBin buildPackages.darwin.bootstrap_cmds}/libexec/migcom";
-    NMEDIT = "echo";
-    UNIFDEF = "unifdef";
-
-    HOST_SDKROOT_RESOLVED = buildPackages.apple-sdk.sdkroot;
-    HOST_OS_VERSION = buildPackages.stdenv.hostPlatform.darwinMinVersion;
-
     HOST_BISON = "bison";
     HOST_CC = lib.getExe' buildPackages.clangStdenv.cc "${buildPackages.clangStdenv.cc.targetPrefix}clang";
     HOST_CODESIGN = "echo";
     HOST_CODESIGN_ALLOCATE = "echo";
     HOST_FLEX = "flex";
     HOST_GM4 = "m4";
+    HOST_OS_VERSION = buildPackages.stdenv.hostPlatform.darwinMinVersion;
+    HOST_SDKROOT_RESOLVED = buildPackages.apple-sdk.sdkroot;
+    IIG = "echo";
+    LIBTOOL = "echo";
+    LIPO = "echo";
+    MIG = "mig";
+    MIGCOM = "${lib.getBin buildPackages.darwin.bootstrap_cmds}/libexec/migcom";
+    NMEDIT = "echo";
+    PLATFORM = "MacOSX";
+    RC_DARWIN_KERNEL_VERSION = "25.3.0";
+    SDKROOT_RESOLVED = apple-sdk.sdkroot;
+    SDKVERSION = stdenv.hostPlatform.darwinMinVersion;
+    UNIFDEF = "unifdef";
   };
-
-  buildFlags = [ "exporthdrs" ];
-  installTargets = [ "installhdrs" ];
 
   # Remove public headers. `xnuHeaders` is meant to provide private headers needed to build packages.
   # If you need public headers, use the correct SDK for the version you need.
@@ -129,4 +122,7 @@ mkAppleDerivation {
       fi
     done
   '';
+
+  installTargets = [ "installhdrs" ];
+  releaseName = "xnu";
 }

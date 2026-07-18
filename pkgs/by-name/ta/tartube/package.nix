@@ -1,7 +1,10 @@
 {
   lib,
   fetchFromGitHub,
+  aria2,
+  ffmpeg,
   gdk-pixbuf,
+  glib,
   gobject-introspection,
   gtk3,
   libnotify,
@@ -9,15 +12,11 @@
   python3Packages,
   wrapGAppsHook3,
   youtube-dl,
-  glib,
-  ffmpeg,
-  aria2,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "tartube";
   version = "2.5.164";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "axcore";
@@ -26,12 +25,24 @@ python3Packages.buildPythonApplication rec {
     sha256 = "sha256-PPvbdxxGUYUKL+5exO5+iO5ObJgjzFejZIIDA17hvYo=";
   };
 
+  postPatch = ''
+    sed -i "/^\s*'pgi',$/d" setup.py
+  '';
+
+  strictDeps = false;
+
   nativeBuildInputs = [
     gobject-introspection
     wrapGAppsHook3
   ];
 
-  strictDeps = false;
+  buildInputs = [
+    gdk-pixbuf
+    gtk3
+    glib
+    libnotify
+    pango
+  ];
 
   propagatedBuildInputs = with python3Packages; [
     moviepy
@@ -45,17 +56,7 @@ python3Packages.buildPythonApplication rec {
     aria2
   ];
 
-  buildInputs = [
-    gdk-pixbuf
-    gtk3
-    glib
-    libnotify
-    pango
-  ];
-
-  postPatch = ''
-    sed -i "/^\s*'pgi',$/d" setup.py
-  '';
+  doCheck = false;
 
   postInstall = ''
     mkdir -p $out/share/{man/man1,applications,pixmaps}
@@ -64,7 +65,7 @@ python3Packages.buildPythonApplication rec {
     cp pack/tartube.{png,xpm} $out/share/pixmaps
   '';
 
-  doCheck = false;
+  format = "setuptools";
 
   makeWrapperArgs = [
     "--prefix PATH : ${lib.makeBinPath [ youtube-dl ]}"
@@ -72,10 +73,10 @@ python3Packages.buildPythonApplication rec {
 
   meta = {
     description = "GUI front-end for youtube-dl";
-    license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ mkg20001 ];
     homepage = "https://tartube.sourceforge.io/";
+    license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ mkg20001 ];
+    platforms = lib.platforms.linux;
     mainProgram = "tartube";
   };
 }

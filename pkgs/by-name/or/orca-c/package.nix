@@ -15,17 +15,17 @@ stdenv.mkDerivation {
     sha256 = "sha256-bbIH0kyHRTcMGXV3WdBQIH1br0FyIzKKL88wqpGZ0NY=";
   };
 
-  buildInputs = [
-    ncurses
-    portmidi
-  ];
-
   postPatch = ''
     patchShebangs tool
     sed -i tool \
       -e 's@ncurses_dir=.*@ncurses_dir="${ncurses}"@' \
       -e 's@portmidi_dir=.*@portmidi_dir="${portmidi}"@' tool
   '';
+
+  buildInputs = [
+    ncurses
+    portmidi
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -40,8 +40,8 @@ stdenv.mkDerivation {
     description = "Esoteric programming language designed to quickly create procedural sequencers";
     homepage = "https://git.sr.ht/~rabbits/orca";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ netcrns ];
+    platforms = lib.platforms.all;
     mainProgram = "orca";
   };
 }

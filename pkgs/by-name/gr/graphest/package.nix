@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  fetchpatch,
-  fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  replaceVars,
+  blas,
   copyDesktopItems,
-  makeDesktopItem,
+  darwin,
+  electron,
+  fetchYarnDeps,
+  fetchpatch,
+  gnum4,
   makeBinaryWrapper,
+  makeDesktopItem,
   nix-update-script,
   nodejs,
-  electron,
-  gnum4,
   pkgsStatic,
-  blas,
-  darwin,
+  replaceVars,
+  rustPlatform,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,17 +37,17 @@ stdenv.mkDerivation (finalAttrs: {
     # specify what files should be installed in package.json (https://github.com/unageek/graphest/pull/1000)
     # not accepted by upstream because the developer did not intend to publish as an npm package
     (fetchpatch {
+      hash = "sha256-5PU9iPy6gfesl40piRTw9+QMNf4GSGASYs8ZTLedS7o=";
       name = "npm-files";
       url = "https://github.com/unageek/graphest/commit/1d1b8ee610a55bf9465a630499c6b0f6e9a66689.patch";
-      hash = "sha256-5PU9iPy6gfesl40piRTw9+QMNf4GSGASYs8ZTLedS7o=";
     })
 
     # support opening file or url from command line (https://github.com/unageek/graphest/pull/1002)
     # otherwise the desktop entry is basically useless
     (fetchpatch {
+      hash = "sha256-GkssYkHVps8PeHMX/Fj5uj6r+MLrZcETXtQq4mZcOrQ=";
       name = "open-file";
       url = "https://github.com/unageek/graphest/commit/05f2e486a5cdd79d5135057d67c398256dc5019c.patch";
-      hash = "sha256-GkssYkHVps8PeHMX/Fj5uj6r+MLrZcETXtQq4mZcOrQ=";
     })
 
     ./disable-auto-update.patch
@@ -63,17 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin darwin.autoSignDarwinBinariesHook;
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-krpJflsoUPIzhdtyQu3WmapM4C63adwOq2Q6inUa3Xk=";
-  };
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
 
   preBuild = ''
     # do not set this in env because it must not be present in the configure phase
     export NODE_ENV=production
   '';
-  yarnBuildScript = "build:app";
 
   checkPhase = ''
     runHook preCheck
@@ -110,43 +105,54 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "graphest";
-      desktopName = "Graphest";
-      exec = "Graphest %u";
-      icon = "graphest";
       categories = [
         "Science"
         "Math"
       ];
+
       comment = finalAttrs.meta.description;
+      desktopName = "Graphest";
+      exec = "Graphest %u";
+      icon = "graphest";
+
       mimeTypes = [
         "x-scheme-handler/graphest"
         "application/x-graphest"
       ];
+
+      name = "graphest";
     })
   ];
 
-  passthru = {
-    updateScript = nix-update-script { };
+  yarnBuildScript = "build:app";
 
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-krpJflsoUPIzhdtyQu3WmapM4C63adwOq2Q6inUa3Xk=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
+  passthru = {
     # The dependencies of graphest-fftw-sys and graphest-arb-sys need to be static.
     fftwFloatStatic = pkgsStatic.fftwFloat;
+
     flintStatic = pkgsStatic.flint.override {
       withBlas = true; # Some functions used by Graphest require BLAS
     };
 
     graph = rustPlatform.buildRustPackage {
-      pname = "graphest-graph";
       inherit (finalAttrs) version src;
+      pname = "graphest-graph";
 
       patches = [
         # Use libraries from nixpkgs instead of trying to download them
         (replaceVars ./dependencies.patch {
-          fftwLib = finalAttrs.passthru.fftwFloatStatic.out;
           fftwDev = finalAttrs.passthru.fftwFloatStatic.dev;
+          fftwLib = finalAttrs.passthru.fftwFloatStatic.out;
           flint = finalAttrs.passthru.flintStatic.out;
         })
       ];
+
+      strictDeps = true;
 
       nativeBuildInputs = [
         gnum4 # used by build script of gmp-mpfr-sys
@@ -156,22 +162,18 @@ stdenv.mkDerivation (finalAttrs: {
       buildInputs = [
         blas # needed here because -lblas is added to RUSTFLAGS
       ];
-      strictDeps = true;
 
       cargoHash = "sha256-GC0BHLWRKw6ThQiIfFQoOcGq9Xm0I9rt8uhwyalCa2I=";
 
       env = {
         RUSTC_BOOTSTRAP = 1; # smallvec: error[E0554]: `#![feature]` may not be used on the stable release channel
+
         RUSTFLAGS =
           "-lblas" # add -lblas to fix linking error regarding the function cblas_dgemm (bug of flint maybe???)
           # inari: error: RUSTFLAGS='-Ctarget-cpu=haswell' or later is required.
           + lib.optionalString stdenv.hostPlatform.isx86 " -Ctarget-cpu=haswell";
       };
 
-      preCheck = ''
-        # see rust/tests/graph.rs; executable path is hardcoded to be in target/release
-        ln -s ../${stdenv.targetPlatform.rust.rustcTargetSpec}/release/graph -t target/release
-      '';
       # TODO: These tests fail for unknown reasons.
       checkFlags = [
         "--skip=graph_tests::examples::t_564aaa5e88a54895b1851a1f1e5ffa3c"
@@ -182,22 +184,29 @@ stdenv.mkDerivation (finalAttrs: {
         "--skip=graph_tests::implicit::t_84a2738be35745da97a9b120c563b4b3"
       ];
 
+      preCheck = ''
+        # see rust/tests/graph.rs; executable path is hardcoded to be in target/release
+        ln -s ../${stdenv.targetPlatform.rust.rustcTargetSpec}/release/graph -t target/release
+      '';
+
       meta = finalAttrs.meta // {
+        mainProgram = "graph";
         # See README of https://github.com/unageek/inari:
         # limited to platforms that are supported by the gmp-mpfr-sys crate.
         broken = stdenv.hostPlatform.isMsvc;
-        mainProgram = "graph";
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Graphing calculator that can faithfully plot arbitrary mathematical relations";
     homepage = "https://github.com/unageek/graphest";
     changelog = "https://github.com/unageek/graphest/releases";
-    downloadPage = "https://github.com/unageek/graphest/releases";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ulysseszhan ];
     mainProgram = "Graphest";
+    downloadPage = "https://github.com/unageek/graphest/releases";
   };
 })

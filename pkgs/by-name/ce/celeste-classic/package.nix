@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  fetchzip,
-  autoPatchelfHook,
   SDL2,
+  autoPatchelfHook,
+  fetchzip,
+  stdenvNoCC,
   practiceMod ? false,
 }:
 
@@ -42,9 +42,9 @@ stdenvNoCC.mkDerivation {
     description = "PICO-8 platformer about climbing a mountain, made in four days${lib.optionalString practiceMod " (Practice Mod)"}";
     homepage = "https://celesteclassic.github.io/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ mrtnvgr ];
     platforms = lib.platforms.linux;
     mainProgram = outbin;
-    maintainers = with lib.maintainers; [ mrtnvgr ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
   xrdb,
 }:
 
@@ -11,7 +11,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "razer-cli";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lolei";
@@ -19,6 +18,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-uwTqDCYmG/5dyse0tF/CPG+9SlThyRyeHJ0OSBpcQio=";
   };
+
+  buildInputs = [
+    xrdb
+  ];
 
   build-system = with python3.pkgs; [
     setuptools
@@ -28,16 +31,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     python3.pkgs.openrazer
   ];
 
-  buildInputs = [
-    xrdb
-  ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/LoLei/razer-cli";
     description = "Command line interface for controlling Razer devices on Linux";
-    mainProgram = "razer-cli";
+    homepage = "https://github.com/LoLei/razer-cli";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.kaylorben ];
     platforms = lib.platforms.linux;
+    mainProgram = "razer-cli";
   };
 })

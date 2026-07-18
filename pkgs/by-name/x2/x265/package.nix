@@ -1,33 +1,30 @@
 {
   lib,
-  gccStdenv,
   stdenv,
   fetchurl,
   cmake,
-  nasm,
   fetchpatch,
   fetchpatch2,
-
-  # NUMA support enabled by default on NUMA platforms:
-  numaSupport ? (
-    stdenv.hostPlatform.isLinux && (stdenv.hostPlatform.isx86 || stdenv.hostPlatform.isAarch64)
-  ),
+  gccStdenv,
+  nasm,
   numactl,
-
-  # Multi bit-depth support (8bit+10bit+12bit):
-  multibitdepthSupport ? stdenv.hostPlatform.is64bit,
-
   # Other options:
   cliSupport ? true, # Build standalone CLI application
   custatsSupport ? false, # Internal profiling of encoder work
   debugSupport ? false, # Run-time sanity checks (debugging)
+  # Multi bit-depth support (8bit+10bit+12bit):
+  multibitdepthSupport ? stdenv.hostPlatform.is64bit,
+  # NEON support is always enabled for aarch64
+  # this flag is only needed for armv7.
+  neonSupport ? false, # force enable the NEON fpu support for arm v7 CPUs
+  # NUMA support enabled by default on NUMA platforms:
+  numaSupport ? (
+    stdenv.hostPlatform.isLinux && (stdenv.hostPlatform.isx86 || stdenv.hostPlatform.isAarch64)
+  ),
   ppaSupport ? false, # PPA profiling instrumentation
   unittestsSupport ? stdenv.hostPlatform.isx86_64, # Unit tests - only testing x64 assembly
   vtuneSupport ? false, # Vtune profiling instrumentation
   werrorSupport ? false, # Warnings as errors
-  # NEON support is always enabled for aarch64
-  # this flag is only needed for armv7.
-  neonSupport ? false, # force enable the NEON fpu support for arm v7 CPUs
 }:
 
 let
@@ -38,17 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "x265";
   version = "4.2";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   # Check that x265Version.txt contains the expected version number
   # whether we fetch a source tarball or a tag from the git repo
   src = fetchurl {
     url = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_${finalAttrs.version}.tar.gz";
     hash = "sha256-QLHqBFPgMJ8OupNODd9TP49ilZZmeeiJTo8cHI1eEhA=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./darwin-__rdtsc.patch
@@ -62,13 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
   # TODO: remove after update to version 4.2
   ++ lib.optionals (stdenv.hostPlatform.isAarch32 && stdenv.hostPlatform.isLinux) [
     (fetchpatch2 {
-      url = "https://bitbucket.org/multicoreware/x265_git/commits/ddb1933598736394b646cb0f78da4a4201ffc656/raw";
       hash = "sha256-ZH+jbVtfNJ+CwRUEgsnzyPVzajR/+4nDnUDz5RONO6c=";
       stripLen = 1;
+      url = "https://bitbucket.org/multicoreware/x265_git/commits/ddb1933598736394b646cb0f78da4a4201ffc656/raw";
     })
   ];
-
-  sourceRoot = "x265_${finalAttrs.version}/source";
 
   postPatch = ''
     substituteInPlace cmake/Version.cmake \
@@ -118,17 +113,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ENABLE_NEON" true)
     (lib.cmakeBool "CPU_HAS_NEON" true)
     (lib.cmakeBool "ENABLE_ASSEMBLY" true)
-  ];
-
-  cmakeStaticLibFlags = [
-    (lib.cmakeBool "HIGH_BIT_DEPTH" true)
-    (lib.cmakeBool "ENABLE_CLI" false)
-    (lib.cmakeBool "ENABLE_SHARED" false)
-    (lib.cmakeBool "EXPORT_C_API" false)
-  ]
-  ++ lib.optionals isCross [
-    (lib.cmakeBool "CROSS_COMPILE_ARM" stdenv.hostPlatform.isAarch32)
-    (lib.cmakeBool "CROSS_COMPILE_ARM64" stdenv.hostPlatform.isAarch64)
   ];
 
   preConfigure =
@@ -182,15 +166,30 @@ stdenv.mkDerivation (finalAttrs: {
 
   __structuredAttrs = true;
 
+  cmakeStaticLibFlags = [
+    (lib.cmakeBool "HIGH_BIT_DEPTH" true)
+    (lib.cmakeBool "ENABLE_CLI" false)
+    (lib.cmakeBool "ENABLE_SHARED" false)
+    (lib.cmakeBool "EXPORT_C_API" false)
+  ]
+  ++ lib.optionals isCross [
+    (lib.cmakeBool "CROSS_COMPILE_ARM" stdenv.hostPlatform.isAarch32)
+    (lib.cmakeBool "CROSS_COMPILE_ARM64" stdenv.hostPlatform.isAarch64)
+  ];
+
+  sourceRoot = "x265_${finalAttrs.version}/source";
+
   meta = {
     description = "Library for encoding H.265/HEVC video streams";
-    mainProgram = "x265";
     homepage = "https://www.x265.org";
+
     changelog = "https://x265.readthedocs.io/en/master/releasenotes.html#version-${
       lib.strings.replaceStrings [ "." ] [ "-" ] finalAttrs.version
     }";
+
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "x265";
   };
 })

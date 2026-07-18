@@ -1,17 +1,17 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  gitMinimal,
   installShellFiles,
+  nix-update-script,
   openssl,
   pkg-config,
-  stdenv,
+  replaceVars,
+  rustPlatform,
   swift,
   swiftpm,
-  replaceVars,
-  gitMinimal,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,17 +29,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     (replaceVars ./fix-swift-lib-path.patch { swiftLib = lib.getLib swift; })
   ];
 
-  cargoHash = "sha256-CwULTOZN2TTpB8heLuegID38ub6J3XoiY7l7UW1VcGo=";
-
-  # Needed to get openssl-sys to use pkgconfig.
-  env.OPENSSL_NO_VENDOR = 1;
-
-  # By default including `swiftpm` in `nativeBuildInputs` will take over `buildPhase`
-  dontUseSwiftpmBuild = true;
-  dontUseSwiftpmCheck = true;
-
-  __darwinAllowLocalNetworking = true;
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -50,7 +39,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-CwULTOZN2TTpB8heLuegID38ub6J3XoiY7l7UW1VcGo=";
+  # Needed to get openssl-sys to use pkgconfig.
+  env.OPENSSL_NO_VENDOR = 1;
   nativeCheckInputs = [ gitMinimal ];
 
   checkFlags = [
@@ -65,18 +56,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --zsh <($out/bin/sentry-cli completions zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  # By default including `swiftpm` in `nativeBuildInputs` will take over `buildPhase`
+  dontUseSwiftpmBuild = true;
+  dontUseSwiftpmCheck = true;
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://docs.sentry.io/cli/";
-    license = lib.licenses.bsd3;
     description = "Command line utility to work with Sentry";
-    mainProgram = "sentry-cli";
+    homepage = "https://docs.sentry.io/cli/";
     changelog = "https://github.com/getsentry/sentry-cli/raw/${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ rizary ];
+    mainProgram = "sentry-cli";
   };
 })

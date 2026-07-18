@@ -1,5 +1,5 @@
 {
-  mkDerivation,
+  lib,
   fetchFromGitHub,
   array,
   base,
@@ -10,7 +10,7 @@
   directory,
   filepath,
   ghci,
-  lib,
+  mkDerivation,
   network,
 }:
 mkDerivation {
@@ -25,8 +25,21 @@ mkDerivation {
     hash = "sha256-10x8/G0x3eR/++XRHPx4MBuqlnc6+N+ajIxXyLkG+nU=";
   };
 
-  isLibrary = true;
+  description = "iserv allows GHC to delegate Template Haskell computations";
+
+  executableHaskellDepends = [
+    base
+    binary
+    bytestring
+    directory
+    filepath
+    ghci
+    network
+  ];
+
   isExecutable = true;
+  isLibrary = true;
+
   libraryHaskellDepends = [
     array
     base
@@ -39,15 +52,6 @@ mkDerivation {
     ghci
     network
   ];
-  executableHaskellDepends = [
-    base
-    binary
-    bytestring
-    directory
-    filepath
-    ghci
-    network
-  ];
-  description = "iserv allows GHC to delegate Template Haskell computations";
+
   license = lib.licenses.bsd3;
 }

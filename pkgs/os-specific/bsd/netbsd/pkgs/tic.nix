@@ -1,21 +1,18 @@
 {
-  mkDerivation,
   bsdSetupHook,
-  netbsdSetupHook,
-  makeMinimal,
-  install,
-  mandoc,
-  groff,
-  nbperf,
   compatIfNeeded,
   defaultMakeFlags,
+  groff,
+  install,
   libterminfo,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
+  nbperf,
+  netbsdSetupHook,
 }:
 
 mkDerivation {
-  path = "tools/tic";
-  HOSTPROG = "tic";
-  buildInputs = compatIfNeeded;
   nativeBuildInputs = [
     bsdSetupHook
     netbsdSetupHook
@@ -25,10 +22,16 @@ mkDerivation {
     groff
     nbperf
   ];
+
+  buildInputs = compatIfNeeded;
   makeFlags = defaultMakeFlags ++ [ "TOOLDIR=$(out)" ];
+  HOSTPROG = "tic";
+
   extraPaths = [
     libterminfo.path
     "usr.bin/tic"
     "tools/Makefile.host"
   ];
+
+  path = "tools/tic";
 }

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  versionCheckHook,
-  nix-update-script,
   installShellFiles,
+  nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,6 +17,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "dua-cli";
     tag = "v${finalAttrs.version}";
     hash = "sha256-FVkq+iLkVcug/SzQtzmupHc1nh+orqyOnqv0xr1Dg/Q=";
+
     # Remove unicode file names which leads to different checksums on HFS+
     # vs. other filesystems because of unicode normalisation.
     postFetch = ''
@@ -24,6 +25,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     '';
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   cargoHash = "sha256-8lRpN3KcrK9x446buGVnHl0CcHVoLWl0slB7CAw37G8=";
 
   checkFlags = [
@@ -37,10 +39,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=interactive::app::tests::unit::it_can_handle_ending_traversal_without_reaching_the_top"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
-  nativeBuildInputs = [ installShellFiles ];
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     # TODO: Upstream also provides Elvish and PowerShell completions,
     # but `installShellCompletion` only has support for Bash, Zsh and Fish at the moment.
@@ -50,6 +48,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --zsh  <($out/bin/dua completions zsh)
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -57,10 +57,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/Byron/dua-cli";
     changelog = "https://github.com/Byron/dua-cli/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       killercup
       defelo
     ];
+
     mainProgram = "dua";
   };
 })

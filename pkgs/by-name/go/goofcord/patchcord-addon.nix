@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage {
   pname = "patchcord";
@@ -15,7 +15,6 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-/IbHvs9SEuulNcWkihwFwaFcqMM0rdFBVjCWgUu7dys=";
-
   doCheck = false;
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,17 +17,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-kbvdUqAz9k3AHtitoVr4q1kGMf2Jzfs6iSRUl1sp4UU=";
 
-  subPackages = [ "cmd/ooniprobe" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "cmd/ooniprobe" ];
+
   meta = {
-    changelog = "https://github.com/ooni/probe-cli/releases/tag/${finalAttrs.src.tag}";
     description = "Open Observatory of Network Interference command line network probe";
     homepage = "https://ooni.org/install/cli";
+    changelog = "https://github.com/ooni/probe-cli/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
     mainProgram = "ooniprobe";

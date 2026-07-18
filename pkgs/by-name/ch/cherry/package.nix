@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  mkfontscale,
   fonttosfnt,
+  mkfontscale,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

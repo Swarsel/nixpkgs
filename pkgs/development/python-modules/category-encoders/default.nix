@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   importlib-resources,
   numpy,
   pandas,
   patsy,
-  scikit-learn,
-  scipy,
-  statsmodels,
-
+  # build-system
+  poetry-core,
   # test
   pytestCheckHook,
+  scikit-learn,
+  scipy,
+  setuptools,
+  statsmodels,
 }:
 buildPythonPackage rec {
   pname = "category-encoders";
   version = "2.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scikit-learn-contrib";
@@ -30,6 +26,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-OcQCEWxqH6b9adQk64fdnqFl5CGLb9Yyd7bSxSaGTvg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     poetry-core
@@ -46,9 +46,7 @@ buildPythonPackage rec {
     statsmodels
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "category_encoders"

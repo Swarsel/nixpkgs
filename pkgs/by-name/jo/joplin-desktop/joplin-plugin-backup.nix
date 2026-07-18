@@ -1,10 +1,9 @@
 {
   lib,
   stdenv,
-  fetchzip,
   buildNpmPackage,
   clang_20,
-
+  fetchzip,
   patches ? [ ],
 }:
 
@@ -13,8 +12,6 @@ let
 in
 
 buildNpmPackage {
-  name = "joplin-plugin-backup";
-
   inherit (releaseData) npmDepsHash;
   inherit patches;
 
@@ -26,8 +23,6 @@ buildNpmPackage {
     clang_20 # clang_21 breaks keytar
   ];
 
-  npmBuildScript = "dist";
-
   installPhase = ''
     runHook preInstall
 
@@ -35,4 +30,7 @@ buildNpmPackage {
 
     runHook postInstall
   '';
+
+  name = "joplin-plugin-backup";
+  npmBuildScript = "dist";
 }

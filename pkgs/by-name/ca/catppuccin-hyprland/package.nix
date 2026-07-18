@@ -1,14 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "catppuccin-hyprland";
   version = "2.0.0";
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "catppuccin";
@@ -16,6 +14,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jGqBpSQa793phan9PeU2yXMX1nxzYClthQSeTwdqgEQ=";
   };
+
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -26,6 +26,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

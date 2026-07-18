@@ -1,10 +1,10 @@
 {
   lib,
-  aiosendspin-mpris,
+  fetchFromGitHub,
   aiosendspin,
+  aiosendspin-mpris,
   av,
   buildPythonPackage,
-  fetchFromGitHub,
   numpy,
   pulsectl-asyncio,
   pychromecast,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "sendspin";
   version = "7.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Sendspin";
@@ -32,6 +31,11 @@ buildPythonPackage (finalAttrs: {
 
   nativeBuildInputs = [
     pyprojectVersionPatchHook
+  ];
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
   ];
 
   build-system = [ setuptools ];
@@ -49,21 +53,17 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ aiosendspin.optional-dependencies.server;
 
-  optional-dependencies = {
-    cast = [ pychromecast ];
-  };
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "sendspin" ];
-
   disabledTests = [
     # requires internet
     "test_multi_worker_starts_and_serves_status"
   ];
+
+  optional-dependencies = {
+    cast = [ pychromecast ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "sendspin" ];
 
   meta = {
     description = "Synchronized audio player for Sendspin servers";

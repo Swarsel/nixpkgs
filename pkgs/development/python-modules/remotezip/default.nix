@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
+  buildPythonPackage,
   pytestCheckHook,
+  requests,
   requests-mock,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "remotezip";
   version = "0.12.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gtsystem";
@@ -21,7 +20,6 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ requests ];
 
   nativeCheckInputs = [
@@ -29,13 +27,14 @@ buildPythonPackage (finalAttrs: {
     requests-mock
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "remotezip" ];
 
   meta = {
     description = "Python module to access single members of a zip archive without downloading the full content";
-    mainProgram = "remotezip";
     homepage = "https://github.com/gtsystem/python-remotezip";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nickcao ];
+    mainProgram = "remotezip";
   };
 })

@@ -1,28 +1,36 @@
 {
   lib,
   buildPythonPackage,
-  pythonAtLeast,
-  fetchPypi,
-  hatchling,
-  hatch-nodejs-version,
   fastjsonschema,
+  fetchPypi,
+  hatch-nodejs-version,
+  hatchling,
   jsonschema,
   jupyter-core,
-  traitlets,
   pep440,
   pytestCheckHook,
+  pythonAtLeast,
   testpath,
+  traitlets,
 }:
 
 buildPythonPackage rec {
   pname = "nbformat";
   version = "5.10.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-MiFosU+Tel0RNimI7KwqSVLT2OOiy+sjGVhGMSJtWzo=";
   };
+
+  nativeCheckInputs = [
+    pep440
+    pytestCheckHook
+    testpath
+  ];
+
+  # Some of the tests use localhost networking.
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatchling
@@ -36,24 +44,15 @@ buildPythonPackage rec {
     traitlets
   ];
 
-  pythonImportsCheck = [ "nbformat" ];
-
-  nativeCheckInputs = [
-    pep440
-    pytestCheckHook
-    testpath
-  ];
-
+  pyproject = true;
   pytestFlags = [ "-Wignore::pytest.PytestUnraisableExceptionWarning" ];
-
-  # Some of the tests use localhost networking.
-  __darwinAllowLocalNetworking = true;
+  pythonImportsCheck = [ "nbformat" ];
 
   meta = {
     description = "Jupyter Notebook format";
-    mainProgram = "jupyter-trust";
     homepage = "https://jupyter.org/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "jupyter-trust";
   };
 }

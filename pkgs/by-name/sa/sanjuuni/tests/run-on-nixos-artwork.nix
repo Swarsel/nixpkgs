@@ -1,8 +1,8 @@
 {
+  lua5_2,
+  nixos-artwork,
   runCommand,
   sanjuuni,
-  nixos-artwork,
-  lua5_2,
 }:
 let
   makeCommand = derivation: baseFilename: ''

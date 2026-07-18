@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   paho-mqtt,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "roombapy";
   version = "1.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pschmitt";
@@ -28,17 +27,10 @@ buildPythonPackage rec {
     poetry-core
   ];
 
-  pythonRelaxDeps = [ "orjson" ];
-
   propagatedBuildInputs = [
     mashumaro
     orjson
     paho-mqtt
-  ];
-
-  optional-dependencies.cli = [
-    click
-    tabulate
   ];
 
   nativeCheckInputs = [
@@ -56,14 +48,21 @@ buildPythonPackage rec {
     "test_roomba_connect"
   ];
 
+  optional-dependencies.cli = [
+    click
+    tabulate
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "roombapy" ];
+  pythonRelaxDeps = [ "orjson" ];
 
   meta = {
     description = "Python program and library to control Wi-Fi enabled iRobot Roombas";
-    mainProgram = "roombapy";
     homepage = "https://github.com/pschmitt/roombapy";
     changelog = "https://github.com/pschmitt/roombapy/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "roombapy";
   };
 }

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   aiounittest,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   pythonOlder,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "airly";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ak-ambi";
@@ -22,7 +21,6 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # aiounittest is not supported on 3.12
   doCheck = pythonOlder "3.12";
 
@@ -41,6 +39,7 @@ buildPythonPackage rec {
     "MeasurementsSessionTestCase"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "airly" ];
 
   meta = {

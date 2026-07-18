@@ -1,16 +1,15 @@
 {
   lib,
-  fetchpatch,
   buildPythonPackage,
   fetchPypi,
-  poetry-core,
+  fetchpatch,
   nix-update-script,
+  poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "strip-ansi";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,14 +20,16 @@ buildPythonPackage rec {
     # Replace `poetry` with `poetry-core`. Unreleased.
     # See: https://github.com/NixOS/nixpkgs/issues/103325
     (fetchpatch {
-      url = "https://github.com/gwennlbh/python-strip-ansi/commit/0ea9b418d5b21bd3d3b1b3b91fad7e66f25acb97.diff";
       hash = "sha256-Pzlc7fx4kEmM8pezu+8K7z5oV44uq/rzeByqKxHVKx0=";
+      url = "https://github.com/gwennlbh/python-strip-ansi/commit/0ea9b418d5b21bd3d3b1b3b91fad7e66f25acb97.diff";
     })
   ];
 
   build-system = [
     poetry-core
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "strip_ansi"

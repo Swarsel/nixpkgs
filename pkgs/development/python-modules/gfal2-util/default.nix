@@ -1,18 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   callPackage,
-  fetchFromGitHub,
-  runCommandLocal,
   # Build inputs
   gfal2-python,
+  runCommandLocal,
   # For tests
   xrootd, # pkgs.xrootd
 }:
 (buildPythonPackage rec {
   pname = "gfal2-util";
   version = "1.9.1";
-  format = "setuptools";
+
   src = fetchFromGitHub {
     owner = "cern-fts";
     repo = "gfal2-util";
@@ -30,7 +30,7 @@
   '';
 
   propagatedBuildInputs = [ gfal2-python ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "gfal2_util" ];
 
   meta = {
@@ -68,23 +68,23 @@
               urlTestDir = dirOf urlTestFile;
             in
             {
-              test-copy-file-xrootd = finalAttrs.passthru.fetchGfal2 {
-                url = urlTestFile;
-                hash = hashTestFile;
-                extraGfalCopyFlags = [ "--verbose" ];
-                pname = "gfal2-util-test-copy-file-xrootd";
-                version = versionFODTests;
-                allowSubstitutes = false;
-              };
-
               test-copy-dir-xrootd = finalAttrs.passthru.fetchGfal2 {
-                url = urlTestDir;
-                hash = "sha256-vOahIhvx1oE9sfkqANMGUvGeLHS737wyfYWo4rkvrxw=";
-                recursive = true;
-                extraGfalCopyFlags = [ "--verbose" ];
                 pname = "gfal2-util-test-copy-dir-xrootd";
                 version = versionFODTests;
                 allowSubstitutes = false;
+                extraGfalCopyFlags = [ "--verbose" ];
+                hash = "sha256-vOahIhvx1oE9sfkqANMGUvGeLHS737wyfYWo4rkvrxw=";
+                recursive = true;
+                url = urlTestDir;
+              };
+
+              test-copy-file-xrootd = finalAttrs.passthru.fetchGfal2 {
+                pname = "gfal2-util-test-copy-file-xrootd";
+                version = versionFODTests;
+                allowSubstitutes = false;
+                extraGfalCopyFlags = [ "--verbose" ];
+                hash = hashTestFile;
+                url = urlTestFile;
               };
 
               test-ls-dir-xrootd =
@@ -96,13 +96,13 @@
                     finalAttrs: previousAttrs: {
                       pname = previousAttrs.name;
                       version = versionFODTests;
-                      name = "${finalAttrs.pname}-${finalAttrs.version}";
                       nativeBuildInputs = [ self ];
-                      url = urlTestDir;
                       baseNameExpected = baseNameOf urlTestFile;
-                      outputHashMode = "flat";
-                      outputHashAlgo = "sha256";
+                      name = "${finalAttrs.pname}-${finalAttrs.version}";
                       outputHash = builtins.hashString finalAttrs.outputHashAlgo (finalAttrs.baseNameExpected + "\n");
+                      outputHashAlgo = "sha256";
+                      outputHashMode = "flat";
+                      url = urlTestDir;
                     }
                   );
             }

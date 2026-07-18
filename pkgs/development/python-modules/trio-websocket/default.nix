@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytest-trio,
   pytestCheckHook,
+  setuptools,
   trio,
   trustme,
   wsproto,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "trio-websocket";
   version = "0.12.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "HyperionGray";
@@ -23,17 +22,18 @@ buildPythonPackage rec {
     hash = "sha256-TGFf4WUeZDrjp/UiQ9O/GoaK5BRC2aaGZVPfqZ4Ip9I=";
   };
 
+  nativeCheckInputs = [
+    pytest-trio
+    pytestCheckHook
+    trustme
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
     trio
     wsproto
-  ];
-
-  nativeCheckInputs = [
-    pytest-trio
-    pytestCheckHook
-    trustme
   ];
 
   disabledTests = [
@@ -60,14 +60,13 @@ buildPythonPackage rec {
     "test_open_websocket_internal_exc"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "trio_websocket" ];
 
   meta = {
-    changelog = "https://github.com/HyperionGray/trio-websocket/blob/${version}/CHANGELOG.md";
     description = "WebSocket client and server implementation for Python Trio";
     homepage = "https://github.com/HyperionGray/trio-websocket";
+    changelog = "https://github.com/HyperionGray/trio-websocket/blob/${version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
   numpy,
-  setuptools,
-
   # tests
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dedupe-pylbfgs";
   version = "0.2.0.16";
-  pyproject = true;
 
   # NOTE: This is a fork of larsmans/pylbfgs maintained by dedupeio
   src = fetchFromGitHub {
@@ -30,6 +27,16 @@ buildPythonPackage rec {
     ./tests-numpy-2.4.patch # https://github.com/dedupeio/pylbfgs/pull/52
   ];
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  # Prevent importing from source during test collection (only $out has compiled extensions)
+  preCheck = ''
+    rm -rf lbfgs
+  '';
+
   build-system = [
     cython
     numpy
@@ -40,15 +47,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
-  # Prevent importing from source during test collection (only $out has compiled extensions)
-  preCheck = ''
-    rm -rf lbfgs
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "lbfgs"

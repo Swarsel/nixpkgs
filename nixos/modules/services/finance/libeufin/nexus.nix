@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   options,
   ...
 }:
@@ -13,23 +13,22 @@
 
       For a list of all possible options, please see the man page [`libeufin-nexus.conf(5)`](https://docs.taler.net/manpages/libeufin-nexus.conf.5.html)
     '';
+
     type = lib.types.submodule {
       inherit (options.services.libeufin.settings.type.nestedTypes) freeformType;
+
       options = {
+        libeufin-nexusdb-postgres = {
+          CONFIG = lib.mkOption {
+            description = ''
+              The database connection string for the libeufin-nexus database.
+            '';
+
+            type = lib.types.str;
+          };
+        };
+
         nexus-ebics = {
-          # Mandatory configuration values
-          # https://docs.taler.net/libeufin/nexus-manual.html#setting-up-the-ebics-subscriber
-          # https://docs.taler.net/libeufin/setup-ebics-at-postfinance.html
-          CURRENCY = lib.mkOption {
-            description = "Name of the fiat currency.";
-            type = lib.types.nonEmptyStr;
-            example = "CHF";
-          };
-          HOST_BASE_URL = lib.mkOption {
-            description = "URL of the EBICS server.";
-            type = lib.types.nonEmptyStr;
-            example = "https://ebics.postfinance.ch/ebics/ebics.aspx";
-          };
           BANK_DIALECT = lib.mkOption {
             description = ''
               Name of the following combination: EBICS version and ISO20022
@@ -38,80 +37,106 @@
 
               Currently only the "postfinance" or "gls" value is supported.
             '';
+
+            example = "postfinance";
+
             type = lib.types.enum [
               "postfinance"
               "gls"
             ];
-            example = "postfinance";
           };
+
+          BANK_PUBLIC_KEYS_FILE = lib.mkOption {
+            default = "/var/lib/libeufin-nexus/bank-ebics-keys.json";
+
+            description = ''
+              Filesystem location where Nexus should store the bank public keys.
+            '';
+
+            type = lib.types.path;
+          };
+
+          BIC = lib.mkOption {
+            description = "BIC of the bank account that is associated with the EBICS subscriber.";
+            example = "POFICHBEXXX";
+            type = lib.types.nonEmptyStr;
+          };
+
+          CLIENT_PRIVATE_KEYS_FILE = lib.mkOption {
+            default = "/var/lib/libeufin-nexus/client-ebics-keys.json";
+
+            description = ''
+              Filesystem location where Nexus should store the subscriber private keys.
+            '';
+
+            type = lib.types.path;
+          };
+
+          # Mandatory configuration values
+          # https://docs.taler.net/libeufin/nexus-manual.html#setting-up-the-ebics-subscriber
+          # https://docs.taler.net/libeufin/setup-ebics-at-postfinance.html
+          CURRENCY = lib.mkOption {
+            description = "Name of the fiat currency.";
+            example = "CHF";
+            type = lib.types.nonEmptyStr;
+          };
+
+          HOST_BASE_URL = lib.mkOption {
+            description = "URL of the EBICS server.";
+            example = "https://ebics.postfinance.ch/ebics/ebics.aspx";
+            type = lib.types.nonEmptyStr;
+          };
+
           HOST_ID = lib.mkOption {
             description = "Name of the EBICS host.";
-            type = lib.types.nonEmptyStr;
             example = "PFEBICS";
-          };
-          USER_ID = lib.mkOption {
-            description = ''
-              User ID of the EBICS subscriber.
-
-              This value must be assigned by the bank after having activated a new EBICS subscriber.
-            '';
             type = lib.types.nonEmptyStr;
-            example = "PFC00563";
           };
+
+          IBAN = lib.mkOption {
+            description = "IBAN of the bank account that is associated with the EBICS subscriber.";
+            example = "CH7789144474425692816";
+            type = lib.types.nonEmptyStr;
+          };
+
+          NAME = lib.mkOption {
+            description = "Legal entity that is associated with the EBICS subscriber.";
+            example = "John Smith S.A.";
+            type = lib.types.nonEmptyStr;
+          };
+
           PARTNER_ID = lib.mkOption {
             description = ''
               Partner ID of the EBICS subscriber.
 
               This value must be assigned by the bank after having activated a new EBICS subscriber.
             '';
-            type = lib.types.nonEmptyStr;
+
             example = "PFC00563";
-          };
-          IBAN = lib.mkOption {
-            description = "IBAN of the bank account that is associated with the EBICS subscriber.";
             type = lib.types.nonEmptyStr;
-            example = "CH7789144474425692816";
           };
-          BIC = lib.mkOption {
-            description = "BIC of the bank account that is associated with the EBICS subscriber.";
-            type = lib.types.nonEmptyStr;
-            example = "POFICHBEXXX";
-          };
-          NAME = lib.mkOption {
-            description = "Legal entity that is associated with the EBICS subscriber.";
-            type = lib.types.nonEmptyStr;
-            example = "John Smith S.A.";
-          };
-          BANK_PUBLIC_KEYS_FILE = lib.mkOption {
-            type = lib.types.path;
-            default = "/var/lib/libeufin-nexus/bank-ebics-keys.json";
+
+          USER_ID = lib.mkOption {
             description = ''
-              Filesystem location where Nexus should store the bank public keys.
+              User ID of the EBICS subscriber.
+
+              This value must be assigned by the bank after having activated a new EBICS subscriber.
             '';
-          };
-          CLIENT_PRIVATE_KEYS_FILE = lib.mkOption {
-            type = lib.types.path;
-            default = "/var/lib/libeufin-nexus/client-ebics-keys.json";
-            description = ''
-              Filesystem location where Nexus should store the subscriber private keys.
-            '';
+
+            example = "PFC00563";
+            type = lib.types.nonEmptyStr;
           };
         };
+
         nexus-httpd = {
           PORT = lib.mkOption {
-            type = lib.types.port;
             default = 8084;
+
             description = ''
               The port on which libeufin-bank should listen.
             '';
-          };
-        };
-        libeufin-nexusdb-postgres = {
-          CONFIG = lib.mkOption {
-            type = lib.types.str;
-            description = ''
-              The database connection string for the libeufin-nexus database.
-            '';
+
+            type = lib.types.port;
           };
         };
       };

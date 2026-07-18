@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
@@ -11,7 +11,6 @@ let
 
 in
 stdenv.mkDerivation rec {
-  name = "${pname}-${version}-${kernel.version}";
   pname = "r8168";
   # on update please verify that the source matches the realtek version
   version = "8.056.02";
@@ -28,8 +27,6 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-KKfI03RrD+34+KSxwTwDkeB4sGFNY/tU/YbfrfVkTp8=";
   };
 
-  hardeningDisable = [ "pic" ];
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   # avoid using the Makefile directly -- it doesn't understand
@@ -39,13 +36,12 @@ stdenv.mkDerivation rec {
     "-C ${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     "modules"
   ];
+
   preBuild = ''
     absSrc=$(realpath src)
     makeFlagsArray+=("M=$absSrc")
     makeFlagsArray+=("EXTRA_CFLAGS=-DCONFIG_R8168_NAPI -DCONFIG_R8168_VLAN -DCONFIG_ASPM -DENABLE_S5WOL -DENABLE_EEE")
   '';
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     mkdir -p ${modDestDir}
@@ -53,16 +49,22 @@ stdenv.mkDerivation rec {
     find ${modDestDir} -name '*.ko' -exec xz -f '{}' \;
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+  name = "${pname}-${version}-${kernel.version}";
+
   meta = {
     description = "Realtek r8168 driver";
+
     longDescription = ''
       A kernel module for Realtek 8168 network cards.
       If you want to use this driver, you might need to blacklist the r8169 driver
       by adding "r8169" to boot.blacklistedKernelModules.
     '';
+
     homepage = "https://github.com/mtorromeo/r8168";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

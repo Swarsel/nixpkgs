@@ -1,14 +1,13 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cmake,
   doxygen,
+  fetchgit,
   python3,
 }:
 stdenv.mkDerivation {
   pname = "tclap";
-
   # This version is slightly newer than 1.4.0-rc1:
   # See https://github.com/mirror/tclap/compare/1.4.0-rc1..3feeb7b2499b37d9cb80890cadaf7c905a9a50c6
   version = "1.4-3feeb7b";
@@ -32,12 +31,12 @@ stdenv.mkDerivation {
     python3
   ];
 
+  doCheck = true;
+
   # Installing docs is broken in this package+version so we stub out some files
   preInstall = ''
     touch docs/manual.html
   '';
-
-  doCheck = true;
 
   meta = {
     description = "Templatized C++ Command Line Parser Library (v1.4)";

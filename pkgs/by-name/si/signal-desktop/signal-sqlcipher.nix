@@ -1,18 +1,18 @@
 {
-  stdenv,
-  pnpm,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpmBuildHook,
-  nodejs,
-  rustPlatform,
   cargo,
-  dump_syms,
-  python3,
-  xcodebuild,
   cctools,
+  dump_syms,
+  fetchPnpmDeps,
+  nodejs,
+  pnpm,
+  pnpmBuildHook,
+  pnpmConfigHook,
+  python3,
+  rustPlatform,
+  xcodebuild,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "node-sqlcipher";
@@ -25,21 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-RzuyUx0WEG8j8HwV5cepVJIeqYzJpNemFNtB+9NETto=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm; # may be different than top-level pnpm
-    fetcherVersion = 4;
-    hash = "sha256-HK3AetwGqFq/dhxX+aWgUww6eLCeQEkZIVsmmnYqdmM=";
-  };
-
-  cargoRoot = "deps/extension";
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    name = "sqlcipher-signal-exentsion";
-    inherit (finalAttrs) src cargoRoot;
-    hash = "sha256-NtJPwRvjU1WsOxgb2vpokes9eL4DkEcbDaEmML7zsqQ=";
-  };
-
   strictDeps = true;
+
   nativeBuildInputs = [
     nodejs
     pnpmConfigHook
@@ -61,8 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpm run prebuildify --strip false --arch "${stdenv.hostPlatform.node.arch}" --platform "${stdenv.hostPlatform.node.platform}"
   '';
 
-  pnpmBuildScript = "build";
-
   installPhase = ''
     runHook preInstall
 
@@ -74,15 +59,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src cargoRoot;
+    hash = "sha256-NtJPwRvjU1WsOxgb2vpokes9eL4DkEcbDaEmML7zsqQ=";
+    name = "sqlcipher-signal-exentsion";
+  };
+
+  cargoRoot = "deps/extension";
+  pnpmBuildScript = "build";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm; # may be different than top-level pnpm
+    fetcherVersion = 4;
+    hash = "sha256-HK3AetwGqFq/dhxX+aWgUww6eLCeQEkZIVsmmnYqdmM=";
+  };
+
   meta = {
     description = "Fast N-API-based Node.js addon wrapping sqlcipher and FTS5 segmenting APIs";
     homepage = "https://github.com/signalapp/node-sqlcipher/tree/main";
+
     license = with lib.licenses; [
       agpl3Only
 
       # deps/sqlcipher
       bsd3
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

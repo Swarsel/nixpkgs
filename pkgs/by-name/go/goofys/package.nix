@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -17,22 +17,21 @@ buildGoModule {
     sha256 = "sha256-6yVMNSwwPZlADXuPBDRlgoz4Stuz2pgv6r6+y2/C8XY=";
   };
 
-  vendorHash = "sha256-shFld293pdmVcnu3p0NoBmPGLJddZd4O/gJ8klgdlQ8=";
-
-  subPackages = [ "." ];
-
   # Tests are using networking
   postPatch = ''
     rm internal/*_test.go
   '';
 
+  vendorHash = "sha256-shFld293pdmVcnu3p0NoBmPGLJddZd4O/gJ8klgdlQ8=";
+  subPackages = [ "." ];
+
   meta = {
-    homepage = "https://github.com/kahing/goofys";
     description = "High-performance, POSIX-ish Amazon S3 file system written in Go";
+    homepage = "https://github.com/kahing/goofys";
     license = [ lib.licenses.mit ];
     maintainers = [ ];
-    broken = stdenv.hostPlatform.isDarwin; # needs to update gopsutil to at least v3.21.3 to include https://github.com/shirou/gopsutil/pull/1042
     mainProgram = "goofys";
+    broken = stdenv.hostPlatform.isDarwin; # needs to update gopsutil to at least v3.21.3 to include https://github.com/shirou/gopsutil/pull/1042
   };
 
 }

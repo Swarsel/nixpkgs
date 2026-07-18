@@ -2,13 +2,13 @@ self:
 {
   lib,
   stdenv,
-  makeSetupHook,
   cmake,
+  jq,
+  makeSetupHook,
   ninja,
-  qt6,
   python3,
   python3Packages,
-  jq,
+  qt6,
 }:
 let
   dependencies = (lib.importJSON ../generated/dependencies.json).dependencies;
@@ -21,60 +21,54 @@ let
       value = v;
     }) lib.licenses)
     // {
-      # https://community.kde.org/Policies/Licensing_Policy
-      "LicenseRef-KDE-Accepted-GPL" = lib.licenses.gpl3Plus;
-      "LicenseRef-KFQF-Accepted-GPL" = lib.licenses.gpl3Plus;
-      "LicenseRef-KDE-Accepted-LGPL" = lib.licenses.lgpl3Plus;
-
-      # https://sjfonts.sourceforge.net/
-      "LicenseRef-SJFonts" = lib.licenses.gpl2Plus;
-
-      # https://invent.kde.org/education/kiten/-/blob/master/LICENSES/LicenseRef-EDRDG.txt
-      "LicenseRef-EDRDG" = lib.licenses.cc-by-sa-30;
-
-      # https://invent.kde.org/kdevelop/kdevelop/-/blob/master/LICENSES/LicenseRef-MIT-KDevelop-Ideal.txt
-      "LicenseRef-MIT-KDevelop-Ideal" = lib.licenses.mit;
+      "BSD-2-Clauses" = lib.licenses.bsd2;
+      "BSD-3-Clauses" = lib.licenses.bsd3;
+      "BSD-3-clause" = lib.licenses.bsd3;
+      "Bison-exception-2.2" = null;
 
       "FSFAP" = {
-        spdxId = "FSFAP";
         fullName = "FSF All Permissive License";
+        spdxId = "FSFAP";
       };
 
       "FSFULLR" = {
-        spdxId = "FSFULLR";
         fullName = "FSF Unlimited License (with License Retention)";
+        spdxId = "FSFULLR";
       };
+
+      "Font-exception-2.0" = null;
+      "GCC-exception-3.1" = null;
+      # FIXME: typo lol
+      "ICS" = lib.licenses.isc;
+      "LGPL" = lib.licenses.lgpl2Plus;
+      # https://invent.kde.org/education/kiten/-/blob/master/LICENSES/LicenseRef-EDRDG.txt
+      "LicenseRef-EDRDG" = lib.licenses.cc-by-sa-30;
+      # https://community.kde.org/Policies/Licensing_Policy
+      "LicenseRef-KDE-Accepted-GPL" = lib.licenses.gpl3Plus;
+      "LicenseRef-KDE-Accepted-LGPL" = lib.licenses.lgpl3Plus;
+      "LicenseRef-KFQF-Accepted-GPL" = lib.licenses.gpl3Plus;
+      # https://invent.kde.org/kdevelop/kdevelop/-/blob/master/LICENSES/LicenseRef-MIT-KDevelop-Ideal.txt
+      "LicenseRef-MIT-KDevelop-Ideal" = lib.licenses.mit;
+      "LicenseRef-Qt-Commercial" = null;
+      "LicenseRef-Qt-Commercial-exception-1.0" = null;
+      "LicenseRef-Qt-LGPL-exception-1.0" = null;
+      "LicenseRef-Qt-exception" = null;
+      # https://sjfonts.sourceforge.net/
+      "LicenseRef-SJFonts" = lib.licenses.gpl2Plus;
+      None = null;
+      # These are only relevant to Qt commercial users
+      "Qt-Commercial-exception-1.0" = null;
+      # FIXME: ???
+      "Qt-GPL-exception-1.0" = null;
+      "Qt-LGPL-exception-1.1" = null;
 
       "W3C-20150513" = {
-        spdxId = "W3C-20150513";
         fullName = "W3C Software Notice and Document License (2015-05-13)";
+        spdxId = "W3C-20150513";
       };
-
-      "LGPL" = lib.licenses.lgpl2Plus;
 
       # Technically not exact
       "bzip2-1.0.6" = lib.licenses.bsdOriginal;
-
-      # FIXME: typo lol
-      "ICS" = lib.licenses.isc;
-      "BSD-2-Clauses" = lib.licenses.bsd2;
-      "BSD-3-clause" = lib.licenses.bsd3;
-      "BSD-3-Clauses" = lib.licenses.bsd3;
-
-      # These are only relevant to Qt commercial users
-      "Qt-Commercial-exception-1.0" = null;
-      "LicenseRef-Qt-Commercial" = null;
-      "LicenseRef-Qt-Commercial-exception-1.0" = null;
-
-      # FIXME: ???
-      "Qt-GPL-exception-1.0" = null;
-      "LicenseRef-Qt-LGPL-exception-1.0" = null;
-      "Qt-LGPL-exception-1.1" = null;
-      "LicenseRef-Qt-exception" = null;
-      "GCC-exception-3.1" = null;
-      "Bison-exception-2.2" = null;
-      "Font-exception-2.0" = null;
-      None = null;
     };
 
   moveOutputsHook = makeSetupHook {
@@ -84,23 +78,25 @@ let
 
   qmllintHook = makeSetupHook {
     name = "qmllint-validate-hook";
+
     substitutions = {
-      qmllint = "${qt6.qtdeclarative}/bin/qmllint";
       jq = lib.getExe jq;
+      qmllint = "${qt6.qtdeclarative}/bin/qmllint";
     };
+
     meta.license = lib.licenses.mit;
   } ./qmllint-hook.sh;
 in
 {
   pname,
-  version ? self.sources.${pname}.version,
-  src ? self.sources.${pname},
+  excludeDependencies ? [ ],
   extraBuildInputs ? [ ],
+  extraCmakeFlags ? [ ],
   extraNativeBuildInputs ? [ ],
   extraPropagatedBuildInputs ? [ ],
-  extraCmakeFlags ? [ ],
-  excludeDependencies ? [ ],
   hasPythonBindings ? false,
+  src ? self.sources.${pname},
+  version ? self.sources.${pname}.version,
   ...
 }@args:
 let
@@ -139,6 +135,8 @@ let
     ]
     ++ lib.optionals hasPythonBindings [ "python" ];
 
+    strictDeps = true;
+
     nativeBuildInputs = [
       cmake
       ninja
@@ -165,15 +163,10 @@ let
 
     # FIXME: figure out what to propagate here
     propagatedBuildInputs = deps ++ extraPropagatedBuildInputs;
-    strictDeps = true;
-
     cmakeFlags = [ "-DQT_MAJOR_VERSION=6" ] ++ extraCmakeFlags;
-
-    doInstallCheck = true;
-
-    separateDebugInfo = true;
-
     env.LANG = "C.UTF-8";
+    doInstallCheck = true;
+    separateDebugInfo = true;
   };
 
   cleanArgs = removeAttrs args [
@@ -189,11 +182,11 @@ let
   meta = {
     description = projectInfo.${pname}.description;
     homepage = "https://invent.kde.org/${projectInfo.${pname}.repo_path}";
-    donationPage = "https://kde.org/donate/";
     license = lib.filter (l: l != null) (map (l: licensesBySpdxId.${l}) licenseInfo.${pname});
-    teams = [ lib.teams.qt-kde ];
     # Platforms are currently limited to what upstream tests in CI, but can be extended if there's interest.
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+    donationPage = "https://kde.org/donate/";
+    teams = [ lib.teams.qt-kde ];
   }
   // (args.meta or { });
 

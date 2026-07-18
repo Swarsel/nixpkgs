@@ -1,11 +1,11 @@
 {
   lib,
-  makeSetupHook,
   cmake,
+  makeSetupHook,
 }:
 
 makeSetupHook {
-  name = "ctestCheckHook";
   propagatedBuildInputs = [ cmake ];
+  name = "ctestCheckHook";
   meta.license = lib.licenses.mit;
 } ./ctest-check-hook.sh

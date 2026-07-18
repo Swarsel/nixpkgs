@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   systemd,
 }:
 
@@ -17,9 +17,18 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-hDf6F9sCrX6vu9FJlXTMRtGaA+gwI7PdqD9GKINHPO0=";
   };
 
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ systemd ];
   vendorHash = null;
 
+  preBuild = ''
+    export CGO_ENABLED=${if stdenv.hostPlatform.isLinux then "1" else "0"}
+  '';
+
   doCheck = false;
+
+  ldflags = [
+    "-X k8s.io/node-problem-detector/pkg/version.version=v${finalAttrs.version}"
+  ];
 
   # Optionally, a log counter binary can be created to parse journald logs.
   # The binary is dynamically linked against systemd libraries, making it a
@@ -30,17 +39,7 @@ buildGoModule (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ "cmd/logcounter" ];
 
-  preBuild = ''
-    export CGO_ENABLED=${if stdenv.hostPlatform.isLinux then "1" else "0"}
-  '';
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ systemd ];
-
   tags = lib.optionals stdenv.hostPlatform.isLinux [ "journald" ];
-
-  ldflags = [
-    "-X k8s.io/node-problem-detector/pkg/version.version=v${finalAttrs.version}"
-  ];
 
   meta = {
     description = "Various problem detectors running on the Kubernetes nodes";

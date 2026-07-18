@@ -3,24 +3,24 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libxcb,
-  libxcb-keysyms,
-  libxcb-image,
-  pam,
-  libx11,
-  libev,
   cairo,
+  libev,
+  libjpeg_turbo,
+  libx11,
+  libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-util,
   libxkbcommon,
   libxkbfile,
-  libjpeg_turbo,
+  pam,
+  pkg-config,
   xcbutilxrm,
-  libxcb-util,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.13.c.5";
   pname = "i3lock-color";
+  version = "2.13.c.5";
 
   src = fetchFromGitHub {
     owner = "PandorasFox";
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libxcb
     libxcb-keysyms
@@ -49,22 +50,27 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "all" ];
+
   preInstall = ''
     mkdir -p $out/share/man/man1
   '';
-  installFlags = [
-    "PREFIX=\${out}"
-    "SYSCONFDIR=\${out}/etc"
-    "MANDIR=\${out}/share/man"
-  ];
+
   postInstall = ''
     mv $out/bin/i3lock $out/bin/i3lock-color
     ln -s $out/bin/i3lock-color $out/bin/i3lock
     mv $out/share/man/man1/i3lock.1 $out/share/man/man1/i3lock-color.1
     sed -i 's/\(^\|\s\|"\)i3lock\(\s\|$\)/\1i3lock-color\2/g' $out/share/man/man1/i3lock-color.1
   '';
+
+  installFlags = [
+    "PREFIX=\${out}"
+    "SYSCONFDIR=\${out}/etc"
+    "MANDIR=\${out}/share/man"
+  ];
+
   meta = {
     description = "Simple screen locker like slock, enhanced version with extra configuration options";
+
     longDescription = ''
       Simple screen locker. After locking, a colored background (default: white) or
       a configurable image is shown, and a ring-shaped unlock-indicator gives feedback
@@ -86,12 +92,12 @@ stdenv.mkDerivation (finalAttrs: {
         - clock: time/date with configurable format
         - keyboard-layout
     '';
-    homepage = "https://github.com/PandorasFox/i3lock-color";
-    maintainers = with lib.maintainers; [ malyn ];
-    mainProgram = "i3lock-color";
-    license = lib.licenses.bsd3;
 
+    homepage = "https://github.com/PandorasFox/i3lock-color";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ malyn ];
     platforms = lib.platforms.all;
+    mainProgram = "i3lock-color";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

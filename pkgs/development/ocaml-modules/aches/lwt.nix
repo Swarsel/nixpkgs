@@ -1,14 +1,14 @@
 {
   lib,
-  buildDunePackage,
-  ringo,
   aches,
+  buildDunePackage,
   lwt,
+  ringo,
 }:
 
 buildDunePackage {
-  pname = "aches-lwt";
   inherit (ringo) src version;
+  pname = "aches-lwt";
 
   propagatedBuildInputs = [
     aches

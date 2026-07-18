@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   cmake,
   dbus,
   dbus-test-runner,
   doxygen,
+  gitUpdater,
   pkg-config,
   qtbase,
   qtdeclarative,
   qttools,
+  testers,
   validatePkgConfig,
   withDocumentation ? true,
 }:
@@ -66,11 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtdeclarative
   ];
 
-  nativeCheckInputs = [
-    dbus
-    dbus-test-runner
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_QT6" withQt6)
     (lib.cmakeBool "ENABLE_TESTING" finalAttrs.finalPackage.doCheck)
@@ -79,14 +74,19 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "use_libhud2" false)
   ];
 
-  dontWrapQtApps = true;
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  nativeCheckInputs = [
+    dbus
+    dbus-test-runner
+  ];
 
   preCheck = ''
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
     export QML2_IMPORT_PATH=${lib.getBin qtdeclarative}/${qtbase.qtQmlPrefix}
   '';
+
+  dontWrapQtApps = true;
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -98,10 +98,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/lomiri-action-api";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-action-api/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "lomiri-action-qt${lib.optionalString withQt6 "6"}-1"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

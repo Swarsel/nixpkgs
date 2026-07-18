@@ -3,25 +3,22 @@
   stdenv,
   fetchFromGitHub,
   buildPythonPackage,
-  pytestCheckHook,
-  setuptools,
+  flask,
+  flask-compress,
   matplotlib,
   numpy,
   packaging,
+  parameterized,
+  pytestCheckHook,
+  scikit-learn,
+  setuptools,
   torch,
   tqdm,
-  flask,
-  flask-compress,
-  parameterized,
-  scikit-learn,
 }:
 
 buildPythonPackage rec {
   pname = "captum";
   version = "0.8.0";
-  pyproject = true;
-
-  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "pytorch";
@@ -30,26 +27,22 @@ buildPythonPackage rec {
     hash = "sha256-WuKbMYZPHWaTYYhVseSSkwXQk9LBzGuWfmneDw9V2hg=";
   };
 
-  dependencies = [
-    matplotlib
-    numpy
-    packaging
-    torch
-    tqdm
-  ];
-
-  pythonRelaxDeps = [
-    "numpy"
-  ];
-
-  pythonImportsCheck = [ "captum" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     flask
     flask-compress
     parameterized
     scikit-learn
+  ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    matplotlib
+    numpy
+    packaging
+    torch
+    tqdm
   ];
 
   disabledTestPaths =
@@ -67,6 +60,13 @@ buildPythonPackage rec {
     # Failing tests
     "test_softmax_classification_batch_zero_baseline"
     "test_tracin_identity_regression_9_check_idx_none_ArnoldiInfluenceFunction"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "captum" ];
+
+  pythonRelaxDeps = [
+    "numpy"
   ];
 
   meta = {

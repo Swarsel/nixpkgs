@@ -15,85 +15,48 @@ in
     system.autoUpgrade = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to periodically upgrade NixOS to the latest
           version. If enabled, a systemd timer will run
           `nixos-rebuild switch --upgrade` once a
           day.
         '';
+
+        type = lib.types.bool;
       };
 
-      operation = lib.mkOption {
-        type = lib.types.enum [
-          "switch"
-          "boot"
-        ];
-        default = "switch";
-        example = "boot";
-        description = ''
-          Whether to run
-          `nixos-rebuild switch --upgrade` or run
-          `nixos-rebuild boot --upgrade`
-        '';
-      };
+      allowReboot = lib.mkOption {
+        default = false;
 
-      flake = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        example = "github:kloenk/nix";
         description = ''
-          The Flake URI of the NixOS configuration to build.
-          Disables the option {option}`system.autoUpgrade.channel`.
+          Reboot the system into the new generation instead of a switch
+          if the new generation uses a different kernel, kernel modules
+          or initrd than the booted system.
+          See {option}`rebootWindow` for configuring the times at which a reboot is allowed.
         '';
+
+        type = lib.types.bool;
       };
 
       channel = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
         default = null;
-        example = "https://channels.nixos.org/nixos-14.12-small";
+
         description = ''
           The URI of the NixOS channel to use for automatic
           upgrades. By default, this is the channel set using
           {command}`nix-channel` (run `nix-channel --list`
           to see the current value).
         '';
-      };
 
-      upgrade = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Disable adding the `--upgrade` parameter when `channel`
-          is not set, such as when upgrading to the latest version
-          of a flake honouring its lockfile.
-        '';
-      };
-
-      flags = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        example = [
-          "-I"
-          "stuff=/home/alice/nixos-stuff"
-          "--option"
-          "extra-binary-caches"
-          "http://my-cache.example.org/"
-        ];
-        description = ''
-          Any additional flags passed to {command}`nixos-rebuild`.
-
-          If you are using flakes and use a local repo you can add
-          {command}`[ "--update-input" "nixpkgs" "--commit-lock-file" ]`
-          to update nixpkgs.
-        '';
+        example = "https://channels.nixos.org/nixos-14.12-small";
+        type = lib.types.nullOr lib.types.str;
       };
 
       dates = lib.mkOption {
-        type = lib.types.str;
         default = "04:40";
-        example = "daily";
+
         description = ''
           How often or when upgrade occurs. For most desktop and server systems
           a sufficient upgrade frequency is once a day.
@@ -101,77 +64,78 @@ in
           The format is described in
           {manpage}`systemd.time(7)`.
         '';
-      };
 
-      allowReboot = lib.mkOption {
-        default = false;
-        type = lib.types.bool;
-        description = ''
-          Reboot the system into the new generation instead of a switch
-          if the new generation uses a different kernel, kernel modules
-          or initrd than the booted system.
-          See {option}`rebootWindow` for configuring the times at which a reboot is allowed.
-        '';
-      };
-
-      randomizedDelaySec = lib.mkOption {
-        default = "0";
+        example = "daily";
         type = lib.types.str;
-        example = "45min";
-        description = ''
-          Add a randomized delay before each automatic upgrade.
-          The delay will be chosen between zero and this value.
-          This value must be a time span in the format specified by
-          {manpage}`systemd.time(7)`
-        '';
       };
 
       fixedRandomDelay = lib.mkOption {
         default = false;
-        type = lib.types.bool;
-        example = true;
+
         description = ''
           Make the randomized delay consistent between runs.
           This reduces the jitter between automatic upgrades.
           See {option}`randomizedDelaySec` for configuring the randomized delay.
         '';
+
+        example = true;
+        type = lib.types.bool;
       };
 
-      rebootWindow = lib.mkOption {
-        description = ''
-          Define a lower and upper time value (in HH:MM format) which
-          constitute a time window during which reboots are allowed after an upgrade.
-          This option only has an effect when {option}`allowReboot` is enabled.
-          The default value of `null` means that reboots are allowed at any time.
-        '';
-        default = null;
-        example = {
-          lower = "01:00";
-          upper = "05:00";
-        };
-        type =
-          with lib.types;
-          nullOr (submodule {
-            options = {
-              lower = lib.mkOption {
-                description = "Lower limit of the reboot window";
-                type = lib.types.strMatching "[[:digit:]]{2}:[[:digit:]]{2}";
-                example = "01:00";
-              };
+      flags = lib.mkOption {
+        default = [ ];
 
-              upper = lib.mkOption {
-                description = "Upper limit of the reboot window";
-                type = lib.types.strMatching "[[:digit:]]{2}:[[:digit:]]{2}";
-                example = "05:00";
-              };
-            };
-          });
+        description = ''
+          Any additional flags passed to {command}`nixos-rebuild`.
+
+          If you are using flakes and use a local repo you can add
+          {command}`[ "--update-input" "nixpkgs" "--commit-lock-file" ]`
+          to update nixpkgs.
+        '';
+
+        example = [
+          "-I"
+          "stuff=/home/alice/nixos-stuff"
+          "--option"
+          "extra-binary-caches"
+          "http://my-cache.example.org/"
+        ];
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      flake = lib.mkOption {
+        default = null;
+
+        description = ''
+          The Flake URI of the NixOS configuration to build.
+          Disables the option {option}`system.autoUpgrade.channel`.
+        '';
+
+        example = "github:kloenk/nix";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      operation = lib.mkOption {
+        default = "switch";
+
+        description = ''
+          Whether to run
+          `nixos-rebuild switch --upgrade` or run
+          `nixos-rebuild boot --upgrade`
+        '';
+
+        example = "boot";
+
+        type = lib.types.enum [
+          "switch"
+          "boot"
+        ];
       };
 
       persistent = lib.mkOption {
         default = true;
-        type = lib.types.bool;
-        example = false;
+
         description = ''
           Takes a boolean argument. If true, the time when the service
           unit was last triggered is stored on disk. When the timer is
@@ -182,15 +146,80 @@ in
           useful to catch up on missed runs of the service when the
           system was powered down.
         '';
+
+        example = false;
+        type = lib.types.bool;
+      };
+
+      randomizedDelaySec = lib.mkOption {
+        default = "0";
+
+        description = ''
+          Add a randomized delay before each automatic upgrade.
+          The delay will be chosen between zero and this value.
+          This value must be a time span in the format specified by
+          {manpage}`systemd.time(7)`
+        '';
+
+        example = "45min";
+        type = lib.types.str;
+      };
+
+      rebootWindow = lib.mkOption {
+        default = null;
+
+        description = ''
+          Define a lower and upper time value (in HH:MM format) which
+          constitute a time window during which reboots are allowed after an upgrade.
+          This option only has an effect when {option}`allowReboot` is enabled.
+          The default value of `null` means that reboots are allowed at any time.
+        '';
+
+        example = {
+          lower = "01:00";
+          upper = "05:00";
+        };
+
+        type =
+          with lib.types;
+          nullOr (submodule {
+            options = {
+              lower = lib.mkOption {
+                description = "Lower limit of the reboot window";
+                example = "01:00";
+                type = lib.types.strMatching "[[:digit:]]{2}:[[:digit:]]{2}";
+              };
+
+              upper = lib.mkOption {
+                description = "Upper limit of the reboot window";
+                example = "05:00";
+                type = lib.types.strMatching "[[:digit:]]{2}:[[:digit:]]{2}";
+              };
+            };
+          });
       };
 
       runGarbageCollection = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to automatically run `nix-gc.service` after a successful
           system upgrade.
         '';
+
+        type = lib.types.bool;
+      };
+
+      upgrade = lib.mkOption {
+        default = true;
+
+        description = ''
+          Disable adding the `--upgrade` parameter when `channel`
+          is not set, such as when upgrading to the latest version
+          of a flake honouring its lockfile.
+        '';
+
+        type = lib.types.bool;
       };
 
     };
@@ -202,12 +231,14 @@ in
     assertions = [
       {
         assertion = !((cfg.channel != null) && (cfg.flake != null));
+
         message = ''
           The options 'system.autoUpgrade.channel' and 'system.autoUpgrade.flake' cannot both be set.
         '';
       }
       {
         assertion = (cfg.runGarbageCollection -> config.nix.enable);
+
         message = ''
           The option 'system.autoUpgrade.runGarbageCollection = true' requires 'nix.enable = true'.
         '';
@@ -229,15 +260,8 @@ in
     );
 
     systemd.services.nixos-upgrade = {
+      after = [ "network-online.target" ];
       description = "NixOS Upgrade";
-
-      restartIfChanged = false;
-      unitConfig.X-StopOnRemoval = false;
-      unitConfig.OnSuccess = lib.optional (
-        cfg.runGarbageCollection && config.nix.enable
-      ) "nix-gc.service";
-
-      serviceConfig.Type = "oneshot";
 
       environment =
         config.nix.envVars
@@ -256,6 +280,8 @@ in
         config.nix.package.out
         config.programs.ssh.package
       ];
+
+      restartIfChanged = false;
 
       script =
         let
@@ -311,17 +337,22 @@ in
             ${nixos-rebuild} ${cfg.operation} ${toString (cfg.flags ++ upgradeFlag)}
           '';
 
+      serviceConfig.Type = "oneshot";
       startAt = cfg.dates;
 
-      after = [ "network-online.target" ];
+      unitConfig.OnSuccess = lib.optional (
+        cfg.runGarbageCollection && config.nix.enable
+      ) "nix-gc.service";
+
+      unitConfig.X-StopOnRemoval = false;
       wants = [ "network-online.target" ];
     };
 
     systemd.timers.nixos-upgrade = {
       timerConfig = {
-        RandomizedDelaySec = cfg.randomizedDelaySec;
         FixedRandomDelay = cfg.fixedRandomDelay;
         Persistent = cfg.persistent;
+        RandomizedDelaySec = cfg.randomizedDelaySec;
       };
     };
   };

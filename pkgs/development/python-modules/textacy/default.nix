@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "textacy";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -59,6 +58,7 @@ buildPythonPackage rec {
     "tests/preprocessing/test_replace.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "textacy" ];
 
   meta = {

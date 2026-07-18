@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -21,6 +21,7 @@ buildGoModule (finalAttrs: {
   postInstall = ''
     mv $out/bin/cmd $out/bin/kubectl-rook-ceph
   '';
+
   # FIXME: uncomment once https://github.com/rook/kubectl-rook-ceph/issues/353 has been resolved
   # nativeBuildInputs = [ installShellFiles ];
   # postInstall =
@@ -43,10 +44,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Krew plugin to run kubectl commands with rook-ceph";
-    mainProgram = "kubectl-rook-ceph";
     homepage = "https://github.com/rook/kubectl-rook-ceph";
     changelog = "https://github.com/rook/kubectl-rook-ceph/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ vinylen ];
+    mainProgram = "kubectl-rook-ceph";
   };
 })

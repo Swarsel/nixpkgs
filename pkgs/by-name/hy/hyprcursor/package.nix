@@ -1,16 +1,16 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   cairo,
+  cmake,
+  gcc15Stdenv,
   hyprlang,
   librsvg,
   libzip,
-  xcur2png,
-  tomlplusplus,
   nix-update-script,
+  pkg-config,
+  tomlplusplus,
+  xcur2png,
 }:
 gcc15Stdenv.mkDerivation (finalAttrs: {
   pname = "hyprcursor";
@@ -22,6 +22,12 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-lIqabfBY7z/OANxHoPeIrDJrFyYy9jAM4GQLzZ2feCM=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -37,27 +43,22 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     tomlplusplus
   ];
 
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-  ];
-
   cmakeBuildType = "RelWithDebInfo";
   separateDebugInfo = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/hyprwm/hyprcursor";
     description = "Hyprland cursor format, library and utilities";
+    homepage = "https://github.com/hyprwm/hyprcursor";
     changelog = "https://github.com/hyprwm/hyprcursor/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       iynaix
     ];
-    teams = [ lib.teams.hyprland ];
-    mainProgram = "hyprcursor-util";
+
     platforms = lib.platforms.linux;
+    mainProgram = "hyprcursor-util";
+    teams = [ lib.teams.hyprland ];
   };
 })

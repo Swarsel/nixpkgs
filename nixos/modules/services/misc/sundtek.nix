@@ -19,17 +19,19 @@ in
 
     systemd.services.sundtek = {
       description = "Sundtek driver";
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
-        Type = "oneshot";
         ExecStart = ''
           ${pkgs.sundtek}/bin/mediasrv -d -v -p ${pkgs.sundtek}/bin ;\
           ${pkgs.sundtek}/bin/mediaclient --start --wait-for-devices
         '';
+
         ExecStop = "${pkgs.sundtek}/bin/mediaclient --shutdown";
         RemainAfterExit = true;
+        Type = "oneshot";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

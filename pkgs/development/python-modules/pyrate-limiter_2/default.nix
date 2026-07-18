@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
@@ -9,7 +9,6 @@ buildPythonPackage (finalAttrs: {
   pname = "pyrate-limiter";
   # nixpkgs-update: no auto update
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vutran1710";
@@ -19,9 +18,8 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ poetry-core ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyrate_limiter" ];
-
   passthru.skipBulkUpdate = true;
 
   meta = {

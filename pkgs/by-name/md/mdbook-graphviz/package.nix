@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   graphviz,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,18 +19,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-A1pFifxshWynwA88iLTMOm21NKCH8fHl5nFiV4wEG8A=";
-
   nativeCheckInputs = [ graphviz ];
 
   meta = {
     description = "Preprocessor for mdbook, rendering Graphviz graphs to HTML at build time";
-    mainProgram = "mdbook-graphviz";
     homepage = "https://github.com/dylanowen/mdbook-graphviz";
     changelog = "https://github.com/dylanowen/mdbook-graphviz/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       lovesegfault
       matthiasbeyer
     ];
+
+    mainProgram = "mdbook-graphviz";
   };
 })

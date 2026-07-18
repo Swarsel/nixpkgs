@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
-  installShellFiles,
+  buildGoModule,
   getent,
+  installShellFiles,
+  makeWrapper,
   nix-update-script,
-  testers,
   prometheus-php-fpm-exporter,
+  testers,
 }:
 
 buildGoModule rec {
@@ -21,21 +21,12 @@ buildGoModule rec {
     hash = "sha256-ggrFnyEdGBoZVh4dHMw+7RUm8nJ1hJXo/fownO3wvzE=";
   };
 
-  vendorHash = "sha256-OK36tHkBtosdfEWFPYMtlbzCkh5cF35NBWYyJrb9fwg=";
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
 
-  ldflags = [
-    "-X main.version=${version}"
-  ];
-
-  preFixup = ''
-    wrapProgram "$out/bin/php-fpm_exporter" \
-      --prefix PATH ":" "${lib.makeBinPath [ getent ]}"
-  '';
+  vendorHash = "sha256-OK36tHkBtosdfEWFPYMtlbzCkh5cF35NBWYyJrb9fwg=";
 
   postInstall = ''
     installShellCompletion --cmd php-fpm_exporter \
@@ -44,18 +35,28 @@ buildGoModule rec {
       --zsh <($out/bin/php-fpm_exporter completion zsh)
   '';
 
+  preFixup = ''
+    wrapProgram "$out/bin/php-fpm_exporter" \
+      --prefix PATH ":" "${lib.makeBinPath [ getent ]}"
+  '';
+
+  ldflags = [
+    "-X main.version=${version}"
+  ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = testers.testVersion {
       inherit version;
-      package = prometheus-php-fpm-exporter;
       command = "php-fpm_exporter version";
+      package = prometheus-php-fpm-exporter;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/hipages/php-fpm_exporter";
     description = "Prometheus exporter for PHP-FPM";
+    homepage = "https://github.com/hipages/php-fpm_exporter";
     license = lib.licenses.asl20;
     maintainers = [ ];
     mainProgram = "php-fpm_exporter";

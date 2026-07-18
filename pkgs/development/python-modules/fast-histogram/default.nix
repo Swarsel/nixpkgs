@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hypothesis,
   numpy,
   pytest-cov-stub,
   pytestCheckHook,
   python,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fast-histogram";
   version = "0.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astrofrog";
@@ -23,6 +22,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vIzDDzz6e7PXArHdZdSSgShuTjy3niVdGtXqgmyJl1w=";
   };
 
+  nativeCheckInputs = [
+    hypothesis
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -30,20 +35,14 @@ buildPythonPackage (finalAttrs: {
 
   dependencies = [ numpy ];
 
-  nativeCheckInputs = [
-    hypothesis
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "${placeholder "out"}/${python.sitePackages}" ];
-
-  pythonImportsCheck = [ "fast_histogram" ];
-
   disabledTests = [
     # ValueError
     "test_1d_compare_with_numpy"
   ];
+
+  enabledTestPaths = [ "${placeholder "out"}/${python.sitePackages}" ];
+  pyproject = true;
+  pythonImportsCheck = [ "fast_histogram" ];
 
   meta = {
     description = "Fast 1D and 2D histogram functions in Python";

@@ -1,14 +1,14 @@
 {
-  dpkg,
-  fetchurl,
   lib,
+  fetchurl,
+  common-updater-scripts,
+  curl,
+  dpkg,
+  jc,
+  jq,
   makeWrapper,
   stdenvNoCC,
   writeShellApplication,
-  common-updater-scripts,
-  curl,
-  jc,
-  jq,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "plasticscm-client-core-unwrapped";
@@ -17,21 +17,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   src = fetchurl {
     url = "https://www.plasticscm.com/plasticrepo/stable/debian/amd64/plasticscm-client-core_${finalAttrs.version}_amd64.deb";
     hash = "sha256-5Hmhb6DdJOohCj3LBn7Mo8Kad+MEjlfIKEBlNnujBY0=";
-    nativeBuildInputs = [ dpkg ];
     downloadToTemp = true;
-    recursiveHash = true;
+    nativeBuildInputs = [ dpkg ];
+
     postFetch = ''
       mkdir -p $out
       dpkg-deb --fsys-tarfile $downloadedFile | tar --extract --directory=$out
       rm -rf $out/usr/share/doc
     '';
+
+    recursiveHash = true;
   };
 
   nativeBuildInputs = [
     makeWrapper
   ];
-
-  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
@@ -42,8 +42,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontFixup = true;
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "update-plasticscm-client-core-unwrapped";
+
     runtimeInputs = [
       common-updater-scripts
       curl
@@ -51,6 +54,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       jc
       jq
     ];
+
     text = ''
       version="$(curl -sSL https://www.plasticscm.com/plasticrepo/stable/debian/Packages |
         jc --pkg-index-deb |
@@ -61,12 +65,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   });
 
   meta = {
-    homepage = "https://www.plasticscm.com";
     description = "SCM by Unity for game development";
+    homepage = "https://www.plasticscm.com";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ musjj ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "cm";
-    license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [ musjj ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

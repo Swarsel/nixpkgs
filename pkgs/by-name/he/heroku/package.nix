@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchzip,
   makeWrapper,
   nodejs,
@@ -18,8 +18,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/share/heroku $out/bin
     cp -pr * $out/share/heroku
@@ -28,6 +26,8 @@ stdenv.mkDerivation {
     makeWrapper $out/share/heroku/bin/run $out/bin/heroku \
       --set HEROKU_DISABLE_AUTOUPDATE 1
   '';
+
+  dontBuild = true;
 
   passthru.updateScript = writeScript "update-heroku" ''
     #!/usr/bin/env nix-shell
@@ -43,14 +43,16 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://devcenter.heroku.com/articles/heroku-cli";
     description = "Everything you need to get started using Heroku";
-    mainProgram = "heroku";
+    homepage = "https://devcenter.heroku.com/articles/heroku-cli";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aflatter
       mirdhyn
     ];
-    license = lib.licenses.mit;
+
     platforms = with lib.platforms; unix;
+    mainProgram = "heroku";
   };
 }

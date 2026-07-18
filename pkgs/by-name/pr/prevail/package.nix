@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   boost,
-  cmake,
   catch2_3,
+  cmake,
   microsoft-gsl,
   pkg-config,
   replaceVars,
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "vbpf";
     repo = "prevail";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-qlQSoz9GE2Z2rzmrPIj+HnIQmNxiBSgvR40FR9psuDc=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -45,15 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "prevail_ENABLE_TESTS" finalAttrs.doCheck)
   ];
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin
-    cp ../bin/prevail $out/bin/prevail
-
-    runHook postInstall
-  '';
-
   doCheck = true;
 
   checkPhase = ''
@@ -64,12 +55,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin
+    cp ../bin/prevail $out/bin/prevail
+
+    runHook postInstall
+  '';
+
   meta = {
     description = "eBPF verifier based on abstract interpretation";
     homepage = "https://github.com/vbpf/prevail";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "prevail";
   };
 })

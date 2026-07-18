@@ -18,6 +18,7 @@ buildGo125Module (finalAttrs: {
   };
 
   vendorHash = "sha256-tkDcC/2EdeNC60vbbRJ3zlsXvOYYkjr0QYO/aeEtQS0=";
+  nativeCheckInputs = [ exiftool ];
 
   ldflags = [
     "-s"
@@ -25,18 +26,18 @@ buildGo125Module (finalAttrs: {
     "-X=github.com/ayoisaiah/f2/v2/app.VersionString=${finalAttrs.version}"
   ];
 
-  nativeCheckInputs = [ exiftool ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command-line batch renaming tool";
     homepage = "https://github.com/ayoisaiah/f2";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       prince213
       zendo
     ];
+
     mainProgram = "f2";
   };
 })

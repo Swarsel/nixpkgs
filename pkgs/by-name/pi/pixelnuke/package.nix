@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libevent,
   glew,
   glfw,
+  libevent,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "03dp0p00chy00njl4w02ahxqiwqpjsrvwg8j4yi4dgckkc3gbh40";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/pixelnuke";
-
   buildInputs = [
     libevent
     glew
@@ -30,12 +28,14 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm755 ./pixelnuke $out/bin/pixelnuke
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/pixelnuke";
+
   meta = {
     description = "Multiplayer canvas (C implementation)";
     homepage = "https://cccgoe.de/wiki/Pixelflut";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ mrVanDalo ];
+    platforms = lib.platforms.linux;
     mainProgram = "pixelnuke";
   };
 })

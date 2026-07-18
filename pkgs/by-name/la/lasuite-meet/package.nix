@@ -1,7 +1,7 @@
 {
-  callPackage,
   lib,
   fetchFromGitHub,
+  callPackage,
   nixosTests,
   python3,
 }:
@@ -28,16 +28,13 @@ let
   outlook = callPackage ./addon-outlook.nix { inherit src version meta; };
 
   python = python3.override {
-    self = python3;
     packageOverrides = (self: super: { django = super.django_5; });
+    self = python3;
   };
 in
 python.pkgs.buildPythonApplication (finalAttrs: {
-  pname = "lasuite-meet";
-  pyproject = true;
   inherit version src;
-
-  sourceRoot = "${finalAttrs.src.name}/src/backend";
+  pname = "lasuite-meet";
 
   patches = [
     # Support configuration throught environment variables for SECURE_*
@@ -48,6 +45,33 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.11.16,<0.12.0" "uv_build"
   '';
+
+  postBuild = ''
+    export DJANGO_DATA_DIR=$(pwd)/data
+    ${python.pythonOnBuildForHost.interpreter} manage.py collectstatic --noinput --clear
+  '';
+
+  postInstall =
+    let
+      pythonPath = python.pkgs.makePythonPath finalAttrs.passthru.dependencies;
+    in
+    ''
+      mkdir -p $out/{bin,share}
+
+      cp ./manage.py $out/bin/.manage.py
+      cp -r data/static $out/share
+      chmod +x $out/bin/.manage.py
+
+      makeWrapper $out/bin/.manage.py $out/bin/meet \
+        --prefix PYTHONPATH : "${pythonPath}"
+      makeWrapper ${lib.getExe python.pkgs.celery} $out/bin/celery \
+        --prefix PYTHONPATH : "${pythonPath}:$out/${python.sitePackages}"
+      makeWrapper ${lib.getExe python.pkgs.gunicorn} $out/bin/gunicorn \
+        --prefix PYTHONPATH : "${pythonPath}:$out/${python.sitePackages}"
+
+      mkdir -p $out/${python.sitePackages}/core/templates
+      ln -sv ${finalAttrs.passthru.mail}/ $out/${python.sitePackages}/core/templates/mail
+    '';
 
   build-system = with python.pkgs; [ uv-build ];
 
@@ -102,40 +126,17 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     ++ django-lasuite.optional-dependencies.all
     ++ django-storages.optional-dependencies.s3;
 
+  pyproject = true;
   pythonRelaxDeps = true;
-
-  postBuild = ''
-    export DJANGO_DATA_DIR=$(pwd)/data
-    ${python.pythonOnBuildForHost.interpreter} manage.py collectstatic --noinput --clear
-  '';
-
-  postInstall =
-    let
-      pythonPath = python.pkgs.makePythonPath finalAttrs.passthru.dependencies;
-    in
-    ''
-      mkdir -p $out/{bin,share}
-
-      cp ./manage.py $out/bin/.manage.py
-      cp -r data/static $out/share
-      chmod +x $out/bin/.manage.py
-
-      makeWrapper $out/bin/.manage.py $out/bin/meet \
-        --prefix PYTHONPATH : "${pythonPath}"
-      makeWrapper ${lib.getExe python.pkgs.celery} $out/bin/celery \
-        --prefix PYTHONPATH : "${pythonPath}:$out/${python.sitePackages}"
-      makeWrapper ${lib.getExe python.pkgs.gunicorn} $out/bin/gunicorn \
-        --prefix PYTHONPATH : "${pythonPath}:$out/${python.sitePackages}"
-
-      mkdir -p $out/${python.sitePackages}/core/templates
-      ln -sv ${finalAttrs.passthru.mail}/ $out/${python.sitePackages}/core/templates/mail
-    '';
+  sourceRoot = "${finalAttrs.src.name}/src/backend";
 
   passthru = {
     inherit mail frontend;
+
     addons = {
       inherit outlook;
     };
+
     tests = {
       login-and-create-room = nixosTests.lasuite-meet;
     };

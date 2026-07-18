@@ -11,7 +11,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,6 +18,7 @@ buildPythonPackage {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Rijndael algorithm library";

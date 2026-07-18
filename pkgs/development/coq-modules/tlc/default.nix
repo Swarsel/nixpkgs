@@ -1,18 +1,16 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 (mkCoqDerivation {
-  pname = "tlc";
-  owner = "charguer";
   inherit version;
-  displayVersion = {
-    tlc = false;
-  };
+  pname = "tlc";
+  propagatedBuildInputs = [ stdlib ];
+
   defaultVersion =
     with lib.versions;
     lib.switch coq.coq-version [
@@ -33,16 +31,20 @@
         out = "20181116";
       }
     ] null;
-  release."20211215".hash = "sha256:0m4d4jhdcyq8p2gpz9j3nd6jqzmz2bjmbpc0q06b38b8i550mamp";
-  release."20210316".hash = "sha256:1hlavnx20lxpf2iydbbxqmim9p8wdwv4phzp9ypij93yivih0g4a";
-  release."20200328".hash = "sha256:16vzild9gni8zhgb3qhmka47f8zagdh03k6nssif7drpim8233lx";
-  release."20181116".hash = "sha256:032lrbkxqm9d3fhf6nv1kq2z0mqd3czv3ijlbsjwnfh12xck4vpl";
 
-  propagatedBuildInputs = [ stdlib ];
+  displayVersion = {
+    tlc = false;
+  };
+
+  owner = "charguer";
+  release."20181116".hash = "sha256:032lrbkxqm9d3fhf6nv1kq2z0mqd3czv3ijlbsjwnfh12xck4vpl";
+  release."20200328".hash = "sha256:16vzild9gni8zhgb3qhmka47f8zagdh03k6nssif7drpim8233lx";
+  release."20210316".hash = "sha256:1hlavnx20lxpf2iydbbxqmim9p8wdwv4phzp9ypij93yivih0g4a";
+  release."20211215".hash = "sha256:0m4d4jhdcyq8p2gpz9j3nd6jqzmz2bjmbpc0q06b38b8i550mamp";
 
   meta = {
-    homepage = "http://www.chargueraud.org/softs/tlc/";
     description = "Non-constructive library for Coq";
+    homepage = "http://www.chargueraud.org/softs/tlc/";
     license = lib.licenses.free;
     maintainers = [ lib.maintainers.vbgl ];
   };

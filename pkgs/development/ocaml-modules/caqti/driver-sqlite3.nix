@@ -1,26 +1,26 @@
 {
+  alcotest,
   buildDunePackage,
   caqti,
-  ocaml_sqlite3,
-  alcotest,
   dune-site,
+  ocaml_sqlite3,
 }:
 
 buildDunePackage {
-  pname = "caqti-driver-sqlite3";
   inherit (caqti) version src;
+  pname = "caqti-driver-sqlite3";
 
   propagatedBuildInputs = [
     caqti
     ocaml_sqlite3
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
     dune-site
   ];
-
-  doCheck = true;
 
   meta = caqti.meta // {
     description = "Sqlite3 driver for Caqti using C bindings";

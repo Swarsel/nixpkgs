@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libosmocore,
   libosmoabis,
+  libosmocore,
+  pkg-config,
   sqlite,
 }:
 

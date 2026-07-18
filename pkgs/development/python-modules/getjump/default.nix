@@ -3,8 +3,8 @@
   beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-  pillow,
   hatchling,
+  pillow,
   requests,
   rich,
   uv-dynamic-versioning,
@@ -13,17 +13,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "getjump";
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-AX8WffzcqBYqo8DzXXbhfqOMd7U5VpWx4MTKhUXLJeQ=";
   };
 
-  pythonRelaxDeps = [
-    "pillow"
-    "rich"
-  ];
+  # all the tests talk to the internet
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -37,10 +34,13 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "getjump" ];
 
-  # all the tests talk to the internet
-  doCheck = false;
+  pythonRelaxDeps = [
+    "pillow"
+    "rich"
+  ];
 
   meta = {
     description = "Get and save images from jump web viewer";

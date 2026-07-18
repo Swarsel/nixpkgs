@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,20 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-uRUqa6sXaXXDes9JjyTsMlA+nYdTGdioM0/y2XDIiEw=";
   };
-
-  patchPhase = ''
-    runHook prePatch
-
-    patchShebangs bash_unit
-
-    for t in tests/test_*; do
-      chmod +x "$t" # make test file visible to `patchShebangs`
-      patchShebangs "$t"
-      chmod -x "$t"
-    done
-
-    runHook postPatch
-  '';
 
   doCheck = true;
 
@@ -44,12 +30,26 @@ stdenv.mkDerivation (finalAttrs: {
     cp bash_unit $out/bin/
   '';
 
+  patchPhase = ''
+    runHook prePatch
+
+    patchShebangs bash_unit
+
+    for t in tests/test_*; do
+      chmod +x "$t" # make test file visible to `patchShebangs`
+      patchShebangs "$t"
+      chmod -x "$t"
+    done
+
+    runHook postPatch
+  '';
+
   meta = {
     description = "Bash unit testing enterprise edition framework for professionals";
     homepage = "https://github.com/bash-unit/bash_unit";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pamplemousse ];
     platforms = lib.platforms.all;
-    license = lib.licenses.gpl3Plus;
     mainProgram = "bash_unit";
   };
 })

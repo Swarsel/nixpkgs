@@ -1,17 +1,17 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoreconfHook,
   cups,
   libjpeg,
   rpmextract,
-  fetchurl,
-  lib,
-  stdenv,
 }:
 
 let
   srcdirs = {
-    filter = "epson-inkjet-printer-filter-1.0.0";
     driver = "epson-inkjet-printer-workforce-635-nx625-series-1.0.1";
+    filter = "epson-inkjet-printer-filter-1.0.0";
   };
 in
 stdenv.mkDerivation rec {
@@ -19,34 +19,28 @@ stdenv.mkDerivation rec {
   version = "1.0.1";
 
   src = fetchurl {
+    sha256 = "19nb2h0y9rvv6rg7j262f8sqap9kjvz8kmisxnjg1w0v19zb9zf2";
+
     # NOTE: Don't forget to update the webarchive link too!
     urls = [
       "https://download.ebz.epson.net/dsc/op/stable/SRPMS/${pname}-${version}-1lsb3.2.src.rpm"
       "https://web.archive.org/web/https://download.ebz.epson.net/dsc/op/stable/SRPMS/${pname}-${version}-1lsb3.2.src.rpm"
     ];
-    sha256 = "19nb2h0y9rvv6rg7j262f8sqap9kjvz8kmisxnjg1w0v19zb9zf2";
   };
-  sourceRoot = srcdirs.filter;
+
+  patches = [
+    ./eps_raster_print-cast.patch
+    ./include-raster-helper.patch
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
     rpmextract
   ];
+
   buildInputs = [
     cups
     libjpeg
-  ];
-
-  unpackPhase = ''
-    rpmextract "$src"
-    for i in ${lib.concatStringsSep " " (builtins.attrValues srcdirs)}; do
-        tar xvf "$i".tar.gz
-    done
-  '';
-
-  patches = [
-    ./eps_raster_print-cast.patch
-    ./include-raster-helper.patch
   ];
 
   preConfigure = ''
@@ -79,8 +73,18 @@ stdenv.mkDerivation rec {
       cp -r resource watermark ${libdir} "$out"
     '';
 
+  sourceRoot = srcdirs.filter;
+
+  unpackPhase = ''
+    rpmextract "$src"
+    for i in ${lib.concatStringsSep " " (builtins.attrValues srcdirs)}; do
+        tar xvf "$i".tar.gz
+    done
+  '';
+
   meta = {
     description = "Proprietary CUPS drivers for Epson inkjet printers";
+
     longDescription = ''
       This software is a filter program used with Common UNIX Printing
       System (CUPS) from the Linux. This can supply the high quality print
@@ -115,15 +119,19 @@ stdenv.mkDerivation rec {
           drivers = [ pkgs.${pname} ];
         };
     '';
-    downloadPage = "https://download.ebz.epson.net/dsc/du/02/DriverDownloadInfo.do?LG2=EN&CN2=&DSCMI=16857&DSCCHK=4334d3487503d7f916ccf5d58071b05b7687294f";
+
     license = with lib.licenses; [
       lgpl21
       epson
     ];
+
     maintainers = [ lib.maintainers.jorsn ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
+    downloadPage = "https://download.ebz.epson.net/dsc/du/02/DriverDownloadInfo.do?LG2=EN&CN2=&DSCMI=16857&DSCCHK=4334d3487503d7f916ccf5d58071b05b7687294f";
   };
 }

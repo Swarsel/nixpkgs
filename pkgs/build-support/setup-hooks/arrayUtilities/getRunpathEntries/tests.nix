@@ -1,11 +1,11 @@
 # NOTE: Tests related to getRunpathEntries go here.
 {
+  lib,
+  stdenv,
   emptyFile,
   getRunpathEntries,
   hello,
-  lib,
   pkgsStatic,
-  stdenv,
   testers,
 }:
 let
@@ -19,13 +19,14 @@ let
 
   check =
     {
-      name,
       elfFile,
+      name,
       runpathEntries,
     }:
     (testEqualArrayOrMap {
       inherit name;
       expectedArray = runpathEntries;
+
       script = ''
         set -eu
         nixLog "running getRunpathEntries with ''${elfFile@Q} to populate actualArray"
@@ -38,6 +39,7 @@ let
       (prevAttrs: {
         inherit elfFile;
         nativeBuildInputs = prevAttrs.nativeBuildInputs or [ ] ++ [ getRunpathEntries ];
+
         meta = prevAttrs.meta or { } // {
           platforms = lib.platforms.linux;
         };
@@ -45,57 +47,63 @@ let
 in
 recurseIntoAttrs {
   shellcheck = shellcheck {
-    name = "getRunpathEntries";
     src = ./getRunpathEntries.bash;
+    name = "getRunpathEntries";
   };
 
   shfmt = shfmt {
-    name = "getRunpathEntries";
     src = ./getRunpathEntries.bash;
+    name = "getRunpathEntries";
   };
 }
 # Only tested on Linux.
 // lib.optionalAttrs stdenv.hostPlatform.isLinux {
-  # Not an ELF file
-  notElfFileFails = testBuildFailure' {
-    name = "notElfFileFails";
-    drv = check {
-      name = "notElfFile";
-      elfFile = emptyFile;
-      runpathEntries = [ ];
-    };
-    expectedBuilderLogEntries = [
-      "getRunpathEntries failed"
-    ];
-  };
-
-  # Not a dynamic ELF file
-  staticElfFileFails = testBuildFailure' {
-    name = "staticElfFileFails";
-    drv = check {
-      name = "staticElfFile";
-      elfFile = lib.getExe pkgsStatic.hello;
-      runpathEntries = [ ];
-    };
-    expectedBuilderLogEntries = [
-      "getRunpathEntries failed"
-    ];
-  };
-
   hello = check {
-    name = "hello";
     elfFile = lib.getExe hello;
+    name = "hello";
+
     runpathEntries = [
       "${lib.getLib stdenv.cc.libc}/lib"
     ];
   };
 
   libstdcplusplus = check {
-    name = "libstdcplusplus";
     elfFile = "${lib.getLib stdenv.cc.cc}/lib/libstdc++.so";
+    name = "libstdcplusplus";
+
     runpathEntries = [
       "${lib.getLib stdenv.cc.cc}/lib"
       "${lib.getLib stdenv.cc.libc}/lib"
     ];
+  };
+
+  # Not an ELF file
+  notElfFileFails = testBuildFailure' {
+    drv = check {
+      elfFile = emptyFile;
+      name = "notElfFile";
+      runpathEntries = [ ];
+    };
+
+    expectedBuilderLogEntries = [
+      "getRunpathEntries failed"
+    ];
+
+    name = "notElfFileFails";
+  };
+
+  # Not a dynamic ELF file
+  staticElfFileFails = testBuildFailure' {
+    drv = check {
+      elfFile = lib.getExe pkgsStatic.hello;
+      name = "staticElfFile";
+      runpathEntries = [ ];
+    };
+
+    expectedBuilderLogEntries = [
+      "getRunpathEntries failed"
+    ];
+
+    name = "staticElfFileFails";
   };
 }

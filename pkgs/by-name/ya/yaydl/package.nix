@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  ffmpeg,
   makeWrapper,
   openssl,
-  ffmpeg,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,14 +19,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-X5D4kC5P5qHLSlTa9sQUAql1zK+Iut24224wvqihfAY=";
   };
 
-  cargoHash = "sha256-nt9S9KrHO8Vp75XZMQ0RAiALpdQ5LxI2Yaf3LRQD+fE=";
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-nt9S9KrHO8Vp75XZMQ0RAiALpdQ5LxI2Yaf3LRQD+fE=";
 
   postInstall = ''
     wrapProgram $out/bin/yaydl \
@@ -34,8 +33,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://code.rosaelefanten.org/yaydl";
     description = "Yet another youtube down loader";
+    homepage = "https://code.rosaelefanten.org/yaydl";
     license = lib.licenses.cddl;
     maintainers = [ ];
     mainProgram = "yaydl";

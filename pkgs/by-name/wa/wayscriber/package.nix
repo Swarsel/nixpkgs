@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
-  pango,
   libxkbcommon,
+  nix-update-script,
+  pango,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-g9LFceW05miR6PyHb6p3RvB1mnhAI/V/AeAYtmGplSA=";
   };
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     pango
     libxkbcommon
   ];
+
   cargoHash = "sha256-QNzUjY3k8OLsOLzMuEKFy1xcAHVsUOQMipL0c3T7tsY=";
   passthru.updateScript = nix-update-script { };
 
@@ -31,10 +34,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://wayscriber.com";
     changelog = "https://github.com/devmobasa/wayscriber/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       leiserfg
     ];
-    mainProgram = "wayscriber";
+
     platforms = lib.platforms.linux;
+    mainProgram = "wayscriber";
   };
 })

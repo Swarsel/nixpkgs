@@ -10,12 +10,9 @@ let
 
 in
 {
-  meta.maintainers = pkgs.dublin-traceroute.meta.maintainers;
-
   options = {
     programs.dublin-traceroute = {
       enable = lib.mkEnableOption "dublin-traceroute (including setcap wrapper)";
-
       package = lib.mkPackageOption pkgs "dublin-traceroute" { };
     };
   };
@@ -24,10 +21,12 @@ in
     environment.systemPackages = [ cfg.package ];
 
     security.wrappers.dublin-traceroute = {
-      owner = "root";
-      group = "root";
       capabilities = "cap_net_raw+p";
+      group = "root";
+      owner = "root";
       source = lib.getExe cfg.package;
     };
   };
+
+  meta.maintainers = pkgs.dublin-traceroute.meta.maintainers;
 }

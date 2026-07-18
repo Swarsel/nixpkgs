@@ -1,27 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  pkg-config,
-  glib,
-  sqlite,
-  gobject-introspection,
-  vala,
   autoconf,
   automake,
-  libtool,
-  gettext,
   dbus,
+  gettext,
+  glib,
+  gobject-introspection,
   gtk3,
   json-glib,
   librdf_raptor2,
-  pythonSupport ? true,
+  libtool,
+  pkg-config,
   python3,
+  sqlite,
+  vala,
+  pythonSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "zeitgeist";
   version = "1.0.4";
+
+  src = fetchFromGitLab {
+    owner = "zeitgeist";
+    repo = "zeitgeist";
+    rev = "v${finalAttrs.version}";
+    sha256 = "kG1N8DXgjYAJ8fbrGHsp7eTqB20H5smzRnW0PSRUYR0=";
+    domain = "gitlab.freedesktop.org";
+  };
 
   outputs = [
     "out"
@@ -31,13 +39,9 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional pythonSupport "py";
 
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "zeitgeist";
-    repo = "zeitgeist";
-    rev = "v${finalAttrs.version}";
-    sha256 = "kG1N8DXgjYAJ8fbrGHsp7eTqB20H5smzRnW0PSRUYR0=";
-  };
+  postPatch = ''
+    patchShebangs data/ontology2code
+  '';
 
   nativeBuildInputs = [
     autoconf
@@ -64,12 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-telepathy"
   ];
 
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    patchShebangs data/ontology2code
-  '';
-
   preConfigure = ''
     NOCONFIGURE=1 ./autogen.sh
   '';
@@ -78,11 +76,13 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput lib/${python3.libPrefix} "$py"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Service which logs the users’s activities and events";
     homepage = "https://zeitgeist.freedesktop.org/";
-    teams = [ lib.teams.freedesktop ];
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.freedesktop ];
   };
 })

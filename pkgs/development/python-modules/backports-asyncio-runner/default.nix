@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
-  pytestCheckHook,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   hatch-fancy-pypi-readme,
+  hatchling,
+  pytestCheckHook,
 }:
 
 let
@@ -19,15 +19,12 @@ let
 in
 buildPythonPackage {
   inherit pname version src;
-  pyproject = true;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatch-fancy-pypi-readme
     hatchling
   ];
-
-  pythonImportsCheck = [ "backports.asyncio.runner" ];
-  nativeCheckInputs = [ pytestCheckHook ];
 
   # These tests depend on the test.test_asyncio module in cpython which is
   # removed at build time.
@@ -37,10 +34,13 @@ buildPythonPackage {
     "tests/test_tasks_py310.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "backports.asyncio.runner" ];
+
   meta = {
-    changelog = "https://github.com/samypr100/backports.asyncio.runner/releases/tag/${src.tag}";
     description = "Backport of Python 3.11 asyncio.Runner";
     homepage = "https://github.com/samypr100/backports.asyncio.runner";
+    changelog = "https://github.com/samypr100/backports.asyncio.runner/releases/tag/${src.tag}";
     license = lib.licenses.psfl;
     maintainers = with lib.maintainers; [ detroyejr ];
   };

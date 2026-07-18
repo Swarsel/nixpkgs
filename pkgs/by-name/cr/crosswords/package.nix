@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitLab,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitLab,
   isocodes,
   json-glib,
   libadwaita,
@@ -21,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.3.17";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "jrb";
     repo = "crosswords";
     rev = finalAttrs.version;
     hash = "sha256-VeiVuMEfMCVjSk52BGtlypapeW6CBW1VQsrtDS8aCoY=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -58,11 +58,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/jrb/crosswords";
     changelog = "https://gitlab.gnome.org/jrb/crosswords/-/blob/${finalAttrs.version}/NEWS.md?ref_type=tags";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "crosswords";
+
     maintainers = with lib.maintainers; [
       aleksana
       l0b0
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "crosswords";
   };
 })

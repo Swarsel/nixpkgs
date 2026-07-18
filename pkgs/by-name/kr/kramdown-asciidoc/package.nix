@@ -1,32 +1,30 @@
 {
   lib,
   bundlerApp,
-  makeWrapper,
+  bundlerUpdateScript,
   # Optional dependencies, can be null
   epubcheck,
-  bundlerUpdateScript,
+  makeWrapper,
 }:
 
 let
   app = bundlerApp {
     pname = "kramdown-asciidoc";
-    gemdir = ./.;
 
     exes = [
       "kramdoc"
     ];
 
-    # nativeBuildInputs = [ makeWrapper ];
+    gemdir = ./.;
 
+    # nativeBuildInputs = [ makeWrapper ];
     # postBuild = ''
     #     wrapProgram "$out/bin/asciidoctor-epub3" \
     #       ${lib.optionalString (epubcheck != null) "--set EPUBCHECK ${epubcheck}/bin/epubcheck"}
     #   '';
-
     # passthru = {
     #   updateScript = bundlerUpdateScript "kramdown-asciidoc";
     # };
-
     meta = {
       description = "Kramdown extension for converting Markdown documents to AsciiDoc";
       homepage = "https://asciidoctor.org/";

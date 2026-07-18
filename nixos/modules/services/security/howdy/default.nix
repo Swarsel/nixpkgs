@@ -10,37 +10,21 @@ let
 
   default_config = {
     core = {
+      abort_if_lid_closed = true;
+      abort_if_ssh = true;
       detection_notice = false;
-      timeout_notice = true;
+      disabled = false;
       no_confirmation = false;
       suppress_unknown = false;
-      abort_if_ssh = true;
-      abort_if_lid_closed = true;
-      disabled = false;
+      timeout_notice = true;
       use_cnn = false;
       workaround = "off";
     };
 
-    video = {
-      certainty = 3.5;
-      timeout = 4;
-      device_path = "/dev/video2";
-      warn_no_device = true;
-      max_height = 320;
-      frame_width = -1;
-      frame_height = -1;
-      dark_threshold = 60;
-      recording_plugin = "opencv";
-      device_format = "v4l2";
-      force_mjpeg = false;
-      exposure = -1;
-      device_fps = -1;
-      rotate = 0;
-    };
-
-    snapshots = {
-      save_failed = false;
-      save_successful = false;
+    debug = {
+      end_report = false;
+      gtk_stdout = false;
+      verbose_stamps = false;
     };
 
     rubberstamps = {
@@ -48,10 +32,26 @@ let
       stamp_rules = "nod		5s		failsafe     min_distance=12";
     };
 
-    debug = {
-      end_report = false;
-      verbose_stamps = false;
-      gtk_stdout = false;
+    snapshots = {
+      save_failed = false;
+      save_successful = false;
+    };
+
+    video = {
+      certainty = 3.5;
+      dark_threshold = 60;
+      device_format = "v4l2";
+      device_fps = -1;
+      device_path = "/dev/video2";
+      exposure = -1;
+      force_mjpeg = false;
+      frame_height = -1;
+      frame_width = -1;
+      max_height = 320;
+      recording_plugin = "opencv";
+      rotate = 0;
+      timeout = 4;
+      warn_no_device = true;
     };
   };
 in
@@ -81,8 +81,8 @@ in
       package = lib.mkPackageOption pkgs "howdy" { };
 
       control = lib.mkOption {
-        type = lib.types.str;
         default = "required";
+
         description = ''
           PAM control flag to use for Howdy.
 
@@ -90,11 +90,14 @@ in
 
           Refer to {manpage}`pam.conf(5)` for options.
         '';
+
+        type = lib.types.str;
       };
 
       settings = lib.mkOption {
         inherit (settingsType) type;
         default = default_config;
+
         description = ''
           Howdy configuration file. Refer to
           <https://github.com/boltgolt/howdy/blob/d3ab99382f88f043d15f15c1450ab69433892a1c/howdy/src/config.ini>
@@ -106,14 +109,15 @@ in
 
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
-      environment.systemPackages = [ cfg.package ];
-      environment.etc."howdy/config.ini".source = settingsType.generate "howdy-config.ini" cfg.settings;
       assertions = [
         {
           assertion = !(builtins.elem "v4l2loopback" config.boot.kernelModules);
           message = "Adding 'v4l2loopback' to `boot.kernelModules` causes Howdy to no longer work. Consider adding 'v4l2loopback' to `boot.extraModulePackages` instead.";
         }
       ];
+
+      environment.etc."howdy/config.ini".source = settingsType.generate "howdy-config.ini" cfg.settings;
+      environment.systemPackages = [ cfg.package ];
     })
     {
       services.howdy.settings = lib.mapAttrsRecursive (name: lib.mkDefault) default_config;

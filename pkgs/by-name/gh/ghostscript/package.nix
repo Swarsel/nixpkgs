@@ -1,67 +1,66 @@
 {
-  config,
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch2,
-  pkg-config,
-  zlib,
-  expat,
-  openssl,
   autoconf,
-  libjpeg,
-  libpng,
-  libtiff,
-  freetype,
-  fontconfig,
-  libpaper,
-  jbig2dec,
-  libiconv,
-  ijs,
-  lcms2,
-  callPackage,
   bash,
   buildPackages,
-  openjpeg,
-  fixDarwinDylibNames,
-  cupsSupport ? config.ghostscript.cups or (!stdenv.hostPlatform.isDarwin),
+  callPackage,
+  config,
   cups,
-  x11Support ? cupsSupport,
+  expat,
+  fetchpatch2,
+  fixDarwinDylibNames,
+  fontconfig,
+  freetype,
+  # for passthru.tests
+  graphicsmagick,
+  ijs,
+  imagemagick,
+  jbig2dec,
+  lcms2,
   libice,
+  libiconv,
+  libjpeg,
+  libpaper,
+  libpng,
+  libspectre,
+  libtiff,
   libx11,
   libxext,
   libxt,
-  dynamicDrivers ? true,
-
-  # for passthru.tests
-  graphicsmagick,
-  imagemagick,
-  libspectre,
   lilypond,
+  openjpeg,
+  openssl,
+  pkg-config,
   pstoedit,
   python3,
+  zlib,
+  cupsSupport ? config.ghostscript.cups or (!stdenv.hostPlatform.isDarwin),
+  dynamicDrivers ? true,
+  x11Support ? cupsSupport,
 }:
 
 let
   fonts = stdenv.mkDerivation {
-    name = "ghostscript-fonts";
-
-    srcs = [
-      (fetchurl {
-        url = "mirror://sourceforge/gs-fonts/ghostscript-fonts-std-8.11.tar.gz";
-        hash = "sha256-DrbzVhGfLkmyVjIQhS4X9X+dzFdV81Cmmkag1kGgxAE=";
-      })
-      (fetchurl {
-        url = "mirror://gnu/ghostscript/gnu-gs-fonts-other-6.0.tar.gz";
-        hash = "sha256-gUbMzEaZ/p2rhBRGvdFwOfR2nJA+zrVECRiLkgdUqrM=";
-      })
-      # ... add other fonts here
-    ];
-
     installPhase = ''
       mkdir "$out"
       mv -v * "$out/"
     '';
+
+    name = "ghostscript-fonts";
+
+    srcs = [
+      (fetchurl {
+        hash = "sha256-DrbzVhGfLkmyVjIQhS4X9X+dzFdV81Cmmkag1kGgxAE=";
+        url = "mirror://sourceforge/gs-fonts/ghostscript-fonts-std-8.11.tar.gz";
+      })
+      (fetchurl {
+        hash = "sha256-gUbMzEaZ/p2rhBRGvdFwOfR2nJA+zrVECRiLkgdUqrM=";
+        url = "mirror://gnu/ghostscript/gnu-gs-fonts-other-6.0.tar.gz";
+      })
+      # ... add other fonts here
+    ];
   };
 
 in
@@ -73,19 +72,9 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs${
       lib.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }/ghostscript-${finalAttrs.version}.tar.xz";
+
     hash = "sha256-HNt2bejbjx5YnIF/CcWFXqX2XfyFQORlpprBTBhBYCU=";
   };
-
-  patches = [
-    ./urw-font-files.patch
-    ./doc-no-ref.diff
-
-    # Support SOURCE_DATE_EPOCH for reproducible builds
-    (fetchpatch2 {
-      url = "https://salsa.debian.org/debian/ghostscript/-/raw/01e895fea033cc35054d1b68010de9818fa4a8fc/debian/patches/2010_add_build_timestamp_setting.patch";
-      hash = "sha256-XTKkFKzMR2QpcS1YqoxzJnyuGk/l/Y2jdevsmbMtCXA=";
-    })
-  ];
 
   outputs = [
     "out"
@@ -94,10 +83,15 @@ stdenv.mkDerivation (finalAttrs: {
     "fonts"
   ];
 
-  enableParallelBuilding = true;
+  patches = [
+    ./urw-font-files.patch
+    ./doc-no-ref.diff
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
+    # Support SOURCE_DATE_EPOCH for reproducible builds
+    (fetchpatch2 {
+      hash = "sha256-XTKkFKzMR2QpcS1YqoxzJnyuGk/l/Y2jdevsmbMtCXA=";
+      url = "https://salsa.debian.org/debian/ghostscript/-/raw/01e895fea033cc35054d1b68010de9818fa4a8fc/debian/patches/2010_add_build_timestamp_setting.patch";
+    })
   ];
 
   nativeBuildInputs = [
@@ -133,6 +127,30 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional cupsSupport cups;
 
+  configureFlags = [
+    "CFLAGS=-std=gnu17"
+    "--with-system-libtiff"
+    "--without-tesseract"
+  ]
+  ++ lib.optionals dynamicDrivers [
+    "--enable-dynamic"
+    "--disable-hidden-visibility"
+  ]
+  ++ lib.optionals x11Support [
+    "--with-x"
+  ]
+  ++ lib.optionals cupsSupport [
+    "--enable-cups"
+  ];
+
+  # don't build/install statically linked bin/gs
+  buildFlags = [
+    "so"
+  ]
+  # without -headerpad, the following error occurs on Darwin when compiling with X11 support (as of 10.02.0)
+  # error: install_name_tool: changing install names or rpaths can't be redone for: [...]libgs.dylib.10 (the program must be relinked, and you may need to use -headerpad or -headerpad_max_install_names)
+  ++ lib.optional (x11Support && stdenv.hostPlatform.isDarwin) "LDFLAGS=-headerpad_max_install_names";
+
   preConfigure = ''
     # https://ghostscript.com/doc/current/Make.htm
     export CCAUX=$CC_FOR_BUILD
@@ -157,33 +175,8 @@ stdenv.mkDerivation (finalAttrs: {
     export DARWIN_LDFLAGS_SO_PREFIX=$out/lib/
   '';
 
-  configureFlags = [
-    "CFLAGS=-std=gnu17"
-    "--with-system-libtiff"
-    "--without-tesseract"
-  ]
-  ++ lib.optionals dynamicDrivers [
-    "--enable-dynamic"
-    "--disable-hidden-visibility"
-  ]
-  ++ lib.optionals x11Support [
-    "--with-x"
-  ]
-  ++ lib.optionals cupsSupport [
-    "--enable-cups"
-  ];
-
   # make check does nothing useful
   doCheck = false;
-
-  # don't build/install statically linked bin/gs
-  buildFlags = [
-    "so"
-  ]
-  # without -headerpad, the following error occurs on Darwin when compiling with X11 support (as of 10.02.0)
-  # error: install_name_tool: changing install names or rpaths can't be redone for: [...]libgs.dylib.10 (the program must be relinked, and you may need to use -headerpad or -headerpad_max_install_names)
-  ++ lib.optional (x11Support && stdenv.hostPlatform.isDarwin) "LDFLAGS=-headerpad_max_install_names";
-  installTargets = [ "soinstall" ];
 
   postInstall = ''
     ln -s gsc "$out"/bin/gs
@@ -197,6 +190,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   # validate dynamic linkage
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -219,8 +213,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ];
+
+  enableParallelBuilding = true;
+  installTargets = [ "soinstall" ];
+
   passthru.tests = {
-    test-corpus-render = callPackage ./test-corpus-render.nix { };
     inherit
       graphicsmagick
       imagemagick
@@ -228,13 +228,14 @@ stdenv.mkDerivation (finalAttrs: {
       lilypond
       pstoedit
       ;
+
     inherit (python3.pkgs) matplotlib;
+    test-corpus-render = callPackage ./test-corpus-render.nix { };
   };
 
   meta = {
-    homepage = "https://www.ghostscript.com/";
-    changelog = "https://ghostscript.readthedocs.io/en/gs${finalAttrs.version}/News.html";
     description = "PostScript interpreter (mainline version)";
+
     longDescription = ''
       Ghostscript is the name of a set of tools that provides (i) an
       interpreter for the PostScript language and the PDF file format,
@@ -243,9 +244,12 @@ stdenv.mkDerivation (finalAttrs: {
       operations in the PostScript language, and (iii) a wide variety
       of output drivers for various file formats and printers.
     '';
+
+    homepage = "https://www.ghostscript.com/";
+    changelog = "https://ghostscript.readthedocs.io/en/gs${finalAttrs.version}/News.html";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ tobim ];
+    platforms = lib.platforms.all;
     mainProgram = "gs";
   };
 })

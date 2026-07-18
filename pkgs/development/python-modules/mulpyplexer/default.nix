@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "mulpyplexer";
   version = "0.09";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "mulpyplexer" ];
 
   meta = {

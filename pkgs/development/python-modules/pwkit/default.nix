@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pwkit";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pkgw";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-lEa1AWBhevCOBiAJd0Q0VWDtjSK5O89LYTNnLxKfD8U=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ numpy ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
+  pyproject = true;
   pythonImportsCheck = [ "pwkit" ];
 
   meta = {

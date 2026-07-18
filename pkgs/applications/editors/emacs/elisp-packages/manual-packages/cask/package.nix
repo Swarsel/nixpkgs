@@ -1,14 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   ansi,
   cl-generic,
   cl-lib,
   commander,
   epl,
   f,
-  fetchFromGitHub,
-  installShellFiles,
   git,
+  installShellFiles,
   melpaBuild,
   package-build,
   replaceVars,
@@ -45,33 +45,18 @@ melpaBuild (
     version = "0.9.1";
 
     src = fetchFromGitHub {
-      name = "cask-source-${finalAttrs.version}";
       owner = "cask";
       repo = "cask";
       rev = "v${finalAttrs.version}";
       hash = "sha256-/vinpQ51AuaTbXW4L4MnVonyfzTMvHUF4HViSPBKZxs=";
+      name = "cask-source-${finalAttrs.version}";
     };
-
-    nativeBuildInputs = [ installShellFiles ];
 
     patches = [
       # Uses LISPDIR substitution var
       ./0000-cask-lispdir.diff
       # Use Nix provided dependencies instead of letting Cask bootstrap itself
       ./0001-cask-bootstrap.diff
-    ];
-
-    packageRequires = [
-      ansi
-      cl-generic
-      cl-lib
-      commander
-      epl
-      f
-      git
-      package-build
-      s
-      shut-up
     ];
 
     postPatch = ''
@@ -86,21 +71,38 @@ melpaBuild (
         --replace-fail @nativeLoadPaths@ '${nativeLoadPaths}'
     '';
 
+    nativeBuildInputs = [ installShellFiles ];
+
     postInstall = ''
       installBin bin/cask
     '';
 
+    packageRequires = [
+      ansi
+      cl-generic
+      cl-lib
+      commander
+      epl
+      f
+      git
+      package-build
+      s
+      shut-up
+    ];
+
     meta = {
-      homepage = "https://github.com/cask/cask";
       description = "Project management for Emacs";
+
       longDescription = ''
         Cask is a project management tool for Emacs that helps automate the
         package development cycle; development, dependencies, testing, building,
         packaging and more.
       '';
+
+      homepage = "https://github.com/cask/cask";
       license = lib.licenses.gpl3Plus;
-      mainProgram = "cask";
       maintainers = [ ];
+      mainProgram = "cask";
     };
   }
 )

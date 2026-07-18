@@ -1,20 +1,20 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  pipewire,
-  wayland,
   fontconfig,
   freetype,
   libglvnd,
+  libx11,
+  libxcursor,
+  libxi,
   libxkbcommon,
   libxrandr,
-  libxi,
-  libxcursor,
-  libx11,
-  vulkan-loader,
   nix-update-script,
+  pipewire,
+  pkg-config,
+  rustPlatform,
+  vulkan-loader,
+  wayland,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "openmeters";
@@ -27,8 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-gtrX9MPZFUy+cMk4MPTNL2+QmORZ9rJ9WEivALgiy5M=";
   };
 
-  cargoHash = "sha256-LNELcHA45EEtdwW9iMQqtD0aVA/8Q69xdo+GXklTkQc=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -38,6 +36,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pipewire
     libxkbcommon
   ];
+
+  cargoHash = "sha256-LNELcHA45EEtdwW9iMQqtD0aVA/8Q69xdo+GXklTkQc=";
 
   postFixup = ''
     patchelf --add-rpath '${
@@ -60,6 +60,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Fast and professional audio metering/visualization for Linux";
+
     longDescription = ''
       OpenMeters is a fast audio metering application for Linux built with
       Rust and PipeWire. It provides LUFS/RMS/true-peak loudness meters
@@ -72,10 +73,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/httpsworldview/openmeters";
     changelog = "https://github.com/httpsworldview/openmeters/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       bitbloxhub
       magnetophon
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "openmeters";
   };

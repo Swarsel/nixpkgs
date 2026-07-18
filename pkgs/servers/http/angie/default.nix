@@ -1,7 +1,7 @@
 {
-  callPackage,
   lib,
   fetchurl,
+  callPackage,
   nixosTests,
   withAcme ? false,
   ...
@@ -41,7 +41,7 @@ callPackage ../nginx/generic.nix args rec {
     description = "Angie is an efficient, powerful, and scalable web server that was forked from nginx";
     homepage = "https://angie.software/en/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = lib.platforms.all;
   };
 }

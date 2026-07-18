@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   httpx,
   pytest-asyncio,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pywaze";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eifinger";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-yhECJORKVM8R/+CjhSTwgtCPeQ8QwIuG3EZHmtjVkX0=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ httpx ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
@@ -33,6 +28,9 @@ buildPythonPackage (finalAttrs: {
     respx
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ httpx ];
+  pyproject = true;
   pythonImportsCheck = [ "pywaze" ];
 
   meta = {

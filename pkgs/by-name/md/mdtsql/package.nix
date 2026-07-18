@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   buildPackages,
+  installShellFiles,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -18,11 +18,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-fmv8wJfeJ8Lz6Z5OxggrudUvyJaA+22tCs0x2Dvz+Bw=";
   };
 
-  vendorHash = "sha256-/FpbKpxTYiwWVDRxBn3GmPEhna/a+t4CuVq/bZmsb9w=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-/FpbKpxTYiwWVDRxBn3GmPEhna/a+t4CuVq/bZmsb9w=";
 
   postInstall = lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (
     let

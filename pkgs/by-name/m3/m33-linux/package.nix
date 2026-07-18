@@ -21,9 +21,9 @@ stdenv.mkDerivation {
     # Pull the `gcc-13` build fix pending upstream inclusion:
     #   https://github.com/donovan6000/M33-Linux/pull/6
     (fetchpatch {
+      hash = "sha256-ubdCwXFVljvOCzYrWVJgU6PY1j6Ei6aaclhXaGwZT2w=";
       name = "gcc-13.patch";
       url = "https://github.com/donovan6000/M33-Linux/commit/272e4488ef05cfd95fcc952becfc0ac982306d0c.patch";
-      hash = "sha256-ubdCwXFVljvOCzYrWVJgU6PY1j6Ei6aaclhXaGwZT2w=";
     })
   ];
 
@@ -31,19 +31,19 @@ stdenv.mkDerivation {
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
   installPhase = ''
     install -Dm755 m33-linux $out/bin/m33-linux
     install -Dm755 90-micro-3d-local.rules $out/lib/udev/rules.d/90-micro-3d-local.rules
   '';
 
+  doInstallCheck = true;
+
   meta = {
-    homepage = "https://github.com/donovan6000/M33-Linux";
     description = "Linux program that can communicate with the Micro 3D printer";
-    mainProgram = "m33-linux";
+    homepage = "https://github.com/donovan6000/M33-Linux";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "m33-linux";
   };
 }

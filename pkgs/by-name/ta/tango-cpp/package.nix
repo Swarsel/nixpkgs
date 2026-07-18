@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitLab,
   cmake,
   cppzmq,
   curl,
-  fetchFromGitLab,
   fetchpatch,
   libjpeg,
   omniorb,
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "tango-controls";
     repo = "cppTango";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-hs8SvcTsO0tmGwBmtyzmqQEFIDwvFGOiQpzOMwJHWfM=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -50,7 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/tango-controls/cppTango";
     changelog = "https://gitlab.com/tango-controls/cppTango/-/blob/${finalAttrs.version}/RELEASE_NOTES.md";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.gilice ];
+    platforms = lib.platforms.linux;
   };
 })

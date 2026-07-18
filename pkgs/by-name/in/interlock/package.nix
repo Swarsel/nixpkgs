@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   coreutils,
   cryptsetup,
   mount,
@@ -20,13 +20,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-YXa4vErt3YnomTKAXCv8yUVhcc0ST47n9waW5E8QZzY=";
   };
 
-  vendorHash = "sha256-OL6I95IpyTIc8wCwD9nWxVUTrmZH6COhsd/YwNTyvN0=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   postPatch = ''
     grep -lr '/s\?bin/' | xargs sed -i \
       -e 's|/bin/mount|${mount}/bin/mount|' \
@@ -40,19 +33,25 @@ buildGoModule (finalAttrs: {
       -e 's|/sbin/cryptsetup|${cryptsetup}/bin/cryptsetup|'
   '';
 
+  vendorHash = "sha256-OL6I95IpyTIc8wCwD9nWxVUTrmZH6COhsd/YwNTyvN0=";
+  # Tests are broken due to an error during key generation.
+  doCheck = false;
+
   postInstall = ''
     mkdir -p $out/share
     cp -R $src/static $out/share
   '';
 
-  # Tests are broken due to an error during key generation.
-  doCheck = false;
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
-    homepage = "https://github.com/usbarmory/interlock";
     description = "File encryption tool and an HSM frontend";
-    mainProgram = "interlock";
+    homepage = "https://github.com/usbarmory/interlock";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "interlock";
   };
 })

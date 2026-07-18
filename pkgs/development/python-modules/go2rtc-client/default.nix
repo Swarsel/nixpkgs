@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   awesomeversion,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   mashumaro,
   orjson,
@@ -19,9 +19,6 @@
 buildPythonPackage rec {
   pname = "go2rtc-client";
   version = "0.4.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -35,8 +32,15 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
-  pythonRelaxDeps = [ "orjson" ];
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -47,17 +51,10 @@ buildPythonPackage rec {
     webrtc-models
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "go2rtc_client" ];
-
-  __darwinAllowLocalNetworking = true;
+  pythonRelaxDeps = [ "orjson" ];
 
   meta = {
     description = "Module for interacting with go2rtc";

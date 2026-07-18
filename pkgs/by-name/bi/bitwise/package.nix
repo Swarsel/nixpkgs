@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   ncurses,
   readline,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,11 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-x+ky1X0c0bQZnkNvNNuXN2BoMDtDSCt/8dBAG92jCCQ=";
   };
 
+  nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     ncurses
     readline
   ];
-  nativeBuildInputs = [ autoreconfHook ];
 
   meta = {
     description = "Terminal based bitwise calculator in curses";

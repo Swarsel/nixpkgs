@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
   curl,
+  fetchpatch,
+  hash,
+  libiconv,
   openssl,
+  version,
   zlib,
   zstd,
-  libiconv,
-  version,
-  hash,
   ...
 }:
 
@@ -19,41 +19,34 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "mariadb-connector-c";
   inherit version;
+  pname = "mariadb-connector-c";
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "mariadb-corporation";
     repo = "mariadb-connector-c";
     rev = "v${version}";
-    inherit hash;
   };
-
-  patches = lib.optionals (lib.versionOlder version "3.4") [
-    # fix compilation against gcc15
-    (fetchpatch {
-      url = "https://github.com/mariadb-corporation/mariadb-connector-c/commit/e8448137f3365568090d5c0d4051039ddc1cdb6f.patch";
-      hash = "sha256-aDbaaJA8DxGG5RrOa+CHhk4wuzlBy5tWyS+f/zVYU0c=";
-    })
-
-    # Fix the build with CMake 4.
-    (fetchpatch {
-      name = "mariadb-connector-c-fix-cmake-4.patch";
-      url = "https://github.com/mariadb-corporation/mariadb-connector-c/commit/598dc3d2d7a63e5d250421dd0ea88be55ea8511f.patch";
-      hash = "sha256-HojNRobguBmtpEdr2lVi/MpcoDAsZnb3+tw/pt376es=";
-    })
-  ];
 
   outputs = [
     "out"
     "dev"
   ];
 
-  cmakeFlags = [
-    "-DMARIADB_UNIX_ADDR=/run/mysqld/mysqld.sock"
-    "-DWITH_CURL=ON"
-    "-DWITH_EXTERNAL_ZLIB=ON"
-    "-DWITH_MYSQLCOMPAT=ON"
+  patches = lib.optionals (lib.versionOlder version "3.4") [
+    # fix compilation against gcc15
+    (fetchpatch {
+      hash = "sha256-aDbaaJA8DxGG5RrOa+CHhk4wuzlBy5tWyS+f/zVYU0c=";
+      url = "https://github.com/mariadb-corporation/mariadb-connector-c/commit/e8448137f3365568090d5c0d4051039ddc1cdb6f.patch";
+    })
+
+    # Fix the build with CMake 4.
+    (fetchpatch {
+      hash = "sha256-HojNRobguBmtpEdr2lVi/MpcoDAsZnb3+tw/pt376es=";
+      name = "mariadb-connector-c-fix-cmake-4.patch";
+      url = "https://github.com/mariadb-corporation/mariadb-connector-c/commit/598dc3d2d7a63e5d250421dd0ea88be55ea8511f.patch";
+    })
   ];
 
   postPatch = ''
@@ -73,19 +66,27 @@ stdenv.mkDerivation {
       --replace-fail 'libmariadb SHARED' 'libmariadb STATIC'
   '';
 
-  # The cmake setup-hook uses $out/lib by default, this is not the case here.
-  preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    cmakeFlagsArray+=("-DCMAKE_INSTALL_NAME_DIR=$out/lib/mariadb")
-  '';
-
   nativeBuildInputs = [ cmake ];
+  buildInputs = [ libiconv ];
+
   propagatedBuildInputs = [
     curl
     openssl
     zlib
   ]
   ++ lib.optional isVer33 zstd;
-  buildInputs = [ libiconv ];
+
+  cmakeFlags = [
+    "-DMARIADB_UNIX_ADDR=/run/mysqld/mysqld.sock"
+    "-DWITH_CURL=ON"
+    "-DWITH_EXTERNAL_ZLIB=ON"
+    "-DWITH_MYSQLCOMPAT=ON"
+  ];
+
+  # The cmake setup-hook uses $out/lib by default, this is not the case here.
+  preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    cmakeFlagsArray+=("-DCMAKE_INSTALL_NAME_DIR=$out/lib/mariadb")
+  '';
 
   postInstall = ''
     moveToOutput bin/mariadb_config "$dev"

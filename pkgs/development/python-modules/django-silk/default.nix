@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   autopep8,
   buildPythonPackage,
   django,
   factory-boy,
-  fetchFromGitHub,
   freezegun,
   gprof2dot,
   jinja2,
@@ -13,9 +13,9 @@
   pillow,
   pydot,
   pygments,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-django,
+  pytestCheckHook,
   python,
   python-dateutil,
   pytz,
@@ -28,7 +28,6 @@
 buildPythonPackage rec {
   pname = "django-silk";
   version = "5.5.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -48,7 +47,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools-scm ];
-
   buildInputs = [ mock ];
 
   propagatedBuildInputs = [
@@ -75,13 +73,14 @@ buildPythonPackage rec {
     pytest-django
   ];
 
-  pythonImportsCheck = [ "silk" ];
-
   preCheck = ''
     export DB_ENGINE=sqlite3 DB_NAME=':memory:'
 
     cd project
   '';
+
+  format = "setuptools";
+  pythonImportsCheck = [ "silk" ];
 
   meta = {
     description = "Silky smooth profiling for the Django Framework";

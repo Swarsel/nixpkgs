@@ -23,18 +23,11 @@ stdenv.mkDerivation rec {
     ./remove-install-exec-hook.patch
   ];
 
-  perlModules = with perlPackages; [
-    HTTPDate
-    HTTPMessage
-    LWP
-    TextCSV
-    URI
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
     makeWrapper
   ];
+
   buildInputs = [
     perlPackages.perl
     libpcap
@@ -46,20 +39,32 @@ stdenv.mkDerivation rec {
     done;
   '';
 
+  perlModules = with perlPackages; [
+    HTTPDate
+    HTTPMessage
+    LWP
+    TextCSV
+    URI
+  ];
+
   meta = {
     description = "ARP scanning and fingerprinting tool";
+
     longDescription = ''
       Arp-scan is a command-line tool that uses the ARP protocol to discover
       and fingerprint IP hosts on the local network.
     '';
+
     homepage = "https://github.com/royhills/arp-scan/wiki/arp-scan-User-Guide";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       bjornfor
       mikoim
       r-burns
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "arp-scan";
   };
 }

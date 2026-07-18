@@ -13,20 +13,20 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "999a34b6e99657ffc7e6c98a15b8ea744c28420e891a8802c7d99b737752dfb6";
   };
 
-  dontUnpack = true;
-  sourceRoot = ".";
-
   installPhase = ''
     install -m755 -D $src $out/bin/hashi-ui
   '';
 
+  dontUnpack = true;
+  sourceRoot = ".";
+
   meta = {
-    homepage = "https://github.com/jippi/hashi-ui";
     description = "Modern user interface for hashicorp Consul & Nomad";
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ numkem ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://github.com/jippi/hashi-ui";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ numkem ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "hashi-ui";
   };
 })

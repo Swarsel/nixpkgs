@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitLab,
-
   asciidoctor,
   bcg729,
   bison,
+  brotli,
   buildPackages,
   c-ares,
   cmake,
@@ -40,6 +40,7 @@
   perl,
   pkg-config,
   python3,
+  qt6,
   sbc,
   snappy,
   spandsp3,
@@ -47,12 +48,9 @@
   wrapGAppsHook3,
   zlib-ng,
   zstd,
-  brotli,
-
-  withQt ? true,
-  qt6,
   libpcap' ? libpcap.override { withBluez = stdenv.hostPlatform.isLinux; },
   withExtras ? stdenv.hostPlatform.isLinux,
+  withQt ? true,
 }:
 let
   isAppBundle = withQt && stdenv.hostPlatform.isDarwin;
@@ -62,25 +60,27 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "wireshark-${if withQt then "qt" else "cli"}";
   version = "4.6.7";
 
+  src = fetchFromGitLab {
+    owner = "wireshark";
+    repo = "wireshark";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-+y2OyCXHnUYNKVbUNeqcATKcTPZz+ikOHPAEs1C2hww=";
+  };
+
   outputs = [
     "out"
     "dev"
   ];
 
-  src = fetchFromGitLab {
-    repo = "wireshark";
-    owner = "wireshark";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-+y2OyCXHnUYNKVbUNeqcATKcTPZz+ikOHPAEs1C2hww=";
-  };
-
   patches = [
     ./patches/lookup-dumpcap-in-path.patch
   ];
 
-  depsBuildBuild = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-    buildPackages.stdenv.cc
-  ];
+  postPatch = ''
+    sed -i -e '1i cmake_policy(SET CMP0025 NEW)' CMakeLists.txt
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     asciidoctor
@@ -155,8 +155,6 @@ stdenv.mkDerivation (finalAttrs: {
     (darwinMinVersionHook "12.0")
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     "-DBUILD_wireshark=${if withQt then "ON" else "OFF"}"
     # Fix `extcap` and `plugins` paths. See https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=16444
@@ -171,17 +169,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Avoid referencing -dev paths because of debug assertions.
   env.NIX_CFLAGS_COMPILE = toString [ "-DQT_NO_DEBUG" ];
-
-  dontWrapGApps = true;
-
-  shellHook = ''
-    # to be able to run the resulting binary
-    export WIRESHARK_RUN_FROM_BUILD_DIRECTORY=1
-  '';
-
-  postPatch = ''
-    sed -i -e '1i cmake_policy(SET CMP0025 NEW)' CMakeLists.txt
-  '';
 
   postInstall = ''
     cmake --install . --prefix "''${!outputDev}" --component Development
@@ -222,21 +209,36 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r $out/libexec/wireshark/extcap $out/Applications/Wireshark.app/Contents/MacOS/extcap
   '';
 
+  depsBuildBuild = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    buildPackages.stdenv.cc
+  ];
+
+  dontWrapGApps = true;
+
+  shellHook = ''
+    # to be able to run the resulting binary
+    export WIRESHARK_RUN_FROM_BUILD_DIRECTORY=1
+  '';
+
   meta = {
     description = "Powerful network protocol analyzer";
+
     longDescription = ''
       Wireshark (formerly known as "Ethereal") is a powerful network
       protocol analyzer developed by an international team of networking
       experts. It runs on UNIX, macOS and Windows.
     '';
+
     homepage = "https://www.wireshark.org";
     changelog = "https://www.wireshark.org/docs/relnotes/wireshark-${finalAttrs.version}.html";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       bjornfor
       fpletz
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = if withQt then "wireshark" else "tshark";
   };
 })

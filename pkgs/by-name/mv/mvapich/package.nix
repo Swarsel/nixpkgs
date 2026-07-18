@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  removeReferencesTo,
   bison,
-  rdma-core,
-  libxml2,
-  perl,
   gfortran,
-  slurm,
-  openssh,
   hwloc,
-  zlib,
-  makeWrapper,
-  python3,
-  # InfiniBand dependencies
-  ucx,
   # OmniPath dependencies
   libfabric,
-  # Compile with slurm as a process manager
-  useSlurm ? false,
+  libxml2,
+  makeWrapper,
+  openssh,
+  perl,
+  pkg-config,
+  python3,
+  rdma-core,
+  removeReferencesTo,
+  slurm,
+  # InfiniBand dependencies
+  ucx,
+  zlib,
   # Network backend for MVAPICH2
   network ? "ucx",
+  # Compile with slurm as a process manager
+  useSlurm ? false,
 }:
 
 assert builtins.elem network [

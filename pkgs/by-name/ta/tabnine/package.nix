@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   unzip,
 }:
@@ -13,19 +13,13 @@ let
       throw "Not supported on ${stdenv.hostPlatform.system}";
 in
 stdenv.mkDerivation {
-  pname = "tabnine";
   inherit (sources) version;
+  pname = "tabnine";
 
   src = fetchurl {
-    url = "https://update.tabnine.com/bundles/${sources.version}/${platform.name}/TabNine.zip";
     inherit (platform) hash;
+    url = "https://update.tabnine.com/bundles/${sources.version}/${platform.name}/TabNine.zip";
   };
-
-  dontBuild = true;
-
-  # Work around the "unpacker appears to have produced no directories"
-  # case that happens when the archive doesn't have a subdirectory.
-  sourceRoot = ".";
 
   nativeBuildInputs = [ unzip ];
 
@@ -38,16 +32,21 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  # Work around the "unpacker appears to have produced no directories"
+  # case that happens when the archive doesn't have a subdirectory.
+  sourceRoot = ".";
+
   passthru = {
     platform = platform.name;
     updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://tabnine.com";
     description = "Smart Compose for code that uses deep learning to help you write code faster";
+    homepage = "https://tabnine.com";
     license = lib.licenses.unfree;
-    platforms = lib.attrNames sources.platforms;
     maintainers = with lib.maintainers; [ lovesegfault ];
+    platforms = lib.attrNames sources.platforms;
   };
 }

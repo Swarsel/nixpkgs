@@ -1,23 +1,21 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   cryptography,
+  fetchPypi,
   pyspnego,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "requests-ntlm";
   version = "1.3.0";
 
-  pyproject = true;
-
   src = fetchPypi {
-    pname = "requests_ntlm";
     inherit version;
     hash = "sha256-spzCRiYj3/35uIxD4YDMtzW0AHIopUIiDogsWK5Wxmg=";
+    pname = "requests_ntlm";
   };
 
   nativeBuildInputs = [ setuptools ];
@@ -28,10 +26,10 @@ buildPythonPackage rec {
     requests
   ];
 
-  pythonImportsCheck = [ "requests_ntlm" ];
-
   # Tests require networking
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "requests_ntlm" ];
 
   meta = {
     description = "HTTP NTLM authentication support for python-requests";

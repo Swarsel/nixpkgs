@@ -8,11 +8,11 @@
 let
   cfg = config.services.scanservjs;
   settings = {
-    scanimage = lib.getExe' config.hardware.sane.backends-package "scanimage";
     convert = lib.getExe' pkgs.imagemagick "convert";
-    tesseract = lib.getExe pkgs.tesseract;
     # it defaults to config/devices.json, but "config" dir doesn't exist by default and scanservjs doesn't create it
     devicesPath = "devices.json";
+    scanimage = lib.getExe' config.hardware.sane.backends-package "scanimage";
+    tesseract = lib.getExe pkgs.tesseract;
   }
   // cfg.settings;
   settingsFormat = pkgs.formats.json { };
@@ -57,84 +57,91 @@ in
 {
   options.services.scanservjs = {
     enable = lib.mkEnableOption "scanservjs";
-    stateDir = lib.mkOption {
-      type = lib.types.str;
-      default = "/var/lib/scanservjs";
-      description = ''
-        State directory for scanservjs.
-      '';
+
+    extraActions = lib.mkOption {
+      default = [ ];
+      description = "Actions to add to config.local.js's `actions`.";
+      type = lib.types.listOf lib.types.lines;
     };
-    settings = lib.mkOption {
-      default = { };
-      description = ''
-        Config to set in config.local.js's `afterConfig`.
-      '';
-      type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-        options.host = lib.mkOption {
-          type = lib.types.str;
-          description = "The IP to listen on.";
-          default = "127.0.0.1";
-        };
-        options.port = lib.mkOption {
-          type = lib.types.port;
-          description = "The port to listen on.";
-          default = 8080;
-        };
-      };
-    };
+
     extraConfig = lib.mkOption {
       default = "";
-      type = lib.types.lines;
+
       description = ''
         Extra code to add to config.local.js's `afterConfig`.
       '';
+
+      type = lib.types.lines;
     };
+
     extraDevicesConfig = lib.mkOption {
       default = "";
-      type = lib.types.lines;
+
       description = ''
         Extra code to add to config.local.js's `afterDevices`.
       '';
+
+      type = lib.types.lines;
     };
+
     runAfterScan = lib.mkOption {
       default = "";
-      type = lib.types.lines;
+
       description = ''
         Extra code to add to config.local.js's `afterScan`.
       '';
+
+      type = lib.types.lines;
     };
-    extraActions = lib.mkOption {
-      default = [ ];
-      type = lib.types.listOf lib.types.lines;
-      description = "Actions to add to config.local.js's `actions`.";
+
+    settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Config to set in config.local.js's `afterConfig`.
+      '';
+
+      type = lib.types.submodule {
+        options.host = lib.mkOption {
+          default = "127.0.0.1";
+          description = "The IP to listen on.";
+          type = lib.types.str;
+        };
+
+        options.port = lib.mkOption {
+          default = 8080;
+          description = "The port to listen on.";
+          type = lib.types.port;
+        };
+
+        freeformType = settingsFormat.type;
+      };
+    };
+
+    stateDir = lib.mkOption {
+      default = "/var/lib/scanservjs";
+
+      description = ''
+        State directory for scanservjs.
+      '';
+
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     hardware.sane.enable = true;
-    users.users.scanservjs = {
-      group = "scanservjs";
-      extraGroups = [
-        "scanner"
-        "lp"
-      ];
-      home = cfg.stateDir;
-      isSystemUser = true;
-      createHome = true;
-    };
-    users.groups.scanservjs = { };
-
-    systemd.tmpfiles.rules = [
-      "d ${cfg.stateDir}/data 0755 scanservjs scanservjs - -"
-      "d ${cfg.stateDir}/data/preview 0755 scanservjs scanservjs - -"
-      "L+ ${cfg.stateDir}/data/preview/default.jpg - - - - ${package}/lib/data/preview/default.jpg"
-    ];
 
     systemd.services.scanservjs = {
-      description = "scanservjs";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "scanservjs";
+
+      environment = {
+        LD_LIBRARY_PATH = "/etc/sane-libs";
+        NIX_SCANSERVJS_CONFIG_PATH = configFile;
+        SANE_CONFIG_DIR = "/etc/sane-config";
+      };
+
       # yes, those paths are configurable, but the config option isn't always used...
       # a lot of the time scanservjs just takes those from PATH
       path = with pkgs; [
@@ -143,18 +150,37 @@ in
         imagemagick
         tesseract
       ];
-      environment = {
-        NIX_SCANSERVJS_CONFIG_PATH = configFile;
-        SANE_CONFIG_DIR = "/etc/sane-config";
-        LD_LIBRARY_PATH = "/etc/sane-libs";
-      };
+
       serviceConfig = {
         ExecStart = lib.getExe package;
+        Group = "scanservjs";
         Restart = "always";
         User = "scanservjs";
-        Group = "scanservjs";
         WorkingDirectory = cfg.stateDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.tmpfiles.rules = [
+      "d ${cfg.stateDir}/data 0755 scanservjs scanservjs - -"
+      "d ${cfg.stateDir}/data/preview 0755 scanservjs scanservjs - -"
+      "L+ ${cfg.stateDir}/data/preview/default.jpg - - - - ${package}/lib/data/preview/default.jpg"
+    ];
+
+    users.groups.scanservjs = { };
+
+    users.users.scanservjs = {
+      createHome = true;
+
+      extraGroups = [
+        "scanner"
+        "lp"
+      ];
+
+      group = "scanservjs";
+      home = cfg.stateDir;
+      isSystemUser = true;
     };
   };
 }

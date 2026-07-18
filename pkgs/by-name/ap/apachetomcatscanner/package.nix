@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "apachetomcatscanner";
   version = "3.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "p0dalirius";
@@ -22,13 +21,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sed -i '/apachetomcatscanner=apachetomcatscanner\.__main__:main/d' setup.py
   '';
 
-  pythonRelaxDeps = [
-    "requests"
-    "urllib3"
-  ];
-
-  build-system = with python3.pkgs; [ setuptools ];
-
   propagatedBuildInputs = with python3.pkgs; [
     requests
     sectools
@@ -38,8 +30,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # Project has no test
   doCheck = false;
-
+  build-system = with python3.pkgs; [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "apachetomcatscanner" ];
+
+  pythonRelaxDeps = [
+    "requests"
+    "urllib3"
+  ];
 
   meta = {
     description = "Tool to scan for Apache Tomcat server vulnerabilities";

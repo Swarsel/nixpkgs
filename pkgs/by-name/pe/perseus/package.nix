@@ -8,22 +8,19 @@
 stdenv.mkDerivation {
   pname = "perseus";
   version = "4-beta";
-  nativeBuildInputs = [ unzip ];
-
-  hardeningDisable = [ "stackprotector" ];
 
   src = fetchurl {
     url = "https://people.maths.ox.ac.uk/nanda/source/perseus_4_beta.zip";
     sha256 = "sha256-cnkJEIC4tu+Ni7z0cKdjmLdS8QLe8iKpdA8uha2MeSU=";
   };
 
-  sourceRoot = ".";
-
   patches = [
     ./fix-gcc15.patch
   ];
 
+  nativeBuildInputs = [ unzip ];
   env.NIX_CFLAGS_COMPILE = toString [ "-std=c++14" ];
+
   buildPhase = ''
     g++ Pers.cpp -O3 -fpermissive -o perseus
   '';
@@ -33,9 +30,12 @@ stdenv.mkDerivation {
     cp perseus $out/bin
   '';
 
+  hardeningDisable = [ "stackprotector" ];
+  sourceRoot = ".";
+
   meta = {
     description = "Persistent Homology Software";
-    mainProgram = "perseus";
+
     longDescription = ''
       Persistent homology - or simply, persistence - is an algebraic
       topological invariant of a filtered cell complex. Perseus
@@ -43,9 +43,11 @@ stdenv.mkDerivation {
       around datasets arising from point samples, images, distance
       matrices and so forth.
     '';
+
     homepage = "https://people.maths.ox.ac.uk/nanda/perseus/index.html";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ erikryb ];
     platforms = lib.platforms.linux;
+    mainProgram = "perseus";
   };
 }

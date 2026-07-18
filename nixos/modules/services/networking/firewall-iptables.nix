@@ -288,9 +288,8 @@ in
   options = {
     networking.firewall = {
       extraCommands = lib.mkOption {
-        type = lib.types.lines;
         default = "";
-        example = "iptables -A INPUT -p icmp -j ACCEPT";
+
         description = ''
           Additional shell commands executed as part of the firewall
           initialisation script.  These are executed just before the
@@ -299,12 +298,14 @@ in
 
           This option only works with the iptables based firewall.
         '';
+
+        example = "iptables -A INPUT -p icmp -j ACCEPT";
+        type = lib.types.lines;
       };
 
       extraStopCommands = lib.mkOption {
-        type = lib.types.lines;
         default = "";
-        example = "iptables -P INPUT ACCEPT";
+
         description = ''
           Additional shell commands executed as part of the firewall
           shutdown script.  These are executed just after the removal
@@ -313,6 +314,9 @@ in
 
           This option only works with the iptables based firewall.
         '';
+
+        example = "iptables -P INPUT ACCEPT";
+        type = lib.types.lines;
       };
     };
   };
@@ -330,38 +334,37 @@ in
       }
     ];
 
+    environment.systemPackages = [ pkgs.nixos-firewall-tool ];
     networking.firewall.checkReversePath = lib.mkIf (!kernelHasRPFilter) (lib.mkDefault false);
 
-    environment.systemPackages = [ pkgs.nixos-firewall-tool ];
-
     systemd.services.firewall = {
-      description = "Firewall";
-      wantedBy = [ "sysinit.target" ];
-      wants = [ "network-pre.target" ];
       after = [ "systemd-modules-load.service" ];
+
       before = [
         "network-pre.target"
         "shutdown.target"
       ];
-      conflicts = [ "shutdown.target" ];
 
+      conflicts = [ "shutdown.target" ];
+      description = "Firewall";
       path = [ cfg.package ] ++ cfg.extraPackages;
+      reloadIfChanged = true;
+
+      serviceConfig = {
+        ExecReload = "@${reloadScript} firewall-reload";
+        ExecStart = "@${startScript} firewall-start";
+        ExecStop = "@${stopScript} firewall-stop";
+        RemainAfterExit = true;
+        Type = "oneshot";
+      };
 
       # FIXME: this module may also try to load kernel modules, but
       # containers don't have CAP_SYS_MODULE.  So the host system had
       # better have all necessary modules already loaded.
       unitConfig.ConditionCapability = "CAP_NET_ADMIN";
       unitConfig.DefaultDependencies = false;
-
-      reloadIfChanged = true;
-
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        ExecStart = "@${startScript} firewall-start";
-        ExecReload = "@${reloadScript} firewall-reload";
-        ExecStop = "@${stopScript} firewall-stop";
-      };
+      wantedBy = [ "sysinit.target" ];
+      wants = [ "network-pre.target" ];
     };
   };
 }

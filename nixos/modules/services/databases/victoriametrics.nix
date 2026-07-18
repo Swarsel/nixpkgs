@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 with lib;
@@ -34,64 +34,89 @@ in
 {
   options.services.victoriametrics = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable VictoriaMetrics in single-node mode.
 
         VictoriaMetrics is a fast, cost-effective and scalable monitoring solution and time series database.
       '';
+
+      type = lib.types.bool;
     };
+
     package = mkPackageOption pkgs "victoriametrics" { };
 
-    listenAddress = mkOption {
-      default = ":8428";
-      type = types.str;
-      description = ''
-        TCP address to listen for incoming http requests.
-      '';
-    };
-
-    stateDir = mkOption {
-      type = types.str;
-      default = "victoriametrics";
-      description = ''
-        Directory below `/var/lib` to store VictoriaMetrics metrics data.
-        This directory will be created automatically using systemd's StateDirectory mechanism.
-      '';
-    };
-
-    retentionPeriod = mkOption {
-      type = types.nullOr types.str;
+    basicAuthPasswordFile = lib.mkOption {
       default = null;
-      example = "15d";
+
       description = ''
-        How long to retain samples in storage.
-        The minimum retentionPeriod is 24h or 1d. See also -retentionFilter
-        The following optional suffixes are supported: s (second), h (hour), d (day), w (week), y (year).
-        If suffix isn't set, then the duration is counted in months (default 1)
+        File that contains the Basic Auth password used to protect VictoriaMetrics instance by authorization
       '';
+
+      type = lib.types.nullOr lib.types.path;
     };
 
     basicAuthUsername = lib.mkOption {
       default = null;
-      type = lib.types.nullOr lib.types.str;
+
       description = ''
         Basic Auth username used to protect VictoriaMetrics instance by authorization
       '';
+
+      type = lib.types.nullOr lib.types.str;
     };
 
-    basicAuthPasswordFile = lib.mkOption {
-      default = null;
-      type = lib.types.nullOr lib.types.path;
+    checkConfig = lib.mkOption {
+      default = true;
+
       description = ''
-        File that contains the Basic Auth password used to protect VictoriaMetrics instance by authorization
+        Check configuration.
+
+        If you use credentials stored in external files (`environmentFile`, etc),
+        they will not be visible  and it will report errors, despite a correct configuration.
       '';
+
+      type = lib.types.bool;
+    };
+
+    extraOptions = mkOption {
+      default = [ ];
+
+      description = ''
+        Extra options to pass to VictoriaMetrics. See the docs:
+        <https://docs.victoriametrics.com/single-server-victoriametrics/#list-of-command-line-flags>
+        or {command}`victoriametrics -help` for more information.
+      '';
+
+      example = literalExpression ''
+        [
+          "-loggerLevel=WARN"
+        ]
+      '';
+
+      type = types.listOf types.str;
+    };
+
+    listenAddress = mkOption {
+      default = ":8428";
+
+      description = ''
+        TCP address to listen for incoming http requests.
+      '';
+
+      type = types.str;
     };
 
     prometheusConfig = lib.mkOption {
-      type = lib.types.submodule { freeformType = settingsFormat.type; };
       default = { };
+
+      description = ''
+        Config for prometheus style metrics.
+        See the docs: <https://docs.victoriametrics.com/vmagent/#how-to-collect-metrics-in-prometheus-format>
+        for more information.
+      '';
+
       example = literalExpression ''
         {
           scrape_configs = [
@@ -122,37 +147,33 @@ in
           ];
         }
       '';
-      description = ''
-        Config for prometheus style metrics.
-        See the docs: <https://docs.victoriametrics.com/vmagent/#how-to-collect-metrics-in-prometheus-format>
-        for more information.
-      '';
+
+      type = lib.types.submodule { freeformType = settingsFormat.type; };
     };
 
-    extraOptions = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = literalExpression ''
-        [
-          "-loggerLevel=WARN"
-        ]
-      '';
+    retentionPeriod = mkOption {
+      default = null;
+
       description = ''
-        Extra options to pass to VictoriaMetrics. See the docs:
-        <https://docs.victoriametrics.com/single-server-victoriametrics/#list-of-command-line-flags>
-        or {command}`victoriametrics -help` for more information.
+        How long to retain samples in storage.
+        The minimum retentionPeriod is 24h or 1d. See also -retentionFilter
+        The following optional suffixes are supported: s (second), h (hour), d (day), w (week), y (year).
+        If suffix isn't set, then the duration is counted in months (default 1)
       '';
+
+      example = "15d";
+      type = types.nullOr types.str;
     };
 
-    checkConfig = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = ''
-        Check configuration.
+    stateDir = mkOption {
+      default = "victoriametrics";
 
-        If you use credentials stored in external files (`environmentFile`, etc),
-        they will not be visible  and it will report errors, despite a correct configuration.
+      description = ''
+        Directory below `/var/lib` to store VictoriaMetrics metrics data.
+        This directory will be created automatically using systemd's StateDirectory mechanism.
       '';
+
+      type = types.str;
     };
   };
 
@@ -163,17 +184,32 @@ in
         assertion =
           (cfg.basicAuthUsername == null && cfg.basicAuthPasswordFile == null)
           || (cfg.basicAuthUsername != null && cfg.basicAuthPasswordFile != null);
+
         message = "Both basicAuthUsername and basicAuthPasswordFile must be set together to enable basicAuth functionality, or neither should be set.";
       }
     ];
 
     systemd.services.victoriametrics = {
-      description = "VictoriaMetrics time series database";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-      startLimitBurst = 5;
+      description = "VictoriaMetrics time series database";
+
+      postStart =
+        let
+          bindAddr =
+            (lib.optionalString (lib.hasPrefix ":" cfg.listenAddress) "127.0.0.1") + cfg.listenAddress;
+        in
+        lib.mkBefore ''
+          until ${lib.getBin pkgs.curl}/bin/curl -s -o /dev/null http://${bindAddr}/ping; do
+            sleep 1;
+          done
+        '';
 
       serviceConfig = {
+        # Hardening
+        DeviceAllow = [ "/dev/null rw" ];
+        DevicePolicy = "strict";
+        DynamicUser = true;
+
         ExecStart = lib.escapeShellArgs (
           startCLIList
           ++ lib.optionals (cfg.prometheusConfig != { }) [ "-promscrape.config=${prometheusConfigYml}" ]
@@ -183,24 +219,13 @@ in
           ) "-httpAuth.password=file://%d/basic_auth_password"
         );
 
-        DynamicUser = true;
+        # Increase the limit to avoid errors like 'too many open files'  when merging small parts
+        LimitNOFILE = 1048576;
+
         LoadCredential = lib.optionals (cfg.basicAuthPasswordFile != null) [
           "basic_auth_password:${cfg.basicAuthPasswordFile}"
         ];
 
-        RestartSec = 1;
-        Restart = "on-failure";
-        RuntimeDirectory = "victoriametrics";
-        RuntimeDirectoryMode = "0700";
-        StateDirectory = cfg.stateDir;
-        StateDirectoryMode = "0700";
-
-        # Increase the limit to avoid errors like 'too many open files'  when merging small parts
-        LimitNOFILE = 1048576;
-
-        # Hardening
-        DeviceAllow = [ "/dev/null rw" ];
-        DevicePolicy = "strict";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -217,15 +242,24 @@ in
         ProtectProc = "invisible";
         ProtectSystem = "full";
         RemoveIPC = true;
+        Restart = "on-failure";
+        RestartSec = 1;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        RuntimeDirectory = "victoriametrics";
+        RuntimeDirectoryMode = "0700";
+        StateDirectory = cfg.stateDir;
+        StateDirectoryMode = "0700";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
@@ -233,16 +267,8 @@ in
         ];
       };
 
-      postStart =
-        let
-          bindAddr =
-            (lib.optionalString (lib.hasPrefix ":" cfg.listenAddress) "127.0.0.1") + cfg.listenAddress;
-        in
-        lib.mkBefore ''
-          until ${lib.getBin pkgs.curl}/bin/curl -s -o /dev/null http://${bindAddr}/ping; do
-            sleep 1;
-          done
-        '';
+      startLimitBurst = 5;
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

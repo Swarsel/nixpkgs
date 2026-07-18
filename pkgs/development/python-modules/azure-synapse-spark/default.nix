@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "azure-synapse-spark";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,6 +26,7 @@ buildPythonPackage rec {
     msrest
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "azure.synapse.spark" ];
 
   meta = {

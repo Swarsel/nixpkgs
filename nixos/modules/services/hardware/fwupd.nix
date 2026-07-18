@@ -15,6 +15,9 @@ let
 
   customEtc = {
     "fwupd/fwupd.conf" = {
+      # fwupd tries to chmod the file if it doesn't have the right permissions
+      mode = "0640";
+
       source = format.generate "fwupd.conf" (
         {
           fwupd = cfg.daemonSettings;
@@ -23,8 +26,6 @@ let
           uefi_capsule = cfg.uefiCapsuleSettings;
         }
       );
-      # fwupd tries to chmod the file if it doesn't have the right permissions
-      mode = "0640";
     };
   };
 
@@ -65,99 +66,6 @@ let
 in
 {
 
-  ###### interface
-  options = {
-    services.fwupd = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to enable fwupd, a DBus service that allows
-          applications to update firmware.
-        '';
-      };
-
-      extraTrustedKeys = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
-        default = [ ];
-        example = lib.literalExpression "[ /etc/nixos/fwupd/myfirmware.pem ]";
-        description = ''
-          Installing a public key allows firmware signed with a matching private key to be recognized as trusted, which may require less authentication to install than for untrusted files. By default trusted firmware can be upgraded (but not downgraded) without the user or administrator password. Only very few keys are installed by default.
-        '';
-      };
-
-      extraRemotes = lib.mkOption {
-        type = with lib.types; listOf str;
-        default = [ ];
-        example = [ "lvfs-testing" ];
-        description = ''
-          Enables extra remotes in fwupd. See `/etc/fwupd/remotes.d`.
-        '';
-      };
-
-      package = lib.mkPackageOption pkgs "fwupd" { };
-
-      daemonSettings = lib.mkOption {
-        type = lib.types.submodule {
-          freeformType = format.type.nestedTypes.elemType;
-          options = {
-            DisabledDevices = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              example = [ "2082b5e0-7a64-478a-b1b2-e3404fab6dad" ];
-              description = ''
-                List of device GUIDs to be disabled.
-              '';
-            };
-
-            DisabledPlugins = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              example = [ "udev" ];
-              description = ''
-                List of plugins to be disabled.
-              '';
-            };
-
-            EspLocation = lib.mkOption {
-              type = lib.types.path;
-              default = config.boot.loader.efi.efiSysMountPoint;
-              defaultText = lib.literalExpression "config.boot.loader.efi.efiSysMountPoint";
-              description = ''
-                The EFI system partition (ESP) path used if UDisks is not available
-                or if this partition is not mounted at /boot/efi, /boot, or /efi
-              '';
-            };
-
-            TestDevices = lib.mkOption {
-              internal = true;
-              type = lib.types.bool;
-              default = false;
-              description = ''
-                Create virtual test devices and remote for validating daemon flows.
-                This is only intended for CI testing and development purposes.
-              '';
-            };
-          };
-        };
-        default = { };
-        description = ''
-          Configurations for the fwupd daemon.
-        '';
-      };
-
-      uefiCapsuleSettings = lib.mkOption {
-        type = lib.types.submodule {
-          freeformType = format.type.nestedTypes.elemType;
-        };
-        default = { };
-        description = ''
-          UEFI capsule configurations for the fwupd daemon.
-        '';
-      };
-    };
-  };
-
   imports = [
     (lib.mkRenamedOptionModule
       [ "services" "fwupd" "blacklistDevices" ]
@@ -180,47 +88,127 @@ in
     )
   ];
 
-  ###### implementation
-  config = lib.mkIf cfg.enable {
-    # Disable test related plug-ins implicitly so that users do not have to care about them.
-    services.fwupd.daemonSettings = {
-      EspLocation = config.boot.loader.efi.efiSysMountPoint;
-    };
+  ###### interface
+  options = {
+    services.fwupd = {
+      enable = lib.mkOption {
+        default = false;
 
-    environment.systemPackages = [ cfg.package ];
+        description = ''
+          Whether to enable fwupd, a DBus service that allows
+          applications to update firmware.
+        '';
 
-    # customEtc overrides some files from the package
-    environment.etc = originalEtc // customEtc // extraTrustedKeys // remotes;
-
-    services.dbus.packages = [ cfg.package ];
-
-    services.udev.packages = [ cfg.package ];
-
-    # required to update the firmware of disks
-    services.udisks2.enable = true;
-
-    systemd = {
-      packages = [ cfg.package ];
-
-      # The upstream unit runs as User=fwupd-refresh; ensure it can take
-      # ownership of /var/lib/fwupd.
-      services.fwupd-refresh.serviceConfig = {
-        StateDirectory = "fwupd";
-        # Better for debugging, upstream sets stderr to null for some reason..
-        StandardError = "inherit";
+        type = lib.types.bool;
       };
 
-      timers.fwupd-refresh.wantedBy = [ "timers.target" ];
-    };
+      package = lib.mkPackageOption pkgs "fwupd" { };
 
-    users.users.fwupd-refresh = {
-      isSystemUser = true;
-      group = "fwupd-refresh";
+      daemonSettings = lib.mkOption {
+        default = { };
+
+        description = ''
+          Configurations for the fwupd daemon.
+        '';
+
+        type = lib.types.submodule {
+          options = {
+            DisabledDevices = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                List of device GUIDs to be disabled.
+              '';
+
+              example = [ "2082b5e0-7a64-478a-b1b2-e3404fab6dad" ];
+              type = lib.types.listOf lib.types.str;
+            };
+
+            DisabledPlugins = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                List of plugins to be disabled.
+              '';
+
+              example = [ "udev" ];
+              type = lib.types.listOf lib.types.str;
+            };
+
+            EspLocation = lib.mkOption {
+              default = config.boot.loader.efi.efiSysMountPoint;
+              defaultText = lib.literalExpression "config.boot.loader.efi.efiSysMountPoint";
+
+              description = ''
+                The EFI system partition (ESP) path used if UDisks is not available
+                or if this partition is not mounted at /boot/efi, /boot, or /efi
+              '';
+
+              type = lib.types.path;
+            };
+
+            TestDevices = lib.mkOption {
+              default = false;
+
+              description = ''
+                Create virtual test devices and remote for validating daemon flows.
+                This is only intended for CI testing and development purposes.
+              '';
+
+              internal = true;
+              type = lib.types.bool;
+            };
+          };
+
+          freeformType = format.type.nestedTypes.elemType;
+        };
+      };
+
+      extraRemotes = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Enables extra remotes in fwupd. See `/etc/fwupd/remotes.d`.
+        '';
+
+        example = [ "lvfs-testing" ];
+        type = with lib.types; listOf str;
+      };
+
+      extraTrustedKeys = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Installing a public key allows firmware signed with a matching private key to be recognized as trusted, which may require less authentication to install than for untrusted files. By default trusted firmware can be upgraded (but not downgraded) without the user or administrator password. Only very few keys are installed by default.
+        '';
+
+        example = lib.literalExpression "[ /etc/nixos/fwupd/myfirmware.pem ]";
+        type = lib.types.listOf lib.types.path;
+      };
+
+      uefiCapsuleSettings = lib.mkOption {
+        default = { };
+
+        description = ''
+          UEFI capsule configurations for the fwupd daemon.
+        '';
+
+        type = lib.types.submodule {
+          freeformType = format.type.nestedTypes.elemType;
+        };
+      };
     };
-    users.groups.fwupd-refresh = { };
+  };
+
+  ###### implementation
+  config = lib.mkIf cfg.enable {
+    # customEtc overrides some files from the package
+    environment.etc = originalEtc // customEtc // extraTrustedKeys // remotes;
+    environment.systemPackages = [ cfg.package ];
 
     security.polkit = {
       enable = true;
+
       # fwupd-refresh.service has no seat, so polkit denies these actions.
       # Upstream's TrustedUids needs a static uid which we only allocate at
       # activation time, so grant access via a rule on the user name instead.
@@ -233,6 +221,38 @@ in
           }
         });
       '';
+    };
+
+    services.dbus.packages = [ cfg.package ];
+
+    # Disable test related plug-ins implicitly so that users do not have to care about them.
+    services.fwupd.daemonSettings = {
+      EspLocation = config.boot.loader.efi.efiSysMountPoint;
+    };
+
+    services.udev.packages = [ cfg.package ];
+    # required to update the firmware of disks
+    services.udisks2.enable = true;
+
+    systemd = {
+      packages = [ cfg.package ];
+
+      # The upstream unit runs as User=fwupd-refresh; ensure it can take
+      # ownership of /var/lib/fwupd.
+      services.fwupd-refresh.serviceConfig = {
+        # Better for debugging, upstream sets stderr to null for some reason..
+        StandardError = "inherit";
+        StateDirectory = "fwupd";
+      };
+
+      timers.fwupd-refresh.wantedBy = [ "timers.target" ];
+    };
+
+    users.groups.fwupd-refresh = { };
+
+    users.users.fwupd-refresh = {
+      group = "fwupd-refresh";
+      isSystemUser = true;
     };
   };
 

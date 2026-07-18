@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   pynintendoauth,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pynintendoparental";
   version = "2.4.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pantherale0";
@@ -24,6 +23,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '__version__ = "0.0.0"' '__version__ = "${finalAttrs.version}"'
   '';
 
+  # test.py connects to the actual API
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,15 +32,13 @@ buildPythonPackage (finalAttrs: {
     pynintendoauth
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pynintendoparental" ];
 
-  # test.py connects to the actual API
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/pantherale0/pynintendoparental/releases/tag/${finalAttrs.src.tag}";
     description = "Python module to interact with Nintendo Parental Controls";
     homepage = "https://github.com/pantherale0/pynintendoparental";
+    changelog = "https://github.com/pantherale0/pynintendoparental/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dotlambda ];
   };

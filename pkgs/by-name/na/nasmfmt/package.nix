@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -25,9 +25,9 @@ buildGoModule {
 
   meta = {
     description = "Formatter for NASM source files";
-    mainProgram = "nasmfmt";
     homepage = "https://github.com/yamnikov-oleg/nasmfmt";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "nasmfmt";
   };
 }

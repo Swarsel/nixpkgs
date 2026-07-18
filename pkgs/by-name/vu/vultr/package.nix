@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,16 +16,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   # There are not test files
   doCheck = false;
 
   meta = {
     description = "CLI and API client library";
-    mainProgram = "vultr";
     homepage = "https://jamesclonk.github.io/vultr";
     changelog = "https://github.com/JamesClonk/vultr/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zauberpony ];
+    mainProgram = "vultr";
   };
 })

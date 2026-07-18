@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pyyaml,
   ruamel-yaml,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "yamale";
   version = "6.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "23andMe";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-+UZJhZLJEZVGPF9D9B8blGh4pLszQnDoOl5xQMpvVl0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.ruamel;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,8 +30,7 @@ buildPythonPackage rec {
     ruamel = [ ruamel-yaml ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.ruamel;
-
+  pyproject = true;
   pythonImportsCheck = [ "yamale" ];
 
   meta = {

@@ -13,13 +13,6 @@ let
 in
 lib.recurseIntoAttrs rec {
 
-  helloFromCabalSdist = haskellPackages.buildFromCabalSdist haskellPackages.hello;
-
-  # A more complicated example with a cabal hook.
-  hercules-ci-cnix-store = haskellPackages.buildFromCabalSdist haskellPackages.hercules-ci-cnix-store;
-
-  localFromCabalSdist = haskellPackages.buildFromCabalSdist localRaw;
-
   # This test makes sure that localHasNoDirectReference can actually fail if
   # it doesn't do anything. If this test fails, either the test setup was broken,
   # or Haskell packaging has changed the way `src` is treated in such a way that
@@ -34,6 +27,11 @@ lib.recurseIntoAttrs rec {
         touch $out
       '';
 
+  helloFromCabalSdist = haskellPackages.buildFromCabalSdist haskellPackages.hello;
+  # A more complicated example with a cabal hook.
+  hercules-ci-cnix-store = haskellPackages.buildFromCabalSdist haskellPackages.hercules-ci-cnix-store;
+  localFromCabalSdist = haskellPackages.buildFromCabalSdist localRaw;
+
   localHasNoDirectReference =
     runCommand "localHasNoDirectReference"
       {
@@ -47,6 +45,8 @@ lib.recurseIntoAttrs rec {
   # Test that buildFromCabalSdist respects patches applied to the package.
   # The patch changes the greeting from "Hello, Haskell!" to "Hello, Patched Haskell!".
   localPatchedFromCabalSdist = haskellPackages.buildFromCabalSdist localPatched;
+  # Test that buildFromSdist (non-cabal-install variant) also respects patches.
+  localPatchedFromSdist = haskell.lib.buildFromSdist localPatched;
 
   patchRespected =
     runCommand "patchRespected"
@@ -57,9 +57,6 @@ lib.recurseIntoAttrs rec {
         ${lib.getExe localPatchedFromCabalSdist} | grep "Patched" >/dev/null
         touch $out
       '';
-
-  # Test that buildFromSdist (non-cabal-install variant) also respects patches.
-  localPatchedFromSdist = haskell.lib.buildFromSdist localPatched;
 
   patchRespectedSdist =
     runCommand "patchRespectedSdist"

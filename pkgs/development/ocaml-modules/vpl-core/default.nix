@@ -9,8 +9,6 @@ buildDunePackage rec {
   pname = "vpl-core";
   version = "0.5";
 
-  minimalOCamlVersion = "4.07";
-
   src = fetchFromGitHub {
     owner = "VERIMAG-Polyhedra";
     repo = "vpl";
@@ -21,6 +19,8 @@ buildDunePackage rec {
   propagatedBuildInputs = [
     zarith
   ];
+
+  minimalOCamlVersion = "4.07";
 
   meta = {
     description = "Verified Polyhedra Library";

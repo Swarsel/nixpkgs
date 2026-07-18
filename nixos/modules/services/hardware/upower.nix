@@ -20,19 +20,53 @@ in
     services.upower = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable Upower, a DBus service that provides power
           management support to applications.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "upower" { };
 
-      enableWattsUpPro = lib.mkOption {
-        type = lib.types.bool;
+      allowRiskyCriticalPowerAction = lib.mkOption {
         default = false;
+
+        description = ''
+          Enable the risky critical power actions "Suspend" and "Ignore".
+        '';
+
+        type = lib.types.bool;
+      };
+
+      criticalPowerAction = lib.mkOption {
+        default = "HybridSleep";
+
+        description = ''
+          The action to take when `timeAction` or
+          `percentageAction` has been reached for the batteries
+          (UPS or laptop batteries) supplying the computer.
+
+          When set to `Suspend` or `Ignore`,
+          {option}`services.upower.allowRiskyCriticalPowerAction` must be set
+          to `true`.
+        '';
+
+        type = lib.types.enum [
+          "PowerOff"
+          "Hibernate"
+          "HybridSleep"
+          "Suspend"
+          "Ignore"
+        ];
+      };
+
+      enableWattsUpPro = lib.mkOption {
+        default = false;
+
         description = ''
           Enable the Watts Up Pro device.
 
@@ -46,23 +80,13 @@ in
           - Sparkfun FT232 breakout board
           - Parallax Propeller
         '';
-      };
 
-      noPollBatteries = lib.mkOption {
         type = lib.types.bool;
-        default = false;
-        description = ''
-          Don't poll the kernel for battery level changes.
-
-          Some hardware will send us battery level changes through
-          events, rather than us having to poll for it. This option
-          allows disabling polling for hardware that sends out events.
-        '';
       };
 
       ignoreLid = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Do we ignore the lid state
 
@@ -72,61 +96,27 @@ in
           by a couple of user-space daemons. On Linux systems, see also
           {manpage}`logind.conf(5)`.
         '';
-      };
 
-      usePercentageForPolicy = lib.mkOption {
         type = lib.types.bool;
-        default = true;
-        description = ''
-          Policy for warnings and action based on battery levels
-
-          Whether battery percentage based policy should be used. The default
-          is to use the percentage, which
-          should work around broken firmwares. It is also more reliable than
-          the time left (frantically saving all your files is going to use more
-          battery than letting it rest for example).
-        '';
       };
 
-      percentageLow = lib.mkOption {
-        type = lib.types.ints.unsigned;
-        default = 20;
+      noPollBatteries = lib.mkOption {
+        default = false;
+
         description = ''
-          When `usePercentageForPolicy` is
-          `true`, the levels at which UPower will consider the
-          battery low.
+          Don't poll the kernel for battery level changes.
 
-          This will also be used for batteries which don't have time information
-          such as that of peripherals.
-
-          If any value (of `percentageLow`,
-          `percentageCritical` and
-          `percentageAction`) is invalid, or not in descending
-          order, the defaults will be used.
+          Some hardware will send us battery level changes through
+          events, rather than us having to poll for it. This option
+          allows disabling polling for hardware that sends out events.
         '';
-      };
 
-      percentageCritical = lib.mkOption {
-        type = lib.types.ints.unsigned;
-        default = 5;
-        description = ''
-          When `usePercentageForPolicy` is
-          `true`, the levels at which UPower will consider the
-          battery critical.
-
-          This will also be used for batteries which don't have time information
-          such as that of peripherals.
-
-          If any value (of `percentageLow`,
-          `percentageCritical` and
-          `percentageAction`) is invalid, or not in descending
-          order, the defaults will be used.
-        '';
+        type = lib.types.bool;
       };
 
       percentageAction = lib.mkOption {
-        type = lib.types.ints.unsigned;
         default = 2;
+
         description = ''
           When `usePercentageForPolicy` is
           `true`, the levels at which UPower will take action
@@ -140,39 +130,53 @@ in
           `percentageAction`) is invalid, or not in descending
           order, the defaults will be used.
         '';
+
+        type = lib.types.ints.unsigned;
       };
 
-      timeLow = lib.mkOption {
-        type = lib.types.ints.unsigned;
-        default = 1200;
+      percentageCritical = lib.mkOption {
+        default = 5;
+
         description = ''
           When `usePercentageForPolicy` is
-          `false`, the time remaining in seconds at which
-          UPower will consider the battery low.
+          `true`, the levels at which UPower will consider the
+          battery critical.
 
-          If any value (of `timeLow`,
-          `timeCritical` and `timeAction`) is
-          invalid, or not in descending order, the defaults will be used.
+          This will also be used for batteries which don't have time information
+          such as that of peripherals.
+
+          If any value (of `percentageLow`,
+          `percentageCritical` and
+          `percentageAction`) is invalid, or not in descending
+          order, the defaults will be used.
         '';
+
+        type = lib.types.ints.unsigned;
       };
 
-      timeCritical = lib.mkOption {
-        type = lib.types.ints.unsigned;
-        default = 300;
+      percentageLow = lib.mkOption {
+        default = 20;
+
         description = ''
           When `usePercentageForPolicy` is
-          `false`, the time remaining in seconds at which
-          UPower will consider the battery critical.
+          `true`, the levels at which UPower will consider the
+          battery low.
 
-          If any value (of `timeLow`,
-          `timeCritical` and `timeAction`) is
-          invalid, or not in descending order, the defaults will be used.
+          This will also be used for batteries which don't have time information
+          such as that of peripherals.
+
+          If any value (of `percentageLow`,
+          `percentageCritical` and
+          `percentageAction`) is invalid, or not in descending
+          order, the defaults will be used.
         '';
+
+        type = lib.types.ints.unsigned;
       };
 
       timeAction = lib.mkOption {
-        type = lib.types.ints.unsigned;
         default = 120;
+
         description = ''
           When `usePercentageForPolicy` is
           `false`, the time remaining in seconds at which
@@ -182,34 +186,56 @@ in
           `timeCritical` and `timeAction`) is
           invalid, or not in descending order, the defaults will be used.
         '';
+
+        type = lib.types.ints.unsigned;
       };
 
-      allowRiskyCriticalPowerAction = lib.mkOption {
+      timeCritical = lib.mkOption {
+        default = 300;
+
+        description = ''
+          When `usePercentageForPolicy` is
+          `false`, the time remaining in seconds at which
+          UPower will consider the battery critical.
+
+          If any value (of `timeLow`,
+          `timeCritical` and `timeAction`) is
+          invalid, or not in descending order, the defaults will be used.
+        '';
+
+        type = lib.types.ints.unsigned;
+      };
+
+      timeLow = lib.mkOption {
+        default = 1200;
+
+        description = ''
+          When `usePercentageForPolicy` is
+          `false`, the time remaining in seconds at which
+          UPower will consider the battery low.
+
+          If any value (of `timeLow`,
+          `timeCritical` and `timeAction`) is
+          invalid, or not in descending order, the defaults will be used.
+        '';
+
+        type = lib.types.ints.unsigned;
+      };
+
+      usePercentageForPolicy = lib.mkOption {
+        default = true;
+
+        description = ''
+          Policy for warnings and action based on battery levels
+
+          Whether battery percentage based policy should be used. The default
+          is to use the percentage, which
+          should work around broken firmwares. It is also more reliable than
+          the time left (frantically saving all your files is going to use more
+          battery than letting it rest for example).
+        '';
+
         type = lib.types.bool;
-        default = false;
-        description = ''
-          Enable the risky critical power actions "Suspend" and "Ignore".
-        '';
-      };
-
-      criticalPowerAction = lib.mkOption {
-        type = lib.types.enum [
-          "PowerOff"
-          "Hibernate"
-          "HybridSleep"
-          "Suspend"
-          "Ignore"
-        ];
-        default = "HybridSleep";
-        description = ''
-          The action to take when `timeAction` or
-          `percentageAction` has been reached for the batteries
-          (UPS or laptop batteries) supplying the computer.
-
-          When set to `Suspend` or `Ignore`,
-          {option}`services.upower.allowRiskyCriticalPowerAction` must be set
-          to `true`.
-        '';
       };
 
     };
@@ -231,6 +257,7 @@ in
             riskyActionEnabled = elem cfg.criticalPowerAction riskyActions;
           in
           riskyActionEnabled -> cfg.allowRiskyCriticalPowerAction;
+
         message = ''
           services.upower.allowRiskyCriticalPowerAction must be true if
           services.upower.criticalPowerAction is set to
@@ -239,30 +266,27 @@ in
       }
     ];
 
-    environment.systemPackages = [ cfg.package ];
-
-    services.dbus.packages = [ cfg.package ];
-
-    services.udev.packages = [ cfg.package ];
-
-    systemd.packages = [ cfg.package ];
-
     environment.etc."UPower/UPower.conf".text = lib.generators.toINI { } {
       UPower = {
-        EnableWattsUpPro = cfg.enableWattsUpPro;
-        NoPollBatteries = cfg.noPollBatteries;
-        IgnoreLid = cfg.ignoreLid;
-        UsePercentageForPolicy = cfg.usePercentageForPolicy;
-        PercentageLow = cfg.percentageLow;
-        PercentageCritical = cfg.percentageCritical;
-        PercentageAction = cfg.percentageAction;
-        TimeLow = cfg.timeLow;
-        TimeCritical = cfg.timeCritical;
-        TimeAction = cfg.timeAction;
         AllowRiskyCriticalPowerAction = cfg.allowRiskyCriticalPowerAction;
         CriticalPowerAction = cfg.criticalPowerAction;
+        EnableWattsUpPro = cfg.enableWattsUpPro;
+        IgnoreLid = cfg.ignoreLid;
+        NoPollBatteries = cfg.noPollBatteries;
+        PercentageAction = cfg.percentageAction;
+        PercentageCritical = cfg.percentageCritical;
+        PercentageLow = cfg.percentageLow;
+        TimeAction = cfg.timeAction;
+        TimeCritical = cfg.timeCritical;
+        TimeLow = cfg.timeLow;
+        UsePercentageForPolicy = cfg.usePercentageForPolicy;
       };
     };
+
+    environment.systemPackages = [ cfg.package ];
+    services.dbus.packages = [ cfg.package ];
+    services.udev.packages = [ cfg.package ];
+    systemd.packages = [ cfg.package ];
   };
 
 }

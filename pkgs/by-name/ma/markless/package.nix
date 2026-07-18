@@ -9,9 +9,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "markless";
   version = "0.9.29";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "jvanderberg";
     repo = "markless";
@@ -19,13 +16,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-orjJ++948WEJ031c5Dcvmfyqw2JMRJRjoBsGU+A+B4w=";
   };
 
+  strictDeps = true;
   cargoHash = "sha256-kMMglmIsc3HkCx24Zir3NtZitwrxYwa7FgLgAZ2/ffo=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Terminal markdown viewer with image support";
+
     longDescription = ''
       Markless is a terminal markdown viewer and editor focused on fast
       navigation, clear rendering, and sensible defaults for long documents.
@@ -38,11 +37,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       table of contents sidebar, incremental search, file watching for live
       reload, and auto theme detection.
     '';
+
     homepage = "https://github.com/jvanderberg/markless";
     changelog = "https://github.com/jvanderberg/markless/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "markless";
     maintainers = with lib.maintainers; [ fraggerfox ];
     platforms = lib.platforms.unix;
+    mainProgram = "markless";
   };
 })

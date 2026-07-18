@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,10 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Lambda calculus interpreter";
-    mainProgram = "rlci";
     homepage = "https://github.com/orsinium-labs/rlci";
     changelog = "https://github.com/orsinium-labs/rlci/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "rlci";
   };
 })

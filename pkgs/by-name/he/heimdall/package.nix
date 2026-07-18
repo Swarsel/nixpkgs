@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
   cmake,
-  enableGUI ? false,
   fetchFromSourcehut,
   gitUpdater,
-  lib,
   libusb1,
   pkg-config,
   qt6,
-  stdenv,
+  enableGUI ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,15 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ga2hAZhsKosEG//qXEf+1vhJYtsHwyq6QvMlZaSFIgQ=";
   };
 
-  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
-
-  patches = [
-    ./0001-Install-the-macOS-bundle-to-the-install-prefix.patch
-  ];
-
   outputs = [
     "out"
     "udev"
+  ];
+
+  patches = [
+    ./0001-Install-the-macOS-bundle-to-the-install-prefix.patch
   ];
 
   strictDeps = true;
@@ -45,6 +43,10 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional enableGUI qt6.qtbase;
 
+  cmakeFlags = [
+    (lib.cmakeBool "DISABLE_FRONTEND" (!enableGUI))
+  ];
+
   preInstall = ''
     mkdir -p $udev/lib/udev/rules.d
     install -m644 -t $udev/lib/udev/rules.d $src/heimdall/60-heimdall.rules
@@ -57,21 +59,22 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=(--prefix PATH : "$out/bin")
   '';
 
-  cmakeFlags = [
-    (lib.cmakeBool "DISABLE_FRONTEND" (!enableGUI))
-  ];
+  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Cross-platform open-source tool suite used to flash firmware onto Samsung Galaxy devices";
     homepage = "https://git.sr.ht/~grimler/Heimdall";
     license = lib.licenses.mit;
-    mainProgram =
-      (if enableGUI then "heimdall-frontend" else "heimdall")
-      + lib.optionalString stdenv.hostPlatform.isWindows ".exe";
+
     maintainers = with lib.maintainers; [
       surfaceflinger
       timschumi
     ];
+
     platforms = with lib.platforms; unix ++ windows;
+
+    mainProgram =
+      (if enableGUI then "heimdall-frontend" else "heimdall")
+      + lib.optionalString stdenv.hostPlatform.isWindows ".exe";
   };
 })

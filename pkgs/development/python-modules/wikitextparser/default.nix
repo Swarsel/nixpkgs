@@ -1,18 +1,17 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  flit-core,
   lib,
-  setuptools,
+  fetchFromGitHub,
+  buildPythonPackage,
+  flit-core,
   pytestCheckHook,
   regex,
+  setuptools,
   wcwidth,
 }:
 
 buildPythonPackage rec {
   pname = "wikitextparser";
   version = "0.56.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "5j9";
@@ -30,12 +29,12 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wikitextparser" ];
 
   meta = {
-    homepage = "https://github.com/5j9/wikitextparser";
     description = "Simple parsing tool for MediaWiki's wikitext markup";
+    homepage = "https://github.com/5j9/wikitextparser";
     changelog = "https://github.com/5j9/wikitextparser/blob/v${version}/CHANGELOG.rst";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ rapiteanu ];

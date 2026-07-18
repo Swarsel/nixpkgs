@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   imagemagick,
   qrencode,
+  stdenvNoCC,
   testQR ? false,
   zbar ? null,
 }:
@@ -18,8 +18,6 @@ stdenvNoCC.mkDerivation {
     rev = "5d36a1bada8646ae0f61b04356e62ba5ef10a1aa";
     hash = "sha256-DwxYgBsioL86WM6KBFJ+DuSJo3/1pwD1Fl156XD98RY=";
   };
-
-  dontBuild = true;
 
   postPatch =
     let
@@ -43,15 +41,19 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/yishilin14/asc-key-to-qr-code-gif";
     description = "Convert ASCII-armored PGP keys to animated QR code";
+    homepage = "https://github.com/yishilin14/asc-key-to-qr-code-gif";
     license = lib.licenses.unfree; # program does not have a license
-    mainProgram = "asc-to-gif";
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       asymmetric
       NotAShelf
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "asc-to-gif";
   };
 }

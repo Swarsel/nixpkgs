@@ -7,17 +7,17 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchurl,
-  writeText,
-  pkg-config,
   dune,
-  customOCamlPackages ? null,
+  fetchzip,
+  ncurses,
   ocamlPackages_4_14,
   ocamlPackages_5_4,
-  ncurses,
-  csdp ? null,
+  pkg-config,
   version,
+  writeText,
+  csdp ? null,
+  customOCamlPackages ? null,
   rocq-version ? null,
 }@args:
 let
@@ -43,6 +43,7 @@ let
       }
       {
         inherit release releaseRev;
+
         location = {
           owner = "coq";
           repo = "coq";
@@ -74,13 +75,58 @@ let
   ];
   ocamlPropagatedBuildInputs = [ ocamlPackages.zarith ];
   self = stdenv.mkDerivation {
-    pname = "rocq";
     inherit (fetched) version src;
+    pname = "rocq";
+
+    postPatch = ''
+      UNAME=$(type -tp uname)
+      RM=$(type -tp rm)
+      substituteInPlace tools/beautify-archive --replace-warn "/bin/rm" "$RM"
+      ${csdpPatch}
+    '';
+
+    nativeBuildInputs = [ pkg-config ] ++ ocamlNativeBuildInputs;
+    buildInputs = [ ncurses ];
+    propagatedBuildInputs = ocamlPropagatedBuildInputs;
+
+    preConfigure = ''
+      patchShebangs dev/tools/
+    '';
+
+    buildPhase = ''
+      runHook preBuild
+      make dunestrap
+      dune build -p rocq-runtime,rocq-core -j $NIX_BUILD_CORES
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+      dune install --prefix $out rocq-runtime rocq-core
+      ln -s $out/lib/rocq-runtime $OCAMLFIND_DESTDIR/rocq-runtime
+      ln -s $out/lib/rocq-core $OCAMLFIND_DESTDIR/rocq-core
+      runHook postInstall
+    '';
+
+    createFindlibDestdir = true;
+    enableParallelBuilding = true;
+    prefixKey = "-prefix ";
+
+    setupHook = writeText "setupHook.sh" ''
+      addRocqPath () {
+        if test -d "''$1/lib/coq/${rocq-version}/user-contrib"; then
+          export ROCQPATH="''${ROCQPATH-}''${ROCQPATH:+:}''$1/lib/coq/${rocq-version}/user-contrib/"
+        fi
+      }
+
+      addEnvHooks "$targetOffset" addRocqPath
+    '';
 
     passthru = {
       inherit rocq-version;
       inherit ocamlPackages ocamlNativeBuildInputs;
       inherit ocamlPropagatedBuildInputs;
+
       emacsBufferSetup = pkgs: ''
         ; Propagate rocq paths to children
         (inherit-local-permanent coq-prog-name "${self}/bin/rocq repl")
@@ -129,72 +175,29 @@ let
       '';
     };
 
-    nativeBuildInputs = [ pkg-config ] ++ ocamlNativeBuildInputs;
-    buildInputs = [ ncurses ];
-
-    propagatedBuildInputs = ocamlPropagatedBuildInputs;
-
-    postPatch = ''
-      UNAME=$(type -tp uname)
-      RM=$(type -tp rm)
-      substituteInPlace tools/beautify-archive --replace-warn "/bin/rm" "$RM"
-      ${csdpPatch}
-    '';
-
-    setupHook = writeText "setupHook.sh" ''
-      addRocqPath () {
-        if test -d "''$1/lib/coq/${rocq-version}/user-contrib"; then
-          export ROCQPATH="''${ROCQPATH-}''${ROCQPATH:+:}''$1/lib/coq/${rocq-version}/user-contrib/"
-        fi
-      }
-
-      addEnvHooks "$targetOffset" addRocqPath
-    '';
-
-    preConfigure = ''
-      patchShebangs dev/tools/
-    '';
-
-    prefixKey = "-prefix ";
-
-    enableParallelBuilding = true;
-
-    createFindlibDestdir = true;
-
-    buildPhase = ''
-      runHook preBuild
-      make dunestrap
-      dune build -p rocq-runtime,rocq-core -j $NIX_BUILD_CORES
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-      dune install --prefix $out rocq-runtime rocq-core
-      ln -s $out/lib/rocq-runtime $OCAMLFIND_DESTDIR/rocq-runtime
-      ln -s $out/lib/rocq-core $OCAMLFIND_DESTDIR/rocq-core
-      runHook postInstall
-    '';
-
     meta = {
       description = "Rocq Prover";
+
       longDescription = ''
         The Rocq Prover is an interactive theorem prover, or proof assistant. It provides
         a formal language to write mathematical definitions, executable
         algorithms and theorems together with an environment for
         semi-interactive development of machine-checked proofs.
       '';
+
       homepage = "https://rocq-prover.org";
       license = lib.licenses.lgpl21;
-      branch = rocq-version;
+
       maintainers = with lib.maintainers; [
         proux01
         roconnor
         vbgl
         Zimmi48
       ];
+
       platforms = lib.platforms.unix;
       mainProgram = "rocq";
+      branch = rocq-version;
     };
   };
 in

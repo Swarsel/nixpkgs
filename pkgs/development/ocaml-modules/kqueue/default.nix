@@ -1,8 +1,8 @@
 {
-  buildDunePackage,
-  dune-configurator,
   lib,
   fetchurl,
+  buildDunePackage,
+  dune-configurator,
   ppx_expect,
   ppx_optcomp,
 }:
@@ -10,8 +10,6 @@
 buildDunePackage (finalAttrs: {
   pname = "kqueue";
   version = "0.4.0";
-
-  minimalOCamlVersion = "4.12";
 
   src = fetchurl {
     url = "https://github.com/anuragsoni/kqueue-ml/releases/download/${finalAttrs.version}/kqueue-${finalAttrs.version}.tbz";
@@ -23,11 +21,13 @@ buildDunePackage (finalAttrs: {
     ppx_optcomp
   ];
 
+  doCheck = true;
+
   checkInputs = [
     ppx_expect
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.12";
 
   meta = {
     description = "OCaml bindings for kqueue event notification interface";

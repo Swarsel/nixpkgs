@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
   beautifulsoup4,
   boto3,
+  buildPythonPackage,
   freezegun,
   hatchling,
   lxml,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "bx-py-utils";
   version = "120";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "boxine";
@@ -32,7 +31,45 @@ buildPythonPackage rec {
     rm bx_py_utils_tests/publish.py
   '';
 
+  nativeCheckInputs = [
+    beautifulsoup4
+    boto3
+    freezegun
+    lxml
+    openpyxl
+    parameterized
+    pdoc
+    pytestCheckHook
+    requests-mock
+    typeguard
+  ];
+
   build-system = [ hatchling ];
+
+  disabledTestPaths = [
+    # depends on cli-base-utilities, which depends on bx-py-utils
+    "bx_py_utils_tests/tests/test_project_setup.py"
+    # processify() doesn't work under darwin
+    # https://github.com/boxine/bx_py_utils/issues/80
+    # Also not working under Linux anymore
+    # _pickle.PicklingError: Can't pickle local object <function processify.<locals>.process_func at 0x7ffff36deda0>
+    "bx_py_utils_tests/tests/test_processify.py"
+  ];
+
+  disabledTests = [
+    # too closely affected by bs4 updates
+    "test_pretty_format_html"
+    "test_assert_html_snapshot_by_css_selector"
+    # test accesses the internet
+    "test_happy_path"
+    # cli_base module not found
+    "test_doctests"
+    # leaks unix timestamp of 1980 into test fixtures
+    "test_xlsx2dict_complex"
+    "test_xlsx2dict_simple"
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "bx_py_utils.anonymize"
@@ -55,48 +92,12 @@ buildPythonPackage rec {
     "bx_py_utils.text_tools"
   ];
 
-  nativeCheckInputs = [
-    beautifulsoup4
-    boto3
-    freezegun
-    lxml
-    openpyxl
-    parameterized
-    pdoc
-    pytestCheckHook
-    requests-mock
-    typeguard
-  ];
-
-  disabledTests = [
-    # too closely affected by bs4 updates
-    "test_pretty_format_html"
-    "test_assert_html_snapshot_by_css_selector"
-    # test accesses the internet
-    "test_happy_path"
-    # cli_base module not found
-    "test_doctests"
-    # leaks unix timestamp of 1980 into test fixtures
-    "test_xlsx2dict_complex"
-    "test_xlsx2dict_simple"
-  ];
-
-  disabledTestPaths = [
-    # depends on cli-base-utilities, which depends on bx-py-utils
-    "bx_py_utils_tests/tests/test_project_setup.py"
-    # processify() doesn't work under darwin
-    # https://github.com/boxine/bx_py_utils/issues/80
-    # Also not working under Linux anymore
-    # _pickle.PicklingError: Can't pickle local object <function processify.<locals>.process_func at 0x7ffff36deda0>
-    "bx_py_utils_tests/tests/test_processify.py"
-  ];
-
   meta = {
     description = "Various Python utility functions";
-    mainProgram = "bx_py_utils";
     homepage = "https://github.com/boxine/bx_py_utils";
     changelog = "https://github.com/boxine/bx_py_utils/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "bx_py_utils";
   };
 }

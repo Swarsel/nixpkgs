@@ -7,7 +7,6 @@ let
   pluginHashes = lib.importJSON ./plugins.json;
 in
 makeScopeWithSplicing' {
-  otherSplices = generateSplicesForMkScope "reposilitePlugins";
   f =
     self:
     {
@@ -19,8 +18,8 @@ makeScopeWithSplicing' {
         }:
         lib.makeOverridable (
           {
-            name,
             hash,
+            name,
           }:
           let
             inherit (reposilite) version;
@@ -32,20 +31,22 @@ makeScopeWithSplicing' {
             ];
           in
           fetchurl {
-            url = "https://maven.reposilite.com/releases/com/reposilite/plugin/${name}-plugin/${version}/${name}-plugin-${version}-all.jar";
             inherit pname version hash;
+            url = "https://maven.reposilite.com/releases/com/reposilite/plugin/${name}-plugin/${version}/${name}-plugin-${version}-all.jar";
 
             meta = {
+              inherit (reposilite.meta) platforms;
               description = "${fancyName} plugin for Reposilite.";
               homepage = "https://github.com/dzikoysk/reposilite";
-              sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
               license = lib.licenses.asl20;
+              sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
               maintainers = with lib.maintainers; [ uku3lig ];
-              inherit (reposilite.meta) platforms;
             };
           }
         )
       ) { };
     }
     // builtins.mapAttrs (name: hash: self.fetchPlugin { inherit name hash; }) pluginHashes;
+
+  otherSplices = generateSplicesForMkScope "reposilitePlugins";
 }

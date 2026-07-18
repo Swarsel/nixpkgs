@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libGLU,
   qmake,
   qtbase,
-  libGLU,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,14 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-T8KAcw3cXbp0FZm53OjlQBnUvLRFdoj80dIQzQY0/yw=";
   };
 
-  nativeBuildInputs = [ qmake ];
-  buildInputs = [
-    qtbase
-    libGLU
-  ];
-
-  dontWrapQtApps = true;
-
   # Fix build on darwin, and install dylib instead of framework
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     substituteInPlace QGLViewer/QGLViewer.pro \
@@ -37,9 +29,18 @@ stdenv.mkDerivation (finalAttrs: {
         ""
   '';
 
+  nativeBuildInputs = [ qmake ];
+
+  buildInputs = [
+    qtbase
+    libGLU
+  ];
+
   preConfigure = ''
     cd QGLViewer
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "C++ library based on Qt that eases the creation of OpenGL 3D viewers";

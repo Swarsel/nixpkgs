@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  simde,
-  zlib,
-  enableSse4_1 ? stdenv.hostPlatform.sse4_1Support,
-  enableAvx ? stdenv.hostPlatform.avxSupport,
-  enablePython ? false,
+  abpoa,
   python3Packages,
   runCommand,
-  abpoa,
+  simde,
+  zlib,
+  enableAvx ? stdenv.hostPlatform.avxSupport,
+  enablePython ? false,
+  enableSse4_1 ? stdenv.hostPlatform.sse4_1Support,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,6 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  buildInputs = [ zlib ];
+
   buildFlags = lib.optionals stdenv.hostPlatform.isx86_64 [
     (
       if enableAvx then
@@ -62,8 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
       { "SSE2" = 1; }
   );
 
-  buildInputs = [ zlib ];
-
   installPhase = lib.optionalString (!enablePython) ''
     runHook preInstall
 
@@ -71,8 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
-
-  pythonImportsCheck = [ "pyabpoa" ];
 
   doInstallCheck = enablePython;
 
@@ -83,6 +81,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstallCheck
   '';
+
+  pythonImportsCheck = [ "pyabpoa" ];
 
   passthru.tests = {
     simple = runCommand "${finalAttrs.pname}-test" { } ''
@@ -96,7 +96,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/yangao07/abPOA/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ natsukium ];
-    mainProgram = "abpoa";
     platforms = lib.platforms.unix;
+    mainProgram = "abpoa";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,18 +17,16 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   # no test file in upstream
   doCheck = false;
-
   passthru.tests.nixos = nixosTests.local-content-share;
 
   meta = {
     description = "Storing/sharing text/files in your local network with no setup on client devices";
     homepage = "https://github.com/Tanq16/local-content-share";
     license = lib.licenses.mit;
-    mainProgram = "local-content-share";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ e-v-o-l-v-e ];
+    platforms = lib.platforms.unix;
+    mainProgram = "local-content-share";
   };
 })

@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
-  libsamplerate,
-  fftwFloat,
-  rtl-sdr,
-  soapysdr-with-plugins,
+  codecserver,
   csdr,
   direwolf,
+  fftwFloat,
+  libsamplerate,
+  pkg-config,
+  python3Packages,
+  rtl-sdr,
+  soapysdr-with-plugins,
   sox,
-  wsjtx,
-  codecserver,
   versionCheckHook,
+  wsjtx,
 }:
 
 let
@@ -22,7 +22,6 @@ let
   js8py = python3Packages.buildPythonPackage rec {
     pname = "js8py";
     version = "0.1.1";
-    format = "setuptools";
 
     src = fetchFromGitHub {
       owner = "jketterl";
@@ -31,14 +30,16 @@ let
       hash = "sha256-nAj8fI4MkAKr+LjvJQbz7Px8TVAYA9AwZYWy8Cj7AMk=";
     };
 
+    format = "setuptools";
+
     pythonImportsCheck = [
       "js8py"
       "test"
     ];
 
     meta = {
-      homepage = "https://github.com/jketterl/js8py";
       description = "Library to decode the output of the js8 binary of JS8Call";
+      homepage = "https://github.com/jketterl/js8py";
       license = lib.licenses.gpl3Only;
     };
   };
@@ -73,13 +74,13 @@ let
       soapysdr-with-plugins
     ];
 
+    doInstallCheck = true;
     nativeInstallCheckInputs = [ versionCheckHook ];
     versionCheckProgram = "${placeholder "out"}/bin/rtl_connector";
-    doInstallCheck = true;
 
     meta = {
-      homepage = "https://github.com/jketterl/owrx_connector";
       description = "Set of connectors that are used by OpenWebRX to interface with SDR hardware";
+      homepage = "https://github.com/jketterl/owrx_connector";
       license = lib.licenses.gpl3Only;
       platforms = lib.platforms.unix;
     };
@@ -89,7 +90,6 @@ in
 python3Packages.buildPythonApplication rec {
   pname = "openwebrx";
   version = "1.2.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jketterl";
@@ -97,6 +97,9 @@ python3Packages.buildPythonApplication rec {
     tag = version;
     hash = "sha256-i3Znp5Sxs/KtJazHh2v9/2P+3cEocWB5wIpF7E4pK9s=";
   };
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   dependencies =
     with python3Packages;
@@ -116,23 +119,22 @@ python3Packages.buildPythonApplication rec {
       codecserver
     ];
 
+  format = "setuptools";
+
   pythonImportsCheck = [
     "csdr"
     "owrx"
     "test"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   passthru = {
     inherit js8py owrx_connector;
   };
 
   meta = {
-    homepage = "https://github.com/jketterl/openwebrx";
     description = "Simple DSP library and command-line tool for Software Defined Radio";
-    mainProgram = "openwebrx";
+    homepage = "https://github.com/jketterl/openwebrx";
     license = lib.licenses.gpl3Only;
+    mainProgram = "openwebrx";
   };
 }

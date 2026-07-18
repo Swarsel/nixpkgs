@@ -4,14 +4,14 @@
   fetchFromGitHub,
   cmake,
   gettext,
-  libdnf,
-  pkg-config,
   glib,
-  libpeas,
-  util-linux,
   help2man,
-  zchunk,
+  libdnf,
+  libpeas,
   pcre2,
+  pkg-config,
+  util-linux,
+  zchunk,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

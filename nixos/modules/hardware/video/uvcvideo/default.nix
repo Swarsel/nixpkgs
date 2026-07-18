@@ -23,8 +23,8 @@ in
     services.uvcvideo.dynctrl = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable {command}`uvcvideo` dynamic controls.
 
@@ -32,11 +32,13 @@ in
           into your environment and register all dynamic controls from
           specified {command}`packages` to the {command}`uvcvideo` driver.
         '';
+
+        type = lib.types.bool;
       };
 
       packages = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
-        example = lib.literalExpression "[ pkgs.tiscamera ]";
+        apply = map lib.getBin;
+
         description = ''
           List of packages containing {command}`uvcvideo` dynamic controls
           rules. All files found in
@@ -48,19 +50,21 @@ in
           the dynamic controls from specified packages to the {command}`uvcvideo`
           driver.
         '';
-        apply = map lib.getBin;
+
+        example = lib.literalExpression "[ pkgs.tiscamera ]";
+        type = lib.types.listOf lib.types.path;
       };
     };
   };
 
   config = lib.mkIf cfg.dynctrl.enable {
 
-    services.udev.packages = [
-      (uvcdynctrl-udev-rules cfg.dynctrl.packages)
-    ];
-
     environment.systemPackages = [
       pkgs.libwebcam
+    ];
+
+    services.udev.packages = [
+      (uvcdynctrl-udev-rules cfg.dynctrl.packages)
     ];
 
   };

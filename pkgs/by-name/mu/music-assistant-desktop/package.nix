@@ -1,33 +1,30 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-
   fetchFromGitHub,
-  fetchYarnDeps,
-
+  alsa-lib,
+  atk,
   # nativeBuildInputs
   cargo-tauri,
+  dbus,
+  fetchYarnDeps,
+  glib-networking,
+  gtk3,
   jq,
+  libappindicator-gtk3,
+  llvmPackages,
   moreutils,
   nodejs,
+  # buildInputs
+  openssl,
   pkg-config,
+  pulseaudio,
+  rustPlatform,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
   yarnBuildHook,
   yarnConfigHook,
   yarnInstallHook,
-  wrapGAppsHook3,
-
-  # buildInputs
-  openssl,
-  alsa-lib,
-  atk,
-  dbus,
-  glib-networking,
-  libappindicator-gtk3,
-  llvmPackages,
-  pulseaudio,
-  gtk3,
-  webkitgtk_4_1,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -55,15 +52,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       | sponge src-tauri/tauri.conf.json
   '';
 
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  cargoHash = "sha256-AFn2m8eO+U86s6g2LlzBuAsJBesrm3Gncihf+zbPDeE=";
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-dOJ5ETRodpnuaI+L2wckNU0XANUcjqzvdqw/cd5sJC4=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -91,27 +80,35 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-    gappsWrapperArgs+=(
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libappindicator-gtk3 ]}"
-    )
-  '';
+  cargoHash = "sha256-AFn2m8eO+U86s6g2LlzBuAsJBesrm3Gncihf+zbPDeE=";
 
   env = {
     # `LIBCLANG_PATH` is needed to build `coreaudio-sys` on darwin
     LIBCLANG_PATH = lib.optionalString stdenv.hostPlatform.isDarwin "${lib.getLib llvmPackages.libclang}/lib";
   };
 
+  preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
+    gappsWrapperArgs+=(
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libappindicator-gtk3 ]}"
+    )
+  '';
+
   __structuredAttrs = true;
-  strictDeps = true;
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-dOJ5ETRodpnuaI+L2wckNU0XANUcjqzvdqw/cd5sJC4=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   meta = {
     description = "Official companion desktop app for Music Assistant";
-    changelog = "https://github.com/music-assistant/desktop-app/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/music-assistant/desktop-app";
+    changelog = "https://github.com/music-assistant/desktop-app/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ nim65s ];
-    mainProgram = "music-assistant-companion";
     platforms = lib.platforms.all;
+    mainProgram = "music-assistant-companion";
   };
 })

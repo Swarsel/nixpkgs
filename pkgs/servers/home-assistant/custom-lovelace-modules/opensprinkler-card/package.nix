@@ -1,8 +1,8 @@
 {
   lib,
-  buildNpmPackage,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -16,8 +16,6 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-Ds5x/Ktughi1/jO3mSo0yALJoD+okl4W68EYlHqsMEg=";
   };
 
-  makeCacheWritable = true;
-
   npmDepsHash = "sha256-6zze/SzgZGaFOtGO/aEzX3JO+NdAI1H6nVuvILE74HI=";
 
   installPhase = ''
@@ -28,6 +26,8 @@ buildNpmPackage (finalAttrs: {
 
     runHook postInstall
   '';
+
+  makeCacheWritable = true;
 
   meta = {
     description = "Home Assistant card for collecting OpenSprinkler status";

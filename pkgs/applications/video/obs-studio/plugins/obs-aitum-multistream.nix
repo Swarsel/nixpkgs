@@ -21,6 +21,20 @@ stdenv.mkDerivation rec {
 
   # Remove after https://github.com/Aitum/obs-aitum-multistream/pull/15 is released :)
   patches = [ ./obs-aitum-multistream.diff ];
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    curl
+    obs-studio
+    qtbase
+  ];
+
+  cmakeFlags = [
+    # Prevent deprecation warnings from failing the build
+    (lib.cmakeOptionType "string" "CMAKE_CXX_FLAGS" "-Wno-error=deprecated-declarations")
+  ];
+
+  dontWrapQtApps = true;
 
   # Fix FTBFS with Qt >= 6.8
   prePatch = ''
@@ -28,24 +42,11 @@ stdenv.mkDerivation rec {
       --replace-fail 'find_qt(COMPONENTS Widgets Core)' 'find_package(Qt6 REQUIRED COMPONENTS Core Widgets)'
   '';
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    curl
-    obs-studio
-    qtbase
-  ];
-  dontWrapQtApps = true;
-
-  cmakeFlags = [
-    # Prevent deprecation warnings from failing the build
-    (lib.cmakeOptionType "string" "CMAKE_CXX_FLAGS" "-Wno-error=deprecated-declarations")
-  ];
-
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "Plugin to stream everywhere from a single instance of OBS";
     homepage = "https://github.com/Aitum/obs-aitum-multistream";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

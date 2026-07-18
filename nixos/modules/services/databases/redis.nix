@@ -30,8 +30,6 @@ let
 
 in
 {
-  meta.teams = [ lib.teams.redis ];
-
   imports = [
     (lib.mkRemovedOptionModule [
       "services"
@@ -137,22 +135,15 @@ in
   ];
 
   ###### interface
-
   options = {
 
     services.redis = {
       package = lib.mkPackageOption pkgs "redis" { };
 
-      vmOverCommit =
-        lib.mkEnableOption ''
-          set `vm.overcommit_memory` sysctl to 1
-          (Suggested for Background Saving: <https://redis.io/docs/get-started/faq/>)
-        ''
-        // {
-          default = true;
-        };
-
       servers = lib.mkOption {
+        default = { };
+        description = "Configuration of multiple `redis-server` instances.";
+
         type =
           with lib.types;
           attrsOf (
@@ -162,26 +153,47 @@ in
                 options = {
                   enable = lib.mkEnableOption "Redis server";
 
-                  user = lib.mkOption {
+                  appendFsync = lib.mkOption {
+                    default = "everysec"; # no, always, everysec
+                    description = "How often to fsync the append-only log, options: no, always, everysec.";
                     type = types.str;
-                    default = redisName name;
-                    defaultText = lib.literalExpression ''
-                      if name == "" then "redis" else "redis-''${name}"
-                    '';
-                    description = ''
-                      User account under which this instance of redis-server runs.
+                  };
 
-                      ::: {.note}
-                      If left as the default value this user will automatically be
-                      created on system activation, otherwise you are responsible for
-                      ensuring the user exists before the redis service starts.
+                  appendOnly = lib.mkOption {
+                    default = false;
+                    description = "By default data is only periodically persisted to disk, enable this option to use an append-only file for improved persistence.";
+                    type = types.bool;
+                  };
+
+                  bind = lib.mkOption {
+                    default = "127.0.0.1";
+
+                    description = ''
+                      The IP interface to bind to.
+                      `null` means "all interfaces".
                     '';
+
+                    example = "192.0.2.1";
+                    type = with types; nullOr str;
+                  };
+
+                  databases = lib.mkOption {
+                    default = 16;
+                    description = "Set the number of databases.";
+                    type = types.int;
+                  };
+
+                  extraParams = lib.mkOption {
+                    default = [ ];
+                    description = "Extra parameters to append to redis-server invocation";
+                    example = [ "--sentinel" ];
+                    type = with types; listOf str;
                   };
 
                   group = lib.mkOption {
-                    type = types.str;
                     default = config.user;
                     defaultText = lib.literalExpression "config.user";
+
                     description = ''
                       Group account under which this instance of redis-server runs.
 
@@ -190,93 +202,102 @@ in
                       created on system activation, otherwise you are responsible for
                       ensuring the group exists before the redis service starts.
                     '';
+
+                    type = types.str;
+                  };
+
+                  logLevel = lib.mkOption {
+                    default = "notice"; # debug, verbose, notice, warning
+                    description = "Specify the server verbosity level, options: debug, verbose, notice, warning.";
+                    example = "debug";
+                    type = types.str;
+                  };
+
+                  logfile = lib.mkOption {
+                    default = "/dev/null";
+                    description = "Specify the log file name. Also 'stdout' can be used to force Redis to log on the standard output.";
+                    example = "/var/log/redis.log";
+                    type = types.str;
+                  };
+
+                  masterAuth = lib.mkOption {
+                    default = null;
+
+                    description = ''
+                      If the master is password protected (using the requirePass configuration)
+                      it is possible to tell the slave to authenticate before starting the replication synchronization
+                      process, otherwise the master will refuse the slave request.
+                      (STORED PLAIN TEXT, WORLD-READABLE IN NIX STORE)
+                    '';
+
+                    type = with types; nullOr str;
+                  };
+
+                  masterAuthFile = lib.mkOption {
+                    default = null;
+                    description = "File with password for the master user.";
+                    example = "/run/keys/redis-master-password";
+                    type = with types; nullOr path;
+                  };
+
+                  masterUser = lib.mkOption {
+                    default = null;
+
+                    description = ''
+                      If the master is password protected via ACLs this option can be used to specify
+                      the Redis user that is used by replicas.'';
+
+                    type = with types; nullOr str;
+                  };
+
+                  maxclients = lib.mkOption {
+                    default = 10000;
+                    description = "Set the max number of connected clients at the same time.";
+                    type = types.int;
+                  };
+
+                  openFirewall = lib.mkOption {
+                    default = false;
+
+                    description = ''
+                      Whether to open ports in the firewall for the server.
+                    '';
+
+                    type = types.bool;
                   };
 
                   port = lib.mkOption {
-                    type = types.port;
                     default = if name == "" then 6379 else 0;
                     defaultText = lib.literalExpression ''if name == "" then 6379 else 0'';
+
                     description = ''
                       The TCP port to accept connections.
                       If port 0 is specified Redis will not listen on a TCP socket.
                     '';
+
+                    type = types.port;
                   };
 
-                  openFirewall = lib.mkOption {
-                    type = types.bool;
-                    default = false;
+                  requirePass = lib.mkOption {
+                    default = null;
+
                     description = ''
-                      Whether to open ports in the firewall for the server.
+                      Password for database (STORED PLAIN TEXT, WORLD-READABLE IN NIX STORE).
+                      Use requirePassFile to store it outside of the nix store in a dedicated file.
                     '';
-                  };
 
-                  extraParams = lib.mkOption {
-                    type = with types; listOf str;
-                    default = [ ];
-                    description = "Extra parameters to append to redis-server invocation";
-                    example = [ "--sentinel" ];
-                  };
-
-                  bind = lib.mkOption {
+                    example = "letmein!";
                     type = with types; nullOr str;
-                    default = "127.0.0.1";
-                    description = ''
-                      The IP interface to bind to.
-                      `null` means "all interfaces".
-                    '';
-                    example = "192.0.2.1";
                   };
 
-                  unixSocket = lib.mkOption {
+                  requirePassFile = lib.mkOption {
+                    default = null;
+                    description = "File with password for the database.";
+                    example = "/run/keys/redis-password";
                     type = with types; nullOr path;
-                    default = "/run/${redisName name}/redis.sock";
-                    defaultText = lib.literalExpression ''
-                      if name == "" then "/run/redis/redis.sock" else "/run/redis-''${name}/redis.sock"
-                    '';
-                    description = "The path to the socket to bind to.";
-                  };
-
-                  unixSocketPerm = lib.mkOption {
-                    type = types.int;
-                    default = 660;
-                    description = "Change permissions for the socket";
-                    example = 600;
-                  };
-
-                  logLevel = lib.mkOption {
-                    type = types.str;
-                    default = "notice"; # debug, verbose, notice, warning
-                    example = "debug";
-                    description = "Specify the server verbosity level, options: debug, verbose, notice, warning.";
-                  };
-
-                  logfile = lib.mkOption {
-                    type = types.str;
-                    default = "/dev/null";
-                    description = "Specify the log file name. Also 'stdout' can be used to force Redis to log on the standard output.";
-                    example = "/var/log/redis.log";
-                  };
-
-                  syslog = lib.mkOption {
-                    type = types.bool;
-                    default = true;
-                    description = "Enable logging to the system logger.";
-                  };
-
-                  databases = lib.mkOption {
-                    type = types.int;
-                    default = 16;
-                    description = "Set the number of databases.";
-                  };
-
-                  maxclients = lib.mkOption {
-                    type = types.int;
-                    default = 10000;
-                    description = "Set the max number of connected clients at the same time.";
                   };
 
                   save = lib.mkOption {
-                    type = with types; listOf (listOf int);
                     default = [
                       [
                         900
@@ -291,151 +312,68 @@ in
                         10000
                       ]
                     ];
+
                     description = ''
                       The schedule in which data is persisted to disk, represented as a list of lists where the first element represent the amount of seconds and the second the number of changes.
 
                       If set to the empty list (`[]`) then RDB persistence will be disabled (useful if you are using AOF or don't want any persistence).
                     '';
-                  };
 
-                  slaveOf = lib.mkOption {
-                    type =
-                      with types;
-                      nullOr (
-                        submodule (
-                          { ... }:
-                          {
-                            options = {
-                              ip = lib.mkOption {
-                                type = str;
-                                description = "IP of the Redis master";
-                                example = "192.168.1.100";
-                              };
-
-                              port = lib.mkOption {
-                                type = port;
-                                description = "port of the Redis master";
-                                default = 6379;
-                              };
-                            };
-                          }
-                        )
-                      );
-
-                    default = null;
-                    description = "IP and port to which this redis instance acts as a slave.";
-                    example = {
-                      ip = "192.168.1.100";
-                      port = 6379;
-                    };
-                  };
-
-                  masterAuth = lib.mkOption {
-                    type = with types; nullOr str;
-                    default = null;
-                    description = ''
-                      If the master is password protected (using the requirePass configuration)
-                      it is possible to tell the slave to authenticate before starting the replication synchronization
-                      process, otherwise the master will refuse the slave request.
-                      (STORED PLAIN TEXT, WORLD-READABLE IN NIX STORE)
-                    '';
-                  };
-
-                  masterAuthFile = lib.mkOption {
-                    type = with types; nullOr path;
-                    default = null;
-                    description = "File with password for the master user.";
-                    example = "/run/keys/redis-master-password";
-                  };
-
-                  masterUser = lib.mkOption {
-                    type = with types; nullOr str;
-                    default = null;
-                    description = ''
-                      If the master is password protected via ACLs this option can be used to specify
-                      the Redis user that is used by replicas.'';
-                  };
-
-                  requirePass = lib.mkOption {
-                    type = with types; nullOr str;
-                    default = null;
-                    description = ''
-                      Password for database (STORED PLAIN TEXT, WORLD-READABLE IN NIX STORE).
-                      Use requirePassFile to store it outside of the nix store in a dedicated file.
-                    '';
-                    example = "letmein!";
-                  };
-
-                  requirePassFile = lib.mkOption {
-                    type = with types; nullOr path;
-                    default = null;
-                    description = "File with password for the database.";
-                    example = "/run/keys/redis-password";
+                    type = with types; listOf (listOf int);
                   };
 
                   sentinelAuthPassFile = lib.mkOption {
-                    type = with types; nullOr path;
                     default = null;
                     description = "File with password for connecting to other Sentinel instances.";
                     example = "/run/keys/sentinel-password";
+                    type = with types; nullOr path;
                   };
 
                   sentinelAuthUser = lib.mkOption {
-                    type = with types; nullOr str;
                     default = null;
                     description = "The username to use to monitor a master from Sentinel.";
+                    type = with types; nullOr str;
                   };
 
                   sentinelMasterHost = lib.mkOption {
-                    type = with types; nullOr str;
                     default = null;
                     description = "The IP address (recommended) or hostname of the Redis master that Sentinel will monitor.";
+                    type = with types; nullOr str;
                   };
 
                   sentinelMasterName = lib.mkOption {
-                    type = with types; nullOr str;
                     default = null;
                     description = "The master name of the Redis master that Sentinel will monitor.";
+                    type = with types; nullOr str;
                   };
 
                   sentinelMasterPort = lib.mkOption {
-                    type = with types; nullOr int;
                     default = null;
                     description = "The TCP port of the Redis master that Sentinel will monitor.";
+                    type = with types; nullOr int;
                   };
 
                   sentinelMasterQuorum = lib.mkOption {
-                    type = with types; nullOr int;
                     default = null;
                     description = "The Sentinel quorum (minimum number of Sentinel nodes online for failover)";
-                  };
-
-                  appendOnly = lib.mkOption {
-                    type = types.bool;
-                    default = false;
-                    description = "By default data is only periodically persisted to disk, enable this option to use an append-only file for improved persistence.";
-                  };
-
-                  appendFsync = lib.mkOption {
-                    type = types.str;
-                    default = "everysec"; # no, always, everysec
-                    description = "How often to fsync the append-only log, options: no, always, everysec.";
-                  };
-
-                  slowLogLogSlowerThan = lib.mkOption {
-                    type = types.int;
-                    default = 10000;
-                    description = "Log queries whose execution take longer than X in milliseconds.";
-                    example = 1000;
-                  };
-
-                  slowLogMaxLen = lib.mkOption {
-                    type = types.int;
-                    default = 128;
-                    description = "Maximum number of items to keep in slow log.";
+                    type = with types; nullOr int;
                   };
 
                   settings = lib.mkOption {
+                    default = { };
+
+                    description = ''
+                      Redis configuration. Refer to
+                      <https://redis.io/topics/config>
+                      for details on supported values.
+                    '';
+
+                    example = lib.literalExpression ''
+                      {
+                        loadmodule = [ "/path/to/my_module.so" "/path/to/other_module.so" ];
+                      }
+                    '';
+
                     # TODO: this should be converted to freeformType
                     type =
                       with types;
@@ -445,19 +383,98 @@ in
                         str
                         (listOf str)
                       ]);
-                    default = { };
+                  };
+
+                  slaveOf = lib.mkOption {
+                    default = null;
+                    description = "IP and port to which this redis instance acts as a slave.";
+
+                    example = {
+                      ip = "192.168.1.100";
+                      port = 6379;
+                    };
+
+                    type =
+                      with types;
+                      nullOr (
+                        submodule (
+                          { ... }:
+                          {
+                            options = {
+                              ip = lib.mkOption {
+                                description = "IP of the Redis master";
+                                example = "192.168.1.100";
+                                type = str;
+                              };
+
+                              port = lib.mkOption {
+                                default = 6379;
+                                description = "port of the Redis master";
+                                type = port;
+                              };
+                            };
+                          }
+                        )
+                      );
+                  };
+
+                  slowLogLogSlowerThan = lib.mkOption {
+                    default = 10000;
+                    description = "Log queries whose execution take longer than X in milliseconds.";
+                    example = 1000;
+                    type = types.int;
+                  };
+
+                  slowLogMaxLen = lib.mkOption {
+                    default = 128;
+                    description = "Maximum number of items to keep in slow log.";
+                    type = types.int;
+                  };
+
+                  syslog = lib.mkOption {
+                    default = true;
+                    description = "Enable logging to the system logger.";
+                    type = types.bool;
+                  };
+
+                  unixSocket = lib.mkOption {
+                    default = "/run/${redisName name}/redis.sock";
+
+                    defaultText = lib.literalExpression ''
+                      if name == "" then "/run/redis/redis.sock" else "/run/redis-''${name}/redis.sock"
+                    '';
+
+                    description = "The path to the socket to bind to.";
+                    type = with types; nullOr path;
+                  };
+
+                  unixSocketPerm = lib.mkOption {
+                    default = 660;
+                    description = "Change permissions for the socket";
+                    example = 600;
+                    type = types.int;
+                  };
+
+                  user = lib.mkOption {
+                    default = redisName name;
+
+                    defaultText = lib.literalExpression ''
+                      if name == "" then "redis" else "redis-''${name}"
+                    '';
+
                     description = ''
-                      Redis configuration. Refer to
-                      <https://redis.io/topics/config>
-                      for details on supported values.
+                      User account under which this instance of redis-server runs.
+
+                      ::: {.note}
+                      If left as the default value this user will automatically be
+                      created on system activation, otherwise you are responsible for
+                      ensuring the user exists before the redis service starts.
                     '';
-                    example = lib.literalExpression ''
-                      {
-                        loadmodule = [ "/path/to/my_module.so" "/path/to/other_module.so" ];
-                      }
-                    '';
+
+                    type = types.str;
                   };
                 };
+
                 config.settings = lib.mkMerge [
                   {
                     inherit (config)
@@ -467,20 +484,23 @@ in
                       maxclients
                       appendOnly
                       ;
+
+                    appendfsync = config.appendFsync;
                     daemonize = false;
-                    supervised = "systemd";
+                    dbfilename = "dump.rdb";
+                    dir = "/var/lib/${redisName name}";
                     loglevel = config.logLevel;
-                    syslog-enabled = config.syslog;
+
                     save =
                       if config.save == [ ] then
                         ''""'' # Disable saving with `save = ""`
                       else
                         map (d: "${toString (builtins.elemAt d 0)} ${toString (builtins.elemAt d 1)}") config.save;
-                    dbfilename = "dump.rdb";
-                    dir = "/var/lib/${redisName name}";
-                    appendfsync = config.appendFsync;
+
                     slowlog-log-slower-than = config.slowLogLogSlowerThan;
                     slowlog-max-len = config.slowLogMaxLen;
+                    supervised = "systemd";
+                    syslog-enabled = config.syslog;
                   }
                   (lib.mkIf (config.bind != null) { inherit (config) bind; })
                   (lib.mkIf (config.unixSocket != null) {
@@ -496,21 +516,28 @@ in
               }
             )
           );
-        description = "Configuration of multiple `redis-server` instances.";
-        default = { };
       };
+
+      vmOverCommit =
+        lib.mkEnableOption ''
+          set `vm.overcommit_memory` sysctl to 1
+          (Suggested for Background Saving: <https://redis.io/docs/get-started/faq/>)
+        ''
+        // {
+          default = true;
+        };
     };
 
   };
 
   ###### implementation
-
   config = lib.mkIf (enabledServers != { }) {
 
     assertions = lib.concatLists (
       lib.mapAttrsToList (name: conf: [
         {
           assertion = conf.requirePass != null -> conf.requirePassFile == null;
+
           message = ''
             You can only set one of services.redis.servers.${name}.requirePass
             or services.redis.servers.${name}.requirePassFile
@@ -518,6 +545,7 @@ in
         }
         {
           assertion = conf.masterAuth != null -> conf.masterAuthFile == null;
+
           message = ''
             You can only set one of services.redis.servers.${name}.masterAuth
             or services.redis.servers.${name}.masterAuthFile
@@ -525,6 +553,7 @@ in
         }
         {
           assertion = conf.masterUser != null -> (conf.masterAuth != null || conf.masterAuthFile != null);
+
           message = ''
             If using services.redis.servers.${name}.masterUser, either
             services.redis.servers.${name}.masterAuthFile or
@@ -539,6 +568,7 @@ in
               && conf.sentinelMasterPort != null
               && conf.sentinelMasterQuorum != null
             );
+
           message = ''
             For Sentinel,
             services.redis.servers.${name}.sentinelMasterName,
@@ -550,6 +580,7 @@ in
         }
         {
           assertion = conf.sentinelAuthPassFile != null -> conf.sentinelMasterName != null;
+
           message = ''
             For Sentinel authentication, services.redis.servers.${name}.sentinelMasterName,
             must be provided
@@ -562,35 +593,22 @@ in
       "vm.overcommit_memory" = "1";
     };
 
+    environment.systemPackages = [ cfg.package ];
+
     networking.firewall.allowedTCPPorts = lib.concatMap (
       conf: lib.optional conf.openFirewall conf.port
     ) (lib.attrValues enabledServers);
 
-    environment.systemPackages = [ cfg.package ];
-
-    users.users = lib.mapAttrs' (
-      name: conf:
-      lib.nameValuePair (redisName name) {
-        description = "System user for the redis-server instance ${name}";
-        isSystemUser = true;
-        group = conf.group;
-      }
-    ) (lib.filterAttrs (name: conf: conf.user == redisName name) enabledServers);
-    users.groups = lib.mapAttrs' (
-      name: conf:
-      lib.nameValuePair (redisName name) {
-      }
-    ) (lib.filterAttrs (name: conf: conf.group == redisName name) enabledServers);
-
     systemd.services = lib.mapAttrs' (
       name: conf:
       lib.nameValuePair (redisName name) {
+        after = [ "network.target" ];
         description = "Redis Server - ${redisName name}";
 
-        wantedBy = [ "multi-user.target" ];
-        after = [ "network.target" ];
-
         serviceConfig = {
+          # Capabilities
+          CapabilityBoundingSet = "";
+
           ExecStart = "${cfg.package}/bin/${
             cfg.package.serverBin or "redis-server"
           } /var/lib/${redisName name}/redis.conf ${lib.escapeShellArgs conf.extraParams}";
@@ -659,53 +677,73 @@ in
                 ''}
               ''
             );
-          Type = "notify";
-          # User and group
-          User = conf.user;
+
           Group = conf.group;
+          # Process Properties
+          LimitNOFILE = lib.mkDefault "${toString (conf.maxclients + 32)}";
+          LockPersonality = true;
+          MemoryDenyWriteExecute = true;
+          # Security
+          NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateMounts = true;
+          PrivateTmp = true;
+          PrivateUsers = true;
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          # Sandboxing
+          ProtectSystem = "strict";
+
+          RestrictAddressFamilies = [
+            "AF_INET"
+            "AF_INET6"
+            "AF_UNIX"
+          ];
+
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
           # Runtime directory and mode
           RuntimeDirectory = redisName name;
           RuntimeDirectoryMode = "0750";
           # State directory and mode
           StateDirectory = redisName name;
           StateDirectoryMode = "0700";
-          # Access write directories
-          UMask = "0077";
-          # Capabilities
-          CapabilityBoundingSet = "";
-          # Security
-          NoNewPrivileges = true;
-          # Process Properties
-          LimitNOFILE = lib.mkDefault "${toString (conf.maxclients + 32)}";
-          # Sandboxing
-          ProtectSystem = "strict";
-          ProtectHome = true;
-          PrivateTmp = true;
-          PrivateDevices = true;
-          PrivateUsers = true;
-          ProtectClock = true;
-          ProtectHostname = true;
-          ProtectKernelLogs = true;
-          ProtectKernelModules = true;
-          ProtectKernelTunables = true;
-          ProtectControlGroups = true;
-          RestrictAddressFamilies = [
-            "AF_INET"
-            "AF_INET6"
-            "AF_UNIX"
-          ];
-          RestrictNamespaces = true;
-          LockPersonality = true;
-          MemoryDenyWriteExecute = true;
-          RestrictRealtime = true;
-          RestrictSUIDSGID = true;
-          PrivateMounts = true;
           # System Call Filtering
           SystemCallArchitectures = "native";
           SystemCallFilter = "~@cpu-emulation @debug @keyring @memlock @mount @obsolete @privileged @resources @setuid";
+          Type = "notify";
+          # Access write directories
+          UMask = "0077";
+          # User and group
+          User = conf.user;
         };
+
+        wantedBy = [ "multi-user.target" ];
       }
     ) enabledServers;
 
+    users.groups = lib.mapAttrs' (
+      name: conf:
+      lib.nameValuePair (redisName name) {
+      }
+    ) (lib.filterAttrs (name: conf: conf.group == redisName name) enabledServers);
+
+    users.users = lib.mapAttrs' (
+      name: conf:
+      lib.nameValuePair (redisName name) {
+        description = "System user for the redis-server instance ${name}";
+        group = conf.group;
+        isSystemUser = true;
+      }
+    ) (lib.filterAttrs (name: conf: conf.user == redisName name) enabledServers);
+
   };
+
+  meta.teams = [ lib.teams.redis ];
 }

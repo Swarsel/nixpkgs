@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
   mock,
-  pytestCheckHook,
   nix-update-script,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "vdf";
   version = "3.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ValvePython";
@@ -23,8 +22,8 @@ buildPythonPackage rec {
   patches = [
     # Support appinfo.vdf v29 (required by protontricks 1.12.0)
     (fetchpatch2 {
-      url = "https://github.com/Matoking/vdf/commit/981cad270c2558aeb8eccaf42cfcf9fabbbed199.patch";
       hash = "sha256-kLAbbB0WHjxq4rokLoGTPx43BU44EshteR59Ey9JnXo=";
+      url = "https://github.com/Matoking/vdf/commit/981cad270c2558aeb8eccaf42cfcf9fabbbed199.patch";
     })
   ];
 
@@ -33,8 +32,8 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "vdf" ];
-
   # Use nix-update-script instead of the default python updater
   # The python updater requires GitHub releases, but vdf only uses tags
   passthru.updateScript = nix-update-script { };

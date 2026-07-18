@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  fetchFromGitHub,
   fetchurl,
-  pkg-config,
+  fetchFromGitHub,
   apple-sdk_15,
-  libiconv,
-  versionCheckHook,
-  nix-update-script,
-  runCommand,
   jq,
+  libiconv,
+  nix-update-script,
+  pkg-config,
+  runCommand,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 let
@@ -22,8 +22,8 @@ let
   # upstream repo at tag v20.0.6). Bump this revision together with the package
   # version; nix-update only refreshes the src and cargo hashes.
   litellmPricing = fetchurl {
-    url = "https://raw.githubusercontent.com/BerriAI/litellm/f27df8d516802ce4c1b32973992154fe83b851cf/model_prices_and_context_window.json";
     hash = "sha256-zJa6H2EwP9s+hMVs78Y+hwo4UX1dHRtvX5J3MdGh5aI=";
+    url = "https://raw.githubusercontent.com/BerriAI/litellm/f27df8d516802ce4c1b32973992154fe83b851cf/model_prices_and_context_window.json";
   };
 in
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -37,15 +37,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-uf/FlPprxx4jh74YwjmYMtoIHpTkKrWTLetbNoYiFv4=";
   };
 
-  # The Cargo workspace lives in rust/, not at the repo root.
-  cargoRoot = "rust";
-  buildAndTestSubdir = "rust";
-
-  cargoHash = "sha256-izA2Gs5nPmt0zn6/e1xM80vyyQHYKGEUDpUFRpyFiB8=";
-
-  __structuredAttrs = true;
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -53,7 +45,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
+  cargoHash = "sha256-izA2Gs5nPmt0zn6/e1xM80vyyQHYKGEUDpUFRpyFiB8=";
   env.CCUSAGE_PRICING_JSON_PATH = "${litellmPricing}";
+  # Upstream disables the test suite in its own Nix build; parts of it rely on
+  # network access and live pricing data. versionCheckHook still exercises the
+  # built binary below.
+  doCheck = false;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  buildAndTestSubdir = "rust";
 
   # Build only the ccusage binary out of the multi-crate workspace.
   cargoBuildFlags = [
@@ -63,17 +64,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "ccusage"
   ];
 
-  # Upstream disables the test suite in its own Nix build; parts of it rely on
-  # network access and live pricing data. versionCheckHook still exercises the
-  # built binary below.
-  doCheck = false;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  # The Cargo workspace lives in rust/, not at the repo root.
+  cargoRoot = "rust";
 
   passthru = {
-    updateScript = nix-update-script { };
-
     tests = {
       # With no agent data on disk, ccusage must still emit a valid, empty JSON
       # report. --offline keeps it from reaching the network, exercising the
@@ -94,6 +88,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
             touch "$out"
           '';
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

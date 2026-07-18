@@ -12,13 +12,14 @@ let
   Mount =
     with lib;
     types.submodule {
-      options.host = mkOption {
-        type = types.str;
-        description = "Host path to mount";
-      };
       options.guest = mkOption {
-        type = types.str;
         description = "Location in the sandbox to mount the host path at";
+        type = types.str;
+      };
+
+      options.host = mkOption {
+        description = "Host path to mount";
+        type = types.str;
       };
     };
   Pattern =
@@ -27,27 +28,31 @@ let
       { config, name, ... }:
       {
         options.onFeatures = lib.mkOption {
-          type = listOf types.str;
-          description = "Which requiredSystemFeatures should trigger relaxation of the sandbox";
           default = [ name ];
+          description = "Which requiredSystemFeatures should trigger relaxation of the sandbox";
+          type = listOf types.str;
         };
+
         options.paths = lib.mkOption {
+          description = "A list of glob patterns, indicating which paths to expose to the sandbox";
+
           type = listOf (oneOf [
             path
             Mount
           ]);
-          description = "A list of glob patterns, indicating which paths to expose to the sandbox";
         };
+
+        options.safePrefixes = lib.mkOption {
+          default = [ builtins.storeDir ];
+          description = "A list of path prefixes that do not need and shall not be searched recursively for further symlink targets. Everything in the nix store does not need to be searched as the derivation already calculcated the full closure of all nix store paths for the drivers package.";
+          type = listOf path;
+        };
+
         options.unsafeFollowSymlinks = lib.mkEnableOption ''
           Instructs the hook to mount the symlink targets as well, when any of
           the `paths` contain symlinks. This may not work correctly with glob
           patterns.
         '';
-        options.safePrefixes = lib.mkOption {
-          default = [ builtins.storeDir ];
-          type = listOf path;
-          description = "A list of path prefixes that do not need and shall not be searched recursively for further symlink targets. Everything in the nix store does not need to be searched as the derivation already calculcated the full closure of all nix store paths for the drivers package.";
-        };
       }
     );
 
@@ -75,6 +80,7 @@ let
         "gpu"
         "opengl"
       ];
+
       paths = [
         pkgs.addDriverRunpath.driverLink
         "/dev/dri"
@@ -85,14 +91,49 @@ let
         "/sys/dev/char/226:*"
       ]
       ++ config.hardware.graphics.extraPackages;
+
       unsafeFollowSymlinks = true;
     };
   };
 in
 {
-  meta.maintainers = with lib.maintainers; [ SomeoneSerge ];
   options.programs.nix-required-mounts = {
     enable = lib.mkEnableOption "Expose extra paths to the sandbox depending on derivations' requiredSystemFeatures";
+
+    package = lib.mkOption {
+      default = package.override { inherit (cfg) allowedPatterns extraWrapperArgs; };
+      description = "The final package with the final config applied";
+      internal = true;
+      type = lib.types.package;
+    };
+
+    allowedPatterns =
+      with lib.types;
+      lib.mkOption {
+        default = { };
+
+        defaultText = lib.literalExpression ''
+          {
+            opengl.paths = config.hardware.graphics.extraPackages ++ [
+              config.graphics.opengl.package
+              pkgs.addDriverRunpath.driverLink
+              "/dev/dri"
+            ];
+          }
+        '';
+
+        description = "The hook config, describing which paths to mount for which system features";
+        example.require-ipfs.onFeatures = [ "ipfs" ];
+        example.require-ipfs.paths = [ "/ipfs" ];
+        type = attrsOf Pattern;
+      };
+
+    extraWrapperArgs = lib.mkOption {
+      default = [ ];
+      description = "List of extra arguments (such as `--add-flags -v`) to pass to the hook's wrapper";
+      type = with lib.types; listOf str;
+    };
+
     presets.nvidia-gpu.enable = lib.mkEnableOption ''
       Declare the support for derivations that require an Nvidia GPU to be
       available, e.g. derivations with `requiredSystemFeatures = [ "cuda" ]`.
@@ -111,55 +152,30 @@ in
       You may extend or override the exposed paths via the
       `programs.nix-required-mounts.allowedPatterns.zluda.paths` option.
     '';
-
-    allowedPatterns =
-      with lib.types;
-      lib.mkOption {
-        type = attrsOf Pattern;
-        description = "The hook config, describing which paths to mount for which system features";
-        default = { };
-        defaultText = lib.literalExpression ''
-          {
-            opengl.paths = config.hardware.graphics.extraPackages ++ [
-              config.graphics.opengl.package
-              pkgs.addDriverRunpath.driverLink
-              "/dev/dri"
-            ];
-          }
-        '';
-        example.require-ipfs.paths = [ "/ipfs" ];
-        example.require-ipfs.onFeatures = [ "ipfs" ];
-      };
-    extraWrapperArgs = lib.mkOption {
-      type = with lib.types; listOf str;
-      default = [ ];
-      description = "List of extra arguments (such as `--add-flags -v`) to pass to the hook's wrapper";
-    };
-    package = lib.mkOption {
-      type = lib.types.package;
-      default = package.override { inherit (cfg) allowedPatterns extraWrapperArgs; };
-      description = "The final package with the final config applied";
-      internal = true;
-    };
   };
+
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       { nix.settings.pre-build-hook = lib.getExe cfg.package; }
       (lib.mkIf cfg.presets.nvidia-gpu.enable {
         hardware.graphics.enable = lib.mkDefault true;
         nix.settings.system-features = cfg.allowedPatterns.nvidia-gpu.onFeatures;
+
         programs.nix-required-mounts.allowedPatterns = {
           inherit (defaults) nvidia-gpu;
         };
       })
       (lib.mkIf cfg.presets.zluda.enable {
-        hardware.graphics.enable = lib.mkDefault true;
         hardware.amdgpu.zluda.enable = lib.mkDefault true;
+        hardware.graphics.enable = lib.mkDefault true;
         nix.settings.system-features = cfg.allowedPatterns.zluda.onFeatures;
+
         programs.nix-required-mounts.allowedPatterns = {
           inherit (defaults) zluda;
         };
       })
     ]
   );
+
+  meta.maintainers = with lib.maintainers; [ SomeoneSerge ];
 }

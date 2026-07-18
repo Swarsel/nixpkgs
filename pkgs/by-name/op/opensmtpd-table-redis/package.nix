@@ -19,13 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  buildInputs = [
-    hiredis
-  ];
-
   nativeBuildInputs = [
     autoconf
     automake
+  ];
+
+  buildInputs = [
+    hiredis
   ];
 
   configureFlags = [
@@ -42,13 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.opensmtpd.org/";
     description = "Redis tables for the OpenSMTPD mail server";
+    homepage = "https://www.opensmtpd.org/";
     changelog = "https://github.com/OpenSMTPD/table-redis/releases/tag/${finalAttrs.version}";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       pks
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

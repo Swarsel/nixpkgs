@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   gitMinimal,
-  yarn-berry_4,
   nodejs,
   npmHooks,
+  yarn-berry_4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,14 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "0.0.0-dev" "${finalAttrs.version}"
   '';
 
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
-    name = "${finalAttrs.pname}-yarn-deps";
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-4fdSeSxSjd8EjPmu7U3ftxB+OJJc2uuvM3Umr5iY/a8=";
-  };
-
   nativeBuildInputs = [
     gitMinimal
     nodejs
@@ -48,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     yarn-berry_4
     yarn-berry_4.yarnBerryConfigHook
   ];
-
-  npmBuildScript = "build";
 
   installPhase = ''
     runHook preInstall
@@ -60,10 +50,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  missingHashes = ./missing-hashes.json;
+  npmBuildScript = "build";
+
+  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-4fdSeSxSjd8EjPmu7U3ftxB+OJJc2uuvM3Umr5iY/a8=";
+    name = "${finalAttrs.pname}-yarn-deps";
+  };
+
   meta = {
-    changelog = "https://github.com/dermotduffy/advanced-camera-card/releases/tag/${finalAttrs.src.tag}";
     description = "Comprehensive camera card for Home Assistant";
     homepage = "https://github.com/dermotduffy/advanced-camera-card";
+    changelog = "https://github.com/dermotduffy/advanced-camera-card/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

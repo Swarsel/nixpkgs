@@ -2,18 +2,15 @@
   lib,
   stdenv,
   dockapps-sources,
-  libx11,
-  libxpm,
-  libxext,
   libdockapp,
+  libx11,
+  libxext,
+  libxpm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "wmcube";
-
   inherit (dockapps-sources) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/wmcube/wmcube";
+  pname = "wmcube";
 
   buildInputs = [
     libx11
@@ -40,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   preInstall = ''
     mkdir -pv $out/{bin,doc/wmcube-${finalAttrs.version},share/wmcube,man/man1}
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/wmcube/wmcube";
 
   meta = {
     description = "System monitor for Windowmaker";

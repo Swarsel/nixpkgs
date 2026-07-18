@@ -13,14 +13,14 @@ let
     vm:
     if lib.isString vm then
       {
-        name = vm;
         inherit (cfg) snapshotType keep;
+        name = vm;
       }
     else
       {
         inherit (vm) name;
-        snapshotType = if vm.snapshotType != null then vm.snapshotType else cfg.snapshotType;
         keep = if vm.keep != null then vm.keep else cfg.keep;
+        snapshotType = if vm.snapshotType != null then vm.snapshotType else cfg.snapshotType;
       };
 
   # Main backup script combining all VM scripts
@@ -131,82 +131,53 @@ in
       enable = lib.mkEnableOption "LibVirt VM snapshots";
 
       calendar = lib.mkOption {
-        type = lib.types.str;
         default = "04:15:00";
+
         description = ''
           When to create snapshots (systemd calendar format).
           Default is 4:15 AM.
         '';
+
+        type = lib.types.str;
+      };
+
+      keep = lib.mkOption {
+        default = 2;
+        description = "Default number of snapshots to keep for VMs that don't specify a keep value.";
+        type = lib.types.int;
       };
 
       prefix = lib.mkOption {
-        type = lib.types.str;
         default = "autosnap";
+
         description = ''
           Prefix for automatic snapshot names.
           This is used to identify and manage automatic snapshots
           separately from manual ones.
         '';
-      };
 
-      keep = lib.mkOption {
-        type = lib.types.int;
-        default = 2;
-        description = "Default number of snapshots to keep for VMs that don't specify a keep value.";
+        type = lib.types.str;
       };
 
       snapshotType = lib.mkOption {
+        default = "internal";
+        description = "Type of snapshot to create (internal or external).";
+
         type = lib.types.enum [
           "internal"
           "external"
         ];
-        default = "internal";
-        description = "Type of snapshot to create (internal or external).";
       };
 
       vms = lib.mkOption {
-        type = lib.types.nullOr (
-          lib.types.listOf (
-            lib.types.oneOf [
-              lib.types.str
-              (lib.types.submodule {
-                options = {
-                  name = lib.mkOption {
-                    type = lib.types.str;
-                    description = "Name of the VM";
-                  };
-                  snapshotType = lib.mkOption {
-                    type = lib.types.nullOr (
-                      lib.types.enum [
-                        "internal"
-                        "external"
-                      ]
-                    );
-                    default = null;
-                    description = ''
-                      Type of snapshot to create (internal or external).
-                      If not specified, uses global snapshotType (${toString cfg.snapshotType}).
-                    '';
-                  };
-                  keep = lib.mkOption {
-                    type = lib.types.nullOr lib.types.int;
-                    default = null;
-                    description = ''
-                      Number of snapshots to keep for this VM.
-                      If not specified, uses global keep (${toString cfg.keep}).
-                    '';
-                  };
-                };
-              })
-            ]
-          )
-        );
         default = null;
+
         description = ''
           If specified only the list of VMs will be snapshotted else all existing one. Each entry can be either:
           - A string (VM name, uses default settings)
           - An attribute set with VM configuration
         '';
+
         example = lib.literalExpression ''
           [
             "myvm1"              # Uses defaults
@@ -216,6 +187,49 @@ in
             }
           ]
         '';
+
+        type = lib.types.nullOr (
+          lib.types.listOf (
+            lib.types.oneOf [
+              lib.types.str
+              (lib.types.submodule {
+                options = {
+                  keep = lib.mkOption {
+                    default = null;
+
+                    description = ''
+                      Number of snapshots to keep for this VM.
+                      If not specified, uses global keep (${toString cfg.keep}).
+                    '';
+
+                    type = lib.types.nullOr lib.types.int;
+                  };
+
+                  name = lib.mkOption {
+                    description = "Name of the VM";
+                    type = lib.types.str;
+                  };
+
+                  snapshotType = lib.mkOption {
+                    default = null;
+
+                    description = ''
+                      Type of snapshot to create (internal or external).
+                      If not specified, uses global snapshotType (${toString cfg.snapshotType}).
+                    '';
+
+                    type = lib.types.nullOr (
+                      lib.types.enum [
+                        "internal"
+                        "external"
+                      ]
+                    );
+                  };
+                };
+              })
+            ]
+          )
+        );
       };
     };
   };
@@ -233,25 +247,28 @@ in
     ];
 
     systemd = {
-      timers.libvirtd-autosnapshot = {
-        description = "LibVirt VM snapshot timer";
-        wantedBy = [ "timers.target" ];
-        timerConfig = {
-          OnCalendar = cfg.calendar;
-          AccuracySec = "5m";
-          Unit = "libvirtd-autosnapshot.service";
-        };
-      };
-
       services.libvirtd-autosnapshot = {
-        description = "LibVirt VM snapshot service";
         after = [ "libvirtd.service" ];
+        description = "LibVirt VM snapshot service";
         requires = [ "libvirtd.service" ];
+        script = backupScript;
+
         serviceConfig = {
           Type = "oneshot";
           User = "root";
         };
-        script = backupScript;
+      };
+
+      timers.libvirtd-autosnapshot = {
+        description = "LibVirt VM snapshot timer";
+
+        timerConfig = {
+          AccuracySec = "5m";
+          OnCalendar = cfg.calendar;
+          Unit = "libvirtd-autosnapshot.service";
+        };
+
+        wantedBy = [ "timers.target" ];
       };
     };
   };

@@ -1,28 +1,28 @@
 {
-  config,
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  intltool,
-  pkg-config,
-  portaudio,
   SDL2,
+  alsa-lib,
+  cmake,
+  config,
   ffmpeg,
-  udev,
+  gsl,
+  gtk3,
+  intltool,
+  libpng,
+  libpulseaudio,
+  libsForQt5,
   libusb1,
   libv4l,
-  alsa-lib,
-  gsl,
-  libpng,
+  pkg-config,
+  portaudio,
   sfml_2,
+  udev,
   pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-  useQt ? false,
-  libsForQt5,
   # can be turned off if used as a library
   useGtk ? true,
-  gtk3,
+  useQt ? false,
   wrapGAppsHook3 ? null,
 }:
 
@@ -69,10 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple interface for devices supported by the linux UVC driver";
-    mainProgram = "guvcview";
     homepage = "https://guvcview.sourceforge.net";
-    maintainers = [ lib.maintainers.coconnor ];
     license = lib.licenses.gpl3;
+    maintainers = [ lib.maintainers.coconnor ];
     platforms = lib.platforms.linux;
+    mainProgram = "guvcview";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django-guardian,
   djangorestframework,
   pytest-django,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "djangorestframework-guardian";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rpkilby";
@@ -21,6 +20,13 @@ buildPythonPackage rec {
     hash = "sha256-7SaKyWoLen5DAwSyrWeA4rEmjXMcPwJ7LM7WYxk+IKs=";
   };
 
+  env.DJANGO_SETTINGS_MODULE = "tests.settings";
+
+  nativeCheckInputs = [
+    pytest-django
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,13 +34,7 @@ buildPythonPackage rec {
     djangorestframework
   ];
 
-  nativeCheckInputs = [
-    pytest-django
-    pytestCheckHook
-  ];
-
-  env.DJANGO_SETTINGS_MODULE = "tests.settings";
-
+  pyproject = true;
   pythonImportsCheck = [ "rest_framework_guardian" ];
 
   meta = {

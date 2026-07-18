@@ -2,22 +2,19 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   linux-gpib,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "gpib-ctypes";
   version = "0.3.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "gpib_ctypes";
     inherit version;
     hash = "sha256-c9l6TNmM4PtbvopnnFi5R1dQ9o3MI39BHHHPSGqfjCY=";
+    pname = "gpib_ctypes";
   };
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   postPatch = ''
     substituteInPlace gpib_ctypes/gpib/gpib.py \
@@ -26,6 +23,8 @@ buildPythonPackage rec {
       --replace "'pytest-runner'," ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
   pythonImportsCheck = [ "gpib_ctypes.gpib" ];
 
   meta = {

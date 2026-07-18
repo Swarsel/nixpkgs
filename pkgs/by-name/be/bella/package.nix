@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  desktop-file-utils,
   appstream-glib,
+  desktop-file-utils,
   gjs,
   glib,
   gobject-introspection,
@@ -13,8 +12,9 @@
   libportal,
   meson,
   ninja,
-  wrapGAppsHook4,
   nix-update-script,
+  pkg-config,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/josephmawa/Bella";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ pluiedev ];
-    mainProgram = "io.github.josephmawa.Bella";
     platforms = lib.lists.intersectLists lib.platforms.linux gjs.meta.platforms;
+    mainProgram = "io.github.josephmawa.Bella";
   };
 })

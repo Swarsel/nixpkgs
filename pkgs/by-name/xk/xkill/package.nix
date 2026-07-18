@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxmu,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xkill";
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -40,15 +39,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Utility to forcibly terminate X11 clients";
+
     longDescription = ''
       xkill is a utility for forcing the X server to close connections to clients.
       This program is very dangerous, but is useful for aborting programs that have displayed
       undesired windows on a user's screen.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xkill";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xkill";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xkill";
   };
 })

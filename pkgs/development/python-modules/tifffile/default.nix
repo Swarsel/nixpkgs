@@ -14,16 +14,14 @@
 buildPythonPackage rec {
   pname = "tifffile";
   version = "2026.1.14";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-pCPFg+HuzZyiVWQtR/Rj76jX8jZaDhEOsBZ1cEk+DIw=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ numpy ];
+  # flaky, often killed due to OOM or timeout
+  env.SKIP_LARGE = "1";
 
   nativeCheckInputs = [
     dask
@@ -32,6 +30,9 @@ buildPythonPackage rec {
     pytestCheckHook
     zarr
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
 
   disabledTests = [
     # Test require network access
@@ -50,10 +51,8 @@ buildPythonPackage rec {
     "test_issue_invalid_predictor"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tifffile" ];
-
-  # flaky, often killed due to OOM or timeout
-  env.SKIP_LARGE = "1";
 
   meta = {
     description = "Read and write image data from and to TIFF files";

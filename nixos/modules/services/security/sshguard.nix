@@ -35,75 +35,91 @@ in
     services.sshguard = {
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
         description = "Whether to enable the sshguard service.";
+        type = lib.types.bool;
       };
 
       attack_threshold = lib.mkOption {
         default = 30;
-        type = lib.types.int;
+
         description = ''
           Block attackers when their cumulative attack score exceeds threshold. Most attacks have a score of 10.
         '';
-      };
 
-      blacklist_threshold = lib.mkOption {
-        default = null;
-        example = 120;
-        type = lib.types.nullOr lib.types.int;
-        description = ''
-          Blacklist an attacker when its score exceeds threshold. Blacklisted addresses are loaded from and added to blacklist-file.
-        '';
+        type = lib.types.int;
       };
 
       blacklist_file = lib.mkOption {
         default = "/var/lib/sshguard/blacklist.db";
-        type = lib.types.path;
+
         description = ''
           Blacklist an attacker when its score exceeds threshold. Blacklisted addresses are loaded from and added to blacklist-file.
         '';
+
+        type = lib.types.path;
+      };
+
+      blacklist_threshold = lib.mkOption {
+        default = null;
+
+        description = ''
+          Blacklist an attacker when its score exceeds threshold. Blacklisted addresses are loaded from and added to blacklist-file.
+        '';
+
+        example = 120;
+        type = lib.types.nullOr lib.types.int;
       };
 
       blocktime = lib.mkOption {
         default = 120;
-        type = lib.types.int;
+
         description = ''
           Block attackers for initially blocktime seconds after exceeding threshold. Subsequent blocks increase by a factor of 1.5.
 
           sshguard unblocks attacks at random intervals, so actual block times will be longer.
         '';
+
+        type = lib.types.int;
       };
 
       detection_time = lib.mkOption {
         default = 1800;
-        type = lib.types.int;
+
         description = ''
           Remember potential attackers for up to detection_time seconds before resetting their score.
         '';
-      };
 
-      whitelist = lib.mkOption {
-        default = [ ];
-        example = [
-          "198.51.100.56"
-          "198.51.100.2"
-        ];
-        type = lib.types.listOf lib.types.str;
-        description = ''
-          Whitelist a list of addresses, hostnames, or address blocks.
-        '';
+        type = lib.types.int;
       };
 
       services = lib.mkOption {
         default = [ "sshd" ];
+
+        description = ''
+          Systemd services sshguard should receive logs of.
+        '';
+
         example = [
           "sshd"
           "exim"
         ];
+
         type = lib.types.listOf lib.types.str;
+      };
+
+      whitelist = lib.mkOption {
+        default = [ ];
+
         description = ''
-          Systemd services sshguard should receive logs of.
+          Whitelist a list of addresses, hostnames, or address blocks.
         '';
+
+        example = [
+          "198.51.100.56"
+          "198.51.100.2"
+        ];
+
+        type = lib.types.listOf lib.types.str;
       };
     };
   };
@@ -115,13 +131,9 @@ in
     environment.etc."sshguard.conf".source = configFile;
 
     systemd.services.sshguard = {
-      description = "SSHGuard brute-force attacks protection system";
-
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "SSHGuard brute-force attacks protection system";
       partOf = lib.optional config.networking.firewall.enable "firewall.service";
-
-      restartTriggers = [ configFile ];
 
       path =
         with pkgs;
@@ -139,6 +151,16 @@ in
             systemd
           ];
 
+      postStop =
+        lib.optionalString config.networking.firewall.enable ''
+          ${pkgs.iptables}/bin/iptables  -D INPUT -m set --match-set sshguard4 src -j DROP
+          ${pkgs.ipset}/bin/ipset -quiet destroy sshguard4
+        ''
+        + lib.optionalString (config.networking.firewall.enable && config.networking.enableIPv6) ''
+          ${pkgs.iptables}/bin/ip6tables -D INPUT -m set --match-set sshguard6 src -j DROP
+          ${pkgs.ipset}/bin/ipset -quiet destroy sshguard6
+        '';
+
       # The sshguard ipsets must exist before we invoke
       # iptables. sshguard creates the ipsets after startup if
       # necessary, but if we let sshguard do it, we can't reliably add
@@ -155,20 +177,11 @@ in
           ${pkgs.iptables}/bin/ip6tables -I INPUT -m set --match-set sshguard6 src -j DROP
         '';
 
-      postStop =
-        lib.optionalString config.networking.firewall.enable ''
-          ${pkgs.iptables}/bin/iptables  -D INPUT -m set --match-set sshguard4 src -j DROP
-          ${pkgs.ipset}/bin/ipset -quiet destroy sshguard4
-        ''
-        + lib.optionalString (config.networking.firewall.enable && config.networking.enableIPv6) ''
-          ${pkgs.iptables}/bin/ip6tables -D INPUT -m set --match-set sshguard6 src -j DROP
-          ${pkgs.ipset}/bin/ipset -quiet destroy sshguard6
-        '';
-
-      unitConfig.Documentation = "man:sshguard(8)";
+      restartTriggers = [ configFile ];
 
       serviceConfig = {
-        Type = "simple";
+        CapabilityBoundingSet = "CAP_NET_ADMIN CAP_NET_RAW";
+
         ExecStart =
           let
             args = lib.concatStringsSep " " (
@@ -184,13 +197,17 @@ in
             );
           in
           "${pkgs.sshguard}/bin/sshguard ${args}";
-        Restart = "always";
-        ProtectSystem = "strict";
+
         ProtectHome = "tmpfs";
+        ProtectSystem = "strict";
+        Restart = "always";
         RuntimeDirectory = "sshguard";
         StateDirectory = "sshguard";
-        CapabilityBoundingSet = "CAP_NET_ADMIN CAP_NET_RAW";
+        Type = "simple";
       };
+
+      unitConfig.Documentation = "man:sshguard(8)";
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

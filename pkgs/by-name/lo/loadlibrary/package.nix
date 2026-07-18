@@ -1,7 +1,7 @@
 {
   lib,
-  cabextract,
   fetchFromGitHub,
+  cabextract,
   readline,
   stdenv_32bit,
 }:
@@ -12,7 +12,7 @@
 stdenv_32bit.mkDerivation rec {
   pname = "loadlibrary";
   version = "20170525-${lib.strings.substring 0 7 rev}";
-  rev = "721b084c088d779075405b7f20c77c2578e2a961";
+
   src = fetchFromGitHub {
     inherit rev;
     owner = "taviso";
@@ -30,12 +30,14 @@ stdenv_32bit.mkDerivation rec {
     cp mpclient $out/bin/
   '';
 
+  rev = "721b084c088d779075405b7f20c77c2578e2a961";
+
   meta = {
-    homepage = "https://github.com/taviso/loadlibrary";
     description = "Porting Windows Dynamic Link Libraries to Linux";
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.eleanor ];
+    homepage = "https://github.com/taviso/loadlibrary";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.eleanor ];
+    platforms = lib.platforms.linux;
     mainProgram = "mpclient";
   };
 }

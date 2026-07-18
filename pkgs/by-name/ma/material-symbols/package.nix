@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 stdenvNoCC.mkDerivation {
@@ -23,19 +23,20 @@ stdenvNoCC.mkDerivation {
   ];
 
   nativeBuildInputs = [ installFonts ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Material Symbols icons by Google";
     homepage = "https://fonts.google.com/icons";
-    downloadPage = "https://github.com/google/material-design-icons";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fufexan
       luftmensch-luftmensch
       alexphanna
     ];
+
     platforms = lib.platforms.all;
+    downloadPage = "https://github.com/google/material-design-icons";
   };
 }

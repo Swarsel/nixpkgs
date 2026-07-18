@@ -12,7 +12,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "wapiti";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wapiti-scanner";
@@ -21,8 +20,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-hUkEwyIzYhlip6vtwO8EYcUsL5B/ZVnbJKpTR6osVuc=";
   };
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs =
+    with python3Packages;
+    [
+      respx
+      pytest-asyncio
+      pytest-cov-stub
+      pytestCheckHook
+    ]
+    ++ [
+      php
+      versionCheckHook
+      writableTmpDirAsHomeHook
+    ];
 
+  __darwinAllowLocalNetworking = true;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -54,21 +66,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wapiti-swagger
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs =
-    with python3Packages;
-    [
-      respx
-      pytest-asyncio
-      pytest-cov-stub
-      pytestCheckHook
-    ]
-    ++ [
-      php
-      versionCheckHook
-      writableTmpDirAsHomeHook
-    ];
+  disabledTestPaths = [
+    # Requires sslyze which is obsolete and was removed
+    "tests/attack/test_mod_ssl.py"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # PermissionError: [Errno 13] Permission denied: '/tmp/crawl.db'
+    "tests/web/test_persister.py"
+  ];
 
   disabledTests = [
     # Tests requires network access
@@ -149,16 +154,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_title_context"
   ];
 
-  disabledTestPaths = [
-    # Requires sslyze which is obsolete and was removed
-    "tests/attack/test_mod_ssl.py"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # PermissionError: [Errno 13] Permission denied: '/tmp/crawl.db'
-    "tests/web/test_persister.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wapitiCore" ];
+  pythonRelaxDeps = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -166,6 +164,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Web application vulnerability scanner";
+
     longDescription = ''
       Wapiti allows you to audit the security of your websites or web applications.
       It performs "black-box" scans (it does not study the source code) of the web
@@ -174,6 +173,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
       forms and their inputs, Wapiti acts like a fuzzer, injecting payloads to see
       if a script is vulnerable.
     '';
+
     homepage = "https://wapiti-scanner.github.io/";
     changelog = "https://github.com/wapiti-scanner/wapiti/blob/${finalAttrs.src.tag}/doc/ChangeLog_Wapiti";
     license = lib.licenses.gpl2Only;

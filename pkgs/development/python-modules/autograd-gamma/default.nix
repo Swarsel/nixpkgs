@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
   autograd,
+  buildPythonPackage,
+  pytestCheckHook,
   scipy,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "autograd-gamma";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CamDavidsonPilon";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4uMdBYnKGCfwhEc0nMhUMY+aADH8flLWh0GNWTx9A2w=";
   };
 
+  checkInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,13 +27,12 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "autograd_gamma" ];
 
-  checkInputs = [ pytestCheckHook ];
-
   meta = {
-    homepage = "https://github.com/CamDavidsonPilon/autograd-gamma";
     description = "Autograd compatible approximations to the gamma family of functions";
+    homepage = "https://github.com/CamDavidsonPilon/autograd-gamma";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ swflint ];
   };

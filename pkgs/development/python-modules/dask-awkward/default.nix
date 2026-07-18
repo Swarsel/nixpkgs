@@ -1,55 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # dependencies
+  awkward,
+  buildPythonPackage,
+  cachetools,
+  dask,
+  # tests
+  distributed,
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  awkward,
-  cachetools,
-  dask,
-  typing-extensions,
-
-  # optional-dependencies
-  pyarrow,
-
-  # tests
-  distributed,
   hist,
   pandas,
+  # optional-dependencies
+  pyarrow,
   pytestCheckHook,
+  typing-extensions,
   uproot,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dask-awkward";
   version = "2026.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dask-contrib";
     repo = "dask-awkward";
     tag = finalAttrs.version;
     hash = "sha256-ICgJTV7DdESWD3QjxYw8pE20SeOmG5fU5b37Yojyylk=";
-  };
-
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
-  dependencies = [
-    awkward
-    cachetools
-    dask
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    io = [ pyarrow ];
   };
 
   nativeCheckInputs = [
@@ -62,7 +41,19 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pythonImportsCheck = [ "dask_awkward" ];
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    hatch-vcs
+    hatchling
+  ];
+
+  dependencies = [
+    awkward
+    cachetools
+    dask
+    typing-extensions
+  ];
 
   disabledTests = [
     # Tests require network access
@@ -80,7 +71,12 @@ buildPythonPackage (finalAttrs: {
     "test_ravel_fail"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    io = [ pyarrow ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "dask_awkward" ];
 
   meta = {
     description = "Native Dask collection for awkward arrays, and the library to use it";

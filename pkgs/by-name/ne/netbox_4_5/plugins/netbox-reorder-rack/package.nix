@@ -1,17 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   netbox,
   python,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-reorder-rack";
   version = "1.1.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "netbox-community";
@@ -20,17 +18,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-lWC+Br66POJe3M8L+Pt5D1pWBr9qSpRLn2TcVMXKje4=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   checkInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
   dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
+  pyproject = true;
   pythonImportsCheck = [ "netbox_reorder_rack" ];
 
   meta = {

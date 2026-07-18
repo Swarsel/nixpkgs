@@ -1,17 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dfmt";
   version = "1.2.0";
-  pyproject = true;
-
-  build-system = [
-    python3Packages.poetry-core
-  ];
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -24,11 +19,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail 'poetry>=' 'poetry-core>=' \
   '';
 
+  build-system = [
+    python3Packages.poetry-core
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Format paragraphs, comments and doc strings";
-    mainProgram = "dfmt";
     homepage = "https://github.com/dmerejkowsky/dfmt";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ cole-h ];
+    mainProgram = "dfmt";
   };
 })

@@ -3,20 +3,20 @@
   stdenv,
   fetchFromGitHub,
   buildGoModule,
-  replaceVars,
-  pandoc,
-  nodejs,
-  pnpm_11,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpmBuildHook,
-  electron,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
-  nix-update-script,
-  xdg-utils,
   darwin,
+  electron,
+  fetchPnpmDeps,
+  makeDesktopItem,
+  makeWrapper,
+  nix-update-script,
+  nodejs,
+  pandoc,
+  pnpmBuildHook,
+  pnpmConfigHook,
+  pnpm_11,
+  replaceVars,
+  xdg-utils,
 }:
 
 let
@@ -25,9 +25,9 @@ let
   pnpm = pnpm_11;
 
   platformIds = {
-    "x86_64-linux" = "linux";
-    "aarch64-linux" = "linux-arm64";
     "aarch64-darwin" = "darwin-arm64";
+    "aarch64-linux" = "linux-arm64";
+    "x86_64-linux" = "linux";
   };
 
   platformId = platformIds.${system} or (throw "Unsupported platform: ${system}");
@@ -43,35 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-K31h2noDpTn7vCXj16K2dxRPww5z+HC/nA4Gn5MAVms=";
   };
 
-  kernel = buildGoModule {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-kernel";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/kernel";
-    vendorHash = "sha256-fZLVqrWTWUHo6BhixB6+krXaM7WCiZpusHA8T2SicgQ=";
-
-    patches = [
-      (replaceVars ./set-pandoc-path.patch {
-        pandoc_path = lib.getExe pandoc;
-      })
-    ];
-
-    # this patch makes it so that file permissions are not kept when copying files using the gulu package
-    # this fixes a problem where it was copying files from the store and keeping their permissions
-    # hopefully this doesn't break other functionality
-    modPostBuild = ''
-      chmod +w vendor/github.com/88250/gulu
-      substituteInPlace vendor/github.com/88250/gulu/file.go \
-          --replace-fail "os.Chmod(dest, sourceinfo.Mode())" "os.Chmod(dest, 0644)"
-    '';
-
-    # Set flags and tags as per upstream's Dockerfile
-    ldflags = [
-      "-s"
-      "-X 'github.com/siyuan-note/siyuan/kernel/util.Mode=prod'"
-    ];
-    tags = [ "fts5" ];
-  };
-
   nativeBuildInputs = [
     nodejs
     pnpmConfigHook
@@ -85,20 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals isDarwin [
     darwin.autoSignDarwinBinariesHook
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      ;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-1QIGx0Zm6v4FIR1EYgXQzmBMZBa9Bi24vouT1K6v9EQ=";
-  };
-
-  sourceRoot = "${finalAttrs.src.name}/app";
 
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
@@ -160,13 +117,59 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   desktopItems = lib.optional isLinux (makeDesktopItem {
-    name = "siyuan";
-    desktopName = "SiYuan";
-    comment = "Refactor your thinking";
-    icon = "siyuan";
-    exec = "siyuan %U";
     categories = [ "Utility" ];
+    comment = "Refactor your thinking";
+    desktopName = "SiYuan";
+    exec = "siyuan %U";
+    icon = "siyuan";
+    name = "siyuan";
   });
+
+  kernel = buildGoModule {
+    inherit (finalAttrs) src;
+
+    patches = [
+      (replaceVars ./set-pandoc-path.patch {
+        pandoc_path = lib.getExe pandoc;
+      })
+    ];
+
+    vendorHash = "sha256-fZLVqrWTWUHo6BhixB6+krXaM7WCiZpusHA8T2SicgQ=";
+
+    # Set flags and tags as per upstream's Dockerfile
+    ldflags = [
+      "-s"
+      "-X 'github.com/siyuan-note/siyuan/kernel/util.Mode=prod'"
+    ];
+
+    # this patch makes it so that file permissions are not kept when copying files using the gulu package
+    # this fixes a problem where it was copying files from the store and keeping their permissions
+    # hopefully this doesn't break other functionality
+    modPostBuild = ''
+      chmod +w vendor/github.com/88250/gulu
+      substituteInPlace vendor/github.com/88250/gulu/file.go \
+          --replace-fail "os.Chmod(dest, sourceinfo.Mode())" "os.Chmod(dest, 0644)"
+    '';
+
+    name = "${finalAttrs.pname}-${finalAttrs.version}-kernel";
+    sourceRoot = "${finalAttrs.src.name}/kernel";
+    tags = [ "fts5" ];
+  };
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-1QIGx0Zm6v4FIR1EYgXQzmBMZBa9Bi24vouT1K6v9EQ=";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/app";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -180,12 +183,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Privacy-first personal knowledge management system that supports complete offline usage, as well as end-to-end encrypted data sync";
     homepage = "https://b3log.org/siyuan/";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "siyuan";
+
     maintainers = with lib.maintainers; [
       tomasajt
       ltrump
       myul
     ];
+
     platforms = lib.attrNames platformIds;
+    mainProgram = "siyuan";
   };
 })

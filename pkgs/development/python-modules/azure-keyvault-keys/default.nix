@@ -13,14 +13,15 @@
 buildPythonPackage rec {
   pname = "azure-keyvault-keys";
   version = "4.11.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_keyvault_keys";
     inherit version;
     hash = "sha256-8lexkXosOoiYPj9WdaZBlEnrJiMYiI1bUeHLO+15d5o=";
+    pname = "azure_keyvault_keys";
   };
 
+  # Tests require relative paths to utilities in the mono-repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,10 +32,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  pythonNamespaces = [ "azure.keyvault" ];
-
-  # Tests require relative paths to utilities in the mono-repo
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure"
@@ -43,6 +41,8 @@ buildPythonPackage rec {
     "azure.keyvault"
     "azure.keyvault.keys"
   ];
+
+  pythonNamespaces = [ "azure.keyvault" ];
 
   meta = {
     description = "Microsoft Azure Key Vault Keys Client Library for Python";

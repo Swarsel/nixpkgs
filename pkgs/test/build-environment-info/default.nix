@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  runCommand,
   getent,
+  runCommand,
   xcbuild,
 }:
 

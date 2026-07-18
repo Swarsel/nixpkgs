@@ -11,56 +11,6 @@ let
   wayland-lib = import ./lib.nix { inherit lib; };
 in
 {
-  options.programs.river-classic = {
-    enable = lib.mkEnableOption "river-classic, a dynamic tiling Wayland compositor";
-
-    package =
-      lib.mkPackageOption pkgs "river-classic" {
-        nullable = true;
-        extraDescription = ''
-          If the package is not overridable with `xwaylandSupport`, then the module option
-          {option}`xwayland` will have no effect.
-
-          Set to `null` to not add any River package to your path.
-          This should be done if you want to use the Home Manager River module to install River.
-        '';
-      }
-      // {
-        apply =
-          p:
-          if p == null then
-            null
-          else
-            wayland-lib.genFinalPackage p {
-              xwaylandSupport = cfg.xwayland.enable;
-            };
-      };
-
-    xwayland.enable = lib.mkEnableOption "XWayland" // {
-      default = true;
-    };
-
-    extraPackages = lib.mkOption {
-      type = with lib.types; listOf package;
-      default = with pkgs; [
-        swaylock
-        foot
-        dmenu
-      ];
-      defaultText = lib.literalExpression ''
-        with pkgs; [ swaylock foot dmenu ];
-      '';
-      example = lib.literalExpression ''
-        with pkgs; [ alacritty rofi light ]
-      '';
-      description = ''
-        Extra packages to be installed system wide. See
-        [Common X11 apps used on i3 with Wayland alternatives](https://github.com/swaywm/sway/wiki/i3-Migration-Guide#common-x11-apps-used-on-i3-with-wayland-alternatives)
-        for a list of useful software.
-      '';
-    };
-  };
-
   imports = [
     (lib.mkRenamedOptionModule [ "programs" "river" "enable" ] [ "programs" "river-classic" "enable" ])
     (lib.mkRenamedOptionModule
@@ -77,11 +27,65 @@ in
     )
   ];
 
+  options.programs.river-classic = {
+    enable = lib.mkEnableOption "river-classic, a dynamic tiling Wayland compositor";
+
+    package =
+      lib.mkPackageOption pkgs "river-classic" {
+        extraDescription = ''
+          If the package is not overridable with `xwaylandSupport`, then the module option
+          {option}`xwayland` will have no effect.
+
+          Set to `null` to not add any River package to your path.
+          This should be done if you want to use the Home Manager River module to install River.
+        '';
+
+        nullable = true;
+      }
+      // {
+        apply =
+          p:
+          if p == null then
+            null
+          else
+            wayland-lib.genFinalPackage p {
+              xwaylandSupport = cfg.xwayland.enable;
+            };
+      };
+
+    extraPackages = lib.mkOption {
+      default = with pkgs; [
+        swaylock
+        foot
+        dmenu
+      ];
+
+      defaultText = lib.literalExpression ''
+        with pkgs; [ swaylock foot dmenu ];
+      '';
+
+      description = ''
+        Extra packages to be installed system wide. See
+        [Common X11 apps used on i3 with Wayland alternatives](https://github.com/swaywm/sway/wiki/i3-Migration-Guide#common-x11-apps-used-on-i3-with-wayland-alternatives)
+        for a list of useful software.
+      '';
+
+      example = lib.literalExpression ''
+        with pkgs; [ alacritty rofi light ]
+      '';
+
+      type = with lib.types; listOf package;
+    };
+
+    xwayland.enable = lib.mkEnableOption "XWayland" // {
+      default = true;
+    };
+  };
+
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       {
         environment.systemPackages = lib.optional (cfg.package != null) cfg.package ++ cfg.extraPackages;
-
         # To make a river session available if a display manager like SDDM is enabled:
         services.displayManager.sessionPackages = lib.optional (cfg.package != null) cfg.package;
 

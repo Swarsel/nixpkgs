@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # build-system
-  setuptools,
+  buildPythonPackage,
   # dependencies
   click,
   joblib,
-  regex,
-  tqdm,
   # tests
   pytestCheckHook,
+  regex,
+  # build-system
+  setuptools,
+  tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sacremoses";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hplt-project";
@@ -25,6 +24,7 @@ buildPythonPackage (finalAttrs: {
     sha256 = "sha256-ked6/8oaGJwVW1jvpjrWtJYfr0GKUHdJyaEuzid/S3M=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,18 +34,19 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
   # ignore tests which call to remote host
   disabledTestPaths = [
     "sacremoses/test/test_truecaser.py::TestTruecaser"
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/alvations/sacremoses";
     description = "Python port of Moses tokenizer, truecaser and normalizer";
-    mainProgram = "sacremoses";
+    homepage = "https://github.com/alvations/sacremoses";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ pashashocky ];
+    platforms = lib.platforms.unix;
+    mainProgram = "sacremoses";
   };
 })

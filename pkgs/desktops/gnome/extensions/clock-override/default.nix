@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchzip,
-  gnome-shell,
   gettext,
   glib,
+  gnome-shell,
 }:
 
 stdenv.mkDerivation rec {
@@ -15,11 +15,6 @@ stdenv.mkDerivation rec {
     url = "https://extensions.gnome.org/extension-data/clock-overridegnomeshell.kryogenix.org.v${version}.shell-extension.zip";
     sha256 = "1cyaszks6bwnbgacqsl1pmr24mbj05mad59d4253la9am8ibb4m6";
     stripRoot = false;
-  };
-
-  passthru = {
-    extensionUuid = "clock-override@gnomeshell.kryogenix.org";
-    extensionPortalSlug = "clock-override";
   };
 
   nativeBuildInputs = [
@@ -40,11 +35,16 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  passthru = {
+    extensionPortalSlug = "clock-override";
+    extensionUuid = "clock-override@gnomeshell.kryogenix.org";
+  };
+
   meta = {
     description = "Customize the date and time format displayed in clock in the top bar in GNOME Shell";
+    homepage = "https://github.com/stuartlangridge/gnome-shell-clock-override";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rhoriguchi ];
-    homepage = "https://github.com/stuartlangridge/gnome-shell-clock-override";
     broken = lib.versionOlder gnome-shell.version "3.18";
   };
 }

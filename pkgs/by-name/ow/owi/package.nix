@@ -1,13 +1,13 @@
 {
   lib,
-  ocaml-ng,
   fetchFromGitHub,
   llvmPackages,
-  rustc,
-  zig,
   makeWrapper,
-  unstableGitUpdater,
   nixosTests,
+  ocaml-ng,
+  rustc,
+  unstableGitUpdater,
+  zig,
 }:
 
 let
@@ -21,8 +21,8 @@ ocamlPackages.buildDunePackage {
     owner = "ocamlpro";
     repo = "owi";
     rev = "2d6ec0d897a209f34849d25f8bcfc73298820be3";
-    fetchSubmodules = true;
     hash = "sha256-A+mTFvojEpIfRPJkPRf5vfHf+nk+3/hdIbJqIDv/AzM=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = with ocamlPackages; [
@@ -63,6 +63,8 @@ ocamlPackages.buildDunePackage {
     yojson
   ];
 
+  doCheck = false;
+
   postInstall = ''
     wrapProgram $out/bin/owi \
       --prefix PATH : ${
@@ -75,24 +77,24 @@ ocamlPackages.buildDunePackage {
       }
   '';
 
-  doCheck = false;
-
   passthru = {
-    updateScript = unstableGitUpdater { };
     tests = { inherit (nixosTests) owi; };
+    updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "Symbolic execution for Wasm, C, C++, Rust and Zig";
     homepage = "https://ocamlpro.github.io/owi/";
-    downloadPage = "https://github.com/OCamlPro/owi";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       ethancedwards8
       redianthus
     ];
-    teams = with lib.teams; [ ngi ];
-    mainProgram = "owi";
+
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "owi";
+    downloadPage = "https://github.com/OCamlPro/owi";
+    teams = with lib.teams; [ ngi ];
   };
 }

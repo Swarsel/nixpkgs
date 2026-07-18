@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
   testers,
   updateAutotoolsGnuConfigScriptsHook,
 }:
@@ -15,12 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aiRQShTeSnRBA9y5Nr6Xbfb76IzP8mBl5UwcR5RvSl4=";
   };
 
-  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
-
-  hardeningDisable = [ "strictflexarrays3" ];
-
-  configureFlags = [ (lib.enableFeature true "libgdbm-compat") ];
-
   outputs = [
     "out"
     "dev"
@@ -28,10 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     "lib"
     "man"
   ];
-
-  doCheck = true;
-
-  enableParallelBuilding = true;
 
   # 1. Linking static stubs on cygwin requires correct ordering. Consider
   #    upstreaming this.
@@ -46,6 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'm4_include([dbmfetch03.at])' ""
   '';
 
+  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
+  configureFlags = [ (lib.enableFeature true "libgdbm-compat") ];
+  doCheck = true;
+
   # create symlinks for compatibility
   postInstall = ''
     install -dm755 ''${!outputDev}/include/gdbm
@@ -56,16 +50,19 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "strictflexarrays3" ];
+
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "gdbmtool --version";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
-    homepage = "https://www.gnu.org/software/gdbm/";
     description = "GNU dbm key/value database library";
+
     longDescription = ''
       GNU dbm (or GDBM, for short) is a library of database functions that use
       extensible hashing and work similar to the standard UNIX dbm. These
@@ -83,9 +80,11 @@ stdenv.mkDerivation (finalAttrs: {
       For compatibility with programs using old UNIX dbm function, the package
       also provides traditional dbm and ndbm interfaces.
     '';
+
+    homepage = "https://www.gnu.org/software/gdbm/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "gdbmtool";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "gdbmtool";
   };
 })

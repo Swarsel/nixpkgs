@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  esbuild,
-  buildGoModule,
-  yarnBuildHook,
-  yarnInstallHook,
-  yarnConfigHook,
-  nodejs,
-  fetchYarnDeps,
   fetchFromGitHub,
+  buildGoModule,
+  esbuild,
+  fetchYarnDeps,
   nix-update-script,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 let
   esbuild' =
@@ -23,12 +23,14 @@ let
           args
           // {
             inherit version;
+
             src = fetchFromGitHub {
               owner = "evanw";
               repo = "esbuild";
               rev = "v${version}";
               hash = "sha256-+4oNM39cN7zCld4WwLVDHQFyvVhdsqKTLLiF2a9+KP0=";
             };
+
             vendorHash = "sha256-2ABWPqhK2Cf4ipQH7XvRrd+ZscJhYPc3SV2cGT0apdg=";
           }
         );
@@ -46,11 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-K3NvqZnAEj/qfsvomYl7dPtEo3ad7w1dCfZHjMRwbAA=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-aEjfhjkMlHSdISfG9baRfaUiTUbj8TPZi2edAFiqKlg=";
-  };
-
   nativeBuildInputs = [
     yarnBuildHook
     yarnConfigHook
@@ -60,6 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.ESBUILD_BINARY_PATH = lib.getExe esbuild';
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-aEjfhjkMlHSdISfG9baRfaUiTUbj8TPZi2edAFiqKlg=";
+  };
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 

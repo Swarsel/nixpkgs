@@ -19,6 +19,28 @@ in
 {
   options = {
     services.jack = {
+      alsa = {
+        enable = lib.mkOption {
+          default = true;
+
+          description = ''
+            Route audio to/from generic ALSA-using applications using ALSA JACK PCM plugin.
+          '';
+
+          type = lib.types.bool;
+        };
+
+        support32Bit = lib.mkOption {
+          default = false;
+
+          description = ''
+            Whether to support sound for 32-bit ALSA applications on 64-bit system.
+          '';
+
+          type = lib.types.bool;
+        };
+      };
+
       jackd = {
         enable = lib.mkEnableOption ''
           JACK Audio Connection Kit. You need to add yourself to the "jackaudio" group
@@ -34,90 +56,85 @@ in
           };
 
         extraOptions = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
           default = [
             "-dalsa"
           ];
-          example = lib.literalExpression ''
-            [ "-dalsa" "--device" "hw:1" ];
-          '';
+
           description = ''
             Specifies startup command line arguments to pass to JACK server.
           '';
+
+          example = lib.literalExpression ''
+            [ "-dalsa" "--device" "hw:1" ];
+          '';
+
+          type = lib.types.listOf lib.types.str;
         };
 
         session = lib.mkOption {
-          type = lib.types.lines;
           description = ''
             Commands to run after JACK is started.
           '';
+
+          type = lib.types.lines;
         };
 
-      };
-
-      alsa = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Route audio to/from generic ALSA-using applications using ALSA JACK PCM plugin.
-          '';
-        };
-
-        support32Bit = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = ''
-            Whether to support sound for 32-bit ALSA applications on 64-bit system.
-          '';
-        };
       };
 
       loopback = {
+        config = lib.mkOption {
+          description = ''
+            ALSA config for loopback device.
+          '';
+
+          type = lib.types.lines;
+        };
+
         enable = lib.mkOption {
-          type = lib.types.bool;
           default = false;
+
           description = ''
             Create ALSA loopback device, instead of using PCM plugin. Has broader
             application support (things like Steam will work), but may need fine-tuning
             for concrete hardware.
           '';
-        };
 
-        index = lib.mkOption {
-          type = lib.types.int;
-          default = 10;
-          description = ''
-            Index of an ALSA loopback device.
-          '';
-        };
-
-        config = lib.mkOption {
-          type = lib.types.lines;
-          description = ''
-            ALSA config for loopback device.
-          '';
+          type = lib.types.bool;
         };
 
         dmixConfig = lib.mkOption {
-          type = lib.types.lines;
           default = "";
-          example = ''
-            period_size 2048
-            periods 2
-          '';
+
           description = ''
             For music production software that still doesn't support JACK natively you
             would like to put buffer/period adjustments here
             to decrease dmix device latency.
           '';
+
+          example = ''
+            period_size 2048
+            periods 2
+          '';
+
+          type = lib.types.lines;
+        };
+
+        index = lib.mkOption {
+          default = 10;
+
+          description = ''
+            Index of an ALSA loopback device.
+          '';
+
+          type = lib.types.int;
         };
 
         session = lib.mkOption {
-          type = lib.types.lines;
           description = ''
             Additional commands to run to setup loopback device.
           '';
+
+          type = lib.types.lines;
         };
       };
 
@@ -148,9 +165,39 @@ in
     })
 
     (lib.mkIf cfg.jackd.enable {
+      assertions = [
+        {
+          assertion = !(cfg.alsa.enable && cfg.loopback.enable);
+          message = "For JACK both alsa and loopback options shouldn't be used at the same time.";
+        }
+      ];
+
+      environment = {
+        etc."alsa/conf.d/50-jack.conf".source = "${pkgs.alsa-plugins}/etc/alsa/conf.d/50-jack.conf";
+        systemPackages = [ cfg.jackd.package ];
+        variables.JACK_PROMISCUOUS_SERVER = "jackaudio";
+      };
+
+      # https://jackaudio.org/faq/linux_rt_config.html
+      security.pam.loginLimits = [
+        {
+          domain = "@jackaudio";
+          item = "rtprio";
+          type = "-";
+          value = "99";
+        }
+        {
+          domain = "@jackaudio";
+          item = "memlock";
+          type = "-";
+          value = "unlimited";
+        }
+      ];
+
       services.jack.jackd.session = ''
         ${lib.optionalString bridgeNeeded "${pkgs.a2jmidid}/bin/a2jmidid -e &"}
       '';
+
       # https://alsa.opensrc.org/Jack_and_Loopback_device_as_Alsa-to-Jack_bridge#id06
       services.jack.loopback.config = ''
         pcm.loophw00 {
@@ -202,6 +249,7 @@ in
           slave.pcm aduplex
         }
       '';
+
       services.jack.loopback.session = ''
         alsa_in -j cloop -dcloop &
         alsa_out -j ploop -dploop &
@@ -212,90 +260,74 @@ in
         jack_connect system:capture_2 ploop:playback_2
       '';
 
-      assertions = [
-        {
-          assertion = !(cfg.alsa.enable && cfg.loopback.enable);
-          message = "For JACK both alsa and loopback options shouldn't be used at the same time.";
-        }
-      ];
-
-      users.users.jackaudio = {
-        group = "jackaudio";
-        extraGroups = [ "audio" ];
-        description = "JACK Audio system service user";
-        isSystemUser = true;
-      };
-      # https://jackaudio.org/faq/linux_rt_config.html
-      security.pam.loginLimits = [
-        {
-          domain = "@jackaudio";
-          type = "-";
-          item = "rtprio";
-          value = "99";
-        }
-        {
-          domain = "@jackaudio";
-          type = "-";
-          item = "memlock";
-          value = "unlimited";
-        }
-      ];
-      users.groups.jackaudio = { };
-
-      environment = {
-        systemPackages = [ cfg.jackd.package ];
-        etc."alsa/conf.d/50-jack.conf".source = "${pkgs.alsa-plugins}/etc/alsa/conf.d/50-jack.conf";
-        variables.JACK_PROMISCUOUS_SERVER = "jackaudio";
-      };
-
       services.udev.extraRules = ''
         ACTION=="add", SUBSYSTEM=="sound", ATTRS{id}!="Loopback", TAG+="systemd", ENV{SYSTEMD_WANTS}="jack.service"
       '';
 
       systemd.services.jack = {
         description = "JACK Audio Connection Kit";
+
+        environment = {
+          JACK_NO_AUDIO_RESERVATION = "1";
+          JACK_PROMISCUOUS_SERVER = "jackaudio";
+        };
+
+        path = [ cfg.jackd.package ];
+        restartIfChanged = false;
+
         serviceConfig = {
-          User = "jackaudio";
+          ExecStart = "${cfg.jackd.package}/bin/jackd ${lib.escapeShellArgs cfg.jackd.extraOptions}";
+          LimitMEMLOCK = "infinity";
+          LimitRTPRIO = 99;
+
           SupplementaryGroups = lib.optional (
             config.services.pulseaudio.enable && !config.services.pulseaudio.systemWide
           ) "users";
-          ExecStart = "${cfg.jackd.package}/bin/jackd ${lib.escapeShellArgs cfg.jackd.extraOptions}";
-          LimitRTPRIO = 99;
-          LimitMEMLOCK = "infinity";
+
+          User = "jackaudio";
         }
         // lib.optionalAttrs umaskNeeded {
           UMask = "007";
         };
-        path = [ cfg.jackd.package ];
-        environment = {
-          JACK_PROMISCUOUS_SERVER = "jackaudio";
-          JACK_NO_AUDIO_RESERVATION = "1";
-        };
-        restartIfChanged = false;
       };
+
       systemd.services.jack-session = {
+        after = [ "jack.service" ];
         description = "JACK session";
+
+        environment = {
+          HOME = "/var/lib/jack";
+          JACK_PROMISCUOUS_SERVER = "jackaudio";
+        };
+
+        partOf = [ "jack.service" ];
+        path = [ cfg.jackd.package ];
+        restartIfChanged = false;
+
         script = ''
           ${pkgs.jack-example-tools}/bin/jack_wait -w
           ${cfg.jackd.session}
           ${lib.optionalString cfg.loopback.enable cfg.loopback.session}
         '';
+
         serviceConfig = {
-          RemainAfterExit = true;
-          User = "jackaudio";
-          StateDirectory = "jack";
-          LimitRTPRIO = 99;
           LimitMEMLOCK = "infinity";
+          LimitRTPRIO = 99;
+          RemainAfterExit = true;
+          StateDirectory = "jack";
+          User = "jackaudio";
         };
-        path = [ cfg.jackd.package ];
-        environment = {
-          JACK_PROMISCUOUS_SERVER = "jackaudio";
-          HOME = "/var/lib/jack";
-        };
+
         wantedBy = [ "jack.service" ];
-        partOf = [ "jack.service" ];
-        after = [ "jack.service" ];
-        restartIfChanged = false;
+      };
+
+      users.groups.jackaudio = { };
+
+      users.users.jackaudio = {
+        description = "JACK Audio system service user";
+        extraGroups = [ "audio" ];
+        group = "jackaudio";
+        isSystemUser = true;
       };
     })
 

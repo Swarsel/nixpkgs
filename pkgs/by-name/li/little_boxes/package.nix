@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
-  testers,
   little_boxes,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ejFo+BYoXf889G/iLuKITwY3ephkEMS6nLtfi3PozHQ=";
   };
 
-  cargoVendorDir = "vendor";
-
   nativeBuildInputs = [ installShellFiles ];
 
   postInstall = ''
@@ -32,13 +30,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion --nushell $extrasPath/little_boxes.nu
   '';
 
+  cargoVendorDir = "vendor";
+
   passthru.tests.version = testers.testVersion {
-    package = little_boxes;
     command = "little_boxes --version";
+    package = little_boxes;
   };
 
   meta = {
     description = "Add boxes are input text";
+
     longDescription = ''
       little_boxes is a small program that takes input from stdin or a file
       and wraps it with box made of ACII/Unicode Box Drawing characters. There
@@ -51,6 +52,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ┃ Hello World ┃
       ┗━━━━━━━━━━━━━┛
     '';
+
     homepage = "https://github.com/giodamelio/little_boxes";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ giodamelio ];

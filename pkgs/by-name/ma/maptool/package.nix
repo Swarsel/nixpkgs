@@ -1,7 +1,7 @@
 {
   lib,
-  copyDesktopItems,
   fetchurl,
+  copyDesktopItems,
   ffmpeg,
   gitUpdater,
   jre,
@@ -22,15 +22,17 @@ let
 
   meta = {
     description = "Virtual Tabletop for playing roleplaying games with remote players or face to face";
-    mainProgram = "maptool";
     homepage = "https://www.rptools.net/toolbox/maptool/";
+    license = lib.licenses.agpl3Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [ rhendric ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "maptool";
   };
 
   javafxModules = [
@@ -89,26 +91,10 @@ stdenvNoCC.mkDerivation {
     meta
     ;
 
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontWrapGApps = true;
-
   nativeBuildInputs = [
     copyDesktopItems
     libarchive
     wrapGAppsHook3
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = rdnsName;
-      desktopName = "MapTool";
-      icon = rdnsName;
-      exec = binName;
-      comment = meta.description;
-      categories = [ "Game" ];
-    })
   ];
 
   installPhase = ''
@@ -132,8 +118,24 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = meta.description;
+      desktopName = "MapTool";
+      exec = binName;
+      icon = rdnsName;
+      name = rdnsName;
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  dontWrapGApps = true;
+
   passthru.updateScript = gitUpdater {
-    url = "${repoBase}.git";
     ignoredVersions = "-";
+    url = "${repoBase}.git";
   };
 }

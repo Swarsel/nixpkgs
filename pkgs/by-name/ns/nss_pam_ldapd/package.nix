@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  makeWrapper,
   autoreconfHook,
+  makeWrapper,
   openldap,
-  python3,
   pam,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,15 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     autoreconfHook
   ];
+
   buildInputs = [
     openldap
     pam
     python3
   ];
-
-  preConfigure = ''
-    substituteInPlace Makefile.in --replace "install-data-local: " "# install-data-local: "
-  '';
 
   configureFlags = [
     "--with-bindpw-file=/run/nslcd/bindpw"
@@ -46,6 +43,10 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-pam-seclib-dir=$(out)/lib/security"
     "--enable-kerberos=no"
   ];
+
+  preConfigure = ''
+    substituteInPlace Makefile.in --replace "install-data-local: " "# install-data-local: "
+  '';
 
   postInstall = ''
     wrapProgram $out/sbin/nslcd --prefix LD_LIBRARY_PATH ":" $out/lib

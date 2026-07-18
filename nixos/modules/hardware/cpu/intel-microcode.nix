@@ -11,14 +11,17 @@ in
   ###### interface
   options = {
 
+    hardware.cpu.intel.microcodePackage = lib.mkPackageOption pkgs "microcode-intel" { };
+
     hardware.cpu.intel.updateMicrocode = lib.mkOption {
       default = false;
-      type = lib.types.bool;
+
       description = ''
         Update the CPU microcode for Intel processors.
       '';
+
+      type = lib.types.bool;
     };
-    hardware.cpu.intel.microcodePackage = lib.mkPackageOption pkgs "microcode-intel" { };
   };
 
   ###### implementation

@@ -1,13 +1,13 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
   nodejs_22,
   p7zip,
   python3,
-  stdenv,
   yarn-berry_3,
 }:
 let
@@ -29,8 +29,8 @@ let
   yarn-berry = yarn-berry_3;
 
   frontend = stdenv.mkDerivation (finalAttrs: {
-    pname = "bloodhound-ce-frontend";
     inherit version src;
+    pname = "bloodhound-ce-frontend";
 
     patches = [
       # cmd/ui/package.json includes "git@github.com:BloodHoundAD/dagre.git"
@@ -51,13 +51,6 @@ let
       ))
     ];
 
-    missingHashes = ./missing-hashes.json;
-
-    offlineCache = yarn-berry.fetchYarnBerryDeps {
-      inherit (finalAttrs) src patches missingHashes;
-      hash = "sha256-0OXOZ9QVpOxqE4r1Gj0dOlEijY+JAqOvanntp5D5t1M=";
-    };
-
     preConfigure = ''
       export JOBS=$NIX_BUILD_CORES
     '';
@@ -73,6 +66,13 @@ let
       cp -r cmd/ui/dist $out
       runHook postInstall
     '';
+
+    missingHashes = ./missing-hashes.json;
+
+    offlineCache = yarn-berry.fetchYarnBerryDeps {
+      inherit (finalAttrs) src patches missingHashes;
+      hash = "sha256-0OXOZ9QVpOxqE4r1Gj0dOlEijY+JAqOvanntp5D5t1M=";
+    };
   });
 
   collectors =
@@ -81,41 +81,41 @@ let
       shver = "v2.8.0";
 
       sharphound = fetchurl {
-        url = "https://github.com/SpecterOps/SharpHound/releases/download/${shver}/sharphound_${shver}_windows_x86.zip";
         hash = "sha256-BjBOxjhQYpqD/qUy9EsuXplK8JAuPU/LE2O0Ooxr+r4=";
+        url = "https://github.com/SpecterOps/SharpHound/releases/download/${shver}/sharphound_${shver}_windows_x86.zip";
       };
     in
     pipe
       [
         {
-          os = "darwin";
           arch = "amd64";
           hash = "sha256-HD5vMc6vt71wj5ST6On417iY3DJZQXdG8Il73H22m9Q=";
+          os = "darwin";
         }
         {
-          os = "darwin";
           arch = "arm64";
           hash = "sha256-57i+/9gV17pqQqqnEianJdJ6Jtg4DsExMkfAEqaeNns=";
+          os = "darwin";
         }
         {
-          os = "linux";
           arch = "amd64";
           hash = "sha256-8wrEef0+ik5WAsIV7tInyUlNnsUBw6Ux9LE7gVS3Fhs=";
+          os = "linux";
         }
         {
-          os = "linux";
           arch = "arm64";
           hash = "sha256-23lokcbd2Yp9pWibsb5SNW/YE/eHpHCFZv2PbBlw0Xo=";
+          os = "linux";
         }
         {
-          os = "windows";
           arch = "amd64";
           hash = "sha256-IkEfEh2VFNTnuUAez6/vMY7sMv4rtDR3Paerev/xoqs=";
+          os = "windows";
         }
         {
-          os = "windows";
           arch = "arm64";
           hash = "sha256-qEgmO7oNy/pUXH7lbOoJxNznl2mPofj2R5RGBZdOoUI=";
+          os = "windows";
         }
       ]
       [
@@ -123,8 +123,8 @@ let
           x:
           "cp ${
             fetchurl {
-              url = "https://github.com/SpecterOps/AzureHound/releases/download/${azver}/azurehound_${azver}_${x.os}_${x.arch}.zip";
               inherit (x) hash;
+              url = "https://github.com/SpecterOps/AzureHound/releases/download/${azver}/azurehound_${azver}_${x.os}_${x.arch}.zip";
             }
           } azurehound_${azver}_${x.os}_${x.arch}.zip"
         ))
@@ -132,9 +132,8 @@ let
         (
           copyAzurehoundZips:
           stdenv.mkDerivation {
-            pname = "bloodhound-ce-collectors";
             inherit version src;
-
+            pname = "bloodhound-ce-collectors";
             nativeBuildInputs = [ p7zip ];
 
             installPhase = ''
@@ -158,18 +157,6 @@ buildGoModule {
     makeWrapper
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/specterops/bloodhound/cmd/api/src/version.majorVersion=${major version}"
-    "-X github.com/specterops/bloodhound/cmd/api/src/version.minorVersion=${minor version}"
-    "-X github.com/specterops/bloodhound/cmd/api/src/version.patchVersion=${patch version}"
-  ];
-
-  subPackages = [
-    "cmd/api/src/cmd/bhapi"
-  ];
-
   vendorHash = "sha256-Lm6g0pxGVIuns6mUwnkbnBQQQp1V0TvEakX5fAo8qMo=";
 
   preBuild = ''
@@ -184,6 +171,18 @@ buildGoModule {
       --set BHE_COLLECTORS_BASE_PATH ${collectors}
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/specterops/bloodhound/cmd/api/src/version.majorVersion=${major version}"
+    "-X github.com/specterops/bloodhound/cmd/api/src/version.minorVersion=${minor version}"
+    "-X github.com/specterops/bloodhound/cmd/api/src/version.patchVersion=${patch version}"
+  ];
+
+  subPackages = [
+    "cmd/api/src/cmd/bhapi"
+  ];
+
   passthru = {
     inherit frontend collectors;
   };
@@ -192,10 +191,10 @@ buildGoModule {
     description = "Six Degrees of Domain Admin";
     homepage = "https://github.com/SpecterOps/BloodHound";
     changelog = "https://github.com/SpecterOps/BloodHound/releases/tag/v${version}";
-    downloadPage = "https://github.com/SpecterOps/BloodHound/releases";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ eleonora ];
+    platforms = lib.platforms.linux;
     mainProgram = "bloodhound-ce";
+    downloadPage = "https://github.com/SpecterOps/BloodHound/releases";
   };
 }

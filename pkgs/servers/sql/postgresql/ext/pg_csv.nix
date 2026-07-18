@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -20,8 +20,8 @@ postgresqlBuildExtension (finalAttrs: {
     description = "Flexible CSV processing for Postgres";
     homepage = "https://github.com/PostgREST/pg_csv";
     changelog = "https://github.com/PostgREST/pg_csv/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ steve-chavez ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.mit;
   };
 })

@@ -19,6 +19,13 @@ let
   cfg = config.security.run0;
 in
 {
+  imports = [
+    (mkAliasOptionModule
+      [ "security" "run0" "enableSudoAlias" ]
+      [ "security" "run0" "sudo-shim" "enable" ]
+    )
+  ];
+
   options.security.run0 = {
     enable = mkEnableOption "support for run0";
 
@@ -26,27 +33,22 @@ in
       persistent authentication for sessions.
       Timeout configurable via {option}`security.polkit.settings.Polkitd.ExpirationSeconds`
     '';
+
     persistentAuth.enableRemote = mkEnableOption "persistent authentication for remote sessions";
+    sudo-shim.enable = mkEnableOption "make {command}`sudo` an alias to {command}`run0`.";
+    sudo-shim.package = mkPackageOption pkgs "run0-sudo-shim" { };
 
     wheelNeedsPassword = mkOption {
-      type = lib.types.bool;
       default = true;
+
       description = ''
         Whether users of the `wheel` group must
         provide a password to run commands as super user via {command}`run0`.
       '';
+
+      type = lib.types.bool;
     };
-
-    sudo-shim.enable = mkEnableOption "make {command}`sudo` an alias to {command}`run0`.";
-    sudo-shim.package = mkPackageOption pkgs "run0-sudo-shim" { };
   };
-
-  imports = [
-    (mkAliasOptionModule
-      [ "security" "run0" "enableSudoAlias" ]
-      [ "security" "run0" "sudo-shim" "enable" ]
-    )
-  ];
 
   config = mkMerge [
     {
@@ -68,12 +70,16 @@ in
         {
           assertion =
             cfg.sudo-shim.enable -> (!config.security.sudo.enable && !config.security.sudo-rs.enable);
+
           message = "`security.run0.sudo-shim.enable` cannot be enabled if `security.sudo` or `security.sudo-rs` are enabled.";
         }
       ];
 
+      environment.systemPackages = lib.optional cfg.sudo-shim.enable cfg.sudo-shim.package;
+
       security.polkit = {
         enable = true;
+
         extraConfig = lib.concatLines [
           (optionalString (!cfg.wheelNeedsPassword) ''
             polkit.addRule(function(action, subject) {
@@ -93,8 +99,6 @@ in
           '')
         ];
       };
-
-      environment.systemPackages = lib.optional cfg.sudo-shim.enable cfg.sudo-shim.package;
     })
   ];
 

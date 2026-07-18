@@ -13,23 +13,12 @@
 buildPythonPackage rec {
   pname = "oslo-serialization";
   version = "5.9.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "oslo_serialization";
     inherit version;
     hash = "sha256-CGq3ihXzPwLmR72zyjZjJIDZTPZhzx+xGK3r3u5dS+c=";
+    pname = "oslo_serialization";
   };
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
-  dependencies = [
-    msgpack
-    oslo-utils
-  ];
 
   nativeCheckInputs = [
     oslotest
@@ -42,6 +31,17 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  dependencies = [
+    msgpack
+    oslo-utils
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "oslo_serialization" ];
 
   meta = {

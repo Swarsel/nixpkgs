@@ -1,9 +1,9 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
-  instrument-control,
   arduino-core-unwrapped,
+  buildOctavePackage,
+  instrument-control,
   nix-update-script,
 }:
 
@@ -18,12 +18,12 @@ buildOctavePackage rec {
     sha256 = "sha256-gYoYXJwkuoI1S2SdOu6qpemlSjgAAx7N5LYwJq9ZrU8=";
   };
 
-  requiredOctavePackages = [
-    instrument-control
-  ];
-
   propagatedBuildInputs = [
     arduino-core-unwrapped
+  ];
+
+  requiredOctavePackages = [
+    instrument-control
   ];
 
   passthru.updateScript = nix-update-script {
@@ -34,10 +34,10 @@ buildOctavePackage rec {
   };
 
   meta = {
-    name = "Octave Arduino Toolkit";
+    description = "Basic Octave implementation of the matlab arduino extension, allowing communication to a programmed arduino board to control its hardware";
     homepage = "https://gnu-octave.github.io/packages/arduino/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Basic Octave implementation of the matlab arduino extension, allowing communication to a programmed arduino board to control its hardware";
+    name = "Octave Arduino Toolkit";
   };
 }

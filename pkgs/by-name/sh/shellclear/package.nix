@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,7 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-Q6F7cqs+d1LqYaZkcpCBTOB9Z0qxuGz9zRDK2Yg10CU=";
-
   buildAndTestSubdir = "shellclear";
 
   meta = {

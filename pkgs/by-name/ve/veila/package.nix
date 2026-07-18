@@ -1,19 +1,18 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  libxkbcommon,
   makeWrapper,
   nix-update-script,
-  pkg-config,
   pam,
+  pkg-config,
+  rustPlatform,
   wayland,
-  libxkbcommon,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "veila";
   version = "0.4.3";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "naurissteins";
@@ -21,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-6b8KODC62pL0ocgcGiO4P9cwVkomFen6tn3H7QilOhc=";
   };
-
-  cargoHash = "sha256-zWGVDgnL2AjgO1gdx6Ye3DX5kmy+6nzQ9ZeMHE9l/NQ=";
 
   nativeBuildInputs = [
     makeWrapper
@@ -35,7 +32,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxkbcommon
   ];
 
-  cargoBuildFlags = [ "--workspace" ];
+  cargoHash = "sha256-zWGVDgnL2AjgO1gdx6Ye3DX5kmy+6nzQ9ZeMHE9l/NQ=";
 
   postInstall = ''
     pushd assets
@@ -56,6 +53,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --set VEILA_CURTAIN_BIN "$out/bin/veila-curtain"
   '';
 
+  __structuredAttrs = true;
+  cargoBuildFlags = [ "--workspace" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

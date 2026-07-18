@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZXZcXQdG3hXAMwwftrIWL5GbVdPXk+AyqdhGTnaKL1I=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -26,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -34,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/openSUSE/libeconf/blob/${finalAttrs.src.tag}/NEWS";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ grimmauld ];
-    mainProgram = "econftool";
     platforms = lib.platforms.all;
+    mainProgram = "econftool";
   };
 })

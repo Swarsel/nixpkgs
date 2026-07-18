@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
-  runCommand,
-  patchelf,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  makeBinaryWrapper,
-  pkg-config,
-  openssl,
-  curl,
-  writableTmpDirAsHomeHook,
-  installShellFiles,
-  zlib,
-  libiconv,
-  xz,
   buildPackages,
+  curl,
+  installShellFiles,
+  libiconv,
+  makeBinaryWrapper,
+  openssl,
+  patchelf,
+  pkg-config,
+  runCommand,
+  rustPlatform,
+  writableTmpDirAsHomeHook,
+  xz,
+  zlib,
 }:
 
 let
@@ -34,7 +34,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-jbB0nmXtc95Ac+YfmyELh6n5OTRMmeDPT4OFIlJNrZc=";
   };
 
-  cargoHash = "sha256-m/KoXNJh00zYKZo7MIJsBvo4zldfKdofrUh8AItJqXI=";
+  patches = lib.optionals stdenv.hostPlatform.isLinux [
+    (runCommand "0001-dynamically-patchelf-binaries.patch"
+      {
+        CC = stdenv.cc;
+        libPath = "${libPath}";
+        patchelf = patchelf;
+      }
+      ''
+        export dynamicLinker=$(cat $CC/nix-support/dynamic-linker)
+        substitute ${./0001-dynamically-patchelf-binaries.patch} $out \
+          --subst-var patchelf \
+          --subst-var dynamicLinker \
+          --subst-var libPath
+      ''
+    )
+  ];
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -53,32 +68,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xz
   ];
 
-  buildFeatures = [ "no-self-update" ];
+  cargoHash = "sha256-m/KoXNJh00zYKZo7MIJsBvo4zldfKdofrUh8AItJqXI=";
 
-  checkFeatures = [ "test" ];
+  env = {
+    inherit (stdenv.cc.bintools)
+      expandResponseParams
+      shell
+      suffixSalt
+      wrapperName
+      coreutils_bin
+      ;
 
-  patches = lib.optionals stdenv.hostPlatform.isLinux [
-    (runCommand "0001-dynamically-patchelf-binaries.patch"
-      {
-        CC = stdenv.cc;
-        patchelf = patchelf;
-        libPath = "${libPath}";
-      }
-      ''
-        export dynamicLinker=$(cat $CC/nix-support/dynamic-linker)
-        substitute ${./0001-dynamically-patchelf-binaries.patch} $out \
-          --subst-var patchelf \
-          --subst-var dynamicLinker \
-          --subst-var libPath
-      ''
-    )
-  ];
+    hardening_unsupported_flags = "";
+  };
 
   # Random tests fail nondeterministically on macOS.
   # TODO: Investigate this.
   doCheck = !stdenv.hostPlatform.isDarwin;
-  # Random failures when running tests in parallel.
-  dontUseCargoParallelTests = true;
 
   # skip failing tests
   checkFlags = [
@@ -141,27 +147,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     chmod +x $out/nix-support/ld-wrapper.sh
   '';
 
-  env = {
-    inherit (stdenv.cc.bintools)
-      expandResponseParams
-      shell
-      suffixSalt
-      wrapperName
-      coreutils_bin
-      ;
-    hardening_unsupported_flags = "";
-  };
+  buildFeatures = [ "no-self-update" ];
+  checkFeatures = [ "test" ];
+  # Random failures when running tests in parallel.
+  dontUseCargoParallelTests = true;
 
   meta = {
     description = "Rust toolchain installer";
     homepage = "https://www.rustup.rs/";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       mic92
     ];
+
     mainProgram = "rustup";
   };
 })

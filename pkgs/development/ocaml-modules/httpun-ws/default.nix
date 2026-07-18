@@ -1,14 +1,14 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
+  alcotest,
   angstrom,
   base64,
   bigstringaf,
+  buildDunePackage,
   faraday,
   gluten,
   httpun,
-  alcotest,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -34,8 +34,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Websocket implementation for httpun";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/anmonteiro/httpun-ws";
+    license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.vbgl ];
   };
 })

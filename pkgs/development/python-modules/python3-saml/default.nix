@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   freezegun,
   isodate,
   lxml,
-  pytestCheckHook,
   poetry-core,
+  pytestCheckHook,
   xmlsec,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python3-saml";
   version = "1.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "onelogin";
@@ -26,9 +25,9 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # Fix build system, https://github.com/SAML-Toolkits/python3-saml/pull/341
     (fetchpatch {
+      hash = "sha256-MvX1LXhf3LJUy3O7L0/ySyVY4KDGc/GKJud4pOkwVIk=";
       name = "switch-to-poetry-core.patch";
       url = "https://github.com/SAML-Toolkits/python3-saml/commit/231a7e19543138fdd7424c01435dfe3f82bbe9ce.patch";
-      hash = "sha256-MvX1LXhf3LJUy3O7L0/ySyVY4KDGc/GKJud4pOkwVIk=";
     })
   ];
 
@@ -45,8 +44,6 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "onelogin.saml2" ];
-
   disabledTests = [
     # Tests require network access or additions files
     "OneLogin_Saml2_Metadata_Test"
@@ -58,6 +55,9 @@ buildPythonPackage (finalAttrs: {
     "OneLogin_Saml2_IdPMetadataParser_Test"
     "OneLogin_Saml2_Logout_Request_Test"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "onelogin.saml2" ];
 
   meta = {
     description = "OneLogin's SAML Python Toolkit";

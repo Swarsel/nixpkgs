@@ -5,9 +5,9 @@
 */
 {
   buildEnv,
-  ruby,
-  bundler,
   bundix,
+  bundler,
+  ruby,
 }:
 let
   bundler_ = bundler.override {
@@ -18,12 +18,14 @@ let
   };
 in
 buildEnv {
+  ignoreCollisions = true;
   name = "${ruby.rubyEngine}-dev-${ruby.version}";
+
   paths = [
     bundix_
     bundler_
     ruby
   ];
+
   pathsToLink = [ "/bin" ];
-  ignoreCollisions = true;
 }

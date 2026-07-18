@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix,
-  nixfmt,
   nix-update-script,
+  nixfmt,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,13 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-oxvVAFUO9husnRk6XZcLFLjLWL9z0pW25Fk6kVKwt1c=";
   };
 
+  nativeBuildInputs = [ nix ];
   cargoHash = "sha256-OZIajxv8xNfCGalVw/FUAwWdQzPqfGuDoeRg2E2RR7s=";
 
-  nativeBuildInputs = [ nix ];
-
   env = {
-    CFG_RELEASE = finalAttrs.version;
     CFG_DEFAULT_FORMATTER = lib.getExe nixfmt;
+    CFG_RELEASE = finalAttrs.version;
   };
 
   # might be related to https://github.com/NixOS/nix/issues/5884
@@ -38,13 +37,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Yet another language server for Nix";
     homepage = "https://github.com/oxalica/nil";
     changelog = "https://github.com/oxalica/nil/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       oxalica
     ];
+
     mainProgram = "nil";
   };
 })

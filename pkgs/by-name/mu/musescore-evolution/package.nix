@@ -1,32 +1,30 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  wrapGAppsHook3,
-  pkg-config,
-  ninja,
   alsa-lib,
   alsa-plugins,
+  cmake,
+  flac,
   freetype,
-  libjack2,
   lame,
+  libjack2,
   libogg,
+  libopus,
+  libopusenc,
   libpulseaudio,
   libsndfile,
   libvorbis,
+  ninja,
+  pkg-config,
   portaudio,
   portmidi,
-  flac,
-  libopusenc,
-  libopus,
-  tinyxml-2,
   qt5, # Needed for musescore 3.X
+  tinyxml-2,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "musescore-evolution";
   version = "3.7.0-unstable-2026-06-30";
 
@@ -41,33 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
     ./musescore-evolution-pch-fix.patch
   ];
 
-  # From top-level CMakeLists.txt:
-  # - DOWNLOAD_SOUNDFONT defaults ON and tries to fetch from the network.
-  # Download manually at Help > Manage Resources
-  cmakeFlags = [
-    (lib.cmakeBool "DOWNLOAD_SOUNDFONT" false)
-  ];
-
-  qtWrapperArgs = [
-    # MuseScore JACK backend loads libjack at runtime.
-    "--prefix ${lib.optionalString stdenv.hostPlatform.isDarwin "DY"}LD_LIBRARY_PATH : ${
-      lib.makeLibraryPath [ libjack2 ]
-    }"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    "--set ALSA_PLUGIN_DIR ${alsa-plugins}/lib/alsa-lib"
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    # There are some issues with using the wayland backend, see:
-    # https://musescore.org/en/node/321936
-    "--set-default QT_QPA_PLATFORM xcb"
-  ];
-
-  preFixup = ''
-    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  # Avoid depending on insecure QtWebEngine (and having to compile it (huge))
+  # Because we don't use this, we need to patch the CMakeLists and install scripts to not try to bundle it.
+  postPatch = ''
+    # Disable Qt bundling logic in the source CMakeLists.
+    sed -i '/QT_INSTALL_PREFIX/d' main/CMakeLists.txt
+    sed -i '/QtWebEngineProcess/d' main/CMakeLists.txt
   '';
-
-  dontWrapGApps = true;
 
   nativeBuildInputs = [
     cmake
@@ -107,13 +85,15 @@ stdenv.mkDerivation (finalAttrs: {
     alsa-lib
   ];
 
-  # Avoid depending on insecure QtWebEngine (and having to compile it (huge))
-  # Because we don't use this, we need to patch the CMakeLists and install scripts to not try to bundle it.
-  postPatch = ''
-    # Disable Qt bundling logic in the source CMakeLists.
-    sed -i '/QT_INSTALL_PREFIX/d' main/CMakeLists.txt
-    sed -i '/QtWebEngineProcess/d' main/CMakeLists.txt
-  '';
+  # From top-level CMakeLists.txt:
+  # - DOWNLOAD_SOUNDFONT defaults ON and tries to fetch from the network.
+  # Download manually at Help > Manage Resources
+  cmakeFlags = [
+    (lib.cmakeBool "DOWNLOAD_SOUNDFONT" false)
+  ];
+
+  # Don't run bundled upstreams tests, as they require a running X window system.
+  doCheck = false;
 
   # Patch the generated install script to drop Qt resource / QtWebEngine installs.
   preInstall = ''
@@ -132,6 +112,10 @@ stdenv.mkDerivation (finalAttrs: {
     mv "$out/mscore.app" "$out/Applications/mscore-evo.app"
     mkdir -p $out/bin
     ln -s $out/Applications/mscore-evo.app/Contents/MacOS/mscore $out/bin/mscore-evo
+  '';
+
+  preFixup = ''
+    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
   # On Linux, let CMake + wrapQtAppsHook install/wrap "mscore", then rename it
@@ -199,8 +183,23 @@ stdenv.mkDerivation (finalAttrs: {
       "$new"
   '';
 
-  # Don't run bundled upstreams tests, as they require a running X window system.
-  doCheck = false;
+  __structuredAttrs = true;
+  dontWrapGApps = true;
+
+  qtWrapperArgs = [
+    # MuseScore JACK backend loads libjack at runtime.
+    "--prefix ${lib.optionalString stdenv.hostPlatform.isDarwin "DY"}LD_LIBRARY_PATH : ${
+      lib.makeLibraryPath [ libjack2 ]
+    }"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    "--set ALSA_PLUGIN_DIR ${alsa-plugins}/lib/alsa-lib"
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    # There are some issues with using the wayland backend, see:
+    # https://musescore.org/en/node/321936
+    "--set-default QT_QPA_PLATFORM xcb"
+  ];
 
   passthru.updateScript.command = [ ./update.sh ];
 
@@ -209,7 +208,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Jojo-Schmitz/MuseScore";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ nemeott ];
-    mainProgram = "mscore-evo";
     platforms = lib.platforms.unix;
+    mainProgram = "mscore-evo";
   };
 })

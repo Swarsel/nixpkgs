@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   httpx,
   iso8601,
@@ -14,17 +14,16 @@
   pytestCheckHook,
   python-dateutil,
   pythonAtLeast,
-  tenacity,
   respx,
   retrying,
   rfc3339,
+  tenacity,
   toml,
 }:
 
 buildPythonPackage rec {
   pname = "qcs-api-client";
   version = "0.26.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rigetti";
@@ -36,18 +35,19 @@ buildPythonPackage rec {
   patches = [
     # Switch to poetry-core, https://github.com/rigetti/qcs-api-client-python/pull/2
     (fetchpatch {
+      hash = "sha256-mOc+Q/5cmwPziojtxeEMWWHSDvqvzZlNRbPtOSeTinQ=";
       name = "switch-to-poetry-core.patch";
       url = "https://github.com/rigetti/qcs-api-client-python/commit/32f0b3c7070a65f4edf5b2552648d88435469e44.patch";
-      hash = "sha256-mOc+Q/5cmwPziojtxeEMWWHSDvqvzZlNRbPtOSeTinQ=";
     })
   ];
 
-  pythonRelaxDeps = [
-    "attrs"
-    "httpx"
-    "iso8601"
-    "pydantic"
-    "tenacity"
+  # Tests are failing on Python 3.11, Fatal Python error: Aborted
+  doCheck = !(pythonAtLeast "3.11");
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+    respx
   ];
 
   build-system = [ poetry-core ];
@@ -66,16 +66,16 @@ buildPythonPackage rec {
     toml
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-    respx
-  ];
-
-  # Tests are failing on Python 3.11, Fatal Python error: Aborted
-  doCheck = !(pythonAtLeast "3.11");
-
+  pyproject = true;
   pythonImportsCheck = [ "qcs_api_client" ];
+
+  pythonRelaxDeps = [
+    "attrs"
+    "httpx"
+    "iso8601"
+    "pydantic"
+    "tenacity"
+  ];
 
   meta = {
     description = "Python library for accessing the Rigetti QCS API";

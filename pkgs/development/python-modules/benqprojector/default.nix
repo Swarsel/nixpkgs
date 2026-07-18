@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
   hatch-vcs,
+  hatchling,
   pyserial,
   pyserial-asyncio-fast,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "benqprojector";
   version = "0.1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rrooggiieerr";
@@ -20,6 +19,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-oG6djfmBnZyb4YpB6zqzHlcmQx+l+LF5xwCdf/NOb1Q=";
   };
+
+  # Test cases require an actual serial/telnet connection to a projector
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -32,9 +34,7 @@ buildPythonPackage rec {
     pyserial-asyncio-fast
   ];
 
-  # Test cases require an actual serial/telnet connection to a projector
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "benqprojector" ];
 
   meta = rec {

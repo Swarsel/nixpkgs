@@ -2,13 +2,12 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "parse";
   version = "1.20.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "r1chardj0n3s";
@@ -22,12 +21,12 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/r1chardj0n3s/parse";
     description = "parse() is the opposite of format()";
+    homepage = "https://github.com/r1chardj0n3s/parse";
     license = lib.licenses.bsdOriginal;
     maintainers = with lib.maintainers; [ alunduil ];
   };

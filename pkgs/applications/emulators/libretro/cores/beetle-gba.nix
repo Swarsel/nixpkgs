@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "mednafen-gba";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-4LRMPsPrYvdTJGcbbS3ZyimrWKxZSU+bP0SxUMLkYgE=";
   };
 
+  core = "mednafen-gba";
   makefile = "Makefile";
 
   meta = {

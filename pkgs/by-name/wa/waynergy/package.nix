@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  pkg-config,
-  ninja,
-  wayland-scanner,
   libdrm,
+  libressl,
+  libxkbcommon,
+  meson,
+  ninja,
+  pkg-config,
   wayland,
   wayland-protocols,
+  wayland-scanner,
   wl-clipboard,
-  libxkbcommon,
-  libressl,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "waynergy";
@@ -24,13 +24,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cwpW6O+KJNDvSrHeSM1Ci7S0kNw6a8KCdGAIhowPEIw=";
   };
 
+  postPatch = ''
+    substituteInPlace waynergy.desktop --replace "Exec=/usr/bin/waynergy" "Exec=$out/bin/waynergy"
+  '';
+
   strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     meson
     ninja
     wayland-scanner
   ];
+
   buildInputs = [
     libdrm
     wayland
@@ -40,18 +46,16 @@ stdenv.mkDerivation (finalAttrs: {
     libressl
   ];
 
-  postPatch = ''
-    substituteInPlace waynergy.desktop --replace "Exec=/usr/bin/waynergy" "Exec=$out/bin/waynergy"
-  '';
-
   meta = {
     description = "Synergy client for Wayland compositors";
+
     longDescription = ''
       A synergy client for Wayland compositors
     '';
+
     homepage = "https://github.com/r-c-f/waynergy";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ maxhero ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -10,8 +10,8 @@ buildGoModule (finalAttrs: {
   version = "0.2.4";
 
   src = fetchFromGitHub {
-    repo = "legit";
     owner = "icyphox";
+    repo = "legit";
     rev = "v${finalAttrs.version}";
     hash = "sha256-2XeIAeneSKf8TSWOunvRJ7N+3IrmOUjS79ZubsGne9E=";
   };

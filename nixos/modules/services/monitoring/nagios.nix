@@ -22,21 +22,21 @@ let
   nagiosCfgFile =
     let
       default = {
-        log_file = "${nagiosLogDir}/current";
-        log_archive_path = "${nagiosLogDir}/archive";
-        status_file = "${nagiosState}/status.dat";
-        object_cache_file = "${nagiosState}/objects.cache";
-        temp_file = "${nagiosState}/nagios.tmp";
-        lock_file = "/run/nagios.lock";
-        state_retention_file = "${nagiosState}/retention.dat";
-        query_socket = "${nagiosState}/nagios.qh";
+        cfg_dir = "${nagiosObjectDefsDir}";
         check_result_path = "${nagiosState}";
         command_file = "${nagiosState}/nagios.cmd";
-        cfg_dir = "${nagiosObjectDefsDir}";
-        nagios_user = "nagios";
-        nagios_group = "nagios";
         illegal_macro_output_chars = "`~$&|'\"<>";
+        lock_file = "/run/nagios.lock";
+        log_archive_path = "${nagiosLogDir}/archive";
+        log_file = "${nagiosLogDir}/current";
+        nagios_group = "nagios";
+        nagios_user = "nagios";
+        object_cache_file = "${nagiosState}/objects.cache";
+        query_socket = "${nagiosState}/nagios.qh";
         retain_state_information = "1";
+        state_retention_file = "${nagiosState}/retention.dat";
+        status_file = "${nagiosState}/status.dat";
+        temp_file = "${nagiosState}/nagios.tmp";
       };
       lines = lib.mapAttrsToList (key: value: "${key}=${value}") (default // cfg.extraConfig);
       content = lib.concatStringsSep "\n" lines;
@@ -89,11 +89,54 @@ in
     ] "The urlPath option has been removed as it is hard coded to /nagios in the nagios package.")
   ];
 
-  meta.maintainers = with lib.maintainers; [ symphorien ];
-
   options = {
     services.nagios = {
       enable = lib.mkEnableOption "[Nagios](https://www.nagios.org/) to monitor your system or network";
+
+      cgiConfigFile = lib.mkOption {
+        default = nagiosCGICfgFile;
+        defaultText = lib.literalExpression "nagiosCGICfgFile";
+
+        description = ''
+          Derivation for the configuration file of Nagios CGI scripts
+          that can be used in web servers for running the Nagios web interface.
+        '';
+
+        type = lib.types.package;
+      };
+
+      enableWebInterface = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to enable the Nagios web interface.  You should also
+          enable Apache ({option}`services.httpd.enable`).
+        '';
+
+        type = lib.types.bool;
+      };
+
+      extraConfig = lib.mkOption {
+        default = { };
+        description = "Configuration to add to /etc/nagios.cfg";
+
+        example = {
+          debug_file = "/var/log/nagios/debug.log";
+          debug_level = "-1";
+        };
+
+        type = lib.types.attrsOf lib.types.str;
+      };
+
+      mainConfigFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          If non-null, overrides the main configuration file of Nagios.
+        '';
+
+        type = lib.types.nullOr lib.types.package;
+      };
 
       objectDefs = lib.mkOption {
         description = ''
@@ -101,70 +144,41 @@ in
           the hosts, host groups, services and contacts for the
           network that you want Nagios to monitor.
         '';
-        type = lib.types.listOf lib.types.path;
+
         example = lib.literalExpression "[ ./objects.cfg ]";
+        type = lib.types.listOf lib.types.path;
       };
 
       plugins = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
         default = with pkgs; [
           monitoring-plugins
           msmtp
           mailutils
         ];
+
         defaultText = lib.literalExpression "[pkgs.monitoring-plugins pkgs.msmtp pkgs.mailutils]";
+
         description = ''
           Packages to be added to the Nagios {env}`PATH`.
           Typically used to add plugins, but can be anything.
         '';
-      };
 
-      mainConfigFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.package;
-        default = null;
-        description = ''
-          If non-null, overrides the main configuration file of Nagios.
-        '';
-      };
-
-      extraConfig = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
-        example = {
-          debug_level = "-1";
-          debug_file = "/var/log/nagios/debug.log";
-        };
-        default = { };
-        description = "Configuration to add to /etc/nagios.cfg";
+        type = lib.types.listOf lib.types.package;
       };
 
       validateConfig = lib.mkOption {
-        type = lib.types.bool;
         default = pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform;
         defaultText = lib.literalExpression "pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform";
         description = "if true, the syntax of the nagios configuration file is checked at build time";
-      };
-
-      cgiConfigFile = lib.mkOption {
-        type = lib.types.package;
-        default = nagiosCGICfgFile;
-        defaultText = lib.literalExpression "nagiosCGICfgFile";
-        description = ''
-          Derivation for the configuration file of Nagios CGI scripts
-          that can be used in web servers for running the Nagios web interface.
-        '';
-      };
-
-      enableWebInterface = lib.mkOption {
         type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to enable the Nagios web interface.  You should also
-          enable Apache ({option}`services.httpd.enable`).
-        '';
       };
 
       virtualHost = lib.mkOption {
-        type = lib.types.submodule (import ../web-servers/apache-httpd/vhost-options.nix);
+        description = ''
+          Apache configuration can be done by adapting {option}`services.httpd.virtualHosts`.
+          See [](#opt-services.httpd.virtualHosts) for further information.
+        '';
+
         example = lib.literalExpression ''
           { hostName = "example.org";
             adminAddr = "webmaster@example.org";
@@ -173,46 +187,17 @@ in
             sslServerKey = "/var/lib/acme/example.org/key.pem";
           }
         '';
-        description = ''
-          Apache configuration can be done by adapting {option}`services.httpd.virtualHosts`.
-          See [](#opt-services.httpd.virtualHosts) for further information.
-        '';
+
+        type = lib.types.submodule (import ../web-servers/apache-httpd/vhost-options.nix);
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.users.nagios = {
-      description = "Nagios user";
-      uid = config.ids.uids.nagios;
-      home = nagiosState;
-      group = "nagios";
-    };
-
-    users.groups.nagios = { };
-
     # This isn't needed, it's just so that the user can type "nagiostats
     # -c /etc/nagios.cfg".
     environment.etc."nagios.cfg".source = nagiosCfgFile;
-
     environment.systemPackages = [ pkgs.nagios ];
-    systemd.services.nagios = {
-      description = "Nagios monitoring daemon";
-      path = [ pkgs.nagios ] ++ cfg.plugins;
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-      restartTriggers = [ nagiosCfgFile ];
-
-      serviceConfig = {
-        User = "nagios";
-        Group = "nagios";
-        Restart = "always";
-        RestartSec = 2;
-        LogsDirectory = "nagios";
-        StateDirectory = "nagios";
-        ExecStart = "${pkgs.nagios}/bin/nagios /etc/nagios.cfg";
-      };
-    };
 
     services.httpd.virtualHosts = lib.optionalAttrs cfg.enableWebInterface {
       ${cfg.virtualHost.hostName} = lib.mkMerge [
@@ -220,5 +205,35 @@ in
         { extraConfig = extraHttpdConfig; }
       ];
     };
+
+    systemd.services.nagios = {
+      after = [ "network.target" ];
+      description = "Nagios monitoring daemon";
+      path = [ pkgs.nagios ] ++ cfg.plugins;
+      restartTriggers = [ nagiosCfgFile ];
+
+      serviceConfig = {
+        ExecStart = "${pkgs.nagios}/bin/nagios /etc/nagios.cfg";
+        Group = "nagios";
+        LogsDirectory = "nagios";
+        Restart = "always";
+        RestartSec = 2;
+        StateDirectory = "nagios";
+        User = "nagios";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.nagios = { };
+
+    users.users.nagios = {
+      description = "Nagios user";
+      group = "nagios";
+      home = nagiosState;
+      uid = config.ids.uids.nagios;
+    };
   };
+
+  meta.maintainers = with lib.maintainers; [ symphorien ];
 }

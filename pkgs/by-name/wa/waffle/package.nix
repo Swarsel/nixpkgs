@@ -1,26 +1,26 @@
 {
+  lib,
   stdenv,
   fetchFromGitLab,
-  lib,
+  bash-completion,
   cmake,
+  libGL,
+  libgbm,
+  libglvnd,
+  libx11,
+  libxcb,
+  makeWrapper,
   meson,
   ninja,
-  bash-completion,
-  libGL,
-  libglvnd,
-  makeWrapper,
   pkg-config,
   python3,
-  x11Support ? true,
-  libxcb,
-  libx11,
-  waylandSupport ? true,
+  udev,
   wayland,
   wayland-protocols,
   wayland-scanner,
   useGbm ? true,
-  libgbm,
-  udev,
+  waylandSupport ? true,
+  x11Support ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,12 +28,24 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.8.3";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "Mesa";
     repo = "waffle";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-VvkSZOddxTPukyPpngi4vxni/OqmMGJV7voiiM0uHXo=";
+    domain = "gitlab.freedesktop.org";
   };
+
+  nativeBuildInputs = [
+    cmake
+    makeWrapper
+    meson
+    ninja
+    pkg-config
+    python3
+  ]
+  ++ lib.optionals waylandSupport [
+    wayland-scanner
+  ];
 
   buildInputs = [
     bash-completion
@@ -55,22 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgbm
   ];
 
-  depsBuildBuild = [ pkg-config ];
-
-  dontUseCmakeConfigure = true;
-
-  nativeBuildInputs = [
-    cmake
-    makeWrapper
-    meson
-    ninja
-    pkg-config
-    python3
-  ]
-  ++ lib.optionals waylandSupport [
-    wayland-scanner
-  ];
-
   env.PKG_CONFIG_BASH_COMPLETION_COMPLETIONSDIR = "${placeholder "out"}/share/bash-completion/completions";
 
   postInstall = ''
@@ -83,12 +79,15 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  depsBuildBuild = [ pkg-config ];
+  dontUseCmakeConfigure = true;
+
   meta = {
+    inherit (libgbm.meta) platforms;
     description = "Cross-platform C library that allows one to defer selection of an OpenGL API and window system until runtime";
-    mainProgram = "wflinfo";
     homepage = "https://www.waffle-gl.org/";
     license = lib.licenses.bsd2;
-    inherit (libgbm.meta) platforms;
     maintainers = with lib.maintainers; [ Flakebi ];
+    mainProgram = "wflinfo";
   };
 })

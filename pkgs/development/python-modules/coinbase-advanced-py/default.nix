@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pythonRelaxDepsHook,
-  requests,
+  backoff,
+  buildPythonPackage,
   cryptography,
   pyjwt,
-  websockets,
-  backoff,
   pytestCheckHook,
+  pythonRelaxDepsHook,
+  requests,
   requests-mock,
+  setuptools,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "coinbase-advanced-py";
   version = "1.8.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coinbase";
@@ -25,12 +24,13 @@ buildPythonPackage rec {
     hash = "sha256-kr2S6oB5H/SpmZgcK+dAJyMijp5OdxLszTbc6yAcX6I=";
   };
 
-  build-system = [
-    setuptools
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
   ];
 
-  pythonRelaxDeps = [
-    "websockets"
+  build-system = [
+    setuptools
   ];
 
   dependencies = [
@@ -41,10 +41,12 @@ buildPythonPackage rec {
     backoff
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
+  disabledTestPaths = [
+    # WebSocket tests fail due to API changes in websockets >= 14.0
+    "tests/websocket/"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "coinbase"
@@ -52,9 +54,8 @@ buildPythonPackage rec {
     "coinbase.websocket"
   ];
 
-  disabledTestPaths = [
-    # WebSocket tests fail due to API changes in websockets >= 14.0
-    "tests/websocket/"
+  pythonRelaxDeps = [
+    "websockets"
   ];
 
   meta = {

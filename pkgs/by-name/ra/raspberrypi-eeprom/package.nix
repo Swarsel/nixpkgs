@@ -1,16 +1,16 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  makeWrapper,
-  python3,
   binutils-unwrapped,
   findutils,
   flashrom,
   gawk,
   kmod,
-  pciutils,
   libraspberrypi,
+  makeWrapper,
+  pciutils,
+  python3,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "raspberrypi-eeprom";
@@ -23,9 +23,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-duzftioXXrLizQVLwAS285n6ve4Y3rCt/ERjcGQG+Dc=";
   };
 
-  buildInputs = [ python3 ];
-  nativeBuildInputs = [ makeWrapper ];
-
   postPatch = ''
     # Don't try to verify md5 signatures from /var/lib/dpkg and
     # fix path to the configuration.
@@ -33,6 +30,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace 'IGNORE_DPKG_CHECKSUMS=''${LOCAL_MODE}' 'IGNORE_DPKG_CHECKSUMS=1' \
       --replace '/etc/default' '/etc'
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ python3 ];
 
   installPhase = ''
     mkdir -p "$out/bin"
@@ -73,14 +73,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Installation scripts and binaries for the closed sourced Raspberry Pi 4 and 5 bootloader EEPROMs";
     homepage = "https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-boot-eeprom";
+
     license = with lib.licenses; [
       bsd3
       unfreeRedistributableFirmware
     ];
+
     maintainers = with lib.maintainers; [
       das_j
       Luflosi
     ];
+
     platforms = lib.platforms.linux;
   };
 })

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   packaging,
   pycryptodome,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "solc-select";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "crytic";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-pPDiP8GNE/KAFS4Jm6jLpKozktxy70+f00QFUa4wMiQ=";
   };
 
+  # no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,8 +29,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # no tests
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "solc_select" ];
 
   meta = {

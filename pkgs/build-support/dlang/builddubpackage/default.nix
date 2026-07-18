@@ -2,10 +2,10 @@
   lib,
   stdenv,
   dub,
-  importDubLock,
-  dubSetupHook,
   dubBuildHook,
   dubCheckHook,
+  dubSetupHook,
+  importDubLock,
   ldc,
   removeReferencesTo,
 }:
@@ -29,13 +29,7 @@ lib.extendMkDerivation {
     }@args:
 
     {
-      dubDeps = importDubLock {
-        inherit (finalAttrs) pname version;
-        lock = dubLock;
-      };
-
       strictDeps = args.strictDeps or true;
-      __structuredAttrs = args.__structuredAttrs or true;
 
       nativeBuildInputs = args.nativeBuildInputs or [ ] ++ [
         dubSetupHook
@@ -43,12 +37,6 @@ lib.extendMkDerivation {
         compiler
         removeReferencesTo
       ];
-
-      configurePhase = ''
-        runHook preConfigure
-        dubFlags+=("--compiler=${lib.getExe compiler}")
-        runHook postConfigure
-      '';
 
       doCheck = args.doCheck or false;
 
@@ -64,7 +52,20 @@ lib.extendMkDerivation {
         } '{}' +
       '';
 
+      __structuredAttrs = args.__structuredAttrs or true;
+
+      configurePhase = ''
+        runHook preConfigure
+        dubFlags+=("--compiler=${lib.getExe compiler}")
+        runHook postConfigure
+      '';
+
       disallowedReferences = args.disallowedReferences or compiler.all;
+
+      dubDeps = importDubLock {
+        inherit (finalAttrs) pname version;
+        lock = dubLock;
+      };
 
       meta = {
         platforms = dub.meta.platforms;

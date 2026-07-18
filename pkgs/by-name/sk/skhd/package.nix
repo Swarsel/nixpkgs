@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   makeFlags = [ "BUILD_PATH=$(out)/bin" ];
-
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
 
   postInstall = ''
@@ -26,20 +25,21 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/Library/LaunchDaemons/org.nixos.skhd.plist --subst-var out
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple hotkey daemon for macOS";
     homepage = "https://github.com/koekeishiya/skhd";
     license = lib.licenses.mit;
-    mainProgram = "skhd";
+
     maintainers = with lib.maintainers; [
       cmacrae
       khaneliman
     ];
+
     platforms = lib.platforms.darwin;
+    mainProgram = "skhd";
   };
 })

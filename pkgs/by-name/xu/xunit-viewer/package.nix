@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nix-update-script,
+  buildNpmPackage,
   callPackage,
+  nix-update-script,
   testers,
   xunit-viewer,
 }:
@@ -11,8 +11,8 @@ let
   version = "10.6.1";
 in
 buildNpmPackage {
-  pname = "xunit-viewer";
   inherit version;
+  pname = "xunit-viewer";
 
   src = fetchFromGitHub {
     owner = "lukejpreston";
@@ -23,15 +23,16 @@ buildNpmPackage {
 
   npmDepsHash = "sha256-6PV0+G1gzUWUjOfwRtVeALVFFiwkCAB33yB9W0PCGfc=";
 
-  passthru.updateScript = nix-update-script { };
-
   passthru.tests = {
     version = testers.testVersion {
-      package = xunit-viewer;
       version = "unknown"; # broken, but at least it runs
+      package = xunit-viewer;
     };
+
     example = callPackage ./test/example.nix { };
   };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "View your xunit results using JavaScript";

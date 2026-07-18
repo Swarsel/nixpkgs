@@ -1,21 +1,20 @@
 {
   lib,
+  anyio,
   buildPythonPackage,
+  distro,
   fetchPypi,
+  hatch-fancy-pypi-readme,
+  hatchling,
   httpx,
   pydantic,
-  typing-extensions,
-  anyio,
-  distro,
   sniffio,
-  hatchling,
-  hatch-fancy-pypi-readme,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "cloudflare";
   version = "5.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,6 +25,9 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail 'hatchling==1.26.3' 'hatchling>=1.26.3'
   '';
+
+  # tests require networking
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -41,19 +43,18 @@ buildPythonPackage rec {
     sniffio
   ];
 
-  # tests require networking
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "cloudflare" ];
 
   meta = {
     description = "Official Python library for the Cloudflare API";
     homepage = "https://github.com/cloudflare/cloudflare-python";
     changelog = "https://github.com/cloudflare/cloudflare-python/blob/v${version}/CHANGELOG.md";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       marie
       jemand771
     ];
-    license = lib.licenses.asl20;
   };
 }

@@ -1,9 +1,9 @@
 {
-  melpaBuild,
+  lib,
   fetchFromGitHub,
   git,
+  melpaBuild,
   unstableGitUpdater,
-  lib,
 }:
 
 melpaBuild {
@@ -18,13 +18,13 @@ melpaBuild {
   };
 
   nativeBuildInputs = [ git ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/progfolio/elpaca";
     description = "Elisp package manager";
+    homepage = "https://github.com/progfolio/elpaca";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       abhisheksingh0x558
     ];

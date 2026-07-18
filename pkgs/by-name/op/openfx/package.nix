@@ -20,8 +20,6 @@ stdenv.mkDerivation {
     "out"
   ];
 
-  enableParallelBuilding = true;
-
   buildPhase = ''
     mkdir $dev
     mkdir $out
@@ -32,11 +30,13 @@ stdenv.mkDerivation {
     cp -r include/* $dev/include/OpenFX/
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Image processing plug-in standard";
     homepage = "https://openeffects.org/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.guibou ];
+    platforms = lib.platforms.all;
   };
 }

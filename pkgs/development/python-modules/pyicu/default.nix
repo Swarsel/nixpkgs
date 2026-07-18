@@ -1,42 +1,40 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitLab,
-  pkg-config,
-  setuptools,
-  pytestCheckHook,
-  six,
+  buildPythonPackage,
   icu,
+  pkg-config,
+  pytestCheckHook,
+  setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "pyicu";
   version = "2.15.3";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "gitlab.pyicu.org";
     owner = "main";
     repo = "pyicu";
     tag = "v${version}";
     hash = "sha256-vbrl6n7X85sQIdgj+Z0Xr6x/L8roK5Z/mNj53zyWQGs=";
+    domain = "gitlab.pyicu.org";
   };
 
   postPatch = ''
     substituteInPlace setup.py --replace-fail "'pkg-config'" "'${stdenv.cc.targetPrefix}pkg-config'"
   '';
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ icu ];
 
   nativeCheckInputs = [
     pytestCheckHook
     six
   ];
+
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # AssertionError: '$' != 'US Dollar'
@@ -45,11 +43,12 @@ buildPythonPackage rec {
     "test/test_UnicodeSet.py::TestUnicodeSet::testIterators"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "icu" ];
 
   meta = {
-    homepage = "https://gitlab.pyicu.org/main/pyicu";
     description = "Python extension wrapping the ICU C++ API";
+    homepage = "https://gitlab.pyicu.org/main/pyicu";
     changelog = "https://gitlab.pyicu.org/main/pyicu/-/raw/v${version}/CHANGES";
     license = lib.licenses.mit;
   };

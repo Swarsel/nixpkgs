@@ -1,21 +1,19 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  lwt,
-  mirage-net,
+  buildDunePackage,
   cstruct,
-  ipaddr,
-  macaddr,
   duration,
+  ipaddr,
   logs,
+  lwt,
+  macaddr,
+  mirage-net,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "mirage-vnetif";
   version = "0.6.2";
-
-  minimalOCamlVersion = "4.06";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-vnetif/releases/download/v${finalAttrs.version}/mirage-vnetif-${finalAttrs.version}.tbz";
@@ -31,6 +29,8 @@ buildDunePackage (finalAttrs: {
     duration
     logs
   ];
+
+  minimalOCamlVersion = "4.06";
 
   meta = {
     description = "Virtual network interface and software switch for Mirage";

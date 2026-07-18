@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "dissect-qnxfs";
   version = "1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -37,6 +36,7 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "dissect.qnxfs" ];
 
   meta = {

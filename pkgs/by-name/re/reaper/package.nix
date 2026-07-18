@@ -1,29 +1,27 @@
 {
-  config,
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
-  makeWrapper,
-  undmg,
-
   alsa-lib,
+  autoPatchelfHook,
+  config,
   curl,
+  ffmpeg_4-headless,
   gtk3,
   lame,
-  libxml2_13,
   libjack2,
-  ffmpeg_4-headless,
+  libpulseaudio,
+  libxml2_13,
+  makeWrapper,
+  openssl,
+  undmg,
   vlc,
+  which,
   xdg-utils,
   xdotool,
-  which,
-  openssl,
-
-  jackSupport ? stdenv.hostPlatform.isLinux,
   jackLibrary ? libjack2, # Another option is "pipewire.jack"
+  jackSupport ? stdenv.hostPlatform.isLinux,
   pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-  libpulseaudio,
 }:
 
 let
@@ -44,13 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = url_for_platform finalAttrs.version stdenv.hostPlatform.qemuArch;
+
     hash =
       if stdenv.hostPlatform.isDarwin then
         "sha256-7lGMSRXawS8/ISCPLjUlQmxqW/pQy3iWviM+2fZ6LSc="
       else
         {
-          x86_64-linux = "sha256-P13PaZjGnA3bLpz9latebVJAdL6ZF+UVtX94mKmq/xg=";
           aarch64-linux = "sha256-dVloxbTYK3wPSFpIs/UD6ons1ePY7tpTMI7WoSngaVs=";
+          x86_64-linux = "sha256-P13PaZjGnA3bLpz9latebVJAdL6ZF+UVtX94mKmq/xg=";
         }
         .${stdenv.hostPlatform.system};
   };
@@ -67,8 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     undmg
   ];
 
-  sourceRoot = lib.optionalString stdenv.hostPlatform.isDarwin "Reaper.app";
-
   buildInputs = [
     (lib.getLib stdenv.cc.cc) # reaper and libSwell need libstdc++.so.6
   ]
@@ -76,16 +73,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
     alsa-lib
   ];
-
-  runtimeDependencies =
-    lib.optionals stdenv.hostPlatform.isLinux [
-      gtk3 # libSwell needs libgdk-3.so.0
-    ]
-    ++ lib.optional jackSupport jackLibrary
-    ++ lib.optional pulseaudioSupport libpulseaudio;
-
-  dontBuild = true;
-  dontStrip = true;
 
   installPhase =
     if stdenv.hostPlatform.isDarwin then
@@ -138,22 +125,35 @@ stdenv.mkDerivation (finalAttrs: {
         runHook postInstall
       '';
 
+  dontBuild = true;
+  dontStrip = true;
+
+  runtimeDependencies =
+    lib.optionals stdenv.hostPlatform.isLinux [
+      gtk3 # libSwell needs libgdk-3.so.0
+    ]
+    ++ lib.optional jackSupport jackLibrary
+    ++ lib.optional pulseaudioSupport libpulseaudio;
+
+  sourceRoot = lib.optionalString stdenv.hostPlatform.isDarwin "Reaper.app";
   passthru.updateScript = ./updater.sh;
 
   meta = {
     description = "Digital audio workstation";
     homepage = "https://www.reaper.fm/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-      "aarch64-darwin"
-    ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       ilian
       viraptor
       pancaek
+    ];
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "aarch64-darwin"
     ];
   };
 })

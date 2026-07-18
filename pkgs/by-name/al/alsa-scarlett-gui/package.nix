@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  makeWrapper,
-  alsa-utils,
   alsa-lib,
+  alsa-utils,
   gtk4,
+  makeWrapper,
   openssl,
+  pkg-config,
   wrapGAppsHook4,
 }:
 
@@ -22,14 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DkfpMK0T67B4mnriignf4hx6Ifddls0rN0SxyfEsPZg=";
   };
 
-  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=deprecated-declarations" ];
-
-  makeFlags = [
-    "DESTDIR=\${out}"
-    "PREFIX=''"
-  ];
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   postPatch = ''
     substituteInPlace file.c \
       --replace-fail "/usr/sbin/alsactl" "${alsa-utils}/bin/alsactl"
@@ -40,11 +32,20 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook4
     makeWrapper
   ];
+
   buildInputs = [
     gtk4
     alsa-lib
     openssl
   ];
+
+  makeFlags = [
+    "DESTDIR=\${out}"
+    "PREFIX=''"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=deprecated-declarations" ];
+
   postInstall = ''
     wrapProgram $out/bin/alsa-scarlett-gui --prefix PATH : ${lib.makeBinPath [ alsa-utils ]}
 
@@ -54,13 +55,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   # causes redefinition of _FORTIFY_SOURCE
   hardeningDisable = [ "fortify3" ];
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "GUI for alsa controls presented by Focusrite Scarlett Gen 2/3/4 Mixer Driver";
-    mainProgram = "alsa-scarlett-gui";
     homepage = "https://github.com/geoffreybennett/alsa-scarlett-gui";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ mdorman ];
     platforms = lib.platforms.linux;
+    mainProgram = "alsa-scarlett-gui";
   };
 })

@@ -1,30 +1,30 @@
 {
   lib,
   stdenv,
-  meson,
-  ninja,
   fetchFromGitLab,
-  re2c,
-  gperf,
-  gawk,
-  pkg-config,
+  asciidoctor,
   boost,
-  fmt,
-  luajit_openresty,
-  ncurses,
-  serd,
-  sord,
-  libcap,
-  liburing,
-  openssl,
   cereal,
   cmake,
-  asciidoctor,
-  makeWrapper,
-  versionCheckHook,
-  gitUpdater,
-  enableIoUring ? false,
   emilua, # this package
+  fmt,
+  gawk,
+  gitUpdater,
+  gperf,
+  libcap,
+  liburing,
+  luajit_openresty,
+  makeWrapper,
+  meson,
+  ncurses,
+  ninja,
+  openssl,
+  pkg-config,
+  re2c,
+  serd,
+  sord,
+  versionCheckHook,
+  enableIoUring ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,41 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-h/uC5yAj64A5cVQN6XPVlFg+mDFdugwWblp6qNoU824=";
   };
-
-  propagatedBuildInputs = [
-    luajit_openresty
-    boost
-    fmt
-    ncurses
-    serd
-    sord
-    libcap
-    liburing
-    openssl
-    cereal
-  ];
-
-  nativeBuildInputs = [
-    re2c
-    gperf
-    gawk
-    pkg-config
-    asciidoctor
-    meson
-    cmake
-    ninja
-    makeWrapper
-  ];
-
-  dontUseCmakeConfigure = true;
-
-  mesonFlags = [
-    (lib.mesonBool "enable_io_uring" enableIoUring)
-    (lib.mesonBool "enable_file_io" enableIoUring)
-    (lib.mesonBool "enable_tests" true)
-    (lib.mesonBool "enable_manpages" true)
-    (lib.mesonOption "version_suffix" "-nixpkgs1")
-  ];
 
   patches = [
     # https://gitlab.com/emilua/emilua/-/commit/9f3964f22b2289c98b64a1af729712a862459aeb
@@ -90,15 +55,41 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs src/emilua_gperf.awk --interpreter '${lib.getExe gawk} -f'
   '';
 
+  nativeBuildInputs = [
+    re2c
+    gperf
+    gawk
+    pkg-config
+    asciidoctor
+    meson
+    cmake
+    ninja
+    makeWrapper
+  ];
+
+  propagatedBuildInputs = [
+    luajit_openresty
+    boost
+    fmt
+    ncurses
+    serd
+    sord
+    libcap
+    liburing
+    openssl
+    cereal
+  ];
+
+  mesonFlags = [
+    (lib.mesonBool "enable_io_uring" enableIoUring)
+    (lib.mesonBool "enable_file_io" enableIoUring)
+    (lib.mesonBool "enable_tests" true)
+    (lib.mesonBool "enable_manpages" true)
+    (lib.mesonOption "version_suffix" "-nixpkgs1")
+  ];
+
   # io_uring is not allowed in Nix sandbox, that breaks the tests
   doCheck = !enableIoUring;
-
-  mesonCheckFlags = [
-    # Skipped test: libpsx
-    # Known issue with no-new-privs disabled in the Nix build environment.
-    "--no-suite"
-    "libpsx"
-  ];
 
   postInstall = ''
     mkdir -p $out/nix-support
@@ -107,27 +98,39 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail @sitePackages@ "${finalAttrs.passthru.sitePackages}"
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  dontUseCmakeConfigure = true;
+
+  mesonCheckFlags = [
+    # Skipped test: libpsx
+    # Known issue with no-new-privs disabled in the Nix build environment.
+    "--no-suite"
+    "libpsx"
+  ];
 
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     inherit boost;
     sitePackages = "lib/emilua-${(lib.concatStringsSep "." (lib.take 2 (lib.splitVersion finalAttrs.version)))}";
     tests.with-io-uring = emilua.override { enableIoUring = true; };
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Lua execution engine";
-    mainProgram = "emilua";
     homepage = "https://emilua.org/";
     license = lib.licenses.boost;
+
     maintainers = with lib.maintainers; [
       manipuladordedados
       lucasew
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "emilua";
   };
 })

@@ -1,44 +1,41 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  libuv,
-  libmicrohttpd,
-  openssl,
   hwloc,
   kmod,
+  libmicrohttpd,
+  libuv,
+  openssl,
   donateLevel ? 0,
-
-  # Algorithms
-  enableCnLite ? true,
-  enableCnHeavy ? true,
-  enableCnPico ? true,
-  enableCnFemto ? true,
-  enableRandomx ? true,
   enableArgon2 ? true,
-  enableKawpow ? true,
-  enableGhostrider ? true,
-
-  # Features requiring external dependencies
-  withHwloc ? true,
-  withHttp ? true,
-  withTls ? true,
-
   # Features (build toggles)
   enableAsm ? true,
-  enableMsr ? true,
-  enableProfiling ? false,
-  enableSse4_1 ? true,
   enableBenchmark ? true,
-  enableDmi ? true,
-
+  enableCnFemto ? true,
+  enableCnHeavy ? true,
+  # Algorithms
+  enableCnLite ? true,
+  enableCnPico ? true,
   # Debug options
   enableDebugLog ? false,
+  enableDmi ? true,
+  enableGhostrider ? true,
   enableHwlocDebug ? false,
+  enableKawpow ? true,
+  enableMsr ? true,
+  enableProfiling ? false,
+  enableRandomx ? true,
+  enableSse4_1 ? true,
+  withHttp ? true,
+  # Features requiring external dependencies
+  withHwloc ? true,
+  withTls ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit donateLevel;
   pname = "xmrig";
   version = "6.26.0";
 
@@ -101,8 +98,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "HWLOC_DEBUG" enableHwlocDebug)
   ];
 
-  inherit donateLevel;
-
   installPhase = ''
     runHook preInstall
 
@@ -118,8 +113,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Monero (XMR) CPU miner";
     homepage = "https://github.com/xmrig/xmrig";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "xmrig";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ kim0 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "xmrig";
   };
 })

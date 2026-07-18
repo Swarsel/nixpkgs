@@ -1,21 +1,21 @@
 {
   lib,
-  callPackage,
-  writeShellApplication,
+  atk,
   buildFHSEnv,
-  webkitgtk_4_1,
+  cairo,
+  callPackage,
+  cyrus_sasl,
   ffmpeg_7,
+  gdk-pixbuf,
   gtk4,
   libepoxy,
-  wayland,
   libxcb,
   libxi,
   pango,
-  atk,
-  cairo,
-  gdk-pixbuf,
   protobufc,
-  cyrus_sasl,
+  wayland,
+  webkitgtk_4_1,
+  writeShellApplication,
 }:
 
 let
@@ -41,12 +41,23 @@ let
   };
 in
 buildFHSEnv {
-  pname = "aws-workspaces";
   inherit (workspacesclient) version;
+  pname = "aws-workspaces";
 
-  runScript = lib.getExe workspacesclient;
+  extraBwrapArgs = [
+    # provide certificates where Debian-style OpenSSL can find them
+    "--symlink /etc/ssl/certs/ca-certificates.crt /etc/ssl/cert.pem"
+  ];
+
+  # expected executable doesn't match the name of this package
+  extraInstallCommands = ''
+    mv $out/bin/aws-workspaces $out/bin/${workspacesclient.meta.mainProgram}
+
+    ln -s ${workspacesclient}/share $out/
+  '';
 
   includeClosures = true;
+  runScript = lib.getExe workspacesclient;
 
   targetPkgs = pkgs: [
     workspacesclient
@@ -65,18 +76,6 @@ buildFHSEnv {
     cyrus_sasl
     wayland
   ];
-
-  extraBwrapArgs = [
-    # provide certificates where Debian-style OpenSSL can find them
-    "--symlink /etc/ssl/certs/ca-certificates.crt /etc/ssl/cert.pem"
-  ];
-
-  # expected executable doesn't match the name of this package
-  extraInstallCommands = ''
-    mv $out/bin/aws-workspaces $out/bin/${workspacesclient.meta.mainProgram}
-
-    ln -s ${workspacesclient}/share $out/
-  '';
 
   meta = workspacesclient.meta;
 }

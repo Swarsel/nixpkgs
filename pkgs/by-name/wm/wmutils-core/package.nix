@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   libxcb,
-  libxcb-util,
   libxcb-cursor,
+  libxcb-util,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

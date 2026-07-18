@@ -1,7 +1,7 @@
 {
-  buildDunePackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildDunePackage,
   printbox-text,
   reason,
 }:
@@ -29,6 +29,7 @@ buildDunePackage {
 
   meta = {
     description = "Native Reason + JSOO cross-platform performance benchmarking tools";
+
     longDescription = ''
       Inspired by the core_bench tools from Janestreet.
 
@@ -40,8 +41,9 @@ buildDunePackage {
       Supports benchmarks, which are test cases that exercise performance scenarios.
       Outputs a JSON performance report, and compare it with previous iterations - and fail if a regression is detected.
     '';
+
     homepage = "https://github.com/bryphe/reperf";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

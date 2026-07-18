@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   just,
   libcosmicAppHook,
+  nix-update-script,
   pciutils,
+  rustPlatform,
   usbutils,
   util-linux,
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "examine";
@@ -21,12 +21,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6U8reOzeqamX/MG/mWbso+kjuZQ6cK8j9XhuEtGZ1q4=";
   };
 
-  cargoHash = "sha256-V+ClzaG7LnkOl84j5mVGJPTLVfaVqxaSH7ufmjXdwyM=";
-
   nativeBuildInputs = [
     just
     libcosmicAppHook
   ];
+
+  cargoHash = "sha256-V+ClzaG7LnkOl84j5mVGJPTLVfaVqxaSH7ufmjXdwyM=";
+  env.VERGEN_GIT_SHA = finalAttrs.version;
+
+  preFixup = ''
+    libcosmicAppWrapperArgs+=(--prefix PATH : ${
+      lib.makeBinPath [
+        pciutils
+        usbutils
+        util-linux
+      ]
+    })
+  '';
 
   dontUseJustBuild = true;
   dontUseJustCheck = true;
@@ -40,28 +51,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/examine"
   ];
 
-  preFixup = ''
-    libcosmicAppWrapperArgs+=(--prefix PATH : ${
-      lib.makeBinPath [
-        pciutils
-        usbutils
-        util-linux
-      ]
-    })
-  '';
-
-  env.VERGEN_GIT_SHA = finalAttrs.version;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/cosmic-utils/examine/releases/tag/${finalAttrs.version}";
     description = "System information viewer for the COSMIC Desktop";
     homepage = "https://github.com/cosmic-utils/examine";
+    changelog = "https://github.com/cosmic-utils/examine/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "examine";
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = with lib.maintainers; [ HeitorAugustoLN ];
     platforms = lib.platforms.linux;
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    mainProgram = "examine";
   };
 })

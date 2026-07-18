@@ -1,76 +1,77 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  pkg-config,
-  meson,
-  ninja,
-  gettext,
-  python3,
-  gstreamer,
-  graphene,
-  orc,
-  pango,
-  libtheora,
-  libintl,
-  libopus,
-  isocodes,
-  libjpeg,
-  libpng,
-  tremor, # provides 'virbisidec'
-  libGL,
-  withIntrospection ?
-    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
-    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  alsa-lib,
+  apple-sdk_gstreamer,
   buildPackages,
+  cdparanoia,
+  directoryListingUpdater,
+  gettext,
+  glib,
   gobject-introspection,
-  enableX11 ? stdenv.hostPlatform.isLinux,
+  graphene,
+  gstreamer,
+  hotdoc,
+  isocodes,
+  libGL,
+  libdrm,
+  libintl,
+  libjpeg,
+  libopus,
+  libpng,
+  libtheora,
   libxext,
   libxi,
   libxv,
-  libdrm,
-  enableWayland ? stdenv.hostPlatform.isLinux,
-  wayland-scanner,
-  wayland,
-  wayland-protocols,
-  enableAlsa ? stdenv.hostPlatform.isLinux,
-  alsa-lib,
-  enableCocoa ? stdenv.hostPlatform.isDarwin,
-  enableGl ? (enableX11 || enableWayland || enableCocoa),
-  enableCdparanoia ? (!stdenv.hostPlatform.isDarwin),
-  cdparanoia,
-  glib,
-  testers,
-  # Checks meson.is_cross_build(), so even canExecute isn't enough.
-  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
-  hotdoc,
-  directoryListingUpdater,
-  apple-sdk_gstreamer,
   # TODO: Clean up on `staging`
   llvmPackages,
+  meson,
+  ninja,
+  orc,
+  pango,
+  pkg-config,
+  python3,
+  testers,
+  tremor, # provides 'virbisidec'
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  enableAlsa ? stdenv.hostPlatform.isLinux,
+  enableCdparanoia ? (!stdenv.hostPlatform.isDarwin),
+  enableCocoa ? stdenv.hostPlatform.isDarwin,
+  # Checks meson.is_cross_build(), so even canExecute isn't enough.
+  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
+  enableGl ? (enableX11 || enableWayland || enableCocoa),
+  enableWayland ? stdenv.hostPlatform.isLinux,
+  enableX11 ? stdenv.hostPlatform.isLinux,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gst-plugins-base";
   version = "1.28.4";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  separateDebugInfo = true;
-
   src = fetchurl {
     url = "https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-${finalAttrs.version}.tar.xz";
     hash = "sha256-qJiv1XZhcrAEnmeBVY4GiQmL+HudgrhGxlLlccAdYNg=";
   };
 
-  __structuredAttrs = true;
-  strictDeps = true;
-  depsBuildBuild = [
-    pkg-config
+  outputs = [
+    "out"
+    "dev"
   ];
+
+  postPatch = ''
+    patchShebangs \
+      scripts/meson-pkg-config-file-fixup.py \
+      scripts/extract-release-date-from-doap-file.py
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -173,21 +174,22 @@ stdenv.mkDerivation (finalAttrs: {
     OBJC_LD = "lld";
   };
 
-  postPatch = ''
-    patchShebangs \
-      scripts/meson-pkg-config-file-fixup.py \
-      scripts/extract-release-date-from-doap-file.py
-  '';
-
-  # This package has some `_("string literal")` string formats
-  # that trip up clang with format security enabled.
-  hardeningDisable = [ "format" ];
-
   doCheck = false; # fails, wants DRI access for OpenGL
 
   preFixup = ''
     moveToOutput "lib/gstreamer-1.0/pkgconfig" "$dev"
   '';
+
+  __structuredAttrs = true;
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  # This package has some `_("string literal")` string formats
+  # that trip up clang with format security enabled.
+  hardeningDisable = [ "format" ];
+  separateDebugInfo = true;
 
   passthru = {
     # Downstream `gst-*` packages depending on `gst-plugins-base`
@@ -203,9 +205,8 @@ stdenv.mkDerivation (finalAttrs: {
     # distinguish inputs from outputs (what is to be built
     # vs what was built) and to make them easier to search for.
     glEnabled = enableGl;
-    waylandEnabled = enableWayland;
-
     updateScript = directoryListingUpdater { odd-unstable = true; };
+    waylandEnabled = enableWayland;
   };
 
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -214,13 +215,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Base GStreamer plug-ins and helper libraries";
     homepage = "https://gstreamer.freedesktop.org";
     license = lib.licenses.lgpl2Plus;
+    maintainers = with lib.maintainers; [ tmarkus ];
+    platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "gstreamer-audio-1.0"
       "gstreamer-base-1.0"
       "gstreamer-net-1.0"
       "gstreamer-video-1.0"
     ];
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ tmarkus ];
   };
 })

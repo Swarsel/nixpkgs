@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   bison,
   boost,
+  buildPackages,
   capnproto,
+  cmake,
   doxygen,
   flex,
+  nix-update-script,
+  onetbb,
   pkg-config,
   python3,
   sphinx,
-  onetbb,
-  buildPackages,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "naja";
@@ -55,12 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs --build test/test_utils/diff_files.py
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString (
-    lib.optionals stdenv.cc.isClang [
-      "-Wno-character-conversion"
-    ]
-  );
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -91,8 +85,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CAPNPC_CXX_EXECUTABLE" (lib.getExe' buildPackages.capnproto "capnpc-c++"))
   ];
 
-  doCheck = true;
-
   # Disable Darwin failing tests (SIGTRAP)
   env.GTEST_FILTER = lib.optionalString stdenv.hostPlatform.isDarwin "-${
     lib.concatStringsSep ":" [
@@ -105,6 +97,13 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   }";
 
+  env.NIX_CFLAGS_COMPILE = toString (
+    lib.optionals stdenv.cc.isClang [
+      "-Wno-character-conversion"
+    ]
+  );
+
+  doCheck = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -112,8 +111,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/najaeda/naja";
     changelog = "https://github.com/najaeda/naja/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.ngi ];
-    mainProgram = "naja_edit";
     platforms = lib.platforms.all;
+    mainProgram = "naja_edit";
+    teams = [ lib.teams.ngi ];
   };
 })

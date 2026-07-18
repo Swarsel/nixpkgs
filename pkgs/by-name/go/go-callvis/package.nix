@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,21 +16,20 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-IS8lkDBy7Y/qAaDxmWRfrVQEF9OFo7VofqSNgNTEQQw=";
+  # Build errors in github.com/goccy/go-graphviz/internal/ccall when format hardening is enabled:
+  #   cc1: error: '-Wformat-security' ignored without '-Wformat' [-Werror=format-security]
+  hardeningDisable = [ "format" ];
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  # Build errors in github.com/goccy/go-graphviz/internal/ccall when format hardening is enabled:
-  #   cc1: error: '-Wformat-security' ignored without '-Wformat' [-Werror=format-security]
-  hardeningDisable = [ "format" ];
-
   meta = {
     description = "Visualize call graph of a Go program using Graphviz";
-    mainProgram = "go-callvis";
     homepage = "https://github.com/ondrajz/go-callvis";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ meain ];
+    mainProgram = "go-callvis";
   };
 })

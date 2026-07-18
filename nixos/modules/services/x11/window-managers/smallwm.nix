@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.smallwm ];
+
     services.xserver.windowManager.session = singleton {
       name = "smallwm";
+
       start = ''
         ${pkgs.smallwm}/bin/smallwm &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.smallwm ];
   };
 }

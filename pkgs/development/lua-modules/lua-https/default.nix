@@ -1,11 +1,11 @@
 {
   lib,
-  buildLuaPackage,
-  writeScript,
   fetchFromGitHub,
+  buildLuaPackage,
   cmake,
-  lua,
   curl,
+  lua,
+  writeScript,
 }:
 
 buildLuaPackage rec {
@@ -20,8 +20,6 @@ buildLuaPackage rec {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -37,6 +35,8 @@ buildLuaPackage rec {
     (lib.cmakeBool "USE_NSURL_BACKEND" false) # on by default on darwin
   ];
 
+  __structuredAttrs = true;
+
   passthru.updateScript = writeScript "update.sh" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p curl jq common-updater-scripts
@@ -50,8 +50,8 @@ buildLuaPackage rec {
   '';
 
   meta = {
-    homepage = "https://love2d.org/wiki/lua-https";
     description = "Simple Lua HTTPS module using native platform backends specifically written for LÖVE 12.0";
+    homepage = "https://love2d.org/wiki/lua-https";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ ulysseszhan ];
   };

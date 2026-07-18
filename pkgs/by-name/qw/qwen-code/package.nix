@@ -1,15 +1,15 @@
 {
   lib,
-  buildNpmPackage,
-  nodejs_22,
   fetchFromGitHub,
-  nix-update-script,
-  jq,
+  buildNpmPackage,
   git,
-  ripgrep,
-  pkg-config,
   glib,
+  jq,
   libsecret,
+  nix-update-script,
+  nodejs_22,
+  pkg-config,
+  ripgrep,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -22,25 +22,6 @@ buildNpmPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-XWhQ5GlAGW0WAyiPwBULLz1yQps2IdjVkusQ0a88tCs=";
   };
-
-  npmDepsFetcherVersion = 3;
-  npmDepsHash = "sha256-dRc+hTk5ELw0rJhT71heFnLjTmjN1UpIOHUMXKt4YwU=";
-
-  # npm 11 incompatible with fetchNpmDeps
-  # https://github.com/NixOS/nixpkgs/issues/474535
-  nodejs = nodejs_22;
-
-  nativeBuildInputs = [
-    jq
-    pkg-config
-    git
-  ];
-
-  buildInputs = [
-    ripgrep
-    glib
-    libsecret
-  ];
 
   postPatch = ''
     # patches below remove node-pty and keytar dependencies which cause build fail on Darwin
@@ -72,6 +53,20 @@ buildNpmPackage (finalAttrs: {
       )
     ' package-lock.json > package-lock.json.tmp && mv package-lock.json.tmp package-lock.json
   '';
+
+  nativeBuildInputs = [
+    jq
+    pkg-config
+    git
+  ];
+
+  buildInputs = [
+    ripgrep
+    glib
+    libsecret
+  ];
+
+  npmDepsHash = "sha256-dRc+hTk5ELw0rJhT71heFnLjTmjN1UpIOHUMXKt4YwU=";
 
   buildPhase = ''
     runHook preBuild
@@ -105,16 +100,22 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  # npm 11 incompatible with fetchNpmDeps
+  # https://github.com/NixOS/nixpkgs/issues/474535
+  nodejs = nodejs_22;
+  npmDepsFetcherVersion = 3;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Coding agent that lives in digital world";
     homepage = "https://github.com/QwenLM/qwen-code";
-    mainProgram = "qwen";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       lonerOrz
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "qwen";
   };
 })

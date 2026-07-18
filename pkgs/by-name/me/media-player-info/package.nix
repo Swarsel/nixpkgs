@@ -5,9 +5,9 @@
   autoreconfHook,
   pkg-config,
   python3,
+  systemd,
   udev,
   udevCheckHook,
-  systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,17 +15,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "26";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "media-player-info";
     repo = "media-player-info";
     rev = finalAttrs.version;
     hash = "sha256-VoMr5Lxy6u/BA/9t65/S8AW41YU0FLp6eftYUVdoMjY=";
+    domain = "gitlab.freedesktop.org";
   };
 
-  buildInputs = [
-    udev
-    systemd
-  ];
+  postPatch = ''
+    patchShebangs ./tools
+  '';
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -33,13 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
-  postPatch = ''
-    patchShebangs ./tools
-  '';
+  buildInputs = [
+    udev
+    systemd
+  ];
 
   configureFlags = [ "--with-udevdir=${placeholder "out"}/lib/udev" ];
+  doInstallCheck = true;
 
   meta = {
     description = "Repository of data files describing media player capabilities";

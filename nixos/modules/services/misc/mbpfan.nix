@@ -12,55 +12,6 @@ let
 
 in
 {
-  options.services.mbpfan = {
-    enable = lib.mkEnableOption "mbpfan, fan controller daemon for Apple Macs and MacBooks";
-    package = lib.mkPackageOption pkgs "mbpfan" { };
-
-    verbose = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "If true, sets the log level to verbose.";
-    };
-
-    aggressive = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "If true, favors higher default fan speeds.";
-    };
-
-    settings = lib.mkOption {
-      default = { };
-      description = "INI configuration for Mbpfan.";
-      type = lib.types.submodule {
-        freeformType = format.type;
-
-        options.general.low_temp = lib.mkOption {
-          type = lib.types.int;
-          default = (if cfg.aggressive then 55 else 63);
-          defaultText = lib.literalExpression "55";
-          description = "If temperature is below this, fans will run at minimum speed.";
-        };
-        options.general.high_temp = lib.mkOption {
-          type = lib.types.int;
-          default = (if cfg.aggressive then 58 else 66);
-          defaultText = lib.literalExpression "58";
-          description = "If temperature is above this, fan speed will gradually increase.";
-        };
-        options.general.max_temp = lib.mkOption {
-          type = lib.types.int;
-          default = (if cfg.aggressive then 78 else 86);
-          defaultText = lib.literalExpression "78";
-          description = "If temperature is above this, fans will run at maximum speed.";
-        };
-        options.general.polling_interval = lib.mkOption {
-          type = lib.types.int;
-          default = 1;
-          description = "The polling interval.";
-        };
-      };
-    };
-  };
-
   imports = [
     (lib.mkRenamedOptionModule
       [ "services" "mbpfan" "pollingInterval" ]
@@ -88,27 +39,82 @@ in
     )
   ];
 
+  options.services.mbpfan = {
+    enable = lib.mkEnableOption "mbpfan, fan controller daemon for Apple Macs and MacBooks";
+    package = lib.mkPackageOption pkgs "mbpfan" { };
+
+    aggressive = lib.mkOption {
+      default = true;
+      description = "If true, favors higher default fan speeds.";
+      type = lib.types.bool;
+    };
+
+    settings = lib.mkOption {
+      default = { };
+      description = "INI configuration for Mbpfan.";
+
+      type = lib.types.submodule {
+        options.general.high_temp = lib.mkOption {
+          default = (if cfg.aggressive then 58 else 66);
+          defaultText = lib.literalExpression "58";
+          description = "If temperature is above this, fan speed will gradually increase.";
+          type = lib.types.int;
+        };
+
+        options.general.low_temp = lib.mkOption {
+          default = (if cfg.aggressive then 55 else 63);
+          defaultText = lib.literalExpression "55";
+          description = "If temperature is below this, fans will run at minimum speed.";
+          type = lib.types.int;
+        };
+
+        options.general.max_temp = lib.mkOption {
+          default = (if cfg.aggressive then 78 else 86);
+          defaultText = lib.literalExpression "78";
+          description = "If temperature is above this, fans will run at maximum speed.";
+          type = lib.types.int;
+        };
+
+        options.general.polling_interval = lib.mkOption {
+          default = 1;
+          description = "The polling interval.";
+          type = lib.types.int;
+        };
+
+        freeformType = format.type;
+      };
+    };
+
+    verbose = lib.mkOption {
+      default = false;
+      description = "If true, sets the log level to verbose.";
+      type = lib.types.bool;
+    };
+  };
+
   config = lib.mkIf cfg.enable {
     boot.kernelModules = [
       "coretemp"
       "applesmc"
     ];
-    environment.systemPackages = [ cfg.package ];
+
     environment.etc."mbpfan.conf".source = cfgfile;
+    environment.systemPackages = [ cfg.package ];
 
     systemd.services.mbpfan = {
-      description = "A fan manager daemon for MacBook Pro";
-      wantedBy = [ "sysinit.target" ];
       after = [ "sysinit.target" ];
+      description = "A fan manager daemon for MacBook Pro";
       restartTriggers = [ config.environment.etc."mbpfan.conf".source ];
 
       serviceConfig = {
-        Type = "simple";
-        ExecStart = "${cfg.package}/bin/mbpfan -f${verbose}";
         ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+        ExecStart = "${cfg.package}/bin/mbpfan -f${verbose}";
         PIDFile = "/run/mbpfan.pid";
         Restart = "always";
+        Type = "simple";
       };
+
+      wantedBy = [ "sysinit.target" ];
     };
   };
 }

@@ -1,19 +1,18 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  libwnck,
+  gobject-introspection,
   gtk3,
   libnotify,
-  wrapGAppsHook3,
-  gobject-introspection,
+  libwnck,
+  python3Packages,
   replaceVars,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "xborders";
   version = "3.4"; # in version.txt
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deter0";
@@ -22,15 +21,26 @@ python3Packages.buildPythonPackage rec {
     hash = "sha256-UKsseNkXest6npPqJKvKL0iBWeK+S7zynrDlyXIOmF4=";
   };
 
-  buildInputs = [
-    libwnck
-    gtk3
-    libnotify
-  ];
+  postPatch =
+    let
+      setup = replaceVars ./setup.py {
+        inherit pname version;
+        desc = meta.description; # "description" is reserved
+      };
+    in
+    ''
+      ln -s ${setup} setup.py
+    '';
 
   nativeBuildInputs = [
     wrapGAppsHook3
     gobject-introspection
+  ];
+
+  buildInputs = [
+    libwnck
+    gtk3
+    libnotify
   ];
 
   build-system = with python3Packages; [ setuptools ];
@@ -41,16 +51,7 @@ python3Packages.buildPythonPackage rec {
     pygobject3
   ];
 
-  postPatch =
-    let
-      setup = replaceVars ./setup.py {
-        desc = meta.description; # "description" is reserved
-        inherit pname version;
-      };
-    in
-    ''
-      ln -s ${setup} setup.py
-    '';
+  pyproject = true;
 
   meta = {
     description = "Active window border replacement for window managers";

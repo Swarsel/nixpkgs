@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   buildPythonPackage,
   django,
   elasticsearch,
@@ -7,39 +8,25 @@
   geopy,
   packaging,
   pysolr,
-  pythonAtLeast,
   python-dateutil,
+  pythonAtLeast,
   requests,
-  setuptools-scm,
   setuptools,
-  stdenv,
+  setuptools-scm,
   whoosh,
 }:
 
 buildPythonPackage rec {
   pname = "django-haystack";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "django_haystack";
     inherit version;
     hash = "sha256-Eianyc4T4efq2KyD9uh7/vSZbxRu0klx/eeJYRWxxTA=";
+    pname = "django_haystack";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
 
   buildInputs = [ django ];
-
-  dependencies = [ packaging ];
-
-  optional-dependencies = {
-    elasticsearch = [ elasticsearch ];
-  };
-
   # tests fail and get stuck on darwin
   doCheck = !stdenv.hostPlatform.isDarwin;
 
@@ -57,6 +44,19 @@ buildPythonPackage rec {
     python test_haystack/run_tests.py
     runHook postCheck
   '';
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ packaging ];
+
+  optional-dependencies = {
+    elasticsearch = [ elasticsearch ];
+  };
+
+  pyproject = true;
 
   meta = {
     description = "Pluggable search for Django";

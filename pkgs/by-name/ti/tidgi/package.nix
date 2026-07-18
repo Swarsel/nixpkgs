@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  writeShellScript,
-  jq,
   ast-grep,
   common-updater-scripts,
+  jq,
+  unzip,
+  writeShellScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,17 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
   src =
     {
       aarch64-darwin = fetchurl {
-        url = "https://github.com/tiddly-gittly/TidGi-Desktop/releases/download/v${finalAttrs.version}/TidGi-darwin-arm64-${finalAttrs.version}.zip";
         hash = "sha256-bSJFM67+KVECUqjwu1HYipn+zOps1ahNzM721yZL52c=";
+        url = "https://github.com/tiddly-gittly/TidGi-Desktop/releases/download/v${finalAttrs.version}/TidGi-darwin-arm64-${finalAttrs.version}.zip";
       };
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
-  dontBuild = true;
-
   nativeBuildInputs = [ unzip ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -36,6 +32,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  sourceRoot = ".";
 
   passthru.updateScript = writeShellScript "update-tidgi" ''
     version=$(nix eval --raw --file . tidgi.version)
@@ -59,14 +58,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/tiddly-gittly/TidGi-Desktop/releases/tag/v${finalAttrs.version}";
     description = "Customizable personal knowledge-base and blogging platform with git as backup manager";
     homepage = "https://github.com/tiddly-gittly/TidGi-Desktop";
+    changelog = "https://github.com/tiddly-gittly/TidGi-Desktop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ klchen0112 ];
+
     platforms = [
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

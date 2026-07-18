@@ -15,26 +15,12 @@
 buildPythonPackage rec {
   pname = "google-cloud-trace";
   version = "1.20.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_trace";
     inherit version;
     hash = "sha256-9ab5uNpTC3bEUhY7g+UIHBaW8bT2cpDIeLDnNw8ekQo=";
+    pname = "google_cloud_trace";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
-
-  dependencies = [
-    google-api-core
-    proto-plus
-    protobuf
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
 
   nativeCheckInputs = [
     google-cloud-testutils
@@ -43,16 +29,31 @@ buildPythonPackage rec {
     pytest-asyncio
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    proto-plus
+    protobuf
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
+
   disabledTests = [
     # Tests require credentials
     "test_batch_write_spans"
     "test_list_traces"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.trace"
     "google.cloud.trace_v1"
     "google.cloud.trace_v2"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

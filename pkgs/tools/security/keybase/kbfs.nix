@@ -5,11 +5,16 @@
 }:
 
 buildGoModule {
+  inherit (keybase) src version vendorHash;
   pname = "kbfs";
 
-  inherit (keybase) src version vendorHash;
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   modRoot = "go";
+
   subPackages = [
     "kbfs/kbfsfuse"
     "kbfs/redirector"
@@ -17,14 +22,12 @@ buildGoModule {
   ];
 
   tags = [ "production" ];
-  ldflags = [
-    "-s"
-    "-w"
-  ];
 
   meta = {
-    homepage = "https://keybase.io/docs/kbfs";
     description = "Keybase filesystem";
+    homepage = "https://keybase.io/docs/kbfs";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       avaq
       rvolosatovs
@@ -32,6 +35,5 @@ buildGoModule {
       np
       shofius
     ];
-    license = lib.licenses.bsd3;
   };
 }

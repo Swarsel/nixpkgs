@@ -20,8 +20,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "X11 XTEST reimplementation primarily for Steam Controller on Wayland";
     homepage = "https://github.com/Supreeeme/extest";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.puffnfresh ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  hareHook,
   fetchFromSourcehut,
+  hareHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,16 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ hareHook ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   doCheck = true;
 
   meta = {
-    homepage = "https://git.sr.ht/~sircmpwn/hare-compress/";
+    inherit (hareHook.meta) platforms badPlatforms;
     description = "Compression algorithms for Hare";
+    homepage = "https://git.sr.ht/~sircmpwn/hare-compress/";
     license = with lib.licenses; [ mpl20 ];
     maintainers = with lib.maintainers; [ starzation ];
-    inherit (hareHook.meta) platforms badPlatforms;
   };
 })

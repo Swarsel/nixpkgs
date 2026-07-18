@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   rain,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,24 +19,24 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-bREmqt9QDuPqhfTIIY1FBfOcNqGS8JXjlMqM99tBI9g=";
 
-  subPackages = [ "cmd/rain" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "cmd/rain" ];
+
   passthru.tests.version = testers.testVersion {
-    package = rain;
-    command = "rain --version";
     version = "v${finalAttrs.version}";
+    command = "rain --version";
+    package = rain;
   };
 
   meta = {
     description = "Development workflow tool for working with AWS CloudFormation";
-    mainProgram = "rain";
     homepage = "https://github.com/aws-cloudformation/rain";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jiegec ];
+    mainProgram = "rain";
   };
 })

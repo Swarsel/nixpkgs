@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "traits";
   version = "7.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "traits" ];
 
   meta = {

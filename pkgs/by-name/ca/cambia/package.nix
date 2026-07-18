@@ -28,15 +28,16 @@ let
   };
 
   frontend = buildNpmPackage (finalAttrs: {
-    pname = "cambia-frontend";
     inherit version;
-
+    pname = "cambia-frontend";
     src = "${src}/web";
+
     postPatch = ''
       substituteInPlace tailwind.config.ts \
         --replace-fail "import { cambiaTheme } from './cambia-theme'" \
         "import { cambiaTheme } from './cambia-theme.ts'"
     '';
+
     npmDepsHash = "sha256-U+2YfsC4u6rJdeMo2zxWiXGM3061MKCcFl0oZt0ug6o=";
 
     installPhase = ''
@@ -52,19 +53,8 @@ let
 in
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "cambia";
   inherit version src;
-
-  cargoHash = "sha256-dNgFQiJrakdP0ynyVcak6cKU02Z5dcw2nhh9XhlWsOg=";
-
-  cargoPatches = [
-    # https://github.com/arg274/cambia/pull/5
-    (fetchpatch {
-      name = "cargo.lock.patch";
-      url = "https://github.com/arg274/cambia/commit/b47944fbaf4e631ede25c560a4d7e684a2ad5014.patch";
-      hash = "sha256-y9WkEmzBaFJ0eHWK0hVmB6+IdWespp79N9lSuteZZAI=";
-    })
-  ];
+  pname = "cambia";
 
   postPatch = ''
     cp -r ${finalAttrs.passthru.frontend} web/build/
@@ -78,14 +68,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-dNgFQiJrakdP0ynyVcak6cKU02Z5dcw2nhh9XhlWsOg=";
+
+  cargoPatches = [
+    # https://github.com/arg274/cambia/pull/5
+    (fetchpatch {
+      hash = "sha256-y9WkEmzBaFJ0eHWK0hVmB6+IdWespp79N9lSuteZZAI=";
+      name = "cargo.lock.patch";
+      url = "https://github.com/arg274/cambia/commit/b47944fbaf4e631ede25c560a4d7e684a2ad5014.patch";
+    })
+  ];
+
   passthru = {
+    inherit frontend;
+
     updateScript = nix-update-script {
       extraArgs = [
         "-s"
         "frontend"
       ];
     };
-    inherit frontend;
   };
 
   meta = meta // {

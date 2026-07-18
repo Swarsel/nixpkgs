@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  rustfmt,
   perl,
+  rustPlatform,
+  rustfmt,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-uWnFj2oMEQvzzpi1UDK7OQ/2bAm7zlEPHhJXV+gj6nU=";
   };
 
-  cargoHash = "sha256-FrLjo+Zu8OvNZ69jjzqR1uK0hius7nwbwdlJJkkvTKI=";
-
   # openssl crate requires perl during build process
   nativeBuildInputs = [
     perl
   ];
+
+  cargoHash = "sha256-FrLjo+Zu8OvNZ69jjzqR1uK0hius7nwbwdlJJkkvTKI=";
 
   nativeCheckInputs = [
     rustfmt

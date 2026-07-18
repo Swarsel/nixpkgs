@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   rapidjson,
   buildExamples ? false,
 }:
@@ -19,6 +19,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "04cxhqdv5r92lrpnhxf8702a8iackdf3sfk1050z7pijbijiql2a";
   };
 
+  patches = [
+    # Adds unreleased PR https://github.com/discord/discord-rpc/pull/387
+    (fetchpatch {
+      hash = "sha256-geofgXwfbDsvsYCz92IVFrdvBDiGvMBiFd3GEbsdoHU=";
+      name = "0001-Update-.clang-format.patch";
+      url = "https://github.com/discord/discord-rpc/commit/dc26645316a1996a10995d9f5fae53ca1caddade.patch";
+    })
+  ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail \
+      "cmake_minimum_required (VERSION 3.2.0)" \
+      "cmake_minimum_required (VERSION 3.10.0)"
+  '';
+
   nativeBuildInputs = [
     cmake
   ];
@@ -31,21 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DBUILD_SHARED_LIBS=true"
     "-DBUILD_EXAMPLES=${lib.boolToString buildExamples}"
   ];
-
-  patches = [
-    # Adds unreleased PR https://github.com/discord/discord-rpc/pull/387
-    (fetchpatch {
-      name = "0001-Update-.clang-format.patch";
-      url = "https://github.com/discord/discord-rpc/commit/dc26645316a1996a10995d9f5fae53ca1caddade.patch";
-      hash = "sha256-geofgXwfbDsvsYCz92IVFrdvBDiGvMBiFd3GEbsdoHU=";
-    })
-  ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail \
-      "cmake_minimum_required (VERSION 3.2.0)" \
-      "cmake_minimum_required (VERSION 3.10.0)"
-  '';
 
   meta = {
     description = "Official library to interface with the Discord client";

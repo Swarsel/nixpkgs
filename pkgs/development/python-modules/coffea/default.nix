@@ -1,22 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  hatch-vcs,
-
   # dependencies
   aiohttp,
   awkward,
+  buildPythonPackage,
   cachetools,
   cloudpickle,
   correctionlib,
   dask,
   dask-awkward,
   dask-histogram,
+  # tests
+  distributed,
   fsspec,
+  hatch-vcs,
+  # build-system
+  hatchling,
   hist,
   ipywidgets,
   lz4,
@@ -27,6 +27,9 @@
   packaging,
   pandas,
   pyarrow,
+  pyinstrument,
+  pytest-xdist,
+  pytestCheckHook,
   requests,
   rich,
   scipy,
@@ -34,18 +37,11 @@
   tqdm,
   uproot,
   vector,
-
-  # tests
-  distributed,
-  pyinstrument,
-  pytest-xdist,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "coffea";
   version = "2025.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CoffeaTeam";
@@ -54,13 +50,18 @@ buildPythonPackage rec {
     hash = "sha256-+Qfb5NHJTlSBUqyv+n3zebEwAZPB9+UMV5KiQhOxJSY=";
   };
 
+  nativeCheckInputs = [
+    distributed
+    pyinstrument
+    pytest-xdist
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
   build-system = [
     hatchling
     hatch-vcs
-  ];
-
-  pythonRelaxDeps = [
-    "dask"
   ];
 
   dependencies = [
@@ -93,15 +94,6 @@ buildPythonPackage rec {
   ]
   ++ dask.optional-dependencies.array;
 
-  nativeCheckInputs = [
-    distributed
-    pyinstrument
-    pytest-xdist
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "coffea" ];
-
   disabledTests = [
     # Requires internet access
     # https://github.com/CoffeaTeam/coffea/issues/1094
@@ -113,7 +105,12 @@ buildPythonPackage rec {
     "test_packed_selection_nminusone_dak" # nminusone.npz
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "coffea" ];
+
+  pythonRelaxDeps = [
+    "dask"
+  ];
 
   meta = {
     description = "Basic tools and wrappers for enabling not-too-alien syntax when running columnar Collider HEP analysis";

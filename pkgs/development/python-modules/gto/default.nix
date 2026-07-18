@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cacert,
   entrypoints,
-  fetchFromGitHub,
   freezegun,
   funcy,
   gitSetupHook,
@@ -17,8 +17,8 @@
   ruamel-yaml,
   scmrepo,
   semver,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   tabulate,
   typer,
   writableTmpDirAsHomeHook,
@@ -27,7 +27,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "gto";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -35,6 +34,21 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-LXYpOnk9W/ellG70qZLihmvk4kvVcwZfE5buPNU2qzQ=";
   };
+
+  nativeCheckInputs = [
+    freezegun
+    gitSetupHook
+    pytest-cov-stub
+    pytest-mock
+    pytest-test-utils
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  preCheck = ''
+    # _pygit2.GitError: OpenSSL error: failed to load certificates: error:00000000:lib(0)::reason(0)
+    export SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt
+  '';
 
   build-system = [
     setuptools
@@ -54,21 +68,6 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    gitSetupHook
-    pytest-cov-stub
-    pytest-mock
-    pytest-test-utils
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  preCheck = ''
-    # _pygit2.GitError: OpenSSL error: failed to load certificates: error:00000000:lib(0)::reason(0)
-    export SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt
-  '';
-
   disabledTests = [
     # Tests want to do it with a remote repo
     "remote_repo"
@@ -82,6 +81,7 @@ buildPythonPackage (finalAttrs: {
     "test_stderr_exception"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gto" ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   dash,
-  scdoc,
   makeBinaryWrapper,
+  scdoc,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "xdg-terminal-exec";
@@ -25,10 +25,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ dash ];
-
   makeFlags = [ "prefix=${placeholder "out"}" ];
 
-  dontPatchShebangs = true;
   postFixup = ''
     # use dash posix sh implementation as recommended by upstream
     substituteInPlace $out/bin/xdg-terminal-exec \
@@ -39,12 +37,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --suffix XDG_DATA_DIRS : '${placeholder "out"}/share'
   '';
 
+  dontPatchShebangs = true;
+
   meta = {
     description = "Reference implementation of the proposed XDG Default Terminal Execution Specification";
     homepage = "https://github.com/Vladimir-csp/xdg-terminal-exec";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "xdg-terminal-exec";
     maintainers = with lib.maintainers; [ quantenzitrone ];
     platforms = lib.platforms.unix;
+    mainProgram = "xdg-terminal-exec";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   re,
   xmlplaylist,
 }:
@@ -9,8 +9,6 @@
 buildDunePackage (finalAttrs: {
   pname = "lastfm";
   version = "0.3.4";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "savonet";
@@ -24,9 +22,11 @@ buildDunePackage (finalAttrs: {
     xmlplaylist
   ];
 
+  minimalOCamlVersion = "4.08";
+
   meta = {
-    homepage = "https://github.com/savonet/ocaml-lastfm";
     description = "OCaml API to lastfm radio and audioscrobbler";
+    homepage = "https://github.com/savonet/ocaml-lastfm";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

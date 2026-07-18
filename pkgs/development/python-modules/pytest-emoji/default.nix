@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pytest-emoji";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "hackebrot";
@@ -19,10 +18,7 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ pytest ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pytest_emoji" ];
 
   disabledTests = [
     # Test scompare CLI output
@@ -30,6 +26,9 @@ buildPythonPackage rec {
     "test_emoji_enabled_verbose"
     "test_emoji_enabled_custom_verbose"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "pytest_emoji" ];
 
   meta = {
     description = "Pytest plugin that adds emojis to test result report";

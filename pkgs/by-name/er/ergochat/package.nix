@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,19 +17,20 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   passthru.tests.ergochat = nixosTests.ergochat;
 
   meta = {
-    changelog = "https://github.com/ergochat/ergo/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Modern IRC server (daemon/ircd) written in Go";
-    mainProgram = "ergo";
     homepage = "https://github.com/ergochat/ergo";
+    changelog = "https://github.com/ergochat/ergo/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       lassulus
       tv
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "ergo";
   };
 })

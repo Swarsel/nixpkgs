@@ -13,22 +13,9 @@ in
   options = {
     meta = {
 
-      doc = lib.mkOption {
-        type = docFile;
-        internal = true;
-        example = "./meta.chapter.md";
-        description = ''
-          Documentation prologue for the set of options of each module.  This
-          option should be defined at most once per module.
-        '';
-      };
-
       buildDocsInSandbox = lib.mkOption {
-        type = lib.types.bool // {
-          merge = loc: defs: defs;
-        };
-        internal = true;
         default = true;
+
         description = ''
           Whether to include this module in the split options doc build.
           Disable if the module references `config`, `pkgs` or other module
@@ -36,6 +23,23 @@ in
 
           This option should be defined at most once per module.
         '';
+
+        internal = true;
+
+        type = lib.types.bool // {
+          merge = loc: defs: defs;
+        };
+      };
+
+      doc = lib.mkOption {
+        description = ''
+          Documentation prologue for the set of options of each module.  This
+          option should be defined at most once per module.
+        '';
+
+        example = "./meta.chapter.md";
+        internal = true;
+        type = docFile;
       };
 
     };

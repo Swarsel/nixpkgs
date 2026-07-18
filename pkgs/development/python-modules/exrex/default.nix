@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "exrex";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asciimoo";
@@ -24,12 +23,10 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
-  dontWrapPythonPrograms = true;
-
   # Project thas no released tests
   doCheck = false;
-
+  dontWrapPythonPrograms = true;
+  pyproject = true;
   pythonImportsCheck = [ "exrex" ];
 
   meta = {

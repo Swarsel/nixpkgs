@@ -51,17 +51,6 @@ let
   '';
 in
 rec {
-  unpack =
-    nar-all "unpack.nar.xz"
-      (with pkgs; [
-        bash
-        mkdir
-        xz
-        gnutar
-      ])
-      ''
-        rm -rf include lib/*.a lib/bash share
-      '';
   bootstrap-tools = tar-all "bootstrap-tools.tar.xz" (
     with pkgs;
     # SYNCME: this version number must be synced with the one in default.nix
@@ -116,9 +105,22 @@ rec {
     # - manually remove all files under include and lib/clang/*/include from the list in order to improve forward compatibility (and since they are very small)
     # - plop it here
   ) "xargs rm -f <${./bootstrap-tools-spurious.txt}";
+
   build = runCommand "build" { } ''
     mkdir -p $out/on-server
     ln -s ${unpack} $out/on-server/unpack.nar.xz
     ln -s ${bootstrap-tools} $out/on-server/bootstrap-tools.tar.xz
   '';
+
+  unpack =
+    nar-all "unpack.nar.xz"
+      (with pkgs; [
+        bash
+        mkdir
+        xz
+        gnutar
+      ])
+      ''
+        rm -rf include lib/*.a lib/bash share
+      '';
 }

@@ -16,37 +16,40 @@ in
       enable = mkEnableOption "RobustIRC bridge";
 
       extraFlags = mkOption {
-        type = types.listOf types.str;
         default = [ ];
         description = "Extra flags passed to the {command}`robustirc-bridge` command. See [RobustIRC Documentation](https://robustirc.net/docs/adminguide.html#_bridge) or {manpage}`robustirc-bridge(1)` for details.";
+
         example = [
           "-network robustirc.net"
         ];
+
+        type = types.listOf types.str;
       };
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.robustirc-bridge = {
+      after = [ "network.target" ];
       description = "RobustIRC bridge";
+
       documentation = [
         "man:robustirc-bridge(1)"
         "https://robustirc.net/"
       ];
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
 
       serviceConfig = {
         DynamicUser = true;
         ExecStart = "${pkgs.robustirc-bridge}/bin/robustirc-bridge ${concatStringsSep " " cfg.extraFlags}";
-        Restart = "on-failure";
-
         # Hardening
         PrivateDevices = true;
-        ProtectSystem = true;
-        ProtectHome = true;
         PrivateTmp = true;
+        ProtectHome = true;
+        ProtectSystem = true;
+        Restart = "on-failure";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

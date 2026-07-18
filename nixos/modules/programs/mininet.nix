@@ -15,8 +15,7 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    virtualisation.vswitch.enable = true;
-
     environment.systemPackages = [ pkgs.mininet ];
+    virtualisation.vswitch.enable = true;
   };
 }

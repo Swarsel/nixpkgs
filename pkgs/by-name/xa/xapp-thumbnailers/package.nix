@@ -1,19 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsNoGuiHook,
+  dcraw,
+  gdk-pixbuf,
+  gimp,
   gobject-introspection,
+  libjxl,
   meson,
   ninja,
-  gdk-pixbuf,
-  xapp,
-
-  dcraw,
-  gimp,
-  libjxl,
+  # passthru.updateScript
+  nix-update-script,
+  python3Packages,
   squashfsTools,
-
+  wrapGAppsNoGuiHook,
+  xapp,
   # Exclude "raw" for now because dcraw is vulnerable.
   enabledThumbnailers ? [
     "aiff"
@@ -25,15 +25,11 @@
     "ora"
     "vorbiscomment"
   ],
-
-  # passthru.updateScript
-  nix-update-script,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "xapp-thumbnailers";
   version = "1.2.10";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "linuxmint";
@@ -78,20 +74,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     xapp
   ];
 
-  dependencies =
-    with python3Packages;
-    [
-      pillow
-      pygobject3
-    ]
-    ++ lib.optional (builtins.elem "aiff" enabledThumbnailers) mutagen
-    ++ lib.optional (builtins.elem "appimage" enabledThumbnailers) pyelftools
-    ++ lib.optional (builtins.elem "mp3" enabledThumbnailers) eyed3
-    ++ lib.optional (builtins.elem "vorbiscomment" enabledThumbnailers) mutagen;
-
-  # Let the Python wrapper add `gappsWrapperArgs` to avoid two layers of wrapping.
-  dontWrapGApps = true;
-
   preFixup =
     let
       runtimeBinPackages =
@@ -107,6 +89,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
       )
     '';
 
+  dependencies =
+    with python3Packages;
+    [
+      pillow
+      pygobject3
+    ]
+    ++ lib.optional (builtins.elem "aiff" enabledThumbnailers) mutagen
+    ++ lib.optional (builtins.elem "appimage" enabledThumbnailers) pyelftools
+    ++ lib.optional (builtins.elem "mp3" enabledThumbnailers) eyed3
+    ++ lib.optional (builtins.elem "vorbiscomment" enabledThumbnailers) mutagen;
+
+  # Let the Python wrapper add `gappsWrapperArgs` to avoid two layers of wrapping.
+  dontWrapGApps = true;
+  pyproject = false;
   pythonImportsCheck = [ "XappThumbnailers" ];
 
   passthru.updateScript = nix-update-script {
@@ -117,11 +113,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
+    inherit (xapp.meta) platforms;
     description = "Thumbnailers for GTK desktop environments";
     homepage = "https://github.com/linuxmint/xapp-thumbnailers";
     changelog = "https://github.com/linuxmint/xapp-thumbnailers/blob/${finalAttrs.src.tag}/debian/changelog";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ thunze ];
-    inherit (xapp.meta) platforms;
   };
 })

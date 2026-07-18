@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  coreutils,
   fetchFromGitHub,
+  coreutils,
   fetchPypi,
-  python3,
-  par2cmdline-turbo,
-  unzip,
-  unrar,
-  p7zip,
-  util-linux,
   makeWrapper,
   nixosTests,
+  p7zip,
+  par2cmdline-turbo,
+  python3,
+  unrar,
+  unzip,
+  util-linux,
 }:
 
 let
@@ -50,10 +50,11 @@ let
       # sabnzbd requires a specific version of sabctools
       (sabctools.overridePythonAttrs (old: {
         version = sabctoolsVersion;
+
         src = fetchPypi {
+          hash = sabctoolsHash;
           pname = "sabctools";
           version = sabctoolsVersion;
-          hash = sabctoolsHash;
         };
       }))
       sabyenc3
@@ -73,8 +74,8 @@ let
   ];
 in
 stdenv.mkDerivation rec {
-  version = "5.0.4";
   pname = "sabnzbd";
+  version = "5.0.4";
 
   src = fetchFromGitHub {
     owner = "sabnzbd";
@@ -108,11 +109,13 @@ stdenv.mkDerivation rec {
     description = "Usenet NZB downloader, par2 repairer and auto extracting server";
     homepage = "https://sabnzbd.org";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       jojosch
       adamcstephens
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "sabnzbd";
   };
 }

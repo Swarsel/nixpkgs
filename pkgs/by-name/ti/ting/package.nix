@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   alsa-lib,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,12 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-D5u/zRjUu+fku6MdtBuwjYQqCkaQbI4sN0UR5NLFN8c=";
   };
 
-  cargoHash = "sha256-17hmYsbOOJcrepwI4Q6VuB42SF7ec+BJYTlGKmxkL5w=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ alsa-lib ];
-
+  cargoHash = "sha256-17hmYsbOOJcrepwI4Q6VuB42SF7ec+BJYTlGKmxkL5w=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -32,7 +29,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/dhth/ting/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ yiyu ];
-    mainProgram = "ting";
     platforms = lib.platforms.linux;
+    mainProgram = "ting";
   };
 })

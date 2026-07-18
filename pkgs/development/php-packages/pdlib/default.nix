@@ -1,9 +1,9 @@
 {
-  buildPecl,
-  fetchFromGitHub,
   lib,
-  pkg-config,
+  fetchFromGitHub,
+  buildPecl,
   dlib,
+  pkg-config,
 }:
 let
   pname = "pdlib";
@@ -24,8 +24,8 @@ buildPecl {
 
   meta = {
     description = "PHP extension for Dlib";
-    license = with lib.licenses; [ mit ];
     homepage = "https://github.com/goodspb/pdlib";
+    license = with lib.licenses; [ mit ];
     teams = [ lib.teams.php ];
   };
 }

@@ -1,33 +1,32 @@
 {
   lib,
   stdenv,
-  coreutils,
   fetchFromGitHub,
-  fetchpatch,
   autoconf,
   automake,
+  coreutils,
+  fetchpatch,
+  libpng,
+  libx11,
+  libxft,
+  libxmu,
+  libxpm,
+  libxrandr,
+  libxrender,
   pkg-config,
   procps,
+  python3Packages,
   ronn,
-  libpng,
   uthash,
   which,
-  xnee,
-  libxrender,
-  libxrandr,
-  libxpm,
-  libxmu,
-  libxft,
-  libx11,
-  xprop,
   xeyes,
-  python3Packages,
+  xnee,
+  xprop,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.7.1";
-
   pname = "alttab";
+  version = "1.7.1";
 
   src = fetchFromGitHub {
     owner = "sagb";
@@ -39,9 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix gcc-15 build failure: https://github.com/sagb/alttab/pull/178
     (fetchpatch {
+      hash = "sha256-7l74kXs0bAyozBbgOEzDSY+4NE2pjdVfWda0XiPvCz4=";
       name = "gcc-15.patch";
       url = "https://github.com/sagb/alttab/commit/665e3e369f74ab0075c22a46a3cb3a9f76bdd762.patch";
-      hash = "sha256-7l74kXs0bAyozBbgOEzDSY+4NE2pjdVfWda0XiPvCz4=";
     })
   ];
 
@@ -51,8 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     ronn
   ];
-
-  preConfigure = "./bootstrap.sh";
 
   buildInputs = [
     libpng
@@ -65,8 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     libxrender
   ];
 
-  enableParallelBuilding = true;
-
+  preConfigure = "./bootstrap.sh";
   doCheck = true;
 
   nativeCheckInputs = [
@@ -79,12 +75,14 @@ stdenv.mkDerivation (finalAttrs: {
     xprop
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/sagb/alttab";
     description = "X11 window switcher designed for minimalistic window managers or standalone X11 session";
+    homepage = "https://github.com/sagb/alttab";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "alttab";
   };
 })

@@ -3,33 +3,32 @@
   buildPythonPackage,
   fetchPypi,
   isPy3k,
-  pycodestyle,
   isort,
+  pycodestyle,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "avro-python3";
   version = "1.10.2";
-  pyproject = true;
-  disabled = !isPy3k;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-O2PyTmsENow+Sm+SP0hL4CMNghqtZaw2EI7b/ynpqqs=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [
     pycodestyle
     isort
   ];
+
   doCheck = false; # No such file or directory: './run_tests.py
+  build-system = [ setuptools ];
+  disabled = !isPy3k;
+  pyproject = true;
 
   meta = {
     description = "Serialization and RPC framework";
-    mainProgram = "avro";
     homepage = "https://pypi.org/project/avro-python3/";
     license = lib.licenses.asl20;
 
@@ -37,5 +36,7 @@ buildPythonPackage (finalAttrs: {
       lib.maintainers.shlevy
       lib.maintainers.timma
     ];
+
+    mainProgram = "avro";
   };
 })

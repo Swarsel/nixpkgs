@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-asyncio";
   version = "0.3.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,11 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ sphinx ];
-
   doCheck = false; # no tests
-
+  format = "setuptools";
   pythonImportsCheck = [ "sphinxcontrib.asyncio" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoAddDriverRunpath,
   autoreconfHook,
+  config,
+  cudaPackages,
   doxygen,
-  numactl,
-  rdma-core,
   libbfd,
   libiberty,
+  numactl,
   perl,
-  zlib,
-  symlinkJoin,
   pkg-config,
-  config,
-  autoAddDriverRunpath,
-  enableCuda ? config.cudaSupport,
-  cudaPackages,
-  enableRocm ? config.rocmSupport,
+  rdma-core,
   rocmPackages,
+  symlinkJoin,
+  zlib,
+  enableCuda ? config.cudaSupport,
+  enableRocm ? config.rocmSupport,
 }:
 
 let
@@ -34,13 +34,6 @@ let
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  # TODO(@connorbaker):
-  # When strictDeps is enabled, `cuda_nvcc` is required as the argument to `--with-cuda` in `configureFlags` or else
-  # configurePhase fails with `checking for cuda_runtime.h... no`.
-  # This is odd, especially given `cuda_runtime.h` is provided by `cuda_cudart.dev`, which is already in `buildInputs`.
-  strictDeps = true;
-
   pname = "ucx";
   version = "1.21.0";
 
@@ -48,21 +41,27 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "openucx";
     repo = "ucx";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-Td6L5wXDadIbHfk251bj6k9J3kIjqCYVx5lDso/u76M=";
     # Otherwise compilation fails with:
     #   fatal error: gpunetio/common/doca_gpunetio_verbs_def.h: No such file or directory
     fetchSubmodules = true;
-    hash = "sha256-Td6L5wXDadIbHfk251bj6k9J3kIjqCYVx5lDso/u76M=";
   };
-
-  postPatch = ''
-    patchShebangs config/nvcc_wrap.sh
-  '';
 
   outputs = [
     "out"
     "doc"
     "dev"
   ];
+
+  postPatch = ''
+    patchShebangs config/nvcc_wrap.sh
+  '';
+
+  # TODO(@connorbaker):
+  # When strictDeps is enabled, `cuda_nvcc` is required as the argument to `--with-cuda` in `configureFlags` or else
+  # configurePhase fails with `checking for cuda_runtime.h... no`.
+  # This is odd, especially given `cuda_runtime.h` is provided by `cuda_cudart.dev`, which is already in `buildInputs`.
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -90,6 +89,16 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals enableRocm rocmList;
 
+  configureFlags = [
+    "--with-rdmacm=${lib.getDev rdma-core}"
+    "--with-dc"
+    "--with-rc"
+    "--with-dm"
+    "--with-verbs=${lib.getDev rdma-core}"
+  ]
+  ++ lib.optionals enableCuda [ "--with-cuda=${cudaPackages.cuda_nvcc}" ]
+  ++ lib.optionals enableRocm [ "--with-rocm=${rocm}" ];
+
   # NOTE: With `__structuredAttrs` enabled, `LDFLAGS` must be set under `env` so it is assured to be a string;
   # otherwise, we might have forgotten to convert it to a string and Nix would make LDFLAGS a shell variable
   # referring to an array!
@@ -102,16 +111,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  configureFlags = [
-    "--with-rdmacm=${lib.getDev rdma-core}"
-    "--with-dc"
-    "--with-rc"
-    "--with-dm"
-    "--with-verbs=${lib.getDev rdma-core}"
-  ]
-  ++ lib.optionals enableCuda [ "--with-cuda=${cudaPackages.cuda_nvcc}" ]
-  ++ lib.optionals enableRocm [ "--with-rocm=${rocm}" ];
-
   postInstall = ''
     find $out/lib/ -name "*.la" -exec rm -f \{} \;
 
@@ -120,16 +119,17 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput share/ucx/examples $doc
   '';
 
+  __structuredAttrs = true;
   enableParallelBuilding = true;
 
   meta = {
     description = "Unified Communication X library";
     homepage = "https://www.openucx.org";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ markuskowa ];
     platforms = lib.platforms.linux;
     # LoongArch64 is not supported.
     # See: https://github.com/openucx/ucx/issues/9873
     badPlatforms = lib.platforms.loongarch64;
-    maintainers = with lib.maintainers; [ markuskowa ];
   };
 })

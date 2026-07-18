@@ -1,31 +1,31 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  boost,
   cmake,
+  doxygen,
+  eigen,
+  elfutils, # Inside elfutils: libelf and libdw
+  fig2dev,
+  gfortran,
+  ghostscript,
+  libevent,
+  libunwind,
+  openjdk,
   perl,
   python3,
-  boost,
-  fortranSupport ? false,
-  gfortran,
-  buildDocumentation ? false,
-  fig2dev,
-  ghostscript,
-  doxygen,
-  buildJavaBindings ? false,
-  openjdk,
-  buildPythonBindings ? true,
   python3Packages,
-  modelCheckingSupport ? false,
-  libunwind,
-  libevent,
-  elfutils, # Inside elfutils: libelf and libdw
   bmfSupport ? true,
-  eigen,
-  minimalBindings ? false,
+  buildDocumentation ? false,
+  buildJavaBindings ? false,
+  buildPythonBindings ? true,
   debug ? false,
-  optimize ? (!debug),
+  fortranSupport ? false,
+  minimalBindings ? false,
+  modelCheckingSupport ? false,
   moreTests ? false,
+  optimize ? (!debug),
   withoutBin ? false,
 }:
 
@@ -34,19 +34,20 @@ stdenv.mkDerivation rec {
   version = "4.1";
 
   src = fetchFromGitLab {
-    domain = "framagit.org";
     owner = "simgrid";
     repo = "simgrid";
     rev = "v${version}";
     sha256 = "sha256-d5yzlR2uo//EcFtqhNUU2q/RCwBiXrRNUAMkEbA49ZQ=";
+    domain = "framagit.org";
   };
+
+  outputs = [ "out" ] ++ lib.optionals buildPythonBindings [ "python" ];
 
   patches = [
     # https://framagit.org/simgrid/simgrid/-/commit/6159c067c29ac1a3c9a94b025c79cfa3fb109ccd
     ./pybind11-3.0.2.patch
   ];
 
-  propagatedBuildInputs = [ boost ];
   nativeBuildInputs = [
     cmake
     perl
@@ -67,10 +68,7 @@ stdenv.mkDerivation rec {
     elfutils
   ];
 
-  outputs = [ "out" ] ++ lib.optionals buildPythonBindings [ "python" ];
-
-  # "Release" does not work. non-debug mode is Debug compiled with optimization
-  cmakeBuildType = "Debug";
+  propagatedBuildInputs = [ boost ];
 
   cmakeFlags = [
     (lib.cmakeBool "enable_documentation" buildDocumentation)
@@ -99,17 +97,18 @@ stdenv.mkDerivation rec {
 
   makeFlags = lib.optional debug "VERBOSE=1";
 
-  # needed to run tests and to ensure correct shabangs in output scripts
-  preBuild = ''
-    patchShebangs ..
-  '';
-
   # needed by tests (so libsimgrid.so is found)
   preConfigure = ''
     export LD_LIBRARY_PATH="$PWD/build/lib"
   '';
 
+  # needed to run tests and to ensure correct shabangs in output scripts
+  preBuild = ''
+    patchShebangs ..
+  '';
+
   doCheck = true;
+
   preCheck = ''
     # prevent the execution of tests known to fail
     cat <<EOW >CTestCustom.cmake
@@ -132,12 +131,15 @@ stdenv.mkDerivation rec {
       cp ./lib/simgrid.cpython*.so $python/lib/python${lib.versions.majorMinor python3.version}/site-packages/
     '';
 
+  # "Release" does not work. non-debug mode is Debug compiled with optimization
+  cmakeBuildType = "Debug";
+  dontStrip = debug;
   # improve debuggability if requested
   hardeningDisable = lib.optionals debug [ "fortify" ];
-  dontStrip = debug;
 
   meta = {
     description = "Framework for the simulation of distributed applications";
+
     longDescription = ''
       SimGrid is a toolkit that provides core functionalities for the
       simulation of distributed applications in heterogeneous distributed
@@ -146,12 +148,15 @@ stdenv.mkDerivation rec {
       scheduling on distributed computing platforms ranging from simple
       network of workstations to Computational Grids.
     '';
+
     homepage = "https://simgrid.org/";
     license = lib.licenses.lgpl2Plus;
+
     maintainers = with lib.maintainers; [
       mickours
       mpoquet
     ];
+
     platforms = lib.platforms.all;
     broken = stdenv.hostPlatform.isDarwin;
   };

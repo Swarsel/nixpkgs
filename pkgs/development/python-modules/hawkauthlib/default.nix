@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   requests,
-  webob,
+  setuptools,
   unittestCheckHook,
+  webob,
 }:
 
 buildPythonPackage rec {
   pname = "hawkauthlib";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mozilla-services";
@@ -25,6 +24,7 @@ buildPythonPackage rec {
         --replace-warn 'assertEquals' 'assertEqual'
   '';
 
+  nativeCheckInputs = [ unittestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,13 +32,12 @@ buildPythonPackage rec {
     webob
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hawkauthlib" ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
   meta = {
-    homepage = "https://github.com/mozilla-services/hawkauthlib";
     description = "Hawk Access Authentication protocol";
+    homepage = "https://github.com/mozilla-services/hawkauthlib";
     license = lib.licenses.mpl20;
     maintainers = [ ];
   };

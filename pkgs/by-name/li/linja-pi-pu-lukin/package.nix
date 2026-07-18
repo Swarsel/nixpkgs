@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-Mf7P9fLGiG7L555Q3wRaI/PRv/TIs0njLq2IzIbc5Wo=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -23,11 +21,13 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Sitelen pona font resembling the style found in Toki Pona: The Language of Good (lipu pu), by jan Sa";
     homepage = "https://jansa-tp.github.io/linja-pi-pu-lukin/";
     license = lib.licenses.unfree; # license is unspecified in repository
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ somasis ];
+    platforms = lib.platforms.all;
   };
 }

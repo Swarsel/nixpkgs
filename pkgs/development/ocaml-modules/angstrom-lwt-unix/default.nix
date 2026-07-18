@@ -1,14 +1,13 @@
 {
   lib,
-  buildDunePackage,
   angstrom,
+  buildDunePackage,
   lwt,
 }:
 
 buildDunePackage {
-  pname = "angstrom-lwt-unix";
-
   inherit (angstrom) version src;
+  pname = "angstrom-lwt-unix";
 
   propagatedBuildInputs = [
     angstrom

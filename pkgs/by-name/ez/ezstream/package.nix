@@ -2,18 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-
-  # nativeBuildInputs
-  pkg-config,
-
+  # checkInputs
+  check,
   # buildInputs
   libiconv,
   libshout,
   libxml2,
+  # nativeBuildInputs
+  pkg-config,
   taglib,
-
-  # checkInputs
-  check,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,14 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
     taglib
   ];
 
+  doCheck = true;
+
   checkInputs = [
     check
   ];
 
-  doCheck = true;
-
   meta = {
     description = "Command line source client for Icecast media streaming servers";
+
     longDescription = ''
       Ezstream is a command line source client for Icecast media
       streaming servers. It began as the successor of the old "shout"
@@ -62,6 +60,7 @@ stdenv.mkDerivation (finalAttrs: {
       from standard input without reencoding and thus requires only
       very little CPU resources.
     '';
+
     homepage = "https://icecast.org/ezstream/";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.barrucadu ];

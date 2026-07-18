@@ -2,33 +2,28 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  plantuml,
   setuptools,
   sphinx,
-  plantuml,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-plantuml";
   version = "0.31";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "sphinxcontrib_plantuml";
     hash = "sha256-/XR1L46gcOZBw/ikAvzPodSkBW4JZ7VgM9KnYoLZ+VY=";
+    pname = "sphinxcontrib_plantuml";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ sphinx ];
-
   propagatedBuildInputs = [ plantuml ];
-
-  pythonImportsCheck = [ "sphinxcontrib.plantuml" ];
-
   # No tests included.
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ sphinx ];
+  pyproject = true;
+  pythonImportsCheck = [ "sphinxcontrib.plantuml" ];
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

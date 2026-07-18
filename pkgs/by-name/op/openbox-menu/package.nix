@@ -1,11 +1,11 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
-  pkg-config,
+  gccStdenv,
   glib,
   gtk2,
   menu-cache,
+  pkg-config,
 }:
 
 gccStdenv.mkDerivation (finalAttrs: {
@@ -17,13 +17,6 @@ gccStdenv.mkDerivation (finalAttrs: {
     hash = "sha256-FPHghHwVES6bSBUqNeNRUA0x55pRQ0iwVMafhKtZJMI=";
   };
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    glib
-    gtk2
-    menu-cache
-  ];
-
   # Enables SVG support by uncommenting the Makefile
   patches = [ ./000-enable-svg.patch ];
 
@@ -32,18 +25,27 @@ gccStdenv.mkDerivation (finalAttrs: {
     sed -i -e '/strip -s/d' Makefile
   '';
 
-  makeFlags = [ "CC=${gccStdenv.cc.targetPrefix}cc" ];
+  nativeBuildInputs = [ pkg-config ];
 
+  buildInputs = [
+    glib
+    gtk2
+    menu-cache
+  ];
+
+  makeFlags = [ "CC=${gccStdenv.cc.targetPrefix}cc" ];
   installFlags = [ "prefix=${placeholder "out"}" ];
 
   meta = {
-    homepage = "http://fabrice.thiroux.free.fr/openbox-menu_en.html";
     description = "Dynamic XDG menu generator for Openbox";
+
     longDescription = ''
       Openbox-menu is a pipemenu for Openbox window manager. It provides a
       dynamic menu listing installed applications. Most of the work is done by
       the LXDE library menu-cache.
     '';
+
+    homepage = "http://fabrice.thiroux.free.fr/openbox-menu_en.html";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.romildo ];
     platforms = lib.platforms.unix;

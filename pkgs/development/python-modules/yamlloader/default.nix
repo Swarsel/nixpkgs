@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
+  hypothesis,
   pytestCheckHook,
   pyyaml,
-  hypothesis,
 }:
 
 buildPythonPackage rec {
   pname = "yamlloader";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Phynix";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-BByyKCCRZZYloxKKZVhSyH82I4hZNxCRqUddinRzYpE=";
   };
 
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+  ];
+
   build-system = [
     hatch-vcs
     hatchling
@@ -28,16 +32,13 @@ buildPythonPackage rec {
 
   dependencies = [ pyyaml ];
 
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # TypeError: cannot pickle '_thread.RLock' object
     # https://github.com/Phynix/yamlloader/issues/64
     "tests/test_ordereddict.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "yaml"

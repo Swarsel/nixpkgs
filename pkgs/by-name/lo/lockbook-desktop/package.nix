@@ -1,17 +1,17 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  gtk3,
-  glib,
-  gobject-introspection,
-  gdk-pixbuf,
-  libxkbcommon,
-  vulkan-loader,
-  makeDesktopItem,
   autoPatchelfHook,
   copyDesktopItems,
+  gdk-pixbuf,
+  glib,
+  gobject-introspection,
+  gtk3,
+  libxkbcommon,
+  makeDesktopItem,
+  pkg-config,
+  rustPlatform,
+  vulkan-loader,
 }:
 let
   desc = "Private, polished note-taking platform";
@@ -27,8 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-gwpobBTugTTTtd/mWVoyiU0E/NjWCTfMnMF0reWLKrA=";
   };
 
-  cargoHash = "sha256-EH3uIjz2M+Ytkx/gD0gwslUrDVPvm5+hwOGoDtAdblg=";
-
   nativeBuildInputs = [
     pkg-config
     autoPatchelfHook
@@ -42,36 +40,40 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gdk-pixbuf
   ];
 
-  runtimeDependencies = [
-    vulkan-loader
-    libxkbcommon
-  ];
-
+  cargoHash = "sha256-EH3uIjz2M+Ytkx/gD0gwslUrDVPvm5+hwOGoDtAdblg=";
   doCheck = false; # there are no cli tests
+
+  postInstall = ''
+    install -D docs/graphics/logo.svg $out/share/icons/hicolor/scalable/apps/lockbook.svg
+  '';
+
   cargoBuildFlags = [
     "--package"
     "lockbook-desktop"
   ];
 
   desktopItems = makeDesktopItem {
-    desktopName = "Lockbook";
-    name = "lockbook-desktop";
-    comment = desc;
-    icon = "lockbook";
-    exec = "lockbook-desktop";
     categories = [
       "Office"
       "Documentation"
       "Utility"
     ];
+
+    comment = desc;
+    desktopName = "Lockbook";
+    exec = "lockbook-desktop";
+    icon = "lockbook";
+    name = "lockbook-desktop";
   };
 
-  postInstall = ''
-    install -D docs/graphics/logo.svg $out/share/icons/hicolor/scalable/apps/lockbook.svg
-  '';
+  runtimeDependencies = [
+    vulkan-loader
+    libxkbcommon
+  ];
 
   meta = {
     description = desc;
+
     longDescription = ''
       Write notes, sketch ideas, and store files in one secure place.
       Share seamlessly, keep data synced, and access it on any
@@ -79,10 +81,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       can’t see them, but don’t take our word for it:
       Lockbook is 100% open-source.
     '';
+
     homepage = "https://lockbook.net";
-    license = lib.licenses.unlicense;
-    platforms = lib.platforms.linux;
     changelog = "https://github.com/lockbook/lockbook/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.unlicense;
     maintainers = [ lib.maintainers.parth ];
+    platforms = lib.platforms.linux;
   };
 })

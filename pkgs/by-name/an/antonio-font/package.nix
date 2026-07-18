@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -23,8 +23,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/vernnobile/antonioFont";
     description = "Condensed, sans serif font for larger display, headline & banner use, based on Anton";
+
     longDescription = ''
       Antonio is a ‘refined’ version of the Anton Font. Anton is a single
       weight web font, designed specifically for larger display, headline and
@@ -35,8 +35,10 @@ stdenvNoCC.mkDerivation {
       refinements to the design that makes it also suitable for use in smaller
       headings, menus and ‘buttons’ etc.
     '';
+
+    homepage = "https://github.com/vernnobile/antonioFont";
     license = lib.licenses.ofl; # in fontinfo.plist files
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ toastal ];
+    platforms = lib.platforms.all;
   };
 }

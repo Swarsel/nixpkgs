@@ -1,6 +1,5 @@
 { buildRedist, zlib }:
 buildRedist {
-  redistName = "cuda";
   pname = "fabricmanager";
 
   outputs = [
@@ -11,9 +10,8 @@ buildRedist {
     "lib"
   ];
 
-  allowFHSReferences = true;
-
   buildInputs = [ zlib ];
-
+  allowFHSReferences = true;
+  redistName = "cuda";
   meta.homepage = "https://docs.nvidia.com/datacenter/tesla/fabric-manager-user-guide";
 }

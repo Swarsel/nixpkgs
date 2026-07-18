@@ -1,14 +1,14 @@
 {
   lib,
-  multiStdenv,
   fetchFromGitHub,
-  wineWow64Packages,
   cmake,
-  makeWrapper,
   file,
   libx11,
+  makeWrapper,
+  multiStdenv,
   qt5,
   vst2-sdk,
+  wineWow64Packages,
 }:
 
 let
@@ -25,19 +25,6 @@ multiStdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mvT0b0auKiu1T8cbR9RoBT94hKSnXDamqkIQPnUqVq0=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    makeWrapper
-    qt5.wrapQtAppsHook
-  ];
-
-  buildInputs = [
-    file
-    libx11
-    qt5.qtbase
-    wine-wow64
-  ];
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 2.8.11)" "cmake_minimum_required(VERSION 3.10)"
@@ -51,12 +38,18 @@ multiStdenv.mkDerivation (finalAttrs: {
       '-m32 -L${lib.getLib wine-wow64}/lib -L${lib.getLib wine-wow64}/lib/wine -L${lib.getLib multiStdenv.cc.libc}/lib/32'
   '';
 
-  # libstdc++.so link gets lost in 64-bit executables during
-  # shrinking.
-  dontPatchELF = true;
+  nativeBuildInputs = [
+    cmake
+    makeWrapper
+    qt5.wrapQtAppsHook
+  ];
 
-  # Cf. https://github.com/psycha0s/airwave/issues/57
-  hardeningDisable = [ "format" ];
+  buildInputs = [
+    file
+    libx11
+    qt5.qtbase
+    wine-wow64
+  ];
 
   cmakeFlags = [ "-DVSTSDK_PATH=${vst2-sdk}" ];
 
@@ -68,8 +61,15 @@ multiStdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/libexec/airwave-host-64.exe --set WINELOADER ${lib.getExe' wine-wow64 "wine"}
   '';
 
+  # libstdc++.so link gets lost in 64-bit executables during
+  # shrinking.
+  dontPatchELF = true;
+  # Cf. https://github.com/psycha0s/airwave/issues/57
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "WINE-based VST bridge for Linux VST hosts";
+
     longDescription = ''
       Airwave is a wine based VST bridge, that allows for the use of
       Windows 32- and 64-bit VST 2.4 audio plugins with Linux VST
@@ -78,10 +78,11 @@ multiStdenv.mkDerivation (finalAttrs: {
       protocol to correctly embed the plugin editor into the host
       window.
     '';
+
     homepage = "https://github.com/psycha0s/airwave";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ michalrus ];
+    platforms = [ "x86_64-linux" ];
     hydraPlatforms = [ ];
   };
 })

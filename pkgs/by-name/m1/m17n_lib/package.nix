@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  m17n_db,
   autoreconfHook,
+  m17n_db,
   pkg-config,
 }:
 stdenv.mkDerivation rec {
@@ -28,8 +28,8 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.nongnu.org/m17n/";
     description = "Multilingual text processing library (runtime)";
+    homepage = "https://www.nongnu.org/m17n/";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
   };

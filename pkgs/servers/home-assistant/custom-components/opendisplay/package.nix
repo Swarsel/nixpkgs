@@ -1,27 +1,23 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-
   # dependencies
   bleak,
   bleak-retry-connector,
-  python-resize-image,
+  buildHomeAssistantComponent,
   numpy,
-  qrcode,
-  requests-toolbelt,
-  websocket-client,
-  websockets,
-
   # tests
   pytest-asyncio,
   pytest-homeassistant-custom-component,
   pytestCheckHook,
+  python-resize-image,
+  qrcode,
+  requests-toolbelt,
+  websocket-client,
+  websockets,
 }:
 
 buildHomeAssistantComponent (finalAttrs: {
-  owner = "OpenDisplay";
-  domain = "opendisplay";
   version = "2.0.2";
 
   src = fetchFromGitHub {
@@ -30,6 +26,12 @@ buildHomeAssistantComponent (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-EmcDY31cTWK+JRErM6EWO0jrQvIaxKXgeI6i5qiwYGU=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-homeassistant-custom-component
+    pytestCheckHook
+  ];
 
   dependencies = [
     bleak
@@ -42,17 +44,6 @@ buildHomeAssistantComponent (finalAttrs: {
     websockets
   ]
   ++ qrcode.optional-dependencies.pil;
-
-  ignoreVersionRequirement = [
-    "qrcode"
-    "websocket-client"
-  ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-homeassistant-custom-component
-    pytestCheckHook
-  ];
 
   disabledTestPaths = [
     # Probably mismatch in fontconfig priorities
@@ -68,6 +59,15 @@ buildHomeAssistantComponent (finalAttrs: {
     "tests/drawcustom/text_test.py::test_text_anchors" # AssertionError: Text anchor points failed
     "tests/drawcustom/text_test.py::test_text_truncate" # AssertionError: Text truncation failed
   ];
+
+  domain = "opendisplay";
+
+  ignoreVersionRequirement = [
+    "qrcode"
+    "websocket-client"
+  ];
+
+  owner = "OpenDisplay";
 
   meta = {
     description = "Home Assistant Integration for OpenDisplay";

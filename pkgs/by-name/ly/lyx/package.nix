@@ -1,19 +1,19 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  bc,
+  file,
+  hunspell,
+  libsForQt5,
+  makeWrapper, # , mythes, boost
   pkg-config,
   python3,
-  file,
-  bc,
-  libsForQt5,
-  hunspell,
-  makeWrapper, # , mythes, boost
 }:
 
 stdenv.mkDerivation rec {
-  version = "2.5.1";
   pname = "lyx";
+  version = "2.5.1";
 
   src = fetchurl {
     url = "ftp://ftp.lyx.org/pub/lyx/stable/2.5.x/lyx-${version}.tar.xz";
@@ -28,6 +28,7 @@ stdenv.mkDerivation rec {
     libsForQt5.qtbase
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libsForQt5.qtbase
     libsForQt5.qtsvg
@@ -46,16 +47,15 @@ stdenv.mkDerivation rec {
     #"--without-included-mythes" # such a small library isn't worth a separate package
   ];
 
-  enableParallelBuilding = true;
   doCheck = true;
-
+  enableParallelBuilding = true;
   # python is run during runtime to do various tasks
   qtWrapperArgs = [ " --prefix PATH : ${python3}/bin" ];
 
   meta = {
-    changelog = "https://www.lyx.org/announce/${lib.replaceString "." "_" version}.txt";
     description = "WYSIWYM frontend for LaTeX, DocBook";
     homepage = "https://www.lyx.org";
+    changelog = "https://www.lyx.org/announce/${lib.replaceString "." "_" version}.txt";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.vcunat ];
     platforms = lib.platforms.linux;

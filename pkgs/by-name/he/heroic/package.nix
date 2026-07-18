@@ -1,19 +1,15 @@
 {
-  steam,
   heroic-unwrapped,
-  extraPkgs ? pkgs: [ ],
-  extraLibraries ? pkgs: [ ],
+  steam,
   extraEnv ? { },
+  extraLibraries ? pkgs: [ ],
+  extraPkgs ? pkgs: [ ],
 }:
 
 steam.buildRuntimeEnv {
-  pname = "heroic";
   inherit (heroic-unwrapped) version meta;
-
-  runScript = "heroic";
-
-  extraPkgs = pkgs: [ heroic-unwrapped ] ++ extraPkgs pkgs;
   inherit extraLibraries extraEnv;
+  pname = "heroic";
 
   extraInstallCommands = ''
     mkdir -p $out/share
@@ -21,5 +17,7 @@ steam.buildRuntimeEnv {
     ln -s ${heroic-unwrapped}/share/icons $out/share
   '';
 
+  extraPkgs = pkgs: [ heroic-unwrapped ] ++ extraPkgs pkgs;
   privateTmp = false;
+  runScript = "heroic";
 }

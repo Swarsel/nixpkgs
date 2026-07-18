@@ -28,6 +28,7 @@ let
     // (optionalAttrs (vhostConfig.enableACME || vhostConfig.useACMEHost != null) {
       sslCertificate = "${certs.${certName}.directory}/fullchain.pem";
       sslCertificateKey = "${certs.${certName}.directory}/key.pem";
+
       sslTrustedCertificate =
         if vhostConfig.sslTrustedCertificate != null then
           vhostConfig.sslTrustedCertificate
@@ -76,30 +77,26 @@ let
   ];
 
   defaultFastcgiParams = {
-    SCRIPT_FILENAME = "$document_root$fastcgi_script_name";
-    QUERY_STRING = "$query_string";
-    REQUEST_METHOD = "$request_method";
-    CONTENT_TYPE = "$content_type";
     CONTENT_LENGTH = "$content_length";
-
-    SCRIPT_NAME = "$fastcgi_script_name";
-    REQUEST_URI = "$request_uri";
-    DOCUMENT_URI = "$document_uri";
+    CONTENT_TYPE = "$content_type";
     DOCUMENT_ROOT = "$document_root";
-    SERVER_PROTOCOL = "$server_protocol";
-    REQUEST_SCHEME = "$scheme";
-    HTTPS = "$https if_not_empty";
-
+    DOCUMENT_URI = "$document_uri";
     GATEWAY_INTERFACE = "CGI/1.1";
-    SERVER_SOFTWARE = "nginx/$nginx_version";
-
+    HTTPS = "$https if_not_empty";
+    QUERY_STRING = "$query_string";
+    REDIRECT_STATUS = "200";
     REMOTE_ADDR = "$remote_addr";
     REMOTE_PORT = "$remote_port";
+    REQUEST_METHOD = "$request_method";
+    REQUEST_SCHEME = "$scheme";
+    REQUEST_URI = "$request_uri";
+    SCRIPT_FILENAME = "$document_root$fastcgi_script_name";
+    SCRIPT_NAME = "$fastcgi_script_name";
     SERVER_ADDR = "$server_addr";
-    SERVER_PORT = "$server_port";
     SERVER_NAME = "$server_name";
-
-    REDIRECT_STATUS = "200";
+    SERVER_PORT = "$server_port";
+    SERVER_PROTOCOL = "$server_protocol";
+    SERVER_SOFTWARE = "nginx/$nginx_version";
   };
 
   recommendedProxyConfig = pkgs.writeText "nginx-recommended-proxy_set_header-headers.conf" ''
@@ -403,8 +400,8 @@ let
             addr,
             port,
             ssl,
-            proxyProtocol ? false,
             extraParameters ? [ ],
+            proxyProtocol ? false,
             ...
           }:
           # UDP listener for QUIC transport protocol.
@@ -604,752 +601,6 @@ let
 in
 
 {
-  options = {
-    services.nginx = {
-      enable = mkEnableOption "Nginx Web Server";
-
-      statusPage = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Enable status page reachable from localhost on http://127.0.0.1/nginx_status.
-        '';
-      };
-
-      recommendedTlsSettings = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Enable recommended TLS settings.
-        '';
-      };
-
-      recommendedOptimisation = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Enable recommended optimisation settings.
-        '';
-      };
-
-      recommendedBrotliSettings = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Enable recommended brotli settings.
-          Learn more about compression in Brotli format [here](https://github.com/google/ngx_brotli/).
-
-          This adds `pkgs.nginxModules.brotli` to `services.nginx.additionalModules`.
-        '';
-      };
-
-      recommendedGzipSettings = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Enable recommended gzip settings.
-          Learn more about compression in Gzip format [here](https://docs.nginx.com/nginx/admin-guide/web-server/compression/).
-        '';
-      };
-
-      experimentalZstdSettings = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Enable alpha quality zstd module with recommended settings.
-          Learn more about compression in Zstd format [here](https://github.com/tokers/zstd-nginx-module).
-
-          This adds `pkgs.nginxModules.zstd` to `services.nginx.additionalModules`.
-        '';
-      };
-
-      recommendedProxySettings = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Whether to enable recommended proxy settings if a vhost does not specify the option manually.
-        '';
-      };
-
-      proxyTimeout = mkOption {
-        type = types.str;
-        default = "60s";
-        example = "20s";
-        description = ''
-          Change the proxy related timeouts in recommendedProxySettings.
-        '';
-      };
-
-      recommendedUwsgiSettings = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Whether to enable recommended uwsgi settings if a vhost does not specify the option manually.
-        '';
-      };
-
-      uwsgiTimeout = mkOption {
-        type = types.str;
-        default = "60s";
-        example = "20s";
-        description = ''
-          Change the uwsgi related timeouts in recommendedUwsgiSettings.
-        '';
-      };
-
-      defaultListen = mkOption {
-        type =
-          with types;
-          listOf (submodule {
-            options = {
-              addr = mkOption {
-                type = str;
-                description = "IP address.";
-              };
-              port = mkOption {
-                type = nullOr port;
-                description = "Port number.";
-                default = null;
-              };
-              ssl = mkOption {
-                type = nullOr bool;
-                default = null;
-                description = "Enable SSL.";
-              };
-              proxyProtocol = mkOption {
-                type = bool;
-                description = "Enable PROXY protocol.";
-                default = false;
-              };
-              extraParameters = mkOption {
-                type = listOf str;
-                description = "Extra parameters of this listen directive.";
-                default = [ ];
-                example = [
-                  "backlog=1024"
-                  "deferred"
-                ];
-              };
-            };
-          });
-        default = [ ];
-        example = literalExpression ''
-          [
-            { addr = "10.0.0.12"; proxyProtocol = true; ssl = true; }
-            { addr = "0.0.0.0"; }
-            { addr = "[::0]"; }
-          ]
-        '';
-        description = ''
-          If vhosts do not specify listen, use these addresses by default.
-          This option takes precedence over {option}`defaultListenAddresses` and
-          other listen-related defaults options.
-        '';
-      };
-
-      defaultListenAddresses = mkOption {
-        type = types.listOf types.str;
-        default = [ "0.0.0.0" ] ++ optional enableIPv6 "[::0]";
-        defaultText = literalExpression ''[ "0.0.0.0" ] ++ lib.optional config.networking.enableIPv6 "[::0]"'';
-        example = literalExpression ''[ "10.0.0.12" "[2002:a00:1::]" ]'';
-        description = ''
-          If vhosts do not specify listenAddresses, use these addresses by default.
-          This is akin to writing `defaultListen = [ { addr = "0.0.0.0" } ]`.
-        '';
-      };
-
-      defaultHTTPListenPort = mkOption {
-        type = types.port;
-        default = 80;
-        example = 8080;
-        description = ''
-          If vhosts do not specify listen.port, use these ports for HTTP by default.
-        '';
-      };
-
-      defaultSSLListenPort = mkOption {
-        type = types.port;
-        default = 443;
-        example = 8443;
-        description = ''
-          If vhosts do not specify listen.port, use these ports for SSL by default.
-        '';
-      };
-
-      defaultMimeTypes = mkOption {
-        type = types.path;
-        default = "${pkgs.mailcap}/etc/nginx/mime.types";
-        defaultText = literalExpression "$''{pkgs.mailcap}/etc/nginx/mime.types";
-        example = literalExpression "$''{pkgs.nginx}/conf/mime.types";
-        description = ''
-          Default MIME types for NGINX, as MIME types definitions from NGINX are very incomplete,
-          we use by default the ones bundled in the mailcap package, used by most of the other
-          Linux distributions.
-        '';
-      };
-
-      package = mkOption {
-        default = pkgs.nginxStable;
-        defaultText = literalExpression "pkgs.nginxStable";
-        type = types.package;
-        apply =
-          p:
-          p.override {
-            modules = lib.unique (
-              p.modules
-              ++ cfg.additionalModules
-              ++ lib.optional (cfg.lua.enable && !packageBundlesLua p) pkgs.nginxModules.lua
-            );
-          };
-        description = ''
-          Nginx package to use. This defaults to the stable version. Note
-          that the nginx team recommends to use the mainline version which
-          available in nixpkgs as `nginxMainline`.
-          Supported Nginx forks include `angie`, `openresty` and `tengine`.
-        '';
-      };
-
-      additionalModules = mkOption {
-        default = [ ];
-        type = types.listOf (types.attrsOf types.anything);
-        example = literalExpression "[ pkgs.nginxModules.echo ]";
-        description = ''
-          Additional [third-party nginx modules](https://www.nginx.com/resources/wiki/modules/)
-          to install. Packaged modules are available in `pkgs.nginxModules`.
-        '';
-      };
-
-      lua = {
-        enable = mkEnableOption ''
-          Lua scripting in nginx via OpenResty's lua-nginx-module,
-          wiring up `lua_package_path`/`lua_package_cpath` for
-          {option}`services.nginx.lua.extraPackages`.
-
-          Use this to add Lua to a stock nginx. For the full OpenResty platform —
-          required by libraries that depend on its bundled lualib (for example
-          `lua-resty-openidc`, which needs `resty.string` and friends) — set
-          {option}`services.nginx.package` to `pkgs.openresty` instead; this option
-          then only sets up the search path and leaves OpenResty's built-in Lua
-          module in place
-        '';
-
-        extraPackages = mkOption {
-          type = types.functionTo (types.listOf types.package);
-          default = ps: [ ];
-          defaultText = literalExpression "ps: [ ]";
-          example = literalExpression ''
-            ps: with ps; [ lua-resty-openidc ]
-          '';
-          description = ''
-            Extra Lua packages to put on `lua_package_path` / `lua_package_cpath`,
-            for both stock nginx and `pkgs.openresty`. Packages are selected from
-            `pkgs.luajit_openresty.pkgs`. `lua-resty-core`, which the Lua module
-            requires to start, is added automatically.
-          '';
-        };
-      };
-
-      logError = mkOption {
-        default = "stderr";
-        type = types.str;
-        description = ''
-          Configures logging.
-          The first parameter defines a file that will store the log. The
-          special value stderr selects the standard error file. Logging to
-          syslog can be configured by specifying the “syslog:” prefix.
-          The second parameter determines the level of logging, and can be
-          one of the following: debug, info, notice, warn, error, crit,
-          alert, or emerg. Log levels above are listed in the order of
-          increasing severity. Setting a certain log level will cause all
-          messages of the specified and more severe log levels to be logged.
-          If this parameter is omitted then error is used.
-        '';
-      };
-
-      preStart = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Shell commands executed before the service's nginx is started.
-        '';
-      };
-
-      config = mkOption {
-        type = types.str;
-        default = "";
-        description = ''
-          Verbatim {file}`nginx.conf` configuration.
-          This is mutually exclusive to any other config option for
-          {file}`nginx.conf` except for
-          - [](#opt-services.nginx.appendConfig)
-          - [](#opt-services.nginx.httpConfig)
-          - [](#opt-services.nginx.logError)
-
-          If additional verbatim config in addition to other options is needed,
-          [](#opt-services.nginx.appendConfig) should be used instead.
-        '';
-      };
-
-      prependConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Configuration lines prepended to the generated Nginx
-          configuration file. Can for example be used to load modules.
-          {option}`prependConfig` can be specified more than once
-          and its value will be concatenated (contrary to {option}`config`
-          which can be set only once).
-        '';
-      };
-
-      appendConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Configuration lines appended to the generated Nginx
-          configuration file. Commonly used by different modules
-          providing http snippets. {option}`appendConfig`
-          can be specified more than once and its value will be
-          concatenated (contrary to {option}`config` which
-          can be set only once).
-        '';
-      };
-
-      commonHttpConfig = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          resolver 127.0.0.1 valid=5s;
-
-          log_format myformat '$remote_addr - $remote_user [$time_local] '
-                              '"$request" $status $body_bytes_sent '
-                              '"$http_referer" "$http_user_agent"';
-        '';
-        description = ''
-          With nginx you must provide common http context definitions before
-          they are used, e.g. log_format, resolver, etc. inside of server
-          or location contexts. Use this attribute to set these definitions
-          at the appropriate location.
-        '';
-      };
-
-      httpConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Configuration lines to be set inside the http block.
-          This is mutually exclusive with the structured configuration
-          via virtualHosts and the recommendedXyzSettings configuration
-          options. See appendHttpConfig for appending to the generated http block.
-        '';
-      };
-
-      streamConfig = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          server {
-            listen 127.0.0.1:53 udp reuseport;
-            proxy_timeout 20s;
-            proxy_pass 192.168.0.1:53535;
-          }
-        '';
-        description = ''
-          Configuration lines to be set inside the stream block.
-        '';
-      };
-
-      eventsConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Configuration lines to be set inside the events block.
-        '';
-      };
-
-      appendHttpConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Configuration lines to be appended to the generated http block.
-          This is mutually exclusive with using config and httpConfig for
-          specifying the whole http block verbatim.
-        '';
-      };
-
-      enableReload = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Reload nginx when configuration file changes (instead of restart).
-          The configuration file is exposed at {file}`/etc/nginx/nginx.conf`.
-          See also `systemd.services.*.restartIfChanged`.
-        '';
-      };
-
-      enableQuicBPF = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Enables routing of QUIC packets using eBPF. When enabled, this allows
-          to support QUIC connection migration. The directive is only supported
-          on Linux 5.7+.
-          Note that enabling this option will make nginx run with extended
-          capabilities that are usually limited to processes running as root
-          namely `CAP_SYS_ADMIN` and `CAP_NET_ADMIN`.
-        '';
-      };
-
-      user = mkOption {
-        type = types.str;
-        default = "nginx";
-        description = "User account under which nginx runs.";
-      };
-
-      group = mkOption {
-        type = types.str;
-        default = "nginx";
-        description = "Group account under which nginx runs.";
-      };
-
-      serverTokens = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Show nginx version in headers and error pages.";
-      };
-
-      clientMaxBodySize = mkOption {
-        type = types.str;
-        default = "10m";
-        description = "Set nginx global client_max_body_size.";
-      };
-
-      sslCiphers = mkOption {
-        type = types.nullOr (types.either types.str (types.listOf types.str));
-        # Keep in sync with https://ssl-config.mozilla.org/#server=nginx&config=intermediate
-        default = [
-          "ECDHE-ECDSA-AES128-GCM-SHA256"
-          "ECDHE-RSA-AES128-GCM-SHA256"
-          "ECDHE-ECDSA-AES256-GCM-SHA384"
-          "ECDHE-RSA-AES256-GCM-SHA384"
-          "ECDHE-ECDSA-CHACHA20-POLY1305"
-          "ECDHE-RSA-CHACHA20-POLY1305"
-        ];
-        description = ''
-          List of available cipher suites to choose from when negotiating TLS sessions.
-
-          :::{.warn}
-          This option only handles cipher suites up to TLSv1.2. Use
-          `ssl_conf_command CipherSuites` to configure TLSv1.3 cipher suites.
-          :::
-        '';
-      };
-
-      sslProtocols = mkOption {
-        type = types.str;
-        default = "TLSv1.2 TLSv1.3";
-        example = "TLSv1.3";
-        description = "Allowed TLS protocol versions.";
-      };
-
-      proxyResolveWhileRunning = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Resolves domains of proxyPass targets at runtime and not only at startup.
-          This can be used as a workaround if nginx fails to start because of not-yet-working DNS.
-
-          :::{.warn}
-          `services.nginx.resolver` must be set for this option to work.
-          :::
-        '';
-      };
-
-      uwsgiResolveWhileRunning = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Resolves domains of uwsgi targets at runtime
-          and not only at start, you have to set
-          services.nginx.resolver, too.
-        '';
-      };
-
-      mapHashBucketSize = mkOption {
-        type = types.nullOr (types.ints.positive);
-        default = null;
-        description = ''
-          Sets the bucket size for the map variables hash tables. Default
-          value depends on the processor’s cache line size.
-
-          Refer to [the nginx docs on hashes](https://nginx.org/en/docs/hash.html)
-          for more information.
-        '';
-      };
-
-      mapHashMaxSize = mkOption {
-        type = types.nullOr types.ints.positive;
-        default = null;
-        description = ''
-          Sets the maximum size of the map variables hash tables.
-        '';
-      };
-
-      serverNamesHashBucketSize = mkOption {
-        type = types.nullOr types.ints.positive;
-        default = null;
-        description = ''
-          Sets the bucket size for the server names hash tables. Default
-          value depends on the processor’s cache line size.
-        '';
-      };
-
-      serverNamesHashMaxSize = mkOption {
-        type = types.nullOr types.ints.positive;
-        default = null;
-        description = ''
-          Sets the maximum size of the server names hash tables.
-        '';
-      };
-
-      typesHashMaxSize = mkOption {
-        type = types.ints.positive;
-        default = if cfg.defaultMimeTypes == "${pkgs.mailcap}/etc/nginx/mime.types" then 2688 else 1024;
-        defaultText = literalExpression ''if config.services.nginx.defaultMimeTypes == "''${pkgs.mailcap}/etc/nginx/mime.types" then 2688 else 1024'';
-        description = ''
-          Sets the maximum size of the types hash tables (`types_hash_max_size`).
-          It is recommended that the minimum size possible size is used.
-          If {option}`recommendedOptimisation` is disabled, nginx would otherwise
-          fail to start since the mailmap `mime.types` database has more entries
-          than the nginx default value 1024.
-        '';
-      };
-
-      proxyCachePath = mkOption {
-        type = types.attrsOf (
-          types.submodule (
-            { ... }:
-            {
-              options = {
-                enable = mkEnableOption "this proxy cache path entry";
-
-                keysZoneName = mkOption {
-                  type = types.str;
-                  default = "cache";
-                  example = "my_cache";
-                  description = "Set name to shared memory zone.";
-                };
-
-                keysZoneSize = mkOption {
-                  type = types.str;
-                  default = "10m";
-                  example = "32m";
-                  description = "Set size to shared memory zone.";
-                };
-
-                levels = mkOption {
-                  type = types.str;
-                  default = "1:2";
-                  example = "1:2:2";
-                  description = ''
-                    The levels parameter defines structure of subdirectories in cache: from
-                    1 to 3, each level accepts values 1 or 2. Can be used any combination of
-                    1 and 2 in these formats: x, x:x and x:x:x.
-                  '';
-                };
-
-                useTempPath = mkOption {
-                  type = types.bool;
-                  default = false;
-                  example = true;
-                  description = ''
-                    Nginx first writes files that are destined for the cache to a temporary
-                    storage area, and the use_temp_path=off directive instructs Nginx to
-                    write them to the same directories where they will be cached. Recommended
-                    that you set this parameter to off to avoid unnecessary copying of data
-                    between file systems.
-                  '';
-                };
-
-                inactive = mkOption {
-                  type = types.str;
-                  default = "10m";
-                  example = "1d";
-                  description = ''
-                    Cached data that has not been accessed for the time specified by
-                    the inactive parameter is removed from the cache, regardless of
-                    its freshness.
-                  '';
-                };
-
-                maxSize = mkOption {
-                  type = types.str;
-                  default = "1g";
-                  example = "2048m";
-                  description = "Set maximum cache size";
-                };
-              };
-            }
-          )
-        );
-        default = { };
-        description = ''
-          Configure a proxy cache path entry.
-          See <https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_cache_path> for documentation.
-        '';
-      };
-
-      resolver = mkOption {
-        type = types.submodule {
-          options = {
-            addresses = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              example = literalExpression ''[ "[::1]" "127.0.0.1:5353" ]'';
-              description = "List of resolvers to use";
-            };
-            valid = mkOption {
-              type = types.str;
-              default = "";
-              example = "30s";
-              description = ''
-                By default, nginx caches answers using the TTL value of a response.
-                An optional valid parameter allows overriding it
-              '';
-            };
-            ipv4 = mkOption {
-              type = types.bool;
-              default = true;
-              description = ''
-                By default, nginx will look up both IPv4 and IPv6 addresses while resolving.
-                If looking up of IPv4 addresses is not desired, the ipv4=off parameter can be
-                specified.
-              '';
-            };
-            ipv6 = mkOption {
-              type = types.bool;
-              default = config.networking.enableIPv6;
-              defaultText = lib.literalExpression "config.networking.enableIPv6";
-              description = ''
-                By default, nginx will look up both IPv4 and IPv6 addresses while resolving.
-                If looking up of IPv6 addresses is not desired, the ipv6=off parameter can be
-                specified.
-              '';
-            };
-          };
-        };
-        description = ''
-          Configures name servers used to resolve names of upstream servers into addresses
-        '';
-        default = { };
-      };
-
-      upstreams = mkOption {
-        type = types.attrsOf (
-          types.submodule {
-            options = {
-              servers = mkOption {
-                type = types.attrsOf (
-                  types.submodule {
-                    freeformType = types.attrsOf (
-                      types.oneOf [
-                        types.bool
-                        types.int
-                        types.str
-                      ]
-                    );
-                    options = {
-                      backup = mkOption {
-                        type = types.bool;
-                        default = false;
-                        description = ''
-                          Marks the server as a backup server. It will be passed
-                          requests when the primary servers are unavailable.
-                        '';
-                      };
-                    };
-                  }
-                );
-                description = ''
-                  Defines the address and other parameters of the upstream servers.
-                  See [the documentation](https://nginx.org/en/docs/http/ngx_http_upstream_module.html#server)
-                  for the available parameters.
-                '';
-                default = { };
-                example = lib.literalMD "see [](#opt-services.nginx.upstreams)";
-              };
-              extraConfig = mkOption {
-                type = types.lines;
-                default = "";
-                description = ''
-                  These lines go to the end of the upstream verbatim.
-                '';
-              };
-            };
-          }
-        );
-        description = ''
-          Defines a group of servers to use as proxy target.
-        '';
-        default = { };
-        example = {
-          "backend" = {
-            servers = {
-              "backend1.example.com:8080" = {
-                weight = 5;
-              };
-              "backend2.example.com" = {
-                max_fails = 3;
-                fail_timeout = "30s";
-              };
-              "backend3.example.com" = { };
-              "backup1.example.com" = {
-                backup = true;
-              };
-              "backup2.example.com" = {
-                backup = true;
-              };
-            };
-            extraConfig = ''
-              keepalive 16;
-            '';
-          };
-          "memcached" = {
-            servers."unix:/run/memcached/memcached.sock" = { };
-          };
-        };
-      };
-
-      virtualHosts = mkOption {
-        type = types.attrsOf (
-          types.submodule (
-            import ./vhost-options.nix {
-              inherit config lib;
-            }
-          )
-        );
-        default = {
-          localhost = { };
-        };
-        example = literalExpression ''
-          {
-            "hydra.example.com" = {
-              forceSSL = true;
-              enableACME = true;
-              locations."/" = {
-                proxyPass = "http://localhost:3000";
-              };
-            };
-          };
-        '';
-        description = "Declarative vhost config";
-      };
-      validateConfigFile = lib.mkEnableOption "validating configuration with pkgs.writeNginxConfig" // {
-        default = true;
-      };
-    };
-  };
-
   imports = [
     (mkRemovedOptionModule [ "services" "nginx" "sslDhparam" ] ''
       DHE cipher suites have been removed from the default nginx cipher list.
@@ -1394,6 +645,880 @@ in
     '')
   ];
 
+  options = {
+    services.nginx = {
+      config = mkOption {
+        default = "";
+
+        description = ''
+          Verbatim {file}`nginx.conf` configuration.
+          This is mutually exclusive to any other config option for
+          {file}`nginx.conf` except for
+          - [](#opt-services.nginx.appendConfig)
+          - [](#opt-services.nginx.httpConfig)
+          - [](#opt-services.nginx.logError)
+
+          If additional verbatim config in addition to other options is needed,
+          [](#opt-services.nginx.appendConfig) should be used instead.
+        '';
+
+        type = types.str;
+      };
+
+      enable = mkEnableOption "Nginx Web Server";
+
+      package = mkOption {
+        apply =
+          p:
+          p.override {
+            modules = lib.unique (
+              p.modules
+              ++ cfg.additionalModules
+              ++ lib.optional (cfg.lua.enable && !packageBundlesLua p) pkgs.nginxModules.lua
+            );
+          };
+
+        default = pkgs.nginxStable;
+        defaultText = literalExpression "pkgs.nginxStable";
+
+        description = ''
+          Nginx package to use. This defaults to the stable version. Note
+          that the nginx team recommends to use the mainline version which
+          available in nixpkgs as `nginxMainline`.
+          Supported Nginx forks include `angie`, `openresty` and `tengine`.
+        '';
+
+        type = types.package;
+      };
+
+      additionalModules = mkOption {
+        default = [ ];
+
+        description = ''
+          Additional [third-party nginx modules](https://www.nginx.com/resources/wiki/modules/)
+          to install. Packaged modules are available in `pkgs.nginxModules`.
+        '';
+
+        example = literalExpression "[ pkgs.nginxModules.echo ]";
+        type = types.listOf (types.attrsOf types.anything);
+      };
+
+      appendConfig = mkOption {
+        default = "";
+
+        description = ''
+          Configuration lines appended to the generated Nginx
+          configuration file. Commonly used by different modules
+          providing http snippets. {option}`appendConfig`
+          can be specified more than once and its value will be
+          concatenated (contrary to {option}`config` which
+          can be set only once).
+        '';
+
+        type = types.lines;
+      };
+
+      appendHttpConfig = mkOption {
+        default = "";
+
+        description = ''
+          Configuration lines to be appended to the generated http block.
+          This is mutually exclusive with using config and httpConfig for
+          specifying the whole http block verbatim.
+        '';
+
+        type = types.lines;
+      };
+
+      clientMaxBodySize = mkOption {
+        default = "10m";
+        description = "Set nginx global client_max_body_size.";
+        type = types.str;
+      };
+
+      commonHttpConfig = mkOption {
+        default = "";
+
+        description = ''
+          With nginx you must provide common http context definitions before
+          they are used, e.g. log_format, resolver, etc. inside of server
+          or location contexts. Use this attribute to set these definitions
+          at the appropriate location.
+        '';
+
+        example = ''
+          resolver 127.0.0.1 valid=5s;
+
+          log_format myformat '$remote_addr - $remote_user [$time_local] '
+                              '"$request" $status $body_bytes_sent '
+                              '"$http_referer" "$http_user_agent"';
+        '';
+
+        type = types.lines;
+      };
+
+      defaultHTTPListenPort = mkOption {
+        default = 80;
+
+        description = ''
+          If vhosts do not specify listen.port, use these ports for HTTP by default.
+        '';
+
+        example = 8080;
+        type = types.port;
+      };
+
+      defaultListen = mkOption {
+        default = [ ];
+
+        description = ''
+          If vhosts do not specify listen, use these addresses by default.
+          This option takes precedence over {option}`defaultListenAddresses` and
+          other listen-related defaults options.
+        '';
+
+        example = literalExpression ''
+          [
+            { addr = "10.0.0.12"; proxyProtocol = true; ssl = true; }
+            { addr = "0.0.0.0"; }
+            { addr = "[::0]"; }
+          ]
+        '';
+
+        type =
+          with types;
+          listOf (submodule {
+            options = {
+              addr = mkOption {
+                description = "IP address.";
+                type = str;
+              };
+
+              extraParameters = mkOption {
+                default = [ ];
+                description = "Extra parameters of this listen directive.";
+
+                example = [
+                  "backlog=1024"
+                  "deferred"
+                ];
+
+                type = listOf str;
+              };
+
+              port = mkOption {
+                default = null;
+                description = "Port number.";
+                type = nullOr port;
+              };
+
+              proxyProtocol = mkOption {
+                default = false;
+                description = "Enable PROXY protocol.";
+                type = bool;
+              };
+
+              ssl = mkOption {
+                default = null;
+                description = "Enable SSL.";
+                type = nullOr bool;
+              };
+            };
+          });
+      };
+
+      defaultListenAddresses = mkOption {
+        default = [ "0.0.0.0" ] ++ optional enableIPv6 "[::0]";
+        defaultText = literalExpression ''[ "0.0.0.0" ] ++ lib.optional config.networking.enableIPv6 "[::0]"'';
+
+        description = ''
+          If vhosts do not specify listenAddresses, use these addresses by default.
+          This is akin to writing `defaultListen = [ { addr = "0.0.0.0" } ]`.
+        '';
+
+        example = literalExpression ''[ "10.0.0.12" "[2002:a00:1::]" ]'';
+        type = types.listOf types.str;
+      };
+
+      defaultMimeTypes = mkOption {
+        default = "${pkgs.mailcap}/etc/nginx/mime.types";
+        defaultText = literalExpression "$''{pkgs.mailcap}/etc/nginx/mime.types";
+
+        description = ''
+          Default MIME types for NGINX, as MIME types definitions from NGINX are very incomplete,
+          we use by default the ones bundled in the mailcap package, used by most of the other
+          Linux distributions.
+        '';
+
+        example = literalExpression "$''{pkgs.nginx}/conf/mime.types";
+        type = types.path;
+      };
+
+      defaultSSLListenPort = mkOption {
+        default = 443;
+
+        description = ''
+          If vhosts do not specify listen.port, use these ports for SSL by default.
+        '';
+
+        example = 8443;
+        type = types.port;
+      };
+
+      enableQuicBPF = mkOption {
+        default = false;
+
+        description = ''
+          Enables routing of QUIC packets using eBPF. When enabled, this allows
+          to support QUIC connection migration. The directive is only supported
+          on Linux 5.7+.
+          Note that enabling this option will make nginx run with extended
+          capabilities that are usually limited to processes running as root
+          namely `CAP_SYS_ADMIN` and `CAP_NET_ADMIN`.
+        '';
+
+        type = types.bool;
+      };
+
+      enableReload = mkOption {
+        default = false;
+
+        description = ''
+          Reload nginx when configuration file changes (instead of restart).
+          The configuration file is exposed at {file}`/etc/nginx/nginx.conf`.
+          See also `systemd.services.*.restartIfChanged`.
+        '';
+
+        type = types.bool;
+      };
+
+      eventsConfig = mkOption {
+        default = "";
+
+        description = ''
+          Configuration lines to be set inside the events block.
+        '';
+
+        type = types.lines;
+      };
+
+      experimentalZstdSettings = mkOption {
+        default = false;
+
+        description = ''
+          Enable alpha quality zstd module with recommended settings.
+          Learn more about compression in Zstd format [here](https://github.com/tokers/zstd-nginx-module).
+
+          This adds `pkgs.nginxModules.zstd` to `services.nginx.additionalModules`.
+        '';
+
+        type = types.bool;
+      };
+
+      group = mkOption {
+        default = "nginx";
+        description = "Group account under which nginx runs.";
+        type = types.str;
+      };
+
+      httpConfig = mkOption {
+        default = "";
+
+        description = ''
+          Configuration lines to be set inside the http block.
+          This is mutually exclusive with the structured configuration
+          via virtualHosts and the recommendedXyzSettings configuration
+          options. See appendHttpConfig for appending to the generated http block.
+        '';
+
+        type = types.lines;
+      };
+
+      logError = mkOption {
+        default = "stderr";
+
+        description = ''
+          Configures logging.
+          The first parameter defines a file that will store the log. The
+          special value stderr selects the standard error file. Logging to
+          syslog can be configured by specifying the “syslog:” prefix.
+          The second parameter determines the level of logging, and can be
+          one of the following: debug, info, notice, warn, error, crit,
+          alert, or emerg. Log levels above are listed in the order of
+          increasing severity. Setting a certain log level will cause all
+          messages of the specified and more severe log levels to be logged.
+          If this parameter is omitted then error is used.
+        '';
+
+        type = types.str;
+      };
+
+      lua = {
+        enable = mkEnableOption ''
+          Lua scripting in nginx via OpenResty's lua-nginx-module,
+          wiring up `lua_package_path`/`lua_package_cpath` for
+          {option}`services.nginx.lua.extraPackages`.
+
+          Use this to add Lua to a stock nginx. For the full OpenResty platform —
+          required by libraries that depend on its bundled lualib (for example
+          `lua-resty-openidc`, which needs `resty.string` and friends) — set
+          {option}`services.nginx.package` to `pkgs.openresty` instead; this option
+          then only sets up the search path and leaves OpenResty's built-in Lua
+          module in place
+        '';
+
+        extraPackages = mkOption {
+          default = ps: [ ];
+          defaultText = literalExpression "ps: [ ]";
+
+          description = ''
+            Extra Lua packages to put on `lua_package_path` / `lua_package_cpath`,
+            for both stock nginx and `pkgs.openresty`. Packages are selected from
+            `pkgs.luajit_openresty.pkgs`. `lua-resty-core`, which the Lua module
+            requires to start, is added automatically.
+          '';
+
+          example = literalExpression ''
+            ps: with ps; [ lua-resty-openidc ]
+          '';
+
+          type = types.functionTo (types.listOf types.package);
+        };
+      };
+
+      mapHashBucketSize = mkOption {
+        default = null;
+
+        description = ''
+          Sets the bucket size for the map variables hash tables. Default
+          value depends on the processor’s cache line size.
+
+          Refer to [the nginx docs on hashes](https://nginx.org/en/docs/hash.html)
+          for more information.
+        '';
+
+        type = types.nullOr (types.ints.positive);
+      };
+
+      mapHashMaxSize = mkOption {
+        default = null;
+
+        description = ''
+          Sets the maximum size of the map variables hash tables.
+        '';
+
+        type = types.nullOr types.ints.positive;
+      };
+
+      preStart = mkOption {
+        default = "";
+
+        description = ''
+          Shell commands executed before the service's nginx is started.
+        '';
+
+        type = types.lines;
+      };
+
+      prependConfig = mkOption {
+        default = "";
+
+        description = ''
+          Configuration lines prepended to the generated Nginx
+          configuration file. Can for example be used to load modules.
+          {option}`prependConfig` can be specified more than once
+          and its value will be concatenated (contrary to {option}`config`
+          which can be set only once).
+        '';
+
+        type = types.lines;
+      };
+
+      proxyCachePath = mkOption {
+        default = { };
+
+        description = ''
+          Configure a proxy cache path entry.
+          See <https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_cache_path> for documentation.
+        '';
+
+        type = types.attrsOf (
+          types.submodule (
+            { ... }:
+            {
+              options = {
+                enable = mkEnableOption "this proxy cache path entry";
+
+                inactive = mkOption {
+                  default = "10m";
+
+                  description = ''
+                    Cached data that has not been accessed for the time specified by
+                    the inactive parameter is removed from the cache, regardless of
+                    its freshness.
+                  '';
+
+                  example = "1d";
+                  type = types.str;
+                };
+
+                keysZoneName = mkOption {
+                  default = "cache";
+                  description = "Set name to shared memory zone.";
+                  example = "my_cache";
+                  type = types.str;
+                };
+
+                keysZoneSize = mkOption {
+                  default = "10m";
+                  description = "Set size to shared memory zone.";
+                  example = "32m";
+                  type = types.str;
+                };
+
+                levels = mkOption {
+                  default = "1:2";
+
+                  description = ''
+                    The levels parameter defines structure of subdirectories in cache: from
+                    1 to 3, each level accepts values 1 or 2. Can be used any combination of
+                    1 and 2 in these formats: x, x:x and x:x:x.
+                  '';
+
+                  example = "1:2:2";
+                  type = types.str;
+                };
+
+                maxSize = mkOption {
+                  default = "1g";
+                  description = "Set maximum cache size";
+                  example = "2048m";
+                  type = types.str;
+                };
+
+                useTempPath = mkOption {
+                  default = false;
+
+                  description = ''
+                    Nginx first writes files that are destined for the cache to a temporary
+                    storage area, and the use_temp_path=off directive instructs Nginx to
+                    write them to the same directories where they will be cached. Recommended
+                    that you set this parameter to off to avoid unnecessary copying of data
+                    between file systems.
+                  '';
+
+                  example = true;
+                  type = types.bool;
+                };
+              };
+            }
+          )
+        );
+      };
+
+      proxyResolveWhileRunning = mkOption {
+        default = false;
+
+        description = ''
+          Resolves domains of proxyPass targets at runtime and not only at startup.
+          This can be used as a workaround if nginx fails to start because of not-yet-working DNS.
+
+          :::{.warn}
+          `services.nginx.resolver` must be set for this option to work.
+          :::
+        '';
+
+        type = types.bool;
+      };
+
+      proxyTimeout = mkOption {
+        default = "60s";
+
+        description = ''
+          Change the proxy related timeouts in recommendedProxySettings.
+        '';
+
+        example = "20s";
+        type = types.str;
+      };
+
+      recommendedBrotliSettings = mkOption {
+        default = false;
+
+        description = ''
+          Enable recommended brotli settings.
+          Learn more about compression in Brotli format [here](https://github.com/google/ngx_brotli/).
+
+          This adds `pkgs.nginxModules.brotli` to `services.nginx.additionalModules`.
+        '';
+
+        type = types.bool;
+      };
+
+      recommendedGzipSettings = mkOption {
+        default = false;
+
+        description = ''
+          Enable recommended gzip settings.
+          Learn more about compression in Gzip format [here](https://docs.nginx.com/nginx/admin-guide/web-server/compression/).
+        '';
+
+        type = types.bool;
+      };
+
+      recommendedOptimisation = mkOption {
+        default = false;
+
+        description = ''
+          Enable recommended optimisation settings.
+        '';
+
+        type = types.bool;
+      };
+
+      recommendedProxySettings = mkOption {
+        default = false;
+
+        description = ''
+          Whether to enable recommended proxy settings if a vhost does not specify the option manually.
+        '';
+
+        type = types.bool;
+      };
+
+      recommendedTlsSettings = mkOption {
+        default = false;
+
+        description = ''
+          Enable recommended TLS settings.
+        '';
+
+        type = types.bool;
+      };
+
+      recommendedUwsgiSettings = mkOption {
+        default = false;
+
+        description = ''
+          Whether to enable recommended uwsgi settings if a vhost does not specify the option manually.
+        '';
+
+        type = types.bool;
+      };
+
+      resolver = mkOption {
+        default = { };
+
+        description = ''
+          Configures name servers used to resolve names of upstream servers into addresses
+        '';
+
+        type = types.submodule {
+          options = {
+            addresses = mkOption {
+              default = [ ];
+              description = "List of resolvers to use";
+              example = literalExpression ''[ "[::1]" "127.0.0.1:5353" ]'';
+              type = types.listOf types.str;
+            };
+
+            ipv4 = mkOption {
+              default = true;
+
+              description = ''
+                By default, nginx will look up both IPv4 and IPv6 addresses while resolving.
+                If looking up of IPv4 addresses is not desired, the ipv4=off parameter can be
+                specified.
+              '';
+
+              type = types.bool;
+            };
+
+            ipv6 = mkOption {
+              default = config.networking.enableIPv6;
+              defaultText = lib.literalExpression "config.networking.enableIPv6";
+
+              description = ''
+                By default, nginx will look up both IPv4 and IPv6 addresses while resolving.
+                If looking up of IPv6 addresses is not desired, the ipv6=off parameter can be
+                specified.
+              '';
+
+              type = types.bool;
+            };
+
+            valid = mkOption {
+              default = "";
+
+              description = ''
+                By default, nginx caches answers using the TTL value of a response.
+                An optional valid parameter allows overriding it
+              '';
+
+              example = "30s";
+              type = types.str;
+            };
+          };
+        };
+      };
+
+      serverNamesHashBucketSize = mkOption {
+        default = null;
+
+        description = ''
+          Sets the bucket size for the server names hash tables. Default
+          value depends on the processor’s cache line size.
+        '';
+
+        type = types.nullOr types.ints.positive;
+      };
+
+      serverNamesHashMaxSize = mkOption {
+        default = null;
+
+        description = ''
+          Sets the maximum size of the server names hash tables.
+        '';
+
+        type = types.nullOr types.ints.positive;
+      };
+
+      serverTokens = mkOption {
+        default = false;
+        description = "Show nginx version in headers and error pages.";
+        type = types.bool;
+      };
+
+      sslCiphers = mkOption {
+        # Keep in sync with https://ssl-config.mozilla.org/#server=nginx&config=intermediate
+        default = [
+          "ECDHE-ECDSA-AES128-GCM-SHA256"
+          "ECDHE-RSA-AES128-GCM-SHA256"
+          "ECDHE-ECDSA-AES256-GCM-SHA384"
+          "ECDHE-RSA-AES256-GCM-SHA384"
+          "ECDHE-ECDSA-CHACHA20-POLY1305"
+          "ECDHE-RSA-CHACHA20-POLY1305"
+        ];
+
+        description = ''
+          List of available cipher suites to choose from when negotiating TLS sessions.
+
+          :::{.warn}
+          This option only handles cipher suites up to TLSv1.2. Use
+          `ssl_conf_command CipherSuites` to configure TLSv1.3 cipher suites.
+          :::
+        '';
+
+        type = types.nullOr (types.either types.str (types.listOf types.str));
+      };
+
+      sslProtocols = mkOption {
+        default = "TLSv1.2 TLSv1.3";
+        description = "Allowed TLS protocol versions.";
+        example = "TLSv1.3";
+        type = types.str;
+      };
+
+      statusPage = mkOption {
+        default = false;
+
+        description = ''
+          Enable status page reachable from localhost on http://127.0.0.1/nginx_status.
+        '';
+
+        type = types.bool;
+      };
+
+      streamConfig = mkOption {
+        default = "";
+
+        description = ''
+          Configuration lines to be set inside the stream block.
+        '';
+
+        example = ''
+          server {
+            listen 127.0.0.1:53 udp reuseport;
+            proxy_timeout 20s;
+            proxy_pass 192.168.0.1:53535;
+          }
+        '';
+
+        type = types.lines;
+      };
+
+      typesHashMaxSize = mkOption {
+        default = if cfg.defaultMimeTypes == "${pkgs.mailcap}/etc/nginx/mime.types" then 2688 else 1024;
+        defaultText = literalExpression ''if config.services.nginx.defaultMimeTypes == "''${pkgs.mailcap}/etc/nginx/mime.types" then 2688 else 1024'';
+
+        description = ''
+          Sets the maximum size of the types hash tables (`types_hash_max_size`).
+          It is recommended that the minimum size possible size is used.
+          If {option}`recommendedOptimisation` is disabled, nginx would otherwise
+          fail to start since the mailmap `mime.types` database has more entries
+          than the nginx default value 1024.
+        '';
+
+        type = types.ints.positive;
+      };
+
+      upstreams = mkOption {
+        default = { };
+
+        description = ''
+          Defines a group of servers to use as proxy target.
+        '';
+
+        example = {
+          "backend" = {
+            extraConfig = ''
+              keepalive 16;
+            '';
+
+            servers = {
+              "backend1.example.com:8080" = {
+                weight = 5;
+              };
+
+              "backend2.example.com" = {
+                fail_timeout = "30s";
+                max_fails = 3;
+              };
+
+              "backend3.example.com" = { };
+
+              "backup1.example.com" = {
+                backup = true;
+              };
+
+              "backup2.example.com" = {
+                backup = true;
+              };
+            };
+          };
+
+          "memcached" = {
+            servers."unix:/run/memcached/memcached.sock" = { };
+          };
+        };
+
+        type = types.attrsOf (
+          types.submodule {
+            options = {
+              extraConfig = mkOption {
+                default = "";
+
+                description = ''
+                  These lines go to the end of the upstream verbatim.
+                '';
+
+                type = types.lines;
+              };
+
+              servers = mkOption {
+                default = { };
+
+                description = ''
+                  Defines the address and other parameters of the upstream servers.
+                  See [the documentation](https://nginx.org/en/docs/http/ngx_http_upstream_module.html#server)
+                  for the available parameters.
+                '';
+
+                example = lib.literalMD "see [](#opt-services.nginx.upstreams)";
+
+                type = types.attrsOf (
+                  types.submodule {
+                    options = {
+                      backup = mkOption {
+                        default = false;
+
+                        description = ''
+                          Marks the server as a backup server. It will be passed
+                          requests when the primary servers are unavailable.
+                        '';
+
+                        type = types.bool;
+                      };
+                    };
+
+                    freeformType = types.attrsOf (
+                      types.oneOf [
+                        types.bool
+                        types.int
+                        types.str
+                      ]
+                    );
+                  }
+                );
+              };
+            };
+          }
+        );
+      };
+
+      user = mkOption {
+        default = "nginx";
+        description = "User account under which nginx runs.";
+        type = types.str;
+      };
+
+      uwsgiResolveWhileRunning = mkOption {
+        default = false;
+
+        description = ''
+          Resolves domains of uwsgi targets at runtime
+          and not only at start, you have to set
+          services.nginx.resolver, too.
+        '';
+
+        type = types.bool;
+      };
+
+      uwsgiTimeout = mkOption {
+        default = "60s";
+
+        description = ''
+          Change the uwsgi related timeouts in recommendedUwsgiSettings.
+        '';
+
+        example = "20s";
+        type = types.str;
+      };
+
+      validateConfigFile = lib.mkEnableOption "validating configuration with pkgs.writeNginxConfig" // {
+        default = true;
+      };
+
+      virtualHosts = mkOption {
+        default = {
+          localhost = { };
+        };
+
+        description = "Declarative vhost config";
+
+        example = literalExpression ''
+          {
+            "hydra.example.com" = {
+              forceSSL = true;
+              enableACME = true;
+              locations."/" = {
+                proxyPass = "http://localhost:3000";
+              };
+            };
+          };
+        '';
+
+        type = types.attrsOf (
+          types.submodule (
+            import ./vhost-options.nix {
+              inherit config lib;
+            }
+          )
+        );
+      };
+    };
+  };
+
   config = mkIf cfg.enable {
     assertions =
       let
@@ -1416,6 +1541,7 @@ in
               rejectSSL
             ] <= 1
           ) (attrValues virtualHosts);
+
           message = ''
             Options services.nginx.service.virtualHosts.<name>.addSSL,
             services.nginx.virtualHosts.<name>.onlySSL,
@@ -1426,6 +1552,7 @@ in
 
         {
           assertion = all (host: !(host.enableACME && host.useACMEHost != null)) (attrValues virtualHosts);
+
           message = ''
             Options services.nginx.service.virtualHosts.<name>.enableACME and
             services.nginx.virtualHosts.<name>.useACMEHost are mutually exclusive.
@@ -1439,6 +1566,7 @@ in
               attrValues host.locations
             )
           ) (attrValues virtualHosts);
+
           message = ''
             Options services.nginx.service.virtualHosts.<name>.proxyPass and
             services.nginx.virtualHosts.<name>.uwsgiPass are mutually exclusive.
@@ -1479,6 +1607,7 @@ in
                 || (!vhostAuthority && hasAtLeastDefaultHttpListener)
               )
             ) (attrValues virtualHosts);
+
           message = ''
             services.nginx.virtualHosts.<name>.enableACME requires a HTTP listener
             to answer to ACME requests.
@@ -1487,6 +1616,7 @@ in
 
         {
           assertion = cfg.resolver.ipv4 || cfg.resolver.ipv6;
+
           message = ''
             At least one of services.nginx.resolver.ipv4 and services.nginx.resolver.ipv6 must be true.
           '';
@@ -1497,6 +1627,7 @@ in
         mkCertOwnershipAssertion {
           cert = config.security.acme.certs.${name};
           groups = config.users.groups;
+
           services = [
             config.systemd.services.nginx
           ]
@@ -1506,18 +1637,64 @@ in
         }
       ) vhostCertNames;
 
+    boot.kernelModules = optional (versionAtLeast config.boot.kernelPackages.kernel.version "4.17") "tls";
+    environment.etc."nginx/nginx.conf".source = configFile;
+
+    security.acme.certs =
+      let
+        # Here are two cases:
+        # - when no `useACMEHost` is set, the `serverName` acme certificate is the primary name and we need to configure it
+        # - when `useACMEHost` is set, this is also the primary name and we only need to configure the reloadServices property
+        acmePairs =
+          map (
+            vhostConfig:
+            let
+              hasRoot = vhostConfig.acmeRoot != null;
+            in
+            nameValuePair vhostConfig.serverName {
+              # Also nudge dnsProvider to null in case it is inherited
+              dnsProvider = mkOverride (if hasRoot then 1000 else 2000) null;
+              extraDomainNames = vhostConfig.serverAliases;
+              group = mkDefault cfg.group;
+              reloadServices = [ "nginx.service" ];
+              # if acmeRoot is null inherit config.security.acme
+              # Since config.security.acme.certs.<cert>.webroot's own default value
+              # should take precedence set priority higher than mkOptionDefault
+              webroot = mkOverride (if hasRoot then 1000 else 2000) vhostConfig.acmeRoot;
+              # Filter for enableACME-only vhosts. Don't want to create dud certs
+            }
+          ) (filter (vhostConfig: vhostConfig.useACMEHost == null) acmeEnabledVhosts)
+          ++ map (
+            vhostConfig:
+            nameValuePair vhostConfig.useACMEHost {
+              reloadServices = [ "nginx.service" ];
+            }
+          ) (filter (vhostConfig: vhostConfig.useACMEHost != null) acmeEnabledVhosts);
+      in
+      listToAttrs acmePairs;
+
+    services.logrotate.settings.nginx = mapAttrs (_: mkDefault) {
+      compress = true;
+      delaycompress = true;
+      files = [ "/var/log/nginx/*.log" ];
+      frequency = "weekly";
+      postrotate = "[ ! -f /var/run/nginx/nginx.pid ] || kill -USR1 `cat /var/run/nginx/nginx.pid`";
+      rotate = 26;
+      su = "${cfg.user} ${cfg.group}";
+    };
+
     services.nginx.additionalModules =
       optional cfg.recommendedBrotliSettings pkgs.nginxModules.brotli
       ++ lib.optional cfg.experimentalZstdSettings pkgs.nginxModules.zstd;
 
     services.nginx.virtualHosts.localhost = mkIf cfg.statusPage {
-      serverAliases = [ "127.0.0.1" ] ++ lib.optional config.networking.enableIPv6 "[::1]";
       listenAddresses = lib.mkDefault (
         [
           "0.0.0.0"
         ]
         ++ lib.optional enableIPv6 "[::]"
       );
+
       locations."/nginx_status" = {
         extraConfig = ''
           stub_status on;
@@ -1527,56 +1704,31 @@ in
           deny all;
         '';
       };
+
+      serverAliases = [ "127.0.0.1" ] ++ lib.optional config.networking.enableIPv6 "[::1]";
     };
 
     systemd.services = {
       nginx = {
-        description = "Nginx Web Server";
-        wantedBy = [ "multi-user.target" ];
-        wants = lib.optionals (!cfg.enableReload) (
-          concatLists (map (certName: [ "acme-${certName}.service" ]) vhostCertNames)
-        );
         after = [
           "network.target"
         ]
         # Ensure nginx runs with baseline certificates in place.
         ++ lib.optionals (!cfg.enableReload) (map (certName: "acme-${certName}.service") vhostCertNames);
+
         # Ensure nginx runs (with current config) before the actual ACME jobs run
         before = lib.optionals (!cfg.enableReload) (
           map (certName: "acme-order-renew-${certName}.service") vhostCertNames
         );
-        stopIfChanged = false;
+
+        description = "Nginx Web Server";
+
         preStart = ''
           ${cfg.preStart}
           ${execCommand} -t
         '';
 
-        startLimitIntervalSec = 60;
         serviceConfig = {
-          ExecStart = execCommand;
-          ExecReload = [
-            "${execCommand} -t"
-            "${pkgs.coreutils}/bin/kill -HUP $MAINPID"
-          ];
-          Restart = "always";
-          RestartSec = "10s";
-          # User and group
-          User = cfg.user;
-          Group = cfg.group;
-          # Runtime directory and mode
-          RuntimeDirectory = "nginx";
-          RuntimeDirectoryMode = "0750";
-          # Cache directory and mode
-          CacheDirectory = "nginx";
-          CacheDirectoryMode = "0750";
-          # Logs directory and mode
-          LogsDirectory = "nginx";
-          LogsDirectoryMode = "0750";
-          # Proc filesystem
-          ProcSubset = "pid";
-          ProtectProc = "invisible";
-          # New file permissions
-          UMask = "0027"; # 0640 / 0750
           # Capabilities
           AmbientCapabilities = [
             "CAP_NET_BIND_SERVICE"
@@ -1586,6 +1738,11 @@ in
             "CAP_SYS_ADMIN"
             "CAP_NET_ADMIN"
           ];
+
+          # Cache directory and mode
+          CacheDirectory = "nginx";
+          CacheDirectoryMode = "0750";
+
           CapabilityBoundingSet = [
             "CAP_NET_BIND_SERVICE"
             "CAP_SYS_RESOURCE"
@@ -1594,42 +1751,79 @@ in
             "CAP_SYS_ADMIN"
             "CAP_NET_ADMIN"
           ];
-          # Security
-          NoNewPrivileges = true;
-          # Sandboxing (sorted by occurrence in https://www.freedesktop.org/software/systemd/man/systemd.exec.html)
-          ProtectSystem = "strict";
-          ProtectHome = mkDefault true;
-          PrivateTmp = true;
-          PrivateDevices = true;
-          ProtectHostname = true;
-          ProtectClock = true;
-          ProtectKernelTunables = true;
-          ProtectKernelModules = true;
-          ProtectKernelLogs = true;
-          ProtectControlGroups = true;
-          RestrictAddressFamilies = [
-            "AF_UNIX"
-            "AF_INET"
-            "AF_INET6"
+
+          ExecReload = [
+            "${execCommand} -t"
+            "${pkgs.coreutils}/bin/kill -HUP $MAINPID"
           ];
-          RestrictNamespaces = true;
+
+          ExecStart = execCommand;
+          Group = cfg.group;
           LockPersonality = true;
+          # Logs directory and mode
+          LogsDirectory = "nginx";
+          LogsDirectoryMode = "0750";
+
           MemoryDenyWriteExecute =
             !(
               (builtins.any (mod: (mod.allowMemoryWriteExecute or false)) cfg.package.modules)
               || (lib.getName cfg.package == "openresty")
             );
+
+          # Security
+          NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateMounts = true;
+          PrivateTmp = true;
+          # Proc filesystem
+          ProcSubset = "pid";
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = mkDefault true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "invisible";
+          # Sandboxing (sorted by occurrence in https://www.freedesktop.org/software/systemd/man/systemd.exec.html)
+          ProtectSystem = "strict";
+          RemoveIPC = true;
+          Restart = "always";
+          RestartSec = "10s";
+
+          RestrictAddressFamilies = [
+            "AF_UNIX"
+            "AF_INET"
+            "AF_INET6"
+          ];
+
+          RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-          RemoveIPC = true;
-          PrivateMounts = true;
+          # Runtime directory and mode
+          RuntimeDirectory = "nginx";
+          RuntimeDirectoryMode = "0750";
           # System Call Filtering
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "~@cpu-emulation @debug @keyring @mount @obsolete @privileged @setuid"
           ]
           ++ optional cfg.enableQuicBPF [ "bpf" ];
+
+          # New file permissions
+          UMask = "0027"; # 0640 / 0750
+          # User and group
+          User = cfg.user;
         };
+
+        startLimitIntervalSec = 60;
+        stopIfChanged = false;
+        wantedBy = [ "multi-user.target" ];
+
+        wants = lib.optionals (!cfg.enableReload) (
+          concatLists (map (certName: [ "acme-${certName}.service" ]) vhostCertNames)
+        );
       };
 
       # This service waits for all certificates to be available
@@ -1643,33 +1837,37 @@ in
           sslOrderRenewServices = map (certName: "acme-order-renew-${certName}.service") vhostCertNames;
         in
         mkIf (cfg.enableReload || vhostCertNames != [ ]) {
-          wants = optionals cfg.enableReload [ "nginx.service" ];
-          # Reload config directly after the self-signed certificates have been requested
-          # This is required for HTTP-01 ACME challenges, as the vHost with `.well-known/acme-challenge`
-          # must already exist. Another reload with the actual certificate is triggered
-          # with `security.acme.certs.<...>.reloadServices`
-          wantedBy = [ "multi-user.target" ] ++ optionals cfg.enableReload sslServices;
           after = optionals cfg.enableReload sslServices;
           before = optionals cfg.enableReload sslOrderRenewServices;
           restartTriggers = optionals cfg.enableReload [ configFile ];
+
+          serviceConfig = {
+            ExecCondition = "/run/current-system/systemd/bin/systemctl -q is-active nginx.service";
+            ExecStart = "/run/current-system/systemd/bin/systemctl reload nginx.service";
+            TimeoutSec = 60;
+            Type = "oneshot";
+          };
+
           # Block reloading if not all certs exist yet.
           # Happens when config changes add new vhosts/certs.
           unitConfig = {
             ConditionPathExists = optionals (vhostCertNames != [ ]) (
               map (certName: certs.${certName}.directory + "/fullchain.pem") vhostCertNames
             );
+
             # Disable rate limiting for this, because it may be triggered quickly a bunch of times
             # if a lot of certificates are renewed in quick succession. The reload itself is cheap,
             # so even doing a lot of them in a short burst is fine.
             # FIXME: there's probably a better way to do this.
             StartLimitIntervalSec = 0;
           };
-          serviceConfig = {
-            Type = "oneshot";
-            TimeoutSec = 60;
-            ExecCondition = "/run/current-system/systemd/bin/systemctl -q is-active nginx.service";
-            ExecStart = "/run/current-system/systemd/bin/systemctl reload nginx.service";
-          };
+
+          # Reload config directly after the self-signed certificates have been requested
+          # This is required for HTTP-01 ACME challenges, as the vHost with `.well-known/acme-challenge`
+          # must already exist. Another reload with the actual certificate is triggered
+          # with `security.acme.certs.<...>.reloadServices`
+          wantedBy = [ "multi-user.target" ] ++ optionals cfg.enableReload sslServices;
+          wants = optionals cfg.enableReload [ "nginx.service" ];
         };
     }
     # When reload is enabled, add the systemd dependency to the acme unit to prevent restarts
@@ -1691,40 +1889,14 @@ in
       )
     );
 
-    environment.etc."nginx/nginx.conf".source = configFile;
+    # do not delete the default temp directories created upon nginx startup
+    systemd.tmpfiles.rules = [
+      "X /tmp/systemd-private-%b-nginx.service-*/tmp/nginx_*"
+    ];
 
-    security.acme.certs =
-      let
-        # Here are two cases:
-        # - when no `useACMEHost` is set, the `serverName` acme certificate is the primary name and we need to configure it
-        # - when `useACMEHost` is set, this is also the primary name and we only need to configure the reloadServices property
-        acmePairs =
-          map (
-            vhostConfig:
-            let
-              hasRoot = vhostConfig.acmeRoot != null;
-            in
-            nameValuePair vhostConfig.serverName {
-              reloadServices = [ "nginx.service" ];
-              group = mkDefault cfg.group;
-              # if acmeRoot is null inherit config.security.acme
-              # Since config.security.acme.certs.<cert>.webroot's own default value
-              # should take precedence set priority higher than mkOptionDefault
-              webroot = mkOverride (if hasRoot then 1000 else 2000) vhostConfig.acmeRoot;
-              # Also nudge dnsProvider to null in case it is inherited
-              dnsProvider = mkOverride (if hasRoot then 1000 else 2000) null;
-              extraDomainNames = vhostConfig.serverAliases;
-              # Filter for enableACME-only vhosts. Don't want to create dud certs
-            }
-          ) (filter (vhostConfig: vhostConfig.useACMEHost == null) acmeEnabledVhosts)
-          ++ map (
-            vhostConfig:
-            nameValuePair vhostConfig.useACMEHost {
-              reloadServices = [ "nginx.service" ];
-            }
-          ) (filter (vhostConfig: vhostConfig.useACMEHost != null) acmeEnabledVhosts);
-      in
-      listToAttrs acmePairs;
+    users.groups = optionalAttrs (cfg.group == "nginx") {
+      nginx.gid = config.ids.gids.nginx;
+    };
 
     users.users = optionalAttrs (cfg.user == "nginx") {
       nginx = {
@@ -1733,28 +1905,8 @@ in
         uid = config.ids.uids.nginx;
       };
     };
-
-    users.groups = optionalAttrs (cfg.group == "nginx") {
-      nginx.gid = config.ids.gids.nginx;
-    };
-
-    boot.kernelModules = optional (versionAtLeast config.boot.kernelPackages.kernel.version "4.17") "tls";
-
-    # do not delete the default temp directories created upon nginx startup
-    systemd.tmpfiles.rules = [
-      "X /tmp/systemd-private-%b-nginx.service-*/tmp/nginx_*"
-    ];
-
-    services.logrotate.settings.nginx = mapAttrs (_: mkDefault) {
-      files = [ "/var/log/nginx/*.log" ];
-      frequency = "weekly";
-      su = "${cfg.user} ${cfg.group}";
-      rotate = 26;
-      compress = true;
-      delaycompress = true;
-      postrotate = "[ ! -f /var/run/nginx/nginx.pid ] || kill -USR1 `cat /var/run/nginx/nginx.pid`";
-    };
   };
+
   meta.maintainers = [
     lib.maintainers.leona
     lib.maintainers.ma27

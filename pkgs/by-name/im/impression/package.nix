@@ -3,23 +3,23 @@
   stdenv,
   fetchFromGitLab,
   blueprint-compiler,
-  cargo,
-  desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
-  rustPlatform,
-  rustc,
-  wrapGAppsHook4,
   cairo,
+  cargo,
   dbus,
+  desktop-file-utils,
   gdk-pixbuf,
   glib,
   gtk4,
   libadwaita,
+  meson,
+  ninja,
+  nix-update-script,
   openssl,
   pango,
-  nix-update-script,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,11 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "Impression";
     tag = "v${finalAttrs.version}";
     hash = "sha256-EyVbK+E9X9q+O/2RItJDXjQNsLZ3cn2YmK9Ct98w8IQ=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-Mvpy5aDeu4qycSj+fp4DfRNLv6T2Ksqgjt5GFTkjS6U=";
   };
 
   nativeBuildInputs = [
@@ -61,6 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-Mvpy5aDeu4qycSj+fp4DfRNLv6T2Ksqgjt5GFTkjS6U=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -70,9 +70,9 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/adhami3310/Impression";
     changelog = "https://gitlab.com/adhami3310/Impression/-/releases/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "impression";
     maintainers = with lib.maintainers; [ dotlambda ];
-    teams = [ lib.teams.gnome-circle ];
     platforms = lib.platforms.linux;
+    mainProgram = "impression";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

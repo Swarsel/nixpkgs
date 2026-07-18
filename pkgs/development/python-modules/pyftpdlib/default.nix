@@ -4,8 +4,8 @@
   fetchPypi,
   mock,
   psutil,
-  pyasyncore,
   pyasynchat,
+  pyasyncore,
   pyopenssl,
   pysendfile,
   setuptools,
@@ -14,12 +14,20 @@
 buildPythonPackage rec {
   pname = "pyftpdlib";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-S6BkIHh5LfY907LpyPg48qPs9CjHUY1ZIcBTDVNRKs8=";
   };
+
+  # Impure filesystem-related tests cause timeouts
+  # on Hydra: https://hydra.nixos.org/build/84374861
+  doCheck = false;
+
+  nativeCheckInputs = [
+    mock
+    psutil
+  ];
 
   build-system = [ setuptools ];
 
@@ -33,15 +41,7 @@ buildPythonPackage rec {
     ssl = [ pyopenssl ];
   };
 
-  nativeCheckInputs = [
-    mock
-    psutil
-  ];
-
-  # Impure filesystem-related tests cause timeouts
-  # on Hydra: https://hydra.nixos.org/build/84374861
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyftpdlib" ];
 
   meta = {

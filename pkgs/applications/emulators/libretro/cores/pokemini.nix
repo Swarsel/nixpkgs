@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "pokemini";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-iXHUk0gWciJCKfbfIa2pOBPIOeKg1yRahNKesLRC8v8=";
   };
 
+  core = "pokemini";
   makefile = "Makefile";
 
   meta = {

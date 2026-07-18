@@ -1,11 +1,9 @@
 { buildRedist }:
 buildRedist {
-  redistName = "cuda";
   pname = "cuda_documentation";
-
   outputs = [ "out" ];
-
   allowFHSReferences = true;
+  redistName = "cuda";
 
   meta = {
     homepage = "https://docs.nvidia.com/cuda";

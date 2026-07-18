@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   igraph,
   matplotlib,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "iplotx";
   version = "1.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fabilab";
@@ -23,6 +22,16 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-vLYjTYdt3ctaUwnzV73vNWu2uKpER92SH8uqeLR/G7M=";
   };
+
+  postPatch = ''
+    # silence matplotlib warning
+    export MPLCONFIGDIR=$(mktemp -d)
+  '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [ hatchling ];
 
@@ -32,18 +41,6 @@ buildPythonPackage (finalAttrs: {
     pandas
     pylint
   ];
-
-  pythonRelaxDeps = [ "pylint" ];
-
-  optional-dependencies = {
-    igraph = [ igraph ];
-    networkx = [ networkx ];
-  };
-
-  postPatch = ''
-    # silence matplotlib warning
-    export MPLCONFIGDIR=$(mktemp -d)
-  '';
 
   disabledTests = [
     # These tests result in an ImageComparisonFailure
@@ -57,12 +54,14 @@ buildPythonPackage (finalAttrs: {
     "test_vertex_labels"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+  optional-dependencies = {
+    igraph = [ igraph ];
+    networkx = [ networkx ];
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "iplotx" ];
+  pythonRelaxDeps = [ "pylint" ];
 
   meta = {
     description = "Plot networkx from igraph and networkx";

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  glfw,
+  binaryen,
+  boehmgc,
   freetype,
-  openssl,
+  glfw,
+  libx11,
+  libxau,
+  libxdmcp,
   makeWrapper,
+  openssl,
   pkg-config,
   sqlite,
   upx,
-  boehmgc,
-  libxdmcp,
-  libxau,
-  libx11,
   xorgproto,
-  binaryen,
 }:
 
 let
@@ -28,6 +28,7 @@ let
   vc = stdenv.mkDerivation {
     pname = "v.c";
     version = "0.5.2";
+
     src = fetchFromGitHub {
       owner = "vlang";
       repo = "vc";
@@ -48,18 +49,18 @@ let
   };
   # Required for vdoc.
   markdown = fetchFromGitHub {
+    hash = "sha256-drhDQYm7yiL+EDyslkTb0MGA9NQRrDLVg3IElwXAIIY=";
     owner = "vlang";
     repo = "markdown";
     rev = "ef2f1018c37c1db6e379331b3cd841331b6a6fd2";
-    hash = "sha256-drhDQYm7yiL+EDyslkTb0MGA9NQRrDLVg3IElwXAIIY=";
   };
   boehmgcStatic = boehmgc.override {
     enableStatic = true;
   };
 in
 stdenv.mkDerivation {
-  pname = "vlang";
   inherit version;
+  pname = "vlang";
 
   src = fetchFromGitHub {
     owner = "vlang";
@@ -67,14 +68,6 @@ stdenv.mkDerivation {
     rev = version;
     hash = "sha256-0PInqMmb4sNzJwVD9SMhTXzvxMdaC1uIJl7fpdXKESE=";
   };
-
-  propagatedBuildInputs = [
-    glfw
-    freetype
-    openssl
-    sqlite
-  ]
-  ++ lib.optional stdenv.hostPlatform.isUnix upx;
 
   nativeBuildInputs = [
     makeWrapper
@@ -90,6 +83,14 @@ stdenv.mkDerivation {
     libxdmcp
     xorgproto
   ];
+
+  propagatedBuildInputs = [
+    glfw
+    freetype
+    openssl
+    sqlite
+  ]
+  ++ lib.optional stdenv.hostPlatform.isUnix upx;
 
   makeFlags = [
     "local=1"
@@ -137,14 +138,16 @@ stdenv.mkDerivation {
   '';
 
   meta = {
+    description = "Simple, fast, safe, compiled language for developing maintainable software";
     homepage = "https://vlang.io/";
     changelog = "https://github.com/vlang/v/releases/tag/${version}";
-    description = "Simple, fast, safe, compiled language for developing maintainable software";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       delta231
     ];
-    mainProgram = "v";
+
     platforms = lib.platforms.all;
+    mainProgram = "v";
   };
 }

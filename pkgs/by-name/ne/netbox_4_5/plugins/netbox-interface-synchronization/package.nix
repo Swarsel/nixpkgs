@@ -1,27 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   django,
   netaddr,
+  # tests
+  netbox,
   numpy,
   psycopg,
   requests,
-
-  # tests
-  netbox,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-interface-synchronization";
   version = "4.5.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "NetTech2001";
@@ -30,6 +25,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DZ1xOfHop/rASWbBzVILVqvll94tQM7tRiSXwOo/QQI=";
   };
 
+  # netbox is required for the pythonImportsCheck; plugin does not provide unit tests
+  nativeCheckInputs = [ netbox ];
+
+  preFixup = ''
+    export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
+  '';
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,13 +43,7 @@ buildPythonPackage (finalAttrs: {
     psycopg # not specified in pyproject.toml, but required at import time
   ];
 
-  # netbox is required for the pythonImportsCheck; plugin does not provide unit tests
-  nativeCheckInputs = [ netbox ];
-
-  preFixup = ''
-    export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "netbox_interface_synchronization" ];
 
   meta = {
@@ -54,7 +51,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/NetTech2001/netbox-interface-synchronization";
     changelog = "https://github.com/NetTech2001/netbox-interface-synchronization/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ felbinger ];
+    platforms = lib.platforms.linux;
   };
 })

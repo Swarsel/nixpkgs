@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docker,
-  fetchFromGitHub,
   keystoneauth1,
   openstackdocstheme,
   osc-lib,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "python-zunclient";
   version = "5.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -29,35 +28,12 @@ buildPythonPackage rec {
     hash = "sha256-Ps4V05obkbiy4dbPBOff3WQ1d502Ie303jAmtatNOdc=";
   };
 
-  env.PBR_VERSION = version;
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
   nativeBuildInputs = [
     openstackdocstheme
     sphinxHook
   ];
 
-  sphinxBuilders = [ "man" ];
-
-  # python-openstackclient is unused upstream
-  # and will cause infinite recursion in openstackclient-full package.
-  pythonRemoveDeps = [ "python-openstackclient" ];
-
-  dependencies = [
-    docker
-    keystoneauth1
-    osc-lib
-    oslo-i18n
-    oslo-log
-    oslo-utils
-    prettytable
-    websocket-client
-  ];
-
+  env.PBR_VERSION = version;
   nativeCheckInputs = [ stestr ];
 
   checkPhase = ''
@@ -77,11 +53,32 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  dependencies = [
+    docker
+    keystoneauth1
+    osc-lib
+    oslo-i18n
+    oslo-log
+    oslo-utils
+    prettytable
+    websocket-client
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "zunclient" ];
+  # python-openstackclient is unused upstream
+  # and will cause infinite recursion in openstackclient-full package.
+  pythonRemoveDeps = [ "python-openstackclient" ];
+  sphinxBuilders = [ "man" ];
 
   meta = {
-    homepage = "https://github.com/openstack/python-zunclient";
     description = "Client library for OpenStack Zun API";
+    homepage = "https://github.com/openstack/python-zunclient";
     license = lib.licenses.asl20;
     mainProgram = "zun";
     teams = [ lib.teams.openstack ];

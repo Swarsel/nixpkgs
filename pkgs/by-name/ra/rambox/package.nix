@@ -1,7 +1,7 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
   makeDesktopItem,
 }:
 
@@ -14,16 +14,16 @@ appimageTools.wrapType2 rec {
     hash = "sha256-YVLT+6o2Py796LBgN7ZgMiigbjBFGyTNaG/bSwJYAXk=";
   };
 
-  desktopItem = makeDesktopItem {
-    desktopName = "Rambox";
-    name = "rambox";
-    exec = "rambox";
-    icon = "rambox";
-    categories = [ "Network" ];
-  };
-
   appimageContents = appimageTools.extract {
     inherit pname version src;
+  };
+
+  desktopItem = makeDesktopItem {
+    categories = [ "Network" ];
+    desktopName = "Rambox";
+    exec = "rambox";
+    icon = "rambox";
+    name = "rambox";
   };
 
   extraInstallCommands = ''
@@ -38,8 +38,8 @@ appimageTools.wrapType2 rec {
     description = "Workspace Simplifier - a cross-platform application organizing web services into Workspaces similar to browser profiles";
     homepage = "https://rambox.app";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ nazarewk ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

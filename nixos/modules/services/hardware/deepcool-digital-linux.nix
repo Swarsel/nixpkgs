@@ -1,22 +1,24 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
   cfg = config.services.hardware.deepcool-digital-linux;
 in
 {
-  meta.maintainers = [ lib.maintainers.NotAShelf ];
-
   options.services.hardware.deepcool-digital-linux = {
     enable = lib.mkEnableOption "DeepCool Digital monitoring daemon";
     package = lib.mkPackageOption pkgs "deepcool-digital-linux" { };
 
     extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
+      description = ''
+        Extra command line arguments to be passed to the deepcool-digital-linux daemon.
+      '';
+
       example = lib.literalExpression ''
         [
           # Change the update interval
@@ -25,23 +27,27 @@ in
           "--alarm"
         ]
       '';
-      description = ''
-        Extra command line arguments to be passed to the deepcool-digital-linux daemon.
-      '';
+
+      type = lib.types.listOf lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
+
     systemd.services.deepcool-digital-linux = {
       description = "DeepCool Digital";
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        StateDirectory = "deepcool-digital-linux";
-        WorkingDirectory = "/var/lib/deepcool-digital-linux";
         ExecStart = "${lib.getExe cfg.package} ${lib.escapeShellArgs cfg.extraArgs}";
         Restart = "always";
+        StateDirectory = "deepcool-digital-linux";
+        WorkingDirectory = "/var/lib/deepcool-digital-linux";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = [ lib.maintainers.NotAShelf ];
 }

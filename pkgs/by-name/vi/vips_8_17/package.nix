@@ -2,27 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # Native build inputs
-  docbook-xsl-nons,
-  gi-docgen,
-  gobject-introspection,
-  meson,
-  ninja,
-  pkg-config,
   buildPackages,
-
-  # Build inputs
-  expat,
-  glib,
-  libxml2,
-  python3,
-
   # Optional dependencies
   cfitsio,
   cgif,
+  # Native build inputs
+  docbook-xsl-nons,
+  # Build inputs
+  expat,
   fftw,
+  gi-docgen,
+  glib,
+  gobject-introspection,
   imagemagick,
+  # meta
+  immich,
   lcms2,
   libarchive,
   libexif,
@@ -31,31 +25,45 @@
   libimagequant,
   libjpeg,
   libjxl,
-  librsvg,
   libpng,
+  librsvg,
   libtiff,
   libwebp,
+  libxml2,
   matio,
+  meson,
+  ninja,
+  nix-update-script,
   openexr,
   openjpeg,
   openslide,
   pango,
+  pkg-config,
   poppler,
+  python3,
+  # passthru
+  testers,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-
-  # passthru
-  testers,
-  nix-update-script,
-
-  # meta
-  immich,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "vips";
   version = "8.17.3";
+
+  src = fetchFromGitHub {
+    owner = "libvips";
+    repo = "libvips";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-yxjfkb2R3JPHbz0vCG4hkW9Davoc9MUPHL9Cqc+Ik0Y=";
+
+    # Remove unicode file names which leads to different checksums on HFS+
+    # vs. other filesystems because of unicode normalisation.
+    postFetch = ''
+      rm -r $out/test/test-suite/images/
+    '';
+  };
 
   outputs = [
     "bin"
@@ -64,18 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ]
   ++ lib.optionals (!stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isFreeBSD) [ "devdoc" ];
-
-  src = fetchFromGitHub {
-    owner = "libvips";
-    repo = "libvips";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-yxjfkb2R3JPHbz0vCG4hkW9Davoc9MUPHL9Cqc+Ik0Y=";
-    # Remove unicode file names which leads to different checksums on HFS+
-    # vs. other filesystems because of unicode normalisation.
-    postFetch = ''
-      rm -r $out/test/test-suite/images/
-    '';
-  };
 
   postPatch = ''
     patchShebangs .
@@ -145,14 +141,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests = {
+      version = testers.testVersion {
+        command = "vips --version";
+        package = finalAttrs.finalPackage;
+      };
+
       pkg-config = testers.hasPkgConfigModules {
         package = finalAttrs.finalPackage;
       };
-      version = testers.testVersion {
-        package = finalAttrs.finalPackage;
-        command = "vips --version";
-      };
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -162,16 +160,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/libvips/libvips/blob/${finalAttrs.src.rev}/ChangeLog";
-    homepage = "https://www.libvips.org/";
-    description = "Image processing system for large images";
-    license = lib.licenses.lgpl2Plus;
     inherit (immich.meta) maintainers;
+    description = "Image processing system for large images";
+    homepage = "https://www.libvips.org/";
+    changelog = "https://github.com/libvips/libvips/blob/${finalAttrs.src.rev}/ChangeLog";
+    license = lib.licenses.lgpl2Plus;
+    platforms = lib.platforms.unix;
+    mainProgram = "vips";
+
     pkgConfigModules = [
       "vips"
       "vips-cpp"
     ];
-    platforms = lib.platforms.unix;
-    mainProgram = "vips";
   };
 })

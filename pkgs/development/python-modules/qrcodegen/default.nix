@@ -1,25 +1,18 @@
 {
   lib,
   buildPythonPackage,
+  python,
   qrcodegen,
   setuptools,
-  python,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "qrcodegen";
-  pyproject = true;
-
   inherit (qrcodegen)
     version
     src
     ;
 
-  sourceRoot = "${finalAttrs.src.name}/python";
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "qrcodegen" ];
+  pname = "qrcodegen";
 
   checkPhase = ''
     runHook preCheck
@@ -28,6 +21,11 @@ buildPythonPackage (finalAttrs: {
 
     runHook postCheck
   '';
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "qrcodegen" ];
+  sourceRoot = "${finalAttrs.src.name}/python";
 
   meta = {
     inherit (qrcodegen.meta)

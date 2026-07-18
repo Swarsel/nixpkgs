@@ -1,15 +1,16 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  runCommand,
-  ran,
+  fetchFromGitHub,
+  buildGoModule,
   curl,
+  ran,
+  runCommand,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "ran";
   version = "0.1.6";
+
   src = fetchFromGitHub {
     owner = "m3ng9i";
     repo = "ran";
@@ -18,7 +19,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ObroruWWNilHIclqNvbEaa7vwk+1zMzDKbjlVs7Fito=";
-
   env.CGO_ENABLED = 0;
 
   ldflags = [
@@ -41,10 +41,10 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/m3ng9i/ran";
     description = "Simple web server for serving static files";
-    mainProgram = "ran";
+    homepage = "https://github.com/m3ng9i/ran";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomberek ];
+    mainProgram = "ran";
   };
 })

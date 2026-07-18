@@ -1,14 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
   cunit,
   docbook5,
-  fetchFromGitHub,
   gdalMinimal,
   geos,
   jitSupport,
   json_c,
-  lib,
   libiconv,
   libtool,
   libxml2,
@@ -23,11 +24,9 @@
   postgresqlTestHook,
   proj,
   protobufc,
-  stdenv,
-  which,
-
-  withSfcgal ? false,
   sfcgal,
+  which,
+  withSfcgal ? false,
 }:
 
 let
@@ -37,11 +36,6 @@ postgresqlBuildExtension (finalAttrs: {
   pname = "postgis";
   version = "3.6.4";
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   src = fetchFromGitHub {
     owner = "postgis";
     repo = "postgis";
@@ -49,16 +43,10 @@ postgresqlBuildExtension (finalAttrs: {
     hash = "sha256-ZRBrZ23s0w3noFU6L3Ke9G/Z8d7xGGg3qo/2GPDpbK4=";
   };
 
-  buildInputs = [
-    geos
-    proj
-    gdal
-    json_c
-    protobufc
-    pcre2.dev
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin libiconv
-  ++ lib.optional withSfcgal sfcgal;
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   nativeBuildInputs = [
     autoconf
@@ -72,27 +60,16 @@ postgresqlBuildExtension (finalAttrs: {
   ]
   ++ lib.optional jitSupport llvm;
 
-  dontDisableStatic = true;
-
-  checkInputs = [
-    cunit
-  ];
-
-  nativeCheckInputs = [
-    postgresql
-    postgresqlTestHook
-    libxslt
-  ];
-
-  postgresqlTestUserOptions = "LOGIN SUPERUSER";
-
-  # postgis config directory assumes /include /lib from the same root for json-c library
-  env.NIX_LDFLAGS = "-L${lib.getLib json_c}/lib";
-
-  setOutputFlags = false;
-  preConfigure = ''
-    ./autogen.sh
-  '';
+  buildInputs = [
+    geos
+    proj
+    gdal
+    json_c
+    protobufc
+    pcre2.dev
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin libiconv
+  ++ lib.optional withSfcgal sfcgal;
 
   configureFlags =
     let
@@ -111,7 +88,24 @@ postgresqlBuildExtension (finalAttrs: {
     "PERL=${perl}/bin/perl"
   ];
 
+  # postgis config directory assumes /include /lib from the same root for json-c library
+  env.NIX_LDFLAGS = "-L${lib.getLib json_c}/lib";
+
+  preConfigure = ''
+    ./autogen.sh
+  '';
+
   doCheck = stdenv.hostPlatform.isLinux;
+
+  nativeCheckInputs = [
+    postgresql
+    postgresqlTestHook
+    libxslt
+  ];
+
+  checkInputs = [
+    cunit
+  ];
 
   preCheck = ''
     substituteInPlace doc/postgis-out.xml --replace-fail "http://docbook.org/xml/5.0/dtd/docbook.dtd" "${docbook5}/xml/dtd/docbook/docbookx.dtd"
@@ -129,8 +123,26 @@ postgresqlBuildExtension (finalAttrs: {
     mv doc/* $doc/share/doc/postgis/
   '';
 
+  dontDisableStatic = true;
+  postgresqlTestUserOptions = "LOGIN SUPERUSER";
+  setOutputFlags = false;
+
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
+
+    asserts = [
+      {
+        description = "postgis_version() returns correct values.";
+        expected = "'${lib.versions.major finalAttrs.version}.${lib.versions.minor finalAttrs.version} USE_GEOS=1 USE_PROJ=1 USE_STATS=1'";
+        query = "postgis_version()";
+      }
+    ]
+    ++ lib.optional withSfcgal {
+      description = "postgis_sfcgal_version() returns correct value.";
+      expected = "'${sfcgal.version}'";
+      query = "postgis_sfcgal_version()";
+    };
+
     sql = ''
       CREATE EXTENSION postgis;
       CREATE EXTENSION postgis_raster;
@@ -151,27 +163,15 @@ postgresqlBuildExtension (finalAttrs: {
 
       SELECT name from geometries where cg_isplanar(geom);
     '';
-    asserts = [
-      {
-        query = "postgis_version()";
-        expected = "'${lib.versions.major finalAttrs.version}.${lib.versions.minor finalAttrs.version} USE_GEOS=1 USE_PROJ=1 USE_STATS=1'";
-        description = "postgis_version() returns correct values.";
-      }
-    ]
-    ++ lib.optional withSfcgal {
-      query = "postgis_sfcgal_version()";
-      expected = "'${sfcgal.version}'";
-      description = "postgis_sfcgal_version() returns correct value.";
-    };
   };
 
   meta = {
+    inherit (postgresql.meta) platforms;
     description = "Geographic Objects for PostgreSQL";
     homepage = "https://postgis.net/";
     changelog = "https://git.osgeo.org/postgis/postgis/raw/tag/${finalAttrs.version}/NEWS";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     teams = [ lib.teams.geospatial ];
-    inherit (postgresql.meta) platforms;
   };
 })

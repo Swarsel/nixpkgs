@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unstableGitUpdater,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "nampa";
   version = "1.0-unstable-2024-12-18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thebabush";
@@ -18,13 +17,11 @@ buildPythonPackage {
     hash = "sha256-4NEfrx5cR6Zk713oBRZBe52mrbHKhs1doJFAdjnobig=";
   };
 
-  build-system = [ setuptools ];
-
   # Not used for binaryninja as plugin
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "nampa" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   elfutils,
-  pkg-config,
-  stdenv,
-  zlib,
-  lib,
   nixosTests,
+  pkg-config,
+  zlib,
 }:
 
 # update bot does not seem to limit updates here to 0.8.x despite
@@ -25,45 +25,48 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     elfutils
     zlib
   ];
 
-  enableParallelBuilding = true;
   makeFlags = [
     "PREFIX=$(out)"
     "-C src"
   ];
-
-  passthru.tests = {
-    bpf = nixosTests.bpf;
-  };
 
   postInstall = ''
     # install linux's libbpf-compatible linux/btf.h
     install -Dm444 include/uapi/linux/*.h -t $out/include/linux
   '';
 
+  enableParallelBuilding = true;
+
+  passthru.tests = {
+    bpf = nixosTests.bpf;
+  };
+
   # FIXME: Multi-output requires some fixes to the way the pkg-config file is
   # constructed (it gets put in $out instead of $dev for some reason, with
   # improper paths embedded). Don't enable it for now.
-
   # outputs = [ "out" "dev" ];
-
   meta = {
     description = "Upstream mirror of libbpf";
     homepage = "https://github.com/libbpf/libbpf";
+
     license = with lib.licenses; [
       lgpl21 # or
       bsd2
     ];
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       vcunat
       saschagrunert
       martinetd
     ];
+
     platforms = lib.platforms.linux;
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "libbpf_project" version;
   };

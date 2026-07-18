@@ -1,21 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-
   # tests
   gitMinimal,
-  ripgrep,
-  writableTmpDirAsHomeHook,
-
-  versionCheckHook,
   nix-update-script,
+  python3Packages,
+  ripgrep,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "seagoat";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kantord";
@@ -24,15 +21,33 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-HdIvXXpMEynZV6J++kClNDubXuPORn6GEPHSD+UYBv0=";
   };
 
-  build-system = [ python3Packages.poetry-core ];
+  nativeCheckInputs =
+    with python3Packages;
+    [
+      pytestCheckHook
+      freezegun
+      pytest-asyncio
+      pytest-mock
+      pytest-snapshot
+    ]
+    ++ [
+      gitMinimal
+      ripgrep
+      versionCheckHook
+      writableTmpDirAsHomeHook
+    ];
 
-  pythonRelaxDeps = [
-    "chromadb"
-    "psutil"
-    "setuptools"
-    "stop-words"
-    "ollama"
-  ];
+  preCheck = ''
+    git init
+  '';
+
+  postInstall = ''
+    wrapProgram $out/bin/seagoat-server \
+      --prefix PATH : "${ripgrep}/bin"
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ python3Packages.poetry-core ];
 
   dependencies = with python3Packages; [
     appdirs
@@ -54,39 +69,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
     waitress
   ];
 
-  nativeCheckInputs =
-    with python3Packages;
-    [
-      pytestCheckHook
-      freezegun
-      pytest-asyncio
-      pytest-mock
-      pytest-snapshot
-    ]
-    ++ [
-      gitMinimal
-      ripgrep
-      versionCheckHook
-      writableTmpDirAsHomeHook
-    ];
-
-  disabledTests = import ./failing_tests.nix;
-
   # require network access
   disabledTestPaths = [
     "tests/test_chroma.py"
   ];
 
-  preCheck = ''
-    git init
-  '';
+  disabledTests = import ./failing_tests.nix;
+  pyproject = true;
 
-  __darwinAllowLocalNetworking = true;
-
-  postInstall = ''
-    wrapProgram $out/bin/seagoat-server \
-      --prefix PATH : "${ripgrep}/bin"
-  '';
+  pythonRelaxDeps = [
+    "chromadb"
+    "psutil"
+    "setuptools"
+    "stop-words"
+    "ollama"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };

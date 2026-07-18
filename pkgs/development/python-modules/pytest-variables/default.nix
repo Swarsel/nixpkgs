@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
-  pytest,
   hjson,
-  toml,
+  pytest,
   pytestCheckHook,
   pyyaml,
+  toml,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-variables";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-adKoE3td12JtF2f6/1/+TlSIy4i6gRDmeeWalsE6B/w=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [
     hatch-vcs
@@ -36,8 +37,7 @@ buildPythonPackage rec {
     yaml = [ pyyaml ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_variables" ];
 
   meta = {

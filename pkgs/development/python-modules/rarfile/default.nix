@@ -1,13 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   libarchive,
+  pytestCheckHook,
   setuptools,
+  unrar,
   # unrar is non-free software
   useUnrar ? false,
-  unrar,
 }:
 
 assert useUnrar -> unrar != null;
@@ -16,7 +16,6 @@ assert !useUnrar -> libarchive != null;
 buildPythonPackage rec {
   pname = "rarfile";
   version = "4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "markokr";
@@ -24,6 +23,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ZiwD2LG25fMd4Z+QWsh/x3ceG5QRBH4s/TZDwMnfpNI=";
   };
+
+  # The tests only work with the standard unrar package
+  doCheck = useUnrar;
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   prePatch = ''
     substituteInPlace rarfile.py \
@@ -40,13 +44,7 @@ buildPythonPackage rec {
   )
   + "";
 
-  build-system = [ setuptools ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # The tests only work with the standard unrar package
-  doCheck = useUnrar;
-
+  pyproject = true;
   pythonImportsCheck = [ "rarfile" ];
 
   meta = {

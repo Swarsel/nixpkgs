@@ -1,45 +1,45 @@
 {
-  stdenv,
   lib,
-  makeWrapper,
+  stdenv,
   fetchurl,
-  dpkg,
-  wrapGAppsHook3,
-  autoPatchelfHook,
-  gtk3,
-  cairo,
-  pango,
+  alsa-lib,
+  at-spi2-atk,
   atk,
+  autoPatchelfHook,
+  cairo,
+  cups,
+  curl,
+  dbus,
+  dpkg,
+  expat,
+  fontconfig,
   gdk-pixbuf,
   glib,
-  at-spi2-atk,
-  dbus,
-  libx11,
-  libxcb,
-  libxi,
-  libxcursor,
-  libxdamage,
-  libxrandr,
-  libxcomposite,
-  libxext,
-  libxfixes,
-  libxrender,
-  libxtst,
-  libxscrnsaver,
-  nss,
-  nspr,
-  alsa-lib,
-  cups,
-  fontconfig,
-  expat,
-  libudev0-shim,
   glibc,
-  curl,
-  openssl,
-  libnghttp2,
   gsettings-desktop-schemas,
+  gtk3,
   libdrm,
   libgbm,
+  libnghttp2,
+  libudev0-shim,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxtst,
+  makeWrapper,
+  nspr,
+  nss,
+  openssl,
+  pango,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,6 +51,13 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/polar-bookshelf.mirror/v${finalAttrs.version}/polar-desktop-app-${finalAttrs.version}-amd64.deb";
     hash = "sha256-jcq0hW698bAhVM3fLQQeKAnld33XLkHsGjS3QwUpciQ=";
   };
+
+  nativeBuildInputs = [
+    wrapGAppsHook3
+    autoPatchelfHook
+    makeWrapper
+    dpkg
+  ];
 
   buildInputs = [
     libdrm
@@ -84,21 +91,6 @@ stdenv.mkDerivation (finalAttrs: {
     expat
   ];
 
-  nativeBuildInputs = [
-    wrapGAppsHook3
-    autoPatchelfHook
-    makeWrapper
-    dpkg
-  ];
-
-  runtimeLibs = lib.makeLibraryPath [
-    libudev0-shim
-    glibc
-    curl
-    openssl
-    libnghttp2
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -123,14 +115,22 @@ stdenv.mkDerivation (finalAttrs: {
     gappsWrapperArgs+=(--prefix LD_LIBRARY_PATH : "${finalAttrs.runtimeLibs}" )
   '';
 
+  runtimeLibs = lib.makeLibraryPath [
+    libudev0-shim
+    glibc
+    curl
+    openssl
+    libnghttp2
+  ];
+
   meta = {
-    homepage = "https://getpolarized.io/";
     description = "Personal knowledge repository for PDF and web content supporting incremental reading and document annotation";
-    mainProgram = "polar-desktop-app";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://getpolarized.io/";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "polar-desktop-app";
   };
 
 })

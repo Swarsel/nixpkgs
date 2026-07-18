@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
+  callPackage,
   chez,
   chez-racket,
   clang,
-  gmp,
-  installShellFiles,
   gambit,
-  nodejs,
-  zsh,
-  callPackage,
-  idris2Packages,
-  testers,
-  libidris2_support,
-  idris2-version,
+  gmp,
   idris2-src,
+  idris2-version,
+  idris2Packages,
+  installShellFiles,
+  libidris2_support,
+  nodejs,
+  testers,
+  zsh,
 }:
 let
   inherit (stdenv.hostPlatform) extensions;
@@ -54,19 +54,19 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     clang
     platformChez
     installShellFiles
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ zsh ];
+
   buildInputs = [
     platformChez
     gmp
     libidris2_support
   ];
-
-  enableParallelBuilding = true;
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"
@@ -83,11 +83,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = false;
-  checkTarget = "test";
+
   nativeCheckInputs = [
     gambit
     nodejs
   ];
+
   checkFlags = [
     "INTERACTIVE="
     "IDRIS2_DATA=${libsupportShare}"
@@ -96,8 +97,6 @@ stdenv.mkDerivation (finalAttrs: {
     "TEST_IDRIS2_LIBS=${libsupportLib}"
     "TEST_IDRIS2_SUPPORT_DIR=${libsupportLib}"
   ];
-
-  installTargets = "install-idris2";
 
   postInstall = ''
     # Remove existing idris2 wrapper that sets incorrect LD_LIBRARY_PATH
@@ -114,16 +113,23 @@ stdenv.mkDerivation (finalAttrs: {
       --bash <($out/bin/idris2 --bash-completion-script idris2)
   '';
 
+  checkTarget = "test";
+  enableParallelBuilding = true;
+  installTargets = "install-idris2";
+
   # Run package tests
   passthru = {
     inherit libidris2_support;
-    tests = {
-      wrapped = testers.testVersion {
-        package = finalAttrs.finalPackage.withPackages (p: [ p.idris2Api ]);
-      };
+    chez = platformChez;
 
+    tests = {
       prelude = testers.runCommand {
+        nativeBuildInputs = [
+          (finalAttrs.finalPackage.withPackages (_: [ ]))
+        ];
+
         name = "idris2-prelude-wrapped";
+
         script = ''
           local packages=$(idris2 --list-packages)
 
@@ -133,10 +139,10 @@ stdenv.mkDerivation (finalAttrs: {
 
           touch "$out"
         '';
+      };
 
-        nativeBuildInputs = [
-          (finalAttrs.finalPackage.withPackages (_: [ ]))
-        ];
+      wrapped = testers.testVersion {
+        package = finalAttrs.finalPackage.withPackages (p: [ p.idris2Api ]);
       };
     }
     // (callPackage ./tests.nix {
@@ -144,29 +150,29 @@ stdenv.mkDerivation (finalAttrs: {
       idris2Packages = idris2Packages.override { idris2 = finalAttrs.finalPackage; };
     });
 
-    chez = platformChez;
+    updateScript = ./update.nu;
 
     withPackages =
       f:
       callPackage ./wrapped.nix {
-        idris2-unwrapped = finalAttrs.finalPackage;
         extraPackages = f idris2Packages;
+        idris2-unwrapped = finalAttrs.finalPackage;
       };
-
-    updateScript = ./update.nu;
   };
 
   meta = {
     description = "Purely functional programming language with first class types";
-    mainProgram = "idris2";
     homepage = "https://github.com/idris-lang/Idris2";
     changelog = "https://github.com/idris-lang/Idris2/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       fabianhjr
       wchresta
       mattpolzin
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "idris2";
   };
 })

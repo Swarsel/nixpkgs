@@ -10,12 +10,14 @@ in
 {
   options.services.speedify = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         This option enables Speedify daemon.
         This sets {option}`networking.firewall.checkReversePath` to "loose", which might be undesirable for security.
       '';
+
+      type = lib.types.bool;
     };
 
     package = lib.mkPackageOption pkgs "speedify" { };
@@ -23,24 +25,21 @@ in
 
   config = lib.mkIf cfg.enable {
     boot.kernelModules = [ "tun" ];
-
     networking.firewall.checkReversePath = "loose";
 
     systemd.services.speedify = {
-      description = "Speedify Service";
-      wantedBy = [ "multi-user.target" ];
-      wants = [
-        "network.target"
-        "network-online.target"
-      ];
       after = [
         "network-online.target"
       ]
       ++ lib.optional config.networking.networkmanager.enable "NetworkManager.service";
+
+      description = "Speedify Service";
+
       path = [
         pkgs.procps
         pkgs.nettools
       ];
+
       serviceConfig = {
         ExecStart = "${cfg.package}/share/speedify/SpeedifyStartup.sh";
         ExecStop = "${cfg.package}/share/speedify/SpeedifyShutdown.sh";
@@ -50,6 +49,13 @@ in
         TimeoutStopSec = 30;
         Type = "forking";
       };
+
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "network.target"
+        "network-online.target"
+      ];
     };
   };
 

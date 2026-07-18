@@ -2,17 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  pyasn1,
   cryptography,
+  pyasn1,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pgpy";
   version = "0.6.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SecurityInnovation";
@@ -20,13 +18,6 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-47YiHNxmjyCOYHHUV3Zyhs3Att9HZtCXYfbN34ooTxU=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    pyasn1
-    cryptography
-  ];
 
   patches = [
     # https://github.com/SecurityInnovation/PGPy/issues/462
@@ -43,15 +34,26 @@ buildPythonPackage rec {
   '';
 
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    pyasn1
+    cryptography
+  ];
+
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/SecurityInnovation/PGPy";
     description = "Pretty Good Privacy for Python";
+
     longDescription = ''
       PGPy is a Python library for implementing Pretty Good Privacy into Python
       programs, conforming to the OpenPGP specification per RFC 4880.
     '';
+
+    homepage = "https://github.com/SecurityInnovation/PGPy";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       eadwu
       dotlambda

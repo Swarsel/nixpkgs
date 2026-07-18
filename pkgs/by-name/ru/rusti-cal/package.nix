@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Minimal command line calendar, similar to cal";
-    mainProgram = "rusti-cal";
     homepage = "https://github.com/arthurhenrique/rusti-cal";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers.detegr ];
+    mainProgram = "rusti-cal";
   };
 })

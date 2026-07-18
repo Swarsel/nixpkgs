@@ -1,26 +1,26 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   ceres-solver,
   cmake,
   cminpack,
   dlib,
-  fetchFromGitHub,
   hdf5,
   hmat-oss,
   ipopt,
   libxml2,
   nlopt,
+  onetbb,
   pagmo2,
   primesieve,
   python3Packages,
   spectra,
-  stdenv,
   swig,
-  onetbb,
+  enablePython ? false,
   # Boolean flags
   runTests ? false, # tests take an hour to build on a 48-core machine
-  enablePython ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-2z4tTTvDpc+AsPbiL528Y5zNf62v1u4nVaUpk22d+wo=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -71,23 +73,23 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeOptionType "PATH" "OPENTURNS_SYSCONFIG_PATH" "${placeholder "out"}/etc")
   ];
 
+  doCheck = runTests;
+
   checkTarget = lib.concatStringsSep " " [
     "tests"
     "check"
   ];
 
-  strictDeps = true;
-
-  doCheck = runTests;
-
   meta = {
-    homepage = "https://openturns.github.io/www/";
     description = "Multivariate probabilistic modeling and uncertainty treatment library";
+    homepage = "https://openturns.github.io/www/";
     changelog = "https://github.com/openturns/openturns/raw/v${finalAttrs.version}/ChangeLog";
+
     license = with lib.licenses; [
       lgpl3Plus
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ gdinh ];
     platforms = lib.platforms.unix;
   };

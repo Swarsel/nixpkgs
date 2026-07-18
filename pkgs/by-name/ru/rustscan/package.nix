@@ -18,13 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+qPSeDpOeCq+KwZb5ANXx6z+pYbgdT1hVgcrSzxyGp0=";
   };
 
-  cargoHash = "sha256-cUuInYCT2jzen9gswfFGtKum6w2X/SiKA2ccdmxk38A=";
-
   postPatch = ''
     substituteInPlace src/scripts/mod.rs \
       --replace-fail 'call_format = "nmap' 'call_format = "${nmap}/bin/nmap'
     patchShebangs fixtures/.rustscan_scripts/*
   '';
+
+  cargoHash = "sha256-cUuInYCT2jzen9gswfFGtKum6w2X/SiKA2ccdmxk38A=";
 
   nativeCheckInputs = [
     perl

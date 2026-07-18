@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   influxdb-client,
   kubernetes,
   mock,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "powerapi";
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "powerapi-ng";
@@ -30,13 +29,28 @@ buildPythonPackage rec {
     hash = "sha256-rn1qe0RwYuUR23CgzOOeiwe1wuFihnhQ9a6ALgSP/cQ=";
   };
 
-  __darwinAllowLocalNetworking = true;
+  nativeCheckInputs = [
+    mock
+    pytest-cov-stub
+    pytestCheckHook
+    pytest-timeout
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
     pyzmq
     setproctitle
+  ];
+
+  # multiprocessing pickling fails: darwin sandbox + py3.14 weakref change
+  disabledTests = lib.optionals (stdenv.hostPlatform.isDarwin || pythonAtLeast "3.14") [
+    "test_puller"
+    "TestDispatcher"
+    "TestK8sProcessor"
+    "TestPusher"
   ];
 
   optional-dependencies = {
@@ -50,23 +64,8 @@ buildPythonPackage rec {
     influxdb = [ influxdb-client ];
   };
 
-  nativeCheckInputs = [
-    mock
-    pytest-cov-stub
-    pytestCheckHook
-    pytest-timeout
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "powerapi" ];
-
-  # multiprocessing pickling fails: darwin sandbox + py3.14 weakref change
-  disabledTests = lib.optionals (stdenv.hostPlatform.isDarwin || pythonAtLeast "3.14") [
-    "test_puller"
-    "TestDispatcher"
-    "TestK8sProcessor"
-    "TestPusher"
-  ];
 
   meta = {
     description = "Python framework for building software-defined power meters";

@@ -14,19 +14,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-run";
   version = "0.16.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_run";
     inherit (finalAttrs) version;
     hash = "sha256-Vov3/Ouo+ESjm2mFio5kL2zKJ+q3JGxiHZ00HCibEVg=";
+    pname = "google_cloud_run";
   };
 
+  # Tests are only available in the google-cloud-python monorepo
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
 
   dependencies = [
     google-api-core
@@ -37,10 +34,12 @@ buildPythonPackage (finalAttrs: {
     protobuf
   ];
 
-  # Tests are only available in the google-cloud-python monorepo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "google.cloud.run" ];
+
+  pythonRelaxDeps = [
+    "protobuf"
+  ];
 
   meta = {
     description = "Google Cloud Run API client library";

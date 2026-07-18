@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  pkg-config,
-  enableWX ? false,
-  wxwidgets_3_2,
-  enableXWin ? false,
-  libx11,
-  enablePNG ? false,
   cairo,
+  cmake,
+  libx11,
   pango,
+  pkg-config,
+  wxwidgets_3_2,
+  enablePNG ? false,
+  enableWX ? false,
+  enableXWin ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,28 +35,29 @@ stdenv.mkDerivation (finalAttrs: {
       pango
     ];
 
-  passthru = {
-    inherit
-      enableWX
-      enableXWin
-      libx11
-      ;
-    # backwards compat
-    libX11 = libx11;
-  };
-
   cmakeFlags = [
     "-DBUILD_TEST=ON"
   ];
 
   doCheck = true;
 
+  passthru = {
+    inherit
+      enableWX
+      enableXWin
+      libx11
+      ;
+
+    # backwards compat
+    libX11 = libx11;
+  };
+
   meta = {
     description = "Cross-platform scientific graphics plotting library";
-    mainProgram = "pltek";
     homepage = "https://plplot.org";
+    license = lib.licenses.lgpl2;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.lgpl2;
+    mainProgram = "pltek";
   };
 })

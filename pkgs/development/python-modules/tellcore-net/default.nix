@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tellcore-net";
   version = "0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -17,11 +16,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-yMNAu8iSFB2UDqJR3u2XFelpGRKzi/3HyuEbrZK6v8g=";
   };
 
-  build-system = [ setuptools ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "tellcorenet" ];
 
   meta = {

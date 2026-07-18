@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,27 +18,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-iEGrGSia/Da1bpXVAOI9M7QNNVHUAB/RFRgzl+IrFlU=";
-
-  useNextest = true;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
-  passthru.updateScript = nix-update-script { };
   __structuredAttrs = true;
+  useNextest = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Bridge Jujutsu (jj) bookmarks to GitHub stacked pull requests";
     homepage = "https://github.com/glennib/stakk";
     changelog = "https://github.com/glennib/stakk/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       voidlily
       Br1ght0ne
     ];
+
     mainProgram = "stakk";
   };
 })

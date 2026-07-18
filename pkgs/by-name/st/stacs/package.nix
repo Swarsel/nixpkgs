@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   libarchive,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "stacs";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stacscan";
@@ -25,6 +24,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   buildInputs = [ libarchive ];
 
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = with python3.pkgs; [
     pybind11
     setuptools
@@ -39,22 +43,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     zstandard
   ];
 
-  pythonRelaxDeps = [ "yara-python" ];
-
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "stacs"
   ];
 
+  pythonRelaxDeps = [ "yara-python" ];
+
   meta = {
     description = "Static token and credential scanner";
-    mainProgram = "stacs";
     homepage = "https://github.com/stacscan/stacs";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "stacs";
   };
 })

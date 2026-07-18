@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
-  makeWrapper,
-  procps,
-  nix-update-script,
   bashNonInteractive,
+  buildGoModule,
   fprintd,
+  installShellFiles,
   kdePackages,
+  makeWrapper,
+  nix-update-script,
+  procps,
   qt6,
 }:
 
@@ -37,22 +37,12 @@ buildGoModule (
       hash = "sha256-zdHsPGPE5MVi/y+uIt548XScTfZjQzdF21dME7ISEJM=";
     };
 
-    sourceRoot = "${finalAttrs.src.name}/core";
-
-    vendorHash = "sha256-nvxFHQhOfBGl3h51fgYDb39K0NCj+H8mAEyKr1qOwJQ=";
-
-    ldflags = [
-      "-s"
-      "-w"
-      "-X main.Version=${finalAttrs.version}"
-    ];
-
-    subPackages = [ "cmd/dms" ];
-
     nativeBuildInputs = [
       installShellFiles
       makeWrapper
     ];
+
+    vendorHash = "sha256-nvxFHQhOfBGl3h51fgYDb39K0NCj+H8mAEyKr1qOwJQ=";
 
     postInstall = ''
       mkdir -p $out/share/quickshell/dms
@@ -87,6 +77,15 @@ buildGoModule (
         --zsh <($out/bin/dms completion zsh)
     '';
 
+    ldflags = [
+      "-s"
+      "-w"
+      "-X main.Version=${finalAttrs.version}"
+    ];
+
+    sourceRoot = "${finalAttrs.src.name}/core";
+    subPackages = [ "cmd/dms" ];
+
     passthru = {
       updateScript = nix-update-script { };
     };
@@ -96,9 +95,9 @@ buildGoModule (
       homepage = "https://danklinux.com";
       changelog = "https://github.com/AvengeMedia/DankMaterialShell/releases/tag/v${finalAttrs.version}";
       license = lib.licenses.mit;
-      teams = [ lib.teams.danklinux ];
-      mainProgram = "dms";
       platforms = lib.platforms.linux;
+      mainProgram = "dms";
+      teams = [ lib.teams.danklinux ];
     };
   }
 )

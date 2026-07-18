@@ -2,24 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  sphinx,
-  pydata-sphinx-theme,
   jupyter-book,
+  pydata-sphinx-theme,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-book-theme";
   version = "1.2.0";
 
-  format = "wheel";
-
   src = fetchPypi {
     inherit version;
-    format = "wheel";
-    dist = "py3";
-    python = "py3";
-    pname = "sphinx_book_theme";
     hash = "sha256-cJYF0wjhmRxe8M8ZxIHb6QhLYoUuMX+vq3Q4Kg7nzPo=";
+    dist = "py3";
+    format = "wheel";
+    pname = "sphinx_book_theme";
+    python = "py3";
   };
 
   dependencies = [
@@ -27,6 +25,7 @@ buildPythonPackage rec {
     sphinx
   ];
 
+  format = "wheel";
   pythonImportsCheck = [ "sphinx_book_theme" ];
 
   passthru.tests = {

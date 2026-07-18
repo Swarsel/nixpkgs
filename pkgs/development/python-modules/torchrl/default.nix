@@ -1,83 +1,77 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cmake,
-  ninja,
-  numpy,
-  pybind11,
-  setuptools,
-  setuptools-scm,
-  torch,
-
+  # llm
+  accelerate,
+  # brax
+  brax,
+  buildPythonPackage,
   # dependencies
   cloudpickle,
-  packaging,
-  pyvers,
-  tensordict,
-
+  # build-system
+  cmake,
+  datasets,
+  # dm-control
+  dm-control,
+  einops,
+  # utils
+  git,
   # optional-dependencies
   # atari
   gymnasium,
-  # brax
-  brax,
-  jax,
-  # checkpointing
-  torchsnapshot,
-  # dm-control
-  dm-control,
-  # gym-continuous
-  mujoco,
-  # llm
-  accelerate,
-  datasets,
-  einops,
-  immutabledict,
-  langdetect,
-  nltk,
-  playwright,
-  protobuf,
-  safetensors,
-  sentencepiece,
-  transformers,
-  vllm,
-  # marl
-  pettingzoo,
-  vmas,
   # offline-data
   h5py,
   huggingface-hub,
-  minari,
-  pandas,
-  pillow,
-  requests,
-  scikit-learn,
-  torchvision,
-  tqdm,
-  # rendering
-  moviepy,
-  # utils
-  git,
   hydra-core,
-  tensorboard,
-  wandb,
-
   # tests
   imageio,
+  immutabledict,
+  jax,
+  langdetect,
+  minari,
+  # rendering
+  moviepy,
+  # gym-continuous
+  mujoco,
+  ninja,
+  nltk,
+  numpy,
+  packaging,
+  pandas,
+  # marl
+  pettingzoo,
+  pillow,
+  playwright,
+  protobuf,
+  pybind11,
   pytest-rerunfailures,
   pytestCheckHook,
+  pyvers,
   pyyaml,
+  requests,
+  safetensors,
+  scikit-learn,
   scipy,
+  sentencepiece,
+  setuptools,
+  setuptools-scm,
+  tensorboard,
+  tensordict,
+  torch,
+  # checkpointing
+  torchsnapshot,
+  torchvision,
+  tqdm,
+  transformers,
+  vllm,
+  vmas,
+  wandb,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "torchrl";
   version = "0.13.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pytorch";
@@ -91,101 +85,9 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "pybind11[global]" "pybind11"
   '';
 
-  build-system = [
-    cmake
-    ninja
-    numpy
-    pybind11
-    setuptools
-    setuptools-scm
-    torch
-  ];
-  dontUseCmakeConfigure = true;
-
-  dependencies = [
-    cloudpickle
-    numpy
-    packaging
-    tensordict
-    pyvers
-    torch
-  ];
-
-  optional-dependencies = {
-    atari = [
-      gymnasium
-    ]
-    ++ gymnasium.optional-dependencies.atari;
-    brax = [
-      brax
-      jax
-    ];
-    checkpointing = [ torchsnapshot ];
-    dm-control = [ dm-control ];
-    gym-continuous = [
-      gymnasium
-      mujoco
-    ];
-    llm = [
-      accelerate
-      datasets
-      einops
-      immutabledict
-      langdetect
-      nltk
-      playwright
-      protobuf
-      safetensors
-      sentencepiece
-      transformers
-      vllm
-    ];
-    marl = [
-      # dm-meltingpot (unpackaged)
-      pettingzoo
-      vmas
-    ];
-    offline-data = [
-      h5py
-      huggingface-hub
-      minari
-      pandas
-      pillow
-      requests
-      scikit-learn
-      torchvision
-      tqdm
-    ];
-    open-spiel = [
-      # open-spiel (unpackaged)
-    ];
-    procgen = [
-      # procgen (unpackaged)
-    ];
-    rendering = [ moviepy ];
-    replay-buffer = [ torch ];
-    utils = [
-      git
-      hydra-core
-      # hydra-submitit-launcher (unpackaged)
-      tensorboard
-      tqdm
-      wandb
-    ];
-  };
-
   # torchrl needs to create a folder to store datasets
   preBuild = ''
     export D4RL_DATASET_DIR=$(mktemp -d)
-  '';
-
-  pythonImportsCheck = [ "torchrl" ];
-
-  # We have to delete the source because otherwise it is used instead of the installed package.
-  preCheck = ''
-    rm -rf torchrl
-
-    export XDG_RUNTIME_DIR=$(mktemp -d)
   '';
 
   nativeCheckInputs = [
@@ -202,6 +104,47 @@ buildPythonPackage (finalAttrs: {
   ++ finalAttrs.passthru.optional-dependencies.gym-continuous
   ++ finalAttrs.passthru.optional-dependencies.llm
   ++ finalAttrs.passthru.optional-dependencies.rendering;
+
+  # We have to delete the source because otherwise it is used instead of the installed package.
+  preCheck = ''
+    rm -rf torchrl
+
+    export XDG_RUNTIME_DIR=$(mktemp -d)
+  '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    cmake
+    ninja
+    numpy
+    pybind11
+    setuptools
+    setuptools-scm
+    torch
+  ];
+
+  dependencies = [
+    cloudpickle
+    numpy
+    packaging
+    tensordict
+    pyvers
+    torch
+  ];
+
+  disabledTestPaths = [
+    # ERROR collecting test/smoke_test.py
+    # import file mismatch:
+    # imported module 'smoke_test' has this __file__ attribute:
+    #   /build/source/test/llm/smoke_test.py
+    # which is not the same as the test file we want to collect:
+    #   /build/source/test/smoke_test.py
+    "test/llm"
+
+    # Hang indefinitely
+    "test/services/test_services.py"
+  ];
 
   disabledTests = [
     # Require network
@@ -283,18 +226,83 @@ buildPythonPackage (finalAttrs: {
     "test_vecnorm_parallel_auto"
   ];
 
-  disabledTestPaths = [
-    # ERROR collecting test/smoke_test.py
-    # import file mismatch:
-    # imported module 'smoke_test' has this __file__ attribute:
-    #   /build/source/test/llm/smoke_test.py
-    # which is not the same as the test file we want to collect:
-    #   /build/source/test/smoke_test.py
-    "test/llm"
+  dontUseCmakeConfigure = true;
 
-    # Hang indefinitely
-    "test/services/test_services.py"
-  ];
+  optional-dependencies = {
+    atari = [
+      gymnasium
+    ]
+    ++ gymnasium.optional-dependencies.atari;
+
+    brax = [
+      brax
+      jax
+    ];
+
+    checkpointing = [ torchsnapshot ];
+    dm-control = [ dm-control ];
+
+    gym-continuous = [
+      gymnasium
+      mujoco
+    ];
+
+    llm = [
+      accelerate
+      datasets
+      einops
+      immutabledict
+      langdetect
+      nltk
+      playwright
+      protobuf
+      safetensors
+      sentencepiece
+      transformers
+      vllm
+    ];
+
+    marl = [
+      # dm-meltingpot (unpackaged)
+      pettingzoo
+      vmas
+    ];
+
+    offline-data = [
+      h5py
+      huggingface-hub
+      minari
+      pandas
+      pillow
+      requests
+      scikit-learn
+      torchvision
+      tqdm
+    ];
+
+    open-spiel = [
+      # open-spiel (unpackaged)
+    ];
+
+    procgen = [
+      # procgen (unpackaged)
+    ];
+
+    rendering = [ moviepy ];
+    replay-buffer = [ torch ];
+
+    utils = [
+      git
+      hydra-core
+      # hydra-submitit-launcher (unpackaged)
+      tensorboard
+      tqdm
+      wandb
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "torchrl" ];
 
   meta = {
     description = "Modular, primitive-first, python-first PyTorch library for Reinforcement Learning";

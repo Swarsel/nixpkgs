@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -25,19 +25,20 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    # This font doesn't appear to have any official web site but this
-    # one provides some good information and samples.
-    homepage = "http://openfontlibrary.org/en/font/caladea";
     description = "Serif font metric-compatible with Microsoft Cambria";
+
     longDescription = ''
       Caladea is a free font that is metric-compatible with the
       Microsoft Cambria font. Developed by Carolina Giovagnoli and
       Andrés Torresi at Huerta Tipográfica foundry.
     '';
-    license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
-    maintainers = [ lib.maintainers.rycee ];
 
+    # This font doesn't appear to have any official web site but this
+    # one provides some good information and samples.
+    homepage = "http://openfontlibrary.org/en/font/caladea";
+    license = lib.licenses.asl20;
+    maintainers = [ lib.maintainers.rycee ];
+    platforms = lib.platforms.all;
     # Reduce the priority of this package. The intent is that if you
     # also install the `vista-fonts` package, then you probably will
     # not want to install the font alias of this package.

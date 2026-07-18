@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   mock,
   pyparsing,
   pysocks,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "httplib2";
   version = "0.31.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "httplib2";
@@ -27,10 +26,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-1OO3BNtOGJxV9L34C60CHv95LLH9Ih1lY0zQUD4wrnc=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ pyparsing ];
 
   nativeCheckInputs = [
     cryptography
@@ -45,6 +40,8 @@ buildPythonPackage (finalAttrs: {
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ pyparsing ];
 
   disabledTests = [
     # ValueError: Unable to load PEM file.
@@ -63,12 +60,13 @@ buildPythonPackage (finalAttrs: {
     "test_connection_close"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "httplib2" ];
 
   meta = {
-    changelog = "https://github.com/httplib2/httplib2/blob/${finalAttrs.src.tag}/CHANGELOG";
     description = "Comprehensive HTTP client library";
     homepage = "https://github.com/httplib2/httplib2";
+    changelog = "https://github.com/httplib2/httplib2/blob/${finalAttrs.src.tag}/CHANGELOG";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
   };

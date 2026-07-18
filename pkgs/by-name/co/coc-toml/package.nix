@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
   nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
     hash = "sha256-jZZUrpi3Bg4qQ/NyUDPW7zNuUz/399wAf+gdeZHp+B0=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
   };
 
   meta = {

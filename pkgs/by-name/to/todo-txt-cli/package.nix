@@ -7,8 +7,8 @@ let
   version = "2.13.0";
 in
 stdenv.mkDerivation {
-  pname = "todo.txt-cli";
   inherit version;
+  pname = "todo.txt-cli";
 
   src = fetchurl {
     url = "https://github.com/ginatrapani/todo.txt-cli/releases/download/v${version}/todo.txt_cli-${version}.tar.gz";
@@ -28,7 +28,7 @@ stdenv.mkDerivation {
     description = "Simple plaintext todo list manager";
     homepage = "http://todotxt.com";
     license = lib.licenses.gpl3;
-    mainProgram = "todo.sh";
     platforms = lib.platforms.all;
+    mainProgram = "todo.sh";
   };
 }

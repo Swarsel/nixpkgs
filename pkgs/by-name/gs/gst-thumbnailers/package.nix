@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
+  callPackage,
+  cargo,
+  fontconfig,
+  glycin-loaders,
+  gst_all_1,
+  libglycin,
   meson,
   ninja,
-  pkg-config,
-  cargo,
-  rustc,
-  wrapGAppsNoGuiHook,
-  gst_all_1,
-  fontconfig,
-  libglycin,
-  glycin-loaders,
-  writableTmpDirAsHomeHook,
-  shared-mime-info,
-  callPackage,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  shared-mime-info,
+  wrapGAppsNoGuiHook,
+  writableTmpDirAsHomeHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,17 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.0.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "gst-thumbnailers";
     tag = finalAttrs.version;
     hash = "sha256-QxOdjtPnX4ulGsenASQzKJckbIqfSU7FeR+iW1ZL878=";
+    domain = "gitlab.gnome.org";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-irXwoGGcVeZza02Ob5HTkeTBD3PaXmfJ4vuqXk9BadA=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -56,9 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     glycin-loaders
   ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -72,6 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
     export XDG_DATA_DIRS=${glycin-loaders}/share:${shared-mime-info}/share:$XDG_DATA_DIRS
   '';
 
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-irXwoGGcVeZza02Ob5HTkeTBD3PaXmfJ4vuqXk9BadA=";
+  };
+
   mesonCheckFlags = [ "-v" ];
 
   passthru = {
@@ -84,10 +85,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/gst-thumbnailers";
     changelog = "https://gitlab.gnome.org/GNOME/gst-thumbnailers/-/blob/${finalAttrs.src.tag}/NEWS";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aleksana
       thunze
     ];
+
     platforms = lib.platforms.linux;
   };
 })

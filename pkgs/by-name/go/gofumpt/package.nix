@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,13 +18,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-tM9IKMdCAdKcQPzENWdeK9GtVD20IzZYGaoLGJPettw=";
-
   env.CGO_ENABLED = "0";
-
-  ldflags = [
-    "-s"
-    "-X main.version=v${finalAttrs.version}"
-  ];
 
   checkFlags = [
     # Requires network access (Error: module lookup disabled by GOPROXY=off).
@@ -34,6 +28,11 @@ buildGoModule (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  ldflags = [
+    "-s"
+    "-X main.version=v${finalAttrs.version}"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -41,10 +40,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/mvdan/gofumpt";
     changelog = "https://github.com/mvdan/gofumpt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       rvolosatovs
       katexochen
     ];
+
     mainProgram = "gofumpt";
   };
 })

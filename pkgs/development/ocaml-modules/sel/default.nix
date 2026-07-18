@@ -1,16 +1,14 @@
 {
   lib,
   fetchurl,
-  ppxlib,
-  ppx_deriving,
   buildDunePackage,
+  ppx_deriving,
+  ppxlib,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "sel";
   version = "0.8.0";
-
-  minimalOCamlVersion = "4.07";
 
   src = fetchurl {
     url = "https://github.com/gares/sel/releases/download/v${finalAttrs.version}/sel-${finalAttrs.version}.tbz";
@@ -24,6 +22,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [
     ppx_deriving
   ];
+
+  minimalOCamlVersion = "4.07";
 
   meta = {
     description = "Simple event library";

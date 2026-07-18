@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 let
@@ -25,19 +25,23 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-LzXcHGRBn99WhDsxLQKY3t8Zp4sw9Ec5CbA/rU/3SQ0=";
 
-  subPackages = [
-    "cmd/pomerium-cli"
-  ];
+  installPhase = ''
+    runHook preInstall
+
+    install -Dm0755 $GOPATH/bin/pomerium-cli $out/bin/pomerium-cli
+
+    runHook postInstall
+  '';
 
   ldflags =
     let
       # Set a variety of useful meta variables for stamping the build with.
       setVars = {
         "github.com/pomerium/cli/version" = {
-          Version = "v${finalAttrs.version}";
           BuildMeta = "nixpkgs";
           ProjectName = "pomerium-cli";
           ProjectURL = "github.com/pomerium/cli";
+          Version = "v${finalAttrs.version}";
         };
       };
       concatStringsSpace = list: concatStringsSep " " list;
@@ -53,20 +57,16 @@ buildGoModule (finalAttrs: {
       "${varFlags}"
     ];
 
-  installPhase = ''
-    runHook preInstall
-
-    install -Dm0755 $GOPATH/bin/pomerium-cli $out/bin/pomerium-cli
-
-    runHook postInstall
-  '';
+  subPackages = [
+    "cmd/pomerium-cli"
+  ];
 
   meta = {
-    homepage = "https://pomerium.io";
     description = "Client-side helper for Pomerium authenticating reverse proxy";
-    mainProgram = "pomerium-cli";
+    homepage = "https://pomerium.io";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lukegb ];
     platforms = lib.platforms.unix;
+    mainProgram = "pomerium-cli";
   };
 })

@@ -1,19 +1,16 @@
 {
   lib,
-  fetchFromGitHub,
-  versionCheckHook,
-  installShellFiles,
-
   stdenv,
+  fetchFromGitHub,
   clangStdenv,
+  installShellFiles,
   llvmPackages,
+  nix-update-script,
   nixosTests,
-
+  versionCheckHook,
   # https://goupile.org/en/build recommends a Paranoid build
   # which is not bit by bit reproducible, whereas others are
   profile ? "Paranoid",
-
-  nix-update-script,
 }:
 
 assert lib.assertOneOf "profile" profile [
@@ -64,8 +61,8 @@ stdenv'.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
-  versionCheckProgramArg = "--version";
   nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgramArg = "--version";
 
   passthru = {
     tests = { inherit (nixosTests) goupile; };
@@ -73,9 +70,9 @@ stdenv'.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/Koromix/rygel/blob/${finalAttrs.src.rev}/src/goupile/CHANGELOG.md";
     description = "Free design tool for secure forms including Clinical Report Forms (eCRF)";
     homepage = "https://goupile.org/en";
+    changelog = "https://github.com/Koromix/rygel/blob/${finalAttrs.src.rev}/src/goupile/CHANGELOG.md";
     license = lib.licenses.gpl3Plus; # sdpx headers
     platforms = lib.platforms.linux; # https://goupile.org/en/build
     mainProgram = "goupile";

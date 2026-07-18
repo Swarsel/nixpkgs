@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bashNonInteractive,
   kernel,
   kernelModuleMakeFlags,
-  bashNonInteractive,
   linuxConsoleTools,
   nix-update-script,
 }:
@@ -23,8 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-lJ+Pn1OLgZK+T1dsV1mwzAwJJgsouFFwDH7bFUD1SGI=";
   };
 
-  nativeBuildInputs = kernel.moduleBuildDependencies;
-
   postPatch = ''
     mkdir -p $out/{lib/udev/rules.d,${moduleDir}}
 
@@ -36,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '/usr/bin/evdev-joystick' '${lib.getExe' linuxConsoleTools "evdev-joystick"}' \
       --replace-fail '/bin/sh' '${lib.getExe bashNonInteractive}'
   '';
+
+  nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KVERSION=${kernel.modDirVersion}"

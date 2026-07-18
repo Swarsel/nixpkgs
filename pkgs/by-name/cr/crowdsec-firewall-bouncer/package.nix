@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "crowdsec-firewall-bouncer";
@@ -17,16 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-SbpclloBgd9vffC0lBduGRqPOqmzQ0J91/KeDHCh0jo=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-X github.com/crowdsecurity/go-cs-lib/version.Version=v${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   versionCheckProgram = "${placeholder "out"}/bin/cs-firewall-bouncer";
   versionCheckProgramArg = "-version";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script {
@@ -35,21 +34,25 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://crowdsec.net/";
-    downloadPage = "https://github.com/crowdsecurity/cs-firewall-bouncer";
-    changelog = "https://github.com/crowdsecurity/cs-firewall-bouncer/releases/tag/v${finalAttrs.version}";
     description = "Crowdsec bouncer written in golang for firewalls";
+
     longDescription = ''
       CrowdSec Remediation Component written in golang for firewalls.
 
       crowdsec-firewall-bouncer will fetch new and old decisions from a
       CrowdSec API and add them to a blocklist used by supported firewalls.
     '';
+
+    homepage = "https://crowdsec.net/";
+    changelog = "https://github.com/crowdsecurity/cs-firewall-bouncer/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "cs-firewall-bouncer";
+
     maintainers = with lib.maintainers; [
       tornax
       jk
     ];
+
+    mainProgram = "cs-firewall-bouncer";
+    downloadPage = "https://github.com/crowdsecurity/cs-firewall-bouncer";
   };
 })

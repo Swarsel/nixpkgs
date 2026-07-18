@@ -28,10 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Query or alter a process' scheduling policy under Linux";
-    mainProgram = "schedtool";
     homepage = "https://github.com/freequaos/schedtool";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "schedtool";
   };
 })

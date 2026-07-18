@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   parameterized,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "nuheat";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "broox";
@@ -30,6 +29,7 @@ buildPythonPackage rec {
     responses
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "nuheat" ];
 
   meta = {

@@ -37,12 +37,12 @@ let
     in
     runCommand "unpacked"
       {
+        strictDeps = true;
         nativeBuildInputs = [ nukeReferences ];
         # The result should not contain any references (store paths) so
         # that we can safely copy them out of the store and to other
         # locations in the store.
         allowedReferences = [ ];
-        strictDeps = true;
       }
       ''
         mkdir -p "$out"/{bin,include,lib,libexec}

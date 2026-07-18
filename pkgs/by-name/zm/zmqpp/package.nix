@@ -23,6 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.8.12)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -30,16 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ zeromq ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.8.12)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
-    homepage = "https://github.com/zeromq/zmqpp";
     description = "C++ wrapper for czmq. Aims to be minimal, simple and consistent";
+    homepage = "https://github.com/zeromq/zmqpp";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ chris-martin ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   python3,
-  stdenv,
   strip-nondeterminism,
   zip,
 }:
@@ -13,10 +13,10 @@ let
 
   pname = "pridefetch";
   src = fetchFromGitHub {
+    inherit sha256;
     owner = "SpyHoodle";
     repo = "pridefetch";
     rev = "v" + version;
-    inherit sha256;
   };
 in
 
@@ -57,15 +57,19 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Print out system statistics with pride flags";
+
     longDescription = ''
       Pridefetch prints your system statistics (similarly to neofetch, screenfetch or pfetch) along with a pride flag.
       The flag which is printed is configurable, as well as the width of the output.
     '';
+
     homepage = "https://github.com/SpyHoodle/pridefetch";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.minion3665
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "pridefetch";
   };

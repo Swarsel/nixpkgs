@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitLab,
   attrs,
   beautifulsoup4,
   buildPythonPackage,
@@ -7,7 +8,6 @@
   colorama,
   cryptoparser,
   dnspython,
-  fetchFromGitLab,
   pathlib2,
   pyfakefs,
   python-dateutil,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cryptolyzer";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "coroner";
@@ -34,7 +33,16 @@ buildPythonPackage (finalAttrs: {
     ./fix-dirs-exclude.patch
   ];
 
-  pythonRemoveDeps = [ "bs4" ];
+  # Tests require networking
+  doCheck = false;
+
+  postInstall = ''
+    find $out -name "__pycache__" -type d | xargs rm -rv
+
+    # Prevent creating more binary byte code later (e.g. during
+    # pythonImportsCheck)
+    export PYTHONDONTWRITEBYTECODE=1
+  '';
 
   build-system = [
     setuptools
@@ -55,18 +63,9 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  # Tests require networking
-  doCheck = false;
-
-  postInstall = ''
-    find $out -name "__pycache__" -type d | xargs rm -rv
-
-    # Prevent creating more binary byte code later (e.g. during
-    # pythonImportsCheck)
-    export PYTHONDONTWRITEBYTECODE=1
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "cryptolyzer" ];
+  pythonRemoveDeps = [ "bs4" ];
 
   meta = {
     description = "Cryptographic protocol analyzer";

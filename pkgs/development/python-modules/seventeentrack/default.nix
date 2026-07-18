@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   poetry-core,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "seventeentrack";
   version = "2022.04.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "McSwindler";
@@ -32,9 +31,9 @@ buildPythonPackage rec {
     #   https://github.com/McSwindler/seventeentrack/pull/4
     #
     (fetchpatch {
+      hash = "sha256-UvxUpiSkDbP8Jum5XbrWHBnH1HLBYEKUKw6GTV+Kvys=";
       name = "clean-up-build-dependencies.patch";
       url = "https://github.com/McSwindler/seventeentrack/commit/9a21e22f796a17628a9628f54e19d19d002b4d0a.patch";
-      hash = "sha256-UvxUpiSkDbP8Jum5XbrWHBnH1HLBYEKUKw6GTV+Kvys=";
     })
   ];
 
@@ -46,19 +45,20 @@ buildPythonPackage rec {
     pytz
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     aresponses
     pytest-asyncio
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+
   disabledTestPaths = [
     # Ignore the examples directory as the files are prefixed with test_
     "examples/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "seventeentrack" ];
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   docutils,
 }:
 
 buildPythonPackage {
   pname = "rst2ansi";
   version = "0.1.5-unstable-2025-02-12";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Snaipe";
@@ -18,12 +17,13 @@ buildPythonPackage {
   };
 
   propagatedBuildInputs = [ docutils ];
+  format = "setuptools";
 
   meta = {
     description = "Rst converter to ansi-decorated console output";
-    mainProgram = "rst2ansi";
     homepage = "https://github.com/Snaipe/python-rst-to-ansi";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vojta001 ];
+    mainProgram = "rst2ansi";
   };
 }

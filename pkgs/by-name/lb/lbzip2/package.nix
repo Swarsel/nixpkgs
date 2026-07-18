@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoconf,
+  automake,
   fetchpatch,
   gnulib,
   perl,
-  autoconf,
-  automake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,19 +25,20 @@ stdenv.mkDerivation (finalAttrs: {
     # xmalloc.c, addressing a build failure with future compiler version.
     # https://github.com/kjn/lbzip2/pull/33
     (fetchpatch {
+      hash = "sha256-YNgmkh4bksIq5kBgZP+8o97aMm9CzFZldfUW6L5DGXk=";
       name = "GNULIB_XALLOC_DIE.patch";
       url = "https://github.com/kjn/lbzip2/commit/32b5167940ec817e454431956040734af405a9de.patch";
-      hash = "sha256-YNgmkh4bksIq5kBgZP+8o97aMm9CzFZldfUW6L5DGXk=";
     })
+  ];
+
+  nativeBuildInputs = [
+    autoconf
+    automake
   ];
 
   buildInputs = [
     gnulib
     perl
-  ];
-  nativeBuildInputs = [
-    autoconf
-    automake
   ];
 
   preConfigure = ''
@@ -46,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/kjn/lbzip2"; # Formerly http://lbzip2.org/
     description = "Parallel bzip2 compression utility";
+    homepage = "https://github.com/kjn/lbzip2"; # Formerly http://lbzip2.org/
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.unix;

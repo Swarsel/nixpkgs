@@ -1,29 +1,26 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
+  fetchPypi,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-multiselectfield";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "django_multiselectfield";
     inherit version;
     hash = "sha256-P4tP/z4H1Kkci7S4Cbw1yusitBdptgb0ye3FO41ypmc=";
+    pname = "django_multiselectfield";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ django ];
 
   # No tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "multiselectfield" ];
 
   meta = {

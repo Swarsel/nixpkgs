@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-PAZOenugZrKYIP7zzxozerjkauwg7VN0mAlex0WPttQ=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/evansmurithi/cloak";
     description = "Command-line OTP authenticator application";
+    homepage = "https://github.com/evansmurithi/cloak";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mvs ];
     mainProgram = "cloak";

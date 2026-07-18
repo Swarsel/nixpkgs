@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libx11,
-  libxtst,
-  libxdmcp,
-  libxkbfile,
-  libxkbcommon,
   libxcb,
+  libxdmcp,
+  libxkbcommon,
+  libxkbfile,
+  libxtst,
+  pkg-config,
+  rustPlatform,
   wayland,
   xorgproto,
 }:
@@ -25,8 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6gPyQ6JjqvM2AUuIxCfO0nOLJfyQTX5bbsbKDzlNSqo=";
     fetchSubmodules = true;
   };
-
-  cargoHash = "sha256-FZTXj8f+ezRhElovKhF3khWc5SqC+22tDHlFe9IHuwo=";
 
   nativeBuildInputs = [
     rustPlatform.bindgenHook
@@ -45,6 +43,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xorgproto
   ];
 
+  cargoHash = "sha256-FZTXj8f+ezRhElovKhF3khWc5SqC+22tDHlFe9IHuwo=";
   doCheck = false;
 
   meta = {

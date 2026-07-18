@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  callPackage,
   buildPackages,
+  callPackage,
 }:
 let
   pname = "losslesscut";
@@ -11,17 +11,19 @@ let
     description = "Swiss army knife of lossless video/audio editing";
     homepage = "https://mifi.no/losslesscut/";
     license = lib.licenses.gpl2Only;
+    mainProgram = "losslesscut";
+
     maintainers = with lib.maintainers; [
       ShamrockLee
       Br1ght0ne
     ];
-    mainProgram = "losslesscut";
+
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
   x86_64-appimage = callPackage ./build-from-appimage.nix {
     inherit pname version metaCommon;
-    hash = "sha256-F56q4nv/viWmVJpKcUR0EmtXwojO/DBwRvycYxOhJnY=";
     inherit (buildPackages) makeWrapper;
+    hash = "sha256-F56q4nv/viWmVJpKcUR0EmtXwojO/DBwRvycYxOhJnY=";
   };
   x86_64-dmg = callPackage ./build-from-dmg.nix {
     inherit pname version metaCommon;
@@ -57,6 +59,7 @@ in
         x86_64-windows
         ;
     };
+
     meta = oldAttrs.meta // {
       platforms = lib.unique (
         x86_64-appimage.meta.platforms

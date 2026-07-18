@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
   autoreconfHook,
+  buildPackages,
   gettext,
-  pkg-config,
   icu,
-  libuuid,
-  readline,
   inih,
   liburcu,
+  libuuid,
   nixosTests,
+  pkg-config,
   python3,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,11 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SoyoOnrLjNksmX1jtprmTxcAVrNmopJKdT5H1LtLiwY=";
   };
 
-  postPatch = ''
-    substituteInPlace {./scrub/xfs_scrub_all.py.in,./mkfs/xfs_protofile.py.in}\
-      --replace-fail '#!/usr/bin/python3' '#!/usr/bin/env python3'
-  '';
-
   outputs = [
     "bin"
     "dev"
@@ -37,7 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  postPatch = ''
+    substituteInPlace {./scrub/xfs_scrub_all.py.in,./mkfs/xfs_protofile.py.in}\
+      --replace-fail '#!/usr/bin/python3' '#!/usr/bin/env python3'
+  '';
+
   nativeBuildInputs = [
     autoreconfHook
     gettext
@@ -45,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     libuuid # codegen tool uses libuuid
     liburcu # required by crc32selftest
   ];
+
   buildInputs = [
     readline
     icu
@@ -52,12 +52,13 @@ stdenv.mkDerivation (finalAttrs: {
     liburcu
     (python3.withPackages (ps: [ ps.dbus-python ]))
   ];
+
   propagatedBuildInputs = [ libuuid ]; # Dev headers include <uuid/uuid.h>
 
-  enableParallelBuilding = true;
-  # Install fails as:
-  #   make[1]: *** No rule to make target '\', needed by 'kmem.lo'.  Stop.
-  enableParallelInstalling = false;
+  configureFlags = [
+    "--disable-lib64"
+    "--with-systemd-unit-dir=${placeholder "out"}/lib/systemd/system"
+  ];
 
   # @sbindir@ is replaced with /run/current-system/sw/bin to fix dependency cycles
   # and '@pkg_state_dir@' should not point to the nix store, but we cannot use the configure parameter
@@ -72,39 +73,42 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs ./install-sh
   '';
 
+  # FIXME: forbidden rpath
+  postInstall = ''
+    find . -type d -name .libs | xargs rm -rf
+  '';
+
   # The default --force would replace xfsprogs' custom install-sh.
   autoreconfFlags = [
     "--install"
     "--verbose"
   ];
 
-  configureFlags = [
-    "--disable-lib64"
-    "--with-systemd-unit-dir=${placeholder "out"}/lib/systemd/system"
-  ];
-
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+  # Install fails as:
+  #   make[1]: *** No rule to make target '\', needed by 'kmem.lo'.  Stop.
+  enableParallelInstalling = false;
   installFlags = [ "install-dev" ];
-
-  # FIXME: forbidden rpath
-  postInstall = ''
-    find . -type d -name .libs | xargs rm -rf
-  '';
 
   passthru.tests = {
     inherit (nixosTests.installer) lvm;
   };
 
   meta = {
-    homepage = "https://xfs.wiki.kernel.org";
     description = "SGI XFS utilities";
+    homepage = "https://xfs.wiki.kernel.org";
+
     license = with lib.licenses; [
       gpl2Only
       lgpl21
       gpl3Plus
     ]; # see https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git/tree/debian/copyright
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       ajs124
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

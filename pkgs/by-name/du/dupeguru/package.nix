@@ -1,17 +1,15 @@
 {
-  stdenv,
   lib,
-  python3Packages,
+  stdenv,
+  fetchFromGitHub,
   gettext,
+  python3Packages,
   qt5,
   writableTmpDirAsHomeHook,
-  fetchFromGitHub,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dupeguru";
   version = "4.3.1-unstable-2026-01-06";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "arsenetar";
@@ -49,11 +47,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ];
 
-  # Avoid double wrapping Python programs.
-  dontWrapQtApps = true;
-
-  installTargets = "install installdocs";
-
   # TODO: A bug in python wrapper
   # see https://github.com/NixOS/nixpkgs/pull/75054#discussion_r357656916
   preFixup = ''
@@ -66,14 +59,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapPythonProgramsIn "$out/share/dupeguru" "$out ''${pythonPath[*]}"
   '';
 
+  # Avoid double wrapping Python programs.
+  dontWrapQtApps = true;
+  installTargets = "install installdocs";
+  pyproject = false;
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "GUI tool to find duplicate files in a system";
     homepage = "https://github.com/arsenetar/dupeguru";
     changelog = "https://github.com/arsenetar/dupeguru/releases/tag/${builtins.head (lib.strings.splitString "-" finalAttrs.version)}";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ novoxd ];
+    platforms = lib.platforms.unix;
     mainProgram = "dupeguru";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

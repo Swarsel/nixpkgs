@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,19 +16,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-3gi2ysIb5256CdmtX38oIfeDwNCQojK+YB9aEm8H01Q=";
+  # Tests contain network calls
+  doCheck = false;
+
+  postInstall = ''
+    mv $out/bin/cli $out/bin/tx
+  '';
 
   ldflags = [
     "-s"
     "-w"
     "-X 'github.com/transifex/cli/internal/txlib.Version=${finalAttrs.version}'"
   ];
-
-  postInstall = ''
-    mv $out/bin/cli $out/bin/tx
-  '';
-
-  # Tests contain network calls
-  doCheck = false;
 
   meta = {
     description = "Transifex command-line client";

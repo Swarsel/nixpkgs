@@ -16,18 +16,19 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-XuvwO/MkGBMWo2hjDPDDYS3JmfWJH75mbNn6oKsMWps=";
   };
 
-  composerLock = ./composer.lock;
   vendorHash = "sha256-/Kvj3vd2YG7DFvodtvEkWdAsbMazBHJHmUTBexxFsII=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  composerLock = ./composer.lock;
 
   meta = {
-    changelog = "https://github.com/nunomaduro/phpinsights/releases/tag/v${finalAttrs.version}";
     description = "Instant PHP quality checks from your console";
     homepage = "https://phpinsights.com/";
+    changelog = "https://github.com/nunomaduro/phpinsights/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     mainProgram = "phpinsights";
     teams = [ lib.teams.php ];

@@ -1,24 +1,22 @@
 {
   lib,
-  gitSupport ? true,
   fetchFromGitHub,
-  rustPlatform,
   cmake,
+  installShellFiles,
   pandoc,
   pkg-config,
-  zlib,
-  installShellFiles,
+  rustPlatform,
   versionCheckHook,
+  zlib,
   # once eza upstream gets support for setting up a compatibility symlink for exa, we should change
   # the handling here from postInstall to passing the required argument to the builder.
   exaAlias ? true,
+  gitSupport ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "eza";
   version = "0.23.5";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "eza-community";
@@ -27,7 +25,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-4XgPePl90mnQxmTUJfOvIsCcTRSYNBuRUNOb/3kmO1k=";
   };
 
-  cargoHash = "sha256-IRG+mVgU8ZZ8PsxZWqmf3ZjW8fGL0RD0CwIrjsL366I=";
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -35,15 +36,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellFiles
     pandoc
   ];
+
   buildInputs = [ zlib ];
-
-  buildNoDefaultFeatures = true;
-  buildFeatures = lib.optional gitSupport "git";
-
-  outputs = [
-    "out"
-    "man"
-  ];
+  cargoHash = "sha256-IRG+mVgU8ZZ8PsxZWqmf3ZjW8fGL0RD0CwIrjsL366I=";
 
   postInstall = ''
     for page in eza.1 eza_colors.5 eza_colors-explanation.5; do
@@ -60,11 +55,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ln -s eza $out/bin/exa
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  buildFeatures = lib.optional gitSupport "git";
+  buildNoDefaultFeatures = true;
 
   meta = {
     description = "Modern, maintained replacement for ls";
+
     longDescription = ''
       eza is a modern replacement for ls. It uses colours for information by
       default, helping you distinguish between many types of files, such as
@@ -73,15 +72,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
       for a directory, or recursing into directories with a tree view. eza is
       written in Rust, so it’s small, fast, and portable.
     '';
+
     homepage = "https://github.com/eza-community/eza";
     changelog = "https://github.com/eza-community/eza/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.eupl12;
-    mainProgram = "eza";
+
     maintainers = with lib.maintainers; [
       cafkafk
       _9glenda
       sigmasquadron
     ];
+
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "eza";
   };
 })

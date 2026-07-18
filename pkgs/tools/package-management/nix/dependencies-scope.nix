@@ -1,9 +1,9 @@
 {
   lib,
+  callPackage,
   generateSplicesForMkScope,
   newScope,
   splicePackages,
-  callPackage,
 }:
 
 let

@@ -47,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Yet another zen simulation; A simple find-the-kitten game";
     homepage = "http://robotfindskitten.org/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "robotfindskitten";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "robotfindskitten";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dateparser,
-  fetchFromGitHub,
   georss-client,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "georss-ign-sismologia-client";
   version = "0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-geIxF4GumxRoetJ6mIZCzI3pAvWjJJoY66aQYd2Mzik=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     georss-client
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "georss_ign_sismologia_client" ];
 
   meta = {

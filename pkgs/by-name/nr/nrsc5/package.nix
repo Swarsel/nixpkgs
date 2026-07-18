@@ -4,18 +4,18 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
   cmake,
-  rtl-sdr,
-  libao,
   fftwFloat,
+  libao,
+  libtool,
+  rtl-sdr,
 }:
 let
   src_faad2 = fetchFromGitHub {
+    hash = "sha256-JvmblrmE3doUMUwObBN2b+Ej+CDBWNemBsyYSCXGwo8=";
     owner = "knik0";
     repo = "faad2";
     tag = "2.11.2";
-    hash = "sha256-JvmblrmE3doUMUwObBN2b+Ej+CDBWNemBsyYSCXGwo8=";
   };
 
 in
@@ -30,14 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xfgTUIaXt/nb5hNiwi4ws7pzeVGOW72LDSIXg+yLwkw=";
   };
 
-  postUnpack = ''
-    export srcRoot=`pwd`
-    export faadSrc="$srcRoot/faad2-prefix/src/faad2_external"
-    mkdir -p $faadSrc
-    cp -r ${src_faad2}/* $faadSrc
-    chmod -R u+w $faadSrc
-  '';
-
   postPatch = ''
     sed -i '/GIT_REPOSITORY/d' CMakeLists.txt
     sed -i '/GIT_TAG/d' CMakeLists.txt
@@ -50,6 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     automake
     libtool
   ];
+
   buildInputs = [
     rtl-sdr
     libao
@@ -61,12 +54,20 @@ stdenv.mkDerivation (finalAttrs: {
     "-DUSE_FAAD2=ON"
   ];
 
+  postUnpack = ''
+    export srcRoot=`pwd`
+    export faadSrc="$srcRoot/faad2-prefix/src/faad2_external"
+    mkdir -p $faadSrc
+    cp -r ${src_faad2}/* $faadSrc
+    chmod -R u+w $faadSrc
+  '';
+
   meta = {
-    homepage = "https://github.com/theori-io/nrsc5";
     description = "HD-Radio decoder for RTL-SDR";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/theori-io/nrsc5";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ markuskowa ];
+    platforms = lib.platforms.linux;
     mainProgram = "nrsc5";
   };
 })

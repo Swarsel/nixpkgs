@@ -4,14 +4,13 @@
   fetchPypi,
   fetchpatch2,
   pytestCheckHook,
-  six,
   setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "mohawk";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,20 +19,18 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-wUA62sHuZuyarVU3NjLy3XqTW0kZeUzfiw2vitkcfLg=";
       # https://github.com/kumar303/mohawk/pull/59
       name = "nose-to-pytest.patch";
       url = "https://github.com/kumar303/mohawk/compare/b7899166880e890f01cf2531b5686094ba08df8f...66157c7efbf6b0d18c30a9ffe5dfd84bef27bd3a.diff?full_index=1";
-      hash = "sha256-wUA62sHuZuyarVU3NjLy3XqTW0kZeUzfiw2vitkcfLg=";
     })
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ six ];
   enabledTestPaths = [ "mohawk/tests.py" ];
+  pyproject = true;
 
   meta = {
     description = "Python library for Hawk HTTP authorization";

@@ -3,13 +3,13 @@
   stdenv,
   fetchurl,
   alsa-lib,
+  fftwFloat,
   libclthreads,
   libclxclient,
+  libjack2,
   libx11,
   libxft,
   libxrender,
-  fftwFloat,
-  libjack2,
   zita-alsa-pcmi,
 }:
 
@@ -44,8 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://kokkinizita.linuxaudio.org/linuxaudio/index.html";
     description = "JACK and ALSA Audio Analyser";
+    homepage = "http://kokkinizita.linuxaudio.org/linuxaudio/index.html";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

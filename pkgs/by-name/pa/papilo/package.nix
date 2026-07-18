@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
   onetbb,
 }:
 
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail '"happy-path-replace-variable"' ""
     '');
 
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -42,17 +43,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ onetbb ];
-
-  strictDeps = true;
-
   doCheck = true;
 
   meta = {
-    homepage = "https://scipopt.org/";
     description = "Parallel Presolve for Integer and Linear Optimization";
+    homepage = "https://scipopt.org/";
     license = with lib.licenses; [ lgpl3Plus ];
-    mainProgram = "papilo";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "papilo";
   };
 })

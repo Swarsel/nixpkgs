@@ -21,11 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-H3dj11Q0MgLST1TWJ5rmfPePxjXrXOYI2Xf/3uUdICU=";
   };
 
-  cargoHash = "sha256-N2WYnFTlz4NUAU/tjy18SPvxdDVDIIaqgu44e6unOHs=";
-
-  # For aws-lc-sys@0.22.0: use external bindgen.
-  env.AWS_LC_SYS_EXTERNAL_BINDGEN = "true";
-
   # For aws-lc-sys@0.22.0: fix gcc error:
   # In function 'memcpy',
   #   inlined from 'OPENSSL_memcpy' at aws-lc/crypto/asn1/../internal.h
@@ -53,13 +48,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rustPlatform.bindgenHook
   ];
 
-  cargoBuildFlags = [ "--workspace" ];
-  cargoTestFlags = [
-    "--package"
-    "firecracker"
-    "--package"
-    "jailer"
-  ];
+  cargoHash = "sha256-N2WYnFTlz4NUAU/tjy18SPvxdDVDIIaqgu44e6unOHs=";
+  # For aws-lc-sys@0.22.0: use external bindgen.
+  env.AWS_LC_SYS_EXTERNAL_BINDGEN = "true";
 
   checkFlags = [
     # basic tests to skip in sandbox
@@ -80,11 +71,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=resource_limits::tests::test_set_resource_limits"
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -97,18 +83,35 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  cargoBuildFlags = [ "--workspace" ];
+
+  cargoTestFlags = [
+    "--package"
+    "firecracker"
+    "--package"
+    "jailer"
+  ];
+
   meta = {
     description = "Secure, fast, minimal micro-container virtualization";
     homepage = "http://firecracker-microvm.io";
     changelog = "https://github.com/firecracker-microvm/firecracker/releases/tag/v${finalAttrs.version}";
-    mainProgram = "firecracker";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       usertam
       thoughtpolice
       qjoly
       techknowlogick
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "firecracker";
   };
 })

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  sassc,
-  meson,
-  ninja,
+  cinnamon,
   glib,
   gnome-shell,
   gnome-themes-extra,
   gtk-engine-murrine,
   inkscape,
-  cinnamon,
   makeFontsConf,
+  meson,
+  ninja,
   python3,
+  sassc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7VmqsUCeG5GwmrVdt9BJj0eZ/1v+no/05KwGFb7E9ns=";
   };
 
+  postPatch = ''
+    patchShebangs meson/install-file.py
+  '';
+
   nativeBuildInputs = [
     meson
     ninja
@@ -34,23 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     glib # for glib-compile-resources
     python3
   ];
-
-  propagatedUserEnvPkgs = [
-    gnome-themes-extra
-    gtk-engine-murrine
-  ];
-
-  postPatch = ''
-    patchShebangs meson/install-file.py
-  '';
-
-  preBuild = ''
-    # Shut up inkscape's warnings about creating profile directory
-    export HOME="$TMPDIR"
-  '';
-
-  # Fontconfig error: Cannot load default config file: No such file: (null)
-  env.FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
 
   mesonFlags = [
     # "-Dthemes=cinnamon,gnome-shell,gtk2,gtk3,plank,xfwm,metacity"
@@ -61,14 +48,29 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dgnome_shell_gresource=true"
   ];
 
+  # Fontconfig error: Cannot load default config file: No such file: (null)
+  env.FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
+
+  preBuild = ''
+    # Shut up inkscape's warnings about creating profile directory
+    export HOME="$TMPDIR"
+  '';
+
+  propagatedUserEnvPkgs = [
+    gnome-themes-extra
+    gtk-engine-murrine
+  ];
+
   meta = {
     description = "Flat theme with transparent elements for GTK 3, GTK 2 and Gnome Shell";
     homepage = "https://github.com/jnsh/arc-theme";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       simonvandel
       romildo
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

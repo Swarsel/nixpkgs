@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  cmake,
   cacert,
+  cmake,
   fetchpatch,
   buildShared ? !stdenv.hostPlatform.isStatic,
 }:
@@ -13,24 +13,36 @@ let
 
   generic =
     {
-      version,
       hash,
+      version,
+      knownVulnerabilities ? [ ],
       patches ? [ ],
       postPatch ? "",
-      knownVulnerabilities ? [ ],
     }:
     stdenv.mkDerivation {
-      pname = "libressl";
       inherit version;
-
-      strictDeps = true;
-      __structuredAttrs = true;
+      inherit patches;
+      pname = "libressl";
 
       src = fetchurl {
-        url = "mirror://openbsd/LibreSSL/libressl-${version}.tar.gz";
         inherit hash;
+        url = "mirror://openbsd/LibreSSL/libressl-${version}.tar.gz";
       };
 
+      outputs = [
+        "bin"
+        "dev"
+        "out"
+        "man"
+        "nc"
+      ];
+
+      postPatch = ''
+        patchShebangs tests/
+      ''
+      + postPatch;
+
+      strictDeps = true;
       nativeBuildInputs = [ cmake ];
 
       cmakeFlags = [
@@ -52,14 +64,8 @@ let
         rm configure
       '';
 
-      inherit patches;
-
-      postPatch = ''
-        patchShebangs tests/
-      ''
-      + postPatch;
-
       doCheck = !(stdenv.hostPlatform.isPower64 || stdenv.hostPlatform.isRiscV);
+
       preCheck = ''
         export PREVIOUS_${ldLibPathEnvName}=$${ldLibPathEnvName}
         export ${ldLibPathEnvName}="$${ldLibPathEnvName}:$(realpath tls/):$(realpath ssl/):$(realpath crypto/)"
@@ -81,17 +87,10 @@ let
           END { exit res }
         '
       '';
+
       postCheck = ''
         export ${ldLibPathEnvName}=$PREVIOUS_${ldLibPathEnvName}
       '';
-
-      outputs = [
-        "bin"
-        "dev"
-        "out"
-        "man"
-        "nc"
-      ];
 
       postFixup = ''
         moveToOutput "bin/nc" "$nc"
@@ -100,9 +99,13 @@ let
         moveToOutput "share/man/man1/nc.1.gz" "$nc"
       '';
 
+      __structuredAttrs = true;
+
       meta = {
+        inherit knownVulnerabilities;
         description = "Free TLS/SSL implementation";
         homepage = "https://www.libressl.org";
+
         license = with lib.licenses; [
           publicDomain
           bsdOriginal
@@ -112,13 +115,14 @@ let
           isc
           openssl
         ];
-        platforms = lib.platforms.all;
+
         maintainers = with lib.maintainers; [
           thoughtpolice
           fpletz
           ruuda
         ];
-        inherit knownVulnerabilities;
+
+        platforms = lib.platforms.all;
 
         # OpenBSD believes that PowerPC should be always-big-endian;
         # this assumption seems to have propagated into recent
@@ -129,6 +133,7 @@ let
         badPlatforms = with lib.systems.inspect.patterns; [
           (lib.recursiveUpdate isPower64 isLittleEndian)
         ];
+
         identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "openbsd" version;
       };
     };
@@ -136,8 +141,8 @@ let
   # https://github.com/libressl/portable/pull/1206
   # This got merged in February 2026 and is included as of LibreSSL 4.3.0.
   common-cmake-install-full-dirs-patch = fetchpatch {
-    url = "https://github.com/libressl/portable/commit/a15ea0710398eaeed3be53cf643e80a1e80c981d.patch";
     hash = "sha256-Mlf4SrGCCqALQicbGtmVGdkdfcE8DEGYkOuVyG2CozM=";
+    url = "https://github.com/libressl/portable/commit/a15ea0710398eaeed3be53cf643e80a1e80c981d.patch";
   };
 in
 {
@@ -145,29 +150,33 @@ in
   # 2026, one year after the release of OpenBSD 7.8.
   libressl_4_2 = generic {
     version = "4.2.1";
-    hash = "sha256-bVwvWFg1iOp5H0yGRQBAcdAN+lVKW/eIoAbKHrWr1ws=";
+
     patches = [
       common-cmake-install-full-dirs-patch
     ];
+
+    hash = "sha256-bVwvWFg1iOp5H0yGRQBAcdAN+lVKW/eIoAbKHrWr1ws=";
   };
 
   # 4.3 was released April 2026 and will become unsupported one year after the
   # release of OpenBSD 7.9.
   libressl_4_3 = generic {
     version = "4.3.1";
-    hash = "sha256-wttCrOFOfVQZgm+rNadC7G5NEnJaBRpR0M6jwQug+lA=";
+
     patches = [
       # Fix for https://github.com/libressl/portable/issues/1278, where LibreSSL
       # 4.3 started requiring executable stack because some objects were missing
       # a .note.GNU-stack section; will probably be included in the next release.
       (fetchpatch {
-        url = "https://raw.githubusercontent.com/libressl/portable/4dae91d056c6c75ba5cf2bc5e6148b8e02239119/patches/gnu-stack.patch";
-        hash = "sha256-Q1oWL4N8w5Zmjfq5QkTJR53NgZ4GqChSDaBicli5G2I=";
         # This patch is written to be applied with -p0, with no leading path
         # component, but Nix applies with -p1 by default, so we add it to not
         # break compatibility with how other patches must be applied.
         decode = "sed 's|^--- |--- a/|; s|^+++ |+++ b/|'";
+        hash = "sha256-Q1oWL4N8w5Zmjfq5QkTJR53NgZ4GqChSDaBicli5G2I=";
+        url = "https://raw.githubusercontent.com/libressl/portable/4dae91d056c6c75ba5cf2bc5e6148b8e02239119/patches/gnu-stack.patch";
       })
     ];
+
+    hash = "sha256-wttCrOFOfVQZgm+rNadC7G5NEnJaBRpR0M6jwQug+lA=";
   };
 }

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -15,12 +15,12 @@ buildGoModule rec {
     hash = "sha256-RvyoqfhvoXESmc6M4B1XeUtal0zQt6LCKjByyBe6pUU=";
   };
 
-  vendorHash = "sha256-ZnfNje0JuTCckW9SMc2TLb968nHiGK/bgOJnIllJJq4=";
-
   # NOTE: Remove the install and upgrade hooks.
   postPatch = ''
     sed -i '/^hooks:/,+2 d' plugin.yaml
   '';
+
+  vendorHash = "sha256-ZnfNje0JuTCckW9SMc2TLb968nHiGK/bgOJnIllJJq4=";
 
   postInstall = ''
     install -dm755 $out/helm-mapkubeapis

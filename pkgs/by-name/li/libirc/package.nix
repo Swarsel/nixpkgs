@@ -17,17 +17,15 @@ stdenv.mkDerivation {
     hash = "sha256-C7bO2Dwa6p7/bUh73JJCup2biIm9UShOUSxL9uCShqg=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail 'cmake_minimum_required(VERSION 3.0)' 'cmake_minimum_required(VERSION 3.10)'
+  '';
+
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
     qt6.qtbase
   ];
-
-  dontWrapQtApps = true; # library only
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail 'cmake_minimum_required(VERSION 3.0)' 'cmake_minimum_required(VERSION 3.10)'
-  '';
 
   cmakeFlags = [
     (lib.cmakeBool "QT6_BUILD" true)
@@ -39,6 +37,8 @@ stdenv.mkDerivation {
     cp ../libirc/*.h $out/libirc/libirc
     cp ../libircclient/*.h $out/libirc/libircclient
   '';
+
+  dontWrapQtApps = true; # library only
 
   meta = {
     description = "C++ IRC library written in Qt with support for data serialization";

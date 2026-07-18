@@ -2,12 +2,10 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pythonAtLeast,
-
+  hatch-vcs,
   # build-system
   hatchling,
-  hatch-vcs,
-
+  pythonAtLeast,
   # dependencies
   setuptools,
 }:
@@ -15,7 +13,6 @@
 buildPythonPackage rec {
   pname = "testtools";
   version = "2.7.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,12 +24,11 @@ buildPythonPackage rec {
     hatch-vcs
   ];
 
-  pythonRemoveDeps = [ "fixtures" ];
-
   propagatedBuildInputs = lib.optionals (pythonAtLeast "3.12") [ setuptools ];
-
   # testscenarios has a circular dependency on testtools
   doCheck = false;
+  pyproject = true;
+  pythonRemoveDeps = [ "fixtures" ];
 
   meta = {
     description = "Set of extensions to the Python standard library's unit testing framework";

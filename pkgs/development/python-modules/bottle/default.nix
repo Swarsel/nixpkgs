@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
   pythonAtLeast,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bottle";
   version = "0.13.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -18,12 +17,13 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     cd test
   '';
+
+  __darwinAllowLocalNetworking = true;
 
   disabledTests = [
     "test_delete_cookie"
@@ -40,14 +40,14 @@ buildPythonPackage (finalAttrs: {
     "test_from_import"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
 
   meta = {
-    homepage = "https://bottlepy.org/";
     description = "Fast and simple micro-framework for small web-applications";
-    mainProgram = "bottle.py";
-    downloadPage = "https://github.com/bottlepy/bottle";
+    homepage = "https://bottlepy.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ koral ];
+    mainProgram = "bottle.py";
+    downloadPage = "https://github.com/bottlepy/bottle";
   };
 })

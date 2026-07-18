@@ -18,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GjQg7Fq7fWal1vh/jR5qqm+qs+D/McCoQfktOvO86eA=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -28,11 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   dontWrapQtApps = true;
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   meta = {
     description = "Very simple set of IPC classes for inter-process communication";

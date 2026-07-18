@@ -37,19 +37,19 @@ stdenv.mkDerivation rec {
     "KERNEL_SRC=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
 
-  enableParallelBuilding = true;
-
   preInstall = ''
     sed -i -e "s,INSTALL_MOD_DIR=,INSTALL_MOD_PATH=$out INSTALL_MOD_DIR=," Makefile
   '';
+
+  enableParallelBuilding = true;
 
   installTargets = [
     "modules_install"
   ];
 
   meta = {
-    homepage = "https://github.com/intel/ipu6-drivers";
     description = "IPU6 kernel driver";
+    homepage = "https://github.com/intel/ipu6-drivers";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];

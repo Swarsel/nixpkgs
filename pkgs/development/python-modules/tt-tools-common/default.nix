@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   distro,
   elasticsearch,
   psutil,
+  pydantic,
   pyyaml,
-  rich,
-  textual,
   requests,
+  rich,
+  setuptools,
+  setuptools-scm,
+  textual,
   tomli,
   tqdm,
-  pydantic,
-  setuptools-scm,
 }:
 buildPythonPackage rec {
   pname = "tt-tools-common";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tenstorrent";
@@ -45,10 +44,12 @@ buildPythonPackage rec {
     pydantic
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Helper library for common utilities shared across Tentorrent tools";
     homepage = "https://github.com/tenstorrent/tt-tools-common";
-    maintainers = with lib.maintainers; [ RossComputerGuy ];
     license = with lib.licenses; [ asl20 ];
+    maintainers = with lib.maintainers; [ RossComputerGuy ];
   };
 }

@@ -10,12 +10,11 @@
 buildPythonPackage rec {
   pname = "robotframework-assertion-engine";
   version = "3.0.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "robotframework_assertion_engine";
     inherit version;
     hash = "sha256-HGCNTGnZZSCYah3cbe8Px/foSVIPHmiCpjO1HbuY/Yg=";
+    pname = "robotframework_assertion_engine";
   };
 
   build-system = [
@@ -26,6 +25,8 @@ buildPythonPackage rec {
     robotframework
     robotframework-pythonlibcore
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "assertionengine"

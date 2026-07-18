@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   boost,
+  cppunit,
+  curl,
+  docbook_xml_dtd_43,
   libxml2,
   pkg-config,
-  docbook_xml_dtd_43,
-  curl,
-  autoreconfHook,
-  cppunit,
   xmlto,
 }:
 
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     xmlto
   ];
+
   buildInputs = [
     boost
     libxml2
@@ -47,15 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   enableParallelBuilding = true;
 
   meta = {
-    changelog = "https://github.com/tdf/libcmis/blob/${finalAttrs.src.tag}/NEWS";
     description = "C++ client library for the CMIS interface";
     homepage = "https://github.com/tdf/libcmis";
+    changelog = "https://github.com/tdf/libcmis/blob/${finalAttrs.src.tag}/NEWS";
     license = lib.licenses.gpl2;
-    mainProgram = "cmis-client";
     platforms = lib.platforms.unix;
+    mainProgram = "cmis-client";
   };
 })

@@ -1,32 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatch-vcs,
   hatchling,
-
+  # tests
+  hist,
   # dependencies
   matplotlib,
   mplhep-data,
   numpy,
   packaging,
-  uhi,
-
-  # tests
-  hist,
   pytest-mock,
   pytest-mpl,
   pytestCheckHook,
   scipy,
+  uhi,
   uproot,
 }:
 
 buildPythonPackage rec {
   pname = "mplhep";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scikit-hep";
@@ -34,6 +30,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Sx/VR573Vhxfv043mVdMpu/v6Ukv/JrVXBlpbILqGsI=";
   };
+
+  nativeCheckInputs = [
+    hist
+    pytest-mock
+    pytest-mpl
+    pytestCheckHook
+    scipy
+    uproot
+  ];
 
   build-system = [
     hatch-vcs
@@ -48,20 +53,12 @@ buildPythonPackage rec {
     uhi
   ];
 
-  nativeCheckInputs = [
-    hist
-    pytest-mock
-    pytest-mpl
-    pytestCheckHook
-    scipy
-    uproot
-  ];
-
   disabledTestPaths = [
     # requires uproot4
     "tests/test_inputs.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mplhep" ];
 
   meta = {

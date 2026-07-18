@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bottle,
   buildPythonPackage,
-  fetchFromGitHub,
   numpy,
   pytestCheckHook,
   pyyaml,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "jug";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "luispedro";
@@ -22,10 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-YjBhA+yEdMQ/4yYf25kkXwbvw+ta9Nb4CX8Rnr0du6k=";
   };
 
-  build-system = [ setuptools ];
-
-  dependenciesk = [ bottle ];
-
   nativeCheckInputs = [
     numpy
     pytestCheckHook
@@ -33,6 +28,9 @@ buildPythonPackage rec {
     redis
   ];
 
+  build-system = [ setuptools ];
+  dependenciesk = [ bottle ];
+  pyproject = true;
   pythonImportsCheck = [ "jug" ];
 
   meta = {

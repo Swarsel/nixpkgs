@@ -1,30 +1,30 @@
 {
-  stdenv,
   lib,
-  testers,
+  stdenv,
   fetchurl,
-  pkg-config,
-  makeWrapper,
+  OVMF,
   autoreconfHook,
   bash-completion,
-  OVMF,
-  qemu,
-  ocamlPackages,
-  perl,
+  cdrkit,
   cpio,
   getopt,
-  libosinfo,
-  pcre2,
-  libxml2,
-  json_c,
-  glib,
-  libguestfs-with-appliance,
-  cdrkit,
-  nbdkit,
-  withWindowsGuestSupport ? true,
-  pkgsCross, # for rsrvany
-  virtio-win,
   gitUpdater,
+  glib,
+  json_c,
+  libguestfs-with-appliance,
+  libosinfo,
+  libxml2,
+  makeWrapper,
+  nbdkit,
+  ocamlPackages,
+  pcre2,
+  perl,
+  pkg-config,
+  pkgsCross, # for rsrvany
+  qemu,
+  testers,
+  virtio-win,
+  withWindowsGuestSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -74,6 +74,8 @@ stdenv.mkDerivation (finalAttrs: {
     nbd
   ]);
 
+  env.PKG_CONFIG_BASH_COMPLETION_COMPLETIONSDIR = "${placeholder "out"}/share/bash-completion/completions";
+
   postInstall = ''
     for bin in $out/bin/*; do
     wrapProgram "$bin" \
@@ -91,19 +93,17 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s "${pkgsCross.mingwW64.rhsrvany}/bin/" $out/share/virt-tools
   '';
 
-  env.PKG_CONFIG_BASH_COMPLETION_COMPLETIONSDIR = "${placeholder "out"}/share/bash-completion/completions";
-
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/libguestfs/guestfs-tools";
-    rev-prefix = "v";
     odd-unstable = true;
+    rev-prefix = "v";
+    url = "https://github.com/libguestfs/guestfs-tools";
   };
 
   meta = {
-    homepage = "https://github.com/libguestfs/virt-v2v";
     description = "Convert guests from foreign hypervisors to run on KVM";
+    homepage = "https://github.com/libguestfs/virt-v2v";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ lukts30 ];
     platforms = lib.platforms.linux;

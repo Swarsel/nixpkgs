@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   buildPackages,
-  pkg-config,
-  libtool,
-  xbitmaps,
-  libxext,
-  libxft,
-  libxrender,
-  libxmu,
-  libxt,
   expat,
+  fetchpatch,
+  flex,
+  libiconv,
   libjpeg,
   libpng,
-  libiconv,
-  flex,
-  libxp,
+  libtool,
   libxau,
+  libxext,
+  libxft,
+  libxmu,
+  libxp,
+  libxrender,
+  libxt,
+  pkg-config,
+  xbitmaps,
   demoSupport ? false,
 }:
 # refer to the gentoo package
@@ -32,32 +32,38 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1rxwkrhmj8sfg7dwmkhq885valwqbh26d79033q7vb7fcqv756w5";
   };
 
-  buildInputs = [
-    flex
-    libtool
-    xbitmaps
-    libxext
-    libxft
-    libxrender
-    libxmu
-    libxt
-    expat
-    libjpeg
-    libpng
-    libiconv
-  ];
+  patches = [
+    ./Remove-unsupported-weak-refs-on-darwin.patch
+    ./Add-X.Org-to-bindings-file.patch
+    (fetchpatch rec {
+      name = "fix-format-security.patch";
+      sha256 = "13vzpf8yxvhf4gl7q0yzlr6ak1yzx382fsqsrv5lc8jbbg4nwrrq";
+      url = "https://raw.githubusercontent.com/void-linux/void-packages/b9a1110dabb01c052dadc1abae1413bd4afe3652/srcpkgs/motif/patches/02-${name}";
+    })
+    (fetchpatch {
+      extraPrefix = "lib/Xm/";
+      hash = "sha256-WlagHOgf2gZDxXN+SSEW6de1FuN4fbpd9zviMwo1+HI=";
+      name = "missing-headers.patch";
+      stripLen = 2;
+      url = "https://gitlab.freedesktop.org/xorg/lib/libxpm/-/commit/4cedf181bcfe13e5d206554c51edb82cb17e7ad5.patch";
+    })
+    (fetchurl {
+      downloadToTemp = true;
+      hash = "sha256-FyaBfqD/TuJVFFHZlp1/b1MyL8BJAfV43ktuusgxbfE=";
+      name = "noreturn.patch";
 
-  nativeBuildInputs = [
-    pkg-config
-    flex
-  ];
+      postFetch = ''
+        tar -xOf $downloadedFile patch/12_all_noreturn.patch > $out
+      '';
 
-  propagatedBuildInputs = [
-    libxp
-    libxau
+      url = "https://dev.gentoo.org/~ulm/distfiles/motif-2.3.8-patches-5.tar.xz";
+    })
+    (fetchpatch {
+      extraPrefix = "";
+      hash = "sha256-w3zCUs/RbnRoUJ0sNCI00noEOkov/IGV/zIygakSQqc=";
+      url = "https://raw.githubusercontent.com/macports/macports-ports/acc8c7cb2247d9892bf5a52eb92431a4c0c8e1cd/x11/openmotif/files/wcs-functions.patch";
+    })
   ];
-
-  strictDeps = true;
 
   postPatch = ''
     # File existence fails when cross-compiling - useless for Nix anyhow
@@ -86,35 +92,31 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '$(AM_V_CCLD)$(LINK) $(wml_OBJECTS) $(wml_LDADD) $(LIBS)' ""
   '';
 
-  patches = [
-    ./Remove-unsupported-weak-refs-on-darwin.patch
-    ./Add-X.Org-to-bindings-file.patch
-    (fetchpatch rec {
-      name = "fix-format-security.patch";
-      url = "https://raw.githubusercontent.com/void-linux/void-packages/b9a1110dabb01c052dadc1abae1413bd4afe3652/srcpkgs/motif/patches/02-${name}";
-      sha256 = "13vzpf8yxvhf4gl7q0yzlr6ak1yzx382fsqsrv5lc8jbbg4nwrrq";
-    })
-    (fetchpatch {
-      name = "missing-headers.patch";
-      url = "https://gitlab.freedesktop.org/xorg/lib/libxpm/-/commit/4cedf181bcfe13e5d206554c51edb82cb17e7ad5.patch";
-      extraPrefix = "lib/Xm/";
-      stripLen = 2;
-      hash = "sha256-WlagHOgf2gZDxXN+SSEW6de1FuN4fbpd9zviMwo1+HI=";
-    })
-    (fetchurl {
-      name = "noreturn.patch";
-      url = "https://dev.gentoo.org/~ulm/distfiles/motif-2.3.8-patches-5.tar.xz";
-      downloadToTemp = true;
-      postFetch = ''
-        tar -xOf $downloadedFile patch/12_all_noreturn.patch > $out
-      '';
-      hash = "sha256-FyaBfqD/TuJVFFHZlp1/b1MyL8BJAfV43ktuusgxbfE=";
-    })
-    (fetchpatch {
-      url = "https://raw.githubusercontent.com/macports/macports-ports/acc8c7cb2247d9892bf5a52eb92431a4c0c8e1cd/x11/openmotif/files/wcs-functions.patch";
-      extraPrefix = "";
-      hash = "sha256-w3zCUs/RbnRoUJ0sNCI00noEOkov/IGV/zIygakSQqc=";
-    })
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    pkg-config
+    flex
+  ];
+
+  buildInputs = [
+    flex
+    libtool
+    xbitmaps
+    libxext
+    libxft
+    libxrender
+    libxmu
+    libxt
+    expat
+    libjpeg
+    libpng
+    libiconv
+  ];
+
+  propagatedBuildInputs = [
+    libxp
+    libxau
   ];
 
   # provide correct configure answers for cross builds
@@ -132,20 +134,20 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  enableParallelBuilding = true;
-
   # copy tools for cross builds
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     mkdir -p "$out/lib/internals"
     cp config/util/makestrs tools/wml/{wml,wmluiltok,.libs/wmldbcreate} "$out/lib/internals"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://motif.ics.com";
     description = "Unix standard widget-toolkit and window-manager";
-    platforms = lib.platforms.unix;
+    homepage = "https://motif.ics.com";
     license = with lib.licenses; [ lgpl21Plus ];
     maintainers = with lib.maintainers; [ qyliss ];
+    platforms = lib.platforms.unix;
     broken = demoSupport && stdenv.cc.isClang && lib.versionAtLeast stdenv.cc.version "16";
   };
 })

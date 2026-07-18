@@ -8,11 +8,12 @@ let
   cfg = config.services.hound;
   settingsFormat = pkgs.formats.json { };
   houndConfigFile = pkgs.writeTextFile {
-    name = "hound-config.json";
-    text = builtins.toJSON cfg.settings;
     checkPhase = ''
       ${cfg.package}/bin/houndd -check-config -conf $out
     '';
+
+    name = "hound-config.json";
+    text = builtins.toJSON cfg.settings;
   };
 in
 {
@@ -27,47 +28,44 @@ in
     ))
   ];
 
-  meta.maintainers = with lib.maintainers; [ SuperSandro2000 ];
-
   options = {
     services.hound = {
       enable = lib.mkEnableOption "hound";
-
       package = lib.mkPackageOption pkgs "hound" { };
-
-      user = lib.mkOption {
-        default = "hound";
-        type = lib.types.str;
-        description = ''
-          User the hound daemon should execute under.
-        '';
-      };
 
       group = lib.mkOption {
         default = "hound";
-        type = lib.types.str;
+
         description = ''
           Group the hound daemon should execute under.
         '';
+
+        type = lib.types.str;
       };
 
       home = lib.mkOption {
         default = "/var/lib/hound";
-        type = lib.types.path;
+
         description = ''
           The path to use as hound's $HOME.
           If the default user "hound" is configured then this is the home of the "hound" user.
         '';
+
+        type = lib.types.path;
+      };
+
+      listen = lib.mkOption {
+        default = "0.0.0.0:6080";
+
+        description = ''
+          Listen on this [IP]:port
+        '';
+
+        example = ":6080";
+        type = lib.types.str;
       };
 
       settings = lib.mkOption {
-        type = settingsFormat.type;
-        example = lib.literalExpression ''
-          {
-            max-concurrent-indexers = 2;
-            repos.nixpkgs.url = "https://www.github.com/NixOS/nixpkgs.git";
-          }
-        '';
         description = ''
           The full configuration of the Hound daemon.
           See the upstream documentation <https://github.com/hound-search/hound/blob/main/docs/config-options.md> for details.
@@ -76,33 +74,30 @@ in
           The `dbpath` should be an absolute path to a writable directory.
           :::.com/hound-search/hound/blob/main/docs/config-options.md>.
         '';
+
+        example = lib.literalExpression ''
+          {
+            max-concurrent-indexers = 2;
+            repos.nixpkgs.url = "https://www.github.com/NixOS/nixpkgs.git";
+          }
+        '';
+
+        type = settingsFormat.type;
       };
 
-      listen = lib.mkOption {
-        type = lib.types.str;
-        default = "0.0.0.0:6080";
-        example = ":6080";
+      user = lib.mkOption {
+        default = "hound";
+
         description = ''
-          Listen on this [IP]:port
+          User the hound daemon should execute under.
         '';
+
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.groups = lib.mkIf (cfg.group == "hound") {
-      hound = { };
-    };
-
-    users.users = lib.mkIf (cfg.user == "hound") {
-      hound = {
-        description = "Hound code search";
-        createHome = true;
-        isSystemUser = true;
-        inherit (cfg) home group;
-      };
-    };
-
     environment.etc."hound/config.json".source = houndConfigFile;
 
     services.hound.settings = {
@@ -110,17 +105,34 @@ in
     };
 
     systemd.services.hound = {
-      description = "Hound Code Search";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Hound Code Search";
       restartTriggers = [ houndConfigFile ];
+
       serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
-        WorkingDirectory = cfg.home;
-        ExecStartPre = "${pkgs.git}/bin/git config --global --replace-all http.sslCAinfo ${config.security.pki.caBundle}";
         ExecStart = "${cfg.package}/bin/houndd -addr ${cfg.listen} -conf /etc/hound/config.json";
+        ExecStartPre = "${pkgs.git}/bin/git config --global --replace-all http.sslCAinfo ${config.security.pki.caBundle}";
+        Group = cfg.group;
+        User = cfg.user;
+        WorkingDirectory = cfg.home;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups = lib.mkIf (cfg.group == "hound") {
+      hound = { };
+    };
+
+    users.users = lib.mkIf (cfg.user == "hound") {
+      hound = {
+        inherit (cfg) home group;
+        createHome = true;
+        description = "Hound code search";
+        isSystemUser = true;
       };
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ SuperSandro2000 ];
 }

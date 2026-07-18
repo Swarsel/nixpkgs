@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   camlp-streams,
   num,
 }:
@@ -9,8 +9,6 @@
 buildDunePackage (finalAttrs: {
   pname = "lutils";
   version = "1.54.1";
-
-  minimalOCamlVersion = "4.02";
 
   src = fetchurl {
     url = "https://www-verimag.imag.fr/DIST-TOOLS/SYNCHRONE/pool/lutils.v${finalAttrs.version}.tgz";
@@ -22,9 +20,11 @@ buildDunePackage (finalAttrs: {
     num
   ];
 
+  minimalOCamlVersion = "4.02";
+
   meta = {
-    homepage = "https://gricad-gitlab.univ-grenoble-alpes.fr/verimag/synchrone/lutils/";
     description = "Tools and libs shared by Verimag/synchronous tools (lustre, lutin, rdbg)";
+    homepage = "https://gricad-gitlab.univ-grenoble-alpes.fr/verimag/synchrone/lutils/";
     changelog = "https://gricad-gitlab.univ-grenoble-alpes.fr/verimag/synchrone/lutils/-/releases/v${finalAttrs.version}";
     license = lib.licenses.cecill21;
     mainProgram = "gnuplot-rif";

@@ -1,37 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   datasets,
   einops,
+  # tests
+  expecttest,
   fsspec,
   pillow,
+  pytestCheckHook,
+  # build-system
+  setuptools,
   tensorboard,
   tokenizers,
   tomli,
+  tomli-w,
   torch,
   torchdata,
   transformers,
-  tyro,
-
-  # tests
-  expecttest,
-  pytestCheckHook,
-  tomli-w,
   triton,
+  tyro,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "torchtitan";
   version = "0.2.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pytorch";
@@ -39,6 +34,17 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-YXbbqNjmPBIFDRbvagHRIy5ph1pZmSerUxlqaF6f4cY=";
   };
+
+  nativeCheckInputs = [
+    expecttest
+    pytestCheckHook
+    tomli-w
+    transformers
+    triton
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -57,15 +63,9 @@ buildPythonPackage (finalAttrs: {
     tyro
   ];
 
-  pythonImportsCheck = [ "torchtitan" ];
-
-  nativeCheckInputs = [
-    expecttest
-    pytestCheckHook
-    tomli-w
-    transformers
-    triton
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    # Require internet access
+    "tests/unit_tests/test_tokenizer.py"
   ];
 
   disabledTests = [
@@ -73,10 +73,8 @@ buildPythonPackage (finalAttrs: {
     "test_list_files"
   ];
 
-  disabledTestPaths = [
-    # Require internet access
-    "tests/unit_tests/test_tokenizer.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "torchtitan" ];
 
   meta = {
     description = "PyTorch native platform for training generative AI models";

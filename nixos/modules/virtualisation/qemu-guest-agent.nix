@@ -14,10 +14,11 @@ in
 
   options.services.qemuGuest = {
     enable = mkOption {
-      type = types.bool;
       default = false;
       description = "Whether to enable the qemu guest agent.";
+      type = types.bool;
     };
+
     package = mkPackageOption pkgs [ "qemu_kvm" "ga" ] { };
   };
 
@@ -30,6 +31,7 @@ in
 
       systemd.services.qemu-guest-agent = {
         description = "Run the QEMU Guest Agent";
+
         serviceConfig = {
           ExecStart = "${cfg.package}/bin/qemu-ga --statedir /run/qemu-ga";
           Restart = "always";

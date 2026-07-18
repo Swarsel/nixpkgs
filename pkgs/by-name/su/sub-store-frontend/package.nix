@@ -1,13 +1,12 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-
-  pnpm_10,
+  buildNpmPackage,
   fetchPnpmDeps,
-  pnpmConfigHook,
   nix-update-script,
   nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 let
   pnpm = pnpm_10;
@@ -28,16 +27,6 @@ buildNpmPackage (finalAttrs: {
     pnpm
   ];
 
-  npmDeps = null;
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-lj93WF3mqvgaD0qnZC+X4ubw8ohz8E5ICWYWbEITYnk=";
-  };
-
-  npmConfigHook = pnpmConfigHook;
-
   installPhase = ''
     runHook preInstall
 
@@ -45,6 +34,16 @@ buildNpmPackage (finalAttrs: {
 
     runHook postInstall
   '';
+
+  npmConfigHook = pnpmConfigHook;
+  npmDeps = null;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-lj93WF3mqvgaD0qnZC+X4ubw8ohz8E5ICWYWbEITYnk=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

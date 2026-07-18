@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  pkg-config,
+  fetchpatch,
   libuv,
   libx11,
   libxi,
   libyaml,
   luajit,
+  pkg-config,
   udev,
 }:
 
@@ -30,8 +30,8 @@ stdenv.mkDerivation {
   # This patch fixes the build process which is broken on the current master branch of keyleds.
   patches = [
     (fetchpatch {
-      url = "https://github.com/keyleds/keyleds/commit/bffed5eb181127df915002b6ed830f85f15feafd.patch";
       sha256 = "sha256-i2N3D/K++34JVqJloNK2UcN473NarIjdjAz6PUhXcNY=";
+      url = "https://github.com/keyleds/keyleds/commit/bffed5eb181127df915002b6ed830f85f15feafd.patch";
     })
   ];
 
@@ -56,15 +56,14 @@ stdenv.mkDerivation {
     udev
   ];
 
+  cmakeBuildType = "MinSizeRel";
   enableParallelBuilding = true;
 
-  cmakeBuildType = "MinSizeRel";
-
   meta = {
-    homepage = "https://github.com/keyleds/keyleds";
     description = "Advanced RGB animation service for Logitech keyboards";
+    homepage = "https://github.com/keyleds/keyleds";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    platforms = lib.platforms.linux;
   };
 }

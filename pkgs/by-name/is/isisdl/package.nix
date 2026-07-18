@@ -13,8 +13,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-YyR0A7NqmUcR+hQnQlIgBdU6CxfHtDOjR3q5I21ROCI=";
   };
 
-  pyproject = true;
+  buildInputs = [
+    util-linux # for runtime dependency `lsblk`
+  ];
 
+  # disable tests since they require valid login credentials
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -28,6 +32,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     psutil
   ];
 
+  pyproject = true;
+
   pythonRelaxDeps = [
     "cryptography"
     "requests"
@@ -36,23 +42,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "psutil"
   ];
 
-  buildInputs = [
-    util-linux # for runtime dependency `lsblk`
-  ];
-
-  # disable tests since they require valid login credentials
-  doCheck = false;
-
   meta = {
-    homepage = "https://github.com/Emily3403/isisdl";
     description = "Downloader for ISIS of TU-Berlin";
+
     longDescription = ''
       A downloading utility for ISIS of TU-Berlin.
       Download all your files and videos from ISIS.
     '';
+
+    homepage = "https://github.com/Emily3403/isisdl";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ bchmnn ];
-    mainProgram = "isisdl";
     platforms = lib.platforms.linux;
+    mainProgram = "isisdl";
   };
 })

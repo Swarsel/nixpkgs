@@ -1,16 +1,14 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   construct,
   micloud,
-  python-miio,
   nix-update-script,
+  python-miio,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "al-one";
-  domain = "xiaomi_miot";
   version = "1.1.4";
 
   src = fetchFromGitHub {
@@ -26,11 +24,13 @@ buildHomeAssistantComponent rec {
     python-miio
   ];
 
+  domain = "xiaomi_miot";
+  owner = "al-one";
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=^v([0-9.]+)$" ]; };
 
   meta = {
-    changelog = "https://github.com/al-one/hass-xiaomi-miot/releases/tag/v${version}";
     description = "Automatic integrate all Xiaomi devices to HomeAssistant via miot-spec, support Wi-Fi, BLE, ZigBee devices";
+
     longDescription = ''
       Xiaomi Miot For HomeAssistant depends on `ffmpeg` and `homekit`, example how to setup in NixOS `configuration.nix`:
 
@@ -44,8 +44,10 @@ buildHomeAssistantComponent rec {
       }
       ```
     '';
+
     homepage = "https://github.com/al-one/hass-xiaomi-miot";
-    maintainers = with lib.maintainers; [ azuwis ];
+    changelog = "https://github.com/al-one/hass-xiaomi-miot/releases/tag/v${version}";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ azuwis ];
   };
 }

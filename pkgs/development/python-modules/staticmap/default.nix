@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "staticmap";
   version = "0.5.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,10 +20,10 @@ buildPythonPackage rec {
     pillow
   ];
 
-  pythonImportsCheck = [ "staticmap" ];
-
   # Tests seem to be broken
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "staticmap" ];
 
   meta = {
     description = "Small, python-based library for creating map images with lines and markers";

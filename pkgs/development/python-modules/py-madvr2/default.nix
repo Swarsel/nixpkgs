@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "py-madvr2";
   version = "1.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iloveicedgreentea";
@@ -19,14 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-yW2w0XwTRRT0h2spblziAkayklYZZi1uU1FJdiTSr6Y=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "pymadvr" ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   disabledTests = [
     # AssertionError: Expected 'mock' to have been called once. Called 0 times.
@@ -38,10 +35,13 @@ buildPythonPackage rec {
     "test_open_connection"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "pymadvr" ];
+
   meta = {
-    changelog = "https://github.com/iloveicedgreentea/py-madvr/releases/tag/${src.tag}";
     description = "Control MadVR Envy over IP";
     homepage = "https://github.com/iloveicedgreentea/py-madvr";
+    changelog = "https://github.com/iloveicedgreentea/py-madvr/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

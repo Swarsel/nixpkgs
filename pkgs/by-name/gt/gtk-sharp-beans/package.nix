@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  which,
-  pkg-config,
-  mono,
-  gtk-sharp-2_0,
   gio-sharp,
+  gtk-sharp-2_0,
+  mono,
+  pkg-config,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "mono";
     repo = "gtk-sharp-beans";
-
     rev = finalAttrs.version;
     sha256 = "04sylwdllb6gazzs2m4jjfn14mil9l3cny2q0xf0zkhczzih6ah1";
   };
@@ -27,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     which
   ];
+
   buildInputs = [
     mono
     gtk-sharp-2_0
@@ -38,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Binds some API from GTK that isn't in GTK# 2.12.x";
     homepage = "https://github.com/mono/gtk-sharp-beans";
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl21;
+    platforms = lib.platforms.linux;
   };
 })

@@ -2,15 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
-  findlib,
-  topkg,
-  ocamlbuild,
   cmdliner,
+  findlib,
+  ocaml,
+  ocamlbuild,
+  topkg,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
 
+  inherit (topkg) buildPhase installPhase;
   pname = "ocaml${ocaml.version}-b0";
   version = "0.0.6";
 
@@ -27,15 +28,16 @@ stdenv.mkDerivation (finalAttrs: {
     ocamlbuild
     topkg
   ];
+
   buildInputs = [
     topkg
     cmdliner
   ];
 
-  inherit (topkg) buildPhase installPhase;
-
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "Software construction and deployment kit";
+
     longDescription = ''
       WARNING this package is unstable and work in progress, do not depend on
       it.
@@ -50,8 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
       library can be – and has been – used on its own to devise domain specific
       build systems.
     '';
+
     homepage = "https://erratique.ch/software/b0";
-    inherit (ocaml.meta) platforms;
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.Julow ];
     broken = !lib.versionAtLeast ocaml.version "4.14";

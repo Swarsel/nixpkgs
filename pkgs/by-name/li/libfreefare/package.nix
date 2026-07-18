@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
   libnfc,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -21,6 +21,7 @@ stdenv.mkDerivation {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libnfc
     openssl
@@ -34,8 +35,8 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Convenient API for MIFARE card manipulations";
-    license = lib.licenses.lgpl3;
     homepage = "https://github.com/nfc-tools/libfreefare";
+    license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ bobvanderlinden ];
     platforms = lib.platforms.unix;
   };

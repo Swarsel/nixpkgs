@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   pytestCheckHook,
   python-dateutil,
   python-dotenv,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "asana";
   version = "5.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asana";
@@ -23,6 +22,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Bfq3FKJoZE8edAAFVNYYrLJ8vp44QYboEVsCGsI5WMY=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,14 +33,13 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "asana" ];
-
   disabledTestPaths = [
     # Tests require network access
     "build_tests/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "asana" ];
 
   meta = {
     description = "Python client library for Asana";

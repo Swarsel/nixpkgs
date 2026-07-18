@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   cups,
   cups-filters,
   foomatic-db-engine,
   ghostscript,
   libpng,
   libxml2,
-  autoreconfHook,
-  perl,
   patchPpdFilesHook,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,13 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MVvtfos2ze6uXFg8sEH1UlJ9gg4iq91dLK0k0xuTE1Y=";
   };
 
-  buildInputs = [
-    cups
-    cups-filters
-    ghostscript
-    libpng
-    libxml2
-  ];
+  postPatch = ''
+    patchShebangs ./foomaticalize
+  '';
+
   nativeBuildInputs = [
     autoreconfHook
     foomatic-db-engine
@@ -38,9 +35,13 @@ stdenv.mkDerivation (finalAttrs: {
     (perl.withPackages (pp: with pp; [ XMLLibXML ]))
   ];
 
-  postPatch = ''
-    patchShebangs ./foomaticalize
-  '';
+  buildInputs = [
+    cups
+    cups-filters
+    ghostscript
+    libpng
+    libxml2
+  ];
 
   postInstall = ''
     export FOOMATICDB="${placeholder "out"}/share/foomatic"
@@ -64,16 +65,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/philpem/printer-driver-ptouch/releases/tag/v${finalAttrs.version}";
     description = "Printer Driver for Brother P-touch and QL Label Printers";
-    downloadPage = "https://github.com/philpem/printer-driver-ptouch";
-    homepage = "https://github.com/philpem/printer-driver-ptouch";
-    license = lib.licenses.gpl2Plus;
-    maintainers = with lib.maintainers; [ sascha8a ];
-    platforms = lib.platforms.linux;
+
     longDescription = ''
       This is ptouch-driver, a printer driver based on CUPS and foomatic,
       for the Brother P-touch and QL label printer families.
     '';
+
+    homepage = "https://github.com/philpem/printer-driver-ptouch";
+    changelog = "https://github.com/philpem/printer-driver-ptouch/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ sascha8a ];
+    platforms = lib.platforms.linux;
+    downloadPage = "https://github.com/philpem/printer-driver-ptouch";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-  hatchling,
   hatch-vcs,
+  hatchling,
   pydantic,
   pytestCheckHook,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "json-schema-to-pydantic";
   version = "0.4.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "richard-gyiko";
@@ -24,11 +23,13 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # Pull test fixes for Pydantic 2.13+ from https://github.com/richard-gyiko/json-schema-to-pydantic/pull/46
     (fetchpatch {
+      hash = "sha256-+dDFF/eloYuc+ANTjlr9tvI5ycX21o8G1xJOjGlrmTg=";
       name = "pydantic-2.13-test-compat.patch";
       url = "https://github.com/richard-gyiko/json-schema-to-pydantic/commit/acfacd19f282011cfb96b8901d72867a39f57bff.patch";
-      hash = "sha256-+dDFF/eloYuc+ANTjlr9tvI5ycX21o8G1xJOjGlrmTg=";
     })
   ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -36,9 +37,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ pydantic ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "json_schema_to_pydantic" ];
 
   meta = {

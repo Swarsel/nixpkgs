@@ -1,33 +1,31 @@
 {
   lib,
   fetchFromGitLab,
-  python3,
-  meson,
-  ninja,
-  pkg-config,
+  appstream-glib,
+  blueprint-compiler,
+  desktop-file-utils,
   glib,
+  gobject-introspection,
   gtk4,
   libadwaita,
   librsvg,
-  blueprint-compiler,
-  gobject-introspection,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
   wrapGAppsHook4,
-  appstream-glib,
-  desktop-file-utils,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "whatip";
   version = "1.2";
 
-  pyproject = false;
-
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GabMus";
     repo = "whatip";
     rev = finalAttrs.version;
     hash = "sha256-gt/NKgnCpRoVmLvEJJq2geng4miM2g+YhXYEOm5pPTA=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -54,12 +52,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
+  pyproject = false;
+
   meta = {
     description = "Info on your IP";
-    mainProgram = "whatip";
     homepage = "https://gitlab.gnome.org/GabMus/whatip";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "whatip";
   };
 })

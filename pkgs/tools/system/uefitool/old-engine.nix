@@ -1,10 +1,10 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
-  qtbase,
-  qmake,
   cmake,
+  mkDerivation,
+  qmake,
+  qtbase,
   zip,
 }:
 
@@ -13,20 +13,20 @@ mkDerivation rec {
   version = "0.28.0";
 
   src = fetchFromGitHub {
-    hash = "sha256-StqrOMsKst2X2yQQ/Xl7iLAuA4QXEOyj2KtE7ZtoUNg=";
     owner = "LongSoft";
     repo = "uefitool";
     tag = version;
+    hash = "sha256-StqrOMsKst2X2yQQ/Xl7iLAuA4QXEOyj2KtE7ZtoUNg=";
   };
 
-  buildInputs = [ qtbase ];
   nativeBuildInputs = [
     qmake
     cmake
     zip
   ];
 
-  dontConfigure = true;
+  buildInputs = [ qtbase ];
+
   buildPhase = ''
     bash unixbuild.sh
   '';
@@ -35,6 +35,8 @@ mkDerivation rec {
     mkdir -p "$out"/bin
     cp UEFITool UEFIReplace/UEFIReplace UEFIPatch/UEFIPatch "$out"/bin
   '';
+
+  dontConfigure = true;
 
   meta = {
     description = "UEFI firmware image viewer and editor";

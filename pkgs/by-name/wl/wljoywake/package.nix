@@ -15,12 +15,12 @@ let
   version = "0.3";
 in
 stdenv.mkDerivation {
-  pname = "wljoywake";
   inherit version;
+  pname = "wljoywake";
 
   src = fetchFromGitHub {
-    repo = "wljoywake";
     owner = "nowrep";
+    repo = "wljoywake";
     rev = "v${version}";
     hash = "sha256-zSYNfsFjswaSXZPlIDMDC87NK/6AKtArHBeWCWDDR3E=";
   };
@@ -42,8 +42,8 @@ stdenv.mkDerivation {
     description = "Wayland tool for idle inhibit when using joysticks";
     homepage = "https://github.com/nowrep/wljoywake";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.jtrees ];
+    platforms = lib.platforms.linux;
     mainProgram = "wljoywake";
   };
 }

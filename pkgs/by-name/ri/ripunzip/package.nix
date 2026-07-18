@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
+  fetchzip,
   openssl,
   pkg-config,
-  testers,
-  fetchzip,
   ripunzip,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,10 +20,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-oujRw/4yKNNqLJLTN4wxaOllSUGMu077YgWZkD0DJ4M=";
   };
 
-  cargoHash = "sha256-J6FtaWjeJhbSB1WoAbh6c4DeShPmqGgmh2NTNRS6CUk=";
-
-  buildInputs = [ openssl ];
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-J6FtaWjeJhbSB1WoAbh6c4DeShPmqGgmh2NTNRS6CUk=";
 
   checkFlags = [
     # Skip tests involving network
@@ -43,25 +42,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
   setupHook = ./setup-hook.sh;
 
   passthru.tests = {
-    fetchzipWithRipunzip =
-      testers.invalidateFetcherByDrvHash (fetchzip.override { unzip = ripunzip; })
-        {
-          url = "https://github.com/google/ripunzip/archive/cb9caa3ba4b0e27a85e165be64c40f1f6dfcc085.zip";
-          hash = "sha256-BoErC5VL3Vpvkx6xJq6J+eUJrBnjVEdTuSo7zh98Jy4=";
-        };
     version = testers.testVersion {
       package = ripunzip;
     };
+
+    fetchzipWithRipunzip =
+      testers.invalidateFetcherByDrvHash (fetchzip.override { unzip = ripunzip; })
+        {
+          hash = "sha256-BoErC5VL3Vpvkx6xJq6J+eUJrBnjVEdTuSo7zh98Jy4=";
+          url = "https://github.com/google/ripunzip/archive/cb9caa3ba4b0e27a85e165be64c40f1f6dfcc085.zip";
+        };
   };
 
   meta = {
     description = "Tool to unzip files in parallel";
-    mainProgram = "ripunzip";
     homepage = "https://github.com/google/ripunzip";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = [ lib.maintainers.lesuisse ];
+    mainProgram = "ripunzip";
   };
 })

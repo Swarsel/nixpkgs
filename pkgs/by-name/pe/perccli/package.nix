@@ -1,13 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   rpmextract,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
   pname = "perccli";
-
   # On a new release, update version, URL, hash, and meta.homepage
   version = "7.2313.00";
 
@@ -26,14 +25,6 @@ stdenvNoCC.mkDerivation rec {
 
   nativeBuildInputs = [ rpmextract ];
 
-  unpackPhase = ''
-    rpmextract $src/perccli-00${version}00.0000-1.noarch.rpm
-  '';
-
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase =
     let
       inherit (stdenvNoCC.hostPlatform) system;
@@ -46,17 +37,22 @@ stdenvNoCC.mkDerivation rec {
     in
     platforms.${system} or (throw "unsupported system: ${system}");
 
+  dontBuild = true;
+  dontConfigure = true;
   # Not needed because the binary is statically linked
   dontFixup = true;
+  dontPatch = true;
+
+  unpackPhase = ''
+    rpmextract $src/perccli-00${version}00.0000-1.noarch.rpm
+  '';
 
   meta = {
     description = "Perccli Support for PERC RAID controllers";
-
     # Must be updated with every release
     homepage = "https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=tdghn";
-
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ panicgh ];
     platforms = [ "x86_64-linux" ];
   };

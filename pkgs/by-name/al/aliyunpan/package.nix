@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,12 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-PKx40HqXm1nyqjNBSJdW5ucRAkMj9w3fbQYjAGALM1k=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=v${finalAttrs.version}"
-  ];
 
   # skip test
   checkFlags =
@@ -43,6 +37,12 @@ buildGoModule (finalAttrs: {
     cp docs/manual.md "$out/share/doc/aliyunpan/"
     cp docs/plugin_manual.md "$out/share/doc/aliyunpan/"
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=v${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Command line client for Aliyun Drive";

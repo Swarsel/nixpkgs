@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
 }:
 
@@ -16,16 +16,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-2dJmGFHfGSroucn4WgiV2NExBs5wtMDe2kX1jDBwbRs=";
   };
 
-  deleteVendor = true;
-  vendorHash = "sha256-sHNP1YwnZYu0UfgLx5+gxJmesY8Brt7rr9cptlyk9Bk=";
-
   patches = [
     # Add Go Modules support
     (fetchpatch {
-      url = "https://github.com/prasmussen/gdrive/pull/585/commits/faa6fc3dc104236900caa75eb22e9ed2e5ecad42.patch";
       hash = "sha256-W8o2ZfhQFJISHfPavjx9sw5UB6xOZ7qRW4L0bHNddS8=";
+      url = "https://github.com/prasmussen/gdrive/pull/585/commits/faa6fc3dc104236900caa75eb22e9ed2e5ecad42.patch";
     })
   ];
+
+  vendorHash = "sha256-sHNP1YwnZYu0UfgLx5+gxJmesY8Brt7rr9cptlyk9Bk=";
+  deleteVendor = true;
 
   ldflags = [
     "-s"
@@ -33,8 +33,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/prasmussen/gdrive";
     description = "Command line utility for interacting with Google Drive";
+    homepage = "https://github.com/prasmussen/gdrive";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.rzetterberg ];
     mainProgram = "gdrive";

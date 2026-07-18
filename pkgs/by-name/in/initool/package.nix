@@ -1,8 +1,8 @@
 {
-  stdenv,
-  mlton,
   lib,
+  stdenv,
   fetchFromGitHub,
+  mlton,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ mlton ];
-
   doCheck = true;
 
   installPhase = ''
@@ -31,12 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     inherit (mlton.meta) platforms;
-
     description = "Manipulate INI files from the command line";
-    mainProgram = "initool";
     homepage = "https://github.com/dbohdan/initool";
+    changelog = "https://github.com/dbohdan/initool/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ e1mo ];
-    changelog = "https://github.com/dbohdan/initool/releases/tag/v${finalAttrs.version}";
+    mainProgram = "initool";
   };
 })

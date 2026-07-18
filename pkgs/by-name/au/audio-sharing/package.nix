@@ -1,14 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitLab,
   appstream-glib,
   cargo,
   dbus,
   desktop-file-utils,
-  fetchFromGitLab,
   git,
   glib,
   gst_all_1,
   gtk4,
-  lib,
   libadwaita,
   meson,
   ninja,
@@ -17,7 +18,6 @@
   python3,
   rustPlatform,
   rustc,
-  stdenv,
   wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -25,16 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.2.4";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "AudioSharing";
     rev = finalAttrs.version;
     hash = "sha256-yUMiy5DaCPfCmBIGCXpqtvSSmQl5wo6vsLdW7Tt/Wfo=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-ePgEAVYXLOHWQXG92Grb9nmenyGj0JkgVy1UDsQF0xw=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -64,17 +59,22 @@ stdenv.mkDerivation (finalAttrs: {
     dbus
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-ePgEAVYXLOHWQXG92Grb9nmenyGj0JkgVy1UDsQF0xw=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/AudioSharing";
     description = "Automatically share the current audio playback in the form of an RTSP stream";
-    mainProgram = "audio-sharing";
-    maintainers = with lib.maintainers; [ benediktbroich ];
-    teams = [ lib.teams.gnome-circle ];
+    homepage = "https://gitlab.gnome.org/World/AudioSharing";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ benediktbroich ];
     platforms = lib.platforms.linux;
+    mainProgram = "audio-sharing";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

@@ -1,17 +1,16 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   flit-core,
   jsonpickle,
-  lib,
   pysignalr,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pysmarlaapi";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Explicatis-GmbH";
@@ -22,20 +21,20 @@ buildPythonPackage (finalAttrs: {
 
   build-system = [ flit-core ];
 
-  pythonRelaxDeps = true;
-
   dependencies = [
     aiohttp
     jsonpickle
     pysignalr
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pysmarlaapi" ];
+  pythonRelaxDeps = true;
 
   meta = {
-    changelog = "https://github.com/Explicatis-GmbH/pysmarlaapi/releases/tag/${finalAttrs.src.tag}";
     description = "Swing2Sleep Smarla API";
     homepage = "https://github.com/Explicatis-GmbH/pysmarlaapi";
+    changelog = "https://github.com/Explicatis-GmbH/pysmarlaapi/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -1,24 +1,22 @@
 {
   lib,
-  python3,
+  desktop-file-utils,
   fetchFromSourcehut,
-  gtk3,
-  libhandy_0,
-  gobject-introspection,
-  meson,
-  pkg-config,
-  ninja,
   gettext,
   glib,
-  desktop-file-utils,
+  gobject-introspection,
+  gtk3,
+  libhandy_0,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
   wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "thumbdrives";
   version = "0.3.2";
-
-  pyproject = false;
 
   src = fetchFromSourcehut {
     owner = "~martijnbraam";
@@ -53,14 +51,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyxdg
   ];
 
+  pyproject = false;
+
   meta = {
     description = "USB mass storage emulator for Linux handhelds";
     homepage = "https://sr.ht/~martijnbraam/thumbdrives/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       chuangzhu
       Luflosi
     ];
+
     platforms = lib.platforms.linux;
   };
 })

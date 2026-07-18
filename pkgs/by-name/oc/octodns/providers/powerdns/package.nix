@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   octodns,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "octodns-powerdns";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "octodns";
@@ -20,6 +19,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-bdCX1oHFZRYr9PvLVbag/La087DMSXZfZ2W0mXffcUY=";
   };
+
+  env.OCTODNS_RELEASE = 1;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [
     setuptools
@@ -30,14 +36,8 @@ buildPythonPackage rec {
     requests
   ];
 
-  env.OCTODNS_RELEASE = 1;
-
+  pyproject = true;
   pythonImportsCheck = [ "octodns_powerdns" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
 
   meta = {
     description = "PowerDNS API provider for octoDNS";

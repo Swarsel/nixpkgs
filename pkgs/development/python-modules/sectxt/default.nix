@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
-  python-dateutil,
+  buildPythonPackage,
   langcodes,
   pgpy-dtc,
-  validators,
-  requests-mock,
   pytestCheckHook,
+  python-dateutil,
+  requests,
+  requests-mock,
+  setuptools,
+  validators,
 }:
 
 buildPythonPackage rec {
   pname = "sectxt";
   version = "0.9.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DigitalTrustCenter";
@@ -23,6 +22,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-x8HcERUZpOijTEXbbtnG0Co5PiQlO4v5bxKM4CAExnI=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,17 +38,13 @@ buildPythonPackage rec {
     validators
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sectxt" ];
 
   meta = {
+    description = "Security.txt parser and validator";
     homepage = "https://github.com/DigitalTrustCenter/sectxt";
     changelog = "https://github.com/DigitalTrustCenter/sectxt/releases/tag/${src.tag}";
-    description = "Security.txt parser and validator";
     license = lib.licenses.eupl12;
     maintainers = with lib.maintainers; [ networkexception ];
   };

@@ -1,8 +1,8 @@
 {
-  pkgs,
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  pkgs,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -27,10 +27,12 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Miniscule SVG versions of common logos";
+
     longDescription = ''
       Super Tiny Web Icons are minuscule SVG versions of your favourite logos.
       The average size is under 568 bytes!
     '';
+
     homepage = "https://github.com/edent/SuperTinyIcons";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.h7x4 ];

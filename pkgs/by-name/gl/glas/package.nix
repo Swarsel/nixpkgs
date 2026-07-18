@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,8 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-uPCWHLqko361S/ThtWOP/XN1QFSHXv0dpYR3xweHqe0=";
-
   doInstallCheck = true;
+
   postInstallCheck = ''
     $out/bin/glas --help > /dev/null
   '';
@@ -26,11 +26,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Language server for the Gleam programming language";
     homepage = "https://github.com/maurobalbi/glas";
     changelog = "https://github.com/maurobalbi/glas/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    mainProgram = "glas";
+
     maintainers = with lib.maintainers; [ bhankas ];
+    mainProgram = "glas";
   };
 })

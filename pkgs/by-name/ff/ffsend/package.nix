@@ -3,15 +3,14 @@
   stdenv,
   fetchFromGitLab,
   fetchpatch,
-  rustPlatform,
-  pkg-config,
-  openssl,
   installShellFiles,
-
+  openssl,
+  pkg-config,
+  rustPlatform,
+  preferXsel ? false, # if true and xsel is non-null, use it instead of xclip
   x11Support ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isBSD,
   xclip ? null,
   xsel ? null,
-  preferXsel ? false, # if true and xsel is non-null, use it instead of xclip
 }:
 
 let
@@ -31,22 +30,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-qq1nLNe4ddcsFJZaGfNQbNtqchz6tPh1kpEH/oDW3jk=";
   };
 
-  cargoHash = "sha256-DQcuyp61r0y9fi8AV33qxN2cOrl0M8q4/VoXuV47gxQ=";
-
-  cargoPatches = [
-    # https://gitlab.com/timvisee/ffsend/-/merge_requests/44
-    (fetchpatch {
-      name = "rust-1.87.0-compat.patch";
-      url = "https://gitlab.com/timvisee/ffsend/-/commit/29eb167d4367929a2546c20b3f2bbf890b63c631.patch";
-      hash = "sha256-BxJ+0QJP2fzQT1X3BZG1Yy9V+csIEk8xocUKSBgdG9M=";
-    })
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
+
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ openssl ];
+  cargoHash = "sha256-DQcuyp61r0y9fi8AV33qxN2cOrl0M8q4/VoXuV47gxQ=";
 
   preBuild = lib.optionalString (x11Support && usesX11) (
     if preferXsel && xsel != null then
@@ -62,16 +52,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
   postInstall = ''
     installShellCompletion contrib/completions/ffsend.{bash,fish} --zsh contrib/completions/_ffsend
   '';
-  # There's also .elv and .ps1 completion files but I don't know where to install those
 
+  cargoPatches = [
+    # https://gitlab.com/timvisee/ffsend/-/merge_requests/44
+    (fetchpatch {
+      hash = "sha256-BxJ+0QJP2fzQT1X3BZG1Yy9V+csIEk8xocUKSBgdG9M=";
+      name = "rust-1.87.0-compat.patch";
+      url = "https://gitlab.com/timvisee/ffsend/-/commit/29eb167d4367929a2546c20b3f2bbf890b63c631.patch";
+    })
+  ];
+
+  # There's also .elv and .ps1 completion files but I don't know where to install those
   meta = {
     description = "Easily and securely share files from the command line. A fully featured Firefox Send client";
+
     longDescription = ''
       Easily and securely share files and directories from the command line through a safe, private
       and encrypted link using a single simple command. Files are shared using the Send service and
       may be up to 2GB. Others are able to download these files with this tool, or through their
       web browser.
     '';
+
     homepage = "https://gitlab.com/timvisee/ffsend";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ equirosa ];

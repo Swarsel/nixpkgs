@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  testers,
+  rustPlatform,
   sshs,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,7 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-Py85+zv54KHFXjhiThTPXgJQmCImXN42ePOjazjzxIQ=";
-
   passthru.tests.version = testers.testVersion { package = sshs; };
 
   meta = {

@@ -6,8 +6,8 @@
   jdk,
   libffi,
   pkg-config,
-  texinfo,
   stripJavaArchivesHook,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,11 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ libffi ];
-
+  env.ANT_ARGS = "-Duse.system.libffi=1";
   # The pkg-config script in the build.xml doesn't work propery
   # set the lib path manually to work around this.
   env.LIBFFI_LIBS = "${libffi}/lib/libffi${stdenv.hostPlatform.extensions.sharedLibrary}";
-  env.ANT_ARGS = "-Duse.system.libffi=1";
 
   buildPhase = ''
     runHook preBuild
@@ -65,11 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Java Foreign Function Interface";
     homepage = "https://github.com/jnr/jffi";
-    platforms = lib.platforms.unix;
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bachp ];
+    platforms = lib.platforms.unix;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

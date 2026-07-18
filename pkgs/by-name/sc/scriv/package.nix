@@ -1,18 +1,17 @@
 {
   lib,
-  python3,
   fetchPypi,
-  pandoc,
+  fetchpatch,
   git,
+  pandoc,
+  python3,
   scriv,
   testers,
-  fetchpatch,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "scriv";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -22,20 +21,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   patches = [
     # fix tests by removing deprecated Click parameter from fixture
     (fetchpatch {
-      url = "https://github.com/nedbat/scriv/commit/04ac45da9e1adb24a95ad9643099fe537b3790fd.diff";
       hash = "sha256-Gle3zWC/WypGHsKmVlqedRAZVWsBjGpzMq3uKuG9+SY=";
+      url = "https://github.com/nedbat/scriv/commit/04ac45da9e1adb24a95ad9643099fe537b3790fd.diff";
     })
-  ];
-
-  build-system = with python3.pkgs; [ setuptools ];
-
-  dependencies = with python3.pkgs; [
-    attrs
-    click
-    click-log
-    jinja2
-    markdown-it-py
-    requests
   ];
 
   nativeCheckInputs = with python3.pkgs; [
@@ -50,12 +38,26 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pandoc
     git
   ];
+
+  build-system = with python3.pkgs; [ setuptools ];
+
+  dependencies = with python3.pkgs; [
+    attrs
+    click
+    click-log
+    jinja2
+    markdown-it-py
+    requests
+  ];
+
   disabledTests = [
     # assumes we have checked out the full repo (including remotes)
     "test_real_get_github_repos"
     # test fails due to a pandoc bug (fixed in pandoc 3.6.4)
     "test_convert_to_markdown"
   ];
+
+  pyproject = true;
 
   passthru.tests = {
     version = testers.testVersion { package = scriv; };

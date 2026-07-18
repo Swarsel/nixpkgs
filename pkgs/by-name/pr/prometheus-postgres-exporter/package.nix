@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,6 +17,7 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-5Q24L+6/vBQRilr4+Ke/8XIFjWRVQ+s+QO2oyGTa+ek=";
+  doCheck = true;
 
   ldflags =
     let
@@ -32,19 +33,19 @@ buildGoModule rec {
       "-X ${t}.BuildDate=unknown"
     ];
 
-  doCheck = true;
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) postgres; };
 
   meta = {
     inherit (src.meta) homepage;
     description = "Prometheus exporter for PostgreSQL";
-    mainProgram = "postgres_exporter";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fpletz
       globin
       ma27
     ];
+
+    mainProgram = "postgres_exporter";
   };
 }

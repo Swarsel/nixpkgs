@@ -10,12 +10,11 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-websupport";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sphinxcontrib_websupport";
     inherit version;
     hash = "sha256-C3Nn07rGRUsfl+QqqMTU1KG3VtUl/HJuu+VXHgM+ec0=";
+    pname = "sphinxcontrib_websupport";
   };
 
   nativeBuildInputs = [ flit-core ];
@@ -25,10 +24,10 @@ buildPythonPackage rec {
     sphinxcontrib-serializinghtml
   ];
 
+  doCheck = false;
   # circular dependency on sphinx
   dontCheckRuntimeDeps = true;
-  doCheck = false;
-
+  pyproject = true;
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

@@ -15,13 +15,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "bitbox02";
   version = "7.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-J9UQXrFaVTcZ+p0+aJIchksAyGGzpkQETZrGhCbxhEc=";
   };
 
+  # does not contain tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +35,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  # does not contain tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "bitbox02" ];
 
   meta = {

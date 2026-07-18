@@ -1,23 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  openssl,
-  setuptools,
+  buildPythonPackage,
   cryptography,
-  typing-extensions,
-  pytestCheckHook,
+  openssl,
   pretend,
-  sphinxHook,
-  sphinx-rtd-theme,
   pytest-rerunfailures,
+  pytestCheckHook,
+  setuptools,
+  sphinx-rtd-theme,
+  sphinxHook,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pyopenssl";
   version = "26.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyca";
@@ -32,19 +31,10 @@ buildPythonPackage rec {
     "doc"
   ];
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     openssl
     sphinxHook
     sphinx-rtd-theme
-  ];
-
-  pythonRelaxDeps = [ "cryptography" ];
-
-  dependencies = [
-    cryptography
-    typing-extensions
   ];
 
   nativeCheckInputs = [
@@ -54,6 +44,12 @@ buildPythonPackage rec {
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cryptography
+    typing-extensions
+  ];
 
   disabledTests = [
     # https://github.com/pyca/pyopenssl/issues/692
@@ -94,6 +90,9 @@ buildPythonPackage rec {
     # https://github.com/pyca/pyopenssl/issues/974
     "test_verify_with_time"
   ];
+
+  pyproject = true;
+  pythonRelaxDeps = [ "cryptography" ];
 
   meta = {
     description = "Python wrapper around the OpenSSL library";

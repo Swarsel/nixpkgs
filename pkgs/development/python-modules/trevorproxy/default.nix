@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "trevorproxy";
   version = "1.0.9";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ poetry-core ];
-
   dependencies = [ sh ];
-
+  pyproject = true;
   pythonImportsCheck = [ "trevorproxy" ];
 
   meta = {

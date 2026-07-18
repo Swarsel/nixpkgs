@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -14,13 +14,14 @@ in
     enable = lib.mkEnableOption "GoBGP Routing Daemon";
 
     settings = lib.mkOption {
-      type = format.type;
       default = { };
+
       description = ''
         GoBGP configuration. Refer to
         <https://github.com/osrg/gobgp#documentation>
         for details on supported values.
       '';
+
       example = lib.literalExpression ''
         {
           global = {
@@ -45,23 +46,28 @@ in
           ];
         }
       '';
+
+      type = format.type;
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ pkgs.gobgpd ];
+
     systemd.services.gobgpd = {
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       description = "GoBGP Routing Daemon";
+
       serviceConfig = {
-        Type = "notify";
-        ExecStartPre = "${pkgs.gobgpd}/bin/gobgpd -f ${confFile} -d";
-        ExecStart = "${pkgs.gobgpd}/bin/gobgpd -f ${confFile} --sdnotify";
-        ExecReload = "${pkgs.gobgpd}/bin/gobgpd -r";
-        DynamicUser = true;
         AmbientCapabilities = "cap_net_bind_service";
+        DynamicUser = true;
+        ExecReload = "${pkgs.gobgpd}/bin/gobgpd -r";
+        ExecStart = "${pkgs.gobgpd}/bin/gobgpd -f ${confFile} --sdnotify";
+        ExecStartPre = "${pkgs.gobgpd}/bin/gobgpd -f ${confFile} -d";
+        Type = "notify";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

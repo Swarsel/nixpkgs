@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ragel,
-  python3,
-  util-linux,
-  pkg-config,
   boost,
+  cmake,
   pcre,
+  pkg-config,
+  python3,
+  ragel,
+  util-linux,
   withStatic ? false, # build only shared libs by default, build static+shared if true
 }:
 
@@ -50,7 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
         "cmake_minimum_required (VERSION 3.10)"
   '';
 
-  buildInputs = [ boost ];
   nativeBuildInputs = [
     cmake
     ragel
@@ -58,6 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
     util-linux
     pkg-config
   ];
+
+  buildInputs = [ boost ];
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_AVX512" true)
@@ -101,6 +102,7 @@ stdenv.mkDerivation (finalAttrs: {
   );
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -112,6 +114,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "High-performance multiple regex matching library";
+
     longDescription = ''
       Hyperscan is a high-performance multiple regex matching library.
       It follows the regular expression syntax of the commonly-used
@@ -126,10 +129,11 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://www.hyperscan.io/";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ avnik ];
+
     platforms = [
       "x86_64-linux"
     ];
-    license = lib.licenses.bsd3;
   };
 })

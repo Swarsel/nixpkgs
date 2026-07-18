@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  mpi,
   blas,
+  cmake,
+  config,
+  cudaPackages,
   gfortran,
   llvmPackages,
-  cudaPackages,
+  mpi,
   rocmPackages,
-  config,
   gpuBackend ? (
     if config.cudaSupport then
       "cuda"

@@ -1,34 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  autoreconfHook,
   autoconf-archive,
-  pkg-config,
-  which,
-  flex,
+  autoreconfHook,
   bison,
+  callPackage,
+  # test
+  dejagnu,
+  flex,
+  libxcrypt,
+  ncurses,
+  # passthru
+  nix-update-script,
+  nixosTests,
+  perl,
+  pkg-config,
+  python3Packages,
+  swig,
+  which,
   withPerl ?
     stdenv.hostPlatform == stdenv.buildPlatform && lib.meta.availableOn stdenv.hostPlatform perl,
-  perl,
   withPython ?
     # static can't load python libraries
     !stdenv.hostPlatform.isStatic
     && lib.meta.availableOn stdenv.hostPlatform python3Packages.python
     # m4 python include script fails if cpu bit depth is different across machines
     && stdenv.hostPlatform.parsed.cpu.bits == stdenv.buildPlatform.parsed.cpu.bits,
-  python3Packages,
-  swig,
-  ncurses,
-  libxcrypt,
-
-  # test
-  dejagnu,
-
-  # passthru
-  nix-update-script,
-  nixosTests,
-  callPackage,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libapparmor";
@@ -40,7 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-seEREIc83alEPyZGD/GY48hjpqiw3QENnqYsdjHOGgs=";
   };
-  sourceRoot = "${finalAttrs.src.name}/libraries/libapparmor";
 
   postPatch = ''
     substituteInPlace swig/perl/Makefile.am \
@@ -65,18 +62,11 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.setuptools
   ];
 
-  nativeCheckInputs = [
-    python3Packages.pythonImportsCheckHook
-  ];
-
   buildInputs = [
     libxcrypt
   ]
   ++ (lib.optional withPerl perl)
   ++ (lib.optional withPython python3Packages.python);
-
-  # required to build apparmor-parser
-  dontDisableStatic = true;
 
   # https://gitlab.com/apparmor/apparmor/issues/1
   configureFlags = [
@@ -86,25 +76,35 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = withPerl && withPython;
 
+  nativeCheckInputs = [
+    python3Packages.pythonImportsCheckHook
+  ];
+
   checkInputs = [ dejagnu ];
+  # required to build apparmor-parser
+  dontDisableStatic = true;
 
   pythonImportsCheck = [
     "LibAppArmor"
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/libraries/libapparmor";
+
   passthru = {
-    updateScript = nix-update-script { };
-    tests.nixos = nixosTests.apparmor;
     apparmorRulesFromClosure = callPackage ./apparmorRulesFromClosure.nix { };
+    tests.nixos = nixosTests.apparmor;
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://apparmor.net/";
     description = "Mandatory access control system - core library";
+    homepage = "https://apparmor.net/";
+
     license = with lib.licenses; [
       gpl2Only
       lgpl21Only
     ];
+
     maintainers = lib.teams.apparmor.members;
     platforms = lib.platforms.linux;
   };

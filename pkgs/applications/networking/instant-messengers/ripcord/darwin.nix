@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -14,9 +14,6 @@ stdenvNoCC.mkDerivation rec {
     stripRoot = false;
   };
 
-  dontBuild = true;
-  dontFixup = true; # modification is not allowed by the license https://cancel.fm/ripcord/shareware-redistribution/
-
   installPhase = ''
     runHook preInstall
 
@@ -26,12 +23,15 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontFixup = true; # modification is not allowed by the license https://cancel.fm/ripcord/shareware-redistribution/
+
   meta = {
     description = "Desktop chat client for Slack and Discord";
     homepage = "https://cancel.fm/ripcord/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     # See: https://cancel.fm/ripcord/shareware-redistribution/
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ mikroskeem ];
     platforms = [ ];
   };

@@ -1,15 +1,14 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "gh-pr-review";
   version = "1.6.2";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "agynio";
@@ -18,11 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-NVctUkxfYGs29T9naAfqbEhUXfhynx8Ajsh+V+4gCLw=";
   };
 
-  vendorHash = "sha256-CEV23koYz0FpSWXJRF4J+dGNuDT8Ftkn4LGFftvd0ts=";
-
   nativeBuildInputs = lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
     installShellFiles
   ];
+
+  vendorHash = "sha256-CEV23koYz0FpSWXJRF4J+dGNuDT8Ftkn4LGFftvd0ts=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd gh-pr-review \
@@ -30,6 +29,8 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/gh-pr-review completion fish) \
       --bash <($out/bin/gh-pr-review completion bash)
   '';
+
+  __structuredAttrs = true;
 
   meta = {
     description = "GitHub CLI extension that adds full inline PR review comment support";

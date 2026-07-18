@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  dpkg,
 }:
 
 stdenv.mkDerivation rec {
@@ -15,16 +15,12 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-KLxj81ZjbEvhhaz0seNB4WXX5ybeZ7/WcT1dGfdWle0=";
   };
 
-  unpackPhase = ''
-    ${dpkg}/bin/dpkg -x $src $out
-  '';
+  nativeBuildInputs = [
+    autoPatchelfHook
+  ];
 
   buildInputs = [
     (lib.getLib stdenv.cc.cc)
-  ];
-
-  nativeBuildInputs = [
-    autoPatchelfHook
   ];
 
   installPhase = ''
@@ -35,12 +31,16 @@ stdenv.mkDerivation rec {
     chmod +x $out/bin/mlink
   '';
 
+  unpackPhase = ''
+    ${dpkg}/bin/dpkg -x $src $out
+  '';
+
   meta = {
     description = "Driver for mBlock web version";
     homepage = "https://mblock.makeblock.com/en-us/download/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.mausch ];
+    platforms = [ "x86_64-linux" ];
   };
 }

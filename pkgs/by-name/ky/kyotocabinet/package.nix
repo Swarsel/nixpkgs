@@ -14,6 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-TIXXNmaNgpIL/b25KsPWa32xEI8JWBp2ndkWCgLe80k=";
   };
 
+  buildInputs = [ zlib ];
+
   prePatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     substituteInPlace kccommon.h \
       --replace tr1/unordered_map unordered_map \
@@ -30,11 +32,9 @@ stdenv.mkDerivation (finalAttrs: {
         --replace stdc++ c++
   '';
 
-  buildInputs = [ zlib ];
-
   meta = {
-    homepage = "https://dbmx.net/kyotocabinet";
     description = "Library of routines for managing a database";
+    homepage = "https://dbmx.net/kyotocabinet";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.all;
   };

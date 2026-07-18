@@ -1,11 +1,11 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  darwin,
   libiconv,
   libiconvReal,
   updateAutotoolsGnuConfigScriptsHook,
-  darwin,
 }@args:
 
 let
@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libunistring";
   version = "1.4.2";
 
-  __structuredAttrs = true;
-
   src = fetchurl {
     url = "mirror://gnu/libunistring/libunistring-${finalAttrs.version}.tar.gz";
     hash = "sha256-6CZksXAGTmIzGWISayWdRS1Tsie7SpOrIAQNhG/sAdg=";
@@ -39,13 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-  propagatedBuildInputs = lib.optional (!stdenv.hostPlatform.isLinux) libiconv;
   nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
-
+  propagatedBuildInputs = lib.optional (!stdenv.hostPlatform.isLinux) libiconv;
   configureFlags = [ "--with-libiconv-prefix=${libiconv}" ];
-
   doCheck = false;
-
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
   /*
     This seems to cause several random failures like these, which I assume
     is because of bad or missing target dependencies in their build system:
@@ -60,11 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
       FAIL unistdio/test-u16-vasnprintf3.sh (exit status: 1)
   */
   enableParallelChecking = false;
-  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.gnu.org/software/libunistring/";
-
     description = "Unicode string library";
 
     longDescription = ''
@@ -88,8 +82,8 @@ stdenv.mkDerivation (finalAttrs: {
       strings as internal in-memory representation.
     '';
 
+    homepage = "https://www.gnu.org/software/libunistring/";
     license = lib.licenses.lgpl3Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

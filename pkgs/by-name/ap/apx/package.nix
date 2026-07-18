@@ -1,21 +1,20 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
+  common-updater-scripts,
+  curl,
   distrobox,
+  installShellFiles,
+  jq,
   podman,
   writableTmpDirAsHomeHook,
-  curl,
-  jq,
-  common-updater-scripts,
   writeShellScript,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "apx";
   version = "2.4.5";
-  versionConfig = "1.0.0";
 
   src = fetchFromGitHub {
     owner = "Vanilla-OS";
@@ -24,32 +23,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-0Rfj7hrH26R9GHOPPVdCaeb1bfAw9KnPpJYXyiei90U=";
   };
 
-  # Official Vanilla APX configs (stacks + package-managers)
-  configsSrc = fetchFromGitHub {
-    owner = "Vanilla-OS";
-    repo = "vanilla-apx-configs";
-    tag = "v${finalAttrs.versionConfig}";
-    hash = "sha256-cCXmHkRjcWcpMtgPVtQF5Q76jr1Qt2RHSLtWLQdq+aE=";
-  };
-
-  vendorHash = "sha256-RoZ6sXbvIHfQcup9Ba/PpzS0eytKdX4WjDUlgB3UjfE=";
-
-  # podman needed for apx to not error when building shell completions
-  nativeBuildInputs = [
-    installShellFiles
-    podman
-  ];
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X 'main.Version=v${finalAttrs.version}'"
-  ];
-
   postPatch = ''
     substituteInPlace config/apx.json \
       --replace-fail "/usr/share/apx/distrobox/distrobox" "${distrobox}/bin/distrobox" \
@@ -57,6 +30,18 @@ buildGoModule (finalAttrs: {
     substituteInPlace settings/config.go \
       --replace-fail "/usr/share/apx/" "$out/share/apx/"
   '';
+
+  # podman needed for apx to not error when building shell completions
+  nativeBuildInputs = [
+    installShellFiles
+    podman
+  ];
+
+  vendorHash = "sha256-RoZ6sXbvIHfQcup9Ba/PpzS0eytKdX4WjDUlgB3UjfE=";
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+  ];
 
   postInstall = ''
     # Base configuration of apx
@@ -80,6 +65,22 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/apx completion zsh)
   '';
 
+  # Official Vanilla APX configs (stacks + package-managers)
+  configsSrc = fetchFromGitHub {
+    hash = "sha256-cCXmHkRjcWcpMtgPVtQF5Q76jr1Qt2RHSLtWLQdq+aE=";
+    owner = "Vanilla-OS";
+    repo = "vanilla-apx-configs";
+    tag = "v${finalAttrs.versionConfig}";
+  };
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X 'main.Version=v${finalAttrs.version}'"
+  ];
+
+  versionConfig = "1.0.0";
+
   passthru.updateScript = writeShellScript "update-apx" ''
     set -euo pipefail
         PATH=${
@@ -102,6 +103,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Vanilla OS package manager";
+
     longDescription = ''
       Apx is the Vanilla OS package manager that allows you to install packages
       from multiple sources inside managed containers without altering the host system.
@@ -112,6 +114,7 @@ buildGoModule (finalAttrs: {
         virtualisation.podman.enable = true;
         environment.systemPackages = with pkgs; [ apx ];
     '';
+
     homepage = "https://github.com/Vanilla-OS/apx";
     changelog = "https://github.com/Vanilla-OS/apx/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;

@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
   cpp-utilities,
-  mp4v2,
-  libid3tag,
   kdePackages,
+  libid3tag,
+  mp4v2,
+  pkg-config,
   qt6,
   tagparser,
 }:
@@ -53,8 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/Martchus/tageditor";
     description = "Tag editor with Qt GUI and command-line interface supporting MP4/M4A/AAC (iTunes), ID3, Vorbis, Opus, FLAC and Matroska";
+    homepage = "https://github.com/Martchus/tageditor";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.matthiasbeyer ];
     platforms = lib.platforms.unix;

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  fmt,
   catch2_3,
+  cmake,
+  fmt,
+  ninja,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mcl-cpp-utility-lib";
@@ -27,11 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
     fmt
   ];
 
+  doCheck = true;
+
   checkInputs = [
     catch2_3
   ];
 
-  doCheck = true;
   checkPhase = ''
     tests/mcl-tests
   '';
@@ -39,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Collection of C++20 utilities which is common to a number of merry's projects";
     homepage = "https://github.com/azahar-emu/mcl";
-    maintainers = with lib.maintainers; [ marcin-serwin ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ marcin-serwin ];
     platforms = lib.platforms.all;
   };
 })

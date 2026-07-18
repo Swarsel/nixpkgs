@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,8 +24,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/arp242/uni";
     description = "Query the Unicode database from the commandline, with good support for emojis";
+    homepage = "https://github.com/arp242/uni";
     changelog = "https://github.com/arp242/uni/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ chvp ];

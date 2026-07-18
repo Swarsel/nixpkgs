@@ -1,14 +1,11 @@
 {
-  stdenvNoCC,
   hugs,
   makeWrapper,
   microhs-src,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
-  pname = "microhs";
-  version = "${microhs-src.version}-hugs";
-
   inherit (microhs-src)
     src
     patches
@@ -16,9 +13,9 @@ stdenvNoCC.mkDerivation {
     meta
     ;
 
+  pname = "microhs";
+  version = "${microhs-src.version}-hugs";
   nativeBuildInputs = [ makeWrapper ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -32,6 +29,8 @@ stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   passthru = {
     isMhs = true;

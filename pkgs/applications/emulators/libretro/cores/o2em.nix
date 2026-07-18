@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "o2em";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-OSW81RXyXbv4s6hGDdQwE0FEk6xeeA0SM3d47M+mQVw=";
   };
 
+  core = "o2em";
   makefile = "Makefile";
 
   meta = {

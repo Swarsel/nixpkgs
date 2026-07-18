@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,15 +18,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-FToKA1Zu8wj5CudxYmtggvBZmuQLYWWg2taswPnMuDA=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
     "-X github.com/bakito/kubexporter/version.Version=${finalAttrs.version}"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sslstrip";
   version = "2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "L1ghtn1ng";
@@ -35,6 +34,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # Project has no test
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "sslstrip"

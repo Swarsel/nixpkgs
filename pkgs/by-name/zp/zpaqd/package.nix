@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Mx87Zt0AASk0ZZCjyTzYbhlYJAXBlb59OpUWsqynyCA=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ unzip ];
 
   buildPhase = ''
@@ -41,11 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
     cp readme_zpaqd.txt "$out/share/doc/zpaq"
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "ZPAQ archive (de)compressor and algorithm development tool";
-    mainProgram = "zpaqd";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
+    mainProgram = "zpaqd";
   };
 })

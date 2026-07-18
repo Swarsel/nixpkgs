@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   fetchpatch,
+  nixosTests,
   perl,
+  python3,
+  runCommand,
   # Update the enabled crypt scheme ids in passthru when the enabled hashes change
   enableHashes ? "strong",
-  nixosTests,
-  runCommand,
-  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/besser82/libxcrypt/releases/download/v${finalAttrs.version}/libxcrypt-${finalAttrs.version}.tar.xz";
     hash = "sha256-cVE6McAaQovM1TZ6Mv2V8RXW2sUPtbYMd51ceUKuwHE=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   patches = [
     # https://github.com/besser82/libxcrypt/pull/221
@@ -31,9 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace ./build-aux/m4-autogen/config.guess --replace-fail /usr/bin/uname uname
   '';
 
-  outputs = [
-    "out"
-    "man"
+  nativeBuildInputs = [
+    perl
   ];
 
   configureFlags = [
@@ -58,15 +62,22 @@ stdenv.mkDerivation (finalAttrs: {
     # when not exported: https://github.com/besser82/libxcrypt/issues/181
     ++ lib.optionals lld17Plus [ "LDFLAGS+=-Wl,--undefined-version" ];
 
-  nativeBuildInputs = [
-    perl
-  ];
-
+  doCheck = true;
   enableParallelBuilding = true;
 
-  doCheck = true;
-
   passthru = {
+    enabledCryptSchemeIds = [
+      # https://github.com/besser82/libxcrypt/blob/v4.5.0/lib/hashes.conf
+      "y" # yescrypt
+      "gy" # gost_yescrypt
+      "sm3y" # sm3_yescrypt
+      "7" # scrypt
+      "2b" # bcrypt
+      "2y" # bcrypt_y
+      "2a" # bcrypt_a
+      "6" # sha512crypt
+    ];
+
     tests = {
       inherit (nixosTests) login shadow;
 
@@ -84,28 +95,19 @@ stdenv.mkDerivation (finalAttrs: {
         touch "$out"
       '';
     };
-    enabledCryptSchemeIds = [
-      # https://github.com/besser82/libxcrypt/blob/v4.5.0/lib/hashes.conf
-      "y" # yescrypt
-      "gy" # gost_yescrypt
-      "sm3y" # sm3_yescrypt
-      "7" # scrypt
-      "2b" # bcrypt
-      "2y" # bcrypt_y
-      "2a" # bcrypt_a
-      "6" # sha512crypt
-    ];
   };
 
   meta = {
-    changelog = "https://github.com/besser82/libxcrypt/blob/v${finalAttrs.version}/NEWS";
     description = "Extended crypt library for descrypt, md5crypt, bcrypt, and others";
     homepage = "https://github.com/besser82/libxcrypt/";
-    platforms = lib.platforms.all;
+    changelog = "https://github.com/besser82/libxcrypt/blob/v${finalAttrs.version}/NEWS";
+    license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       dottedmag
       hexa
     ];
-    license = lib.licenses.lgpl21Plus;
+
+    platforms = lib.platforms.all;
   };
 })

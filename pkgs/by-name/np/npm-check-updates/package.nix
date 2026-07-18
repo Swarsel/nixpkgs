@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -15,20 +15,19 @@ buildNpmPackage rec {
     hash = "sha256-rQRBPfP7w9a2qCjOxNtl9mmSJiYZYbJyyOh3FEfckxk=";
   };
 
-  npmDepsHash = "sha256-wcpaJv8ji5Yr8Whp+fk+CYp4w3WcnYo20q/Injf/7Z8=";
-
   postPatch = ''
     sed -i '/"prepare"/d' package.json
   '';
 
+  npmDepsHash = "sha256-wcpaJv8ji5Yr8Whp+fk+CYp4w3WcnYo20q/Injf/7Z8=";
   makeCacheWritable = true;
 
   meta = {
-    changelog = "https://github.com/raineorshine/npm-check-updates/blob/${src.rev}/CHANGELOG.md";
     description = "Find newer versions of package dependencies than what your package.json allows";
     homepage = "https://github.com/raineorshine/npm-check-updates";
+    changelog = "https://github.com/raineorshine/npm-check-updates/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "ncu";
     maintainers = with lib.maintainers; [ flosse ];
+    mainProgram = "ncu";
   };
 }

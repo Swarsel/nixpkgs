@@ -1,19 +1,19 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
+  aws-lc,
+  libressl,
+  libxcrypt,
+  lua5_4,
+  nixosTests,
+  openssl,
+  pcre2,
+  zlib,
+  sslLibrary ? "openssl",
   useLua ? true,
   usePcre ? true,
   withPrometheusExporter ? true,
-  sslLibrary ? "openssl",
-  stdenv,
-  lib,
-  fetchurl,
-  nixosTests,
-  zlib,
-  libxcrypt,
-  aws-lc,
-  libressl,
-  openssl,
-  lua5_4,
-  pcre2,
 }:
 
 assert lib.assertOneOf "sslLibrary" sslLibrary [
@@ -98,17 +98,11 @@ stdenv.mkDerivation (finalAttrs: {
   ++ [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   enableParallelBuilding = true;
-
   passthru.tests.haproxy = nixosTests.haproxy;
 
   meta = {
-    changelog = "https://www.haproxy.org/download/${lib.versions.majorMinor finalAttrs.version}/src/CHANGELOG";
     description = "Reliable, high performance TCP/HTTP load balancer";
-    homepage = "https://haproxy.org";
-    license = with lib.licenses; [
-      gpl2Plus
-      lgpl21Only
-    ];
+
     longDescription = ''
       HAProxy is a free, very fast and reliable solution offering high
       availability, load balancing, and proxying for TCP and HTTP-based
@@ -117,6 +111,15 @@ stdenv.mkDerivation (finalAttrs: {
       tens of thousands of connections is clearly realistic with todays
       hardware.
     '';
+
+    homepage = "https://haproxy.org";
+    changelog = "https://www.haproxy.org/download/${lib.versions.majorMinor finalAttrs.version}/src/CHANGELOG";
+
+    license = with lib.licenses; [
+      gpl2Plus
+      lgpl21Only
+    ];
+
     maintainers = with lib.maintainers; [ vifino ];
     platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "haproxy";

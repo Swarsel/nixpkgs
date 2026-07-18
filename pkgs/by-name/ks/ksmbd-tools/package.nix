@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
   glib,
   libkrb5,
   libnl,
   libtool,
+  meson,
+  ninja,
   pkg-config,
   withKerberos ? false,
 }:
@@ -23,11 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-JwfxYFBwrMtP2D7GcDpW44WYbLJyxZy3Jhgi+7HsIng=";
   };
 
-  buildInputs = [
-    glib
-    libnl
-  ]
-  ++ lib.optional withKerberos libkrb5;
+  patches = [ ./0001-skip-installing-example-configuration.patch ];
 
   nativeBuildInputs = [
     meson
@@ -35,7 +31,13 @@ stdenv.mkDerivation (finalAttrs: {
     libtool
     pkg-config
   ];
-  patches = [ ./0001-skip-installing-example-configuration.patch ];
+
+  buildInputs = [
+    glib
+    libnl
+  ]
+  ++ lib.optional withKerberos libkrb5;
+
   mesonFlags = [
     "-Drundir=/run"
     "-Dsystemdsystemunitdir=lib/systemd/system"

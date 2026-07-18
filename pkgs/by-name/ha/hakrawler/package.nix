@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,13 +19,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Web crawler for the discovery of endpoints and assets";
-    mainProgram = "hakrawler";
-    homepage = "https://github.com/hakluke/hakrawler";
+
     longDescription = ''
       Simple, fast web crawler designed for easy, quick discovery of endpoints
       and assets within a web application.
     '';
+
+    homepage = "https://github.com/hakluke/hakrawler";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "hakrawler";
   };
 })

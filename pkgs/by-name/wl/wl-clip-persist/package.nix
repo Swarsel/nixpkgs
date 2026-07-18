@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   wayland,
 }:
 
@@ -18,19 +18,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-MEH8ADsFst/CgTc9QW4x0dBXJ5ssQDVa55qPcsALJRg=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ wayland ];
   cargoHash = "sha256-iQI5Z/gk+EFNQNma+T2/y77F8M+kPuSS2QKO6QV9dm4=";
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ wayland ];
-
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
+    inherit (wayland.meta) platforms;
     description = "Keep Wayland clipboard even after programs close";
     homepage = "https://github.com/Linus789/wl-clip-persist";
-    inherit (wayland.meta) platforms;
     license = lib.licenses.mit;
-    mainProgram = "wl-clip-persist";
     maintainers = with lib.maintainers; [ name-snrl ];
+    mainProgram = "wl-clip-persist";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

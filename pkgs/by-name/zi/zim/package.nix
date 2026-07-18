@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  python3Packages,
-  gtk3,
-  gobject-introspection,
-  wrapGAppsHook3,
   adwaita-icon-theme,
+  gobject-introspection,
+  gtk3,
+  python3Packages,
+  wrapGAppsHook3,
   writableTmpDirAsHomeHook,
   xvfb-run,
 }:
@@ -19,7 +19,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "zim";
   version = "0.76.3";
-  pyproject = true;
 
   src = fetchurl {
     url = "https://zim-wiki.org/downloads/zim-${finalAttrs.version}.tar.gz";
@@ -34,13 +33,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
   buildInputs = [
     gtk3
     adwaita-icon-theme
-  ];
-
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [
-    pyxdg
-    pygobject3
   ];
 
   # (test.py:800): GLib-GIO-ERROR **: 20:59:45.754:
@@ -74,14 +66,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=(--prefix XDG_DATA_DIRS : $out/share)
     makeWrapperArgs+=(--prefix XDG_DATA_DIRS : ${adwaita-icon-theme}/share)
     makeWrapperArgs+=(--argv0 $out/bin/.zim-wrapped)
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  build-system = with python3Packages; [ setuptools ];
+
+  dependencies = with python3Packages; [
+    pyxdg
+    pygobject3
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
 
   meta = {
     description = "Desktop wiki";

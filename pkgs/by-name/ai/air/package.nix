@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -27,9 +27,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Live reload for Go apps";
-    mainProgram = "air";
     homepage = "https://github.com/air-verse/air";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ miniharinn ];
+    mainProgram = "air";
   };
 })

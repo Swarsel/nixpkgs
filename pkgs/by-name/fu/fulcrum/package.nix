@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libsForQt5,
+  nix-update-script,
   pkg-config,
   python3,
   rocksdb_9_10,
-  zeromq,
-  libsForQt5,
-  nix-update-script,
   testers,
+  zeromq,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,15 +37,15 @@ stdenv.mkDerivation (finalAttrs: {
   dontWrapQtApps = true; # no GUI
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Fast & nimble SPV server for Bitcoin Cash & Bitcoin BTC";
     homepage = "https://github.com/cculianu/Fulcrum";
-    maintainers = with lib.maintainers; [ prusnak ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ prusnak ];
     platforms = lib.platforms.unix;
     mainProgram = "Fulcrum";
   };

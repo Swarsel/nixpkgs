@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "igrr";
     repo = "mkspiffs";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-oa6Lmo2yb66IjtEKkZyJBgM/p7rdvmrKfgNd2rAM/Lk=";
+    fetchSubmodules = true;
   };
 
   # 1) Fix build for Darwin
@@ -33,24 +33,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  buildFlags = [ "dist" ];
-
   makeFlags = [
     "VERSION=${finalAttrs.version}"
     "SPIFFS_VERSION=unknown"
   ];
 
+  buildFlags = [ "dist" ];
+
   installPhase = ''
     install -Dm755 -t $out/bin mkspiffs
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Tool to build and unpack SPIFFS images";
-    license = lib.licenses.mit;
     homepage = "https://github.com/igrr/mkspiffs";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.haslersn ];
     platforms = lib.platforms.all;
     mainProgram = "mkspiffs";

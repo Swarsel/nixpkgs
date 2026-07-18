@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -20,12 +20,10 @@ in
     environment.systemPackages = [ pkgs.kexec-tools ];
 
     systemd.services.prepare-kexec = {
-      description = "Preparation for kexec";
-      wantedBy = [ "kexec.target" ];
       before = [ "systemd-kexec.service" ];
-      unitConfig.DefaultDependencies = false;
-      serviceConfig.Type = "oneshot";
+      description = "Preparation for kexec";
       path = [ pkgs.kexec-tools ];
+
       script = ''
         # Don't load the current system profile if we already have a kernel loaded
         if [[ 1 = "$(</sys/kernel/kexec_loaded)" ]] ; then
@@ -41,6 +39,10 @@ in
         echo "Loading NixOS system via kexec."
         exec kexec --load "$p/kernel" --initrd="$p/initrd" --append="$(cat "$p/kernel-params") init=$p/init"
       '';
+
+      serviceConfig.Type = "oneshot";
+      unitConfig.DefaultDependencies = false;
+      wantedBy = [ "kexec.target" ];
     };
   };
 }

@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitLab,
   adwaita-icon-theme,
   gitUpdater,
   gtk3,
   hicolor-icon-theme,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -38,9 +38,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ adwaita-icon-theme ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -52,8 +49,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   dontDropIconThemeCache = true;
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
@@ -61,7 +59,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/suru-icon-theme";
     changelog = "https://gitlab.com/ubports/development/core/suru-icon-theme/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.cc-by-sa-30;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.lomiri ];
   };
 })

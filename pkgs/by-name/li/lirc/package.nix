@@ -2,21 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  autoreconfHook,
-  pkg-config,
-  help2man,
-  python3,
-  linuxHeaders,
-
   alsa-lib,
-  libxslt,
-  systemd,
-  libusb-compat-0_1,
+  autoreconfHook,
+  fetchpatch,
+  help2man,
   libftdi1,
   libice,
   libsm,
+  libusb-compat-0_1,
   libx11,
+  libxslt,
+  linuxHeaders,
+  pkg-config,
+  python3,
+  systemd,
 }:
 
 let
@@ -36,11 +35,27 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-PUTsgnSIHPJi8WCAVkHwgn/8wgreDYXn5vO5Dg09Iio=";
   };
 
+  outputs = [
+    "out"
+    "man"
+    "doc"
+    "dev"
+    # This is the output referenced by dependent packages most of the time.
+    # $out on the other hand contains files used by direct users of lirc -
+    # systemd units, binaries, shell scripts & lirc python package. Since
+    # Nixpkgs' stdenv puts by default python libraries in $lib, this causes a
+    # cyclic reference between $out and $lib. We solve this by moving the
+    # Python library to $out in postFixup below. Since the Python library is
+    # also strongly related to the direct usage of lirc (and not only linking
+    # to the libraries of it), this makes sense anyway.
+    "lib"
+  ];
+
   patches = [
     # Fix installation of Python bindings
     (fetchpatch {
-      url = "https://sourceforge.net/p/lirc/tickets/339/attachment/0001-Fix-Python-bindings.patch";
       sha256 = "088a39x8c1qd81qwvbiqd6crb2lk777wmrs8rdh1ga06lglyvbly";
+      url = "https://sourceforge.net/p/lirc/tickets/339/attachment/0001-Fix-Python-bindings.patch";
     })
 
     # Add a workaround for linux-headers-5.18 until upstream adapts:
@@ -68,10 +83,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "ExecStart=/usr/" "ExecStart=''${!outputBin}/"
   '';
 
-  preConfigure = ''
-    export PKGCONFIG="$PKG_CONFIG"
-  '';
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -92,8 +103,6 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
   ];
 
-  env.DEVINPUT_HEADER = "${linuxHeaders}/include/linux/input-event-codes.h";
-
   configureFlags = [
     "--sysconfdir=/etc"
     "--localstatedir=/var"
@@ -104,26 +113,11 @@ stdenv.mkDerivation (finalAttrs: {
     "PYTHON=${pythonEnv.interpreter}"
   ];
 
-  installFlags = [
-    "sysconfdir=$out/etc"
-    "localstatedir=$TMPDIR"
-  ];
+  env.DEVINPUT_HEADER = "${linuxHeaders}/include/linux/input-event-codes.h";
 
-  outputs = [
-    "out"
-    "man"
-    "doc"
-    "dev"
-    # This is the output referenced by dependent packages most of the time.
-    # $out on the other hand contains files used by direct users of lirc -
-    # systemd units, binaries, shell scripts & lirc python package. Since
-    # Nixpkgs' stdenv puts by default python libraries in $lib, this causes a
-    # cyclic reference between $out and $lib. We solve this by moving the
-    # Python library to $out in postFixup below. Since the Python library is
-    # also strongly related to the direct usage of lirc (and not only linking
-    # to the libraries of it), this makes sense anyway.
-    "lib"
-  ];
+  preConfigure = ''
+    export PKGCONFIG="$PKG_CONFIG"
+  '';
 
   postFixup = ''
     moveToOutput "${python3.sitePackages}" "$out"
@@ -136,11 +130,16 @@ stdenv.mkDerivation (finalAttrs: {
   # Upstream ships broken symlinks in docs
   dontCheckForBrokenSymlinks = true;
 
+  installFlags = [
+    "sysconfdir=$out/etc"
+    "localstatedir=$TMPDIR"
+  ];
+
   meta = {
     description = "Allows to receive and send infrared signals";
     homepage = "https://www.lirc.org/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.linux;
   };
 })

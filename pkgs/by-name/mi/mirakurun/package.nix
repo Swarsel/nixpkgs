@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bash,
   buildNpmPackage,
-  fetchFromGitHub,
   installShellFiles,
   makeWrapper,
   nodejs,
@@ -29,13 +29,12 @@ buildNpmPackage rec {
     ./nix-filesystem.patch
   ];
 
-  npmDepsHash = "sha256-e7m7xb7p1SBzLAyQ82TTR/qLXv4lRm37x0JJPWYYGvI=";
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
 
+  npmDepsHash = "sha256-e7m7xb7p1SBzLAyQ82TTR/qLXv4lRm37x0JJPWYYGvI=";
   # workaround for https://github.com/webpack/webpack/issues/14532
   env.NODE_OPTIONS = "--openssl-legacy-provider";
 

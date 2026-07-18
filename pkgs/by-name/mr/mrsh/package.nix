@@ -20,25 +20,26 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
   ];
-  buildInputs = [ readline ];
 
+  buildInputs = [ readline ];
   doCheck = true;
+
+  passthru = {
+    shellPath = "/bin/mrsh";
+  };
 
   meta = {
     description = "Minimal POSIX shell";
-    mainProgram = "mrsh";
     homepage = "https://mrsh.sh";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
     platforms = lib.platforms.unix;
-  };
-
-  passthru = {
-    shellPath = "/bin/mrsh";
+    mainProgram = "mrsh";
   };
 }

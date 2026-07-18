@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cmake,
-  setuptools,
+  imath,
+  libGL,
   libx11,
   libxt,
-  libGL,
   openimageio,
-  imath,
   python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
@@ -23,8 +23,6 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-XNfXOC76zM5Ns2DyyE3mKCJ1iJaszs1M0rBdVLRDo8E=";
   };
-
-  pyproject = false;
 
   nativeBuildInputs = [
     cmake
@@ -51,8 +49,6 @@ buildPythonPackage rec {
     ))
   ];
 
-  pythonImportsCheck = [ "MaterialX" ];
-
   postInstall = ''
     # Make python lib properly accessible
     target_dir=$out/${python.sitePackages}
@@ -61,12 +57,15 @@ buildPythonPackage rec {
     ln -s $out/python $target_dir
   '';
 
+  pyproject = false;
+  pythonImportsCheck = [ "MaterialX" ];
+
   meta = {
-    changelog = "https://github.com/AcademySoftwareFoundation/MaterialX/blob/${src.rev}/CHANGELOG.md";
     description = "Open standard for representing rich material and look-development content in computer graphics";
     homepage = "https://materialx.org";
+    changelog = "https://github.com/AcademySoftwareFoundation/MaterialX/blob/${src.rev}/CHANGELOG.md";
+    license = lib.licenses.mpl20;
     maintainers = [ lib.maintainers.gador ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.mpl20;
   };
 }

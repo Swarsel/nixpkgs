@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,18 +16,16 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-AmG4YQNW20wRfNHl9l8RkByrTIfmAjBxnWvndf1jqYU=";
-
-  subPackages = [ "." ];
-
   # some tests require a running podman service
   doCheck = false;
+  subPackages = [ "." ];
 
   meta = {
-    homepage = "https://www.github.com/hashicorp/nomad-driver-podman";
     description = "Podman task driver for Nomad";
-    mainProgram = "nomad-driver-podman";
-    platforms = lib.platforms.linux;
+    homepage = "https://www.github.com/hashicorp/nomad-driver-podman";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ cpcloud ];
+    platforms = lib.platforms.linux;
+    mainProgram = "nomad-driver-podman";
   };
 })

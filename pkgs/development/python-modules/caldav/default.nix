@@ -1,35 +1,34 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dnspython,
-  fetchFromGitHub,
+  hatch-vcs,
+  hatchling,
   icalendar,
   icalendar-searcher,
   lxml,
   manuel,
-  pytestCheckHook,
-  python,
-  radicale,
-  recurring-ical-events,
   niquests,
-  hatchling,
-  hatch-vcs,
   proxy-py,
   pyfakefs,
   pytest-asyncio,
+  pytestCheckHook,
+  python,
   python-dateutil,
   pyyaml,
+  radicale,
+  recurring-ical-events,
   toPythonModule,
   tzlocal,
   vobject,
-  xandikos,
   writableTmpDirAsHomeHook,
+  xandikos,
 }:
 
 buildPythonPackage rec {
   pname = "caldav";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-caldav";
@@ -37,6 +36,21 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-SCqc0MVxKaHpES+NkDcaItHlkk0kCFj6kFqH8k08vdA=";
   };
+
+  nativeCheckInputs = [
+    manuel
+    proxy-py
+    pyfakefs
+    pytest-asyncio
+    pytestCheckHook
+    (toPythonModule (radicale.override { python3 = python; }))
+    tzlocal
+    vobject
+    writableTmpDirAsHomeHook
+    (toPythonModule (xandikos.override { python3Packages = python.pkgs; }))
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatchling
@@ -54,21 +68,7 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    manuel
-    proxy-py
-    pyfakefs
-    pytest-asyncio
-    pytestCheckHook
-    (toPythonModule (radicale.override { python3 = python; }))
-    tzlocal
-    vobject
-    writableTmpDirAsHomeHook
-    (toPythonModule (xandikos.override { python3Packages = python.pkgs; }))
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "caldav" ];
 
   meta = {
@@ -76,6 +76,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/python-caldav/caldav";
     changelog = "https://github.com/python-caldav/caldav/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       marenz
       dotlambda

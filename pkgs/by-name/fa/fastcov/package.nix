@@ -1,16 +1,15 @@
 {
-  python3Packages,
   lib,
   fetchFromGitHub,
   cmake,
-  ninja,
   libgcc,
+  ninja,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "fastcov";
   version = "1.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RPGillespie6";
@@ -19,18 +18,12 @@ python3Packages.buildPythonPackage rec {
     hash = "sha256-2WrgLNC3FU4b8DdcoK3rk0+JBiv60JmlBktg0tMx6CM=";
   };
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
   nativeBuildInputs = [
     cmake
     ninja
     python3Packages.coverage
     libgcc # provide gcov
   ];
-
-  dontUseCmakeConfigure = true; # cmake is used for testing
 
   nativeCheckInputs = with python3Packages; [
     pytestCheckHook
@@ -64,13 +57,20 @@ python3Packages.buildPythonPackage rec {
       --replace-fail "default='gcov'" "default='${lib.getExe' libgcc.out "gcov"}'"
   '';
 
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  dontUseCmakeConfigure = true; # cmake is used for testing
+  pyproject = true;
+
   meta = {
     description = "Massively parallelized gcov wrapper";
     homepage = "https://github.com/RPGillespie6/fastcov";
     changelog = "https://github.com/RPGillespie6/fastcov/releases/tag/v${version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.mit;
     mainProgram = "fastcov";
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  stdenv,
   gtest,
   nix-update-script,
+  pkg-config,
   testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -19,16 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/QsOjDik0TnH3FnK7LOwsJkvX+O+2DRFX4eF3MxD3fc=";
   };
 
-  passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
-
-  passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
-
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
-
-  checkInputs = [ gtest ];
 
   cmakeFlags = [
     (lib.cmakeBool "CPUINFO_BUILD_UNIT_TESTS" finalAttrs.finalPackage.doCheck)
@@ -42,15 +36,18 @@ stdenv.mkDerivation (finalAttrs: {
   # not understand all CPUs (causing test failures such as https://github.com/pytorch/cpuinfo/issues/132)
   # Instead, allow building in any environment.
   doCheck = false;
+  checkInputs = [ gtest ];
+  passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+  passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Tools and library to detect essential for performance optimization information about host CPU";
     homepage = "https://github.com/pytorch/cpuinfo";
     license = lib.licenses.bsd2;
-    mainProgram = "cpu-info";
     maintainers = with lib.maintainers; [ pawelchcki ];
-    pkgConfigModules = [ "libcpuinfo" ];
     # https://github.com/pytorch/cpuinfo/blob/ea6b9f1bb6e1001d8b21574d5bc78ddef62e499d/CMakeLists.txt#L98
     platforms = lib.platforms.x86 ++ lib.platforms.aarch ++ lib.platforms.riscv;
+    mainProgram = "cpu-info";
+    pkgConfigModules = [ "libcpuinfo" ];
   };
 })

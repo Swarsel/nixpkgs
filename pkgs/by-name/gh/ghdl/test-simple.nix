@@ -1,10 +1,10 @@
 {
-  stdenvNoCC,
+  backend,
+  ghdl-gcc,
   ghdl-llvm,
   ghdl-llvm-jit,
   ghdl-mcode,
-  ghdl-gcc,
-  backend,
+  stdenvNoCC,
 }:
 
 let
@@ -19,9 +19,8 @@ let
       ghdl-mcode;
 in
 stdenvNoCC.mkDerivation {
-  name = "ghdl-test-simple";
-  meta.timeout = 300;
   nativeBuildInputs = [ ghdl ];
+
   buildCommand = ''
     cp ${./simple.vhd} simple.vhd
     cp ${./simple-tb.vhd} simple-tb.vhd
@@ -42,4 +41,7 @@ stdenvNoCC.mkDerivation {
   + ''
     diff output.txt ${./expected-output.txt} && touch $out
   '';
+
+  name = "ghdl-test-simple";
+  meta.timeout = 300;
 }

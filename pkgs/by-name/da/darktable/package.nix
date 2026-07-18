@@ -2,32 +2,29 @@
   lib,
   stdenv,
   fetchurl,
-  withAi ? false,
-
-  # nativeBuildInputs
-  cmake,
-  desktop-file-utils,
-  intltool,
-  llvmPackages,
-  ninja,
-  perl,
-  pkg-config,
-  wrapGAppsHook3,
-  saxon,
-
   # buildInputs
   SDL2,
   adwaita-icon-theme,
   alsa-lib,
   cairo,
+  # nativeBuildInputs
+  cmake,
+  # Linux only
+  colord,
+  colord-gtk,
   curl,
+  desktop-file-utils,
   exiv2,
+  gitUpdater,
   glib,
   glib-networking,
   gmic,
   graphicsmagick,
+  # Darwin only
+  gtk-mac-integration,
   gtk3,
   icu,
+  intltool,
   isocodes,
   jasper,
   json-glib,
@@ -49,49 +46,53 @@
   libpng,
   librsvg,
   libsecret,
+  libselinux,
+  libsepol,
   libsysprof-capture,
   libthai,
   libtiff,
   libwebp,
+  libx11,
+  libxdmcp,
+  libxkbcommon,
   libxml2,
+  libxtst,
+  llvmPackages,
   lua5_4,
+  ninja,
+  ocl-icd,
   onnxruntime,
-  util-linux,
   openexr,
   openjpeg,
   osm-gps-map,
   pcre2,
+  perl,
+  pkg-config,
   portmidi,
   potrace,
   pugixml,
+  saxon,
   sqlite,
-  # Linux only
-  colord,
-  colord-gtk,
-  libselinux,
-  libsepol,
-  libx11,
-  libxdmcp,
-  libxkbcommon,
-  libxtst,
-  ocl-icd,
-  # Darwin only
-  gtk-mac-integration,
-
+  util-linux,
   versionCheckHook,
-  gitUpdater,
+  wrapGAppsHook3,
+  withAi ? false,
 }:
 let
   pugixml-shared = pugixml.override { shared = true; };
 in
 stdenv.mkDerivation rec {
-  version = "5.6.0";
   pname = "darktable";
+  version = "5.6.0";
 
   src = fetchurl {
     url = "https://github.com/darktable-org/darktable/releases/download/release-${version}/darktable-${version}.tar.xz";
     hash = "sha256-FX1tOEevivyr54lERUeG9zqIbgilBLS9YRTCBl/gBuQ=";
   };
+
+  postPatch = ''
+    patchShebangs ./tools/generate_styles_string.sh
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -191,6 +192,12 @@ stdenv.mkDerivation rec {
     NIX_CFLAGS_LINK = "-fuse-ld=lld";
   };
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   # darktable changed its rpath handling in commit
   # 83c70b876af6484506901e6b381304ae0d073d3c and as a result the
   # binaries can't find libdarktable.so, so change LD_LIBRARY_PATH in
@@ -213,18 +220,9 @@ stdenv.mkDerivation rec {
       )
     '';
 
-  postPatch = ''
-    patchShebangs ./tools/generate_styles_string.sh
-  '';
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   passthru.updateScript = gitUpdater {
-    rev-prefix = "release-";
     odd-unstable = true;
+    rev-prefix = "release-";
     url = "https://github.com/darktable-org/darktable.git";
   };
 
@@ -233,12 +231,14 @@ stdenv.mkDerivation rec {
     homepage = "https://www.darktable.org";
     changelog = "https://github.com/darktable-org/darktable/releases/tag/release-${version}";
     license = lib.licenses.gpl3Plus;
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = with lib.maintainers; [
       flosse
       mrVanDalo
       paperdigits
       freyacodes
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
   };
 }

@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   uglify-js,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "zerobin";
   version = "1.0.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Tygs";
@@ -33,6 +32,18 @@ python3Packages.buildPythonApplication rec {
     paste
   ];
 
+  buildPhase = ''
+    runHook preBuild
+    doit build
+    runHook postBuild
+  '';
+
+  # zerobin has no check, but checking would fail with:
+  # nix_run_setup runserver: Received extra arguments: test
+  # See https://github.com/NixOS/nixpkgs/pull/98734#discussion_r495823510
+  doCheck = false;
+  format = "setuptools";
+
   prePatch = ''
     # replace /bin/bash in compress.sh
     patchShebangs .
@@ -45,17 +56,6 @@ python3Packages.buildPythonApplication rec {
       --replace "Paste==3.4.3" "Paste>=3.4.3,<4"
   '';
 
-  buildPhase = ''
-    runHook preBuild
-    doit build
-    runHook postBuild
-  '';
-
-  # zerobin has no check, but checking would fail with:
-  # nix_run_setup runserver: Received extra arguments: test
-  # See https://github.com/NixOS/nixpkgs/pull/98734#discussion_r495823510
-  doCheck = false;
-
   pythonImportsCheck = [ "zerobin" ];
 
   meta = {
@@ -63,7 +63,7 @@ python3Packages.buildPythonApplication rec {
     homepage = "https://github.com/Tygs/0bin";
     changelog = "https://github.com/Tygs/0bin/releases/tag/v${version}";
     license = lib.licenses.wtfpl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ julm ];
+    platforms = lib.platforms.all;
   };
 }

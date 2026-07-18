@@ -1,44 +1,49 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   docbook-xsl-nons,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  gettext,
-  libxml2,
-  libxslt,
-  gobject-introspection,
-  wrapGAppsHook4,
-  wrapGAppsNoGuiHook,
-  python3,
   gdk-pixbuf,
+  gettext,
   glib,
+  gnome,
+  gobject-introspection,
   gssdp_1_6,
-  gupnp_1_6,
+  gst_all_1,
+  gtk4,
   gupnp-av,
   gupnp-dlna,
-  gst_all_1,
+  gupnp_1_6,
   libgee,
+  libmediaart,
   libsoup_3,
   libx11,
-  withGtk ? true,
-  gtk4,
-  libmediaart,
+  libxml2,
+  libxslt,
+  meson,
+  ninja,
   pipewire,
+  pkg-config,
+  python3,
+  rygel,
+  shared-mime-info,
   sqlite,
   systemd,
   tinysparql,
-  shared-mime-info,
-  gnome,
-  rygel,
+  vala,
+  wrapGAppsHook4,
+  wrapGAppsNoGuiHook,
+  withGtk ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "rygel";
   version = "45.2";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/rygel/${lib.versions.major finalAttrs.version}/rygel-${finalAttrs.version}.tar.xz";
+    hash = "sha256-IOV7cLFahl133Dj594arxSxksRH+X5OKYsKNcS3xMx0=";
+  };
 
   # TODO: split out lib
   outputs = [
@@ -46,14 +51,13 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/rygel/${lib.versions.major finalAttrs.version}/rygel-${finalAttrs.version}.tar.xz";
-    hash = "sha256-IOV7cLFahl133Dj594arxSxksRH+X5OKYsKNcS3xMx0=";
-  };
-
   patches = [
     ./add-option-for-installation-sysconfdir.patch
   ];
+
+  postPatch = ''
+    patchShebangs data/xml/process-xml.py
+  '';
 
   nativeBuildInputs = [
     docbook-xsl-nons
@@ -109,16 +113,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    patchShebangs data/xml/process-xml.py
-  '';
-
   passthru = {
+    noGtk = rygel.override { withGtk = false; };
+
     updateScript = gnome.updateScript {
       packageName = "rygel";
       versionPolicy = "odd-unstable";
     };
-    noGtk = rygel.override { withGtk = false; };
   };
 
   meta = {
@@ -126,7 +127,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/rygel";
     changelog = "https://gitlab.gnome.org/GNOME/rygel/-/blob/rygel-${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

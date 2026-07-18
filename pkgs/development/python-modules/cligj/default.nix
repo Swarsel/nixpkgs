@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   click,
   pytest,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "cligj";
   version = "0.7.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mapbox";
@@ -27,6 +26,8 @@ buildPythonPackage rec {
   checkPhase = ''
     pytest tests
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Click params for command line interfaces to GeoJSON";

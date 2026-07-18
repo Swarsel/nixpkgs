@@ -1,9 +1,9 @@
 {
   lib,
-  fetchgit,
   stdenv,
-  bitlbee,
   autoreconfHook,
+  bitlbee,
+  fetchgit,
   pkg-config,
 }:
 
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ bitlbee ];
 
   preConfigure = ''

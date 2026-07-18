@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  undmg,
   nix-update-script,
+  undmg,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ undmg ];
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
 
@@ -28,14 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Beautiful calculator app for macOS";
     homepage = "https://numi.app/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ _4evy ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

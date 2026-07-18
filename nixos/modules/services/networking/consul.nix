@@ -12,6 +12,7 @@ let
 
   configOptions = {
     data_dir = dataDir;
+
     ui_config = {
       enabled = cfg.webUi;
     };
@@ -35,26 +36,129 @@ in
     services.consul = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Enables the consul daemon.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "consul" { };
 
-      webUi = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
+      alerts = {
+        enable = lib.mkEnableOption "consul-alerts";
+        package = lib.mkPackageOption pkgs "consul-alerts" { };
+
+        consulAddr = lib.mkOption {
+          default = "localhost:8500";
+          description = "Consul api listening address";
+          type = lib.types.str;
+        };
+
+        listenAddr = lib.mkOption {
+          default = "localhost:9000";
+          description = "Api listening address.";
+          type = lib.types.str;
+        };
+
+        watchChecks = lib.mkOption {
+          default = true;
+          description = "Whether to enable check watcher.";
+          type = lib.types.bool;
+        };
+
+        watchEvents = lib.mkOption {
+          default = true;
+          description = "Whether to enable event watcher.";
+          type = lib.types.bool;
+        };
+      };
+
+      dropPrivileges = lib.mkOption {
+        default = true;
+
         description = ''
-          Enables the web interface on the consul http port.
+          Whether the consul agent should be run as a non-root consul user.
         '';
+
+        type = lib.types.bool;
+      };
+
+      extraConfig = lib.mkOption {
+        default = { };
+
+        description = ''
+          Extra configuration options which are serialized to json and added
+          to the config.json file.
+        '';
+
+        type = lib.types.attrsOf lib.types.anything;
+      };
+
+      extraConfigFiles = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Additional configuration files to pass to consul
+          NOTE: These will not trigger the service to be restarted when altered.
+        '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      forceAddrFamily = lib.mkOption {
+        default = "any";
+
+        description = ''
+          Whether to bind ipv4/ipv6 or both kind of addresses.
+        '';
+
+        type = lib.types.enum [
+          "any"
+          "ipv4"
+          "ipv6"
+        ];
+      };
+
+      forceIpv4 = lib.mkOption {
+        default = null;
+
+        description = ''
+          Deprecated: Use consul.forceAddrFamily instead.
+          Whether we should force the interfaces to only pull ipv4 addresses.
+        '';
+
+        type = lib.types.nullOr lib.types.bool;
+      };
+
+      interface = {
+
+        advertise = lib.mkOption {
+          default = null;
+
+          description = ''
+            The name of the interface to pull the advertise_addr from.
+          '';
+
+          type = lib.types.nullOr lib.types.str;
+        };
+
+        bind = lib.mkOption {
+          default = null;
+
+          description = ''
+            The name of the interface to pull the bind_addr from.
+          '';
+
+          type = lib.types.nullOr lib.types.str;
+        };
       };
 
       leaveOnStop = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           If enabled, causes a leave action to be sent when closing consul.
           This allows a clean termination of the node, but permanently removes
@@ -62,102 +166,18 @@ in
           are running a node which going offline in a permanent / semi-permanent
           fashion.
         '';
-      };
 
-      interface = {
-
-        advertise = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          default = null;
-          description = ''
-            The name of the interface to pull the advertise_addr from.
-          '';
-        };
-
-        bind = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          default = null;
-          description = ''
-            The name of the interface to pull the bind_addr from.
-          '';
-        };
-      };
-
-      forceAddrFamily = lib.mkOption {
-        type = lib.types.enum [
-          "any"
-          "ipv4"
-          "ipv6"
-        ];
-        default = "any";
-        description = ''
-          Whether to bind ipv4/ipv6 or both kind of addresses.
-        '';
-      };
-
-      forceIpv4 = lib.mkOption {
-        type = lib.types.nullOr lib.types.bool;
-        default = null;
-        description = ''
-          Deprecated: Use consul.forceAddrFamily instead.
-          Whether we should force the interfaces to only pull ipv4 addresses.
-        '';
-      };
-
-      dropPrivileges = lib.mkOption {
         type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether the consul agent should be run as a non-root consul user.
-        '';
       };
 
-      extraConfig = lib.mkOption {
-        default = { };
-        type = lib.types.attrsOf lib.types.anything;
+      webUi = lib.mkOption {
+        default = false;
+
         description = ''
-          Extra configuration options which are serialized to json and added
-          to the config.json file.
+          Enables the web interface on the consul http port.
         '';
-      };
 
-      extraConfigFiles = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.str;
-        description = ''
-          Additional configuration files to pass to consul
-          NOTE: These will not trigger the service to be restarted when altered.
-        '';
-      };
-
-      alerts = {
-        enable = lib.mkEnableOption "consul-alerts";
-
-        package = lib.mkPackageOption pkgs "consul-alerts" { };
-
-        listenAddr = lib.mkOption {
-          description = "Api listening address.";
-          default = "localhost:9000";
-          type = lib.types.str;
-        };
-
-        consulAddr = lib.mkOption {
-          description = "Consul api listening address";
-          default = "localhost:8500";
-          type = lib.types.str;
-        };
-
-        watchChecks = lib.mkOption {
-          description = "Whether to enable check watcher.";
-          default = true;
-          type = lib.types.bool;
-        };
-
-        watchEvents = lib.mkOption {
-          description = "Whether to enable event watcher.";
-          default = true;
-          type = lib.types.bool;
-        };
+        type = lib.types.bool;
       };
 
     };
@@ -168,59 +188,23 @@ in
     lib.mkMerge [
       {
 
-        users.users.consul = {
-          description = "Consul agent daemon user";
-          isSystemUser = true;
-          group = "consul";
-          # The shell is needed for health checks
-          shell = "/run/current-system/sw/bin/bash";
-        };
-        users.groups.consul = { };
-
         environment = {
-          etc."consul.json".text = builtins.toJSON configOptions;
           # We need consul.d to exist for consul to start
           etc."consul.d/dummy.json".text = "{ }";
+          etc."consul.json".text = builtins.toJSON configOptions;
           systemPackages = [ cfg.package ];
         };
 
-        warnings = lib.flatten [
-          (lib.optional (cfg.forceIpv4 != null) ''
-            The option consul.forceIpv4 is deprecated, please use
-            consul.forceAddrFamily instead.
-          '')
-        ];
-
         systemd.services.consul = {
-          wantedBy = [ "multi-user.target" ];
           after = [ "network.target" ] ++ systemdDevices;
           bindsTo = systemdDevices;
-          restartTriggers = [
-            config.environment.etc."consul.json".source
-          ]
-          ++ lib.mapAttrsToList (_: d: d.source) (
-            lib.filterAttrs (n: _: lib.hasPrefix "consul.d/" n) config.environment.etc
-          );
-
-          serviceConfig = {
-            ExecStart =
-              "@${lib.getExe cfg.package} consul agent -config-dir /etc/consul.d"
-              + lib.concatMapStrings (n: " -config-file ${n}") configFiles;
-            ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-            PermissionsStartOnly = true;
-            User = if cfg.dropPrivileges then "consul" else null;
-            Restart = "on-failure";
-            TimeoutStartSec = "infinity";
-          }
-          // (lib.optionalAttrs (cfg.leaveOnStop) {
-            ExecStop = "${lib.getExe cfg.package} leave";
-          });
 
           path = with pkgs; [
             iproute2
             gawk
             cfg.package
           ];
+
           preStart =
             let
               family =
@@ -269,7 +253,49 @@ in
             + ''
               echo "}" >> /etc/consul-addrs.json
             '';
+
+          restartTriggers = [
+            config.environment.etc."consul.json".source
+          ]
+          ++ lib.mapAttrsToList (_: d: d.source) (
+            lib.filterAttrs (n: _: lib.hasPrefix "consul.d/" n) config.environment.etc
+          );
+
+          serviceConfig = {
+            ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
+            ExecStart =
+              "@${lib.getExe cfg.package} consul agent -config-dir /etc/consul.d"
+              + lib.concatMapStrings (n: " -config-file ${n}") configFiles;
+
+            PermissionsStartOnly = true;
+            Restart = "on-failure";
+            TimeoutStartSec = "infinity";
+            User = if cfg.dropPrivileges then "consul" else null;
+          }
+          // (lib.optionalAttrs (cfg.leaveOnStop) {
+            ExecStop = "${lib.getExe cfg.package} leave";
+          });
+
+          wantedBy = [ "multi-user.target" ];
         };
+
+        users.groups.consul = { };
+
+        users.users.consul = {
+          description = "Consul agent daemon user";
+          group = "consul";
+          isSystemUser = true;
+          # The shell is needed for health checks
+          shell = "/run/current-system/sw/bin/bash";
+        };
+
+        warnings = lib.flatten [
+          (lib.optional (cfg.forceIpv4 != null) ''
+            The option consul.forceIpv4 is deprecated, please use
+            consul.forceAddrFamily instead.
+          '')
+        ];
       }
 
       # deprecated
@@ -279,9 +305,7 @@ in
 
       (lib.mkIf (cfg.alerts.enable) {
         systemd.services.consul-alerts = {
-          wantedBy = [ "multi-user.target" ];
           after = [ "consul.service" ];
-
           path = [ cfg.package ];
 
           serviceConfig = {
@@ -292,9 +316,12 @@ in
                 ${lib.optionalString cfg.alerts.watchChecks "--watch-checks"} \
                 ${lib.optionalString cfg.alerts.watchEvents "--watch-events"}
             '';
-            User = if cfg.dropPrivileges then "consul" else null;
+
             Restart = "on-failure";
+            User = if cfg.dropPrivileges then "consul" else null;
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
       })
 

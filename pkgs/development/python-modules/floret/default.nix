@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  numpy,
   pybind11,
+  pytestCheckHook,
   setuptools,
   wheel,
-  numpy,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "floret";
   version = "0.10.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -34,9 +33,9 @@ buildPythonPackage rec {
     pybind11
   ];
 
-  pythonImportsCheck = [ "floret" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "floret" ];
 
   meta = {
     description = "FastText + Bloom embeddings for compact, full-coverage vectors with spaCy";

@@ -1,19 +1,18 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  libappindicator,
-  gobject-introspection,
-  wrapGAppsHook4,
-  callPackage,
   bash,
-  pipewire,
+  callPackage,
+  gobject-introspection,
   gtk4,
+  libappindicator,
+  pipewire,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pulsemeeter";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "theRealCarneiro";
@@ -21,18 +20,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-m64frtEVqwJEc0rfKoPIbTJtASE+aPAdBBSrPNHIXRY=";
   };
-
-  build-system = with python3Packages; [
-    setuptools
-    babel
-  ];
-
-  dependencies = with python3Packages; [
-    pygobject3
-    pydantic
-    pulsectl
-    pulsectl-asyncio
-  ];
 
   nativeBuildInputs = [
     wrapGAppsHook4
@@ -46,24 +33,38 @@ python3Packages.buildPythonApplication (finalAttrs: {
     gtk4
   ];
 
-  makeWrapperArgs = [
-    "\${gappsWrapperArgs[@]}"
+  build-system = with python3Packages; [
+    setuptools
+    babel
+  ];
+
+  dependencies = with python3Packages; [
+    pygobject3
+    pydantic
+    pulsectl
+    pulsectl-asyncio
   ];
 
   dontWrapGApps = true;
 
-  pythonImportsCheck = [ "pulsemeeter" ];
+  makeWrapperArgs = [
+    "\${gappsWrapperArgs[@]}"
+  ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "pulsemeeter" ];
   passthru.tests.version = callPackage ./version-test.nix { inherit (finalAttrs) version; };
 
   meta = {
     description = "Pulseaudio and pipewire audio mixer inspired by voicemeeter";
-    license = lib.licenses.mit;
     homepage = "https://github.com/theRealCarneiro/pulsemeeter";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       therobot2105
     ];
-    mainProgram = "pulsemeeter";
+
     platforms = lib.platforms.linux;
+    mainProgram = "pulsemeeter";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   docker,
-  fetchFromGitHub,
   installShellFiles,
   nix-update-script,
   oras,
@@ -21,32 +21,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MH3HSbJ+/5vjUrjFZQVf4Qv2+qAezOShxfkAoCJMnFU=";
   };
 
-  vendorHash = "sha256-RKqaIwGDZj91lfbEJHcnG8RhIrixtR0VtieCfZD/rns=";
-
-  excludedPackages = [
-    "integration/..."
-    "test/..."
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-RKqaIwGDZj91lfbEJHcnG8RhIrixtR0VtieCfZD/rns=";
+  env.CGO_ENABLED = "0";
 
   nativeCheckInputs = [
     docker
     oras
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  env.CGO_ENABLED = "0";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/project-copacetic/copacetic/pkg/version.GitVersion=${finalAttrs.version}"
-    "-X=main.version=${finalAttrs.version}"
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   checkFlags =
     let
@@ -73,10 +55,6 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  doInstallCheck = true;
-
-  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
-
   postInstall = ''
     mv $out/bin/copacetic $out/bin/copa
   ''
@@ -87,6 +65,23 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/copa completion zsh)
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+
+  excludedPackages = [
+    "integration/..."
+    "test/..."
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/project-copacetic/copacetic/pkg/version.GitVersion=${finalAttrs.version}"
+    "-X=main.version=${finalAttrs.version}"
+  ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -94,7 +89,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://project-copacetic.github.io/copacetic/";
     changelog = "https://github.com/project-copacetic/copacetic/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "copa";
     maintainers = with lib.maintainers; [ tbutter ];
+    mainProgram = "copa";
   };
 })

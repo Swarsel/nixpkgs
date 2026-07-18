@@ -1,17 +1,17 @@
 {
-  cmake,
+  lib,
+  stdenv,
   fetchFromGitLab,
+  cmake,
   glm,
   jsoncpp,
-  lib,
   libGL,
+  libx11,
   nix-update-script,
   openxr-loader,
   python3,
-  stdenv,
   vulkan-headers,
   vulkan-loader,
-  libx11,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "znixian";
     repo = "OpenOVR";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-qi1iqlsr0P+Hw63O3ayCBIEGdNtkhl8FCPcs/m0WIzs=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -58,11 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    # This can realistically only work on systems that support OpenXR Loader
+    inherit (openxr-loader.meta) platforms;
     description = "Reimplementation of OpenVR, translating calls to OpenXR";
     homepage = "https://gitlab.com/znixian/OpenOVR";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = with lib.maintainers; [ Scrumplex ];
-    # This can realistically only work on systems that support OpenXR Loader
-    inherit (openxr-loader.meta) platforms;
   };
 })

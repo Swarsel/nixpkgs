@@ -1,19 +1,16 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
+  copyDesktopItems,
   fetchzip,
   makeBinaryWrapper,
-  nix-update-script,
-
   makeDesktopItem,
-  copyDesktopItems,
+  nix-update-script,
+  python3Packages,
   replaceVars,
-
-  todds,
-
   steam,
+  todds,
 }:
 let
   pname = "rimsort";
@@ -28,20 +25,21 @@ let
   };
 
   steamworksSrc = fetchzip {
-    url = "https://web.archive.org/web/20250527013243/https://partner.steamgames.com/downloads/steamworks_sdk_162.zip"; # Steam sometimes requires auth to download.
     hash = "sha256-yDA92nGj3AKTNI4vnoLaa+7mDqupQv0E4YKRRUWqyZw=";
+    url = "https://web.archive.org/web/20250527013243/https://partner.steamgames.com/downloads/steamworks_sdk_162.zip"; # Steam sometimes requires auth to download.
   };
 
   steamfiles = python3Packages.buildPythonPackage {
-    pname = "steamfiles";
     inherit version;
-    format = "setuptools";
-
+    pname = "steamfiles";
     src = "${src}/submodules/steamfiles";
+
     dependencies = with python3Packages; [
       protobuf
       protobuf3-to-dict
     ];
+
+    format = "setuptools";
   };
 
   steam-run =
@@ -54,18 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
   inherit pname;
   inherit version;
   inherit src;
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    cp -r ${finalAttrs.src} source
-    chmod -R 755 source
-    cp ${steamworksSrc}/redistributable_bin/linux64/libsteam_api.so source/
-
-    runHook postUnpack
-  '';
-
-  sourceRoot = "source";
 
   patches = [
     (replaceVars ./todds-path.patch { inherit todds; })
@@ -110,7 +96,7 @@ stdenv.mkDerivation (finalAttrs: {
       ;
   };
 
-  dontBuild = true;
+  doCheck = true;
 
   nativeCheckInputs = with python3Packages; [
     aiohttp
@@ -123,31 +109,11 @@ stdenv.mkDerivation (finalAttrs: {
     rapidfuzz
   ];
 
-  doCheck = true;
-
   preCheck = ''
     export QT_DEBUG_PLUGINS=1
     export QT_QPA_PLATFORM=offscreen
     export HOME=$(mktemp -d) # Some tests require a writable directory
   '';
-
-  disabledTestPaths = [
-    # requires network (clones GitHub: Community-Rules-Database, Steam-Workshop-Database)
-    "tests/models/metadata/test_metadata_factory.py"
-  ];
-
-  pytestFlags = [ "--doctest-modules" ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "RimSort";
-      desktopName = "RimSort";
-      exec = "rimsort";
-      icon = "rimsort";
-      comment = "RimWorld Mod Manager";
-      categories = [ "Game" ];
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -170,6 +136,36 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "RimWorld Mod Manager";
+      desktopName = "RimSort";
+      exec = "rimsort";
+      icon = "rimsort";
+      name = "RimSort";
+    })
+  ];
+
+  disabledTestPaths = [
+    # requires network (clones GitHub: Community-Rules-Database, Steam-Workshop-Database)
+    "tests/models/metadata/test_metadata_factory.py"
+  ];
+
+  dontBuild = true;
+  pytestFlags = [ "--doctest-modules" ];
+  sourceRoot = "source";
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    cp -r ${finalAttrs.src} source
+    chmod -R 755 source
+    cp ${steamworksSrc}/redistributable_bin/linux64/libsteam_api.so source/
+
+    runHook postUnpack
+  '';
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       # To skip checking the pre-release 'Edge' release as 'vEdge'.
@@ -181,6 +177,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Open source mod manager for the video game RimWorld";
     homepage = "https://github.com/RimSort/RimSort";
+
     license = with lib.licenses; [
       gpl3Only
       # For libsteam_api.so
@@ -191,9 +188,10 @@ stdenv.mkDerivation (finalAttrs: {
         }
       )
     ];
+
     maintainers = with lib.maintainers; [ weirdrock ];
-    mainProgram = "rimsort";
     # steamworksSrc is x86_64-linux only
     platforms = [ "x86_64-linux" ];
+    mainProgram = "rimsort";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycognito,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pyschlage";
   version = "2025.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dknowles2";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-ROLtRN/J6LdL67CQ/Ui60RLMLNStb1CZlvQGt8xerOA=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,8 +32,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyschlage" ];
 
   meta = {

@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "forbidden";
   version = "13.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ivan-sincek";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-eOf74JWDzYz73axY9+6bRcSfJAdHMh3H4+cuUojSU4A=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -31,9 +32,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     termcolor
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "forbidden" ];
 
   meta = {

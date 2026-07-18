@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ruby,
-  makeWrapper,
   gitSVN,
+  makeWrapper,
+  ruby,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out
     cp -r lib $out/
@@ -39,9 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${gitSVN}/bin
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/nirvdrum/svn2git";
     description = "Tool for importing Subversion repositories into git";
+    homepage = "https://github.com/nirvdrum/svn2git";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
     mainProgram = "svn2git";

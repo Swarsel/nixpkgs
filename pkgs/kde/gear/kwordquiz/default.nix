@@ -1,7 +1,7 @@
 {
   mkKdeDerivation,
-  qtsvg,
   qtmultimedia,
+  qtsvg,
 }:
 mkKdeDerivation {
   pname = "kwordquiz";
@@ -10,5 +10,6 @@ mkKdeDerivation {
     qtsvg
     qtmultimedia
   ];
+
   meta.mainProgram = "kwordquiz";
 }

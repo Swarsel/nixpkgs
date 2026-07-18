@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,18 +17,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-A3zdDzmwX2gdTLLWnUGeiqY1R5PBKZRmEHdIi1Uveaw=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Easily query TOML files from bash";
     homepage = "https://github.com/snyball/tombl";
     changelog = "https://github.com/snyball/tombl/releases/tag/v${finalAttrs.version}";
-    mainProgram = "tombl";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ oskardotglobal ];
+    mainProgram = "tombl";
   };
 })

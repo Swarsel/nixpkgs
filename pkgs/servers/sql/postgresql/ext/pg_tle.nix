@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -22,8 +22,8 @@ postgresqlBuildExtension rec {
     description = "Framework for building trusted language extensions for PostgreSQL";
     homepage = "https://github.com/aws/pg_tle";
     changelog = "https://github.com/aws/pg_tle/releases/tag/v${version}";
+    license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.benchand ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.asl20;
   };
 }

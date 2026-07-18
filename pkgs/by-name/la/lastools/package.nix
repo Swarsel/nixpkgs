@@ -20,14 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
     ./drop-64-suffix.patch # necessary to prevent '64' from being appended to the names of the executables
   ];
 
-  hardeningDisable = [
-    "format"
+  nativeBuildInputs = [
+    cmake
   ];
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isAarch64 "-Wno-narrowing";
 
-  nativeBuildInputs = [
-    cmake
+  hardeningDisable = [
+    "format"
   ];
 
   meta = {
@@ -35,7 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "http://lastools.org/";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ stephenwithph ];
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.geospatial ];
   };
 })

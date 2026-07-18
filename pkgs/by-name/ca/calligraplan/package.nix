@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  qt6,
-  kdePackages,
   cmake,
-  shared-mime-info,
   gitUpdater,
+  kdePackages,
+  qt6,
+  shared-mime-info,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,12 +14,19 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.0.1";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "office";
     repo = "calligraplan";
     tag = "v${finalAttrs.version}";
     hash = "sha256-OD719omgw+RZrFz6qWiFDFB4t6Lvvh2M2QXYAIh0H2I=";
+    domain = "invent.kde.org";
   };
+
+  nativeBuildInputs = [
+    qt6.wrapQtAppsHook
+    cmake
+    kdePackages.extra-cmake-modules
+    shared-mime-info
+  ];
 
   buildInputs = [
     qt6.qtbase
@@ -48,24 +55,17 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.sonnet
   ];
 
-  nativeBuildInputs = [
-    qt6.wrapQtAppsHook
-    cmake
-    kdePackages.extra-cmake-modules
-    shared-mime-info
-  ];
-
   passthru = {
     updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
-    homepage = "https://www.calligra.org/plan/";
-    license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ bot-wxt1221 ];
     description = "Project Management Application";
-    mainProgram = "calligraplan";
+    homepage = "https://www.calligra.org/plan/";
     changelog = "https://invent.kde.org/office/calligraplan/-/tags/v${finalAttrs.version}";
+    license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "calligraplan";
   };
 })

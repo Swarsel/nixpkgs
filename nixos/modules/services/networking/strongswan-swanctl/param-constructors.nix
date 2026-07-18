@@ -45,16 +45,6 @@ with lib;
 with (import ./param-lib.nix lib);
 
 rec {
-  mkParamOfType = type: strongswanDefault: description: {
-    _type = "param";
-    option = mkOption {
-      type = types.nullOr type;
-      default = null;
-      description = documentDefault description strongswanDefault;
-    };
-    render = single toString;
-  };
-
   documentDefault =
     description: strongswanDefault:
     if strongswanDefault == null then
@@ -69,78 +59,55 @@ rec {
         ''
       );
 
-  single = f: name: value: { ${name} = f value; };
-
-  mkStrParam = mkParamOfType types.str;
-  mkOptionalStrParam = mkStrParam null;
-
-  mkEnumParam = values: mkParamOfType (types.enum values);
-
-  mkIntParam = mkParamOfType types.int;
-  mkOptionalIntParam = mkIntParam null;
-
-  # We should have floats in Nix...
-  mkFloatParam = mkStrParam;
-
-  # TODO: Check for hex format:
-  mkHexParam = mkStrParam;
-  mkOptionalHexParam = mkOptionalStrParam;
-
-  # TODO: Check for duration format:
-  mkDurationParam = mkStrParam;
-  mkOptionalDurationParam = mkOptionalStrParam;
-
-  mkYesNoParam = strongswanDefault: description: {
-    _type = "param";
-    option = mkOption {
-      type = types.nullOr types.bool;
-      default = null;
-      description = documentDefault description strongswanDefault;
-    };
-    render = single boolToYesNo;
-  };
-  yes = true;
-  no = false;
-
-  mkSpaceSepListParam = mkSepListParam " ";
-  mkCommaSepListParam = mkSepListParam ",";
-
-  mkSepListParam = sep: strongswanDefault: description: {
-    _type = "param";
-    option = mkOption {
-      type = types.nullOr (types.listOf types.str);
-      default = null;
-      description = documentDefault description strongswanDefault;
-    };
-    render = single (value: concatStringsSep sep value);
-  };
-
-  mkAttrsOfParams = params: mkAttrsOf params (types.submodule { options = paramsToOptions params; });
-
-  mkAttrsOfParam = param: mkAttrsOf param param.option.type;
-
   mkAttrsOf = param: option: description: {
     _type = "param";
+
     option = mkOption {
-      type = types.attrsOf option;
       default = { };
       description = description;
+      type = types.attrsOf option;
     };
+
     render = single (attrs: (paramsToRenderedStrings attrs (mapAttrs (_n: _v: param) attrs)));
   };
 
-  mkPrefixedAttrsOfParams =
-    params: mkPrefixedAttrsOf params (types.submodule { options = paramsToOptions params; });
+  mkAttrsOfParam = param: mkAttrsOf param param.option.type;
+  mkAttrsOfParams = params: mkAttrsOf params (types.submodule { options = paramsToOptions params; });
+  mkCommaSepListParam = mkSepListParam ",";
+  # TODO: Check for duration format:
+  mkDurationParam = mkStrParam;
+  mkEnumParam = values: mkParamOfType (types.enum values);
+  # We should have floats in Nix...
+  mkFloatParam = mkStrParam;
+  # TODO: Check for hex format:
+  mkHexParam = mkStrParam;
+  mkIntParam = mkParamOfType types.int;
+  mkOptionalDurationParam = mkOptionalStrParam;
+  mkOptionalHexParam = mkOptionalStrParam;
+  mkOptionalIntParam = mkIntParam null;
+  mkOptionalStrParam = mkStrParam null;
 
-  mkPrefixedAttrsOfParam = param: mkPrefixedAttrsOf param param.option.type;
+  mkParamOfType = type: strongswanDefault: description: {
+    _type = "param";
+
+    option = mkOption {
+      default = null;
+      description = documentDefault description strongswanDefault;
+      type = types.nullOr type;
+    };
+
+    render = single toString;
+  };
 
   mkPrefixedAttrsOf = p: option: description: {
     _type = "param";
+
     option = mkOption {
-      type = types.attrsOf option;
       default = { };
       description = description;
+      type = types.attrsOf option;
     };
+
     render =
       prefix: attrs:
       let
@@ -148,5 +115,41 @@ rec {
       in
       paramsToRenderedStrings prefixedAttrs (mapAttrs (_n: _v: p) prefixedAttrs);
   };
+
+  mkPrefixedAttrsOfParam = param: mkPrefixedAttrsOf param param.option.type;
+
+  mkPrefixedAttrsOfParams =
+    params: mkPrefixedAttrsOf params (types.submodule { options = paramsToOptions params; });
+
+  mkSepListParam = sep: strongswanDefault: description: {
+    _type = "param";
+
+    option = mkOption {
+      default = null;
+      description = documentDefault description strongswanDefault;
+      type = types.nullOr (types.listOf types.str);
+    };
+
+    render = single (value: concatStringsSep sep value);
+  };
+
+  mkSpaceSepListParam = mkSepListParam " ";
+  mkStrParam = mkParamOfType types.str;
+
+  mkYesNoParam = strongswanDefault: description: {
+    _type = "param";
+
+    option = mkOption {
+      default = null;
+      description = documentDefault description strongswanDefault;
+      type = types.nullOr types.bool;
+    };
+
+    render = single boolToYesNo;
+  };
+
+  no = false;
+  single = f: name: value: { ${name} = f value; };
+  yes = true;
 
 }

@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   catch2,
   cmake,
   eigen,
-  fetchFromGitHub,
-  lib,
   osqp,
-  stdenv,
   valgrind,
 }:
 
@@ -20,20 +20,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SrQxRyzbheotCTSF7eBFr6nxJxWdze1hFhP/F06cb7g=";
   };
 
+  nativeBuildInputs = [ cmake ];
+
+  propagatedBuildInputs = [
+    eigen
+    osqp
+  ];
+
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTING" true)
     (lib.cmakeBool "OSQPEIGEN_RUN_Valgrind_tests" stdenv.hostPlatform.isLinux)
   ];
 
-  nativeBuildInputs = [ cmake ];
-  propagatedBuildInputs = [
-    eigen
-    osqp
-  ];
-  checkInputs = [ catch2 ];
-  nativeCheckInputs = lib.optional stdenv.hostPlatform.isLinux valgrind;
-
   doCheck = true;
+  nativeCheckInputs = lib.optional stdenv.hostPlatform.isLinux valgrind;
+  checkInputs = [ catch2 ];
 
   meta = {
     description = "Simple Eigen-C++ wrapper for OSQP library";

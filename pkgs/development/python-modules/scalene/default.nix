@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cloudpickle,
   cython,
   hypothesis,
@@ -15,25 +15,25 @@
   python,
   pyyaml,
   rich,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 let
   heap-layers-src = fetchFromGitHub {
+    hash = "sha256-p+8aUC124Digv3c9fZ7lLHg6H8FXoAcAQxlYzf9TYbM=";
+    name = "Heap-Layers";
     owner = "emeryberger";
     repo = "heap-layers";
-    name = "Heap-Layers";
     tag = "v1.0.0";
-    hash = "sha256-p+8aUC124Digv3c9fZ7lLHg6H8FXoAcAQxlYzf9TYbM=";
   };
 
   printf-src = fetchFromGitHub {
+    hash = "sha256-tgLJNJw/dJGQMwCmfkWNBvHB76xZVyyfVVplq7aSJnI=";
+    name = "printf";
     owner = "mpaland";
     repo = "printf";
-    name = "printf";
     tag = "v4.0.0";
-    hash = "sha256-tgLJNJw/dJGQMwCmfkWNBvHB76xZVyyfVVplq7aSJnI=";
   };
 
   pythonPath = lib.getExe python;
@@ -42,7 +42,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "scalene";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "plasma-umass";
@@ -55,16 +54,6 @@ buildPythonPackage (finalAttrs: {
     ./01-manifest-no-git.patch
   ];
 
-  prePatch = ''
-    mkdir vendor
-    cp -r ${heap-layers-src} vendor/Heap-Layers
-    mkdir vendor/printf
-    cp ${printf-src}/printf.c vendor/printf/printf.cpp
-    cp -r ${printf-src}/* vendor/printf
-    sed -i 's/^#define printf printf_/\/\/&/' vendor/printf/printf.h
-    sed -i 's/^#define vsnprintf vsnprintf_/\/\/&/' vendor/printf/printf.h
-  '';
-
   postPatch = ''
     # Fix hash mismatch
     rm vendor/printf/printf.c
@@ -73,6 +62,20 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace tests/test_{multiprocessing_pool_spawn,on_off_windows}.py \
       --replace-fail "sys.executable" "\"${pythonPath}\""
   '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  checkInputs = [
+    hypothesis
+    numpy
+  ];
+
+  # remove scalene directory to prevent pytest import confusion
+  preCheck = ''
+    rm -rf scalene
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     cython
@@ -91,18 +94,12 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ nvidia-ml-py ];
 
-  pythonRemoveDeps = [
-    "nvidia-ml-py3"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ "nvidia-ml-py" ];
-
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  checkInputs = [
-    hypothesis
-    numpy
+  disabledTestPaths = [
+    # Broken pipe
+    # https://github.com/plasma-umass/scalene/issues/1017
+    "tests/test_coverup_50.py"
+    "tests/test_multiprocessing_spawn.py::TestReplacementSemLockPickling"
+    "tests/test_multiprocessing_spawn.py::TestSpawnModeIntegration"
   ];
 
   disabledTests = [
@@ -112,28 +109,31 @@ buildPythonPackage (finalAttrs: {
     "test_nested_package_relative_import"
   ];
 
-  disabledTestPaths = [
-    # Broken pipe
-    # https://github.com/plasma-umass/scalene/issues/1017
-    "tests/test_coverup_50.py"
-    "tests/test_multiprocessing_spawn.py::TestReplacementSemLockPickling"
-    "tests/test_multiprocessing_spawn.py::TestSpawnModeIntegration"
-  ];
-
-  # remove scalene directory to prevent pytest import confusion
-  preCheck = ''
-    rm -rf scalene
+  prePatch = ''
+    mkdir vendor
+    cp -r ${heap-layers-src} vendor/Heap-Layers
+    mkdir vendor/printf
+    cp ${printf-src}/printf.c vendor/printf/printf.cpp
+    cp -r ${printf-src}/* vendor/printf
+    sed -i 's/^#define printf printf_/\/\/&/' vendor/printf/printf.h
+    sed -i 's/^#define vsnprintf vsnprintf_/\/\/&/' vendor/printf/printf.h
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "scalene" ];
+
+  pythonRemoveDeps = [
+    "nvidia-ml-py3"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ "nvidia-ml-py" ];
 
   meta = {
     description = "High-resolution, low-overhead CPU, GPU, and memory profiler for Python with AI-powered optimization suggestions";
     homepage = "https://github.com/plasma-umass/scalene";
     changelog = "https://github.com/plasma-umass/scalene/releases/tag/${finalAttrs.src.tag}";
-    mainProgram = "scalene";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ sarahec ];
+
     badPlatforms = [
       # The scalene doesn't seem to account for arm64 linux
       "aarch64-linux"
@@ -143,5 +143,7 @@ buildPythonPackage (finalAttrs: {
       # which fails.
       "aarch64-darwin"
     ];
+
+    mainProgram = "scalene";
   };
 })

@@ -1,18 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   colorama,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "simber";
   version = "0.2.6";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "deepjyoti30";
@@ -21,12 +18,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-kHoFZD7nhVxJu9MqePLkL7KTG2saPecY9238c/oeEco=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ colorama ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ colorama ];
+  pyproject = true;
   pythonImportsCheck = [ "simber" ];
 
   meta = {

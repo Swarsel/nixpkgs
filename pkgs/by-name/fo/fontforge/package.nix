@@ -1,34 +1,34 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  lib,
-  replaceVars,
-  cmake,
-  pkg-config,
-  python3,
-  freetype,
-  zlib,
-  glib,
-  giflib,
-  gettext,
-  libpng,
-  libjpeg,
-  libtiff,
-  libxml2,
   cairo,
-  pango,
-  readline,
-  woff2,
-  zeromq,
-  withSpiro ? false,
-  libspiro,
-  withGTK ? false,
+  cmake,
+  fetchpatch,
+  freetype,
+  gettext,
+  giflib,
+  glib,
   gtk3,
   gtkmm3,
+  libjpeg,
+  libpng,
+  libspiro,
+  libtiff,
+  libxml2,
+  pango,
+  pkg-config,
+  python3,
+  readline,
+  replaceVars,
+  woff2,
+  zeromq,
+  zlib,
+  withExtras ? true,
+  withGTK ? false,
   withGUI ? withGTK,
   withPython ? true,
-  withExtras ? true,
+  withSpiro ? false,
 }:
 
 assert withGTK -> withGUI;
@@ -51,24 +51,24 @@ stdenv.mkDerivation (finalAttrs: {
     # Provide a Nix-controlled location for the initial `sys.path` entry.
     (replaceVars ./set-python-sys-path.patch { python = "${py}/${py.sitePackages}"; })
     (fetchpatch {
+      hash = "sha256-AqixWSgMc75qkgO30nWnI9NKLRtVwCDR+uSEiwMtFKg=";
       name = "CVE-2025-15279_1.patch";
       url = "https://github.com/fontforge/fontforge/commit/7d67700cf8888e0bb37b453ad54ed932c8587073.patch";
-      hash = "sha256-AqixWSgMc75qkgO30nWnI9NKLRtVwCDR+uSEiwMtFKg=";
     })
     (fetchpatch {
+      hash = "sha256-DsP2fDTZlTtg8MXcnsuGQ4PFPOVp56Jm95gq877PLlE=";
       name = "CVE-2025-15279_2.patch";
       url = "https://github.com/fontforge/fontforge/commit/720ea95020c964202928afd2e93b0f5fac11027e.patch";
-      hash = "sha256-DsP2fDTZlTtg8MXcnsuGQ4PFPOVp56Jm95gq877PLlE=";
     })
     (fetchpatch {
+      hash = "sha256-NHgKUvHF389z7PRqaDj3IWLSLijlSw0F3UYcMjLxKvE=";
       name = "CVE-2025-15275.patch";
       url = "https://github.com/fontforge/fontforge/commit/7195402701ace7783753ef9424153eff48c9af44.patch";
-      hash = "sha256-NHgKUvHF389z7PRqaDj3IWLSLijlSw0F3UYcMjLxKvE=";
     })
     (fetchpatch {
+      hash = "sha256-3KsWSXVRpPJbytVmzjExCGw6IaCgcrKwqQGRKpQAOiY=";
       name = "CVE-2025-15269.patch";
       url = "https://github.com/fontforge/fontforge/commit/6aea6db5da332d8ac94e3501bb83c1b21f52074d.patch";
-      hash = "sha256-3KsWSXVRpPJbytVmzjExCGw6IaCgcrKwqQGRKpQAOiY=";
     })
   ];
 
@@ -80,9 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     sed -r -i 's#^\s*ttf_fftm_dump#if (!getenv("SOURCE_DATE_EPOCH")) ttf_fftm_dump#g'                 fontforge/tottf.c
     sed -r -i 's#sprintf\(.+ author \);#if (!getenv("SOURCE_DATE_EPOCH")) &#g'                        fontforgeexe/fontinfo.c
   '';
-
-  # do not use x87's 80-bit arithmetic, rounding errors result in very different font binaries
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isi686 "-msse2 -mfpmath=sse";
 
   strictDeps = true;
 
@@ -125,6 +122,9 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withPython "-DPython3_EXECUTABLE=${lib.getExe py}"
   ++ lib.optional withExtras "-DENABLE_FONTFORGE_EXTRAS=ON";
 
+  # do not use x87's 80-bit arithmetic, rounding errors result in very different font binaries
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isi686 "-msse2 -mfpmath=sse";
+
   preConfigure = ''
     # The way $version propagates to $version of .pe-scripts (https://github.com/dejavu-fonts/dejavu-fonts/blob/358190f/scripts/generate.pe#L19)
     export SOURCE_DATE_EPOCH=$(date -d ${finalAttrs.version} +%s)
@@ -133,11 +133,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Font editor";
     homepage = "https://fontforge.github.io";
-    platforms = lib.platforms.all;
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       philiptaron
       ulysseszhan
     ];
+
+    platforms = lib.platforms.all;
   };
 })

@@ -1,27 +1,18 @@
 {
   lib,
-
-  toPythonModule,
-  pythonImportsCheckHook,
-
-  pinocchio,
-
-  coal,
   casadi,
+  coal,
   matplotlib,
+  pinocchio,
   pybind11,
   python,
-
+  pythonImportsCheckHook,
+  toPythonModule,
   buildStandalone ? true,
 }:
 toPythonModule (
   pinocchio.overrideAttrs (super: {
     pname = "py-${super.pname}";
-
-    cmakeFlags = super.cmakeFlags ++ [
-      (lib.cmakeBool "BUILD_PYTHON_INTERFACE" true)
-      (lib.cmakeBool "BUILD_STANDALONE_PYTHON_INTERFACE" buildStandalone)
-    ];
 
     nativeBuildInputs = super.nativeBuildInputs ++ [
       python
@@ -34,13 +25,18 @@ toPythonModule (
     ++ super.propagatedBuildInputs
     ++ lib.optional buildStandalone pinocchio;
 
-    checkInputs = super.checkInputs ++ [
-      matplotlib
-      pybind11
+    cmakeFlags = super.cmakeFlags ++ [
+      (lib.cmakeBool "BUILD_PYTHON_INTERFACE" true)
+      (lib.cmakeBool "BUILD_STANDALONE_PYTHON_INTERFACE" buildStandalone)
     ];
 
     nativeCheckInputs = super.nativeCheckInputs ++ [
       pythonImportsCheckHook
+    ];
+
+    checkInputs = super.checkInputs ++ [
+      matplotlib
+      pybind11
     ];
 
     pythonImportsCheck = [

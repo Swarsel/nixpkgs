@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  automake,
   autoconf,
+  automake,
+  fetchgit,
   libtool,
   libx11,
   libxi,
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QNJlxZ9uNwNgFWm9qRJdPfusx7dXHZajjFH7wDhpgcs=";
   };
 
-  configureScript = "./autogen.sh";
-
   nativeBuildInputs = [
     automake
     autoconf
@@ -39,6 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_LDFLAGS = "-lX11";
+  configureScript = "./autogen.sh";
 
   meta = {
     description = "X virtual keyboard library";

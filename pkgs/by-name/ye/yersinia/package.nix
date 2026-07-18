@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchDebianPatch,
   autoreconfHook,
-  pkg-config,
-  ncurses,
-  libpcap,
-  libnet,
-  # alpha version of GTK interface
-  withGtk ? false,
+  fetchDebianPatch,
   gtk2,
+  libnet,
+  libpcap,
+  ncurses,
+  pkg-config,
   # enable remote admin interface
   enableAdmin ? false,
+  # alpha version of GTK interface
+  withGtk ? false,
 }:
 
 stdenv.mkDerivation {
@@ -31,8 +31,8 @@ stdenv.mkDerivation {
       pname = "yersinia";
       version = "0.8.2";
       debianRevision = "2.3";
-      patch = "fix-ftbfs.patch";
       hash = "sha256-qoD627fcIGmlWT2Uz+85tgIf7KtD11gtUu1N+Ol4T/A=";
+      patch = "fix-ftbfs.patch";
     })
   ];
 
@@ -40,14 +40,13 @@ stdenv.mkDerivation {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libpcap
     libnet
     ncurses
   ]
   ++ lib.optional withGtk gtk2;
-
-  autoreconfPhase = "./autogen.sh";
 
   configureFlags = [
     "--with-pcap-includes=${lib.getDev libpcap}/include"
@@ -57,10 +56,10 @@ stdenv.mkDerivation {
   ++ lib.optional (!withGtk) "--disable-gtk";
 
   makeFlags = [ "LDFLAGS=-lncurses" ];
+  autoreconfPhase = "./autogen.sh";
 
   meta = {
     description = "Framework for layer 2 attacks";
-    mainProgram = "yersinia";
     homepage = "https://github.com/tomac/yersinia";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ vdot0x23 ];
@@ -68,5 +67,6 @@ stdenv.mkDerivation {
     # so not sure, but it could work on openbsd, illumos, and freebsd
     # if you have a machine to test with, feel free to add these
     platforms = with lib.platforms; linux;
+    mainProgram = "yersinia";
   };
 }

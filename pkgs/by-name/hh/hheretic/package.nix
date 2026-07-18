@@ -4,10 +4,10 @@
   fetchFromGitHub,
   SDL,
   SDL_mixer,
-  libGL,
-  libGLU,
   autoreconfHook,
   gitUpdater,
+  libGL,
+  libGLU,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-49eQeh0suU+7QLB25cvrqirZRaBgZp438H6NW0pWsPI=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     (lib.getDev SDL)
@@ -33,9 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     libGLU
   ];
 
-  strictDeps = true;
-  enableParallelBuilding = true;
-
   configureFlags = [ "--with-audio=sdlmixer" ];
 
   installPhase = ''
@@ -46,17 +45,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   passthru.updateScript = gitUpdater {
     rev-prefix = "hheretic-";
   };
 
   meta = {
+    inherit (SDL.meta) platforms;
     description = "Linux port of Raven Game's Heretic";
     homepage = "https://hhexen.sourceforge.net/hhexen.html";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "hheretic-gl";
     maintainers = with lib.maintainers; [ moody ];
-    inherit (SDL.meta) platforms;
+    mainProgram = "hheretic-gl";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

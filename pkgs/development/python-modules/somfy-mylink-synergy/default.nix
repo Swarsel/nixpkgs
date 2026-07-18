@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "somfy-mylink-synergy";
   version = "1.0.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bendews";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # no tests implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "somfy_mylink_synergy" ];
 
   meta = {

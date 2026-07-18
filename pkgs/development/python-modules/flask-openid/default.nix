@@ -2,22 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   flask,
   python3-openid,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "flask-openid";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "flask_openid";
     inherit version;
     hash = "sha256-J2KLwKN+ZTCUiCMZPgaNeQNa2Ulth7dAQEQ+xITHZXo=";
+    pname = "flask_openid";
   };
 
+  # no tests for repo...
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,8 +26,7 @@ buildPythonPackage rec {
     python3-openid
   ];
 
-  # no tests for repo...
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "OpenID support for Flask";

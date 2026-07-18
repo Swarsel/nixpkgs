@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchPypi,
   nixosTests,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "prometheus_pve_exporter";
   version = "3.8.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,7 +25,7 @@ python3.pkgs.buildPythonApplication rec {
   ];
 
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pve_exporter" ];
 
   passthru.tests = {
@@ -35,9 +34,9 @@ python3.pkgs.buildPythonApplication rec {
 
   meta = {
     description = "Exposes information gathered from Proxmox VE cluster for use by the Prometheus monitoring system";
-    mainProgram = "pve_exporter";
     homepage = "https://github.com/prometheus-pve/prometheus-pve-exporter";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ nukaduka ];
+    mainProgram = "pve_exporter";
   };
 }

@@ -2,15 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   sphinx,
-  pytestCheckHook,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "sphinx-llms-txt";
   version = "0.7.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jdillard";
@@ -18,6 +16,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-9uj5UYl6/TppGd3zuGUpxiY9U6/65ffWDPKaX7ut4zg=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -27,8 +28,7 @@ buildPythonPackage (finalAttrs: {
     sphinx
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_llms_txt" ];
 
   meta = {

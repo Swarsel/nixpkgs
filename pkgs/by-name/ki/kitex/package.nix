@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  testers,
+  fetchFromGitHub,
+  buildGoModule,
   kitex,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,21 +19,21 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-xsyfOuovG7LHcRMrtkT02DOp/L96M309QMiPLE24y9k=";
 
-  subPackages = [ "tool/cmd/kitex" ];
+  postInstall = ''
+    ln -s $out/bin/kitex $out/bin/protoc-gen-kitex
+    ln -s $out/bin/kitex $out/bin/thrift-gen-kitex
+  '';
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  postInstall = ''
-    ln -s $out/bin/kitex $out/bin/protoc-gen-kitex
-    ln -s $out/bin/kitex $out/bin/thrift-gen-kitex
-  '';
+  subPackages = [ "tool/cmd/kitex" ];
 
   passthru.tests.version = testers.testVersion {
-    package = kitex;
     version = "v${finalAttrs.version}";
+    package = kitex;
   };
 
   meta = {

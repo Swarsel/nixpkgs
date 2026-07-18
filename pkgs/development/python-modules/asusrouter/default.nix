@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
   urllib3,
   xmltodict,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "asusrouter";
   version = "1.21.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Vaskivskyi";
@@ -27,6 +26,11 @@ buildPythonPackage rec {
       --replace-fail "setuptools==80.9.0" "setuptools"
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,11 +39,7 @@ buildPythonPackage rec {
     xmltodict
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "asusrouter" ];
 
   meta = {

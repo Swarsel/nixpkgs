@@ -1,19 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
+  copyDesktopItems,
+  docker-compose,
   electron_40,
-  zip,
+  freerdp,
+  makeDesktopItem,
   makeWrapper,
+  nix-update-script,
+  pkgsCross,
+  podman-compose,
   udev,
   usbutils,
-  freerdp,
-  docker-compose,
-  podman-compose,
-  pkgsCross,
-  buildNpmPackage,
-  fetchFromGitHub,
-  makeDesktopItem,
-  copyDesktopItems,
-  nix-update-script,
+  zip,
 }:
 
 let
@@ -42,21 +42,8 @@ buildNpmPackage (finalAttrs: {
   ];
 
   buildInputs = [ udev ];
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
   npmDepsHash = "sha256-DLkI9a030uM2X1et94e4nd/HEyw5ugtK8NEAn/J8p9U=";
-  makeCacheWritable = true;
-
-  guest-server = pkgsCross.mingwW64.callPackage ./guest-server.nix { };
-  passthru = {
-    guest-server = finalAttrs.guest-server;
-    updateScript = nix-update-script {
-      extraArgs = [
-        "--subpackage"
-        "guest-server"
-      ];
-    };
-  };
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
 
   buildPhase = ''
     node scripts/build.ts
@@ -101,26 +88,42 @@ buildNpmPackage (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "winboat";
-      desktopName = "WinBoat";
-      type = "Application";
-      exec = "winboat %U";
-      terminal = false;
-      icon = "winboat";
       categories = [ "Utility" ];
+      desktopName = "WinBoat";
+      exec = "winboat %U";
+      icon = "winboat";
+      name = "winboat";
+      terminal = false;
+      type = "Application";
     })
   ];
 
+  guest-server = pkgsCross.mingwW64.callPackage ./guest-server.nix { };
+  makeCacheWritable = true;
+
+  passthru = {
+    guest-server = finalAttrs.guest-server;
+
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--subpackage"
+        "guest-server"
+      ];
+    };
+  };
+
   meta = {
-    mainProgram = "winboat";
     description = "Run Windows apps on Linux with seamless integration";
     homepage = "https://github.com/TibixDev/winboat";
     changelog = "https://github.com/TibixDev/winboat/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       rexies
       ppom
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "winboat";
   };
 })

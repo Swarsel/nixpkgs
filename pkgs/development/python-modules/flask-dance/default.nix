@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   betamax,
   blinker,
   buildPythonPackage,
-  fetchFromGitHub,
   flask,
   flask-caching,
   flask-login,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "flask-dance";
   version = "7.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "singingwolfboy";
@@ -32,6 +31,18 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-rKHC0G5S7l52QSrbbweMii68AZuBAgf6tYsJdPKIeUk=";
   };
+
+  nativeCheckInputs = [
+    betamax
+    flask-caching
+    flask-login
+    flask-sqlalchemy
+    freezegun
+    pytest-mock
+    pytestCheckHook
+    responses
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ flit-core ];
 
@@ -49,18 +60,7 @@ buildPythonPackage rec {
     sqla = [ sqlalchemy ];
   };
 
-  nativeCheckInputs = [
-    betamax
-    flask-caching
-    flask-login
-    flask-sqlalchemy
-    freezegun
-    pytest-mock
-    pytestCheckHook
-    responses
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_dance" ];
 
   meta = {

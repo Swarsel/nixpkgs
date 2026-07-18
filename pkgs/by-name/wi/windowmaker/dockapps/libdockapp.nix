@@ -12,11 +12,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libdockapp";
-
   inherit (dockapps-sources) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/libdockapp";
+  pname = "libdockapp";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -36,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-examples=no"
     "--with-font=no"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/libdockapp";
 
   meta = {
     description = "Library providing a framework for dockapps";

@@ -1,6 +1,6 @@
 {
-  vimUtils,
   teamtype,
+  vimUtils,
 }:
 vimUtils.buildVimPlugin rec {
   inherit (teamtype)

@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 let
   # List of file formats to package.
@@ -30,10 +30,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   outputs = [ "out" ] ++ _types;
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -48,7 +44,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   dontFixup = true;
+  dontPatch = true;
 
   meta = {
     description = "Various data formats for the SPDX License List";

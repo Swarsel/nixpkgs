@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "dbus-deviation";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,12 +23,12 @@ buildPythonPackage rec {
 
   build-system = [ setuptools ];
   dependencies = [ lxml ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dbusdeviation" ];
 
   meta = {
-    homepage = "https://tecnocode.co.uk/dbus-deviation/";
     description = "Project for parsing D-Bus introspection XML and processing it in various ways";
+    homepage = "https://tecnocode.co.uk/dbus-deviation/";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
   };

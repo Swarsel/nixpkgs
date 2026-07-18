@@ -3,18 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libdiscid";
   version = "0.6.5";
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
 
   src = fetchFromGitHub {
     owner = "metabrainz";
@@ -22,6 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-lGq2iGt7c4h8HntEPeQcd7X+IykRLm0kvjrLswRWSSs=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_LDFLAGS = toString [

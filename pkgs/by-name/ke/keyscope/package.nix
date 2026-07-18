@@ -18,22 +18,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-PjuBRxW42DIOyHPqs5sOFBUrPPzVVoYAeKtyIWfA+28=";
   };
 
-  cargoHash = "sha256-Oi/F89uRuwqWTa7E/PDVdj/VAnYYeG0BSs+pM41AXCU=";
-
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ openssl ];
-
   # build script tries to get information from git
   postPatch = ''
     echo "fn main() {}" > build.rs
   '';
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-Oi/F89uRuwqWTa7E/PDVdj/VAnYYeG0BSs+pM41AXCU=";
   env.VERGEN_GIT_SEMVER = "v${finalAttrs.version}";
-
   # Test require network access
   doCheck = false;
-
   passthru.updateScript = gitUpdater { };
 
   meta = {

@@ -17,6 +17,11 @@ stdenv.mkDerivation {
     hash = "sha256-mRyuElLTlOZuUlQ3dKZJbclPq73Gv+YFrBCB5nh0nmw=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     flex
@@ -27,16 +32,11 @@ stdenv.mkDerivation {
     flex -o src/NSPlistLexer.cpp <(tail --lines=+17 src/NSPlistLexer.l)
   '';
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
-    maintainers = [ ];
     description = "Parses .plist files";
     homepage = "https://github.com/matthewbauer/NSPlist";
     license = lib.licenses.mit;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
   };
 }

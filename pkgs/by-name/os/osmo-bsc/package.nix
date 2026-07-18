@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libosmocore,
-  libosmoabis,
   libosmo-netif,
   libosmo-sigtran,
+  libosmoabis,
+  libosmocore,
   osmo-mgw,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

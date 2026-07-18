@@ -1,25 +1,21 @@
 {
-  stdenv,
   lib,
-  fetchzip,
-
+  stdenv,
   # Free MASM-compatible assembler
   asmc-linux,
-  useAsmc ? !useUasm && stdenv.hostPlatform.isx86 && stdenv.hostPlatform.isLinux,
-
+  fetchzip,
+  # For tests
+  testers,
   # Unfree Open-Watcom licensed assembler
   uasm,
+  # RAR code is under non-free unRAR license
+  # see the meta.license section below for more details
+  enableUnfree ? false,
+  useAsmc ? !useUasm && stdenv.hostPlatform.isx86 && stdenv.hostPlatform.isLinux,
   useUasm ?
     enableUnfree
     && stdenv.hostPlatform.isx86
     && (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isWindows),
-
-  # RAR code is under non-free unRAR license
-  # see the meta.license section below for more details
-  enableUnfree ? false,
-
-  # For tests
-  testers,
 }:
 
 let
@@ -42,18 +38,20 @@ let
   }.mak";
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit makefile;
   pname = "7zz";
   version = "26.01";
 
   src = fetchzip {
     url = "https://7-zip.org/a/7z${lib.replaceStrings [ "." ] [ "" ] finalAttrs.version}-src.tar.xz";
+
     hash =
       {
         free = "sha256-52+Gg66MOFmwYUVB0OO4PAtZJtQOkoVpxV7F9xBGy58=";
         unfree = "sha256-w0fk8EDusUYiOfrmIiUq+xevlwfQxMhjdPzfkHkOkR8=";
       }
       .${if enableUnfree then "unfree" else "free"};
-    stripRoot = false;
+
     # remove the unRAR related code from the src drv
     # > the license requires that you agree to these use restrictions,
     # > or you must remove the software (source and binary) from your hard disks
@@ -61,12 +59,41 @@ stdenv.mkDerivation (finalAttrs: {
     postFetch = lib.optionalString (!enableUnfree) ''
       rm -r $out/CPP/7zip/Compress/Rar*
     '';
+
+    stripRoot = false;
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   postPatch = lib.optionalString stdenv.hostPlatform.isMinGW ''
     substituteInPlace CPP/7zip/7zip_gcc.mak C/7zip_gcc_c.mak \
       --replace-fail windres.exe ${stdenv.cc.targetPrefix}windres
   '';
+
+  nativeBuildInputs = lib.optionals useAsmc [ asmc-linux ] ++ lib.optionals useUasm [ uasm ];
+
+  makeFlags = [
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "CXX=${stdenv.cc.targetPrefix}c++"
+  ]
+  ++ lib.optionals useAsmc [
+    "MY_ASM=asmc"
+  ]
+  ++ lib.optionals useUasm [
+    "MY_ASM=uasm"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isx86 && !useAsmc && !useUasm) [
+    "USE_ASM="
+  ]
+  # it's the compression code with the restriction, see DOC/License.txt
+  ++ lib.optionals (!enableUnfree) [ "DISABLE_RAR_COMPRESS=true" ]
+  ++ lib.optionals (stdenv.hostPlatform.isMinGW) [
+    "IS_MINGW=1"
+    "MSYSTEM=1"
+  ];
 
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals stdenv.hostPlatform.isDarwin [
@@ -93,39 +120,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  inherit makefile;
-
-  makeFlags = [
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "CXX=${stdenv.cc.targetPrefix}c++"
-  ]
-  ++ lib.optionals useAsmc [
-    "MY_ASM=asmc"
-  ]
-  ++ lib.optionals useUasm [
-    "MY_ASM=uasm"
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isx86 && !useAsmc && !useUasm) [
-    "USE_ASM="
-  ]
-  # it's the compression code with the restriction, see DOC/License.txt
-  ++ lib.optionals (!enableUnfree) [ "DISABLE_RAR_COMPRESS=true" ]
-  ++ lib.optionals (stdenv.hostPlatform.isMinGW) [
-    "IS_MINGW=1"
-    "MSYSTEM=1"
-  ];
-
-  nativeBuildInputs = lib.optionals useAsmc [ asmc-linux ] ++ lib.optionals useUasm [ uasm ];
-
-  outputs = [
-    "out"
-    "doc"
-  ];
-
-  setupHook = ./setup-hook.sh;
-
-  enableParallelBuilding = true;
-
   preBuild = "cd CPP/7zip/Bundles/Alone2";
 
   installPhase = ''
@@ -137,17 +131,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+  setupHook = ./setup-hook.sh;
+
   passthru = {
-    updateScript = ./update.sh;
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "7zz --help";
+      package = finalAttrs.finalPackage;
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Command line version of the 7-Zip archiver utility";
     homepage = "https://7-zip.org";
+
     license =
       with lib.licenses;
       # 7zip code is largely lgpl2Plus
@@ -160,11 +159,13 @@ stdenv.mkDerivation (finalAttrs: {
         # and CPP/7zip/Compress/Rar* are unfree with the unRAR license restriction
         # the unRAR compression code is disabled by default
         lib.optionals enableUnfree [ unfreeRedistributable ];
+
     maintainers = with lib.maintainers; [
       anna328p
       jk
       peterhoeg
     ];
+
     platforms = with lib.platforms; unix ++ windows;
     mainProgram = "7zz";
   };

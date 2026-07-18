@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installShellFiles,
+  stdenvNoCC,
   writableTmpDirAsHomeHook,
 }:
 let
@@ -35,14 +35,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "https://download.clis.cloud.ibm.com/ibm-cloud-cli/${finalAttrs.version}/binaries/IBM_Cloud_CLI_${finalAttrs.version}_${platform}.tgz";
+
     hash =
       {
         "aarch64-darwin" = "sha256-JrTFbufKjX9uUwUcfxCDjqbZx6drgSmqn0F/xtce/mE=";
-        "x86_64-linux" = "sha256-Zu6XFQeD9Dlny6cex7X6P428MiQftwn9RR4QL3H/0AU=";
         "aarch64-linux" = "sha256-pfHhAszhbbLKkJnwP94dCaDZNFTLr+2tnO3aHxOch+U=";
         "i686-linux" = "sha256-v8azVYFa6bBAPJZoOnLr3W+spQZlPFmR92wNTvtRS34=";
         "powerpc64le-linux" = "sha256-L3cBkNV0iMNhk6b/v1i3JcQJ1SxbffOrs5xqMEOTMY8=";
         "s390x-linux" = "sha256-UIBu8konMu8Y2U4mix8H9T6Y/2plVVnoiJJgKhGgGs4=";
+        "x86_64-linux" = "sha256-Zu6XFQeD9Dlny6cex7X6P428MiQftwn9RR4QL3H/0AU=";
       }
       .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
@@ -69,7 +70,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Command line client for IBM Cloud";
     homepage = "https://cloud.ibm.com/docs/cli";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ emilytrau ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
@@ -78,7 +81,7 @@ stdenv.mkDerivation (finalAttrs: {
       "s390x-linux"
     ]
     ++ lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     mainProgram = "ibmcloud";
   };
 })

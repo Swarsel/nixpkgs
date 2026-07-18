@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
   asciidoctor,
   iniparser,
   json_c,
   keyutils,
   kmod,
+  libtraceevent,
+  libtracefs,
+  meson,
+  ninja,
+  pkg-config,
   udev,
   util-linux,
-  libtracefs,
-  libtraceevent,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xhTZyRAQNomVyHCPUBwmM0Uuu1sMngTIJm8MF0gnRLk=";
   };
 
+  outputs = [
+    "out"
+    "man"
+    "dev"
+  ];
+
   patches = lib.optionals (!stdenv.hostPlatform.isGnu) [
     # Use POSIX basename on non-glib.
     # Remove when https://github.com/pmem/ndctl/pull/263
@@ -34,11 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
     ./musl-compat.patch
   ];
 
-  outputs = [
-    "out"
-    "man"
-    "dev"
-  ];
+  postPatch = ''
+    patchShebangs test
+
+    substituteInPlace git-version --replace-fail /bin/bash ${stdenv.shell}
+    substituteInPlace git-version-gen --replace-fail /bin/sh ${stdenv.shell}
+
+    echo "m4_define([GIT_VERSION], [${finalAttrs.version}])" > version.m4;
+  '';
 
   nativeBuildInputs = [
     meson
@@ -66,15 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "systemd" false)
     (lib.mesonOption "iniparserdir" "${iniparser}")
   ];
-
-  postPatch = ''
-    patchShebangs test
-
-    substituteInPlace git-version --replace-fail /bin/bash ${stdenv.shell}
-    substituteInPlace git-version-gen --replace-fail /bin/sh ${stdenv.shell}
-
-    echo "m4_define([GIT_VERSION], [${finalAttrs.version}])" > version.m4;
-  '';
 
   meta = {
     description = "Tools for managing the Linux Non-Volatile Memory Device sub-system";

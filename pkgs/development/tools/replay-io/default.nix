@@ -1,63 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchFromGitHub,
   autoPatchelfHook,
-  makeWrapper,
-  libcxx,
-  libx11,
-  libxt,
-  libxdamage,
+  dbus-glib,
+  fetchzip,
   glib,
   gtk3,
-  dbus-glib,
-  openssl,
+  libcxx,
+  libx11,
+  libxdamage,
+  libxt,
+  makeWrapper,
   nodejs,
+  openssl,
   zlib,
-  fetchzip,
 }:
 let
   metadata = lib.importJSON ./meta.json;
 in
 rec {
-  replay-recordreplay = stdenv.mkDerivation {
-    pname = "replay-recordreplay";
-    version = builtins.head (builtins.match ".*/linux-recordreplay-(.*).tgz" metadata.recordreplay.url);
-    nativeBuildInputs = [ autoPatchelfHook ];
-    buildInputs = [
-      (lib.getLib stdenv.cc.cc)
-      openssl
-      zlib
-    ];
-
-    src = (fetchzip metadata.recordreplay);
-    dontBuild = true;
-    installPhase = ''
-      runHook preInstall
-      cp linux-recordreplay.so $out
-      runHook postInstall
-    '';
-    postFixup = ''
-      patchelf --set-rpath "$(patchelf --print-rpath $out):${lib.makeLibraryPath [ openssl ]}" $out
-    '';
-    meta = {
-      description = "RecordReplay internal recording library";
-      homepage = "https://www.replay.io/";
-      license = lib.licenses.unfree;
-      maintainers = with lib.maintainers; [ phryneas ];
-      platforms = [ "x86_64-linux" ];
-    };
-  };
-
   replay-io = stdenv.mkDerivation {
     pname = "replay-io";
     version = builtins.head (builtins.match ".*/linux-gecko-(.*).tar.bz2" metadata.replay.url);
-    srcs = fetchurl metadata.replay;
+
     nativeBuildInputs = [
       autoPatchelfHook
       makeWrapper
     ];
+
     buildInputs = [
       dbus-glib
       glib
@@ -66,6 +38,7 @@ rec {
       libxdamage
       libxt
     ];
+
     installPhase = ''
       runHook preInstall
       mkdir -p $out/opt/replay-io
@@ -77,37 +50,40 @@ rec {
       runHook postInstall
     '';
 
+    srcs = fetchurl metadata.replay;
     passthru.updateScript = ./update.sh;
 
     meta = {
       description = "Time Travel Debugger for Web Development";
+
       longDescription = ''
         Replay allows you to record and replay web applications with familiar browser dev tools.
         You can access the browser DevTools at any point of the recording, adding new logger
         statements and inspecting the status of the DOM, variables and the current call stack.
         Your recordings can be shared with other users for collaborative debugging.
       '';
+
       homepage = "https://www.replay.io/";
-      downloadPage = "https://www.replay.io/";
-      mainProgram = "replay-io";
       license = lib.licenses.mpl20;
       maintainers = with lib.maintainers; [ phryneas ];
       platforms = [ "x86_64-linux" ];
+      mainProgram = "replay-io";
+      downloadPage = "https://www.replay.io/";
     };
   };
 
   replay-node = stdenv.mkDerivation {
     pname = "replay-node";
     version = builtins.head (builtins.match ".*/linux-node-(.*)" metadata.replay-node.url);
+    src = (fetchurl metadata.replay-node);
+
     nativeBuildInputs = [
       autoPatchelfHook
       makeWrapper
     ];
+
     buildInputs = [ (lib.getLib stdenv.cc.cc) ];
 
-    src = (fetchurl metadata.replay-node);
-    dontUnpack = true;
-    dontBuild = true;
     installPhase = ''
       runHook preInstall
       mkdir -p $out/bin $out/opt/replay-node
@@ -122,6 +98,9 @@ rec {
       runHook postInstall
     '';
 
+    dontBuild = true;
+    dontUnpack = true;
+
     meta = {
       description = "Event-driven I/O framework for the V8 JavaScript engine, patched for replay";
       homepage = "https://github.com/RecordReplay/node";
@@ -135,6 +114,7 @@ rec {
   replay-node-cli = stdenv.mkDerivation {
     pname = "replay-node-cli";
     version = "0.1.7-" + builtins.head (builtins.match ".*/linux-node-(.*)" metadata.replay-node.url);
+
     src = fetchFromGitHub {
       owner = "RecordReplay";
       repo = "replay-node-cli";
@@ -143,11 +123,12 @@ rec {
     };
 
     nativeBuildInputs = [ makeWrapper ];
+
     buildInputs = [
       (lib.getLib stdenv.cc.cc)
       nodejs
     ];
-    dontBuild = true;
+
     installPhase = ''
       runHook preInstall
       mkdir -p $out/opt/replay-node-cli
@@ -159,8 +140,11 @@ rec {
       runHook postInstall
     '';
 
+    dontBuild = true;
+
     meta = {
       description = "Time Travel Debugger for Web Development - Node Command Line";
+
       longDescription = ''
         The Replay Node Command Line allows you to record node applications and debug them
         with familiar browser dev tools.
@@ -168,12 +152,46 @@ rec {
         statements and inspecting the status of variables and the current call stack.
         Your recordings can be shared with other users for collaborative debugging.
       '';
+
       homepage = "https://www.replay.io/";
-      mainProgram = "replay-node";
       license = lib.licenses.bsd3;
+      sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
       maintainers = with lib.maintainers; [ phryneas ];
       platforms = [ "x86_64-linux" ];
-      sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+      mainProgram = "replay-node";
+    };
+  };
+
+  replay-recordreplay = stdenv.mkDerivation {
+    pname = "replay-recordreplay";
+    version = builtins.head (builtins.match ".*/linux-recordreplay-(.*).tgz" metadata.recordreplay.url);
+    src = (fetchzip metadata.recordreplay);
+    nativeBuildInputs = [ autoPatchelfHook ];
+
+    buildInputs = [
+      (lib.getLib stdenv.cc.cc)
+      openssl
+      zlib
+    ];
+
+    installPhase = ''
+      runHook preInstall
+      cp linux-recordreplay.so $out
+      runHook postInstall
+    '';
+
+    postFixup = ''
+      patchelf --set-rpath "$(patchelf --print-rpath $out):${lib.makeLibraryPath [ openssl ]}" $out
+    '';
+
+    dontBuild = true;
+
+    meta = {
+      description = "RecordReplay internal recording library";
+      homepage = "https://www.replay.io/";
+      license = lib.licenses.unfree;
+      maintainers = with lib.maintainers; [ phryneas ];
+      platforms = [ "x86_64-linux" ];
     };
   };
 }

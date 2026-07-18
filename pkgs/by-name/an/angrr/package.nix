@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  nixosTests,
-  testers,
-  nix-update-script,
   go-md2man,
+  installShellFiles,
+  nix-update-script,
+  nixosTests,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,19 +20,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Sj7aaKC7rtIzIz3UiVfmLjr4O7hWXrEC3wkKaPra/3A=";
   };
 
-  cargoHash = "sha256-LspQncUrWfou41G37L3O1GbeiaoQpAC/RAu3EAPVrRU=";
-
-  buildAndTestSubdir = "angrr";
-
   nativeBuildInputs = [
     go-md2man
     installShellFiles
   ];
+
+  cargoHash = "sha256-LspQncUrWfou41G37L3O1GbeiaoQpAC/RAu3EAPVrRU=";
+
   postBuild = ''
     mkdir --parents build/{man-pages,shell-completions}
     cargo xtask man-pages --out build/man-pages
     cargo xtask shell-completions --out build/shell-completions
   '';
+
   postInstall = ''
     install -m400 -D ./direnv/angrr.sh $out/share/direnv/lib/angrr.sh
     installManPage build/man-pages/*
@@ -42,13 +42,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh  build/shell-completions/_angrr
   '';
 
+  buildAndTestSubdir = "angrr";
+
   passthru = {
     tests = {
-      module = nixosTests.angrr;
       version = testers.testVersion {
         package = finalAttrs.finalPackage;
       };
+
+      module = nixosTests.angrr;
     };
+
     updateScript = nix-update-script { };
   };
 

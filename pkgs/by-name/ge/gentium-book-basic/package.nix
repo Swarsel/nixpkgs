@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -23,10 +23,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://software.sil.org/gentium/";
     description = "High-quality typeface family for Latin, Cyrillic, and Greek";
-    maintainers = [ ];
+    homepage = "https://software.sil.org/gentium/";
     license = lib.licenses.ofl;
+    maintainers = [ ];
     platforms = lib.platforms.all;
   };
 }

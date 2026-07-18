@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  makeWrapper,
   img2pdf,
+  makeWrapper,
+  stdenvNoCC,
   zathura,
 }:
 
@@ -37,8 +37,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/7USTIN/manga-cli";
     description = "Bash script for reading mangas via the terminal by scraping manganato";
+    homepage = "https://github.com/7USTIN/manga-cli";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ baitinq ];
     mainProgram = "manga-cli";

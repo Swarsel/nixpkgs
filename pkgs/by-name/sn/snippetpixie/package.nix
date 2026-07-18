@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  vala,
-  pkg-config,
-  wrapGAppsHook3,
   appstream,
-  desktop-file-utils,
-  python3,
-  libgee,
-  glib,
-  gtk3,
-  sqlite,
   at-spi2-atk,
   at-spi2-core,
   dbus,
+  desktop-file-utils,
+  glib,
+  gtk3,
   ibus,
   json-glib,
-  pantheon,
+  libgee,
   libxtst,
+  meson,
+  ninja,
+  nix-update-script,
+  pantheon,
+  pkg-config,
+  python3,
+  sqlite,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "0gs3d9hdywg4vcfbp4qfcagfjqalfgw9xpvywg4pw1cm3rzbdqmz";
   };
+
+  postPatch = ''
+    chmod +x meson/post_install.py
+    patchShebangs meson/post_install.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -62,17 +67,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    chmod +x meson/post_install.py
-    patchShebangs meson/post_install.py
-  '';
-
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Your little expandable text snippet helper";
+
     longDescription = ''
       Your little expandable text snippet helper.
 
@@ -82,10 +83,11 @@ stdenv.mkDerivation (finalAttrs: {
 
       For non-accessible applications such as browsers and Electron apps, there's a shortcut (default is Ctrl+`) for opening a search window that pastes the selected snippet.
     '';
+
     homepage = "https://www.snippetpixie.com";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
     mainProgram = "com.github.bytepixie.snippetpixie";
+    teams = [ lib.teams.pantheon ];
   };
 })

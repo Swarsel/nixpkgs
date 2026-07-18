@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   poetry-core,
+  pytestCheckHook,
   python-lzo,
   tkinter,
-
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "readmdict";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ffreemt";
@@ -30,14 +27,14 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "readmdict" ];
 
   meta = {
     description = "Read mdx/mdd files (repacking of readmdict from mdict-analysis)";
-    mainProgram = "readmdict";
     homepage = "https://github.com/ffreemt/readmdict";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "readmdict";
   };
 }

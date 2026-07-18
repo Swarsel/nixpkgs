@@ -9,9 +9,8 @@ let
 in
 assert lib.versionAtLeast kresd.version "6.0.0";
 python3Packages.buildPythonPackage {
-  pname = "knot-resolver-manager_6";
   inherit (kresd) version src;
-  pyproject = true;
+  pname = "knot-resolver-manager_6";
 
   patches = [
     # Rewrap the two supervisor's binaries, so that they obtain access to python modules
@@ -31,10 +30,16 @@ python3Packages.buildPythonPackage {
       --replace-fail 'args = [sys.executable] + sys.argv' 'args = sys.argv'
   '';
 
-  build-system = with python3Packages; [
-    poetry-core
-    setuptools
-  ];
+  # set up (additional) Lua dependencies
+  buildInputs =
+    with kresd.lua;
+    lib.optionals extraFeatures [
+      # For http module, prefill module, trust anchor bootstrap.
+      # It brings lots of deps; some are useful elsewhere (e.g. cqueues).
+      http
+      # used by policy.slice_randomize_psl()
+      psl
+    ];
 
   # Deps can be seen in ${src}/pyproject.toml
   propagatedBuildInputs = with python3Packages; [
@@ -47,35 +52,8 @@ python3Packages.buildPythonPackage {
     watchdog # optional, watching changes in files (TLS certs, RPZs)
   ];
 
-  # set up (additional) Lua dependencies
-  buildInputs =
-    with kresd.lua;
-    lib.optionals extraFeatures [
-      # For http module, prefill module, trust anchor bootstrap.
-      # It brings lots of deps; some are useful elsewhere (e.g. cqueues).
-      http
-      # used by policy.slice_randomize_psl()
-      psl
-    ];
-  makeWrapperArgs = [
-    "--set"
-    "LUA_PATH"
-    ''"$LUA_PATH"''
-    "--set"
-    "LUA_CPATH"
-    ''"$LUA_CPATH"''
-  ];
-  # basic test that the wrapping works
-  postCheck = lib.optionalString extraFeatures ''
-    makeWrapper '${kresd}/bin/kresd' ./kresd \
-      --set LUA_PATH  "$LUA_PATH" \
-      --set LUA_CPATH "$LUA_CPATH"
-    echo "Checking that 'http' module loads, i.e. lua search paths work:"
-    echo "modules.load('http')" > test-http.lua
-    echo -e 'quit()' | env -i ./kresd -a 127.0.0.1#53535 -c test-http.lua
-  '';
-
   doCheck = python3Packages.stdenv.hostPlatform.isLinux; # maybe in future
+
   nativeCheckInputs = with python3Packages; [
     augeas
     dnspython
@@ -91,6 +69,21 @@ python3Packages.buildPythonPackage {
     mkdir -p /tmp
   '';
 
+  # basic test that the wrapping works
+  postCheck = lib.optionalString extraFeatures ''
+    makeWrapper '${kresd}/bin/kresd' ./kresd \
+      --set LUA_PATH  "$LUA_PATH" \
+      --set LUA_CPATH "$LUA_CPATH"
+    echo "Checking that 'http' module loads, i.e. lua search paths work:"
+    echo "modules.load('http')" > test-http.lua
+    echo -e 'quit()' | env -i ./kresd -a 127.0.0.1#53535 -c test-http.lua
+  '';
+
+  build-system = with python3Packages; [
+    poetry-core
+    setuptools
+  ];
+
   disabledTestPaths = [
     # FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-kresd-portdir/11076'
     "tests/pytests/test_conn_mgmt.py"
@@ -105,12 +98,23 @@ python3Packages.buildPythonPackage {
     "test_proxy_rehandshake_tls12"
   ];
 
+  makeWrapperArgs = [
+    "--set"
+    "LUA_PATH"
+    ''"$LUA_PATH"''
+    "--set"
+    "LUA_CPATH"
+    ''"$LUA_CPATH"''
+  ];
+
+  pyproject = true;
+
   passthru = {
     inherit kresd;
   };
 
   meta = kresd.meta // {
-    mainProgram = "knot-resolver";
     inherit (kresd.meta) description; # explicit to make e.g. `nix edit` point here
+    mainProgram = "knot-resolver";
   };
 }

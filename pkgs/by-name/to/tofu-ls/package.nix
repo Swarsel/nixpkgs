@@ -1,16 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "tofu-ls";
   version = "0.5.3";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "opentofu";
@@ -20,10 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-D/LaFzgmpqW4xG5V2Ng3O2ogG/maqbHbD0JaXWU/dbQ=";
-
-  ldflags = [
-    "-s"
-  ];
 
   checkFlags =
     let
@@ -40,10 +34,14 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

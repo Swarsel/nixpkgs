@@ -1,36 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  fastai,
+  fastcore,
   # dependencies
   filelock,
   fsspec,
+  # gradio
+  gradio,
   hf-xet,
   httpx,
+  # mcp
+  mcp,
   packaging,
   pyyaml,
-  tqdm,
-  typer,
-  typing-extensions,
-
+  requests,
+  safetensors,
+  # build-system
+  setuptools,
+  # fastai
+  toml,
   # optional-dependencies
   # torch
   torch,
-  safetensors,
-  # fastai
-  toml,
-  fastai,
-  fastcore,
-  # gradio
-  gradio,
-  requests,
-  # mcp
-  mcp,
-
+  tqdm,
+  typer,
+  typing-extensions,
   # tests
   versionCheckHook,
 }:
@@ -38,7 +34,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "huggingface-hub";
   version = "1.10.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -46,6 +41,10 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Q9N0QnxV8oJcxUsJzv4wX8Z6FkNdEfUH5BEVoZolsRY=";
   };
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -65,44 +64,48 @@ buildPythonPackage (finalAttrs: {
     all = [
 
     ];
-    torch = [
-      torch
-      safetensors
-    ]
-    ++ safetensors.optional-dependencies.torch;
+
     fastai = [
       toml
       fastai
       fastcore
     ];
+
     gradio = [
       gradio
       requests
     ];
+
     hf_xet = [
       hf-xet
     ];
+
     mcp = [
       mcp
     ];
+
+    torch = [
+      torch
+      safetensors
+    ]
+    ++ safetensors.optional-dependencies.torch;
   };
 
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
-  versionCheckProgramArg = "version";
-
+  pyproject = true;
   pythonImportsCheck = [ "huggingface_hub" ];
+  versionCheckProgramArg = "version";
 
   meta = {
     description = "Download and publish models and other files on the huggingface.co hub";
-    mainProgram = "hf";
     homepage = "https://github.com/huggingface/huggingface_hub";
     changelog = "https://github.com/huggingface/huggingface_hub/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       osbm
     ];
+
+    mainProgram = "hf";
   };
 })

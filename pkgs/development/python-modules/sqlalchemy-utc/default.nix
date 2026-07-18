@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   sqlalchemy,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sqlalchemy-utc";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spoqa";
@@ -26,6 +25,10 @@ buildPythonPackage (finalAttrs: {
     ./python314-compat.patch
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -34,9 +37,7 @@ buildPythonPackage (finalAttrs: {
     sqlalchemy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "sqlalchemy_utc"

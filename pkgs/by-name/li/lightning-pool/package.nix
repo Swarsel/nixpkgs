@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-DD27zUW524qe9yLaVPEzw/c4sSzlH89HMw0PdtNYEhg=";
 
-  subPackages = [
-    "cmd/pool"
-    "cmd/poold"
-  ];
-
   ldflags = [
     "-s"
     "-w"
+  ];
+
+  subPackages = [
+    "cmd/pool"
+    "cmd/poold"
   ];
 
   meta = {

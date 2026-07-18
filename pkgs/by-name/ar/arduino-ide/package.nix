@@ -1,7 +1,7 @@
 {
-  appimageTools,
-  fetchurl,
   lib,
+  fetchurl,
+  appimageTools,
 }:
 
 let
@@ -31,8 +31,8 @@ appimageTools.wrapType2 {
     homepage = "https://www.arduino.cc/en/software";
     changelog = "https://github.com/arduino/arduino-ide/releases/tag/${version}";
     license = lib.licenses.agpl3Only;
-    mainProgram = "arduino-ide";
     maintainers = with lib.maintainers; [ clerie ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "arduino-ide";
   };
 }

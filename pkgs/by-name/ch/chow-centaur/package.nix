@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
+  alsa-lib,
   cairo,
-  libxkbcommon,
+  cmake,
+  gcc-unwrapped,
+  libjack2,
   libxcb-cursor,
   libxcb-keysyms,
   libxcb-util,
-  libxrandr,
-  libxinerama,
   libxcursor,
-  alsa-lib,
-  libjack2,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
   lv2,
-  gcc-unwrapped,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     cairo
     libxkbcommon
@@ -65,7 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Digital emulation of the Klon Centaur guitar pedal using RNNs, Wave Digital Filters, and more";
     homepage = "https://github.com/jatinchowdhury18/KlonCentaur";
     license = lib.licenses.bsd3;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ magnetophon ];
+    platforms = [ "x86_64-linux" ];
   };
 })

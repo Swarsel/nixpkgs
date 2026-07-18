@@ -1,13 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   glibcLocales,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "calamares-nixos-extensions";
   version = "0.3.23";
-
   src = ./src;
 
   installPhase = ''
@@ -26,12 +25,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Calamares modules for NixOS";
     homepage = "https://github.com/NixOS/calamares-nixos-extensions";
+
     license = with lib.licenses; [
       mit
       # assets
       cc-by-40
       cc-by-sa-40
     ];
+
     maintainers = with lib.maintainers; [ vlinkz ];
     platforms = lib.platforms.linux;
   };

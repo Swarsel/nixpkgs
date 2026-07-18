@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  trash-cli,
   coreutils,
-  which,
   getopt,
+  makeWrapper,
+  stdenvNoCC,
+  trash-cli,
+  which,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -38,13 +38,15 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/PhrozenByte/rmtrash";
     description = "Trash-put made compatible with GNUs rm and rmdir";
+
     longDescription = ''
       Put files (and directories) in trash using the `trash-put` command in a
       way that is, otherwise as `trash-put` itself, compatible to GNUs `rm`
       and `rmdir`.
     '';
+
+    homepage = "https://github.com/PhrozenByte/rmtrash";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ peelz ];
     platforms = lib.platforms.all;

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 let
@@ -10,6 +10,7 @@ in
 stdenvNoCC.mkDerivation rec {
   pname = "msp430-gcc-support-files";
   version = "1.207";
+
   src = fetchzip {
     url = "http://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSPGCC/${mspgccVersion}/exports/msp430-gcc-support-files-${version}.zip";
     sha256 = "1gyi9zc5vh9c1lxd22dwvk6b17dcd17hah2rayr062p4l51kzam1";
@@ -28,9 +29,10 @@ stdenvNoCC.mkDerivation rec {
     description = ''
       Development headers and linker scripts for TI MSP430 microcontrollers
     '';
+
     homepage = "https://www.ti.com/tool/msp430-gcc-opensource";
     license = lib.licenses.bsd3;
-    platforms = [ "msp430-none" ];
     maintainers = with lib.maintainers; [ aerialx ];
+    platforms = [ "msp430-none" ];
   };
 }

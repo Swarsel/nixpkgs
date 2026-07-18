@@ -1,9 +1,10 @@
 # trivial builder for Emacs packages
 
-{ callPackage, lib, ... }@envargs:
+{ lib, callPackage, ... }@envargs:
 
 lib.extendMkDerivation {
   constructDrv = callPackage ./generic.nix envargs;
+
   extendDrvArgs =
     finalAttrs:
 

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildNpmPackage,
   fetchNpmDeps,
-  fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildNpmPackage rec {
@@ -18,11 +18,6 @@ buildNpmPackage rec {
     hash = "sha256-nAV0X5882Ps5zDPfmoRHm0a0NtzCOpBQEZqOT2/GCZU=";
   };
 
-  npmDeps = fetchNpmDeps {
-    inherit src;
-    hash = "sha256-AN3TVvCyWjjm1GfnI+ZMt27KQC7qYxQ0bcysAaDsyz4=";
-  };
-
   buildPhase = ''
     runHook preBuild
     npm run build
@@ -34,11 +29,18 @@ buildNpmPackage rec {
     ln -s $out/lib/node_modules/neovim/node_modules/.bin/neovim-node-host $out/bin/neovim-node-host
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  npmDeps = fetchNpmDeps {
+    inherit src;
+    hash = "sha256-AN3TVvCyWjjm1GfnI+ZMt27KQC7qYxQ0bcysAaDsyz4=";
+  };
+
   versionCheckProgram = "${placeholder "out"}/bin/neovim-node-host";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

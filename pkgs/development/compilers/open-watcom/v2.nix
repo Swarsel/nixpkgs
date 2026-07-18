@@ -1,15 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  dosbox,
+  ghostscript,
+  mesa,
   unstableGitUpdater,
-
   # Docs cause an immense increase in build time, up to 2 additional hours
   withDocs ? false,
-  dosbox,
-  mesa,
-  ghostscript,
-
   # GUI tools aren't ported to non-MS platforms, building them usually just wastes time
   withGUI ? stdenv.hostPlatform.isWindows,
 }:
@@ -51,14 +49,27 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '-static' ""
   '';
 
-  # https://github.com/open-watcom/open-watcom-v2/issues/1608
-  hardeningDisable = [ "strictflexarrays1" ];
-
   nativeBuildInputs = lib.optionals withDocs [
     dosbox # running prebuilt WGML tool to create docs
     ghostscript
     mesa.llvmpipeHook # DOSBox doesn't seem to launch without OpenGL available, even on SDL dummy platform
   ];
+
+  buildPhase = ''
+    runHook preBuild
+
+    ./build.sh build
+
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+
+    ./build.sh cprel
+
+    runHook postInstall
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -86,36 +97,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  buildPhase = ''
-    runHook preBuild
-
-    ./build.sh build
-
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    ./build.sh cprel
-
-    runHook postInstall
-  '';
-
   # Stripping breaks many tools
   dontStrip = true;
+  # https://github.com/open-watcom/open-watcom-v2/issues/1608
+  hardeningDisable = [ "strictflexarrays1" ];
 
   passthru = {
     prettyName = "open-watcom-v2";
+
     updateScript = unstableGitUpdater {
-      url = "https://github.com/open-watcom/open-watcom-v2.git";
       # no numerical releases, monthly "YYYY-MM-DD-Build" tags and daily "Current-build", "Last-CI-build" & "Coverity-scan" retagging
       hardcodeZeroVersion = true;
+      url = "https://github.com/open-watcom/open-watcom-v2.git";
     };
   };
 
   meta = {
     description = "V2 fork of the Open Watcom suite of compilers and tools";
+
     longDescription = ''
       A fork of Open Watcom: A C/C++/Fortran compiler and assembler suite
       targeting a multitude of architectures (x86, IA-32, Alpha AXP, MIPS,
@@ -144,14 +143,16 @@ stdenv.mkDerivation (finalAttrs: {
       The documentation has been excluded from this build for build time reasons. It can be found here:
       https://github.com/open-watcom/open-watcom-v2/wiki/Open-Watcom-Documentation
     '';
+
     homepage = "https://open-watcom.github.io";
     license = lib.licenses.watcom;
+    maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = with lib.platforms; windows ++ unix;
+
     badPlatforms = lib.platforms.riscv ++ [
       "powerpc64-linux"
       "powerpc64le-linux"
       "mips64el-linux"
     ];
-    maintainers = with lib.maintainers; [ OPNA2608 ];
   };
 })

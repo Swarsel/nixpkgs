@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "compressed-rtf";
   version = "1.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "delimitry";
@@ -20,12 +19,10 @@ buildPythonPackage {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "compressed_rtf" ];
-
   enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "compressed_rtf" ];
 
   meta = {
     description = "Compressed Rich Text Format (RTF) compression and decompression";

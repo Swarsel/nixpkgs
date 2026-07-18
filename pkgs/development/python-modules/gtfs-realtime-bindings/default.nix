@@ -9,21 +9,18 @@
 buildPythonPackage rec {
   pname = "gtfs-realtime-bindings";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "gtfs_realtime_bindings";
     inherit version;
     hash = "sha256-FQfKOWKO6N8tOq44+e7YgdSoKqgkaTDWCLpkKNXKOlY=";
+    pname = "gtfs_realtime_bindings";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ protobuf ];
 
   # Tests are not shipped, only a tarball for Java is present
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ protobuf ];
+  pyproject = true;
   pythonImportsCheck = [ "google.transit" ];
 
   meta = {

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
-  setuptools,
-  regex,
   pytestCheckHook,
+  regex,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "curated-tokenizers";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -26,6 +25,16 @@ buildPythonPackage rec {
     sed -i '1i #include <cstdint>' sentencepiece/src/sentencepiece_processor.h
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    # avoid local paths, relative imports wont resolve correctly
+    mv curated_tokenizers/tests tests
+    rm -r curated_tokenizers
+  '';
+
   build-system = [
     cython
     setuptools
@@ -35,20 +44,10 @@ buildPythonPackage rec {
     regex
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   # Explicitly set the path to avoid running vendored
   # sentencepiece tests.
   enabledTestPaths = [ "tests" ];
-
-  preCheck = ''
-    # avoid local paths, relative imports wont resolve correctly
-    mv curated_tokenizers/tests tests
-    rm -r curated_tokenizers
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "curated_tokenizers" ];
 
   meta = {

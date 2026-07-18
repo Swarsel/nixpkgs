@@ -1,31 +1,29 @@
 {
   buildDunePackage,
+  ca-certs-nss,
   conduit-lwt,
-  ppx_sexp_conv,
-  sexplib0,
-  uri,
   cstruct,
-  mirage-flow,
-  mirage-flow-combinators,
-  mirage-crypto-rng,
-  mirage-ptime,
-  mirage-mtime,
   dns-client-mirage,
-  vchan,
-  xenstore,
-  tls,
-  tls-mirage,
   ipaddr,
   ipaddr-sexp,
+  mirage-crypto-rng,
+  mirage-flow,
+  mirage-flow-combinators,
+  mirage-mtime,
+  mirage-ptime,
+  ppx_sexp_conv,
+  sexplib0,
   tcpip,
-  ca-certs-nss,
+  tls,
+  tls-mirage,
+  uri,
+  vchan,
+  xenstore,
 }:
 
 buildDunePackage {
-  pname = "conduit-mirage";
-
   inherit (conduit-lwt) version src;
-
+  pname = "conduit-mirage";
   nativeBuildInputs = [ ppx_sexp_conv ];
 
   propagatedBuildInputs = [

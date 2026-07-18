@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libfs,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xfsinfo";
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -38,19 +37,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "X font server information utility";
+
     longDescription = ''
       xfsinfo is a utility for displaying information about an X font server.
       It is used to examine the capabilities of a server, the predefined values for various
       parameters used in communicating between clients and the server, and the font catalogues and
       alternate servers that are available.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xfsinfo";
+
     license = with lib.licenses; [
       mitOpenGroup
       hpndSellVariant
     ];
-    mainProgram = "xfsinfo";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xfsinfo";
   };
 })

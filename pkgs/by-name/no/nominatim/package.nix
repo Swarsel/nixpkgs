@@ -1,28 +1,25 @@
 {
   lib,
-  fetchFromGitHub,
   fetchurl,
-
+  fetchFromGitHub,
+  nixosTests,
+  nominatim, # required for testVersion
   osm2pgsql,
   python3Packages,
-
-  nominatim, # required for testVersion
-  nixosTests,
   testers,
 }:
 
 let
   countryGrid = fetchurl {
+    hash = "sha256-/mY5Oq9WF0klXOv0xh0TqEJeMmuM5QQJ2IxANRZd4Ek=";
     # Nominatim-db needs https://www.nominatim.org/data/country_grid.sql.gz
     # but it's not a very good URL for pinning
     url = "https://web.archive.org/web/20220323041006/https://nominatim.org/data/country_grid.sql.gz";
-    hash = "sha256-/mY5Oq9WF0klXOv0xh0TqEJeMmuM5QQJ2IxANRZd4Ek=";
   };
 in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nominatim";
   version = "5.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "osm-search";
@@ -44,6 +41,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     cd packaging/nominatim-db
   '';
 
+  propagatedBuildInputs = [
+    osm2pgsql
+  ];
+
   build-system = with python3Packages; [
     hatchling
   ];
@@ -60,27 +61,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
     mwparserfromhell
   ];
 
-  propagatedBuildInputs = [
-    osm2pgsql
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nominatim_db" ];
 
   passthru.tests = {
-    version = testers.testVersion { package = nominatim; };
     inherit (nixosTests) nominatim;
+    version = testers.testVersion { package = nominatim; };
   };
 
   meta = {
     description = "Search engine for OpenStreetMap data (DB, CLI)";
     homepage = "https://nominatim.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mausch ];
+    platforms = lib.platforms.unix;
+    mainProgram = "nominatim";
+
     teams = with lib.teams; [
       geospatial
       ngi
     ];
-    mainProgram = "nominatim";
   };
 })

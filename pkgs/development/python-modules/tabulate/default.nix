@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
-  setuptools,
-  wcwidth,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
+  wcwidth,
 }:
 
 buildPythonPackage (finalAttrs: {
-  version = "0.10.0";
   pname = "tabulate";
-  pyproject = true;
+  version = "0.10.0";
 
   src = fetchFromGitHub {
     owner = "astanin";
@@ -25,20 +24,22 @@ buildPythonPackage (finalAttrs: {
     setuptools-scm
   ];
 
-  optional-dependencies = {
-    widechars = [ wcwidth ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
   ]
   ++ lib.concatAttrValues finalAttrs.finalPackage.optional-dependencies;
 
+  optional-dependencies = {
+    widechars = [ wcwidth ];
+  };
+
+  pyproject = true;
+
   meta = {
     description = "Pretty-print tabular data";
-    mainProgram = "tabulate";
     homepage = "https://github.com/astanin/python-tabulate";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ doronbehar ];
+    mainProgram = "tabulate";
   };
 })

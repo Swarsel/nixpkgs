@@ -8,19 +8,25 @@
 let
 
   runTests = stdenv.mkDerivation {
-    name = "tests-activation-lib";
-    src = ./lib;
     buildPhase = ":";
-    doCheck = true;
-    postUnpack = ''
-      patchShebangs --build .
-    '';
+
     checkPhase = ''
       ./test.sh
     '';
+
+    doCheck = true;
+
     installPhase = ''
       touch $out
     '';
+
+    name = "tests-activation-lib";
+
+    postUnpack = ''
+      patchShebangs --build .
+    '';
+
+    src = ./lib;
   };
 
   runShellcheck = testers.shellcheck {

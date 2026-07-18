@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   unzip,
 }:
@@ -10,14 +10,12 @@ stdenv.mkDerivation rec {
   version = "1.4.5.4049";
 
   src = fetchurl {
-    name = "${pname}-${version}-plugin.zip";
     url = "https://plugins.jetbrains.com/plugin/download?updateId=454005";
     hash = "sha256-ibu3OcmtyLHuumhJQ6QipsNEIdEhvLUS7sb3xmnaR0U=";
+    name = "${pname}-${version}-plugin.zip";
   };
 
   nativeBuildInputs = [ unzip ];
-
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -67,9 +65,11 @@ stdenv.mkDerivation rec {
     '';
 
   dontStrip = true;
+  dontUnpack = true;
 
   meta = rec {
     description = "GitHub copilot IntelliJ plugin's native component";
+
     longDescription = ''
       The GitHub copilot IntelliJ plugin's native component.
       bin/copilot-agent must be symlinked into the plugin directory, replacing the existing binary.
@@ -80,16 +80,19 @@ stdenv.mkDerivation rec {
       ln -fs /run/current-system/sw/bin/copilot-agent ~/.local/share/JetBrains/IntelliJIdea2022.2/github-copilot-intellij/copilot-agent/bin/copilot-agent-linux
       ```
     '';
+
     homepage = "https://plugins.jetbrains.com/plugin/17718-github-copilot";
-    downloadPage = homepage;
     changelog = homepage;
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ hacker1024 ];
-    mainProgram = "copilot-agent";
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    mainProgram = "copilot-agent";
+    downloadPage = homepage;
   };
 }

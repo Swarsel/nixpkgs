@@ -3,8 +3,8 @@
 
 # this file is used to figure out which versions of nextcloud we have in nixpkgs
 {
-  pkgs ? import ../../../.. { },
   lib ? pkgs.lib,
+  pkgs ? import ../../../.. { },
 }:
 let
   n = lib.mapAttrsToList (_: v: v.version) (

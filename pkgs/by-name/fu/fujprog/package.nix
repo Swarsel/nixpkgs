@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libftdi1,
   libusb-compat-0_1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,11 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "JTAG programmer for the ULX3S and ULX2S open hardware FPGA development boards";
-    mainProgram = "fujprog";
     homepage = "https://github.com/kost/fujprog";
+    changelog = "https://github.com/kost/fujprog/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = lib.platforms.all;
-    changelog = "https://github.com/kost/fujprog/releases/tag/v${finalAttrs.version}";
+    mainProgram = "fujprog";
   };
 })

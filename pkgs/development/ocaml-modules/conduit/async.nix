@@ -1,23 +1,24 @@
 {
-  buildDunePackage,
   async,
-  async_ssl ? null,
-  ppx_sexp_conv,
-  ppx_here,
-  uri,
+  buildDunePackage,
   conduit,
   core,
   ipaddr,
   ipaddr-sexp,
+  ppx_here,
+  ppx_sexp_conv,
   sexplib0,
+  uri,
+  async_ssl ? null,
 }:
 
 buildDunePackage {
-  pname = "conduit-async";
   inherit (conduit)
     version
     src
     ;
+
+  pname = "conduit-async";
 
   buildInputs = [
     ppx_sexp_conv

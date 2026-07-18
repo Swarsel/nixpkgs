@@ -1,12 +1,12 @@
 {
   lib,
-  writeShellScript,
+  bundix,
+  bundler,
+  common-updater-scripts,
+  coreutils,
   git,
   nix,
-  bundler,
-  bundix,
-  coreutils,
-  common-updater-scripts,
+  writeShellScript,
 }:
 writeShellScript "update-script" ''
   set -eu

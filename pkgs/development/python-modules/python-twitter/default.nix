@@ -1,11 +1,11 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   filetype,
   future,
   hypothesis,
-  lib,
   pytestCheckHook,
   requests,
   requests-oauthlib,
@@ -17,9 +17,6 @@ buildPythonPackage rec {
   pname = "python-twitter";
   version = "3.5";
 
-  pyproject = true;
-  build-system = [ setuptools ];
-
   src = fetchFromGitHub {
     owner = "bear";
     repo = "python-twitter";
@@ -30,10 +27,23 @@ buildPythonPackage rec {
   patches = [
     # Fix tests. Remove with the next release
     (fetchpatch {
-      url = "https://github.com/bear/python-twitter/commit/f7eb83d9dca3ba0ee93e629ba5322732f99a3a30.patch";
       sha256 = "008b1bd03wwngs554qb136lsasihql3yi7vlcacmk4s5fmr6klqw";
+      url = "https://github.com/bear/python-twitter/commit/f7eb83d9dca3ba0ee93e629ba5322732f99a3a30.patch";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace-fail "'pytest-runner'" ""
+  '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+    hypothesis
+  ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     filetype
@@ -42,22 +52,12 @@ buildPythonPackage rec {
     requests-oauthlib
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-    hypothesis
-  ];
-
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace-fail "'pytest-runner'" ""
-  '';
-
   disabledTests = [
     # AttributeError: 'FileCacheTest' object has no attribute 'assert_'
     "test_filecache"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "twitter" ];
 
   meta = {

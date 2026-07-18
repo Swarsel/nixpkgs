@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyfakewebcam";
   version = "0.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
 
   # No tests are available
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "pyfakewebcam" ];
 
   meta = {

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "prboom";
   version = "0-unstable-2026-07-07";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-eFRzbVTL5ARf650D0ZAEFGNTxjAy1CjBiAhwSQR8vJ4=";
   };
 
+  core = "prboom";
   makefile = "Makefile";
 
   meta = {

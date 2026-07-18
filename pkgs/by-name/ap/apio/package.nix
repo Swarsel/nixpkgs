@@ -1,16 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  tinyprog,
+  python3Packages,
   scons,
+  tinyprog,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "apio";
   version = "0.9.5";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "FPGAwars";
@@ -41,8 +39,18 @@ python3Packages.buildPythonApplication rec {
         'version = semantic_version.Version(pkg_version.replace(".dev", "-dev"))'
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = with python3Packages; [
     flit-core
+  ];
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
+
+  build-system = with python3Packages; [
+    setuptools # needs pkg_resources at runtime (technically not needed when tinyprog is also in this list because of the propagatedBuildInputs of tinyprog)
   ];
 
   dependencies =
@@ -60,28 +68,19 @@ python3Packages.buildPythonApplication rec {
       tinyprog # needed for upload to TinyFPGA
     ];
 
-  build-system = with python3Packages; [
-    setuptools # needs pkg_resources at runtime (technically not needed when tinyprog is also in this list because of the propagatedBuildInputs of tinyprog)
-  ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # This test fails and is also not executed in upstream's CI
     "test2"
   ];
 
+  pyproject = true;
   pytestFlags = [ "--offline" ];
-
-  strictDeps = true;
 
   meta = {
     description = "Open source ecosystem for open FPGA boards";
-    mainProgram = "apio";
     homepage = "https://github.com/FPGAwars/apio";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ Luflosi ];
+    mainProgram = "apio";
   };
 }

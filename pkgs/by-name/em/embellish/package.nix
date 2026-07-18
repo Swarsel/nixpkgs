@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  glib,
   blueprint-compiler,
-  gobject-introspection,
-  gtk4,
   desktop-file-utils,
   gettext,
-  wrapGAppsHook4,
-  libadwaita,
   gjs,
+  glib,
   gnome-autoar,
+  gobject-introspection,
+  gtk4,
+  libadwaita,
   libsoup_3,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "embellish";
@@ -54,6 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "User-friendly application designed for managing Nerd Fonts on your system";
+
     longDescription = ''
       Embellish provides a seamless experience for installing, uninstalling
       and updating of Nerd Fonts. It's able to:
@@ -65,11 +66,12 @@ stdenv.mkDerivation (finalAttrs: {
       - Search fonts
       - Read font's licence(s)
     '';
+
     homepage = "https://github.com/getnf/embellish";
     changelog = "https://github.com/getnf/embellish/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
-    mainProgram = "io.github.getnf.embellish";
     platforms = lib.platforms.linux;
+    mainProgram = "io.github.getnf.embellish";
   };
 })

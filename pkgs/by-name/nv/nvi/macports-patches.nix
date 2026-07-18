@@ -10,8 +10,8 @@ let
 in
 builtins.attrValues (
   builtins.mapAttrs (n: v: {
-    url = "${url}/${n}";
-    hash = v;
     extraPrefix = "";
+    hash = v;
+    url = "${url}/${n}";
   }) hashes
 )

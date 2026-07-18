@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "deja";
   version = "0.3.2";
-  __structuredAttrs = true;
+
   src = fetchFromGitHub {
     owner = "Giammarco-Ferranti";
     repo = "deja";
@@ -17,6 +17,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-KmLdMK94cGOXMPJwWS6NgLB5OiNmJbszHdnLzauqJm8=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -24,18 +27,14 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Predictive inline shell autosuggestions for zsh";
     homepage = "https://github.com/Giammarco-Ferranti/deja";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ tomasrivera ];
+    platforms = lib.platforms.unix;
     mainProgram = "deja";
   };
 })

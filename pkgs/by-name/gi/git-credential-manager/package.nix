@@ -3,14 +3,14 @@
   fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  libsecret,
   git,
   git-credential-manager,
   gnupg,
+  libsecret,
   pass,
   testers,
-  withLibsecretSupport ? true,
   withGpgSupport ? true,
+  withLibsecretSupport ? true,
 }:
 
 buildDotnetModule rec {
@@ -24,17 +24,16 @@ buildDotnetModule rec {
     hash = "sha256-jXBFnXBUQz53doOr9zcfUq3dguA85N7WL0KuFjSIjF8=";
   };
 
-  projectFile = "src/shared/Git-Credential-Manager/Git-Credential-Manager.csproj";
-  nugetDeps = ./deps.json;
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+
   dotnetInstallFlags = [
     "--framework"
     "net8.0"
   ];
+
   executables = [ "git-credential-manager" ];
 
-  runtimeDeps = lib.optional withLibsecretSupport libsecret;
   makeWrapperArgs = [
     "--prefix PATH : ${
       lib.makeBinPath (
@@ -48,19 +47,21 @@ buildDotnetModule rec {
     "--inherit-argv0"
   ];
 
+  nugetDeps = ./deps.json;
+  projectFile = "src/shared/Git-Credential-Manager/Git-Credential-Manager.csproj";
+  runtimeDeps = lib.optional withLibsecretSupport libsecret;
+
   passthru = {
-    updateScript = ./update.sh;
     tests.version = testers.testVersion {
       package = git-credential-manager;
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Secure, cross-platform Git credential storage with authentication to GitHub, Azure Repos, and other popular Git hosting services";
-    homepage = "https://github.com/git-ecosystem/git-credential-manager";
-    license = with lib.licenses; [ mit ];
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ _999eagle ];
+
     longDescription = ''
       git-credential-manager is a secure, cross-platform Git credential storage with authentication to GitHub, Azure Repos, and other popular Git hosting services.
 
@@ -68,6 +69,11 @@ buildDotnetModule rec {
       .NET can find `/usr/bin/codesign` to sign the compiled binary.
       This problem is common to all .NET packages on MacOS with Nix.
     '';
+
+    homepage = "https://github.com/git-ecosystem/git-credential-manager";
+    license = with lib.licenses; [ mit ];
+    maintainers = with lib.maintainers; [ _999eagle ];
+    platforms = lib.platforms.unix;
     mainProgram = "git-credential-manager";
   };
 }

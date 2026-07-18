@@ -1,6 +1,6 @@
 {
-  version,
   hash,
+  version,
   patches ? [ ],
 }:
 
@@ -8,21 +8,21 @@
   lib,
   stdenv,
   fetchurl,
-  which,
-  python3,
-  gfortran,
+  buildPackages,
   cacert,
   cmake,
-  perl,
-  gnum4,
-  openssl,
-  libxml2,
-  zlib,
-  buildPackages,
-  darwin,
-  unzip,
-  ncurses,
   curl,
+  darwin,
+  gfortran,
+  gnum4,
+  libxml2,
+  ncurses,
+  openssl,
+  perl,
+  python3,
+  unzip,
+  which,
+  zlib,
 }:
 
 let
@@ -53,14 +53,31 @@ let
 in
 
 stdenv.mkDerivation rec {
+  inherit version patches;
   pname = "julia";
 
-  inherit version patches;
-
   src = fetchurl {
-    url = "https://github.com/JuliaLang/julia/releases/download/v${version}/julia-${version}-full.tar.gz";
     inherit hash;
+    url = "https://github.com/JuliaLang/julia/releases/download/v${version}/julia-${version}-full.tar.gz";
   };
+
+  postPatch = ''
+    patchShebangs .
+  ''
+  + lib.optionalString (lib.versionAtLeast version "1.11") ''
+    substituteInPlace deps/curl.mk \
+      --replace-fail 'jxf $(notdir $<)' \
+                     'jxf $(notdir $<) && sed -i "s|/usr/bin/env perl|${lib.getExe buildPackages.perl}|" curl-$(CURL_VER)/scripts/cd2nroff'
+  ''
+  + lib.optionalString (lib.versionOlder version "1.12") ''
+    substituteInPlace deps/tools/common.mk \
+      --replace-fail "CMAKE_COMMON := " "CMAKE_COMMON := ${lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10"} "
+  ''
+  + lib.optionalString (lib.versionAtLeast version "1.12") ''
+    substituteInPlace deps/openssl.mk \
+      --replace-fail 'cd $(dir $<) && $(TAR) -zxf $<' \
+                     'cd $(dir $<) && $(TAR) -zxf $< && sed -i "s|/usr/bin/env perl|${lib.getExe buildPackages.perl}|" openssl-$(OPENSSL_VER)/Configure'
+  '';
 
   strictDeps = true;
 
@@ -89,31 +106,6 @@ stdenv.mkDerivation rec {
     cacert
   ];
 
-  dontUseCmakeConfigure = true;
-
-  postPatch = ''
-    patchShebangs .
-  ''
-  + lib.optionalString (lib.versionAtLeast version "1.11") ''
-    substituteInPlace deps/curl.mk \
-      --replace-fail 'jxf $(notdir $<)' \
-                     'jxf $(notdir $<) && sed -i "s|/usr/bin/env perl|${lib.getExe buildPackages.perl}|" curl-$(CURL_VER)/scripts/cd2nroff'
-  ''
-  + lib.optionalString (lib.versionOlder version "1.12") ''
-    substituteInPlace deps/tools/common.mk \
-      --replace-fail "CMAKE_COMMON := " "CMAKE_COMMON := ${lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.10"} "
-  ''
-  + lib.optionalString (lib.versionAtLeast version "1.12") ''
-    substituteInPlace deps/openssl.mk \
-      --replace-fail 'cd $(dir $<) && $(TAR) -zxf $<' \
-                     'cd $(dir $<) && $(TAR) -zxf $< && sed -i "s|/usr/bin/env perl|${lib.getExe buildPackages.perl}|" openssl-$(OPENSSL_VER)/Configure'
-  '';
-
-  preBuild = lib.optionalString (lib.versionAtLeast version "1.11") ''
-    # terminfo dirs normally inaccessible in build sandbox
-    export TERMINFO="${ncurses.out}/share/terminfo/";
-  '';
-
   makeFlags = [
     "prefix=$(out)"
     "USE_BINARYBUILDER=0"
@@ -125,6 +117,36 @@ stdenv.mkDerivation rec {
   ++ lib.optionals stdenv.hostPlatform.isAarch64 [
     "JULIA_CPU_TARGET=generic;cortex-a57;thunderx2t99;carmel,clone_all;apple-m1,base(3);neoverse-512tvb,base(3)"
   ];
+
+  env = lib.optionalAttrs (lib.versionOlder version "1.11" || stdenv.hostPlatform.isAarch64) {
+    NIX_CFLAGS_COMPILE = toString [
+      "-Wno-error=implicit-function-declaration"
+      "-Wno-error=incompatible-pointer-types"
+    ];
+  };
+
+  preBuild = lib.optionalString (lib.versionAtLeast version "1.11") ''
+    # terminfo dirs normally inaccessible in build sandbox
+    export TERMINFO="${ncurses.out}/share/terminfo/";
+  '';
+
+  # tests are flaky for aarch64-linux on hydra
+  # some tests not working on aarch64-darwin for unrelated reasons
+  doInstallCheck =
+    stdenv.hostPlatform.isLinux
+    && (lib.versionAtLeast version "1.10" || !stdenv.hostPlatform.isAarch64);
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+    # Command lifted from `test/Makefile`.
+    $out/bin/julia \
+      --check-bounds=yes \
+      --startup-file=no \
+      --depwarn=error \
+      $out/share/julia/test/runtests.jl \
+      --skip internet_required ${toString skip_tests}
+    runHook postInstallCheck
+  '';
 
   # remove forbidden reference to $TMPDIR
   preFixup = lib.optionalString stdenv.hostPlatform.isElf ''
@@ -139,11 +161,9 @@ stdenv.mkDerivation rec {
     codesign -s - --force --entitlements ./contrib/mac/app/Entitlements.plist $out/bin/julia
   '';
 
-  # tests are flaky for aarch64-linux on hydra
-  # some tests not working on aarch64-darwin for unrelated reasons
-  doInstallCheck =
-    stdenv.hostPlatform.isLinux
-    && (lib.versionAtLeast version "1.10" || !stdenv.hostPlatform.isAarch64);
+  dontStrip = true;
+  dontUseCmakeConfigure = true;
+  enableParallelBuilding = true;
 
   preInstallCheck = ''
     export JULIA_TEST_USE_MULTIPLE_WORKERS="true"
@@ -152,44 +172,24 @@ stdenv.mkDerivation rec {
     export HOME=$(mktemp -d)
   '';
 
-  installCheckPhase = ''
-    runHook preInstallCheck
-    # Command lifted from `test/Makefile`.
-    $out/bin/julia \
-      --check-bounds=yes \
-      --startup-file=no \
-      --depwarn=error \
-      $out/share/julia/test/runtests.jl \
-      --skip internet_required ${toString skip_tests}
-    runHook postInstallCheck
-  '';
-
-  dontStrip = true;
-
-  enableParallelBuilding = true;
-
-  env = lib.optionalAttrs (lib.versionOlder version "1.11" || stdenv.hostPlatform.isAarch64) {
-    NIX_CFLAGS_COMPILE = toString [
-      "-Wno-error=implicit-function-declaration"
-      "-Wno-error=incompatible-pointer-types"
-    ];
-  };
-
   meta = {
     description = "High-level performance-oriented dynamical language for technical computing";
-    mainProgram = "julia";
     homepage = "https://julialang.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nickcao
       joshniemela
       thomasjm
       taranarmo
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "julia";
   };
 }

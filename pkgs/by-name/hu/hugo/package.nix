@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   buildPackages,
-  versionCheckHook,
+  installShellFiles,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,6 +20,7 @@ buildGoModule (finalAttrs: {
     hash = "sha256-hpxz5zOggqqYVTUkgwpkWcOa7sdGaWrRJUnXjJx59cA=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-35VeZOtnwgYVuabzJ3+FjvhtoJGZcVRo+TWPTBAWVC4=";
 
   checkFlags =
@@ -39,23 +40,6 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "|^" skippedTestPrefixes}" ];
 
-  proxyVendor = true;
-
-  tags = [
-    "extended"
-    "withdeploy"
-  ];
-
-  subPackages = [ "." ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/gohugoio/hugo/common/hugo.vendorInfo=nixpkgs"
-  ];
-
   postInstall =
     let
       emulator = stdenv.hostPlatform.emulator buildPackages;
@@ -69,25 +53,42 @@ buildGoModule (finalAttrs: {
         --zsh  <(${emulator} $out/bin/hugo completion zsh)
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/gohugoio/hugo/common/hugo.vendorInfo=nixpkgs"
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "." ];
+
+  tags = [
+    "extended"
+    "withdeploy"
+  ];
+
   versionCheckProgram = "${placeholder "out"}/bin/hugo";
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/gohugoio/hugo/releases/tag/v${finalAttrs.version}";
     description = "Fast and modern static website engine";
     homepage = "https://gohugo.io";
+    changelog = "https://github.com/gohugoio/hugo/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "hugo";
+
     maintainers = with lib.maintainers; [
       Frostman
       savtrip
       miniharinn
     ];
+
+    mainProgram = "hugo";
   };
 })

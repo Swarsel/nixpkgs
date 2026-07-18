@@ -1,15 +1,16 @@
 {
   mkKdeDerivation,
+  pkg-config,
   qtdeclarative,
   qtlocation,
-  pkg-config,
 }:
 mkKdeDerivation {
   pname = "kpublictransport";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtdeclarative
     qtlocation
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 }

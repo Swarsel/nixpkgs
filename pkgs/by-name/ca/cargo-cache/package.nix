@@ -17,24 +17,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-q9tYKXK8RqiqbDZ/lTxUI1Dm/h28/yZR8rTQuq+roZs=";
   };
 
-  cargoHash = "sha256-cwTHJ5Cd17ur8AhEQb8FTS0mcgqg83VGjvCQP00JY6s=";
-
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     zlib
   ];
 
+  cargoHash = "sha256-cwTHJ5Cd17ur8AhEQb8FTS0mcgqg83VGjvCQP00JY6s=";
   checkFlags = [ "offline_tests" ];
 
   meta = {
     description = "Manage cargo cache (\${CARGO_HOME}, ~/.cargo/), print sizes of dirs and remove dirs selectively";
-    mainProgram = "cargo-cache";
     homepage = "https://github.com/matthiaskrgr/cargo-cache";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-cache";
   };
 })

@@ -1,35 +1,42 @@
 {
   lib,
   stdenv,
-  config,
+  fetchFromGitHub,
   alsa-lib,
   cmake,
+  config,
   dbus,
-  fetchFromGitHub,
   ibusMinimal,
   installShellFiles,
   libGL,
   libayatana-appindicator,
   libdecor,
   libdrm,
+  libgbm,
   libjack2,
   libpulseaudio,
   libusb1,
-  libxkbcommon,
-  libgbm,
   libx11,
   libxcb,
-  libxscrnsaver,
   libxcursor,
   libxext,
   libxfixes,
   libxi,
+  libxkbcommon,
   libxrandr,
+  libxscrnsaver,
   libxtst,
+  # TODO: Clean up on `staging`.
+  llvmPackages,
   ninja,
   nix-update-script,
   nixosTests,
   pipewire,
+  # for passthru.tests
+  sdl12-compat,
+  sdl2-compat,
+  sdl3-image,
+  sdl3-ttf,
   sndio,
   systemdLibs,
   testers,
@@ -39,11 +46,6 @@
   wayland,
   wayland-scanner,
   zenity,
-  # for passthru.tests
-  sdl12-compat,
-  sdl2-compat,
-  sdl3-image,
-  sdl3-ttf,
   alsaSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
   dbusSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
   drmSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
@@ -61,9 +63,6 @@
   vulkanSupport ? true,
   waylandSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
   x11Support ? !stdenv.hostPlatform.isAndroid && !stdenv.hostPlatform.isWindows,
-
-  # TODO: Clean up on `staging`.
-  llvmPackages,
 }:
 
 assert lib.assertMsg (
@@ -75,19 +74,19 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "sdl3";
   version = "3.4.10";
 
-  outputs = [
-    "lib"
-    "dev"
-    "out"
-    "installedTests"
-  ];
-
   src = fetchFromGitHub {
     owner = "libsdl-org";
     repo = "SDL";
     tag = "release-${finalAttrs.version}";
     hash = "sha256-6Dph2eLiJUmpQzPWe8EuY5LrWhrFwde2f2dwfgCcWNw=";
   };
+
+  outputs = [
+    "lib"
+    "dev"
+    "out"
+    "installedTests"
+  ];
 
   postPatch =
     lib.optionalString (finalAttrs.finalPackage.doCheck) ''
@@ -227,10 +226,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = {
     # Building this in its own derivation to make sure the rpath hack above propagate to users
     debug-text-example = stdenv.mkDerivation (finalAttrs': {
-      pname = "sdl3-debug-text-example";
       inherit (finalAttrs) version src;
-
-      sourceRoot = "${finalAttrs'.src.name}/examples/renderer/18-debug-text";
+      pname = "sdl3-debug-text-example";
 
       nativeBuildInputs = [
         installShellFiles
@@ -245,6 +242,8 @@ stdenv.mkDerivation (finalAttrs: {
       postInstall = ''
         installBin debug-text
       '';
+
+      sourceRoot = "${finalAttrs'.src.name}/examples/renderer/18-debug-text";
 
       meta = {
         inherit (finalAttrs.meta) maintainers platforms;
@@ -262,11 +261,13 @@ stdenv.mkDerivation (finalAttrs: {
           sdl3-image
           sdl3-ttf
           ;
+
+        inherit (finalAttrs.passthru) debug-text-example;
+
         pkg-config = testers.hasPkgConfigModules {
           package = finalAttrs.finalPackage;
           versionCheck = true;
         };
-        inherit (finalAttrs.passthru) debug-text-example;
       }
       // lib.optionalAttrs stdenv.hostPlatform.isLinux {
         nixosTest = nixosTests.sdl3;
@@ -286,8 +287,8 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/libsdl-org/SDL/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ getchoo ];
-    teams = [ lib.teams.sdl ];
     platforms = lib.platforms.unix ++ lib.platforms.windows;
     pkgConfigModules = [ "sdl3" ];
+    teams = [ lib.teams.sdl ];
   };
 })

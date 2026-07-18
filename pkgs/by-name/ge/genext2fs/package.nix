@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     libarchive
   ];
@@ -27,16 +28,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkPhase = ''
     ./test.sh
   '';
 
   meta = {
-    homepage = "https://github.com/bestouff/genext2fs";
     description = "Tool to generate ext2 filesystem images without requiring root privileges";
+    homepage = "https://github.com/bestouff/genext2fs";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
     mainProgram = "genext2fs";
   };
 })

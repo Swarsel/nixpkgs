@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   gitUpdater,
   gtk3,
@@ -9,7 +10,6 @@
   opencv,
   pixman,
   pkg-config,
-  stdenv,
   wayland,
   wayland-protocols,
   wayland-scanner,
@@ -25,7 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Z0ECLxkJChGe2ggwFRuKJj+J6+KcTAlZclqdvBzZDzs=";
   };
 
-  depsBuildBuild = [ pkg-config ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -44,23 +44,24 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonFlags = [ "-Dopencv=enabled" ];
-
-  strictDeps = true;
+  depsBuildBuild = [ pkg-config ];
 
   passthru = {
     updateScript = gitUpdater { };
   };
 
   meta = {
-    homepage = "https://github.com/moverest/wl-kbptr";
+    inherit (wayland.meta) platforms;
     description = "Control the mouse pointer with the keyboard on Wayland";
+    homepage = "https://github.com/moverest/wl-kbptr";
     changelog = "https://github.com/moverest/wl-kbptr/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3;
-    mainProgram = "wl-kbptr";
+
     maintainers = [
       lib.maintainers.luftmensch-luftmensch
       lib.maintainers.clementpoiret
     ];
-    inherit (wayland.meta) platforms;
+
+    mainProgram = "wl-kbptr";
   };
 })

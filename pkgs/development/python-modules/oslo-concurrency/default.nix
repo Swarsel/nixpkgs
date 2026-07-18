@@ -1,8 +1,9 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
   bash,
+  buildPythonPackage,
   coreutils,
   debtcollector,
   eventlet,
@@ -17,7 +18,6 @@
   pbr,
   pythonAtLeast,
   setuptools,
-  stdenv,
   stestr,
   writeText,
 }:
@@ -25,7 +25,6 @@
 buildPythonPackage rec {
   pname = "oslo-concurrency";
   version = "7.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -46,17 +45,6 @@ buildPythonPackage rec {
   '';
 
   env.PBR_VERSION = version;
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    debtcollector
-    fasteners
-    oslo-config
-    oslo-i18n
-    oslo-utils
-    pbr
-  ];
 
   nativeCheckInputs = [
     eventlet
@@ -97,13 +85,25 @@ buildPythonPackage rec {
       runHook postCheck
     '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    debtcollector
+    fasteners
+    oslo-config
+    oslo-i18n
+    oslo-utils
+    pbr
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "oslo_concurrency" ];
 
   meta = {
     description = "Oslo Concurrency library";
-    mainProgram = "lockutils-wrapper";
     homepage = "https://github.com/openstack/oslo.concurrency";
     license = lib.licenses.asl20;
+    mainProgram = "lockutils-wrapper";
     teams = [ lib.teams.openstack ];
   };
 }

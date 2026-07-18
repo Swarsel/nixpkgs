@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  xapp,
-  xapp-symbolic-icons,
   circle-flags,
   gettext,
   gobject-introspection,
   mpv,
   python3,
+  replaceVars,
   wrapGAppsHook3,
+  xapp,
+  xapp-symbolic-icons,
   yt-dlp,
 }:
 
@@ -49,19 +49,9 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  dontWrapGApps = true;
-
   buildInputs = [
     xapp
     python3 # for patchShebangs
-  ];
-
-  pythonPath = with python3.pkgs; [
-    pygobject3
-    requests
-    setproctitle
-    unidecode
-    python-xapp
   ];
 
   installPhase = ''
@@ -86,15 +76,27 @@ stdenv.mkDerivation (finalAttrs: {
       ''${gappsWrapperArgs[@]}
   '';
 
+  dontWrapGApps = true;
+
+  pythonPath = with python3.pkgs; [
+    pygobject3
+    requests
+    setproctitle
+    unidecode
+    python-xapp
+  ];
+
   meta = {
     description = "IPTV streaming application";
     homepage = "https://github.com/linuxmint/hypnotix";
     changelog = "https://github.com/linuxmint/hypnotix/blob/${finalAttrs.src.tag}/debian/changelog";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       dotlambda
       bobby285271
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "hypnotix";
   };

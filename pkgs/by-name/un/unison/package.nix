@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocamlPackages,
   copyDesktopItems,
-  makeDesktopItem,
-  wrapGAppsHook3,
   gsettings-desktop-schemas,
+  makeDesktopItem,
+  ocamlPackages,
+  wrapGAppsHook3,
   enableX11 ? !stdenv.hostPlatform.isDarwin,
 }:
 
@@ -23,7 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Allow the build scripts to correctly call ocamlfind & detect dependencies
   patches = [ ./fix-ocamlfind-env.patch ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -34,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     copyDesktopItems
     wrapGAppsHook3
   ];
+
   buildInputs = lib.optionals enableX11 [
     gsettings-desktop-schemas
     ocamlPackages.lablgtk3
@@ -48,31 +48,32 @@ stdenv.mkDerivation (finalAttrs: {
     install -D $src/icons/U.svg $out/share/icons/hicolor/scalable/apps/unison.svg
   '';
 
-  dontStrip = !ocamlPackages.ocaml.nativeCompilers;
-
   desktopItems = lib.optional enableX11 (makeDesktopItem {
-    name = finalAttrs.pname;
-    desktopName = "Unison";
-    comment = "Bidirectional file synchronizer";
-    genericName = "File synchronization tool";
-    exec = "unison-gui";
-    icon = "unison";
     categories = [
       "Utility"
       "FileTools"
       "GTK"
     ];
+
+    comment = "Bidirectional file synchronizer";
+    desktopName = "Unison";
+    exec = "unison-gui";
+    genericName = "File synchronization tool";
+    icon = "unison";
+    name = finalAttrs.pname;
     startupNotify = true;
     startupWMClass = "Unison";
   });
 
+  dontStrip = !ocamlPackages.ocaml.nativeCompilers;
+
   meta = {
-    homepage = "https://www.cis.upenn.edu/~bcpierce/unison/";
     description = "Bidirectional file synchronizer";
+    homepage = "https://www.cis.upenn.edu/~bcpierce/unison/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ nevivurn ];
     platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin && enableX11; # unison-gui and uimac are broken on darwin
     mainProgram = if enableX11 then "unison-gui" else "unison";
+    broken = stdenv.hostPlatform.isDarwin && enableX11; # unison-gui and uimac are broken on darwin
   };
 })

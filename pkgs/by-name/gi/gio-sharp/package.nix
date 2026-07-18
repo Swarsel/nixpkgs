@@ -4,11 +4,11 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  which,
-  pkg-config,
-  mono,
   glib,
   gtk-sharp-2_0,
+  mono,
+  pkg-config,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "mono";
     repo = "gio-sharp";
-
     rev = finalAttrs.version;
     sha256 = "13pc529pjabj7lq23dbndc26ssmg5wkhc7lfvwapm87j711m0zig";
   };
@@ -29,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     automake
     which
   ];
+
   buildInputs = [
     mono
     glib

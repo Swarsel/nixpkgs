@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "zfec";
   version = "1.6.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -19,7 +18,6 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ pyutil ];
 
   nativeCheckInputs = [
@@ -31,11 +29,12 @@ buildPythonPackage (finalAttrs: {
     trial zfec
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "zfec" ];
 
   meta = {
-    homepage = "https://github.com/tahoe-lafs/zfec";
     description = "Fast erasure codec which can be used with the command-line, C, Python, or Haskell";
+
     longDescription = ''
       Fast, portable, programmable erasure coding a.k.a. "forward
       error correction": the generation of redundant blocks of
@@ -44,6 +43,8 @@ buildPythonPackage (finalAttrs: {
       zfec package includes command-line tools, C API, Python API,
       and Haskell API.
     '';
+
+    homepage = "https://github.com/tahoe-lafs/zfec";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ prusnak ];
   };

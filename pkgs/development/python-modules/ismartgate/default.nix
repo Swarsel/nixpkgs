@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   defusedxml,
   dicttoxml,
-  fetchFromGitHub,
   httpx,
   pycryptodome,
   pytest-asyncio,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "ismartgate";
   version = "5.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -47,6 +46,7 @@ buildPythonPackage rec {
     respx
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "ismartgate" ];
 
   meta = {

@@ -6,9 +6,8 @@
 
 bundlerApp {
   pname = "twurl";
-  gemdir = ./.;
   exes = [ "twurl" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "twurl";
 
   meta = {

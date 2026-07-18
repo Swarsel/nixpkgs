@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   python3,
 }:
 
 stdenv.mkDerivation {
-  name = "replace-secret";
   buildInputs = [ python3 ];
-  dontUnpack = true;
+
   installPhase = ''
     runHook preInstall
     install -D ${./replace-secret.py} $out/bin/replace-secret
     patchShebangs $out
     runHook postInstall
   '';
+
   installCheckPhase = ''
     install -m 0600 ${./test/input_file} long_test
     $out/bin/replace-secret "replace this" ${./test/passwd} long_test
@@ -25,17 +25,23 @@ stdenv.mkDerivation {
     $out/bin/replace-secret "and this" <(echo "b") short_test
     diff ${./test/expected_short_output} short_test
   '';
+
+  dontUnpack = true;
+  name = "replace-secret";
+
   meta = {
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ talyz ];
-    license = lib.licenses.mit;
     description = "Replace a string in one file with a secret from a second file";
+
     longDescription = ''
       Replace a string in one file with a secret from a second file.
 
       Since the secret is read from a file, it won't be leaked through
       '/proc/<pid>/cmdline', unlike when 'sed' or 'replace' is used.
     '';
+
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ talyz ];
+    platforms = lib.platforms.all;
     mainProgram = "replace-secret";
   };
 }

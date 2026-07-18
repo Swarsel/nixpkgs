@@ -1,28 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unstableGitUpdater,
+  buildPythonPackage,
+  chevron,
+  diffenator2,
+  fontbakery,
+  fontmake,
+  fonttools,
+  gftools,
+  glyphslib,
+  ninja,
   setuptools,
   setuptools-scm,
-  fonttools,
-  ufomerge,
-  fontmake,
-  glyphslib,
+  sh,
   ttfautohint-py,
   ufo2ft,
-  gftools,
-  fontbakery,
-  diffenator2,
-  chevron,
-  sh,
-  ninja,
+  ufomerge,
+  unstableGitUpdater,
 }:
 
 buildPythonPackage {
   pname = "notobuilder";
   version = "0-unstable-2026-02-25";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "notofonts";
@@ -36,12 +35,12 @@ buildPythonPackage {
       --replace-fail '"ninja"' '"${lib.getExe ninja}"'
   '';
 
+  env.SETUPTOOLS_SCM_PRETEND_VERSION = "0.0.0";
+
   build-system = [
     setuptools
     setuptools-scm
   ];
-
-  env.SETUPTOOLS_SCM_PRETEND_VERSION = "0.0.0";
 
   dependencies = [
     fonttools
@@ -56,6 +55,8 @@ buildPythonPackage {
     sh
   ]
   ++ gftools.optional-dependencies.qa;
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "notobuilder"

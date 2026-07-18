@@ -1,8 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  unstableGitUpdater,
+  fetchFromGitHub,
   cairo,
   glib,
   json_c,
@@ -15,6 +14,7 @@
   pango,
   pkg-config,
   scdoc,
+  unstableGitUpdater,
   wayland,
   wayland-protocols,
   wayland-scanner,
@@ -45,23 +45,22 @@ stdenv.mkDerivation {
     wayland-scanner
   ];
 
-  # https://github.com/philj56/greetd-mini-wl-greeter/issues/2
-  mesonBuildType = "release";
-
   buildInputs = [
     meson
     ninja
     scdoc
   ];
 
+  # https://github.com/philj56/greetd-mini-wl-greeter/issues/2
+  mesonBuildType = "release";
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Extremely minimal raw Wayland greeter for greetd";
-    license = lib.licenses.mit;
     homepage = "https://github.com/philj56/greetd-mini-wl-greeter";
-    mainProgram = "greetd-mini-wl-greeter";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ _0x5a4 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "greetd-mini-wl-greeter";
   };
 }

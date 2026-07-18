@@ -1,24 +1,24 @@
 {
   lib,
-  stdenvNoCC,
-  buildGoModule,
   fetchFromGitHub,
-  pnpm,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  makeWrapper,
-  electron,
+  buildGoModule,
+  copyDesktopItems,
   dbip-asn-lite,
   dbip-country-lite,
-  v2ray-geoip,
-  v2ray-domain-list-community,
+  electron,
+  fetchPnpmDeps,
+  makeDesktopItem,
+  makeWrapper,
+  mihomo,
+  nix-update-script,
+  nodejs,
+  pnpm,
+  pnpmConfigHook,
+  stdenvNoCC,
   sub-store,
   sub-store-frontend,
-  mihomo,
-  copyDesktopItems,
-  makeDesktopItem,
-  nix-update-script,
+  v2ray-domain-list-community,
+  v2ray-geoip,
 }:
 
 let
@@ -34,7 +34,6 @@ let
     };
 
     vendorHash = "sha256-gg9hcHyVDVFibVwErwCsJtru3TEFnSCpLbGXSgG6XxU=";
-
     meta.mainProgram = "sparkle-service";
   };
 in
@@ -50,12 +49,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-IFK7rhT3i+Qct0FIEYFbgQpJ5cjS7JMKd2tmOq5ZSNg=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-+OHO0Rvp33QUDRFjKwDpaIzdciwbsjEwoQxmqd4TouA=";
-  };
+  # workaround for https://github.com/electron/electron/issues/31121
+  postPatch = ''
+    sed -i "s#process\.resourcesPath#'$out/lib/sparkle/resources'#g" \
+      src/main/utils/dirs.ts
+  '';
 
   nativeBuildInputs = [
     pnpmConfigHook
@@ -66,12 +64,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  # workaround for https://github.com/electron/electron/issues/31121
-  postPatch = ''
-    sed -i "s#process\.resourcesPath#'$out/lib/sparkle/resources'#g" \
-      src/main/utils/dirs.ts
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -115,25 +107,35 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "sparkle";
-      desktopName = "Sparkle";
-      exec = "sparkle %U";
-      terminal = false;
-      type = "Application";
-      icon = "sparkle";
-      startupWMClass = "sparkle";
-      comment = "Another Mihomo GUI";
       categories = [
         "Utility"
         "Network"
       ];
+
+      comment = "Another Mihomo GUI";
+      desktopName = "Sparkle";
+      exec = "sparkle %U";
+      icon = "sparkle";
+
       mimeTypes = [
         "x-scheme-handler/clash"
         "x-scheme-handler/mihomo"
         "x-scheme-handler/sparkle"
       ];
+
+      name = "sparkle";
+      startupWMClass = "sparkle";
+      terminal = false;
+      type = "Application";
     })
   ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-+OHO0Rvp33QUDRFjKwDpaIzdciwbsjEwoQxmqd4TouA=";
+  };
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
@@ -141,8 +143,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Another Mihomo GUI";
     homepage = "https://github.com/xishang0128/sparkle";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "sparkle";
     maintainers = with lib.maintainers; [ chillcicada ];
     platforms = lib.platforms.linux;
+    mainProgram = "sparkle";
   };
 })

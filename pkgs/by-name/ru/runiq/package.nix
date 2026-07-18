@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -15,17 +15,17 @@ rustPlatform.buildRustPackage {
     hash = "sha256-DWP0kbTjXlyUI/+bHgom9/XJ2XW/BJEU4xvIisPVug0=";
   };
 
-  cargoLock.lockFile = ./Cargo.lock;
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
+  cargoLock.lockFile = ./Cargo.lock;
+
   meta = {
     description = "Efficient way to filter duplicate lines from input, à la uniq";
-    mainProgram = "runiq";
     homepage = "https://github.com/whitfin/runiq";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "runiq";
   };
 }

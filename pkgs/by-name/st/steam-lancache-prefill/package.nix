@@ -1,9 +1,9 @@
 {
   lib,
-  buildDotnetModule,
-  dotnetCorePackages,
   fetchFromGitHub,
+  buildDotnetModule,
   curl,
+  dotnetCorePackages,
   jq,
   unzip,
 }:
@@ -20,14 +20,6 @@ buildDotnetModule (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  projectFile = "SteamPrefill/SteamPrefill.csproj";
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
-
-  executables = [ "SteamPrefill" ];
-
   patches = [ ./current-dir-config.patch ];
 
   nativeBuildInputs = [
@@ -40,13 +32,19 @@ buildDotnetModule (finalAttrs: {
     rm -rf $out/lib/steam-lancache-prefill/update.sh
   '';
 
+  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "SteamPrefill" ];
+  nugetDeps = ./deps.json;
+  projectFile = "SteamPrefill/SteamPrefill.csproj";
+
   meta = {
     description = "Automatically fills a Lancache with games from Steam";
     homepage = "https://github.com/tpill90/steam-lancache-prefill";
     changelog = "https://github.com/tpill90/steam-lancache-prefill/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rhoriguchi ];
-    mainProgram = "SteamPrefill";
     platforms = lib.platforms.all;
+    mainProgram = "SteamPrefill";
   };
 })

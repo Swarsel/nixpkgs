@@ -28,14 +28,6 @@ stdenv.mkDerivation rec {
       'datetime.date.fromtimestamp(float(os.environ["SOURCE_DATE_EPOCH"]))'
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    install -m444 -Dt $out/share/fonts/rictydiminished-with-firacode *.ttf
-
-    runHook postInstall
-  '';
-
   nativeBuildInputs = [
     (python3.withPackages (ps: [
       ps.jinja2
@@ -44,11 +36,19 @@ stdenv.mkDerivation rec {
     ]))
   ];
 
+  installPhase = ''
+    runHook preInstall
+
+    install -m444 -Dt $out/share/fonts/rictydiminished-with-firacode *.ttf
+
+    runHook postInstall
+  '';
+
   meta = {
-    homepage = "https://github.com/hakatashi/RictyDiminished-with-FiraCode";
     description = "Best Japanese programming font meets the awesome ligatures of Firacode";
+    homepage = "https://github.com/hakatashi/RictyDiminished-with-FiraCode";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ mt-caret ];
+    platforms = lib.platforms.all;
   };
 }

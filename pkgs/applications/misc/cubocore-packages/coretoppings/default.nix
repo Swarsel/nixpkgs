@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  qt6,
-  ffmpeg,
+  bluez,
   cmake,
-  ninja,
-  v4l-utils,
+  connman,
+  ffmpeg,
+  gawk,
   grim,
-  wf-recorder,
-  libdbusmenu,
-  playerctl,
-  libxdamage,
-  xrandr,
-  xinput,
   iio-sensor-proxy,
   inotify-tools,
-  bluez,
-  networkmanager,
-  connman,
-  redshift,
-  gawk,
-  polkit,
-  libnotify,
-  systemd,
-  xdg-utils,
   libcprime,
   libcsys,
+  libdbusmenu,
+  libnotify,
+  libxdamage,
+  networkmanager,
+  ninja,
+  playerctl,
+  polkit,
+  qt6,
+  redshift,
+  systemd,
+  v4l-utils,
+  wf-recorder,
+  xdg-utils,
+  xinput,
+  xrandr,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -80,10 +80,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Additional features,plugins etc for CuboCore Application Suite";
-    mainProgram = "shareIT";
     homepage = "https://gitlab.com/cubocore/coreapps/coretoppings";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "shareIT";
   };
 })

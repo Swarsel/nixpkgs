@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   qmake,
   wrapQtAppsHook,
@@ -33,7 +33,7 @@ stdenv.mkDerivation rec {
     description = "Qt provides several classes for DBus communication";
     homepage = "https://github.com/nemomobile/qtdbusextended";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ wineee ];
+    platforms = lib.platforms.linux;
   };
 }

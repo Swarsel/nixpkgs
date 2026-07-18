@@ -11,8 +11,6 @@
 }:
 
 buildGoModule (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "atomgit-cli";
   version = "0.5.0";
 
@@ -22,14 +20,29 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZvQ8S0f1jUfN48UE/U+JnTTrtoWYZfwhDPDBbKKLlC0=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-7K17JaXFsjf163g5PXCb5ng2gYdotnZ2IDKk8KFjNj0=";
-
-  subPackages = [ "cmd/ag" ];
 
   preCheck = ''
     # Test all packages, not only cmd/ag.
     unset subPackages
   '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  postFixup = ''
+    wrapProgram $out/bin/ag \
+      --prefix PATH : ${
+        lib.makeBinPath ([ gitMinimal ] ++ lib.optionals stdenv.hostPlatform.isLinux [ xdg-utils ])
+      }
+  '';
+
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -39,29 +52,16 @@ buildGoModule (finalAttrs: {
     "-X atomgit.com/hust-open-atom-club/atomgit-cli/internal/version.BuildDate=2026-07-13T07:53:45Z"
   ];
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  postFixup = ''
-    wrapProgram $out/bin/ag \
-      --prefix PATH : ${
-        lib.makeBinPath ([ gitMinimal ] ++ lib.optionals stdenv.hostPlatform.isLinux [ xdg-utils ])
-      }
-  '';
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
-  versionCheckProgramArg = "version";
+  subPackages = [ "cmd/ag" ];
   versionCheckKeepEnvironment = [ "HOME" ];
-  doInstallCheck = true;
+  versionCheckProgramArg = "version";
 
   meta = {
     description = "Command-line interface for AtomGit";
     homepage = "https://atomgit.com/hust-open-atom-club/atomgit-cli";
     changelog = "https://atomgit.com/hust-open-atom-club/atomgit-cli/tags/v${finalAttrs.version}";
     license = lib.licenses.mulan-psl2;
-    mainProgram = "ag";
     maintainers = [ lib.maintainers.silicalet ];
+    mainProgram = "ag";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  mkKdeDerivation,
   fetchurl,
+  mkKdeDerivation,
   pkg-config,
   pulseaudio,
 }:
@@ -14,8 +14,8 @@ mkKdeDerivation rec {
     hash = "sha256-eWGcVblICKp9MH+yNK05oQltCI8h+Aa+DniL55p2s8k=";
   };
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [ pulseaudio ];
+  extraNativeBuildInputs = [ pkg-config ];
 
   meta.license = with lib.licenses; [
     lgpl21Only

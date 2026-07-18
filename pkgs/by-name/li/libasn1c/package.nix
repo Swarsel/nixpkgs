@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   pkg-config,
   talloc,
 }:
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Runtime library of Lev Walkin's asn1c split out as separate library";
     homepage = "https://github.com/osmocom/libasn1c/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

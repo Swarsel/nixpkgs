@@ -37,53 +37,31 @@ in
 
     expectedTailnet = mkOption {
       default = "";
-      type = types.nullOr types.str;
-      example = "tailnet012345.ts.net";
+
       description = ''
         If you want to prevent node sharing from allowing users to access services
         across tailnets, declare your expected tailnets domain here.
       '';
+
+      example = "tailnet012345.ts.net";
+      type = types.nullOr types.str;
     };
 
     virtualHosts = mkOption {
-      type = types.listOf types.str;
       default = [ ];
+
       description = ''
         A list of nginx virtual hosts to put behind tailscale.nginx-auth
       '';
+
+      type = types.listOf types.str;
     };
   };
 
   config = mkIf cfg.enable {
-    services.tailscaleAuth.enable = true;
     services.nginx.enable = true;
 
-    users.users.${config.services.nginx.user}.extraGroups = [ cfgAuth.group ];
-
-    systemd.services.tailscale-nginx-auth = {
-      after = [ "nginx.service" ];
-      wants = [ "nginx.service" ];
-    };
-
     services.nginx.virtualHosts = genAttrs cfg.virtualHosts (vhost: {
-      locations."/auth" = {
-        extraConfig = ''
-          internal;
-
-          proxy_pass http://unix:${cfgAuth.socketPath};
-          proxy_pass_request_body off;
-          proxy_set_header Content-Length "";
-
-          # Upstream uses $http_host here, but we are using gixy to check nginx configurations
-          # gixy wants us to use $host: https://github.com/yandex/gixy/blob/master/docs/en/plugins/hostspoofing.md
-          proxy_set_header Host $host;
-          proxy_set_header Remote-Addr $remote_addr;
-          proxy_set_header Remote-Port $remote_port;
-          proxy_set_header Original-URI $request_uri;
-          proxy_set_header X-Scheme                $scheme;
-          proxy_set_header X-Auth-Request-Redirect $scheme://$host$request_uri;
-        '';
-      };
       locations."/".extraConfig = ''
         auth_request /auth;
         auth_request_set $auth_user $upstream_http_tailscale_user;
@@ -102,7 +80,35 @@ in
           cfg.expectedTailnet != ""
         ) ''proxy_set_header Expected-Tailnet "${cfg.expectedTailnet}";''}
       '';
+
+      locations."/auth" = {
+        extraConfig = ''
+          internal;
+
+          proxy_pass http://unix:${cfgAuth.socketPath};
+          proxy_pass_request_body off;
+          proxy_set_header Content-Length "";
+
+          # Upstream uses $http_host here, but we are using gixy to check nginx configurations
+          # gixy wants us to use $host: https://github.com/yandex/gixy/blob/master/docs/en/plugins/hostspoofing.md
+          proxy_set_header Host $host;
+          proxy_set_header Remote-Addr $remote_addr;
+          proxy_set_header Remote-Port $remote_port;
+          proxy_set_header Original-URI $request_uri;
+          proxy_set_header X-Scheme                $scheme;
+          proxy_set_header X-Auth-Request-Redirect $scheme://$host$request_uri;
+        '';
+      };
     });
+
+    services.tailscaleAuth.enable = true;
+
+    systemd.services.tailscale-nginx-auth = {
+      after = [ "nginx.service" ];
+      wants = [ "nginx.service" ];
+    };
+
+    users.users.${config.services.nginx.user}.extraGroups = [ cfgAuth.group ];
   };
 
   meta.maintainers = [ ];

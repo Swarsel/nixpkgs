@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -34,10 +34,12 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Dictionary converted from alt-cannadic for Mozc";
     homepage = "https://github.com/utuhiro78/mozcdic-ut-alt-cannadic";
+
     license = with lib.licenses; [
       asl20
       gpl2
     ];
+
     maintainers = with lib.maintainers; [ pineapplehunter ];
     platforms = lib.platforms.all;
     # this does not need to be separately built

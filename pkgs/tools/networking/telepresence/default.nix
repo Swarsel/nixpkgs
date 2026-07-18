@@ -1,16 +1,16 @@
 {
   lib,
-  pythonPackages,
   fetchFromGitHub,
-  makeWrapper,
-  sshfs-fuse,
-  torsocks,
-  sshuttle,
+  bash,
   conntrack-tools,
-  openssh,
   coreutils,
   iptables,
-  bash,
+  makeWrapper,
+  openssh,
+  pythonPackages,
+  sshfs-fuse,
+  sshuttle,
+  torsocks,
 }:
 
 let
@@ -21,7 +21,6 @@ in
 pythonPackages.buildPythonPackage rec {
   pname = "telepresence";
   version = "0.109";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "telepresenceio";
@@ -35,6 +34,7 @@ pythonPackages.buildPythonPackage rec {
   ];
 
   nativeBuildInputs = [ makeWrapper ];
+  doCheck = false;
 
   postInstall = ''
     wrapProgram $out/bin/telepresence \
@@ -52,13 +52,13 @@ pythonPackages.buildPythonPackage rec {
       }
   '';
 
-  doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://www.telepresence.io/";
     description = "Local development against a remote Kubernetes or OpenShift cluster";
-    mainProgram = "telepresence";
+    homepage = "https://www.telepresence.io/";
     license = with lib.licenses; [ asl20 ];
     maintainers = [ ];
+    mainProgram = "telepresence";
   };
 }

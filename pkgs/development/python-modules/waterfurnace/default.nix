@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   pytestCheckHook,
   requests,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "waterfurnace";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sdague";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-o5C964T53JgSBG2M3LP45xNika70CXZmR5Z4ThGdxSE=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +29,7 @@ buildPythonPackage (finalAttrs: {
     websocket-client
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "waterfurnace" ];
 
   meta = {

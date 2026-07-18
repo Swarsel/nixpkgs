@@ -4,21 +4,20 @@
   dns-client-mirage,
   dns-mirage,
   dns-resolver,
-  dns-tsig,
   dns-server,
+  dns-tsig,
   duration,
-  randomconv,
   lwt,
-  mirage-ptime,
-  mirage-crypto-rng,
-  tcpip,
   metrics,
+  mirage-crypto-rng,
+  mirage-ptime,
+  randomconv,
+  tcpip,
 }:
 
 buildDunePackage {
-  pname = "dns-stub";
-
   inherit (dns) version src;
+  pname = "dns-stub";
 
   propagatedBuildInputs = [
     dns

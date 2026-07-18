@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   appdirs,
   buildPythonPackage,
   distro,
-  fetchFromGitHub,
   filelock,
-  pytestCheckHook,
   pytest-mock,
+  pytestCheckHook,
   requests,
   setuptools-scm,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "iterative-telemtry";
   version = "0.0.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-+l9JH9MbN+Pai3MIcKZJObzoPGhQipfMd7T8v4SoSws=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -32,11 +36,7 @@ buildPythonPackage rec {
     distro
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "iterative_telemetry" ];
 
   meta = {

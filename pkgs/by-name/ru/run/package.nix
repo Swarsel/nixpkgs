@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "run";
@@ -15,16 +15,17 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-BAyhuE9hGGDfDGmXQ7dseUvHlK5vC87uLT78lHSvLeg=";
-
   doCheck = false;
 
   meta = {
     description = "Easily manage and invoke small scripts and wrappers";
-    mainProgram = "run";
     homepage = "https://github.com/TekWizely/run";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       rawkode
     ];
+
+    mainProgram = "run";
   };
 })

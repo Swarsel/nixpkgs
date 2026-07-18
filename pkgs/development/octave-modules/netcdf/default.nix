@@ -1,11 +1,11 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
+  autoreconfHook,
+  buildOctavePackage,
   netcdf,
   nix-update-script,
   pkg-config,
-  autoreconfHook,
 }:
 
 buildOctavePackage rec {
@@ -28,6 +28,10 @@ buildOctavePackage rec {
     netcdf
   ];
 
+  postAutoreconf = ''
+    popd
+  '';
+
   # autoreconfHook provides an autoreconfPhase that is run as a
   # preconfigurePhase, which means it runs AFTER the source is un-tarred, and
   # before buildOctavePackage's buildPhase re-tars it up into a format for later
@@ -39,14 +43,11 @@ buildOctavePackage rec {
     # actually fires for our environment.
     rm config.*
   '';
-  postAutoreconf = ''
-    popd
-  '';
 
   meta = {
+    description = "NetCDF interface for Octave";
     homepage = "https://gnu-octave.github.io/packages/netcdf/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "NetCDF interface for Octave";
   };
 }

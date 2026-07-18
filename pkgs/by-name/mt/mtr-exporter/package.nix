@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,6 +22,7 @@ buildGoModule (finalAttrs: {
       Mtr-exporter periodically executes mtr to a given host and
       provides the measured results as prometheus metrics.
     '';
+
     homepage = "https://github.com/mgumz/mtr-exporter";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jakubgs ];

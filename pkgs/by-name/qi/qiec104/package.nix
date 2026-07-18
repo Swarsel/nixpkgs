@@ -24,18 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux copyDesktopItems;
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "qiec104";
-      desktopName = "Q104";
-      comment = finalAttrs.meta.description;
-      exec = finalAttrs.meta.mainProgram;
-      icon = "Q104";
-      terminal = false;
-      categories = [ "Utility" ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -52,6 +40,18 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "Q104";
+      exec = finalAttrs.meta.mainProgram;
+      icon = "Q104";
+      name = "qiec104";
+      terminal = false;
+    })
+  ];
 
   meta = {
     description = "Small IEC104 client";

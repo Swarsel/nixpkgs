@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "result";
   version = "0.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rustedpy";
@@ -20,14 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-o+7qKxGQCeMUnsmEReggvf+XwQWFHRCYArYk3DxCa50=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "result" ];
 
   meta = {

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   ncurses,
+  pkg-config,
   versionCheckHook,
 }:
 
@@ -17,18 +17,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ ncurses ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Disk usage analyzer with an ncurses interface";
     homepage = "https://dev.yorhel.nl/ncdu";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.all;
     mainProgram = "ncdu";
   };
 })

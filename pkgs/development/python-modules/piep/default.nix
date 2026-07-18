@@ -2,34 +2,31 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pygments,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
-  version = "0.10.0";
   pname = "piep";
-  pyproject = true;
+  version = "0.10.0";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-aM7KQJZr1P0Hs2ReyRj2ItGUo+fRJ+TU3lLAU2Mu8KA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pygments ];
-
-  pythonImportsCheck = [ "piep" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ pygments ];
+  pyproject = true;
+  pythonImportsCheck = [ "piep" ];
 
   meta = {
     description = "Bringing the power of python to stream editing";
     homepage = "https://github.com/timbertson/piep";
-    maintainers = with lib.maintainers; [ timbertson ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ timbertson ];
     mainProgram = "piep";
   };
 }

@@ -20,7 +20,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-  unshareIpc = false;
 
   extraInstallCommands = ''
     mv $out/bin/jbrowse $out/bin/jbrowse-desktop
@@ -31,12 +30,14 @@ appimageTools.wrapType2 {
       --replace 'Exec=AppRun --no-sandbox' 'Exec=jbrowse-desktop'
   '';
 
+  unshareIpc = false;
+
   meta = {
     description = "Next-generation genome browser";
-    mainProgram = "jbrowse-desktop";
     homepage = "https://jbrowse.org/jb2/";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "jbrowse-desktop";
   };
 }

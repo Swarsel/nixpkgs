@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
+  fetchgit,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,9 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0s37xn9pr5p820hd40489xwra7kg3gzqrxhc2j9rnxnd489hl0pr";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-  doCheck = true;
-
   outputs = [
     "bin"
     "lib"
@@ -25,15 +22,18 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
   ];
 
+  nativeBuildInputs = [ autoreconfHook ];
+  doCheck = true;
+
   meta = {
+    description = "Shamir's secret-sharing method in the Galois Field GF(2**8)";
     # Not the most descriptive homepage but it's what Debian and Ubuntu use
     # https://packages.debian.org/sid/libgfshare2
     # https://launchpad.net/ubuntu/impish/+source/libgfshare/+copyright
     homepage = "https://git.gitano.org.uk/libgfshare.git/";
-    description = "Shamir's secret-sharing method in the Galois Field GF(2**8)";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.rraval ];
+    platforms = lib.platforms.all;
     broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/gfshare.x86_64-darwin
   };
 })

@@ -13,9 +13,9 @@ let
   cfg = config.programs.pmount;
 
   mkSetuidWrapper = package: command: {
-    setuid = true;
-    owner = "root";
     group = "root";
+    owner = "root";
+    setuid = true;
     source = getExe' package command;
   };
 in

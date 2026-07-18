@@ -18,14 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-fkp78hmZioRMC8zgoXbknQdDy0tQWg4ZUym/LsGW3dc=";
   };
 
-  hardeningDisable = [
-    "format"
-  ];
-
-  patchPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace GNUmakefile --replace gcc cc
-  '';
-
   preBuild = ''
     echo Building PALP optimized for ${dim} dimensions
     sed -i "s/^#define[^a-zA-Z]*POLY_Dmax.*/#define POLY_Dmax ${dim}/" Global.h
@@ -34,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   # palp has no tests of its own. This test is an adapted sage test that failed
   # when #28029 was merged.
   doCheck = true;
+
   checkPhase = ''
     ./nef.x -f -N << EOF | grep -q 'np='
       3 6
@@ -56,8 +49,17 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  hardeningDisable = [
+    "format"
+  ];
+
+  patchPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace GNUmakefile --replace gcc cc
+  '';
+
   meta = {
     description = "Package for Analyzing Lattice Polytopes";
+
     longDescription = ''
       A Package for Analyzing Lattice Polytopes (PALP) is a set of C
       programs for calculations with lattice polytopes and applications to
@@ -79,6 +81,7 @@ stdenv.mkDerivation (finalAttrs: {
       algorithms work in any dimension and our key routine for vertex and
       facet enumeration compares well with existing packages.
     '';
+
     homepage = "http://hep.itp.tuwien.ac.at/~kreuzer/CY/CYpalp.html";
     # Not really a changelog, but a one-line summary of each update that should
     # be reviewed on update.
@@ -87,7 +90,7 @@ stdenv.mkDerivation (finalAttrs: {
     # version was released that pointed to gplv2 however, so thats probably
     # the right license.
     license = lib.licenses.gpl2;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.sage ];
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  fetchurl,
   stdenv,
-  unzip,
+  fetchurl,
   fpc,
+  unzip,
 }:
 
 stdenv.mkDerivation {
@@ -19,9 +19,11 @@ stdenv.mkDerivation {
     unzip
     fpc
   ];
+
   buildPhase = ''
     fpc DolbyBi64.PP
   '';
+
   installPhase = ''
     mkdir -p $out/bin
     cp DolbyBi64 $out/bin/
@@ -30,12 +32,11 @@ stdenv.mkDerivation {
   meta = {
     description = "Dolby B & C software decoder";
     homepage = "https://sourceforge.net/projects/dolbybcsoftwaredecode/";
-    maintainers = with lib.maintainers; [ lorenz ];
-
     # Project is has source code available, but has no explicit license.
     # I asked upstream to assign a license, so maybe this can be free
     # in the future, but for now let's play it safe and make it unfree.
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ lorenz ];
     mainProgram = "DolbyBi64";
   };
 }

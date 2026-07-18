@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  replaceVars,
   dmenu,
+  python3Packages,
+  replaceVars,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dmensamenu";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dotlambda";
@@ -24,20 +23,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
     })
   ];
 
+  # No tests implemented
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
     requests
   ];
 
-  # No tests implemented
-  doCheck = false;
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/dotlambda/dmensamenu";
     description = "Print German canteen menus using dmenu and OpenMensa";
-    mainProgram = "dmensamenu";
+    homepage = "https://github.com/dotlambda/dmensamenu";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "dmensamenu";
   };
 })

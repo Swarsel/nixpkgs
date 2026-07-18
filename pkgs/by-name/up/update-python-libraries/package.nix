@@ -1,10 +1,10 @@
 {
   lib,
-  python3,
-  runCommand,
   git,
   nix,
   nix-prefetch-git,
+  python3,
+  runCommand,
 }:
 
 runCommand "update-python-libraries"

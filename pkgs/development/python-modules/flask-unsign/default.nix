@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
   itsdangerous,
   markupsafe,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "flask-unsign";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Paradoxis";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     hash = "sha256-/WK3g6Ef3mSKeT3aaSAh5J8estUN4sNmM9Tq9An/18A=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,11 +33,9 @@ buildPythonPackage rec {
     werkzeug
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "flask_unsign" ];
-
   enabledTestPaths = [ "tests/flask_unsign.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "flask_unsign" ];
 
   meta = {
     description = "Command line tool to fetch, decode, brute-force and craft session cookies of Flask applications";

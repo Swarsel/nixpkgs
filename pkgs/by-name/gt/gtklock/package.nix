@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gtk-session-lock,
+  gtk3,
   meson,
   ninja,
-  scdoc,
-  pkg-config,
-  wrapGAppsHook3,
-  gtk3,
   pam,
-  gtk-session-lock,
+  pkg-config,
   runCommand,
+  scdoc,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-e/JRJtQAyIvQhL5hSbY7I/f12Z9g2N0MAHQvX+aXz8Q=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -38,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     pam
     gtk-session-lock
   ];
-
-  strictDeps = true;
 
   passthru.testModule =
     module:
@@ -58,15 +58,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GTK-based lockscreen for Wayland";
+
     longDescription = ''
       Important note: for gtklock to work you need to set "security.pam.services.gtklock = {};" manually.
       Otherwise you'll lock youself out of desktop and unable to authenticate.
     ''; # Following  nixpkgs/pkgs/applications/window-managers/sway/lock.nix
+
     homepage = "https://github.com/jovanlanik/gtklock";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       aleksana
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "gtklock";
   };

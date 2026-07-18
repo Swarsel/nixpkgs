@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -17,19 +17,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   propagatedBuildInputs = with python3Packages; [ pybluez ];
 
-  pyproject = false;
-
   installPhase = ''
     mkdir -p $out/bin
     cp $src/bluetooth_battery.py $out/bin/bluetooth_battery
   '';
 
+  pyproject = false;
+
   meta = {
     description = "Fetch the battery charge level of some Bluetooth headsets";
-    mainProgram = "bluetooth_battery";
     homepage = "https://github.com/TheWeirdDev/Bluetooth_Headset_Battery_Level";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ cheriimoya ];
+    platforms = lib.platforms.unix;
+    mainProgram = "bluetooth_battery";
   };
 })

@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "locket";
   version = "1.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # weird test requirements (spur.local>=0.3.7,<0.4)
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "locket" ];
 
   meta = {

@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pysqlrecon";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Tw1sm";
@@ -15,12 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-+pme4uOgsh6iZEL73PaR1Y55r+Z/SPEVD2QWBsnMsNs=";
   };
-
-  pythonRelaxDeps = [
-    "impacket"
-    "rich"
-    "typer"
-  ];
 
   nativeBuildInputs = with python3.pkgs; [ poetry-core ];
 
@@ -33,8 +26,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # Project has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pysqlrecon" ];
+
+  pythonRelaxDeps = [
+    "impacket"
+    "rich"
+    "typer"
+  ];
 
   meta = {
     description = "Offensive MSSQL toolkit";

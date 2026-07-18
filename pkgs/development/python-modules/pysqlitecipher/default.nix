@@ -1,16 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cryptography,
+  fetchPypi,
   onetimepad,
 }:
 
 buildPythonPackage rec {
   pname = "pysqlitecipher";
   version = "0.22";
-
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,7 +22,7 @@ buildPythonPackage rec {
 
   # upstream has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pysqlitecipher" ];
 
   meta = {

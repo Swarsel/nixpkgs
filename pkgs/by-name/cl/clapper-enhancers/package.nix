@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  clapper-unwrapped,
+  glib,
+  gobject-introspection,
+  gst_all_1,
+  json-glib,
+  libmicrodns,
+  libpeas2,
+  libsoup_3,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
-  libpeas2,
-  json-glib,
-  libsoup_3,
-  libmicrodns,
-  sqlite,
-  glib,
-  clapper-unwrapped,
-  gst_all_1,
   python3Packages,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,9 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     gst_all_1.gst-plugins-ugly
   ];
 
-  pythonPath = with python3Packages; [
-    yt-dlp
-  ];
+  mesonFlags = [ "-Denhancersdir=${placeholder "out"}/${finalAttrs.passthru.pluginPath}" ];
 
   postFixup = ''
     buildPythonPath "$out ''${pythonPath[*]}"
@@ -63,14 +61,16 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  mesonFlags = [ "-Denhancersdir=${placeholder "out"}/${finalAttrs.passthru.pluginPath}" ];
+  pythonPath = with python3Packages; [
+    yt-dlp
+  ];
 
   passthru.pluginPath = "lib/clapper-enhancers/plugins";
 
   meta = {
+    inherit (clapper-unwrapped.meta) maintainers platforms;
     description = "Plugins enhancing Clapper library capabilities";
     homepage = "https://github.com/Rafostar/clapper-enhancers";
     license = lib.licenses.lgpl21Only;
-    inherit (clapper-unwrapped.meta) maintainers platforms;
   };
 })

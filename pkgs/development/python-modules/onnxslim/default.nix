@@ -1,13 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   colorama,
+  # build-system
+  hatchling,
   onnx,
   packaging,
   sympy,
@@ -16,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "onnxslim";
   version = "0.1.93";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "inisis";
@@ -24,6 +21,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-RnUBOTRlxtyy2QaAFaAHA664CzLNoBUwfYkhPysYOJo=";
   };
+
+  # __main__.py: error: the following arguments are required: --model-dir
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -36,10 +36,8 @@ buildPythonPackage (finalAttrs: {
     sympy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "onnxslim" ];
-
-  # __main__.py: error: the following arguments are required: --model-dir
-  doCheck = false;
 
   meta = {
     description = "Toolkit to Help Optimize Onnx Model";

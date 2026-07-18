@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -16,11 +16,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-mVHPnff6NEAgehEgrrIsGBeR05fHlzRMpXWCs6jsUz0=";
   };
 
+  vendorHash = "sha256-fIbykVKC7CiVRh/SIaLpSkV1emVchrvFwRFotTpOInQ=";
   # needs network connection and fails at
   # https://github.com/0xERR0R/blocky/blob/development/resolver/upstream_resolver_test.go
   doCheck = false;
-
-  vendorHash = "sha256-fIbykVKC7CiVRh/SIaLpSkV1emVchrvFwRFotTpOInQ=";
 
   ldflags = [
     "-s"
@@ -35,10 +34,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://0xerr0r.github.io/blocky";
     changelog = "https://github.com/0xERR0R/blocky/releases";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ratsclub
       kuflierl
     ];
+
     mainProgram = "blocky";
   };
 })

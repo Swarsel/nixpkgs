@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  gtk2,
   libhdhomerun,
   pkg-config,
-  gtk2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     gtk2
     libhdhomerun
@@ -35,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GUI for configuring Silicondust HDHomeRun TV tuners";
     homepage = "https://www.silicondust.com/support/linux";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.louisdk1 ];
+    platforms = lib.platforms.linux;
     mainProgram = "hdhomerun_config_gui";
   };
 })

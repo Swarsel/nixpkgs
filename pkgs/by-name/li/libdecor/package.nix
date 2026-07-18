@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  pkg-config,
+  cairo,
+  dbus,
+  evdev-proto,
+  gtk3,
   meson,
   ninja,
+  pango,
+  pkg-config,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  cairo,
-  dbus,
-  pango,
-  gtk3,
-  evdev-proto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.2.5";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "libdecor";
     repo = "libdecor";
     rev = finalAttrs.version;
     hash = "sha256-sUktv/k+4IdJ55uH3F6z8XqaAOTic6miuyZ9U+NhtQQ=";
+    domain = "gitlab.freedesktop.org";
   };
 
   outputs = [
@@ -33,10 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-
-  mesonFlags = [
-    (lib.mesonBool "demo" false)
-  ];
 
   nativeBuildInputs = [
     meson
@@ -55,11 +51,15 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isFreeBSD evdev-proto;
 
+  mesonFlags = [
+    (lib.mesonBool "demo" false)
+  ];
+
   meta = {
-    homepage = "https://gitlab.freedesktop.org/libdecor/libdecor";
     description = "Client-side decorations library for Wayland clients";
+    homepage = "https://gitlab.freedesktop.org/libdecor/libdecor";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     maintainers = with lib.maintainers; [ artturin ];
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
   };
 })

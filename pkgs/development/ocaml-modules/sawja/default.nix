@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  which,
-  ocaml,
   findlib,
   javalib,
+  ocaml,
+  which,
 }:
 
 let
@@ -14,9 +14,8 @@ let
 in
 stdenv.mkDerivation {
 
-  pname = "ocaml${ocaml.version}-${pname}";
-
   inherit version;
+  pname = "ocaml${ocaml.version}-${pname}";
 
   src = fetchFromGitHub {
     owner = "javalib-team";
@@ -25,34 +24,32 @@ stdenv.mkDerivation {
     hash = "sha256-G1W8/G0TEcldnFnH/NAb9a6ZSGGP2fWTM47lI8bBHnw=";
   };
 
+  patches = [
+    ./configure.sh.patch
+    ./Makefile.config.example.patch
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     which
     ocaml
     findlib
   ];
 
-  strictDeps = true;
-
-  patches = [
-    ./configure.sh.patch
-    ./Makefile.config.example.patch
-  ];
-
-  createFindlibDestdir = true;
-
+  propagatedBuildInputs = [ javalib ];
+  configurePlatforms = [ ];
   configureScript = "./configure.sh";
+  createFindlibDestdir = true;
   dontAddPrefix = "true";
   dontAddStaticConfigureFlags = true;
-  configurePlatforms = [ ];
-
-  propagatedBuildInputs = [ javalib ];
 
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "Library written in OCaml, relying on Javalib to provide a high level representation of Java bytecode programs";
     homepage = "http://sawja.inria.fr/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.vbgl ];
-    inherit (ocaml.meta) platforms;
     broken = !(lib.versionAtLeast ocaml.version "4.08");
   };
 }

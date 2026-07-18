@@ -1,26 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   jinja2,
   jupyterhub,
-
   # tests
   pytest-asyncio_0,
   pytest-cov-stub,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "batchspawner";
   version = "1.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jupyterhub";
@@ -38,6 +33,15 @@ buildPythonPackage (finalAttrs: {
         "from jupyterhub.tests.conftest import db"
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio_0
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
@@ -47,22 +51,15 @@ buildPythonPackage (finalAttrs: {
     jupyterhub
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio_0
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "batchspawner" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Spawner for Jupyterhub to spawn notebooks using batch resource managers";
-    mainProgram = "batchspawner-singleuser";
     homepage = "https://github.com/jupyterhub/batchspawner";
     changelog = "https://github.com/jupyterhub/batchspawner/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "batchspawner-singleuser";
   };
 })

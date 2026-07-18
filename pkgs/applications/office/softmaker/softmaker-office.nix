@@ -1,7 +1,6 @@
 {
-  callPackage,
   fetchurl,
-
+  callPackage,
   # This is a bit unusual, but makes version and hash easily
   # overridable. This is useful when people have an older version of
   # Softmaker Office or when the upstream archive was replaced and
@@ -11,7 +10,6 @@
     edition = "2024";
     hash = "sha256-oIO/p52ASIU0qjQqxp/l9GVrUK+LQNQxX1wKheKHT3w=";
   },
-
   ...
 }@args:
 
@@ -19,9 +17,7 @@ callPackage ./generic.nix (
   args
   // rec {
     inherit (officeVersion) version edition;
-
     pname = "softmaker-office";
-    suiteName = "SoftMaker Office";
 
     src = fetchurl {
       inherit (officeVersion) hash;
@@ -29,5 +25,6 @@ callPackage ./generic.nix (
     };
 
     archive = "office${edition}.tar.lzma";
+    suiteName = "SoftMaker Office";
   }
 )

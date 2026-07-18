@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bleak,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   requests,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aranet4";
   version = "2.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Anrijs";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-9dVa2RCsA+cs0fA8rLaOnikedEDz6fSfQ1tfAV0A7Eo=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,14 +27,13 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "aranet4" ];
-
   disabledTests = [
     # Test compares rendered output
     "test_current_values"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aranet4" ];
 
   meta = {
     description = "Module to interact with Aranet4 devices";

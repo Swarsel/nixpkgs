@@ -10,12 +10,11 @@
 buildPythonPackage rec {
   pname = "llama-index-graph-stores-nebula";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_graph_stores_nebula";
     inherit version;
     hash = "sha256-XTW6XrAbWx8DZgoEoOL2rP2WNuQqQO+hcCWpQSj98ks=";
+    pname = "llama_index_graph_stores_nebula";
   };
 
   build-system = [ hatchling ];
@@ -25,6 +24,7 @@ buildPythonPackage rec {
     nebula3-python
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.graph_stores.nebula" ];
 
   meta = {

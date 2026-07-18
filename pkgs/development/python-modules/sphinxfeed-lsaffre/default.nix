@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   feedgen,
+  hatchling,
+  pytest-cov-stub,
+  pytestCheckHook,
   python-dateutil,
   sphinx,
-  pytestCheckHook,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sphinxfeed-lsaffre";
   version = "0.3.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lsaffre";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-2hS8EzaUlxAqBT0R5NMYAuj3ZMPq+x5nqJnidQOAGfM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   build-system = [
     hatchling
@@ -32,10 +36,7 @@ buildPythonPackage (finalAttrs: {
     sphinx
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "sphinxfeed"

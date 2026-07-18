@@ -9,21 +9,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "advantage-air";
   version = "0.4.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "advantage_air";
     inherit (finalAttrs) version;
     hash = "sha256-4rRR9IxzH5EiYfWzWYeyCwoLB2LetBVyH7L3nkvp+gA=";
+    pname = "advantage_air";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
 
   # No tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "advantage_air" ];
 
   meta = {

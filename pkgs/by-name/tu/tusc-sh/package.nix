@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  writeShellApplication,
-  curl,
   coreutils,
+  curl,
   jq,
+  stdenvNoCC,
+  writeShellApplication,
 }:
 
 let
@@ -20,9 +20,6 @@ let
       hash = "sha256-EKlcE+rsVh5lUd8dQzAwXDjiUvrrud5yWfF6JWSZQFE=";
     };
 
-    dontConfigure = true;
-    dontBuild = true;
-
     installPhase = ''
       runHook preInstall
 
@@ -31,26 +28,32 @@ let
       runHook postInstall
     '';
 
+    dontBuild = true;
+    dontConfigure = true;
+
   });
 in
 writeShellApplication {
   name = "tusc";
+
   runtimeInputs = [
     tusc
     curl
     coreutils
     jq
   ];
+
   text = ''
     tusc.sh "$@"
   '';
+
   meta = {
     description = "Tus 1.0.0 client protocol implementation for bash";
     homepage = "https://github.com/adhocore/tusc.sh";
     changelog = "https://github.com/adhocore/tusc.sh/blob/${tusc.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ happysalada ];
-    mainProgram = "tusc";
     platforms = lib.platforms.all;
+    mainProgram = "tusc";
   };
 }

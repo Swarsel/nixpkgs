@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  mono,
-  glib,
-  pango,
-  gtk2,
-  libxml2,
-  monoDLLFixer,
   autoconf,
   automake,
-  libtool,
-  which,
   fetchpatch,
+  glib,
+  gtk2,
+  libtool,
+  libxml2,
+  mono,
+  monoDLLFixer,
+  pango,
+  pkg-config,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit monoDLLFixer;
   pname = "gtk-sharp";
   version = "2.12.45";
 
-  builder = ./builder.sh;
   src = fetchFromGitHub {
     owner = "mono";
     repo = "gtk-sharp";
@@ -30,19 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://projects.archlinux.de/svntogit/packages.git/plain/trunk/gtk-sharp2-2.12.12-gtkrange.patch?h=packages/gtk-sharp-2";
       sha256 = "bjx+OfgWnN8SO82p8G7pbGuxJ9EeQxMLeHnrtEm8RV8=";
+      url = "https://projects.archlinux.de/svntogit/packages.git/plain/trunk/gtk-sharp2-2.12.12-gtkrange.patch?h=packages/gtk-sharp-2";
     })
   ];
-
-  postInstall = ''
-    pushd $out/bin
-    for f in gapi2-*
-    do
-      substituteInPlace $f --replace mono ${mono}/bin/mono
-    done
-    popd
-  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -60,15 +51,23 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=int-conversion";
+
   preConfigure = ''
     ./bootstrap-${lib.versions.majorMinor finalAttrs.version}
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=int-conversion";
+  postInstall = ''
+    pushd $out/bin
+    for f in gapi2-*
+    do
+      substituteInPlace $f --replace mono ${mono}/bin/mono
+    done
+    popd
+  '';
 
+  builder = ./builder.sh;
   dontStrip = true;
-
-  inherit monoDLLFixer;
 
   passthru = {
     gtk = gtk2;
@@ -77,7 +76,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Graphical User Interface Toolkit for mono and .Net";
     homepage = "https://www.mono-project.com/docs/gui/gtksharp";
-    platforms = lib.platforms.unix;
     license = lib.licenses.gpl2;
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,21 +1,21 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  scdoc,
+  bash,
   coreutils,
+  glib,
   grim,
   hyprland,
   hyprpicker,
   jq,
   libnotify,
-  slurp,
-  wl-clipboard,
-  unixtools,
-  glib,
-  bash,
+  makeWrapper,
   nix-update-script,
+  scdoc,
+  slurp,
+  stdenvNoCC,
+  unixtools,
+  wl-clipboard,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -42,8 +42,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     "PREFIX=$(out)"
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/grimblast";
-
   postInstall = ''
     wrapProgram $out/bin/grimblast --prefix PATH ':' \
       "${
@@ -62,6 +60,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       }"
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/grimblast";
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
@@ -69,7 +68,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/hyprwm/contrib";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
-    teams = [ lib.teams.hyprland ];
     mainProgram = "grimblast";
+    teams = [ lib.teams.hyprland ];
   };
 })

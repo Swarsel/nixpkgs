@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   cmake,
   versionCheckHook,
@@ -29,15 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
     rm $out/bin/*.sh
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgramArg = "-version";
-  doInstallCheck = true;
 
   meta = {
-    homepage = "https://sourceforge.net/projects/nettee";
     description = ''Network "tee" program'';
+    homepage = "https://sourceforge.net/projects/nettee";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.linux;

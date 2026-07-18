@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchCrate,
-  cargo-c,
-  buildPackages,
   stdenv,
+  buildPackages,
+  cargo-c,
+  fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -12,18 +12,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "3.3.1";
 
   src = fetchCrate {
-    pname = "dolby_vision";
     inherit (finalAttrs) version;
     hash = "sha256-ecd+r0JWZtP/rxt4Y3Cj2TkygXIMy5KZhZpXBwJNPx4=";
+    pname = "dolby_vision";
   };
-
-  cargoLock.lockFile = ./Cargo.lock;
 
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
   nativeBuildInputs = [ cargo-c ];
+  cargoLock.lockFile = ./Cargo.lock;
 
   buildPhase = ''
     runHook preBuild
@@ -31,16 +30,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postBuild
   '';
 
-  installPhase = ''
-    runHook preInstall
-    ${buildPackages.rust.envVars.setEnv} cargo cinstall -j $NIX_BUILD_CORES --release --frozen --prefix=${placeholder "out"} --target ${stdenv.hostPlatform.rust.rustcTarget}
-    runHook postInstall
-  '';
-
   checkPhase = ''
     runHook preCheck
     ${buildPackages.rust.envVars.setEnv} cargo ctest -j $NIX_BUILD_CORES --release --frozen --prefix=${placeholder "out"} --target ${stdenv.hostPlatform.rust.rustcTarget}
     runHook postCheck
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    ${buildPackages.rust.envVars.setEnv} cargo cinstall -j $NIX_BUILD_CORES --release --frozen --prefix=${placeholder "out"} --target ${stdenv.hostPlatform.rust.rustcTarget}
+    runHook postInstall
   '';
 
   meta = {

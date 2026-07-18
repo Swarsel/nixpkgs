@@ -2,33 +2,24 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
-  libxext,
-  libx11,
   imlib2,
+  libx11,
+  libxext,
   makeWrapper,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "xteddy";
   version = "2.2-5";
+
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "games-team";
     repo = "xteddy";
     rev = "debian/${finalAttrs.version}";
     sha256 = "0rm7w78d6qajq4fvi4agyqm0c70f3c1i0cy2jdb6kqql2k8w78qy";
+    domain = "salsa.debian.org";
   };
-
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-  ];
-  buildInputs = [
-    imlib2
-    libx11
-    libxext
-  ];
 
   patches = [
     "${finalAttrs.src}/debian/patches/10_libXext.patch"
@@ -39,6 +30,17 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i "s:/usr/games/xteddy:$out/bin/xteddy:" xtoys
     sed -i "s:/usr/share/xteddy:$out/share/xteddy:" xtoys
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ];
+
+  buildInputs = [
+    imlib2
+    libx11
+    libxext
+  ];
 
   postInstall = ''
     cp -R images $out/share/images

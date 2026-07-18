@@ -1,25 +1,23 @@
 {
   lib,
   fetchFromGitHub,
-  callPackage,
-  buildGoModule,
-  replaceVars,
-
   # build-time
   autoPatchelfHook,
+  buildGoModule,
+  callPackage,
   copyDesktopItems,
   desktop-file-utils,
-  makeDesktopItem,
-  pkg-config,
-  xdg-utils,
-
   # run-time
   gtk3,
   libayatana-appindicator,
   libx11,
   libxkbcommon,
   libxtst,
+  makeDesktopItem,
   nodejs,
+  pkg-config,
+  replaceVars,
+  xdg-utils,
 }:
 buildGoModule (finalAttrs: {
   pname = "wox";
@@ -31,10 +29,6 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FbOnENSko/BYtTI7z2Ep+IIYufgZpNWcz6d0mqhTL5g=";
   };
-
-  vendorHash = "sha256-IDcIEZVCJp1ls5c2fblgX+I+MhfRDXqFbf0GhgcFiTo=";
-
-  sourceRoot = "${finalAttrs.src.name}/wox.core";
 
   patches = [
     (replaceVars ./plugin-host-python.patch {
@@ -52,8 +46,6 @@ buildGoModule (finalAttrs: {
       --replace-fail "xdg-mime" "${xdg-utils}/bin/xdg-mime"
   '';
 
-  proxyVendor = true;
-
   nativeBuildInputs = [
     autoPatchelfHook
     copyDesktopItems
@@ -68,13 +60,8 @@ buildGoModule (finalAttrs: {
     libxtst
   ];
 
+  vendorHash = "sha256-IDcIEZVCJp1ls5c2fblgX+I+MhfRDXqFbf0GhgcFiTo=";
   env.CGO_ENABLED = 1;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X 'wox/util.ProdEnv=true'"
-  ];
 
   preBuild = ''
     mkdir -p resource/ui/flutter resource/hosts
@@ -86,18 +73,27 @@ buildGoModule (finalAttrs: {
   # XkbGetKeyboard failed to locate a valid keyboard!
   doCheck = false;
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "wox";
-      exec = "wox %U";
-      icon = "wox";
-      desktopName = "Wox";
-    })
-  ];
-
   postInstall = ''
     install -Dm644 ../assets/app.png $out/share/icons/wox.png
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      desktopName = "Wox";
+      exec = "wox %U";
+      icon = "wox";
+      name = "wox";
+    })
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X 'wox/util.ProdEnv=true'"
+  ];
+
+  proxyVendor = true;
+  sourceRoot = "${finalAttrs.src.name}/wox.core";
 
   passthru = {
     plugin-host-nodejs = callPackage ./plugin-host-nodejs.nix { };
@@ -109,9 +105,9 @@ buildGoModule (finalAttrs: {
     description = "Cross-platform launcher that simply works";
     homepage = "https://github.com/Wox-launcher/Wox";
     changelog = "https://github.com/Wox-launcher/Wox/blob/${finalAttrs.src.rev}/CHANGELOG.md";
-    mainProgram = "wox";
-    platforms = lib.platforms.linux;
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ eljamm ];
+    platforms = lib.platforms.linux;
+    mainProgram = "wox";
   };
 })

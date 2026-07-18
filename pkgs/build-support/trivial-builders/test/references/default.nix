@@ -1,19 +1,19 @@
 {
   lib,
-  stdenvNoCC,
-  testers,
   callPackage,
-  writeText,
   # nativeBuildInputs
   shellcheck-minimal,
-  # Samples
-  samples ? cleanSamples (callPackage ./samples.nix { }),
+  stdenvNoCC,
+  testers,
+  writeClosure,
+  # Test targets
+  writeDirectReferencesToFile,
+  writeText,
   # Filter out the non-string-like attributes such as <pkg>.override added by
   # callPackage.
   cleanSamples ? lib.filterAttrs (n: lib.isStringLike),
-  # Test targets
-  writeDirectReferencesToFile,
-  writeClosure,
+  # Samples
+  samples ? cleanSamples (callPackage ./samples.nix { }),
 }:
 
 # -------------------------------------------------------------------------- #
@@ -55,11 +55,7 @@ let
   collectiveClosure = writeClosure (lib.attrValues samples);
 
   testScriptBin = stdenvNoCC.mkDerivation (finalAttrs: {
-    name = "references-test";
-
     src = ./references-test.sh;
-    dontUnpack = true;
-    dontBuild = true;
 
     installPhase = ''
       runHook preInstall
@@ -74,14 +70,20 @@ let
     '';
 
     doInstallCheck = true;
+
     nativeInstallCheckInputs = [
       shellcheck-minimal
     ];
+
     installCheckPhase = ''
       runHook preInstallCheck
       shellcheck "$out/bin/${finalAttrs.meta.mainProgram}"
       runHook postInstallCheck
     '';
+
+    dontBuild = true;
+    dontUnpack = true;
+    name = "references-test";
 
     passthru = {
       inherit
@@ -98,7 +100,7 @@ let
   });
 in
 testers.runNixOSTest (
-  { config, lib, ... }:
+  { lib, config, ... }:
   let
     # Use the testScriptBin from guest pkgs.
     # The attribute path to access the guest version of testScriptBin is
@@ -108,25 +110,27 @@ testers.runNixOSTest (
   in
   {
     name = "nixpkgs-trivial-builders-references";
+
     nodes.machine =
       {
-        config,
         lib,
+        config,
         pkgs,
         ...
       }:
       {
-        virtualisation.writableStore = true;
-
         # Test runs without network, so we don't substitute and prepare our deps
         nix.settings.substituters = lib.mkForce [ ];
         system.extraDependencies = [ guestTestScriptBin ];
+        virtualisation.writableStore = true;
       };
+
     testScript = ''
       machine.succeed("""
         ${lib.getExe guestTestScriptBin} 2>/dev/console
       """)
     '';
+
     passthru = {
       inherit
         collectiveClosure
@@ -135,8 +139,10 @@ testers.runNixOSTest (
         samples
         testScriptBin
         ;
+
       inherit guestTestScriptBin;
     };
+
     meta = {
       maintainers = with lib.maintainers; [
         roberth

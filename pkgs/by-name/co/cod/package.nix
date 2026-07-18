@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
   python3,
@@ -18,13 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-kezfBDTgpOTBYKTNlwuP+M5tXU2w/MXz0B5nBJcL1io=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.GitSha=${finalAttrs.src.rev}"
-  ];
-
   nativeCheckInputs = [ python3 ];
 
   preCheck = ''
@@ -38,12 +31,18 @@ buildGoModule (finalAttrs: {
     substituteInPlace test/learn_test.go --replace TestLearnArgparseSubCommand SkipLearnArgparseSubCommand
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.GitSha=${finalAttrs.src.rev}"
+  ];
+
   meta = {
     description = "Tool for generating Bash/Fish/Zsh autocompletions based on `--help` output";
     homepage = "https://github.com/dim-an/cod/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
-    broken = stdenv.hostPlatform.isDarwin;
     mainProgram = "cod";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

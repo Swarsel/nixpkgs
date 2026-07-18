@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   appstream-glib,
   curl,
   desktop-file-utils,
-  fetchFromGitHub,
   geoip,
   gettext,
   glib,
@@ -60,10 +60,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GTK remote control for the Transmission BitTorrent client";
-    mainProgram = "transmission-remote-gtk";
     homepage = "https://github.com/transmission-remote-gtk/transmission-remote-gtk";
     changelog = "https://github.com/transmission-remote-gtk/transmission-remote-gtk/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
+    mainProgram = "transmission-remote-gtk";
   };
 })

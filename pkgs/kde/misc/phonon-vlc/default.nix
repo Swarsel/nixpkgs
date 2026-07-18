@@ -1,9 +1,9 @@
 {
   lib,
-  mkKdeDerivation,
   fetchurl,
-  qttools,
   libvlc,
+  mkKdeDerivation,
+  qttools,
 }:
 mkKdeDerivation rec {
   pname = "phonon-vlc";
@@ -14,13 +14,12 @@ mkKdeDerivation rec {
     hash = "sha256-M4R53EUeS5SzyltXje90Hc+C9cYmooB9NiNb4tznyaU=";
   };
 
-  extraNativeBuildInputs = [ qttools ];
-  extraBuildInputs = [ libvlc ];
-
   cmakeFlags = [
     "-DPHONON_BUILD_QT5=0"
     "-DPHONON_BUILD_QT6=1"
   ];
 
+  extraBuildInputs = [ libvlc ];
+  extraNativeBuildInputs = [ qttools ];
   meta.license = with lib.licenses; [ lgpl21Plus ];
 }

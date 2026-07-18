@@ -1,8 +1,8 @@
 {
   lib,
-  buildPackages,
   fetchFromGitHub,
   buildNpmPackage,
+  buildPackages,
   fetchFromCodeberg,
   nix-update-script,
 }:
@@ -15,12 +15,14 @@ let
         args
         // rec {
           version = "0.21.5";
+
           src = fetchFromGitHub {
             owner = "evanw";
             repo = "esbuild";
             rev = "v${version}";
             hash = "sha256-FpvXWIlt67G8w3pBKZo/mcp57LunxDmRUaCU/Ne89B8=";
           };
+
           vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
         }
       );
@@ -38,7 +40,6 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-HDv6sW6FmKZpUjymrUjz/WG9XrKgLmM6qHMAxP6gBtU=";
-
   env.ESBUILD_BINARY_PATH = lib.getExe esbuild';
 
   postInstall = ''
@@ -50,8 +51,8 @@ buildNpmPackage rec {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://codeberg.org/annaaurora/kaufkauflist";
     description = "To-do list for shopping or other use cases";
+    homepage = "https://codeberg.org/annaaurora/kaufkauflist";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ annaaurora ];
     mainProgram = "kaufdbclean";

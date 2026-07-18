@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   brainflow,
+  buildPythonPackage,
   nptyping,
   numpy,
   python,
@@ -16,7 +16,17 @@ buildPythonPackage {
     meta
     ;
 
-  pyproject = true;
+  postPatch = ''
+    cd python_package
+  '';
+
+  buildInputs = [ brainflow ];
+
+  postInstall = ''
+    mkdir -p "$out/${python.sitePackages}/brainflow/lib/"
+    cp -Tr "${brainflow}/lib" "$out/${python.sitePackages}/brainflow/lib/"
+  '';
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -24,16 +34,6 @@ buildPythonPackage {
     nptyping
   ];
 
-  buildInputs = [ brainflow ];
-
-  postPatch = ''
-    cd python_package
-  '';
-
-  postInstall = ''
-    mkdir -p "$out/${python.sitePackages}/brainflow/lib/"
-    cp -Tr "${brainflow}/lib" "$out/${python.sitePackages}/brainflow/lib/"
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "brainflow" ];
 }

@@ -1,6 +1,6 @@
 {
-  fetchFromCodeberg,
   lib,
+  fetchFromCodeberg,
   nix-update-script,
   rustPlatform,
   versionCheckHook,
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-aQ9h+L232dxZRPOQ+6b+vI3v/QdBR4//3HV8K9vwWV8=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -31,7 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://codeberg.org/lukeflo/bibiman";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ clementpoiret ];
-    mainProgram = "bibiman";
     platforms = lib.platforms.linux;
+    mainProgram = "bibiman";
   };
 })

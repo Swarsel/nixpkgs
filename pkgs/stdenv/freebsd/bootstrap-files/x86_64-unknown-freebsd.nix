@@ -10,13 +10,14 @@
 # - build time: Sun, 24 May 2026 15:32:02 +0000
 {
   bootstrapTools = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv/x86_64-unknown-freebsd/87c888eedeced2c577b21a86b5bce79b3067ab20/bootstrap-tools.tar.xz";
     hash = "sha256-J+0DbtPnxYzwY3+PCdGr6YYlCzw3Ov5EMoxI02rs+9U=";
+    url = "http://tarballs.nixos.org/stdenv/x86_64-unknown-freebsd/87c888eedeced2c577b21a86b5bce79b3067ab20/bootstrap-tools.tar.xz";
   };
+
   unpack = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv/x86_64-unknown-freebsd/87c888eedeced2c577b21a86b5bce79b3067ab20/unpack.nar.xz";
     hash = "sha256-zlE/VteBYhAIt7vnKuwgitnezcH3KpN2myUyJnR0Wh4=";
     name = "unpack";
     unpack = true;
+    url = "http://tarballs.nixos.org/stdenv/x86_64-unknown-freebsd/87c888eedeced2c577b21a86b5bce79b3067ab20/unpack.nar.xz";
   };
 }

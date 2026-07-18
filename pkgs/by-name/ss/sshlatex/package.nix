@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bash,
+  gnutar,
   inotify-tools,
+  makeWrapper,
   openssh,
   perl,
-  gnutar,
-  bash,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Collection of hacks to efficiently run LaTeX via ssh";
+
     longDescription = ''
       sshlatex is a tool which uploads LaTeX source files to a remote, runs
       LaTeX there, and streams the resulting PDF file to the local host.
@@ -48,10 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
       thereby preloading the required LaTeX packages, it is also useful in a
       purely local setting.
     '';
+
     homepage = "https://github.com/iblech/sshlatex";
     license = lib.licenses.gpl3Plus; # actually dual-licensed gpl3Plus | lppl13cplus
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.iblech ];
+    platforms = lib.platforms.all;
     mainProgram = "sshlatex";
   };
 })

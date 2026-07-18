@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   asn1crypto,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   openssl,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "oscrypto";
   version = "1.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "wbond";
@@ -25,9 +24,9 @@ buildPythonPackage rec {
     ./support-openssl-3.0.10.patch
 
     (fetchpatch {
+      hash = "sha256-lQGoPM7EicwCPWapEDkqWEqMqXk4tijiImxndcDFqY4=";
       # backport removal of imp module usage
       url = "https://github.com/wbond/oscrypto/commit/3865f5d528740aa1205d16ddbee84c5b48aeb078.patch";
-      hash = "sha256-lQGoPM7EicwCPWapEDkqWEqMqXk4tijiImxndcDFqY4=";
     })
   ];
 
@@ -40,18 +39,17 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ asn1crypto ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "oscrypto" ];
-
   doCheck = !stdenv.hostPlatform.isDarwin;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # Tests require network access
     "TLSTests"
     "TrustListTests"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "oscrypto" ];
 
   meta = {
     description = "Encryption library for Python";

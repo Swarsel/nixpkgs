@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -29,13 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
     }/g' Makefile
   '';
 
-  preBuild = ''
-    mkdir bin
-  '';
-
   makeFlags = [
     "CC=${lib.getBin stdenv.cc}/bin/${stdenv.cc.targetPrefix}g++"
   ];
+
+  preBuild = ''
+    mkdir bin
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -52,9 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Ordered resolution based theorem prover for Coalition Logic";
     homepage = "https://cgi.csc.liv.ac.uk/~ullrich/CLProver++/";
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ mgttlinger ];
     platforms = with lib.platforms; linux ++ windows;
-    license = lib.licenses.gpl3;
     mainProgram = if stdenv.targetPlatform.isWindows then "CLProver++.exe" else "CLProver++";
   };
 })

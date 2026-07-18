@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
   cmake,
+  fetchpatch,
   libinput,
+  pkg-config,
   zlib,
 }:
 
@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fix build with gcc 11+
     (fetchpatch {
-      url = "https://github.com/9ary/gebaar-libinput-fork/commit/25cac08a5f1aed1951b03de12fa0010a0964967d.patch";
       hash = "sha256-CtgfMTBCXotiPAXc7cA3h+7Kb0NHFi/q7w72IY32CyA=";
+      url = "https://github.com/9ary/gebaar-libinput-fork/commit/25cac08a5f1aed1951b03de12fa0010a0964967d.patch";
     })
   ];
 
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     cmake
   ];
+
   buildInputs = [
     libinput
     zlib
@@ -40,12 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Gebaar, A Super Simple WM Independent Touchpad Gesture Daemon for libinput";
-    mainProgram = "gebaard";
     homepage = "https://github.com/Coffee2CodeNL/gebaar-libinput";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       lovesegfault
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "gebaard";
   };
 })

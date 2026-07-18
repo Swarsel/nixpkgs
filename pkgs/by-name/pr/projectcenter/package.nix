@@ -1,7 +1,7 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
+  clangStdenv,
   gdb,
   gnumake,
   gnustep-back,
@@ -36,11 +36,13 @@ clangStdenv.mkDerivation (finalAttrs: {
     description = "GNUstep's integrated development environment";
     homepage = "https://gnustep.github.io/";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "ProjectCenter";
+
     maintainers = with lib.maintainers; [
       ashalkhakov
       dblsaiko
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "ProjectCenter";
   };
 })

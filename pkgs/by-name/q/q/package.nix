@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-gY3o5rkHLptrq7IEJ3AVhKY+PONJw6WC1yM3fu2ZB38=";
+  doCheck = false; # tries to resolve DNS
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  doCheck = false; # tries to resolve DNS
 
   meta = {
     description = "Tiny and feature-rich command line DNS client with support for UDP, TCP, DoT, DoH, DoQ, and ODoH";

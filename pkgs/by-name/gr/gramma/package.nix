@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
-  fetchYarnDeps,
   fetchFromGitHub,
+  fetchYarnDeps,
+  nix-update-script,
+  nodejs,
+  stdenvNoCC,
   yarnConfigHook,
   yarnInstallHook,
-  nodejs,
-  nix-update-script,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -26,16 +26,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail '.demandCommand()' '.demandCommand().scriptName("gramma")'
   '';
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-FuR6wUhAaej/vMgjAlICMEj1pPf+7PFrdu2lTFshIkg=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnInstallHook
     nodejs
   ];
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-FuR6wUhAaej/vMgjAlICMEj1pPf+7PFrdu2lTFshIkg=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -44,7 +44,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://caderek.github.io/gramma/";
     changelog = "https://github.com/caderek/gramma/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.isc;
-    mainProgram = "gramma";
     maintainers = [ ];
+    mainProgram = "gramma";
   };
 })

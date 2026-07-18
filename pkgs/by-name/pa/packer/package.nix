@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   callPackage,
+  installShellFiles,
   runCommand,
 }:
 
@@ -18,20 +18,19 @@ buildGoModule (finalAttrs: {
     hash = "sha256-mhHES+/FCvVBBQm1qDQeH6WY2c9hIV7N3iFBCqJqJLw=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-HMaT1TZ2lHcKiKpZLZdRkmePb6SWV+z6QbS2q2rR/cY=";
 
-  subPackages = [ "." ];
+  postInstall = ''
+    installShellCompletion --zsh contrib/zsh-completion/_packer
+  '';
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = ''
-    installShellCompletion --zsh contrib/zsh-completion/_packer
-  '';
+  subPackages = [ "." ];
 
   passthru =
     let
@@ -39,14 +38,6 @@ buildGoModule (finalAttrs: {
     in
     {
       plugins = lib.filterAttrs (_: lib.isDerivation) pluginScope;
-
-      withPlugins =
-        f:
-        (callPackage ./with-plugins.nix {
-          packer = finalAttrs.finalPackage;
-          packerPlugins = pluginScope;
-        })
-          { selector = f; };
 
       tests.withPlugins =
         let
@@ -71,12 +62,22 @@ buildGoModule (finalAttrs: {
 
             touch $out
           '';
+
+      withPlugins =
+        f:
+        (callPackage ./with-plugins.nix {
+          packer = finalAttrs.finalPackage;
+          packerPlugins = pluginScope;
+        })
+          { selector = f; };
     };
 
   meta = {
     description = "Tool for creating identical machine images for multiple platforms from a single source configuration";
     homepage = "https://www.packer.io";
+    changelog = "https://github.com/hashicorp/packer/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.bsl11;
+
     maintainers = with lib.maintainers; [
       zimbatm
       ma27
@@ -84,6 +85,5 @@ buildGoModule (finalAttrs: {
       qjoly
       jlesquembre
     ];
-    changelog = "https://github.com/hashicorp/packer/blob/v${finalAttrs.version}/CHANGELOG.md";
   };
 })

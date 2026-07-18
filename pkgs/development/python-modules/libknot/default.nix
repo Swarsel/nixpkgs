@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "libknot";
   version = "3.5.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,7 +26,7 @@ buildPythonPackage rec {
   '';
 
   build-system = [ hatchling ];
-
+  pyproject = true;
   pythonImportsCheck = [ "libknot" ];
 
   meta = {

@@ -1,37 +1,37 @@
 {
   lib,
   stdenv,
+  bubblewrap,
   callPackage,
-  runCommandLocal,
-  writeShellScript,
+  coreutils,
   glibc,
   pkgsHostTarget,
   runCommandCC,
-  coreutils,
-  bubblewrap,
+  runCommandLocal,
+  writeShellScript,
 }:
 
 {
-  pname ? throw "You must provide either `name` or `pname`",
-  version ? throw "You must provide either `name` or `version`",
-  name ? "${pname}-${version}",
-  runScript ? "bash",
-  nativeBuildInputs ? [ ],
-  extraInstallCommands ? "",
-  executableName ? args.pname or name,
-  meta ? { },
-  passthru ? { },
-  extraPreBwrapCmds ? "",
-  extraBwrapArgs ? [ ],
-  unshareUser ? false,
-  unshareIpc ? false,
-  unsharePid ? false,
-  unshareNet ? false,
-  unshareUts ? false,
-  unshareCgroup ? false,
-  privateTmp ? false,
   chdirToPwd ? true,
   dieWithParent ? true,
+  executableName ? args.pname or name,
+  extraBwrapArgs ? [ ],
+  extraInstallCommands ? "",
+  extraPreBwrapCmds ? "",
+  meta ? { },
+  name ? "${pname}-${version}",
+  nativeBuildInputs ? [ ],
+  passthru ? { },
+  pname ? throw "You must provide either `name` or `pname`",
+  privateTmp ? false,
+  runScript ? "bash",
+  unshareCgroup ? false,
+  unshareIpc ? false,
+  unshareNet ? false,
+  unsharePid ? false,
+  unshareUser ? false,
+  unshareUts ? false,
+  version ? throw "You must provide either `name` or `version`",
   ...
 }@args:
 
@@ -347,10 +347,11 @@ runCommandLocal name
     nameAttrs
     // {
       inherit nativeBuildInputs;
-
       __structuredAttrs = true;
 
       passthru = passthru // {
+        inherit args fhsenv;
+
         env =
           runCommandLocal "${name}-shell-env"
             {
@@ -362,7 +363,6 @@ runCommandLocal name
               echo >&2 ""
               exit 1
             '';
-        inherit args fhsenv;
       };
 
       meta = {

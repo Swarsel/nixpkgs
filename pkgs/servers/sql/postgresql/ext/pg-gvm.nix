@@ -1,10 +1,10 @@
 {
-  cmake,
+  lib,
   fetchFromGitHub,
+  cmake,
   glib,
   gvm-libs,
   icu,
-  lib,
   libical,
   pcre2,
   pkg-config,

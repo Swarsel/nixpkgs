@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
+  fetchgit,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,12 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Celestial Mechanics, Astrometry and Astrodynamics Library";
-    mainProgram = "libnovaconfig";
     homepage = "http://libnova.sf.net";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       returntoreality
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "libnovaconfig";
   };
 })

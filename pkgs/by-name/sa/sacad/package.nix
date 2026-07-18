@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
   jpegoptim,
   optipng,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "sacad";
   version = "2.8.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -34,7 +33,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   # tests require internet connection
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "sacad" ];
 
   meta = {

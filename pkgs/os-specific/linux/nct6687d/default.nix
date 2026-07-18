@@ -18,10 +18,6 @@ stdenv.mkDerivation {
     hash = "sha256-+9gGpr004hKvvQeadTOwFe4gZvmx5bO1jWmlmt4NfSo=";
   };
 
-  setSourceRoot = ''
-    export sourceRoot=$(pwd)/source
-  '';
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
@@ -34,15 +30,19 @@ stdenv.mkDerivation {
   installFlags = [ "INSTALL_MOD_PATH=${placeholder "out"}" ];
   installTargets = [ "modules_install" ];
 
+  setSourceRoot = ''
+    export sourceRoot=$(pwd)/source
+  '';
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch=main" ];
   };
 
   meta = {
     description = "Kernel module for the Nuvoton NCT6687-R chipset found on many B550/B650 motherboards from ASUS and MSI";
-    license = with lib.licenses; [ gpl2Only ];
     homepage = "https://github.com/Fred78290/nct6687d/";
-    platforms = lib.platforms.linux;
+    license = with lib.licenses; [ gpl2Only ];
     maintainers = with lib.maintainers; [ atemu ];
+    platforms = lib.platforms.linux;
   };
 }

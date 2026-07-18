@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytest,
   pytest-fixture-classes,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-lazy-fixtures";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dev-petrov";
@@ -27,20 +26,20 @@ buildPythonPackage rec {
       --replace-fail '"pytest_lazy_fixtures.plugin",' ""
   '';
 
-  build-system = [ hatchling ];
-
-  dependencies = [ pytest ];
-
   nativeCheckInputs = [
     pytest-fixture-classes
     pytestCheckHook
   ];
+
+  build-system = [ hatchling ];
+  dependencies = [ pytest ];
 
   disabledTestPaths = [
     # missing pytest-deadfixtures
     "tests/test_deadfixtures_support.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytest_lazy_fixtures" ];
 
   meta = {

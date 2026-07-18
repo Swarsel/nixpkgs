@@ -2,19 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  help2man,
-  pkg-config,
-  texinfo,
   boehmgc,
-  readline,
-  nbdSupport ? !stdenv.hostPlatform.isDarwin,
-  libnbd,
-  textStylingSupport ? true,
-  gettext,
   dejagnu,
-
+  gettext,
+  help2man,
+  libnbd,
+  pkg-config,
+  readline,
+  texinfo,
   # update script only
   writeScript,
+  nbdSupport ? !stdenv.hostPlatform.isDarwin,
+  textStylingSupport ? true,
 }:
 
 let
@@ -67,8 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--datadir=${placeholder "lib"}/share"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
   nativeCheckInputs = [ dejagnu ];
 
@@ -76,6 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput share/emacs "$out"
     moveToOutput share/vim "$out"
   '';
+
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = writeScript "update-poke" ''

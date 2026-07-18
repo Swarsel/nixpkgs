@@ -1,18 +1,18 @@
 #TODO@deliciouslytyped The tool seems to unnecessarily force mutable access for the debugedit `-l` feature
 {
-  fetchgit,
-  fetchpatch,
   lib,
   stdenv,
   autoreconfHook,
-  pkg-config,
-  elfutils,
-  xxhash,
-  help2man,
-  util-linux,
   cpio,
-  gdb,
   dwz,
+  elfutils,
+  fetchgit,
+  fetchpatch,
+  gdb,
+  help2man,
+  pkg-config,
+  util-linux,
+  xxhash,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "debugedit";
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     # fix: No build ID note found in ...
     # caused by gcc not configured to produce build-id by default
     (fetchpatch {
-      url = "https://sourceware.org/git/?p=debugedit.git;a=commitdiff_plain;h=c011f478dca2c89d52958a8999b99663d14db85d";
       hash = "sha256-fOjXKA3U1YM+ZMieLhWiXdJj79IJ+iFNH0x+Asn/EMY=";
+      url = "https://sourceware.org/git/?p=debugedit.git;a=commitdiff_plain;h=c011f478dca2c89d52958a8999b99663d14db85d";
     })
   ];
 
@@ -44,6 +44,12 @@ stdenv.mkDerivation (finalAttrs: {
     xxhash
   ];
 
+  preBuild = ''
+    patchShebangs scripts/find-debuginfo.in
+  '';
+
+  doCheck = true;
+
   nativeCheckInputs = [
     util-linux # Tests use `rev`
     cpio
@@ -51,17 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
     dwz
   ];
 
-  preBuild = ''
-    patchShebangs scripts/find-debuginfo.in
-  '';
-
-  doCheck = true;
-
   meta = {
     description = "Provides programs and scripts for creating debuginfo and source file distributions, collect build-ids and rewrite source paths in DWARF data for debugging, tracing and profiling";
     homepage = "https://sourceware.org/debugedit/";
     license = lib.licenses.gpl3Plus;
-    platforms = [ lib.systems.inspect.patterns.isElf ];
     maintainers = with lib.maintainers; [ deliciouslytyped ];
+    platforms = [ lib.systems.inspect.patterns.isElf ];
   };
 })

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   fuse3,
   mbedtls,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,9 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Aorimn/dislocker";
     changelog = "https://github.com/Aorimn/dislocker/raw/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       yuannan
     ];
+
     platforms = lib.platforms.unix;
   };
 })

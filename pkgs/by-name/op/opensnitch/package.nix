@@ -1,20 +1,20 @@
 {
-  buildGoModule,
+  lib,
   fetchFromGitHub,
-  protobuf,
+  buildGoModule,
   go-protobuf,
-  pkg-config,
+  iptables,
   libnetfilter_queue,
   libnfnetlink,
-  lib,
-  iptables,
   makeWrapper,
+  nix-update-script,
+  nixosTests,
+  opensnitch,
+  opensnitch-ui,
+  pkg-config,
+  protobuf,
   protoc-gen-go-grpc,
   testers,
-  opensnitch,
-  nixosTests,
-  opensnitch-ui,
-  nix-update-script,
 }:
 let
   # Override protoc-gen-go-grpc to use the compatible version
@@ -48,19 +48,17 @@ buildGoModule (finalAttrs: {
     substituteInPlace daemon/core/version.go --replace-fail "const " "var "
   '';
 
-  modRoot = "daemon";
-
-  buildInputs = [
-    libnetfilter_queue
-    libnfnetlink
-  ];
-
   nativeBuildInputs = [
     pkg-config
     protobuf
     go-protobuf
     makeWrapper
     protoc-gen-go-grpc'
+  ];
+
+  buildInputs = [
+    libnetfilter_queue
+    libnfnetlink
   ];
 
   vendorHash = "sha256-6/N/E+uk6RVmSLy6fSWjHj+J5mPFXtHZwWThhFJnfYY=";
@@ -80,24 +78,27 @@ buildGoModule (finalAttrs: {
       --replace-fail "/usr/local/bin/opensnitchd" "$out/bin/opensnitchd"
   '';
 
+  postInstall = ''
+    wrapProgram $out/bin/opensnitchd \
+      --prefix PATH : ${lib.makeBinPath [ iptables ]}
+  '';
+
   ldflags = [
     "-s"
     "-w"
     "-X github.com/evilsocket/opensnitch/daemon/core.Version=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    wrapProgram $out/bin/opensnitchd \
-      --prefix PATH : ${lib.makeBinPath [ iptables ]}
-  '';
+  modRoot = "daemon";
 
   passthru = {
     tests = {
       inherit (nixosTests) opensnitch;
       inherit opensnitch-ui;
+
       version = testers.testVersion {
-        package = opensnitch;
         command = "opensnitchd -version";
+        package = opensnitch;
       };
     };
 
@@ -111,13 +112,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Application firewall";
-    mainProgram = "opensnitchd";
     homepage = "https://github.com/evilsocket/opensnitch/wiki";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       onny
       grimmauld
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "opensnitchd";
   };
 })

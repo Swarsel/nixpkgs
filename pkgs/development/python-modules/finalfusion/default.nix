@@ -1,20 +1,17 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  isPy3k,
+  fetchFromGitHub,
+  buildPythonPackage,
   cython,
+  isPy3k,
   numpy,
-  toml,
   pytest,
+  toml,
 }:
 
 buildPythonPackage rec {
   pname = "finalfusion";
   version = "0.7.1";
-  format = "setuptools";
-
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "finalfusion";
@@ -22,6 +19,14 @@ buildPythonPackage rec {
     rev = version;
     sha256 = "0pwzflamxqvpl1wcz0zbhhd6aa4xn18rmza6rggaic3ckidhyrh4";
   };
+
+  postPatch = ''
+    patchShebangs tests/integration
+
+    # `np.float` was a deprecated alias of the builtin `float`
+    substituteInPlace tests/test_storage.py \
+      --replace 'dtype=np.float)' 'dtype=float)'
+  '';
 
   nativeBuildInputs = [ cython ];
 
@@ -32,14 +37,6 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytest ];
 
-  postPatch = ''
-    patchShebangs tests/integration
-
-    # `np.float` was a deprecated alias of the builtin `float`
-    substituteInPlace tests/test_storage.py \
-      --replace 'dtype=np.float)' 'dtype=float)'
-  '';
-
   checkPhase = ''
     # Regular unit tests.
     pytest
@@ -48,11 +45,14 @@ buildPythonPackage rec {
     PATH=$PATH:$out/bin tests/integration/all.sh
   '';
 
+  disabled = !isPy3k;
+  format = "setuptools";
+
   meta = {
     description = "Python module for using finalfusion, word2vec, and fastText word embeddings";
     homepage = "https://github.com/finalfusion/finalfusion-python/";
+    license = lib.licenses.blueOak100;
     maintainers = [ ];
     platforms = lib.platforms.all;
-    license = lib.licenses.blueOak100;
   };
 }

@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "oocsi";
   version = "0.4.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Tests are not shipped
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "oocsi" ];
 
   meta = {

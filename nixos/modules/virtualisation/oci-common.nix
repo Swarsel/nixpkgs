@@ -10,6 +10,7 @@ let
 in
 {
   imports = [ ../profiles/qemu-guest.nix ];
+  boot.growPartition = true;
 
   # Taken from /proc/cmdline of Ubuntu 20.04.2 LTS on OCI
   boot.kernelParams = [
@@ -28,12 +29,26 @@ in
     "console=ttyAMA0,115200"
   ];
 
-  boot.growPartition = true;
+  boot.loader.efi.canTouchEfiVariables = false;
+
+  boot.loader.grub = {
+    device = if cfg.efi then "nodev" else "/dev/sda";
+    efiInstallAsRemovable = cfg.efi;
+    efiSupport = cfg.efi;
+
+    extraConfig = ''
+      serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
+      terminal_input --append serial
+      terminal_output --append serial
+    '';
+
+    splashImage = null;
+  };
 
   fileSystems."/" = {
+    autoResize = true;
     device = "/dev/disk/by-label/nixos";
     fsType = "ext4";
-    autoResize = true;
   };
 
   fileSystems."/boot" = lib.mkIf cfg.efi {
@@ -41,25 +56,10 @@ in
     fsType = "vfat";
   };
 
-  boot.loader.efi.canTouchEfiVariables = false;
-  boot.loader.grub = {
-    device = if cfg.efi then "nodev" else "/dev/sda";
-    splashImage = null;
-    extraConfig = ''
-      serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
-      terminal_input --append serial
-      terminal_output --append serial
-    '';
-    efiInstallAsRemovable = cfg.efi;
-    efiSupport = cfg.efi;
-  };
-
   # https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/configuringntpservice.htm#Configuring_the_Oracle_Cloud_Infrastructure_NTP_Service_for_an_Instance
   networking.timeServers = [ "169.254.169.254" ];
-
-  services.openssh.enable = true;
-
   # Otherwise the instance may not have a working network-online.target,
   # making the fetch-ssh-keys.service fail
   networking.useNetworkd = lib.mkDefault true;
+  services.openssh.enable = true;
 }

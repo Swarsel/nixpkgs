@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoconf
     automake
   ];
+
   buildInputs = [
     ncurses
   ];
@@ -35,9 +36,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Linux text console viewer";
-    mainProgram = "conspy";
     license = lib.licenses.epl10;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
+    mainProgram = "conspy";
   };
 })

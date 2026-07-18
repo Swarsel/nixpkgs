@@ -1,33 +1,27 @@
 {
   lib,
   buildPythonPackage,
+  django-cms,
   fetchPypi,
-  pytestCheckHook,
-  setuptools,
   html5lib,
   pillow,
-  django-cms,
   pytest-django,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "djangocms-text-ckeditor";
   version = "5.1.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "djangocms_text_ckeditor";
     hash = "sha256-xyl2TMXzyFaRGyBDku8fu++DE0G72cYv8AstPwcVnIM=";
+    pname = "djangocms_text_ckeditor";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django-cms
-    html5lib
-    pillow
-  ];
+  # Tests require module "djangocms-helper" which is not yet packaged
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -38,9 +32,15 @@ buildPythonPackage rec {
     export DJANGO_SETTINGS_MODULE="tests.settings"
   '';
 
-  # Tests require module "djangocms-helper" which is not yet packaged
-  doCheck = false;
+  build-system = [ setuptools ];
 
+  dependencies = [
+    django-cms
+    html5lib
+    pillow
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "djangocms_text_ckeditor" ];
 
   meta = {

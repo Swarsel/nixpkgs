@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pysyncobj";
   version = "0.3.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bakwc";
@@ -17,11 +16,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-6kvWcKSyVtK3sdeetJxx1golIXRY/RYkFCpWBfs10rg=";
   };
 
-  build-system = [ setuptools ];
-
   # Tests require network features
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pysyncobj" ];
 
   meta = {

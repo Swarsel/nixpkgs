@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   unstableGitUpdater,
 }:
 
@@ -27,6 +27,7 @@ rustPlatform.buildRustPackage {
   ];
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -40,17 +41,19 @@ rustPlatform.buildRustPackage {
   '';
 
   passthru.updateScript = unstableGitUpdater {
-    tagPrefix = "v";
     branch = "master";
+    tagPrefix = "v";
   };
 
   meta = {
     description = "USI shogi engine";
     homepage = "https://github.com/HiraokaTakuya/apery_rust";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
     mainProgram = "apery";
   };
 }

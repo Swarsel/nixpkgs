@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
 }:
 
@@ -18,8 +18,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-JrRIUYpw2lAD0ezi0HTZvS42OS7vP8DAHU3m0u3eCbM=";
 
-  subPackages = [ "cmd/gog" ];
-
   ldflags = [
     "-s"
     "-w"
@@ -28,10 +26,12 @@ buildGoModule (finalAttrs: {
     "-X github.com/steipete/gogcli/internal/cmd.date=1970-01-01T00:00:00Z"
   ];
 
+  subPackages = [ "cmd/gog" ];
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
-    command = "gog --version";
     version = "v${finalAttrs.version}";
+    command = "gog --version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {

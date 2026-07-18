@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
   aiofiles,
+  buildPythonPackage,
   click,
-  pytest-mock,
+  fetchPypi,
   pytest-asyncio,
+  pytest-mock,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "w1thermsensor";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -25,13 +24,7 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ click ];
-
-  optional-dependencies = {
-    async = [ aiofiles ];
-  };
-
   # Don't try to load the kernel module in tests.
   env.W1THERMSENSOR_NO_KERNEL_MODULE = 1;
 
@@ -42,20 +35,27 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  optional-dependencies = {
+    async = [ aiofiles ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "w1thermsensor" ];
 
   meta = {
     description = "Python interface to 1-Wire temperature sensors";
-    mainProgram = "w1thermsensor";
+
     longDescription = ''
       A Python package and CLI tool to work with w1 temperature sensors like
       DS1822, DS18S20 & DS18B20 on the Raspberry Pi, Beagle Bone and other
       devices.
     '';
+
     homepage = "https://github.com/timofurrer/w1thermsensor";
     changelog = "https://github.com/timofurrer/w1thermsensor/blob/v${version}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ quentin ];
     platforms = lib.platforms.all;
+    mainProgram = "w1thermsensor";
   };
 }

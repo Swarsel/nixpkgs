@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  writeText,
   fetchurl,
   buildcatrust,
+  cacert,
+  openssl,
+  # Used for tests only
+  runCommand,
+  writeText,
   blacklist ? [ ],
   extraCertificateFiles ? [ ],
   extraCertificateStrings ? [ ],
-
-  # Used for tests only
-  runCommand,
-  cacert,
-  openssl,
 }:
 
 let
@@ -22,25 +21,32 @@ let
 
   version = "3.125";
   meta = {
-    homepage = "https://firefox-source-docs.mozilla.org/security/nss/runbooks/rootstore.html#root-store-consumers";
     description = "Bundle of X.509 certificates of public Certificate Authorities (CA)";
-    platforms = lib.platforms.all;
+    homepage = "https://firefox-source-docs.mozilla.org/security/nss/runbooks/rootstore.html#root-store-consumers";
+    license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       fpletz
       lukegb
     ];
-    teams = [ lib.teams.security-review ];
-    license = lib.licenses.mpl20;
+
+    platforms = lib.platforms.all;
+
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "mozilla" version // {
       product = "nss";
     };
+
+    teams = [ lib.teams.security-review ];
   };
 in
 stdenv.mkDerivation {
-  pname = "nss-cacert";
   inherit version;
+  inherit meta;
+  pname = "nss-cacert";
 
   src = fetchurl {
+    hash = "sha256-5XkSgI2u97Kw+k3yzPF+R66vJsg5o4+Fx2AD66/YZr0=";
+
     urls =
       let
         # This file is effectively a public interface, see the homepage link
@@ -52,14 +58,7 @@ stdenv.mkDerivation {
         "https://hg-edge.mozilla.org/projects/nss/raw-file/${tag}/${file}"
         "https://raw.githubusercontent.com/nss-dev/nss/refs/tags/${tag}/${file}"
       ];
-    hash = "sha256-5XkSgI2u97Kw+k3yzPF+R66vJsg5o4+Fx2AD66/YZr0=";
   };
-
-  unpackPhase = ''
-    runHook preUnpack
-    cp "$src" "$(stripHash "$src")"
-    runHook postUnpack
-  '';
 
   outputs = [
     "out"
@@ -105,8 +104,13 @@ stdenv.mkDerivation {
 
   setupHook = ./setup-hook.sh;
 
+  unpackPhase = ''
+    runHook preUnpack
+    cp "$src" "$(stripHash "$src")"
+    runHook postUnpack
+  '';
+
   passthru = {
-    updateScript = ./update.sh;
     tests =
       let
         isTrusted = ''
@@ -137,6 +141,7 @@ stdenv.mkDerivation {
               # "blacklist" uses the CA name from the NSS bundle, but we check for presence using the SHA256 fingerprint.
               "CFCA EV ROOT" =
                 "5C:C3:D7:8E:4E:1D:5E:45:54:7A:04:E6:87:3E:64:F9:0C:F9:53:6D:1C:CC:2E:F8:00:F3:55:C4:C5:FD:70:FD";
+
               "NetLock Arany (Class Gold) Főtanúsítvány" =
                 "6C:61:DA:C3:A2:DE:F0:31:50:6B:E0:36:D2:A6:FE:40:19:94:FB:D1:3D:F9:C8:D4:66:59:92:74:C4:46:EC:98";
             };
@@ -144,13 +149,13 @@ stdenv.mkDerivation {
           in
           runCommand "verify-the-cacert-filter-output"
             {
+              nativeBuildInputs = [ openssl ];
               cacert = cacert.unbundled;
+
               cacertWithExcludes =
                 (cacert.override {
                   blacklist = builtins.attrNames blacklistCAToFingerprint;
                 }).unbundled;
-
-              nativeBuildInputs = [ openssl ];
             }
             ''
               ${isTrusted}
@@ -198,26 +203,26 @@ stdenv.mkDerivation {
             '';
             extraCertificateFile = ./test-cert-file.crt;
             extraCertificatesToFingerprint = {
-              # String above
-              "NixOS cacert extra certificate string" =
-                "A3:20:D0:84:96:97:25:FF:98:B8:A9:6D:A3:7C:89:95:6E:7A:77:21:92:F3:33:E9:31:AF:5E:03:CE:A9:E5:EE";
-
               # File
               "NixOS cacert extra certificate file" =
                 "88:B8:BE:A7:57:AC:F1:FE:D6:98:8B:50:E0:BD:0A:AE:88:C7:DF:70:26:E1:67:5E:F5:F6:91:27:FF:02:D4:A5";
+
+              # String above
+              "NixOS cacert extra certificate string" =
+                "A3:20:D0:84:96:97:25:FF:98:B8:A9:6D:A3:7C:89:95:6E:7A:77:21:92:F3:33:E9:31:AF:5E:03:CE:A9:E5:EE";
             };
             mapExtra = f: lib.concatStringsSep "\n" (lib.mapAttrsToList f extraCertificatesToFingerprint);
           in
           runCommand "verify-the-cacert-extra-output"
             {
+              nativeBuildInputs = [ openssl ];
               cacert = cacert.unbundled;
+
               cacertWithExtras =
                 (cacert.override {
-                  extraCertificateStrings = [ extraCertificateStr ];
                   extraCertificateFiles = [ extraCertificateFile ];
+                  extraCertificateStrings = [ extraCertificateStr ];
                 }).unbundled;
-
-              nativeBuildInputs = [ openssl ];
             }
             ''
               ${isTrusted}
@@ -245,7 +250,7 @@ stdenv.mkDerivation {
               touch "$out"
             '';
       };
-  };
 
-  inherit meta;
+    updateScript = ./update.sh;
+  };
 }

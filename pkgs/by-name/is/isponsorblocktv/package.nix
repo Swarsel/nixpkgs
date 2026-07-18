@@ -1,14 +1,13 @@
 {
+  lib,
   fetchFromGitHub,
   fetchpatch,
-  lib,
   python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "isponsorblocktv";
   version = "2.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dmunozv04";
@@ -20,8 +19,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
   patches = [
     # Port iSponsorBlockTV to pyytlounge v3
     (fetchpatch {
-      url = "https://github.com/ameertaweel/iSponsorBlockTV/commit/1809ca5a0d561bc9326a51e82118f290423ed3e6.patch";
       hash = "sha256-v5YXfKUPTzpZPIkVSQF2VUe9EvclAH+kJyiiyUEe/HM=";
+      url = "https://github.com/ameertaweel/iSponsorBlockTV/commit/1809ca5a0d561bc9326a51e82118f290423ed3e6.patch";
     })
   ];
 
@@ -43,16 +42,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     xmltodict
   ];
 
+  pyproject = true;
   # all dependencies are pinned to exact version numbers
   pythonRelaxDeps = true;
 
   meta = {
+    description = "SponsorBlock client for all YouTube TV clients";
     homepage = "https://github.com/dmunozv04/iSponsorBlockTV";
     changelog = "https://github.com/dmunozv04/iSponsorBlockTV/releases/tag/${finalAttrs.src.tag}";
-    description = "SponsorBlock client for all YouTube TV clients";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ lukegb ];
-    mainProgram = "iSponsorBlockTV";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "iSponsorBlockTV";
   };
 })

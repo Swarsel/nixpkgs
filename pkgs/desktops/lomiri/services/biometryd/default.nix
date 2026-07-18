@@ -1,15 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  gitUpdater,
-  testers,
   boost,
   cmake,
   cmake-extras,
   dbus,
   dbus-cpp,
+  fetchpatch,
+  gitUpdater,
   gtest,
   libapparmor,
   libelf,
@@ -20,6 +19,7 @@
   qtbase,
   qtdeclarative,
   sqlite,
+  testers,
   validatePkgConfig,
 }:
 
@@ -47,9 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Remove when version > 0.4.0
     (fetchpatch {
+      hash = "sha256-PddZRML4Gc+s4aNeOyZwJJjmPSixMGFVFNcrO9dNDSI=";
       name = "0001-biometryd-Fix-compatibility-with-Boost-1.87.patch";
       url = "https://gitlab.com/ubports/development/core/biometryd/-/commit/8def6dfb18ee56971f0f64e3622af2a5a39ab0f6.patch";
-      hash = "sha256-PddZRML4Gc+s4aNeOyZwJJjmPSixMGFVFNcrO9dNDSI=";
     })
   ];
 
@@ -100,12 +100,6 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite
   ];
 
-  checkInputs = [
-    gtest
-  ];
-
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_QT6" withQt6)
     (lib.cmakeBool "ENABLE_WERROR" true)
@@ -119,6 +113,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
+  checkInputs = [
+    gtest
+  ];
+
+  dontWrapQtApps = true;
+
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     updateScript = gitUpdater { };
@@ -126,19 +126,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Mediates/multiplexes access to biometric devices";
+
     longDescription = ''
       biometryd mediates and multiplexes access to biometric devices present
       on the system, enabling applications and system components to leverage
       them for identification and verification of users.
     '';
+
     homepage = "https://gitlab.com/ubports/development/core/biometryd";
     changelog = "https://gitlab.com/ubports/development/core/biometryd/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
-    mainProgram = "biometryd";
     platforms = lib.platforms.linux;
+    mainProgram = "biometryd";
+
     pkgConfigModules = [
       "biometryd"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

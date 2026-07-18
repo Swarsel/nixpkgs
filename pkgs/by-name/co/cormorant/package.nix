@@ -1,16 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "cormorant";
   version = "4.002";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "CatharsisFonts";
@@ -19,7 +16,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-vYn6MV+P+YVH329NM9tfAsNG8bsgGTJtDLOgnNYRMFk=";
   };
 
-  dontBuild = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -30,6 +27,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -37,7 +36,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     longDescription = "Cormorant is a free display type family developed by Christian Thalmann (Catharsis Fonts).";
     homepage = "https://www.behance.net/gallery/28579883/Cormorant-an-open-source-display-font-family";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ mrbjarksen ];
+    platforms = lib.platforms.all;
   };
 })

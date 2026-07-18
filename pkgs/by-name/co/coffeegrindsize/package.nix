@@ -1,15 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "coffeegrindsize";
   # no tags in the repo
   version = "0-unstable-2021-04-20";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "jgagneastro";
@@ -38,11 +36,13 @@ python3.pkgs.buildPythonApplication {
     runHook postInstall
   '';
 
+  pyproject = false;
+
   meta = {
     description = "Detects the individual coffee grounds in a white-background picture to determine particle size distribution";
-    mainProgram = "coffeegrindsize";
     homepage = "https://github.com/jgagneastro/coffeegrindsize";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ t4ccer ];
+    mainProgram = "coffeegrindsize";
   };
 }

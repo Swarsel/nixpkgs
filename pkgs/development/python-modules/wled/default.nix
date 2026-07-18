@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   awesomeversion,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -22,7 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "wled";
   version = "0.23.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -37,6 +36,16 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "0.0.0" "${finalAttrs.version}"
   '';
 
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-xdist
+    pytestCheckHook
+    syrupy
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -48,23 +57,6 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  optional-dependencies = {
-    cli = [
-      typer
-      zeroconf
-    ];
-  };
-
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-xdist
-    pytestCheckHook
-    syrupy
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
   disabledTests = [
     # wled release table rendering is inconsistent
     "test_releases_command"
@@ -72,6 +64,14 @@ buildPythonPackage (finalAttrs: {
     "test_device_version_fixture"
   ];
 
+  optional-dependencies = {
+    cli = [
+      typer
+      zeroconf
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "wled" ];
 
   meta = {

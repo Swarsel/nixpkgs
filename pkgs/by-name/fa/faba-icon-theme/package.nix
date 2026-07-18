@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  gnome-icon-theme,
+  gtk3,
+  hicolor-icon-theme,
   meson,
   ninja,
-  python3,
-  gtk3,
   pantheon,
-  gnome-icon-theme,
-  hicolor-icon-theme,
+  python3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -21,6 +21,10 @@ stdenvNoCC.mkDerivation rec {
     rev = "v${version}";
     sha256 = "0xh6ppr73p76z60ym49b4d0liwdc96w41cc5p07d48hxjsa6qd6n";
   };
+
+  postPatch = ''
+    patchShebangs meson/post_install.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -37,18 +41,16 @@ stdenvNoCC.mkDerivation rec {
 
   dontDropIconThemeCache = true;
 
-  postPatch = ''
-    patchShebangs meson/post_install.py
-  '';
-
   meta = {
     description = "Sexy and modern icon theme with Tango influences";
     homepage = "https://snwh.org/moka";
+
     license = with lib.licenses; [
       cc-by-sa-40
       gpl3
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.all;
   };
 }

@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
   postgresqlTestExtension,
@@ -25,10 +25,10 @@ postgresqlBuildExtension (finalAttrs: {
   };
 
   meta = {
+    inherit (postgresql.meta) platforms;
     description = "IPv4/v6 and IPv4/v6 range index type for PostgreSQL";
     homepage = "https://github.com/RhodiumToad/ip4r";
     license = lib.licenses.postgresql;
     maintainers = with lib.maintainers; [ lukegb ];
-    inherit (postgresql.meta) platforms;
   };
 })

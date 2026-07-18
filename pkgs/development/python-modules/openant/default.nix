@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pyusb,
+  buildPythonPackage,
   influxdb-client,
   pyserial,
   pytestCheckHook,
+  pyusb,
+  setuptools,
   udevCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "openant-unstable";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Tigge";
@@ -27,26 +26,26 @@ buildPythonPackage rec {
     udevCheckHook
   ];
 
+  propagatedBuildInputs = [ pyusb ];
+  nativeCheckInputs = [ pytestCheckHook ];
+
   postInstall = ''
     install -dm755 "$out/etc/udev/rules.d"
     install -m644 resources/42-ant-usb-sticks.rules "$out/etc/udev/rules.d/99-ant-usb-sticks.rules"
   '';
 
-  propagatedBuildInputs = [ pyusb ];
-
   optional-dependencies = {
-    serial = [ pyserial ];
     influx = [ influxdb-client ];
+    serial = [ pyserial ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "openant" ];
 
   meta = {
-    homepage = "https://github.com/Tigge/openant";
     description = "ANT and ANT-FS Python Library";
-    mainProgram = "openant";
+    homepage = "https://github.com/Tigge/openant";
     license = lib.licenses.mit;
+    mainProgram = "openant";
   };
 }

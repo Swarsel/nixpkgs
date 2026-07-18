@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lxml,
+  pytestCheckHook,
   python-dateutil,
   requests,
   setuptools,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "webdavclient3";
   version = "3.14.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ezhov-evgeny";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-On2vCV3iLxqLYKaiUkwry/lZFjhzlAlU2OYYq/7rrcE=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,10 +28,6 @@ buildPythonPackage rec {
     python-dateutil
     requests
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "webdav3.client" ];
 
   disabledTestPaths = [
     # Tests require a local WebDAV instance
@@ -41,6 +37,9 @@ buildPythonPackage rec {
     "tests/test_multi_client_it.py"
     "tests/test_tailing_slash_client_it.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "webdav3.client" ];
 
   meta = {
     description = "Easy to use WebDAV Client for Python 3.x";

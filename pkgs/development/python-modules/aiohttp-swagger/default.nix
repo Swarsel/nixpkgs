@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   jinja2,
   markupsafe,
   pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aiohttp-swagger";
   version = "1.0.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cr0hn";
@@ -32,12 +31,13 @@ buildPythonPackage rec {
     pyyaml
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "aiohttp_swagger" ];
+
   pythonRelaxDeps = [
     "markupsafe"
     "jinja2"
   ];
-
-  pythonImportsCheck = [ "aiohttp_swagger" ];
 
   meta = {
     description = "Swagger API Documentation builder for aiohttp";

@@ -1,8 +1,8 @@
 {
-  mkDerivation,
   lib,
   libbsdxml,
   libgeom,
+  mkDerivation,
   openssl,
   zfs-data,
   zlib,
@@ -35,20 +35,9 @@ let
   ];
 in
 mkDerivation {
-  path = "cddl/lib/libzfs";
-  extraPaths = [
-    "cddl/Makefile.inc"
-    "cddl/compat/opensolaris"
-    "cddl/lib"
-    "sys/contrib/openzfs"
-    "sys/modules/zfs"
-  ];
-
-  buildInputs = [
-    libbsdxml
-    libgeom
-    openssl
-    zlib
+  outputs = [
+    "out"
+    "debug"
   ];
 
   postPatch = ''
@@ -59,6 +48,13 @@ mkDerivation {
     # libzfs wants some files from compatibility.d, put them in the store
     sed -i 's|/usr/share/zfs|${zfs-data}/share/zfs|' $BSDSRCDIR/cddl/lib/libzfs/Makefile
   '';
+
+  buildInputs = [
+    libbsdxml
+    libgeom
+    openssl
+    zlib
+  ];
 
   # If we don't specify an object directory then
   # make will try to put openzfs objects in nonexistent directories.
@@ -72,15 +68,20 @@ mkDerivation {
     make -C $BSDSRCDIR/cddl/lib/${libname} $makeFlags install
   '');
 
-  outputs = [
-    "out"
-    "debug"
-  ];
-
   MK_TESTS = "no";
 
+  extraPaths = [
+    "cddl/Makefile.inc"
+    "cddl/compat/opensolaris"
+    "cddl/lib"
+    "sys/contrib/openzfs"
+    "sys/modules/zfs"
+  ];
+
+  path = "cddl/lib/libzfs";
+
   meta = {
-    platforms = lib.platforms.freebsd;
     license = with lib.licenses; [ cddl ];
+    platforms = lib.platforms.freebsd;
   };
 }

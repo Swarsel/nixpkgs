@@ -28,6 +28,7 @@ stdenv.mkDerivation {
     flex
     file
   ];
+
   buildInputs = [
     expat
   ];
@@ -37,8 +38,8 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://www.unidata.ucar.edu/software/udunits/";
     description = "C-based package for the programatic handling of units of physical quantities";
+
     longDescription = ''
       The UDUNITS package supports units of physical quantities. Its C library
       provides for arithmetic manipulation of units and for conversion of
@@ -47,6 +48,8 @@ stdenv.mkDerivation {
       also contains a command-line utility for investigating units and
       converting values.
     '';
+
+    homepage = "https://www.unidata.ucar.edu/software/udunits/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.all;

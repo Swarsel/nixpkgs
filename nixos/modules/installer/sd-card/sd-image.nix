@@ -42,22 +42,26 @@ in
       "The boot files for SD image have been moved to the main ext4 partition. The FAT partition now only holds the Raspberry Pi firmware files. Changing its size may not be required."
     )
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2505;
       from = [
         "sdImage"
         "imageBaseName"
       ];
+
+      sinceRelease = 2505;
+
       to = [
         "image"
         "baseName"
       ];
     })
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2505;
       from = [
         "sdImage"
         "imageName"
       ];
+
+      sinceRelease = 2505;
+
       to = [
         "image"
         "fileName"
@@ -68,17 +72,51 @@ in
   ];
 
   options.sdImage = {
-    storePaths = mkOption {
-      type = with types; listOf package;
-      example = literalExpression "[ pkgs.stdenv ]";
+    compressImage = mkOption {
+      default = true;
+
       description = ''
-        Derivations to be included in the Nix store in the generated SD image.
+        Whether the SD image should be compressed using
+        {command}`zstd`.
       '';
+
+      type = types.bool;
+    };
+
+    expandOnBoot = mkOption {
+      default = true;
+
+      description = ''
+        Whether to configure the sd image to expand it's partition on boot.
+      '';
+
+      type = types.bool;
+    };
+
+    firmwarePartitionID = mkOption {
+      default = "0x2178694e";
+
+      description = ''
+        Volume ID for the /boot/firmware partition on the SD card. This value
+        must be a 32-bit hexadecimal number.
+      '';
+
+      type = types.str;
+    };
+
+    firmwarePartitionName = mkOption {
+      default = "FIRMWARE";
+
+      description = ''
+        Name of the filesystem which holds the boot firmware.
+      '';
+
+      type = types.str;
     };
 
     firmwarePartitionOffset = mkOption {
-      type = types.int;
       default = 8;
+
       description = ''
         Gap in front of the /boot/firmware partition, in MiB (1024×1024 bytes).
         Can be increased to make more space for boards requiring to dd u-boot
@@ -89,108 +127,72 @@ in
         partition, which is used **only** for the Raspberry Pi family of
         hardware.
       '';
-    };
 
-    firmwarePartitionID = mkOption {
-      type = types.str;
-      default = "0x2178694e";
-      description = ''
-        Volume ID for the /boot/firmware partition on the SD card. This value
-        must be a 32-bit hexadecimal number.
-      '';
-    };
-
-    firmwarePartitionName = mkOption {
-      type = types.str;
-      default = "FIRMWARE";
-      description = ''
-        Name of the filesystem which holds the boot firmware.
-      '';
-    };
-
-    rootPartitionUUID = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "14e19a7b-0ae0-484d-9d54-43bd6fdc20c7";
-      description = ''
-        UUID for the filesystem on the main NixOS partition on the SD card.
-      '';
-    };
-
-    rootVolumeLabel = mkOption {
-      type = types.str;
-      default = "NIXOS_SD";
-      example = "NIXOS_PENDRIVE";
-      description = ''
-        Label for the NixOS root volume.
-        Usually used when creating a recovery NixOS media installation
-        that avoids conflicting with previous instalation label.
-      '';
-    };
-
-    rootFilesystemCreator = mkOption {
-      type = types.oneOf [
-        types.package
-        types.path
-      ];
-      default = ../../../lib/make-ext4-fs.nix;
-      example = ''
-        nixpkgs/nixos/lib/make-btrfs-fs.nix
-      '';
-      description = ''
-        The filesystem creator used for the root partition.
-      '';
-    };
-
-    rootFilesystemImage = mkOption {
-      type = types.package;
-      default = rootfsImage;
-      description = ''
-        The finished root partition image with all custom fileystem modifications.
-        Used to override the filesystem creator itself.
-      '';
+      type = types.int;
     };
 
     firmwareSize = mkOption {
-      type = types.int;
       # As of 2019-08-18 the Raspberry pi firmware + u-boot takes ~18MiB
       default = 30;
+
       description = ''
         Size of the /boot/firmware partition, in megabytes.
       '';
+
+      type = types.int;
+    };
+
+    nixPathRegistrationFile = mkOption {
+      default = "/nix-path-registration";
+
+      description = ''
+        Location of the file containing the input for nix-store --load-db once the machine has booted.
+        If overriding fileSystems."/" then you should to set this to the root mount + /nix-path-registration
+      '';
+
+      type = types.str;
     };
 
     populateFirmwareCommands = mkOption {
-      example = literalExpression "'' cp \${pkgs.myBootLoader}/u-boot.bin firmware/ ''";
       description = ''
         Shell commands to populate the ./firmware directory.
         All files in that directory are copied to the
         /boot/firmware partition on the SD image.
       '';
+
+      example = literalExpression "'' cp \${pkgs.myBootLoader}/u-boot.bin firmware/ ''";
     };
 
     populateRootCommands = mkOption {
-      example = literalExpression "''\${config.boot.loader.generic-extlinux-compatible.populateCmd} -c \${config.system.build.toplevel} -d ./files/boot''";
       description = ''
         Shell commands to populate the ./files directory.
         All files in that directory are copied to the
         root (/) partition on the SD image. Use this to
         populate the ./files/boot (/boot) directory.
       '';
+
+      example = literalExpression "''\${config.boot.loader.generic-extlinux-compatible.populateCmd} -c \${config.system.build.toplevel} -d ./files/boot''";
+    };
+
+    postBuildCommands = mkOption {
+      default = "";
+
+      description = ''
+        Shell commands to run after the SD image has been assembled.
+
+        The path to the image is available in the {var}`img` shell
+        variable. This hook is typically used for boards that require
+        writing a bootloader (such as u-boot SPL) to a fixed offset
+        before the first partition.
+      '';
+
+      example = literalExpression "'' dd if=\${pkgs.myBootLoader}/SPL of=$img bs=1024 seek=1 conv=notrunc ''";
+      type = types.lines;
     };
 
     preBuildCommands = mkOption {
-      type = types.lines;
-      example = literalExpression ''
-        '''
-          if [ ! -w "$root_fs" ]; then
-            cp --no-preserve=mode "$root_fs" ./root-fs.img
-            root_fs=./root-fs.img
-          fi
-          resize2fs $root_fs 15G
-        '''
-      '';
       default = "";
+
       description = ''
         Shell commands to run after the root filesystem image has been
         prepared, but before the final SD image is assembled.
@@ -204,56 +206,90 @@ in
         first copy it to a writable location and update {var}`root_fs`
         to point to the copy.
       '';
-    };
 
-    postBuildCommands = mkOption {
+      example = literalExpression ''
+        '''
+          if [ ! -w "$root_fs" ]; then
+            cp --no-preserve=mode "$root_fs" ./root-fs.img
+            root_fs=./root-fs.img
+          fi
+          resize2fs $root_fs 15G
+        '''
+      '';
+
       type = types.lines;
-      example = literalExpression "'' dd if=\${pkgs.myBootLoader}/SPL of=$img bs=1024 seek=1 conv=notrunc ''";
-      default = "";
-      description = ''
-        Shell commands to run after the SD image has been assembled.
-
-        The path to the image is available in the {var}`img` shell
-        variable. This hook is typically used for boards that require
-        writing a bootloader (such as u-boot SPL) to a fixed offset
-        before the first partition.
-      '';
     };
 
-    compressImage = mkOption {
-      type = types.bool;
-      default = true;
+    rootFilesystemCreator = mkOption {
+      default = ../../../lib/make-ext4-fs.nix;
+
       description = ''
-        Whether the SD image should be compressed using
-        {command}`zstd`.
+        The filesystem creator used for the root partition.
       '';
+
+      example = ''
+        nixpkgs/nixos/lib/make-btrfs-fs.nix
+      '';
+
+      type = types.oneOf [
+        types.package
+        types.path
+      ];
     };
 
-    expandOnBoot = mkOption {
-      type = types.bool;
-      default = true;
+    rootFilesystemImage = mkOption {
+      default = rootfsImage;
+
       description = ''
-        Whether to configure the sd image to expand it's partition on boot.
+        The finished root partition image with all custom fileystem modifications.
+        Used to override the filesystem creator itself.
       '';
+
+      type = types.package;
     };
 
-    nixPathRegistrationFile = mkOption {
+    rootPartitionUUID = mkOption {
+      default = null;
+
+      description = ''
+        UUID for the filesystem on the main NixOS partition on the SD card.
+      '';
+
+      example = "14e19a7b-0ae0-484d-9d54-43bd6fdc20c7";
+      type = types.nullOr types.str;
+    };
+
+    rootVolumeLabel = mkOption {
+      default = "NIXOS_SD";
+
+      description = ''
+        Label for the NixOS root volume.
+        Usually used when creating a recovery NixOS media installation
+        that avoids conflicting with previous instalation label.
+      '';
+
+      example = "NIXOS_PENDRIVE";
       type = types.str;
-      default = "/nix-path-registration";
+    };
+
+    storePaths = mkOption {
       description = ''
-        Location of the file containing the input for nix-store --load-db once the machine has booted.
-        If overriding fileSystems."/" then you should to set this to the root mount + /nix-path-registration
+        Derivations to be included in the Nix store in the generated SD image.
       '';
+
+      example = literalExpression "[ pkgs.stdenv ]";
+      type = with types; listOf package;
     };
   };
 
   config = {
-    hardware.enableAllHardware = true;
-
     fileSystems = {
+      "/" = {
+        device = "/dev/disk/by-label/${config.sdImage.rootVolumeLabel}";
+        fsType = "ext4";
+      };
+
       "/boot/firmware" = {
-        device = "/dev/disk/by-label/${config.sdImage.firmwarePartitionName}";
-        fsType = "vfat";
         # Alternatively, this could be removed from the configuration.
         # The filesystem is not needed at runtime, it could be treated
         # as an opaque blob instead of a discrete FAT32 filesystem.
@@ -261,41 +297,29 @@ in
           "nofail"
           "noauto"
         ];
-      };
-      "/" = {
-        device = "/dev/disk/by-label/${config.sdImage.rootVolumeLabel}";
-        fsType = "ext4";
+
+        device = "/dev/disk/by-label/${config.sdImage.firmwarePartitionName}";
+        fsType = "vfat";
       };
     };
 
-    sdImage.storePaths = [ config.system.build.toplevel ];
-
+    hardware.enableAllHardware = true;
     image.extension = if config.sdImage.compressImage then "img.zst" else "img";
     image.filePath = "sd-image/${config.image.fileName}";
-    system.nixos.tags = [ "sd-card" ];
+    sdImage.storePaths = [ config.system.build.toplevel ];
     system.build.image = config.system.build.sdImage;
+
     system.build.sdImage = pkgs.callPackage (
       {
-        stdenv,
         dosfstools,
         e2fsprogs,
-        mtools,
         libfaketime,
+        mtools,
+        stdenv,
         util-linux,
         zstd,
       }:
       stdenv.mkDerivation {
-        name = config.image.fileName;
-
-        nativeBuildInputs = [
-          dosfstools
-          e2fsprogs
-          libfaketime
-          mtools
-          util-linux
-        ]
-        ++ lib.optional config.sdImage.compressImage zstd;
-
         inherit (config.sdImage) compressImage;
 
         buildCommand = ''
@@ -374,28 +398,35 @@ in
               zstd -T$NIX_BUILD_CORES --rm $img
           fi
         '';
+
+        name = config.image.fileName;
+
+        nativeBuildInputs = [
+          dosfstools
+          e2fsprogs
+          libfaketime
+          mtools
+          util-linux
+        ]
+        ++ lib.optional config.sdImage.compressImage zstd;
       }
     ) { };
 
+    system.nixos.tags = [ "sd-card" ];
+
     systemd.services.expand-root-partition = lib.mkIf config.sdImage.expandOnBoot {
-      description = "Grow the root partition and filesystem to fill the SD card";
-      unitConfig = {
-        DefaultDependencies = false;
-        ConditionPathExists = config.sdImage.nixPathRegistrationFile;
-      };
-      wantedBy = [ "sysinit.target" ];
+      after = [ "local-fs.target" ];
+
       before = [
         "sysinit.target"
         "shutdown.target"
         "register-nix-paths.service"
       ];
-      after = [ "local-fs.target" ];
+
       conflicts = [ "shutdown.target" ];
+      description = "Grow the root partition and filesystem to fill the SD card";
       restartIfChanged = false;
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
+
       script = ''
         # Figure out device names for the boot device and root filesystem.
         rootPart=$(${lib.getExe' pkgs.util-linux "findmnt"} -n -o SOURCE /)
@@ -407,6 +438,18 @@ in
         ${lib.getExe' pkgs.parted "partprobe"}
         ${lib.getExe' pkgs.e2fsprogs "resize2fs"} $rootPart
       '';
+
+      serviceConfig = {
+        RemainAfterExit = true;
+        Type = "oneshot";
+      };
+
+      unitConfig = {
+        ConditionPathExists = config.sdImage.nixPathRegistrationFile;
+        DefaultDependencies = false;
+      };
+
+      wantedBy = [ "sysinit.target" ];
     };
 
     systemd.services.register-nix-paths =
@@ -414,25 +457,19 @@ in
         inherit (config.sdImage) nixPathRegistrationFile;
       in
       {
-        description = "Register Nix Store Paths";
-        unitConfig = {
-          DefaultDependencies = false;
-          ConditionPathExists = nixPathRegistrationFile;
-        };
-        wantedBy = [ "sysinit.target" ];
+        after = [ "local-fs.target" ];
+
         before = [
           "sysinit.target"
           "shutdown.target"
           "nix-daemon.socket"
           "nix-daemon.service"
         ];
-        after = [ "local-fs.target" ];
+
         conflicts = [ "shutdown.target" ];
+        description = "Register Nix Store Paths";
         restartIfChanged = false;
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
+
         script = ''
           ${lib.getExe' config.nix.package.out "nix-store"} --load-db < ${nixPathRegistrationFile}
 
@@ -443,6 +480,18 @@ in
           # Prevents this from running on later boots.
           rm -f ${nixPathRegistrationFile}
         '';
+
+        serviceConfig = {
+          RemainAfterExit = true;
+          Type = "oneshot";
+        };
+
+        unitConfig = {
+          ConditionPathExists = nixPathRegistrationFile;
+          DefaultDependencies = false;
+        };
+
+        wantedBy = [ "sysinit.target" ];
       };
   };
 }

@@ -1,8 +1,8 @@
 {
-  fetchFromGitHub,
   lib,
-  python3,
   stdenv,
+  fetchFromGitHub,
+  python3,
   sudo,
   zfs,
 }:
@@ -18,11 +18,6 @@ stdenv.mkDerivation rec {
     sha256 = "gPLCNt6hp4E94s9/PRgsnBN5XXQQ+s2MGcgRFeknXg4=";
   };
 
-  buildInputs = [
-    python3
-    zfs
-  ];
-
   postPatch = ''
     patchShebangs check_zfs.py
     substituteInPlace check_zfs.py \
@@ -30,6 +25,11 @@ stdenv.mkDerivation rec {
       --replace-fail "'/sbin/zpool'" "'${zfs}/bin/zpool'" \
       --replace-fail "'/sbin/zfs'" "'${zfs}/bin/zfs'"
   '';
+
+  buildInputs = [
+    python3
+    zfs
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -43,7 +43,7 @@ stdenv.mkDerivation rec {
     description = "Check the health, capacity, fragmentation, and other things for use with Nagios monitoring";
     homepage = "https://github.com/zlacelle/nagios_check_zfs_linux";
     license = lib.licenses.gpl3Only;
-    mainProgram = "check_zfs";
     maintainers = with lib.maintainers; [ mariaa144 ];
+    mainProgram = "check_zfs";
   };
 }

@@ -1,14 +1,14 @@
 {
+  lib,
+  fetchFromGitHub,
   audit,
   bash,
   bison,
   cmake,
   elfutils,
-  fetchFromGitHub,
   fetchpatch,
   flex,
   iperf,
-  lib,
   libbpf,
   llvmPackages,
   luajit,
@@ -24,7 +24,6 @@
 python3Packages.buildPythonApplication rec {
   pname = "bcc";
   version = "0.36.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "iovisor";
@@ -32,6 +31,11 @@ python3Packages.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-+XBFENCAKP8Z+5dviBervDXHOM2qY3lfDFsDKVjzMbM=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   patches = [
     # This is needed until we fix
@@ -46,15 +50,23 @@ python3Packages.buildPythonApplication rec {
     })
 
     (fetchpatch {
+      hash = "sha256-Fr5SqDUpQzZj8yPST0V1QExNMCSoRbOXG5ZaChDXTZQ=";
       # https://github.com/iovisor/bcc/issues/5501
       url = "https://github.com/iovisor/bcc/commit/c3f35ecca18b1ce926bd272f60f6d4465656a80b.patch";
-      hash = "sha256-Fr5SqDUpQzZj8yPST0V1QExNMCSoRbOXG5ZaChDXTZQ=";
     })
   ];
 
-  build-system = [ python3Packages.setuptools ];
+  postPatch = ''
+    substituteInPlace src/python/bcc/libbcc.py \
+      --replace-fail "libbcc.so.0" "$out/lib/libbcc.so.0"
 
-  dependencies = [ python3Packages.netaddr ];
+    # https://github.com/iovisor/bcc/issues/3996
+    substituteInPlace src/cc/libbcc.pc.in \
+      --replace-fail '$'{exec_prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
+
+    substituteInPlace tools/bashreadline.py \
+      --replace-fail '/bin/bash' '${readline}/lib/libreadline.so'
+  '';
 
   nativeBuildInputs = [
     bison
@@ -86,18 +98,6 @@ python3Packages.buildPythonApplication rec {
     (lib.cmakeBool "ENABLE_LIBDEBUGINFOD" false)
   ];
 
-  postPatch = ''
-    substituteInPlace src/python/bcc/libbcc.py \
-      --replace-fail "libbcc.so.0" "$out/lib/libbcc.so.0"
-
-    # https://github.com/iovisor/bcc/issues/3996
-    substituteInPlace src/cc/libbcc.pc.in \
-      --replace-fail '$'{exec_prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
-
-    substituteInPlace tools/bashreadline.py \
-      --replace-fail '/bin/bash' '${readline}/lib/libreadline.so'
-  '';
-
   postInstall = ''
     mkdir -p $out/bin $out/share
     rm -r $out/share/bcc/tools/old
@@ -115,16 +115,14 @@ python3Packages.buildPythonApplication rec {
     done
   '';
 
-  pythonImportsCheck = [ "bcc" ];
-
   postFixup = ''
     wrapPythonProgramsIn "$out/share/bcc/tools" "$out ''${pythonPath[*]}"
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  build-system = [ python3Packages.setuptools ];
+  dependencies = [ python3Packages.netaddr ];
+  pyproject = false;
+  pythonImportsCheck = [ "bcc" ];
 
   passthru.tests = {
     bpf = nixosTests.bpf;
@@ -134,6 +132,7 @@ python3Packages.buildPythonApplication rec {
     description = "Dynamic Tracing Tools for Linux";
     homepage = "https://iovisor.github.io/bcc/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ragge
       mic92
@@ -141,6 +140,7 @@ python3Packages.buildPythonApplication rec {
       martinetd
       ryan4yin
     ];
+
     platforms = lib.platforms.linux;
   };
 }

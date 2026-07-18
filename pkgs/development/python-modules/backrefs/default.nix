@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
   regex,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "backrefs";
   version = "6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "facelessuser";
@@ -19,16 +18,17 @@ buildPythonPackage rec {
     hash = "sha256-y0scI6FBvjuvWLx1V3AHiGhtLB2Mk7jCx4hEjOv+ETA=";
   };
 
-  build-system = [
-    hatchling
-  ];
-
-  pythonImportsCheck = [ "backrefs" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     regex
   ];
+
+  build-system = [
+    hatchling
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "backrefs" ];
 
   meta = {
     description = "Wrapper around re or regex that adds additional back references";

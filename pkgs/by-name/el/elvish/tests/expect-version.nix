@@ -5,12 +5,9 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "elvish-simple-test";
   inherit (elvish) version;
-
+  pname = "elvish-simple-test";
   nativeBuildInputs = [ elvish ];
-
-  dontInstall = true;
 
   buildCommand = ''
     elvish ${
@@ -22,5 +19,6 @@ stdenv.mkDerivation {
     touch $out
   '';
 
+  dontInstall = true;
   meta.timeout = 10;
 }

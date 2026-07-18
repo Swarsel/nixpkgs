@@ -1,17 +1,13 @@
 {
   lib,
-  skawarePackages,
-  skalibs,
   execline,
+  skalibs,
+  skawarePackages,
 }:
 
 skawarePackages.buildPackage {
   pname = "s6-linux-utils";
   version = "2.6.4.1";
-  sha256 = "sha256-FuGltaK0qYZ0tKlxlhKtt5WI48IMQIM2AnjqOPLTISk=";
-
-  description = "Set of minimalistic Linux-specific system utilities";
-  platforms = lib.platforms.linux;
 
   outputs = [
     "bin"
@@ -40,5 +36,9 @@ skawarePackages.buildPackage {
 
     mv doc $doc/share/doc/s6-linux-utils/html
   '';
+
+  description = "Set of minimalistic Linux-specific system utilities";
+  platforms = lib.platforms.linux;
+  sha256 = "sha256-FuGltaK0qYZ0tKlxlhKtt5WI48IMQIM2AnjqOPLTISk=";
 
 }

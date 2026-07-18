@@ -4,11 +4,9 @@
   lib,
   stdenv,
   callPackage,
-
   jdk,
-
-  vmopts ? null,
   forceWayland ? false,
+  vmopts ? null,
 }:
 let
   baseBuilder = if stdenv.hostPlatform.isDarwin then ./darwin.nix else ./linux.nix;
@@ -17,6 +15,7 @@ in
 lib.extendMkDerivation {
   constructDrv = callPackage baseBuilder {
     inherit vmopts jdk forceWayland;
+
     # Args to not pass to mkDerivation in the base builders. Since both get the same args
     # passed in, both have the same list of args to ignore, even if they don't both use
     # all of them.
@@ -37,11 +36,9 @@ lib.extendMkDerivation {
     finalAttrs:
     {
       buildNumber,
-      product,
-
-      libdbm,
       fsnotifier,
-
+      libdbm,
+      product,
       meta ? { },
       passthru ? { },
       ...
@@ -55,11 +52,11 @@ lib.extendMkDerivation {
           fsnotifier
           ;
 
-        updateScript = ../updater/main.py;
-
         tests = {
           plugins = callPackage ../plugins/tests.nix { ide = finalAttrs.finalPackage; };
         };
+
+        updateScript = ../updater/main.py;
       };
 
       meta = meta // {

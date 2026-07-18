@@ -1,29 +1,26 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
-  # dependencies
-  packaging,
-  pexpect,
-  python-daemon,
-  pyyaml,
-
   # tests
   addBinToPathHook,
   ansible-core,
+  buildPythonPackage,
   glibcLocales,
   mock,
   openssh,
+  # dependencies
+  packaging,
+  pexpect,
   pytest-mock,
   pytest-timeout,
   pytest-xdist,
   pytestCheckHook,
+  python-daemon,
+  pyyaml,
+  # build-system
+  setuptools,
+  setuptools-scm,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -31,7 +28,6 @@
 buildPythonPackage rec {
   pname = "ansible-runner";
   version = "2.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ansible";
@@ -45,18 +41,6 @@ buildPythonPackage rec {
       --replace-fail "setuptools>=45, <=70.0.0" setuptools \
       --replace-fail "setuptools-scm[toml]>=6.2, <=8.1.0" setuptools-scm
   '';
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    packaging
-    pexpect
-    python-daemon
-    pyyaml
-  ];
 
   nativeCheckInputs = [
     addBinToPathHook
@@ -77,6 +61,30 @@ buildPythonPackage rec {
     rm pytest.ini
   '';
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    packaging
+    pexpect
+    python-daemon
+    pyyaml
+  ];
+
+  disabledTestPaths = [
+    # These tests unset PATH and then run executables like `bash` (see https://github.com/ansible/ansible-runner/pull/918)
+    "test/integration/test_runner.py"
+    "test/unit/test_runner.py"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # Integration tests on Darwin are not regularly passing in ansible-runner's own CI
+    "test/integration"
+    # These tests write to `/tmp` which is not writable on Darwin
+    "test/unit/config/test__base.py"
+  ];
+
   disabledTests = [
     # Tests require network access
     "test_callback_plugin_task_args_leak"
@@ -95,18 +103,7 @@ buildPythonPackage rec {
     "test_resolved_actions"
   ];
 
-  disabledTestPaths = [
-    # These tests unset PATH and then run executables like `bash` (see https://github.com/ansible/ansible-runner/pull/918)
-    "test/integration/test_runner.py"
-    "test/unit/test_runner.py"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Integration tests on Darwin are not regularly passing in ansible-runner's own CI
-    "test/integration"
-    # These tests write to `/tmp` which is not writable on Darwin
-    "test/unit/config/test__base.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ansible_runner" ];
 
   meta = {

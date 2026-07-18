@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  boehmgc,
-  zlib,
-  sqlite,
-  pcre2,
-  cmake,
-  pkg-config,
-  git,
   apacheHttpd,
   apr,
   aprutil,
-  libmysqlclient,
-  mbedtls,
-  openssl,
+  boehmgc,
+  cmake,
+  git,
   gtk3,
+  libmysqlclient,
   libpthread-stubs,
+  mbedtls,
   nix-update-script,
+  openssl,
+  pcre2,
+  pkg-config,
+  sqlite,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     git
   ];
+
   buildInputs = [
     boehmgc
     zlib
@@ -50,27 +51,29 @@ stdenv.mkDerivation (finalAttrs: {
     libpthread-stubs
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux gtk3;
+
   cmakeFlags = [ "-DRUN_LDCONFIG=OFF" ];
 
   env = lib.optionalAttrs stdenv.cc.isClang {
     NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
   };
 
+  # Called from tools/test.neko line 2
+  # Uncaught exception - Segmentation fault
+  doInstallCheck = !stdenv.hostPlatform.isDarwin;
+
   installCheckPhase = ''
     bin/neko bin/test.n
   '';
 
-  # Called from tools/test.neko line 2
-  # Uncaught exception - Segmentation fault
-  doInstallCheck = !stdenv.hostPlatform.isDarwin;
   dontPatchELF = true;
   dontStrip = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "High-level dynamically typed programming language";
     homepage = "https://nekovm.org";
+
     license = [
       # list based on https://github.com/HaxeFoundation/neko/blob/v2-3-0/LICENSE
       lib.licenses.gpl2Plus # nekoc, nekoml
@@ -81,9 +84,11 @@ stdenv.mkDerivation (finalAttrs: {
       lib.licenses.mit # overall, other libs
       lib.licenses.boehmGC # boehm gc
     ];
+
     maintainers = with lib.maintainers; [
       locallycompact
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   };

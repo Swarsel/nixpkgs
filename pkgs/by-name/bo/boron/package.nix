@@ -14,25 +14,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-50HKcK2hQpe9k9RIoVa/N5krTRKlW9AsGYTmHITx7Nc=";
   };
 
-  # this is not a standard Autotools-like `configure` script
-  dontAddPrefix = true;
-
-  preConfigure = ''
-    patchShebangs configure
-  '';
-
-  configureFlags = [ "--thread" ];
-
-  makeFlags = [ "DESTDIR=$(out)" ];
-
   buildInputs = [
     zlib
   ];
 
-  installTargets = [
-    "install"
-    "install-dev"
-  ];
+  configureFlags = [ "--thread" ];
+  makeFlags = [ "DESTDIR=$(out)" ];
+
+  preConfigure = ''
+    patchShebangs configure
+  '';
 
   doCheck = true;
 
@@ -41,12 +32,20 @@ stdenv.mkDerivation (finalAttrs: {
     make -C test
   '';
 
+  # this is not a standard Autotools-like `configure` script
+  dontAddPrefix = true;
+
+  installTargets = [
+    "install"
+    "install-dev"
+  ];
+
   meta = {
-    homepage = "https://urlan.sourceforge.net/boron/";
     description = "Scripting language and C library useful for building DSLs";
-    mainProgram = "boron";
+    homepage = "https://urlan.sourceforge.net/boron/";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ mausch ];
+    platforms = lib.platforms.linux;
+    mainProgram = "boron";
   };
 })

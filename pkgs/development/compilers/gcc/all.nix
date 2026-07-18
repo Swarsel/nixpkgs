@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  pkgs,
-  overrideCC,
   buildPackages,
-  targetPackages,
   callPackage,
   isl_0_20,
   noSysDirs,
+  overrideCC,
+  pkgs,
+  targetPackages,
   wrapCC,
 }:
 
@@ -27,14 +27,16 @@ let
           callPackage ./default.nix {
             inherit noSysDirs;
             inherit majorMinorVersion;
+
             _systemInfo = {
               inherit buildIsHost hostIsTarget;
             };
-            reproducibleBuild = true;
-            profiledCompiler = false;
-            libcCross = if !buildIsTarget then targetPackages.libc or pkgs.libc else null;
-            threadsCross = if !buildIsTarget then targetPackages.threads or pkgs.threads else { };
+
             isl = if stdenv.hostPlatform.isDarwin then null else isl_0_20;
+            libcCross = if !buildIsTarget then targetPackages.libc or pkgs.libc else null;
+            profiledCompiler = false;
+            reproducibleBuild = true;
+
             # do not allow version skew when cross-building gcc
             #
             # When `gcc` is cross-built (`build` != `target` && `host` == `target`)
@@ -58,6 +60,8 @@ let
                 overrideCC stdenv buildPackages."gcc${majorVersion}"
               else
                 stdenv;
+
+            threadsCross = if !buildIsTarget then targetPackages.threads or pkgs.threads else { };
           }
         )
       );

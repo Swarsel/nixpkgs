@@ -44,55 +44,58 @@ in
         example = "haskellPackages.spacecookie";
       };
 
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to open the necessary port in the firewall for spacecookie.
-        '';
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 70;
-        description = ''
-          Port the gopher service should be exposed on.
-        '';
-      };
-
       address = mkOption {
-        type = types.str;
         default = "[::]";
+
         description = ''
           Address to listen on. Must be in the
           `ListenStream=` syntax of
           {manpage}`systemd.socket(5)`.
         '';
+
+        type = types.str;
+      };
+
+      openFirewall = mkOption {
+        default = false;
+
+        description = ''
+          Whether to open the necessary port in the firewall for spacecookie.
+        '';
+
+        type = types.bool;
+      };
+
+      port = mkOption {
+        default = 70;
+
+        description = ''
+          Port the gopher service should be exposed on.
+        '';
+
+        type = types.port;
       };
 
       settings = mkOption {
-        type = types.submodule {
-          freeformType = format.type;
+        description = ''
+          Settings for spacecookie. The settings set here are
+          directly translated to the spacecookie JSON config
+          file. See
+          [spacecookie.json(5)](https://sternenseemann.github.io/spacecookie/spacecookie.json.5.html)
+          for explanations of all options.
+        '';
 
+        type = types.submodule {
           options.hostname = mkOption {
-            type = types.str;
             default = "localhost";
+
             description = ''
               The hostname the service is reachable via. Clients
               will use this hostname for further requests after
               loading the initial gopher menu.
             '';
-          };
 
-          options.root = mkOption {
-            type = types.path;
-            default = "/srv/gopher";
-            description = ''
-              The directory spacecookie should serve via gopher.
-              Files in there need to be world-readable since
-              the spacecookie service file sets
-              `DynamicUser=true`.
-            '';
+            type = types.str;
           };
 
           options.log = {
@@ -102,49 +105,62 @@ in
             };
 
             hide-ips = mkOption {
-              type = types.bool;
               default = true;
+
               description = ''
                 If enabled, spacecookie will hide personal
                 information of users like IP addresses from
                 log output.
               '';
+
+              type = types.bool;
             };
 
             hide-time = mkOption {
-              type = types.bool;
               # since we are starting with systemd anyways
               # we deviate from the default behavior here:
               # journald will add timestamps, so no need
               # to double up.
               default = true;
+
               description = ''
                 If enabled, spacecookie will not print timestamps
                 at the beginning of every log line.
               '';
+
+              type = types.bool;
             };
 
             level = mkOption {
+              default = "info";
+
+              description = ''
+                Log level for the spacecookie service.
+              '';
+
               type = types.enum [
                 "info"
                 "warn"
                 "error"
               ];
-              default = "info";
-              description = ''
-                Log level for the spacecookie service.
-              '';
             };
           };
-        };
 
-        description = ''
-          Settings for spacecookie. The settings set here are
-          directly translated to the spacecookie JSON config
-          file. See
-          [spacecookie.json(5)](https://sternenseemann.github.io/spacecookie/spacecookie.json.5.html)
-          for explanations of all options.
-        '';
+          options.root = mkOption {
+            default = "/srv/gopher";
+
+            description = ''
+              The directory spacecookie should serve via gopher.
+              Files in there need to be world-readable since
+              the spacecookie service file sets
+              `DynamicUser=true`.
+            '';
+
+            type = types.path;
+          };
+
+          freeformType = format.type;
+        };
       };
     };
   };
@@ -153,6 +169,7 @@ in
     assertions = [
       {
         assertion = !(cfg.settings ? user);
+
         message = ''
           spacecookie is started as a normal user, so the setuid
           feature doesn't work. If you want to run spacecookie as
@@ -166,6 +183,7 @@ in
       }
       {
         assertion = !(cfg.settings ? listen || cfg.settings ? port);
+
         message = ''
           The NixOS spacecookie module uses socket activation,
           so the listen options have no effect. Use the port
@@ -174,51 +192,49 @@ in
       }
     ];
 
-    systemd.sockets.spacecookie = {
-      description = "Socket for the Spacecookie Gopher Server";
-      wantedBy = [ "sockets.target" ];
-      listenStreams = [ "${cfg.address}:${toString cfg.port}" ];
-      socketConfig = {
-        BindIPv6Only = "both";
-      };
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
     };
 
     systemd.services.spacecookie = {
       description = "Spacecookie Gopher Server";
-      wantedBy = [ "multi-user.target" ];
       requires = [ "spacecookie.socket" ];
 
       serviceConfig = {
-        Type = "notify";
+        CapabilityBoundingSet = "";
+        DynamicUser = true;
         ExecStart = "${lib.getBin cfg.package}/bin/spacecookie ${configFile}";
         FileDescriptorStoreMax = 1;
-
-        DynamicUser = true;
-
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
+        LockPersonality = true;
+        NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateMounts = true;
+        PrivateTmp = true;
         PrivateUsers = true;
-
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
         ProtectControlGroups = true;
-
-        CapabilityBoundingSet = "";
-        NoNewPrivileges = true;
-        LockPersonality = true;
-        RestrictRealtime = true;
-
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
         # AF_UNIX for communication with systemd
         # AF_INET replaced by BindIPv6Only=both
         RestrictAddressFamilies = "AF_UNIX AF_INET6";
+        RestrictRealtime = true;
+        Type = "notify";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
+    systemd.sockets.spacecookie = {
+      description = "Socket for the Spacecookie Gopher Server";
+      listenStreams = [ "${cfg.address}:${toString cfg.port}" ];
+
+      socketConfig = {
+        BindIPv6Only = "both";
+      };
+
+      wantedBy = [ "sockets.target" ];
     };
   };
 }

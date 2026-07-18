@@ -1,16 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "zcool-qingke-huangyou";
   version = "1.000";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -19,13 +16,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-xIIDP8gCtwNtY6AReeuLZSbnDXczS5ycObP3EKxk+hU=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ installFonts ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Futuristic stiff geometric font";
     homepage = "https://fonts.google.com/specimen/ZCOOL+QingKe+HuangYou";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ gigahawk ];
+    platforms = lib.platforms.all;
   };
 })

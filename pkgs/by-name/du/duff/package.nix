@@ -11,16 +11,18 @@ stdenv.mkDerivation {
   version = "2024-02-16";
 
   src = fetchFromGitHub {
-    sha256 = "9lS4th+qeglsoA+1s45uEE2UGmlE3YtSy4/uGqWKU/k=";
-    rev = "c1baefa4f4d5cefbbbc7bfefc0c18356752c8a1b";
-    repo = "duff";
     owner = "elmindreda";
+    repo = "duff";
+    rev = "c1baefa4f4d5cefbbbc7bfefc0c18356752c8a1b";
+    sha256 = "9lS4th+qeglsoA+1s45uEE2UGmlE3YtSy4/uGqWKU/k=";
   };
 
   nativeBuildInputs = [
     autoreconfHook
     gettext
   ];
+
+  enableParallelBuilding = true;
 
   preAutoreconf = ''
     # gettexttize rightly refuses to run non-interactively:
@@ -34,17 +36,17 @@ stdenv.mkDerivation {
     sed '/^XGETTEXT_OPTIONS =/ s,$, --from-code=utf-8,' -i po/Makevars
   '';
 
-  enableParallelBuilding = true;
-
   meta = {
     description = "Quickly find duplicate files";
-    mainProgram = "duff";
+
     longDescription = ''
       Duff is a Unix command-line utility for quickly finding duplicates in
       a given set of files.
     '';
+
     homepage = "https://github.com/elmindreda/duff";
     license = lib.licenses.zlib;
     platforms = lib.platforms.all;
+    mainProgram = "duff";
   };
 }

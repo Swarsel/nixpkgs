@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   buildDotnetModule,
-  dotnetCorePackages,
-  powershell,
   darwin,
+  dotnetCorePackages,
   glibcLocales,
+  powershell,
+  stdenvNoCC,
 }:
 buildDotnetModule (finalAttrs: {
   pname = "ilspycmd";
@@ -29,33 +29,34 @@ buildDotnetModule (finalAttrs: {
   # https://github.com/NixOS/nixpkgs/issues/38991
   # bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
   env.LOCALE_ARCHIVE = lib.optionalString stdenvNoCC.hostPlatform.isLinux "${glibcLocales}/lib/locale/locale-archive";
-
   dotnet-sdk = dotnetCorePackages.sdk_8_0;
-
-  projectFile = "ICSharpCode.ILSpyCmd/ICSharpCode.ILSpyCmd.csproj";
-  nugetDeps = ./deps.json;
-
   # see: https://github.com/tunnelvisionlabs/ReferenceAssemblyAnnotator/issues/94
   linkNugetPackages = true;
+  nugetDeps = ./deps.json;
+  projectFile = "ICSharpCode.ILSpyCmd/ICSharpCode.ILSpyCmd.csproj";
 
   meta = {
     description = "Tool for decompiling .NET assemblies and generating portable PDBs";
-    mainProgram = "ilspycmd";
     homepage = "https://github.com/icsharpcode/ILSpy";
     changelog = "https://github.com/icsharpcode/ILSpy/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       mit
       # third party dependencies
       mspl
       asl20
     ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
+
     maintainers = with lib.maintainers; [
       emilytrau
       tbaldwin
     ];
+
+    mainProgram = "ilspycmd";
   };
 })

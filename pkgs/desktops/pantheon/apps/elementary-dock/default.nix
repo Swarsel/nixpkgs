@@ -1,29 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wayland-scanner,
-  wrapGAppsHook4,
   glib,
   granite7,
   gtk4,
   libadwaita,
-  wayland,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  vala,
+  wayland,
+  wayland-scanner,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "elementary-dock";
   version = "8.3.3";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "elementary";
@@ -32,7 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-13wXBqN4vovmiXXQyciy4yxIrByuLBvm+ypg2MLVMB4=";
   };
 
-  depsBuildBuild = [ pkg-config ];
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     meson
@@ -54,6 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
   # Fix building with GCC 14
   # https://github.com/elementary/dock/issues/418
   env.NIX_CFLAGS_COMPILE = "-Wno-error=int-conversion";
+  depsBuildBuild = [ pkg-config ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -64,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/elementary/dock";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.dock";
+    teams = [ lib.teams.pantheon ];
   };
 })

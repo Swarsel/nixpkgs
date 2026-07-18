@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  nixosTests,
   nix-update-script,
+  nixosTests,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,26 +17,27 @@ buildGoModule (finalAttrs: {
     hash = "sha256-+ERoH2DsEMJNs3eGTBr4I+2+EdEKBfWnVRFKZ8igA6g=";
   };
 
-  vendorHash = "sha256-r9W/2Uead/EHKWnnJLL9bdA/MazLbe1UsgVXkPNFnxM=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-  preCheck = "export TZ=UTC";
-
   outputs = [
     "out"
     "static"
   ];
+
+  vendorHash = "sha256-r9W/2Uead/EHKWnnJLL9bdA/MazLbe1UsgVXkPNFnxM=";
+  preCheck = "export TZ=UTC";
 
   postInstall = ''
     mkdir $static
     cp -r ./static $static
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru = {
     tests.vm = nixosTests.galene.basic;
+
     updateScript = nix-update-script {
       extraArgs = [ "--version-regex=galene-(.*)" ];
     };
@@ -47,11 +48,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/jech/galene";
     changelog = "https://github.com/jech/galene/raw/${finalAttrs.src.tag}/CHANGES";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
-    teams = [ lib.teams.ngi ];
+
     maintainers = with lib.maintainers; [
       rgrunbla
       erdnaxe
     ];
+
+    platforms = lib.platforms.linux;
+    teams = [ lib.teams.ngi ];
   };
 })

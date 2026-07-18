@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  nix-update-script,
   pkg-config,
   testers,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "JankyBorders";
@@ -32,8 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       version = "borders-v${finalAttrs.version}";
+      package = finalAttrs.finalPackage;
     };
 
     updateScript = nix-update-script { };
@@ -45,8 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/FelixKratz/JankyBorders";
     changelog = "https://github.com/FelixKratz/JankyBorders/releases/tag/v${finalAttrs.src.tag}";
     license = lib.licenses.gpl3;
-    mainProgram = "borders";
     maintainers = with lib.maintainers; [ khaneliman ];
     platforms = lib.platforms.darwin;
+    mainProgram = "borders";
   };
 })

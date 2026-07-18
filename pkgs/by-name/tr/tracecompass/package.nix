@@ -1,21 +1,21 @@
 {
-  coreutils,
+  lib,
+  stdenv,
   fetchurl,
+  coreutils,
   fontconfig,
   freetype,
   glib,
   gsettings-desktop-schemas,
   gtk3,
+  imagemagick,
   jdk21,
-  lib,
   libx11,
   libxrender,
   libxtst,
   makeDesktopItem,
   makeWrapper,
-  imagemagick,
   shared-mime-info,
-  stdenv,
   testers,
   webkitgtk_4_1,
   xvfb-run,
@@ -28,23 +28,21 @@ let
   archiveName = "trace-compass-${version}-${buildId}-linux.gtk.x86_64.tar.gz";
 
   desktopItem = makeDesktopItem {
-    name = "tracecompass";
-    exec = "tracecompass";
-    icon = "tracecompass";
-    comment = "Trace Compass";
-    desktopName = "Trace Compass";
     categories = [
       "Development"
       "Profiling"
     ];
+
+    comment = "Trace Compass";
+    desktopName = "Trace Compass";
+    exec = "tracecompass";
+    icon = "tracecompass";
+    name = "tracecompass";
   };
 in
 stdenv.mkDerivation (finalAttrs: rec {
-  pname = "tracecompass";
   inherit version;
-
-  strictDeps = true;
-  __structuredAttrs = true;
+  pname = "tracecompass";
 
   # Use the upstream RCP release tarball; building Trace Compass from source
   # would require a much heavier Eclipse/Tycho build pipeline.
@@ -53,13 +51,6 @@ stdenv.mkDerivation (finalAttrs: rec {
     hash = "sha256-QNJAJkgpV8v94IJx/jnQQ5HhX0kuASET3ywa/nfhsEs=";
   };
 
-  sourceRoot = "trace-compass";
-
-  nativeBuildInputs = [
-    makeWrapper
-    imagemagick
-  ];
-
   postPatch = ''
         substituteInPlace tracecompass.ini \
           --replace-fail '-vmargs' "-vm
@@ -67,8 +58,12 @@ stdenv.mkDerivation (finalAttrs: rec {
     -vmargs"
   '';
 
-  dontBuild = true;
-  dontConfigure = true;
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    makeWrapper
+    imagemagick
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -115,15 +110,20 @@ stdenv.mkDerivation (finalAttrs: rec {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = "trace-compass";
+
   passthru = {
-    updateScript = ./update.sh;
     tests.smoke = testers.runCommand {
-      name = "tracecompass-smoke-test";
       nativeBuildInputs = [
         coreutils
         xvfb-run
       ];
-      meta.timeout = 120;
+
+      name = "tracecompass-smoke-test";
+
       script = ''
         export HOME=$(mktemp -d)
         export XDG_CACHE_HOME="$HOME/.cache"
@@ -160,20 +160,26 @@ stdenv.mkDerivation (finalAttrs: rec {
 
         touch $out
       '';
+
+      meta.timeout = 120;
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = with lib; {
     description = "Eclipse Trace Compass trace event analyzer";
+
     longDescription = ''
       Trace Compass is an Eclipse application for analyzing and visualizing traces and logs.
       It helps diagnose performance issues in the Linux kernel, Android, and other systems
       by understanding what the system is doing over time.
     '';
+
     homepage = "https://www.eclipse.org/tracecompass/";
     changelog = "https://github.com/eclipse-tracecompass/org.eclipse.tracecompass/wiki/New_In_Trace_Compass";
-    sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     license = licenses.epl20;
+    sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     maintainers = with maintainers; [ lvanasse ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "tracecompass";

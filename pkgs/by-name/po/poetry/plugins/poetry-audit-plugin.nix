@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   poetry,
-  safety,
+  poetry-core,
   pytestCheckHook,
+  safety,
 }:
 
 buildPythonPackage rec {
   pname = "poetry-audit-plugin";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "opeco17";
@@ -20,32 +19,33 @@ buildPythonPackage rec {
     hash = "sha256-aAQzgxzBJa/pK+hQj0tN4Zg1MG/sT0rbaMNMIxnhxdU=";
   };
 
-  build-system = [
-    poetry-core
-  ];
-
   buildInputs = [
     poetry
   ];
 
-  dependencies = [
-    safety
-  ];
-
-  pythonImportsCheck = [ "poetry_audit_plugin" ];
+  # requires networking
+  doCheck = false;
 
   nativeCheckInputs = [
     poetry # for the executable
     pytestCheckHook
   ];
 
-  # requires networking
-  doCheck = false;
+  build-system = [
+    poetry-core
+  ];
+
+  dependencies = [
+    safety
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "poetry_audit_plugin" ];
 
   meta = {
-    changelog = "https://github.com/opeco17/poetry-audit-plugin/releases/tag/${src.tag}";
     description = "Poetry plugin for checking security vulnerabilities in dependencies";
     homepage = "https://github.com/opeco17/poetry-audit-plugin";
+    changelog = "https://github.com/opeco17/poetry-audit-plugin/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

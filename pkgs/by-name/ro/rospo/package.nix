@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   buildPackages,
-  fetchFromGitHub,
   installShellFiles,
 }:
 
@@ -18,16 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-nqlUsg/V9v/2hcsaoyuXXhsa7+M/QK9+oQxX9hp/A2k=";
   };
 
-  vendorHash = "sha256-tIIEONPNnS7oF+MSKozaRW6MZq0gcH3KDG+aukCUG+c=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/ferama/rospo/cmd.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-tIIEONPNnS7oF+MSKozaRW6MZq0gcH3KDG+aukCUG+c=";
   doCheck = false;
 
   postInstall =
@@ -44,6 +36,12 @@ buildGoModule (finalAttrs: {
         --fish <(${rospoBin}/bin/rospo completion fish) \
         --zsh <(${rospoBin}/bin/rospo completion zsh)
     '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/ferama/rospo/cmd.Version=${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Simple, reliable, persistent ssh tunnels with embedded ssh server";

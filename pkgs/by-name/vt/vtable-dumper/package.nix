@@ -20,10 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "prefix=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/lvc/vtable-dumper";
     description = "Tool to list content of virtual tables in a C++ shared library";
-    mainProgram = "vtable-dumper";
+    homepage = "https://github.com/lvc/vtable-dumper";
     license = lib.licenses.lgpl21;
     platforms = lib.platforms.all;
+    mainProgram = "vtable-dumper";
   };
 })

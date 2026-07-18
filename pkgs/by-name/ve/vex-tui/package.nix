@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "vex-tui";
@@ -16,22 +16,22 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-jE53+VEjj5E5G2Yycwb8NDA8vDtoUtarrQgZ9ULyVh0=";
 
+  postInstall = ''
+    mv $out/bin/{vex-tui,vex}
+  '';
+
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    mv $out/bin/{vex-tui,vex}
-  '';
-
   meta = {
     description = "Beautiful, fast, and feature-rich terminal-based Excel and CSV viewer built with Go";
     homepage = "https://github.com/CodeOne45/vex-tui";
     license = lib.licenses.mit;
-    mainProgram = "vex";
     maintainers = with lib.maintainers; [ Inarizxc ];
     platforms = lib.platforms.linux;
+    mainProgram = "vex";
   };
 })

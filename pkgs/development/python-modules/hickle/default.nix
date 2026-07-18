@@ -1,23 +1,22 @@
 {
   lib,
+  astropy,
   buildPythonPackage,
+  dill,
   fetchPypi,
   fetchpatch,
   h5py,
   numpy,
-  dill,
-  astropy,
-  scipy,
   pandas,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
+  scipy,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "hickle";
   version = "5.0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -33,14 +32,6 @@ buildPythonPackage rec {
     ./numpy-2.3-ndarray-tostring.patch
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    dill
-    h5py
-    numpy
-  ];
-
   nativeCheckInputs = [
     astropy
     pandas
@@ -49,6 +40,15 @@ buildPythonPackage rec {
     scipy
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    dill
+    h5py
+    numpy
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "hickle" ];
 
   meta = {

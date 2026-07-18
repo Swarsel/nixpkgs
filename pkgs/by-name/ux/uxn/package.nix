@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromSourcehut,
   SDL2,
+  fetchFromSourcehut,
   unstableGitUpdater,
 }:
 
@@ -22,16 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     "projects"
   ];
 
-  nativeBuildInputs = [
-    SDL2
-  ];
-
-  buildInputs = [
-    SDL2
-  ];
-
-  strictDeps = true;
-
   postPatch = ''
     patchShebangs build.sh
     substituteInPlace build.sh \
@@ -40,6 +30,16 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "--static-libs" "--libs" \
       --replace " | sed -e 's/-lSDL2 //'" ""
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    SDL2
+  ];
+
+  buildInputs = [
+    SDL2
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -65,11 +65,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://wiki.xxiivv.com/site/uxn.html";
+    inherit (SDL2.meta) platforms;
     description = "Assembler and emulator for the Uxn stack machine";
+    homepage = "https://wiki.xxiivv.com/site/uxn.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jleightcap ];
     mainProgram = "uxnemu";
-    inherit (SDL2.meta) platforms;
   };
 })

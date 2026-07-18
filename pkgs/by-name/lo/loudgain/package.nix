@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   ffmpeg,
   libebur128,
   libresample,
+  pkg-config,
   taglib_1,
   zlib,
 }:
@@ -36,10 +36,16 @@ stdenv.mkDerivation (finalAttrs: {
     ./support-ffmpeg-7.patch
   ];
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 2.8)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     ffmpeg
     libebur128
@@ -47,11 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     taglib_1
     zlib
   ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 2.8)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   postInstall = ''
     sed -e "1aPATH=$out/bin:\$PATH" -i "$out/bin/rgbpm"

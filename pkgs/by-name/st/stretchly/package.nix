@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
   electron,
   makeDesktopItem,
+  makeWrapper,
   nix-update-script,
 }:
 
@@ -15,11 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchurl {
     url = "https://github.com/hovancik/stretchly/releases/download/v${finalAttrs.version}/stretchly-${finalAttrs.version}.tar.xz";
     hash = "sha256-llcKbzlqGMxwrqH1qvQo4fHxO0C1itVZ5wlkwL1IOOU=";
-  };
-
-  icon = fetchurl {
-    url = "https://raw.githubusercontent.com/hovancik/stretchly/v${finalAttrs.version}/stretchly_128x128.png";
-    hash = "sha256-tO0cNKopG/recQus7KDUTyGpApvR5/tpmF5C4V14DnI=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -40,12 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   desktopItem = makeDesktopItem {
-    name = "stretchly";
-    exec = "stretchly";
-    icon = finalAttrs.icon;
-    desktopName = "Stretchly";
-    genericName = "Stretchly";
     categories = [ "Utility" ];
+    desktopName = "Stretchly";
+    exec = "stretchly";
+    genericName = "Stretchly";
+    icon = finalAttrs.icon;
+    name = "stretchly";
+  };
+
+  icon = fetchurl {
+    hash = "sha256-tO0cNKopG/recQus7KDUTyGpApvR5/tpmF5C4V14DnI=";
+    url = "https://raw.githubusercontent.com/hovancik/stretchly/v${finalAttrs.version}/stretchly_128x128.png";
   };
 
   passthru = {
@@ -54,6 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Break time reminder app";
+
     longDescription = ''
       stretchly is a cross-platform electron app that reminds you to take
       breaks when working on your computer. By default, it runs in your tray
@@ -61,11 +62,12 @@ stdenv.mkDerivation (finalAttrs: {
       seconds every 10 minutes. Every 30 minutes, it displays a window
       containing an idea for a longer 5 minute break.
     '';
+
     homepage = "https://hovancik.net/stretchly";
-    downloadPage = "https://hovancik.net/stretchly/downloads/";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ _1000101 ];
     platforms = lib.platforms.linux;
     mainProgram = "stretchly";
+    downloadPage = "https://hovancik.net/stretchly/downloads/";
   };
 })

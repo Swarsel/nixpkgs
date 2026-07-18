@@ -1,13 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  # tests
+  datasets,
   # dependencies
   fsspec,
   imagehash,
@@ -15,21 +12,20 @@
   numpy,
   pandas,
   pillow,
-  tabulate,
-  tqdm,
-
-  # tests
-  datasets,
   psutil,
   pytestCheckHook,
+  pythonAtLeast,
+  # build-system
+  setuptools,
+  tabulate,
   torchvision,
+  tqdm,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cleanvision";
   version = "0.3.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cleanlab";
@@ -37,6 +33,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-L28HfvUzpZyKuG5wp3fTTHJN4Tq0HtZM+s9/7onMTDM=";
   };
+
+  nativeCheckInputs = [
+    datasets
+    psutil
+    pytestCheckHook
+    torchvision
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -49,16 +53,6 @@ buildPythonPackage (finalAttrs: {
     pillow
     tabulate
     tqdm
-  ];
-
-  pythonImportsCheck = [ "cleanvision" ];
-
-  nativeCheckInputs = [
-    datasets
-    psutil
-    pytestCheckHook
-    torchvision
-    writableTmpDirAsHomeHook
   ];
 
   disabledTests = [
@@ -78,6 +72,9 @@ buildPythonPackage (finalAttrs: {
     "test_imagelab_run"
     "test_individual_images"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "cleanvision" ];
 
   meta = {
     description = "Automatically find issues in image datasets and practice data-centric computer vision";

@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  dotnetCorePackages,
   buildDotnetModule,
+  dotnetCorePackages,
   ffmpeg,
   which,
 }:
@@ -17,6 +17,7 @@ buildDotnetModule rec {
     rev = "v${version}";
     sha256 = "sha256-2w+4xppj3E8H6WXea/iuNfloUmBsFQKDBpTnUn3RWvE=";
   };
+
   postPatch = ''
     # Remove config of development tools that don't end up in
     # nuget-deps.json but would be looked up at build time
@@ -25,17 +26,14 @@ buildDotnetModule rec {
   '';
 
   buildInputs = [ ffmpeg ];
+  dotnet-runtime = dotnetCorePackages.aspnetcore_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  dotnetFlags = [ "-p:TreatWarningsAsErrors=false" ];
 
-  projectFile = "ErsatzTV/ErsatzTV.csproj";
   executables = [
     "ErsatzTV"
     "ErsatzTV.Scanner"
   ];
-  nugetDeps = ./nuget-deps.json;
-
-  dotnetFlags = [ "-p:TreatWarningsAsErrors=false" ];
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_10_0;
 
   # ETV uses `which` to find `ffmpeg` and `ffprobe`
   makeWrapperArgs = [
@@ -48,6 +46,8 @@ buildDotnetModule rec {
     ]}"
   ];
 
+  nugetDeps = ./nuget-deps.json;
+  projectFile = "ErsatzTV/ErsatzTV.csproj";
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -55,7 +55,7 @@ buildDotnetModule rec {
     homepage = "https://ersatztv.org/";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ allout58 ];
-    mainProgram = "ErsatzTV";
     platforms = dotnet-runtime.meta.platforms;
+    mainProgram = "ErsatzTV";
   };
 }

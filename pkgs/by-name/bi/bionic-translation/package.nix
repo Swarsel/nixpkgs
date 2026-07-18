@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  wayland,
-  libglvnd,
   libbsd,
-  libunwind,
   libelf,
+  libglvnd,
+  libunwind,
   meson,
-  pkg-config,
   ninja,
+  pkg-config,
+  wayland,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/android_translation_layer/bionic_translation";
     # No license specified yet
     license = lib.licenses.unfree;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.all;
   };
 })

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  lv2,
-  libx11,
+  cmake,
   libGL,
   libGLU,
   libgbm,
-  cmake,
+  libx11,
+  lv2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,10 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://dougal-s.github.io/Aether/";
     description = "Algorithmic reverb LV2 based on Cloudseed";
+    homepage = "https://dougal-s.github.io/Aether/";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.mit;
   };
 })

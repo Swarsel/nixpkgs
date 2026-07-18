@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  libusb1,
+  autoPatchelfHook,
   cups,
   dpkg,
+  fetchzip,
   libjpeg8,
+  libusb1,
   makeWrapper,
-  autoPatchelfHook,
   enablePtqpdf ? false, # Pantum's version of qpdf
 }:
 
@@ -27,17 +27,19 @@ stdenv.mkDerivation rec {
     url = "https://github.com/osguot/pantum-universal-driver/releases/download/release/Pantum.Linux.Driver.V${
       builtins.replaceStrings [ "." ] [ "_" ] version
     }.zip";
+
     hash = "sha256-0RyCgU00ZwGwcUhCkod971noVB7G10xnbH64/AdIFMA=";
   };
+
+  nativeBuildInputs = [
+    dpkg
+    autoPatchelfHook
+  ];
 
   buildInputs = [
     libusb1
     libjpeg8
     cups
-  ];
-  nativeBuildInputs = [
-    dpkg
-    autoPatchelfHook
   ];
 
   installPhase = ''
@@ -59,12 +61,13 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Pantum universal driver";
     homepage = "https://global.pantum.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ deinferno ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    maintainers = with lib.maintainers; [ deinferno ];
   };
 }

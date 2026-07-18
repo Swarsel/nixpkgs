@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeText,
   elixir,
+  writeText,
 }:
 
 let
   shell =
     drv:
     stdenv.mkDerivation {
-      name = "interactive-shell-${drv.name}";
       buildInputs = [ drv ];
+      name = "interactive-shell-${drv.name}";
     };
 
   pkg =
@@ -26,12 +26,6 @@ let
         rev = "v${version}";
         sha256 = "sha256-1xiv8FWX8fk9WBoJXCUfgFN9lo7ClMVUBYb1mmr6u9U=";
       };
-
-      setupHook = writeText "setupHook.sh" ''
-        addToSearchPath ERL_LIBS "$1/lib/erlang/lib/"
-      '';
-
-      dontStrip = true;
 
       buildInputs = [ elixir ];
 
@@ -53,15 +47,21 @@ let
         runHook postInstall
       '';
 
-      meta = {
-        description = "Package manager for the Erlang VM https://hex.pm";
-        license = lib.licenses.mit;
-        homepage = "https://github.com/hexpm/hex";
-        maintainers = with lib.maintainers; [ ericbmerritt ];
-      };
+      dontStrip = true;
+
+      setupHook = writeText "setupHook.sh" ''
+        addToSearchPath ERL_LIBS "$1/lib/erlang/lib/"
+      '';
 
       passthru = {
         env = shell self;
+      };
+
+      meta = {
+        description = "Package manager for the Erlang VM https://hex.pm";
+        homepage = "https://github.com/hexpm/hex";
+        license = lib.licenses.mit;
+        maintainers = with lib.maintainers; [ ericbmerritt ];
       };
     };
 in

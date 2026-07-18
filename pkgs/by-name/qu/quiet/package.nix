@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  appimageTools,
-  makeWrapper,
   _7zz,
-  writeShellScript,
+  appimageTools,
+  common-updater-scripts,
   curl,
   jq,
-  common-updater-scripts,
+  makeWrapper,
+  writeShellScript,
 }:
 
 let
@@ -60,16 +60,6 @@ let
       makeWrapper
     ];
 
-    sourceRoot = "Quiet ${version}";
-
-    unpackPhase = ''
-      runHook preUnpack
-
-      7zz x $src -x!Quiet\ ${version}/Applications
-
-      runHook postUnpack
-    '';
-
     installPhase = ''
       runHook preInstall
 
@@ -78,6 +68,16 @@ let
       makeWrapper $out/Applications/Quiet.app/Contents/MacOS/Quiet $out/bin/${pname}
 
       runHook postInstall
+    '';
+
+    sourceRoot = "Quiet ${version}";
+
+    unpackPhase = ''
+      runHook preUnpack
+
+      7zz x $src -x!Quiet\ ${version}/Applications
+
+      runHook postUnpack
     '';
 
     meta = meta // {

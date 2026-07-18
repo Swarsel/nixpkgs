@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  elfutils,
   fetchgit,
   gettext,
   python3,
-  elfutils,
 }:
 
 stdenv.mkDerivation {
@@ -16,8 +16,6 @@ stdenv.mkDerivation {
     rev = "release-5.3";
     hash = "sha256-W9iJ+hyowqgeq1hGcNQbvPfHpqY0Yt2W/Ng/4p6asxc=";
   };
-
-  dontBuild = true;
 
   nativeBuildInputs = [
     gettext
@@ -35,12 +33,14 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Statically defined probes development files";
     homepage = "https://sourceware.org/systemtap/";
     license = lib.licenses.bsd3;
+    maintainers = [ lib.maintainers.workflow ];
     platforms = elfutils.meta.platforms or lib.platforms.unix;
     badPlatforms = elfutils.meta.badPlatforms or [ ];
-    maintainers = [ lib.maintainers.workflow ];
   };
 }

@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  replaceVars,
   fetchFromGitHub,
-  setuptools,
-  wheel,
+  buildPythonPackage,
   capnproto,
   cython,
   pkgconfig,
   pytest-asyncio,
   pytestCheckHook,
+  replaceVars,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "pycapnp";
   version = "2.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "capnproto";
@@ -37,6 +36,25 @@ buildPythonPackage rec {
     (replaceVars ./include-paths.patch { inherit capnproto; })
   ];
 
+  buildInputs = [ capnproto ];
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  # https://github.com/NixOS/nixpkgs/issues/255262
+  preCheck = ''
+    enabledTestPaths=$PWD/test
+    pushd "$out"
+  '';
+
+  postCheck = ''
+    popd
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
   build-system = [
     setuptools
     wheel
@@ -44,21 +62,7 @@ buildPythonPackage rec {
     pkgconfig
   ];
 
-  buildInputs = [ capnproto ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-  __darwinAllowLocalNetworking = true;
-  # https://github.com/NixOS/nixpkgs/issues/255262
-  preCheck = ''
-    enabledTestPaths=$PWD/test
-    pushd "$out"
-  '';
-  postCheck = ''
-    popd
-  '';
+  pyproject = true;
 
   meta = {
     description = "Cython wrapping of the C++ Cap'n Proto library";

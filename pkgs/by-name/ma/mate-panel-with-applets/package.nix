@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   glib,
-  wrapGAppsHook3,
   lndir,
   marco,
   mate-applets,
   mate-indicator-applet,
+  mate-media,
   mate-netbook,
   mate-notification-daemon,
-  mate-media,
   mate-panel,
   mate-power-manager,
   mate-sensors-applet,
   mate-utils,
+  wrapGAppsHook3,
   applets ? [ ],
   useDefaultApplets ? true,
 }:
@@ -33,16 +33,10 @@ let
     ]);
 in
 stdenv.mkDerivation {
-  pname = "${mate-panel.pname}-with-applets";
   inherit (mate-panel) version outputs;
-
+  inherit (mate-panel) meta;
+  pname = "${mate-panel.pname}-with-applets";
   src = null;
-
-  paths = [
-    mate-panel.out
-    mate-panel.man
-  ]
-  ++ selectedApplets;
 
   nativeBuildInputs = [
     glib
@@ -55,13 +49,6 @@ stdenv.mkDerivation {
     ++ [ mate-panel ]
     ++ mate-panel.buildInputs
     ++ mate-panel.propagatedBuildInputs;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
-  preferLocalBuild = true;
-  allowSubstitutes = false;
 
   installPhase = ''
     runHook preInstall
@@ -84,6 +71,16 @@ stdenv.mkDerivation {
   '';
 
   __structuredAttrs = true;
+  allowSubstitutes = false;
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
 
-  inherit (mate-panel) meta;
+  paths = [
+    mate-panel.out
+    mate-panel.man
+  ]
+  ++ selectedApplets;
+
+  preferLocalBuild = true;
 }

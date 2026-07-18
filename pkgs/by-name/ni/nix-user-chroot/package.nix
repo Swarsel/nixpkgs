@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
   pkgsStatic,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "nix-user-chroot";
@@ -17,23 +17,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-VgwLuR+ZGIZi2aTBAevngTyZLswduFbKzoFgL9TFUj4=";
-
-  passthru.updateScript = nix-update-script { };
-
   env.NIX_USER_CHROOT_TEST_BUSYBOX = "${pkgsStatic.busybox}/bin/busybox";
+
   checkFlags = [
     "--skip=run_nix_install" # Test requires network
   ];
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Install & Run Nix Programs without root permissions";
     homepage = "https://github.com/nix-community/nix-user-chroot";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       eveeifyeve
       mic92
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "nix-user-chroot";
   };
 })

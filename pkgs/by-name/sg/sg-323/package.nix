@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   fontconfig,
   freetype,
   libx11,
@@ -15,6 +14,7 @@
   libxinerama,
   libxrandr,
   libxtst,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "greyboxaudio";
     repo = "SG-323";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-7zqIWLF9gcqHFg2LYauvF+6qUTIohYC5vZEn76siS7o=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -49,8 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
     libxtst
   ];
-
-  enableParallelBuilding = true;
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isLinux (toString [
     # juce, compiled in this build as part of a Git submodule, uses `-flto` as
@@ -95,6 +93,8 @@ stdenv.mkDerivation (finalAttrs: {
 
       runHook postInstall
     '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Ursa Major Stargate 323 reverb plugin";

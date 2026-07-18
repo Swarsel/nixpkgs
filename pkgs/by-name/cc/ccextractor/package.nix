@@ -2,31 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  writeTextFile,
-
-  pkg-config,
-  cmake,
-  ninja,
   cargo,
-  rustc,
+  cmake,
   corrosion,
-  rustPlatform,
-
-  gpac,
-  protobufc,
-  libpng,
-  zlib,
-  utf8proc,
-  freetype,
-  ffmpeg,
-  libarchive,
   curl,
-  libiconv,
-
-  enableOcr ? true,
+  fetchpatch,
+  ffmpeg,
+  freetype,
+  gpac,
   leptonica,
+  libarchive,
+  libiconv,
+  libpng,
+  ninja,
+  pkg-config,
+  protobufc,
+  rustPlatform,
+  rustc,
   tesseract,
+  utf8proc,
+  writeTextFile,
+  zlib,
+  enableOcr ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,22 +42,17 @@ stdenv.mkDerivation (finalAttrs: {
     ./remove-vendored-libraries.patch
     ./fix-avcodec-close.patch
     (fetchpatch {
+      hash = "sha256-wZiJob5v4SVa5YBmiHuNvgphSi4PhTTb3hg4vs1lhVg=";
       name = "CVE-2026-2245.patch";
       url = "https://github.com/CCExtractor/ccextractor/commit/fd7271bae238ccb3ae8a71304ea64f0886324925.patch";
-      hash = "sha256-wZiJob5v4SVa5YBmiHuNvgphSi4PhTTb3hg4vs1lhVg=";
     })
   ]
   ++ finalAttrs.cargoDeps.vendorStaging.patches;
 
-  cmakeDir = "../src";
-
-  cargoRoot = "src/rust";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src cargoRoot;
-    patches = [ ./use-rsmpeg-0.15.patch ];
-    hash = "sha256-68Y8nzPHxhVIRHoPXOy9tc71177lCBuOf//z3cqyDGQ=";
-  };
+  postPatch = lib.optionalString enableOcr ''
+    substituteInPlace src/lib_ccx/ocr.c \
+      --replace-fail 'getenv("TESSDATA_PREFIX")' '"${tesseract}/share"'
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -105,8 +97,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    FFMPEG_INCLUDE_DIR = "${lib.getDev ffmpeg}/include";
-
     # Upstream’s FFmpeg binding crate needs an explicit path to a shared
     # object to do dynamic linking. The key word is *an* explicit path;
     # they don’t support passing more than one. This linker script hack
@@ -128,34 +118,42 @@ stdenv.mkDerivation (finalAttrs: {
         ffmpegLibExt = stdenv.hostPlatform.extensions.library;
         ffmpegLibPath = ffmpegLibName: "${ffmpegLibDir}/lib${ffmpegLibName}.${ffmpegLibExt}";
         ffmpegLinkerScript = writeTextFile {
-          name = "ccextractor-ffmpeg-linker-script";
           destination = "/lib/ffmpeg.ld";
+          name = "ccextractor-ffmpeg-linker-script";
           text = "INPUT(${lib.concatMapStringsSep " " ffmpegLibPath ffmpegLibNames})";
         };
       in
       "${ffmpegLinkerScript}/lib/ffmpeg.ld";
+
+    FFMPEG_INCLUDE_DIR = "${lib.getDev ffmpeg}/include";
   };
 
   doCheck = true;
 
-  postPatch = lib.optionalString enableOcr ''
-    substituteInPlace src/lib_ccx/ocr.c \
-      --replace-fail 'getenv("TESSDATA_PREFIX")' '"${tesseract}/share"'
-  '';
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src cargoRoot;
+    patches = [ ./use-rsmpeg-0.15.patch ];
+    hash = "sha256-68Y8nzPHxhVIRHoPXOy9tc71177lCBuOf//z3cqyDGQ=";
+  };
+
+  cargoRoot = "src/rust";
+  cmakeDir = "../src";
 
   meta = {
-    homepage = "https://www.ccextractor.org/";
-    changelog = "${finalAttrs.src.meta.homepage}/blob/${finalAttrs.src.rev}/docs/CHANGES.TXT";
     description = "Tool that produces subtitles from closed caption data in videos";
+
     longDescription = ''
       A tool that analyzes video files and produces independent subtitle files from
       closed captions data. CCExtractor is portable, small, and very fast.
       It works on Linux, Windows, and OSX.
     '';
-    platforms = lib.platforms.unix;
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+
+    homepage = "https://www.ccextractor.org/";
+    changelog = "${finalAttrs.src.meta.homepage}/blob/${finalAttrs.src.rev}/docs/CHANGES.TXT";
     license = lib.licenses.gpl2Only;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ lib.maintainers.emily ];
+    platforms = lib.platforms.unix;
     mainProgram = "ccextractor";
   };
 })

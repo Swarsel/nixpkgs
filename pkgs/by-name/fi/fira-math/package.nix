@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   installFonts,
+  python3,
   stdenvNoCC,
 }:
 

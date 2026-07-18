@@ -1,39 +1,35 @@
 {
   stdenv,
-  toKodiAddon,
   addonDir,
   cmake,
   kodi,
   kodi-platform,
   libcec_platform,
+  toKodiAddon,
 }:
 {
-  name ? "${attrs.pname}-${attrs.version}",
   namespace,
   version,
-  extraNativeBuildInputs ? [ ],
   extraBuildInputs ? [ ],
-  extraRuntimeDependencies ? [ ],
   extraCMakeFlags ? [ ],
   extraInstallPhase ? "",
+  extraNativeBuildInputs ? [ ],
+  extraRuntimeDependencies ? [ ],
+  name ? "${attrs.pname}-${attrs.version}",
   ...
 }@attrs:
 toKodiAddon (
   stdenv.mkDerivation (
     {
-      name = "kodi-" + name;
-
-      dontStrip = true;
-
+      inherit extraRuntimeDependencies;
       nativeBuildInputs = [ cmake ] ++ extraNativeBuildInputs;
+
       buildInputs = [
         kodi
         kodi-platform
         libcec_platform
       ]
       ++ extraBuildInputs;
-
-      inherit extraRuntimeDependencies;
 
       # disables check ensuring install prefix is that of kodi
       cmakeFlags = [
@@ -60,6 +56,9 @@ toKodiAddon (
 
           runHook postInstall
         '';
+
+      dontStrip = true;
+      name = "kodi-" + name;
     }
     // attrs
   )

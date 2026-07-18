@@ -5,14 +5,13 @@
 }:
 
 buildDunePackage {
-  pname = "chrome-trace";
   inherit (dune) src version;
-
+  pname = "chrome-trace";
   dontAddPrefix = true;
 
   meta = {
-    description = "Chrome trace event generation library";
     inherit (dune.meta) homepage;
+    description = "Chrome trace event generation library";
     license = lib.licenses.mit;
   };
 }

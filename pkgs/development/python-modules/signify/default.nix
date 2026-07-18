@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   asn1crypto,
   buildPythonPackage,
   certvalidator,
-  fetchFromGitHub,
   mscerts,
   oscrypto,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "signify";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ralphje";
@@ -23,6 +22,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ICmBzIbkynxRNojNQrQZoydMyFd6j3F1BLWN8VeB5dE=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,14 +33,13 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "signify" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
-    changelog = "https://github.com/ralphje/signify/blob/refs/tags/${finalAttrs.src.tag}/docs/changelog.rst";
     description = "Library that verifies PE Authenticode-signed binaries";
     homepage = "https://github.com/ralphje/signify";
+    changelog = "https://github.com/ralphje/signify/blob/refs/tags/${finalAttrs.src.tag}/docs/changelog.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ baloo ];
   };

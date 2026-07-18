@@ -1,14 +1,14 @@
 {
-  clangStdenv,
+  lib,
   fetchFromGitHub,
+  SDL2,
+  clangStdenv,
   fpc,
   lazarus-qt6,
-  lib,
   libx11,
   makeWrapper,
   nix-update-script,
   qt6Packages,
-  SDL2,
   vulkan-loader,
   zlib,
 }:
@@ -77,7 +77,7 @@ clangStdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/benjamimgois/pascube/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ RoGreat ];
-    mainProgram = "pascube";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "pascube";
   };
 })

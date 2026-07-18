@@ -14,59 +14,72 @@ in
     powerManagement = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Whether to enable power management.  This includes support
           for suspend-to-RAM and powersave features on laptops.
         '';
+
+        type = lib.types.bool;
       };
 
-      resumeCommands = lib.mkOption {
-        type = lib.types.lines;
+      bootCommands = lib.mkOption {
         default = "";
-        example = lib.literalExpression ''
-          "''${pkgs.util-linux}/bin/rfkill unblock all"
-        '';
-        description = "Commands executed after the system resumes from suspend-to-RAM.";
-      };
 
-      powerUpCommands = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        example = lib.literalExpression ''
-          "''${pkgs.powertop}/bin/powertop --auto-tune"
-        '';
         description = ''
-          Commands executed when the machine powers up.  That is,
-          they're executed both when the system first boots and when
-          it resumes from suspend or hibernation.
+          Commands executed only once after initial boot.
+          These commands are executed before `powerUpCommands`.
         '';
+
+        example = lib.literalExpression ''
+          "''${pkgs.networkmanager}/bin/nmcli radio wifi on"
+        '';
+
+        type = lib.types.lines;
       };
 
       powerDownCommands = lib.mkOption {
-        type = lib.types.lines;
         default = "";
-        example = lib.literalExpression ''
-          "''${pkgs.hdparm}/sbin/hdparm -B 255 /dev/sda"
-        '';
+
         description = ''
           Commands executed when the machine powers down.  That is,
           they're executed both when the system shuts down and when
           it goes to suspend or hibernation.
         '';
+
+        example = lib.literalExpression ''
+          "''${pkgs.hdparm}/sbin/hdparm -B 255 /dev/sda"
+        '';
+
+        type = lib.types.lines;
       };
 
-      bootCommands = lib.mkOption {
-        type = lib.types.lines;
+      powerUpCommands = lib.mkOption {
         default = "";
-        example = lib.literalExpression ''
-          "''${pkgs.networkmanager}/bin/nmcli radio wifi on"
-        '';
+
         description = ''
-          Commands executed only once after initial boot.
-          These commands are executed before `powerUpCommands`.
+          Commands executed when the machine powers up.  That is,
+          they're executed both when the system first boots and when
+          it resumes from suspend or hibernation.
         '';
+
+        example = lib.literalExpression ''
+          "''${pkgs.powertop}/bin/powertop --auto-tune"
+        '';
+
+        type = lib.types.lines;
+      };
+
+      resumeCommands = lib.mkOption {
+        default = "";
+        description = "Commands executed after the system resumes from suspend-to-RAM.";
+
+        example = lib.literalExpression ''
+          "''${pkgs.util-linux}/bin/rfkill unblock all"
+        '';
+
+        type = lib.types.lines;
       };
 
     };
@@ -76,6 +89,72 @@ in
   ###### implementation
 
   config = lib.mkIf cfg.enable {
+
+    systemd.services = {
+      # Service executed after boot, and stopped during shutdown
+      post-boot = {
+        description = "Post-Boot Actions";
+
+        preStop = ''
+          # NixOS pre-shutdown script
+
+          # config.powerManagement.powerDownCommands
+          ${cfg.powerDownCommands}
+        '';
+
+        restartIfChanged = false;
+
+        script = ''
+          # NixOS post-boot script
+
+          # config.powerManagement.bootCommands
+          ${cfg.bootCommands}
+
+          # config.powerManagement.powerUpCommands
+          ${cfg.powerUpCommands}
+        '';
+
+        serviceConfig = {
+          RemainAfterExit = true;
+          Type = "oneshot";
+        };
+
+        # It's not well defined at what point in the bootup sequence this should run
+        # we should eventually just remove this.
+        wantedBy = [ "multi-user.target" ];
+      };
+
+      # Service executed before suspending/hibernating.
+      sleep-actions = {
+        before = [ "sleep.target" ];
+        description = "Sleep Actions";
+
+        preStop = ''
+          # NixOS pre-resume script
+
+          # config.powerManagement.resumeCommands
+          ${cfg.resumeCommands}
+
+          # config.powerManagement.powerUpCommands
+          ${cfg.powerUpCommands}
+        '';
+
+        script = ''
+          # NixOS pre-sleep script
+
+          # config.powerManagement.powerDownCommands
+          ${cfg.powerDownCommands}
+        '';
+
+        serviceConfig = {
+          RemainAfterExit = true;
+          Type = "oneshot";
+        };
+
+        unitConfig.StopWhenUnneeded = true;
+        wantedBy = [ "sleep.target" ];
+      };
+    };
 
     warnings = lib.optional (cfg.powerUpCommands != "") ''
       powerManagement.powerUpCommands is deprecated due to it having unclear ordering semantics.
@@ -89,63 +168,6 @@ in
       method to do so is described here:
       https://www.freedesktop.org/software/systemd/man/latest/systemd.special.html#sleep.target
     '';
-
-    systemd.services = {
-      # Service executed before suspending/hibernating.
-      sleep-actions = {
-        description = "Sleep Actions";
-        wantedBy = [ "sleep.target" ];
-        before = [ "sleep.target" ];
-        unitConfig.StopWhenUnneeded = true;
-        script = ''
-          # NixOS pre-sleep script
-
-          # config.powerManagement.powerDownCommands
-          ${cfg.powerDownCommands}
-        '';
-        preStop = ''
-          # NixOS pre-resume script
-
-          # config.powerManagement.resumeCommands
-          ${cfg.resumeCommands}
-
-          # config.powerManagement.powerUpCommands
-          ${cfg.powerUpCommands}
-        '';
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
-      };
-
-      # Service executed after boot, and stopped during shutdown
-      post-boot = {
-        description = "Post-Boot Actions";
-        # It's not well defined at what point in the bootup sequence this should run
-        # we should eventually just remove this.
-        wantedBy = [ "multi-user.target" ];
-        restartIfChanged = false;
-        script = ''
-          # NixOS post-boot script
-
-          # config.powerManagement.bootCommands
-          ${cfg.bootCommands}
-
-          # config.powerManagement.powerUpCommands
-          ${cfg.powerUpCommands}
-        '';
-        preStop = ''
-          # NixOS pre-shutdown script
-
-          # config.powerManagement.powerDownCommands
-          ${cfg.powerDownCommands}
-        '';
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
-      };
-    };
 
   };
 

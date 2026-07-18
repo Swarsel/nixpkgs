@@ -1,18 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  perl,
+  Gtk3,
+  TestPod,
   buildPerlModule,
-  makeWrapper,
-  wrapGAppsHook3,
-  withGtk3 ? false,
   ffmpeg,
+  makeWrapper,
   mpv,
+  perl,
   wget,
+  wrapGAppsHook3,
   xdg-utils,
   yt-dlp,
-  TestPod,
-  Gtk3,
+  withGtk3 ? false,
 }:
 let
   perlEnv = perl.withPackages (
@@ -52,14 +52,6 @@ buildPerlModule rec {
     hash = "sha256-ZcO07zDMXSFOWIC0XHqeqjgPJXzWWh8G2szTkvF8OjM=";
   };
 
-  nativeBuildInputs = [ makeWrapper ] ++ lib.optionals withGtk3 [ wrapGAppsHook3 ];
-
-  buildInputs = [
-    perlEnv
-  ]
-  # Can't be in perlEnv for wrapGAppsHook3 to work correctly
-  ++ lib.optional withGtk3 Gtk3;
-
   # Not supported by buildPerlModule
   # and the Perl code fails anyway
   # when Getopt::Long sets $gtk in Build.PL:
@@ -69,11 +61,17 @@ buildPerlModule rec {
     substituteInPlace Build.PL --replace 'my $gtk ' 'my $gtk = 1;#'
   '';
 
+  nativeBuildInputs = [ makeWrapper ] ++ lib.optionals withGtk3 [ wrapGAppsHook3 ];
+
+  buildInputs = [
+    perlEnv
+  ]
+  # Can't be in perlEnv for wrapGAppsHook3 to work correctly
+  ++ lib.optional withGtk3 Gtk3;
+
   nativeCheckInputs = [
     TestPod
   ];
-
-  dontWrapGApps = true;
 
   postInstall = ''
     cp -r share/* $out/share
@@ -104,9 +102,11 @@ buildPerlModule rec {
       --suffix PATH : "${lib.makeBinPath [ xdg-utils ]}"
   '';
 
+  dontWrapGApps = true;
+
   meta = {
-    homepage = "https://github.com/trizen/pipe-viewer";
     description = "CLI+GUI YouTube Client";
+    homepage = "https://github.com/trizen/pipe-viewer";
     license = lib.licenses.artistic2;
     maintainers = with lib.maintainers; [ julm ];
     platforms = lib.platforms.all;

@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     copyDesktopItems
     makeWrapper
   ];
+
   buildInputs = [ jdk ];
 
   buildPhase = ''
@@ -53,18 +54,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "graphwar";
-      exec = "graphwar";
-      desktopName = "Graphwar";
       categories = [ "Game" ];
+      desktopName = "Graphwar";
+      exec = "graphwar";
+      name = "graphwar";
     })
   ];
 
   meta = {
-    homepage = "https://www.graphwar.com/";
     description = "Artillery game in which you must hit your enemies using mathematical functions";
+    homepage = "https://www.graphwar.com/";
     license = lib.licenses.gpl3Plus;
-    platforms = jdk.meta.platforms;
     maintainers = with lib.maintainers; [ yrd ];
+    platforms = jdk.meta.platforms;
   };
 })

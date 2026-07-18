@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
   buildInputs = [ bash ];
+
   installPhase = ''
     install -D nix-shell.plugin.zsh --target-directory=$out/share/zsh/plugins/zsh-nix-shell
     install -D scripts/* --target-directory=$out/share/zsh/plugins/zsh-nix-shell/scripts
@@ -31,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Zsh plugin that lets you use zsh in nix-shell shell";
     homepage = finalAttrs.src.meta.homepage;
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ aw ];
+    platforms = lib.platforms.unix;
   };
 })

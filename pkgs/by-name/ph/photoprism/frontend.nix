@@ -15,10 +15,6 @@ buildNpmPackage {
 
   npmDepsHash = "sha256-RjPTtIm1BhyeQLUN9mWI+sXakNju4up0FbrdwZzkTS0=";
 
-  # Some dependencies are fetched from git repositories
-  forceGitDeps = true;
-  makeCacheWritable = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,9 +24,13 @@ buildNpmPackage {
     runHook postInstall
   '';
 
+  # Some dependencies are fetched from git repositories
+  forceGitDeps = true;
+  makeCacheWritable = true;
+
   meta = {
-    homepage = "https://photoprism.app";
     description = "Photoprism's frontend";
+    homepage = "https://photoprism.app";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ benesim ];
   };

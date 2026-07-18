@@ -1,25 +1,23 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   _7zz,
-  makeWrapper,
   gyroflow,
+  makeWrapper,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "gyroflow-bin";
   version = "1.6.3";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchurl {
     url = "https://github.com/gyroflow/gyroflow/releases/download/v${finalAttrs.version}/Gyroflow-mac-universal.dmg";
     hash = "sha256-++Jnk8Y58UENiZXeutGIchWHEIy2p0Ik6Hn3nku4ocA=";
   };
 
-  sourceRoot = ".";
+  strictDeps = true;
 
   nativeBuildInputs = [
     _7zz
@@ -37,13 +35,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  sourceRoot = ".";
+  passthru.updateScript = nix-update-script { };
+
   meta = gyroflow.meta // {
     description = "Advanced gyro-based video stabilization tool (pre-built macOS binary)";
-    maintainers = with lib.maintainers; [ Br1ght0ne ];
-    mainProgram = "gyroflow";
-    platforms = lib.platforms.darwin;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ Br1ght0ne ];
+    platforms = lib.platforms.darwin;
+    mainProgram = "gyroflow";
   };
-
-  passthru.updateScript = nix-update-script { };
 })

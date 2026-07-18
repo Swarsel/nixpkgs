@@ -1,16 +1,16 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "waterproof";
-  owner = "impermeable";
-  repo = "coq-waterproof";
   inherit version;
+  pname = "waterproof";
+  propagatedBuildInputs = [ stdlib ];
+
   defaultVersion =
     let
       inherit (lib.versions) range;
@@ -21,14 +21,15 @@ mkCoqDerivation {
         out = "2.1.1+8.18";
       }
     ] null;
+
+  mlPlugin = true;
+  owner = "impermeable";
+
   release = {
     "2.1.1+8.18".hash = "sha256-jYuQ9SPFRefNCUfn6+jEaJ4399EnU0gXPPkEDCpJYOI=";
   };
 
-  propagatedBuildInputs = [ stdlib ];
-
-  mlPlugin = true;
-
+  repo = "coq-waterproof";
   useDune = true;
 
   meta = {

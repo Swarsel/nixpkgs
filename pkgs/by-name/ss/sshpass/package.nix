@@ -14,8 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://sourceforge.net/projects/sshpass/";
     description = "Non-interactive ssh password auth";
+    homepage = "https://sourceforge.net/projects/sshpass/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.madjar ];
     platforms = lib.platforms.unix;

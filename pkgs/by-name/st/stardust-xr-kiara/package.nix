@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   makeBinaryWrapper,
   niri,
+  nix-update-script,
+  rustPlatform,
   stardust-xr-kiara,
   testers,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,40 +20,43 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-e89/x66S+MpJFtqat1hYEyRVUYFjef62LDN2hQPjNVw=";
   };
 
-  cargoHash = "sha256-C1eD974cEGbo0vHJqdnCPUopDPDDa6hAFJdzSm8t618=";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
-
-  passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
-    tests.helpTest = testers.runCommand {
-      name = "stardust-xr-kiara";
-      script = ''
-        kiara --help
-        touch $out
-      '';
-      nativeBuildInputs = [ stardust-xr-kiara ];
-    };
-  };
-
-  postInstall = ''
-    wrapProgram $out/bin/kiara --prefix PATH : ${niri}/bin
-  '';
+  cargoHash = "sha256-C1eD974cEGbo0vHJqdnCPUopDPDDa6hAFJdzSm8t618=";
 
   env = {
     NIRI_CONFIG = "${finalAttrs.src}/src/niri_config.kdl";
     STARDUST_RES_PREFIXES = "${finalAttrs.src}/res";
   };
 
+  postInstall = ''
+    wrapProgram $out/bin/kiara --prefix PATH : ${niri}/bin
+  '';
+
+  passthru = {
+    tests.helpTest = testers.runCommand {
+      nativeBuildInputs = [ stardust-xr-kiara ];
+      name = "stardust-xr-kiara";
+
+      script = ''
+        kiara --help
+        touch $out
+      '';
+    };
+
+    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
+  };
+
   meta = {
     description = "360-degree app shell / DE for Stardust XR using Niri";
     homepage = "https://stardustxr.org/";
     license = lib.licenses.mit;
-    mainProgram = "kiara";
+
     maintainers = with lib.maintainers; [
       pandapip1
       technobaboo
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "kiara";
   };
 })

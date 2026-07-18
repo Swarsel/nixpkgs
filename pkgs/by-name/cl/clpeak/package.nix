@@ -15,8 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "krrishnarraj";
     repo = "clpeak";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-tybt85jxoaWLUuZNFAla+2t0rLSanapc9w3lgez9uPI=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [ cmake ];

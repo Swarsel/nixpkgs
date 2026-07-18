@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  runtimeShell,
   cacert,
   cmake,
   cmakerc,
@@ -14,13 +13,14 @@
   ninja,
   openssh,
   python3,
+  runCommand,
+  runtimeShell,
   unzip,
+  writeText,
   zip,
   zstd,
-  runCommand,
-  writeText,
-  extraRuntimeDeps ? [ ],
   doWrap ? true,
+  extraRuntimeDeps ? [ ],
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "vcpkg-tool";
@@ -33,6 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EnKfeWRiqWVFbGc2QNT9YQHs+dlXvvri9FPVxpxpphM=";
   };
 
+  patches = [
+    ./change-lock-location.patch
+    ./read-bundle-info-from-root.patch
+  ];
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -43,15 +48,18 @@ stdenv.mkDerivation (finalAttrs: {
     fmt_11
   ];
 
-  patches = [
-    ./change-lock-location.patch
-    ./read-bundle-info-from-root.patch
-  ];
-
   cmakeFlags = [
     "-DVCPKG_DEPENDENCY_EXTERNAL_FMT=ON"
     "-DVCPKG_DEPENDENCY_CMAKERC=ON"
   ];
+
+  postFixup = lib.optionalString doWrap ''
+    mv "$out/bin/vcpkg" "$out/bin/.vcpkg-wrapped"
+    printf "%s" "$vcpkgWrapper" > "$out/bin/vcpkg"
+    chmod 555 "$out/bin/vcpkg"
+  '';
+
+  __structuredAttrs = true;
 
   vcpkgWrapper =
     let
@@ -84,23 +92,23 @@ stdenv.mkDerivation (finalAttrs: {
       # settings either of the nix-specific environment variables.
       argsWithDefault = [
         {
-          arg = "--downloads-root";
           env = "NIX_VCPKG_DOWNLOADS_ROOT";
+          arg = "--downloads-root";
           default = "$NIX_VCPKG_WRITABLE_PATH/downloads";
         }
         {
-          arg = "--x-buildtrees-root";
           env = "NIX_VCPKG_BUILDTREES_ROOT";
+          arg = "--x-buildtrees-root";
           default = "$NIX_VCPKG_WRITABLE_PATH/buildtrees";
         }
         {
-          arg = "--x-packages-root";
           env = "NIX_VCPKG_PACKAGES_ROOT";
+          arg = "--x-packages-root";
           default = "$NIX_VCPKG_WRITABLE_PATH/packages";
         }
         {
-          arg = "--x-install-root";
           env = "NIX_VCPKG_INSTALL_ROOT";
+          arg = "--x-install-root";
           default = "$NIX_VCPKG_WRITABLE_PATH/installed";
         }
       ];
@@ -125,7 +133,7 @@ stdenv.mkDerivation (finalAttrs: {
       NIX_VCPKG_WRITABLE_PATH=$(get_vcpkg_path)
 
       ${lib.concatMapStringsSep "\n" (
-        { env, default, ... }: ''${env}=''${${env}-"${default}"}''
+        { default, env, ... }: ''${env}=''${${env}-"${default}"}''
       ) argsWithDefault}
 
       export PATH="${lib.makeBinPath runtimeDeps}''${PATH:+":$PATH"}"
@@ -170,12 +178,6 @@ stdenv.mkDerivation (finalAttrs: {
         "''${FINAL_NONMODIFIED_ARGS[@]}"
     '';
 
-  postFixup = lib.optionalString doWrap ''
-    mv "$out/bin/vcpkg" "$out/bin/.vcpkg-wrapped"
-    printf "%s" "$vcpkgWrapper" > "$out/bin/vcpkg"
-    chmod 555 "$out/bin/vcpkg"
-  '';
-
   passthru.tests = lib.optionalAttrs doWrap {
     testWrapper = runCommand "vcpkg-tool-test-wrapper" { buildInputs = [ finalAttrs.finalPackage ]; } ''
       export NIX_VCPKG_DEBUG_PRINT_ENVVARS=true
@@ -191,19 +193,19 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
-  __structuredAttrs = true;
-
   meta = {
     description = "Components of microsoft/vcpkg's binary";
-    mainProgram = "vcpkg";
     homepage = "https://github.com/microsoft/vcpkg-tool";
     changelog = "https://github.com/microsoft/vcpkg-tool/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       guekka
       gracicot
       h7x4
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "vcpkg";
   };
 })

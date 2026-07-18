@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-BnHuiCxE0VjzMWFTEMunQ9mkebQKIKbbMxZVfBUO57Y=";
   };
 
-  dontBuild = true; # otherwise we try to 'make' which fails.
-
   installPhase = ''
     runHook preInstall
 
@@ -26,12 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true; # otherwise we try to 'make' which fails.
+
   meta = {
-    homepage = "https://github.com/fsaintjacques/semver-tool";
     description = "Semver bash implementation";
+    homepage = "https://github.com/fsaintjacques/semver-tool";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.qyliss ];
+    platforms = lib.platforms.unix;
     mainProgram = "semver";
   };
 })

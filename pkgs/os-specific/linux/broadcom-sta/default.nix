@@ -22,10 +22,10 @@ let
   tarball = "hybrid-v35${arch}-nodebug-pcoem-${tarballVersion}.tar.gz";
 
   rpmFusionPatches = fetchFromGitHub {
+    hash = "sha256-yEMsFaGBVs/rtDZLG8j8ZW1CV9SDtt00avoWxkJdLAU=";
     owner = "rpmfusion";
     repo = "wl-kmod";
     rev = "7786b3a3e54962124d24b4b61a6472bb0c4bbd94";
-    hash = "sha256-yEMsFaGBVs/rtDZLG8j8ZW1CV9SDtt00avoWxkJdLAU=";
   };
   patchset = [
     "wl-kmod-001_wext_workaround.patch"
@@ -66,31 +66,19 @@ let
   ];
 in
 stdenv.mkDerivation (finalAttrs: {
-  name = "${finalAttrs.pname}-${finalAttrs.version}-${release}-${kernel.version}";
-  pname = "broadcom-sta";
   inherit version;
+  pname = "broadcom-sta";
 
   src = fetchurl {
     url = "https://docs.broadcom.com/docs-and-downloads/docs/linux_sta/${tarball}";
+
     hash =
       hashes.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
 
-  hardeningDisable = [ "pic" ];
-
-  nativeBuildInputs = kernel.moduleBuildDependencies;
-
   patches = map (patch: "${rpmFusionPatches}/${patch}") patchset;
-
+  nativeBuildInputs = kernel.moduleBuildDependencies;
   makeFlags = [ "KBASE=${kernel.dev}/lib/modules/${kernel.modDirVersion}" ];
-
-  unpackPhase = ''
-    runHook preUnpack
-    sourceRoot=broadcom-sta
-    mkdir "$sourceRoot"
-    tar xvf "$src" -C "$sourceRoot"
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -102,18 +90,32 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  hardeningDisable = [ "pic" ];
+  name = "${finalAttrs.pname}-${finalAttrs.version}-${release}-${kernel.version}";
+
+  unpackPhase = ''
+    runHook preUnpack
+    sourceRoot=broadcom-sta
+    mkdir "$sourceRoot"
+    tar xvf "$src" -C "$sourceRoot"
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Kernel module driver for some Broadcom's wireless cards";
     homepage = "https://www.broadcom.com/support/download-search?pg=Legacy%20Products&pf=Legacy%20Wireless&pn&pa&po&dk&pl";
     license = lib.licenses.unfreeRedistributable;
+
     maintainers = with lib.maintainers; [
       j0hax
       nullcube
     ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
     knownVulnerabilities = [
       "CVE-2019-9501: heap buffer overflow, potentially allowing remote code execution by sending specially-crafted WiFi packets"
       "CVE-2019-9502: heap buffer overflow, potentially allowing remote code execution by sending specially-crafted WiFi packets"

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "meteor";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -14,8 +13,9 @@ mkLibretroCore {
     hash = "sha256-l/m8HmKnOt/zJ8V+IBqKYc2UZaRBQiaqkpzUPZnKOd0=";
   };
 
-  makefile = "Makefile";
   preBuild = "cd libretro";
+  core = "meteor";
+  makefile = "Makefile";
 
   meta = {
     description = "Port of Meteor to libretro";

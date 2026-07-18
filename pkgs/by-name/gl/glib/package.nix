@@ -1,44 +1,43 @@
 {
-  config,
   lib,
   stdenv,
   fetchurl,
-  gettext,
-  meson,
-  ninja,
-  pkg-config,
-  perl,
-  python3,
-  python3Packages,
-  libiconv,
-  zlib,
-  libffi,
-  pcre2,
-  elfutils,
-  gnome,
-  libselinux,
   bash,
-  gnum4,
-  libxslt,
-  docutils,
-  gi-docgen,
-  # use util-linuxMinimal to avoid circular dependency (util-linux, systemd, glib)
-  util-linuxMinimal ? null,
-  # TODO: Clean up on `staging`.
-  llvmPackages,
   buildPackages,
-
+  config,
+  dbus,
+  desktop-file-utils,
+  docutils,
+  elfutils,
+  gettext,
+  gi-docgen,
   # this is just for tests (not in the closure of any regular package)
   glib,
-  dbus,
-  tzdata,
-  desktop-file-utils,
+  gnome,
+  gnum4,
+  gobject-introspection,
+  libffi,
+  libiconv,
+  libselinux,
+  libsysprof-capture,
+  libsystemtap,
+  libxslt,
+  # TODO: Clean up on `staging`.
+  llvmPackages,
+  meson,
+  mesonEmulatorHook,
+  ninja,
+  pcre2,
+  perl,
+  pkg-config,
+  python3,
+  python3Packages,
   shared-mime-info,
   testers,
-  gobject-introspection,
-  libsystemtap,
-  libsysprof-capture,
-  mesonEmulatorHook,
+  tzdata,
+  zlib,
+  # use util-linuxMinimal to avoid circular dependency (util-linux, systemd, glib)
+  util-linuxMinimal ? null,
   withIntrospection ?
     stdenv.hostPlatform.emulatorAvailable buildPackages
     && lib.meta.availableOn stdenv.hostPlatform gobject-introspection
@@ -86,19 +85,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "glib";
   version = "2.88.1";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/glib/${lib.versions.majorMinor finalAttrs.version}/glib-${finalAttrs.version}.tar.xz";
+    hash = "sha256-UauATFb26rPlBFx3TRKQrF5Mkj1Pmj2OMxI77kXBhA4=";
+  };
+
   outputs = [
     "bin"
     "out"
     "dev"
     "devdoc"
   ];
-
-  setupHook = ./setup-hook.sh;
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/glib/${lib.versions.majorMinor finalAttrs.version}/glib-${finalAttrs.version}.tar.xz";
-    hash = "sha256-UauATFb26rPlBFx3TRKQrF5Mkj1Pmj2OMxI77kXBhA4=";
-  };
 
   patches =
     lib.optionals stdenv.hostPlatform.isMusl [
@@ -158,35 +155,29 @@ stdenv.mkDerivation (finalAttrs: {
       ./gdb_script.patch
     ];
 
+  postPatch = ''
+    patchShebangs glib/gen-unicode-tables.pl
+    patchShebangs glib/tests/gen-casefold-txt.py
+    patchShebangs glib/tests/gen-casemap-txt.py
+    patchShebangs tools/gen-visibility-macros.py
+    patchShebangs tests
+
+    # Needs machine-id, comment the test
+    sed -e '/\/gdbus\/codegen-peer-to-peer/ s/^\/*/\/\//' -i gio/tests/gdbus-peer.c
+    sed -e '/g_test_add_func/ s/^\/*/\/\//' -i gio/tests/gdbus-address-get-session.c
+    # All gschemas fail to pass the test, upstream bug?
+    sed -e '/g_test_add_data_func/ s/^\/*/\/\//' -i gio/tests/gschema-compile.c
+    # Cannot reproduce the failing test_associations on hydra
+    sed -e '/\/appinfo\/associations/d' -i gio/tests/appinfo.c
+    # Needed because of libtool wrappers
+    sed -e '/g_subprocess_launcher_set_environ (launcher, envp);/a g_subprocess_launcher_setenv (launcher, "PATH", g_getenv("PATH"), TRUE);' -i gio/tests/gsubprocess.c
+  ''
+  + lib.optionalString stdenv.hostPlatform.isWindows ''
+    substituteInPlace gio/win32/meson.build \
+      --replace "libintl, " ""
+  '';
+
   strictDeps = true;
-
-  buildInputs = [
-    finalAttrs.setupHook
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [
-    libsysprof-capture
-  ]
-  ++ [
-    pcre2
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isWindows) [
-    bash
-    gnum4 # install glib-gettextize and m4 macros for other apps to use
-  ]
-  ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform elfutils) [
-    elfutils
-  ]
-  ++ lib.optionals withDtrace [
-    libsystemtap
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    libselinux
-    util-linuxMinimal # for libmount
-  ];
-
-  depsBuildBuild = [
-    pkg-config # required to find native gi-docgen
-  ];
 
   nativeBuildInputs = [
     docutils # for rst2man, rst2html5
@@ -215,17 +206,35 @@ stdenv.mkDerivation (finalAttrs: {
     llvmPackages.lld
   ];
 
+  buildInputs = [
+    finalAttrs.setupHook
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [
+    libsysprof-capture
+  ]
+  ++ [
+    pcre2
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isWindows) [
+    bash
+    gnum4 # install glib-gettextize and m4 macros for other apps to use
+  ]
+  ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform elfutils) [
+    elfutils
+  ]
+  ++ lib.optionals withDtrace [
+    libsystemtap
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    libselinux
+    util-linuxMinimal # for libmount
+  ];
+
   propagatedBuildInputs = [
     zlib
     libffi
     gettext
     libiconv
-  ];
-
-  nativeCheckInputs = [
-    tzdata
-    desktop-file-utils'
-    shared-mime-info'
   ];
 
   mesonFlags = [
@@ -249,13 +258,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
+    DETERMINISTIC_BUILD = 1;
+
     NIX_CFLAGS_COMPILE = toString [
       "-Wno-error=nonnull"
       # Default for release buildtype but passed manually because
       # we're using plain
       "-DG_DISABLE_CAST_CHECKS"
     ];
-    DETERMINISTIC_BUILD = 1;
   }
   // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     # Work around ld64 hardening issue.
@@ -265,30 +275,45 @@ stdenv.mkDerivation (finalAttrs: {
     OBJC_LD = "lld";
   };
 
-  postPatch = ''
-    patchShebangs glib/gen-unicode-tables.pl
-    patchShebangs glib/tests/gen-casefold-txt.py
-    patchShebangs glib/tests/gen-casemap-txt.py
-    patchShebangs tools/gen-visibility-macros.py
-    patchShebangs tests
-
-    # Needs machine-id, comment the test
-    sed -e '/\/gdbus\/codegen-peer-to-peer/ s/^\/*/\/\//' -i gio/tests/gdbus-peer.c
-    sed -e '/g_test_add_func/ s/^\/*/\/\//' -i gio/tests/gdbus-address-get-session.c
-    # All gschemas fail to pass the test, upstream bug?
-    sed -e '/g_test_add_data_func/ s/^\/*/\/\//' -i gio/tests/gschema-compile.c
-    # Cannot reproduce the failing test_associations on hydra
-    sed -e '/\/appinfo\/associations/d' -i gio/tests/appinfo.c
-    # Needed because of libtool wrappers
-    sed -e '/g_subprocess_launcher_set_environ (launcher, envp);/a g_subprocess_launcher_setenv (launcher, "PATH", g_getenv("PATH"), TRUE);' -i gio/tests/gsubprocess.c
-  ''
-  + lib.optionalString stdenv.hostPlatform.isWindows ''
-    substituteInPlace gio/win32/meson.build \
-      --replace "libintl, " ""
-  '';
-
   postConfigure = ''
     patchShebangs gio/gdbus-2.0/codegen/gdbus-codegen gobject/glib-{genmarshal,mkenums}
+  '';
+
+  nativeCheckInputs = [
+    tzdata
+    desktop-file-utils'
+    shared-mime-info'
+  ];
+
+  # Conditional necessary to break infinite recursion with passthru.tests
+  preCheck = lib.optionalString finalAttrs.finalPackage.doCheck or config.doCheckByDefault or false ''
+    export LD_LIBRARY_PATH="$NIX_BUILD_TOP/glib-${finalAttrs.version}/glib/.libs''${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
+    export TZDIR="${tzdata}/share/zoneinfo"
+    export XDG_CACHE_HOME="$TMP"
+    export XDG_RUNTIME_HOME="$TMP"
+    export HOME="$TMP"
+    export XDG_DATA_DIRS="${desktop-file-utils'}/share:${shared-mime-info'}/share"
+    export G_TEST_DBUS_DAEMON="${dbus'}/bin/dbus-daemon"
+
+    # pkg_config_tests expects a PKG_CONFIG_PATH that points to meson-private, wrapped pkg-config
+    # tries to be clever and picks up the wrong glib at the end.
+    export PATH="${buildPackages.pkg-config-unwrapped}/bin:$PATH:$(pwd)/gobject"
+    echo "PATH=$PATH"
+
+    # Our gobject-introspection patches make the shared library paths absolute
+    # in the GIR files. When running tests, the library is not yet installed,
+    # though, so we need to replace the absolute path with a local one during build.
+    # We are using a symlink that we will delete before installation.
+    mkdir -p $out/lib
+    ln -s $PWD/gobject/libgobject-${librarySuffix} $out/lib/libgobject-${librarySuffix}
+    ln -s $PWD/gio/libgio-${librarySuffix} $out/lib/libgio-${librarySuffix}
+    ln -s $PWD/glib/libglib-${librarySuffix} $out/lib/libglib-${librarySuffix}
+  '';
+
+  postCheck = ''
+    rm $out/lib/libgobject-${librarySuffix}
+    rm $out/lib/libgio-${librarySuffix}
+    rm $out/lib/libglib-${librarySuffix}
   '';
 
   postInstall = ''
@@ -325,52 +350,26 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
-  # Conditional necessary to break infinite recursion with passthru.tests
-  preCheck = lib.optionalString finalAttrs.finalPackage.doCheck or config.doCheckByDefault or false ''
-    export LD_LIBRARY_PATH="$NIX_BUILD_TOP/glib-${finalAttrs.version}/glib/.libs''${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
-    export TZDIR="${tzdata}/share/zoneinfo"
-    export XDG_CACHE_HOME="$TMP"
-    export XDG_RUNTIME_HOME="$TMP"
-    export HOME="$TMP"
-    export XDG_DATA_DIRS="${desktop-file-utils'}/share:${shared-mime-info'}/share"
-    export G_TEST_DBUS_DAEMON="${dbus'}/bin/dbus-daemon"
-
-    # pkg_config_tests expects a PKG_CONFIG_PATH that points to meson-private, wrapped pkg-config
-    # tries to be clever and picks up the wrong glib at the end.
-    export PATH="${buildPackages.pkg-config-unwrapped}/bin:$PATH:$(pwd)/gobject"
-    echo "PATH=$PATH"
-
-    # Our gobject-introspection patches make the shared library paths absolute
-    # in the GIR files. When running tests, the library is not yet installed,
-    # though, so we need to replace the absolute path with a local one during build.
-    # We are using a symlink that we will delete before installation.
-    mkdir -p $out/lib
-    ln -s $PWD/gobject/libgobject-${librarySuffix} $out/lib/libgobject-${librarySuffix}
-    ln -s $PWD/gio/libgio-${librarySuffix} $out/lib/libgio-${librarySuffix}
-    ln -s $PWD/glib/libglib-${librarySuffix} $out/lib/libglib-${librarySuffix}
-  '';
-
-  postCheck = ''
-    rm $out/lib/libgobject-${librarySuffix}
-    rm $out/lib/libgio-${librarySuffix}
-    rm $out/lib/libglib-${librarySuffix}
-  '';
+  depsBuildBuild = [
+    pkg-config # required to find native gi-docgen
+  ];
 
   separateDebugInfo = stdenv.hostPlatform.isLinux;
+  setupHook = ./setup-hook.sh;
 
   passthru = rec {
+    getSchemaDataDirPath = pkg: makeSchemaDataDirPath pkg pkg.name;
+    getSchemaPath = pkg: makeSchemaPath pkg pkg.name;
     gioModuleDir = "lib/gio/modules";
-
     makeSchemaDataDirPath = dir: name: "${dir}/share/gsettings-schemas/${name}";
     makeSchemaPath = dir: name: "${makeSchemaDataDirPath dir name}/glib-2.0/schemas";
-    getSchemaPath = pkg: makeSchemaPath pkg pkg.name;
-    getSchemaDataDirPath = pkg: makeSchemaDataDirPath pkg pkg.name;
 
     tests = {
+      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
       withChecks = finalAttrs.finalPackage.overrideAttrs (_: {
         doCheck = true;
       });
-      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     };
 
     updateScript = gnome.updateScript {
@@ -381,18 +380,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C library of programming buildings blocks";
-    homepage = "https://gitlab.gnome.org/GNOME/glib";
-    license = lib.licenses.lgpl21Plus;
-    maintainers = with lib.maintainers; [
-      raskin
-    ];
-    teams = [ lib.teams.gnome ];
-    pkgConfigModules = [
-      "gio-2.0"
-      "gobject-2.0"
-      "gthread-2.0"
-    ];
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
 
     longDescription = ''
       GLib provides the core application building blocks for libraries
@@ -400,5 +387,22 @@ stdenv.mkDerivation (finalAttrs: {
       system used in GNOME, the main loop implementation, and a large
       set of utility functions for strings and common data structures.
     '';
+
+    homepage = "https://gitlab.gnome.org/GNOME/glib";
+    license = lib.licenses.lgpl21Plus;
+
+    maintainers = with lib.maintainers; [
+      raskin
+    ];
+
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
+
+    pkgConfigModules = [
+      "gio-2.0"
+      "gobject-2.0"
+      "gthread-2.0"
+    ];
+
+    teams = [ lib.teams.gnome ];
   };
 })

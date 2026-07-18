@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gflanguages,
   num2words,
   protobuf,
   pytestCheckHook,
   pyyaml,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   strictyaml,
   termcolor,
   ufo2ft,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "shaperglot";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -28,12 +27,13 @@ buildPythonPackage rec {
     hash = "sha256-O6z7TJpC54QkqX5/G1HKSvaDYty7B9BnCQ4FpsLsEMs=";
   };
 
-  env.PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools>=75.0.0" "setuptools"
   '';
+
+  env.PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -52,8 +52,7 @@ buildPythonPackage rec {
     youseedee
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "shaperglot" ];
 
   meta = {

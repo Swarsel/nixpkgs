@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   importlib-resources,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "typeshed-client";
   version = "2.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JelleZijlstra";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-hSyhGn+xEUjZVrYUYaxZ/3CwNXy4EJ2TG73S9o3o0gw=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,11 +27,9 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "typeshed_client" ];
-
   enabledTestPaths = [ "tests/test.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "typeshed_client" ];
 
   meta = {
     description = "Retrieve information from typeshed and other typing stubs";

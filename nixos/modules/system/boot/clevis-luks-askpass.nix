@@ -27,8 +27,8 @@ in
     boot.initrd.clevisLuksAskpass.package = lib.mkPackageOption pkgs "clevis" { };
 
     boot.initrd.clevisLuksAskpass.useTang = lib.mkOption {
-      description = "Whether the Clevis headers used to decrypt the devices uses a Tang server as a pin.";
       default = false;
+      description = "Whether the Clevis headers used to decrypt the devices uses a Tang server as a pin.";
       type = lib.types.bool;
     };
   };
@@ -41,17 +41,19 @@ in
       }
     ];
 
-    warnings =
-      if
-        cfg.useTang && !config.boot.initrd.network.enable && !config.boot.initrd.systemd.network.enable
-      then
-        [ "In order to use a Tang pinned secret you must configure networking in initrd" ]
-      else
-        [ ];
-
     boot.initrd.systemd = {
       # Install upstream clevis-luks-askpass.path and clevis-luks-askpass.service into the initrd
       packages = [ cfg.package ];
+
+      # This is in the [Install] section of clevis-luks-askpass.path but that's not processed in nixos so we add it here
+      paths.clevis-luks-askpass = {
+        wantedBy = [ "cryptsetup.target" ];
+      };
+
+      services.clevis-luks-askpass = {
+        after = lib.optional cfg.useTang "network-online.target";
+        wants = lib.optional cfg.useTang "network-online.target";
+      };
 
       storePaths = [
         cfg.package
@@ -69,16 +71,14 @@ in
         "${pkgs.tpm2-tools}/bin/tpm2_load"
         "${pkgs.tpm2-tools}/bin/tpm2_unseal"
       ];
-
-      # This is in the [Install] section of clevis-luks-askpass.path but that's not processed in nixos so we add it here
-      paths.clevis-luks-askpass = {
-        wantedBy = [ "cryptsetup.target" ];
-      };
-
-      services.clevis-luks-askpass = {
-        wants = lib.optional cfg.useTang "network-online.target";
-        after = lib.optional cfg.useTang "network-online.target";
-      };
     };
+
+    warnings =
+      if
+        cfg.useTang && !config.boot.initrd.network.enable && !config.boot.initrd.systemd.network.enable
+      then
+        [ "In order to use a Tang pinned secret you must configure networking in initrd" ]
+      else
+        [ ];
   };
 }

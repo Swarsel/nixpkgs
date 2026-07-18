@@ -1,30 +1,25 @@
 {
   lib,
   stdenv,
-  pkgs,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatch-vcs,
   hatchling,
-
+  pkgs,
+  # tests
+  pytestCheckHook,
   # dependencies
   reretry,
+  snakemake,
   snakemake-interface-common,
   snakemake-interface-storage-plugins,
   xrootd,
-
-  # tests
-  pytestCheckHook,
-  snakemake,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-storage-plugin-xrootd";
   version = "1.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -40,6 +35,23 @@ buildPythonPackage (finalAttrs: {
         'subprocess.Popen(["${lib.getExe pkgs.xrootd}",'
   '';
 
+  # Tests fail on darwin even with:
+  # - __darwinAllowLocalNetworking = true;
+  # - sandbox = false
+  # - writableTmpDirAsHomeHook
+  #
+  # Failed: XRootD server terminated unexpectedly.
+  # 260604 22:16:56 259 XrdConfig: Unable to set permission for admin path /tmp/.xrd/; operation not permitted
+  # ------ xrootd anon@91-224-148-58.tetaneutral.net:32293 initialization failed.
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     hatch-vcs
     hatchling
@@ -52,26 +64,11 @@ buildPythonPackage (finalAttrs: {
     xrootd
   ];
 
+  enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
   # When doCheck is disabled, nnativeCheckInputs are not available and the package fails to import:
   #   ModuleNotFoundError: No module named 'snakemake'
   pythonImportsCheck = lib.optionals finalAttrs.doCheck [ "snakemake_storage_plugin_xrootd" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake
-  ];
-
-  enabledTestPaths = [ "tests/tests.py" ];
-
-  # Tests fail on darwin even with:
-  # - __darwinAllowLocalNetworking = true;
-  # - sandbox = false
-  # - writableTmpDirAsHomeHook
-  #
-  # Failed: XRootD server terminated unexpectedly.
-  # 260604 22:16:56 259 XrdConfig: Unable to set permission for admin path /tmp/.xrd/; operation not permitted
-  # ------ xrootd anon@91-224-148-58.tetaneutral.net:32293 initialization failed.
-  doCheck = !stdenv.hostPlatform.isDarwin;
 
   meta = {
     description = "Snakemake storage plugin for handling input and output via XRootD";

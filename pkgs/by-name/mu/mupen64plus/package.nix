@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
+  SDL2,
   boost,
   dash,
   freetype,
-  libpng,
   libGLU,
+  libpng,
+  nasm,
   pkg-config,
-  SDL2,
+  vulkan-loader,
   which,
   zlib,
-  nasm,
-  vulkan-loader,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     nasm
   ];
+
   buildInputs = [
     boost
     dash
@@ -48,14 +49,15 @@ stdenv.mkDerivation (finalAttrs: {
   buildPhase = ''
     dash m64p_build.sh PREFIX="$out" COREDIR="$out/lib/" PLUGINDIR="$out/lib/mupen64plus" SHAREDIR="$out/share/mupen64plus"
   '';
+
   installPhase = ''
     dash m64p_install.sh DESTDIR="$out" PREFIX=""
   '';
 
   meta = {
     description = "Nintendo 64 Emulator";
-    license = lib.licenses.gpl2Plus;
     homepage = "http://www.mupen64plus.org/";
+    license = lib.licenses.gpl2Plus;
     platforms = [ "x86_64-linux" ];
     mainProgram = "mupen64plus";
   };

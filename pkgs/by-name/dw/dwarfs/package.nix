@@ -1,34 +1,34 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   bison,
   boost,
   brotli,
   cmake,
   double-conversion,
+  flac,
   fmt,
   fuse3,
-  flac,
   glog,
   gtest,
   jemalloc,
   libarchive,
+  libdwarf,
   libevent,
   libunwind,
   lz4,
+  nlohmann_json,
   openssl,
+  parallel-hashmap,
   pkg-config,
   python3,
   range-v3,
   ronn,
-  xxhash,
   utf8cpp,
-  zstd,
-  parallel-hashmap,
-  nlohmann_json,
-  libdwarf,
   versionCheckHook,
+  xxhash,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,23 +39,9 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "mhx";
     repo = "dwarfs";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-4Ec1AqumTSPZpPEi528OaO3bOU1Soc8ZHuuKXIDvCUA=";
+    fetchSubmodules = true;
   };
-
-  cmakeFlags = [
-    "-DNIXPKGS_DWARFS_VERSION_OVERRIDE=v${finalAttrs.version}" # see https://github.com/mhx/dwarfs/issues/155
-
-    # Needs to be set so `dwarfs` does not try to download `gtest`; it is not
-    # a submodule, see: https://github.com/mhx/dwarfs/issues/188#issuecomment-1907657083
-    "-DPREFER_SYSTEM_GTEST=ON"
-    # Upstream composes DESTDIR + CMAKE_INSTALL_PREFIX + CMAKE_INSTALL_SBINDIR
-    # in a create_link() install script. Keep SBINDIR relative to avoid
-    # nested nix/store path creation in the output.
-    "-DCMAKE_INSTALL_SBINDIR=sbin"
-    "-DWITH_LEGACY_FUSE=ON"
-    "-DWITH_TESTS=ON"
-  ];
 
   nativeBuildInputs = [
     bison
@@ -91,15 +77,20 @@ stdenv.mkDerivation (finalAttrs: {
     libdwarf # DWARFS_STACKTRACE_ENABLED relies on FOLLY_USE_SYMBOLIZER, which needs FOLLY_HAVE_DWARF
   ];
 
-  doCheck = true;
-  nativeCheckInputs = [
-    # https://github.com/mhx/dwarfs/issues/188#issuecomment-1907574427
-    # `dwarfs` sets C++20 as the minimum, see
-    #     https://github.com/mhx/dwarfs/blob/2cb5542a5d4274225c5933370adcf00035f6c974/CMakeLists.txt#L129
-    # Thus the `gtest` headers, when included,
-    # refer to symbols that only exist in `.so` files compiled with that version.
-    (gtest.override { cxx_standard = "20"; })
+  cmakeFlags = [
+    "-DNIXPKGS_DWARFS_VERSION_OVERRIDE=v${finalAttrs.version}" # see https://github.com/mhx/dwarfs/issues/155
+
+    # Needs to be set so `dwarfs` does not try to download `gtest`; it is not
+    # a submodule, see: https://github.com/mhx/dwarfs/issues/188#issuecomment-1907657083
+    "-DPREFER_SYSTEM_GTEST=ON"
+    # Upstream composes DESTDIR + CMAKE_INSTALL_PREFIX + CMAKE_INSTALL_SBINDIR
+    # in a create_link() install script. Keep SBINDIR relative to avoid
+    # nested nix/store path creation in the output.
+    "-DCMAKE_INSTALL_SBINDIR=sbin"
+    "-DWITH_LEGACY_FUSE=ON"
+    "-DWITH_TESTS=ON"
   ];
+
   # these fail inside of the sandbox due to missing access
   # to the FUSE device
   env.GTEST_FILTER =
@@ -121,10 +112,21 @@ stdenv.mkDerivation (finalAttrs: {
     in
     "-${lib.concatStringsSep ":" disabledTests}";
 
+  doCheck = true;
+
+  nativeCheckInputs = [
+    # https://github.com/mhx/dwarfs/issues/188#issuecomment-1907574427
+    # `dwarfs` sets C++20 as the minimum, see
+    #     https://github.com/mhx/dwarfs/blob/2cb5542a5d4274225c5933370adcf00035f6c974/CMakeLists.txt#L129
+    # Thus the `gtest` headers, when included,
+    # refer to symbols that only exist in `.so` files compiled with that version.
+    (gtest.override { cxx_standard = "20"; })
+  ];
+
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/dwarfs";
   dontMoveSbin = true;
+  versionCheckProgram = "${placeholder "out"}/bin/dwarfs";
 
   meta = {
     description = "Fast high compression read-only file system";

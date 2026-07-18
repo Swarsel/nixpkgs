@@ -8,14 +8,14 @@ buildDunePackage (finalAttrs: {
   pname = "pprint";
   version = "20230830";
 
-  minimalOCamlVersion = "4.03";
-
   src = fetchFromGitHub {
     owner = "fpottier";
     repo = "pprint";
     rev = finalAttrs.version;
     sha256 = "sha256-avf71vAgCL1MU8O7Q3FNN3wEdCDtbNZP0ipETnn8AqA=";
   };
+
+  minimalOCamlVersion = "4.03";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;

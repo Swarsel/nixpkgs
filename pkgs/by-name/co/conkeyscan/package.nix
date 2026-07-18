@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   fetchpatch,
+  python3,
 }:
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "conkeyscan";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CompassSecurity";
@@ -19,9 +18,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   patches = [
     # https://github.com/CompassSecurity/conkeyscan/pull/3
     (fetchpatch {
+      hash = "sha256-zfHU/KsgzQvn/kNsWZy1hGZaBHw/he1zDTUHHV/BHFc=";
       name = "replace-random-user-agent-with-fake-useragent.patch";
       url = "https://github.com/nagapraneethk/conkeyscan/commit/f6cf61cc42fcc07930a06891b6c4a2653bfbf47f.patch";
-      hash = "sha256-zfHU/KsgzQvn/kNsWZy1hGZaBHw/he1zDTUHHV/BHFc=";
     })
   ];
 
@@ -30,6 +29,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail "{{VERSION_PLACEHOLDER}}" "${finalAttrs.version}"
   '';
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -43,9 +44,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     requests-ratelimiter
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "conkeyscan" ];
 
   meta = {

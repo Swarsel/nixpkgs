@@ -1,11 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 
 let
   rootHints = fetchurl {
+    hash = "sha256-4lG/uPnNHBNIZ/XIeDM1w3iukrpeW0JIjTnGSwkJ8U4=";
+
     # Original source https://www.internic.net/domain/named.root
     # occasionally suffers from pointless hash changes,
     # and having stable sources for older versions has advantages, too.
@@ -13,7 +15,6 @@ let
       "https://gitlab.nic.cz/knot/knot-resolver/raw/"
       "https://raw.githubusercontent.com/CZ-NIC/knot-resolver/"
     ];
-    hash = "sha256-4lG/uPnNHBNIZ/XIeDM1w3iukrpeW0JIjTnGSwkJ8U4=";
   };
 in
 stdenv.mkDerivation {
@@ -28,12 +29,13 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://www.iana.org/domains/root/files";
     description = "DNS root data including root hints and DNSSEC root trust anchor + key";
+    homepage = "https://www.iana.org/domains/root/files";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       fpletz
       vcunat
     ];
-    license = lib.licenses.gpl3Plus;
   };
 }

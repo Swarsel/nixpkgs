@@ -1,21 +1,18 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-
-  cmake,
-  makeWrapper,
-  pkg-config,
-
   boost,
+  cmake,
   fmt,
-  openssl,
-  sv-lang_9, # update sv-lang version here according to upstream requirements
+  makeWrapper,
   mimalloc,
-
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sv-lang_9, # update sv-lang version here according to upstream requirements
   verible,
   verilator,
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage {
   pname = "veridian";
@@ -27,10 +24,6 @@ rustPlatform.buildRustPackage {
     rev = "0c5776a4a4e08fd00b90d91ad3cd2ec10315d2bd";
     hash = "sha256-TQ1qyKQesk0eOArhvfGxOHtIwpyM7iUOgNI1VA1riPE=";
   };
-
-  cargoHash = "sha256-qJQD9HjSrrHdppbLNgLnXCycgzbmPePydZve3A8zGtU=";
-
-  buildFeatures = [ "slang" ];
 
   nativeBuildInputs = [
     rustPlatform.bindgenHook
@@ -46,6 +39,15 @@ rustPlatform.buildRustPackage {
     sv-lang_9
     mimalloc
   ];
+
+  cargoHash = "sha256-qJQD9HjSrrHdppbLNgLnXCycgzbmPePydZve3A8zGtU=";
+
+  env = {
+    OPENSSL_NO_VENDOR = "1";
+    RUSTFLAGS = "-C link-args=-lmimalloc";
+    # this is needed so that veridian doesn't try to build the sv-lang package itself
+    SLANG_INSTALL_PATH = sv-lang_9;
+  };
 
   # the tests also need these to be on the PATH
   nativeCheckInputs = [
@@ -65,12 +67,7 @@ rustPlatform.buildRustPackage {
         --prefix PATH : ${lib.makeBinPath runtimePathDeps}
     '';
 
-  env = {
-    OPENSSL_NO_VENDOR = "1";
-    RUSTFLAGS = "-C link-args=-lmimalloc";
-    # this is needed so that veridian doesn't try to build the sv-lang package itself
-    SLANG_INSTALL_PATH = sv-lang_9;
-  };
+  buildFeatures = [ "slang" ];
 
   passthru = {
     updateScript = nix-update-script {

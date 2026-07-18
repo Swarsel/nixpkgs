@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchFromGitHub,
-  libx11,
-  pkg-config,
-  gdb,
   freetype,
+  gdb,
+  libx11,
+  makeWrapper,
   nix-update-script,
-  freetypeSupport ? true,
-  withExtensions ? true,
+  pkg-config,
   extraFlags ? "",
+  freetypeSupport ? true,
   pluginsFile ? null,
+  withExtensions ? true,
 }:
 
 stdenv.mkDerivation {
@@ -19,21 +19,11 @@ stdenv.mkDerivation {
   version = "0-unstable-2026-06-16";
 
   src = fetchFromGitHub {
-    repo = "gf";
     owner = "nakst";
+    repo = "gf";
     rev = "1c04ed95d45d49fb4b06cbc620c61acd58818977";
     hash = "sha256-42uB2HVJaEXgjA+/iUrML6biUOqj9b7mCQfSrj/nKvw=";
   };
-
-  nativeBuildInputs = [
-    makeWrapper
-    pkg-config
-  ];
-  buildInputs = [
-    libx11
-    gdb
-  ]
-  ++ lib.optional freetypeSupport freetype;
 
   patches = [
     ./build-use-optional-freetype-with-pkg-config.patch
@@ -46,6 +36,17 @@ stdenv.mkDerivation {
     + lib.optionalString (pluginsFile != null) ''
       cp ${pluginsFile} ./plugins.cpp
     '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    pkg-config
+  ];
+
+  buildInputs = [
+    libx11
+    gdb
+  ]
+  ++ lib.optional freetypeSupport freetype;
 
   preConfigure = ''
     patchShebangs build.sh
@@ -74,8 +75,8 @@ stdenv.mkDerivation {
     description = "GDB Frontend";
     homepage = "https://github.com/nakst/gf";
     license = lib.licenses.mit;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "gf2";
-    maintainers = [ ];
   };
 }

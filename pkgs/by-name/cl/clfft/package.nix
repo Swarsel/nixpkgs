@@ -1,13 +1,13 @@
 {
   lib,
-  gccStdenv,
   fetchFromGitHub,
+  boost,
   cmake,
   fftw,
   fftwFloat,
-  boost,
-  opencl-clhpp,
+  gccStdenv,
   ocl-icd,
+  opencl-clhpp,
 }:
 
 let
@@ -23,8 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-yp7u6qhpPYQpBw3d+VLg0GgMyZONVII8BsBCEoRZm4w=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   postPatch = ''
     sed -i '/-m64/d;/-m32/d' CMakeLists.txt
@@ -47,16 +45,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   # https://github.com/clMathLibraries/clFFT/issues/237
   env.CXXFLAGS = "-std=c++98";
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Library containing FFT functions written in OpenCL";
+
     longDescription = ''
       clFFT is a software library containing FFT functions written in OpenCL.
       In addition to GPU devices, the library also supports running on CPU devices to facilitate debugging and heterogeneous programming.
     '';
-    license = lib.licenses.asl20;
+
     homepage = "http://clmathlibraries.github.io/clFFT/";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ chessai ];
+    platforms = lib.platforms.unix;
   };
 })

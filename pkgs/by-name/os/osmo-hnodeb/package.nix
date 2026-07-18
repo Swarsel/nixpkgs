@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libosmocore,
-  lksctp-tools,
   libasn1c,
-  libosmoabis,
   libosmo-netif,
   libosmo-sigtran,
+  libosmoabis,
+  libosmocore,
+  lksctp-tools,
   osmo-iuh,
+  pkg-config,
 }:
 
 let
@@ -51,10 +51,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Upper layers implementation of HomeNodeB for 3G/UMTS";
-    mainProgram = "osmo-hnodeb";
     homepage = "https://osmocom.org/projects/osmo-hnodeb";
     license = lib.licenses.agpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "osmo-hnodeb";
   };
 }

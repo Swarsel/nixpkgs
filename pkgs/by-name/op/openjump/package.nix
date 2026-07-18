@@ -2,33 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  makeBinaryWrapper,
   coreutils,
-  gawk,
-  which,
-  gnugrep,
   findutils,
+  gawk,
+  gnugrep,
   jre,
+  makeBinaryWrapper,
+  unzip,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "openjump";
   version = "2.4.0";
-  revision = "r5303%5B6c9a02d%5D";
 
   src = fetchurl {
     url = "mirror://sourceforge/jump-pilot/OpenJUMP/${finalAttrs.version}/OpenJUMP-Portable-${finalAttrs.version}-${finalAttrs.revision}-PLUS.zip";
     hash = "sha256-MBP4zZTKHj3WooQvo6nQzhiAw9nO9gAJybSL2rc1mnc=";
   };
-
-  # TODO: build from source
-  unpackPhase = ''
-    runHook preUnpack
-    mkdir -p $out/opt
-    unzip $src -d $out/opt
-    runHook postUnpack
-  '';
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -54,13 +45,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  revision = "r5303%5B6c9a02d%5D";
+
+  # TODO: build from source
+  unpackPhase = ''
+    runHook preUnpack
+    mkdir -p $out/opt
+    unzip $src -d $out/opt
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Open source Geographic Information System (GIS) written in the Java programming language";
     homepage = "http://www.openjump.org/";
     license = lib.licenses.gpl2;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    platforms = jre.meta.platforms;
     mainProgram = "OpenJump";
     teams = [ lib.teams.geospatial ];
-    platforms = jre.meta.platforms;
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
   };
 })

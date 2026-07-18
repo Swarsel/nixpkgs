@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  ncurses,
   python3,
   qmake,
   qtbase,
   qtdeclarative,
-  qtquickcontrols ? null, # Qt6: merged into qtdeclarative
   qtsvg,
-  ncurses,
+  qtquickcontrols ? null, # Qt6: merged into qtdeclarative
 }:
 
 let
@@ -24,6 +24,8 @@ stdenv.mkDerivation rec {
     rev = version;
     sha256 = "sha256-2OYVULNW9EzssqodiVtL2EmhTSbefXpLkub3zFvNwNo=";
   };
+
+  patches = [ ./qml-path.patch ];
 
   postPatch = ''
     substituteInPlace qtquicktests/run \
@@ -41,6 +43,7 @@ stdenv.mkDerivation rec {
   '';
 
   nativeBuildInputs = [ qmake ];
+
   buildInputs = [
     python3
     qtbase
@@ -48,11 +51,6 @@ stdenv.mkDerivation rec {
     qtsvg
     ncurses
   ];
-
-  dontWrapQtApps = true;
-
-  patches = [ ./qml-path.patch ];
-  installTargets = [ "sub-src-install_subtargets" ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
@@ -77,6 +75,9 @@ stdenv.mkDerivation rec {
 
     runHook postInstallCheck
   '';
+
+  dontWrapQtApps = true;
+  installTargets = [ "sub-src-install_subtargets" ];
 
   meta = {
     description = "Asynchronous Python 3 Bindings for Qt ${lib.versions.major qtbase.version}";

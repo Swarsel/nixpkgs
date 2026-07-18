@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cython,
+  fastremap,
   numpy,
   pbr,
-  fastremap,
   pytestCheckHook,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "connected-components-3d";
   version = "3.22.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "seung-lab";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-txgQY9k96hFKLrKVLE6ldPdNbSnKOk2FIMrHkRQXlPk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    scipy
+  ]
+  ++ optional-dependencies.stack;
 
   build-system = [
     cython
@@ -32,6 +37,11 @@ buildPythonPackage rec {
 
   dependencies = [ numpy ];
 
+  disabledTests = [
+    # requires optional dependency crackle-codec (not in nixpkgs)
+    "test_connected_components_stack"
+  ];
+
   optional-dependencies = {
     stack = [
       # crackle-codec # not in nixpkgs
@@ -39,17 +49,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    scipy
-  ]
-  ++ optional-dependencies.stack;
-
-  disabledTests = [
-    # requires optional dependency crackle-codec (not in nixpkgs)
-    "test_connected_components_stack"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cc3d" ];
 
   meta = {

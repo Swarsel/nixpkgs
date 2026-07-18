@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -30,6 +30,7 @@ buildNpmPackage rec {
     homepage = "https://github.com/Lint-Free-Technology/lovelace-auto-entities";
     changelog = "https://github.com/Lint-Free-Technology/lovelace-auto-entities/releases/tag/v${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kranzes
       SuperSandro2000

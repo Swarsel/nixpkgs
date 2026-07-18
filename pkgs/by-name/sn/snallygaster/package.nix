@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "snallygaster";
   version = "0.0.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hannob";
@@ -15,6 +14,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-t6xNRPISlPaxlwW/infW9qnxguc/wF7XpbFPzZRcgDA=";
   };
+
+  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
 
   build-system = with python3Packages; [
     setuptools
@@ -27,7 +28,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Tool to scan for secret files on HTTP servers";

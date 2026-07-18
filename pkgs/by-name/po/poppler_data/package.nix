@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   cmake,
   ninja,
   poppler,
@@ -22,10 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://poppler.freedesktop.org/";
-    description = "Encoding files for Poppler, a PDF rendering library";
-    platforms = lib.platforms.all;
-    license = lib.licenses.free; # more free licenses combined
     inherit (poppler.meta) teams maintainers;
+    description = "Encoding files for Poppler, a PDF rendering library";
+    homepage = "https://poppler.freedesktop.org/";
+    license = lib.licenses.free; # more free licenses combined
+    platforms = lib.platforms.all;
   };
 })

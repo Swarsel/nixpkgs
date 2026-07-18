@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  enableStatic ? stdenv.hostPlatform.isStatic,
-  writeScript,
   testers,
+  writeScript,
+  enableStatic ? stdenv.hostPlatform.isStatic,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -21,10 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
     url =
       with finalAttrs;
       "https://github.com/tukaani-project/xz/releases/download/v${version}/xz-${version}.tar.xz";
+
     hash = "sha256-//H/zysNqE0wihTeUToaoj1OmqNGTRfmS5cUv90Lv7Y=";
   };
 
-  strictDeps = true;
   outputs = [
     "bin"
     "dev"
@@ -33,32 +33,36 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  configureFlags = lib.optional enableStatic "--disable-shared";
-
-  enableParallelBuilding = true;
-  doCheck = true;
-
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isOpenBSD [
-    autoreconfHook
-  ];
-
   # this could be accomplished by updateAutotoolsGnuConfigScriptsHook, but that causes infinite recursion
   # necessary for FreeBSD code path in configure
   postPatch = ''
     substituteInPlace ./build-aux/config.guess --replace-fail /usr/bin/uname uname
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isOpenBSD [
+    autoreconfHook
+  ];
+
+  configureFlags = lib.optional enableStatic "--disable-shared";
+  # In stdenv-linux, prevent a dependency on bootstrap-tools.
+  preConfigure = "CONFIG_SHELL=/bin/sh";
+  doCheck = true;
+
   preCheck = ''
     # Tests have a /bin/sh dependency...
     patchShebangs tests
   '';
 
-  # In stdenv-linux, prevent a dependency on bootstrap-tools.
-  preConfigure = "CONFIG_SHELL=/bin/sh";
-
   postInstall = "rm -rf $out/share/doc";
+  enableParallelBuilding = true;
 
   passthru = {
+    tests.pkg-config = testers.hasPkgConfigModules {
+      package = finalAttrs.finalPackage;
+    };
+
     updateScript = writeScript "update-xz" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p curl pcre common-updater-scripts
@@ -72,15 +76,11 @@ stdenv.mkDerivation (finalAttrs: {
           head -n1)"
       update-source-version ${finalAttrs.pname} "$new_version"
     '';
-    tests.pkg-config = testers.hasPkgConfigModules {
-      package = finalAttrs.finalPackage;
-    };
   };
 
   meta = {
-    changelog = "https://github.com/tukaani-project/xz/releases/tag/v${finalAttrs.version}";
     description = "General-purpose data compression software, successor of LZMA";
-    homepage = "https://tukaani.org/xz/";
+
     longDescription = ''
       XZ Utils is free general-purpose data compression software with high
       compression ratio.  XZ Utils were written for POSIX-like systems,
@@ -94,12 +94,17 @@ stdenv.mkDerivation (finalAttrs: {
       create 30 % smaller output than gzip and 15 % smaller output than
       bzip2.
     '';
+
+    homepage = "https://tukaani.org/xz/";
+    changelog = "https://github.com/tukaani-project/xz/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
+
     platforms = lib.platforms.all;
-    pkgConfigModules = [ "liblzma" ];
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "tukaani" finalAttrs.version;
+    pkgConfigModules = [ "liblzma" ];
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   moralerspace,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "moralerspace-hwjpdoc";
   inherit (moralerspace) version meta;
+  pname = "moralerspace-hwjpdoc";
 
   src = fetchzip {
     url = "https://github.com/yuru7/moralerspace/releases/download/v${finalAttrs.version}/MoralerspaceHWJPDOC_v${finalAttrs.version}.zip";

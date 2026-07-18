@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  kdePackages,
   cava,
+  kdePackages,
+  nix-update-script,
   python3,
   qt6,
 }:
@@ -14,7 +14,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "kurve";
   version = "3.5.1";
-  dontWrapQtApps = true;
 
   src = fetchFromGitHub {
     owner = "luisbocanegra";
@@ -41,14 +40,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (kdePackages.kwindowsystem.meta) platforms;
     description = "KDE Plasma widget displaying CAVA audio visualizations.";
     homepage = "https://github.com/luisbocanegra/kurve";
     changelog = "https://github.com/luisbocanegra/kurve/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ chrisheib ];
-    inherit (kdePackages.kwindowsystem.meta) platforms;
   };
 })

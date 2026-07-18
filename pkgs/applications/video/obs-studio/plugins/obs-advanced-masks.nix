@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  obs-studio,
   cmake,
+  obs-studio,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,12 +17,12 @@ stdenv.mkDerivation rec {
     hash = "sha256-NtmOWKk3eZeRa3TvclZpg4sj8lbOoY8hUhxs1z6kEW4=";
   };
 
-  buildInputs = [
-    obs-studio
-  ];
-
   nativeBuildInputs = [
     cmake
+  ];
+
+  buildInputs = [
+    obs-studio
   ];
 
   postInstall = ''
@@ -37,7 +37,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/FiniteSingularity/obs-advanced-masks";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ rytswd ];
-    mainProgram = "obs-advanced-masks";
     platforms = lib.platforms.linux;
+    mainProgram = "obs-advanced-masks";
   };
 }

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
+  fltk,
+  glib,
+  gtk3,
+  libevdev,
   libxtst,
   pkg-config,
-  cmake,
-  libevdev,
-  gtkSupport ? true,
-  gtk3,
-  glib,
+  qt5,
   wrapGAppsHook3,
   fltkSupport ? true,
-  fltk,
+  gtkSupport ? true,
   qtSupport ? true,
-  qt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,9 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-4ovcaVrXQqFZX85SnewtfjZpipcGTw52ZrTkT6iWZQM=";
       name = "bump-cmake-required-version.patch";
       url = "https://github.com/qarkai/xautoclick/commit/a6cd4058fa7d8579bf4ada3f48441f333fca9dab.patch?full_index=1";
-      hash = "sha256-4ovcaVrXQqFZX85SnewtfjZpipcGTw52ZrTkT6iWZQM=";
     })
   ];
 
@@ -40,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     libevdev
     libxtst

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libsndfile,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,11 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     # realloc(NULL, size) and treat it like malloc(size).
     "ac_cv_func_malloc_0_nonnull=yes"
   ];
+
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://bs2b.sourceforge.net/";
     description = "Bauer stereophonic-to-binaural DSP library";
+    homepage = "https://bs2b.sourceforge.net/";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
   };

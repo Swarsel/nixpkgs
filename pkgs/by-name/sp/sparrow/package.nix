@@ -1,26 +1,26 @@
 {
-  stdenv,
-  stdenvNoCC,
   lib,
-  makeWrapper,
+  stdenv,
   fetchurl,
-  makeDesktopItem,
-  copyDesktopItems,
   autoPatchelfHook,
-  zulu25,
-  gtk3,
-  gsettings-desktop-schemas,
-  writeScript,
   bash,
+  copyDesktopItems,
   gnugrep,
-  tor,
-  zlib,
-  imagemagick,
-  gzip,
   gnupg,
+  gsettings-desktop-schemas,
+  gtk3,
+  gzip,
+  imagemagick,
   libusb1,
+  makeDesktopItem,
+  makeWrapper,
   pcsclite,
+  stdenvNoCC,
+  tor,
   udevCheckHook,
+  writeScript,
+  zlib,
+  zulu25,
 }:
 
 let
@@ -31,20 +31,22 @@ let
 
   sparrowArch =
     {
-      x86_64-linux = "x86_64";
       aarch64-linux = "aarch64";
+      x86_64-linux = "x86_64";
     }
     ."${stdenvNoCC.hostPlatform.system}";
 
   src = fetchurl {
     url = "https://github.com/sparrowwallet/${pname}/releases/download/${version}/sparrowwallet-${version}-${sparrowArch}.tar.gz";
+
     hash =
       {
-        x86_64-linux = "sha256-BvtQZ+b+Hj+9eBdLg/KfYUeRQth0LWwwbZUQMfyTayE=";
         aarch64-linux = "sha256-SMVO07kuTo1Yfj+8QfPOvkLR4551tQadJPoIMdT9GFE=";
+        x86_64-linux = "sha256-BvtQZ+b+Hj+9eBdLg/KfYUeRQth0LWwwbZUQMfyTayE=";
       }
       ."${stdenvNoCC.hostPlatform.system}";
 
+    downloadToTemp = true;
     # nativeBuildInputs, downloadToTemp, and postFetch are used to verify the signed upstream package.
     # The signature is not a self-contained file. Instead the SHA256 of the package is added to a manifest file.
     # The manifest file is signed by the owner of the public key, Craig Raw.
@@ -53,7 +55,6 @@ let
     # The public key is obtained from https://keybase.io/craigraw/pgp_keys.asc
     # and is included in this repo to provide reproducibility.
     nativeBuildInputs = [ gnupg ];
-    downloadToTemp = true;
 
     postFetch = ''
       pushd $(mktemp -d)
@@ -71,13 +72,13 @@ let
   };
 
   manifest = fetchurl {
-    url = "https://github.com/sparrowwallet/${pname}/releases/download/${version}/${pname}-${version}-manifest.txt";
     hash = "sha256-cv/bkUZArASgWjgEphdWc6p8R9uOOkT+Idc53sjEOQ0=";
+    url = "https://github.com/sparrowwallet/${pname}/releases/download/${version}/${pname}-${version}-manifest.txt";
   };
 
   manifestSignature = fetchurl {
-    url = "https://github.com/sparrowwallet/${pname}/releases/download/${version}/${pname}-${version}-manifest.txt.asc";
     hash = "sha256-lIamtUX45HVTrUJKbiGsFkRanM17KaZS0NwlTAoptEE=";
+    url = "https://github.com/sparrowwallet/${pname}/releases/download/${version}/${pname}-${version}-manifest.txt.asc";
   };
 
   publicKey = ./publickey.asc;
@@ -130,9 +131,7 @@ let
   '';
 
   jdk-modules = stdenvNoCC.mkDerivation {
-    name = "jdk-modules";
     nativeBuildInputs = [ openjdk ];
-    dontUnpack = true;
 
     buildPhase = ''
       # Extract the JDK's JIMAGE and generate a list of modules.
@@ -148,11 +147,15 @@ let
       cp manifest.txt $out/
       cp -r modules/ $out/
     '';
+
+    dontUnpack = true;
+    name = "jdk-modules";
   };
 
   sparrow-modules = stdenvNoCC.mkDerivation {
-    pname = "sparrow-modules";
     inherit version src;
+    pname = "sparrow-modules";
+
     nativeBuildInputs = [
       makeWrapper
       gzip
@@ -231,47 +234,12 @@ in
 stdenvNoCC.mkDerivation rec {
   inherit version src;
   pname = "sparrow";
+
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
     udevCheckHook
   ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "sparrow-desktop";
-      exec = "sparrow-desktop";
-      icon = "sparrow-desktop";
-      desktopName = "Sparrow Bitcoin Wallet";
-      genericName = "Bitcoin Wallet";
-      categories = [
-        "Finance"
-        "Network"
-      ];
-      mimeTypes = [
-        "application/psbt"
-        "application/bitcoin-transaction"
-        "x-scheme-handler/bitcoin"
-        "x-scheme-handler/auth47"
-        "x-scheme-handler/lightning"
-      ];
-      startupWMClass = "Sparrow";
-    })
-  ];
-
-  sparrow-icons = stdenvNoCC.mkDerivation {
-    inherit version src;
-    pname = "sparrow-icons";
-    nativeBuildInputs = [ imagemagick ];
-
-    installPhase = ''
-      for n in 16 24 32 48 64 96 128 256; do
-        size=$n"x"$n
-        mkdir -p $out/hicolor/$size/apps
-        convert lib/Sparrow.png -resize $size $out/hicolor/$size/apps/sparrow-desktop.png
-        done;
-    '';
-  };
 
   installPhase = ''
     runHook preInstall
@@ -293,12 +261,52 @@ stdenvNoCC.mkDerivation rec {
 
   doInstallCheck = true;
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Finance"
+        "Network"
+      ];
+
+      desktopName = "Sparrow Bitcoin Wallet";
+      exec = "sparrow-desktop";
+      genericName = "Bitcoin Wallet";
+      icon = "sparrow-desktop";
+
+      mimeTypes = [
+        "application/psbt"
+        "application/bitcoin-transaction"
+        "x-scheme-handler/bitcoin"
+        "x-scheme-handler/auth47"
+        "x-scheme-handler/lightning"
+      ];
+
+      name = "sparrow-desktop";
+      startupWMClass = "Sparrow";
+    })
+  ];
+
+  sparrow-icons = stdenvNoCC.mkDerivation {
+    inherit version src;
+    pname = "sparrow-icons";
+    nativeBuildInputs = [ imagemagick ];
+
+    installPhase = ''
+      for n in 16 24 32 48 64 96 128 256; do
+        size=$n"x"$n
+        mkdir -p $out/hicolor/$size/apps
+        convert lib/Sparrow.png -resize $size $out/hicolor/$size/apps/sparrow-desktop.png
+        done;
+    '';
+  };
+
   passthru = {
     updateScript = {
       command = [
         ./update.sh
         ./.
       ];
+
       supportedFeatures = [ "commit" ];
     };
   };
@@ -306,18 +314,22 @@ stdenvNoCC.mkDerivation rec {
   meta = {
     description = "Modern desktop Bitcoin wallet application supporting most hardware wallets and built on common standards such as PSBT, with an emphasis on transparency and usability";
     homepage = "https://sparrowwallet.com";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       msgilligan
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "sparrow-desktop";
   };
 }

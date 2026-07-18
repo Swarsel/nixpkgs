@@ -23,8 +23,8 @@ stdenv.mkDerivation {
     description = "Simple, stupid and slow HNCP daemon";
     homepage = "https://www.irif.univ-paris-diderot.fr/~jch/software/homenet/shncpd.html";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.fpletz ];
+    platforms = lib.platforms.linux;
     mainProgram = "shncpd";
   };
 }

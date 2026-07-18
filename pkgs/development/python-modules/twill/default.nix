@@ -14,14 +14,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "twill";
   version = "3.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-/ZT5ntn7YMafrD9/rWaOvROKo+CGFKSldG9jjH/eR0Q=";
   };
 
-  pythonRelaxDeps = [ "lxml" ];
+  nativeCheckInputs = [
+    flask
+    pytestCheckHook
+    quixote
+  ];
 
   build-system = [ setuptools ];
 
@@ -31,18 +34,14 @@ buildPythonPackage (finalAttrs: {
     pyparsing
   ];
 
-  nativeCheckInputs = [
-    flask
-    pytestCheckHook
-    quixote
-  ];
-
   disabledTestPaths = [
     # pytidylib is abandoned
     "tests/test_tidy.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "twill" ];
+  pythonRelaxDeps = [ "lxml" ];
 
   meta = {
     description = "Simple scripting language for Web browsing";

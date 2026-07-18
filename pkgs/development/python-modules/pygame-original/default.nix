@@ -1,39 +1,32 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-  fontconfig,
-  python,
-  pythonAtLeast,
-
-  # build-system
-  cython,
-  setuptools,
-
   # nativeBuildInputs
   SDL2,
-  pkg-config,
-
+  SDL2_image,
+  SDL2_mixer,
+  SDL2_ttf,
+  buildPythonPackage,
+  # build-system
+  cython,
+  fontconfig,
   # buildInputs
   freetype,
   libjpeg,
   libpng,
   libx11,
+  pkg-config,
   portmidi,
-  SDL2_image,
-  SDL2_mixer,
-  SDL2_ttf,
+  python,
+  pythonAtLeast,
+  replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pygame";
   version = "2.6.1";
-  pyproject = true;
-
-  # https://github.com/NixOS/nixpkgs/pull/475917
-  disabled = pythonAtLeast "3.14";
 
   src = fetchFromGitHub {
     owner = "pygame";
@@ -56,6 +49,7 @@ buildPythonPackage rec {
           "${lib.getDev dep}/include/SDL2"
         ]) buildInputs
       );
+
       buildinputs_lib = builtins.toJSON (
         builtins.concatMap (dep: [
           "${lib.getLib dep}/"
@@ -83,11 +77,6 @@ buildPythonPackage rec {
       --replace-fail /usr/X11/bin/fc-list ${fontconfig}/bin/fc-list
   '';
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
   nativeBuildInputs = [
     SDL2
     pkg-config
@@ -105,13 +94,13 @@ buildPythonPackage rec {
     SDL2_ttf
   ];
 
-  preConfigure = ''
-    ${python.pythonOnBuildForHost.interpreter} buildconfig/config.py
-  '';
-
   env = lib.optionalAttrs stdenv.cc.isClang {
     NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-function-pointer-types";
   };
+
+  preConfigure = ''
+    ${python.pythonOnBuildForHost.interpreter} buildconfig/config.py
+  '';
 
   checkPhase = ''
     runHook preCheck
@@ -128,6 +117,15 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  # https://github.com/NixOS/nixpkgs/pull/475917
+  disabled = pythonAtLeast "3.14";
+  pyproject = true;
   pythonImportsCheck = [ "pygame" ];
 
   meta = {

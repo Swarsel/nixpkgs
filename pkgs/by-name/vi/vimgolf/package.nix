@@ -6,9 +6,8 @@
 
 bundlerApp {
   pname = "vimgolf";
-  gemdir = ./.;
   exes = [ "vimgolf" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "vimgolf";
 
   meta = {

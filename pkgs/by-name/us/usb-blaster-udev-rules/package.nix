@@ -5,23 +5,22 @@
 }:
 
 stdenvNoCC.mkDerivation rec {
-  name = "usb-blaster-udev-rules";
-
-  udevRules = ./usb-blaster.rules;
-  dontUnpack = true;
-
   nativeBuildInputs = [
     udevCheckHook
   ];
-
-  doInstallCheck = true;
 
   installPhase = ''
     install -Dm 644 "${udevRules}" "$out/lib/udev/rules.d/51-usbblaster.rules"
   '';
 
+  doInstallCheck = true;
+  dontUnpack = true;
+  name = "usb-blaster-udev-rules";
+  udevRules = ./usb-blaster.rules;
+
   meta = {
     description = "udev rules that give NixOS permission to communicate with usb blasters";
+
     longDescription = ''
       udev rules that give NixOS permission to communicate with usb blasters.
       To use it under NixOS, add
@@ -30,6 +29,7 @@ stdenvNoCC.mkDerivation rec {
 
       to the system configuration.
     '';
+
     license = lib.licenses.free;
     platforms = lib.platforms.linux;
   };

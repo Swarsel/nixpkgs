@@ -15,12 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1dz045yhcsw1rdamzpz4bk8mw888in7fyqk1q1b3m1yk4pd1ahkh";
   };
 
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   patches = [
     ./remove-sys-sysctl.h.patch
     ./get-missing-basename.patch
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   installPhase = ''
     mkdir -p $out/bin
@@ -28,11 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/opsengine/cpulimit";
     description = "CPU usage limiter";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/opsengine/cpulimit";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "cpulimit";
     maintainers = [ lib.maintainers.jsoo1 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "cpulimit";
   };
 })

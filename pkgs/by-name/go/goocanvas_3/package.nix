@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  pkg-config,
-  gettext,
-  gobject-introspection,
-  gtk-doc,
-  python3,
   cairo,
-  gtk3,
+  fetchpatch,
+  gettext,
   glib,
   gnome,
+  gobject-introspection,
+  gtk-doc,
+  gtk3,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "goocanvas";
   version = "3.0.0";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/goocanvas/${lib.versions.majorMinor finalAttrs.version}/goocanvas-${finalAttrs.version}.tar.xz";
+    sha256 = "06j05g2lmwvklmv51xsb7gm7rszcarhm01sal41jfp0qzrbpa2k7";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/goocanvas/${lib.versions.majorMinor finalAttrs.version}/goocanvas-${finalAttrs.version}.tar.xz";
-    sha256 = "06j05g2lmwvklmv51xsb7gm7rszcarhm01sal41jfp0qzrbpa2k7";
-  };
 
   patches = [
     # This broke due to the introduction of anubis
@@ -71,10 +71,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Canvas widget for GTK based on the the Cairo 2D library";
     homepage = "https://gitlab.gnome.org/Archive/goocanvas";
     license = lib.licenses.lgpl2Plus; # The license contains the "or later" clause
+
     maintainers = with lib.maintainers; [
       bobby285271
       pandapip1
     ];
+
     platforms = lib.platforms.unix;
   };
 })

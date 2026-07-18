@@ -8,10 +8,12 @@
 lib.recurseIntoAttrs {
   example-dir = testers.testBuildFailure' {
     drv = testers.shellcheck {
-      name = "example-dir";
       src = ./src;
+      name = "example-dir";
     };
+
     expectedBuilderExitCode = 123;
+
     expectedBuilderLogEntries = [
       ''
         echo $@
@@ -22,10 +24,12 @@ lib.recurseIntoAttrs {
 
   example-file = testers.testBuildFailure' {
     drv = testers.shellcheck {
-      name = "example-file";
       src = ./src/example.sh;
+      name = "example-file";
     };
+
     expectedBuilderExitCode = 123;
+
     expectedBuilderLogEntries = [
       ''
         echo $@

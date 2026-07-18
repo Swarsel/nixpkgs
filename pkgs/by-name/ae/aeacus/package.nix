@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-WOXOM08UYECdGx+e54n4BgLP3cr+st3qKi8iQXebPvk=";
+  # Tests require network access
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  # Tests require network access
-  doCheck = false;
 
   meta = {
     description = "Vulnerability remediation scoring system";
@@ -31,7 +30,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/elysium-suite/aeacus/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "aeacus";
     platforms = lib.platforms.linux;
+    mainProgram = "aeacus";
   };
 })

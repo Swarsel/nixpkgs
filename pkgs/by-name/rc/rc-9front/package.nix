@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchFrom9Front,
-  unstableGitUpdater,
   byacc,
-  installShellFiles,
   coreutils,
+  fetchFrom9Front,
+  installShellFiles,
+  nawk,
   # for tests only
   rc-9front,
   runCommand,
-  nawk,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation {
@@ -17,19 +17,13 @@ stdenv.mkDerivation {
   version = "0-unstable-2026-06-20";
 
   src = fetchFrom9Front {
-    domain = "shithub.us";
     owner = "cinap_lenrek";
     repo = "rc";
     rev = "b7d36ddb71a2469b226727506c17d9e875e2e668";
     hash = "sha256-6Smtv/D2r4R4/wo6EWimhbWQQCUf+gcNln9+YBFoFsY=";
+    domain = "shithub.us";
   };
 
-  strictDeps = true;
-  nativeBuildInputs = [
-    byacc
-    installShellFiles
-  ];
-  enableParallelBuilding = true;
   # Rc bootstraps the new $path by hardcoding a common list
   # of binary locations common to most POSIX-y systems.
   # On NixOS the average $PATH is a lot more involved and
@@ -39,6 +33,14 @@ stdenv.mkDerivation {
   postPatch = ''
     substituteInPlace ./rcmain.unix --replace-fail 'path=(. /bin /usr/bin /usr/local/bin)' 'path=`:{${coreutils}/bin/env echo -n $PATH}'
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    byacc
+    installShellFiles
+  ];
+
   makeFlags = [ "PREFIX=$(out)" ];
 
   installPhase = ''
@@ -52,10 +54,17 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     shellPath = "/bin/rc";
-    updateScript = unstableGitUpdater { shallowClone = false; };
+
     tests = {
+      path = runCommand "rc-path" { } ''
+        PATH='${coreutils}/bin:/a:/b:/c' ${lib.getExe rc-9front} -c 'echo $path(2-)' >$out
+        [ '/a /b /c' = "$(cat $out)" ]
+      '';
+
       simple = runCommand "rc-test" { } ''
         ${lib.getExe rc-9front} -c 'nl=`{echo} && \
           res=`$nl{for(i in `{seq 1 10}) echo $i} && \
@@ -63,11 +72,9 @@ stdenv.mkDerivation {
         [ "$(wc -l $out | ${lib.getExe nawk} '{ print $1 }' )" = 10 ]
         [ "$(${lib.getExe nawk} '{ a=a+$1 } END{ print a }' < $out)" = "$((10+9+8+7+6+5+4+3+2+1))" ]
       '';
-      path = runCommand "rc-path" { } ''
-        PATH='${coreutils}/bin:/a:/b:/c' ${lib.getExe rc-9front} -c 'echo $path(2-)' >$out
-        [ '/a /b /c' = "$(cat $out)" ]
-      '';
     };
+
+    updateScript = unstableGitUpdater { shallowClone = false; };
   };
 
   meta = {
@@ -76,7 +83,7 @@ stdenv.mkDerivation {
     homepage = "http://shithub.us/cinap_lenrek/rc/HEAD/info.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ moody ];
-    mainProgram = "rc";
     platforms = lib.platforms.all;
+    mainProgram = "rc";
   };
 }

@@ -1,4 +1,4 @@
-{ pkgs, lib }:
+{ lib, pkgs }:
 {
   # Format for defining configuration of some PHP services, that use "include 'config.php';" approach.
   format =
@@ -9,13 +9,13 @@
       toPHP =
         value:
         {
-          "null" = "null";
           "bool" = if value then "true" else "false";
-          "int" = toString value;
           "float" = toString value;
-          "string" = string value;
-          "set" = attrs value;
+          "int" = toString value;
           "list" = list value;
+          "null" = "null";
+          "set" = attrs value;
+          "string" = string value;
         }
         .${builtins.typeOf value}
         or (abort "should never happen: unknown value type ${builtins.typeOf value}");
@@ -42,7 +42,7 @@
         { list, set }: if list == [ ] then attrs set else "[${listContent list}, ${attrsContent set}]";
 
       specialType =
-        { value, _phpType }:
+        { _phpType, value }:
         {
           "mixed_array" = mixedArray value;
           "raw" = value;
@@ -67,21 +67,11 @@
 
       inherit type;
 
-      lib = {
-        mkMixedArray = list: set: {
-          _phpType = "mixed_array";
-          value = { inherit list set; };
-        };
-        mkRaw = raw: {
-          _phpType = "raw";
-          value = raw;
-        };
-      };
-
       generate =
         name: value:
         pkgs.writeTextFile {
           inherit name;
+
           text =
             let
               # strict_types enabled here to easily debug problems when calling functions of incorrect type using `mkRaw`.
@@ -92,6 +82,18 @@
             else
               phpHeader + "\$${finalVariable} = ${toPHP value};\n";
         };
+
+      lib = {
+        mkMixedArray = list: set: {
+          _phpType = "mixed_array";
+          value = { inherit list set; };
+        };
+
+        mkRaw = raw: {
+          _phpType = "raw";
+          value = raw;
+        };
+      };
 
     };
 }

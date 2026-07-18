@@ -6,7 +6,6 @@ let
   common = callPackage ./common.nix { };
 in
 buildGoModule (finalAttrs: {
-  pname = "woodpecker-server";
   inherit (common)
     version
     src
@@ -15,17 +14,18 @@ buildGoModule (finalAttrs: {
     vendorHash
     ;
 
-  subPackages = "cmd/server";
-
-  env.CGO_ENABLED = 1;
+  pname = "woodpecker-server";
 
   postPatch = ''
     cp -r ${finalAttrs.passthru.webui} web/dist
   '';
 
+  env.CGO_ENABLED = 1;
+  subPackages = "cmd/server";
+
   passthru = {
-    webui = callPackage ./webui.nix { };
     updateScript = ./update.sh;
+    webui = callPackage ./webui.nix { };
   };
 
   meta = common.meta // {

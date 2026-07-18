@@ -17,13 +17,13 @@
   x264,
   x265,
   withAom ? true, # AV1 reference encoder
-  withSvtav1 ? false, # AV1 encoder/decoder (focused on speed and correctness)
+  withMkvtoolnix ? true, # mkv editor, recommended concatenation method
   withRav1e ? false, # AV1 encoder (focused on speed and safety)
+  withSvtav1 ? false, # AV1 encoder/decoder (focused on speed and correctness)
+  withVmaf ? false, # Perceptual video quality assessment algorithm
   withVpx ? true, # VP8 & VP9 de/encoding
   withX264 ? true, # H.264/AVC encoder
   withX265 ? true, # H.265/HEVC encoder
-  withVmaf ? false, # Perceptual video quality assessment algorithm
-  withMkvtoolnix ? true, # mkv editor, recommended concatenation method
 }:
 
 # av1an requires at least one encoder
@@ -37,11 +37,8 @@ assert lib.assertMsg (lib.elem true [
 ]) "At least one encoder is required!";
 
 symlinkJoin {
-  pname = "av1an";
   inherit (av1an-unwrapped) version;
-
-  paths = [ av1an-unwrapped ];
-
+  pname = "av1an";
   nativeBuildInputs = [ makeBinaryWrapper ];
 
   postBuild =
@@ -66,10 +63,12 @@ symlinkJoin {
         --prefix PYTHONPATH : ${vapoursynth}/${python3.sitePackages}
     '';
 
+  paths = [ av1an-unwrapped ];
+
   passthru = {
     tests.version = testers.testVersion {
-      package = av1an;
       inherit (av1an-unwrapped) version;
+      package = av1an;
     };
   };
 

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyecharts,
   setuptools,
   streamlit,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "streamlit-echarts";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "andfanilo";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-VNliCZPkAYUx+TacBc6PrS4C4bjM5fmVx/Sj6aSw2Yc=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,10 +27,8 @@ buildPythonPackage rec {
     streamlit
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "streamlit_echarts" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Streamlit component to render ECharts";

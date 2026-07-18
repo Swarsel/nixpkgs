@@ -1,8 +1,8 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   alcotest,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -15,8 +15,8 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
-
   checkInputs = [ alcotest ];
+  minimalOCamlVersion = "4.12";
 
   meta = {
     description = "Exponential backoff mechanism for OCaml";
@@ -24,6 +24,4 @@ buildDunePackage (finalAttrs: {
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
   };
-
-  minimalOCamlVersion = "4.12";
 })

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchgit,
   asciidoc,
-  docbook_xml_dtd_45,
+  curl,
   docbook2x,
+  docbook_xml_dtd_45,
+  fetchgit,
+  glib,
   libxml2,
   meson,
   ninja,
   pkg-config,
-  curl,
-  glib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-XOGjdvMw8wfhBwyOBnQqiiJeOGvYXKMYxiJ6BZeEwDQ=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     asciidoc
@@ -39,17 +41,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
-  strictDeps = true;
 
   meta = {
     description = "Command line client for Mega.co.nz";
     homepage = "https://xff.cz/megatools/";
     changelog = "https://xff.cz/megatools/builds/NEWS";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       viric
       vji
     ];
+
     platforms = lib.platforms.unix;
   };
 })

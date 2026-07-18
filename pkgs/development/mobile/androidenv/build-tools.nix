@@ -1,21 +1,23 @@
 {
-  deployAndroidPackage,
   lib,
   stdenv,
-  package,
-  os,
   arch,
   autoPatchelfHook,
+  deployAndroidPackage,
   makeWrapper,
+  meta,
+  os,
+  package,
   pkgs,
   pkgsi686Linux,
   postInstall,
-  meta,
 }:
 
 deployAndroidPackage {
   inherit package os arch;
+  inherit meta;
   nativeBuildInputs = [ makeWrapper ] ++ lib.optionals (os == "linux") [ autoPatchelfHook ];
+
   buildInputs =
     lib.optionals (os == "linux") [
       pkgs.glibc
@@ -31,6 +33,9 @@ deployAndroidPackage {
         ncurses5
       ]
     );
+
+  noAuditTmpdir = true; # The checker script gets confused by the build-tools path that is incorrectly identified as a reference to /build
+
   patchInstructions = ''
     ${lib.optionalString (os == "linux") ''
       addAutoPatchelfSearchPath $packageBaseDir/lib
@@ -49,7 +54,4 @@ deployAndroidPackage {
     cd $out/libexec/android-sdk
   ''
   + postInstall;
-  noAuditTmpdir = true; # The checker script gets confused by the build-tools path that is incorrectly identified as a reference to /build
-
-  inherit meta;
 }

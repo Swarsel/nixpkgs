@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aioesphomeapi,
   bleak,
   bleak-retry-connector,
   bluetooth-data-tools,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   habluetooth,
   lru-dict,
   poetry-core,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "bleak-esphome";
   version = "3.9.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bluetooth-devices";
@@ -33,6 +32,13 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools>=75.8.2" setuptools
   '';
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-codspeed
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     cython
@@ -49,13 +55,6 @@ buildPythonPackage (finalAttrs: {
     lru-dict
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-codspeed
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # bleak_client.services.get_characteristic returns None
     "test_client_get_services_and_read_write"
@@ -63,6 +62,7 @@ buildPythonPackage (finalAttrs: {
     "test_bleak_client_cached_get_services_and_read_write"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bleak_esphome" ];
 
   meta = {

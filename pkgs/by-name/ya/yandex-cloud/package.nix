@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  makeBinaryWrapper,
-  installShellFiles,
   buildPackages,
-  withShellCompletions ? stdenv.hostPlatform.emulatorAvailable buildPackages,
-  # update script
-  writers,
-  python3Packages,
+  installShellFiles,
+  makeBinaryWrapper,
   nix,
+  python3Packages,
   # tests
   testers,
+  # update script
+  writers,
+  withShellCompletions ? stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 let
   pname = "yandex-cloud";
@@ -20,21 +20,13 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit pname version;
-
   src = fetchurl binaries.${stdenv.hostPlatform.system};
-
-  dontUnpack = true;
-
   strictDeps = true;
 
   nativeBuildInputs = [
     installShellFiles
     makeBinaryWrapper
   ];
-
-  emulator = lib.optionalString (
-    withShellCompletions && !stdenv.buildPlatform.canExecute stdenv.hostPlatform
-  ) (stdenv.hostPlatform.emulator buildPackages);
 
   installPhase = ''
     runHook preInstall
@@ -56,9 +48,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
+  emulator = lib.optionalString (
+    withShellCompletions && !stdenv.buildPlatform.canExecute stdenv.hostPlatform
+  ) (stdenv.hostPlatform.emulator buildPackages);
+
   passthru = {
+    tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
+
     updateScript = writers.writePython3 "${pname}-updater" {
       libraries = with python3Packages; [ requests ];
+
       makeWrapperArgs = [
         "--prefix"
         "PATH"
@@ -66,16 +67,16 @@ stdenv.mkDerivation (finalAttrs: {
         (lib.makeBinPath [ nix ])
       ];
     } ./update.py;
-    tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
   };
 
   meta = {
     description = "Command line interface that helps you interact with Yandex Cloud services";
     homepage = "https://cloud.yandex/docs/cli";
     changelog = "https://cloud.yandex/docs/cli/release-notes#version${version}";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ lib.maintainers.tie ];
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"
@@ -91,6 +92,7 @@ stdenv.mkDerivation (finalAttrs: {
       # ready and merged.
       "i686-linux"
     ];
+
     mainProgram = "yc";
   };
 })

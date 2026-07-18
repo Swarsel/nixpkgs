@@ -2,8 +2,8 @@
   stdenv,
   fetchurl,
   tcl,
-  usb-modeswitch,
   udevCheckHook,
+  usb-modeswitch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,13 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.draisberghof.de/usb_modeswitch/${finalAttrs.pname}-${finalAttrs.version}.tar.bz2";
     hash = "sha256-C7EtZK7l5GfDGvYaU/uCj/eqWcVKgsqF7u3kxWkL+mY=";
   };
-
-  doInstallCheck = true;
-
-  makeFlags = [
-    "PREFIX=$(out)"
-    "DESTDIR=$(out)"
-  ];
 
   postPatch =
     # bash
@@ -39,8 +32,15 @@ stdenv.mkDerivation (finalAttrs: {
     udevCheckHook
   ];
 
+  makeFlags = [
+    "PREFIX=$(out)"
+    "DESTDIR=$(out)"
+  ];
+
+  doInstallCheck = true;
+
   meta = {
-    description = "Device database and the rules file for 'multi-mode' USB devices";
     inherit (usb-modeswitch.meta) license maintainers platforms;
+    description = "Device database and the rules file for 'multi-mode' USB devices";
   };
 })

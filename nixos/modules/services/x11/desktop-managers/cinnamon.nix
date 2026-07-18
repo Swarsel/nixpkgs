@@ -23,6 +23,13 @@ in
 
 {
   options = {
+    environment.cinnamon.excludePackages = mkOption {
+      default = [ ];
+      description = "Which packages cinnamon should exclude from the default environment";
+      example = literalExpression "[ pkgs.blueman ]";
+      type = types.listOf types.package;
+    };
+
     services.cinnamon = {
       apps.enable = mkEnableOption "Cinnamon default applications";
     };
@@ -30,62 +37,37 @@ in
     services.xserver.desktopManager.cinnamon = {
       enable = mkEnableOption "the cinnamon desktop manager";
 
+      extraGSettingsOverridePackages = mkOption {
+        default = [ ];
+        description = "List of packages for which gsettings are overridden.";
+        type = types.listOf types.path;
+      };
+
+      extraGSettingsOverrides = mkOption {
+        default = "";
+        description = "Additional gsettings overrides.";
+        type = types.lines;
+      };
+
       sessionPath = mkOption {
         default = [ ];
-        type = types.listOf types.package;
-        example = literalExpression "[ pkgs.gpaste ]";
+
         description = ''
           Additional list of packages to be added to the session search path.
           Useful for GSettings-conditional autostart.
 
           Note that this should be a last resort; patching the package is preferred (see GPaste).
         '';
-      };
 
-      extraGSettingsOverrides = mkOption {
-        default = "";
-        type = types.lines;
-        description = "Additional gsettings overrides.";
+        example = literalExpression "[ pkgs.gpaste ]";
+        type = types.listOf types.package;
       };
-
-      extraGSettingsOverridePackages = mkOption {
-        default = [ ];
-        type = types.listOf types.path;
-        description = "List of packages for which gsettings are overridden.";
-      };
-    };
-
-    environment.cinnamon.excludePackages = mkOption {
-      default = [ ];
-      example = literalExpression "[ pkgs.blueman ]";
-      type = types.listOf types.package;
-      description = "Which packages cinnamon should exclude from the default environment";
     };
 
   };
 
   config = mkMerge [
     (mkIf cfg.enable {
-      services.displayManager.sessionPackages = [ pkgs.cinnamon ];
-
-      services.xserver.displayManager.lightdm.greeters.slick = {
-        enable = mkDefault true;
-
-        # Taken from mint-artwork.gschema.override
-        theme = mkIf (notExcluded pkgs.mint-themes) {
-          name = mkDefault "Mint-Y-Aqua";
-          package = mkDefault pkgs.mint-themes;
-        };
-        iconTheme = mkIf (notExcluded pkgs.mint-y-icons) {
-          name = mkDefault "Mint-Y-Sand";
-          package = mkDefault pkgs.mint-y-icons;
-        };
-        cursorTheme = mkIf (notExcluded pkgs.mint-cursor-themes) {
-          name = mkDefault "Bibata-Modern-Classic";
-          package = mkDefault pkgs.mint-cursor-themes;
-        };
-      };
-
       # Have to take care of GDM + Cinnamon on Wayland users
       environment.extraInit = ''
         ${concatMapStrings (p: ''
@@ -107,59 +89,13 @@ in
         fi
       '';
 
-      # Default services
-      services.blueman.enable = mkDefault (notExcluded pkgs.blueman);
-      services.hardware.bolt.enable = mkDefault (notExcluded pkgs.bolt);
-      hardware.bluetooth.enable = mkDefault true;
-      security.polkit = {
-        enable = true;
-        enablePkexecWrapper = lib.mkDefault true;
-      };
-      services.accounts-daemon.enable = true;
-      services.dbus.packages = with pkgs; [
-        cinnamon
-        cinnamon-screensaver
-        nemo-with-extensions
-        xapp
+      environment.pathsToLink = [
+        # FIXME: modules should link subdirs of `/share` rather than relying on this
+        "/share" # TODO: https://github.com/NixOS/nixpkgs/issues/47173
       ];
-      systemd.packages =
-        with pkgs;
-        [
-          cinnamon-session
-        ]
-        ++ utils.removePackagesByName [
-          xdg-user-dirs # Update user dirs as described in https://freedesktop.org/wiki/Software/xdg-user-dirs/
-          xdg-user-dirs-gtk
-        ] config.environment.cinnamon.excludePackages;
-      services.cinnamon.apps.enable = mkDefault true;
-      services.gnome.evolution-data-server.enable = true;
-      services.gnome.glib-networking.enable = true;
-      services.gnome.gnome-keyring.enable = true;
-      services.gnome.gnome-online-accounts.enable = mkDefault true;
-      services.gnome.gcr-ssh-agent.enable = mkDefault true;
-      services.gvfs.enable = true;
-      services.power-profiles-daemon.enable = mkDefault true;
-      services.switcherooControl.enable = mkDefault true; # xapp-gpu-offload-helper
-      services.touchegg.enable = mkDefault true;
-      services.udisks2.enable = true;
-      services.upower.enable = mkDefault config.powerManagement.enable;
-      services.libinput.enable = mkDefault true;
-      services.xserver.updateDbusEnvironment = true;
-      networking.networkmanager.enable = mkDefault true;
 
-      # Enable colord server
-      services.colord.enable = true;
-
-      # Enable dconf
-      programs.dconf.enable = true;
-
-      # Enable org.a11y.Bus
-      services.gnome.at-spi2-core.enable = true;
-
-      # Fix lockscreen
-      security.pam.services = {
-        cinnamon-screensaver = { };
-      };
+      # Override GSettings schemas
+      environment.sessionVariables.NIX_GSETTINGS_OVERRIDES_DIR = "${nixos-gsettings-overrides}/share/gsettings-schemas/nixos-gsettings-overrides/glib-2.0/schemas";
 
       environment.systemPackages =
         with pkgs;
@@ -168,8 +104,9 @@ in
             # Teach nemo-desktop how to launch file browser.
             # https://github.com/linuxmint/nemo/blob/6.4.0/src/nemo-desktop-application.c#L398
             (writeTextFile {
-              name = "x-cinnamon-mimeapps";
               destination = "/share/applications/x-cinnamon-mimeapps.list";
+              name = "x-cinnamon-mimeapps";
+
               text = ''
                 [Default Applications]
                 inode/directory=nemo.desktop
@@ -230,45 +167,108 @@ in
           ] config.environment.cinnamon.excludePackages
         );
 
-      # For printers@cinnamon.org applet
-      programs.system-config-printer.enable = (mkIf config.services.printing.enable (mkDefault true));
-
-      xdg.mime.enable = true;
-      xdg.icons.enable = true;
-
-      xdg.portal.enable = true;
-      xdg.portal.extraPortals = [
-        pkgs.xdg-desktop-portal-xapp
-        pkgs.xdg-desktop-portal-gtk
-      ];
-
-      services.orca.enable = mkDefault (notExcluded pkgs.orca);
-
-      xdg.portal.configPackages = mkDefault [ pkgs.cinnamon ];
-
-      # Override GSettings schemas
-      environment.sessionVariables.NIX_GSETTINGS_OVERRIDES_DIR = "${nixos-gsettings-overrides}/share/gsettings-schemas/nixos-gsettings-overrides/glib-2.0/schemas";
-
-      environment.pathsToLink = [
-        # FIXME: modules should link subdirs of `/share` rather than relying on this
-        "/share" # TODO: https://github.com/NixOS/nixpkgs/issues/47173
-      ];
-
-      # Shell integration for VTE terminals
-      programs.bash.vteIntegration = mkDefault true;
-      programs.zsh.vteIntegration = mkDefault true;
-
       # Default Fonts
       fonts.packages = with pkgs; [
         dejavu_fonts # Default monospace font in LMDE 6+
         ubuntu-classic # required for default theme
       ];
+
+      hardware.bluetooth.enable = mkDefault true;
+      networking.networkmanager.enable = mkDefault true;
+      # Shell integration for VTE terminals
+      programs.bash.vteIntegration = mkDefault true;
+      # Enable dconf
+      programs.dconf.enable = true;
+      # For printers@cinnamon.org applet
+      programs.system-config-printer.enable = (mkIf config.services.printing.enable (mkDefault true));
+      programs.zsh.vteIntegration = mkDefault true;
+
+      # Fix lockscreen
+      security.pam.services = {
+        cinnamon-screensaver = { };
+      };
+
+      security.polkit = {
+        enable = true;
+        enablePkexecWrapper = lib.mkDefault true;
+      };
+
+      services.accounts-daemon.enable = true;
+      # Default services
+      services.blueman.enable = mkDefault (notExcluded pkgs.blueman);
+      services.cinnamon.apps.enable = mkDefault true;
+      # Enable colord server
+      services.colord.enable = true;
+
+      services.dbus.packages = with pkgs; [
+        cinnamon
+        cinnamon-screensaver
+        nemo-with-extensions
+        xapp
+      ];
+
+      services.displayManager.sessionPackages = [ pkgs.cinnamon ];
+      # Enable org.a11y.Bus
+      services.gnome.at-spi2-core.enable = true;
+      services.gnome.evolution-data-server.enable = true;
+      services.gnome.gcr-ssh-agent.enable = mkDefault true;
+      services.gnome.glib-networking.enable = true;
+      services.gnome.gnome-keyring.enable = true;
+      services.gnome.gnome-online-accounts.enable = mkDefault true;
+      services.gvfs.enable = true;
+      services.hardware.bolt.enable = mkDefault (notExcluded pkgs.bolt);
+      services.libinput.enable = mkDefault true;
+      services.orca.enable = mkDefault (notExcluded pkgs.orca);
+      services.power-profiles-daemon.enable = mkDefault true;
+      services.switcherooControl.enable = mkDefault true; # xapp-gpu-offload-helper
+      services.touchegg.enable = mkDefault true;
+      services.udisks2.enable = true;
+      services.upower.enable = mkDefault config.powerManagement.enable;
+
+      services.xserver.displayManager.lightdm.greeters.slick = {
+        enable = mkDefault true;
+
+        cursorTheme = mkIf (notExcluded pkgs.mint-cursor-themes) {
+          package = mkDefault pkgs.mint-cursor-themes;
+          name = mkDefault "Bibata-Modern-Classic";
+        };
+
+        iconTheme = mkIf (notExcluded pkgs.mint-y-icons) {
+          package = mkDefault pkgs.mint-y-icons;
+          name = mkDefault "Mint-Y-Sand";
+        };
+
+        # Taken from mint-artwork.gschema.override
+        theme = mkIf (notExcluded pkgs.mint-themes) {
+          package = mkDefault pkgs.mint-themes;
+          name = mkDefault "Mint-Y-Aqua";
+        };
+      };
+
+      services.xserver.updateDbusEnvironment = true;
+
+      systemd.packages =
+        with pkgs;
+        [
+          cinnamon-session
+        ]
+        ++ utils.removePackagesByName [
+          xdg-user-dirs # Update user dirs as described in https://freedesktop.org/wiki/Software/xdg-user-dirs/
+          xdg-user-dirs-gtk
+        ] config.environment.cinnamon.excludePackages;
+
+      xdg.icons.enable = true;
+      xdg.mime.enable = true;
+      xdg.portal.configPackages = mkDefault [ pkgs.cinnamon ];
+      xdg.portal.enable = true;
+
+      xdg.portal.extraPortals = [
+        pkgs.xdg-desktop-portal-xapp
+        pkgs.xdg-desktop-portal-gtk
+      ];
     })
 
     (mkIf serviceCfg.apps.enable {
-      programs.gnome-disks.enable = mkDefault (notExcluded pkgs.gnome-disk-utility);
-      programs.gnome-terminal.enable = mkDefault (notExcluded pkgs.gnome-terminal);
-
       environment.systemPackages =
         with pkgs;
         utils.removePackagesByName [
@@ -290,6 +290,9 @@ in
           file-roller
           gucharmap
         ] config.environment.cinnamon.excludePackages;
+
+      programs.gnome-disks.enable = mkDefault (notExcluded pkgs.gnome-disk-utility);
+      programs.gnome-terminal.enable = mkDefault (notExcluded pkgs.gnome-terminal);
     })
   ];
 }

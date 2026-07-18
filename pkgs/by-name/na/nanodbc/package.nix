@@ -26,7 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ unixodbc ];
 
   cmakeFlags =
@@ -36,9 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
       [ "-DBUILD_SHARED_LIBS=ON" ];
 
   meta = {
+    description = "Small C++ wrapper for the native C ODBC API";
     homepage = "https://github.com/nanodbc/nanodbc";
     changelog = "https://github.com/nanodbc/nanodbc/raw/v${finalAttrs.version}/CHANGELOG.md";
-    description = "Small C++ wrapper for the native C ODBC API";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.bzizou ];
     broken = stdenv.hostPlatform.isDarwin;

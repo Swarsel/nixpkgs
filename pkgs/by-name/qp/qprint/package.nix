@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,20 +15,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  checkTarget = "wringer";
-
   preInstall = ''
     mkdir -p $out/bin
     mkdir -p $out/share/man/man1
   '';
 
+  checkTarget = "wringer";
+
   meta = {
+    description = "Encode and decode Quoted-Printable files";
     homepage = "https://www.fourmilab.ch/webtools/qprint/";
     license = lib.licenses.publicDomain;
-    description = "Encode and decode Quoted-Printable files";
-    mainProgram = "qprint";
     maintainers = [ lib.maintainers.tv ];
     platforms = lib.platforms.all;
+    mainProgram = "qprint";
   };
 
 })

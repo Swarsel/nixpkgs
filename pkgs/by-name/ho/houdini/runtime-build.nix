@@ -1,17 +1,17 @@
 {
   stdenv,
   bc,
-  version,
-  src,
   eulaDate,
+  src,
+  version,
   outputHash ? null,
 }:
 stdenv.mkDerivation (
   {
     inherit version src;
     pname = "houdini-runtime";
-
     buildInputs = [ bc ];
+
     installPhase = ''
       patchShebangs houdini.install
       mkdir -p $out

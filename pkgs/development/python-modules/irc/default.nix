@@ -2,6 +2,7 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  importlib-resources,
   jaraco-collections,
   jaraco-itertools,
   jaraco-logging,
@@ -11,13 +12,11 @@
   pythonOlder,
   pytz,
   setuptools-scm,
-  importlib-resources,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "irc";
   version = "20.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -42,9 +41,8 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optionals (pythonOlder "3.12") [ importlib-resources ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "irc" ];
 
   meta = {

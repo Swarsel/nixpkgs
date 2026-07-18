@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   openssl,
   pkg-config,
-  fetchFromGitHub,
   rustPlatform,
 }:
 
@@ -17,11 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-APVbrR4V2Go7ba+1AFZKi0eBxRnT2bm+Fy2/KmvhsjE=";
   };
 
-  cargoHash = "sha256-WHfC9RPW/FXXZTfU2LEdkKvkJBt/9TemNpBOyv5/Wfo=";
-
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ openssl ];
-
   postPatch = ''
     substituteInPlace \
       ./systemd/afterburn-checkin.service \
@@ -31,13 +26,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail /usr/bin "$out/bin"
   '';
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-WHfC9RPW/FXXZTfU2LEdkKvkJBt/9TemNpBOyv5/Wfo=";
+
   postInstall = ''
     DEFAULT_INSTANCE=root PREFIX= DESTDIR=$out make install-units
   '';
 
   meta = {
-    homepage = "https://github.com/coreos/afterburn";
     description = "One-shot cloud provider agent";
+    homepage = "https://github.com/coreos/afterburn";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ arianvp ];
     platforms = lib.platforms.linux;

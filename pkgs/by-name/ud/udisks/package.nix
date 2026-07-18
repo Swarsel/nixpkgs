@@ -2,42 +2,42 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  pkg-config,
-  gnused,
-  autoreconfHook,
-  gtk-doc,
   acl,
-  systemd,
-  glib,
-  libatasmart,
-  polkit,
-  coreutils,
+  autoreconfHook,
   bash,
-  which,
-  expat,
-  libxslt,
-  docbook_xsl,
-  util-linux,
-  mdadm,
-  libgudev,
-  libblockdev,
-  parted,
-  gobject-introspection,
+  btrfs-progs,
+  coreutils,
   docbook_xml_dtd_412,
   docbook_xml_dtd_43,
-  xfsprogs,
-  f2fs-tools,
+  docbook_xsl,
   dosfstools,
   e2fsprogs,
-  btrfs-progs,
   exfat,
-  nilfs-utils,
-  ntfs3g,
-  nixosTests,
-  udevCheckHook,
-  libiscsi,
+  expat,
+  f2fs-tools,
+  glib,
+  gnused,
+  gobject-introspection,
+  gtk-doc,
+  libatasmart,
+  libblockdev,
   libconfig,
+  libgudev,
+  libiscsi,
+  libxslt,
+  mdadm,
+  nilfs-utils,
+  nixosTests,
+  ntfs3g,
+  parted,
+  pkg-config,
+  polkit,
+  replaceVars,
+  systemd,
+  udevCheckHook,
+  util-linux,
+  which,
+  xfsprogs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -84,9 +84,14 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
+  postPatch = lib.optionalString stdenv.hostPlatform.isMusl ''
+    substituteInPlace udisks/udisksclient.c \
+      --replace 'defined( __GNUC_PREREQ)' 1 \
+      --replace '__GNUC_PREREQ(4,6)' 1
+  '';
+
   strictDeps = true;
-  # pkg-config had to be in both to find gtk-doc and gobject-introspection
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     autoreconfHook
     which
@@ -99,12 +104,6 @@ stdenv.mkDerivation (finalAttrs: {
     docbook_xsl
     udevCheckHook
   ];
-
-  postPatch = lib.optionalString stdenv.hostPlatform.isMusl ''
-    substituteInPlace udisks/udisksclient.c \
-      --replace 'defined( __GNUC_PREREQ)' 1 \
-      --replace '__GNUC_PREREQ(4,6)' 1
-  '';
 
   buildInputs = [
     expat
@@ -119,8 +118,6 @@ stdenv.mkDerivation (finalAttrs: {
     libiscsi
     libconfig
   ];
-
-  preConfigure = "NOCONFIGURE=1 ./autogen.sh";
 
   configureFlags = [
     (lib.enableFeature (stdenv.buildPlatform == stdenv.hostPlatform) "gtk-doc")
@@ -140,14 +137,16 @@ stdenv.mkDerivation (finalAttrs: {
     "INTROSPECTION_TYPELIBDIR=$(out)/lib/girepository-1.0"
   ];
 
+  preConfigure = "NOCONFIGURE=1 ./autogen.sh";
+  doCheck = true;
+  doInstallCheck = true;
+  # pkg-config had to be in both to find gtk-doc and gobject-introspection
+  depsBuildBuild = [ pkg-config ];
+  enableParallelBuilding = true;
+
   installFlags = [
     "sysconfdir=${placeholder "out"}/etc"
   ];
-
-  enableParallelBuilding = true;
-
-  doCheck = true;
-  doInstallCheck = true;
 
   passthru = {
     inherit libblockdev;
@@ -157,12 +156,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Daemon, tools and libraries to access and manipulate disks, storage devices and technologies";
     homepage = "https://www.freedesktop.org/wiki/Software/udisks/";
+
     license = with lib.licenses; [
       lgpl2Plus
       gpl2Plus
     ]; # lgpl2Plus for the library, gpl2Plus for the tools & daemon
+
     maintainers = with lib.maintainers; [ johnazoidberg ];
-    teams = [ lib.teams.freedesktop ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.freedesktop ];
   };
 })

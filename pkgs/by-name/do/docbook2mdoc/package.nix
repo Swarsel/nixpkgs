@@ -15,15 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ expat.dev ];
-
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "http://mdocml.bsd.lv/";
     description = "Converter from DocBook V4.x and v5.x XML into mdoc";
+    homepage = "http://mdocml.bsd.lv/";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ramkromberg ];
+    platforms = lib.platforms.all;
     mainProgram = "docbook2mdoc";
   };
 })

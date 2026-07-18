@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jemalloc,
   jre,
+  makeWrapper,
   runCommand,
   testers,
 }:
@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-CC24z0+2dSeqDddX5dJUs7SX9QJ8Iyh/nAp0pqdDvwg=";
   };
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ jemalloc ];
   nativeBuildInputs = [ makeWrapper ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ jemalloc ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -35,9 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       version = "v${finalAttrs.version}";
+      package = finalAttrs.finalPackage;
     };
+
     jemalloc =
       runCommand "besu-test-jemalloc"
         {
@@ -57,7 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/besu-eth/besu/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ mmahut ];
+    platforms = lib.platforms.all;
   };
 })

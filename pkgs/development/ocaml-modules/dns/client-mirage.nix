@@ -1,24 +1,24 @@
 {
   buildDunePackage,
+  ca-certs-nss,
   dns,
   dns-client,
-  lwt,
-  mirage-sleep,
-  mirage-mtime,
-  mirage-ptime,
-  mirage-crypto-rng,
   domain-name,
-  ipaddr,
-  ca-certs-nss,
   happy-eyeballs,
   happy-eyeballs-mirage,
+  ipaddr,
+  lwt,
+  mirage-crypto-rng,
+  mirage-mtime,
+  mirage-ptime,
+  mirage-sleep,
   tcpip,
   tls-mirage,
 }:
 
 buildDunePackage {
-  pname = "dns-client-mirage";
   inherit (dns) src version;
+  pname = "dns-client-mirage";
 
   propagatedBuildInputs = [
     dns-client
@@ -35,7 +35,7 @@ buildDunePackage {
     tcpip
     tls-mirage
   ];
-  doCheck = true;
 
+  doCheck = true;
   meta = dns-client.meta;
 }

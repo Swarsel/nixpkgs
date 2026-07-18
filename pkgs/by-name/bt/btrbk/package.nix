@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
+  asciidoctor,
   bash,
   btrfs-progs,
+  curl,
+  genericUpdater,
+  makeWrapper,
+  mbuffer,
+  nixosTests,
   openssh,
   perl,
   perlPackages,
   util-linux,
-  asciidoctor,
-  mbuffer,
-  makeWrapper,
-  genericUpdater,
-  curl,
   writeShellScript,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -86,8 +86,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Backup tool for btrfs subvolumes";
     homepage = "https://digint.ch/btrbk";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ asymmetric ];
+    platforms = lib.platforms.unix;
     mainProgram = "btrbk";
   };
 })

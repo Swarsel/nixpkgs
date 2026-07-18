@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  fetchFromCodeberg,
+  stdenv,
   curl,
-  openssl,
+  fetchFromCodeberg,
   nix-update-script,
+  openssl,
   versionCheckHook,
 }:
 
@@ -33,21 +33,21 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/snac";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://codeberg.org/grunfink/snac2/src/tag/${finalAttrs.version}/RELEASE_NOTES.md";
     description = "Simple, minimalistic ActivityPub instance (2.x, C)";
     homepage = "https://codeberg.org/grunfink/snac2";
+    changelog = "https://codeberg.org/grunfink/snac2/src/tag/${finalAttrs.version}/RELEASE_NOTES.md";
     license = lib.licenses.mit;
-    mainProgram = "snac";
     maintainers = with lib.maintainers; [ misuzu ];
     platforms = lib.platforms.unix;
+    mainProgram = "snac";
   };
 })

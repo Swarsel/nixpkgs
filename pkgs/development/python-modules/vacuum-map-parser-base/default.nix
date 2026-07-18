@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   pillow,
+  poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "vacuum-map-parser-base";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PiotrMachowski";
@@ -25,19 +24,17 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ pillow ];
-
   # No tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "vacuum_map_parser_base" ];
 
   meta = {
-    homepage = "https://github.com/PiotrMachowski/Python-package-vacuum-map-parser-base";
     description = "Common code for vacuum map parsers";
+    homepage = "https://github.com/PiotrMachowski/Python-package-vacuum-map-parser-base";
     changelog = "https://github.com/PiotrMachowski/Python-package-vacuum-map-parser-base/releases/tag/${src.tag}";
-    maintainers = with lib.maintainers; [ jamiemagee ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ jamiemagee ];
   };
 }

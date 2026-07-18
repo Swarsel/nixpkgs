@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  go,
   libxtst,
   pkg-config,
   wrapGAppsHook3,
-  go,
 }:
 
 stdenv.mkDerivation rec {
@@ -29,21 +29,21 @@ stdenv.mkDerivation rec {
     libxtst
   ];
 
+  makeFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
+
   preConfigure = ''
     export GOCACHE="$TMPDIR/go-cache"
     sed -i "s,/usr,$out," data/bamboo.xml
   '';
 
-  makeFlags = [
-    "PREFIX=${placeholder "out"}"
-  ];
-
   meta = {
-    isIbusEngine = true;
     description = "Vietnamese IME for IBus";
     homepage = "https://github.com/BambooEngine/ibus-bamboo";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    isIbusEngine = true;
   };
 }

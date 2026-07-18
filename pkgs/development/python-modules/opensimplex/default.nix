@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "opensimplex";
   version = "0.4.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "lmas";
@@ -19,19 +18,21 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ numpy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
   enabledTestPaths = [ "tests/test_opensimplex.py" ];
+  format = "setuptools";
   pythonImportsCheck = [ "opensimplex" ];
 
   meta = {
     description = "OpenSimplex Noise functions for 2D, 3D and 4D";
+
     longDescription = ''
       OpenSimplex noise is an n-dimensional gradient noise function that was
       developed in order to overcome the patent-related issues surrounding
       Simplex noise, while continuing to also avoid the visually-significant
       directional artifacts characteristic of Perlin noise.
     '';
+
     homepage = "https://github.com/lmas/opensimplex";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ emilytrau ];

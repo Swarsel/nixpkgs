@@ -1,16 +1,14 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  dune-configurator,
   alsa-lib,
+  buildDunePackage,
+  dune-configurator,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "alsa";
   version = "0.3.0";
-
-  minimalOCamlVersion = "4.02";
 
   src = fetchFromGitHub {
     owner = "savonet";
@@ -21,10 +19,11 @@ buildDunePackage (finalAttrs: {
 
   buildInputs = [ dune-configurator ];
   propagatedBuildInputs = [ alsa-lib ];
+  minimalOCamlVersion = "4.02";
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-alsa";
     description = "OCaml interface for libasound2";
+    homepage = "https://github.com/savonet/ocaml-alsa";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

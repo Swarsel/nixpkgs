@@ -4,8 +4,8 @@
   fetchFromGitHub,
   cmake,
   nix-update-script,
-  testers,
   python3,
+  testers,
   validatePkgConfig,
 }:
 
@@ -35,15 +35,16 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "LLHTTP_BUILD_STATIC_LIBS" stdenv.hostPlatform.isStatic)
   ];
 
-  passthru.updateScript = nix-update-script {
-    extraArgs = [ "--version-regex=release/v(.+)" ];
-  };
   passthru.tests = {
     inherit (python3.pkgs) aiohttp;
 
     pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
+  };
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--version-regex=release/v(.+)" ];
   };
 
   meta = {

@@ -22,17 +22,11 @@ stdenv.mkDerivation rec {
     cmake
   ];
 
-  nativeCheckInputs = [
-    gbenchmark
-    gtest
-  ];
-
   #preConfigure = ''
   #  sed -i 's/GTest::main//' test/unittests/CMakeLists.txt
   #  cat test/unittests/CMakeLists.txt
   #  ln -sfv ${gtest.src}/googletest gtest
   #'';
-
   # NOTE: disabling tests due to gtest issue
   cmakeFlags = [
     "-DHUNTER_ENABLED=OFF"
@@ -43,11 +37,16 @@ stdenv.mkDerivation rec {
     #"-DCMAKE_PREFIX_PATH=${gtest.dev}/lib/cmake"
   ];
 
+  nativeCheckInputs = [
+    gbenchmark
+    gtest
+  ];
+
   meta = {
     description = "PoW algorithm for Ethereum 1.0 based on Dagger-Hashimoto";
     homepage = "https://github.com/ethereum/ethash";
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
     license = lib.licenses.asl20;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

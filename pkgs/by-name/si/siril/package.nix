@@ -2,40 +2,40 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
-  meson,
-  ninja,
+  cfitsio,
   cmake,
-  git,
   criterion,
+  curl,
+  exiv2,
+  ffmpeg,
+  ffms,
+  fftwFloat,
+  git,
+  gnuplot,
+  gsl,
   gtk3,
   gtksourceview4,
-  libconfig,
-  gnuplot,
-  opencv,
-  python3,
   json-glib,
-  fftwFloat,
-  cfitsio,
-  gsl,
-  exiv2,
-  librtprocess,
-  wcslib,
-  ffmpeg,
-  libraw,
-  libtiff,
-  libpng,
+  libconfig,
   libgit2,
+  libheif,
   libjpeg,
   libjxl,
-  libheif,
+  libpng,
+  libraw,
+  librtprocess,
+  libtiff,
   libxisf,
-  ffms,
-  wrapGAppsHook3,
-  curl,
-  yyjson,
-  versionCheckHook,
+  meson,
+  ninja,
   nix-update-script,
+  opencv,
+  pkg-config,
+  python3,
+  versionCheckHook,
+  wcslib,
+  wrapGAppsHook3,
+  yyjson,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -87,27 +87,29 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ python3 ];
-
-  # Necessary because project uses default build dir for flatpaks/snaps
-  mesonBuildDir = "nixbld";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  # Necessary because project uses default build dir for flatpaks/snaps
+  mesonBuildDir = "nixbld";
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://www.siril.org/";
     description = "Astrophotographic image processing tool";
-    license = lib.licenses.gpl3Plus;
+    homepage = "https://www.siril.org/";
     changelog = "https://gitlab.com/free-astro/siril/-/blob/HEAD/ChangeLog";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       returntoreality
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "siril";
   };

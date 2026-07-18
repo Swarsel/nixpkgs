@@ -1,32 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-
-  # src / metadata
-  mujoco-main,
-
-  # build-system
-  setuptools,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
   etils,
   importlib-resources,
   jax,
   jaxlib,
   mujoco,
+  # src / metadata
+  mujoco-main,
   scipy,
+  # build-system
+  setuptools,
   trimesh,
 }:
 
 buildPythonPackage {
-  pname = "mujoco-mjx";
   inherit (mujoco-main) src version;
-
-  pyproject = true;
-
-  sourceRoot = "${mujoco-main.src.name}/mjx";
-
+  pname = "mujoco-mjx";
   build-system = [ setuptools ];
 
   dependencies = [
@@ -41,11 +33,13 @@ buildPythonPackage {
   ]
   ++ etils.optional-dependencies.epath;
 
+  pyproject = true;
   pythonImportsCheck = [ "mujoco.mjx" ];
+  sourceRoot = "${mujoco-main.src.name}/mjx";
 
   meta = {
-    description = "MuJoCo XLA (MJX)";
     inherit (mujoco.meta) homepage changelog license;
+    description = "MuJoCo XLA (MJX)";
     maintainers = with lib.maintainers; [ nim65s ];
   };
 }

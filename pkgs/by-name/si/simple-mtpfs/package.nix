@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   autoconf-archive,
-  pkg-config,
+  autoreconfHook,
   fuse,
   libmtp,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "simple-mtpfs";
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoconf-archive
     pkg-config
   ];
+
   buildInputs = [
     fuse
     libmtp
@@ -33,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple MTP fuse filesystem driver";
     homepage = "https://github.com/phatina/simple-mtpfs";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ laalsaas ];
+    platforms = lib.platforms.linux;
     mainProgram = "simple-mtpfs";
   };
 })

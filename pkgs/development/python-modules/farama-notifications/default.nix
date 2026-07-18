@@ -1,15 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "farama-notifications";
   version = "0.0.6";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Farama-Foundation";
@@ -18,8 +16,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-gvOLitPqpJW1kLVZUkf8UVhKdjhCZhu9ORmdLHzil1E=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "farama_notifications" ];
 
   meta = {

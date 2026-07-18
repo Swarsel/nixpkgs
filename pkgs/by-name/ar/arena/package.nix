@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  gtk2-x11,
-  glib,
-  pango,
-  cairo,
   atk,
+  cairo,
   gdk-pixbuf,
+  glib,
+  gtk2-x11,
   libx11,
+  pango,
 }:
 
 # Arena is free software in the sense of "free beer" but not as in "free
@@ -30,6 +30,7 @@ stdenv.mkDerivation rec {
     url = "http://www.playwitharena.de/downloads/arenalinux_64bit_${
       lib.replaceStrings [ "-" ] [ "" ] version
     }.tar.gz";
+
     sha256 = "1pzb9sg4lzbbi4gbldvlb85p8xyl9xnplxwyb9pkk2mwzvvxkf0d";
   };
 
@@ -44,17 +45,6 @@ stdenv.mkDerivation rec {
     libx11
     (lib.getLib stdenv.cc.cc)
   ];
-
-  unpackPhase = ''
-    # This is is a tar bomb, i.e. it extract a dozen files and directories to
-    # the top-level, so we must create a sub-directory first.
-    mkdir -p $out/lib/${pname}-${version}
-    tar -C $out/lib/${pname}-${version} -xf ${src}
-
-    # Remove executable bits from data files. This matters for the find command
-    # we'll use below to find all bundled engines.
-    chmod -x $out/lib/${pname}-${version}/Engines/*/*.{txt,bin,bmp,zip}
-  '';
 
   buildPhase = ''
     # Arena has (at least) two executables plus a couple of bundled chess
@@ -80,8 +70,20 @@ stdenv.mkDerivation rec {
 
   dontStrip = true;
 
+  unpackPhase = ''
+    # This is is a tar bomb, i.e. it extract a dozen files and directories to
+    # the top-level, so we must create a sub-directory first.
+    mkdir -p $out/lib/${pname}-${version}
+    tar -C $out/lib/${pname}-${version} -xf ${src}
+
+    # Remove executable bits from data files. This matters for the find command
+    # we'll use below to find all bundled engines.
+    chmod -x $out/lib/${pname}-${version}/Engines/*/*.{txt,bin,bmp,zip}
+  '';
+
   meta = {
     description = "Chess GUI for analyzing with and playing against various engines";
+
     longDescription = ''
       A free Graphical User Interface (GUI) for chess. Arena assists you in
       analyzing and playing games as well as in testing chess engines. It runs
@@ -89,9 +91,10 @@ stdenv.mkDerivation rec {
       UCI protocol I, II. Furthermore, compatible to Chess960, DGT electronic
       chess board & DGT clocks and much more.
     '';
+
+    homepage = "http://www.playwitharena.de";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    homepage = "http://www.playwitharena.de";
     platforms = [ "x86_64-linux" ];
   };
 

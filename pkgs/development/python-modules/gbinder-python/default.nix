@@ -3,15 +3,14 @@
   fetchFromGitHub,
   buildPythonPackage,
   cython,
-  pkg-config,
   libgbinder,
+  pkg-config,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "gbinder-python";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "waydroid";
@@ -20,28 +19,30 @@ buildPythonPackage rec {
     hash = "sha256-bXuvGTzYifiCPDkcNvkgh+RAZfckcyR8weaRkgbfCyA=";
   };
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
-  buildInputs = [ libgbinder ];
-
-  nativeBuildInputs = [
-    pkg-config
-  ];
-
   postPatch = ''
     # Fix pkg-config name for cross-compilation
     substituteInPlace setup.py \
       --replace-fail "pkg-config" "$PKG_CONFIG"
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
+  buildInputs = [ libgbinder ];
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Python bindings for libgbinder";
     homepage = "https://github.com/waydroid/gbinder-python";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

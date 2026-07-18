@@ -1,70 +1,68 @@
 {
-  stdenv,
   lib,
-  pkgArches,
-  makeSetupHook,
-  pname,
-  version,
-  src,
-  mingwGccs,
-  monos,
-  geckos,
-  platforms,
+  stdenv,
+  autoconf,
   bison,
   flex,
   fontforge,
+  geckos,
   gettext,
-  makeWrapper,
-  pkg-config,
-  nixosTests,
-  pnameSuffix ? "",
-  patches,
-  moltenvk,
-  buildScript ? null,
-  configureFlags ? [ ],
-  mainProgram ? "wine",
-
-  # Staging support
-  useStaging ? false,
-  autoconf,
-  hexdump,
-  perl,
-  python3,
   gitMinimal,
-
+  hexdump,
+  makeSetupHook,
+  makeWrapper,
+  mingwGccs,
+  moltenvk,
+  monos,
+  nixosTests,
+  patches,
+  perl,
+  pkg-config,
+  pkgArches,
+  platforms,
+  pname,
+  python3,
+  src,
+  version,
+  alsaSupport ? false,
+  buildScript ? null,
+  cairoSupport ? false,
+  configureFlags ? [ ],
+  cupsSupport ? false,
+  cursesSupport ? false,
+  dbusSupport ? false,
+  embedInstallers ? false,
+  ffmpegSupport ? false,
+  fontconfigSupport ? false,
   # Support flags
   gettextSupport ? false,
-  fontconfigSupport ? false,
-  alsaSupport ? false,
-  gtkSupport ? false,
-  openglSupport ? false,
-  tlsSupport ? false,
-  gstreamerSupport ? false,
-  cupsSupport ? false,
-  dbusSupport ? false,
-  openclSupport ? false,
-  cairoSupport ? false,
-  odbcSupport ? false,
-  netapiSupport ? false,
-  cursesSupport ? false,
-  vaSupport ? false,
-  pcapSupport ? false,
-  v4lSupport ? false,
-  saneSupport ? false,
   gphoto2Support ? false,
+  gstreamerSupport ? false,
+  gtkSupport ? false,
   krb5Support ? false,
-  pulseaudioSupport ? false,
-  udevSupport ? false,
-  xineramaSupport ? false,
-  vulkanSupport ? false,
-  sdlSupport ? false,
-  usbSupport ? false,
+  mainProgram ? "wine",
   mingwSupport ? stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isAarch64,
+  netapiSupport ? false,
+  odbcSupport ? false,
+  openclSupport ? false,
+  openglSupport ? false,
+  pcapSupport ? false,
+  pnameSuffix ? "",
+  pulseaudioSupport ? false,
+  saneSupport ? false,
+  sdlSupport ? false,
+  smartcardSupport ? false,
+  tlsSupport ? false,
+  udevSupport ? false,
+  usbSupport ? false,
+  # Staging support
+  useStaging ? false,
+  v4lSupport ? false,
+  vaSupport ? false,
+  vulkanSupport ? false,
   waylandSupport ? false,
   x11Support ? false,
-  ffmpegSupport ? false,
-  embedInstallers ? false,
-  smartcardSupport ? false,
+  xineramaSupport ? false,
 }:
 
 let
@@ -75,10 +73,12 @@ let
 
   setupHookDarwin = makeSetupHook {
     name = "darwin-mingw-hook";
+
     substitutions = {
       darwinSuffixSalt = stdenv.cc.suffixSalt;
       mingwGccsSuffixSalts = map (gcc: gcc.suffixSalt) mingwGccs;
     };
+
     meta.license = lib.licenses.mit;
   } ./setup-hook-darwin.sh;
 
@@ -126,9 +126,8 @@ stdenv.mkDerivation (
   }
   // {
     inherit version src;
-
+    inherit patches;
     pname = prevName + pnameSuffix;
-
     # Fixes "Compiler cannot create executables" building wineWow with mingwSupport
     strictDeps = true;
 
@@ -257,22 +256,6 @@ stdenv.mkDerivation (
         ]
       );
 
-    inherit patches;
-
-    prePatch =
-      if !useStaging then
-        null
-      else
-        ''
-          patchShebangs tools
-          cp -r ${stagingPatches}/patches ${stagingPatches}/staging .
-          chmod +w patches
-          patchShebangs ./patches/gitapply.sh
-          python3 ./staging/patchinstall.py DESTDIR="$PWD" --all ${
-            lib.concatMapStringsSep " " (ps: "-W ${ps}") stagingPatches.disabledPatchsets
-          }
-        '';
-
     configureFlags =
       prevConfigFlags
       ++ lib.optionals waylandSupport [ "--with-wayland" ]
@@ -281,6 +264,9 @@ stdenv.mkDerivation (
         "--without-x"
       ]
       ++ lib.optionals smartcardSupport [ "--with-pcsclite" ];
+
+    # Just here to avoid rebuilds for now.
+    env.NIX_CFLAGS_COMPILE = "";
 
     # Wine locates a lot of libraries dynamically through dlopen().  Add
     # them to the RPATH so that the user doesn't have to set them in
@@ -299,12 +285,6 @@ stdenv.mkDerivation (
         )
       )
     );
-    # Just here to avoid rebuilds for now.
-    env.NIX_CFLAGS_COMPILE = "";
-
-    # Don't shrink the ELF RPATHs in order to keep the extra RPATH
-    # elements specified above.
-    dontPatchELF = true;
 
     ## FIXME
     # Add capability to ignore known failing tests
@@ -346,6 +326,9 @@ stdenv.mkDerivation (
         done
       '';
 
+    # Don't shrink the ELF RPATHs in order to keep the extra RPATH
+    # elements specified above.
+    dontPatchELF = true;
     enableParallelBuilding = true;
 
     # https://bugs.winehq.org/show_bug.cgi?id=43530
@@ -357,23 +340,43 @@ stdenv.mkDerivation (
     ++ lib.optional stdenv.hostPlatform.isDarwin "fortify"
     ++ lib.optional mingwSupport "format";
 
+    prePatch =
+      if !useStaging then
+        null
+      else
+        ''
+          patchShebangs tools
+          cp -r ${stagingPatches}/patches ${stagingPatches}/staging .
+          chmod +w patches
+          patchShebangs ./patches/gitapply.sh
+          python3 ./staging/patchinstall.py DESTDIR="$PWD" --all ${
+            lib.concatMapStringsSep " " (ps: "-W ${ps}") stagingPatches.disabledPatchsets
+          }
+        '';
+
     passthru = {
       inherit pkgArches;
       tests = { inherit (nixosTests) wine; };
       updateScript = src.updateScript or null;
     };
+
     meta = {
       inherit version;
+      inherit badPlatforms platforms;
+      inherit mainProgram;
+
+      description =
+        "Open Source implementation of the Windows API on top of X, OpenGL, and Unix"
+        + lib.optionalString useStaging " (with staging patches)";
+
       homepage = "https://www.winehq.org/";
       license = with lib.licenses; [ lgpl21Plus ];
+
       sourceProvenance = with lib.sourceTypes; [
         fromSource
         binaryNativeCode # mono, gecko
       ];
-      description =
-        "Open Source implementation of the Windows API on top of X, OpenGL, and Unix"
-        + lib.optionalString useStaging " (with staging patches)";
-      inherit badPlatforms platforms;
+
       maintainers = with lib.maintainers; [
         avnik
         bendlas
@@ -382,7 +385,6 @@ stdenv.mkDerivation (
         raskin
         reckenrode
       ];
-      inherit mainProgram;
     };
   }
 )

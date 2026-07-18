@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   rustPlatform,
 }:
 
@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo subcommand to sort derive attributes";
-    mainProgram = "cargo-sort-derives";
     homepage = "https://lusingander.github.io/cargo-sort-derives/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sebimarkgraf ];
+    mainProgram = "cargo-sort-derives";
   };
 })

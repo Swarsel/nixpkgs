@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -15,6 +15,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.windowlab ];
+
     services.xserver.windowManager = {
       session = [
         {
@@ -23,6 +25,5 @@ in
         }
       ];
     };
-    environment.systemPackages = [ pkgs.windowlab ];
   };
 }

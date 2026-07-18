@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -12,32 +12,34 @@ with lib;
     services.xl2tpd = {
       enable = mkEnableOption "xl2tpd, the Layer 2 Tunnelling Protocol Daemon";
 
-      serverIp = mkOption {
-        type = types.str;
-        description = "The server-side IP address.";
-        default = "10.125.125.1";
-      };
-
       clientIpRange = mkOption {
-        type = types.str;
-        description = "The range from which client IPs are drawn.";
         default = "10.125.125.2-11";
-      };
-
-      extraXl2tpOptions = mkOption {
-        type = types.lines;
-        description = "Adds extra lines to the xl2tpd configuration file.";
-        default = "";
+        description = "The range from which client IPs are drawn.";
+        type = types.str;
       };
 
       extraPppdOptions = mkOption {
-        type = types.lines;
-        description = "Adds extra lines to the pppd options file.";
         default = "";
+        description = "Adds extra lines to the pppd options file.";
+
         example = ''
           ms-dns 8.8.8.8
           ms-dns 8.8.4.4
         '';
+
+        type = types.lines;
+      };
+
+      extraXl2tpOptions = mkOption {
+        default = "";
+        description = "Adds extra lines to the xl2tpd configuration file.";
+        type = types.lines;
+      };
+
+      serverIp = mkOption {
+        default = "10.125.125.1";
+        description = "The server-side IP address.";
+        type = types.str;
       };
     };
   };
@@ -88,8 +90,6 @@ with lib;
         '';
 
         xl2tpd-ppp-wrapped = pkgs.stdenv.mkDerivation {
-          name = "xl2tpd-ppp-wrapped";
-          nativeBuildInputs = with pkgs; [ makeWrapper ];
           buildCommand = ''
             mkdir -p $out/bin
 
@@ -101,13 +101,13 @@ with lib;
               --set LD_PRELOAD    "${pkgs.libredirect}/lib/libredirect.so" \
               --set NIX_REDIRECTS "${pkgs.ppp}/sbin/pppd=$out/bin/pppd"
           '';
+
+          name = "xl2tpd-ppp-wrapped";
+          nativeBuildInputs = with pkgs; [ makeWrapper ];
         };
       in
       {
         description = "xl2tpd server";
-
-        requires = [ "network-online.target" ];
-        wantedBy = [ "multi-user.target" ];
 
         preStart = ''
           install -m 700 -d /etc/xl2tpd/ppp
@@ -124,13 +124,17 @@ with lib;
           install -m 701 -o root -g root -d /run/xl2tpd
         '';
 
+        requires = [ "network-online.target" ];
+
         serviceConfig = {
           ExecStart = "${xl2tpd-ppp-wrapped}/bin/xl2tpd -D -c ${xl2tpd-conf} -s /etc/xl2tpd/l2tp-secrets -p /run/xl2tpd/pid -C /run/xl2tpd/control";
           KillMode = "process";
+          PIDFile = "/run/xl2tpd/pid";
           Restart = "on-success";
           Type = "simple";
-          PIDFile = "/run/xl2tpd/pid";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
   };
 }

@@ -1,39 +1,39 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  dpkg,
-  libxcb-wm,
-  libxcb-render-util,
-  libxcb-keysyms,
-  libxcb-image,
-  libxscrnsaver,
-  libxrender,
-  libxi,
-  libx11,
-  libsm,
-  libice,
-  libxcb,
-  glib,
-  libGLU,
-  libGL,
-  libpulseaudio,
-  zlib,
+  cups,
+  curl,
   dbus,
+  dpkg,
   fontconfig,
   freetype,
+  glib,
   gtk3,
-  pango,
-  makeWrapper,
-  python3Packages,
-  lib,
+  libGL,
+  libGLU,
   libcap,
-  lsof,
-  curl,
-  libuuid,
-  cups,
   libgbm,
-  xz,
+  libice,
+  libpulseaudio,
+  libsm,
+  libuuid,
+  libx11,
+  libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-wm,
+  libxi,
   libxkbcommon,
+  libxrender,
+  libxscrnsaver,
+  lsof,
+  makeWrapper,
+  pango,
+  python3Packages,
+  xz,
+  zlib,
 }:
 
 let
@@ -91,22 +91,9 @@ let
       url = "${baseUrl}/${data.path}";
     };
 
-    meta = {
-      description = "Well known password manager";
-      homepage = "https://www.enpass.io/";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-      license = lib.licenses.unfree;
-      platforms = [
-        "x86_64-linux"
-        "i686-linux"
-      ];
-      maintainers = with lib.maintainers; [ ewok ];
-    };
-
     nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ dpkg ];
 
-    unpackPhase = "dpkg -X $src .";
     installPhase = ''
       mkdir -p $out/bin
       cp -r opt/enpass/*  $out/bin
@@ -127,12 +114,24 @@ let
         --unset QML2_IMPORT_PATH \
         --unset QT_PLUGIN_PATH
     '';
+
+    unpackPhase = "dpkg -X $src .";
+
+    meta = {
+      description = "Well known password manager";
+      homepage = "https://www.enpass.io/";
+      license = lib.licenses.unfree;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+      maintainers = with lib.maintainers; [ ewok ];
+
+      platforms = [
+        "x86_64-linux"
+        "i686-linux"
+      ];
+    };
   };
   updater = {
     update = stdenv.mkDerivation {
-      name = "enpass-update-script";
-      SCRIPT = toString ./update_script.py;
-
       buildInputs = with python3Packages; [
         python
         requests
@@ -141,6 +140,10 @@ let
         six
         attrs
       ];
+
+      SCRIPT = toString ./update_script.py;
+      name = "enpass-update-script";
+
       shellHook = ''
         exec python $SCRIPT --target pkgs/by-name/en/enpass/data.json --repo ${baseUrl}
       '';

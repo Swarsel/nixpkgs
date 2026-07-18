@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gevent,
   python,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "yappi";
   version = "1.7.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sumerc";
@@ -20,9 +19,6 @@ buildPythonPackage rec {
   };
 
   patches = [ ./tests.patch ];
-
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ gevent ];
 
   checkPhase = ''
@@ -31,13 +27,15 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "yappi" ];
 
   meta = {
     description = "Python profiler that supports multithreading and measuring CPU time";
-    mainProgram = "yappi";
     homepage = "https://github.com/sumerc/yappi";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "yappi";
   };
 }

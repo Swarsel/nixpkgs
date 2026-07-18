@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
   numpy,
-  setuptools,
-
   # tests
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyedflib";
   version = "0.1.42";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "holgern";
@@ -24,14 +21,8 @@ buildPythonPackage rec {
     hash = "sha256-KbySCsDjiS94U012KASRgHR2fuX090HlKUuPgsLC+xQ=";
   };
 
-  build-system = [
-    cython
-    numpy
-    setuptools
-  ];
-
-  pythonImportsCheck = [
-    "pyedflib"
+  nativeCheckInputs = [
+    pytestCheckHook
   ];
 
   # Otherwise, the module is imported from source and lacks the compiled artifacts
@@ -41,8 +32,16 @@ buildPythonPackage rec {
     cd pyedflib
   '';
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  build-system = [
+    cython
+    numpy
+    setuptools
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "pyedflib"
   ];
 
   meta = {

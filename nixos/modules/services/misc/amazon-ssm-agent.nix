@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -20,13 +20,14 @@ let
   '';
 
   sudoRule = {
-    users = [ "ssm-user" ];
     commands = [
       {
-        command = "ALL";
         options = [ "NOPASSWD" ];
+        command = "ALL";
       }
     ];
+
+    users = [ "ssm-user" ];
   };
 in
 {
@@ -47,12 +48,21 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    environment.etc."amazon/ssm/amazon-ssm-agent.json".source =
+      "${cfg.package}/etc/amazon/ssm/amazon-ssm-agent.json.template";
+
+    environment.etc."amazon/ssm/seelog.xml".source =
+      "${cfg.package}/etc/amazon/ssm/seelog.xml.template";
+
+    # Add user that Session Manager needs, and give it sudo.
+    # This is consistent with Amazon Linux 2 images.
+    security.sudo.extraRules = [ sudoRule ];
+    security.sudo-rs.extraRules = [ sudoRule ];
+
     # See https://github.com/aws/amazon-ssm-agent/blob/mainline/packaging/linux/amazon-ssm-agent.service
     systemd.services.amazon-ssm-agent = {
       inherit (cfg.package.meta) description;
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
 
       path = [
         fake-lsb-release
@@ -70,26 +80,19 @@ in
         RestartPreventExitStatus = 194;
         RestartSec = "90";
       };
-    };
 
-    # Add user that Session Manager needs, and give it sudo.
-    # This is consistent with Amazon Linux 2 images.
-    security.sudo.extraRules = [ sudoRule ];
-    security.sudo-rs.extraRules = [ sudoRule ];
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
+    };
 
     # On Amazon Linux 2 images, the ssm-user user is pretty much a
     # normal user with its own group. We do the same.
     users.groups.ssm-user = { };
+
     users.users.ssm-user = {
-      isNormalUser = true;
       group = "ssm-user";
+      isNormalUser = true;
     };
-
-    environment.etc."amazon/ssm/seelog.xml".source =
-      "${cfg.package}/etc/amazon/ssm/seelog.xml.template";
-
-    environment.etc."amazon/ssm/amazon-ssm-agent.json".source =
-      "${cfg.package}/etc/amazon/ssm/amazon-ssm-agent.json.template";
 
   };
 }

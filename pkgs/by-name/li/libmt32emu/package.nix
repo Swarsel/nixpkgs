@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  _experimental-update-script-combinators,
+  cmake,
   gitUpdater,
   nix,
   writeShellApplication,
-  _experimental-update-script-combinators,
-  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,30 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    # Otherwise x.y.z in version != x_y_z in tag, and bump to same version is attempted
-    unfixVersionScript = writeShellApplication {
-      name = "unfix-libmt32emu-version";
-
-      runtimeInputs = [
-        nix
-      ];
-
-      text = ''
-        export UPDATE_NIX_ATTR_PATH="''${UPDATE_NIX_ATTR_PATH:-libmt32emu}"
-
-        preUpdateScriptVersion="$(nix-instantiate . --eval --strict -A "$UPDATE_NIX_ATTR_PATH.version" | cut -d'"' -f2)"
-        unfixedVersion="''${preUpdateScriptVersion//\./_}"
-
-        pkgFile="$(nix-instantiate --eval -E "with import ./. {}; (builtins.unsafeGetAttrPos \"version\" $UPDATE_NIX_ATTR_PATH).file" | cut -d'"' -f2)"
-
-        sed -i -e "s/version = \"$preUpdateScriptVersion\"/version = \"$unfixedVersion\"/g" "$pkgFile"
-      '';
-    };
-
-    updateTagScript = gitUpdater {
-      rev-prefix = "libmt32emu_";
-    };
-
     # gitUpdater lacks an option for modifying new tag
     fixVersionScript = writeShellApplication {
       name = "fix-libmt32emu-version";
@@ -85,16 +61,40 @@ stdenv.mkDerivation (finalAttrs: {
       '';
     };
 
+    # Otherwise x.y.z in version != x_y_z in tag, and bump to same version is attempted
+    unfixVersionScript = writeShellApplication {
+      name = "unfix-libmt32emu-version";
+
+      runtimeInputs = [
+        nix
+      ];
+
+      text = ''
+        export UPDATE_NIX_ATTR_PATH="''${UPDATE_NIX_ATTR_PATH:-libmt32emu}"
+
+        preUpdateScriptVersion="$(nix-instantiate . --eval --strict -A "$UPDATE_NIX_ATTR_PATH.version" | cut -d'"' -f2)"
+        unfixedVersion="''${preUpdateScriptVersion//\./_}"
+
+        pkgFile="$(nix-instantiate --eval -E "with import ./. {}; (builtins.unsafeGetAttrPos \"version\" $UPDATE_NIX_ATTR_PATH).file" | cut -d'"' -f2)"
+
+        sed -i -e "s/version = \"$preUpdateScriptVersion\"/version = \"$unfixedVersion\"/g" "$pkgFile"
+      '';
+    };
+
     updateScript = _experimental-update-script-combinators.sequence [
       (lib.getExe finalAttrs.passthru.unfixVersionScript)
       (finalAttrs.passthru.updateTagScript.command)
       (lib.getExe finalAttrs.passthru.fixVersionScript)
     ];
+
+    updateTagScript = gitUpdater {
+      rev-prefix = "libmt32emu_";
+    };
   };
 
   meta = {
-    homepage = "https://munt.sourceforge.net/";
     description = "Library to emulate Roland MT-32, CM-32L, CM-64 and LAPC-I devices";
+    homepage = "https://munt.sourceforge.net/";
     license = with lib.licenses; [ lgpl21Plus ];
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.unix; # Not tested on ReactOS yet :)

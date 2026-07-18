@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
-  yara-x,
-  replxx,
-  readline,
   pkg-config,
+  qt6,
+  readline,
+  replxx,
+  yara-x,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
         ""
   '';
 
-  cmakeFlags = [
-    (lib.cmakeFeature "FETCHCONTENT_TRY_FIND_PACKAGE_MODE" "ALWAYS")
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    qt6.wrapQtAppsHook
   ];
 
   buildInputs = [
@@ -43,20 +45,20 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    qt6.wrapQtAppsHook
+  cmakeFlags = [
+    (lib.cmakeFeature "FETCHCONTENT_TRY_FIND_PACKAGE_MODE" "ALWAYS")
   ];
 
   meta = {
     description = "CAD tool for extracting bits from Mask ROM photographs";
     homepage = "https://github.com/travisgoodspeed/maskromtool";
     changelog = "https://github.com/travisgoodspeed/maskromtool/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       beerware
       gpl1Plus
     ];
+
     maintainers = with lib.maintainers; [ evanrichter ];
     mainProgram = "maskromtool";
   };

@@ -5,23 +5,23 @@
   appstream-glib,
   cargo,
   desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
-  rustPlatform,
-  rustc,
-  wrapGAppsHook4,
   gdk-pixbuf,
   glib,
   gst_all_1,
   gtk4,
   libadwaita,
+  meson,
+  ninja,
+  nix-update-script,
   openssl,
   pipewire,
+  pkg-config,
+  rustPlatform,
+  rustc,
   sqlite,
   wayland,
+  wrapGAppsHook4,
   zbar,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,16 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.6.2";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "Authenticator";
     tag = finalAttrs.version;
     hash = "sha256-UvHIVUed4rxmjliaZ7jnwCjiHyvUDihoJyG3G+fYtow=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-iOIGm3egVtVM6Eb3W5/ys9nQV5so0dnv2ZODjQwrVyw=";
+    domain = "gitlab.gnome.org";
   };
 
   strictDeps = true;
@@ -80,17 +75,22 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-iOIGm3egVtVM6Eb3W5/ys9nQV5so0dnv2ZODjQwrVyw=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Two-factor authentication code generator for GNOME";
-    mainProgram = "authenticator";
     homepage = "https://gitlab.gnome.org/World/Authenticator";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ austinbutler ];
-    teams = [ lib.teams.gnome-circle ];
     platforms = lib.platforms.linux;
+    mainProgram = "authenticator";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

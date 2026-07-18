@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,9 +15,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-B/DT8hdtOds9d/od5QInuRu5rBprxzJOfbuj3LkGCvk=";
   };
 
-  __structuredAttrs = true;
-
   cargoHash = "sha256-VSu68KPkoOLyva+A3+TtdTg48xZg0LNenMq+z9xoAVU=";
+  __structuredAttrs = true;
 
   meta = {
     description = "Cat files and directories with code outline for LLM coding agents";

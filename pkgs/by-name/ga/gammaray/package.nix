@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  elfutils,
+  kdePackages,
+  libbfd,
   pkg-config,
   qt6,
-  kdePackages,
   wayland,
-  elfutils,
-  libbfd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,8 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/KDAB/GammaRay";
     changelog = "https://github.com/KDAB/GammaRay/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ wineee ];
+    platforms = lib.platforms.linux;
     mainProgram = "gammaray";
   };
 })

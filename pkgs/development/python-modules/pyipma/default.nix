@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
-  mock,
   geopy,
+  mock,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyipma";
   version = "3.0.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dgomes";
@@ -23,13 +22,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-f1V+8So8TmR9Cu2fjD3B7EqeJd9e1G9cgCNytGul2Eo=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    geopy
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -39,11 +31,11 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "pyipma" ];
+  build-system = [ setuptools ];
 
-  disabledTests = [
-    # Test requires network access
-    "test_retrieve_returns_json_response_from_api"
+  dependencies = [
+    aiohttp
+    geopy
   ];
 
   disabledTestPaths = [
@@ -52,6 +44,14 @@ buildPythonPackage (finalAttrs: {
     "tests/test_location.py"
     "tests/test_sea_forecast.py"
   ];
+
+  disabledTests = [
+    # Test requires network access
+    "test_retrieve_returns_json_response_from_api"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyipma" ];
 
   meta = {
     description = "Library to retrieve information from Instituto Português do Mar e Atmosfera";

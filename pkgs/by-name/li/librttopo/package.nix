@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
   autoreconfHook,
-  validatePkgConfig,
+  fetchFromGitea,
   geos,
+  validatePkgConfig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "librttopo";
   version = "1.1.0";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitea {
-    domain = "git.osgeo.org";
     owner = "rttopo";
     repo = "librttopo";
     rev = "librttopo-${finalAttrs.version}";
     hash = "sha256-VxyQr4nBy4PS2IjabBZHvzejFPDNBgSNn528ZCf99EA=";
+    domain = "git.osgeo.org";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -42,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://git.osgeo.org/rttopo/librttopo";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.geospatial ];
   };
 })

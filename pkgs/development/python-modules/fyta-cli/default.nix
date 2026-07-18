@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   mashumaro,
   pytest-asyncio,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "fyta-cli";
   version = "0.7.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dontinelli";
@@ -22,13 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-+gPPECRMhhx7H+K3//PRH3ALyY2k6eQ/o9qAVHyyoes=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    aiohttp
-    mashumaro
-  ];
 
   doCheck = false; # Failed: async def functions are not natively supported.
 
@@ -39,9 +31,16 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
-  pythonImportsCheck = [ "fyta_cli" ];
+  build-system = [ hatchling ];
 
+  dependencies = [
+    aiohttp
+    mashumaro
+  ];
+
+  pyproject = true;
   pytestFlags = [ "--snapshot-update" ];
+  pythonImportsCheck = [ "fyta_cli" ];
 
   meta = {
     description = "Module to access the FYTA API";

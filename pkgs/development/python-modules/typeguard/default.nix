@@ -2,21 +2,20 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  glibcLocales,
+  mypy,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
-  typing-extensions,
-  mypy,
-  sphinxHook,
   sphinx-autodoc-typehints,
   sphinx-rtd-theme,
-  glibcLocales,
+  sphinxHook,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "typeguard";
   version = "4.5.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,6 +26,17 @@ buildPythonPackage rec {
     "out"
     "doc"
   ];
+
+  env.LC_ALL = "en_US.utf-8";
+
+  nativeCheckInputs = [
+    mypy
+    pytestCheckHook
+  ];
+
+  # To prevent test from writing out non-reproducible .pyc files
+  # https://github.com/agronholm/typeguard/blob/ca512c28132999da514f31b5e93ed2f294ca8f77/tests/test_typechecked.py#L641
+  preCheck = "export PYTHONDONTWRITEBYTECODE=1";
 
   build-system = [
     glibcLocales
@@ -41,17 +51,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  env.LC_ALL = "en_US.utf-8";
-
-  nativeCheckInputs = [
-    mypy
-    pytestCheckHook
-  ];
-
-  # To prevent test from writing out non-reproducible .pyc files
-  # https://github.com/agronholm/typeguard/blob/ca512c28132999da514f31b5e93ed2f294ca8f77/tests/test_typechecked.py#L641
-  preCheck = "export PYTHONDONTWRITEBYTECODE=1";
-
+  pyproject = true;
   pythonImportsCheck = [ "typeguard" ];
 
   meta = {

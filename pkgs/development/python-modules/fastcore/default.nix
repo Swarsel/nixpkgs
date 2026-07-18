@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   packaging,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "fastcore";
   version = "1.14.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fastai";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-lWCUVgu/4Udv3r5BPbBoyn+VyMJYWLWvlcPP89pcC+w=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ packaging ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ packaging ];
+  pyproject = true;
   pythonImportsCheck = [ "fastcore" ];
 
   meta = {

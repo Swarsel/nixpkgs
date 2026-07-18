@@ -1,34 +1,34 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  cmake,
-  pkg-config,
-  makeWrapper,
-  wrapGAppsHook3,
+  atkmm,
   bzip2,
+  cairo,
+  cmake,
+  dbus-glib,
   fontconfig,
   freetype,
+  gdk-pixbuf,
+  glib,
+  gtk3,
+  installShellFiles,
+  kdePackages,
   libGL,
   libx11,
   libxcursor,
-  libxrandr,
   libxi,
   libxkbcommon,
+  libxrandr,
+  makeWrapper,
+  pango,
+  pkg-config,
+  rclone,
+  rustPlatform,
   vulkan-loader,
   wayland,
+  wrapGAppsHook3,
   zenity,
-  kdePackages,
-  cairo,
-  pango,
-  atkmm,
-  gdk-pixbuf,
-  dbus-glib,
-  gtk3,
-  glib,
-  rclone,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -41,10 +41,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-S2yN0WLG2tUxkqR9xe466VE+QgDQcSNgyNjvjTjTY7Q=";
   };
-
-  cargoHash = "sha256-nRqyzRl10xRMLR5hxSaaMxBArgScoV2/iCvMkN9zH/4=";
-
-  dontWrapGApps = true;
 
   nativeBuildInputs = [
     cmake
@@ -67,6 +63,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gdk-pixbuf
     gtk3
   ];
+
+  cargoHash = "sha256-nRqyzRl10xRMLR5hxSaaMxBArgScoV2/iCvMkN9zH/4=";
 
   postInstall = ''
     install -Dm644 assets/linux/com.mtkennerly.ludusavi.metainfo.xml -t \
@@ -117,15 +115,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
         "''${gappsWrapperArgs[@]}"
     '';
 
+  dontWrapGApps = true;
+
   meta = {
     description = "Backup tool for PC game saves";
     homepage = "https://github.com/mtkennerly/ludusavi";
     changelog = "https://github.com/mtkennerly/ludusavi/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pasqui23
       megheaiulian
     ];
+
     mainProgram = "ludusavi";
   };
 })

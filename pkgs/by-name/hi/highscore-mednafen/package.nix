@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libchdr,
+  libhighscore,
+  libvorbis,
   meson,
   ninja,
   pkg-config,
-  libhighscore,
-  zstd,
-  libchdr,
-  libvorbis,
   unstableGitUpdater,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "e13c337a2cde6d5304f2a33311447280ef206a7a";
     hash = "sha256-nwvOkL1RzqXCqMFiDuSvNhgmujvxFYpdp4OScvEmppI=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/highscore";
 
   postPatch = ''
     substituteInPlace meson.build \
@@ -44,14 +42,16 @@ stdenv.mkDerivation (finalAttrs: {
     libvorbis
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/highscore";
+
   passthru.updateScript = unstableGitUpdater {
     hardcodeZeroVersion = true;
   };
 
   meta = {
+    inherit (libhighscore.meta) maintainers platforms;
     description = "Port of Mednafen to Highscore";
     homepage = "https://github.com/highscore-emu/mednafen-highscore";
     license = lib.licenses.gpl2Plus;
-    inherit (libhighscore.meta) maintainers platforms;
   };
 })

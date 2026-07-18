@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
   libxcrypt,
+  ncurses,
 }:
 
 stdenv.mkDerivation {
@@ -15,22 +15,18 @@ stdenv.mkDerivation {
     sha256 = "0487mh6s99ijqf1pfmbm302pa5i4pzmm8s439hdl1ffs5g8jqpqd";
   };
 
-  buildInputs = [
-    ncurses
-    libxcrypt
-  ];
-
-  unpackPhase = ''
-    mkdir -p src
-    pushd src
-    tar xvzf $src
-  '';
-
   postPatch = ''
     sed -i -e 's@-I/usr/include/ncurses@@' \
       -e 's@/usr/local@'"$out"@ makefile
   '';
 
+  buildInputs = [
+    ncurses
+    libxcrypt
+  ];
+
+  # Old K&R C sources fail under GCC 14+ default C standard (e.g. dosexp prototypes).
+  env.NIX_CFLAGS_COMPILE = "-std=gnu89 -Wno-implicit-function-declaration -Wno-implicit-int";
   buildPhase = "make -f makefile linux KFLAGS='-D_IO_file_flags' LNKFLAGS='-lcrypt -lresolv'";
 
   installPhase = ''
@@ -39,12 +35,15 @@ stdenv.mkDerivation {
     make -f makefile install
   '';
 
-  # Old K&R C sources fail under GCC 14+ default C standard (e.g. dosexp prototypes).
-  env.NIX_CFLAGS_COMPILE = "-std=gnu89 -Wno-implicit-function-declaration -Wno-implicit-int";
+  unpackPhase = ''
+    mkdir -p src
+    pushd src
+    tar xvzf $src
+  '';
 
   meta = {
-    homepage = "https://www.kermitproject.org/ck90.html";
     description = "Portable Scriptable Network and Serial Communication Software";
+    homepage = "https://www.kermitproject.org/ck90.html";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = with lib.platforms; linux;

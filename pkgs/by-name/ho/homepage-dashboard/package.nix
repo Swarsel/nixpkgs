@@ -1,25 +1,25 @@
 {
-  fetchFromGitHub,
-  node-gyp-build,
-  makeBinaryWrapper,
-  nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  python3,
-  stdenv,
-  unixtools,
-  cctools,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cctools,
+  fetchPnpmDeps,
+  makeBinaryWrapper,
   nixosTests,
+  node-gyp-build,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  python3,
+  unixtools,
   enableLocalIcons ? false,
 }:
 let
   dashboardIcons = fetchFromGitHub {
+    hash = "sha256-VOWQh8ZadsqNInoXcRKYuXfWn5MK0qJpuYEWgM7Pny8=";
     owner = "homarr-labs";
     repo = "dashboard-icons";
     rev = "f222c55843b888a82e9f2fe2697365841cbe6025"; # Until 2025-07-11
-    hash = "sha256-VOWQh8ZadsqNInoXcRKYuXfWn5MK0qJpuYEWgM7Pny8=";
   };
 
   installLocalIcons = ''
@@ -38,17 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "homepage";
     tag = "v${finalAttrs.version}";
     hash = "sha256-d6NNtaThDfVErGx7fFdqLdjx4UZXMN6CZUBpMZFZYhQ=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-jAcAbi++Wbyi07YdPuIhDAeNT4fJVAIxp51boD30x3k=";
   };
 
   nativeBuildInputs = [
@@ -117,20 +106,33 @@ stdenv.mkDerivation (finalAttrs: {
 
   doDist = false;
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-jAcAbi++Wbyi07YdPuIhDAeNT4fJVAIxp51boD30x3k=";
+    pnpm = pnpm_10;
+  };
+
   passthru = {
     tests = {
       inherit (nixosTests) homepage-dashboard;
     };
+
     updateScript = ./update.sh;
   };
 
   meta = {
     description = "Highly customisable dashboard with Docker and service API integrations";
-    changelog = "https://github.com/gethomepage/homepage/releases/tag/v${finalAttrs.version}";
-    mainProgram = "homepage";
     homepage = "https://gethomepage.dev";
+    changelog = "https://github.com/gethomepage/homepage/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ parthiv-krishna ];
     platforms = lib.platforms.all;
+    mainProgram = "homepage";
   };
 })

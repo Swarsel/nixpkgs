@@ -1,14 +1,12 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  zigpy,
+  buildHomeAssistantComponent,
   nix-update-script,
+  zigpy,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "AlexxIT";
-  domain = "xiaomi_gateway3";
   version = "4.1.4";
 
   src = fetchFromGitHub {
@@ -19,14 +17,15 @@ buildHomeAssistantComponent rec {
   };
 
   dependencies = [ zigpy ];
-
+  domain = "xiaomi_gateway3";
+  owner = "AlexxIT";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/AlexxIT/XiaomiGateway3/releases/tag/v${version}";
     description = "Home Assistant custom component for control Xiaomi Multimode Gateway (aka Gateway 3), Xiaomi Multimode Gateway 2, Aqara Hub E1 on default firmwares over LAN";
     homepage = "https://github.com/AlexxIT/XiaomiGateway3";
-    maintainers = with lib.maintainers; [ azuwis ];
+    changelog = "https://github.com/AlexxIT/XiaomiGateway3/releases/tag/v${version}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ azuwis ];
   };
 }

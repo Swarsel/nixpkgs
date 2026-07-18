@@ -1,22 +1,21 @@
 {
   lib,
   stdenv,
-  gcc_meta,
-  release_version,
-  version,
-  getVersionFile,
-  monorepoSrc ? null,
-  fetchpatch,
   autoreconfHook269,
   buildGccPackages,
   buildPackages,
-  which,
+  fetchpatch,
+  gcc_meta,
+  getVersionFile,
   python3,
+  release_version,
+  version,
+  which,
+  monorepoSrc ? null,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libgcc";
   inherit version;
-
+  pname = "libgcc";
   src = monorepoSrc;
 
   outputs = [
@@ -24,12 +23,54 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  strictDeps = true;
+  patches = [
+    (fetchpatch {
+      hash = "sha256-oEk0lnI96RlpALWpb7J+GnrtgQsFVqDO57I/zjiqqTk=";
+      name = "delete-MACHMODE_H.patch";
+      url = "https://github.com/gcc-mirror/gcc/commit/493aae4b034d62054d5e7e54dc06cd9a8be54e29.diff";
+    })
+    (fetchpatch {
+      hash = "sha256-92LIttIXdh12/lRhivb2JTPpqUmGBRn+uKmR5pzuveo=";
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-    buildGccPackages.libiberty
+      includes = [
+        "config/*"
+        "libgcc/configure.ac"
+      ];
+
+      name = "custom-threading-model.patch";
+      url = "https://github.com/gcc-mirror/gcc/commit/e5d853bbe9b05d6a00d98ad236f01937303e40c4.diff";
+    })
+    (fetchpatch {
+      hash = "sha256-QlxlTkWAK1dB7JiU5wz2iOW24gj3bFaeBpwb90oWwns=";
+
+      includes = [
+        "gcc/Makefile.in"
+        "gcc/configure.ac"
+        "libgcc/Makefile.in"
+        "libgcc/configure.ac"
+      ];
+
+      name = "no-pie-cflags.patch";
+      url = "https://github.com/gcc-mirror/gcc/commit/77144dd3b6736e0166156bb509590d924375a4f1.diff";
+    })
+    (fetchpatch {
+      hash = "sha256-BZmpHpJuuyDmQMwpQhSgCZO0Rg7kXt8rTiJAT+e0sUw=";
+      name = "no-target-system-root.patch";
+      url = "https://github.com/gcc-mirror/gcc/commit/9947930b7ae923010c5061fd8fa6b1ec4f22f161.diff";
+    })
+    (fetchpatch {
+      hash = "sha256-Cn7rvg1FI7H/26GzSe4pv5VW/gvwbwGqivAqEeawkwk=";
+      name = "regular-libdir-includedir.patch";
+      url = "https://inbox.sourceware.org/gcc-patches/20250717174911.1536129-1-git@JohnEricson.me/raw";
+    })
+    (getVersionFile "libgcc/force-regular-dirs.patch")
   ];
+
+  postPatch = ''
+    sourceRoot=$(readlink -e "./libgcc")
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook269
@@ -37,57 +78,17 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
-  patches = [
-    (fetchpatch {
-      name = "delete-MACHMODE_H.patch";
-      url = "https://github.com/gcc-mirror/gcc/commit/493aae4b034d62054d5e7e54dc06cd9a8be54e29.diff";
-      hash = "sha256-oEk0lnI96RlpALWpb7J+GnrtgQsFVqDO57I/zjiqqTk=";
-    })
-    (fetchpatch {
-      name = "custom-threading-model.patch";
-      url = "https://github.com/gcc-mirror/gcc/commit/e5d853bbe9b05d6a00d98ad236f01937303e40c4.diff";
-      hash = "sha256-92LIttIXdh12/lRhivb2JTPpqUmGBRn+uKmR5pzuveo=";
-      includes = [
-        "config/*"
-        "libgcc/configure.ac"
-      ];
-    })
-    (fetchpatch {
-      name = "no-pie-cflags.patch";
-      url = "https://github.com/gcc-mirror/gcc/commit/77144dd3b6736e0166156bb509590d924375a4f1.diff";
-      hash = "sha256-QlxlTkWAK1dB7JiU5wz2iOW24gj3bFaeBpwb90oWwns=";
-      includes = [
-        "gcc/Makefile.in"
-        "gcc/configure.ac"
-        "libgcc/Makefile.in"
-        "libgcc/configure.ac"
-      ];
-    })
-    (fetchpatch {
-      name = "no-target-system-root.patch";
-      url = "https://github.com/gcc-mirror/gcc/commit/9947930b7ae923010c5061fd8fa6b1ec4f22f161.diff";
-      hash = "sha256-BZmpHpJuuyDmQMwpQhSgCZO0Rg7kXt8rTiJAT+e0sUw=";
-    })
-    (fetchpatch {
-      name = "regular-libdir-includedir.patch";
-      url = "https://inbox.sourceware.org/gcc-patches/20250717174911.1536129-1-git@JohnEricson.me/raw";
-      hash = "sha256-Cn7rvg1FI7H/26GzSe4pv5VW/gvwbwGqivAqEeawkwk=";
-    })
-    (getVersionFile "libgcc/force-regular-dirs.patch")
+  configureFlags = [
+    "--disable-dependency-tracking"
+    "gcc_cv_target_thread_file=single"
+    # $CC cannot link binaries, let alone run then
+    "cross_compiling=true"
+    # Do not have dynamic linker without libc
+    "--enable-static"
+    "--disable-shared"
   ];
 
-  autoreconfFlags = "--install --force --verbose . libgcc";
-
-  postUnpack = ''
-    mkdir -p ./build
-    buildRoot=$(readlink -e "./build")
-  '';
-
-  postPatch = ''
-    sourceRoot=$(readlink -e "./libgcc")
-  '';
-
-  enableParallelBuilding = true;
+  makeFlags = [ "MULTIBUILDTOP:=../" ];
 
   preConfigure = ''
     cd "$buildRoot"
@@ -161,6 +162,37 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_COMPILE+=' -isystem ${stdenv.cc.cc}/lib/gcc/${stdenv.hostPlatform.config}/${version}/include-fixed'
   '';
 
+  # Set the variable back the way it was, see corresponding code in
+  # `preConfigure`.
+  postConfigure = lib.optionalString stdenv.hostPlatform.isMusl ''
+    NIX_CFLAGS_COMPILE=$NIX_CFLAGS_COMPILE_OLD
+  '';
+
+  doCheck = true;
+
+  postInstall = ''
+    install -c -m 644 gthr-default.h "$dev/include"
+  '';
+
+  autoreconfFlags = "--install --force --verbose . libgcc";
+
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    buildGccPackages.libiberty
+  ];
+
+  enableParallelBuilding = true;
+
+  postUnpack = ''
+    mkdir -p ./build
+    buildRoot=$(readlink -e "./build")
+  '';
+
   topLevelConfigureFlags = [
     "--build=${stdenv.buildPlatform.config}"
     "--host=${stdenv.buildPlatform.config}"
@@ -194,35 +226,6 @@ stdenv.mkDerivation (finalAttrs: {
       # of GCC 11, libgcc only cares if the version is greater than 2.19,
       # which is quite ancient, so this little lie should be fine.
       "--with-glibc-version=${buildPackages.glibc.version}";
-
-  configurePlatforms = [
-    "build"
-    "host"
-  ];
-
-  configureFlags = [
-    "--disable-dependency-tracking"
-    "gcc_cv_target_thread_file=single"
-    # $CC cannot link binaries, let alone run then
-    "cross_compiling=true"
-    # Do not have dynamic linker without libc
-    "--enable-static"
-    "--disable-shared"
-  ];
-
-  # Set the variable back the way it was, see corresponding code in
-  # `preConfigure`.
-  postConfigure = lib.optionalString stdenv.hostPlatform.isMusl ''
-    NIX_CFLAGS_COMPILE=$NIX_CFLAGS_COMPILE_OLD
-  '';
-
-  makeFlags = [ "MULTIBUILDTOP:=../" ];
-
-  postInstall = ''
-    install -c -m 644 gthr-default.h "$dev/include"
-  '';
-
-  doCheck = true;
 
   passthru = {
     isGNU = true;

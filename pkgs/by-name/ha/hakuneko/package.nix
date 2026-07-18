@@ -1,29 +1,30 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
+  alsa-lib,
   autoPatchelfHook,
   dpkg,
-  fetchurl,
+  libxscrnsaver,
+  libxtst,
   makeDesktopItem,
   makeWrapper,
-  udev,
-  stdenv,
-  lib,
-  wrapGAppsHook3,
-  alsa-lib,
-  nss,
   nspr,
+  nss,
   systemd,
-  libxtst,
-  libxscrnsaver,
+  udev,
+  wrapGAppsHook3,
 }:
 let
   desktopItem = makeDesktopItem {
-    desktopName = "HakuNeko Desktop";
-    genericName = "Manga & Anime Downloader";
     categories = [
       "Network"
       "FileTransfer"
     ];
+
+    desktopName = "HakuNeko Desktop";
     exec = "hakuneko";
+    genericName = "Manga & Anime Downloader";
     icon = "hakuneko-desktop";
     name = "hakuneko-desktop";
   };
@@ -34,21 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   src =
     {
-      "x86_64-linux" = fetchurl {
-        url = "https://github.com/manga-download/hakuneko/releases/download/v${finalAttrs.version}/hakuneko-desktop_${finalAttrs.version}_linux_amd64.deb";
-        sha256 = "06bb17d7a06bb0601053eaaf423f9176f06ff3636cc43ffc024438e1962dcd02";
-      };
       "i686-linux" = fetchurl {
-        url = "https://github.com/manga-download/hakuneko/releases/download/v${finalAttrs.version}/hakuneko-desktop_${finalAttrs.version}_linux_i386.deb";
         sha256 = "32017d26bafffaaf0a83dd6954d3926557014af4022a972371169c56c0e3d98b";
+        url = "https://github.com/manga-download/hakuneko/releases/download/v${finalAttrs.version}/hakuneko-desktop_${finalAttrs.version}_linux_i386.deb";
+      };
+
+      "x86_64-linux" = fetchurl {
+        sha256 = "06bb17d7a06bb0601053eaaf423f9176f06ff3636cc43ffc024438e1962dcd02";
+        url = "https://github.com/manga-download/hakuneko/releases/download/v${finalAttrs.version}/hakuneko-desktop_${finalAttrs.version}_linux_amd64.deb";
       };
     }
     ."${stdenv.hostPlatform.system}" or (throw "unsupported system ${stdenv.hostPlatform.system}");
-
-  dontBuild = true;
-  dontConfigure = true;
-  dontPatchELF = true;
-  dontWrapGApps = true;
 
   # TODO: migrate off autoPatchelfHook and use nixpkgs' electron
   nativeBuildInputs = [
@@ -67,11 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  unpackPhase = ''
-    # The deb file contains a setuid binary, so 'dpkg -x' doesn't work here
-    dpkg --fsys-tarfile $src | tar --extract
-  '';
-
   installPhase = ''
     cp -R usr "$out"
     # Overwrite existing .desktop file.
@@ -79,27 +71,40 @@ stdenv.mkDerivation (finalAttrs: {
        "$out/share/applications/hakuneko-desktop.desktop"
   '';
 
-  runtimeDependencies = [
-    (lib.getLib udev)
-  ];
-
   postFixup = ''
     makeWrapper $out/lib/hakuneko-desktop/hakuneko $out/bin/hakuneko \
       "''${gappsWrapperArgs[@]}"
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatchELF = true;
+  dontWrapGApps = true;
+
+  runtimeDependencies = [
+    (lib.getLib udev)
+  ];
+
+  unpackPhase = ''
+    # The deb file contains a setuid binary, so 'dpkg -x' doesn't work here
+    dpkg --fsys-tarfile $src | tar --extract
+  '';
+
   meta = {
     description = "Manga & Anime Downloader";
     homepage = "https://sourceforge.net/projects/hakuneko/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unlicense;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       nloomans
     ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     mainProgram = "hakuneko";
   };
 })

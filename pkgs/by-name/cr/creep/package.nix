@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fonttosfnt,
   libfaketime,
   mkfontscale,
-  fonttosfnt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Pretty sweet 4px wide pixel font";
     homepage = "https://github.com/romeovs/creep";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

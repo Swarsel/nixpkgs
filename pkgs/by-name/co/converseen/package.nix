@@ -4,9 +4,9 @@
   fetchFromGitHub,
   cmake,
   imagemagick,
+  nix-update-script,
   pkg-config,
   qt5,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -36,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     qt5.qttools
   ];
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -44,7 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/Faster3ck/Converseen/blob/${finalAttrs.src.rev}/CHANGELOG";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
-    mainProgram = "converseen";
     platforms = lib.platforms.all;
+    mainProgram = "converseen";
   };
 })

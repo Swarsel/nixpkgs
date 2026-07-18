@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cbor2,
   coincurve,
   crcmod,
   ecdsa,
   ed25519-blake2b,
-  fetchFromGitHub,
   py-sr25519-bindings,
   pycryptodome,
   pynacl,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "bip-utils";
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ebellocchia";
@@ -40,7 +39,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bip_utils" ];
 
   meta = {
@@ -48,6 +47,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/ebellocchia/bip_utils";
     changelog = "https://github.com/ebellocchia/bip_utils/blob/${src.tag}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       prusnak
       stargate01

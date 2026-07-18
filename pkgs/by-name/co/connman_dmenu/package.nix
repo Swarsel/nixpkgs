@@ -17,29 +17,29 @@ stdenv.mkDerivation {
     hash = "sha256-05MjFg+8rliYIAdOOHmP7DQhOTeYn5ZoCpZEdQeKLhg=";
   };
 
-  buildInputs = [
-    connman
-    dmenu
-  ];
-
-  dontBuild = true;
-
   # remove root requirement, see: https://github.com/march-linux/connman_dmenu/issues/3
   postPatch = ''
     sed -i '89,92d' connman_dmenu
   '';
+
+  buildInputs = [
+    connman
+    dmenu
+  ];
 
   installPhase = ''
     mkdir -p $out/bin
     cp connman_dmenu $out/bin/
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Dmenu wrapper for connmann";
-    mainProgram = "connman_dmenu";
     homepage = "https://github.com/march-linux/connman_dmenu";
     license = lib.licenses.free;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.all;
+    mainProgram = "connman_dmenu";
   };
 }

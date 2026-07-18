@@ -21,7 +21,7 @@ stdenv.mkDerivation {
     description = "Acoustic grand piano soundfont";
     homepage = "https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html";
     license = lib.licenses.cc-by-30;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

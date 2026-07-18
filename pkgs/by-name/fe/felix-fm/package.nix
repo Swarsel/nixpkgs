@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   bzip2,
   libgit2,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
   zlib,
-  zstd,
   zoxide,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-QslV0MVbIuiFDmd8A69+7nTPAUhDrn/dndZsIiNkeZ8=";
   };
 
-  cargoHash = "sha256-1JjvfXyjGUHIwJJAlI2pB829kHcPrVmKOp+msDk5Qp4=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -33,13 +31,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
-  nativeCheckInputs = [ zoxide ];
+  cargoHash = "sha256-1JjvfXyjGUHIwJJAlI2pB829kHcPrVmKOp+msDk5Qp4=";
 
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;
   };
 
-  buildFeatures = [ "zstd/pkg-config" ];
+  nativeCheckInputs = [ zoxide ];
 
   checkFlags = [
     # extra test files not shipped with the repository
@@ -47,6 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=state::tests::test_has_write_permission"
   ];
 
+  buildFeatures = [ "zstd/pkg-config" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

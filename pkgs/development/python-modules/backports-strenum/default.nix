@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
   pythonAtLeast,
@@ -10,9 +10,6 @@
 buildPythonPackage rec {
   pname = "backports-strenum";
   version = "1.3.1";
-  pyproject = true;
-
-  disabled = pythonAtLeast "3.11";
 
   src = fetchFromGitHub {
     owner = "clbarnes";
@@ -21,10 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-j5tALFrLeZ8k+GwAaq0ocmcQWvdWkRUHbOVq5Du4mu0=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  disabled = pythonAtLeast "3.11";
+  pyproject = true;
   pythonImportsCheck = [ "backports.strenum" ];
 
   meta = {

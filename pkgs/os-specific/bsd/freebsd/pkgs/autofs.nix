@@ -1,17 +1,20 @@
 {
-  mkDerivation,
   flex,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/autofs";
-  extraPaths = [
-    "sys/fs/autofs"
-  ];
   outputs = [
     "out"
     "debug"
   ];
+
   extraNativeBuildInputs = [
     flex
   ];
+
+  extraPaths = [
+    "sys/fs/autofs"
+  ];
+
+  path = "usr.sbin/autofs";
 }

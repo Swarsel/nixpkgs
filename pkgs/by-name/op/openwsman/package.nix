@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   curl,
   libxml2,
   pam,
+  pkg-config,
   sblim-sfcc,
 }:
 
@@ -33,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     sblim-sfcc
   ];
 
+  configureFlags = [ "--disable-more-warnings" ];
+
   cmakeFlags = [
     "-DCMAKE_BUILD_RUBY_GEM=no"
     "-DBUILD_PYTHON=no"
@@ -43,14 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
     appendToVar cmakeFlags "-DPACKAGE_ARCHITECTURE=$(uname -m)"
   '';
 
-  configureFlags = [ "--disable-more-warnings" ];
-
   meta = {
     description = "Open source implementation of WS-Management";
-    downloadPage = "https://github.com/Openwsman/openwsman/releases";
     homepage = "https://openwsman.github.io";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.linux; # PAM is not available on Darwin
+    downloadPage = "https://github.com/Openwsman/openwsman/releases";
   };
 })

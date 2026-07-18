@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  alsa-lib,
   fetchFromGitHub,
+  alsa-lib,
   fftwFloat,
   freetype,
   libGL,
@@ -14,13 +14,11 @@
   meson,
   ninja,
   pkg-config,
-
-  # empty means build all available plugins
-  plugins ? [ ],
-
-  buildVST3 ? true,
   buildLV2 ? true,
   buildVST2 ? true,
+  buildVST3 ? true,
+  # empty means build all available plugins
+  plugins ? [ ],
 }:
 
 let
@@ -42,6 +40,11 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
+  postPatch = ''
+    chmod +x scripts/*.sh
+    patchShebangs scripts
+  '';
+
   nativeBuildInputs = [
     pkg-config
     meson
@@ -59,12 +62,14 @@ stdenv.mkDerivation {
     lv2
   ];
 
-  env.NIX_CFLAGS_COMPILE = toString [ "-fpermissive" ];
+  mesonFlags = [
+    (lib.mesonBool "build-lv2" buildLV2)
+    (lib.mesonBool "build-vst2" buildVST2)
+    (lib.mesonBool "build-vst3" buildVST3)
+  ]
+  ++ lib.optional (plugins != [ ]) mesonPlugins;
 
-  postPatch = ''
-    chmod +x scripts/*.sh
-    patchShebangs scripts
-  '';
+  env.NIX_CFLAGS_COMPILE = toString [ "-fpermissive" ];
 
   postFixup =
     let
@@ -81,16 +86,9 @@ stdenv.mkDerivation {
       done
     '';
 
-  mesonFlags = [
-    (lib.mesonBool "build-lv2" buildLV2)
-    (lib.mesonBool "build-vst2" buildVST2)
-    (lib.mesonBool "build-vst3" buildVST3)
-  ]
-  ++ lib.optional (plugins != [ ]) mesonPlugins;
-
   meta = {
-    homepage = "http://distrho.sourceforge.net/ports";
     description = "Linux audio plugins and LV2 ports";
+
     longDescription = ''
       You can override this package to only include some plugins like so:
 
@@ -136,6 +134,9 @@ stdenv.mkDerivation {
       - vitalium
       - wolpertinger
     '';
+
+    homepage = "http://distrho.sourceforge.net/ports";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Only
@@ -144,6 +145,7 @@ stdenv.mkDerivation {
       lgpl3Only
       mit
     ];
+
     maintainers = with lib.maintainers; [ bandithedoge ];
     platforms = lib.systems.inspect.patternLogicalAnd lib.systems.inspect.patterns.isLinux lib.systems.inspect.patterns.isx86;
   };

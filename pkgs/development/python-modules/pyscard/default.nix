@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   pcsclite,
   pkg-config,
   pytestCheckHook,
   setuptools,
-  stdenv,
   swig,
 }:
 
 buildPythonPackage rec {
   pname = "pyscard";
   version = "2.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LudovicRousseau";
@@ -21,14 +20,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-MW/Cg7Ta/LdY/pOomsEecVIt62rc5qSAGjpJl4m+ruM=";
   };
-
-  build-system = [ setuptools ];
-
-  nativeBuildInputs = [ swig ] ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ pkg-config ];
-
-  buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ pcsclite ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -40,6 +31,12 @@ buildPythonPackage rec {
       --replace-fail "libpcsclite.so.1" \
                 "${lib.getLib pcsclite}/lib/libpcsclite${stdenv.hostPlatform.extensions.sharedLibrary}"
   '';
+
+  nativeBuildInputs = [ swig ] ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ pkg-config ];
+  buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ pcsclite ];
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Smartcard library for python";

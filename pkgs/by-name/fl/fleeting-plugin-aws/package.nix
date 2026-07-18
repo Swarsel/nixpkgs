@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitLab,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,6 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-cRcIc/+odubxVNHOqruWFcA5aOc/GeIJIoYOdWq2ldc=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   # Needed for "fleeting-plugin-aws -version" to not show "dev".
   #
@@ -32,10 +34,6 @@ buildGoModule (finalAttrs: {
       "-X ${ldflagsPackageVariablePrefix}.REFERENCE=v${finalAttrs.version}"
     ];
 
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   versionCheckProgramArg = "-version";
 
   passthru = {
@@ -46,7 +44,7 @@ buildGoModule (finalAttrs: {
     description = "GitLab fleeting plugin for AWS";
     homepage = "https://gitlab.com/gitlab-org/fleeting/plugins/aws";
     license = lib.licenses.mit;
-    mainProgram = "fleeting-plugin-aws";
     maintainers = with lib.maintainers; [ commiterate ];
+    mainProgram = "fleeting-plugin-aws";
   };
 })

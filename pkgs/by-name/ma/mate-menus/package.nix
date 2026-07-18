@@ -4,13 +4,13 @@
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  pkg-config,
   gettext,
+  gitUpdater,
   glib,
   gobject-introspection,
   mate-common,
+  pkg-config,
   python3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-GAc9DPsXdswmyNKlbY6cyHBWO2OSKCBygtzttNHN/p4=";
   };
+
   nativeBuildInputs = [
     autoconf-archive
     autoreconfHook
@@ -45,20 +46,22 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-menus";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-menus";
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Menu system for MATE";
     homepage = "https://github.com/mate-desktop/mate-menus";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
     ];
+
     platforms = lib.platforms.unix;
+    broken = stdenv.hostPlatform.isDarwin;
     teams = [ lib.teams.mate ];
   };
 })

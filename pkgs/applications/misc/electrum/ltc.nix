@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  wrapQtAppsHook,
   python3,
-  zbar,
-  secp256k1,
-  enableQt ? true,
   qtwayland,
+  secp256k1,
+  wrapQtAppsHook,
+  zbar,
+  enableQt ? true,
 }:
 
 let
@@ -33,34 +33,53 @@ let
   # Not provided in official source releases, which are what upstream signs.
   tests = fetchFromGitHub {
     owner = "pooler";
-    repo = "electrum-ltc";
-    rev = version;
-    sha256 = "sha256-qu72LIV07pgHqvKv+Kcw9ZmNk6IBz+4/vdJELlT5tE4=";
 
     postFetch = ''
       mv $out ./all
       mv ./all/electrum_ltc/tests $out
     '';
+
+    repo = "electrum-ltc";
+    rev = version;
+    sha256 = "sha256-qu72LIV07pgHqvKv+Kcw9ZmNk6IBz+4/vdJELlT5tE4=";
   };
 
 in
 
 python3.pkgs.buildPythonApplication {
-  pname = "electrum-ltc";
   inherit version;
-  format = "setuptools";
+  pname = "electrum-ltc";
 
   src = fetchurl {
     url = "https://electrum-ltc.org/download/Electrum-LTC-${version}.tar.gz";
     hash = "sha256-7F28cve+HD5JDK5igfkGD/NvTCfA33g+DmQJ5mwPM9Q=";
   };
 
-  postUnpack = ''
-    # can't symlink, tests get confused
-    cp -ar ${tests} $sourceRoot/electrum_ltc/tests
+  patches = [
+    # electrum-ltc attempts to pin to aiorpcX < 0.23, but nixpkgs
+    # has moved to newer versions.
+    #
+    # electrum-ltc hasn't been updated in some time, so we replicate
+    # the patch from electrum (BTC) and alter it to be usable with
+    # electrum-ltc.
+    #
+    # Similar to the BTC patch, we need to overwrite the symlink
+    # at electrum_ltc/electrum-ltc with the patched run_electrum
+    # in postPatch.
+    ./ltc-aiorpcX-version-bump.patch
+  ];
+
+  postPatch = ''
+    # copy the patched `/run_electrum` over `/electrum/electrum`
+    # so the aiorpcx compatibility patch is used
+    cp run_electrum electrum_ltc/electrum-ltc
+
+    # refresh stale generated code, per electrum_ltc/paymentrequest.py line 40
+    protoc --proto_path=electrum_ltc/ --python_out=electrum_ltc/ electrum_ltc/paymentrequest.proto
   '';
 
   nativeBuildInputs = lib.optionals enableQt [ wrapQtAppsHook ];
+  buildInputs = lib.optional stdenv.hostPlatform.isLinux qtwayland;
 
   propagatedBuildInputs =
     with python3.pkgs;
@@ -93,29 +112,6 @@ python3.pkgs.buildPythonApplication {
       qdarkstyle
     ];
 
-  patches = [
-    # electrum-ltc attempts to pin to aiorpcX < 0.23, but nixpkgs
-    # has moved to newer versions.
-    #
-    # electrum-ltc hasn't been updated in some time, so we replicate
-    # the patch from electrum (BTC) and alter it to be usable with
-    # electrum-ltc.
-    #
-    # Similar to the BTC patch, we need to overwrite the symlink
-    # at electrum_ltc/electrum-ltc with the patched run_electrum
-    # in postPatch.
-    ./ltc-aiorpcX-version-bump.patch
-  ];
-
-  postPatch = ''
-    # copy the patched `/run_electrum` over `/electrum/electrum`
-    # so the aiorpcx compatibility patch is used
-    cp run_electrum electrum_ltc/electrum-ltc
-
-    # refresh stale generated code, per electrum_ltc/paymentrequest.py line 40
-    protoc --proto_path=electrum_ltc/ --python_out=electrum_ltc/ electrum_ltc/paymentrequest.proto
-  '';
-
   preBuild = ''
     sed -i 's,usr_share = .*,usr_share = "'$out'/share",g' setup.py
     substituteInPlace ./electrum_ltc/ecc_fast.py \
@@ -132,6 +128,16 @@ python3.pkgs.buildPythonApplication {
         sed -i '/qdarkstyle/d' contrib/requirements/requirements.txt
       ''
   );
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    pyaes
+    pycryptodomex
+  ];
+
+  postCheck = ''
+    $out/bin/electrum-ltc help >/dev/null
+  '';
 
   postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
     # Despite setting usr_share above, these files are installed under
@@ -151,15 +157,6 @@ python3.pkgs.buildPythonApplication {
     wrapQtApp $out/bin/electrum-ltc
   '';
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    pyaes
-    pycryptodomex
-  ];
-  buildInputs = lib.optional stdenv.hostPlatform.isLinux qtwayland;
-
-  enabledTestPaths = [ "electrum_ltc/tests" ];
-
   disabledTests = [
     "test_loop" # test tries to bind 127.0.0.1 causing permission error
     "test_is_ip_address" # fails spuriously https://github.com/spesmilo/electrum/issues/7307
@@ -170,22 +167,28 @@ python3.pkgs.buildPythonApplication {
     "test_reestablish_with_old_state"
   ];
 
-  postCheck = ''
-    $out/bin/electrum-ltc help >/dev/null
+  enabledTestPaths = [ "electrum_ltc/tests" ];
+  format = "setuptools";
+
+  postUnpack = ''
+    # can't symlink, tests get confused
+    cp -ar ${tests} $sourceRoot/electrum_ltc/tests
   '';
 
   meta = {
     description = "Lightweight Litecoin Client";
-    mainProgram = "electrum-ltc";
+
     longDescription = ''
       Electrum-LTC is a simple, but powerful Litecoin wallet. A unique secret
       phrase (or “seed”) leaves intruders stranded and your peace of mind
       intact. Keep it on paper, or in your head... and never worry about losing
       your litecoins to theft or hardware failure.
     '';
+
     homepage = "https://electrum-ltc.org/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ bbjubjub ];
+    platforms = lib.platforms.all;
+    mainProgram = "electrum-ltc";
   };
 }

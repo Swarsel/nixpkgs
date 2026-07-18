@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   mpmath,
   numpy,
-  scipy,
-
+  pytest-xdist,
   # tests
   pytestCheckHook,
-  pytest-xdist,
+  scipy,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hankel";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "steven-murray";
@@ -28,6 +24,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-/5PvbH8zz2siLS1YJYRSrl/Cpi0WToBu1TJhlek8VEE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-xdist
+  ];
 
   build-system = [
     setuptools
@@ -40,17 +41,13 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  pythonImportsCheck = [ "hankel" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-xdist
-  ];
-
   disabledTests = [
     # ValueError: Calling nonzero on 0d arrays is not allowed.
     "test_nu0"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "hankel" ];
 
   meta = {
     description = "Implementation of Ogata's (2005) method for Hankel transforms";

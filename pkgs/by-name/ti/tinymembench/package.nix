@@ -22,11 +22,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/ssvb/tinymembench";
     description = "Simple benchmark for memory throughput and latency";
+    homepage = "https://github.com/ssvb/tinymembench";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ lorenz ];
     platforms = lib.platforms.linux;
     mainProgram = "tinymembench";
-    maintainers = with lib.maintainers; [ lorenz ];
   };
 }

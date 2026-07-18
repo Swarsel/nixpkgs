@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aioruckus";
   version = "0.46.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ms264556";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-17vcYdggtoeAtGShshseBMB4PSiIOf00nRNIHOAP9Jw=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [
     hatch-vcs
@@ -35,14 +40,6 @@ buildPythonPackage rec {
     xmltodict
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "aioruckus" ];
-
   disabledTests = [
     # Those tests require a local ruckus device
     "test_ap_info"
@@ -54,6 +51,9 @@ buildPythonPackage rec {
     # Network access to Ruckus Cloud API
     "test_r1_connect_no_webserver_error"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aioruckus" ];
 
   meta = {
     description = "Python client for Ruckus Unleashed and Ruckus ZoneDirector";

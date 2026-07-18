@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   mkfontscale,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -34,9 +34,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/molarmanful/kirsch";
     changelog = "https://github.com/molarmanful/kirsch/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       ejiektpobehuk
     ];
+
+    platforms = lib.platforms.all;
   };
 })

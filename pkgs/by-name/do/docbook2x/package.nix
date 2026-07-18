@@ -1,19 +1,19 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  texinfo,
-  perlPackages,
+  fetchurl,
+  bash,
+  docbook_xml_dtd_43,
+  gnused,
   groff,
+  iconv,
+  libiconv,
   libxml2,
   libxslt,
-  gnused,
-  libiconv,
-  iconv,
-  opensp,
-  docbook_xml_dtd_43,
-  bash,
   makeWrapper,
+  opensp,
+  perlPackages,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
   # This patch makes sure that `docbook2texi --to-stdout' actually
   # writes its output to stdout instead of creating a file.
   patches = [ ./db2x_texixml-to-stdout.patch ];
-
   strictDeps = true;
+
   nativeBuildInputs = [
     makeWrapper
     perlPackages.perl
@@ -37,6 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     libxslt
     iconv
   ];
+
   buildInputs = [
     groff
     libxml2
@@ -95,8 +96,9 @@ stdenv.mkDerivation (finalAttrs: {
       into the traditional Unix man page format and the GNU Texinfo
       format.
     '';
-    license = lib.licenses.mit;
+
     homepage = "https://docbook2x.sourceforge.net/";
+    license = lib.licenses.mit;
     platforms = lib.platforms.all;
   };
 })

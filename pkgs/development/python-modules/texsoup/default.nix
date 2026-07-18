@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "texsoup";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alvinwan";
@@ -21,12 +20,13 @@ buildPythonPackage (finalAttrs: {
 
   nativeBuildInputs = [ setuptools ];
 
-  pythonImportsCheck = [ "TexSoup" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "TexSoup" ];
 
   meta = {
     description = "Fault-tolerant Python3 package for searching, navigating, and modifying LaTeX documents";

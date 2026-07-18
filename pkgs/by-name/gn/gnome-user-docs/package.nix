@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "User and system administration help for the GNOME desktop";
     homepage = "https://help.gnome.org/users/gnome-help/";
     license = lib.licenses.cc-by-30;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.gnome ];
   };
 })

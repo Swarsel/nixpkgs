@@ -29,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Convert HTML to plain text";
-    mainProgram = "html2text";
     homepage = "https://gitlab.com/grobian/html2text";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.eikek ];
+    platforms = lib.platforms.unix;
+    mainProgram = "html2text";
   };
 })

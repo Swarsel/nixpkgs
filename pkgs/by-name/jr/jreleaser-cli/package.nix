@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 stdenv.mkDerivation rec {
   pname = "jreleaser-cli";
@@ -16,8 +16,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/share/java/ $out/bin/
     cp $src $out/share/java/${pname}.jar
@@ -25,11 +23,13 @@ stdenv.mkDerivation rec {
       --add-flags "-jar $out/share/java/${pname}.jar"
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://jreleaser.org/";
     description = "Release projects quickly and easily";
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    homepage = "https://jreleaser.org/";
     license = lib.licenses.asl20;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = [ lib.maintainers.i-al-istannen ];
     mainProgram = "jreleaser-cli";
   };

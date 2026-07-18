@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  olm,
+  buildGoModule,
   nix-update-script,
+  olm,
   versionCheckHook,
   # This option enables the use of an experimental pure-Go implementation of
   # the Olm protocol instead of libolm for end-to-end encryption. Using goolm
@@ -15,22 +15,18 @@
 buildGoModule rec {
   pname = "mautrix-slack";
   version = "26.06";
-  tag = "v0.2606.0";
 
   src = fetchFromGitHub {
+    inherit tag;
     owner = "mautrix";
     repo = "slack";
-    inherit tag;
     hash = "sha256-Ug4Na9qt140hVKkDQHqUCu4uijJzjJka52noZob/mkc=";
   };
 
-  vendorHash = "sha256-a/3JHm3kR5edozVB17fCTwbm2awBhUvJn0wUSvLq/GY=";
-
   buildInputs = lib.optional (!withGoolm) olm;
-  tags = lib.optional withGoolm "goolm";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  vendorHash = "sha256-a/3JHm3kR5edozVB17fCTwbm2awBhUvJn0wUSvLq/GY=";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -39,6 +35,8 @@ buildGoModule rec {
     "main.Tag=${tag}"
   ];
 
+  tag = "v0.2606.0";
+  tags = lib.optional withGoolm "goolm";
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,14 +14,16 @@ buildOctavePackage rec {
   };
 
   meta = {
-    homepage = "https://gnu-octave.github.io/packages/ocl/";
-    license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ ravenjoad ];
     description = "Use OpenCL for parallelization";
+
     longDescription = ''
       Package using OpenCL for parallelization, mostly suitable to
       Single-Instruction-Multiple-Data (SIMD) computations, selectively
       using available OpenCL hardware and drivers.
     '';
+
+    homepage = "https://gnu-octave.github.io/packages/ocl/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ ravenjoad ];
   };
 }

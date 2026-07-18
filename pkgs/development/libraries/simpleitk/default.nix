@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  swig,
-  lua,
   elastix,
   itk,
+  lua,
+  swig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     swig
   ];
+
   buildInputs = [
     elastix
     lua
@@ -38,11 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.simpleitk.org";
     description = "Simplified interface to ITK";
+    homepage = "https://www.simpleitk.org";
     changelog = "https://github.com/SimpleITK/SimpleITK/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.asl20;
   };
 })

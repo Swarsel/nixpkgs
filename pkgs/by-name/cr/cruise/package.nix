@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Zx1rZl5ljlsBNV1eQKPtQ+SgJV9l5rS8hwBe8nX9dYQ=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -25,7 +24,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/NucleoFusion/cruise";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ greatnatedev ];
-    mainProgram = "cruise";
     platforms = lib.platforms.linux;
+    mainProgram = "cruise";
   };
 })

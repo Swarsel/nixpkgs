@@ -4,8 +4,8 @@
   lapack-reference,
   openblas,
   openmpCheckPhaseHook,
-  isILP64 ? false,
   blasProvider ? openblas,
+  isILP64 ? false,
 }:
 
 let
@@ -179,33 +179,13 @@ in
 assert isILP64 -> blasImplementation == "mkl" || blasProvider'.blas64;
 
 stdenv.mkDerivation {
-  pname = "blas";
   inherit version;
+  pname = "blas";
 
   outputs = [
     "out"
     "dev"
   ];
-
-  propagatedNativeBuildInputs = [
-    openmpCheckPhaseHook
-  ];
-
-  meta = (blasProvider'.meta or { }) // {
-    description = "${lib.getName blasProvider} with just the BLAS C and FORTRAN ABI";
-  };
-
-  passthru = {
-    inherit isILP64;
-    provider = blasProvider';
-    implementation = blasImplementation;
-  };
-
-  dontBuild = true;
-  dontConfigure = true;
-  unpackPhase = "src=$PWD";
-
-  dontPatchELF = true;
 
   installPhase = (
     ''
@@ -314,4 +294,24 @@ stdenv.mkDerivation {
       ln -sf ${blasProvider'}/include/* $dev/include
     ''
   );
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatchELF = true;
+
+  propagatedNativeBuildInputs = [
+    openmpCheckPhaseHook
+  ];
+
+  unpackPhase = "src=$PWD";
+
+  passthru = {
+    inherit isILP64;
+    implementation = blasImplementation;
+    provider = blasProvider';
+  };
+
+  meta = (blasProvider'.meta or { }) // {
+    description = "${lib.getName blasProvider} with just the BLAS C and FORTRAN ABI";
+  };
 }

@@ -1,14 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "kanarenshu";
   version = "0.1.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "nuixyz";
@@ -18,6 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ES9+l6aDY8Y38yi4ufw2bpBPCW58L2oSlfXzh1TWGRE=";
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dlms-cosem,
-  fetchFromGitHub,
   pytestCheckHook,
   pythonAtLeast,
   serialx,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dsmr-parser";
   version = "1.11.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ndokter";
@@ -22,8 +21,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-2q2e1/xt8a24QmACZUc9zWOnAiFhEYMg+44kOlx1JAk=";
   };
 
-  pythonRelaxDeps = [ "dlms_cosem" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,9 +30,9 @@ buildPythonPackage (finalAttrs: {
     tailer
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dsmr_parser" ];
+  pythonRelaxDeps = [ "dlms_cosem" ];
 
   meta = {
     description = "Python module to parse Dutch Smart Meter Requirements (DSMR)";

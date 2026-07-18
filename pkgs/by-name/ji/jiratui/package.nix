@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "jiratui";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "whyisdifficult";
@@ -21,6 +20,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.9.2,<0.10.0" "uv_build>=0.9.2"
   '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   build-system = with python3Packages; [
     uv-build
@@ -43,16 +45,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ textual.optional-dependencies.syntax;
 
-  pythonRelaxDeps = [
-    "click"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "jiratui"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  pythonRelaxDeps = [
+    "click"
+  ];
+
   versionCheckProgramArg = "version";
 
   meta = {

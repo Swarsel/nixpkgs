@@ -1,9 +1,9 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
-  ghc,
   cabal-install,
+  ghc,
+  mkDerivation,
 }:
 
 mkDerivation {
@@ -11,8 +11,8 @@ mkDerivation {
   version = "0.5-unstable-2025-06-13";
 
   src = fetchFromGitHub {
-    repo = "cubical-mini";
     owner = "cmcmA20";
+    repo = "cubical-mini";
     rev = "1776874d13d0b811e6eeb70d0e5a52b4d2a978d2";
     hash = "sha256-UxWOS+uzP9aAaMdSueA2CAuzWkImGAoKxroarcgpk+w=";
   };
@@ -34,10 +34,10 @@ mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/cmcmA20/cubical-mini";
     description = "Nonstandard library for Cubical Agda";
+    homepage = "https://github.com/cmcmA20/cubical-mini";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ thelissimus ];
+    platforms = lib.platforms.unix;
   };
 }

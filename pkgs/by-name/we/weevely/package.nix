@@ -1,16 +1,15 @@
 {
   lib,
   fetchFromGitHub,
+  installShellFiles,
+  makeWrapper,
   python3,
   python3Packages,
-  makeWrapper,
-  installShellFiles,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "weevely";
   version = "4.0.2-unstable-2024-04-29";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "epinna";
@@ -45,12 +44,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
+  pyproject = false;
+
   meta = {
     description = "Weaponized web shell";
     homepage = "https://github.com/epinna/weevely3";
-    mainProgram = "weevely";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "weevely";
   };
 })

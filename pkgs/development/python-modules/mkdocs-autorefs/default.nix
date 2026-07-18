@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   markdown,
-  mkdocs-material,
-  pytestCheckHook,
-  pdm-backend,
   markupsafe,
+  mkdocs-material,
+  pdm-backend,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-autorefs";
   version = "1.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkdocstrings";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
       --replace 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -33,8 +33,6 @@ buildPythonPackage rec {
     markupsafe
     mkdocs-material
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTestPaths = [
     # Circular dependencies
@@ -47,6 +45,7 @@ buildPythonPackage rec {
     "test_reference_implicit_with_code_inlinehilite_python"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs_autorefs" ];
 
   meta = {

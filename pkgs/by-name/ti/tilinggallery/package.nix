@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   fontconfig,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,16 +18,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-k6AHNvizXitrdY/K13B/eVBCvdmfVou7Zv3tslHA4T8=";
   };
 
-  cargoHash = "sha256-xr+gVDaxGtu7U/HaJoFXzNztvp+LNYAGuMqKA9QyXHg=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ fontconfig ];
-
+  cargoHash = "sha256-xr+gVDaxGtu7U/HaJoFXzNztvp+LNYAGuMqKA9QyXHg=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI tool for generating aperiodic tilings";
+
     longDescription = ''
       Tiling Gallery is a Rust-based CLI tool for generating SVG
       images of two types of aperiodic tilings:
@@ -39,6 +37,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       This project is ideal for generating mathematical and artistic
       patterns based on non-periodic tilings.
     '';
+
     homepage = "https://github.com/roothch/TilingGallery";
     changelog = "https://github.com/roothch/TilingGallery/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;

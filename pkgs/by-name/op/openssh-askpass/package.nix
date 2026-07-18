@@ -1,20 +1,16 @@
 {
   lib,
   stdenv,
-  openssh,
   gtk3,
+  openssh,
   pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "openssh-askpass";
   inherit (openssh) src version;
-
+  pname = "openssh-askpass";
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ gtk3 ];
-
-  sourceRoot = "${openssh.pname}-${finalAttrs.version}/contrib";
   makeFlags = "gnome-ssh-askpass3";
-  dontConfigure = true;
 
   installPhase = ''
     runHook preInstall
@@ -22,6 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
     cp -a gnome-ssh-askpass3 $out/libexec/gtk-ssh-askpass
     runHook postInstall
   '';
+
+  dontConfigure = true;
+  sourceRoot = "${openssh.pname}-${finalAttrs.version}/contrib";
 
   meta = {
     description = "A passphrase dialog for OpenSSH and GTK";

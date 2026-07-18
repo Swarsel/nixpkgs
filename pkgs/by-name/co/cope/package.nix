@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  perlPackages,
   makeWrapper,
+  perlPackages,
 }:
 perlPackages.buildPerlPackage {
   pname = "cope";
@@ -68,10 +68,12 @@ perlPackages.buildPerlPackage {
   meta = {
     description = "Colourful wrapper for terminal programs";
     homepage = "https://github.com/deftdawg/cope";
+
     license = with lib.licenses; [
       artistic1
       gpl1Plus
     ];
+
     maintainers = with lib.maintainers; [ deftdawg ];
   };
 }

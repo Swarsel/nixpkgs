@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchurl,
-  fig2dev,
-  texliveSmall,
-  ghostscript,
   colm,
+  fig2dev,
+  ghostscript,
+  texliveSmall,
   build-manual ? false,
 }:
 
 let
   generic =
     {
-      version,
-      sha256,
-      broken ? false,
       license,
+      sha256,
+      version,
+      broken ? false,
     }:
     stdenv.mkDerivation rec {
-      pname = "ragel";
       inherit version;
+      pname = "ragel";
 
       src = fetchurl {
-        url = "https://www.colm.net/files/ragel/${pname}-${version}.tar.gz";
         inherit sha256;
+        url = "https://www.colm.net/files/ragel/${pname}-${version}.tar.gz";
       };
 
       buildInputs = lib.optionals build-manual [
@@ -32,41 +32,39 @@ let
         texliveSmall
       ];
 
+      configureFlags = [ "--with-colm=${colm}" ];
+      env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu++98";
+
       preConfigure = lib.optionalString build-manual ''
         sed -i "s/build_manual=no/build_manual=yes/g" DIST
       '';
 
-      configureFlags = [ "--with-colm=${colm}" ];
-
-      env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu++98";
-
       doCheck = true;
-
       enableParallelBuilding = true;
 
       meta = {
-        homepage = "https://www.colm.net/open-source/ragel/";
-        description = "State machine compiler";
-        mainProgram = "ragel";
         inherit broken license;
-        platforms = lib.platforms.unix;
+        description = "State machine compiler";
+        homepage = "https://www.colm.net/open-source/ragel/";
         maintainers = with lib.maintainers; [ pSub ];
+        platforms = lib.platforms.unix;
+        mainProgram = "ragel";
       };
     };
 
 in
 
 {
-  ragelStable = generic {
-    version = "6.10";
-    sha256 = "0gvcsl62gh6sg73nwaxav4a5ja23zcnyxncdcdnqa2yjcpdnw5az";
-    license = lib.licenses.gpl2;
-  };
-
   ragelDev = generic {
     version = "7.0.0.12";
-    sha256 = "0x3si355lv6q051lgpg8bpclpiq5brpri5lv3p8kk2qhzfbyz69r";
-    license = lib.licenses.mit;
     broken = stdenv.hostPlatform.isDarwin;
+    license = lib.licenses.mit;
+    sha256 = "0x3si355lv6q051lgpg8bpclpiq5brpri5lv3p8kk2qhzfbyz69r";
+  };
+
+  ragelStable = generic {
+    version = "6.10";
+    license = lib.licenses.gpl2;
+    sha256 = "0gvcsl62gh6sg73nwaxav4a5ja23zcnyxncdcdnqa2yjcpdnw5az";
   };
 }

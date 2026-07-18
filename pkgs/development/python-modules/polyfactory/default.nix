@@ -1,32 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  hatchling,
-
   # dependencies
   aiosqlite,
+  buildPythonPackage,
   email-validator,
   faker,
+  # build-system
+  hatchling,
   hypothesis,
   msgspec,
   pydantic,
   pymongo,
-  sqlalchemy,
-  typing-extensions,
-
   # tests
   pytest-asyncio,
   pytestCheckHook,
+  pythonAtLeast,
+  sqlalchemy,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "polyfactory";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "litestar-org";
@@ -34,6 +30,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-KcruZTaCUHalfQtaJmj3BHF220Ccd3LKn+my/LuYroI=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
 
   build-system = [ hatchling ];
 
@@ -49,18 +50,9 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
   disabledTestPaths = [
     # Requires unpackaged 'beanie'
     "tests/test_beanie_factory.py"
-  ];
-
-  enabledTestPaths = [
-    "tests/test_msgspec_factory.py"
   ];
 
   disabledTests = [
@@ -86,14 +78,19 @@ buildPythonPackage (finalAttrs: {
     "test_use_default_with_callable_default"
   ];
 
+  enabledTestPaths = [
+    "tests/test_msgspec_factory.py"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "polyfactory" ];
 
   meta = {
-    homepage = "https://polyfactory.litestar.dev/";
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ bot-wxt1221 ];
-    changelog = "https://github.com/litestar-org/polyfactory/releases/tag/${finalAttrs.src.tag}";
     description = "Simple and powerful factories for mock data generation";
+    homepage = "https://polyfactory.litestar.dev/";
+    changelog = "https://github.com/litestar-org/polyfactory/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.unix;
   };
 })

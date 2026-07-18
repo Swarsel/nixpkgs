@@ -21,10 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ curl ];
 
   meta = {
-    homepage = "https://github.com/bakulf/libnxml";
     description = "C library for parsing, writing and creating XML 1.0 and 1.1 files or streams";
+    homepage = "https://github.com/bakulf/libnxml";
     license = lib.licenses.lgpl2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ sigmanificient ];
+    platforms = lib.platforms.all;
   };
 })

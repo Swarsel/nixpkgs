@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
+  cffi,
   fetchPypi,
   oniguruma,
   setuptools,
-  cffi,
 }:
 buildPythonPackage rec {
   pname = "onigurumacffi";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     setuptools
     cffi
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Python cffi bindings for the oniguruma regex engine";

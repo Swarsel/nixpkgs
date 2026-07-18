@@ -3,21 +3,20 @@
   buildPythonPackage,
   fetchPypi,
   oslotest,
-  stestr,
   pbr,
   setuptools,
+  stestr,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "oslo-context";
   version = "6.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "oslo_context";
     hash = "sha256-5QT43wLFzOf8mE+Gf736qh1NS5uIl44pH25cuJ31o+A=";
+    pname = "oslo_context";
   };
 
   postPatch = ''
@@ -25,13 +24,6 @@ buildPythonPackage rec {
     # so instead of removing them one by one remove everything
     rm test-requirements.txt
   '';
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    pbr
-    typing-extensions
-  ];
 
   nativeCheckInputs = [
     oslotest
@@ -44,6 +36,14 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    pbr
+    typing-extensions
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "oslo_context" ];
 
   meta = {

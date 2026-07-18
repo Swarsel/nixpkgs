@@ -4,7 +4,6 @@
 }:
 
 buildGoModule (finalAttrs: {
-  pname = "plik";
   inherit (plikd)
     version
     src
@@ -12,13 +11,14 @@ buildGoModule (finalAttrs: {
     passthru
     ;
 
-  subPackages = [ "client" ];
-
+  pname = "plik";
   vendorHash = null;
 
   postInstall = ''
     mv $out/bin/client $out/bin/plik
   '';
+
+  subPackages = [ "client" ];
 
   meta = {
     inherit (plikd.meta)
@@ -27,6 +27,7 @@ buildGoModule (finalAttrs: {
       license
       maintainers
       ;
+
     mainProgram = "plik";
   };
 })

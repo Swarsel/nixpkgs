@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pgmpy,
   torch,
 }:
@@ -11,7 +11,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "HazyResearch";
@@ -25,10 +24,10 @@ buildPythonPackage {
     torch
   ];
 
-  pythonImportsCheck = [ "flyingsquid" ];
-
   # no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "flyingsquid" ];
 
   meta = {
     description = "More interactive weak supervision with FlyingSquid";

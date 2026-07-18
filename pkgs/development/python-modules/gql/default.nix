@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   anyio,
   backoff,
   botocore,
   buildPythonPackage,
-  fetchFromGitHub,
   graphql-core,
   httpx,
   parse,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "gql";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "graphql-python";
@@ -32,15 +31,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-bPdlFN6MRT6G9Mw2g2BBfsOGpQmT7pbRatpqa7CImSs=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    anyio
-    backoff
-    graphql-core
-    yarl
-  ];
 
   nativeCheckInputs = [
     parse
@@ -51,7 +41,28 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.all;
 
+  preCheck = ''
+    export PATH=$out/bin:$PATH
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    anyio
+    backoff
+    graphql-core
+    yarl
+  ];
+
+  disabledTestMarks = [
+    "online"
+  ];
+
   optional-dependencies = {
+    aiofiles = [ aiofiles ];
+    aiohttp = [ aiohttp ];
+
     all = [
       aiofiles
       aiohttp
@@ -61,28 +72,20 @@ buildPythonPackage rec {
       requests-toolbelt
       websockets
     ];
-    aiofiles = [ aiofiles ];
-    aiohttp = [ aiohttp ];
+
+    botocore = [ botocore ];
     httpx = [ httpx ];
+
     requests = [
       requests
       requests-toolbelt
     ];
+
     websockets = [ websockets ];
-    botocore = [ botocore ];
   };
 
-  preCheck = ''
-    export PATH=$out/bin:$PATH
-  '';
-
-  disabledTestMarks = [
-    "online"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "gql" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "GraphQL client in Python";

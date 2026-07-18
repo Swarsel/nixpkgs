@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,10 +21,12 @@ buildGoModule (finalAttrs: {
     description = "Terminal file manager";
     homepage = "https://github.com/antonmedv/walk";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       portothree
       surfaceflinger
     ];
+
     mainProgram = "walk";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,7 +16,6 @@ buildNpmPackage rec {
   };
 
   patches = [ ./remove-git-dependency.patch ];
-
   npmDepsHash = "sha256-xHHbOt9HW+zJAhHEDy2V5eYyLv4e3OrUbnzqeJasSng=";
 
   installPhase = ''

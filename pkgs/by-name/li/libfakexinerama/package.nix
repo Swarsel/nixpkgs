@@ -40,10 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://xpra.org/";
     description = "fakeXinerama for Xpra";
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.nickcao ];
+    homepage = "http://xpra.org/";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.nickcao ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -12,70 +12,80 @@ let
 in
 
 {
-  meta = {
-    teams = [ lib.teams.freedesktop ];
-  };
-
   options = {
-    xdg.mime.enable = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = ''
-        Whether to install files to support the
-        [XDG Shared MIME-info specification](https://specifications.freedesktop.org/shared-mime-info-spec/latest) and the
-        [XDG MIME Applications specification](https://specifications.freedesktop.org/mime-apps-spec/latest).
-      '';
-    };
-
     xdg.mime.addedAssociations = lib.mkOption {
-      type = associationOptions;
       default = { };
-      example = {
-        "application/pdf" = "firefox.desktop";
-        "text/*" = [
-          "nvim.desktop"
-          "codium.desktop"
-        ];
-      };
+
       description = ''
         Adds associations between mimetypes and applications. See the
         [specifications](https://specifications.freedesktop.org/mime-apps-spec/latest/associations) for more information.
         Globs in all variations are supported.
       '';
+
+      example = {
+        "application/pdf" = "firefox.desktop";
+
+        "text/*" = [
+          "nvim.desktop"
+          "codium.desktop"
+        ];
+      };
+
+      type = associationOptions;
     };
 
     xdg.mime.defaultApplications = lib.mkOption {
-      type = associationOptions;
       default = { };
-      example = {
-        "application/pdf" = "firefox.desktop";
-        "image/*" = [
-          "sxiv.desktop"
-          "gimp.desktop"
-        ];
-      };
+
       description = ''
         Sets the default applications for given mimetypes. See the
         [specifications](https://specifications.freedesktop.org/mime-apps-spec/latest/default) for more information.
         Globs in all variations are supported.
       '';
+
+      example = {
+        "application/pdf" = "firefox.desktop";
+
+        "image/*" = [
+          "sxiv.desktop"
+          "gimp.desktop"
+        ];
+      };
+
+      type = associationOptions;
+    };
+
+    xdg.mime.enable = lib.mkOption {
+      default = true;
+
+      description = ''
+        Whether to install files to support the
+        [XDG Shared MIME-info specification](https://specifications.freedesktop.org/shared-mime-info-spec/latest) and the
+        [XDG MIME Applications specification](https://specifications.freedesktop.org/mime-apps-spec/latest).
+      '';
+
+      type = lib.types.bool;
     };
 
     xdg.mime.removedAssociations = lib.mkOption {
-      type = associationOptions;
       default = { };
-      example = {
-        "audio/*" = [
-          "mpv.desktop"
-          "umpv.desktop"
-        ];
-        "inode/directory" = "codium.desktop";
-      };
+
       description = ''
         Removes associations between mimetypes and applications. See the
         [specifications](https://specifications.freedesktop.org/mime-apps-spec/latest/associations) for more information.
         Globs in all variations are supported.
       '';
+
+      example = {
+        "audio/*" = [
+          "mpv.desktop"
+          "umpv.desktop"
+        ];
+
+        "inode/directory" = "codium.desktop";
+      };
+
+      type = associationOptions;
     };
   };
 
@@ -124,13 +134,6 @@ in
           '';
         };
 
-    environment.pathsToLink = [ "/share/mime" ];
-
-    environment.systemPackages = [
-      # this package also installs some useful data, as well as its utilities
-      pkgs.shared-mime-info
-    ];
-
     environment.extraSetup = ''
       if [ -w $out/share/mime ] && [ -d $out/share/mime/packages ]; then
           XDG_DATA_DIRS=$out/share PKGSYSTEM_ENABLE_FSYNC=0 ${pkgs.buildPackages.shared-mime-info}/bin/update-mime-database -V $out/share/mime > /dev/null
@@ -140,6 +143,17 @@ in
           ${pkgs.buildPackages.desktop-file-utils}/bin/update-desktop-database $out/share/applications
       fi
     '';
+
+    environment.pathsToLink = [ "/share/mime" ];
+
+    environment.systemPackages = [
+      # this package also installs some useful data, as well as its utilities
+      pkgs.shared-mime-info
+    ];
+  };
+
+  meta = {
+    teams = [ lib.teams.freedesktop ];
   };
 
 }

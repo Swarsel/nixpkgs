@@ -1,77 +1,77 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  replaceVars,
-  meson,
-  ninja,
-  pkg-config,
+  aalib,
+  adwaita-icon-theme,
+  alsa-lib,
+  appstream,
   babl,
   bash-completion,
-  cfitsio,
-  gegl,
-  gtk3,
-  glib,
-  gdk-pixbuf,
-  graphviz,
-  isocodes,
-  pango,
   cairo,
-  libarchive,
-  luajit,
-  freetype,
+  cfitsio,
+  dbus,
+  desktop-file-utils,
+  desktopToDarwinBundle,
   fontconfig,
+  freetype,
+  gdk-pixbuf,
+  gegl,
+  gettext,
+  gexiv2,
+  ghostscript,
+  gi-docgen,
+  gjs,
+  glib,
+  glib-networking,
+  glibcLocales,
+  gobject-introspection,
+  graphviz,
+  gtk3,
+  harfbuzz,
+  isocodes,
+  json-glib,
   lcms,
-  libpng,
+  libarchive,
+  libexif,
+  libgudev,
+  libheif,
   libiff,
   libilbm,
   libjpeg,
   libjxl,
+  libmng,
+  libmypaint,
+  libpng,
+  librsvg,
+  libtiff,
+  libwebp,
+  libwmf,
+  libxmu,
+  libxpm,
+  libxslt,
+  libzip,
+  llvmPackages,
+  luajit,
+  makeFontsConf,
+  meson,
+  mypaint-brushes,
+  ninja,
+  openexr,
+  pango,
+  perl,
+  pkg-config,
   poppler,
   poppler_data,
-  libtiff,
-  libmng,
-  librsvg,
-  libwmf,
-  zlib,
-  xz,
-  libzip,
-  ghostscript,
-  aalib,
-  shared-mime-info,
   python3,
-  libexif,
-  gettext,
-  glibcLocales,
-  wrapGAppsHook3,
-  libxslt,
-  gobject-introspection,
-  vala,
-  gi-docgen,
-  perl,
-  appstream,
-  desktop-file-utils,
-  libxpm,
-  libxmu,
-  glib-networking,
-  json-glib,
-  libmypaint,
-  llvmPackages,
-  gexiv2,
-  harfbuzz,
-  makeFontsConf,
-  mypaint-brushes,
-  libwebp,
-  libheif,
-  gjs,
-  libgudev,
-  openexr,
-  xvfb-run,
-  dbus,
-  adwaita-icon-theme,
-  alsa-lib,
-  desktopToDarwinBundle,
   qoi,
+  replaceVars,
+  shared-mime-info,
+  vala,
+  wrapGAppsHook3,
+  xvfb-run,
+  xz,
+  zlib,
 }:
 
 let
@@ -85,17 +85,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gimp";
   version = "3.2.4";
 
+  src = fetchurl {
+    url = "https://download.gimp.org/gimp/v${lib.versions.majorMinor finalAttrs.version}/gimp-${finalAttrs.version}.tar.xz";
+    hash = "sha256-cxK8U+nG0tAFbKe5PxxrmHB5Rt2TT3FMIbh0bstgFYg=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
     "man"
   ];
-
-  src = fetchurl {
-    url = "https://download.gimp.org/gimp/v${lib.versions.majorMinor finalAttrs.version}/gimp-${finalAttrs.version}.tar.xz";
-    hash = "sha256-cxK8U+nG0tAFbKe5PxxrmHB5Rt2TT3FMIbh0bstgFYg=";
-  };
 
   patches = [
     # to remove compiler from the runtime closure, reference was retained via
@@ -108,8 +108,8 @@ stdenv.mkDerivation (finalAttrs: {
     # to make sure plug-ins are loaded by the correct interpreter.
     # TODO: This now only appears to be used on Windows.
     (replaceVars ./hardcode-plugin-interpreters.patch {
-      python_interpreter = python.interpreter;
       PYTHON_EXE = null;
+      python_interpreter = python.interpreter;
     })
 
     # D-Bus configuration is not available in the build sandbox
@@ -118,6 +118,18 @@ stdenv.mkDerivation (finalAttrs: {
       session_conf = "${dbus.out}/share/dbus-1/session.conf";
     })
   ];
+
+  postPatch = ''
+    patchShebangs tools/gimp-mkenums
+
+    # GIMP is executed at build time so we need to fix this.
+    # TODO: Look into if we can fix the interp thing.
+    chmod +x plug-ins/python/{colorxhtml,file-openraster,foggify,gradients-save-as-css,histogram-export,palette-export-as-kpl,palette-offset,palette-sort,palette-to-gradient,python-eval,spyro-plus}.py
+    patchShebangs \
+      plug-ins/python/{colorxhtml,file-openraster,foggify,gradients-save-as-css,histogram-export,palette-export-as-kpl,palette-offset,palette-sort,palette-to-gradient,python-eval,spyro-plus}.py
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -223,8 +235,6 @@ stdenv.mkDerivation (finalAttrs: {
     gexiv2
   ];
 
-  strictDeps = true;
-
   mesonFlags = [
     "-Dbug-report-url=https://github.com/NixOS/nixpkgs/issues/new"
     "-Dicc-directory=/run/current-system/sw/share/color/icc"
@@ -240,32 +250,18 @@ stdenv.mkDerivation (finalAttrs: {
     "-Djavascript=disabled"
   ];
 
-  doCheck = true;
-
   env = {
-    # The check runs before glib-networking is registered
-    GIO_EXTRA_MODULES = "${glib-networking}/lib/gio/modules";
-
-    NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-DGDK_OSX_BIG_SUR=16";
-
-    # Check if librsvg was built with --disable-pixbuf-loader.
-    PKG_CONFIG_GDK_PIXBUF_2_0_GDK_PIXBUF_MODULEDIR = "${librsvg}/${gdk-pixbuf.moduleDir}";
-
     # Silence fontconfig warnings about missing config during tests
     FONTCONFIG_FILE = makeFontsConf {
       fontDirectories = [ ];
     };
+
+    # The check runs before glib-networking is registered
+    GIO_EXTRA_MODULES = "${glib-networking}/lib/gio/modules";
+    NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-DGDK_OSX_BIG_SUR=16";
+    # Check if librsvg was built with --disable-pixbuf-loader.
+    PKG_CONFIG_GDK_PIXBUF_2_0_GDK_PIXBUF_MODULEDIR = "${librsvg}/${gdk-pixbuf.moduleDir}";
   };
-
-  postPatch = ''
-    patchShebangs tools/gimp-mkenums
-
-    # GIMP is executed at build time so we need to fix this.
-    # TODO: Look into if we can fix the interp thing.
-    chmod +x plug-ins/python/{colorxhtml,file-openraster,foggify,gradients-save-as-css,histogram-export,palette-export-as-kpl,palette-offset,palette-sort,palette-to-gradient,python-eval,spyro-plus}.py
-    patchShebangs \
-      plug-ins/python/{colorxhtml,file-openraster,foggify,gradients-save-as-css,histogram-export,palette-export-as-kpl,palette-offset,palette-sort,palette-to-gradient,python-eval,spyro-plus}.py
-  '';
 
   preBuild =
     let
@@ -293,6 +289,8 @@ stdenv.mkDerivation (finalAttrs: {
         "$PWD/libgimpmodule/libgimpmodule-${librarySuffix}" \
         "$out/lib/"
     '';
+
+  doCheck = true;
 
   preCheck = ''
     # Avoid “Error retrieving accessibility bus address”
@@ -328,30 +326,32 @@ stdenv.mkDerivation (finalAttrs: {
         + (if lib.versions.minor finalAttrs.version == "99" then 1 else 0)
       )
     }.0";
-    appVersion = lib.versions.majorMinor finalAttrs.version;
-    majorVersion = lib.warn "gimp.majorVersion is deprecated in favour of gimp.apiVersion and gimp.appVersion" finalAttrs.passthru.apiVersion;
-    targetLibDir = "lib/gimp/${finalAttrs.passthru.apiVersion}";
-    targetDataDir = "share/gimp/${finalAttrs.passthru.apiVersion}";
-    targetPluginDir = "${finalAttrs.passthru.targetLibDir}/plug-ins";
-    targetScriptDir = "${finalAttrs.passthru.targetDataDir}/scripts";
 
+    appVersion = lib.versions.majorMinor finalAttrs.version;
     # probably its a good idea to use the same gtk in plugins ?
     gtk = gtk3;
+    majorVersion = lib.warn "gimp.majorVersion is deprecated in favour of gimp.apiVersion and gimp.appVersion" finalAttrs.passthru.apiVersion;
+    targetDataDir = "share/gimp/${finalAttrs.passthru.apiVersion}";
+    targetLibDir = "lib/gimp/${finalAttrs.passthru.apiVersion}";
+    targetPluginDir = "${finalAttrs.passthru.targetLibDir}/plug-ins";
+    targetScriptDir = "${finalAttrs.passthru.targetDataDir}/scripts";
   };
 
   meta = {
     description = "GNU Image Manipulation Program";
     homepage = "https://www.gimp.org/";
-    donationPage = "https://www.gimp.org/donating/";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       jtojnar
       bddvlpr
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux;
+    mainProgram = "gimp";
     # Build invokes built binary to convert assets, binary hangs during plugin loading on big-endian platforms (s390x, ppc64)
     # https://gitlab.gnome.org/GNOME/gimp/-/issues/12522
     broken = stdenv.hostPlatform.isBigEndian;
-    mainProgram = "gimp";
+    donationPage = "https://www.gimp.org/donating/";
   };
 })

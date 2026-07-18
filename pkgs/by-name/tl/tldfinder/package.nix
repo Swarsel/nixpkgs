@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildGoModule (finalAttrs: {
   pname = "tldfinder";
   version = "0.0.2";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "projectdiscovery";
@@ -19,9 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-lY9AouIIj2OFBRLeaE/8KdF2siiBTuD8ieWdPZVNI9I=";
-
+  __structuredAttrs = true;
   ldflags = [ "-s" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

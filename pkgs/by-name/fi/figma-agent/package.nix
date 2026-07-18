@@ -21,7 +21,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/neetly/figma-agent-linux";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "figma-agent";
     platforms = lib.platforms.linux;
+    mainProgram = "figma-agent";
   };
 })

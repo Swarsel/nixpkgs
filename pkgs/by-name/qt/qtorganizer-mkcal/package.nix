@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
   cmake,
   kdePackages,
   libsForQt5,
   mkcal,
   pkg-config,
   tzdata,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,14 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
     qtpim
   ]);
 
+  # Flaky: https://github.com/dcaliste/qtorganizer-mkcal/issues/9
+  doCheck = false;
+
   nativeCheckInputs = [
     tzdata
   ];
-
-  dontWrapQtApps = true;
-
-  # Flaky: https://github.com/dcaliste/qtorganizer-mkcal/issues/9
-  doCheck = false;
 
   preCheck =
     let
@@ -76,13 +74,14 @@ stdenv.mkDerivation (finalAttrs: {
       export QT_PLUGIN_PATH=$TMP/fake-install:$QT_PLUGIN_PATH
     '';
 
+  dontWrapQtApps = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "QtOrganizer plugin using sqlite via mKCal";
     homepage = "https://github.com/dcaliste/qtorganizer-mkcal";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.lomiri ];
   };
 })

@@ -1,15 +1,15 @@
 {
   lib,
-  suffix ? "",
-  version,
   src,
+  version,
   # For Lix versions >= 2.92, Rust sources are in the Lix repository root.
   cargoDeps ? null,
   # For previous versions, Rust sources are only in a subdirectory for
   # `lix-doc`.
   docCargoDeps ? null,
-  patches ? [ ],
   knownVulnerabilities ? [ ],
+  patches ? [ ],
+  suffix ? "",
 }@args:
 
 assert lib.assertMsg (
@@ -20,22 +20,25 @@ assert lib.assertMsg (
 ) "`cargoDeps` must be set for Lix ≥ 2.92";
 
 {
+  lib,
   stdenv,
-  closureInfo,
-  runCommand,
-  meson,
+  aws-c-common,
+  aws-sdk-cpp,
   bash,
   bison,
   boehmgc,
   boost,
   brotli,
+  buildPackages,
   busybox-sandbox-shell,
   bzip2,
   callPackage,
   capnproto,
   cargo,
-  curl,
+  closureInfo,
   cmake,
+  confDir,
+  curl,
   darwin,
   doxygen,
   editline,
@@ -44,67 +47,62 @@ assert lib.assertMsg (
   git,
   gtest,
   jq,
-  lib,
   libarchive,
   libcpuid,
+  libseccomp,
   libsodium,
   libsystemtap,
   llvmPackages,
   lowdown,
   lowdown-unsandboxed,
   lsof,
-  mercurial,
   mdbook,
-  nlohmann_json,
+  mercurial,
+  meson,
   ninja,
+  nixosTests,
+  nlohmann_json,
   openssl,
-  pkgsStatic,
-  rustc,
-  rust-cbindgen,
-  toml11,
+  passt,
   pegtl,
-  buildPackages,
   pkg-config,
+  pkgsStatic,
   rapidcheck,
-  sqlite,
-  systemtap-sdt,
-  util-linuxMinimal,
   removeReferencesTo,
+  runCommand,
+  rust-cbindgen,
+  rustPlatform,
+  rustc,
+  sqlite,
+  stateDir,
+  storeDir,
+  systemtap-sdt,
+  toml11,
+  util-linuxMinimal,
   xz,
   yq,
   zstd,
-  nixosTests,
-  rustPlatform,
+  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
+  enableStatic ? stdenv.hostPlatform.isStatic,
+  enableStrictLLVMChecks ? true,
   # Only used for versions before 2.92.
   lix-doc ? callPackage ./doc {
     inherit src;
     version = "${version}${suffix}";
     cargoDeps = docCargoDeps;
   },
-
-  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
-  enableStatic ? stdenv.hostPlatform.isStatic,
-  enableStrictLLVMChecks ? true,
+  pastaFod ? lib.meta.availableOn stdenv.hostPlatform passt,
   withAWS ?
     lib.meta.availableOn stdenv.hostPlatform aws-c-common
     && !enableStatic
     && (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin),
-  aws-c-common,
-  aws-sdk-cpp,
   # FIXME support Darwin once https://github.com/NixOS/nixpkgs/pull/392918 lands
   withDtrace ?
     lib.meta.availableOn stdenv.hostPlatform libsystemtap
     && lib.meta.availableOn stdenv.buildPlatform systemtap-sdt,
   # RISC-V support in progress https://github.com/seccomp/libseccomp/pull/50
   withLibseccomp ? lib.meta.availableOn stdenv.hostPlatform libseccomp,
-  libseccomp,
-  pastaFod ? lib.meta.availableOn stdenv.hostPlatform passt,
-  passt,
   withPlugins ? lib.versionAtLeast version "2.95" && !enableStatic,
-
-  confDir,
-  stateDir,
-  storeDir,
 }:
 let
   isLLVMOnly = lib.versionAtLeast version "2.92";
@@ -122,6 +120,7 @@ let
           [project options]
           builtin-dep-closure = @deps@
         '';
+
         passAsFile = [ "input" ];
       }
       ''
@@ -140,10 +139,10 @@ let
       patches = patches ++ [
         # See https://github.com/curl/curl/commit/2a2104f3cff44bb28bb570a093be52bbeeed8f23
         (fetchpatch2 {
-          name = "fix-wakeup-consumption-revert.patch";
-          url = "https://github.com/curl/curl/commit/2a2104f3cff44bb28bb570a093be52bbeeed8f23.patch";
           hash = "sha256-dkwr1ZaR7XB408JxeIKhuHxJrlwf3J01jL6lnOLXo1I=";
+          name = "fix-wakeup-consumption-revert.patch";
           revert = true;
+          url = "https://github.com/curl/curl/commit/2a2104f3cff44bb28bb570a093be52bbeeed8f23.patch";
         })
       ];
     }
@@ -154,12 +153,10 @@ in
 assert lib.assertMsg (enableStrictLLVMChecks && isLLVMOnly -> stdenv.cc.isClang)
   "Lix upstream strongly discourage the usage of GCC to compile Lix as there's known miscompilations in important places. If you are a compiler developer, please get in touch with us.";
 stdenv.mkDerivation (finalAttrs: {
-  pname = "lix";
-
-  version = "${version}${suffix}";
-  env.VERSION_SUFFIX = suffix;
-
   inherit src patches;
+  inherit cargoDeps;
+  pname = "lix";
+  version = "${version}${suffix}";
 
   outputs = [
     "out"
@@ -171,48 +168,11 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
+  postPatch = ''
+    patchShebangs --build tests doc/manual
+  '';
+
   strictDeps = true;
-  disallowedReferences = lib.optionals isLLVMOnly [
-    # We don't want the Clang.
-    stdenv.cc.cc
-    # We don't want the underlying GCC neither!
-    stdenv.cc.cc.stdenv.cc.cc
-  ];
-  __structuredAttrs = true;
-
-  # dep closure for builtin builders in meson array form for immediate use
-  builtinDeps =
-    if stdenv.hostPlatform.isStatic then
-      builtins.toFile "lix-static-dep-closure" "[]"
-    else
-      runCommand "lix-builtin-dep-closure"
-        {
-          closure = closureInfo {
-            # closureInfo does not work all that well for things like lowdown,
-            # where it finds only -out but not -lib. we'll take -out and -lib,
-            # ignoring -bin, -man, -dev, etc. and hope that'll be good enough.
-            rootPaths = lib.flatten (
-              map
-                (drv: [
-                  (drv.out or [ ])
-                  (drv.lib or [ ])
-                ])
-                (
-                  lib.subtractLists finalAttrs.disallowedReferences (
-                    finalAttrs.buildInputs ++ finalAttrs.propagatedBuildInputs
-                  )
-                )
-            );
-          };
-        }
-        ''
-          closure=($(cat $closure/store-paths))
-          closure="$(printf ", '%s'" "''${closure[@]}")"
-          printf "[%s]" "''${closure:2}" >$out
-        '';
-
-  # We only include CMake so that Meson can locate toml11, which only ships CMake dependency metadata.
-  dontUseCmakeConfigure = true;
 
   nativeBuildInputs = [
     # python3.withPackages does not splice properly, see https://github.com/NixOS/nixpkgs/issues/305858
@@ -296,53 +256,10 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withAWS [ aws-sdk-cpp ]
   ++ lib.optionals (hasDtraceSupport && withDtrace) [ libsystemtap ];
 
-  inherit cargoDeps;
-
-  env = {
-    # Meson allows referencing a /usr/share/cargo/registry shaped thing for subproject sources.
-    # Turns out the Nix-generated Cargo dependencies are named the same as they
-    # would be in a Cargo registry cache.
-    MESON_PACKAGE_CACHE_DIR =
-      if finalAttrs.cargoDeps != null then
-        "${finalAttrs.cargoDeps}/source-registry-0"
-      else
-        "lix: no `MESON_PACKAGE_CACHE_DIR`, set `cargoDeps`";
-  };
-
   propagatedBuildInputs = [
     boehmgc
     nlohmann_json
   ];
-
-  postPatch = ''
-    patchShebangs --build tests doc/manual
-  '';
-
-  preConfigure =
-    # Copy libboost_context so we don't get all of Boost in our closure.
-    # https://github.com/NixOS/nixpkgs/issues/45462
-    lib.optionalString (lib.versionOlder version "2.91" && !enableStatic) ''
-      mkdir -p $out/lib
-      cp -pd ${boost}/lib/{libboost_context*,libboost_thread*,libboost_system*} $out/lib
-      rm -f $out/lib/*.a
-      ${lib.optionalString stdenv.hostPlatform.isLinux ''
-        chmod u+w $out/lib/*.so.*
-        patchelf --set-rpath $out/lib:${lib.getLib stdenv.cc.cc}/lib $out/lib/libboost_thread.so.*
-      ''}
-      ${lib.optionalString stdenv.hostPlatform.isDarwin ''
-        for LIB in $out/lib/*.dylib; do
-          chmod u+w $LIB
-          install_name_tool -id $LIB $LIB
-          install_name_tool -delete_rpath ${boost}/lib/ $LIB || true
-        done
-        install_name_tool -change ${boost}/lib/libboost_system.dylib $out/lib/libboost_system.dylib $out/lib/libboost_thread.dylib
-      ''}
-    '';
-
-  # -O3 seems to anger a gcc bug and provide no performance benefit.
-  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114360
-  # We use -O2 upstream https://gerrit.lix.systems/c/lix/+/554
-  mesonBuildType = "debugoptimized";
 
   mesonFlags = [
     # Enable LTO, since it improves eval performance a fair amount
@@ -418,7 +335,46 @@ stdenv.mkDerivation (finalAttrs: {
     }-file=${mesonCrossFile finalAttrs.builtinDeps}"
   ];
 
-  ninjaFlags = [ "-v" ];
+  env = {
+    # Meson allows referencing a /usr/share/cargo/registry shaped thing for subproject sources.
+    # Turns out the Nix-generated Cargo dependencies are named the same as they
+    # would be in a Cargo registry cache.
+    MESON_PACKAGE_CACHE_DIR =
+      if finalAttrs.cargoDeps != null then
+        "${finalAttrs.cargoDeps}/source-registry-0"
+      else
+        "lix: no `MESON_PACKAGE_CACHE_DIR`, set `cargoDeps`";
+  };
+
+  env.VERSION_SUFFIX = suffix;
+
+  preConfigure =
+    # Copy libboost_context so we don't get all of Boost in our closure.
+    # https://github.com/NixOS/nixpkgs/issues/45462
+    lib.optionalString (lib.versionOlder version "2.91" && !enableStatic) ''
+      mkdir -p $out/lib
+      cp -pd ${boost}/lib/{libboost_context*,libboost_thread*,libboost_system*} $out/lib
+      rm -f $out/lib/*.a
+      ${lib.optionalString stdenv.hostPlatform.isLinux ''
+        chmod u+w $out/lib/*.so.*
+        patchelf --set-rpath $out/lib:${lib.getLib stdenv.cc.cc}/lib $out/lib/libboost_thread.so.*
+      ''}
+      ${lib.optionalString stdenv.hostPlatform.isDarwin ''
+        for LIB in $out/lib/*.dylib; do
+          chmod u+w $LIB
+          install_name_tool -id $LIB $LIB
+          install_name_tool -delete_rpath ${boost}/lib/ $LIB || true
+        done
+        install_name_tool -change ${boost}/lib/libboost_system.dylib $out/lib/libboost_system.dylib $out/lib/libboost_thread.dylib
+      ''}
+    '';
+
+  doCheck = true;
+
+  checkInputs = [
+    gtest
+    rapidcheck
+  ];
 
   postInstall =
     lib.optionalString enableDocumentation ''
@@ -449,28 +405,95 @@ stdenv.mkDerivation (finalAttrs: {
       find "$out" -type f -exec remove-references-to -t ${stdenv.cc.cc.stdenv.cc.cc} '{}' +
     '';
 
+  # Python splices are broken (https://github.com/NixOS/nixpkgs/issues/476822), causing build failure in `buildPackages.python3Packages.bcrypt`.
+  doInstallCheck = stdenv.buildPlatform == stdenv.hostPlatform;
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+    flagsArray=($mesonInstallCheckFlags "''${mesonInstallCheckFlagsArray[@]}")
+    meson test --no-rebuild "''${flagsArray[@]}"
+    runHook postInstallCheck
+  '';
+
   # This needs to run after _multioutDocs moves the docs to $doc
   postFixup = lib.optionalString enableDocumentation ''
     mkdir -p $devdoc/share/doc/nix
     mv $doc/share/doc/nix/internal-api $devdoc/share/doc/nix
   '';
 
-  doCheck = true;
+  # Used by (1) test which has dynamic port assignment.
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  # dep closure for builtin builders in meson array form for immediate use
+  builtinDeps =
+    if stdenv.hostPlatform.isStatic then
+      builtins.toFile "lix-static-dep-closure" "[]"
+    else
+      runCommand "lix-builtin-dep-closure"
+        {
+          closure = closureInfo {
+            # closureInfo does not work all that well for things like lowdown,
+            # where it finds only -out but not -lib. we'll take -out and -lib,
+            # ignoring -bin, -man, -dev, etc. and hope that'll be good enough.
+            rootPaths = lib.flatten (
+              map
+                (drv: [
+                  (drv.out or [ ])
+                  (drv.lib or [ ])
+                ])
+                (
+                  lib.subtractLists finalAttrs.disallowedReferences (
+                    finalAttrs.buildInputs ++ finalAttrs.propagatedBuildInputs
+                  )
+                )
+            );
+          };
+        }
+        ''
+          closure=($(cat $closure/store-paths))
+          closure="$(printf ", '%s'" "''${closure[@]}")"
+          printf "[%s]" "''${closure:2}" >$out
+        '';
+
+  disallowedReferences = lib.optionals isLLVMOnly [
+    # We don't want the Clang.
+    stdenv.cc.cc
+    # We don't want the underlying GCC neither!
+    stdenv.cc.cc.stdenv.cc.cc
+  ];
+
+  # We only include CMake so that Meson can locate toml11, which only ships CMake dependency metadata.
+  dontUseCmakeConfigure = true;
+  enableParallelBuilding = true;
+
+  hardeningDisable = [
+    "shadowstack"
+    # strictoverflow is disabled because we trap on signed overflow instead
+    "strictoverflow"
+  ]
+  # fortify breaks the build with lto and musl for some reason
+  ++ lib.optional stdenv.hostPlatform.isMusl "fortify";
+
+  # -O3 seems to anger a gcc bug and provide no performance benefit.
+  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114360
+  # We use -O2 upstream https://gerrit.lix.systems/c/lix/+/554
+  mesonBuildType = "debugoptimized";
+
   mesonCheckFlags = [
     "--suite=check"
     "--print-errorlogs"
   ];
-  checkInputs = [
-    gtest
-    rapidcheck
-  ];
 
-  # Python splices are broken (https://github.com/NixOS/nixpkgs/issues/476822), causing build failure in `buildPackages.python3Packages.bcrypt`.
-  doInstallCheck = stdenv.buildPlatform == stdenv.hostPlatform;
   mesonInstallCheckFlags = [
     "--suite=installcheck"
     "--print-errorlogs"
   ];
+
+  ninjaFlags = [ "-v" ];
+  # point 'nix edit' and ofborg at the file that defines the attribute,
+  # not this common file.
+  pos = builtins.unsafeGetAttrPos "version" args;
 
   preInstallCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
     # socket path becomes too long otherwise
@@ -480,39 +503,21 @@ stdenv.mkDerivation (finalAttrs: {
     export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
   '';
 
-  installCheckPhase = ''
-    runHook preInstallCheck
-    flagsArray=($mesonInstallCheckFlags "''${mesonInstallCheckFlagsArray[@]}")
-    meson test --no-rebuild "''${flagsArray[@]}"
-    runHook postInstallCheck
-  '';
-  hardeningDisable = [
-    "shadowstack"
-    # strictoverflow is disabled because we trap on signed overflow instead
-    "strictoverflow"
-  ]
-  # fortify breaks the build with lto and musl for some reason
-  ++ lib.optional stdenv.hostPlatform.isMusl "fortify";
-
   separateDebugInfo = stdenv.hostPlatform.isLinux && !enableStatic;
-  enableParallelBuilding = true;
-
-  # Used by (1) test which has dynamic port assignment.
-  __darwinAllowLocalNetworking = true;
 
   passthru = {
     inherit aws-sdk-cpp boehmgc;
+
     tests = {
-      misc = nixosTests.nix-misc.default.passthru.override { nixPackage = finalAttrs.finalPackage; };
       installer = nixosTests.installer.simple.override { selectNixPackage = _: finalAttrs.finalPackage; };
+      misc = nixosTests.nix-misc.default.passthru.override { nixPackage = finalAttrs.finalPackage; };
     };
   };
 
-  # point 'nix edit' and ofborg at the file that defines the attribute,
-  # not this common file.
-  pos = builtins.unsafeGetAttrPos "version" args;
   meta = {
+    inherit knownVulnerabilities;
     description = "Powerful package manager that makes package management reliable and reproducible";
+
     longDescription = ''
       Lix (a fork of Nix) is a powerful package manager for Linux and other Unix systems that
       makes package management reliable and reproducible. It provides atomic
@@ -520,12 +525,12 @@ stdenv.mkDerivation (finalAttrs: {
       a package, multi-user package management and easy setup of build
       environments.
     '';
+
     homepage = "https://lix.systems";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.lix ];
     platforms = lib.platforms.unix;
-    outputsToInstall = [ "out" ] ++ lib.optional enableDocumentation "man";
     mainProgram = "nix";
-    inherit knownVulnerabilities;
+    outputsToInstall = [ "out" ] ++ lib.optional enableDocumentation "man";
+    teams = [ lib.teams.lix ];
   };
 })

@@ -15,26 +15,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-videointelligence";
   version = "2.20.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_videointelligence";
     inherit (finalAttrs) version;
     hash = "sha256-5EktMzhD8EAZG0cw/1igpK6hAINQBTh5vEBY3fYtqKA=";
+    pname = "google_cloud_videointelligence";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
-
-  dependencies = [
-    google-api-core
-    proto-plus
-    protobuf
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
 
   nativeCheckInputs = [
     google-cloud-testutils
@@ -43,10 +29,21 @@ buildPythonPackage (finalAttrs: {
     pytest-asyncio
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    proto-plus
+    protobuf
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
+
   disabledTests = [
     # require credentials
     "test_annotate_video"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.videointelligence"
@@ -55,6 +52,10 @@ buildPythonPackage (finalAttrs: {
     "google.cloud.videointelligence_v1p1beta1"
     "google.cloud.videointelligence_v1p2beta1"
     "google.cloud.videointelligence_v1p3beta1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

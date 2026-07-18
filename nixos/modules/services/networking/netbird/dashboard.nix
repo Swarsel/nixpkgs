@@ -36,25 +36,31 @@ in
 {
   options.services.netbird.server.dashboard = {
     enable = mkEnableOption "the static netbird dashboard frontend";
-
     package = mkPackageOption pkgs "netbird-dashboard" { };
+
+    domain = mkOption {
+      default = "localhost";
+      description = "The domain under which the dashboard runs.";
+      type = str;
+    };
 
     enableNginx = mkEnableOption "Nginx reverse-proxy to serve the dashboard";
 
-    domain = mkOption {
-      type = str;
-      default = "localhost";
-      description = "The domain under which the dashboard runs.";
+    finalDrv = mkOption {
+      description = ''
+        The derivation containing the final templated dashboard.
+      '';
+
+      readOnly = true;
+      type = package;
     };
 
     managementServer = mkOption {
-      type = str;
       description = "The address of the management server, used for the API endpoints.";
+      type = str;
     };
 
     settings = mkOption {
-      type = submodule { freeformType = attrsOf (either str bool); };
-
       defaultText = ''
         {
           AUTH_AUDIENCE = "netbird";
@@ -72,14 +78,8 @@ in
         A starting point when searching for valid values is this [script](https://github.com/netbirdio/dashboard/blob/main/docker/init_react_envs.sh)
         The only mandatory value is 'AUTH_AUTHORITY' as we cannot set a default value here.
       '';
-    };
 
-    finalDrv = mkOption {
-      readOnly = true;
-      type = package;
-      description = ''
-        The derivation containing the final templated dashboard.
-      '';
+      type = submodule { freeformType = attrsOf (either str bool); };
     };
   };
 
@@ -92,38 +92,10 @@ in
     ];
 
     services.netbird.server.dashboard = {
-      settings = {
-        # Due to how the backend and frontend work this secret will be templated into the backend
-        # and then served statically from your website
-        # This enables you to login without the normally needed indirection through the backend
-        # but this also means anyone that can reach your website can
-        # fetch this secret, which is why there is no real need to put it into
-        # special options as its public anyway
-        # As far as I know leaking this secret is just
-        # an information leak as one can fetch some basic app
-        # information from the IDP
-        # To actually do something one still needs to have login
-        # data and this secret so this being public will not
-        # suffice for anything just decreasing security
-        AUTH_CLIENT_SECRET = "";
-
-        NETBIRD_MGMT_API_ENDPOINT = cfg.managementServer;
-        NETBIRD_MGMT_GRPC_API_ENDPOINT = cfg.managementServer;
-      }
-      // (mapAttrs (_: mkDefault) {
-        # Those values have to be easily overridable
-        AUTH_AUDIENCE = "netbird"; # must be set for your devices to be able to log in
-        AUTH_CLIENT_ID = "netbird";
-        AUTH_SUPPORTED_SCOPES = "openid profile email";
-        NETBIRD_TOKEN_SOURCE = "idToken";
-        USE_AUTH0 = false;
-      });
-
       # The derivation containing the templated dashboard
       finalDrv =
         pkgs.runCommand "netbird-dashboard"
           {
-            nativeBuildInputs = [ pkgs.gettext ];
             env = {
               ENV_STR = concatStringsSep " " [
                 "$AUTH_AUDIENCE"
@@ -145,6 +117,8 @@ in
               ];
             }
             // (mapAttrs (_: toStringEnv) cfg.settings);
+
+            nativeBuildInputs = [ pkgs.gettext ];
           }
           ''
             cp -R ${cfg.package} build
@@ -162,13 +136,41 @@ in
 
             cp -R build $out
           '';
+
+      settings = {
+        # Due to how the backend and frontend work this secret will be templated into the backend
+        # and then served statically from your website
+        # This enables you to login without the normally needed indirection through the backend
+        # but this also means anyone that can reach your website can
+        # fetch this secret, which is why there is no real need to put it into
+        # special options as its public anyway
+        # As far as I know leaking this secret is just
+        # an information leak as one can fetch some basic app
+        # information from the IDP
+        # To actually do something one still needs to have login
+        # data and this secret so this being public will not
+        # suffice for anything just decreasing security
+        AUTH_CLIENT_SECRET = "";
+        NETBIRD_MGMT_API_ENDPOINT = cfg.managementServer;
+        NETBIRD_MGMT_GRPC_API_ENDPOINT = cfg.managementServer;
+      }
+      // (mapAttrs (_: mkDefault) {
+        # Those values have to be easily overridable
+        AUTH_AUDIENCE = "netbird"; # must be set for your devices to be able to log in
+        AUTH_CLIENT_ID = "netbird";
+        AUTH_SUPPORTED_SCOPES = "openid profile email";
+        NETBIRD_TOKEN_SOURCE = "idToken";
+        USE_AUTH0 = false;
+      });
     };
 
     services.nginx = mkIf cfg.enableNginx {
       enable = true;
 
       virtualHosts.${cfg.domain} = {
-        root = cfg.finalDrv;
+        extraConfig = ''
+          error_page 404 /404.html;
+        '';
 
         locations = {
           "/".tryFiles = "$uri $uri.html $uri/ =404";
@@ -178,9 +180,7 @@ in
           '';
         };
 
-        extraConfig = ''
-          error_page 404 /404.html;
-        '';
+        root = cfg.finalDrv;
       };
     };
   };

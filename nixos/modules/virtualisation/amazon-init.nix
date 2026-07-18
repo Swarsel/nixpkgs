@@ -77,35 +77,38 @@ in
   options.virtualisation.amazon-init = {
     enable = mkOption {
       default = true;
-      type = types.bool;
+
       description = ''
         Enable or disable the amazon-init service.
       '';
+
+      type = types.bool;
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.amazon-init = {
       inherit script;
-      description = "Reconfigure the system from EC2 userdata on startup";
-
-      wantedBy = [ "multi-user.target" ];
       after = [ "multi-user.target" ];
-      requires = [ "network-online.target" ];
+      description = "Reconfigure the system from EC2 userdata on startup";
 
       path = [
         "/run/wrappers"
         "/run/current-system/sw"
       ];
 
+      requires = [ "network-online.target" ];
       restartIfChanged = false;
-      unitConfig.X-StopOnRemoval = false;
 
       serviceConfig = {
-        Type = "oneshot";
         RemainAfterExit = true;
+        Type = "oneshot";
       };
+
+      unitConfig.X-StopOnRemoval = false;
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
   meta.maintainers = with maintainers; [ arianvp ];
 }

@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  vala,
-  gnome,
   adwaita-icon-theme,
-  gtk3,
-  wrapGAppsHook3,
   appstream-glib,
   desktop-file-utils,
-  glib,
-  librsvg,
-  libxml2,
   gettext,
+  glib,
+  gnome,
+  gtk3,
   itstool,
   libgee,
   libgnome-games-support,
+  librsvg,
+  libxml2,
   meson,
   ninja,
+  pkg-config,
   python3,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/gnome-klotski/${lib.versions.majorMinor finalAttrs.version}/gnome-klotski-${finalAttrs.version}.tar.xz";
     hash = "sha256-kWN4RWSfPKcJ0p9x7ndblG0REghyCfMiZOj60hoMoOI=";
   };
+
+  postPatch = ''
+    chmod +x build-aux/meson_post_install.py
+    patchShebangs build-aux/meson_post_install.py
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -54,22 +59,17 @@ stdenv.mkDerivation (finalAttrs: {
     libgnome-games-support
   ];
 
-  postPatch = ''
-    chmod +x build-aux/meson_post_install.py
-    patchShebangs build-aux/meson_post_install.py
-  '';
-
   passthru = {
     updateScript = gnome.updateScript { packageName = "gnome-klotski"; };
   };
 
   meta = {
+    description = "Slide blocks to solve the puzzle";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-klotski";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-klotski/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Slide blocks to solve the puzzle";
-    mainProgram = "gnome-klotski";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-klotski";
+    teams = [ lib.teams.gnome ];
   };
 })

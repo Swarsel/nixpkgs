@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  libvorbis,
-  libogg,
-  libtheora,
   SDL,
-  libxft,
   SDL_image,
-  zlib,
-  libx11,
+  libogg,
   libpng,
+  libtheora,
+  libvorbis,
+  libx11,
+  libxft,
   openal,
-  runtimeShell,
   requireFile,
+  runtimeShell,
+  zlib,
   commercialVersion ? false,
 }:
 
@@ -30,22 +30,25 @@ stdenv.mkDerivation rec {
       in
       if commercialVersion then
         requireFile {
+          sha256 =
+            if stdenv.hostPlatform.system == "i686-linux" then
+              "15wvzmmidvykwjrbnq70h5jrvnjx1hcrm0357qj85q4aqbzavh01"
+            else
+              "1v8z16qa9ka8sf7qq45knsxj87s6sipvv3a7xq11pb5xk08fb2ql";
+
           message = ''
             We cannot download the commercial version automatically, as you require a license.
             Once you bought a license, you need to add your downloaded version to the nix store.
             You can do this by using "nix-prefetch-url file:///$PWD/${commercialName}" in the
             directory where you saved it.
           '';
+
           name = commercialName;
-          sha256 =
-            if stdenv.hostPlatform.system == "i686-linux" then
-              "15wvzmmidvykwjrbnq70h5jrvnjx1hcrm0357qj85q4aqbzavh01"
-            else
-              "1v8z16qa9ka8sf7qq45knsxj87s6sipvv3a7xq11pb5xk08fb2ql";
         }
       else
         fetchurl {
           url = demoUrl;
+
           sha256 =
             if stdenv.hostPlatform.system == "i686-linux" then
               "0f14vrrbq05hsbdajrb5y9za65fpng1lc8f0adb4aaz27x7sh525"
@@ -54,6 +57,19 @@ stdenv.mkDerivation rec {
         }
     else
       throw "And Yet It Moves nix package only supports linux and intel cpu's.";
+
+  buildInputs = [
+    libvorbis
+    libogg
+    libtheora
+    SDL
+    libxft
+    SDL_image
+    zlib
+    libx11
+    libpng
+    openal
+  ];
 
   installPhase = ''
     mkdir -p $out/{opt/andyetitmoves,bin}
@@ -75,24 +91,13 @@ stdenv.mkDerivation rec {
     chmod +x $out/bin/$binName
   '';
 
-  buildInputs = [
-    libvorbis
-    libogg
-    libtheora
-    SDL
-    libxft
-    SDL_image
-    zlib
-    libx11
-    libpng
-    openal
-  ];
-
   meta = {
     description = "Physics/Gravity Platform game";
+
     longDescription = ''
       And Yet It Moves is an award-winning physics-based platform game in which players rotate the game world at will to solve challenging puzzles. Tilting the world turns walls into floors, slides into platforms, and stacks of rocks into dangerous hazards.
     '';
+
     homepage = "http://www.andyetitmoves.net/";
     license = lib.licenses.unfree;
   };

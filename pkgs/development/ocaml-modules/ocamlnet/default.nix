@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  camlzip,
+  findlib,
+  gnutls,
+  ncurses,
+  nettle,
+  ocaml,
+  ocaml_pcre,
   pkg-config,
   which,
-  ncurses,
-  ocaml,
-  findlib,
-  ocaml_pcre,
-  camlzip,
-  gnutls,
-  nettle,
 }:
 
 stdenv.mkDerivation rec {
@@ -22,12 +22,15 @@ stdenv.mkDerivation rec {
     sha256 = "1vlwxjxr946gdl61a1d7yk859cijq45f60dhn54ik3w4g6cx33pr";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     which
     ocaml
     findlib
   ];
+
   buildInputs = [
     ncurses
     ocaml_pcre
@@ -35,14 +38,6 @@ stdenv.mkDerivation rec {
     gnutls
     nettle
   ];
-
-  strictDeps = true;
-
-  createFindlibDestdir = true;
-
-  dontAddPrefix = true;
-  dontAddStaticConfigureFlags = true;
-  configurePlatforms = [ ];
 
   preConfigure = ''
     configureFlagsArray=(
@@ -61,9 +56,16 @@ stdenv.mkDerivation rec {
     make opt
   '';
 
+  configurePlatforms = [ ];
+  createFindlibDestdir = true;
+  dontAddPrefix = true;
+  dontAddStaticConfigureFlags = true;
+
   meta = {
-    homepage = "http://projects.camlcity.org/projects/ocamlnet.html";
+    inherit (ocaml.meta) platforms;
     description = "Library implementing Internet protocols (http, cgi, email, etc.) for OCaml";
+    homepage = "http://projects.camlcity.org/projects/ocamlnet.html";
+
     license =
       with lib.licenses;
       AND [
@@ -71,7 +73,7 @@ stdenv.mkDerivation rec {
         bsd3
         gpl2Only
       ];
-    inherit (ocaml.meta) platforms;
+
     broken = lib.versionOlder ocaml.version "4.02" || lib.versionAtLeast ocaml.version "5.0";
   };
 }

@@ -1,34 +1,28 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  distutils,
-  pyyaml,
-  openssh,
-  unittestCheckHook,
-  installShellFiles,
-  bc,
-  hostname,
+  stdenv,
   bash,
+  bc,
+  buildPythonPackage,
+  distutils,
+  fetchPypi,
+  hostname,
+  installShellFiles,
+  openssh,
+  pyyaml,
+  setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "clustershell";
   version = "1.9.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "ClusterShell";
     inherit version;
     hash = "sha256-4oTA5rP+CgzWvmffcd+/aqMhGIlz22g6BX9WN1UvvIw=";
+    pname = "ClusterShell";
   };
-
-  build-system = [
-    setuptools
-    distutils
-  ];
 
   postPatch = ''
     substituteInPlace lib/ClusterShell/Worker/Ssh.py \
@@ -50,22 +44,13 @@ buildPythonPackage rec {
     done
   '';
 
-  propagatedBuildInputs = [ pyyaml ];
-
   nativeBuildInputs = [ installShellFiles ];
+  propagatedBuildInputs = [ pyyaml ];
 
   nativeCheckInputs = [
     bc
     hostname
     unittestCheckHook
-  ];
-
-  pythonImportsCheck = [ "ClusterShell" ];
-
-  unittestFlagsArray = [
-    "tests"
-    "-p"
-    "'*Test.py'"
   ];
 
   # Many tests want to open network connections
@@ -87,11 +72,25 @@ buildPythonPackage rec {
     installShellCompletion --bash bash_completion.d/*
   '';
 
+  build-system = [
+    setuptools
+    distutils
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ClusterShell" ];
+
+  unittestFlagsArray = [
+    "tests"
+    "-p"
+    "'*Test.py'"
+  ];
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Scalable Python framework for cluster administration";
     homepage = "https://cea-hpc.github.io/clustershell";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.alexvorobiev ];
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

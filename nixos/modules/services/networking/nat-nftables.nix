@@ -33,12 +33,12 @@ let
 
   mkTable =
     {
-      ipVer,
       dest,
-      ipSet,
-      forwardPorts,
       dmzHost,
       externalIP,
+      forwardPorts,
+      ipSet,
+      ipVer,
     }:
     let
       # nftables maps for port forward
@@ -136,30 +136,6 @@ in
       }
     ];
 
-    networking.nftables.tables = {
-      "nixos-nat" = {
-        family = "ip";
-        content = mkTable {
-          ipVer = "ip";
-          inherit dest ipSet;
-          forwardPorts = filter (x: !(isIPv6 x.destination)) cfg.forwardPorts;
-          inherit (cfg) dmzHost externalIP;
-        };
-      };
-      "nixos-nat6" = mkIf cfg.enableIPv6 {
-        family = "ip6";
-        name = "nixos-nat";
-        content = mkTable {
-          ipVer = "ip6";
-          dest = destIPv6;
-          ipSet = ipv6Set;
-          forwardPorts = filter (x: isIPv6 x.destination) cfg.forwardPorts;
-          dmzHost = null;
-          externalIP = cfg.externalIPv6;
-        };
-      };
-    };
-
     networking.firewall.extraForwardRules = optionalString config.networking.firewall.filterForward ''
       ${optionalString (ifaceSet != "") ''
         iifname { ${ifaceSet} } ${oifExpr} accept comment "from internal interfaces"
@@ -171,6 +147,33 @@ in
         ip6 saddr { ${ipv6Set} } ${oifExpr} accept comment "from internal IPv6s"
       ''}
     '';
+
+    networking.nftables.tables = {
+      "nixos-nat" = {
+        content = mkTable {
+          inherit dest ipSet;
+          inherit (cfg) dmzHost externalIP;
+          forwardPorts = filter (x: !(isIPv6 x.destination)) cfg.forwardPorts;
+          ipVer = "ip";
+        };
+
+        family = "ip";
+      };
+
+      "nixos-nat6" = mkIf cfg.enableIPv6 {
+        content = mkTable {
+          dest = destIPv6;
+          dmzHost = null;
+          externalIP = cfg.externalIPv6;
+          forwardPorts = filter (x: isIPv6 x.destination) cfg.forwardPorts;
+          ipSet = ipv6Set;
+          ipVer = "ip6";
+        };
+
+        family = "ip6";
+        name = "nixos-nat";
+      };
+    };
 
   };
 }

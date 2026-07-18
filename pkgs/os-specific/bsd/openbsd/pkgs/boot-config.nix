@@ -1,19 +1,11 @@
 {
-  mkDerivation,
   lib,
-  flex,
   byacc,
   compatHook,
+  flex,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/config";
-
-  extraNativeBuildInputs = [
-    flex
-    byacc
-    compatHook
-  ];
-
   postPatch = ''
     rm $BSDSRCDIR/usr.sbin/config/ukc.c
     rm $BSDSRCDIR/usr.sbin/config/ukcutil.c
@@ -28,5 +20,12 @@ mkDerivation {
     $CC *.o -o config
   '';
 
+  extraNativeBuildInputs = [
+    flex
+    byacc
+    compatHook
+  ];
+
+  path = "usr.sbin/config";
   meta.platforms = lib.platforms.linux;
 }

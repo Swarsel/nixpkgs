@@ -1,8 +1,9 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   gjs,
   glib,
   glib-networking,
@@ -15,7 +16,6 @@
   ninja,
   nix-update-script,
   pkg-config,
-  stdenv,
   wrapGAppsHook4,
 }:
 
@@ -65,12 +65,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/rafaelmardojai/forge-sparks/releases/tag/${finalAttrs.version}";
     description = "Get Git forges notifications";
     homepage = "https://github.com/rafaelmardojai/forge-sparks";
+    changelog = "https://github.com/rafaelmardojai/forge-sparks/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+    platforms = lib.platforms.linux;
     mainProgram = "forge-sparks";
     teams = [ lib.teams.gnome-circle ];
-    platforms = lib.platforms.linux;
   };
 })

@@ -1,77 +1,73 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  fetchgit,
-  pythonOlder,
-  rustPlatform,
   stdenv,
-
-  cargo,
-  nasm,
-  pkg-config,
-  rustc,
-
-  # dependencies
-  fsspec,
-  packaging,
-  pyarrow,
-  tqdm,
-  typing-extensions,
-
+  fetchFromGitHub,
+  # tests
+  adlfs,
   # optional-dependencies
   av,
   boto3,
+  buildPythonPackage,
+  cargo,
   clickhouse-connect,
-  datasets,
-  deltalake,
-  google-genai,
-  httpx,
-  huggingface-hub,
-  librosa,
-  mypy-boto3-glue,
-  numpy,
-  openai,
-  pandas,
-  pgvector,
-  pillow,
-  psycopg,
-  pyiceberg,
-  ray,
-  requests,
-  sentence-transformers,
-  soundfile,
-  sqlalchemy,
-  sqlglot,
-  torch,
-  torchvision,
-  transformers,
-
-  # tests
-  adlfs,
   cloudpickle,
   dask,
   databricks-sdk,
+  datasets,
+  deltalake,
   duckdb,
+  fetchgit,
+  # dependencies
+  fsspec,
   gcsfs,
   google-cloud-bigtable,
+  google-genai,
+  httpx,
+  huggingface-hub,
   hypothesis,
   jax,
   jaxtyping,
+  librosa,
   lxml,
   memray,
   moto,
+  mypy-boto3-glue,
+  nasm,
+  numpy,
+  openai,
   opencv-python,
+  packaging,
+  pandas,
+  pgvector,
+  pillow,
+  pkg-config,
+  psycopg,
+  pyarrow,
   pydantic,
+  pyiceberg,
   pymysql,
   pyodbc,
   pytest-timeout,
   pytest-xdist,
   pytestCheckHook,
+  pythonOlder,
+  ray,
   reportlab,
+  requests,
+  rustPlatform,
+  rustc,
   s3fs,
+  sentence-transformers,
+  soundfile,
+  sqlalchemy,
+  sqlglot,
   tenacity,
   tiktoken,
+  torch,
+  torchvision,
+  tqdm,
+  transformers,
+  typing-extensions,
   writableTmpDirAsHomeHook,
   xxhash,
 }:
@@ -79,10 +75,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "daft";
   version = "0.7.14";
-  pyproject = true;
-  __structuredAttrs = true;
-
-  disabled = pythonOlder "3.10";
 
   src = fetchFromGitHub {
     owner = "Eventual-Inc";
@@ -90,30 +82,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qw1NB+RvXOFMHZvqpD5CSLWSUUKmtfWr0EyBgRMv2lA=";
   };
-
-  cargoDeps =
-    (rustPlatform.importCargoLock.override {
-      fetchgit =
-        args:
-        if (args.url or null) == "https://github.com/Eventual-Inc/azure-sdk-for-rust" then
-          fetchgit (
-            args
-            // {
-              postFetch = (args.postFetch or "") + ''
-                substituteInPlace $out/services/Cargo.toml \
-                  --replace-fail '"mgmt/batch",' '"mgmt/batch", "svc/blobstorage",'
-              '';
-            }
-          )
-        else
-          fetchgit args;
-    })
-      {
-        lockFile = ./Cargo.lock;
-        outputHashes = {
-          "azure_core-0.21.0" = "sha256-I8kzIkguRa3REwii0xsFFpNhE90/QX5msXwE6rrzDlY=";
-        };
-      };
 
   postPatch = ''
     substituteInPlace Cargo.toml \
@@ -140,88 +108,14 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isx86_64 nasm;
 
-  dontUseCmakeConfigure = true;
-
   env = {
-    DAFT_RUNNER = "native";
-    NIX_CFLAGS_COMPILE = "-Wno-error";
-
     # avoid building frontend npm
     CI = "1";
     DAFT_DASHBOARD_SKIP_BUILD = "1";
-
+    DAFT_RUNNER = "native";
+    NIX_CFLAGS_COMPILE = "-Wno-error";
     # daft-minhash uses #![feature(portable_simd)] which requires nightly
     RUSTC_BOOTSTRAP = "1";
-  };
-
-  pythonRelaxDeps = [ "fsspec" ];
-
-  dependencies = [
-    fsspec
-    packaging
-    pyarrow
-    tqdm
-
-    # daft/series.py imports `Self` from typing_extensions unconditionally,
-    # even though upstream pyproject.toml marks it python_version < '3.11'.
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    aws = [
-      boto3
-      mypy-boto3-glue
-    ];
-    azure = [ ];
-    clickhouse = [ clickhouse-connect ];
-    deltalake = [ deltalake ];
-    gcp = [ ];
-    google = [
-      google-genai
-      numpy
-      pillow
-    ];
-    gravitino = [ requests ];
-    hudi = [ pyarrow ];
-    huggingface = [
-      datasets
-      huggingface-hub
-    ];
-    iceberg = [ pyiceberg ];
-    numpy = [ numpy ];
-    openai = [
-      numpy
-      openai
-      pillow
-    ];
-    pandas = [ pandas ];
-    postgres = [
-      pgvector
-      psycopg
-      sqlglot
-    ];
-    ray = [ ray ];
-    transformers = [
-      pillow
-      sentence-transformers
-      torch
-      torchvision
-      transformers
-    ];
-    sql = [
-      sqlalchemy
-      sqlglot
-    ];
-    unity = [
-      deltalake
-      httpx
-    ];
-    video = [ av ];
-    audio = [
-      librosa
-      soundfile
-    ];
-    viz = [ ];
   };
 
   nativeCheckInputs = [
@@ -279,6 +173,46 @@ buildPythonPackage (finalAttrs: {
     rm -rf daft
   '';
 
+  __structuredAttrs = true;
+
+  cargoDeps =
+    (rustPlatform.importCargoLock.override {
+      fetchgit =
+        args:
+        if (args.url or null) == "https://github.com/Eventual-Inc/azure-sdk-for-rust" then
+          fetchgit (
+            args
+            // {
+              postFetch = (args.postFetch or "") + ''
+                substituteInPlace $out/services/Cargo.toml \
+                  --replace-fail '"mgmt/batch",' '"mgmt/batch", "svc/blobstorage",'
+              '';
+            }
+          )
+        else
+          fetchgit args;
+    })
+      {
+        lockFile = ./Cargo.lock;
+
+        outputHashes = {
+          "azure_core-0.21.0" = "sha256-I8kzIkguRa3REwii0xsFFpNhE90/QX5msXwE6rrzDlY=";
+        };
+      };
+
+  dependencies = [
+    fsspec
+    packaging
+    pyarrow
+    tqdm
+
+    # daft/series.py imports `Self` from typing_extensions unconditionally,
+    # even though upstream pyproject.toml marks it python_version < '3.11'.
+    typing-extensions
+  ];
+
+  disabled = pythonOlder "3.10";
+
   disabledTestPaths = [
     "tests/integration"
     "tests/benchmarks"
@@ -323,7 +257,82 @@ buildPythonPackage (finalAttrs: {
     "test_table_concat_schema_mismatch"
   ];
 
+  dontUseCmakeConfigure = true;
+
+  optional-dependencies = {
+    audio = [
+      librosa
+      soundfile
+    ];
+
+    aws = [
+      boto3
+      mypy-boto3-glue
+    ];
+
+    azure = [ ];
+    clickhouse = [ clickhouse-connect ];
+    deltalake = [ deltalake ];
+    gcp = [ ];
+
+    google = [
+      google-genai
+      numpy
+      pillow
+    ];
+
+    gravitino = [ requests ];
+    hudi = [ pyarrow ];
+
+    huggingface = [
+      datasets
+      huggingface-hub
+    ];
+
+    iceberg = [ pyiceberg ];
+    numpy = [ numpy ];
+
+    openai = [
+      numpy
+      openai
+      pillow
+    ];
+
+    pandas = [ pandas ];
+
+    postgres = [
+      pgvector
+      psycopg
+      sqlglot
+    ];
+
+    ray = [ ray ];
+
+    sql = [
+      sqlalchemy
+      sqlglot
+    ];
+
+    transformers = [
+      pillow
+      sentence-transformers
+      torch
+      torchvision
+      transformers
+    ];
+
+    unity = [
+      deltalake
+      httpx
+    ];
+
+    video = [ av ];
+    viz = [ ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "daft" ];
+  pythonRelaxDeps = [ "fsspec" ];
 
   meta = {
     description = "Distributed dataframes for multimodal data";
@@ -331,7 +340,7 @@ buildPythonPackage (finalAttrs: {
     changelog = "https://github.com/Eventual-Inc/Daft/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ derdennisop ];
-    mainProgram = "daft";
     platforms = lib.platforms.unix;
+    mainProgram = "daft";
   };
 })

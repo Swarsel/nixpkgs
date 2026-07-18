@@ -2,8 +2,8 @@
   lib,
   stdenv,
   buildPackages,
-  targetPackages,
   gobject-introspection-unwrapped,
+  targetPackages,
   ...
 }@_args:
 
@@ -41,11 +41,7 @@ then
   overriddenUnwrappedGir.overrideAttrs (previousAttrs: {
 
     pname = "gobject-introspection-wrapped";
-    passthru = previousAttrs.passthru // {
-      unwrapped = overriddenUnwrappedGir;
-    };
-    dontStrip = true;
-    depsTargetTargetPropagated = [ overridenTargetUnwrappedGir ];
+
     buildCommand = ''
       eval fixupPhase
       ${lib.concatMapStrings (output: ''
@@ -91,20 +87,18 @@ then
         preConfigureHooks+=(override-pkg-config-gir-variables)
       EOF
     '';
+
+    depsTargetTargetPropagated = [ overridenTargetUnwrappedGir ];
+    dontStrip = true;
+
+    passthru = previousAttrs.passthru // {
+      unwrapped = overriddenUnwrappedGir;
+    };
   })
 else
   overriddenUnwrappedGir.overrideAttrs (previousAttrs: {
     pname = "gobject-introspection-wrapped";
-    passthru = previousAttrs.passthru // {
-      unwrapped = overriddenUnwrappedGir;
-    };
-    dontStrip = true;
-    # Conditional is for `pkgsCross.x86_64-freebsd.pkgsBuildHost.gobject-introspection` `error: Don't know how to run x86_64-unknown-freebsd executables.`
-    # `pkgsCross.x86_64-freebsd.buildPackages.python3.withPackages (pp: [ pp.pygobject3 ])`
-    # Using the python module does not need this propagation
-    depsTargetTargetPropagated = lib.optionals (stdenv.targetPlatform.emulatorAvailable buildPackages) [
-      overridenTargetUnwrappedGir
-    ];
+
     buildCommand = ''
       eval fixupPhase
       ${lib.concatMapStrings (output: ''
@@ -112,4 +106,17 @@ else
         ${lib.getExe buildPackages.lndir} ${overriddenUnwrappedGir.${output}} ${"$" + "${output}"}
       '') overriddenUnwrappedGir.outputs}
     '';
+
+    # Conditional is for `pkgsCross.x86_64-freebsd.pkgsBuildHost.gobject-introspection` `error: Don't know how to run x86_64-unknown-freebsd executables.`
+    # `pkgsCross.x86_64-freebsd.buildPackages.python3.withPackages (pp: [ pp.pygobject3 ])`
+    # Using the python module does not need this propagation
+    depsTargetTargetPropagated = lib.optionals (stdenv.targetPlatform.emulatorAvailable buildPackages) [
+      overridenTargetUnwrappedGir
+    ];
+
+    dontStrip = true;
+
+    passthru = previousAttrs.passthru // {
+      unwrapped = overriddenUnwrappedGir;
+    };
   })

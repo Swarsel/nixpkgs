@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -11,17 +11,17 @@ stdenvNoCC.mkDerivation {
 
   src = fetchzip {
     url = "http://www.i18nguy.com/unicode/andagii.zip";
-    curlOpts = "--user-agent 'Mozilla/5.0'";
     hash = "sha256-U7wC55G8jIvMMyPcEiJQ700A7nkWdgWK1LM0F/wgDCg=";
+    curlOpts = "--user-agent 'Mozilla/5.0'";
   };
 
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "http://www.i18nguy.com/unicode/unicode-font.html";
     description = "Unicode Plane 1 Osmanya script font";
-    maintainers = [ lib.maintainers.raskin ];
+    homepage = "http://www.i18nguy.com/unicode/unicode-font.html";
     license = lib.licenses.unfreeRedistributable; # upstream uses the term copyleft only
+    maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.all;
   };
 }

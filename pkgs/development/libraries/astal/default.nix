@@ -1,8 +1,5 @@
 { wireplumber }:
 self: {
-  source = self.callPackage ./source.nix { };
-  buildAstalModule = self.callPackage ./buildAstalModule.nix { };
-
   apps = self.callPackage ./modules/apps.nix { };
   astal3 = self.callPackage ./modules/astal3.nix { };
   astal4 = self.callPackage ./modules/astal4.nix { };
@@ -10,6 +7,7 @@ self: {
   battery = self.callPackage ./modules/battery.nix { };
   bluetooth = self.callPackage ./modules/bluetooth.nix { };
   brightness = self.callPackage ./modules/brightness.nix { };
+  buildAstalModule = self.callPackage ./buildAstalModule.nix { };
   cava = self.callPackage ./modules/cava.nix { };
   gjs = self.callPackage ./modules/gjs.nix { };
   greet = self.callPackage ./modules/greet.nix { };
@@ -21,6 +19,7 @@ self: {
   powerprofiles = self.callPackage ./modules/powerprofiles.nix { };
   quarrel = self.callPackage ./modules/quarrel.nix { };
   river = self.callPackage ./modules/river.nix { };
+  source = self.callPackage ./source.nix { };
   tray = self.callPackage ./modules/tray.nix { };
   wireplumber = self.callPackage ./modules/wireplumber.nix { inherit wireplumber; };
   wl = self.callPackage ./modules/wl.nix { };

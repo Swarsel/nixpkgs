@@ -1,34 +1,25 @@
 {
   lib,
   stdenv,
-  testers,
-  wayland,
-  meson,
-  pkg-config,
-  ninja,
-  wayland-scanner,
   expat,
   libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  testers,
+  wayland,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "wayland-scanner";
   inherit (wayland) version src;
+  pname = "wayland-scanner";
 
   outputs = [
     "out"
     "bin"
     "dev"
   ];
-  separateDebugInfo = true;
-
-  mesonFlags = [
-    (lib.mesonBool "documentation" false)
-    (lib.mesonBool "libraries" false)
-    (lib.mesonBool "tests" false)
-  ];
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     meson
@@ -42,6 +33,15 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
+  mesonFlags = [
+    (lib.mesonBool "documentation" false)
+    (lib.mesonBool "libraries" false)
+    (lib.mesonBool "tests" false)
+  ];
+
+  depsBuildBuild = [ pkg-config ];
+  separateDebugInfo = true;
+
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
@@ -51,9 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     inherit (wayland.meta) homepage license maintainers;
-    mainProgram = "wayland-scanner";
     description = "C code generator for Wayland protocol XML files";
     platforms = lib.platforms.unix;
+    mainProgram = "wayland-scanner";
     pkgConfigModules = [ "wayland-scanner" ];
   };
 })

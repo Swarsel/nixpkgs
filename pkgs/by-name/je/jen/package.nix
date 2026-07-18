@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,11 +16,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-2c4XHA8fl2BA/Qtz+Hp29SjiWqPEJEj4WQiIFG/O4fE=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -28,9 +28,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Simple CLI generation tool for creating large datasets";
-    mainProgram = "jen";
     homepage = "https://github.com/whitfin/jen";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ liberodark ];
+    mainProgram = "jen";
   };
 })

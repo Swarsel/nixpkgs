@@ -1,20 +1,18 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   buildGoModule,
-  fetchFromGitHub,
   flac,
-  lib,
   libogg,
   libvorbis,
   pkg-config,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "lazyspotify-librespot";
   version = "0.7.1.1";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "dubeyKartikay";
@@ -22,10 +20,6 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Hq9Qk8f8oKzpBwsbLNAvPO7qam3bh4L4RPUQC67/NZY=";
   };
-
-  vendorHash = "sha256-5J5i2Wc0zHCdvJ3aUkftXeMKS5X8jWimup0Ir4HLuS8=";
-
-  subPackages = [ "cmd/daemon" ];
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -38,11 +32,7 @@ buildGoModule (finalAttrs: {
     alsa-lib
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/devgianlu/go-librespot.version=v${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-5J5i2Wc0zHCdvJ3aUkftXeMKS5X8jWimup0Ir4HLuS8=";
 
   # rename the generic daemon binary for identification
   postInstall = ''
@@ -50,10 +40,20 @@ buildGoModule (finalAttrs: {
     rm $out/bin/daemon
   '';
 
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/devgianlu/go-librespot.version=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/daemon" ];
+
   meta = {
     description = "Librespot daemon tailored for lazyspotify";
-    mainProgram = "lazyspotify-librespot";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ eConnah ];
+    mainProgram = "lazyspotify-librespot";
   };
 })

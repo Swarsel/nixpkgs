@@ -1,15 +1,14 @@
 {
   buildDunePackage,
-  ppx_sexp_conv,
   conduit,
   lwt,
+  ppx_sexp_conv,
   sexplib0,
 }:
 
 buildDunePackage {
-  pname = "conduit-lwt";
   inherit (conduit) version src;
-
+  pname = "conduit-lwt";
   buildInputs = [ ppx_sexp_conv ];
 
   propagatedBuildInputs = [

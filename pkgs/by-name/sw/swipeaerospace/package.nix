@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   actool,
   darwin,
-  fetchFromGitHub,
-  lib,
   nix-update-script,
   swiftPackages,
 }:
@@ -14,9 +14,6 @@ let
     pname = "blue-socket";
     version = "2.0.4";
 
-    strictDeps = true;
-    __structuredAttrs = true;
-
     src = fetchFromGitHub {
       owner = "Kitura";
       repo = "BlueSocket";
@@ -24,12 +21,12 @@ let
       hash = "sha256-Bru14uTGvmAeRLjbFYhWKfRjQcj5cZzp9jzyg5o7EHs=";
     };
 
+    strictDeps = true;
+
     nativeBuildInputs = [
       swift
       darwin.autoSignDarwinBinariesHook
     ];
-
-    dontConfigure = true;
 
     buildPhase = ''
       runHook preBuild
@@ -60,6 +57,9 @@ let
 
       runHook postInstall
     '';
+
+    __structuredAttrs = true;
+    dontConfigure = true;
   });
 
   infoPlist =
@@ -87,9 +87,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "swipeaerospace";
   version = "0.3.1";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "MediosZ";
     repo = "SwipeAeroSpace";
@@ -100,6 +97,7 @@ stdenv.mkDerivation (finalAttrs: {
   # Keep SettingsView unchanged, but open it through a regular WindowGroup.
   # @Environment(\.openSettings) does not compile with nixpkgs' SwiftUI SDK.
   patches = [ ./settings-window.patch ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     swift
@@ -108,8 +106,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ blueSocket ];
-
-  dontConfigure = true;
 
   buildPhase = ''
     runHook preBuild
@@ -159,15 +155,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Switch AeroSpace workspaces by swiping";
     homepage = "https://github.com/MediosZ/SwipeAeroSpace";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ kinnrai ];
     platforms = lib.platforms.darwin;
   };

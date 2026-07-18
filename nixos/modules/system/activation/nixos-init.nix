@@ -35,8 +35,8 @@ in
           env_binary = config.environment.usrbinenv;
         }
         // lib.optionalAttrs config.system.etc.overlay.enable {
-          etc_metadata_image = config.system.build.etcMetadataImage;
           etc_basedir = config.system.build.etcBasedir;
+          etc_metadata_image = config.system.build.etcMetadataImage;
         };
       };
     }

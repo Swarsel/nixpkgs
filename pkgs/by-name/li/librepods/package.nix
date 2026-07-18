@@ -1,20 +1,17 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   libpulseaudio,
   openssl,
-  qt6,
-  cmake,
   pkg-config,
-  lib,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "librepods";
   version = "0.2.5";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "librepods-org";
@@ -23,7 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6l1WjwjDbv5e3tDaWo9+XSEjr9ge/hKysIkeUqyiO4U=";
   };
 
-  sourceRoot = "source/linux";
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    qt6.wrapQtAppsHook
+  ];
 
   buildInputs = [
     libpulseaudio
@@ -34,20 +37,19 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qttools
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    qt6.wrapQtAppsHook
-  ];
+  __structuredAttrs = true;
+  sourceRoot = "source/linux";
 
   meta = {
-    homepage = "https://github.com/librepods-org/librepods";
     description = "AirPods liberated from Apple's ecosystem";
+    homepage = "https://github.com/librepods-org/librepods";
     license = lib.licenses.gpl3;
-    mainProgram = "librepods";
+
     maintainers = with lib.maintainers; [
       thefossguy
       Cameo007
     ];
+
+    mainProgram = "librepods";
   };
 })

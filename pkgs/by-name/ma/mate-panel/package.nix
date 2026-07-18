@@ -4,46 +4,47 @@
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  pkg-config,
-  gettext,
-  gtk-doc,
-  itstool,
-  glib,
-  gtk-layer-shell,
-  gtk3,
-  libmateweather,
-  libwnck,
-  librsvg,
-  libxml2,
   dconf,
   dconf-editor,
+  gettext,
+  gitUpdater,
+  glib,
+  gobject-introspection,
+  gtk-doc,
+  gtk-layer-shell,
+  gtk3,
+  hicolor-icon-theme,
+  itstool,
+  libmateweather,
+  librsvg,
+  libwnck,
+  libxml2,
+  marco,
   mate-common,
   mate-desktop,
   mate-menus,
-  hicolor-icon-theme,
+  pkg-config,
   wayland,
-  gobject-introspection,
   wrapGAppsHook3,
   yelp-tools,
-  marco,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mate-panel";
   version = "1.28.7";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "mate-desktop";
     repo = "mate-panel";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-8GS6JY5kS2YKscItAo8dzudgkZeG51JsSBUj0EfLiZQ=";
+    fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     autoconf-archive
@@ -82,12 +83,12 @@ stdenv.mkDerivation (finalAttrs: {
   # Needed for Wayland support.
   configureFlags = [ "--with-in-process-applets=all" ];
 
-  env.NIX_CFLAGS_COMPILE = "-I${glib.dev}/include/gio-unix-2.0";
-
   makeFlags = [
     "INTROSPECTION_GIRDIR=$(out)/share/gir-1.0/"
     "INTROSPECTION_TYPELIBDIR=$(out)/lib/girepository-1.0"
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${glib.dev}/include/gio-unix-2.0";
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -99,18 +100,20 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "v";
     odd-unstable = true;
+    rev-prefix = "v";
   };
 
   meta = {
     description = "MATE panel";
     homepage = "https://github.com/mate-desktop/mate-panel";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
       fdl11Plus
     ];
+
     platforms = lib.platforms.unix;
     teams = [ lib.teams.mate ];
   };

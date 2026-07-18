@@ -9,6 +9,16 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "anthy";
   version = "9100h";
 
+  src = fetchurl {
+    url = "mirror://osdn/anthy/37536/anthy-${finalAttrs.version}.tar.gz";
+    sha256 = "0ism4zibcsa5nl77wwi12vdsfjys3waxcphn1p5s7d0qy1sz0mnj";
+  };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     # for cross builds, copy build tools from the native package
     cp -r "${buildPackages.anthy.dev}"/lib/internals/{mkdepgraph,.libs} depgraph/
@@ -30,10 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(DATA)' 'all-am: $(DATA)'
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  postFixup = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    # not relevant for installed package
+    mkdir "$dev/lib/internals"
+    cp -r depgraph/{mkdepgraph,.libs} mkworddic/{mkworddic,.libs} calctrans/{calctrans,.libs} mkanthydic/{mkfiledic,.libs} "$dev/lib/internals"
+  '';
 
   meta = {
     description = "Hiragana text to Kana Kanji mixed text Japanese input method";
@@ -41,16 +52,5 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-  };
-
-  postFixup = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    # not relevant for installed package
-    mkdir "$dev/lib/internals"
-    cp -r depgraph/{mkdepgraph,.libs} mkworddic/{mkworddic,.libs} calctrans/{calctrans,.libs} mkanthydic/{mkfiledic,.libs} "$dev/lib/internals"
-  '';
-
-  src = fetchurl {
-    url = "mirror://osdn/anthy/37536/anthy-${finalAttrs.version}.tar.gz";
-    sha256 = "0ism4zibcsa5nl77wwi12vdsfjys3waxcphn1p5s7d0qy1sz0mnj";
   };
 })

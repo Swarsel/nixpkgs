@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
-  pkgs,
-  fetchgit,
+  stdenv,
   autoconf,
   automake,
-  libtool,
-  flex,
-  perl,
   check,
+  fetchgit,
+  flex,
+  libtool,
+  perl,
   pkg-config,
+  pkgs,
   python3,
+  arch ? pkgs.crossfire-arch,
   # Included here so that hosts using custom maps/archetypes can easily override.
   maps ? pkgs.crossfire-maps,
-  arch ? pkgs.crossfire-arch,
 }:
 
 stdenv.mkDerivation {
@@ -36,7 +36,8 @@ stdenv.mkDerivation {
     pkg-config
     python3
   ];
-  hardeningDisable = [ "format" ];
+
+  configureFlags = [ "--with-python=${python3}" ];
 
   preConfigure = ''
     ln -s ${arch} lib/arch
@@ -44,17 +45,17 @@ stdenv.mkDerivation {
     sh autogen.sh
   '';
 
-  configureFlags = [ "--with-python=${python3}" ];
-
   postInstall = ''
     ln -s ${maps} "$out/share/crossfire/maps"
   '';
+
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Server for the Crossfire free MMORPG";
     homepage = "http://crossfire.real-time.com/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

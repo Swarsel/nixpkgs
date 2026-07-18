@@ -1,17 +1,16 @@
 {
   lib,
+  alcotest,
   buildDunePackage,
+  hex,
   ppx_deriving,
   ppxlib,
   repr,
-  alcotest,
-  hex,
 }:
 
 buildDunePackage {
-  pname = "ppx_repr";
-
   inherit (repr) src version;
+  pname = "ppx_repr";
 
   propagatedBuildInputs = [
     ppx_deriving
@@ -20,6 +19,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     hex

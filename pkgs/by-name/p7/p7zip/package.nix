@@ -13,12 +13,14 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "p7zip-project";
     repo = "p7zip";
     rev = "v${finalAttrs.version}";
+
     sha256 =
       {
         free = "sha256-NHlacZFal4xMYyFMshibeAw86cS1RXXyXweXKFHQAT8=";
         unfree = "sha256-kSJHgnuUxO9DJwSOE1hffp9PfU39V+VE87I3CpeRGiY=";
       }
       .${if enableUnfree then "unfree" else "free"};
+
     # remove the unRAR related code from the src drv
     # > the license requires that you agree to these use restrictions,
     # > or you must remove the software (source and binary) from your hard disks
@@ -28,6 +30,13 @@ stdenv.mkDerivation (finalAttrs: {
       find $out -name makefile'*' -exec sed -i '/Rar/d' {} +
     '';
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "doc"
+    "man"
+  ];
 
   # Default makefile is full of impurities on Darwin. The patch doesn't hurt Linux so I'm leaving it unconditional
   postPatch = ''
@@ -46,6 +55,15 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'CXX=g++' 'CXX=${stdenv.cc.targetPrefix}g++'
   '';
 
+  makeFlags = [
+    "DEST_BIN=${placeholder "out"}/bin"
+    "DEST_SHARE=${placeholder "lib"}/lib/p7zip"
+    "DEST_MAN=${placeholder "man"}/share/man"
+    "DEST_SHARE_DOC=${placeholder "doc"}/share/doc/p7zip"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=c++11-narrowing";
+
   preConfigure = ''
     buildFlags=all3
   ''
@@ -54,28 +72,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=c++11-narrowing";
-
-  makeFlags = [
-    "DEST_BIN=${placeholder "out"}/bin"
-    "DEST_SHARE=${placeholder "lib"}/lib/p7zip"
-    "DEST_MAN=${placeholder "man"}/share/man"
-    "DEST_SHARE_DOC=${placeholder "doc"}/share/doc/p7zip"
-  ];
-
-  outputs = [
-    "out"
-    "lib"
-    "doc"
-    "man"
-  ];
-
   setupHook = ./setup-hook.sh;
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://github.com/p7zip-project/p7zip";
     description = "New p7zip fork with additional codecs and improvements (forked from https://sourceforge.net/projects/p7zip/)";
+    homepage = "https://github.com/p7zip-project/p7zip";
+
     license =
       with lib.licenses;
       # p7zip code is largely lgpl2Plus
@@ -88,10 +91,12 @@ stdenv.mkDerivation (finalAttrs: {
         # and CPP/7zip/Compress/Rar* are unfree with the unRAR license restriction
         # the unRAR compression code is disabled by default
         lib.optionals enableUnfree [ unfree ];
+
     maintainers = with lib.maintainers; [
       raskin
       jk
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "7z";
   };

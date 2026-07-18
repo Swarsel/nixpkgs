@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   libpcap,
-  pkg-config,
   perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,12 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ pkg-config ];
-
-  nativeCheckInputs = [ perl ];
-
   buildInputs = [ libpcap ];
-
   configureFlags = lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) "ac_cv_linux_vers=2";
+  nativeCheckInputs = [ perl ];
 
   meta = {
     description = "Network sniffer";

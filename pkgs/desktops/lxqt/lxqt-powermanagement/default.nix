@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   kidletime,
   kwindowsystem,
   liblxqt,
@@ -15,7 +16,6 @@
   qtwayland,
   solid,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -51,8 +51,8 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-powermanagement";
     description = "Power management module for LXQt";
+    homepage = "https://github.com/lxqt/lxqt-powermanagement";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxqt ];

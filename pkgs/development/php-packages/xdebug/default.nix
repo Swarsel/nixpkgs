@@ -1,7 +1,7 @@
 {
-  buildPecl,
   lib,
   fetchFromGitHub,
+  buildPecl,
 }:
 
 let
@@ -9,7 +9,6 @@ let
 in
 buildPecl {
   inherit version;
-
   pname = "xdebug";
 
   src = fetchFromGitHub {
@@ -20,13 +19,12 @@ buildPecl {
   };
 
   doCheck = true;
-
   zendExtension = true;
 
   meta = {
-    changelog = "https://github.com/xdebug/xdebug/releases/tag/${version}";
     description = "Provides functions for function traces and profiling";
     homepage = "https://xdebug.org/";
+    changelog = "https://github.com/xdebug/xdebug/releases/tag/${version}";
     license = lib.licenses.php301;
     teams = [ lib.teams.php ];
   };

@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "adenum";
   version = "0-unstable-2022-04-01";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "SecuProject";
@@ -28,6 +27,9 @@ python3.pkgs.buildPythonApplication {
       john
     ];
 
+  # Project has no tests
+  doCheck = false;
+
   installPhase = ''
     runHook preInstall
 
@@ -39,14 +41,13 @@ python3.pkgs.buildPythonApplication {
     runHook postInstall
   '';
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = false;
 
   meta = {
     description = "Tool to find misconfiguration through LDAP";
-    mainProgram = "adenum";
     homepage = "https://github.com/SecuProject/ADenum";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "adenum";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,7 +16,6 @@ buildGoModule {
   };
 
   vendorHash = "sha256-Qnt1wo/yKC3Ce4JoZBIWtXyzlkh4bWz9vyE349iRsjk=";
-
   ldflags = [ "-s" ];
 
   meta = {
@@ -24,7 +23,7 @@ buildGoModule {
     homepage = "https://github.com/muesli/asciicam";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ phanirithvij ];
-    mainProgram = "asciicam";
     platforms = lib.platforms.linux;
+    mainProgram = "asciicam";
   };
 }

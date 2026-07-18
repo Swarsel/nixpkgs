@@ -1,4 +1,4 @@
-{ stdenv, lib }:
+{ lib, stdenv }:
 
 # A "response file" is a sequence of arguments that is passed via a
 # file, rather than via argv[].
@@ -8,26 +8,31 @@
 # https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2023-0/use-response-files.html
 
 stdenv.mkDerivation {
-  name = "expand-response-params";
   src = ./expand-response-params.c;
   strictDeps = true;
+
+  buildPhase = ''
+    NIX_CC_USE_RESPONSE_FILE=0 "$CC" -std=c99 -O3 -o "expand-response-params" expand-response-params.c
+  '';
+
+  installPhase = ''
+    mkdir -p $prefix/bin
+    mv expand-response-params${stdenv.hostPlatform.extensions.executable} $prefix/bin/
+  '';
+
   enableParallelBuilding = true;
+  name = "expand-response-params";
+
   # Work around "stdenv-darwin-boot-2 is not allowed to refer to path
   # /nix/store/...-expand-response-params.c"
   unpackPhase = ''
     cp "$src" expand-response-params.c
     src=$PWD
   '';
-  buildPhase = ''
-    NIX_CC_USE_RESPONSE_FILE=0 "$CC" -std=c99 -O3 -o "expand-response-params" expand-response-params.c
-  '';
-  installPhase = ''
-    mkdir -p $prefix/bin
-    mv expand-response-params${stdenv.hostPlatform.extensions.executable} $prefix/bin/
-  '';
 
   meta = {
     description = "Internal tool used by the nixpkgs wrapper scripts for processing response files";
+
     longDescription = ''
       expand-response-params is a tool that allows for obtaining a full list of all
       arguments passed in a given compiler command line including those passed via
@@ -36,6 +41,7 @@ stdenv.mkDerivation {
       conjunction with the nixpkgs wrapper scripts, it should be considered as
       unstable and subject to change.
     '';
+
     license = lib.licenses.mit;
     platforms = lib.platforms.all;
     mainProgram = "expand-response-params${stdenv.hostPlatform.extensions.executable}";

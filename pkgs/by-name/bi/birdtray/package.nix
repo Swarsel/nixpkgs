@@ -1,13 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-
   cmake,
-  pkg-config,
   libsForQt5,
-
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = with libsForQt5; [
     qtbase
     qttools
@@ -41,15 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
   # Wayland support is broken.
   # https://github.com/gyunaev/birdtray/issues/113#issuecomment-621742315
   qtWrapperArgs = [ "--set QT_QPA_PLATFORM xcb" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Mail system tray notification icon for Thunderbird";
-    mainProgram = "birdtray";
     homepage = "https://github.com/gyunaev/birdtray";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ Flakebi ];
     platforms = lib.platforms.linux;
+    mainProgram = "birdtray";
   };
 })

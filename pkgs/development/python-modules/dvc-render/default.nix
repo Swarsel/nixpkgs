@@ -1,45 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flatten-dict,
   funcy,
   matplotlib,
-  tabulate,
-  pytestCheckHook,
   pytest-mock,
   pytest-test-utils,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
+  tabulate,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dvc-render";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
     repo = "dvc-render";
     tag = finalAttrs.version;
     hash = "sha256-V4QVZu4PSOW9poT6YUWbgTjJpIJ8YUtGDAE4Ijgm5Ac=";
-  };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  passthru.optional-dependencies = {
-    table = [
-      flatten-dict
-      tabulate
-    ];
-    markdown = [
-      tabulate
-      matplotlib
-    ];
   };
 
   nativeCheckInputs = [
@@ -51,9 +34,26 @@ buildPythonPackage (finalAttrs: {
   ++ finalAttrs.passthru.optional-dependencies.table
   ++ finalAttrs.passthru.optional-dependencies.markdown;
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [ "tests/test_vega.py" ];
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
 
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [ "tests/test_vega.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "dvc_render" ];
+
+  passthru.optional-dependencies = {
+    markdown = [
+      tabulate
+      matplotlib
+    ];
+
+    table = [
+      flatten-dict
+      tabulate
+    ];
+  };
 
   meta = {
     description = "Library for rendering DVC plots";

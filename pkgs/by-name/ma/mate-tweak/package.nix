@@ -1,26 +1,25 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
+  gdk-pixbuf,
+  gitUpdater,
+  glib,
+  gobject-introspection,
+  gtk3,
   intltool,
+  libmatekbd,
+  libnotify,
+  marco,
   mate-applets,
   mate-panel,
-  marco,
-  libmatekbd,
   mate-session-manager,
-  libnotify,
-  gtk3,
-  gdk-pixbuf,
-  gobject-introspection,
+  python3Packages,
   wrapGAppsHook3,
-  glib,
-  gitUpdater,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "mate-tweak";
   version = "22.10.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ubuntu-mate";
@@ -28,6 +27,17 @@ python3Packages.buildPythonApplication rec {
     rev = version;
     sha256 = "emeNgCzMhHMeLOyUkXe+8OzQMEWuwNdD4xkGXIFgbh4=";
   };
+
+  postPatch = ''
+    # mate-tweak hardcodes absolute paths everywhere. Nuke from orbit.
+    find . -type f -exec sed -i \
+      -e s,/usr/lib/mate-tweak,$out/lib/mate-tweak,g \
+      {} +
+
+    sed -i 's,{prefix}/,,g' setup.py
+  '';
+
+  strictDeps = false;
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -55,19 +65,6 @@ python3Packages.buildPythonApplication rec {
     setproctitle
   ];
 
-  strictDeps = false;
-
-  dontWrapGApps = true;
-
-  postPatch = ''
-    # mate-tweak hardcodes absolute paths everywhere. Nuke from orbit.
-    find . -type f -exec sed -i \
-      -e s,/usr/lib/mate-tweak,$out/lib/mate-tweak,g \
-      {} +
-
-    sed -i 's,{prefix}/,,g' setup.py
-  '';
-
   # Arguments to be passed to `makeWrapper`, only used by buildPython*
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
@@ -79,6 +76,8 @@ python3Packages.buildPythonApplication rec {
     done
   '';
 
+  dontWrapGApps = true;
+  format = "setuptools";
   passthru.updateScript = gitUpdater { };
 
   meta = {

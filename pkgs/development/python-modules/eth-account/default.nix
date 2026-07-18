@@ -1,13 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   bitarray,
+  buildPythonPackage,
   ckzg,
   eth-abi,
   eth-keyfile,
@@ -15,20 +11,20 @@
   eth-rlp,
   eth-utils,
   hexbytes,
-  rlp,
-  websockets,
-
   # tests
   hypothesis,
   pydantic,
-  pytestCheckHook,
   pytest-xdist,
+  pytestCheckHook,
+  rlp,
+  # build-system
+  setuptools,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "eth-account";
   version = "0.13.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -36,6 +32,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Ipz2zIKCpIzKBtX0UZnvpKZeTUcDPbGTzMgmcJC/4qs=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    pydantic
+    pytestCheckHook
+    pytest-xdist
+  ];
 
   build-system = [ setuptools ];
 
@@ -53,13 +56,6 @@ buildPythonPackage rec {
     websockets
   ];
 
-  nativeCheckInputs = [
-    hypothesis
-    pydantic
-    pytestCheckHook
-    pytest-xdist
-  ];
-
   disabledTests = [
     # requires local nodejs install
     "test_messages_where_all_3_sigs_match"
@@ -73,8 +69,8 @@ buildPythonPackage rec {
     "test_install_local_wheel"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "eth_account" ];
-
   pythonRelaxDeps = [ "eth-keyfile" ];
 
   meta = {

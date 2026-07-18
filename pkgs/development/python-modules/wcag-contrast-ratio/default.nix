@@ -2,32 +2,29 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   hypothesis,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "wcag-contrast-ratio";
   version = "0.9";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-aRkrjlwKfQ3F/xGH7rPjmBQWM6S95RxpyH9Y/oftNhw=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
   enabledTestPaths = [ "test.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wcag_contrast_ratio" ];
 
   meta = {

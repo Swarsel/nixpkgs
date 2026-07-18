@@ -1,9 +1,9 @@
 {
   lib,
-  nodejs_22,
-  buildNpmPackage,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  buildNpmPackage,
+  nodejs_22,
 }:
 
 let
@@ -20,7 +20,6 @@ let
     };
 
     vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
-
     meta.mainProgram = "esbuild";
   };
 in
@@ -37,11 +36,6 @@ buildNpmPackage.override { nodejs = nodejs_22; } rec {
   };
 
   npmDepsHash = "sha256-CwIx5/kAAY+PAjEkJi7/7NpApzFSoIfuIl7zmsaqicE=";
-
-  # for ml-regression-logarithmic
-  forceGitDeps = true;
-  makeCacheWritable = true;
-
   # custom pinned esbuild version
   env.ESBUILD_BINARY_PATH = lib.getExe esbuild;
 
@@ -49,6 +43,10 @@ buildNpmPackage.override { nodejs = nodejs_22; } rec {
     install -d $out
     install -m0644 dist/plotly-graph-card.js $out/
   '';
+
+  # for ml-regression-logarithmic
+  forceGitDeps = true;
+  makeCacheWritable = true;
 
   meta = {
     description = "Highly customisable Lovelace card to plot interactive graphs. Brings scrolling, zooming, and much more";

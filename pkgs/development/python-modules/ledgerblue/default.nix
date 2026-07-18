@@ -23,19 +23,19 @@
 buildPythonPackage rec {
   pname = "ledgerblue";
   version = "0.1.55";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-6s2V8cXik6jEg8z3UK49qVwodPbwXMIkWk7iJ7OY0rM=";
   };
 
+  # No tests
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
-
-  pythonRelaxDeps = [ "protobuf" ];
 
   dependencies = [
     ecpy
@@ -53,10 +53,9 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ bleak ];
 
-  # No tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ledgerblue" ];
+  pythonRelaxDeps = [ "protobuf" ];
 
   meta = {
     description = "Python library to communicate with Ledger Blue/Nano S";

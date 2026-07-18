@@ -1,10 +1,10 @@
 {
+  lib,
   fetchFromSourcehut,
   file,
   gettext,
   installShellFiles,
   less,
-  lib,
   python3Packages,
   timg,
   versionCheckHook,
@@ -15,7 +15,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "offpunk";
   version = "3.1";
-  pyproject = true;
 
   src = fetchFromSourcehut {
     owner = "~lioploum";
@@ -24,12 +23,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-RwigItHVNsgq6k3O8YrSMFBaZMJwJSzB6dfnNiYsefY=";
   };
 
-  build-system = with python3Packages; [ hatchling ];
-
   nativeBuildInputs = [
     gettext
     installShellFiles
   ];
+
+  postInstall = ''
+    installManPage man/*.1
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  build-system = with python3Packages; [ hatchling ];
 
   dependencies = [
     file
@@ -49,6 +54,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setproctitle
   ]);
 
+  pyproject = true;
+
   /*
     False positive from pythonRuntimeDepsCheckHook:
       - "bs4" is the import name for beautifulsoup4 (not the PyPI
@@ -61,16 +68,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "file"
   ];
 
-  postInstall = ''
-    installManPage man/*.1
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   meta = {
-    changelog = "https://git.sr.ht/~lioploum/offpunk/tree/v${finalAttrs.version}/item/CHANGELOG";
     description = "CLI and offline-first smolnet browser/feed reader";
+
     longDescription = ''
       Offpunk allows you to browse the Web, Gemini, Gopher and
       subscribe to RSS feeds without leaving your terminal and while
@@ -80,9 +80,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
       once (a day, a week, a month) and then browse/organise it while
       staying disconnected.
     '';
+
     homepage = "https://offpunk.net";
+    changelog = "https://git.sr.ht/~lioploum/offpunk/tree/v${finalAttrs.version}/item/CHANGELOG";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "offpunk";
     maintainers = with lib.maintainers; [ DamienCassou ];
+    mainProgram = "offpunk";
   };
 })

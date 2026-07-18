@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  gitUpdater,
-  nixosTests,
   accounts-qml-module,
   buteo-syncfw,
   cmake,
+  fetchpatch,
   gettext,
+  gitUpdater,
   lomiri-content-hub,
   lomiri-indicator-network,
   lomiri-ui-toolkit,
+  nixosTests,
   qtbase,
   qtdeclarative,
   qtorganizer-mkcal,
@@ -33,21 +33,21 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Needed for MR 260 changes
     (fetchpatch {
+      hash = "sha256-tvY5inNkNrSvfuD05RpmI3a2tFEOwNPCRgRn0RZB4DA=";
       name = "0001-lomiri-calendar-app-Remove-deprecated-tabs.patch";
       url = "https://gitlab.com/ubports/development/apps/lomiri-calendar-app/-/commit/12c9d3b8a5643790334e664e6b3d2c8f9b600e83.patch";
-      hash = "sha256-tvY5inNkNrSvfuD05RpmI3a2tFEOwNPCRgRn0RZB4DA=";
     })
     (fetchpatch {
+      hash = "sha256-FusFYFnpEEJKchInLZ5vE08SnKbwmlnUYh85cQE+JbM=";
       name = "0002-lomiri-calendar-app-Ensure-PageStack-is-initialized.patch";
       url = "https://gitlab.com/ubports/development/apps/lomiri-calendar-app/-/commit/deef3605b31c4c41f5c67311f1ff1ee02bd3b39a.patch";
-      hash = "sha256-FusFYFnpEEJKchInLZ5vE08SnKbwmlnUYh85cQE+JbM=";
     })
 
     # Fixes localisation for us
     (fetchpatch {
+      hash = "sha256-GLEJlr4EMY6ugP2UVvpyVIZkBnkArn0XoSB5aqGEpm4=";
       name = "0101-lomiri-calendar-app-bindtextdomain.patch";
       url = "https://gitlab.com/ubports/development/apps/lomiri-calendar-app/-/commit/c4c296e7f308af491558f1b7964542e4d638cb47.patch";
-      hash = "sha256-GLEJlr4EMY6ugP2UVvpyVIZkBnkArn0XoSB5aqGEpm4=";
     })
 
     # Switch to future contacts backend
@@ -115,8 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
   # Not workiing yet
   doCheck = false;
 
-  enableParallelChecking = false;
-
   preCheck =
     let
       listToQtVar = suffix: lib.makeSearchPathOutput "bin" suffix;
@@ -140,6 +138,8 @@ stdenv.mkDerivation (finalAttrs: {
       }
     '';
 
+  enableParallelChecking = false;
+
   passthru = {
     tests.vm = nixosTests.lomiri-calendar-app;
     updateScript = gitUpdater { rev-prefix = "v"; };
@@ -150,8 +150,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/apps/lomiri-calendar-app";
     changelog = "https://gitlab.com/ubports/development/apps/lomiri-calendar-app/-/blob/v${finalAttrs.version}/ChangeLog";
     license = with lib.licenses; [ gpl3Only ];
+    platforms = lib.platforms.linux;
     mainProgram = "lomiri-calendar-app";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   filelock,
-  pytest,
-  typing-extensions,
+  hatchling,
   polars,
+  pytest,
   pytest-xdist,
   pytestCheckHook,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-shared-session-scope";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "StefanBRas";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-IPTktwOJhzoC7/gPgMVwbLCkRuhbPf90m23yznqHha4=";
   };
+
+  nativeCheckInputs = [
+    polars
+    pytest-xdist
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -31,18 +36,13 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    polars
-    pytest-xdist
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_shared_session_scope" ];
 
   meta = {
-    changelog = "https://github.com/StefanBRas/pytest-shared-session-scope/blob/${src.tag}/CHANGELOG.md";
     description = "Pytest session-scoped fixture that works with xdist";
     homepage = "https://pypi.org/project/pytest-shared-session-scope/";
+    changelog = "https://github.com/StefanBRas/pytest-shared-session-scope/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

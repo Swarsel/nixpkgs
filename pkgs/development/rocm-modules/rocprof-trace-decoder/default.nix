@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmPackages,
   cmake,
-  python3,
-  nlohmann_json,
   gtest,
+  nlohmann_json,
+  python3,
+  rocmPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,14 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "rocm-systems";
     # No tags (yet?)
     rev = "feeca99950c590e0b8228733405c4a1a10fa4773";
+    hash = "sha256-aJhPiZf5380jj2IeCipgcTEQYogr5R19UnVwKRGnkxo=";
+
     sparseCheckout = [
       "projects/rocprof-trace-decoder"
       "shared"
     ];
-    hash = "sha256-aJhPiZf5380jj2IeCipgcTEQYogr5R19UnVwKRGnkxo=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/projects/rocprof-trace-decoder";
 
   patches = [
     ./use-system-dependencies.patch
@@ -34,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -45,6 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTS" finalAttrs.doCheck)
   ];
+
+  doCheck = true;
 
   nativeCheckInputs = [
     python3
@@ -73,13 +73,13 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postCheck
     '';
 
-  doCheck = true;
+  sourceRoot = "${finalAttrs.src.name}/projects/rocprof-trace-decoder";
 
   meta = {
     description = "Library for decoding ROCm thread trace data";
     homepage = "https://github.com/ROCm/rocm-systems/tree/develop/projects/rocprof-trace-decoder";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

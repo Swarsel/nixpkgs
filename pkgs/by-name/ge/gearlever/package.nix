@@ -1,30 +1,29 @@
 {
   lib,
-  python3Packages,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  _7zz,
+  appimage-run,
+  bintools,
+  desktop-file-utils,
+  dwarfs,
+  file,
+  gobject-introspection,
+  gtk4,
+  libadwaita,
+  libnotify,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
-  file,
-  _7zz,
-  which,
-  appimage-run,
-  gtk4,
-  bintools,
-  libnotify,
-  dwarfs,
+  python3Packages,
   squashfsTools,
+  which,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gearlever";
   version = "3.4.7";
-  pyproject = false; # Built with meson
 
   src = fetchFromGitHub {
     owner = "mijorus";
@@ -91,8 +90,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     }"
   ];
 
+  pyproject = false; # Built with meson
+
   meta = {
     description = "Manage AppImages with ease";
+
     longDescription = ''
       Features:
 
@@ -105,13 +107,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
       - Save CLI apps with their executable name automatically
       - Modern and Fresh UI
     '';
+
     homepage = "https://mijorus.it/projects/gearlever";
+
     license = with lib.licenses; [
       gpl3Plus
       cc0
     ];
-    mainProgram = "gearlever";
+
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "gearlever";
   };
 })

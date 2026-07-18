@@ -1,20 +1,15 @@
 {
   lib,
   stdenv,
-  fetchFromBitbucket,
   cmake,
-  sqlite,
+  fetchFromBitbucket,
   nix-update-script,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "nunicode";
   version = "1.11.1";
-
-  outputs = [
-    "out"
-    "sqlite"
-  ];
 
   src = fetchFromBitbucket {
     owner = "alekseyt";
@@ -22,6 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-73jkbWbQGSya4hf+/5c2bpJsRmncgjA2m+6bud2UN0A=";
   };
+
+  outputs = [
+    "out"
+    "sqlite"
+  ];
 
   postPatch = ''
     # load correct SQLite extension on all platforms
@@ -41,9 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     sqlite
   ];
-
-  # avoid name-clash on case-insensitive filesystems
-  cmakeBuildDir = "build-dir";
 
   cmakeFlags = [
     # fix compatibility with CMake (https://cmake.org/cmake/help/latest/command/cmake_minimum_required.html)
@@ -68,6 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  # avoid name-clash on case-insensitive filesystems
+  cmakeBuildDir = "build-dir";
   passthru.updateScript = nix-update-script { };
 
   meta = {

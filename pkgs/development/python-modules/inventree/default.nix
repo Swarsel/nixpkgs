@@ -1,26 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   coveralls,
   invoke,
   pillow,
-  requests,
-
   # tests
   pytestCheckHook,
+  requests,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "inventree";
   version = "0.23.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "inventree";
@@ -28,6 +23,9 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-YGzy58AbDdZGqkRNw/mRpcmbzsP5rBk2H9diz9RDhfM=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -38,21 +36,6 @@ buildPythonPackage (finalAttrs: {
     invoke
     pillow
     requests
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-  pytestImportsCheck = [ "inventree" ];
-
-  disabledTests = [
-    # Disable tests requiring dev server
-    "file_download"
-    "timeout"
-    "details"
-    "token"
-    "create_stuff"
-    "add_result"
-    "add_template"
-    "get_widget"
   ];
 
   disabledTestPaths = [
@@ -71,11 +54,27 @@ buildPythonPackage (finalAttrs: {
     "test/test_stock.py"
   ];
 
+  disabledTests = [
+    # Disable tests requiring dev server
+    "file_download"
+    "timeout"
+    "details"
+    "token"
+    "create_stuff"
+    "add_result"
+    "add_template"
+    "get_widget"
+  ];
+
+  pyproject = true;
+  pytestImportsCheck = [ "inventree" ];
+
   meta = {
     description = "Python library for communication with inventree via API";
     homepage = "https://github.com/inventree/inventree-python/";
     changelog = "https://github.com/inventree/inventree-python/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gigahawk
     ];

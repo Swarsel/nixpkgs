@@ -1,11 +1,11 @@
 {
   lib,
-  multiStdenv,
   fetchFromGitHub,
   libx11,
   libxxf86vm,
-  xorgproto,
+  multiStdenv,
   unstableGitUpdater,
+  xorgproto,
 }:
 
 multiStdenv.mkDerivation (finalAttrs: {
@@ -45,8 +45,8 @@ multiStdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/CyberShadow/hax11";
     description = "Hackbrary to Hook and Augment X11 protocol calls";
+    homepage = "https://github.com/CyberShadow/hax11";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ cybershadow ];
     platforms = lib.platforms.linux;

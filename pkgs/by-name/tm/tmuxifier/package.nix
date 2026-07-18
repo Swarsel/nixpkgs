@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ installShellFiles ];
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -50,12 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Powerful session, window & pane management for Tmux";
     homepage = "https://github.com/jimeh/tmuxifier";
     license = lib.licenses.mit;
-    mainProgram = "tmuxifier";
     maintainers = with lib.maintainers; [ wigust ];
     platforms = lib.platforms.unix;
+    mainProgram = "tmuxifier";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "omnikinverter";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "klaasnicolaas";
@@ -22,8 +21,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-W9VeRhsCXLLgOgvJcNNCGNmPvakPtKHAtwQAGtYJbcY=";
   };
-
-  __darwinAllowLocalNetworking = true;
 
   postPatch = ''
     # Upstream doesn't set a version for the pyproject.toml
@@ -45,6 +42,8 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+  pyproject = true;
   pythonImportsCheck = [ "omnikinverter" ];
 
   meta = {

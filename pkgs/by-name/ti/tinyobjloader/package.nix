@@ -16,10 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-BNffbicnLTGK2GQ2/bB328LFU9fqHxrpAVj2hJaekWc=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [ (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5") ];
-
   # https://github.com/tinyobjloader/tinyobjloader/issues/336
   postPatch = ''
     substituteInPlace tinyobjloader.pc.in \
@@ -27,9 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '$'{prefix}/@TINYOBJLOADER_INCLUDE_DIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
   '';
 
+  nativeBuildInputs = [ cmake ];
+  cmakeFlags = [ (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5") ];
+
   meta = {
-    homepage = "https://github.com/tinyobjloader/tinyobjloader";
     description = "Tiny but powerful single file wavefront obj loader";
+    homepage = "https://github.com/tinyobjloader/tinyobjloader";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;

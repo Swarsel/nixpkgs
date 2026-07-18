@@ -17,6 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Depc6mzPK6FEGTUo2BmXoWlyzjQDU8Hiodp5UjxKlQE=";
   };
 
+  # https://github.com/georgeweigt/eigenmath/issues/32
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  doCheck = true;
+
   checkPhase =
     let
       emulator = stdenv.hostPlatform.emulator buildPackages;
@@ -28,25 +32,20 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postCheck
     '';
 
-  # https://github.com/georgeweigt/eigenmath/issues/32
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   installPhase = ''
     runHook preInstall
     install -Dm555 eigenmath "$out/bin/eigenmath"
     runHook postInstall
   '';
 
-  doCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Computer algebra system written in C";
-    mainProgram = "eigenmath";
     homepage = "https://georgeweigt.github.io";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ nickcao ];
     platforms = lib.platforms.unix;
+    mainProgram = "eigenmath";
   };
 })

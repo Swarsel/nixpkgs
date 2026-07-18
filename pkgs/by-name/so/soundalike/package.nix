@@ -1,8 +1,8 @@
 {
   lib,
   buildGoModule,
-  fetchFromCodeberg,
   chromaprint,
+  fetchFromCodeberg,
   makeWrapper,
   versionCheckHook,
 }:
@@ -18,29 +18,14 @@ buildGoModule rec {
     hash = "sha256-mpYUVTj3Zll6kNuK5Mdzv1R7k5FZy6XFghhzmAPPVM8=";
   };
 
-  vendorHash = "sha256-7hRezOBcjB2wsx/SwV519wg3Azh+0kHMcAoc9aYPM3A=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X"
-    "main.buildVersion=${version}"
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     chromaprint
   ];
 
+  vendorHash = "sha256-7hRezOBcjB2wsx/SwV519wg3Azh+0kHMcAoc9aYPM3A=";
   doCheck = true;
-  # need to grab another repo for music test data
-  testDataVersion = "0.0.1";
-  testData = fetchFromCodeberg {
-    owner = "derat";
-    repo = "soundalike-testdata";
-    tag = "v${testDataVersion}";
-    hash = "sha256-7JQTnEjoYiiaQlnxsGcfj/9PYDWAkWq4/oxyczjEMo4=";
-  };
+
   preCheck = ''
     # add soundalike to PATH to be available for unit tests
     export PATH="$GOPATH/bin:$PATH"
@@ -49,16 +34,33 @@ buildGoModule rec {
     ln -sfv ${testData} ./testdata
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-version";
-  doInstallCheck = true;
-
   # soundalike depends on fpcalc (chromparint) at runtime, so we
   # need to use wrapProgram to make it available
   postInstall = ''
     wrapProgram $out/bin/soundalike \
       --prefix PATH : ${lib.makeBinPath [ chromaprint ]}
   '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X"
+    "main.buildVersion=${version}"
+  ];
+
+  testData = fetchFromCodeberg {
+    hash = "sha256-7JQTnEjoYiiaQlnxsGcfj/9PYDWAkWq4/oxyczjEMo4=";
+    owner = "derat";
+    repo = "soundalike-testdata";
+    tag = "v${testDataVersion}";
+  };
+
+  # need to grab another repo for music test data
+  testDataVersion = "0.0.1";
+  versionCheckProgramArg = "-version";
 
   meta = {
     description = "Find duplicate audio files using acoustic fingerprints";

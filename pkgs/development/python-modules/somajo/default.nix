@@ -3,14 +3,13 @@
   stdenv,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   regex,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "somajo";
   version = "2.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tsproisl";
@@ -19,13 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-fq891LX6PukUEfrXplulhnisuPX/RqLAQ/5ty/Fvm9k=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ regex ];
-
   # loops forever
   doCheck = !stdenv.hostPlatform.isDarwin;
-
+  build-system = [ setuptools ];
+  dependencies = [ regex ];
+  pyproject = true;
   pythonImportsCheck = [ "somajo" ];
 
   meta = {

@@ -58,28 +58,21 @@
 
 {
   mkDerivation,
-  replaceVars,
   pkgs,
+  replaceVars,
 }:
 {
   stdenv ? pkgs.stdenv,
   name,
   buildInputs ? [ ],
-  propagatedBuildInputs ? [ ],
-  extraCmds ? "",
   cleanupCmds ? "",
+  extraCmds ? "",
+  propagatedBuildInputs ? [ ],
   shell ? "${pkgs.bashInteractive}/bin/bash --norc",
 }:
 
 mkDerivation {
   inherit buildInputs propagatedBuildInputs;
-
-  name = "env-${name}";
-  phases = [
-    "buildPhase"
-    "fixupPhase"
-  ];
-  setupNew = ../../stdenv/generic/setup.sh;
 
   buildPhase =
     let
@@ -160,4 +153,13 @@ mkDerivation {
         -e 's,@name@,${name},' ${./loadenv.sh} > $out/bin/load-env-${name}
       chmod +x $out/bin/load-env-${name}
     '';
+
+  name = "env-${name}";
+
+  phases = [
+    "buildPhase"
+    "fixupPhase"
+  ];
+
+  setupNew = ../../stdenv/generic/setup.sh;
 }

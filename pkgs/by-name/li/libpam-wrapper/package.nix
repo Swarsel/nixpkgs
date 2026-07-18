@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cmake,
+  fetchgit,
   linux-pam,
   replaceVars,
   enablePython ? false,
@@ -23,13 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (replaceVars ./python.patch {
-      siteDir = lib.optionalString enablePython python.sitePackages;
       includeDir = lib.optionalString enablePython "include/${python.libPrefix}";
+      siteDir = lib.optionalString enablePython python.sitePackages;
     })
   ];
 
   nativeBuildInputs = [ cmake ] ++ lib.optionals enablePython [ python ];
-
   # We must use linux-pam, using openpam will result in broken fprintd.
   buildInputs = [ linux-pam ];
 

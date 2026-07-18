@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,12 +17,12 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-f+bNNwbTj348JJJLST2j7h8/A79qzvGlf8MjldVvtGU=";
 
-  subPackages = [ "cmd/flarectl" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
+
+  subPackages = [ "cmd/flarectl" ];
 
   meta = {
     description = "CLI application for interacting with a Cloudflare account";

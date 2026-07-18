@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
   cmake,
+  gitUpdater,
   python3,
 }:
 
@@ -18,6 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-F/UNDIsEjRvM9RkTPg0wJtRdoTPpNPqyJYbgtvkntNk=";
   };
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     cmake
     python3
@@ -27,10 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "Kokkos_ENABLE_TESTS" true)
   ];
 
-  postPatch = ''
-    patchShebangs .
-  '';
-
   doCheck = true;
   passthru.updateScript = gitUpdater { };
 
@@ -38,10 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C++ Performance Portability Programming EcoSystem";
     homepage = "https://github.com/kokkos/kokkos";
     changelog = "https://github.com/kokkos/kokkos/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       llvm-exception
     ];
+
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin;
   };

@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   SDL,
   autoreconfHook,
   fetchpatch,
-  fetchurl,
   pango,
   pkg-config,
-  stdenv,
   # Boolean flags
   enableSdltest ? (!stdenv.hostPlatform.isDarwin),
 }:
@@ -22,12 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-jfr+R4tIVZfYoaY4i+aNSGLwJGEipnuKqD2O9orP5QI=";
       name = "0000-api_additions.patch";
       url = "https://sources.debian.org/data/main/s/sdlpango/0.1.2-6/debian/patches/api_additions.patch";
-      hash = "sha256-jfr+R4tIVZfYoaY4i+aNSGLwJGEipnuKqD2O9orP5QI=";
     })
     ./0001-fixes.patch
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     SDL
@@ -44,14 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.enableFeature enableSdltest "sdltest")
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://sdlpango.sourceforge.net/";
+    inherit (SDL.meta) platforms;
     description = "Connects the Pango rendering engine to SDL";
+    homepage = "https://sdlpango.sourceforge.net/";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ puckipedia ];
     teams = [ lib.teams.sdl ];
-    inherit (SDL.meta) platforms;
   };
 })

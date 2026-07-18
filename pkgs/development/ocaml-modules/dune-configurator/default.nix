@@ -1,25 +1,22 @@
 {
   lib,
   buildDunePackage,
-  ocaml,
-  dune,
   csexp,
+  dune,
+  ocaml,
   version ? if lib.versionAtLeast ocaml.version "4.13" then dune.version else "3.22.2",
 }:
 
 buildDunePackage {
-  pname = "dune-configurator";
   inherit version;
-
   inherit (dune.override { inherit version; }) src;
-
-  dontAddPrefix = true;
-
+  pname = "dune-configurator";
   propagatedBuildInputs = [ csexp ];
+  dontAddPrefix = true;
 
   meta = {
     description = "Helper library for gathering system configuration";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

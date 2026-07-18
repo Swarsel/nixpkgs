@@ -1,55 +1,53 @@
 {
-  stdenv,
   lib,
-  cacert,
-  curl,
-  runCommandLocal,
-  unzip,
-  appimageTools,
+  stdenv,
   addDriverRunpath,
+  appimageTools,
+  aprutil,
+  bash,
+  buildFHSEnv,
+  cacert,
+  common-updater-scripts,
+  copyDesktopItems,
+  curl,
   dbus,
+  glib,
+  jq,
   libGLU,
-  xkeyboard-config,
+  libarchive,
+  libice,
+  libsm,
+  libx11,
+  libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
   libxcb-util,
   libxcb-wm,
-  libxcb-render-util,
-  libxcb-keysyms,
-  libxcb-image,
-  libxxf86vm,
-  libxt,
-  libxtst,
-  libxrender,
-  libxrandr,
+  libxcomposite,
+  libxcrypt,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
   libxi,
   libxinerama,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libsm,
-  libice,
-  libxcb,
-  buildFHSEnv,
-  bash,
-  writeText,
-  writeShellScript,
-  ocl-icd,
-  xkeyboard_config,
-  glib,
-  libarchive,
-  libxcrypt,
-  python3,
-  aprutil,
+  libxrandr,
+  libxrender,
+  libxt,
+  libxtst,
+  libxxf86vm,
   makeDesktopItem,
-  copyDesktopItems,
-  jq,
-
-  studioVariant ? false,
-
-  common-updater-scripts,
+  ocl-icd,
+  python3,
+  runCommandLocal,
+  unzip,
   writeShellApplication,
+  writeShellScript,
+  writeText,
+  xkeyboard-config,
+  xkeyboard_config,
+  studioVariant ? false,
 }:
 
 let
@@ -58,46 +56,29 @@ let
       pname = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
       version = "21.0.1";
 
-      nativeBuildInputs = [
-        appimageTools.appimage-exec
-        addDriverRunpath
-        copyDesktopItems
-        unzip
-      ];
-
-      # Pretty sure, there are missing dependencies ...
-      buildInputs = [
-        libGLU
-        libxxf86vm
-      ];
-
       src =
         runCommandLocal "${pname}-src.zip"
           rec {
-            outputHashMode = "recursive";
-            outputHashAlgo = "sha256";
-            outputHash =
-              if studioVariant then
-                "sha256-8JN3ptd8jcacxHihZHXuhdkyambUsnFIj+AruvpztKI="
-              else
-                "sha256-ioAqvqHjwFX1ec6fDoxg2VUZy1moYoGx/aEewDuN1+g=";
-
-            impureEnvVars = lib.fetchers.proxyImpureEnvVars;
-
-            nativeBuildInputs = [
-              curl
-              jq
-            ];
-
-            # ENV VARS
-            SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-
+            DOWNLOADSURL = "https://www.blackmagicdesign.com/api/support/us/downloads.json";
+            PRODUCT = "DaVinci Resolve${lib.optionalString studioVariant " Studio"}";
             # Get linux.downloadId from HTTP response on https://www.blackmagicdesign.com/products/davinciresolve
             REFERID = "263d62f31cbb49e0868005059abcb0c9";
-            DOWNLOADSURL = "https://www.blackmagicdesign.com/api/support/us/downloads.json";
+
+            REQJSON = builtins.toJSON {
+              "city" = "Utrecht";
+              "country" = "nl";
+              "email" = "someone@nixos.org";
+              "firstname" = "NixOS";
+              "lastname" = "Linux";
+              "phone" = "+31 71 452 5670";
+              "product" = PRODUCT;
+              "state" = "Province of Utrecht";
+              "street" = "-";
+            };
+
             SITEURL = "https://www.blackmagicdesign.com/api/register/us/download";
-            PRODUCT = "DaVinci Resolve${lib.optionalString studioVariant " Studio"}";
-            VERSION = version;
+            # ENV VARS
+            SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
 
             USERAGENT = builtins.concatStringsSep " " [
               "User-Agent: Mozilla/5.0 (X11; Linux ${stdenv.hostPlatform.linuxArch})"
@@ -106,17 +87,22 @@ let
               "Safari/537.36"
             ];
 
-            REQJSON = builtins.toJSON {
-              "firstname" = "NixOS";
-              "lastname" = "Linux";
-              "email" = "someone@nixos.org";
-              "phone" = "+31 71 452 5670";
-              "country" = "nl";
-              "street" = "-";
-              "state" = "Province of Utrecht";
-              "city" = "Utrecht";
-              "product" = PRODUCT;
-            };
+            VERSION = version;
+            impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+
+            nativeBuildInputs = [
+              curl
+              jq
+            ];
+
+            outputHash =
+              if studioVariant then
+                "sha256-8JN3ptd8jcacxHihZHXuhdkyambUsnFIj+AruvpztKI="
+              else
+                "sha256-ioAqvqHjwFX1ec6fDoxg2VUZy1moYoGx/aEewDuN1+g=";
+
+            outputHashAlgo = "sha256";
+            outputHashMode = "recursive";
 
           }
           ''
@@ -154,8 +140,18 @@ let
               > $out
           '';
 
-      # The unpack phase won't generate a directory
-      sourceRoot = ".";
+      nativeBuildInputs = [
+        appimageTools.appimage-exec
+        addDriverRunpath
+        copyDesktopItems
+        unzip
+      ];
+
+      # Pretty sure, there are missing dependencies ...
+      buildInputs = [
+        libGLU
+        libxxf86vm
+      ];
 
       installPhase =
         let
@@ -192,8 +188,6 @@ let
           runHook postInstall
         '';
 
-      dontStrip = true;
-
       postFixup = ''
         for program in $out/bin/*; do
           isELF "$program" || continue
@@ -212,78 +206,167 @@ let
 
       desktopItems = [
         (makeDesktopItem {
-          name = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
-          desktopName = "Davinci Resolve${lib.optionalString studioVariant " Studio"}";
-          genericName = "Video Editor";
-          exec = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
-          icon = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
-          comment = "Professional video editing, color, effects and audio post-processing";
           categories = [
             "AudioVideo"
             "AudioVideoEditing"
             "Video"
             "Graphics"
           ];
+
+          comment = "Professional video editing, color, effects and audio post-processing";
+          desktopName = "Davinci Resolve${lib.optionalString studioVariant " Studio"}";
+          exec = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
+          genericName = "Video Editor";
+          icon = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
+          name = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
           startupWMClass = "resolve";
         })
         (makeDesktopItem {
-          name = "blackmagicraw-player";
+          categories = [
+            "Video"
+            "AudioVideo"
+          ];
+
           desktopName = "Blackmagic RAW Player";
           exec = "blackmagicraw-player %f";
           icon = "blackmagicraw-player";
+
           mimeTypes = [
             "application/x-braw-clip"
             "application/x-braw-sidecar"
           ];
+
+          name = "blackmagicraw-player";
+        })
+        (makeDesktopItem {
           categories = [
             "Video"
             "AudioVideo"
           ];
-        })
-        (makeDesktopItem {
-          name = "blackmagicraw-speedtest";
+
           desktopName = "Blackmagic RAW Speed Test";
           exec = "blackmagicraw-speedtest";
           icon = "blackmagicraw-speedtest";
-          categories = [
-            "Video"
-            "AudioVideo"
-          ];
+          name = "blackmagicraw-speedtest";
         })
         (makeDesktopItem {
-          name = "davinci-control-panels-setup";
+          categories = [ "Settings" ];
           desktopName = "DaVinci Control Panels Setup";
           exec = "davinci-control-panels-setup";
           icon = "davinci-control-panels-setup";
-          categories = [ "Settings" ];
+          name = "davinci-control-panels-setup";
         })
         (makeDesktopItem {
-          name = "davinci-fairlight-studio-utility";
-          desktopName = "Fairlight Studio Utility";
-          exec = "davinci-fairlight-studio-utility";
-          icon = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
           categories = [
             "AudioVideo"
             "Audio"
           ];
+
+          desktopName = "Fairlight Studio Utility";
+          exec = "davinci-fairlight-studio-utility";
+          icon = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
+          name = "davinci-fairlight-studio-utility";
         })
       ]
       ++ lib.optional studioVariant (makeDesktopItem {
-        name = "davinci-remote-monitor";
-        desktopName = "DaVinci Remote Monitor";
-        exec = "davinci-remote-monitor";
-        icon = "davinci-remote-monitor";
-        comment = "DaVinci Remote Monitor";
         categories = [
           "AudioVideo"
           "Video"
         ];
+
+        comment = "DaVinci Remote Monitor";
+        desktopName = "DaVinci Remote Monitor";
+        exec = "davinci-remote-monitor";
+        icon = "davinci-remote-monitor";
+        name = "davinci-remote-monitor";
       });
+
+      dontStrip = true;
+      # The unpack phase won't generate a directory
+      sourceRoot = ".";
     }
   );
 in
 buildFHSEnv {
   inherit (davinci) pname version;
+
+  extraBwrapArgs = lib.optionals studioVariant [
+    ''--bind "$HOME"/.local/share/DaVinciResolve/license ${davinci}/.license''
+    ''--bind "$HOME"/.local/share/DaVinciResolve/Extras ${davinci}/Extras''
+  ];
+
+  extraInstallCommands =
+    let
+      execName = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
+      # Each wrapper re-enters the FHS environment and execs a different binary
+      mkWrapper =
+        name: bin:
+        writeShellScript name ''
+          exec "$(dirname "$0")/${execName}" ${bin} "$@"
+        '';
+      wrappers = {
+        "blackmagicraw-player" = "${davinci}/BlackmagicRAWPlayer/BlackmagicRAWPlayer";
+        "blackmagicraw-speedtest" = "${davinci}/BlackmagicRAWSpeedTest/BlackmagicRAWSpeedTest";
+
+        "davinci-control-panels-setup" =
+          ''"${davinci}/DaVinci Control Panels Setup/DaVinci Control Panels Setup"'';
+
+        "davinci-fairlight-studio-utility" =
+          ''"${davinci}/Fairlight Studio Utility/Fairlight Studio Utility"'';
+      }
+      // lib.optionalAttrs studioVariant {
+        "davinci-remote-monitor" = ''"${davinci}/bin/DaVinci Remote Monitor"'';
+      };
+    in
+    ''
+      # Desktop files
+      mkdir -p $out/share/applications
+      ln -s ${davinci}/share/applications/*.desktop $out/share/applications/
+
+      # Icons
+      mkdir -p $out/share/icons/hicolor/{128x128,256x256}/apps
+      ln -s ${davinci}/graphics/DV_Resolve.png $out/share/icons/hicolor/128x128/apps/davinci-resolve${lib.optionalString studioVariant "-studio"}.png
+      ln -s ${davinci}/graphics/DV_Panels.png $out/share/icons/hicolor/128x128/apps/davinci-control-panels-setup.png
+      ${lib.optionalString studioVariant ''
+        ln -s ${davinci}/graphics/Remote_Monitoring.png $out/share/icons/hicolor/128x128/apps/davinci-remote-monitor.png
+      ''}
+      ln -s ${davinci}/graphics/blackmagicraw-player_256x256_apps.png $out/share/icons/hicolor/256x256/apps/blackmagicraw-player.png
+      ln -s ${davinci}/graphics/blackmagicraw-speedtest_256x256_apps.png $out/share/icons/hicolor/256x256/apps/blackmagicraw-speedtest.png
+
+      # Wrapper scripts for additional programs
+      ${lib.concatStringsSep "\n" (
+        lib.mapAttrsToList (name: bin: ''
+          ln -s ${mkWrapper name bin} $out/bin/${name}
+        '') wrappers
+      )}
+
+      # MIME type definitions for .drp, .braw, etc.
+      mkdir -p $out/share/mime/packages
+      ln -s ${davinci}/share/resolve.xml $out/share/mime/packages/
+      ln -s ${davinci}/share/blackmagicraw.xml $out/share/mime/packages/
+
+      # Expose udev rules so NixOS can aggregate them from environment.systemPackages
+      mkdir -p $out/lib/udev/rules.d
+      ln -s ${davinci}/lib/udev/rules.d/99-BlackmagicDevices.rules $out/lib/udev/rules.d/
+      ln -s ${davinci}/lib/udev/rules.d/99-ResolveKeyboardHID.rules $out/lib/udev/rules.d/
+      ln -s ${davinci}/lib/udev/rules.d/99-DavinciPanel.rules $out/lib/udev/rules.d/
+    '';
+
+  extraPreBwrapCmds = lib.optionalString studioVariant ''
+    mkdir -p ~/.local/share/DaVinciResolve/license || exit 1
+    mkdir -p ~/.local/share/DaVinciResolve/Extras || exit 1
+  '';
+
+  runScript = "${bash}/bin/bash ${writeText "davinci-wrapper" ''
+    export QT_XKB_CONFIG_ROOT="${xkeyboard_config}/share/X11/xkb"
+    export QT_PLUGIN_PATH="${davinci}/libs/plugins:$QT_PLUGIN_PATH"
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib:/usr/lib32:${davinci}/libs
+    if [ $# -gt 0 ]; then
+      exec "$@"
+    else
+      exec ${davinci}/bin/resolve
+    fi
+  ''}";
 
   targetPkgs =
     pkgs: with pkgs; [
@@ -342,93 +425,19 @@ buildFHSEnv {
       zlib
     ];
 
-  extraPreBwrapCmds = lib.optionalString studioVariant ''
-    mkdir -p ~/.local/share/DaVinciResolve/license || exit 1
-    mkdir -p ~/.local/share/DaVinciResolve/Extras || exit 1
-  '';
-
-  extraBwrapArgs = lib.optionals studioVariant [
-    ''--bind "$HOME"/.local/share/DaVinciResolve/license ${davinci}/.license''
-    ''--bind "$HOME"/.local/share/DaVinciResolve/Extras ${davinci}/Extras''
-  ];
-
-  runScript = "${bash}/bin/bash ${writeText "davinci-wrapper" ''
-    export QT_XKB_CONFIG_ROOT="${xkeyboard_config}/share/X11/xkb"
-    export QT_PLUGIN_PATH="${davinci}/libs/plugins:$QT_PLUGIN_PATH"
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib:/usr/lib32:${davinci}/libs
-    if [ $# -gt 0 ]; then
-      exec "$@"
-    else
-      exec ${davinci}/bin/resolve
-    fi
-  ''}";
-
-  extraInstallCommands =
-    let
-      execName = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
-      # Each wrapper re-enters the FHS environment and execs a different binary
-      mkWrapper =
-        name: bin:
-        writeShellScript name ''
-          exec "$(dirname "$0")/${execName}" ${bin} "$@"
-        '';
-      wrappers = {
-        "blackmagicraw-player" = "${davinci}/BlackmagicRAWPlayer/BlackmagicRAWPlayer";
-        "blackmagicraw-speedtest" = "${davinci}/BlackmagicRAWSpeedTest/BlackmagicRAWSpeedTest";
-        "davinci-control-panels-setup" =
-          ''"${davinci}/DaVinci Control Panels Setup/DaVinci Control Panels Setup"'';
-        "davinci-fairlight-studio-utility" =
-          ''"${davinci}/Fairlight Studio Utility/Fairlight Studio Utility"'';
-      }
-      // lib.optionalAttrs studioVariant {
-        "davinci-remote-monitor" = ''"${davinci}/bin/DaVinci Remote Monitor"'';
-      };
-    in
-    ''
-      # Desktop files
-      mkdir -p $out/share/applications
-      ln -s ${davinci}/share/applications/*.desktop $out/share/applications/
-
-      # Icons
-      mkdir -p $out/share/icons/hicolor/{128x128,256x256}/apps
-      ln -s ${davinci}/graphics/DV_Resolve.png $out/share/icons/hicolor/128x128/apps/davinci-resolve${lib.optionalString studioVariant "-studio"}.png
-      ln -s ${davinci}/graphics/DV_Panels.png $out/share/icons/hicolor/128x128/apps/davinci-control-panels-setup.png
-      ${lib.optionalString studioVariant ''
-        ln -s ${davinci}/graphics/Remote_Monitoring.png $out/share/icons/hicolor/128x128/apps/davinci-remote-monitor.png
-      ''}
-      ln -s ${davinci}/graphics/blackmagicraw-player_256x256_apps.png $out/share/icons/hicolor/256x256/apps/blackmagicraw-player.png
-      ln -s ${davinci}/graphics/blackmagicraw-speedtest_256x256_apps.png $out/share/icons/hicolor/256x256/apps/blackmagicraw-speedtest.png
-
-      # Wrapper scripts for additional programs
-      ${lib.concatStringsSep "\n" (
-        lib.mapAttrsToList (name: bin: ''
-          ln -s ${mkWrapper name bin} $out/bin/${name}
-        '') wrappers
-      )}
-
-      # MIME type definitions for .drp, .braw, etc.
-      mkdir -p $out/share/mime/packages
-      ln -s ${davinci}/share/resolve.xml $out/share/mime/packages/
-      ln -s ${davinci}/share/blackmagicraw.xml $out/share/mime/packages/
-
-      # Expose udev rules so NixOS can aggregate them from environment.systemPackages
-      mkdir -p $out/lib/udev/rules.d
-      ln -s ${davinci}/lib/udev/rules.d/99-BlackmagicDevices.rules $out/lib/udev/rules.d/
-      ln -s ${davinci}/lib/udev/rules.d/99-ResolveKeyboardHID.rules $out/lib/udev/rules.d/
-      ln -s ${davinci}/lib/udev/rules.d/99-DavinciPanel.rules $out/lib/udev/rules.d/
-    '';
-
   passthru = {
     inherit davinci;
   }
   // lib.optionalAttrs (!studioVariant) {
     updateScript = lib.getExe (writeShellApplication {
       name = "update-davinci-resolve";
+
       runtimeInputs = [
         curl
         jq
         common-updater-scripts
       ];
+
       text = ''
         set -o errexit
         drv=pkgs/by-name/da/davinci-resolve/package.nix
@@ -451,14 +460,16 @@ buildFHSEnv {
     description = "Professional video editing, color, effects and audio post-processing";
     homepage = "https://www.blackmagicdesign.com/products/davinciresolve";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       amarshall
       XBagon
       toXel
       cafkafk
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     mainProgram = "davinci-resolve${lib.optionalString studioVariant "-studio"}";
   };
 }

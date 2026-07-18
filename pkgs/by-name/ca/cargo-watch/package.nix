@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -33,12 +33,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo subcommand for watching over Cargo project's source";
-    mainProgram = "cargo-watch";
     homepage = "https://github.com/watchexec/cargo-watch";
     license = lib.licenses.cc0;
+
     maintainers = with lib.maintainers; [
       xrelkd
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-watch";
   };
 })

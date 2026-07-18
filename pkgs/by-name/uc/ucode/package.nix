@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   json_c,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,20 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-V8WGd4rSuCtGIA5oTfnagp0Dmh5FNG87/MJSeILtbM4=";
   };
 
-  buildInputs = [
-    json_c
-  ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
+  ];
+
+  buildInputs = [
+    json_c
   ];
 
   meta = {
     description = "JavaScript-like language with optional templating";
     homepage = "https://github.com/jow-/ucode";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mkg20001 ];
+    platforms = lib.platforms.unix;
   };
 })

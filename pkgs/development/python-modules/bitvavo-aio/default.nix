@@ -1,17 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bitvavo-aio";
   version = "1.0.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "cyberjunky";
@@ -20,13 +17,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-L64stPpprLN8kCePc08VcciimtDQ6QFkj9P2s/daNrU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "bitvavo" ];
 
   meta = {

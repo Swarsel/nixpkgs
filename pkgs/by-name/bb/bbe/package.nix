@@ -13,19 +13,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1nyxdqi4425sffjrylh7gl57lrssyk4018afb7mvrnd6fmbszbms";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-
   outputs = [
     "out"
     "doc"
   ];
 
+  nativeBuildInputs = [ autoreconfHook ];
+
   meta = {
     description = "Sed-like editor for binary files";
     homepage = "https://bbe-.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.hhm ];
+    platforms = lib.platforms.all;
     mainProgram = "bbe";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gibberish-detector,
   mock,
   pkgs,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "detect-secrets";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Yelp";
@@ -28,15 +27,6 @@ buildPythonPackage rec {
     leaveDotGit = true;
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    gibberish-detector
-    pyyaml
-    pyahocorasick
-    requests
-  ];
-
   nativeCheckInputs = [
     mock
     pytest7CheckHook
@@ -44,6 +34,15 @@ buildPythonPackage rec {
     unidiff
     pkgs.gitMinimal
     writableTmpDirAsHomeHook
+  ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    gibberish-detector
+    pyyaml
+    pyahocorasick
+    requests
   ];
 
   disabledTests = [
@@ -59,6 +58,7 @@ buildPythonPackage rec {
     "test_start_halfway"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "detect_secrets" ];
 
   meta = {

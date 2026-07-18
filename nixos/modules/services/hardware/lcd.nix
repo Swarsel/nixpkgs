@@ -36,38 +36,56 @@ in
 with lib;
 {
 
-  meta.maintainers = with maintainers; [ peterhoeg ];
-
   options = with types; {
     services.hardware.lcd = {
-      serverHost = mkOption {
-        type = str;
-        default = "localhost";
-        description = "Host on which LCDd is listening.";
-      };
+      client = {
+        enable = mkOption {
+          default = false;
+          description = "Enable the LCD panel client (LCDproc)";
+          type = bool;
+        };
 
-      serverPort = mkOption {
-        type = int;
-        default = 13666;
-        description = "Port on which LCDd is listening.";
+        extraConfig = mkOption {
+          default = "";
+          description = "Additional configuration added verbatim to the client config.";
+          type = lines;
+        };
+
+        restartForever = mkOption {
+          default = true;
+          description = "Try restarting the client forever.";
+          type = bool;
+        };
       };
 
       server = {
         enable = mkOption {
-          type = bool;
           default = false;
           description = "Enable the LCD panel server (LCDd)";
+          type = bool;
+        };
+
+        extraConfig = mkOption {
+          default = "";
+          description = "Additional configuration added verbatim to the server config.";
+          type = lines;
         };
 
         openPorts = mkOption {
-          type = bool;
           default = false;
           description = "Open the ports in the firewall";
+          type = bool;
+        };
+
+        usbGroup = mkOption {
+          default = "dialout";
+          description = "The group to use for settings permissions. This group must exist or you will have to create it.";
+          type = str;
         };
 
         usbPermissions = mkOption {
-          type = bool;
           default = false;
+
           description = ''
             Set group-write permissions on a USB device.
 
@@ -85,51 +103,33 @@ with lib;
 
             In this case the vendor id is 0403 and the product id is c630.
           '';
-        };
 
-        usbVid = mkOption {
-          type = str;
-          default = "";
-          description = "The vendor ID of the USB device to claim.";
+          type = bool;
         };
 
         usbPid = mkOption {
-          type = str;
           default = "";
           description = "The product ID of the USB device to claim.";
-        };
-
-        usbGroup = mkOption {
           type = str;
-          default = "dialout";
-          description = "The group to use for settings permissions. This group must exist or you will have to create it.";
         };
 
-        extraConfig = mkOption {
-          type = lines;
+        usbVid = mkOption {
           default = "";
-          description = "Additional configuration added verbatim to the server config.";
+          description = "The vendor ID of the USB device to claim.";
+          type = str;
         };
       };
 
-      client = {
-        enable = mkOption {
-          type = bool;
-          default = false;
-          description = "Enable the LCD panel client (LCDproc)";
-        };
+      serverHost = mkOption {
+        default = "localhost";
+        description = "Host on which LCDd is listening.";
+        type = str;
+      };
 
-        extraConfig = mkOption {
-          type = lines;
-          default = "";
-          description = "Additional configuration added verbatim to the client config.";
-        };
-
-        restartForever = mkOption {
-          type = bool;
-          default = true;
-          description = "Try restarting the client forever.";
-        };
+      serverPort = mkOption {
+        default = 13666;
+        description = "Port on which LCDd is listening.";
+        type = int;
       };
     };
   };
@@ -146,35 +146,42 @@ with lib;
     systemd.services = {
       lcdd = mkIf cfg.server.enable {
         description = "LCDproc - server";
-        wantedBy = [ "lcd.target" ];
+
         serviceConfig = serviceCfg // {
           ExecStart = "${pkg}/bin/LCDd -f -c ${serverCfg}";
           SupplementaryGroups = cfg.server.usbGroup;
         };
+
+        wantedBy = [ "lcd.target" ];
       };
 
       lcdproc = mkIf cfg.client.enable {
-        description = "LCDproc - client";
         after = [ "lcdd.service" ];
-        wantedBy = [ "lcd.target" ];
-        # Allow restarting for eternity
-        startLimitIntervalSec = lib.mkIf cfg.client.restartForever 0;
+        description = "LCDproc - client";
+
         serviceConfig = serviceCfg // {
           ExecStart = "${pkg}/bin/lcdproc -f -c ${clientCfg}";
           # If the server is being restarted at the same time, the client will
           # fail as it cannot connect, so space it out a bit.
           RestartSec = "5";
         };
+
+        # Allow restarting for eternity
+        startLimitIntervalSec = lib.mkIf cfg.client.restartForever 0;
+        wantedBy = [ "lcd.target" ];
       };
     };
 
     systemd.targets.lcd = {
-      description = "LCD client/server";
       after = [
         "lcdd.service"
         "lcdproc.service"
       ];
+
+      description = "LCD client/server";
       wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = with maintainers; [ peterhoeg ];
 }

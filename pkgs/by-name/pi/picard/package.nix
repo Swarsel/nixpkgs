@@ -1,17 +1,14 @@
 {
   lib,
   stdenv,
-  python312Packages,
   fetchFromGitHub,
-
   chromaprint,
   gettext,
-  qt5,
-
-  enablePlayback ? true,
   gst_all_1,
-
+  python312Packages,
+  qt5,
   writableTmpDirAsHomeHook,
+  enablePlayback ? true,
 }:
 
 let
@@ -22,9 +19,6 @@ pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "picard";
   # nix-update --commit picard --version-regex 'release-(.*)'
   version = "2.13.3";
-  pyproject = true;
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "metabrainz";
@@ -32,6 +26,8 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     tag = "release-${finalAttrs.version}";
     hash = "sha256-Q0W5Q1+PbN+yneh98jx0/UNHVfD6okX92hxNzCE+Ibc=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gettext
@@ -53,12 +49,6 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     gst_all_1.gst-plugins-bad
   ];
 
-  pythonRelaxDeps = lib.optionals stdenv.hostPlatform.isDarwin [
-    # Should be resolved in the next version
-    "pyobjc-core"
-    "pyobjc-framework-Cocoa"
-  ];
-
   propagatedBuildInputs =
     with pythonPackages;
     [
@@ -78,6 +68,23 @@ pythonPackages.buildPythonApplication (finalAttrs: {
       pyobjc-framework-Cocoa
     ];
 
+  doCheck = true;
+
+  nativeCheckInputs = [
+    pythonPackages.pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  # In order to spare double wrapping, we use:
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  ''
+  + lib.optionalString (pyqt5.multimediaEnabled) ''
+    makeWrapperArgs+=(--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0")
+  '';
+
+  __structuredAttrs = true;
+
   # Not reporting any of these issues because the next upstream version will
   # include many breaking changes and this might not be relevant.
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -88,33 +95,27 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     "test/test_utils.py::HiddenFileTest::test_macos" # - FileNotFoundError: [Errno 2] No such file or directory: 'SetFile'
   ];
 
+  pyproject = true;
+
+  pythonRelaxDeps = lib.optionals stdenv.hostPlatform.isDarwin [
+    # Should be resolved in the next version
+    "pyobjc-core"
+    "pyobjc-framework-Cocoa"
+  ];
+
   setupPyGlobalFlags = [
     "build"
     "--disable-autoupdate"
     "--localedir=${placeholder "out"}/share/locale"
   ];
 
-  nativeCheckInputs = [
-    pythonPackages.pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-  doCheck = true;
-
-  # In order to spare double wrapping, we use:
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  ''
-  + lib.optionalString (pyqt5.multimediaEnabled) ''
-    makeWrapperArgs+=(--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0")
-  '';
-
   meta = {
+    description = "Official MusicBrainz tagger";
     homepage = "https://picard.musicbrainz.org";
     changelog = "https://picard.musicbrainz.org/changelog";
-    description = "Official MusicBrainz tagger";
-    mainProgram = "picard";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ doronbehar ];
+    platforms = lib.platforms.all;
+    mainProgram = "picard";
   };
 })

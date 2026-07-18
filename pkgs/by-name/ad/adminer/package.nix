@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  php,
   nix-update-script,
+  php,
   unzip,
 }:
 
@@ -47,14 +47,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Database management in a single PHP file";
     homepage = "https://www.adminer.org";
+
     license = with lib.licenses; [
       asl20
       gpl2Only
     ];
+
     maintainers = with lib.maintainers; [
       jtojnar
       sstef
     ];
+
     platforms = lib.platforms.all;
   };
 })

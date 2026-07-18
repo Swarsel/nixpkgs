@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "holehe";
   version = "0-unstable-2023-05-18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "megadose";
@@ -22,6 +21,9 @@ python3.pkgs.buildPythonApplication {
       --replace-fail "bs4" "beautifulsoup4"
   '';
 
+  # Project has no test
+  doCheck = false;
+
   build-system = with python3.pkgs; [
     setuptools
   ];
@@ -35,8 +37,7 @@ python3.pkgs.buildPythonApplication {
     trio
   ];
 
-  # Project has no test
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "holehe"
@@ -44,9 +45,9 @@ python3.pkgs.buildPythonApplication {
 
   meta = {
     description = "CLI to check if the mail is used on different sites";
-    mainProgram = "holehe";
     homepage = "https://github.com/megadose/holehe";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "holehe";
   };
 }

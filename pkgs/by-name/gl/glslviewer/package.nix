@@ -1,36 +1,39 @@
 {
-  stdenv,
-  cmake,
-  ninja,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libx11,
-  libxrandr,
-  libxinerama,
-  libxcursor,
-  libxi,
-  libxext,
-  libGLU,
+  cmake,
   ffmpeg_7,
+  libGLU,
+  libx11,
+  libxcursor,
+  libxext,
+  libxi,
+  libxinerama,
+  libxrandr,
   ncurses,
+  ninja,
+  pkg-config,
   python3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "glslviewer";
   version = "3.5.2";
+
   src = fetchFromGitHub {
     owner = "patriciogonzalezvivo";
     repo = "glslViewer";
-    fetchSubmodules = true;
     tag = finalAttrs.version;
     hash = "sha256-rfiTiyCcOa5+ZTU7JrM35mmoZNRzco6M3ZyeZ+hio4w=";
+    fetchSubmodules = true;
   };
+
   nativeBuildInputs = [
     cmake
     ninja
     pkg-config
   ];
+
   buildInputs = [
     libx11
     libxrandr

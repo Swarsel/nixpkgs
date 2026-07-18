@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "arc4";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "manicmaniac";
@@ -18,10 +17,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-kEgyZQmVdOmD/KkmEKxgZb9Hj0jGJswCJI7Np5TI1K4=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "arc4" ];
 
   meta = {

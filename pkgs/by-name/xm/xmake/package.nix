@@ -26,14 +26,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/xmake-io/xmake/releases/tag/v${finalAttrs.version}";
     description = "Cross-platform build utility based on Lua";
     homepage = "https://xmake.io";
+    changelog = "https://github.com/xmake-io/xmake/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       wineee
       rennsax
     ];
+
     mainProgram = "xmake";
   };
 })

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "simplejson";
   version = "3.20.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "simplejson";
@@ -18,23 +17,27 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "simplejson" ];
 
   meta = {
     description = "Extensible JSON encoder/decoder for Python";
+
     longDescription = ''
       simplejson covers the full JSON specification for both encoding
       and decoding, with unicode support. By default, encoding is done
       in an encoding neutral fashion (plain ASCII with \uXXXX escapes
       for unicode characters).
     '';
+
     homepage = "https://github.com/simplejson/simplejson";
     changelog = "https://github.com/simplejson/simplejson/blob/v${version}/CHANGES.txt";
+
     license = with lib.licenses; [
       mit
       afl21
     ];
+
     maintainers = with lib.maintainers; [ fab ];
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -13,19 +13,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     inherit (finalAttrs) pname version;
     hash = "sha256-ytJLH7CcfLjpzRXljTUZS1rzueBljGXwpDOpKKdBJ+k=";
   };
+
   cargoHash = "sha256-D+wHG+e2gVt7I7h0KobY4bLkphZJXWaTCoSp2gpNctE=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Extract translatable strings from .slint files and generate gettext-compatible translation files";
-    mainProgram = "slint-tr-extractor";
     homepage = "https://crates.io/crates/slint-tr-extractor";
     changelog = "https://github.com/slint-ui/slint/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ woile ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "slint-tr-extractor";
   };
 })

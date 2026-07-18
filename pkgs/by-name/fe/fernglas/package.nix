@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   fetchYarnDeps,
   fixup-yarn-lock,
-  python3,
   jq,
-  yarn,
   nodejs-slim,
+  python3,
+  rustPlatform,
+  yarn,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,29 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     jq
   ];
 
-  nlnog_communities = fetchFromGitHub {
-    owner = "NLNOG";
-    repo = "lg.ring.nlnog.net";
-    rev = "20f9a9f3da8b1bc9d7046e88c62df4b41b4efb99";
-    hash = "sha256-FlbOBX/+/LLmoqMJLvu59XuHYmiohIhDc1VjkZu4Wzo=";
-  };
-
   cargoHash = "sha256-aY5/dIplV8yWaQ2IdWxxC7T1DoKeRjsN5eT+UxsaA1E=";
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/frontend/yarn.lock";
-    hash = "sha256-/ubCAs4C5nG8xNC77jTH+cJVNgddSxqGGPEVLDH/Cdo=";
-  };
-
-  cargoBuildFlags =
-    lib.optionals (stdenv.hostPlatform.isMusl && stdenv.hostPlatform.isStatic) [
-      "--features"
-      "mimalloc"
-    ]
-    ++ [
-      "--features"
-      "embed-static"
-    ];
 
   preBuild = ''
     python3 contrib/print_communities.py $nlnog_communities/communities | jq . > src/communities.json
@@ -71,13 +49,35 @@ rustPlatform.buildRustPackage (finalAttrs: {
     popd
   '';
 
+  cargoBuildFlags =
+    lib.optionals (stdenv.hostPlatform.isMusl && stdenv.hostPlatform.isStatic) [
+      "--features"
+      "mimalloc"
+    ]
+    ++ [
+      "--features"
+      "embed-static"
+    ];
+
+  nlnog_communities = fetchFromGitHub {
+    hash = "sha256-FlbOBX/+/LLmoqMJLvu59XuHYmiohIhDc1VjkZu4Wzo=";
+    owner = "NLNOG";
+    repo = "lg.ring.nlnog.net";
+    rev = "20f9a9f3da8b1bc9d7046e88c62df4b41b4efb99";
+  };
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-/ubCAs4C5nG8xNC77jTH+cJVNgddSxqGGPEVLDH/Cdo=";
+    yarnLock = finalAttrs.src + "/frontend/yarn.lock";
+  };
+
   meta = {
     description = "Looking glass for your network using BGP and BMP as data source";
     homepage = "https://wobcom.github.io/fernglas/";
     changelog = "https://github.com/wobcom/fernglas/releases/tag/fernglas-${finalAttrs.version}";
     license = lib.licenses.eupl12;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ yureka-wdz ];
+    platforms = lib.platforms.linux;
     mainProgram = "fernglas";
   };
 })

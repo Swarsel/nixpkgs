@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   skawarePackages,
 }:
@@ -14,10 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-URK5FBpCbhcp2haug0lWtc9wOvwJHPTWZe4u8HDeaYc=";
   };
 
-  patches = [
-    ./add-skalibs-include.patch
-  ];
-
   outputs = [
     "bin"
     "lib"
@@ -27,25 +23,20 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
   ];
 
+  patches = [
+    ./add-skalibs-include.patch
+  ];
+
   buildInputs = [
     skawarePackages.skalibs
   ];
 
-  configurePhase = ''
-    cd fdtools-${finalAttrs.version}
-    substituteInPlace conf-compile/defaults/host_compile.sh \
-      --replace-fail "gcc" "$CC"
-    substituteInPlace conf-compile/defaults/host_link.sh \
-      --replace-fail "gcc" "$CC"
-    echo "${skawarePackages.skalibs.lib}/lib/skalibs/sysdeps" > conf-compile/defaults/depend_skalibs_sysdeps
-  '';
+  # gcc15
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   buildPhase = ''
     bash package/build
   '';
-
-  # gcc15
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   installPhase = ''
     mkdir -p $bin/bin
@@ -69,17 +60,18 @@ stdenv.mkDerivation (finalAttrs: {
 
     ${
       skawarePackages.cleanPackaging.commonFileActions {
+        docFiles = [
+          "package/INSTALL"
+          "package/LICENSE"
+          "package/README"
+        ];
+
         noiseFiles = [
           "conf-compile/**/*"
           "src/**/*"
           "src/.**/*"
           "compile/**/*"
           "package/{build,check,compile,elsewhere,install,install_commands,own,run,sharing,upgrade,upgrade_version,url_src,url_src_latest,versions}"
-        ];
-        docFiles = [
-          "package/INSTALL"
-          "package/LICENSE"
-          "package/README"
         ];
       }
     } $docdir
@@ -90,11 +82,20 @@ stdenv.mkDerivation (finalAttrs: {
     touch $out
   '';
 
+  configurePhase = ''
+    cd fdtools-${finalAttrs.version}
+    substituteInPlace conf-compile/defaults/host_compile.sh \
+      --replace-fail "gcc" "$CC"
+    substituteInPlace conf-compile/defaults/host_link.sh \
+      --replace-fail "gcc" "$CC"
+    echo "${skawarePackages.skalibs.lib}/lib/skalibs/sysdeps" > conf-compile/defaults/depend_skalibs_sysdeps
+  '';
+
   meta = {
-    homepage = "https://code.dogmap.org/fdtools/";
     description = "Set of utilities for working with file descriptors";
+    homepage = "https://code.dogmap.org/fdtools/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

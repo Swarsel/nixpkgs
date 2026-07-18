@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   deprecated,
   ipython,
   matplotlib-inline,
@@ -27,10 +26,6 @@
 buildPythonPackage rec {
   pname = "pyquil";
   version = "4.17.0";
-  pyproject = true;
-
-  # qcs-sdk-python (PyO3) caps at 3.12; upstream also pins python <3.13
-  disabled = pythonAtLeast "3.13";
 
   src = fetchFromGitHub {
     owner = "rigetti";
@@ -39,13 +34,17 @@ buildPythonPackage rec {
     hash = "sha256-El0eMBUOYpB0v+duPEnIQTbJLKTguq4yTsItbriRbg4=";
   };
 
-  pythonRelaxDeps = [
-    "lark"
-    "networkx"
-    "numpy"
-    "packaging"
-    "qcs-sdk-python"
-    "rpcq"
+  # tests hang
+  doCheck = false;
+
+  nativeCheckInputs = [
+    nest-asyncio
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+    respx
+    syrupy
+    ipython
   ];
 
   build-system = [ poetry-core ];
@@ -63,20 +62,19 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    nest-asyncio
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-    respx
-    syrupy
-    ipython
-  ];
-
-  # tests hang
-  doCheck = false;
-
+  # qcs-sdk-python (PyO3) caps at 3.12; upstream also pins python <3.13
+  disabled = pythonAtLeast "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "pyquil" ];
+
+  pythonRelaxDeps = [
+    "lark"
+    "networkx"
+    "numpy"
+    "packaging"
+    "qcs-sdk-python"
+    "rpcq"
+  ];
 
   meta = {
     description = "Python library for creating Quantum Instruction Language (Quil) programs";

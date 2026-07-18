@@ -2,62 +2,62 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   autoreconfHook,
-  libestr,
-  json_c,
-  zlib,
-  docutils,
-  libfastjson,
-  withKrb5 ? true,
-  libkrb5,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd,
-  withJemalloc ? true,
-  jemalloc,
-  withMysql ? true,
-  libmysqlclient,
-  withPostgres ? true,
-  libpq,
-  withDbi ? true,
-  libdbi,
-  withNetSnmp ? true,
-  net-snmp,
-  withUuid ? true,
-  libuuid,
-  withCurl ? true,
   curl,
-  withGnutls ? true,
-  gnutls,
-  withGcrypt ? true,
-  libgcrypt,
-  withLognorm ? true,
-  liblognorm,
-  withMaxminddb ? true,
-  libmaxminddb,
-  withOpenssl ? true,
-  openssl,
-  withRelp ? true,
-  librelp,
-  withKsi ? false, # Currently Broken
-  libksi,
-  withLogging ? true,
-  liblogging,
-  withNet ? true,
-  libnet,
-  withHadoop ? false, # Currently Broken
-  hadoop,
-  withRdkafka ? true,
-  rdkafka,
-  withMongo ? true,
-  mongoc,
-  withCzmq ? true,
   czmq,
-  withRabbitmq ? true,
-  rabbitmq-c,
-  withHiredis ? true,
+  docutils,
+  gnutls,
+  hadoop,
   hiredis,
+  jemalloc,
+  json_c,
+  libdbi,
+  libestr,
+  libfastjson,
+  libgcrypt,
+  libkrb5,
+  libksi,
+  liblogging,
+  liblognorm,
+  libmaxminddb,
+  libmysqlclient,
+  libnet,
+  libpq,
+  librelp,
+  libuuid,
+  mongoc,
+  net-snmp,
   nixosTests,
+  openssl,
+  pkg-config,
+  rabbitmq-c,
+  rdkafka,
+  systemd,
+  zlib,
+  withCurl ? true,
+  withCzmq ? true,
+  withDbi ? true,
+  withGcrypt ? true,
+  withGnutls ? true,
+  withHadoop ? false, # Currently Broken
+  withHiredis ? true,
+  withJemalloc ? true,
+  withKrb5 ? true,
+  withKsi ? false, # Currently Broken
+  withLogging ? true,
+  withLognorm ? true,
+  withMaxminddb ? true,
+  withMongo ? true,
+  withMysql ? true,
+  withNet ? true,
+  withNetSnmp ? true,
+  withOpenssl ? true,
+  withPostgres ? true,
+  withRabbitmq ? true,
+  withRdkafka ? true,
+  withRelp ? true,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
+  withUuid ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -181,16 +181,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_LINK = "-lz";
-
   passthru.tests = nixosTests.rsyslogd;
 
   meta = {
-    homepage = "https://www.rsyslog.com/";
     description = "Enhanced syslog implementation";
-    mainProgram = "rsyslogd";
+    homepage = "https://www.rsyslog.com/";
     changelog = "https://raw.githubusercontent.com/rsyslog/rsyslog/v${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "rsyslogd";
   };
 })

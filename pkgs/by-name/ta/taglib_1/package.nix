@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  zlib,
+  fetchpatch,
   testers,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,16 +21,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-GeowBwspGAmrjALaIgEgSR9uUuClKAkS/cwZ2FHltl4=";
       name = "taglib-fix-cmake-4.patch";
       url = "https://github.com/taglib/taglib/commit/967aaf7af2f4aa2e9fed0edb2cbaca98b737eebe.patch";
-      hash = "sha256-GeowBwspGAmrjALaIgEgSR9uUuClKAkS/cwZ2FHltl4=";
     })
   ];
 
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ zlib ];
 
   cmakeFlags = [
@@ -44,24 +42,29 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
-    homepage = "https://taglib.org/";
     description = "Library for reading and editing audio file metadata";
-    mainProgram = "taglib-config";
+
     longDescription = ''
       TagLib is a library for reading and editing the meta-data of several
       popular audio formats. Currently it supports both ID3v1 and ID3v2 for MP3
       files, Ogg Vorbis comments and ID3 tags and Vorbis comments in FLAC, MPC,
       Speex, WavPack, TrueAudio, WAV, AIFF, MP4 and ASF files.
     '';
+
+    homepage = "https://taglib.org/";
+
     license = with lib.licenses; [
       lgpl21Only
       mpl11
     ];
+
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "taglib-config";
+
     pkgConfigModules = [
       "taglib"
       "taglib_c"
     ];
-    platforms = lib.platforms.all;
   };
 })

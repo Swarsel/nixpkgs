@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pretix-plugin-build,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "pretix-reluctant-stripe";
   version = "0-unstable-2023-08-03";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "metarheinmain";
@@ -18,12 +17,14 @@ buildPythonPackage {
     hash = "sha256-bw9aDMxl4/uar5KHjj+wwkYkaGMRxHWY/c1N75bxu0o=";
   };
 
+  doCheck = false; # no tests
+
   build-system = [
     pretix-plugin-build
     setuptools
   ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   pythonImportsCheck = [
     "pretix_reluctant_stripe"

@@ -17,22 +17,12 @@
 buildPythonPackage rec {
   pname = "python-keystoneclient";
   version = "5.8.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_keystoneclient";
     inherit version;
     hash = "sha256-PKh8Z8QEKYzoYjELVp9UWlis91zVaFCUyC81Mgs6NV0=";
+    pname = "python_keystoneclient";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    keystoneauth1
-    oslo-config
-    oslo-serialization
-    pbr
-  ];
 
   nativeCheckInputs = [
     openssl
@@ -48,6 +38,16 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    keystoneauth1
+    oslo-config
+    oslo-serialization
+    pbr
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "keystoneclient" ];
 
   meta = {

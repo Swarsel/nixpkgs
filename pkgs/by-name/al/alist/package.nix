@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
+  callPackage,
   fetchzip,
   fuse,
-  stdenv,
   installShellFiles,
   versionCheckHook,
-  callPackage,
 }:
 buildGoModule (finalAttrs: {
   pname = "alist";
@@ -21,6 +21,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -37,20 +38,9 @@ buildGoModule (finalAttrs: {
       --replace-fail '{name: "drive", entry: "C:\\evil.txt", wantErr: true},' ""
   '';
 
-  proxyVendor = true;
-  vendorHash = "sha256-aRnS3LLG25FK1ELKd7K1e5aGLmKnQ7w/3QVe4P9RRLI=";
-
+  nativeBuildInputs = [ installShellFiles ];
   buildInputs = [ fuse ];
-
-  tags = [ "jsoniter" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X \"github.com/alist-org/alist/v3/internal/conf.GitAuthor=Xhofe <i@nn.ci>\""
-    "-X github.com/alist-org/alist/v3/internal/conf.Version=${finalAttrs.version}"
-    "-X github.com/alist-org/alist/v3/internal/conf.WebVersion=${finalAttrs.passthru.webVersion}"
-  ];
+  vendorHash = "sha256-aRnS3LLG25FK1ELKd7K1e5aGLmKnQ7w/3QVe4P9RRLI=";
 
   preConfigure = ''
     rm -rf public/dist
@@ -75,8 +65,6 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd alist \
       --bash <($out/bin/alist completion bash) \
@@ -86,40 +74,56 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
 
-  versionCheckProgramArg = "version";
-
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X \"github.com/alist-org/alist/v3/internal/conf.GitAuthor=Xhofe <i@nn.ci>\""
+    "-X github.com/alist-org/alist/v3/internal/conf.Version=${finalAttrs.version}"
+    "-X github.com/alist-org/alist/v3/internal/conf.WebVersion=${finalAttrs.passthru.webVersion}"
+  ];
+
+  proxyVendor = true;
+  tags = [ "jsoniter" ];
+  versionCheckProgramArg = "version";
+
   passthru = {
     updateScript = lib.getExe (callPackage ./update.nix { });
-    webVersion = "3.57.0";
+
     web = fetchzip {
-      url = "https://github.com/AlistGo/alist-web/releases/download/${finalAttrs.passthru.webVersion}/dist.tar.gz";
       hash = "sha256-QP1eWlSr7XBX8jUyvXhpmEGIwWaY6wy4M2l/35AiuUg=";
+      url = "https://github.com/AlistGo/alist-web/releases/download/${finalAttrs.passthru.webVersion}/dist.tar.gz";
     };
+
+    webVersion = "3.57.0";
   };
 
   meta = {
     description = "File list/WebDAV program that supports multiple storages";
     homepage = "https://github.com/AlistGo/alist";
     changelog = "https://github.com/AlistGo/alist/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       agpl3Only
       # alist-web
       mit
     ];
-    knownVulnerabilities = [
-      "Alist was acquired by Bugotech, a company distrusted by the community"
-      "Uses a questionable API server alist.nn.ci for account creation for certain drivers"
-    ];
-    maintainers = with lib.maintainers; [ moraxyc ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       # alist-web
       binaryBytecode
     ];
+
+    maintainers = with lib.maintainers; [ moraxyc ];
     mainProgram = "alist";
+
+    knownVulnerabilities = [
+      "Alist was acquired by Bugotech, a company distrusted by the community"
+      "Uses a questionable API server alist.nn.ci for account creation for certain drivers"
+    ];
   };
 })

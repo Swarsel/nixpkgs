@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,11 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-M4/vD1sVny7hAf4h56Z2xy7yuCqH/H3qHYod6haZOs0=";
   };
 
-  cargoHash = "sha256-20Fz98mAkmhk7g0359S7Gjg6i89cXtKuS/9bVzOagBs=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-20Fz98mAkmhk7g0359S7Gjg6i89cXtKuS/9bVzOagBs=";
 
   # requires internet access
   checkFlags = [
@@ -32,10 +30,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Recursively visit and download a website's content to your disk";
     homepage = "https://github.com/skallwar/suckit";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = [ ];
     mainProgram = "suckit";
   };

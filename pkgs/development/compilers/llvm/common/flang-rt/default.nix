@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  llvm_meta,
-  monorepoSrc,
-  runCommand,
+  buildFlang,
   cmake,
   libllvm,
+  llvm_meta,
+  monorepoSrc,
   ninja,
   python3,
-  buildFlang,
+  runCommand,
   version,
 }:
 let
@@ -21,8 +21,8 @@ let
       stdenv.hostPlatform.darwinMinVersion;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "flang-rt";
   inherit version;
+  pname = "flang-rt";
 
   src =
     runCommand "${finalAttrs.pname}-src-${version}"
@@ -43,8 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
         cp -r ${monorepoSrc}/runtimes "$out"
       '';
 
-  sourceRoot = "${finalAttrs.src.name}/runtimes";
-
   outputs = [ "out" ];
 
   nativeBuildInputs = [
@@ -53,14 +51,10 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     python3
   ];
+
   buildInputs = [
     libllvm
   ];
-
-  env = lib.optionalAttrs stdenv.isDarwin {
-    MACOSX_DEPLOYMENT_TARGET = effectiveDarwinVersion;
-    NIX_CFLAGS_COMPILE = "-mmacosx-version-min=${effectiveDarwinVersion}";
-  };
 
   cmakeFlags = [
     (lib.cmakeFeature "LLVM_DEFAULT_TARGET_TRIPLE" stdenv.hostPlatform.config)
@@ -74,8 +68,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_OSX_DEPLOYMENT_TARGET" effectiveDarwinVersion)
   ];
 
+  env = lib.optionalAttrs stdenv.isDarwin {
+    MACOSX_DEPLOYMENT_TARGET = effectiveDarwinVersion;
+    NIX_CFLAGS_COMPILE = "-mmacosx-version-min=${effectiveDarwinVersion}";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/runtimes";
+
   meta = llvm_meta // {
-    homepage = "https://flang.llvm.org";
     description = "LLVM Fortran Runtime";
+    homepage = "https://flang.llvm.org";
   };
 })

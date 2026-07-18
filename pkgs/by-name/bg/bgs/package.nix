@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  imlib2,
   libx11,
   libxinerama,
-  imlib2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Extremely fast and small background setter for X";
     homepage = "https://github.com/Gottox/bgs";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.linux;
     mainProgram = "bgs";
   };
 })

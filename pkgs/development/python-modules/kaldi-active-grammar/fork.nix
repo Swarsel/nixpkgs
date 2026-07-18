@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  blas,
-  lapack,
-  openfst,
-  icu,
-  pkg-config,
   fetchFromGitHub,
-  python,
-  openblas,
-  zlib,
+  blas,
   gfortran,
+  icu,
+  lapack,
+  openblas,
+  openfst,
+  pkg-config,
+  python,
+  zlib,
 }:
 
 let
@@ -24,6 +24,7 @@ let
       rev = "0bca6e76d24647427356dc242b0adbf3b5f1a8d9";
       sha256 = "1802rr14a03zl1wa5a0x1fa412kcvbgprgkadfj5s6s3agnn11rx";
     };
+
     buildInputs = [ zlib ];
   });
 in
@@ -46,28 +47,6 @@ stdenv.mkDerivation rec {
     ./0006-fork-configure.patch
   ];
 
-  enableParallelBuilding = true;
-
-  buildInputs = [
-    openblas
-    old-openfst
-    icu
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-    python
-    gfortran
-  ];
-
-  buildFlags = [
-    "dragonfly"
-    "dragonflybin"
-    "bin"
-    "fstbin"
-    "lmbin"
-  ];
-
   postPatch = ''
     # Replace the shebangs for the various build scripts
     patchShebangs src
@@ -87,10 +66,25 @@ stdenv.mkDerivation rec {
       --replace dsptrf_ LAPACK_dsptrf
   '';
 
-  configurePhase = ''
-    cd src
-    ./configure --shared --fst-root="${old-openfst}" --use-cuda=no --openblas-root="${openblas}" --mathlib=OPENBLAS
-  '';
+  nativeBuildInputs = [
+    pkg-config
+    python
+    gfortran
+  ];
+
+  buildInputs = [
+    openblas
+    old-openfst
+    icu
+  ];
+
+  buildFlags = [
+    "dragonfly"
+    "dragonflybin"
+    "bin"
+    "fstbin"
+    "lmbin"
+  ];
 
   installPhase = ''
     # Fixes "patchelf: wrong ELF type"
@@ -101,6 +95,13 @@ stdenv.mkDerivation rec {
       --set-rpath "${lib.makeLibraryPath buildInputs}:$out/lib" \
       $out/lib/*
   '';
+
+  configurePhase = ''
+    cd src
+    ./configure --shared --fst-root="${old-openfst}" --use-cuda=no --openblas-root="${openblas}" --mathlib=OPENBLAS
+  '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Speech Recognition Toolkit";

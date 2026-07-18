@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   addDriverRunpath,
   alsa-lib,
   at-spi2-atk,
@@ -10,7 +13,6 @@
   dbus,
   dpkg,
   expat,
-  fetchurl,
   fontconfig,
   freetype,
   gdk-pixbuf,
@@ -18,59 +20,57 @@
   glibc,
   gnutls,
   gtk3,
-  lib,
   libGL,
+  libappindicator-gtk3,
+  libcxx,
+  libdbusmenu,
+  libdrm,
+  libgbm,
+  libgcrypt,
+  libglvnd,
+  libnotify,
+  libpulseaudio,
+  libuuid,
   libx11,
-  libxscrnsaver,
+  libxcb,
   libxcomposite,
   libxcursor,
   libxdamage,
   libxext,
   libxfixes,
   libxi,
-  libxrandr,
-  libxrender,
-  libxtst,
-  libappindicator-gtk3,
-  libcxx,
-  libdbusmenu,
-  libdrm,
-  libgcrypt,
-  libglvnd,
-  libnotify,
-  libpulseaudio,
-  libuuid,
-  libxcb,
   libxkbcommon,
   libxkbfile,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
   libxshmfence,
+  libxtst,
   makeShellWrapper,
-  libgbm,
   nspr,
   nss,
   pango,
   pciutils,
   pipewire,
   pixman,
-  stdenv,
   systemd,
   wayland,
-  xdg-utils,
   writeScript,
-
+  xdg-utils,
   # for custom command line arguments, e.g. "--use-gl=desktop"
   commandLineArgs ? "",
 }:
 
 let
   sources = {
-    x86_64-linux = fetchurl {
-      url = "https://sf3-cn.feishucdn.com/obj/ee-appcenter/289abaac/Feishu-linux_x64-7.66.10.deb";
-      sha256 = "sha256-68WKfT4dblQOQDd51n90nyAzOxrkBESR0pqbjbwrOso=";
-    };
     aarch64-linux = fetchurl {
-      url = "https://sf3-cn.feishucdn.com/obj/ee-appcenter/382a3d72/Feishu-linux_arm64-7.66.10.deb";
       sha256 = "sha256-Beh0dYJ96BuwJwTMPF61H6R9u99Jcg4pzEF1rFOj9WA=";
+      url = "https://sf3-cn.feishucdn.com/obj/ee-appcenter/382a3d72/Feishu-linux_arm64-7.66.10.deb";
+    };
+
+    x86_64-linux = fetchurl {
+      sha256 = "sha256-68WKfT4dblQOQDd51n90nyAzOxrkBESR0pqbjbwrOso=";
+      url = "https://sf3-cn.feishucdn.com/obj/ee-appcenter/289abaac/Feishu-linux_x64-7.66.10.deb";
     };
   };
 
@@ -133,8 +133,8 @@ let
   ];
 in
 stdenv.mkDerivation {
-  version = "7.66.10";
   pname = "feishu";
+  version = "7.66.10";
 
   src =
     sources.${stdenv.hostPlatform.system}
@@ -163,7 +163,6 @@ stdenv.mkDerivation {
     nss
   ];
 
-  dontUnpack = true;
   installPhase = ''
     # This deb file contains a setuid binary,
     # so 'dpkg -x' doesn't work here.
@@ -198,8 +197,11 @@ stdenv.mkDerivation {
     ln -s $out/opt/bytedance/feishu/bytedance-feishu $out/bin/bytedance-feishu
   '';
 
+  dontUnpack = true;
+
   passthru = {
     inherit sources;
+
     updateScript = writeScript "update-feishu.sh" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p curl jq common-updater-scripts
@@ -226,10 +228,10 @@ stdenv.mkDerivation {
   meta = {
     description = "All-in-one collaboration suite";
     homepage = "https://www.feishu.cn/en/";
-    downloadPage = "https://www.feishu.cn/en/#en_home_download_block";
     license = lib.licenses.unfree;
-    platforms = supportedPlatforms;
     maintainers = with lib.maintainers; [ billhuang ];
+    platforms = supportedPlatforms;
     mainProgram = "bytedance-feishu";
+    downloadPage = "https://www.feishu.cn/en/#en_home_download_block";
   };
 }

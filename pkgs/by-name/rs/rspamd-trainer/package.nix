@@ -1,17 +1,16 @@
 {
   lib,
-  python3,
-  python3Packages,
   fetchFromGitLab,
   fetchpatch,
-  rspamd,
   nixosTests,
+  python3,
+  python3Packages,
+  rspamd,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "rspamd-trainer";
   version = "unstable-2023-11-27";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "onlime";
@@ -24,9 +23,9 @@ python3Packages.buildPythonApplication {
     # Refactor pyproject.toml
     # https://gitlab.com/onlime/rspamd-trainer/-/merge_requests/2
     (fetchpatch {
-      url = "https://gitlab.com/onlime/rspamd-trainer/-/commit/8824bfb9a9826988a90a401b8e51c20f5366ed70.patch";
       hash = "sha256-qiXfwMUfM/iV+fHba8xdwQD92RQz627+HdUTgwgRZdc=";
       name = "refactor_pyproject.patch";
+      url = "https://gitlab.com/onlime/rspamd-trainer/-/commit/8824bfb9a9826988a90a401b8e51c20f5366ed70.patch";
     })
   ];
 
@@ -50,13 +49,14 @@ python3Packages.buildPythonApplication {
     imapclient
   ];
 
+  pyproject = true;
   passthru.tests = { inherit (nixosTests) rspamd-trainer; };
 
   meta = {
-    homepage = "https://gitlab.com/onlime/rspamd-trainer";
     description = "Grabs messages from a spam mailbox via IMAP and feeds them to Rspamd for training";
-    mainProgram = "rspamd-trainer";
+    homepage = "https://gitlab.com/onlime/rspamd-trainer";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ onny ];
+    mainProgram = "rspamd-trainer";
   };
 }

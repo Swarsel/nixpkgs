@@ -2,19 +2,18 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   deprecated,
-  regex,
   pytest-cov-stub,
   pytest-forked,
   pytest-random-order,
   pytestCheckHook,
+  regex,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "oelint-parser";
   version = "8.11.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "priv-kweihmann";
@@ -23,7 +22,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DwbpF1H5fY854YKqB/8ppg6gMS2VhMzoyY8yr/DsfBk=";
   };
 
-  pythonRelaxDeps = [ "regex" ];
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-forked
+    pytest-random-order
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,14 +36,9 @@ buildPythonPackage (finalAttrs: {
     deprecated
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-forked
-    pytest-random-order
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "oelint_parser" ];
+  pythonRelaxDeps = [ "regex" ];
 
   meta = {
     description = "Alternative parser for bitbake recipes";

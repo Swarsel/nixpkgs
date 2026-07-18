@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
   nixosTests,
 }:
 
@@ -18,21 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontUnpack = true;
-
   installPhase = ''
     makeWrapper ${jre}/bin/java $out/bin/ergo --add-flags "-jar $src"
   '';
 
+  dontUnpack = true;
   passthru.tests = { inherit (nixosTests) ergo; };
 
   meta = {
     description = "Open protocol that implements modern scientific ideas in the blockchain area";
     homepage = "https://ergoplatform.org/en/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.cc0;
-    platforms = lib.platforms.all;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ mmahut ];
+    platforms = lib.platforms.all;
     mainProgram = "ergo";
   };
 })

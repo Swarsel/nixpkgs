@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Block layer IO tracing mechanism";
-    maintainers = with lib.maintainers; [ nickcao ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ nickcao ];
     platforms = lib.platforms.linux;
   };
 })

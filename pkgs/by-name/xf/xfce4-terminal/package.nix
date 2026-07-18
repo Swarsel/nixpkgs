@@ -1,25 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   docbook_xml_dtd_45,
   docbook_xsl,
+  gitUpdater,
   glib,
-  libxslt, # xsltproc
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
-  gtk3,
   gtk-layer-shell,
+  gtk3,
   libutempter,
   libx11,
   libxfce4ui,
-  pcre2,
-  vte,
-  xfconf,
+  libxslt, # xsltproc
+  meson,
+  ninja,
   nixosTests,
-  gitUpdater,
+  pcre2,
+  pkg-config,
+  vte,
+  wrapGAppsHook3,
+  xfconf,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.2.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "xfce4-terminal";
     tag = "xfce4-terminal-${finalAttrs.version}";
     hash = "sha256-2zlx9pt9srMT6iKy89oKKdvh7YALOkyQTy7hRH60AOw=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -68,8 +68,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Modern terminal emulator";
     homepage = "https://gitlab.xfce.org/apps/xfce4-terminal";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "xfce4-terminal";
     teams = [ lib.teams.xfce ];
-    platforms = lib.platforms.linux;
   };
 })

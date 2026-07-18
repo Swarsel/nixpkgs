@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  aioresponses,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
-  aioresponses,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "greenplanet-energy-api";
   version = "0.1.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "petschni";
@@ -22,12 +21,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-2Maz/deWoHO92ed+k7EqJg6KhdARHl46IN/d/6E3W8E=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-  ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
@@ -35,11 +28,18 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+  ];
+
   disabledTests = [
     # connects to mein.green-planet-energy.de
     "test_get_electricity_prices_timeout"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "greenplanet_energy_api" ];
 
   meta = {

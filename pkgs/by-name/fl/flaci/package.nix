@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  makeWrapper,
+  buildNpmPackage,
   electron,
+  makeWrapper,
 }:
 
 buildNpmPackage {
@@ -17,16 +17,15 @@ buildNpmPackage {
     hash = "sha256-Wgkxlz4d1KNoPL9290D1qIbOqUYW/iAIWE9YL35Tfno=";
   };
 
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
-  };
-
-  npmDepsHash = "sha256-6X4R6D9GAe4DiIXCT62xKbHhLqdTE/BLlXJQKwt8oaQ=";
-
   nativeBuildInputs = [
     makeWrapper
   ];
-  dontNpmBuild = true;
+
+  npmDepsHash = "sha256-6X4R6D9GAe4DiIXCT62xKbHhLqdTE/BLlXJQKwt8oaQ=";
+
+  env = {
+    ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
+  };
 
   installPhase = ''
     runHook preInstall
@@ -40,6 +39,7 @@ buildNpmPackage {
     runHook postInstall
   '';
 
+  dontNpmBuild = true;
   dontWrapGApps = true;
 
   meta = {

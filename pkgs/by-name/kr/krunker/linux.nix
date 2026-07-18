@@ -1,4 +1,4 @@
-{ appimageTools, fetchurl }:
+{ fetchurl, appimageTools }:
 
 let
   pname = "krunker";

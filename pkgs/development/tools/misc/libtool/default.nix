@@ -17,11 +17,10 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ m4 ];
   buildInputs = [ perl ];
-
+  dontFixLibtool = true;
   # Don't fixup "#! /bin/sh" in Libtool, otherwise it will use the
   # "fixed" path in generated files!
   dontPatchShebangs = true;
-  dontFixLibtool = true;
 
   meta = {
     description = "Generic library support script";
@@ -37,10 +36,8 @@ stdenv.mkDerivation rec {
     '';
 
     homepage = "https://www.gnu.org/software/libtool/";
-
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
-
     mainProgram = "libtool";
   };
 }

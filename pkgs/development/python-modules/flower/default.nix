@@ -1,19 +1,18 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   celery,
+  fetchPypi,
   humanize,
-  pytz,
-  tornado,
   prometheus-client,
   pytestCheckHook,
+  pytz,
+  tornado,
 }:
 
 buildPythonPackage rec {
   pname = "flower";
   version = "2.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -34,10 +33,9 @@ buildPythonPackage rec {
     tornado
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __darwinAllowLocalNetworking = true;
+  format = "setuptools";
   pythonImportsCheck = [ "flower" ];
 
   meta = {

@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   av,
+  buildPythonPackage,
   ctranslate2,
   huggingface-hub,
   onnxruntime,
-  tokenizers,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  tokenizers,
 }:
 
 buildPythonPackage rec {
   pname = "faster-whisper";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SYSTRAN";
@@ -29,13 +25,16 @@ buildPythonPackage rec {
     hash = "sha256-pWVYxC1h0kIhhBxAt9oT2USuvoarlcwwYmaLUJlZZwY=";
   };
 
+  # all tests require downloads
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    export HOME=$TMPDIR
+  '';
+
   build-system = [
     setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "av"
-    "tokenizers"
   ];
 
   dependencies = [
@@ -46,21 +45,18 @@ buildPythonPackage rec {
     tokenizers
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "faster_whisper" ];
 
-  # all tests require downloads
-  doCheck = false;
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = ''
-    export HOME=$TMPDIR
-  '';
+  pythonRelaxDeps = [
+    "av"
+    "tokenizers"
+  ];
 
   meta = {
-    changelog = "https://github.com/SYSTRAN/faster-whisper/releases/tag/${src.tag}";
     description = "Faster Whisper transcription with CTranslate2";
     homepage = "https://github.com/SYSTRAN/faster-whisper";
+    changelog = "https://github.com/SYSTRAN/faster-whisper/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

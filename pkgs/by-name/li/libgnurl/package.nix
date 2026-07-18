@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  gnutls,
+  libidn2,
   libtool,
+  libunistring,
   perl,
   pkg-config,
   python3,
   zlib,
-  gnutls,
-  libidn2,
-  libunistring,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -60,8 +60,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Fork of libcurl used by GNUnet";
     homepage = "https://gnunet.org/en/gnurl.html";
+    license = lib.licenses.curl;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.curl;
   };
 })

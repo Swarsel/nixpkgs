@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -32,9 +32,11 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/stephenafamo/bob";
     changelog = "https://github.com/stephenafamo/bob/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       spotdemo4
     ];
+
     platforms = lib.platforms.all;
   };
 })

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   arpack,
   bison,
@@ -35,15 +35,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NzLn2GXpMgwE8fY1vp5SU0Y7EfyVpQfphGdqU6sQGW4=";
   };
 
-  postPatch = ''
-    echo "${finalAttrs.version}" > IGRAPH_VERSION
-  '';
-
   outputs = [
     "out"
     "dev"
     "doc"
   ];
+
+  postPatch = ''
+    echo "${finalAttrs.version}" > IGRAPH_VERSION
+  '';
 
   nativeBuildInputs = [
     bison
@@ -102,11 +102,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    inherit (hal-hardware-analyzer.meta) maintainers;
     description = "C library for complex network analysis and graph theory";
     homepage = "https://igraph.org/";
     changelog = "https://github.com/igraph/igraph/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.all;
-    inherit (hal-hardware-analyzer.meta) maintainers;
   };
 })

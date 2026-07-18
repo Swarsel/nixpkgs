@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   anyio,
+  buildPythonPackage,
   hatchling,
   httpx,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "tika-client";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stumpylog";
@@ -26,10 +25,10 @@ buildPythonPackage rec {
     httpx
   ];
 
-  pythonImportsCheck = [ "tika_client" ];
-
   # The tests expect the tika-server to run in a docker container
   doChecks = false;
+  pyproject = true;
+  pythonImportsCheck = [ "tika_client" ];
 
   meta = {
     description = "Modern Python REST client for Apache Tika server";

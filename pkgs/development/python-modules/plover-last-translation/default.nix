@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   plover,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "plover-last-translation";
   version = "0.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nsmarkop";
@@ -26,6 +25,8 @@ buildPythonPackage (finalAttrs: {
     plover
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "plover_last_translation"
   ];
@@ -34,6 +35,7 @@ buildPythonPackage (finalAttrs: {
     description = "Plugins for Plover to repeat output";
     homepage = "https://github.com/nsmarkop/plover_last_translation";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       pandapip1
       ShamrockLee

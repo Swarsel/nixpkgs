@@ -1,19 +1,19 @@
 {
-  fetchurl,
-  fetchDebianPatch,
   lib,
   stdenv,
-  makeWrapper,
+  fetchurl,
+  autoconf,
+  automake,
+  fetchDebianPatch,
+  ghostscript,
   gnum4,
+  libtool,
+  libx11,
+  makeWrapper,
+  ncurses,
   texinfo,
   texliveSmall,
-  automake,
-  autoconf,
-  libtool,
-  ghostscript,
-  ncurses,
   enableX11 ? false,
-  libx11,
 }:
 
 let
@@ -25,8 +25,8 @@ let
     if stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64 then "-aarch64le" else "-x86-64";
 in
 stdenv.mkDerivation {
-  pname = "mit-scheme" + lib.optionalString enableX11 "-x11";
   inherit version;
+  pname = "mit-scheme" + lib.optionalString enableX11 "-x11";
 
   # MIT/GNU Scheme is not bootstrappable, so it's recommended to compile from
   # the platform-specific tarballs, which contain pre-built binaries.  It
@@ -49,19 +49,28 @@ stdenv.mkDerivation {
       pname = "mit-scheme";
       version = "12.1";
       debianRevision = "4";
-      patch = "0006-texi2any-_html-fix.patch";
       hash = "sha256-tTAK/xRGubQeiqe1Nbo+m3CYmscXxQ8HAlIl4kSZxk8=";
+      patch = "0006-texi2any-_html-fix.patch";
     })
   ];
 
-  buildInputs = [ ncurses ] ++ lib.optionals enableX11 [ libx11 ];
+  nativeBuildInputs = [
+    makeWrapper
+    gnum4
+    texinfo
+    (texliveSmall.withPackages (
+      ps: with ps; [
+        epsf
+        ps.texinfo
+      ]
+    ))
+    automake
+    ghostscript
+    autoconf
+    libtool
+  ];
 
-  configurePhase = ''
-    runHook preConfigure
-    (cd src && ./configure)
-    (cd doc && ./configure)
-    runHook postConfigure
-  '';
+  buildInputs = [ ncurses ] ++ lib.optionals enableX11 [ libx11 ];
 
   env.NIX_CFLAGS_COMPILE = toString [
     # Needed with GCC 12
@@ -84,6 +93,9 @@ stdenv.mkDerivation {
      runHook postBuild
   '';
 
+  # XXX: The `check' target doesn't exist.
+  doCheck = false;
+
   installPhase = ''
     runHook preInstall
     make prefix=$out install -C src
@@ -96,24 +108,12 @@ stdenv.mkDerivation {
       $out/lib/mit-scheme${arch}-${version}
   '';
 
-  nativeBuildInputs = [
-    makeWrapper
-    gnum4
-    texinfo
-    (texliveSmall.withPackages (
-      ps: with ps; [
-        epsf
-        ps.texinfo
-      ]
-    ))
-    automake
-    ghostscript
-    autoconf
-    libtool
-  ];
-
-  # XXX: The `check' target doesn't exist.
-  doCheck = false;
+  configurePhase = ''
+    runHook preConfigure
+    (cd src && ./configure)
+    (cd doc && ./configure)
+    runHook postConfigure
+  '';
 
   meta = {
     description = "MIT/GNU Scheme, a native code Scheme compiler";
@@ -127,11 +127,8 @@ stdenv.mkDerivation {
     '';
 
     homepage = "https://www.gnu.org/software/mit-scheme/";
-
     license = lib.licenses.gpl2Plus;
-
     maintainers = [ ];
-
     # Build fails on Cygwin and Darwin:
     # <http://article.gmane.org/gmane.lisp.scheme.mit-scheme.devel/489>.
     platforms = lib.platforms.gnu ++ lib.platforms.linux ++ lib.platforms.freebsd;

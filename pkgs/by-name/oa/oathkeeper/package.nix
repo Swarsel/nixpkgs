@@ -17,34 +17,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Dux9g5AWnbj9kXoIogVneOYywgg9TnyXqP41YT/1C8k=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-/Qgdes8EAxP9FDKbahQdCpAD7PSe4iCkUvL1+poqaWc=";
 
-  __structuredAttrs = true;
-  tags = [
-    "sqlite"
-    "json1"
-    "hsm"
-  ];
-
-  subPackages = [ "..." ];
-
-  # Pass versioning information via ldflags
-  ldflags = [
-    "-s"
-    "-X github.com/ory/oathkeeper/x.Version=${finalAttrs.src.tag}"
-    "-X github.com/ory/oathkeeper/x.Commit=${finalAttrs.src.rev}"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
-  # upstream tests use dynamic port assignment
-  __darwinAllowLocalNetworking = true;
-
-  # The configuration contains values or keys which are invalid:
-  # version:
-  #          ^-- does not match pattern "^v(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
-  preCheck = ''
-    export version="${finalAttrs.src.tag}"
-  '';
   checkFlags =
     let
       skippedTests = [
@@ -60,17 +35,47 @@ buildGoModule (finalAttrs: {
       ];
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = [ "version" ];
+
+  # The configuration contains values or keys which are invalid:
+  # version:
+  #          ^-- does not match pattern "^v(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+  preCheck = ''
+    export version="${finalAttrs.src.tag}"
+  '';
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd oathkeeper \
       --bash <($out/bin/oathkeeper completion bash) \
       --fish <($out/bin/oathkeeper completion fish) \
       --zsh <($out/bin/oathkeeper completion zsh)
   '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  # upstream tests use dynamic port assignment
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  # Pass versioning information via ldflags
+  ldflags = [
+    "-s"
+    "-X github.com/ory/oathkeeper/x.Version=${finalAttrs.src.tag}"
+    "-X github.com/ory/oathkeeper/x.Commit=${finalAttrs.src.rev}"
+  ];
+
+  subPackages = [ "..." ];
+
+  tags = [
+    "sqlite"
+    "json1"
+    "hsm"
+  ];
+
+  versionCheckProgramArg = [ "version" ];
+
   meta = {
     description = "Identity and access proxy that authorizes HTTP requests based on sets of rules";
+
     longDescription = ''
       It follows
       [cloud architecture best practices](https://www.ory.com/docs/ecosystem/software-architecture-philosophy) and focuses on:
@@ -82,13 +87,16 @@ buildGoModule (finalAttrs: {
       - Supporting multiple authentication and authorization strategies
       - Working in Zero-Trust network architectures
     '';
+
     homepage = "https://github.com/ory/oathkeeper";
     changelog = "https://github.com/ory/oathkeeper/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       camcalaquian
       debtquity
     ];
+
     mainProgram = "oathkeeper";
   };
 })

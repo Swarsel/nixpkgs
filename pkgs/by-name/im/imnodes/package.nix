@@ -2,22 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  imgui,
   SDL2,
-  libxext,
+  cmake,
+  fetchpatch,
+  imgui,
   imnodes,
+  libxext,
   withExamples ? false,
 }:
 
 stdenv.mkDerivation {
   pname = "imnodes";
   version = "unstable-2025-06-25";
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Nelarius";
@@ -25,15 +21,22 @@ stdenv.mkDerivation {
     rev = "b2ec254ce576ac3d42dfb7aef61deadbff8e7211";
     hash = "sha256-Hdde198chSm3Ii0grEB4imqp7vVu6mYxa1VPZovvb7A=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # CMake install rules
     (fetchpatch {
-      url = "https://github.com/Nelarius/imnodes/commit/ff20336fcd82ce07c39fabd76d5bc9fa0a08b3bc.patch";
       hash = "sha256-JHOUjwMofDwt2kg6SLPFZmuQC4bOfjGa3qHFr5MdPIE=";
+      url = "https://github.com/Nelarius/imnodes/commit/ff20336fcd82ce07c39fabd76d5bc9fa0a08b3bc.patch";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     imgui
   ]
@@ -43,7 +46,6 @@ stdenv.mkDerivation {
   ];
 
   cmakeFlags = [ (lib.cmakeBool "IMNODES_EXAMPLES" withExamples) ];
-
   passthru.tests.examples = imnodes.override { withExamples = true; };
 
   meta = {
@@ -51,7 +53,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/Nelarius/imnodes";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ SomeoneSerge ];
-    mainProgram = "imnodes";
     platforms = lib.platforms.all;
+    mainProgram = "imnodes";
   };
 }

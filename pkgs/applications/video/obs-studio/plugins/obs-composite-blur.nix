@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  obs-studio,
   cmake,
+  obs-studio,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,12 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-wT49bCxik8mrg+YleNelOPQQzqcYQR7ZSnzvPXA5D3g=";
   };
 
-  buildInputs = [
-    obs-studio
-  ];
-
   nativeBuildInputs = [
     cmake
+  ];
+
+  buildInputs = [
+    obs-studio
   ];
 
   postInstall = ''

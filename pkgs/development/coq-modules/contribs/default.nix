@@ -1,8 +1,8 @@
 {
   lib,
-  mkCoqDerivation,
-  coq,
   callPackage,
+  coq,
+  mkCoqDerivation,
 }:
 
 let
@@ -16,12 +16,13 @@ let
         mkCoqDerivation (
           {
             inherit pname version;
-            owner = "coq-contribs";
             mlPlugin = true;
+            owner = "coq-contribs";
           }
           // lib.optionalAttrs (builtins.elem coq.coq-version coqs) (
             {
               defaultVersion = param.version;
+
               release = {
                 "${param.version}" = { inherit (param) rev sha256; };
               };
@@ -45,6 +46,7 @@ in
           rev = "f01df35e1d796ce1fdc7ba3d670ce5d63c95d544";
           sha256 = "1bwvnbd5ws1plgj147blcrvyycf3gg3fz3rm2mckln8z3sfxyq2k";
         };
+
         "8.8" = {
           version = "20180530";
           rev = "86ac28259030649ef51460e4de2441c8a1017751";
@@ -223,16 +225,19 @@ in
           rev = "fa1fec7";
           sha256 = "1ns0swlr8hzb1zc7fsyd3vws1vbq0vvfxcf0lszqnca9c9hfkfy4";
         };
+
         "8.7" = {
           version = "20180313";
           rev = "77ac16366529c9e558f70ba86f0168a76ca76b8f";
           sha256 = "01gp8injb0knaxgqsdc4x9h8714k7qxg7j5w7y6i45dnpd81ndr4";
         };
+
         "8.8" = {
           version = "20180330";
           rev = "52b86bed1671321b25fe4d7495558f9f221b12aa";
           sha256 = "0hbnrwdgryr52170cfrlbiymr88jsyxilnpr343vnprqq3zk1xz0";
         };
+
         "8.9" = {
           version = "20190222";
           rev = "aa33052c1edfc5a65885942a67c2773b5d96f8cc";
@@ -543,9 +548,9 @@ in
 
   intuitionistic-nuprl = mkContrib "intuitionistic-nuprl" [ "8.6" ] {
     version = "v8.6.0";
+    installFlags = [ "COQBIN=$(out)/lib/coq/${coq.coq-version}/bin/" ]; # hack
     rev = "6279ed83244dc4aec2e23ffb4c87e3f10a50326d";
     sha256 = "1yvlnqwa7ka4a0yg0j7zrzvayhsm1shvsjjawjv552sxc9519aag";
-    installFlags = [ "COQBIN=$(out)/lib/coq/${coq.coq-version}/bin/" ]; # hack
   };
 
   ipc = mkContrib "ipc" [ "8.6" "8.7" ] {

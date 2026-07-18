@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   makeWrapper,
   pytestCheckHook,
   python,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "hjson";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hjson";
@@ -20,13 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-VrCLHfXShF45IEhGVQpryBzjxreQEunyghazDNKRh8k=";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ makeWrapper ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "hjson" ];
 
   postInstall = ''
     rm $out/bin/hjson.cmd
@@ -35,10 +29,15 @@ buildPythonPackage rec {
       --prefix PATH : ${lib.makeBinPath [ python ]}
   '';
 
+  build-system = [ setuptools ];
+
   disabledTestPaths = [
     # AttributeError:  b'/build/source/hjson/tool.py:14: Deprecati[151 chars]ools' != b''
     "hjson/tests/test_tool.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "hjson" ];
 
   meta = {
     description = "User interface for JSON";

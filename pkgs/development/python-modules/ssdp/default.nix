@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   flit-core,
   flit-scm,
   pygments,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ssdp";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "codingjoe";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-1LO5+lfykaepp+MfS/2mlngobhcV1nZvU19Jb0sbVzk=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     flit-core
@@ -32,14 +36,11 @@ buildPythonPackage (finalAttrs: {
       click
       pygments
     ];
+
     pygments = [ pygments ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ssdp" ];
 
   meta = {

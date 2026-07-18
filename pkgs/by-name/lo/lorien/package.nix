@@ -2,15 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  alsa-lib,
   autoPatchelfHook,
   copyDesktopItems,
-  makeDesktopItem,
-
   godot3-export-templates,
   godot3-headless,
-
-  alsa-lib,
   libGL,
   libGLU,
   libpulseaudio,
@@ -22,8 +18,9 @@
   libxinerama,
   libxrandr,
   libxrender,
-  zlib,
+  makeDesktopItem,
   udev, # for libudev
+  zlib,
 }:
 
 let
@@ -68,22 +65,6 @@ stdenv.mkDerivation rec {
     udev
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "lorien";
-      exec = "lorien";
-      icon = "lorien";
-      desktopName = "Lorien";
-      genericName = "Whiteboard";
-      comment = meta.description;
-      categories = [
-        "Graphics"
-        "Office"
-      ];
-      keywords = [ "whiteboard" ];
-    })
-  ];
-
   buildPhase = ''
     runHook preBuild
 
@@ -120,6 +101,23 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Graphics"
+        "Office"
+      ];
+
+      comment = meta.description;
+      desktopName = "Lorien";
+      exec = "lorien";
+      genericName = "Whiteboard";
+      icon = "lorien";
+      keywords = [ "whiteboard" ];
+      name = "lorien";
+    })
+  ];
+
   runtimeDependencies = map lib.getLib [
     alsa-lib
     libpulseaudio
@@ -127,15 +125,17 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
-    homepage = "https://github.com/mbrlabs/Lorien";
     description = "Infinite canvas drawing/note-taking app";
+
     longDescription = ''
       An infinite canvas drawing/note-taking app that is focused on performance,
       small savefiles and simplicity
     '';
+
+    homepage = "https://github.com/mbrlabs/Lorien";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "lorien";
   };
 }

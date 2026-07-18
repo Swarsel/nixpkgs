@@ -1,13 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   agate,
+  buildPythonPackage,
+  # passthru
+  callPackage,
   click,
   daff,
   dbt-adapters,
@@ -15,6 +13,8 @@
   dbt-extractor,
   dbt-protos,
   dbt-semantic-interfaces,
+  # build-system
+  hatchling,
   jinja2,
   logbook,
   mashumaro,
@@ -30,15 +30,11 @@
   snowplow-tracker,
   sqlparse,
   typing-extensions,
-
-  # passthru
-  callPackage,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dbt-core";
   version = "1.11.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dbt-labs";
@@ -47,22 +43,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-+7q332Te3R6g8HvT1Gwa7vHo8OBmT0/E/CzunBYIvZk=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/core";
-
-  pythonRelaxDeps = [
-    "agate"
-    "click"
-    "dbt-common"
-    "dbt-semantic-interfaces"
-    "logbook"
-    "mashumaro"
-    "networkx"
-    "pathspec"
-    "protobuf"
-    "pydantic"
-    "sqlparse"
-    "urllib3"
-  ];
+  # tests exist for the dbt tool but not for this package specifically
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -95,8 +77,24 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ mashumaro.optional-dependencies.msgpack;
 
-  # tests exist for the dbt tool but not for this package specifically
-  doCheck = false;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "agate"
+    "click"
+    "dbt-common"
+    "dbt-semantic-interfaces"
+    "logbook"
+    "mashumaro"
+    "networkx"
+    "pathspec"
+    "protobuf"
+    "pydantic"
+    "sqlparse"
+    "urllib3"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/core";
 
   passthru = {
     withAdapters = callPackage ./with-adapters.nix { };
@@ -104,6 +102,7 @@ buildPythonPackage (finalAttrs: {
 
   meta = {
     description = "Enables data analysts and engineers to transform their data using the same practices that software engineers use to build applications";
+
     longDescription = ''
       The dbt tool needs adapters to data sources in order to work. The available
       adapters are:
@@ -120,12 +119,15 @@ buildPythonPackage (finalAttrs: {
           adapters.dbt-postgres
         ])
     '';
+
     homepage = "https://github.com/dbt-labs/dbt-core";
     changelog = "https://github.com/dbt-labs/dbt-core/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mausch
     ];
+
     mainProgram = "dbt";
   };
 })

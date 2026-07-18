@@ -1,16 +1,14 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "iredis";
   version = "1.16.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "laixintao";
@@ -19,10 +17,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-m8XDNzHgMWBgcN3AyFlb8K/UNXbGhH4toKBiX5Q4/QY=";
   };
 
-  pythonRelaxDeps = [
-    "packaging"
-    "redis"
+  nativeCheckInputs = with python3Packages; [
+    freezegun
+    pexpect
+    pytestCheckHook
   ];
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = with python3Packages; [
     poetry-core
@@ -39,17 +46,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     redis
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    freezegun
-    pexpect
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [
-    # Only execute unittests, because cli tests require a running Redis
-    "tests/unittests/"
-  ];
-
   disabledTestPaths = [
     # Fails on sandbox
     "tests/unittests/test_client.py"
@@ -62,17 +58,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "tests/unittests/test_utils.py::test_timer"
   ];
 
+  enabledTestPaths = [
+    # Only execute unittests, because cli tests require a running Redis
+    "tests/unittests/"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "iredis" ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
+  pythonRelaxDeps = [
+    "packaging"
+    "redis"
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "Terminal Client for Redis with AutoCompletion and Syntax Highlighting";
-    changelog = "https://github.com/laixintao/iredis/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     homepage = "https://iredis.xbin.io/";
+    changelog = "https://github.com/laixintao/iredis/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ phanirithvij ];
     mainProgram = "iredis";

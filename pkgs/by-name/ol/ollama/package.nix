@@ -1,43 +1,39 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  buildEnv,
-  makeBinaryWrapper,
   stdenv,
+  fetchFromGitHub,
   addDriverRunpath,
-  nix-update-script,
-
-  cmake,
-  gitMinimal,
-  clblast,
-  libdrm,
-  rocmPackages,
-  rocmGpuTargets ? rocmPackages.clr.localGpuTargets or (rocmPackages.clr.gpuTargets or [ ]),
-  cudaPackages,
-  cudaArches ? cudaPackages.flags.realArches or [ ],
-  autoAddDriverRunpath,
   apple-sdk_15,
-  vulkan-tools,
-  vulkan-headers,
-  vulkan-loader,
-  spirv-headers,
-  shaderc,
+  autoAddDriverRunpath,
+  buildEnv,
+  buildGoModule,
   ccache,
-
-  versionCheckHook,
-  writableTmpDirAsHomeHook,
-
+  clblast,
+  cmake,
+  config,
+  cudaPackages,
+  gitMinimal,
+  libdrm,
+  makeBinaryWrapper,
+  nix-update-script,
   # passthru
   nixosTests,
   ollama,
-  ollama-rocm,
   ollama-cuda,
+  ollama-rocm,
   ollama-vulkan,
-
-  config,
+  rocmPackages,
+  shaderc,
+  spirv-headers,
+  versionCheckHook,
+  vulkan-headers,
+  vulkan-loader,
+  vulkan-tools,
+  writableTmpDirAsHomeHook,
   # one of `[ null false "rocm" "cuda" "vulkan" ]`
   acceleration ? null,
+  cudaArches ? cudaPackages.flags.realArches or [ ],
+  rocmGpuTargets ? rocmPackages.clr.localGpuTargets or (rocmPackages.clr.gpuTargets or [ ]),
 }:
 
 assert builtins.elem acceleration [
@@ -94,16 +90,16 @@ let
   cudaMajorVersion = lib.versions.major cudaPackages.cuda_cudart.version;
 
   cudaToolkit = buildEnv {
+    # cccl and cuda_cudart both have a LICENSE file in their output
+    ignoreCollisions = true;
     # ollama hardcodes the major version in the Makefile to support different variants.
     # - https://github.com/ollama/ollama/blob/v0.31.1/CMakePresets.json#L21-L47
     name = "cuda-merged-${cudaMajorVersion}";
+
     paths = map lib.getLib cudaLibs ++ [
       (lib.getOutput "static" cudaPackages.cuda_cudart)
       (lib.getBin (cudaPackages.cuda_nvcc.__spliced.buildHost or cudaPackages.cuda_nvcc))
     ];
-
-    # cccl and cuda_cudart both have a LICENSE file in their output
-    ignoreCollisions = true;
   };
 
   cudaPath = lib.removeSuffix "-${cudaMajorVersion}" cudaToolkit;
@@ -113,10 +109,10 @@ let
   # `LLAMA_CPP_VERSION` file) so the FetchContent step uses our copy
   # instead of trying to clone over the network in the sandbox.
   llamaCppSrc = fetchFromGitHub {
+    hash = "sha256-SlcBqlUSeXgGltk7fz1blp4DobypzkT8cw8a7dkVGiU=";
     owner = "ggml-org";
     repo = "llama.cpp";
     tag = "b9840";
-    hash = "sha256-SlcBqlUSeXgGltk7fz1blp4DobypzkT8cw8a7dkVGiU=";
   };
 
   wrapperOptions = [
@@ -161,19 +157,33 @@ goBuild (finalAttrs: {
     hash = "sha256-NyZ3H1gsC692IcmdTXjIA9jDtTobUEfJladGW72aNGw=";
   };
 
-  vendorHash = "sha256-HMwoaFBMbpoy8f0I+O+i7kIa9BslLu3FcVWeaIOkpvs=";
-  proxyVendor = true;
+  # replace inaccurate version number with actual release version
+  postPatch = ''
+    substituteInPlace version/version.go \
+      --replace-fail 0.0.0 '${finalAttrs.version}'
 
-  env =
-    lib.optionalAttrs enableRocm {
-      ROCM_PATH = rocmPath;
-      CLBlast_DIR = "${clblast}/lib/cmake/CLBlast";
-      HIP_PATH = rocmPath;
-      CFLAGS = "-Wno-c++17-extensions -I${rocmPath}/include";
-      CXXFLAGS = "-Wno-c++17-extensions -I${rocmPath}/include";
-    }
-    // lib.optionalAttrs enableCuda { CUDA_PATH = cudaPath; }
-    // lib.optionalAttrs enableVulkan { VULKAN_SDK = shaderc.bin; };
+    # cmd/launch/*_test.go are integration tests for user-facing CLI
+    # launchers (claude, qwen, cline, codex, kimi, droid, openclaw, hermes,
+    # …) that install the target binary via npm and then exec it on PATH.
+    # Both prerequisites are unavailable in the nix sandbox, so the launch
+    # subpackage's tests can't pass here. Drop them.
+    rm cmd/launch/*_test.go
+
+    rm -r app
+
+    # Pre-stage llama.cpp for the FetchContent step and apply Ollama's
+    # compat patch. When FETCHCONTENT_SOURCE_DIR_LLAMA_CPP is set, neither
+    # `cmake/local.cmake` nor `llama/server/CMakeLists.txt` auto-applies
+    # the patch (the parent's ExternalProject_Add passes
+    # OLLAMA_LLAMA_CPP_SKIP_COMPAT_PATCH=ON to the child build) — the
+    # caller has to. The apply-patch.cmake script is idempotent so this
+    # is safe to re-run.
+    cp -r ${llamaCppSrc} $TMPDIR/llama-cpp-src
+    chmod -R +w $TMPDIR/llama-cpp-src
+    ( cd $TMPDIR/llama-cpp-src && \
+      cmake -DPATCH_DIR=$NIX_BUILD_TOP/source/llama/compat \
+        -P $NIX_BUILD_TOP/source/llama/compat/apply-patch.cmake )
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -204,38 +214,18 @@ goBuild (finalAttrs: {
     ++ lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_15 ]
     ++ lib.optionals enableVulkan vulkanLibs;
 
-  # replace inaccurate version number with actual release version
-  postPatch = ''
-    substituteInPlace version/version.go \
-      --replace-fail 0.0.0 '${finalAttrs.version}'
+  vendorHash = "sha256-HMwoaFBMbpoy8f0I+O+i7kIa9BslLu3FcVWeaIOkpvs=";
 
-    # cmd/launch/*_test.go are integration tests for user-facing CLI
-    # launchers (claude, qwen, cline, codex, kimi, droid, openclaw, hermes,
-    # …) that install the target binary via npm and then exec it on PATH.
-    # Both prerequisites are unavailable in the nix sandbox, so the launch
-    # subpackage's tests can't pass here. Drop them.
-    rm cmd/launch/*_test.go
-
-    rm -r app
-
-    # Pre-stage llama.cpp for the FetchContent step and apply Ollama's
-    # compat patch. When FETCHCONTENT_SOURCE_DIR_LLAMA_CPP is set, neither
-    # `cmake/local.cmake` nor `llama/server/CMakeLists.txt` auto-applies
-    # the patch (the parent's ExternalProject_Add passes
-    # OLLAMA_LLAMA_CPP_SKIP_COMPAT_PATCH=ON to the child build) — the
-    # caller has to. The apply-patch.cmake script is idempotent so this
-    # is safe to re-run.
-    cp -r ${llamaCppSrc} $TMPDIR/llama-cpp-src
-    chmod -R +w $TMPDIR/llama-cpp-src
-    ( cd $TMPDIR/llama-cpp-src && \
-      cmake -DPATCH_DIR=$NIX_BUILD_TOP/source/llama/compat \
-        -P $NIX_BUILD_TOP/source/llama/compat/apply-patch.cmake )
-  '';
-
-  overrideModAttrs = _: _: {
-    # don't run llama.cpp build in the module fetch phase
-    preBuild = "";
-  };
+  env =
+    lib.optionalAttrs enableRocm {
+      CFLAGS = "-Wno-c++17-extensions -I${rocmPath}/include";
+      CLBlast_DIR = "${clblast}/lib/cmake/CLBlast";
+      CXXFLAGS = "-Wno-c++17-extensions -I${rocmPath}/include";
+      HIP_PATH = rocmPath;
+      ROCM_PATH = rocmPath;
+    }
+    // lib.optionalAttrs enableCuda { CUDA_PATH = cudaPath; }
+    // lib.optionalAttrs enableVulkan { VULKAN_SDK = shaderc.bin; };
 
   preBuild =
     let
@@ -309,6 +299,30 @@ goBuild (finalAttrs: {
       cmake --build build -j $NIX_BUILD_CORES
     '';
 
+  checkFlags =
+    let
+      # Skip tests that require network access
+      skippedTests = [
+        "TestPushHandler/unauthorized_push" # Writes to $HOME, see https://github.com/ollama/ollama/pull/12307#pullrequestreview-3249128660
+        "TestPiRun_InstallAndWebSearchLifecycle" # Requires network access to install npm packages
+      ];
+    in
+    [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
+
+  # ollama looks for acceleration libs in ../lib/ollama/ (now also for CPU-only with arch specific optimizations)
+  # https://github.com/ollama/ollama/blob/v0.31.1/docs/development.md#library-detection
+  postInstall = ''
+    mkdir -p $out/lib
+    cp -r build/lib/ollama $out/lib/
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   # The llama.cpp sub-build is driven by ExternalProject_Add and does
   # not inherit the parent's CMAKE_SKIP_BUILD_RPATH setting, so its
   # `.so` payloads end up with build-dir entries in RPATH. Drop them
@@ -321,25 +335,25 @@ goBuild (finalAttrs: {
       -exec patchelf --shrink-rpath --allowed-rpath-prefixes /nix/store {} +
   '';
 
-  # ollama looks for acceleration libs in ../lib/ollama/ (now also for CPU-only with arch specific optimizations)
-  # https://github.com/ollama/ollama/blob/v0.31.1/docs/development.md#library-detection
-  postInstall = ''
-    mkdir -p $out/lib
-    cp -r build/lib/ollama $out/lib/
-  '';
-
   postFixup =
     # expose runtime libraries necessary to use the gpu
     lib.optionalString (enableRocm || enableCuda) ''
       wrapProgram "$out/bin/ollama" ${wrapperArgs}
     '';
 
+  __darwinAllowLocalNetworking = true;
+
   ldflags = [
     "-X=github.com/ollama/ollama/version.Version=${finalAttrs.version}"
     "-X=github.com/ollama/ollama/server.mode=release"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  overrideModAttrs = _: _: {
+    # don't run llama.cpp build in the module fetch phase
+    preBuild = "";
+  };
+
+  proxyVendor = true;
 
   # required for github.com/ollama/ollama/detect's tests
   sandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -347,21 +361,6 @@ goBuild (finalAttrs: {
     (allow iokit-open (iokit-user-client-class "AGXDeviceUserClient"))
   '';
 
-  checkFlags =
-    let
-      # Skip tests that require network access
-      skippedTests = [
-        "TestPushHandler/unauthorized_push" # Writes to $HOME, see https://github.com/ollama/ollama/pull/12307#pullrequestreview-3249128660
-        "TestPiRun_InstallAndWebSearchLifecycle" # Requires network access to install npm packages
-      ];
-    in
-    [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
   versionCheckKeepEnvironment = "HOME";
 
   passthru = {
@@ -384,14 +383,18 @@ goBuild (finalAttrs: {
       + lib.optionalString rocmRequested ", using ROCm for AMD GPU acceleration"
       + lib.optionalString cudaRequested ", using CUDA for NVIDIA GPU acceleration"
       + lib.optionalString vulkanRequested ", using Vulkan for generic GPU acceleration";
+
     homepage = "https://github.com/ollama/ollama";
     changelog = "https://github.com/ollama/ollama/releases/tag/v${finalAttrs.version}";
     license = licenses.mit;
-    platforms =
-      if (rocmRequested || cudaRequested || vulkanRequested) then platforms.linux else platforms.unix;
-    mainProgram = "ollama";
+
     maintainers = with maintainers; [
       prusnak
     ];
+
+    platforms =
+      if (rocmRequested || cudaRequested || vulkanRequested) then platforms.linux else platforms.unix;
+
+    mainProgram = "ollama";
   };
 })

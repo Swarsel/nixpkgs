@@ -8,8 +8,6 @@
 buildPythonPackage rec {
   pname = "pyx";
   version = "0.17";
-  format = "setuptools";
-  disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +16,8 @@ buildPythonPackage rec {
 
   # No tests in archive
   doCheck = false;
+  disabled = !isPy3k;
+  format = "setuptools";
 
   meta = {
     description = "Python package for the generation of PostScript, PDF, and SVG files";

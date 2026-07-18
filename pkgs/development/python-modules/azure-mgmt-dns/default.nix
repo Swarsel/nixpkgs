@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-dns";
   version = "9.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_dns";
     inherit version;
     hash = "sha256-ifjE5GepQiS5e/Ft121b1ha/Ec7+cn93ZhilfMVIbjc=";
+    pname = "azure_mgmt_dns";
   };
 
+  # Tests are only available in the mono-repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,11 +30,9 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   # this is still needed for when the version is overrided
   pythonNamespaces = [ "azure.mgmt" ];
-
-  # Tests are only available in the mono-repo
-  doCheck = false;
 
   meta = {
     description = "This is the Microsoft Azure DNS Management Client Library";

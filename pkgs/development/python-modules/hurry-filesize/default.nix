@@ -8,20 +8,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "hurry-filesize";
   version = "0.9";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "hurry.filesize";
     inherit (finalAttrs) version;
     hash = "sha256-9TaDKa2++GrM07yUkFIjQLt5JgRVromxpCwQ9jgBuaY=";
+    pname = "hurry.filesize";
   };
 
   # project has no repo...
   # fix implicit namespaces (PEP 420) warning
   patches = [ ./use-pep-420-implicit-namespace-package.patch ];
-
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "hurry.filesize" ];
 
   meta = {

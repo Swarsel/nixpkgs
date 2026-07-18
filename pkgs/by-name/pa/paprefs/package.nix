@@ -1,14 +1,14 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  meson,
-  ninja,
+  fetchurl,
   gettext,
-  pkg-config,
-  pulseaudioFull,
   glibmm,
   gtkmm3,
+  meson,
+  ninja,
+  pkg-config,
+  pulseaudioFull,
   wrapGAppsHook3,
 }:
 
@@ -37,7 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "PulseAudio Preferences";
-    mainProgram = "paprefs";
 
     longDescription = ''
       PulseAudio Preferences (paprefs) is a simple GTK based configuration
@@ -45,10 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "http://freedesktop.org/software/pulseaudio/paprefs/";
-
     license = lib.licenses.gpl2Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "paprefs";
   };
 })

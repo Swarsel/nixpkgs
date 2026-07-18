@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -34,7 +34,7 @@ buildNpmPackage rec {
     homepage = "https://github.com/VueTorrent/VueTorrent";
     changelog = "https://github.com/VueTorrent/VueTorrent/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ redxtech ];
+    platforms = lib.platforms.all;
   };
 }

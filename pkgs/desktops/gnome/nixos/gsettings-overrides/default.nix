@@ -1,17 +1,17 @@
 {
   lib,
-  runCommand,
-  gsettings-desktop-schemas,
-  gnome-shell,
   glib,
   gnome-flashback,
+  gnome-shell,
+  gsettings-desktop-schemas,
   nixos-artwork,
-  nixos-background-light ? nixos-artwork.wallpapers.simple-blue,
-  nixos-background-dark ? nixos-artwork.wallpapers.simple-dark-gray,
-  extraGSettingsOverrides ? "",
+  runCommand,
   extraGSettingsOverridePackages ? [ ],
+  extraGSettingsOverrides ? "",
   favoriteAppsOverride ? "",
   flashbackEnabled ? false,
+  nixos-background-dark ? nixos-artwork.wallpapers.simple-dark-gray,
+  nixos-background-light ? nixos-artwork.wallpapers.simple-blue,
 }:
 
 let

@@ -1,29 +1,29 @@
 {
+  lib,
   stdenv,
   fetchurl,
   alsa-lib,
   cairo,
   dpkg,
+  ffmpeg,
   freetype,
   gdk-pixbuf,
   glib,
   gtk3,
-  lib,
-  libxcb-util,
-  libxcb-wm,
-  libxtst,
-  libxcursor,
-  libx11,
-  libxcb,
   libglvnd,
   libjack2,
-  ffmpeg,
+  libx11,
+  libxcb,
+  libxcb-util,
+  libxcb-wm,
+  libxcursor,
   libxkbcommon,
-  xdg-utils,
-  zlib,
+  libxtst,
+  makeWrapper,
   pulseaudio,
   wrapGAppsHook3,
-  makeWrapper,
+  xdg-utils,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,9 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     wrapGAppsHook3
   ];
-
-  dontBuild = true;
-  dontWrapGApps = true; # we only want $gappsWrapperArgs here
 
   buildInputs = [
     alsa-lib
@@ -64,8 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcursor
     (lib.getLib stdenv.cc.cc)
   ];
-
-  ldLibraryPath = lib.strings.makeLibraryPath finalAttrs.buildInputs;
 
   installPhase = ''
     runHook preInstall
@@ -97,21 +92,29 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  dontBuild = true;
+  dontWrapGApps = true; # we only want $gappsWrapperArgs here
+  ldLibraryPath = lib.strings.makeLibraryPath finalAttrs.buildInputs;
+
   meta = {
     description = "Digital audio workstation";
+
     longDescription = ''
       Bitwig Studio is a multi-platform music-creation system for
       production, performance and DJing, with a focus on flexible
       editing tools and a super-fast workflow.
     '';
+
     homepage = "https://www.bitwig.com/";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       bfortz
       michalrus
       mrVanDalo
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    platforms = [ "x86_64-linux" ];
   };
 })

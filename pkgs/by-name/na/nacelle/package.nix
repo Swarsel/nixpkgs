@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 let
@@ -27,10 +27,10 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://dotcolon.net/font/nacelle/";
     description = "Improved version of the Aileron font";
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ minijackson ];
+    homepage = "https://dotcolon.net/font/nacelle/";
     license = lib.licenses.ofl;
+    maintainers = with lib.maintainers; [ minijackson ];
+    platforms = lib.platforms.all;
   };
 }

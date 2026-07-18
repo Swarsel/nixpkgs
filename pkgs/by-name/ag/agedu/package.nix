@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cmake,
+  fetchgit,
   halibut,
 }:
 let
@@ -15,8 +15,8 @@ stdenv.mkDerivation {
 
   # upstream provides tarballs but it seems they disappear after the next version is released
   src = fetchgit {
-    url = "https://git.tartarus.org/simon/agedu.git";
     inherit rev;
+    url = "https://git.tartarus.org/simon/agedu.git";
     hash = "sha256-ZU2bVVo//mAVtVtrKPQ20wZHip/AZPmlL2uaCBcc7rw=";
   };
 
@@ -27,6 +27,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Unix utility for tracking down wasted disk space";
+
     longDescription = ''
       Most Unix file systems, in their default mode, helpfully record when a
       file was last accessed. So if you generated a large amount of data years
@@ -38,6 +39,7 @@ stdenv.mkDerivation {
       agedu uses this information to tell you which files waste disk space when
       you haven't used them since a long time.
     '';
+
     homepage = "https://www.chiark.greenend.org.uk/~sgtatham/agedu/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ symphorien ];

@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "verspec";
   version = "0.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,15 +25,18 @@ buildPythonPackage rec {
     "test/test_specifiers.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "verspec" ];
 
   meta = {
     description = "Flexible version handling";
     homepage = "https://github.com/jimporter/verspec";
+
     license = with lib.licenses; [
       bsd2 # and
       asl20
     ];
+
     maintainers = [ ];
   };
 }

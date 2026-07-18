@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   alsa-lib,
   config,
   dbus,
-  fetchFromGitHub,
   libpulseaudio,
   libxcb,
   ncurses,
@@ -14,8 +14,8 @@
   portaudio,
   python3,
   rustPlatform,
-  versionCheckHook,
   ueberzug,
+  versionCheckHook,
   withALSA ? stdenv.hostPlatform.isLinux,
   withClipboard ? true,
   withCover ? false,
@@ -41,8 +41,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-QQeiVmMRF5ql2GVR5nopKtBrTAP8K1Rjs/B89+Azg5s=";
   };
 
-  cargoHash = "sha256-u6T5zaeN+rmTH5eM7Inpw/EZh48RauhhVhnAmUMYFIc=";
-
   nativeBuildInputs = [ pkg-config ] ++ lib.optional withClipboard python3;
 
   buildInputs = [
@@ -57,9 +55,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optional withPortAudio portaudio
   ++ lib.optional withPulseAudio libpulseaudio;
 
+  cargoHash = "sha256-u6T5zaeN+rmTH5eM7Inpw/EZh48RauhhVhnAmUMYFIc=";
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-DNCURSES_UNCTRL_H_incl";
 
-  buildNoDefaultFeatures = true;
+  postInstall = ''
+    install -D --mode=444 $src/misc/ncspot.desktop $out/share/applications/ncspot.desktop
+    install -D --mode=444 $src/images/logo.svg $out/share/icons/hicolor/scalable/apps/ncspot.svg
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   buildFeatures =
     lib.optional withALSA "alsa_backend"
@@ -76,14 +81,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ++ lib.optional withShareSelection "share_selection"
     ++ lib.optional withTermion "termion_backend";
 
-  postInstall = ''
-    install -D --mode=444 $src/misc/ncspot.desktop $out/share/applications/ncspot.desktop
-    install -D --mode=444 $src/images/logo.svg $out/share/icons/hicolor/scalable/apps/ncspot.svg
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  buildNoDefaultFeatures = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -91,11 +89,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/hrkfdn/ncspot";
     changelog = "https://github.com/hrkfdn/ncspot/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       liff
       getchoo
       sodagunz
     ];
+
     mainProgram = "ncspot";
   };
 })

@@ -1,39 +1,38 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  setuptools-scm,
+  buildPythonPackage,
   # python dependencies
   docling,
   docling-jobkit,
   docling-mcp,
   fastapi,
+  gradio,
+  hatchling,
   httpx,
+  nodejs,
+  onnxruntime,
   pydantic-settings,
   python-multipart,
-  scalar-fastapi,
-  uvicorn,
-  websockets,
-  tesserocr,
-  typer,
   rapidocr,
-  onnxruntime,
+  scalar-fastapi,
+  setuptools-scm,
+  tesserocr,
   torch,
   torchvision,
-  gradio,
-  nodejs,
+  typer,
+  uvicorn,
+  websockets,
   which,
-  withUI ? false,
-  withTesserocr ? false,
-  withRapidocr ? false,
   withCPU ? false,
+  withRapidocr ? false,
+  withTesserocr ? false,
+  withUI ? false,
 }:
 
 buildPythonPackage rec {
   pname = "docling-serve";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "docling-project";
@@ -42,17 +41,12 @@ buildPythonPackage rec {
     hash = "sha256-g0ATehTRtrqgTjvMTs+yvFdFwXTZ8AWsO+Hljwlcbto=";
   };
 
+  # Require network
+  doCheck = false;
+
   build-system = [
     hatchling
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "websockets"
-  ];
-
-  pythonRemoveDeps = [
-    "mlx-vlm" # not yet available on nixpkgs
   ];
 
   dependencies = [
@@ -74,37 +68,47 @@ buildPythonPackage rec {
   ++ lib.optionals withCPU optional-dependencies.cpu;
 
   optional-dependencies = {
+    cpu = [
+      torch
+      torchvision
+    ];
+
+    rapidocr = [
+      rapidocr
+      onnxruntime
+    ];
+
+    tesserocr = [
+      tesserocr
+    ];
+
     ui = [
       gradio
       nodejs
       which
     ];
-    tesserocr = [
-      tesserocr
-    ];
-    rapidocr = [
-      rapidocr
-      onnxruntime
-    ];
-    cpu = [
-      torch
-      torchvision
-    ];
   };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "docling_serve"
   ];
 
-  # Require network
-  doCheck = false;
+  pythonRelaxDeps = [
+    "websockets"
+  ];
+
+  pythonRemoveDeps = [
+    "mlx-vlm" # not yet available on nixpkgs
+  ];
 
   meta = {
-    changelog = "https://github.com/docling-project/docling-serve/blob/${src.tag}/CHANGELOG.md";
     description = "Running Docling as an API service";
     homepage = "https://github.com/docling-project/docling-serve";
+    changelog = "https://github.com/docling-project/docling-serve/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "docling-serve";
     maintainers = [ ];
+    mainProgram = "docling-serve";
   };
 }

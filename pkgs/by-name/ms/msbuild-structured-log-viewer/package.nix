@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnetCorePackages,
-  writeText,
+  buildDotnetModule,
   copyDesktopItems,
+  dotnetCorePackages,
   makeDesktopItem,
   nix-update-script,
+  writeText,
 }:
 buildDotnetModule (finalAttrs: {
   pname = "msbuild-structured-log-viewer";
@@ -20,31 +20,9 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-HTWPsVl/pMi+lMSax5JNtbPXHeqD8QxfvLp2bhVxfPs=";
   };
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
-  projectFile = [ "src/StructuredLogViewer.Avalonia/StructuredLogViewer.Avalonia.csproj" ];
-  nugetDeps = ./deps.json;
-
-  dotnetBuildFlags = [
-    "-p:CustomAfterDirectoryBuildTargets=${writeText "StubGitVersioning.targets" ''
-      <Project>
-          <Target Name="GetBuildVersion" Returns="$(BuildVersion)" DependsOnTargets="GetAssemblyVersion">
-              <PropertyGroup>
-                  <BuildVersion>$(Version)</BuildVersion>
-                  <AssemblyFileVersion>$(FileVersion)</AssemblyFileVersion>
-                  <AssemblyInformationalVersion>$(InformationalVersion)</AssemblyInformationalVersion>
-              </PropertyGroup>
-          </Target>
-      </Project>
-    ''}"
-  ];
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     copyDesktopItems
   ];
-
-  dontDotnetFixup = true;
 
   postFixup = ''
     wrapDotnetProgram $out/lib/msbuild-structured-log-viewer/StructuredLogViewer.Avalonia $out/bin/${finalAttrs.meta.mainProgram}
@@ -64,29 +42,53 @@ buildDotnetModule (finalAttrs: {
   '';
 
   desktopItems = makeDesktopItem {
-    name = "msbuild-structured-log-viewer";
-    desktopName = "MSBuild Structured Log Viewer";
-    comment = finalAttrs.meta.description;
-    icon = "msbuild-structured-log-viewer";
-    exec = finalAttrs.meta.mainProgram;
     categories = [ "Development" ];
+    comment = finalAttrs.meta.description;
+    desktopName = "MSBuild Structured Log Viewer";
+    exec = finalAttrs.meta.mainProgram;
+    icon = "msbuild-structured-log-viewer";
+
     mimeTypes = [
       "application/x-binlog"
     ];
+
+    name = "msbuild-structured-log-viewer";
   };
 
+  dontDotnetFixup = true;
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+
+  dotnetBuildFlags = [
+    "-p:CustomAfterDirectoryBuildTargets=${writeText "StubGitVersioning.targets" ''
+      <Project>
+          <Target Name="GetBuildVersion" Returns="$(BuildVersion)" DependsOnTargets="GetAssemblyVersion">
+              <PropertyGroup>
+                  <BuildVersion>$(Version)</BuildVersion>
+                  <AssemblyFileVersion>$(FileVersion)</AssemblyFileVersion>
+                  <AssemblyInformationalVersion>$(InformationalVersion)</AssemblyInformationalVersion>
+              </PropertyGroup>
+          </Target>
+      </Project>
+    ''}"
+  ];
+
+  nugetDeps = ./deps.json;
+  projectFile = [ "src/StructuredLogViewer.Avalonia/StructuredLogViewer.Avalonia.csproj" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Rich interactive log viewer for MSBuild logs";
     homepage = "https://github.com/KirillOsenkov/MSBuildStructuredLog";
     changelog = "https://github.com/KirillOsenkov/MSBuildStructuredLog/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [ js6pak ];
     mainProgram = "msbuild-structured-log-viewer";
   };

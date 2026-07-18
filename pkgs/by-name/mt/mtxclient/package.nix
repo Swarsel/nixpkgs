@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   coeurl,
   curl,
+  gtest,
   libevent,
   nlohmann_json,
   olm,
   openssl,
+  pkg-config,
   re2,
   spdlog,
-  gtest,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,11 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     ./remove-network-tests.patch
-  ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_LIB_TESTS" finalAttrs.finalPackage.doCheck)
-    (lib.cmakeBool "BUILD_LIB_EXAMPLES" false)
   ];
 
   nativeBuildInputs = [
@@ -51,20 +46,26 @@ stdenv.mkDerivation (finalAttrs: {
     spdlog
   ];
 
-  checkInputs = [ gtest ];
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_LIB_TESTS" finalAttrs.finalPackage.doCheck)
+    (lib.cmakeBool "BUILD_LIB_EXAMPLES" false)
+  ];
 
   doCheck = true;
+  checkInputs = [ gtest ];
 
   meta = {
     description = "Client API library for the Matrix protocol";
     homepage = "https://github.com/Nheko-Reborn/mtxclient";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fpletz
       pstn
       rebmit
       rnhmjoj
     ];
+
     platforms = lib.platforms.all;
   };
 })

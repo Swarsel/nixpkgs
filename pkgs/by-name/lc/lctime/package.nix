@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromCodeberg,
-  runCommand,
   lctime,
   ngspice,
+  python3Packages,
+  runCommand,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "lctime";
   version = "0.0.28";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "librecell";
@@ -20,6 +19,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Td56NtqcI8763hw/XVxLP7+qExraapN9ULD3ZolfR6M=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    ngspice
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -35,17 +39,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sympy
   ];
 
-  optional-dependencies.debug = with python3Packages; [ matplotlib ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    ngspice
-  ];
-
-  enabledTestPaths = [
-    "src/lctime/*/*.py"
-  ];
-
   disabledTestPaths = [
     # hangs indefinitely
     "src/lctime/characterization/test_ngspice_subprocess.py::test_ngspice_interactive_simple"
@@ -57,6 +50,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # broken pipe
     "src/lctime/characterization/test_ngspice_subprocess.py::test_interactive_subprocess"
   ];
+
+  enabledTestPaths = [
+    "src/lctime/*/*.py"
+  ];
+
+  optional-dependencies.debug = with python3Packages; [ matplotlib ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "lctime"
@@ -86,15 +86,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
   meta = {
     description = "Characterization tool for CMOS digital standard-cells";
     homepage = "https://codeberg.org/librecell/lctime";
+    changelog = "https://codeberg.org/librecell/lctime/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       agpl3Plus
       asl20
       cc-by-sa-40
       cc0
     ];
-    changelog = "https://codeberg.org/librecell/lctime/releases/tag/${finalAttrs.src.tag}";
+
     maintainers = with lib.maintainers; [ eljamm ];
-    teams = with lib.teams; [ ngi ];
     mainProgram = "lctime";
+    teams = with lib.teams; [ ngi ];
   };
 })

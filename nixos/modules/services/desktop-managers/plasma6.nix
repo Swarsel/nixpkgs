@@ -24,34 +24,6 @@ let
   '';
 in
 {
-  options = {
-    services.desktopManager.plasma6 = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Enable the Plasma 6 (KDE 6) desktop environment.";
-      };
-
-      enableQt5Integration = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Enable Qt 5 integration (theming, etc). Disable for a pure Qt 6 system.";
-      };
-
-      notoPackage = mkPackageOption pkgs "Noto fonts - used for UI by default" {
-        default = [ "noto-fonts" ];
-        example = "noto-fonts-lgc-plus";
-      };
-    };
-
-    environment.plasma6.excludePackages = mkOption {
-      description = "List of default packages to exclude from the configuration";
-      type = types.listOf types.package;
-      default = [ ];
-      example = literalExpression "[ pkgs.kdePackages.elisa ]";
-    };
-  };
-
   imports = [
     (lib.mkRenamedOptionModule
       [ "services" "xserver" "desktopManager" "plasma6" "enable" ]
@@ -67,9 +39,55 @@ in
     )
   ];
 
+  options = {
+    environment.plasma6.excludePackages = mkOption {
+      default = [ ];
+      description = "List of default packages to exclude from the configuration";
+      example = literalExpression "[ pkgs.kdePackages.elisa ]";
+      type = types.listOf types.package;
+    };
+
+    services.desktopManager.plasma6 = {
+      enable = mkOption {
+        default = false;
+        description = "Enable the Plasma 6 (KDE 6) desktop environment.";
+        type = types.bool;
+      };
+
+      enableQt5Integration = mkOption {
+        default = true;
+        description = "Enable Qt 5 integration (theming, etc). Disable for a pure Qt 6 system.";
+        type = types.bool;
+      };
+
+      notoPackage = mkPackageOption pkgs "Noto fonts - used for UI by default" {
+        default = [ "noto-fonts" ];
+        example = "noto-fonts-lgc-plus";
+      };
+    };
+  };
+
   config = mkIf cfg.enable {
-    qt.enable = true;
-    programs.xwayland.enable = true;
+    environment.etc."X11/xkb".source = config.services.xserver.xkb.dir;
+
+    environment.pathsToLink = [
+      # FIXME: modules should link subdirs of `/share` rather than relying on this
+      "/share"
+      "/libexec" # for drkonqi
+    ];
+
+    # Needed for things that depend on other store.kde.org packages to install correctly,
+    # notably Plasma look-and-feel packages (a.k.a. Global Themes)
+    #
+    # FIXME: this is annoyingly impure and should really be fixed at source level somehow,
+    # but kpackage is a library so we can't just wrap the one thing invoking it and be done.
+    # This also means things won't work for people not on Plasma, but at least this way it
+    # works for SOME people.
+    environment.sessionVariables.KPACKAGE_DEP_RESOLVERS_PATH = "${kdePackages.frameworkintegration.out}/libexec/kf6/kpackagehandlers";
+    # Add ~/.config/kdedefaults to XDG_CONFIG_DIRS for shells, since Plasma sets that.
+    # FIXME: maybe we should append to XDG_CONFIG_DIRS in /etc/set-environment instead?
+    environment.sessionVariables.XDG_CONFIG_DIRS = [ "$HOME/.config/kdedefaults" ];
+
     environment.systemPackages =
       with kdePackages;
       let
@@ -226,154 +244,67 @@ in
       ++ lib.optional config.services.xserver.wacom.enable wacomtablet
       ++ lib.optional config.services.flatpak.enable flatpak-kcm;
 
-    environment.pathsToLink = [
-      # FIXME: modules should link subdirs of `/share` rather than relying on this
-      "/share"
-      "/libexec" # for drkonqi
-    ];
-
-    environment.etc."X11/xkb".source = config.services.xserver.xkb.dir;
-
-    # Add ~/.config/kdedefaults to XDG_CONFIG_DIRS for shells, since Plasma sets that.
-    # FIXME: maybe we should append to XDG_CONFIG_DIRS in /etc/set-environment instead?
-    environment.sessionVariables.XDG_CONFIG_DIRS = [ "$HOME/.config/kdedefaults" ];
-
-    # Needed for things that depend on other store.kde.org packages to install correctly,
-    # notably Plasma look-and-feel packages (a.k.a. Global Themes)
-    #
-    # FIXME: this is annoyingly impure and should really be fixed at source level somehow,
-    # but kpackage is a library so we can't just wrap the one thing invoking it and be done.
-    # This also means things won't work for people not on Plasma, but at least this way it
-    # works for SOME people.
-    environment.sessionVariables.KPACKAGE_DEP_RESOLVERS_PATH = "${kdePackages.frameworkintegration.out}/libexec/kf6/kpackagehandlers";
-
-    # Enable GTK applications to load SVG icons
-    programs.gdk-pixbuf.modulePackages = [ pkgs.librsvg ];
-
-    fonts.packages = [
-      cfg.notoPackage
-      pkgs.hack-font
-    ];
     fonts.fontconfig.defaultFonts = {
       monospace = [
         "Hack"
         "Noto Sans Mono"
       ];
+
       sansSerif = [ "Noto Sans" ];
       serif = [ "Noto Serif" ];
     };
 
+    fonts.packages = [
+      cfg.notoPackage
+      pkgs.hack-font
+    ];
+
+    programs.chromium = {
+      enablePlasmaBrowserIntegration = true;
+      plasmaBrowserIntegrationPackage = pkgs.kdePackages.plasma-browser-integration;
+    };
+
+    programs.dconf.enable = true;
+    programs.firefox.nativeMessagingHosts.packages = [ kdePackages.plasma-browser-integration ];
+    programs.fuse.enable = true;
+    # Enable GTK applications to load SVG icons
+    programs.gdk-pixbuf.modulePackages = [ pkgs.librsvg ];
     programs.gnupg.agent.pinentryPackage = mkDefault pkgs.pinentry-qt;
     programs.kde-pim.enable = mkDefault true;
+    programs.kdeconnect.package = kdePackages.kdeconnect-kde;
+    programs.partition-manager.package = kdePackages.partitionmanager;
     programs.ssh.askPassword = mkDefault "${kdePackages.ksshaskpass.out}/bin/ksshaskpass";
-
-    # Enable helpful DBus services.
-    services.accounts-daemon.enable = true;
-    # when changing an account picture the accounts-daemon reads a temporary file containing the image which systemsettings5 may place under /tmp
-    systemd.services.accounts-daemon.serviceConfig.PrivateTmp = false;
-
-    services.power-profiles-daemon.enable = mkDefault true;
-    services.system-config-printer.enable = mkIf config.services.printing.enable (mkDefault true);
-    programs.fuse.enable = true;
-    services.udisks2.enable = true;
-    services.upower.enable = config.powerManagement.enable;
-    services.libinput.enable = mkDefault true;
-    services.geoclue2.enable = mkDefault true;
-    services.fwupd.enable = mkDefault true;
-
-    # Extra UDEV rules used by Solid
-    services.udev.packages = [
-      # libmtp has "bin", "dev", "out" outputs. UDEV rules file is in "out".
-      pkgs.libmtp.out
-      pkgs.media-player-info
-    ];
-
-    # Set up Dr. Konqi as crash handler
-    systemd.packages = [ kdePackages.drkonqi ];
-    systemd.services."drkonqi-coredump-processor@".wantedBy = [ "systemd-coredump@.service" ];
-
-    xdg.icons.enable = true;
-    xdg.icons.fallbackCursorThemes = mkDefault [ "breeze_cursors" ];
-
-    xdg.portal.enable = true;
-    xdg.portal.extraPortals = [
-      kdePackages.kwallet
-      kdePackages.xdg-desktop-portal-kde
-      pkgs.xdg-desktop-portal-gtk
-    ];
-    xdg.portal.configPackages = mkDefault [ kdePackages.plasma-workspace ];
-    services.pipewire.enable = mkDefault true;
-
-    # Enable screen reader by default
-    services.orca.enable = mkDefault true;
-
-    services.displayManager = {
-      sessionPackages = [ kdePackages.plasma-workspace.sessions ];
-      defaultSession = mkDefault "plasma";
-    };
-    services.displayManager.sddm = {
-      package = kdePackages.sddm;
-      theme = mkDefault "breeze";
-      wayland = mkDefault {
-        enable = true;
-        compositor = "kwin";
-      };
-      extraPackages = with kdePackages; [
-        breeze-icons
-        kirigami
-        libplasma
-        plasma5support
-        qtsvg
-        qtvirtualkeyboard
-      ];
-    };
+    programs.xwayland.enable = true;
+    qt.enable = true;
 
     security.pam.services = {
-      login.kwallet = {
-        enable = true;
-        package = kdePackages.kwallet-pam;
-      };
       kde = {
         allowNullPassword = true;
+        # "kde" must not have fingerprint authentication otherwise it can block password login.
+        # See https://github.com/NixOS/nixpkgs/issues/239770 and https://invent.kde.org/plasma/kscreenlocker/-/merge_requests/163.
+        fprintAuth = false;
+
         kwallet = {
           enable = true;
           package = kdePackages.kwallet-pam;
         };
-        # "kde" must not have fingerprint authentication otherwise it can block password login.
-        # See https://github.com/NixOS/nixpkgs/issues/239770 and https://invent.kde.org/plasma/kscreenlocker/-/merge_requests/163.
-        fprintAuth = false;
+
         p11Auth = false;
       };
+
       kde-fingerprint = lib.mkIf config.services.fprintd.enable {
         fprintAuth = true;
         p11Auth = false;
       };
+
       kde-smartcard = lib.mkIf config.security.pam.p11.enable {
-        p11Auth = true;
         fprintAuth = false;
-      };
-    };
-
-    security.wrappers = {
-      kwin_wayland = {
-        owner = "root";
-        group = "root";
-        capabilities = "cap_sys_nice+ep";
-        source = "${lib.getBin pkgs.kdePackages.kwin}/bin/kwin_wayland";
+        p11Auth = true;
       };
 
-      ksystemstats_intel_helper = {
-        owner = "root";
-        group = "root";
-        capabilities = "cap_perfmon+ep";
-        source = "${pkgs.kdePackages.ksystemstats}/libexec/ksystemstats_intel_helper";
-      };
-
-      ksgrd_network_helper = {
-        owner = "root";
-        group = "root";
-        capabilities = "cap_net_raw+ep";
-        source = "${pkgs.kdePackages.libksysguard}/libexec/ksysguard/ksgrd_network_helper";
+      login.kwallet = {
+        enable = true;
+        package = kdePackages.kwallet-pam;
       };
     };
 
@@ -390,25 +321,99 @@ in
       });
     '';
 
-    programs.dconf.enable = true;
+    security.wrappers = {
+      ksgrd_network_helper = {
+        capabilities = "cap_net_raw+ep";
+        group = "root";
+        owner = "root";
+        source = "${pkgs.kdePackages.libksysguard}/libexec/ksysguard/ksgrd_network_helper";
+      };
 
-    programs.firefox.nativeMessagingHosts.packages = [ kdePackages.plasma-browser-integration ];
+      ksystemstats_intel_helper = {
+        capabilities = "cap_perfmon+ep";
+        group = "root";
+        owner = "root";
+        source = "${pkgs.kdePackages.ksystemstats}/libexec/ksystemstats_intel_helper";
+      };
 
-    programs.chromium = {
-      enablePlasmaBrowserIntegration = true;
-      plasmaBrowserIntegrationPackage = pkgs.kdePackages.plasma-browser-integration;
+      kwin_wayland = {
+        capabilities = "cap_sys_nice+ep";
+        group = "root";
+        owner = "root";
+        source = "${lib.getBin pkgs.kdePackages.kwin}/bin/kwin_wayland";
+      };
     };
 
-    programs.kdeconnect.package = kdePackages.kdeconnect-kde;
-    programs.partition-manager.package = kdePackages.partitionmanager;
+    # Enable helpful DBus services.
+    services.accounts-daemon.enable = true;
 
+    services.displayManager = {
+      defaultSession = mkDefault "plasma";
+      sessionPackages = [ kdePackages.plasma-workspace.sessions ];
+    };
+
+    services.displayManager.sddm = {
+      package = kdePackages.sddm;
+
+      extraPackages = with kdePackages; [
+        breeze-icons
+        kirigami
+        libplasma
+        plasma5support
+        qtsvg
+        qtvirtualkeyboard
+      ];
+
+      theme = mkDefault "breeze";
+
+      wayland = mkDefault {
+        enable = true;
+        compositor = "kwin";
+      };
+    };
+
+    services.fwupd.enable = mkDefault true;
+    services.geoclue2.enable = mkDefault true;
+    services.libinput.enable = mkDefault true;
+    # Enable screen reader by default
+    services.orca.enable = mkDefault true;
+    services.pipewire.enable = mkDefault true;
+    services.power-profiles-daemon.enable = mkDefault true;
+    services.system-config-printer.enable = mkIf config.services.printing.enable (mkDefault true);
+
+    # Extra UDEV rules used by Solid
+    services.udev.packages = [
+      # libmtp has "bin", "dev", "out" outputs. UDEV rules file is in "out".
+      pkgs.libmtp.out
+      pkgs.media-player-info
+    ];
+
+    services.udisks2.enable = true;
+    services.upower.enable = config.powerManagement.enable;
     # FIXME: ugly hack. See #292632 for details.
     system.userActivationScripts.rebuildSycoca = activationScript;
+    # Set up Dr. Konqi as crash handler
+    systemd.packages = [ kdePackages.drkonqi ];
+    # when changing an account picture the accounts-daemon reads a temporary file containing the image which systemsettings5 may place under /tmp
+    systemd.services.accounts-daemon.serviceConfig.PrivateTmp = false;
+    systemd.services."drkonqi-coredump-processor@".wantedBy = [ "systemd-coredump@.service" ];
+
     systemd.user.services.nixos-rebuild-sycoca = {
       description = "Rebuild KDE system configuration cache";
-      wantedBy = [ "graphical-session-pre.target" ];
-      serviceConfig.Type = "oneshot";
       script = activationScript;
+      serviceConfig.Type = "oneshot";
+      wantedBy = [ "graphical-session-pre.target" ];
     };
+
+    xdg.icons.enable = true;
+    xdg.icons.fallbackCursorThemes = mkDefault [ "breeze_cursors" ];
+    xdg.portal.configPackages = mkDefault [ kdePackages.plasma-workspace ];
+    xdg.portal.enable = true;
+
+    xdg.portal.extraPortals = [
+      kdePackages.kwallet
+      kdePackages.xdg-desktop-portal-kde
+      pkgs.xdg-desktop-portal-gtk
+    ];
   };
 }

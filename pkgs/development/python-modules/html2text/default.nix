@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "html2text";
   version = "2025.4.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Alir3z4";
@@ -19,13 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-SMdILvCVXMe3Tlf3kK54VfEKsQ/KvpBZK3xZ4zVwcfo=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "html2text" ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   buildPythonPackage,
   click,
   click-default-group,
-  fetchFromGitHub,
   hypothesis,
   moto,
   pytest-mock,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "s3-credentials";
   version = "0.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -23,6 +22,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-zDolFoil/oTmvFDGVF+cLTgCpfigvvEW2UuVdIN2pYM=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    moto
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,19 +38,13 @@ buildPythonPackage rec {
     click-default-group
   ];
 
-  nativeCheckInputs = [
-    hypothesis
-    moto
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "s3_credentials" ];
-
   disabledTests = [
     # AssertionError: assert 'directory/th...ory/...
     "test_put_objects"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "s3_credentials" ];
 
   meta = {
     description = "Python CLI utility for creating credentials for accessing S3 buckets";

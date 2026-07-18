@@ -1,25 +1,22 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
-
-  # patches
-  replaceVars,
+  gitUpdater,
   meek,
   obfs4,
+  onionshare-gui,
+  python3Packages,
+  # patches
+  replaceVars,
   snowflake,
   tor,
-
   versionCheckHook,
-  gitUpdater,
-  onionshare-gui,
   writableTmpDirAsHomeHook,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "onionshare-cli";
   version = "2.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "onionshare";
@@ -27,8 +24,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-VkfS9coUIejRAcu+/e6jjh+eknd56fA3NpFwikd5n9c=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/cli";
 
   patches = [
     # hardcode store paths of dependencies
@@ -39,18 +34,28 @@ python3Packages.buildPythonApplication (finalAttrs: {
         snowflake
         tor
         ;
+
       inherit (tor) geoip;
     })
   ];
 
-  build-system = with python3Packages; [
-    poetry-core
+  buildInputs = [
+    obfs4
+    tor
   ];
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ]
+  ++ (with python3Packages; [
+    pytestCheckHook
+  ]);
 
-  pythonRemoveDeps = [
-    "pkgconfig"
+  __darwinAllowLocalNetworking = true;
+
+  build-system = with python3Packages; [
+    poetry-core
   ];
 
   dependencies =
@@ -82,19 +87,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ requests.optional-dependencies.socks;
 
-  buildInputs = [
-    obfs4
-    tor
-  ];
-
-  nativeCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ]
-  ++ (with python3Packages; [
-    pytestCheckHook
-  ]);
-
   disabledTests =
     lib.optionals stdenv.hostPlatform.isLinux [
       "test_get_tor_paths_linux" # expects /usr instead of /nix/store
@@ -108,17 +100,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
       "test_receive_mode_webhook"
     ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonRelaxDeps = true;
+
+  pythonRemoveDeps = [
+    "pkgconfig"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/cli";
 
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests = {
       inherit onionshare-gui;
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Securely and anonymously send and receive files";
+
     longDescription = ''
       OnionShare is an open source tool for securely and anonymously sending
       and receiving files using Tor onion services. It works by starting a web
@@ -135,13 +136,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
       (like pasting it in an encrypted messaging app), no one but you and the
       person you're sharing with can access the files.
     '';
+
     homepage = "https://onionshare.org/";
     changelog = "https://github.com/onionshare/onionshare/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       bbjubjub
       dotlambda
     ];
+
     mainProgram = "onionshare-cli";
   };
 })

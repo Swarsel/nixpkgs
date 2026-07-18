@@ -1,15 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPgrxExtension,
   cargo-pgrx_0_16_1,
-  fetchFromGitHub,
-  lib,
   nix-update-script,
   postgresql,
 }:
 buildPgrxExtension (finalAttrs: {
   inherit postgresql;
-  cargo-pgrx = cargo-pgrx_0_16_1;
-
   pname = "pg_graphql";
   version = "1.6.1";
 
@@ -21,9 +19,9 @@ buildPgrxExtension (finalAttrs: {
   };
 
   cargoHash = "sha256-pgwx8Axctd37J79nUTbCGp6g2PGiHdgt99pMqGGLmyA=";
-
   # pgrx tests try to install the extension into postgresql nix store
   doCheck = false;
+  cargo-pgrx = cargo-pgrx_0_16_1;
 
   passthru = {
     updateScript = nix-update-script { };

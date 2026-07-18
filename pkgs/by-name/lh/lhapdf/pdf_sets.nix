@@ -11,17 +11,16 @@ let
       inherit name;
 
       src = fetchurl {
-        url = "https://lhapdfsets.web.cern.ch/lhapdfsets/current/${name}.tar.gz";
         inherit sha256;
+        url = "https://lhapdfsets.web.cern.ch/lhapdfsets/current/${name}.tar.gz";
       };
-
-      preferLocalBuild = true;
 
       installPhase = ''
         mkdir -p $out/${name}/
         cp * $out/${name}/
       '';
 
+      preferLocalBuild = true;
       setupHook = ./pdfset-hook.sh;
     };
 in
@@ -1002,8 +1001,10 @@ lib.mapAttrs mkPdfSet {
   "NNPDF40_an3lo_as_01180_mhou" = "01pd4h2rk3a8cwq1lfgqn5hxz3rylwdr2x0knw33bpw8r4bvhgpp";
   "NNPDF40_an3lo_as_01180_mhou_hessian" = "00asvfpkz7asg1h0gyv0sr9y2llafnbm7drjc75n3rx7109bbrxg";
   "NNPDF40_an3lo_as_01180_mhou_pdfas" = "1qkpk1vz1pk2n7hal9l5fnvk05sfxwagn9g0yl2yyxyaa6nps088";
+
   "NNPDF40_an3lo_as_01180_mhou_pdfas_hessian" =
     "0q3sqpr31b8r54087yg2j9ikpc3jrnibb58yf37sk3f1rfk06fwq";
+
   "NNPDF40_an3lo_as_01180_pdfas" = "0gm7cw33lyj0gcnvawm95pxq5h3kx76m3dh0c9j7msk8lsh5a9zi";
   "NNPDF40_an3lo_as_01180_pdfas_hessian" = "167ifn4g0g9v7q2br7f6m49m51qbhkxz1hzh7gllznn0f7xii58c";
   "NNPDF40_an3lo_as_01180_qed" = "0sxz4vdyjfp0lz012rhl50flhjsgfpm95xzypdcxf45lmwsca6z8";

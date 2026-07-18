@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
+  bubblewrap,
+  curl,
   getconf,
+  makeWrapper,
+  ncurses,
   ocaml,
   unzip,
-  ncurses,
-  curl,
-  bubblewrap,
 }:
 
 assert lib.versionAtLeast ocaml.version "4.08.0";
@@ -22,6 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SMW/r19cQEjMX0ACXec4X1utOoJpdWIWzW3S8hUAM+0=";
   };
 
+  outputs = [
+    "out"
+    "installer"
+  ];
+
+  patches = [ ./opam-shebangs.patch ];
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -30,24 +36,19 @@ stdenv.mkDerivation (finalAttrs: {
     ocaml
     curl
   ];
+
   buildInputs = [
     ncurses
     getconf
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ bubblewrap ];
 
-  patches = [ ./opam-shebangs.patch ];
-
   configureFlags = [
     "--with-vendored-deps"
     "--with-mccs"
   ];
 
-  outputs = [
-    "out"
-    "installer"
-  ];
-  setOutputFlags = false;
+  doCheck = false;
 
   postInstall = ''
     wrapProgram $out/bin/opam \
@@ -64,14 +65,14 @@ stdenv.mkDerivation (finalAttrs: {
     $out/bin/opam-installer --prefix=$installer opam-installer.install
   '';
 
-  doCheck = false;
+  setOutputFlags = false;
 
   meta = {
     description = "Package manager for OCaml";
     homepage = "https://opam.ocaml.org/";
     changelog = "https://github.com/ocaml/opam/raw/${finalAttrs.version}/CHANGES";
-    maintainers = [ ];
     license = lib.licenses.lgpl21Only;
+    maintainers = [ ];
     platforms = lib.platforms.all;
   };
 })

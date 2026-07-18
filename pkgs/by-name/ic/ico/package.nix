@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
-  xorgproto,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ico";
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -39,13 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Simple animation program that may be used for testing various X11 operations and extensions";
     homepage = "https://gitlab.freedesktop.org/xorg/app/ico";
+
     license = with lib.licenses; [
       x11
       hpnd
       hpndSellVariant
     ];
-    mainProgram = "ico";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "ico";
   };
 })

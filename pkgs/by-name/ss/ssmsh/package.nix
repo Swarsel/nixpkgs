@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   ssmsh,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,7 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-+7duWRe/haBOZbe18sr2qwg419ieEZwYDb0L3IPLA4A=";
-
   doCheck = true;
 
   ldflags = [
@@ -28,14 +27,14 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru.tests = testers.testVersion {
-    package = ssmsh;
-    command = "ssmsh -version";
     version = "Version ${finalAttrs.version}";
+    command = "ssmsh -version";
+    package = ssmsh;
   };
 
   meta = {
-    homepage = "https://github.com/bwhaley/ssmsh";
     description = "Interactive shell for AWS Parameter Store";
+    homepage = "https://github.com/bwhaley/ssmsh";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dbirks ];
     mainProgram = "ssmsh";

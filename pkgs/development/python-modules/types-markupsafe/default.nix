@@ -8,17 +8,18 @@
 buildPythonPackage rec {
   pname = "types-markupsafe";
   version = "1.1.10";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types-MarkupSafe";
     inherit version;
     hash = "sha256-hbOocmg9Aq6jpawqjvWQGTw0QJIDL1hFcof7+OBnEbE=";
+    pname = "types-MarkupSafe";
   };
 
   build-system = [
     setuptools
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Typing stubs for MarkupSafe";

@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  qt6,
+  kdePackages,
   libx11,
   libxfixes,
   libxtst,
-  wayland,
   miniaudio,
+  ninja,
   pkg-config,
-  kdePackages,
+  qt6,
+  wayland,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,8 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://hluk.github.io/CopyQ";
     description = "Clipboard Manager with Advanced Features";
+    homepage = "https://hluk.github.io/CopyQ";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ artturin ];
     # NOTE: CopyQ supports windows and osx, but I cannot test these.

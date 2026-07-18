@@ -18,6 +18,7 @@ assert lib.asserts.assertMsg (
 stdenv.mkDerivation (finalAttrs: {
   pname = "reference-fmus";
   version = "0.0.39";
+
   src = fetchFromGitHub {
     owner = "modelica";
     repo = "reference-fmus";
@@ -37,14 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    # CMakeLists.txt explicitly states support for aarch64-darwin, but
-    # the build fails in a Nix environment. C.f.
-    # <https://github.com/NixOS/nixpkgs/pull/397658#issuecomment-2851958172>.
-    broken = with stdenv.hostPlatform; isAarch64 && isDarwin;
     description = "Functional Mock-up Units for development, testing and debugging";
     homepage = "https://github.com/modelica/Reference-FMUs";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ tmplt ];
     platforms = lib.platforms.all;
+    # CMakeLists.txt explicitly states support for aarch64-darwin, but
+    # the build fails in a Nix environment. C.f.
+    # <https://github.com/NixOS/nixpkgs/pull/397658#issuecomment-2851958172>.
+    broken = with stdenv.hostPlatform; isAarch64 && isDarwin;
   };
 })

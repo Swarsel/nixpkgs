@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   nix-update-script,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gorilla-cli";
   version = "0.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gorilla-llm";
@@ -17,6 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-3h3QtBDKswTDL7zNM2C4VWiGCqknm/bxhP9sw4ieIcQ=";
   };
 
+  # no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -25,10 +26,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     prompt-toolkit
   ];
 
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
-
-  # no tests
-  doCheck = false;
 
   meta = {
     description = "LLMs for your CLI";

@@ -1,11 +1,13 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  SDL2,
   bzip2,
   copyDesktopItems,
   curl,
-  fetchFromGitHub,
   fftwFloat,
   jsoncpp,
-  lib,
   libpng,
   libx11,
   lua5_2,
@@ -14,8 +16,6 @@
   ninja,
   pkg-config,
   python3,
-  SDL2,
-  stdenv,
   zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -68,11 +68,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Free 2D physics sandbox game";
     homepage = "https://powdertoy.co.uk/";
-    platforms = lib.platforms.unix;
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       siraben
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "powder";
   };
 })

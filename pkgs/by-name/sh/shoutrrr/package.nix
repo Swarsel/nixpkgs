@@ -1,18 +1,18 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 let
   version = "0.8.0";
 in
 buildGoModule {
-  pname = "shoutrrr";
   inherit version;
+  pname = "shoutrrr";
 
   src = fetchFromGitHub {
-    repo = "shoutrrr";
     owner = "containrrr";
+    repo = "shoutrrr";
     tag = "v${version}";
     hash = "sha256-DGyFo2oRZ39r1awqh5AXjOL2VShABarFbOMIcEXlWq4=";
   };

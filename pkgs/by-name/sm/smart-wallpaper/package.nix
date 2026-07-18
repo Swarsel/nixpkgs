@@ -1,13 +1,13 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  makeWrapper,
-  xdpyinfo,
   killall,
-  xwinwrap,
-  swaybg,
+  makeWrapper,
   redshift,
+  stdenvNoCC,
+  swaybg,
+  xdpyinfo,
+  xwinwrap,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -38,8 +38,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/Baitinq/smart-wallpaper";
     description = "Simple bash script that automatically changes your wallpaper depending on if its daytime or nighttime";
+    homepage = "https://github.com/Baitinq/smart-wallpaper";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ baitinq ];
     platforms = lib.platforms.linux;

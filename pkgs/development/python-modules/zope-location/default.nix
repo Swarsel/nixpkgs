@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
-  zope-interface,
-  zope-proxy,
-  zope-schema,
+  unittestCheckHook,
   zope-component,
   zope-configuration,
   zope-copy,
-  unittestCheckHook,
+  zope-interface,
+  zope-proxy,
+  zope-schema,
 }:
 
 buildPythonPackage rec {
   pname = "zope-location";
   version = "6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -29,6 +28,7 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
+  nativeCheckInputs = [ unittestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,22 +38,19 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
-    zcml = [ zope-configuration ];
     component = [ zope-component ];
     copy = [ zope-copy ];
+    zcml = [ zope-configuration ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "zope.location" ];
-
-  nativeCheckInputs = [ unittestCheckHook ];
-
+  pythonNamespaces = [ "zope" ];
   unittestFlagsArray = [ "src/zope/location/tests" ];
 
-  pythonNamespaces = [ "zope" ];
-
   meta = {
-    homepage = "https://github.com/zopefoundation/zope.location/";
     description = "Zope Location";
+    homepage = "https://github.com/zopefoundation/zope.location/";
     changelog = "https://github.com/zopefoundation/zope.location/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.zpl21;
     maintainers = [ ];

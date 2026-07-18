@@ -2,43 +2,39 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
-  pythonSupport ? false,
-  python3Packages,
-
-  # nativeBuildInputs
-  cmake,
-  doxygen,
-  pkg-config,
-
   # propagatedBuildInputs
   assimp,
   blas,
   boost,
   bullet,
+  # nativeBuildInputs
+  cmake,
+  doxygen,
   eigen,
   fcl,
+  fetchpatch,
   flann,
   fmt,
-  libglut,
+  # checkInputs
+  gbenchmark,
+  gtest,
   imgui,
   ipopt,
   lapack,
   libGL,
   libGLU,
   libccd,
+  libglut,
   nlopt,
   ode,
   openscenegraph,
   pagmo2,
+  pkg-config,
+  python3Packages,
   tinyxml-2,
   urdfdom,
   urdfdom-headers,
-
-  # checkInputs
-  gbenchmark,
-  gtest,
+  pythonSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,20 +54,20 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix use of system gbenchmark, merged upstream
     # ref. https://github.com/dartsim/dart/pull/1904
     (fetchpatch {
-      url = "https://github.com/dartsim/dart/commit/c18c48a1b0beff6660b9923e8a6f8f09a86a6039.patch";
       hash = "sha256-i8Ga0FGVQ3OMprEoGEwVy0j139wjnmR6ABxr/3syhzw=";
+      url = "https://github.com/dartsim/dart/commit/c18c48a1b0beff6660b9923e8a6f8f09a86a6039.patch";
     })
     # Fix use of system pybind11, merged upstream
     # ref. https://github.com/dartsim/dart/pull/1907
     (fetchpatch {
-      url = "https://github.com/dartsim/dart/commit/940c425c19e50a9ded2629422db54785802143af.patch";
       hash = "sha256-T3992uD0Z36tTxlcFaikVaLt08N9EP4gOHP0Y2AFBzQ=";
+      url = "https://github.com/dartsim/dart/commit/940c425c19e50a9ded2629422db54785802143af.patch";
     })
     # fix use of absolute CMake paths in .pc, merged upstream
     # ref. https://github.com/dartsim/dart/pull/2006
     (fetchpatch {
-      url = "https://github.com/dartsim/dart/commit/6f3d6086780a311ef6e1928697f56a4d845ae028.patch";
       hash = "sha256-sfbTm9C74fl7lVnGPZ1h3cvKXILHhkeNYxd/BpSQvg8=";
+      url = "https://github.com/dartsim/dart/commit/6f3d6086780a311ef6e1928697f56a4d845ae028.patch";
     })
   ];
 
@@ -80,14 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
     echo "install(TARGETS $""{pybind_module} DESTINATION ${python3Packages.python.sitePackages})" \
       >> python/dartpy/CMakeLists.txt
   '';
-
-  buildFlags = [
-    # build unit tests
-    "tests"
-  ]
-  ++ lib.optionals pythonSupport [
-    "dartpy"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -128,22 +116,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.numpy
   ];
 
-  checkInputs = [
-    gbenchmark
-    gtest
-  ];
-
-  nativeCheckInputs = lib.optionals pythonSupport [
-    python3Packages.pytest
-    python3Packages.pythonImportsCheckHook
-  ];
-
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=deprecated-literal-operator";
-
-  doCheck = true;
-
-  pythonImportsCheck = [ "dartpy" ];
-
   cmakeFlags = [
     (lib.cmakeBool "DART_VERBOSE" true)
     (lib.cmakeBool "DART_BUILD_DARTPY" pythonSupport)
@@ -152,6 +124,29 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "DART_USE_SYSTEM_IMGUI" true)
     (lib.cmakeBool "DART_USE_SYSTEM_PYBIND11" true)
   ];
+
+  buildFlags = [
+    # build unit tests
+    "tests"
+  ]
+  ++ lib.optionals pythonSupport [
+    "dartpy"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=deprecated-literal-operator";
+  doCheck = true;
+
+  nativeCheckInputs = lib.optionals pythonSupport [
+    python3Packages.pytest
+    python3Packages.pythonImportsCheckHook
+  ];
+
+  checkInputs = [
+    gbenchmark
+    gtest
+  ];
+
+  pythonImportsCheck = [ "dartpy" ];
 
   meta = {
     description = "DART: Dynamic Animation and Robotics Toolkit";

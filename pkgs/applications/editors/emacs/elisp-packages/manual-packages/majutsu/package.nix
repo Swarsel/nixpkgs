@@ -1,9 +1,9 @@
 {
   lib,
-  melpaBuild,
   fetchFromGitHub,
-  nix-update-script,
   magit,
+  melpaBuild,
+  nix-update-script,
   transient,
   with-editor,
 }:
@@ -29,7 +29,7 @@ melpaBuild {
   meta = {
     description = "Magit for jujutsu";
     homepage = "https://github.com/0WD0/majutsu";
-    maintainers = [ lib.maintainers.shunueda ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.shunueda ];
   };
 }

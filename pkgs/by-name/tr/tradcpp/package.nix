@@ -16,18 +16,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   # tradcpp only comes with BSD-make Makefile; the patch adds configure support
   patches = [ ./tradcpp-configure.patch ];
-
+  strictDeps = true;
+  nativeBuildInputs = [ autoreconfHook ];
   # Fix build with gcc15
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
-  strictDeps = true;
-
-  nativeBuildInputs = [ autoreconfHook ];
-
   meta = {
     description = "Traditional (K&R-style) C macro preprocessor";
-    mainProgram = "tradcpp";
-    platforms = lib.platforms.all;
     license = lib.licenses.bsd2;
+    platforms = lib.platforms.all;
+    mainProgram = "tradcpp";
   };
 })

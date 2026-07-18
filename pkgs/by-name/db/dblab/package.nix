@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,23 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-widzVKA85qslxuuO/ledG+IUvr+vw2HUiD3kVbe2D2A=";
-  # Fix case-insensitive conflicts producing platform-dependent checksums
-  # https://github.com/microsoft/go-mssqldb/issues/234
-  proxyVendor = true;
-
-  ldflags = [
-    "-s"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
   doCheck = true;
-  preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # modernc reads /etc/protocols during package init, which Darwin sandboxing blocks.
-    go mod download modernc.org/libc
-    chmod -R u+w "$GOPATH/pkg/mod/modernc.org/libc@"*
-    substituteInPlace "$GOPATH"/pkg/mod/modernc.org/libc@*/honnef.co/go/netdb/netdb.go \
-      --replace-fail '!os.IsNotExist(err)' '!os.IsNotExist(err) && !os.IsPermission(err)'
-  '';
+
   checkFlags = [
     "-short"
   ]
@@ -42,12 +27,31 @@ buildGoModule (finalAttrs: {
     "-skip=^TestSSHKeyFileAuthentication$"
   ];
 
+  preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # modernc reads /etc/protocols during package init, which Darwin sandboxing blocks.
+    go mod download modernc.org/libc
+    chmod -R u+w "$GOPATH/pkg/mod/modernc.org/libc@"*
+    substituteInPlace "$GOPATH"/pkg/mod/modernc.org/libc@*/honnef.co/go/netdb/netdb.go \
+      --replace-fail '!os.IsNotExist(err)' '!os.IsNotExist(err) && !os.IsPermission(err)'
+  '';
+
+  ldflags = [
+    "-s"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  # Fix case-insensitive conflicts producing platform-dependent checksums
+  # https://github.com/microsoft/go-mssqldb/issues/234
+  proxyVendor = true;
+
   meta = {
     description = "Database client every command line junkie deserves";
+
     longDescription = ''
       Fast and lightweight interactive terminal-based UI application
       for PostgreSQL, MySQL, SQLite, Oracle, and SQL Server.
     '';
+
     homepage = "https://github.com/danvergara/dblab";
     changelog = "https://github.com/danvergara/dblab/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;

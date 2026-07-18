@@ -16,20 +16,20 @@ stdenv.mkDerivation {
     sha256 = "156m92k38ap4bzidbr8dzl065rni8lrib71ih88myk9z5y1x5nxm";
   };
 
-  hardeningDisable = [ "fortify" ];
-
   installPhase = ''
     mkdir --parents "$out/bin"
     cp ./traceFileSim "$out/bin"
   '';
 
+  hardeningDisable = [ "fortify" ];
+
   meta = {
     description = "Ease the analysis of existing memory management techniques, as well as the prototyping of new memory management techniques";
-    mainProgram = "traceFileSim";
     homepage = "https://github.com/GarCoSim";
-    maintainers = [ lib.maintainers.cmcdragonkai ];
     license = lib.licenses.gpl2;
+    maintainers = [ lib.maintainers.cmcdragonkai ];
     platforms = lib.platforms.linux;
+    mainProgram = "traceFileSim";
   };
 
 }

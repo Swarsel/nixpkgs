@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libx11,
   nix-update-script,
 }:
@@ -18,14 +18,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-/p7RVsz9jjPTVkEjhDsSHQmYVOsvpbb1APLGQYVjgiU=";
   };
 
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libx11 ];
   vendorHash = "sha256-O5OmVP5aGlc8Bz2nVAAkhCdTuonB9yXGSz5FO3FxJ1I=";
-
-  subPackages = [ "cmd/moribito" ];
-
   # Clipboard support
   env.CGO_ENABLED = 1;
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libx11 ];
-
+  subPackages = [ "cmd/moribito" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

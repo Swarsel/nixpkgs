@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gtk-engine-murrine,
   jdupes,
   sassc,
-  themeVariants ? [ ], # default: blue
+  stdenvNoCC,
   colorVariants ? [ ], # default: all
   sizeVariants ? [ ], # default: standard
+  themeVariants ? [ ], # default: blue
   tweaks ? [ ],
 }:
 
@@ -65,18 +65,14 @@ lib.checkListOfEnum "colloid-gtk-theme: theme variants"
       hash = "sha256-0pXbeeBAkk6v2DBWfUYhWWdyrQhgr/JfDbhyS33maMM=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       jdupes
       sassc
     ];
-
-    propagatedUserEnvPkgs = [
-      gtk-engine-murrine
-    ];
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -93,11 +89,15 @@ lib.checkListOfEnum "colloid-gtk-theme: theme variants"
       runHook postInstall
     '';
 
+    propagatedUserEnvPkgs = [
+      gtk-engine-murrine
+    ];
+
     meta = {
       description = "Modern and clean Gtk theme";
       homepage = "https://github.com/vinceliuice/Colloid-gtk-theme";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.unix;
       maintainers = [ lib.maintainers.romildo ];
+      platforms = lib.platforms.unix;
     };
   })

@@ -1,9 +1,9 @@
 {
-  fetchFromSourcehut,
-  hareHook,
   lib,
   stdenv,
+  fetchFromSourcehut,
   gitUpdater,
+  hareHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,19 +17,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Chetww+F46ZJ+cgVuoFXRVYOT9g13iBK5EembWXQhuc=";
   };
 
-  nativeCheckInputs = [ hareHook ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   doCheck = true;
-
+  nativeCheckInputs = [ hareHook ];
   passthru.updateScript = gitUpdater { };
 
   meta = {
+    inherit (hareHook.meta) platforms badPlatforms;
     description = "Event loop for Hare programs";
     homepage = "https://sr.ht/~sircmpwn/hare-ev";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ colinsane ];
-    inherit (hareHook.meta) platforms badPlatforms;
   };
 })

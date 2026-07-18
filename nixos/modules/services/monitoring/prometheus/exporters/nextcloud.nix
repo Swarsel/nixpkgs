@@ -16,55 +16,71 @@ let
     ;
 in
 {
-  port = 9205;
   extraOpts = {
-    url = mkOption {
+    passwordFile = mkOption {
+      default = null;
+
+      description = ''
+        File containing the password for connecting to Nextcloud.
+        Make sure that this file is readable by the exporter user.
+      '';
+
+      example = "/path/to/password-file";
+      type = types.nullOr types.path;
+    };
+
+    timeout = mkOption {
+      default = "5s";
+
+      description = ''
+        Timeout for getting server info document.
+      '';
+
       type = types.str;
-      example = "https://domain.tld";
+    };
+
+    tokenFile = mkOption {
+      default = null;
+
+      description = ''
+        File containing the token for connecting to Nextcloud.
+        Make sure that this file is readable by the exporter user.
+      '';
+
+      example = "/path/to/token-file";
+      type = types.nullOr types.path;
+    };
+
+    url = mkOption {
       description = ''
         URL to the Nextcloud serverinfo page.
         Adding the path to the serverinfo API is optional, it defaults
         to `/ocs/v2.php/apps/serverinfo/api/v1/info`.
       '';
-    };
-    username = mkOption {
+
+      example = "https://domain.tld";
       type = types.str;
+    };
+
+    username = mkOption {
       default = "nextcloud-exporter";
+
       description = ''
         Username for connecting to Nextcloud.
         Note that this account needs to have admin privileges in Nextcloud.
         Unused when using token authentication.
       '';
-    };
-    passwordFile = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      example = "/path/to/password-file";
-      description = ''
-        File containing the password for connecting to Nextcloud.
-        Make sure that this file is readable by the exporter user.
-      '';
-    };
-    tokenFile = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      example = "/path/to/token-file";
-      description = ''
-        File containing the token for connecting to Nextcloud.
-        Make sure that this file is readable by the exporter user.
-      '';
-    };
-    timeout = mkOption {
+
       type = types.str;
-      default = "5s";
-      description = ''
-        Timeout for getting server info document.
-      '';
     };
   };
+
+  port = 9205;
+
   serviceOpts = {
     serviceConfig = {
       DynamicUser = false;
+
       ExecStart = ''
         ${pkgs.prometheus-nextcloud-exporter}/bin/nextcloud-exporter \
           --addr ${cfg.listenAddress}:${toString cfg.port} \

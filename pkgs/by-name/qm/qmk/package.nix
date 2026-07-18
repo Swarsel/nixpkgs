@@ -1,22 +1,21 @@
 {
   lib,
-  python3,
-  fetchPypi,
-  pkgsCross,
   avrdude,
   bootloadhid,
   dfu-programmer,
   dfu-util,
-  wb32-dfu-updater,
+  fetchPypi,
   gcc-arm-embedded,
   gnumake,
+  pkgsCross,
+  python3,
   teensy-loader-cli,
+  wb32-dfu-updater,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "qmk";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -58,10 +57,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # no tests implemented
   doCheck = false;
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/qmk/qmk_cli";
     description = "Program to help users work with QMK Firmware";
+
     longDescription = ''
       qmk_cli is a companion tool to QMK firmware. With it, you can:
 
@@ -76,6 +76,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
         - qmk lint
       - ... and many more!
     '';
+
+    homepage = "https://github.com/qmk/qmk_cli";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "qmk";

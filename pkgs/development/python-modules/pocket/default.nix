@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pocket";
   version = "0.3.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ requests ];
+  format = "setuptools";
 
   meta = {
     description = "Wrapper for the pocket API";

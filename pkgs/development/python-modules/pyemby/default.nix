@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyemby";
   version = "1.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mezz64";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-+A/SNMCUqo9TwWsQXwOKJCqmYhbilIdHYazLNQY+NkU=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     async-timeout
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyemby" ];
 
   meta = {

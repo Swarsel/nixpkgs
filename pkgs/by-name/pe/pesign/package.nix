@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  pkg-config,
-  nss,
   efivar,
-  util-linux,
-  popt,
-  nspr,
+  fetchpatch2,
   mandoc,
+  nspr,
+  nss,
+  pkg-config,
+  popt,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,10 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
     # fix build with gcc14
     # https://github.com/rhboot/pesign/pull/119
     (fetchpatch2 {
-      url = "https://github.com/rhboot/pesign/commit/1f9e2fa0b4d872fdd01ca3ba81b04dfb1211a187.patch?full_index=1";
       hash = "sha256-viVM4Z0jAEAWC3EdJVHcWe21aQskH5XE85lOd6Xd/qU=";
+      url = "https://github.com/rhboot/pesign/commit/1f9e2fa0b4d872fdd01ca3ba81b04dfb1211a187.patch?full_index=1";
     })
   ];
+
+  nativeBuildInputs = [ pkg-config ];
 
   # nss-util is missing because it is already contained in nss
   # Red Hat seems to be shipping a separate nss-util:
@@ -46,7 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     nspr
     mandoc
   ];
-  nativeBuildInputs = [ pkg-config ];
 
   makeFlags = [ "INSTALLROOT=$(out)" ];
 

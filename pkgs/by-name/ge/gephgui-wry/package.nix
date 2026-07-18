@@ -1,17 +1,17 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
+  copyDesktopItems,
+  glib,
+  makeDesktopItem,
+  nix-update-script,
+  openssl,
+  perl,
+  pkg-config,
   rustPlatform,
   webkitgtk_4_1,
-  pkg-config,
-  openssl,
-  buildNpmPackage,
-  makeDesktopItem,
-  fetchFromGitHub,
-  nix-update-script,
-  perl,
-  stdenv,
-  glib,
-  copyDesktopItems,
   wrapGAppsHook4,
 }:
 let
@@ -52,8 +52,8 @@ let
       description = "Change proxy auto-config settings of operation system";
       homepage = "https://github.com/getlantern/pac-cmd";
       license = lib.licenses.asl20;
-      mainProgram = "pac";
       platforms = lib.platforms.all;
+      mainProgram = "pac";
     };
   };
 in
@@ -69,26 +69,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  gephgui = buildNpmPackage {
-    pname = "gephgui";
-    inherit (finalAttrs) version src;
-
-    sourceRoot = "${finalAttrs.src.name}/gephgui-wry/gephgui";
-    npmDepsHash = "sha256-GFeHowIv+TiejSNK6kAGAgYcwc2DHu3c4UBEeTScIPk=";
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out
-      cp -aR dist/* $out/
-
-      runHook postInstall
-    '';
-  };
-
-  sourceRoot = "${finalAttrs.src.name}/gephgui-wry";
-  cargoHash = "sha256-Ekl03CvM32E3Q86YZL8eBFYAzDcpAXq8yVi2Fg3t5yc=";
-
   nativeBuildInputs = [
     pkg-config
     perl
@@ -101,6 +81,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs =
     lib.optionals stdenv.hostPlatform.isLinux [ webkitgtk_4_1 ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [ openssl ];
+
+  cargoHash = "sha256-Ekl03CvM32E3Q86YZL8eBFYAzDcpAXq8yVi2Fg3t5yc=";
 
   preBuild = ''
     cp -r ${finalAttrs.gephgui}/ gephgui/dist/
@@ -126,19 +108,39 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
     (makeDesktopItem {
-      name = "Geph";
-      desktopName = "Geph";
-      icon = "geph";
-      exec = "gephgui-wry";
       categories = [ "Network" ];
       comment = "Modular Internet censorship circumvention system designed specifically to deal with national filtering";
+      desktopName = "Geph";
+      exec = "gephgui-wry";
+      icon = "geph";
+      name = "Geph";
       startupWMClass = "geph";
     })
   ];
 
+  gephgui = buildNpmPackage {
+    inherit (finalAttrs) version src;
+    pname = "gephgui";
+    npmDepsHash = "sha256-GFeHowIv+TiejSNK6kAGAgYcwc2DHu3c4UBEeTScIPk=";
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out
+      cp -aR dist/* $out/
+
+      runHook postInstall
+    '';
+
+    sourceRoot = "${finalAttrs.src.name}/gephgui-wry/gephgui";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/gephgui-wry";
+
   passthru = {
     inherit pac-cmd;
     inherit (finalAttrs) gephgui;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage=gephgui"
@@ -149,12 +151,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Modular Internet censorship circumvention system designed specifically to deal with national filtering";
     homepage = "https://github.com/geph-official/gephgui-wry";
-    mainProgram = if stdenv.hostPlatform.isDarwin then "Geph" else "gephgui-wry";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       penalty1083
       MCSeekeri
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = if stdenv.hostPlatform.isDarwin then "Geph" else "gephgui-wry";
   };
 })

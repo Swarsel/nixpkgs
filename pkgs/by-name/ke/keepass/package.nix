@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  mono,
-  makeWrapper,
-  writeText,
-  icoutils,
-  replaceVars,
-  xsel,
-  xprop,
-  xdotool,
   coreutils,
-  unixtools,
   glib,
   gtk2,
+  icoutils,
   makeDesktopItem,
+  makeWrapper,
+  mono,
+  replaceVars,
+  unixtools,
+  unzip,
+  writeText,
+  xdotool,
+  xprop,
+  xsel,
   plugins ? [ ],
 }:
 let
@@ -59,23 +59,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AraAdneAkLTS1wZ7pWC0Mm51m50s2hCy6wN74nlUtxo=";
   };
 
-  sourceRoot = ".";
-
-  nativeBuildInputs = [
-    unzip
-    mono
-    makeWrapper
-  ];
-  buildInputs = [ icoutils ];
-
   patches = [
     (replaceVars ./fix-paths.patch {
-      xsel = "${xsel}/bin/xsel";
-      xprop = "${xprop}/bin/xprop";
-      xdotool = "${xdotool}/bin/xdotool";
+      gsettings = "${glib}/bin/gsettings";
       uname = "${coreutils}/bin/uname";
       whereis = "${unixtools.whereis}/bin/whereis";
-      gsettings = "${glib}/bin/gsettings";
+      xdotool = "${xdotool}/bin/xdotool";
+      xprop = "${xprop}/bin/xprop";
+      xsel = "${xsel}/bin/xsel";
     })
   ];
 
@@ -84,21 +75,13 @@ stdenv.mkDerivation (finalAttrs: {
     patch -p1 <${pluginLoadPathsPatch}
   '';
 
-  configurePhase = ''
-    runHook preConfigure
+  nativeBuildInputs = [
+    unzip
+    mono
+    makeWrapper
+  ];
 
-    rm -rvf Build/*
-    find . -name "*.sln" -print -exec sed -i 's/Format Version 10.00/Format Version 11.00/g' {} \;
-    find . -name "*.csproj" -print -exec sed -i '
-      s#ToolsVersion="3.5"#ToolsVersion="4.0"#g
-      s#<TargetFrameworkVersion>.*</TargetFrameworkVersion>##g
-      s#<PropertyGroup>#<PropertyGroup><TargetFrameworkVersion>v4.5</TargetFrameworkVersion>#g
-      s#<SignAssembly>.*$#<SignAssembly>false</SignAssembly>#g
-      s#<PostBuildEvent>.*sgen.exe.*$##
-    ' {} \;
-
-    runHook postConfigure
-  '';
+  buildInputs = [ icoutils ];
 
   buildPhase = ''
     runHook preBuild
@@ -107,20 +90,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
-
-  outputFiles = [
-    "Build/KeePass/Release/*"
-    "Build/KeePassLib/Release/*"
-    "Ext/KeePass.config.xml" # contains <PreferUserConfiguration>true</PreferUserConfiguration>
-  ];
-
-  # plgx plugin like keefox requires mono to compile at runtime
-  # after loading. It is brought into plugins bin/ directory using
-  # buildEnv in the plugin derivation. Wrapper below makes sure it
-  # is found and does not pollute output path.
-  binPaths = lib.concatStringsSep ":" (map (x: x + "/bin") plugins);
-
-  dynlibPath = lib.makeLibraryPath [ gtk2 ];
 
   installPhase = ''
     runHook preInstall
@@ -152,25 +121,59 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # plgx plugin like keefox requires mono to compile at runtime
+  # after loading. It is brought into plugins bin/ directory using
+  # buildEnv in the plugin derivation. Wrapper below makes sure it
+  # is found and does not pollute output path.
+  binPaths = lib.concatStringsSep ":" (map (x: x + "/bin") plugins);
+
+  configurePhase = ''
+    runHook preConfigure
+
+    rm -rvf Build/*
+    find . -name "*.sln" -print -exec sed -i 's/Format Version 10.00/Format Version 11.00/g' {} \;
+    find . -name "*.csproj" -print -exec sed -i '
+      s#ToolsVersion="3.5"#ToolsVersion="4.0"#g
+      s#<TargetFrameworkVersion>.*</TargetFrameworkVersion>##g
+      s#<PropertyGroup>#<PropertyGroup><TargetFrameworkVersion>v4.5</TargetFrameworkVersion>#g
+      s#<SignAssembly>.*$#<SignAssembly>false</SignAssembly>#g
+      s#<PostBuildEvent>.*sgen.exe.*$##
+    ' {} \;
+
+    runHook postConfigure
+  '';
+
   desktopItem = makeDesktopItem {
-    name = "keepass";
-    exec = "keepass";
-    comment = "Password manager";
-    icon = "keepass";
-    desktopName = "Keepass";
-    genericName = "Password manager";
     categories = [ "Utility" ];
+    comment = "Password manager";
+    desktopName = "Keepass";
+    exec = "keepass";
+    genericName = "Password manager";
+    icon = "keepass";
     mimeTypes = [ "application/x-keepass2" ];
+    name = "keepass";
   };
+
+  dynlibPath = lib.makeLibraryPath [ gtk2 ];
+
+  outputFiles = [
+    "Build/KeePass/Release/*"
+    "Build/KeePassLib/Release/*"
+    "Ext/KeePass.config.xml" # contains <PreferUserConfiguration>true</PreferUserConfiguration>
+  ];
+
+  sourceRoot = ".";
 
   meta = {
     description = "GUI password manager with strong cryptography";
     homepage = "http://www.keepass.info/";
+    license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       obadz
     ];
+
     platforms = with lib.platforms; all;
-    license = lib.licenses.gpl2;
     mainProgram = "keepass";
   };
 })

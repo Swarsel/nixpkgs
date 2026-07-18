@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,8 +25,8 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Update binaries installed by 'go install' with goroutines";
-    changelog = "https://github.com/nao1215/gup/blob/v${finalAttrs.version}/CHANGELOG.md";
     homepage = "https://github.com/nao1215/gup";
+    changelog = "https://github.com/nao1215/gup/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ phanirithvij ];
     mainProgram = "gup";

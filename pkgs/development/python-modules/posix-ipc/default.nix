@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "posix-ipc";
   version = "1.3.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "osvenskan";
@@ -16,6 +15,7 @@ buildPythonPackage rec {
     hash = "sha256-Ehhk+IM3gTW6t6Cvc9AVAB9bscC0CMc6wQFgrZuCPz0=";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "posix_ipc" ];
 
   meta = {

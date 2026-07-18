@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,9 +15,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-JGGLh/1n9zG6p2/9BgfeUTKGbVuG2QnyVAdrbVvif4A=";
   };
 
-  vendorHash = "sha256-j6WSBIPmSfbz+30wVPIbgzgghzLV0b5BYELJP6FuR/4=";
-
   patches = [ ./modify-version-handling.patch ];
+  vendorHash = "sha256-j6WSBIPmSfbz+30wVPIbgzgghzLV0b5BYELJP6FuR/4=";
 
   subPackages = [
     "cmd/ogen"

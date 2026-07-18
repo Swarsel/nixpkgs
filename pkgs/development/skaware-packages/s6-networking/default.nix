@@ -1,23 +1,22 @@
 {
   lib,
-  skawarePackages,
-  skalibs,
+  bearssl,
   execline,
+  libressl,
   s6,
   s6-dns,
-
+  skalibs,
+  skawarePackages,
   # Whether to build the TLS/SSL tools and what library to use
   # acceptable values: "bearssl", "libressl", false
   sslSupport ? "bearssl",
-  libressl,
-  bearssl,
 }:
 
 let
   sslSupportEnabled = sslSupport != false;
   sslLibs = {
-    libressl = libressl;
     bearssl = bearssl;
+    libressl = libressl;
   };
 
 in
@@ -26,17 +25,6 @@ assert sslSupportEnabled -> sslLibs ? ${sslSupport};
 skawarePackages.buildPackage {
   pname = "s6-networking";
   version = "2.8.0.0";
-  sha256 = "sha256-rE9lhA/OwWJPe/nGMvtAVThRvJApV/+VayofIoGkXNQ=";
-
-  manpages = skawarePackages.buildManPages {
-    pname = "s6-networking-man-pages";
-    version = "2.7.2.1.4";
-    sha256 = "sha256-N5BXi21JEgF3X5FKg5SzKNKfzYS5uTRqbUvbsrEZ2xg=";
-    description = "Port of the documentation for the s6-networking suite to mdoc";
-    maintainers = [ lib.maintainers.sternenseemann ];
-  };
-
-  description = "Suite of small networking utilities for Unix systems";
 
   outputs = [
     "bin"
@@ -81,5 +69,17 @@ skawarePackages.buildPackage {
 
     mv doc $doc/share/doc/s6-networking/html
   '';
+
+  description = "Suite of small networking utilities for Unix systems";
+
+  manpages = skawarePackages.buildManPages {
+    pname = "s6-networking-man-pages";
+    version = "2.7.2.1.4";
+    description = "Port of the documentation for the s6-networking suite to mdoc";
+    maintainers = [ lib.maintainers.sternenseemann ];
+    sha256 = "sha256-N5BXi21JEgF3X5FKg5SzKNKfzYS5uTRqbUvbsrEZ2xg=";
+  };
+
+  sha256 = "sha256-rE9lhA/OwWJPe/nGMvtAVThRvJApV/+VayofIoGkXNQ=";
 
 }

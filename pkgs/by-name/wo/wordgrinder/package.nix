@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  makeWrapper,
-  lua52Packages,
   libxft,
+  lua52Packages,
+  makeWrapper,
   ncurses,
   ninja,
+  pkg-config,
   readline,
   zlib,
 }:
@@ -17,26 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.8";
 
   src = fetchFromGitHub {
-    repo = "wordgrinder";
     owner = "davidgiven";
+    repo = "wordgrinder";
     rev = finalAttrs.version;
     sha256 = "124d1bnn2aqs6ik8pdazzni6a0583prz9lfdjrbwyb97ipqga9pm";
   };
-
-  makeFlags = [
-    "PREFIX=$(out)"
-    "LUA_INCLUDE=${lua52Packages.lua}/include"
-    "LUA_LIB=${lua52Packages.lua}/lib/liblua.so"
-    "OBJDIR=$TMP/wg-build"
-  ];
-
-  preBuild = lib.optionalString stdenv.hostPlatform.isLinux ''
-    makeFlagsArray+=('XFT_PACKAGE=--cflags={} --libs={-lX11 -lXft}')
-  '';
-
-  dontUseNinjaBuild = true;
-  dontUseNinjaInstall = true;
-  dontConfigure = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -54,8 +39,19 @@ stdenv.mkDerivation (finalAttrs: {
     libxft
   ];
 
+  makeFlags = [
+    "PREFIX=$(out)"
+    "LUA_INCLUDE=${lua52Packages.lua}/include"
+    "LUA_LIB=${lua52Packages.lua}/lib/liblua.so"
+    "OBJDIR=$TMP/wg-build"
+  ];
+
   # To be able to find <Xft.h>
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isLinux "-I${libxft.dev}/include/X11";
+
+  preBuild = lib.optionalString stdenv.hostPlatform.isLinux ''
+    makeFlagsArray+=('XFT_PACKAGE=--cflags={} --libs={-lX11 -lXft}')
+  '';
 
   # Binaries look for LuaFileSystem library (lfs.so) at runtime
   postInstall = ''
@@ -64,6 +60,10 @@ stdenv.mkDerivation (finalAttrs: {
   + lib.optionalString stdenv.hostPlatform.isLinux ''
     wrapProgram $out/bin/xwordgrinder --set LUA_CPATH "${lua52Packages.luafilesystem}/lib/lua/5.2/lfs.so";
   '';
+
+  dontConfigure = true;
+  dontUseNinjaBuild = true;
+  dontUseNinjaInstall = true;
 
   meta = {
     description = "Text-based word processor";

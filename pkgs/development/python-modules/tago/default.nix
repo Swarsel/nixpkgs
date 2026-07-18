@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   promise,
   python-socketio,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "tago";
   version = "3.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "tago-io";
@@ -20,8 +19,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-q1xcPF+oeQsCAZjeYTVY2aaKFmb8rCTWVikGxdpPQ28=";
   };
-
-  pythonRelaxDeps = true;
 
   propagatedBuildInputs = [
     aiohttp
@@ -33,8 +30,9 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "tago" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Python module for interacting with Tago.io";

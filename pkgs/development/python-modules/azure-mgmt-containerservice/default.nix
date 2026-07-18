@@ -4,21 +4,22 @@
   buildPythonPackage,
   fetchPypi,
   msrest,
-  typing-extensions,
   setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-containerservice";
   version = "41.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_containerservice";
     inherit version;
     hash = "sha256-fssuY+hzZgEv2nwT02uv9qKqWZ/GeSUqKWB2M+0YbKg=";
+    pname = "azure_mgmt_containerservice";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.containerservice" ];
 
   meta = {

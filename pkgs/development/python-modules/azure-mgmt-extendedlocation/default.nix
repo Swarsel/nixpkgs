@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-extendedlocation";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_extendedlocation";
     inherit version;
     hash = "sha256-O1wdLwoh8V6bF29EAgbHAqH3f6S5ffHKQAH5kavPfNE=";
+    pname = "azure_mgmt_extendedlocation";
   };
 
+  # Tests are only available in mono repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,9 +30,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Tests are only available in mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.extendedlocation" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  stalwart_0_15,
+  fetchFromGitHub,
   nix-update-script,
+  stalwart_0_15,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,7 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-2D/0mnkV4G/Gyr48rbMGTo6uTL7pe+AT+DNKqkBTIbA=";
   };
-  __structuredAttrs = true;
+
   buildPhase = ''
     bash ./build.sh
   '';
@@ -26,18 +26,21 @@ stdenv.mkDerivation (finalAttrs: {
     cp spam-filter.toml $out/
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
+    inherit (stalwart_0_15.meta) maintainers;
     description = "Spam filter module for the Stalwart server";
     homepage = "https://github.com/stalwartlabs/spam-filter";
     changelog = "https://github.com/stalwartlabs/spam-filter/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
-    inherit (stalwart_0_15.meta) maintainers;
   };
 })

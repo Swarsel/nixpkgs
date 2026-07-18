@@ -1,9 +1,9 @@
 {
   lib,
-  symlinkJoin,
   backendStdenv,
   cudaAtLeast,
   cudaMajorMinorVersion,
+  symlinkJoin,
   cccl ? null,
   cuda_crt ? null,
   cuda_cudart ? null,
@@ -66,11 +66,11 @@ in
 symlinkJoin rec {
   pname = "cuda-merged";
   version = cudaMajorMinorVersion;
-
   paths = builtins.concatMap getAllOutputs allPackages;
 
   passthru = {
     cc = lib.warn "cudaPackages.cudatoolkit is deprecated, refer to the manual and use splayed packages instead" backendStdenv.cc;
+
     lib = symlinkJoin {
       inherit pname version;
       paths = map (p: lib.getLib p) allPackages;

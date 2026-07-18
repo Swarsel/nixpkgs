@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
+  fetchgit,
   libtool,
   openssl,
   pkg-config,
@@ -18,20 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cFu9v8vOkfvIj/OfD0Er3n+gbH1h1CHOHA6a0pJuwXY=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
     libtool
   ];
 
+  buildInputs = [ openssl ];
+
   autoreconfFlags = [
     "--force"
     "--install"
   ];
-
-  buildInputs = [ openssl ];
-
-  strictDeps = true;
 
   meta = {
     description = "Libtls for OpenSSL";

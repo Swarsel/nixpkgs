@@ -1,7 +1,7 @@
 {
+  boost,
   mkKdeDerivation,
   qtdeclarative,
-  boost,
 }:
 mkKdeDerivation {
   pname = "plasma-activities";
@@ -10,5 +10,6 @@ mkKdeDerivation {
     qtdeclarative
     boost
   ];
+
   meta.mainProgram = "plasma-activities-cli6";
 }

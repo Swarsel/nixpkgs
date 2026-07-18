@@ -16,9 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tkCHP3B1sBb0+scHBjX5lCvaeSrZryfaGKye02LFlYs=";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-  strictDeps = true;
-
   postPatch = ''
     # disable static bins compilation
     sed -i \
@@ -28,23 +25,28 @@ stdenv.mkDerivation (finalAttrs: {
       -e '/bin_PROGRAMS/s/spf_example_static//' src/spf_example/Makefile.am
   '';
 
+  strictDeps = true;
+  nativeBuildInputs = [ autoreconfHook ];
   env.CFLAGS = "-Wno-error=implicit-function-declaration";
-
   doCheck = true;
 
   meta = {
     description =
       "Implementation of the Sender Policy Framework for SMTP " + "authorization (Helsinki Systems fork)";
+
     homepage = "https://github.com/helsinki-systems/libspf2";
+
     license = with lib.licenses; [
       lgpl21Plus
       bsd2
     ];
+
     maintainers = with lib.maintainers; [
       das_j
       euxane
       helsinki-Jo
     ];
+
     platforms = lib.platforms.all;
   };
 })

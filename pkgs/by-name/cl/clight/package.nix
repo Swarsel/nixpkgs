@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  dbus,
-  cmake,
-  pkg-config,
   bash-completion,
-  gsl,
-  popt,
   clightd,
-  systemd,
+  cmake,
+  dbus,
+  geoclue2,
+  gsl,
   libconfig,
   libmodule,
-  withGeoclue ? true,
-  geoclue2,
-  withUpower ? true,
+  pkg-config,
+  popt,
+  systemd,
   upower,
+  withGeoclue ? true,
+  withUpower ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,11 +58,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "C daemon that turns your webcam into a light sensor";
     homepage = "https://github.com/FedeDP/Clight";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       eadwu
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "clight";
   };
 })

@@ -2,11 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   cmake,
   python3,
-
-  llvmTargetsToBuild ? [ "NATIVE" ], # "NATIVE" resolves into x86 or aarch64 depending on stdenv
   llvmProjectsToBuild ? [
     # Required for building triton>=3.7.0
     # https://github.com/triton-lang/triton/blob/a34f373ba47899831f3de3c83cd8f4877bf23d69/third_party/nvidia/CMakeLists.txt#L14
@@ -19,6 +16,7 @@
     "llvm"
     "mlir"
   ],
+  llvmTargetsToBuild ? [ "NATIVE" ], # "NATIVE" resolves into x86 or aarch64 depending on stdenv
 }:
 let
   llvmNativeTarget =
@@ -39,8 +37,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "tokenspeed-triton-llvm";
   version = "23.0.0-unstable-2026-04-08"; # See cmake/Modules/LLVMVersion.cmake
-  __structuredAttrs = true;
-  strictDeps = true;
 
   # See https://github.com/lightseekorg/triton/blob/v3.7.10.post20260531/cmake/llvm-info.json
   src = fetchFromGitHub {
@@ -50,14 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8+Q19pOgovZgpN0it5TDrrQfXZFGiIRoP0Ha5dLQJp0=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     python3
   ];
-
-  preConfigure = ''
-    cd llvm
-  '';
 
   cmakeFlags = [
     (lib.cmakeFeature "LLVM_TARGETS_TO_BUILD" (lib.concatStringsSep ";" llvmTargetsToBuild'))
@@ -65,17 +59,24 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "LLVM_INSTALL_UTILS" true)
   ];
 
+  preConfigure = ''
+    cd llvm
+  '';
+
+  __structuredAttrs = true;
   requiredSystemFeatures = [ "big-parallel" ];
 
   meta = {
     description = "Collection of modular and reusable compiler and toolchain technologies";
     homepage = "https://github.com/llvm/llvm-project";
+
     license =
       with lib.licenses;
       AND [
         ncsa
         (WITH asl20 llvm-exception)
       ];
+
     maintainers = with lib.maintainers; [ prince213 ];
     platforms = with lib.platforms; aarch64 ++ x86;
   };

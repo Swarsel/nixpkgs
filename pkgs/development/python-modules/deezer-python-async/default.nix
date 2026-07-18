@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   aiohttp,
   asyncio-throttle,
+  buildPythonPackage,
+  # build-system
+  poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "deezer-python-async";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "music-assistant";
@@ -22,6 +19,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-uuAB+SC/ECG50ox/6Bi+94bAt+YZokeQChpDQUAK+zc=";
   };
+
+  doCheck = false; # requires access to the deezer api
 
   build-system = [
     poetry-core
@@ -32,7 +31,7 @@ buildPythonPackage rec {
     asyncio-throttle
   ];
 
-  doCheck = false; # requires access to the deezer api
+  pyproject = true;
 
   pythonImportsCheck = [
     "deezer"

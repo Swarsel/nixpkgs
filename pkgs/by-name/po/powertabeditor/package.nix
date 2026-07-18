@@ -2,20 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  cmake,
-  ninja,
-  pkg-config,
-  doctest,
-
   boost,
-  qt6,
-  nlohmann_json,
-  rtmidi,
-  pugixml,
+  cmake,
+  doctest,
   minizip,
-
+  ninja,
   nix-update-script,
+  nlohmann_json,
+  pkg-config,
+  pugixml,
+  qt6,
+  rtmidi,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "powertabeditor";
@@ -53,8 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://powertab.github.io/";
     changelog = "https://github.com/powertab/powertabeditor/blob/refs/tags/${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ gpl3Plus ];
-    platforms = with lib.platforms; linux ++ darwin ++ windows;
     maintainers = with lib.maintainers; [ pluiedev ];
+    platforms = with lib.platforms; linux ++ darwin ++ windows;
     mainProgram = "powertabeditor";
   };
 })

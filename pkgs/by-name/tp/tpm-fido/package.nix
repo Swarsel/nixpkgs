@@ -16,11 +16,11 @@ buildGoModule {
     hash = "sha256-Yfr5B4AfcBscD31QOsukamKtEDWC9Cx2ee4L6HM2554=";
   };
 
-  vendorHash = "sha256-qm/iDc9tnphQ4qooufpzzX7s4dbnUbR9J5L770qXw8Y=";
-
   buildInputs = [
     pinentry-tty
   ];
+
+  vendorHash = "sha256-qm/iDc9tnphQ4qooufpzzX7s4dbnUbR9J5L770qXw8Y=";
 
   ldFlags = [
     "-s "

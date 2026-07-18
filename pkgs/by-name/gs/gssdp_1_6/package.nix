@@ -1,37 +1,33 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  gi-docgen,
+  glib,
+  gnome,
+  gobject-introspection,
+  gssdp-tools,
+  libsoup_3,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
-  vala,
-  gi-docgen,
   python3,
-  libsoup_3,
-  glib,
-  gnome,
-  gssdp-tools,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gssdp";
   version = "1.6.5";
 
-  outputs = [
-    "out"
-    "dev"
-    "devdoc"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/gssdp/${lib.versions.majorMinor finalAttrs.version}/gssdp-${finalAttrs.version}.tar.xz";
     hash = "sha256-NP2CTDbvn1dVlNVXJyhBLduMUi9ga2yRPvi1qACq/E4=";
   };
 
-  depsBuildBuild = [
-    pkg-config
+  outputs = [
+    "out"
+    "dev"
+    "devdoc"
   ];
 
   nativeBuildInputs = [
@@ -71,14 +67,18 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
+    tests = {
+      inherit gssdp-tools;
+    };
+
     updateScript = gnome.updateScript {
       attrPath = "gssdp_1_6";
       packageName = "gssdp";
-    };
-
-    tests = {
-      inherit gssdp-tools;
     };
   };
 
@@ -86,7 +86,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GObject-based API for handling resource discovery and announcement over SSDP";
     homepage = "http://www.gupnp.org/";
     license = lib.licenses.lgpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.gnome ];
   };
 })

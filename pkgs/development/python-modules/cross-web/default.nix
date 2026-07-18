@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   chalice,
   django,
   fastapi,
-  fetchFromGitHub,
   flask,
   hatchling,
   httpx,
@@ -15,8 +15,8 @@
   pytestCheckHook,
   python-multipart,
   quart,
-  sanic-testing,
   sanic,
+  sanic-testing,
   starlette,
   typing-extensions,
   werkzeug,
@@ -26,7 +26,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cross-web";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "usecross";
@@ -35,8 +34,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-JxwzTU17jCQMFNCtmcZVAZQnwDZjHNxCGNdKhkCMoPs=";
   };
 
-  build-system = [ hatchling ];
+  env.DJANGO_SETTINGS_MODULE = "testing._django_settings";
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-django
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  preCheck = ''
+    export PYTHONPATH="$PYTHONPATH:$PWD/tests"
+  '';
+
+  build-system = [ hatchling ];
   dependencies = [ typing-extensions ];
 
   optional-dependencies = {
@@ -58,20 +69,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-django
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "cross_web" ];
-
-  preCheck = ''
-    export PYTHONPATH="$PYTHONPATH:$PWD/tests"
-  '';
-
-  env.DJANGO_SETTINGS_MODULE = "testing._django_settings";
 
   meta = {
     description = "Universal web framework adapter for Python";

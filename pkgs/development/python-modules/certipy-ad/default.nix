@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   argcomplete,
   asn1crypto,
   beautifulsoup4,
@@ -7,7 +8,6 @@
   cryptography,
   dnspython,
   dsinternals,
-  fetchFromGitHub,
   httpx,
   impacket,
   ldap3,
@@ -22,7 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "certipy-ad";
   version = "5.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ly4k";
@@ -31,18 +30,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-q9Gn3eBPKK8emm9upy3hJ1HaBdyTrMgek/hq+Xi2ZZg=";
   };
 
-  pythonRelaxDeps = [
-    "argcomplete"
-    "beautifulsoup4"
-    "cryptography"
-    "dnspython"
-    "ldap3"
-    "pycryptodome"
-    "pyopenssl"
-    "beautifulsoup4"
-    "requests"
-  ];
-
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -63,10 +52,20 @@ buildPythonPackage (finalAttrs: {
     unicrypto
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "certipy" ];
+
+  pythonRelaxDeps = [
+    "argcomplete"
+    "beautifulsoup4"
+    "cryptography"
+    "dnspython"
+    "ldap3"
+    "pycryptodome"
+    "pyopenssl"
+    "beautifulsoup4"
+    "requests"
+  ];
 
   meta = {
     description = "Library and CLI tool to enumerate and abuse misconfigurations in Active Directory Certificate Services";

@@ -19,36 +19,39 @@ in
     services.mjpg-streamer = {
 
       enable = mkEnableOption "mjpg-streamer webcam streamer";
-
       package = mkPackageOption pkgs "mjpg-streamer" { };
 
-      inputPlugin = mkOption {
+      group = mkOption {
+        default = "video";
+        description = "mjpg-streamer group name.";
         type = types.str;
+      };
+
+      inputPlugin = mkOption {
         default = "input_uvc.so";
+
         description = ''
           Input plugin. See plugins documentation for more information.
         '';
+
+        type = types.str;
       };
 
       outputPlugin = mkOption {
-        type = types.str;
         default = "output_http.so -w @www@ -n -p 5050";
+
         description = ''
           Output plugin. `@www@` is substituted for default mjpg-streamer www directory.
           See plugins documentation for more information.
         '';
+
+        type = types.str;
       };
 
       user = mkOption {
-        type = types.str;
         default = "mjpg-streamer";
         description = "mjpg-streamer user name.";
-      };
-
-      group = mkOption {
         type = types.str;
-        default = "video";
-        description = "mjpg-streamer group name.";
       };
 
     };
@@ -57,23 +60,8 @@ in
 
   config = mkIf cfg.enable {
 
-    users.users = optionalAttrs (cfg.user == "mjpg-streamer") {
-      mjpg-streamer = {
-        uid = config.ids.uids.mjpg-streamer;
-        group = cfg.group;
-      };
-    };
-
     systemd.services.mjpg-streamer = {
       description = "mjpg-streamer webcam streamer";
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
-        Restart = "on-failure";
-        RestartSec = 1;
-      };
 
       script = ''
         IPLUGIN="${cfg.inputPlugin}"
@@ -81,6 +69,22 @@ in
         OPLUGIN="''${OPLUGIN//@www@/${pkgs.mjpg-streamer}/share/mjpg-streamer/www}"
         exec ${lib.getExe cfg.package} -i "$IPLUGIN" -o "$OPLUGIN"
       '';
+
+      serviceConfig = {
+        Group = cfg.group;
+        Restart = "on-failure";
+        RestartSec = 1;
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.users = optionalAttrs (cfg.user == "mjpg-streamer") {
+      mjpg-streamer = {
+        group = cfg.group;
+        uid = config.ids.uids.mjpg-streamer;
+      };
     };
 
   };

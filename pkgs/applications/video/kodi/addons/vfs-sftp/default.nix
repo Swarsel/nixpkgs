@@ -1,15 +1,14 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
-  openssl,
+  buildKodiBinaryAddon,
   libssh,
+  openssl,
+  rel,
   zlib,
 }:
 buildKodiBinaryAddon rec {
   pname = namespace;
-  namespace = "vfs.sftp";
   version = "21.0.2";
 
   src = fetchFromGitHub {
@@ -24,6 +23,8 @@ buildKodiBinaryAddon rec {
     libssh
     zlib
   ];
+
+  namespace = "vfs.sftp";
 
   meta = {
     description = "SFTP Virtual Filesystem add-on for Kodi";

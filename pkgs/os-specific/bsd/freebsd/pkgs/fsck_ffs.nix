@@ -1,13 +1,11 @@
 {
   lib,
-  mkDerivation,
   libufs,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/fsck_ffs";
-  extraPaths = [ "sbin/mount" ];
-
   buildInputs = [ libufs ];
-
+  extraPaths = [ "sbin/mount" ];
+  path = "sbin/fsck_ffs";
   meta.platforms = lib.platforms.freebsd;
 }

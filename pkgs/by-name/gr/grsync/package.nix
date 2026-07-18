@@ -13,8 +13,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.3.1";
   pname = "grsync";
+  version = "1.3.1";
 
   src = fetchurl {
     url = "mirror://sourceforge/grsync/grsync-${finalAttrs.version}.tar.gz";
@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Synchronize folders, files and make backups";
     homepage = "http://www.opbyte.it/grsync/";
     license = lib.licenses.gpl2Only;
+    maintainers = [ lib.maintainers.kuznero ];
     platforms = lib.platforms.linux;
     mainProgram = "grsync";
-    maintainers = [ lib.maintainers.kuznero ];
   };
 })

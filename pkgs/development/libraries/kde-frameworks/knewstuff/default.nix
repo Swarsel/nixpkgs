@@ -1,8 +1,7 @@
 {
-  mkDerivation,
+  attica,
   cmake,
   extra-cmake-modules,
-  attica,
   karchive,
   kcompletion,
   kconfig,
@@ -10,24 +9,31 @@
   ki18n,
   kiconthemes,
   kio,
+  kirigami2,
   kitemviews,
   kpackage,
   kservice,
   ktextwidgets,
   kwidgetsaddons,
   kxmlgui,
+  mkDerivation,
   qtbase,
   qtdeclarative,
-  kirigami2,
   syndication,
 }:
 
 mkDerivation {
   pname = "knewstuff";
+
+  patches = [
+    ./0001-Delay-resolving-knsrcdir.patch
+  ];
+
   nativeBuildInputs = [
     cmake
     extra-cmake-modules
   ];
+
   buildInputs = [
     karchive
     kcompletion
@@ -45,12 +51,10 @@ mkDerivation {
     kirigami2
     syndication
   ];
+
   propagatedBuildInputs = [
     attica
     kservice
     kxmlgui
-  ];
-  patches = [
-    ./0001-Delay-resolving-knsrcdir.patch
   ];
 }

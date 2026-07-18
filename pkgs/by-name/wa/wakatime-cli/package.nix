@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
   wakatime-cli,
   writableTmpDirAsHomeHook,
@@ -19,15 +19,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-xrIvtUfOFOgcKJ+2VgUgOzF2Cwp3NPBf39yXgAHN/cQ=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/wakatime/wakatime-cli/pkg/version.Version=${finalAttrs.version}"
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   checkFlags =
@@ -38,14 +29,22 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/wakatime/wakatime-cli/pkg/version.Version=${finalAttrs.version}"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = wakatime-cli;
     command = "HOME=$(mktemp -d) wakatime-cli --version";
+    package = wakatime-cli;
   };
 
   meta = {
-    homepage = "https://wakatime.com/";
     description = "WakaTime command line interface";
+    homepage = "https://wakatime.com/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ sigmanificient ];
     mainProgram = "wakatime-cli";

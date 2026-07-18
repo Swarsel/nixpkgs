@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  cmake,
-  pkg-config,
-  libsndfile,
-  rapidjson,
-  libjack2,
-  lv2,
-  libx11,
   cairo,
+  cmake,
+  libjack2,
+  libsndfile,
+  libx11,
+  lv2,
   openssl,
+  pkg-config,
+  rapidjson,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,11 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://gitlab.com/iurie-sw/geonkick";
     description = "Free software percussion synthesizer";
+    homepage = "https://gitlab.com/iurie-sw/geonkick";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.magnetophon ];
+    platforms = lib.platforms.linux;
     mainProgram = "geonkick";
   };
 })

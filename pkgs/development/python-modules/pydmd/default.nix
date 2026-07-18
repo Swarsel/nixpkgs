@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-git-versioning,
-
+  buildPythonPackage,
   # dependencies
   ezyrb,
   future,
   h5netcdf,
   matplotlib,
   numpy,
-  scipy,
-  xarray,
-
   # tests
   pytest-mock,
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
+  setuptools-git-versioning,
+  xarray,
 }:
 
 buildPythonPackage rec {
   pname = "pydmd";
   version = "2025.08.01";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyDMD";
@@ -37,6 +33,11 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools-git-versioning>=2.0,<3" "setuptools-git-versioning"
   '';
+
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -53,12 +54,8 @@ buildPythonPackage rec {
     xarray
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pydmd" ];
-
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python Dynamic Mode Decomposition";

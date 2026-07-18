@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  zlib,
-  ncurses,
   fuse3,
+  ncurses,
   versionCheckHook,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,12 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5aikiPJkZf9OwD8QmQ7ijhBOtFQpkIErvb6gOvEu2L0=";
   };
 
-  buildInputs = [
-    zlib
-    ncurses
-    fuse3
-  ];
-
   patches = [
     ./fix-paths.diff
 
@@ -31,9 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
     #  https://github.com/Wiimm/wiimms-iso-tools/pull/14
     (fetchpatch {
       name = "ncurses-6.3.patch";
-      url = "https://github.com/Wiimm/wiimms-iso-tools/commit/3f1e84ec6915cc4f658092d33411985bd3eaf4e6.patch";
       sha256 = "18cfri4y1082phg6fzh402gk5ri24wr8ff4zl8v5rlgjndh610im";
       stripLen = 1;
+      url = "https://github.com/Wiimm/wiimms-iso-tools/commit/3f1e84ec6915cc4f658092d33411985bd3eaf4e6.patch";
     })
   ];
 
@@ -42,6 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace setup.sh --replace gcc "$CC"
     substituteInPlace Makefile --replace gcc "$CC"
   '';
+
+  buildInputs = [
+    zlib
+    ncurses
+    fuse3
+  ];
 
   env.INSTALL_PATH = "$out";
 
@@ -52,16 +52,18 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgram = "${placeholder "out"}/bin/wit";
 
   meta = {
-    homepage = "https://wit.wiimm.de";
     description = "Set of command line tools to manipulate Wii and GameCube ISO images and WBFS containers";
+    homepage = "https://wit.wiimm.de";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ nilp0inter ];
+    platforms = lib.platforms.unix;
   };
 })

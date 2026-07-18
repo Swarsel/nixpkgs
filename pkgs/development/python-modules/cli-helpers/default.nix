@@ -1,11 +1,11 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   configobj,
+  fetchPypi,
   mock,
-  pytestCheckHook,
   pygments,
+  pytestCheckHook,
   setuptools,
   tabulate,
 }:
@@ -13,13 +13,18 @@
 buildPythonPackage rec {
   pname = "cli-helpers";
   version = "2.14.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "cli_helpers";
     inherit version;
     hash = "sha256-eY4HMfL01CV2fLEqOtlmvyi13nelZRZiBhu0pmvujzU=";
+    pname = "cli_helpers";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -33,14 +38,11 @@ buildPythonPackage rec {
     styles = [ pygments ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
+  pyproject = true;
 
   meta = {
     description = "Python helpers for common CLI tasks";
+
     longDescription = ''
       CLI Helpers is a Python package that makes it easy to perform common
       tasks when building command-line apps. It's a helper library for
@@ -61,6 +63,7 @@ buildPythonPackage rec {
 
       Read the documentation at http://cli-helpers.rtfd.io
     '';
+
     homepage = "https://cli-helpers.readthedocs.io/en/stable/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.kalbasit ];

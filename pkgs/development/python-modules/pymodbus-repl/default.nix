@@ -1,9 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  doCheck ? false, # cyclic dependency with pymodbus
-  fetchFromGitHub,
-  lib,
   poetry-core,
   prompt-toolkit,
   pygments,
@@ -13,12 +12,13 @@
   pytestCheckHook,
   tabulate,
   typer,
+  doCheck ? false, # cyclic dependency with pymodbus
 }:
 
 buildPythonPackage rec {
+  inherit doCheck;
   pname = "pymodbus-repl";
   version = "2.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pymodbus-dev";
@@ -27,12 +27,13 @@ buildPythonPackage rec {
     hash = "sha256-jGoYp2nDWMWMX8n0aaG/YP+rQcj2npFbhdy7T1qxByc=";
   };
 
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "tabulate"
-    "typer"
+  nativeCheckInputs = [
+    pymodbus
+    pytest-cov-stub
+    pytestCheckHook
   ];
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     aiohttp
@@ -42,14 +43,12 @@ buildPythonPackage rec {
     typer
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pymodbus_repl" ];
 
-  inherit doCheck;
-
-  nativeCheckInputs = [
-    pymodbus
-    pytest-cov-stub
-    pytestCheckHook
+  pythonRelaxDeps = [
+    "tabulate"
+    "typer"
   ];
 
   passthru.tests = {
@@ -58,9 +57,9 @@ buildPythonPackage rec {
   };
 
   meta = {
-    changelog = "https://github.com/pymodbus-dev/repl/releases/tag/${src.tag}";
     description = "REPL client and server for pymodbus";
     homepage = "https://github.com/pymodbus-dev/repl";
+    changelog = "https://github.com/pymodbus-dev/repl/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

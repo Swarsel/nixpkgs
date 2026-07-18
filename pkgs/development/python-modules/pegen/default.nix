@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pythonAtLeast,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pegen";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "we-like-parsers";
@@ -20,14 +19,18 @@ buildPythonPackage rec {
     hash = "sha256-P4zX8za9lBlXhNPkQe9p136ggZEJh6fHfBr+DQKvtTg=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pegen" ];
+  disabledTestPaths = lib.optionals (pythonAtLeast "3.13") [
+    "tests/python_parser/test_ast_parsing.py"
+    "tests/python_parser/test_syntax_error_handling.py"
+    "tests/python_parser/test_unsupported_syntax.py"
+  ];
 
   disabledTests = [
     # ValueError: Expected locations of (1, 3) and...
@@ -38,11 +41,8 @@ buildPythonPackage rec {
     "test_invalid_def_stmt"
   ];
 
-  disabledTestPaths = lib.optionals (pythonAtLeast "3.13") [
-    "tests/python_parser/test_ast_parsing.py"
-    "tests/python_parser/test_syntax_error_handling.py"
-    "tests/python_parser/test_unsupported_syntax.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "pegen" ];
 
   meta = {
     description = "Library to generate PEG parsers";

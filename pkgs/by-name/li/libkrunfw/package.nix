@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  flex,
-  bison,
+  fetchFromGitHub,
   bc,
+  bison,
   cpio,
-  perl,
   elfutils,
+  flex,
+  perl,
   python3,
   variant ? null,
 }:
@@ -22,13 +22,6 @@ assert lib.elem variant [
 stdenv.mkDerivation (finalAttrs: {
   pname = "libkrunfw" + lib.optionalString (variant != null) "-${variant}";
   version = "5.5.0";
-
-  kernelSrc = fetchurl {
-    url = "mirror://kernel/linux/kernel/v6.x/linux-6.12.91.tar.xz";
-    hash = "sha256-D/KrnhafnxlIVXRx+7RQ0wGPjFt3yvKI4aOYJYJZeWk=";
-  };
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "libkrun";
@@ -71,20 +64,29 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_COMPILE = "-march=armv8-a+crypto";
   };
 
+  __structuredAttrs = true;
   enableParallelBuilding = true;
+
+  kernelSrc = fetchurl {
+    hash = "sha256-D/KrnhafnxlIVXRx+7RQ0wGPjFt3yvKI4aOYJYJZeWk=";
+    url = "mirror://kernel/linux/kernel/v6.x/linux-6.12.91.tar.xz";
+  };
 
   meta = {
     description = "Dynamic library bundling the guest payload consumed by libkrun";
     homepage = "https://github.com/libkrun/libkrunfw";
+
     license = with lib.licenses; [
       lgpl2Only
       lgpl21Only
     ];
+
     maintainers = with lib.maintainers; [
       nickcao
       RossComputerGuy
       nrabulinski
     ];
+
     platforms = [
       "x86_64-linux"
     ]

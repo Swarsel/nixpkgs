@@ -3,16 +3,16 @@
   stdenv,
   buildGoModule,
   fetchFromSourcehut,
-  pkg-config,
-  vulkan-headers,
-  libxkbcommon,
-  wayland,
-  libxfixes,
-  libxcursor,
+  libGL,
   libx11,
   libxcb,
-  libGL,
+  libxcursor,
+  libxfixes,
+  libxkbcommon,
+  pkg-config,
   sqlite,
+  vulkan-headers,
+  wayland,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,9 +25,9 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-87U9RdlP260ApkGJB3dLitxAdY3I9nWrukxzRnwuJ2E=";
   };
-  vendorHash = "sha256-mgvfrNKvdjLa7O0oTSec8u3eHHU66ZDqpKzNeeyy2J0=";
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     vulkan-headers
     libxkbcommon
@@ -40,8 +40,8 @@ buildGoModule (finalAttrs: {
     sqlite
   ];
 
-  tags = [ "sqlite_math_functions" ];
-  ldflags = [ "-X git.sr.ht/~mil/transito/src/uipages/pageconfig.Commit=${finalAttrs.version}" ];
+  vendorHash = "sha256-mgvfrNKvdjLa7O0oTSec8u3eHHU66ZDqpKzNeeyy2J0=";
+  doCheck = false; # no test
 
   postInstall = ''
     install -Dm644 -t $out/share/applications assets/transito.desktop
@@ -51,10 +51,12 @@ buildGoModule (finalAttrs: {
     done
   '';
 
-  doCheck = false; # no test
+  ldflags = [ "-X git.sr.ht/~mil/transito/src/uipages/pageconfig.Commit=${finalAttrs.version}" ];
+  tags = [ "sqlite_math_functions" ];
 
   meta = {
     description = "Data-provider-agnostic (GTFS) public transportation app";
+
     longDescription = ''
       Transito is a data-provider-agnostic public transportation app
       that let's you route between locations using openly available
@@ -68,12 +70,13 @@ buildGoModule (finalAttrs: {
       It works in many well-connected metros which have publicly available
       GTFS data, to name a few: Lisbon, NYC, Brussels, Krakow, and Bourges.
     '';
+
     homepage = "https://git.sr.ht/~mil/transito";
     changelog = "https://git.sr.ht/~mil/transito/refs/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.McSinyx ];
-    mainProgram = "transito";
     platforms = lib.platforms.unix;
+    mainProgram = "transito";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

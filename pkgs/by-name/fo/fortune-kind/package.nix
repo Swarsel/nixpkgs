@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
+  installShellFiles,
   libiconv,
   makeBinaryWrapper,
-  installShellFiles,
+  rustPlatform,
   fortuneAlias ? true,
 }:
 
@@ -20,18 +20,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Tpg0Jq2EhkwQuz5ZOtv6Rb5YESSlmzLoJPTxYJNNgac=";
   };
 
-  cargoHash = "sha256-Kp3pv9amEz9oFMDhz0IZDmhpsok5VgrvJZfwSPyz2X0=";
-
   nativeBuildInputs = [
     makeBinaryWrapper
     installShellFiles
   ];
+
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
 
-  buildNoDefaultFeatures = true;
-
+  cargoHash = "sha256-Kp3pv9amEz9oFMDhz0IZDmhpsok5VgrvJZfwSPyz2X0=";
   env.MAN_OUT = "./man";
 
   preBuild = ''
@@ -56,8 +54,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ln -s fortune-kind $out/bin/fortune
   '';
 
+  buildNoDefaultFeatures = true;
+
   meta = {
     description = "Kinder, curated fortune, written in rust";
+
     longDescription = ''
       Historically, contributions to fortune-mod have had a less-than ideal
       quality control process, and as such, many of the fortunes that a user may
@@ -66,11 +67,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       defining and applying a somewhat more rigorous moderation and editing
       process to the fortune adoption workflow.
     '';
+
     homepage = "https://github.com/cafkafk/fortune-kind";
     changelog = "https://github.com/cafkafk/fortune-kind/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "fortune-kind";
     maintainers = with lib.maintainers; [ cafkafk ];
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "fortune-kind";
   };
 })

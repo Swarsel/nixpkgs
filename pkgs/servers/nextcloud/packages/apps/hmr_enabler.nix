@@ -1,7 +1,7 @@
 {
-  php,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  php,
 }:
 
 php.buildComposerProject2 (finalAttrs: {
@@ -17,7 +17,6 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-uLCpwvMVQ20z9vlO5q/GVPnaaQZ7ZjE8+V/zuqaB9Yo=";
   };
 
-  composerNoDev = false;
   vendorHash = "sha256-js9O89jIRxX2DKI+LYjL3d9RsLdzUB4iUNUgngTryz8=";
 
   postInstall = ''
@@ -25,6 +24,8 @@ php.buildComposerProject2 (finalAttrs: {
     mv $out/share/php/hmr_enabler/* $out/
     rm -r $out/share $out/composer.* $out/Makefile $out/psalm.xml $out/tests
   '';
+
+  composerNoDev = false;
 
   meta = {
     description = "Development Nextcloud app to enable apps to use hot module reloading";

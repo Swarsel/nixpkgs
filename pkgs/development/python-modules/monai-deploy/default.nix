@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
-  fetchFromGitHub,
   networkx,
   numpy,
   pytest-lazy-fixture,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "monai-deploy";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Project-MONAI";
@@ -32,6 +31,11 @@ buildPythonPackage rec {
       --replace-fail 'versioneer-518' 'versioneer'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-lazy-fixture
+  ];
+
   build-system = [
     versioneer
     setuptools
@@ -45,15 +49,12 @@ buildPythonPackage rec {
     typeguard
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-lazy-fixture
-  ];
-
   disabledTests = [
     # requires Docker daemon:
     "test_packager"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "monai.deploy"
@@ -65,11 +66,11 @@ buildPythonPackage rec {
 
   meta = {
     description = "Framework and tools to design, develop and verify AI applications in healthcare imaging";
-    mainProgram = "monai-deploy";
     homepage = "https://monai.io/deploy.html";
     changelog = "https://github.com/Project-MONAI/monai-deploy-app-sdk/blob/main/docs/source/release_notes/${src.tag}.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bcdarwin ];
+    mainProgram = "monai-deploy";
     broken = true; # requires holoscan and holoscan-cli, not in Nixpkgs
   };
 }

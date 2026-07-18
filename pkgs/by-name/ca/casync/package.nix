@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  acl,
+  curl,
+  fuse,
+  glibcLocales,
+  libselinux,
   meson,
   ninja,
   pkg-config,
   python3,
+  rsync,
   sphinx,
-  acl,
-  curl,
-  fuse,
-  libselinux,
   udev,
+  udevCheckHook,
   xz,
   zstd,
   fuseSupport ? true,
   selinuxSupport ? true,
   udevSupport ? true,
-  glibcLocales,
-  rsync,
-  udevCheckHook,
 }:
 
 stdenv.mkDerivation {
@@ -33,6 +33,21 @@ stdenv.mkDerivation {
     hash = "sha256-L7I80kSG4/ES2tGvHHgvOxJZzF76yeqy2WquKCPhnFk=";
   };
 
+  postPatch = ''
+    for f in test/test-*.sh.in; do
+      patchShebangs $f
+    done
+    patchShebangs test/http-server.py
+  '';
+
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+    python3
+    sphinx
+  ];
+
   buildInputs = [
     acl
     curl
@@ -42,13 +57,15 @@ stdenv.mkDerivation {
   ++ lib.optionals fuseSupport [ fuse ]
   ++ lib.optionals selinuxSupport [ libselinux ]
   ++ lib.optionals udevSupport [ udev ];
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-    python3
-    sphinx
-  ];
+
+  mesonFlags =
+    lib.optionals (!fuseSupport) [ "-Dfuse=false" ]
+    ++ lib.optionals (!udevSupport) [ "-Dudev=false" ]
+    ++ lib.optionals (!selinuxSupport) [ "-Dselinux=false" ];
+
+  env.PKG_CONFIG_UDEV_UDEVDIR = "lib/udev";
+  doCheck = true;
+
   nativeCheckInputs = [
     glibcLocales
     rsync
@@ -57,21 +74,6 @@ stdenv.mkDerivation {
     udevCheckHook
   ];
 
-  postPatch = ''
-    for f in test/test-*.sh.in; do
-      patchShebangs $f
-    done
-    patchShebangs test/http-server.py
-  '';
-
-  env.PKG_CONFIG_UDEV_UDEVDIR = "lib/udev";
-
-  mesonFlags =
-    lib.optionals (!fuseSupport) [ "-Dfuse=false" ]
-    ++ lib.optionals (!udevSupport) [ "-Dudev=false" ]
-    ++ lib.optionals (!selinuxSupport) [ "-Dselinux=false" ];
-
-  doCheck = true;
   preCheck = ''
     export LC_ALL="en_US.utf-8"
   '';
@@ -80,10 +82,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Content-Addressable Data Synchronizer";
-    mainProgram = "casync";
     homepage = "https://github.com/systemd/casync";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ flokli ];
+    platforms = lib.platforms.linux;
+    mainProgram = "casync";
   };
 }

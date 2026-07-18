@@ -2,37 +2,37 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  vala,
-  meson,
-  ninja,
-  python3,
-  pkg-config,
-  wrapGAppsHook4,
+  clapper-enhancers,
+  clapper-unwrapped,
   desktop-file-utils,
-  gtk4,
-  libadwaita,
-  json-glib,
   gexiv2,
   glib,
   glib-networking,
   gnome,
   gobject-introspection,
+  gst_all_1,
+  gtk4,
   gtksourceview5,
-  libxml2,
+  icu,
+  json-glib,
+  libadwaita,
   libgee,
   librsvg,
-  libsoup_3,
   libsecret,
-  libwebp,
+  libsoup_3,
   libspelling,
+  libwebp,
+  libxml2,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  python3,
+  vala,
   webkitgtk_6_0,
   webp-pixbuf-loader,
-  icu,
-  gst_all_1,
-  clapper-enhancers,
-  clapper-unwrapped,
+  wrapGAppsHook4,
   clapperSupport ? true,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -91,12 +91,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=int-conversion";
 
-  preFixup = ''
-    gappsWrapperArgs+=(
-      --set-default CLAPPER_ENHANCERS_PATH "${clapper-enhancers}/${clapper-enhancers.passthru.pluginPath}"
-    )
-  '';
-
   # Pull in WebP support for avatars from Misskey instances.
   # In postInstall to run before gappsWrapperArgsHook.
   postInstall = ''
@@ -110,6 +104,12 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   '';
 
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --set-default CLAPPER_ENHANCERS_PATH "${clapper-enhancers}/${clapper-enhancers.passthru.pluginPath}"
+    )
+  '';
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -117,13 +117,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Browse the Fediverse";
     homepage = "https://tuba.geopjr.dev/";
-    mainProgram = "dev.geopjr.Tuba";
-    license = lib.licenses.gpl3Only;
     changelog = "https://github.com/GeopJr/Tuba/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       chuangzhu
       donovanglover
     ];
+
+    mainProgram = "dev.geopjr.Tuba";
     teams = [ lib.teams.gnome-circle ];
   };
 })

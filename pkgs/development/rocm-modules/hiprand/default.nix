@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
   clr,
-  rocrand,
+  cmake,
   gtest,
+  rocm-cmake,
+  rocmUpdateScript,
+  rocrand,
   buildTests ? false,
   gpuTargets ? clr.localGpuTargets or [ ],
 }:
@@ -16,24 +16,24 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "hiprand";
   version = "7.2.3";
 
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-bjcwjN1dNukhoDAbiSpATlK6dtAwM8bOJTe3IjhdwwY=";
+
+    sparseCheckout = [
+      "projects/hiprand"
+      "shared"
+    ];
+  };
+
   outputs = [
     "out"
   ]
   ++ lib.optionals buildTests [
     "test"
   ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/hiprand"
-      "shared"
-    ];
-    hash = "sha256-bjcwjN1dNukhoDAbiSpATlK6dtAwM8bOJTe3IjhdwwY=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/hiprand";
 
   nativeBuildInputs = [
     cmake
@@ -66,13 +66,14 @@ stdenv.mkDerivation (finalAttrs: {
     rmdir $out/bin
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/hiprand";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "HIP wrapper for rocRAND and cuRAND";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/hiprand";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

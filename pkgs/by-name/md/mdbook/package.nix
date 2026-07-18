@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch2,
+  installShellFiles,
   nix,
   rustPlatform,
-  installShellFiles,
 }:
 let
   version = "0.5.3";
@@ -21,9 +21,8 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-RMJQn58hshBGQSpu30NdUOb3Prywn6NfhauSzFZ35xQ=";
   };
 
-  cargoHash = "sha256-LlImOjTQjMQURQ81Gn73v+DEHXqyyiz39K9T+MrE7S0=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-LlImOjTQjMQURQ81Gn73v+DEHXqyyiz39K9T+MrE7S0=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd mdbook \
@@ -40,13 +39,15 @@ rustPlatform.buildRustPackage rec {
 
   meta = {
     description = "Create books from MarkDown";
-    mainProgram = "mdbook";
     homepage = "https://github.com/rust-lang/mdBook";
     changelog = "https://github.com/rust-lang/mdBook/blob/v${version}/CHANGELOG.md";
     license = [ lib.licenses.mpl20 ];
+
     maintainers = with lib.maintainers; [
       Frostman
       matthiasbeyer
     ];
+
+    mainProgram = "mdbook";
   };
 }

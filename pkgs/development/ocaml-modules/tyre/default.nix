@@ -1,18 +1,16 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  alcotest,
+  buildDunePackage,
   re,
   result,
   seq,
-  alcotest,
 }:
 
 buildDunePackage rec {
   pname = "tyre";
   version = "0.5";
-
-  minimalOCamlVersion = "4.03.0";
 
   src = fetchurl {
     url = "https://github.com/Drup/tyre/releases/download/${version}/${pname}-${version}.tbz";
@@ -25,11 +23,13 @@ buildDunePackage rec {
     seq
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.03.0";
 
   meta = {
     description = "Typed Regular Expressions";

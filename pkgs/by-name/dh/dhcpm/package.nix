@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   rustPlatform,
 }:
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-L6+/buzhYoLdFh7x8EmT37JyY5Pr7oFzyOGbhvgNvlw=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

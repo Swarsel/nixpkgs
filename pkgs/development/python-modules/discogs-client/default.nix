@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  requests,
+  buildPythonPackage,
   oauthlib,
-  python-dateutil,
   pytestCheckHook,
+  python-dateutil,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "discogs-client";
   version = "2.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "joalla";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "discogs_client" ];
 
   meta = {

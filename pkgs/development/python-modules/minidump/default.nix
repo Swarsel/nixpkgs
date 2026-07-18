@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "minidump";
   version = "0.0.24";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-964JuUTzsXzPXOzGb5/1p6RbBTR0oTrrAS9MkgRHBDc=";
   };
 
-  build-system = [ setuptools ];
-
   # Upstream doesn't have tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "minidump" ];
 
   meta = {

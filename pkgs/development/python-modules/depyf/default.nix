@@ -1,27 +1,23 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   astor,
+  buildPythonPackage,
   dill,
   filelock,
-
   # tests
   pytestCheckHook,
-  torch,
   pythonAtLeast,
+  # build-system
+  setuptools,
+  torch,
 }:
 
 buildPythonPackage rec {
   pname = "depyf";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thuml";
@@ -36,6 +32,15 @@ buildPythonPackage rec {
       --replace-fail 'commit_id = get_git_commit_id()' 'commit_id = None'
   '';
 
+  # All remaining tests fail with:
+  # ValueError: invalid literal for int() with base 10: 'L1'
+  doCheck = !(pythonAtLeast "3.13");
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    torch
+  ];
+
   build-system = [
     setuptools
   ];
@@ -44,11 +49,6 @@ buildPythonPackage rec {
     astor
     dill
     filelock
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    torch
   ];
 
   disabledTestPaths = [
@@ -70,10 +70,7 @@ buildPythonPackage rec {
     "tests/test_pytorch/test_simple_graph.py"
   ];
 
-  # All remaining tests fail with:
-  # ValueError: invalid literal for int() with base 10: 'L1'
-  doCheck = !(pythonAtLeast "3.13");
-
+  pyproject = true;
   pythonImportsCheck = [ "depyf" ];
 
   meta = {

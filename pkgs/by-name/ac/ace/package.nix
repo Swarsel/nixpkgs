@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libtool,
   perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,21 +16,20 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-r+LRiu/u1qMcbrjkSr8ErnemX6zvhgvc5cLWu8AQhww=";
   };
 
-  enableParallelBuilding = true;
+  postPatch = ''
+    patchShebangs ./MPC/prj_install.pl
+  '';
 
   nativeBuildInputs = [
     pkg-config
     libtool
   ];
+
   buildInputs = [ perl ];
 
   env.NIX_CFLAGS_COMPILE = toString [
     "-Wno-error=format-security"
   ];
-
-  postPatch = ''
-    patchShebangs ./MPC/prj_install.pl
-  '';
 
   preConfigure = ''
     export INSTALL_PREFIX=$out
@@ -41,12 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
     > include/makeinclude/platform_macros.GNU
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://www.dre.vanderbilt.edu/~schmidt/ACE.html";
     description = "ADAPTIVE Communication Environment";
-    mainProgram = "ace_gperf";
+    homepage = "https://www.dre.vanderbilt.edu/~schmidt/ACE.html";
     license = lib.licenses.doc;
     maintainers = with lib.maintainers; [ nico202 ];
     platforms = lib.platforms.linux;
+    mainProgram = "ace_gperf";
   };
 })

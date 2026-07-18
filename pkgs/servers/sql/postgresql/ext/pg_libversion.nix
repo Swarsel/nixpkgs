@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   gitUpdater,
-  lib,
   libversion,
   pkg-config,
   postgresql,

@@ -1,13 +1,15 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchFromGitHub,
-  sdl3,
+  # to download assets
+  aria2,
   buildFHSEnv,
+  cacert,
   cmake,
   copyDesktopItems,
   curl,
+  fetchzip,
   freetype,
   gcc,
   geoip,
@@ -27,10 +29,8 @@
   nettle,
   openal,
   opusfile,
+  sdl3,
   zlib,
-  # to download assets
-  aria2,
-  cacert,
 }:
 
 let
@@ -41,8 +41,8 @@ let
     owner = "Unvanquished";
     repo = "Unvanquished";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-+3y9UJAMfMDIO4feHTyb5IWIelRSsH6KF6WAtx7rric=";
+    fetchSubmodules = true;
   };
 
   unvanquished-binary-deps = stdenv.mkDerivation rec {
@@ -54,21 +54,6 @@ let
       url = "https://dl.unvanquished.net/deps/linux-amd64-default_${version}.tar.xz";
       hash = "sha256-1PPqQYnMBFR7Jr48qiqQEduEjiFWx3XyvfPBwX/PzIY=";
     };
-
-    dontPatchELF = true;
-
-    preFixup = ''
-      # We are not using the autoPatchelfHook, because it would make
-      # nacl_bootstrap_helper unable to load nacl_loader:
-      # "nacl_loader: ELF file has unreasonable e_phnum=13"
-      interpreter="$(< "$NIX_CC/nix-support/dynamic-linker")"
-      for f in pnacl/bin/*; do
-        if [ -f "$f" && -x "$f" ]; then
-          echo "Patching $f"
-          patchelf --set-interpreter "$interpreter" "$f"
-        fi
-      done
-    '';
 
     preCheck = ''
       # check it links correctly
@@ -83,23 +68,37 @@ let
 
       runHook postInstall
     '';
+
+    preFixup = ''
+      # We are not using the autoPatchelfHook, because it would make
+      # nacl_bootstrap_helper unable to load nacl_loader:
+      # "nacl_loader: ELF file has unreasonable e_phnum=13"
+      interpreter="$(< "$NIX_CC/nix-support/dynamic-linker")"
+      for f in pnacl/bin/*; do
+        if [ -f "$f" && -x "$f" ]; then
+          echo "Patching $f"
+          patchelf --set-interpreter "$interpreter" "$f"
+        fi
+      done
+    '';
+
+    dontPatchELF = true;
   };
 
   libstdcpp-preload-for-unvanquished-nacl = stdenv.mkDerivation {
-    name = "libstdcpp-preload-for-unvanquished-nacl";
-
     propagatedBuildInputs = [ gcc.cc.lib ];
 
     buildCommand = ''
       mkdir $out/etc -p
       echo ${gcc.cc.lib}/lib/libstdc++.so.6 > $out/etc/ld-nix.so.preload
     '';
+
+    name = "libstdcpp-preload-for-unvanquished-nacl";
   };
 
   fhsEnv = buildFHSEnv {
-    pname = "unvanquished-fhs-wrapper";
     inherit version;
-
+    pname = "unvanquished-fhs-wrapper";
     targetPkgs = pkgs: [ libstdcpp-preload-for-unvanquished-nacl ];
   };
 
@@ -118,11 +117,8 @@ let
   '';
 
   unvanquished-assets = stdenv.mkDerivation {
-    pname = "unvanquished-assets";
     inherit version src;
-
-    outputHash = "sha256-lXhzrA30wiNtCvpl4xxrIyl5Vcd4TvSQAuBK73vZXHs=";
-    outputHashMode = "recursive";
+    pname = "unvanquished-assets";
 
     nativeBuildInputs = [
       aria2
@@ -132,20 +128,16 @@ let
     buildCommand = ''
       bash $src/download-paks --cache=$(pwd) --version=${version} $out
     '';
+
+    outputHash = "sha256-lXhzrA30wiNtCvpl4xxrIyl5Vcd4TvSQAuBK73vZXHs=";
+    outputHashMode = "recursive";
   };
 
   # this really is the daemon game engine, the game itself is in the assets
 in
 stdenv.mkDerivation rec {
-  pname = "unvanquished";
   inherit version src binary-deps-version;
-
-  preConfigure = ''
-    TARGET="linux-amd64-default_${binary-deps-version}"
-    mkdir daemon/external_deps/"$TARGET"
-    cp -r ${unvanquished-binary-deps}/* daemon/external_deps/"$TARGET"/
-    chmod +w -R daemon/external_deps/"$TARGET"/
-  '';
+  pname = "unvanquished";
 
   nativeBuildInputs = [
     cmake
@@ -185,29 +177,12 @@ stdenv.mkDerivation rec {
     "-DOpenGL_GL_PREFERENCE=LEGACY" # https://github.com/DaemonEngine/Daemon/issues/474
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "net.unvanquished.Unvanquished.desktop";
-      desktopName = "Unvanquished";
-      comment = "FPS/RTS Game - Aliens vs. Humans";
-      icon = "unvanquished";
-      exec = "unvanquished";
-      categories = [
-        "Game"
-        "ActionGame"
-        "StrategyGame"
-      ];
-      prefersNonDefaultGPU = true;
-    })
-    (makeDesktopItem {
-      name = "net.unvanquished.UnvanquishedProtocolHandler.desktop";
-      desktopName = "Unvanquished (protocol handler)";
-      noDisplay = true;
-      exec = "unvanquished -connect %u";
-      mimeTypes = [ "x-scheme-handler/unv" ];
-      prefersNonDefaultGPU = true;
-    })
-  ];
+  preConfigure = ''
+    TARGET="linux-amd64-default_${binary-deps-version}"
+    mkdir daemon/external_deps/"$TARGET"
+    cp -r ${unvanquished-binary-deps}/* daemon/external_deps/"$TARGET"/
+    chmod +w -R daemon/external_deps/"$TARGET"/
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -229,10 +204,35 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "ActionGame"
+        "StrategyGame"
+      ];
+
+      comment = "FPS/RTS Game - Aliens vs. Humans";
+      desktopName = "Unvanquished";
+      exec = "unvanquished";
+      icon = "unvanquished";
+      name = "net.unvanquished.Unvanquished.desktop";
+      prefersNonDefaultGPU = true;
+    })
+    (makeDesktopItem {
+      desktopName = "Unvanquished (protocol handler)";
+      exec = "unvanquished -connect %u";
+      mimeTypes = [ "x-scheme-handler/unv" ];
+      name = "net.unvanquished.UnvanquishedProtocolHandler.desktop";
+      noDisplay = true;
+      prefersNonDefaultGPU = true;
+    })
+  ];
+
   meta = {
-    homepage = "https://unvanquished.net/";
-    downloadPage = "https://unvanquished.net/download/";
     description = "Fast paced, first person strategy game";
+    homepage = "https://unvanquished.net/";
+
     # don't replace the following lib.licenses.zlib with just "zlib",
     # or you would end up with the package instead
     license = with lib.licenses; [
@@ -246,11 +246,14 @@ stdenv.mkDerivation rec {
       cc-by-sa-40
       cc0 # assets
     ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode # unvanquished-binary-deps
     ];
+
     maintainers = with lib.maintainers; [ afontain ];
     platforms = [ "x86_64-linux" ];
+    downloadPage = "https://unvanquished.net/download/";
   };
 }

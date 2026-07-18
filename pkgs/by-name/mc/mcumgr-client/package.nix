@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   nix-update-script,
   pkg-config,
+  rustPlatform,
   udev,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,13 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-IbjWJ4AEUxIvj3gSyz7w4q0DL1q2u0q2JO8O+I5qXnY=";
   };
 
-  cargoHash = "sha256-V8o89jGqjxJPVIQIh6IbnahXVMktT2gZg/5H+Sr0ogQ=";
-
-  passthru.updateScript = nix-update-script { };
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ udev ];
+  cargoHash = "sha256-V8o89jGqjxJPVIQIh6IbnahXVMktT2gZg/5H+Sr0ogQ=";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Client for mcumgr commands";

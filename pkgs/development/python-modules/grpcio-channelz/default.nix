@@ -2,9 +2,9 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   grpcio,
   protobuf,
+  setuptools,
 }:
 
 # This package should be updated together with the main grpc package and other
@@ -13,30 +13,29 @@
 buildPythonPackage rec {
   pname = "grpcio-channelz";
   version = "1.81.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "grpcio_channelz";
     inherit version;
     hash = "sha256-V6Gr5QURNJv9iafEJtHbaRmOLJzUcbr2wNVgbDTbmt8=";
+    pname = "grpcio_channelz";
   };
 
+  # no tests
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "grpcio"
-    "protobuf"
-  ];
 
   dependencies = [
     grpcio
     protobuf
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "grpc_channelz" ];
 
-  # no tests
-  doCheck = false;
+  pythonRelaxDeps = [
+    "grpcio"
+    "protobuf"
+  ];
 
   meta = {
     description = "Channel Level Live Debug Information Service for gRPC";

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  nodejs,
   fetchFromGitHub,
-  yarn-berry_4,
-  python3,
-  pkg-config,
-  libsecret,
-  rsync,
-  xcbuild,
   buildPackages,
   clang_20,
+  libsecret,
+  nodejs,
+  pkg-config,
+  python3,
+  rsync,
+  xcbuild,
+  yarn-berry_4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,11 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "laurent22";
     repo = "joplin";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-nWMUvAseKoTOv5ui9uYDUiGlvO+8nNV4ux7JbsnrM5U=";
+
     postFetch = ''
       # there's a file with a weird name that causes a hash mismatch on darwin
       rm $out/packages/app-cli/tests/support/photo*
     '';
-    hash = "sha256-nWMUvAseKoTOv5ui9uYDUiGlvO+8nNV4ux7JbsnrM5U=";
   };
 
   patches = [
@@ -34,17 +35,12 @@ stdenv.mkDerivation (finalAttrs: {
     ./yarn-4.14-support.patch
   ];
 
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
-    inherit (finalAttrs)
-      src
-      missingHashes
-      patches
-      postPatch
-      ;
-    hash = "sha256-mdDVYLJ4ZN7zJJdf/2Wh+or+p1uJPTrMCyDYWwc04YM=";
-  };
+  postPatch = ''
+    # Don't immediately build everything
+    sed -i '/postinstall/d' package.json
+    # Don't install onenote-converter subpackage deps
+    sed -i '/onenote-converter/d' packages/{lib,app-cli}/package.json
+  '';
 
   nativeBuildInputs = [
     nodejs
@@ -70,13 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     # We want to patch them first
     YARN_ENABLE_SCRIPTS = 0;
   };
-
-  postPatch = ''
-    # Don't immediately build everything
-    sed -i '/postinstall/d' package.json
-    # Don't install onenote-converter subpackage deps
-    sed -i '/onenote-converter/d' packages/{lib,app-cli}/package.json
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -118,14 +107,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
+    inherit (finalAttrs)
+      src
+      missingHashes
+      patches
+      postPatch
+      ;
+
+    hash = "sha256-mdDVYLJ4ZN7zJJdf/2Wh+or+p1uJPTrMCyDYWwc04YM=";
+  };
+
   updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/laurent22/joplin/releases/v${finalAttrs.version}";
     description = "CLI client for Joplin";
     homepage = "https://joplinapp.org/";
+    changelog = "https://github.com/laurent22/joplin/releases/v${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "joplin";
     maintainers = [ ];
+    mainProgram = "joplin";
   };
 })

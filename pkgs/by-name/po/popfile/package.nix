@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.1.3";
   pname = "popfile";
+  version = "1.1.3";
 
   src = fetchzip {
     url = "https://getpopfile.org/downloads/popfile-${finalAttrs.version}.zip";
@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = (
     with perlPackages;
     [
@@ -58,7 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Email classification system that automatically sorts messages and fights spam";
     homepage = "https://getpopfile.org/";
     license = lib.licenses.gpl2Only;
-
     # Should work on macOS, but havent tested it.
     # Windows support is more complicated.
     # https://getpopfile.org/docs/faq:systemrequirements

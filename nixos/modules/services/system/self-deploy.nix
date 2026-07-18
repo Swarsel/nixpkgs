@@ -33,61 +33,53 @@ in
   options.services.self-deploy = {
     enable = lib.mkEnableOption "self-deploy";
 
-    nixFile = lib.mkOption {
-      type = lib.types.path;
-
-      default = "/default.nix";
+    branch = lib.mkOption {
+      default = "master";
 
       description = ''
-        Path to nix file in repository. Leading '/' refers to root of
-        git repository.
+        Branch to track
+
+        Technically speaking any ref can be specified here, as this is
+        passed directly to a `git fetch`, but for the use-case of
+        continuous deployment you're likely to want to specify a branch.
       '';
-    };
 
-    nixAttribute = lib.mkOption {
-      type = with lib.types; nullOr str;
-
-      default = null;
-
-      description = ''
-        Attribute of `nixFile` that builds the current system.
-      '';
+      type = lib.types.str;
     };
 
     nixArgs = lib.mkOption {
-      type = lib.types.attrs;
-
       default = { };
 
       description = ''
         Arguments to `nix-build` passed as `--argstr` or `--arg` depending on
         the type.
       '';
+
+      type = lib.types.attrs;
     };
 
-    switchCommand = lib.mkOption {
-      type = lib.types.enum [
-        "boot"
-        "switch"
-        "dry-activate"
-        "test"
-      ];
-
-      default = "switch";
+    nixAttribute = lib.mkOption {
+      default = null;
 
       description = ''
-        The `switch-to-configuration` subcommand used.
+        Attribute of `nixFile` that builds the current system.
       '';
+
+      type = with lib.types; nullOr str;
+    };
+
+    nixFile = lib.mkOption {
+      default = "/default.nix";
+
+      description = ''
+        Path to nix file in repository. Leading '/' refers to root of
+        git repository.
+      '';
+
+      type = lib.types.path;
     };
 
     repository = lib.mkOption {
-      type =
-        with lib.types;
-        oneOf [
-          path
-          str
-        ];
-
       description = ''
         The repository to fetch from. Must be properly formatted for git.
 
@@ -99,36 +91,27 @@ in
         entry to `programs.ssh.knownHosts` for the SSH host for the fetch
         to be successful.
       '';
+
+      type =
+        with lib.types;
+        oneOf [
+          path
+          str
+        ];
     };
 
     sshKeyFile = lib.mkOption {
-      type = with lib.types; nullOr path;
-
       default = null;
 
       description = ''
         Path to SSH private key used to fetch private repositories over
         SSH.
       '';
-    };
 
-    branch = lib.mkOption {
-      type = lib.types.str;
-
-      default = "master";
-
-      description = ''
-        Branch to track
-
-        Technically speaking any ref can be specified here, as this is
-        passed directly to a `git fetch`, but for the use-case of
-        continuous deployment you're likely to want to specify a branch.
-      '';
+      type = with lib.types; nullOr path;
     };
 
     startAt = lib.mkOption {
-      type = with lib.types; either str (listOf str);
-
       default = "hourly";
 
       description = ''
@@ -139,24 +122,34 @@ in
         strings, in which case the service will be started on multiple
         schedules.
       '';
+
+      type = with lib.types; either str (listOf str);
+    };
+
+    switchCommand = lib.mkOption {
+      default = "switch";
+
+      description = ''
+        The `switch-to-configuration` subcommand used.
+      '';
+
+      type = lib.types.enum [
+        "boot"
+        "switch"
+        "dry-activate"
+        "test"
+      ];
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.self-deploy = rec {
       inherit (cfg) startAt;
-
-      serviceConfig.Type = "oneshot";
-
-      requires = lib.mkIf (!(isPathType cfg.repository)) [ "network-online.target" ];
-
       after = requires;
 
       environment.GIT_SSH_COMMAND = lib.mkIf (
         cfg.sshKeyFile != null
       ) "${pkgs.openssh}/bin/ssh -i ${lib.escapeShellArg cfg.sshKeyFile}";
-
-      restartIfChanged = false;
 
       path =
         with pkgs;
@@ -167,6 +160,9 @@ in
           nix
         ]
         ++ lib.optionals (cfg.switchCommand == "boot") [ systemd ];
+
+      requires = lib.mkIf (!(isPathType cfg.repository)) [ "network-online.target" ];
+      restartIfChanged = false;
 
       script = ''
         if [ ! -e ${repositoryDirectory} ]; then
@@ -181,9 +177,9 @@ in
         nix-build${renderNixArgs cfg.nixArgs} ${
           lib.cli.toCommandLineShell
             (optionName: {
+              explicitBool = false;
               option = "--${optionName}";
               sep = null;
-              explicitBool = false;
             })
             {
               attr = cfg.nixAttribute;
@@ -203,6 +199,8 @@ in
 
         ${lib.optionalString (cfg.switchCommand == "boot") "systemctl reboot"}
       '';
+
+      serviceConfig.Type = "oneshot";
     };
   };
 }

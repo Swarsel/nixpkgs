@@ -1,24 +1,24 @@
 {
   lib,
-  writeTextFile,
   buildPackages,
+  writeTextFile,
 }:
 
 # See https://people.freedesktop.org/~dbn/pkg-config-guide.html#concepts
 {
   name, # The name of the pc file
+  cflags ? [ ],
+  conflicts ? [ ],
   # keywords
   # provide a default description for convenience. it's not important but still required by pkg-config.
   description ? "Pkg-config file for ${name}",
-  url ? "",
-  version ? "",
-  requires ? [ ],
-  requiresPrivate ? [ ],
-  conflicts ? [ ],
-  cflags ? [ ],
   libs ? [ ],
   libsPrivate ? [ ],
+  requires ? [ ],
+  requiresPrivate ? [ ],
+  url ? "",
   variables ? { },
+  version ? "",
 }:
 
 let
@@ -38,16 +38,16 @@ let
         attr: attrName: if !(lib.isList attr) then throw "'${attrName}' must be a list" else attr;
     in
     {
-      "Name" = name;
-      "Description" = description;
-      "URL" = url;
-      "Version" = version;
-      "Requires" = mustBeAList requires "requires";
-      "Requires.private" = mustBeAList requiresPrivate "requiresPrivate";
-      "Conflicts" = mustBeAList conflicts "conflicts";
       "Cflags" = mustBeAList cflags "cflags";
+      "Conflicts" = mustBeAList conflicts "conflicts";
+      "Description" = description;
       "Libs" = mustBeAList libs "libs";
       "Libs.private" = mustBeAList libsPrivate "libsPrivate";
+      "Name" = name;
+      "Requires" = mustBeAList requires "requires";
+      "Requires.private" = mustBeAList requiresPrivate "requiresPrivate";
+      "URL" = url;
+      "Version" = version;
     };
 
   renderVariable =
@@ -78,8 +78,8 @@ let
   ];
 in
 writeTextFile {
-  name = "${name}.pc";
-  destination = "/lib/pkgconfig/${name}.pc";
-  text = builtins.concatStringsSep "\n" content;
   checkPhase = ''${buildPackages.pkg-config}/bin/${buildPackages.pkg-config.targetPrefix}pkg-config --validate "$target"'';
+  destination = "/lib/pkgconfig/${name}.pc";
+  name = "${name}.pc";
+  text = builtins.concatStringsSep "\n" content;
 }

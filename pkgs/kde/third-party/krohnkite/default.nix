@@ -1,11 +1,11 @@
 {
   lib,
-  nix-update-script,
   buildNpmPackage,
   fetchFromCodeberg,
-  nodejs_22,
-  kwin,
   kpackage,
+  kwin,
+  nix-update-script,
+  nodejs_22,
   zip,
 }:
 buildNpmPackage (finalAttrs: {
@@ -19,19 +19,13 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-gulKg23BeWL270B2omRYJIuAHIsKu1cBVpimgButM9I=";
   };
 
-  npmDepsHash = "sha256-6+meI602VKIzqunTOwNRLZOO7/LscjNm545icc2WN0c=";
-
-  dontWrapQtApps = true;
-
-  nodejs = nodejs_22;
-
   nativeBuildInputs = [
     kpackage
     zip
     kwin
   ];
 
-  npmBuildScript = "tsc";
+  npmDepsHash = "sha256-6+meI602VKIzqunTOwNRLZOO7/LscjNm545icc2WN0c=";
 
   installPhase = ''
     runHook preInstall
@@ -48,6 +42,9 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
+  nodejs = nodejs_22;
+  npmBuildScript = "tsc";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -55,10 +52,12 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://codeberg.org/anametologin/Krohnkite";
     changelog = "https://codeberg.org/anametologin/Krohnkite/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ben9986
       dramforever
     ];
+
     platforms = lib.platforms.all;
   };
 })

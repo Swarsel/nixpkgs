@@ -1,13 +1,13 @@
 {
-  dpkg,
-  fetchurl,
   lib,
-  stdenvNoCC,
-  writeShellApplication,
+  fetchurl,
   common-updater-scripts,
   curl,
+  dpkg,
   jc,
   jq,
+  stdenvNoCC,
+  writeShellApplication,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "plasticscm-client-gui-unwrapped";
@@ -16,17 +16,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   src = fetchurl {
     url = "https://www.plasticscm.com/plasticrepo/stable/debian/amd64/plasticscm-client-gui_${finalAttrs.version}_amd64.deb";
     hash = "sha256-xlQ+cYjmPQEAyGXO1vtoFNWIvWLsjroUFd4bS0GLccc=";
-    nativeBuildInputs = [ dpkg ];
     downloadToTemp = true;
-    recursiveHash = true;
+    nativeBuildInputs = [ dpkg ];
+
     postFetch = ''
       mkdir -p $out
       dpkg-deb --fsys-tarfile $downloadedFile | tar --extract --directory=$out
       rm -rf $out/usr/share/doc
     '';
-  };
 
-  dontFixup = true;
+    recursiveHash = true;
+  };
 
   installPhase = ''
     runHook preInstall
@@ -37,8 +37,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontFixup = true;
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "update-plasticscm-client-gui-unwrapped";
+
     runtimeInputs = [
       common-updater-scripts
       curl
@@ -46,6 +49,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       jc
       jq
     ];
+
     text = ''
       version="$(curl -sSL https://www.plasticscm.com/plasticrepo/stable/debian/Packages |
         jc --pkg-index-deb |
@@ -56,12 +60,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   });
 
   meta = {
-    homepage = "https://www.plasticscm.com";
     description = "SCM by Unity for game development";
+    homepage = "https://www.plasticscm.com";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ musjj ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "plasticgui";
-    license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [ musjj ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

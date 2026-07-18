@@ -1,4 +1,4 @@
-{ version, hash }:
+{ hash, version }:
 {
   lib,
   stdenv,
@@ -7,23 +7,21 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "docbook-sgml";
   inherit version;
+  pname = "docbook-sgml";
 
   src = fetchurl {
+    inherit hash;
+
     url = "https://archive.docbook.org/sgml/${finalAttrs.version}/${
       if lib.versionAtLeast finalAttrs.version "4.2" then
         "docbook-${finalAttrs.version}"
       else
         "docbk${lib.replaceStrings [ "." ] [ "" ] finalAttrs.version}"
     }.zip";
-    inherit hash;
   };
 
-  isoents = fetchurl {
-    url = "https://web.archive.org/web/20250220122223/http://xml.coverpages.org/ISOEnts.zip";
-    hash = "sha256-3OQ1mjmW7S/TOtXqoRqbz8JLWwaZLiQpUTKwbbGambI=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     unzip
@@ -43,9 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontUnpack = true;
-  strictDeps = true;
   __structuredAttrs = true;
+  dontUnpack = true;
+
+  isoents = fetchurl {
+    hash = "sha256-3OQ1mjmW7S/TOtXqoRqbz8JLWwaZLiQpUTKwbbGambI=";
+    url = "https://web.archive.org/web/20250220122223/http://xml.coverpages.org/ISOEnts.zip";
+  };
 
   meta = {
     description = "DocBook ${finalAttrs.version} SGML Schemas";

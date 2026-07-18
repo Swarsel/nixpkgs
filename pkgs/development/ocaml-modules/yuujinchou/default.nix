@@ -1,10 +1,10 @@
 {
   lib,
-  ocaml,
   fetchFromGitHub,
-  buildDunePackage,
   algaeff,
+  buildDunePackage,
   bwd,
+  ocaml,
   qcheck-alcotest,
 }:
 
@@ -13,11 +13,13 @@ let
     if lib.versionAtLeast ocaml.version "5.0" then
       {
         version = "5.2.0";
-        hash = "sha256-DJzXjV5Tjf69FKUiRioeHghks72pOOHYd73vqhmecS8=";
+
         propagatedBuildInputs = [
           algaeff
           bwd
         ];
+
+        hash = "sha256-DJzXjV5Tjf69FKUiRioeHghks72pOOHYd73vqhmecS8=";
       }
     else
       {
@@ -27,22 +29,20 @@ let
 in
 
 buildDunePackage rec {
-  pname = "yuujinchou";
   inherit (params) version;
-
-  minimalOCamlVersion = "4.12";
+  pname = "yuujinchou";
 
   src = fetchFromGitHub {
+    inherit (params) hash;
     owner = "RedPRL";
     repo = pname;
     rev = version;
-    inherit (params) hash;
   };
 
   propagatedBuildInputs = params.propagatedBuildInputs or [ ];
-
   doCheck = true;
   checkInputs = [ qcheck-alcotest ];
+  minimalOCamlVersion = "4.12";
 
   meta = {
     description = "Name pattern combinators";

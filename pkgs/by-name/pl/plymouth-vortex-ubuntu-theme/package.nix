@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -16,8 +16,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-RBV5g1ccDw7O6MnrLb2yCga/ASjVo7GOE5CIoJcku4w=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/plymouth/themes/vortex-ubuntu
@@ -27,17 +25,20 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Animated Plymouth boot theme with rotating Ubuntu logo";
+
     longDescription = ''
       Animated Plymouth theme with the Ubuntu logo and a futuristic and elegant look.
       Disk encryption password prompt is supported.
     '';
+
     homepage = "https://github.com/emanuele-scarsella/vortex-ubuntu-plymouth-theme";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ johnrtitor ];
+    platforms = lib.platforms.linux;
   };
 }

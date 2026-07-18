@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   glib-networking,
   gobject-introspection,
-  lib,
   libadwaita,
   libsecret,
   libsoup_3,
@@ -19,7 +19,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "lenspect";
   version = "1.0.5";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "vmkspv";
@@ -45,16 +44,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libsoup_3
   ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   dependencies = with python3Packages; [
     pygobject3
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -63,7 +62,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/vmkspv/lenspect/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ RoGreat ];
-    mainProgram = "lenspect";
     platforms = lib.platforms.linux;
+    mainProgram = "lenspect";
   };
 })

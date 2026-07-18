@@ -1,26 +1,33 @@
 {
   lib,
   stdenv,
-  which,
-  flex,
+  bashInteractive,
   bison,
-  linuxHeaders ? stdenv.cc.libc.linuxHeaders,
   buildPackages,
-  zstd,
   fetchpatch,
-
+  flex,
   # apparmor deps
   libapparmor,
-  runtimeShellPackage,
-
   # testing
   perl,
   python3,
-  bashInteractive,
+  runtimeShellPackage,
+  which,
+  zstd,
+  linuxHeaders ? stdenv.cc.libc.linuxHeaders,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "apparmor-parser";
   inherit (libapparmor) version src;
+  pname = "apparmor-parser";
+
+  patches = [
+    (fetchpatch {
+      hash = "sha256-7c5EFByrGIDj2lc31bRttyeybwndDm4iS4qdPMVaG/I=";
+      # https://gitlab.com/apparmor/apparmor/-/merge_requests/2133
+      # Patches generated yacc parser code to compile with format-security
+      url = "https://gitlab.com/apparmor/apparmor/-/commit/6bdec74d5e74660b97e00b4b8fafc014b05907b7.diff";
+    })
+  ];
 
   postPatch = ''
     patchShebangs .
@@ -30,14 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/usr/include/linux/capability.h" "${linuxHeaders}/include/linux/capability.h"
   '';
 
-  patches = [
-    (fetchpatch {
-      # https://gitlab.com/apparmor/apparmor/-/merge_requests/2133
-      # Patches generated yacc parser code to compile with format-security
-      url = "https://gitlab.com/apparmor/apparmor/-/commit/6bdec74d5e74660b97e00b4b8fafc014b05907b7.diff";
-      hash = "sha256-7c5EFByrGIDj2lc31bRttyeybwndDm4iS4qdPMVaG/I=";
-    })
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     bison
@@ -62,25 +62,22 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional finalAttrs.doCheck "PROVE=${lib.getExe' perl "prove"}";
 
-  installFlags = [
-    "DESTDIR=$(out)"
-    "DISTRO=unknown"
-  ];
-
-  preCheck = "pushd ./tst";
-
-  checkTarget = "tests";
-
-  postCheck = "popd";
-
   doCheck = stdenv.hostPlatform == stdenv.buildPlatform;
+
   nativeCheckInputs = [
     bashInteractive
     perl
     python3
   ];
 
-  strictDeps = true;
+  preCheck = "pushd ./tst";
+  postCheck = "popd";
+  checkTarget = "tests";
+
+  installFlags = [
+    "DESTDIR=$(out)"
+    "DISTRO=unknown"
+  ];
 
   meta = libapparmor.meta // {
     description = "Mandatory access control system - core library";

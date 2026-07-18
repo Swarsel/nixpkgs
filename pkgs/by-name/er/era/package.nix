@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -33,13 +31,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
+    inherit (deno.meta) platforms;
     description = "Rainy clock in your terminal";
     homepage = "https://github.com/kyoheiu/era";
     changelog = "https://github.com/kyoheiu/era/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ natsukium ];
     mainProgram = "era";
-    inherit (deno.meta) platforms;
   };
 })

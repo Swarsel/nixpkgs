@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
-  nix-update-script,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
-  coreutils,
   bash,
+  cacert,
+  cmake,
+  coreutils,
   direnv,
   git,
-  pkg-config,
-  openssl,
-  cmake,
-  cacert,
-  usage,
-  mise,
-  testers,
-  runCommand,
+  installShellFiles,
   jq,
+  mise,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  runCommand,
+  rustPlatform,
+  testers,
+  usage,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,15 +30,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-oHZXd9u+FbwOs60yrmg5oSnQoHskVCi29TRgu0RKOpM=";
   };
-
-  cargoHash = "sha256-JXipQn9gN5cJx6PSpDYHuxjYLNRyAwpjSaROxqSvIog=";
-
-  nativeBuildInputs = [
-    installShellFiles
-    pkg-config
-  ];
-
-  buildInputs = [ openssl ];
 
   postPatch = ''
     patchShebangs --build \
@@ -61,6 +52,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail 'cmd!("direnv"' 'cmd!("${lib.getExe direnv}"'
   '';
 
+  nativeBuildInputs = [
+    installShellFiles
+    pkg-config
+  ];
+
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-JXipQn9gN5cJx6PSpDYHuxjYLNRyAwpjSaROxqSvIog=";
+  # disable warnings as errors for aws-lc-sys in checkPhase
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
+
   nativeCheckInputs = [
     cacert
     cmake
@@ -68,9 +69,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     git
     rustPlatform.bindgenHook
   ];
-
-  # disable warnings as errors for aws-lc-sys in checkPhase
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
   checkFlags = [
     # last_modified will always be different in nix
@@ -81,13 +79,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=task::task_file_providers::remote_task_http::tests::test_http_remote_task_get_local_path_with_cache"
     "--skip=task::task_file_providers::remote_task_http::tests::test_http_remote_task_get_local_path_without_cache"
   ];
-
-  cargoTestFlags = [ "--all-features" ];
-  # some tests access the same folders, don't test in parallel to avoid race conditions
-  dontUseCargoParallelTests = true;
-
-  # HTTP tests use mock servers that bind to localhost. Without this, darwin builds fail.
-  __darwinAllowLocalNetworking = true;
 
   postInstall = ''
     installManPage ./man/man1/mise.1
@@ -105,17 +96,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     touch $out/lib/mise/.disable-self-update
   '';
 
+  # HTTP tests use mock servers that bind to localhost. Without this, darwin builds fail.
+  __darwinAllowLocalNetworking = true;
+  cargoTestFlags = [ "--all-features" ];
+  # some tests access the same folders, don't test in parallel to avoid race conditions
+  dontUseCargoParallelTests = true;
+
   passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [
-        # Ignore subcrate releases (fox, aqua-registry)
-        "--version-regex=^v([0-9]+\\.[0-9]+\\.[0-9]+)$"
-      ];
-    };
     tests = {
       version = (testers.testVersion { package = mise; }).overrideAttrs (old: {
         nativeBuildInputs = old.nativeBuildInputs ++ [ cacert ];
       });
+
       usageCompat =
         # should not crash
         runCommand "mise-usage-compatibility"
@@ -137,17 +129,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
             touch $out
           '';
     };
+
+    updateScript = nix-update-script {
+      extraArgs = [
+        # Ignore subcrate releases (fox, aqua-registry)
+        "--version-regex=^v([0-9]+\\.[0-9]+\\.[0-9]+)$"
+      ];
+    };
   };
 
   meta = {
-    homepage = "https://mise.jdx.dev";
     description = "Front-end to your dev env";
+    homepage = "https://mise.jdx.dev";
     changelog = "https://github.com/jdx/mise/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       konradmalik
       Br1ght0ne
     ];
+
     mainProgram = "mise";
   };
 })

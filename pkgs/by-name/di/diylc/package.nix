@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   copyDesktopItems,
-  makeDesktopItem,
-  unzip,
   jdk17,
   makeBinaryWrapper,
+  makeDesktopItem,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,20 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     copyDesktopItems
     unzip
     makeBinaryWrapper
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "diylc";
-      desktopName = "DIY Layout Creator";
-      comment = "Multi platform circuit layout and schematic drawing tool";
-      exec = "diylc";
-      icon = "diylc_icon";
-      categories = [
-        "Development"
-        "Electronics"
-      ];
-    })
   ];
 
   installPhase = ''
@@ -59,14 +45,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Development"
+        "Electronics"
+      ];
+
+      comment = "Multi platform circuit layout and schematic drawing tool";
+      desktopName = "DIY Layout Creator";
+      exec = "diylc";
+      icon = "diylc_icon";
+      name = "diylc";
+    })
+  ];
+
   meta = {
     description = "Multi platform circuit layout and schematic drawing tool";
-    mainProgram = "diylc";
     homepage = "https://bancika.github.io/diy-layout-creator";
     changelog = "https://github.com/bancika/diy-layout-creator/releases";
     license = lib.licenses.gpl3Plus;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "diylc";
   };
 })

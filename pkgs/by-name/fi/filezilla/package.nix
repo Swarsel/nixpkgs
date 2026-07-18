@@ -3,10 +3,12 @@
   stdenv,
   fetchurl,
   autoreconfHook,
+  boost,
   dbus,
   fzssh,
   gettext,
   gnutls,
+  gtk3,
   libfilezilla,
   libidn,
   nettle,
@@ -14,10 +16,8 @@
   pugixml,
   sqlite,
   tinyxml,
-  boost,
   wrapGAppsHook3,
   wxwidgets_3_2,
-  gtk3,
   xdg-utils,
 }:
 
@@ -32,11 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-d8FsJfsdlNUSlLAe/SDT5cwRmESFfktDmCrKa4mO5dY=";
   };
 
-  configureFlags = [
-    "--disable-manualupdatecheck"
-    "--disable-autoupdatecheck"
-    "--with-wx-prefix=${wxwidgets_3_2}"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -60,9 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ];
 
-  strictDeps = true;
-
-  enableParallelBuilding = true;
+  configureFlags = [
+    "--disable-manualupdatecheck"
+    "--disable-autoupdatecheck"
+    "--with-wx-prefix=${wxwidgets_3_2}"
+  ];
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -70,20 +68,26 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://filezilla-project.org/";
     description = "Graphical FTP, FTPS and SFTP client";
+
     longDescription = ''
       FileZilla Client is a free, open source FTP client. It supports
       FTP, SFTP, and FTPS (FTP over SSL/TLS). The client is available
       under many platforms, binaries for Windows, Linux and macOS are
       provided.
     '';
+
+    homepage = "https://filezilla-project.org/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       iedame
       pSub
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

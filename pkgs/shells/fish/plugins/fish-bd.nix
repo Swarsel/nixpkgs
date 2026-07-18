@@ -1,7 +1,7 @@
 {
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
+  buildFishPlugin,
   gitUpdater,
 }:
 buildFishPlugin rec {

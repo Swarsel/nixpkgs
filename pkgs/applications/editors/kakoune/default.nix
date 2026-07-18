@@ -7,30 +7,25 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "kakoune-unwrapped";
   version = "2026.05.21";
+
   src = fetchFromGitHub {
-    repo = "kakoune";
     owner = "mawww";
+    repo = "kakoune";
     rev = "v${finalAttrs.version}";
     hash = "sha256-4nhhvq871mgbpKYhAAVkIi2+MaO1jlt3d3lIXNGkh6I=";
   };
+
+  postPatch = ''
+    echo "v${finalAttrs.version}" >.version
+  '';
 
   makeFlags = [
     "debug=no"
     "PREFIX=${placeholder "out"}"
   ];
 
-  postPatch = ''
-    echo "v${finalAttrs.version}" >.version
-  '';
-
-  enableParallelBuilding = true;
   preBuild = ''
     appendToVar makeFlags "CXX=$CXX"
-  '';
-
-  doInstallCheck = true;
-  installCheckPhase = ''
-    $out/bin/kak -ui json -e "kill 0"
   '';
 
   postInstall = ''
@@ -42,12 +37,20 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s --relative "$autoload_target" autoload
   '';
 
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    $out/bin/kak -ui json -e "kill 0"
+  '';
+
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "http://kakoune.org/";
     description = "Vim inspired text editor";
+    homepage = "http://kakoune.org/";
     license = lib.licenses.publicDomain;
-    mainProgram = "kak";
     maintainers = with lib.maintainers; [ philiptaron ];
     platforms = lib.platforms.unix;
+    mainProgram = "kak";
   };
 })

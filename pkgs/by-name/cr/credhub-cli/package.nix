@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,9 +20,18 @@ buildGoModule (finalAttrs: {
     rm commands/api_test.go
     rm commands/socks5_test.go
   '';
-  __darwinAllowLocalNetworking = true;
 
   vendorHash = null;
+
+  preCheck = ''
+    export HOME=$TMPDIR
+  '';
+
+  postInstall = ''
+    ln -s $out/bin/credhub-cli $out/bin/credhub
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -30,18 +39,10 @@ buildGoModule (finalAttrs: {
     "-X code.cloudfoundry.org/credhub-cli/version.Version=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    ln -s $out/bin/credhub-cli $out/bin/credhub
-  '';
-
-  preCheck = ''
-    export HOME=$TMPDIR
-  '';
-
   meta = {
     description = "Provides a command line interface to interact with CredHub servers";
     homepage = "https://github.com/cloudfoundry/credhub-cli";
-    maintainers = with lib.maintainers; [ ris ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ ris ];
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
-  scdoc,
   nix-update-script,
+  rustPlatform,
+  scdoc,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "tuigreet";
@@ -17,12 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-e0YtpakEaaWdgu+bMr2VFoUc6+SUMFk4hYtSyk5aApY=";
   };
 
-  cargoHash = "sha256-w6ZOqpwogKoN4oqqI1gFqY8xAnfvhEBVaL8/6JXpKXs=";
-
   nativeBuildInputs = [
     installShellFiles
     scdoc
   ];
+
+  cargoHash = "sha256-w6ZOqpwogKoN4oqqI1gFqY8xAnfvhEBVaL8/6JXpKXs=";
 
   postInstall = ''
     scdoc < contrib/man/tuigreet-1.scd > tuigreet.1

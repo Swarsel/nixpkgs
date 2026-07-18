@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  id3lib,
   groff,
+  id3lib,
   zlib,
 }:
 
@@ -17,12 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ groff ];
+
   buildInputs = [
     id3lib
     zlib
   ];
 
   makeFlags = [ "PREFIX=$(out)" ];
+
   buildFlags = [
     "clean"
     "all"

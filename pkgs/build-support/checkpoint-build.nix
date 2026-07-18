@@ -46,6 +46,7 @@ in
 
 {
   inherit mkCheckpointBuild;
+
   /*
     Prepare a derivation for local builds.
     *
@@ -69,7 +70,7 @@ in
     drv:
     drv.overrideAttrs (old: {
       outputs = [ "out" ];
-      name = drv.name + "-checkpointArtifacts";
+
       # To determine differences between the state of the build directory
       # from an earlier build and a later one we store the state of the build
       # directory before build, but after patch phases.
@@ -93,9 +94,10 @@ in
         unset postPhases
       '';
 
-      dontFixup = true;
       doInstallCheck = false;
       doDist = false;
+      dontFixup = true;
+      name = drv.name + "-checkpointArtifacts";
     });
 }
 // lib.optionalAttrs config.allowAliases {

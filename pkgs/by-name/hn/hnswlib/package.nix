@@ -24,25 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tYzx92eKRFcZ+RW5mcAw1SFT5aRHvdDr9oBsWj6xZbg=";
   };
 
+  doCheck = true;
+
   # this is a header-only library, so we don't need to build it
   # we need `cmake` only to run tests
   nativeCheckInputs = [
     cmake
     python
   ];
-
-  # we only want to run buildPhase when we run tests
-  dontBuild = !finalAttrs.finalPackage.doCheck;
-
-  installPhase = ''
-    runHook preInstall
-
-    install -Dm644 $src/hnswlib/*.h -t $out/include/hnswlib
-
-    runHook postInstall
-  '';
-
-  doCheck = true;
 
   preCheck = ''
     pushd ../tests/cpp
@@ -57,6 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postCheck
   '';
+
+  installPhase = ''
+    runHook preInstall
+
+    install -Dm644 $src/hnswlib/*.h -t $out/include/hnswlib
+
+    runHook postInstall
+  '';
+
+  # we only want to run buildPhase when we run tests
+  dontBuild = !finalAttrs.finalPackage.doCheck;
 
   meta = {
     description = "Header-only C++/python library for fast approximate nearest neighbors";

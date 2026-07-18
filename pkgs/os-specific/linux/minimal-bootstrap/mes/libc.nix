@@ -4,11 +4,11 @@ in
 
 {
   lib,
+  fetchurl,
+  buildPlatform,
   kaem,
   ln-boot,
   mes,
-  buildPlatform,
-  fetchurl,
 }:
 let
   pname = "mes-libc";
@@ -25,8 +25,8 @@ let
   inherit (sources) libtcc1_SOURCES libc_gnu1_SOURCES libc_gnu2_SOURCES;
 
   ldexpl = fetchurl {
-    url = "https://gitlab.com/janneke/mes/-/raw/c837abed8edb341d4e56913729fbe9803b4de47c/lib/math/ldexpl.c";
     hash = "sha256-3QoFZZIqVmlMUosEqOdYIMEHzYgQ7GJ7Hz0Bf/1iIig=";
+    url = "https://gitlab.com/janneke/mes/-/raw/c837abed8edb341d4e56913729fbe9803b4de47c/lib/math/ldexpl.c";
   };
 
   # Concatenate all source files into a convenient bundle
@@ -41,20 +41,20 @@ in
 kaem.runCommand "${pname}-${version}"
   {
     inherit pname version;
-
     extraPath = "${ln-boot}/bin";
-
     passthru.CFLAGS = "-std=c11";
 
     meta = {
       description = "Mes C Library";
       homepage = "https://www.gnu.org/software/mes";
       license = lib.licenses.gpl3Plus;
-      teams = [ lib.teams.minimal-bootstrap ];
+
       platforms = [
         "i686-linux"
         "x86_64-linux"
       ];
+
+      teams = [ lib.teams.minimal-bootstrap ];
     };
   }
   ''

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -27,10 +27,12 @@ buildGoModule (finalAttrs: {
     description = "Look up records for one or more IPs/networks in one or more .mmdb databases";
     homepage = "https://github.com/maxmind/mmdbinspect";
     changelog = "https://github.com/maxmind/mmdbinspect/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ moraxyc ];
     mainProgram = "mmdbinspect";
   };

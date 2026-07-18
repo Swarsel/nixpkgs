@@ -1,9 +1,9 @@
 {
+  lib,
   buildPackages,
   buildPythonPackage,
   fetchpatch,
   isPyPy,
-  lib,
   protobuf,
   pytestCheckHook,
   pythonAtLeast,
@@ -14,27 +14,16 @@ assert lib.versionAtLeast protobuf.version "3.21" -> throw "Protobuf 3.20 or old
 
 buildPythonPackage {
   inherit (protobuf) pname src;
-
   version = protobuf.version;
-  format = "setuptools";
-
-  sourceRoot = "${protobuf.src.name}/python";
 
   patches = lib.optionals (pythonAtLeast "3.11") [
     (fetchpatch {
-      name = "support-python311.patch";
-      url = "https://github.com/protocolbuffers/protobuf/commit/2206b63c4649cf2e8a06b66c9191c8ef862ca519.diff";
-      stripLen = 1; # because sourceRoot above
       hash = "sha256-3GaoEyZIhS3QONq8LEvJCH5TdO9PKnOgcQF0GlEiwFo=";
+      name = "support-python311.patch";
+      stripLen = 1; # because sourceRoot above
+      url = "https://github.com/protocolbuffers/protobuf/commit/2206b63c4649cf2e8a06b66c9191c8ef862ca519.diff";
     })
   ];
-
-  prePatch = ''
-    if [[ "$(<../version.json)" != *'"python": "'"$version"'"'* ]]; then
-      echo "Python library version mismatch. Derivation version: $version, actual: $(<../version.json)"
-      exit 1
-    fi
-  '';
 
   # Remove the line in setup.py that forces compiling with C++14. Upstream's
   # CMake build has been updated to support compiling with other versions of
@@ -53,16 +42,7 @@ buildPythonPackage {
   '';
 
   nativeBuildInputs = lib.optional isPyPy tzdata;
-
   buildInputs = [ protobuf ];
-
-  propagatedNativeBuildInputs = [
-    # For protoc of the same version.
-    buildPackages."protobuf${lib.versions.major protobuf.version}_${lib.versions.minor protobuf.version}"
-  ];
-
-  setupPyGlobalFlags = [ "--cpp_implementation" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = lib.optionals isPyPy [
@@ -75,10 +55,27 @@ buildPythonPackage {
     "testStrictUtf8Check"
   ];
 
+  format = "setuptools";
+
+  prePatch = ''
+    if [[ "$(<../version.json)" != *'"python": "'"$version"'"'* ]]; then
+      echo "Python library version mismatch. Derivation version: $version, actual: $(<../version.json)"
+      exit 1
+    fi
+  '';
+
+  propagatedNativeBuildInputs = [
+    # For protoc of the same version.
+    buildPackages."protobuf${lib.versions.major protobuf.version}_${lib.versions.minor protobuf.version}"
+  ];
+
   pythonImportsCheck = [
     "google.protobuf"
     "google.protobuf.internal._api_implementation" # Verify that --cpp_implementation worked
   ];
+
+  setupPyGlobalFlags = [ "--cpp_implementation" ];
+  sourceRoot = "${protobuf.src.name}/python";
 
   passthru = {
     inherit protobuf;

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
   alsa-lib,
+  autoreconfHook,
   libxmp,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,6 +23,7 @@ stdenv.mkDerivation rec {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ libxmp ] ++ lib.optionals stdenv.hostPlatform.isLinux [ alsa-lib ];
 
   meta = {

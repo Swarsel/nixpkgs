@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
-
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -18,11 +17,8 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-gXPX5drVXsfkssPMdhqIpFsYNSbelE9mKwO+nGEy4Qs=";
   };
 
-  cargoHash = "sha256-bsyEEbwBTDcIOc+PRkZqcfqcDgQnchuVy8a8eSZZUHU=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  __darwinAllowLocalNetworking = true;
+  cargoHash = "sha256-bsyEEbwBTDcIOc+PRkZqcfqcDgQnchuVy8a8eSZZUHU=";
 
   preConfigure = ''
     export BANDWHICH_GEN_DIR=_shell-files
@@ -36,8 +32,11 @@ rustPlatform.buildRustPackage rec {
       --zsh $BANDWHICH_GEN_DIR/_bandwhich
   '';
 
+  __darwinAllowLocalNetworking = true;
+
   meta = {
     description = "CLI utility for displaying current network utilization";
+
     longDescription = ''
       bandwhich sniffs a given network interface and records IP packet size, cross
       referencing it with the /proc filesystem on linux or lsof on MacOS. It is
@@ -45,11 +44,14 @@ rustPlatform.buildRustPackage rec {
       no room for it. It will also attempt to resolve ips to their host name in
       the background using reverse DNS on a best effort basis.
     '';
+
     homepage = "https://github.com/imsnif/bandwhich";
     changelog = "https://github.com/imsnif/bandwhich/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = [
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "bandwhich";
   };

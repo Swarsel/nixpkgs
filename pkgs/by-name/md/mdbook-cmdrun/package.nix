@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   mdbook,
   nodejs,
   python3,
-  util-linux,
   rustPlatform,
-  fetchFromGitHub,
+  util-linux,
 }:
 
 rustPlatform.buildRustPackage {
@@ -20,6 +20,8 @@ rustPlatform.buildRustPackage {
     hash = "sha256-0RkyMJ8tsnGcSD0ksGTGAyliH6AihVl0HEesljEmTH8=";
   };
 
+  cargoHash = "sha256-oUlH+z50a1FtzDADXfGKSYjauZGTok0bVMq718HLglY=";
+
   nativeCheckInputs = [
     mdbook # used by tests/book.rs
     nodejs # used by tests/regression/inline_call/input.md
@@ -27,16 +29,16 @@ rustPlatform.buildRustPackage {
     util-linux # used by tests/regression/shell/input.md
   ];
 
-  cargoHash = "sha256-oUlH+z50a1FtzDADXfGKSYjauZGTok0bVMq718HLglY=";
-
   meta = {
     description = "mdbook preprocessor to run arbitrary commands";
-    mainProgram = "mdbook-cmdrun";
     homepage = "https://github.com/FauconFan/mdbook-cmdrun";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pinpox
       matthiasbeyer
     ];
+
+    mainProgram = "mdbook-cmdrun";
   };
 }

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "snes9x2002";
   version = "0-unstable-2026-06-25";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-iqhmSJzWqr5HgtY9q+kBb/xB6njvG3M2SePXdRszqqc=";
   };
 
+  core = "snes9x2002";
   makefile = "Makefile";
 
   meta = {

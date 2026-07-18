@@ -1,7 +1,7 @@
 {
-  fetchzip,
   lib,
   stdenv,
+  fetchzip,
   which,
 }:
 
@@ -19,19 +19,16 @@ stdenv.mkDerivation (finalAttrs: {
     ./0.6-Makefile.patch
   ];
 
-  nativeBuildInputs = [ which ];
-
-  makeFlags = [ "PREFIX=$(out)" ];
-
   postPatch = ''
     rm empty
   '';
 
+  nativeBuildInputs = [ which ];
+  makeFlags = [ "PREFIX=$(out)" ];
+
   meta = {
-    homepage = "https://empty.sourceforge.net";
     description = "Simple tool to automate interactive terminal applications";
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
+
     longDescription = ''
       The empty utility provides an interface to execute and/or interact with
       processes under pseudo-terminal sessions (PTYs). This tool is definitely
@@ -46,7 +43,11 @@ stdenv.mkDerivation (finalAttrs: {
       - has small and simple source code
       - can easily be ported to almost all UNIX-like systems
     '';
+
+    homepage = "https://empty.sourceforge.net";
+    license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.djwf ];
+    platforms = lib.platforms.all;
     mainProgram = "empty";
   };
 })

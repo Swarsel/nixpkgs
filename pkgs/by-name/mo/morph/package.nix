@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
   openssh,
 }:
@@ -17,14 +17,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-IqWtVklzSq334cGgLx/13l329g391oDW50MZWyO6l08=";
   };
 
-  vendorHash = "sha256-zQlMtbXgrH83zrcIoOuFhb2tYCeQ1pz4UQUvRIsLMCE=";
+  outputs = [
+    "out"
+    "lib"
+  ];
 
   nativeBuildInputs = [ makeWrapper ];
-
-  ldflags = [
-    "-X main.version=${finalAttrs.version}"
-    "-X main.assetRoot=${placeholder "lib"}"
-  ];
+  vendorHash = "sha256-zQlMtbXgrH83zrcIoOuFhb2tYCeQ1pz4UQUvRIsLMCE=";
 
   postInstall = ''
     mkdir -p $lib
@@ -32,19 +31,21 @@ buildGoModule (finalAttrs: {
     wrapProgram $out/bin/morph --prefix PATH : ${lib.makeBinPath [ openssh ]};
   '';
 
-  outputs = [
-    "out"
-    "lib"
+  ldflags = [
+    "-X main.version=${finalAttrs.version}"
+    "-X main.assetRoot=${placeholder "lib"}"
   ];
 
   meta = {
     description = "NixOS host manager written in Golang";
-    license = lib.licenses.mit;
     homepage = "https://github.com/dbcdk/morph";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       adamt
       johanot
     ];
+
     mainProgram = "morph";
   };
 })

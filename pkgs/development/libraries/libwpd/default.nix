@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
-  pkg-config,
+  boost,
   glib,
   libgsf,
-  libxml2,
   librevenge,
-  boost,
+  libxml2,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,6 +21,7 @@ stdenv.mkDerivation rec {
   };
 
   patches = [ ./gcc-1.0.patch ];
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     glib
@@ -30,8 +31,6 @@ stdenv.mkDerivation rec {
     librevenge
     boost
   ];
-
-  nativeBuildInputs = [ pkg-config ];
 
   meta = {
     description = "Library for importing and exporting WordPerfect documents";

@@ -22,19 +22,19 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isx86_64 [ nasm ];
 
-  preConfigure = lib.optionalString stdenv.hostPlatform.isLinux ''
-    # for LTO
-    export AR="${stdenv.cc.targetPrefix}gcc-ar"
-    export NM="${stdenv.cc.targetPrefix}gcc-nm"
-    export RANLIB="${stdenv.cc.targetPrefix}gcc-ranlib"
-  '';
-
   configureFlags = [
     "--disable-arch-native"
     "--enable-lto"
   ]
   ++ lib.optional stdenv.hostPlatform.isx86_64 "--enable-x86-64"
   ++ lib.optional stdenv.hostPlatform.isAarch64 "--enable-aarch64";
+
+  preConfigure = lib.optionalString stdenv.hostPlatform.isLinux ''
+    # for LTO
+    export AR="${stdenv.cc.targetPrefix}gcc-ar"
+    export NM="${stdenv.cc.targetPrefix}gcc-nm"
+    export RANLIB="${stdenv.cc.targetPrefix}gcc-ranlib"
+  '';
 
   meta = {
     description = "Error/erasure code system guarding data integrity";

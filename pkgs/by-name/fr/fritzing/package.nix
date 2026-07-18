@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  boost,
+  clipper,
   kdePackages,
+  libgit2,
+  libngspice,
   pkg-config,
   qt6,
-  boost,
-  libngspice,
-  libgit2,
-  clipper,
   wrapGAppsHook3,
 }:
 
@@ -18,18 +18,18 @@ let
   partsSha = "73bc0559bb8399b2f895d68f032e41d7efc720c0";
 
   parts = fetchFromGitHub {
+    hash = "sha256-2aXvSXWjQliEChQGhcCicOVoAqeNdeq69wQVYQsd2ew=";
     owner = "fritzing";
     repo = "fritzing-parts";
     rev = partsSha;
-    hash = "sha256-2aXvSXWjQliEChQGhcCicOVoAqeNdeq69wQVYQsd2ew=";
   };
 
   # Header-only library
   svgpp = fetchFromGitHub {
+    hash = "sha256-nW0ns06XWfUi22nOKZzFKgAOHVIlQqChW8HxUDOFMh4=";
     owner = "svgpp";
     repo = "svgpp";
     tag = "v1.3.1";
-    hash = "sha256-nW0ns06XWfUi22nOKZzFKgAOHVIlQqChW8HxUDOFMh4=";
   };
 in
 
@@ -47,29 +47,6 @@ stdenv.mkDerivation {
   patches = [
     # Fix build with Qt >= 6.9
     ./fix-stricter-types.patch
-  ];
-
-  nativeBuildInputs = [
-    kdePackages.qmake
-    pkg-config
-    qt6.qttools
-    kdePackages.wrapQtAppsHook
-    wrapGAppsHook3
-  ];
-
-  buildInputs = [
-    qt6.qtbase
-    qt6.qtsvg
-    qt6.qtserialport
-    kdePackages.qt5compat
-    boost
-    libgit2
-    kdePackages.quazip
-    libngspice
-    clipper
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    qt6.qtwayland
   ];
 
   postPatch = ''
@@ -95,6 +72,29 @@ stdenv.mkDerivation {
     cp -a ${parts}/* parts/
   '';
 
+  nativeBuildInputs = [
+    kdePackages.qmake
+    pkg-config
+    qt6.qttools
+    kdePackages.wrapQtAppsHook
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [
+    qt6.qtbase
+    qt6.qtsvg
+    qt6.qtserialport
+    kdePackages.qt5compat
+    boost
+    libgit2
+    kdePackages.quazip
+    libngspice
+    clipper
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    qt6.qtwayland
+  ];
+
   env = {
     NIX_CFLAGS_COMPILE = lib.concatStringsSep " " (
       [
@@ -104,12 +104,9 @@ stdenv.mkDerivation {
       ]
       ++ lib.optionals stdenv.hostPlatform.isDarwin [ "-F${kdePackages.qt5compat}/lib" ]
     );
+
     NIX_LDFLAGS = "-lquazip1-qt${lib.versions.major qt6.qtbase.version}";
   };
-
-  qmakeFlags = [
-    "phoenix.pro"
-  ];
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir $out/Applications
@@ -117,8 +114,6 @@ stdenv.mkDerivation {
     cp FritzingInfo.plist $out/Applications/Fritzing.app/Contents/Info.plist
     makeWrapper $out/Applications/Fritzing.app/Contents/MacOS/Fritzing $out/bin/Fritzing
   '';
-
-  dontWrapGApps = true;
 
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
@@ -132,17 +127,26 @@ stdenv.mkDerivation {
       -folder "$out/share/fritzing"
   '';
 
+  dontWrapGApps = true;
+
+  qmakeFlags = [
+    "phoenix.pro"
+  ];
+
   meta = {
     description = "Open source prototyping tool for Arduino-based projects";
     homepage = "https://fritzing.org";
+
     license = with lib.licenses; [
       gpl3
       cc-by-sa-30
     ];
+
     maintainers = with lib.maintainers; [
       robberer
       muscaln
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "Fritzing";
   };

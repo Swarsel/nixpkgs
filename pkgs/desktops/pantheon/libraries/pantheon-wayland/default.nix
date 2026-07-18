@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  glib,
   gobject-introspection,
+  gtk4,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   vala,
   wayland-scanner,
-  glib,
-  gtk4,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  depsBuildBuild = [ pkg-config ];
-
   nativeBuildInputs = [
     gobject-introspection
     meson
@@ -45,6 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     gtk4
   ];
 
+  depsBuildBuild = [ pkg-config ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -53,7 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Wayland integration library to the Pantheon Desktop";
     homepage = "https://github.com/elementary/pantheon-wayland";
     license = lib.licenses.lgpl3Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.pantheon ];
   };
 })

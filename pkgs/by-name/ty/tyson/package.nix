@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,16 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-NoQJBEedV3NDNQ4PVvvjjsO7N+rq40LWKp962P+naEY=";
   };
 
-  vendorHash = "sha256-kJIfKgVaHuCYvvTZXyuZ/Hg8z1BlW4oW6+5s1inFizg=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-kJIfKgVaHuCYvvTZXyuZ/Hg8z1BlW4oW6+5s1inFizg=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd tyson \
@@ -35,12 +30,17 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/tyson completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
     description = "TypeScript as a configuration language";
-    mainProgram = "tyson";
     homepage = "https://github.com/jetify-com/tyson";
     changelog = "https://github.com/jetify-com/tyson/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "tyson";
   };
 })

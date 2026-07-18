@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
   libmysofa,
   zlib,
@@ -30,6 +30,7 @@ stdenv.mkDerivation rec {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libmysofa
     zlib
@@ -44,7 +45,7 @@ stdenv.mkDerivation rec {
     description = "Ambisonic encoding / decoding and binauralization library in C++";
     homepage = "https://github.com/videolan/libspatialaudio";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ krav ];
+    platforms = lib.platforms.all;
   };
 }

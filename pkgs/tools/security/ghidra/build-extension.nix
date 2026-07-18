@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  unzip,
-  jdk,
-  gradle,
   ghidra,
+  gradle,
+  jdk,
+  unzip,
 }:
 
 let
@@ -18,17 +18,19 @@ let
           vringar
           ivyfanchiang
         ]);
+
       platforms = oldMeta.platforms or ghidra.meta.platforms;
     };
 
   buildGhidraExtension = lib.extendMkDerivation {
     constructDrv = stdenv.mkDerivation;
+
     extendDrvArgs =
       finalAttrs:
       {
         pname,
-        nativeBuildInputs ? [ ],
         meta ? { },
+        nativeBuildInputs ? [ ],
         ...
       }@args:
       {
@@ -46,12 +48,6 @@ let
           ${args.preBuild or ""}
         '';
 
-        # Needed to run gradle on darwin
-        __darwinAllowLocalNetworking = true;
-
-        gradleBuildTask = args.gradleBuildTask or "buildExtension";
-        gradleFlags = args.gradleFlags or [ ] ++ [ "-PGHIDRA_INSTALL_DIR=${ghidra}/lib/ghidra" ];
-
         installPhase =
           args.installPhase or ''
             runHook preInstall
@@ -67,12 +63,17 @@ let
             runHook postInstall
           '';
 
+        # Needed to run gradle on darwin
+        __darwinAllowLocalNetworking = true;
+        gradleBuildTask = args.gradleBuildTask or "buildExtension";
+        gradleFlags = args.gradleFlags or [ ] ++ [ "-PGHIDRA_INSTALL_DIR=${ghidra}/lib/ghidra" ];
         meta = metaCommon meta;
       };
   };
 
   buildGhidraScripts = lib.extendMkDerivation {
     constructDrv = stdenv.mkDerivation;
+
     extendDrvArgs =
       finalAttrs:
       {

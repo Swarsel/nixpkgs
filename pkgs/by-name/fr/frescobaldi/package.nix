@@ -2,15 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
   lilypond,
+  python3Packages,
   qt6,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "frescobaldi";
   version = "4.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frescobaldi";
@@ -18,6 +17,15 @@ python3Packages.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-IgvjKj0+8oNbuZ91n4O16kGXBS7rS63HQUNQnJcOis8=";
   };
+
+  nativeBuildInputs = [ qt6.wrapQtAppsHook ];
+  buildInputs = [ qt6.qtbase ];
+  # no tests in shipped with upstream
+  doCheck = false;
+
+  build-system = with python3Packages; [
+    hatchling
+  ];
 
   dependencies = with python3Packages; [
     qpageview
@@ -29,24 +37,17 @@ python3Packages.buildPythonApplication rec {
     pyqt6-webengine
   ];
 
-  buildInputs = [ qt6.qtbase ];
-  nativeBuildInputs = [ qt6.wrapQtAppsHook ];
-
-  build-system = with python3Packages; [
-    hatchling
-  ];
-
-  # no tests in shipped with upstream
-  doCheck = false;
-
   dontWrapQtApps = true;
+
   makeWrapperArgs = [
     "\${qtWrapperArgs[@]}"
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://frescobaldi.org/";
     description = "LilyPond sheet music text editor";
+
     longDescription = ''
       Powerful text editor with syntax highlighting and automatic completion,
       Music view with advanced Point & Click, Midi player to proof-listen
@@ -59,10 +60,12 @@ python3Packages.buildPythonApplication rec {
       MusicXML import, Modern user iterface with configurable colors,
       fonts and keyboard shortcuts
     '';
+
+    homepage = "https://frescobaldi.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ sepi ];
     platforms = lib.platforms.all;
-    broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/frescobaldi.x86_64-darwin
     mainProgram = "frescobaldi";
+    broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/frescobaldi.x86_64-darwin
   };
 }

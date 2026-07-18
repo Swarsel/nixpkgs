@@ -17,9 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkgsCross.avr.stdenv.cc ];
-
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   makeFlags = [ "all" ];
 
   installPhase = ''
@@ -28,18 +25,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Firmware for the Nitrokey TRNG RS232 device";
+
     longDescription = ''
       This package does not provide an executable. It should be built using `nix-build -A nitrokey-trng-rs232-firmware` or `nix build nixpkgs#nitrokey-trng-rs232-firmware` and flashed using `libnitrokey`
     '';
+
     homepage = "https://github.com/Nitrokey/nitrokey-trng-rs232-firmware";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       amerino
       imadnyc
       kiike
     ];
+
     platforms = lib.platforms.linux;
   };
 })

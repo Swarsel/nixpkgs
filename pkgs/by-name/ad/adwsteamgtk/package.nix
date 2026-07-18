@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
-  lib,
   libadwaita,
   libportal-gtk4,
   meson,
@@ -14,8 +14,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "adwsteamgtk";
   version = "0.8.0";
-  # built with meson, not a python format
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Foldex";
@@ -23,11 +21,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-n+BNqa+SHB1V1INHooc0VpeqZ2Dy1Byt7mrbJc2MXts=";
   };
-
-  buildInputs = [
-    libadwaita
-    libportal-gtk4
-  ];
 
   nativeBuildInputs = [
     blueprint-compiler
@@ -37,17 +30,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapGAppsHook4
   ];
 
+  buildInputs = [
+    libadwaita
+    libportal-gtk4
+  ];
+
   propagatedBuildInputs = with python3Packages; [
     packaging
     pygobject3
   ];
+
+  # built with meson, not a python format
+  pyproject = false;
 
   meta = {
     description = "Simple Gtk wrapper for Adwaita-for-Steam";
     homepage = "https://github.com/Foldex/AdwSteamGtk";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ reedrw ];
-    mainProgram = "adwaita-steam-gtk";
     platforms = lib.platforms.linux;
+    mainProgram = "adwaita-steam-gtk";
   };
 })

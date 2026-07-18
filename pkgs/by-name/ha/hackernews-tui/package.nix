@@ -1,13 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "hackernews-tui";
   version = "0.13.5";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "aome510";
@@ -17,6 +16,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-KuqAyuU/LOFwvvfplHqq56Df4Dkr5PkUK1Fgeaq1REs=";
+  __structuredAttrs = true;
 
   meta = {
     description = "A Terminal UI to browse Hacker News";

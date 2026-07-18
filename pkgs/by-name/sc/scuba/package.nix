@@ -1,7 +1,7 @@
 {
   lib,
-  pkgsStatic,
   fetchFromGitHub,
+  pkgsStatic,
   python3Packages,
 }:
 
@@ -17,27 +17,15 @@ let
 
   # This must be built statically because scuba will execute unknown docker environments
   scubainit = pkgsStatic.rustPlatform.buildRustPackage rec {
-    pname = "scubainit";
     inherit src version;
-
-    sourceRoot = "${src.name}/scubainit";
-
+    pname = "scubainit";
     cargoHash = "sha256-YUYo2B5hzzmDeNiWUC+198Qbz+JPgUJfpAqyPWAXTRA=";
+    sourceRoot = "${src.name}/scubainit";
   };
 in
 python3Packages.buildPythonPackage rec {
-  pname = "scuba";
   inherit src version;
-  pyproject = true;
-
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
-  dependencies = with python3Packages; [
-    argcomplete
-    pyyaml
-  ];
+  pname = "scuba";
 
   postPatch = ''
     # Version detection fails
@@ -56,13 +44,24 @@ python3Packages.buildPythonPackage rec {
     ln -s ${scubainit}/bin/scubainit scuba/scubainit
   '';
 
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  dependencies = with python3Packages; [
+    argcomplete
+    pyyaml
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Simple Container-Utilizing Build Apparatus";
     homepage = "https://github.com/JonathonReinhart/scuba";
     changelog = "https://github.com/JonathonReinhart/scuba/releases/tag/${src.tag}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ tbaldwin ];
+    platforms = lib.platforms.linux;
     mainProgram = "scuba";
   };
 }

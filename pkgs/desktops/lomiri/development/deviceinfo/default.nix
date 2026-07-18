@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   cmake,
-  pkg-config,
   cmake-extras,
+  gitUpdater,
   gtest,
+  pkg-config,
+  testers,
   yaml-cpp,
 }:
 
@@ -46,15 +46,15 @@ stdenv.mkDerivation (finalAttrs: {
     yaml-cpp
   ];
 
-  checkInputs = [
-    gtest
-  ];
-
   cmakeFlags = [
     "-DDISABLE_TESTS=${lib.boolToString (!finalAttrs.finalPackage.doCheck)}"
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  checkInputs = [
+    gtest
+  ];
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -66,11 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/deviceinfo";
     changelog = "https://gitlab.com/ubports/development/core/deviceinfo/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
     mainProgram = "device-info";
+
     pkgConfigModules = [
       "deviceinfo"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

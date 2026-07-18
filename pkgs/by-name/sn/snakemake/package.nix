@@ -3,17 +3,15 @@
   stdenv,
   fetchFromGitHub,
   python3Packages,
+  snakemake,
   stress,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  snakemake,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "snakemake";
   version = "9.23.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -33,12 +31,35 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "raise err" "return bytes('err','ascii')"
   '';
 
+  # Circular dependencies
+  doCheck = false;
+
+  # See
+  # https://github.com/snakemake/snakemake/blob/main/.github/workflows/main.yml#L99
+  # for the current basic test suite. Slurm, Tibanna and Tes require extra
+  # setup.
+  nativeCheckInputs =
+    (with python3Packages; [
+      numpy
+      pandas
+      pytestCheckHook
+      pytest-mock
+      requests-mock
+      snakemake-executor-plugin-cluster-generic
+      snakemake-storage-plugin-fs
+      snakemake-storage-plugin-http
+      snakemake-storage-plugin-s3
+      stress
+      polars
+    ])
+    ++ [
+      versionCheckHook
+      writableTmpDirAsHomeHook
+    ];
+
+  __structuredAttrs = true;
   build-system = with python3Packages; [ setuptools-scm ];
 
-  pythonRelaxDeps = [
-    "packaging"
-    "sqlmodel"
-  ];
   dependencies = with python3Packages; [
     appdirs
     conda-inject
@@ -73,41 +94,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     toposort
     wrapt
     yte
-  ];
-
-  pythonImportsCheck = [ "snakemake" ];
-
-  # See
-  # https://github.com/snakemake/snakemake/blob/main/.github/workflows/main.yml#L99
-  # for the current basic test suite. Slurm, Tibanna and Tes require extra
-  # setup.
-
-  nativeCheckInputs =
-    (with python3Packages; [
-      numpy
-      pandas
-      pytestCheckHook
-      pytest-mock
-      requests-mock
-      snakemake-executor-plugin-cluster-generic
-      snakemake-storage-plugin-fs
-      snakemake-storage-plugin-http
-      snakemake-storage-plugin-s3
-      stress
-      polars
-    ])
-    ++ [
-      versionCheckHook
-      writableTmpDirAsHomeHook
-    ];
-
-  enabledTestPaths = [
-    "tests/tests.py"
-    "tests/test_expand.py"
-    "tests/test_io.py"
-    "tests/test_schema.py"
-    "tests/test_executor_test_suite.py"
-    "tests/test_api.py"
   ];
 
   disabledTests = [
@@ -185,18 +171,30 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_issue1331"
   ];
 
-  # Circular dependencies
-  doCheck = false;
+  enabledTestPaths = [
+    "tests/tests.py"
+    "tests/test_expand.py"
+    "tests/test_io.py"
+    "tests/test_schema.py"
+    "tests/test_executor_test_suite.py"
+    "tests/test_api.py"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "snakemake" ];
+
+  pythonRelaxDeps = [
+    "packaging"
+    "sqlmodel"
+  ];
+
   passthru.tests.pytest = snakemake.overridePythonAttrs {
     doCheck = true;
   };
 
   meta = {
-    homepage = "https://snakemake.github.io";
-    license = lib.licenses.mit;
     description = "Python-based execution environment for make-like workflows";
-    changelog = "https://github.com/snakemake/snakemake/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    mainProgram = "snakemake";
+
     longDescription = ''
       Snakemake is a workflow management system that aims to reduce the complexity of
       creating workflows by providing a fast and comfortable execution environment,
@@ -204,10 +202,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
       workflows are essentially Python scripts extended by declarative code to define
       rules. Rules describe how to create output files from input files.
     '';
+
+    homepage = "https://snakemake.github.io";
+    changelog = "https://github.com/snakemake/snakemake/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       helkafen
       renatoGarcia
       veprbl
     ];
+
+    mainProgram = "snakemake";
   };
 })

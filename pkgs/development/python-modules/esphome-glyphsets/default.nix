@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "esphome-glyphsets";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "esphome";
@@ -19,6 +18,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "esphome_glyphsets"

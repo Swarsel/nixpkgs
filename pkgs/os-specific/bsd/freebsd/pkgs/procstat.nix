@@ -1,24 +1,23 @@
 {
   lib,
-  mkDerivation,
-  libxo,
   libsbuf,
+  libxo,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/procstat";
-  buildInputs = [
-    libxo
-    libsbuf
-  ];
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
 
-  MK_TESTS = "no";
+  buildInputs = [
+    libxo
+    libsbuf
+  ];
 
-  meta.platforms = lib.platforms.freebsd;
+  MK_TESTS = "no";
+  path = "usr.bin/procstat";
   meta.mainProgram = "procstat";
+  meta.platforms = lib.platforms.freebsd;
 }

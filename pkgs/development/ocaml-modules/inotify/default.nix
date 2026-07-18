@@ -2,14 +2,14 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
+  fileutils, # only for tests
   lwt, # optional lwt support
   ounit2,
-  fileutils, # only for tests
 }:
 
 buildDunePackage (finalAttrs: {
-  version = "2.6";
   pname = "inotify";
+  version = "2.6";
 
   src = fetchFromGitHub {
     owner = "whitequark";
@@ -19,19 +19,18 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ lwt ];
+  doCheck = true;
 
   checkInputs = [
     ounit2
     fileutils
   ];
 
-  doCheck = true;
-
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Bindings for Linux’s filesystem monitoring interface, inotify";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.vbgl ];
-    inherit (finalAttrs.src.meta) homepage;
     platforms = lib.platforms.linux;
   };
 })

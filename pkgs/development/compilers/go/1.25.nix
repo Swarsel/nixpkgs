@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  tzdata,
-  replaceVars,
-  iana-etc,
-  mailcap,
-  buildPackages,
-  pkgsBuildTarget,
-  targetPackages,
   # for testing
   buildGo125Module,
+  buildPackages,
   callPackage,
+  iana-etc,
+  mailcap,
+  pkgsBuildTarget,
+  replaceVars,
+  targetPackages,
+  tzdata,
 }:
 
 let
@@ -32,20 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+Q3O5L0CP6N2N06gpabr5VNTeznEJv/YxolGm0VRmTI=";
   };
 
-  strictDeps = true;
-  buildInputs =
-    [ ]
-    ++ lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.libc.out ]
-    ++ lib.optionals (stdenv.hostPlatform.libc == "glibc") [ stdenv.cc.libc.static ];
-
-  depsBuildTarget = lib.optional isCross targetCC;
-
-  depsTargetTarget = lib.optional stdenv.targetPlatform.isMinGW targetPackages.threads.package;
-
-  postPatch = ''
-    patchShebangs .
-  '';
-
   patches = [
     (replaceVars ./iana-etc-1.25.patch {
       iana = iana-etc;
@@ -65,15 +51,20 @@ stdenv.mkDerivation (finalAttrs: {
     ./go-env-go_ldso.patch
   ];
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
+  strictDeps = true;
+
+  buildInputs =
+    [ ]
+    ++ lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.libc.out ]
+    ++ lib.optionals (stdenv.hostPlatform.libc == "glibc") [ stdenv.cc.libc.static ];
+
   env = {
     inherit (stdenv.targetPlatform.go) GOOS GOARCH GOARM;
-    # GOHOSTOS/GOHOSTARCH must match the building system, not the host system.
-    # Go will nevertheless build a for host system that we will copy over in
-    # the install phase.
-    GOHOSTOS = stdenv.buildPlatform.go.GOOS;
-    GOHOSTARCH = stdenv.buildPlatform.go.GOARCH;
 
-    GO386 = "softfloat"; # from Arch: don't assume sse2 on i686
     # Wasi does not support CGO
     # ppc64/linux CGO is incomplete/borked, and will likely not receive any further improvements
     # https://github.com/golang/go/issues/8912
@@ -89,6 +80,12 @@ stdenv.mkDerivation (finalAttrs: {
       else
         1;
 
+    GO386 = "softfloat"; # from Arch: don't assume sse2 on i686
+    GOHOSTARCH = stdenv.buildPlatform.go.GOARCH;
+    # GOHOSTOS/GOHOSTARCH must match the building system, not the host system.
+    # Go will nevertheless build a for host system that we will copy over in
+    # the install phase.
+    GOHOSTOS = stdenv.buildPlatform.go.GOOS;
     GOROOT_BOOTSTRAP = "${goBootstrap}/share/go";
   }
   // lib.optionalAttrs isCross {
@@ -172,26 +169,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  depsBuildTarget = lib.optional isCross targetCC;
+  depsTargetTarget = lib.optional stdenv.targetPlatform.isMinGW targetPackages.threads.package;
   disallowedReferences = [ goBootstrap ];
 
   passthru = {
     inherit goBootstrap;
+
     tests = callPackage ./tests.nix {
-      go = finalAttrs.finalPackage;
       buildGoModule = buildGo125Module;
+      go = finalAttrs.finalPackage;
     };
   };
 
-  __structuredAttrs = true;
-
   meta = {
-    changelog = "https://go.dev/doc/devel/release#go${lib.versions.majorMinor finalAttrs.version}";
     description = "Go Programming language";
     homepage = "https://go.dev/";
+    changelog = "https://go.dev/doc/devel/release#go${lib.versions.majorMinor finalAttrs.version}";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.golang ];
+
     platforms =
       lib.platforms.darwin ++ lib.platforms.linux ++ lib.platforms.wasi ++ lib.platforms.freebsd;
+
     badPlatforms = [
       # Support for big-endian POWER < 8 was dropped in 1.9, but POWER8 users have less of a reason to run in big-endian mode than pre-POWER8 ones
       # So non-LE ppc64 is effectively unsupported, and Go SIGILLs on affordable ppc64 hardware
@@ -199,6 +199,8 @@ stdenv.mkDerivation (finalAttrs: {
       # https://github.com/golang/go/issues/73349 - upstream will not accept submissions to fix this
       "powerpc64-linux"
     ];
+
     mainProgram = "go";
+    teams = [ lib.teams.golang ];
   };
 })

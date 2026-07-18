@@ -1,12 +1,12 @@
 {
   buildPythonPackage,
+  cffi,
+  dftd4,
   meson-python,
   ninja,
-  setuptools,
-  pkg-config,
-  dftd4,
-  cffi,
   numpy,
+  pkg-config,
+  setuptools,
 }:
 
 buildPythonPackage {
@@ -17,14 +17,18 @@ buildPythonPackage {
     meta
     ;
 
-  pyproject = true;
-
-  buildInputs = [ dftd4 ];
-
   nativeBuildInputs = [
     pkg-config
     ninja
   ];
+
+  buildInputs = [ dftd4 ];
+
+  preConfigure = ''
+    cd python
+  '';
+
+  doCheck = true;
 
   build-system = [
     meson-python
@@ -36,10 +40,6 @@ buildPythonPackage {
     numpy
   ];
 
-  preConfigure = ''
-    cd python
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "dftd4" ];
-  doCheck = true;
 }

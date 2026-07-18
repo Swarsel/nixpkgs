@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   fetchpatch2,
 }:
 
@@ -19,21 +19,20 @@ buildNpmPackage rec {
   patches = [
     # https://github.com/http-party/http-server/pull/875
     (fetchpatch2 {
+      hash = "sha256-hJyiUKZfuSaXTsjFi4ojdaE3rPHgo+N8k5Hqete+zqk=";
       name = "regenerate-package-lock.patch";
       url = "https://github.com/http-party/http-server/commit/0cbd85175f1a399c4d13c88a25c5483a9f1dea08.patch";
-      hash = "sha256-hJyiUKZfuSaXTsjFi4ojdaE3rPHgo+N8k5Hqete+zqk=";
     })
   ];
 
   npmDepsHash = "sha256-iUTDdcibnstbSxC7cD5WbwSxQbfiIL2iNyMWJ8izSu0=";
-
   dontNpmBuild = true;
 
   meta = {
     description = "Simple zero-configuration command-line http server";
     homepage = "https://github.com/http-party/http-server";
     license = lib.licenses.mit;
-    mainProgram = "http-server";
     maintainers = with lib.maintainers; [ miniharinn ];
+    mainProgram = "http-server";
   };
 }

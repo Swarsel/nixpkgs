@@ -13,16 +13,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-oss20190517";
   version = "1.0.6";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_oss20190517";
     inherit (finalAttrs) version;
     hash = "sha256-fND7Fq9hPOs40uDlKaofWAOMfPWetnyMh3WuROpxeFI=";
+    pname = "alibabacloud_oss20190517";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,10 +33,8 @@ buildPythonPackage (finalAttrs: {
     alibabacloud-tea-util
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_oss20190517" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Alibaba Cloud Object Storage Service (20190517) SDK Library for Python";

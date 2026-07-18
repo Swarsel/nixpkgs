@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
+  buildPythonPackage,
   dateparser,
   orjson,
   pydantic,
   ua-parser,
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lookyloo-models";
   version = "0.2.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Lookyloo";
@@ -26,8 +25,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.11,<0.12" "uv_build"
   '';
 
-  pythonRelaxDeps = [ "pydantic" ];
-
+  # Module has no tests
+  doCheck = false;
   build-system = [ uv-build ];
 
   dependencies = [
@@ -37,10 +36,9 @@ buildPythonPackage (finalAttrs: {
     ua-parser
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lookyloo_models" ];
+  pythonRelaxDeps = [ "pydantic" ];
 
   meta = {
     description = "Set of models representing data passed around across the toolchain";

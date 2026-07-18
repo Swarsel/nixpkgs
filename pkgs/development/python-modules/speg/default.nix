@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "speg";
   version = "0.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,10 +14,10 @@ buildPythonPackage rec {
     extension = "zip";
   };
 
-  pythonImportsCheck = [ "speg" ];
-
   # checks fail for seemingly spurious reasons
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "speg" ];
 
   meta = {
     description = "PEG-based parser interpreter with memoization (in time)";

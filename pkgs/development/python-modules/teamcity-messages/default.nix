@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "teamcity-messages";
   version = "1.33";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JetBrains";
@@ -18,12 +17,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-BAwAfe54J+gbbiz03Yiu3eC/9RnI7P0mfR3nfM1oKZw=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   enabledTestPaths = [ "tests/unit-tests/" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "teamcity" ];
 
   meta = {

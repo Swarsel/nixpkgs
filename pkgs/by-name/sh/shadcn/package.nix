@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  fetchPnpmDeps,
   makeBinaryWrapper,
   nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
-  testers,
+  pnpm_10,
   shadcn,
+  stdenvNoCC,
+  testers,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "shadcn";
@@ -19,19 +19,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     repo = "ui";
     rev = "shadcn@${finalAttrs.version}";
     hash = "sha256-jwZBYQKixm3YAC8uLSeQMwTFoOrw4EgkvgC1FWShxy0=";
-  };
-
-  pnpmWorkspaces = [ "shadcn" ];
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = "sha256-XqdSa9ONpJ/QOu7njPMhG0xyTLEN9nt/dm3E0ivDaEs=";
   };
 
   nativeBuildInputs = [
@@ -67,21 +54,38 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   dontCheckForBrokenSymlinks = true;
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-XqdSa9ONpJ/QOu7njPMhG0xyTLEN9nt/dm3E0ivDaEs=";
+    pnpm = pnpm_10;
+  };
+
+  pnpmWorkspaces = [ "shadcn" ];
+
   passthru.tests.version = testers.testVersion {
-    package = shadcn;
-    command = "shadcn --version";
     version = finalAttrs.version;
+    command = "shadcn --version";
+    package = shadcn;
   };
 
   meta = {
+    description = "Beautifully designed components that you can copy and paste into your apps";
+    homepage = "https://ui.shadcn.com/docs/cli";
+
     changelog = "https://github.com/shadcn-ui/ui/blob/${finalAttrs.src.rev}/packages/shadcn/CHANGELOG.md#${
       builtins.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }";
-    description = "Beautifully designed components that you can copy and paste into your apps";
-    homepage = "https://ui.shadcn.com/docs/cli";
+
     license = lib.licenses.mit;
-    mainProgram = "shadcn";
     maintainers = with lib.maintainers; [ getpsyched ];
     platforms = lib.platforms.all;
+    mainProgram = "shadcn";
   };
 })

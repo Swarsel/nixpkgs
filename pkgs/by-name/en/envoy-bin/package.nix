@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  autoPatchelfHook,
   fetchurl,
+  autoPatchelfHook,
   nixosTests,
+  stdenvNoCC,
   versionCheckHook,
 }:
 let
@@ -26,21 +26,16 @@ let
     .${system} or throwSystem;
 in
 stdenvNoCC.mkDerivation {
-  pname = "envoy-bin";
   inherit version;
+  pname = "envoy-bin";
 
   src = fetchurl {
-    url = "https://github.com/envoyproxy/envoy/releases/download/v${version}/envoy-${version}-linux-${plat}";
     inherit hash;
+    url = "https://github.com/envoyproxy/envoy/releases/download/v${version}/envoy-${version}-linux-${plat}";
   };
 
-  nativeBuildInputs = [ autoPatchelfHook ];
-
   strictDeps = true;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
+  nativeBuildInputs = [ autoPatchelfHook ];
 
   installPhase = ''
     runHook preInstall
@@ -51,28 +46,33 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
 
   passthru = {
     tests.envoy-bin = nixosTests.envoy-bin;
-
     updateScript = ./update.sh;
   };
 
   meta = {
+    description = "Cloud-native edge and service proxy";
     homepage = "https://envoyproxy.io";
     changelog = "https://github.com/envoyproxy/envoy/releases/tag/v${version}";
-    description = "Cloud-native edge and service proxy";
     license = lib.licenses.asl20;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       charludo
     ];
-    mainProgram = "envoy";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "envoy";
   };
 }

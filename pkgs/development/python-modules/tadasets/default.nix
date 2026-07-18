@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  numpy,
   matplotlib,
+  numpy,
   pytest,
   scipy,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "tadasets";
   version = "0.2.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,6 +26,8 @@ buildPythonPackage rec {
     pytest
     scipy
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Great data sets for Topological Data Analysis";

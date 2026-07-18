@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "multiset";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,13 +21,14 @@ buildPythonPackage rec {
     sed -i '/python_requires/d' setup.cfg
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "multiset" ];
 
   meta = {

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libx11,
+  libxext,
+  libxscrnsaver,
   meson,
   ninja,
   pkg-config,
-  libxscrnsaver,
-  libxext,
-  libx11,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/g0hl1n/xprintidle";
     description = "Utility that queries the X server for the user's idle time and prints it to stdout";
+    homepage = "https://github.com/g0hl1n/xprintidle";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.linux;

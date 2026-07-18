@@ -10,16 +10,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-ecs20140526";
   version = "7.9.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_ecs20140526";
     inherit (finalAttrs) version;
     hash = "sha256-ntrWxB3W/fR4RBGrX4I+fcyJScCri+9V9RxAZbJQeHE=";
+    pname = "alibabacloud_ecs20140526";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +27,8 @@ buildPythonPackage (finalAttrs: {
     darabonba-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_ecs20140526" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Alibaba Cloud Elastic Compute Service (20140526) SDK Library for Python";

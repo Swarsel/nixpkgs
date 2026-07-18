@@ -1,18 +1,17 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gpgme,
   installShellFiles,
+  nix-update-script,
   pkg-config,
   versionCheckHook,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "openshift";
   version = "4.22.0-202605222050";
-  gitCommit = "8f1c8b5";
 
   src = fetchFromGitHub {
     owner = "openshift";
@@ -21,22 +20,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-WUFeRRKymdOJfbFhut9nGAvMCI1OsanYGKCioEZSOng=";
   };
 
-  vendorHash = null;
-
-  buildInputs = [ gpgme ];
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/openshift/oc/pkg/version.commitFromGit=${finalAttrs.gitCommit}"
-    "-X github.com/openshift/oc/pkg/version.versionFromGit=v${finalAttrs.version}"
-  ];
-
+  buildInputs = [ gpgme ];
+  vendorHash = null;
   doCheck = false;
 
   postInstall = ''
@@ -57,18 +47,28 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
+  gitCommit = "8f1c8b5";
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/openshift/oc/pkg/version.commitFromGit=${finalAttrs.gitCommit}"
+    "-X github.com/openshift/oc/pkg/version.versionFromGit=v${finalAttrs.version}"
+  ];
+
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Build, deploy, and manage your applications with Docker and Kubernetes";
     homepage = "http://www.openshift.org";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       moretea
       stehessel
     ];
+
     mainProgram = "oc";
   };
 })

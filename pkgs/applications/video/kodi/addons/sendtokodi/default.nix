@@ -1,15 +1,14 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
-  kodi,
+  buildKodiAddon,
   inputstreamhelper,
+  kodi,
   requests,
 }:
 
 buildKodiAddon rec {
   pname = "sendtokodi";
-  namespace = "plugin.video.sendtokodi";
   version = "0.9.924";
 
   src = fetchFromGitHub {
@@ -25,11 +24,6 @@ buildKodiAddon rec {
     ./use-yt-dlp-only.patch
   ];
 
-  propagatedBuildInputs = [
-    inputstreamhelper
-    requests
-  ];
-
   postPatch = ''
     # Remove youtube-dl, which is unmaintained and vulnerable.
     rm -r lib/youtube_dl lib/youtube_dl_version
@@ -39,9 +33,16 @@ buildKodiAddon rec {
     ln -s ${kodi.pythonPackages.yt-dlp}/${kodi.pythonPackages.python.sitePackages}/yt_dlp lib/
   '';
 
+  propagatedBuildInputs = [
+    inputstreamhelper
+    requests
+  ];
+
+  namespace = "plugin.video.sendtokodi";
+
   meta = {
-    homepage = "https://github.com/firsttris/plugin.video.sendtokodi";
     description = "Plays various stream sites on Kodi using yt-dlp";
+    homepage = "https://github.com/firsttris/plugin.video.sendtokodi";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.pks ];
     teams = [ lib.teams.kodi ];

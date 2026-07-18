@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  pkg-config,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  wrapGAppsHook3,
   avahi,
   avahi-compat,
-  openssl,
+  cmake,
+  fetchpatch,
   gst_all_1,
   libplist,
+  openssl,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation {
@@ -29,10 +29,15 @@ stdenv.mkDerivation {
     # sets static ports 7000 7100 (tcp) and 6000 6001 7011 (udp)
     (fetchpatch {
       name = "use-static-ports.patch";
-      url = "https://github.com/FD-/RPiPlay/commit/2ffc287ba822e1d2b2ed0fc0e41a2bb3d9dab105.patch";
       sha256 = "08dy829gyhyzw2n54zn5m3176cmd24k5hij24vpww5bhbwkbabww";
+      url = "https://github.com/FD-/RPiPlay/commit/2ffc287ba822e1d2b2ed0fc0e41a2bb3d9dab105.patch";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace {lib/playfair/,lib/llhttp/,lib/,renderers/,./}CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.4.1)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -52,18 +57,13 @@ stdenv.mkDerivation {
     gst_all_1.gst-plugins-ugly
   ];
 
-  postPatch = ''
-    substituteInPlace {lib/playfair/,lib/llhttp/,lib/,renderers/,./}CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.4.1)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "https://github.com/FD-/RPiPlay";
     description = "Open-source implementation of an AirPlay mirroring server";
+    homepage = "https://github.com/FD-/RPiPlay";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "rpiplay";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

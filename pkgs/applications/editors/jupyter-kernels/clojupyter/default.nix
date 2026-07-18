@@ -1,12 +1,12 @@
 {
-  pkgs,
-  stdenv,
   lib,
-  jre,
+  stdenv,
   fetchFromGitHub,
-  writeShellScript,
-  runCommand,
   imagemagick,
+  jre,
+  pkgs,
+  runCommand,
+  writeShellScript,
 }:
 
 # Jupyter console:
@@ -29,8 +29,8 @@ let
   meta = {
     description = "Jupyter kernel for Clojure";
     homepage = "https://github.com/clojupyter/clojupyter";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ]; # deps from maven
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ]; # deps from maven
     maintainers = with lib.maintainers; [ thomasjm ];
     platforms = jre.meta.platforms;
   };
@@ -38,7 +38,7 @@ let
   sizedLogo =
     size:
     stdenv.mkDerivation {
-      name = "clojupyter-logo-${size}x${size}.png";
+      inherit meta;
 
       src = fetchFromGitHub {
         owner = "clojupyter";
@@ -49,19 +49,30 @@ let
 
       buildInputs = [ imagemagick ];
 
-      dontConfigure = true;
-      dontInstall = true;
-
       buildPhase = ''
         convert ./resources/clojupyter/assets/logo-64x64.png -resize ${size}x${size} $out
       '';
 
-      inherit meta;
+      dontConfigure = true;
+      dontInstall = true;
+      name = "clojupyter-logo-${size}x${size}.png";
     };
 
 in
 
 rec {
+  definition = {
+    argv = [
+      "${launcher}/bin/clojupyter"
+      "{connection_file}"
+    ];
+
+    displayName = "Clojure";
+    language = "clojure";
+    logo32 = sizedLogo "32";
+    logo64 = sizedLogo "64";
+  };
+
   launcher =
     runCommand "clojupyter"
       {
@@ -76,15 +87,4 @@ rec {
         mkdir -p $out/bin
         ln -s $shellScript $out/bin/clojupyter
       '';
-
-  definition = {
-    displayName = "Clojure";
-    argv = [
-      "${launcher}/bin/clojupyter"
-      "{connection_file}"
-    ];
-    language = "clojure";
-    logo32 = sizedLogo "32";
-    logo64 = sizedLogo "64";
-  };
 }

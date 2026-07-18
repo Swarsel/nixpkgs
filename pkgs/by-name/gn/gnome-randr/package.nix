@@ -1,7 +1,7 @@
 {
-  dbus,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  dbus,
   pkg-config,
   rustPlatform,
 }:
@@ -9,8 +9,8 @@ let
   version = "0.1.1";
 in
 rustPlatform.buildRustPackage {
-  pname = "gnome-randr";
   inherit version;
+  pname = "gnome-randr";
 
   src = fetchFromGitHub {
     owner = "maxwellainatchi";
@@ -19,11 +19,9 @@ rustPlatform.buildRustPackage {
     sha256 = "sha256-mciHgBEOCFjRA4MSoEdP7bIag0KE+zRbk4wOkB2PAn0=";
   };
 
-  cargoHash = "sha256-FnJU/KtZrSXBEf7gjvlME52by3Fj7DwxmxUL4xXNBmk=";
-
-  buildInputs = [ dbus ];
-
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ dbus ];
+  cargoHash = "sha256-FnJU/KtZrSXBEf7gjvlME52by3Fj7DwxmxUL4xXNBmk=";
 
   meta = {
     description = "Xrandr-like CLI for configuring displays on GNOME/Wayland, on distros that don't support `wlr-randr`";

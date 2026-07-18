@@ -6,26 +6,33 @@
   fonttools,
   lxml,
   pytestCheckHook,
-  youseedee,
   setuptools-scm,
+  youseedee,
 }:
 
 buildPythonPackage rec {
   pname = "fontfeatures";
   version = "1.9.0";
 
-  pyproject = true;
-  build-system = [ setuptools-scm ];
-
   src = fetchPypi {
-    pname = "fontfeatures";
     inherit version;
     hash = "sha256-3PpUgaTXyFcthJrFaQqeUOvDYYFosJeXuRFnFrwp0R8=";
+    pname = "fontfeatures";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools-scm ];
 
   dependencies = [
     fonttools
     lxml
+  ];
+
+  disabledTestPaths = [
+    # These tests require babelfont but we have to leave it out and skip them
+    # to break the cyclic dependency with babelfont.
+    "tests/test_shaping_generic.py"
+    "tests/test_shaping_harfbuzz.py"
   ];
 
   optional-dependencies.shaper = [
@@ -33,13 +40,7 @@ buildPythonPackage rec {
     youseedee
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-  disabledTestPaths = [
-    # These tests require babelfont but we have to leave it out and skip them
-    # to break the cyclic dependency with babelfont.
-    "tests/test_shaping_generic.py"
-    "tests/test_shaping_harfbuzz.py"
-  ];
+  pyproject = true;
 
   meta = {
     description = "Python library for compiling OpenType font features";

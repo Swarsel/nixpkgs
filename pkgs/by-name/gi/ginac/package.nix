@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  gccStdenv,
-  callPackage,
   fetchurl,
+  callPackage,
   cln,
-  pkg-config,
-  readline,
+  gccStdenv,
   gmp,
+  pkg-config,
   python3,
+  readline,
 }:
 
 gccStdenv.mkDerivation (finalAttrs: {
@@ -20,30 +20,28 @@ gccStdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-bKwZc6UyXeC5vLjjkpiK6V+8N6pmwPHx07jmTAjOwbk=";
   };
 
-  propagatedBuildInputs = [ cln ];
-
-  buildInputs = [ readline ] ++ lib.optional stdenv.hostPlatform.isDarwin gmp;
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
     python3
   ];
 
-  strictDeps = true;
+  buildInputs = [ readline ] ++ lib.optional stdenv.hostPlatform.isDarwin gmp;
+  propagatedBuildInputs = [ cln ];
+  configureFlags = [ "--disable-rpath" ];
 
   preConfigure = ''
     patchShebangs ginsh
   '';
-
-  configureFlags = [ "--disable-rpath" ];
 
   passthru.tests.example = callPackage ./ginac-example-test.nix { ginac = finalAttrs.finalPackage; };
 
   meta = {
     description = "GiNaC C++ library for symbolic manipulations";
     homepage = "https://www.ginac.de/";
-    maintainers = [ ];
     license = lib.licenses.gpl2;
+    maintainers = [ ];
     platforms = lib.platforms.all;
   };
 })

@@ -12,21 +12,19 @@
 buildPythonPackage rec {
   pname = "pympler";
   version = "1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-HqqGfLiZLCGEMPFwj9rM2lPfBkFE0cVlax5vHuYABCQ=";
   };
 
+  doCheck = stdenv.hostPlatform.isLinux;
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
-
   # There is a version of bottle bundled with Pympler, but it is broken on
   # Python 3.11. Fortunately, Pympler will preferentially import an external
   # bottle if it is available, so we make it an explicit dependency.
   dependencies = [ bottle ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # 'AssertionError: 'function (test.muppy.test_summary.func)' != 'function (muppy.test_summary.func)'
@@ -56,7 +54,7 @@ buildPythonPackage rec {
     "test_untracked_containers"
   ];
 
-  doCheck = stdenv.hostPlatform.isLinux;
+  pyproject = true;
 
   meta = {
     description = "Tool to measure, monitor and analyze memory behavior";

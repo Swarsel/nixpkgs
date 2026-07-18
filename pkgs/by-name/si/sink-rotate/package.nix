@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pipewire,
-  wireplumber,
   makeWrapper,
   nix-update-script,
+  pipewire,
+  rustPlatform,
+  wireplumber,
 }:
 rustPlatform.buildRustPackage {
   pname = "sink-rotate";
@@ -18,9 +18,8 @@ rustPlatform.buildRustPackage {
     hash = "sha256-ftSu04fWCgZ9Beu4pMAF8KKe3nfe0km1F6ExVWbmoxQ=";
   };
 
-  cargoHash = "sha256-qiHrntm6p3j5784Pzh0NxeyQMasTQpgsfXq+DyDqies=";
-
   nativeBuildInputs = [ makeWrapper ];
+  cargoHash = "sha256-qiHrntm6p3j5784Pzh0NxeyQMasTQpgsfXq+DyDqies=";
 
   postFixup = ''
     wrapProgram $out/bin/sink-rotate \
@@ -37,7 +36,7 @@ rustPlatform.buildRustPackage {
     homepage = "https://github.com/mightyiam/sink-rotate";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mightyiam ];
-    mainProgram = "sink-rotate";
     platforms = lib.platforms.linux;
+    mainProgram = "sink-rotate";
   };
 }

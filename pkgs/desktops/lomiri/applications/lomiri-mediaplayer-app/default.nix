@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   cmake,
   gettext,
+  gitUpdater,
   gst_all_1,
   lomiri-action-api,
   lomiri-content-hub,
   lomiri-ui-toolkit,
+  nixosTests,
   pkg-config,
   qtbase,
   qtdeclarative,
@@ -67,19 +67,16 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-bad
   ]);
 
+  cmakeFlags = [ (lib.cmakeBool "ENABLE_AUTOPILOT" false) ];
+  # Only test segfaults in Nix sandbox, see LSS for details
+  doCheck = false;
+
   nativeCheckInputs = [
     qtdeclarative # qmltestrunner
     xvfb-run
   ];
 
   checkInputs = [ lomiri-ui-toolkit ];
-
-  dontWrapGApps = true;
-
-  cmakeFlags = [ (lib.cmakeBool "ENABLE_AUTOPILOT" false) ];
-
-  # Only test segfaults in Nix sandbox, see LSS for details
-  doCheck = false;
 
   preCheck =
     let
@@ -109,6 +106,8 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+
   passthru = {
     tests.vm = nixosTests.lomiri-mediaplayer-app;
     updateScript = gitUpdater { };
@@ -117,15 +116,18 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Media Player application for Ubuntu Touch devices";
     homepage = "https://gitlab.com/ubports/development/core/lomiri-mediaplayer-app";
+
     changelog = "https://gitlab.com/ubports/development/core/lomiri-mediaplayer-app/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = with lib.licenses; [
       gpl3Only
       cc-by-sa-30
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "lomiri-mediaplayer-app";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

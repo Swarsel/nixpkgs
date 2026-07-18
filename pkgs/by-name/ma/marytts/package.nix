@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   # "Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0."
   gradle_8,
-  makeWrapper,
   jdk,
+  makeWrapper,
   nixosTests,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "marytts";
@@ -31,16 +31,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  mitmCache = gradle_8.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  # Required for the MITM cache to function
-  __darwinAllowLocalNetworking = true;
-
-  gradleBuildTask = "installDist";
-
   installPhase = ''
     runHook preInstall
 
@@ -57,20 +47,31 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Required for the MITM cache to function
+  __darwinAllowLocalNetworking = true;
+  gradleBuildTask = "installDist";
+
+  mitmCache = gradle_8.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   passthru.tests = lib.optionalAttrs stdenvNoCC.hostPlatform.isLinux {
     nixos = nixosTests.marytts;
   };
 
   meta = {
+    inherit (jdk.meta) platforms;
     description = "Open-source, multilingual text-to-speech synthesis system written in pure Java";
     homepage = "https://marytts.github.io/";
     license = lib.licenses.lgpl3Only;
-    inherit (jdk.meta) platforms;
-    maintainers = with lib.maintainers; [ pluiedev ];
-    mainProgram = "marytts-server";
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # Gradle dependencies
     ];
+
+    maintainers = with lib.maintainers; [ pluiedev ];
+    mainProgram = "marytts-server";
   };
 })

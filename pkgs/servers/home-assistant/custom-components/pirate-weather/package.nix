@@ -1,17 +1,15 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   nix-update-script,
+  pytest-asyncio,
+  pytest-homeassistant-custom-component,
   # Test dependencies
   pytestCheckHook,
-  pytest-homeassistant-custom-component,
-  pytest-asyncio,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "Pirate-Weather";
-  domain = "pirateweather";
   version = "1.8.9";
 
   src = fetchFromGitHub {
@@ -27,13 +25,15 @@ buildHomeAssistantComponent rec {
     pytest-asyncio
   ];
 
+  domain = "pirateweather";
+  owner = "Pirate-Weather";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/Pirate-Weather/pirate-weather-ha/releases/tag/${src.tag}";
     description = "Replacement for the default Dark Sky Home Assistant integration using Pirate Weather";
     homepage = "https://github.com/Pirate-Weather/pirate-weather-ha";
-    maintainers = with lib.maintainers; [ CodedNil ];
+    changelog = "https://github.com/Pirate-Weather/pirate-weather-ha/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ CodedNil ];
   };
 }

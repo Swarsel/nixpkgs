@@ -1,10 +1,10 @@
 {
-  config,
-  stdenv,
   lib,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
+  fetchFromGitHub,
   alsa-lib,
+  config,
   coreutils,
   file,
   freetype,
@@ -12,21 +12,21 @@
   libpulseaudio,
   libtool,
   libuuid,
+  libx11,
+  libxrandr,
   openssl,
   pango,
   pkg-config,
-  libxrandr,
-  libx11,
 }:
 let
   buildVM =
     {
+      configureFlags,
+      configureFlagsArray,
       # VM-specific information, manually extracted from building/<platformDir>/<vmName>/build/mvm
       platformDir,
-      vmName,
       scriptName,
-      configureFlagsArray,
-      configureFlags,
+      vmName,
     }:
     let
       src = fetchFromGitHub {
@@ -37,14 +37,15 @@ let
       };
     in
     stdenv.mkDerivation {
+      inherit src;
+
       pname =
         let
           vmNameNoDots = builtins.replaceStrings [ "." ] [ "-" ] vmName;
         in
         "opensmalltalk-vm-${platformDir}-${vmNameNoDots}";
-      version = src.rev;
 
-      inherit src;
+      version = src.rev;
 
       postPatch = ''
         vmVersionFiles=$(sed -n 's/^versionfiles="\(.*\)"/\1/p' ./scripts/updateSCCSVersions)
@@ -63,22 +64,6 @@ let
           --replace "/usr/bin/pkg-config" "pkg-config"
       '';
 
-      preConfigure = ''
-        cd building/${platformDir}/${vmName}/build
-        # Exits with non-zero code if the check fails, counterintuitively
-        ../../../../scripts/checkSCCSversion && exit 1
-        cp ../plugins.int ../plugins.ext .
-        configureFlagsArray=${configureFlagsArray}
-      '';
-
-      configureScript = "../../../../platforms/unix/config/configure";
-
-      configureFlags = [ "--with-scriptname=${scriptName}" ] ++ configureFlags;
-
-      buildFlags = [ "all" ];
-
-      enableParallelBuilding = true;
-
       nativeBuildInputs = [
         file
         pkg-config
@@ -96,6 +81,17 @@ let
         libxrandr
       ];
 
+      configureFlags = [ "--with-scriptname=${scriptName}" ] ++ configureFlags;
+      buildFlags = [ "all" ];
+
+      preConfigure = ''
+        cd building/${platformDir}/${vmName}/build
+        # Exits with non-zero code if the check fails, counterintuitively
+        ../../../../scripts/checkSCCSversion && exit 1
+        cp ../plugins.int ../plugins.ext .
+        configureFlagsArray=${configureFlagsArray}
+      '';
+
       postInstall = ''
         rm "$out/squeak"
         cd "$out/bin"
@@ -106,86 +102,97 @@ let
         done
       '';
 
+      configureScript = "../../../../platforms/unix/config/configure";
+      enableParallelBuilding = true;
+
       meta = {
         description = "Cross-platform virtual machine for Squeak, Pharo, Cuis, and Newspeak";
-        mainProgram = scriptName;
         homepage = "https://opensmalltalk.org/";
         license = with lib.licenses; [ mit ];
         maintainers = with lib.maintainers; [ jakewaksbaum ];
         platforms = [ stdenv.targetPlatform.system ];
+        mainProgram = scriptName;
       };
     };
 
   vmsByPlatform = {
     "aarch64-linux" = {
       "squeak-cog-spur" = buildVM {
-        platformDir = "linux64ARMv8";
-        vmName = "squeak.cog.spur";
-        scriptName = "squeak";
-        configureFlagsArray = ''
-          (
-            CFLAGS="-DNDEBUG -DDEBUGVM=0 -DMUSL -D_GNU_SOURCE -DUSEEVDEV -DCOGMTVM=0 -DDUAL_MAPPED_CODE_ZONE=1"
-            LIBS="-lrt"
-          )
-        '';
         configureFlags = [
           "--with-vmversion=5.0"
           "--with-src=src/spur64.cog"
           "--without-npsqueak"
           "--enable-fast-bitblt"
         ];
+
+        configureFlagsArray = ''
+          (
+            CFLAGS="-DNDEBUG -DDEBUGVM=0 -DMUSL -D_GNU_SOURCE -DUSEEVDEV -DCOGMTVM=0 -DDUAL_MAPPED_CODE_ZONE=1"
+            LIBS="-lrt"
+          )
+        '';
+
+        platformDir = "linux64ARMv8";
+        scriptName = "squeak";
+        vmName = "squeak.cog.spur";
       };
 
       "squeak-stack-spur" = buildVM {
-        platformDir = "linux64ARMv8";
-        vmName = "squeak.stack.spur";
-        scriptName = "squeak";
-        configureFlagsArray = ''
-          (
-            CFLAGS="-DNDEBUG -DDEBUGVM=0 -DMUSL -D_GNU_SOURCE -DUSEEVDEV -D__ARM_ARCH_ISA_A64 -DARM64 -D__arm__ -D__arm64__ -D__aarch64__"
-          )
-        '';
         configureFlags = [
           "--with-vmversion=5.0"
           "--with-src=src/spur64.stack"
           "--disable-cogit"
           "--without-npsqueak"
         ];
+
+        configureFlagsArray = ''
+          (
+            CFLAGS="-DNDEBUG -DDEBUGVM=0 -DMUSL -D_GNU_SOURCE -DUSEEVDEV -D__ARM_ARCH_ISA_A64 -DARM64 -D__arm__ -D__arm64__ -D__aarch64__"
+          )
+        '';
+
+        platformDir = "linux64ARMv8";
+        scriptName = "squeak";
+        vmName = "squeak.stack.spur";
       };
     };
 
     "x86_64-linux" = {
       "newspeak-cog-spur" = buildVM {
-        platformDir = "linux64x64";
-        vmName = "newspeak.cog.spur";
-        scriptName = "newspeak";
-        configureFlagsArray = ''
-          (
-            CFLAGS="-DNDEBUG -DDEBUGVM=0"
-          )
-        '';
         configureFlags = [
           "--with-vmversion=5.0"
           "--with-src=src/spur64.cog.newspeak"
           "--without-vm-display-fbdev"
           "--without-npsqueak"
         ];
+
+        configureFlagsArray = ''
+          (
+            CFLAGS="-DNDEBUG -DDEBUGVM=0"
+          )
+        '';
+
+        platformDir = "linux64x64";
+        scriptName = "newspeak";
+        vmName = "newspeak.cog.spur";
       };
 
       "squeak-cog-spur" = buildVM {
-        platformDir = "linux64x64";
-        vmName = "squeak.cog.spur";
-        scriptName = "squeak";
-        configureFlagsArray = ''
-          (
-            CFLAGS="-DNDEBUG -DDEBUGVM=0 -DCOGMTVM=0"
-          )
-        '';
         configureFlags = [
           "--with-vmversion=5.0"
           "--with-src=src/spur64.cog"
           "--without-npsqueak"
         ];
+
+        configureFlagsArray = ''
+          (
+            CFLAGS="-DNDEBUG -DDEBUGVM=0 -DCOGMTVM=0"
+          )
+        '';
+
+        platformDir = "linux64x64";
+        scriptName = "squeak";
+        vmName = "squeak.cog.spur";
       };
     };
   };

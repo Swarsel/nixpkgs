@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   # Build system
   hatchling,
   # Dependencies
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "hatch-gettext";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "damonlynch";
@@ -27,6 +26,8 @@ buildPythonPackage (finalAttrs: {
   dependencies = [
     rich
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "hatch_gettext"

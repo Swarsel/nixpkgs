@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,9 +17,18 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-2gHWpBPl4Dpt+1WZh2W+p+t1/HWnVtjTaRC1U8dw1ZI=";
   };
 
-  subPackages = [ "cmd/pv-migrate" ];
+  nativeBuildInputs = [
+    installShellFiles
+  ];
 
   vendorHash = "sha256-mQIJBmsop3CqtsUv1FbnExfByxiHmS+crcVaTif5JiI=";
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd pv-migrate \
+      --bash <($out/bin/pv-migrate completion bash) \
+      --fish <($out/bin/pv-migrate completion fish) \
+      --zsh <($out/bin/pv-migrate completion zsh)
+  '';
 
   ldflags = [
     "-s"
@@ -29,26 +38,19 @@ buildGoModule (finalAttrs: {
     "-X main.date=1970-01-01-00:00:01"
   ];
 
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd pv-migrate \
-      --bash <($out/bin/pv-migrate completion bash) \
-      --fish <($out/bin/pv-migrate completion fish) \
-      --zsh <($out/bin/pv-migrate completion zsh)
-  '';
+  subPackages = [ "cmd/pv-migrate" ];
 
   meta = {
-    mainProgram = "pv-migrate";
     description = "CLI tool to easily migrate Kubernetes persistent volumes";
     homepage = "https://github.com/utkuozdemir/pv-migrate";
     changelog = "https://github.com/utkuozdemir/pv-migrate/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.afl20;
+
     maintainers = with lib.maintainers; [
       ivankovnatsky
       qjoly
     ];
+
+    mainProgram = "pv-migrate";
   };
 })

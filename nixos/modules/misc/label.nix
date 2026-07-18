@@ -8,7 +8,6 @@ in
   options.system = {
 
     nixos.label = lib.mkOption {
-      type = lib.types.strMatching "[a-zA-Z0-9:_\\.-]*";
       description = ''
         NixOS version name to be used in the names of generated
         outputs and boot labels.
@@ -38,12 +37,13 @@ in
         nixos-rebuild switch
         ```
       '';
+
+      type = lib.types.strMatching "[a-zA-Z0-9:_\\.-]*";
     };
 
     nixos.tags = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
-      example = [ "with-xen" ];
+
       description = ''
         Strings to prefix to the default
         {option}`system.nixos.label`.
@@ -58,6 +58,9 @@ in
         }
         ```
       '';
+
+      example = [ "with-xen" ];
+      type = lib.types.listOf lib.types.str;
     };
 
   };

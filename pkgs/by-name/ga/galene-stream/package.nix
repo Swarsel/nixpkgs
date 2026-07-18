@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  gitUpdater,
-  nixosTests,
   galene,
+  gitUpdater,
   gobject-introspection,
   gst_all_1,
   libnice,
+  nixosTests,
+  python3Packages,
   wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "galene-stream";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "erdnaxe";
@@ -38,11 +37,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  build-system = with python3Packages; [
-    setuptools
-    setuptools-scm
-  ];
-
   buildInputs = [
     libnice # libgstnice.so
   ]
@@ -53,16 +47,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     gst-plugins-ugly # libgstx264.so
   ]);
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  build-system = with python3Packages; [
+    setuptools
+    setuptools-scm
+  ];
+
   dependencies = with python3Packages; [
     pygobject3
     websockets
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = true;
 
   passthru = {
     tests.vm = nixosTests.galene.stream;
@@ -70,11 +70,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
+    inherit (galene.meta) maintainers;
     description = "Gateway to send UDP, RTMP, SRT or RIST streams to Galène videoconference server";
     homepage = "https://github.com/erdnaxe/galene-stream";
     changelog = "https://github.com/erdnaxe/galene-stream/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
-    inherit (galene.meta) maintainers;
   };
 })

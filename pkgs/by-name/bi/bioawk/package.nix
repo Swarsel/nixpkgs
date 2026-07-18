@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
   bison,
+  installShellFiles,
   zlib,
 }:
 
@@ -43,10 +43,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "BWK awk modified for biological data";
-    mainProgram = "bioawk";
     homepage = "https://github.com/lh3/bioawk";
     license = lib.licenses.hpnd;
     maintainers = with lib.maintainers; [ natsukium ];
     platforms = lib.platforms.unix;
+    mainProgram = "bioawk";
   };
 }

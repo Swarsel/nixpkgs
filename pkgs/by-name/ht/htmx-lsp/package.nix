@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   unstableGitUpdater,
 }:
 
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-/ypaTrctJo88DHtF/hv6B0dqB06axd/qKFnuI8zs8KA=";
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

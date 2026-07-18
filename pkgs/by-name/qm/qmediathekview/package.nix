@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   boost,
-  xz,
   cargo,
   pkg-config,
   qt6Packages,
   rustPlatform,
   sqlite,
+  xz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,27 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-miqCzNTqbZwPuy6P911wlf5TF1lECzNW/02/edK8XaU=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      cargoRoot
-      ;
-    hash = "sha256-89ogtmtJRgMoPOjyW+OGoptKE8VP9lUhbsB5vrdP7zQ=";
-  };
-
   postPatch = ''
     substituteInPlace QMediathekView.pro \
       --replace /usr ""
   '';
-
-  buildInputs = [
-    qt6Packages.qtbase
-    sqlite
-    xz
-    boost
-  ];
 
   nativeBuildInputs = [
     qt6Packages.qmake
@@ -52,19 +35,36 @@ stdenv.mkDerivation (finalAttrs: {
     rustPlatform.cargoSetupHook
   ];
 
-  cargoRoot = "internals";
+  buildInputs = [
+    qt6Packages.qtbase
+    sqlite
+    xz
+    boost
+  ];
 
   env.HOST_AR = lib.getExe' stdenv.cc.bintools.bintools "ar";
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      cargoRoot
+      ;
+
+    hash = "sha256-89ogtmtJRgMoPOjyW+OGoptKE8VP9lUhbsB5vrdP7zQ=";
+  };
+
+  cargoRoot = "internals";
   installFlags = [ "INSTALL_ROOT=$(out)" ];
 
   meta = {
-    description = "Alternative Qt-based front-end for the database maintained by the MediathekView project";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Alternative Qt-based front-end for the database maintained by the MediathekView project";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ dotlambda ];
-    broken = stdenv.hostPlatform.isAarch64;
+    platforms = lib.platforms.linux;
     mainProgram = "QMediathekView";
+    broken = stdenv.hostPlatform.isAarch64;
   };
 })

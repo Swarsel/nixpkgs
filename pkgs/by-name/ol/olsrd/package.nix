@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   bison,
+  fetchpatch,
   flex,
 }:
 
@@ -22,18 +22,18 @@ stdenv.mkDerivation (finalAttrs: {
     # remove if there's ever an upstream release that incorporates
     # https://github.com/OLSR/olsrd/pull/87
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/openwrt-routing/packages/b3897386771890ba1b15f672c2fed58630beedef/olsrd/patches/011-bison.patch";
       sha256 = "04cl4b8dpr1yjs7wa94jcszmkdzpnrn719a5m9nhm7lvfrn1rzd0";
+      url = "https://raw.githubusercontent.com/openwrt-routing/packages/b3897386771890ba1b15f672c2fed58630beedef/olsrd/patches/011-bison.patch";
     })
   ];
-
-  # boolean type guards in olsr_types.h are incompatible with C23
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   buildInputs = [
     bison
     flex
   ];
+
+  # boolean type guards in olsr_types.h are incompatible with C23
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   preConfigure = ''
     makeFlags="prefix=$out ETCDIR=$out/etc"
@@ -41,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Adhoc wireless mesh routing daemon";
-    license = lib.licenses.bsd3;
     homepage = "http://olsr.org/";
+    license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = with lib.platforms; linux;
   };

@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,24 +16,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-2zi8r4LIguWPrsvpvz+sYF4sXqBVmWJtzHLm5nRHFCU=";
   };
 
-  vendorHash = "sha256-P7zrfUcb/Hxo7QbIQfq9JSf2d7meZShQ++GG8HkEoLE=";
-
-  proxyVendor = true;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "." ];
+  vendorHash = "sha256-P7zrfUcb/Hxo7QbIQfq9JSf2d7meZShQ++GG8HkEoLE=";
 
   preCheck = ''
     export HOME=$(mktemp -d)
   '';
-
-  ldflags = [
-    "-X main.version=${finalAttrs.version}"
-    "-X main.apiVersion=1.0"
-    "-X github.com/dapr/cli/pkg/standalone.gitcommit=${finalAttrs.src.rev}"
-    "-X github.com/dapr/cli/pkg/standalone.gitversion=${finalAttrs.version}"
-  ];
 
   postInstall = ''
     mv $out/bin/cli $out/bin/dapr
@@ -43,14 +31,26 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/dapr completion zsh)
   '';
 
+  ldflags = [
+    "-X main.version=${finalAttrs.version}"
+    "-X main.apiVersion=1.0"
+    "-X github.com/dapr/cli/pkg/standalone.gitcommit=${finalAttrs.src.rev}"
+    "-X github.com/dapr/cli/pkg/standalone.gitversion=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "." ];
+
   meta = {
     description = "CLI for managing Dapr, the distributed application runtime";
     homepage = "https://dapr.io";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       joshvanl
       lucperkins
     ];
+
     mainProgram = "dapr";
   };
 })

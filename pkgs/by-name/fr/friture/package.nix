@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "friture";
   version = "0.54";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tlecomte";
@@ -32,12 +31,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ])
     ++ (with qt5; [ wrapQtAppsHook ]);
 
-  # Very strict versions
-  pythonRelaxDeps = true;
-
-  # Not actually used, dropped from nixpkgs
-  pythonRemoveDeps = [ "pyrr" ];
-
   buildInputs = with qt5; [ qtquickcontrols2 ];
 
   propagatedBuildInputs = with python3Packages; [
@@ -53,10 +46,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rtmixer
   ];
 
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
   postInstall = ''
     substituteInPlace $out/share/applications/friture.desktop --replace-fail usr/bin/friture friture
 
@@ -69,15 +58,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
     cp $src/resources/images-src/window-icon.svg $out/share/icons/hicolor/scalable/apps/friture.svg
   '';
 
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  pyproject = true;
+  # Very strict versions
+  pythonRelaxDeps = true;
+  # Not actually used, dropped from nixpkgs
+  pythonRemoveDeps = [ "pyrr" ];
+
   meta = {
     description = "Real-time audio analyzer";
-    mainProgram = "friture";
     homepage = "https://friture.org/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux; # fails on Darwin
+
     maintainers = with lib.maintainers; [
       laikq
       pentane
     ];
+
+    platforms = lib.platforms.linux; # fails on Darwin
+    mainProgram = "friture";
   };
 })

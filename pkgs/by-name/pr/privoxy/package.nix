@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  nixosTests,
-  fetchpatch,
   fetchurl,
   autoreconfHook,
-  zlib,
+  brotli,
+  fetchpatch,
+  man,
+  nixosTests,
+  openssl,
   pcre2,
   w3m-batch,
-  man,
-  openssl,
-  brotli,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,13 +35,14 @@ stdenv.mkDerivation (finalAttrs: {
     brotli
   ];
 
-  makeFlags = [ "STRIP=" ];
   configureFlags = [
     "--with-openssl"
     "--with-brotli"
     "--enable-external-filters"
     "--enable-compression"
   ];
+
+  makeFlags = [ "STRIP=" ];
 
   postInstall = ''
     rm -r $out/var
@@ -50,13 +51,13 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.privoxy = nixosTests.privoxy;
 
   meta = {
-    homepage = "https://www.privoxy.org/";
     description = "Non-caching web proxy with advanced filtering capabilities";
+    homepage = "https://www.privoxy.org/";
     # When linked with mbedtls, the license becomes GPLv3 (or later), otherwise
     # GPLv2 (or later). See https://www.privoxy.org/user-manual/copyright.html
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "privoxy";
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  wrapGAppsHook3,
   avahi,
   avahi-compat,
+  cmake,
   gst_all_1,
   libplist,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,12 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/FDH2/UxPlay/releases/tag/v${finalAttrs.version}";
     description = "AirPlay Unix mirroring server";
     homepage = "https://github.com/FDH2/UxPlay";
+    changelog = "https://github.com/FDH2/UxPlay/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "uxplay";
     maintainers = [ lib.maintainers.azuwis ];
     platforms = lib.platforms.unix;
+    mainProgram = "uxplay";
   };
 })

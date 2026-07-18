@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -15,9 +15,6 @@ stdenvNoCC.mkDerivation rec {
     sha256 = "sha256-pHJU9FxG1/vAakaXxJeXFDdDbOvmgL9/88jM6CWXzjg=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/include
@@ -25,12 +22,15 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Lightweight, dependency-free library for binding Lua to C++";
     homepage = "https://github.com/vinniefalco/LuaBridge";
     changelog = "https://github.com/vinniefalco/LuaBridge/blob/${version}/CHANGES.md";
-    platforms = lib.platforms.unix;
     license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

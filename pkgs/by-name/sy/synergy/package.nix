@@ -1,30 +1,29 @@
 {
-  withGUI ? true,
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-
+  avahi-compat,
   cmake,
-  openssl,
-  pcre,
-  util-linux,
+  gdk-pixbuf,
+  libice,
+  libnotify,
+  libsForQt5,
   libselinux,
   libsepol,
-  pkg-config,
-  gdk-pixbuf,
-  libnotify,
-  libice,
   libsm,
   libx11,
-  libxkbfile,
   libxi,
-  libxtst,
-  libxrandr,
   libxinerama,
-  xkeyboard-config,
+  libxkbfile,
+  libxrandr,
+  libxtst,
+  openssl,
+  pcre,
+  pkg-config,
+  util-linux,
   xinput,
-  avahi-compat,
-  libsForQt5,
+  xkeyboard-config,
+  withGUI ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -89,9 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
     libnotify
   ];
 
-  # Silences many warnings
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-inconsistent-missing-override";
-
   cmakeFlags =
     lib.optional (!withGUI) "-DSYNERGY_BUILD_LEGACY_GUI=OFF"
     # NSFilenamesPboardType is deprecated in 10.14+
@@ -99,6 +95,8 @@ stdenv.mkDerivation (finalAttrs: {
       if stdenv.hostPlatform.isAarch64 then "10.13" else stdenv.hostPlatform.darwinSdkVersion
     }";
 
+  # Silences many warnings
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-inconsistent-missing-override";
   doCheck = true;
 
   checkPhase = ''
@@ -143,9 +141,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Share one mouse and keyboard between multiple computers";
     homepage = "https://symless.com/synergy";
     changelog = "https://github.com/symless/synergy-core/blob/${finalAttrs.version}/ChangeLog";
-    mainProgram = lib.optionalString (!withGUI) "synergyc";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ talyz ];
     platforms = lib.platforms.unix;
+    mainProgram = lib.optionalString (!withGUI) "synergyc";
   };
 })

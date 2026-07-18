@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyrympro";
   version = "0.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OnFreund";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-+KgYdiVuX8Ycw0Odte/EXsoWiMaLmTU6zTeJCw9jwvs=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pyrympro" ];
 
   meta = {

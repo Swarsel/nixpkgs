@@ -24,10 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Source code beautifier for C, C++, C#, ObjectiveC, D, Java, Pawn and VALA";
-    mainProgram = "uncrustify";
     homepage = "https://uncrustify.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.unix;
+    mainProgram = "uncrustify";
   };
 })

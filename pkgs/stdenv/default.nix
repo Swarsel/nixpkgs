@@ -7,12 +7,12 @@
 {
   # Args just for stdenvs' usage
   lib,
+  config,
+  crossOverlays,
+  crossSystem,
   # Args to pass on to the pkgset builder, too
   localSystem,
-  crossSystem,
-  config,
   overlays,
-  crossOverlays,
 }:
 
 let
@@ -62,10 +62,10 @@ else if localSystem.isDarwin then
 # misc special cases
 else
   {
-    # switch
-    x86_64-solaris = stagesNix;
     i686-cygwin = stagesNative;
     x86_64-cygwin = stagesNative;
     x86_64-freebsd = stagesFreeBSD;
+    # switch
+    x86_64-solaris = stagesNix;
   }
   .${localSystem.system} or stagesNative

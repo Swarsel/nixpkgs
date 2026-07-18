@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
   unstableGitUpdater,
 }:
 
 buildPythonPackage {
   pname = "astor";
   version = "0.8.1-unstable-2024-03-30";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "berkerpeksag";
@@ -24,14 +23,15 @@ buildPythonPackage {
     ./python314-compat.patch
   ];
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # https://github.com/berkerpeksag/astor/issues/196
     "test_convert_stdlib"
   ];
+
+  pyproject = true;
 
   passthru.updateScript = unstableGitUpdater {
     branch = "master";

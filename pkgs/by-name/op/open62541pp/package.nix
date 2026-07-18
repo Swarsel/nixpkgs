@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   open62541,
@@ -17,16 +17,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-zi707TD40XH/W5kJ7WXeFOX14aVJovo5WsHKsTQjt3w=";
   };
 
-  cmakeFlags = [
-    (lib.cmakeBool "UAPP_INTERNAL_OPEN62541" false)
-  ];
-
   nativeBuildInputs = [
     cmake
   ];
 
   buildInputs = [
     open62541
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "UAPP_INTERNAL_OPEN62541" false)
   ];
 
   meta = {

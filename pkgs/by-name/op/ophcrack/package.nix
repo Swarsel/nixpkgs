@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  libsForQt5,
   fetchurl,
-  fetchpatch,
-  pkg-config,
-  openssl,
   expat,
+  fetchpatch,
+  libsForQt5,
+  openssl,
+  pkg-config,
   enableGui ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -21,16 +21,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/ophcrack/-/raw/c60118b40802e1162dcebfe5f881cf973b2334d3/debian/patches/fix_spelling_error.diff";
       hash = "sha256-Fc044hTU4Mtdym+HukGAwGzaLm7aVzV9KpvHvFUG2Sc=";
+      url = "https://salsa.debian.org/pkg-security-team/ophcrack/-/raw/c60118b40802e1162dcebfe5f881cf973b2334d3/debian/patches/fix_spelling_error.diff";
     })
     (fetchpatch {
-      url = "https://salsa.debian.org/pkg-security-team/ophcrack/-/raw/e19d993a7dbf131d13128366e2aac270a685befc/debian/patches/qmake_crossbuild.diff";
       hash = "sha256-sOKXOBpAYGLacU6IxjRzy3HCnGm4DFowDL2qP+DzG8M=";
+      url = "https://salsa.debian.org/pkg-security-team/ophcrack/-/raw/e19d993a7dbf131d13128366e2aac270a685befc/debian/patches/qmake_crossbuild.diff";
     })
   ];
 
   nativeBuildInputs = [ pkg-config ] ++ lib.optional enableGui libsForQt5.wrapQtAppsHook;
+
   buildInputs = [
     openssl
     expat
@@ -60,7 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://ophcrack.sourceforge.io";
     license = with lib.licenses; [ gpl2Plus ];
     maintainers = with lib.maintainers; [ tochiaha ];
-    mainProgram = "ophcrack";
     platforms = lib.platforms.all;
+    mainProgram = "ophcrack";
   };
 })

@@ -2,8 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nixosTests,
-
   arrow-glib,
   bison,
   c-ares,
@@ -18,6 +16,7 @@
   msgpack-c,
   nghttp2,
   nix-update-script,
+  nixosTests,
   openssl,
   pkg-config,
   rdkafka,
@@ -38,6 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5X6qiwoRc7FTJSGjWYhhef9N8gaxrc9dwD8Z/8woIUo=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   # The source build documentation covers some dependencies and CMake options.
   #
   # - Linux: https://docs.fluentbit.io/manual/installation/sources/build-and-install
@@ -50,7 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
   # some dependencies.
   #
   # https://github.com/fluent/fluent-bit/blob/v4.0.2/CMakeLists.txt#L245
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -103,14 +106,7 @@ stdenv.mkDerivation (finalAttrs: {
   #
   # https://man.openbsd.org/pkg-config.1#PKG_CONFIG_$PACKAGE_$VARIABLE
   env.PKG_CONFIG_SYSTEMD_SYSTEMDSYSTEMUNITDIR = "${placeholder "out"}/lib/systemd/system";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
@@ -125,7 +121,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Fast and lightweight logs and metrics processor for Linux, BSD, OSX and Windows";
     homepage = "https://fluentbit.io";
     license = lib.licenses.asl20;
-    mainProgram = "fluent-bit";
     maintainers = with lib.maintainers; [ arianvp ];
+    mainProgram = "fluent-bit";
   };
 })

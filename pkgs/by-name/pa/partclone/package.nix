@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libuuid,
   e2fsprogs,
+  libuuid,
   nilfs-utils,
   ntfs3g,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     e2fsprogs
     libuuid
@@ -53,12 +54,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Utilities to save and restore used blocks on a partition";
+
     longDescription = ''
       Partclone provides utilities to save and restore used blocks on a
       partition and is designed for higher compatibility of the file system by
       using existing libraries, e.g. e2fslibs is used to read and write the
       ext2 partition.
     '';
+
     homepage = "https://partclone.org";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];

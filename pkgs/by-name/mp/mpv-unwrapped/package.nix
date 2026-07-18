@@ -1,5 +1,7 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   addDriverRunpath,
   alsa-lib,
@@ -7,17 +9,11 @@
   buildPackages,
   config,
   docutils,
-  fetchFromGitHub,
   ffmpeg,
   freefont_ttf,
   freetype,
   lcms2,
   libGL,
-  libx11,
-  libxscrnsaver,
-  libxext,
-  libxpresent,
-  libxrandr,
   libarchive,
   libass,
   libbluray,
@@ -25,9 +21,10 @@
   libcaca,
   libcdio,
   libcdio-paranoia,
-  libdrm,
   libdisplay-info,
+  libdrm,
   libdvdnav,
+  libgbm,
   libjack2,
   libplacebo,
   libpthread-stubs,
@@ -36,10 +33,15 @@
   libuchardet,
   libva,
   libvdpau,
+  libx11,
+  libxext,
   libxkbcommon,
+  libxpresent,
+  libxrandr,
+  libxscrnsaver,
+  llvmPackages,
   lua,
   makeBinaryWrapper,
-  libgbm,
   meson,
   mujs,
   ninja,
@@ -51,18 +53,16 @@
   python3,
   rubberband,
   shaderc, # instead of spirv-cross
-  stdenv,
   swift,
   testers,
   vapoursynth,
+  versionCheckHook,
   vulkan-headers,
   vulkan-loader,
   wayland,
   wayland-protocols,
   wayland-scanner,
   zimg,
-  llvmPackages,
-
   # Boolean
   alsaSupport ? stdenv.hostPlatform.isLinux,
   archiveSupport ? true,
@@ -89,7 +89,6 @@
   waylandSupport ? !stdenv.hostPlatform.isDarwin,
   x11Support ? !stdenv.hostPlatform.isDarwin,
   zimgSupport ? true,
-  versionCheckHook,
 }:
 
 let
@@ -99,19 +98,19 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "mpv";
   version = "0.41.0";
 
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "mpv-player";
     repo = "mpv";
     tag = "v${finalAttrs.version}";
     hash = "sha256-gJWqfvPE6xOKlgj2MzZgXiyOKxksJlY/tL6T/BeG19c=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+    "man"
+  ];
 
   postPatch = lib.concatStringsSep "\n" [
     # Don't reference compile time dependencies or create a build outputs cycle
@@ -130,28 +129,6 @@ stdenv.mkDerivation (finalAttrs: {
       popd
     ''
   ];
-
-  # Ensure we reference 'lib' (not 'out') of Swift.
-  # TODO: Remove this once the Swift wrapper doesn’t include these.
-  preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    export SWIFT_LIB_DYNAMIC="${lib.getLib swift.swift}/lib/swift/macosx"
-  '';
-
-  mesonFlags = [
-    (lib.mesonOption "default_library" "shared")
-    (lib.mesonOption "sysconfdir" "/etc")
-    (lib.mesonBool "libmpv" true)
-    (lib.mesonEnable "manpage-build" true)
-    (lib.mesonEnable "cdda" cddaSupport)
-    (lib.mesonEnable "dvbin" dvbinSupport)
-    (lib.mesonEnable "dvdnav" dvdnavSupport)
-    (lib.mesonEnable "openal" openalSupport)
-    (lib.mesonEnable "sdl2-audio" sdl2Support)
-    (lib.mesonEnable "sdl2-gamepad" sdl2Support)
-    (lib.mesonEnable "sdl2-video" sdl2Support)
-  ];
-
-  mesonAutoFeatures = "auto";
 
   nativeBuildInputs = [
     addDriverRunpath
@@ -231,24 +208,39 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals zimgSupport [ zimg ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ nv-codec-headers-11 ];
 
+  mesonFlags = [
+    (lib.mesonOption "default_library" "shared")
+    (lib.mesonOption "sysconfdir" "/etc")
+    (lib.mesonBool "libmpv" true)
+    (lib.mesonEnable "manpage-build" true)
+    (lib.mesonEnable "cdda" cddaSupport)
+    (lib.mesonEnable "dvbin" dvbinSupport)
+    (lib.mesonEnable "dvdnav" dvdnavSupport)
+    (lib.mesonEnable "openal" openalSupport)
+    (lib.mesonEnable "sdl2-audio" sdl2Support)
+    (lib.mesonEnable "sdl2-gamepad" sdl2Support)
+    (lib.mesonEnable "sdl2-video" sdl2Support)
+  ];
+
   # https://github.com/mpv-player/mpv/issues/15591#issuecomment-2764797522
   # In file included from ../player/clipboard/clipboard-mac.m:19:
   # ./osdep/mac/swift.h:270:9: fatal error: '.../app_bridge_objc-1.pch' file not found
   env = lib.optionalAttrs (stdenv.hostPlatform.isDarwin) {
-    NIX_SWIFTFLAGS_COMPILE = "-disable-bridging-pch";
-
     # TODO: Remove once #536365 reaches this branch
     NIX_CFLAGS_LINK = "-fuse-ld=lld";
+    NIX_SWIFTFLAGS_COMPILE = "-disable-bridging-pch";
   };
+
+  # Ensure we reference 'lib' (not 'out') of Swift.
+  # TODO: Remove this once the Swift wrapper doesn’t include these.
+  preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    export SWIFT_LIB_DYNAMIC="${lib.getLib swift.swift}/lib/swift/macosx"
+  '';
 
   postBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
     pushd .. # Must be run from the source dir because it uses relative paths
     python3 TOOLS/osxbundle.py -s build/mpv
     popd
-  '';
-
-  sandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    (allow mach-lookup (global-name "com.apple.coreservices.launchservicesd"))
   '';
 
   postInstall = ''
@@ -281,6 +273,12 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper $out/Applications/mpv.app/Contents/MacOS/mpv $out/bin/mpv
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   # Set RUNPATH so that libcuda in /run/opengl-driver(-32)/lib can be found.
   # See the explanation in addDriverRunpath.
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -288,14 +286,14 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs --update --host $out/bin/umpv $out/bin/mpv_identify.sh
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   # On macOS, mpv --version initializes the full Cocoa app framework and
   # connects to the window server, which hangs in a headless build environment
   dontVersionCheck = stdenv.hostPlatform.isDarwin;
+  mesonAutoFeatures = "auto";
+
+  sandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    (allow mach-lookup (global-name "com.apple.coreservices.launchservicesd"))
+  '';
 
   passthru = {
     inherit
@@ -314,30 +312,35 @@ stdenv.mkDerivation (finalAttrs: {
       inherit (nixosTests) mpv;
 
       pkg-config = testers.hasPkgConfigModules {
-        package = finalAttrs.finalPackage;
         moduleNames = [ "mpv" ];
+        package = finalAttrs.finalPackage;
       };
     };
   };
 
   meta = {
-    homepage = "https://mpv.io";
     description = "General-purpose media player, fork of MPlayer and mplayer2";
+
     longDescription = ''
       mpv is a free and open-source general-purpose video player, based on the
       MPlayer and mplayer2 projects, with great improvements above both.
     '';
+
+    homepage = "https://mpv.io";
     changelog = "https://github.com/mpv-player/mpv/releases/tag/v${finalAttrs.version}";
+
     license = [
       lib.licenses.gpl2Plus
       lib.licenses.lgpl21Plus
     ];
-    mainProgram = "mpv";
+
     maintainers = with lib.maintainers; [
       colinsane
       fpletz
       SchweGELBin
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "mpv";
   };
 })

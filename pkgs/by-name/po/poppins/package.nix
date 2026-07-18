@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unzip,
 }:
 stdenvNoCC.mkDerivation rec {

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "osc-cli";
   version = "1.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "outscale";
@@ -16,12 +15,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-7WXy+1NHwFvYmyi5xGfWpq/mbVGJ3WkgP5WQd5pvcC0=";
   };
 
+  # Skipping tests as they require working access and secret keys
+  doCheck = false;
+
   build-system = [
     python3.pkgs.setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "defusedxml"
   ];
 
   dependencies = with python3.pkgs; [
@@ -32,8 +30,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     xmltodict
   ];
 
-  # Skipping tests as they require working access and secret keys
-  doCheck = false;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "defusedxml"
+  ];
 
   meta = {
     description = "Official Outscale CLI providing connectors to Outscale API";

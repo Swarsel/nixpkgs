@@ -1,5 +1,6 @@
 {
-  mkDerivation,
+  lib,
+  QuickCheck,
   aeson,
   ansi-wl-pprint,
   avh4-lib,
@@ -9,9 +10,8 @@
   elm-format-test-lib,
   fetchgit,
   hspec,
-  lib,
+  mkDerivation,
   optparse-applicative,
-  QuickCheck,
   quickcheck-io,
   relude,
   tasty,
@@ -23,14 +23,17 @@
 mkDerivation {
   pname = "elm-format";
   version = "0.8.8";
+
   src = fetchgit {
     url = "https://github.com/avh4/elm-format";
-    sha256 = "13i1wgva6p9zsx1a7sfb3skc0rv187isb920chkhljyh48c12k8l";
     rev = "d07fddc8c0eef412dba07be4ab8768d6abcca796";
+    sha256 = "13i1wgva6p9zsx1a7sfb3skc0rv187isb920chkhljyh48c12k8l";
     fetchSubmodules = true;
   };
-  isLibrary = false;
-  isExecutable = true;
+
+  description = "A source code formatter for Elm";
+  doHaddock = false;
+
   executableHaskellDepends = [
     aeson
     ansi-wl-pprint
@@ -42,6 +45,13 @@ mkDerivation {
     relude
     text
   ];
+
+  homepage = "https://elm-lang.org";
+  isExecutable = true;
+  isLibrary = false;
+  license = lib.licenses.bsd3;
+  mainProgram = "elm-format";
+
   testHaskellDepends = [
     aeson
     ansi-wl-pprint
@@ -61,9 +71,4 @@ mkDerivation {
     tasty-quickcheck
     text
   ];
-  doHaddock = false;
-  homepage = "https://elm-lang.org";
-  description = "A source code formatter for Elm";
-  license = lib.licenses.bsd3;
-  mainProgram = "elm-format";
 }

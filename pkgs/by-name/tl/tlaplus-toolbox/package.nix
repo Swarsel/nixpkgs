@@ -1,17 +1,17 @@
 {
   lib,
-  fetchurl,
-  makeShellWrapper,
-  makeDesktopItem,
   stdenv,
+  fetchurl,
+  bintools,
+  copyDesktopItems,
+  glib,
   gtk3,
   libxtst,
-  glib,
-  zlib,
-  wrapGAppsHook3,
-  copyDesktopItems,
-  bintools,
+  makeDesktopItem,
+  makeShellWrapper,
   unzip,
+  wrapGAppsHook3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,21 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ gtk3 ];
-
-  dontWrapGApps = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "TLA+Toolbox";
-      exec = "tla-toolbox";
-      icon = "tla-toolbox";
-      comment = "IDE for TLA+";
-      desktopName = "TLA+Toolbox";
-      genericName = "IDE for TLA+";
-      categories = [ "Development" ];
-      startupWMClass = "TLA+ Toolbox";
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -87,19 +72,36 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      comment = "IDE for TLA+";
+      desktopName = "TLA+Toolbox";
+      exec = "tla-toolbox";
+      genericName = "IDE for TLA+";
+      icon = "tla-toolbox";
+      name = "TLA+Toolbox";
+      startupWMClass = "TLA+ Toolbox";
+    })
+  ];
+
+  dontWrapGApps = true;
+
   meta = {
-    homepage = "http://research.microsoft.com/en-us/um/people/lamport/tla/toolbox.html";
     description = "IDE for the TLA+ tools";
-    mainProgram = "tla-toolbox";
+
     longDescription = ''
       Integrated development environment for the TLA+ tools, based on Eclipse. You can use it
       to create and edit your specs, run the PlusCal translator, view the pretty-printed
       versions of your modules, run the TLC model checker, and run TLAPS, the TLA+ proof system.
     '';
+
+    homepage = "http://research.microsoft.com/en-us/um/people/lamport/tla/toolbox.html";
     # http://lamport.azurewebsites.net/tla/license.html
     license = with lib.licenses; [ mit ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = [ "x86_64-linux" ];
     maintainers = [ ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "tla-toolbox";
   };
 })

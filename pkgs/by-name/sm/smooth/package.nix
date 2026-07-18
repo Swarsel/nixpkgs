@@ -2,8 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-
   bzip2,
   curl,
   fribidi,
@@ -14,6 +12,7 @@
   libpng,
   libwebp,
   libxml2,
+  pkg-config,
   zlib,
 }:
 
@@ -32,11 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  makeFlags = [
-    "prefix=$(out)"
-    "config=systemlibbz2,systemlibcpuid,systemlibcurl,systemlibfribidi,systemlibiconv,systemlibjpeg,systemlibpng,systemlibwebp,systemlibxml2,systemzlib"
-  ];
-
   buildInputs = [
     bzip2
     curl
@@ -51,11 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
+  makeFlags = [
+    "prefix=$(out)"
+    "config=systemlibbz2,systemlibcpuid,systemlibcurl,systemlibfribidi,systemlibiconv,systemlibjpeg,systemlibpng,systemlibwebp,systemlibxml2,systemzlib"
+  ];
+
   meta = {
     description = "Object-oriented class library for C++ application development";
-    mainProgram = "smooth-translator";
-    license = lib.licenses.artistic2;
     homepage = "http://www.smooth-project.org/";
+    license = lib.licenses.artistic2;
     platforms = lib.platforms.linux;
+    mainProgram = "smooth-translator";
   };
 })

@@ -1,17 +1,17 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitLab,
   stdenv,
+  fetchFromGitLab,
   _experimental-update-script-combinators,
-  nix-update-script,
-  nix-update,
-  writeScript,
   git,
-  pkg-config,
+  nix-update,
+  nix-update-script,
   openssl,
+  pkg-config,
   python314,
+  rustPlatform,
   swim,
+  writeScript,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -27,7 +27,32 @@ rustPlatform.buildRustPackage rec {
     fetchSubmodules = true;
   };
 
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
+  buildInputs = [
+    openssl
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    python314
+  ];
+
   cargoHash = "sha256-koMnkwgQtVMvxlslvC5dZAhr3K/66XWyp5UPW7yZtio=";
+  env.NIX_CFLAGS_LINK = lib.optionalString stdenv.hostPlatform.isDarwin "-L${python314}/lib/python3.14/config-3.14-darwin -lpython3.14";
+
+  cargoBuildFlags = [
+    "--workspace"
+    # TODO: --exclude the excluded crates listed in release.sh?
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # "Undefined symbols for architecture arm:" ...
+    "--exclude=spade-surfer-plugin"
+  ];
+
+  passthru.tests = {
+    inherit swim;
+  };
 
   # TODO: somehow respect https://nixos.org/manual/nixpkgs/stable/#var-passthru-updateScript-commit
   passthru.updateScript = _experimental-update-script-combinators.sequence [
@@ -48,41 +73,18 @@ rustPlatform.buildRustPackage rec {
     })
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-  ];
-
-  buildInputs = [
-    openssl
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    python314
-  ];
-  env.NIX_CFLAGS_LINK = lib.optionalString stdenv.hostPlatform.isDarwin "-L${python314}/lib/python3.14/config-3.14-darwin -lpython3.14";
-
-  cargoBuildFlags = [
-    "--workspace"
-    # TODO: --exclude the excluded crates listed in release.sh?
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # "Undefined symbols for architecture arm:" ...
-    "--exclude=spade-surfer-plugin"
-  ];
-
-  passthru.tests = {
-    inherit swim;
-  };
-
   meta = {
     description = "Better hardware description language";
     homepage = "https://gitlab.com/spade-lang/spade";
     changelog = "https://gitlab.com/spade-lang/spade/-/blob/${src.rev}/CHANGELOG.md";
+
     # compiler is eupl12, spade-lang stdlib is both asl20 and mit
     license = with lib.licenses; [
       eupl12
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ pbsds ];
     mainProgram = "spade";
   };

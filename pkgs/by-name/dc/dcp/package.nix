@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
   bash,
+  buildGoModule,
+  installShellFiles,
+  kubernetes-controller-tools,
+  nix-update-script,
   protobuf,
   protoc-gen-go,
   protoc-gen-go-grpc,
-  kubernetes-controller-tools,
-  installShellFiles,
-  nix-update-script,
   writableTmpDirAsHomeHook,
 }:
 
@@ -24,24 +24,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-umcrTAPWAInbjdZYhY0xEbI7heGwr+8FGMI7BIWSdD0=";
   };
 
-  vendorHash = "sha256-hcuVUUr3kr3iBmSEhHy365LIWGGLFTYnBRa5jnt7kPw=";
-
-  # This is required so we:
-  # - Delete an inconsistent vendor directory from upstream
-  # - Avoid running a preBuild before the codegen step
-  overrideModAttrs = _: {
-    preBuild = null;
-    postUnpack = ''
-      rm -rf $sourceRoot/vendor
-    '';
-  };
-
   nativeBuildInputs = [
     installShellFiles
     protoc-gen-go
     protoc-gen-go-grpc
     writableTmpDirAsHomeHook
   ];
+
+  vendorHash = "sha256-hcuVUUr3kr3iBmSEhHy365LIWGGLFTYnBRa5jnt7kPw=";
 
   # Run code generation using the upstream Makefile.
   # Override SHELL for Nix sandbox compatibility.
@@ -52,22 +42,6 @@ buildGoModule (finalAttrs: {
       PROTOC="${protobuf}/bin/protoc" \
       CONTROLLER_GEN="${kubernetes-controller-tools}/bin/controller-gen"
   '';
-
-  subPackages = [
-    "cmd/dcp"
-    "cmd/dcptun"
-  ];
-
-  ldflags =
-    let
-      pkg = "github.com/microsoft/dcp/internal/version";
-    in
-    [
-      "-s"
-      "-w"
-      "-X ${pkg}.ProductVersion=${finalAttrs.version}"
-      "-X ${pkg}.CommitHash=v${finalAttrs.version}"
-    ];
 
   # The dcptun binary should be named dcptun_c for compatibility
   # https://github.com/microsoft/dcp/blob/3146b1dd5b2ea283947f846a55bf2e01c294e2ba/Makefile#L103
@@ -81,6 +55,33 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/dcp completion zsh)
   '';
 
+  ldflags =
+    let
+      pkg = "github.com/microsoft/dcp/internal/version";
+    in
+    [
+      "-s"
+      "-w"
+      "-X ${pkg}.ProductVersion=${finalAttrs.version}"
+      "-X ${pkg}.CommitHash=v${finalAttrs.version}"
+    ];
+
+  # This is required so we:
+  # - Delete an inconsistent vendor directory from upstream
+  # - Avoid running a preBuild before the codegen step
+  overrideModAttrs = _: {
+    preBuild = null;
+
+    postUnpack = ''
+      rm -rf $sourceRoot/vendor
+    '';
+  };
+
+  subPackages = [
+    "cmd/dcp"
+    "cmd/dcptun"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -89,7 +90,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/microsoft/dcp/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mtrsk ];
-    mainProgram = "dcp";
     platforms = lib.platforms.unix;
+    mainProgram = "dcp";
   };
 })

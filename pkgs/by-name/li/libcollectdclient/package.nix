@@ -2,7 +2,6 @@
 
 collectd.overrideAttrs (prevAttrs: {
   pname = "libcollectdclient";
-
   buildInputs = [ ];
 
   configureFlags = (prevAttrs.configureFlags or [ ]) ++ [
@@ -17,7 +16,7 @@ collectd.overrideAttrs (prevAttrs: {
     description = "C Library for collectd, a daemon which collects system performance statistics periodically";
     homepage = "https://collectd.org";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = lib.platforms.unix;
   };
 })

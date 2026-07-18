@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   async-timeout,
   bleak,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   intelhex,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "smpclient";
   version = "7.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "intercreate";
@@ -26,6 +25,13 @@ buildPythonPackage rec {
   };
 
   env.HATCH_BUILD_HOOK_VCS_VERSION = version;
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.all;
+
   __darwinAllowLocalNetworking = true;
 
   build-system = [
@@ -40,18 +46,13 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
-    serial = [ pyserial ];
-    ble = [ bleak ];
-    udp = [ ];
     all = lib.concatAttrValues (lib.removeAttrs optional-dependencies [ "all" ]);
+    ble = [ bleak ];
+    serial = [ pyserial ];
+    udp = [ ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.all;
-
+  pyproject = true;
   pythonImportsCheck = [ "smpclient" ];
 
   meta = {

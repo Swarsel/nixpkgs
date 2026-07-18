@@ -7,6 +7,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "repseek";
   version = "9Sep2014";
+
   src = fetchurl {
     url = "https://bioinfo.mnhn.fr/abi/public/RepSeek/RepSeek.${finalAttrs.version}.tgz";
     sha256 = "1jiknji3ivrv7zmrfbf2mccfpdwhin3lfxfsciaqwf69b3sda8nf";
@@ -24,10 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool to retrieve approximate repeats from large DNA sequences";
-    mainProgram = "repseek";
     homepage = "https://bioinfo.mnhn.fr/abi/public/RepSeek";
-    maintainers = [ lib.maintainers.bzizou ];
     license = lib.licenses.lgpl21;
+    maintainers = [ lib.maintainers.bzizou ];
+    mainProgram = "repseek";
   };
 
 })

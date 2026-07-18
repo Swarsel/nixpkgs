@@ -1,34 +1,24 @@
 {
   lib,
   stdenv,
-  mkMesonLibrary,
-
-  unixtools,
-  freebsd,
-
-  nix-util,
-  boost,
-  curl,
-  cmake,
   aws-c-common,
-  aws-sdk-cpp,
   aws-crt-cpp,
+  aws-sdk-cpp,
+  boost,
+  cmake,
+  curl,
+  freebsd,
   libseccomp,
+  mkMesonLibrary,
+  nix-util,
   nlohmann_json,
-  sqlite,
-
-  busybox-sandbox-shell ? null,
   pkgsStatic,
-
+  sqlite,
+  unixtools,
   # Configuration Options
-
   version,
-
+  busybox-sandbox-shell ? null,
   embeddedSandboxShell ? stdenv.hostPlatform.isStatic,
-
-  withSandboxShell ?
-    stdenv.hostPlatform.isLinux
-    || (lib.versionAtLeast version "2.35pre" && stdenv.hostPlatform.isFreeBSD),
   sandboxShell ?
     if stdenv.hostPlatform.isLinux then
       "${busybox-sandbox-shell}/bin/busybox"
@@ -36,18 +26,18 @@
       "${pkgsStatic.bash}/bin/bash"
     else
       null,
-
   withAWS ?
     # Default is this way because there have been issues building this dependency
     # TODO: aws-crt-cpp is broken on cygwin, find a good way to check that here
     lib.meta.availableOn stdenv.hostPlatform aws-c-common && !stdenv.hostPlatform.isCygwin,
+  withSandboxShell ?
+    stdenv.hostPlatform.isLinux
+    || (lib.versionAtLeast version "2.35pre" && stdenv.hostPlatform.isFreeBSD),
 }:
 
 mkMesonLibrary (finalAttrs: {
-  pname = "nix-store";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-store";
 
   nativeBuildInputs =
     lib.optional embeddedSandboxShell unixtools.hexdump
@@ -83,6 +73,8 @@ mkMesonLibrary (finalAttrs: {
   ++ lib.optionals withSandboxShell [
     (lib.mesonOption "sandbox-shell" sandboxShell)
   ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix ++ lib.platforms.windows;

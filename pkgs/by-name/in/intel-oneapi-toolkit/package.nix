@@ -1,56 +1,56 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchurl,
-  ncurses5,
+  alsa-lib,
+  at-spi2-atk,
+  autoPatchelfHook,
+  bash,
   bc,
   bubblewrap,
-  autoPatchelfHook,
-  python3,
-  libgcc,
-  glibc,
-  writableTmpDirAsHomeHook,
-  writeShellApplication,
-  curl,
-  htmlq,
+  bzip2,
+  cairo,
+  callPackage,
   common-updater-scripts,
-  zlib,
-  rdma-core,
-  libpsm2,
-  ucx,
-  numactl,
+  cups,
+  curl,
+  dbus,
+  elfutils,
+  eudev,
+  expat,
+  gdbm,
+  glib,
+  glibc,
+  gtk3,
+  htmlq,
   level-zero,
   libdrm,
-  elfutils,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
+  libffi,
+  libgbm,
+  libgcc,
+  libpsm2,
+  libuuid,
   libx11,
   libxcb,
-  glib,
-  nss,
-  nspr,
-  dbus,
-  at-spi2-atk,
-  cups,
-  gtk3,
-  pango,
-  cairo,
-  libgbm,
-  expat,
-  libxkbcommon,
-  eudev,
-  alsa-lib,
-  bzip2,
-  gdbm,
+  libxcomposite,
   libxcrypt-legacy,
-  libuuid,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxkbcommon,
+  libxrandr,
+  ncurses5,
+  nspr,
+  nss,
+  numactl,
+  pango,
+  python3,
+  rdma-core,
   sqlite,
-  libffi,
-  bash,
+  ucx,
+  writableTmpDirAsHomeHook,
+  writeShellApplication,
+  zlib,
   # The list of components to install;
   # Either [ "all" ], [ "default" ], or a custom list of components.
   # If you want to install all default components plus an extra one, pass [ "default" <your extra components here> ]
@@ -62,17 +62,19 @@ let
 
   mkUpdateScript =
     {
-      pname,
       downloadPage,
       file,
+      pname,
     }:
     lib.getExe (writeShellApplication {
       name = "update-intel-oneapi";
+
       runtimeInputs = [
         curl
         htmlq
         common-updater-scripts
       ];
+
       text = ''
         download_page=${lib.escapeShellArg downloadPage}
         pname=${lib.escapeShellArg pname}
@@ -126,11 +128,17 @@ let
       zlib
       level-zero
     ];
+
+    dpcpp-ct = [ zlib ];
+
     dpcpp_dbg = [
       level-zero
       zlib
     ];
-    dpcpp-ct = [ zlib ];
+
+    ifort-compiler = [ ];
+    mkl = mpi ++ pti;
+
     mpi = [
       zlib
       rdma-core
@@ -141,7 +149,10 @@ let
       level-zero
       libffi
     ];
+
     pti = [ level-zero ];
+    tbb = [ ];
+
     vtune = [
       libdrm
       elfutils
@@ -175,28 +186,18 @@ let
       sqlite
       nspr
     ];
-    ifort-compiler = [ ];
-    tbb = [ ];
-    mkl = mpi ++ pti;
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "intel-oneapi-toolkit";
-
-  versionYear = "2026";
-  versionMajor = "0";
-  versionMinor = "0";
-  versionRel = "198";
-
   version = "${finalAttrs.versionYear}.${finalAttrs.versionMajor}.${finalAttrs.versionMinor}.${finalAttrs.versionRel}";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchurl {
     url = "https://registrationcenter-download.intel.com/akdlm/IRC_NAS/71180075-e4e3-4c6f-bbbb-19017ed0cf7d/intel-oneapi-toolkit-2026.0.0.198_offline.sh";
     hash = "sha256-FVpSiWvSQjndxzP0h+zLKvXK2ZV+7R4r/mDOFFNpTls=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     ncurses5
@@ -218,8 +219,6 @@ stdenv.mkDerivation (finalAttrs: {
     else
       depsByComponent.${shortName comp} or [ ]
   ) components;
-
-  dontUnpack = true;
 
   # See https://software.intel.com/content/www/us/en/develop/documentation/installation-guide-for-intel-oneapi-toolkits-linux/top/installation/install-with-command-line.html
   installPhase = ''
@@ -260,6 +259,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   autoPatchelfIgnoreMissingDeps = [
     # Needs to be dynamically loaded as it depends on the hardware
     "libcuda.so.1"
@@ -275,27 +276,34 @@ stdenv.mkDerivation (finalAttrs: {
     "liboutputgenerator.so"
   ];
 
+  dontUnpack = true;
+  versionMajor = "0";
+  versionMinor = "0";
+  versionRel = "198";
+  versionYear = "2026";
+  passthru.stdenv = callPackage ./stdenv.nix { kit = finalAttrs.finalPackage; };
+  passthru.tests = callPackage ./tests.nix { kit = finalAttrs.finalPackage; };
+
   passthru.updateScript = mkUpdateScript {
     inherit (finalAttrs) pname;
-    file = "package.nix";
     downloadPage = "https://www.intel.com/content/www/us/en/developer/tools/oneapi/oneapi-toolkit-download.html";
+    file = "package.nix";
   };
-
-  passthru.stdenv = callPackage ./stdenv.nix { kit = finalAttrs.finalPackage; };
-
-  passthru.tests = callPackage ./tests.nix { kit = finalAttrs.finalPackage; };
 
   meta = {
     description = "Intel oneAPI Toolkit";
     homepage = "https://www.intel.com/content/www/us/en/developer/tools/oneapi/oneapi-toolkit.html";
+
     license = with lib.licenses; [
       intel-eula
       issl
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       balsoft
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 })

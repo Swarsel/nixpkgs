@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libcap,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ libcap ];
 
   configureFlags = [

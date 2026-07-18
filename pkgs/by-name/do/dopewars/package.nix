@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  makeWrapper,
   curl,
-  ncurses,
   gtk3,
+  makeWrapper,
+  ncurses,
   pkg-config,
   scoreDirectory ? "$HOME/.local/share",
 }:
@@ -22,6 +22,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CpgqRYmrfOFxhC7yAS2OqRBi4r3Vesq3+7a0q5rc3vM=";
   };
 
+  patches = [
+    # remove the denied setting of setuid bit permission
+    ./0001-remove_setuid.patch
+    # fix compilation errors with gcc15
+    ./0002-fix_gcc15.patch
+  ];
+
   nativeBuildInputs = [
     autoreconfHook
     makeWrapper
@@ -32,13 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     curl
     gtk3
     ncurses
-  ];
-
-  patches = [
-    # remove the denied setting of setuid bit permission
-    ./0001-remove_setuid.patch
-    # fix compilation errors with gcc15
-    ./0002-fix_gcc15.patch
   ];
 
   preConfigure = ''
@@ -58,7 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://dopewars.sourceforge.io";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ geri1701 ];
-    mainProgram = "dopewars";
     platforms = lib.platforms.unix;
+    mainProgram = "dopewars";
   };
 })

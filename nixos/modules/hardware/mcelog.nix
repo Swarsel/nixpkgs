@@ -9,11 +9,13 @@
 
     hardware.mcelog = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Enable the Machine Check Exception logger.
         '';
+
+        type = lib.types.bool;
       };
     };
 
@@ -24,12 +26,13 @@
       packages = [ pkgs.mcelog ];
 
       services.mcelog = {
-        wantedBy = [ "multi-user.target" ];
         serviceConfig = {
-          ProtectHome = true;
           PrivateNetwork = true;
           PrivateTmp = true;
+          ProtectHome = true;
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
   };

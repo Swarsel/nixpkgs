@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
+  buildGoModule,
   installShellFiles,
   nixosTests,
   testers,
   upterm,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,23 +21,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-b52Rny6mYkmfF6Umn2tzlnUhNkENHPFpCzp55OWj92w=";
   };
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/owenthereal/upterm/internal/version.Version=${finalAttrs.version}"
-  ];
-
-  vendorHash = "sha256-UkZnLbxn0dPT43ycuevcwMw0dXnX1OPHLh5F1XMHWDI=";
-
-  subPackages = [
-    "cmd/upterm"
-    "cmd/uptermd"
-  ];
-
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
     installShellFiles
   ];
+
+  vendorHash = "sha256-UkZnLbxn0dPT43ycuevcwMw0dXnX1OPHLh5F1XMHWDI=";
+  doCheck = true;
 
   postInstall = ''
     # force go to build for build arch rather than host arch during cross-compiling
@@ -53,18 +43,28 @@ buildGoModule (finalAttrs: {
     done
   '';
 
-  doCheck = true;
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/owenthereal/upterm/internal/version.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/upterm"
+    "cmd/uptermd"
+  ];
 
   passthru.tests = {
     inherit (nixosTests) uptermd;
+
     version = testers.testVersion {
-      package = upterm;
-      command = "HOME=$PWD upterm version"; # upterm tries to write to $HOME
       version = "Upterm version ${finalAttrs.version}";
+      command = "HOME=$PWD upterm version"; # upterm tries to write to $HOME
+      package = upterm;
     };
   };
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Secure terminal-session sharing";

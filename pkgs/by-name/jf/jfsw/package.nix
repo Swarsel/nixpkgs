@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  which,
   SDL2,
+  gtk3,
   perl,
   pkg-config,
+  which,
   wrapGAppsHook3,
-  gtk3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,9 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "jonof";
     repo = "jfsw";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-L/EtdbyU6uZbSajQkI8IclskIfzm15uikSK2EZZZHXA=";
+    fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     which
@@ -35,9 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ];
 
-  strictDeps = true;
-  enableParallelBuilding = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -46,13 +45,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
+    inherit (SDL2.meta) platforms;
     description = "Modern port the original Shadow Warrior";
     homepage = "http://www.jonof.id.au/jfsw/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "sw";
     maintainers = with lib.maintainers; [ moody ];
+    mainProgram = "sw";
     broken = stdenv.hostPlatform.isDarwin;
-    inherit (SDL2.meta) platforms;
   };
 })

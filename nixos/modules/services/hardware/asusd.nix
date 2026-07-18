@@ -33,19 +33,19 @@ in
       with lib.types;
       let
         configType = submodule (
-          { text, source, ... }:
+          { source, text, ... }:
           {
             options = {
-              text = lib.mkOption {
-                default = null;
-                type = nullOr lines;
-                description = "Text of the file.";
-              };
-
               source = lib.mkOption {
                 default = null;
-                type = nullOr path;
                 description = "Path of the source file.";
+                type = nullOr path;
+              };
+
+              text = lib.mkOption {
+                default = null;
+                description = "Text of the file.";
+                type = nullOr lines;
               };
             };
           }
@@ -53,68 +53,77 @@ in
       in
       {
         enable = lib.mkEnableOption "the asusd service for ASUS ROG laptops";
-
         package = lib.mkPackageOption pkgs "asusctl" { };
 
         animeConfig = lib.mkOption {
-          type = nullOr configType;
           default = null;
+
           description = ''
             The content of /etc/asusd/anime.ron.
             See <https://asus-linux.org/manual/asusctl-manual/#anime-control>.
           '';
+
+          type = nullOr configType;
         };
 
         asusdConfig = lib.mkOption {
-          type = nullOr configType;
           default = null;
+
           description = ''
             The content of /etc/asusd/asusd.ron.
             See <https://asus-linux.org/manual/asusctl-manual/>.
           '';
+
+          type = nullOr configType;
         };
 
         auraConfigs = lib.mkOption {
-          type = attrsOf configType;
           default = { };
+
           description = ''
             The content of /etc/asusd/aura_<name>.ron.
             See <https://asus-linux.org/manual/asusctl-manual/#led-keyboard-control>.
           '';
-        };
 
-        profileConfig = lib.mkOption {
-          type = nullOr configType;
-          default = null;
-          description = ''
-            The content of /etc/asusd/profile.ron.
-            See <https://asus-linux.org/manual/asusctl-manual/#profiles>.
-          '';
+          type = attrsOf configType;
         };
 
         fanCurvesConfig = lib.mkOption {
-          type = nullOr configType;
           default = null;
+
           description = ''
             The content of /etc/asusd/fan_curves.ron.
             See <https://asus-linux.org/manual/asusctl-manual/#fan-curves>.
           '';
+
+          type = nullOr configType;
+        };
+
+        profileConfig = lib.mkOption {
+          default = null;
+
+          description = ''
+            The content of /etc/asusd/profile.ron.
+            See <https://asus-linux.org/manual/asusctl-manual/#profiles>.
+          '';
+
+          type = nullOr configType;
         };
 
         userLedModesConfig = lib.mkOption {
-          type = nullOr configType;
           default = null;
+
           description = ''
             The content of /etc/asusd/asusd-user-ledmodes.ron.
             See <https://asus-linux.org/manual/asusctl-manual/#led-keyboard-control>.
           '';
+
+          type = nullOr configType;
         };
       };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-
     environment.etc =
       let
         maybeConfig =
@@ -129,18 +138,19 @@ in
       {
         "asusd/anime.ron" = maybeConfig "anime.ron" cfg.animeConfig;
         "asusd/asusd.ron" = maybeConfig "asusd.ron" cfg.asusdConfig;
-        "asusd/profile.ron" = maybeConfig "profile.ron" cfg.profileConfig;
-        "asusd/fan_curves.ron" = maybeConfig "fan_curves.ron" cfg.fanCurvesConfig;
         "asusd/asusd_user_ledmodes.ron" = maybeConfig "asusd_user_ledmodes.ron" cfg.userLedModesConfig;
+        "asusd/fan_curves.ron" = maybeConfig "fan_curves.ron" cfg.fanCurvesConfig;
+        "asusd/profile.ron" = maybeConfig "profile.ron" cfg.profileConfig;
       }
       // lib.attrsets.concatMapAttrs (prod_id: value: {
         "asusd/aura_${prod_id}.ron" = maybeConfig "aura_${prod_id}.ron" value;
       }) cfg.auraConfigs;
 
+    environment.systemPackages = [ cfg.package ];
     services.dbus.enable = true;
-    systemd.packages = [ cfg.package ];
     services.dbus.packages = [ cfg.package ];
     services.udev.packages = [ cfg.package ];
+    systemd.packages = [ cfg.package ];
   };
 
   meta.maintainers = pkgs.asusctl.meta.maintainers;

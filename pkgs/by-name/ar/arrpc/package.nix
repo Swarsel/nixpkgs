@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 buildNpmPackage rec {
   pname = "arrpc";
@@ -16,24 +16,26 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-GNXQLOTuu+7QWjx1Y+eaAon70jj7XC3p5a7z7qJOB+Q=";
 
-  dontNpmBuild = true;
-
   postInstall = ''
     mkdir -p $out/lib/systemd/user
     substitute ${./arrpc.service} $out/lib/systemd/user/arrpc.service \
       --subst-var-by arrpc $out/bin/arrpc
   '';
 
+  dontNpmBuild = true;
+
   meta = {
-    changelog = "https://github.com/OpenAsar/arrpc/blob/${version}/changelog.md";
     description = "Open Discord RPC server for atypical setups";
     homepage = "https://arrpc.openasar.dev/";
+    changelog = "https://github.com/OpenAsar/arrpc/blob/${version}/changelog.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       anomalocaris
       NotAShelf
       ulysseszhan
     ];
+
     mainProgram = "arrpc";
   };
 }

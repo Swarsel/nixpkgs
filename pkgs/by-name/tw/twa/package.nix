@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bash,
   curl,
   dnsutils,
   gawk,
   jq,
+  makeWrapper,
   ncurses,
   netcat,
 }:
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-B+UwH7oCtediLzurjYuLp56IxiKNAqyoW5QkwXX72MA=";
   };
-
-  dontBuild = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -58,6 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Tiny web auditor with strong opinions";

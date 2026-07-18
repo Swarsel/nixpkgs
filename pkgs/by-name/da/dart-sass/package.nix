@@ -1,13 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  buildDartApplication,
   buf,
-  protoc-gen-dart,
-  writableTmpDirAsHomeHook,
-  testers,
+  buildDartApplication,
   dart-sass,
+  protoc-gen-dart,
   runCommand,
+  testers,
+  writableTmpDirAsHomeHook,
   writeText,
 }:
 
@@ -15,10 +15,10 @@ let
   embedded-protocol-version = "3.2.0";
 
   embedded-protocol = fetchFromGitHub {
+    hash = "sha256-yX30i1gbVZalVhefj9c37mpFOIDaQlsLeAh7UnY56ro=";
     owner = "sass";
     repo = "sass";
     tag = "embedded-protocol-${embedded-protocol-version}";
-    hash = "sha256-yX30i1gbVZalVhefj9c37mpFOIDaQlsLeAh7UnY56ro=";
   };
 in
 buildDartApplication rec {
@@ -32,8 +32,6 @@ buildDartApplication rec {
     hash = "sha256-hs028qXBzRGrh9xZAQGaFw7iXtkQm9fixMuBohupjrI=";
   };
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
   nativeBuildInputs = [
     buf
     protoc-gen-dart
@@ -46,31 +44,29 @@ buildDartApplication rec {
     buf generate
   '';
 
-  dartCompileFlags = [ "--define=version=${version}" ];
-
   postInstall = ''
     # dedupe identiall binaries
     ln -rsf $out/bin/{,dart-}sass
   '';
 
+  dartCompileFlags = [ "--define=version=${version}" ];
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   passthru = {
     inherit embedded-protocol-version embedded-protocol;
-    updateScript = ./update.sh;
+
     tests = {
       version = testers.testVersion {
-        package = dart-sass;
         command = "dart-sass --version";
+        package = dart-sass;
       };
 
       simple = testers.testEqualContents {
-        assertion = "dart-sass compiles a basic scss file";
-        expected = writeText "expected" ''
-          body h1{color:#123}
-        '';
         actual =
           runCommand "actual"
             {
               nativeBuildInputs = [ dart-sass ];
+
               base = writeText "base" ''
                 body {
                   $color: #123;
@@ -83,15 +79,23 @@ buildDartApplication rec {
             ''
               dart-sass --style=compressed $base > $out
             '';
+
+        assertion = "dart-sass compiles a basic scss file";
+
+        expected = writeText "expected" ''
+          body h1{color:#123}
+        '';
       };
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://github.com/sass/dart-sass";
     description = "Reference implementation of Sass, written in Dart";
-    mainProgram = "sass";
+    homepage = "https://github.com/sass/dart-sass";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lelgenio ];
+    mainProgram = "sass";
   };
 }

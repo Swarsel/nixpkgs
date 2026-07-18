@@ -1,13 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   bash,
   coreutils,
   curl,
-  fetchFromGitHub,
   gnugrep,
   gnused,
   iproute2,
   jq,
-  lib,
   resholve,
   wireguard-tools,
 }:
@@ -29,17 +29,22 @@ resholve.mkDerivation (finalAttrs: {
       --replace '$conf_dir/countries_iso31662.txt' "$out/share/countries_iso31662.txt"
   '';
 
-  dontBuild = true;
-
   installPhase = ''
     install -Dm 755 wgnord -t $out/bin/
     install -Dm 644 countries.txt -t $out/share/
     install -Dm 644 countries_iso31662.txt -t $out/share/
   '';
 
+  dontBuild = true;
+
   solutions.default = {
-    scripts = [ "bin/wgnord" ];
-    interpreter = "${bash}/bin/sh";
+    execer = [
+      "cannot:${iproute2}/bin/ip"
+      "cannot:${wireguard-tools}/bin/wg-quick"
+    ];
+
+    fix.aliases = true; # curl command in an alias
+
     inputs = [
       coreutils
       curl
@@ -49,19 +54,17 @@ resholve.mkDerivation (finalAttrs: {
       jq
       wireguard-tools
     ];
-    fix.aliases = true; # curl command in an alias
-    execer = [
-      "cannot:${iproute2}/bin/ip"
-      "cannot:${wireguard-tools}/bin/wg-quick"
-    ];
+
+    interpreter = "${bash}/bin/sh";
+    scripts = [ "bin/wgnord" ];
   };
 
   meta = {
     description = "NordVPN Wireguard (NordLynx) client in POSIX shell";
     homepage = "https://github.com/phirecc/wgnord";
-    maintainers = [ ];
     license = lib.licenses.mit;
-    mainProgram = "wgnord";
+    maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "wgnord";
   };
 })

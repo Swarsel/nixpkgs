@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   libsixel,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation {
@@ -17,22 +17,20 @@ stdenv.mkDerivation {
     hash = "sha256-l5eLnfV2ozAlfiTo2pr0a2BXv/pwfpX4pycw1Z7doj4=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ libsixel ];
 
   configureFlags = [
     (lib.enableFeature true "video-sixel")
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://github.com/saitoha/SDL1.2-SIXEL";
     description = "SDL 1.2 patched with libsixel support";
+    homepage = "https://github.com/saitoha/SDL1.2-SIXEL";
     license = lib.licenses.lgpl21;
-    mainProgram = "sdl-config";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "sdl-config";
   };
 }

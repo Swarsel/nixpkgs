@@ -1,11 +1,11 @@
 {
   lib,
-  ocaml,
   fetchFromGitHub,
+  bigarray-compat,
   buildDunePackage,
   dune-configurator,
   integers,
-  bigarray-compat,
+  ocaml,
   ounit2,
 }:
 
@@ -31,8 +31,8 @@ buildDunePackage (finalAttrs: {
   checkInputs = [ ounit2 ];
 
   meta = {
-    homepage = "https://github.com/ocamllabs/ocaml-ctypes";
     description = "Library for binding to C libraries using pure OCaml";
+    homepage = "https://github.com/ocamllabs/ocaml-ctypes";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ericbmerritt ];
   };

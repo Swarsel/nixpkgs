@@ -1,21 +1,27 @@
 {
   lib,
+  binlore,
   callPackage,
+  gawk,
   installShellFiles,
   rSrc,
-  version,
-  gawk,
-  binlore,
   resholve,
   resholve-utils,
+  version,
 }:
 let
   python27 = callPackage ./python27.nix { };
 in
 python27.pkgs.buildPythonApplication {
-  pname = "resholve";
   inherit version;
+  pname = "resholve";
   src = rSrc;
+
+  postPatch = ''
+    for file in setup.cfg _resholve/version.py; do
+      substituteInPlace $file --subst-var-by version ${version}
+    done
+  '';
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -24,19 +30,6 @@ python27.pkgs.buildPythonApplication {
     configargparse
     sedparse
   ];
-
-  makeWrapperArgs = [
-    "--prefix"
-    "PATH"
-    ":"
-    (lib.makeBinPath [ gawk ])
-  ];
-
-  postPatch = ''
-    for file in setup.cfg _resholve/version.py; do
-      substituteInPlace $file --subst-var-by version ${version}
-    done
-  '';
 
   postInstall = ''
     installManPage resholve.1
@@ -48,6 +41,15 @@ python27.pkgs.buildPythonApplication {
     rm $out/nix-support/propagated-build-inputs
   '';
 
+  __structuredAttrs = true;
+
+  makeWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    (lib.makeBinPath [ gawk ])
+  ];
+
   passthru = {
     inherit (resholve-utils)
       mkDerivation
@@ -55,6 +57,7 @@ python27.pkgs.buildPythonApplication {
       writeScript
       writeScriptBin
       ;
+
     tests = callPackage ./test.nix {
       inherit
         rSrc
@@ -64,8 +67,6 @@ python27.pkgs.buildPythonApplication {
     };
   };
 
-  __structuredAttrs = true;
-
   meta = {
     description = "Resolve external shell-script dependencies";
     homepage = "https://github.com/abathur/resholve";
@@ -73,6 +74,7 @@ python27.pkgs.buildPythonApplication {
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ abathur ];
     platforms = lib.platforms.all;
+
     knownVulnerabilities = [
       ''
         resholve depends on python27 (EOL). While it's safe to

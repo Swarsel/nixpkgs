@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  electron,
-  makeDesktopItem,
   copyDesktopItems,
+  electron,
+  fetchPnpmDeps,
   imagemagick,
+  makeDesktopItem,
   makeWrapper,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 let
   pnpm = pnpm_10;
@@ -26,27 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-zKvI9uwKiKKbHTzM/LIhCzUCcM104UNReRJb51iQonc=";
   };
-
-  nativeBuildInputs = [
-    nodejs
-    pnpmConfigHook
-    pnpm
-    copyDesktopItems
-    imagemagick
-    makeWrapper
-  ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-KjRcUVeByCXetX7skJoxt6LU6EZcOG+5U2y3sr3XP7A=";
-  };
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
 
   postPatch = ''
     substituteInPlace electron-builder.js \
@@ -65,6 +44,19 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/main/updater.ts \
       --replace-fail "if (!this.menubar.app.isPackaged)" "if (true)"
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    nodejs
+    pnpmConfigHook
+    pnpm
+    copyDesktopItems
+    imagemagick
+    makeWrapper
+  ];
+
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
 
   buildPhase = ''
     runHook preBuild
@@ -111,24 +103,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "gitify";
+      categories = [ "Development" ];
+      comment = "GitHub notifications on your menu bar";
       desktopName = "Gitify";
       exec = "gitify %U";
       icon = "gitify";
-      comment = "GitHub notifications on your menu bar";
-      categories = [ "Development" ];
+      name = "gitify";
       startupWMClass = "Gitify";
     })
   ];
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-KjRcUVeByCXetX7skJoxt6LU6EZcOG+5U2y3sr3XP7A=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "GitHub notifications on your menu bar";
     homepage = "https://gitify.io/";
     changelog = "https://github.com/gitify-app/gitify/releases/tag/v${finalAttrs.version}";
-    description = "GitHub notifications on your menu bar";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pineapplehunter ];
     platforms = lib.platforms.all;

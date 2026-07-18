@@ -1,19 +1,19 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nixosTests,
   bash,
-  which,
+  buildGoModule,
   ffmpeg,
   makeBinaryWrapper,
+  nixosTests,
+  which,
 }:
 let
   version = "0.2.5";
 in
 buildGoModule {
-  pname = "owncast";
   inherit version;
+  pname = "owncast";
 
   src = fetchFromGitHub {
     owner = "owncast";
@@ -22,13 +22,9 @@ buildGoModule {
     hash = "sha256-REgo9RC1izb9vJ6ae66Wti9yfP8DrCGetf6O4rX3DPY=";
   };
 
-  vendorHash = "sha256-T4nr4lNUEq6grZ21qumaOjIDIDoJK7Ql8j8WbCy2u3g=";
-
-  subPackages = [ "." ];
-
-  propagatedBuildInputs = [ ffmpeg ];
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  propagatedBuildInputs = [ ffmpeg ];
+  vendorHash = "sha256-T4nr4lNUEq6grZ21qumaOjIDIDoJK7Ql8j8WbCy2u3g=";
 
   postInstall = ''
     wrapProgram $out/bin/owncast \
@@ -47,17 +43,20 @@ buildGoModule {
     runHook postCheck
   '';
 
+  subPackages = [ "." ];
   passthru.tests.owncast = nixosTests.owncast;
 
   meta = {
     description = "Self-hosted video live streaming solution";
     homepage = "https://owncast.online";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       flexiondotorg
       MayNiklas
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "owncast";
   };
 }

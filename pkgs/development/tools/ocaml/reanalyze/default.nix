@@ -1,16 +1,14 @@
 {
   lib,
-  ocaml,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   cppo,
+  ocaml,
 }:
 
 buildDunePackage rec {
   pname = "reanalyze";
   version = "2.25.1";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "rescript-lang";
@@ -20,6 +18,7 @@ buildDunePackage rec {
   };
 
   nativeBuildInputs = [ cppo ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Program analysis for ReScript and OCaml projects";

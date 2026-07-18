@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  emptyDirectory,
+  git,
+  hello,
   runCommand,
   srcOnly,
-  hello,
-  emptyDirectory,
-  zlib,
-  git,
-  withCFlags,
-  stdenv,
   testers,
+  withCFlags,
+  zlib,
 }:
 
 let
@@ -94,11 +94,10 @@ let
   structuredAttrsDrv =
     let
       drv = stdenv.mkDerivation {
-        name = "drv-using-structured-attrs";
         src = emptyDirectory;
-
         env.NIX_DEBUG = true;
         __structuredAttrs = true;
+        name = "drv-using-structured-attrs";
       };
     in
     # Confirm the issue we are trying to avoid exists

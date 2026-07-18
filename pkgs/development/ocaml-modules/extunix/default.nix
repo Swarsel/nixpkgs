@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   dune-configurator,
   ppxlib,
 }:
@@ -9,8 +9,6 @@
 buildDunePackage (finalAttrs: {
   pname = "extunix";
   version = "0.4.4";
-
-  minimalOCamlVersion = "5.3.0";
 
   src = fetchurl {
     url = "https://github.com/ygrek/extunix/releases/download/v${finalAttrs.version}/extunix-${finalAttrs.version}.tbz";
@@ -31,6 +29,7 @@ buildDunePackage (finalAttrs: {
 
   # need absolute paths outside from sandbox
   doCheck = false;
+  minimalOCamlVersion = "5.3.0";
 
   meta = {
     description = "Collection of thin bindings to various low-level system API";

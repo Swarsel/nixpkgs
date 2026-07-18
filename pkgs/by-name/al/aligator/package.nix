@@ -1,28 +1,24 @@
 {
   lib,
-  fetchFromGitHub,
-  fontconfig,
-  llvmPackages,
-  nix-update-script,
   stdenv,
-
-  # nativeBuildInputs
-  doxygen,
-  cmake,
-  graphviz,
-  pkg-config,
-
-  # buildInputs
-  fmt,
-  mimalloc,
-
-  # propagatedBuildInputs
-  crocoddyl,
-  pinocchio,
-
+  fetchFromGitHub,
   # checkInputs
   catch2_3,
+  cmake,
+  # propagatedBuildInputs
+  crocoddyl,
+  # nativeBuildInputs
+  doxygen,
+  # buildInputs
+  fmt,
+  fontconfig,
   gbenchmark,
+  graphviz,
+  llvmPackages,
+  mimalloc,
+  nix-update-script,
+  pinocchio,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-8DO+lfM4mk4bA/IOEJlLaOp9snCUBHiw7RRcYEwJC7c=";
   };
+
+  outputs = [
+    "doc"
+    "out"
+  ];
 
   # aligator 0.19.0 expect gbenchmark 1.9.5, which is not merged yet:
   # https://github.com/NixOS/nixpkgs/pull/506375
@@ -49,11 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
         "benchmark::Benchmark" \
         "benchmark::internal::Benchmark"
   '';
-
-  outputs = [
-    "doc"
-    "out"
-  ];
 
   strictDeps = true;
 
@@ -77,11 +73,6 @@ stdenv.mkDerivation (finalAttrs: {
     pinocchio
   ];
 
-  checkInputs = [
-    catch2_3
-    gbenchmark
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_PYTHON_INTERFACE" false)
     (lib.cmakeBool "BUILD_WITH_PINOCCHIO_SUPPORT" true)
@@ -103,6 +94,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
+  checkInputs = [
+    catch2_3
+    gbenchmark
+  ];
 
   passthru.updateScript = nix-update-script { };
 

@@ -1,33 +1,33 @@
 {
   lib,
   stdenv,
-  darwin,
   fetchFromGitHub,
-  rustPlatform,
-  nixosTests,
-  nix-update-script,
   autoPatchelfHook,
-  installShellFiles,
   cmake,
-  ncurses,
-  scdoc,
-  shaderc,
-  pkg-config,
-  gcc-unwrapped,
+  darwin,
   fontconfig,
+  gcc-unwrapped,
+  installShellFiles,
   libGL,
-  vulkan-loader,
-  libxkbcommon,
-  withX11 ? !stdenv.hostPlatform.isDarwin,
   libx11,
+  libxcb,
   libxcursor,
   libxi,
+  libxkbcommon,
   libxrandr,
-  libxcb,
-  withWayland ? !stdenv.hostPlatform.isDarwin,
-  wayland,
-  testers,
+  ncurses,
+  nix-update-script,
+  nixosTests,
+  pkg-config,
   rio,
+  rustPlatform,
+  scdoc,
+  shaderc,
+  testers,
+  vulkan-loader,
+  wayland,
+  withWayland ? !stdenv.hostPlatform.isDarwin,
+  withX11 ? !stdenv.hostPlatform.isDarwin,
 }:
 let
   rlinkLibs =
@@ -60,7 +60,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-vlNt8hBb1fhO5tEAID5WXMc7I0k9vn6/L45nkTXS6Qg=";
   };
 
-  cargoHash = "sha256-8qVS9wINEBLKKWbylG3sHO+oqnLvsa1wgN0OOHFzOBM=";
+  outputs = [
+    "out"
+    "terminfo"
+  ];
 
   # The 0.4.7 "update to rust 1.96" bump (raphamorim/rio@6a11aa33c7) only made
   # clippy-style refactors that build on older rustc; the MSRV pin is cosmetic.
@@ -83,21 +86,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     shaderc
   ];
 
-  runtimeDependencies = rlinkLibs;
-
   buildInputs =
     rlinkLibs
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       darwin.libutil
     ];
 
-  outputs = [
-    "out"
-    "terminfo"
-  ];
-
-  buildNoDefaultFeatures = true;
-  buildFeatures = [ ] ++ lib.optional withX11 "x11" ++ lib.optional withWayland "wayland";
+  cargoHash = "sha256-8qVS9wINEBLKKWbylG3sHO+oqnLvsa1wgN0OOHFzOBM=";
 
   checkFlags = [
     # Fail to run in sandbox environment.
@@ -126,14 +121,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ln -s $out/bin/rio $out/Applications/Rio.app/Contents/MacOS/
   '';
 
-  passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [
-        "--version-regex"
-        "v([0-9.]+)"
-      ];
-    };
+  buildFeatures = [ ] ++ lib.optional withX11 "x11" ++ lib.optional withWayland "wayland";
+  buildNoDefaultFeatures = true;
+  runtimeDependencies = rlinkLibs;
 
+  passthru = {
     tests = {
       version = testers.testVersion { package = rio; };
     }
@@ -144,19 +136,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
       # Ref: https://github.com/NixOS/nixpkgs/issues/345825
       test = nixosTests.terminal-emulators.rio;
     };
+
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--version-regex"
+        "v([0-9.]+)"
+      ];
+    };
   };
 
   meta = {
     description = "Hardware-accelerated GPU terminal emulator powered by WebGPU";
     homepage = "https://rioterm.com/";
+    changelog = "https://github.com/raphamorim/rio/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       tornax
       otavio
       oluceps
     ];
+
     platforms = lib.platforms.unix;
-    changelog = "https://github.com/raphamorim/rio/releases/tag/v${finalAttrs.version}";
     mainProgram = "rio";
   };
 })

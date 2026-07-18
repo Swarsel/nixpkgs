@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -21,8 +21,8 @@ postgresqlBuildExtension (finalAttrs: {
   meta = {
     description = "Text similarity measurement and index searching based on bigrams";
     homepage = "https://pgbigm.osdn.jp/";
+    license = lib.licenses.postgresql;
     maintainers = [ ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.postgresql;
   };
 })

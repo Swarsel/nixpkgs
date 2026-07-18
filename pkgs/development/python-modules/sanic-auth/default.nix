@@ -2,36 +2,21 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
+  pytestCheckHook,
   sanic,
   sanic-testing,
-  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "sanic-auth";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "Sanic-Auth";
     inherit version;
     hash = "sha256-KAU066S70GO1hURQrW0n+L5/kFzpgen341hlia0ngjU=";
+    pname = "Sanic-Auth";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ sanic ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    sanic-testing
-  ];
-
-  disabledTests = [
-    # incompatible with sanic>=22.3.0
-    "test_login_required"
-  ];
 
   postPatch = ''
     # Support for httpx>=0.20.0
@@ -39,6 +24,20 @@ buildPythonPackage rec {
       --replace-fail "allow_redirects=False" "follow_redirects=False"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    sanic-testing
+  ];
+
+  build-system = [ setuptools ];
+  dependencies = [ sanic ];
+
+  disabledTests = [
+    # incompatible with sanic>=22.3.0
+    "test_login_required"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "sanic_auth" ];
 
   meta = {

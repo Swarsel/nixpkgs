@@ -21,16 +21,16 @@ stdenv.mkDerivation {
     # gcc-15 build fix:
     #   https://github.com/iagox86/hash_extender/pull/15
     (fetchpatch {
+      hash = "sha256-LCzv4FK+4WoJBYYUYB+zsC6358ZpTOxbE91W/1pFe6U=";
       name = "gcc-15.patch";
       url = "https://github.com/iagox86/hash_extender/commit/84d8d70eb10bcbe4dea2cf5a41d246d59a389e61.patch";
-      hash = "sha256-LCzv4FK+4WoJBYYUYB+zsC6358ZpTOxbE91W/1pFe6U=";
     })
   ];
 
   buildInputs = [ openssl ];
-
-  enableParallelBuilding = true;
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -38,11 +38,6 @@ stdenv.mkDerivation {
 
     runHook postCheck
   '';
-
-  # https://github.com/iagox86/hash_extender/issues/26
-  hardeningDisable = [ "fortify3" ];
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
 
   installPhase = ''
     runHook preInstall
@@ -53,12 +48,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+  # https://github.com/iagox86/hash_extender/issues/26
+  hardeningDisable = [ "fortify3" ];
+
   meta = {
     description = "Tool to automate hash length extension attacks";
-    mainProgram = "hash_extender";
     homepage = "https://github.com/iagox86/hash_extender";
     license = lib.licenses.bsd3;
-    badPlatforms = lib.platforms.darwin;
     maintainers = [ ];
+    badPlatforms = lib.platforms.darwin;
+    mainProgram = "hash_extender";
   };
 }

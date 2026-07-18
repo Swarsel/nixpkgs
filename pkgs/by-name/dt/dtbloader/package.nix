@@ -24,11 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     llvm
   ];
 
-  # Disable hardening which adds incompatible flags like -fPIC
-  hardeningDisable = [ "all" ];
-
-  enableParallelBuilding = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -41,6 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+  # Disable hardening which adds incompatible flags like -fPIC
+  hardeningDisable = [ "all" ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -50,10 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/TravMurav/dtbloader";
     changelog = "https://github.com/TravMurav/dtbloader/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ liberodark ];
+
     platforms = [
       # EFI file only works on aarch64 platforms
       "aarch64-linux"
     ];
-    maintainers = with lib.maintainers; [ liberodark ];
   };
 })

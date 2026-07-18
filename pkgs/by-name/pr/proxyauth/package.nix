@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromForgejo,
-  rustPlatform,
-  pkg-config,
-  openssl,
   nettle,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -14,15 +14,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.8.0";
 
   src = fetchFromForgejo {
-    domain = "git.proxyauth.app";
     owner = "ProxyAuth";
     repo = "ProxyAuth";
     rev = "13b353e4a8b34fc1736c834cfcaa9afe06e8abf8";
     # Tags were not replicated from GitHub to git.proxyauth.app
     hash = "sha256-cVjD91tBCGyslLsYUSP1Gy7KuMQZDVxQXU7fQkWeWyM=";
+    domain = "git.proxyauth.app";
   };
 
-  cargoHash = "sha256-YhFOh60D014Tb/Gi3u+tpmXbaaIFIB5HU4X8rhWPV40=";
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -33,13 +33,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     nettle
   ];
 
-  __structuredAttrs = true;
-  strictDeps = true;
+  cargoHash = "sha256-YhFOh60D014Tb/Gi3u+tpmXbaaIFIB5HU4X8rhWPV40=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
 
   passthru = {
     updateScript = nix-update-script { };

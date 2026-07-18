@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ config, lib, ... }:
 let
   facterLib = import ./lib.nix lib;
 
@@ -6,13 +6,15 @@ let
 in
 {
   options.hardware.facter.detected.boot.keyboard.kernelModules = lib.mkOption {
-    type = lib.types.listOf lib.types.str;
     default = lib.uniqueStrings (facterLib.collectDrivers (report.hardware.usb_controller or [ ]));
     defaultText = "hardware dependent";
-    example = [ "usbhid" ];
+
     description = ''
       List of kernel modules to include in the initrd to support the keyboard.
     '';
+
+    example = [ "usbhid" ];
+    type = lib.types.listOf lib.types.str;
   };
 
   config = lib.mkIf config.hardware.facter.enable {

@@ -23,17 +23,6 @@ stdenv.mkDerivation {
     ./add-limits-include.patch
   ];
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [
-    # If this package is built with clang it will attempt to
-    # use libcxx via the Cmake find_package interface.
-    # The default libcxx stdenv in llvmPackages doesn't provide
-    # this and so will fail.
-    "-DENABLE_LIBCXX=${if libcxxCmakeModule then "ON" else "OFF"}"
-    "-DCPPTOML_BUILD_EXAMPLES=OFF"
-  ];
-
   # Fix the build with CMake 4.
   #
   # See:
@@ -46,6 +35,17 @@ stdenv.mkDerivation {
         'cmake_minimum_required(VERSION 3.1.0)' \
         'cmake_minimum_required(VERSION 3.10)'
   '';
+
+  nativeBuildInputs = [ cmake ];
+
+  cmakeFlags = [
+    # If this package is built with clang it will attempt to
+    # use libcxx via the Cmake find_package interface.
+    # The default libcxx stdenv in llvmPackages doesn't provide
+    # this and so will fail.
+    "-DENABLE_LIBCXX=${if libcxxCmakeModule then "ON" else "OFF"}"
+    "-DCPPTOML_BUILD_EXAMPLES=OFF"
+  ];
 
   meta = {
     description = "C++ TOML configuration library";

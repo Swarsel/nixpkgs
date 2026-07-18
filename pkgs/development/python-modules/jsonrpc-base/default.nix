@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "jsonrpc-base";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "emlove";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "tests.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jsonrpc_base" ];
 
   meta = {

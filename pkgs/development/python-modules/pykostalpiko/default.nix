@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "pykostalpiko";
   version = "1.1.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Florian7843";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pykostalpiko" ];
 
   meta = {

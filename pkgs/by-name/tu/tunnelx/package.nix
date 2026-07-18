@@ -4,8 +4,8 @@
   fetchFromGitHub,
   jdk,
   jre,
-  survex,
   makeWrapper,
+  survex,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -31,12 +31,12 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/eyal0/Marlin";
     description = "Marlin 3D printer timing simulator";
+    homepage = "https://github.com/eyal0/Marlin";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/marlin-calc.x86_64-darwin
     mainProgram = "marlin-calc";
+    broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/marlin-calc.x86_64-darwin
   };
 }

@@ -1,29 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  click,
-  watchdog,
-  pympler,
-  portalocker,
-  pytestCheckHook,
-  pytest-cov-stub,
-  pytest-asyncio,
   aiosqlite,
-  sqlalchemy,
-  pymongo,
-  dnspython,
-  pymongo-inmemory,
-  pandas,
   birch,
+  buildPythonPackage,
+  click,
+  dnspython,
+  pandas,
+  portalocker,
+  pymongo,
+  pymongo-inmemory,
+  pympler,
+  pytest-asyncio,
+  pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
+  sqlalchemy,
+  watchdog,
 }:
 
 buildPythonPackage rec {
   pname = "cachier";
   version = "4.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-cachier";
@@ -32,19 +31,13 @@ buildPythonPackage rec {
     hash = "sha256-hiyevLMtKV8M8znB2mznHLRM+pVN6uCxZZVf3H0gjTI=";
   };
 
-  pythonRemoveDeps = [ "setuptools" ];
-
   nativeBuildInputs = [
     setuptools
   ];
 
-  dependencies = [
-    watchdog
-    pympler
-    portalocker
-    # not listed as dep, but needed to run main script entrypoint
-    click
-  ];
+  preBuild = ''
+    export HOME="$(mktemp -d)"
+  '';
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -57,6 +50,19 @@ buildPythonPackage rec {
     pymongo-inmemory
     pandas
     birch
+  ];
+
+  dependencies = [
+    watchdog
+    pympler
+    portalocker
+    # not listed as dep, but needed to run main script entrypoint
+    click
+  ];
+
+  disabledTestPaths = [
+    # Keeps breaking due to concurrent access or failing to close the db between tests.
+    "tests/sql_tests/test_sql_core.py"
   ];
 
   disabledTests = [
@@ -87,23 +93,16 @@ buildPythonPackage rec {
     "test_delete_cache_file"
   ];
 
-  disabledTestPaths = [
-    # Keeps breaking due to concurrent access or failing to close the db between tests.
-    "tests/sql_tests/test_sql_core.py"
-  ];
-
-  preBuild = ''
-    export HOME="$(mktemp -d)"
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "cachier" ];
+  pythonRemoveDeps = [ "setuptools" ];
 
   meta = {
+    description = "Persistent, stale-free, local and cross-machine caching for functions";
     homepage = "https://github.com/python-cachier/cachier";
     changelog = "https://github.com/python-cachier/cachier/releases/tag/${src.tag}";
-    description = "Persistent, stale-free, local and cross-machine caching for functions";
-    mainProgram = "cachier";
-    maintainers = with lib.maintainers; [ pbsds ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ pbsds ];
+    mainProgram = "cachier";
   };
 }

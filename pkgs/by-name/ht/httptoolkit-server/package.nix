@@ -1,18 +1,15 @@
 {
   lib,
-
-  buildNpmPackage,
   fetchFromGitHub,
-  writeShellScriptBin,
-
+  buildNpmPackage,
   cmake,
+  libdatachannel,
   nodejs_24,
   nss,
-  pkg-config,
-
-  libdatachannel,
   openssl,
+  pkg-config,
   plog,
+  writeShellScriptBin,
 }:
 
 let
@@ -31,18 +28,17 @@ let
   };
 
   overridesNodeModules = buildNpmPackage' {
-    pname = "httptoolkit-server-overrides-node-modules";
     inherit version src;
-    sourceRoot = "${src.name}/overrides/js";
-
+    pname = "httptoolkit-server-overrides-node-modules";
     npmDepsHash = "sha256-B/W6kD6x10bfsuehRb9oObi+Gf3Hovm0jMNLcbuigeo=";
-
-    dontBuild = true;
 
     installPhase = ''
       mkdir -p $out
       cp -r node_modules $out/node_modules
     '';
+
+    dontBuild = true;
+    sourceRoot = "${src.name}/overrides/js";
   };
 
   nodeDatachannel = buildNpmPackage' {
@@ -56,12 +52,6 @@ let
       hash = "sha256-xjYja+e2Z7X5cU4sEuSsJzG0gtmTPl3VrUf+ypd3zdw=";
     };
 
-    npmFlags = [ "--ignore-scripts" ];
-
-    makeCacheWritable = true;
-
-    npmDepsHash = "sha256-Qhib9ZGulTXjoYcZIWunf3/BSd2SLXZuWEmMcstaphs=";
-
     nativeBuildInputs = [
       cmake
       pkg-config
@@ -73,10 +63,9 @@ let
       plog
     ];
 
-    dontUseCmakeConfigure = true;
-
-    env.NIX_CFLAGS_COMPILE = "-I${nodejs}/include/node";
+    npmDepsHash = "sha256-Qhib9ZGulTXjoYcZIWunf3/BSd2SLXZuWEmMcstaphs=";
     env.CXXFLAGS = "-include stdexcept"; # for GCC13
+    env.NIX_CFLAGS_COMPILE = "-I${nodejs}/include/node";
 
     preBuild = ''
       # don't use static libs and don't use FetchContent
@@ -97,25 +86,24 @@ let
       install -Dm755 build/Release/*.node -t $out/build/Release
       runHook postInstall
     '';
+
+    dontUseCmakeConfigure = true;
+    makeCacheWritable = true;
+    npmFlags = [ "--ignore-scripts" ];
   };
 in
 buildNpmPackage' {
-  pname = "httptoolkit-server";
   inherit version src;
-
+  pname = "httptoolkit-server";
   patches = [ ./only-build-for-one-platform.patch ];
-
-  npmDepsHash = "sha256-OO1QI2KNbZo/2Bl6xC6oORVfDtBqjr2tuQmk6s70znM=";
-
-  npmFlags = [ "--ignore-scripts" ];
-
-  makeCacheWritable = true;
 
   nativeBuildInputs = [
     # the build system uses the `git` executable to get the current revision
     # we use a fake git to provide it with a fake revision
     (writeShellScriptBin "git" "echo '???'")
   ];
+
+  npmDepsHash = "sha256-OO1QI2KNbZo/2Bl6xC6oORVfDtBqjr2tuQmk6s70znM=";
 
   postConfigure = ''
     # make sure `oclif-dev' doesn't fetch `node` binary to bundle with the app
@@ -137,8 +125,6 @@ buildNpmPackage' {
   preBuild = ''
     npm run build:src
   '';
-
-  npmBuildScript = "build:release";
 
   installPhase = ''
     runHook preInstall
@@ -165,6 +151,10 @@ buildNpmPackage' {
     runHook postInstall
   '';
 
+  makeCacheWritable = true;
+  npmBuildScript = "build:release";
+  npmFlags = [ "--ignore-scripts" ];
+
   passthru = {
     inherit nodeDatachannel;
   };
@@ -173,8 +163,8 @@ buildNpmPackage' {
     description = "Backend for HTTP Toolkit";
     homepage = "https://httptoolkit.com/";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "httptoolkit-server";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.unix;
+    mainProgram = "httptoolkit-server";
   };
 }

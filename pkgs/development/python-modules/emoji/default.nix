@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "emoji";
   version = "2.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "carpedm20";
@@ -18,12 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-YHf5UIxbdBS4JEPrD4BWE+wzYkzAboMpGmuMbOgR7s0=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   disabledTests = [ "test_emojize_name_only" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "emoji" ];
 
   meta = {

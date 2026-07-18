@@ -1,33 +1,37 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # buildInputs
+  blas,
+  buildPythonPackage,
   # build-system
   cmake,
   ninja,
   numpy,
   scikit-build-core,
-
-  # buildInputs
-  blas,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sparsediffpy";
   version = "0.5.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "SparseDifferentiation";
     repo = "SparseDiffPy";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-PqtD3FjOpYLuu5ddeTdJ1UcL4Wvcv6RoZFGchpVdBAI=";
     # SparseDiffEngine is built from source and their cmake does not support finding it on the
     # system. We fallback to using the git submodule approach for now.
     fetchSubmodules = true;
-    hash = "sha256-PqtD3FjOpYLuu5ddeTdJ1UcL4Wvcv6RoZFGchpVdBAI=";
   };
+
+  buildInputs = [
+    blas
+  ];
+
+  # No tests
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     cmake
@@ -35,20 +39,14 @@ buildPythonPackage (finalAttrs: {
     numpy
     scikit-build-core
   ];
-  dontUseCmakeConfigure = true;
-
-  buildInputs = [
-    blas
-  ];
 
   dependencies = [
     numpy
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "sparsediffpy" ];
-
-  # No tests
-  doCheck = false;
 
   meta = {
     description = "Python bindings for SparseDiffEngine, a C library for computing sparse Jacobians and Hessians";

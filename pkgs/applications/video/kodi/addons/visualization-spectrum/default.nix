@@ -1,16 +1,15 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
-  pkg-config,
+  buildKodiBinaryAddon,
   glm,
   libGL,
+  pkg-config,
+  rel,
 }:
 
 buildKodiBinaryAddon rec {
   pname = "visualization-spectrum";
-  namespace = "visualization.spectrum";
   version = "21.0.2";
 
   src = fetchFromGitHub {
@@ -20,17 +19,20 @@ buildKodiBinaryAddon rec {
     hash = "sha256-8yGmZeLJ8AdT17yqYVxYbmkZ6DqhlCyblbTUzf8MhE4=";
   };
 
+  propagatedBuildInputs = [ glm ];
+
   extraBuildInputs = [
     pkg-config
     libGL
   ];
 
-  propagatedBuildInputs = [ glm ];
+  namespace = "visualization.spectrum";
+
   meta = {
-    homepage = "https://github.com/xbmc/visualization.spectrum";
     description = "Spectrum visualization for kodi";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/xbmc/visualization.spectrum";
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

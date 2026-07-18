@@ -1,17 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   # build inputs
   inflect,
+  joblib,
   num2words,
   numpy,
-  scipy,
   scikit-learn,
-  joblib,
-  wikipedia,
-  stemming,
+  scipy,
   setuptools,
+  stemming,
+  wikipedia,
 }:
 let
   pname = "quantulum3";
@@ -19,7 +19,6 @@ let
 in
 buildPythonPackage {
   inherit version pname;
-  pyproject = true;
 
   # Pypi source package doesn't contain tests
   src = fetchFromGitHub {
@@ -41,13 +40,14 @@ buildPythonPackage {
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "quantulum3" ];
 
   meta = {
     description = "Library for unit extraction - fork of quantulum for python3";
-    mainProgram = "quantulum3-training";
     homepage = "https://github.com/nielstron/quantulum3";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ happysalada ];
+    mainProgram = "quantulum3-training";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,13 +15,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-A575QnbituecxIX0mm7bOMC+V8jeWB4j3A2iWgDKBts=";
   };
 
-  cargoLock = {
-    lockFile = ./Cargo.lock;
-  };
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
+
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+  };
 
   meta = {
     description = "Raster to Vector Graphics Converter";

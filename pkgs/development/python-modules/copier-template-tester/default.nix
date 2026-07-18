@@ -1,16 +1,15 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   copier,
   corallium,
-  fetchFromGitHub,
-  lib,
   poetry-core,
   poetry-dynamic-versioning,
 }:
 buildPythonPackage rec {
   pname = "copier-template-tester";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KyleKing";
@@ -28,6 +27,8 @@ buildPythonPackage rec {
     copier
     corallium
   ];
+
+  pyproject = true;
 
   meta = {
     description = "CLI and pre-commit tool for testing copier";

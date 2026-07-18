@@ -1,29 +1,29 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   bison,
-  libiconv,
-  pcre,
-  libgcrypt,
-  libxcrypt-legacy,
   json_c,
+  libgcrypt,
+  libiconv,
+  libmysqlclient,
+  libpq,
+  libxcrypt-legacy,
   libxml2,
+  openssl,
+  pcre,
+  pkg-config,
+  python3,
+  sqlite,
+  zlib,
   ipv6Support ? false,
   mccpSupport ? false,
-  zlib,
   mysqlSupport ? false,
-  libmysqlclient,
   postgresSupport ? false,
-  libpq,
-  sqliteSupport ? false,
-  sqlite,
-  tlsSupport ? false,
-  openssl,
   pythonSupport ? false,
-  python3,
+  sqliteSupport ? false,
+  tlsSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./mysql-compat.patch
   ];
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -64,13 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional pythonSupport python3
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
-  # To support systems without autoconf LD puts its configure.ac in a non-default
-  # location and uses a helper script. We skip that script and symlink the .ac
-  # file to where the autoreconfHook find it.
-  preAutoreconf = ''
-    ln -fs ./autoconf/configure.ac ./
-  '';
-
   configureFlags = [
     "--enable-erq=xerq"
     "--enable-filename-spaces"
@@ -85,6 +76,10 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.enableFeature pythonSupport "use-python")
   ];
 
+  env.NIX_CFLAGS_COMPILE =
+    # Required for legacy C code in source
+    "-std=gnu99";
+
   preConfigure =
     lib.optionalString mysqlSupport ''
       export CPPFLAGS="-I${lib.getDev libmysqlclient}/include/mysql"
@@ -94,9 +89,10 @@ stdenv.mkDerivation (finalAttrs: {
       export LDFLAGS="$LDFLAGS -L${libiconv}/lib -liconv"
     '';
 
-  env.NIX_CFLAGS_COMPILE =
-    # Required for legacy C code in source
-    "-std=gnu99";
+  postInstall = ''
+    mkdir -p "$out/share/"
+    cp -v ../COPYRIGHT $out/share/
+  '';
 
   installTargets = [
     "install-driver"
@@ -104,15 +100,18 @@ stdenv.mkDerivation (finalAttrs: {
     "install-headers"
   ];
 
-  postInstall = ''
-    mkdir -p "$out/share/"
-    cp -v ../COPYRIGHT $out/share/
+  # To support systems without autoconf LD puts its configure.ac in a non-default
+  # location and uses a helper script. We skip that script and symlink the .ac
+  # file to where the autoreconfHook find it.
+  preAutoreconf = ''
+    ln -fs ./autoconf/configure.ac ./
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Gamedriver for LPMuds including a LPC compiler, interpreter and runtime";
-    homepage = "https://ldmud.eu";
-    changelog = "https://github.com/ldmud/ldmud/blob/${finalAttrs.version}/HISTORY";
+
     longDescription = ''
       LDMud started as a project to clean up and modernize Amylaar's LPMud
       gamedriver. Primary goals are full documentation, a commented source body
@@ -122,9 +121,12 @@ stdenv.mkDerivation (finalAttrs: {
       more than originally expected, and definitely enough to make LDMud
       a driver in its own right.
     '';
+
+    homepage = "https://ldmud.eu";
+    changelog = "https://github.com/ldmud/ldmud/blob/${finalAttrs.version}/HISTORY";
     # See https://github.com/ldmud/ldmud/blob/master/COPYRIGHT
     license = lib.licenses.unfreeRedistributable;
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = with lib.maintainers; [ cpu ];
+    platforms = with lib.platforms; linux ++ darwin;
   };
 })

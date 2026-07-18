@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
-  inkscape,
-  xcursorgen,
   fetchFromGitHub,
   fetchpatch2,
+  inkscape,
+  stdenvNoCC,
+  xcursorgen,
 }:
 let
   styles = [
@@ -23,9 +23,9 @@ let
   # build script such as the fact that the style to build isn't hardcoded. We don't simply use this
   # fork as source, as the upstream repository is what we want to track.
   buildScriptPatch = fetchpatch2 {
+    hash = "sha256-KCT4zNdep1TB7Oa4qrPw374ahT30o9/QrNTEgobp8zM=";
     name = "use-more-flexible-build-script.patch";
     url = "https://github.com/KiranWells/Lyra-Cursors/commit/2735acb37a51792388497c666cc28370660217cb.patch?full_index=1";
-    hash = "sha256-KCT4zNdep1TB7Oa4qrPw374ahT30o9/QrNTEgobp8zM=";
   };
 in
 stdenvNoCC.mkDerivation {
@@ -39,18 +39,16 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-lfaX8ouE0JaQwVBpAGsrLIExQZ2rCSFKPs3cch17eYg=";
   };
 
-  nativeBuildInputs = [
-    inkscape
-    xcursorgen
-  ];
-
   patches = [ buildScriptPatch ];
-
-  dontConfigure = true;
 
   postPatch = ''
     patchShebangs build.sh
   '';
+
+  nativeBuildInputs = [
+    inkscape
+    xcursorgen
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -72,11 +70,13 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Cursor theme inspired by macOS and based on capitaine-cursors";
     homepage = "https://github.com/yeyushengfan258/Lyra-Cursors";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ lordmzte ];
+    platforms = lib.platforms.all;
   };
 }

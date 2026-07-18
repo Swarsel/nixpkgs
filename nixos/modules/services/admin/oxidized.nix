@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -10,33 +10,13 @@ in
 {
   options.services.oxidized = {
     enable = lib.mkEnableOption "the oxidized configuration backup service";
-
     package = lib.mkPackageOption pkgs "oxidized" { };
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "oxidized";
-      description = ''
-        User under which the oxidized service runs.
-      '';
-    };
-
-    group = lib.mkOption {
-      type = lib.types.str;
-      default = "oxidized";
-      description = ''
-        Group under which the oxidized service runs.
-      '';
-    };
-
-    dataDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/oxidized";
-      description = "State directory for the oxidized service.";
-    };
-
     configFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
+      description = ''
+        Path to the oxidized configuration file.
+      '';
+
       example = lib.literalExpression ''
         pkgs.writeText "oxidized-config.yml" '''
           ---
@@ -66,14 +46,33 @@ in
           # ... additional config
         ''';
       '';
+
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    dataDir = lib.mkOption {
+      default = "/var/lib/oxidized";
+      description = "State directory for the oxidized service.";
+      type = lib.types.path;
+    };
+
+    group = lib.mkOption {
+      default = "oxidized";
+
       description = ''
-        Path to the oxidized configuration file.
+        Group under which the oxidized service runs.
       '';
+
+      type = lib.types.str;
     };
 
     routerDB = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
+
+      description = ''
+        Path to the file/database which contains the targets for oxidized.
+      '';
+
       example = lib.literalExpression ''
         pkgs.writeText "oxidized-router.db" '''
           hostname-sw1:powerconnect:username1:password2
@@ -81,44 +80,62 @@ in
           # ... additional hosts
         '''
       '';
+
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    user = lib.mkOption {
+      default = "oxidized";
+
       description = ''
-        Path to the file/database which contains the targets for oxidized.
+        User under which the oxidized service runs.
       '';
+
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.groups.${cfg.group} = { };
-    users.users.${cfg.user} = {
-      description = "Oxidized service user";
-      group = cfg.group;
-      home = cfg.dataDir;
-      createHome = true;
-      isSystemUser = true;
+    systemd.services.oxidized = {
+      after = [ "network.target" ];
+
+      serviceConfig = {
+        ExecStart = lib.getExe cfg.package;
+        Group = cfg.group;
+        KillSignal = "SIGKILL";
+        NoNewPrivileges = true;
+        PIDFile = "${cfg.dataDir}/.config/oxidized/pid";
+        Restart = "always";
+        UMask = "0077";
+        User = cfg.user;
+        WorkingDirectory = cfg.dataDir;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.tmpfiles.settings."10-oxidized" = {
       "${cfg.dataDir}" = {
         d = {
+          group = cfg.group;
           mode = "0750";
           user = cfg.user;
-          group = cfg.group;
         };
       };
 
       "${cfg.dataDir}/.config" = {
         d = {
+          group = cfg.group;
           mode = "0750";
           user = cfg.user;
-          group = cfg.group;
         };
       };
 
       "${cfg.dataDir}/.config/oxidized" = {
         d = {
+          group = cfg.group;
           mode = "0750";
           user = cfg.user;
-          group = cfg.group;
         };
       };
 
@@ -127,8 +144,8 @@ in
       "${cfg.dataDir}/.config/oxidized/config" = {
         "L+" = {
           argument = "${cfg.configFile}";
-          user = cfg.user;
           group = cfg.group;
+          user = cfg.user;
         };
       };
 
@@ -137,27 +154,20 @@ in
       "${cfg.dataDir}/.config/oxidized/router.db" = {
         "L+" = {
           argument = "${cfg.routerDB}";
-          user = cfg.user;
           group = cfg.group;
+          user = cfg.user;
         };
       };
     };
 
-    systemd.services.oxidized = {
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
+    users.groups.${cfg.group} = { };
 
-      serviceConfig = {
-        ExecStart = lib.getExe cfg.package;
-        User = cfg.user;
-        Group = cfg.group;
-        UMask = "0077";
-        NoNewPrivileges = true;
-        Restart = "always";
-        WorkingDirectory = cfg.dataDir;
-        KillSignal = "SIGKILL";
-        PIDFile = "${cfg.dataDir}/.config/oxidized/pid";
-      };
+    users.users.${cfg.user} = {
+      createHome = true;
+      description = "Oxidized service user";
+      group = cfg.group;
+      home = cfg.dataDir;
+      isSystemUser = true;
     };
   };
 }

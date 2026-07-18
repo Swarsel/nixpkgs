@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,20 +16,21 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-MaBBi2Qi7s9lfRWmnYkyr7PtwzC7ZL0jmyUXzISOXVg=";
-
   subPackages = [ "." ];
-
-  meta = {
-    description = "Bash-like shell and scripting environment with advanced features designed for safety and productivity";
-    mainProgram = "murex";
-    homepage = "https://murex.rocks";
-    license = lib.licenses.gpl2Only;
-    maintainers = with lib.maintainers; [
-      kashw2
-    ];
-  };
 
   passthru = {
     shellPath = "/bin/murex";
+  };
+
+  meta = {
+    description = "Bash-like shell and scripting environment with advanced features designed for safety and productivity";
+    homepage = "https://murex.rocks";
+    license = lib.licenses.gpl2Only;
+
+    maintainers = with lib.maintainers; [
+      kashw2
+    ];
+
+    mainProgram = "murex";
   };
 })

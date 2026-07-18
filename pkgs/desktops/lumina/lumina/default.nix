@@ -1,10 +1,15 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
   fluxbox,
   hicolor-icon-theme,
   libarchive,
+  libxcb,
+  libxcb-image,
+  libxcb-wm,
+  libxcursor,
+  libxdamage,
+  mkDerivation,
   numlockx,
   qmake,
   qtbase,
@@ -12,13 +17,8 @@
   qtsvg,
   qttools,
   qtx11extras,
-  libxcb-wm,
-  libxcb-image,
-  libxdamage,
-  libxcursor,
-  libxcb,
-  xscreensaver,
   wrapGAppsHook3,
+  xscreensaver,
 }:
 
 mkDerivation rec {
@@ -31,6 +31,32 @@ mkDerivation rec {
     rev = "v${version}";
     sha256 = "1llr65gilcf0k88f9mbwzlalqwdnjy4nv2jq7w154z0xmd6iarfq";
   };
+
+  patches = [
+    ./LuminaOS-NixOS.cpp.patch
+  ];
+
+  postPatch = ''
+    # Avoid absolute path on sessdir
+    substituteInPlace src-qt5/OS-detect.pri \
+      --replace L_SESSDIR=/usr/share/xsessions '#L_SESSDIR=/usr/share/xsessions'
+
+    # Fix plugin dir
+    substituteInPlace src-qt5/core/lumina-theme-engine/lthemeengine.pri \
+      --replace "\$\$[QT_INSTALL_PLUGINS]" "$out/$qtPluginPrefix"
+
+    # Fix location of fluxbox styles
+    substituteInPlace src-qt5/core-utils/lumina-config/pages/page_fluxbox_settings.cpp \
+      --replace 'LOS::AppPrefix()+"share/fluxbox' "\"${fluxbox}/share/fluxbox"
+
+    # Add full path of bsdtar to lumina-archiver
+    substituteInPlace src-qt5/desktop-utils/lumina-archiver/TarBackend.cpp \
+      --replace '"bsdtar"' '"${lib.getBin libarchive}/bin/bsdtar"'
+
+    # Fix installation path of lumina-sudo
+    substituteInPlace src-qt5/desktop-utils/lumina-sudo/lumina-sudo.pro \
+      --replace "/usr/bin" "$out/bin"
+  '';
 
   nativeBuildInputs = [
     qmake
@@ -55,44 +81,18 @@ mkDerivation rec {
     xscreensaver
   ];
 
-  dontDropIconThemeCache = true;
+  postInstall = ''
+    for theme in lumina-icons material-design-{dark,light}; do
+      gtk-update-icon-cache $out/share/icons/$theme
+    done
+  '';
 
-  patches = [
-    ./LuminaOS-NixOS.cpp.patch
-  ];
+  dontDropIconThemeCache = true;
 
   prePatch = ''
     # Copy Gentoo setup as NixOS setup and then patch it
     # TODO: write a complete NixOS setup?
     cp -a src-qt5/core/libLumina/LuminaOS-Gentoo.cpp src-qt5/core/libLumina/LuminaOS-NixOS.cpp
-  '';
-
-  postPatch = ''
-    # Avoid absolute path on sessdir
-    substituteInPlace src-qt5/OS-detect.pri \
-      --replace L_SESSDIR=/usr/share/xsessions '#L_SESSDIR=/usr/share/xsessions'
-
-    # Fix plugin dir
-    substituteInPlace src-qt5/core/lumina-theme-engine/lthemeengine.pri \
-      --replace "\$\$[QT_INSTALL_PLUGINS]" "$out/$qtPluginPrefix"
-
-    # Fix location of fluxbox styles
-    substituteInPlace src-qt5/core-utils/lumina-config/pages/page_fluxbox_settings.cpp \
-      --replace 'LOS::AppPrefix()+"share/fluxbox' "\"${fluxbox}/share/fluxbox"
-
-    # Add full path of bsdtar to lumina-archiver
-    substituteInPlace src-qt5/desktop-utils/lumina-archiver/TarBackend.cpp \
-      --replace '"bsdtar"' '"${lib.getBin libarchive}/bin/bsdtar"'
-
-    # Fix installation path of lumina-sudo
-    substituteInPlace src-qt5/desktop-utils/lumina-sudo/lumina-sudo.pro \
-      --replace "/usr/bin" "$out/bin"
-  '';
-
-  postInstall = ''
-    for theme in lumina-icons material-design-{dark,light}; do
-      gtk-update-icon-cache $out/share/icons/$theme
-    done
   '';
 
   qmakeFlags = [
@@ -105,11 +105,13 @@ mkDerivation rec {
 
   meta = {
     description = "Lightweight, portable desktop environment";
+
     longDescription = ''
       The Lumina Desktop Environment is a lightweight system interface
       that is designed for use on any Unix-like operating system. It
       is based on QT5.
     '';
+
     homepage = "https://lumina-desktop.org";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;

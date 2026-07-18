@@ -22,10 +22,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/fioncat/otree";
     changelog = "https://github.com/fioncat/otree/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "otree";
+
     maintainers = with lib.maintainers; [
       anas
       kiara
     ];
+
+    mainProgram = "otree";
   };
 })

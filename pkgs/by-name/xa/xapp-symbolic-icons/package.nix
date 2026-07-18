@@ -1,10 +1,10 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   meson,
   ninja,
   python3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -28,8 +28,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/xapp-project/xapp-symbolic-icons";
     description = "Set of symbolic icons for GTK applications and projects";
+    homepage = "https://github.com/xapp-project/xapp-symbolic-icons";
     license = lib.licenses.lgpl3Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

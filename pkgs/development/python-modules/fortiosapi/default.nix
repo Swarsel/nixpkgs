@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   oyaml,
   packaging,
   paramiko,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "fortiosapi";
   version = "1.0.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "fortinet-solutions-cse";
@@ -33,7 +32,7 @@ buildPythonPackage rec {
 
   # Tests require a local VM
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "fortiosapi" ];
 
   meta = {

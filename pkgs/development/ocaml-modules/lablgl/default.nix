@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocaml,
+  camlp-streams,
   findlib,
   libGLU,
   libglut,
-  camlp-streams,
+  ocaml,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,29 +20,22 @@ stdenv.mkDerivation rec {
     hash = "sha256-GiQKHMn5zHyvDrA2ve12X5YTm3/RZp8tukIqifgVaW4=";
   };
 
+  patches = [ ./META.patch ];
   strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
     findlib
   ];
+
   buildInputs = [
     libglut
     camlp-streams
   ];
+
   propagatedBuildInputs = [
     libGLU
   ];
-
-  patches = [ ./META.patch ];
-
-  preConfigure = ''
-    mkdir -p $out/bin
-    mkdir -p $out/lib/ocaml/${ocaml.version}/site-lib/stublibs
-    cp \
-      Makefile.config.${if stdenv.hostPlatform.isDarwin then "osx" else "ex"} \
-      Makefile.config
-  '';
 
   makeFlags = [
     "BINDIR=${placeholder "out"}/bin/"
@@ -60,6 +53,14 @@ stdenv.mkDerivation rec {
     "glutopt"
   ];
 
+  preConfigure = ''
+    mkdir -p $out/bin
+    mkdir -p $out/lib/ocaml/${ocaml.version}/site-lib/stublibs
+    cp \
+      Makefile.config.${if stdenv.hostPlatform.isDarwin then "osx" else "ex"} \
+      Makefile.config
+  '';
+
   postInstall = ''
     cp ./META $out/lib/ocaml/${ocaml.version}/site-lib/lablgl
   '';
@@ -68,10 +69,12 @@ stdenv.mkDerivation rec {
     description = "OpenGL bindings for ocaml";
     homepage = "http://wwwfun.kurims.kyoto-u.ac.jp/soft/lsl/lablgl.html";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       pSub
       vbgl
     ];
+
     mainProgram = "lablglut";
     broken = lib.versionOlder ocaml.version "4.06";
   };

@@ -1,12 +1,12 @@
 {
   lib,
-  python312,
-  nix-update-script,
   fetchFromGitHub,
   buildNpmPackage,
-  nodejs_24,
-  wrapGAppsHook3,
   libappindicator-gtk3,
+  nix-update-script,
+  nodejs_24,
+  python312,
+  wrapGAppsHook3,
 }:
 let
   version = "8.2.3-unstable-2025-10-14";
@@ -26,14 +26,6 @@ let
     src = "${src}/src/tribler/ui";
     npmDepsHash = "sha256-bgRwhqP6/NMPFbZks31IZtVGV9wzFFU6qSgyLvdarlY=";
 
-    # The prepack script runs the build script, which we'd rather do in the build phase.
-    npmPackFlags = [ "--ignore-scripts" ];
-
-    NODE_OPTIONS = "--openssl-legacy-provider";
-
-    dontNpmBuild = true;
-    dontNpmInstall = true;
-
     installPhase = ''
       mkdir -pv $out
       cp -prvd ./* $out/
@@ -41,6 +33,12 @@ let
       npm install
       npm run build
     '';
+
+    NODE_OPTIONS = "--openssl-legacy-provider";
+    dontNpmBuild = true;
+    dontNpmInstall = true;
+    # The prepack script runs the build script, which we'd rather do in the build phase.
+    npmPackFlags = [ "--ignore-scripts" ];
   };
 
 in
@@ -48,44 +46,6 @@ in
 python3.pkgs.buildPythonApplication {
   inherit version src;
   pname = "tribler";
-  pyproject = true;
-
-  build-system = with python3.pkgs; [
-    setuptools
-  ];
-
-  dependencies = with python3.pkgs; [
-    # requirements.txt
-    configobj
-    pyipv8
-    ipv8-rust-tunnels
-    libtorrent-rasterbar
-    lz4
-    pillow
-    pony
-    pystray
-
-    # build/requirements.txt
-    cx-freeze
-    requests
-  ];
-
-  nativeBuildInputs = [ wrapGAppsHook3 ];
-
-  buildInputs = with python3.pkgs; [
-    # setup.py requirements
-    pygobject3
-    # sphinx requirements
-    sphinxHook
-    sphinx
-    sphinx-autoapi
-    sphinx-rtd-theme
-    astroid
-    # tray icon deps
-    libappindicator-gtk3
-    # test phase requirements
-    pytestCheckHook
-  ];
 
   outputs = [
     "out"
@@ -103,6 +63,23 @@ python3.pkgs.buildPythonApplication {
     rm -r src/tribler/ui
     ln -s ${tribler-webui} src/tribler/ui
   '';
+
+  nativeBuildInputs = [ wrapGAppsHook3 ];
+
+  buildInputs = with python3.pkgs; [
+    # setup.py requirements
+    pygobject3
+    # sphinx requirements
+    sphinxHook
+    sphinx
+    sphinx-autoapi
+    sphinx-rtd-theme
+    astroid
+    # tray icon deps
+    libappindicator-gtk3
+    # test phase requirements
+    pytestCheckHook
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -124,6 +101,26 @@ python3.pkgs.buildPythonApplication {
     )
   '';
 
+  build-system = with python3.pkgs; [
+    setuptools
+  ];
+
+  dependencies = with python3.pkgs; [
+    # requirements.txt
+    configobj
+    pyipv8
+    ipv8-rust-tunnels
+    libtorrent-rasterbar
+    lz4
+    pillow
+    pony
+    pystray
+
+    # build/requirements.txt
+    cx-freeze
+    requests
+  ];
+
   disabledTests = [
     "test_request_for_version"
     "test_establish_connection"
@@ -133,19 +130,22 @@ python3.pkgs.buildPythonApplication {
     "test_get_set_explicit"
   ];
 
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Decentralized P2P filesharing client based on the Bittorrent protocol";
-    mainProgram = "tribler";
     homepage = "https://www.tribler.org/";
     changelog = "https://github.com/Tribler/tribler/releases/tag/v${version}";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       mkg20001
       mlaradji
       xvapx
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "tribler";
   };
 }

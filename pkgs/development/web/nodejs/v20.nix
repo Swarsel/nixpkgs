@@ -18,16 +18,16 @@ let
     # See https://github.com/NixOS/nixpkgs/issues/261820
     # and https://github.com/nodejs/gyp-next/pull/216
     (fetchpatch2 {
-      url = "https://github.com/nodejs/gyp-next/commit/706d04aba5bd18f311dc56f84720e99f64c73466.patch?full_index=1";
+      extraPrefix = "tools/gyp/";
       hash = "sha256-iV9qvj0meZkgRzFNur2v1jtLZahbqvSJ237NoM8pPZc=";
       stripLen = 1;
-      extraPrefix = "tools/gyp/";
+      url = "https://github.com/nodejs/gyp-next/commit/706d04aba5bd18f311dc56f84720e99f64c73466.patch?full_index=1";
     })
     (fetchpatch2 {
-      url = "https://github.com/nodejs/gyp-next/commit/706d04aba5bd18f311dc56f84720e99f64c73466.patch?full_index=1";
+      extraPrefix = "deps/npm/node_modules/node-gyp/gyp/";
       hash = "sha256-1iyeeAprmWpmLafvOOXW45iZ4jWFSloWJxQ0reAKBOo=";
       stripLen = 1;
-      extraPrefix = "deps/npm/node_modules/node-gyp/gyp/";
+      url = "https://github.com/nodejs/gyp-next/commit/706d04aba5bd18f311dc56f84720e99f64c73466.patch?full_index=1";
     })
 
     ./gyp-patches-pre-v22-import-sys.patch
@@ -35,7 +35,7 @@ let
 in
 buildNodejs {
   version = "20.20.2";
-  sha256 = "7aeeacdb858299e09a3e0510d4bb8b266923894a9e3ac0058ba89d4ecf4a4cca";
+
   patches = [
     ./configure-emulator.patch
     ./configure-armv6-vfpv2.patch
@@ -45,42 +45,46 @@ buildNodejs {
 
     # TODO: remove when included in a release
     (fetchpatch2 {
-      url = "https://github.com/nodejs/node/commit/8caa1dcee63b2c6fd7a9edf9b9a6222b38a2cf62.patch?full_index=1";
       hash = "sha256-DtN0bpYfo5twHz2GrLLgq4Bu2gFYTkNPMRKhrgeYRyA=";
       includes = [ "test/parallel/test-setproctitle.js" ];
+      url = "https://github.com/nodejs/node/commit/8caa1dcee63b2c6fd7a9edf9b9a6222b38a2cf62.patch?full_index=1";
     })
     (fetchpatch2 {
-      url = "https://github.com/nodejs/node/commit/499a5c345165f0d4a94b98d08f1ace7268781564.patch?full_index=1";
       hash = "sha256-wF4+CytC1OB5egJGOfLm1USsYY12f9kADymVrxotezE=";
+      url = "https://github.com/nodejs/node/commit/499a5c345165f0d4a94b98d08f1ace7268781564.patch?full_index=1";
     })
   ]
   ++ lib.optionals (!stdenv.hostPlatform.isStatic) [
     # Fix builds with shared llhttp
     (fetchpatch2 {
-      url = "https://github.com/nodejs/node/commit/ff3a028f8bf88da70dc79e1d7b7947a8d5a8548a.patch?full_index=1";
       hash = "sha256-LJcO3RXVPnpbeuD87fiJ260m3BQXNk3+vvZkBMFUz5w=";
+      url = "https://github.com/nodejs/node/commit/ff3a028f8bf88da70dc79e1d7b7947a8d5a8548a.patch?full_index=1";
     })
     # update tests for nghttp2 1.65
     ./deprecate-http2-priority-signaling.patch
     (fetchpatch2 {
-      url = "https://github.com/nodejs/node/commit/a63126409ad4334dd5d838c39806f38c020748b9.diff?full_index=1";
       hash = "sha256-lfq8PMNvrfJjlp0oE3rJkIsihln/Gcs1T/qgI3wW2kQ=";
       includes = [ "test/*" ];
+      url = "https://github.com/nodejs/node/commit/a63126409ad4334dd5d838c39806f38c020748b9.diff?full_index=1";
     })
     # Patch for nghttp2 1.69 support
     (fetchpatch2 {
-      url = "https://github.com/nodejs/node/commit/ecbc22dc3709290dcaadf634a28d8307a75952ee.diff?full_index=1";
       hash = "sha256-LwniqgKlG1IiqSzdP7UgBw3/9cn1jyz/jtx45yb6RWM=";
+
       includes = [
         "test/parallel/test-http2-misbehaving-flow-control-paused.js"
         "test/parallel/test-http2-misbehaving-flow-control.js"
       ];
+
+      url = "https://github.com/nodejs/node/commit/ecbc22dc3709290dcaadf634a28d8307a75952ee.diff?full_index=1";
     })
     (fetchpatch2 {
-      url = "https://github.com/nodejs/node/commit/4a32c00fb8dbe55c3bcf9ef43343968c9fe449e6.diff?full_index=1";
-      hash = "sha256-pex8ruwa4b/vWvfGA+nyN3JJP8NOturmwAQe4Rkd6nU=";
       excludes = [ "tools/nix/*" ];
+      hash = "sha256-pex8ruwa4b/vWvfGA+nyN3JJP8NOturmwAQe4Rkd6nU=";
+      url = "https://github.com/nodejs/node/commit/4a32c00fb8dbe55c3bcf9ef43343968c9fe449e6.diff?full_index=1";
     })
   ]
   ++ gypPatches;
+
+  sha256 = "7aeeacdb858299e09a3e0510d4bb8b266923894a9e3ac0058ba89d4ecf4a4cca";
 }

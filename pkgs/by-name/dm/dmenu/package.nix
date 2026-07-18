@@ -1,44 +1,31 @@
 {
   lib,
   stdenv,
-  fetchzip,
   bash,
-  fontconfig,
-  libx11,
-  libxinerama,
-  libxft,
-  writeText,
   # customization
   config,
+  fetchzip,
+  fontconfig,
+  # update script dependencies
+  gitUpdater,
+  libx11,
+  libxft,
+  libxinerama,
+  writeText,
   conf ? config.dmenu.conf or null,
   extraLibs ? config.dmenu.extraLibs or [ ],
   patches ? config.dmenu.patches or [ ],
-  # update script dependencies
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit patches;
   pname = "dmenu";
   version = "5.4";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchzip {
     url = "https://dl.suckless.org/tools/dmenu-${finalAttrs.version}.tar.gz";
     hash = "sha256-6bFq3Pj3cuZqLR0pkoJyfx3CDWmmSqkDoEVptMfej7g=";
   };
-
-  buildInputs = [
-    bash
-    fontconfig
-    libx11
-    libxinerama
-    libxft
-  ]
-  ++ extraLibs;
-
-  inherit patches;
 
   postPatch =
     let
@@ -51,6 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
       ${lib.optionalString (conf != null) "cp ${configFile} config.def.h"}
     '';
 
+  strictDeps = true;
+
+  buildInputs = [
+    bash
+    fontconfig
+    libx11
+    libxinerama
+    libxft
+  ]
+  ++ extraLibs;
+
   preConfigure = ''
     makeFlagsArray+=(
       PREFIX="$out"
@@ -58,17 +56,20 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = gitUpdater { url = "git://git.suckless.org/dmenu"; };
 
   meta = {
     description = "Generic, highly customizable, and efficient menu for the X Window System";
     homepage = "https://tools.suckless.org/dmenu";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pSub
       qusic
       _0david0mp
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "dmenu";
   };

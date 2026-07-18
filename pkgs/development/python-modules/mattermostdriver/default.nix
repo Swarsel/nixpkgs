@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  websockets,
   requests,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "mattermostdriver";
   version = "7.3.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,10 +20,10 @@ buildPythonPackage rec {
     requests
   ];
 
-  pythonImportsCheck = [ "mattermostdriver" ];
-
   # no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "mattermostdriver" ];
 
   meta = {
     description = "Python Mattermost Driver";

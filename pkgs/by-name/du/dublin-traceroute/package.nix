@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   jsoncpp,
-  libtins,
   libpcap,
-  openssl,
-  unstableGitUpdater,
+  libtins,
   nixosTests,
+  openssl,
+  pkg-config,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation {
@@ -22,6 +22,12 @@ stdenv.mkDerivation {
     rev = "a92118d93fd1fa7bdb827e741dd848b7f7083a1e";
     hash = "sha256-UJeFPVi3423Jh72fVk8QbLX1tTNAQ504xYs9HwVCkZc=";
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -41,19 +47,13 @@ stdenv.mkDerivation {
     openssl
   ];
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
   passthru = {
-    # 0.4.2 was tagged in 2017
-    updateScript = unstableGitUpdater { };
-
     tests = {
       inherit (nixosTests) dublin-traceroute;
     };
+
+    # 0.4.2 was tagged in 2017
+    updateScript = unstableGitUpdater { };
   };
 
   meta = {

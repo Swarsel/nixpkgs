@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  libgcrypt,
-  libgpg-error,
   bison,
   flex,
+  libgcrypt,
+  libgpg-error,
 }:
 
 # library that allows libbluray to play AACS protected bluray disks
@@ -24,22 +24,22 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-qIqg6+TJinf3rv/ZKrPvZKxUjGuCLoJIqLkmclvqCjk=";
   };
 
-  buildInputs = [
-    libgcrypt
-    libgpg-error
-  ];
-
   nativeBuildInputs = [
     bison
     flex
   ];
 
+  buildInputs = [
+    libgcrypt
+    libgpg-error
+  ];
+
   meta = {
-    homepage = "https://www.videolan.org/developers/libaacs.html";
     description = "Library to access AACS protected Blu-Ray disks";
-    mainProgram = "aacs_info";
+    homepage = "https://www.videolan.org/developers/libaacs.html";
     license = lib.licenses.lgpl21;
     maintainers = [ ];
     platforms = with lib.platforms; unix;
+    mainProgram = "aacs_info";
   };
 })

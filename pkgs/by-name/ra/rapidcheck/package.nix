@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  unstableGitUpdater,
   testers,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,15 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = unstableGitUpdater { };
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    updateScript = unstableGitUpdater { };
   };
 
   meta = {
-    description = "C++ framework for property based testing inspired by QuickCheck";
     inherit (finalAttrs.src.meta) homepage;
-    maintainers = [ ];
+    description = "C++ framework for property based testing inspired by QuickCheck";
     license = lib.licenses.bsd2;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
+
     pkgConfigModules = [
       "rapidcheck"
       # Extras
@@ -49,6 +51,5 @@ stdenv.mkDerivation (finalAttrs: {
       "rapidcheck_doctest"
       "rapidcheck_gtest"
     ];
-    platforms = lib.platforms.all;
   };
 })

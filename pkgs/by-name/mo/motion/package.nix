@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   ffmpeg-headless,
   libjpeg,
   libmicrohttpd,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-cross.diff
   ];
 
-  depsBuildBuild = [ pkg-config ];
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -38,17 +36,21 @@ stdenv.mkDerivation (finalAttrs: {
     libmicrohttpd
   ];
 
+  depsBuildBuild = [ pkg-config ];
+
   meta = {
     description = "Monitors the video signal from cameras";
     homepage = "https://motion-project.github.io/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       puffnfresh
       veprbl
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "motion";
     # never built on aarch64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;
-    mainProgram = "motion";
   };
 })

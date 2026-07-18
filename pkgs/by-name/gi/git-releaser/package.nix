@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,17 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-RROA+nvdZnGfkUuB+ksUWGG16E8tqdyMQss2z/XWGd8=";
-
   ldflags = [ "-X main.version=${finalAttrs.version}" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Tool for creating Git releases based on Semantic Versioning";
     homepage = "https://github.com/git-releaser/git-releaser";
     changelog = "https://github.com/git-releaser/git-releaser/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ jakuzure ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ jakuzure ];
     mainProgram = "git-releaser";
   };
 })

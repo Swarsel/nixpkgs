@@ -15,8 +15,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-4HuNBCvN1BDjIsEyo8Lo/H1rNgCFygkXqo6yD3oDf18=";
   };
 
-  sourceRoot = "${pname}/Project/QtCreator";
-
   nativeBuildInputs = [
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
@@ -42,6 +40,8 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  sourceRoot = "${pname}/Project/QtCreator";
 
   meta = {
     description = "Audiovisual analytics and filtering of video files";

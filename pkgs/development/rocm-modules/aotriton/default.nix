@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  rocm-cmake,
-  clr,
-  python3,
-  ninja,
-  xz,
-  writableTmpDirAsHomeHook,
-  pkg-config,
-  gpuTargets ? clr.localGpuTargets or clr.gpuTargets,
   # for passthru.tests
   aotriton,
+  clr,
+  cmake,
   hello,
+  ninja,
+  pkg-config,
+  python3,
+  rocm-cmake,
+  writableTmpDirAsHomeHook,
+  xz,
+  gpuTargets ? clr.localGpuTargets or clr.gpuTargets,
 }:
 let
   supportedTargets = lib.lists.intersectLists [
@@ -45,6 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-F7JjyS+6gMdCpOFLldTsNJdVzzVwd6lwW7+V8ZOZfig=";
     leaveDotGit = true;
+
     # fetch all submodules except unused triton submodule that is ~500MB
     postFetch = ''
       cd $out
@@ -56,20 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
-  cmakeBuildType = "RelWithDebInfo";
-  separateDebugInfo = true;
-  __structuredAttrs = true;
   strictDeps = true;
-  # Only set big-parallel when we are building kernels, no-image mode build is faster
-  requiredSystemFeatures = if anySupportedTargets then [ "big-parallel" ] else [ ];
-
-  env = {
-    AOTRITON_CI_SUPPLIED_SHA1 = finalAttrs.version;
-    ROCM_PATH = "${clr}";
-    CFLAGS = "-w -g1 -gz -Wno-c++11-narrowing";
-    CXXFLAGS = finalAttrs.env.CFLAGS;
-    TRITON_STORE_BINARY_ONLY = 1; # reduce triton disk space usage
-  };
 
   nativeBuildInputs = [
     cmake
@@ -98,32 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
     triton
   ]);
 
-  # Excerpt from README:
-  # Note: do not run ninja separately, due to the limit of the current build system,
-  # ninja install will run the whole build process unconditionally.
-  dontBuild = true;
-  # This builds+installs
-  installPhase = ''
-    runHook preInstall
-    ninja -v install
-    runHook postInstall
-  '';
-  # tests are intended to be ran manually as test/ python scripts and need accelerator
-  doCheck = false;
-  doInstallCheck = false;
-
-  # Need to set absolute paths to VENV and its PYTHON or
-  # build fails with "AOTRITON_INHERIT_SYSTEM_SITE_TRITON is enabled
-  # but triton is not available … no such file or directory"
-  # Set via a preConfigure hook so a valid absolute path can be
-  # picked if nix-shell is used against this package
-  preConfigure = ''
-    cmakeFlagsArray+=(
-      "-DVENV_DIR=$(pwd)/build/venv/"
-      "-DVENV_BIN_PYTHON=$(pwd)/build/venv/bin/python"
-    )
-  '';
-
   cmakeFlags = [
     # Disable building kernels if no supported targets are enabled
     (lib.cmakeBool "AOTRITON_NOIMAGE_MODE" (!anySupportedTargets))
@@ -146,12 +108,53 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "AOTRITON_TARGET_ARCH" supportedTargets')
   ];
 
+  env = {
+    AOTRITON_CI_SUPPLIED_SHA1 = finalAttrs.version;
+    CFLAGS = "-w -g1 -gz -Wno-c++11-narrowing";
+    CXXFLAGS = finalAttrs.env.CFLAGS;
+    ROCM_PATH = "${clr}";
+    TRITON_STORE_BINARY_ONLY = 1; # reduce triton disk space usage
+  };
+
+  # Need to set absolute paths to VENV and its PYTHON or
+  # build fails with "AOTRITON_INHERIT_SYSTEM_SITE_TRITON is enabled
+  # but triton is not available … no such file or directory"
+  # Set via a preConfigure hook so a valid absolute path can be
+  # picked if nix-shell is used against this package
+  preConfigure = ''
+    cmakeFlagsArray+=(
+      "-DVENV_DIR=$(pwd)/build/venv/"
+      "-DVENV_BIN_PYTHON=$(pwd)/build/venv/bin/python"
+    )
+  '';
+
+  # tests are intended to be ran manually as test/ python scripts and need accelerator
+  doCheck = false;
+
+  # This builds+installs
+  installPhase = ''
+    runHook preInstall
+    ninja -v install
+    runHook postInstall
+  '';
+
+  doInstallCheck = false;
+  __structuredAttrs = true;
+  cmakeBuildType = "RelWithDebInfo";
+  # Excerpt from README:
+  # Note: do not run ninja separately, due to the limit of the current build system,
+  # ninja install will run the whole build process unconditionally.
+  dontBuild = true;
+  # Only set big-parallel when we are building kernels, no-image mode build is faster
+  requiredSystemFeatures = if anySupportedTargets then [ "big-parallel" ] else [ ];
+  separateDebugInfo = true;
+
   passthru.tests = {
     # regression test that aotriton so doesn't crash in static constructor
     # currently known to fail on rocm toolchain but fine with default stdenv
     ld-preload-into-hello = stdenv.mkDerivation {
-      name = "aotriton-basic-load-test";
       nativeBuildInputs = [ hello ];
+
       buildCommand = ''
         set -e
         LD_PRELOAD=${
@@ -161,6 +164,8 @@ stdenv.mkDerivation (finalAttrs: {
         }/lib/libaotriton_v2.so ${hello}/bin/hello > /dev/null
         echo "ld-preload-into-hello" > $out
       '';
+
+      name = "aotriton-basic-load-test";
     };
   };
 
@@ -168,9 +173,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "ROCm Ahead of Time (AOT) Triton Math Library";
     homepage = "https://github.com/ROCm/aotriton";
     license = lib.licenses.mit;
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
     # ld: error: unable to insert .comment after .comment
     broken = stdenv.cc.isClang;
+    teams = [ lib.teams.rocm ];
   };
 })

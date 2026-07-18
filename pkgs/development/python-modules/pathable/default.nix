@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  pytest-cov-stub,
+  buildPythonPackage,
   poetry-core,
+  pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pathable";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "p1c2u";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-DjIn+hXZvx4tKyzQlWPwIxHD8vWy/jEvhdFY6HC+sdo=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "pathable" ];
 
   meta = {

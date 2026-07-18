@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  runCommand,
-  which,
-  python3,
-  help2man,
-  makeWrapper,
   ethtool,
+  help2man,
   inetutils,
   iperf,
   iproute2,
+  makeWrapper,
   net-tools,
+  python3,
+  runCommand,
   socat,
+  which,
 }:
 
 let
@@ -43,11 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "mininet";
   version = "2.3.1b4";
 
-  outputs = [
-    "out"
-    "py"
-  ];
-
   src = fetchFromGitHub {
     owner = "mininet";
     repo = "mininet";
@@ -55,10 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Z7Vbfu0EJ4+rCpckXrt3hgxeB9N2nnyPIXgPBnpV4uw=";
   };
 
-  buildFlags = [ "mnexec" ];
-  makeFlags = [ "PREFIX=$(out)" ];
+  outputs = [
+    "out"
+    "py"
+  ];
 
-  pythonPath = [ python3.pkgs.setuptools ];
   nativeBuildInputs = [
     help2man
     makeWrapper
@@ -70,10 +66,9 @@ stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
-  installTargets = [
-    "install-mnexec"
-    "install-manpages"
-  ];
+  makeFlags = [ "PREFIX=$(out)" ];
+  buildFlags = [ "mnexec" ];
+  doCheck = false;
 
   preInstall = ''
     mkdir -p $out $py
@@ -92,14 +87,19 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : "${generatedPath}"
   '';
 
-  doCheck = false;
+  installTargets = [
+    "install-mnexec"
+    "install-manpages"
+  ];
+
+  pythonPath = [ python3.pkgs.setuptools ];
 
   meta = {
     description = "Emulator for rapid prototyping of Software Defined Networks";
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     homepage = "https://github.com/mininet/mininet";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ teto ];
+    platforms = lib.platforms.linux;
     mainProgram = "mnexec";
   };
 })

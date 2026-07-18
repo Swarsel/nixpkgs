@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   inkscape,
+  stdenvNoCC,
   xcursorgen,
 }:
 
@@ -36,7 +36,7 @@ stdenvNoCC.mkDerivation rec {
     description = "Numix cursor theme";
     homepage = "https://numixproject.github.io";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

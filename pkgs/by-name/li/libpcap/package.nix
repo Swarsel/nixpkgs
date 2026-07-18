@@ -2,35 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  flex,
-  bison,
   bash,
   bashNonInteractive,
+  bison,
   bluez,
-  libnl,
-  libxcrypt,
-  pkg-config,
-  rdma-core,
-  withBluez ? false,
-  withRdma ? false,
-  withRemote ? false,
-
   # for passthru.tests
   ettercap,
+  flex,
+  haskellPackages,
+  libnl,
+  libxcrypt,
   nmap,
   ostinato,
+  pkg-config,
+  python3,
+  rdma-core,
   tcpreplay,
   vde2,
   wireshark,
-  python3,
-  haskellPackages,
+  withBluez ? false,
+  withRdma ? false,
+  withRemote ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libpcap";
   version = "1.10.6";
-
-  __structuredAttrs = true;
 
   src = fetchurl {
     url = "https://www.tcpdump.org/release/libpcap-${finalAttrs.version}.tar.gz";
@@ -44,6 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
+  nativeBuildInputs = [
+    flex
+    bison
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
+
   buildInputs = [
     bash
   ]
@@ -51,12 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withRdma [ rdma-core ]
   ++ lib.optionals withRemote [ libxcrypt ]
   ++ lib.optionals withBluez [ bluez ];
-
-  nativeBuildInputs = [
-    flex
-    bison
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
 
   # We need to force the autodetection because detection doesn't
   # work in pure build environments.
@@ -80,6 +77,7 @@ stdenv.mkDerivation (finalAttrs: {
     fi
   '';
 
+  __structuredAttrs = true;
   enableParallelBuilding = true;
 
   outputChecks.lib.disallowedRequisites = [
@@ -96,16 +94,17 @@ stdenv.mkDerivation (finalAttrs: {
       vde2
       wireshark
       ;
+
     inherit (python3.pkgs) pcapy-ng scapy;
     haskell-pcap = haskellPackages.pcap;
   };
 
   meta = {
-    homepage = "https://www.tcpdump.org";
     description = "Packet Capture Library";
-    mainProgram = "pcap-config";
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ fpletz ];
+    homepage = "https://www.tcpdump.org";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.unix;
+    mainProgram = "pcap-config";
   };
 })

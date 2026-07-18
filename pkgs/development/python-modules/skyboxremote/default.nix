@@ -12,12 +12,17 @@
 buildPythonPackage rec {
   pname = "skyboxremote";
   version = "0.0.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-GgRUMGnU91UQm9LNctYhHfRmfFujfc8fXc9KSwLrNBM=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ flit-core ];
 
@@ -27,12 +32,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "skyboxremote" ];
 
   meta = {

@@ -1,21 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
-  testers,
   boost,
   cmake,
   cmake-extras,
   dbus,
   dbus-cpp,
   gdk-pixbuf,
+  gitUpdater,
   glib,
   gst_all_1,
   gtest,
   libapparmor,
   libexif,
+  nixosTests,
   pkg-config,
   properties-cpp,
   qtbase,
@@ -23,6 +22,7 @@
   shared-mime-info,
   sqlite,
   taglib,
+  testers,
   udisks,
   wrapQtAppsHook,
 }:
@@ -83,16 +83,14 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-good
   ]);
 
-  nativeCheckInputs = [ dbus ];
-
-  checkInputs = [ gtest ];
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_QT6" withQt6)
     (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  nativeCheckInputs = [ dbus ];
+  checkInputs = [ gtest ];
 
   preCheck = ''
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
@@ -115,19 +113,22 @@ stdenv.mkDerivation (finalAttrs: {
       # music app needs mediascanner to work properly, so it can find files
       music-app = nixosTests.lomiri-music-app;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Media scanner service & access library";
     homepage = "https://gitlab.com/ubports/development/core/mediascanner2";
+
     changelog = "https://gitlab.com/ubports/development/core/mediascanner2/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
-    mainProgram = "mediascanner-service-2.0";
     platforms = lib.platforms.linux;
+    mainProgram = "mediascanner-service-2.0";
     pkgConfigModules = [ "mediascanner-2.0" ];
+    teams = [ lib.teams.lomiri ];
   };
 })

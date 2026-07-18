@@ -9,22 +9,23 @@
 buildPythonPackage rec {
   pname = "coreschema";
   version = "0.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
-    repo = "python-coreschema";
     owner = "core-api";
+    repo = "python-coreschema";
     rev = version;
     sha256 = "027pc753mkgbb3r1v1x7dsdaarq93drx0f79ppvw9pfkcjcq6wb1";
   };
 
   propagatedBuildInputs = [ jinja2 ];
-
   nativeCheckInputs = [ pytest ];
+
   checkPhase = ''
     cd ./tests
     pytest
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Python client library for Core Schema";

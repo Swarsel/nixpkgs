@@ -1,8 +1,8 @@
 {
   config,
-  options,
-  pkgs,
   lib,
+  pkgs,
+  options,
   ...
 }:
 let
@@ -50,59 +50,37 @@ in
   options.services.aesmd = {
     enable = mkEnableOption "Intel's Architectural Enclave Service Manager (AESM) for Intel SGX";
     package = mkPackageOption pkgs "sgx-psw" { };
+
     environment = mkOption {
-      type = with types; attrsOf str;
       default = { };
       description = "Additional environment variables to pass to the AESM service.";
+
       # Example environment variable for `sgx-azure-dcap-client` provider library
       example = {
         AZDCAP_COLLATERAL_VERSION = "v2";
         AZDCAP_DEBUG_LOG_LEVEL = "INFO";
       };
+
+      type = with types; attrsOf str;
     };
+
     quoteProviderLibrary = mkOption {
-      type = with types; nullOr path;
       default = null;
-      example = literalExpression "pkgs.sgx-azure-dcap-client";
       description = "Custom quote provider library to use.";
+      example = literalExpression "pkgs.sgx-azure-dcap-client";
+      type = with types; nullOr path;
     };
+
     settings = mkOption {
-      description = "AESM configuration";
       default = { };
+      description = "AESM configuration";
+
       type = types.submodule {
-        options.whitelistUrl = mkOption {
-          type = with types; nullOr str;
-          default = null;
-          example = "http://whitelist.trustedservices.intel.com/SGX/LCWL/Linux/sgx_white_list_cert.bin";
-          description = "URL to retrieve authorized Intel SGX enclave signers.";
-        };
-        options.proxy = mkOption {
-          type = with types; nullOr str;
-          default = null;
-          example = "http://proxy_url:1234";
-          description = "HTTP network proxy.";
-        };
-        options.proxyType = mkOption {
-          type =
-            with types;
-            nullOr (enum [
-              "default"
-              "direct"
-              "manual"
-            ]);
-          default = if (cfg.settings.proxy != null) then "manual" else null;
-          defaultText = literalExpression ''
-            if (config.${opt.settings}.proxy != null) then "manual" else null
-          '';
-          example = "default";
-          description = ''
-            Type of proxy to use. The `default` uses the system's default proxy.
-            If `direct` is given, uses no proxy.
-            A value of `manual` uses the proxy from
-            {option}`services.aesmd.settings.proxy`.
-          '';
-        };
         options.defaultQuotingType = mkOption {
+          default = null;
+          description = "Attestation quote type.";
+          example = "ecdsa_256";
+
           type =
             with types;
             nullOr (enum [
@@ -110,9 +88,45 @@ in
               "epid_linkable"
               "epid_unlinkable"
             ]);
+        };
+
+        options.proxy = mkOption {
           default = null;
-          example = "ecdsa_256";
-          description = "Attestation quote type.";
+          description = "HTTP network proxy.";
+          example = "http://proxy_url:1234";
+          type = with types; nullOr str;
+        };
+
+        options.proxyType = mkOption {
+          default = if (cfg.settings.proxy != null) then "manual" else null;
+
+          defaultText = literalExpression ''
+            if (config.${opt.settings}.proxy != null) then "manual" else null
+          '';
+
+          description = ''
+            Type of proxy to use. The `default` uses the system's default proxy.
+            If `direct` is given, uses no proxy.
+            A value of `manual` uses the proxy from
+            {option}`services.aesmd.settings.proxy`.
+          '';
+
+          example = "default";
+
+          type =
+            with types;
+            nullOr (enum [
+              "default"
+              "direct"
+              "manual"
+            ]);
+        };
+
+        options.whitelistUrl = mkOption {
+          default = null;
+          description = "URL to retrieve authorized Intel SGX enclave signers.";
+          example = "http://whitelist.trustedservices.intel.com/SGX/LCWL/Linux/sgx_white_list_cert.bin";
+          type = with types; nullOr str;
         };
       };
     };
@@ -135,25 +149,46 @@ in
         aesmDataFolder = "/var/opt/aesmd/data";
       in
       {
-        description = "Intel Architectural Enclave Service Manager";
-        wantedBy = [ "multi-user.target" ];
-
         after = [
           "auditd.service"
           "network.target"
         ];
 
+        description = "Intel Architectural Enclave Service Manager";
+
         environment = {
-          NAME = "aesm_service";
           AESM_PATH = storeAesmFolder;
           LD_LIBRARY_PATH = makeLibraryPath [ cfg.quoteProviderLibrary ];
+          NAME = "aesm_service";
         }
         // cfg.environment;
 
-        # Ensure the SGX application enclave device is available
-        unitConfig.AssertPathExists = [ "/dev/sgx_enclave" ];
-
         serviceConfig = {
+          BindPaths = [
+            # Hardcoded path CONFIG_SOCKET_PATH in psw/ae/aesm_service/source/core/ipc/SocketConfig.h
+            "%t/aesmd:/var/run/aesmd"
+            "%S/aesmd:/var/opt/aesmd"
+          ];
+
+          BindReadOnlyPaths = [
+            builtins.storeDir
+            # Hardcoded path AESM_CONFIG_FILE in psw/ae/aesm_service/source/utils/aesm_config.cpp
+            "${configFile}:/etc/aesmd.conf"
+          ];
+
+          CapabilityBoundingSet = "";
+
+          DeviceAllow = [
+            # in-tree driver
+            "/dev/sgx_enclave rw"
+            "/dev/sgx_provision rw"
+          ];
+
+          DevicePolicy = "closed";
+          DynamicUser = true;
+          ExecReload = ''${pkgs.coreutils}/bin/kill -SIGHUP "$MAINPID"'';
+          ExecStart = "${sgx-psw}/bin/aesm_service --no-daemon";
+
           # Run with elevated privileges to create /var/opt/aesmd/... before
           # dropping to DynamicUser.
           ExecStartPre = ''
@@ -161,51 +196,34 @@ in
                 "${storeAesmFolder}/data/white_list_cert_to_be_verify.bin" \
                 "${aesmDataFolder}/white_list_cert_to_be_verify.bin"
           '';
-          ExecStart = "${sgx-psw}/bin/aesm_service --no-daemon";
-          ExecReload = ''${pkgs.coreutils}/bin/kill -SIGHUP "$MAINPID"'';
 
-          Restart = "on-failure";
-          RestartSec = "15s";
-
-          DynamicUser = true;
           Group = "sgx";
-          SupplementaryGroups = [
-            config.hardware.cpu.intel.sgx.provision.group
-          ];
-
-          Type = "simple";
-
-          WorkingDirectory = storeAesmFolder;
-          StateDirectory = "aesmd";
-          StateDirectoryMode = "0700";
-          RuntimeDirectory = "aesmd";
-          RuntimeDirectoryMode = "0750";
-
-          # --- Hardening ---
-
-          RootDirectory = "%t/aesmd";
-          BindReadOnlyPaths = [
-            builtins.storeDir
-            # Hardcoded path AESM_CONFIG_FILE in psw/ae/aesm_service/source/utils/aesm_config.cpp
-            "${configFile}:/etc/aesmd.conf"
-          ];
-          BindPaths = [
-            # Hardcoded path CONFIG_SOCKET_PATH in psw/ae/aesm_service/source/core/ipc/SocketConfig.h
-            "%t/aesmd:/var/run/aesmd"
-            "%S/aesmd:/var/opt/aesmd"
-          ];
-
+          KeyringMode = "private";
+          LockPersonality = true;
+          # True breaks stuff
+          MemoryDenyWriteExecute = false;
+          NoNewPrivileges = true;
+          NotifyAccess = "none";
           # PrivateDevices=true will mount /dev noexec which breaks AESM
           PrivateDevices = false;
-          DevicePolicy = "closed";
-          DeviceAllow = [
-            # in-tree driver
-            "/dev/sgx_enclave rw"
-            "/dev/sgx_provision rw"
-          ];
-
+          PrivateMounts = true;
           # Requires Internet access for attestation
           PrivateNetwork = false;
+          PrivateTmp = true;
+          PrivateUsers = true;
+          ProcSubset = "pid";
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "invisible";
+          ProtectSystem = "strict";
+          RemoveIPC = true;
+          Restart = "on-failure";
+          RestartSec = "15s";
 
           RestrictAddressFamilies = [
             # Allocates the socket /var/run/aesmd/aesm.socket
@@ -215,8 +233,22 @@ in
             "AF_INET6"
           ];
 
-          # True breaks stuff
-          MemoryDenyWriteExecute = false;
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          # --- Hardening ---
+          RootDirectory = "%t/aesmd";
+          RuntimeDirectory = "aesmd";
+          RuntimeDirectoryMode = "0750";
+          StateDirectory = "aesmd";
+          StateDirectoryMode = "0700";
+
+          SupplementaryGroups = [
+            config.hardware.cpu.intel.sgx.provision.group
+          ];
+
+          SystemCallArchitectures = "native";
+          SystemCallErrorNumber = "EPERM";
 
           # needs the ipc syscall in order to run
           SystemCallFilter = [
@@ -239,33 +271,15 @@ in
             "~@sync"
             "~@timer"
           ];
-          SystemCallArchitectures = "native";
-          SystemCallErrorNumber = "EPERM";
 
-          CapabilityBoundingSet = "";
-          KeyringMode = "private";
-          LockPersonality = true;
-          NoNewPrivileges = true;
-          NotifyAccess = "none";
-          PrivateMounts = true;
-          PrivateTmp = true;
-          PrivateUsers = true;
-          ProcSubset = "pid";
-          ProtectClock = true;
-          ProtectControlGroups = true;
-          ProtectHome = true;
-          ProtectHostname = true;
-          ProtectKernelLogs = true;
-          ProtectKernelModules = true;
-          ProtectKernelTunables = true;
-          ProtectProc = "invisible";
-          ProtectSystem = "strict";
-          RemoveIPC = true;
-          RestrictNamespaces = true;
-          RestrictRealtime = true;
-          RestrictSUIDSGID = true;
+          Type = "simple";
           UMask = "0066";
+          WorkingDirectory = storeAesmFolder;
         };
+
+        # Ensure the SGX application enclave device is available
+        unitConfig.AssertPathExists = [ "/dev/sgx_enclave" ];
+        wantedBy = [ "multi-user.target" ];
       };
   };
 }

@@ -26,9 +26,9 @@ let
 
   ipsecConf =
     {
-      setup,
-      connections,
       ca,
+      connections,
+      setup,
     }:
     let
       # https://wiki.strongswan.org/projects/strongswan/wiki/IpsecConf
@@ -53,12 +53,12 @@ let
 
   strongswanConf =
     {
-      setup,
-      connections,
       ca,
-      secretsFile,
-      managePlugins,
+      connections,
       enabledPlugins,
+      managePlugins,
+      secretsFile,
+      setup,
     }:
     toFile "strongswan.conf" ''
       charon {
@@ -81,35 +81,34 @@ in
   options.services.strongswan = {
     enable = mkEnableOption "strongSwan";
 
-    secrets = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "/run/keys/ipsec-foo.secret" ];
-      description = ''
-        A list of paths to IPSec secret files. These
-        files will be included into the main ipsec.secrets file with
-        the `include` directive. It is safer if these
-        paths are absolute.
-      '';
-    };
-
-    setup = mkOption {
-      type = types.attrsOf types.str;
+    ca = mkOption {
       default = { };
-      example = {
-        cachecrls = "yes";
-        strictcrlpolicy = "yes";
-      };
+
       description = ''
-        A set of options for the ‘config setup’ section of the
-        {file}`ipsec.conf` file. Defines general
-        configuration parameters.
+        A set of CAs (certification authorities) and their options for
+        the ‘ca xxx’ sections of the {file}`ipsec.conf`
+        file.
       '';
+
+      example = {
+        strongswan = {
+          auto = "add";
+          cacert = "/run/keys/strongswanCert.pem";
+          crluri = "http://crl2.strongswan.org/strongswan.crl";
+        };
+      };
+
+      type = types.attrsOf (types.attrsOf types.str);
     };
 
     connections = mkOption {
-      type = types.attrsOf (types.attrsOf types.str);
       default = { };
+
+      description = ''
+        A set of connections and their options for the ‘conn xxx’
+        sections of the {file}`ipsec.conf` file.
+      '';
+
       example = literalExpression ''
         {
           "%default" = {
@@ -125,46 +124,62 @@ in
           };
         }
       '';
-      description = ''
-        A set of connections and their options for the ‘conn xxx’
-        sections of the {file}`ipsec.conf` file.
-      '';
+
+      type = types.attrsOf (types.attrsOf types.str);
     };
 
-    ca = mkOption {
-      type = types.attrsOf (types.attrsOf types.str);
-      default = { };
-      example = {
-        strongswan = {
-          auto = "add";
-          cacert = "/run/keys/strongswanCert.pem";
-          crluri = "http://crl2.strongswan.org/strongswan.crl";
-        };
-      };
+    enabledPlugins = mkOption {
+      default = [ ];
+
       description = ''
-        A set of CAs (certification authorities) and their options for
-        the ‘ca xxx’ sections of the {file}`ipsec.conf`
-        file.
+        A list of additional plugins to enable if
+        {option}`managePlugins` is true.
       '';
+
+      type = types.listOf types.str;
     };
 
     managePlugins = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         If set to true, this option will disable automatic plugin loading and
         then tell strongSwan to enable the plugins specified in the
         {option}`enabledPlugins` option.
       '';
+
+      type = types.bool;
     };
 
-    enabledPlugins = mkOption {
-      type = types.listOf types.str;
+    secrets = mkOption {
       default = [ ];
+
       description = ''
-        A list of additional plugins to enable if
-        {option}`managePlugins` is true.
+        A list of paths to IPSec secret files. These
+        files will be included into the main ipsec.secrets file with
+        the `include` directive. It is safer if these
+        paths are absolute.
       '';
+
+      example = [ "/run/keys/ipsec-foo.secret" ];
+      type = types.listOf types.str;
+    };
+
+    setup = mkOption {
+      default = { };
+
+      description = ''
+        A set of options for the ‘config setup’ section of the
+        {file}`ipsec.conf` file. Defines general
+        configuration parameters.
+      '';
+
+      example = {
+        cachecrls = "yes";
+        strictcrlpolicy = "yes";
+      };
+
+      type = types.attrsOf types.str;
     };
   };
 
@@ -177,16 +192,9 @@ in
       environment.etc."ipsec.secrets".text = ipsecSecrets cfg.secrets;
 
       systemd.services.strongswan = {
-        description = "strongSwan IPSec Service";
-        wantedBy = [ "multi-user.target" ];
-        path = with pkgs; [
-          kmod
-          iproute2
-          iptables
-          util-linux
-        ]; # XXX Linux
-        wants = [ "network-online.target" ];
         after = [ "network-online.target" ];
+        description = "strongSwan IPSec Service";
+
         environment = {
           STRONGSWAN_CONF = strongswanConf {
             inherit
@@ -196,16 +204,29 @@ in
               managePlugins
               enabledPlugins
               ;
+
             secretsFile = "/etc/ipsec.secrets";
           };
         };
-        serviceConfig = {
-          ExecStart = "${pkgs.strongswan}/sbin/ipsec start --nofork";
-        };
+
+        path = with pkgs; [
+          kmod
+          iproute2
+          iptables
+          util-linux
+        ]; # XXX Linux
+
         preStart = ''
           # with 'nopeerdns' setting, ppp writes into this folder
           mkdir -m 700 -p /etc/ppp
         '';
+
+        serviceConfig = {
+          ExecStart = "${pkgs.strongswan}/sbin/ipsec start --nofork";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       };
     };
 }

@@ -1,14 +1,12 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "omd";
   version = "1.3.2";
-
-  minimalOCamlVersion = "4.03";
 
   src = fetchurl {
     url = "https://github.com/ocaml/omd/releases/download/${finalAttrs.version}/omd-${finalAttrs.version}.tbz";
@@ -18,6 +16,8 @@ buildDunePackage (finalAttrs: {
   preBuild = ''
     substituteInPlace src/dune --replace "bytes)" ")"
   '';
+
+  minimalOCamlVersion = "4.03";
 
   meta = {
     description = "Extensible Markdown library and tool in OCaml";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "rova";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GidoHakvoort";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ requests ];
-
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "rova" ];
 
   meta = {

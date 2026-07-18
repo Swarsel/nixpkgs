@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
   bzip2,
   xz,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,12 +12,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.3.1";
 
   src = fetchFromGitHub {
-    name = "freebayes-${finalAttrs.version}-src";
     owner = "freebayes";
     repo = "freebayes";
     tag = "v${finalAttrs.version}";
     sha256 = "035nriknjqq8gvil81vvsmvqwi35v80q8h1cw24vd1gdyn1x7bys";
     fetchSubmodules = true;
+    name = "freebayes-${finalAttrs.version}-src";
   };
 
   buildInputs = [
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Bayesian haplotype-based polymorphism discovery and genotyping";
-    license = lib.licenses.mit;
     homepage = "https://github.com/freebayes/freebayes";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jdagilliland ];
     platforms = [ "x86_64-linux" ];
   };

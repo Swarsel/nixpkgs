@@ -1,14 +1,13 @@
 {
-  python3,
+  lib,
   fetchFromGitHub,
   fetchpatch,
-  lib,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "dnd-tools";
   version = "0-unstable-2021-02-18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "savagezen";
@@ -20,8 +19,8 @@ python3.pkgs.buildPythonApplication {
   # gives warning every time unless patched, see https://github.com/savagezen/dnd-tools/pull/20
   patches = [
     (fetchpatch {
-      url = "https://github.com/savagezen/dnd-tools/commit/0443f3a232056ad67cfb09eb3eadcb6344659198.patch";
       sha256 = "00k8rsz2aj4sfag6l313kxbphcb5bjxb6z3aw66h26cpgm4kysp0";
+      url = "https://github.com/savagezen/dnd-tools/commit/0443f3a232056ad67cfb09eb3eadcb6344659198.patch";
     })
   ];
 
@@ -29,11 +28,13 @@ python3.pkgs.buildPythonApplication {
     setuptools
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/savagezen/dnd-tools";
     description = "Set of interactive command line tools for Dungeons and Dragons 5th Edition";
-    mainProgram = "dnd-tools";
+    homepage = "https://github.com/savagezen/dnd-tools";
     license = lib.licenses.agpl3Only;
     maintainers = [ ];
+    mainProgram = "dnd-tools";
   };
 }

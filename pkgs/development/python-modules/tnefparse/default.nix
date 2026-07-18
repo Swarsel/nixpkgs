@@ -1,32 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
-
+  buildPythonPackage,
   compressed-rtf,
-
-  pytestCheckHook,
   pytest-console-scripts,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "tnefparse";
   version = "1.4.0";
 
-  pyproject = true;
-  build-system = [ setuptools ];
-
   src = fetchFromGitHub {
     owner = "koodaamo";
     repo = "tnefparse";
     tag = version;
     hash = "sha256-t2ouuuy6fzwb6SZNpxeGSleL/11SgTT8Ce28/ST1glw=";
-  };
-
-  optional-dependencies = {
-    compressed-rtf = [ compressed-rtf ];
   };
 
   nativeCheckInputs = [
@@ -37,11 +27,18 @@ buildPythonPackage rec {
     compressed-rtf
   ];
 
+  build-system = [ setuptools ];
+
   disabledTests = [
     # ensures there's a "optional argument" in the CLI usage, and its output has changed since.
     "test_help_is_printed"
   ];
 
+  optional-dependencies = {
+    compressed-rtf = [ compressed-rtf ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "tnefparse" ];
 
   meta = {
@@ -49,6 +46,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/koodaamo/tnefparse";
     changelog = "https://github.com/koodaamo/tnefparse/releases/tag/${version}";
     license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       flokli
     ];

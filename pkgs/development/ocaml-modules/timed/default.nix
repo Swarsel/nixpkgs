@@ -5,10 +5,8 @@
 }:
 
 buildDunePackage rec {
-  version = "1.1";
   pname = "timed";
-
-  minimalOCamlVersion = "4.08";
+  version = "1.1";
 
   src = fetchFromGitHub {
     owner = "rlepigre";
@@ -18,6 +16,7 @@ buildDunePackage rec {
   };
 
   doCheck = true;
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Timed references for imperative state";

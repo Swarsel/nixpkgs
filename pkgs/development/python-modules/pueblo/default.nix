@@ -1,18 +1,17 @@
 {
   lib,
+  attrs,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  versioningit,
-  attrs,
   platformdirs,
+  setuptools,
   tomli,
+  versioningit,
 }:
 
 buildPythonPackage rec {
   pname = "pueblo";
   version = "0.0.19";
-  pyproject = true;
 
   # This tarball doesn't include tests unfortunately, and the GitHub tarball
   # could have been an alternative, but versioningit fails to detect the
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     hash = "sha256-TGPjM6lOHUTKOdp+lu67ENvkmyfUVdAUaMIHgCxto3U=";
   };
 
+  doCheck = false; # no tests in sdist
+
   build-system = [
     setuptools
     versioningit
@@ -36,8 +37,7 @@ buildPythonPackage rec {
     tomli
   ];
 
-  doCheck = false; # no tests in sdist
-
+  pyproject = true;
   pythonImportsCheck = [ "pueblo" ];
 
   meta = {

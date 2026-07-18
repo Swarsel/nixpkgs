@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchFromGitHub,
   cmake,
-  zlib,
+  fetchpatch,
   gmp,
   jdk8,
+  zlib,
+  includeGplCode ? true,
   # The JDK we use on Darwin currently makes extensive use of rpaths which are
   # annoying and break the python library, so let's not bother for now
   includeJava ? !stdenv.hostPlatform.isDarwin,
-  includeGplCode ? true,
 }:
 
 let
@@ -27,8 +27,8 @@ let
   patches = [
     # Python 3.8 compatibility
     (fetchpatch {
-      url = "https://github.com/sambayless/monosat/commit/a5079711d0df0451f9840f3a41248e56dbb03967.patch";
       sha256 = "1p2y0jw8hb9c90nbffhn86k1dxd6f6hk5v70dfmpzka3y6g1ksal";
+      url = "https://github.com/sambayless/monosat/commit/a5079711d0df0451f9840f3a41248e56dbb03967.patch";
     })
   ];
 
@@ -42,11 +42,11 @@ let
 
   meta = {
     description = "SMT solver for Monotonic Theories";
-    mainProgram = "monosat";
-    platforms = lib.platforms.unix;
-    license = if includeGplCode then lib.licenses.gpl2 else lib.licenses.mit;
     homepage = "https://github.com/sambayless/monosat";
+    license = if includeGplCode then lib.licenses.gpl2 else lib.licenses.mit;
     maintainers = [ lib.maintainers.acairncross ];
+    platforms = lib.platforms.unix;
+    mainProgram = "monosat";
   };
 
   core = stdenv.mkDerivation {
@@ -57,11 +57,14 @@ let
       patches
       meta
       ;
+
     postPatch = commonPostPatch + ''
       substituteInPlace CMakeLists.txt \
         --replace-fail "cmake_minimum_required(VERSION 3.02)" "cmake_minimum_required(VERSION 3.10)"
     '';
+
     nativeBuildInputs = [ cmake ];
+
     buildInputs = [
       zlib
       gmp
@@ -87,13 +90,11 @@ let
   python =
     {
       buildPythonPackage,
-      setuptools,
       cython,
       pytestCheckHook,
+      setuptools,
     }:
     buildPythonPackage {
-      pyproject = true;
-
       inherit
         pname
         version
@@ -101,16 +102,6 @@ let
         patches
         meta
         ;
-
-      build-system = [
-        setuptools
-        cython
-      ];
-
-      buildInputs = [ core ];
-
-      # This tells setup.py to use cython, which should produce faster bindings
-      env.MONOSAT_CYTHON = true;
 
       # After patching src, move to where the actually relevant source is. This could just be made
       # the sourceRoot if it weren't for the patch.
@@ -132,12 +123,22 @@ let
               --replace-fail 'library_dir = "../../../../"' 'library_dir = "${core}/lib/"'
           '';
 
+      buildInputs = [ core ];
+      # This tells setup.py to use cython, which should produce faster bindings
+      env.MONOSAT_CYTHON = true;
       nativeCheckInputs = [ pytestCheckHook ];
+
+      build-system = [
+        setuptools
+        cython
+      ];
 
       disabledTests = [
         "test_assertAtMostOne"
         "test_assertEqual"
       ];
+
+      pyproject = true;
 
       pythonImportsCheck = [
         "monosat"

@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   _7zz,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://s3.amazonaws.com/BBSW-download/BBEdit_${finalAttrs.version}.dmg";
     hash = "sha256-DsrGj2id9XUf3n55s0OHoJnX4AQY5AqiP9skaXysghk=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [ _7zz ];
 
@@ -29,13 +27,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   # app bundle may be messed up by standard fixup
   dontFixup = true;
+  sourceRoot = ".";
 
   meta = {
     description = "Powerful and full-featured professional HTML and text editor for macOS";
     homepage = "https://www.barebones.com/products/bbedit/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ iedame ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

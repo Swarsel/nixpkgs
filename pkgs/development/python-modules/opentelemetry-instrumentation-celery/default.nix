@@ -1,22 +1,24 @@
 {
   lib,
+  billiard,
   buildPythonPackage,
+  celery,
   hatchling,
   opentelemetry-api,
   opentelemetry-instrumentation,
   opentelemetry-semantic-conventions,
   opentelemetry-test-utils,
-  billiard,
-  celery,
   pytestCheckHook,
 }:
 
 buildPythonPackage {
   inherit (opentelemetry-instrumentation) version src;
   pname = "opentelemetry-instrumentation-celery";
-  pyproject = true;
 
-  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-celery";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -32,15 +34,12 @@ buildPythonPackage {
     instruments = [ celery ];
   };
 
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.instrumentation.celery" ];
+  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-celery";
 
   meta = opentelemetry-instrumentation.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-celery";
     description = "Celery instrumentation for OpenTelemetry";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-celery";
   };
 }

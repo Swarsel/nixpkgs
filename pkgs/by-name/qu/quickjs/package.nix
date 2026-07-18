@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
   testers,
   texinfo,
 }:
@@ -20,6 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     "info"
   ];
 
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace Makefile \
+      --replace "CONFIG_LTO=y" ""
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     texinfo
   ];
@@ -29,17 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     "AR=${stdenv.cc.targetPrefix}ar"
     "PREFIX=$(out)"
   ];
-
-  doInstallCheck = true;
-
-  enableParallelBuilding = true;
-
-  strictDeps = true;
-
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace Makefile \
-      --replace "CONFIG_LTO=y" ""
-  '';
 
   postBuild = ''
     make doc/version.texi
@@ -53,6 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm644 -t ''${!outputInfo}/share/info *info
     popd
   '';
+
+  doInstallCheck = true;
 
   installCheckPhase = lib.concatStringsSep "\n" [
     ''
@@ -82,16 +80,18 @@ stdenv.mkDerivation (finalAttrs: {
     ''
   ];
 
+  enableParallelBuilding = true;
+
   passthru.tests = {
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "qjs --help || true";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
-    homepage = "https://bellard.org/quickjs/";
     description = "Small and embeddable Javascript engine";
+
     longDescription = ''
       QuickJS is a small and embeddable Javascript engine. It supports the
       ES2023 specification including modules, asynchronous generators, proxies
@@ -117,10 +117,13 @@ stdenv.mkDerivation (finalAttrs: {
       - Small built-in standard library with C library wrappers.
 
     '';
+
+    homepage = "https://bellard.org/quickjs/";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "qjs";
     platforms = lib.platforms.all;
+    mainProgram = "qjs";
+
     # Pending upstream fix: https://github.com/bellard/quickjs/pull/483
     knownVulnerabilities = [
       "CVE-2026-1144"

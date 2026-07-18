@@ -1,6 +1,6 @@
 {
-  callPackage,
   fetchFromGitHub,
+  callPackage,
 }:
 
 callPackage ../generic.nix rec {
@@ -17,8 +17,8 @@ callPackage ../generic.nix rec {
   desktopName = "Rat King Adventure";
 
   meta = {
+    description = "Expansive fork of RKPD2, itself a fork of the Shattered Pixel Dungeon roguelike";
     homepage = "https://github.com/TrashboxBobylev/Rat-King-Adventure";
     downloadPage = "https://github.com/TrashboxBobylev/Rat-King-Adventure/releases";
-    description = "Expansive fork of RKPD2, itself a fork of the Shattered Pixel Dungeon roguelike";
   };
 }

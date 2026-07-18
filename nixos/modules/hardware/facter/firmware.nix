@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ config, lib, ... }:
 let
   facterLib = import ./lib.nix lib;
 
@@ -9,16 +9,17 @@ let
 in
 {
   config = lib.mkIf (config.hardware.facter.enable && isBaremetal) {
-    # none (e.g. bare-metal)
-    # provide firmware for devices that might not have been detected by nixos-facter
-    hardware.enableRedistributableFirmware = lib.mkDefault true;
-
     # update microcode
     hardware.cpu.amd.updateMicrocode = lib.mkIf hasAmdCpu (
       lib.mkDefault config.hardware.enableRedistributableFirmware
     );
+
     hardware.cpu.intel.updateMicrocode = lib.mkIf hasIntelCpu (
       lib.mkDefault config.hardware.enableRedistributableFirmware
     );
+
+    # none (e.g. bare-metal)
+    # provide firmware for devices that might not have been detected by nixos-facter
+    hardware.enableRedistributableFirmware = lib.mkDefault true;
   };
 }

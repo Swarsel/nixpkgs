@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
   gtk3,
-  vte,
   lua5_3,
   pcre2,
+  pkg-config,
+  vte,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,10 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Lua-configurable terminal emulator";
     homepage = "https://github.com/endaaman/tym";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       wesleyjrz
       kashw2
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "tym";
   };

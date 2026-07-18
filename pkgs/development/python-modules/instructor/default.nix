@@ -1,40 +1,36 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   aiohttp,
-  docstring-parser,
-  jinja2,
-  jiter,
-  openai,
-  pydantic,
-  requests,
-  rich,
-  tenacity,
-  typer,
-
   # tests
   anthropic,
+  buildPythonPackage,
   diskcache,
+  docstring-parser,
   fastapi,
   google-genai,
   google-generativeai,
+  # build-system
+  hatchling,
+  jinja2,
+  jiter,
   jsonref,
+  openai,
+  pydantic,
   pytest-asyncio,
   pytestCheckHook,
   python-dotenv,
   redis,
+  requests,
+  rich,
+  tenacity,
+  typer,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "instructor";
   version = "1.15.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jxnl";
@@ -42,27 +38,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-+mYVg4IuoU/GEK/L3qXUfO224eWMrRtoXTTi8RhOJk4=";
   };
-
-  build-system = [ hatchling ];
-
-  pythonRelaxDeps = [
-    "jiter"
-    "openai"
-    "rich"
-  ];
-
-  dependencies = [
-    aiohttp
-    docstring-parser
-    jinja2
-    jiter
-    openai
-    pydantic
-    requests
-    rich
-    tenacity
-    typer
-  ];
 
   nativeCheckInputs = [
     anthropic
@@ -77,7 +52,30 @@ buildPythonPackage (finalAttrs: {
     redis
   ];
 
-  pythonImportsCheck = [ "instructor" ];
+  build-system = [ hatchling ];
+
+  dependencies = [
+    aiohttp
+    docstring-parser
+    jinja2
+    jiter
+    openai
+    pydantic
+    requests
+    rich
+    tenacity
+    typer
+  ];
+
+  disabledTestPaths = [
+    # Tests require OpenAI API key
+    "tests/llm/"
+    # Network and requires API keys
+    "tests/test_auto_client.py"
+    # annoying dependencies
+    "tests/docs"
+    "examples"
+  ];
 
   disabledTests = [
     # Tests require OpenAI API key
@@ -108,14 +106,13 @@ buildPythonPackage (finalAttrs: {
     "test_openai_schema_raises_error"
   ];
 
-  disabledTestPaths = [
-    # Tests require OpenAI API key
-    "tests/llm/"
-    # Network and requires API keys
-    "tests/test_auto_client.py"
-    # annoying dependencies
-    "tests/docs"
-    "examples"
+  pyproject = true;
+  pythonImportsCheck = [ "instructor" ];
+
+  pythonRelaxDeps = [
+    "jiter"
+    "openai"
+    "rich"
   ];
 
   meta = {

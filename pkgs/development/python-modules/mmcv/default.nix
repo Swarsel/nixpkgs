@@ -1,35 +1,31 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  ninja,
-  which,
-
-  # buildInputs
-  pybind11,
-  torch,
-
   # dependencies
   addict,
-  mmengine,
-  numpy,
-  packaging,
-  pillow,
-  pyyaml,
-  yapf,
-
+  buildPythonPackage,
   # tests
   lmdb,
+  mmengine,
+  # nativeBuildInputs
+  ninja,
+  numpy,
   onnx,
   onnxruntime,
+  packaging,
+  pillow,
+  # buildInputs
+  pybind11,
   pytestCheckHook,
   pyturbojpeg,
+  pyyaml,
   scipy,
   tifffile,
+  torch,
   torchvision,
+  which,
+  yapf,
 }:
 
 let
@@ -39,7 +35,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "mmcv";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "open-mmlab";
@@ -80,19 +75,6 @@ buildPythonPackage (finalAttrs: {
     ]
   );
 
-  dependencies = [
-    addict
-    mmengine
-    numpy
-    packaging
-    pillow
-    pyyaml
-    yapf
-
-    # opencv4
-    # torch
-  ];
-
   env = {
     CUDA_HOME = lib.optionalString cudaSupport (lib.getDev cudaPackages.cuda_nvcc);
     MMCV_WITH_OPS = 1;
@@ -100,11 +82,9 @@ buildPythonPackage (finalAttrs: {
   // lib.optionalAttrs cudaSupport {
     CC = lib.getExe' backendStdenv.cc "cc";
     CXX = lib.getExe' backendStdenv.cc "c++";
-    TORCH_CUDA_ARCH_LIST = lib.concatStringsSep ";" cudaCapabilities;
     FORCE_CUDA = 1;
+    TORCH_CUDA_ARCH_LIST = lib.concatStringsSep ";" cudaCapabilities;
   };
-
-  pythonImportsCheck = [ "mmcv" ];
 
   nativeCheckInputs = [
     lmdb
@@ -121,6 +101,19 @@ buildPythonPackage (finalAttrs: {
   preCheck = ''
     rm -rf mmcv
   '';
+
+  dependencies = [
+    addict
+    mmengine
+    numpy
+    packaging
+    pillow
+    pyyaml
+    yapf
+
+    # opencv4
+    # torch
+  ];
 
   # test_cnn test_ops really requires gpus to be useful.
   # some of the tests take exceedingly long time.
@@ -145,6 +138,9 @@ buildPythonPackage (finalAttrs: {
     # Fatal Python error: Segmentation fault
     "test_transform"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mmcv" ];
 
   meta = {
     description = "Foundational Library for Computer Vision Research";

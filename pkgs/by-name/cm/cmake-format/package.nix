@@ -1,21 +1,21 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cmake-format";
   version = "0.6.13";
-  # The source distribution does not build because of missing files.
-  format = "wheel";
 
   src = fetchPypi {
     inherit (finalAttrs) version;
+    sha256 = "0kmggnfbv6bba75l3zfzqwk0swi90brjka307m2kcz2w35kr8jvn";
     format = "wheel";
     pname = "cmakelang";
-    sha256 = "0kmggnfbv6bba75l3zfzqwk0swi90brjka307m2kcz2w35kr8jvn";
   };
+
+  doCheck = false;
 
   dependencies = with python3Packages; [
     autopep8
@@ -26,7 +26,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     six
   ];
 
-  doCheck = false;
+  # The source distribution does not build because of missing files.
+  format = "wheel";
 
   meta = {
     description = "Source code formatter for cmake listfiles";

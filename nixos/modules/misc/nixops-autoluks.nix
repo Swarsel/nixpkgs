@@ -1,7 +1,7 @@
 {
   config,
-  options,
   lib,
+  options,
   ...
 }:
 let
@@ -20,6 +20,7 @@ in
     assertions = [
       {
         assertion = if hasAutoLuksConfig then hasAutoLuksConfig && enableDeprecatedAutoLuks else true;
+
         message = ''
           ⚠️  !!! WARNING !!! ⚠️
 

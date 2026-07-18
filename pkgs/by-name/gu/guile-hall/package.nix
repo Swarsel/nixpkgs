@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
-  texinfo,
-  makeWrapper,
   guile,
   guile-config,
+  makeWrapper,
+  pkg-config,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,8 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     guile-config
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
 
   postInstall = ''
@@ -47,6 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     export HOME=$TMPDIR
@@ -54,12 +53,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Project manager and build tool for GNU guile";
-    mainProgram = "hall";
     homepage = "https://gitlab.com/a-sassmannshausen/guile-hall";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = guile.meta.platforms;
+    mainProgram = "hall";
   };
 })

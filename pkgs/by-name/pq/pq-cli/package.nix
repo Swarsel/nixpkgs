@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pq-cli";
   version = "1.0.2-unstable-2025-04-10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rr-";
@@ -28,6 +27,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     urwid
     urwid-readline
   ];
+
+  pyproject = true;
 
   pythonRelaxDeps = [
     "urwid"

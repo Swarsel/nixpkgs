@@ -1,26 +1,23 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  setuptools-scm,
   click,
   commoncode,
+  fetchPypi,
   pluggy,
-  pytestCheckHook,
   pytest-xdist,
+  pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "plugincode";
   version = "32.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-QTLZOxdVJxxuImydouIET/YuvLhztelY1mqN3enzRfo=";
   };
-
-  dontConfigure = true;
 
   nativeBuildInputs = [ setuptools-scm ];
 
@@ -37,11 +34,13 @@ buildPythonPackage rec {
 
   # wants to read /etc/os-release and crashes because that is not available in the sandbox
   # pythonImportsCheck = [ "plugincode" ];
-
   disabledTests = [
     # We don't want black as an input
     "test_skeleton_codestyle"
   ];
+
+  dontConfigure = true;
+  format = "setuptools";
 
   meta = {
     description = "Library that provides plugin functionality for ScanCode toolkit";

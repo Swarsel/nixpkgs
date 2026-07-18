@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   cmake,
-  llvmPackages,
   git,
+  llvmPackages,
 }:
 llvmPackages.stdenv.mkDerivation rec {
   pname = "enzyme";
@@ -20,33 +20,34 @@ llvmPackages.stdenv.mkDerivation rec {
     patchShebangs enzyme
   '';
 
-  llvm = llvmPackages.llvm;
-  clang = llvmPackages.clang-unwrapped;
-
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     git
     llvm
     clang
   ];
 
-  cmakeDir = "../enzyme";
-
   cmakeFlags = [
     "-DLLVM_DIR=${llvm.dev}"
     "-DClang_DIR=${clang.dev}"
   ];
 
+  clang = llvmPackages.clang-unwrapped;
+  cmakeDir = "../enzyme";
   enableParallelBuilding = true;
+  llvm = llvmPackages.llvm;
 
   meta = {
-    homepage = "https://enzyme.mit.edu/";
     description = "High-performance automatic differentiation of LLVM and MLIR";
-    maintainers = with lib.maintainers; [ kiranshila ];
-    platforms = lib.platforms.all;
+    homepage = "https://enzyme.mit.edu/";
+
     license = with lib.licenses; [
       asl20
       llvm-exception
     ];
+
+    maintainers = with lib.maintainers; [ kiranshila ];
+    platforms = lib.platforms.all;
   };
 }

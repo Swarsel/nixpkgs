@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   cmake,
-  zlib,
-  libpng,
   libGL,
+  libpng,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mathgl";
@@ -29,12 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Library for scientific data visualization";
     homepage = "https://mathgl.sourceforge.net/";
+
     license = with lib.licenses; [
       gpl3
       lgpl3
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.GabrielDougherty ];
+    platforms = lib.platforms.linux;
     # build tool make_bin is built for host
     broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   };

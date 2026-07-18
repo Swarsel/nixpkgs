@@ -3,20 +3,20 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libxdmcp,
+  gitUpdater,
   libexif,
   libfm-qt,
   libpthread-stubs,
+  libxdmcp,
   lxqt-build-tools,
   menu-cache,
+  pkg-config,
   qtbase,
   qtimageformats,
   qtsvg,
   qttools,
   qtwayland,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -53,11 +53,11 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lximage-qt";
     description = "Image viewer and screenshot tool for lxqt";
-    mainProgram = "lximage-qt";
+    homepage = "https://github.com/lxqt/lximage-qt";
     license = lib.licenses.gpl2Plus;
     platforms = with lib.platforms; unix;
+    mainProgram = "lximage-qt";
     teams = [ lib.teams.lxqt ];
   };
 }

@@ -1,21 +1,20 @@
 {
   lib,
+  stdenv,
   buildPythonPackage,
   fetchPypi,
-  libpulseaudio,
   glibc,
-  replaceVars,
-  stdenv,
+  libpulseaudio,
   pulseaudio,
-  unittestCheckHook,
+  replaceVars,
   setuptools,
+  unittestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pulsectl";
   version = "24.12.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -30,15 +29,15 @@ buildPythonPackage (finalAttrs: {
     })
   ];
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "pulsectl" ];
-
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
     unittestCheckHook
     pulseaudio
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "pulsectl" ];
 
   meta = {
     description = "Python high-level interface and ctypes-based bindings for PulseAudio (libpulse)";

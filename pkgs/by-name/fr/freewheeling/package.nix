@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  freetype,
-  fluidsynth,
   SDL,
   SDL_gfx,
   SDL_ttf,
-  liblo,
-  libxml2,
   alsa-lib,
+  fluidsynth,
+  freetype,
   libjack2,
-  libvorbis,
+  liblo,
+  libogg,
   libsm,
   libsndfile,
-  libogg,
+  libvorbis,
   libx11,
+  libxml2,
   nettle,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Live looping instrument with JACK and MIDI support";
+
     longDescription = ''
       Freewheeling allows us to build repetitive grooves
       by sampling and directing loops from within spirited improvisation.

@@ -1,17 +1,14 @@
 {
   lib,
-
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
   # nativeBuildInputs
   cmake,
-  libsForQt5,
-
   # buildInputs
   corto,
+  fetchpatch,
   glew,
+  libsForQt5,
   llvmPackages,
   vcg,
 }:
@@ -37,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     # ref. https://github.com/cnr-isti-vclab/nexus/pull/173
     # merged upstream
     (fetchpatch {
-      url = "https://github.com/cnr-isti-vclab/nexus/commit/141ba17059f3680a74ce1178ed4245412f76061f.patch";
       hash = "sha256-iY84QIpliC1BIImI/6S6E6fQwMKPmmTiwouCXW6wLuM=";
+      url = "https://github.com/cnr-isti-vclab/nexus/commit/141ba17059f3680a74ce1178ed4245412f76061f.patch";
     })
   ];
 
@@ -66,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/cnr-isti-vclab/nexus";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ nim65s ];
-    mainProgram = "nxsview";
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "nxsview";
   };
 })

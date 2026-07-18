@@ -1,12 +1,12 @@
 {
   lib,
-  replaceVars,
   fetchurl,
   fetchFromGitHub,
-  rustPlatform,
   buildNpmPackage,
-  openapi-generator-cli,
   nixosTests,
+  openapi-generator-cli,
+  replaceVars,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (
   finalAttrs:
@@ -14,16 +14,10 @@ rustPlatform.buildRustPackage (
     warpgate-web = buildNpmPackage {
       pname = "${finalAttrs.pname}-web";
       version = finalAttrs.version;
-
       src = finalAttrs.src;
-      sourceRoot = "${finalAttrs.src.name}/warpgate-web";
-
       patches = [ ./web-ui-package-json.patch ];
-
-      npmDepsHash = "sha256-JW3nibMIETj5PQcaNRS5UVZgguSvGd9Bw8uGD3kb5uM=";
-
       nativeBuildInputs = [ openapi-generator-cli ];
-
+      npmDepsHash = "sha256-JW3nibMIETj5PQcaNRS5UVZgguSvGd9Bw8uGD3kb5uM=";
       preBuild = "rm node_modules/.bin/openapi-generator-cli";
 
       installPhase = ''
@@ -31,6 +25,8 @@ rustPlatform.buildRustPackage (
         cp -R dist $out
         runHook postInstall
       '';
+
+      sourceRoot = "${finalAttrs.src.name}/warpgate-web";
     };
   in
   {
@@ -44,20 +40,13 @@ rustPlatform.buildRustPackage (
       hash = "sha256-/IhnDBQq7Ed5vaGiCHNTcE7Uu9b9VrBN1ipCd2Tai1o=";
     };
 
-    cargoHash = "sha256-PRR+bzvmWcWUVdV1HqDqD08SwvDCvGXMvkIVoFEnaQI=";
-
     patches = [
       (replaceVars ./hardcode-version.patch { inherit (finalAttrs) version; })
       ./remove-nightly-rustflags.patch
     ];
 
+    cargoHash = "sha256-PRR+bzvmWcWUVdV1HqDqD08SwvDCvGXMvkIVoFEnaQI=";
     env.RUSTFLAGS = "--cfg tokio_unstable";
-
-    buildFeatures = [
-      "postgres"
-      "mysql"
-      "sqlite"
-    ];
 
     preBuild = ''
       rm -r .cargo/
@@ -67,6 +56,12 @@ rustPlatform.buildRustPackage (
     # skip check, project included tests require python stuff and docker
     doCheck = false;
 
+    buildFeatures = [
+      "postgres"
+      "mysql"
+      "sqlite"
+    ];
+
     passthru.tests = {
       inherit (nixosTests) warpgate;
     };
@@ -75,9 +70,9 @@ rustPlatform.buildRustPackage (
       description = "Smart SSH, HTTPS, MySQL and Postgres bastion that requires no additional client-side software";
       homepage = "https://warpgate.null.page";
       license = lib.licenses.asl20;
+      maintainers = with lib.maintainers; [ alemonmk ];
       platforms = lib.platforms.linux ++ lib.platforms.darwin;
       mainProgram = "warpgate";
-      maintainers = with lib.maintainers; [ alemonmk ];
     };
   }
 )

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   six,
   timecop,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "onetimepass";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tadeck";
@@ -20,15 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-cHJg3vdUpWp5+HACIeTGrqkHKUDS//aQICSjPKgwu3I=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
   nativeCheckInputs = [
     timecop
     unittestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
   pythonImportsCheck = [ "onetimepass" ];
 
   meta = {

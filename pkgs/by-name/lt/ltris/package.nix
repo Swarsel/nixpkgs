@@ -1,12 +1,12 @@
 {
   lib,
-  sdl2-compat,
-  SDL2_mixer,
+  stdenv,
+  fetchurl,
   SDL2_image,
+  SDL2_mixer,
   SDL2_ttf,
   directoryListingUpdater,
-  fetchurl,
-  stdenv,
+  sdl2-compat,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,19 +28,19 @@ stdenv.mkDerivation (finalAttrs: {
   hardeningDisable = [ "format" ];
 
   passthru.updateScript = directoryListingUpdater {
-    pname = "ltris2";
     inherit (finalAttrs) version;
-    url = "https://lgames.sourceforge.io/LTris/";
+    pname = "ltris2";
     extraRegex = "(?!.*-win(32|64)).*";
+    url = "https://lgames.sourceforge.io/LTris/";
   };
 
   meta = {
-    homepage = "https://lgames.sourceforge.io/LTris/";
     description = "Tetris clone from the LGames series";
+    homepage = "https://lgames.sourceforge.io/LTris/";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "ltris2";
     maintainers = with lib.maintainers; [ marcin-serwin ];
     platforms = lib.platforms.all;
+    mainProgram = "ltris2";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

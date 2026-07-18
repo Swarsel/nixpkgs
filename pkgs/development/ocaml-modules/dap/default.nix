@@ -1,10 +1,10 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   angstrom-lwt-unix,
-  lwt,
+  buildDunePackage,
   logs,
+  lwt,
   lwt_ppx,
   ppx_deriving_yojson,
   ppx_expect,
@@ -15,13 +15,11 @@
 buildDunePackage (finalAttrs: {
   pname = "dap";
   version = "1.0.6";
-  duneVersion = "3";
+
   src = fetchurl {
     url = "https://github.com/hackwaly/ocaml-dap/releases/download/${finalAttrs.version}/dap-${finalAttrs.version}.tbz";
     sha256 = "1zq0f8429m38a4x3h9n3rv7n1vsfjbs72pfi5902a89qwyilkcp0";
   };
-
-  minimalOCamlVersion = "4.08";
 
   buildInputs = [
     lwt_ppx
@@ -36,6 +34,9 @@ buildDunePackage (finalAttrs: {
     ppx_here
     react
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Debug adapter protocol";

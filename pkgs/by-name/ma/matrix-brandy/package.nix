@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL,
   libx11,
   nix-update-script,
-  SDL,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,14 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = lib.optionals stdenv.hostPlatform.isDarwin [ ./no-lrt.patch ];
 
-  makeFlags = lib.optionals stdenv.hostPlatform.isDarwin [
-    "CC=cc"
-    "LD=clang"
-  ];
-
   buildInputs = [
     libx11
     SDL
+  ];
+
+  makeFlags = lib.optionals stdenv.hostPlatform.isDarwin [
+    "CC=cc"
+    "LD=clang"
   ];
 
   installPhase = ''
@@ -38,11 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://brandy.matrixnetwork.co.uk/";
     description = "Matrix Brandy BASIC VI for Linux, Windows, MacOSX";
-    mainProgram = "brandy";
+    homepage = "https://brandy.matrixnetwork.co.uk/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fiq ];
+    platforms = lib.platforms.unix;
+    mainProgram = "brandy";
   };
 })

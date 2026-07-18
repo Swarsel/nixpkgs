@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libplist,
   libimobiledevice-glue,
+  libplist,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Client library to multiplex connections from and to iOS devices";
     homepage = "https://github.com/libimobiledevice/libusbmuxd";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

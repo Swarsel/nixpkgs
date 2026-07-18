@@ -57,16 +57,13 @@ let
   # makes it bootable. See `activatable-system.nix`.
   baseSystem = pkgs.stdenvNoCC.mkDerivation (
     {
-      name = "nixos-system-${config.system.name}-${config.system.nixos.label}";
-      preferLocalBuild = true;
+      inherit (config.system) extraDependencies;
       allowSubstitutes = false;
       buildCommand = systemBuilder;
-
-      systemd = config.systemd.package;
-
+      name = "nixos-system-${config.system.name}-${config.system.nixos.label}";
       nixosLabel = config.system.nixos.label;
-
-      inherit (config.system) extraDependencies;
+      preferLocalBuild = true;
+      systemd = config.systemd.package;
     }
     // config.system.systemBuilderArgs
     // {
@@ -92,15 +89,16 @@ let
         };
       })
         {
-          drv = baseSystemAssertWarn;
           inherit replacements cutoffPackages;
+          drv = baseSystemAssertWarn;
         };
 
   systemWithBuildDeps = system.overrideAttrs (o: {
-    systemBuildClosure = pkgs.closureInfo { rootPaths = [ system.drvPath ]; };
     buildCommand = o.buildCommand + ''
       ln -sn $systemBuildClosure $out/build-closure
     '';
+
+    systemBuildClosure = pkgs.closureInfo { rootPaths = [ system.drvPath ]; };
   });
 
 in
@@ -130,47 +128,68 @@ in
   options = {
 
     system.boot.loader.id = mkOption {
-      internal = true;
       default = "";
+
       description = ''
         Id string of the used bootloader.
       '';
-    };
 
-    system.boot.loader.kernelFile = mkOption {
       internal = true;
-      default = config.boot.kernelPackages.kernel.target;
-      defaultText = literalExpression "config.boot.kernelPackages.kernel.target";
-      type = types.str;
-      description = ''
-        Name of the kernel file to be passed to the bootloader.
-      '';
     };
 
     system.boot.loader.initrdFile = mkOption {
-      internal = true;
       default = "initrd";
-      type = types.str;
+
       description = ''
         Name of the initrd file to be passed to the bootloader.
       '';
+
+      internal = true;
+      type = types.str;
+    };
+
+    system.boot.loader.kernelFile = mkOption {
+      default = config.boot.kernelPackages.kernel.target;
+      defaultText = literalExpression "config.boot.kernelPackages.kernel.target";
+
+      description = ''
+        Name of the kernel file to be passed to the bootloader.
+      '';
+
+      internal = true;
+      type = types.str;
     };
 
     system.build = {
       toplevel = mkOption {
-        type = types.package;
-        readOnly = true;
         description = ''
           This option contains the store path that typically represents a NixOS system.
 
           You can read this path in a custom deployment tool for example.
         '';
+
+        readOnly = true;
+        type = types.package;
       };
     };
 
+    system.checks = mkOption {
+      default = [ ];
+
+      description = ''
+        Packages that are added as dependencies of the system's build, usually
+        for the purpose of validating some part of the configuration.
+
+        Unlike `system.extraDependencies`, these store paths do not
+        become part of the built system configuration.
+      '';
+
+      type = types.listOf types.package;
+    };
+
     system.copySystemConfiguration = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         If enabled, copies the NixOS configuration file
         (usually {file}`/etc/nixos/configuration.nix`)
@@ -179,39 +198,13 @@ in
         Note that only this single file is copied, even if it imports others.
         Warning: This feature cannot be used when the system is configured by a flake
       '';
-    };
 
-    system.systemBuilderCommands = mkOption {
-      type = types.lines;
-      internal = true;
-      default = "";
-      description = ''
-        This code will be added to the builder creating the system store path.
-      '';
-    };
-
-    system.systemBuilderArgs = mkOption {
-      type = types.attrsOf types.unspecified;
-      internal = true;
-      default = { };
-      description = ''
-        `lib.mkDerivation` attributes that will be passed to the top level system builder.
-      '';
-    };
-
-    system.forbiddenDependenciesRegexes = mkOption {
-      default = [ ];
-      example = [ "-dev$" ];
-      type = types.listOf types.str;
-      description = ''
-        POSIX Extended Regular Expressions that match store paths that
-        should not appear in the system closure, with the exception of {option}`system.extraDependencies`, which is not checked.
-      '';
+      type = types.bool;
     };
 
     system.extraDependencies = mkOption {
-      type = types.listOf types.pathInStore;
       default = [ ];
+
       description = ''
         A list of paths that should be included in the system
         closure but generally not visible to users.
@@ -220,88 +213,25 @@ in
         `system.checks` option is more appropriate for that purpose as checks
         should not leave a trace in the built system configuration.
       '';
+
+      type = types.listOf types.pathInStore;
     };
 
-    system.checks = mkOption {
-      type = types.listOf types.package;
+    system.forbiddenDependenciesRegexes = mkOption {
       default = [ ];
+
       description = ''
-        Packages that are added as dependencies of the system's build, usually
-        for the purpose of validating some part of the configuration.
-
-        Unlike `system.extraDependencies`, these store paths do not
-        become part of the built system configuration.
+        POSIX Extended Regular Expressions that match store paths that
+        should not appear in the system closure, with the exception of {option}`system.extraDependencies`, which is not checked.
       '';
-    };
 
-    system.replaceDependencies = {
-      replacements = mkOption {
-        default = [ ];
-        example = lib.literalExpression "[ ({ oldDependency = pkgs.openssl; newDependency = pkgs.callPackage /path/to/openssl { }; }) ]";
-        type = types.listOf (
-          types.submodule (
-            { ... }:
-            {
-              imports = [
-                (mkRenamedOptionModule [ "original" ] [ "oldDependency" ])
-                (mkRenamedOptionModule [ "replacement" ] [ "newDependency" ])
-              ];
-
-              options.oldDependency = mkOption {
-                type = types.package;
-                description = "The original package to override.";
-              };
-
-              options.newDependency = mkOption {
-                type = types.package;
-                description = "The replacement package.";
-              };
-            }
-          )
-        );
-        apply = map (
-          { oldDependency, newDependency, ... }:
-          {
-            inherit oldDependency newDependency;
-          }
-        );
-        description = ''
-          List of packages to override without doing a full rebuild.
-          The original derivation and replacement derivation must have the same
-          name length, and ideally should have close-to-identical directory layout.
-        '';
-      };
-
-      cutoffPackages = mkOption {
-        default = lib.optionals config.boot.initrd.enable [ config.system.build.initialRamdisk ];
-        defaultText = literalExpression "lib.optionals config.boot.initrd.enable [ config.system.build.initialRamdisk ]";
-        type = types.listOf types.package;
-        description = ''
-          Packages to which no replacements should be applied.
-          The initrd is matched by default, because its structure renders the replacement process ineffective and prone to breakage.
-        '';
-      };
-    };
-
-    system.name = mkOption {
-      type = types.str;
-      default = if config.networking.hostName == "" then "unnamed" else config.networking.hostName;
-      defaultText = literalExpression ''
-        if config.networking.hostName == ""
-        then "unnamed"
-        else config.networking.hostName;
-      '';
-      description = ''
-        The name of the system used in the {option}`system.build.toplevel` derivation.
-
-        That derivation has the following name:
-        `"nixos-system-''${config.system.name}-''${config.system.nixos.label}"`
-      '';
+      example = [ "-dev$" ];
+      type = types.listOf types.str;
     };
 
     system.includeBuildDependencies = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether to include the build closure of the whole system in
         its runtime closure.  This can be useful for making changes
@@ -318,6 +248,104 @@ in
         from ~670MiB in size to 13.5GiB, and takes proportionally
         longer to download.
       '';
+
+      type = types.bool;
+    };
+
+    system.name = mkOption {
+      default = if config.networking.hostName == "" then "unnamed" else config.networking.hostName;
+
+      defaultText = literalExpression ''
+        if config.networking.hostName == ""
+        then "unnamed"
+        else config.networking.hostName;
+      '';
+
+      description = ''
+        The name of the system used in the {option}`system.build.toplevel` derivation.
+
+        That derivation has the following name:
+        `"nixos-system-''${config.system.name}-''${config.system.nixos.label}"`
+      '';
+
+      type = types.str;
+    };
+
+    system.replaceDependencies = {
+      cutoffPackages = mkOption {
+        default = lib.optionals config.boot.initrd.enable [ config.system.build.initialRamdisk ];
+        defaultText = literalExpression "lib.optionals config.boot.initrd.enable [ config.system.build.initialRamdisk ]";
+
+        description = ''
+          Packages to which no replacements should be applied.
+          The initrd is matched by default, because its structure renders the replacement process ineffective and prone to breakage.
+        '';
+
+        type = types.listOf types.package;
+      };
+
+      replacements = mkOption {
+        apply = map (
+          { newDependency, oldDependency, ... }:
+          {
+            inherit oldDependency newDependency;
+          }
+        );
+
+        default = [ ];
+
+        description = ''
+          List of packages to override without doing a full rebuild.
+          The original derivation and replacement derivation must have the same
+          name length, and ideally should have close-to-identical directory layout.
+        '';
+
+        example = lib.literalExpression "[ ({ oldDependency = pkgs.openssl; newDependency = pkgs.callPackage /path/to/openssl { }; }) ]";
+
+        type = types.listOf (
+          types.submodule (
+            { ... }:
+            {
+              imports = [
+                (mkRenamedOptionModule [ "original" ] [ "oldDependency" ])
+                (mkRenamedOptionModule [ "replacement" ] [ "newDependency" ])
+              ];
+
+              options.newDependency = mkOption {
+                description = "The replacement package.";
+                type = types.package;
+              };
+
+              options.oldDependency = mkOption {
+                description = "The original package to override.";
+                type = types.package;
+              };
+            }
+          )
+        );
+      };
+    };
+
+    system.systemBuilderArgs = mkOption {
+      default = { };
+
+      description = ''
+        `lib.mkDerivation` attributes that will be passed to the top level system builder.
+      '';
+
+      internal = true;
+      type = types.attrsOf types.unspecified;
+    };
+
+    system.systemBuilderCommands = mkOption {
+      default = "";
+
+      description = ''
+        This code will be added to the builder creating the system store path.
+      '';
+
+      internal = true;
+      type = types.lines;
     };
 
   };
@@ -329,6 +357,51 @@ in
         message = "system.copySystemConfiguration is not supported with flakes";
       }
     ];
+
+    system.build.toplevel =
+      if config.system.includeBuildDependencies then systemWithBuildDeps else system;
+
+    system.systemBuilderArgs = {
+
+      distroId = config.system.nixos.distroId;
+      # Legacy environment variables. These were used by the activation script,
+      # but some other script might still depend on them, although unlikely.
+      installBootLoader = config.system.build.installBootLoader;
+      # Not actually used in the builder. `passedChecks` is just here to create
+      # the build dependencies. Checks are similar to build dependencies in the
+      # sense that if they fail, the system build fails. However, checks do not
+      # produce any output of value, so they are not used by the system builder.
+      # In fact, using them runs the risk of accidentally adding unneeded paths
+      # to the system closure, which defeats the purpose of the `system.checks`
+      # option, as opposed to `system.extraDependencies`.
+      passedChecks = concatStringsSep " " config.system.checks;
+
+      perl = pkgs.perl.withPackages (
+        p: with p; [
+          ConfigIniFiles
+          FileSlurp
+        ]
+      );
+
+      # End if legacy environment variables
+      preSwitchCheck = lib.mkIf (
+        config.system.preSwitchChecks != { }
+      ) config.system.preSwitchChecksScript;
+    }
+    // lib.optionalAttrs (config.i18n.glibcLocales != null) {
+      localeArchive = "${config.i18n.glibcLocales}/lib/locale/locale-archive";
+    }
+    // lib.optionalAttrs (config.system.forbiddenDependenciesRegexes != [ ]) {
+      closureInfo = pkgs.closureInfo {
+        rootPaths = [
+          # override to avoid  infinite recursion (and to allow using extraDependencies to add forbidden dependencies)
+          (config.system.build.toplevel.overrideAttrs (_: {
+            closureInfo = null;
+            extraDependencies = [ ];
+          }))
+        ];
+      };
+    };
 
     system.systemBuilderCommands =
       optionalString config.system.copySystemConfiguration ''
@@ -347,51 +420,6 @@ in
           '') config.system.forbiddenDependenciesRegexes
         )
       );
-
-    system.systemBuilderArgs = {
-
-      # Legacy environment variables. These were used by the activation script,
-      # but some other script might still depend on them, although unlikely.
-      installBootLoader = config.system.build.installBootLoader;
-      distroId = config.system.nixos.distroId;
-      perl = pkgs.perl.withPackages (
-        p: with p; [
-          ConfigIniFiles
-          FileSlurp
-        ]
-      );
-      # End if legacy environment variables
-
-      preSwitchCheck = lib.mkIf (
-        config.system.preSwitchChecks != { }
-      ) config.system.preSwitchChecksScript;
-
-      # Not actually used in the builder. `passedChecks` is just here to create
-      # the build dependencies. Checks are similar to build dependencies in the
-      # sense that if they fail, the system build fails. However, checks do not
-      # produce any output of value, so they are not used by the system builder.
-      # In fact, using them runs the risk of accidentally adding unneeded paths
-      # to the system closure, which defeats the purpose of the `system.checks`
-      # option, as opposed to `system.extraDependencies`.
-      passedChecks = concatStringsSep " " config.system.checks;
-    }
-    // lib.optionalAttrs (config.i18n.glibcLocales != null) {
-      localeArchive = "${config.i18n.glibcLocales}/lib/locale/locale-archive";
-    }
-    // lib.optionalAttrs (config.system.forbiddenDependenciesRegexes != [ ]) {
-      closureInfo = pkgs.closureInfo {
-        rootPaths = [
-          # override to avoid  infinite recursion (and to allow using extraDependencies to add forbidden dependencies)
-          (config.system.build.toplevel.overrideAttrs (_: {
-            extraDependencies = [ ];
-            closureInfo = null;
-          }))
-        ];
-      };
-    };
-
-    system.build.toplevel =
-      if config.system.includeBuildDependencies then systemWithBuildDeps else system;
 
   };
 

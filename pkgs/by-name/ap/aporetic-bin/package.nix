@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -25,14 +25,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/protesilaos/aporetic";
     description = ''
       Custom build of Iosevka with different style and metrics than the default. This is the successor to my "Iosevka Comfy" fonts.
     '';
+
+    homepage = "https://github.com/protesilaos/aporetic";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       DamienCassou
     ];
+
+    platforms = lib.platforms.all;
   };
 })

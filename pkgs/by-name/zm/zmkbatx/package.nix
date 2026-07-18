@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  qt6,
-  pkg-config,
   dbus,
+  pkg-config,
+  qt6,
   simplebluez,
   simpledbus,
 }:
@@ -12,6 +12,7 @@ let
   # zmkBATx is incompatible against the new ABI
   simplebluez' = simplebluez.overrideAttrs rec {
     version = "0.7.3";
+
     src = fetchFromGitHub {
       owner = "OpenBluetoothToolbox";
       repo = "SimpleBLE";
@@ -22,7 +23,6 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "zmkbatx";
-
   version = "1.0.1";
 
   src = fetchFromGitHub {
@@ -31,6 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-xbiwRHVTuaZDH3RZlMK2CpKBThtS8g6q5r3C+OccDZg=";
   };
+
+  postPatch = ''
+    substituteInPlace zmkBATx.pro --replace-fail "/usr/include/dbus-1.0" "${dbus.dev}/include/dbus-1.0"
+    substituteInPlace zmkBATx.pro --replace-fail "/usr/lib/x86_64-linux-gnu/dbus-1.0/include" "${dbus.lib}/lib/dbus-1.0/include"
+  '';
 
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
@@ -46,19 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
     simplebluez'
   ];
 
-  postPatch = ''
-    substituteInPlace zmkBATx.pro --replace-fail "/usr/include/dbus-1.0" "${dbus.dev}/include/dbus-1.0"
-    substituteInPlace zmkBATx.pro --replace-fail "/usr/lib/x86_64-linux-gnu/dbus-1.0/include" "${dbus.lib}/lib/dbus-1.0/include"
-  '';
-
   meta = {
     description = "Battery monitoring for ZMK split keyboards";
     longDescription = "Opensource tool for peripheral battery monitoring zmk split keyboard over BLE for linux.";
     homepage = "https://github.com/mh4x0f/zmkBATx";
     changelog = "https://github.com/mh4x0f/zmkBATx/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "zmkbatx";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ aciceri ];
+    platforms = lib.platforms.linux;
+    mainProgram = "zmkbatx";
   };
 })

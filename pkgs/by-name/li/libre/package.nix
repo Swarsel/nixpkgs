@@ -2,14 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
-  openssl,
   cmake,
+  openssl,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "4.9.0";
   pname = "libre";
+  version = "4.9.0";
+
   src = fetchFromGitHub {
     owner = "baresip";
     repo = "re";
@@ -17,12 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-0g3L+2PYLjnc2MyFhPX6exy+84oohP24As34oMBzO9k=";
   };
 
+  nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     openssl
     zlib
   ];
 
-  nativeBuildInputs = [ cmake ];
   makeFlags = [
     "USE_ZLIB=1"
     "USE_OPENSSL=1"
@@ -30,11 +32,13 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (stdenv.cc.cc != null) "SYSROOT_ALT=${stdenv.cc.cc}"
   ++ lib.optional (stdenv.cc.libc != null) "SYSROOT=${lib.getDev stdenv.cc.libc}";
+
   enableParallelBuilding = true;
+
   meta = {
     description = "Library for real-time communications with async IO support and a complete SIP stack";
     homepage = "https://github.com/baresip/re";
-    maintainers = with lib.maintainers; [ raskin ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ raskin ];
   };
 })

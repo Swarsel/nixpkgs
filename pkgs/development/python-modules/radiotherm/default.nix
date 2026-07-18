@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "radiotherm";
   version = "2.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mhrivnak";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "radiotherm" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   poetry-dynamic-versioning,
   pytest-asyncio_0,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pybalboa";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "garbled1";
@@ -21,14 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-xOMbMmTTDDbd0WL0LFJ6lztsQMdI/r9MLhV9DmB6m3I=";
   };
 
-  build-system = [
-    poetry-core
-    poetry-dynamic-versioning
-  ];
-
   nativeCheckInputs = [
     pytest-asyncio_0
     pytestCheckHook
+  ];
+
+  build-system = [
+    poetry-core
+    poetry-dynamic-versioning
   ];
 
   disabledTests = [
@@ -36,6 +35,7 @@ buildPythonPackage rec {
     "test_cancel_task"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pybalboa" ];
 
   meta = {

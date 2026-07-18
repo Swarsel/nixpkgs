@@ -11,6 +11,25 @@ let
   wayland-lib = import ./lib.nix { inherit lib; };
 in
 {
+  imports = [
+    (lib.mkRemovedOptionModule [
+      "programs"
+      "hyprland"
+      "xwayland"
+      "hidpi"
+    ] "XWayland patches are deprecated. Refer to https://wiki.hyprland.org/Configuring/XWayland")
+    (lib.mkRemovedOptionModule [
+      "programs"
+      "hyprland"
+      "enableNvidiaPatches"
+    ] "Nvidia patches are no longer needed")
+    (lib.mkRemovedOptionModule [
+      "programs"
+      "hyprland"
+      "nvidiaPatches"
+    ] "Nvidia patches are no longer needed")
+  ];
+
   options.programs.hyprland = {
     enable = lib.mkEnableOption ''
       Hyprland, the dynamic tiling Wayland compositor that doesn't sacrifice on its looks.
@@ -48,8 +67,17 @@ in
           };
       };
 
-    xwayland.enable = lib.mkEnableOption "XWayland" // {
-      default = true;
+    systemd.setPath.enable = lib.mkEnableOption null // {
+      default = lib.versionOlder cfg.package.version "0.41.2";
+      defaultText = lib.literalExpression ''lib.versionOlder cfg.package.version "0.41.2"'';
+
+      description = ''
+        Set environment path of systemd to include the current system's bin directory.
+        This is needed in Hyprland setups, where opening links in applications do not work.
+        Enabled by default for Hyprland versions older than 0.41.2.
+      '';
+
+      example = false;
     };
 
     withUWSM = lib.mkEnableOption null // {
@@ -66,15 +94,8 @@ in
       '';
     };
 
-    systemd.setPath.enable = lib.mkEnableOption null // {
-      default = lib.versionOlder cfg.package.version "0.41.2";
-      defaultText = lib.literalExpression ''lib.versionOlder cfg.package.version "0.41.2"'';
-      example = false;
-      description = ''
-        Set environment path of systemd to include the current system's bin directory.
-        This is needed in Hyprland setups, where opening links in applications do not work.
-        Enabled by default for Hyprland versions older than 0.41.2.
-      '';
+    xwayland.enable = lib.mkEnableOption "XWayland" // {
+      default = true;
     };
   };
 
@@ -82,25 +103,18 @@ in
     lib.mkMerge [
       {
         environment = {
-          systemPackages = [ cfg.package ];
-
           # Allows lua stub file to be accessed from /run/current-system/sw/share/hypr
           pathsToLink = [ "/share/hypr" ];
+          systemPackages = [ cfg.package ];
         };
 
         # Hyprland needs permissions to give itself SCHED_RR on startup:
         # https://github.com/hyprwm/Hyprland/blob/main/src/init/initHelpers.cpp
         security.wrappers.Hyprland = {
-          owner = "root";
-          group = "root";
           capabilities = "cap_sys_nice+ep";
+          group = "root";
+          owner = "root";
           source = lib.getExe cfg.package;
-        };
-
-        xdg.portal = {
-          enable = true;
-          extraPortals = [ cfg.portalPackage ];
-          configPackages = lib.mkDefault [ cfg.package ];
         };
 
         # To make the Hyprland session available in DM
@@ -111,6 +125,12 @@ in
             DefaultEnvironment = "PATH=/run/wrappers/bin:/etc/profiles/per-user/%u/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH";
           };
         };
+
+        xdg.portal = {
+          enable = true;
+          configPackages = lib.mkDefault [ cfg.package ];
+          extraPortals = [ cfg.portalPackage ];
+        };
       }
 
       (lib.mkIf (cfg.withUWSM) {
@@ -119,30 +139,11 @@ in
 
       (import ./wayland-session.nix {
         inherit lib pkgs;
-        enableXWayland = cfg.xwayland.enable;
         enableWlrPortal = false; # Hyprland has its own portal, wlr is not needed
+        enableXWayland = cfg.xwayland.enable;
       })
     ]
   );
-
-  imports = [
-    (lib.mkRemovedOptionModule [
-      "programs"
-      "hyprland"
-      "xwayland"
-      "hidpi"
-    ] "XWayland patches are deprecated. Refer to https://wiki.hyprland.org/Configuring/XWayland")
-    (lib.mkRemovedOptionModule [
-      "programs"
-      "hyprland"
-      "enableNvidiaPatches"
-    ] "Nvidia patches are no longer needed")
-    (lib.mkRemovedOptionModule [
-      "programs"
-      "hyprland"
-      "nvidiaPatches"
-    ] "Nvidia patches are no longer needed")
-  ];
 
   meta.teams = [ lib.teams.hyprland ];
 }

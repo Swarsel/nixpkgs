@@ -4,16 +4,16 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  gtk-doc,
-  pkg-config,
-  libuuid,
-  libtool,
-  readline,
-  gobject-introspection,
-  json-glib,
-  lvm2,
-  libxslt,
   docbook_xsl,
+  gobject-introspection,
+  gtk-doc,
+  json-glib,
+  libtool,
+  libuuid,
+  libxslt,
+  lvm2,
+  pkg-config,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,19 +27,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Vd+3FnM+U5y2FxuslEsEzgZEx+5AQWuTjUVRnoFhm3I=";
   };
 
-  preConfigure = ''
-    sed -i docs/reference/ldmtool/Makefile.am \
-      -e 's|-nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl|--nonet ${docbook_xsl}/xml/xsl/docbook/manpages/docbook.xsl|g'
-  '';
-
-  configureScript = "sh autogen.sh";
-
   nativeBuildInputs = [
     pkg-config
     autoconf
     automake
     gobject-introspection
   ];
+
   buildInputs = [
     gtk-doc
     lvm2
@@ -50,11 +44,18 @@ stdenv.mkDerivation (finalAttrs: {
     libuuid
   ];
 
+  preConfigure = ''
+    sed -i docs/reference/ldmtool/Makefile.am \
+      -e 's|-nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl|--nonet ${docbook_xsl}/xml/xsl/docbook/manpages/docbook.xsl|g'
+  '';
+
+  configureScript = "sh autogen.sh";
+
   meta = {
     description = "Tool and library for managing Microsoft Windows Dynamic Disks";
     homepage = "https://github.com/mdbooth/libldm";
-    maintainers = with lib.maintainers; [ jensbin ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ jensbin ];
     platforms = lib.platforms.linux;
     mainProgram = "ldmtool";
   };

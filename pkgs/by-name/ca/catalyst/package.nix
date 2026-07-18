@@ -2,19 +2,18 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  catalyst,
   cmake,
+  ctestCheckHook,
   gfortran,
   mpi,
-  python3Packages,
-  ctestCheckHook,
   mpiCheckPhaseHook,
-  mpiSupport ? true,
-  pythonSupport ? false,
-  fortranSupport ? false,
-
+  python3Packages,
   # passthru.tests
   testers,
-  catalyst,
+  fortranSupport ? false,
+  mpiSupport ? true,
+  pythonSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.1.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.kitware.com";
     owner = "paraview";
     repo = "catalyst";
     tag = "v${finalAttrs.version}";
     hash = "sha256-8pBQQE5/h9LKRgFJi/KHtQPQ9rm7JyxBRVgh6Uf0Q98=";
+    domain = "gitlab.kitware.com";
   };
 
   nativeBuildInputs = [
@@ -45,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     lib.optional pythonSupport (
       python3Packages.mkPythonMetaPackage {
         inherit (finalAttrs) pname version meta;
+
         dependencies =
           with python3Packages;
           [
@@ -66,14 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+  nativeCheckInputs = [ ctestCheckHook ] ++ lib.optional mpiSupport mpiCheckPhaseHook;
 
   preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
     export DYLD_LIBRARY_PATH=$PWD/lib:$DYLD_LIBRARY_PATH
   '';
 
   __darwinAllowLocalNetworking = mpiSupport;
-
-  nativeCheckInputs = [ ctestCheckHook ] ++ lib.optional mpiSupport mpiCheckPhaseHook;
 
   disabledTests =
     lib.optionals (fortranSupport || stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64)
@@ -90,20 +89,23 @@ stdenv.mkDerivation (finalAttrs: {
       moduleNames = [ "catalyst" ];
       package = finalAttrs.finalPackage;
     };
-    serial = catalyst.override { mpiSupport = false; };
+
     fortran = catalyst.override { fortranSupport = true; };
+    serial = catalyst.override { mpiSupport = false; };
   };
 
   meta = {
     description = "In situ visualization and analysis library";
     homepage = "https://kitware.github.io/paraview-catalyst";
-    downloadPage = "https://gitlab.kitware.com/paraview/catalyst";
+
     license = with lib.licenses; [
       bsd3
       # vendored conduit
       bsd3Lbnl
     ];
+
     maintainers = with lib.maintainers; [ qbisi ];
     platforms = lib.platforms.unix;
+    downloadPage = "https://gitlab.kitware.com/paraview/catalyst";
   };
 })

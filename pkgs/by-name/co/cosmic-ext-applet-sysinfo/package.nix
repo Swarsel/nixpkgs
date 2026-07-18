@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  libcosmicAppHook,
   just,
+  libcosmicAppHook,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage {
   pname = "cosmic-ext-applet-sysinfo";
@@ -18,13 +18,12 @@ rustPlatform.buildRustPackage {
     hash = "sha256-e/dmBJik953u1JSQwQ+n9A3jTVmcefKSkF+EmXhg73o=";
   };
 
-  cargoHash = "sha256-KVnvyiF2rXb9gio3o+dE9w/zZ5gcad1uEbWHMBC3yDc=";
-
   nativeBuildInputs = [
     libcosmicAppHook
     just
   ];
 
+  cargoHash = "sha256-KVnvyiF2rXb9gio3o+dE9w/zZ5gcad1uEbWHMBC3yDc=";
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -48,8 +47,8 @@ rustPlatform.buildRustPackage {
     description = "Simple system info applet for COSMIC";
     homepage = "https://github.com/cosmic-utils/cosmic-ext-applet-sysinfo";
     license = lib.licenses.gpl3Only;
-    mainProgram = "cosmic-ext-applet-sysinfo";
     maintainers = with lib.maintainers; [ HeitorAugustoLN ];
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-ext-applet-sysinfo";
   };
 }

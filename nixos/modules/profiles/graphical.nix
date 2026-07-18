@@ -4,18 +4,18 @@
 { pkgs, ... }:
 
 {
-  services.xserver = {
-    enable = true;
-    desktopManager.plasma6.enable = true;
-  };
+  environment.systemPackages = [
+    pkgs.mesa-demos
+    pkgs.firefox
+  ];
 
   services = {
     displayManager.plasma-login-manager.enable = true;
     libinput.enable = true; # for touchpad support on many laptops
   };
 
-  environment.systemPackages = [
-    pkgs.mesa-demos
-    pkgs.firefox
-  ];
+  services.xserver = {
+    enable = true;
+    desktopManager.plasma6.enable = true;
+  };
 }

@@ -12,12 +12,11 @@
 buildPythonPackage rec {
   pname = "goocalendar";
   version = "0.8.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "GooCalendar";
     inherit version;
     hash = "sha256-LwL5TLRkD6ALucabLUeB0k4rIX+O/aW2ebS2rZPjIUs=";
+    pname = "GooCalendar";
   };
 
   nativeBuildInputs = [
@@ -25,16 +24,15 @@ buildPythonPackage rec {
     gobject-introspection
   ];
 
-  propagatedBuildInputs = [ pygobject3 ];
-
   buildInputs = [
     gtk3
     goocanvas_2
   ];
 
+  propagatedBuildInputs = [ pygobject3 ];
   # No upstream tests available
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "goocalendar" ];
 
   meta = {

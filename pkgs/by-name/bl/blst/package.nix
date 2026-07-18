@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -23,6 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
+
+  doCheck = true;
+
   installPhase = ''
     runHook preInstall
 
@@ -69,17 +72,17 @@ stdenv.mkDerivation (finalAttrs: {
     install_name_tool -id $out/lib/libblst.dylib $out/lib/libblst.dylib
   '';
 
-  doCheck = true;
-
   meta = {
-    changelog = "https://github.com/supranational/blst/releases/tag/${finalAttrs.src.tag}";
     description = "Multilingual BLS12-381 signature library";
     homepage = "https://github.com/supranational/blst";
+    changelog = "https://github.com/supranational/blst/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       iquerejeta
       yvan-sraka
     ];
+
     platforms = lib.platforms.all;
   };
 })

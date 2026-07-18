@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "bagels";
   version = "0.3.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EnhancedJax";
@@ -17,11 +16,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-w7Q7yCKffya2SyuHUaTWOugkeyTZbL9JNj/Ir3tnafE=";
   };
 
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+  ]
+  ++ (with python3Packages; [
+    freezegun
+    pytestCheckHook
+  ]);
+
   build-system = with python3Packages; [
     hatchling
   ];
-
-  pythonRelaxDeps = true;
 
   dependencies = with python3Packages; [
     aiohappyeyeballs
@@ -65,14 +70,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     yarl
   ];
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-  ]
-  ++ (with python3Packages; [
-    freezegun
-    pytestCheckHook
-  ]);
-
   disabledTests = [
     # AssertionError: assert 1 == 0
     "test_delete_category"
@@ -99,17 +96,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_update_template"
   ];
 
+  pyproject = true;
+  pythonRelaxDeps = true;
+
   meta = {
-    homepage = "https://github.com/EnhancedJax/Bagels";
     description = "Powerful expense tracker that lives in your terminal";
+
     longDescription = ''
       Bagels expense tracker is a TUI application where you can track and analyse your money flow, with convenience oriented features and a complete interface.
     '';
+
+    homepage = "https://github.com/EnhancedJax/Bagels";
     changelog = "https://github.com/EnhancedJax/Bagels/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       loc
     ];
+
     mainProgram = "bagels";
   };
 })

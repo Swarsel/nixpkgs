@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,20 +18,20 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-y1NYYyRS5L7QzV/bcm43EJ2OCHg+vPSTSwhHO0AwqD8=";
 
+  checkFlags = [
+    "-skip=TestMQTTBackend" # Depends on external MQTT broker
+  ];
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   ldflags = [
     "-s"
     "-w"
     "-X main.version=v${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
   versionCheckProgramArg = "version";
-  checkFlags = [
-    "-skip=TestMQTTBackend" # Depends on external MQTT broker
-  ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   fetchPypi,
   git,
+  python3,
   versionCheckHook,
 }:
 
@@ -13,13 +13,15 @@ let
       cement = super.cement.overridePythonAttrs (old: rec {
         pname = "cement";
         version = "2.10.14";
+
         src = fetchPypi {
           inherit pname version;
           hash = "sha256-NC4n21SmYW3RiS7QuzWXoifO4z3C2FVgQm3xf8qQcFg=";
         };
+
         patches = [ ];
-        build-system = old.build-system or [ ] ++ (with python.pkgs; [ setuptools ]);
         doCheck = false;
+        build-system = old.build-system or [ ] ++ (with python.pkgs; [ setuptools ]);
       });
     };
   };
@@ -28,8 +30,6 @@ in
 python.pkgs.buildPythonApplication (finalAttrs: {
   pname = "awsebcli";
   version = "3.27.3";
-  pyproject = true;
-  doInstallCheck = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -38,18 +38,21 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-p7W9HoFND28jcqrMp7cFOzmarxvcA3wFhrOCHyvoj5E=";
   };
 
-  pythonRelaxDeps = [
-    "botocore"
-    "colorama"
-    "fabric"
-    "pathspec"
-    "packaging"
-    "PyYAML"
-    "six"
-    "termcolor"
-    "urllib3"
-    "wcwidth"
+  nativeCheckInputs = with python.pkgs; [
+    git
+    mock
+    pytest-socket
+    pytestCheckHook
+    versionCheckHook
   ];
+
+  doInstallCheck = true;
+
+  # Propagating dependencies leaks them through $PYTHONPATH which causes issues
+  # when used in nix-shell.
+  postFixup = ''
+    rm $out/nix-support/propagated-build-inputs
+  '';
 
   dependencies = with python.pkgs; [
     packaging
@@ -67,18 +70,6 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     termcolor
     wcwidth
     websocket-client
-  ];
-
-  nativeCheckInputs = with python.pkgs; [
-    git
-    mock
-    pytest-socket
-    pytestCheckHook
-    versionCheckHook
-  ];
-
-  enabledTestPaths = [
-    "tests/unit"
   ];
 
   disabledTests = [
@@ -100,11 +91,24 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     "test_aws_eb_profile_environment_variable_found__profile_exists_in_credentials_file"
   ];
 
-  # Propagating dependencies leaks them through $PYTHONPATH which causes issues
-  # when used in nix-shell.
-  postFixup = ''
-    rm $out/nix-support/propagated-build-inputs
-  '';
+  enabledTestPaths = [
+    "tests/unit"
+  ];
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "botocore"
+    "colorama"
+    "fabric"
+    "pathspec"
+    "packaging"
+    "PyYAML"
+    "six"
+    "termcolor"
+    "urllib3"
+    "wcwidth"
+  ];
 
   meta = {
     description = "Command line interface for Elastic Beanstalk";

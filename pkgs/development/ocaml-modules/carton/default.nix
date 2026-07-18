@@ -1,33 +1,33 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  ke,
-  duff,
-  decompress,
-  cstruct,
-  optint,
+  alcotest,
+  alcotest-lwt,
+  base64,
   bigstringaf,
+  bos,
+  buildDunePackage,
   checkseum,
-  logs,
-  psq,
+  cmdliner,
+  crowbar,
+  cstruct,
+  decompress,
+  digestif,
+  duff,
+  findlib,
   fmt,
+  fpath,
+  getconf,
+  hxd,
+  ke,
+  logs,
+  lwt,
+  mirage-flow,
+  optint,
+  psq,
+  replaceVars,
   result,
   rresult,
-  fpath,
-  base64,
-  bos,
-  digestif,
-  alcotest,
-  crowbar,
-  alcotest-lwt,
-  lwt,
-  findlib,
-  mirage-flow,
-  cmdliner,
-  hxd,
-  getconf,
-  replaceVars,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -50,6 +50,10 @@ buildDunePackage (finalAttrs: {
     rm CHANGES.md
   '';
 
+  nativeBuildInputs = [
+    findlib
+  ];
+
   buildInputs = [
     cmdliner
     digestif
@@ -59,6 +63,7 @@ buildDunePackage (finalAttrs: {
     bos
     hxd
   ];
+
   propagatedBuildInputs = [
     ke
     duff
@@ -74,9 +79,7 @@ buildDunePackage (finalAttrs: {
 
   # Alcotest depends on cmdliner ≥ 2.0
   doCheck = false;
-  nativeBuildInputs = [
-    findlib
-  ];
+
   checkInputs = [
     base64
     alcotest
@@ -88,8 +91,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Implementation of PACKv2 file in OCaml";
-    license = lib.licenses.mit;
     homepage = "https://github.com/mirage/ocaml-git";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sternenseemann ];
   };
 })

@@ -1,12 +1,9 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
-  makeWrapper,
-
-  nixosTests,
   alsa-lib,
   boost,
+  clangStdenv,
   cli11,
   cmake,
   cryptopp,
@@ -15,15 +12,11 @@
   half,
   jack2,
   libdecor,
+  libgbm,
   libpng,
   libpulseaudio,
   libunwind,
   libusb1,
-  magic-enum,
-  minimp3,
-  miniz,
-  nlohmann_json,
-  libgbm,
   libx11,
   libxcb,
   libxcursor,
@@ -32,6 +25,13 @@
   libxrandr,
   libxscrnsaver,
   libxtst,
+  magic-enum,
+  makeWrapper,
+  minimp3,
+  miniz,
+  nix-update-script,
+  nixosTests,
+  nlohmann_json,
   pipewire,
   pkg-config,
   pugixml,
@@ -50,7 +50,6 @@
   xbyak,
   xxhash,
   zlib,
-  nix-update-script,
 }:
 
 clangStdenv.mkDerivation (finalAttrs: {
@@ -95,6 +94,12 @@ clangStdenv.mkDerivation (finalAttrs: {
       --replace-fail @GIT_DESC@ nixpkgs \
       --replace-fail @BUILD_DATE@ $(cat SOURCE_DATE_EPOCH)
   '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    makeWrapper
+  ];
 
   buildInputs = [
     alsa-lib
@@ -142,19 +147,9 @@ clangStdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    makeWrapper
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_UPDATER" false)
   ];
-
-  # Still in development, help with debugging
-  cmakeBuildType = "RelWithDebugInfo";
-  dontStrip = true;
 
   postInstall = ''
     wrapProgram $out/bin/shadps4 \
@@ -166,6 +161,10 @@ clangStdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  # Still in development, help with debugging
+  cmakeBuildType = "RelWithDebugInfo";
+  dontStrip = true;
+
   runtimeDependencies = [
     vulkan-loader
     libxi
@@ -173,6 +172,7 @@ clangStdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.openorbis-example = nixosTests.shadps4;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -185,11 +185,13 @@ clangStdenv.mkDerivation (finalAttrs: {
     description = "Early in development PS4 emulator";
     homepage = "https://github.com/shadps4-emu/shadPS4";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       ryand56
       liberodark
     ];
-    mainProgram = "shadps4";
+
     platforms = lib.intersectLists lib.platforms.linux lib.platforms.x86_64;
+    mainProgram = "shadps4";
   };
 })

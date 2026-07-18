@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  bundlerEnv,
-  buildPackages,
   fetchFromGitHub,
+  buildPackages,
+  bundlerEnv,
+  callPackage,
   makeBinaryWrapper,
   nixosTests,
-  callPackage,
 }:
 stdenv.mkDerivation (
   finalAttrs:
@@ -22,11 +22,12 @@ stdenv.mkDerivation (
         buildPackages.bundlerEnv finalAttrs.passthru.bundlerEnvArgs;
 
     bundlerEnvArgs = {
-      name = "${finalAttrs.pname}-${finalAttrs.version}-gems";
       gemdir = ./.;
+      name = "${finalAttrs.pname}-${finalAttrs.version}-gems";
     };
   in
   {
+    inherit rubyEnv;
     pname = "pghero";
     version = "3.6.1";
 
@@ -38,12 +39,11 @@ stdenv.mkDerivation (
     };
 
     strictDeps = true;
+
     nativeBuildInputs = [
       nativeRubyEnv
       makeBinaryWrapper
     ];
-
-    inherit rubyEnv;
 
     buildPhase = ''
       runHook preBuild
@@ -64,18 +64,20 @@ stdenv.mkDerivation (
 
     passthru = {
       inherit bundlerEnvArgs;
-      updateScript = callPackage ./update.nix { };
+
       tests = {
         inherit (nixosTests) pghero;
       };
+
+      updateScript = callPackage ./update.nix { };
     };
 
     meta = {
-      homepage = "https://github.com/ankane/pghero";
       description = "Performance dashboard for Postgres";
-      mainProgram = "pghero";
+      homepage = "https://github.com/ankane/pghero";
       license = lib.licenses.mit;
       maintainers = [ lib.maintainers.tie ];
+      mainProgram = "pghero";
     };
   }
 )

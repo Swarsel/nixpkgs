@@ -21,29 +21,30 @@ in
   ###### implementation
 
   config = mkIf cfg.enable {
-    users.users.owamp = {
-      group = "owamp";
-      description = "Owamp daemon";
-      isSystemUser = true;
+    systemd.services.owamp = {
+      description = "Owamp server";
+
+      serviceConfig = {
+        AmbientCapabilities = "cap_net_bind_service";
+        ExecStart = "${pkgs.owamp}/bin/owampd -R /run/owamp -d /run/owamp -v -Z ";
+        Group = "owamp";
+        PrivateTmp = true;
+        Restart = "always";
+        RuntimeDirectory = "owamp";
+        StateDirectory = "owamp";
+        Type = "simple";
+        User = "owamp";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups.owamp = { };
 
-    systemd.services.owamp = {
-      description = "Owamp server";
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        ExecStart = "${pkgs.owamp}/bin/owampd -R /run/owamp -d /run/owamp -v -Z ";
-        PrivateTmp = true;
-        Restart = "always";
-        Type = "simple";
-        User = "owamp";
-        Group = "owamp";
-        RuntimeDirectory = "owamp";
-        StateDirectory = "owamp";
-        AmbientCapabilities = "cap_net_bind_service";
-      };
+    users.users.owamp = {
+      description = "Owamp daemon";
+      group = "owamp";
+      isSystemUser = true;
     };
   };
 }

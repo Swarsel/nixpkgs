@@ -1,28 +1,30 @@
 {
-  fetchzip,
   lib,
   stdenv,
+  fetchzip,
+  glib,
   jdk17,
   runtimeShell,
-  glib,
   wrapGAppsHook3,
 }:
 let
   jdk = jdk17;
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "5.6.1";
   pname = "keystore-explorer";
+  version = "5.6.1";
+
   src = fetchzip {
     url = "https://github.com/kaikramer/keystore-explorer/releases/download/v${finalAttrs.version}/kse-${
       lib.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }.zip";
+
     sha256 = "sha256-yhYQpeBoicILYEXpW+oqDdF+KieDbNmTFpxL+aA8vTw=";
   };
 
+  nativeBuildInputs = [ wrapGAppsHook3 ];
   # glib is necessary so file dialogs don't hang.
   buildInputs = [ glib ];
-  nativeBuildInputs = [ wrapGAppsHook3 ];
 
   installPhase = ''
     runHook preInstall
@@ -43,16 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontStrip = true;
   dontBuild = true;
   dontConfigure = true;
+  dontStrip = true;
 
   meta = {
     description = "Open source GUI replacement for the Java command-line utilities keytool and jarsigner";
-    mainProgram = "keystore-explorer";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.numinit ];
     platforms = lib.platforms.unix;
+    mainProgram = "keystore-explorer";
   };
 })

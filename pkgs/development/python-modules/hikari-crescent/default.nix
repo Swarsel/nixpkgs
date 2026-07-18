@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
+  croniter,
   hikari,
-  sigparse,
+  poetry-core,
+  pynacl,
+  pytest-asyncio,
   pytestCheckHook,
   python-dotenv,
-  pytest-asyncio,
-  croniter,
-  pynacl,
+  sigparse,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hikari-crescent";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hikari-crescent";
@@ -23,15 +22,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-86NCAlN5/JGrxPVIMs6ARr6H4G3shPcgxASwukptyJo=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    hikari
-    sigparse
-  ];
-
-  pythonImportsCheck = [ "crescent" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -41,14 +31,22 @@ buildPythonPackage (finalAttrs: {
     pynacl
   ];
 
-  disabledTests = [ "test_handle_resp" ];
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    hikari
+    sigparse
+  ];
 
   disabledTestPaths = [ "tests/test_bot/test_bot.py" ];
+  disabledTests = [ "test_handle_resp" ];
+  pyproject = true;
+  pythonImportsCheck = [ "crescent" ];
 
   meta = {
     description = "Command handler for Hikari that keeps your project neat and tidy";
-    license = lib.licenses.mit;
     homepage = "https://github.com/hikari-crescent/hikari-crescent";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sigmanificient ];
     mainProgram = "hikari-crescent";
   };

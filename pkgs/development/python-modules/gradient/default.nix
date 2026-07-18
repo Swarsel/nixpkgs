@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  anyio,
+  buildPythonPackage,
+  distro,
   hatch-fancy-pypi-readme,
+  hatchling,
   httpx,
   pydantic,
-  typing-extensions,
-  anyio,
-  distro,
   sniffio,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "gradient";
   version = "3.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "digitalocean";
@@ -43,14 +42,15 @@ buildPythonPackage (finalAttrs: {
     sniffio
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gradient" ];
 
   meta = {
     description = "Python API library for Gradient";
-    mainProgram = "gradient";
     homepage = "https://github.com/digitalocean/gradient-python";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.unix;
+    mainProgram = "gradient";
   };
 })

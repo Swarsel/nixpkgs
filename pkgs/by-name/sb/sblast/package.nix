@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  ffmpeg,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  ffmpeg,
   makeBinaryWrapper,
   nix-update-script,
   pulseaudio,
@@ -20,11 +20,11 @@ let
       hash = "sha256-ICSnLfzBoaax3YKa4LiTBQ4zxgDxttxcN4YVLApFH24=";
     };
 
-    vendorHash = "sha256-yPwLilMiDR1aSeuk8AEmuYPsHPRWqiByGLwgkdI5t+s=";
-
     nativeBuildInputs = [
       makeBinaryWrapper
     ];
+
+    vendorHash = "sha256-yPwLilMiDR1aSeuk8AEmuYPsHPRWqiByGLwgkdI5t+s=";
 
     postInstall = ''
       wrapProgram $out/bin/sblast \
@@ -40,20 +40,21 @@ let
     subPackages = ".";
 
     passthru = {
-      updateScript = nix-update-script { };
       tests.version = testers.testVersion {
-        package = self;
         version = "v${version}";
+        package = self;
       };
+
+      updateScript = nix-update-script { };
     };
 
     meta = {
       description = "Blast your Linux audio to DLNA receivers";
       homepage = "https://github.com/ugjka/sblast";
       license = lib.licenses.mit;
-      mainProgram = "sblast";
       maintainers = with lib.maintainers; [ colinsane ];
       platforms = lib.platforms.linux;
+      mainProgram = "sblast";
     };
   };
 in

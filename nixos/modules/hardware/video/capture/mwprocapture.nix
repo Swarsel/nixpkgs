@@ -13,12 +13,6 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    boot.kernelModules = [ "ProCapture" ];
-
-    environment.systemPackages = [ kernelPackages.mwprocapture ];
-
-    boot.extraModulePackages = [ kernelPackages.mwprocapture ];
-
     boot.extraModprobeConfig = ''
       # Set the png picture to be displayed when no input signal is detected.
       options ProCapture nosignal_file=${kernelPackages.mwprocapture}/res/NoSignal.png
@@ -47,6 +41,10 @@ in
       # Parameters for internal usage
       #options ProCapture internal_params=""
     '';
+
+    boot.extraModulePackages = [ kernelPackages.mwprocapture ];
+    boot.kernelModules = [ "ProCapture" ];
+    environment.systemPackages = [ kernelPackages.mwprocapture ];
 
   };
 

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "goodwe";
   version = "0.4.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "marcelblijleven";
@@ -18,10 +17,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-2wnfc+W1lhUgvWa1iwHxJu4WGZHaXvmxgtBAkTJHJ3E=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "goodwe" ];
 
   meta = {

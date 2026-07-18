@@ -2,16 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gtk3,
+  nixosTests,
+  pcre2,
   pkg-config,
   vte,
-  gtk3,
-  pcre2,
-  nixosTests,
 }:
 
 stdenv.mkDerivation {
   pname = "stupidterm";
   version = "2019-03-26";
+
+  src = fetchFromGitHub {
+    owner = "esmil";
+    repo = "stupidterm";
+    rev = "f824e41c2ca9016db73556c5d2f5a2861e235c8e";
+    sha256 = "1f73wvqqvj5pr3fvb7jjc4bi1iwgkkknz24k8n69mdb75jnfjipp";
+  };
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -20,13 +27,6 @@ stdenv.mkDerivation {
     gtk3
     pcre2
   ];
-
-  src = fetchFromGitHub {
-    owner = "esmil";
-    repo = "stupidterm";
-    rev = "f824e41c2ca9016db73556c5d2f5a2861e235c8e";
-    sha256 = "1f73wvqqvj5pr3fvb7jjc4bi1iwgkkknz24k8n69mdb75jnfjipp";
-  };
 
   makeFlags = [
     "PKGCONFIG=${pkg-config}/bin/${pkg-config.targetPrefix}pkg-config"

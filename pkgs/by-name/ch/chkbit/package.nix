@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -18,12 +18,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-hiXn7LmO4bYti9iufonQSLM1G0BZGB8u0QRqSYBvxNc=";
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.appVersion=${finalAttrs.version}"
-  ];
-
   # Tests expect binary to be in the source directory
   preCheck = ''
     ln -s ../go/bin/chkbit .
@@ -31,6 +25,13 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.appVersion=${finalAttrs.version}"
+  ];
+
   versionCheckProgramArg = "version";
 
   meta = {

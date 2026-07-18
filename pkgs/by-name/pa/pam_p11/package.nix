@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  fetchpatch,
+  libintl,
   libp11,
   pam,
-  libintl,
-  fetchpatch,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     pam
     libp11.passthru.openssl
@@ -33,10 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libintl ];
 
   meta = {
-    homepage = "https://github.com/OpenSC/pam_p11";
     description = "Authentication with PKCS#11 modules";
+    homepage = "https://github.com/OpenSC/pam_p11";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sb0 ];
+    platforms = lib.platforms.unix;
   };
 })

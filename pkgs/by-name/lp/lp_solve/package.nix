@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cctools,
-  fixDarwinDylibNames,
-  darwin,
-  replaceVars,
-  buildPackages,
   binutils,
+  buildPackages,
+  cctools,
+  darwin,
+  fixDarwinDylibNames,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-mCYstt0vEGZk7rjcXmxqZjYTviF8xfg1mvA4jqKCYgE=";
   };
+
+  patches = [
+    (replaceVars ./0001-fix-cross-compilation.patch {
+      emulator = "${stdenv.hostPlatform.emulator buildPackages}";
+    })
+  ];
 
   nativeBuildInputs =
     lib.optionals (!stdenv.hostPlatform.isDarwin) [
@@ -39,14 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
   // lib.optionalAttrs (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) {
     NIX_LDFLAGS = "-headerpad_max_install_names";
   };
-
-  dontConfigure = true;
-
-  patches = [
-    (replaceVars ./0001-fix-cross-compilation.patch {
-      emulator = "${stdenv.hostPlatform.emulator buildPackages}";
-    })
-  ];
 
   buildPhase =
     let
@@ -75,12 +73,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Mixed Integer Linear Programming (MILP) solver";
-    mainProgram = "lp_solve";
     homepage = "https://github.com/lp-solve/lp_solve";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ tbutter ];
     platforms = lib.platforms.unix;
+    mainProgram = "lp_solve";
   };
 })

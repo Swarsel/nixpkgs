@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  cmake,
   cereal,
   ceres-solver,
   clp,
+  cmake,
   coin-utils,
   eigen,
   lemon-graph,
   libjpeg,
   libpng,
   libtiff,
-  nix-update-script,
   llvmPackages,
+  nix-update-script,
   osi,
+  pkg-config,
   zlib,
-  enableShared ? !stdenv.hostPlatform.isStatic,
-  enableExamples ? false,
   enableDocs ? false,
+  enableExamples ? false,
+  enableShared ? !stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.1";
   pname = "openmvg";
+  version = "2.1";
 
   src = fetchFromGitHub {
     owner = "openmvg";
@@ -37,6 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     mkdir src/dependencies/cereal/include
   '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
 
   buildInputs = [
     cereal
@@ -51,11 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     llvmPackages.openmp
     osi
     zlib
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
   ];
 
   # flann is missing because the lz4 dependency isn't propagated: https://github.com/openMVG/openMVG/issues/1265
@@ -76,27 +76,25 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeDir = "./src";
-
   dontUseCmakeBuildDir = true;
-
   # This can be enabled, but it will exhause virtual memory on most machines.
   enableParallelBuilding = false;
-
   # Without hardeningDisable, certain flags are passed to the compile that break the build (primarily string format errors)
   hardeningDisable = [ "all" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Library for computer-vision scientists and targeted for the Multiple View Geometry community";
     homepage = "https://openmvg.readthedocs.io/en/latest/";
-    downloadPage = "https://github.com/openMVG/openMVG";
     changelog = "https://github.com/openMVG/openMVG/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       mdaiter
       bouk
     ];
+
+    platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/openMVG/openMVG";
   };
 })

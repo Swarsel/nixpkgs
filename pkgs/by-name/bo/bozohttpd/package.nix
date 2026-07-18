@@ -1,23 +1,23 @@
 {
   lib,
-  bmake,
+  stdenv,
   fetchurl,
+  bmake,
   groff,
   inetutils,
   libxcrypt,
   lua,
   openssl,
-  stdenv,
   wget,
-  # Boolean flags
-  minimal ? false,
-  userSupport ? !minimal,
   cgiSupport ? !minimal,
   dirIndexSupport ? !minimal,
   dynamicContentSupport ? !minimal,
-  sslSupport ? !minimal,
-  luaSupport ? !minimal,
   htpasswdSupport ? !minimal,
+  luaSupport ? !minimal,
+  # Boolean flags
+  minimal ? false,
+  sslSupport ? !minimal,
+  userSupport ? !minimal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,21 +31,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha512-fr1PnyYAS3wkpmj/npRC3A87UL9LIXw4thlM4GfrtlJbuX5EkWGVJnHJW/EmYp7z+N91dcdRJgdO79l6WJsKpg==";
   };
 
+  nativeBuildInputs = [
+    bmake
+    groff
+  ];
+
   buildInputs = [
     libxcrypt
     openssl
   ]
   ++ lib.optionals luaSupport [ lua ];
 
-  nativeBuildInputs = [
-    bmake
-    groff
-  ];
-
-  nativeCheckInputs = [
-    inetutils
-    wget
-  ];
+  makeFlags = [ "LDADD=$(_LDADD)" ];
 
   env = {
     COPTS = lib.concatStringsSep " " (
@@ -80,15 +77,18 @@ stdenv.mkDerivation (finalAttrs: {
     );
   };
 
-  makeFlags = [ "LDADD=$(_LDADD)" ];
+  doCheck = true;
+
+  nativeCheckInputs = [
+    inetutils
+    wget
+  ];
 
   checkFlags = lib.optionals (!cgiSupport) [ "CGITESTS=" ];
 
-  doCheck = true;
-
   meta = {
-    homepage = "http://www.eterna23.net/bozohttpd/";
     description = "Bozotic HTTP server; small and secure";
+
     longDescription = ''
       bozohttpd is a small and secure HTTP version 1.1 server. Its main
       feature is the lack of features, reducing the code size and improving
@@ -99,10 +99,12 @@ stdenv.mkDerivation (finalAttrs: {
       single machine. It is capable of servicing pages via the IPv6 protocol.
       It has SSL support. It has no configuration file by design.
     '';
+
+    homepage = "http://www.eterna23.net/bozohttpd/";
     changelog = "http://www.eterna23.net/bozohttpd/CHANGES";
     license = lib.licenses.bsd2;
-    mainProgram = "bozohttpd";
     maintainers = [ lib.maintainers.embr ];
     platforms = lib.platforms.all;
+    mainProgram = "bozohttpd";
   };
 })

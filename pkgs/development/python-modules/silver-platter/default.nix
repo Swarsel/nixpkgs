@@ -1,22 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  pkgs,
-  pkg-config,
-  rustPlatform,
-  cargo,
-  rustc,
-  libiconv,
-  openssl,
-
-  setuptools,
-  setuptools-rust,
   breezy,
+  buildPythonPackage,
+  cargo,
   dulwich,
   jinja2,
+  libiconv,
+  openssl,
+  pkg-config,
+  pkgs,
   pyyaml,
   ruamel-yaml,
+  rustPlatform,
+  rustc,
+  setuptools,
+  setuptools-rust,
 }:
 
 let
@@ -30,7 +29,17 @@ buildPythonPackage {
     cargoDeps
     ;
 
-  pyproject = true;
+  nativeBuildInputs = [
+    setuptools-rust
+    rustPlatform.cargoSetupHook
+    cargo
+    rustc
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
+
+  buildInputs =
+    lib.optionals stdenv.hostPlatform.isLinux [ openssl ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
   dependencies = [
     setuptools
@@ -40,17 +49,8 @@ buildPythonPackage {
     pyyaml
     ruamel-yaml
   ];
-  nativeBuildInputs = [
-    setuptools-rust
-    rustPlatform.cargoSetupHook
-    cargo
-    rustc
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
-  buildInputs =
-    lib.optionals stdenv.hostPlatform.isLinux [ openssl ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
+  pyproject = true;
   pythonImportsCheck = [ "silver_platter" ];
 
   meta = {

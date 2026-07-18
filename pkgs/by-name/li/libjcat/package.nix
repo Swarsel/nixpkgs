@@ -1,26 +1,33 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  docbook_xml_dtd_43,
   docbook-xsl-nons,
+  docbook_xml_dtd_43,
   glib,
-  json-glib,
   gnutls,
-  gpgme,
   gobject-introspection,
-  vala,
+  gpgme,
   gtk-doc,
+  json-glib,
   meson,
   ninja,
+  nixosTests,
   pkg-config,
   python3,
-  nixosTests,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libjcat";
   version = "0.2.6";
+
+  src = fetchFromGitHub {
+    owner = "hughsie";
+    repo = "libjcat";
+    rev = finalAttrs.version;
+    sha256 = "sha256-PLaxeRWbPWXbS9QvMzYS4FTBNw9BDpMf1z2gYNZQa2c=";
+  };
 
   outputs = [
     "bin"
@@ -30,13 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "installedTests"
   ];
-
-  src = fetchFromGitHub {
-    owner = "hughsie";
-    repo = "libjcat";
-    rev = finalAttrs.version;
-    sha256 = "sha256-PLaxeRWbPWXbS9QvMzYS4FTBNw9BDpMf1z2gYNZQa2c=";
-  };
 
   patches = [
     # Installed tests are installed to different output
@@ -78,10 +78,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library for reading and writing Jcat files";
-    mainProgram = "jcat-tool";
     homepage = "https://github.com/hughsie/libjcat";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "jcat-tool";
   };
 })

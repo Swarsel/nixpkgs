@@ -1,22 +1,17 @@
 {
   lib,
   mkMesonLibrary,
-
-  nix-store-c,
   nix-expr-c,
   nix-fetchers-c,
   nix-flake,
-
+  nix-store-c,
   # Configuration Options
-
   version,
 }:
 
 mkMesonLibrary (finalAttrs: {
-  pname = "nix-flake-c";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-flake-c";
 
   propagatedBuildInputs = [
     nix-expr-c
@@ -31,6 +26,8 @@ mkMesonLibrary (finalAttrs: {
 
   mesonFlags = [
   ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix ++ lib.platforms.windows;

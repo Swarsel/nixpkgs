@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  hatchling,
   pytestCheckHook,
   typing-extensions,
 }:
@@ -10,9 +10,8 @@ let
   version = "8.8.1";
 in
 buildPythonPackage {
-  pname = "coloraide";
   inherit version;
-  pyproject = true;
+  pname = "coloraide";
 
   src = fetchFromGitHub {
     owner = "facelessuser";
@@ -20,6 +19,10 @@ buildPythonPackage {
     tag = version;
     hash = "sha256-a6FAMtvJMKkMfJVNjlxb7ayIPVZwsGYktO9bkRJjmL4=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -29,18 +32,17 @@ buildPythonPackage {
     typing-extensions
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "coloraide"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {
     description = "Library to aid in using colors";
     homepage = "https://github.com/facelessuser/coloraide";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers._9999years
       lib.maintainers.djacu

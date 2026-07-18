@@ -11,15 +11,14 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-dashboard";
   version = "2.0.0";
-  format = "wheel";
 
   src = fetchPypi {
-    pname = "azure_mgmt_dashboard";
     inherit version;
-    format = "wheel";
-    python = "py3";
-    dist = "py3";
     hash = "sha256-1LASBzs+biyDDQPoCujcvLhK3iyNaHLU8VCtBSdTJxg=";
+    dist = "py3";
+    format = "wheel";
+    pname = "azure_mgmt_dashboard";
+    python = "py3";
   };
 
   propagatedBuildInputs = [
@@ -31,7 +30,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "wheel";
   pythonImportsCheck = [ "azure.mgmt.dashboard" ];
 
   meta = {

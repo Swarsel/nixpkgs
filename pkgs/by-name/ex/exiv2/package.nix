@@ -2,25 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  brotli,
   cmake,
   doxygen,
+  expat,
   gettext,
   graphviz,
-  libxslt,
-  removeReferencesTo,
-  libiconv,
-  brotli,
-  expat,
   inih,
-  zlib,
+  libiconv,
   libxml2,
+  libxslt,
   python3,
+  removeReferencesTo,
   which,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "exiv2";
   version = "0.28.8";
+
+  src = fetchFromGitHub {
+    owner = "exiv2";
+    repo = "exiv2";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-9Qe+lNBO24qQyKDXe7RMCqoDa61iha2QFhRpLJlCSMo=";
+  };
 
   outputs = [
     "out"
@@ -29,13 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
     "man"
   ];
-
-  src = fetchFromGitHub {
-    owner = "exiv2";
-    repo = "exiv2";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-9Qe+lNBO24qQyKDXe7RMCqoDa61iha2QFhRpLJlCSMo=";
-  };
 
   nativeBuildInputs = [
     cmake
@@ -57,12 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  nativeCheckInputs = [
-    libxml2.bin
-    python3
-    which
-  ];
-
   cmakeFlags = [
     "-DEXIV2_ENABLE_NLS=ON"
     "-DEXIV2_BUILD_DOC=ON"
@@ -75,6 +69,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
+  nativeCheckInputs = [
+    libxml2.bin
+    python3
+    which
+  ];
 
   preCheck = ''
     patchShebangs ../test/
@@ -103,16 +103,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   disallowedReferences = [ stdenv.cc.cc ];
-
   # causes redefinition of _FORTIFY_SOURCE
   hardeningDisable = [ "fortify3" ];
 
   meta = {
-    homepage = "https://exiv2.org";
     description = "Library and command-line utility to manage image metadata";
-    mainProgram = "exiv2";
-    platforms = lib.platforms.all;
+    homepage = "https://exiv2.org";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ wegank ];
+    platforms = lib.platforms.all;
+    mainProgram = "exiv2";
   };
 })

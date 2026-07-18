@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   ipykernel,
   nbclient,
   nbformat,
   pygments,
-
   # tests
   pytestCheckHook,
   typing-extensions,
@@ -20,7 +17,6 @@
 buildPythonPackage rec {
   pname = "nbmake";
   version = "1.5.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "treebeardtech";
@@ -28,6 +24,17 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Du2sxSl1a5ZVl7ueHWnkTTPtuMUlmALuOuSkoEFIQcE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    typing-extensions
+  ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatchling
@@ -40,19 +47,6 @@ buildPythonPackage rec {
     pygments
   ];
 
-  pythonRelaxDeps = [ "nbclient" ];
-
-  pythonImportsCheck = [ "nbmake" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    typing-extensions
-  ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
   disabledTests = [
     # depends on pytest-xdist that is not added, as
     # tests are prone to race conditions under parallelism, they sometimes hang indefinitely
@@ -60,7 +54,9 @@ buildPythonPackage rec {
     "test_when_parallel_passing_nbs_then_ok"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "nbmake" ];
+  pythonRelaxDeps = [ "nbclient" ];
 
   meta = {
     description = "Pytest plugin for testing notebooks";

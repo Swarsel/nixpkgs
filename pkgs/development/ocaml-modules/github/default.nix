@@ -1,14 +1,14 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  uri,
+  buildDunePackage,
   cohttp,
-  lwt,
   cohttp-lwt,
   github-data,
-  yojson,
+  lwt,
   stringext,
+  uri,
+  yojson,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -22,8 +22,6 @@ buildDunePackage (finalAttrs: {
     sha256 = "sha256-nxHXOdZAvFe5/lKNw7tTJmY86xzfdFT+fW+lnKioyPM=";
   };
 
-  duneVersion = "3";
-
   propagatedBuildInputs = [
     uri
     cohttp
@@ -34,9 +32,11 @@ buildDunePackage (finalAttrs: {
     stringext
   ];
 
+  duneVersion = "3";
+
   meta = {
-    homepage = "https://github.com/mirage/ocaml-github";
     description = "GitHub APIv3 OCaml library";
+    homepage = "https://github.com/mirage/ocaml-github";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ niols ];
   };

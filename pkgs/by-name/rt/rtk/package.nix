@@ -1,19 +1,18 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  gitMinimal,
   makeWrapper,
   pkg-config,
+  rustPlatform,
   sqlite,
-  gitMinimal,
-  writableTmpDirAsHomeHook,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rtk";
   version = "0.43.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "rtk-ai";
@@ -22,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-n5bkPPsrdM4fE5ltocTjlq+JwRgp39yib6S79fci4m4=";
   };
 
-  cargoHash = "sha256-XKUKdhxfnwUCOx9slqx4oUFa09HcosPLVh5Xkh87oSk=";
-
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -31,6 +28,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   buildInputs = [
     sqlite
+  ];
+
+  cargoHash = "sha256-XKUKdhxfnwUCOx9slqx4oUFa09HcosPLVh5Xkh87oSk=";
+
+  nativeCheckInputs = [
+    gitMinimal
+    writableTmpDirAsHomeHook
   ];
 
   postInstall = ''
@@ -42,15 +46,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       }
   '';
 
-  nativeCheckInputs = [
-    gitMinimal
-    writableTmpDirAsHomeHook
-  ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
 
   meta = {
     description = "CLI proxy that reduces LLM token consumption by 60-90% on common dev commands";

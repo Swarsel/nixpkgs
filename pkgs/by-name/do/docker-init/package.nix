@@ -1,14 +1,12 @@
 {
+  lib,
   stdenv,
   fetchurl,
   zstd,
-  lib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "docker-init";
   version = "1.4.0";
-
-  tag = "175267";
 
   src = fetchurl {
     url = "https://desktop.docker.com/linux/main/amd64/${finalAttrs.tag}/docker-desktop-x86_64.pkg.tar.zst";
@@ -19,12 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  unpackPhase = ''
-    runHook preUnpack
-    tar --zstd -xvf $src
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/{bin,libexec/docker/cli-plugins}
@@ -34,14 +26,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  tag = "175267";
+
+  unpackPhase = ''
+    runHook preUnpack
+    tar --zstd -xvf $src
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Creates Docker-related starter files for your project";
     homepage = "https://docs.docker.com/reference/cli/docker/init";
-    downloadPage = "https://docs.docker.com/desktop/release-notes";
-    mainProgram = "docker-init";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ BastianAsmussen ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "docker-init";
+    downloadPage = "https://docs.docker.com/desktop/release-notes";
   };
 })

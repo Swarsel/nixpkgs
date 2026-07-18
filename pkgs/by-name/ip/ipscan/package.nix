@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  dpkg,
+  glib,
+  gtk3,
   jdk,
   jre,
-  swt,
-  makeWrapper,
   libxtst,
-  dpkg,
-  gtk3,
-  glib,
+  makeWrapper,
+  swt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,16 +50,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Angry IP Scanner - fast and friendly network scanner";
-    mainProgram = "ipscan";
     homepage = "https://angryip.org";
-    downloadPage = "https://github.com/angryip/ipscan/releases/tag/${finalAttrs.version}";
     changelog = "https://github.com/angryip/ipscan/blob/${finalAttrs.version}/CHANGELOG";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl2Only;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       kylesferrazza
       totoroot
     ];
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "ipscan";
+    downloadPage = "https://github.com/angryip/ipscan/releases/tag/${finalAttrs.version}";
   };
 })

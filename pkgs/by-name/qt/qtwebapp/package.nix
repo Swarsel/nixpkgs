@@ -1,24 +1,21 @@
 {
-  fetchFromGitHub,
+  lib,
   stdenv,
+  fetchFromGitHub,
+  qt6,
   testers,
   validatePkgConfig,
-  lib,
-  qt6,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "qtwebapp";
   version = "1.9.1";
+
   src = fetchFromGitHub {
     owner = "fffaraz";
     repo = "QtWebApp";
     tag = "v${finalAttrs.version}";
     hash = "sha256-RbFgz2ed1eEVy44LX+milP4hPSeiabakU3TMvHYR7TU=";
   };
-
-  __structuredAttrs = true;
-
-  sourceRoot = "${finalAttrs.src.name}/QtWebApp";
 
   postPatch = ''
     cat >>QtWebApp.pro <<EOF
@@ -43,10 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qt5compat
   ];
 
-  qmakeFlags = [ "QtWebApp.pro" ];
-
-  pkgConfigFile = ./pkg-config.in;
-
   postInstall = ''
     mkdir -p "$out/lib/pkgconfig"
     cp "$pkgConfigFile" "$out/lib/pkgconfig/QtWebApp.pc"
@@ -64,13 +57,18 @@ stdenv.mkDerivation (finalAttrs: {
     cp templateengine/*.h "$out/include/QtWebApp/templateengine"
   '';
 
+  __structuredAttrs = true;
+  pkgConfigFile = ./pkg-config.in;
+  qmakeFlags = [ "QtWebApp.pro" ];
+  sourceRoot = "${finalAttrs.src.name}/QtWebApp";
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
-    maintainers = with lib.maintainers; [ xddxdd ];
     description = "HTTP server library in C++, inspired by Java Servlets";
     homepage = "https://stefanfrings.de/qtwebapp/index-en.html";
     license = lib.licenses.lgpl3Plus;
+    maintainers = with lib.maintainers; [ xddxdd ];
+
     pkgConfigModules = [
       "QtWebApp"
     ];

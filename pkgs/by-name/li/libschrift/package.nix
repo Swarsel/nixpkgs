@@ -23,10 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "libschrift.a" ];
 
   meta = {
-    homepage = "https://github.com/tomolt/libschrift";
     description = "Lightweight TrueType font rendering library";
+    homepage = "https://github.com/tomolt/libschrift";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.sternenseemann ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-
+  buildPythonPackage,
   # dependencies
   gitpython,
-  pytz,
-  types-pytz,
   lizard,
+  pytestCheckHook,
+  pytz,
+  setuptools,
+  types-pytz,
 }:
 
 buildPythonPackage rec {
   pname = "pydriller";
   version = "2.10";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ishepard";
@@ -25,6 +22,7 @@ buildPythonPackage rec {
     hash = "sha256-Ooyn0Fjtz4J+BM+/LfknvRHTxnqDBxXVH4V9eNcDSTE=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,7 +34,7 @@ buildPythonPackage rec {
 
   # require internet access
   doChecks = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pydriller" ];
 
   meta = {

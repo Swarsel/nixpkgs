@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchFromGitHub,
-  cmake,
-  git,
   asio_1_32_0,
   catch2,
+  cmake,
+  fetchpatch,
+  git,
   spdlog,
   udev,
 }:
@@ -24,28 +24,22 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-bvK1BXjdlhIXV8R4PiCGaq8oSLzgjMmTgAwssm8N2sk=";
       name = "support-arm.patch";
       url = "https://github.com/NordicSemiconductor/pc-ble-driver/commit/76a6b31dba7a13ceae40587494cbfa01a29192f4.patch";
-      hash = "sha256-bvK1BXjdlhIXV8R4PiCGaq8oSLzgjMmTgAwssm8N2sk=";
     })
     # Fix build with GCC 11
     (fetchpatch {
-      url = "https://github.com/NordicSemiconductor/pc-ble-driver/commit/37258e65bdbcd0b4369ae448faf650dd181816ec.patch";
       hash = "sha256-gOdzIW8YJQC+PE4FJd644I1+I7CMcBY8wpF6g02eI5g=";
+      url = "https://github.com/NordicSemiconductor/pc-ble-driver/commit/37258e65bdbcd0b4369ae448faf650dd181816ec.patch";
     })
-  ];
-
-  cmakeFlags = [
-    "-DNRF_BLE_DRIVER_VERSION=${version}"
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
-    "-DARCH=arm64"
   ];
 
   nativeBuildInputs = [
     cmake
     git
   ];
+
   buildInputs = [
     # Depends on io_service
     asio_1_32_0
@@ -58,6 +52,13 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     udev
+  ];
+
+  cmakeFlags = [
+    "-DNRF_BLE_DRIVER_VERSION=${version}"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
+    "-DARCH=arm64"
   ];
 
   meta = {

@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  gfortran,
-  pkg-config,
   blas,
-  lapack,
   fftw,
-  hdf5,
-  libctl,
+  gfortran,
   guile,
+  hdf5,
+  lapack,
+  libctl,
   perl,
+  pkg-config,
 }:
 
 assert !blas.isILP64;
@@ -44,11 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     perl
   ];
 
-  # Required for build with gcc-14
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=int-conversion";
-
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--with-libctl=yes"
     "--with-libctl=${libctl}"
@@ -57,15 +52,20 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (!stdenv.hostPlatform.isStatic) "--enable-shared";
 
+  # Required for build with gcc-14
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=int-conversion";
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "MIT Photonic-Bands: computation of photonic band structures in periodic media";
     homepage = "https://mpb.readthedocs.io/en/latest/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       sheepforce
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  gitUpdater,
   libx11,
   libxft,
   libxrandr,
-  gitUpdater,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,17 +29,19 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "prefix=$(out)" ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://www.uninformativ.de/git/bevelbar.git/";
     rev-prefix = "v";
+    url = "https://www.uninformativ.de/git/bevelbar.git/";
   };
 
   meta = {
-    homepage = "https://www.uninformativ.de/git/bevelbar/file/README.html";
     description = "X11 status bar with beveled borders";
+    homepage = "https://www.uninformativ.de/git/bevelbar/file/README.html";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       neeasade
     ];
+
     platforms = lib.platforms.linux;
   };
 })

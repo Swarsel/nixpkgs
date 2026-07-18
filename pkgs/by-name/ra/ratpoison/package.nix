@@ -28,6 +28,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2Y+kvgJezKRTxAf/MRqzlJ8p8g1tir7fjwcWuF/I0fE=";
   };
 
+  outputs = [
+    "out"
+    "contrib"
+    "man"
+    "doc"
+    "info"
+  ];
+
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace src/getopt.h \
+      --replace-fail "extern int getopt ();" \
+                     "extern int getopt (int argc, char *const *argv, const char *shortopts);"
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -49,22 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     xorgproto
   ];
 
-  outputs = [
-    "out"
-    "contrib"
-    "man"
-    "doc"
-    "info"
-  ];
-
-  strictDeps = true;
-
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace src/getopt.h \
-      --replace-fail "extern int getopt ();" \
-                     "extern int getopt (int argc, char *const *argv, const char *shortopts);"
-  '';
-
   configureFlags = [
     # >=1.4.9 requires this even with readline in inputs
     "--enable-history"
@@ -77,8 +77,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.nongnu.org/ratpoison/";
+    inherit (libx11.meta) platforms;
     description = "Simple mouse-free tiling window manager";
+
     longDescription = ''
       Ratpoison is a simple window manager with no fat library
       dependencies, no fancy graphics, no window decorations, and no
@@ -93,9 +94,10 @@ stdenv.mkDerivation (finalAttrs: {
       Ratpoison has a prefix map to minimize the key clobbering that
       cripples Emacs and other quality pieces of software.
     '';
+
+    homepage = "https://www.nongnu.org/ratpoison/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "ratpoison";
     maintainers = [ ];
-    inherit (libx11.meta) platforms;
+    mainProgram = "ratpoison";
   };
 })

@@ -1,77 +1,81 @@
 {
-  stdenv,
-  rustPlatform,
   lib,
-  common-updater-scripts,
+  stdenv,
   fetchFromGitHub,
-  genericUpdater,
-  gitUpdater,
-  nixosTests,
-  testers,
+  boost,
   cargo,
   cmake,
+  common-updater-scripts,
   ctestCheckHook,
-  pkg-config,
-  python3,
-  boost,
+  dbus,
   egl-wayland,
   freetype,
+  genericUpdater,
+  gitUpdater,
   glib,
   glm,
+  gobject-introspection,
+  gtest,
   libapparmor,
   libdisplay-info,
   libdrm,
   libepoxy,
   libevdev,
+  libgbm,
   libglvnd,
   libinput,
   libuuid,
+  libx11,
   libxcb,
+  libxcursor,
   libxkbcommon,
   libxmlxx,
-  yaml-cpp,
   lttng-ust,
-  libgbm,
   mesa,
   nettle,
+  nixosTests,
   pixman,
+  pkg-config,
+  python3,
+  rustPlatform,
+  testers,
   udev,
+  umockdev,
+  validatePkgConfig,
   wayland,
   wayland-scanner,
-  libxcursor,
-  libx11,
+  wlcs,
   xorgproto,
   xwayland,
-  dbus,
-  gobject-introspection,
-  gtest,
-  umockdev,
-  wlcs,
-  validatePkgConfig,
+  yaml-cpp,
 }:
 
 {
-  version,
-  pinned ? false,
   hash,
+  version,
   cargoHash ? null,
   patches ? [ ],
+  pinned ? false,
 }:
 
 stdenv.mkDerivation (
   finalAttrs:
   {
-    pname = "mir";
     inherit version;
+    inherit patches;
+    pname = "mir";
 
     src = fetchFromGitHub {
+      inherit hash;
       owner = "canonical";
       repo = "mir";
       rev = "v${finalAttrs.version}";
-      inherit hash;
     };
 
-    inherit patches;
+    outputs = [
+      "out"
+      "dev"
+    ];
 
     postPatch = ''
       # Fix scripts that get run in tests
@@ -166,24 +170,6 @@ stdenv.mkDerivation (
       libdisplay-info
     ];
 
-    nativeCheckInputs = [
-      ctestCheckHook
-      dbus
-      gobject-introspection
-    ]
-    ++ lib.optionals (lib.strings.versionAtLeast version "2.22.0") [
-      mesa.llvmpipeHook
-    ]
-    ++ lib.optionals (lib.strings.versionAtLeast version "2.23.0") [
-      xwayland
-    ];
-
-    checkInputs = [
-      gtest
-      umockdev
-      wlcs
-    ];
-
     cmakeFlags = [
       (lib.cmakeBool "BUILD_DOXYGEN" false)
       (lib.cmakeFeature "MIR_PLATFORM" (
@@ -234,9 +220,22 @@ stdenv.mkDerivation (
 
     doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-    disabledTests = lib.optionals (lib.strings.versionAtLeast version "2.25.0") [
-      # We don't care about the documentation, so we also don't care if there are any changes in it
-      "verify-options-reference-unchanged"
+    nativeCheckInputs = [
+      ctestCheckHook
+      dbus
+      gobject-introspection
+    ]
+    ++ lib.optionals (lib.strings.versionAtLeast version "2.22.0") [
+      mesa.llvmpipeHook
+    ]
+    ++ lib.optionals (lib.strings.versionAtLeast version "2.23.0") [
+      xwayland
+    ];
+
+    checkInputs = [
+      gtest
+      umockdev
+      wlcs
     ];
 
     preCheck = ''
@@ -244,16 +243,12 @@ stdenv.mkDerivation (
       export XDG_RUNTIME_DIR=$TMP
     '';
 
-    outputs = [
-      "out"
-      "dev"
+    disabledTests = lib.optionals (lib.strings.versionAtLeast version "2.25.0") [
+      # We don't care about the documentation, so we also don't care if there are any changes in it
+      "verify-options-reference-unchanged"
     ];
 
     passthru = {
-      tests = {
-        pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
-      }
-      // lib.optionalAttrs (!pinned) { inherit (nixosTests) miriway miracle-wm; };
       providedSessions = lib.optionals (lib.strings.versionOlder version "2.16.0") [
         # More of an example than a fully functioning shell, some notes for the adventurous:
         # - ~/.config/miral-shell.config is one possible user config location,
@@ -264,6 +259,11 @@ stdenv.mkDerivation (
         #   does not know about preferred terminal
         "mir-shell"
       ];
+
+      tests = {
+        pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+      }
+      // lib.optionalAttrs (!pinned) { inherit (nixosTests) miriway miracle-wm; };
     }
     // lib.optionalAttrs (!pinned) {
       updateScript =
@@ -279,13 +279,14 @@ stdenv.mkDerivation (
         # Attrs to update are in default.nix
         (gitUpdater.override {
           common-updater-scripts = cusWithFlag;
+
           genericUpdater = genericUpdater.override {
             common-updater-scripts = cusWithFlag;
           };
         })
           {
-            rev-prefix = "v";
             ignoredVersions = "-(dev|rc)$";
+            rev-prefix = "v";
           };
     };
 
@@ -294,12 +295,15 @@ stdenv.mkDerivation (
       homepage = "https://mir-server.io";
       changelog = "https://github.com/canonical/mir/releases/tag/v${finalAttrs.version}";
       license = lib.licenses.gpl2Plus;
+
       maintainers = with lib.maintainers; [
         OPNA2608
       ];
+
       # Onle LE has valid graphics buffer formats
       # https://github.com/canonical/mir/blob/ba8e83f75084379dec8e23131fdf04fa4a4567ac/src/platforms/common/server/shm_buffer.cpp#L61-L65
       platforms = lib.lists.intersectLists lib.platforms.linux lib.platforms.littleEndian;
+
       pkgConfigModules = [
         "miral"
         "mircommon"
@@ -329,8 +333,8 @@ stdenv.mkDerivation (
   // lib.optionalAttrs (lib.strings.versionAtLeast version "2.22.0") {
     cargoDeps = rustPlatform.fetchCargoVendor {
       src = finalAttrs.src;
-      sourceRoot = finalAttrs.src.name;
       hash = cargoHash;
+      sourceRoot = finalAttrs.src.name;
     };
   }
 )

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,8 +15,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-7NrdoAUwbN6S19elYkYEiDbxIFVOaAnT7CbYZej/cfs=";
   };
 
-  deleteVendor = true;
   vendorHash = null;
+  deleteVendor = true;
 
   ldflags = [
     "-s"
@@ -27,10 +27,12 @@ buildGoModule (finalAttrs: {
     description = "Simple helper tool for generating XML output in Cobertura format for CIs like Jenkins and others from go tool cover output";
     homepage = "https://github.com/boumenot/gocover-cobertura";
     license = lib.licenses.mit;
-    mainProgram = "gocover-cobertura";
+
     maintainers = with lib.maintainers; [
       gabyx
       hmajid2301
     ];
+
+    mainProgram = "gocover-cobertura";
   };
 })

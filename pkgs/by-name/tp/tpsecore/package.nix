@@ -1,19 +1,19 @@
 {
   lib,
   fetchFromGitLab,
+  binaryen,
   rustPlatform,
   rustc,
-  wasm-pack,
   wasm-bindgen-cli_0_2_95,
-  binaryen,
+  wasm-pack,
 }:
 
 let
   version = "0.1.1";
 in
 rustPlatform.buildRustPackage {
-  pname = "tpsecore";
   inherit version;
+  pname = "tpsecore";
 
   src = fetchFromGitLab {
     owner = "UniQMG";
@@ -22,14 +22,14 @@ rustPlatform.buildRustPackage {
     hash = "sha256-+OynnLMBEiYwdFzxGzgkcBN6xrHoH1Q6O5i+OW7RBLo=";
   };
 
-  cargoHash = "sha256-EM/THiR0NV4N3mFGjRYe1cpaF82rCYnOPLxv67BronU=";
-
   nativeBuildInputs = [
     wasm-pack
     wasm-bindgen-cli_0_2_95
     binaryen
     rustc.llvmPackages.lld
   ];
+
+  cargoHash = "sha256-EM/THiR0NV4N3mFGjRYe1cpaF82rCYnOPLxv67BronU=";
 
   buildPhase = ''
     runHook preBuild
@@ -39,6 +39,8 @@ rustPlatform.buildRustPackage {
     runHook postBuild
   '';
 
+  doCheck = false;
+
   installPhase = ''
     runHook preInstall
 
@@ -46,8 +48,6 @@ rustPlatform.buildRustPackage {
 
     runHook postInstall
   '';
-
-  doCheck = false;
 
   meta = {
     description = "Self contained toolkit for creating, editing, and previewing TPSE files";

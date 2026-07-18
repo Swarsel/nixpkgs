@@ -1,30 +1,30 @@
 {
   lib,
-  pkgs, # for passthru.plugins
   stdenv,
   fetchurl,
-  pkg-config,
-  libusb-compat-0_1,
-  readline,
-  libewf,
-  perl,
-  pcre2,
-  zlib,
-  openssl,
+  binutils,
+  capstone,
+  cmake,
   file,
+  libewf,
   libmspack,
+  libusb-compat-0_1,
   libzip,
   lz4,
+  meson,
+  ninja,
+  openssl,
+  pcre2,
+  perl,
+  pkg-config,
+  pkgs, # for passthru.plugins
+  python3,
+  readline,
+  tree-sitter,
   xxhash,
   xz,
-  meson,
-  python3,
-  cmake,
-  ninja,
-  capstone,
-  tree-sitter,
+  zlib,
   zstd,
-  binutils,
 }:
 
 let
@@ -37,23 +37,6 @@ let
       hash = "sha256-FjDKUrroby/zfrIgaZ/IL5UbWxgIDt+j9Q3TalJsLZU=";
     };
 
-    mesonFlags = [
-      "-Duse_sys_capstone=enabled"
-      "-Duse_sys_magic=enabled"
-      "-Duse_sys_libzip=enabled"
-      "-Duse_sys_zlib=enabled"
-      "-Duse_sys_lz4=enabled"
-      "-Duse_sys_libzstd=enabled"
-      "-Duse_sys_lzma=enabled"
-      "-Duse_sys_xxhash=enabled"
-      "-Duse_sys_openssl=enabled"
-      "-Duse_sys_libmspack=enabled"
-      "-Duse_sys_tree_sitter=enabled"
-      "-Duse_sys_pcre2=enabled"
-      # this is needed for wrapping (adding plugins) to work
-      "-Dportable=true"
-    ];
-
     patches = [
       # Normally, Rizin only looks for files in the install prefix. With
       # portable=true, it instead looks for files in relation to the parent
@@ -62,6 +45,19 @@ let
       # the env var NIX_RZ_PREFIX
       ./librz-wrapper-support.patch
     ];
+
+    postPatch = ''
+      # find_installation without arguments uses Meson’s Python interpreter,
+      # which does not have any extra modules.
+      # https://github.com/mesonbuild/meson/pull/9904
+      substituteInPlace meson.build \
+        --replace "import('python').find_installation()" "find_program('python3')"
+
+      substituteInPlace \
+        librz/arch/p/asm/asm_x86_as.c \
+        librz/arch/p/asm/asm_ppc_as.c \
+        --replace '"as"' '"${binutils}/bin/as"'
+    '';
 
     nativeBuildInputs = [
       pkg-config
@@ -74,22 +70,6 @@ let
       ninja
       cmake
     ];
-
-    # meson's find_library seems to not use our compiler wrapper if static parameter
-    # is either true/false... We work around by also providing LIBRARY_PATH
-    preConfigure = ''
-      LIBRARY_PATH=""
-      for b in ${toString (map lib.getLib buildInputs)}; do
-        if [[ -d "$b/lib" ]]; then
-          LIBRARY_PATH="$b/lib''${LIBRARY_PATH:+:}$LIBRARY_PATH"
-        fi
-      done
-      export LIBRARY_PATH
-    ''
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      substituteInPlace binrz/rizin/macos_sign.sh \
-        --replace 'codesign' '# codesign'
-    '';
 
     buildInputs = [
       file
@@ -111,17 +91,37 @@ let
       binutils
     ];
 
-    postPatch = ''
-      # find_installation without arguments uses Meson’s Python interpreter,
-      # which does not have any extra modules.
-      # https://github.com/mesonbuild/meson/pull/9904
-      substituteInPlace meson.build \
-        --replace "import('python').find_installation()" "find_program('python3')"
+    mesonFlags = [
+      "-Duse_sys_capstone=enabled"
+      "-Duse_sys_magic=enabled"
+      "-Duse_sys_libzip=enabled"
+      "-Duse_sys_zlib=enabled"
+      "-Duse_sys_lz4=enabled"
+      "-Duse_sys_libzstd=enabled"
+      "-Duse_sys_lzma=enabled"
+      "-Duse_sys_xxhash=enabled"
+      "-Duse_sys_openssl=enabled"
+      "-Duse_sys_libmspack=enabled"
+      "-Duse_sys_tree_sitter=enabled"
+      "-Duse_sys_pcre2=enabled"
+      # this is needed for wrapping (adding plugins) to work
+      "-Dportable=true"
+    ];
 
-      substituteInPlace \
-        librz/arch/p/asm/asm_x86_as.c \
-        librz/arch/p/asm/asm_ppc_as.c \
-        --replace '"as"' '"${binutils}/bin/as"'
+    # meson's find_library seems to not use our compiler wrapper if static parameter
+    # is either true/false... We work around by also providing LIBRARY_PATH
+    preConfigure = ''
+      LIBRARY_PATH=""
+      for b in ${toString (map lib.getLib buildInputs)}; do
+        if [[ -d "$b/lib" ]]; then
+          LIBRARY_PATH="$b/lib''${LIBRARY_PATH:+:}$LIBRARY_PATH"
+        fi
+      done
+      export LIBRARY_PATH
+    ''
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      substituteInPlace binrz/rizin/macos_sign.sh \
+        --replace 'codesign' '# codesign'
     '';
 
     passthru = rec {
@@ -129,14 +129,17 @@ let
         jsdec = pkgs.callPackage ./jsdec.nix {
           inherit rizin openssl;
         };
+
         rz-ghidra = pkgs.callPackage ./rz-ghidra.nix {
           inherit rizin openssl;
           enableCutterPlugin = false;
         };
+
         # sigdb isn't a real plugin, but it's separated from the main rizin
         # derivation so that only those who need it will download it
         sigdb = pkgs.callPackage ./sigdb.nix { };
       };
+
       withPlugins =
         filter:
         pkgs.callPackage ./wrapper.nix {
@@ -149,13 +152,15 @@ let
       description = "UNIX-like reverse engineering framework and command-line toolset";
       homepage = "https://rizin.re/";
       license = lib.licenses.gpl3Plus;
-      mainProgram = "rizin";
+
       maintainers = with lib.maintainers; [
         raskin
         makefu
         mic92
       ];
+
       platforms = with lib.platforms; unix;
+      mainProgram = "rizin";
     };
   };
 in

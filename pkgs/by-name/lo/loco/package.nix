@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "loco";
@@ -14,7 +14,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-01IQxfeOzxOHqRovmNV3q/ZSdESWi7Gb6F7o51Rbkw4=";
-
   #Skip trycmd integration tests
   checkFlags = [ "--skip=cli_tests" ];
 

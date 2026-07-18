@@ -16,9 +16,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-+CLym2N2O6Opv7pxuVA+sfiENggPD5HRJrVByzaMMN8=";
   };
 
-  dontBuild = true;
-  dontConfigure = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,8 +25,12 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "World-script expansion of Lexend";
+
     longDescription = ''
       Readex is the world-script expansion of the font Lexend designed by Thomas Jockin and Nadine Chahine. Readex currently supports Latin and Arabic.
 
@@ -37,14 +38,12 @@ stdenvNoCC.mkDerivation {
 
       This font is based on the Quicksand project from Andrew Paglinawan, initiated in 2008. Quicksand was improved in 2016 by Thomas Jockin for Google Fonts. Thomas modified Quicksand for the specialized task of improving reading fluency in low-proficiency readers (including those with dyslexia.)
     '';
-    homepage = "http://www.lexend.com/";
 
+    homepage = "http://www.lexend.com/";
     # The fetched Font Software is licensed under the SIL Open Font License, Version 1.1.
     # see https://scripts.sil.org/OFL
     license = lib.licenses.ofl;
-
-    platforms = lib.platforms.all;
-
     maintainers = with lib.maintainers; [ S-K-Tiger ];
+    platforms = lib.platforms.all;
   };
 }

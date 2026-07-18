@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pkgs,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "hwdata";
   version = "2.4.3-1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xsuchy";
@@ -19,14 +18,14 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
+  doCheck = false; # no tests
 
   patchPhase = ''
     substituteInPlace hwdata.py --replace "/usr/share/hwdata" "${pkgs.hwdata}/share/hwdata"
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "hwdata" ];
-
-  doCheck = false; # no tests
 
   meta = {
     description = "Python bindings to hwdata";

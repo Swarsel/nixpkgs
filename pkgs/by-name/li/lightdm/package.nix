@@ -1,46 +1,41 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
-  nix-update-script,
-  replaceVars,
-  plymouth,
-  pam,
-  pkg-config,
+  accountsservice,
+  audit,
   autoreconfHook,
+  buildPackages,
+  busybox,
+  fetchpatch,
   gettext,
+  glib,
+  gobject-introspection,
+  gtk-doc,
+  intltool,
+  itstool,
+  libgcrypt,
   libtool,
   libxcb,
-  glib,
   libxdmcp,
-  itstool,
-  intltool,
   libxklavier,
-  libgcrypt,
-  audit,
-  busybox,
+  nix-update-script,
+  nixosTests,
+  pam,
+  pkg-config,
+  plymouth,
   polkit,
-  accountsservice,
-  gtk-doc,
-  gobject-introspection,
-  vala,
-  fetchpatch,
-  withQt5 ? false,
   qt5,
+  replaceVars,
+  vala,
   yelp-tools,
   yelp-xsl,
-  nixosTests,
+  withQt5 ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "lightdm";
   version = "1.32.0";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "ubuntu";
@@ -48,6 +43,29 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     sha256 = "sha256-ttNlhWD0Ran4d3QvZ+PxbFbSUGMkfrRm+hJdQxIDJvM=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  patches = [
+    # Adds option to disable writing dmrc files
+    (fetchpatch {
+      hash = "sha256-NpASGgEhOjxuKME2f7RM2U5JvRRdl0OF5lHnp5aKxxk=";
+      url = "https://src.fedoraproject.org/rpms/lightdm/raw/4cf0d2bed8d1c68970b0322ccd5dbbbb7a0b12bc/f/lightdm-1.25.1-disable_dmrc.patch";
+    })
+
+    # Hardcode plymouth to fix transitions.
+    # For some reason it can't find `plymouth`
+    # even when it's in PATH in environment.systemPackages.
+    (replaceVars ./fix-paths.patch {
+      plymouth = "${plymouth}/bin/plymouth";
+    })
+
+    # glib gettext is deprecated and broken, so use regular gettext instead
+    ./use-regular-gettext.patch
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -76,28 +94,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withQt5 qt5.qtbase;
 
-  patches = [
-    # Adds option to disable writing dmrc files
-    (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/lightdm/raw/4cf0d2bed8d1c68970b0322ccd5dbbbb7a0b12bc/f/lightdm-1.25.1-disable_dmrc.patch";
-      hash = "sha256-NpASGgEhOjxuKME2f7RM2U5JvRRdl0OF5lHnp5aKxxk=";
-    })
-
-    # Hardcode plymouth to fix transitions.
-    # For some reason it can't find `plymouth`
-    # even when it's in PATH in environment.systemPackages.
-    (replaceVars ./fix-paths.patch {
-      plymouth = "${plymouth}/bin/plymouth";
-    })
-
-    # glib gettext is deprecated and broken, so use regular gettext instead
-    ./use-regular-gettext.patch
-  ];
-
-  dontWrapQtApps = true;
-
-  preConfigure = "NOCONFIGURE=1 ./autogen.sh";
-
   configureFlags = [
     "--localstatedir=/var"
     "--sysconfdir=/etc"
@@ -105,6 +101,14 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-dmrc"
   ]
   ++ lib.optional withQt5 "--enable-liblightdm-qt5";
+
+  preConfigure = "NOCONFIGURE=1 ./autogen.sh";
+
+  postInstall = ''
+    rm -rf $out/etc/apparmor.d $out/etc/init $out/etc/pam.d
+  '';
+
+  dontWrapQtApps = true;
 
   installFlags = [
     "sysconfdir=${placeholder "out"}/etc"
@@ -119,19 +123,15 @@ stdenv.mkDerivation (finalAttrs: {
       --replace /bin/rm ${busybox}/bin/rm
   '';
 
-  postInstall = ''
-    rm -rf $out/etc/apparmor.d $out/etc/init $out/etc/pam.d
-  '';
-
   passthru = {
-    updateScript = nix-update-script { };
     tests = { inherit (nixosTests) lightdm; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/ubuntu/lightdm";
     description = "Cross-desktop display manager";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/ubuntu/lightdm";
+
     license = with lib.licenses; [
       gpl3Plus
       # and (
@@ -140,6 +140,8 @@ stdenv.mkDerivation (finalAttrs: {
       lgpl3Only
       # )
     ];
+
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.pantheon ];
   };
 })

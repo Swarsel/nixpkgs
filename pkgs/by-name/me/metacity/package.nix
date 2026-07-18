@@ -7,14 +7,14 @@
   gnome,
   gsettings-desktop-schemas,
   gtk3,
-  libxres,
-  libxpresent,
-  libxdamage,
-  libx11,
   libcanberra-gtk3,
   libgtop,
   libstartup_notification,
+  libx11,
+  libxdamage,
   libxml2,
+  libxpresent,
+  libxres,
   pkg-config,
   wrapGAppsHook3,
 }:
@@ -48,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     libstartup_notification
   ];
 
+  doCheck = true;
   enableParallelBuilding = true;
 
   passthru = {
@@ -57,14 +58,12 @@ stdenv.mkDerivation (finalAttrs: {
     };
   };
 
-  doCheck = true;
-
   meta = {
     description = "Window manager used in Gnome Flashback";
     homepage = "https://gitlab.gnome.org/GNOME/metacity";
     changelog = "https://gitlab.gnome.org/GNOME/metacity/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

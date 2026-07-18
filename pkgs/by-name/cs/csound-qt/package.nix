@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  alsa-lib,
   csound,
   desktop-file-utils,
-  fetchFromGitHub,
   python3,
-  rtmidi,
   qt6,
-  alsa-lib,
+  rtmidi,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,7 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "CsoundQt is a frontend for Csound with editor, integrated help, widgets and other features";
     homepage = "https://csoundqt.github.io/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ hlolli ];
+    platforms = lib.platforms.linux;
   };
 })

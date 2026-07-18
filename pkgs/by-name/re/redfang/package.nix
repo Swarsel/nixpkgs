@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
   bluez,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -11,28 +11,26 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.5";
 
   src = fetchFromGitLab {
-    group = "kalilinux";
     owner = "packages";
     repo = "redfang";
     rev = "upstream/${finalAttrs.version}";
     hash = "sha256-dF9QmBckyHAZ+JbLr0jTmp0eMu947unJqjrTMsJAfIE=";
+    group = "kalilinux";
   };
 
   patches = [
     # make install rule
     (fetchpatch {
-      url = "https://gitlab.com/kalilinux/packages/redfang/-/merge_requests/1.diff";
       sha256 = "sha256-oxIrUAucxsBL4+u9zNNe2XXoAd088AEAHcRB/AN7B1M=";
+      url = "https://gitlab.com/kalilinux/packages/redfang/-/merge_requests/1.diff";
     })
     # error: implicit declaration of function 'pthread_create' []
     ./include-pthread.patch
   ];
 
-  installFlags = [ "DESTDIR=$(out)" ];
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-format-security";
-
   buildInputs = [ bluez ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-format-security";
+  installFlags = [ "DESTDIR=$(out)" ];
 
   meta = {
     description = "Small proof-of-concept application to find non discoverable bluetooth devices";

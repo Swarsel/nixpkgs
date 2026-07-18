@@ -1,7 +1,7 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
+  mkDerivation,
   standard-library,
 }:
 
@@ -29,7 +29,7 @@ mkDerivation rec {
     description = "Library for datatype-generic programming in Agda";
     homepage = src.meta.homepage;
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ turion ];
+    platforms = lib.platforms.unix;
   };
 }

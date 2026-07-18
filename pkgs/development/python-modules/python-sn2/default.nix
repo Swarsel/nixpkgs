@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
   setuptools,
   websockets,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-sn2";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "konsulten";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7IrfTjww2K64qIQ6dGMcTja1/dV5/wt+pcx6ZLW9KEA=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sn2" ];
 
   meta = {

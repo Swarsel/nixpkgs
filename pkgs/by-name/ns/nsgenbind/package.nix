@@ -29,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/";
-    description = "Generator for JavaScript bindings for netsurf browser";
-    mainProgram = "nsgenbind";
-    license = lib.licenses.mit;
     inherit (netsurf-buildsystem.meta) maintainers platforms;
+    description = "Generator for JavaScript bindings for netsurf browser";
+    homepage = "https://www.netsurf-browser.org/";
+    license = lib.licenses.mit;
+    mainProgram = "nsgenbind";
   };
 })

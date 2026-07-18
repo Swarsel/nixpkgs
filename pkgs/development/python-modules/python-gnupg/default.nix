@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   gnupg,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-gnupg";
   version = "0.5.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vsajip";
@@ -26,15 +25,15 @@ buildPythonPackage (finalAttrs: {
       --replace "os.environ.get('GPGBINARY', 'gpg')" "os.environ.get('GPGBINARY', '${lib.getExe gnupg}')"
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # network access
     "test_search_keys"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gnupg" ];
 
   meta = {

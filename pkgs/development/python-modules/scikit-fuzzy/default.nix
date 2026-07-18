@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   matplotlib,
   networkx,
   numpy,
-  scipy,
   pytestCheckHook,
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "scikit-fuzzy";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scikit-fuzzy";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     hash = "sha256-02aIYBdbQXQD9S1R/gZZeKTn5LxloE0GGGRttxJnR/o=";
   };
 
+  nativeCheckInputs = [
+    matplotlib
+    pytestCheckHook
+  ];
+
+  preCheck = "rm -rf build";
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,18 +35,12 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [
-    matplotlib
-    pytestCheckHook
-  ];
-
-  preCheck = "rm -rf build";
-
+  pyproject = true;
   pythonImportsCheck = [ "skfuzzy" ];
 
   meta = {
-    homepage = "https://github.com/scikit-fuzzy/scikit-fuzzy";
     description = "Fuzzy logic toolkit for scientific Python";
+    homepage = "https://github.com/scikit-fuzzy/scikit-fuzzy";
     changelog = "https://github.com/scikit-fuzzy/scikit-fuzzy/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.bcdarwin ];

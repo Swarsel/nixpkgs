@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   bpf-linker,
-  rustPlatform,
+  buildPythonPackage,
   mitmproxy-rs,
+  rustPlatform,
 }:
 
 buildPythonPackage {
-  pname = "mitmproxy-linux";
   inherit (mitmproxy-rs) version src cargoDeps;
-  pyproject = true;
+  pname = "mitmproxy-linux";
 
   postPatch = ''
     substituteInPlace ../mitmproxy-rs-*-vendor/*/aya-build-*/src/lib.rs \
@@ -26,22 +25,21 @@ buildPythonPackage {
     patch -p1 < tmp.diff
   '';
 
-  env = {
-    RUSTFLAGS = "-C target-feature=";
-    RUSTC_BOOTSTRAP = 1;
-  };
-
-  buildAndTestSubdir = "mitmproxy-linux";
-
   nativeBuildInputs = [
     bpf-linker
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
   ];
 
+  env = {
+    RUSTC_BOOTSTRAP = 1;
+    RUSTFLAGS = "-C target-feature=";
+  };
+
   # repo has no python tests
   doCheck = false;
-
+  buildAndTestSubdir = "mitmproxy-linux";
+  pyproject = true;
   pythonImportsCheck = [ "mitmproxy_linux" ];
 
   meta = {

@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  scdoc,
-  wayland-scanner,
   aml,
   jansson,
   libdrm,
-  libxkbcommon,
   libgbm,
+  libxkbcommon,
+  meson,
   neatvnc,
+  ninja,
   pam,
   pixman,
+  pkg-config,
+  scdoc,
   wayland,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,10 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -60,11 +56,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   __structuredAttrs = true;
+
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   meta = {
     description = "VNC server for wlroots based Wayland compositors";
+
     longDescription = ''
       This is a VNC server for wlroots based Wayland compositors. It attaches
       to a running Wayland session, creates virtual input devices and exposes a
@@ -72,11 +72,12 @@ stdenv.mkDerivation (finalAttrs: {
       headless one, so it is also possible to run wayvnc without a physical
       display attached.
     '';
+
     homepage = "https://github.com/any1/wayvnc";
     changelog = "https://github.com/any1/wayvnc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.linux;
     mainProgram = "wayvnc";
   };
 })

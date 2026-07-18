@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycares,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiodns";
   version = "4.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "saghul";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-TLiiSRhZaEbHeyrQPk8uvj10VEttRanYEgkBy7DxH4Y=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pycares ];
-
   # Could not contact DNS servers
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pycares ];
+  pyproject = true;
   pythonImportsCheck = [ "aiodns" ];
 
   meta = {

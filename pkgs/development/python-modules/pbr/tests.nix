@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   build,
+  buildPythonPackage,
   git,
   gnupg,
   pbr,
@@ -13,9 +13,8 @@
 }:
 
 buildPythonPackage {
-  pname = "pbr";
   inherit (pbr) version src;
-  pyproject = false;
+  pname = "pbr";
 
   postPatch = ''
     # only a small portion of the listed packages are actually needed for running the tests
@@ -23,8 +22,6 @@ buildPythonPackage {
     rm test-requirements.txt
   '';
 
-  dontBuild = true;
-  dontInstall = true;
   preConfigure = ''
     pythonOutputDistPhase() { touch $dist; }
   '';
@@ -53,4 +50,8 @@ buildPythonPackage {
     pbr.tests.functional.test_requirements.TestRequirementParsing.test_requirement_parsing
     ")
   '';
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

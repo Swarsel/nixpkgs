@@ -1,11 +1,11 @@
 {
-  fetchFromGitHub,
   lib,
-  libGLU,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   SDL2_net,
+  libGLU,
   libx11,
-  stdenv,
   zlib,
 }:
 
@@ -33,11 +33,8 @@ stdenv.mkDerivation {
     zlib
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
-
-  makefile = "Makefiles/Makefile.UNIX";
-
   makeFlags = [ "NET_BOARD=1" ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
 
   installPhase = ''
     runHook preInstall
@@ -50,10 +47,11 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  makefile = "Makefiles/Makefile.UNIX";
+
   meta = {
     description = "Sega Model 3 Arcade Emulator";
-    homepage = "https://github.com/trzy/supermodel";
-    license = lib.licenses.gpl3;
+
     longDescription = ''
       Supermodel requires specific files to be present in the $HOME directory of
       the user running the emulator. To ensure these files are present, move the
@@ -65,8 +63,11 @@ stdenv.mkDerivation {
       Then the emulator can be started with:
       <code>supermodel -game-xml-file=$out/share/supermodel/Config/Games.xml /path/to/romset</code>.
     '';
-    mainProgram = "supermodel";
+
+    homepage = "https://github.com/trzy/supermodel";
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ msanft ];
     platforms = lib.platforms.linux;
+    mainProgram = "supermodel";
   };
 }

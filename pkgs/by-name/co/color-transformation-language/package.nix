@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  openexr,
-  libtiff,
   aces-container,
+  cmake,
+  libtiff,
+  openexr,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/aces-aswf/CTL/blob/${finalAttrs.src.rev}/CHANGELOG";
     license = lib.licenses.ampas;
     maintainers = with lib.maintainers; [ paperdigits ];
-    mainProgram = "ctl";
     platforms = lib.platforms.all;
+    mainProgram = "ctl";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,12 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Open-Source Phishing Toolkit";
+
     longDescription = ''
       Open-source phishing toolkit designed for businesses and penetration testers.
       Provides the ability to quickly and easily setup and execute phishing engagements and security awareness training.
     '';
+
     homepage = "https://github.com/gophish/gophish";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mib ];

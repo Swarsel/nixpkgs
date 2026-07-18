@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
-  libjpeg,
-  libx11,
-  libxt,
-  alsa-lib,
   aalib,
-  libxft,
-  xorgproto,
-  libv4l,
+  alsa-lib,
   libfs,
-  libxaw,
-  libxpm,
-  libxext,
-  libsm,
   libice,
+  libjpeg,
+  libsm,
+  libv4l,
+  libx11,
+  libxaw,
+  libxext,
+  libxft,
+  libxpm,
+  libxt,
+  ncurses,
   perl,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,8 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./0001-Fix-build-for-glibc-2.32.patch
   ];
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
 
   buildInputs = [
     ncurses
@@ -59,10 +57,12 @@ stdenv.mkDerivation (finalAttrs: {
     "resdir=${placeholder "out"}/share/X11"
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
+
   meta = {
     description = "TV application for Linux with apps and tools such as a teletext browser";
-    license = lib.licenses.gpl2;
     homepage = "https://www.kraxel.org/blog/linux/xawtv/";
+    license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

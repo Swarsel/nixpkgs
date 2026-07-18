@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  makeWrapper,
   iperf3,
+  makeWrapper,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,21 +18,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+  cargoHash = "sha256-eijsPyoe3/+yR5kRmzk0dH62gTAFFURTVT8wN6Iy0HI=";
 
   postInstall = ''
     wrapProgram $out/bin/iperf3d --prefix PATH : ${iperf3}/bin
   '';
 
-  cargoHash = "sha256-eijsPyoe3/+yR5kRmzk0dH62gTAFFURTVT8wN6Iy0HI=";
-
   meta = {
     description = "Iperf3 client and server wrapper for dynamic server ports";
-    mainProgram = "iperf3d";
     homepage = "https://github.com/wobcom/iperf3d";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       netali
       johannwagner
     ];
+
+    mainProgram = "iperf3d";
   };
 })

@@ -1,10 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  makeWrapper,
   bison,
+  fetchpatch,
   flex,
   geoip,
   geolite-legacy,
@@ -15,6 +14,7 @@
   libpcap,
   libsodium,
   liburcu,
+  makeWrapper,
   ncurses,
   pkg-config,
   zlib,
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.6.9";
 
   src = fetchFromGitHub {
-    repo = "netsniff-ng";
     owner = "netsniff-ng";
+    repo = "netsniff-ng";
     rev = "v${finalAttrs.version}";
     hash = "sha256-P1xZqhZ/HJV3fAvh4xhhApZ0+FLDFqvYrZlbvb+FV7I=";
   };
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # GCC 15 compatibility
     (fetchpatch {
-      url = "https://github.com/netsniff-ng/netsniff-ng/commit/1af7ae33e3e8178ab5c649c3a52838d4375c4228.patch";
       sha256 = "sha256-aNV1Srnr396HsyAKVQoCeGBo/oduxLrUidlZLuI5Rlk=";
+      url = "https://github.com/netsniff-ng/netsniff-ng/commit/1af7ae33e3e8178ab5c649c3a52838d4375c4228.patch";
     })
   ];
 
@@ -60,19 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  # ./configure is not autoGNU but some home-brewn magic
-  configurePhase = ''
-    runHook preConfigure
-
-    patchShebangs configure
-    substituteInPlace configure --replace "which" "command -v"
-    NACL_INC_DIR=${libsodium.dev}/include/sodium NACL_LIB=sodium ./configure
-
-    runHook postConfigure
-  '';
-
-  enableParallelBuilding = true;
-
   # All files installed to /etc are just static data that can go in the store
   makeFlags = [
     "PREFIX=$(out)"
@@ -93,8 +80,22 @@ stdenv.mkDerivation (finalAttrs: {
     rm -v $out/etc/netsniff-ng/geoip.conf # updating databases after installation is impossible
   '';
 
+  # ./configure is not autoGNU but some home-brewn magic
+  configurePhase = ''
+    runHook preConfigure
+
+    patchShebangs configure
+    substituteInPlace configure --replace "which" "command -v"
+    NACL_INC_DIR=${libsodium.dev}/include/sodium NACL_LIB=sodium ./configure
+
+    runHook postConfigure
+  '';
+
+  enableParallelBuilding = true;
+
   meta = {
     description = "Swiss army knife for daily Linux network plumbing";
+
     longDescription = ''
       netsniff-ng is a free Linux networking toolkit. Its gain of performance
       is reached by zero-copy mechanisms, so that on packet reception and
@@ -102,6 +103,7 @@ stdenv.mkDerivation (finalAttrs: {
       to user space and vice versa. The toolkit can be used for network
       development and analysis, debugging, auditing or network reconnaissance.
     '';
+
     homepage = "http://netsniff-ng.org/";
     license = with lib.licenses; [ gpl2Only ];
     platforms = lib.platforms.linux;

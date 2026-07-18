@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
-  pytestCheckHook,
-
+  buildPythonPackage,
   # build system
   hatchling,
-
-  # dependencies
-  typing-extensions,
-
+  mypy,
   # test dependencies
   pytest,
   pytest-mypy-plugins,
-  mypy,
+  pytestCheckHook,
+  python,
+  # dependencies
+  typing-extensions,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "obspec";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "developmentseed";
@@ -27,14 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-zO2T189WUl1HJkBLrGpArS5NoFNpEchWfjJQJEME5W8=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    typing-extensions
-  ];
-
-  pythonImportsCheck = [ "obspec" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -49,6 +37,15 @@ buildPythonPackage (finalAttrs: {
   preCheck = ''
     export MYPYPATH=$out/${python.sitePackages}
   '';
+
+  build-system = [ hatchling ];
+
+  dependencies = [
+    typing-extensions
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "obspec" ];
 
   meta = {
     description = "Object storage interface definitions for Python";

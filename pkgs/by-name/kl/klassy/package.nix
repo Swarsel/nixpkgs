@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  kdePackages,
   gitUpdater,
+  kdePackages,
+  ninja,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "klassy";
@@ -61,7 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Highly customizable binary Window Decoration, Application Style and Global Theme plugin for recent versions of the KDE Plasma desktop";
     homepage = "https://github.com/paulmcauley/klassy";
-    platforms = lib.platforms.linux;
+
     license = with lib.licenses; [
       bsd3
       cc0
@@ -71,7 +71,9 @@ stdenv.mkDerivation (finalAttrs: {
       gpl3Plus # KDE-Accepted-GPL
       mit
     ];
+
     maintainers = with lib.maintainers; [ pluiedev ];
+    platforms = lib.platforms.linux;
     mainProgram = "klassy-settings";
   };
 })

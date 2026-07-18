@@ -2,24 +2,20 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
+  # tests
+  pytestCheckHook,
   # build-system
   setuptools,
-
+  spacy,
+  spacy-loggers,
   # dependencies
   wandb,
   wasabi,
-
-  # tests
-  pytestCheckHook,
-  spacy,
-  spacy-loggers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "spacy-loggers";
   version = "1.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -27,6 +23,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Kl8FSs+sbIF2Ml5AJhP5aY7lWnDLqUr7QBAq+63SW5Q=";
   };
+
+  # skipping the checks, because it requires a cycle dependency to spacy as well.
+  doCheck = false;
+
+  nativeCheckInputs = [
+    spacy
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -37,14 +41,8 @@ buildPythonPackage (finalAttrs: {
     wasabi
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "spacy_loggers" ];
-
-  nativeCheckInputs = [
-    spacy
-    pytestCheckHook
-  ];
-  # skipping the checks, because it requires a cycle dependency to spacy as well.
-  doCheck = false;
 
   passthru = {
     tests.pytest = spacy-loggers.overridePythonAttrs {

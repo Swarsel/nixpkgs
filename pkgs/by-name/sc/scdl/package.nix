@@ -1,20 +1,21 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
   ffmpeg-headless,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "scdl";
   version = "3.0.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-kAvK1KqfVK6axQXTkBtcMxc7OHLPYNfIyy2n+97LhB4=";
   };
 
+  # No tests in repository
+  doCheck = false;
   build-system = [ python3Packages.setuptools ];
 
   dependencies =
@@ -36,9 +37,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
       ''--prefix PATH : "${lib.makeBinPath packagesToBinPath}"''
     ];
 
-  # No tests in repository
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "scdl" ];
 
   meta = {

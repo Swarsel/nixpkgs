@@ -1,22 +1,18 @@
 {
-  stdenv,
   lib,
-
+  stdenv,
   fetchFromGitHub,
-
-  pkg-config,
-  meson,
-  ninja,
-
-  jack2,
   alsa-lib,
+  jack2,
   libopus,
   libsamplerate,
   libsndfile,
+  meson,
+  ninja,
+  pkg-config,
   readline,
   zita-alsa-pcmi,
   zita-resampler,
-
   enableAlsa ? stdenv.hostPlatform.isLinux,
 }:
 
@@ -40,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     meson
     ninja
   ];
+
   buildInputs = [
     jack2
     (libopus.override { withCustomModes = true; })
@@ -65,7 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Official examples and tools from the JACK project";
     homepage = "https://jackaudio.org";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

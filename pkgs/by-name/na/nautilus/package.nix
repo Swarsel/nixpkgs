@@ -2,60 +2,60 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  gi-docgen,
-  docbook-xsl-nons,
-  gettext,
+  adwaita-icon-theme,
   blueprint-compiler,
   desktop-file-utils,
-  wayland-scanner,
-  wrapGAppsHook4,
-  gtk4,
-  libadwaita,
-  libportal-gtk4,
-  gnome,
-  adwaita-icon-theme,
-  gnome-autoar,
+  docbook-xsl-nons,
+  gdk-pixbuf,
+  gettext,
+  gexiv2_0_16,
+  gi-docgen,
   glib-networking,
+  gnome,
+  gnome-autoar,
+  gnome-desktop,
+  gnome-user-share,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gst_all_1,
+  gtk4,
   icu,
-  shared-mime-info,
-  libnotify,
+  libadwaita,
+  libcloudproviders,
   libexif,
   libglycin,
   libglycin-gtk4,
   libjxl,
-  libseccomp,
+  libnotify,
+  libportal-gtk4,
   librsvg,
-  webp-pixbuf-loader,
-  tinysparql,
-  localsearch,
-  gexiv2_0_16,
+  libseccomp,
   libselinux,
-  libcloudproviders,
-  gdk-pixbuf,
-  gnome-desktop,
-  gst_all_1,
-  gsettings-desktop-schemas,
-  gnome-user-share,
-  gobject-introspection,
+  localsearch,
+  meson,
+  ninja,
+  pkg-config,
+  shared-mime-info,
+  tinysparql,
+  wayland-scanner,
+  webp-pixbuf-loader,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "nautilus";
   version = "50.2.2";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/nautilus/${lib.versions.major finalAttrs.version}/nautilus-${finalAttrs.version}.tar.xz";
+    hash = "sha256-4eKF7930LtMN2lsp9/jSQtq0vBQJqQVIY7NnutSzTVo=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/nautilus/${lib.versions.major finalAttrs.version}/nautilus-${finalAttrs.version}.tar.xz";
-    hash = "sha256-4eKF7930LtMN2lsp9/jSQtq0vBQJqQVIY7NnutSzTVo=";
-  };
 
   patches = [
     # Allow changing extension directory using environment variable.
@@ -138,7 +138,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://apps.gnome.org/Nautilus/";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.gnome ];
     mainProgram = "nautilus";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,11 +1,11 @@
 {
-  callPackage,
   lib,
-  jre_minimal,
   fetchFromGitHub,
+  callPackage,
   fetchpatch,
-  maven,
+  jre_minimal,
   makeWrapper,
+  maven,
   nix-update-script,
 }:
 
@@ -34,7 +34,6 @@ let
   mainProgram = "openapi-generator-cli";
   this = maven.buildMavenPackage {
     inherit version;
-
     pname = "openapi-generator-cli";
 
     src = fetchFromGitHub {
@@ -47,21 +46,16 @@ let
     patches = [
       # Achieve reproducible mvnHash by pinning develocity plugin.
       (fetchpatch {
-        url = "https://github.com/OpenAPITools/openapi-generator/commit/ff66e1bc7fe33dcee89de7296eb7bcd5e2a11cc6.patch";
         hash = "sha256-E1VgtaIW1V+8ch2RpW850fVNl5Iqitjog+0b8DKFgZw=";
+        url = "https://github.com/OpenAPITools/openapi-generator/commit/ff66e1bc7fe33dcee89de7296eb7bcd5e2a11cc6.patch";
       })
     ];
-
-    mvnHash = "sha256-oJnXNHAYZxWi9YDHw+RR1HWf7hlTKoZmnDIHxXNpp1M=";
-    mvnParameters = "-Duser.home=$TMPDIR";
-    doCheck = false;
-
-    # Otherwise, Gradle fails with `java.net.SocketException: Operation not permitted`
-    __darwinAllowLocalNetworking = true;
 
     nativeBuildInputs = [
       makeWrapper
     ];
+
+    doCheck = false;
 
     installPhase = ''
       runHook preInstall
@@ -76,24 +70,31 @@ let
       runHook postInstall
     '';
 
+    # Otherwise, Gradle fails with `java.net.SocketException: Operation not permitted`
+    __darwinAllowLocalNetworking = true;
+    mvnHash = "sha256-oJnXNHAYZxWi9YDHw+RR1HWf7hlTKoZmnDIHxXNpp1M=";
+    mvnParameters = "-Duser.home=$TMPDIR";
+
     passthru = {
-      updateScript = nix-update-script { };
       tests.example = callPackage ./example.nix {
         openapi-generator-cli = this;
       };
+
+      updateScript = nix-update-script { };
     };
 
     meta = {
+      inherit mainProgram;
       description = "Allows generation of API client libraries (SDK generation), server stubs and documentation automatically given an OpenAPI Spec";
       homepage = "https://github.com/OpenAPITools/openapi-generator";
       changelog = "https://github.com/OpenAPITools/openapi-generator/releases/tag/v${version}";
-      sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
       license = lib.licenses.asl20;
+      sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
       maintainers = with lib.maintainers; [
         booxter
         shou
       ];
-      inherit mainProgram;
     };
   };
 in

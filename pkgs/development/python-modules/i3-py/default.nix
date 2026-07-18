@@ -5,9 +5,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.6.4";
-  format = "setuptools";
   pname = "i3-py";
+  version = "0.6.4";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # no tests in tarball
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Tools for i3 users and developers";

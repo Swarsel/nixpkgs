@@ -2,21 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   cmake,
-  pkg-config,
-
   jsoncpp,
   libarchive,
   libcpr,
   libloot,
-  lz4,
-  pugixml,
-
   libsForQt5,
-
-  withUnrar ? false,
+  lz4,
+  pkg-config,
+  pugixml,
   unrar, # has an unfree license
+  withUnrar ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -74,11 +70,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "General purpose mod manager with support for the NexusMods API and LOOT";
     homepage = "https://github.com/limo-app/limo";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "limo";
+
     maintainers = with lib.maintainers; [
       tomasajt
       MattSturgeon
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "limo";
   };
 })

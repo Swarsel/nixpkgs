@@ -1,27 +1,26 @@
 {
   lib,
   fetchFromGitHub,
+  # nativeCheckInputs
+  asn1tools,
   buildPythonPackage,
-  setuptools,
+  coincurve,
+  eth-hash,
   # dependencies
   eth-typing,
   eth-utils,
-  # nativeCheckInputs
-  asn1tools,
   factory-boy,
   hypothesis,
-  pyasn1,
-  pytestCheckHook,
-  coincurve,
-  eth-hash,
   isPyPy,
+  pyasn1,
   pydantic,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "eth-keys";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -29,13 +28,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-H/s/D4f4tqP/WTil9uLmFw2Do9sEjMWwEreQEooeszQ=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    eth-typing
-    eth-utils
-  ];
 
   nativeCheckInputs = [
     asn1tools
@@ -49,13 +41,21 @@ buildPythonPackage rec {
   ++ lib.optionals (!isPyPy) eth-hash.optional-dependencies.pysha3
   ++ lib.optionals isPyPy eth-hash.optional-dependencies.pycryptodome;
 
-  pythonImportsCheck = [ "eth_keys" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    eth-typing
+    eth-utils
+  ];
 
   disabledTests = [ "test_install_local_wheel" ];
 
   optional-dependencies = {
     coincurve = [ coincurve ];
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "eth_keys" ];
 
   meta = {
     description = "Common API for Ethereum key operations";

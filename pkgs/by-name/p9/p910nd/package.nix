@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ installShellFiles ];
 
-  enableParallelBuilding = true;
-
   # instead of mucking around with the Makefile, just install the bits we need
   installPhase = ''
     runHook preInstall
@@ -35,8 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Small printer daemon passing jobs directly to the printer";
+
     longDescription = ''
       p910nd is a small printer daemon intended for diskless platforms that
       does not spool to disk but passes the job directly to the printer.
@@ -47,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
       the AppSocket protocol and has the scheme socket://. LPRng also supports
       this protocol and the syntax is lp=remotehost%9100 in /etc/printcap.
     '';
+
     homepage = "https://github.com/kenyapcomau/p910nd";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ peterhoeg ];

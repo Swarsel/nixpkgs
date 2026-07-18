@@ -10,11 +10,11 @@
 {
   lib,
   stdenv,
+  engine,
+  mod,
   packageAttrs,
   patchEngine,
   wrapLaunchGame,
-  mod,
-  engine,
 }:
 
 let
@@ -31,18 +31,6 @@ stdenv.mkDerivation (
     inherit pname;
     inherit (mod) version;
 
-    srcs = [
-      mod.src
-      engine.src
-    ];
-
-    sourceRoot = ".";
-
-    postUnpack = ''
-      mv ${engineSourceName} ${modSourceName}
-      cd ${modSourceName}
-    '';
-
     postPatch = ''
       cat <<'EOF' > fetch-engine.sh
       #!/bin/sh
@@ -55,17 +43,6 @@ stdenv.mkDerivation (
 
       ${patchEngine engineSourceName engine.version}
     '';
-
-    configurePhase = ''
-      runHook preConfigure
-
-      make version VERSION=${lib.escapeShellArg mod.version}
-      make -C ${engineSourceName} version VERSION=${lib.escapeShellArg engine.version}
-
-      runHook postConfigure
-    '';
-
-    checkTarget = "test";
 
     installPhase = ''
       runHook preInstall
@@ -111,6 +88,29 @@ stdenv.mkDerivation (
 
       runHook postInstall
     '';
+
+    checkTarget = "test";
+
+    configurePhase = ''
+      runHook preConfigure
+
+      make version VERSION=${lib.escapeShellArg mod.version}
+      make -C ${engineSourceName} version VERSION=${lib.escapeShellArg engine.version}
+
+      runHook postConfigure
+    '';
+
+    postUnpack = ''
+      mv ${engineSourceName} ${modSourceName}
+      cd ${modSourceName}
+    '';
+
+    sourceRoot = ".";
+
+    srcs = [
+      mod.src
+      engine.src
+    ];
 
     meta = packageAttrs.meta // mod.meta;
   }

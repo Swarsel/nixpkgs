@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   markdown,
   pillow,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "django-markdownx";
   version = "4.0.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "neutronX";
@@ -30,7 +29,7 @@ buildPythonPackage rec {
 
   # tests only executable in vagrant
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "markdownx" ];
 
   meta = {

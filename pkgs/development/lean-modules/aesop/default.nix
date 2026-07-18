@@ -1,8 +1,8 @@
 {
   lib,
-  buildLakePackage,
   fetchFromGitHub,
   batteries,
+  buildLakePackage,
 }:
 
 buildLakePackage {
@@ -17,8 +17,8 @@ buildLakePackage {
     hash = "sha256-7PhQVMdiYImuzRYdf0Kgw3JYS4nBLfILXxyhFH8Zag0=";
   };
 
-  leanPackageName = "aesop";
   leanDeps = [ batteries ];
+  leanPackageName = "aesop";
 
   meta = {
     description = "White-box automation for Lean 4";

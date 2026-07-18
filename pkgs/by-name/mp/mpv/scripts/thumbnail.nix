@@ -1,7 +1,7 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   gitUpdater,
   python3,
 }:
@@ -16,22 +16,21 @@ buildLua rec {
     rev = version;
     sha256 = "sha256-nflavx25skLj9kitneL6Uz3zI2DyMMhQC595npofzbQ=";
   };
-  passthru.updateScript = gitUpdater { };
 
-  nativeBuildInputs = [ python3 ];
   postPatch = "patchShebangs concat_files.py";
+  nativeBuildInputs = [ python3 ];
   dontBuild = false;
-
-  scriptPath = "mpv_thumbnail_script_client_osc.lua";
   extraScriptsToCopy = [ "mpv_thumbnail_script_server.lua" ];
   extraScriptsToLoad = [ "mpv_thumbnail_script_server.lua" ];
+  scriptPath = "mpv_thumbnail_script_client_osc.lua";
+  passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Lua script to show preview thumbnails in mpv's OSC seekbar";
     homepage = "https://github.com/marzzzello/mpv_thumbnail_script";
     changelog = "https://github.com/marzzzello/mpv_thumbnail_script/releases/tag/${version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ thegu5 ];
+    platforms = lib.platforms.all;
   };
 }

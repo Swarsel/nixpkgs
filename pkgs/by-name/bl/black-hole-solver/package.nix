@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  cmake,
   buildPackages,
+  cmake,
   pkg-config,
   python3,
   rinutils,
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     python3
   ];
+
   buildInputs = [
     rinutils
   ];
@@ -34,9 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Solver for Solitaire variants Golf, Black Hole, and All in a Row";
-    mainProgram = "black-hole-solve";
     homepage = "https://www.shlomifish.org/open-source/projects/black-hole-solitaire-solver/";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "black-hole-solve";
   };
 })

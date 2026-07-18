@@ -1,10 +1,10 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   click,
+  fetchPypi,
   requests,
+  setuptools,
   tabulate,
 }:
 
@@ -14,7 +14,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,6 +25,9 @@ buildPythonPackage {
     touch requirements.txt
   '';
 
+  # No tests
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
@@ -36,12 +38,11 @@ buildPythonPackage {
     tabulate
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "sotabenchapi"
   ];
-
-  # No tests
-  doCheck = false;
 
   meta = {
     description = "Easily benchmark Machine Learning models on selected tasks and datasets";

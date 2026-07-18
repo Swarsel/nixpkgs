@@ -1,20 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
-
-  # build-system
-  hatchling,
-  uv-dynamic-versioning,
-
-  # dependencies
-  fastmcp-slim,
-
+  buildPythonPackage,
   # tests
   dirty-equals,
   fastapi,
+  # dependencies
+  fastmcp-slim,
+  # build-system
+  hatchling,
   inline-snapshot,
   opentelemetry-sdk,
   psutil,
@@ -25,13 +20,13 @@
   pytest-timeout,
   pytest-xdist,
   pytestCheckHook,
+  uv-dynamic-versioning,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fastmcp";
   version = "3.3.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "PrefectHQ";
@@ -44,29 +39,6 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail "timeout = 5" "timeout = 50"
   '';
-
-  build-system = [
-    hatchling
-    uv-dynamic-versioning
-  ];
-
-  dependencies = [
-    fastmcp-slim
-  ]
-  ++ fastmcp-slim.optional-dependencies.client
-  ++ fastmcp-slim.optional-dependencies.server;
-
-  optional-dependencies = {
-    anthropic = fastmcp-slim.optional-dependencies.anthropic;
-    apps = fastmcp-slim.optional-dependencies.apps;
-    azure = fastmcp-slim.optional-dependencies.azure;
-    code-mode = fastmcp-slim.optional-dependencies.code-mode;
-    gemini = fastmcp-slim.optional-dependencies.gemini;
-    openai = fastmcp-slim.optional-dependencies.openai;
-    tasks = fastmcp-slim.optional-dependencies.tasks;
-  };
-
-  pythonImportsCheck = [ "fastmcp" ];
 
   nativeCheckInputs = [
     dirty-equals
@@ -91,6 +63,29 @@ buildPythonPackage (finalAttrs: {
   ++ finalAttrs.passthru.optional-dependencies.openai
   ++ finalAttrs.passthru.optional-dependencies.tasks
   ++ inline-snapshot.optional-dependencies.dirty-equals;
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  build-system = [
+    hatchling
+    uv-dynamic-versioning
+  ];
+
+  dependencies = [
+    fastmcp-slim
+  ]
+  ++ fastmcp-slim.optional-dependencies.client
+  ++ fastmcp-slim.optional-dependencies.server;
+
+  disabledTestPaths = [
+    # Requires prefab-ui (optional dependency)
+    "tests/apps"
+    "tests/test_apps_prefab.py"
+    "tests/test_fastmcp_app.py"
+    # Subprocess crash recovery tests are flaky in sandbox
+    "tests/client/test_stdio.py"
+  ];
 
   disabledTests = [
     # requires internet
@@ -130,21 +125,23 @@ buildPythonPackage (finalAttrs: {
     "test_index_retrieval[float32-quantization1-1-metric0-3]"
   ];
 
-  disabledTestPaths = [
-    # Requires prefab-ui (optional dependency)
-    "tests/apps"
-    "tests/test_apps_prefab.py"
-    "tests/test_fastmcp_app.py"
-    # Subprocess crash recovery tests are flaky in sandbox
-    "tests/client/test_stdio.py"
-  ];
+  optional-dependencies = {
+    anthropic = fastmcp-slim.optional-dependencies.anthropic;
+    apps = fastmcp-slim.optional-dependencies.apps;
+    azure = fastmcp-slim.optional-dependencies.azure;
+    code-mode = fastmcp-slim.optional-dependencies.code-mode;
+    gemini = fastmcp-slim.optional-dependencies.gemini;
+    openai = fastmcp-slim.optional-dependencies.openai;
+    tasks = fastmcp-slim.optional-dependencies.tasks;
+  };
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "fastmcp" ];
 
   meta = {
     description = "Fast, Pythonic way to build MCP servers and clients";
-    changelog = "https://github.com/PrefectHQ/fastmcp/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/PrefectHQ/fastmcp";
+    changelog = "https://github.com/PrefectHQ/fastmcp/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

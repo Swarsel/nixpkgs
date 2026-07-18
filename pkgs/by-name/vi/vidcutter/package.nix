@@ -11,8 +11,8 @@ let
   version = "6.0.5.3";
 in
 python3Packages.buildPythonApplication {
-  pname = "vidcutter";
   inherit version;
+  pname = "vidcutter";
 
   src = fetchFromGitHub {
     owner = "ozmartian";
@@ -20,8 +20,6 @@ python3Packages.buildPythonApplication {
     tag = version;
     hash = "sha256-MCltdvXgsZgPh0ezGvWFEa5vZVDBc6r0WxvXSLf4x2Y=";
   };
-
-  pyproject = true;
 
   nativeBuildInputs = [ qt5.wrapQtAppsHook ];
 
@@ -41,6 +39,7 @@ python3Packages.buildPythonApplication {
   ];
 
   dontWrapQtApps = true;
+
   makeWrapperArgs = [
     "\${qtWrapperArgs[@]}"
     "--prefix PATH : ${
@@ -51,13 +50,17 @@ python3Packages.buildPythonApplication {
     }"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Modern yet simple multi-platform video cutter and joiner";
+
     longDescription = ''
       A modern, simple to use, constantly evolving and hella fast MEDIA CUTTER + JOINER
       with frame-accurate SmartCut technology, chapter support, media stream selection for audio + subtitle channels
       and blackdetect video filter support to automatically detect scene changes or skip commercials in digital TV recordings.
     '';
+
     homepage = "https://vidcutter.ozmartians.com/";
     changelog = "https://github.com/ozmartian/vidcutter/blob/master/CHANGELOG";
     license = lib.licenses.gpl3Plus;

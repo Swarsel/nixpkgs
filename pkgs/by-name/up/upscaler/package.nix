@@ -1,36 +1,32 @@
 {
   lib,
   fetchFromGitLab,
-  glib,
-  gtk4,
-  meson,
-  ninja,
-  gitUpdater,
-  desktop-file-utils,
   appstream,
   blueprint-compiler,
-  python3Packages,
-  pkg-config,
+  desktop-file-utils,
+  gitUpdater,
+  glib,
+  gtk4,
   libadwaita,
-  wrapGAppsHook4,
+  meson,
+  ninja,
+  pkg-config,
+  python3Packages,
   upscayl-ncnn,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "upscaler";
   version = "1.6.3";
 
-  pyproject = false; # meson instead of pyproject
-
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "Upscaler";
     rev = finalAttrs.version;
     hash = "sha256-h+m5YOnsWFmQH0FxYrGbUzGMr38HhnkHegJl4daRXAs=";
+    domain = "gitlab.gnome.org";
   };
-
-  passthru.updateScript = gitUpdater { };
 
   postPatch = ''
     substituteInPlace upscaler/window.py \
@@ -51,12 +47,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     glib
   ];
 
-  dependencies = with python3Packages; [
-    pygobject3
-    pillow
-    vulkan
-  ];
-
   buildInputs = [
     libadwaita
     upscayl-ncnn
@@ -66,6 +56,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     (lib.mesonBool "network_tests" false)
   ];
 
+  dependencies = with python3Packages; [
+    pygobject3
+    pillow
+    vulkan
+  ];
+
+  dontWrapGApps = true;
+  makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
+
   # NOTE: `postCheck` is intentionally not used here, as the entire checkPhase
   # is skipped by `buildPythonApplication`
   # https://github.com/NixOS/nixpkgs/blob/9d4343b7b27a3e6f08fc22ead568233ff24bbbde/pkgs/development/interpreters/python/mk-python-derivation.nix#L296
@@ -73,20 +72,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
     mesonCheckPhase
   '';
 
-  dontWrapGApps = true;
-
-  makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
+  pyproject = false; # meson instead of pyproject
+  passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Upscale and enhance images";
     homepage = "https://tesk.page/upscaler";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       grimmauld
       getchoo
       aleksana
     ];
-    mainProgram = "upscaler";
+
     platforms = lib.platforms.linux;
+    mainProgram = "upscaler";
   };
 })

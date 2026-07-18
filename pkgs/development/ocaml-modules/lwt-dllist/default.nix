@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   lwt,
 }:
 
@@ -14,10 +14,11 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-6GznXkDwDVFRTPiy5x5RhMTLXa6WE2viRhNAbPwNum4=";
   };
 
+  doCheck = true;
+
   checkInputs = [
     lwt
   ];
-  doCheck = true;
 
   meta = {
     description = "Mutable doubly-linked list with Lwt iterators";

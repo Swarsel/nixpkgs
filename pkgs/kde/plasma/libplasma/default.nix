@@ -1,9 +1,9 @@
 {
   mkKdeDerivation,
+  pkg-config,
   qtsvg,
   qtwayland,
   wayland,
-  pkg-config,
 }:
 mkKdeDerivation {
   pname = "libplasma";
@@ -13,11 +13,11 @@ mkKdeDerivation {
     ./rb-extracomponents.patch
   ];
 
-  extraNativeBuildInputs = [ pkg-config ];
-
   extraBuildInputs = [
     qtsvg
     qtwayland
     wayland
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 }

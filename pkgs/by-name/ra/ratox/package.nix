@@ -21,6 +21,7 @@ stdenv.mkDerivation {
   };
 
   buildInputs = [ libtoxcore ];
+  makeFlags = [ "PREFIX=$(out)" ];
 
   preConfigure = ''
     substituteInPlace config.mk \
@@ -29,13 +30,11 @@ stdenv.mkDerivation {
     ${lib.optionalString (conf != null) "cp ${configFile} config.def.h"}
   '';
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
   meta = {
     description = "FIFO based tox client";
-    mainProgram = "ratox";
     homepage = "http://ratox.2f30.org/";
     license = lib.licenses.isc;
     platforms = lib.platforms.linux;
+    mainProgram = "ratox";
   };
 }

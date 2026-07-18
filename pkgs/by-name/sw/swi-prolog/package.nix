@@ -3,50 +3,31 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-
-  libxcrypt,
-  zlib,
-  openssl,
+  db,
+  fontconfig,
+  freetype,
   gmp,
   gperftools,
-  libedit,
-  libarchive,
-  libicns,
-
-  # optional dependencies
-  withDb ? true,
-  db,
-
-  withJava ? true,
   jdk,
-
-  withOdbc ? true,
-  unixodbc,
-
-  withPcre ? true,
-  pcre2,
-
-  withPython ? true,
-  python3,
-
-  withYaml ? true,
-  libyaml,
-
-  withGui ? false,
-  libxpm,
+  libarchive,
+  libedit,
+  libicns,
+  libjpeg,
+  libsm,
+  libxcrypt,
   libxext,
   libxft,
   libxinerama,
-  libjpeg,
+  libxpm,
   libxt,
-  libsm,
-  freetype,
-  fontconfig,
-
-  # gcc/g++ as runtime dependency
-  withNativeCompiler ? true,
-
+  libyaml,
+  ninja,
+  openssl,
+  pcre2,
+  python3,
+  unixodbc,
+  zlib,
+  extraLibraries ? [ ], # removed option - see below
   # Packs must be installed from a local directory during the build, with dependencies
   # resolved manually, e.g. to install the 'julian' pack, which depends on the 'delay', 'list_util' and 'typedef' packs:
   #   julian = pkgs.fetchzip {
@@ -73,7 +54,16 @@
   #     julian delay list_util typedef
   #   ]; };
   extraPacks ? [ ],
-  extraLibraries ? [ ], # removed option - see below
+  # optional dependencies
+  withDb ? true,
+  withGui ? false,
+  withJava ? true,
+  # gcc/g++ as runtime dependency
+  withNativeCompiler ? true,
+  withOdbc ? true,
+  withPcre ? true,
+  withPython ? true,
+  withYaml ? true,
 }:
 
 let
@@ -115,8 +105,8 @@ let
     ++ extraLibraries';
 in
 stdenv.mkDerivation {
-  pname = "swi-prolog";
   inherit version;
+  pname = "swi-prolog";
 
   # SWI-Prolog has two repositories: swipl and swipl-devel.
   # - `swipl`, which tracks stable releases and backports
@@ -157,8 +147,6 @@ stdenv.mkDerivation {
   ]
   ++ optionalDependencies;
 
-  hardeningDisable = [ "format" ];
-
   cmakeFlags = [
     "-DSWIPL_INSTALL_IN_LIB=ON"
   ]
@@ -173,16 +161,19 @@ stdenv.mkDerivation {
   '';
 
   postInstall = builtins.concatStringsSep "\n" (map (packInstall "$out") extraPacks);
+  hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://www.swi-prolog.org";
     description = "Prolog compiler and interpreter";
+    homepage = "https://www.swi-prolog.org";
     license = lib.licenses.bsd2;
-    mainProgram = "swipl";
-    platforms = lib.platforms.linux ++ lib.optionals (!withGui) lib.platforms.darwin;
+
     maintainers = [
       lib.maintainers.meditans
       lib.maintainers.matko
     ];
+
+    platforms = lib.platforms.linux ++ lib.optionals (!withGui) lib.platforms.darwin;
+    mainProgram = "swipl";
   };
 }

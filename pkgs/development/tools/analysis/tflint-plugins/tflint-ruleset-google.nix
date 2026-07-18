@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -22,8 +22,6 @@ buildGoModule rec {
     rm integration/integration_test.go
   '';
 
-  subPackages = [ "." ];
-
   postInstall = ''
     # allow use as a versioned dependency, i.e., with `source = ...` and
     # `version = ...` in `.tflintrc`:
@@ -35,11 +33,13 @@ buildGoModule rec {
     ln -s $out/github.com/terraform-linters/${pname}/${version}/${pname} $out/
   '';
 
+  subPackages = [ "." ];
+
   meta = {
-    homepage = "https://github.com/terraform-linters/tflint-ruleset-google";
     description = "TFLint ruleset plugin for Terraform Google Provider";
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ john-rodewald ];
+    homepage = "https://github.com/terraform-linters/tflint-ruleset-google";
     license = with lib.licenses; [ mpl20 ];
+    maintainers = with lib.maintainers; [ john-rodewald ];
+    platforms = lib.platforms.unix;
   };
 }

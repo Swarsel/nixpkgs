@@ -1,13 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nodejs_22,
-  pkg-config,
-  node-gyp,
-  vips,
+  buildNpmPackage,
   nix-update-script,
   nixosTests,
+  node-gyp,
+  nodejs_22,
+  pkg-config,
+  vips,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -34,12 +34,6 @@ buildNpmPackage (finalAttrs: {
     ./0002-upload-paths.patch
   ];
 
-  npmDepsFetcherVersion = 2;
-  npmDepsHash = "sha256-Y+oC9eigwzL8jei5Hs4YOf32oFgULPmHrSDApxPKh+0=";
-
-  # npm dependency install fails with nodejs_24: https://github.com/NixOS/nixpkgs/issues/474535
-  nodejs = nodejs_22;
-
   nativeBuildInputs = [
     pkg-config
     node-gyp
@@ -49,15 +43,7 @@ buildNpmPackage (finalAttrs: {
     vips
   ];
 
-  npmBuildScript = "frontend";
-  npmPruneFlags = [ "--production" ];
-
-  makeWrapperArgs = [
-    # Upstream defaults to the immutable package directory.
-    # As a functioning default, we set this to the current working directory (through a relative logs path),
-    # but make it easy for the module to override.
-    "--set-default LIBRECHAT_LOG_DIR ./logs"
-  ];
+  npmDepsHash = "sha256-Y+oC9eigwzL8jei5Hs4YOf32oFgULPmHrSDApxPKh+0=";
 
   # npmConfigHook only patches the root node_modules
   postConfigure = ''
@@ -75,15 +61,29 @@ buildNpmPackage (finalAttrs: {
     cp -R packages/client/dist/. $out/lib/node_modules/LibreChat/packages/client
   '';
 
+  makeWrapperArgs = [
+    # Upstream defaults to the immutable package directory.
+    # As a functioning default, we set this to the current working directory (through a relative logs path),
+    # but make it easy for the module to override.
+    "--set-default LIBRECHAT_LOG_DIR ./logs"
+  ];
+
+  # npm dependency install fails with nodejs_24: https://github.com/NixOS/nixpkgs/issues/474535
+  nodejs = nodejs_22;
+  npmBuildScript = "frontend";
+  npmDepsFetcherVersion = 2;
+  npmPruneFlags = [ "--production" ];
+
   passthru = {
+    tests = {
+      inherit (nixosTests) librechat;
+    };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
         "^v(\\d+\\.\\d+\\.\\d+)$"
       ];
-    };
-    tests = {
-      inherit (nixosTests) librechat;
     };
   };
 
@@ -92,10 +92,12 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/danny-avila/LibreChat";
     changelog = "https://www.librechat.ai/changelog/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gepbird
       niklaskorz
     ];
+
     mainProgram = "librechat-server";
   };
 })

@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
   aiohttp,
-  pytz,
-  requests,
-  pytestCheckHook,
+  buildPythonPackage,
+  flit-core,
+  pydantic,
   pytest-asyncio,
   pytest-cov-stub,
-  pydantic,
+  pytestCheckHook,
+  pytz,
+  requests,
   responses,
 }:
 
 buildPythonPackage rec {
   pname = "fhir-py";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "beda-software";
@@ -24,14 +23,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-C6ttVEYsnOzA4PFtq0wHfXrGSvpXOj0/oTuVDtx19qc=";
   };
-
-  build-system = [ flit-core ];
-
-  dependencies = [
-    aiohttp
-    pytz
-    requests
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -41,10 +32,18 @@ buildPythonPackage rec {
     responses
   ];
 
+  build-system = [ flit-core ];
+
+  dependencies = [
+    aiohttp
+    pytz
+    requests
+  ];
+
   # sync/async test cases require docker-compose to set up services, so disable:
   disabledTestPaths = [ "tests/test_lib_sync.py" ];
   disabledTests = [ "TestLibAsyncCase" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "fhirpy" ];
 
   meta = {

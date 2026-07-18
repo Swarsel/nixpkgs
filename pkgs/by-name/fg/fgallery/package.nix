@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  makeWrapper,
-  perlPackages,
   coreutils,
-  zip,
-  imagemagick,
-  pngcrush,
-  lcms2,
   facedetect,
   fbida,
+  imagemagick,
+  lcms2,
+  makeWrapper,
+  perlPackages,
+  pngcrush,
+  unzip,
+  zip,
 }:
 
 # TODO: add optional dependencies (snippet from fgallery source):
@@ -29,10 +29,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-FvF0wkRe3wTPUG9/GEBxkaxvZ1B4wEd9kI9rURHKxn0=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace "/usr" $out
+  '';
+
   nativeBuildInputs = [
     makeWrapper
     unzip
   ];
+
   buildInputs = (
     with perlPackages;
     [
@@ -41,11 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
       CpanelJSONXS
     ]
   );
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace "/usr" $out
-  '';
 
   installPhase = ''
     mkdir -p "$out/bin"
@@ -78,8 +79,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Static photo gallery generator";
     homepage = "https://www.thregr.org/~wavexx/software/fgallery/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
     mainProgram = "fgallery";
   };
 })

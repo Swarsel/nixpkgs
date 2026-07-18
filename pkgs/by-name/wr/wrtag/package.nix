@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
   testers,
@@ -17,9 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-j5V3EN6pckR0lVmtkkRoeLIOI5zuW9tSFXFegahsz7w=";
   };
 
-  vendorHash = "sha256-hL8T9mC5re1v17grFXdVF6TidI9P41HKq0hQyG0Yl8c=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-hL8T9mC5re1v17grFXdVF6TidI9P41HKq0hQyG0Yl8c=";
 
   postInstall = ''
     installShellCompletion contrib/completions/wrtag.{fish,bash}
@@ -27,22 +26,25 @@ buildGoModule (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "wrtag --version";
+      package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Fast automated music tagging and organization based on MusicBrainz";
+
     longDescription = ''
       wrtag is a music tagging and organisation tool similar to Beets and MusicBrainz Picard.
       Written in go, it aims to be simpler, more composable and faster.
     '';
+
     homepage = "https://github.com/sentriz/wrtag";
     license = lib.licenses.gpl3Only;
-    mainProgram = "wrtag";
     maintainers = with lib.maintainers; [ quantenzitrone ];
+    mainProgram = "wrtag";
   };
 })

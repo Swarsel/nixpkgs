@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   aiohttp,
   aws-request-signer,
   boto3,
   botocore,
+  buildPythonPackage,
+  poetry-core,
   pycognito,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aioaquacell";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Jordi1990";
@@ -27,6 +26,7 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
+  doCheck = false; # no tests
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -37,14 +37,13 @@ buildPythonPackage (finalAttrs: {
     pycognito
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aioaquacell" ];
 
-  doCheck = false; # no tests
-
   meta = {
-    changelog = "https://github.com/Jordi1990/aioaquacell/releases/tag/${finalAttrs.version}";
     description = "Asynchronous library to retrieve details of your Aquacell water softener device";
     homepage = "https://github.com/Jordi1990/aioaquacell";
+    changelog = "https://github.com/Jordi1990/aioaquacell/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

@@ -2,44 +2,44 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  nix-update-script,
+  airspy,
+  airspyhf,
   cmake,
-  pkg-config,
+  curl,
+  fetchpatch,
   # required dependencies
   fftwFloat,
+  glfw,
+  hackrf,
+  hdf5,
+  jemalloc,
+  libad9361,
+  libbladeRF,
+  libiio,
   libpng,
   libtiff,
-  jemalloc,
-  volk,
+  nix-update-script,
   nng,
-  curl,
+  ocl-icd,
+  opencl-headers,
+  pkg-config,
+  portaudio,
+  rtl-sdr-librtlsdr,
+  volk,
+  zenity,
+  zstd,
+  withAudio ? true,
+  withGUI ? true,
+  withOfficialProductSupport ? true,
+  withOpenCL ? true,
+  withSourceAD9361 ? true,
+  withSourceAirspy ? true,
+  withSourceAirspyHF ? true,
+  withSourceBladeRF ? true,
+  withSourceHackRF ? true,
+  withSourceRtlsdr ? true,
   # Optional dependencies
   withZIQRecordingCompression ? true,
-  zstd,
-  withGUI ? true,
-  glfw,
-  zenity,
-  withAudio ? true,
-  portaudio,
-  withOfficialProductSupport ? true,
-  hdf5,
-  withOpenCL ? true,
-  opencl-headers,
-  ocl-icd,
-  withSourceRtlsdr ? true,
-  rtl-sdr-librtlsdr,
-  withSourceHackRF ? true,
-  hackrf,
-  withSourceAirspy ? true,
-  airspy,
-  withSourceAirspyHF ? true,
-  airspyhf,
-  withSourceAD9361 ? true,
-  libad9361,
-  libiio,
-  withSourceBladeRF ? true,
-  libbladeRF,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -56,9 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fixes build with GCC 15 until newer satdump release is available
     (fetchpatch {
-      url = "https://github.com/SatDump/SatDump/commit/2b0a874f38d9310e3e4cbc56cfcc69cb0a59e035.patch";
-      name = "fix-build-with-gcc15.patch";
       hash = "sha256-RYNLax/VA7cT7wP88hG5cb2BDkEMMZu2v2CKo/hqwCE=";
+      name = "fix-build-with-gcc15.patch";
+      url = "https://github.com/SatDump/SatDump/commit/2b0a874f38d9310e3e4cbc56cfcc69cb0a59e035.patch";
     })
   ];
 
@@ -103,7 +103,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withSourceBladeRF [ libbladeRF ];
 
   cmakeFlags = [ (lib.cmakeBool "BUILD_GUI" withGUI) ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -111,10 +110,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.satdump.org/";
     changelog = "https://github.com/SatDump/SatDump/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       theverygaming
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "satdump";
   };
 })

@@ -1,17 +1,17 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  makeWrapper,
-  libx11,
-  ncurses,
-  coreutils,
+  fetchFromGitHub,
   bashInteractive,
-  gnused,
-  gnugrep,
+  coreutils,
   glibc,
-  xterm,
+  gnugrep,
+  gnused,
+  libx11,
+  makeWrapper,
+  ncurses,
   util-linux,
+  xterm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,14 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-U2ntplhyv8KAkaMd2D6wRsUIYkhJzxdgHo2xsbNRfqM=";
   };
-
-  nativeBuildInputs = [
-    makeWrapper
-  ];
-
-  buildInputs = [
-    libx11
-  ];
 
   patches = [
     ./remote-permissions.patch
@@ -63,6 +55,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '/bin/cp' '${coreutils}/bin/cp'
   '';
 
+  nativeBuildInputs = [
+    makeWrapper
+  ];
+
+  buildInputs = [
+    libx11
+  ];
+
   postFixup = ''
     wrapProgram $out/bin/bashrun2 \
       --prefix PATH : "$out/bin:${
@@ -81,10 +81,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    maintainers = with lib.maintainers; [ dopplerian ];
-    mainProgram = "bashrun2";
+    description = "Application launcher based on a modified bash session in a small terminal window";
     homepage = "http://henning-liebenau.de/bashrun2/";
     license = lib.licenses.gpl2Plus;
-    description = "Application launcher based on a modified bash session in a small terminal window";
+    maintainers = with lib.maintainers; [ dopplerian ];
+    mainProgram = "bashrun2";
   };
 })

@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   gdk-pixbuf,
   granite7,
   gst_all_1,
   gtk4,
   libadwaita,
   libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -60,7 +60,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/videos";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.videos";
+    teams = [ lib.teams.pantheon ];
   };
 }

@@ -1,25 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  writeText,
-  fpc,
-  gtk2,
-  glib,
-  pango,
   atk,
+  binutils,
+  fpc,
+  gdb,
   gdk-pixbuf,
-  libxi,
-  xorgproto,
+  glib,
+  gnumake,
+  gtk2,
   libx11,
   libxext,
-  gdb,
-  gnumake,
-  binutils,
-  withQt ? false,
-  qtbase ? null,
+  libxi,
+  makeWrapper,
+  pango,
+  writeText,
+  xorgproto,
   libqtpas ? null,
+  qtbase ? null,
+  withQt ? false,
   wrapQtAppsHook ? null,
 }:
 
@@ -48,8 +48,8 @@ let
   qtVersion = lib.versions.major qtbase.version;
 in
 stdenv.mkDerivation rec {
-  pname = "lazarus-${LCL_PLATFORM}";
   inherit version;
+  pname = "lazarus-${LCL_PLATFORM}";
 
   src = fetchurl {
     url = "mirror://sourceforge/lazarus/Lazarus%20Zip%20_%20GZip/Lazarus%20${majorMinorPatch version}/lazarus-${version}.tar.gz";
@@ -59,6 +59,11 @@ stdenv.mkDerivation rec {
   postPatch = ''
     cp ${overrides} ide/${overrides.name}
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+  ]
+  ++ lib.optional withQt wrapQtAppsHook;
 
   buildInputs = [
     # we need gtk2 unconditionally as that is the default target when building applications with lazarus
@@ -79,15 +84,6 @@ stdenv.mkDerivation rec {
     qtbase
   ];
 
-  # Disable parallel build, errors:
-  #  Fatal: (1018) Compilation aborted
-  enableParallelBuilding = false;
-
-  nativeBuildInputs = [
-    makeWrapper
-  ]
-  ++ lib.optional withQt wrapQtAppsHook;
-
   makeFlags = [
     "FPC=fpc"
     "PP=fpc"
@@ -99,6 +95,7 @@ stdenv.mkDerivation rec {
 
   env = {
     inherit LCL_PLATFORM;
+
     NIX_LDFLAGS = toString (
       [
         "-L${lib.getLib stdenv.cc.cc}/lib"
@@ -147,6 +144,10 @@ stdenv.mkDerivation rec {
           ]
         }"
     '';
+
+  # Disable parallel build, errors:
+  #  Fatal: (1018) Compilation aborted
+  enableParallelBuilding = false;
 
   meta = {
     description = "Graphical IDE for the FreePascal language";

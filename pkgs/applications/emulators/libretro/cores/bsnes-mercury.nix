@@ -5,7 +5,6 @@
   withProfile ? "accuracy",
 }:
 mkLibretroCore {
-  core = "bsnes-mercury-${withProfile}";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -15,8 +14,9 @@ mkLibretroCore {
     hash = "sha256-DLT7Do3FWL6N63tSxeVqFW82GiCkpG5kOs82nsjCtPw=";
   };
 
-  makefile = "Makefile";
   makeFlags = [ "PROFILE=${withProfile}" ];
+  core = "bsnes-mercury-${withProfile}";
+  makefile = "Makefile";
 
   meta = {
     description = "Fork of bsnes with HLE DSP emulation restored (${withProfile} profile)";

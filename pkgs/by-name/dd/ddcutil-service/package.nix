@@ -2,13 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  pkg-config,
-
+  ddcutil,
   # buildInputs
   glib,
-  ddcutil,
+  # nativeBuildInputs
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,19 +29,19 @@ stdenv.mkDerivation (finalAttrs: {
     ddcutil
   ];
 
-  # Also installs ddcutil-client, which is built by default
-  installTargets = "install-all";
-
   makeFlags = [
     "PREFIX=${placeholder "out"}"
   ];
+
+  # Also installs ddcutil-client, which is built by default
+  installTargets = "install-all";
 
   meta = {
     description = "A Dbus ddcutil server for control of DDC Monitors/VDUs";
     homepage = "https://github.com/digitaltrails/ddcutil-service";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ doronbehar ];
-    mainProgram = "ddcutil-service";
     platforms = lib.platforms.linux;
+    mainProgram = "ddcutil-service";
   };
 })

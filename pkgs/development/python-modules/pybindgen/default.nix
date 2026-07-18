@@ -10,22 +10,19 @@
 buildPythonPackage (finalAttrs: {
   pname = "pybindgen";
   version = "0.22.1";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "PyBindGen";
     inherit (finalAttrs) version;
     hash = "sha256-jH8iORpJqEUY9aKtBuOlseg50Q402nYxUZyKKPy6N2Q=";
+    pname = "PyBindGen";
   };
 
   buildInputs = [ setuptools-scm ];
-
-  nativeCheckInputs = [ pygccxml ];
-
-  pythonImportsCheck = [ "pybindgen" ];
-
   # Fails to import module 'cxxfilt' from pygccxml on Py3k
   doCheck = (!isPy3k);
+  nativeCheckInputs = [ pygccxml ];
+  format = "setuptools";
+  pythonImportsCheck = [ "pybindgen" ];
 
   meta = {
     description = "Python Bindings Generator";

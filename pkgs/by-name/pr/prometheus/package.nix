@@ -1,19 +1,20 @@
 {
-  stdenv,
   lib,
-  go,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
+  fetchPnpmDeps,
+  go,
+  nixosTests,
   nodejs,
   pnpmConfigHook,
   pnpm_11,
-  fetchPnpmDeps,
-  fetchFromGitHub,
-  nixosTests,
+  versionCheckHook,
   enableAWS ? true,
   enableAzure ? true,
   enableConsul ? true,
-  enableDigitalOcean ? true,
   enableDNS ? true,
+  enableDigitalOcean ? true,
   enableEureka ? true,
   enableGCE ? true,
   enableHetzner ? true,
@@ -23,17 +24,16 @@
   enableMarathon ? true,
   enableMoby ? true,
   enableNomad ? true,
-  enableOpenstack ? true,
   enableOVHCloud ? true,
+  enableOpenstack ? true,
   enablePuppetDB ? true,
-  enableScaleway ? true,
   enableSTACKIT ? true,
+  enableScaleway ? true,
   enableTriton ? true,
   enableUyuni ? true,
   enableVultr ? true,
   enableXDS ? true,
   enableZookeeper ? true,
-  versionCheckHook,
 }:
 
 let
@@ -51,9 +51,8 @@ let
   };
 
   assets = stdenv.mkDerivation (finalAssetsAttrs: {
-    pname = "${pname}-assets";
     inherit version;
-
+    pname = "${pname}-assets";
     src = "${src}/web/ui";
 
     patches = [
@@ -61,13 +60,6 @@ let
       # script
       ./disable-react-app.diff
     ];
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAssetsAttrs) pname version src;
-      pnpm = pnpm_11;
-      fetcherVersion = 4;
-      hash = source.pnpmDepsHash;
-    };
 
     nativeBuildInputs = [
       nodejs
@@ -77,23 +69,22 @@ let
 
     env.CI = true;
 
-    __darwinAllowLocalNetworking = true;
-
-    doCheck = true;
-    checkPhase = ''
-      runHook preCheck
-
-      pnpm test
-
-      runHook postCheck
-    '';
-
     buildPhase = ''
       runHook preBuild
 
       pnpm build
 
       runHook postBuild
+    '';
+
+    doCheck = true;
+
+    checkPhase = ''
+      runHook preCheck
+
+      pnpm test
+
+      runHook postCheck
     '';
 
     installPhase = ''
@@ -105,6 +96,15 @@ let
 
       runHook postInstall
     '';
+
+    __darwinAllowLocalNetworking = true;
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAssetsAttrs) pname version src;
+      fetcherVersion = 4;
+      hash = source.pnpmDepsHash;
+      pnpm = pnpm_11;
+    };
   });
 in
 buildGoModule (finalAttrs: {
@@ -115,18 +115,10 @@ buildGoModule (finalAttrs: {
     src
     ;
 
-  proxyVendor = true;
-
   outputs = [
     "out"
     "doc"
     "cli"
-  ];
-
-  excludedPackages = [
-    "documentation/prometheus-mixin"
-    "internal/tools"
-    "web/ui/mantine-ui/src/promql/tools"
   ];
 
   postPatch = ''
@@ -185,31 +177,6 @@ buildGoModule (finalAttrs: {
     substituteInPlace web/ui/embed.go --replace-fail "web/ui/" ""
   '';
 
-  tags = [ "builtinassets" ];
-
-  ldflags =
-    let
-      t = "github.com/prometheus/common/version";
-    in
-    [
-      "-s"
-      "-X ${t}.Version=${finalAttrs.version}"
-      "-X ${t}.Revision=unknown"
-      "-X ${t}.Branch=unknown"
-      "-X ${t}.BuildUser=nix@nixpkgs"
-      "-X ${t}.BuildDate=unknown"
-      "-X ${t}.GoVersion=${lib.getVersion go}"
-    ];
-
-  preInstall = ''
-    mkdir -p "$out/share/doc/prometheus" "$out/etc/prometheus"
-    cp -a $src/documentation/* $out/share/doc/prometheus
-  '';
-
-  postInstall = ''
-    moveToOutput bin/promtool $cli
-  '';
-
   # https://hydra.nixos.org/build/130673870/nixlog/1
   # Test mock data uses 64 bit data without an explicit (u)int64
   doCheck = !(stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.parsed.cpu.bits < 64);
@@ -226,10 +193,43 @@ buildGoModule (finalAttrs: {
     "-skip=TestEvaluations/testdata/aggregators.test"
   ];
 
+  preInstall = ''
+    mkdir -p "$out/share/doc/prometheus" "$out/etc/prometheus"
+    cp -a $src/documentation/* $out/share/doc/prometheus
+  '';
+
+  postInstall = ''
+    moveToOutput bin/promtool $cli
+  '';
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  excludedPackages = [
+    "documentation/prometheus-mixin"
+    "internal/tools"
+    "web/ui/mantine-ui/src/promql/tools"
+  ];
+
+  ldflags =
+    let
+      t = "github.com/prometheus/common/version";
+    in
+    [
+      "-s"
+      "-X ${t}.Version=${finalAttrs.version}"
+      "-X ${t}.Revision=unknown"
+      "-X ${t}.Branch=unknown"
+      "-X ${t}.BuildUser=nix@nixpkgs"
+      "-X ${t}.BuildDate=unknown"
+      "-X ${t}.GoVersion=${lib.getVersion go}"
+    ];
+
+  proxyVendor = true;
+  tags = [ "builtinassets" ];
 
   passthru = {
     inherit assets;
@@ -240,13 +240,15 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Service monitoring system and time series database";
     homepage = "https://prometheus.io";
-    license = lib.licenses.asl20;
     changelog = "https://github.com/prometheus/prometheus/blob/v${version}/CHANGELOG.md";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fpletz
       Frostman
       jpds
     ];
+
     mainProgram = "prometheus";
   };
 })

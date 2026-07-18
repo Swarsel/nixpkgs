@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gitless";
   version = "0.9.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "goldstar611";
@@ -15,6 +14,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-XDB1i2b1reMCM6i1uK3IzTnsoLXO7jldYtNlYUo1AoQ=";
   };
+
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -25,13 +26,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     argcomplete
   ];
 
-  pythonRelaxDeps = [ "pygit2" ];
-
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "gitless"
   ];
+
+  pythonRelaxDeps = [ "pygit2" ];
 
   meta = {
     description = "Version control system built on top of Git";

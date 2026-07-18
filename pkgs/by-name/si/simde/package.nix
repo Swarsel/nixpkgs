@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   meson,
   ninja,
@@ -23,10 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://simd-everywhere.github.io";
     description = "Implementations of SIMD instruction sets for systems which don't natively support them";
+    homepage = "https://simd-everywhere.github.io";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ whiteley ];
+
     platforms = lib.flatten (
       with lib.platforms;
       [

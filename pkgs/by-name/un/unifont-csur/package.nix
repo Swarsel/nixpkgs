@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -13,19 +13,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-41MXxHHohZFm42LMePmLSZp3bytsxMJmWh/0psIgWt4=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
     install -Dm644 $src $out/share/fonts/truetype/unifont_csur.ttf
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Unifont CSUR - Private Use Area font covering ConScript Unicode Registry";
     homepage = "https://unifoundry.com/unifont/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.qxrein ];
+    platforms = lib.platforms.all;
   };
 })

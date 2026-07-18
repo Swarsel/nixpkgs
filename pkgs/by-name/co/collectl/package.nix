@@ -1,25 +1,23 @@
 {
-  callPackage,
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-
+  callPackage,
   # Runtime dependencies
   coreutils,
   dmidecode,
   gnugrep,
   inetutils,
+  # Dependencies
+  ipmitool,
   openssh,
   pciutils,
   perl,
   procps,
+  replaceVars,
   rpm,
   util-linux,
   xterm,
-
-  # Dependencies
-  ipmitool,
 }:
 
 let
@@ -60,9 +58,9 @@ let
     // (mkTools dmidecode [ "dmidecode" ])
     // (mkTools rpm [ "rpm" ])
     // {
+      ipmitool = getExe ipmitool;
       # Single-tool packages
       ssh = getExe openssh;
-      ipmitool = getExe ipmitool;
     };
 in
 
@@ -77,20 +75,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hokovb6uqPiMFlDS0g2F/J1rHTkyNBegcgOC3g3ykEs=";
   };
 
-  strictDeps = true;
-
   patches = [
     (replaceVars ./0001-scripts-external-executable-calls.patch scriptDeps)
     ./0002-fix-install-script.patch
   ];
+
+  strictDeps = true;
 
   buildInputs = [
     perl
     dmidecode
     ipmitool
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -100,10 +96,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
   passthru.tests.run = callPackage ./test.nix { };
 
   meta = {
     description = "Performance monitoring tool for Linux systems";
+
     longDescription = ''
       Collectl is a light-weight performance monitoring tool capable of reporting
       interactively as well as logging to disk. It reports statistics on cpu, disk,
@@ -113,14 +111,17 @@ stdenv.mkDerivation (finalAttrs: {
       The `--config` option allows specifying a custom configuration file path,
       overriding the default configuration file in the package's etc directory.
     '';
+
     homepage = "https://github.com/sharkcz/collectl";
-    downloadPage = "https://github.com/sharkcz/collectl/releases";
+
     license = with lib.licenses; [
       artistic1
       gpl1Plus
     ];
+
     maintainers = with lib.maintainers; [ seven_bear ];
     platforms = lib.platforms.linux;
     mainProgram = "collectl";
+    downloadPage = "https://github.com/sharkcz/collectl/releases";
   };
 })

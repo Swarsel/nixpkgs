@@ -1,28 +1,28 @@
 {
-  mkDerivation,
-  libutil,
-  libpam,
-  libbsm,
   cap_mkdb,
+  libbsm,
+  libpam,
+  libutil,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/login";
+  postPatch = ''
+    sed -E -i -e "s|..DESTDIR./etc|\''${CONFDIR}|g" $BSDSRCDIR/usr.bin/login/Makefile
+  '';
+
   buildInputs = [
     libutil
     libpam
     libbsm
   ];
-  extraNativeBuildInputs = [ cap_mkdb ];
-
-  postPatch = ''
-    sed -E -i -e "s|..DESTDIR./etc|\''${CONFDIR}|g" $BSDSRCDIR/usr.bin/login/Makefile
-  '';
-
-  MK_TESTS = "no";
-  MK_SETUID_LOGIN = "no";
 
   postInstall = ''
     mkdir -p $out/etc
     make $makeFlags installconfig
   '';
+
+  MK_SETUID_LOGIN = "no";
+  MK_TESTS = "no";
+  extraNativeBuildInputs = [ cap_mkdb ];
+  path = "usr.bin/login";
 }

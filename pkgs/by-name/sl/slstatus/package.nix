@@ -1,22 +1,23 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  pkg-config,
-  writeText,
-  libx11,
-  libxcb,
-  libxau,
-  libxdmcp,
   config,
-  conf ? config.slstatus.conf or null,
-  patches ? config.slstatus.patches or [ ],
-  extraLibs ? config.slstatus.extraLibs or [ ],
+  fetchzip,
   # update script dependencies
   gitUpdater,
+  libx11,
+  libxau,
+  libxcb,
+  libxdmcp,
+  pkg-config,
+  writeText,
+  conf ? config.slstatus.conf or null,
+  extraLibs ? config.slstatus.extraLibs or [ ],
+  patches ? config.slstatus.patches or [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit patches;
   pname = "slstatus";
   version = "1.1";
 
@@ -24,6 +25,16 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://dl.suckless.org/tools/slstatus-${finalAttrs.version}.tar.gz";
     hash = "sha256-MRDovZpQsvnLEvsbJNBzprkzQQ4nIs1T9BLT+tSGta8=";
   };
+
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    libx11
+    libxcb
+    libxau
+    libxdmcp
+  ]
+  ++ extraLibs;
 
   preBuild =
     let
@@ -35,28 +46,18 @@ stdenv.mkDerivation (finalAttrs: {
       makeFlagsArray+=(LDLIBS="-lX11 -lxcb -lXau -lXdmcp" CC=$CC)
     '';
 
-  inherit patches;
-
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    libx11
-    libxcb
-    libxau
-    libxdmcp
-  ]
-  ++ extraLibs;
-
   installFlags = [ "PREFIX=$(out)" ];
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://tools.suckless.org/slstatus/";
     description = "Status monitor for window managers that use WM_NAME like dwm";
+    homepage = "https://tools.suckless.org/slstatus/";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       qusic
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "slstatus";
   };

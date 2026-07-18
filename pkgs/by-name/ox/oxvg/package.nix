@@ -9,7 +9,6 @@
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "oxvg";
   version = "0.0.5";
-  __structuredAttrs = true;
 
   src = fetchCrate {
     inherit (finalAttrs) pname version;
@@ -17,10 +16,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-+dfM2/SjUTwNAoKC7cjw2Ba1RNp6BwmbR1TxXtp9W4E=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

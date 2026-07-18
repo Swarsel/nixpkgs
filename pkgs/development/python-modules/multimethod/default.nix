@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "multimethod";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coady";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "multimethod" ];
 
   meta = {

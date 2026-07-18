@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication {
   pname = "mdslides";
   version = "0-unstable-2022-12-15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dadoomer";
@@ -16,10 +15,9 @@ python3Packages.buildPythonApplication {
     sha256 = "sha256-31ALsy1P/vfI+H6Onmg4TXLeKbVAQ1FlnFs4k6ZOgHQ=";
   };
 
-  build-system = with python3Packages; [ setuptools ];
-
   doCheck = false;
-
+  build-system = with python3Packages; [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "mdslides" ];
 
   meta = {

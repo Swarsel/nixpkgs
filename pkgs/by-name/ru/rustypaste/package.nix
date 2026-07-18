@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-10tBbn4XtdUNhfzb+KpwFGZAc7YVIEQRaqNLzJC1GGI=";
 
-  dontUseCargoParallelTests = true;
-
   checkFlags = [
     # requires internet access
     "--skip=paste::tests::test_paste_data"
@@ -26,15 +24,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   __darwinAllowLocalNetworking = true;
+  dontUseCargoParallelTests = true;
 
   meta = {
     description = "Minimal file upload/pastebin service";
     homepage = "https://github.com/orhun/rustypaste";
     changelog = "https://github.com/orhun/rustypaste/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       seqizz
     ];
+
     mainProgram = "rustypaste";
   };
 })

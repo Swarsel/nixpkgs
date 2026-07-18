@@ -1,15 +1,15 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnetCorePackages,
-  wrapGAppsHook3,
-  gtk3,
-  libnotify,
-  icoutils,
-  nix-update-script,
+  buildDotnetModule,
   copyDesktopItems,
+  dotnetCorePackages,
+  gtk3,
+  icoutils,
+  libnotify,
   makeDesktopItem,
+  nix-update-script,
+  wrapGAppsHook3,
 }:
 buildDotnetModule (finalAttrs: {
   pname = "arcdps-log-manager";
@@ -22,22 +22,10 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-AiIWYb3hwkE20NdmAHlSt55QJ/d3NnQt3ZeX1COUG7k=";
   };
 
-  nugetDeps = ./deps.json;
-
-  projectFile = "ArcdpsLogManager.Gtk/ArcdpsLogManager.Gtk.csproj";
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
   nativeBuildInputs = [
     wrapGAppsHook3
     icoutils
     copyDesktopItems
-  ];
-
-  runtimeDeps = [
-    gtk3
-    libnotify
   ];
 
   postInstall = ''
@@ -49,11 +37,21 @@ buildDotnetModule (finalAttrs: {
   desktopItems = [
     (makeDesktopItem {
       desktopName = "arcdps Log Manager";
-      genericName = "arcdps Log Manager";
       exec = "GW2Scratch.ArcdpsLogManager.Gtk";
-      name = "arcdps Log Manager";
+      genericName = "arcdps Log Manager";
       icon = "arcdps-log-manager";
+      name = "arcdps Log Manager";
     })
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  nugetDeps = ./deps.json;
+  projectFile = "ArcdpsLogManager.Gtk/ArcdpsLogManager.Gtk.csproj";
+
+  runtimeDeps = [
+    gtk3
+    libnotify
   ];
 
   passthru.updateScript = nix-update-script {
@@ -62,14 +60,16 @@ buildDotnetModule (finalAttrs: {
 
   meta = {
     description = "Manager for Guild Wars 2 log files";
+
     longDescription = ''
       Manager for all your recorded logs. Filter logs, upload them with one click, find interesting statistics.
     '';
+
     homepage = "https://gw2scratch.com/tools/manager";
     changelog = "https://github.com/gw2scratch/evtc/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.Blu3 ];
-    mainProgram = "GW2Scratch.ArcdpsLogManager.Gtk";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "GW2Scratch.ArcdpsLogManager.Gtk";
   };
 })

@@ -1,25 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # tests
+  pytestCheckHook,
+  # dependencies
+  scipy,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  scipy,
   torch,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "linear-operator";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cornellius-gp";
@@ -27,6 +23,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Ghe4a3zMSvTv3J6ROd1RLELK+k24/rO8p+XUPVsl090=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -38,10 +36,6 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  pythonImportsCheck = [ "linear_operator" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # flaky numerical tests
     "test_matmul_matrix_broadcast"
@@ -52,6 +46,9 @@ buildPythonPackage (finalAttrs: {
     # RuntimeError: Failed to initialize cpuinfo!
     "test_half"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "linear_operator" ];
 
   meta = {
     description = "LinearOperator implementation to wrap the numerical nuts and bolts of GPyTorch";

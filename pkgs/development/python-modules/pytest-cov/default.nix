@@ -1,11 +1,11 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  pytest,
   coverage,
-  hatchling,
+  fetchPypi,
   hatch-fancy-pypi-readme,
+  hatchling,
+  pytest,
   toml,
   tomli,
 }:
@@ -13,20 +13,28 @@
 buildPythonPackage rec {
   pname = "pytest-cov";
   version = "7.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pytest_cov";
     inherit version;
     hash = "sha256-MGdPK19jUaoJcCqcjDZPagHCeq4ME2augBYWDR78VrI=";
+    pname = "pytest_cov";
   };
+
+  buildInputs = [ pytest ];
+  # xdist related tests fail with the following error
+  # OSError: [Errno 13] Permission denied: 'py/_code'
+  doCheck = false;
+
+  checkPhase = ''
+    # allow to find the module helper during the test run
+    export PYTHONPATH=$PYTHONPATH:$PWD/tests
+    py.test tests
+  '';
 
   build-system = [
     hatchling
     hatch-fancy-pypi-readme
   ];
-
-  buildInputs = [ pytest ];
 
   dependencies = [
     coverage
@@ -34,15 +42,7 @@ buildPythonPackage rec {
     tomli
   ];
 
-  # xdist related tests fail with the following error
-  # OSError: [Errno 13] Permission denied: 'py/_code'
-  doCheck = false;
-  checkPhase = ''
-    # allow to find the module helper during the test run
-    export PYTHONPATH=$PYTHONPATH:$PWD/tests
-    py.test tests
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_cov" ];
 
   meta = {

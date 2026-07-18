@@ -11,16 +11,16 @@ let
     let
       perl' = perl.withPackages f;
       finalPackage = buildEnv {
-        pname = "${postgresql.pname}-plperl";
         inherit (postgresql) version;
+        pname = "${postgresql.pname}-plperl";
         paths = [ postgresql.plperl ];
+
         passthru = {
           inherit withPackages;
-          wrapperArgs = [
-            ''--set PERL5LIB "${perl'}/${perl'.libPrefix}"''
-          ];
+
           tests.extension = postgresqlTestExtension {
             finalPackage = finalPackage.withPackages (ps: [ ps.boolean ]);
+
             sql = ''
               CREATE EXTENSION plperlu;
               DO LANGUAGE plperlu $$
@@ -28,7 +28,12 @@ let
               $$;
             '';
           };
+
+          wrapperArgs = [
+            ''--set PERL5LIB "${perl'}/${perl'.libPrefix}"''
+          ];
         };
+
         meta = {
           inherit (postgresql.meta)
             homepage
@@ -37,6 +42,7 @@ let
             teams
             platforms
             ;
+
           description = "PL/Perl - Perl Procedural Language";
         };
       };

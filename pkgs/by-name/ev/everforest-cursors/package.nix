@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-xXgtN9wbjbrGLUGYymMEGug9xEs9y44mq18yZVdbiuU=";
   };
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/icons
@@ -23,13 +21,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Everforest cursor theme, based on phinger-cursors";
     homepage = "https://github.com/talwat/everforest-cursors";
     license = lib.licenses.cc-by-sa-40;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.stelcodes ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,34 +1,25 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  python,
   cronsim,
-  python-dateutil,
-  tzlocal,
-  pytestCheckHook,
+  fetchPypi,
   pytest-cov-stub,
   pytest-xdist,
+  pytestCheckHook,
+  python,
+  python-dateutil,
+  setuptools,
+  tzlocal,
 }:
 
 buildPythonPackage rec {
   pname = "aiocron";
   version = "2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-G7ZaNq7hN+iDNZJ4OVbgx9xHi8PpJz/ChB1dDGBF5NI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    cronsim
-    python-dateutil
-    tzlocal
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -41,6 +32,15 @@ buildPythonPackage rec {
     rm -rf $out/${python.sitePackages}/tests
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cronsim
+    python-dateutil
+    tzlocal
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "aiocron" ];
 
   meta = {

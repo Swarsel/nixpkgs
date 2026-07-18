@@ -1,16 +1,14 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-
+  buildGoModule,
+  buildPackages,
+  fulcio,
   # required for completion and cross-compilation
   installShellFiles,
-  buildPackages,
-  stdenv,
-
   # required for testing
   testers,
-  fulcio,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,6 +23,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -33,18 +32,9 @@ buildGoModule (finalAttrs: {
       find "$out" -name .git -print0 | xargs -0 rm -rf
     '';
   };
-  vendorHash = "sha256-Bpu6PR3i+Sq5tZhCPLYi4rECwZ/QiN3Wls7U+8f6fBU=";
 
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
-    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
-  ];
+  vendorHash = "sha256-Bpu6PR3i+Sq5tZhCPLYi4rECwZ/QiN3Wls7U+8f6fBU=";
 
   # ldflags based on metadata from git and source
   preBuild = ''
@@ -52,14 +42,14 @@ buildGoModule (finalAttrs: {
     ldflags+=" -X sigs.k8s.io/release-utils/version.buildDate=$(cat SOURCE_DATE_EPOCH)"
   '';
 
+  checkFlags = [
+    "-skip=TestLoad"
+  ];
+
   preCheck = ''
     # test all paths
     unset subPackages
   '';
-
-  checkFlags = [
-    "-skip=TestLoad"
-  ];
 
   postInstall =
     let
@@ -76,17 +66,24 @@ buildGoModule (finalAttrs: {
         --zsh <(${fulcio}/bin/fulcio completion zsh)
     '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
+    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
+  ];
+
+  subPackages = [ "." ];
+
   passthru.tests.version = testers.testVersion {
-    package = fulcio;
-    command = "fulcio version";
     version = "v${finalAttrs.version}";
+    command = "fulcio version";
+    package = fulcio;
   };
 
   meta = {
-    homepage = "https://github.com/sigstore/fulcio";
-    changelog = "https://github.com/sigstore/fulcio/releases/tag/v${finalAttrs.version}";
     description = "Root-CA for code signing certs - issuing certificates based on an OIDC email address";
-    mainProgram = "fulcio";
+
     longDescription = ''
       Fulcio is a free code signing Certificate Authority, built to make
       short-lived certificates available to anyone. Based on an Open ID Connect
@@ -97,10 +94,16 @@ buildGoModule (finalAttrs: {
       different delegation models, and to deploy and run Fulcio as a
       disconnected instance.
     '';
+
+    homepage = "https://github.com/sigstore/fulcio";
+    changelog = "https://github.com/sigstore/fulcio/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       lesuisse
       jk
     ];
+
+    mainProgram = "fulcio";
   };
 })

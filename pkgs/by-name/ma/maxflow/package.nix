@@ -27,7 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Software for computing mincut/maxflow in a graph";
     homepage = "https://github.com/gerddie/maxflow";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.tadfisher ];
+    platforms = lib.platforms.all;
   };
 })

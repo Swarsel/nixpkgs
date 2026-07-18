@@ -2,21 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
-  replaceVars,
-
+  _7zz,
   copyDesktopItems,
   dart-sass,
+  electron,
+  fetchPnpmDeps,
   jq,
+  makeDesktopItem,
   makeWrapper,
   moreutils,
   nodejs,
-  fetchPnpmDeps,
   pnpmConfigHook,
   pnpm_10,
-
-  _7zz,
-  electron,
+  replaceVars,
   voicevox-engine,
 }:
 
@@ -48,28 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     # and also set version to a proper value
     jq "del(.packageManager) | .version = \"$version\"" package.json | sponge package.json
   '';
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      patches
-      postPatch
-      ;
-
-    pnpm = pnpm_10;
-
-    # let's just be safe and add these explicitly to nativeBuildInputs
-    # even though the fetcher already uses them in its implementation
-    nativeBuildInputs = [
-      jq
-      moreutils
-    ];
-
-    fetcherVersion = 3;
-    hash = "sha256-0Z/C4x4ZDPC+3o5i6KJgFqmAhHk9CUhoPB9+6yyLtdE=";
-  };
 
   nativeBuildInputs = [
     dart-sass
@@ -136,25 +112,48 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "voicevox";
+      categories = [ "AudioVideo" ];
+      desktopName = "VOICEVOX";
       exec = "voicevox";
       icon = "voicevox";
-      desktopName = "VOICEVOX";
-      categories = [ "AudioVideo" ];
       mimeTypes = [ "application/x-voicevox" ];
+      name = "voicevox";
     })
   ];
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      patches
+      postPatch
+      ;
+
+    # let's just be safe and add these explicitly to nativeBuildInputs
+    # even though the fetcher already uses them in its implementation
+    nativeBuildInputs = [
+      jq
+      moreutils
+    ];
+
+    fetcherVersion = 3;
+    hash = "sha256-0Z/C4x4ZDPC+3o5i6KJgFqmAhHk9CUhoPB9+6yyLtdE=";
+    pnpm = pnpm_10;
+  };
+
   meta = {
-    changelog = "https://github.com/VOICEVOX/voicevox/releases/tag/${finalAttrs.src.tag}";
     description = "Editor for the VOICEVOX speech synthesis software";
     homepage = "https://github.com/VOICEVOX/voicevox";
+    changelog = "https://github.com/VOICEVOX/voicevox/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.lgpl3Only;
-    mainProgram = "voicevox";
+
     maintainers = with lib.maintainers; [
       tomasajt
       eljamm
     ];
+
     platforms = electron.meta.platforms;
+    mainProgram = "voicevox";
   };
 })

@@ -18,7 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0c18c7fzlqxifz1bf3izil0bczv3a7nsv0dn6winy3ik49yw3i9j";
   };
 
-  enableParallelBuilding = true;
+  buildInputs = [
+    blas
+    lapack
+    mpi
+  ];
 
   postInstall = ''
     # only contains the static lib
@@ -27,18 +31,14 @@ stdenv.mkDerivation (finalAttrs: {
     install -D testing/ptest/HPL.dat $out/share/hpl/HPL.dat
   '';
 
-  buildInputs = [
-    blas
-    lapack
-    mpi
-  ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Portable Implementation of the Linpack Benchmark for Distributed-Memory Computers";
     homepage = "http://www.netlib.org/benchmark/hpl/";
-    platforms = lib.platforms.unix;
     license = lib.licenses.bsdOriginal;
     maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.unix;
     mainProgram = "xhpl";
   };
 })

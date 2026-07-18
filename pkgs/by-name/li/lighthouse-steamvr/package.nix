@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
-  rustPlatform,
-  pkg-config,
+  fetchFromGitHub,
   dbus,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,11 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Ai+d7BKA1o98iOhQ7VXltnWHW/knw122xLZHhFM6gZ0=";
   };
 
-  cargoHash = "sha256-+5fxqWq7akICVmDa8Lc6M8laEAWrrEyg4uCFLoCNRpo=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ dbus ];
+  cargoHash = "sha256-+5fxqWq7akICVmDa8Lc6M8laEAWrrEyg4uCFLoCNRpo=";
 
   meta = {
     description = "VR Lighthouse power state management";

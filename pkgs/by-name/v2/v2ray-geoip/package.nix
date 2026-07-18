@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  pkgsBuildBuild,
   dbip-country-lite,
+  pkgsBuildBuild,
+  stdenvNoCC,
 }:
 
 let
@@ -32,7 +32,6 @@ in
 stdenvNoCC.mkDerivation {
   inherit (generator) pname src;
   inherit (dbip-country-lite) version;
-
   nativeBuildInputs = [ generator ];
 
   buildPhase = ''

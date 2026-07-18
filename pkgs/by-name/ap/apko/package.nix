@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
+  buildGoModule,
+  buildPackages,
   installShellFiles,
   versionCheckHook,
-  buildPackages,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,6 +21,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -29,20 +30,9 @@ buildGoModule (finalAttrs: {
       find "$out" -name .git -print0 | xargs -0 rm -rf
     '';
   };
-  vendorHash = "sha256-nms4bDB9z4H2IbMO49bri0aQBiBfVj4kzVqwzURZ75c=";
-
-  excludedPackages = [
-    "internal/gen-jsonschema"
-  ];
 
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
-    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
-  ];
+  vendorHash = "sha256-nms4bDB9z4H2IbMO49bri0aQBiBfVj4kzVqwzURZ75c=";
 
   # ldflags based on metadata from git and source
   preBuild = ''
@@ -50,24 +40,24 @@ buildGoModule (finalAttrs: {
     ldflags+=" -X sigs.k8s.io/release-utils/version.buildDate=$(cat SOURCE_DATE_EPOCH)"
   '';
 
-  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
   # skip tests on darwin due to some local networking failures
   # `__darwinAllowLocalNetworking = true;` wasn't sufficient for
   # aarch64 or x86_64
   doCheck = !stdenv.hostPlatform.isDarwin;
-  preCheck = ''
-    # some test data include SOURCE_DATE_EPOCH (which is different from our default)
-    # and the default version info which we get by unsetting our ldflags
-    export SOURCE_DATE_EPOCH=0
-    unset ldflags
-  '';
+  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   checkFlags = [
     # requires networking (apk.chainreg.biz and dl-cdn.alpinelinux.org)
     # TestSpecialModeBits fails because of sandbox setuid/setgid restrictions
     "-skip=TestInitDB_ChainguardDiscovery|TestFetchPackage|TestLock/apko-discover|TestSpecialModeBits"
   ];
+
+  preCheck = ''
+    # some test data include SOURCE_DATE_EPOCH (which is different from our default)
+    # and the default version info which we get by unsetting our ldflags
+    export SOURCE_DATE_EPOCH=0
+    unset ldflags
+  '';
 
   postInstall =
     let
@@ -84,19 +74,33 @@ buildGoModule (finalAttrs: {
         --zsh <(${apko}/bin/apko completion zsh)
     '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  excludedPackages = [
+    "internal/gen-jsonschema"
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
+    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
+  ];
+
   versionCheckProgramArg = "version";
 
   meta = {
+    description = "Build OCI images using APK directly without Dockerfile";
     homepage = "https://apko.dev/";
     changelog = "https://github.com/chainguard-dev/apko/releases/tag/v${finalAttrs.version}";
-    description = "Build OCI images using APK directly without Dockerfile";
-    mainProgram = "apko";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jk
       developer-guy
     ];
+
+    mainProgram = "apko";
   };
 })

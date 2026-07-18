@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  numpy,
-  razdel,
   navec,
+  numpy,
   pytestCheckHook,
+  razdel,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "slovnet";
   version = "0.6.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -23,12 +22,16 @@ buildPythonPackage (finalAttrs: {
     navec
     razdel
   ];
+
   nativeCheckInputs = [ pytestCheckHook ];
-  enabledTestPaths = [ "tests/" ];
+
   disabledTestPaths = [
     # Tries to download model binary artifacts:
     "tests/test_api.py"
   ];
+
+  enabledTestPaths = [ "tests/" ];
+  format = "setuptools";
   pythonImportsCheck = [ "slovnet" ];
 
   meta = {

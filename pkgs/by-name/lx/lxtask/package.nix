@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  gitUpdater,
   gtk3,
   intltool,
   libintl,
   pkg-config,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,13 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--enable-gtk3" ];
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://lxde.sourceforge.net/";
     description = "Lightweight and desktop independent task manager";
-    mainProgram = "lxtask";
+
     longDescription = ''
       LXTask is a lightweight task manager derived from xfce4 task manager
       with all xfce4 dependencies removed, some bugs fixed, and some
@@ -47,8 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
       Desktop Environment, it's totally desktop independent and only
       requires pure GTK.
     '';
+
+    homepage = "https://lxde.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
+    mainProgram = "lxtask";
   };
 })

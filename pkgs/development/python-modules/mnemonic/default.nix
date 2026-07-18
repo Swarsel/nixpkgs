@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   poetry-core,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "mnemonic";
   version = "0.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "trezor";
@@ -18,16 +17,16 @@ buildPythonPackage rec {
     hash = "sha256-D1mS/JQhefYmwrShfWR9SdiGsBUM+jmuCkfWix9tDOU=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "mnemonic" ];
 
   meta = {
     description = "Reference implementation of BIP-0039";
     homepage = "https://github.com/trezor/python-mnemonic";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       np
       prusnak

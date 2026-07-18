@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "electrickiwi-api";
   version = "0.9.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mikey0000";
@@ -18,14 +17,12 @@ buildPythonPackage rec {
     hash = "sha256-UXweOz5olwx3ZI2M7eI1n729tqfLiWszV2zTWbrA9CM=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
-
-  pythonImportsCheck = [ "electrickiwi_api" ];
-
   # Tests require authentication credentials
   doCheck = false;
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
+  pythonImportsCheck = [ "electrickiwi_api" ];
 
   meta = {
     description = "Python library for interfacing with the Electric Kiwi power company API";

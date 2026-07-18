@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,10 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Xhle7SODRZlHT3798mYIzBi1Mqjz8ai74/UnbVWetiY=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -26,6 +22,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
 
   meta = {
     description = "Header-only C++ logging library";

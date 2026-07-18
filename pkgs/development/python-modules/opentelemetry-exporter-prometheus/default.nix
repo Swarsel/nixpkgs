@@ -15,9 +15,11 @@ buildPythonPackage {
   # This package is in the same repository as `opentelemetry-api`,
   # but its version is synchronized with `opentelemetry-instrumentation` in another repository.
   version = opentelemetry-instrumentation.version;
-  pyproject = true;
 
-  sourceRoot = "${opentelemetry-api.src.name}/exporter/opentelemetry-exporter-prometheus";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -27,15 +29,12 @@ buildPythonPackage {
     prometheus-client
   ];
 
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.exporter.prometheus" ];
+  sourceRoot = "${opentelemetry-api.src.name}/exporter/opentelemetry-exporter-prometheus";
 
   meta = opentelemetry-api.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-prometheus";
     description = "Prometheus Metric Exporter for OpenTelemetry";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-prometheus";
   };
 }

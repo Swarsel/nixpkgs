@@ -16,6 +16,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ wmii ];
+
     services.xserver.windowManager.session =
       singleton
         # stop wmii by
@@ -34,13 +36,12 @@ in
         # subject "wmii and xrandr" on mailinglist)
         {
           name = "wmii";
+
           start = ''
             while :; do
               ${wmii}/bin/wmii && break
             done
           '';
         };
-
-    environment.systemPackages = [ wmii ];
   };
 }

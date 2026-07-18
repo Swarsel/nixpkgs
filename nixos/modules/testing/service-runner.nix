@@ -111,13 +111,15 @@ let
     { config, name, ... }:
     {
       options.runner = mkOption {
-        internal = true;
         description = ''
           A script that runs the service outside of systemd,
           useful for testing or for using NixOS services outside
           of NixOS.
         '';
+
+        internal = true;
       };
+
       config.runner = makeScript name config;
     };
 

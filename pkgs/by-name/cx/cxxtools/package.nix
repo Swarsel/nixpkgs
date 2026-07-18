@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  tzdata,
   autoreconfHook,
+  fetchpatch,
   openssl,
+  tzdata,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,12 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/maekitalo/cxxtools/commit/b773c01fc13d2ae67abc0839888e383be23562fd.patch";
       hash = "sha256-9yRkD+vMRhc4n/Xh6SKtmllBrmfDx3IBVOtHQV6s7Tw=";
+      url = "https://github.com/maekitalo/cxxtools/commit/b773c01fc13d2ae67abc0839888e383be23562fd.patch";
     })
     (fetchpatch {
-      url = "https://github.com/maekitalo/cxxtools/commit/6e1439a108ce3892428e95f341f2d23ae32a590e.patch";
       hash = "sha256-ZnlbdWBjL9lEtNLEF/ZPa0IzvJ7i4xWI4GbY8KeA6A4=";
+      url = "https://github.com/maekitalo/cxxtools/commit/6e1439a108ce3892428e95f341f2d23ae32a590e.patch";
     })
   ];
 
@@ -46,10 +46,10 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.tntnet.org/cxxtools.html";
     description = "Comprehensive C++ class library for Unix and Linux";
-    platforms = lib.platforms.linux;
+    homepage = "http://www.tntnet.org/cxxtools.html";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.juliendehos ];
+    platforms = lib.platforms.linux;
   };
 })

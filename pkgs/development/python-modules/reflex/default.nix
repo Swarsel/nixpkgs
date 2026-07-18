@@ -1,53 +1,49 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  uv-dynamic-versioning,
-
-  # dependencies
-  requests,
-  click,
-  granian,
-  httpx,
-  packaging,
-  platformdirs,
-  psutil,
-  python-multipart,
-  python-socketio,
-  redis,
-  rich,
-  starlette,
-  typing-extensions,
-  wrapt,
-
-  # sub package dependencies
-  pydantic,
-  griffelib,
-  mistletoe,
-  pyyaml,
-  typing-inspection,
-  email-validator,
-  ruff-format,
-
   # tests
   attrs,
-  typer,
+  buildPythonPackage,
+  click,
+  email-validator,
+  granian,
+  griffelib,
+  # build-system
+  hatchling,
+  httpx,
+  mistletoe,
   numpy,
+  packaging,
   pandas,
   pillow,
+  platformdirs,
   playwright,
   plotly,
+  psutil,
+  # sub package dependencies
+  pydantic,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
   python-dotenv,
+  python-multipart,
+  python-socketio,
+  pyyaml,
+  redis,
+  # dependencies
+  requests,
+  rich,
   ruff,
+  ruff-format,
+  starlette,
   starlette-admin,
+  typer,
+  typing-extensions,
+  typing-inspection,
+  uv-dynamic-versioning,
   uvicorn,
   versionCheckHook,
+  wrapt,
   writableTmpDirAsHomeHook,
 }:
 
@@ -63,16 +59,23 @@ let
   buildSubPackage =
     {
       pname,
-      version,
       src,
+      subPkgs,
+      version,
       workspace,
       workspaces,
-      subPkgs,
     }:
     buildPythonPackage {
       inherit pname version src;
-      pyproject = true;
-      sourceRoot = workspace.sourceRoot or "${src.name}/packages/${pname}";
+      inherit (workspace) dependencies;
+
+      preBuild = ''
+        # for .ruff_cache and whatnot, written by hatch-reflex-pyi
+        chmod -R +w ../..
+      '';
+
+      # the top-level package tests everything
+      doCheck = false;
 
       build-system = [
         hatchling
@@ -81,16 +84,8 @@ let
       ]
       ++ lib.optional (pname != "hatch-reflex-pyi") subPkgs.hatch-reflex-pyi;
 
-      preBuild = ''
-        # for .ruff_cache and whatnot, written by hatch-reflex-pyi
-        chmod -R +w ../..
-      '';
-
-      inherit (workspace) dependencies;
-
-      # the top-level package tests everything
-      doCheck = false;
-
+      pyproject = true;
+      sourceRoot = workspace.sourceRoot or "${src.name}/packages/${pname}";
       meta = metaCommon;
     };
 
@@ -99,7 +94,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "reflex";
   version = "0.9.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "reflex-dev";
@@ -108,13 +102,32 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-CTW8p8cPSZnTMgXk9F6oHvbfIiTtgKZVvRygUZbccJw=";
   };
 
+  nativeBuildInputs = [
+    ruff
+  ];
+
+  nativeCheckInputs = [
+    attrs
+    typer
+    numpy
+    pandas
+    pillow
+    playwright
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+    python-dotenv
+    starlette-admin
+    uvicorn
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
   build-system = [
     hatchling
     uv-dynamic-versioning
-  ];
-
-  nativeBuildInputs = [
-    ruff
   ];
 
   dependencies =
@@ -154,23 +167,23 @@ buildPythonPackage (finalAttrs: {
     ]
     ++ granian.optional-dependencies.reload;
 
-  nativeCheckInputs = [
-    attrs
-    typer
-    numpy
-    pandas
-    pillow
-    playwright
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-    python-dotenv
-    starlette-admin
-    uvicorn
-    versionCheckHook
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    "tests/benchmarks/"
+    "tests/integration/"
+
+    # unable to import agent_files (should be in docs/app/agent_files/)
+    "docs/app/tests/test_agent_files.py"
+
+    # circular imports (reflex-docgen)
+    "tests/units/docgen/test_class_and_component.py"
+    "tests/units/docgen/test_markdown.py"
+    "tests/units/docgen/test_reflex_transformer.py"
+    "docs/app/tests/test_doc_links.py"
+    "docs/app/tests/test_docgen_double_eval.py"
+
+    # circular imports (reflex-site-shared)
+    "docs/app/tests/test_routes.py"
   ];
-  versionCheckProgramArg = "--version";
 
   disabledTests = [
     # Touches network
@@ -199,25 +212,7 @@ buildPythonPackage (finalAttrs: {
     "test_enterprise_parent_breadcrumb_uses_overview_route"
   ];
 
-  disabledTestPaths = [
-    "tests/benchmarks/"
-    "tests/integration/"
-
-    # unable to import agent_files (should be in docs/app/agent_files/)
-    "docs/app/tests/test_agent_files.py"
-
-    # circular imports (reflex-docgen)
-    "tests/units/docgen/test_class_and_component.py"
-    "tests/units/docgen/test_markdown.py"
-    "tests/units/docgen/test_reflex_transformer.py"
-    "docs/app/tests/test_doc_links.py"
-    "docs/app/tests/test_docgen_double_eval.py"
-
-    # circular imports (reflex-site-shared)
-    "docs/app/tests/test_routes.py"
-  ];
-
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "reflex"
@@ -254,7 +249,29 @@ buildPythonPackage (finalAttrs: {
     "reflex.vars"
   ];
 
+  versionCheckProgramArg = "--version";
+
   passthru = {
+    inherit buildSubPackage;
+
+    subPkgs = lib.flip lib.mapAttrs finalAttrs.passthru.workspaces (
+      pname: workspace:
+      (finalAttrs.passthru.buildSubPackage {
+        inherit pname workspace;
+        inherit (finalAttrs) version src;
+        inherit (finalAttrs.passthru) workspaces subPkgs;
+      })
+    );
+
+    tests = {
+      reflex-no-checks = finalAttrs.finalPackage.overrideAttrs (old: {
+        pname = "${old.pname}-sans-checks-phase";
+        doCheck = false;
+        nativeCheckInputs = [ ];
+      });
+    }
+    // finalAttrs.passthru.subPkgs;
+
     # all [tool.uv.sources] workspaces in pyproject.toml
     workspaces =
       let
@@ -266,9 +283,7 @@ buildPythonPackage (finalAttrs: {
         hatch-reflex-pyi.dependencies = [
           hatchling
         ];
-        reflex-integrations-docs.sourceRoot = "${finalAttrs.src.name}/packages/integrations-docs";
-        reflex-integrations-docs.dependencies = [
-        ];
+
         reflex-base.dependencies = [
           packaging
           platformdirs
@@ -276,6 +291,7 @@ buildPythonPackage (finalAttrs: {
           rich
           typing-extensions
         ];
+
         reflex-components-code.dependencies = [
           subPkgs.reflex-base
           subPkgs.reflex-components-core
@@ -284,6 +300,7 @@ buildPythonPackage (finalAttrs: {
           subPkgs.reflex-components-sonner
           ruff
         ];
+
         reflex-components-core.dependencies = [
           python-multipart
           subPkgs.reflex-base
@@ -293,6 +310,7 @@ buildPythonPackage (finalAttrs: {
           starlette
           typing-extensions
         ];
+
         reflex-components-dataeditor.dependencies = [
           subPkgs.reflex-base
           subPkgs.reflex-components-core
@@ -300,10 +318,12 @@ buildPythonPackage (finalAttrs: {
           subPkgs.reflex-components-sonner
           ruff
         ];
+
         reflex-components-gridjs.dependencies = [
           subPkgs.reflex-base
           ruff
         ];
+
         reflex-components-internal.dependencies = [
           finalAttrs.finalPackage # reflex
           subPkgs.reflex-base
@@ -322,10 +342,12 @@ buildPythonPackage (finalAttrs: {
           subPkgs.reflex-hosting-cli
           ruff
         ];
+
         reflex-components-lucide.dependencies = [
           subPkgs.reflex-base
           ruff
         ];
+
         reflex-components-markdown.dependencies = [
           subPkgs.reflex-base
           subPkgs.reflex-components-code
@@ -335,10 +357,12 @@ buildPythonPackage (finalAttrs: {
           subPkgs.reflex-components-sonner
           ruff
         ];
+
         reflex-components-moment.dependencies = [
           subPkgs.reflex-base
           ruff
         ];
+
         reflex-components-plotly.dependencies = [
           subPkgs.reflex-base
           subPkgs.reflex-components-core
@@ -346,6 +370,7 @@ buildPythonPackage (finalAttrs: {
           subPkgs.reflex-components-sonner
           ruff
         ];
+
         reflex-components-radix.dependencies = [
           subPkgs.reflex-base
           subPkgs.reflex-components-core
@@ -353,6 +378,7 @@ buildPythonPackage (finalAttrs: {
           subPkgs.reflex-components-sonner
           ruff
         ];
+
         reflex-components-react-player.dependencies = [
           subPkgs.reflex-base
           subPkgs.reflex-components-core
@@ -360,15 +386,18 @@ buildPythonPackage (finalAttrs: {
           subPkgs.reflex-components-sonner
           ruff
         ];
+
         reflex-components-recharts.dependencies = [
           subPkgs.reflex-base
           ruff
         ];
+
         reflex-components-sonner.dependencies = [
           subPkgs.reflex-base
           subPkgs.reflex-components-lucide
           ruff
         ];
+
         reflex-docgen.dependencies = [
           griffelib
           mistletoe
@@ -376,6 +405,7 @@ buildPythonPackage (finalAttrs: {
           finalAttrs.finalPackage # reflex
           typing-inspection
         ];
+
         reflex-hosting-cli.dependencies = [
           click
           httpx
@@ -383,6 +413,12 @@ buildPythonPackage (finalAttrs: {
           platformdirs
           rich
         ];
+
+        reflex-integrations-docs.dependencies = [
+        ];
+
+        reflex-integrations-docs.sourceRoot = "${finalAttrs.src.name}/packages/integrations-docs";
+
         reflex-site-shared.dependencies = [
           email-validator
           httpx
@@ -408,25 +444,6 @@ buildPythonPackage (finalAttrs: {
           ruff-format
         ];
       };
-
-    inherit buildSubPackage;
-    subPkgs = lib.flip lib.mapAttrs finalAttrs.passthru.workspaces (
-      pname: workspace:
-      (finalAttrs.passthru.buildSubPackage {
-        inherit pname workspace;
-        inherit (finalAttrs) version src;
-        inherit (finalAttrs.passthru) workspaces subPkgs;
-      })
-    );
-
-    tests = {
-      reflex-no-checks = finalAttrs.finalPackage.overrideAttrs (old: {
-        pname = "${old.pname}-sans-checks-phase";
-        doCheck = false;
-        nativeCheckInputs = [ ];
-      });
-    }
-    // finalAttrs.passthru.subPkgs;
   };
 
   meta = metaCommon // {

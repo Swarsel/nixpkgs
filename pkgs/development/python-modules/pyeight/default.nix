@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "pyeight";
   version = "0.3.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mezz64";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyeight" ];
 
   meta = {

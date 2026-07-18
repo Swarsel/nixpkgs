@@ -1,10 +1,10 @@
 {
   lib,
-  libnotify,
-  gpgme,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  gpgme,
   installShellFiles,
+  libnotify,
   pkg-config,
   scdoc,
 }:
@@ -19,7 +19,6 @@ buildGoModule (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-aHR/y8rAKS+dMvRdB3oAmOiI7hTA6qlF4Z05OjwYOO4=";
   };
-  vendorHash = "sha256-oHEcpu3QvcVC/YCtGtP7nNT9++BSU8BPT5pf8NdLrOo=";
 
   nativeBuildInputs = [
     pkg-config
@@ -31,6 +30,8 @@ buildGoModule (finalAttrs: {
     libnotify
     gpgme
   ];
+
+  vendorHash = "sha256-oHEcpu3QvcVC/YCtGtP7nNT9++BSU8BPT5pf8NdLrOo=";
 
   postInstall = ''
     install -Dm444 -t $out/share/doc/yubikey-touch-detector *.{md,example}
@@ -51,8 +52,8 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Tool to detect when your YubiKey is waiting for a touch";
     homepage = "https://github.com/maximbaz/yubikey-touch-detector";
-    maintainers = with lib.maintainers; [ sumnerevans ];
     license = lib.licenses.isc;
+    maintainers = with lib.maintainers; [ sumnerevans ];
     platforms = lib.platforms.linux;
     mainProgram = "yubikey-touch-detector";
   };

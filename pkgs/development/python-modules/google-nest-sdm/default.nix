@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   coreutils,
-  fetchFromGitHub,
   google-auth,
   google-auth-oauthlib,
   google-cloud-pubsub,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-nest-sdm";
   version = "9.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "allenporter";
@@ -28,6 +27,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-yElmh+ajNVbjhsnNsUtQ3mJw9fvJtXqgS58iow+Nwi8=";
   };
 
+  nativeCheckInputs = [
+    coreutils
+    pytest-aiohttp
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,21 +47,13 @@ buildPythonPackage (finalAttrs: {
     requests-oauthlib
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    coreutils
-    pytest-aiohttp
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "google_nest_sdm" ];
-
   disabledTests = [
     "test_clip_preview_transcode"
     "test_event_manager_event_expiration_with_transcode"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "google_nest_sdm" ];
 
   meta = {
     description = "Module for Google Nest Device Access using the Smart Device Management API";

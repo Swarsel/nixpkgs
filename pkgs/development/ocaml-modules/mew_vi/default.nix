@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   mew,
   react,
 }:
@@ -23,9 +23,9 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
+    description = "Modal Editing Witch, VI interpreter";
     homepage = "https://github.com/kandu/mew_vi";
     license = lib.licenses.mit;
-    description = "Modal Editing Witch, VI interpreter";
     maintainers = [ lib.maintainers.vbgl ];
   };
 

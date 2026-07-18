@@ -1,11 +1,10 @@
 {
   appimageTools,
   makeWrapper,
-
-  pname,
-  version,
   meta,
+  pname,
   src,
+  version,
 }:
 
 let
@@ -25,11 +24,6 @@ appimageTools.wrapType2 {
     makeWrapper
   ];
 
-  extraPkgs = pkgs: [
-    pkgs.vulkan-headers
-    pkgs.vulkan-loader
-  ];
-
   extraInstallCommands = ''
     install -D ${appimageContents}/upscayl.desktop -t $out/share/applications
     install -D ${appimageContents}/upscayl.png -t $out/share/icons/hicolor/512x512/apps
@@ -40,5 +34,10 @@ appimageTools.wrapType2 {
     wrapProgram $out/bin/upscayl \
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
+
+  extraPkgs = pkgs: [
+    pkgs.vulkan-headers
+    pkgs.vulkan-loader
+  ];
 
 }

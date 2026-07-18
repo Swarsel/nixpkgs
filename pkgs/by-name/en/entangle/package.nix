@@ -2,41 +2,41 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  itstool,
-  libxml2,
-  meson,
-  ninja,
-  perl,
-  python3,
-  pkg-config,
-  wrapGAppsHook3,
   at-spi2-core,
   dbus,
   elfutils,
-  libepoxy,
+  fetchpatch,
   gexiv2,
   glib,
   gobject-introspection,
   gst_all_1,
   gtk3,
+  itstool,
   lcms2,
+  lerc,
   libdatrie,
+  libepoxy,
   libgphoto2,
   libgudev,
   libpeas,
   libraw,
   libselinux,
   libsepol,
-  lerc,
   libthai,
   libunwind,
+  libxdmcp,
   libxkbcommon,
+  libxml2,
+  libxtst,
+  meson,
+  ninja,
   orc,
+  perl,
+  pkg-config,
+  python3,
   udev,
   util-linux,
-  libxtst,
-  libxdmcp,
+  wrapGAppsHook3,
   zstd,
 }:
 
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix build with meson 0.61, can be removed on next update
     # https://gitlab.com/entangle/entangle/-/issues/67
     (fetchpatch {
-      url = "https://gitlab.com/entangle/entangle/-/commit/54795d275a93e94331a614c8712740fcedbdd4f0.patch";
       sha256 = "iEgqGjKa0xwSdctwvNdEV361l9nx+bz53xn3fuDgtzY=";
+      url = "https://gitlab.com/entangle/entangle/-/commit/54795d275a93e94331a614c8712740fcedbdd4f0.patch";
     })
 
     # Fix implicit dependency
@@ -68,6 +68,16 @@ stdenv.mkDerivation (finalAttrs: {
     # https://gitlab.com/entangle/entangle/-/merge_requests/61
     ./0001-build-Add-missing-gio-unix-2.0-dependency.patch
   ];
+
+  # Disable building of doc/reference since it requires network connection to render XML to HTML
+  # Patch build script shebangs
+  postPatch = ''
+    sed -i "/subdir('reference')/d" "docs/meson.build"
+    patchShebangs --build build-aux meson_post_install.py
+    sed -i meson_post_install.py \
+      -e "/print('Update icon cache...')/d" \
+      -e "/gtk-update-icon-cache/d"
+  '';
 
   nativeBuildInputs = [
     itstool
@@ -112,18 +122,9 @@ stdenv.mkDerivation (finalAttrs: {
     libxtst
   ];
 
-  # Disable building of doc/reference since it requires network connection to render XML to HTML
-  # Patch build script shebangs
-  postPatch = ''
-    sed -i "/subdir('reference')/d" "docs/meson.build"
-    patchShebangs --build build-aux meson_post_install.py
-    sed -i meson_post_install.py \
-      -e "/print('Update icon cache...')/d" \
-      -e "/gtk-update-icon-cache/d"
-  '';
-
   meta = {
     description = "Tethered camera control and capture";
+
     longDescription = ''
       Entangle uses GTK and libgphoto2 to provide a graphical interface
       for tethered photography with digital cameras.
@@ -131,10 +132,11 @@ stdenv.mkDerivation (finalAttrs: {
       and 'hands off' shooting directly from the controlling computer.
       This app can also serve as a camera app for mobile devices.
     '';
+
     homepage = "https://gitlab.com/entangle/entangle";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ShamrockLee ];
+    platforms = lib.platforms.all;
     mainProgram = "entangle";
   };
 })

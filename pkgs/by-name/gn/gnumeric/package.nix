@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  pkg-config,
+  fetchFromGitLab,
+  adwaita-icon-theme,
+  autoreconfHook,
+  bison,
+  gettext,
+  glib,
+  gnome,
+  goffice,
+  gtk-doc,
+  gtk3,
   intltool,
+  itstool,
   libxml2,
   perlPackages,
-  goffice,
-  gnome,
-  adwaita-icon-theme,
-  wrapGAppsHook3,
-  glib,
-  gtk3,
-  bison,
+  pkg-config,
   python3Packages,
-  itstool,
-  autoreconfHook,
-  gtk-doc,
-  fetchFromGitLab,
-  gettext,
+  wrapGAppsHook3,
   yelp-tools,
 }:
 
@@ -29,23 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.12.61";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "gnumeric";
     tag = "GNUMERIC_${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}";
     hash = "sha256-SrAFYLCYacTobOmb+Jk4f4OWVLcWS8aq8OBFrdwYcbE=";
+    domain = "gitlab.gnome.org";
   };
 
   postPatch = ''
     substituteInPlace configure.ac \
       --replace-fail 'GLIB_COMPILE_RESOURCES=' 'GLIB_COMPILE_RESOURCES="glib-compile-resources"#'
   '';
-
-  preConfigure = ''
-    ./autogen.sh
-  '';
-
-  configureFlags = [ "--disable-component" ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -76,6 +70,12 @@ stdenv.mkDerivation (finalAttrs: {
     XMLParser
   ]);
 
+  configureFlags = [ "--disable-component" ];
+
+  preConfigure = ''
+    ./autogen.sh
+  '';
+
   enableParallelBuilding = true;
 
   passthru = {
@@ -86,11 +86,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://gitlab.gnome.org/GNOME/gnumeric/-/blob/${finalAttrs.src.tag}/NEWS";
     description = "GNOME Office Spreadsheet";
-    license = lib.licenses.gpl2Plus;
     homepage = "http://projects.gnome.org/gnumeric/";
-    platforms = lib.platforms.unix;
+    changelog = "https://gitlab.gnome.org/GNOME/gnumeric/-/blob/${finalAttrs.src.tag}/NEWS";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.vcunat ];
+    platforms = lib.platforms.unix;
   };
 })

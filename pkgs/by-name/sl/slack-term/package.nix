@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -14,6 +14,7 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "1fbq7bdhy70hlkklppimgdjamnk0v059pg73xm9ax1f4616ki1m6";
   };
+
   vendorHash = null;
 
   meta = {

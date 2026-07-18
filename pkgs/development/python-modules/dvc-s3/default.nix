@@ -7,23 +7,22 @@
   flatten-dict,
   funcy,
   s3fs,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dvc-s3";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "dvc_s3";
     inherit (finalAttrs) version;
     hash = "sha256-8dcYpE3O5Rkb60bkSt9LsiiCy46czdjyZAB4q8VkV9Q=";
+    pname = "dvc_s3";
   };
 
-  # Prevent circular dependency
-  pythonRemoveDeps = [ "dvc" ];
+  # Network access is needed for tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -38,14 +37,14 @@ buildPythonPackage (finalAttrs: {
     s3fs
   ];
 
-  # Network access is needed for tests
-  doCheck = false;
+  pyproject = true;
+  # Prevent circular dependency
+  pythonRemoveDeps = [ "dvc" ];
 
   # Circular dependency
   # pythonImportsCheck = [
   #   "dvc_s3"
   # ];
-
   meta = {
     description = "S3 plugin for dvc";
     homepage = "https://pypi.org/project/dvc-s3";

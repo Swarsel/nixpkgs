@@ -1,14 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
-  autoPatchelfHook,
-  makeDesktopItem,
-  makeWrapper,
-  copyDesktopItems,
   alsa-lib,
   at-spi2-core,
+  autoPatchelfHook,
+  copyDesktopItems,
+  dpkg,
   gtk3,
   libGL,
   libappindicator,
@@ -16,6 +14,8 @@
   libgbm,
   libnotify,
   libxcb,
+  makeDesktopItem,
+  makeWrapper,
   nss,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -62,33 +62,35 @@ stdenv.mkDerivation (finalAttrs: {
 
   preFixup = "patchelf --add-needed libGL.so.1 --add-needed libEGL.so.1 $out/opt/Foxglove/foxglove-studio";
 
-  passthru.updateScript = ./update.sh;
-
   desktopItems = [
     (makeDesktopItem {
-      name = "foxglove-studio";
-      desktopName = "Foxglove Studio";
+      categories = [ "Development" ];
       comment = "Integrated robotics visualization and debugging";
+      desktopName = "Foxglove Studio";
       exec = "foxglove-studio %U";
       icon = "foxglove-studio";
-      categories = [ "Development" ];
+
       mimeTypes = [
         "application/octet-stream"
         "application/zip"
         "x-scheme-handler/foxglove"
       ];
+
+      name = "foxglove-studio";
     })
   ];
 
+  passthru.updateScript = ./update.sh;
+
   meta = {
-    changelog = "https://docs.foxglove.dev/changelog/foxglove/v${finalAttrs.version}";
     description = "Visualization and observability platform for robotics";
-    downloadPage = "https://foxglove.dev/download";
     homepage = "https://foxglove.dev/";
+    changelog = "https://docs.foxglove.dev/changelog/foxglove/v${finalAttrs.version}";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ sascha8a ];
     platforms = [ "x86_64-linux" ];
+    downloadPage = "https://foxglove.dev/download";
     hydraPlatforms = [ ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

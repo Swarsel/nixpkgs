@@ -1,27 +1,30 @@
 {
-  stdenvNoCC,
-  makeWrapper,
   lib,
   fetchFromGitHub,
   bash,
+  coreutils,
+  makeWrapper,
   nix,
   nixos-install,
-  coreutils,
-  xcp,
+  stdenvNoCC,
   testers,
+  xcp,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "disko";
   version = "1.13.0";
+
   src = fetchFromGitHub {
     owner = "nix-community";
     repo = "disko";
     rev = "v${finalAttrs.version}";
     hash = "sha256-CNzzBsRhq7gg4BMBuTDObiWDH/rFYHEuDRVOwCcwXw4=";
   };
+
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ bash ];
+
   installPhase = ''
     runHook preInstall
     mkdir -p $out/bin $out/share/disko
@@ -50,7 +53,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     done
     runHook postInstall
   '';
+
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/disko --help
@@ -63,16 +68,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
-    homepage = "https://github.com/nix-community/disko";
     description = "Declarative disk partitioning and formatting using nix";
+    homepage = "https://github.com/nix-community/disko";
     license = lib.licenses.mit;
-    mainProgram = "disko";
+
     maintainers = with lib.maintainers; [
       mic92
       lassulus
       iFreilicht
       Enzime
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "disko";
   };
 })

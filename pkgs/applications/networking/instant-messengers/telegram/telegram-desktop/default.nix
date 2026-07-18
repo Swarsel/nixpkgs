@@ -1,25 +1,24 @@
 {
-  callPackage,
   lib,
   stdenv,
-  pname ? "telegram-desktop",
-  unwrapped ? callPackage ./unwrapped.nix { inherit stdenv; },
+  callPackage,
+  geoclue2,
+  glib-networking,
+  kimageformats,
   qtbase,
   qtimageformats,
   qtsvg,
   qtwayland,
-  kimageformats,
+  webkitgtk_4_1,
   wrapGAppsHook3,
   wrapQtAppsHook,
-  geoclue2,
-  glib-networking,
-  webkitgtk_4_1,
+  pname ? "telegram-desktop",
+  unwrapped ? callPackage ./unwrapped.nix { inherit stdenv; },
   withWebkit ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
   inherit pname;
   inherit (finalAttrs.unwrapped) version meta passthru;
-
   inherit unwrapped;
 
   nativeBuildInputs = [
@@ -42,20 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     glib-networking
   ];
 
-  qtWrapperArgs = lib.optionals (stdenv.hostPlatform.isLinux && withWebkit) [
-    "--prefix"
-    "LD_LIBRARY_PATH"
-    ":"
-    (lib.makeLibraryPath [
-      geoclue2
-      webkitgtk_4_1
-    ])
-  ];
-
-  dontUnpack = true;
-  dontWrapGApps = true;
-  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
-
   installPhase = ''
     runHook preInstall
     cp -r "$unwrapped" "$out"
@@ -74,4 +59,18 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace $out/share/dbus-1/services/* \
         --replace-fail "$unwrapped" "$out"
     '';
+
+  dontUnpack = true;
+  dontWrapGApps = true;
+  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
+
+  qtWrapperArgs = lib.optionals (stdenv.hostPlatform.isLinux && withWebkit) [
+    "--prefix"
+    "LD_LIBRARY_PATH"
+    ":"
+    (lib.makeLibraryPath [
+      geoclue2
+      webkitgtk_4_1
+    ])
+  ];
 })

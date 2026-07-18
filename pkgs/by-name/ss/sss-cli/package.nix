@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,13 +15,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-9Wht+t48SsWpj1z2yY6P7G+h9StmuqfMdODtyPffhak=";
   };
 
+  cargoHash = "sha256-yutjlaqLf8R8KmdeKF+CHz/s/b6T+GB9bOl2liMBmMQ=";
   cargoPatches = [ ./fix-cargo-lock.patch ];
 
-  cargoHash = "sha256-yutjlaqLf8R8KmdeKF+CHz/s/b6T+GB9bOl2liMBmMQ=";
-
   meta = {
-    homepage = "https://github.com/dsprenkels/sss-cli";
     description = "Command line program for secret-sharing strings";
+    homepage = "https://github.com/dsprenkels/sss-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ laalsaas ];
   };

@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  kmod,
   meson,
-  pkg-config,
   ninja,
-  perl,
-  util-linux,
+  nixosTests,
   open-isns,
   openssl,
-  kmod,
-  systemd,
+  perl,
+  pkg-config,
   runtimeShell,
-  nixosTests,
+  systemd,
   udevCheckHook,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     udevCheckHook
   ];
+
   buildInputs = [
     kmod
     open-isns
@@ -42,16 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     util-linux
   ];
 
-  preConfigure = ''
-    patchShebangs .
-  '';
-
-  prePatch = ''
-    substituteInPlace etc/systemd/iscsi-init.service.template \
-      --replace /usr/bin/sh ${runtimeShell}
-    sed -i '/install_dir: db_root/d' meson.build
-  '';
-
   mesonFlags = [
     "-Discsi_sbindir=${placeholder "out"}/sbin"
     "-Drulesdir=${placeholder "out"}/etc/udev/rules.d"
@@ -59,18 +50,30 @@ stdenv.mkDerivation (finalAttrs: {
     "-Ddbroot=/etc/iscsi"
   ];
 
+  preConfigure = ''
+    patchShebangs .
+  '';
+
   doInstallCheck = true;
+
+  prePatch = ''
+    substituteInPlace etc/systemd/iscsi-init.service.template \
+      --replace /usr/bin/sh ${runtimeShell}
+    sed -i '/install_dir: db_root/d' meson.build
+  '';
 
   passthru.tests = { inherit (nixosTests) iscsi-root; };
 
   meta = {
     description = "High performance, transport independent, multi-platform implementation of RFC3720";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://www.open-iscsi.com";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       cleverca22
       zaninime
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

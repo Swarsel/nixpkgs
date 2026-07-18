@@ -1,7 +1,7 @@
 {
-  curl,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  curl,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -17,15 +17,15 @@ postgresqlBuildExtension (finalAttrs: {
     hash = "sha256-vTOLAv0TYks8ubQa/y7+XjaIZuHEfh2wi2I38UNJ7NM=";
   };
 
-  buildInputs = [ curl ];
   nativeBuildInputs = [ curl ];
+  buildInputs = [ curl ];
 
   meta = {
     description = "HTTP client for PostgreSQL, retrieve a web page from inside the database";
     homepage = "https://github.com/pramsey/pgsql-http";
     changelog = "https://github.com/pramsey/pgsql-http/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.mit;
   };
 })

@@ -128,6 +128,7 @@ let
       # Respect overrides that already exist in the passed package and
       # concat it with values passed via the module.
       extraComponents = oldArgs.extraComponents or [ ] ++ extraComponents;
+
       extraPackages =
         ps:
         (oldArgs.extraPackages or (_: [ ]) ps)
@@ -145,8 +146,8 @@ let
   # Create parts of the lovelace config that reference lovelace modules as resources
   customLovelaceModulesResources = {
     lovelace.resources = map (card: {
-      url = "/local/nixos-lovelace-modules/${card.entrypoint or (card.pname + ".js")}?${card.version}";
       type = "module";
+      url = "/local/nixos-lovelace-modules/${card.entrypoint or (card.pname + ".js")}?${card.version}";
     }) cfg.customLovelaceModules;
   };
 
@@ -302,33 +303,368 @@ in
     )
   ];
 
-  meta = {
-    buildDocsInSandbox = false;
-    teams = [ lib.teams.home-assistant ];
-  };
-
   options.services.home-assistant = {
+    config = mkOption {
+      description = ''
+        Your {file}`configuration.yaml` as a Nix attribute set.
+
+        YAML functions like [secrets](https://www.home-assistant.io/docs/configuration/secrets/)
+        can be passed as a string and will be unquoted automatically.
+
+        Unless this option is explicitly set to `null`
+        we assume your {file}`configuration.yaml` is
+        managed through this module and thereby overwritten on startup.
+      '';
+
+      example = literalExpression ''
+        {
+          homeassistant = {
+            name = "Home";
+            latitude = "!secret latitude";
+            longitude = "!secret longitude";
+            elevation = "!secret elevation";
+            unit_system = "metric";
+            time_zone = "UTC";
+          };
+          frontend = {
+            themes = "!include_dir_merge_named themes";
+          };
+          http = {};
+          feedreader.urls = [ "https://nixos.org/blogs.xml" ];
+        }
+      '';
+
+      type = types.nullOr (
+        types.submodule {
+          options = {
+            # This is a partial selection of the most common options, so new users can quickly
+            # pick up how to match home-assistants config structure to ours. It also lets us preset
+            # config values intelligently.
+
+            homeassistant = {
+              latitude = mkOption {
+                default = null;
+
+                description = ''
+                  Latitude of your location required to calculate the time the sun rises and sets.
+                '';
+
+                example = 52.3;
+                type = types.nullOr (types.either types.float types.str);
+              };
+
+              longitude = mkOption {
+                default = null;
+
+                description = ''
+                  Longitude of your location required to calculate the time the sun rises and sets.
+                '';
+
+                example = 4.9;
+                type = types.nullOr (types.either types.float types.str);
+              };
+
+              # https://www.home-assistant.io/docs/configuration/basic/
+              name = mkOption {
+                default = null;
+
+                description = ''
+                  Name of the location where Home Assistant is running.
+                '';
+
+                example = "Home";
+                type = types.nullOr types.str;
+              };
+
+              temperature_unit = mkOption {
+                default = null;
+
+                description = ''
+                  Override temperature unit set by unit_system. `C` for Celsius, `F` for Fahrenheit.
+                '';
+
+                example = "C";
+
+                type = types.nullOr (
+                  types.enum [
+                    "C"
+                    "F"
+                  ]
+                );
+              };
+
+              time_zone = mkOption {
+                default = config.time.timeZone or null;
+
+                defaultText = literalExpression ''
+                  config.time.timeZone or null
+                '';
+
+                description = ''
+                  Pick your time zone from the column TZ of Wikipedia’s [list of tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+                '';
+
+                example = "Europe/Amsterdam";
+                type = types.nullOr types.str;
+              };
+
+              unit_system = mkOption {
+                default = null;
+
+                description = ''
+                  The unit system to use. This also sets temperature_unit, Celsius for Metric and Fahrenheit for US Customary.
+                '';
+
+                example = "metric";
+
+                type = types.nullOr (
+                  types.enum [
+                    "metric"
+                    "us_customary"
+                  ]
+                );
+              };
+            };
+
+            http = {
+              # https://www.home-assistant.io/integrations/http/
+              server_host = mkOption {
+                default = [
+                  "0.0.0.0"
+                  "::"
+                ];
+
+                description = ''
+                  Only listen to incoming requests on specific IP/host. The default listed assumes support for IPv4 and IPv6.
+                '';
+
+                example = "::1";
+                type = types.either types.str (types.listOf types.str);
+              };
+
+              server_port = mkOption {
+                default = 8123;
+
+                description = ''
+                  The port on which to listen.
+                '';
+
+                type = types.port;
+              };
+            };
+
+            lovelace = {
+              # https://www.home-assistant.io/lovelace/dashboards/
+              dashboards.nixos-lovelace = mkOption {
+                default =
+                  if cfg.lovelaceConfig != null || cfg.lovelaceConfigFile != null then
+                    {
+                      filename = "ui-lovelace.yaml";
+                      icon = "mdi:view-dashboard";
+                      mode = "yaml";
+                      show_in_sidebar = true;
+                      title = "Overview";
+                    }
+                  else
+                    null;
+
+                defaultText = literalExpression ''
+                  if cfg.lovelaceConfig != null || cfg.lovelaceConfigFile != null then {
+                    mode = "yaml";
+                    filename = "ui-lovelace.yaml";
+                    title = "Overview";
+                    icon = "mdi:view-dashboard";
+                    show_in_sidebar = true;
+                  } else null
+                '';
+
+                description = ''
+                  Default NixOS-managed Lovelace dashboard. Automatically populated
+                  when {option}`lovelaceConfig` or {option}`lovelaceConfigFile` is set.
+
+                  Additional dashboards can be defined under
+                  `config.lovelace.dashboards.<name>`.
+
+                  See <https://www.home-assistant.io/lovelace/dashboards/> for details.
+                '';
+
+                type = types.nullOr format.type;
+              };
+
+              resource_mode = mkOption {
+                default = if cfg.customLovelaceModules != [ ] then "yaml" else null;
+
+                defaultText = literalExpression ''
+                  if cfg.customLovelaceModules != [ ] then "yaml" else null
+                '';
+
+                description = ''
+                  Set to `"yaml"` to load Lovelace resources from YAML configuration,
+                  or `"storage"` to manage them through the UI. See
+                  <https://www.home-assistant.io/dashboards/dashboards/#resource_mode>.
+
+                  Automatically set to `"yaml"` when {option}`customLovelaceModules`
+                  is non-empty.
+                '';
+
+                type = types.nullOr (
+                  types.enum [
+                    "yaml"
+                    "storage"
+                  ]
+                );
+              };
+            };
+          };
+
+          freeformType = format.type;
+        }
+      );
+    };
+
     # Running home-assistant on NixOS is considered an installation method that is unsupported by the upstream project.
     # https://github.com/home-assistant/architecture/blob/master/adr/0012-define-supported-installation-method.md#decision
     enable = mkEnableOption "Home Assistant. Please note that this installation method is unsupported upstream";
 
-    extraArgs = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "--debug" ];
-      description = ''
-        Extra arguments to pass to the hass executable.
+    package = mkOption {
+      default = pkgs.home-assistant.overrideAttrs (oldAttrs: {
+        doInstallCheck = false;
+      });
+
+      defaultText = literalExpression ''
+        pkgs.home-assistant.overrideAttrs (oldAttrs: {
+          doInstallCheck = false;
+        })
       '';
+
+      description = ''
+        The Home Assistant package to use.
+      '';
+
+      example = literalExpression ''
+        pkgs.home-assistant.override {
+          extraPackages = python3Packages: with python3Packages; [
+            psycopg2
+          ];
+          extraComponents = [
+            "default_config"
+            "esphome"
+            "met"
+          ];
+        }
+      '';
+
+      type = types.package;
     };
+
+    blueprints = mergeAttrsList (
+      map
+        (domain: {
+          ${domain} = mkOption {
+            default = [ ];
+
+            description = ''
+              List of ${domain}
+              [blueprints](https://www.home-assistant.io/docs/blueprint/) to
+              install into {file}`''${config.services.home-assistant.configDir}/blueprints/${domain}`.
+            '';
+
+            example =
+              if domain == "automation" then
+                literalExpression ''
+                  [
+                    (pkgs.fetchurl {
+                      url = "https://github.com/home-assistant/core/raw/2025.1.4/homeassistant/components/automation/blueprints/motion_light.yaml";
+                      hash = "sha256-4HrDX65ycBMfEY2nZ7A25/d3ZnIHdpHZ+80Cblp+P5w=";
+                    })
+                  ]
+                ''
+              else if domain == "template" then
+                literalExpression "[ \"\${pkgs.home-assistant.src}/homeassistant/components/template/blueprints/inverted_binary_sensor.yaml\" ]"
+              else
+                literalExpression "[ ./blueprint.yaml ]";
+
+            type = types.listOf (types.coercedTo types.path (x: "${x}") types.pathInStore);
+          };
+        })
+        # https://www.home-assistant.io/docs/blueprint/schema/#domain
+        [
+          "automation"
+          "script"
+          "template"
+        ]
+    );
 
     configDir = mkOption {
       default = "/var/lib/hass";
-      type = types.path;
       description = "The config directory, where your {file}`configuration.yaml` is located.";
+      type = types.path;
+    };
+
+    configWritable = mkOption {
+      default = false;
+
+      description = ''
+        Whether to make {file}`configuration.yaml` writable.
+
+        This will allow you to edit it from Home Assistant's web interface.
+
+        This only has an effect if {option}`config` is set.
+        However, bear in mind that it will be overwritten at every start of the service.
+      '';
+
+      type = types.bool;
+    };
+
+    customComponents = mkOption {
+      default = [ ];
+
+      description = ''
+        List of custom component packages to install.
+
+        Available components can be found below `pkgs.home-assistant-custom-components`.
+      '';
+
+      example = literalExpression ''
+        with pkgs.home-assistant-custom-components; [
+          prometheus_sensor
+        ];
+      '';
+
+      type = types.listOf (
+        types.addCheck types.package (p: p.isHomeAssistantComponent or false)
+        // {
+          description = "package that is a Home Assistant component";
+          name = "home-assistant-component";
+        }
+      );
+    };
+
+    customLovelaceModules = mkOption {
+      default = [ ];
+
+      description = ''
+        List of custom lovelace card packages to load as lovelace resources.
+
+        Available cards can be found below `pkgs.home-assistant-custom-lovelace-modules`.
+
+        ::: {.note}
+        When non-empty, `lovelace.resource_mode` is automatically set to `"yaml"`
+        so that resources are loaded from the YAML configuration.
+        :::
+      '';
+
+      example = literalExpression ''
+        with pkgs.home-assistant-custom-lovelace-modules; [
+          mini-graph-card
+          mini-media-player
+        ];
+      '';
+
+      type = types.listOf types.package;
     };
 
     defaultIntegrations = mkOption {
-      type = types.listOf (types.enum availableComponents);
       # https://github.com/home-assistant/core/blob/dev/homeassistant/bootstrap.py#L109
       default = [
         "application_credentials"
@@ -360,14 +696,27 @@ in
         # non-supervisor
         "backup"
       ];
-      readOnly = true;
+
       description = ''
         List of integrations set are always set up, unless in recovery mode.
       '';
+
+      readOnly = true;
+      type = types.listOf (types.enum availableComponents);
+    };
+
+    extraArgs = mkOption {
+      default = [ ];
+
+      description = ''
+        Extra arguments to pass to the hass executable.
+      '';
+
+      example = [ "--debug" ];
+      type = types.listOf types.str;
     };
 
     extraComponents = mkOption {
-      type = types.listOf (types.enum availableComponents);
       default = [
         # List of components required to complete the onboarding
         "default_config"
@@ -379,6 +728,13 @@ in
         # relevant components
         "rpi_power"
       ];
+
+      description = ''
+        List of [components](https://www.home-assistant.io/integrations/) that have their dependencies included in the package.
+
+        The component name can be found in the URL, for example `https://www.home-assistant.io/integrations/ffmpeg/` would map to `ffmpeg`.
+      '';
+
       example = literalExpression ''
         [
           "analytics"
@@ -389,308 +745,56 @@ in
           "wled"
         ]
       '';
-      description = ''
-        List of [components](https://www.home-assistant.io/integrations/) that have their dependencies included in the package.
 
-        The component name can be found in the URL, for example `https://www.home-assistant.io/integrations/ffmpeg/` would map to `ffmpeg`.
-      '';
+      type = types.listOf (types.enum availableComponents);
     };
 
     extraPackages = mkOption {
-      type = types.functionTo (types.listOf types.package);
       default = _: [ ];
+
       defaultText = literalExpression ''
         python3Packages: with python3Packages; [];
       '';
-      example = literalExpression ''
-        python3Packages: with python3Packages; [
-          # postgresql support
-          psycopg2
-        ];
-      '';
+
       description = ''
         List of packages to add to propagatedBuildInputs.
 
         A popular example is `python3Packages.psycopg2`
         for PostgreSQL support in the recorder component.
       '';
-    };
 
-    customComponents = mkOption {
-      type = types.listOf (
-        types.addCheck types.package (p: p.isHomeAssistantComponent or false)
-        // {
-          name = "home-assistant-component";
-          description = "package that is a Home Assistant component";
-        }
-      );
-      default = [ ];
       example = literalExpression ''
-        with pkgs.home-assistant-custom-components; [
-          prometheus_sensor
+        python3Packages: with python3Packages; [
+          # postgresql support
+          psycopg2
         ];
       '';
-      description = ''
-        List of custom component packages to install.
 
-        Available components can be found below `pkgs.home-assistant-custom-components`.
-      '';
+      type = types.functionTo (types.listOf types.package);
     };
 
-    customLovelaceModules = mkOption {
-      type = types.listOf types.package;
-      default = [ ];
-      example = literalExpression ''
-        with pkgs.home-assistant-custom-lovelace-modules; [
-          mini-graph-card
-          mini-media-player
-        ];
-      '';
+    finalPackage = mkOption {
+      default = package;
+
       description = ''
-        List of custom lovelace card packages to load as lovelace resources.
-
-        Available cards can be found below `pkgs.home-assistant-custom-lovelace-modules`.
-
-        ::: {.note}
-        When non-empty, `lovelace.resource_mode` is automatically set to `"yaml"`
-        so that resources are loaded from the YAML configuration.
-        :::
+        The final Home Assistant package which is being used in the service.
       '';
-    };
 
-    themes = mkOption {
-      type = types.listOf (
-        types.addCheck types.package (p: p.isHomeAssistantTheme or false)
-        // {
-          name = "home-assistant-theme";
-          description = "package that is a Home Assistant theme";
-        }
-      );
-      default = [ ];
-      example = literalExpression ''
-        with pkgs.home-assistant-themes; [
-          material-you-theme
-        ];
-      '';
-      description = ''
-        List of themes to load.
-
-        Available themes can be found below `pkgs.home-assistant-themes`.
-
-        ::: {.note}
-        When `themes` is set, the module takes authoritative control
-        over the `frontend.themes` setting in
-        {option}`services.home-assistant.config`.
-        :::
-      '';
-    };
-
-    config = mkOption {
-      type = types.nullOr (
-        types.submodule {
-          freeformType = format.type;
-          options = {
-            # This is a partial selection of the most common options, so new users can quickly
-            # pick up how to match home-assistants config structure to ours. It also lets us preset
-            # config values intelligently.
-
-            homeassistant = {
-              # https://www.home-assistant.io/docs/configuration/basic/
-              name = mkOption {
-                type = types.nullOr types.str;
-                default = null;
-                example = "Home";
-                description = ''
-                  Name of the location where Home Assistant is running.
-                '';
-              };
-
-              latitude = mkOption {
-                type = types.nullOr (types.either types.float types.str);
-                default = null;
-                example = 52.3;
-                description = ''
-                  Latitude of your location required to calculate the time the sun rises and sets.
-                '';
-              };
-
-              longitude = mkOption {
-                type = types.nullOr (types.either types.float types.str);
-                default = null;
-                example = 4.9;
-                description = ''
-                  Longitude of your location required to calculate the time the sun rises and sets.
-                '';
-              };
-
-              unit_system = mkOption {
-                type = types.nullOr (
-                  types.enum [
-                    "metric"
-                    "us_customary"
-                  ]
-                );
-                default = null;
-                example = "metric";
-                description = ''
-                  The unit system to use. This also sets temperature_unit, Celsius for Metric and Fahrenheit for US Customary.
-                '';
-              };
-
-              temperature_unit = mkOption {
-                type = types.nullOr (
-                  types.enum [
-                    "C"
-                    "F"
-                  ]
-                );
-                default = null;
-                example = "C";
-                description = ''
-                  Override temperature unit set by unit_system. `C` for Celsius, `F` for Fahrenheit.
-                '';
-              };
-
-              time_zone = mkOption {
-                type = types.nullOr types.str;
-                default = config.time.timeZone or null;
-                defaultText = literalExpression ''
-                  config.time.timeZone or null
-                '';
-                example = "Europe/Amsterdam";
-                description = ''
-                  Pick your time zone from the column TZ of Wikipedia’s [list of tz database time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
-                '';
-              };
-            };
-
-            http = {
-              # https://www.home-assistant.io/integrations/http/
-              server_host = mkOption {
-                type = types.either types.str (types.listOf types.str);
-                default = [
-                  "0.0.0.0"
-                  "::"
-                ];
-                example = "::1";
-                description = ''
-                  Only listen to incoming requests on specific IP/host. The default listed assumes support for IPv4 and IPv6.
-                '';
-              };
-
-              server_port = mkOption {
-                default = 8123;
-                type = types.port;
-                description = ''
-                  The port on which to listen.
-                '';
-              };
-            };
-
-            lovelace = {
-              # https://www.home-assistant.io/lovelace/dashboards/
-              dashboards.nixos-lovelace = mkOption {
-                type = types.nullOr format.type;
-                default =
-                  if cfg.lovelaceConfig != null || cfg.lovelaceConfigFile != null then
-                    {
-                      mode = "yaml";
-                      filename = "ui-lovelace.yaml";
-                      title = "Overview";
-                      icon = "mdi:view-dashboard";
-                      show_in_sidebar = true;
-                    }
-                  else
-                    null;
-                defaultText = literalExpression ''
-                  if cfg.lovelaceConfig != null || cfg.lovelaceConfigFile != null then {
-                    mode = "yaml";
-                    filename = "ui-lovelace.yaml";
-                    title = "Overview";
-                    icon = "mdi:view-dashboard";
-                    show_in_sidebar = true;
-                  } else null
-                '';
-                description = ''
-                  Default NixOS-managed Lovelace dashboard. Automatically populated
-                  when {option}`lovelaceConfig` or {option}`lovelaceConfigFile` is set.
-
-                  Additional dashboards can be defined under
-                  `config.lovelace.dashboards.<name>`.
-
-                  See <https://www.home-assistant.io/lovelace/dashboards/> for details.
-                '';
-              };
-
-              resource_mode = mkOption {
-                type = types.nullOr (
-                  types.enum [
-                    "yaml"
-                    "storage"
-                  ]
-                );
-                default = if cfg.customLovelaceModules != [ ] then "yaml" else null;
-                defaultText = literalExpression ''
-                  if cfg.customLovelaceModules != [ ] then "yaml" else null
-                '';
-                description = ''
-                  Set to `"yaml"` to load Lovelace resources from YAML configuration,
-                  or `"storage"` to manage them through the UI. See
-                  <https://www.home-assistant.io/dashboards/dashboards/#resource_mode>.
-
-                  Automatically set to `"yaml"` when {option}`customLovelaceModules`
-                  is non-empty.
-                '';
-              };
-            };
-          };
-        }
-      );
-      example = literalExpression ''
-        {
-          homeassistant = {
-            name = "Home";
-            latitude = "!secret latitude";
-            longitude = "!secret longitude";
-            elevation = "!secret elevation";
-            unit_system = "metric";
-            time_zone = "UTC";
-          };
-          frontend = {
-            themes = "!include_dir_merge_named themes";
-          };
-          http = {};
-          feedreader.urls = [ "https://nixos.org/blogs.xml" ];
-        }
-      '';
-      description = ''
-        Your {file}`configuration.yaml` as a Nix attribute set.
-
-        YAML functions like [secrets](https://www.home-assistant.io/docs/configuration/secrets/)
-        can be passed as a string and will be unquoted automatically.
-
-        Unless this option is explicitly set to `null`
-        we assume your {file}`configuration.yaml` is
-        managed through this module and thereby overwritten on startup.
-      '';
-    };
-
-    configWritable = mkOption {
-      default = false;
-      type = types.bool;
-      description = ''
-        Whether to make {file}`configuration.yaml` writable.
-
-        This will allow you to edit it from Home Assistant's web interface.
-
-        This only has an effect if {option}`config` is set.
-        However, bear in mind that it will be overwritten at every start of the service.
-      '';
+      internal = true;
+      readOnly = true;
+      type = types.package;
     };
 
     lovelaceConfig = mkOption {
       default = null;
-      type = types.nullOr format.type;
+
+      description = ''
+        Your {file}`ui-lovelace.yaml` as a Nix attribute set.
+        Setting this option will automatically configure a Lovelace dashboard in YAML mode.
+
+        Beware that setting this option will delete your previous {file}`ui-lovelace.yaml`
+      '';
+
       # from https://www.home-assistant.io/lovelace/dashboards/
       example = literalExpression ''
         {
@@ -705,27 +809,25 @@ in
           } ];
         }
       '';
-      description = ''
-        Your {file}`ui-lovelace.yaml` as a Nix attribute set.
-        Setting this option will automatically configure a Lovelace dashboard in YAML mode.
 
-        Beware that setting this option will delete your previous {file}`ui-lovelace.yaml`
-      '';
+      type = types.nullOr format.type;
     };
 
     lovelaceConfigFile = mkOption {
       default = null;
-      type = types.nullOr types.path;
-      example = "/path/to/ui-lovelace.yaml";
+
       description = ''
         Your {file}`ui-lovelace.yaml` managed as configuration file.
         Setting this option will automatically configure a Lovelace dashboard in YAML mode.
       '';
+
+      example = "/path/to/ui-lovelace.yaml";
+      type = types.nullOr types.path;
     };
 
     lovelaceConfigWritable = mkOption {
       default = false;
-      type = types.bool;
+
       description = ''
         Whether to make {file}`ui-lovelace.yaml` writable.
 
@@ -734,48 +836,13 @@ in
         This only has an effect if {option}`lovelaceConfig` is set.
         However, bear in mind that it will be overwritten at every start of the service.
       '';
-    };
 
-    package = mkOption {
-      default = pkgs.home-assistant.overrideAttrs (oldAttrs: {
-        doInstallCheck = false;
-      });
-      defaultText = literalExpression ''
-        pkgs.home-assistant.overrideAttrs (oldAttrs: {
-          doInstallCheck = false;
-        })
-      '';
-      type = types.package;
-      example = literalExpression ''
-        pkgs.home-assistant.override {
-          extraPackages = python3Packages: with python3Packages; [
-            psycopg2
-          ];
-          extraComponents = [
-            "default_config"
-            "esphome"
-            "met"
-          ];
-        }
-      '';
-      description = ''
-        The Home Assistant package to use.
-      '';
-    };
-
-    finalPackage = mkOption {
-      default = package;
-      internal = true;
-      readOnly = true;
-      type = types.package;
-      description = ''
-        The final Home Assistant package which is being used in the service.
-      '';
+      type = types.bool;
     };
 
     openFirewall = mkOption {
       default = false;
-      type = types.bool;
+
       description = ''
         Whether to open the firewall for the specified frontend port
 
@@ -783,11 +850,13 @@ in
         For components specific ports see {option}`services.home-assistant.openFirewallForComponents`.
         :::
       '';
+
+      type = types.bool;
     };
 
     openFirewallForComponents = mkOption {
       default = false;
-      type = types.bool;
+
       description = ''
         Whether to open required firewall ports for enabled components.
 
@@ -795,58 +864,42 @@ in
         For the frontend see {option}`services.home-assistant.openFirewall`.
         :::
       '';
+
+      type = types.bool;
     };
 
-    blueprints = mergeAttrsList (
-      map
-        (domain: {
-          ${domain} = mkOption {
-            default = [ ];
-            description = ''
-              List of ${domain}
-              [blueprints](https://www.home-assistant.io/docs/blueprint/) to
-              install into {file}`''${config.services.home-assistant.configDir}/blueprints/${domain}`.
-            '';
-            example =
-              if domain == "automation" then
-                literalExpression ''
-                  [
-                    (pkgs.fetchurl {
-                      url = "https://github.com/home-assistant/core/raw/2025.1.4/homeassistant/components/automation/blueprints/motion_light.yaml";
-                      hash = "sha256-4HrDX65ycBMfEY2nZ7A25/d3ZnIHdpHZ+80Cblp+P5w=";
-                    })
-                  ]
-                ''
-              else if domain == "template" then
-                literalExpression "[ \"\${pkgs.home-assistant.src}/homeassistant/components/template/blueprints/inverted_binary_sensor.yaml\" ]"
-              else
-                literalExpression "[ ./blueprint.yaml ]";
-            type = types.listOf (types.coercedTo types.path (x: "${x}") types.pathInStore);
-          };
-        })
-        # https://www.home-assistant.io/docs/blueprint/schema/#domain
-        [
-          "automation"
-          "script"
-          "template"
-        ]
-    );
+    themes = mkOption {
+      default = [ ];
+
+      description = ''
+        List of themes to load.
+
+        Available themes can be found below `pkgs.home-assistant-themes`.
+
+        ::: {.note}
+        When `themes` is set, the module takes authoritative control
+        over the `frontend.themes` setting in
+        {option}`services.home-assistant.config`.
+        :::
+      '';
+
+      example = literalExpression ''
+        with pkgs.home-assistant-themes; [
+          material-you-theme
+        ];
+      '';
+
+      type = types.listOf (
+        types.addCheck types.package (p: p.isHomeAssistantTheme or false)
+        // {
+          description = "package that is a Home Assistant theme";
+          name = "home-assistant-theme";
+        }
+      );
+    };
   };
 
   config = mkIf cfg.enable {
-    warnings = optionals (cfg.config ? lovelace.mode) [
-      ''
-        services.home-assistant.config.lovelace.mode is deprecated.
-        Home Assistant 2026.8 renames the legacy top-level `lovelace.mode`
-        setting in favour of per-dashboard configuration.
-
-        Use `services.home-assistant.config.lovelace.dashboards` and
-        `services.home-assistant.config.lovelace.resource_mode` instead.
-
-        See https://www.home-assistant.io/dashboards/dashboards/ for details.
-      ''
-    ];
-
     assertions = [
       {
         assertion = cfg.openFirewall -> cfg.config != null;
@@ -860,6 +913,20 @@ in
         assertion = cfg.themes != [ ] -> !(hasAttrByPath [ "frontend" "themes" ] (cfg.config or { }));
         message = "`services.home-assistant.themes` and `services.home-assistant.config.frontend.themes` cannot both be set. When `themes` is non-empty the module sets `frontend.themes` authoritatively.";
       }
+    ];
+
+    # symlink the configuration to /etc/home-assistant
+    environment.etc = mkMerge [
+      (mkIf (cfg.config != null && !cfg.configWritable) {
+        "home-assistant/configuration.yaml".source = configFile;
+      })
+
+      (mkIf
+        ((cfg.lovelaceConfig != null || cfg.lovelaceConfigFile != null) && !cfg.lovelaceConfigWritable)
+        {
+          "home-assistant/ui-lovelace.yaml".source = lovelaceConfigFile;
+        }
+      )
     ];
 
     networking.firewall.allowedTCPPorts = mkMerge [
@@ -877,23 +944,7 @@ in
       optionals (useComponent "homekit") [ 5353 ]
     );
 
-    # symlink the configuration to /etc/home-assistant
-    environment.etc = mkMerge [
-      (mkIf (cfg.config != null && !cfg.configWritable) {
-        "home-assistant/configuration.yaml".source = configFile;
-      })
-
-      (mkIf
-        ((cfg.lovelaceConfig != null || cfg.lovelaceConfigFile != null) && !cfg.lovelaceConfigWritable)
-        {
-          "home-assistant/ui-lovelace.yaml".source = lovelaceConfigFile;
-        }
-      )
-    ];
-
     systemd.services.home-assistant = {
-      description = "Home Assistant";
-      wants = [ "network-online.target" ];
       after = [
         "network-online.target"
 
@@ -901,9 +952,15 @@ in
         "mysql.service"
         "postgresql.target"
       ];
-      reloadTriggers =
-        optionals (cfg.config != null) [ configFile ]
-        ++ optionals (cfg.lovelaceConfig != null || cfg.lovelaceConfigFile != null) [ lovelaceConfigFile ];
+
+      description = "Home Assistant";
+      environment.PYTHONPATH = package.pythonPath;
+
+      path =
+        with pkgs;
+        lib.optionals (useComponent "go2rtc") [ pkgs.go2rtc ]
+        ++ lib.optionals (useComponent "picotts") [ pkgs.picotts ]
+        ++ lib.optionals (any useComponent componentsUsingPing) [ unixtools.ping ];
 
       preStart =
         let
@@ -987,7 +1044,11 @@ in
         + copyCustomComponents
         + removeBlueprints
         + copyBlueprints;
-      environment.PYTHONPATH = package.pythonPath;
+
+      reloadTriggers =
+        optionals (cfg.config != null) [ configFile ]
+        ++ optionals (cfg.lovelaceConfig != null || cfg.lovelaceConfigFile != null) [ lovelaceConfigFile ];
+
       serviceConfig =
         let
           # List of capabilities to equip home-assistant with, depending on configured components
@@ -1021,34 +1082,10 @@ in
           );
         in
         {
-          ExecStart = escapeSystemdExecArgs (
-            [
-              (lib.getExe package)
-              "--config"
-              cfg.configDir
-            ]
-            ++ cfg.extraArgs
-          );
-          ExecReload =
-            (escapeSystemdExecArgs [
-              (lib.getExe' pkgs.coreutils "kill")
-              "-HUP"
-            ])
-            + " $MAINPID";
-          User = "hass";
-          Group = "hass";
-          WorkingDirectory = cfg.configDir;
-          Restart = "on-failure";
-
-          # Signal handling
-          # homeassistant/helpers/signal.py
-          RestartForceExitStatus = "100";
-          SuccessExitStatus = "100";
-          KillSignal = "SIGINT";
-
           # Hardening
           AmbientCapabilities = capabilities;
           CapabilityBoundingSet = capabilities;
+
           DeviceAllow =
             optionals (any useComponent componentsUsingSerialDevices) [
               "char-ttyACM rw"
@@ -1058,12 +1095,33 @@ in
             ++ optionals (any useComponent componentsUsingInputDevices) [
               "char-input rw"
             ];
+
           DevicePolicy = "closed";
+
+          ExecReload =
+            (escapeSystemdExecArgs [
+              (lib.getExe' pkgs.coreutils "kill")
+              "-HUP"
+            ])
+            + " $MAINPID";
+
+          ExecStart = escapeSystemdExecArgs (
+            [
+              (lib.getExe package)
+              "--config"
+              cfg.configDir
+            ]
+            ++ cfg.extraArgs
+          );
+
+          Group = "hass";
+          KillSignal = "SIGINT";
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
           PrivateTmp = true;
           PrivateUsers = false; # prevents gaining capabilities in the host namespace
+          ProcSubset = "all";
           ProtectClock = true;
           ProtectControlGroups = true;
           ProtectHome = true;
@@ -1072,9 +1130,8 @@ in
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
           ProtectProc = "invisible";
-          ProcSubset = "all";
           ProtectSystem = "strict";
-          RemoveIPC = true;
+
           ReadWritePaths =
             let
               # Allow rw access to explicitly configured paths
@@ -1087,6 +1144,13 @@ in
               allowPaths = if isList value then value else singleton value;
             in
             [ "${cfg.configDir}" ] ++ allowPaths;
+
+          RemoveIPC = true;
+          Restart = "on-failure";
+          # Signal handling
+          # homeassistant/helpers/signal.py
+          RestartForceExitStatus = "100";
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
@@ -1099,9 +1163,12 @@ in
           ++ optionals (any useComponent componentsUsingPacketCapture) [
             "AF_PACKET"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
+          SuccessExitStatus = "100";
+
           SupplementaryGroups =
             optionals (any useComponent componentsUsingSerialDevices) [
               "dialout"
@@ -1109,7 +1176,9 @@ in
             ++ optionals (any useComponent componentsUsingInputDevices) [
               "input"
             ];
+
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
@@ -1118,29 +1187,47 @@ in
             "capset"
             "setuid"
           ];
+
           UMask = "0077";
+          User = "hass";
+          WorkingDirectory = cfg.configDir;
         };
-      path =
-        with pkgs;
-        lib.optionals (useComponent "go2rtc") [ pkgs.go2rtc ]
-        ++ lib.optionals (useComponent "picotts") [ pkgs.picotts ]
-        ++ lib.optionals (any useComponent componentsUsingPing) [ unixtools.ping ];
+
+      wants = [ "network-online.target" ];
     };
 
     systemd.targets.home-assistant = rec {
+      after = wants;
       description = "Home Assistant";
       wantedBy = [ "multi-user.target" ];
       wants = [ "home-assistant.service" ];
-      after = wants;
-    };
-
-    users.users.hass = {
-      home = cfg.configDir;
-      createHome = true;
-      group = "hass";
-      uid = config.ids.uids.hass;
     };
 
     users.groups.hass.gid = config.ids.gids.hass;
+
+    users.users.hass = {
+      createHome = true;
+      group = "hass";
+      home = cfg.configDir;
+      uid = config.ids.uids.hass;
+    };
+
+    warnings = optionals (cfg.config ? lovelace.mode) [
+      ''
+        services.home-assistant.config.lovelace.mode is deprecated.
+        Home Assistant 2026.8 renames the legacy top-level `lovelace.mode`
+        setting in favour of per-dashboard configuration.
+
+        Use `services.home-assistant.config.lovelace.dashboards` and
+        `services.home-assistant.config.lovelace.resource_mode` instead.
+
+        See https://www.home-assistant.io/dashboards/dashboards/ for details.
+      ''
+    ];
+  };
+
+  meta = {
+    buildDocsInSandbox = false;
+    teams = [ lib.teams.home-assistant ];
   };
 }

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
   aiohttp,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-mock,
   pytestCheckHook,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "solarman-opendata";
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "solarmanpv";
@@ -22,6 +21,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mLwvAs+RFaHXjOgMaIhKKTU4Dqzdu/pLtAwYc/B6oj4=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -31,13 +37,7 @@ buildPythonPackage (finalAttrs: {
     aiohttp
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "solarman_opendata" ];
 
   meta = {

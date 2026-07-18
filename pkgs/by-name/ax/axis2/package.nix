@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
-  ant,
   fetchurl,
+  ant,
   jdk,
   nixosTests,
+  stdenvNoCC,
   stripJavaArchivesHook,
   unzip,
 }:
@@ -49,9 +49,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Web Services / SOAP / WSDL engine, the successor to the widely used Apache Axis SOAP stack";
     homepage = "https://axis.apache.org/axis2/java/core/";
     changelog = "https://axis.apache.org/axis2/java/core/release-notes/${finalAttrs.version}.html";
+    license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.anthonyroussel ];
     platforms = lib.platforms.unix;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.asl20;
   };
 })

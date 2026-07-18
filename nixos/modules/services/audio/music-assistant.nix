@@ -33,47 +33,52 @@ let
 in
 
 {
-  meta.buildDocsInSandbox = false;
-
   options.services.music-assistant = {
     enable = mkEnableOption "Music Assistant";
-
     package = mkPackageOption pkgs "music-assistant" { };
 
     extraOptions = mkOption {
-      type = listOf str;
       default = [
         "--config"
         "/var/lib/music-assistant"
       ];
+
+      description = ''
+        List of extra options to pass to the music-assistant executable.
+      '';
+
       example = [
         "--log-level"
         "DEBUG"
       ];
-      description = ''
-        List of extra options to pass to the music-assistant executable.
-      '';
+
+      type = listOf str;
     };
 
     openFirewall = lib.mkOption {
-      type = bool;
       default = false;
+
       description = ''
         Whether to open required ports for the configured providers.
         Currently airplay and sendspin need port to be opened to function.
       '';
+
+      type = bool;
     };
 
     providers = mkOption {
-      type = listOf (enum cfg.package.providerNames);
       default = [ ];
+
+      description = ''
+        List of provider names for which dependencies will be installed.
+      '';
+
       example = [
         "opensubsonic"
         "snapcast"
       ];
-      description = ''
-        List of provider names for which dependencies will be installed.
-      '';
+
+      type = listOf (enum cfg.package.providerNames);
     };
   };
 
@@ -91,10 +96,7 @@ in
           9000 # Slimproto JSON-RPC
           9090 # Slimproto CLI
         ];
-      allowedUDPPorts = lib.optionals (lib.elem "squeezelite" cfg.providers) [
-        # https://lyrion.org/reference/slimproto-protocol/
-        3483 # Slimproto discovery
-      ];
+
       # The information published by Apple 1 seem to not apply to libraop.
       # The closest we could find that represents the port range being used as observed by tcpdump is the ephemeral port range.
       # 1: https://support.apple.com/en-us/103229#:~:text=49152%E2%80%93-,65535,-TCP%2C%20UDP
@@ -105,12 +107,18 @@ in
           to = 65535;
         }
       ];
+
+      allowedUDPPorts = lib.optionals (lib.elem "squeezelite" cfg.providers) [
+        # https://lyrion.org/reference/slimproto-protocol/
+        3483 # Slimproto discovery
+      ];
     };
 
     services = {
       avahi = lib.mkIf (lib.elem "airplay_receiver" cfg.providers) {
         enable = true;
         openFirewall = lib.mkIf cfg.openFirewall true;
+
         publish = {
           enable = true;
           userServices = true;
@@ -121,13 +129,9 @@ in
     };
 
     systemd.services.music-assistant = {
+      after = [ "network-online.target" ];
       description = "Music Assistant";
       documentation = [ "https://music-assistant.io" ];
-
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-
-      wantedBy = [ "multi-user.target" ];
 
       environment = {
         HOME = "/var/lib/music-assistant";
@@ -161,24 +165,25 @@ in
         ];
 
       serviceConfig = {
+        AmbientCapabilities = "";
+        # required for torch to properly detect the supported engines
+        # allows Music-Assistant to warn, if x86_64-v2 cpu features are missing
+        BindReadOnlyPaths = [ "/proc/cpuinfo" ];
+        CapabilityBoundingSet = [ "" ];
+        DevicePolicy = "closed";
+        DynamicUser = true;
+
         ExecStart = utils.escapeSystemdExecArgs (
           [
             (lib.getExe cfg.package)
           ]
           ++ cfg.extraOptions
         );
-        DynamicUser = true;
-        StateDirectory = "music-assistant";
-        AmbientCapabilities = "";
-        CapabilityBoundingSet = [ "" ];
-        DevicePolicy = "closed";
+
         LockPersonality = true;
         # breaks pyopenssl's cffi calls, used in remote access feature
         # not compatible with llvmlite which is required by numba -> librosa
         MemoryDenyWriteExecute = false;
-        # required for torch to properly detect the supported engines
-        # allows Music-Assistant to warn, if x86_64-v2 cpu features are missing
-        BindReadOnlyPaths = [ "/proc/cpuinfo" ];
         ProcSubset = "all";
         ProtectClock = true;
         ProtectControlGroups = true;
@@ -188,6 +193,7 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
@@ -196,9 +202,13 @@ in
         ++ lib.optionals (lib.elem "snapcast" cfg.providers) [
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        StateDirectory = "music-assistant";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
@@ -207,9 +217,14 @@ in
         ++ lib.optionals useYTMusic [
           "@pkey"
         ];
-        RestrictSUIDSGID = true;
+
         UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
+
+  meta.buildDocsInSandbox = false;
 }

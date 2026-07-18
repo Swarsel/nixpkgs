@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   buildGoModule,
   installShellFiles,
   nix-update-script,
@@ -18,11 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-vytc/e+e6JE5bwh5hny9C7LWenGctQLUso8GAXgk4j8=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-CswQV9uTnL58TzYaVzx6dc1aZDZQ5b2LWLE1bv+P/2c=";
 
-  subPackages = [ "cmd/mongocli" ];
-
-  nativeBuildInputs = [ installShellFiles ];
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd mongocli \
       --bash <($out/bin/mongocli completion bash) \
@@ -30,6 +28,7 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/mongocli completion zsh)
   '';
 
+  subPackages = [ "cmd/mongocli" ];
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=mongocli/v(.+)" ]; };
 
   meta = {

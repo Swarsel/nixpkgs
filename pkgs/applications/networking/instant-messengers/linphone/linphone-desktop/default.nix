@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitLab,
   bc-ispell,
   bc-soci,
   bctoolbox,
@@ -8,8 +11,6 @@
   boost,
   cmake,
   doxygen,
-  fetchFromGitLab,
-  lib,
   liblinphone,
   lime,
   linphoneSdkVersion,
@@ -19,7 +20,6 @@
   python3,
   python3Packages,
   qt6Packages,
-  stdenv,
   symlinkJoin,
   xercesc,
   zxing-cpp,
@@ -27,6 +27,7 @@
 let
   grammars = symlinkJoin {
     name = "belr-grammars";
+
     paths =
       let
         grammarPackages = [
@@ -43,12 +44,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "6.1.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.linphone.org";
     owner = "public";
-    group = "BC";
     repo = "linphone-desktop";
     tag = finalAttrs.version;
     hash = "sha256-jCnovCFdPJExD0+ZLhU9np1R5uN+mPlSPi/Nb1aOD0U=";
+    domain = "gitlab.linphone.org";
+    group = "BC";
   };
 
   patches = [
@@ -61,6 +62,14 @@ stdenv.mkDerivation (finalAttrs: {
     # file extension is enough to affect the chosen codec (wav makes more
     # sense for audio recordings anyway)
     ./record-in-wav-format.patch
+  ];
+
+  nativeBuildInputs = [
+    cmake
+    qt6Packages.qttools
+    qt6Packages.wrapQtAppsHook
+    python3
+    doxygen
   ];
 
   buildInputs = [
@@ -84,14 +93,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     python3Packages.pystache
     python3Packages.six
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    qt6Packages.qttools
-    qt6Packages.wrapQtAppsHook
-    python3
-    doxygen
   ];
 
   cmakeFlags = [
@@ -162,14 +163,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.linphone.org/";
     description = "Open source SIP phone for voice/video calls and instant messaging";
-    mainProgram = "linphone";
+    homepage = "https://www.linphone.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       jluttine
       naxdy
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "linphone";
   };
 })

@@ -1,22 +1,20 @@
 {
   lib,
-  python3Packages,
-  fetchFromGitea,
   cyclonedx-python,
+  fetchFromGitea,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "sbom-compliance-tool";
   version = "0.0.11";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitea {
-    domain = "codeberg.org";
     owner = "software-compliance-org";
     repo = "sbom-compliance-tool";
     tag = finalAttrs.version;
     hash = "sha256-6ZaHY1EKjJ78PrCov0wenj5doc93Ot9/yN4hEaagSmE=";
+    domain = "codeberg.org";
   };
 
   postPatch = ''
@@ -26,6 +24,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
         "packages=['sbom_compliance_tool']" \
         "packages=setuptools.find_namespace_packages(include=['sbom_compliance_tool*'])"
   '';
+
+  # upstream has no tests
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = with python3Packages; [
     setuptools
@@ -39,8 +41,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     lookup-license
   ];
 
-  # upstream has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "sbom_compliance_tool"
@@ -50,12 +51,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
   meta = {
     description = "Tool to assist your compliance work with SBoM";
     homepage = "https://codeberg.org/software-compliance-org/sbom-compliance-tool";
-    mainProgram = "sbom_compliance_tool";
+
     license = with lib.licenses; [
       gpl3Only
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ eljamm ];
+    mainProgram = "sbom_compliance_tool";
     teams = with lib.teams; [ ngi ];
   };
 })

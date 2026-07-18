@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "t-lang";
   version = "0.3.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "alecthomas";
@@ -18,15 +17,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-86T8rOKXx6agZw6xu10YVCgP+dyuodCW1ZZlimQFcFk=";
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Text processing language and utility";
+
     longDescription = ''
       T is a concise language for manipulating text, replacing common usage
       patterns of Unix utilities like grep, sed, cut, awk, sort, and uniq.
     '';
+
     homepage = "https://github.com/alecthomas/t";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ chillcicada ];

@@ -9,11 +9,9 @@
 }:
 
 buildPythonPackage rec {
-  version = "3.6.7";
-  pyproject = true;
   pname = "rpy2";
+  version = "3.6.7";
 
-  disabled = isPyPy;
   src = fetchPypi {
     inherit version pname;
     hash = "sha256-8ftGSc59FOk1EzCI3sl82ifrN858xxA4X4HcpVb+jJ8=";
@@ -26,15 +24,18 @@ buildPythonPackage rec {
     rpy2-robjects
   ];
 
+  disabled = isPyPy;
+  pyproject = true;
+
   pythonImportsCheck = [
     "rpy2"
   ];
 
   meta = {
-    homepage = "https://rpy2.github.io/";
     description = "Python interface to R";
+    homepage = "https://rpy2.github.io/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ joelmo ];
+    platforms = lib.platforms.unix;
   };
 }

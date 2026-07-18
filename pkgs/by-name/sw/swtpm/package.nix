@@ -2,28 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
-  libtasn1,
-  openssl,
+  expect,
+  fetchpatch,
   fuse3,
   glib,
-  libseccomp,
-  json-glib,
-  libtpms,
-  unixtools,
-  expect,
-  socat,
   gmp,
   gnutls,
-  perl,
+  json-glib,
+  libseccomp,
+  libtasn1,
+  libtpms,
   makeWrapper,
-
+  nixosTests,
+  openssl,
+  perl,
+  pkg-config,
   # Tests
   python3,
+  socat,
+  unixtools,
   which,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,6 +36,29 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ebVfzKloJGmiaguxtcPC/MUuOQYzxIZDdi/0oEGXJ64=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  postPatch = ''
+    patchShebangs tests/*
+
+    # Needed for cross-compilation
+    substituteInPlace configure.ac --replace-fail 'pkg-config' '${stdenv.cc.targetPrefix}pkg-config'
+
+    # Makefile tries to create the directory /var/lib/swtpm-localca, which fails
+    substituteInPlace samples/Makefile.am \
+        --replace-fail 'install-data-local:' 'do-not-execute:'
+
+    # Use the correct path to the openssl binary
+    # instead of relying on it being in the environment
+    substituteInPlace src/swtpm_localca/swtpm_localca.c \
+      --replace-fail \
+        '#define OPENSSL_TOOL  "openssl"' \
+        '#define OPENSSL_TOOL  "${lib.getExe openssl}"'
+  '';
+
   nativeBuildInputs = [
     pkg-config
     unixtools.netstat
@@ -46,10 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3
     autoreconfHook
     makeWrapper
-  ];
-
-  nativeCheckInputs = [
-    which
   ];
 
   buildInputs = [
@@ -74,23 +92,11 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-cuse"
   ];
 
-  postPatch = ''
-    patchShebangs tests/*
+  doCheck = true;
 
-    # Needed for cross-compilation
-    substituteInPlace configure.ac --replace-fail 'pkg-config' '${stdenv.cc.targetPrefix}pkg-config'
-
-    # Makefile tries to create the directory /var/lib/swtpm-localca, which fails
-    substituteInPlace samples/Makefile.am \
-        --replace-fail 'install-data-local:' 'do-not-execute:'
-
-    # Use the correct path to the openssl binary
-    # instead of relying on it being in the environment
-    substituteInPlace src/swtpm_localca/swtpm_localca.c \
-      --replace-fail \
-        '#define OPENSSL_TOOL  "openssl"' \
-        '#define OPENSSL_TOOL  "${lib.getExe openssl}"'
-  '';
+  nativeCheckInputs = [
+    which
+  ];
 
   # Workaround for https://github.com/stefanberger/swtpm/issues/795
   postFixup = ''
@@ -98,15 +104,8 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram "$out/bin/swtpm_setup" --suffix PATH : "$out/bin"
   '';
 
-  doCheck = true;
   __darwinAllowLocalNetworking = true; # tests do socket things, requires local networking to pass
   enableParallelBuilding = true;
-
-  outputs = [
-    "out"
-    "man"
-  ];
-
   passthru.tests = { inherit (nixosTests) systemd-cryptenroll; };
 
   meta = {
@@ -114,7 +113,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/stefanberger/swtpm";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.baloo ];
-    mainProgram = "swtpm";
     platforms = lib.platforms.all;
+    mainProgram = "swtpm";
   };
 })

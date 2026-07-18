@@ -20,8 +20,8 @@ rustPlatform.buildRustPackage {
   meta = {
     description = "Little satellite utility for LeftWM";
     homepage = "https://github.com/leftwm/leftwm-config";
-    maintainers = with lib.maintainers; [ denperidge ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ denperidge ];
     platforms = lib.platforms.linux;
   };
 }

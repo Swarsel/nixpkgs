@@ -1,7 +1,7 @@
 {
   lib,
-  buildGo126Module,
   fetchFromGitHub,
+  buildGo126Module,
   nix-update-script,
   versionCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildGo126Module (finalAttrs: {
   pname = "ku";
   version = "0.8.2";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "bjarneo";
@@ -19,6 +18,9 @@ buildGo126Module (finalAttrs: {
   };
 
   vendorHash = "sha256-x7O2/uKnIIFDr8WK0ej3FJiIGxN5Fq5Czqrv4OJ5A44=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -26,10 +28,7 @@ buildGo126Module (finalAttrs: {
     "-X main.version=v${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -38,7 +37,7 @@ buildGo126Module (finalAttrs: {
     changelog = "https://github.com/bjarneo/ku/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kevinpita ];
-    mainProgram = "ku";
     platforms = lib.platforms.unix;
+    mainProgram = "ku";
   };
 })

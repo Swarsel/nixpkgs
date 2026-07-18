@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gitUpdater,
   gdk-pixbuf,
+  gitUpdater,
   gtk-engine-murrine,
   gtk_engines,
   librsvg,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -26,10 +26,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/themes
@@ -37,13 +33,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Variation for marwaita GTK theme based on linux mint color scheme";
     homepage = "https://www.pling.com/p/1674243";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
   };
 })

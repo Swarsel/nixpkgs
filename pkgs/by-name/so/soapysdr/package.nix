@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  makeWrapper,
-  libusb-compat-0_1,
-  ncurses,
-  usePython ? false,
-  python ? null,
-  swig,
-  extraPackages ? [ ],
   buildPackages,
+  cmake,
+  libusb-compat-0_1,
+  makeWrapper,
+  ncurses,
+  pkg-config,
+  swig,
   testers,
+  extraPackages ? [ ],
+  python ? null,
+  usePython ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,7 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "pothosware";
     repo = "SoapySDR";
-
     # update to include latest patch for newer cmake support
     rev = "1667b4e6301d7ad47b340dcdcd6e9969bf57d843";
     hash = "sha256-UCpYBUb2k1bHy1z2Mvmv+1ZX1BloSsPrTydFV3Ga3Os=";
@@ -34,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     makeWrapper
   ];
+
   buildInputs = [
     libusb-compat-0_1
     ncurses
@@ -44,7 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = lib.optionals usePython [ python.pkgs.numpy ];
-
   cmakeFlags = lib.optionals usePython [ "-DUSE_PYTHON_CONFIG=ON" ];
 
   postFixup = lib.optionalString (extraPackages != [ ]) (
@@ -64,22 +63,24 @@ stdenv.mkDerivation (finalAttrs: {
   );
 
   passthru = {
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     # SOAPY_SDR_ABI_VERSION defined in include/SoapySDR/Version.h
     abiVersion = "0.8-3";
     searchPath = "lib/SoapySDR/modules${finalAttrs.passthru.abiVersion}";
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
-    homepage = "https://github.com/pothosware/SoapySDR";
     description = "Vendor and platform neutral SDR support library";
+    homepage = "https://github.com/pothosware/SoapySDR";
     license = lib.licenses.boost;
+
     maintainers = with lib.maintainers; [
       markuskowa
       numinit
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "SoapySDRUtil";
     pkgConfigModules = [ "SoapySDR" ];
-    platforms = lib.platforms.unix;
   };
 })

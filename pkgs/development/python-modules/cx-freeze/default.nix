@@ -1,26 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  darwin,
+  distutils,
+  dmgbuild,
   # dependencies
   filelock,
   freeze-core,
-  packaging,
-
-  distutils,
   ncurses,
+  packaging,
   patchelf,
-  dmgbuild,
-
-  darwin,
-  python,
   pytest-mock,
   pytestCheckHook,
+  python,
+  # build-system
+  setuptools,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -28,7 +24,6 @@
 buildPythonPackage rec {
   pname = "cx-freeze";
   version = "8.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "marcelotduarte";
@@ -42,37 +37,7 @@ buildPythonPackage rec {
       --replace-fail "setuptools>=78.1.1,<81" "setuptools"
   '';
 
-  build-system = [
-    setuptools
-  ];
-
   buildInputs = [ ncurses ];
-
-  pythonRelaxDeps = [ "setuptools" ];
-
-  pythonRemoveDeps = [ "patchelf" ];
-
-  dependencies = [
-    distutils
-    filelock
-    freeze-core
-    packaging
-    setuptools
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    dmgbuild
-  ];
-
-  makeWrapperArgs = [
-    "--prefix"
-    "PATH"
-    ":"
-    (lib.makeBinPath [ patchelf ])
-  ];
-
-  pythonImportsCheck = [
-    "cx_Freeze"
-  ];
 
   nativeCheckInputs = [
     pytest-mock
@@ -84,8 +49,6 @@ buildPythonPackage rec {
     darwin.sigtool
   ];
 
-  versionCheckProgram = "${placeholder "out"}/bin/cxfreeze";
-
   preCheck = ''
     rm -rf cx_Freeze
 
@@ -94,6 +57,21 @@ buildPythonPackage rec {
         "Path(pytest.__file__).parent.parent.relative_to(prefix).as_posix()" \
         "'python/lib/python${lib.versions.majorMinor python.version}/site-packages/'"
   '';
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    distutils
+    filelock
+    freeze-core
+    packaging
+    setuptools
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    dmgbuild
+  ];
 
   disabledTests = [
     # Require internet access
@@ -186,6 +164,23 @@ buildPythonPackage rec {
     # AssertionError: assert names != []
     "test_freezer_default_bin_includes"
   ];
+
+  makeWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    (lib.makeBinPath [ patchelf ])
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "cx_Freeze"
+  ];
+
+  pythonRelaxDeps = [ "setuptools" ];
+  pythonRemoveDeps = [ "patchelf" ];
+  versionCheckProgram = "${placeholder "out"}/bin/cxfreeze";
 
   meta = {
     description = "Set of scripts and modules for freezing Python scripts into executables";

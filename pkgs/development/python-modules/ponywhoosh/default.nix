@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ponywhoosh";
   version = "1.7.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,9 +20,11 @@ buildPythonPackage rec {
     whoosh
   ];
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://pythonhosted.org/ponywhoosh/";
     description = "Make your database over PonyORM searchable";
+    homepage = "https://pythonhosted.org/ponywhoosh/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ alexarice ];
   };

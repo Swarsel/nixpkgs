@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libmnl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,12 +25,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Userspace library that provides the programming interface to the connection tracking timeout infrastructure";
+
     longDescription = ''
       libnetfilter_cttimeout is the userspace library that provides the programming
       interface to the fine-grain connection tracking timeout infrastructure.
       With this library, you can create, update and delete timeout policies that can
       be attached to traffic flows. This library is used by conntrack-tools.
     '';
+
     homepage = "https://netfilter.org/projects/libnetfilter_cttimeout/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;

@@ -9,7 +9,6 @@
 stdenv.mkDerivation rec {
   pname = "eclair";
   version = "0.8.0";
-  revision = "0077471";
 
   src = fetchzip {
     url = "https://github.com/ACINQ/eclair/releases/download/v${version}/eclair-node-${version}-${revision}-bin.zip";
@@ -31,6 +30,8 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  revision = "0077471";
 
   meta = {
     description = "Scala implementation of the Lightning Network";

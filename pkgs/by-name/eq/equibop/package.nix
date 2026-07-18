@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
-  makeWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
-  electron_41,
-  python3Packages,
-  pipewire,
-  libpulseaudio,
-  jq,
   autoPatchelfHook,
   bun,
+  callPackage,
+  copyDesktopItems,
+  electron_41,
+  jq,
+  libpulseaudio,
+  makeDesktopItem,
+  makeWrapper,
   nodejs,
-  withTTS ? true,
+  pipewire,
+  python3Packages,
   withMiddleClickScroll ? false,
+  withTTS ? true,
 }:
 let
   electron = electron_41;
@@ -44,8 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail -baseline ""
   '';
 
-  node-modules = callPackage ./node-modules.nix { };
-
   nativeBuildInputs = [
     bun
     jq
@@ -66,14 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
     pipewire
     (lib.getLib stdenv.cc.cc)
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    cp -R ${finalAttrs.node-modules} node_modules
-
-    runHook postConfigure
-  '';
 
   preBuild = ''
     # Validate electron version matches upstream package.json
@@ -138,25 +128,38 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    cp -R ${finalAttrs.node-modules} node_modules
+
+    runHook postConfigure
+  '';
+
   desktopItems = makeDesktopItem {
-    name = "equibop";
+    categories = [
+      "Network"
+      "InstantMessaging"
+      "Chat"
+    ];
+
     desktopName = "Equibop";
     exec = "equibop %U";
-    icon = "equibop";
-    startupWMClass = "Equibop";
     genericName = "Internet Messenger";
+    icon = "equibop";
+
     keywords = [
       "discord"
       "equibop"
       "electron"
       "chat"
     ];
-    categories = [
-      "Network"
-      "InstantMessaging"
-      "Chat"
-    ];
+
+    name = "equibop";
+    startupWMClass = "Equibop";
   };
+
+  node-modules = callPackage ./node-modules.nix { };
 
   passthru = {
     # fails to update node-modules FOD :/
@@ -173,13 +176,15 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Equicord/Equibop";
     changelog = "https://github.com/Equicord/Equibop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       NotAShelf
       rexies
       PerchunPak
     ];
-    mainProgram = "equibop";
+
     # I am not confident in my ability to support Darwin, please PR if this is important to you
     platforms = lib.platforms.linux;
+    mainProgram = "equibop";
   };
 })

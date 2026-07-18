@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # update depreciated cmake minimum version
     (fetchpatch {
-      url = "https://github.com/bombela/backward-cpp/commit/8cb73c397f38b0a375d49335e17980b6c3345ca1.patch?full_index=1";
       hash = "sha256-i+ywKsCdTIS9sqqwAOcf2Mhdz5ReKfThNLHjhvRRQQ0=";
+      url = "https://github.com/bombela/backward-cpp/commit/8cb73c397f38b0a375d49335e17980b6c3345ca1.patch?full_index=1";
     })
   ];
 
@@ -33,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Beautiful stack trace pretty printer for C++";
     homepage = "https://github.com/bombela/backward-cpp";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

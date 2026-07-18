@@ -1,14 +1,13 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "django-contrib-comments";
   version = "2.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ django ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/django/django-contrib-comments";
     description = "Code formerly known as django.contrib.comments";
+    homepage = "https://github.com/django/django-contrib-comments";
     license = lib.licenses.bsd0;
   };
 }

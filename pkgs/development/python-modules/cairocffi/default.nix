@@ -1,26 +1,25 @@
 # FIXME: make gdk-pixbuf dependency optional
 {
+  lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
-  lib,
-  replaceVars,
-  pikepdf,
-  pytestCheckHook,
   cairo,
   cffi,
+  fetchPypi,
   flit-core,
-  numpy,
-  withXcffib ? false,
-  xcffib,
-  glib,
   gdk-pixbuf,
+  glib,
+  numpy,
+  pikepdf,
+  pytestCheckHook,
+  replaceVars,
+  xcffib,
+  withXcffib ? false,
 }:
 
 buildPythonPackage rec {
   pname = "cairocffi";
   version = "1.7.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -30,10 +29,10 @@ buildPythonPackage rec {
   patches = [
     # OSError: dlopen() failed to load a library: gdk-pixbuf-2.0 / gdk-pixbuf-2.0-0
     (replaceVars ./dlopen-paths.patch {
-      ext = stdenv.hostPlatform.extensions.sharedLibrary;
       cairo = cairo.out;
-      glib = glib.out;
+      ext = stdenv.hostPlatform.extensions.sharedLibrary;
       gdk_pixbuf = gdk-pixbuf.out;
+      glib = glib.out;
     })
     ./fix_test_scaled_font.patch
   ];
@@ -52,17 +51,17 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "cairocffi" ];
-
   # Cairo tries to load system fonts by default.
   # It's surfaced as a Cairo "out of memory" error in tests.
   __impureHostDeps = [ "/System/Library/Fonts" ];
+  pyproject = true;
+  pythonImportsCheck = [ "cairocffi" ];
 
   meta = {
-    changelog = "https://github.com/Kozea/cairocffi/blob/v${version}/NEWS.rst";
+    description = "cffi-based cairo bindings for Python";
     homepage = "https://github.com/SimonSapin/cairocffi";
+    changelog = "https://github.com/Kozea/cairocffi/blob/v${version}/NEWS.rst";
     license = lib.licenses.bsd3;
     maintainers = [ ];
-    description = "cffi-based cairo bindings for Python";
   };
 }

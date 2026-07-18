@@ -16,11 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.libdivecomputer.org";
     description = "Cross-platform and open source library for communication with dive computers from various manufacturers";
-    mainProgram = "dctool";
-    maintainers = [ lib.maintainers.mguentner ];
+    homepage = "https://www.libdivecomputer.org";
     license = lib.licenses.lgpl21;
+    maintainers = [ lib.maintainers.mguentner ];
     platforms = lib.platforms.all;
+    mainProgram = "dctool";
   };
 })

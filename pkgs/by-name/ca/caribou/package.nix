@@ -1,26 +1,26 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  pkg-config,
-  gnome,
-  glib,
-  gtk3,
-  gobject-introspection,
-  clutter,
-  dbus,
-  python3,
-  libxml2,
-  libxklavier,
-  libxtst,
-  gtk2,
-  intltool,
-  libxslt,
+  fetchurl,
   at-spi2-core,
   autoreconfHook,
-  wrapGAppsHook3,
+  clutter,
+  dbus,
+  glib,
+  gnome,
+  gobject-introspection,
+  gtk2,
+  gtk3,
+  intltool,
   libgee,
+  libxklavier,
+  libxml2,
+  libxslt,
+  libxtst,
+  pkg-config,
+  python3,
   vala,
+  wrapGAppsHook3,
 }:
 
 let
@@ -39,27 +39,32 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix crash in GNOME Flashback
     # https://bugzilla.gnome.org/show_bug.cgi?id=791001
     (fetchurl {
-      url = "https://bugzilla.gnome.org/attachment.cgi?id=364774";
       hash = "sha256-bU+/PTfkMh0KAUNCDhYYJ2iq9JlWLtwztdO4/EohYZY=";
+      url = "https://bugzilla.gnome.org/attachment.cgi?id=364774";
     })
     # Stop patching the generated GIR, fixes build with latest vala
     (fetchurl {
-      url = "https://gitlab.gnome.org/GNOME/caribou/-/commit/c52ce71c49dc8d6109a58d16cc8d491d7bd1d781.patch";
       hash = "sha256-jbF1Ygp8Q0ENN/5aEpROuK5zkufIfn6cGW8dncl7ET4=";
+      url = "https://gitlab.gnome.org/GNOME/caribou/-/commit/c52ce71c49dc8d6109a58d16cc8d491d7bd1d781.patch";
     })
     (fetchurl {
+      hash = "sha256-XkyRYXWmlcHTx2q81WFUMXV273MKkG5DeTAhdOY/wmM=";
       name = "fix-build-modern-vala.patch";
       url = "https://gitlab.gnome.org/GNOME/caribou/-/commit/76fbd11575f918fc898cb0f5defe07f67c11ec38.patch";
-      hash = "sha256-XkyRYXWmlcHTx2q81WFUMXV273MKkG5DeTAhdOY/wmM=";
     })
     (fetchurl {
+      hash = "sha256-yIsEqSflpAdQPAB6eNr6fctxzyACu7N1HVfMIdCQou0=";
       name = "CVE-2021-3567.patch";
       url = "https://gitlab.gnome.org/GNOME/caribou/-/commit/d41c8e44b12222a290eaca16703406b113a630c6.patch";
-      hash = "sha256-yIsEqSflpAdQPAB6eNr6fctxzyACu7N1HVfMIdCQou0=";
     })
     # Fix build with gettext 0.25
     ./gettext-0.25.patch
   ];
+
+  postPatch = ''
+    patchShebangs .
+    substituteInPlace libcaribou/Makefile.am --replace "--shared-library=libcaribou.so.0" "--shared-library=$out/lib/libcaribou.so.0"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -90,11 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxklavier
   ];
 
-  postPatch = ''
-    patchShebangs .
-    substituteInPlace libcaribou/Makefile.am --replace "--shared-library=libcaribou.so.0" "--shared-library=$out/lib/libcaribou.so.0"
-  '';
-
   env = lib.optionalAttrs stdenv.cc.isGNU {
     # This really should be done by latest Vala, but we are using
     # release tarball here, which dists generated C code.
@@ -108,11 +108,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Input assistive technology intended for switch and pointer users";
-    mainProgram = "caribou-preferences";
     homepage = "https://gitlab.gnome.org/Archive/caribou";
     license = lib.licenses.lgpl21;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "caribou-preferences";
     # checking for a Python interpreter with version >= 2.4... none
     # configure: error: no suitable Python interpreter found
     broken = stdenv.buildPlatform != stdenv.hostPlatform;

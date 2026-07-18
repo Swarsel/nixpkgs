@@ -1,26 +1,24 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ecpy";
   version = "1.2.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "ECPy";
     inherit (finalAttrs) version;
     hash = "sha256-ljXP+5tuz3/X9yrqFmWCmsdKHScgBtAFfUWmIariAig=";
+    pname = "ECPy";
   };
-
-  build-system = [ setuptools ];
 
   # No tests implemented
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ecpy" ];
 
   meta = {

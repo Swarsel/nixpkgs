@@ -1,13 +1,11 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   icalendar,
 }:
 
 buildHomeAssistantComponent {
-  owner = "JosephAbbey";
-  domain = "calendar_export";
   version = "0.1.0-unstable-2025-12-13";
 
   src = fetchFromGitHub {
@@ -18,8 +16,9 @@ buildHomeAssistantComponent {
   };
 
   dependencies = [ icalendar ];
-
+  domain = "calendar_export";
   ignoreVersionRequirement = [ "icalendar" ];
+  owner = "JosephAbbey";
 
   meta = {
     description = "Export calendar events in the iCalendar format";

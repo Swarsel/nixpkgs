@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  poetry-core,
-  pytestCheckHook,
-  pytest-cov-stub,
-  pytest-asyncio,
   stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
+  poetry-core,
+  pytest-asyncio,
+  pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "onecache";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sonic182";
@@ -21,26 +20,27 @@ buildPythonPackage rec {
     hash = "sha256-jhyszGKzmMdtPfnjc3VllfF6Zd0MkV66CpL6HiAof/A=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
     pytest-asyncio
   ];
 
+  build-system = [ poetry-core ];
+
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # test fails due to unknown reason on darwin
     "test_lru_and_ttl_refresh"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "onecache" ];
 
   meta = {
-    changelog = "https://github.com/sonic182/onecache/blob/${version}/CHANGELOG.md";
     description = "Python LRU and TTL cache for sync and async code";
-    license = lib.licenses.mit;
     homepage = "https://github.com/sonic182/onecache";
+    changelog = "https://github.com/sonic182/onecache/blob/${version}/CHANGELOG.md";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ geraldog ];
   };
 }

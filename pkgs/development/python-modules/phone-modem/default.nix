@@ -8,12 +8,11 @@
 buildPythonPackage rec {
   pname = "phone-modem";
   version = "0.1.2";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "phone_modem";
     inherit version;
     hash = "sha256-7NahK9l67MdT/dDVXsq+y0Z4cZxZ/WUW2kPpE4Wz6j0=";
+    pname = "phone_modem";
   };
 
   postPatch = ''
@@ -22,10 +21,9 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ aioserial ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "phone_modem" ];
 
   meta = {

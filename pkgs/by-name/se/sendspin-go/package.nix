@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   alsa-lib,
   buildGoModule,
-  fetchFromGitHub,
   ffmpeg,
   libogg,
   opus,
@@ -21,10 +21,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-T0lOczyUi6YvlMqbrdAnWpFmTqJ7fVKm5yOeZueLwkg=";
   };
 
-  __structuredAttrs = true;
-
-  vendorHash = "sha256-QAmC6bgOSlV8we9j3rDQ9V3sLdSvELu8zzn5UAw/uIY=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -35,15 +31,17 @@ buildGoModule (finalAttrs: {
     ffmpeg
   ];
 
+  vendorHash = "sha256-QAmC6bgOSlV8we9j3rDQ9V3sLdSvELu8zzn5UAw/uIY=";
   env.CGO_LDFLAGS = "-lm";
-
-  ldflags = [ "-s" ];
 
   preCheck = ''
     # Tests require network features that are not available in the sandbox
     substituteInPlace pkg/discovery/mdns_test.go \
       --replace-fail "TestGetLocalIPs" "Skip_TestGetLocalIPs"
   '';
+
+  __structuredAttrs = true;
+  ldflags = [ "-s" ];
 
   meta = {
     description = "Sendspin server and client";

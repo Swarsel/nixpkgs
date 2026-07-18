@@ -53,11 +53,6 @@ let
 
 in
 {
-  meta.maintainers = with lib.maintainers; [
-    happysalada
-  ];
-  meta.doc = ./meilisearch.md;
-
   imports = [
     (lib.mkRenamedOptionModule
       [ "services" "meilisearch" "environment" ]
@@ -100,23 +95,29 @@ in
 
     listenAddress = lib.mkOption {
       default = "localhost";
-      type = lib.types.str;
+
       description = ''
         The IP address that Meilisearch will listen on.
 
         It can also be a hostname like "localhost". If it resolves to an IPv4 and IPv6 address, Meilisearch will listen on both.
       '';
+
+      type = lib.types.str;
     };
 
     listenPort = lib.mkOption {
       default = 7700;
-      type = lib.types.port;
+
       description = ''
         The port that Meilisearch will listen on.
       '';
+
+      type = lib.types.port;
     };
 
     masterKeyFile = lib.mkOption {
+      default = null;
+
       description = ''
         Path to file which contains the master key.
         By doing so, all routes will be protected and will require a key to be accessed.
@@ -125,11 +126,13 @@ in
         You can generate a master key by running `openssl rand -base64 36`.
         Alternatively, you can start Meilisearch without a master key and use the pre-generated key from the service's logs that can be obtained by `journalctl -u meilisearch | grep -- --master-key`.
       '';
-      default = null;
+
       type = lib.types.nullOr lib.types.path;
     };
 
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         Configuration settings for Meilisearch.
         Look at the documentation for available options:
@@ -137,21 +140,18 @@ in
         https://www.meilisearch.com/docs/learn/self_hosted/configure_meilisearch_at_launch#all-instance-options
       '';
 
-      default = { };
-
       type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-
         imports = map (secret: {
           # give them proper types, just so they're easier to consume from this file
           options.${secret.name} = lib.mkOption {
+            default = null;
+            type = lib.types.nullOr lib.types.path;
             # but they should not show up in documentation as special in any way.
             visible = false;
-
-            type = lib.types.nullOr lib.types.path;
-            default = null;
           };
         }) secrets-with-path;
+
+        freeformType = settingsFormat.type;
       };
     };
   };
@@ -160,6 +160,7 @@ in
     assertions = [
       {
         assertion = !cfg.settings ? master_key;
+
         message = ''
           Do not set `services.meilisearch.settings.master_key` in your configuration.
           Use `services.meilisearch.masterKeyFile` instead.
@@ -167,33 +168,36 @@ in
       }
     ];
 
-    services.meilisearch.settings = {
-      # we use `listenAddress` and `listenPort` to derive the `http_addr` setting.
-      # this is the only setting we treat like this.
-      # we do this because some dependent services like Misskey/Sharkey need separate host,port for no good reason.
-      http_addr = "${cfg.listenAddress}:${toString cfg.listenPort}";
+    # used to restore dumps
+    environment.systemPackages = [ cfg.package ];
 
+    services.meilisearch.settings = {
       # upstream's default for `db_path` is `/var/lib/meilisearch/data.ms/`, but ours is different for no reason.
       db_path = lib.mkDefault "/var/lib/meilisearch";
       # these are equivalent to the upstream defaults, because we set a working directory.
       # they are only set here for consistency with `db_path`.
       dump_dir = lib.mkDefault "/var/lib/meilisearch/dumps";
-      snapshot_dir = lib.mkDefault "/var/lib/meilisearch/snapshots";
-
-      # this is intentionally different from upstream's default.
-      no_analytics = lib.mkDefault true;
-
       # allow updating without manual intervention
       experimental_dumpless_upgrade = lib.mkDefault true;
+      # we use `listenAddress` and `listenPort` to derive the `http_addr` setting.
+      # this is the only setting we treat like this.
+      # we do this because some dependent services like Misskey/Sharkey need separate host,port for no good reason.
+      http_addr = "${cfg.listenAddress}:${toString cfg.listenPort}";
+      # this is intentionally different from upstream's default.
+      no_analytics = lib.mkDefault true;
+      snapshot_dir = lib.mkDefault "/var/lib/meilisearch/snapshots";
     };
 
-    # used to restore dumps
-    environment.systemPackages = [ cfg.package ];
-
     systemd.services.meilisearch = {
-      description = "Meilisearch daemon";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Meilisearch daemon";
+
+      environment = builtins.listToAttrs (
+        map (secret: {
+          name = secret.environment;
+          value = lib.mkIf (secret.setting != null) "%d/${secret.name}";
+        }) secrets-with-path
+      );
 
       preStart = lib.mkMerge [
         ''
@@ -204,17 +208,11 @@ in
         '')
       ];
 
-      environment = builtins.listToAttrs (
-        map (secret: {
-          name = secret.environment;
-          value = lib.mkIf (secret.setting != null) "%d/${secret.name}";
-        }) secrets-with-path
-      );
-
       serviceConfig = {
-        Type = "simple";
+        CapabilityBoundingSet = "";
         DynamicUser = true;
-        Restart = "always";
+        ExecStart = "${lib.getExe cfg.package} --config-file-path \${RUNTIME_DIRECTORY}/config.toml";
+
         LoadCredential = lib.mkMerge (
           [
             (lib.mkIf (cfg.masterKeyFile != null) [ "master_key:${cfg.masterKeyFile}" ])
@@ -223,42 +221,35 @@ in
             secret: lib.mkIf (secret.setting != null) [ "${secret.name}:${secret.setting}" ]
           ) secrets-with-path
         );
-        ExecStart = "${lib.getExe cfg.package} --config-file-path \${RUNTIME_DIRECTORY}/config.toml";
-        StateDirectory = "meilisearch";
-        WorkingDirectory = "%S/meilisearch";
-        RuntimeDirectory = "meilisearch";
-        RuntimeDirectoryMode = "0700";
+
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        # Meilisearch needs to determine cgroup memory limits to set its own memory limits.
+        # This means this can't be set to "pid"
+        ProcSubset = "all";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+
         ReadWritePaths = [
           cfg.settings.db_path
           cfg.settings.dump_dir
           cfg.settings.snapshot_dir
         ];
 
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        ProtectClock = true;
-        ProtectHostname = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectControlGroups = true;
-        PrivateTmp = true;
-        PrivateMounts = true;
-        PrivateUsers = true;
-        PrivateDevices = true;
-        RestrictRealtime = true;
-        RestrictNamespaces = true;
-        RestrictSUIDSGID = true;
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
         RemoveIPC = true;
-
-        # Meilisearch needs to determine cgroup memory limits to set its own memory limits.
-        # This means this can't be set to "pid"
-        ProcSubset = "all";
-        ProtectProc = "invisible";
-
-        NoNewPrivileges = true;
+        Restart = "always";
 
         # Meilisearch does not support listening on AF_UNIX sockets,
         # so we currently restrict it to only AF_INET and AF_INET6.
@@ -267,15 +258,31 @@ in
           "AF_INET6"
         ];
 
-        CapabilityBoundingSet = "";
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RuntimeDirectory = "meilisearch";
+        RuntimeDirectoryMode = "0700";
+        StateDirectory = "meilisearch";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged @resources"
         ];
 
+        Type = "simple";
         UMask = "0077";
+        WorkingDirectory = "%S/meilisearch";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.doc = ./meilisearch.md;
+
+  meta.maintainers = with lib.maintainers; [
+    happysalada
+  ];
 }

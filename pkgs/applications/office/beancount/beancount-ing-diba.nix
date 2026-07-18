@@ -1,9 +1,9 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  beangulp,
   beancount,
+  beangulp,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
@@ -17,20 +17,20 @@ python3.pkgs.buildPythonApplication rec {
     sha256 = "sha256-zjwajl+0ix4wnW0bf4MAuO9Lr9F8sBv87TIL5Ghmlxg=";
   };
 
-  pyproject = true;
+  nativeBuildInputs = with python3.pkgs; [
+    poetry-core
+  ];
 
   propagatedBuildInputs = [
     beancount
     beangulp
   ];
 
-  nativeBuildInputs = with python3.pkgs; [
-    poetry-core
-  ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/siddhantgoel/beancount-ing";
     description = "Beancount Importers for ING-DiBa (Germany) CSV Exports";
+    homepage = "https://github.com/siddhantgoel/beancount-ing";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
   };

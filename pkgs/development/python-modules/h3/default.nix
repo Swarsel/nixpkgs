@@ -1,23 +1,22 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoPatchelfHook,
   buildPythonPackage,
   cmake,
   cython,
-  fetchFromGitHub,
   h3,
-  lib,
   ninja,
   numpy,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   scikit-build-core,
-  stdenv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "h3";
   version = "4.4.2";
-  pyproject = true;
 
   # pypi version does not include tests
   src = fetchFromGitHub {
@@ -27,7 +26,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-+2cf/m+8BEEjNgIyuYmLDD7wsmc3Bg8QXaIjC0Px+Qk=";
   };
 
-  dontConfigure = true;
+  # This is not needed per-se, it's only added for autoPatchelfHook to work
+  # correctly. See the note above ^^
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ h3 ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -47,11 +48,8 @@ buildPythonPackage (finalAttrs: {
     autoPatchelfHook
   ];
 
-  # This is not needed per-se, it's only added for autoPatchelfHook to work
-  # correctly. See the note above ^^
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ h3 ];
-
   dependencies = [ numpy ];
+  dontConfigure = true;
 
   # The following prePatch replaces the h3lib compilation with using the h3 packaged in nixpkgs.
   #
@@ -71,13 +69,14 @@ buildPythonPackage (finalAttrs: {
         --replace-fail "\''${CMAKE_CURRENT_BINARY_DIR}/src/h3lib/src/h3lib/include/h3api.h" "${lib.getDev h3}/include/h3/h3api.h"
     '';
 
+  pyproject = true;
   # Extra check to make sure we can import it from Python
   pythonImportsCheck = [ "h3" ];
 
   meta = {
-    changelog = "https://github.com/uber/h3-py/blob/${finalAttrs.src.rev}/CHANGELOG.md";
-    homepage = "https://github.com/uber/h3-py";
     description = "Hierarchical hexagonal geospatial indexing system";
+    homepage = "https://github.com/uber/h3-py";
+    changelog = "https://github.com/uber/h3-py/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.kalbasit ];
   };

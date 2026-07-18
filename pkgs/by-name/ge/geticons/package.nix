@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromSourcehut,
   gitUpdater,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "CLI utility to get icons for apps on your system or other generic icons by name";
-    mainProgram = "geticons";
     homepage = "https://git.sr.ht/~zethra/geticons";
     license = with lib.licenses; [ gpl3Plus ];
+    mainProgram = "geticons";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,9 +22,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/max-niederman/ttyper";
     changelog = "https://github.com/max-niederman/ttyper/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       max-niederman
     ];
+
     mainProgram = "ttyper";
   };
 })

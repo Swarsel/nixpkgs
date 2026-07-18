@@ -1,13 +1,13 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
+  mkDerivation,
   standard-library,
 }:
 
 mkDerivation rec {
-  version = "0.3.0";
   pname = "agda-categories";
+  version = "0.3.0";
 
   src = fetchFromGitHub {
     owner = "agda";
@@ -32,10 +32,12 @@ mkDerivation rec {
     inherit (src.meta) homepage;
     description = "New Categories library";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       alexarice
       turion
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

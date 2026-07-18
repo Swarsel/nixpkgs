@@ -1,35 +1,35 @@
 {
-  stdenv,
   lib,
-  crystal,
-  pcre2,
-  shards,
-  git,
-  pkg-config,
-  which,
-  linkFarm,
-  fetchgit,
+  stdenv,
   fetchFromGitHub,
+  crystal,
+  fetchgit,
+  git,
   installShellFiles,
+  linkFarm,
+  pcre2,
+  pkg-config,
   removeReferencesTo,
+  shards,
+  which,
 }:
 
 {
-  # Some projects do not include a lock file, so you can pass one
-  lockFile ? null,
-  # Generate shards.nix with `nix-shell -p crystal2nix --run crystal2nix` in the projects root
-  shardsFile ? null,
-  # We support different builders. To make things more straight forward, make it
-  # user selectable instead of trying to autodetect
-  format ? "make",
-  installManPages ? true,
+  # Copy all shards dependencies instead of symlinking and add write permissions
+  # to make environment more local-like
+  copyShardDeps ? false,
   # Specify binaries to build in the form { foo.src = "src/foo.cr"; }
   # The default `crystal build` options can be overridden with { foo.options = [ "--optionname" ]; }
   crystalBinaries ? { },
   enableParallelBuilding ? true,
-  # Copy all shards dependencies instead of symlinking and add write permissions
-  # to make environment more local-like
-  copyShardDeps ? false,
+  # We support different builders. To make things more straight forward, make it
+  # user selectable instead of trying to autodetect
+  format ? "make",
+  installManPages ? true,
+  # Some projects do not include a lock file, so you can pass one
+  lockFile ? null,
+  # Generate shards.nix with `nix-shell -p crystal2nix --run crystal2nix` in the projects root
+  shardsFile ? null,
   ...
 }@args:
 
@@ -89,38 +89,8 @@ stdenv.mkDerivation (
   mkDerivationArgs
   // {
 
-    configurePhase =
-      args.configurePhase or (lib.concatStringsSep "\n" (
-        [
-          "runHook preConfigure"
-        ]
-        ++ lib.optional (lockFile != null) "cp ${lockFile} ./shard.lock"
-        ++ lib.optionals (shardsFile != null) [
-          "test -e lib || mkdir lib"
-          (
-            if copyShardDeps then
-              "for d in ${crystalLib}/*; do cp -r $d/ lib/; done; chmod -R +w lib/"
-            else
-              "for d in ${crystalLib}/*; do ln -s $d lib/; done"
-          )
-          "cp shard.lock lib/.shards.info"
-        ]
-        ++ [ "runHook postConfigure" ]
-      ));
-
-    env = {
-      CRFLAGS = lib.concatStringsSep " " defaultOptions;
-
-      PREFIX = placeholder "out";
-    }
-    // (args.env or { });
-
     inherit enableParallelBuilding;
     strictDeps = true;
-    buildInputs =
-      args.buildInputs or [ ]
-      ++ [ crystal ]
-      ++ lib.optional (lib.versionAtLeast crystal.version "1.8") pcre2;
 
     nativeBuildInputs =
       args.nativeBuildInputs or [ ]
@@ -134,6 +104,17 @@ stdenv.mkDerivation (
       ]
       ++ lib.optional (format != "crystal") shards;
 
+    buildInputs =
+      args.buildInputs or [ ]
+      ++ [ crystal ]
+      ++ lib.optional (lib.versionAtLeast crystal.version "1.8") pcre2;
+
+    env = {
+      CRFLAGS = lib.concatStringsSep " " defaultOptions;
+      PREFIX = placeholder "out";
+    }
+    // (args.env or { });
+
     buildPhase =
       args.buildPhase or (lib.concatStringsSep "\n" (
         [
@@ -145,6 +126,18 @@ stdenv.mkDerivation (
           lib.optional (format == "shards")
             "shards build --local --production ${lib.concatStringsSep " " (args.options or defaultOptions)}"
         ++ [ "runHook postBuild" ]
+      ));
+
+    doCheck = args.doCheck or true;
+
+    checkPhase =
+      args.checkPhase or (lib.concatStringsSep "\n" (
+        [
+          "runHook preCheck"
+        ]
+        ++ lib.optional (format == "make") "make \${checkTarget:-test} $checkFlags"
+        ++ lib.optional (format != "make") "crystal \${checkTarget:-spec} $checkFlags"
+        ++ [ "runHook postCheck" ]
       ));
 
     installPhase =
@@ -182,18 +175,6 @@ stdenv.mkDerivation (
         ]
       ));
 
-    doCheck = args.doCheck or true;
-
-    checkPhase =
-      args.checkPhase or (lib.concatStringsSep "\n" (
-        [
-          "runHook preCheck"
-        ]
-        ++ lib.optional (format == "make") "make \${checkTarget:-test} $checkFlags"
-        ++ lib.optional (format != "make") "crystal \${checkTarget:-spec} $checkFlags"
-        ++ [ "runHook postCheck" ]
-      ));
-
     doInstallCheck = args.doInstallCheck or true;
 
     installCheckPhase =
@@ -209,6 +190,25 @@ stdenv.mkDerivation (
 
         runHook postInstallCheck
       '';
+
+    configurePhase =
+      args.configurePhase or (lib.concatStringsSep "\n" (
+        [
+          "runHook preConfigure"
+        ]
+        ++ lib.optional (lockFile != null) "cp ${lockFile} ./shard.lock"
+        ++ lib.optionals (shardsFile != null) [
+          "test -e lib || mkdir lib"
+          (
+            if copyShardDeps then
+              "for d in ${crystalLib}/*; do cp -r $d/ lib/; done; chmod -R +w lib/"
+            else
+              "for d in ${crystalLib}/*; do ln -s $d lib/; done"
+          )
+          "cp shard.lock lib/.shards.info"
+        ]
+        ++ [ "runHook postConfigure" ]
+      ));
 
     meta = {
       platforms = crystal.meta.platforms;

@@ -1,7 +1,7 @@
 {
   lib,
-  buildDubPackage,
   fetchFromGitHub,
+  buildDubPackage,
   versionCheckHook,
 }:
 
@@ -16,17 +16,15 @@ buildDubPackage rec {
     hash = "sha256-QjmYPIQFs+91jB1sdaFoenfWt5TLXyEJauSSHP2fd+M=";
   };
 
-  preBuild = ''
-    mkdir -p bin/
-    echo "v${version}" > bin/dubhash.txt
-  '';
-
   patches = [
     # do not run the dubhash tool, we supply the version in preBuild
     ./fix_version.patch
   ];
 
-  dubLock = ./dub-lock.json;
+  preBuild = ''
+    mkdir -p bin/
+    echo "v${version}" > bin/dubhash.txt
+  '';
 
   doCheck = true;
 
@@ -36,18 +34,20 @@ buildDubPackage rec {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  dubLock = ./dub-lock.json;
 
   meta = {
     description = "Formatter for D source code";
-    changelog = "https://github.com/dlang-community/dfmt/releases/tag/v${version}";
     homepage = "https://github.com/dlang-community/dfmt";
+    changelog = "https://github.com/dlang-community/dfmt/releases/tag/v${version}";
+    license = lib.licenses.boost;
     maintainers = with lib.maintainers; [ ipsavitsky ];
     mainProgram = "dfmt";
-    license = lib.licenses.boost;
   };
 }

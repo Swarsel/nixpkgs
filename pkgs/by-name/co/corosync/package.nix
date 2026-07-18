@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch2,
-  makeWrapper,
-  pkg-config,
-  kronosnet,
-  nss,
-  nspr,
-  libqb,
-  systemd,
   dbus,
-  rdma-core,
+  fetchpatch2,
+  kronosnet,
+  libqb,
   libstatgrab,
+  makeWrapper,
   net-snmp,
+  nixosTests,
+  nspr,
+  nss,
+  pkg-config,
+  rdma-core,
+  systemd,
   enableDbus ? false,
   enableInfiniBandRdma ? false,
   enableMonitoring ? false,
   enableSnmp ? false,
-  nixosTests,
 }:
 
 let
@@ -35,9 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-EgGTfOM9chjLnb1QWNGp6IQQKQGdetNkztdddXlN/uo=";
       name = "CVE-2025-30472.patch";
       url = "https://github.com/corosync/corosync/commit/7839990f9cdf34e55435ed90109e82709032466a.patch??full_index=1";
-      hash = "sha256-EgGTfOM9chjLnb1QWNGp6IQQKQGdetNkztdddXlN/uo=";
     })
   ];
 
@@ -72,16 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optional enableMonitoring "--enable-monitoring"
   ++ optional enableSnmp "--enable-snmp";
 
-  installFlags = [
-    "sysconfdir=$(out)/etc"
-    "localstatedir=$(out)/var"
-    "COROSYSCONFDIR=$(out)/etc/corosync"
-    "INITDDIR=$(out)/etc/init.d"
-    "LOGROTATEDIR=$(out)/etc/logrotate.d"
-  ];
-
-  enableParallelBuilding = true;
-
   preConfigure = lib.optionalString enableInfiniBandRdma ''
     # configure looks for the pkg-config files
     # of librdmacm and libibverbs
@@ -98,18 +88,30 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH ":" "$out/sbin:${libqb}/sbin"
   '';
 
+  enableParallelBuilding = true;
+
+  installFlags = [
+    "sysconfdir=$(out)/etc"
+    "localstatedir=$(out)/var"
+    "COROSYSCONFDIR=$(out)/etc/corosync"
+    "INITDDIR=$(out)/etc/init.d"
+    "LOGROTATEDIR=$(out)/etc/logrotate.d"
+  ];
+
   passthru.tests = {
     inherit (nixosTests) pacemaker;
   };
 
   meta = {
-    homepage = "https://corosync.org/";
     description = "Group Communication System with features for implementing high availability within applications";
+    homepage = "https://corosync.org/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       montag451
       ryantm
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

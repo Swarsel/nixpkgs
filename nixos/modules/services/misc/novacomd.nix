@@ -22,11 +22,12 @@ in
 
     systemd.services.novacomd = {
       description = "Novacom WebOS daemon";
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
         ExecStart = "${pkgs.webos.novacomd}/sbin/novacomd";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

@@ -1,46 +1,38 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # preBuild
-  wgpu-native,
-
-  # dependencies
-  cffi,
-  rubicon-objc,
-  sniffio,
-
-  # optional dependency
-  glfw,
-
-  # docs
-  sphinx-rtd-theme,
-  sphinxHook,
-
   # tests
   anyio,
+  buildPythonPackage,
+  # dependencies
+  cffi,
+  # optional dependency
+  glfw,
+  # build-system
+  hatchling,
   imageio,
   numpy,
   psutil,
   pypng,
   pytest,
   rendercanvas,
+  rubicon-objc,
   ruff,
-  trio,
-
+  sniffio,
+  # docs
+  sphinx-rtd-theme,
+  sphinxHook,
   # passthru
   testers,
+  trio,
+  # preBuild
+  wgpu-native,
   wgpu-py,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "wgpu-py";
   version = "0.31.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pygfx";
@@ -74,6 +66,36 @@ buildPythonPackage (finalAttrs: {
       wgpu/resources/libwgpu_native-release${stdenv.hostPlatform.extensions.library}
   '';
 
+  # Tests break in Linux CI due to wgpu being unable to find any adapters.
+  # Ordinarily, this would be fixed in an approach similar to `pkgs/by-name/wg/wgpu-native/examples.nix`'s
+  # usage of `runtimeInputs` and `makeWrapperArgs`.
+  # Unfortunately, as this is a Python module without a `mainProgram`, `makeWrapperArgs` will not apply here,
+  # as there is no "script" to wrap.
+  doCheck = stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    anyio
+    imageio
+    numpy
+    psutil
+    pypng
+    pytest
+    # break circular dependency cycle
+    (rendercanvas.overrideAttrs { doInstallCheck = false; })
+    ruff
+    trio
+  ];
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    pytest tests -k "not test_render_timestamps_inside_encoder"
+    pytest examples
+    pytest tests_mem
+
+    runHook postInstallCheck
+  '';
+
   build-system = [ hatchling ];
 
   dependencies =
@@ -90,62 +112,31 @@ buildPythonPackage (finalAttrs: {
     ];
 
   optional-dependencies = {
-    # jupyter = [ jupyter_rfb ] not in nixpkgs
-    glfw = [ glfw ];
     # imgui = ["imgui-bundle>=1.2.1"] not in nixpkgs
-
     docs = [
       sphinxHook
       sphinx-rtd-theme
     ];
+
+    # jupyter = [ jupyter_rfb ] not in nixpkgs
+    glfw = [ glfw ];
   };
 
+  pyproject = true;
+  pythonImportsCheck = [ "wgpu" ];
   pythonRemoveDeps = [ "requests" ];
 
-  pythonImportsCheck = [ "wgpu" ];
-
-  nativeCheckInputs = [
-    anyio
-    imageio
-    numpy
-    psutil
-    pypng
-    pytest
-    # break circular dependency cycle
-    (rendercanvas.overrideAttrs { doInstallCheck = false; })
-    ruff
-    trio
-  ];
-
-  # Tests break in Linux CI due to wgpu being unable to find any adapters.
-  # Ordinarily, this would be fixed in an approach similar to `pkgs/by-name/wg/wgpu-native/examples.nix`'s
-  # usage of `runtimeInputs` and `makeWrapperArgs`.
-  # Unfortunately, as this is a Python module without a `mainProgram`, `makeWrapperArgs` will not apply here,
-  # as there is no "script" to wrap.
-  doCheck = stdenv.hostPlatform.isDarwin;
-
-  installCheckPhase = ''
-    runHook preInstallCheck
-
-    pytest tests -k "not test_render_timestamps_inside_encoder"
-    pytest examples
-    pytest tests_mem
-
-    runHook postInstallCheck
-  '';
-
   passthru.tests.version = testers.testVersion {
-    package = wgpu-py;
     command = "python3 -c 'import wgpu; print(wgpu.__version__)'";
+    package = wgpu-py;
   };
 
   meta = {
     description = "WebGPU for Python";
     homepage = "https://github.com/pygfx/wgpu-py";
     changelog = "https://github.com/pygfx/wgpu-py/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-
-    platforms = lib.platforms.all;
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.bengsparks ];
+    platforms = lib.platforms.all;
   };
 })

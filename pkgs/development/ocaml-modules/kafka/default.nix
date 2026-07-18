@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  ocaml,
   buildDunePackage,
+  ocaml,
   rdkafka,
   zlib,
 }:
@@ -22,8 +22,8 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/didier-wenzek/ocaml-kafka";
     description = "OCaml bindings for Kafka";
+    homepage = "https://github.com/didier-wenzek/ocaml-kafka";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
     broken = lib.versionAtLeast ocaml.version "5.0";

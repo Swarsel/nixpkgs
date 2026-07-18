@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitLab,
   bubblewrap,
   cacert,
-  fetchFromGitLab,
   git,
   imagemagick,
   openmw,
@@ -26,12 +26,11 @@ let
     inherit src version;
     pname = "portmod-rust";
 
-    cargoHash = "sha256-hLci2O+eliCgscvvC4ejn6ZDtFQnM5K6f0luu2cYIHM=";
-
     nativeBuildInputs = [
       python3Packages.python
     ];
 
+    cargoHash = "sha256-hLci2O+eliCgscvvC4ejn6ZDtFQnM5K6f0luu2cYIHM=";
     doCheck = false;
   };
 
@@ -48,19 +47,7 @@ let
 in
 python3Packages.buildPythonApplication {
   inherit src version;
-
   pname = "portmod";
-  pyproject = true;
-
-  # build the rust library independently
-  prePatch = ''
-    substituteInPlace setup.py \
-      --replace "from setuptools_rust import Binding, RustExtension, Strip" "" \
-      --replace "RustExtension(\"portmodlib.portmod\", binding=Binding.PyO3, strip=Strip.Debug)" ""
-
-    substituteInPlace pyproject.toml \
-      --replace '"setuptools-rust"' ""
-  '';
 
   nativeBuildInputs = with python3Packages; [
     setuptools
@@ -97,6 +84,14 @@ python3Packages.buildPythonApplication {
     export HOME=$(mktemp -d)
   '';
 
+  # for some reason, installPhase doesn't copy the compiled binary
+  postInstall = ''
+    cp ${portmod-rust}/lib/libportmod.so $out/${python3Packages.python.sitePackages}/portmodlib/portmod.so
+
+    makeWrapperArgs+=("--prefix" "GIT_SSL_CAINFO" ":" "${cacert}/etc/ssl/certs/ca-bundle.crt" \
+      "--prefix" "PATH" ":" "${lib.makeBinPath bin-programs}")
+  '';
+
   # some test require network access
   disabledTests = [
     "test_masters_esp"
@@ -112,13 +107,17 @@ python3Packages.buildPythonApplication {
     "test_unpack"
   ];
 
-  # for some reason, installPhase doesn't copy the compiled binary
-  postInstall = ''
-    cp ${portmod-rust}/lib/libportmod.so $out/${python3Packages.python.sitePackages}/portmodlib/portmod.so
+  # build the rust library independently
+  prePatch = ''
+    substituteInPlace setup.py \
+      --replace "from setuptools_rust import Binding, RustExtension, Strip" "" \
+      --replace "RustExtension(\"portmodlib.portmod\", binding=Binding.PyO3, strip=Strip.Debug)" ""
 
-    makeWrapperArgs+=("--prefix" "GIT_SSL_CAINFO" ":" "${cacert}/etc/ssl/certs/ca-bundle.crt" \
-      "--prefix" "PATH" ":" "${lib.makeBinPath bin-programs}")
+    substituteInPlace pyproject.toml \
+      --replace '"setuptools-rust"' ""
   '';
+
+  pyproject = true;
 
   meta = {
     description = "Mod manager for openMW based on portage";

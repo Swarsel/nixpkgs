@@ -1,15 +1,24 @@
 {
-  stdenv,
   lib,
-  buildNpmPackage,
+  stdenv,
   fetchFromGitHub,
+  buildNpmPackage,
   cctools,
   go-toml,
   ttfautohint-nox,
+  # Extra parameters. Can be used for ligature mapping.
+  # It must be a raw TOML string.
+  # Ex:
+  # extraParameters = ''
+  #   [[iosevka.compLig]]
+  #   unicode = 57808 # 0xe1d0
+  #   featureTag = 'XHS0'
+  #   sequence = "+>"
+  # '';
+  extraParameters ? null,
   # Custom font set options.
   # See https://typeof.net/Iosevka/customizer
   # Can be a raw TOML string, or a Nix attrset.
-
   # Ex:
   # privateBuildPlan = ''
   #   [buildPlans.iosevka-custom]
@@ -23,7 +32,6 @@
   #   [buildPlans.iosevka-custom.variants.italic]
   #   i = "tailed"
   # '';
-
   # Or:
   # privateBuildPlan = {
   #   family = "Iosevka Custom";
@@ -36,17 +44,6 @@
   #   };
   # }
   privateBuildPlan ? null,
-  # Extra parameters. Can be used for ligature mapping.
-  # It must be a raw TOML string.
-
-  # Ex:
-  # extraParameters = ''
-  #   [[iosevka.compLig]]
-  #   unicode = 57808 # 0xe1d0
-  #   featureTag = 'XHS0'
-  #   sequence = "+>"
-  # '';
-  extraParameters ? null,
   # Custom font set name. Required if `extraParameters` is used and/or
   # if `privateBuildPlan` is a TOML string.
   set ? privateBuildPlan.family or null,
@@ -57,6 +54,7 @@ assert (privateBuildPlan != null) -> set != null;
 assert (extraParameters != null) -> set != null;
 
 buildNpmPackage rec {
+  inherit extraParameters;
   pname = "Iosevka${toString set}";
   version = "34.7.0";
 
@@ -67,7 +65,7 @@ buildNpmPackage rec {
     hash = "sha256-OwCtp/WufMCzuaPTDCr2siorUC52zgM2e80DyshzsZw=";
   };
 
-  npmDepsHash = "sha256-tlBxO9K0itXO6Mac4jcygZ6+9kj1gTdmu+rtbL2qdcE=";
+  strictDeps = true;
 
   nativeBuildInputs = [
     go-toml
@@ -78,15 +76,33 @@ buildNpmPackage rec {
     cctools
   ];
 
-  strictDeps = true;
+  npmDepsHash = "sha256-tlBxO9K0itXO6Mac4jcygZ6+9kj1gTdmu+rtbL2qdcE=";
+
+  buildPhase = ''
+    export HOME=$TMPDIR
+    runHook preBuild
+
+    # pipe to cat to disable progress bar
+    npm run build --no-update-notifier --targets ttf::"$pname" -- --jCmd=$NIX_BUILD_CORES --verbosity=9 | cat
+
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    fontdir="$out/share/fonts/truetype"
+    install -d "$fontdir"
+    install "dist/$pname/TTF"/* "$fontdir"
+    runHook postInstall
+  '';
+
+  __structuredAttrs = true;
 
   buildPlan =
     if builtins.isAttrs privateBuildPlan then
       builtins.toJSON { buildPlans.${pname} = privateBuildPlan; }
     else
       privateBuildPlan;
-
-  inherit extraParameters;
 
   configurePhase = ''
     runHook preConfigure
@@ -112,42 +128,26 @@ buildNpmPackage rec {
     runHook postConfigure
   '';
 
-  buildPhase = ''
-    export HOME=$TMPDIR
-    runHook preBuild
-
-    # pipe to cat to disable progress bar
-    npm run build --no-update-notifier --targets ttf::"$pname" -- --jCmd=$NIX_BUILD_CORES --verbosity=9 | cat
-
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-    fontdir="$out/share/fonts/truetype"
-    install -d "$fontdir"
-    install "dist/$pname/TTF"/* "$fontdir"
-    runHook postInstall
-  '';
-
   enableParallelBuilding = true;
   requiredSystemFeatures = [ "big-parallel" ];
 
-  __structuredAttrs = true;
-
   meta = {
-    homepage = "https://typeof.net/Iosevka/";
-    downloadPage = "https://github.com/be5invis/Iosevka/releases";
     description = "Versatile typeface for code, from code";
+
     longDescription = ''
       Iosevka is an open-source, sans-serif + slab-serif, monospace +
       quasi‑proportional typeface family, designed for writing code, using in
       terminals, and preparing technical documents.
     '';
+
+    homepage = "https://typeof.net/Iosevka/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       lunik1
     ];
+
+    platforms = lib.platforms.all;
+    downloadPage = "https://github.com/be5invis/Iosevka/releases";
   };
 }

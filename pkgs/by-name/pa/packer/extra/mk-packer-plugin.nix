@@ -1,17 +1,17 @@
 let
   platformSuffix = {
-    x86_64-linux = "linux_amd64";
-    aarch64-linux = "linux_arm64";
     aarch64-darwin = "darwin_arm64";
+    aarch64-linux = "linux_arm64";
+    x86_64-linux = "linux_amd64";
   };
 in
 
 {
-  stdenv,
   lib,
+  stdenv,
   buildGoModule,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 lib.extendMkDerivation {
@@ -25,15 +25,15 @@ lib.extendMkDerivation {
     finalAttrs:
     {
       pname,
-      version,
       src,
+      version,
+      apiVersion ? "x5.0",
+      doInstallCheck ? true,
       ldflags ? [ ],
       nativeInstallCheckInputs ? [ ],
       postFixup ? "",
       subPackages ? [ "." ],
-      apiVersion ? "x5.0",
       versionCheckProgramArg ? "describe",
-      doInstallCheck ? true,
       ...
     }@prevAttrs:
     # Packer expects plugins to be hosted on GitHub and follow a specific release structure
@@ -62,8 +62,16 @@ lib.extendMkDerivation {
         versionCheckProgramArg
         ;
 
-      __structuredAttrs = true;
       strictDeps = true;
+      nativeInstallCheckInputs = nativeInstallCheckInputs ++ [ versionCheckHook ];
+
+      # Generate checksums AFTER fixup phase when binary is finalized
+      postFixup = postFixup + ''
+        mv "$out/bin/${finalAttrs.src.repo}" "$out/bin/${binName}"
+        sha256sum "$out/bin/${binName}" | cut -d' ' -f1 > "$out/bin/${binName}_SHA256SUM"
+      '';
+
+      __structuredAttrs = true;
 
       ldflags =
         ldflags
@@ -81,19 +89,11 @@ lib.extendMkDerivation {
 
       versionCheckProgram = prevAttrs.versionCheckProgram or "${placeholder "out"}/bin/${binName}";
 
-      nativeInstallCheckInputs = nativeInstallCheckInputs ++ [ versionCheckHook ];
-
-      # Generate checksums AFTER fixup phase when binary is finalized
-      postFixup = postFixup + ''
-        mv "$out/bin/${finalAttrs.src.repo}" "$out/bin/${binName}"
-        sha256sum "$out/bin/${binName}" | cut -d' ' -f1 > "$out/bin/${binName}_SHA256SUM"
-      '';
-
-      meta.mainProgram = binName;
-
       passthru = {
         pluginPath = "${finalAttrs.src.githubBase}/${finalAttrs.src.owner}/${lib.removePrefix "packer-plugin-" finalAttrs.src.repo}/${binName}";
         updateScript = prevAttrs.passthru.updateScript or (nix-update-script { });
       };
+
+      meta.mainProgram = binName;
     };
 }

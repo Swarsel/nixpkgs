@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   gawk,
 }:
 
@@ -17,10 +17,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Luz6boPGIJqF/PJHZmnu3zChT5g8Wt37eOMtFS7j2pI=";
   };
 
-  vendorHash = null;
-
-  nativeCheckInputs = [ gawk ];
-
   postPatch = ''
     substituteInPlace goawk_test.go \
       --replace "TestCommandLine" "SkipCommandLine" \
@@ -32,18 +28,20 @@ buildGoModule (finalAttrs: {
       --replace "TestShellCommand" "SkipShellCommand"
   '';
 
+  vendorHash = null;
+  doCheck = (stdenv.system != "aarch64-darwin");
+  nativeCheckInputs = [ gawk ];
+
   checkFlags = [
     "-awk"
     "${gawk}/bin/gawk"
   ];
 
-  doCheck = (stdenv.system != "aarch64-darwin");
-
   meta = {
     description = "POSIX-compliant AWK interpreter written in Go";
     homepage = "https://benhoyt.com/writings/goawk/";
     license = lib.licenses.mit;
-    mainProgram = "goawk";
     maintainers = with lib.maintainers; [ abbe ];
+    mainProgram = "goawk";
   };
 })

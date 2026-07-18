@@ -2,21 +2,18 @@
   lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
   enchant_2,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "pyenchant";
   version = "3.3.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "sha256-glKIJGtd68lDb5GWdlCXTvDVY2RYUCYZ4yLEdvEoOJE=";
   };
-
-  propagatedBuildInputs = [ enchant_2 ];
 
   postPatch =
     let
@@ -35,8 +32,10 @@ buildPythonPackage rec {
         --replace '/opt/local/lib/' ""
     '';
 
+  propagatedBuildInputs = [ enchant_2 ];
   # dictionaries needed for tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python bindings for the Enchant spellchecker";

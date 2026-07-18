@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   SDL2,
+  cmake,
   libx11,
   ncurses,
   nix-update-script,
-  enableSDL ? true,
-  enableGUI ? true,
-  enableX11 ? stdenv.hostPlatform.isLinux,
+  pkg-config,
   enableCurses ? true,
+  enableGUI ? true,
+  enableSDL ? true,
   enableTests ? true,
+  enableX11 ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,7 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-agwNuIxO+o4HHkjd3TikYuVNgO0vlDPikcZoLDVLCUc=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -48,16 +47,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = enableTests;
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "ASCII art webcam and video viewer";
     homepage = "https://github.com/dyne/hasciicam";
     changelog = "https://github.com/dyne/hasciicam/releases/tag/v${finalAttrs.version}";
-    mainProgram = "hasciicam";
-    platforms = lib.platforms.unix;
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ castorNova2 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "hasciicam";
   };
 })

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -9,10 +9,6 @@ let
 
 in
 {
-  meta = {
-    teams = [ lib.teams.lxqt ];
-  };
-
   options.xdg.portal.lxqt = {
     enable = lib.mkEnableOption ''
       the desktop portal for the LXQt desktop environment.
@@ -23,29 +19,37 @@ in
     '';
 
     styles = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
       default = [ ];
+
+      description = ''
+        Extra Qt styles that will be available to the
+        `lxqt.xdg-desktop-portal-lxqt`.
+      '';
+
       example = lib.literalExpression ''
         [
           pkgs.libsForQt5.qtstyleplugin-kvantum
           pkgs.breeze-qt5
         ];
       '';
-      description = ''
-        Extra Qt styles that will be available to the
-        `lxqt.xdg-desktop-portal-lxqt`.
-      '';
+
+      type = lib.types.listOf lib.types.package;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = cfg.styles;
+
     xdg.portal = {
       enable = true;
+
       extraPortals = [
         (pkgs.lxqt.xdg-desktop-portal-lxqt.override { extraQtStyles = cfg.styles; })
       ];
     };
+  };
 
-    environment.systemPackages = cfg.styles;
+  meta = {
+    teams = [ lib.teams.lxqt ];
   };
 }

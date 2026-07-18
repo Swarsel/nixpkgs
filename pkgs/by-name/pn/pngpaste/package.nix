@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Paste image files from clipboard to file on MacOS";
+
     longDescription = ''
       Paste PNG into files on MacOS, much like pbpaste does for text.
       Supported input formats are PNG, PDF, GIF, TIF, JPEG.
@@ -30,10 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
       formats are determined by the provided filename extension,
       falling back to PNG.
     '';
+
     homepage = "https://github.com/jcsalterego/pngpaste";
     changelog = "https://github.com/jcsalterego/pngpaste/raw/${finalAttrs.version}/CHANGELOG.md";
-    platforms = lib.platforms.darwin;
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ samw ];
+    platforms = lib.platforms.darwin;
   };
 })

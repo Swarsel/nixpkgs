@@ -1,9 +1,9 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
-  gitUpdater,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  gitUpdater,
   primecount,
 }:
 
@@ -25,20 +25,20 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  nativeBuildInputs = [ cmake ];
-
   strictDeps = true;
+  nativeBuildInputs = [ cmake ];
 
   passthru = {
     tests = {
       inherit primecount; # dependent
     };
+
     updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
-    homepage = "https://primesieve.org/";
     description = "Fast C/C++ prime number generator";
+
     longDescription = ''
       primesieve is a command-line program and C/C++ library for quickly
       generating prime numbers. It is very cache efficient, it detects your
@@ -47,10 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
       CPU cores whenever possible i.e. if sequential ordering is not
       required. primesieve can generate primes and prime k-tuplets up to 264.
     '';
+
+    homepage = "https://primesieve.org/";
     changelog = "https://github.com/kimwalisch/primesieve/blob/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.bsd2;
+    platforms = lib.platforms.unix;
     mainProgram = "primesieve";
     teams = [ lib.teams.sage ];
-    platforms = lib.platforms.unix;
   };
 })

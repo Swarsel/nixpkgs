@@ -1,19 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
-  buildPythonPackage,
-  hatchling,
   boto3,
   botocore,
+  buildPythonPackage,
   cattrs,
-  fetchFromGitHub,
+  hatchling,
   itsdangerous,
+  orjson,
   platformdirs,
   psutil,
   pymongo,
-  pytestCheckHook,
   pytest-rerunfailures,
   pytest-xdist,
+  pytestCheckHook,
   pyyaml,
   redis,
   requests,
@@ -23,48 +24,19 @@
   tenacity,
   time-machine,
   ujson,
-  orjson,
-  urllib3,
   url-normalize,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "requests-cache";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "requests-cache";
     repo = "requests-cache";
     tag = "v${finalAttrs.version}";
     hash = "sha256-qil5z54kkxu8QlPQ2P/7jo+VyfC+KhhiSUyAVmuLG/o=";
-  };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    attrs
-    cattrs
-    platformdirs
-    requests
-    urllib3
-    url-normalize
-  ];
-
-  optional-dependencies = {
-    dynamodb = [
-      boto3
-      botocore
-    ];
-    mongodb = [ pymongo ];
-    redis = [ redis ];
-    security = [ itsdangerous ];
-    yaml = [ pyyaml ];
-    all = [
-      orjson
-      ujson
-    ]
-    ++ lib.concatAttrValues (lib.removeAttrs finalAttrs.passthru.optional-dependencies [ "all" ]);
   };
 
   nativeCheckInputs = [
@@ -83,9 +55,15 @@ buildPythonPackage (finalAttrs: {
     export HOME=$(mktemp -d);
   '';
 
-  enabledTestPaths = [
-    # Integration tests require local DBs
-    "tests/unit"
+  build-system = [ hatchling ];
+
+  dependencies = [
+    attrs
+    cattrs
+    platformdirs
+    requests
+    urllib3
+    url-normalize
   ];
 
   disabledTests = [
@@ -93,6 +71,30 @@ buildPythonPackage (finalAttrs: {
     "test_request_only_if_cached__stale_if_error__expired"
   ];
 
+  enabledTestPaths = [
+    # Integration tests require local DBs
+    "tests/unit"
+  ];
+
+  optional-dependencies = {
+    all = [
+      orjson
+      ujson
+    ]
+    ++ lib.concatAttrValues (lib.removeAttrs finalAttrs.passthru.optional-dependencies [ "all" ]);
+
+    dynamodb = [
+      boto3
+      botocore
+    ];
+
+    mongodb = [ pymongo ];
+    redis = [ redis ];
+    security = [ itsdangerous ];
+    yaml = [ pyyaml ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "requests_cache" ];
 
   meta = {

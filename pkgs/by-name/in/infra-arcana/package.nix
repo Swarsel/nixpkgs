@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  cmake,
-  makeWrapper,
   SDL2,
   SDL2_image,
   SDL2_mixer,
+  cmake,
   fetchpatch,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,13 +27,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Remove CMake minimum version requirement
     (fetchpatch {
-      url = "https://gitlab.com/martin-tornqvist/ia/-/commit/6d82fe8ac58cfb33b65eb1c345d6a73d7c0a300b.patch";
       sha256 = "sha256-WaJKcjKQ9Ip46MM4W2lTFu1ev1lutbgXpceWX2KnffI=";
+      url = "https://gitlab.com/martin-tornqvist/ia/-/commit/6d82fe8ac58cfb33b65eb1c345d6a73d7c0a300b.patch";
     })
     # Re-add required CMake version, raise to higher version
     (fetchpatch {
-      url = "https://gitlab.com/martin-tornqvist/ia/-/commit/51ca3d3cf577a159d65799124c3d19b7c6d49057.patch";
       sha256 = "sha256-+GklNdHsywxN8tCciPjRK9/H75hoSp3oh7rIj6J0gMM=";
+      url = "https://gitlab.com/martin-tornqvist/ia/-/commit/51ca3d3cf577a159d65799124c3d19b7c6d49057.patch";
     })
   ];
 
@@ -41,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     makeWrapper
   ];
+
   buildInputs = [
     SDL2
     SDL2_image
@@ -64,9 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://sites.google.com/site/infraarcana";
     description = "Lovecraftian single-player roguelike game";
-    mainProgram = "infra-arcana";
+
     longDescription = ''
       Infra Arcana is a Roguelike set in the early 20th century. The goal is to
       explore the lair of a dreaded cult called The Church of Starry Wisdom.
@@ -75,8 +75,11 @@ stdenv.mkDerivation (finalAttrs: {
       Shining Trapezohedron - a window to all secrets of the universe. Your
       ultimate goal is to unearth this artifact.
     '';
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.kenran ];
+
+    homepage = "https://sites.google.com/site/infraarcana";
     license = lib.licenses.agpl3Plus;
+    maintainers = [ lib.maintainers.kenran ];
+    platforms = lib.platforms.linux;
+    mainProgram = "infra-arcana";
   };
 })

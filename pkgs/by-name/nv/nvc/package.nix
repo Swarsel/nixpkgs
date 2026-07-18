@@ -4,12 +4,12 @@
   fetchFromGitHub,
   autoreconfHook,
   check,
-  flex,
-  pkg-config,
-  which,
   elfutils,
+  flex,
   libffi,
   llvm,
+  pkg-config,
+  which,
   zlib,
   zstd,
 }:
@@ -43,26 +43,25 @@ stdenv.mkDerivation (finalAttrs: {
     elfutils
   ];
 
-  preConfigure = ''
-    mkdir build
-    cd build
-  '';
-
-  configureScript = "../configure";
-
   configureFlags = [
     "--enable-vhpi"
     "--disable-lto"
   ];
 
+  preConfigure = ''
+    mkdir build
+    cd build
+  '';
+
   doCheck = true;
+  configureScript = "../configure";
 
   meta = {
     description = "VHDL compiler and simulator";
-    mainProgram = "nvc";
     homepage = "https://www.nickg.me.uk/nvc/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.unix;
+    mainProgram = "nvc";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  ocamlPackages,
   fetchFromGitHub,
+  ocamlPackages,
   scdoc,
 }:
 
@@ -32,7 +32,7 @@ ocamlPackages.buildDunePackage rec {
     changelog = "https://github.com/lthms/spatial-shell/blob/${src.rev}/CHANGES.md";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "spatial";
     platforms = lib.platforms.linux;
+    mainProgram = "spatial";
   };
 }

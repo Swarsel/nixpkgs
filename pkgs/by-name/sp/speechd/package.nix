@@ -1,38 +1,38 @@
 {
-  stdenv,
   lib,
-  replaceVars,
-  pkg-config,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  python3Packages,
-  gettext,
-  itstool,
-  libtool,
-  texinfo,
-  systemdMinimal,
-  util-linux,
-  autoreconfHook,
-  glib,
-  dotconf,
-  libsndfile,
-  withLibao ? true,
-  libao,
-  withPulse ? false,
-  libpulseaudio,
-  withAlsa ? false,
   alsa-lib,
-  withOss ? false,
-  withFlite ? true,
-  flite,
-  withEspeak ? true,
+  autoreconfHook,
+  dotconf,
   espeak,
-  sonic,
-  pcaudiolib,
+  fetchpatch,
+  flite,
+  gettext,
+  glib,
+  itstool,
+  libao,
+  libpulseaudio,
+  libsndfile,
+  libtool,
   mbrola,
-  withPico ? true,
+  pcaudiolib,
   picotts,
+  pkg-config,
+  python3Packages,
+  replaceVars,
+  sonic,
+  systemdMinimal,
+  texinfo,
+  util-linux,
   libsOnly ? false,
+  withAlsa ? false,
+  withEspeak ? true,
+  withFlite ? true,
+  withLibao ? true,
+  withOss ? false,
+  withPico ? true,
+  withPulse ? false,
 }:
 
 let
@@ -49,14 +49,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (replaceVars ./fix-paths.patch {
-      utillinux = util-linux;
       # patch context
       bindir = null;
+      utillinux = util-linux;
     })
     (fetchpatch {
+      hash = "sha256-7R5BH6QmxovvtXoH/T76qu6YMfm1HE+CA0eB0mzwmfY=";
       name = "use-binsh.patch";
       url = "https://github.com/brailcom/speechd/commit/66d5fe65cffd4c0ce9cfb4c6d292866ed8726999.diff?full_index=1";
-      hash = "sha256-7R5BH6QmxovvtXoH/T76qu6YMfm1HE+CA0eB0mzwmfY=";
     })
   ]
   ++ lib.optionals (withEspeak && espeak.mbrolaSupport) [
@@ -65,6 +65,10 @@ stdenv.mkDerivation (finalAttrs: {
       inherit mbrola;
     })
   ];
+
+  postPatch = lib.optionalString withPico ''
+    substituteInPlace src/modules/pico.c --replace "/usr/share/pico/lang" "${picotts}/share/pico/lang"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -102,10 +106,6 @@ stdenv.mkDerivation (finalAttrs: {
     picotts
   ];
 
-  pythonPath = [
-    pyxdg
-  ];
-
   configureFlags = [
     "--sysconfdir=/etc"
     # Audio method falls back from left to right.
@@ -132,14 +132,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-pico"
   ];
 
-  postPatch = lib.optionalString withPico ''
-    substituteInPlace src/modules/pico.c --replace "/usr/share/pico/lang" "${picotts}/share/pico/lang"
-  '';
-
-  installFlags = [
-    "sysconfdir=${placeholder "out"}/etc"
-  ];
-
   postInstall =
     if libsOnly then
       ''
@@ -152,9 +144,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  installFlags = [
+    "sysconfdir=${placeholder "out"}/etc"
+  ];
+
+  pythonPath = [
+    pyxdg
+  ];
+
   meta = {
     description =
       "Common interface to speech synthesis" + lib.optionalString libsOnly " - client libraries only";
+
     homepage = "https://devel.freebsoft.org/speechd";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ jtojnar ];

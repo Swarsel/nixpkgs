@@ -1,18 +1,18 @@
 {
   lib,
-  buildBazelPackage,
   fetchFromGitHub,
-  qt6,
+  bazel_7,
+  buildBazelPackage,
+  ibus,
+  jp-zip-codes,
+  merge-ut-dictionaries,
   pkg-config,
   protobuf_27,
-  bazel_7,
-  ibus,
-  withIbus ? false,
+  qt6,
   unzip,
   xdg-utils,
-  jp-zip-codes,
   dictionaries ? [ ],
-  merge-ut-dictionaries,
+  withIbus ? false,
 }:
 
 let
@@ -30,6 +30,18 @@ buildBazelPackage rec {
     fetchSubmodules = true;
   };
 
+  postPatch = ''
+    # replace protobuf with our own
+    rm -r src/third_party/protobuf
+    cp -r ${protobuf_27.src} src/third_party/protobuf
+    substituteInPlace src/config.bzl \
+      --replace-fail "/usr/bin/xdg-open" "${xdg-utils}/bin/xdg-open" \
+      --replace-fail "/usr" "$out"
+    substituteInPlace src/WORKSPACE.bazel \
+      --replace-fail "https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip" "file://${jp-zip-codes}/ken_all.zip" \
+      --replace-fail "https://www.post.japanpost.jp/zipcode/dl/jigyosyo/zip/jigyosyo.zip" "file://${jp-zip-codes}/jigyosyo.zip"
+  '';
+
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
     pkg-config
@@ -41,23 +53,14 @@ buildBazelPackage rec {
   ]
   ++ lib.optional withIbus ibus;
 
-  dontAddBazelOpts = true;
-  removeRulesCC = false;
+  preConfigure = ''
+    cd src
+  ''
+  + lib.optionalString (dictionaries != [ ]) ''
+    cat ${ut-dictionary}/mozcdic-ut.txt >> data/dictionary_oss/dictionary00.txt
+  '';
 
   bazel = bazel_7;
-
-  fetchAttrs = {
-    hash = "sha256-G05vlHiOJp4rvQBUj2ffRBuWBA/lpJju8CLiopYJckE=";
-
-    preInstall = ''
-      # Remove zip code data. It will be replaced with jp-zip-codes from nixpkgs
-      rm -rv "$bazelOut"/external/zip_code_{jigyosyo,ken_all}
-      # Remove references to buildInputs
-      rm -rv "$bazelOut"/external/{ibus,qt_linux}
-      # Remove reference to the host platform
-      rm -rv "$bazelOut"/external/host_platform
-    '';
-  };
 
   bazelFlags = [
     "--config"
@@ -78,25 +81,6 @@ buildBazelPackage rec {
     "unix/ibus:gen_mozc_xml"
     "unix/ibus:ibus_mozc"
   ];
-
-  postPatch = ''
-    # replace protobuf with our own
-    rm -r src/third_party/protobuf
-    cp -r ${protobuf_27.src} src/third_party/protobuf
-    substituteInPlace src/config.bzl \
-      --replace-fail "/usr/bin/xdg-open" "${xdg-utils}/bin/xdg-open" \
-      --replace-fail "/usr" "$out"
-    substituteInPlace src/WORKSPACE.bazel \
-      --replace-fail "https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip" "file://${jp-zip-codes}/ken_all.zip" \
-      --replace-fail "https://www.post.japanpost.jp/zipcode/dl/jigyosyo/zip/jigyosyo.zip" "file://${jp-zip-codes}/jigyosyo.zip"
-  '';
-
-  preConfigure = ''
-    cd src
-  ''
-  + lib.optionalString (dictionaries != [ ]) ''
-    cat ${ut-dictionary}/mozcdic-ut.txt >> data/dictionary_oss/dictionary00.txt
-  '';
 
   buildAttrs.installPhase = ''
     runHook preInstall
@@ -130,15 +114,34 @@ buildBazelPackage rec {
     runHook postInstall
   '';
 
+  dontAddBazelOpts = true;
+
+  fetchAttrs = {
+    preInstall = ''
+      # Remove zip code data. It will be replaced with jp-zip-codes from nixpkgs
+      rm -rv "$bazelOut"/external/zip_code_{jigyosyo,ken_all}
+      # Remove references to buildInputs
+      rm -rv "$bazelOut"/external/{ibus,qt_linux}
+      # Remove reference to the host platform
+      rm -rv "$bazelOut"/external/host_platform
+    '';
+
+    hash = "sha256-G05vlHiOJp4rvQBUj2ffRBuWBA/lpJju8CLiopYJckE=";
+  };
+
+  removeRulesCC = false;
+
   meta = {
-    isIbusEngine = withIbus;
     description = "Japanese input method from Google";
-    mainProgram = "mozc_emacs_helper";
     homepage = "https://github.com/google/mozc";
     license = lib.licenses.free;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       pineapplehunter
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "mozc_emacs_helper";
+    isIbusEngine = withIbus;
   };
 }

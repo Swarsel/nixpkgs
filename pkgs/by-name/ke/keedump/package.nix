@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,10 +21,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "PoC KeePass master password dumper";
     homepage = "https://github.com/ynuwenhof/keedump";
     changelog = "https://github.com/ynuwenhof/keedump/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ fab ];
     mainProgram = "keedump";
   };

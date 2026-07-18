@@ -1,10 +1,10 @@
 {
-  buildDotnetModule,
-  fetchFromGitHub,
-  dotnetCorePackages,
-  copyDesktopItems,
-  makeDesktopItem,
   lib,
+  fetchFromGitHub,
+  buildDotnetModule,
+  copyDesktopItems,
+  dotnetCorePackages,
+  makeDesktopItem,
   runCommandLocal,
 }:
 let
@@ -32,14 +32,30 @@ let
   '';
 in
 buildDotnetModule {
-  pname = "retrospy";
   inherit version;
-
   inherit src;
+  inherit executables;
+  pname = "retrospy";
 
   nativeBuildInputs = [
     copyDesktopItems
   ];
+
+  desktopItems = map (
+    e:
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      desktopName = "${e}";
+      exec = e;
+      icon = "${retrospy-icons}/share/retrospy/${e}.ico";
+      name = e;
+      startupWMClass = e;
+    })
+  ) executables;
+
+  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  nugetDeps = ./deps.json;
 
   projectFile = [
     "RetroSpyX/RetroSpyX.csproj"
@@ -48,26 +64,7 @@ buildDotnetModule {
     "UsbUpdaterX2/UsbUpdaterX2.csproj"
   ];
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
-
-  nugetDeps = ./deps.json;
-
-  inherit executables;
-
   passthru.updateScript = ./update.sh;
-
-  desktopItems = map (
-    e:
-    (makeDesktopItem {
-      name = e;
-      exec = e;
-      icon = "${retrospy-icons}/share/retrospy/${e}.ico";
-      desktopName = "${e}";
-      categories = [ "Utility" ];
-      startupWMClass = e;
-    })
-  ) executables;
 
   meta = {
     description = "Live controller viewer for Nintendo consoles as well as many other retro consoles and computers";

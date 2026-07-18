@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "oemthermostat";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Cadair";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-vrMw3/X8MtejO1WyUA1DOlfVCPTCPgcK5p3+OlTWcM4=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "oemthermostat" ];
 
   meta = {

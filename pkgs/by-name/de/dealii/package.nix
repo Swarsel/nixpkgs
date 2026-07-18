@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,18 +18,19 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ boost ];
 
   meta = {
-    homepage = "https://dealii.org/";
     description = "C++ software library supporting the creation of finite element codes";
+
     longDescription = ''
       deal.II is a C++ program library targeted at the computational solution of
       partial differential equations using adaptive finite elements.
       It uses state-of-the-art programming techniques to offer you a modern interface
       to the complex data structures and algorithms required.
     '';
+
+    homepage = "https://dealii.org/";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ neural-blade ];
     platforms = lib.platforms.unix;

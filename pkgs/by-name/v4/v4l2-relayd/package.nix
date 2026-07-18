@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
+  fetchgit,
+  gitUpdater,
   glib,
   gst_all_1,
   libtool,
   pkg-config,
   which,
-  gitUpdater,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "v4l2-relayd";
@@ -41,10 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Streaming relay for v4l2loopback using GStreamer";
-    mainProgram = "v4l2-relayd";
     homepage = "https://git.launchpad.net/v4l2-relayd";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ betaboon ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "v4l2-relayd";
   };
 })

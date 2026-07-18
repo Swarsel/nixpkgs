@@ -1,12 +1,14 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cacert,
   cargo-tauri,
   cmake,
   curl,
+  dart-sass,
   desktop-file-utils,
-  fetchFromGitHub,
+  fetchPnpmDeps,
   git,
   glib-networking,
   jq,
@@ -17,7 +19,6 @@
   nodejs,
   openssl,
   pkg-config,
-  fetchPnpmDeps,
   pnpmConfigHook,
   pnpm_10,
   rust,
@@ -25,7 +26,6 @@
   turbo,
   webkitgtk_4_1,
   wrapGAppsHook4,
-  dart-sass,
 }:
 let
   pnpm = pnpm_10;
@@ -56,15 +56,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail 'checkUpdate = tauriCheck;' 'checkUpdate = () => null;'
   '';
 
-  cargoHash = "sha256-7dF865YPcVp/g6PUs5QRaU3wZ0UmlAgaPGhHsIjIZPY=";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-SqIf61KryWEvrw9rqA4UXTS+DCe08o+LqT4s1o9cPVE=";
-  };
-
   nativeBuildInputs = [
     cacert # Required by turbo
     cargo-tauri.hook
@@ -92,12 +83,45 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  tauriBuildFlags = [
-    "--config"
-    "crates/gitbutler-tauri/tauri.conf.release.json"
-  ];
+  cargoHash = "sha256-7dF865YPcVp/g6PUs5QRaU3wZ0UmlAgaPGhHsIjIZPY=";
+
+  env = {
+    # `fetchPnpmDeps` and `pnpmConfigHook` use a specific version of pnpm, not upstream's
+    COREPACK_ENABLE_STRICT = 0;
+    LIBGIT2_NO_VENDOR = 1;
+    OPENSSL_NO_VENDOR = true;
+    # task tracing requires Tokio to be built with RUSTFLAGS="--cfg tokio_unstable"
+    RUSTFLAGS = "--cfg tokio_unstable";
+    # Make sure `crates/gitbutler-tauri/inject-git-binaries.sh` can find our
+    # target dir
+    # https://github.com/gitbutlerapp/gitbutler/blob/56b64d778042d0e93fa362f808c35a7f095ab1d1/crates/gitbutler-tauri/inject-git-binaries.sh#L10C10-L10C26
+    TRIPLE_OVERRIDE = rust.envVars.rustHostPlatformSpec;
+    TUBRO_BINARY_PATH = lib.getExe turbo;
+    TURBO_TELEMETRY_DISABLED = 1;
+  };
+
+  preBuild = ''
+    # force the sass npm dependency to use our own sass binary instead of the bundled one
+    substituteInPlace node_modules/.pnpm/sass-embedded@*/node_modules/sass-embedded/dist/lib/src/compiler-path.js \
+      --replace-fail 'compilerCommand = (() => {' 'compilerCommand = (() => { return ["${lib.getExe dart-sass}"];'
+
+    turbo run --filter @gitbutler/svelte-comment-injector build
+    pnpm build:desktop -- --mode production
+  '';
 
   nativeCheckInputs = [ git ];
+
+  postInstall =
+    lib.optionalString stdenv.hostPlatform.isDarwin ''
+      makeBinaryWrapper $out/Applications/GitButler.app/Contents/MacOS/gitbutler-tauri $out/bin/gitbutler-tauri
+    ''
+    + lib.optionalString stdenv.hostPlatform.isLinux ''
+      desktop-file-edit \
+        --set-comment "A Git client for simultaneous branches on top of your existing workflow." \
+        --set-key="Keywords" --set-value="git;" \
+        --set-key="StartupWMClass" --set-value="GitButler" \
+        $out/share/applications/GitButler.desktop
+    '';
 
   cargoTestFlags = [
     "--workspace"
@@ -148,45 +172,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "track_directory_changes_after_rename"
   ];
 
-  env = {
-    # Make sure `crates/gitbutler-tauri/inject-git-binaries.sh` can find our
-    # target dir
-    # https://github.com/gitbutlerapp/gitbutler/blob/56b64d778042d0e93fa362f808c35a7f095ab1d1/crates/gitbutler-tauri/inject-git-binaries.sh#L10C10-L10C26
-    TRIPLE_OVERRIDE = rust.envVars.rustHostPlatformSpec;
-
-    # `fetchPnpmDeps` and `pnpmConfigHook` use a specific version of pnpm, not upstream's
-    COREPACK_ENABLE_STRICT = 0;
-
-    # task tracing requires Tokio to be built with RUSTFLAGS="--cfg tokio_unstable"
-    RUSTFLAGS = "--cfg tokio_unstable";
-
-    TUBRO_BINARY_PATH = lib.getExe turbo;
-    TURBO_TELEMETRY_DISABLED = 1;
-
-    OPENSSL_NO_VENDOR = true;
-    LIBGIT2_NO_VENDOR = 1;
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-SqIf61KryWEvrw9rqA4UXTS+DCe08o+LqT4s1o9cPVE=";
   };
 
-  preBuild = ''
-    # force the sass npm dependency to use our own sass binary instead of the bundled one
-    substituteInPlace node_modules/.pnpm/sass-embedded@*/node_modules/sass-embedded/dist/lib/src/compiler-path.js \
-      --replace-fail 'compilerCommand = (() => {' 'compilerCommand = (() => { return ["${lib.getExe dart-sass}"];'
-
-    turbo run --filter @gitbutler/svelte-comment-injector build
-    pnpm build:desktop -- --mode production
-  '';
-
-  postInstall =
-    lib.optionalString stdenv.hostPlatform.isDarwin ''
-      makeBinaryWrapper $out/Applications/GitButler.app/Contents/MacOS/gitbutler-tauri $out/bin/gitbutler-tauri
-    ''
-    + lib.optionalString stdenv.hostPlatform.isLinux ''
-      desktop-file-edit \
-        --set-comment "A Git client for simultaneous branches on top of your existing workflow." \
-        --set-key="Keywords" --set-value="git;" \
-        --set-key="StartupWMClass" --set-value="GitButler" \
-        $out/share/applications/GitButler.desktop
-    '';
+  tauriBuildFlags = [
+    "--config"
+    "crates/gitbutler-tauri/tauri.conf.release.json"
+  ];
 
   passthru = {
     updateScript = nix-update-script {
@@ -202,11 +198,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://gitbutler.com";
     changelog = "https://github.com/gitbutlerapp/gitbutler/releases/tag/release/${finalAttrs.version}";
     license = lib.licenses.fsl11Mit;
+
     maintainers = with lib.maintainers; [
       getchoo
       techknowlogick
     ];
-    mainProgram = "gitbutler-tauri";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "gitbutler-tauri";
   };
 })

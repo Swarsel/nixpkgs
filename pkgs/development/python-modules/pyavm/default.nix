@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # tests
   astropy,
+  buildPythonPackage,
+  fetchPypi,
   numpy,
   pillow,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pyavm";
   version = "0.9.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -36,6 +33,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyavm" ];
 
   meta = {

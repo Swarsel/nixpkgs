@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
 }:
@@ -18,17 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uk/tX1AfYfy4ARzyd9IZijFYBEsfrx/DX+QsTVg3Jc4=";
   };
 
-  vendorHash = "sha256-sH9zV99XX7f8q7guBDkLAJ7Lr3eiQXSQ2+CGd2zphLk=";
-
-  subPackages = [ "cmd/license-eye" ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/apache/skywalking-eyes/commands.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-sH9zV99XX7f8q7guBDkLAJ7Lr3eiQXSQ2+CGd2zphLk=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd license-eye \
@@ -37,6 +28,13 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/license-eye completion fish)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/apache/skywalking-eyes/commands.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/license-eye" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

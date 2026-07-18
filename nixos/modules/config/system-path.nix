@@ -71,30 +71,14 @@ in
 
     environment = {
 
-      systemPackages = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        example = lib.literalExpression "[ pkgs.firefox pkgs.thunderbird ]";
-        description = ''
-          The set of packages that appear in
-          /run/current-system/sw.  These packages are
-          automatically available to all users, and are
-          automatically updated every time you rebuild the system
-          configuration.  (The latter is the main difference with
-          installing them in the default profile,
-          {file}`/nix/var/nix/profiles/default`.
-        '';
-      };
-
       corePackages = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
         defaultText = lib.literalMD ''
           these packages, with their `meta.priority` numerically increased
           (thus lowering their installation priority):
 
               ${corePackagesText}
         '';
-        example = [ ];
+
         description = ''
           Set of core packages for a normal interactive system.
 
@@ -106,18 +90,21 @@ in
           automatically updated every time you rebuild the system
           configuration.
         '';
+
+        example = [ ];
+        type = lib.types.listOf lib.types.package;
       };
 
       defaultPackages = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
         default = defaultPackages;
+
         defaultText = lib.literalMD ''
           these packages, with their `meta.priority` numerically increased
           (thus lowering their installation priority):
 
               ${defaultPackagesText}
         '';
-        example = [ ];
+
         description = ''
           Set of default packages that aren't strictly necessary
           for a running system, entries can be removed for a more
@@ -129,24 +116,14 @@ in
           automatically updated every time you rebuild the system
           configuration.
         '';
-      };
 
-      pathsToLink = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        # Note: We need `/lib' to be among `pathsToLink' for NSS modules
-        # to work.
-        default = [ ];
-        example = [ "/" ];
-        description = "List of directories to be symlinked in {file}`/run/current-system/sw`.";
+        example = [ ];
+        type = lib.types.listOf lib.types.package;
       };
 
       extraOutputsToInstall = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
-        example = [
-          "dev"
-          "info"
-        ];
+
         description = ''
           Entries listed here will be appended to the `meta.outputsToInstall` attribute for each package in `environment.systemPackages`, and the files from the corresponding derivation outputs symlinked into {file}`/run/current-system/sw`.
 
@@ -154,12 +131,45 @@ in
 
           To use specific outputs instead of configuring them globally, select the corresponding attribute on the package derivation, e.g. `libxml2.dev` or `coreutils.info`.
         '';
+
+        example = [
+          "dev"
+          "info"
+        ];
+
+        type = lib.types.listOf lib.types.str;
       };
 
       extraSetup = lib.mkOption {
-        type = lib.types.lines;
         default = "";
         description = "Shell fragments to be run after the system environment has been created. This should only be used for things that need to modify the internals of the environment, e.g. generating MIME caches. The environment being built can be accessed at $out.";
+        type = lib.types.lines;
+      };
+
+      pathsToLink = lib.mkOption {
+        # Note: We need `/lib' to be among `pathsToLink' for NSS modules
+        # to work.
+        default = [ ];
+        description = "List of directories to be symlinked in {file}`/run/current-system/sw`.";
+        example = [ "/" ];
+        type = lib.types.listOf lib.types.str;
+      };
+
+      systemPackages = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          The set of packages that appear in
+          /run/current-system/sw.  These packages are
+          automatically available to all users, and are
+          automatically updated every time you rebuild the system
+          configuration.  (The latter is the main difference with
+          installing them in the default profile,
+          {file}`/nix/var/nix/profiles/default`.
+        '';
+
+        example = lib.literalExpression "[ pkgs.firefox pkgs.thunderbird ]";
+        type = lib.types.listOf lib.types.package;
       };
 
     };
@@ -167,10 +177,11 @@ in
     system = {
 
       path = lib.mkOption {
-        internal = true;
         description = ''
           The packages you want in the boot environment.
         '';
+
+        internal = true;
       };
 
     };
@@ -182,8 +193,6 @@ in
     # Set this here so that it has the right priority and allows ergonomic
     # merging.
     environment.corePackages = corePackages;
-
-    environment.systemPackages = config.environment.corePackages ++ config.environment.defaultPackages;
 
     environment.pathsToLink = [
       "/bin"
@@ -204,11 +213,14 @@ in
       "/share/thumbnailers"
     ];
 
+    environment.systemPackages = config.environment.corePackages ++ config.environment.defaultPackages;
+
     system.path = pkgs.buildEnv {
-      name = "system-path";
-      paths = config.environment.systemPackages;
       inherit (config.environment) pathsToLink extraOutputsToInstall;
       ignoreCollisions = true;
+      name = "system-path";
+      paths = config.environment.systemPackages;
+
       # !!! Hacky, should modularise.
       # outputs TODO: note that the tools will often not be linked by default
       postBuild = ''

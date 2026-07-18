@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -17,9 +17,9 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-3uztB5/VevFyEz3S+VlAUPgDrNDJcwaTnHuXXYAX+MY=";
-
   # upstream does not have any tests
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 

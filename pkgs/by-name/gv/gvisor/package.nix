@@ -1,13 +1,13 @@
 {
   lib,
-  nixosTests,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  glibc,
   iproute2,
   iptables,
   makeWrapper,
+  nixosTests,
   procps,
-  glibc,
 }:
 
 buildGoModule {
@@ -17,7 +17,6 @@ buildGoModule {
   # gvisor provides a synthetic go branch (https://github.com/google/gvisor/tree/go)
   # that can be used to build gvisor without bazel.
   # For updates, you should stick to the commits labeled "Merge release-** (automated)"
-
   src = fetchFromGitHub {
     owner = "google";
     repo = "gvisor";
@@ -25,27 +24,17 @@ buildGoModule {
     hash = "sha256-T0ilLqZTX2KNZdR7wuMnYimnL+G5Tbkd77IULCZE764=";
   };
 
+  patches = [ ./fix-go-mod-tidy.diff ];
+
   # Replace the placeholder with the actual path to ldconfig
   postPatch = ''
     substituteInPlace runsc/container/container.go \
       --replace-fail '"/sbin/ldconfig"' '"${glibc}/bin/ldconfig"'
   '';
 
-  vendorHash = "sha256-8Zkgt5hegYEHnG1lF+wLgdru6t3l+Z/qKRvJHukZbPo=";
-
   nativeBuildInputs = [ makeWrapper ];
-
+  vendorHash = "sha256-8Zkgt5hegYEHnG1lF+wLgdru6t3l+Z/qKRvJHukZbPo=";
   env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  subPackages = [
-    "runsc"
-    "shim"
-  ];
 
   postInstall = ''
     # Needed for the 'runsc do' subcommand
@@ -60,7 +49,15 @@ buildGoModule {
     mv $out/bin/shim $out/bin/containerd-shim-runsc-v1
   '';
 
-  patches = [ ./fix-go-mod-tidy.diff ];
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [
+    "runsc"
+    "shim"
+  ];
 
   passthru.tests = { inherit (nixosTests) gvisor; };
 
@@ -69,6 +66,7 @@ buildGoModule {
     homepage = "https://github.com/google/gvisor";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ gpl ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

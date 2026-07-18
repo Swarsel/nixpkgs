@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   bcc,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "ebpf-usb";
   version = "0-unstable-2022-04-03";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "francisrstokes";
@@ -17,21 +16,13 @@ python3Packages.buildPythonApplication {
     hash = "sha256-n3ttFej9sroTqAOgyAejwKT+aMt/z7HlVPV6CVGPNUQ=";
   };
 
-  makeWrapperArgs = [
-    "--set PYTHONUNBUFFERED 1"
-  ];
-
-  pythonPath = [
-    bcc
-  ]
-  ++ (with python3Packages; [
-    hexdump
-  ]);
-
   postPatch = ''
     substituteInPlace ebpf-usb.py \
       --replace '#!/usr/bin/env -S python3 -u' '#!/usr/bin/env python3'
   '';
+
+  # no tests
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -39,8 +30,18 @@ python3Packages.buildPythonApplication {
     runHook postInstall
   '';
 
-  # no tests
-  doCheck = false;
+  makeWrapperArgs = [
+    "--set PYTHONUNBUFFERED 1"
+  ];
+
+  pyproject = false;
+
+  pythonPath = [
+    bcc
+  ]
+  ++ (with python3Packages; [
+    hexdump
+  ]);
 
   meta = {
     description = "Python script for USB monitoring using eBPF";

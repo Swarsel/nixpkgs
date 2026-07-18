@@ -1,17 +1,19 @@
 {
-  deployAndroidPackage,
   lib,
-  package,
-  os,
   arch,
   autoPatchelfHook,
-  pkgs,
+  deployAndroidPackage,
   meta,
+  os,
+  package,
+  pkgs,
 }:
 
 deployAndroidPackage {
   inherit package os arch;
+  inherit meta;
   nativeBuildInputs = lib.optionals (os == "linux") [ autoPatchelfHook ];
+
   buildInputs = lib.optionals (os == "linux") [
     pkgs.glibc
     (lib.getLib pkgs.stdenv.cc.cc)
@@ -33,5 +35,4 @@ deployAndroidPackage {
           ln -s $i
       done
     '';
-  inherit meta;
 }

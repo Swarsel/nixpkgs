@@ -54,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/awslabs/aws-c-s3";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ r-burns ];
-    mainProgram = "s3";
     platforms = lib.platforms.unix;
+    mainProgram = "s3";
   };
 })

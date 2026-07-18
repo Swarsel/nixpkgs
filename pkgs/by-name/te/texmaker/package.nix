@@ -23,6 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-build-with-qt-6-10.patch
   ];
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    qt6.wrapQtAppsHook
+  ];
+
   buildInputs = [
     qt6Packages.poppler
     qt6.qtbase
@@ -30,11 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qt5compat
     qt6.qttools
     zlib
-  ];
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    qt6.wrapQtAppsHook
   ];
 
   qmakeFlags = [
@@ -45,17 +46,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "TeX and LaTeX editor";
+
     longDescription = ''
       This editor is a full fledged IDE for TeX and
       LaTeX editing with completion, structure viewer, preview,
       spell checking and support of any compilation chain.
     '';
+
     homepage = "http://www.xm1math.net/texmaker/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       cfouche
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "texmaker";
   };
 })

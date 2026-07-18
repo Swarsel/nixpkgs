@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
   makeWrapper,
   nix,
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,14 +15,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.4.1";
 
   src = fetchFromGitHub {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-src";
     owner = "jonringer";
     repo = "nix-template";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-42u5FmTIKHpfQ2zZQXIrFkAN2/XvU0wWnCRrQkQzcNI=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-src";
   };
-
-  cargoHash = "sha256-cLSGWOyBQLv235TeYqSVg/f0Zmcnpj+RshINN69JYEU=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -31,6 +29,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-cLSGWOyBQLv235TeYqSVg/f0Zmcnpj+RshINN69JYEU=";
 
   # needed for nix-prefetch-url
   postInstall = ''

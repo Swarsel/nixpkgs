@@ -19,6 +19,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libjack2
     libsndfile
@@ -35,10 +36,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Program for recording soundfiles with jack";
-    mainProgram = "jack_capture";
     homepage = "https://github.com/kmatheussen/jack_capture/";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "jack_capture";
   };
 }

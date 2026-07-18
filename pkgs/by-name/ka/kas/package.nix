@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  kas,
   python3,
   testers,
-  kas,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "kas";
   version = "5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "siemens";
@@ -19,6 +18,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   patches = [ ./pass-terminfo-env.patch ];
+  # Tests require network as they try to clone repos
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -33,18 +34,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     gitpython
   ];
 
-  # Tests require network as they try to clone repos
-  doCheck = false;
-  passthru.tests.version = testers.testVersion {
-    package = kas;
-    command = "kas --version";
-  };
-
+  pyproject = true;
   pythonImportsCheck = [ "kas" ];
 
+  passthru.tests.version = testers.testVersion {
+    command = "kas --version";
+    package = kas;
+  };
+
   meta = {
-    homepage = "https://github.com/siemens/kas";
     description = "Setup tool for bitbake based projects";
+    homepage = "https://github.com/siemens/kas";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bachp ];
   };

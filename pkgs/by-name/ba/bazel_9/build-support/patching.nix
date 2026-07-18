@@ -8,17 +8,18 @@
   # sources patch that adds given file to given location
   addFilePatch =
     {
-      path,
       file,
+      path,
     }:
     stdenv.mkDerivation {
-      name = "add_file.patch";
-      dontUnpack = true;
       buildPhase = ''
         mkdir -p $(dirname "${path}")
         cp ${file} "${path}"
         diff -u /dev/null "${path}" >result.patch || true  # diff exit code is non-zero if there's a diff
       '';
+
       installPhase = "cp result.patch $out";
+      dontUnpack = true;
+      name = "add_file.patch";
     };
 }

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  openssl,
   db,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,7 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/glv2/bruteforce-wallet/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ octodi ];
-    mainProgram = "bruteforce-wallet";
     platforms = lib.platforms.linux;
+    mainProgram = "bruteforce-wallet";
   };
 })

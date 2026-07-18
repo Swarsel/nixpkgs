@@ -45,14 +45,16 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/dasJ/spotifywm";
     description = "Wrapper around Spotify that correctly sets class name before opening the window";
+    homepage = "https://github.com/dasJ/spotifywm";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       jqueiroz
       the-argus
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "spotify";
   };
 }

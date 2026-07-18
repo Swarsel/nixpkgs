@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-Qma5Vk0JO/tTrZanvTCE40LmjeCfBup3U3N7gyhfp44=";
 
-  meta = {
-    homepage = "https://github.com/michaelmacinnis/oh";
-    description = "New Unix shell";
-    mainProgram = "oh";
-    license = lib.licenses.mit;
-  };
-
   passthru = {
     shellPath = "/bin/oh";
+  };
+
+  meta = {
+    description = "New Unix shell";
+    homepage = "https://github.com/michaelmacinnis/oh";
+    license = lib.licenses.mit;
+    mainProgram = "oh";
   };
 })

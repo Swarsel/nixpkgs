@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   libiconv,
   openssl,
   pkg-config,
   rustPlatform,
-  stdenv,
   zlib,
 }:
 
@@ -20,9 +20,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-IAjet/bDG/Hf/whS+yrEQSquj8s5DEmFis+5ysLLuxs=";
   };
 
-  doCheck = false;
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openssl
   ]
@@ -32,16 +31,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoHash = "sha256-2VhbvhGeQHAbQLW0iBAgl0ICAX/X+PnwcGdodJG2Hsw=";
+  doCheck = false;
 
   meta = {
     description = "Commit changes in your git repository to a new branch without leaving the current branch";
     homepage = "https://github.com/siedentop/git-quickfix";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       cafkafk
       matthiasbeyer
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "git-quickfix";
   };
 })

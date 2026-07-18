@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   copyDesktopItems,
-  makeDesktopItem,
-  electron,
-  xcodebuild,
   desktopToDarwinBundle,
+  electron,
+  makeDesktopItem,
+  xcodebuild,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -21,6 +21,9 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-92w8vmzyQbIbRaQdXKKpeaLdxhLVpxyCE3RJjtJf0Jk=";
   };
 
+  # fixes missing npm dependency errors
+  patches = [ ./missing-hashes.patch ];
+
   nativeBuildInputs = [
     copyDesktopItems
   ]
@@ -30,10 +33,6 @@ buildNpmPackage (finalAttrs: {
   ];
 
   npmDepsHash = "sha256-EwtCA94ezhq36ooVvQWd4ThtxqWSOe7cr28V1thet2o=";
-
-  # fixes missing npm dependency errors
-  patches = [ ./missing-hashes.patch ];
-
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
 
   # rebuild better-sqlite3 for nixpkgs electron
@@ -59,13 +58,13 @@ buildNpmPackage (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "solidtime-desktop";
+      categories = [ "Utility" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "Solidtime Desktop";
       exec = "solidtime-desktop %U";
       icon = "solidtime-desktop";
-      desktopName = "Solidtime Desktop";
-      comment = finalAttrs.meta.description;
-      categories = [ "Utility" ];
       mimeTypes = [ "x-scheme-handler/solidtime" ];
+      name = "solidtime-desktop";
       terminal = false;
     })
   ];
@@ -75,8 +74,8 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/solidtime-io/solidtime-desktop";
     changelog = "https://github.com/solidtime-io/solidtime-desktop/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Only;
-    mainProgram = "solidtime-desktop";
     maintainers = with lib.maintainers; [ hensoko ];
     platforms = lib.platforms.all;
+    mainProgram = "solidtime-desktop";
   };
 })

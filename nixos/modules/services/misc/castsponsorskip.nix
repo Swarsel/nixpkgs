@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -10,18 +10,22 @@ in
 {
   options = {
     services.castsponsorskip = {
-      enable = lib.mkEnableOption "castsponsorskip";
-      package = lib.mkPackageOption pkgs "castsponsorskip" { };
       config = lib.mkOption {
-        type = (pkgs.formats.yaml { }).type;
         default = { };
+        description = "Configuration for the service. List of options all options <https://github.com/gabe565/CastSponsorSkip/blob/main/docs/envs.md>.";
+
         example = {
           CSS_SKIP_SPONSORS = false;
         };
-        description = "Configuration for the service. List of options all options <https://github.com/gabe565/CastSponsorSkip/blob/main/docs/envs.md>.";
+
+        type = (pkgs.formats.yaml { }).type;
       };
+
+      enable = lib.mkEnableOption "castsponsorskip";
+      package = lib.mkPackageOption pkgs "castsponsorskip" { };
     };
   };
+
   config = lib.mkIf cfg.enable {
     systemd.services.castsponsorskip =
       let
@@ -31,15 +35,17 @@ in
         config = (pkgs.formats.yaml cfg.config).generate "config.yaml" { };
       in
       {
-        description = "Skip YouTube ads and sponsorships on all local Google Cast devices";
         after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "Skip YouTube ads and sponsorships on all local Google Cast devices";
+
         serviceConfig = {
           DynamicUser = true;
-          Restart = "always";
           ExecStart = "${lib.getExe cfg.package} --config=${config}";
+          Restart = "always";
           TimeoutStopSec = "20s";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
   };
 

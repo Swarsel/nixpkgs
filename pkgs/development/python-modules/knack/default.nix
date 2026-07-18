@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   argcomplete,
+  buildPythonPackage,
   colorama,
+  fetchPypi,
   jmespath,
+  mock,
   pygments,
+  pytest,
   pyyaml,
   six,
   tabulate,
-  mock,
   vcrpy,
-  pytest,
 }:
 
 buildPythonPackage rec {
   pname = "knack";
   version = "0.14.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -44,14 +43,15 @@ buildPythonPackage rec {
     HOME=$TMPDIR pytest .
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "knack" ];
 
   meta = {
-    homepage = "https://github.com/microsoft/knack";
     description = "Command-Line Interface framework";
+    homepage = "https://github.com/microsoft/knack";
     changelog = "https://github.com/microsoft/knack/blob/v${version}/HISTORY.rst";
-    platforms = lib.platforms.all;
     license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

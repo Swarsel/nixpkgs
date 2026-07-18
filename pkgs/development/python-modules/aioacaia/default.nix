@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aioacaia";
   version = "0.1.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zweckj";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-ltqY1n7Kvpf518q+cL8u+Cyg9BHySb0dopxKNtUdoA4=";
   };
 
+  # Module only has a homebrew tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     bleak-retry-connector
   ];
 
-  # Module only has a homebrew tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aioacaia" ];
 
   meta = {

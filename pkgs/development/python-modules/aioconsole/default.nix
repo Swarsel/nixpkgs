@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aioconsole";
   version = "0.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vxgmichel";
@@ -34,8 +33,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail " --strict-markers --count 2 -vv" ""
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
@@ -43,6 +40,12 @@ buildPythonPackage (finalAttrs: {
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # OSError: AF_UNIX path too long
+    "tests/test_server.py::test_uds_server[default]"
+  ];
 
   disabledTests = [
     "test_interact_syntax_error"
@@ -50,17 +53,13 @@ buildPythonPackage (finalAttrs: {
     "test_interact_multiple_indented_lines"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # OSError: AF_UNIX path too long
-    "tests/test_server.py::test_uds_server[default]"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aioconsole" ];
 
   meta = {
     description = "Asynchronous console and interfaces for asyncio";
-    changelog = "https://github.com/vxgmichel/aioconsole/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/vxgmichel/aioconsole";
+    changelog = "https://github.com/vxgmichel/aioconsole/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     mainProgram = "apython";
   };

@@ -1,21 +1,19 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  curl,
   installShellFiles,
   libxml2,
-  openssl,
-  curl,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "hurl";
   version = "8.0.1";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Orange-OpenSource";
@@ -23,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-DVxY7vjZpcqptq/4CUxo5WX7+Bf9o/sxGobZ7+BMXHM=";
   };
-
-  cargoHash = "sha256-rBn14XK1DrwRfe4Mo0aezF4lLhQf4PtsRYkuM1wcZXU=";
 
   nativeBuildInputs = [
     pkg-config
@@ -38,11 +34,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     curl
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  cargoHash = "sha256-rBn14XK1DrwRfe4Mo0aezF4lLhQf4PtsRYkuM1wcZXU=";
   # The actual tests require network access to a test server, but we can run an install check
   doCheck = false;
-  doInstallCheck = true;
 
   postInstall = ''
     installManPage docs/manual/hurl.1 docs/manual/hurlfmt.1
@@ -55,17 +49,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh completions/_hurlfmt
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command line tool that performs HTTP requests defined in a simple plain text format";
     homepage = "https://hurl.dev/";
     changelog = "https://github.com/Orange-OpenSource/hurl/blob/${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       eonpatapon
       defelo
     ];
-    license = lib.licenses.asl20;
+
     mainProgram = "hurl";
   };
 })

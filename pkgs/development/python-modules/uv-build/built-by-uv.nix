@@ -1,21 +1,16 @@
 {
-  buildPythonPackage,
-  uv-build,
   anyio,
+  buildPythonPackage,
   pytestCheckHook,
+  uv-build,
 }:
 buildPythonPackage {
   pname = "built-by-uv";
   version = "0.1.0";
-  pyproject = true;
-
   src = "${uv-build.src}/test/packages/built-by-uv";
-
-  build-system = [ uv-build ];
-
-  dependencies = [ anyio ];
-
-  pythonImportsCheck = [ "built_by_uv" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ uv-build ];
+  dependencies = [ anyio ];
+  pyproject = true;
+  pythonImportsCheck = [ "built_by_uv" ];
 }

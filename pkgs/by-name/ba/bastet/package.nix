@@ -2,18 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   fetchpatch,
   ncurses,
-  boost,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "bastet";
   version = "0.43.2";
-  buildInputs = [
-    ncurses
-    boost
-  ];
 
   src = fetchFromGitHub {
     owner = "fph";
@@ -25,17 +21,22 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Compatibility with new Boost
     (fetchpatch {
-      url = "https://github.com/fph/bastet/commit/0e03f8d4d6bc6949cf1c447e632ce0d1b98c4be1.patch";
       sha256 = "1475hisbm44jirsrhdlnddppsyn83xmvcx09gfkm9drcix05alzj";
+      url = "https://github.com/fph/bastet/commit/0e03f8d4d6bc6949cf1c447e632ce0d1b98c4be1.patch";
     })
 
     # Fix pending upstream inclusion for ncurses-6.3:
     #  https://github.com/fph/bastet/pull/21
     (fetchpatch {
       name = "ncurses-6.3.patch";
-      url = "https://github.com/fph/bastet/commit/54a6d127351ea2c62f50efafe97c5b02e23e86a7.patch";
       sha256 = "14v95b0m16m6ycd82i3wpp81kbmj6qz029b1m5483dkk6mwz98iy";
+      url = "https://github.com/fph/bastet/commit/54a6d127351ea2c62f50efafe97c5b02e23e86a7.patch";
     })
+  ];
+
+  buildInputs = [
+    ncurses
+    boost
   ];
 
   installPhase = ''
@@ -47,10 +48,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tetris clone with 'bastard' block-choosing AI";
-    mainProgram = "bastet";
     homepage = "http://fph.altervista.org/prog/bastet.html";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "bastet";
   };
 })

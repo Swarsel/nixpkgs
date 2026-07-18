@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -19,10 +19,10 @@ buildGoModule {
 
   meta = {
     description = "Nintendo Wii iso.dec decoder";
-    mainProgram = "dec-decode";
     homepage = "https://github.com/sammiq/dec-decode";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ hughobrien ];
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "dec-decode";
   };
 }

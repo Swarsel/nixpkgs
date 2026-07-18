@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  obs-studio,
-  libGL,
-  qtbase,
   flatbuffers,
+  libGL,
+  obs-studio,
+  pkg-config,
+  qtbase,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,21 +21,20 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-UAfjafoZhhhHRSo+eUBLhHaCmn2GYFcYyRb9wHIp/9I=";
   };
 
+  patches = [ ./check-state-changed.patch ];
+
   nativeBuildInputs = [
     cmake
     flatbuffers
     pkg-config
   ];
+
   buildInputs = [
     obs-studio
     flatbuffers
     libGL
     qtbase
   ];
-
-  dontWrapQtApps = true;
-
-  patches = [ ./check-state-changed.patch ];
 
   cmakeFlags = [
     "-DOBS_SOURCE=${obs-studio.src}"
@@ -49,11 +48,13 @@ stdenv.mkDerivation rec {
     rm -rf external/flatbuffers
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "OBS Studio plugin to connect to a Hyperion.ng server";
     homepage = "https://github.com/hyperion-project/hyperion-obs-plugin";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ algram ];
-    inherit (obs-studio.meta) platforms;
   };
 }

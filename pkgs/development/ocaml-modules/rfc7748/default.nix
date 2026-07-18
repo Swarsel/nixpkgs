@@ -1,10 +1,9 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   fetchpatch,
   ocaml,
-
   ounit,
   zarith,
 }:
@@ -22,26 +21,26 @@ buildDunePackage (finalAttrs: {
 
   # Compatibility with OCaml 5.0
   patches = fetchpatch {
-    url = "https://github.com/burgerdev/ocaml-rfc7748/commit/f66257bae0317c7b24c4b208ee27ab6eb68460e4.patch";
     hash = "sha256-780yy8gLOwwf7xIKIIIaoGpDPcY7+dZ0jPS4nrkH2s8=";
+    url = "https://github.com/burgerdev/ocaml-rfc7748/commit/f66257bae0317c7b24c4b208ee27ab6eb68460e4.patch";
   };
 
-  minimalOCamlVersion = "4.05";
-
   propagatedBuildInputs = [ zarith ];
-
   doCheck = lib.versionAtLeast ocaml.version "4.08";
   checkInputs = [ ounit ];
+  minimalOCamlVersion = "4.05";
 
   meta = {
-    homepage = "https://github.com/burgerdev/ocaml-rfc7748";
     description = "Elliptic Curve Diffie-Hellman on Edwards Curves (X25519, X448)";
+
     longDescription = ''
       This library implements the ECDH functions 'X25519' and 'X448' as specified
       in RFC 7748, 'Elliptic curves for security'. In the spirit of the original
       publications, the public API is kept as simple as possible to make it easy
       to use and hard to misuse.
     '';
+
+    homepage = "https://github.com/burgerdev/ocaml-rfc7748";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ fufexan ];
   };

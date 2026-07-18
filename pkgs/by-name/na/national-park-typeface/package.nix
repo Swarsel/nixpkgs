@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "https://files.cargocollective.com/c${version}/NationalPark.zip";
-    stripRoot = false;
     hash = "sha256-VUboZZVJfKupnoHXo3RxetEEYimrr1DxghVZaaWnnw4=";
+    stripRoot = false;
   };
 
   installPhase = ''

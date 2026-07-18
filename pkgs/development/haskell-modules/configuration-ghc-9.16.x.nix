@@ -1,4 +1,4 @@
-{ pkgs, haskellLib }:
+{ haskellLib, pkgs }:
 
 let
   inherit (pkgs) lib;
@@ -6,13 +6,14 @@ let
 in
 
 self: super: {
+  Cabal = null;
+  Cabal-syntax = null;
+  Win32 = null;
   # Disable GHC core libraries
   array = null;
   base = null;
   binary = null;
   bytestring = null;
-  Cabal = null;
-  Cabal-syntax = null;
   containers = null;
   deepseq = null;
   directory = null;
@@ -53,5 +54,4 @@ self: super: {
   transformers = null;
   unix = null;
   xhtml = null;
-  Win32 = null;
 }

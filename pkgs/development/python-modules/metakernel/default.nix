@@ -12,13 +12,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "metakernel";
   version = "0.32.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-AxmEtMBinBKchhYtJ72N8mTWmTv5Ya7HMP23H6zv3bw=";
   };
 
+  # Tests hang, so disable
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage (finalAttrs: {
     pexpect
   ];
 
-  # Tests hang, so disable
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "metakernel" ];
 
   meta = {

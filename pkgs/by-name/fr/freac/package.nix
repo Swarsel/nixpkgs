@@ -2,12 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   boca,
+  nix-update-script,
   smooth,
   systemd,
   wrapGAppsHook3,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,12 +35,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Audio converter and CD ripper with support for various popular formats and encoders";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://www.freac.org/";
-    downloadPage = "https://www.freac.org/downloads-mainmenu-33";
     changelog = "https://github.com/enzo1982/freac/releases/tag/${finalAttrs.src.tag}";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ VZstless ];
+    platforms = lib.platforms.linux;
     mainProgram = "freac";
+    downloadPage = "https://www.freac.org/downloads-mainmenu-33";
   };
 })

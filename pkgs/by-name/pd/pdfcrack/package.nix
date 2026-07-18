@@ -18,11 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://pdfcrack.sourceforge.net/";
     description = "Small command line driven tool for recovering passwords and content from PDF files";
-    mainProgram = "pdfcrack";
+    homepage = "https://pdfcrack.sourceforge.net/";
     license = with lib.licenses; [ gpl2Plus ];
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ qoelet ];
+    platforms = lib.platforms.all;
+    mainProgram = "pdfcrack";
   };
 })

@@ -13,12 +13,12 @@ stdenv.mkDerivation {
     sha256 = "sha256-EVcoxjTTjXOYD8DppD+IULxpKerEdolmlgphrulFGC0=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/share
     cp $src $out/share/grep.py
   '';
+
+  dontUnpack = true;
 
   passthru = {
     scripts = [ "grep.py" ];

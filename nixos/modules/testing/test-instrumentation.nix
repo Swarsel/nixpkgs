@@ -2,10 +2,10 @@
 # via a root shell attached to a virtio console.
 
 {
-  options,
   config,
   lib,
   pkgs,
+  options,
   ...
 }:
 
@@ -17,14 +17,16 @@ let
   qemu-common = import ../../lib/qemu-common.nix { inherit (pkgs) lib stdenv; };
 
   backdoorService = {
-    requires = [
-      "dev-hvc0.device"
-      "dev-${qemu-common.qemuSerialDevice}.device"
-    ];
     after = [
       "dev-hvc0.device"
       "dev-${qemu-common.qemuSerialDevice}.device"
     ];
+
+    requires = [
+      "dev-hvc0.device"
+      "dev-${qemu-common.qemuSerialDevice}.device"
+    ];
+
     script = ''
       export USER=root
       export HOME=/root
@@ -69,17 +71,18 @@ let
       # tightly coupled to NixOS.
       PS1="" exec ${pkgs.bashNonInteractive}/bin/bash --norc /dev/hvc0
     '';
+
     serviceConfig.KillSignal = "SIGHUP";
   };
 
   managerSettings = {
-    # Don't clobber the console with duplicate systemd messages.
-    ShowStatus = false;
+    DefaultDeviceTimeoutSec = 300;
     # Allow very slow start
     DefaultTimeoutStartSec = 300;
-    DefaultDeviceTimeoutSec = 300;
     # Don't enforce a minimum uptime before shutting down.
     MinimumUptimeSec = 0;
+    # Don't clobber the console with duplicate systemd messages.
+    ShowStatus = false;
   };
 
 in
@@ -107,12 +110,14 @@ in
     assertions = [
       {
         assertion = cfg.initrdBackdoor -> config.boot.initrd.systemd.enable;
+
         message = ''
           `testing.initrdBackdoor` requires `boot.initrd.systemd.enable` to be enabled.
         '';
       }
       {
         assertion = config.boot.isContainer -> !cfg.backdoor;
+
         message = ''
           `testing.backdoor` uses virtio console, which does not work with
           containers (we use `nsenter` instead).
@@ -120,20 +125,14 @@ in
       }
       {
         assertion = config.boot.isContainer -> !cfg.initrdBackdoor;
+
         message = ''
           `testing.initrdBackdoor` does not work with containers as there is no initrd.
         '';
       }
     ];
 
-    systemd.services.backdoor = lib.mkIf cfg.backdoor (
-      lib.mkMerge [
-        backdoorService
-        {
-          wantedBy = [ "multi-user.target" ];
-        }
-      ]
-    );
+    boot.consoleLogLevel = 7;
 
     boot.initrd.systemd = lib.mkMerge [
       {
@@ -148,6 +147,30 @@ in
       }
 
       (lib.mkIf cfg.initrdBackdoor {
+        services.backdoor = lib.mkMerge [
+          backdoorService
+          {
+            before = [
+              "shutdown.target"
+              "initrd-switch-root.target"
+            ];
+
+            conflicts = [
+              "shutdown.target"
+              "initrd-switch-root.target"
+            ];
+
+            unitConfig.DefaultDependencies = false;
+            # TODO: Both stage 1 and stage 2 should use these same
+            # settings. But a lot of existing tests rely on
+            # backdoor.service having default orderings,
+            # e.g. systemd-boot.update relies on /boot being mounted
+            # as soon as backdoor starts. But it can be useful for
+            # backdoor to start even earlier.
+            wantedBy = [ "sysinit.target" ];
+          }
+        ];
+
         # Implemented in machine.switch_root(). Suppress the unit by
         # making it a noop without removing it, which would break
         # initrd-parse-etc.service
@@ -158,53 +181,11 @@ in
           "/bin/true"
         ];
 
-        services.backdoor = lib.mkMerge [
-          backdoorService
-          {
-            # TODO: Both stage 1 and stage 2 should use these same
-            # settings. But a lot of existing tests rely on
-            # backdoor.service having default orderings,
-            # e.g. systemd-boot.update relies on /boot being mounted
-            # as soon as backdoor starts. But it can be useful for
-            # backdoor to start even earlier.
-            wantedBy = [ "sysinit.target" ];
-            unitConfig.DefaultDependencies = false;
-            conflicts = [
-              "shutdown.target"
-              "initrd-switch-root.target"
-            ];
-            before = [
-              "shutdown.target"
-              "initrd-switch-root.target"
-            ];
-          }
-        ];
-
         storePaths = [
           "${pkgs.coreutils}/bin/env"
         ];
       })
     ];
-
-    # Prevent agetty from being instantiated on the serial device, since it
-    # interferes with the backdoor (writes to it will randomly fail
-    # with EIO).  Likewise for hvc0.
-    systemd.services."serial-getty@${qemu-common.qemuSerialDevice}".enable = false;
-    systemd.services."serial-getty@hvc0".enable = false;
-
-    # Only set these settings when the options exist. Some tests (e.g. those
-    # that do not specify any nodes, or an empty attr set as nodes) will not
-    # have the QEMU module loaded and thuse these options can't and should not
-    # be set.
-    virtualisation = lib.optionalAttrs (options ? virtualisation.qemu) {
-      qemu = {
-        # NOTE: optionalAttrs
-        #       test-instrumentation.nix appears to be used without qemu-vm.nix, so
-        #       we avoid defining attributes if not possible.
-        # TODO: refactor such that test-instrumentation can import qemu-vm
-        package = lib.mkDefault pkgs.qemu_test;
-      };
-    };
 
     boot.kernel.sysctl = {
       "kernel.hung_task_timeout_secs" = 600;
@@ -231,6 +212,11 @@ in
 
     # `xwininfo' is used by the test driver to query open windows.
     environment.systemPackages = [ pkgs.xwininfo ];
+    # Prevent tests from accessing the Internet.
+    networking.defaultGateway = mkOverride 150 null;
+    networking.nameservers = mkOverride 150 [ ];
+    networking.usePredictableInterfaceNames = false;
+    services.displayManager.logToJournal = true;
 
     # Log everything to the serial console.
     services.journald.extraConfig = ''
@@ -239,18 +225,10 @@ in
       MaxLevelConsole=debug
     '';
 
-    systemd.settings.Manager = managerSettings;
-    systemd.user.settings.Manager = {
-      # Allow very slow start
-      DefaultTimeoutStartSec = 300;
-      DefaultDeviceTimeoutSec = 300;
-    };
-
-    boot.consoleLogLevel = 7;
-
-    # Prevent tests from accessing the Internet.
-    networking.defaultGateway = mkOverride 150 null;
-    networking.nameservers = mkOverride 150 [ ];
+    services.logrotate.enable = mkOverride 150 false;
+    # Make sure we use the Guest Agent from the QEMU package for testing
+    # to reduce the closure size required for the tests.
+    services.qemuGuest.package = pkgs.qemu_test.ga;
 
     system.requiredKernelConfig = with config.lib.kernelConfig; [
       (isYes "SERIAL_8250_CONSOLE")
@@ -258,7 +236,30 @@ in
       (isEnabled "VIRTIO_CONSOLE")
     ];
 
-    networking.usePredictableInterfaceNames = false;
+    # Squelch warning about unset system.stateVersion
+    system.stateVersion = (lib.mkOverride 1200) lib.trivial.release;
+
+    systemd.services.backdoor = lib.mkIf cfg.backdoor (
+      lib.mkMerge [
+        backdoorService
+        {
+          wantedBy = [ "multi-user.target" ];
+        }
+      ]
+    );
+
+    # Prevent agetty from being instantiated on the serial device, since it
+    # interferes with the backdoor (writes to it will randomly fail
+    # with EIO).  Likewise for hvc0.
+    systemd.services."serial-getty@${qemu-common.qemuSerialDevice}".enable = false;
+    systemd.services."serial-getty@hvc0".enable = false;
+    systemd.settings.Manager = managerSettings;
+
+    systemd.user.settings.Manager = {
+      DefaultDeviceTimeoutSec = 300;
+      # Allow very slow start
+      DefaultTimeoutStartSec = 300;
+    };
 
     # Make it easy to log in as root when running the test interactively.
     # This needs to be a file because of a quirk in systemd credentials,
@@ -266,16 +267,19 @@ in
     # uses credentials to set passwords on users.
     users.users.root.hashedPasswordFile = mkOverride 150 "${pkgs.writeText "hashed-password.root" ""}";
 
-    services.displayManager.logToJournal = true;
-
-    services.logrotate.enable = mkOverride 150 false;
-
-    # Make sure we use the Guest Agent from the QEMU package for testing
-    # to reduce the closure size required for the tests.
-    services.qemuGuest.package = pkgs.qemu_test.ga;
-
-    # Squelch warning about unset system.stateVersion
-    system.stateVersion = (lib.mkOverride 1200) lib.trivial.release;
+    # Only set these settings when the options exist. Some tests (e.g. those
+    # that do not specify any nodes, or an empty attr set as nodes) will not
+    # have the QEMU module loaded and thuse these options can't and should not
+    # be set.
+    virtualisation = lib.optionalAttrs (options ? virtualisation.qemu) {
+      qemu = {
+        # NOTE: optionalAttrs
+        #       test-instrumentation.nix appears to be used without qemu-vm.nix, so
+        #       we avoid defining attributes if not possible.
+        # TODO: refactor such that test-instrumentation can import qemu-vm
+        package = lib.mkDefault pkgs.qemu_test;
+      };
+    };
   };
 
 }

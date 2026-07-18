@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,11 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
 
   checkFlags =
     let
@@ -37,11 +32,16 @@ buildGoModule (finalAttrs: {
       "${builtins.concatStringsSep "|" skippedTests}"
     ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
     description = "Autostart and stop minecraft-server when players join/leave";
-    mainProgram = "msh";
     homepage = "https://github.com/gekware/minecraft-server-hibernation";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ squarepear ];
+    mainProgram = "msh";
   };
 })

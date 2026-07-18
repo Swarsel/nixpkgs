@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   tzdata,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-oNGq00Znh5WLc+y2NEWZL7Bl17gIaSY7PXYLel9Ucjg=";
-
   env.NUMBAT_SYSTEM_MODULE_PATH = "${placeholder "out"}/share/numbat/modules";
+
+  preCheck = ''
+    # The datetime library used by Numbat, "jiff", always attempts to use the
+    # system TZDIR on Unix and doesn't fall back to the embedded tzdb when not
+    # present.
+    export TZDIR=${tzdata}/share/zoneinfo
+  '';
 
   postInstall = ''
     mkdir -p $out/share/numbat
@@ -40,34 +46,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cp $src/assets/numbat.svg $out/share/icons/hicolor/scalable/apps
   '';
 
-  preCheck = ''
-    # The datetime library used by Numbat, "jiff", always attempts to use the
-    # system TZDIR on Unix and doesn't fall back to the embedded tzdb when not
-    # present.
-    export TZDIR=${tzdata}/share/zoneinfo
-  '';
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "High precision scientific calculator with full support for physical units";
+
     longDescription = ''
       A statically typed programming language for scientific computations
       with first class support for physical dimensions and units
     '';
+
     homepage = "https://numbat.dev";
     changelog = "https://github.com/sharkdp/numbat/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       giomf
       atemu
     ];
+
     mainProgram = "numbat";
   };
 })

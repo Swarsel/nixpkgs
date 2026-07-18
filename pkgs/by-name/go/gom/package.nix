@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchurl,
+  gdk-pixbuf,
+  glib,
+  gnome,
+  gobject-introspection,
   meson,
   ninja,
   pkg-config,
-  glib,
   python3,
   sqlite,
-  gdk-pixbuf,
-  gnome,
-  gobject-introspection,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gom";
   version = "0.5.6";
 
-  outputs = [
-    "out"
-    "py"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/gom/${lib.versions.majorMinor finalAttrs.version}/gom-${finalAttrs.version}.tar.xz";
     sha256 = "TXpeJoaYyOfkBgPjbp46K3YTOTHOG2N8ETYwFJG1TMM=";
   };
+
+  outputs = [
+    "out"
+    "py"
+  ];
 
   patches = [
     ./longer-stress-timeout.patch

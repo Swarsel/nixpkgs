@@ -3,13 +3,13 @@
   stdenv,
   gcc_meta,
   release_version,
+  runCommand,
   version,
   monorepoSrc ? null,
-  runCommand,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libiberty";
   inherit version;
+  pname = "libiberty";
 
   src = runCommand "libiberty-src-${version}" { src = monorepoSrc; } ''
     runPhase unpackPhase
@@ -37,9 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  enableParallelBuilding = true;
-
-  sourceRoot = "${finalAttrs.src.name}/libiberty";
+  configureFlags = [
+    "--enable-install-libiberty"
+  ]
+  ++ lib.optional (!stdenv.hostPlatform.isStatic) "--enable-shared";
 
   preConfigure = ''
     mkdir ../../build
@@ -47,16 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
     configureScript=../$sourceRoot/configure
   '';
 
-  configureFlags = [
-    "--enable-install-libiberty"
-  ]
-  ++ lib.optional (!stdenv.hostPlatform.isStatic) "--enable-shared";
+  doCheck = true;
 
   postInstall = ''
     cp pic/libiberty.a $out/lib/libiberty_pic.a
   '';
 
-  doCheck = true;
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/libiberty";
 
   passthru = {
     isGNU = true;

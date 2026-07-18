@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation {
 
   src = fetchzip {
     url = "https://scholarsfonts.net/cardo104.zip";
-    stripRoot = false;
     hash = "sha256-NU6/H5f0JBlVo3L3uUcl7IvNxPMXD8UQY9k5o2YA5Vo=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -25,6 +25,7 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Large Unicode font specifically designed for the needs of classicists, Biblical scholars, medievalists, and linguists";
+
     longDescription = ''
       Cardo is a large Unicode font specifically designed for the needs of
       classicists, Biblical scholars, medievalists, and linguists. It also
@@ -35,6 +36,7 @@ stdenvNoCC.mkDerivation {
       text figures (also known as old style numerals), true small capitals and
       a variety of punctuation and space characters.
     '';
+
     homepage = "http://scholarsfonts.net/cardofnt.html";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ kmein ];

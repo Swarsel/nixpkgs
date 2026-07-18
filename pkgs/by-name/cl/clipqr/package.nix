@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitLab,
   buildGoModule,
   copyDesktopItems,
-  fetchFromGitLab,
-  lib,
   libGL,
   libdecor,
   libgbm,
@@ -32,13 +32,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-DC6zc1Qe/z7ihuvdawb8bj5MefYGgt7HAV5dWTjeHZc=";
   };
 
-  vendorHash = "sha256-MrXMbavff6CEKVbL+Mx8hICYB9sZQcvAhnu2X4sVvVw=";
-
-  tags = [ "wayland" ];
-
-  ldflags = [
-    "-s"
-    "-w"
+  nativeBuildInputs = [
+    copyDesktopItems
+    makeWrapper
+    pkg-config
   ];
 
   buildInputs = [
@@ -55,11 +52,7 @@ buildGoModule (finalAttrs: {
     wayland
   ];
 
-  nativeBuildInputs = [
-    copyDesktopItems
-    makeWrapper
-    pkg-config
-  ];
+  vendorHash = "sha256-MrXMbavff6CEKVbL+Mx8hICYB9sZQcvAhnu2X4sVvVw=";
 
   postInstall = ''
     install -Dm644 icon.svg $out/share/icons/hicolor/scalable/apps/clipqr.svg
@@ -71,21 +64,28 @@ buildGoModule (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "ClipQR";
+      categories = [ "Utility" ];
+      comment = "Scan QR codes on screen and from camera";
       desktopName = "ClipQR";
       exec = "clipqr";
-      categories = [ "Utility" ];
-      icon = "clipqr";
-      comment = "Scan QR codes on screen and from camera";
       genericName = "ClipQR";
+      icon = "clipqr";
+      name = "ClipQR";
     })
   ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  tags = [ "wayland" ];
+
   meta = {
     description = "Scan QR codes on screen and from camera, the result is in your clipboard";
+    homepage = "https://gitlab.com/imatt-foss/clipqr";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ MatthieuBarthel ];
-    homepage = "https://gitlab.com/imatt-foss/clipqr";
     platforms = lib.platforms.linux;
     mainProgram = "clipqr";
   };

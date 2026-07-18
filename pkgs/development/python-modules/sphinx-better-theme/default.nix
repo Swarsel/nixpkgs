@@ -1,18 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   sphinxHook,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-better-theme";
   version = "0.13";
-  format = "setuptools";
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   src = fetchFromGitHub {
     owner = "irskep";
@@ -21,13 +16,18 @@ buildPythonPackage rec {
     sha256 = "sha256-eFA1U2jMeOH7xabonYg/bV6eTAFBew6+WaK2uKWlsUc=";
   };
 
-  nativeBuildInputs = [ sphinxHook ];
+  outputs = [
+    "out"
+    "doc"
+  ];
 
+  nativeBuildInputs = [ sphinxHook ];
+  format = "setuptools";
   pythonImportsCheck = [ "better" ];
 
   meta = {
-    homepage = "https://github.com/irskep/sphinx-better-theme";
     description = "Better Sphinx Theme";
+
     longDescription = ''
       This is a modified version of the default Sphinx theme with the following
       goals:
@@ -48,6 +48,8 @@ buildPythonPackage rec {
           html_theme_path = [better_theme_path]
           html_theme = 'better'
     '';
+
+    homepage = "https://github.com/irskep/sphinx-better-theme";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ kaction ];
   };

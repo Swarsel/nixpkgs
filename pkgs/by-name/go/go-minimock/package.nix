@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,15 +15,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Dx4m17r7GOdiaV8DzqOXAr32dNCXJyi7gID6GHohKXk=";
   };
 
+  vendorHash = "sha256-74bmsixBO5VwLZYRXN9Fx3Mu9BbL4bSF6o0h9QaET1Y=";
+  doCheck = true;
+
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  vendorHash = "sha256-74bmsixBO5VwLZYRXN9Fx3Mu9BbL4bSF6o0h9QaET1Y=";
-
-  doCheck = true;
 
   subPackages = [
     "cmd/minimock"
@@ -31,8 +30,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/gojuno/minimock";
     description = "Golang mock generator from interfaces";
+    homepage = "https://github.com/gojuno/minimock";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ svrana ];
     mainProgram = "minimock";

@@ -35,10 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Shell script that uploads images to imgur";
-    license = lib.licenses.mit;
-    platforms = lib.platforms.all;
-    maintainers = [ ];
     homepage = "https://github.com/ram-on/imgurbash2";
+    license = lib.licenses.mit;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "imgurbash2";
   };
 })

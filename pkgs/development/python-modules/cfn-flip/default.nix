@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   pytest-cov-stub,
   pytestCheckHook,
   pyyaml,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "cfn-flip";
   version = "1.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "awslabs";
@@ -38,16 +37,19 @@ buildPythonPackage rec {
     "test_yaml_no_ordered_dict"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "cfn_flip" ];
 
   meta = {
     description = "Tool for converting AWS CloudFormation templates between JSON and YAML formats";
-    mainProgram = "cfn-flip";
     homepage = "https://github.com/awslabs/aws-cfn-template-flip";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kamadorueda
       psyanticy
     ];
+
+    mainProgram = "cfn-flip";
   };
 }

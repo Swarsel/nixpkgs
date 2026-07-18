@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchurl,
   perl,
   ronn,
-  fetchurl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,9 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     ronn
   ];
 
-  unpackCmd = "";
-  dontBuild = true;
-  configurePhase = "";
   installPhase = ''
     # reformat README to ronn markdown
     cat > README.new <<EOF
@@ -47,11 +44,15 @@ stdenv.mkDerivation (finalAttrs: {
     install -vD geteltorito $out/bin/geteltorito
   '';
 
+  configurePhase = "";
+  dontBuild = true;
+  unpackCmd = "";
+
   meta = {
     description = "Extract the initial/default boot image from a CD image if existent";
     homepage = "https://userpages.uni-koblenz.de/~krienke/ftp/noarch/geteltorito/";
-    maintainers = [ ];
     license = lib.licenses.gpl2Only;
+    maintainers = [ ];
     mainProgram = "geteltorito";
   };
 

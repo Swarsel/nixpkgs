@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   nix-update-script,
 }:
 
@@ -18,16 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-8E3hDbZlROMPn6F2jx1KMavlBUsCnrpGdJeEaYt5bcU=";
   };
 
-  vendorHash = "sha256-o5Z2ABRw6v4wFXp+KxgdKQn5/Lk5LG73VTiDOA/kBIs=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.Version=${finalAttrs.version}"
-  ];
-
+  vendorHash = "sha256-o5Z2ABRw6v4wFXp+KxgdKQn5/Lk5LG73VTiDOA/kBIs=";
   doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -36,6 +28,12 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/glow completion fish) \
       --zsh <($out/bin/glow completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.Version=${finalAttrs.version}"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

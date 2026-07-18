@@ -8,28 +8,27 @@
 }:
 
 buildPythonPackage rec {
-  pname = "ds-reporting-lib";
   inherit (dep-scan) version src;
-  pyproject = true;
-
-  sourceRoot = "${src.name}/packages/reporting-lib";
+  pname = "ds-reporting-lib";
+  # no tests
+  doCheck = false;
 
   build-system = [
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "reporting_lib" ];
-
-  # no tests
-  doCheck = false;
+  sourceRoot = "${src.name}/packages/reporting-lib";
 
   meta = {
-    description = "Reporting library for owasp depscan";
     inherit (dep-scan.meta)
       homepage
       license
       maintainers
       teams
       ;
+
+    description = "Reporting library for owasp depscan";
   };
 }

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   asio,
   boost,
+  catch2_3,
+  cmake,
   expected-lite,
   fmt,
   llhttp,
   openssl,
   pcre2,
   zlib,
-  catch2_3,
   # Build with the asio library bundled in boost instead of the standalone asio package.
   with_boost_asio ? false,
 }:
@@ -39,8 +39,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    catch2_3
+    llhttp
+  ];
 
   propagatedBuildInputs = [
     expected-lite
@@ -60,12 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
       ]
   );
 
-  buildInputs = [
-    catch2_3
-    llhttp
-  ];
-
-  cmakeDir = "../dev";
   cmakeFlags = [
     "-DCMAKE_CATCH_DISCOVER_TESTS_DISCOVERY_MODE=PRE_TEST"
     "-DRESTINIO_TEST=ON"
@@ -80,8 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-  enableParallelChecking = false;
-  __darwinAllowLocalNetworking = true;
+
   preCheck =
     let
       disabledTests =
@@ -104,12 +101,16 @@ stdenv.mkDerivation (finalAttrs: {
       checkFlagsArray+=(ARGS="--exclude-regex '${excludeRegex}'")
     '';
 
+  __darwinAllowLocalNetworking = true;
+  cmakeDir = "../dev";
+  enableParallelChecking = false;
+
   meta = {
     description = "Cross-platform, efficient, customizable, and robust asynchronous HTTP(S)/WebSocket server C++ library";
     homepage = "https://github.com/Stiffstream/restinio";
     changelog = "https://github.com/Stiffstream/restinio/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ tobim ];
+    platforms = lib.platforms.all;
   };
 })

@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     fontconfig
     freetype
@@ -32,10 +33,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Microsoft EMF to SVG conversion library";
-    mainProgram = "emf2svg-conv";
     homepage = "https://github.com/kakwa/libemf2svg";
-    maintainers = with lib.maintainers; [ erdnaxe ];
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ erdnaxe ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "emf2svg-conv";
   };
 })

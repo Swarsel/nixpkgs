@@ -15,8 +15,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "DSL to generate fast incremental C code from declarative specifications";
+    homepage = "https://github.com/magnusjonsson/opti";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.jmagnusj ];
-    homepage = "https://github.com/magnusjonsson/opti";
   };
 })

@@ -3,13 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  openmpi,
-
   # passthru
   conduit,
-  python3Packages,
   nix-update-script,
-
+  openmpi,
+  python3Packages,
   mpiSupport ? false,
 }:
 
@@ -21,15 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "LLNL";
     repo = "conduit";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-DmnHGj6Q/i+wVNIbaTGrFX9f0Kry2X5bC7zahXv29I4=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
     cmake
   ];
-
-  cmakeDir = "../src";
 
   buildInputs = lib.optionals mpiSupport [
     openmpi
@@ -40,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_SYSTEM_VERSION" "")
     (lib.cmakeBool "ENABLE_MPI" mpiSupport)
   ];
+
+  doInstallCheck = true;
 
   installCheckPhase =
     let
@@ -59,14 +57,16 @@ stdenv.mkDerivation (finalAttrs: {
 
       runHook postInstallCheck
     '';
-  doInstallCheck = true;
+
+  cmakeDir = "../src";
 
   passthru = {
     tests = {
-      withMpi = conduit.override { mpiSupport = true; };
       pythonModule = python3Packages.conduit;
       pythonModuleWithMpi = python3Packages.conduit-mpi;
+      withMpi = conduit.override { mpiSupport = true; };
     };
+
     updateScript = nix-update-script { };
   };
 

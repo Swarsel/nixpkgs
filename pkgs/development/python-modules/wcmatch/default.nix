@@ -1,16 +1,15 @@
 {
   lib,
+  bracex,
   buildPythonPackage,
   fetchPypi,
   hatchling,
   pytestCheckHook,
-  bracex,
 }:
 
 buildPythonPackage rec {
   pname = "wcmatch";
   version = "10.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,9 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ hatchling ];
-
   propagatedBuildInputs = [ bracex ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
@@ -28,7 +25,7 @@ buildPythonPackage rec {
   '';
 
   disabledTests = [ "TestTilde" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wcmatch" ];
 
   meta = {

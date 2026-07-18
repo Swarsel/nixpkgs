@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "smhi-pkg";
   version = "1.0.19";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "joysoftware";
@@ -35,6 +34,7 @@ buildPythonPackage rec {
     "test_async_error_from_api"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "smhi" ];
 
   meta = {

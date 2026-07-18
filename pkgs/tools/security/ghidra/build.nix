@@ -1,20 +1,20 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   callPackage,
-  gradle,
-  makeBinaryWrapper,
-  openjdk21,
-  unzip,
-  makeDesktopItem,
   copyDesktopItems,
   desktopToDarwinBundle,
-  xcbuild,
-  protobuf,
   ghidra-extensions,
+  gradle,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  openjdk21,
+  protobuf,
   python3,
   python3Packages,
+  unzip,
+  xcbuild,
 }:
 
 let
@@ -34,6 +34,7 @@ let
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -85,25 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
     postPatch
     ;
 
-  # Don't create .orig files if the patch isn't an exact match.
-  patchFlags = [
-    "--no-backup-if-mismatch"
-    "-p1"
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "ghidra";
-      exec = "ghidra";
-      icon = "ghidra";
-      desktopName = "Ghidra";
-      genericName = "Ghidra Software Reverse Engineering Suite";
-      categories = [ "Development" ];
-      terminal = false;
-      startupWMClass = "ghidra-Ghidra";
-    })
-  ];
-
   nativeBuildInputs = [
     gradle
     unzip
@@ -118,38 +100,10 @@ stdenv.mkDerivation (finalAttrs: {
     desktopToDarwinBundle
   ];
 
-  dontStrip = true;
-
-  __darwinAllowLocalNetworking = true;
-
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  gradleFlags = [
-    "-Dorg.gradle.java.home=${openjdk21}"
-  ]
-  ++ lib.optionals isMacArm64 [
-    # For some reason I haven't been able to figure out yet, ghidra builds for
-    # arm64 seems to build the x64 binaries of the decompiler. These fail to
-    # build due to trying to link the x64 object files with arm64 stdc++
-    # library, which obviously fails.
-    #
-    # Those binaries are entirely unnecessary anyways, since we're targeting
-    # arm64 build here, so let's exclude them from the build.
-    "-x"
-    "Decompiler:linkSleighMac_x86_64Executable"
-    "-x"
-    "Decompiler:linkDecompileMac_x86_64Executable"
-  ];
-
   preBuild = ''
     export JAVA_TOOL_OPTIONS="-Duser.home=$NIX_BUILD_TOP/home"
     gradle -I gradle/support/fetchDependencies.gradle
   '';
-
-  gradleBuildTask = "buildGhidra";
 
   installPhase = ''
     runHook preInstall
@@ -186,8 +140,55 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ openjdk21 ]}
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      desktopName = "Ghidra";
+      exec = "ghidra";
+      genericName = "Ghidra Software Reverse Engineering Suite";
+      icon = "ghidra";
+      name = "ghidra";
+      startupWMClass = "ghidra-Ghidra";
+      terminal = false;
+    })
+  ];
+
+  dontStrip = true;
+  gradleBuildTask = "buildGhidra";
+
+  gradleFlags = [
+    "-Dorg.gradle.java.home=${openjdk21}"
+  ]
+  ++ lib.optionals isMacArm64 [
+    # For some reason I haven't been able to figure out yet, ghidra builds for
+    # arm64 seems to build the x64 binaries of the decompiler. These fail to
+    # build due to trying to link the x64 object files with arm64 stdc++
+    # library, which obviously fails.
+    #
+    # Those binaries are entirely unnecessary anyways, since we're targeting
+    # arm64 build here, so let's exclude them from the build.
+    "-x"
+    "Decompiler:linkSleighMac_x86_64Executable"
+    "-x"
+    "Decompiler:linkDecompileMac_x86_64Executable"
+  ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
+
+  # Don't create .orig files if the patch isn't an exact match.
+  patchFlags = [
+    "--no-backup-if-mismatch"
+    "-p1"
+  ];
+
   passthru = {
     inherit releaseName distroPrefix;
+
     inherit (ghidra-extensions.override { ghidra = finalAttrs.finalPackage; })
       buildGhidraExtension
       buildGhidraScripts
@@ -197,25 +198,29 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://htmlpreview.github.io/?https://github.com/NationalSecurityAgency/ghidra/blob/Ghidra_${finalAttrs.version}_build/Ghidra/Configurations/Public_Release/src/global/docs/ChangeHistory.html";
     description = "Software reverse engineering (SRE) suite of tools";
-    mainProgram = "ghidra";
     homepage = "https://ghidra-sre.org/";
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-      "aarch64-darwin"
-    ];
+    changelog = "https://htmlpreview.github.io/?https://github.com/NationalSecurityAgency/ghidra/blob/Ghidra_${finalAttrs.version}_build/Ghidra/Configurations/Public_Release/src/global/docs/ChangeHistory.html";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
-    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       tbaldwin
       roblabla
       vringar
     ];
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "aarch64-darwin"
+    ];
+
+    mainProgram = "ghidra";
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64;
   };
 })

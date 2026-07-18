@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  autoreconfHook,
   aalib,
-  ncurses,
-  libxdmcp,
-  libxau,
-  libx11,
+  autoreconfHook,
   libmikmod,
+  libx11,
+  libxau,
+  libxdmcp,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     ./included-files-updates.diff
   ];
 
+  # regparm attribute is not supported by clang
+  postPatch = lib.optionalString stdenv.cc.isClang ''
+    substituteInPlace config.h \
+      --replace-fail "__attribute__ ((regparm(n)))" ""
+  '';
+
   nativeBuildInputs = [ autoreconfHook ];
 
   buildInputs = [
@@ -36,15 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
   ];
 
-  # regparm attribute is not supported by clang
-  postPatch = lib.optionalString stdenv.cc.isClang ''
-    substituteInPlace config.h \
-      --replace-fail "__attribute__ ((regparm(n)))" ""
-  '';
-
   meta = {
-    homepage = "http://aa-project.sourceforge.net/bb";
     description = "AA-lib demo";
+    homepage = "http://aa-project.sourceforge.net/bb";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.rnhmjoj ];
     platforms = lib.platforms.unix;

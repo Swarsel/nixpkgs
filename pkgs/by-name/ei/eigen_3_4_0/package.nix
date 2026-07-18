@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,21 +29,23 @@ stdenv.mkDerivation (finalAttrs: {
     # but Eigen hasn't had a release in two years either:
     # https://gitlab.com/libeigen/eigen/-/issues/2699.
     (fetchpatch {
-      url = "https://gitlab.com/libeigen/eigen/-/commit/d0e3791b1a0e2db9edd5f1d1befdb2ac5a40efe0.patch";
       hash = "sha256-8qiNpuYehnoiGiqy0c3Mcb45pwrmc6W4rzCxoLDSvj0=";
+      url = "https://gitlab.com/libeigen/eigen/-/commit/d0e3791b1a0e2db9edd5f1d1befdb2ac5a40efe0.patch";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
 
   meta = {
-    homepage = "https://eigen.tuxfamily.org";
     description = "C++ template library for linear algebra: vectors, matrices, and related algorithms";
+    homepage = "https://eigen.tuxfamily.org";
     license = lib.licenses.lgpl3Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       pbsds
     ];
+
     platforms = lib.platforms.unix;
   };
 })

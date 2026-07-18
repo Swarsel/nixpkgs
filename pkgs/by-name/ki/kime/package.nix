@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  cairo,
+  cargo,
+  cmake,
+  dbus,
+  gtk3,
+  gtk4,
+  kdePackages,
+  libdbusmenu,
+  libxcb,
+  pkg-config,
+  qt5,
+  qt6,
   rustPlatform,
   rustc,
-  cargo,
-  fetchFromGitHub,
-  pkg-config,
-  cmake,
-  kdePackages,
-  withWayland ? true,
-  withIndicator ? true,
-  dbus,
-  libdbusmenu,
-  withXim ? true,
-  libxcb,
-  cairo,
   withGtk3 ? true,
-  gtk3,
   withGtk4 ? true,
-  gtk4,
+  withIndicator ? true,
   withQt5 ? true,
-  qt5,
   withQt6 ? false,
-  qt6,
+  withWayland ? true,
+  withXim ? true,
 }:
 
 let
@@ -45,19 +45,42 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-apQkxAUve7+2h9XACZZgroqBK1sCUYMNfsX/4nEnCPA=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-U3SOHZvgyPwv98wY41dnwSCUg+DTkb/LY6woffrAli8=";
-  };
-
   # Replace autostart path
   postPatch = ''
     substituteInPlace res/kime.desktop res/kime-xdg-autostart \
       --replace-warn "/usr/bin/kime" "kime"
   '';
 
-  dontUseCmakeConfigure = true;
-  dontWrapQtApps = true;
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+    kdePackages.extra-cmake-modules
+    rustPlatform.bindgenHook
+    rustPlatform.cargoSetupHook
+    rustc
+    cargo
+  ];
+
+  buildInputs =
+    lib.optionals withIndicator [
+      dbus
+      libdbusmenu
+    ]
+    ++ lib.optionals withXim [
+      libxcb
+      cairo
+    ]
+    ++ lib.optionals withGtk3 [ gtk3 ]
+    ++ lib.optionals withGtk4 [ gtk4 ]
+    ++ lib.optionals withQt5 [ qt5.qtbase ]
+    ++ lib.optionals withQt6 [ qt6.qtbase ];
+
+  env = {
+    # https://github.com/Riey/kime/issues/688
+    RUSTFLAGS = "-Clink-args=-L./target/release";
+    RUST_BACKTRACE = 1;
+  };
+
   buildPhase = ''
     runHook preBuild
     export KIME_BUILD_CHECK=1
@@ -73,6 +96,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     cargo test --release --frozen
@@ -95,6 +119,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     # Don't pipe output to head directly it will cause broken pipe error https://github.com/rust-lang/rust/issues/46016
@@ -104,39 +129,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  buildInputs =
-    lib.optionals withIndicator [
-      dbus
-      libdbusmenu
-    ]
-    ++ lib.optionals withXim [
-      libxcb
-      cairo
-    ]
-    ++ lib.optionals withGtk3 [ gtk3 ]
-    ++ lib.optionals withGtk4 [ gtk4 ]
-    ++ lib.optionals withQt5 [ qt5.qtbase ]
-    ++ lib.optionals withQt6 [ qt6.qtbase ];
-
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-    kdePackages.extra-cmake-modules
-    rustPlatform.bindgenHook
-    rustPlatform.cargoSetupHook
-    rustc
-    cargo
-  ];
-
-  env = {
-    RUST_BACKTRACE = 1;
-    # https://github.com/Riey/kime/issues/688
-    RUSTFLAGS = "-Clink-args=-L./target/release";
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-U3SOHZvgyPwv98wY41dnwSCUg+DTkb/LY6woffrAli8=";
   };
 
+  dontUseCmakeConfigure = true;
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "https://github.com/Riey/kime";
     description = "Korean IME";
+    homepage = "https://github.com/Riey/kime";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.riey ];
     platforms = lib.platforms.linux;

@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   apple-sdk,
-  macro-utils-c,
-  umock-c,
   cmake,
-  ninja,
-  pkg-config,
   curl,
+  macro-utils-c,
+  ninja,
   openssl,
+  pkg-config,
+  umock-c,
 }:
 stdenv.mkDerivation {
   pname = "azure-c-shared-utility";
@@ -38,11 +38,13 @@ stdenv.mkDerivation {
     ninja
     pkg-config
   ];
+
   buildInputs = [
     macro-utils-c
     umock-c
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin apple-sdk;
+
   propagatedBuildInputs = [ curl ] ++ lib.optional (!stdenv.hostPlatform.isDarwin) openssl;
 
   cmakeFlags = [
@@ -60,10 +62,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/Azure/azure-c-shared-utility";
     description = "Azure C SDKs common code";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    homepage = "https://github.com/Azure/azure-c-shared-utility";
     license = lib.licenses.mit;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ lib.maintainers.tobim ];
     platforms = lib.platforms.all;
   };

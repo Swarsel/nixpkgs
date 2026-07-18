@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "flexget";
   version = "3.19.28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Flexget";
@@ -17,7 +16,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-NEBE39rqYegFO7f1fd0rTIZzkamuQM+5d3dD/zYHCoU=";
   };
 
-  pythonRelaxDeps = true;
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    python3Packages.pytestCheckHook
+    python3Packages.pytest-vcr
+    python3Packages.pytest-xdist
+    python3Packages.paramiko
+  ];
 
   build-system = with python3Packages; [
     hatchling
@@ -74,39 +80,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     subliminal
   ];
 
-  pythonImportsCheck = [
-    "flexget"
-    "flexget.api.core.authentication"
-    "flexget.api.core.database"
-    "flexget.api.core.plugins"
-    "flexget.api.core.schema"
-    "flexget.api.core.server"
-    "flexget.api.core.tasks"
-    "flexget.api.core.user"
-    "flexget.components.thetvdb.api"
-    "flexget.components.tmdb.api"
-    "flexget.components.trakt.api"
-    "flexget.components.tvmaze.api"
-    "flexget.plugins.clients.aria2"
-    "flexget.plugins.clients.deluge"
-    "flexget.plugins.clients.nzbget"
-    "flexget.plugins.clients.pyload"
-    "flexget.plugins.clients.qbittorrent"
-    "flexget.plugins.clients.rtorrent"
-    "flexget.plugins.clients.transmission"
-    "flexget.plugins.services.kodi_library"
-    "flexget.plugins.services.myepisodes"
-    "flexget.plugins.services.pogcal_acquired"
+  disabledTestPaths = [
+    # FIXME package pytest-ftpserver
+    "tests/ftp/test_ftp_download.py"
+    "tests/ftp/test_ftp_list.py"
   ];
-
-  nativeCheckInputs = [
-    python3Packages.pytestCheckHook
-    python3Packages.pytest-vcr
-    python3Packages.pytest-xdist
-    python3Packages.paramiko
-  ];
-
-  doCheck = !stdenv.hostPlatform.isDarwin;
 
   disabledTests = [
     # reach the Internet
@@ -158,16 +136,39 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "TestYamlLists"
   ];
 
-  disabledTestPaths = [
-    # FIXME package pytest-ftpserver
-    "tests/ftp/test_ftp_download.py"
-    "tests/ftp/test_ftp_list.py"
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "flexget"
+    "flexget.api.core.authentication"
+    "flexget.api.core.database"
+    "flexget.api.core.plugins"
+    "flexget.api.core.schema"
+    "flexget.api.core.server"
+    "flexget.api.core.tasks"
+    "flexget.api.core.user"
+    "flexget.components.thetvdb.api"
+    "flexget.components.tmdb.api"
+    "flexget.components.trakt.api"
+    "flexget.components.tvmaze.api"
+    "flexget.plugins.clients.aria2"
+    "flexget.plugins.clients.deluge"
+    "flexget.plugins.clients.nzbget"
+    "flexget.plugins.clients.pyload"
+    "flexget.plugins.clients.qbittorrent"
+    "flexget.plugins.clients.rtorrent"
+    "flexget.plugins.clients.transmission"
+    "flexget.plugins.services.kodi_library"
+    "flexget.plugins.services.myepisodes"
+    "flexget.plugins.services.pogcal_acquired"
   ];
 
+  pythonRelaxDeps = true;
+
   meta = {
+    description = "Multipurpose automation tool for all of your media";
     homepage = "https://flexget.com/";
     changelog = "https://github.com/Flexget/Flexget/releases/tag/${finalAttrs.src.tag}";
-    description = "Multipurpose automation tool for all of your media";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pbsds ];
   };

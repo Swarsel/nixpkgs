@@ -20,8 +20,8 @@ in
   options = {
 
     networking.tcpcrypt.enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether to enable opportunistic TCP encryption. If the other end
         speaks Tcpcrypt, then your traffic will be encrypted; otherwise
@@ -30,27 +30,37 @@ in
         connection is successful and any attackers that exist are
         passive, then Tcpcrypt guarantees privacy.
       '';
+
+      type = types.bool;
     };
   };
 
   config = mkIf cfg.enable {
 
-    users.users.tcpcryptd = {
-      uid = config.ids.uids.tcpcryptd;
-      description = "tcpcrypt daemon user";
-    };
-
     systemd.services.tcpcrypt = {
-      description = "tcpcrypt";
-
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "tcpcrypt";
 
       path = [
         pkgs.iptables
         pkgs.tcpcrypt
         pkgs.procps
       ];
+
+      postStop = ''
+        if [ -f /run/tcpcryptd/pre-tcpcrypt-ecn-state ]; then
+          sysctl -w net.ipv4.tcp_ecn=$(cat /run/tcpcryptd/pre-tcpcrypt-ecn-state)
+        fi
+
+        iptables -t mangle -D POSTROUTING -j nixos-tcpcrypt || true
+        iptables -t raw -D PREROUTING -j nixos-tcpcrypt || true
+
+        iptables -t raw -F nixos-tcpcrypt || true
+        iptables -t raw -X nixos-tcpcrypt || true
+
+        iptables -t mangle -F nixos-tcpcrypt || true
+        iptables -t mangle -X nixos-tcpcrypt || true
+      '';
 
       preStart = ''
         mkdir -p /run/tcpcryptd
@@ -68,21 +78,12 @@ in
       '';
 
       script = "tcpcryptd -x 0x10";
+      wantedBy = [ "multi-user.target" ];
+    };
 
-      postStop = ''
-        if [ -f /run/tcpcryptd/pre-tcpcrypt-ecn-state ]; then
-          sysctl -w net.ipv4.tcp_ecn=$(cat /run/tcpcryptd/pre-tcpcrypt-ecn-state)
-        fi
-
-        iptables -t mangle -D POSTROUTING -j nixos-tcpcrypt || true
-        iptables -t raw -D PREROUTING -j nixos-tcpcrypt || true
-
-        iptables -t raw -F nixos-tcpcrypt || true
-        iptables -t raw -X nixos-tcpcrypt || true
-
-        iptables -t mangle -F nixos-tcpcrypt || true
-        iptables -t mangle -X nixos-tcpcrypt || true
-      '';
+    users.users.tcpcryptd = {
+      description = "tcpcrypt daemon user";
+      uid = config.ids.uids.tcpcryptd;
     };
   };
 

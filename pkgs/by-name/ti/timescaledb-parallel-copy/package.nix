@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -33,16 +33,14 @@ buildGoModule (finalAttrs: {
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   versionCheckProgramArg = "-version";
 
   meta = {
     description = "Bulk, parallel insert of CSV records into PostgreSQL";
-    mainProgram = "timescaledb-parallel-copy";
     homepage = "https://github.com/timescale/timescaledb-parallel-copy";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    mainProgram = "timescaledb-parallel-copy";
   };
 })

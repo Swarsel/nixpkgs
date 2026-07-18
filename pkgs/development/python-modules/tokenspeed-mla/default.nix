@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   apache-tvm-ffi,
+  buildPythonPackage,
   nvidia-cutlass-dsl,
+  # build-system
+  setuptools,
   tokenspeed-triton,
   torch,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "tokenspeed-mla";
   version = "0.1.5";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "lightseekorg";
@@ -25,7 +21,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-rl+cpZabmK24nMcam5Ud4GqnpLA3TqpVRznlX6lz6Xs=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/tokenspeed-mla";
+  # no tests
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -38,10 +36,9 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tokenspeed_mla" ];
-
-  # no tests
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/tokenspeed-mla";
 
   meta = {
     description = "Speed-of-light TokenSpeed MLA kernels for Blackwell SM100 and SM103";

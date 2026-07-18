@@ -1,17 +1,17 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   clucene-core_2,
   cmake,
   docbook_xml_dtd_45,
   docbook_xsl_ns,
-  fetchFromGitHub,
   gettext,
   libxslt,
   perlPackages,
   pkg-config,
   qt6,
-  stdenv,
   sword,
 }:
 
@@ -34,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kYQjkwfWsEijJ/umOylnfvHgv4u16xr3pkr3ALN4O8c=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     docbook_xml_dtd_45
@@ -53,11 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     sword
   ];
 
-  preConfigure = ''
-    export CLUCENE_HOME=${clucene-core_2};
-    export SWORD_HOME=${sword};
-  '';
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_HOWTO_PDF" false)
     (lib.cmakeBool "BUILD_HANDBOOK_PDF" false)
@@ -65,14 +62,17 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "BT_DOCBOOK_XSL_PDF_DOCBOOK_XSL" "${docbook_xsl_ns}/share/xml/docbook-xsl-ns/html/chunk.xsl")
   ];
 
-  strictDeps = true;
+  preConfigure = ''
+    export CLUCENE_HOME=${clucene-core_2};
+    export SWORD_HOME=${sword};
+  '';
 
   meta = {
-    homepage = "http://www.bibletime.info/";
     description = "Powerful cross platform Bible study tool";
+    homepage = "http://www.bibletime.info/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "bibletime";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "bibletime";
   };
 })

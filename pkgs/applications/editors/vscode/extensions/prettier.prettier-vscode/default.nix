@@ -2,19 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  clang_20,
   fetchNpmDeps,
   libsecret,
+  nix-update-script,
   nodejs-slim,
   npmHooks,
   pkg-config,
-  clang_20,
   vscode-utils,
-  nix-update-script,
 }:
 
 let
   vsix = stdenv.mkDerivation (finalAttrs: {
-    name = "prettier-vscode-${finalAttrs.version}.vsix";
     pname = "prettier-vscode-vsix";
     version = "12.4.0";
 
@@ -25,15 +24,7 @@ let
       hash = "sha256-N++WB0CvqYQTRg3SQFf9QJrwSJXtUd7z/kvWXQqOSC4=";
     };
 
-    npmDeps = fetchNpmDeps {
-      name = "${finalAttrs.pname}-npm-deps";
-      inherit (finalAttrs) src;
-      hash = "sha256-vktxhQA2a+D9Nr4vhbmGCnNdGzt0U89K50g0SgiV5SE=";
-    };
-
-    buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-      libsecret
-    ];
+    strictDeps = true;
 
     nativeBuildInputs = [
       nodejs-slim
@@ -48,7 +39,9 @@ let
       clang_20 # clang_21 breaks @vscode/vsce's optional dependency keytar
     ];
 
-    strictDeps = true;
+    buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+      libsecret
+    ];
 
     env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
 
@@ -60,31 +53,38 @@ let
 
       runHook postBuild
     '';
+
+    name = "prettier-vscode-${finalAttrs.version}.vsix";
+
+    npmDeps = fetchNpmDeps {
+      inherit (finalAttrs) src;
+      hash = "sha256-vktxhQA2a+D9Nr4vhbmGCnNdGzt0U89K50g0SgiV5SE=";
+      name = "${finalAttrs.pname}-npm-deps";
+    };
   });
 in
 vscode-utils.buildVscodeExtension (finalAttrs: {
-  pname = "prettier-vscode";
   inherit (finalAttrs.src) version;
-
-  vscodeExtPublisher = "prettier";
+  pname = "prettier-vscode";
+  src = vsix;
   vscodeExtName = "prettier-vscode";
+  vscodeExtPublisher = "prettier";
   vscodeExtUniqueId = "${finalAttrs.vscodeExtPublisher}.${finalAttrs.vscodeExtName}";
 
-  src = vsix;
-
   passthru = {
-    vsix = finalAttrs.src;
     updateScript = nix-update-script {
       attrPath = "vscode-extensions.prettier.prettier-vscode.vsix";
     };
+
+    vsix = finalAttrs.src;
   };
 
   meta = {
-    changelog = "https://marketplace.visualstudio.com/items/Prettier.prettier-vscode/changelog";
     description = "Visual Studio Code extension for Prettier";
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=Prettier.prettier-vscode";
     homepage = "https://github.com/prettier/prettier-vscode";
+    changelog = "https://marketplace.visualstudio.com/items/Prettier.prettier-vscode/changelog";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ xiaoxiangmoe ];
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=Prettier.prettier-vscode";
   };
 })

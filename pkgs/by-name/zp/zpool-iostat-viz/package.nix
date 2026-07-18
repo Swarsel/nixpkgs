@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   installShellFiles,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "zpool-iostat-viz";
   version = "unstable-2021-11-13";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "chadmiller";
@@ -22,9 +21,6 @@ python3Packages.buildPythonApplication {
     python3Packages.wrapPython
   ];
 
-  # There is no setup.py
-  dontConfigure = true;
-  dontBuild = true;
   doCheck = false;
 
   installPhase = ''
@@ -32,6 +28,11 @@ python3Packages.buildPythonApplication {
     install -D zpool-iostat-viz $out/bin/zpool-iostat-viz
     installManPage zpool-iostat-viz.1
   '';
+
+  dontBuild = true;
+  # There is no setup.py
+  dontConfigure = true;
+  pyproject = false;
 
   meta = {
     description = "\"zpool iostats\" for humans; find the slow parts of your ZFS pool";

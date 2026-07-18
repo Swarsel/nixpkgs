@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
+  buildGoModule,
   glib,
   libxml2,
+  pkg-config,
 }:
 
 buildGoModule {
@@ -18,13 +18,14 @@ buildGoModule {
     hash = "sha256-U9fApk/dyz7xSho2W8UT0OGIeOYR/v9lM0LHN2OqTEQ=";
   };
 
-  vendorHash = "sha256-0O80uhxSVsV9N7Z/FgaLwcjZqeb4MqSCE1YW5Zd32ns=";
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glib
     libxml2
   ];
+
+  vendorHash = "sha256-0O80uhxSVsV9N7Z/FgaLwcjZqeb4MqSCE1YW5Zd32ns=";
 
   ldflags = [
     "-s"
@@ -32,9 +33,9 @@ buildGoModule {
   ];
 
   meta = {
+    description = "Universal Aggregator";
     homepage = "https://github.com/sloonz/ua";
     license = lib.licenses.isc;
-    description = "Universal Aggregator";
     maintainers = [ ];
   };
 }

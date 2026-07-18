@@ -1,27 +1,24 @@
 {
-  autoPatchelfHook,
-  buildPythonPackage,
-  fetchurl,
   lib,
-  patchelf,
-  python,
-  pythonAtLeast,
   stdenv,
-
-  # native dependencies
-  openvino-native,
-
+  fetchurl,
+  autoPatchelfHook,
   # dependencies
   backports-strenum,
+  buildPythonPackage,
   flatbuffers,
-  numpy,
-  protobuf,
-  tqdm,
-  typing-extensions,
-
   # optional-dependencies
   lark,
   ml-dtypes,
+  numpy,
+  # native dependencies
+  openvino-native,
+  patchelf,
+  protobuf,
+  python,
+  pythonAtLeast,
+  tqdm,
+  typing-extensions,
 }:
 
 let
@@ -39,7 +36,6 @@ in
 buildPythonPackage {
   pname = "ai-edge-litert";
   version = release.version;
-  format = "wheel";
 
   src = fetchurl {
     inherit (source)
@@ -54,6 +50,13 @@ buildPythonPackage {
     openvino-native
   ];
 
+  preFixup = ''
+    while IFS= read -r -d "" so; do
+      ${patchelf}/bin/patchelf --replace-needed libopenvino.so.2620 libopenvino.so "$so"
+      ${patchelf}/bin/patchelf --replace-needed libopenvino_tensorflow_lite_frontend.so.2620 libopenvino_tensorflow_lite_frontend.so "$so"
+    done < <(find "$out" -type f \( -name '*.so' -o -name '*.so.*' \) -print0)
+  '';
+
   dependencies = [
     backports-strenum
     flatbuffers
@@ -62,6 +65,8 @@ buildPythonPackage {
     tqdm
     typing-extensions
   ];
+
+  format = "wheel";
 
   optional-dependencies = {
     model-utils = [
@@ -72,37 +77,32 @@ buildPythonPackage {
     # TODO: npu-sdk
   };
 
-  preFixup = ''
-    while IFS= read -r -d "" so; do
-      ${patchelf}/bin/patchelf --replace-needed libopenvino.so.2620 libopenvino.so "$so"
-      ${patchelf}/bin/patchelf --replace-needed libopenvino_tensorflow_lite_frontend.so.2620 libopenvino_tensorflow_lite_frontend.so "$so"
-    done < <(find "$out" -type f \( -name '*.so' -o -name '*.so.*' \) -print0)
-  '';
+  pythonImportsCheck = [
+    "ai_edge_litert"
+    "ai_edge_litert.interpreter"
+  ];
 
   pythonRemoveDeps = lib.optionals (pythonAtLeast "3.12") [
     # https://github.com/google-ai-edge/LiteRT/pull/5298
     "backports.strenum"
   ];
 
-  pythonImportsCheck = [
-    "ai_edge_litert"
-    "ai_edge_litert.interpreter"
-  ];
-
   passthru.updateScript = ./update.py;
 
   meta = {
-    changelog = "https://github.com/google-ai-edge/LiteRT/releases/tag/v${release.version}";
     description = "LiteRT is for mobile and embedded devices";
-    downloadPage = "https://github.com/google-ai-edge/LiteRT";
     homepage = "https://www.tensorflow.org/lite/";
+    changelog = "https://github.com/google-ai-edge/LiteRT/releases/tag/v${release.version}";
     license = lib.licenses.asl20;
-    platforms = lib.attrNames platforms;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ hexa ];
+    platforms = lib.attrNames platforms;
+
     badPlatforms = [
       # elftools.common.exceptions.ELFError: Magic number does not match
       lib.systems.inspect.patterns.isDarwin
     ];
+
+    downloadPage = "https://github.com/google-ai-edge/LiteRT";
   };
 }

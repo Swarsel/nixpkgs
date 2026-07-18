@@ -13,31 +13,35 @@ let
     fetchurl
       {
         aarch64-darwin = {
-          url = "https://github.com/Kong/insomnia/releases/download/core%40${version}/Insomnia.Core-${version}.dmg";
           hash = "sha256-sPl7KXC8Z13LFZvxuKg02iDbtrCxn//Yrr8AOOf3VD4=";
+          url = "https://github.com/Kong/insomnia/releases/download/core%40${version}/Insomnia.Core-${version}.dmg";
         };
+
         x86_64-linux = {
-          url = "https://github.com/Kong/insomnia/releases/download/core%40${version}/Insomnia.Core-${version}.AppImage";
           hash = "sha256-PlcKBQnkmgU/SsLRKX7ohrGHm7B4hK9FMkplwlbFolI=";
+          url = "https://github.com/Kong/insomnia/releases/download/core%40${version}/Insomnia.Core-${version}.AppImage";
         };
       }
       .${stdenv.system} or (throw "Unsupported system: ${stdenv.system}");
 
   meta = {
-    homepage = "https://insomnia.rest";
     description = "Open-source, cross-platform API client for GraphQL, REST, WebSockets, SSE and gRPC, with Cloud, Local and Git storage";
-    mainProgram = "insomnia";
+    homepage = "https://insomnia.rest";
     changelog = "https://github.com/Kong/insomnia/releases/tag/core@${version}";
     license = lib.licenses.asl20;
-    platforms = [
-      "aarch64-darwin"
-      "x86_64-linux"
-    ];
+
     maintainers = with lib.maintainers; [
       markus1189
       kashw2
       DataHearth
     ];
+
+    platforms = [
+      "aarch64-darwin"
+      "x86_64-linux"
+    ];
+
+    mainProgram = "insomnia";
   };
 in
 if stdenv.hostPlatform.isDarwin then
@@ -48,7 +52,6 @@ if stdenv.hostPlatform.isDarwin then
       src
       meta
       ;
-    sourceRoot = ".";
 
     nativeBuildInputs = [ undmg ];
 
@@ -58,6 +61,8 @@ if stdenv.hostPlatform.isDarwin then
       mv Insomnia.app $out/Applications/
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   }
 else
   appimageTools.wrapType2 {

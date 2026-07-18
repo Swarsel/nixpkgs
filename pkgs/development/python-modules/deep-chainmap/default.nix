@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "deep-chainmap";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "deep_chainmap";
     inherit version;
     hash = "sha256-lrCg6GGxjq/Y3t1c1HpJuaP+XVvVrOcB5aVaem5E/I8=";
+    pname = "deep_chainmap";
   };
-
-  build-system = [ flit-core ];
 
   # Tests are not published to pypi
   doCheck = false;
-
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "deep_chainmap" ];
 
   # See the guide for more information: https://nixos.org/nixpkgs/manual/#chap-meta

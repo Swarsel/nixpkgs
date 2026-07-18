@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  guile,
   autoreconfHook,
+  guile,
   pkg-config,
 }:
 
@@ -19,18 +19,19 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     guile
     pkg-config
   ];
+
   buildInputs = [
     guile
   ];
 
-  doCheck = true;
   makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
-
+  doCheck = true;
   # In procedure bytevector-u8-ref: Argument 2 out of range
   dontStrip = stdenv.hostPlatform.isDarwin;
 

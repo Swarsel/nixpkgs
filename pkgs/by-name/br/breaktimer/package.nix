@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildNpmPackage,
   copyDesktopItems,
   electron_41,
-  fetchFromGitHub,
   jq,
   makeDesktopItem,
   makeWrapper,
@@ -28,21 +28,11 @@ buildNpmPackage rec {
     hash = "sha256-STDb6+brlVk/ZPUbw3cQOpe2r03WlFKEBgVLqJrsrHI=";
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   # electron-updater's auto-install path tries to download a new release
   # from GitHub and overwrite the nix-store binary, which is read-only.
   # Updates come via nix instead.
   patches = [ ./disable-auto-update.patch ];
-
-  # The package ships a lockfile (package-lock.json) but the default
-  # `npm run build` is run via `concurrently`; we drive the build manually.
-  dontNpmBuild = true;
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  npmDepsHash = "sha256-UL8e0UKZKhHHC+JvRpmcdBvFHlCdn3YknceVJ+knMgg=";
+  strictDeps = true;
 
   nativeBuildInputs = [
     jq
@@ -50,6 +40,9 @@ buildNpmPackage rec {
     makeWrapper
     copyDesktopItems
   ];
+
+  npmDepsHash = "sha256-UL8e0UKZKhHHC+JvRpmcdBvFHlCdn3YknceVJ+knMgg=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   buildPhase = ''
     runHook preBuild
@@ -104,21 +97,27 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "breaktimer";
-      exec = "breaktimer";
-      icon = "breaktimer";
-      comment = description;
-      desktopName = "BreakTimer";
-      genericName = "Break Reminder";
       categories = [
         "Utility"
         "Office"
       ];
+
+      comment = description;
+      desktopName = "BreakTimer";
+      exec = "breaktimer";
+      genericName = "Break Reminder";
+      icon = "breaktimer";
+      name = "breaktimer";
     })
   ];
 
+  # The package ships a lockfile (package-lock.json) but the default
+  # `npm run build` is run via `concurrently`; we drive the build manually.
+  dontNpmBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -127,7 +126,7 @@ buildNpmPackage rec {
     changelog = "https://github.com/tom-james-watson/breaktimer-app/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ proitheus ];
-    mainProgram = "breaktimer";
     platforms = electron.meta.platforms;
+    mainProgram = "breaktimer";
   };
 }

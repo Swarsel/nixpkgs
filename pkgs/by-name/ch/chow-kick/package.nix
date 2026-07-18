@@ -1,21 +1,21 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   cmake,
   curl,
-  libepoxy,
-  fetchFromGitHub,
   freetype,
-  lib,
   libGL,
+  libepoxy,
+  libjack2,
   libxcursor,
   libxext,
   libxinerama,
-  libxrandr,
-  libjack2,
   libxkbcommon,
+  libxrandr,
   lv2,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,30 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-YYcNiJGGw21aVY03tyQLu3wHCJhxYiDNJZ+LWNbQdj4=";
     fetchSubmodules = true;
   };
-
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-  ];
-  buildInputs = [
-    alsa-lib
-    curl
-    libepoxy
-    freetype
-    libGL
-    libxcursor
-    libxext
-    libxinerama
-    libxrandr
-    libjack2
-    libxkbcommon
-    lv2
-  ];
-
-  cmakeFlags = [
-    "-DCMAKE_AR=${stdenv.cc.cc}/bin/gcc-ar"
-    "-DCMAKE_RANLIB=${stdenv.cc.cc}/bin/gcc-ranlib"
-  ];
 
   postPatch = ''
     # Fix width/height naming in chowdsp_GraphicsHelpers.h
@@ -77,6 +53,31 @@ stdenv.mkDerivation (finalAttrs: {
       'cmake_minimum_required(VERSION 4.0)'
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+  ];
+
+  buildInputs = [
+    alsa-lib
+    curl
+    libepoxy
+    freetype
+    libGL
+    libxcursor
+    libxext
+    libxinerama
+    libxrandr
+    libjack2
+    libxkbcommon
+    lv2
+  ];
+
+  cmakeFlags = [
+    "-DCMAKE_AR=${stdenv.cc.cc}/bin/gcc-ar"
+    "-DCMAKE_RANLIB=${stdenv.cc.cc}/bin/gcc-ranlib"
+  ];
+
   installPhase = ''
     mkdir -p $out/lib/lv2 $out/lib/vst3 $out/bin
     cp -r ChowKick_artefacts/Release/LV2/ChowKick.lv2 $out/lib/lv2
@@ -85,8 +86,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/Chowdhury-DSP/ChowKick";
     description = "Kick synthesizer based on old-school drum machine circuits";
+    homepage = "https://github.com/Chowdhury-DSP/ChowKick";
     license = [ lib.licenses.bsd3 ];
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

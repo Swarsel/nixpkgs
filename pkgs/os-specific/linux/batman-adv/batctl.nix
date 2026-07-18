@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libnl,
+  pkg-config,
 }:
 
 let
@@ -11,8 +11,8 @@ let
 in
 
 stdenv.mkDerivation rec {
-  pname = "batctl";
   inherit (cfg) version;
+  pname = "batctl";
 
   src = fetchurl {
     url = "https://downloads.open-mesh.org/batman/releases/batman-adv-${version}/${pname}-${version}.tar.gz";
@@ -27,11 +27,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.open-mesh.org/projects/batman-adv/wiki/Wiki";
     description = "B.A.T.M.A.N. routing protocol in a linux kernel module for layer 2, control tool";
-    mainProgram = "batctl";
+    homepage = "https://www.open-mesh.org/projects/batman-adv/wiki/Wiki";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fpletz ];
     platforms = with lib.platforms; linux;
+    mainProgram = "batctl";
   };
 }

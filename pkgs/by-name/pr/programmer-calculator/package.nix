@@ -1,7 +1,7 @@
 {
   lib,
-  gccStdenv,
   fetchFromGitHub,
+  gccStdenv,
   ncurses,
 }:
 
@@ -26,15 +26,17 @@ gccStdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Terminal calculator for programmers";
-    mainProgram = "pcalc";
+
     longDescription = ''
       Terminal calculator made for programmers working with multiple number
       representations, sizes, and overall close to the bits
     '';
+
     homepage = "https://alt-romes.github.io/programmer-calculator";
     changelog = "https://github.com/alt-romes/programmer-calculator/releases/tag/v${lib.versions.majorMinor finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ cjab ];
     platforms = lib.platforms.all;
+    mainProgram = "pcalc";
   };
 })

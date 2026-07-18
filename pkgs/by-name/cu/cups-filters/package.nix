@@ -1,36 +1,36 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
   bc,
   coreutils,
   cups,
   dbus,
   dejavu_fonts,
-  fetchFromGitHub,
   fetchpatch,
   fontconfig,
   gawk,
   ghostscript,
+  glib,
   gnugrep,
   gnused,
   ijs,
   libcupsfilters,
-  libppd,
   libexif,
   libjpeg,
   liblouis,
   libpng,
+  libppd,
   makeWrapper,
-  autoreconfHook,
   mupdf,
   perl,
   pkg-config,
   poppler,
   poppler-utils,
   qpdf,
-  stdenv,
   which,
   withAvahi ? true,
-  glib,
 }:
 
 (
@@ -67,9 +67,9 @@
         # Fix build with gcc15
         # https://github.com/OpenPrinting/cups-filters/pull/618
         (fetchpatch {
+          hash = "sha256-Hu3nCHzX6K4tD7T5XIt0dh6GPQxmgfuHqbBXWfdXxoA=";
           name = "cups-filters-fix-build-with-gcc15-c23.patch";
           url = "https://github.com/OpenPrinting/cups-filters/commit/9871a50b5c1f9c2caa2754aac1f5db70c886021b.patch";
-          hash = "sha256-Hu3nCHzX6K4tD7T5XIt0dh6GPQxmgfuHqbBXWfdXxoA=";
         })
       ];
 
@@ -122,6 +122,8 @@
         patchShebangs filter
       '';
 
+      doCheck = true;
+
       postInstall = ''
         for i in $out/lib/cups/filter/*; do
           wrapProgram "$i" --prefix PATH ':' ${binPath}
@@ -129,11 +131,10 @@
       '';
 
       enableParallelBuilding = true;
-      doCheck = true;
 
       meta = {
-        homepage = "http://www.linuxfoundation.org/collaborate/workgroups/openprinting/cups-filters";
         description = "Backends, filters, and other software that was once part of the core CUPS distribution but is no longer maintained by Apple Inc";
+        homepage = "http://www.linuxfoundation.org/collaborate/workgroups/openprinting/cups-filters";
         license = lib.licenses.gpl2Plus;
         platforms = lib.platforms.linux;
       };

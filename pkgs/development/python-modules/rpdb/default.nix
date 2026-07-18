@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "rpdb";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +17,8 @@ buildPythonPackage rec {
   build-system = [
     poetry-core
   ];
+
+  pyproject = true;
 
   meta = {
     description = "PDB wrapper with remote access via TCP socket";

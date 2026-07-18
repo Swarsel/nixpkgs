@@ -15,8 +15,6 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-KIAlDpt1Udl+RLp3728utgQ9FCjZz/OyoG92MOJmgPI=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/share/fzf-obc/{bin,lib/fzf-obc,plugins/{kill,gradle}}
     install -m644 bin/* $out/share/fzf-obc/bin
@@ -25,9 +23,11 @@ stdenv.mkDerivation rec {
     install -m644 plugins/gradle/* $out/share/fzf-obc/plugins/gradle
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://fzf-obc.readthedocs.io";
     description = "Completion script adding fzf over all know bash completion functions";
+    homepage = "https://fzf-obc.readthedocs.io";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ loicreynier ];
   };

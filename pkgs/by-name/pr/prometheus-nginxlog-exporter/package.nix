@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,16 +17,14 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-RzqfmP1d3zqageiGSr+CxSJQxAXmOKRCwj/7KO2f3EE=";
-
   subPackages = [ "." ];
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) nginxlog; };
 
   meta = {
     description = "Export metrics from Nginx access log files to Prometheus";
-    mainProgram = "prometheus-nginxlog-exporter";
     homepage = "https://github.com/martin-helmich/prometheus-nginxlog-exporter";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ mmahut ];
+    mainProgram = "prometheus-nginxlog-exporter";
   };
 }

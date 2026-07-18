@@ -3,17 +3,17 @@
   stdenv,
   fetchFromGitHub,
   appstream-glib,
+  apx,
   desktop-file-utils,
+  gnome-console,
   gobject-introspection,
   libadwaita,
   meson,
   ninja,
   pkg-config,
   python3,
-  wrapGAppsHook4,
-  apx,
-  gnome-console,
   vte-gtk4,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,8 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GUI frontend for Apx in GTK 4 and Libadwaita";
     homepage = "https://github.com/Vanilla-OS/apx-gui";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "apx-gui";
   };
 })

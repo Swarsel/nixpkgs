@@ -1,9 +1,9 @@
 {
-  coreutils-prefixed,
   lib,
-  makeWrapper,
   stdenv,
   fetchFromGitHub,
+  coreutils-prefixed,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/bin
     cp git-radar fetch.sh prompt.bash prompt.zsh radar-base.sh $out
@@ -30,12 +28,14 @@ stdenv.mkDerivation (finalAttrs: {
     ''}
   '';
 
+  dontBuild = true;
+
   meta = {
+    description = "Tool you can add to your prompt to provide at-a-glance information on your git repo";
     homepage = "https://github.com/michaeldfallen/git-radar";
     license = lib.licenses.mit;
-    description = "Tool you can add to your prompt to provide at-a-glance information on your git repo";
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = with lib.maintainers; [ kamilchm ];
+    platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "git-radar";
   };
 })

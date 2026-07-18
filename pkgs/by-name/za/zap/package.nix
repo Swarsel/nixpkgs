@@ -2,40 +2,23 @@
   lib,
   stdenv,
   fetchurl,
+  copyDesktopItems,
   jre,
   makeDesktopItem,
-  copyDesktopItems,
   runtimeShell,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "zap";
   version = "2.17.0";
+
   src = fetchurl {
     url = "https://github.com/zaproxy/zaproxy/releases/download/v${finalAttrs.version}/ZAP_${finalAttrs.version}_Linux.tar.gz";
     hash = "sha256-7+eZqqNifbaDtD8AycIQrqC3XADMjwoPBDTRK7Pd3lo=";
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "zap";
-      exec = "zap";
-      icon = "zap";
-      desktopName = "Zed Attack Proxy";
-      categories = [
-        "Development"
-        "Security"
-        "System"
-      ];
-    })
-  ];
-
-  buildInputs = [ jre ];
-
   nativeBuildInputs = [ copyDesktopItems ];
-
-  # From https://github.com/zaproxy/zaproxy/blob/master/zap/src/main/java/org/parosproxy/paros/Constant.java
-  version_tag = "20012000";
+  buildInputs = [ jre ];
 
   # Copying config and adding version tag before first use to avoid permission
   # issues if zap tries to copy config on it's own.
@@ -64,15 +47,35 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Development"
+        "Security"
+        "System"
+      ];
+
+      desktopName = "Zed Attack Proxy";
+      exec = "zap";
+      icon = "zap";
+      name = "zap";
+    })
+  ];
+
+  # From https://github.com/zaproxy/zaproxy/blob/master/zap/src/main/java/org/parosproxy/paros/Constant.java
+  version_tag = "20012000";
+
   meta = {
-    homepage = "https://www.zaproxy.org/";
     description = "Java application for web penetration testing";
+    homepage = "https://www.zaproxy.org/";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mog
       rafael
     ];
+
     platforms = lib.platforms.linux;
-    license = lib.licenses.asl20;
     mainProgram = "zap";
   };
 })

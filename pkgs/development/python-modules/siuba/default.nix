@@ -1,13 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   hypothesis,
   numpy,
   pandas,
   psycopg2,
   pymysql,
+  pytestCheckHook,
   python-dateutil,
   pytz,
   pyyaml,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "siuba";
   version = "0.4.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "machow";
@@ -39,13 +38,15 @@ buildPythonPackage rec {
     sqlalchemy
   ];
 
+  # requires running mysql and postgres instances; see docker-compose.yml
+  doCheck = false;
+
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
 
-  # requires running mysql and postgres instances; see docker-compose.yml
-  doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "siuba"

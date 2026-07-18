@@ -34,9 +34,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/ocaml-obuild/obuild";
     inherit (ocamlPackages.ocaml.meta) platforms;
     description = "Simple package build system for OCaml";
+    homepage = "https://github.com/ocaml-obuild/obuild";
     license = lib.licenses.lgpl21;
     maintainers = [ ];
   };

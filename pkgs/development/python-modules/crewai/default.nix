@@ -1,18 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
-
-  # build-system
-  hatchling,
-
+  # tests
+  a2a-sdk,
+  aiocache,
   # dependencies
   aiofiles,
   aiosqlite,
+  anthropic,
   appdirs,
+  boto3,
+  buildPythonPackage,
   chromadb,
   click,
+  google-genai,
+  # build-system
+  hatchling,
   instructor,
   json-repair,
   json5,
@@ -20,35 +23,29 @@
   lancedb,
   litellm,
   mcp,
+  nix-update-script,
   openai,
+  openpyxl,
   opentelemetry-api,
   opentelemetry-exporter-otlp-proto-http,
   opentelemetry-sdk,
-  openpyxl,
   pdfplumber,
   portalocker,
   pydantic,
   pydantic-settings,
   pyjwt,
+  pytest-asyncio,
+  pytest-recording,
+  pytest-xdist,
+  pytestCheckHook,
   python-dotenv,
+  qdrant-client,
   regex,
   textual,
   tokenizers,
   tomli,
   tomli-w,
   uv,
-
-  # tests
-  a2a-sdk,
-  aiocache,
-  anthropic,
-  boto3,
-  google-genai,
-  pytest-asyncio,
-  pytest-recording,
-  pytest-xdist,
-  pytestCheckHook,
-  qdrant-client,
   vcrpy,
   versionCheckHook,
   writableTmpDirAsHomeHook,
@@ -57,7 +54,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "crewai";
   version = "1.14.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "crewAIInc";
@@ -79,35 +75,23 @@ buildPythonPackage (finalAttrs: {
         "raw_body = request_body if request_body is not None else httpx_request.read()"
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/lib/crewai";
+  nativeCheckInputs = [
+    a2a-sdk
+    aiocache
+    anthropic
+    boto3
+    google-genai
+    pytestCheckHook
+    pytest-asyncio
+    pytest-recording
+    pytest-xdist
+    qdrant-client
+    vcrpy
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ hatchling ];
-
-  pythonRelaxDeps = [
-    "aiofiles"
-    "chromadb"
-    "click"
-    "json-repair"
-    "json5"
-    "lancedb"
-    "litellm"
-    "mcp"
-    "openai"
-    "opentelemetry-api"
-    "opentelemetry-exporter-otlp-proto-http"
-    "opentelemetry-sdk"
-    "pdfplumber"
-    "portalocker"
-    "pydantic"
-    "pydantic-settings"
-    "pyjwt"
-    "python-dotenv"
-    "regex"
-    "tokenizers"
-    "tomli"
-    "tomli-w"
-    "uv"
-  ];
 
   dependencies = [
     aiofiles
@@ -140,8 +124,6 @@ buildPythonPackage (finalAttrs: {
     tomli-w
     uv
   ];
-
-  pythonImportsCheck = [ "crewai" ];
 
   disabledTestPaths = [
     # Ignore tests that require {chromadb, telemetry, security, test_agent}
@@ -540,25 +522,41 @@ buildPythonPackage (finalAttrs: {
     "test_older_than"
   ];
 
-  nativeCheckInputs = [
-    a2a-sdk
-    aiocache
-    anthropic
-    boto3
-    google-genai
-    pytestCheckHook
-    pytest-asyncio
-    pytest-recording
-    pytest-xdist
-    qdrant-client
-    vcrpy
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
+  pyproject = true;
 
   pytestFlags = [
     "--override-ini=addopts="
   ];
+
+  pythonImportsCheck = [ "crewai" ];
+
+  pythonRelaxDeps = [
+    "aiofiles"
+    "chromadb"
+    "click"
+    "json-repair"
+    "json5"
+    "lancedb"
+    "litellm"
+    "mcp"
+    "openai"
+    "opentelemetry-api"
+    "opentelemetry-exporter-otlp-proto-http"
+    "opentelemetry-sdk"
+    "pdfplumber"
+    "portalocker"
+    "pydantic"
+    "pydantic-settings"
+    "pyjwt"
+    "python-dotenv"
+    "regex"
+    "tokenizers"
+    "tomli"
+    "tomli-w"
+    "uv"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/lib/crewai";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  intltool,
   gtk2,
+  intltool,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,10 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     intltool
   ];
+
   buildInputs = [ gtk2 ];
 
   meta = {

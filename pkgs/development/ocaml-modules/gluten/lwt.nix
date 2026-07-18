@@ -5,13 +5,14 @@
 }:
 
 buildDunePackage {
-  pname = "gluten-lwt";
   inherit (gluten)
     doCheck
     meta
     src
     version
     ;
+
+  pname = "gluten-lwt";
 
   propagatedBuildInputs = [
     gluten

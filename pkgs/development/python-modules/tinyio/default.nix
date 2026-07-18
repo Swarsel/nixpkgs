@@ -1,12 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # tests
   pytestCheckHook,
   trio,
@@ -15,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tinyio";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "patrick-kidger";
@@ -24,15 +21,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-a1EbgFcyWz0aihX16ZQbcAwKKneUe+b8qV0cHyMchVI=";
   };
 
-  build-system = [
-    hatchling
-  ];
-
-  pythonImportsCheck = [ "tinyio" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     trio
+  ];
+
+  build-system = [
+    hatchling
   ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -40,6 +35,9 @@ buildPythonPackage (finalAttrs: {
     # assert 0 >= 4, where 0 = sum([False, False, False, False, False])
     "test_sleep"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "tinyio" ];
 
   meta = {
     description = "Dead-simple event loop for Python";

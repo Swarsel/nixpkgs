@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   icu,
   libkqueue,
   libuuid,
+  pkg-config,
   tzdata,
   zlib,
 }:

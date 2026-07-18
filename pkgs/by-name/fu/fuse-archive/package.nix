@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   fuse3,
   libarchive,
   pkg-config,
-  boost,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,9 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     boost
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-D_FILE_OFFSET_BITS=64";
-
   makeFlags = [ "prefix=${placeholder "out"}" ];
+  env.NIX_CFLAGS_COMPILE = "-D_FILE_OFFSET_BITS=64";
 
   meta = {
     inherit (fuse3.meta) platforms;

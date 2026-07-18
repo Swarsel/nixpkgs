@@ -1,21 +1,21 @@
 {
   lib,
-  sgx-azure-dcap-client,
   gtest,
   makeWrapper,
+  sgx-azure-dcap-client,
 }:
 sgx-azure-dcap-client.overrideAttrs (old: {
-  nativeBuildInputs = old.nativeBuildInputs ++ [
-    makeWrapper
-    gtest
-  ];
-
   patches = (old.patches or [ ]) ++ [
     # Missing `#include <array>`
     ./tests-missing-includes.patch
 
     # gtest no longer supports c++14. Use c++17.
     ./tests-cpp-version.patch
+  ];
+
+  nativeBuildInputs = old.nativeBuildInputs ++ [
+    makeWrapper
+    gtest
   ];
 
   buildFlags = [

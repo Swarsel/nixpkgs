@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   coq,
   itauto,
 }:
@@ -13,17 +13,14 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "coq${coq.coq-version}-itauto-test";
   inherit (itauto) src version;
+  pname = "coq${coq.coq-version}-itauto-test";
+  doCheck = true;
 
   nativeCheckInputs = [
     coq
     itauto
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
-  doCheck = true;
 
   checkPhase = ''
     cd test-suite
@@ -35,4 +32,6 @@ stdenv.mkDerivation {
   '';
 
   installPhase = "touch $out";
+  dontBuild = true;
+  dontConfigure = true;
 }

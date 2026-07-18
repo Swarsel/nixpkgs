@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   _7zz,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,16 +15,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [ _7zz ];
-
-  sourceRoot = "Linear";
-
-  # -snld prevents "ERROR: Dangerous symbolic link path was ignored".
-  # -xr'!*:com.apple.*' prevents macOS extended attributes from being
-  # extracted as regular files, which corrupts the .app bundle.
-  unpackCmd = "7zz x -snld -xr'!*:com.apple.*' $curSrc";
 
   installPhase = ''
     runHook preInstall
@@ -35,17 +26,25 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  sourceRoot = "Linear";
+  # -snld prevents "ERROR: Dangerous symbolic link path was ignored".
+  # -xr'!*:com.apple.*' prevents macOS extended attributes from being
+  # extracted as regular files, which corrupts the .app bundle.
+  unpackCmd = "7zz x -snld -xr'!*:com.apple.*' $curSrc";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "App to manage software development and track bugs";
     homepage = "https://linear.app/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       wini
       pradyuman
     ];
+
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

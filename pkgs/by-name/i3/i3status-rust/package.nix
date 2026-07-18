@@ -1,23 +1,23 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  makeWrapper,
-  installShellFiles,
   dbus,
+  ethtool,
+  installShellFiles,
+  iproute2,
+  iw,
   libpulseaudio,
+  lm_sensors,
+  makeWrapper,
   notmuch,
   openssl,
-  ethtool,
-  lm_sensors,
-  iw,
-  iproute2,
   pandoc,
   pipewire,
+  pkg-config,
+  rustPlatform,
   withICUCalendar ? false,
-  withPipewire ? true,
   withNotmuch ? false,
+  withPipewire ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,8 +30,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-tCMoYbsiVBX7GZZVhzAKuMFS1L7DITQZSUfQ6iQMofg=";
   };
-
-  cargoHash = "sha256-mnLl+JegA96z95VQqZ5d8bGYCf1PG/ip2LVyPm4HjVI=";
 
   nativeBuildInputs = [
     pkg-config
@@ -50,22 +48,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ (lib.optionals withPipewire [ pipewire ])
   ++ (lib.optionals withNotmuch [ notmuch ]);
 
-  buildFeatures = [
-    "maildir"
-    "pulseaudio"
-  ]
-  ++ (lib.optionals withICUCalendar [ "icu_calendar" ])
-  ++ (lib.optionals withPipewire [ "pipewire" ])
-  ++ (lib.optionals withNotmuch [ "notmuch" ]);
-
-  prePatch = ''
-    substituteInPlace src/util.rs \
-      --replace "/usr/share/i3status-rust" "$out/share"
-  '';
+  cargoHash = "sha256-mnLl+JegA96z95VQqZ5d8bGYCf1PG/ip2LVyPm4HjVI=";
 
   postBuild = ''
     cargo xtask generate-manpage
   '';
+
+  # Currently no tests are implemented, so we avoid building the package twice
+  doCheck = false;
 
   postInstall = ''
     mkdir -p $out/share
@@ -83,17 +73,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }
   '';
 
-  # Currently no tests are implemented, so we avoid building the package twice
-  doCheck = false;
+  buildFeatures = [
+    "maildir"
+    "pulseaudio"
+  ]
+  ++ (lib.optionals withICUCalendar [ "icu_calendar" ])
+  ++ (lib.optionals withPipewire [ "pipewire" ])
+  ++ (lib.optionals withNotmuch [ "notmuch" ]);
+
+  prePatch = ''
+    substituteInPlace src/util.rs \
+      --replace "/usr/share/i3status-rust" "$out/share"
+  '';
 
   meta = {
     description = "Very resource-friendly and feature-rich replacement for i3status";
     homepage = "https://github.com/greshake/i3status-rust";
     license = lib.licenses.gpl3Only;
-    mainProgram = "i3status-rs";
+
     maintainers = with lib.maintainers; [
       backuitist
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "i3status-rs";
   };
 })

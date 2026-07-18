@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  fetchpatch,
   ncurses,
   perl,
-  fetchpatch,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fix build w/ glibc 2.42 (https://github.com/johnsonjh/OpenVi/pull/46)
     (fetchpatch {
-      url = "https://github.com/johnsonjh/OpenVi/commit/67c76961f512bfe95616fe25b32928db0aab9326.patch";
-      hash = "sha256-GOair/unxROEPvtTekGuKacKwOctPyoRdvilqdVLjrY=";
       excludes = [ "ChangeLog" ];
+      hash = "sha256-GOair/unxROEPvtTekGuKacKwOctPyoRdvilqdVLjrY=";
+      url = "https://github.com/johnsonjh/OpenVi/commit/67c76961f512bfe95616fe25b32928db0aab9326.patch";
     })
   ];
 
@@ -50,15 +50,14 @@ stdenv.mkDerivation (finalAttrs: {
   # is incompatible with macOS wchar.h, resulting in
   # "error: expected function body after function declarator"
   env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-L${lib.getLib ncurses}/lib -lncursesw";
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/johnsonjh/OpenVi";
     description = "Portable OpenBSD vi for UNIX systems";
+    homepage = "https://github.com/johnsonjh/OpenVi";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ aleksana ];
+    platforms = lib.platforms.unix;
     mainProgram = "ovi";
   };
 })

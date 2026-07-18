@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
 let
   games = {
     ctf = {
-      id = "ctf";
       version = "1.07";
       description = "'Capture The Flag' for Yamagi Quake II";
+      id = "ctf";
       sha256 = "0i9bwhjvq6yhalrsbzjambh27fdzrzgswqz3jgfn9qw6k1kjvlin";
     };
 
     ground-zero = {
-      id = "rogue";
       version = "2.07";
       description = "'Ground Zero' for Yamagi Quake II";
+      id = "rogue";
       sha256 = "1m2r4vgfdxpsi0lkf32liwf1433mdhhmjxiicjwzqjlkncjyfcb1";
     };
 
     the-reckoning = {
-      id = "xatrix";
       version = "2.08";
       description = "'The Reckoning' for Yamagi Quake II";
+      id = "xatrix";
       sha256 = "1wp9fg1q8nly2r9hh4394r1h4dxyni3lvdy7g419cz5s8hhn5msr";
     };
   };
@@ -37,8 +37,8 @@ let
         description
         sha256
         ;
-      inherit title;
 
+      inherit title;
       pname = "yquake2-${title}";
 
       src = fetchFromGitHub {
@@ -65,8 +65,8 @@ let
         inherit (data) description;
         homepage = "https://www.yamagi.org/quake2/";
         license = lib.licenses.unfree;
-        platforms = lib.platforms.unix;
         maintainers = with lib.maintainers; [ tadfisher ];
+        platforms = lib.platforms.unix;
       };
     };
 

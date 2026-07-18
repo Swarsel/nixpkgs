@@ -2,51 +2,51 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  openssl,
-  avahi,
+  alac,
   alsa-lib,
-  libplist,
-  glib,
-  libdaemon,
-  libsodium,
-  libgcrypt,
+  autoreconfHook,
+  avahi,
   ffmpeg,
-  libuuid,
-  unixtools,
-  popt,
-  libconfig,
-  libpulseaudio,
-  libjack2,
-  libsndfile,
+  glib,
   libao,
+  libconfig,
+  libdaemon,
+  libgcrypt,
+  libjack2,
+  libplist,
+  libpulseaudio,
+  libsndfile,
+  libsodium,
   libsoundio,
+  libuuid,
   mosquitto,
   nix-update-script,
+  openssl,
   pipewire,
-  soxr,
-  alac,
+  pkg-config,
+  popt,
   sndio,
-  enableAvahi ? true,
+  soxr,
+  unixtools,
   enableAirplay2 ? false,
-  enableStdout ? true,
+  enableAlac ? !enableAirplay2, # airplay2 build uses ffmpeg for alac
   enableAlsa ? true,
-  enableSndio ? true,
-  enablePulse ? true,
-  enablePipe ? true,
-  enablePipewire ? true,
   enableAo ? true,
+  enableAvahi ? true,
+  enableConvolution ? true,
+  enableDbus ? stdenv.hostPlatform.isLinux,
   enableJack ? true,
-  enableSoundio ? true,
+  enableLibdaemon ? false,
   enableMetadata ? true,
   enableMpris ? stdenv.hostPlatform.isLinux,
   enableMqttClient ? true,
-  enableDbus ? stdenv.hostPlatform.isLinux,
+  enablePipe ? true,
+  enablePipewire ? true,
+  enablePulse ? true,
+  enableSndio ? true,
+  enableSoundio ? true,
   enableSoxr ? true,
-  enableAlac ? !enableAirplay2, # airplay2 build uses ffmpeg for alac
-  enableConvolution ? true,
-  enableLibdaemon ? false,
+  enableStdout ? true,
   enableTinySVCmDNS ? true,
 }:
 
@@ -59,11 +59,18 @@ stdenv.mkDerivation (finalAttrs: {
   version = "5.1";
 
   src = fetchFromGitHub {
-    repo = "shairport-sync";
     owner = "mikebrady";
+    repo = "shairport-sync";
     tag = finalAttrs.version;
     hash = "sha256-az6HxelISTebeKkhK7MIh7px39eCHucSuZb8qBDzptk=";
   };
+
+  postPatch = ''
+    sed -i -e 's/G_BUS_TYPE_SYSTEM/G_BUS_TYPE_SESSION/g' dbus-service.c
+    sed -i -e 's/G_BUS_TYPE_SYSTEM/G_BUS_TYPE_SESSION/g' mpris-service.c
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -107,13 +114,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ optional stdenv.hostPlatform.isLinux glib;
 
-  postPatch = ''
-    sed -i -e 's/G_BUS_TYPE_SYSTEM/G_BUS_TYPE_SESSION/g' dbus-service.c
-    sed -i -e 's/G_BUS_TYPE_SYSTEM/G_BUS_TYPE_SESSION/g' mpris-service.c
-  '';
-
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--without-configfiles"
     "--sysconfdir=/etc"
@@ -140,7 +140,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optional enableLibdaemon "--with-libdaemon"
   ++ optional enableAirplay2 "--with-airplay-2";
 
-  strictDeps = true;
+  enableParallelBuilding = true;
 
   passthru.updateScript = nix-update-script {
     # ignore -dev tagged releases
@@ -148,13 +148,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/mikebrady/shairport-sync";
     description = "Airtunes server and emulator with multi-room capabilities";
+    homepage = "https://github.com/mikebrady/shairport-sync";
     license = lib.licenses.mit;
-    mainProgram = "shairport-sync";
+
     maintainers = with lib.maintainers; [
       jordanisaacs
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "shairport-sync";
   };
 })

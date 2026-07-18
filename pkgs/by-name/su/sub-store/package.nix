@@ -1,15 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-
-  pnpm_10,
+  buildNpmPackage,
   fetchPnpmDeps,
-  pnpmConfigHook,
   makeBinaryWrapper,
   nix-update-script,
-
   nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 let
   pnpm = pnpm_10;
@@ -25,28 +23,10 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-EDYPDLB4oKAcArim9xIeyH4ijrRa4tTa2elfDaOpBfk=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/backend";
-
   nativeBuildInputs = [
     makeBinaryWrapper
     pnpm
   ];
-
-  npmDeps = null;
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      ;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-4RFzky/KaRSNvBizH717KtiwavO+KB69AwPKAAnTmh4=";
-  };
-
-  npmConfigHook = pnpmConfigHook;
-  npmBuildScript = "bundle:esbuild";
 
   installPhase = ''
     runHook preInstall
@@ -59,6 +39,24 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  npmBuildScript = "bundle:esbuild";
+  npmConfigHook = pnpmConfigHook;
+  npmDeps = null;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-4RFzky/KaRSNvBizH717KtiwavO+KB69AwPKAAnTmh4=";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/backend";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -67,7 +65,7 @@ buildNpmPackage (finalAttrs: {
     changelog = "https://github.com/sub-store-org/Sub-Store/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ moraxyc ];
-    mainProgram = "sub-store";
     platforms = nodejs.meta.platforms;
+    mainProgram = "sub-store";
   };
 })

@@ -1,17 +1,17 @@
 {
   lib,
-  resholve,
   fetchFromGitHub,
   bc,
   coreutils,
   file,
+  findutils,
   gawk,
   ghostscript,
   gnused,
   imagemagick,
-  zip,
+  resholve,
   runtimeShell,
-  findutils,
+  zip,
 }:
 
 resholve.mkDerivation {
@@ -37,8 +37,11 @@ resholve.mkDerivation {
   '';
 
   solutions.default = {
-    scripts = [ "bin/pdf2odt" ];
-    interpreter = runtimeShell;
+    execer = [
+      # zip can exec; confirmed 2 invocations in pdf2odt don't
+      "cannot:${zip}/bin/zip"
+    ];
+
     inputs = [
       bc
       coreutils
@@ -50,17 +53,16 @@ resholve.mkDerivation {
       imagemagick
       zip
     ];
-    execer = [
-      # zip can exec; confirmed 2 invocations in pdf2odt don't
-      "cannot:${zip}/bin/zip"
-    ];
+
+    interpreter = runtimeShell;
+    scripts = [ "bin/pdf2odt" ];
   };
 
   meta = {
     description = "PDF to ODT/ODS format converter";
     homepage = "https://github.com/gutschke/pdf2odt";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ peterhoeg ];
+    platforms = lib.platforms.all;
   };
 }

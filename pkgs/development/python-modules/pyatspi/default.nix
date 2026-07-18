@@ -1,21 +1,19 @@
 {
   lib,
   fetchurl,
+  at-spi2-core,
+  buildPythonPackage,
+  gnome,
+  isPy3k,
   meson,
   ninja,
   pkg-config,
-  buildPythonPackage,
-  isPy3k,
-  at-spi2-core,
   pygobject3,
-  gnome,
 }:
 
 buildPythonPackage rec {
   pname = "pyatspi";
   version = "2.58.1";
-
-  pyproject = false;
 
   src = fetchurl {
     url = "mirror://gnome/sources/pyatspi/${lib.versions.majorMinor version}/pyatspi-${version}.tar.xz";
@@ -34,11 +32,12 @@ buildPythonPackage rec {
   ];
 
   disabled = !isPy3k;
+  pyproject = false;
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "pyatspi";
       attrPath = "python3.pkgs.pyatspi";
+      packageName = "pyatspi";
       versionPolicy = "odd-unstable";
     };
   };

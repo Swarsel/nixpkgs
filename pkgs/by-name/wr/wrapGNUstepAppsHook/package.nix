@@ -5,7 +5,7 @@
 }:
 
 makeSetupHook {
-  name = "wrapGNUstepAppsHook";
   propagatedBuildInputs = [ makeBinaryWrapper ];
+  name = "wrapGNUstepAppsHook";
   meta.license = lib.licenses.mit;
 } ./wrapGNUstepAppsHook.sh

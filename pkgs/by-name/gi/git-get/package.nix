@@ -20,6 +20,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       git -C $out rev-parse HEAD > $out/COMMIT
       # in format of 0000-00-00T00:00:00Z
@@ -30,12 +31,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-8DLS1pSyh1OgnULMvAppl/+D2yfyi/dcZs08S1IMzaE=";
 
-  doCheck = false;
-
   # ldflags based on metadata from git and source
   preBuild = ''
     ldflags+=" -X ${config-module}.commit=$(cat COMMIT)"
     ldflags+=" -X ${config-module}.date=$(cat SOURCE_DATE_EPOCH)"
+  '';
+
+  doCheck = false;
+
+  preInstall = ''
+    mv "$GOPATH/bin/cmd" "$GOPATH/bin/git-get"
+    ln -s ./git-get "$GOPATH/bin/git-list"
   '';
 
   ldflags = [
@@ -43,11 +49,6 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X ${config-module}.version=v${finalAttrs.version}"
   ];
-
-  preInstall = ''
-    mv "$GOPATH/bin/cmd" "$GOPATH/bin/git-get"
-    ln -s ./git-get "$GOPATH/bin/git-list"
-  '';
 
   passthru.updateScript = nix-update-script { };
 

@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  libedit,
-  gmpxx,
   bison,
+  cmake,
   flex,
-  enableReadline ? false,
-  readline,
+  gmpxx,
   gtest,
+  libedit,
   nix-update-script,
+  readline,
+  enableReadline ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,12 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    broken = with stdenv.hostPlatform; (isLinux && isAarch64);
     description = "Satisfiability modulo theory (SMT) solver";
-    mainProgram = "opensmt";
+    homepage = "https://github.com/usi-verification-and-security/opensmt";
+    license = if enableReadline then lib.licenses.gpl2Plus else lib.licenses.mit;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.linux;
-    license = if enableReadline then lib.licenses.gpl2Plus else lib.licenses.mit;
-    homepage = "https://github.com/usi-verification-and-security/opensmt";
+    mainProgram = "opensmt";
+    broken = with stdenv.hostPlatform; (isLinux && isAarch64);
   };
 })

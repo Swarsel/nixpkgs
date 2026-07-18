@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   dpkg,
 }:
@@ -18,13 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
     dpkg
   ];
 
-  unpackCmd = "dpkg -x $curSrc src";
-
   # Only install /lib. /usr only contains the licenses which are also available
   # in /lib.
   installPhase = ''
     find lib -type f -exec install -D {} $out/{} \;
   '';
+
+  unpackCmd = "dpkg -x $curSrc src";
 
   meta = {
     description = "BlueField boot images";
@@ -34,10 +34,12 @@ stdenv.mkDerivation (finalAttrs: {
     # under bsd2, bsd2Patent, bsd3. However, it is probably safer to assume
     # they are unfree. See https://github.com/Mellanox/bootimages/issues/3
     license = lib.licenses.unfree;
-    platforms = [ "aarch64-linux" ];
+
     maintainers = with lib.maintainers; [
       nikstur
       thillux
     ];
+
+    platforms = [ "aarch64-linux" ];
   };
 })

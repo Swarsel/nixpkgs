@@ -1,25 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
+  # tests
+  azure-identity,
   # optional-dependencies
   azure-storage-blob,
   azure-storage-file-datalake,
-  google-cloud-storage,
   boto3,
-
-  # tests
-  azure-identity,
+  buildPythonPackage,
+  # build-system
+  flit-core,
+  google-cloud-storage,
   psutil,
   pydantic,
-  pytestCheckHook,
   pytest-cases,
   pytest-cov-stub,
   pytest-xdist,
+  pytestCheckHook,
   python-dotenv,
   shortuuid,
   tenacity,
@@ -28,7 +25,6 @@
 buildPythonPackage rec {
   pname = "cloudpathlib";
   version = "0.24.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "drivendataorg";
@@ -43,20 +39,6 @@ buildPythonPackage rec {
       substituteInPlace pyproject.toml \
         --replace-fail "--report-log reportlog.jsonl" ""
     '';
-
-  build-system = [ flit-core ];
-
-  optional-dependencies = {
-    all = optional-dependencies.azure ++ optional-dependencies.gs ++ optional-dependencies.s3;
-    azure = [
-      azure-storage-blob
-      azure-storage-file-datalake
-    ];
-    gs = [ google-cloud-storage ];
-    s3 = [ boto3 ];
-  };
-
-  pythonImportsCheck = [ "cloudpathlib" ];
 
   nativeCheckInputs = [
     azure-identity
@@ -73,6 +55,22 @@ buildPythonPackage rec {
   ++ optional-dependencies.all;
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ flit-core ];
+
+  optional-dependencies = {
+    all = optional-dependencies.azure ++ optional-dependencies.gs ++ optional-dependencies.s3;
+
+    azure = [
+      azure-storage-blob
+      azure-storage-file-datalake
+    ];
+
+    gs = [ google-cloud-storage ];
+    s3 = [ boto3 ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "cloudpathlib" ];
 
   meta = {
     description = "Python pathlib-style classes for cloud storage services such as Amazon S3, Azure Blob Storage, and Google Cloud Storage";

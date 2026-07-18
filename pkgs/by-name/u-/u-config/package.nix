@@ -16,12 +16,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-r1zcXKLqw/gK+9k3SX7OCBaZhvV2ya5VC9O3h+WdkyY=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   makeFlags = [
     "CROSS=${stdenv.cc.targetPrefix}"
     "CC=${lib.getExe stdenv.cc}"
   ];
-
-  nativeBuildInputs = [ pkg-config ];
 
   buildFlags = [ "pkg-config" ];
 

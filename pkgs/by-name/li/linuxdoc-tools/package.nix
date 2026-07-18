@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
-  makeWrapper,
+  stdenv,
   fetchFromGitLab,
-  perl,
+  coreutils,
   flex,
   gnused,
-  coreutils,
-  which,
-  opensp,
   groff,
-  texliveMedium,
+  makeWrapper,
+  opensp,
+  perl,
   texinfo,
+  texliveMedium,
+  which,
   withLatex ? false,
 }:
 
@@ -31,6 +31,22 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "doc"
   ];
+
+  nativeBuildInputs = [
+    flex
+    which
+    makeWrapper
+  ];
+
+  buildInputs = [
+    opensp
+    groff
+    texinfo
+    perl
+    gnused
+    coreutils
+  ]
+  ++ lib.optionals withLatex [ texliveMedium ];
 
   configureFlags = [
     ("--enable-docs=txt info lyx html rtf" + lib.optionalString withLatex " pdf")
@@ -60,24 +76,9 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
-  nativeBuildInputs = [
-    flex
-    which
-    makeWrapper
-  ];
-
-  buildInputs = [
-    opensp
-    groff
-    texinfo
-    perl
-    gnused
-    coreutils
-  ]
-  ++ lib.optionals withLatex [ texliveMedium ];
-
   meta = {
     description = "Toolset for processing LinuxDoc DTD SGML files";
+
     longDescription = ''
       A collection of text formatters which understands a LinuxDoc DTD SGML
       source file. Each formatter (or "back-end") renders the source file into
@@ -86,13 +87,16 @@ stdenv.mkDerivation (finalAttrs: {
       provided for backward compatibility, because there are still many useful
       documents written in LinuxDoc DTD sgml source.
     '';
+
     homepage = "https://gitlab.com/agmartin/linuxdoc-tools";
+
     license = with lib.licenses; [
       gpl3Plus
       mit
       sgmlug
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ p-h ];
+    platforms = lib.platforms.linux;
   };
 })

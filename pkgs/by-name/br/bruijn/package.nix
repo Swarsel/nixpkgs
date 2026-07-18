@@ -1,7 +1,7 @@
 {
+  lib,
   haskell,
   haskellPackages,
-  lib,
 }:
 
 let
@@ -10,10 +10,9 @@ let
   generated = haskellPackages.callPackage ./generated.nix { };
 
   overrides = {
-    passthru.updateScript = ./update.sh;
-
     description = "Purely functional programming language based on lambda calculus and de Bruijn indices";
     homepage = "https://bruijn.marvinborner.de/";
+    passthru.updateScript = ./update.sh;
   };
 in
 

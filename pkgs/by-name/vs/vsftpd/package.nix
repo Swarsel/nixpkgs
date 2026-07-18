@@ -5,10 +5,10 @@
   fetchpatch,
   libcap,
   libseccomp,
-  openssl,
-  pam,
   libxcrypt,
   nixosTests,
+  openssl,
+  pam,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,22 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JrYCrkVLC6bZnvRKCba54N+n9nIoEGc23x8njHC8kdM=";
   };
 
-  buildInputs = [
-    libcap
-    openssl
-    libseccomp
-    pam
-    libxcrypt
-  ];
-
   patches = [
     ./CVE-2015-1419.patch
 
     # Fix build with gcc15
     (fetchpatch {
+      hash = "sha256-eYiY2eKQ+qS3CiRZYGuRHcnAe32zLDdb/GwF6NyHch4=";
       name = "vsftpd-correct-the-definition-of-setup_bio_callbacks-in-ssl.patch";
       url = "https://src.fedoraproject.org/rpms/vsftpd/raw/c31087744900967ff4d572706a296bf6c8c4a68e/f/0076-Correct-the-definition-of-setup_bio_callbacks-in-ssl.patch";
-      hash = "sha256-eYiY2eKQ+qS3CiRZYGuRHcnAe32zLDdb/GwF6NyHch4=";
     })
   ];
 
@@ -51,6 +43,14 @@ stdenv.mkDerivation (finalAttrs: {
 
     mkdir -p $out/sbin $out/man/man{5,8}
   '';
+
+  buildInputs = [
+    libcap
+    openssl
+    libseccomp
+    pam
+    libxcrypt
+  ];
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -73,9 +73,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Very secure FTP daemon";
-    mainProgram = "vsftpd";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.linux;
+    mainProgram = "vsftpd";
   };
 })

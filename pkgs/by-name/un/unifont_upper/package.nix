@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-ACW+6xiQAd9QMidqJ2MQGTkYbW9fvateIR2FyoM7rIs=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -22,6 +20,8 @@ stdenvNoCC.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Unicode font for glyphs above the Unicode Basic Multilingual Plane";
@@ -32,6 +32,7 @@ stdenvNoCC.mkDerivation rec {
       gpl2Plus
       fontException
     ];
+
     maintainers = [ lib.maintainers.mathnerd314 ];
     platforms = lib.platforms.all;
   };

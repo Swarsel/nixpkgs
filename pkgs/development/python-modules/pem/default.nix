@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
   cryptography,
-  fetchFromGitHub,
   hatch-fancy-pypi-readme,
   hatch-vcs,
   hatchling,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pem";
   version = "23.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hynek";
@@ -41,6 +40,7 @@ buildPythonPackage rec {
   ]
   ++ twisted.optional-dependencies.tls;
 
+  pyproject = true;
   pythonImportsCheck = [ "pem" ];
 
   meta = {

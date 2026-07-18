@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
-  fetchFromGitHub,
   pkg-config,
 }:
 
@@ -27,8 +27,8 @@ stdenv.mkDerivation rec {
   preConfigure = "./autogen.sh";
 
   meta = {
-    homepage = "http://mypaint.org/";
     description = "Brushes used by MyPaint and other software using libmypaint";
+    homepage = "http://mypaint.org/";
     license = lib.licenses.cc0;
     maintainers = with lib.maintainers; [ jtojnar ];
     platforms = lib.platforms.unix;

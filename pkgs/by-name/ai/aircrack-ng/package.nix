@@ -2,49 +2,46 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchzip,
-  makeWrapper,
   autoreconfHook,
-  pkg-config,
-  openssl,
-  libgcrypt,
   cmocka,
-  expect,
-  sqlite,
-  pcre2,
-
-  # Linux
-  libpcap,
-  zlib,
-  wirelesstools,
-  iw,
   ethtool,
-  pciutils,
-  libnl,
-  usbutils,
-  tcpdump,
+  expect,
+  fetchzip,
   hostapd,
-  wpa_supplicant,
-  screen,
-
+  iw,
+  libgcrypt,
   # Cygwin
   libiconv,
-
+  libnl,
+  # Linux
+  libpcap,
+  makeWrapper,
+  openssl,
+  pciutils,
+  pcre2,
+  pkg-config,
+  screen,
+  sqlite,
+  tcpdump,
+  usbutils,
+  wirelesstools,
+  wpa_supplicant,
+  zlib,
+  enableAirolib ? true,
   # options
   enableExperimental ? true,
-  useGcrypt ? false,
-  enableAirolib ? true,
   enableRegex ? true,
   useAirpcap ? stdenv.hostPlatform.isCygwin,
+  useGcrypt ? false,
 }:
 let
   airpcap-sdk = fetchzip {
     pname = "airpcap-sdk";
     version = "4.1.1";
-    url = "https://support.riverbed.com/bin/support/download?sid=l3vk3eu649usgu3rj60uncjqqu";
+    extension = "zip";
     hash = "sha256-kJhnUvhnF9F/kIJx9NcbRUfIXUSX/SRaO/SWNvdkVT8=";
     stripRoot = false;
-    extension = "zip";
+    url = "https://support.riverbed.com/bin/support/download?sid=l3vk3eu649usgu3rj60uncjqqu";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -68,17 +65,12 @@ stdenv.mkDerivation (finalAttrs: {
     }
   '';
 
-  configureFlags = [
-    (lib.withFeature enableExperimental "experimental")
-    (lib.withFeature useGcrypt "gcrypt")
-    (lib.withFeatureAs useAirpcap "airpcap" airpcap-sdk)
-  ];
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
     autoreconfHook
   ];
+
   buildInputs =
     lib.singleton (if useGcrypt then libgcrypt else openssl)
     ++ lib.optionals stdenv.hostPlatform.isLinux [
@@ -94,9 +86,26 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional enableRegex pcre2
     ++ lib.optional useAirpcap airpcap-sdk;
 
+  configureFlags = [
+    (lib.withFeature enableExperimental "experimental")
+    (lib.withFeature useGcrypt "gcrypt")
+    (lib.withFeatureAs useAirpcap "airpcap" airpcap-sdk)
+  ];
+
   nativeCheckInputs = [
     cmocka
     expect
+  ];
+
+  nativeInstallCheckInputs = [
+    cmocka
+    expect
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    tcpdump
+    hostapd
+    wpa_supplicant
+    screen
   ];
 
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -113,22 +122,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   installCheckTarget = "integration";
-  nativeInstallCheckInputs = [
-    cmocka
-    expect
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    tcpdump
-    hostapd
-    wpa_supplicant
-    screen
-  ];
 
   meta = {
     description = "WiFi security auditing tools suite";
     homepage = "https://www.aircrack-ng.org/";
+    changelog = "https://github.com/aircrack-ng/aircrack-ng/blob/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ magistau ];
+
     platforms =
       with lib.platforms;
       builtins.concatLists [
@@ -140,6 +141,5 @@ stdenv.mkDerivation (finalAttrs: {
         freebsd
         illumos
       ];
-    changelog = "https://github.com/aircrack-ng/aircrack-ng/blob/${finalAttrs.src.rev}/ChangeLog";
   };
 })

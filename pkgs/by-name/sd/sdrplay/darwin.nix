@@ -1,14 +1,14 @@
 {
-  pname,
-  version,
-  src,
-  meta,
   lib,
   stdenv,
-  xar,
   cpio,
-  libusb1,
   fixDarwinDylibNames,
+  libusb1,
+  meta,
+  pname,
+  src,
+  version,
+  xar,
 }:
 stdenv.mkDerivation {
   inherit
@@ -24,16 +24,9 @@ stdenv.mkDerivation {
     fixDarwinDylibNames
   ];
 
-  unpackPhase = ''
-    xar -xf $src
-    zcat SDRplayAPI.pkg/Payload | cpio -i
-  '';
-
-  dontBuild = true;
-
   env = {
-    majorVersion = lib.versions.major version;
     majorMinorVersion = lib.versions.majorMinor version;
+    majorVersion = lib.versions.major version;
   };
 
   installPhase = ''
@@ -52,5 +45,12 @@ stdenv.mkDerivation {
 
   postFixup = ''
     install_name_tool -add_rpath "${lib.getLib libusb1}/lib" $out/bin/sdrplay_apiService
+  '';
+
+  dontBuild = true;
+
+  unpackPhase = ''
+    xar -xf $src
+    zcat SDRplayAPI.pkg/Payload | cpio -i
   '';
 }

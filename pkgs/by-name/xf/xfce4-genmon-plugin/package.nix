@@ -3,16 +3,16 @@
   stdenv,
   fetchurl,
   gettext,
+  gitUpdater,
+  glib,
+  gtk3,
+  libxfce4ui,
+  libxfce4util,
   meson,
   ninja,
   pkg-config,
-  libxfce4util,
   xfce4-panel,
   xfconf,
-  libxfce4ui,
-  glib,
-  gtk3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,13 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.xfce.org/panel-plugins/xfce4-genmon-plugin";
     rev-prefix = "xfce4-genmon-plugin-";
+    url = "https://gitlab.xfce.org/panel-plugins/xfce4-genmon-plugin";
   };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-genmon-plugin";
     description = "Generic monitor plugin for the Xfce panel";
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-genmon-plugin";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];

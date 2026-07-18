@@ -1,55 +1,35 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   dask,
   duckdb,
-  fetchFromGitHub,
-  uv-build,
   hypothesis,
   ibis-framework,
   packaging,
   pandas,
   polars,
-  pyarrow-hotfix,
   pyarrow,
+  pyarrow-hotfix,
   pyspark,
   pytest-env,
   pytest-xdist,
   pytestCheckHook,
   rich,
   sqlframe,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "narwhals";
   version = "2.23.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "narwhals-dev";
     repo = "narwhals";
     tag = "v${version}";
     hash = "sha256-fT3v7T2S7cmv0tX60kjRBrUq+89TG2/Ar9Qh9O4LP8U=";
-  };
-
-  build-system = [ uv-build ];
-
-  optional-dependencies = {
-    # cudf = [ cudf ];
-    dask = [ dask ] ++ dask.optional-dependencies.dataframe;
-    # modin = [ modin ];
-    pandas = [ pandas ];
-    polars = [ polars ];
-    pyarrow = [ pyarrow ];
-    pyspark = [ pyspark ];
-    ibis = [
-      ibis-framework
-      rich
-      packaging
-      pyarrow-hotfix
-    ];
-    sqlframe = [ sqlframe ];
   };
 
   nativeCheckInputs = [
@@ -61,7 +41,12 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pythonImportsCheck = [ "narwhals" ];
+  build-system = [ uv-build ];
+
+  disabledTestPaths = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) [
+    # Segfault in included polars/lazyframe
+    "tests/tpch_q1_test.py"
+  ];
 
   disabledTests = [
     # Flaky
@@ -93,14 +78,32 @@ buildPythonPackage rec {
     "test_join_duplicate_column_names"
   ];
 
-  disabledTestPaths = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) [
-    # Segfault in included polars/lazyframe
-    "tests/tpch_q1_test.py"
-  ];
+  optional-dependencies = {
+    # cudf = [ cudf ];
+    dask = [ dask ] ++ dask.optional-dependencies.dataframe;
+
+    ibis = [
+      ibis-framework
+      rich
+      packaging
+      pyarrow-hotfix
+    ];
+
+    # modin = [ modin ];
+    pandas = [ pandas ];
+    polars = [ polars ];
+    pyarrow = [ pyarrow ];
+    pyspark = [ pyspark ];
+    sqlframe = [ sqlframe ];
+  };
+
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::DeprecationWarning"
   ];
+
+  pythonImportsCheck = [ "narwhals" ];
 
   meta = {
     description = "Lightweight and extensible compatibility layer between dataframe libraries";

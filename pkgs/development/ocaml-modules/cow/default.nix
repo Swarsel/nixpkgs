@@ -1,19 +1,17 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
   alcotest,
+  buildDunePackage,
+  ezjsonm,
+  omd,
   uri,
   xmlm,
-  omd,
-  ezjsonm,
 }:
 
 buildDunePackage (finalAttrs: {
-  version = "2.5.0";
   pname = "cow";
-
-  minimalOCamlVersion = "4.03";
+  version = "2.5.0";
 
   src = fetchurl {
     url = "https://github.com/mirage/ocaml-cow/releases/download/v${finalAttrs.version}/cow-${finalAttrs.version}.tbz";
@@ -26,16 +24,20 @@ buildDunePackage (finalAttrs: {
     ezjsonm
     omd
   ];
-  checkInputs = [ alcotest ];
+
   doCheck = true;
+  checkInputs = [ alcotest ];
+  minimalOCamlVersion = "4.03";
 
   meta = {
     description = "Caml on the Web";
+
     longDescription = ''
       Writing web-applications requires a lot of skills: HTML, XML, JSON and
       Markdown, to name but a few! This library provides OCaml combinators
       for these web formats.
     '';
+
     homepage = "https://mirage.github.io/ocaml-cow/";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ sternenseemann ];

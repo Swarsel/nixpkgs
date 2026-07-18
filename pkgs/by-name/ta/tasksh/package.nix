@@ -15,8 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1z8zw8lld62fjafjvy248dncjk0i4fwygw0ahzjdvyyppx4zjhkf";
   };
 
-  buildInputs = [ readline ];
   nativeBuildInputs = [ cmake ];
+  buildInputs = [ readline ];
 
   cmakeFlags = [
     # Fix the build with CMake 4.

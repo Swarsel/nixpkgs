@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   authlib,
   avro,
@@ -9,12 +10,11 @@
   buildPythonPackage,
   cachetools,
   fastavro,
-  fetchFromGitHub,
-  google-auth,
   google-api-core,
+  google-auth,
   google-cloud-kms,
-  hvac,
   httpx,
+  hvac,
   jsonschema,
   orjson,
   protobuf,
@@ -33,7 +33,6 @@
 buildPythonPackage rec {
   pname = "confluent-kafka";
   version = "2.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "confluentinc";
@@ -43,46 +42,6 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ rdkafka ];
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    avro = [
-      avro
-      fastavro
-      requests
-    ];
-    json = [
-      jsonschema
-      pyrsistent
-      requests
-    ];
-    protobuf = [
-      protobuf
-      requests
-    ];
-    rules = [
-      azure-identity
-      azure-keyvault-keys
-      boto3
-      # TODO: cel-python
-      google-auth
-      google-api-core
-      google-cloud-kms
-      # hkdf was removed
-      hvac
-      # TODO: jsonata-python
-      pyyaml
-      # TODO: tink
-    ];
-    schema-registry = [
-      attrs
-      authlib
-      cachetools
-      httpx
-      orjson
-    ];
-  };
 
   nativeCheckInputs = [
     cachetools
@@ -95,7 +54,7 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pythonImportsCheck = [ "confluent_kafka" ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     "tests/integration/"
@@ -115,6 +74,51 @@ buildPythonPackage rec {
     # stats_cb can raise during consumer.close() causing race-condition
     "tests/test_Consumer.py::test_callback_exception_no_system_error"
   ];
+
+  optional-dependencies = {
+    avro = [
+      avro
+      fastavro
+      requests
+    ];
+
+    json = [
+      jsonschema
+      pyrsistent
+      requests
+    ];
+
+    protobuf = [
+      protobuf
+      requests
+    ];
+
+    rules = [
+      azure-identity
+      azure-keyvault-keys
+      boto3
+      # TODO: cel-python
+      google-auth
+      google-api-core
+      google-cloud-kms
+      # hkdf was removed
+      hvac
+      # TODO: jsonata-python
+      pyyaml
+      # TODO: tink
+    ];
+
+    schema-registry = [
+      attrs
+      authlib
+      cachetools
+      httpx
+      orjson
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "confluent_kafka" ];
 
   meta = {
     description = "Confluent's Apache Kafka client for Python";

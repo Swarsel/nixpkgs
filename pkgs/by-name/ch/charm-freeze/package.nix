@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-BEMVjPexJ3Y4ScXURu7lbbmrrehc6B09kfr03b/SPg8=";
+  excludedPackages = [ "test/input" ];
 
   ldflags = [
     "-s"
@@ -23,16 +24,16 @@ buildGoModule (finalAttrs: {
     "-X=main.Version=${finalAttrs.version}"
   ];
 
-  excludedPackages = [ "test/input" ];
-
   meta = {
     description = "Tool to generate images of code and terminal output";
-    mainProgram = "freeze";
     homepage = "https://github.com/charmbracelet/freeze";
     changelog = "https://github.com/charmbracelet/freeze/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       caarlos0
     ];
+
+    mainProgram = "freeze";
   };
 })

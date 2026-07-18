@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeText,
   fontconfig,
   libx11,
   libxft,
   libxinerama,
-  conf ? null,
   nix-update-script,
+  writeText,
+  conf ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,13 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-pOayKngUlrMY3bFsP4Fi+VsOLKCUQU3tdkZ+0OY1SCo=";
   };
 
-  buildInputs = [
-    fontconfig
-    libx11
-    libxft
-    libxinerama
-  ];
-
   postPatch = ''
     sed -i "8i #include <time.h>" xprompt.c
   ''
@@ -40,6 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
     lib.optionalString (conf != null) "cp ${configFile} config.h"
   );
 
+  buildInputs = [
+    fontconfig
+    libx11
+    libxft
+    libxinerama
+  ];
+
   makeFlags = [
     "CC:=$(CC)"
     "PREFIX=$(out)"
@@ -49,10 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Dmenu rip-off with contextual completion";
+
     longDescription = ''
       XPrompt is a prompt for X. XPrompt features a text input field where the
       user can type in a text subject to tab-completion.
     '';
+
     homepage = "https://github.com/phillbush/xprompt";
     license = lib.licenses.mit;
     maintainers = [ ];

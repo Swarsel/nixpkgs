@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyngrok";
   version = "8.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -17,9 +16,8 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ pyyaml ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyngrok" ];
 
   meta = {

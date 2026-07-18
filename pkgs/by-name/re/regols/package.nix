@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "OPA Rego language server";
-    mainProgram = "regols";
     homepage = "https://github.com/kitagry/regols";
     changelog = "https://github.com/kitagry/regols/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ alias-dev ];
+    mainProgram = "regols";
   };
 })

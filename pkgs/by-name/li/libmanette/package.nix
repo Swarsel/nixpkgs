@@ -2,27 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  ninja,
+  buildPackages,
+  gi-docgen,
+  glib,
+  gnome,
+  gobject-introspection,
+  hidapi,
+  libevdev,
+  libgudev,
   meson,
   mesonEmulatorHook,
+  ninja,
   pkg-config,
   vala,
-  gobject-introspection,
-  buildPackages,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  gi-docgen,
-  glib,
-  libgudev,
-  libevdev,
-  hidapi,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libmanette";
   version = "0.2.13";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/libmanette/${lib.versions.majorMinor finalAttrs.version}/libmanette-${finalAttrs.version}.tar.xz";
+    hash = "sha256-KHzC/eDeCSkZNmr3V9heezoCSOsbOVNEcm6XlVp32K4=";
+  };
 
   outputs = [
     "out"
@@ -30,14 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withIntrospection "devdoc";
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/libmanette/${lib.versions.majorMinor finalAttrs.version}/libmanette-${finalAttrs.version}.tar.xz";
-    hash = "sha256-KHzC/eDeCSkZNmr3V9heezoCSOsbOVNEcm6XlVp32K4=";
-  };
-
-  depsBuildBuild = lib.optionals withIntrospection [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -71,12 +69,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-  strictDeps = true;
 
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     moveToOutput "share/doc" "$devdoc"
   '';
+
+  depsBuildBuild = lib.optionals withIntrospection [
+    pkg-config
+  ];
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -87,10 +88,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple GObject game controller library";
-    mainProgram = "manette-test";
     homepage = "https://gnome.pages.gitlab.gnome.org/libmanette/";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    mainProgram = "manette-test";
+    teams = [ lib.teams.gnome ];
   };
 })

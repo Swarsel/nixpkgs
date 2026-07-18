@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   beamPackages,
+  gnuplot,
+  makeWrapper,
+  perlPackages,
   python3,
   python3Packages,
-  perlPackages,
-  gnuplot,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,14 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://tsung.erlang-projects.org/";
-    changelog = "https://github.com/processone/tsung/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "High-performance benchmark framework for various protocols including HTTP, XMPP, LDAP, etc";
+
     longDescription = ''
       Tsung is a distributed load testing tool. It is protocol-independent and
       can currently be used to stress HTTP, WebDAV, SOAP, PostgreSQL, MySQL,
       AMQP, MQTT, LDAP and Jabber/XMPP servers.
     '';
+
+    homepage = "http://tsung.erlang-projects.org/";
+    changelog = "https://github.com/processone/tsung/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ uskudnik ];
     platforms = lib.platforms.unix;

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  SDL2,
   cmake,
+  libGLU,
+  libjpeg_turbo,
+  libogg,
+  libpng,
+  libvorbis,
+  makeWrapper,
   openal,
   pkg-config,
-  libogg,
-  libvorbis,
-  SDL2,
-  makeWrapper,
-  libpng,
-  libjpeg_turbo,
-  libGLU,
 }:
 
 let
@@ -34,6 +34,16 @@ stdenv.mkDerivation rec {
     sha256 = "089rblf8xw3c6dq96vnfla6zl8gxcpcbc1bj5jysfpq63hhdpypz";
   };
 
+  # CMake 3.0 is deprecated and no longer supported by CMake > 4
+  # https://github.com/NixOS/nixpkgs/issues/445447
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail \
+      "cmake_minimum_required(VERSION 3.0)" \
+      "cmake_minimum_required(VERSION 3.10)" \
+    --replace-fail \
+      "cmake_policy(SET CMP0004 OLD)" ""
+  '';
+
   nativeBuildInputs = [
     makeWrapper
     cmake
@@ -52,22 +62,12 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [ "-DSYSTEM_INSTALL=ON" ];
 
-  # CMake 3.0 is deprecated and no longer supported by CMake > 4
-  # https://github.com/NixOS/nixpkgs/issues/445447
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail \
-      "cmake_minimum_required(VERSION 3.0)" \
-      "cmake_minimum_required(VERSION 3.10)" \
-    --replace-fail \
-      "cmake_policy(SET CMP0004 OLD)" ""
-  '';
-
   meta = {
     description = "Third person ninja rabbit fighting game";
-    mainProgram = "lugaru";
     homepage = "https://osslugaru.gitlab.io";
+    license = licenses.gpl2Plus;
     maintainers = [ ];
     platforms = platforms.linux;
-    license = licenses.gpl2Plus;
+    mainProgram = "lugaru";
   };
 }

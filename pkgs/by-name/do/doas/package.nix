@@ -3,10 +3,9 @@
   stdenv,
   fetchFromGitHub,
   bison,
-  pam,
   libxcrypt,
   nixosTests,
-
+  pam,
   withPAM ? true,
   withTimestamp ? true,
 }:
@@ -22,22 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "9uOQ2Ta5HzEpbCz2vbqZEEksPuIjL8lvmfmynfqxMeM=";
   };
 
-  # otherwise confuses ./configure
-  dontDisableStatic = true;
-
-  configureFlags = [
-    (lib.optionalString withTimestamp "--with-timestamp") # to allow the "persist" setting
-    (lib.optionalString (!withPAM) "--without-pam")
-  ];
-
   patches = [
     # Allow doas to discover binaries in /run/current-system/sw/{s,}bin and
     # /run/wrappers/bin
     ./0001-add-NixOS-specific-dirs-to-safe-PATH.patch
   ];
-
-  # ./configure script does not understand `--disable-shared`
-  dontAddStaticConfigureFlags = true;
 
   postPatch = ''
     sed -i '/\(chown\|chmod\)/d' GNUmakefile
@@ -49,14 +37,23 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ bison ];
   buildInputs = [ ] ++ lib.optional withPAM pam ++ lib.optional (!withPAM) libxcrypt;
 
+  configureFlags = [
+    (lib.optionalString withTimestamp "--with-timestamp") # to allow the "persist" setting
+    (lib.optionalString (!withPAM) "--without-pam")
+  ];
+
+  # ./configure script does not understand `--disable-shared`
+  dontAddStaticConfigureFlags = true;
+  # otherwise confuses ./configure
+  dontDisableStatic = true;
   passthru.tests = { inherit (nixosTests) doas; };
 
   meta = {
     description = "Executes the given command as another user";
-    mainProgram = "doas";
     homepage = "https://github.com/Duncaen/OpenDoas";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ cole-h ];
+    platforms = lib.platforms.linux;
+    mainProgram = "doas";
   };
 })

@@ -3,17 +3,17 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  expat,
-  ncurses,
-  pciutils,
-  numactl,
-  x11Support ? false,
-  libx11,
   cairo,
   config,
-  enableCuda ? config.cudaSupport,
   cudaPackages,
+  expat,
+  libx11,
+  ncurses,
+  numactl,
+  pciutils,
+  pkg-config,
+  enableCuda ? config.cudaSupport,
+  x11Support ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,9 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-lbh8tkKeUcHta7/q9TuHQhccyWjkBgrC5fVifFJqQyY=";
   };
 
-  configureFlags = [
-    "--localstatedir=/var"
-    "--enable-netloc"
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+    "doc"
+    "man"
   ];
 
   # XXX: libx11 is not directly needed, but needed as a propagated dep of Cairo.
@@ -53,7 +56,14 @@ stdenv.mkDerivation (finalAttrs: {
   # Since `libpci' appears in `hwloc.pc', it must be propagated.
   propagatedBuildInputs = lib.optional stdenv.hostPlatform.isLinux pciutils;
 
-  enableParallelBuilding = true;
+  configureFlags = [
+    "--localstatedir=/var"
+    "--enable-netloc"
+  ];
+
+  # Checks disabled because they're impure (hardware dependent) and
+  # fail on some build machines.
+  doCheck = false;
 
   postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
     if [ -d "${numactl}/lib64" ]; then
@@ -67,20 +77,11 @@ stdenv.mkDerivation (finalAttrs: {
       -e "s|-lnuma|-L$numalibdir -lnuma|g"
   '';
 
-  # Checks disabled because they're impure (hardware dependent) and
-  # fail on some build machines.
-  doCheck = false;
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-    "doc"
-    "man"
-  ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Portable abstraction of hierarchical architectures for high-performance computing";
+
     longDescription = ''
       hwloc provides a portable abstraction (across OS,
       versions, architectures, ...) of the hierarchical topology of
@@ -96,13 +97,16 @@ stdenv.mkDerivation (finalAttrs: {
       gather information about the hardware, bind processes, and much
       more.
     '';
+
+    homepage = "https://www.open-mpi.org/projects/hwloc/";
     # https://www.open-mpi.org/projects/hwloc/license.php
     license = lib.licenses.bsd3;
-    homepage = "https://www.open-mpi.org/projects/hwloc/";
+
     maintainers = with lib.maintainers; [
       fpletz
       markuskowa
     ];
+
     platforms = lib.platforms.all;
     broken = stdenv.hostPlatform.isCygwin;
   };

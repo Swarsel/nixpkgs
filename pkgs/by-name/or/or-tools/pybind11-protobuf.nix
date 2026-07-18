@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  cmake,
   abseil-cpp_202508,
+  buildPythonPackage,
+  cmake,
   protobuf,
   pybind11,
   zlib,
@@ -13,7 +13,6 @@
 buildPythonPackage {
   pname = "pybind11-protobuf";
   version = "0-unstable-2025-10-29";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "pybind";
@@ -62,6 +61,8 @@ buildPythonPackage {
     # But the generated Config works
     (lib.cmakeBool "CMAKE_FIND_PACKAGE_PREFER_CONFIG" true)
   ];
+
+  pyproject = false;
 
   meta = {
     description = "Pybind11 bindings for Google's Protocol Buffers";

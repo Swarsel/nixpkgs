@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "offtrac";
   version = "0.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,10 +14,11 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "http://fedorahosted.org/offtrac";
     description = "Trac xmlrpc library";
+    homepage = "http://fedorahosted.org/offtrac";
     license = lib.licenses.gpl2;
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nodejs,
+  buildNpmPackage,
   nix-update-script,
+  nodejs,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -17,7 +17,7 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-7heFAt8ArwBox0R2UFAYyzqyARPLnVtlWmPr0txuxOM=";
   };
 
-  dontNpmBuild = true;
+  npmDepsHash = "sha256-Tr8kYawvPBt+jC7SW8dnKJVWynQyOpKbRD8yd+qbvIs=";
 
   preBuild = ''
     patchShebangs ./*
@@ -34,14 +34,13 @@ buildNpmPackage (finalAttrs: {
     runHook postBuild
   '';
 
-  npmDepsHash = "sha256-Tr8kYawvPBt+jC7SW8dnKJVWynQyOpKbRD8yd+qbvIs=";
-
+  dontNpmBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/beautifier/js-beautify/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Beautifier for javascript";
     homepage = "https://beautifier.io/";
+    changelog = "https://github.com/beautifier/js-beautify/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "js-beautify";

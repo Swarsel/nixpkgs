@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -15,9 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CFAvTpziKzSkdomvCf8PPXYbYcJxjB4EValz2RdD2b0=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -26,6 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Moustache templates for Bash";

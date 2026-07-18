@@ -1,29 +1,30 @@
 {
   lib,
   stdenv,
-  mkDerivation,
   compatIfNeeded,
-  libelf,
   elfcopy,
+  libelf,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/kldxref";
-  extraPaths = [
-    "lib/libkldelf"
-  ];
+  # We symlink in our modules, make it follow symlinks
+  postPatch = ''
+    sed -i 's/FTS_PHYSICAL/FTS_LOGICAL/' $BSDSRCDIR/usr.sbin/kldxref/kldxref.c
+  '';
 
   buildInputs = lib.optionals (!stdenv.hostPlatform.isFreeBSD) [ libelf ] ++ compatIfNeeded;
-
-  extraNativeBuildInputs = [
-    elfcopy
-  ];
 
   preBuild = ''
     make -C $BSDSRCDIR/lib/libkldelf $makeFlags
   '';
 
-  # We symlink in our modules, make it follow symlinks
-  postPatch = ''
-    sed -i 's/FTS_PHYSICAL/FTS_LOGICAL/' $BSDSRCDIR/usr.sbin/kldxref/kldxref.c
-  '';
+  extraNativeBuildInputs = [
+    elfcopy
+  ];
+
+  extraPaths = [
+    "lib/libkldelf"
+  ];
+
+  path = "usr.sbin/kldxref";
 }

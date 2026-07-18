@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  glib,
   cmake,
+  glib,
+  libgudev,
+  libssc,
   libxml2,
   meson,
   ninja,
   pkg-config,
-  libgudev,
-  systemd,
   polkit,
+  systemd,
   udevCheckHook,
-  libssc,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,11 +20,11 @@ stdenv.mkDerivation rec {
   version = "3.9";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "hadess";
     repo = "iio-sensor-proxy";
     rev = version;
     hash = "sha256-2N/4Fp6QtAhgEzX9cHEDJhFtRsyrtZ80I2jdHdeEmxA=";
+    domain = "gitlab.freedesktop.org";
   };
 
   postPatch = ''
@@ -32,13 +32,6 @@ stdenv.mkDerivation rec {
     substituteInPlace data/meson.build \
       --replace 'polkit_policy_directory' "'$out/share/polkit-1/actions'"
   '';
-
-  buildInputs = [
-    libgudev
-    systemd
-    polkit
-    libssc
-  ];
 
   nativeBuildInputs = [
     meson
@@ -48,6 +41,13 @@ stdenv.mkDerivation rec {
     ninja
     pkg-config
     udevCheckHook
+  ];
+
+  buildInputs = [
+    libgudev
+    systemd
+    polkit
+    libssc
   ];
 
   mesonFlags = [
@@ -60,10 +60,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Proxy for sending IIO sensor data to D-Bus";
-    mainProgram = "monitor-sensor";
     homepage = "https://gitlab.freedesktop.org/hadess/iio-sensor-proxy";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ _999eagle ];
     platforms = lib.platforms.linux;
+    mainProgram = "monitor-sensor";
   };
 }

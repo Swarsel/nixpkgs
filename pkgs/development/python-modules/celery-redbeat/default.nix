@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   celery,
   cron-descriptor,
-  django-timezone-field,
   django,
+  django-timezone-field,
   fakeredis,
-  fetchFromGitHub,
   mock,
   pytestCheckHook,
   python-crontab,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "celery-redbeat";
   version = "2.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "celery";
@@ -33,6 +32,15 @@ buildPythonPackage rec {
       --replace-fail "install_requires=reqs('default.txt') + reqs('runtime.txt')," "install_requires=[],"
   '';
 
+  # Tests require additional work
+  doCheck = false;
+
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+    pytz
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,16 +52,8 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-    pytz
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "django_celery_beat" ];
-
-  # Tests require additional work
-  doCheck = false;
 
   meta = {
     description = "Database-backed Periodic Tasks";

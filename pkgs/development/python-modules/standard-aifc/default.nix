@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   audioop-lts,
-  standard-chunk,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
+  standard-chunk,
 }:
 
 buildPythonPackage rec {
   pname = "standard-aifc";
   version = "3.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "youknowone";
@@ -20,7 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-vhGFTd1yXL4Frqli5D1GwOatwByDjvcP8sxgkdu6Jqg=";
   };
 
-  sourceRoot = "${src.name}/aifc";
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,11 +30,13 @@ buildPythonPackage rec {
     standard-chunk
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "aifc"
   ];
+
+  sourceRoot = "${src.name}/aifc";
 
   meta = {
     description = "Standard library aifc redistribution";

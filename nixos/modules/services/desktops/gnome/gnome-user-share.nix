@@ -2,19 +2,14 @@
 
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
 {
 
-  meta = {
-    teams = [ lib.teams.gnome ];
-  };
-
   ###### interface
-
   options = {
 
     services.gnome.gnome-user-share = {
@@ -26,7 +21,6 @@
   };
 
   ###### implementation
-
   config = lib.mkIf config.services.gnome.gnome-user-share.enable {
 
     environment.systemPackages = [
@@ -37,6 +31,10 @@
       pkgs.gnome-user-share
     ];
 
+  };
+
+  meta = {
+    teams = [ lib.teams.gnome ];
   };
 
 }

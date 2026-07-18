@@ -1,34 +1,34 @@
 {
-  stdenv,
   lib,
-  testers,
-  wrapGAppsHook3,
+  stdenv,
+  cairo,
   fetchzip,
-  sbcl,
-  pkg-config,
-  libfixposix,
+  gdk-pixbuf,
+  glib,
+  glib-networking,
   gobject-introspection,
   gsettings-desktop-schemas,
-  glib-networking,
-  gtk3,
-  glib,
-  gdk-pixbuf,
-  cairo,
-  pango,
-  webkitgtk_4_1,
-  openssl,
-  sqlite,
-  gstreamer,
   gst-libav,
+  gst-plugins-bad,
   gst-plugins-base,
   gst-plugins-good,
-  gst-plugins-bad,
   gst-plugins-ugly,
-  xdg-utils,
-  xclip,
-  wl-clipboard,
+  gstreamer,
+  gtk3,
+  libfixposix,
   nix-update-script,
   nixosTests,
+  openssl,
+  pango,
+  pkg-config,
+  sbcl,
+  sqlite,
+  testers,
+  webkitgtk_4_1,
+  wl-clipboard,
+  wrapGAppsHook3,
+  xclip,
+  xdg-utils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -61,6 +61,12 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-ugly
   ];
 
+  # don't refresh from git
+  makeFlags = [
+    "all"
+    "NYXT_SUBMODULES=false"
+  ];
+
   # for cffi
   env.LD_LIBRARY_PATH = lib.makeLibraryPath [
     glib
@@ -82,12 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
     export NYXT_VERSION="$version"
   '';
 
-  # don't refresh from git
-  makeFlags = [
-    "all"
-    "NYXT_SUBMODULES=false"
-  ];
-
   preFixup = ''
     gappsWrapperArgs+=(--prefix LD_LIBRARY_PATH : "$LD_LIBRARY_PATH")
     gappsWrapperArgs+=(--prefix PATH : "${
@@ -103,20 +103,22 @@ stdenv.mkDerivation (finalAttrs: {
   dontStrip = true;
 
   passthru = {
+    tests = { inherit (nixosTests) nyxt; };
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
     updateScript = nix-update-script { };
-    tests = { inherit (nixosTests) nyxt; };
   };
 
   meta = {
     description = "Infinitely extensible web-browser (with Lisp development files using WebKitGTK platform port)";
-    mainProgram = "nyxt";
     homepage = "https://nyxt.atlas.engineer";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       lewo
       dariof4
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "nyxt";
   };
 })

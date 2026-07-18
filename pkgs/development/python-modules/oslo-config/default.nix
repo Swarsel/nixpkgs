@@ -1,6 +1,7 @@
 {
   lib,
   buildPythonPackage,
+  callPackage,
   fetchPypi,
   netaddr,
   oslo-i18n,
@@ -10,18 +11,16 @@
   rfc3986,
   setuptools,
   stevedore,
-  callPackage,
 }:
 
 buildPythonPackage rec {
   pname = "oslo-config";
   version = "10.5.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "oslo_config";
     inherit version;
     hash = "sha256-juozVsk4KMLWG+oesZuM14YKPtr/StJnjXdN01NzDfo=";
+    pname = "oslo_config";
   };
 
   postPatch = ''
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     rm test-requirements.txt
   '';
 
+  # check in passthru.tests.pytest to escape infinite recursion with other oslo components
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -42,14 +43,12 @@ buildPythonPackage rec {
     stevedore
   ];
 
-  # check in passthru.tests.pytest to escape infinite recursion with other oslo components
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "oslo_config" ];
 
   passthru.tests = {
     tests = callPackage ./tests.nix { };
   };
-
-  pythonImportsCheck = [ "oslo_config" ];
 
   meta = {
     description = "Oslo Configuration API";

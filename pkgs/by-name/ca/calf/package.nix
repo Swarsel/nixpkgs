@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cairo,
+  cmake,
   expat,
   fftwSinglePrec,
   fluidsynth,
   glib,
-  gtk2,
-  libjack2,
-  ladspa-header,
   gnome2,
+  gtk2,
+  ladspa-header,
+  libjack2,
   lv2,
   pkg-config,
-  fetchFromGitHub,
-  cmake,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "calf";
@@ -30,8 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "doc"
   ];
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     cmake
@@ -51,9 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
     lv2
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://calf-studio-gear.org";
     description = "Set of high quality open source audio plugins for musicians";
+    homepage = "https://calf-studio-gear.org";
     license = lib.licenses.lgpl2;
     maintainers = [ ];
     platforms = lib.platforms.linux;

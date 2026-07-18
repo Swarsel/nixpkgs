@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -18,14 +18,7 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   vendorHash = "sha256-ql5Qw5Va/wLBKsb9bCmPciuVrgORU8nndRkhjoJBIgs=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     local INSTALL="$out/bin/zitadel-tools"
@@ -34,6 +27,12 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/zitadel-tools completion fish) \
       --zsh <($out/bin/zitadel-tools completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Helper tools for zitadel";

@@ -1,11 +1,11 @@
 {
-  qtModule,
-  stdenv,
   lib,
+  stdenv,
+  llvmPackages,
+  qtModule,
   qtbase,
   qtdeclarative,
   replaceVars,
-  llvmPackages,
 }:
 
 qtModule {
@@ -15,16 +15,6 @@ qtModule {
     "out"
     "dev"
     "bin"
-  ];
-
-  buildInputs = with llvmPackages; [
-    libclang
-    libllvm
-  ];
-
-  propagatedBuildInputs = [
-    qtbase
-    qtdeclarative
   ];
 
   patches = [
@@ -37,6 +27,20 @@ qtModule {
       libclangDev = lib.getDev llvmPackages.libclang;
     })
   ];
+
+  buildInputs = with llvmPackages; [
+    libclang
+    libllvm
+  ];
+
+  propagatedBuildInputs = [
+    qtbase
+    qtdeclarative
+  ];
+
+  env.NIX_CFLAGS_COMPILE = lib.optionalString (
+    stdenv.hostPlatform.isDarwin && qtdeclarative != null
+  ) ''-DNIXPKGS_QMLIMPORTSCANNER="${qtdeclarative.dev}/bin/qmlimportscanner"'';
 
   devTools = [
     "bin/qcollectiongenerator"
@@ -59,10 +63,6 @@ qtModule {
     "bin/qdistancefieldgenerator"
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "bin/macdeployqt" ];
-
-  env.NIX_CFLAGS_COMPILE = lib.optionalString (
-    stdenv.hostPlatform.isDarwin && qtdeclarative != null
-  ) ''-DNIXPKGS_QMLIMPORTSCANNER="${qtdeclarative.dev}/bin/qmlimportscanner"'';
 
   setupHook = ../hooks/qttools-setup-hook.sh;
 }

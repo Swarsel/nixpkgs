@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  pytestCheckHook,
   fetchFromCodeberg,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "desktop-entry-lib";
   version = "3.1";
-  pyproject = true;
 
   # We could use fetchPypi, but then the tests won't run
   src = fetchFromCodeberg {
@@ -21,6 +20,7 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ setuptools ];
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "desktop_entry_lib" ];
 
   meta = {

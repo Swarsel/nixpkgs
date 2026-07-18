@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
   setuptools,
+  unittestCheckHook,
   zope-i18nmessageid,
   zope-interface,
   zope-schema,
-  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "zope-configuration";
   version = "7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -27,6 +26,12 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
+  nativeCheckInputs = [ unittestCheckHook ];
+
+  preCheck = ''
+    cd $out/${python.sitePackages}/zope/
+  '';
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,17 +40,10 @@ buildPythonPackage rec {
     zope-schema
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "zope.configuration" ];
-
-  nativeCheckInputs = [ unittestCheckHook ];
-
-  preCheck = ''
-    cd $out/${python.sitePackages}/zope/
-  '';
-
-  unittestFlagsArray = [ "configuration/tests" ];
-
   pythonNamespaces = [ "zope" ];
+  unittestFlagsArray = [ "configuration/tests" ];
 
   meta = {
     description = "Zope Configuration Markup Language (ZCML)";

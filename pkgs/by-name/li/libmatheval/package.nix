@@ -2,21 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  guile,
-  flex,
   fetchpatch,
+  flex,
+  guile,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.1.11";
   pname = "libmatheval";
-
-  nativeBuildInputs = [
-    pkg-config
-    flex
-  ];
-  buildInputs = [ guile ];
+  version = "1.1.11";
 
   src = fetchurl {
     url = "https://ftp.gnu.org/gnu/libmatheval/libmatheval-${finalAttrs.version}.tar.gz";
@@ -27,24 +21,31 @@ stdenv.mkDerivation (finalAttrs: {
   # https://packages.debian.org/source/sid/libs/libmatheval
   patches = [
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/libm/libmatheval/1.1.11%2Bdfsg-5/debian/patches/002-skip-docs.patch";
       hash = "sha256-wjz54FKQq7t9Bz0W3EOu+ZPTt8EcfkMotkZKwlWa09o=";
+      url = "https://sources.debian.org/data/main/libm/libmatheval/1.1.11%2Bdfsg-5/debian/patches/002-skip-docs.patch";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/libm/libmatheval/1.1.11%2Bdfsg-5/debian/patches/003-guile3.0.patch";
       hash = "sha256-H3E/2m4MfQAbjpXbVFyNhikVifi3spVThzaVU5srmjI=";
+      url = "https://sources.debian.org/data/main/libm/libmatheval/1.1.11%2Bdfsg-5/debian/patches/003-guile3.0.patch";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/libm/libmatheval/1.1.11%2Bdfsg-5/debian/patches/disable_coth_test.patch";
       hash = "sha256-9XeMXWDTzELWTPcsjAqOlIzp4qY9yupU+e6r0rJEUS0=";
+      url = "https://sources.debian.org/data/main/libm/libmatheval/1.1.11%2Bdfsg-5/debian/patches/disable_coth_test.patch";
     })
   ];
 
+  nativeBuildInputs = [
+    pkg-config
+    flex
+  ];
+
+  buildInputs = [ guile ];
   env.NIX_CFLAGS_COMPILE = "-I${lib.getDev guile}/include/guile/${guile.effectiveVersion}";
   env.NIX_LDFLAGS = "-L${guile}/lib -lguile-${guile.effectiveVersion}";
 
   meta = {
     description = "Library to parse and evaluate symbolic expressions input as text";
+
     longDescription = ''
       GNU libmatheval is a library (callable from C and Fortran) to parse and evaluate symbolic
       expressions input as text. It supports expressions in any number of variables of arbitrary
@@ -52,6 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
       mathematical functions. In addition to parsing and evaluation, libmatheval can also compute
       symbolic derivatives and output expressions to strings.
     '';
+
     homepage = "https://www.gnu.org/software/libmatheval/";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.bzizou ];

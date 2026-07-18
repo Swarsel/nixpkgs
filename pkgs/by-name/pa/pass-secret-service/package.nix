@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
+  coreutils,
   dbus,
   gnupg,
-  coreutils,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
@@ -15,7 +15,6 @@ python3.pkgs.buildPythonApplication {
   # seemingly abandoned D-Bus package pydbus and started using maintained
   # dbus-next. So let's use latest from GitHub.
   version = "0-unstable-2023-12-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mdellweg";
@@ -37,25 +36,6 @@ python3.pkgs.buildPythonApplication {
       --replace-fail "/usr/local" "$out"
   '';
 
-  postInstall = ''
-    mkdir -p "$out/share/dbus-1/services/" "$out/lib/systemd/user/"
-    cp systemd/org.freedesktop.secrets.service "$out/share/dbus-1/services/"
-    cp systemd/dbus-org.freedesktop.secrets.service "$out/lib/systemd/user/"
-  '';
-
-  build-system = with python3.pkgs; [
-    setuptools
-  ];
-
-  dependencies = with python3.pkgs; [
-    click
-    cryptography
-    dbus-next
-    decorator
-    pypass
-    secretstorage
-  ];
-
   nativeCheckInputs =
     let
       ps = python3.pkgs;
@@ -68,23 +48,44 @@ python3.pkgs.buildPythonApplication {
       ps.pypass
     ];
 
+  postInstall = ''
+    mkdir -p "$out/share/dbus-1/services/" "$out/lib/systemd/user/"
+    cp systemd/org.freedesktop.secrets.service "$out/share/dbus-1/services/"
+    cp systemd/dbus-org.freedesktop.secrets.service "$out/lib/systemd/user/"
+  '';
+
+  build-system = with python3.pkgs; [
+    setuptools
+  ];
+
   checkTarget = "test";
 
+  dependencies = with python3.pkgs; [
+    click
+    cryptography
+    dbus-next
+    decorator
+    pypass
+    secretstorage
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pass_secret_service" ];
 
   passthru = {
+    tests.pass-secret-service = nixosTests.pass-secret-service;
+
     updateScript = nix-update-script {
       extraArgs = [ "--version=branch" ];
     };
-    tests.pass-secret-service = nixosTests.pass-secret-service;
   };
 
   meta = {
     description = "Libsecret D-Bus API with pass as the backend";
     homepage = "https://github.com/mdellweg/pass_secret_service/";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ jluttine ];
     platforms = lib.platforms.all;
     mainProgram = "pass_secret_service";
-    maintainers = with lib.maintainers; [ jluttine ];
   };
 }

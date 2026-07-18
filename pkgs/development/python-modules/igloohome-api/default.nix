@@ -1,17 +1,16 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   dacite,
-  fetchFromGitHub,
   hatchling,
-  lib,
   pyjwt,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "igloohome-api";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "keithle888";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-BLmmypbvYTgQisT0+9Ym1ZTK6asAP2tWXP2DWhKYM7U=";
   };
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -28,15 +29,13 @@ buildPythonPackage (finalAttrs: {
     pyjwt
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "igloohome_api" ];
 
-  # upstream has no tests
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/keithle888/igloohome-api/releases/tag/${finalAttrs.src.tag}";
     description = "Python package for using igloohome's API";
     homepage = "https://github.com/keithle888/igloohome-api";
+    changelog = "https://github.com/keithle888/igloohome-api/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

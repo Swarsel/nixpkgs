@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  fetchzip,
   appimageTools,
+  fetchzip,
   makeWrapper,
+  stdenvNoCC,
   nativeWayland ? false,
 }:
 
@@ -15,13 +15,14 @@ let
   src =
     {
       aarch64-darwin = fetchzip {
-        url = "https://github.com/ppy/osu/releases/download/${version}-lazer/osu.app.Apple.Silicon.zip";
         hash = "sha256-XwfNO38dDaUmu/3AEgRwV0VW6JrAUCxWD6Wt0Ew23Eo=";
         stripRoot = false;
+        url = "https://github.com/ppy/osu/releases/download/${version}-lazer/osu.app.Apple.Silicon.zip";
       };
+
       x86_64-linux = fetchurl {
-        url = "https://github.com/ppy/osu/releases/download/${version}-lazer/osu.AppImage";
         hash = "sha256-KyA5UCvb9epk7jRtdG5wl0LzKc6/D2rkw5EJQxIaihw=";
+        url = "https://github.com/ppy/osu/releases/download/${version}-lazer/osu.AppImage";
       };
     }
     .${stdenvNoCC.system} or (throw "osu-lazer-bin: ${stdenvNoCC.system} is unsupported.");
@@ -29,22 +30,27 @@ let
   meta = {
     description = "Rhythm is just a *click* away (AppImage version for score submission and multiplayer, and binary distribution for Darwin systems)";
     homepage = "https://osu.ppy.sh";
+
     license = with lib.licenses; [
       mit
       cc-by-nc-40
       unfreeRedistributable # osu-framework contains libbass.so in repository
     ];
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       gepbird
       stepbrobd
       Guanran928
     ];
-    mainProgram = "osu!";
+
     platforms = [
       "aarch64-darwin"
       "x86_64-linux"
     ];
+
+    mainProgram = "osu!";
   };
 
   passthru.updateScript = ./update.sh;
@@ -82,8 +88,6 @@ else
       passthru
       ;
 
-    extraPkgs = pkgs: with pkgs; [ icu ];
-
     # fix OpenGL renderer on nvidia + wayland
     extraBwrapArgs = [
       "--ro-bind-try /etc/egl/egl_external_platform.d /etc/egl/egl_external_platform.d"
@@ -106,4 +110,6 @@ else
           install -D ${contents}/osu.png $out/share/icons/hicolor/''${i}x$i/apps/osu.png
         done
       '';
+
+    extraPkgs = pkgs: with pkgs; [ icu ];
   }

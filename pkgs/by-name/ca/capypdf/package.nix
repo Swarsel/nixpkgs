@@ -2,26 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
+  darwinMinVersionHook,
   freetype,
   lcms2,
   libjpeg,
   libpng,
   libtiff,
+  meson,
+  ninja,
+  pkg-config,
   zlib,
-  darwinMinVersionHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "capypdf";
   version = "0.21.0";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "jpakkane";
@@ -29,6 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-NJ4pjjbZ7z1bLqqt8ewA/5I/rBUXqy3wGwP29AGV5Vs=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     meson
@@ -52,7 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/jpakkane/capypdf";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jtojnar ];
-    mainProgram = "capypdf";
     platforms = lib.platforms.all;
+    mainProgram = "capypdf";
   };
 })

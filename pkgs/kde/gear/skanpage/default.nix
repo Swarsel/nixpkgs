@@ -1,9 +1,9 @@
 {
+  leptonica,
   mkKdeDerivation,
   qtwebengine,
-  tesseractLanguages ? [ ],
   tesseract5,
-  leptonica,
+  tesseractLanguages ? [ ],
 }:
 mkKdeDerivation {
   pname = "skanpage";
@@ -13,5 +13,6 @@ mkKdeDerivation {
     (tesseract5.override { enableLanguages = tesseractLanguages; })
     leptonica
   ];
+
   meta.mainProgram = "skanpage";
 }

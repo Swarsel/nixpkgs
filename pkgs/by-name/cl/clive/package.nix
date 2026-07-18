@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  ttyd,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   makeWrapper,
-  versionCheckHook,
   nix-update-script,
+  ttyd,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "clive";
@@ -20,17 +20,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-omHxs2hTzjddelPkJWj2sVmK9nI5bCELUS8EmEH7JXM=";
   };
 
-  vendorHash = "sha256-M3cU2051lOzm9hXuVwC1eFI8Ftpmk32h/98dHUkRfts=";
-  subPackages = [ "." ];
-  buildInputs = [ ttyd ];
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
 
-  ldflags = [
-    "-X github.com/koki-develop/clive/cmd.version=v${finalAttrs.version}"
-  ];
+  buildInputs = [ ttyd ];
+  vendorHash = "sha256-M3cU2051lOzm9hXuVwC1eFI8Ftpmk32h/98dHUkRfts=";
 
   postInstall = ''
     wrapProgram $out/bin/clive --prefix PATH : ${ttyd}/bin
@@ -42,9 +38,14 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/clive completion zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
+  ldflags = [
+    "-X github.com/koki-develop/clive/cmd.version=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

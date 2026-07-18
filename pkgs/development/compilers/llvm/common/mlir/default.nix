@@ -1,29 +1,23 @@
 {
   lib,
   stdenv,
-  llvm_meta,
-  release_version,
   buildLlvmPackages,
-  monorepoSrc,
-  runCommand,
   cmake,
-  ninja,
-  libxml2,
+  getVersionFile,
   libllvm,
+  libxml2,
+  llvm_meta,
+  monorepoSrc,
+  ninja,
+  release_version,
+  runCommand,
   version,
   devExtraCmakeFlags ? [ ],
-  getVersionFile,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "mlir";
   inherit version;
-
-  doCheck =
-    (
-      !stdenv.hostPlatform.isx86_32 # TODO: why
-    )
-    && (!stdenv.hostPlatform.isMusl);
+  pname = "mlir";
 
   # Blank llvm dir just so relative path works
   src = runCommand "${finalAttrs.pname}-src-${version}" { inherit (monorepoSrc) passthru; } ''
@@ -35,7 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p "$out/llvm"
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/mlir";
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./gnu-install-dirs.patch
@@ -90,15 +87,18 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ devExtraCmakeFlags;
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  doCheck =
+    (
+      !stdenv.hostPlatform.isx86_32 # TODO: why
+    )
+    && (!stdenv.hostPlatform.isMusl);
 
   requiredSystemFeatures = [ "big-parallel" ];
+  sourceRoot = "${finalAttrs.src.name}/mlir";
+
   meta = llvm_meta // {
-    homepage = "https://mlir.llvm.org/";
     description = "Multi-Level IR Compiler Framework";
+
     longDescription = ''
       The MLIR project is a novel approach to building reusable and extensible
       compiler infrastructure. MLIR aims to address software fragmentation,
@@ -106,5 +106,7 @@ stdenv.mkDerivation (finalAttrs: {
       the cost of building domain specific compilers, and aid in connecting
       existing compilers together.
     '';
+
+    homepage = "https://mlir.llvm.org/";
   };
 })

@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
+  bash,
   cunit,
-  fetchFromGitHub,
   fetchpatch,
   fftw,
-  lib,
   libtool,
   llvmPackages,
-  stdenv,
-  bash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,9 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-Ynhsyzf8ECVw4eBq50okd0oikiIfOCqFRHivuceg0KU=";
       name = "fix-gcc15.patch";
       url = "https://github.com/NFFT/nfft/commit/b06d01be964be7490aed797468f9722e2de1dbfa.patch";
-      hash = "sha256-Ynhsyzf8ECVw4eBq50okd0oikiIfOCqFRHivuceg0KU=";
     })
   ];
 
@@ -39,9 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     bash
   ];
 
-  preConfigure = ''
-    bash bootstrap.sh
-  '';
+  buildInputs = lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
+  propagatedBuildInputs = [ fftw ];
 
   configureFlags = [
     "--enable-all"
@@ -51,13 +50,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
-  enableParallelBuilding = true;
-
-  buildInputs = lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
-
-  propagatedBuildInputs = [ fftw ];
+  preConfigure = ''
+    bash bootstrap.sh
+  '';
 
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Nonequispaced fast Fourier transform";

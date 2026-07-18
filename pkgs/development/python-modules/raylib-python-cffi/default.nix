@@ -1,23 +1,22 @@
 {
-  gcc,
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cffi,
-  pkg-config,
+  gcc,
   glfw3,
   libffi,
-  raylib,
   physac,
+  pkg-config,
   raygui,
-  lib,
+  raylib,
+  setuptools,
   writers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "raylib-python-cffi";
   version = "6.0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "electronstudio";
@@ -26,10 +25,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-9eN3H62gYDloMHbJbTFiO3acif3GJuTkk4CWltzBOXg=";
   };
 
-  build-system = [ setuptools ];
-  dependencies = [ cffi ];
-
   patches = [ ./use-direct-pkg-config-name.patch ];
+
+  nativeBuildInputs = [
+    pkg-config
+    gcc
+  ];
 
   buildInputs = [
     glfw3
@@ -39,14 +40,11 @@ buildPythonPackage (finalAttrs: {
     raygui
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    gcc
-  ];
-
   # tests require a graphic environment
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ cffi ];
+  pyproject = true;
   pythonImportsCheck = [ "pyray" ];
 
   passthru.tests = import ./passthru-tests.nix {

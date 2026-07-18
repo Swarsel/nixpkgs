@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   fastapi,
-  fetchFromGitHub,
-  limits,
-  mock,
   hiro,
   httpx,
+  limits,
+  mock,
   poetry-core,
   pytestCheckHook,
   redis,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "slowapi";
   version = "0.1.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "laurentS";
@@ -30,13 +29,6 @@ buildPythonPackage (finalAttrs: {
     ./starlette-1.0-compat.patch
   ];
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    limits
-    redis
-  ];
-
   nativeCheckInputs = [
     fastapi
     hiro
@@ -44,6 +36,13 @@ buildPythonPackage (finalAttrs: {
     mock
     pytestCheckHook
     starlette
+  ];
+
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    limits
+    redis
   ];
 
   disabledTests = [
@@ -56,6 +55,7 @@ buildPythonPackage (finalAttrs: {
     "test_exempt_decorator"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "slowapi" ];
 
   meta = {

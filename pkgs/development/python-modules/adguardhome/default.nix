@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "adguardhome";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -28,15 +27,6 @@ buildPythonPackage rec {
       --replace-fail '"0.0.0"' '"${version}"'
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    yarl
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     aresponses
     pytest-asyncio
@@ -44,6 +34,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+    yarl
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "adguardhome" ];
 
   meta = {

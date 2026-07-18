@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation {
 
   src = fetchzip {
     url = "https://web.archive.org/web/20190823153624/http://ephifonts.com/downloads/helvetica-neue-lt-std.zip";
-    stripRoot = false;
     hash = "sha256-ytoTTrnwN1lMw/gTxS4DRAq+tV5WzB2xHP4vVxLZ1ZI=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -23,8 +23,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://web.archive.org/web/20190926040940/http://www.ephifonts.com/free-helvetica-font-helvetica-neue-lt-std.html";
     description = "Helvetica Neue LT Std font";
+
     longDescription = ''
       Helvetica Neue Lt Std is one of the most highly rated and complete
       fonts of all time. Developed in early 1983, this font has well
@@ -36,8 +36,10 @@ stdenvNoCC.mkDerivation {
       font. The numbers are well spaced and defined with high accuracy. The
       punctuation marks are heavily detailed as well.
     '';
+
+    homepage = "https://web.archive.org/web/20190926040940/http://www.ephifonts.com/free-helvetica-font-helvetica-neue-lt-std.html";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.all;
   };
 }

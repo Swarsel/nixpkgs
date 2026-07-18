@@ -2,21 +2,19 @@
   lib,
   stdenv,
   buildEnv,
-  runCommand,
   makeBinaryWrapper,
-
   # manually pased
   python,
   requiredPythonModules,
-
+  runCommand,
   # extra opts
   extraLibs ? [ ],
   extraOutputsToInstall ? [ ],
-  postBuild ? "",
   ignoreCollisions ? false,
-  permitUserSite ? false,
   # Wrap executables with the given argument.
   makeWrapperArgs ? [ ],
+  permitUserSite ? false,
+  postBuild ? "",
 }:
 
 # Create a python executable that knows about additional packages.
@@ -32,12 +30,9 @@ let
       pythonExecutable = "${placeholder "out"}/bin/${python.executable}";
     in
     buildEnv {
-      name = "${python.name}-env";
-
       inherit paths;
       inherit ignoreCollisions;
-      extraOutputsToInstall = [ "out" ] ++ extraOutputsToInstall;
-
+      inherit (python) meta;
       nativeBuildInputs = [ makeBinaryWrapper ];
 
       postBuild = ''
@@ -70,13 +65,13 @@ let
       ''
       + postBuild;
 
-      inherit (python) meta;
+      extraOutputsToInstall = [ "out" ] ++ extraOutputsToInstall;
+      name = "${python.name}-env";
 
       passthru = python.passthru // {
-        interpreter = "${env}/bin/${python.executable}";
         inherit python;
+
         env = stdenv.mkDerivation {
-          name = "interactive-${python.name}-environment";
           nativeBuildInputs = [ env ];
 
           buildCommand = ''
@@ -85,7 +80,11 @@ let
             echo >&2 ""
             exit 1
           '';
+
+          name = "interactive-${python.name}-environment";
         };
+
+        interpreter = "${env}/bin/${python.executable}";
       };
     };
 in

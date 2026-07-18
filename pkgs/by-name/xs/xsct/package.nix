@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   gitUpdater,
   libx11,
@@ -31,11 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Set color temperature of screen";
-    mainProgram = "xsct";
     homepage = "https://github.com/faf0/sct";
     changelog = "https://github.com/faf0/sct/blob/${finalAttrs.version}/CHANGELOG";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = with lib.platforms; linux ++ freebsd ++ openbsd;
+    mainProgram = "xsct";
   };
 })

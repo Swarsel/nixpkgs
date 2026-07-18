@@ -1,11 +1,11 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  bppsuite,
   alcotest,
   angstrom-unix,
   biotk,
+  bppsuite,
+  buildDunePackage,
   core,
   gsl,
   lacaml,
@@ -23,11 +23,8 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-3oZ9fMAXqOQ02rQ+8W8PZJWXOJLNe2qERrGOeTk3BKg=";
   };
 
-  minimalOCamlVersion = "4.08";
-
-  nativeCheckInputs = [ bppsuite ];
-  checkInputs = [ alcotest ];
   nativeBuildInputs = [ menhir ];
+
   propagatedBuildInputs = [
     angstrom-unix
     biotk
@@ -38,12 +35,17 @@ buildDunePackage (finalAttrs: {
     printbox-text
   ];
 
+  doCheck = true;
+  nativeCheckInputs = [ bppsuite ];
+  checkInputs = [ alcotest ];
+
   checkPhase = ''
     runHook preCheck
     dune build @app/fulltest
     runHook postCheck
   '';
-  doCheck = true;
+
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Algorithms and datastructures for phylogenetics";

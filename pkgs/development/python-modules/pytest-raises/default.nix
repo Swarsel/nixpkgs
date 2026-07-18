@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytest-raises";
   version = "0.11";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Lemmons";
@@ -19,10 +18,7 @@ buildPythonPackage (finalAttrs: {
   };
 
   buildInputs = [ pytest ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pytest_raises" ];
 
   disabledTests = [
     # Failed: nomatch: '*::test_pytest_mark_raises_unexpected_exception FAILED*'
@@ -31,6 +27,9 @@ buildPythonPackage (finalAttrs: {
     "test_pytest_mark_raises_unexpected_match"
     "test_pytest_mark_raises_parametrize"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "pytest_raises" ];
 
   meta = {
     description = "Implementation of pytest.raises as a pytest.mark fixture";

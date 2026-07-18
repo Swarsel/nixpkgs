@@ -1,11 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   accelerate,
   buildPythonPackage,
   docling,
-  fetchFromGitHub,
   hatchling,
   httpx,
+  llama-index,
   llama-index-core,
   llama-index-embeddings-huggingface,
   llama-index-embeddings-openai,
@@ -14,12 +15,11 @@
   llama-index-readers-docling,
   llama-index-readers-file,
   llama-index-vector-stores-milvus,
-  llama-index,
   llama-stack-client,
   mcp,
   ollama,
-  pydantic-settings,
   pydantic,
+  pydantic-settings,
   pytest-asyncio,
   pytestCheckHook,
   python-dotenv,
@@ -31,7 +31,6 @@
 buildPythonPackage rec {
   pname = "docling-mcp";
   version = "1.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "docling-project";
@@ -40,9 +39,9 @@ buildPythonPackage rec {
     hash = "sha256-OyLL8g9fh1H9N3i5ok885IzC5pFckMoqsjd8oX/HdRY=";
   };
 
-  pythonRemoveDeps = [
-    # Disabled due to circular dependency
-    "mellea"
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
   ];
 
   build-system = [ hatchling ];
@@ -54,6 +53,12 @@ buildPythonPackage rec {
     pydantic
     pydantic-settings
     python-dotenv
+  ];
+
+  disabledTestPaths = [
+    # Tests require network access
+    "tests/test_mcp_server.py"
+    "tests/test_conversion_tools.py"
   ];
 
   optional-dependencies = {
@@ -68,7 +73,9 @@ buildPythonPackage rec {
       llama-index-readers-file
       llama-index-vector-stores-milvus
     ];
+
     llama-stack = [ llama-stack-client ];
+
     smolagents = [
       accelerate
       ollama
@@ -78,17 +85,12 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "docling_mcp" ];
 
-  disabledTestPaths = [
-    # Tests require network access
-    "tests/test_mcp_server.py"
-    "tests/test_conversion_tools.py"
+  pythonRemoveDeps = [
+    # Disabled due to circular dependency
+    "mellea"
   ];
 
   meta = {

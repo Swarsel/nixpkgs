@@ -1,36 +1,24 @@
 {
   lib,
-  symlinkJoin,
-  makeBinaryWrapper,
   fcitx5,
-  withConfigtool ? true,
   fcitx5-configtool,
-  libsForQt5,
-  qt6Packages,
   fcitx5-gtk,
   librsvg,
+  libsForQt5,
+  makeBinaryWrapper,
+  qt6Packages,
+  symlinkJoin,
   addons ? [ ],
+  withConfigtool ? true,
 }:
 
 symlinkJoin {
-  name = "fcitx5-with-addons-${fcitx5.version}";
-
-  paths = [
-    fcitx5
-    libsForQt5.fcitx5-qt
-    qt6Packages.fcitx5-qt
-    fcitx5-gtk
-  ]
-  ++ lib.optionals withConfigtool [
-    fcitx5-configtool
-  ]
-  ++ addons;
+  inherit (fcitx5) meta;
+  nativeBuildInputs = [ makeBinaryWrapper ];
 
   buildInputs = [
     librsvg
   ];
-
-  nativeBuildInputs = [ makeBinaryWrapper ];
 
   postBuild = ''
     wrapProgram $out/bin/fcitx5 \
@@ -56,5 +44,16 @@ symlinkJoin {
     popd
   '';
 
-  inherit (fcitx5) meta;
+  name = "fcitx5-with-addons-${fcitx5.version}";
+
+  paths = [
+    fcitx5
+    libsForQt5.fcitx5-qt
+    qt6Packages.fcitx5-qt
+    fcitx5-gtk
+  ]
+  ++ lib.optionals withConfigtool [
+    fcitx5-configtool
+  ]
+  ++ addons;
 }

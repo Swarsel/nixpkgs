@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   openccu-data,
   orjson,
@@ -20,10 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiohomematic";
   version = "2026.7.6";
-  pyproject = true;
-  __structuredAttrs = true;
-
-  disabled = pythonOlder "3.14";
 
   src = fetchFromGitHub {
     owner = "SukramJ";
@@ -31,16 +27,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-dshlAmjzv13Q9AijApEDNvhI3jLzDMLBs8KDtElzqJ4=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    openccu-data
-    orjson
-    pydantic
-    python-slugify
-  ];
 
   nativeCheckInputs = [
     freezegun
@@ -51,6 +37,19 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    openccu-data
+    orjson
+    pydantic
+    python-slugify
+  ];
+
+  disabled = pythonOlder "3.14";
+  pyproject = true;
   pythonImportsCheck = [ "aiohomematic" ];
 
   meta = {
@@ -58,6 +57,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/SukramJ/aiohomematic";
     changelog = "https://github.com/SukramJ/aiohomematic/blob/${finalAttrs.src.tag}/changelog.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dotlambda
       fab

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "openerz-api";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "misialq";
@@ -21,7 +20,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ requests ];
 
   nativeCheckInputs = [
@@ -29,6 +27,7 @@ buildPythonPackage rec {
     testfixtures
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "openerz_api" ];
 
   meta = {

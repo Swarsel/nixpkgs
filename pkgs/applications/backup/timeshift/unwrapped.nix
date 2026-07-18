@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   gettext,
+  gtk3,
   help2man,
+  json-glib,
+  libgee,
   meson,
   ninja,
   pkg-config,
-  vala,
-  gtk3,
-  json-glib,
-  libgee,
   util-linuxMinimal,
+  vala,
   vte,
   xapp,
 }:
@@ -19,10 +19,6 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "timeshift";
   version = "25.12.4";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "linuxmint";
@@ -30,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-4iK9RngcqwR0sYo9AXcTwEQ1eoPQPbAmwM5k/rcgU9s=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   postPatch = ''
     for FILE in src/Core/Main.vala src/Utility/Device.vala; do
@@ -68,16 +69,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "System restore tool for Linux";
+
     longDescription = ''
       TimeShift creates filesystem snapshots using rsync+hardlinks or BTRFS snapshots.
       Snapshots can be restored using TimeShift installed on the system or from Live CD or USB.
     '';
+
     homepage = "https://github.com/linuxmint/timeshift";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       ShamrockLee
       bobby285271
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -24,9 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Shows a Power/Lock menu with Rofi";
     homepage = "https://github.com/jluttine/rofi-power-menu";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ikervagyok ];
     platforms = lib.platforms.linux;
     mainProgram = "rofi-power-menu";
-    license = lib.licenses.mit;
   };
 })

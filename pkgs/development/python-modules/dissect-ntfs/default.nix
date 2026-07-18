@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "dissect-ntfs";
   version = "3.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-5B27K6HPxSgdYLp0rJ1ld37xS3JXGqGlS/nlx4HBsVY=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -30,10 +31,6 @@ buildPythonPackage rec {
     dissect-cstruct
     dissect-util
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "dissect.ntfs" ];
 
   disabledTestPaths = [
     # Test is very time consuming
@@ -47,6 +44,9 @@ buildPythonPackage rec {
     "test_secure"
     "test_fragmented_mft"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dissect.ntfs" ];
 
   meta = {
     description = "Dissect module implementing a parser for the NTFS file system";

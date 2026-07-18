@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 let
@@ -9,8 +9,8 @@ let
 in
 
 buildGoModule {
-  pname = "agola";
   inherit version;
+  pname = "agola";
 
   src = fetchFromGitHub {
     owner = "agola-io";
@@ -20,6 +20,8 @@ buildGoModule {
   };
 
   vendorHash = "sha256-pNrulS7cjeSQyFJODOrxZvOLam56PLZz8jdFzONzbvA=";
+  # somehow the tests get stuck
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -31,13 +33,10 @@ buildGoModule {
     "sqlite_unlock_notify"
   ];
 
-  # somehow the tests get stuck
-  doCheck = false;
-
   meta = {
     description = "CI/CD Redefined";
     homepage = "https://agola.io";
-    maintainers = with lib.maintainers; [ happysalada ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ happysalada ];
   };
 }

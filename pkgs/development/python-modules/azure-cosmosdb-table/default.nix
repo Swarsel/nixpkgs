@@ -1,26 +1,27 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  cryptography,
   azure-common,
-  azure-storage-common,
   azure-cosmosdb-nspkg,
-  futures ? null,
+  azure-storage-common,
+  buildPythonPackage,
+  cryptography,
+  fetchPypi,
   isPy3k,
   setuptools,
+  futures ? null,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-cosmosdb-table";
   version = "1.0.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-XwYdKrjc8vC06WXVl257eusSR+qJaRHw4dKQkqqqKcc=";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,8 +32,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals (!isPy3k) [ futures ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "This is the Microsoft Azure Log Analytics Client Library";

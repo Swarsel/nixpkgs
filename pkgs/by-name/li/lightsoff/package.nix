@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  vala,
-  pkg-config,
-  glib,
-  gtk4,
-  libadwaita,
-  gnome,
   gdk-pixbuf,
-  wrapGAppsHook4,
   gettext,
+  glib,
+  gnome,
+  gtk4,
   itstool,
+  libadwaita,
   libxml2,
   meson,
   ninja,
+  pkg-config,
   python3,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,6 +26,13 @@ stdenv.mkDerivation rec {
     url = "mirror://gnome/sources/lightsoff/${lib.versions.major version}/lightsoff-${version}.tar.xz";
     hash = "sha256-uqDBdDHoXu7eXmSfUxYvcLTrHnx6bxak7KowJ7ZTFXg=";
   };
+
+  postPatch = ''
+    chmod +x build-aux/meson_post_install.py
+    patchShebangs build-aux/meson_post_install.py
+    substituteInPlace build-aux/meson_post_install.py \
+      --replace-fail "gtk-update-icon-cache" "gtk4-update-icon-cache"
+  '';
 
   nativeBuildInputs = [
     vala
@@ -45,24 +52,17 @@ stdenv.mkDerivation rec {
     libadwaita
   ];
 
-  postPatch = ''
-    chmod +x build-aux/meson_post_install.py
-    patchShebangs build-aux/meson_post_install.py
-    substituteInPlace build-aux/meson_post_install.py \
-      --replace-fail "gtk-update-icon-cache" "gtk4-update-icon-cache"
-  '';
-
   passthru = {
     updateScript = gnome.updateScript { packageName = "lightsoff"; };
   };
 
   meta = {
+    description = "Puzzle game, where the objective is to turn off all of the tiles on the board";
     homepage = "https://gitlab.gnome.org/GNOME/lightsoff";
     changelog = "https://gitlab.gnome.org/GNOME/lightsoff/-/blob/${version}/NEWS?ref_type=tags";
-    description = "Puzzle game, where the objective is to turn off all of the tiles on the board";
-    mainProgram = "lightsoff";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2;
     platforms = lib.platforms.unix;
+    mainProgram = "lightsoff";
+    teams = [ lib.teams.gnome ];
   };
 }

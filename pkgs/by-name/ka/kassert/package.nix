@@ -27,16 +27,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   nativeCheckInputs = [ gtest ];
 
   meta = {
     description = "Karlsruhe assertion library for C++";
     homepage = "https://kamping-site.github.io/kassert/";
-    downloadPage = "https://github.com/kamping-site/kassert";
     changelog = "https://github.com/kamping-site/kasser/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ mit ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/kamping-site/kassert";
   };
 })

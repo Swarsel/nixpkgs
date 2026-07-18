@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-oqGUHPnfCxgUTueB1zEJ8/h0L+2oxoVQHI+oJm3HcPo=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/tomwright/dasel/v3/internal.Version=v${finalAttrs.version}"
-  ];
-
   doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   installCheckPhase = ''
     runHook preInstallCheck
     if [[ $($out/bin/dasel version) == "v${finalAttrs.version}" ]]; then
@@ -37,16 +31,24 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/tomwright/dasel/v3/internal.Version=v${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Query and update data structures from the command line";
+
     longDescription = ''
       Dasel (short for data-selector) allows you to query and modify data structures using selector strings.
       Comparable to jq / yq, but supports JSON, YAML, TOML and XML with zero runtime dependencies.
     '';
+
     homepage = "https://github.com/TomWright/dasel";
     changelog = "https://github.com/TomWright/dasel/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "dasel";
     maintainers = with lib.maintainers; [ _0x4A6F ];
+    mainProgram = "dasel";
   };
 })

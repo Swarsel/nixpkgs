@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   camelot,
   defusedxml,
-  fetchFromGitHub,
   fonttools,
   lxml,
   pikepdf,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "fpdf2";
   version = "2.8.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "py-pdf";
@@ -26,14 +25,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-LQZ7OMfL+PFxEc7q/dSw+YJoKr+eYEaZF8XCzd7AdBI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    defusedxml
-    fonttools
-    pillow
-  ];
 
   nativeCheckInputs = [
     camelot
@@ -43,6 +34,14 @@ buildPythonPackage rec {
     pytestCheckHook
     qrcode
     uharfbuzz
+  ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    defusedxml
+    fonttools
+    pillow
   ];
 
   disabledTestPaths = [
@@ -59,9 +58,11 @@ buildPythonPackage rec {
     "test_insert_jpg_jpxdecode" # JPEG2000 is broken
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/py-pdf/fpdf2";
     description = "Simple PDF generation for Python";
+    homepage = "https://github.com/py-pdf/fpdf2";
     changelog = "https://github.com/py-pdf/fpdf2/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ jfvillablanca ];

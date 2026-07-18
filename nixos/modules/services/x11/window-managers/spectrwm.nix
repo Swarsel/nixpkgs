@@ -17,10 +17,13 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.spectrwm ];
+
     services.xserver.windowManager = {
       session = [
         {
           name = "spectrwm";
+
           start = ''
             ${pkgs.spectrwm}/bin/spectrwm &
             waitPID=$!
@@ -28,6 +31,5 @@ in
         }
       ];
     };
-    environment.systemPackages = [ pkgs.spectrwm ];
   };
 }

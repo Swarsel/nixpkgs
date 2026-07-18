@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,21 +16,22 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-gWDSBjrTsRShihc/jun5lL1cauJU45qaND0IL17pqn8=";
+  # Tests require network access
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  # Tests require network access
-  doCheck = false;
-
   meta = {
     description = "TLS grabber focused on TLS based data collection";
+
     longDescription = ''
       A fast and configurable TLS grabber focused on TLS based data
       collection and analysis.
     '';
+
     homepage = "https://github.com/projectdiscovery/tlsx";
     changelog = "https://github.com/projectdiscovery/tlsx/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

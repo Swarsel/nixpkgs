@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   hatchling,
   pytest,
-  tappy,
   pytestCheckHook,
+  tappy,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-tap";
   version = "3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-tap";
@@ -23,21 +22,18 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-P52NqgXtnO2SthDwVbT+NVPeBNhjGS/8Vsbe/WLCc3A=";
       # see https://github.com/python-tap/pytest-tap/pull/105
       name = "missing-package-in-wheel.patch";
       url = "https://github.com/python-tap/pytest-tap/commit/056a44a632b1af19d9ba4b5044768bde3dd6a764.patch";
-      hash = "sha256-P52NqgXtnO2SthDwVbT+NVPeBNhjGS/8Vsbe/WLCc3A=";
     })
   ];
 
-  build-system = [ hatchling ];
-
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ tappy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_tap" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
-  nixosTests,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  nixosTests,
 }:
 
 buildNpmPackage {
@@ -18,12 +18,12 @@ buildNpmPackage {
 
   npmDepsHash = "sha256-FEuqKbblAts0WTnGI9H9bRBOwPvkahltra1zl3sMPJs=";
 
-  dontNpmBuild = true;
-
   postInstall = ''
     install -Dt "$out/share/haste-server" about.md
     rm -rf "$out/lib/node_modules/haste/node_modules/.bin/"
   '';
+
+  dontNpmBuild = true;
 
   passthru = {
     tests = {
@@ -35,7 +35,7 @@ buildNpmPackage {
     description = "Open source pastebin written in Node.js";
     homepage = "https://github.com/toptal/haste-server";
     license = lib.licenses.mit;
-    mainProgram = "haste-server";
     maintainers = with lib.maintainers; [ mkg20001 ];
+    mainProgram = "haste-server";
   };
 }

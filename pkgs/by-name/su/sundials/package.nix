@@ -2,25 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blas,
   cmake,
   gfortran,
-  python3,
-  blas,
   lapack,
-  suitesparse,
   nix-update-script,
-  lapackSupport ? true,
+  python3,
+  suitesparse,
   kluSupport ? true,
+  lapackSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "sundials";
   version = "7.6.0";
-
-  outputs = [
-    "out"
-    "examples"
-  ];
 
   src = fetchFromGitHub {
     owner = "LLNL";
@@ -28,6 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-DdVZXFfQXpJ9z5ikaK1ZQ/ZkL/vAGdlNsE9MJsIkLdM=";
   };
+
+  outputs = [
+    "out"
+    "examples"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -74,16 +74,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
   checkTarget = "test";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Suite of nonlinear differential/algebraic equation solvers";
     homepage = "https://computing.llnl.gov/projects/sundials";
-    downloadPage = "https://github.com/LLNL/sundials";
     changelog = "https://github.com/LLNL/sundials/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ idontgetoutmuch ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ idontgetoutmuch ];
+    platforms = lib.platforms.all;
+    downloadPage = "https://github.com/LLNL/sundials";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitLab,
+  buildGoModule,
   python3,
 }:
 buildGoModule (finalAttrs: {
@@ -15,16 +15,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uHX45KZO6R0tgTU10csKLiVYZZ/ea2V6BwhF6vfKKtA=";
   };
 
-  vendorHash = null;
-
-  excludedPackages = "tests";
-
   nativeBuildInputs = [ python3 ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = null;
 
   preBuild = ''
     patchShebangs --build tablegen.py
@@ -32,9 +24,16 @@ buildGoModule (finalAttrs: {
     go generate
   '';
 
+  excludedPackages = "tests";
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
     description = "Re-implementation of sloccount in Go";
-    mainProgram = "loccount";
+
     longDescription = ''
       loccount is a re-implementation of David A. Wheeler's sloccount tool
       in Go.  It is faster and handles more different languages. Because
@@ -46,9 +45,11 @@ buildGoModule (finalAttrs: {
       an exception; loccount corrects buggy counting of single-quote multiline
       literals in sloccount 2.26.
     '';
+
     homepage = "https://gitlab.com/esr/loccount";
-    downloadPage = "https://gitlab.com/esr/loccount/tree/master";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ calvertvl ];
+    mainProgram = "loccount";
+    downloadPage = "https://gitlab.com/esr/loccount/tree/master";
   };
 })

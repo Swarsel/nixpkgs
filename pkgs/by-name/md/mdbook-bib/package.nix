@@ -1,15 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mdbook-bib";
   version = "0.5.3";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "francisco-perez-sorrosal";
@@ -18,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-IhGwVnUYjnwZmZJkt1Z9yFlNcJ2EObnqFHmmfJNco/M=";
   };
 
-  cargoHash = "sha256-A1rOfXZP4rFtLX3pmLwB99FBws1wMotKnMPfqnYW9m0=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -27,6 +24,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-A1rOfXZP4rFtLX3pmLwB99FBws1wMotKnMPfqnYW9m0=";
+  __structuredAttrs = true;
 
   meta = {
     description = "mdBook plugin for creating a bibliography & citations in your books";

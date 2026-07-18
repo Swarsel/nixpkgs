@@ -1,38 +1,37 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   curl,
   expat,
-  fetchFromGitHub,
   gspell,
   gst_all_1,
   gtk3,
   libGL,
   libGLU,
-  libsm,
-  libxinerama,
-  libxtst,
-  libxxf86vm,
+  libjpeg_turbo,
   libnotify,
   libpng,
   libsecret,
+  libsm,
   libtiff,
-  libjpeg_turbo,
+  libxinerama,
   libxkbcommon,
-  zlib,
-  pcre2,
-  pkg-config,
-  xorgproto,
-  compat30 ? false,
-  compat32 ? true,
-  withMesa ? !stdenv.hostPlatform.isDarwin,
-  withWebKit ? true,
-  withEGL ? true,
-  withPrivateFonts ? false,
-  webkitgtk_4_1,
-
+  libxtst,
+  libxxf86vm,
   # TODO: Clean up on `staging`.
   llvmPackages,
+  pcre2,
+  pkg-config,
+  webkitgtk_4_1,
+  xorgproto,
+  zlib,
+  compat30 ? false,
+  compat32 ? true,
+  withEGL ? true,
+  withMesa ? !stdenv.hostPlatform.isDarwin,
+  withPrivateFonts ? false,
+  withWebKit ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "wxWidgets";
     repo = "wxWidgets";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-gB+mEk8rHpB4z1m8RWJSV+upKzLt7pZtlviS2g03EHY=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -140,8 +139,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.wxwidgets.org/";
     description = "Cross-Platform C++ GUI Library";
+
     longDescription = ''
       wxWidgets gives you a single, easy-to-use API for writing GUI applications
       on multiple platforms that still utilize the native platform's controls
@@ -152,14 +151,19 @@ stdenv.mkDerivation (finalAttrs: {
       multithreading, image loading and saving in a variety of popular formats,
       database support, HTML viewing and printing, and much more.
     '';
+
+    homepage = "https://www.wxwidgets.org/";
+
     license = with lib.licenses; [
       lgpl2Plus
       wxWindowsException31
     ];
+
     maintainers = with lib.maintainers; [
       fliegendewurst
       wegank
     ];
+
     platforms = lib.platforms.unix;
   };
 })

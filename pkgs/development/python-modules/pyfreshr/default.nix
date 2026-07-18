@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  aiohttp,
+  buildPythonPackage,
+  pytest-asyncio,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  aiohttp,
-  pytestCheckHook,
-  pytest-asyncio,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyfreshr";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SierraNL";
@@ -21,18 +20,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-YErjzr9etWaETR4mXJaY33LRVXH4KxTErlB0AIOPmNk=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ aiohttp ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyfreshr" ];
 
   meta = {

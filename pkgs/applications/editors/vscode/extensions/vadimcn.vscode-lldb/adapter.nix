@@ -1,16 +1,14 @@
 {
   lib,
+  stdenv,
+  cargoHash,
+  codelldb-launch,
   lldb,
   makeWrapper,
-  rustPlatform,
-  stdenv,
-  codelldb-launch,
-
   pname,
+  rustPlatform,
   src,
   version,
-
-  cargoHash,
   standalone ? false,
 }:
 let
@@ -25,32 +23,17 @@ let
   LLVM_TRIPLE = stdenv.buildPlatform.rust.rustcTarget;
 in
 rustPlatform.buildRustPackage {
-  pname = "${pname}-adapter";
   inherit version src;
-
   inherit cargoHash;
-
-  # Environment variables, based on <https://github.com/vadimcn/codelldb/blob/master/cargo_config.unix.toml>
-  # The LLDB_* variables are used in adapter/lldb/build.rs.
-  "CC_${LLVM_TRIPLE}" = "${stdenv.cc}/bin/cc";
-  "CXX_${LLVM_TRIPLE}" = "${stdenv.cc}/bin/c++";
-  LLDB_DYLIB = "${lib.getLib lldb}/lib/liblldb${stdenv.hostPlatform.extensions.sharedLibrary}";
-  LLDB_INCLUDE = "${lib.getDev lldb}/include";
+  pname = "${pname}-adapter";
 
   nativeBuildInputs = [
     makeWrapper
   ]
   ++ lib.optional standalone codelldb-launch;
 
-  buildAndTestSubdir = "adapter";
-
-  # There's isn't much point in enabling the `weaklink` feature
-  # when we provide lldb via Nix.
-  # buildFeatures = [ "weaklink" ];
-
-  cargoBuildFlags = [
-    "--bin=codelldb"
-  ];
+  # Tests fail to build (as of version 1.11.4).
+  doCheck = false;
 
   postFixup = ''
     mkdir -p $out/share/{adapter,lang_support}
@@ -66,8 +49,20 @@ rustPlatform.buildRustPackage {
     ''}
   '';
 
-  # Tests fail to build (as of version 1.11.4).
-  doCheck = false;
+  # Environment variables, based on <https://github.com/vadimcn/codelldb/blob/master/cargo_config.unix.toml>
+  # The LLDB_* variables are used in adapter/lldb/build.rs.
+  "CC_${LLVM_TRIPLE}" = "${stdenv.cc}/bin/cc";
+  "CXX_${LLVM_TRIPLE}" = "${stdenv.cc}/bin/c++";
+  LLDB_DYLIB = "${lib.getLib lldb}/lib/liblldb${stdenv.hostPlatform.extensions.sharedLibrary}";
+  LLDB_INCLUDE = "${lib.getDev lldb}/include";
+  buildAndTestSubdir = "adapter";
+
+  # There's isn't much point in enabling the `weaklink` feature
+  # when we provide lldb via Nix.
+  # buildFeatures = [ "weaklink" ];
+  cargoBuildFlags = [
+    "--bin=codelldb"
+  ];
 
   passthru = { inherit lldbServer; };
 }

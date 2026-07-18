@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Simple command line tool to merge ip/ip cidr/ip range, supports IPv4/IPv6";
-    mainProgram = "cidr-merger";
     homepage = "https://github.com/zhanhb/cidr-merger";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cyounkins ];
+    mainProgram = "cidr-merger";
   };
 })

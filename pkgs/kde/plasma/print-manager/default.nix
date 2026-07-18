@@ -1,7 +1,7 @@
 {
-  mkKdeDerivation,
-  kdeclarative,
   cups,
+  kdeclarative,
+  mkKdeDerivation,
 }:
 mkKdeDerivation {
   pname = "print-manager";

@@ -1,17 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeBinaryWrapper,
   bc,
-  libnotify,
   feh,
   grim,
   imagemagick,
+  libnotify,
+  makeBinaryWrapper,
   slurp,
+  stdenvNoCC,
   wl-clipboard,
   xcolor,
-
   waylandSupport ? true,
   x11Support ? true,
 }:
@@ -28,6 +27,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeBinaryWrapper ];
+
+  installPhase = ''
+    runHook preInstall
+    install -Dm755 farge $out/bin/farge
+    wrapProgram $out/bin/farge \
+      --prefix PATH : "${finalAttrs.wrapperPath}"
+    runHook postInstall
+  '';
 
   # Ensure the following programs are found within $PATH
   wrapperPath = lib.makeBinPath (
@@ -46,23 +53,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ++ lib.optional x11Support xcolor
   );
 
-  installPhase = ''
-    runHook preInstall
-    install -Dm755 farge $out/bin/farge
-    wrapProgram $out/bin/farge \
-      --prefix PATH : "${finalAttrs.wrapperPath}"
-    runHook postInstall
-  '';
-
   meta = {
     description = "View the color value of a specific pixel on your screen";
     homepage = "https://github.com/sdushantha/farge";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       jtbx
       justinlime
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "farge";
   };
 })

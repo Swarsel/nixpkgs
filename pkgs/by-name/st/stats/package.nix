@@ -1,15 +1,15 @@
 {
   lib,
-  swiftPackages,
   fetchFromGitHub,
+  actool,
   leveldb,
   # TODO: Clean up on `staging`.
   llvmPackages,
-  perl,
-  actool,
   makeWrapper,
-  rcodesign,
   nix-update-script,
+  perl,
+  rcodesign,
+  swiftPackages,
 }:
 
 let
@@ -60,9 +60,11 @@ let
       LSApplicationCategoryType = "public.app-category.utilities";
       LSMinimumSystemVersion = "12.0";
       LSUIElement = true;
+
       NSAppTransportSecurity = {
         NSAllowsArbitraryLoads = true;
       };
+
       NSBluetoothAlwaysUsageDescription = "This permission allows obtaining battery level of Bluetooth devices";
       NSHumanReadableCopyright = "Copyright © 2020 Serhiy Mytrovtsiy. All rights reserved.";
       NSPrincipalClass = "NSApplication";
@@ -74,30 +76,12 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "stats";
   version = "3.0.6";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "exelban";
     repo = "Stats";
     tag = "v${finalAttrs.version}";
     hash = "sha256-ztBV+nT3TjislSmItyUFSGvs2atKy5+ZrNHlijIFvTw=";
   };
-
-  nativeBuildInputs = [
-    swift
-    perl
-    actool
-    makeWrapper
-    rcodesign
-    # TODO: Clean up on `staging`.
-    llvmPackages.lld
-  ];
-
-  buildInputs = [ leveldb ];
-
-  # Stats uses IOReport private API symbols declared in bridging headers
-  env.NIX_LDFLAGS = "-lIOReport";
 
   # Swift 5.10 doesn't support trailing commas in argument lists (Swift 6 feature)
   # Remove them from all Swift source files
@@ -112,7 +96,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   '';
 
-  dontConfigure = true;
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    swift
+    perl
+    actool
+    makeWrapper
+    rcodesign
+    # TODO: Clean up on `staging`.
+    llvmPackages.lld
+  ];
+
+  buildInputs = [ leveldb ];
+  # Stats uses IOReport private API symbols declared in bridging headers
+  env.NIX_LDFLAGS = "-lIOReport";
 
   buildPhase = ''
     runHook preBuild
@@ -349,18 +347,22 @@ stdenv.mkDerivation (finalAttrs: {
     ${lib.getExe rcodesign} sign "$out/Applications/Stats.app"
   '';
 
+  __structuredAttrs = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/exelban/stats/releases/tag/v${finalAttrs.version}";
     description = "macOS system monitor in your menu bar";
     homepage = "https://github.com/exelban/stats";
+    changelog = "https://github.com/exelban/stats/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       _4evy
       emilytrau
       kinnrai
     ];
+
     platforms = lib.platforms.darwin;
   };
 })

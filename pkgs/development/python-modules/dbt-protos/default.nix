@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   protobuf,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dbt-protos";
   version = "1.0.455";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dbt-labs";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
   dependencies = [
     protobuf
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "dbtlabs.proto.public.v1"

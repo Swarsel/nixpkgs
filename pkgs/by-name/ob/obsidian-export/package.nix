@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-2rP1ks+47fI5Os7ltktPVUzvYss+KkjftrE4G0cl8XI=";
 
   meta = {
-    changelog = "https://github.com/zoni/obsidian-export/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Rust library and CLI to export an Obsidian vault to regular Markdown";
     homepage = "https://github.com/zoni/obsidian-export";
+    changelog = "https://github.com/zoni/obsidian-export/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.bsd2Patent;
-    mainProgram = "obsidian-export";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "obsidian-export";
   };
 })

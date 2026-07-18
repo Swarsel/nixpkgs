@@ -2,11 +2,11 @@
 # RPM spec file (i.e., one that can be built using `rpmbuild -ta').
 
 {
-  name ? "rpm-build",
+  lib,
   diskImage,
   src,
-  lib,
   vmTools,
+  name ? "rpm-build",
   ...
 }@args:
 
@@ -16,8 +16,6 @@ vmTools.buildRPM (
   //
 
     {
-      name = name + "-" + diskImage.name + (lib.optionalString (src ? version) "-${src.version}");
-
       preBuild = ''
         . ${./functions.sh}
         propagateImageName
@@ -50,6 +48,8 @@ vmTools.buildRPM (
           echo "file rpm-extra $(ls $rpmdir/rpms/*/*.rpm | grep -v 'src\.rpm' | sort | head -1)" >> $out/nix-support/hydra-build-products
         done
       '';
+
+      name = name + "-" + diskImage.name + (lib.optionalString (src ? version) "-${src.version}");
 
       meta = (lib.optionalAttrs (args ? meta) args.meta) // {
         description = "RPM package for ${diskImage.fullName}";

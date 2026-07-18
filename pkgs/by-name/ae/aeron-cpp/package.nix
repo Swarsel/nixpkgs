@@ -1,17 +1,17 @@
 {
-  autoPatchelfHook,
-  aeron,
-  cmake,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  aeron,
+  autoPatchelfHook,
+  cmake,
   fetchMavenArtifact,
   fixDarwinDylibNames,
   jdk11,
-  lib,
   libbsd,
   libuuid,
   makeWrapper,
   patchelf,
-  stdenv,
   zlib,
 }:
 
@@ -19,9 +19,9 @@ let
   version = aeron.version;
 
   sbeAll_1_31_1 = fetchMavenArtifact {
-    groupId = "uk.co.real-logic";
     version = "1.31.1";
     artifactId = "sbe-all";
+    groupId = "uk.co.real-logic";
     hash = "sha512-Ypsk8PbShFOxm49u1L+TTuApaW6ECTSee+hHEhmY/jNi5AymHXBWwDMBMkzC25aowiHLJS5EnzLk6hu9Lea93Q==";
   };
 
@@ -30,8 +30,8 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "aeron-cpp";
   inherit version;
+  pname = "aeron-cpp";
 
   src = fetchFromGitHub {
     owner = "aeron-io";
@@ -48,12 +48,6 @@ stdenv.mkDerivation {
     # Use SBE tool to generate C++ codecs, avoiding Gradle
   ];
 
-  buildInputs = [
-    libbsd
-    libuuid
-    zlib
-  ];
-
   nativeBuildInputs = [
     cmake
     jdk11
@@ -67,24 +61,11 @@ stdenv.mkDerivation {
     fixDarwinDylibNames
   ];
 
-  configurePhase = ''
-    runHook preConfigure
-
-    mkdir --parents cppbuild/Release
-    (
-      cd cppbuild/Release
-      cmake \
-        -G "CodeBlocks - Unix Makefiles" \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DAERON_TESTS=OFF \
-        -DAERON_SYSTEM_TESTS=OFF \
-        -DAERON_BUILD_SAMPLES=OFF \
-        -DCMAKE_INSTALL_PREFIX:PATH=../../install \
-        ../..
-    )
-
-    runHook postConfigure
-  '';
+  buildInputs = [
+    libbsd
+    libuuid
+    zlib
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -125,15 +106,36 @@ stdenv.mkDerivation {
     done
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    mkdir --parents cppbuild/Release
+    (
+      cd cppbuild/Release
+      cmake \
+        -G "CodeBlocks - Unix Makefiles" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DAERON_TESTS=OFF \
+        -DAERON_SYSTEM_TESTS=OFF \
+        -DAERON_BUILD_SAMPLES=OFF \
+        -DCMAKE_INSTALL_PREFIX:PATH=../../install \
+        ../..
+    )
+
+    runHook postConfigure
+  '';
+
   meta = {
     description = "Aeron Messaging C++ Library";
     homepage = "https://aeron.io/";
     license = lib.licenses.asl20;
-    mainProgram = "aeronmd";
-    maintainers = [ lib.maintainers.vaci ];
+
     sourceProvenance = [
       lib.sourceTypes.fromSource
       lib.sourceTypes.binaryBytecode
     ];
+
+    maintainers = [ lib.maintainers.vaci ];
+    mainProgram = "aeronmd";
   };
 }

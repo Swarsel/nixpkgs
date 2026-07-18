@@ -1,19 +1,17 @@
 { config, lib, ... }:
 {
-  meta = {
-    maintainers = [ ];
-  };
-
   options = {
     security.lockKernelModules = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Disable kernel module loading once the system is fully initialised.
         Module loading is disabled until the next reboot. Problems caused
         by delayed module loading can be fixed by adding the module(s) in
         question to {option}`boot.kernelModules`.
       '';
+
+      type = lib.types.bool;
     };
   };
 
@@ -33,29 +31,32 @@
     ) config.system.build.fileSystems;
 
     systemd.services.disable-kernel-module-loading = {
-      description = "Disable kernel module loading";
-
-      wants = [ "systemd-udevd.service" ];
-      wantedBy = [ config.systemd.defaultUnit ];
-
       after = [
         "firewall.service"
         "systemd-modules-load.service"
         config.systemd.defaultUnit
       ];
 
-      unitConfig.ConditionPathIsReadWrite = "/proc/sys/kernel";
-
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        TimeoutSec = 180;
-      };
+      description = "Disable kernel module loading";
 
       script = ''
         ${config.systemd.package}/bin/udevadm settle
         echo -n 1 >/proc/sys/kernel/modules_disabled
       '';
+
+      serviceConfig = {
+        RemainAfterExit = true;
+        TimeoutSec = 180;
+        Type = "oneshot";
+      };
+
+      unitConfig.ConditionPathIsReadWrite = "/proc/sys/kernel";
+      wantedBy = [ config.systemd.defaultUnit ];
+      wants = [ "systemd-udevd.service" ];
     };
+  };
+
+  meta = {
+    maintainers = [ ];
   };
 }

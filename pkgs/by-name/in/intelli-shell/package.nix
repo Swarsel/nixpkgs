@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   libgit2,
   openssl,
+  pkg-config,
+  rustPlatform,
   sqlite,
   zlib,
 }:
@@ -20,15 +20,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-jC5hvyefEEU8odiPaUWtWm8o2oHyS7ZOw4nJdvylb0U=";
   };
 
-  cargoHash = "sha256-g/sJJiwUl+N4ryFXhrbSIaOl0zzXKbehGyxTNamtua8=";
-
   nativeBuildInputs = [
     pkg-config
-  ];
-
-  buildNoDefaultFeatures = true;
-  buildFeatures = [
-    "extra-features"
   ];
 
   buildInputs = [
@@ -38,9 +31,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-g/sJJiwUl+N4ryFXhrbSIaOl0zzXKbehGyxTNamtua8=";
+
   env = {
     OPENSSL_NO_VENDOR = true;
   };
+
+  buildFeatures = [
+    "extra-features"
+  ];
+
+  buildNoDefaultFeatures = true;
 
   meta = {
     description = "Like IntelliSense, but for shells";

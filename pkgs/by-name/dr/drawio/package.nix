@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  copyDesktopItems,
+  darwin,
+  electron,
   fetchNpmDeps,
   makeDesktopItem,
-  copyDesktopItems,
-  npm-lockfile-fix,
   makeWrapper,
-  darwin,
   nodejs,
-  electron,
+  npm-lockfile-fix,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "jgraph";
     repo = "drawio-desktop";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-hn+Lrsn+aNZqVFcyLinuJjUiQgai0o4F5d5cT9CvtLA=";
+    fetchSubmodules = true;
   };
 
   # `@electron/fuses` tries to run `codesign` and fails. Disable and use autoSignDarwinBinariesHook instead
@@ -29,11 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace ./build/fuses.mjs \
       --replace-fail "resetAdHocDarwinSignature:" "// resetAdHocDarwinSignature:"
   '';
-
-  offlineCache = fetchNpmDeps {
-    src = finalAttrs.src;
-    hash = "sha256-PnYUy0Arxo5uTYyYfUEkbd4u7oIOHkEc0/ufp0umBhE=";
-  };
 
   nativeBuildInputs = [
     npm-lockfile-fix
@@ -48,18 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = true;
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME="$TMPDIR"
-    npm config set cache "$offlineCache"
-    npm-lockfile-fix package-lock.json
-    npm ci --offline --ignore-scripts --no-audit --no-fund
-    patchShebangs node_modules/
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -107,27 +90,46 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME="$TMPDIR"
+    npm config set cache "$offlineCache"
+    npm-lockfile-fix package-lock.json
+    npm ci --offline --ignore-scripts --no-audit --no-fund
+    patchShebangs node_modules/
+
+    runHook postConfigure
+  '';
+
   desktopItems = [
     (makeDesktopItem {
-      name = "drawio";
+      categories = [ "Graphics" ];
+      comment = "draw.io desktop";
+      desktopName = "drawio";
       exec = "drawio %U";
       icon = "drawio";
-      desktopName = "drawio";
-      comment = "draw.io desktop";
+
       mimeTypes = [
         "application/vnd.jgraph.mxfile"
         "application/vnd.visio"
       ];
-      categories = [ "Graphics" ];
+
+      name = "drawio";
       startupWMClass = "draw.io";
     })
   ];
 
+  offlineCache = fetchNpmDeps {
+    src = finalAttrs.src;
+    hash = "sha256-PnYUy0Arxo5uTYyYfUEkbd4u7oIOHkEc0/ufp0umBhE=";
+  };
+
   meta = {
     description = "Desktop version of draw.io for creating diagrams";
     homepage = "https://about.draw.io/";
-    license = lib.licenses.asl20;
     changelog = "https://github.com/jgraph/drawio-desktop/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ darkonion0 ];
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
     mainProgram = "drawio";

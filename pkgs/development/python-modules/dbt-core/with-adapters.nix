@@ -1,10 +1,10 @@
 {
-  python,
   dbt-bigquery,
   dbt-core,
   dbt-postgres,
   dbt-redshift,
   dbt-snowflake,
+  python,
 }:
 let
   adapters = {

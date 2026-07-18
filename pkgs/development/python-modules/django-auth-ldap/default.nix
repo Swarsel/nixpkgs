@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # buildtime
-  setuptools-scm,
-
+  buildPythonPackage,
   # runtime
   django,
-  python-ldap,
-
   # tests
   openldap,
+  python-ldap,
+  # buildtime
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "django-auth-ldap";
   version = "5.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-auth-ldap";
@@ -25,13 +21,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-+ezadod2ZKrsNW7lVO1dVqQWUnzP1Mi9On8/RJ2qNfI=";
   };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    django
-    python-ldap
-  ];
 
   # Duplicate attributeType: "MSADat2:102"\nslapadd: could not add entry dn="cn={4}msuser,cn=schema,cn=config" (line=1): \xd0\xbe\xff\xff\xff\x7f\n'
   doCheck = false;
@@ -48,12 +37,20 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    django
+    python-ldap
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "django_auth_ldap" ];
 
   meta = {
-    changelog = "https://github.com/django-auth-ldap/django-auth-ldap/releases/tag/${src.tag}";
     description = "Django authentication backend that authenticates against an LDAP service";
     homepage = "https://github.com/django-auth-ldap/django-auth-ldap";
+    changelog = "https://github.com/django-auth-ldap/django-auth-ldap/releases/tag/${src.tag}";
     license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;

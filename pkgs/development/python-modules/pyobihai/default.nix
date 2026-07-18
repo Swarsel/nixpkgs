@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
-  fetchFromGitHub,
   pytestCheckHook,
   requests,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyobihai";
   version = "1.4.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ejpenney";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyobihai" ];
 
   meta = {

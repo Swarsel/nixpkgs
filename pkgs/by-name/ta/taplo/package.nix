@@ -1,19 +1,17 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   installShellFiles,
-  versionCheckHook,
-
+  makeBinaryWrapper,
   # passthru dependencies
   nix-update-script,
+  openssl,
+  pkg-config,
   runCommand,
-  makeBinaryWrapper,
+  rustPlatform,
   toml-test,
-
+  versionCheckHook,
   # Optional feature
   withLsp ? true,
 }:
@@ -29,24 +27,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-FW8OQ5TRUuQK8M2NDmp4c6p22jsHodxKqzOMrcdiqXU=";
   };
 
-  cargoPatches = [
-    # Update reqwest to fix darwin sandboxing issues
-    # See also: https://github.com/tamasfe/taplo/pull/669
-    ./update-reqwest.patch
-  ];
-
-  cargoHash = "sha256-FMpGo+kRcNgDj4qwYvdQKGwGazUKKMIVq0HCYMrTql0=";
-
-  buildAndTestSubdir = "crates/taplo-cli";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
   ];
 
   buildInputs = [ openssl ];
-
-  buildFeatures = lib.optional withLsp "lsp";
+  cargoHash = "sha256-FMpGo+kRcNgDj4qwYvdQKGwGazUKKMIVq0HCYMrTql0=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd taplo \
@@ -55,12 +42,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/taplo completions zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildAndTestSubdir = "crates/taplo-cli";
+  buildFeatures = lib.optional withLsp "lsp";
+
+  cargoPatches = [
+    # Update reqwest to fix darwin sandboxing issues
+    # See also: https://github.com/tamasfe/taplo/pull/669
+    ./update-reqwest.patch
+  ];
 
   passthru = {
-    updateScript = nix-update-script { };
-
     tests = {
       toml-test =
         let
@@ -111,16 +104,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
             touch "$out"
           '';
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "TOML toolkit written in Rust";
     homepage = "https://taplo.tamasfe.dev";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       defelo
       yzx9
     ];
+
     mainProgram = "taplo";
   };
 })

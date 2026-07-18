@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchLFS = true;
   };
 
-  sourceRoot = "${finalAttrs.src.name}/backend";
-
   postPatch = ''
     substituteInPlace src/{main.rs,services/get.rs,services/utils.rs} \
       --replace-fail "./frontend/" "${placeholder "out"}/share/chhoto-url/frontend/"
@@ -33,6 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     mkdir -p $out/share/chhoto-url
     cp -r ${finalAttrs.src}/frontend $out/share/chhoto-url/frontend
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/backend";
 
   passthru = {
     tests = { inherit (nixosTests) chhoto-url; };

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gettext,
-  iconnamingutils,
-  librsvg,
+  gitUpdater,
   gtk3,
   hicolor-icon-theme,
-  gitUpdater,
+  iconnamingutils,
+  librsvg,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,20 +34,19 @@ stdenv.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
   postInstall = ''
     for theme in "$out"/share/icons/*; do
       "${gtk3.out}/bin/gtk-update-icon-cache" "$theme"
     done
   '';
 
+  dontDropIconThemeCache = true;
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-icon-theme";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-icon-theme";
   };
 
   meta = {

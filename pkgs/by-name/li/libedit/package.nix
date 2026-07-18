@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
   autoreconfHook,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,15 +51,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.thrysoee.dk/editline/";
-    changelog = "https://www.thrysoee.dk/editline/#changelog";
     description = "Port of the NetBSD Editline library (libedit)";
+
     longDescription = ''
       This is an autotool- and libtoolized port of the NetBSD Editline library
       (libedit). This Berkeley-style licensed command line editor library
       provides generic line editing, history, and tokenization functions,
       similar to those found in GNU Readline.
     '';
+
+    homepage = "http://www.thrysoee.dk/editline/";
+    changelog = "https://www.thrysoee.dk/editline/#changelog";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ corngood ];
     platforms = lib.platforms.all;

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libtiff,
   fpc,
+  libtiff,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,10 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Command line tool for deskewing scanned text documents";
     homepage = "https://galfar.vevb.net/deskew";
+
     license = with lib.licenses; [
       mit
       mpl11
     ];
+
     maintainers = with lib.maintainers; [ ryantm ];
     platforms = lib.platforms.all;
     mainProgram = "deskew";

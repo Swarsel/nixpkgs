@@ -3,13 +3,13 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  cmake,
   boost179,
+  cmake,
   gmp,
   htslib,
-  zlib,
-  xz,
   pkg-config,
+  xz,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,22 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-FAogksVxUlzMlC0BqRu22Vchj6VX+8yNlHRLyb3g1sE=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  buildInputs = [
-    boost179
-    gmp
-    htslib
-    zlib
-    xz
-  ];
-
   patches = [
     (fetchurl {
-      url = "https://github.com/luntergroup/octopus/commit/17a597d192bcd5192689bf38c5836a98b824867a.patch";
       sha256 = "sha256-VaUr63v7mzhh4VBghH7a7qrqOYwl6vucmmKzTi9yAjY=";
+      url = "https://github.com/luntergroup/octopus/commit/17a597d192bcd5192689bf38c5836a98b824867a.patch";
     })
   ];
 
@@ -54,6 +42,19 @@ stdenv.mkDerivation (finalAttrs: {
     sed -e '1i #include <cstdint>' -i src/core/tools/vargen/utils/assembler.hpp
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [
+    boost179
+    gmp
+    htslib
+    zlib
+    xz
+  ];
+
   postInstall = ''
     mkdir $out/bin
     mv $out/octopus $out/bin
@@ -61,10 +62,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Bayesian haplotype-based mutation calling";
-    mainProgram = "octopus";
-    license = lib.licenses.mit;
     homepage = "https://github.com/luntergroup/octopus";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jbedo ];
     platforms = lib.platforms.x86_64;
+    mainProgram = "octopus";
   };
 })

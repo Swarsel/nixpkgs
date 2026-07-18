@@ -8,8 +8,8 @@
   openssl,
   pkg-config,
   protobuf,
-  typing-extensions,
   setuptools,
+  typing-extensions,
   zlib,
 }:
 
@@ -19,24 +19,21 @@
 buildPythonPackage rec {
   pname = "grpcio";
   version = "1.81.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-pazX79Ox/ptOsLyqoVB+7WigrQZ4tlTD97Rk35up3KU=";
   };
 
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail cython==3.1.1 cython
-  '';
-
   outputs = [
     "out"
     "dev"
   ];
 
-  build-system = [ setuptools ];
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail cython==3.1.1 cython
+  '';
 
   nativeBuildInputs = [
     cython
@@ -49,10 +46,12 @@ buildPythonPackage rec {
     zlib
   ];
 
-  dependencies = [
-    protobuf
-    typing-extensions
-  ];
+  env = {
+    GRPC_BUILD_WITH_BORING_SSL_ASM = "";
+    GRPC_PYTHON_BUILD_SYSTEM_CARES = 1;
+    GRPC_PYTHON_BUILD_SYSTEM_OPENSSL = 1;
+    GRPC_PYTHON_BUILD_SYSTEM_ZLIB = 1;
+  };
 
   preBuild = ''
     export GRPC_PYTHON_BUILD_EXT_COMPILER_JOBS="$NIX_BUILD_CORES"
@@ -64,18 +63,17 @@ buildPythonPackage rec {
     unset AR
   '';
 
-  env = {
-    GRPC_BUILD_WITH_BORING_SSL_ASM = "";
-    GRPC_PYTHON_BUILD_SYSTEM_OPENSSL = 1;
-    GRPC_PYTHON_BUILD_SYSTEM_ZLIB = 1;
-    GRPC_PYTHON_BUILD_SYSTEM_CARES = 1;
-  };
-
   # does not contain any tests
   doCheck = false;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    protobuf
+    typing-extensions
+  ];
 
   enableParallelBuilding = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "grpc" ];
 
   meta = {

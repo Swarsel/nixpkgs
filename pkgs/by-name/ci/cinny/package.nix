@@ -12,11 +12,8 @@ if (conf == { }) then
   cinny-unwrapped
 else
   stdenvNoCC.mkDerivation {
-    pname = "cinny";
     inherit (cinny-unwrapped) version meta;
-
-    dontUnpack = true;
-
+    pname = "cinny";
     nativeBuildInputs = [ jq ];
 
     installPhase = ''
@@ -29,4 +26,6 @@ else
 
       runHook postInstall
     '';
+
+    dontUnpack = true;
   }

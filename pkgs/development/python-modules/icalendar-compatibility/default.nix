@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
+  git,
   hatch-vcs,
+  hatchling,
   icalendar,
   pytestCheckHook,
-  git,
 }:
 
 buildPythonPackage rec {
   pname = "icalendar-compatibility";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "niccokunzmann";
@@ -27,6 +26,11 @@ buildPythonPackage rec {
       --replace 'dynamic = ["urls", "version"]' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    git
+  ];
+
   build-system = [
     hatchling
     hatch-vcs
@@ -34,16 +38,12 @@ buildPythonPackage rec {
 
   dependencies = [ icalendar ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    git
-  ];
-
   disabledTests = [
     # https://github.com/niccokunzmann/icalendar_compatibility/issues/5
     "test_geo_location_is_also_escaped"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "icalendar_compatibility" ];
 
   meta = {

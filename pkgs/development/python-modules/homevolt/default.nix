@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "homevolt";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Danielhiversen";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Z+3JwACbdFVivWbhlxO73m1rjyGS+Vc/Y3QICqEY9O0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # upstream has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "homevolt" ];
 
   meta = {

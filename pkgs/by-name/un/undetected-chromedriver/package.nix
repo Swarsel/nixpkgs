@@ -9,9 +9,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "undetected-chromedriver";
   inherit (chromedriver) version;
-
+  pname = "undetected-chromedriver";
   nativeBuildInputs = [ (python3.withPackages (ps: [ ps.undetected-chromedriver ])) ];
 
   buildCommand = ''
@@ -38,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = chromedriver.meta // {
     description = "Custom Selenium ChromeDriver that passes all bot mitigation systems";
     homepage = "https://github.com/ultrafunkamsterdam/undetected-chromedriver";
-    mainProgram = "undetected-chromedriver";
     maintainers = [ ];
+    mainProgram = "undetected-chromedriver";
   };
 })

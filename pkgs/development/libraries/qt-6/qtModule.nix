@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  darwinVersionInputs,
   cmake,
+  darwinVersionInputs,
+  moveBuildTree,
   ninja,
   perl,
-  moveBuildTree,
   srcs,
   patches ? [ ],
 }:
@@ -21,10 +21,15 @@ stdenv.mkDerivation (
   args
   // {
     inherit pname version src;
+
+    outputs =
+      args.outputs or [
+        "out"
+        "dev"
+      ];
+
     patches = args.patches or patches.${pname} or [ ];
 
-    buildInputs =
-      args.buildInputs or [ ] ++ lib.optionals stdenv.hostPlatform.isDarwin darwinVersionInputs;
     nativeBuildInputs =
       (args.nativeBuildInputs or [ ])
       ++ [
@@ -33,6 +38,10 @@ stdenv.mkDerivation (
         perl
       ]
       ++ lib.optionals stdenv.hostPlatform.isDarwin [ moveBuildTree ];
+
+    buildInputs =
+      args.buildInputs or [ ] ++ lib.optionals stdenv.hostPlatform.isDarwin darwinVersionInputs;
+
     propagatedBuildInputs =
       (lib.warnIf (args ? qtInputs) "qt6.qtModule's qtInputs argument is deprecated" args.qtInputs or [ ])
       ++ (args.propagatedBuildInputs or [ ]);
@@ -53,16 +62,9 @@ stdenv.mkDerivation (
     ]
     ++ args.cmakeFlags or [ ];
 
-    moveToDev = false;
-
-    outputs =
-      args.outputs or [
-        "out"
-        "dev"
-      ];
-    separateDebugInfo = args.separateDebugInfo or true;
-
     dontWrapQtApps = args.dontWrapQtApps or true;
+    moveToDev = false;
+    separateDebugInfo = args.separateDebugInfo or true;
   }
 )
 // {
@@ -72,17 +74,20 @@ stdenv.mkDerivation (
       pos = builtins.unsafeGetAttrPos "pname" args;
     in
     {
-      homepage = "https://www.qt.io/";
       description = "Cross-platform application framework for C++";
+      homepage = "https://www.qt.io/";
+
       license = with lib.licenses; [
         fdl13Plus
         gpl2Plus
         lgpl21Plus
         lgpl3Plus
       ];
+
       maintainers = with lib.maintainers; [
         nickcao
       ];
+
       platforms = lib.platforms.unix;
       position = "${pos.file}:${toString pos.line}";
     }

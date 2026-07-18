@@ -2,18 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   # build
   cmake,
-  pkg-config,
-
   # runtime
   expat,
-  ipu6-camera-bins,
-  libtool,
   gst_all_1,
+  ipu6-camera-bins,
   libdrm,
-
+  libtool,
+  pkg-config,
   # Pick one of
   # - ipu6 (Tiger Lake)
   # - ipu6ep (Alder Lake)
@@ -40,9 +37,24 @@ stdenv.mkDerivation {
     hash = "sha256-ZWwszteRmUBn0wGgN5rmzw/onfzBoPGadcmpk+93kAM=";
   };
 
+  postPatch = ''
+    substituteInPlace src/platformdata/PlatformData.h \
+      --replace '/usr/share/' "${placeholder "out"}/share/" \
+      --replace '#define CAMERA_DEFAULT_CFG_PATH "/etc/camera/"' '#define CAMERA_DEFAULT_CFG_PATH "${placeholder "out"}/etc/camera/"'
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
+  ];
+
+  buildInputs = [
+    expat
+    ipu6-camera-bins
+    libtool
+    gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
+    libdrm
   ];
 
   cmakeFlags = [
@@ -60,23 +72,6 @@ stdenv.mkDerivation {
     "-Wno-error"
   ];
 
-  enableParallelBuilding = true;
-
-  buildInputs = [
-    expat
-    ipu6-camera-bins
-    libtool
-    gst_all_1.gstreamer
-    gst_all_1.gst-plugins-base
-    libdrm
-  ];
-
-  postPatch = ''
-    substituteInPlace src/platformdata/PlatformData.h \
-      --replace '/usr/share/' "${placeholder "out"}/share/" \
-      --replace '#define CAMERA_DEFAULT_CFG_PATH "/etc/camera/"' '#define CAMERA_DEFAULT_CFG_PATH "${placeholder "out"}/etc/camera/"'
-  '';
-
   postInstall = ''
     mkdir -p $out/include/${ipuTarget}/
     cp -r $src/include $out/include/${ipuTarget}/libcamhal
@@ -87,6 +82,8 @@ stdenv.mkDerivation {
       patchelf --add-rpath "${ipu6-camera-bins}/lib" $lib
     done
   '';
+
+  enableParallelBuilding = true;
 
   passthru = {
     inherit ipuVersion ipuTarget;

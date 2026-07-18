@@ -1,11 +1,11 @@
 {
-  apple-sdk,
-  fetchFromGitHub,
-  ibtool,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  apple-sdk,
+  ibtool,
   llvmPackages,
   makeBinaryWrapper,
-  stdenv,
   xcbuildHook,
 }:
 
@@ -32,13 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     apple-sdk
   ];
 
-  xcbuildFlags = [
-    "-target"
-    "terminal-notifier"
-    "-configuration"
-    "Release"
-  ];
-
   # TODO: Clean up on `staging`
   env.NIX_CFLAGS_LINK = "-fuse-ld=lld";
 
@@ -54,6 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  xcbuildFlags = [
+    "-target"
+    "terminal-notifier"
+    "-configuration"
+    "Release"
+  ];
 
   meta = {
     description = "Send macOS User Notifications from the command-line";

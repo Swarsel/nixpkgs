@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
-  unzip,
-  mkLicenses,
-  os,
+  stdenv,
   arch,
   meta,
+  mkLicenses,
+  os,
+  unzip,
 }:
 {
   packages,
-  nativeBuildInputs ? [ ],
   buildInputs ? [ ],
+  nativeBuildInputs ? [ ],
   patchesInstructions ? { },
   ...
 }@args:
@@ -89,32 +89,12 @@ in
 stdenv.mkDerivation (
   {
     inherit buildInputs;
+    inherit os arch;
+    inherit meta;
     pname = "android-sdk-${lib.concatMapStringsSep "-" (package: package.name) sortedPackages}";
     version = lib.concatMapStringsSep "-" (package: package.revision) sortedPackages;
     src = lib.flatten (map (package: package.archives) packages);
-    inherit os arch;
     nativeBuildInputs = [ unzip ] ++ nativeBuildInputs;
-    preferLocalBuild = true;
-
-    unpackPhase = ''
-      runHook preUnpack
-      if [ -z "$src" ]; then
-        echo "$pname did not have any sources available for os=$os, arch=$arch." >&2
-        echo "Are packages available for this architecture?" >&2
-        exit 1
-      fi
-      buildDir=$PWD
-      i=0
-      for srcArchive in $src; do
-        extractedZip="extractedzip-$i"
-        i=$((i+1))
-        cd "$buildDir"
-        mkdir "$extractedZip"
-        cd "$extractedZip"
-        unpackFile "$srcArchive"
-      done
-      runHook postUnpack
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -148,12 +128,31 @@ stdenv.mkDerivation (
       runHook postInstall
     '';
 
+    dontAutoPatchelf = true;
+    dontPatchELF = true;
     # Some executables that have been patched with patchelf may not work any longer after they have been stripped.
     dontStrip = true;
-    dontPatchELF = true;
-    dontAutoPatchelf = true;
+    preferLocalBuild = true;
 
-    inherit meta;
+    unpackPhase = ''
+      runHook preUnpack
+      if [ -z "$src" ]; then
+        echo "$pname did not have any sources available for os=$os, arch=$arch." >&2
+        echo "Are packages available for this architecture?" >&2
+        exit 1
+      fi
+      buildDir=$PWD
+      i=0
+      for srcArchive in $src; do
+        extractedZip="extractedzip-$i"
+        i=$((i+1))
+        cd "$buildDir"
+        mkdir "$extractedZip"
+        cd "$extractedZip"
+        unpackFile "$srcArchive"
+      done
+      runHook postUnpack
+    '';
   }
   // extraParams
 )

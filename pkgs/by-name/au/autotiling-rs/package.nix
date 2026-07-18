@@ -21,8 +21,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Autotiling for sway (and possibly i3)";
     homepage = "https://github.com/ammgws/autotiling-rs";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "autotiling-rs";
   };
 })

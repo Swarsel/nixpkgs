@@ -27,7 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Interactive memory/page monitor for Linux";
-    mainProgram = "pagemon";
+
     longDescription = ''
       pagemon is an ncurses based interactive memory/page monitoring tool
       allowing one to browse the memory map of an active running process
@@ -38,7 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
       pages of memory belonging data, code, heap, stack, anonymous mappings
       or even swapped-out pages.
     '';
+
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "pagemon";
   };
 })

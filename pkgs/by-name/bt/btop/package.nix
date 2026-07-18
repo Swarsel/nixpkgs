@@ -1,15 +1,15 @@
 {
   lib,
-  config,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  removeReferencesTo,
-  autoAddDriverRunpath,
   apple-sdk_15,
-  versionCheckHook,
+  autoAddDriverRunpath,
+  cmake,
+  config,
   nix-update-script,
+  removeReferencesTo,
   rocmPackages,
+  versionCheckHook,
   cudaSupport ? config.cudaSupport,
   rocmSupport ? config.rocmSupport,
 }:
@@ -36,8 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     apple-sdk_15
   ];
 
-  installFlags = [ "PREFIX=$(out)" ];
-
   # fix build on darwin (see https://github.com/NixOS/nixpkgs/pull/422218#issuecomment-3039181870 and https://github.com/aristocratos/btop/pull/1173)
   cmakeFlags = [
     (lib.cmakeBool "BTOP_LTO" (!stdenv.hostPlatform.isDarwin))
@@ -45,20 +43,20 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BTOP_FORTIFY" (!stdenv.hostPlatform.isStatic))
   ];
 
-  hardeningDisable = lib.optionals stdenv.hostPlatform.isStatic [ "fortify" ];
-
   postInstall = ''
     ${removeReferencesTo}/bin/remove-references-to -t ${stdenv.cc.cc} $(readlink -f $out/bin/btop)
   '';
 
-  postPhases = lib.optionals rocmSupport [ "postPatchelf" ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  hardeningDisable = lib.optionals stdenv.hostPlatform.isStatic [ "fortify" ];
+  installFlags = [ "PREFIX=$(out)" ];
+
   postPatchelf = lib.optionalString rocmSupport ''
     patchelf --add-rpath ${lib.getLib rocmPackages.rocm-smi}/lib $out/bin/btop
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
+  postPhases = lib.optionals rocmSupport [ "postPatchelf" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -66,13 +64,15 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/aristocratos/btop";
     changelog = "https://github.com/aristocratos/btop/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       khaneliman
       rmcgibbo
       ryan4yin
       sigmasquadron
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "btop";
   };
 })

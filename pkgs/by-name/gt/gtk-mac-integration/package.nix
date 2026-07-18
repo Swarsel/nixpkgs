@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
   glib,
-  gtk-doc,
-  gtk ? gtk3,
-  gtk3,
   gobject-introspection,
+  gtk-doc,
+  gtk3,
   # TODO: Clean up on `staging`
   llvmPackages,
+  pkg-config,
+  gtk ? gtk3,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,11 +18,11 @@ stdenv.mkDerivation rec {
   version = "3.0.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "gtk-mac-integration";
     rev = "gtk-mac-integration-${version}";
     sha256 = "0sc0m3p8r5xfh5i4d7dg72kfixx9yi4f800y43bszyr88y52jkga";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -33,12 +33,9 @@ stdenv.mkDerivation rec {
     # TODO: Clean up on `staging`
     llvmPackages.lld
   ];
+
   buildInputs = [ glib ];
   propagatedBuildInputs = [ gtk ];
-
-  preAutoreconf = ''
-    gtkdocize
-  '';
 
   # Fix for ld64 hardening issue
   #
@@ -47,10 +44,14 @@ stdenv.mkDerivation rec {
     NIX_CFLAGS_LINK = "-fuse-ld=lld";
   };
 
+  preAutoreconf = ''
+    gtkdocize
+  '';
+
   meta = {
     description = "Provides integration for GTK applications into the Mac desktop";
-    license = lib.licenses.lgpl21;
     homepage = "https://gitlab.gnome.org/GNOME/gtk-mac-integration";
+    license = lib.licenses.lgpl21;
     maintainers = [ ];
     platforms = lib.platforms.darwin;
   };

@@ -1,13 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   jinja2,
+  # build-system
+  poetry-core,
   pytest,
   rich,
   syrupy,
@@ -17,7 +15,6 @@
 buildPythonPackage rec {
   pname = "pytest-textual-snapshot";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Textualize";
@@ -38,6 +35,14 @@ buildPythonPackage rec {
         "Path('$out/share/pytest-textual-snapshot/')"
   '';
 
+  # Module has no tests
+  doCheck = false;
+
+  postInstall = ''
+    mkdir -p $out/share/pytest-textual-snapshot/
+    cp -r resources $out/share/pytest-textual-snapshot/
+  '';
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -48,19 +53,12 @@ buildPythonPackage rec {
     textual
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_textual_snapshot" ];
+
   pythonRelaxDeps = [
     "syrupy"
   ];
-
-  # Module has no tests
-  doCheck = false;
-
-  pythonImportsCheck = [ "pytest_textual_snapshot" ];
-
-  postInstall = ''
-    mkdir -p $out/share/pytest-textual-snapshot/
-    cp -r resources $out/share/pytest-textual-snapshot/
-  '';
 
   meta = {
     description = "Snapshot testing for Textual applications";

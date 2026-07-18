@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  libtool,
-  cmake,
-  libxml2,
-  cppunit,
-  boost,
   apr,
   aprutil,
+  boost,
+  cmake,
+  cppunit,
   db,
   expat,
+  libtool,
+  libxml2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace CMakeLists.txt --replace "\\\''${prefix}/" ""
   '';
 
+  nativeBuildInputs = [
+    libtool
+    cmake
+  ];
+
   buildInputs = [
     libxml2
     cppunit
@@ -35,14 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
     db
     expat
   ];
-  nativeBuildInputs = [
-    libtool
-    cmake
-  ];
 
   meta = {
-    homepage = "https://logging.apache.org/log4cxx/index.html";
     description = "Logging framework for C++ patterned after Apache log4j";
+    homepage = "https://logging.apache.org/log4cxx/index.html";
     license = lib.licenses.asl20;
     platforms = lib.platforms.unix;
   };

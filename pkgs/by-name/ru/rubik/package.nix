@@ -1,17 +1,12 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "rubik";
   version = "2.200";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -21,13 +16,17 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-AkWMLbDIect48KLEYIIx/WNQ57P1Ivp5VrJP8mdj1oE=";
   };
 
-  nativeBuildInputs = [ installFonts ];
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
+  nativeBuildInputs = [ installFonts ];
   preInstall = "rm -r old/";
 
   meta = {
-    homepage = "https://fonts.google.com/specimen/Rubik";
     description = "Rubik Font - is a 5 weight Roman + Italic family";
+
     longDescription = ''
       The Rubik Fonts project was initiated as part of the Chrome CubeLab
       project.
@@ -45,7 +44,9 @@ stdenvNoCC.mkDerivation {
       expanded by Cyreal Fonts Team (Alexei Vanyashin and Nikita Kanarev). Existing
       glyphs were improved, and glyph set was expanded to GF Cyrillic Plus.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://fonts.google.com/specimen/Rubik";
     license = lib.licenses.ofl;
+    platforms = lib.platforms.all;
   };
 }

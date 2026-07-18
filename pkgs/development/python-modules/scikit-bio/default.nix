@@ -1,35 +1,31 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  numpy,
-  setuptools,
-
   # dependencies
   array-api-compat,
   biom-format,
+  buildPythonPackage,
+  # build-system
+  cython,
   decorator,
   h5py,
   natsort,
+  numpy,
   pandas,
   patsy,
-  requests,
-  scipy,
-  statsmodels,
-
   # tests
   pytestCheckHook,
   python,
+  requests,
+  scipy,
+  setuptools,
+  statsmodels,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "scikit-bio";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scikit-bio";
@@ -37,6 +33,14 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-zBOUZukqLhTxKG9BluWB+2zTCx5ALhM1s+YP2itqg9A=";
   };
+
+  # The trick above makes test collection fail on darwin:
+  # PermissionError: [Errno 1] Operation not permitted: '/nix/.Trashes'
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     cython
@@ -58,25 +62,17 @@ buildPythonPackage (finalAttrs: {
     statsmodels
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   # only the $out dir contains the built cython extensions, so we run the tests inside there
   enabledTestPaths = [ "${placeholder "out"}/${python.sitePackages}/skbio" ];
-
-  # The trick above makes test collection fail on darwin:
-  # PermissionError: [Errno 1] Operation not permitted: '/nix/.Trashes'
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
+  pyproject = true;
   pythonImportsCheck = [ "skbio" ];
 
   meta = {
     description = "Data structures, algorithms and educational resources for bioinformatics";
     homepage = "http://scikit-bio.org/";
-    downloadPage = "https://github.com/scikit-bio/scikit-bio";
     changelog = "https://github.com/scikit-bio/scikit-bio/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ tomasajt ];
+    downloadPage = "https://github.com/scikit-bio/scikit-bio";
   };
 })

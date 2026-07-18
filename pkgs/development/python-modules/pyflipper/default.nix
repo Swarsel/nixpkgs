@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyserial,
   setuptools,
   websocket-client,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyflipper";
   version = "0.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wh00hw";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-IMd9RzGblfsyDH4TC+ip5a2zx4gzXbzjIaWMldEy5xk=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     websocket-client
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyflipper" ];
 
   meta = {

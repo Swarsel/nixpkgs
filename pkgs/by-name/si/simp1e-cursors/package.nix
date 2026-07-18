@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
-  python3,
   librsvg,
+  python3,
+  stdenvNoCC,
   xcursorgen,
 }:
 
@@ -44,7 +44,7 @@ stdenvNoCC.mkDerivation rec {
     homepage = "https://gitlab.com/cursors/simp1e";
     changelog = "https://gitlab.com/cursors/simp1e/-/tags/${version}";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.natto1784 ];
+    platforms = lib.platforms.linux;
   };
 }

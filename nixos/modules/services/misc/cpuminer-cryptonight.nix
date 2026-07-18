@@ -23,29 +23,35 @@ in
 
     services.cpuminer-cryptonight = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable the cpuminer cryptonight miner.
         '';
+
+        type = lib.types.bool;
       };
-      url = lib.mkOption {
-        type = lib.types.str;
-        description = "URL of mining server";
-      };
-      user = lib.mkOption {
-        type = lib.types.str;
-        description = "Username for mining server";
-      };
+
       pass = lib.mkOption {
-        type = lib.types.str;
         default = "x";
         description = "Password for mining server";
+        type = lib.types.str;
       };
+
       threads = lib.mkOption {
-        type = lib.types.ints.unsigned;
         default = 0;
         description = "Number of miner threads, defaults to available processors";
+        type = lib.types.ints.unsigned;
+      };
+
+      url = lib.mkOption {
+        description = "URL of mining server";
+        type = lib.types.str;
+      };
+
+      user = lib.mkOption {
+        description = "Username for mining server";
+        type = lib.types.str;
       };
     };
 
@@ -54,13 +60,15 @@ in
   config = lib.mkIf config.services.cpuminer-cryptonight.enable {
 
     systemd.services.cpuminer-cryptonight = {
-      description = "Cryptonight cpuminer";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Cryptonight cpuminer";
+
       serviceConfig = {
         ExecStart = "${pkgs.cpuminer-multi}/bin/minerd --syslog --config=${confFile}";
         User = "nobody";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

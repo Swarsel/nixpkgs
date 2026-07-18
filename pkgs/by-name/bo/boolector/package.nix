@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  python3,
-  cmake,
-  lingeling,
   btor2tools,
-  gtest,
+  cmake,
   gmp,
+  gtest,
+  lingeling,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     gtest
   ];
+
   buildInputs = [
     lingeling
     btor2tools
@@ -43,8 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ (lib.optional (gmp != null) "-DUSE_GMP=YES");
 
-  nativeCheckInputs = [ python3 ];
   doCheck = true;
+  nativeCheckInputs = [ python3 ];
+
   preCheck =
     let
       var = if stdenv.hostPlatform.isDarwin then "DYLD_LIBRARY_PATH" else "LD_LIBRARY_PATH";
@@ -75,7 +77,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Extremely fast SMT solver for bit-vectors and arrays";
     homepage = "https://boolector.github.io";
     license = lib.licenses.mit;
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = with lib.platforms; linux ++ darwin;
   };
 })

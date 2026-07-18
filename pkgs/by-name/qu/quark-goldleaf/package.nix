@@ -1,14 +1,14 @@
 {
   lib,
-  jdk,
-  maven,
   fetchFromGitHub,
-  makeDesktopItem,
   copyDesktopItems,
-  imagemagick,
-  wrapGAppsHook3,
   gtk3,
+  imagemagick,
+  jdk,
+  makeDesktopItem,
+  maven,
   udevCheckHook,
+  wrapGAppsHook3,
 }:
 
 let
@@ -25,18 +25,10 @@ maven.buildMavenPackage rec {
     hash = "sha256-ldGNtNmn7ln53JvxRkP1AMPslKH0JtSPhBkyqytSx20=";
   };
 
-  sourceRoot = "${src.name}/Quark";
-
   patches = [
     ./fix-maven-plugin-versions.patch
     ./remove-pom-jfx.patch
   ];
-
-  mvnJdk = jdk';
-  mvnHash = "sha256-gA3HsQZFa2POP9cyJLb1l8t3hrJYzDowhJU+5Xl79p4=";
-
-  # set fixed build timestamp for deterministic jar
-  mvnParameters = "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z";
 
   nativeBuildInputs = [
     imagemagick # for icon conversion
@@ -46,11 +38,6 @@ maven.buildMavenPackage rec {
   ];
 
   buildInputs = [ gtk3 ];
-
-  # don't double-wrap
-  dontWrapGApps = true;
-
-  doInstallCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -66,6 +53,8 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   postFixup = ''
     # This is in postFixup because gappsWrapperArgs are generated during preFixup
     makeWrapper ${jdk'}/bin/java $out/bin/quark-goldleaf \
@@ -75,28 +64,38 @@ maven.buildMavenPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "quark-goldleaf";
-      exec = "quark-goldleaf";
-      icon = "quark-goldleaf";
-      desktopName = "Quark";
-      comment = meta.description;
-      terminal = false;
       categories = [
         "Utility"
         "FileTransfer"
       ];
+
+      comment = meta.description;
+      desktopName = "Quark";
+      exec = "quark-goldleaf";
+      icon = "quark-goldleaf";
+
       keywords = [
         "nintendo"
         "switch"
         "goldleaf"
       ];
+
+      name = "quark-goldleaf";
+      terminal = false;
     })
   ];
 
+  # don't double-wrap
+  dontWrapGApps = true;
+  mvnHash = "sha256-gA3HsQZFa2POP9cyJLb1l8t3hrJYzDowhJU+5Xl79p4=";
+  mvnJdk = jdk';
+  # set fixed build timestamp for deterministic jar
+  mvnParameters = "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z";
+  sourceRoot = "${src.name}/Quark";
+
   meta = {
-    changelog = "https://github.com/XorTroll/Goldleaf/releases/tag/${src.rev}";
     description = "GUI tool for transfering files between a computer and a Nintendo Switch running Goldleaf";
-    homepage = "https://github.com/XorTroll/Goldleaf#quark-and-remote-browsing";
+
     longDescription = ''
       ${meta.description}
 
@@ -110,9 +109,12 @@ maven.buildMavenPackage rec {
 
       `services.udev.packages = [ pkgs.quark-goldleaf ];`
     '';
+
+    homepage = "https://github.com/XorTroll/Goldleaf#quark-and-remote-browsing";
+    changelog = "https://github.com/XorTroll/Goldleaf/releases/tag/${src.rev}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "quark-goldleaf";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "quark-goldleaf";
   };
 }

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   markdown,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mdx-wikilink-plus";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "neurobin";
@@ -17,6 +16,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-d0F0blSYYRNbkwnbL9kzkNbfNVG2NZV74WapP5ubkoo=";
   };
+
+  # No tests available.
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -26,12 +28,11 @@ buildPythonPackage (finalAttrs: {
     markdown
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "mdx_wikilink_plus"
   ];
-
-  # No tests available.
-  doCheck = false;
 
   meta = {
     description = "A wikilink extension for Python Markdown";

@@ -1,10 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   ansible-core,
   boto3,
+  buildPythonPackage,
   commentjson,
   configobj,
   django,
@@ -18,6 +17,7 @@
   pytestCheckHook,
   python-dotenv,
   radon,
+  setuptools,
   toml,
   tox,
   versionCheckHook,
@@ -26,7 +26,6 @@
 buildPythonPackage rec {
   pname = "dynaconf";
   version = "3.2.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dynaconf";
@@ -35,9 +34,9 @@ buildPythonPackage rec {
     hash = "sha256-3qUGLEQ0x/WTF/M/SEts6v9w1yGYSB6LYEcxKQcbqSk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ ansible-core ];
+  # django.core.exceptions.ImproperlyConfigured: Requested setting LOGGING_CONFIG
+  # but settings are not configured
+  env.DJANGO_SETTINGS_MODULE = "project.settings";
 
   nativeCheckInputs = [
     boto3
@@ -59,10 +58,8 @@ buildPythonPackage rec {
     versionCheckHook
   ];
 
-  disabledTests = [
-    # AssertionError: assert 42.1 == 'From development env'
-    "test_envless_load_file"
-  ];
+  build-system = [ setuptools ];
+  dependencies = [ ansible-core ];
 
   disabledTestPaths = [
     # import file mismatch
@@ -88,18 +85,20 @@ buildPythonPackage rec {
     "tests/test_vault.py"
   ];
 
-  # django.core.exceptions.ImproperlyConfigured: Requested setting LOGGING_CONFIG
-  # but settings are not configured
-  env.DJANGO_SETTINGS_MODULE = "project.settings";
+  disabledTests = [
+    # AssertionError: assert 42.1 == 'From development env'
+    "test_envless_load_file"
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dynaconf" ];
 
   meta = {
     description = "Dynamic configurator for Python Project";
     homepage = "https://github.com/dynaconf/dynaconf";
     changelog = "https://github.com/dynaconf/dynaconf/blob/${src.tag}/CHANGELOG.md";
-    mainProgram = "dynaconf";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "dynaconf";
   };
 }

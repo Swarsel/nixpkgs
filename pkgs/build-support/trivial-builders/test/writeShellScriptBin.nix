@@ -7,8 +7,8 @@
 
 {
   lib,
-  writeShellScriptBin,
   runCommand,
+  writeShellScriptBin,
 }:
 let
   output = "hello";

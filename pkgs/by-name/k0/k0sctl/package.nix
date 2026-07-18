@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
   k0sctl,
+  testers,
 }:
 
 buildGoModule rec {
@@ -18,7 +18,15 @@ buildGoModule rec {
     hash = "sha256-AbSHyc+Orclm2Cun9QTBqC5AxN1+QOveNzBqzX62vBA=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-zc/6fC6VQJp7g2URWivaGW0APVHMa+uyHlBPM4b0bf8=";
+
+  postInstall = ''
+    for shell in bash zsh fish; do
+      installShellCompletion --cmd ${pname} \
+        --$shell <($out/bin/${pname} completion --shell $shell)
+    done
+  '';
 
   ldflags = [
     "-s"
@@ -28,20 +36,11 @@ buildGoModule rec {
     "-X=github.com/carlmjohnson/versioninfo.Revision=v${version}"
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = ''
-    for shell in bash zsh fish; do
-      installShellCompletion --cmd ${pname} \
-        --$shell <($out/bin/${pname} completion --shell $shell)
-    done
-  '';
-
   passthru.tests.version = testers.testVersion {
-    package = k0sctl;
-    command = "k0sctl version";
     # See https://github.com/carlmjohnson/versioninfo/discussions/12
     version = "version: (devel)\ncommit: v${version}\n";
+    command = "k0sctl version";
+    package = k0sctl;
   };
 
   meta = {
@@ -49,10 +48,12 @@ buildGoModule rec {
     homepage = "https://k0sproject.io/";
     changelog = "https://github.com/k0sproject/k0sctl/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    mainProgram = "k0sctl";
+
     maintainers = with lib.maintainers; [
       nickcao
       qjoly
     ];
+
+    mainProgram = "k0sctl";
   };
 }

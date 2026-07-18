@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
 }:
 let
@@ -10,7 +10,6 @@ let
 in
 buildPythonPackage {
   inherit version pname;
-  format = "setuptools";
 
   # Pypi source package doesn't contain tests
   src = fetchFromGitHub {
@@ -26,7 +25,7 @@ buildPythonPackage {
   '';
 
   propagatedBuildInputs = [ numpy ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "rank_bm25" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   poetry-core,
   pytest-asyncio,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "huum";
   version = "0.8.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frwickst";
@@ -20,6 +19,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-f3ijcH9eou1upzBfvXNzrswFVoegSx81JxtlYVSnS6Q=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -29,11 +33,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ aiohttp.optional-dependencies.speedups;
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "huum" ];
 
   meta = {

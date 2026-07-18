@@ -2,20 +2,25 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  nix-update-script,
-
   cmake,
-  pkg-config,
-  sphinx,
-
+  gdal,
+  graphicsmagick,
+  imagemagick,
   lerc,
   libdeflate,
+  # for passthru.tests
+  libgeotiff,
   libjpeg,
   libwebp,
+  nix-update-script,
+  openimageio,
+  pkg-config,
+  python3Packages,
+  sphinx,
+  testers,
   xz,
   zlib,
   zstd,
-
   # Because lerc is C++ and static libraries don't track dependencies, every downstream dependent of
   # libtiff has to link with a C++ compiler, or the C++ standard library won't be linked, resulting
   # in undefined symbol errors. Without systematic support for this in build systems, fixing this
@@ -24,15 +29,6 @@
   #
   # See https://github.com/mesonbuild/meson/issues/14234
   withLerc ? !stdenv.hostPlatform.isStatic,
-
-  # for passthru.tests
-  libgeotiff,
-  python3Packages,
-  imagemagick,
-  graphicsmagick,
-  gdal,
-  openimageio,
-  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,16 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-UiC6s86i7UavW86EKm74oPVlEacvoKmwW7KETjpnNaI=";
   };
 
-  patches = [
-    # libc++abi 11 has an `#include <version>`, this picks up files name
-    # `version` in the project's include paths
-    ./rename-version.patch
-  ];
-
-  postPatch = ''
-    mv VERSION VERSION.txt
-  '';
-
   outputs = [
     "bin"
     "dev"
@@ -65,13 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  postFixup = ''
-    mkdir -p $dev_private/include
-    mv -t $dev_private/include \
-      libtiff/tif_config.h \
-      ../libtiff/tif_dir.h \
-      ../libtiff/tif_hash_set.h \
-      ../libtiff/tiffiop.h
+  patches = [
+    # libc++abi 11 has an `#include <version>`, this picks up files name
+    # `version` in the project's include paths
+    ./rename-version.patch
+  ];
+
+  postPatch = ''
+    mv VERSION VERSION.txt
   '';
 
   nativeBuildInputs = [
@@ -100,10 +87,18 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
 
+  postFixup = ''
+    mkdir -p $dev_private/include
+    mv -t $dev_private/include \
+      libtiff/tif_config.h \
+      ../libtiff/tif_dir.h \
+      ../libtiff/tif_hash_set.h \
+      ../libtiff/tiffiop.h
+  '';
+
+  enableParallelBuilding = true;
   # Avoid flakiness like https://gitlab.com/libtiff/libtiff/-/commit/94f6f7315b1
   enableParallelChecking = false;
 
@@ -123,6 +118,7 @@ stdenv.mkDerivation (finalAttrs: {
         package = finalAttrs.finalPackage;
       };
     };
+
     updateScript = nix-update-script { };
   };
 

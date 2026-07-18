@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
-  fetchFromGitHub,
   packaging,
   poetry-core,
   pydantic,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "diffsync";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "networktocode";
@@ -26,11 +25,6 @@ buildPythonPackage rec {
     poetry-core
   ];
 
-  pythonRelaxDeps = [
-    "packaging"
-    "structlog"
-  ];
-
   propagatedBuildInputs = [
     colorama
     packaging
@@ -39,7 +33,13 @@ buildPythonPackage rec {
     structlog
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "diffsync" ];
+
+  pythonRelaxDeps = [
+    "packaging"
+    "structlog"
+  ];
 
   meta = {
     description = "Utility library for comparing and synchronizing different datasets";

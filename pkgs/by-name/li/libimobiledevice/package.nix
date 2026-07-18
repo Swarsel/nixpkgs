@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
-  openssl,
+  fetchpatch,
   libgcrypt,
+  libimobiledevice-glue,
   libplist,
   libtasn1,
   libtatsu,
   libusbmuxd,
-  libimobiledevice-glue,
+  openssl,
+  pkg-config,
   unstableGitUpdater,
 }:
 
@@ -26,11 +26,10 @@ stdenv.mkDerivation rec {
     hash = "sha256-SWWsa7asCXpcz80VNhxoePWr74QY8SP0byGSCp+nGG0=";
   };
 
-  preAutoreconf = ''
-    export RELEASE_VERSION=${version}
-  '';
-
-  configureFlags = [ "--without-cython" ];
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -47,18 +46,18 @@ stdenv.mkDerivation rec {
     libimobiledevice-glue
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
+  configureFlags = [ "--without-cython" ];
   enableParallelBuilding = true;
+
+  preAutoreconf = ''
+    export RELEASE_VERSION=${version}
+  '';
 
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/libimobiledevice/libimobiledevice";
     description = "Software library that talks the protocols to support iPhone®, iPod Touch® and iPad® devices on Linux";
+
     longDescription = ''
       libimobiledevice is a software library that talks the protocols to support
       iPhone®, iPod Touch® and iPad® devices on Linux. Unlike other projects, it
@@ -71,8 +70,10 @@ stdenv.mkDerivation rec {
       development since August 2007 with the goal to bring support for these
       devices to the Linux Desktop.
     '';
+
+    homepage = "https://github.com/libimobiledevice/libimobiledevice";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ RossComputerGuy ];
+    platforms = lib.platforms.unix;
   };
 }

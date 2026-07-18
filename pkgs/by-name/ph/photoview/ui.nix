@@ -1,19 +1,15 @@
 {
-  src,
-  version,
   lib,
   buildNpmPackage,
+  src,
+  version,
 }:
 
 buildNpmPackage {
-  pname = "photoview-ui";
   inherit version;
-
+  pname = "photoview-ui";
   src = "${src}/ui";
-
   npmDepsHash = "sha256-wUbfq+7SuJUBxfy9TxHVda8A0g4mmYCbzJT64XBN2mI=";
-
-  NODE_ENV = "production";
 
   installPhase = ''
     runHook preInstall
@@ -21,6 +17,8 @@ buildNpmPackage {
     cp -r dist/* $out/
     runHook postInstall
   '';
+
+  NODE_ENV = "production";
 
   meta = {
     description = "Web UI for Photoview photo gallery";

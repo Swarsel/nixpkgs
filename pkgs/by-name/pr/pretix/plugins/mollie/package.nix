@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pretix-plugin-build,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pretix-mollie";
   version = "2.5.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretix";
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     pretix-plugin-build
     setuptools
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pretix_mollie"

@@ -1,31 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitLab,
   stdenv,
-  spglib,
-  numpy,
-  scipy,
-  matplotlib,
+  fetchFromGitLab,
   ase,
-  netcdf4,
-  cython,
+  buildPythonPackage,
   cmake,
+  cython,
+  matplotlib,
+  netcdf4,
+  numpy,
+  pytestCheckHook,
+  scipy,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
+  spglib,
 }:
 
 buildPythonPackage rec {
   pname = "boltztrap2";
   version = "25.3.1";
-
-  pyproject = true;
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
 
   src = fetchFromGitLab {
     owner = "sousaw";
@@ -41,11 +34,16 @@ buildPythonPackage rec {
       --replace-fail "numpy>=2.0.0" "numpy"
   '';
 
-  dontUseCmakeConfigure = true;
-
   nativeBuildInputs = [
     cmake
     cython
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
   ];
 
   dependencies = [
@@ -56,17 +54,6 @@ buildPythonPackage rec {
     ase
     netcdf4
   ];
-
-  pythonImportsCheck = [ "BoltzTraP2" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preInstallCheck = ''
-    tar xf data.tar.xz
-    rm -rf BoltzTraP2
-  '';
-
-  pytestFlags = [ "tests" ];
 
   disabledTests = lib.optionals (stdenv.system != "x86_64-linux") [
     # Tests np.load numpy arrays from disk that were, apparently, saved on
@@ -80,11 +67,22 @@ buildPythonPackage rec {
     "test_fitde3D_saved_noder"
   ];
 
+  dontUseCmakeConfigure = true;
+
+  preInstallCheck = ''
+    tar xf data.tar.xz
+    rm -rf BoltzTraP2
+  '';
+
+  pyproject = true;
+  pytestFlags = [ "tests" ];
+  pythonImportsCheck = [ "BoltzTraP2" ];
+
   meta = {
     description = "Band-structure interpolator and transport coefficient calculator";
-    mainProgram = "btp2";
     homepage = "http://www.boltztrap.org/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    mainProgram = "btp2";
   };
 }

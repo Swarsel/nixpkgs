@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   unstableGitUpdater,
 }:
 
@@ -22,15 +22,15 @@ stdenv.mkDerivation {
   '';
 
   passthru = {
-    extensionUuid = "argos@pew.worldwidemann.com";
     extensionPortalSlug = "argos";
+    extensionUuid = "argos@pew.worldwidemann.com";
     updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "Create GNOME Shell extensions in seconds";
+    homepage = "https://github.com/p-e-w/argos";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ andersk ];
-    homepage = "https://github.com/p-e-w/argos";
   };
 }

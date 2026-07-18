@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,10 +25,12 @@ buildGoModule (finalAttrs: {
     description = "Dynamic DNS client for Porkbun";
     homepage = "https://github.com/rlado/oink";
     license = lib.licenses.mit;
-    mainProgram = "oink";
+
     maintainers = with lib.maintainers; [
       jtbx
       pmw
     ];
+
+    mainProgram = "oink";
   };
 })

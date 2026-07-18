@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   libtoxcore,
+  pkg-config,
   python3,
 }:
 
@@ -18,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mqhCLIJOQfiSWi6iY56ZPQmXSLhdC/yX1KAItEz8sZo=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail '$(shell git rev-parse HEAD)' "${finalAttrs.src.rev}"
+  '';
+
   nativeBuildInputs = [
     pkg-config
   ];
@@ -27,22 +32,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   buildFlags = [ "tuntox_nostatic" ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail '$(shell git rev-parse HEAD)' "${finalAttrs.src.rev}"
-  '';
 
   meta = {
     description = "Tunnel TCP connections over the Tox protocol";
-    mainProgram = "tuntox";
     homepage = "https://github.com/gjedeer/tuntox";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       willcohen
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "tuntox";
   };
 })

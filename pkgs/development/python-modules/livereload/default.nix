@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   pytestCheckHook,
-  tornado,
   six,
+  tornado,
 }:
 
 buildPythonPackage rec {
   pname = "livereload";
   version = "2.7.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "lepture";
@@ -28,14 +27,14 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [ "test_watch_multiple_dirs" ];
+  format = "setuptools";
 
   meta = {
     description = "Runs a local server that reloads as you develop";
-    mainProgram = "livereload";
     homepage = "https://github.com/lepture/python-livereload";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "livereload";
   };
 }

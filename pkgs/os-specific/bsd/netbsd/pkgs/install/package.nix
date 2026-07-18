@@ -1,17 +1,17 @@
 {
   lib,
-  mkDerivation,
-  writeShellScript,
-  mtree,
-  make,
+  stdenv,
   bsdSetupHook,
-  netbsdSetupHook,
-  makeMinimal,
-  mandoc,
-  groff,
   compatIfNeeded,
   fts,
-  stdenv,
+  groff,
+  make,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
+  mtree,
+  netbsdSetupHook,
+  writeShellScript,
 }:
 
 # HACK: to ensure parent directories exist. This emulates GNU
@@ -25,11 +25,6 @@ let
   );
 in
 mkDerivation {
-  path = "usr.bin/xinstall";
-  extraPaths = [
-    mtree.path
-    make.path
-  ];
   nativeBuildInputs = [
     bsdSetupHook
     netbsdSetupHook
@@ -37,13 +32,14 @@ mkDerivation {
     mandoc
     groff
   ];
-  skipIncludesPhase = true;
+
   buildInputs =
     compatIfNeeded
     # fts header is needed. glibc already has this header, but musl doesn't,
     # so make sure pkgsMusl.netbsd.install still builds in case you want to
     # remove it!
     ++ [ fts ];
+
   installPhase = ''
     runHook preInstall
 
@@ -55,5 +51,13 @@ mkDerivation {
 
     runHook postInstall
   '';
+
+  extraPaths = [
+    mtree.path
+    make.path
+  ];
+
+  path = "usr.bin/xinstall";
   setupHook = ./install-setup-hook.sh;
+  skipIncludesPhase = true;
 }

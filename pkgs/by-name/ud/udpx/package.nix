@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,10 +24,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Single-packet UDP scanner";
-    mainProgram = "udpx";
     homepage = "https://github.com/nullt3r/udpx";
     changelog = "https://github.com/nullt3r/udpx/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "udpx";
   };
 })

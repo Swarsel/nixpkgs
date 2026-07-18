@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
   berglas,
+  buildGoModule,
+  testers,
 }:
 
 let
@@ -44,6 +44,13 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-p+HWZCyFouy+FycCPesKLV7UIeMogz9oKX+mynzBTKw";
   };
 
+  postPatch = skipTestsCommand + ''
+    substituteInPlace go.mod \
+              --replace-fail \
+                "go 1.26.3" \
+                "go 1.26"
+  '';
+
   vendorHash = "sha256-Bz+4hlT5ZqpDnquGirooyFMG8FNUU2NO60Ih3Et3Y3o";
 
   ldflags = [
@@ -51,13 +58,6 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X github.com/GoogleCloudPlatform/berglas/v2/internal/version.version=${finalAttrs.version}"
   ];
-
-  postPatch = skipTestsCommand + ''
-    substituteInPlace go.mod \
-              --replace-fail \
-                "go 1.26.3" \
-                "go 1.26"
-  '';
 
   passthru.tests = {
     version = testers.testVersion {

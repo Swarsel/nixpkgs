@@ -1,8 +1,8 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   cacert,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
@@ -15,8 +15,6 @@ python3Packages.buildPythonApplication rec {
     rev = "v${version}";
     hash = "sha256-eNgnjErPi5q9yA/2iEg3+CoN2xbopmFOpbgU/7GhoAQ=";
   };
-
-  pyproject = true;
 
   postPatch = ''
     # Dependencies already bundled with Python
@@ -45,12 +43,14 @@ python3Packages.buildPythonApplication rec {
     emoji
   ]);
 
+  pyproject = true;
+
   meta = {
     description = "Simple but convenient CLI-based Matrix client app for sending and receiving";
-    mainProgram = "matrix-commander";
     homepage = "https://github.com/8go/matrix-commander";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.seb314 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "matrix-commander";
   };
 }

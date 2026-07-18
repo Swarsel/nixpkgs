@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  qt5,
-  libsForQt5,
-  fetchgit,
   cmake,
+  fetchgit,
+  libsForQt5,
   libsecret,
+  qt5,
   restic,
 }:
 
@@ -41,11 +41,13 @@ stdenv.mkDerivation {
   meta = {
     description = "Restic GUI for Desktop/Laptop Backups";
     homepage = "https://git.srcbox.net/stefan/restique";
+
     license = with lib.licenses; [
       gpl3Plus
       cc-by-sa-40
       cc0
     ];
+
     maintainers = with lib.maintainers; [ dotlambda ];
     mainProgram = "restique";
   };

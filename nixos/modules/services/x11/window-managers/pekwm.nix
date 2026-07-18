@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.pekwm ];
+
     services.xserver.windowManager.session = singleton {
       name = "pekwm";
+
       start = ''
         ${pkgs.pekwm}/bin/pekwm &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.pekwm ];
   };
 }

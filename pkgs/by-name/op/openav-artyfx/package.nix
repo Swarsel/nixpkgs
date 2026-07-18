@@ -6,9 +6,9 @@
   cmake,
   libjack2,
   libpthread-stubs,
+  libsndfile,
   libxdmcp,
   libxshmfence,
-  libsndfile,
   lv2,
   ntk,
   pkg-config,
@@ -25,10 +25,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GD9nwXdXSJX5OvAMxEAnngkvRW+E1jrNfWXK122bsTM=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail \
+      'cmake_minimum_required (VERSION 2.6)' \
+      'cmake_minimum_required(VERSION 4.0)'
+    substituteInPlace src/avtk/CMakeLists.txt --replace-fail \
+      'cmake_minimum_required (VERSION 2.6)' \
+      'cmake_minimum_required(VERSION 4.0)'
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     cairomm
     libjack2
@@ -40,18 +50,9 @@ stdenv.mkDerivation (finalAttrs: {
     ntk
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail \
-      'cmake_minimum_required (VERSION 2.6)' \
-      'cmake_minimum_required(VERSION 4.0)'
-    substituteInPlace src/avtk/CMakeLists.txt --replace-fail \
-      'cmake_minimum_required (VERSION 2.6)' \
-      'cmake_minimum_required(VERSION 4.0)'
-  '';
-
   meta = {
-    homepage = "http://openavproductions.com/artyfx/";
     description = "LV2 plugin bundle of artistic realtime effects";
+    homepage = "http://openavproductions.com/artyfx/";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

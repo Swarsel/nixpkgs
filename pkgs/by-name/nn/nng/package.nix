@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  mbedtls,
   ninja,
   mbedtlsSupport ? true,
-  mbedtls,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,11 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://nng.nanomsg.org/";
     description = "Nanomsg next generation";
+    homepage = "https://nng.nanomsg.org/";
     license = lib.licenses.mit;
-    mainProgram = "nngcat";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ nviets ];
+    platforms = lib.platforms.unix;
+    mainProgram = "nngcat";
   };
 })

@@ -1,40 +1,40 @@
 {
   lib,
-  fetchFromGitHub,
-  applyPatches,
-  _2ship2harkinian,
-  fetchurl,
-  writeTextFile,
   stdenv,
+  fetchurl,
+  fetchFromGitHub,
+  SDL2,
+  _2ship2harkinian,
+  applyPatches,
+  bzip2,
   cmake,
   copyDesktopItems,
+  darwin,
+  fixDarwinDylibNames,
+  glew,
   imagemagick,
-  lsb-release,
-  makeWrapper,
-  ninja,
-  pkg-config,
-  python3,
   libGL,
-  libpng,
-  libpulseaudio,
-  libzip,
-  nlohmann_json,
-  SDL2,
-  spdlog,
-  tinyxml-2,
-  zenity,
-  bzip2,
+  libicns,
   libogg,
   libopus,
+  libpng,
+  libpulseaudio,
   libvorbis,
   libx11,
-  opusfile,
-  sdl_gamecontrollerdb,
+  libzip,
+  lsb-release,
   makeDesktopItem,
-  darwin,
-  glew,
-  libicns,
-  fixDarwinDylibNames,
+  makeWrapper,
+  ninja,
+  nlohmann_json,
+  opusfile,
+  pkg-config,
+  python3,
+  sdl_gamecontrollerdb,
+  spdlog,
+  tinyxml-2,
+  writeTextFile,
+  zenity,
 }:
 
 let
@@ -42,10 +42,10 @@ let
   # The following are either normally fetched during build time or a specific version is required
 
   dr_libs = fetchFromGitHub {
+    hash = "sha256-ydFhQ8LTYDBnRTuETtfWwIHZpRciWfqGsZC6SuViEn0=";
     owner = "mackron";
     repo = "dr_libs";
     rev = "da35f9d6c7374a95353fd1df1d394d44ab66cf01";
-    hash = "sha256-ydFhQ8LTYDBnRTuETtfWwIHZpRciWfqGsZC6SuViEn0=";
   };
 
   imgui' = applyPatches {
@@ -55,27 +55,29 @@ let
       tag = "v1.91.9b-docking";
       hash = "sha256-mQOJ6jCN+7VopgZ61yzaCnt4R1QLrW7+47xxMhFRHLQ=";
     };
+
     patches = [
       "${_2ship2harkinian.src}/libultraship/cmake/dependencies/patches/imgui-fixes-and-config.patch"
     ];
   };
 
   libgfxd = fetchFromGitHub {
+    hash = "sha256-AmHAa3/cQdh7KAMFOtz5TQpcM6FqO9SppmDpKPTjTt8=";
     owner = "glankk";
     repo = "libgfxd";
     rev = "008f73dca8ebc9151b205959b17773a19c5bd0da";
-    hash = "sha256-AmHAa3/cQdh7KAMFOtz5TQpcM6FqO9SppmDpKPTjTt8=";
   };
 
   prism = fetchFromGitHub {
+    hash = "sha256-jRPwO1Vub0cH12YMlME6kd8zGzKmcfIrIJZYpQJeOks=";
     owner = "KiritoDv";
     repo = "prism-processor";
     rev = "bbcbc7e3f890a5806b579361e7aa0336acd547e7";
-    hash = "sha256-jRPwO1Vub0cH12YMlME6kd8zGzKmcfIrIJZYpQJeOks=";
   };
 
   stb_impl = writeTextFile {
     name = "stb_impl.c";
+
     text = ''
       #define STB_IMAGE_IMPLEMENTATION
       #include "stb_image.h"
@@ -83,9 +85,9 @@ let
   };
 
   stb' = fetchurl {
+    hash = "sha256-xUsVponmofMsdeLsI6+kQuPg436JS3PBl00IZ5sg3Vw=";
     name = "stb_image.h";
     url = "https://raw.githubusercontent.com/nothings/stb/0bc88af4de5fb022db643c2d8e549a0927749354/stb_image.h";
-    hash = "sha256-xUsVponmofMsdeLsI6+kQuPg436JS3PBl00IZ5sg3Vw=";
   };
 
   stormlib' = applyPatches {
@@ -95,23 +97,24 @@ let
       tag = "v9.25";
       hash = "sha256-HTi2FKzKCbRaP13XERUmHkJgw8IfKaRJvsK3+YxFFdc=";
     };
+
     patches = [
       "${_2ship2harkinian.src}/libultraship/cmake/dependencies/patches/stormlib-optimizations.patch"
     ];
   };
 
   thread_pool = fetchFromGitHub {
+    hash = "sha256-zhRFEmPYNFLqQCfvdAaG5VBNle9Qm8FepIIIrT9sh88=";
     owner = "bshoshany";
     repo = "thread-pool";
     tag = "v4.1.0";
-    hash = "sha256-zhRFEmPYNFLqQCfvdAaG5VBNle9Qm8FepIIIrT9sh88=";
   };
 
   metalcpp = fetchFromGitHub {
+    hash = "sha256-CSYIpmq478bla2xoPL/cGYKIWAeiORxyFFZr0+ixd7I";
     owner = "briaguya-ai";
     repo = "single-header-metal-cpp";
     tag = "macOS13_iOS16";
-    hash = "sha256-CSYIpmq478bla2xoPL/cGYKIWAeiORxyFFZr0+ixd7I";
   };
 
 in
@@ -126,6 +129,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-zrV1iSI6d6vtzIyvYmSrbgijP3qZnwBkKG9L6+pq8+0=";
     fetchSubmodules = true;
     deepClone = true;
+
     postFetch = ''
       cd $out
       git branch --show-current > GIT_BRANCH
@@ -140,6 +144,15 @@ stdenv.mkDerivation (finalAttrs: {
     # remove fetching stb as we will patch our own
     ./dont-fetch-stb.patch
   ];
+
+  postPatch = ''
+    substituteInPlace mm/src/boot/build.c.in \
+    --replace-fail "@CMAKE_PROJECT_GIT_BRANCH@" "$(cat GIT_BRANCH)" \
+    --replace-fail "@CMAKE_PROJECT_GIT_COMMIT_HASH@" "$(cat GIT_COMMIT_HASH)" \
+    --replace-fail "@CMAKE_PROJECT_GIT_COMMIT_TAG@" "$(cat GIT_COMMIT_TAG)"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -201,15 +214,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-int-conversion -Wno-implicit-int -Wno-elaborated-enum-base";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-  enableParallelBuilding = true;
-
-  dontAddPrefix = true;
-
-  # Linking fails without this
-  hardeningDisable = [ "format" ];
-
   preConfigure = ''
     # mirror 2ship's stb
     mkdir stb
@@ -217,13 +221,6 @@ stdenv.mkDerivation (finalAttrs: {
     cp ${stb_impl} ./stb/${stb_impl.name}
     substituteInPlace libultraship/cmake/dependencies/common.cmake \
       --replace-fail "\''${STB_DIR}" "$(readlink -f ./stb)"
-  '';
-
-  postPatch = ''
-    substituteInPlace mm/src/boot/build.c.in \
-    --replace-fail "@CMAKE_PROJECT_GIT_BRANCH@" "$(cat GIT_BRANCH)" \
-    --replace-fail "@CMAKE_PROJECT_GIT_COMMIT_HASH@" "$(cat GIT_COMMIT_HASH)" \
-    --replace-fail "@CMAKE_PROJECT_GIT_COMMIT_TAG@" "$(cat GIT_COMMIT_TAG)"
   '';
 
   postBuild = ''
@@ -279,31 +276,34 @@ stdenv.mkDerivation (finalAttrs: {
       install -Dm644 -t $out/share/licenses/2ship2harkinian/thread_pool ${thread_pool}/LICENSE.txt
     '';
 
+  __structuredAttrs = true;
+
+  desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "2s2h";
+      exec = "2s2h";
+      genericName = "2 Ship 2 Harkinian";
+      icon = "2s2h";
+      name = "2s2h";
+    })
+  ];
+
+  dontAddPrefix = true;
+  enableParallelBuilding = true;
+
   fixupPhase = lib.optionalString stdenv.hostPlatform.isLinux ''
     wrapProgram $out/2s2h/2s2h.elf --prefix PATH ":" ${lib.makeBinPath [ zenity ]}
   '';
 
-  desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
-    (makeDesktopItem {
-      name = "2s2h";
-      icon = "2s2h";
-      exec = "2s2h";
-      comment = finalAttrs.meta.description;
-      genericName = "2 Ship 2 Harkinian";
-      desktopName = "2s2h";
-      categories = [ "Game" ];
-    })
-  ];
+  # Linking fails without this
+  hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://github.com/HarbourMasters/2ship2harkinian";
     description = "PC port of Majora's Mask with modern controls, widescreen, high-resolution, and more";
-    mainProgram = "2s2h";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    maintainers = with lib.maintainers; [
-      qubitnano
-      matteopacini
-    ];
+    homepage = "https://github.com/HarbourMasters/2ship2harkinian";
+
     license = with lib.licenses; [
       # OTRExporter, ZAPDTR, libultraship, libgfxd, thread_pool
       mit
@@ -312,5 +312,13 @@ stdenv.mkDerivation (finalAttrs: {
       # Reverse engineering
       unfree
     ];
+
+    maintainers = with lib.maintainers; [
+      qubitnano
+      matteopacini
+    ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "2s2h";
   };
 })

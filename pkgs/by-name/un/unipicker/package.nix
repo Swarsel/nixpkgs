@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   fzf,
   xclip,
 }:
@@ -22,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     xclip
   ];
 
+  makeFlags = [
+    "PREFIX=${placeholder "out"}"
+    "DESTDIR=${placeholder "out"}"
+  ];
+
   preInstall = ''
     substituteInPlace unipicker \
       --replace-fail "/etc/unipickerrc" "$out/etc/unipickerrc" \
@@ -30,11 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/usr/local" "$out" \
       --replace-fail "fzf" "${fzf}/bin/fzf"
   '';
-
-  makeFlags = [
-    "PREFIX=${placeholder "out"}"
-    "DESTDIR=${placeholder "out"}"
-  ];
 
   meta = {
     description = "CLI utility for searching unicode characters by description and optionally copying them to clipboard";

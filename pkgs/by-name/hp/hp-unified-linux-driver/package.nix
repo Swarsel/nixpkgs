@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchurl,
+  buildPackages,
   cups,
   libusb1,
   libxml2_13, # The uld library uses libxml2.so.2 which is provided only in the older version
-  fetchurl,
   patchPpdFilesHook,
-  buildPackages,
   replaceVars,
 }:
 
@@ -14,8 +14,8 @@ let
   version = "1.00.39.12_00.15";
   installationPath =
     {
-      x86_64-linux = "x86_64";
       i686-linux = "i386";
+      x86_64-linux = "x86_64";
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
@@ -27,32 +27,29 @@ let
       url = "https://ftp.hp.com/pub/softlib/software13/printers/MFP170/uld-hp_V${version}.tar.gz";
       hash = "sha256-zrube2El50BmNLucKpiwFHfR4R1mx8kEdGad6ZJ7yR0=";
     };
-    dontBuild = true;
 
     installPhase = ''
       mkdir -p $out/opt/smfp-common/scanner/.usedby/
       cp -r . $out
     '';
+
+    dontBuild = true;
   });
 
   patchedWrapper = replaceVars ./libsane-smfp-wrapper.c {
     libsane_smfp_cfg_to = "${unpacked}/noarch/libsane-smfp.cfg";
+    oem_to = "${unpacked}/noarch/oem.conf";
+    opt_to = "${unpacked}/opt";
+    sane_d_to = "${unpacked}/etc/sane.d";
     smfp_conf_to = "${unpacked}/noarch/etc/smfp.conf";
     usedby_to = "${unpacked}/opt/smfp-common/scanner/.usedby/";
-    oem_to = "${unpacked}/noarch/oem.conf";
-    sane_d_to = "${unpacked}/etc/sane.d";
-    opt_to = "${unpacked}/opt";
   };
 
   # Contains a fopen() wrapper
   wrapperLibName = "libsane-smfp-wrapper.so";
   wrapperLib = stdenv.mkDerivation (finalAttrs: {
-    pname = "libsane-smfp-wrapper-lib";
     inherit version;
-
-    unpackPhase = ''
-      cp ${patchedWrapper} libsane-smfp-wrapper.c
-    '';
+    pname = "libsane-smfp-wrapper-lib";
 
     buildPhase = ''
       $CC -fPIC -shared libsane-smfp-wrapper.c -o ${wrapperLibName}
@@ -60,6 +57,10 @@ let
 
     installPhase = ''
       install -D ${wrapperLibName} -t $out/lib
+    '';
+
+    unpackPhase = ''
+      cp ${patchedWrapper} libsane-smfp-wrapper.c
     '';
   });
 
@@ -74,14 +75,9 @@ let
 in
 stdenv.mkDerivation {
   inherit version;
-
   pname = "hp-unified-linux-driver";
   src = unpacked;
-
   nativeBuildInputs = [ patchPpdFilesHook ];
-
-  dontPatchELF = true;
-  dontStrip = true;
 
   installPhase = ''
     runHook preInstall
@@ -131,6 +127,9 @@ stdenv.mkDerivation {
     patchelf --set-rpath ${libPath} $out/lib/libscmssc.so
   '';
 
+  dontPatchELF = true;
+  dontStrip = true;
+
   ppdFileCommands = [
     "pstosecps"
     "rastertospl"
@@ -140,12 +139,13 @@ stdenv.mkDerivation {
   meta = {
     description = "Drivers for HP printers that are actually Samsung printers";
     homepage = "http://www.hp.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ danberdev ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = with lib.maintainers; [ danberdev ];
   };
 }

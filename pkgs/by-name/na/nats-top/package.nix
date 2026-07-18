@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   nats-top,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -27,8 +27,8 @@ buildGoModule (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = nats-top;
       version = "v${finalAttrs.version}";
+      package = nats-top;
     };
   };
 

@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
-  python,
-  fetchPypi,
   absl-py,
+  buildPythonPackage,
   etils,
+  fetchPypi,
+  python,
+  pythonAtLeast,
 }:
 
 buildPythonPackage rec {
   pname = "array-record";
   version = "0.8.3";
-  format = "wheel";
-
-  disabled = pythonAtLeast "3.15";
 
   src =
     let
@@ -21,12 +18,7 @@ buildPythonPackage rec {
     in
     fetchPypi {
       inherit version;
-      format = "wheel";
-      pname = "array_record";
-      dist = pyShortVersion;
-      python = pyShortVersion;
-      abi = pyShortVersion;
-      platform = "manylinux2014_x86_64.manylinux_2_17_x86_64";
+
       hash =
         {
           cp311 = "sha256-9ABPzOt5YaLMAJACjmij7rkdP1s4wA1gtTP3AE0dP3s=";
@@ -35,6 +27,13 @@ buildPythonPackage rec {
           cp314 = "sha256-idLPX0cJvjxsKzDA02YAUiM3VjP/zmbcsT2SegvcUig=";
         }
         .${pyShortVersion} or (throw "${pname} is missing hash for ${pyShortVersion}");
+
+      abi = pyShortVersion;
+      dist = pyShortVersion;
+      format = "wheel";
+      platform = "manylinux2014_x86_64.manylinux_2_17_x86_64";
+      pname = "array_record";
+      python = pyShortVersion;
     };
 
   dependencies = [
@@ -43,6 +42,8 @@ buildPythonPackage rec {
   ]
   ++ etils.optional-dependencies.epath;
 
+  disabled = pythonAtLeast "3.15";
+  format = "wheel";
   pythonImportsCheck = [ "array_record" ];
 
   meta = {

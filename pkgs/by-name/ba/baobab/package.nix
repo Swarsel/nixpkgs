@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
-  gettext,
+  stdenv,
   fetchurl,
-  vala,
   desktop-file-utils,
+  gettext,
+  glib,
+  gnome,
+  gtk4,
+  itstool,
+  libadwaita,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  gtk4,
-  libadwaita,
-  glib,
-  libxml2,
+  vala,
   wrapGAppsHook4,
-  itstool,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,10 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Graphical application to analyse disk usage in any GNOME environment";
-    mainProgram = "baobab";
     homepage = "https://apps.gnome.org/Baobab/";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    mainProgram = "baobab";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,6 +15,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-3DEwi+bhqwP8aMpZYl07GZbe7IecraB3m54lZ5LViVc=";
   };
 
+  patches = [
+    # This patch comes from https://github.com/rslint/rslint/pull/165, which was unmerged.
+    ./fix-rustc-1.89-compatibility.patch
+  ];
+
   cargoHash = "sha256-4DzQSnrUUNaeyNLKvnx4HKM4dAS10y5mu5S2NpzfFRQ=";
 
   cargoBuildFlags = [
@@ -22,11 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "rslint_cli"
     "-p"
     "rslint_lsp"
-  ];
-
-  patches = [
-    # This patch comes from https://github.com/rslint/rslint/pull/165, which was unmerged.
-    ./fix-rustc-1.89-compatibility.patch
   ];
 
   meta = {

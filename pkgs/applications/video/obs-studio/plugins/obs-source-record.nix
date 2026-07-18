@@ -19,23 +19,22 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ obs-studio ];
-
-  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=deprecated-declarations" ];
-
   cmakeFlags = [ "-DBUILD_OUT_OF_TREE=On" ];
+  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=deprecated-declarations" ];
 
   postInstall = ''
     rm -rf $out/{data,obs-plugins}
   '';
 
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "OBS Studio plugin to make sources available to record via a filter";
     homepage = "https://github.com/exeldro/obs-source-record";
+    license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       robbins
       shackra
     ];
-    license = lib.licenses.gpl2Only;
-    inherit (obs-studio.meta) platforms;
   };
 }

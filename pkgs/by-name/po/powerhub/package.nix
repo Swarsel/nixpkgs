@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "powerhub";
   version = "2.0.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AdrianVollmer";
@@ -46,13 +45,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   # Tests uses XDG
   doCheck = false;
 
-  pythonImportsCheck = [
-    "powerhub"
-  ];
-
   preCheck = ''
     cd tests/helpers
   '';
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "powerhub"
+  ];
 
   meta = {
     description = "Post exploitation tool based on a web application, focusing on bypassing endpoint protection and application whitelisting";

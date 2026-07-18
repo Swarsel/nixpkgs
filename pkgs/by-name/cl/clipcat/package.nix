@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  protobuf,
   installShellFiles,
+  protobuf,
+  rustPlatform,
   writableTmpDirAsHomeHook,
 }:
 
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ht+9TFugVckj5xCCHgwPHbXqeJRBP4MzBROMBIbYAYI=";
   };
 
-  cargoHash = "sha256-pejtrvCD1HkAZ+pMynRRLw+EV/pHwzh/7OnnoI5LHoc=";
-
   nativeBuildInputs = [
     protobuf
     installShellFiles
@@ -30,6 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # objc/notify.h:1:9: fatal error: could not build module 'Cocoa'
     writableTmpDirAsHomeHook
   ];
+
+  cargoHash = "sha256-pejtrvCD1HkAZ+pMynRRLw+EV/pHwzh/7OnnoI5LHoc=";
 
   checkFlags = [
     # Some test cases interact with X11, skip them
@@ -50,12 +50,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Clipboard Manager written in Rust Programming Language";
     homepage = "https://github.com/xrelkd/clipcat";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       xrelkd
       bot-wxt1221
     ];
-    broken = stdenv.hostPlatform.isDarwin;
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "clipcatd";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

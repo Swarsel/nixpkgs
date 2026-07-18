@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
+  czmq,
   fetchzip,
+  libelf,
+  libusb1,
   meson,
+  ncurses,
   ninja,
   pkg-config,
-  czmq,
-  libusb1,
-  ncurses,
-  SDL2,
-  libelf,
 }:
 
 let
   libdwarf = fetchzip {
-    url = "https://www.prevanders.net/libdwarf-0.7.0.tar.xz";
     hash = "sha256-YTTbBJkDu2BSAVpvucqtg7/hFxXrxLnNAlvAL7rmkdE=";
+    url = "https://www.prevanders.net/libdwarf-0.7.0.tar.xz";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -53,14 +53,13 @@ stdenv.mkDerivation (finalAttrs: {
     libelf
   ];
 
-  doInstallCheck = true;
-
-  installFlags = [ "INSTALL_ROOT=$(out)/" ];
-
   postInstall = ''
     mkdir -p $out/etc/udev/rules.d/
     cp $src/Support/60-orbcode.rules $out/etc/udev/rules.d/
   '';
+
+  doInstallCheck = true;
+  installFlags = [ "INSTALL_ROOT=$(out)/" ];
 
   meta = {
     description = "Cortex M SWO SWV Demux and Postprocess for the ORBTrace";

@@ -1,31 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
+  buildPythonPackage,
+  # tests
+  geopandas,
   # dependencies
   matplotlib,
   mizani,
   pandas,
-  scipy,
-  statsmodels,
-
-  # tests
-  geopandas,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   scikit-misc,
+  scipy,
+  # build-system
+  setuptools-scm,
+  statsmodels,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "plotnine";
   version = "0.15.7";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "has2k1";
@@ -33,16 +28,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-7yM7NeUqaZvp/UUXbfpFb1V+9Z0Gz3MUBq1JydJeyDE=";
   };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    matplotlib
-    mizani
-    pandas
-    scipy
-    statsmodels
-  ];
 
   nativeCheckInputs = [
     geopandas
@@ -52,18 +37,15 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [ "plotnine" ];
+  __structuredAttrs = true;
+  build-system = [ setuptools-scm ];
 
-  disabledTests = [
-    # Tries to change locale. The issued warning causes this test to fail.
-    # UserWarning: Could not set locale to English/United States. Some date-related tests may fail
-    "test_no_after_scale_warning"
-
-    # Assertion Errors:
-    # Generated plot images do not exactly match the expected files.
-    # After manually checking, this is caused by extremely subtle differences in label placement.
-    # See https://github.com/has2k1/plotnine/issues/627
-    "test_aesthetics"
+  dependencies = [
+    matplotlib
+    mizani
+    pandas
+    scipy
+    statsmodels
   ];
 
   disabledTestPaths = [
@@ -111,6 +93,21 @@ buildPythonPackage (finalAttrs: {
     # Disabling this prevents adding a dependency on 'ruff' and 'black'.
     "tests/test_lint_and_format.py"
   ];
+
+  disabledTests = [
+    # Tries to change locale. The issued warning causes this test to fail.
+    # UserWarning: Could not set locale to English/United States. Some date-related tests may fail
+    "test_no_after_scale_warning"
+
+    # Assertion Errors:
+    # Generated plot images do not exactly match the expected files.
+    # After manually checking, this is caused by extremely subtle differences in label placement.
+    # See https://github.com/has2k1/plotnine/issues/627
+    "test_aesthetics"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "plotnine" ];
 
   meta = {
     description = "Grammar of graphics for Python";

@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "layerx";
   version = "1.5.2";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "deveshctl";
@@ -20,17 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-2FttqXnc6o8EXbLBk7BpLS0Xf6ZozydD7a5gFspPQoo=";
   };
 
-  vendorHash = "sha256-7wbyz6fKB3HMFhKJVIWrOIczLfqF4yInyszdh2Ky8WU=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.version=${finalAttrs.version}"
-    "-X=main.commit=${finalAttrs.src.rev}"
-    "-X=main.date=1970-01-01T00:00:00Z"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-7wbyz6fKB3HMFhKJVIWrOIczLfqF4yInyszdh2Ky8WU=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion \
@@ -40,10 +30,19 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/layerx completion zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-  versionCheckProgramArg = [ "version" ];
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.version=${finalAttrs.version}"
+    "-X=main.commit=${finalAttrs.src.rev}"
+    "-X=main.date=1970-01-01T00:00:00Z"
+  ];
+
+  versionCheckProgramArg = [ "version" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

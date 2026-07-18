@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  rofi-unwrapped,
-  libqalculate,
-  glib,
   cairo,
+  glib,
   gobject-introspection,
-  wrapGAppsHook3,
+  libqalculate,
   meson,
   ninja,
+  pkg-config,
+  rofi-unwrapped,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,16 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-adDHONoLQeZP4Oi7yx/tSAaMHAaipj2UrG+xZz7EiQ4=";
   };
+
+  postPatch = ''
+    substituteInPlace src/calc.c --replace-fail \
+      "qalc_binary = \"qalc\"" \
+      "qalc_binary = \"${lib.getExe libqalculate}\""
+
+    substituteInPlace src/meson.build --replace-fail \
+      "rofi.get_variable('pluginsdir')" \
+      "'$out/lib/rofi'"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -40,16 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonBuildType = "release";
-
-  postPatch = ''
-    substituteInPlace src/calc.c --replace-fail \
-      "qalc_binary = \"qalc\"" \
-      "qalc_binary = \"${lib.getExe libqalculate}\""
-
-    substituteInPlace src/meson.build --replace-fail \
-      "rofi.get_variable('pluginsdir')" \
-      "'$out/lib/rofi'"
-  '';
 
   meta = {
     description = "Do live calculations in rofi";

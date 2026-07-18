@@ -11,18 +11,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "bzip3";
   version = "1.5.3";
 
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-  ];
-
   src = fetchFromGitHub {
     owner = "iczelia";
     repo = "bzip3";
     tag = finalAttrs.version;
     hash = "sha256-SOouMUctxsAJdkt84rJBaCbK23GKmXRH9nVgGdDodsk=";
   };
+
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+  ];
 
   postPatch = ''
     echo -n "${finalAttrs.version}" > .tarball-version
@@ -50,7 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/iczelia/bzip3/blob/${finalAttrs.src.tag}/NEWS";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
-    pkgConfigModules = [ "bzip3" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "bzip3" ];
   };
 })

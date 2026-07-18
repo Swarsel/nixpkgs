@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   SDL2,
   SDL2_image,
+  fetchpatch,
   pkg-config,
 }:
 
@@ -16,9 +16,16 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "kometbomb";
     repo = "klystrack";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-30fUI4abo4TxoUdZfKBowL4lF/lDiwnhQASr1kTVKcE=";
+    fetchSubmodules = true;
   };
+
+  patches = [
+    (fetchpatch {
+      hash = "sha256-sb7ZYf27qfmWp8RiZFIIOpUJenp0hNXvTAM8LgFO9Bk=";
+      url = "https://github.com/kometbomb/klystrack/commit/bb537595d02140176831c4a1b8e9121978b32d22.patch";
+    })
+  ];
 
   # https://github.com/kometbomb/klystrack/commit/6dac9eb5e75801ce4dec1d8b339f78e3df2f54bc fixes build but doesn't apply as-is, just patch in the flag
   # Make embedded date reproducible
@@ -45,11 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2_image
   ];
 
-  patches = [
-    (fetchpatch {
-      url = "https://github.com/kometbomb/klystrack/commit/bb537595d02140176831c4a1b8e9121978b32d22.patch";
-      hash = "sha256-sb7ZYf27qfmWp8RiZFIIOpUJenp0hNXvTAM8LgFO9Bk=";
-    })
+  buildFlags = [
+    "PREFIX=${placeholder "out"}"
+    "CFG=release"
   ];
 
   # Workaround build failure on -fno-common toolchains:
@@ -57,11 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
   #     `menu_t'; objs.release/action.o:(.bss+0x20): first defined here
   # TODO: remove it for 1.7.7+ release as it was fixed upstream.
   env.NIX_CFLAGS_COMPILE = "-fcommon";
-
-  buildFlags = [
-    "PREFIX=${placeholder "out"}"
-    "CFG=release"
-  ];
 
   installPhase = ''
     runHook preInstall

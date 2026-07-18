@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
+  nail-parquet,
+  openssl,
+  pkg-config,
   rustPlatform,
   testers,
-  nail-parquet,
-  stdenv,
-  pkg-config,
-  openssl,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-IDGVdC4jvDfFTP0N0LAi8MTGdUOCT6A7mKXIz2au6jY=";
   };
 
-  cargoHash = "sha256-c4yuXCQAlwpDlKURwN51d3AI+m7cUNGRdgl29qgWIvA=";
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     pkg-config
   ];
@@ -30,10 +28,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-c4yuXCQAlwpDlKURwN51d3AI+m7cUNGRdgl29qgWIvA=";
+
   passthru.tests = {
     version = testers.testVersion {
-      package = nail-parquet;
       command = "nail --version";
+      package = nail-parquet;
     };
   };
 

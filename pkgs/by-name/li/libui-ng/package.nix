@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmocka,
   fetchFromGitHub,
+  cmocka,
   gtk3,
   meson,
   ninja,

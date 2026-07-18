@@ -1,21 +1,20 @@
 {
   lib,
   fetchFromGitHub,
+  adwaita-icon-theme,
+  gobject-introspection,
+  gtk3,
+  gtksourceview3,
   nix-update-script,
   python3,
   python3Packages,
-  adwaita-icon-theme,
-  gtk3,
-  wrapGAppsHook3,
-  gtksourceview3,
   snapper,
-  gobject-introspection,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "snapper-gui";
   version = "0.1-unstable-2022-06-26";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ricardomv";
@@ -34,8 +33,6 @@ python3Packages.buildPythonApplication {
     adwaita-icon-theme
   ];
 
-  doCheck = false; # it doesn't have any tests
-
   propagatedBuildInputs = with python3Packages; [
     gtk3
     dbus-python
@@ -45,22 +42,27 @@ python3Packages.buildPythonApplication {
     snapper
   ];
 
+  doCheck = false; # it doesn't have any tests
+  format = "setuptools";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
 
   meta = {
     description = "Graphical interface for snapper";
-    mainProgram = "snapper-gui";
+
     longDescription = ''
       A graphical user interface for the tool snapper for Linux filesystem
       snapshot management. It can compare snapshots and revert differences between snapshots.
       In simple terms, this allows root and non-root users to view older versions of files
       and revert changes. Currently works with btrfs, ext4 and thin-provisioned LVM volumes.
     '';
+
     homepage = "https://github.com/ricardomv/snapper-gui";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ahuzik ];
+    platforms = lib.platforms.linux;
+    mainProgram = "snapper-gui";
   };
 }

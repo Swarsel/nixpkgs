@@ -5,22 +5,23 @@
   buildPythonPackage,
   fetchPypi,
   isodate,
+  msrest,
   setuptools,
   typing-extensions,
-  msrest,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-cognitiveservices";
   version = "15.0.0b1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_cognitiveservices";
     inherit version;
     hash = "sha256-3ydbAI1IkiIuwnQbd6829kZv9IgFkqTFwG155l58JFQ=";
+    pname = "azure_mgmt_cognitiveservices";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +32,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.cognitiveservices" ];
 
   meta = {

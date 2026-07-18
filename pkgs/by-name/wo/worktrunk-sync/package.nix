@@ -3,15 +3,14 @@
   fetchFromGitHub,
   gitMinimal,
   makeWrapper,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "worktrunk-sync";
   version = "0.1.2";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pablospe";
@@ -20,10 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-LGxTzXF/AWNWajH8gygbSQVpIidbArUZRaokefeD7es=";
   };
 
-  cargoHash = "sha256-iClMQtyDH6SPJSaHXzOsme4uAJCoLQA9QF8EUu/FQDM=";
-
   nativeBuildInputs = [ makeWrapper ];
-
+  cargoHash = "sha256-iClMQtyDH6SPJSaHXzOsme4uAJCoLQA9QF8EUu/FQDM=";
   nativeCheckInputs = [ gitMinimal ];
 
   postInstall = ''
@@ -33,7 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,22 +1,21 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  pdm-backend,
   curl-cffi,
+  fetchPypi,
   httpx,
+  pdm-backend,
   typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "httpx-curl-cffi";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "httpx_curl_cffi";
     inherit (finalAttrs) version;
     hash = "sha256-F37plo6doUJAcBeBbMP7CKsoGxNPdzqTWbakZQpsgfM=";
+    pname = "httpx_curl_cffi";
   };
 
   build-system = [
@@ -28,6 +27,8 @@ buildPythonPackage (finalAttrs: {
     httpx
     typing-extensions
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "httpx_curl_cffi"

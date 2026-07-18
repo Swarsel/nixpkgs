@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,22 +16,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-GKAOM+YQicpPlCiecl4EgVDdvlHXP8j5txCodZVUKRg=";
   };
 
-  cargoHash = "sha256-6fs3fhm0l24EZNZm3xXw8Uxb1Ot3pw+myfSJzWG3alU=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  # skip auto manpage update
-  buildNoDefaultFeatures = true;
+  cargoHash = "sha256-6fs3fhm0l24EZNZm3xXw8Uxb1Ot3pw+myfSJzWG3alU=";
 
   postInstall = ''
     installManPage assets/jf.1
   '';
 
+  # skip auto manpage update
+  buildNoDefaultFeatures = true;
+
   meta = {
     description = "Small utility to safely format and print JSON objects in the commandline";
-    mainProgram = "jf";
     homepage = "https://github.com/sayanarijit/jf";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sayanarijit ];
+    mainProgram = "jf";
   };
 })

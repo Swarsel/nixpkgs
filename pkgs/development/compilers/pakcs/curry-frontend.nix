@@ -1,15 +1,15 @@
 {
-  mkDerivation,
+  lib,
+  Cabal,
   base,
   binary,
   bytestring,
-  Cabal,
   containers,
   directory,
   extra,
   file-embed,
   filepath,
-  lib,
+  mkDerivation,
   mtl,
   network-uri,
   parsec,
@@ -24,9 +24,13 @@ mkDerivation {
   pname = "curry-frontend";
   version = "2.1.0";
   src = ./.;
-  isLibrary = true;
-  isExecutable = true;
+  description = "Compile the functional logic language Curry to several intermediate formats";
   enableSeparateDataOutput = true;
+  executableHaskellDepends = [ base ];
+  homepage = "http://curry-language.org";
+  isExecutable = true;
+  isLibrary = true;
+
   libraryHaskellDepends = [
     base
     binary
@@ -46,7 +50,10 @@ mkDerivation {
     time
     transformers
   ];
-  executableHaskellDepends = [ base ];
+
+  license = lib.licenses.bsd3;
+  mainProgram = "curry-frontend";
+
   testHaskellDepends = [
     base
     bytestring
@@ -64,8 +71,4 @@ mkDerivation {
     template-haskell
     transformers
   ];
-  homepage = "http://curry-language.org";
-  description = "Compile the functional logic language Curry to several intermediate formats";
-  license = lib.licenses.bsd3;
-  mainProgram = "curry-frontend";
 }

@@ -2,23 +2,24 @@
   lib,
   stdenv,
   fetchurl,
+  bzip2,
+  darwin,
+  docutils,
   pkgsStatic,
   python3,
-  docutils,
-  bzip2,
   zlib,
-  darwin,
-  static ? stdenv.hostPlatform.isStatic, # generates static libraries *only*
   enableForMonotone ? false, # Is it being imported for Monotone use?
+  static ? stdenv.hostPlatform.isStatic, # generates static libraries *only*
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "botan";
   version = "2.19.5";
 
-  __structuredAttrs = true;
-  enableParallelBuilding = true;
-  strictDeps = true;
+  src = fetchurl {
+    url = "http://botan.randombit.net/releases/Botan-${finalAttrs.version}.tar.xz";
+    hash = "sha256-3+6g4KbybWckxK8B2pp7iEh62y2Bunxy/K9S21IsmtQ=";
+  };
 
   outputs = [
     "bin"
@@ -28,14 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  src = fetchurl {
-    url = "http://botan.randombit.net/releases/Botan-${finalAttrs.version}.tar.xz";
-    hash = "sha256-3+6g4KbybWckxK8B2pp7iEh62y2Bunxy/K9S21IsmtQ=";
-  };
-
   postPatch = ''
     sed -e '1i#include <cstdint>' -i src/cli/cli.h
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     python3
@@ -47,12 +45,20 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  buildTargets = [
-    "cli"
-  ]
-  ++ lib.optionals finalAttrs.finalPackage.doCheck [ "tests" ]
-  ++ lib.optionals static [ "static" ]
-  ++ lib.optionals (!static) [ "shared" ];
+  doCheck = true;
+
+  preInstall = ''
+    if [ -d src/scripts ]; then
+      patchShebangs src/scripts
+    fi
+  '';
+
+  postInstall = ''
+    cd "$out"/lib/pkgconfig
+    ln -s botan-*.pc botan.pc || true
+  '';
+
+  __structuredAttrs = true;
 
   botanConfigureFlags = [
     "--prefix=${placeholder "out"}"
@@ -73,34 +79,33 @@ stdenv.mkDerivation (finalAttrs: {
     "--os=mingw"
   ];
 
+  buildTargets = [
+    "cli"
+  ]
+  ++ lib.optionals finalAttrs.finalPackage.doCheck [ "tests" ]
+  ++ lib.optionals static [ "static" ]
+  ++ lib.optionals (!static) [ "shared" ];
+
   configurePhase = ''
     runHook preConfigure
     python configure.py ''${botanConfigureFlags[@]}
     runHook postConfigure
   '';
 
-  preInstall = ''
-    if [ -d src/scripts ]; then
-      patchShebangs src/scripts
-    fi
-  '';
-
-  postInstall = ''
-    cd "$out"/lib/pkgconfig
-    ln -s botan-*.pc botan.pc || true
-  '';
-
-  doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Cryptographic algorithms library";
     homepage = "https://botan.randombit.net";
-    mainProgram = "botan";
+    license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.unix;
-    license = lib.licenses.bsd2;
+    mainProgram = "botan";
+
     knownVulnerabilities = lib.optional (
       !enableForMonotone
     ) "Botan2 is EOL and its full interface surface contains unpatched vulnerabilities";

@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  pkg-config,
-  gtk3,
-  gnome,
   adwaita-icon-theme,
+  desktop-file-utils,
+  fetchpatch,
   gdk-pixbuf,
-  librsvg,
-  wrapGAppsHook3,
-  itstool,
+  gnome,
   gsound,
+  gtk3,
+  itstool,
+  librsvg,
   libxml2,
   meson,
   ninja,
+  pkg-config,
   python3,
   vala,
-  desktop-file-utils,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,13 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix build with recent Vala.
     # https://gitlab.gnome.org/GNOME/dconf-editor/-/merge_requests/15
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/iagno/-/commit/e8a0aeec350ea80349582142c0e8e3cd3f1bce38.patch";
       hash = "sha256-OO1x0Yx56UFzHTBsPAMYAjnJHlnTjdO1Vk7q6XU8wKQ=";
+      url = "https://gitlab.gnome.org/GNOME/iagno/-/commit/e8a0aeec350ea80349582142c0e8e3cd3f1bce38.patch";
     })
     # https://gitlab.gnome.org/GNOME/dconf-editor/-/merge_requests/13
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/iagno/-/commit/508c0f94e5f182e50ff61be6e04f72574dee97cb.patch";
       hash = "sha256-U7djuMhb1XJaKAPyogQjaunOkbBK24r25YD7BgH05P4=";
+      url = "https://gitlab.gnome.org/GNOME/iagno/-/commit/508c0f94e5f182e50ff61be6e04f72574dee97cb.patch";
     })
   ];
 
@@ -68,11 +68,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/iagno";
     description = "Computer version of the game Reversi, more popularly called Othello";
-    mainProgram = "iagno";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/iagno";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "iagno";
+    teams = [ lib.teams.gnome ];
   };
 })

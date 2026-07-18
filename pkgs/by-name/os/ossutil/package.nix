@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
-  version = "1.7.18";
   pname = "ossutil";
+  version = "1.7.18";
 
   src = fetchFromGitHub {
     owner = "aliyun";
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-4a/bNH47sxxwgYYQhHTqyXddJit3VbeM49/4IEfjWsY=";
-
   # don't run tests as they require secret access keys that only travis has
   doCheck = false;
 

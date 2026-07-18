@@ -3,14 +3,13 @@
   buildPythonPackage,
   fetchPypi,
   psutil,
-  unittestCheckHook,
   setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pyperf";
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,10 +17,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ psutil ];
-
   nativeCheckInputs = [ unittestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "pyperf" ];
 
   unittestFlagsArray = [
     "-s"
@@ -29,14 +28,12 @@ buildPythonPackage rec {
     "-v"
   ];
 
-  pythonImportsCheck = [ "pyperf" ];
-
   meta = {
     description = "Python module to generate and modify perf";
-    mainProgram = "pyperf";
     homepage = "https://pyperf.readthedocs.io/";
     changelog = "https://github.com/psf/pyperf/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "pyperf";
   };
 }

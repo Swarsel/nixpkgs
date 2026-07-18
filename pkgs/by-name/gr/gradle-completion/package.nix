@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  installShellFiles,
   gitUpdater,
+  installShellFiles,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,17 +17,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-bazehfRFvrcKOd5ZCUeKl/Ru/NtlVVS8LoZio+kI7+8=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     installShellFiles
   ];
-
-  strictDeps = true;
-
-  # we just move two files into $out,
-  # this shouldn't bother Hydra.
-  preferLocalBuild = true;
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -38,6 +32,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  # we just move two files into $out,
+  # this shouldn't bother Hydra.
+  preferLocalBuild = true;
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";

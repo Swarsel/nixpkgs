@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  vala,
-  pkg-config,
-  gtk3,
-  glib,
-  gpgme,
-  json-glib,
-  wrapGAppsHook3,
-  libpeas,
   bash,
-  gobject-introspection,
-  gtksourceview4,
-  gsettings-desktop-schemas,
+  fetchpatch,
+  glib,
   gnome,
+  gobject-introspection,
+  gpgme,
+  gsettings-desktop-schemas,
   gspell,
+  gtk3,
+  gtksourceview4,
   gvfs,
-  shared-mime-info,
+  json-glib,
+  libdazzle,
   libgee,
   libgit2-glib,
   libhandy,
+  libpeas,
   libsecret,
   libxml2,
   meson,
   ninja,
+  pkg-config,
   python3,
-  libdazzle,
+  shared-mime-info,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,10 +43,18 @@ stdenv.mkDerivation (finalAttrs: {
     # Switch to girepository-2.0
     # https://gitlab.gnome.org/GNOME/gitg/-/merge_requests/278
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/gitg/raw/630cf1bdb50ad37fb20b81d76caa8622e7225c58/f/gitg-gir-2.0.patch";
       hash = "sha256-9pC7wrxWcI1C/8yB5AcaED0RyaVbQzT0Ajuz0TM4hmo=";
+      url = "https://src.fedoraproject.org/rpms/gitg/raw/630cf1bdb50ad37fb20b81d76caa8622e7225c58/f/gitg-gir-2.0.patch";
     })
   ];
+
+  postPatch = ''
+    patchShebangs meson_post_install.py
+
+    substituteInPlace tests/libgitg/test-commit.vala --replace-fail "/bin/bash" "${bash}/bin/bash"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gobject-introspection
@@ -78,12 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    patchShebangs meson_post_install.py
-
-    substituteInPlace tests/libgitg/test-commit.vala --replace-fail "/bin/bash" "${bash}/bin/bash"
-  '';
-
   preFixup = ''
     gappsWrapperArgs+=(
       # Thumbnailers
@@ -97,17 +99,17 @@ stdenv.mkDerivation (finalAttrs: {
     };
   };
 
-  strictDeps = true;
-
   meta = {
+    description = "GNOME GUI client to view git repositories";
     homepage = "https://gitlab.gnome.org/GNOME/gitg";
     changelog = "https://gitlab.gnome.org/GNOME/gitg/-/blob/v${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "GNOME GUI client to view git repositories";
-    mainProgram = "gitg";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       Luflosi
     ];
-    license = lib.licenses.gpl2Plus;
+
     platforms = lib.platforms.linux;
+    mainProgram = "gitg";
   };
 })

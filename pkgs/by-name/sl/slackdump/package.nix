@@ -1,10 +1,10 @@
 {
-  buildGoModule,
   lib,
-  fetchFromGitHub,
   stdenv,
-  nix-update-script,
+  fetchFromGitHub,
+  buildGoModule,
   darwin,
+  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,7 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Ds3nggx1f389goOWelYXNviFRZ/h4XX54LgtU9oqklc=";
   };
 
+  vendorHash = "sha256-fRvtdl0+uVhN6cQJxRsOw1vQsrcsPvcn/Tb7US7MKmM=";
   nativeCheckInputs = lib.optional stdenv.hostPlatform.isDarwin darwin.IOKitTools;
 
   checkFlags =
@@ -35,18 +36,15 @@ buildGoModule (finalAttrs: {
       "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$"
     ];
 
-  vendorHash = "sha256-fRvtdl0+uVhN6cQJxRsOw1vQsrcsPvcn/Tb7US7MKmM=";
-
   __darwinAllowLocalNetworking = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Tools for saving Slack's data without admin privileges";
     homepage = "https://github.com/rusq/slackdump";
     changelog = "https://github.com/rusq/slackdump/releases/tag/v${finalAttrs.version}";
-    description = "Tools for saving Slack's data without admin privileges";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     mainProgram = "slackdump";
-    license = lib.licenses.gpl3Plus;
   };
 })

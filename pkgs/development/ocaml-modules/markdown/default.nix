@@ -1,10 +1,10 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   batteries,
-  tyxml,
+  buildDunePackage,
   ounit2,
+  tyxml,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -22,14 +22,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
-
   checkInputs = [ ounit2 ];
 
   meta = {
+    description = "Markdown parser and printer";
     homepage = "https://github.com/gildor478/ocaml-markdown";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
-    description = "Markdown parser and printer";
   };
 
 })

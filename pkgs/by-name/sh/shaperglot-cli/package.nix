@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,19 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-ivl3Zq0HRn4yP9JKfbjSaaERjbQ3SAEWhHk6toFp8dE=";
-
-  cargoBuildFlags = [
-    "--package=shaperglot-cli"
-  ];
-
-  cargoTestFlags = [
-    "--package=shaperglot-cli"
-  ];
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -39,6 +32,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     runHook postInstallCheck
   '';
+
+  cargoBuildFlags = [
+    "--package=shaperglot-cli"
+  ];
+
+  cargoTestFlags = [
+    "--package=shaperglot-cli"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -50,9 +51,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # The CHANGELOG.md file exists in this repository but is not actually used.
     changelog = "https://github.com/googlefonts/shaperglot/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
     mainProgram = "shaperglot";
   };
 })

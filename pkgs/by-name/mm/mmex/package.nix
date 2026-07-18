@@ -4,18 +4,18 @@
   fetchFromGitHub,
   appstream,
   cmake,
+  curl,
   gettext,
   git,
-  makeWrapper,
-  lsb-release,
-  pkg-config,
-  wrapGAppsHook3,
-  curl,
-  sqlite,
-  wxwidgets_3_2,
   gtk3,
+  lsb-release,
   lua,
+  makeWrapper,
+  pkg-config,
+  sqlite,
+  wrapGAppsHook3,
   wxsqlite3,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,14 +26,16 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "moneymanagerex";
     repo = "moneymanagerex";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-DE235wSfq20X3qh2L0KfFLk/54CW6l4Qn1K5r9nePQg=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
     substituteInPlace src/dbwrapper.cpp src/model/Model_Report.cpp \
       --replace-fail "sqlite3mc_amalgamation.h" "sqlite3.h"
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     appstream # for appstreamcli
@@ -57,8 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     lua
     wxsqlite3
   ];
-
-  strictDeps = true;
 
   cmakeFlags = [
     "-DWXSQLITE3_HAVE_CODEC=1"

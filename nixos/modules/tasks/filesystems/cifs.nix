@@ -17,8 +17,6 @@ in
 {
   config = {
 
-    system.fsPackages = mkIf (config.boot.supportedFilesystems.cifs or false) [ pkgs.cifs-utils ];
-
     boot.initrd.availableKernelModules = mkIf inInitrd [
       "cifs"
       "nls_utf8"
@@ -34,6 +32,7 @@ in
     '';
 
     boot.initrd.systemd.extraBin."mount.cifs" = mkIf inInitrd mount_cifs;
+    system.fsPackages = mkIf (config.boot.supportedFilesystems.cifs or false) [ pkgs.cifs-utils ];
 
   };
 }

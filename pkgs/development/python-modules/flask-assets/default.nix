@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
-  setuptools,
   flask,
-  webassets,
   pytestCheckHook,
+  setuptools,
+  webassets,
 }:
 
 buildPythonPackage rec {
   pname = "flask-assets";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miracle2k";
@@ -24,12 +23,13 @@ buildPythonPackage rec {
   patches = [
     # On master branch but not in a release.
     (fetchpatch2 {
+      hash = "sha256-Feo7gHHmHtWRB+3XvlECdU4i5rpyjyKEYEUCuy24rf4=";
       name = "refactor-with-pytest.patch";
       url = "https://github.com/miracle2k/flask-assets/commit/56e06dbb160c165e0289ac97496354786fe3f3fd.patch?full_index=1";
-      hash = "sha256-Feo7gHHmHtWRB+3XvlECdU4i5rpyjyKEYEUCuy24rf4=";
     })
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,13 +37,12 @@ buildPythonPackage rec {
     webassets
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_assets" ];
 
   meta = {
-    homepage = "https://github.com/miracle2k/flask-assets";
     description = "Asset management for Flask, to compress and merge CSS and Javascript files";
+    homepage = "https://github.com/miracle2k/flask-assets";
     license = lib.licenses.bsd2;
     maintainers = [ ];
   };

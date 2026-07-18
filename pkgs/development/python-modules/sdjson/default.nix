@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   domdf-python-tools,
-  fetchFromGitHub,
-  lib,
   typing-extensions,
   whey,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "sdjson";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "domdfcoding";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-7qwmPhij2X2GLtjeaoMCoOyT0qzYt9oFccWrQOq6LXw=";
   };
 
+  # missing dependency coincidence
+  doCheck = false;
   build-system = [ whey ];
 
   dependencies = [
@@ -26,10 +27,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sdjson" ];
-
-  # missing dependency coincidence
-  doCheck = false;
 
   meta = {
     description = "Custom JSON Encoder for Python utilising functools.singledispatch";

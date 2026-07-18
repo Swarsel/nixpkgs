@@ -2,11 +2,10 @@
   stdenv,
   fetchurl,
   appimageTools,
-
-  version,
-  pname,
   meta,
   passthru,
+  pname,
+  version,
 }:
 let
   src =
@@ -19,6 +18,7 @@ let
       throw "${pname}-${version} is not supported on ${stdenv.hostPlatform.system}";
   appimageContents = appimageTools.extractType2 {
     inherit pname version src;
+
     postExtract = ''
       substituteInPlace $out/gdevelop.desktop --replace-fail 'Exec=AppRun --no-sandbox %U' 'Exec=gdevelop'
     '';

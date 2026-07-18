@@ -6,7 +6,6 @@
 buildGoModule (finalAttrs: {
   pname = "kin-openapi";
   version = "0.141.0";
-  vendorHash = "sha256-uprdzJnaxd1UyEdZFFPvmo2Xu/QXJdheC1eqkyKY9Zc=";
 
   src = fetchFromGitHub {
     owner = "getkin";
@@ -14,6 +13,8 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-1qyOCA5R+OWnPsEX0I5AJf/6ckWGz5dtMiKFCCA3TQY=";
   };
+
+  vendorHash = "sha256-uprdzJnaxd1UyEdZFFPvmo2Xu/QXJdheC1eqkyKY9Zc=";
 
   checkFlags =
     let
@@ -28,11 +29,11 @@ buildGoModule (finalAttrs: {
   subPackages = [ "cmd/validate" ];
 
   meta = {
-    mainProgram = "validate";
     description = "Command line tool to validation openapi3 documents";
     homepage = "https://github.com/getkin/kin-openapi";
     changelog = "https://github.com/getkin/kin-openapi/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers._6543 ];
+    mainProgram = "validate";
   };
 })

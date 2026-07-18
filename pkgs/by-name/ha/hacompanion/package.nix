@@ -17,16 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-SohjueM0DwSuh7XVClYiWA/5d0V6x2vmp5aPxgmIJYY=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/tobias-kuendig/hacompanion/releases/tag/v${finalAttrs.version}";
     description = "Daemon that sends local hardware information to Home Assistant";
     homepage = "https://github.com/tobias-kuendig/hacompanion";
+    changelog = "https://github.com/tobias-kuendig/hacompanion/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ramblurr ];
+    platforms = lib.platforms.linux;
     mainProgram = "hacompanion";
   };
 })

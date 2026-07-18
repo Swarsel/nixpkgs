@@ -1,27 +1,26 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   boto3,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   matplotlib,
   moto,
   numpy,
   packaging,
   protobuf,
   pytestCheckHook,
-  torch,
   setuptools,
   setuptools-scm,
   soundfile,
-  stdenv,
   tensorboard,
+  torch,
   torchvision,
 }:
 
 buildPythonPackage rec {
   pname = "tensorboardx";
   version = "2.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lanpa";
@@ -36,21 +35,8 @@ buildPythonPackage rec {
       --replace-fail "newshape=" "shape="
   '';
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   # required to make tests deterministic
   env.PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
-
-  dependencies = [
-    packaging
-    protobuf
-    numpy
-  ];
-
-  pythonImportsCheck = [ "tensorboardX" ];
 
   nativeCheckInputs = [
     boto3
@@ -61,6 +47,25 @@ buildPythonPackage rec {
     torch
     tensorboard
     torchvision
+  ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    packaging
+    protobuf
+    numpy
+  ];
+
+  disabledTestPaths = [
+    # we are not interested in linting errors
+    "tests/test_lint.py"
+    # ImportError: cannot import name 'mock_s3' from 'moto'
+    "tests/test_embedding.py"
+    "tests/test_record_writer.py"
   ];
 
   disabledTests = [
@@ -75,24 +80,21 @@ buildPythonPackage rec {
     "test_pytorch_graph"
   ];
 
-  disabledTestPaths = [
-    # we are not interested in linting errors
-    "tests/test_lint.py"
-    # ImportError: cannot import name 'mock_s3' from 'moto'
-    "tests/test_embedding.py"
-    "tests/test_record_writer.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "tensorboardX" ];
 
   meta = {
     description = "Library for writing tensorboard-compatible logs";
     homepage = "https://tensorboardx.readthedocs.io";
-    downloadPage = "https://github.com/lanpa/tensorboardX";
     changelog = "https://github.com/lanpa/tensorboardX/blob/${src.tag}/HISTORY.rst";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       lebastr
       akamaus
     ];
+
     platforms = lib.platforms.all;
+    downloadPage = "https://github.com/lanpa/tensorboardX";
   };
 }

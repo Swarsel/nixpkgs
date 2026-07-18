@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
   alembic,
+  buildPythonPackage,
   flask,
-  sqlalchemy,
-  pytestCheckHook,
   flask-sqlalchemy,
   flask-sqlalchemy-lite,
+  flit-core,
+  pytestCheckHook,
+  sqlalchemy,
 }:
 
 buildPythonPackage rec {
   pname = "flask-alembic";
   version = "3.2.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pallets-eco";
@@ -23,6 +21,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-g5xl5CEfSZUbZxCLYykjd94eVjxzBAkgoBcR4y7IYfM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    flask-sqlalchemy
+    flask-sqlalchemy-lite
+  ];
 
   build-system = [ flit-core ];
 
@@ -32,12 +36,7 @@ buildPythonPackage rec {
     sqlalchemy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    flask-sqlalchemy
-    flask-sqlalchemy-lite
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_alembic" ];
 
   meta = {

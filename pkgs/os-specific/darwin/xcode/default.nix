@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   requireFile,
-  lib,
 }:
 
 let
@@ -27,10 +27,9 @@ let
           '';
 
       app = requireFile rec {
-        name = "Xcode.app";
-        url = "https://developer.apple.com/services-account/download?path=/Developer_Tools/Xcode_${version}/${xip}";
-        hashMode = "recursive";
         inherit sha256;
+        hashMode = "recursive";
+
         message = ''
           Unfortunately, we cannot download ${name} automatically.
           Please go to ${url}
@@ -41,15 +40,18 @@ let
           nix-store --add-fixed --recursive sha256 Xcode.app
           rm -rf Xcode.app
         '';
+
+        name = "Xcode.app";
+        url = "https://developer.apple.com/services-account/download?path=/Developer_Tools/Xcode_${version}/${xip}";
       };
       meta = {
-        homepage = "https://developer.apple.com/xcode/";
         description = "Apple's Xcode developer tools";
-        maintainers = with lib.maintainers; [ DimitarNestorov ];
+        homepage = "https://developer.apple.com/xcode/";
         license = lib.licenses.unfree;
+        sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+        maintainers = with lib.maintainers; [ DimitarNestorov ];
         platforms = lib.platforms.darwin ++ lib.platforms.linux;
         hydraPlatforms = [ ];
-        sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
       };
 
     in
@@ -57,22 +59,23 @@ let
       oldAttrs:
       oldAttrs
       // {
-        pname = "xcode";
         inherit version;
         inherit meta;
+        pname = "xcode";
       }
     );
 
 in
 lib.makeExtensible (self: {
   inherit requireXcode;
-  xcode_8_1 = requireXcode "8.1" "sha256-VuAovU/b4rcLh+xMtcsZmbTWwTk35VGfMSp+fqPbsqM=";
-  xcode_8_2 = requireXcode "8.2" "sha256-ohqgGD7JEEmXEvmfn/N9Ga2lM8jNwhIuh+ky7PQPzY4=";
-  xcode_9_1 = requireXcode "9.1" "sha256-LG7pVMh1rNh5uP/bASvV9sKvGDrSGWH90J4gzwcgYSk=";
-  xcode_9_2 = requireXcode "9.2" "sha256-jMiG2G2zoGw4m00CjkGE+2cn0qeOdSUcXosZI2577q0=";
-  xcode_9_3 = requireXcode "9.3" "sha256-XIQYjfDVSmrYbyolnZIUtmOMhj9uhyWIn0KncsiaqYo=";
-  xcode_9_4 = requireXcode "9.4" "sha256-ZzE4F4UHVgKlJIn36kfs6Pba8iUAe6P/rh/VmxwLXwE=";
-  xcode_9_4_1 = requireXcode "9.4.1" "sha256-fFGB/XMZJQ2u9qh+2LYBHFh6mj5lr6gMlSQwgyS8M3k=";
+
+  xcode =
+    self."xcode_${
+      lib.replaceStrings [ "." ] [ "_" ] (
+        if (stdenv.targetPlatform ? xcodeVer) then stdenv.targetPlatform.xcodeVer else "12.3"
+      )
+    }";
+
   xcode_10_1 = requireXcode "10.1" "sha256-u4Br3SsWbPCv6r4vGHFQUQmfPb9oUEmcdCFktMlbTes=";
   xcode_10_2 = requireXcode "10.2" "sha256-592xNBS3Obp/3sDROyI4SxPN77cKMk45Lnis/QJd/vc=";
   xcode_10_2_1 = requireXcode "10.2.1" "sha256-r65DbLDpiFJ78VH2hvfp7ZVpehoI44PSnaeDbElZTYc=";
@@ -116,27 +119,28 @@ lib.makeExtensible (self: {
   xcode_16_3 = requireXcode "16.3" "sha256-hkIlRYUc1SD2lBwhRtqBGJapUIa+tdOyPKG19Su5OUU=";
   xcode_16_4 = requireXcode "16.4" "sha256-voCEZlKrp9NYGmXAsf1FHxO69EgWZHDIWtQZ2qEzElA=";
   xcode_26 = requireXcode "26_Universal" "sha256-p4INqf85CSIzd7xHRCS9tCigQkOQPKnS/+D5nue3PsY=";
-  xcode_26_Apple_silicon = requireXcode "26_Apple_silicon" "sha256-dlfZ2sM6a9pUPdukoMoqvQAj7EEUyj0a/VkXKwkkFT8=";
   xcode_26_0_1 = requireXcode "26.0.1_Universal" "sha256-PsEIjrzxgXFqCWeHs/bsvrlxy8aN899jMhesczMbPfE=";
   xcode_26_0_1_Apple_silicon = requireXcode "26.0.1_Apple_silicon" "sha256-UBDey19uBljjRw84bY4rzxetFEkHiXLEj39Q578jYL8=";
   xcode_26_1 = requireXcode "26.1_Universal" "sha256-SLIn1xAjaYhKGN6EEKslzmVZv+Zoq7QNGdtNreWJ5L8=";
-  xcode_26_1_Apple_silicon = requireXcode "26.1_Apple_silicon" "sha256-xFMknk3RxxJi/5IOb2mmw7vyC1xOaY5ZwCZ09AARtJU=";
   xcode_26_1_1 = requireXcode "26.1.1_Universal" "sha256-IkmrerBysM4eqMf/wCQHCBcEL0go/ivFlMpJ4SYQmOU=";
   xcode_26_1_1_Apple_silicon = requireXcode "26.1.1_Apple_silicon" "sha256-5dZ1O7iD2CF8R4TBeBLkaKLe/WOi8CMJJ1/Bg+uitCw=";
+  xcode_26_1_Apple_silicon = requireXcode "26.1_Apple_silicon" "sha256-xFMknk3RxxJi/5IOb2mmw7vyC1xOaY5ZwCZ09AARtJU=";
   xcode_26_2 = requireXcode "26.2_Universal" "sha256-uCw71PjAuvtKTIpcYsiFSjUZQnIBIpIoOm1QaaYHD7k=";
   xcode_26_2_Apple_silicon = requireXcode "26.2_Apple_silicon" "sha256-YxMVppJwRzTA6xWOILxVjLdl0bNmtZSifG/KQx6inRE=";
   xcode_26_3 = requireXcode "26.3_Universal" "sha256-qrPSc036x3tW1TWWfX10+IS2c08dRCa6KFc+++35ueM=";
   xcode_26_3_Apple_silicon = requireXcode "26.3_Apple_silicon" "sha256-q2p45zqAZUH6Z1Q3DHbZgpuuFTjZoMPhEfFdeIUvclw=";
   xcode_26_4 = requireXcode "26.4_Universal" "sha256-0Cg4Ytu2+JOLEqw1ZZoB6hxFXNA2KriTLwLpT8bmA7I=";
-  xcode_26_4_Apple_silicon = requireXcode "26.4_Apple_silicon" "sha256-urkJVqUY6+5z0YiEqCru9M/OneDLAMzdGfOt7i3d1WI=";
   xcode_26_4_1 = requireXcode "26.4.1_Universal" "sha256-N9QgPKfZV64gJPlr4r/0gPS0yAgJd3a+qlr0YbzMCU4=";
   xcode_26_4_1_Apple_silicon = requireXcode "26.4.1_Apple_silicon" "sha256-8MtGX97e/2+zvY2Et9Jm9eXqVmyr+U02UqsKmffh9hs=";
+  xcode_26_4_Apple_silicon = requireXcode "26.4_Apple_silicon" "sha256-urkJVqUY6+5z0YiEqCru9M/OneDLAMzdGfOt7i3d1WI=";
   xcode_26_5 = requireXcode "26.5_Universal" "sha256-hQ1I7CuVOmkCcVLo1AUV25PJGL33fT3MuWR+DJZ84aQ=";
   xcode_26_5_Apple_silicon = requireXcode "26.5_Apple_silicon" "sha256-lavdscO0z4Tyf22vV8QMooOt5yYFwnTi1oe3yA+wTdA=";
-  xcode =
-    self."xcode_${
-      lib.replaceStrings [ "." ] [ "_" ] (
-        if (stdenv.targetPlatform ? xcodeVer) then stdenv.targetPlatform.xcodeVer else "12.3"
-      )
-    }";
+  xcode_26_Apple_silicon = requireXcode "26_Apple_silicon" "sha256-dlfZ2sM6a9pUPdukoMoqvQAj7EEUyj0a/VkXKwkkFT8=";
+  xcode_8_1 = requireXcode "8.1" "sha256-VuAovU/b4rcLh+xMtcsZmbTWwTk35VGfMSp+fqPbsqM=";
+  xcode_8_2 = requireXcode "8.2" "sha256-ohqgGD7JEEmXEvmfn/N9Ga2lM8jNwhIuh+ky7PQPzY4=";
+  xcode_9_1 = requireXcode "9.1" "sha256-LG7pVMh1rNh5uP/bASvV9sKvGDrSGWH90J4gzwcgYSk=";
+  xcode_9_2 = requireXcode "9.2" "sha256-jMiG2G2zoGw4m00CjkGE+2cn0qeOdSUcXosZI2577q0=";
+  xcode_9_3 = requireXcode "9.3" "sha256-XIQYjfDVSmrYbyolnZIUtmOMhj9uhyWIn0KncsiaqYo=";
+  xcode_9_4 = requireXcode "9.4" "sha256-ZzE4F4UHVgKlJIn36kfs6Pba8iUAe6P/rh/VmxwLXwE=";
+  xcode_9_4_1 = requireXcode "9.4.1" "sha256-fFGB/XMZJQ2u9qh+2LYBHFh6mj5lr6gMlSQwgyS8M3k=";
 })

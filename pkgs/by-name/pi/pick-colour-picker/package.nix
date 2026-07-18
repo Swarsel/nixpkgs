@@ -1,18 +1,17 @@
 {
   lib,
   fetchFromGitHub,
+  glib,
+  gobject-introspection,
+  gtk3,
   nix-update-script,
   python3Packages,
-  glib,
-  gtk3,
-  gobject-introspection,
   wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonPackage {
   pname = "pick-colour-picker";
   version = "1.5.0-unstable-2022-05-08";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stuartlangridge";
@@ -32,36 +31,37 @@ python3Packages.buildPythonPackage {
     wrapGAppsHook3
   ];
 
+  buildInputs = [
+    glib
+    gtk3
+  ];
+
   build-system = with python3Packages; [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "pick" ];
 
   pythonPath = with python3Packages; [
     pygobject3
     pycairo
   ];
 
-  buildInputs = [
-    glib
-    gtk3
-  ];
-
-  pythonImportsCheck = [ "pick" ];
-
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
 
   meta = {
-    homepage = "https://kryogenix.org/code/pick/";
-    license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     description = "Colour picker that remembers where you picked colours from";
-    mainProgram = "pick-colour-picker";
-    maintainers = [ lib.maintainers.mkg20001 ];
 
     longDescription = ''
       Pick lets you pick colours from anywhere on your screen. Choose the colour you want and Pick remembers it, names it, and shows you a screenshot so you can remember where you got it from.
 
       Zoom all the way in to pixels to pick just the right one. Show your colours in your choice of format: rgba() or hex, CSS or Gdk or Qt, whichever you prefer. Copy to the clipboard ready for pasting into code or graphics apps.
     '';
+
+    homepage = "https://kryogenix.org/code/pick/";
+    license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.mkg20001 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "pick-colour-picker";
   };
 }

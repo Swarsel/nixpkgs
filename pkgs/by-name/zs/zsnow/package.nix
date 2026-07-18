@@ -1,14 +1,14 @@
 {
   lib,
-  zig_0_15,
   stdenv,
   fetchFromGitHub,
+  nix-update-script,
   pkg-config,
   wayland,
-  wayland-scanner,
   wayland-protocols,
+  wayland-scanner,
   wlr-protocols,
-  nix-update-script,
+  zig_0_15,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,23 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "db8491639e45dbb925652512cb5941f1ea1a1ec2";
     hash = "sha256-h9o/6X2WPfeJrLIx3WnVo0l4i80zHnmO2KkYuVJY2Sk=";
   };
-  zigWayland = fetchFromGitHub {
-    owner = "ifreund";
-    repo = "zig-wayland";
-    tag = "v0.4.0";
-    hash = "sha256-ulIII5iJpM/W/VJB0HcdktEO2eb9T9J0ln2A1Z94dU4=";
-  };
-
-  nativeBuildInputs = [
-    zig_0_15
-    pkg-config
-    wayland-scanner
-  ];
-  buildInputs = [
-    wayland
-    wayland-protocols
-    wlr-protocols
-  ];
 
   postPatch = ''
     ln -s ${finalAttrs.zigWayland} ./zig-wayland
@@ -56,8 +39,27 @@ stdenv.mkDerivation (finalAttrs: {
         ""
   '';
 
+  nativeBuildInputs = [
+    zig_0_15
+    pkg-config
+    wayland-scanner
+  ];
+
+  buildInputs = [
+    wayland
+    wayland-protocols
+    wlr-protocols
+  ];
+
   # no tests
   dontUseZigCheck = true;
+
+  zigWayland = fetchFromGitHub {
+    hash = "sha256-ulIII5iJpM/W/VJB0HcdktEO2eb9T9J0ln2A1Z94dU4=";
+    owner = "ifreund";
+    repo = "zig-wayland";
+    tag = "v0.4.0";
+  };
 
   passthru.updateScript = nix-update-script { };
 

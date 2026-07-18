@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libtirpc,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,17 +19,17 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   buildInputs = [
     libtirpc
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+
   meta = {
     description = "Secure replacement for inetd";
-    platforms = lib.platforms.linux;
     homepage = "https://github.com/openSUSE/xinetd";
     license = lib.licenses.xinetd;
     maintainers = with lib.maintainers; [ fgaz ];
+    platforms = lib.platforms.linux;
   };
 })

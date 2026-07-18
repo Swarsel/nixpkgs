@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -16,69 +16,75 @@ in
       enable = lib.mkEnableOption "plikd, a temporary file upload system";
 
       openFirewall = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Open ports in the firewall for the plikd.";
+        type = lib.types.bool;
       };
 
       settings = lib.mkOption {
-        type = format.type;
         default = { };
+
         description = ''
           Configuration for plikd, see <https://github.com/root-gg/plik/blob/master/server/plikd.cfg>
           for supported values.
         '';
+
+        type = format.type;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.settings.ListenPort ];
+    };
+
     services.plikd.settings = lib.mapAttrs (name: lib.mkDefault) {
-      ListenPort = 8080;
-      ListenAddress = "localhost";
       DataBackend = "file";
+
       DataBackendConfig = {
         Directory = "/var/lib/plikd";
       };
+
+      ListenAddress = "localhost";
+      ListenPort = 8080;
+
       MetadataBackendConfig = {
-        Driver = "sqlite3";
         ConnectionString = "/var/lib/plikd/plik.db";
+        Driver = "sqlite3";
       };
     };
 
     systemd.services.plikd = {
-      description = "Plikd file sharing server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "simple";
-        ExecStart = "${pkgs.plikd}/bin/plikd --config ${plikdCfg}";
-        Restart = "on-failure";
-        StateDirectory = "plikd";
-        LogsDirectory = "plikd";
-        DynamicUser = true;
+      description = "Plikd file sharing server";
 
+      serviceConfig = {
+        DevicePolicy = "closed";
+        DynamicUser = true;
+        ExecStart = "${pkgs.plikd}/bin/plikd --config ${plikdCfg}";
+        LockPersonality = "yes";
+        LogsDirectory = "plikd";
+        MemoryDenyWriteExecute = "yes";
         # Basic hardening
         NoNewPrivileges = "yes";
-        PrivateTmp = "yes";
         PrivateDevices = "yes";
-        DevicePolicy = "closed";
-        ProtectSystem = "strict";
-        ProtectHome = "read-only";
+        PrivateTmp = "yes";
         ProtectControlGroups = "yes";
+        ProtectHome = "read-only";
         ProtectKernelModules = "yes";
         ProtectKernelTunables = "yes";
+        ProtectSystem = "strict";
+        Restart = "on-failure";
         RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
         RestrictNamespaces = "yes";
         RestrictRealtime = "yes";
         RestrictSUIDSGID = "yes";
-        MemoryDenyWriteExecute = "yes";
-        LockPersonality = "yes";
+        StateDirectory = "plikd";
+        Type = "simple";
       };
-    };
 
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.settings.ListenPort ];
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

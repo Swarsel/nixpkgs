@@ -2,20 +2,20 @@
   lib,
   # Build helpers
   stdenv,
+  # Build inputs
+  bashInteractive,
+  # Native build inputs
+  buildPackages,
+  e2fsprogs,
   runCommand,
+  runtimeShell,
+  singularity,
+  util-linux,
   vmTools,
   writeClosure,
   writeDirectReferencesToFile,
   writeScript,
   writeStringReferencesToFile,
-  # Native build inputs
-  buildPackages,
-  e2fsprogs,
-  util-linux,
-  # Build inputs
-  bashInteractive,
-  runtimeShell,
-  singularity,
 }:
 
 let
@@ -51,22 +51,25 @@ lib.makeExtensible (final: {
       result = vmTools.runInLinuxVM (
         runCommand "${projectName}-image-${name}.sif"
           {
-            __structuredAttrs = true;
+            inherit contents;
+            inherit memSize;
+            strictDeps = true;
+
             nativeBuildInputs = [
               singularity
               e2fsprogs
               util-linux
             ];
-            strictDeps = true;
-            inherit contents;
+
+            __structuredAttrs = true;
             layerClosure = writeClosure ([ bashInteractive ] ++ runScriptReferences ++ contents);
+
             preVM = vmTools.createEmptyImage {
-              size = diskSize;
-              fullName = "${projectName}-run-disk";
               # Leaving "$out" for the Singularity/Container image
               destination = "disk-image";
+              fullName = "${projectName}-run-disk";
+              size = diskSize;
             };
-            inherit memSize;
           }
           ''
             mkdir workspace

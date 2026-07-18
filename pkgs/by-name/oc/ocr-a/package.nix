@@ -13,11 +13,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0kpmjjxwzm84z8maz6lq9sk1b0xv1zkvl28lwj7i0m2xf04qixd0";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     install -D -m 0644 $src $out/share/fonts/truetype/OCRA.ttf
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "ANSI OCR font from the '60s. CYBER";

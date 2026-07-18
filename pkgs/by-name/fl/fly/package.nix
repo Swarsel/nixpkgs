@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,18 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-iY0oPeP3D6/nsPDdGE3lvjFlhH/z9QQ5gHpjpamdl5M=";
   };
 
-  vendorHash = "sha256-ZNhGt+nyl7zmQIHT+5f/c2hixyZ8kLmCWO5qa7CAGuY=";
-
-  subPackages = [ "fly" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/concourse/concourse.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-ZNhGt+nyl7zmQIHT+5f/c2hixyZ8kLmCWO5qa7CAGuY=";
   doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -38,14 +28,24 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/fly completion --shell zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/concourse/concourse.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "fly" ];
+
   meta = {
     description = "Command line interface to Concourse CI";
-    mainProgram = "fly";
     homepage = "https://concourse-ci.org";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ivanbrennan
       SuperSandro2000
     ];
+
+    mainProgram = "fly";
   };
 })

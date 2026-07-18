@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "postmoogle";
@@ -14,12 +14,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-WuWCmmxRKT78JGHsdeECzaq6A7F5JaGJPYULMnwRWPE=";
   };
 
+  vendorHash = null;
+
   tags = [
     "timetzdata"
     "goolm"
   ];
-
-  vendorHash = null;
 
   meta = {
     description = "Matrix <-> Email bridge in the form of an SMTP server";

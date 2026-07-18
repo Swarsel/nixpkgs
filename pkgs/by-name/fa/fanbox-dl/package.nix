@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-uhNitrJeFuFG2XyQrc1JBbExoU6Ln6AFRO2Bgb1+N5M=";
-
   # pings websites during testing
   doCheck = false;
 
   meta = {
     description = "Pixiv FANBOX Downloader";
-    mainProgram = "fanbox-dl";
     homepage = "https://github.com/hareku/fanbox-dl";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.moni ];
+    mainProgram = "fanbox-dl";
   };
 })

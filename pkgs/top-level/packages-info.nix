@@ -15,6 +15,7 @@ let
           [
             {
               name = lib.showAttrPath path;
+
               value = {
                 inherit (value)
                   meta
@@ -22,17 +23,19 @@ let
                   outputName
                   system
                   ;
+
+                # TODO: Remove the following two fallbacks when all packages have been fixed.
+                # Note: pname and version are *required* by repology, so do not change to
+                # the optional pattern from above.
+                pname = value.pname or value.name;
+                version = value.version or "";
+
                 ${if value ? "outputs" then "outputs" else null} = lib.listToAttrs (
                   lib.map (x: {
                     name = x;
                     value = null;
                   }) value.outputs
                 );
-                # TODO: Remove the following two fallbacks when all packages have been fixed.
-                # Note: pname and version are *required* by repology, so do not change to
-                # the optional pattern from above.
-                pname = value.pname or value.name;
-                version = value.version or "";
               };
             }
           ]

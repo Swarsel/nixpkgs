@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   libiconv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,15 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-MzXObbxccwEG7egmQMCdhUukGqZS+NgbYwZjTaqME7I=";
   };
 
-  cargoHash = "sha256-gR3FL1GeD9Dx5TKeThmPScMCRJQ2THlO4pBViXlI9XM=";
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
+  cargoHash = "sha256-gR3FL1GeD9Dx5TKeThmPScMCRJQ2THlO4pBViXlI9XM=";
 
   meta = {
     description = "Fast text uwuifier";
     homepage = "https://github.com/Daniel-Liu-c0deb0t/uwu";
     license = lib.licenses.mit;
-    platforms = lib.platforms.x86; # uses SSE instructions
     maintainers = with lib.maintainers; [ siraben ];
+    platforms = lib.platforms.x86; # uses SSE instructions
     mainProgram = "uwuify";
   };
 })

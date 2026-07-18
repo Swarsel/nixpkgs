@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  ocaml,
   findlib,
+  ocaml,
   ocamlbuild,
   opaline,
   withShared ? true,
-  lib,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,21 +18,21 @@ stdenv.mkDerivation rec {
     sha256 = "1w2saw7zanf9m9ffvz2lvcxvlm118pws2x1wym526xmydhqpyfa7";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     ocamlbuild
     findlib
   ];
 
-  strictDeps = true;
-
   buildPhase = "ocaml pkg/build.ml native=true native-dynlink=${lib.boolToString withShared}";
   installPhase = "${opaline}/bin/opaline -libdir $OCAMLFIND_DESTDIR";
   configurePlatforms = [ ];
 
   meta = {
-    description = "Compatibility library for OCaml’s Uchar module";
     inherit (ocaml.meta) platforms license;
+    description = "Compatibility library for OCaml’s Uchar module";
     maintainers = [ lib.maintainers.vbgl ];
   };
 }

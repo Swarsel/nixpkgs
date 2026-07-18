@@ -1,20 +1,20 @@
 {
   lib,
-  symlinkJoin,
   aileron,
-  vegur,
-  f5_6,
-  tenderness,
-  medio,
-  ferrum,
-  seshat,
-  penna,
   eunomia,
-  route159,
   f1_8,
-  nacelle,
-  melete,
+  f5_6,
   fa_1,
+  ferrum,
+  medio,
+  melete,
+  nacelle,
+  penna,
+  route159,
+  seshat,
+  symlinkJoin,
+  tenderness,
+  vegur,
 }:
 
 symlinkJoin {
@@ -39,7 +39,6 @@ symlinkJoin {
 
   meta = {
     description = "Font Collection by Sora Sagano";
-
     homepage = "https://dotcolon.net/";
 
     license = with lib.licenses; [
@@ -47,7 +46,7 @@ symlinkJoin {
       ofl
     ];
 
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ minijackson ];
+    platforms = lib.platforms.all;
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
-  aiohttp,
+  fetchFromGitHub,
   aiocsv,
+  aiohttp,
   buildPythonPackage,
   certifi,
   ciso8601,
-  fetchFromGitHub,
   numpy,
   pandas,
   python-dateutil,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "influxdb-client";
   version = "1.50.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "influxdata";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
     hash = "sha256-39ioVlTgvICHArTNhfXZQ+WrUda2B5LxLtMwXWp6krU=";
   };
 
+  # Requires influxdb server
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,16 +41,16 @@ buildPythonPackage rec {
       aiocsv
       aiohttp
     ];
+
     ciso = [ ciso8601 ];
+
     extra = [
       numpy
       pandas
     ];
   };
 
-  # Requires influxdb server
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "influxdb_client" ];
 
   meta = {

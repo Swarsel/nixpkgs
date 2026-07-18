@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  cabextract,
   bt-fw-converter,
+  cabextract,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -20,11 +20,6 @@ stdenvNoCC.mkDerivation rec {
     bt-fw-converter
   ];
 
-  unpackCmd = ''
-    mkdir -p ${pname}-${version}
-    cabextract $src --directory ${pname}-${version}
-  '';
-
   installPhase = ''
     mkdir -p $out/lib/firmware/brcm
     bt-fw-converter -f bcbtums.inf -o $out/lib/firmware/brcm
@@ -38,16 +33,21 @@ stdenvNoCC.mkDerivation rec {
     done
   '';
 
-  outputHashMode = "recursive";
-  outputHashAlgo = "sha256";
   outputHash = "042frb2dmrqfj8q83h5p769q6hg2b3i8fgnyvs9r9a71z7pbsagq";
+  outputHashAlgo = "sha256";
+  outputHashMode = "recursive";
+
+  unpackCmd = ''
+    mkdir -p ${pname}-${version}
+    cabextract $src --directory ${pname}-${version}
+  '';
 
   meta = {
     description = "Firmware for Broadcom WIDCOMM® Bluetooth devices";
     homepage = "https://www.catalog.update.microsoft.com/Search.aspx?q=Broadcom+bluetooth";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ zraexy ];
     sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
+    maintainers = with lib.maintainers; [ zraexy ];
+    platforms = lib.platforms.linux;
   };
 }

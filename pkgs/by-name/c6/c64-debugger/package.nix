@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchgit,
   alsa-lib,
+  fetchgit,
   gtk3,
   libGL,
   libGLU,
   libx11,
+  libxcb-util,
   pkg-config,
   upx,
-  libxcb-util,
 }:
 
 stdenv.mkDerivation {
@@ -22,6 +22,16 @@ stdenv.mkDerivation {
     hash = "sha256-3SR73AHQlYSEYpJLtQ/aJ1UITZGq7aA9tQKxBsn/yuc=";
   };
 
+  postPatch = ''
+    # Disable default definition of RUN_COMMODORE64
+    sed -i 's|^#define RUN_COMMODORE64|//#define RUN_COMMODORE64|' MTEngine/Games/c64/C64D_Version.h
+  '';
+
+  nativeBuildInputs = [
+    upx
+    pkg-config
+  ];
+
   buildInputs = [
     alsa-lib
     gtk3
@@ -31,15 +41,14 @@ stdenv.mkDerivation {
     libxcb-util
   ];
 
-  nativeBuildInputs = [
-    upx
-    pkg-config
-  ];
-
-  postPatch = ''
-    # Disable default definition of RUN_COMMODORE64
-    sed -i 's|^#define RUN_COMMODORE64|//#define RUN_COMMODORE64|' MTEngine/Games/c64/C64D_Version.h
-  '';
+  env = {
+    NIX_CFLAGS_COMPILE = toString [
+      "-Wno-error=narrowing"
+      "-Wno-error=implicit-function-declaration"
+      "-Wno-error=int-conversion"
+      "-Wno-error=incompatible-pointer-types"
+    ];
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -85,18 +94,10 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  env = {
-    NIX_CFLAGS_COMPILE = toString [
-      "-Wno-error=narrowing"
-      "-Wno-error=implicit-function-declaration"
-      "-Wno-error=int-conversion"
-      "-Wno-error=incompatible-pointer-types"
-    ];
-  };
-
   meta = {
-    homepage = "https://sourceforge.net/projects/c64-debugger";
     description = "Commodore 64, Atari XL/XE and NES code and memory debugger that works in real time";
+    homepage = "https://sourceforge.net/projects/c64-debugger";
+
     license = with lib.licenses; [
       gpl3Only # c64-debugger
       mit # MTEngine
@@ -104,8 +105,9 @@ stdenv.mkDerivation {
       gpl2Plus # VICE, atari800
       gpl2 # nestopiaue
     ];
-    mainProgram = "c64debugger";
+
     maintainers = [ lib.maintainers.detegr ];
     platforms = lib.platforms.linux;
+    mainProgram = "c64debugger";
   };
 }

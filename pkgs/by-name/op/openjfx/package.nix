@@ -1,41 +1,32 @@
 {
-  featureVersion ? "21",
-
   lib,
   stdenv,
-  pkgs,
-
-  gradle_8,
-  perl,
-  pkg-config,
-  cmake,
-  gperf,
-  python3,
-  ruby,
-
-  gtk2,
-  gtk3,
-  libxtst,
-  libxxf86vm,
-  glib,
+  _experimental-update-script-combinators,
   alsa-lib,
+  cmake,
+  fetchpatch2,
   ffmpeg_7,
   ffmpeg_7-headless,
-
-  fetchpatch2,
-  writeText,
-
-  _experimental-update-script-combinators,
-  nixpkgs-openjdk-updater,
-  writeShellScript,
-  path,
-
-  withMedia ? true,
-  withWebKit ? false,
-
+  glib,
+  gperf,
+  gradle_8,
+  gtk2,
+  gtk3,
   jdk17_headless,
   jdk21_headless,
   jdk25_headless,
+  libxtst,
+  libxxf86vm,
+  nixpkgs-openjdk-updater,
+  path,
+  perl,
+  pkg-config,
+  pkgs,
+  python3,
+  ruby,
+  writeShellScript,
+  writeText,
+  featureVersion ? "21",
   jdk-bootstrap ?
     {
       "17" = jdk17_headless;
@@ -43,6 +34,8 @@
       "25" = jdk25_headless;
     }
     .${featureVersion},
+  withMedia ? true,
+  withWebKit ? false,
 }:
 
 let
@@ -60,10 +53,9 @@ assert lib.assertMsg (lib.pathExists sourceFile)
   "OpenJFX ${featureVersion} is not a supported version";
 
 stdenv.mkDerivation {
+  inherit (source) src;
   pname = "openjfx-modular-sdk";
   version = lib.removePrefix "refs/tags/" source.src.rev;
-
-  inherit (source) src;
 
   patches = lib.optionals (!atLeast23) (
     if atLeast21 then
@@ -77,9 +69,6 @@ stdenv.mkDerivation {
 
         # Build with Gradle 8
         (fetchpatch2 {
-          # Yes, this patch taken from the jfx21u repo is intended to be
-          # applied to jfx17.
-          url = "https://github.com/openjdk/jfx21u/commit/7f704c24c2238f9d7bb744a20667a8c1337decc6.patch?full_index=1";
           excludes = [
             # The patch fails to apply to these files, but with the exception
             # of build.properties (which is patched in postPatch), none of them
@@ -89,10 +78,30 @@ stdenv.mkDerivation {
             "gradle/wrapper/gradle-wrapper.properties"
             "gradlew"
           ];
+
           hash = "sha256-WuJtzPy0IV4xvn+i5xeDqekWO0VR2GIfsYKkEmh8KKU=";
+          # Yes, this patch taken from the jfx21u repo is intended to be
+          # applied to jfx17.
+          url = "https://github.com/openjdk/jfx21u/commit/7f704c24c2238f9d7bb744a20667a8c1337decc6.patch?full_index=1";
         })
       ]
   );
+
+  postPatch =
+    lib.optionalString (!atLeast23) ''
+      # Add missing includes for gcc-13 for webkit build:
+      sed -e '1i #include <cstdio>' \
+        -i modules/javafx.web/src/main/native/Source/bmalloc/bmalloc/Heap.cpp \
+           modules/javafx.web/src/main/native/Source/bmalloc/bmalloc/IsoSharedPageInlines.h
+
+    ''
+    + lib.optionalString (!atLeast21) ''
+      substituteInPlace build.properties \
+        --replace-fail jfx.gradle.version=7.3 jfx.gradle.version=8.4
+    ''
+    + ''
+      ln -s $config gradle.properties
+    '';
 
   nativeBuildInputs = [
     gradle_8
@@ -114,46 +123,15 @@ stdenv.mkDerivation {
     (if atLeast21 then ffmpeg_7 else ffmpeg_7-headless)
   ];
 
-  mitmCache = gradle_8.fetchDeps {
-    attrPath = "openjfx${featureVersion}";
-    pkg = pkgs."openjfx${featureVersion}".override { withWebKit = true; };
-    data = ./. + "/${featureVersion}/deps.json";
-  };
-
-  gradleBuildTask = "sdk";
-
-  stripDebugList = [ "." ];
-
-  enableParallelBuilding = false;
-
-  __darwinAllowLocalNetworking = true;
-
   # GCC 14 makes these errors by default
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types -Wno-error=int-conversion";
+
   env.config = writeText "gradle.properties" ''
     CONF = Release
     JDK_HOME = ${jdk-bootstrap.home}
     COMPILE_MEDIA = ${lib.boolToString withMedia}
     COMPILE_WEBKIT = ${lib.boolToString withWebKit}
   '';
-
-  dontUseCmakeConfigure = true;
-
-  postPatch =
-    lib.optionalString (!atLeast23) ''
-      # Add missing includes for gcc-13 for webkit build:
-      sed -e '1i #include <cstdio>' \
-        -i modules/javafx.web/src/main/native/Source/bmalloc/bmalloc/Heap.cpp \
-           modules/javafx.web/src/main/native/Source/bmalloc/bmalloc/IsoSharedPageInlines.h
-
-    ''
-    + lib.optionalString (!atLeast21) ''
-      substituteInPlace build.properties \
-        --replace-fail jfx.gradle.version=7.3 jfx.gradle.version=8.4
-    ''
-    + ''
-      ln -s $config gradle.properties
-    '';
 
   preBuild = ''
     export NUMBER_OF_PROCESSORS=$NIX_BUILD_CORES
@@ -173,10 +151,24 @@ stdenv.mkDerivation {
     done
   '';
 
+  __darwinAllowLocalNetworking = true;
+
   disallowedReferences = [
     jdk-bootstrap
     gradle_8.jdk
   ];
+
+  dontUseCmakeConfigure = true;
+  enableParallelBuilding = false;
+  gradleBuildTask = "sdk";
+
+  mitmCache = gradle_8.fetchDeps {
+    attrPath = "openjfx${featureVersion}";
+    data = ./. + "/${featureVersion}/deps.json";
+    pkg = pkgs."openjfx${featureVersion}".override { withWebKit = true; };
+  };
+
+  stripDebugList = [ "." ];
 
   passthru.updateScript = _experimental-update-script-combinators.sequence [
     source.updateScript
@@ -207,10 +199,12 @@ stdenv.mkDerivation {
   meta = {
     description = "Next-generation Java client toolkit";
     homepage = "https://openjdk.org/projects/openjfx/";
+
     license = with lib.licenses; [
       gpl2
       classpathException20
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

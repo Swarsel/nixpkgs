@@ -1,14 +1,11 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-
+  buildHomeAssistantComponent,
   cachetools,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "dckiller51";
-  domain = "bodymiscale";
   version = "2026.7.0";
 
   src = fetchFromGitHub {
@@ -22,9 +19,13 @@ buildHomeAssistantComponent rec {
     cachetools
   ];
 
+  domain = "bodymiscale";
+
   ignoreVersionRequirement = [
     "cachetools"
   ];
+
+  owner = "dckiller51";
 
   meta = {
     description = "Home Assistant custom component providing body metrics for Xiaomi Mi Scale 1 and 2";

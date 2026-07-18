@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
-  vapoursynth,
-  nasm,
   fftwFloat,
+  nasm,
+  pkg-config,
+  vapoursynth,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     nasm
     vapoursynth

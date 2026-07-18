@@ -2,33 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  cmake,
-  gitMinimal,
-  meson,
-  ninja,
-  pkg-config,
-  python3Packages,
-
   # buildInputs
   abseil-cpp,
   asio,
   aws-sdk-cpp,
+  # nativeBuildInputs
+  cmake,
+  config,
+  cudaPackages,
+  gitMinimal,
   hwloc,
   libaio,
   libfabric,
   liburing,
+  meson,
+  ninja,
+  # passthru
+  nix-update-script,
   numactl,
+  pkg-config,
+  python3Packages,
   taskflow,
   tomlplusplus,
   ucx,
-
-  # passthru
-  nix-update-script,
-
-  config,
-  cudaPackages,
   cudaSupport ? config.cudaSupport,
 }:
 let
@@ -37,9 +33,6 @@ in
 effectiveStdenv.mkDerivation (finalAttrs: {
   pname = "nixl";
   version = "1.3.1";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "ai-dynamo";
@@ -81,6 +74,8 @@ effectiveStdenv.mkDerivation (finalAttrs: {
         --replace-fail "'/lib64'" "'/lib'"
     '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     gitMinimal
@@ -92,7 +87,6 @@ effectiveStdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals cudaSupport [
     cudaPackages.cuda_nvcc
   ];
-  dontUseCmakeConfigure = true;
 
   buildInputs = [
     abseil-cpp
@@ -136,13 +130,14 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "werror" "false")
   ];
 
-  passthru = {
-    updateScript = nix-update-script { };
+  __structuredAttrs = true;
+  dontUseCmakeConfigure = true;
 
+  passthru = {
+    pythonPackage = python3Packages.nixl;
     # propagate the stdenv so that the python API can consume it directly
     stdenv = effectiveStdenv;
-
-    pythonPackage = python3Packages.nixl;
+    updateScript = nix-update-script { };
   };
 
   meta = {

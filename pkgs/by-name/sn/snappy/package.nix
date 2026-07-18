@@ -18,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-bMZD8EI9dvDGupfos4hi/0ShBkrJlI5Np9FxE6FfrNE=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     ./revert-PUBLIC.patch
     # Re-enable RTTI, without which other applications can't subclass snappy::Source
@@ -33,14 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
     # For a different revision (in case nixpkgs is behind or something) you can go through the full revision history.
     # Should the patch not be available for the nixpkgs version, ideally wait until the patch becomes available before bumping, or vendor it if necessary.
     (fetchpatch {
-      url = "https://build.opensuse.org/public/source/openSUSE:Factory/snappy/reenable-rtti.patch?rev=e3449869b466869fc6b8a03a1a528fa6";
       hash = "sha256-JhVhkHh7XPx1Bzf5xnOgWLgwh1oihX3O+emQWzE4Dho=";
+      url = "https://build.opensuse.org/public/source/openSUSE:Factory/snappy/reenable-rtti.patch?rev=e3449869b466869fc6b8a03a1a528fa6";
     })
-  ];
-
-  outputs = [
-    "out"
-    "dev"
   ];
 
   nativeBuildInputs = [ cmake ];
@@ -50,6 +50,10 @@ stdenv.mkDerivation (finalAttrs: {
     "-DSNAPPY_BUILD_TESTS=OFF"
     "-DSNAPPY_BUILD_BENCHMARKS=OFF"
   ];
+
+  #checkTarget = "test";
+  # requires gbenchmark and gtest but it also installs them out $dev
+  doCheck = false;
 
   postInstall = ''
     substituteInPlace "$out"/lib/cmake/Snappy/SnappyTargets.cmake \
@@ -65,15 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
-  #checkTarget = "test";
-
-  # requires gbenchmark and gtest but it also installs them out $dev
-  doCheck = false;
-
   meta = {
+    description = "Compression/decompression library for very high speeds";
     homepage = "https://google.github.io/snappy/";
     license = lib.licenses.bsd3;
-    description = "Compression/decompression library for very high speeds";
     platforms = lib.platforms.all;
   };
 })

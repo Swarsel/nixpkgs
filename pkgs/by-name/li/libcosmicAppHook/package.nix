@@ -6,28 +6,25 @@
 {
   lib,
   stdenv,
-  makeSetupHook,
-  runCommand,
-  makeBinaryWrapper,
-  pkg-config,
-  targetPackages,
   cosmic-icons,
   cosmic-settings,
   libGL,
-  libxkbcommon,
-  libxi,
-  libxcursor,
   libx11,
   libxcb,
-  wayland,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  makeBinaryWrapper,
+  makeSetupHook,
+  pkg-config,
+  runCommand,
+  targetPackages,
   vulkan-loader,
-
+  wayland,
   includeSettings ? true,
 }:
 
 makeSetupHook {
-  name = "libcosmic-app-hook";
-
   propagatedBuildInputs = [
     makeBinaryWrapper
     pkg-config
@@ -49,18 +46,9 @@ makeSetupHook {
       vulkan-loader
     ];
 
+  name = "libcosmic-app-hook";
+
   substitutions = {
-    fallbackXdgDirs =
-      let
-        fallbackThemes = runCommand "cosmic-fallback-themes" { } ''
-          mkdir -p $out/share
-          ln -s ${targetPackages.cosmic-settings or cosmic-settings}/share/cosmic $out/share/cosmic
-        '';
-      in
-      lib.makeSearchPath "share" (
-        lib.optionals includeSettings [ fallbackThemes ] ++ [ targetPackages.cosmic-icons or cosmic-icons ]
-      );
-    cargoLinkerVar = stdenv.targetPlatform.rust.cargoEnvVarTarget;
     # force linking for all libraries that may be dlopen'd by libcosmic/iced apps
     cargoLinkLibs = lib.escapeShellArgs (
       [
@@ -86,11 +74,24 @@ makeSetupHook {
         "vulkan"
       ]
     );
+
+    cargoLinkerVar = stdenv.targetPlatform.rust.cargoEnvVarTarget;
+
+    fallbackXdgDirs =
+      let
+        fallbackThemes = runCommand "cosmic-fallback-themes" { } ''
+          mkdir -p $out/share
+          ln -s ${targetPackages.cosmic-settings or cosmic-settings}/share/cosmic $out/share/cosmic
+        '';
+      in
+      lib.makeSearchPath "share" (
+        lib.optionals includeSettings [ fallbackThemes ] ++ [ targetPackages.cosmic-icons or cosmic-icons ]
+      );
   };
 
   meta = {
     description = "Setup hook for configuring and wrapping applications based on libcosmic";
-    teams = [ lib.teams.cosmic ];
     license = lib.licenses.mit;
+    teams = [ lib.teams.cosmic ];
   };
 } ./libcosmic-app-hook.sh

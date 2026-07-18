@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
   fetchpatch,
+  gitMinimal,
   gradle,
   jdk17,
   jre,
   makeWrapper,
-  coreutils,
-  gitMinimal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,9 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Ensures directories are writable when generating reports from read-only sources
     # Upstream: https://github.com/apache/jmeter/pull/6358
     (fetchpatch {
-      url = "https://github.com/apache/jmeter/commit/f4f1ef144ab5678bddb010ed1f05c67a76f547a5.patch";
-      hash = "sha256-ICG2z+nyJT0WDiYmU/Dx3VtkG83ymU7HwYjEuJMjaiY=";
       excludes = [ "xdocs/changes.xml" ];
+      hash = "sha256-ICG2z+nyJT0WDiYmU/Dx3VtkG83ymU7HwYjEuJMjaiY=";
+      url = "https://github.com/apache/jmeter/commit/f4f1ef144ab5678bddb010ed1f05c67a76f547a5.patch";
     })
   ];
 
@@ -41,27 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     gitMinimal
   ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  # Required for mitm-cache on Darwin
-  __darwinAllowLocalNetworking = true;
-
-  gradleFlags = [
-    # Point Gradle toolchain to the JDK we provide
-    "-Dorg.gradle.java.home=${jdk17}"
-    # Skip javadoc which tries to fetch external URLs
-    "-x"
-    "javadocAggregate"
-    # Skip checksum verification for dependencies
-    # we handle those ourself in `./deps.json`
-    "-PchecksumIgnore"
-  ];
-
-  # Build the distribution
-  gradleBuildTask = ":src:dist:assemble";
+  nativeCheckInputs = [ coreutils ];
 
   installPhase = ''
     runHook preInstall
@@ -102,8 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
-
-  nativeCheckInputs = [ coreutils ];
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -152,22 +130,47 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  # Required for mitm-cache on Darwin
+  __darwinAllowLocalNetworking = true;
+  # Build the distribution
+  gradleBuildTask = ":src:dist:assemble";
+
+  gradleFlags = [
+    # Point Gradle toolchain to the JDK we provide
+    "-Dorg.gradle.java.home=${jdk17}"
+    # Skip javadoc which tries to fetch external URLs
+    "-x"
+    "javadocAggregate"
+    # Skip checksum verification for dependencies
+    # we handle those ourself in `./deps.json`
+    "-PchecksumIgnore"
+  ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   meta = {
     description = "100% pure Java desktop application designed to load test functional behavior and measure performance";
+
     longDescription = ''
       The Apache JMeter desktop application is open source software, a 100%
       pure Java application designed to load test functional behavior and
       measure performance. It was originally designed for testing Web
       Applications but has since expanded to other test functions.
     '';
+
     homepage = "https://jmeter.apache.org/";
     changelog = "https://github.com/apache/jmeter/releases/tag/rel%2Fv${finalAttrs.version}";
     license = lib.licenses.asl20;
-    maintainers = [ ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # mitm cache
     ];
+
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "jmeter";
   };

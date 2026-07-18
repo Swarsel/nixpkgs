@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   redis,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "huey";
   version = "2.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coleifer";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vXp8xISf8g1VjIus/Xr4wKFFaVg5x4CXgP8IUUKYl+o=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ redis ];
-
   # connects to redis
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ redis ];
+  pyproject = true;
   pythonImportsCheck = [ "huey" ];
 
   meta = {

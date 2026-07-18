@@ -10,19 +10,12 @@ let
 in
 
 {
-  meta = {
-    maintainers = pkgs.linyaps.meta.maintainers;
-  };
-
   ###### interface
   options = {
     services.linyaps = {
       enable = lib.mkEnableOption "linyaps, a cross-distribution package manager with sandboxed apps and shared runtime";
-
       package = lib.mkPackageOption pkgs "linyaps" { };
-
       boxPackage = lib.mkPackageOption pkgs "linyaps-box" { };
-
       webStoreInstallerPackage = lib.mkPackageOption pkgs "linyaps-web-store-installer" { };
     };
   };
@@ -32,6 +25,7 @@ in
 
     environment = {
       profiles = [ "/var/lib/linglong/entries" ];
+
       systemPackages = [
         cfg.package
         cfg.boxPackage
@@ -39,10 +33,8 @@ in
       ];
     };
 
-    security.polkit.enable = true;
-
     fonts.fontDir.enable = true;
-
+    security.polkit.enable = true;
     services.dbus.packages = [ cfg.package ];
 
     systemd = {
@@ -53,11 +45,16 @@ in
     # Create system user and group for linyaps/linglong
     users = {
       groups.deepin-linglong = { };
+
       users.deepin-linglong = {
+        description = "Linyaps/Linglong system helper";
         group = "deepin-linglong";
         isSystemUser = true;
-        description = "Linyaps/Linglong system helper";
       };
     };
+  };
+
+  meta = {
+    maintainers = pkgs.linyaps.meta.maintainers;
   };
 }

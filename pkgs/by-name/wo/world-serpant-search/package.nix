@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "world-serpant-search";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Latrodect";
@@ -15,6 +14,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jXTivaXHHt63u9N7w40jyLUU2kg5LxAn50PVpqwUc0M=";
   };
+
+  # Project has no tests
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -27,8 +29,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     termcolor
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Command-line tool for vulnerability detection";

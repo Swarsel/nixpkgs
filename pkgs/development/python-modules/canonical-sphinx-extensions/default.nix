@@ -1,25 +1,26 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
   beautifulsoup4,
+  buildPythonPackage,
   docutils,
+  fetchPypi,
   gitpython,
   requests,
+  setuptools,
   sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "canonical-sphinx-extensions";
   version = "0.0.34";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "canonical_sphinx_extensions";
     inherit version;
     hash = "sha256-y9wiXj4FOkOt3Pt2EFbX5xO+f8V5eaI0G6LzuGbdY0o=";
+    pname = "canonical_sphinx_extensions";
   };
+
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -33,7 +34,7 @@ buildPythonPackage rec {
     sphinx
   ];
 
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Collection of Sphinx extensions used by Canonical documentation";

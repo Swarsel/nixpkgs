@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   coreutils,
   curl,
   diffutils,
@@ -8,10 +9,9 @@
   gnugrep,
   gnused,
   hexdump,
-  openssl,
-  makeWrapper,
-  fetchFromGitHub,
   installShellFiles,
+  makeWrapper,
+  openssl,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "dehydrated";
@@ -56,9 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Letsencrypt/acme client implemented as a shell-script";
-    mainProgram = "dehydrated";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.pstn ];
+    platforms = lib.platforms.all;
+    mainProgram = "dehydrated";
   };
 })

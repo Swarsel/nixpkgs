@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   utils,
   ...
 }:
@@ -12,8 +12,51 @@ in
 {
   options.services.mycelium = {
     enable = lib.mkEnableOption "mycelium network";
-    peers = lib.mkOption {
+    package = lib.mkPackageOption pkgs "mycelium" { };
+
+    addHostedPublicNodes = lib.mkOption {
+      default = true;
+
+      description = ''
+        Adds the hosted peers from <https://github.com/threefoldtech/mycelium#hosted-public-nodes>.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    extraArgs = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Extra command-line arguments to pass to mycelium.
+
+        See `mycelium --help` for all available options.
+      '';
+
       type = lib.types.listOf lib.types.str;
+    };
+
+    keyFile = lib.mkOption {
+      default = null;
+
+      description = ''
+        Optional path to a file containing the mycelium key material.
+        If unset, the location `/var/lib/mycelium/key.bin` will be used.
+        If no key exist at this location, it will be generated on startup.
+      '';
+
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+      description = "Open the firewall for mycelium";
+      type = lib.types.bool;
+    };
+
+    peers = lib.mkOption {
+      default = [ ];
+
       description = ''
         List of peers to connect to, in the formats:
          - `quic://[2001:0db8::1]:9651`
@@ -23,86 +66,36 @@ in
 
         If addHostedPublicNodes is set to true, the hosted public nodes will also be added.
       '';
-      default = [ ];
-    };
-    keyFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      description = ''
-        Optional path to a file containing the mycelium key material.
-        If unset, the location `/var/lib/mycelium/key.bin` will be used.
-        If no key exist at this location, it will be generated on startup.
-      '';
-    };
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Open the firewall for mycelium";
-    };
-    package = lib.mkPackageOption pkgs "mycelium" { };
-    addHostedPublicNodes = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = ''
-        Adds the hosted peers from <https://github.com/threefoldtech/mycelium#hosted-public-nodes>.
-      '';
-    };
-    extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = ''
-        Extra command-line arguments to pass to mycelium.
 
-        See `mycelium --help` for all available options.
-      '';
+      type = lib.types.listOf lib.types.str;
     };
   };
+
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
     networking.firewall.allowedTCPPorts = lib.optionals cfg.openFirewall [ 9651 ];
+
     networking.firewall.allowedUDPPorts = lib.optionals cfg.openFirewall [
       9650
       9651
     ];
 
-    environment.systemPackages = [ cfg.package ];
-
     systemd.services.mycelium = {
-      description = "Mycelium network";
       after = [
         "network.target"
         "network-online.target"
       ];
-      wants = [
-        "network-online.target"
-      ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "Mycelium network";
+
       restartTriggers = [
         cfg.keyFile
       ];
 
-      unitConfig.Documentation = "https://github.com/threefoldtech/mycelium";
-
       serviceConfig = {
-        User = "mycelium";
-        DynamicUser = true;
-        StateDirectory = "mycelium";
-        ProtectHome = true;
-        ProtectSystem = true;
-        LoadCredential = lib.mkIf (cfg.keyFile != null) "keyfile:${cfg.keyFile}";
-        SyslogIdentifier = "mycelium";
         AmbientCapabilities = [ "CAP_NET_ADMIN" ];
-        MemoryDenyWriteExecute = true;
-        ProtectControlGroups = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        SystemCallArchitectures = "native";
-        SystemCallFilter = [
-          "@system-service"
-          "~@privileged @keyring"
-        ];
+        DynamicUser = true;
+
         ExecStart = lib.concatStringsSep " " (
           [
             (lib.getExe cfg.package)
@@ -150,12 +143,41 @@ in
             "quic://[2a01:4f9:5a:1042::2]:9651"
           ])
         );
+
+        LoadCredential = lib.mkIf (cfg.keyFile != null) "keyfile:${cfg.keyFile}";
+        MemoryDenyWriteExecute = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = true;
         Restart = "always";
         RestartSec = 5;
+        RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        StateDirectory = "mycelium";
+        SyslogIdentifier = "mycelium";
+        SystemCallArchitectures = "native";
+
+        SystemCallFilter = [
+          "@system-service"
+          "~@privileged @keyring"
+        ];
+
         TimeoutStopSec = 5;
+        User = "mycelium";
       };
+
+      unitConfig.Documentation = "https://github.com/threefoldtech/mycelium";
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "network-online.target"
+      ];
     };
   };
+
   meta = {
     maintainers = with lib.maintainers; [
       flokli

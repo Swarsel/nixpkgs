@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  makeWrapper,
+  acl,
   copyDesktopItems,
-  makeDesktopItem,
-  ncurses,
+  libselinux,
   libtermkey,
   lua,
+  makeDesktopItem,
+  makeWrapper,
+  ncurses,
+  pkg-config,
   tre,
-  acl,
-  libselinux,
 }:
 
 let
@@ -22,10 +22,10 @@ stdenv.mkDerivation rec {
   version = "0.9";
 
   src = fetchFromGitHub {
+    owner = "martanne";
+    repo = "vis";
     rev = "v${version}";
     hash = "sha256-SYM3zlzhp3NdyOjtXc+pOiWY4/WA/Ax+qAWe18ggq3g=";
-    repo = "vis";
-    owner = "martanne";
   };
 
   nativeBuildInputs = [
@@ -54,24 +54,27 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "vis";
-      exec = "vis %U";
-      type = "Application";
-      icon = "accessories-text-editor";
-      comment = meta.description;
-      desktopName = "vis";
-      genericName = "Text editor";
       categories = [
         "Application"
         "Development"
         "IDE"
       ];
+
+      comment = meta.description;
+      desktopName = "vis";
+      exec = "vis %U";
+      genericName = "Text editor";
+      icon = "accessories-text-editor";
+
       mimeTypes = [
         "text/plain"
         "application/octet-stream"
       ];
+
+      name = "vis";
       startupNotify = false;
       terminal = true;
+      type = "Application";
     })
   ];
 

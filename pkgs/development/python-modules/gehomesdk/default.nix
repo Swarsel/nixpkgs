@@ -16,12 +16,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "gehomesdk";
   version = "2026.5.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-zKYe7vIXSFbtTqaCLEAHQvuDRGGXqorqfFqVVpBWuJs=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    cryptography
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,11 +38,7 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    cryptography
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "gehomesdk" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "filterpath";
@@ -22,14 +22,16 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/Sigmanificient/filterpath";
     description = "Retrieve a valid path from a messy piped line";
+    homepage = "https://github.com/Sigmanificient/filterpath";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       sigmanificient
       eveeifyeve # Darwin
     ];
-    mainProgram = "filterpath";
+
     platforms = lib.platforms.unix;
+    mainProgram = "filterpath";
   };
 })

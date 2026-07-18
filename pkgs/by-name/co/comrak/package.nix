@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,12 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "CommonMark-compatible GitHub Flavored Markdown parser and formatter";
-    mainProgram = "comrak";
     homepage = "https://github.com/kivikakk/comrak";
     changelog = "https://github.com/kivikakk/comrak/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       kivikakk
     ];
+
+    mainProgram = "comrak";
   };
 })

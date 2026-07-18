@@ -1,27 +1,27 @@
 {
-  stdenv,
   lib,
-  callPackage,
-  fetchzip,
+  stdenv,
   fetchFromGitHub,
+  callPackage,
   cmake,
-  pkg-config,
-  ninja,
   copyDesktopItems,
-  qt6,
-  opencv4,
-  procps,
   eigen,
+  fetchzip,
   imagemagick,
-  libxdmcp,
   libevdev,
   libicns,
+  libxdmcp,
   llvmPackages,
   makeDesktopItem,
-  wineWow64Packages,
-  onnxruntime,
+  ninja,
   nix-update-script,
+  onnxruntime,
+  opencv4,
+  pkg-config,
+  procps,
+  qt6,
   v4l-utils,
+  wineWow64Packages,
   withWine ? stdenv.targetPlatform.isx86_64,
 }:
 let
@@ -36,22 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "opentrack";
     rev = "5ce3de85301c9cdb0e2c2e024f03d94cb42bfd62";
     hash = "sha256-k4uAdsEIVYgHPrfl5m2CezQwi4ZGlItgq/e0cHd1TzY=";
-  };
-
-  aruco = callPackage ./aruco.nix { };
-
-  xplaneSdk = fetchzip {
-    url = "https://developer.x-plane.com/wp-content/plugins/code-sample-generation/sdk_zip_files/XPSDK411.zip";
-    hash = "sha256-zay5QrHJctllVFl+JhlyTDzH68h5UoxncEt+TpW3UgI=";
-    # see license.txt inside the zip file
-    meta.license = lib.licenses.free;
-  };
-
-  fusion = fetchFromGitHub {
-    owner = "xioTechnologies";
-    repo = "Fusion";
-    tag = "v1.2.11";
-    hash = "sha256-9bqqP+6kfdRWIRnnP+R0lXSQs6OmZoNlbCjqiJeJjpk=";
   };
 
   patches = [
@@ -135,15 +119,6 @@ stdenv.mkDerivation (finalAttrs: {
       rm -rf "$tmp"
     '';
 
-  # manually wrap just the main binary
-  dontWrapQtApps = true;
-  qtWrapperArgs =
-    lib.optionals isLinux [
-      "--prefix PATH : ${lib.makeBinPath [ v4l-utils ]}"
-    ]
-    ++ lib.optionals isDarwin [
-      "--set DYLD_LIBRARY_PATH ${placeholder "out"}/Library"
-    ];
   preFixup =
     lib.optionalString isLinux ''
       wrapQtApp $out/bin/opentrack
@@ -152,16 +127,43 @@ stdenv.mkDerivation (finalAttrs: {
       wrapQtApp $out/Applications/opentrack.app/Contents/MacOS/opentrack
     '';
 
+  aruco = callPackage ./aruco.nix { };
+
   desktopItems = lib.optionals isLinux [
     (makeDesktopItem {
-      name = "opentrack";
-      exec = "opentrack";
-      icon = "opentrack";
-      desktopName = "opentrack";
-      genericName = "Head tracking software";
       categories = [ "Utility" ];
+      desktopName = "opentrack";
+      exec = "opentrack";
+      genericName = "Head tracking software";
+      icon = "opentrack";
+      name = "opentrack";
     })
   ];
+
+  # manually wrap just the main binary
+  dontWrapQtApps = true;
+
+  fusion = fetchFromGitHub {
+    hash = "sha256-9bqqP+6kfdRWIRnnP+R0lXSQs6OmZoNlbCjqiJeJjpk=";
+    owner = "xioTechnologies";
+    repo = "Fusion";
+    tag = "v1.2.11";
+  };
+
+  qtWrapperArgs =
+    lib.optionals isLinux [
+      "--prefix PATH : ${lib.makeBinPath [ v4l-utils ]}"
+    ]
+    ++ lib.optionals isDarwin [
+      "--set DYLD_LIBRARY_PATH ${placeholder "out"}/Library"
+    ];
+
+  xplaneSdk = fetchzip {
+    hash = "sha256-zay5QrHJctllVFl+JhlyTDzH68h5UoxncEt+TpW3UgI=";
+    url = "https://developer.x-plane.com/wp-content/plugins/code-sample-generation/sdk_zip_files/XPSDK411.zip";
+    # see license.txt inside the zip file
+    meta.license = lib.licenses.free;
+  };
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -172,15 +174,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/opentrack/opentrack";
     description = "Head tracking software for MS Windows, Linux, and Apple OSX";
-    mainProgram = "opentrack";
+    homepage = "https://github.com/opentrack/opentrack";
     changelog = "https://github.com/opentrack/opentrack/releases";
     license = lib.licenses.isc;
+
     maintainers = [
       lib.maintainers.nekowinston
       lib.maintainers.zaninime
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "opentrack";
   };
 })

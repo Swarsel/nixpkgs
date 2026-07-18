@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -27,38 +27,45 @@ in
 {
   options.services.gemstash = {
     enable = lib.mkEnableOption "gemstash, a cache for rubygems.org and a private gem server";
+    package = lib.mkPackageOption pkgs "gemstash" { };
 
     openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to open the firewall for the port in {option}`services.gemstash.bind`.
       '';
-    };
 
-    package = lib.mkPackageOption pkgs "gemstash" { };
+      type = lib.types.bool;
+    };
 
     settings = lib.mkOption {
       default = { };
+
       description = ''
         Configuration for Gemstash. The details can be found at in
         [gemstash documentation](https://github.com/rubygems/gemstash/blob/master/man/gemstash-configuration.5.md).
         Each key set here is automatically prefixed with ":" to match the gemstash expectations.
       '';
+
       type = lib.types.submodule {
-        freeformType = settingsFormat.type;
         options = {
           base_path = lib.mkOption {
-            type = lib.types.path;
             default = "/var/lib/gemstash";
             description = "Path to store the gem files and the sqlite database. If left unchanged, the directory will be created.";
+            type = lib.types.path;
           };
+
           bind = lib.mkOption {
-            type = lib.types.str;
             default = "tcp://0.0.0.0:9292";
             description = "Host and port combination for the server to listen on.";
+            type = lib.types.str;
           };
+
           db_adapter = lib.mkOption {
+            default = null;
+            description = "Which database type to use. For choices other than sqlite3, the dbUrl has to be specified as well.";
+
             type = lib.types.nullOr (
               lib.types.enum [
                 "sqlite3"
@@ -67,49 +74,53 @@ in
                 "mysql2"
               ]
             );
-            default = null;
-            description = "Which database type to use. For choices other than sqlite3, the dbUrl has to be specified as well.";
           };
+
           db_url = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
             default = null;
             description = "The database to connect to when using postgres, mysql, or mysql2.";
+            type = lib.types.nullOr lib.types.str;
           };
         };
+
+        freeformType = settingsFormat.type;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users = {
-      users.gemstash = {
-        group = "gemstash";
-        isSystemUser = true;
-      };
-      groups.gemstash = { };
-    };
-
     networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [
       (parseBindPort cfg.settings.bind)
     ];
 
     systemd.services.gemstash = {
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+
       serviceConfig = lib.mkMerge [
         {
           ExecStart = "${lib.getExe cfg.package} start --no-daemonize --config-file ${settingsFormat.generate "gemstash.yaml" (prefixColon cfg.settings)}";
-          NoNewPrivileges = true;
-          User = "gemstash";
           Group = "gemstash";
+          LockPersonality = true;
+          NoNewPrivileges = true;
           PrivateTmp = true;
           RestrictSUIDSGID = true;
-          LockPersonality = true;
+          User = "gemstash";
         }
         (lib.mkIf (cfg.settings.base_path == "/var/lib/gemstash") {
           StateDirectory = "gemstash";
         })
       ];
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users = {
+      groups.gemstash = { };
+
+      users.gemstash = {
+        group = "gemstash";
+        isSystemUser = true;
+      };
     };
   };
 }

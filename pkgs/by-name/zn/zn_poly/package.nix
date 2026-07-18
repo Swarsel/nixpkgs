@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gmp,
   python3,
@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "0.9.2";
   pname = "zn_poly";
+  version = "0.9.2";
 
   # sage has picked up the maintenance (bug fixes and building, not development)
   # from the original, now unmaintained project which can be found at
@@ -21,17 +21,17 @@ stdenv.mkDerivation rec {
     hash = "sha256-QBItcrrpOGj22/ShTDdfZjm63bGW2xY4c71R1q8abPE=";
   };
 
-  buildInputs = [
-    gmp
-  ];
-
   nativeBuildInputs = [
     python3 # needed by ./configure to create the makefile
   ];
 
-  # name of library file ("libzn_poly.so")
-  libbasename = "libzn_poly";
-  libext = stdenv.hostPlatform.extensions.sharedLibrary;
+  buildInputs = [
+    gmp
+  ];
+
+  configureFlags = lib.optionals (!tune) [
+    "--disable-tuning"
+  ];
 
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
@@ -43,9 +43,7 @@ stdenv.mkDerivation rec {
     "${libbasename}${libext}"
   ];
 
-  configureFlags = lib.optionals (!tune) [
-    "--disable-tuning"
-  ];
+  doCheck = true;
 
   # `make install` fails to install some header files and the lib file.
   installPhase = ''
@@ -55,13 +53,15 @@ stdenv.mkDerivation rec {
     cp include/*.h "$out/include/zn_poly"
   '';
 
-  doCheck = true;
+  # name of library file ("libzn_poly.so")
+  libbasename = "libzn_poly";
+  libext = stdenv.hostPlatform.extensions.sharedLibrary;
 
   meta = {
-    homepage = "https://web.maths.unsw.edu.au/~davidharvey/code/zn_poly/";
     description = "Polynomial arithmetic over Z/nZ";
+    homepage = "https://web.maths.unsw.edu.au/~davidharvey/code/zn_poly/";
     license = with lib.licenses; [ gpl3 ];
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.sage ];
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "aioelectricitymaps";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jpbede";
@@ -30,14 +29,6 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    mashumaro
-    orjson
-  ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
@@ -46,10 +37,18 @@ buildPythonPackage rec {
     syrupy
   ];
 
-  pythonImportsCheck = [ "aioelectricitymaps" ];
+  build-system = [ poetry-core ];
 
+  dependencies = [
+    aiohttp
+    mashumaro
+    orjson
+  ];
+
+  pyproject = true;
   # https://github.com/jpbede/aioelectricitymaps/pull/415
   pytestFlags = [ "--snapshot-update" ];
+  pythonImportsCheck = [ "aioelectricitymaps" ];
 
   meta = {
     description = "Module for interacting with Electricity maps";

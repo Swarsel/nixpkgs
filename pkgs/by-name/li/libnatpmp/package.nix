@@ -18,17 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # install natpmp_declspec.h too, else nothing that uses this library will build
     (fetchpatch {
-      url = "https://github.com/miniupnp/libnatpmp/commit/5f4a7c65837a56e62c133db33c28cd1ea71db662.patch";
       hash = "sha256-tvoGFmo5AzUgb40bIs/EzikE0ex1SFzE5peLXhktnbc=";
+      url = "https://github.com/miniupnp/libnatpmp/commit/5f4a7c65837a56e62c133db33c28cd1ea71db662.patch";
     })
   ];
+
+  nativeBuildInputs = lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
 
   makeFlags = [
     "INSTALLPREFIX=$(out)"
     "CC:=$(CC)"
   ];
-
-  nativeBuildInputs = lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
 
   postFixup = ''
     chmod +x $out/lib/*
@@ -39,7 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "http://miniupnp.free.fr/libnatpmp.html";
     license = lib.licenses.bsd3;
     maintainers = [ ];
-    mainProgram = "natpmpc";
     platforms = lib.platforms.all;
+    mainProgram = "natpmpc";
   };
 })

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cairo,
+  gdk-pixbuf,
+  libxkbcommon,
   meson,
   ninja,
+  pam,
   pkg-config,
   scdoc,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxkbcommon,
-  cairo,
-  gdk-pixbuf,
-  pam,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,7 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -39,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     scdoc
     wayland-scanner
   ];
+
   buildInputs = [
     wayland
     wayland-protocols
@@ -54,15 +55,19 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dman-pages=enabled"
   ];
 
+  depsBuildBuild = [ pkg-config ];
+
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Screen locker for Wayland";
+
     longDescription = ''
       Swaylock, with fancy effects
     '';
-    mainProgram = "swaylock";
-    inherit (finalAttrs.src.meta) homepage;
+
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ gnxlxnxx ];
+    platforms = lib.platforms.linux;
+    mainProgram = "swaylock";
   };
 })

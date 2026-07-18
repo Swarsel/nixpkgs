@@ -1,13 +1,11 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-
-  # build system
-  setuptools,
-
+  fetchFromGitHub,
+  buildPythonPackage,
   # test dependencies
   pytestCheckHook,
+  # build system
+  setuptools,
 }:
 let
   pname = "lazy-imports";
@@ -22,15 +20,14 @@ let
 in
 buildPythonPackage {
   inherit pname version src;
-  pyproject = true;
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "lazy_imports" ];
 
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "lazy_imports" ];
 
   meta = {
     description = "Utility package to create lazy modules, deferring associated imports until attribute access";

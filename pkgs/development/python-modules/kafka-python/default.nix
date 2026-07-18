@@ -1,31 +1,26 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  pythonAtLeast,
-
-  # build system
-  setuptools,
-
+  fetchFromGitHub,
+  buildPythonPackage,
   # optional dependencies
   crc32c,
   lz4,
   pyperf,
-  python-snappy,
-  zstandard,
-
-  # test dependencies
-  pytestCheckHook,
   pytest-mock,
   pytest-timeout,
+  # test dependencies
+  pytestCheckHook,
+  python-snappy,
+  pythonAtLeast,
+  # build system
+  setuptools,
   xxhash,
+  zstandard,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "kafka-python";
   version = "3.0.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "dpkp";
@@ -34,6 +29,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-f/4RcR4vUn0odVdm+YASkqklYFMRHuwlyYln19w/WOs=";
   };
 
+  nativeCheckInputs = [
+    pytest-mock
+    pytest-timeout
+    pytestCheckHook
+    xxhash
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   optional-dependencies = {
@@ -43,6 +47,8 @@ buildPythonPackage (finalAttrs: {
     snappy = [ python-snappy ];
     zstd = [ zstandard ];
   };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "kafka"
@@ -61,19 +67,12 @@ buildPythonPackage (finalAttrs: {
     "kafka.vendor"
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytest-timeout
-    pytestCheckHook
-    xxhash
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
   meta = {
-    changelog = "https://github.com/dpkp/kafka-python/blob/${finalAttrs.src.tag}/CHANGES.md";
     description = "Pure Python client for Apache Kafka";
     homepage = "https://github.com/dpkp/kafka-python";
+    changelog = "https://github.com/dpkp/kafka-python/blob/${finalAttrs.src.tag}/CHANGES.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched

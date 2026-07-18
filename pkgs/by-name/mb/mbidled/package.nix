@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  libev,
   meson,
   ninja,
-  libev,
   openssl,
 }:
 
@@ -19,10 +19,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-XQXLPjEEesBd+bATsKE2nvoNcuqtRA1JIsV7306CssA=";
   };
 
-  preConfigure = ''
-    export LIBRARY_PATH=${libev}/lib
-  '';
-
   nativeBuildInputs = [
     meson
     ninja
@@ -32,6 +28,10 @@ stdenv.mkDerivation {
     libev
     openssl
   ];
+
+  preConfigure = ''
+    export LIBRARY_PATH=${libev}/lib
+  '';
 
   meta = {
     description = "Run command on mailbox change";

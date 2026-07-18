@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   SDL2,
   SDL2_mixer,
-  libpng,
+  cmake,
   darwin,
-  libicns,
   imagemagick,
+  libicns,
+  libpng,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,13 +48,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Open source re-implementation of Caesar III. Fork of Julius incorporating gameplay changes";
-    mainProgram = "augustus";
     homepage = "https://github.com/Keriew/augustus";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       Thra11
       matteopacini
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "augustus";
   };
 })

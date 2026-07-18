@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   gdk-pixbuf,
   glib,
   gpgme,
@@ -54,11 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (gpgme.meta) platforms;
     description = "Process data with GnuPG";
     homepage = "https://konstantintutsch.com/Lock";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ getchoo ];
     mainProgram = "com.konstantintutsch.Lock";
-    inherit (gpgme.meta) platforms;
   };
 })

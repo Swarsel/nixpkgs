@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
   enableJava,
   jdk,
   unzip,
@@ -23,12 +23,14 @@ buildOctavePackage rec {
   ];
 
   meta = {
+    description = "Input/Output in external formats";
     homepage = "https://gnu-octave.github.io/packages/io/";
+
     license = with lib.licenses; [
       gpl3Plus
       bsd2
     ];
+
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Input/Output in external formats";
   };
 }

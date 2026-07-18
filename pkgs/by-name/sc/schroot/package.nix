@@ -2,25 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-
+  # Build inputs
+  boost,
+  # Native build inputs
+  cmake,
   # Runtime script dependencies
   coreutils,
+  findutils,
   getent,
+  gettext,
   gnugrep,
   gnused,
   gnutar,
-  util-linux,
-
-  # Native build inputs
-  cmake,
-  findutils,
-  gettext,
-  mandoc,
   makeWrapper,
+  mandoc,
   perlPackages,
-
-  # Build inputs
-  boost,
+  util-linux,
 }:
 
 let
@@ -53,6 +50,12 @@ stdenv.mkDerivation {
     ./boost-1.89.patch
   ];
 
+  postPatch = ''
+    # Substitute the path to the mount binary
+    substituteInPlace bin/schroot-mount/schroot-mount-main.cc \
+      --replace-fail "/bin/mount" "${util-linux}/bin/mount"
+  '';
+
   nativeBuildInputs = [
     cmake
     findutils
@@ -72,12 +75,6 @@ stdenv.mkDerivation {
     (lib.cmakeFeature "SCHROOT_CONF_SETUP_D" "${placeholder "out"}/etc/schroot/setup.d")
   ];
 
-  postPatch = ''
-    # Substitute the path to the mount binary
-    substituteInPlace bin/schroot-mount/schroot-mount-main.cc \
-      --replace-fail "/bin/mount" "${util-linux}/bin/mount"
-  '';
-
   postFixup = ''
     # Make wrappers for all shell scripts used by schroot
     # The wrapped script are put into a separate directory to not be run by schroot during setup
@@ -94,14 +91,16 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Lightweight virtualisation tool";
+
     longDescription = ''
       Schroot is a program that allows the user to run a command or a login shell in a chroot environment.
     '';
+
     homepage = "https://codeberg.org/shelter/reschroot";
     changelog = "https://codeberg.org/shelter/reschroot/raw/tag/release/reschroot-${upstream-version}/NEWS";
-    mainProgram = "schroot";
-    maintainers = with lib.maintainers; [ bjsowa ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ bjsowa ];
     platforms = lib.platforms.linux;
+    mainProgram = "schroot";
   };
 }

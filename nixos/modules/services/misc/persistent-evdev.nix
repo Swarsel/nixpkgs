@@ -20,7 +20,7 @@ in
 
     devices = lib.mkOption {
       default = { };
-      type = with lib.types; attrsOf str;
+
       description = ''
         A set of virtual proxy device labels with backing physical device ids.
 
@@ -32,6 +32,7 @@ in
         and remember to add `uinput-*` devices to the qemu
         `cgroup_device_acl` list (see [](#opt-virtualisation.libvirtd.qemu.verbatimConfig)).
       '';
+
       example = lib.literalExpression ''
         {
           persist-mouse0 = "usb-Logitech_G403_Prodigy_Gaming_Mouse_078738533531-event-if01";
@@ -41,24 +42,27 @@ in
           persist-keyboard1 = "usb-Microsoft_Natural®_Ergonomic_Keyboard_4000-if01-event-kbd";
         }
       '';
+
+      type = with lib.types; attrsOf str;
     };
   };
 
   config = lib.mkIf cfg.enable {
 
+    services.udev.packages = [ pkgs.persistent-evdev ];
+
     systemd.services.persistent-evdev = {
-      documentation = [ "https://github.com/aiberia/persistent-evdev/blob/master/README.md" ];
       description = "Persistent evdev proxy";
-      wantedBy = [ "multi-user.target" ];
+      documentation = [ "https://github.com/aiberia/persistent-evdev/blob/master/README.md" ];
 
       serviceConfig = {
-        Restart = "on-failure";
-        ExecStart = "${pkgs.persistent-evdev}/bin/persistent-evdev.py ${configFile}";
         CacheDirectory = "persistent-evdev";
+        ExecStart = "${pkgs.persistent-evdev}/bin/persistent-evdev.py ${configFile}";
+        Restart = "on-failure";
       };
-    };
 
-    services.udev.packages = [ pkgs.persistent-evdev ];
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 
   meta.maintainers = with lib.maintainers; [ lodi ];

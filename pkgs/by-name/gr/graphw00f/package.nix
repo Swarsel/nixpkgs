@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication rec {
   pname = "graphw00f";
   version = "1.2.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "dolevf";
@@ -15,8 +14,6 @@ python3.pkgs.buildPythonApplication rec {
     tag = version;
     hash = "sha256-8fOvcc//UdDawgGMAhbYQ/O5kd1l2skWGDlFNYocNY8=";
   };
-
-  dependencies = with python3.pkgs; [ requests ];
 
   installPhase = ''
     runHook preInstall
@@ -27,6 +24,9 @@ python3.pkgs.buildPythonApplication rec {
 
     runHook postInstall
   '';
+
+  dependencies = with python3.pkgs; [ requests ];
+  pyproject = false;
 
   meta = {
     description = "GraphQL Server Engine Fingerprinting utility";

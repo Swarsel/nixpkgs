@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dulwich,
-  fetchFromGitHub,
   gitpython,
   requests,
   setuptools-scm,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "dvc-studio-client";
   version = "0.23.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-Zc6DQ/memnEwxHkSMPi1/fLBgvinqaMpWSOBfAI4sUk=";
   };
 
+  # Tests try to access network
+  doCheck = false;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -30,10 +31,8 @@ buildPythonPackage rec {
     voluptuous
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dvc_studio_client" ];
-
-  # Tests try to access network
-  doCheck = false;
 
   meta = {
     description = "Library to post data from DVC/DVCLive to Iterative Studio";

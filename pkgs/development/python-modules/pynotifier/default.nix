@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   libnotify,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pynotifier";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "YuriyLisovskiy";
@@ -27,9 +26,8 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pynotifier" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,15 +15,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-r+ySKCVRPYHY+8s6uCj2ZQyMArccPjpa4d4lvYjrmmU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/picocrypt";
   vendorHash = "sha256-HscCZ6z/tGLNlm6AjYmAG156LS3VGeye12eyeqYVGtw=";
+  env.CGO_ENABLED = 1;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  env.CGO_ENABLED = 1;
+  sourceRoot = "${finalAttrs.src.name}/picocrypt";
 
   meta = {
     description = "Command-line interface for Picocrypt";

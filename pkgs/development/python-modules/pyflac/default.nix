@@ -1,20 +1,19 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cffi,
-  fetchFromGitHub,
   numpy,
   pytestCheckHook,
   setuptools,
   soundfile,
-  stdenv,
   unixtools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyflac";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sonos";
@@ -22,14 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-PA9ARch1MwBhLlTIIM+pXHc10pg0PM/uEHfwQ5e5MNI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    cffi
-    numpy
-    soundfile
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -42,6 +33,15 @@ buildPythonPackage (finalAttrs: {
     rm -r pyflac
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cffi
+    numpy
+    soundfile
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pyflac" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -9,12 +9,13 @@ stdenvNoCC.mkDerivation {
   version = "unstable-2016-08-01"; # date in the zip file, actual creation date unknown
 
   src = fetchzip {
+    hash = "sha256-7H32pfr0g68XP5B48VUY99e6fbd7rhH6fEnCKNXWEkU=";
+    stripRoot = false;
+
     urls = [
       "https://fontlibrary.org/assets/downloads/u001/3ea00b3c0c8fa6ce4373e5766fafd651/u001.zip"
       "https://web.archive.org/web/20220830085803/https://fontlibrary.org/assets/downloads/u001/3ea00b3c0c8fa6ce4373e5766fafd651/u001.zip"
     ];
-    hash = "sha256-7H32pfr0g68XP5B48VUY99e6fbd7rhH6fEnCKNXWEkU=";
-    stripRoot = false;
   };
 
   installPhase = ''
@@ -41,7 +42,7 @@ stdenvNoCC.mkDerivation {
     description = "Univers-like typeface that comes with GhostPDL made by URW++";
     homepage = "https://fontlibrary.org/en/font/u001";
     license = lib.licenses.aladdin;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ toastal ];
+    platforms = lib.platforms.all;
   };
 }

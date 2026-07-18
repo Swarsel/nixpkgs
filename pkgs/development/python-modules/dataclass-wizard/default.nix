@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-mock,
   pytestCheckHook,
   python-dotenv,
@@ -9,14 +9,13 @@
   pytimeparse,
   pyyaml,
   setuptools,
-  typing-extensions,
   tomli-w,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "dataclass-wizard";
   version = "0.39.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rnag";
@@ -25,22 +24,14 @@ buildPythonPackage rec {
     hash = "sha256-X4/qe1nv/NwUvQGvVqbqIgi9Ej43jwJjzXyMaKAtN2A=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
-  optional-dependencies = {
-    dotenv = [ python-dotenv ];
-    timedelta = [ pytimeparse ];
-    toml = [ tomli-w ];
-    yaml = [ pyyaml ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-mock
   ]
   ++ lib.concatAttrValues optional-dependencies;
+
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
 
   disabledTests =
     [ ]
@@ -54,6 +45,14 @@ buildPythonPackage rec {
       "from_dict_handles_identical_cased_json_keys"
     ];
 
+  optional-dependencies = {
+    dotenv = [ python-dotenv ];
+    timedelta = [ pytimeparse ];
+    toml = [ tomli-w ];
+    yaml = [ pyyaml ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "dataclass_wizard" ];
 
   meta = {

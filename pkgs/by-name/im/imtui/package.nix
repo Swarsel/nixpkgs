@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  imgui,
-  ninja,
-  withEmscripten ? false,
-  emscripten,
-  withCurl ? (!withEmscripten),
   curl,
-  withNcurses ? (!withEmscripten),
+  emscripten,
+  imgui,
   ncurses,
+  ninja,
   static ? withEmscripten,
+  withCurl ? (!withEmscripten),
+  withEmscripten ? false,
+  withNcurses ? (!withEmscripten),
 }:
 
 stdenv.mkDerivation rec {
@@ -25,6 +25,15 @@ stdenv.mkDerivation rec {
     hash = "sha256-eHQPDEfxKGLdiOi0lUUgqJcmme1XJLSPAafT223YK+U=";
   };
 
+  postPatch = ''
+    cp -r ${imgui.src}/* third-party/imgui/imgui
+    chmod -R u+w third-party/imgui
+  ''
+  + lib.optionalString (lib.versionAtLeast imgui.version "1.90.1") ''
+    substituteInPlace src/imtui-impl-{emscripten,ncurses}.cpp \
+      --replace "ImGuiKey_KeyPadEnter" "ImGuiKey_KeypadEnter"
+  '';
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -34,15 +43,6 @@ stdenv.mkDerivation rec {
     lib.optional withEmscripten emscripten
     ++ lib.optional withCurl curl
     ++ lib.optional withNcurses ncurses;
-
-  postPatch = ''
-    cp -r ${imgui.src}/* third-party/imgui/imgui
-    chmod -R u+w third-party/imgui
-  ''
-  + lib.optionalString (lib.versionAtLeast imgui.version "1.90.1") ''
-    substituteInPlace src/imtui-impl-{emscripten,ncurses}.cpp \
-      --replace "ImGuiKey_KeyPadEnter" "ImGuiKey_KeypadEnter"
-  '';
 
   cmakeFlags = [
     "-DEMSCRIPTEN:BOOL=${if withEmscripten then "ON" else "OFF"}"
@@ -55,10 +55,12 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Immediate mode text-based user interface library";
+
     longDescription = ''
       ImTui is an immediate mode text-based user interface library. Supports 256
       ANSI colors and mouse/keyboard input.
     '';
+
     homepage = "https://imtui.ggerganov.com";
     changelog = "https://github.com/ggerganov/imtui/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;

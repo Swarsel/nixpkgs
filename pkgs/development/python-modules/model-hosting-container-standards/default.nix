@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   fastapi,
   httpx,
   jmespath,
+  # build-system
+  poetry-core,
   pydantic,
-  starlette,
-  supervisor,
-
   # tests
   pytest-asyncio,
   pytestCheckHook,
+  starlette,
+  supervisor,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "model-hosting-container-standards";
   version = "0.1.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -32,16 +28,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-3Nuus+MO3ASW7y5Bl7+04C2WvuSWG4HKNyQ+bx/uOw4=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python";
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     poetry-core
   ];
 
-  pythonRemoveDeps = [
-    # Declared as a runtime dependency, but not used in practice
-    "setuptools"
-  ];
   dependencies = [
     fastapi
     httpx
@@ -51,19 +47,21 @@ buildPythonPackage (finalAttrs: {
     supervisor
   ];
 
-  pythonImportsCheck = [ "model_hosting_container_standards" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTests = [
     # AssertionError: Server should have created restart log
     "test_continuous_restart_behavior"
     "test_startup_retry_limit"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "model_hosting_container_standards" ];
+
+  pythonRemoveDeps = [
+    # Declared as a runtime dependency, but not used in practice
+    "setuptools"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/python";
 
   meta = {
     description = "Standardized Python framework for seamless integration between ML frameworks (TensorRT-LLM, vLLM) and Amazon SageMaker hosting";

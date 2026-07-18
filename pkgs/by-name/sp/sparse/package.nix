@@ -1,13 +1,13 @@
 {
-  callPackage,
-  fetchgit,
   lib,
   stdenv,
+  callPackage,
+  fetchgit,
   gtk3,
-  pkg-config,
   libxml2,
   llvm,
   perl,
+  pkg-config,
   sqlite,
 }:
 
@@ -24,16 +24,8 @@ stdenv.mkDerivation {
     hash = "sha256-Fft3hm988Xw92WIwXEoVoX7xzzkDhKy+bn9YuQIOhSk=";
   };
 
-  preConfigure = ''
-    sed -i 's|"/usr/include"|"${stdenv.cc.libc.dev}/include"|' pre-process.c
-    sed -i 's|qx(\$ccom -print-file-name=)|"${GCC_BASE}"|' cgcc
-  '';
-
-  makeFlags = [
-    "PREFIX=${placeholder "out"}"
-  ];
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     gtk3
     libxml2
@@ -41,9 +33,19 @@ stdenv.mkDerivation {
     perl
     sqlite
   ];
-  doCheck = true;
+
+  makeFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
+
   buildFlags = [ "GCC_BASE:=${GCC_BASE}" ];
 
+  preConfigure = ''
+    sed -i 's|"/usr/include"|"${stdenv.cc.libc.dev}/include"|' pre-process.c
+    sed -i 's|qx(\$ccom -print-file-name=)|"${GCC_BASE}"|' cgcc
+  '';
+
+  doCheck = true;
   # Test failures with "fortify3" on, such as:
   # +*** buffer overflow detected ***: terminated
   # +Aborted (core dumped)
@@ -60,10 +62,12 @@ stdenv.mkDerivation {
     description = "Semantic parser for C";
     homepage = "https://git.kernel.org/pub/scm/devel/sparse/sparse.git/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       jkarlson
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

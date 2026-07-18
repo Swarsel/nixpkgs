@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -16,6 +16,19 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-PVkhwoGepRhD6VFJxhPA2tZ+zOkhQw0aI2yIWVYQnz8=";
+  doCheck = false;
+
+  postInstall = ''
+    mv $out/bin/cni-plugin $out/bin/flannel
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/flannel 2>&1 | fgrep -q $version
+    runHook postInstallCheck
+  '';
 
   ldflags = [
     "-s"
@@ -25,25 +38,12 @@ buildGoModule rec {
     "-X main.Program=flannel"
   ];
 
-  postInstall = ''
-    mv $out/bin/cni-plugin $out/bin/flannel
-  '';
-
-  doCheck = false;
-  doInstallCheck = true;
-
-  installCheckPhase = ''
-    runHook preInstallCheck
-    $out/bin/flannel 2>&1 | fgrep -q $version
-    runHook postInstallCheck
-  '';
-
   meta = {
     description = "Network fabric for containers designed to work in conjunction with flannel";
-    mainProgram = "flannel";
     homepage = "https://github.com/flannel-io/cni-plugin/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ abbe ];
+    platforms = lib.platforms.linux;
+    mainProgram = "flannel";
   };
 }

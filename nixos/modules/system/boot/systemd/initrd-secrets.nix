@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -15,19 +15,20 @@
       ) config.boot.initrd.secrets
     );
 
+    # The script needs this
+    boot.initrd.systemd.extraBin.find = "${pkgs.findutils}/bin/find";
+
     # Copy secrets to their respective locations
     boot.initrd.systemd.services.initrd-nixos-copy-secrets =
       lib.mkIf (config.boot.initrd.secrets != { })
         {
-          description = "Copy secrets into place";
-          # Run as early as possible
-          wantedBy = [ "sysinit.target" ];
           before = [
             "cryptsetup-pre.target"
             "shutdown.target"
           ];
+
           conflicts = [ "shutdown.target" ];
-          unitConfig.DefaultDependencies = false;
+          description = "Copy secrets into place";
 
           # We write the secrets to /.initrd-secrets and move them because this allows
           # secrets to be written to /run. If we put the secret directly to /run and
@@ -41,11 +42,13 @@
           '';
 
           serviceConfig = {
-            Type = "oneshot";
             RemainAfterExit = true;
+            Type = "oneshot";
           };
+
+          unitConfig.DefaultDependencies = false;
+          # Run as early as possible
+          wantedBy = [ "sysinit.target" ];
         };
-    # The script needs this
-    boot.initrd.systemd.extraBin.find = "${pkgs.findutils}/bin/find";
   };
 }

@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchPypi,
   glibcLocales,
   unittestCheckHook,
@@ -9,18 +9,16 @@
 buildPythonPackage rec {
   pname = "u-msgpack-python";
   version = "2.8.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-uAGoPW7XXm30HkRRi08qnCIdwtpLzVOA46D+2lILxho=";
   };
 
-  env.LC_ALL = "en_US.UTF-8";
-
   buildInputs = [ glibcLocales ];
-
+  env.LC_ALL = "en_US.UTF-8";
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Portable, lightweight MessagePack serializer and deserializer written in pure Python";

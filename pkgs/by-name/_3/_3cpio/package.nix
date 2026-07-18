@@ -1,11 +1,11 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   lz4,
   lzop,
   nix-update-script,
   rustPlatform,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -20,10 +20,8 @@ rustPlatform.buildRustPackage rec {
   };
 
   cargoHash = "sha256-q3WcEv2JF6SHdeFPSJrx0aE/DU/v08ihZjklJRVLwPY=";
-
   # Tests attempt to access arbitrary filepaths
   doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

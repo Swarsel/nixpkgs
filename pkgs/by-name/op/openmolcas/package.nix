@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  fetchFromGitLab,
   fetchFromGitHub,
+  fetchFromGitLab,
+  armadillo,
+  autoPatchelfHook,
+  blas-ilp64,
+  boost188,
   cmake,
   gfortran,
-  perl,
-  blas-ilp64,
-  lapack-ilp64,
+  globalarrays,
+  gsl,
   hdf5-cpp,
-  python3,
-  texliveMinimal,
-  armadillo,
+  lapack-ilp64,
   libxc,
   makeWrapper,
-  gsl,
-  boost188,
-  autoPatchelfHook,
-  enableQcmaquis ? true,
+  mpi,
+  perl,
+  python3,
+  texliveMinimal,
   # Note that the CASPT2 module is broken with MPI
   # See https://gitlab.com/Molcas/OpenMolcas/-/issues/169
   enableMpi ? false,
-  mpi,
-  globalarrays,
+  enableQcmaquis ? true,
 }:
 
 assert blas-ilp64.isILP64;
@@ -39,23 +39,26 @@ let
     ]
   );
   qcmaquisSrc = fetchFromGitHub {
+    hash = "sha256-+EtfgYg6apREDOltXu8zfUbpuiV56k4RvuPAYO0fbsM=";
     owner = "qcscine";
     repo = "qcmaquis";
     rev = "9ff551fecbdbad43d17600c441a9c9bfb9811d3e"; # Current head of "nag-compiler-fix-internal" as pinned in OpenMolcas' Cmake
-    hash = "sha256-+EtfgYg6apREDOltXu8zfUbpuiV56k4RvuPAYO0fbsM=";
   };
 
   # NEVPT2 sources must be patched to be valid C code in gctime.c
   nevpt2Src = stdenv.mkDerivation {
     pname = "nevpt2-src";
     version = "unstable";
+
     src = fetchFromGitHub {
       owner = "qcscine";
       repo = "nevpt2";
       rev = "e1484fd4901ae93ab0188bde417cf5dc440a8a3b"; # Must match tag in cmake/custom/nevpt2.cmake
       hash = "sha256-Vl+FhwhJBbD/7U2CwsYE9BClSQYLJ8DKXV9EXxQUmz0=";
     };
+
     patches = [ ./nevpt2.patch ];
+
     installPhase = ''
       mkdir $out
       cp -r * $out/.
@@ -116,11 +119,6 @@ stdenv.mkDerivation (finalAttrs: {
     globalarrays
   ];
 
-  passthru = lib.optionalAttrs enableMpi { inherit mpi; };
-
-  # fix build with GCC 15
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   cmakeFlags = [
     "-DOPENMP=ON"
     "-DTOOLS=ON"
@@ -136,6 +134,9 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.strings.cmakeBool "DGA" enableMpi)
     (lib.strings.cmakeBool "MPI" enableMpi)
   ];
+
+  # fix build with GCC 15
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   preConfigure = ''
     cmakeFlagsArray+=("-DLINALG_LIBRARIES=-lblas -llapack")
@@ -156,12 +157,6 @@ stdenv.mkDerivation (finalAttrs: {
     rm -r $out/Tools
   '';
 
-  # DMRG executables contain references to /build, however, they are properly
-  # removed by autopatchelf
-  noAuditTmpdir = true;
-
-  enableParallelBuilding = true;
-
   # Wrong store path in shebang (bare Python, no Python pkgs), force manual re-patching
   postFixup = ''
     for exe in $(find $out/bin/ -type f -name "*.py"); do
@@ -171,18 +166,28 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/pymolcas --set MOLCAS $out
   '';
 
+  enableParallelBuilding = true;
+  # DMRG executables contain references to /build, however, they are properly
+  # removed by autopatchelf
+  noAuditTmpdir = true;
+  passthru = lib.optionalAttrs enableMpi { inherit mpi; };
+
   meta = {
     description = "Advanced quantum chemistry software package";
     homepage = "https://gitlab.com/Molcas/OpenMolcas";
-    maintainers = [ lib.maintainers.markuskowa ];
+
     license = with lib.licenses; [
       lgpl21Only
       bsd3
     ];
+
+    maintainers = [ lib.maintainers.markuskowa ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "pymolcas";
   };
 })

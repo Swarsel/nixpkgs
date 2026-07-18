@@ -1,15 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-
   bash,
   gh,
   git,
   jq,
-
   makeWrapper,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,19 +21,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-jqRbh4To6uHoohkNZrzgmGWOBp/Mahmjm5NwXjmshhM=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     makeWrapper
   ];
 
   buildInputs = [ bash ];
-
-  strictDeps = true;
-
-  runtimeDeps = [
-    gh
-    git
-    jq
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -48,14 +40,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --prefix PATH : "${lib.makeBinPath finalAttrs.runtimeDeps}"
   '';
 
+  runtimeDeps = [
+    gh
+    git
+    jq
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (gh.meta) platforms;
     description = "GitHub CLI extension for local CI to sign off on your own work";
     homepage = "https://github.com/basecamp/gh-signoff";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ maikotan ];
     mainProgram = "gh-signoff";
-    inherit (gh.meta) platforms;
   };
 })

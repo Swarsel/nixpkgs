@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,21 +17,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-ysB1BJbMJ8KSCGSQzs9AnOA4SnnRcukC5R/vU45pbRM=";
-
   # integration tests are not run but the macros need this variable to be set
   env.GHC_VERSIONS = "";
   checkFlags = "--test \"unit\"";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Ghci-based file watching recompiler for Haskell development";
     homepage = "https://github.com/MercuryTechnologies/ghciwatch";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mangoiv
       _9999years
     ];
+
     mainProgram = "ghciwatch";
   };
-
-  passthru.updateScript = nix-update-script { };
 })

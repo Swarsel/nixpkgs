@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  cups,
-  dpkg,
-  gnused,
-  makeWrapper,
-  ghostscript,
-  file,
   a2ps,
   coreutils,
-  gnugrep,
-  which,
+  cups,
+  dpkg,
+  file,
   gawk,
+  ghostscript,
+  gnugrep,
+  gnused,
+  makeWrapper,
+  which,
 }:
 
 let
@@ -20,9 +20,59 @@ let
   model = "dcp375cw";
 in
 {
-  driver = stdenv.mkDerivation {
-    pname = "${model}-lpr";
+  cupswrapper = stdenv.mkDerivation {
     inherit version;
+    pname = "${model}-cupswrapper";
+
+    src = fetchurl {
+      url = "https://download.brother.com/welcome/dlf005429/dcp375cwcupswrapper-${version}-1.i386.deb";
+      sha256 = "9a255728b595d2667b2caf9d0d332b677e1a6829a3ec1ed6d4e900a44069cf2d";
+    };
+
+    nativeBuildInputs = [
+      dpkg
+      makeWrapper
+    ];
+
+    buildInputs = [
+      cups
+      ghostscript
+      a2ps
+      gawk
+    ];
+
+    installPhase = ''
+      for f in $out/opt/brother/Printers/${model}/cupswrapper/cupswrapper${model}; do
+        wrapProgram $f --prefix PATH : ${
+          lib.makeBinPath [
+            coreutils
+            ghostscript
+            gnugrep
+            gnused
+          ]
+        }
+      done
+
+      mkdir -p $out/share/cups/model
+      ln -s $out/opt/brother/Printers/${model}/cupswrapper/brother_${model}_printer_en.ppd $out/share/cups/model/
+    '';
+
+    unpackPhase = "dpkg-deb -x $src $out";
+
+    meta = {
+      description = "Brother ${model} printer CUPS wrapper driver";
+      homepage = "http://www.brother.com/";
+      license = lib.licenses.unfree;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+      maintainers = with lib.maintainers; [ marcovergueira ];
+      platforms = lib.platforms.linux;
+      downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=gb&lang=en&prod=${model}_all&os=128";
+    };
+  };
+
+  driver = stdenv.mkDerivation {
+    inherit version;
+    pname = "${model}-lpr";
 
     src = fetchurl {
       url = "https://download.brother.com/welcome/dlf005427/dcp375cwlpr-${version}-1.i386.deb";
@@ -33,13 +83,13 @@ in
       dpkg
       makeWrapper
     ];
+
     buildInputs = [
       cups
       ghostscript
       a2ps
       gawk
     ];
-    unpackPhase = "dpkg-deb -x $src $out";
 
     installPhase = ''
       substituteInPlace $out/opt/brother/Printers/${model}/lpd/filter${model} \
@@ -66,62 +116,16 @@ in
         }
     '';
 
-    meta = {
-      homepage = "http://www.brother.com/";
-      description = "Brother ${model} printer driver";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-      license = lib.licenses.unfree;
-      platforms = lib.platforms.linux;
-      downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=gb&lang=en&prod=${model}_all&os=128";
-      maintainers = with lib.maintainers; [ marcovergueira ];
-    };
-  };
-
-  cupswrapper = stdenv.mkDerivation {
-    pname = "${model}-cupswrapper";
-    inherit version;
-
-    src = fetchurl {
-      url = "https://download.brother.com/welcome/dlf005429/dcp375cwcupswrapper-${version}-1.i386.deb";
-      sha256 = "9a255728b595d2667b2caf9d0d332b677e1a6829a3ec1ed6d4e900a44069cf2d";
-    };
-
-    nativeBuildInputs = [
-      dpkg
-      makeWrapper
-    ];
-    buildInputs = [
-      cups
-      ghostscript
-      a2ps
-      gawk
-    ];
     unpackPhase = "dpkg-deb -x $src $out";
 
-    installPhase = ''
-      for f in $out/opt/brother/Printers/${model}/cupswrapper/cupswrapper${model}; do
-        wrapProgram $f --prefix PATH : ${
-          lib.makeBinPath [
-            coreutils
-            ghostscript
-            gnugrep
-            gnused
-          ]
-        }
-      done
-
-      mkdir -p $out/share/cups/model
-      ln -s $out/opt/brother/Printers/${model}/cupswrapper/brother_${model}_printer_en.ppd $out/share/cups/model/
-    '';
-
     meta = {
+      description = "Brother ${model} printer driver";
       homepage = "http://www.brother.com/";
-      description = "Brother ${model} printer CUPS wrapper driver";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       license = lib.licenses.unfree;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+      maintainers = with lib.maintainers; [ marcovergueira ];
       platforms = lib.platforms.linux;
       downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=gb&lang=en&prod=${model}_all&os=128";
-      maintainers = with lib.maintainers; [ marcovergueira ];
     };
   };
 }

@@ -1,12 +1,11 @@
 {
-  stdenv,
-  buildGoModule,
-  callPackage,
-  fetchFromGitHub,
   lib,
-
+  stdenv,
+  fetchFromGitHub,
   buf,
+  buildGoModule,
   cacert,
+  callPackage,
   grpc-gateway,
   protoc-gen-go,
   protoc-gen-go-grpc,
@@ -18,22 +17,19 @@
 let
   version = "2.71.7";
   zitadelRepo = fetchFromGitHub {
+    hash = "sha256-0ZOiwJ/ehDBkbd7iTTyVJzLj6Etph5/oxrDrck30ZL8=";
     owner = "zitadel";
     repo = "zitadel";
     rev = "v${version}";
-    hash = "sha256-0ZOiwJ/ehDBkbd7iTTyVJzLj6Etph5/oxrDrck30ZL8=";
   };
   goModulesHash = "sha256-iZCjHSpQ7Gy41Dd4svRLbyEh1N8VE8U0uCOlN9rfJQU=";
 
   buildZitadelProtocGen =
     name:
     buildGoModule {
-      pname = "protoc-gen-${name}";
       inherit version;
-
+      pname = "protoc-gen-${name}";
       src = zitadelRepo;
-
-      proxyVendor = true;
       vendorHash = goModulesHash;
 
       buildPhase = ''
@@ -43,6 +39,8 @@ let
       postInstall = ''
         mv $out/bin/main $out/bin/protoc-gen-${name}
       '';
+
+      proxyVendor = true;
     };
 
   protoc-gen-authoption = buildZitadelProtocGen "authoption";
@@ -54,18 +52,17 @@ let
   # during the main build.
   generateProtobufCode =
     {
+      hash,
+      outputPath,
       pname,
       version,
-      nativeBuildInputs ? [ ],
       bufArgs ? "",
+      nativeBuildInputs ? [ ],
       workDir ? ".",
-      outputPath,
-      hash,
     }:
     stdenv.mkDerivation {
-      pname = "${pname}-buf-generated";
       inherit version;
-
+      pname = "${pname}-buf-generated";
       src = zitadelRepo;
       patches = [ ./console-use-local-protobuf-plugins.patch ];
 
@@ -83,14 +80,15 @@ let
         cp -r ${outputPath} $out
       '';
 
-      outputHashMode = "recursive";
-      outputHashAlgo = "sha256";
       outputHash = hash;
+      outputHashAlgo = "sha256";
+      outputHashMode = "recursive";
     };
 
   protobufGenerated = generateProtobufCode {
-    pname = "zitadel";
     inherit version;
+    pname = "zitadel";
+
     nativeBuildInputs = [
       grpc-gateway
       protoc-gen-authoption
@@ -99,14 +97,14 @@ let
       protoc-gen-validate
       protoc-gen-zitadel
     ];
-    outputPath = ".artifacts";
+
     hash = "sha256-rc5A2bQ2iWkybprQ7IWsQ/LLAQxPqhlxzVvPn8Ec56E=";
+    outputPath = ".artifacts";
   };
 in
 buildGoModule rec {
-  pname = "zitadel";
   inherit version;
-
+  pname = "zitadel";
   src = zitadelRepo;
 
   nativeBuildInputs = [
@@ -114,9 +112,7 @@ buildGoModule rec {
     statik
   ];
 
-  proxyVendor = true;
   vendorHash = goModulesHash;
-  ldflags = [ "-X 'github.com/zitadel/zitadel/cmd/build.version=${version}'" ];
 
   # Adapted from Makefile in repo, with dependency fetching and protobuf codegen
   # bits removed
@@ -144,6 +140,9 @@ buildGoModule rec {
     install -Dm755 $GOPATH/bin/zitadel $out/bin/
   '';
 
+  ldflags = [ "-X 'github.com/zitadel/zitadel/cmd/build.version=${version}'" ];
+  proxyVendor = true;
+
   passthru = {
     console = callPackage (import ./console.nix {
       inherit generateProtobufCode version zitadelRepo;
@@ -153,10 +152,10 @@ buildGoModule rec {
   meta = {
     description = "Identity and access management platform";
     homepage = "https://zitadel.com/";
-    downloadPage = "https://github.com/zitadel/zitadel/releases";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     license = lib.licenses.asl20;
     sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ lib.maintainers.nrabulinski ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    downloadPage = "https://github.com/zitadel/zitadel/releases";
   };
 }

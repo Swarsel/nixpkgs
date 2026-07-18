@@ -1,24 +1,24 @@
 {
   lib,
-  mm64baserom ? null,
-  requireFile,
   fetchFromGitHub,
-  llvmPackages_19,
+  SDL2,
   cmake,
   copyDesktopItems,
+  directx-shader-compiler,
+  gtk3,
   installShellFiles,
+  llvmPackages_19,
+  makeDesktopItem,
   makeWrapper,
+  n64recomp,
   ninja,
   pkg-config,
-  wrapGAppsHook3,
-  SDL2,
-  gtk3,
+  requireFile,
   vulkan-loader,
-  makeDesktopItem,
+  wrapGAppsHook3,
   z64decompress,
-  n64recomp,
-  directx-shader-compiler,
   forceX11 ? false,
+  mm64baserom ? null,
 }:
 
 let
@@ -28,7 +28,8 @@ let
       mm64baserom
     else
       requireFile {
-        name = "mm.us.rev1.rom.z64";
+        hash = "sha256-77E2WzrjYmBFFMD5oaLRH13IaIulvmYKN96/XjvkPys=";
+
         message = ''
           zelda64recomp currently only supports the US version of Majora's Mask.
           Please dump your copy and rename it to mm.us.rev1.rom.z64
@@ -36,7 +37,8 @@ let
           nix-store --add-fixed sha256 mm.us.rev1.rom.z64
           See https://dumping.guide/carts/nintendo/n64 for more details.
         '';
-        hash = "sha256-77E2WzrjYmBFFMD5oaLRH13IaIulvmYKN96/XjvkPys=";
+
+        name = "mm.us.rev1.rom.z64";
       };
 
 in
@@ -72,18 +74,6 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
     vulkan-loader
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Zelda64Recompiled";
-      icon = "zelda64recomp";
-      exec = "Zelda64Recompiled";
-      comment = "Static recompilation of Majora's Mask";
-      genericName = "Static recompilation of Majora's Mask";
-      desktopName = "Zelda 64: Recompiled";
-      categories = [ "Game" ];
-    })
-  ];
-
   preConfigure = ''
     ln -s ${baseRom} ./mm.us.rev1.rom.z64
     ${lib.getExe z64decompress} mm.us.rev1.rom.z64 mm.us.rev1.rom_uncompressed.z64
@@ -102,14 +92,6 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
       --replace-fail "\''${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${directx-shader-compiler}/lib/" \
       --replace-fail "\''${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc-linux" "${directx-shader-compiler}/bin/dxc"
   '';
-
-  # This is required or else nothing will build
-  hardeningDisable = [
-    "format"
-    "pic"
-    "stackprotector"
-    "zerocallusedregs"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -145,9 +127,30 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
         ${lib.optionalString forceX11 "--set SDL_VIDEODRIVER x11"}
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Static recompilation of Majora's Mask";
+      desktopName = "Zelda 64: Recompiled";
+      exec = "Zelda64Recompiled";
+      genericName = "Static recompilation of Majora's Mask";
+      icon = "zelda64recomp";
+      name = "Zelda64Recompiled";
+    })
+  ];
+
+  # This is required or else nothing will build
+  hardeningDisable = [
+    "format"
+    "pic"
+    "stackprotector"
+    "zerocallusedregs"
+  ];
+
   meta = {
     description = "Static recompilation of Majora's Mask (and soon Ocarina of Time) for PC (Windows/Linux)";
     homepage = "https://github.com/Zelda64Recomp/Zelda64Recomp";
+
     license = with lib.licenses; [
       # Zelda64Recomp, N64ModernRuntime
       gpl3Only
@@ -158,8 +161,9 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
       # reverse engineering
       unfree
     ];
+
     maintainers = with lib.maintainers; [ qubitnano ];
-    mainProgram = "Zelda64Recompiled";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "Zelda64Recompiled";
   };
 })

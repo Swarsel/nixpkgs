@@ -11,28 +11,24 @@ let
   configFile = format.generate "conduit.toml" cfg.settings;
 in
 {
-  meta.maintainers = with lib.maintainers; [
-    pstn
-    SchweGELBin
-  ];
   options.services.matrix-conduit = {
     enable = lib.mkEnableOption "matrix-conduit";
+    package = lib.mkPackageOption pkgs "matrix-conduit" { };
 
     extraEnvironment = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
-      description = "Extra Environment variables to pass to the conduit server.";
       default = { };
+      description = "Extra Environment variables to pass to the conduit server.";
+
       example = {
         RUST_BACKTRACE = "yes";
       };
+
+      type = lib.types.attrsOf lib.types.str;
     };
 
-    package = lib.mkPackageOption pkgs "matrix-conduit" { };
-
     secretFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
-      example = "/run/secrets/matrix-conduit.env";
+
       description = ''
         Path to a file containing sensitive environment as described in {manpage}`systemd.exec(5).
         Some variables that can be considered secrets are:
@@ -43,89 +39,14 @@ in
         - CONDUIT_TURN_SECRET:
           The TURN secret
       '';
+
+      example = "/run/secrets/matrix-conduit.env";
+      type = lib.types.nullOr lib.types.path;
     };
 
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = format.type;
-        options = {
-          global.server_name = lib.mkOption {
-            type = lib.types.str;
-            example = "example.com";
-            description = "The server_name is the name of this server. It is used as a suffix for user # and room ids.";
-          };
-          global.port = lib.mkOption {
-            type = lib.types.port;
-            default = 6167;
-            description = "The port Conduit will be running on. You need to set up a reverse proxy in your web server (e.g. apache or nginx), so all requests to /_matrix on port 443 and 8448 will be forwarded to the Conduit instance running on this port";
-          };
-          global.max_request_size = lib.mkOption {
-            type = lib.types.ints.positive;
-            default = 20000000;
-            description = "Max request size in bytes. Don't forget to also change it in the proxy.";
-          };
-          global.allow_registration = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = "Whether new users can register on this server.";
-          };
-          global.allow_encryption = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = "Whether new encrypted rooms can be created. Note: existing rooms will continue to work.";
-          };
-          global.allow_federation = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = ''
-              Whether this server federates with other servers.
-            '';
-          };
-          global.trusted_servers = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ "matrix.org" ];
-            description = "Servers trusted with signing server keys.";
-          };
-          global.address = lib.mkOption {
-            type = lib.types.str;
-            default = "::1";
-            description = "Address to listen on for connections by the reverse proxy/tls terminator.";
-          };
-          global.database_path = lib.mkOption {
-            type = lib.types.str;
-            default = "/var/lib/matrix-conduit/";
-            readOnly = true;
-            description = ''
-              Path to the conduit database, the directory where conduit will save its data.
-              Note that due to using the DynamicUser feature of systemd, this value should not be changed
-              and is set to be read only.
-            '';
-          };
-          global.database_backend = lib.mkOption {
-            type = lib.types.enum [
-              "sqlite"
-              "rocksdb"
-            ];
-            default = "sqlite";
-            example = "rocksdb";
-            description = ''
-              The database backend for the service. Switching it on an existing
-              instance will require manual migration of data.
-            '';
-          };
-          global.allow_check_for_updates = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = ''
-              Whether to allow Conduit to automatically contact
-              <https://conduit.rs> hourly to check for important Conduit news.
-
-              Disabled by default because nixpkgs handles updates.
-            '';
-          };
-        };
-      };
       default = { };
+
       description = ''
         Generates the conduit.toml configuration file. Refer to
         <https://docs.conduit.rs/configuration.html>
@@ -133,58 +54,171 @@ in
         Note that database_path can not be edited because the service's reliance on systemd StateDir.
         For secrets use the `secretFile` option instead.
       '';
+
+      type = lib.types.submodule {
+        options = {
+          global.address = lib.mkOption {
+            default = "::1";
+            description = "Address to listen on for connections by the reverse proxy/tls terminator.";
+            type = lib.types.str;
+          };
+
+          global.allow_check_for_updates = lib.mkOption {
+            default = false;
+
+            description = ''
+              Whether to allow Conduit to automatically contact
+              <https://conduit.rs> hourly to check for important Conduit news.
+
+              Disabled by default because nixpkgs handles updates.
+            '';
+
+            type = lib.types.bool;
+          };
+
+          global.allow_encryption = lib.mkOption {
+            default = true;
+            description = "Whether new encrypted rooms can be created. Note: existing rooms will continue to work.";
+            type = lib.types.bool;
+          };
+
+          global.allow_federation = lib.mkOption {
+            default = true;
+
+            description = ''
+              Whether this server federates with other servers.
+            '';
+
+            type = lib.types.bool;
+          };
+
+          global.allow_registration = lib.mkOption {
+            default = false;
+            description = "Whether new users can register on this server.";
+            type = lib.types.bool;
+          };
+
+          global.database_backend = lib.mkOption {
+            default = "sqlite";
+
+            description = ''
+              The database backend for the service. Switching it on an existing
+              instance will require manual migration of data.
+            '';
+
+            example = "rocksdb";
+
+            type = lib.types.enum [
+              "sqlite"
+              "rocksdb"
+            ];
+          };
+
+          global.database_path = lib.mkOption {
+            default = "/var/lib/matrix-conduit/";
+
+            description = ''
+              Path to the conduit database, the directory where conduit will save its data.
+              Note that due to using the DynamicUser feature of systemd, this value should not be changed
+              and is set to be read only.
+            '';
+
+            readOnly = true;
+            type = lib.types.str;
+          };
+
+          global.max_request_size = lib.mkOption {
+            default = 20000000;
+            description = "Max request size in bytes. Don't forget to also change it in the proxy.";
+            type = lib.types.ints.positive;
+          };
+
+          global.port = lib.mkOption {
+            default = 6167;
+            description = "The port Conduit will be running on. You need to set up a reverse proxy in your web server (e.g. apache or nginx), so all requests to /_matrix on port 443 and 8448 will be forwarded to the Conduit instance running on this port";
+            type = lib.types.port;
+          };
+
+          global.server_name = lib.mkOption {
+            description = "The server_name is the name of this server. It is used as a suffix for user # and room ids.";
+            example = "example.com";
+            type = lib.types.str;
+          };
+
+          global.trusted_servers = lib.mkOption {
+            default = [ "matrix.org" ];
+            description = "Servers trusted with signing server keys.";
+            type = lib.types.listOf lib.types.str;
+          };
+        };
+
+        freeformType = format.type;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.conduit = {
+      after = [ "network-online.target" ];
       description = "Conduit Matrix Server";
       documentation = [ "https://gitlab.com/famedly/conduit/" ];
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" ];
+
       environment = lib.mkMerge [
         { CONDUIT_CONFIG = configFile; }
         cfg.extraEnvironment
       ];
+
       serviceConfig = {
         DynamicUser = true;
-        User = "conduit";
+        ExecStart = "${cfg.package}/bin/conduit";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateUsers = true;
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        PrivateDevices = true;
-        PrivateMounts = true;
-        PrivateUsers = true;
+        Restart = "on-failure";
+        RestartSec = 10;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        StateDirectory = "matrix-conduit";
+        StateDirectoryMode = "0700";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
-        StateDirectory = "matrix-conduit";
-        StateDirectoryMode = "0700";
-        ExecStart = "${cfg.package}/bin/conduit";
-        Restart = "on-failure";
-        RestartSec = 10;
+
         UMask = "077";
+        User = "conduit";
       }
       // lib.optionalAttrs (cfg.secretFile != null) {
         EnvironmentFile = cfg.secretFile;
       };
+
       unitConfig = {
         StartLimitBurst = 5;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [
+    pstn
+    SchweGELBin
+  ];
 }

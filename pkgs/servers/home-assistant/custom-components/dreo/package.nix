@@ -1,17 +1,15 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   nix-update-script,
-  websockets,
+  pytest-homeassistant-custom-component,
   # Test dependencies
   pytestCheckHook,
-  pytest-homeassistant-custom-component,
+  websockets,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "JeffSteinbok";
-  domain = "dreo";
   version = "1.10.1";
 
   src = fetchFromGitHub {
@@ -21,12 +19,14 @@ buildHomeAssistantComponent rec {
     hash = "sha256-/PBTWmqx/KTKvJ5K3KeKbVeypLtiT24TOZkWO62l7wA=";
   };
 
-  dependencies = [ websockets ];
-
   nativeCheckInputs = [
     pytest-homeassistant-custom-component
     pytestCheckHook
   ];
+
+  dependencies = [ websockets ];
+  domain = "dreo";
+  owner = "JeffSteinbok";
 
   pytestFlags = [
     "-Wignore::pytest.PytestRemovedIn9Warning"
@@ -35,10 +35,10 @@ buildHomeAssistantComponent rec {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/JeffSteinbok/hass-dreo/releases/tag/${src.tag}";
     description = "Dreo Smart Device Integration for Home Assistant";
     homepage = "https://github.com/JeffSteinbok/hass-dreo";
-    maintainers = with lib.maintainers; [ CodedNil ];
+    changelog = "https://github.com/JeffSteinbok/hass-dreo/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ CodedNil ];
   };
 }

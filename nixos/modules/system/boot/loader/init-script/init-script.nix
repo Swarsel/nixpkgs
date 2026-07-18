@@ -10,17 +10,20 @@ with lib;
 let
 
   initScriptBuilder = pkgs.replaceVarsWith {
-    src = ./init-script-builder.sh;
     isExecutable = true;
+
     replacements = {
       inherit (pkgs) bash;
       inherit (config.system.nixos) distroName;
+
       path = lib.makeBinPath [
         pkgs.coreutils
         pkgs.gnused
         pkgs.gnugrep
       ];
     };
+
+    src = ./init-script-builder.sh;
   };
 
 in
@@ -35,7 +38,7 @@ in
 
       enable = mkOption {
         default = false;
-        type = types.bool;
+
         description = ''
           Some systems require a /sbin/init script which is started.
           Or having it makes starting NixOS easier.
@@ -46,6 +49,8 @@ in
           contents of remaining configurations. You can copy paste them into
           /sbin/init manually running a rescue system or such.
         '';
+
+        type = types.bool;
       };
     };
 

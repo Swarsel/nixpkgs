@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  makeWrapper,
   fetchFromGitHub,
   dpkg,
+  fetchpatch,
   glib,
   gnutar,
   gtk3-x11,
   luajit,
+  makeWrapper,
+  openssl,
   sdcv,
   sdl3,
-  openssl,
   writeScript,
 }:
 
@@ -24,26 +24,23 @@ let
   luajit_koreader = luajit.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [
       (fetchpatch {
-        url = "https://raw.githubusercontent.com/koreader/koreader-base/master/thirdparty/luajit/koreader-luajit-enable-table_pack.patch";
         hash = "sha256-tvx7eRoSwnumqK6H7+2RCAKRDFJtaRY/2mRPjy30fJA=";
+        url = "https://raw.githubusercontent.com/koreader/koreader-base/master/thirdparty/luajit/koreader-luajit-enable-table_pack.patch";
       })
     ];
   });
 
   src_repo = fetchFromGitHub {
-    repo = "koreader";
-    owner = "koreader";
-    tag = "v${version}";
     fetchSubmodules = true;
     hash = "sha256-KWpWlFoBEAhVDuRTiF7yj1wlKLzYmvcngI9iWqsDuQY=";
+    owner = "koreader";
+    repo = "koreader";
+    tag = "v${version}";
   };
 in
 stdenv.mkDerivation {
-  pname = "koreader";
   inherit version;
-
-  __structuredAttrs = true;
-  strictDeps = true;
+  pname = "koreader";
 
   src =
     let
@@ -58,12 +55,15 @@ stdenv.mkDerivation {
     in
     fetchurl {
       url = "https://github.com/koreader/koreader/releases/download/v${version}/koreader_${version}-1_${arch}.deb";
+
       hash = selectSystem {
         aarch64-linux = "sha256-4ulpMXYcICQ5/9Q0GGn9lkbW0ntzIfUHQ5woTAhyXLU=";
         armv7l-linux = "sha256-diMWFhL0D5bWPQFc9vvZZRPMfNxlxchGyT8Lz/TLHPs=";
         x86_64-linux = "sha256-OhBu3oj9IqNmK5ngCkXvucVQq5aJohObgENtjdDcQcE=";
       };
     };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     dpkg
@@ -119,8 +119,11 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
     inherit src_repo luajit_koreader;
+
     updateScript = writeScript "update-koreader" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p nix curl jq nix-update common-updater-scripts
@@ -141,20 +144,23 @@ stdenv.mkDerivation {
   };
 
   meta = {
+    description = "Ebook reader application supporting PDF, DjVu, EPUB, FB2 and many more formats, running on Cervantes, Kindle, Kobo, PocketBook and Android devices";
     homepage = "https://github.com/koreader/koreader";
     changelog = "https://github.com/koreader/koreader/releases/tag/v${version}";
-    description = "Ebook reader application supporting PDF, DjVu, EPUB, FB2 and many more formats, running on Cervantes, Kindle, Kobo, PocketBook and Android devices";
-    mainProgram = "koreader";
+    license = lib.licenses.agpl3Only;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    maintainers = with lib.maintainers; [
+      contrun
+      liberodark
+    ];
+
     platforms = [
       "aarch64-linux"
       "armv7l-linux"
       "x86_64-linux"
     ];
-    license = lib.licenses.agpl3Only;
-    maintainers = with lib.maintainers; [
-      contrun
-      liberodark
-    ];
+
+    mainProgram = "koreader";
   };
 }

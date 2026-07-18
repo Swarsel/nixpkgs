@@ -16,14 +16,13 @@ buildPythonPackage rec {
     hash = "sha256-xKVk1N+0Ry2THRRcQ9HPGteMJFkhQud1W4hmF57qwBI=";
   };
 
-  pyproject = true;
-
   nativeBuildInputs = [
     setuptools
     setuptools-scm
   ];
 
   nativeCheckInputs = [ unittestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Python library to generate random strings";

@@ -1,16 +1,15 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
-  pkg-config,
+  buildKodiBinaryAddon,
   glm,
   libGL,
+  pkg-config,
+  rel,
 }:
 
 buildKodiBinaryAddon rec {
   pname = "visualization-matrix";
-  namespace = "visualization.matrix";
   version = "20.2.0";
 
   src = fetchFromGitHub {
@@ -20,17 +19,20 @@ buildKodiBinaryAddon rec {
     hash = "sha256-tojzPqt6VMccveqnhkl0yXS+/fLdxotmQO3jdtYlkFk=";
   };
 
+  propagatedBuildInputs = [ glm ];
+
   extraBuildInputs = [
     pkg-config
     libGL
   ];
 
-  propagatedBuildInputs = [ glm ];
+  namespace = "visualization.matrix";
+
   meta = {
-    homepage = "https://github.com/xbmc/visualization.matrix";
     description = "Matrix visualization for kodi";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/xbmc/visualization.matrix";
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

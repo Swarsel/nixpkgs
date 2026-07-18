@@ -1,9 +1,9 @@
 {
   lib,
-  immich,
-  python3,
-  nixosTests,
   stdenv,
+  immich,
+  nixosTests,
+  python3,
 }:
 let
   python = python3.override {
@@ -11,50 +11,9 @@ let
   };
 in
 python.pkgs.buildPythonApplication rec {
-  pname = "immich-machine-learning";
   inherit (immich) version;
+  pname = "immich-machine-learning";
   src = "${immich.src}/machine-learning";
-  pyproject = true;
-
-  pythonRelaxDeps = [
-    "huggingface-hub"
-    "insightface"
-    "numpy"
-    "pillow"
-    "pydantic-settings"
-  ];
-
-  pythonRemoveDeps = [
-    "setuptools"
-  ];
-
-  build-system = with python.pkgs; [
-    hatchling
-    cython
-  ];
-
-  dependencies =
-    with python.pkgs;
-    [
-      insightface
-      opencv-python-headless
-      pillow
-      fastapi
-      uvicorn
-      pydantic
-      pydantic-settings
-      aiocache
-      rich
-      ftfy
-      python-multipart
-      orjson
-      gunicorn
-      huggingface-hub
-      tokenizers
-      rapidocr
-    ]
-    ++ uvicorn.optional-dependencies.standard;
-
   # aarch64-linux tries to get cpu information from /sys, which isn't available
   # inside the nix build sandbox.
   doCheck = stdenv.buildPlatform.system != "aarch64-linux";
@@ -86,14 +45,55 @@ python.pkgs.buildPythonApplication rec {
         --log-config-json $out/share/immich/log_conf.json"
   '';
 
+  build-system = with python.pkgs; [
+    hatchling
+    cython
+  ];
+
+  dependencies =
+    with python.pkgs;
+    [
+      insightface
+      opencv-python-headless
+      pillow
+      fastapi
+      uvicorn
+      pydantic
+      pydantic-settings
+      aiocache
+      rich
+      ftfy
+      python-multipart
+      orjson
+      gunicorn
+      huggingface-hub
+      tokenizers
+      rapidocr
+    ]
+    ++ uvicorn.optional-dependencies.standard;
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "huggingface-hub"
+    "insightface"
+    "numpy"
+    "pillow"
+    "pydantic-settings"
+  ];
+
+  pythonRemoveDeps = [
+    "setuptools"
+  ];
+
   passthru.tests = {
     inherit (nixosTests) immich;
   };
 
   meta = {
+    inherit (immich.meta) license maintainers platforms;
     description = "${immich.meta.description} (machine learning component)";
     homepage = "https://github.com/immich-app/immich/tree/main/machine-learning";
     mainProgram = "machine-learning";
-    inherit (immich.meta) license maintainers platforms;
   };
 }

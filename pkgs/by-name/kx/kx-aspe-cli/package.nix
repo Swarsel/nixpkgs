@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromCodeberg,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,18 +18,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
   cargoHash = "sha256-wOg81NvChOLPiCyhJ5dGn5sRskevpf0QdKwmgZa2/1s=";
 
   meta = {
+    description = "Keyoxide profile generator CLI using ASPE";
     homepage = "https://codeberg.org/keyoxide/kx-aspe-cli";
     changelog = "https://codeberg.org/keyoxide/kx-aspe-cli/src/commit/${finalAttrs.src.rev}/CHANGELOG.md";
-    description = "Keyoxide profile generator CLI using ASPE";
-    mainProgram = "kx-aspe";
-    platforms = lib.platforms.linux;
     license = [ lib.licenses.asl20 ];
     maintainers = [ lib.maintainers.nobbz ];
+    platforms = lib.platforms.linux;
+    mainProgram = "kx-aspe";
   };
 })

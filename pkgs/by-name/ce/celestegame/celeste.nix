@@ -1,27 +1,26 @@
 {
   lib,
-  stdenvNoCC,
-  fetchItchIo,
-  makeWrapper,
   copyDesktopItems,
-  makeDesktopItem,
-  unzip,
-  yq,
   dotnet-runtime_8,
   everest,
-
-  executableName ? "Celeste",
+  fetchItchIo,
+  makeDesktopItem,
+  makeWrapper,
+  stdenvNoCC,
+  unzip,
+  yq,
   desktopItems ? null,
-  withEverest ? false,
-  overrideSrc ? null,
-  writableDir ? null,
-  launchFlags ? "",
-  launchEnv ? "",
   # If we leave it to be the default (log.txt),
   # Everest will try to delete log.txt when it starts,
   # which doesn't work because the file system is read-only.
   # https://github.com/EverestAPI/Everest/blob/050b4a1b4a7918b22d3d5140224f9c0472e1655a/Celeste.Mod.mm/Patches/Celeste.cs#L140-L155
   everestLogFilename ? "everest-log.txt",
+  executableName ? "Celeste",
+  launchEnv ? "",
+  launchFlags ? "",
+  overrideSrc ? null,
+  withEverest ? false,
+  writableDir ? null,
 }:
 
 # TODO: It appears that it is possible to package Celeste for aarch devices:
@@ -58,14 +57,13 @@ stdenvNoCC.mkDerivation {
   src =
     if overrideSrc == null then
       fetchItchIo {
-        name = "celeste-linux.zip";
-        gameUrl = downloadPage;
-        upload = "12748042";
         hash = "sha256-phNDBBHb7zwMRaBHT5D0hFEilkx9F31p6IllvLhHQb8=";
+        gameUrl = downloadPage;
+        name = "celeste-linux.zip";
+        upload = "12748042";
       }
     else
       overrideSrc;
-  dontUnpack = true;
 
   nativeBuildInputs = [
     unzip
@@ -73,21 +71,6 @@ stdenvNoCC.mkDerivation {
     makeWrapper
     copyDesktopItems
   ];
-  desktopItems =
-    if desktopItems != null then
-      desktopItems
-    else
-      [
-        (makeDesktopItem {
-          name = "Celeste";
-          desktopName = "Celeste";
-          genericName = "Celeste";
-          comment = description;
-          exec = "${executableName}";
-          icon = "Celeste";
-          categories = [ "Game" ];
-        })
-      ];
 
   postInstall = ''
     mkdir -p ${phome}
@@ -147,9 +130,6 @@ stdenvNoCC.mkDerivation {
     ln -s ${phome}/Celeste.png $icon
   '';
 
-  dontPatchELF = true;
-  dontStrip = true;
-  dontPatchShebangs = true;
   postFixup =
     lib.optionalString withEverest ''
       rm -r ${phome}/Mods # Currently it is empty.
@@ -159,12 +139,34 @@ stdenvNoCC.mkDerivation {
       ln -s "${writableDir}/log.txt" -t ${phome}
     '';
 
+  desktopItems =
+    if desktopItems != null then
+      desktopItems
+    else
+      [
+        (makeDesktopItem {
+          categories = [ "Game" ];
+          comment = description;
+          desktopName = "Celeste";
+          exec = "${executableName}";
+          genericName = "Celeste";
+          icon = "Celeste";
+          name = "Celeste";
+        })
+      ];
+
+  dontPatchELF = true;
+  dontPatchShebangs = true;
+  dontStrip = true;
+  dontUnpack = true;
+
   meta = {
     inherit downloadPage description;
     homepage = "https://www.celestegame.com";
     license = with lib.licenses; [ unfree ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ ulysseszhan ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

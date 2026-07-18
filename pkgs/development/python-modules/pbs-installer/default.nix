@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-backend,
+  buildPythonPackage,
   httpx,
+  pdm-backend,
   zstandard,
 }:
 
 buildPythonPackage rec {
   pname = "pbs-installer";
   version = "2026.01.27";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frostming";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-aQ/GuskXKBpc1H6vtaBA3hZiPKip/2Kev/hbMcB9Y1E=";
   };
 
+  # upstream has no test
+  doCheck = false;
   build-system = [ pdm-backend ];
 
   optional-dependencies = {
@@ -27,10 +28,8 @@ buildPythonPackage rec {
     install = [ zstandard ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "pbs_installer" ];
-
-  # upstream has no test
-  doCheck = false;
 
   meta = {
     description = "Installer for Python Build Standalone";

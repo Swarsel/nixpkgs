@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  intltool,
-  openssl,
   expat,
+  intltool,
   libgcrypt,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,10 +24,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ intltool ];
+
   buildInputs = [
     openssl
     expat
     libgcrypt
+  ];
+
+  configureFlags = [
+    "--with-tls"
   ];
 
   # gcc 15 errors on incompatible-pointer-types (ggz_tls_openssl.c OPENSSL_sk_* casts) and implicit-function-declaration (configure C99 VLA probe).
@@ -36,18 +41,16 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=implicit-function-declaration"
   ];
 
-  configureFlags = [
-    "--with-tls"
-  ];
-
   meta = {
     description = "GGZ Gaming zone libraries";
-    mainProgram = "ggz-config";
+    license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2;
+    mainProgram = "ggz-config";
     downloadPage = "http://www.ggzgamingzone.org/releases/";
   };
 })

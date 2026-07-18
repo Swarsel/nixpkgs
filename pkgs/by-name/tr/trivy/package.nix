@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  buildPackages,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  buildPackages,
   installShellFiles,
   versionCheckHook,
 }:
@@ -19,24 +19,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-BfYgHa5Qv5rwJSRLdaDeCU4pz1jrUG72QzsJ98F5Is8=";
   };
 
-  # Hash mismatch on across Linux and Darwin
-  proxyVendor = true;
-
-  vendorHash = "sha256-IeX4c34/AUt9MZCFHVs43+9lmDX2gYJhPAi7/lUeWgI=";
-
-  subPackages = [ "cmd/trivy" ];
-
-  ldflags = [
-    "-s"
-    "-X=github.com/aquasecurity/trivy/pkg/version/app.ver=${finalAttrs.version}"
-  ];
-
-  env.GOEXPERIMENT = "jsonv2";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  vendorHash = "sha256-IeX4c34/AUt9MZCFHVs43+9lmDX2gYJhPAi7/lUeWgI=";
+  env.GOEXPERIMENT = "jsonv2";
   # Tests require network access
   doCheck = false;
 
@@ -48,11 +33,20 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-X=github.com/aquasecurity/trivy/pkg/version/app.ver=${finalAttrs.version}"
+  ];
+
+  # Hash mismatch on across Linux and Darwin
+  proxyVendor = true;
+  subPackages = [ "cmd/trivy" ];
 
   meta = {
     description = "Simple and comprehensive vulnerability scanner for containers, suitable for CI";
-    homepage = "https://github.com/aquasecurity/trivy";
-    changelog = "https://github.com/aquasecurity/trivy/releases/tag/${finalAttrs.src.tag}";
+
     longDescription = ''
       Trivy is a simple and comprehensive vulnerability scanner for containers
       and other artifacts. A software vulnerability is a glitch, flaw, or
@@ -60,11 +54,16 @@ buildGoModule (finalAttrs: {
       vulnerabilities of OS packages (Alpine, RHEL, CentOS, etc.) and
       application dependencies (Bundler, Composer, npm, yarn, etc.).
     '';
-    mainProgram = "trivy";
+
+    homepage = "https://github.com/aquasecurity/trivy";
+    changelog = "https://github.com/aquasecurity/trivy/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fab
       jk
     ];
+
+    mainProgram = "trivy";
   };
 })

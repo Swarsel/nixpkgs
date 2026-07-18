@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
   boost,
-  fetchFromGitHub,
   libtorrent-rasterbar,
   libvlc,
   openssl,
   pkg-config,
-  stdenv,
 }:
 
 # VLC does not know where the vlc-bittorrent package is installed.
@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-e2oMZGE7D93SbwYTb1a4BPN+P8P3rJ2iGtKC4vwdfhI=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoconf-archive
     autoreconfHook
@@ -39,8 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  strictDeps = true;
-
   # It's a library, should not have a desktop file
   postFixup = ''
     rm -r $out/share/
@@ -50,7 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Bittorrent plugin for VLC";
     homepage = "https://github.com/johang/vlc-bittorrent";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.kintrix ];
+    platforms = lib.platforms.linux;
   };
 })

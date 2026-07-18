@@ -1,19 +1,15 @@
 {
   lib,
   stdenv,
+  coreutils,
+  jq,
   makeWrapper,
   nix,
   skopeo,
-  jq,
-  coreutils,
 }:
 
 stdenv.mkDerivation {
-  name = "nix-prefetch-docker";
-
   nativeBuildInputs = [ makeWrapper ];
-
-  dontUnpack = true;
 
   installPhase = ''
     install -vD ${./nix-prefetch-docker} $out/bin/$name;
@@ -29,12 +25,14 @@ stdenv.mkDerivation {
       --set HOME /homeless-shelter
   '';
 
+  dontUnpack = true;
+  name = "nix-prefetch-docker";
   preferLocalBuild = true;
 
   meta = {
     description = "Script used to obtain source hashes for dockerTools.pullImage";
-    mainProgram = "nix-prefetch-docker";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "nix-prefetch-docker";
   };
 }

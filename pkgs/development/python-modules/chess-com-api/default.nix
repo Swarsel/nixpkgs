@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   aiohttp,
-  pytestCheckHook,
+  buildPythonPackage,
+  hatchling,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-mock,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "chess-com-api";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Stupidoodle";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/84rDQwD1Qxl1x7AOF6KFTYqYOdqQyzuhgiz5gArMmo=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
@@ -33,12 +28,16 @@ buildPythonPackage (finalAttrs: {
     pytest-mock
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
+
   disabledTestPaths = [
     # require network access
     "tests/test_client.py"
     "tests/test_integration.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "chess_com_api" ];
 
   meta = {

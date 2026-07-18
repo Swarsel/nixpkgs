@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  kubectl,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  kubectl,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,8 +17,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-eemPsrSFwgUR1Jz7283jjwMkoJR38QiaiilI9G0IQuo=";
   };
 
-  vendorHash = "sha256-6b4H8YAY8d/qIGnnGPYZoXne1LXHLsc0OEq0lCeqivo=";
-
   patches = [
     ./go120-compatibility.patch
   ];
@@ -28,17 +26,18 @@ buildGoModule (finalAttrs: {
     rm commands/root_test.go
   '';
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/giantswarm/gsctl/buildinfo.Version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-6b4H8YAY8d/qIGnnGPYZoXne1LXHLsc0OEq0lCeqivo=";
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     kubectl
   ];
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/giantswarm/gsctl/buildinfo.Version=${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Giant Swarm command line interface";

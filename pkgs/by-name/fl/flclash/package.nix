@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  autoPatchelfHook,
+  buildGoModule,
+  copyDesktopItems,
   flutter335,
+  imagemagick,
   keybinder3,
   libayatana-appindicator,
-  buildGoModule,
   makeDesktopItem,
-  copyDesktopItems,
-  autoPatchelfHook,
-  imagemagick,
 }:
 
 let
@@ -19,13 +19,14 @@ let
     owner = "chen08209";
     repo = "FlClash";
     tag = "v${version}";
+    hash = "sha256-bPz2QNwhlCZBmjU0ZpRTwNk0TKVTIHH4E6ZJ5+rtaTk=";
+    fetchSubmodules = true;
+
     preFetch = ''
       export GIT_CONFIG_COUNT=1
       export GIT_CONFIG_KEY_0=url.https://github.com/.insteadOf
       export GIT_CONFIG_VALUE_0=git@github.com:
     '';
-    hash = "sha256-bPz2QNwhlCZBmjU0ZpRTwNk0TKVTIHH4E6ZJ5+rtaTk=";
-    fetchSubmodules = true;
   };
 
   meta = {
@@ -36,13 +37,9 @@ let
   };
 
   core = buildGoModule {
-    pname = "core";
     inherit version src meta;
-
-    modRoot = "core";
-
+    pname = "core";
     vendorHash = "sha256-/p/Z5vIstuerR5jA0vXXLURSoPqS7IDEIXCa/SFCrLc=";
-
     env.CGO_ENABLED = 0;
 
     buildPhase = ''
@@ -53,14 +50,12 @@ let
 
       runHook postBuild
     '';
+
+    modRoot = "core";
   };
 in
 flutter335.buildFlutterApplication {
   inherit pname version src;
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  gitHashes = lib.importJSON ./git-hashes.json;
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -73,26 +68,6 @@ flutter335.buildFlutterApplication {
     libayatana-appindicator
   ];
 
-  flutterBuildFlags = [ "--dart-define=APP_ENV=stable" ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "flclash";
-      exec = "FlClash %U";
-      icon = "flclash";
-      genericName = "FlClash";
-      desktopName = "FlClash";
-      categories = [ "Network" ];
-      startupWMClass = "com.follow.clash";
-      keywords = [
-        "FlClash"
-        "Clash"
-        "ClashMeta"
-        "Proxy"
-      ];
-    })
-  ];
-
   preBuild = ''
     mkdir -p libclash/linux
     cp ${core}/bin/FlClashCore libclash/linux/FlClashCore
@@ -103,13 +78,37 @@ flutter335.buildFlutterApplication {
     magick assets/images/icon.png -resize 512x512 $out/share/icons/hicolor/512x512/apps/flclash.png
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Network" ];
+      desktopName = "FlClash";
+      exec = "FlClash %U";
+      genericName = "FlClash";
+      icon = "flclash";
+
+      keywords = [
+        "FlClash"
+        "Clash"
+        "ClashMeta"
+        "Proxy"
+      ];
+
+      name = "flclash";
+      startupWMClass = "com.follow.clash";
+    })
+  ];
+
+  flutterBuildFlags = [ "--dart-define=APP_ENV=stable" ];
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   passthru = {
     inherit core;
     updateScript = ./update.sh;
   };
 
   meta = meta // {
-    mainProgram = "FlClash";
     platforms = lib.platforms.linux;
+    mainProgram = "FlClash";
   };
 }

@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
+  copyDesktopItems,
   fetchzip,
   glib,
   jre,
-  makeWrapper,
-  wrapGAppsHook3,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
   versionCheckHook,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,14 +20,14 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-aPJgZGRbP016w8riqIVOYnH90QvRs4hnsEdbCVJmLZc=";
   };
 
-  buildInputs = [
-    glib
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     wrapGAppsHook3
     copyDesktopItems
+  ];
+
+  buildInputs = [
+    glib
   ];
 
   installPhase = ''
@@ -48,14 +48,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   desktopItems = [
     (makeDesktopItem {
-      name = "VASSAL";
+      categories = [ "Game" ];
+      comment = "The open-source boardgame engine";
+      desktopName = "VASSAL";
       exec = "vassal";
       icon = "VASSAL";
-      desktopName = "VASSAL";
-      comment = "The open-source boardgame engine";
-      categories = [ "Game" ];
+      name = "VASSAL";
       startupWMClass = "VASSAL-launch-ModuleManager";
     })
   ];
@@ -66,17 +72,13 @@ stdenv.mkDerivation rec {
     "info"
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
   versionCheckProgram = "${placeholder "out"}/bin/vassal";
 
   meta = {
     description = "Free, open-source boardgame engine";
     homepage = "https://vassalengine.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.lgpl21Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ tvestelind ];
     platforms = with lib.platforms; unix ++ windows;
     mainProgram = "vassal";

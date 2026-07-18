@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  docbook_xsl,
-  libxslt,
   c-ares,
   cjson,
+  cmake,
+  docbook_xsl,
   libargon2,
   libuuid,
   libuv,
   libwebsockets,
+  libxslt,
+  nixosTests,
   openssl,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
   sqlite,
   systemd,
   uthash,
-  nixosTests,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 let
@@ -35,10 +35,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "mosquitto";
   version = "2.1.2";
-  # Tests disabled: upstream test suite requires additional Python deps,
-  # uses chown() to fixed UIDs, and relies on signal handling that breaks
-  # in sandboxed builds. Re-enable once upstream tests are sandbox-friendly.
-  doCheck = false;
 
   src = fetchFromGitHub {
     owner = "eclipse-mosquitto";
@@ -47,18 +43,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Zl55yjuzQY2fyaKs/zLaJ7a3OONKTDQPaT+DpPURdZI=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+  ];
+
   postPatch = ''
     for f in html manpage ; do
       substituteInPlace man/$f.xsl \
         --replace http://docbook.sourceforge.net/release/xsl/current ${docbook_xsl}/share/xml/docbook-xsl
     done
   '';
-
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -88,6 +84,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "WITH_TESTS" finalAttrs.doCheck)
   ];
 
+  # Tests disabled: upstream test suite requires additional Python deps,
+  # uses chown() to fixed UIDs, and relies on signal handling that breaks
+  # in sandboxed builds. Re-enable once upstream tests are sandbox-friendly.
+  doCheck = false;
+
   postFixup = ''
     sed -i "s|^libdir=.*|libdir=$lib/lib|g" $dev/lib/pkgconfig/*.pc
   '';
@@ -101,10 +102,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://mosquitto.org/";
     changelog = "https://github.com/eclipse-mosquitto/mosquitto/blob/v2.0.22/ChangeLog.txt";
     license = lib.licenses.epl10;
+
     maintainers = with lib.maintainers; [
       peterhoeg
       sikmir
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "mosquitto";
   };

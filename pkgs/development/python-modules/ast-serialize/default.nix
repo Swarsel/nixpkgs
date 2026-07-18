@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   rustPlatform,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ast-serialize";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mypyc";
@@ -17,15 +16,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-GmhbMraI16J6ePtn7lXAWaJ+9zDH1GdebKIAzm5w9ok=";
   };
 
+  build-system = [
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+  ];
+
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit (finalAttrs) pname version src;
     hash = "sha256-h+BklNeoQaRVWczsE9sFXgvFrnHW5vjWOVaOvLghv0U=";
   };
 
-  build-system = [
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "ast_serialize"

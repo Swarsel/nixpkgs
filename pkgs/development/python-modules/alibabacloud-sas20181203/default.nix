@@ -10,16 +10,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-sas20181203";
   version = "9.3.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_sas20181203";
     inherit (finalAttrs) version;
     hash = "sha256-Y1xDWiGmjuDkcgF6c031fe5xBO4tA8xUH9DIXBN2oRw=";
+    pname = "alibabacloud_sas20181203";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +27,8 @@ buildPythonPackage (finalAttrs: {
     darabonba-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_sas20181203" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Alibaba Cloud Threat Detection (20181203) SDK Library for Python";

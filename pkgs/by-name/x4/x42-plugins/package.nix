@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libltc,
-  libsndfile,
-  libsamplerate,
-  ftgl,
-  freefont_ttf,
-  libjack2,
-  libGLU,
-  lv2,
   cairo,
-  pango,
   fftwFloat,
+  freefont_ttf,
+  ftgl,
+  libGLU,
+  libjack2,
+  libltc,
+  libsamplerate,
+  libsndfile,
+  lv2,
+  pango,
+  pkg-config,
   zita-convolver,
 }:
 
@@ -27,6 +27,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libGLU
     ftgl
@@ -42,6 +43,19 @@ stdenv.mkDerivation rec {
     zita-convolver
   ];
 
+  makeFlags = [
+    "PREFIX=$(out)"
+    "FONTFILE=${freefont_ttf}/share/fonts/truetype/FreeSansBold.ttf"
+  ];
+
+  enableParallelBuilding = true;
+
+  patchPhase = ''
+    patchShebangs ./stepseq.lv2/gridgen.sh
+    patchShebangs ./matrixmixer.lv2/genttl.sh
+    patchShebangs ./matrixmixer.lv2/genhead.sh
+  '';
+
   # Don't remove this. The default fails with 'do not know how to unpack source archive'
   # every now and then on Hydra. No idea why.
   unpackPhase = ''
@@ -50,26 +64,15 @@ stdenv.mkDerivation rec {
     chmod -R u+w $sourceRoot
   '';
 
-  makeFlags = [
-    "PREFIX=$(out)"
-    "FONTFILE=${freefont_ttf}/share/fonts/truetype/FreeSansBold.ttf"
-  ];
-
-  patchPhase = ''
-    patchShebangs ./stepseq.lv2/gridgen.sh
-    patchShebangs ./matrixmixer.lv2/genttl.sh
-    patchShebangs ./matrixmixer.lv2/genhead.sh
-  '';
-
-  enableParallelBuilding = true;
-
   meta = {
     description = "Collection of LV2 plugins by Robin Gareus";
     homepage = "https://github.com/x42/x42-plugins";
+    license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       magnetophon
     ];
-    license = lib.licenses.gpl2;
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

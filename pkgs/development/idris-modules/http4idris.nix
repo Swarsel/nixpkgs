@@ -1,14 +1,12 @@
 {
-  build-idris-package,
-  fetchFromGitHub,
-  contrib,
   lib,
+  fetchFromGitHub,
+  build-idris-package,
+  contrib,
 }:
 build-idris-package {
   pname = "http4idris";
   version = "2018-01-16";
-
-  idrisDeps = [ contrib ];
 
   src = fetchFromGitHub {
     owner = "A1kmm";
@@ -16,6 +14,8 @@ build-idris-package {
     rev = "f44ffd2a15628869c7aadf241e3c9b1ee7b40941";
     sha256 = "16bs7rxbsq7m7jm96zkqiq8hj68l907m8xgmjrcxzl158qvzhw1w";
   };
+
+  idrisDeps = [ contrib ];
 
   meta = {
     description = "Experimental HTTP framework for Idris";

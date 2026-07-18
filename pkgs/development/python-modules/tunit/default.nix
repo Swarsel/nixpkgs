@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tunit";
   version = "1.7.2";
-  pyproject = true;
 
   src = fetchFromBitbucket {
     owner = "massultidev";
@@ -21,21 +20,23 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-S1YEpXQcjQ7gcJPUv4Eo32ypGFkinMjr/x4P/pFMipg=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
+
   build-system = [ setuptools ];
 
   optional-dependencies = {
     json = [ json-handler-registry ];
+
     yaml = [
       pyyaml
       types-pyyaml
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "tunit" ];
 
   meta = {

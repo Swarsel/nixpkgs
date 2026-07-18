@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -17,12 +17,12 @@ buildGoModule {
 
   vendorHash = null;
 
-  subPackages = [ "." ];
-
   ldflags = [
     "-s"
     "-w"
   ];
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Manage local application configuration files using templates and data from etcd or consul";

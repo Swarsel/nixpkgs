@@ -23,8 +23,8 @@ buildGoModule {
   ];
 
   meta = {
-    homepage = "https://github.com/oem/lnch";
     description = "Launches a process and moves it out of the process group";
+    homepage = "https://github.com/oem/lnch";
     license = lib.licenses.mit;
     mainProgram = "lnch";
   };

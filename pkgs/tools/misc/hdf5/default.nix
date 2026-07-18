@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   fixDarwinDylibNames,
-  removeReferencesTo,
-  cppSupport ? true,
-  fortranSupport ? false,
   fortran,
-  zlibSupport ? true,
-  zlib,
-  szipSupport ? true,
+  jdk,
   libaec,
-  mpiSupport ? false,
   mpi,
+  python3,
+  removeReferencesTo,
+  zlib,
+  apiVersion ? null,
+  cppSupport ? true,
   enableShared ? !stdenv.hostPlatform.isStatic,
   enableStatic ? stdenv.hostPlatform.isStatic,
+  fortranSupport ? false,
   javaSupport ? false,
-  jdk,
-  apiVersion ? null,
+  mpiSupport ? false,
+  szipSupport ? true,
   threadsafe ? false,
-  python3,
+  zlibSupport ? true,
 }:
 
 # cpp and mpi options are mutually exclusive
@@ -33,13 +33,14 @@ let
 in
 
 stdenv.mkDerivation rec {
-  version = "1.14.6";
   pname =
     "hdf5"
     + lib.optionalString cppSupport "-cpp"
     + lib.optionalString fortranSupport "-fortran"
     + lib.optionalString mpiSupport "-mpi"
     + lib.optionalString threadsafe "-threadsafe";
+
+  version = "1.14.6";
 
   src = fetchFromGitHub {
     owner = "HDFGroup";
@@ -48,32 +49,18 @@ stdenv.mkDerivation rec {
     hash = "sha256-mJTax+VWAL3Amkq3Ij8fxazY2nfpMOTxYMUQlTvY/rg=";
   };
 
-  patches = [
-    (fetchpatch {
-      name = "reproducible-build.patch";
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/hdf5/-/raw/721d33408db902ff738db18f1e977611d49b4ba8/hdf5-make-reproducible.patch";
-      hash = "sha256-Z31dCsLjYpqjoGXooOXI81EPjPwyTK8890xCENTh8aM=";
-    })
-  ];
-
-  passthru = {
-    inherit
-      cppSupport
-      fortranSupport
-      fortran
-      zlibSupport
-      zlib
-      szipSupport
-      libaec
-      mpiSupport
-      mpi
-      ;
-  };
-
   outputs = [
     "out"
     "dev"
     "bin"
+  ];
+
+  patches = [
+    (fetchpatch {
+      hash = "sha256-Z31dCsLjYpqjoGXooOXI81EPjPwyTK8890xCENTh8aM=";
+      name = "reproducible-build.patch";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/hdf5/-/raw/721d33408db902ff738db18f1e977611d49b4ba8/hdf5-make-reproducible.patch";
+    })
   ];
 
   nativeBuildInputs = [
@@ -135,21 +122,37 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
+  passthru = {
+    inherit
+      cppSupport
+      fortranSupport
+      fortran
+      zlibSupport
+      zlib
+      szipSupport
+      libaec
+      mpiSupport
+      mpi
+      ;
+  };
+
   passthru.tests = {
     inherit (python3.pkgs) h5py;
   };
 
   meta = {
     description = "Data model, library, and file format for storing and managing data";
+
     longDescription = ''
       HDF5 supports an unlimited variety of datatypes, and is designed for flexible and efficient
       I/O and for high volume and complex data. HDF5 is portable and is extensible, allowing
       applications to evolve in their use of HDF5. The HDF5 Technology suite includes tools and
       applications for managing, manipulating, viewing, and analyzing data in the HDF5 format.
     '';
+
+    homepage = "https://www.hdfgroup.org/HDF5/";
     license = lib.licenses.bsd3; # Lawrence Berkeley National Labs BSD 3-Clause variant
     maintainers = [ lib.maintainers.markuskowa ];
-    homepage = "https://www.hdfgroup.org/HDF5/";
     platforms = lib.platforms.unix;
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,6 +18,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-je2/GjCCDymYGhho6yf7SNQ3YkLCLQ5nEqHPNdDXjbQ=";
 
+  checkFlags = [
+    # These tests require network access
+    "--skip=connect_listen_ctrlc_connect"
+    "--skip=connect_listen_ctrlc_listen"
+    "--skip=connect_tcp_happy"
+    "--skip=unix_socket_tests::unix_socket_roundtrip"
+  ];
+
   __darwinAllowLocalNetworking = true;
 
   # On Darwin, dumbpipe invokes CoreFoundation APIs that read ICU data from the
@@ -27,14 +35,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     (allow file-read* (subpath "/usr/share/icu"))
   '';
 
-  checkFlags = [
-    # These tests require network access
-    "--skip=connect_listen_ctrlc_connect"
-    "--skip=connect_listen_ctrlc_listen"
-    "--skip=connect_tcp_happy"
-    "--skip=unix_socket_tests::unix_socket_roundtrip"
-  ];
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -42,10 +42,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Connect A to B - Send Data";
     homepage = "https://www.dumbpipe.dev/";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ ];
     mainProgram = "dumbpipe";
   };

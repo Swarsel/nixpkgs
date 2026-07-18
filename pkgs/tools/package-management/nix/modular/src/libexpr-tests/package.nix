@@ -1,28 +1,22 @@
 {
   lib,
-  buildPackages,
   stdenv,
+  buildPackages,
+  gtest,
   mkMesonExecutable,
-
   nix-expr,
   nix-expr-c,
   nix-expr-test-support,
-
   rapidcheck,
-  gtest,
-  runCommand,
-
-  # Configuration Options
-
-  version,
   resolvePath,
+  runCommand,
+  # Configuration Options
+  version,
 }:
 
 mkMesonExecutable (finalAttrs: {
-  pname = "nix-expr-tests";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-expr-tests";
 
   buildInputs = [
     nix-expr
@@ -34,6 +28,8 @@ mkMesonExecutable (finalAttrs: {
 
   mesonFlags = [
   ];
+
+  workDir = ./.;
 
   passthru = {
     tests = {

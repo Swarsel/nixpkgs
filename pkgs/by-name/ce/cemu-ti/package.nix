@@ -1,17 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  qt6,
   libarchive,
   libpng,
+  pkg-config,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "CEmu";
   version = "2.0";
+
   src = fetchFromGitHub {
     owner = "CE-Programming";
     repo = "CEmu";
@@ -19,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fohsIJrvPDMmYHoPbmYQlKLMnj/B3XEBaerZYuqxvd8=";
     fetchSubmodules = true;
   };
-
-  sourceRoot = "${finalAttrs.src.name}/gui/qt/";
 
   patches = [
     # This is resolved upstream, but I can't apply the patch because the
@@ -42,12 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
     libpng
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/gui/qt/";
+
   meta = {
     description = "Third-party TI-84 Plus CE / TI-83 Premium CE emulator, focused on developer features";
-    mainProgram = "CEmu";
     homepage = "https://ce-programming.github.io/CEmu";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "CEmu";
   };
 })

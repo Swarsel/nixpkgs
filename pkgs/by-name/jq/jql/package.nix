@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-krhy+CLoQyXeYyLHuNYVleSPtEAFKrdf24zDBCGID2Q=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -32,13 +32,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "JSON Query Language CLI tool built with Rust";
     homepage = "https://github.com/yamafaktory/jql";
     changelog = "https://github.com/yamafaktory/jql/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       akshgpt7
     ];
+
     mainProgram = "jql";
   };
 })

@@ -1,24 +1,23 @@
 {
   lib,
   fetchFromGitHub,
-  fetchpatch,
   # Python bits:
   buildPythonPackage,
-  pytest,
-  responses,
   docopt,
+  fetchpatch,
   flask,
   markdown,
   path-and-address,
   pygments,
+  pytest,
   requests,
+  responses,
   tabulate,
 }:
 
 buildPythonPackage rec {
   pname = "grip";
   version = "4.6.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "joeyespo";
@@ -30,15 +29,10 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/NixOS/nixpkgs/issues/288478
     (fetchpatch {
+      hash = "sha256-veVJKJtt8mP1jmseRD7pNR3JgIxX1alYHyQok/rBpiQ=";
       name = "set-default-encoding.patch";
       url = "https://github.com/joeyespo/grip/commit/2784eb2c1515f1cdb1554d049d48b3bff0f42085.patch";
-      hash = "sha256-veVJKJtt8mP1jmseRD7pNR3JgIxX1alYHyQok/rBpiQ=";
     })
-  ];
-
-  nativeCheckInputs = [
-    pytest
-    responses
   ];
 
   propagatedBuildInputs = [
@@ -51,16 +45,23 @@ buildPythonPackage rec {
     tabulate
   ];
 
+  nativeCheckInputs = [
+    pytest
+    responses
+  ];
+
   checkPhase = ''
     export PATH="$PATH:$out/bin"
     py.test -xm "not assumption"
   '';
 
+  format = "setuptools";
+
   meta = {
     description = "Preview GitHub Markdown files like Readme locally before committing them";
-    mainProgram = "grip";
     homepage = "https://github.com/joeyespo/grip";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ koral ];
+    mainProgram = "grip";
   };
 }

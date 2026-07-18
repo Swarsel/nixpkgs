@@ -1,11 +1,11 @@
 {
   lib,
+  bqscales,
   buildPythonPackage,
   fetchPypi,
+  ipywidgets,
   jupyter-packaging,
   jupyterlab,
-  bqscales,
-  ipywidgets,
   numpy,
   pandas,
   traitlets,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "bqplot";
   version = "0.12.46";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +28,9 @@ buildPythonPackage rec {
       --replace "jupyter_packaging~=" "jupyter_packaging>=" \
       --replace "jupyterlab~=" "jupyterlab>="
   '';
+
+  # no tests in PyPI dist, and not obvious to me how to build the js files from GitHub
+  doCheck = false;
 
   build-system = [
     jupyter-packaging
@@ -44,8 +46,7 @@ buildPythonPackage rec {
     traittypes
   ];
 
-  # no tests in PyPI dist, and not obvious to me how to build the js files from GitHub
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "bqplot"

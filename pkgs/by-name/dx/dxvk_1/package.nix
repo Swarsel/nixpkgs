@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fixes errors building with GCC 13.
     (fetchpatch {
-      url = "https://github.com/doitsujin/dxvk/commit/1a5afc77b1859e6c7e31b55e11ece899e3b5295a.patch";
       hash = "sha256-tTAsQOMAazgH/6laLNTuG2lki257VUR9EBivnD4vCuY=";
+      url = "https://github.com/doitsujin/dxvk/commit/1a5afc77b1859e6c7e31b55e11ece899e3b5295a.patch";
     })
     # Fixes errors building with GCC 14.
     ./gcc14-compat.patch
@@ -47,18 +47,17 @@ stdenv.mkDerivation (finalAttrs: {
     meson
     ninja
   ];
+
   buildInputs = [ windows.pthreads ];
-
-  mesonBuildType = "release";
-
   __structuredAttrs = true;
+  mesonBuildType = "release";
 
   meta = {
     description = "Vulkan-based translation layer for Direct3D 9/10/11";
     homepage = "https://github.com/doitsujin/dxvk";
     changelog = "https://github.com/doitsujin/dxvk/releases";
-    maintainers = [ lib.maintainers.reckenrode ];
     license = lib.licenses.zlib;
+    maintainers = [ lib.maintainers.reckenrode ];
     platforms = lib.platforms.windows;
   };
 })

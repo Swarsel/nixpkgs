@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   dateparser,
   httmock,
   matplotlib,
   numpy,
   pandas,
-  setuptools,
+  pytestCheckHook,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "prometheus-api-client";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "4n4nd";
@@ -24,6 +23,8 @@ buildPythonPackage rec {
     hash = "sha256-aoaydE1e+Ng3XiyqRFCgnlFIsLRitss4A0pUZdYeHak=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  checkInputs = [ httmock ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,21 +35,19 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  checkInputs = [ httmock ];
-
   disabledTestPaths = [ "tests/test_prometheus_connect.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "prometheus_api_client" ];
 
   meta = {
     description = "Python wrapper for the Prometheus HTTP API";
+
     longDescription = ''
       The prometheus-api-client library consists of multiple modules which
       assist in connecting to a Prometheus host, fetching the required metrics
       and performing various aggregation operations on the time series data.
     '';
+
     homepage = "https://github.com/4n4nd/prometheus-api-client-python";
     changelog = "https://github.com/4n4nd/prometheus-api-client-python/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;

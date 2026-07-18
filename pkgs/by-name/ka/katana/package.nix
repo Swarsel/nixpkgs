@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,11 +17,11 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-xvMmBQ7am5uRbVQlAr42TqRLyfxMDF/Gygiud5LnewY=";
 
-  subPackages = [ "cmd/katana" ];
-
   ldflags = [
     "-s"
   ];
+
+  subPackages = [ "cmd/katana" ];
 
   meta = {
     description = "Next-generation crawling and spidering framework";

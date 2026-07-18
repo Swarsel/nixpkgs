@@ -69,11 +69,12 @@ let
   '';
 
   pluginConfDir = pkgs.stdenv.mkDerivation {
-    name = "munin-plugin-conf.d";
     buildCommand = ''
       mkdir $out
       ln -s ${pluginConf} $out/nixos-config
     '';
+
+    name = "munin-plugin-conf.d";
   };
 
   # Copy one Munin plugin into the Nix store with a specific name.
@@ -137,74 +138,125 @@ in
 
   options = {
 
+    services.munin-cron = {
+
+      enable = lib.mkOption {
+        default = false;
+
+        description = ''
+          Enable munin-cron. Takes care of all heavy lifting to collect data from
+          nodes and draws graphs to html. Runs munin-update, munin-limits,
+          munin-graphs and munin-html in that order.
+
+          HTML output is in {file}`/var/www/munin/`, configure your
+          favourite webserver to serve static files.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      extraCSS = lib.mkOption {
+        default = "";
+
+        description = ''
+          Custom styling for the HTML that munin-cron generates. This will be
+          appended to the CSS files used by munin-cron and will thus take
+          precedence over the builtin styles.
+        '';
+
+        example = ''
+          /* A simple dark theme. */
+          html, body { background: #222222; }
+          #header, #footer { background: #333333; }
+          img.i, img.iwarn, img.icrit, img.iunkn {
+            filter: invert(100%) hue-rotate(-30deg);
+          }
+        '';
+
+        type = lib.types.lines;
+      };
+
+      extraGlobalConfig = lib.mkOption {
+        default = "";
+
+        description = ''
+          {file}`munin.conf` extra global configuration.
+          See <https://guide.munin-monitoring.org/en/latest/reference/munin.conf.html>.
+          Useful to setup notifications, see
+          <https://guide.munin-monitoring.org/en/latest/tutorial/alert.html>
+        '';
+
+        example = ''
+          contact.email.command mail -s "Munin notification for ''${var:host}" someone@example.com
+        '';
+
+        type = lib.types.lines;
+      };
+
+      hosts = lib.mkOption {
+        default = "";
+
+        description = ''
+          Definitions of hosts of nodes to collect data from. Needs at least one
+          host for cron to succeed. See
+          <https://guide.munin-monitoring.org/en/latest/reference/munin.conf.html>
+        '';
+
+        example = lib.literalExpression ''
+          '''
+            [''${config.networking.hostName}]
+            address localhost
+          '''
+        '';
+
+        type = lib.types.lines;
+      };
+
+    };
+
     services.munin-node = {
 
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Enable Munin Node agent. Munin node listens on 0.0.0.0 and
           by default accepts connections only from 127.0.0.1 for security reasons.
 
           See <https://guide.munin-monitoring.org/en/latest/architecture/index.html>.
         '';
+
+        type = lib.types.bool;
       };
 
-      extraConfig = lib.mkOption {
-        default = "";
-        type = lib.types.lines;
+      disabledPlugins = lib.mkOption {
+        # TODO: figure out why Munin isn't writing the log file and fix it.
+        # In the meantime this at least suppresses a useless graph full of
+        # NaNs in the output.
+        default = [ "munin_stats" ];
+
         description = ''
-          {file}`munin-node.conf` extra configuration. See
-          <https://guide.munin-monitoring.org/en/latest/reference/munin-node.conf.html>
-        '';
-      };
+          Munin plugins to disable, even if
+          `munin-node-configure --suggest` tries to enable
+          them. To disable a wildcard plugin, use an actual wildcard, as in
+          the example.
 
-      extraPluginConfig = lib.mkOption {
-        default = "";
-        type = lib.types.lines;
-        description = ''
-          {file}`plugin-conf.d` extra plugin configuration. See
-          <https://guide.munin-monitoring.org/en/latest/plugin/use.html>
+          munin_stats is disabled by default as it tries to read
+          `/var/log/munin/munin-update.log` for timing
+          information, and the NixOS build of Munin does not write this file.
         '';
-        example = ''
-          [fail2ban_*]
-          user root
-        '';
-      };
 
-      extraPlugins = lib.mkOption {
-        default = { };
-        type = with lib.types; attrsOf path;
-        description = ''
-          Additional Munin plugins to activate. Keys are the name of the plugin
-          symlink, values are the path to the underlying plugin script. You
-          can use the same plugin script multiple times (e.g. for wildcard
-          plugins).
+        example = [
+          "diskstats"
+          "zfs_usage_*"
+        ];
 
-          Note that these plugins do not participate in autoconfiguration. If
-          you want to autoconfigure additional plugins, use
-          {option}`services.munin-node.extraAutoPlugins`.
-
-          Plugins enabled in this manner take precedence over autoconfigured
-          plugins.
-
-          Plugins will be copied into the Nix store, and it will attempt to
-          modify them to run properly by fixing hardcoded references to
-          `/bin`, `/usr/bin`,
-          `/sbin`, and `/usr/sbin`.
-        '';
-        example = lib.literalExpression ''
-          {
-            zfs_usage_bigpool = /src/munin-contrib/plugins/zfs/zfs_usage_;
-            zfs_usage_smallpool = /src/munin-contrib/plugins/zfs/zfs_usage_;
-            zfs_list = /src/munin-contrib/plugins/zfs/zfs_list;
-          };
-        '';
+        type = with lib.types; listOf str;
       };
 
       extraAutoPlugins = lib.mkOption {
         default = [ ];
-        type = with lib.types; listOf path;
+
         description = ''
           Additional Munin plugins to autoconfigure, using
           `munin-node-configure --suggest`. These should be
@@ -224,100 +276,76 @@ in
           `/bin`, `/usr/bin`,
           `/sbin`, and `/usr/sbin`.
         '';
+
         example = lib.literalExpression ''
           [
             /src/munin-contrib/plugins/zfs
             /src/munin-contrib/plugins/ssh
           ];
         '';
+
+        type = with lib.types; listOf path;
       };
 
-      disabledPlugins = lib.mkOption {
-        # TODO: figure out why Munin isn't writing the log file and fix it.
-        # In the meantime this at least suppresses a useless graph full of
-        # NaNs in the output.
-        default = [ "munin_stats" ];
-        type = with lib.types; listOf str;
-        description = ''
-          Munin plugins to disable, even if
-          `munin-node-configure --suggest` tries to enable
-          them. To disable a wildcard plugin, use an actual wildcard, as in
-          the example.
-
-          munin_stats is disabled by default as it tries to read
-          `/var/log/munin/munin-update.log` for timing
-          information, and the NixOS build of Munin does not write this file.
-        '';
-        example = [
-          "diskstats"
-          "zfs_usage_*"
-        ];
-      };
-    };
-
-    services.munin-cron = {
-
-      enable = lib.mkOption {
-        default = false;
-        type = lib.types.bool;
-        description = ''
-          Enable munin-cron. Takes care of all heavy lifting to collect data from
-          nodes and draws graphs to html. Runs munin-update, munin-limits,
-          munin-graphs and munin-html in that order.
-
-          HTML output is in {file}`/var/www/munin/`, configure your
-          favourite webserver to serve static files.
-        '';
-      };
-
-      extraGlobalConfig = lib.mkOption {
+      extraConfig = lib.mkOption {
         default = "";
-        type = lib.types.lines;
+
         description = ''
-          {file}`munin.conf` extra global configuration.
-          See <https://guide.munin-monitoring.org/en/latest/reference/munin.conf.html>.
-          Useful to setup notifications, see
-          <https://guide.munin-monitoring.org/en/latest/tutorial/alert.html>
+          {file}`munin-node.conf` extra configuration. See
+          <https://guide.munin-monitoring.org/en/latest/reference/munin-node.conf.html>
         '';
+
+        type = lib.types.lines;
+      };
+
+      extraPluginConfig = lib.mkOption {
+        default = "";
+
+        description = ''
+          {file}`plugin-conf.d` extra plugin configuration. See
+          <https://guide.munin-monitoring.org/en/latest/plugin/use.html>
+        '';
+
         example = ''
-          contact.email.command mail -s "Munin notification for ''${var:host}" someone@example.com
+          [fail2ban_*]
+          user root
         '';
+
+        type = lib.types.lines;
       };
 
-      hosts = lib.mkOption {
-        default = "";
-        type = lib.types.lines;
+      extraPlugins = lib.mkOption {
+        default = { };
+
         description = ''
-          Definitions of hosts of nodes to collect data from. Needs at least one
-          host for cron to succeed. See
-          <https://guide.munin-monitoring.org/en/latest/reference/munin.conf.html>
+          Additional Munin plugins to activate. Keys are the name of the plugin
+          symlink, values are the path to the underlying plugin script. You
+          can use the same plugin script multiple times (e.g. for wildcard
+          plugins).
+
+          Note that these plugins do not participate in autoconfiguration. If
+          you want to autoconfigure additional plugins, use
+          {option}`services.munin-node.extraAutoPlugins`.
+
+          Plugins enabled in this manner take precedence over autoconfigured
+          plugins.
+
+          Plugins will be copied into the Nix store, and it will attempt to
+          modify them to run properly by fixing hardcoded references to
+          `/bin`, `/usr/bin`,
+          `/sbin`, and `/usr/sbin`.
         '';
+
         example = lib.literalExpression ''
-          '''
-            [''${config.networking.hostName}]
-            address localhost
-          '''
+          {
+            zfs_usage_bigpool = /src/munin-contrib/plugins/zfs/zfs_usage_;
+            zfs_usage_smallpool = /src/munin-contrib/plugins/zfs/zfs_usage_;
+            zfs_list = /src/munin-contrib/plugins/zfs/zfs_list;
+          };
         '';
-      };
 
-      extraCSS = lib.mkOption {
-        default = "";
-        type = lib.types.lines;
-        description = ''
-          Custom styling for the HTML that munin-cron generates. This will be
-          appended to the CSS files used by munin-cron and will thus take
-          precedence over the builtin styles.
-        '';
-        example = ''
-          /* A simple dark theme. */
-          html, body { background: #222222; }
-          #header, #footer { background: #333333; }
-          img.i, img.iwarn, img.icrit, img.iunkn {
-            filter: invert(100%) hue-rotate(-30deg);
-          }
-        '';
+        type = with lib.types; attrsOf path;
       };
-
     };
 
   };
@@ -327,33 +355,34 @@ in
 
       environment.systemPackages = [ pkgs.munin ];
 
+      users.groups.munin = {
+        gid = config.ids.gids.munin;
+      };
+
       users.users.munin = {
         description = "Munin monitoring user";
         group = "munin";
-        uid = config.ids.uids.munin;
         home = "/var/lib/munin";
-      };
-
-      users.groups.munin = {
-        gid = config.ids.gids.munin;
+        uid = config.ids.uids.munin;
       };
 
     })
     (lib.mkIf nodeCfg.enable {
 
       systemd.services.munin-node = {
-        description = "Munin Node";
         after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "Munin Node";
+        environment.MUNIN_LIBDIR = "${pkgs.munin}/lib";
+        environment.MUNIN_LOGDIR = "/var/log/munin";
+        environment.MUNIN_PLUGSTATE = "/run/munin";
+
         path = with pkgs; [
           munin
           smartmontools
           "/run/current-system/sw"
           "/run/wrappers"
         ];
-        environment.MUNIN_LIBDIR = "${pkgs.munin}/lib";
-        environment.MUNIN_PLUGSTATE = "/run/munin";
-        environment.MUNIN_LOGDIR = "/var/log/munin";
+
         preStart = ''
           echo "Updating munin plugins..."
 
@@ -377,16 +406,19 @@ in
             rm -f ${toString nodeCfg.disabledPlugins}
           ''}
         '';
+
         serviceConfig = {
           ExecStart = "${pkgs.munin}/sbin/munin-node --config ${nodeConf} --servicedir /etc/munin/plugins/ --sconfdir=${pluginConfDir}";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
       # munin_stats plugin breaks as of 2.0.33 when this doesn't exist
       systemd.tmpfiles.settings."10-munin"."/run/munin".d = {
+        group = "munin";
         mode = "0755";
         user = "munin";
-        group = "munin";
       };
 
     })
@@ -396,36 +428,37 @@ in
       # it's not available.
       fonts.packages = [ pkgs.dejavu_fonts ];
 
-      systemd.timers.munin-cron = {
-        description = "batch Munin master programs";
-        wantedBy = [ "timers.target" ];
-        timerConfig.OnCalendar = "*:0/5";
-      };
-
       systemd.services.munin-cron = {
         description = "batch Munin master programs";
-        unitConfig.Documentation = "man:munin-cron(8)";
 
         serviceConfig = {
+          ExecStart = "${pkgs.munin}/bin/munin-cron --config ${muninConf}";
           Type = "oneshot";
           User = "munin";
-          ExecStart = "${pkgs.munin}/bin/munin-cron --config ${muninConf}";
         };
+
+        unitConfig.Documentation = "man:munin-cron(8)";
+      };
+
+      systemd.timers.munin-cron = {
+        description = "batch Munin master programs";
+        timerConfig.OnCalendar = "*:0/5";
+        wantedBy = [ "timers.target" ];
       };
 
       systemd.tmpfiles.settings."20-munin" =
         let
           defaultConfig = {
+            group = "munin";
             mode = "0755";
             user = "munin";
-            group = "munin";
           };
         in
         {
           "/run/munin".d = defaultConfig;
+          "/var/lib/munin".d = defaultConfig;
           "/var/log/munin".d = defaultConfig;
           "/var/www/munin".d = defaultConfig;
-          "/var/lib/munin".d = defaultConfig;
         };
     })
   ];

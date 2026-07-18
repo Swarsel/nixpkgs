@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "git-dumper";
   version = "1.0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "arthaud";
@@ -27,6 +26,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
     requests-pkcs12
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "git_dumper"

@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  biocutils,
+  buildPythonPackage,
+  numpy,
+  pandas,
+  polars,
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  biocutils,
-  numpy,
-  polars,
-  pandas,
 }:
 
 buildPythonPackage rec {
   pname = "biocframe";
   version = "0.7.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BiocPy";
@@ -23,6 +22,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-NycHzlOdDRyXvpZLWDr7mg5eXxrBjsSk16AUHpQrDN0=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+    pandas
+    polars
+  ];
 
   build-system = [
     setuptools
@@ -34,13 +40,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-    pandas
-    polars
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "biocframe" ];
 
   meta = {

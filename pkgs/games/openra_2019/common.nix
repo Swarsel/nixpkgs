@@ -4,19 +4,19 @@
 */
 {
   lib,
-  makeSetupHook,
-  curl,
-  unzip,
-  dos2unix,
-  pkg-config,
-  makeWrapper,
-  lua,
-  mono,
-  python3,
-  libGL,
-  freetype,
-  openal,
   SDL2,
+  curl,
+  dos2unix,
+  freetype,
+  libGL,
+  lua,
+  makeSetupHook,
+  makeWrapper,
+  mono,
+  openal,
+  pkg-config,
+  python3,
+  unzip,
   # It is not necessary to run the game, but it is nicer to be given an error dialog in the case of failure,
   # rather than having to look to the logs why it is not starting.
   zenity,
@@ -52,6 +52,36 @@ let
 
 in
 {
+  packageAttrs = {
+    # TODO: Test if this is correct.
+    nativeBuildInputs = [
+      curl
+      unzip
+      dos2unix
+      pkg-config
+      makeWrapper
+      mkdirp
+      mono
+      python3
+    ];
+
+    buildInputs = [ libGL ];
+    makeFlags = [ "prefix=$(out)" ];
+    doCheck = true;
+    dontStrip = true;
+
+    meta = {
+      license = licenses.gpl3;
+
+      maintainers = with maintainers; [
+        fusion809
+        msteen
+      ];
+
+      platforms = platforms.linux;
+    };
+  };
+
   patchEngine = dir: version: ''
     sed -i \
       -e 's/^VERSION.*/VERSION = ${version}/g' \
@@ -73,35 +103,4 @@ in
     makeWrapper $out/lib/openra${openraSuffix}/launch-game.sh $(mkdirp $out/bin)/${binaryName} \
       --chdir "$out/lib/openra${openraSuffix}"
   '';
-
-  packageAttrs = {
-    buildInputs = [ libGL ];
-
-    # TODO: Test if this is correct.
-    nativeBuildInputs = [
-      curl
-      unzip
-      dos2unix
-      pkg-config
-      makeWrapper
-      mkdirp
-      mono
-      python3
-    ];
-
-    makeFlags = [ "prefix=$(out)" ];
-
-    doCheck = true;
-
-    dontStrip = true;
-
-    meta = {
-      maintainers = with maintainers; [
-        fusion809
-        msteen
-      ];
-      license = licenses.gpl3;
-      platforms = platforms.linux;
-    };
-  };
 }

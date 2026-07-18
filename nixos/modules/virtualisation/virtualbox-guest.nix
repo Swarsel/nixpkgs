@@ -11,27 +11,26 @@ let
 
   mkVirtualBoxUserService = serviceArgs: verbose: {
     description = "VirtualBox Guest User Services ${serviceArgs}";
-
-    wantedBy = [ "graphical-session.target" ];
     partOf = [ "graphical-session.target" ];
-
-    # The graphical session may not be ready when starting the service
-    # Hence, check if the DISPLAY env var is set, otherwise fail, wait and retry again
-    startLimitBurst = 20;
-
-    unitConfig.ConditionVirtualization = "oracle";
-
     # Check if the display environment is ready, otherwise fail
     preStart = "${pkgs.bash}/bin/bash -c \"if [ -z $DISPLAY ]; then exit 1; fi\"";
+
     serviceConfig = {
       ExecStart =
         "@${kernel.virtualboxGuestAdditions}/bin/VBoxClient"
         + (lib.strings.optionalString verbose " --verbose")
         + " --foreground ${serviceArgs}";
+
+      Restart = "always";
       # Wait after a failure, hoping that the display environment is ready after waiting
       RestartSec = 2;
-      Restart = "always";
     };
+
+    # The graphical session may not be ready when starting the service
+    # Hence, check if the DISPLAY env var is set, otherwise fail, wait and retry again
+    startLimitBurst = 20;
+    unitConfig.ConditionVirtualization = "oracle";
+    wantedBy = [ "graphical-session.target" ];
   };
 
   mkVirtualBoxUserX11OnlyService =
@@ -62,44 +61,44 @@ in
   options.virtualisation.virtualbox.guest = {
     enable = lib.mkOption {
       default = false;
-      type = lib.types.bool;
       description = "Whether to enable the VirtualBox service and other guest additions.";
+      type = lib.types.bool;
     };
 
     clipboard = lib.mkOption {
       default = true;
-      type = lib.types.bool;
       description = "Whether to enable clipboard support.";
-    };
-
-    seamless = lib.mkOption {
-      default = true;
       type = lib.types.bool;
-      description = "Whether to enable seamless mode. When activated windows from the guest appear next to the windows of the host.";
     };
 
     dragAndDrop = lib.mkOption {
       default = true;
-      type = lib.types.bool;
       description = "Whether to enable drag and drop support.";
-    };
-
-    verbose = lib.mkOption {
-      default = false;
       type = lib.types.bool;
-      description = "Whether to verbose logging for guest services.";
     };
 
-    vboxsf = lib.mkOption {
+    seamless = lib.mkOption {
       default = true;
+      description = "Whether to enable seamless mode. When activated windows from the guest appear next to the windows of the host.";
       type = lib.types.bool;
-      description = "Whether to load vboxsf";
     };
 
     use3rdPartyModules = lib.mkOption {
       default = true;
-      type = lib.types.bool;
       description = "Whether to use the kernel modules provided by VirtualBox instead of the ones from the upstream kernel.";
+      type = lib.types.bool;
+    };
+
+    vboxsf = lib.mkOption {
+      default = true;
+      description = "Whether to load vboxsf";
+      type = lib.types.bool;
+    };
+
+    verbose = lib.mkOption {
+      default = false;
+      description = "Whether to verbose logging for guest services.";
+      type = lib.types.bool;
     };
   };
 
@@ -115,23 +114,8 @@ in
           }
         ];
 
-        environment.systemPackages = [ kernel.virtualboxGuestAdditions ];
-
         boot.extraModulePackages = lib.mkIf cfg.use3rdPartyModules [ kernel.virtualboxGuestAdditions ];
-
-        systemd.services.virtualbox = {
-          description = "VirtualBox Guest Services";
-
-          wantedBy = [ "multi-user.target" ];
-          requires = [ "dev-vboxguest.device" ];
-          after = [ "dev-vboxguest.device" ];
-
-          unitConfig.ConditionVirtualization = "oracle";
-
-          serviceConfig.ExecStart = "@${kernel.virtualboxGuestAdditions}/bin/VBoxService VBoxService --foreground";
-        };
-
-        users.groups.vboxuserdev = { };
+        environment.systemPackages = [ kernel.virtualboxGuestAdditions ];
 
         services.udev.extraRules = ''
           # /dev/vboxuser is necessary for VBoxClient to work.  Maybe we
@@ -142,12 +126,21 @@ in
           SUBSYSTEM=="misc", KERNEL=="vboxguest", TAG+="systemd"
         '';
 
+        systemd.services.virtualbox = {
+          after = [ "dev-vboxguest.device" ];
+          description = "VirtualBox Guest Services";
+          requires = [ "dev-vboxguest.device" ];
+          serviceConfig.ExecStart = "@${kernel.virtualboxGuestAdditions}/bin/VBoxService VBoxService --foreground";
+          unitConfig.ConditionVirtualization = "oracle";
+          wantedBy = [ "multi-user.target" ];
+        };
+
         systemd.user.services.virtualboxClientVmsvga = mkVirtualBoxUserService "--vmsvga-session" cfg.verbose;
+        users.groups.vboxuserdev = { };
       }
       (lib.mkIf cfg.vboxsf {
-        boot.supportedFilesystems = [ "vboxsf" ];
         boot.initrd.supportedFilesystems = [ "vboxsf" ];
-
+        boot.supportedFilesystems = [ "vboxsf" ];
         users.groups.vboxsf.gid = config.ids.gids.vboxsf;
       })
       (lib.mkIf cfg.clipboard {

@@ -1,9 +1,9 @@
 {
   lib,
-  symlinkJoin,
   makeWrapper,
   parallel,
   perlPackages,
+  symlinkJoin,
   extraPerlPackages ? with perlPackages; [
     DBI
     DBDPg
@@ -15,15 +15,15 @@
 }:
 
 symlinkJoin {
-  name = "parallel-full-${parallel.version}";
   inherit (parallel)
     pname
     version
     meta
     outputs
     ;
+
   nativeBuildInputs = [ makeWrapper ];
-  paths = [ parallel ];
+
   postBuild = ''
     ${lib.concatMapStringsSep "\n" (
       output: "ln -s --no-target-directory ${parallel.${output}} \$${output}"
@@ -34,4 +34,7 @@ symlinkJoin {
       --set PERL5LIB "${perlPackages.makeFullPerlPath extraPerlPackages}" \
       ${lib.optionalString willCite "--add-flags --will-cite"}
   '';
+
+  name = "parallel-full-${parallel.version}";
+  paths = [ parallel ];
 }

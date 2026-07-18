@@ -1,15 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   buildDotnetModule,
   buildPackages,
   dotnetCorePackages,
-  fetchFromGitHub,
   fetchNpmDeps,
   mono,
+  nix-update-script,
   nodejs_24,
   slskd,
   testers,
-  nix-update-script,
 }:
 
 let
@@ -33,39 +33,39 @@ buildDotnetModule rec {
     npmHooks.npmConfigHook
   ];
 
-  runtimeDeps = [ mono ];
-
-  npmRoot = "src/web";
-  npmDeps = fetchNpmDeps {
-    name = "${pname}-${version}-npm-deps";
-    inherit src;
-    sourceRoot = "${src.name}/${npmRoot}";
-    hash = "sha256-hmN91Y9ePJ7ZUyQX8jJbOgf0SuhsgmhO1ifi4sWhPUM=";
-  };
-
-  projectFile = "slskd.sln";
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
-
-  testProjectFile = "tests/slskd.Tests.Unit/slskd.Tests.Unit.csproj";
-  doCheck = true;
-  disabledTests = [
-    # Random failures on OfBorg, cause unknown
-    "slskd.Tests.Unit.Transfers.Uploads.UploadGovernorTests+ReturnBytes.Returns_Bytes_To_Bucket"
-  ];
-
   postBuild = ''
     pushd "$npmRoot"
     npm run build --legacy-peer-deps
     popd
   '';
 
+  doCheck = true;
+
   postInstall = ''
     rm -r $out/lib/slskd/wwwroot
     mv "$npmRoot"/build $out/lib/slskd/wwwroot
   '';
+
+  disabledTests = [
+    # Random failures on OfBorg, cause unknown
+    "slskd.Tests.Unit.Transfers.Uploads.UploadGovernorTests+ReturnBytes.Returns_Bytes_To_Bucket"
+  ];
+
+  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+
+  npmDeps = fetchNpmDeps {
+    inherit src;
+    hash = "sha256-hmN91Y9ePJ7ZUyQX8jJbOgf0SuhsgmhO1ifi4sWhPUM=";
+    name = "${pname}-${version}-npm-deps";
+    sourceRoot = "${src.name}/${npmRoot}";
+  };
+
+  npmRoot = "src/web";
+  nugetDeps = ./deps.json;
+  projectFile = "slskd.sln";
+  runtimeDeps = [ mono ];
+  testProjectFile = "tests/slskd.Tests.Unit/slskd.Tests.Unit.csproj";
 
   passthru = {
     tests.version = testers.testVersion { package = slskd; };
@@ -77,12 +77,14 @@ buildDotnetModule rec {
     homepage = "https://github.com/slskd/slskd";
     changelog = "https://github.com/slskd/slskd/releases/tag/${version}";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       ppom
       melvyn2
       getchoo
     ];
-    mainProgram = "slskd";
+
     platforms = lib.platforms.linux;
+    mainProgram = "slskd";
   };
 }

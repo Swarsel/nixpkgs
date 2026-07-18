@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   babel,
   backrefs,
   buildPythonPackage,
   cairosvg,
   colorama,
-  fetchFromGitHub,
   hatch-nodejs-version,
   hatch-requirements-txt,
   hatchling,
@@ -29,7 +29,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mkdocs-material";
   version = "9.7.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "squidfunk";
@@ -37,6 +36,9 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-qQtVnWNSh7rJhVyufkebEq6n4lpBI3tZxHRT07AIZFA=";
   };
+
+  # No tests for python
+  doCheck = false;
 
   build-system = [
     hatch-requirements-txt
@@ -60,38 +62,39 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  pythonRelaxDeps = [ "backrefs" ];
-
   optional-dependencies = {
+    git = [
+      # TODO: gmkdocs-git-committers-plugin
+      mkdocs-git-revision-date-localized-plugin
+    ];
+
+    imaging = [
+      cairosvg
+      pillow
+    ];
+
     recommended = [
       mkdocs-minify-plugin
       mkdocs-redirects
       mkdocs-rss-plugin
     ];
-    git = [
-      # TODO: gmkdocs-git-committers-plugin
-      mkdocs-git-revision-date-localized-plugin
-    ];
-    imaging = [
-      cairosvg
-      pillow
-    ];
   };
 
-  # No tests for python
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs" ];
+  pythonRelaxDeps = [ "backrefs" ];
 
   meta = {
-    changelog = "https://github.com/squidfunk/mkdocs-material/blob/${finalAttrs.src.tag}/CHANGELOG";
     description = "Material for mkdocs";
-    downloadPage = "https://github.com/squidfunk/mkdocs-material";
     homepage = "https://squidfunk.github.io/mkdocs-material/";
+    changelog = "https://github.com/squidfunk/mkdocs-material/blob/${finalAttrs.src.tag}/CHANGELOG";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dandellion
       jaysa68
     ];
+
+    downloadPage = "https://github.com/squidfunk/mkdocs-material";
   };
 })

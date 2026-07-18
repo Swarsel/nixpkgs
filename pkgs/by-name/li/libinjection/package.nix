@@ -17,15 +17,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0chsgam5dqr9vjfhdcp8cgk7la6nf3lq44zs6z6si98cq743550g";
   };
 
-  nativeBuildInputs = [ python3 ];
-
-  strictDeps = true;
+  # no binaries, so out = library, dev = headers
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     (fetchpatch {
+      hash = "sha256-SPdf57FIDDNpatWe5pjhAiZl5yPMDEv50k0Wj+eWTEM=";
       name = "support-python3-for-building";
       url = "https://raw.githubusercontent.com/sysown/proxysql/bed58f92917eb651b80fd8ffa627a485eb320805/deps/libinjection/update-build-py3.diff";
-      hash = "sha256-SPdf57FIDDNpatWe5pjhAiZl5yPMDEv50k0Wj+eWTEM=";
     })
   ];
 
@@ -35,20 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
       --replace /usr/local $out
   '';
 
-  configurePhase = "cd src";
+  strictDeps = true;
+  nativeBuildInputs = [ python3 ];
   buildPhase = "make all";
-
-  # no binaries, so out = library, dev = headers
-  outputs = [
-    "out"
-    "dev"
-  ];
+  configurePhase = "cd src";
 
   meta = {
     description = "SQL / SQLI tokenizer parser analyzer";
     homepage = "https://github.com/client9/libinjection";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.all;
   };
 })

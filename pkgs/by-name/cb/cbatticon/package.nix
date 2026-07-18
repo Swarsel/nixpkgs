@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   gettext,
   glib,
   gtk3,
   libnotify,
+  pkg-config,
   wrapGAppsHook3,
 }:
 
@@ -33,18 +33,18 @@ stdenv.mkDerivation (finalAttrs: {
     libnotify
   ];
 
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
+
   patchPhase = ''
     sed -i -e 's/ -Wno-format//g' Makefile
   '';
 
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   meta = {
     description = "Lightweight and fast battery icon that sits in the system tray";
-    mainProgram = "cbatticon";
     homepage = "https://github.com/valr/cbatticon";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "cbatticon";
   };
 })

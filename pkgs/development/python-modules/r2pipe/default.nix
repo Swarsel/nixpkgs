@@ -1,17 +1,21 @@
 {
-  stdenv,
   lib,
-  python,
+  stdenv,
   buildPythonPackage,
-  fetchPypi,
-  radare2,
   coreutils,
+  fetchPypi,
+  python,
+  radare2,
 }:
 
 buildPythonPackage rec {
   pname = "r2pipe";
   version = "1.9.6";
-  format = "setuptools";
+
+  src = fetchPypi {
+    inherit pname version;
+    hash = "sha256-OAS3Yr1CmMMuhEP/tRO9YAdYZ3emib0huXl3/rjLLJk=";
+  };
 
   postPatch =
     let
@@ -28,11 +32,6 @@ buildPythonPackage rec {
       substituteInPlace r2pipe/open_base.py --replace 'which("radare2")' "'${radare2}/bin/radare2'"
     '';
 
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-OAS3Yr1CmMMuhEP/tRO9YAdYZ3emib0huXl3/rjLLJk=";
-  };
-
   # Tiny sanity check to make sure r2pipe finds radare2 (since r2pipe doesn't
   # provide its own tests):
   # Analyze ls with the fastest analysis and do nothing with the result.
@@ -43,6 +42,8 @@ buildPythonPackage rec {
     r2.cmd('a')
     EOF
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Interact with radare2";

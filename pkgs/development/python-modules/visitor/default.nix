@@ -8,7 +8,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "visitor";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -16,12 +15,12 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "visitor" ];
 
   meta = {
-    homepage = "https://github.com/mbr/visitor";
     description = "Tiny pythonic visitor implementation";
+    homepage = "https://github.com/mbr/visitor";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

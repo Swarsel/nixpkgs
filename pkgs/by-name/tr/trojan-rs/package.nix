@@ -1,8 +1,8 @@
 {
-  fetchFromGitHub,
-  rustPlatform,
   lib,
+  fetchFromGitHub,
   ipset,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -16,10 +16,9 @@ rustPlatform.buildRustPackage {
     hash = "sha256-rtYvsFxxhkUuR/tLrRFvRBLG8C84Qs0kYmXkNP/Ai3c=";
   };
 
-  cargoHash = "sha256-1HrIjkv/CyHCiC3RzQ2M8kHl74eMsWNfypr8PsL6kA0=";
-
   nativeBuildInputs = [ rustPlatform.bindgenHook ];
   buildInputs = [ ipset ];
+  cargoHash = "sha256-1HrIjkv/CyHCiC3RzQ2M8kHl74eMsWNfypr8PsL6kA0=";
 
   env = {
     RUSTC_BOOTSTRAP = true;
@@ -27,10 +26,10 @@ rustPlatform.buildRustPackage {
   };
 
   meta = {
-    homepage = "https://github.com/lazytiger/trojan-rs";
     description = "Trojan server and proxy programs written in Rust";
+    homepage = "https://github.com/lazytiger/trojan-rs";
     license = lib.licenses.mit;
-    mainProgram = "trojan";
     maintainers = with lib.maintainers; [ oluceps ];
+    mainProgram = "trojan";
   };
 }

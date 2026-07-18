@@ -1,39 +1,39 @@
 {
-  fetchFromGitLab,
   lib,
   stdenv,
+  fetchFromGitLab,
   autoreconfHook,
-  gtk-doc,
-  pkg-config,
-  intltool,
+  bzip2,
+  gdk-pixbuf,
   gettext,
   glib,
-  libxml2,
-  zlib,
-  bzip2,
-  perl,
-  gdk-pixbuf,
+  gnome,
+  gtk-doc,
+  intltool,
   libiconv,
   libintl,
-  gnome,
+  libxml2,
+  perl,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libgsf";
   version = "1.14.58";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "libgsf";
     tag = "LIBGSF_${lib.replaceString "." "_" finalAttrs.version}";
     hash = "sha256-0QQas3AsH46OOCSuezoBSeIQSilaenl50stpNwNJsKc=";
+    domain = "gitlab.gnome.org";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     # Fix cross-compilation
@@ -58,10 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  nativeCheckInputs = [
-    perl
-  ];
-
   propagatedBuildInputs = [
     libxml2
     glib
@@ -78,6 +74,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
+  nativeCheckInputs = [
+    perl
+  ];
 
   preCheck = ''
     patchShebangs ./tests/
@@ -98,15 +98,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GNOME's Structured File Library";
-    homepage = "https://gitlab.gnome.org/GNOME/libgsf";
-    changelog = "https://gitlab.gnome.org/GNOME/libgsf/-/blob/${finalAttrs.src.tag}/ChangeLog";
-    license = lib.licenses.lgpl21Only;
-    maintainers = [ ];
-    platforms = lib.platforms.unix;
 
     longDescription = ''
       Libgsf aims to provide an efficient extensible I/O abstraction for
       dealing with different structured file formats.
     '';
+
+    homepage = "https://gitlab.gnome.org/GNOME/libgsf";
+    changelog = "https://gitlab.gnome.org/GNOME/libgsf/-/blob/${finalAttrs.src.tag}/ChangeLog";
+    license = lib.licenses.lgpl21Only;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

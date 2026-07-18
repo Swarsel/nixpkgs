@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
-  unzip,
-  ant,
-  jdk8,
   # Optional, Jitsi still runs without, but you may pass null:
   alsa-lib,
+  ant,
   dbus,
   gtk2,
+  jdk8,
   libpulseaudio,
-  openssl,
-  libxv,
-  libxscrnsaver,
-  libxext,
   libx11,
+  libxext,
+  libxscrnsaver,
+  libxv,
+  makeDesktopItem,
+  openssl,
+  unzip,
 }:
 
 let
@@ -33,30 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./jitsi.patch ];
-
-  jitsiItem = makeDesktopItem {
-    name = "Jitsi";
-    exec = "jitsi";
-    comment = "VoIP and Instant Messaging client";
-    desktopName = "Jitsi";
-    genericName = "Instant Messaging";
-    categories = [ "Chat" ];
-  };
-
-  libPath = lib.makeLibraryPath [
-    stdenv.cc.cc # For libstdc++.
-    alsa-lib
-    dbus
-    gtk2
-    libpulseaudio
-    openssl
-    libx11
-    libxext
-    libxscrnsaver
-    libxv
-  ];
-
   nativeBuildInputs = [ unzip ];
+
   buildInputs = [
     ant
     jdk
@@ -84,16 +62,40 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  jitsiItem = makeDesktopItem {
+    categories = [ "Chat" ];
+    comment = "VoIP and Instant Messaging client";
+    desktopName = "Jitsi";
+    exec = "jitsi";
+    genericName = "Instant Messaging";
+    name = "Jitsi";
+  };
+
+  libPath = lib.makeLibraryPath [
+    stdenv.cc.cc # For libstdc++.
+    alsa-lib
+    dbus
+    gtk2
+    libpulseaudio
+    openssl
+    libx11
+    libxext
+    libxscrnsaver
+    libxv
+  ];
+
   meta = {
-    homepage = "https://desktop.jitsi.org/";
     description = "Open Source Video Calls and Chat";
-    mainProgram = "jitsi";
+    homepage = "https://desktop.jitsi.org/";
+    license = lib.licenses.lgpl21Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.lgpl21Plus;
+
     platforms = lib.platforms.linux;
+    mainProgram = "jitsi";
     teams = [ lib.teams.jitsi ];
   };
 })

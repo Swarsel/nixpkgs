@@ -2,12 +2,12 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  omegaconf,
+  pycocotools,
+  timm,
   # build inputs
   torch,
   torchvision,
-  timm,
-  pycocotools,
-  omegaconf,
 }:
 let
   pname = "effdet";
@@ -15,7 +15,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -32,7 +31,7 @@ buildPythonPackage {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "effdet" ];
 
   meta = {

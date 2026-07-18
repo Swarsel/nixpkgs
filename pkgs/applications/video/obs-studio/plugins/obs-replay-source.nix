@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   obs-studio,
@@ -28,10 +28,12 @@ stdenv.mkDerivation rec {
     description = "Replay source for OBS studio";
     homepage = "https://github.com/exeldro/obs-replay-source";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       flexiondotorg
       pschmitt
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchzip,
-  python3,
-  glib-networking,
   asciidoc,
+  desktopToDarwinBundle,
   docbook_xml_dtd_45,
   docbook_xsl,
-  desktopToDarwinBundle,
+  fetchzip,
+  glib-networking,
   libxml2,
   libxslt,
-  withPdfReader ? true,
-  pipewireSupport ? stdenv.hostPlatform.isLinux,
   pipewire,
+  python3,
   qt6Packages,
+  vulkan-loader,
   wayland,
-  enableWideVine ? false,
   widevine-cdm,
   # can cause issues on some graphics chips
   enableVulkan ? false,
-  vulkan-loader,
+  enableWideVine ? false,
+  pipewireSupport ? stdenv.hostPlatform.isLinux,
+  withPdfReader ? true,
 }:
 
 let
@@ -29,73 +29,26 @@ let
       version = "5.6.205";
     in
     fetchzip {
-      url = "https://github.com/mozilla/pdf.js/releases/download/v${version}/pdfjs-${version}-dist.zip";
       hash = "sha256-JMmxoT68PNJ/MmlMwVNYcHerorklLv5YY6C55xjn73w=";
       stripRoot = false;
+      url = "https://github.com/mozilla/pdf.js/releases/download/v${version}/pdfjs-${version}-dist.zip";
     };
 
   version = "3.7.0";
 in
 
 python3.pkgs.buildPythonApplication {
-  pname = "qutebrowser";
   inherit version;
-  pyproject = true;
+  pname = "qutebrowser";
 
   src = fetchurl {
     url = "https://github.com/qutebrowser/qutebrowser/releases/download/v${version}/qutebrowser-${version}.tar.gz";
     hash = "sha256-x/lYhOpeZnXlhAJb6lXP+VDEfXSa/39BX2jaA/zOD5I=";
   };
 
-  # Needs tox
-  doCheck = false;
-
-  buildInputs = [
-    qt6Packages.qtbase
-    glib-networking
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    qt6Packages.qtwayland
-  ];
-
-  build-system = with python3.pkgs; [
-    setuptools
-  ];
-
-  nativeBuildInputs = [
-    qt6Packages.wrapQtAppsHook
-    asciidoc
-    docbook_xml_dtd_45
-    docbook_xsl
-    libxml2
-    libxslt
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin desktopToDarwinBundle;
-
-  dependencies = with python3.pkgs; [
-    colorama
-    pyyaml
-    pyqt6-webengine
-    jinja2
-    pygments
-    # scripts and userscripts libs
-    tldextract
-    beautifulsoup4
-    readability-lxml
-    pykeepass
-    stem
-    pynacl
-    # extensive ad blocking
-    adblock
-    # for the qute-bitwarden user script to be able to copy the TOTP token to clipboard
-    pyperclip
-  ];
-
   patches = [
     ./fix-restart.patch
   ];
-
-  dontWrapQtApps = true;
 
   postPatch = ''
     substituteInPlace qutebrowser/misc/quitter.py --subst-var-by qutebrowser "$out/bin/qutebrowser"
@@ -110,6 +63,27 @@ python3.pkgs.buildPythonApplication {
       --replace-fail '_load_library("wayland-client")' \
                      'ctypes.CDLL("${lib.getLib wayland}/lib/libwayland-client${stdenv.hostPlatform.extensions.sharedLibrary}")'
   '';
+
+  nativeBuildInputs = [
+    qt6Packages.wrapQtAppsHook
+    asciidoc
+    docbook_xml_dtd_45
+    docbook_xsl
+    libxml2
+    libxslt
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin desktopToDarwinBundle;
+
+  buildInputs = [
+    qt6Packages.qtbase
+    glib-networking
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    qt6Packages.qtwayland
+  ];
+
+  # Needs tox
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -159,16 +133,44 @@ python3.pkgs.buildPythonApplication {
       )
     '';
 
+  build-system = with python3.pkgs; [
+    setuptools
+  ];
+
+  dependencies = with python3.pkgs; [
+    colorama
+    pyyaml
+    pyqt6-webengine
+    jinja2
+    pygments
+    # scripts and userscripts libs
+    tldextract
+    beautifulsoup4
+    readability-lxml
+    pykeepass
+    stem
+    pynacl
+    # extensive ad blocking
+    adblock
+    # for the qute-bitwarden user script to be able to copy the TOTP token to clipboard
+    pyperclip
+  ];
+
+  dontWrapQtApps = true;
+  pyproject = true;
+
   meta = {
+    description = "Keyboard-focused browser with a minimal GUI";
     homepage = "https://github.com/qutebrowser/qutebrowser";
     changelog = "https://github.com/qutebrowser/qutebrowser/blob/v${version}/doc/changelog.asciidoc";
-    description = "Keyboard-focused browser with a minimal GUI";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "qutebrowser";
-    platforms = if enableWideVine then [ "x86_64-linux" ] else qt6Packages.qtwebengine.meta.platforms;
+
     maintainers = with lib.maintainers; [
       rnhmjoj
       dotlambda
     ];
+
+    platforms = if enableWideVine then [ "x86_64-linux" ] else qt6Packages.qtwebengine.meta.platforms;
+    mainProgram = "qutebrowser";
   };
 }

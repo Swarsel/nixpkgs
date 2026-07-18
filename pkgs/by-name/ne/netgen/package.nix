@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  libicns,
-  imagemagick,
-  makeDesktopItem,
-  copyDesktopItems,
+  catch2,
   cmake,
-  python3Packages,
+  copyDesktopItems,
+  fetchpatch2,
+  ffmpeg,
+  imagemagick,
+  libGLU,
+  libicns,
+  libjpeg,
+  libxmu,
+  makeDesktopItem,
+  metis,
   mpi,
   mpiCheckPhaseHook,
-  metis,
   opencascade-occt,
-  libGLU,
-  zlib,
+  python3Packages,
   tcl,
   tk,
-  libxmu,
-  libjpeg,
-  ffmpeg,
-  catch2,
-  avxSupport ? stdenv.hostPlatform.avxSupport,
+  zlib,
   avx2Support ? stdenv.hostPlatform.avx2Support,
   avx512Support ? stdenv.hostPlatform.avx512Support,
+  avxSupport ? stdenv.hostPlatform.avxSupport,
 }:
 let
   archFlags = toString (
@@ -46,20 +46,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "${patchSource}/use-local-catch2.patch";
       hash = "sha256-h4ob8tl6mvGt5B0qXRFNcl9MxPXxRhYw+PrGr5iRGGk=";
+      url = "${patchSource}/use-local-catch2.patch";
     })
     (fetchpatch2 {
-      url = "${patchSource}/ffmpeg_link_libraries.patch";
       hash = "sha256-S02OPH9hbJjOnBm6JMh6uM5XptcubV24vdyEF0FusoM=";
+      url = "${patchSource}/ffmpeg_link_libraries.patch";
     })
     (fetchpatch2 {
-      url = "${patchSource}/fix_nggui_tcl.patch";
       hash = "sha256-ODDT67+RWBzPhhq/equWsu78x9L/Yrs3U8VQ1Uu0zZw=";
+      url = "${patchSource}/fix_nggui_tcl.patch";
     })
     (fetchpatch2 {
-      url = "${patchSource}/include_stdlib.patch";
       hash = "sha256-W+NgGBuy/UmzVbPTSqR8FRUlyN/9dl9l9e9rxKklmIc=";
+      url = "${patchSource}/include_stdlib.patch";
     })
     ./ensure_python_before_getting_gil.patch
     ./macos_use_tk_default_color_map.patch
@@ -146,20 +146,6 @@ stdenv.mkDerivation (finalAttrs: {
     stdenv.hostPlatform.isAarch64 && stdenv.hostPlatform.isLinux
   ) "-flax-vector-conversions";
 
-  __darwinAllowLocalNetworking = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "netgen";
-      exec = "netgen";
-      comment = finalAttrs.meta.description;
-      desktopName = "Netgen Mesh Generator";
-      genericName = "3D Mesh Generator";
-      categories = [ "Science" ];
-      icon = "netgen";
-    })
-  ];
-
   postInstall =
     lib.optionalString stdenv.hostPlatform.isDarwin ''
       rm $out/bin/{Netgen1,startup.sh}
@@ -186,12 +172,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
 
-  preInstallCheck = ''
-    export PYTHONPATH=$out/${python3Packages.python.sitePackages}:$PYTHONPATH
-  '';
-
-  installCheckTarget = "test";
-
   nativeInstallCheckInputs = [
     catch2
     python3Packages.pytest
@@ -200,6 +180,26 @@ stdenv.mkDerivation (finalAttrs: {
     mpiCheckPhaseHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Science" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "Netgen Mesh Generator";
+      exec = "netgen";
+      genericName = "3D Mesh Generator";
+      icon = "netgen";
+      name = "netgen";
+    })
+  ];
+
+  installCheckTarget = "test";
+
+  preInstallCheck = ''
+    export PYTHONPATH=$out/${python3Packages.python.sitePackages}:$PYTHONPATH
+  '';
+
   pythonImportsCheck = [ "netgen" ];
 
   passthru = {
@@ -207,9 +207,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://ngsolve.org";
-    downloadPage = "https://github.com/NGSolve/netgen";
     description = "Atomatic 3d tetrahedral mesh generator";
+    homepage = "https://ngsolve.org";
+
     license = with lib.licenses; [
       lgpl2Plus
       lgpl21Plus
@@ -218,8 +218,10 @@ stdenv.mkDerivation (finalAttrs: {
       boost
       publicDomain
     ];
+
+    maintainers = with lib.maintainers; [ qbisi ];
     platforms = lib.platforms.unix;
     mainProgram = "netgen";
-    maintainers = with lib.maintainers; [ qbisi ];
+    downloadPage = "https://github.com/NGSolve/netgen";
   };
 })

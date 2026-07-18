@@ -2,34 +2,27 @@
 {
   lib,
   stdenv,
-  symlinkJoin,
-  cmake,
-  cctools,
   fetchFromGitHub,
+  cadical,
+  cctools,
+  cmake,
   git,
   gmp,
-  cadical,
-  cadical' ? cadical.override { version = "2.1.3"; },
   leangz,
-  pkg-config,
   libuv,
   perl,
+  pkg-config,
   runCommand,
-  writeText,
+  symlinkJoin,
   testers,
+  writeText,
+  cadical' ? cadical.override { version = "2.1.3"; },
 }:
 
 let
   lean4 = stdenv.mkDerivation (finalAttrs: {
     pname = "lean4";
     version = "4.30.0";
-
-    mimalloc-src = fetchFromGitHub {
-      owner = "microsoft";
-      repo = "mimalloc";
-      tag = "v2.2.3";
-      hash = "sha256-B0gngv16WFLBtrtG5NqA2m5e95bYVcQraeITcOX9A74=";
-    };
 
     src = fetchFromGitHub {
       owner = "leanprover";
@@ -68,10 +61,6 @@ let
             'let upToDate := cfg.pkgDir.toString.startsWith "/nix/store/" ∨ (← olean.pathExists) ∧'
       '';
 
-    preConfigure = ''
-      patchShebangs stage0/src/bin/ src/bin/
-    '';
-
     nativeBuildInputs = [
       cmake
       leangz
@@ -85,11 +74,6 @@ let
       cadical'
     ];
 
-    nativeCheckInputs = [
-      git
-      perl
-    ];
-
     cmakeFlags = [
       "-DUSE_GITHASH=OFF"
       "-DINSTALL_LICENSE=OFF"
@@ -98,10 +82,26 @@ let
       "-DUSE_MIMALLOC=ON"
     ];
 
+    preConfigure = ''
+      patchShebangs stage0/src/bin/ src/bin/
+    '';
+
+    nativeCheckInputs = [
+      git
+      perl
+    ];
+
+    mimalloc-src = fetchFromGitHub {
+      hash = "sha256-B0gngv16WFLBtrtG5NqA2m5e95bYVcQraeITcOX9A74=";
+      owner = "microsoft";
+      repo = "mimalloc";
+      tag = "v2.2.3";
+    };
+
     passthru.tests = {
       version = testers.testVersion {
-        package = finalAttrs.finalPackage;
         version = "v${finalAttrs.version}";
+        package = finalAttrs.finalPackage;
       };
     };
 
@@ -110,8 +110,8 @@ let
       homepage = "https://leanprover.github.io/";
       changelog = "https://github.com/leanprover/lean4/blob/${finalAttrs.src.tag}/RELEASES.md";
       license = lib.licenses.asl20;
-      platforms = lib.platforms.all;
       maintainers = with lib.maintainers; [ nadja-y ];
+      platforms = lib.platforms.all;
       mainProgram = "lean";
     };
   });
@@ -121,12 +121,9 @@ let
   # Binary-patched for correct runtime discovery in wrapped environments.
   wrapped = symlinkJoin {
     inherit (lean4) name pname;
-    paths = [
-      lean4
-      cadical'
-      leangz
-    ];
+    inherit (lean4) version src meta;
     nativeBuildInputs = [ perl ];
+
     postBuild = ''
       newStorePath=$(echo "$out" | head -c 43)
 
@@ -137,9 +134,15 @@ let
       done
     '';
 
-    inherit (lean4) version src meta;
+    paths = [
+      lean4
+      cadical'
+      leangz
+    ];
+
     passthru = {
       inherit (lean4) version src;
+
       tests =
         let
           src = writeText "smoke.lean" ''
@@ -150,9 +153,10 @@ let
         in
         {
           version = testers.testVersion {
-            package = wrapped;
             version = "v${lean4.version}";
+            package = wrapped;
           };
+
           smoke = runCommand "lean4-test-smoke" { } ''
             ${wrapped}/bin/lean ${src}
             touch $out

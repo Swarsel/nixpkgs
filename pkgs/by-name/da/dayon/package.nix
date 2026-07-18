@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   ant,
+  copyDesktopItems,
   jdk,
   jre,
   makeWrapper,
-  copyDesktopItems,
   stripJavaArchivesHook,
 }:
 
@@ -63,8 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Easy to use, cross-platform remote desktop assistance solution";
     homepage = "https://retgal.github.io/Dayon/index.html";
     license = lib.licenses.gpl3Plus; # https://github.com/RetGal/Dayon/issues/59
-    mainProgram = "dayon";
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "dayon";
   };
 })

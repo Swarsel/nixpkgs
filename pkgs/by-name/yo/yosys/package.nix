@@ -2,31 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   # nativeBuildInputs
   bison,
   flex,
-  pkg-config,
-
-  # propagatedBuildInputs
-  libffi,
-  python3,
-  readline,
-  tcl,
-  zlib,
-
   # tests
   gtkwave,
   iverilog,
-
+  # propagatedBuildInputs
+  libffi,
+  makeWrapper,
+  nix-update-script,
+  pkg-config,
+  python3,
+  readline,
   # passthru
   symlinkJoin,
+  tcl,
   yosys,
-  makeWrapper,
   yosys-bluespec,
   yosys-ghdl,
   yosys-symbiflow,
-  nix-update-script,
+  zlib,
   enablePython ? true, # enable python binding
 }:
 
@@ -45,14 +41,16 @@ let
     in
     lib.appendToName "with-plugins" (symlinkJoin {
       inherit (yosys) name;
-      paths = paths ++ [ yosys ];
       nativeBuildInputs = [ makeWrapper ];
+
       postBuild = ''
         wrapProgram $out/bin/yosys \
           --set YOSYS_PATH $out/share/yosys \
           --set YOSYS_PLUGIN_PATH ${pluginPath} \
           ${module_flags}
       '';
+
+      paths = paths ++ [ yosys ];
       meta.mainProgram = "yosys";
     });
 
@@ -75,7 +73,21 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  enableParallelBuilding = true;
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail 'GIT_REV := $(shell GIT_DIR=$(YOSYS_SRC)/.git git rev-parse --short=9 HEAD || echo UNKNOWN)' 'GIT_REV := v${finalAttrs.version}' \
+      --replace-fail 'GIT_DIRTY := $(shell GIT_DIR=$(YOSYS_SRC)/.git git diff --exit-code --quiet 2>/dev/null; if [ $$? -ne 0 ]; then echo "-dirty"; fi)' 'GIT_DIRTY := ""'
+
+    substituteInPlace Makefile \
+      --replace-fail "| check-git-abc" ""
+
+    substituteInPlace Makefile \
+      --replace-fail 'new=$$(cd abc 2>/dev/null && git rev-parse HEAD 2>/dev/null || echo none)' 'new=none'
+
+    sed -i 's/^YOSYS_VER :=.*/YOSYS_VER := ${finalAttrs.version}/' Makefile
+
+    patchShebangs tests ./misc/yosys-config.in
+  '';
 
   nativeBuildInputs = [
     bison
@@ -105,22 +117,6 @@ stdenv.mkDerivation (finalAttrs: {
     "YOSYS_VER=${finalAttrs.version}"
   ];
 
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail 'GIT_REV := $(shell GIT_DIR=$(YOSYS_SRC)/.git git rev-parse --short=9 HEAD || echo UNKNOWN)' 'GIT_REV := v${finalAttrs.version}' \
-      --replace-fail 'GIT_DIRTY := $(shell GIT_DIR=$(YOSYS_SRC)/.git git diff --exit-code --quiet 2>/dev/null; if [ $$? -ne 0 ]; then echo "-dirty"; fi)' 'GIT_DIRTY := ""'
-
-    substituteInPlace Makefile \
-      --replace-fail "| check-git-abc" ""
-
-    substituteInPlace Makefile \
-      --replace-fail 'new=$$(cd abc 2>/dev/null && git rev-parse HEAD 2>/dev/null || echo none)' 'new=none'
-
-    sed -i 's/^YOSYS_VER :=.*/YOSYS_VER := ${finalAttrs.version}/' Makefile
-
-    patchShebangs tests ./misc/yosys-config.in
-  '';
-
   preBuild = ''
     chmod -R u+w .
     make config-${if stdenv.cc.isClang or false then "clang" else "gcc"}
@@ -137,17 +133,19 @@ stdenv.mkDerivation (finalAttrs: {
     echo "BOOST_PYTHON_LIB := -lboost_python${lib.versions.major python3.version}${lib.versions.minor python3.version}" >> Makefile.conf
   '';
 
-  preCheck = ''
-    tests/tools/autotest.sh
-  '';
-
-  checkTarget = "test";
   doCheck = true;
+
   nativeCheckInputs = [
     gtkwave
     iverilog
   ];
 
+  preCheck = ''
+    tests/tools/autotest.sh
+  '';
+
+  checkTarget = "test";
+  enableParallelBuilding = true;
   setupHook = ./setup-hook.sh;
 
   passthru = {
@@ -160,12 +158,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://yosyshq.net/yosys/";
     changelog = "https://github.com/YosysHQ/yosys/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
-    mainProgram = "yosys";
+
     maintainers = with lib.maintainers; [
       shell
       thoughtpolice
       Luflosi
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "yosys";
   };
 })

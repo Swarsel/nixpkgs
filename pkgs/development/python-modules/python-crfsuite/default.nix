@@ -1,21 +1,22 @@
 {
   lib,
   buildPythonPackage,
+  cython,
   fetchPypi,
   pytestCheckHook,
-  cython,
 }:
 
 buildPythonPackage rec {
   pname = "python-crfsuite";
   version = "0.9.12";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "python_crfsuite";
     hash = "sha256-2zf8zDvY8MScKKdpfKecidZ7P9W/EZEihmFpJArExIA=";
+    pname = "python_crfsuite";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     # make sure import the built version, not the source one
@@ -26,8 +27,7 @@ buildPythonPackage rec {
     cython
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pycrfsuite" ];
 
   meta = {

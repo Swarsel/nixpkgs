@@ -1,10 +1,10 @@
 {
   lib,
-  olefile,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   cryptography,
+  olefile,
+  poetry-core,
   pytestCheckHook,
   setuptools,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "msoffcrypto-tool";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nolze";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-qhnQXLkEeMfuPl2FJGX19M2B+StlzGU/wHgmRn9jcxc=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,13 +29,12 @@ buildPythonPackage (finalAttrs: {
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # Test fails with AssertionError
     "test_cli"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "msoffcrypto" ];
 
   meta = {

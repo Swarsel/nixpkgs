@@ -20,18 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-0Sz4/7CRKrArIUy/XxGIP7WMmICqDJ0VxZo62thChYQ=";
   };
 
-  # or-tools has a hard dependency on Cbc static libraries, so we build both
-  configureFlags = [
-    "-C"
-    "--enable-static"
-  ]
-  ++ lib.optionals stdenv.cc.isClang [ "CXXFLAGS=-std=c++14" ];
-
   nativeBuildInputs = [ pkg-config ];
-
-  enableParallelBuilding = true;
-
-  hardeningDisable = [ "format" ];
 
   buildInputs = [
     bzip2
@@ -44,13 +33,22 @@ stdenv.mkDerivation (finalAttrs: {
     clp
   ];
 
-  # FIXME: move share/coin/Data to a separate output?
+  # or-tools has a hard dependency on Cbc static libraries, so we build both
+  configureFlags = [
+    "-C"
+    "--enable-static"
+  ]
+  ++ lib.optionals stdenv.cc.isClang [ "CXXFLAGS=-std=c++14" ];
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+
+  # FIXME: move share/coin/Data to a separate output?
   meta = {
+    description = "Mixed integer programming solver";
     homepage = "https://projects.coin-or.org/Cbc";
     license = lib.licenses.epl10;
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    description = "Mixed integer programming solver";
   };
 })

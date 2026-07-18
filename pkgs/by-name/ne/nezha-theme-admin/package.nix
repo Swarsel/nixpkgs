@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -21,10 +21,7 @@ buildNpmPackage (finalAttrs: {
   '';
 
   npmDepsHash = "sha256-5uF2CROi+J0O2vqWOEzobhg2xw8lebksQtx97LyiWxA=";
-  npmPackFlags = [ "--ignore-scripts" ];
-  npmBuildScript = "build-ignore-error";
 
-  dontNpmInstall = true;
   installPhase = ''
     runHook preInstall
 
@@ -33,6 +30,9 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  dontNpmInstall = true;
+  npmBuildScript = "build-ignore-error";
+  npmPackFlags = [ "--ignore-scripts" ];
   passthru.updateScript = ./update.sh;
 
   meta = {

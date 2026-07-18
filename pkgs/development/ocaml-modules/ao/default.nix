@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
   libao,
 }:
@@ -21,8 +21,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [ libao ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-ao";
     description = "OCaml bindings for libao";
+    homepage = "https://github.com/savonet/ocaml-ao";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ dandellion ];
   };

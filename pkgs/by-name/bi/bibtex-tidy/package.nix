@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  testers,
   bibtex-tidy,
+  buildNpmPackage,
+  testers,
 }:
 
 buildNpmPackage rec {
@@ -25,17 +25,17 @@ buildNpmPackage rec {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = bibtex-tidy;
       version = "v${version}";
+      package = bibtex-tidy;
     };
   };
 
   meta = {
-    changelog = "https://github.com/FlamingTempura/bibtex-tidy/blob/${src.rev}/CHANGELOG.md";
     description = "Cleaner and Formatter for BibTeX files";
-    mainProgram = "bibtex-tidy";
     homepage = "https://github.com/FlamingTempura/bibtex-tidy";
+    changelog = "https://github.com/FlamingTempura/bibtex-tidy/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bertof ];
+    mainProgram = "bibtex-tidy";
   };
 }

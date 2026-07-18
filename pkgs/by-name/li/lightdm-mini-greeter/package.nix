@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  linkFarm,
-  lightdm-mini-greeter,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  lightdm,
-  gtk3,
-  glib,
   gdk-pixbuf,
-  wrapGAppsHook3,
+  glib,
+  gtk3,
   librsvg,
+  lightdm,
+  lightdm-mini-greeter,
+  linkFarm,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     lightdm
     gtk3
@@ -48,21 +49,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.xgreeters = linkFarm "lightdm-mini-greeter-xgreeters" [
     {
-      path = "${lightdm-mini-greeter}/share/xgreeters/lightdm-mini-greeter.desktop";
       name = "lightdm-mini-greeter.desktop";
+      path = "${lightdm-mini-greeter}/share/xgreeters/lightdm-mini-greeter.desktop";
     }
   ];
 
   meta = {
     description = "Minimal, configurable, single-user GTK3 LightDM greeter";
-    mainProgram = "lightdm-mini-greeter";
     homepage = "https://github.com/prikhi/lightdm-mini-greeter";
+    changelog = "https://github.com/prikhi/lightdm-mini-greeter/blob/master/CHANGELOG.md";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       mnacamura
       prikhi
     ];
+
     platforms = lib.platforms.linux;
-    changelog = "https://github.com/prikhi/lightdm-mini-greeter/blob/master/CHANGELOG.md";
+    mainProgram = "lightdm-mini-greeter";
   };
 })

@@ -1,8 +1,8 @@
 {
-  buildPecl,
-  fetchFromGitHub,
-  fetchpatch,
   lib,
+  fetchFromGitHub,
+  buildPecl,
+  fetchpatch,
   php,
   runCommand,
   systemd,
@@ -23,19 +23,18 @@ buildPecl {
     # Add missing arginfo to suppress the warning
     # https://github.com/systemd/php-systemd/issues/9
     (fetchpatch {
-      url = "https://github.com/systemd/php-systemd/commit/0f25ec9aab7747e85445a48213020ea6adda3658.diff";
       hash = "sha256-SNRYDRxaeP9LlHxfZOak0OSqZ3AJA+I9Ln0k+yO0DvE=";
+      url = "https://github.com/systemd/php-systemd/commit/0f25ec9aab7747e85445a48213020ea6adda3658.diff";
     })
     # Define SD_JOURNAL_SUPPRESS_LOCATION so that the php source code location is used, instead of the C one
     # https://github.com/systemd/php-systemd/issues/2
     (fetchpatch {
-      url = "https://github.com/systemd/php-systemd/commit/23575461b8cc55fa9c4132a58393b6438c2aff5c.diff";
       hash = "sha256-KBGWdNE7spXpqbeS4c2D5IU3Dz8zGxx4r22FDOA0KzM=";
+      url = "https://github.com/systemd/php-systemd/commit/23575461b8cc55fa9c4132a58393b6438c2aff5c.diff";
     })
   ];
 
   buildInputs = [ systemd.dev ];
-
   configureFlags = [ "--with-systemd=${systemd.dev}" ];
 
   # php will exit with a non-zero exit code, if the extension is not loaded

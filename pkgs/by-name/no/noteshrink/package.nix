@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   imagemagick,
+  python3,
 }:
 
 with python3.pkgs;
@@ -10,7 +10,6 @@ with python3.pkgs;
 buildPythonApplication (finalAttrs: {
   pname = "noteshrink";
   version = "0.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mzucker";
@@ -25,6 +24,8 @@ buildPythonApplication (finalAttrs: {
     imagemagick
     pillow
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Convert scans of handwritten notes to beautiful, compact PDFs";

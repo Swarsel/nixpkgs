@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ply,
   poetry-core,
   requests,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pysnmp-pysmi";
   version = "1.1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pysnmp";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-dK02y8HXhwq1W6NOYsycjTpIMxoQY4qNT4n8TEycmWM=";
   };
 
+  # Circular dependency with pysnmplib
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Circular dependency with pysnmplib
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pysmi" ];
 
   meta = {

@@ -16,13 +16,14 @@ in
     package = lib.mkPackageOption pkgs "tiny-dfr" { };
 
     settings = lib.mkOption {
-      type = format.type;
       default = { };
+
       description = ''
         Configuration for tiny-dfr. See [example configuration][1] for available options.
 
         [1]: https://github.com/WhatAmISupposedToPutHere/tiny-dfr/blob/master/share/tiny-dfr/config.toml
       '';
+
       example = lib.literalExpression ''
         {
           MediaLayerDefault = true;
@@ -30,14 +31,15 @@ in
           EnablePixelShift = true;
         }
       '';
+
+      type = format.type;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.packages = [ cfg.package ];
-    services.udev.packages = [ cfg.package ];
-
     environment.etc."tiny-dfr/config.toml".source = cfgFile;
+    services.udev.packages = [ cfg.package ];
+    systemd.packages = [ cfg.package ];
     systemd.services.tiny-dfr.restartTriggers = [ cfgFile ];
   };
 }

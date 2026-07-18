@@ -1,8 +1,8 @@
 {
   lib,
-  castxml,
   fetchFromGitHub,
   buildPythonPackage,
+  castxml,
   llvmPackages,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pygccxml";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gccxml";
@@ -29,6 +28,7 @@ buildPythonPackage rec {
   # running the suite is hard, needs to generate xml_generator.cfg
   # but the format doesn't accept -isystem directives
   doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Python package for easy C++ declarations navigation";

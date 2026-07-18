@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
   cmake,
+  meson,
+  ninja,
   pkg-config,
   systemd,
-  ninja,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,14 +27,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ systemd ];
-
   installFlags = [ "prefix=$(out)" ];
 
   meta = {
-    maintainers = with lib.maintainers; [ matthewcroughan ];
     description = "QMI IDL compiler";
     homepage = "https://github.com/linux-msm/qrtr";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ matthewcroughan ];
     platforms = lib.platforms.aarch64;
   };
 })

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   just,
   killall,
   libcosmicAppHook,
   libinput,
-  openssl,
-  udev,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  openssl,
+  rustPlatform,
+  udev,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cosmic-initial-setup";
@@ -32,26 +32,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       "autostart-dst := prefix / 'etc' / 'xdg' / 'autostart' / desktop-entry"
   '';
 
-  cargoHash = "sha256-DESnl5NjakU4++Ep6CHxDZzHn+o0Gi0eREpXk5BN5iY=";
-
-  buildFeatures = [ "nixos" ];
-
-  # cargo-auditable fails during the build when compiling the `crabtime::function`
-  # procedural macro. It panics because the `--out-dir` flag is not passed to
-  # the rustc wrapper.
-  #
-  # Reported this issue upstream in:
-  # https://github.com/rust-secure-code/cargo-auditable/issues/225
-  auditable = false;
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  env = {
-    VERGEN_GIT_SHA = finalAttrs.src.tag;
-    DISABLE_IF_EXISTS = "/iso/nix-store.squashfs";
-  };
-
   nativeBuildInputs = [
     libcosmicAppHook
     just
@@ -64,6 +44,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     udev
   ];
 
+  cargoHash = "sha256-DESnl5NjakU4++Ep6CHxDZzHn+o0Gi0eREpXk5BN5iY=";
+
+  env = {
+    DISABLE_IF_EXISTS = "/iso/nix-store.squashfs";
+    VERGEN_GIT_SHA = finalAttrs.src.tag;
+  };
+
+  preFixup = ''
+    libcosmicAppWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ killall ]})
+  '';
+
+  __structuredAttrs = true;
+  # cargo-auditable fails during the build when compiling the `crabtime::function`
+  # procedural macro. It panics because the `--out-dir` flag is not passed to
+  # the rustc wrapper.
+  #
+  # Reported this issue upstream in:
+  # https://github.com/rust-secure-code/cargo-auditable/issues/225
+  auditable = false;
+  buildFeatures = [ "nixos" ];
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -76,9 +76,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
-  preFixup = ''
-    libcosmicAppWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ killall ]})
-  '';
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -102,8 +100,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "COSMIC Initial Setup";
     homepage = "https://github.com/pop-os/cosmic-initial-setup";
     license = lib.licenses.gpl3Only;
-    mainProgram = "cosmic-initial-setup";
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-initial-setup";
     teams = [ lib.teams.cosmic ];
   };
 })

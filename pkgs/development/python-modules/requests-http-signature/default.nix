@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   http-message-signatures,
   http-sfv,
-  requests,
   pytestCheckHook,
+  requests,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "requests-http-signature";
   version = "0.7.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pyauth";
@@ -31,13 +30,13 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  enabledTestPaths = [ "test/test.py" ];
-
   disabledTests = [
     # Test require network access
     "test_readme_example"
   ];
 
+  enabledTestPaths = [ "test/test.py" ];
+  format = "setuptools";
   pythonImportsCheck = [ "requests_http_signature" ];
 
   meta = {

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  replaceVars,
   file-roller,
+  replaceVars,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation {
@@ -24,10 +24,6 @@ stdenv.mkDerivation {
     })
   ];
 
-  dontConfigure = true;
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -36,6 +32,9 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   passthru = {
     updateScript = unstableGitUpdater {
@@ -47,7 +46,7 @@ stdenv.mkDerivation {
     description = "Contractor extension for File Roller";
     homepage = "https://github.com/elementary/file-roller-contract";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.pantheon ];
   };
 }

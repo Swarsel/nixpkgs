@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   google-auth,
   packaging,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "google-cloud-testutils";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -20,6 +19,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-g7XwDQp4c+duKfUWqhnI8T001fu6cM22oWLriyCZZag=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -29,18 +32,15 @@ buildPythonPackage rec {
     packaging
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "test_utils" ];
 
   meta = {
     description = "System test utilities for google-cloud-python";
-    mainProgram = "lower-bound-checker";
     homepage = "https://github.com/googleapis/python-test-utils";
     changelog = "https://github.com/googleapis/python-test-utils/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.sarahec ];
+    mainProgram = "lower-bound-checker";
   };
 }

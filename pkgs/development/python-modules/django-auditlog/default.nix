@@ -1,23 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   django,
-  python-dateutil,
   freezegun,
-  psycopg2,
   postgresql,
   postgresqlTestHook,
+  psycopg2,
   python,
+  python-dateutil,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "django-auditlog";
   version = "3.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -26,15 +25,7 @@ buildPythonPackage rec {
     hash = "sha256-/IOzMGRR8EP/AGP7fcqwP4GeSKXPwE6NF6AZmiF1+lA=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    django
-    python-dateutil
-  ];
+  doCheck = stdenv.hostPlatform.isLinux; # postgres fails to allocate shm on darwin
 
   nativeCheckInputs = [
     freezegun
@@ -42,10 +33,6 @@ buildPythonPackage rec {
     postgresql
     postgresqlTestHook
   ];
-
-  doCheck = stdenv.hostPlatform.isLinux; # postgres fails to allocate shm on darwin
-
-  postgresqlTestUserOptions = "LOGIN SUPERUSER";
 
   checkPhase = ''
     runHook preCheck
@@ -61,14 +48,26 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    django
+    python-dateutil
+  ];
+
+  postgresqlTestUserOptions = "LOGIN SUPERUSER";
+  pyproject = true;
   pythonImportsCheck = [ "auditlog" ];
 
   meta = {
-    changelog = "https://github.com/jazzband/django-auditlog/blob/${src.tag}/CHANGELOG.md";
     description = "Django app that keeps a log of changes made to an object";
     homepage = "https://github.com/jazzband/django-auditlog";
-    downloadPage = "https://github.com/jazzband/django-auditlog";
+    changelog = "https://github.com/jazzband/django-auditlog/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ leona ];
+    downloadPage = "https://github.com/jazzband/django-auditlog";
   };
 }

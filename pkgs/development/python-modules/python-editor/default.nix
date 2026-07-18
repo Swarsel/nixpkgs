@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage {
   pname = "python-editor";
   version = "1.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "fmoo";
@@ -18,6 +17,7 @@ buildPythonPackage {
 
   # No proper tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Library that provides the `editor` module for programmatically";

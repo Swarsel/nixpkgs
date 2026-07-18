@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   llvmPackages,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,18 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0ismima8j8z0zj9yc267rpf7z90w57b2pbqzjnayhc3ab8mcbfy6";
   };
 
-  nativeBuildInputs = [ unzip ];
-  buildInputs = lib.optional stdenv.cc.isClang llvmPackages.openmp;
-
-  # Disable FORTIFY_SOURCE or the binary fails with "buffer overflow"
-  hardeningDisable = [ "fortify" ];
-
-  sourceRoot = "BayeScan${finalAttrs.version}/source";
-
   postPatch = ''
     substituteInPlace Makefile --replace-fail "-static" "" \
                                --replace-fail "g++" "${stdenv.cc.targetPrefix}c++"
   '';
+
+  nativeBuildInputs = [ unzip ];
+  buildInputs = lib.optional stdenv.cc.isClang llvmPackages.openmp;
+  env.NIX_CFLAGS_COMPILE = toString [ "-std=c++14" ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -35,14 +31,16 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r ../*pdf ../input_examples ../"R functions" $out/share/doc/bayescan
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString [ "-std=c++14" ];
+  # Disable FORTIFY_SOURCE or the binary fails with "buffer overflow"
+  hardeningDisable = [ "fortify" ];
+  sourceRoot = "BayeScan${finalAttrs.version}/source";
 
   meta = {
     description = "Detecting natural selection from population-based genetic data";
     homepage = "http://cmpg.unibe.ch/software/BayeScan";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.bzizou ];
-    mainProgram = "bayescan_${finalAttrs.version}";
     platforms = lib.platforms.all;
+    mainProgram = "bayescan_${finalAttrs.version}";
   };
 })

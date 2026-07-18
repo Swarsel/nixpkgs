@@ -3,13 +3,13 @@
   stdenv,
   gcc_meta,
   release_version,
+  runCommand,
   version,
   monorepoSrc ? null,
-  runCommand,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libquadmath";
   inherit version;
+  pname = "libquadmath";
 
   src = runCommand "libquadmath-src-${version}" { src = monorepoSrc; } ''
     runPhase unpackPhase
@@ -31,8 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     [[ -f MD5SUMS ]]; cp MD5SUMS "$out"
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/libquadmath";
-
   preConfigure = ''
     mkdir ../../build
     cd ../../build
@@ -40,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+  sourceRoot = "${finalAttrs.src.name}/libquadmath";
 
   passthru = {
     isGNU = true;

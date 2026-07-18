@@ -1,31 +1,39 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  dbus,
+  flex,
+  libusb1,
   meson,
   ninja,
-  flex,
-  pkg-config,
+  nix-update-script,
+  nixosTests,
   perl,
-  python3,
-  dbus,
+  pkg-config,
   polkit,
+  python3,
   systemdLibs,
+  testers,
   udev,
   dbusSupport ? stdenv.hostPlatform.isLinux,
-  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
-  udevSupport ? dbusSupport,
-  libusb1,
-  testers,
-  nix-update-script,
   pname ? "pcsclite",
   polkitSupport ? false,
-  nixosTests,
+  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
+  udevSupport ? dbusSupport,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   inherit pname;
   version = "2.4.1";
+
+  src = fetchFromGitLab {
+    owner = "rousseau";
+    repo = "PCSC";
+    tag = finalAttrs.version;
+    hash = "sha256-I4kWToLixfkP0XaONiWqNLXXmz+3n+LafbITfZOxLZw=";
+    domain = "salsa.debian.org";
+  };
 
   outputs = [
     "out"
@@ -33,29 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "doc"
     "man"
-  ];
-
-  src = fetchFromGitLab {
-    domain = "salsa.debian.org";
-    owner = "rousseau";
-    repo = "PCSC";
-    tag = finalAttrs.version;
-    hash = "sha256-I4kWToLixfkP0XaONiWqNLXXmz+3n+LafbITfZOxLZw=";
-  };
-
-  mesonFlags = [
-    (lib.mesonOption "sysconfdir" "/etc")
-    # The OS should care on preparing the drivers into this location
-    (lib.mesonOption "usbdropdir" "/var/lib/pcsc/drivers")
-    (lib.mesonBool "libsystemd" systemdSupport)
-    (lib.mesonBool "polkit" polkitSupport)
-    (lib.mesonOption "ipcdir" "/run/pcscd")
-  ]
-  ++ lib.optionals systemdSupport [
-    (lib.mesonOption "systemdunit" "system")
-  ]
-  ++ lib.optionals (!udevSupport) [
-    (lib.mesonBool "libudev" false)
   ];
 
   postPatch = ''
@@ -83,13 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
         "install_dir : '${placeholder "out"}/share/polkit-1/actions'"
   '';
 
-  postInstall = ''
-    # pcsc-spy is a debugging utility and it drags python into the closure
-    moveToOutput bin/pcsc-spy "$dev"
-  '';
-
-  __structuredAttrs = true;
-  separateDebugInfo = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -109,15 +87,40 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals polkitSupport [ polkit ]
   ++ lib.optionals (!udevSupport) [ libusb1 ];
 
+  mesonFlags = [
+    (lib.mesonOption "sysconfdir" "/etc")
+    # The OS should care on preparing the drivers into this location
+    (lib.mesonOption "usbdropdir" "/var/lib/pcsc/drivers")
+    (lib.mesonBool "libsystemd" systemdSupport)
+    (lib.mesonBool "polkit" polkitSupport)
+    (lib.mesonOption "ipcdir" "/run/pcscd")
+  ]
+  ++ lib.optionals systemdSupport [
+    (lib.mesonOption "systemdunit" "system")
+  ]
+  ++ lib.optionals (!udevSupport) [
+    (lib.mesonBool "libudev" false)
+  ];
+
+  postInstall = ''
+    # pcsc-spy is a debugging utility and it drags python into the closure
+    moveToOutput bin/pcsc-spy "$dev"
+  '';
+
+  __structuredAttrs = true;
+  separateDebugInfo = true;
+
   passthru = {
     tests = {
+      version = testers.testVersion {
+        command = "pcscd --version";
+        package = finalAttrs.finalPackage;
+      };
+
       nixos = nixosTests.pcsclite;
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
-      version = testers.testVersion {
-        package = finalAttrs.finalPackage;
-        command = "pcscd --version";
-      };
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -126,10 +129,10 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://pcsclite.apdu.fr/";
     changelog = "https://salsa.debian.org/rousseau/PCSC/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.bsd3;
-    mainProgram = "pcscd";
     maintainers = [ lib.maintainers.anthonyroussel ];
-    pkgConfigModules = [ "libpcsclite" ];
     platforms = lib.platforms.unix;
+    mainProgram = "pcscd";
     broken = !(polkitSupport -> dbusSupport) || !(systemdSupport -> dbusSupport);
+    pkgConfigModules = [ "libpcsclite" ];
   };
 })

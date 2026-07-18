@@ -1,7 +1,7 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,15 +16,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-GzVdcQzYmKwb3GWhmbTb9HdBPosKgbimgvwZTfBMEk8=";
-
   # tests assume the authors macbook, and thus fail
   doCheck = false;
 
   meta = {
     description = "Your filesystem as a dungeon";
-    mainProgram = "rpg-cli";
     homepage = "https://github.com/facundoolano/rpg-cli";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "rpg-cli";
   };
 })

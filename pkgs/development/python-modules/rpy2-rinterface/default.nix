@@ -1,31 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
-  isPyPy,
   R,
-  rWrapper,
-  xz,
+  buildPythonPackage,
   bzip2,
-  zlib,
-  zstd,
+  cffi,
   icu,
+  isPyPy,
   libdeflate,
   pytestCheckHook,
+  rWrapper,
   setuptools,
-  cffi,
+  xz,
+  zlib,
+  zstd,
 }:
 
 buildPythonPackage rec {
-  version = "3.6.6";
-  pyproject = true;
   pname = "rpy2-rinterface";
+  version = "3.6.6";
 
-  disabled = isPyPy;
   src = fetchurl {
     url = "mirror://pypi/${builtins.substring 0 1 pname}/${pname}/${
       builtins.replaceStrings [ "-" ] [ "_" ] pname
     }-${version}.tar.gz";
+
     hash = "sha256-qcwTQc5ctN8dxnxA3Dss4Mr6znIVvUJi/g7QEZWKM2k=";
   };
 
@@ -43,6 +42,10 @@ buildPythonPackage rec {
       --replace-fail '@NIX_R_LIBS_SITE@' "$R_LIBS_SITE"
   '';
 
+  nativeBuildInputs = [
+    R # needed at setup time to detect R_HOME (alternatively set R_HOME explicitly)
+  ];
+
   buildInputs = [
     xz
     bzip2
@@ -53,9 +56,7 @@ buildPythonPackage rec {
   ]
   ++ rWrapper.recommendedPackages;
 
-  nativeBuildInputs = [
-    R # needed at setup time to detect R_HOME (alternatively set R_HOME explicitly)
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -65,7 +66,7 @@ buildPythonPackage rec {
     cffi
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabled = isPyPy;
 
   # https://github.com/rpy2/rpy2/issues/1111
   disabledTests = [
@@ -74,9 +75,11 @@ buildPythonPackage rec {
     "test_parse_error_when_evaluting"
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://rpy2.github.io/";
     description = "Python interface to R";
+    homepage = "https://rpy2.github.io/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
     teams = with lib.teams; [ sage ];

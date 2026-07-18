@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   coreutils,
-  jdk,
-  rlwrap,
   gnupg,
+  jdk,
+  makeWrapper,
+  rlwrap,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "leiningen";
@@ -17,21 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EqnF46JHFhnKPWSnRi+SD99xOuiVnrT81iV8IzMrWqQ=";
   };
 
-  jarsrc = fetchurl {
-    url = "https://codeberg.org/leiningen/leiningen/releases/download/${finalAttrs.version}/leiningen-${finalAttrs.version}-standalone.jar";
-    hash = "sha256-tyGlc69jF4TyfMtS5xnm0Sh9nTlRrVbTFtOPfs+oGqI=";
-  };
-
-  env.JARNAME = "leiningen-${finalAttrs.version}-standalone.jar";
-
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
   propagatedBuildInputs = [ jdk ];
+  env.JARNAME = "leiningen-${finalAttrs.version}-standalone.jar";
 
   # the jar is not in share/java, because it's a standalone jar and should
   # never be picked up by set-java-classpath.sh
-
   installPhase = ''
     runHook preInstall
 
@@ -41,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   fixupPhase = ''
     runHook preFixup
@@ -62,13 +55,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postFixup
   '';
 
+  jarsrc = fetchurl {
+    hash = "sha256-tyGlc69jF4TyfMtS5xnm0Sh9nTlRrVbTFtOPfs+oGqI=";
+    url = "https://codeberg.org/leiningen/leiningen/releases/download/${finalAttrs.version}/leiningen-${finalAttrs.version}-standalone.jar";
+  };
+
   meta = {
-    homepage = "https://leiningen.org/";
     description = "Project automation for Clojure";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://leiningen.org/";
     license = lib.licenses.epl10;
-    platforms = jdk.meta.platforms;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
+    platforms = jdk.meta.platforms;
     mainProgram = "lein";
   };
 })

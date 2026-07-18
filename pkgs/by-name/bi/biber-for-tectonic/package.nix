@@ -16,8 +16,8 @@
 {
   lib,
   fetchFromGitHub,
-  fetchpatch,
   biber,
+  fetchpatch,
 }:
 
 let
@@ -44,13 +44,15 @@ in
       rev = "v${version}";
       hash = "sha256-Tt2sN2b2NGxcWyZDj5uXNGC8phJwFRiyH72n3yhFCi0=";
     };
+
     patches = [
       # Perl>=5.36.0 compatibility
       (fetchpatch {
-        url = "https://patch-diff.githubusercontent.com/raw/plk/biber/pull/411.patch";
         hash = "sha256-osgldRVfe3jnMSOMnAMQSB0Ymc1s7J6KtM2ig3c93SE=";
+        url = "https://patch-diff.githubusercontent.com/raw/plk/biber/pull/411.patch";
       })
     ];
+
     meta = prevAttrs.meta // {
       maintainers = with lib.maintainers; [
         doronbehar

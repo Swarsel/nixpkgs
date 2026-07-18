@@ -1,25 +1,22 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-
-  wrapGAppsHook4,
-  pkg-config,
   blueprint-compiler,
-  meson,
-  ninja,
-  rustc,
   cargo,
   desktop-file-utils,
-
-  gtk4,
-  libadwaita,
   glib,
-  poppler,
+  gtk4,
   gtksourceview5,
-
+  libadwaita,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  poppler,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,11 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "clapgrep";
     tag = "v${finalAttrs.version}";
     hash = "sha256-8OG3yVfmvAJN/e07r/2rij0tairE/hOdERDwqDt8fbk=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-iNGYFyAF3Qo6x2VaBsyrLTSYPn6OZ6TWfXDTXqbovhE=";
   };
 
   nativeBuildInputs = [
@@ -58,14 +50,19 @@ stdenv.mkDerivation (finalAttrs: {
     gtksourceview5
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-iNGYFyAF3Qo6x2VaBsyrLTSYPn6OZ6TWfXDTXqbovhE=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Search through all your files";
     homepage = "https://github.com/luleyleo/clapgrep";
     license = with lib.licenses; [ gpl3Only ];
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pluiedev ];
+    platforms = lib.platforms.linux;
     mainProgram = "clapgrep";
   };
 })

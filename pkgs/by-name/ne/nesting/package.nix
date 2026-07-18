@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitLab,
   # Need macOS 15+ for nested virtualization.
   apple-sdk_15,
   buildGoModule,
-  fetchFromGitLab,
   nix-update-script,
   versionCheckHook,
 }:
@@ -20,9 +20,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Cdn01R1Jr2npqeKrA8CiC6r85LNfQvq0EONrmMPY0ds=";
   };
 
-  vendorHash = "sha256-PjsS+lTEuReA+alzZsrx6c7JIPaZldgGi/a/Xh4k5w4=";
-
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_15 ];
+  vendorHash = "sha256-PjsS+lTEuReA+alzZsrx6c7JIPaZldgGi/a/Xh4k5w4=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   # Needed for "nesting version" to not show "dev".
   #
@@ -37,10 +38,6 @@ buildGoModule (finalAttrs: {
       "-X ${ldflagsPackageVariablePrefix}.REFERENCE=v${finalAttrs.version}"
     ];
 
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   versionCheckProgramArg = "version";
 
   passthru = {
@@ -51,7 +48,7 @@ buildGoModule (finalAttrs: {
     description = "Basic and opinionated daemon that sits in front of virtualization platforms";
     homepage = "https://gitlab.com/gitlab-org/fleeting/nesting";
     license = lib.licenses.mit;
-    mainProgram = "nesting";
     maintainers = with lib.maintainers; [ commiterate ];
+    mainProgram = "nesting";
   };
 })

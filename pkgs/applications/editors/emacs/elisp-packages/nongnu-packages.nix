@@ -12,8 +12,8 @@
 
 {
   lib,
-  pkgs,
   buildPackages,
+  pkgs,
 }:
 
 self:

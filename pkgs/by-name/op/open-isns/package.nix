@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  pkg-config,
+  fetchFromGitHub,
   meson,
   ninja,
   openssl,
-  fetchFromGitHub,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-buqQMsoxRCbWiBDq0XAg93J7bjbdxeIernV8sDVxCAA=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+    "man"
+  ];
+
   # The location of /var/lib is not made configurable in the meson.build file
   postPatch = ''
     substituteInPlace meson.build \
@@ -30,14 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
   ];
-  propagatedBuildInputs = [ openssl ];
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-    "man"
-  ];
 
+  propagatedBuildInputs = [ openssl ];
   configureFlags = [ "--enable-shared" ];
 
   mesonFlags = [
@@ -47,9 +48,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "iSNS server and client for Linux";
-    license = lib.licenses.lgpl21Only;
     homepage = "https://github.com/open-iscsi/open-isns";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.linux;
   };
 })

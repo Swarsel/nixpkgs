@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,16 +17,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-2xTkCdWKQVg8Sp0LDkC/LH9GYBXNpxdoLX30Ndz0muM=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Companion tool to https://github.com/ryantm/agenix";
     homepage = "https://github.com/cole-h/agenix-cli";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ misuzu ];
     mainProgram = "agenix";
   };

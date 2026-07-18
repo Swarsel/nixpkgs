@@ -1,10 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   cairo,
   cppunit,
-  fetchFromGitHub,
   fetchNpmDeps,
-  lib,
+  kdePackages,
   libcap,
   libpng,
   libreoffice-collabora,
@@ -12,29 +14,25 @@
   npmHooks,
   pam,
   pango,
+  perl,
   pixman,
   pkg-config,
   poco,
   python3,
   rsync,
-  stdenv,
   zstd,
-  kdePackages,
-  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "collabora-desktop";
   version = "25.04.9.2-2";
+
   src = fetchFromGitHub {
     owner = "CollaboraOnline";
     repo = "online";
     tag = "coda-${finalAttrs.version}";
     hash = "sha256-5SKtZvdtYoAsTlEseGsW+ndnD45bjTga3FPpDEldaRY=";
   };
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   patches = [
     # permissions fix for templates
@@ -52,6 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-warn "cursor: cell" "cursor: crosshair"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     perl
@@ -65,12 +65,14 @@ stdenv.mkDerivation (finalAttrs: {
 
     # from CollaboraOnline/nix-build-support
     (stdenv.mkDerivation {
-      name = "qtlibexec";
       src = kdePackages.qtbase;
+
       buildPhase = ''
         mkdir -p $out
         ln -s ${kdePackages.qtbase}/libexec $out/bin
       '';
+
+      name = "qtlibexec";
     })
     kdePackages.qttools
     kdePackages.wrapQtAppsHook
@@ -91,14 +93,6 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  # handle flags with spaces safely
-  preConfigure = ''
-    configureFlagsArray+=(
-      "--with-vendor=Collabora Productivity Limited"
-      "--with-app-name=Collabora Office"
-    )
-  '';
-
   configureFlags = [
     "--enable-qtapp"
     "--disable-werror"
@@ -110,26 +104,36 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-info-url=https://collaboraoffice.com/"
   ];
 
-  enableParallelBuilding = true;
+  env = {
+    npmDeps = fetchNpmDeps {
+      # TODO: Use upstream `npm-shrinkwrap.json` once it's fixed
+      # https://github.com/CollaboraOnline/online/issues/9644
+      postPatch = ''
+        cp ${./package-lock.json} package-lock.json
+      '';
+
+      hash = "sha256-03ycmv27icEASJZCUSz8OqEAOr9MVgEKkfHN4ddbQNg=";
+      unpackPhase = "true";
+    };
+
+    npmRoot = "browser";
+  };
+
+  # handle flags with spaces safely
+  preConfigure = ''
+    configureFlagsArray+=(
+      "--with-vendor=Collabora Productivity Limited"
+      "--with-app-name=Collabora Office"
+    )
+  '';
 
   postInstall = ''
     cp --no-preserve=mode ${finalAttrs.passthru.libreoffice}/lib/collaboraoffice/LICENSE.html $out/LICENSE.html
     python3 scripts/insert-coda-license.py $out/LICENSE.html CODA-THIRDPARTYLICENSES.html
   '';
 
-  env = {
-    npmDeps = fetchNpmDeps {
-      unpackPhase = "true";
-      # TODO: Use upstream `npm-shrinkwrap.json` once it's fixed
-      # https://github.com/CollaboraOnline/online/issues/9644
-      postPatch = ''
-        cp ${./package-lock.json} package-lock.json
-      '';
-      hash = "sha256-03ycmv27icEASJZCUSz8OqEAOr9MVgEKkfHN4ddbQNg=";
-    };
-
-    npmRoot = "browser";
-  };
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
 
   passthru = {
     libreoffice = libreoffice-collabora.override {
@@ -141,12 +145,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://www.collaboraonline.com/blog/";
     description = "Collaborative Office for desktop, based on LibreOffice technology";
     homepage = "https://www.collaboraonline.com/collabora-office/";
+    changelog = "https://www.collaboraonline.com/blog/";
     license = lib.licenses.mpl20;
-    mainProgram = "coda-qt";
     platforms = lib.platforms.linux;
+    mainProgram = "coda-qt";
     teams = [ lib.teams.ngi ];
   };
 })

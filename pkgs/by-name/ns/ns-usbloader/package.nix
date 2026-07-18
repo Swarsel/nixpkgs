@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   copyDesktopItems,
+  gvfs,
+  jre,
   makeDesktopItem,
   makeWrapper,
-  wrapGAppsHook3,
-  gvfs,
   maven,
-  jre,
   udevCheckHook,
+  wrapGAppsHook3,
 }:
 let
   pkgDescription = "All-in-one tool for managing Nintendo Switch homebrew";
@@ -36,13 +36,6 @@ maven.buildMavenPackage rec {
     ./make-deterministic.patch
   ];
 
-  # JavaFX pulls in architecture dependent jar dependencies. :(
-  # May be possible to unify these, but could lead to huge closure sizes.
-  mvnHash = selectSystem {
-    x86_64-linux = "sha256-vXZAlZOh9pXNF1RL78oQRal5pkXFRKDz/7SP9LibgiA=";
-    aarch64-linux = "sha256-xC+feb41EPi30gBrVR8usanVULI2Pt0knztzNagPQiw=";
-  };
-
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
@@ -53,17 +46,11 @@ maven.buildMavenPackage rec {
 
   doCheck = false;
 
-  doInstallCheck = true;
-
-  # Don't wrap binaries twice.
-  dontWrapGApps = true;
-
   ### Issues:
   # * Set us to only use software rendering with `-Dprism.order=sw`, had a hard time
   #   getting `prism_es2` happy with NixOS's GL/GLES.
   # * Currently, there's also a lot of `Failed to build parent project for org.openjfx:javafx-*`
   #   at build, but jar runs fine when using `jreWithJavaFX`.
-
   installPhase = ''
     runHook preInstall
 
@@ -82,6 +69,8 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   preFixup = ''
     mkdir -p $out/bin
     makeWrapper ${jreWithJavaFX}/bin/java $out/bin/ns-usbloader \
@@ -91,30 +80,44 @@ maven.buildMavenPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      type = "Application";
-      name = "ns-usbloader";
-      desktopName = "NS-USBLoader";
+      categories = [ "Game" ];
       comment = pkgDescription;
+      desktopName = "NS-USBLoader";
       exec = "ns-usbloader";
       icon = "ns-usbloader";
-      categories = [ "Game" ];
-      terminal = false;
+
       keywords = [
         "nintendo"
         "switch"
       ];
+
+      name = "ns-usbloader";
+      terminal = false;
+      type = "Application";
     })
   ];
+
+  # Don't wrap binaries twice.
+  dontWrapGApps = true;
+
+  # JavaFX pulls in architecture dependent jar dependencies. :(
+  # May be possible to unify these, but could lead to huge closure sizes.
+  mvnHash = selectSystem {
+    aarch64-linux = "sha256-xC+feb41EPi30gBrVR8usanVULI2Pt0knztzNagPQiw=";
+    x86_64-linux = "sha256-vXZAlZOh9pXNF1RL78oQRal5pkXFRKDz/7SP9LibgiA=";
+  };
 
   meta = {
     description = pkgDescription;
     homepage = "https://github.com/developersu/ns-usbloader";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ soupglasses ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "ns-usbloader";
   };
 }

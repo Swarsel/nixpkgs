@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   git,
-  lib,
   libgit2,
   nix-update-script,
   pkg-config,
@@ -20,20 +20,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Brr/MnJwgyGRjBrY6H2uUnVXFYWdUAHzLolFBgszkp0=";
   };
 
-  cargoHash = "sha256-vjjwoBHgmjzMVDyscfde/fRwm7QWFTuD9EX1+OowUm8=";
-
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ libgit2 ];
-
-  env.LIBGIT2_NO_VENDOR = 1;
-
-  nativeCheckInputs = [ git ];
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  __structuredAttrs = true;
-  doInstallCheck = true;
   strictDeps = true;
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ libgit2 ];
+  cargoHash = "sha256-vjjwoBHgmjzMVDyscfde/fRwm7QWFTuD9EX1+OowUm8=";
+  env.LIBGIT2_NO_VENDOR = 1;
+  nativeCheckInputs = [ git ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -43,11 +38,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/knope-dev/knope/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Automation for changelogs and releases using conventional commits and/or changesets";
     homepage = "https://knope.tech/";
-    mainProgram = "knope";
-    maintainers = with lib.maintainers; [ mdaniels5757 ];
+    changelog = "https://github.com/knope-dev/knope/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ mdaniels5757 ];
+    mainProgram = "knope";
   };
 })

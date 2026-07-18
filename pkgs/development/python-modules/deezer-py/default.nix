@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "deezer-py";
   version = "1.3.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,14 +15,14 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "requests" ];
 
   meta = {
-    homepage = "https://gitlab.com/RemixDev/deezer-py";
     description = "Wrapper for all Deezer's APIs";
+    homepage = "https://gitlab.com/RemixDev/deezer-py";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ natto1784 ];
   };

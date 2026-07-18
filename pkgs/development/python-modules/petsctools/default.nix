@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   packaging,
   petsc4py,
-  slepc4py,
   pytestCheckHook,
+  setuptools,
+  slepc4py,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "petsctools";
   version = "2026.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firedrakeproject";
@@ -20,6 +19,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-IMDPjhyehOkyifSJ7nOJQbZu21w6Xyyz9fv/WLDpEgQ=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.petsc4py;
 
   build-system = [
     setuptools
@@ -29,28 +33,25 @@ buildPythonPackage (finalAttrs: {
     packaging
   ];
 
-  optional-dependencies = {
-    petsc4py = [ petsc4py ];
-    slepc4py = [ slepc4py ];
-  };
-
-  pythonImportsCheck = [
-    "petsctools"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.petsc4py;
-
   disabledTests = [
     # Expects a double slash when PETSC_ARCH is empty.
     "test_get_petsc_dirs"
   ];
 
+  optional-dependencies = {
+    petsc4py = [ petsc4py ];
+    slepc4py = [ slepc4py ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "petsctools"
+  ];
+
   meta = {
-    homepage = "https://github.com/firedrakeproject/petsctools";
     description = "Pythonic extensions for petsc4py and slepc4py";
+    homepage = "https://github.com/firedrakeproject/petsctools";
     changelog = "https://github.com/firedrakeproject/petsctools/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ qbisi ];

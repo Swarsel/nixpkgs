@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "jefferson";
   version = "0.4.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "onekey-sec";
@@ -27,12 +26,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     lzallright
   ];
 
+  # upstream has no tests
+  doCheck = false;
+  pyproject = true;
+
   pythonImportsCheck = [
     "jefferson"
   ];
-
-  # upstream has no tests
-  doCheck = false;
 
   passthru = {
     updateScript = gitUpdater { rev-prefix = "v"; };
@@ -42,10 +42,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     description = "JFFS2 filesystem extraction tool";
     homepage = "https://github.com/onekey-sec/jefferson";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       tnias
       vlaci
     ];
+
     mainProgram = "jefferson";
   };
 })

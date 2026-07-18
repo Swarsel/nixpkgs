@@ -1,18 +1,18 @@
 {
-  cmake,
+  lib,
+  fetchFromGitHub,
   alsa-lib,
   atk,
   cairo,
+  cmake,
   directx-shader-compiler,
   expat,
-  fetchFromGitHub,
   fontconfig,
   freetype,
   gdk-pixbuf,
   glib,
   gtk3,
   harfbuzz,
-  lib,
   libGL,
   libx11,
   libxcb,
@@ -49,8 +49,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ctBvc2xANM/gGzDDv8ygSO4nTOiG6iKyuSKnz385PIw=";
   };
-
-  cargoHash = "sha256-ebjkEWYeeXHuKQzqbMe8+zVol2vPyLiu7ke5Ng7gbs8=";
 
   nativeBuildInputs = [
     cmake
@@ -101,6 +99,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     yq
   ];
 
+  cargoHash = "sha256-ebjkEWYeeXHuKQzqbMe8+zVol2vPyLiu7ke5Ng7gbs8=";
+
   postInstall = ''
     patchelf \
       --add-needed ${vulkan-loader}/lib/libvulkan.so.1 \
@@ -112,17 +112,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "3D and 4D Rubik's cube simulator";
+
     longDescription = ''
       Hyperspeedcube is a modern, beginner-friendly 3D and 4D Rubik's cube
       simulator with customizable mouse and keyboard controls and advanced
       features for speedsolving. It's been used to break numerous speedsolving
       records and runs on all major operating systems plus the web.
     '';
+
     homepage = "https://ajfarkas.dev/hyperspeedcube/";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = [ lib.maintainers.omnipotententity ];
     platforms = [ "x86_64-linux" ];
   };

@@ -1,17 +1,16 @@
 {
   lib,
-  python3,
   fetchurl,
   glib,
   gobject-introspection,
   gtk3,
+  python3,
   wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "tuna";
   version = "0.19";
-  pyproject = true;
 
   src = fetchurl {
     url = "https://git.kernel.org/pub/scm/utils/tuna/tuna.git/snapshot/tuna-v${finalAttrs.version}.tar.gz";
@@ -30,8 +29,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail 'tuna_glade_dirs = [".", "tuna", "/usr/share/tuna"]' "tuna_glade_dirs = [ \"$out/share/tuna\" ]"
   '';
 
-  build-system = with python3.pkgs; [ setuptools ];
-
   nativeBuildInputs = [
     glib.dev
     gobject-introspection
@@ -39,26 +36,30 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  dependencies = with python3.pkgs; [
-    pygobject3
-    python-linux-procfs
-    ethtool
-  ];
+  # contains no tests
+  doCheck = false;
 
   postInstall = ''
     mkdir -p $out/share/tuna
     cp tuna/tuna_gui.glade $out/share/tuna/
   '';
 
-  # contains no tests
-  doCheck = false;
+  build-system = with python3.pkgs; [ setuptools ];
+
+  dependencies = with python3.pkgs; [
+    pygobject3
+    python-linux-procfs
+    ethtool
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "tuna" ];
 
   meta = {
     description = "Thread and IRQ affinity setting GUI and cmd line tool";
-    mainProgram = "tuna";
     homepage = "https://git.kernel.org/pub/scm/utils/tuna/tuna.git";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "tuna";
   };
 })

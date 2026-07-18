@@ -1,8 +1,6 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  fetchzip,
   alsa-lib,
   aubio,
   boost,
@@ -11,6 +9,8 @@
   curl,
   dbus,
   doxygen,
+  fetchgit,
+  fetchzip,
   ffmpeg,
   fftw,
   fftwSinglePrec,
@@ -36,7 +36,9 @@
   libusb1,
   libuv,
   libwebsockets,
+  libxinerama,
   libxml2,
+  libxrandr,
   libxslt,
   lilv,
   lrdf,
@@ -59,8 +61,6 @@
   vamp-plugin-sdk,
   wafHook,
   xjadeo,
-  libxrandr,
-  libxinerama,
   optimize ? true, # disable to print Lua DSP script output to stdout
   videoSupport ? true,
 }:
@@ -79,13 +79,6 @@ stdenv.mkDerivation (
       url = "git://git.ardour.org/ardour/ardour.git";
       rev = finalAttrs.version;
       hash = "sha256-4IgBQ53cwPA35YwNQyo+qBqsMGv+TLn6w1zaDX97erE=";
-    };
-
-    bundledContent = fetchzip {
-      url = "https://web.archive.org/web/20221026200824/http://stuff.ardour.org/loops/ArdourBundledMedia.zip";
-      hash = "sha256-IbPQWFeyMuvCoghFl1ZwZNNcSvLNsH84rGArXnw+t7A=";
-      # archive does not contain a single folder at the root
-      stripRoot = false;
     };
 
     patches = [
@@ -173,22 +166,7 @@ stdenv.mkDerivation (
       xjadeo
     ];
 
-    wafConfigureFlags = [
-      "--cxx17"
-      "--docs"
-      "--freedesktop"
-      "--no-phone-home"
-      "--ptformat"
-      "--run-tests"
-      "--test"
-      # since we don't have https://github.com/agfline/LibAAF yet,
-      # we need to use some of ardours internal libs, see:
-      # https://discourse.ardour.org/t/ardour-8-2-released/109615/6
-      # and
-      # https://discourse.ardour.org/t/ardour-8-2-released/109615/8
-      # "--use-external-libs"
-    ]
-    ++ lib.optional optimize "--optimize";
+    env.LINKFLAGS = "-lpthread";
 
     postInstall = ''
       # wscript does not install these for some reason
@@ -216,10 +194,33 @@ stdenv.mkDerivation (
         }"
     '';
 
-    env.LINKFLAGS = "-lpthread";
+    bundledContent = fetchzip {
+      hash = "sha256-IbPQWFeyMuvCoghFl1ZwZNNcSvLNsH84rGArXnw+t7A=";
+      # archive does not contain a single folder at the root
+      stripRoot = false;
+      url = "https://web.archive.org/web/20221026200824/http://stuff.ardour.org/loops/ArdourBundledMedia.zip";
+    };
+
+    wafConfigureFlags = [
+      "--cxx17"
+      "--docs"
+      "--freedesktop"
+      "--no-phone-home"
+      "--ptformat"
+      "--run-tests"
+      "--test"
+      # since we don't have https://github.com/agfline/LibAAF yet,
+      # we need to use some of ardours internal libs, see:
+      # https://discourse.ardour.org/t/ardour-8-2-released/109615/6
+      # and
+      # https://discourse.ardour.org/t/ardour-8-2-released/109615/8
+      # "--use-external-libs"
+    ]
+    ++ lib.optional optimize "--optimize";
 
     meta = {
       description = "Multi-track hard disk recording software";
+
       longDescription = ''
         Ardour is a digital audio workstation (DAW), You can use it to
         record, edit and mix multi-track audio and midi. Produce your
@@ -229,15 +230,18 @@ stdenv.mkDerivation (
         Please consider supporting the ardour project financially:
         https://community.ardour.org/donate
       '';
+
       homepage = "https://ardour.org/";
       license = lib.licenses.gpl2Plus;
-      mainProgram = "ardour8";
-      platforms = lib.platforms.linux;
+
       maintainers = with lib.maintainers; [
         magnetophon
         mitchmindtree
         ryand56
       ];
+
+      platforms = lib.platforms.linux;
+      mainProgram = "ardour8";
     };
   }
 )

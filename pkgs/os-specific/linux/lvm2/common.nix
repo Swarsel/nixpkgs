@@ -1,58 +1,90 @@
-{ version, hash }:
+{ hash, version }:
 
 {
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  coreutils,
-  libuuid,
-  libaio,
   bash,
   bashNonInteractive,
-  replaceVars,
-  enableCmdlib ? false,
-  enableDmeventd ? false,
-  udevSupport ? !stdenv.hostPlatform.isStatic,
-  udev,
-  udevCheckHook,
-  onlyLib ? stdenv.hostPlatform.isStatic,
-  # Otherwise we have a infinity recursion during static compilation
-  enableUtilLinux ? !stdenv.hostPlatform.isStatic,
-  util-linux,
-  enableVDO ? false,
-  vdo,
-  enableMdadm ? false,
+  buildFHSEnv,
+  coreutils,
+  libaio,
+  libuuid,
   mdadm,
-  enableMultipath ? false,
   multipath-tools,
   nixosTests,
-  buildFHSEnv,
+  pkg-config,
+  replaceVars,
+  udev,
+  udevCheckHook,
+  util-linux,
+  vdo,
+  enableCmdlib ? false,
+  enableDmeventd ? false,
+  enableMdadm ? false,
+  enableMultipath ? false,
+  # Otherwise we have a infinity recursion during static compilation
+  enableUtilLinux ? !stdenv.hostPlatform.isStatic,
+  enableVDO ? false,
+  onlyLib ? stdenv.hostPlatform.isStatic,
+  udevSupport ? !stdenv.hostPlatform.isStatic,
 }:
 
 # configure: error: --enable-dmeventd requires --enable-cmdlib to be used as well
 assert enableDmeventd -> enableCmdlib;
 
 stdenv.mkDerivation rec {
+  inherit version;
+
   pname =
     "lvm2"
     + lib.optionalString enableDmeventd "-with-dmeventd"
     + lib.optionalString enableVDO "-with-vdo";
-  inherit version;
-
-  __structuredAttrs = true;
 
   src = fetchurl {
+    inherit hash;
+
     urls = [
       "https://mirrors.kernel.org/sourceware/lvm2/LVM2.${version}.tgz"
       "ftp://sourceware.org/pub/lvm2/LVM2.${version}.tgz"
     ];
-    inherit hash;
   };
 
-  strictDeps = true;
+  # only split bin and lib out from out if cmdlib isn't enabled
+  outputs = [
+    "out"
+  ]
+  ++ lib.optionals (!onlyLib) [
+    "dev"
+    "man"
+    "scripts"
+  ]
+  ++ lib.optionals (!onlyLib && !enableCmdlib) [
+    "bin"
+    "lib"
+  ];
 
+  patches = [
+    # fixes paths to and checks for tools
+    (replaceVars ./fix-blkdeactivate.patch (
+      let
+        optionalTool = cond: pkg: if cond then pkg else "/run/current-system/sw";
+      in
+      {
+        inherit coreutils;
+        SBINDIR = null; # part of original source code in the patch's context
+        mdadm = optionalTool enableMdadm mdadm;
+        multipath_tools = optionalTool enableMultipath multipath-tools;
+        util_linux = optionalTool enableUtilLinux util-linux;
+        vdo = optionalTool enableVDO vdo;
+      }
+    ))
+    ./fix-stdio-usage.patch
+  ];
+
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ] ++ lib.optionals udevSupport [ udevCheckHook ];
+
   buildInputs = [
     libaio
     bash
@@ -112,6 +144,14 @@ stdenv.mkDerivation rec {
     "--enable-static_link"
   ];
 
+  makeFlags =
+    lib.optionals udevSupport [
+      "SYSTEMD_GENERATOR_DIR=${placeholder "out"}/lib/systemd/system-generators"
+    ]
+    ++ lib.optionals onlyLib [
+      "libdm.device-mapper"
+    ];
+
   preConfigure = ''
     sed -i /DEFAULT_SYS_DIR/d Makefile.in
     sed -i /DEFAULT_PROFILE_DIR/d conf/Makefile.in
@@ -127,35 +167,29 @@ stdenv.mkDerivation rec {
     sed -i 's|^#define LVM_CONFIGURE_LINE.*$|#define LVM_CONFIGURE_LINE "<removed>"|g' ./include/configure.h
   '';
 
-  patches = [
-    # fixes paths to and checks for tools
-    (replaceVars ./fix-blkdeactivate.patch (
-      let
-        optionalTool = cond: pkg: if cond then pkg else "/run/current-system/sw";
-      in
-      {
-        inherit coreutils;
-        util_linux = optionalTool enableUtilLinux util-linux;
-        mdadm = optionalTool enableMdadm mdadm;
-        multipath_tools = optionalTool enableMultipath multipath-tools;
-        vdo = optionalTool enableVDO vdo;
-        SBINDIR = null; # part of original source code in the patch's context
-      }
-    ))
-    ./fix-stdio-usage.patch
-  ];
-
   doCheck = false; # requires root
+
+  installPhase = lib.optionalString onlyLib ''
+    make -C libdm install_${if stdenv.hostPlatform.isStatic then "static" else "dynamic"}
+    make -C libdm install_include
+    make -C libdm install_pkgconfig
+  '';
+
+  postInstall =
+    lib.optionalString (!onlyLib) ''
+      moveToOutput bin/fsadm $scripts
+      moveToOutput bin/blkdeactivate $scripts
+      moveToOutput bin/lvmdump $scripts
+      moveToOutput bin/lvm_import_vdo $scripts
+      moveToOutput bin/lvmpersist $scripts
+      moveToOutput libexec/lvresize_fs_helper $scripts
+    ''
+    + lib.optionalString (!enableCmdlib) ''
+      moveToOutput lib/libdevmapper.so $lib
+    '';
+
   doInstallCheck = true;
-
-  makeFlags =
-    lib.optionals udevSupport [
-      "SYSTEMD_GENERATOR_DIR=${placeholder "out"}/lib/systemd/system-generators"
-    ]
-    ++ lib.optionals onlyLib [
-      "libdm.device-mapper"
-    ];
-
+  __structuredAttrs = true;
   enableParallelBuilding = true;
 
   # To prevent make install from failing.
@@ -175,45 +209,13 @@ stdenv.mkDerivation rec {
     "install_tmpfiles_configuration"
   ];
 
-  installPhase = lib.optionalString onlyLib ''
-    make -C libdm install_${if stdenv.hostPlatform.isStatic then "static" else "dynamic"}
-    make -C libdm install_include
-    make -C libdm install_pkgconfig
-  '';
-
-  # only split bin and lib out from out if cmdlib isn't enabled
-  outputs = [
-    "out"
-  ]
-  ++ lib.optionals (!onlyLib) [
-    "dev"
-    "man"
-    "scripts"
-  ]
-  ++ lib.optionals (!onlyLib && !enableCmdlib) [
-    "bin"
-    "lib"
-  ];
-
-  postInstall =
-    lib.optionalString (!onlyLib) ''
-      moveToOutput bin/fsadm $scripts
-      moveToOutput bin/blkdeactivate $scripts
-      moveToOutput bin/lvmdump $scripts
-      moveToOutput bin/lvm_import_vdo $scripts
-      moveToOutput bin/lvmpersist $scripts
-      moveToOutput libexec/lvresize_fs_helper $scripts
-    ''
-    + lib.optionalString (!enableCmdlib) ''
-      moveToOutput lib/libdevmapper.so $lib
-    '';
-
   outputChecks = lib.optionalAttrs (!stdenv.hostPlatform.isStatic && !enableVDO) {
-    out.disallowedRequisites = [
+    lib.disallowedRequisites = [
       bash
       bashNonInteractive
     ];
-    lib.disallowedRequisites = [
+
+    out.disallowedRequisites = [
       bash
       bashNonInteractive
     ];
@@ -231,20 +233,24 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
+    description = "Tools to support Logical Volume Management (LVM) on Linux";
+    homepage = "http://sourceware.org/lvm2/";
+
     changelog = "https://gitlab.com/lvmteam/lvm2/-/blob/v${
       lib.replaceString "." "_" version
     }/WHATS_NEW";
-    homepage = "http://sourceware.org/lvm2/";
-    description = "Tools to support Logical Volume Management (LVM) on Linux";
-    platforms = lib.platforms.linux;
+
     license = with lib.licenses; [
       gpl2Only
       bsd2
       lgpl21
     ];
+
     maintainers = with lib.maintainers; [
       raskin
       ajs124
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,9 +1,9 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  ncompress,
+  fetchurl,
   libx11,
+  ncompress,
 }:
 
 stdenv.mkDerivation rec {
@@ -45,10 +45,9 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
+    description = "Optimizing Scheme compiler";
     homepage = "http://www.ece.purdue.edu/~qobi/software.html";
     license = lib.licenses.gpl2Plus;
-    description = "Optimizing Scheme compiler";
-
     maintainers = [ ];
     platforms = [ "i686-linux" ]; # doesn't want to work on 64-bit platforms
   };

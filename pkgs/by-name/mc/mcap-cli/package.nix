@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
   buildPackages,
-  fetchFromGitHub,
   installShellFiles,
   nix-update-script,
 }:
@@ -12,34 +12,21 @@ let
 in
 buildGoModule {
 
+  inherit version;
   pname = "mcap-cli";
 
-  inherit version;
-
   src = fetchFromGitHub {
-    repo = "mcap";
     owner = "foxglove";
+    repo = "mcap";
     rev = "releases/mcap-cli/v${version}";
     hash = "sha256-PR0w/D5XwLaRP9vkRt8f9huG75lPTIwyhcegjlY1pno=";
   };
-
-  vendorHash = "sha256-Q1TjUlS7+fV2HBQk108c+o/9IRpDc9C8jzBk048Mkig=";
 
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  modRoot = "go/cli/mcap";
-
-  tags = [
-    "sqlite_omit_load_extension"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    "netgo"
-    "osusergo"
-  ];
-
-  ldflags = [ "-X github.com/foxglove/mcap/go/cli/mcap/cmd.Version=${version}" ];
+  vendorHash = "sha256-Q1TjUlS7+fV2HBQk108c+o/9IRpDc9C8jzBk048Mkig=";
 
   env = {
     CGO_ENABLED = "1";
@@ -70,6 +57,18 @@ buildGoModule {
         --zsh <(${emulator} $out/bin/mcap completion zsh)
     ''
   );
+
+  ldflags = [ "-X github.com/foxglove/mcap/go/cli/mcap/cmd.Version=${version}" ];
+  modRoot = "go/cli/mcap";
+
+  tags = [
+    "sqlite_omit_load_extension"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    "netgo"
+    "osusergo"
+  ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -78,9 +77,11 @@ buildGoModule {
     description = "MCAP CLI tool to inspect and fix MCAP files";
     homepage = "https://github.com/foxglove/mcap";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       therishidesai
     ];
+
     mainProgram = "mcap";
   };
 

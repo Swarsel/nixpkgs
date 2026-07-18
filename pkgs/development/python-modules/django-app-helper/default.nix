@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  django,
-  setuptools,
-  docopt,
+  buildPythonPackage,
   dj-database-url,
-  python,
-  django-filer,
-  six,
+  django,
   django-app-helper,
+  django-filer,
+  docopt,
+  python,
+  setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "django-app-helper";
   version = "3.3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nephila";
@@ -23,6 +22,15 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-gnTEzmQ4h4FWc2+s68VW/yVAkKFdj4U2VMkJKTAnQOM=";
   };
+
+  # Tests depend on django-filer, which depends on this package.
+  # To avoid infinite recursion, we only enable tests when building passthru.tests.
+  doCheck = false;
+  checkInputs = [ django-filer ];
+
+  checkPhase = ''
+    ${python.interpreter} helper.py
+  '';
 
   build-system = [ setuptools ];
 
@@ -32,16 +40,7 @@ buildPythonPackage rec {
     six
   ];
 
-  checkInputs = [ django-filer ];
-
-  # Tests depend on django-filer, which depends on this package.
-  # To avoid infinite recursion, we only enable tests when building passthru.tests.
-  doCheck = false;
-
-  checkPhase = ''
-    ${python.interpreter} helper.py
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "app_helper" ];
 
   passthru.tests = {

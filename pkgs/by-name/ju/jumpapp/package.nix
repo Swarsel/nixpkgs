@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  perl,
-  pandoc,
+  stdenv,
   fetchFromGitHub,
-  xdotool,
-  wmctrl,
-  xprop,
   net-tools,
+  pandoc,
+  perl,
+  wmctrl,
+  xdotool,
+  xprop,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,11 +21,11 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-9sh0+zpDxwqRGC1jUgGTDdSDRdAFsL12mQ/Opwh/UBc=";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
   nativeBuildInputs = [
     pandoc
     perl
   ];
+
   buildInputs = [
     xdotool
     wmctrl
@@ -33,6 +33,9 @@ stdenv.mkDerivation rec {
     net-tools
     perl
   ];
+
+  makeFlags = [ "PREFIX=$(out)" ];
+
   postFixup =
     let
       runtimePath = lib.makeBinPath buildInputs;
@@ -43,8 +46,8 @@ stdenv.mkDerivation rec {
     '';
 
   meta = {
-    homepage = "https://github.com/mkropat/jumpapp";
     description = "Run-or-raise application switcher for any X11 desktop";
+    homepage = "https://github.com/mkropat/jumpapp";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.matklad ];
   };

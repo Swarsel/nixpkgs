@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,7 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/tytso/pwgen";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "pwgen";
     platforms = lib.platforms.all;
+    mainProgram = "pwgen";
   };
 })

@@ -1,15 +1,14 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
   six,
 }:
 
 buildKodiAddon rec {
   pname = "websocket";
-  namespace = "script.module.websocket";
   version = "1.6.4";
 
   src = fetchzip {
@@ -21,16 +20,19 @@ buildKodiAddon rec {
     six
   ];
 
+  namespace = "script.module.websocket";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.websocket";
     };
   };
 
   meta = {
-    homepage = "https://github.com/websocket-client/websocket-client";
     description = "WebSocket client for Python";
+    homepage = "https://github.com/websocket-client/websocket-client";
     license = lib.licenses.lgpl2Only;
     teams = [ lib.teams.kodi ];
   };

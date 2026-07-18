@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bash-completion,
   docbook_xsl,
+  libcap,
+  libselinux,
   libxslt,
   meson,
   ninja,
   pkg-config,
-  bash-completion,
-  libcap,
-  libselinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,9 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = false;
 
   meta = {
-    changelog = "https://github.com/containers/bubblewrap/releases/tag/${finalAttrs.src.rev}";
     description = "Unprivileged sandboxing tool";
     homepage = "https://github.com/containers/bubblewrap";
+    changelog = "https://github.com/containers/bubblewrap/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
     platforms = lib.platforms.linux;

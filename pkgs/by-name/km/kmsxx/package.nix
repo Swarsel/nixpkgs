@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
+  fmt,
+  libdrm,
+  libevdev,
   meson,
   ninja,
-  cmake,
   pkg-config,
-  libdrm,
-  fmt,
-  libevdev,
-  withPython ? false,
   python3Packages,
+  withPython ? false,
 }:
 
 stdenv.mkDerivation {
@@ -20,9 +20,9 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "tomba";
     repo = "kmsxx";
-    fetchSubmodules = true;
     rev = "54f591ec0de61dd192baf781c9b2ec87d5b461f7";
     hash = "sha256-j+20WY4a2iTKZnYjXhxbNnZZ53K3dHpDMTp+ZulS+7c=";
+    fetchSubmodules = true;
   };
 
   # Didn't detect pybind11 without cmake
@@ -32,6 +32,7 @@ stdenv.mkDerivation {
     pkg-config
   ]
   ++ lib.optionals withPython [ cmake ];
+
   buildInputs = [
     libdrm
     fmt
@@ -45,9 +46,8 @@ stdenv.mkDerivation {
     ]
   );
 
-  dontUseCmakeConfigure = true;
-
   mesonFlags = lib.optional (!withPython) "-Dpykms=disabled";
+  dontUseCmakeConfigure = true;
 
   meta = {
     description = "C++11 library, utilities and python bindings for Linux kernel mode setting";

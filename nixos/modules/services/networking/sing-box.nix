@@ -11,24 +11,14 @@ let
 in
 {
 
-  meta = {
-    maintainers = with lib.maintainers; [
-      nickcao
-      prince213
-    ];
-  };
-
   options = {
     services.sing-box = {
       enable = lib.mkEnableOption "sing-box universal proxy platform";
-
       package = lib.mkPackageOption pkgs "sing-box" { };
 
       settings = lib.mkOption {
-        type = lib.types.submodule {
-          freeformType = settingsFormat.type;
-        };
         default = { };
+
         description = ''
           The sing-box configuration, see <https://sing-box.sagernet.org/configuration/> for documentation.
 
@@ -36,6 +26,10 @@ in
           containing the attribute `_secret` - a string pointing to a file
           containing the value the option should be set to.
         '';
+
+        type = lib.types.submodule {
+          freeformType = settingsFormat.type;
+        };
       };
     };
   };
@@ -47,23 +41,12 @@ in
     systemd.packages = [ cfg.package ];
 
     systemd.services.sing-box = {
+      # After= is specified by upstream
+      requires = [ "network-online.target" ];
+
       serviceConfig = {
-        User = "sing-box";
-        Group = "sing-box";
         ConfigurationDirectory = "sing-box";
-        StateDirectory = "sing-box";
-        StateDirectoryMode = "0700";
-        RuntimeDirectory = "sing-box";
-        RuntimeDirectoryMode = "0700";
-        WorkingDirectory = "/var/lib/sing-box";
-        ExecStartPre =
-          let
-            script = pkgs.writeShellScript "sing-box-pre-start" ''
-              ${utils.genJqSecretsReplacementSnippet cfg.settings "/run/sing-box/config.json"}
-              chown --reference=/run/sing-box /run/sing-box/config.json
-            '';
-          in
-          lib.mkIf (cfg.settings != { }) "+${script}";
+
         ExecStart =
           let
             configDir = if cfg.settings != { } then "RUNTIME_DIRECTORY" else "CONFIGURATION_DIRECTORY";
@@ -72,19 +55,43 @@ in
             ""
             "${lib.getExe cfg.package} -D \${STATE_DIRECTORY} -C \${${configDir}} run"
           ];
+
+        ExecStartPre =
+          let
+            script = pkgs.writeShellScript "sing-box-pre-start" ''
+              ${utils.genJqSecretsReplacementSnippet cfg.settings "/run/sing-box/config.json"}
+              chown --reference=/run/sing-box /run/sing-box/config.json
+            '';
+          in
+          lib.mkIf (cfg.settings != { }) "+${script}";
+
+        Group = "sing-box";
+        RuntimeDirectory = "sing-box";
+        RuntimeDirectoryMode = "0700";
+        StateDirectory = "sing-box";
+        StateDirectoryMode = "0700";
+        User = "sing-box";
+        WorkingDirectory = "/var/lib/sing-box";
       };
-      # After= is specified by upstream
-      requires = [ "network-online.target" ];
+
       wantedBy = [ "multi-user.target" ];
     };
 
     users = {
+      groups.sing-box = { };
+
       users.sing-box = {
-        isSystemUser = true;
         group = "sing-box";
         home = "/var/lib/sing-box";
+        isSystemUser = true;
       };
-      groups.sing-box = { };
     };
+  };
+
+  meta = {
+    maintainers = with lib.maintainers; [
+      nickcao
+      prince213
+    ];
   };
 }

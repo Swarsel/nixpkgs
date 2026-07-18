@@ -4,13 +4,13 @@
   fetchurl,
   fetchpatch,
   file,
-  openssl,
-  mlton,
-  libmysqlclient,
-  libpq,
-  sqlite,
   gcc,
   icu,
+  libmysqlclient,
+  libpq,
+  mlton,
+  openssl,
+  sqlite,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,8 +24,8 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/urweb/urweb/commit/f7a38a95bee9d1aaf7ed83a651cfbce8da96ed44.patch";
       sha256 = "TQFD9Y8OEOSFv6cqpHQ4WSNAPzl82MmVCAxLR4F4Uxc=";
+      url = "https://github.com/urweb/urweb/commit/f7a38a95bee9d1aaf7ed83a651cfbce8da96ed44.patch";
     })
   ];
 
@@ -38,11 +38,12 @@ stdenv.mkDerivation rec {
     icu
   ];
 
-  prePatch = ''
-    sed -e 's@/usr/bin/file@${file}/bin/file@g' -i configure
-  '';
-
   configureFlags = [ "--with-openssl=${openssl.dev}" ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    # Needed with GCC 12
+    "-Wno-error=use-after-free"
+  ];
 
   preConfigure = ''
     export MSHEADER="${libmysqlclient}/include/mysql/mysql.h";
@@ -61,24 +62,25 @@ stdenv.mkDerivation rec {
     export LDFLAGS="-Wl,-undefined,dynamic_lookup";
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    # Needed with GCC 12
-    "-Wno-error=use-after-free"
-  ];
-
   # Be sure to keep the statically linked libraries
   dontDisableStatic = true;
 
+  prePatch = ''
+    sed -e 's@/usr/bin/file@${file}/bin/file@g' -i configure
+  '';
+
   meta = {
     description = "Advanced purely-functional web programming language";
-    mainProgram = "urweb";
     homepage = "http://www.impredicative.com/ur/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = [
       lib.maintainers.buggymcbugfix
       lib.maintainers.thoughtpolice
       lib.maintainers.sheganinans
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "urweb";
   };
 }

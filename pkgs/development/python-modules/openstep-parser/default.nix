@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "openstep-parser";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kronenthaler";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-ivPvkvVWXw5ftaGvwBR+JxBIlisI0p6k3i/8V2HlaqQ=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "openstep_parser" ];
 
   meta = {

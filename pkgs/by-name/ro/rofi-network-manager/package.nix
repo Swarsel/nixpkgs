@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
+  gawk,
+  gnused,
+  libnotify,
   makeWrapper,
   networkmanager,
-  libnotify,
-  coreutils,
-  gnused,
-  gawk,
 }:
 
 let
@@ -33,8 +33,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -48,12 +46,14 @@ stdenv.mkDerivation {
       --prefix PATH : "${wrapperPath}"
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Manage wifi and ethernet with rofi";
     homepage = "https://github.com/meowrch/rofi-network-manager";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wenjinnn ];
-    mainProgram = "rofi-network-manager";
     platforms = lib.platforms.linux;
+    mainProgram = "rofi-network-manager";
   };
 }

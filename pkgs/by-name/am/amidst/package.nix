@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,10 +15,9 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/toolbox4minecraft/amidst/releases/download/v${finalAttrs.version}/amidst-v${
       lib.replaceStrings [ "." ] [ "-" ] finalAttrs.version
     }.jar";
+
     sha256 = "sha256-oecRjD7JUuvFym8N/hSE5cbAFQojS6yxOuxpwWRlW9M=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     jre
@@ -32,13 +31,15 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "-jar $out/lib/amidst/amidst.jar"
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://github.com/toolbox4minecraft/amidst";
     description = "Advanced Minecraft Interface and Data/Structure Tracking";
-    mainProgram = "amidst";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://github.com/toolbox4minecraft/amidst";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "amidst";
   };
 })

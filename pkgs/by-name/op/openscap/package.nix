@@ -2,41 +2,41 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  asciidoc,
+  bzip2,
   cmake,
+  curl,
+  doxygen,
+  glib,
+  gnome2,
+  graphviz,
+  haskellPackages,
+  installShellFiles,
+  libgcrypt,
+  libselinux,
   libsepol,
-  popt,
   libxml2,
   libxslt,
-  openssl,
-  util-linux,
-  pcre2,
-  libselinux,
-  graphviz,
-  glib,
-  python3,
-  swig,
-  libgcrypt,
-  opendbx,
-  xmlbird,
-  haskellPackages,
   libyaml,
-  yaml-filter,
-  xmlsec,
-  bzip2,
-  valgrind,
-  asciidoc,
-  installShellFiles,
   makeWrapper,
-  rpm,
-  system-sendmail,
-  gnome2,
-  curl,
-  procps,
-  systemd,
+  opendbx,
+  openssl,
+  pcre2,
   perl,
-  doxygen,
-  pkg-config,
   perlPackages,
+  pkg-config,
+  popt,
+  procps,
+  python3,
+  rpm,
+  swig,
+  system-sendmail,
+  systemd,
+  util-linux,
+  valgrind,
+  xmlbird,
+  xmlsec,
+  yaml-filter,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -99,19 +99,6 @@ stdenv.mkDerivation (finalAttrs: {
       opendbx
     ];
 
-  prePatch = ''
-    export SWIG_PERL_DIR=lib/perl
-    substituteInPlace swig/perl/CMakeLists.txt \
-      --replace-fail "DESTINATION ''${PERL_VENDORLIB}" "DESTINATION ''${SWIG_PERL_DIR}''${PERL_VERSION}" \
-      --replace-fail "DESTINATION ''${PERL_VENDORARCH}" "DESTINATION ''${SWIG_PERL_DIR}"
-    substituteInPlace src/common/oscap_pcre.c \
-      --replace-fail "#include <pcre2.h>" "#include <${pcre2.dev}/include/pcre2.h>"
-
-    # Patch SCE engine to not hardcode FHS paths, allowing it to use the transient environment's PATH
-    substituteInPlace src/SCE/sce_engine.c \
-      --replace-fail 'env_values[0] = "PATH=/bin:/sbin:/usr/bin:/usr/local/bin:/usr/sbin";' 'env_values[0] = "_PATCHED_OUT_DUMMY_VAR=patched-out";'
-  '';
-
   cmakeFlags = [
     "-DPCRE2_INCLUDE_DIRS=${pcre2.dev}/include"
     "-DPCRE2_LIBRARIES=${pcre2.out}/lib"
@@ -156,13 +143,26 @@ stdenv.mkDerivation (finalAttrs: {
       --set OSCAP_CHECK_ENGINE_PLUGIN_DIR $out/lib
   '';
 
+  prePatch = ''
+    export SWIG_PERL_DIR=lib/perl
+    substituteInPlace swig/perl/CMakeLists.txt \
+      --replace-fail "DESTINATION ''${PERL_VENDORLIB}" "DESTINATION ''${SWIG_PERL_DIR}''${PERL_VERSION}" \
+      --replace-fail "DESTINATION ''${PERL_VENDORARCH}" "DESTINATION ''${SWIG_PERL_DIR}"
+    substituteInPlace src/common/oscap_pcre.c \
+      --replace-fail "#include <pcre2.h>" "#include <${pcre2.dev}/include/pcre2.h>"
+
+    # Patch SCE engine to not hardcode FHS paths, allowing it to use the transient environment's PATH
+    substituteInPlace src/SCE/sce_engine.c \
+      --replace-fail 'env_values[0] = "PATH=/bin:/sbin:/usr/bin:/usr/local/bin:/usr/sbin";' 'env_values[0] = "_PATCHED_OUT_DUMMY_VAR=patched-out";'
+  '';
+
   meta = {
     description = "NIST Certified SCAP 1.2 toolkit";
     homepage = "https://github.com/OpenSCAP/openscap";
     changelog = "https://github.com/OpenSCAP/openscap/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ tochiaha ];
-    mainProgram = "oscap";
     platforms = lib.platforms.linux;
+    mainProgram = "oscap";
   };
 })

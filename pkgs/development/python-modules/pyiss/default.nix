@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
-  voluptuous,
+  buildPythonPackage,
   httmock,
+  requests,
+  setuptools,
   unittestCheckHook,
+  voluptuous,
 }:
 
 buildPythonPackage rec {
   pname = "pyiss";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "HydrelioxGitHub";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-bhxeu/06B6ba9RB9p++tRWN/Dp3KUel9DN166HryP1E=";
   };
 
+  nativeCheckInputs = [
+    httmock
+    unittestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     voluptuous
   ];
 
-  nativeCheckInputs = [
-    httmock
-    unittestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyiss" ];
 
   meta = {

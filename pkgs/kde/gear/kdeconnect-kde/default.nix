@@ -1,17 +1,17 @@
 {
   lib,
-  mkKdeDerivation,
-  replaceVars,
-  sshfs,
-  qtbase,
-  qtconnectivity,
-  qtmultimedia,
-  pkg-config,
-  wayland,
-  wayland-protocols,
   libei,
   libevdev,
   libfakekey,
+  mkKdeDerivation,
+  pkg-config,
+  qtbase,
+  qtconnectivity,
+  qtmultimedia,
+  replaceVars,
+  sshfs,
+  wayland,
+  wayland-protocols,
 }:
 mkKdeDerivation {
   pname = "kdeconnect-kde";
@@ -28,7 +28,6 @@ mkKdeDerivation {
     echo "${sshfs}" > $out/nix-support/depends
   '';
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtconnectivity
     qtmultimedia
@@ -42,4 +41,6 @@ mkKdeDerivation {
   extraCmakeFlags = [
     "-DQtWaylandScanner_EXECUTABLE=${qtbase}/libexec/qtwaylandscanner"
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 }

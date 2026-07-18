@@ -1,17 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cai";
   version = "1.1.5-unstable-2026-06-05";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "aliasrobotics";
@@ -20,15 +17,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-LcU9GoUulpeAaaBZr2Mg/C+UmjZ74UL+SGqdB0P9JtA=";
   };
 
-  pythonRemoveDeps = [
-    "cryptography"
-    "dotenv"
-    "openinference-instrumentation-openai"
-    "pypdf2"
+  nativeInstallCheckInputs = with python3Packages; [
+    inline-snapshot
+    litellm
+    pytest-asyncio
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
 
-  pythonRelaxDeps = [ "openai" ];
-
+  __structuredAttrs = true;
   build-system = with python3Packages; [ hatchling ];
 
   dependencies = with python3Packages; [
@@ -70,16 +67,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     websockets
   ];
 
-  nativeInstallCheckInputs = with python3Packages; [
-    inline-snapshot
-    litellm
-    pytest-asyncio
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [ "cai" ];
-
   disabledTestPaths = [
     # Exclude examples
     "examples/"
@@ -116,6 +103,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "tests/test_cli_print_deduplication.py"
     "tests/tools/test_output_tool.py"
     "tests/util/test_wait_hints_compact.py"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "cai" ];
+  pythonRelaxDeps = [ "openai" ];
+
+  pythonRemoveDeps = [
+    "cryptography"
+    "dotenv"
+    "openinference-instrumentation-openai"
+    "pypdf2"
   ];
 
   passthru.updateScript = nix-update-script { };

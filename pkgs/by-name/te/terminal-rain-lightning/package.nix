@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   ffmpeg,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "terminal-rain-lightning";
   version = "0-unstable-2026-04-30";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rmaake1";
@@ -18,15 +17,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-GJvGnvo78l4RK2Y9ACbqOXHLQkNtIwIktbm/FK1vOcc=";
   };
 
-  build-system = [
-    python3Packages.setuptools
-  ];
-
   preFixup = ''
     makeWrapperArgs+=("--prefix" "PATH" ":" "${lib.makeBinPath [ ffmpeg ]}")
   '';
 
   __structuredAttrs = true;
+
+  build-system = [
+    python3Packages.setuptools
+  ];
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

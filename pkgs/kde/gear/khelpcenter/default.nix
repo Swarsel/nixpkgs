@@ -1,14 +1,20 @@
 {
-  mkKdeDerivation,
-  replaceVars,
-  qtwebengine,
-  xapian,
-  man-db,
-  python3,
   kio-extras,
+  man-db,
+  mkKdeDerivation,
+  python3,
+  qtwebengine,
+  replaceVars,
+  xapian,
 }:
 mkKdeDerivation {
   pname = "khelpcenter";
+
+  patches = [
+    (replaceVars ./use_nix_paths_for_mansearch_utilities.patch {
+      inherit man-db;
+    })
+  ];
 
   extraBuildInputs = [
     qtwebengine
@@ -16,10 +22,6 @@ mkKdeDerivation {
     python3
     kio-extras
   ];
-  patches = [
-    (replaceVars ./use_nix_paths_for_mansearch_utilities.patch {
-      inherit man-db;
-    })
-  ];
+
   meta.mainProgram = "khelpcenter";
 }

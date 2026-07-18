@@ -1,19 +1,14 @@
 {
   lib,
-  mkMesonExecutable,
   stdenv,
-
-  nix-store,
+  mimalloc,
+  mkMesonExecutable,
+  nix-cmd,
   nix-expr,
   nix-main,
-  nix-cmd,
-
-  mimalloc,
-
+  nix-store,
   # Configuration Options
-
   version,
-
   # Whether to link against mimalloc for malloc override.
   # Significantly improves evaluation performance on allocation-heavy
   # workloads (~10-15% on large evaluations).
@@ -21,10 +16,8 @@
 }:
 
 mkMesonExecutable (finalAttrs: {
-  pname = "nix";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix";
 
   buildInputs = [
     nix-store
@@ -38,9 +31,11 @@ mkMesonExecutable (finalAttrs: {
     (lib.mesonEnable "mimalloc" withMimalloc)
   ];
 
+  workDir = ./.;
+
   meta = {
-    mainProgram = "nix";
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "nix";
   };
 
 })

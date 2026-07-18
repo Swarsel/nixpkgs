@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
+  azahar,
   boost,
-  robin-map,
   catch2_3,
+  cmake,
+  darwin,
   fmt,
+  mcl-cpp-utility-lib,
+  ninja,
+  nix-update-script,
+  oaknut,
+  robin-map,
   xbyak,
   zydis,
-  nix-update-script,
-  azahar,
-  darwin,
-  oaknut,
-  mcl-cpp-utility-lib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "dynarmic";
@@ -57,11 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     zydis
   ];
 
-  checkInputs = [
-    catch2_3
-    oaknut
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
     (lib.cmakeBool "DYNARMIC_TESTS" finalAttrs.finalPackage.doCheck)
@@ -74,16 +69,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
+  checkInputs = [
+    catch2_3
+    oaknut
+  ];
+
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
     tests = { inherit azahar; };
+    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
   };
 
   meta = {
     description = "Dynamic recompiler for ARM";
     homepage = "https://github.com/azahar-emu/dynarmic";
-    maintainers = with lib.maintainers; [ marcin-serwin ];
     license = lib.licenses.bsd0;
+    maintainers = with lib.maintainers; [ marcin-serwin ];
     platforms = with lib.platforms; x86_64 ++ aarch64;
   };
 })

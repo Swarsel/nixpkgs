@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   matplotlib,
   numpy,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "dufte";
   version = "0.2.29";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nschloe";
@@ -27,6 +26,8 @@ buildPythonPackage rec {
     numpy
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   preCheck = ''
     export HOME=$(mktemp -d)
     mkdir -p $HOME/.config/matplotlib
@@ -34,8 +35,7 @@ buildPythonPackage rec {
     ln -s $HOME/.config/matplotlib $HOME/.matplotlib
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dufte" ];
 
   meta = {

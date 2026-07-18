@@ -1,13 +1,12 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
 }:
 buildKodiAddon rec {
   pname = "myconnpy";
-  namespace = "script.module.myconnpy";
   version = "8.0.33";
 
   src = fetchzip {
@@ -15,16 +14,19 @@ buildKodiAddon rec {
     sha256 = "sha256-NlLMq9RAdWu8rVsMc0FDe1HmQiVp5T7iBXbIH7HB5bI=";
   };
 
+  namespace = "script.module.myconnpy";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.myconnpy";
     };
   };
 
   meta = {
-    homepage = "http://dev.mysql.com/doc/connector-python/en/index.html";
     description = "MySQL Connector/Python";
+    homepage = "http://dev.mysql.com/doc/connector-python/en/index.html";
     license = lib.licenses.gpl2Only;
     teams = [ lib.teams.kodi ];
   };

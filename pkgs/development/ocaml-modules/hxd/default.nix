@@ -1,9 +1,9 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  dune-configurator,
+  buildDunePackage,
   cmdliner,
+  dune-configurator,
   lwt,
   withLwt ? true,
 }:
@@ -17,13 +17,12 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-RTw5TsFWeMXObvEjVuTVgGoCYRdmAPrMp2XexBZx+qk=";
   };
 
-  propagatedBuildInputs = lib.optional withLwt lwt;
-
   buildInputs = [
     cmdliner
     dune-configurator
   ];
 
+  propagatedBuildInputs = lib.optional withLwt lwt;
   doCheck = true;
 
   preCheck = ''

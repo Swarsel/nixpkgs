@@ -1,8 +1,6 @@
 {
   lib,
-  resholve,
   fetchFromGitHub,
-
   # Runtime dependencies
   coreutils,
   dnsutils,
@@ -12,6 +10,7 @@
   iproute2,
   iptables,
   iputils,
+  resholve,
   wget,
 }:
 
@@ -24,8 +23,8 @@ let
   });
 in
 resholve.mkDerivation {
-  pname = "wsl-vpnkit";
   inherit version;
+  pname = "wsl-vpnkit";
 
   src = fetchFromGitHub {
     owner = "sakai135";
@@ -46,8 +45,16 @@ resholve.mkDerivation {
   '';
 
   solutions.wsl-vpnkit = {
-    scripts = [ "bin/wsl-vpnkit" ];
-    interpreter = "none";
+    execer = [
+      "cannot:${iproute2}/bin/ip"
+      "cannot:${wget}/bin/wget"
+    ];
+
+    fix = {
+      aliases = true;
+      ping = "${iputils}/bin/ping";
+    };
+
     inputs = [
       coreutils
       dnsutils
@@ -59,20 +66,14 @@ resholve.mkDerivation {
       wget
     ];
 
+    interpreter = "none";
+
     keep = {
-      "$VMEXEC_PATH" = true;
       "$GVPROXY_PATH" = true;
+      "$VMEXEC_PATH" = true;
     };
 
-    execer = [
-      "cannot:${iproute2}/bin/ip"
-      "cannot:${wget}/bin/wget"
-    ];
-
-    fix = {
-      aliases = true;
-      ping = "${iputils}/bin/ping";
-    };
+    scripts = [ "bin/wsl-vpnkit" ];
   };
 
   meta = {

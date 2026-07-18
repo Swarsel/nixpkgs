@@ -25,9 +25,10 @@ mkTclDerivation rec {
     '';
 
   meta = {
-    homepage = "https://github.com/flightaware/tclx";
     description = "Tcl extensions";
+    homepage = "https://github.com/flightaware/tclx";
     license = lib.licenses.tcltk;
+
     maintainers = with lib.maintainers; [
       kovirobi
       fgaz

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   qt5,
 }:
@@ -12,8 +12,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "nspire-emus";
     repo = "firebird";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-ZptjlnOiF+hKuKYvBFJL95H5YQuR99d4biOco/MVEmE=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -33,9 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "Third-party multi-platform emulator of the ARM-based TI-Nspire™ calculators";
     homepage = "https://github.com/nspire-emus/firebird";
     changelog = "https://github.com/nspire-emus/firebird/releases/tag/v${finalAttrs.version}";
-    description = "Third-party multi-platform emulator of the ARM-based TI-Nspire™ calculators";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.unix;

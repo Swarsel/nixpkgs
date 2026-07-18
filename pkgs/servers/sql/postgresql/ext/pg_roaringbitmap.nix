@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -17,11 +17,11 @@ postgresqlBuildExtension (finalAttrs: {
   };
 
   meta = {
+    inherit (postgresql.meta) platforms;
     description = "RoaringBitmap extension for PostgreSQL";
     homepage = "https://github.com/ChenHuajun/pg_roaringbitmap";
     changelog = "https://github.com/ChenHuajun/pg_roaringbitmap/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ ];
-    inherit (postgresql.meta) platforms;
   };
 })

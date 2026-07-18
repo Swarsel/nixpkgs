@@ -2,7 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
+  curl,
   docbook_xml_dtd_42,
   docbook_xsl,
   fontconfig,
@@ -16,28 +16,17 @@
   gtk3,
   json-glib,
   libarchive,
-  curl,
   libuuid,
   libxslt,
   meson,
   ninja,
   pkg-config,
   pngquant,
+  replaceVars,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "appstream-glib";
   version = "0.8.3";
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
-    "installedTests"
-  ];
-  outputBin = "dev";
 
   src = fetchFromGitHub {
     owner = "hughsie";
@@ -45,6 +34,21 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "appstream_glib_${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}";
     hash = "sha256-GjXrYV+EBduhG88LaxQWICKuUDJeeotcZgqgaG0/dqo=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "man"
+    "installedTests"
+  ];
+
+  patches = [
+    (replaceVars ./paths.patch {
+      pngquant = "${pngquant}/bin/pngquant";
+    })
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     docbook_xml_dtd_42
@@ -76,12 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     gdk-pixbuf
   ];
 
-  patches = [
-    (replaceVars ./paths.patch {
-      pngquant = "${pngquant}/bin/pngquant";
-    })
-  ];
-
   mesonFlags = [
     "-Drpm=false"
     "-Ddep11=false"
@@ -93,12 +91,15 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/installed-tests" "$installedTests"
   '';
 
+  __structuredAttrs = true;
+  outputBin = "dev";
+
   meta = {
-    changelog = "https://github.com/hughsie/appstream-glib/blob/${finalAttrs.src.tag}/NEWS";
     description = "Objects and helper methods to read and write AppStream metadata";
     homepage = "https://people.freedesktop.org/~hughsient/appstream-glib/";
+    changelog = "https://github.com/hughsie/appstream-glib/blob/${finalAttrs.src.tag}/NEWS";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

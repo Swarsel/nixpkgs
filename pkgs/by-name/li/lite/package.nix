@@ -4,9 +4,9 @@
   fetchFromGitHub,
   SDL2,
   lua52Packages,
-  pkg-config,
   makeWrapper,
   openlibm,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0wxqfb4ly8g7w5qph76xys95b55ackkags8jgd1nasmiyi8gcd5a";
   };
 
+  postPatch = ''
+    # use system Lua 5.2
+    rm -rf src/lib/lua52
+    substituteInPlace src/api/api.h \
+      --replace '"lib/lua52/lua.h"' '<lua.h>' \
+      --replace '"lib/lua52/lauxlib.h"' '<lauxlib.h>' \
+      --replace '"lib/lua52/lualib.h"' '<lualib.h>'
+  '';
+
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -30,15 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     lua52Packages.lua
     openlibm
   ];
-
-  postPatch = ''
-    # use system Lua 5.2
-    rm -rf src/lib/lua52
-    substituteInPlace src/api/api.h \
-      --replace '"lib/lua52/lua.h"' '<lua.h>' \
-      --replace '"lib/lua52/lauxlib.h"' '<lauxlib.h>' \
-      --replace '"lib/lua52/lualib.h"' '<lualib.h>'
-  '';
 
   buildPhase = ''
     # extracted and adapted from build.sh

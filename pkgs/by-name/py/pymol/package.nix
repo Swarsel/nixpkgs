@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  makeDesktopItem,
   cmake,
-  python3Packages,
-  netcdf,
+  fetchpatch,
+  freetype,
   glew,
   glm,
   libpng,
   libxml2,
-  freetype,
+  makeDesktopItem,
   mmtf-cpp,
   msgpack-cxx,
+  netcdf,
+  python3Packages,
   qt5,
 }:
 let
@@ -21,12 +21,19 @@ let
   description = "Python-enhanced molecular graphics tool";
 
   desktopItem = makeDesktopItem {
-    name = pname;
-    exec = pname;
-    desktopName = "PyMol Molecular Graphics System";
-    genericName = "Molecular Modeler";
+    categories = [
+      "Graphics"
+      "Education"
+      "Science"
+      "Chemistry"
+    ];
+
     comment = description;
+    desktopName = "PyMol Molecular Graphics System";
+    exec = pname;
+    genericName = "Molecular Modeler";
     icon = pname;
+
     mimeTypes = [
       "chemical/x-pdb"
       "chemical/x-mdl-molfile"
@@ -36,18 +43,13 @@ let
       "chemical/x-xyz"
       "chemical/x-mdl-sdf"
     ];
-    categories = [
-      "Graphics"
-      "Education"
-      "Science"
-      "Chemistry"
-    ];
+
+    name = pname;
   };
 in
 python3Packages.buildPythonApplication rec {
   inherit pname;
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "schrodinger";
@@ -63,17 +65,17 @@ python3Packages.buildPythonApplication rec {
 
     # Fix python3.13 and numpy 2 compatibility
     (fetchpatch {
-      url = "https://github.com/schrodinger/pymol-open-source/commit/fef4a026425d195185e84d46ab88b2bbd6d96cf8.patch";
       hash = "sha256-F/5UcYwgHgcMQ+zeigedc1rr3WkN9rhxAxH+gQfWKIY=";
+      url = "https://github.com/schrodinger/pymol-open-source/commit/fef4a026425d195185e84d46ab88b2bbd6d96cf8.patch";
     })
     (fetchpatch {
-      url = "https://github.com/schrodinger/pymol-open-source/commit/97cc1797695ee0850621762491e93dc611b04165.patch";
       hash = "sha256-H2PsRFn7brYTtLff/iMvJbZ+RZr7GYElMSINa4RDYdA=";
+      url = "https://github.com/schrodinger/pymol-open-source/commit/97cc1797695ee0850621762491e93dc611b04165.patch";
     })
     # Fixes failing test testLoadPWG
     (fetchpatch {
-      url = "https://github.com/schrodinger/pymol-open-source/commit/17c6cbd96d52e9692fd298daec6c9bda273a8aad.patch";
       hash = "sha256-dcYRzUhiaGlR3CjQ0BktA5L+8lFyVdw0+hIz3Li7gDQ=";
+      url = "https://github.com/schrodinger/pymol-open-source/commit/17c6cbd96d52e9692fd298daec6c9bda273a8aad.patch";
     })
   ];
 
@@ -84,10 +86,6 @@ python3Packages.buildPythonApplication rec {
     substituteInPlace pyproject.toml \
       --replace-fail '"cmake>=3.13.3",' ""
   '';
-
-  env.PREFIX_PATH = lib.optionalString (!stdenv.hostPlatform.isDarwin) "${msgpack-cxx}";
-  build-system = [ python3Packages.setuptools ];
-  dontUseCmakeConfigure = true;
 
   nativeBuildInputs = [
     cmake
@@ -108,12 +106,21 @@ python3Packages.buildPythonApplication rec {
     msgpack-cxx
   ];
 
-  dependencies = with python3Packages; [
-    numpy
-    pyqt5
+  env.NIX_CFLAGS_COMPILE = "-I ${libxml2.dev}/include/libxml2";
+  env.PREFIX_PATH = lib.optionalString (!stdenv.hostPlatform.isDarwin) "${msgpack-cxx}";
+  # some tests hang for some reason
+  doCheck = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
+
+  nativeCheckInputs = with python3Packages; [
+    python3Packages.msgpack
+    pillow
+    pytestCheckHook
+    requests
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-I ${libxml2.dev}/include/libxml2";
+  preCheck = ''
+    cd testing
+  '';
 
   postInstall =
     with python3Packages;
@@ -133,17 +140,17 @@ python3Packages.buildPythonApplication rec {
       cp -r "${desktopItem}/share/applications/" "$out/share/"
     '';
 
-  pythonImportsCheck = [ "pymol" ];
+  preFixup = ''
+    wrapQtApp "$out/bin/pymol"
+  '';
 
-  nativeCheckInputs = with python3Packages; [
-    python3Packages.msgpack
-    pillow
-    pytestCheckHook
-    requests
+  __darwinAllowLocalNetworking = true;
+  build-system = [ python3Packages.setuptools ];
+
+  dependencies = with python3Packages; [
+    numpy
+    pyqt5
   ];
-
-  # some tests hang for some reason
-  doCheck = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
 
   disabledTestPaths = [
     # require biopython which is broken as of 2024-04-20
@@ -166,24 +173,20 @@ python3Packages.buildPythonApplication rec {
     "testSave_symmetry__mmtf"
   ];
 
-  preCheck = ''
-    cd testing
-  '';
-
-  __darwinAllowLocalNetworking = true;
-
-  preFixup = ''
-    wrapQtApp "$out/bin/pymol"
-  '';
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "pymol" ];
 
   meta = {
     inherit description;
-    mainProgram = "pymol";
     homepage = "https://www.pymol.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       natsukium
       samlich
     ];
+
+    mainProgram = "pymol";
   };
 }

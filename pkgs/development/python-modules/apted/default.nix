@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unittestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "apted";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JoaoFelipe";
@@ -18,9 +17,10 @@ buildPythonPackage {
     hash = "sha256-h8vJDC5TPpyhDxm1sHiXPegPB2eorEgyrNqzQOzSge8=";
   };
 
-  build-system = [ setuptools ];
-  pythonImportsCheck = [ "apted" ];
   nativeCheckInputs = [ unittestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "apted" ];
 
   meta = {
     description = "APTED algorithm for the Tree Edit Distance";

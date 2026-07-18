@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
   xmltodict,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "aioeagle";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-ZO5uODCGebggItsEVKtis0uwU67dmSxc7DHzzkBZ9oQ=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     xmltodict
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aioeagle" ];
 
   meta = {

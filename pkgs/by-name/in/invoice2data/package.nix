@@ -12,7 +12,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "invoice2data";
   version = "0.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "invoice-x";
@@ -24,11 +23,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   patches = [
     # https://github.com/invoice-x/invoice2data/pull/522
     (fetchpatch {
+      hash = "sha256-BhqPW4hWG/EaR3qBv5a68dcvIMrCCT74GdDHr0Mss5Q=";
       name = "clean-up-build-dependencies.patch";
       url = "https://github.com/invoice-x/invoice2data/commit/ccea3857c7c8295ca51dc24de6cde78774ea7e64.patch";
-      hash = "sha256-BhqPW4hWG/EaR3qBv5a68dcvIMrCCT74GdDHr0Mss5Q=";
     })
   ];
+
+  # Tests fails even when ran manually on my ubuntu machine !!
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -55,8 +57,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ])
   ];
 
-  # Tests fails even when ran manually on my ubuntu machine !!
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "invoice2data"
@@ -64,9 +65,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Data extractor for PDF invoices";
-    mainProgram = "invoice2data";
     homepage = "https://github.com/invoice-x/invoice2data";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ psyanticy ];
+    mainProgram = "invoice2data";
   };
 })

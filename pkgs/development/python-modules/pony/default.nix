@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pythonAtLeast,
   setuptools,
@@ -10,9 +10,6 @@
 buildPythonPackage rec {
   pname = "pony";
   version = "0.7.19";
-  pyproject = true;
-
-  disabled = pythonAtLeast "3.13";
 
   src = fetchFromGitHub {
     owner = "ponyorm";
@@ -21,9 +18,9 @@ buildPythonPackage rec {
     hash = "sha256-fYzwdHRB9QrIJPEk8dqtPggSnJeugDyC9zQSM6u3rN0=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  disabled = pythonAtLeast "3.13";
 
   disabledTests = [
     # Tests are outdated
@@ -38,6 +35,7 @@ buildPythonPackage rec {
     "test_query"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pony" ];
 
   meta = {
@@ -45,6 +43,7 @@ buildPythonPackage rec {
     homepage = "https://ponyorm.org/";
     changelog = "https://github.com/ponyorm/pony/releases/tag/v${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       d-goldin
       xvapx

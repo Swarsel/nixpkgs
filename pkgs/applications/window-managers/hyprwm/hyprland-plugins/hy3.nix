@@ -1,13 +1,12 @@
 {
   lib,
-  cmake,
   fetchFromGitHub,
+  cmake,
   hyprland,
   mkHyprlandPlugin,
   nix-update-script,
 }:
 mkHyprlandPlugin (finalAttrs: {
-  pluginName = "hy3";
   version = "0.55.0";
 
   src = fetchFromGitHub {
@@ -18,8 +17,8 @@ mkHyprlandPlugin (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   dontStrip = true;
+  pluginName = "hy3";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -29,10 +28,11 @@ mkHyprlandPlugin (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/outfoxxed/hy3";
-    description = "Hyprland plugin for an i3 / sway like manual tiling layout";
-    license = lib.licenses.gpl3;
     inherit (hyprland.meta) platforms;
+    description = "Hyprland plugin for an i3 / sway like manual tiling layout";
+    homepage = "https://github.com/outfoxxed/hy3";
+    license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       aacebedo
       johnrtitor

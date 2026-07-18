@@ -1,17 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
+  # tests
+  dm-env,
   etils,
   flask,
   flask-cors,
   flax,
+  gym,
+  # build-system
+  hatchling,
   jax,
   jaxlib,
   jaxopt,
@@ -23,23 +24,17 @@
   optax,
   orbax-checkpoint,
   pillow,
+  pytest-xdist,
+  pytestCheckHook,
   scipy,
   tensorboardx,
-  typing-extensions,
-
-  # tests
-  dm-env,
-  gym,
-  pytestCheckHook,
-  pytest-xdist,
   transforms3d,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "brax";
   version = "0.14.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "google";
@@ -70,6 +65,16 @@ buildPythonPackage (finalAttrs: {
           "mujoco.mj_fullM(model, mj_next, mj_mass_mx)"
     '';
 
+  nativeCheckInputs = [
+    dm-env
+    gym
+    pytestCheckHook
+    pytest-xdist
+    transforms3d
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     hatchling
   ];
@@ -96,12 +101,9 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    dm-env
-    gym
-    pytestCheckHook
-    pytest-xdist
-    transforms3d
+  disabledTestPaths = [
+    # ValueError: matmul: Input operand 1 has a mismatch in its core dimension
+    "brax/generalized/constraint_test.py"
   ];
 
   disabledTests = [
@@ -125,11 +127,7 @@ buildPythonPackage (finalAttrs: {
     "test_save_and_load_checkpoint"
   ];
 
-  disabledTestPaths = [
-    # ValueError: matmul: Input operand 1 has a mismatch in its core dimension
-    "brax/generalized/constraint_test.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "brax" ];
 
   meta = {

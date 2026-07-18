@@ -18,11 +18,10 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-/vLR7XZWzzj35rXLj7EJ3H3WP0RX3qBqIn/PlkM/j/k=";
-
-  subPackages = [ "./cmd/versitygw" ];
-
   # Require access to online S3 services
   doCheck = false;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   # Needed for "versitygw --version" to not show placeholders
   ldflags = [
@@ -31,10 +30,7 @@ buildGoModule (finalAttrs: {
     "-X main.Version=v${finalAttrs.version}"
   ];
 
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  subPackages = [ "./cmd/versitygw" ];
   versionCheckProgramArg = "--version";
 
   passthru = {

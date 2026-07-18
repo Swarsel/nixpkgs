@@ -1,34 +1,38 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   buildMozillaMach,
   callPackage,
-  fetchurl,
-  fetchpatch2,
   config,
+  fetchpatch2,
 }:
 
 let
   common =
     {
-      version,
       sha512,
       updateScript,
+      version,
       applicationName ? "Thunderbird",
     }:
     (buildMozillaMach rec {
-      pname = "thunderbird";
       inherit version updateScript applicationName;
+      pname = "thunderbird";
+
+      src = fetchurl {
+        inherit sha512;
+        url = "mirror://mozilla/thunderbird/releases/${version}/source/thunderbird-${version}.source.tar.xz";
+      };
+
       application = "comm/mail";
       binaryName = "thunderbird";
-      src = fetchurl {
-        url = "mirror://mozilla/thunderbird/releases/${version}/source/thunderbird-${version}.source.tar.xz";
-        inherit sha512;
-      };
+
       extraPatches = [
         # The file to be patched is different from firefox's `no-buildconfig-ffx90.patch`.
         (if lib.versionOlder version "140" then ./no-buildconfig.patch else ./no-buildconfig-tb140.patch)
       ];
+
       # FIXME: let's hope that upstream will fix this soon and we can drop this hack again.
       # https://bugzilla.mozilla.org/show_bug.cgi?id=2040877
       extraPostPatch =
@@ -42,30 +46,31 @@ let
         '';
 
       meta = {
-        changelog = "https://www.thunderbird.net/en-US/thunderbird/${version}/releasenotes/";
         description = "Full-featured e-mail client";
         homepage = "https://www.thunderbird.net/";
-        donationPage = "https://www.thunderbird.net/donate/";
-        mainProgram = "thunderbird";
+        changelog = "https://www.thunderbird.net/en-US/thunderbird/${version}/releasenotes/";
+        # since Firefox 60, build on 32-bit platforms fails with "out of memory".
+        # not in `badPlatforms` because cross-compilation on 64-bit machine might work.
+        license = lib.licenses.mpl20;
+
         maintainers = with lib.maintainers; [
           booxter # darwin
           lovesegfault
           pierron
           vcunat
         ];
+
         platforms = lib.platforms.unix;
+        mainProgram = "thunderbird";
         broken = stdenv.buildPlatform.is32bit;
-        # since Firefox 60, build on 32-bit platforms fails with "out of memory".
-        # not in `badPlatforms` because cross-compilation on 64-bit machine might work.
-        license = lib.licenses.mpl20;
+        donationPage = "https://www.thunderbird.net/donate/";
       };
     }).override
       (
         {
           geolocationSupport = false;
-          webrtcSupport = false;
-
           pgoSupport = false; # console.warn: feeds: "downloadFeed: network connection unavailable"
+          webrtcSupport = false;
         }
         // lib.optionalAttrs (lib.versionAtLeast version "149") {
           # https://bugzilla.mozilla.org/show_bug.cgi?id=2025767
@@ -77,28 +82,27 @@ in
 rec {
   thunderbird = thunderbird-latest;
 
-  thunderbird-latest = common {
-    version = "152.0.1";
-    sha512 = "f66c87de4dd73c3c45e420a55d76c3cb6ac091a61794ccf58ba59d1a40cf8001dee19a6a7f4c6bef7d36ea94ed4e4f677449d3006b2004abbd3fab42ad1c9228";
-
-    updateScript = callPackage ./update.nix {
-      attrPath = "thunderbirdPackages.thunderbird-latest";
-    };
-  };
-
-  # Eventually, switch to an updateScript without versionPrefix hardcoded...
-  thunderbird-esr = thunderbird-140;
-
   thunderbird-140 = common {
-    applicationName = "Thunderbird ESR";
-
     version = "140.12.1esr";
+    applicationName = "Thunderbird ESR";
     sha512 = "24e795483ba7bc112c0debe1becdaf79cc2de95703b9ee726d0216bfc1db7b33c169503f83ac867e5998a8d1d0284a6ef12c7d35d98b10d6432497c2db237477";
 
     updateScript = callPackage ./update.nix {
       attrPath = "thunderbirdPackages.thunderbird-140";
       versionPrefix = "140";
       versionSuffix = "esr";
+    };
+  };
+
+  # Eventually, switch to an updateScript without versionPrefix hardcoded...
+  thunderbird-esr = thunderbird-140;
+
+  thunderbird-latest = common {
+    version = "152.0.1";
+    sha512 = "f66c87de4dd73c3c45e420a55d76c3cb6ac091a61794ccf58ba59d1a40cf8001dee19a6a7f4c6bef7d36ea94ed4e4f677449d3006b2004abbd3fab42ad1c9228";
+
+    updateScript = callPackage ./update.nix {
+      attrPath = "thunderbirdPackages.thunderbird-latest";
     };
   };
 }

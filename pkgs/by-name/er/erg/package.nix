@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   makeWrapper,
   python3,
+  rustPlatform,
   which,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,7 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-VPekgbD5vQ6JsyGT4WKayl1eB9SWGemf02rXpkP6fcU=";
   };
 
-  cargoHash = "sha256-xRav27+T8iy7MrqtzTf1Fvxqi2pwR9E7jv5bmXfC5Cs=";
+  # the build script is impure and also assumes we are in a git repository
+  postPatch = ''
+    rm crates/erg_common/build.rs
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -27,7 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     which
   ];
 
-  buildFeatures = [ "full" ];
+  cargoHash = "sha256-xRav27+T8iy7MrqtzTf1Fvxqi2pwR9E7jv5bmXfC5Cs=";
 
   env = {
     BUILD_DATE = "1970/01/01 00:00:00";
@@ -35,18 +38,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     GIT_HASH_SHORT = finalAttrs.src.rev;
   };
 
-  # TODO(figsoda): fix tests
-  doCheck = false;
-
-  # the build script is impure and also assumes we are in a git repository
-  postPatch = ''
-    rm crates/erg_common/build.rs
-  '';
-
   preBuild = ''
     export HOME=$(mktemp -d)
     export CARGO_ERG_PATH=$HOME/.erg
   '';
+
+  # TODO(figsoda): fix tests
+  doCheck = false;
 
   postInstall = ''
     mkdir -p $out/share
@@ -56,15 +54,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --set-default ERG_PATH $out/share/erg
   '';
 
+  buildFeatures = [ "full" ];
+
   meta = {
     description = "Statically typed language that can deeply improve the Python ecosystem";
-    mainProgram = "erg";
     homepage = "https://github.com/erg-lang/erg";
     changelog = "https://github.com/erg-lang/erg/releases/tag/${finalAttrs.src.rev}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ ];
+    mainProgram = "erg";
   };
 })

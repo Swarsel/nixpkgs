@@ -35,13 +35,14 @@ stdenv.mkDerivation (finalAttrs: {
     make vm image libscheme48 script-interpreter go
     runHook postBuild
   '';
+
   installTargets = "install-no-doc";
 
   meta = {
-    homepage = "https://s48.org/";
     description = "Scheme 48 interpreter for R5RS";
-    platforms = lib.platforms.unix;
+    homepage = "https://s48.org/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.siraben ];
+    platforms = lib.platforms.unix;
   };
 })

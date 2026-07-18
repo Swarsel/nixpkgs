@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   autoAddDriverRunpath,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -17,12 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-PIe4oJndISf6wDxHGQvTeN37cFa+3m6RwmxXRlseePc=";
   };
 
-  cargoHash = "sha256-e6cX9P5dHDOLS06Bx1VuMpH/ilcpyFnHpttG7DDwz8U=";
-
   nativeBuildInputs = [
     autoAddDriverRunpath
   ];
 
+  cargoHash = "sha256-e6cX9P5dHDOLS06Bx1VuMpH/ilcpyFnHpttG7DDwz8U=";
   doInstallCheck = true;
 
   nativeInstallCheckInputs = [

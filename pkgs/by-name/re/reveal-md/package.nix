@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -21,8 +21,6 @@ buildNpmPackage rec {
     PUPPETEER_SKIP_DOWNLOAD = true;
   };
 
-  dontNpmBuild = true;
-
   doCheck = true;
 
   checkPhase = ''
@@ -33,11 +31,13 @@ buildNpmPackage rec {
     runHook postCheck
   '';
 
+  dontNpmBuild = true;
+
   meta = {
     description = "Get beautiful reveal.js presentations from your Markdown files";
-    mainProgram = "reveal-md";
     homepage = "https://github.com/webpro/reveal-md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sagikazarmark ];
+    mainProgram = "reveal-md";
   };
 }

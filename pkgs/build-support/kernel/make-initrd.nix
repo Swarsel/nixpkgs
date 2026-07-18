@@ -18,17 +18,17 @@ let
   compressorName = fullCommand: builtins.elemAt (builtins.match "([^ ]*/)?([^ ]+).*" fullCommand) 1;
 in
 {
-  stdenvNoCC,
-  cpio,
   lib,
+  # List of { object = path_or_derivation; symlink = "/path"; }
+  # The paths are copied into the initramfs in their nix store path
+  # form, then linked at the root according to `symlink`.
+  contents,
+  cpio,
   pkgsBuildHost,
-  # Name of the derivation (not of the resulting file!)
-  name ? "initrd",
-
-  # Program used to compress the cpio archive; use "cat" for no compression.
-  # This can also be a function which takes a package set and returns the path to the compressor,
-  # such as `pkgs: "${pkgs.lzop}/bin/lzop"`.
-  compressor ? "gzip",
+  stdenvNoCC,
+  _compressorArgsReal ?
+    if compressorArgs == null then _compressorMeta.defaultArgs or [ ] else compressorArgs,
+  _compressorExecutable ? _compressorFunction pkgsBuildHost,
   _compressorFunction ?
     if lib.isFunction compressor then
       compressor
@@ -36,15 +36,14 @@ in
       compressors.${compressor}.executable
     else
       _: compressor,
-  _compressorExecutable ? _compressorFunction pkgsBuildHost,
-  _compressorName ? compressorName _compressorExecutable,
   _compressorMeta ? compressors.${_compressorName} or { },
-
+  _compressorName ? compressorName _compressorExecutable,
+  # Program used to compress the cpio archive; use "cat" for no compression.
+  # This can also be a function which takes a package set and returns the path to the compressor,
+  # such as `pkgs: "${pkgs.lzop}/bin/lzop"`.
+  compressor ? "gzip",
   # List of arguments to pass to the compressor program, or null to use its defaults
   compressorArgs ? null,
-  _compressorArgsReal ?
-    if compressorArgs == null then _compressorMeta.defaultArgs or [ ] else compressorArgs,
-
   # Filename extension to use for the compressed initramfs. This is
   # included for clarity, but $out/initrd will always be a symlink to
   # the final image.
@@ -52,58 +51,48 @@ in
   extension ?
     _compressorMeta.extension
       or (throw "Unrecognised compressor ${_compressorName}, please specify filename extension"),
-
-  # List of { object = path_or_derivation; symlink = "/path"; }
-  # The paths are copied into the initramfs in their nix store path
-  # form, then linked at the root according to `symlink`.
-  contents,
-
+  # Deprecated; remove in 27.05.
+  makeUInitrd ? null,
+  # Name of the derivation (not of the resulting file!)
+  name ? "initrd",
   # List of uncompressed cpio files to prepend to the initramfs. This
   # can be used to add files in specified paths without them becoming
   # symlinks to store paths.
   prepend ? [ ],
-
-  # Deprecated; remove in 27.05.
-  makeUInitrd ? null,
   uInitrdArch ? null,
   uInitrdCompression ? null,
 }:
 assert lib.assertMsg (makeUInitrd == null && uInitrdArch == null && uInitrdCompression == null)
   "makeInitrd: U‐Boot legacy image support has been removed as it is deprecated upstream and ARMv5 kernels no longer default to uImage";
 stdenvNoCC.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-
-  # the initrd will be self-contained so we can drop references
-  # to the closure that was used to build it
-  unsafeDiscardReferences.out = true;
-
   inherit
     name
     extension
     prepend
     ;
 
-  builder = ./make-initrd.sh;
-
   nativeBuildInputs = [
     cpio
   ];
 
+  __structuredAttrs = true;
+  builder = ./make-initrd.sh;
+  closureInfo = "${pkgsBuildHost.closureInfo { rootPaths = finalAttrs.objects; }}";
   compress = "${_compressorExecutable} ${lib.escapeShellArgs _compressorArgsReal}";
-
   # !!! should use XML.
   objects = map (x: x.object) contents;
-  symlinks = map (x: x.symlink) contents;
   suffices = map (x: if x ? suffix then x.suffix else "none") contents;
-
-  closureInfo = "${pkgsBuildHost.closureInfo { rootPaths = finalAttrs.objects; }}";
+  symlinks = map (x: x.symlink) contents;
+  # the initrd will be self-contained so we can drop references
+  # to the closure that was used to build it
+  unsafeDiscardReferences.out = true;
 
   # Pass the function through, for reuse in append-initrd-secrets. The
   # function is used instead of the string, in order to support
   # cross-compilation (append-initrd-secrets running on a different
   # architecture than what the main initramfs is built on).
   passthru = {
-    compressorExecutableFunction = _compressorFunction;
     compressorArgs = _compressorArgsReal;
+    compressorExecutableFunction = _compressorFunction;
   };
 })

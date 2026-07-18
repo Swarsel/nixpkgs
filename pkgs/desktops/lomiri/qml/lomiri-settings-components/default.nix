@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
   cmake,
   cmake-extras,
+  gitUpdater,
   pkg-config,
   python3,
   qtbase,
@@ -47,15 +47,14 @@ stdenv.mkDerivation (finalAttrs: {
     qtdeclarative
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     python3
   ];
 
   # No apps, just QML components
   dontWrapQtApps = true;
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
@@ -63,7 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/lomiri-settings-components";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-settings-components/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.lomiri ];
   };
 })

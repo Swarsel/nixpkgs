@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
-  which,
-  libavif,
-  libjxl,
-  librsvg,
-  libxslt,
-  libxml2,
   docbook_xml_dtd_412,
   docbook_xsl,
   glib,
+  installShellFiles,
+  libavif,
+  libjxl,
+  librsvg,
+  libtool,
+  libxml2,
+  libxslt,
+  pkg-config,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.18.2";
   pname = "chafa";
+  version = "1.18.2";
 
   src = fetchFromGitHub {
     owner = "hpjansson";
@@ -35,6 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "out"
   ];
+
+  patches = [ ./xmlcatalog_patch.patch ];
 
   nativeBuildInputs = [
     autoconf
@@ -56,17 +58,15 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  patches = [ ./xmlcatalog_patch.patch ];
+  configureFlags = [
+    "--enable-man"
+    "--with-xml-catalog=${docbook_xml_dtd_412}/xml/dtd/docbook/catalog.xml"
+  ];
 
   preConfigure = ''
     substituteInPlace ./autogen.sh --replace pkg-config '$PKG_CONFIG'
     NOCONFIGURE=1 ./autogen.sh
   '';
-
-  configureFlags = [
-    "--enable-man"
-    "--with-xml-catalog=${docbook_xml_dtd_412}/xml/dtd/docbook/catalog.xml"
-  ];
 
   postInstall = ''
     installShellCompletion --cmd chafa \
@@ -78,11 +78,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Terminal graphics for the 21st century";
     homepage = "https://hpjansson.org/chafa/";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       mog
       prince213
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "chafa";
   };
 })

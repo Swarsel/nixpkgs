@@ -1,28 +1,28 @@
 {
-  rustcVersion,
-  rustcSha256,
-  enableRustcDev ? true,
-  bootstrapVersion,
   bootstrapHashes,
-  selectRustPackage,
-  rustcPatches ? [ ],
+  bootstrapVersion,
+  cargo-auditable,
+  llvmPackages, # Exposed through rustc for LTO in Firefox
   llvmShared,
   llvmSharedForBuild,
   llvmSharedForHost,
   llvmSharedForTarget,
-  llvmPackages, # Exposed through rustc for LTO in Firefox
-  cargo-auditable,
+  rustcSha256,
+  rustcVersion,
+  selectRustPackage,
+  enableRustcDev ? true,
+  rustcPatches ? [ ],
 }:
 {
-  stdenv,
   lib,
-  newScope,
+  stdenv,
   callPackage,
+  makeRustPlatform,
+  newScope,
   pkgsBuildBuild,
   pkgsBuildHost,
   pkgsBuildTarget,
   pkgsTargetTarget,
-  makeRustPlatform,
   wrapRustcWith,
 }:
 
@@ -42,8 +42,6 @@ let
     (stdenv.buildPlatform == stdenv.hostPlatform) && (stdenv.hostPlatform != stdenv.targetPlatform);
 in
 {
-  lib = lib';
-
   # Backwards compat before `lib` was factored out.
   inherit (lib')
     toTargetArch
@@ -54,6 +52,8 @@ in
     toRustTargetForUseInEnvVars
     envVars
     ;
+
+  lib = lib';
 
   # This just contains tools for now. But it would conceivably contain
   # libraries too, say if we picked some default/recommended versions to build
@@ -71,6 +71,7 @@ in
       version = bootstrapVersion;
       hashes = bootstrapHashes;
     };
+
     stable = lib.makeScope newScope (
       self:
       let
@@ -89,14 +90,33 @@ in
         bootRustPlatform = makeRustPlatform bootstrapRustPackages;
       in
       {
+        inherit cargo-auditable;
         # Packages suitable for build-time, e.g. `build.rs`-type stuff.
         buildRustPackages = (selectRustPackage pkgsBuildHost).packages.stable;
+
+        cargo =
+          if (!fastCross) then
+            self.callPackage ./cargo.nix {
+              # Use boot package set to break cycle
+              rustPlatform = bootRustPlatform;
+            }
+          else
+            self.callPackage ./cargo_cross.nix { };
+
+        cargo-auditable-cargo-wrapper = self.callPackage ./cargo-auditable-cargo-wrapper.nix { };
+        clippy = if !fastCross then self.clippy-unwrapped else self.callPackage ./clippy-wrapper.nix { };
+        clippy-unwrapped = self.callPackage ./clippy.nix { };
         # Analogous to stdenv
         rustPlatform = makeRustPlatform self.buildRustPackages;
+
+        rustc = wrapRustcWith {
+          inherit (self) rustc-unwrapped;
+          sysroot = if fastCross then self.rustc-unwrapped else null;
+        };
+
         rustc-unwrapped = self.callPackage ./rustc.nix {
-          version = rustcVersion;
-          sha256 = rustcSha256;
           inherit enableRustcDev;
+
           inherit
             llvmShared
             llvmSharedForBuild
@@ -106,30 +126,16 @@ in
             fastCross
             ;
 
-          patches = rustcPatches;
-
           # Use boot package set to break cycle
           inherit (bootstrapRustPackages) cargo rustc rustfmt;
+          version = rustcVersion;
+          patches = rustcPatches;
+          sha256 = rustcSha256;
         };
-        rustc = wrapRustcWith {
-          inherit (self) rustc-unwrapped;
-          sysroot = if fastCross then self.rustc-unwrapped else null;
-        };
+
         rustfmt = self.callPackage ./rustfmt.nix {
           inherit (self.buildRustPackages) rustc;
         };
-        cargo =
-          if (!fastCross) then
-            self.callPackage ./cargo.nix {
-              # Use boot package set to break cycle
-              rustPlatform = bootRustPlatform;
-            }
-          else
-            self.callPackage ./cargo_cross.nix { };
-        inherit cargo-auditable;
-        cargo-auditable-cargo-wrapper = self.callPackage ./cargo-auditable-cargo-wrapper.nix { };
-        clippy-unwrapped = self.callPackage ./clippy.nix { };
-        clippy = if !fastCross then self.clippy-unwrapped else self.callPackage ./clippy-wrapper.nix { };
       }
     );
   };

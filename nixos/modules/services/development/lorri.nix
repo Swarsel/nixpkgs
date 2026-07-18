@@ -14,37 +14,39 @@ in
     services.lorri = {
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Enables the daemon for `lorri`, a nix-shell replacement for project
           development. The socket-activated daemon starts on the first request
           issued by the `lorri` command.
         '';
+
+        type = lib.types.bool;
       };
+
       package = lib.mkPackageOption pkgs "lorri" { };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.user.sockets.lorri = {
-      description = "Socket for Lorri Daemon";
-      wantedBy = [ "sockets.target" ];
-      socketConfig = {
-        ListenStream = "%t/${socketPath}";
-        RuntimeDirectory = "lorri";
-      };
-    };
+    environment.systemPackages = [
+      cfg.package
+      pkgs.direnv
+    ];
 
     systemd.user.services.lorri = {
-      description = "Lorri Daemon";
-      requires = [ "lorri.socket" ];
       after = [ "lorri.socket" ];
+      description = "Lorri Daemon";
+
       path = with pkgs; [
         config.nix.package
         git
         gnutar
         gzip
       ];
+
+      requires = [ "lorri.socket" ];
+
       serviceConfig = {
         ExecStart = "${cfg.package}/bin/lorri daemon";
         PrivateTmp = true;
@@ -53,9 +55,15 @@ in
       };
     };
 
-    environment.systemPackages = [
-      cfg.package
-      pkgs.direnv
-    ];
+    systemd.user.sockets.lorri = {
+      description = "Socket for Lorri Daemon";
+
+      socketConfig = {
+        ListenStream = "%t/${socketPath}";
+        RuntimeDirectory = "lorri";
+      };
+
+      wantedBy = [ "sockets.target" ];
+    };
   };
 }

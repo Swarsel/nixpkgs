@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   blas,
   cmake,
-  fetchFromGitHub,
   fetchpatch,
-  lib,
-  pythonSupport ? false,
   python3Packages,
-  stdenv,
+  pythonSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,9 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
     # update use of distutils
     # This PR was merged upstream, so the patch can be removed on next release
     (fetchpatch {
+      hash = "sha256-+6iiALFhMSiE44kpkDrhwrYt4miHlPkiffRZAgsM1Jo=";
       name = "python312-support.patch";
       url = "https://github.com/felixlen/trlib/pull/26/commits/6b72f3b2afebee4ae179bc760f93b16c60fd72d8.patch";
-      hash = "sha256-+6iiALFhMSiE44kpkDrhwrYt4miHlPkiffRZAgsM1Jo=";
     })
   ];
 
@@ -39,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     blas
   ]

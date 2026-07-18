@@ -2,16 +2,16 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  rustPlatform,
   cargo,
+  fetchpatch,
+  msgpack,
+  nixosTests,
+  openssl,
   pkg-config,
+  rustPlatform,
   rustc,
   rustfmt,
   setuptools-rust,
-  openssl,
-  msgpack,
-  fetchpatch,
-  nixosTests,
 }:
 
 buildPythonPackage rec {
@@ -29,23 +29,21 @@ buildPythonPackage rec {
   patches = [
     # fix python 3.12 build
     (fetchpatch {
-      url = "https://github.com/etesync/etebase-py/commit/898eb3aca1d4eb30d4aeae15e35d0bc45dd7b3c8.patch";
       hash = "sha256-0BDUTztiC4MiwwNEDFtfc5ruc69Qk+svepQZRixNJgA=";
+      url = "https://github.com/etesync/etebase-py/commit/898eb3aca1d4eb30d4aeae15e35d0bc45dd7b3c8.patch";
     })
     # replace flapigen git dependency in Cargo.lock
     (fetchpatch {
-      url = "https://github.com/etesync/etebase-py/commit/7e9e4244a144dd46383d8be950d3df79e28eb069.patch";
       hash = "sha256-8EH8Sc3UnmuCrSwDf3+as218HiG2Ed3r+FCMrUi5YrI=";
+      url = "https://github.com/etesync/etebase-py/commit/7e9e4244a144dd46383d8be950d3df79e28eb069.patch";
     })
   ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-tFOZJFrNge3N+ux2Hp4Mlm9K/AXYxuuBzEQdQYGGDjg=";
-    inherit patches;
-  };
-
-  pyproject = true;
+  postPatch = ''
+    # Use system OpenSSL, which gets security updates.
+    substituteInPlace Cargo.toml \
+      --replace ', features = ["vendored"]' ""
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -57,15 +55,15 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ openssl ];
-
   propagatedBuildInputs = [ msgpack ];
 
-  postPatch = ''
-    # Use system OpenSSL, which gets security updates.
-    substituteInPlace Cargo.toml \
-      --replace ', features = ["vendored"]' ""
-  '';
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    inherit patches;
+    hash = "sha256-tFOZJFrNge3N+ux2Hp4Mlm9K/AXYxuuBzEQdQYGGDjg=";
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "etebase" ];
 
   passthru.tests = {
@@ -73,8 +71,8 @@ buildPythonPackage rec {
   };
 
   meta = {
-    homepage = "https://www.etebase.com/";
     description = "Python client library for Etebase";
+    homepage = "https://www.etebase.com/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

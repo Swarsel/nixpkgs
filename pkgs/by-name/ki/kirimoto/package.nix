@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 
 let
@@ -30,12 +30,12 @@ appimageTools.wrapType2 rec {
   meta = {
     description = "Open source Slicer for CAM, Laser and 3D-printer";
     homepage = "https://grid.space/";
-    downloadPage = "https://grid.space/downloads.html";
     changelog = "https://grid.space/news";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ FlorisMenninga ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "kirimoto";
+    downloadPage = "https://grid.space/downloads.html";
   };
 }

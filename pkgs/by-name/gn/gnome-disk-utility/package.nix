@@ -75,11 +75,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/DiskUtility/";
     description = "Udisks graphical front-end";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://apps.gnome.org/DiskUtility/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     mainProgram = "gnome-disks";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pretix-plugin-build,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pretix-dbevent";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretix";
@@ -18,12 +17,14 @@ buildPythonPackage rec {
     hash = "sha256-1WUTunDeRh0+hPOF/uLcPmRlUlHAOhOqeoYQNYv0ZLI=";
   };
 
+  doCheck = false; # no tests
+
   build-system = [
     pretix-plugin-build
     setuptools
   ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   pythonImportsCheck = [
     "pretix_dbevent"
@@ -33,6 +34,7 @@ buildPythonPackage rec {
     description = "Advertise the DB Event Offers for discounted and sustainable train travel to your attendees";
     homepage = "https://github.com/pretix/pretix-dbevent";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       e1mo
       hexa

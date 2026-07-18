@@ -16,19 +16,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-leregcv3dv/D3WvFkYyjQePdKi4BgE0aj5PY6JiSKl8=";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-
   postPatch = ''
     substituteInPlace Makefile.am \
       --replace-fail "-Werror" "" \
       --replace-fail "bin_SCRIPTS" "#bin_SCRIPTS"
   '';
+
+  nativeBuildInputs = [ autoreconfHook ];
+
   meta = {
     description = "Extract e-mail messages from Outlook Express DBX files";
     homepage = "https://github.com/ZungBang/undbx";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl3Plus;
     mainProgram = "undbx";
   };
 })

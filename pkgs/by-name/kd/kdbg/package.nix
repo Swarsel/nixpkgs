@@ -3,13 +3,14 @@
   stdenv,
   fetchurl,
   cmake,
-  qt6,
   kdePackages,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "kdbg";
   version = "3.2.0";
+
   src = fetchurl {
     url = "mirror://sourceforge/kdbg/${finalAttrs.version}/kdbg-${finalAttrs.version}.tar.gz";
     hash = "sha256-GoWLKWD/nWXBTiTbDLxeNArDMyPI/gSzADqyOgxrNHE=";
@@ -20,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.extra-cmake-modules
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     qt6.qt5compat
     qt6.qtbase
@@ -41,13 +43,14 @@ stdenv.mkDerivation (finalAttrs: {
   dontWrapQtApps = true;
 
   meta = {
-    homepage = "https://www.kdbg.org/";
     description = ''
       A graphical user interface to gdb, the GNU debugger. It provides an
       intuitive interface for setting breakpoints, inspecting variables, and
       stepping through code.
     '';
-    mainProgram = "kdbg";
+
+    homepage = "https://www.kdbg.org/";
     license = lib.licenses.gpl2;
+    mainProgram = "kdbg";
   };
 })

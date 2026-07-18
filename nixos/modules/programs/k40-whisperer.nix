@@ -14,22 +14,22 @@ in
 {
   options.programs.k40-whisperer = {
     enable = lib.mkEnableOption "K40-Whisperer";
+    package = lib.mkPackageOption pkgs "k40-whisperer" { };
 
     group = lib.mkOption {
-      type = lib.types.str;
+      default = "k40";
+
       description = ''
         Group assigned to the device when connected.
       '';
-      default = "k40";
-    };
 
-    package = lib.mkPackageOption pkgs "k40-whisperer" { };
+      type = lib.types.str;
+    };
   };
 
   config = lib.mkIf cfg.enable {
-    users.groups.${cfg.group} = { };
-
     environment.systemPackages = [ pkg ];
     services.udev.packages = [ pkg ];
+    users.groups.${cfg.group} = { };
   };
 }

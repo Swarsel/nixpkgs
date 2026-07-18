@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "distutils-extra";
   version = "2.50";
-  format = "setuptools";
 
   src = fetchurl {
     url = "https://salsa.debian.org/python-team/modules/python-distutils-extra/-/archive/${version}/python-${pname}-${version}.tar.bz2";
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Tests are out-dated as the last upstream release is from 2016
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "DistUtilsExtra" ];
 
   meta = {

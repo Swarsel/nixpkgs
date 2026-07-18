@@ -1,21 +1,16 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   makeWrapper,
   nix-update-script,
   perl,
-  stdenv,
   testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "cowsay";
   version = "3.8.4";
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "cowsay-org";
@@ -24,10 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-m3Rndw0rnTBLhs15KqokzIOWuYl6aoPqEu2MHWpXRCs=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ perl ];
-
   makeFlags = [ "prefix=${placeholder "out"}" ];
 
   postInstall = ''
@@ -47,11 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "cowsay --version";
+      package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -59,11 +58,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://cowsay.diamonds";
     changelog = "https://github.com/cowsay-org/cowsay/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       rob
       anthonyroussel
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "cowsay";
   };
 })

@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "logzero";
   version = "1.7.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,13 +15,16 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytest ];
+
   checkPhase = ''
     pytest
   '';
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/metachris/logzero";
     description = "Robust and effective logging for Python 2 and 3";
+    homepage = "https://github.com/metachris/logzero";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jakewaksbaum ];
   };

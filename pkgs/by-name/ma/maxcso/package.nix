@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/unknownbrackets/maxcso";
     description = "Fast ISO to CSO compression program for use with PSP and PS2 emulators, which uses multiple algorithms for best compression ratio";
+    homepage = "https://github.com/unknownbrackets/maxcso";
+    license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ david-sawatzke ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    license = lib.licenses.isc;
     mainProgram = "maxcso";
   };
 })

@@ -1,17 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "gocode-gomod";
   version = "1.0.0";
-
-  # we must allow references to the original `go` package,
-  # because `gocode` needs to dig into $GOROOT to provide completions for the
-  # standard packages.
-  allowGoReference = true;
 
   src = fetchFromGitHub {
     owner = "stamblerre";
@@ -21,16 +16,20 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
+  doCheck = false; # fails on go 1.17
 
   postInstall = ''
     mv $out/bin/gocode $out/bin/gocode-gomod
   '';
 
-  doCheck = false; # fails on go 1.17
+  # we must allow references to the original `go` package,
+  # because `gocode` needs to dig into $GOROOT to provide completions for the
+  # standard packages.
+  allowGoReference = true;
 
   meta = {
     description = "Autocompletion daemon for the Go programming language";
-    mainProgram = "gocode-gomod";
+
     longDescription = ''
       Gocode is a helper tool which is intended to be integrated with your
       source code editor, like vim, neovim and emacs. It provides several
@@ -43,11 +42,15 @@ buildGoModule (finalAttrs: {
       Typical autocompletion time with warm cache is 30ms, which is barely
       noticeable.
     '';
+
     homepage = "https://github.com/stamblerre/gocode";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kalbasit
       rvolosatovs
     ];
+
+    mainProgram = "gocode-gomod";
   };
 })

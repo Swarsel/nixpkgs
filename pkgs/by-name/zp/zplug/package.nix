@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -16,9 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontPatch = true;
 
   installPhase = ''
     mkdir -p $out/share/zplug
@@ -27,12 +24,16 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r $src/doc/man/* $out/share/man/
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatch = true;
+
   meta = {
     description = "Next-generation plugin manager for zsh";
     homepage = "https://github.com/zplug/zplug";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.s1341 ];
-    mainProgram = "zplug-env";
     platforms = lib.platforms.all;
+    mainProgram = "zplug-env";
   };
 })

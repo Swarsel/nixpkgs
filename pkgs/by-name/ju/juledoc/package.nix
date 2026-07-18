@@ -1,8 +1,8 @@
 {
   lib,
-  julec,
-  clangStdenv,
   fetchFromGitHub,
+  clangStdenv,
+  julec,
 }:
 
 clangStdenv.mkDerivation (finalAttrs: {
@@ -17,14 +17,13 @@ clangStdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ julec.hook ];
-
   env.JULE_OUT_NAME = "juledoc";
 
   meta = {
+    inherit (julec.meta) platforms maintainers;
     description = "Official documentation generator for the Jule programming language";
     homepage = "https://manual.jule.dev/tools/juledoc";
     license = lib.licenses.bsd3;
     mainProgram = "juledoc";
-    inherit (julec.meta) platforms maintainers;
   };
 })

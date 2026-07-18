@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  patchelf,
-  makeWrapper,
-  libusb1,
   avahi-compat,
   glib,
   libredirect,
+  libusb1,
+  makeWrapper,
   nixosTests,
+  patchelf,
   udevCheckHook,
 }:
 let
@@ -23,36 +23,20 @@ in
 stdenv.mkDerivation rec {
   pname = "brscan5";
   version = "1.3.1-0";
+
   src =
     {
       "i686-linux" = fetchurl {
-        url = "https://download.brother.com/welcome/dlf104034/${pname}-${version}.i386.deb";
         hash = "sha256-BgS64vwsKESJBDz9H2MDwcGiresROSNFP1b+7+zlE5c=";
+        url = "https://download.brother.com/welcome/dlf104034/${pname}-${version}.i386.deb";
       };
+
       "x86_64-linux" = fetchurl {
-        url = "https://download.brother.com/welcome/dlf104033/${pname}-${version}.amd64.deb";
         hash = "sha256-0UMbXMBlyiZI90WG5FWEP2mIZEBsxXd11dtgtyuSDnY=";
+        url = "https://download.brother.com/welcome/dlf104033/${pname}-${version}.amd64.deb";
       };
     }
     ."${system}" or (throw "Unsupported system: ${system}");
-
-  unpackPhase = ''
-    ar x $src
-    tar xfv data.tar.xz
-  '';
-
-  nativeBuildInputs = [
-    makeWrapper
-    patchelf
-    udevCheckHook
-  ];
-  buildInputs = [
-    libusb1
-    avahi-compat
-    stdenv.cc.cc
-    glib
-  ];
-  dontBuild = true;
 
   postPatch =
     let
@@ -85,6 +69,19 @@ stdenv.mkDerivation rec {
       # remove deprecated SYSFS udev rule
       sed -i -e '/^SYSFS/d' opt/brother/scanner/brscan5/udev-rules/*.rules
     '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    patchelf
+    udevCheckHook
+  ];
+
+  buildInputs = [
+    libusb1
+    avahi-compat
+    stdenv.cc.cc
+    glib
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -128,20 +125,26 @@ stdenv.mkDerivation rec {
 
   # We want to run the udevCheckHook
   doInstallCheck = true;
-
+  dontBuild = true;
   dontPatchELF = true;
+
+  unpackPhase = ''
+    ar x $src
+    tar xfv data.tar.xz
+  '';
 
   passthru.tests = { inherit (nixosTests) brscan5; };
 
   meta = {
     description = "Brother brscan5 sane backend driver";
     homepage = "https://www.brother.com";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ mattchrist ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [ mattchrist ];
   };
 }

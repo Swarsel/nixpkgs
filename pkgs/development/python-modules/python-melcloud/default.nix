@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   mashumaro,
   orjson,
   poetry-core,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "python-melcloud";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "erwindouna";
@@ -30,7 +29,20 @@ buildPythonPackage rec {
       --replace-fail "poetry-core>=1.5,<2.0" poetry-core
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pymelcloud" ];
 
   pythonRemoveDeps = [
     "aioresponses"
@@ -39,22 +51,10 @@ buildPythonPackage rec {
     "yarl"
   ];
 
-  dependencies = [
-    aiohttp
-  ];
-
-  pythonImportsCheck = [ "pymelcloud" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/erwindouna/python-melcloud/blob/${src.tag}/CHANGELOG.md";
     description = "Asynchronous Python client for controlling Melcloud devices";
     homepage = "https://github.com/erwindouna/python-melcloud";
+    changelog = "https://github.com/erwindouna/python-melcloud/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

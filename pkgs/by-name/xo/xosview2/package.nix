@@ -22,8 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ libx11 ];
 
   meta = {
-    homepage = "https://xosview.sourceforge.net/index.html";
+    inherit (libx11.meta) platforms;
     description = "Lightweight graphical operating system monitor";
+
     longDescription = ''
       xosview is a lightweight program that gathers information from your
       operating system and displays it in graphical form. It attempts to show
@@ -41,12 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
       connect to it on a network, then you can popup an xosview instance and
       monitor what is going on.
     '';
+
+    homepage = "https://xosview.sourceforge.net/index.html";
+
     license = with lib.licenses; [
       gpl2
       bsdOriginal
     ];
-    mainProgram = "xosview2";
+
     maintainers = [ ];
-    inherit (libx11.meta) platforms;
+    mainProgram = "xosview2";
   };
 })

@@ -15,8 +15,8 @@ in
 
       autoStart = lib.mkOption {
         default = false;
-        type = lib.types.bool;
         description = "Whether rog-control-center should be started automatically.";
+        type = lib.types.bool;
       };
     };
   };
@@ -26,8 +26,8 @@ in
       pkgs.asusctl
       (lib.mkIf cfg.autoStart (
         pkgs.makeAutostartItem {
-          name = "rog-control-center";
           package = pkgs.asusctl;
+          name = "rog-control-center";
         }
       ))
     ];

@@ -1,19 +1,24 @@
 {
   lib,
   stdenv,
-  mkDerivation,
   cmake,
-  pkg-config,
   extra-cmake-modules,
-  wayland-scanner,
+  kdePackages,
+  mkDerivation,
+  pkg-config,
   qtbase,
   qtx11extras,
   wayland,
-  kdePackages,
+  wayland-scanner,
 }:
 
 mkDerivation {
   pname = "kguiaddons";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -23,6 +28,7 @@ mkDerivation {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     wayland-scanner
   ];
+
   buildInputs = [
     qtx11extras
   ]
@@ -30,12 +36,7 @@ mkDerivation {
     wayland
     kdePackages.plasma-wayland-protocols
   ];
+
   propagatedBuildInputs = [ qtbase ];
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   meta.homepage = "https://invent.kde.org/frameworks/kguiaddons";
 }

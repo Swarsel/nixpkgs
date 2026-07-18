@@ -15,21 +15,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ldJsB09xgACCI9ne10gxr2T2f20aVPXJXea32hoCYP8=";
   };
 
-  strictDeps = true;
-
   postPatch = ''
     patchShebangs ent # test shebang
   '';
+
+  strictDeps = true;
+  doCheck = true;
 
   installFlags = [
     "sbindir=$(out)/bin" # no reason for us to have a $out/sbin, its just a symlink to $out/bin
   ];
 
-  doCheck = true;
-
   meta = {
     description = "Simple entropy daemon";
-    mainProgram = "haveged";
+
     longDescription = ''
       The haveged project is an attempt to provide an easy-to-use, unpredictable
       random number generator based upon an adaptation of the HAVEGE algorithm.
@@ -38,11 +37,13 @@ stdenv.mkDerivation (finalAttrs: {
       of haveged is directed towards improving overall reliability and adaptability while minimizing
       the barriers to using haveged for other tasks.
     '';
+
     homepage = "https://github.com/jirka-h/haveged";
     changelog = "https://raw.githubusercontent.com/jirka-h/haveged/v${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
     badPlatforms = lib.platforms.darwin; # fails to build since v1.9.15
+    mainProgram = "haveged";
   };
 })

@@ -2,18 +2,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   core,
-  nix-update-script,
   meta,
+  ninja,
+  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "azure-sdk-for-cpp-security-keyvault-secrets";
   version = "4.3.0-beta.4";
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -21,7 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "azure-security-keyvault-secrets_4.3.0-beta.4";
     hash = "sha256-NSstk0cpgWBOhi50eiFSHDYiJjel2a4l8xxgfIPKSsU=";
   };
-  sourceRoot = "${finalAttrs.src.name}/sdk/keyvault/azure-security-keyvault-secrets";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     sed -i '/CMAKE_CXX_STANDARD/d' CMakeLists.txt
@@ -36,22 +36,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ core ];
 
-  env = {
-    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
-  };
-
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
     "-DWARNINGS_AS_ERRORS=OFF"
   ];
+
+  env = {
+    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
+  };
+
+  # See note in ./core.nix.
+  doCheck = false;
 
   postInstall = ''
     moveToOutput "share" "$dev"
     moveToOutput "share/$(basename "$sourceRoot")-cpp/copyright" "$out"
   '';
 
-  # See note in ./core.nix.
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/sdk/keyvault/azure-security-keyvault-secrets";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

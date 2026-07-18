@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  versionCheckHook,
+  buildNpmPackage,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildNpmPackage rec {
@@ -18,14 +18,15 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-7YeKTcBGsyiI6U0PeddAcs2x/O0LL/DT00KuSkqfy2A=";
-  npmInstallFlags = [ "--only=prod" ];
-  dontBuild = true; # dist folder is checked in
-  dontNpmBuild = true;
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  dontBuild = true; # dist folder is checked in
+  dontNpmBuild = true;
+  npmInstallFlags = [ "--only=prod" ];
 
   passthru = {
     updateScript = nix-update-script { };

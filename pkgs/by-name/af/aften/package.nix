@@ -8,6 +8,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "aften";
   version = "0.0.8";
+
   src = fetchurl {
     url = "mirror://sourceforge/aften/aften-${finalAttrs.version}.tar.bz2";
     sha256 = "02hc5x9vkgng1v9bzvza9985ifrjd7fjr7nlpvazp4mv6dr89k47";
@@ -19,10 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./simd-fallback.patch
   ];
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [ "-DSHARED=ON" ];
-
   # Fix the build with CMake 4.
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -31,11 +28,14 @@ stdenv.mkDerivation (finalAttrs: {
         'CMAKE_MINIMUM_REQUIRED(VERSION 3.10)'
   '';
 
+  nativeBuildInputs = [ cmake ];
+  cmakeFlags = [ "-DSHARED=ON" ];
+
   meta = {
     description = "Audio encoder which generates compressed audio streams based on ATSC A/52 specification";
     homepage = "https://aften.sourceforge.net/";
     license = lib.licenses.lgpl21Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ emilytrau ];
+    platforms = lib.platforms.unix;
   };
 })

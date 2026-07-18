@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  curl,
-  pkg-config,
-  openssl,
-  zlib,
   asciidoctor,
-  nix-update-script,
+  curl,
   findutils,
   installShellFiles,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-9ztYKXZXhc+Fci8WvAyMWwdjurXL/S10ekCjaFOKWZE=";
   };
-
-  cargoHash = "sha256-wZpb/S0g3KccaPlve3YeVFA9d1BqrtAe7tE2qlisG+M=";
 
   nativeBuildInputs = [
     asciidoctor
@@ -39,6 +37,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-wZpb/S0g3KccaPlve3YeVFA9d1BqrtAe7tE2qlisG+M=";
   env.OPENSSL_NO_VENDOR = true;
 
   # man page is placed in cargo's $OUT_DIR, which is randomized.
@@ -47,9 +46,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage $(find target/x86_64-unknown-linux-gnu/release/build -name "snphost.1")
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -57,11 +55,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/virtee/snphost/";
     changelog = "https://github.com/virtee/snphost/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       katexochen
       charludo
     ];
-    mainProgram = "snphost";
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "snphost";
   };
 })

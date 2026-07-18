@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -13,9 +13,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-kC18kJADCyxCtznyPzynTpnLOewIUWAGV8sQttUs9uU=";
   };
 
-  dontUnpack = true;
   strictDeps = true;
-  __structuredAttrs = true;
 
   installPhase = ''
     runHook preInstall
@@ -25,6 +23,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontUnpack = true;
   passthru.updateScript = ./update.sh;
 
   meta = {

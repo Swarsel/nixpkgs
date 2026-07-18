@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  fetchFromGitHub,
   nix-update-script,
 }:
 buildDotnetModule (finalAttrs: {
@@ -25,15 +25,10 @@ buildDotnetModule (finalAttrs: {
         --replace-fail "<TargetFramework>net6.0</TargetFramework>" "<TargetFramework>net10.0</TargetFramework>"
   '';
 
-  projectFile = "slsk-batchdl/slsk-batchdl.csproj";
-
   # Tests fail to build.
   # See: https://github.com/fiso64/slsk-batchdl/issues/111
   # testProjectFile = "slsk-batchdl.Tests/slsk-batchdl.Tests.csproj";
-
   dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  nugetDeps = ./deps.json;
-  executables = [ "sldl" ];
 
   dotnetFlags = [
     "--property:PublishSingleFile=true"
@@ -42,17 +37,21 @@ buildDotnetModule (finalAttrs: {
     # "--property:PublishTrimmed=true"
   ];
 
+  executables = [ "sldl" ];
+  nugetDeps = ./deps.json;
+  projectFile = "slsk-batchdl/slsk-batchdl.csproj";
   selfContainedBuild = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/fiso64/slsk-batchdl";
     description = "Advanced download tool for Soulseek";
+    homepage = "https://github.com/fiso64/slsk-batchdl";
     license = lib.licenses.gpl3Only;
+
     maintainers = [
       lib.maintainers._9999years
     ];
+
     mainProgram = "sldl";
   };
 })

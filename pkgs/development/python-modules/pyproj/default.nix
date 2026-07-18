@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch2,
-  pytestCheckHook,
-  replaceVars,
-
+  buildPythonPackage,
   certifi,
   cython,
+  fetchpatch2,
   numpy,
   pandas,
   proj,
+  pytestCheckHook,
+  replaceVars,
   setuptools,
   shapely,
   xarray,
@@ -19,7 +18,6 @@
 buildPythonPackage rec {
   pname = "pyproj";
   version = "3.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyproj4";
@@ -36,23 +34,16 @@ buildPythonPackage rec {
     })
     # PROJ 9.8.0 compatibility
     (fetchpatch2 {
-      url = "https://github.com/pyproj4/pyproj/pull/1557.diff?full_index=1";
       hash = "sha256-3iK/JaQEgyQvPjybJF/ATxOy3fFl7q6aa9tdfsrhajM=";
+      url = "https://github.com/pyproj4/pyproj/pull/1557.diff?full_index=1";
     })
     (fetchpatch2 {
-      url = "https://github.com/pyproj4/pyproj/pull/1560.diff?full_index=1";
       hash = "sha256-fr+lvDeVFDagc9aHzaQhyZtWK2sy5kR7iImJsuxW8Z4=";
+      url = "https://github.com/pyproj4/pyproj/pull/1560.diff?full_index=1";
     })
-  ];
-
-  build-system = [
-    cython
-    setuptools
   ];
 
   buildInputs = [ proj ];
-
-  dependencies = [ certifi ];
 
   nativeCheckInputs = [
     numpy
@@ -66,6 +57,13 @@ buildPythonPackage rec {
     # import from $out
     rm -r pyproj
   '';
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  dependencies = [ certifi ];
 
   disabledTestPaths = [
     "test/test_datadir.py"
@@ -88,6 +86,8 @@ buildPythonPackage rec {
     "test_transformer_from_pipeline__wkt_json"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "pyproj"
     "pyproj.crs"
@@ -106,13 +106,15 @@ buildPythonPackage rec {
 
   meta = {
     description = "Python interface to PROJ library";
-    mainProgram = "pyproj";
     homepage = "https://github.com/pyproj4/pyproj";
     changelog = "https://github.com/pyproj4/pyproj/blob/${src.rev}/docs/history.rst";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dotlambda
     ];
+
+    mainProgram = "pyproj";
     teams = [ lib.teams.geospatial ];
   };
 }

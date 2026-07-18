@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
-  fetchzip,
-  autoPatchelfHook,
-  makeWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
-  wrapGAppsHook3,
-  gobject-introspection,
-  gdk-pixbuf,
-  jre,
   android-tools,
+  autoPatchelfHook,
+  copyDesktopItems,
+  fetchzip,
+  gdk-pixbuf,
+  gobject-introspection,
+  jre,
+  makeDesktopItem,
+  makeWrapper,
+  stdenvNoCC,
+  wrapGAppsHook3,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -45,8 +45,6 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     wrapProgram $out/bin/agi \
       --add-flags "--vm ${jre}/bin/java" \
@@ -56,28 +54,33 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   desktopItems = lib.toList (makeDesktopItem {
-    name = "agi";
-    desktopName = "Android GPU Inspector";
-    exec = "agi";
-    icon = "agi";
     categories = [
       "Development"
       "Debugger"
       "Graphics"
       "3DGraphics"
     ];
+
+    desktopName = "Android GPU Inspector";
+    exec = "agi";
+    icon = "agi";
+    name = "agi";
   });
+
+  dontWrapGApps = true;
 
   meta = {
     description = "Android GPU Inspector";
     homepage = "https://gpuinspector.dev";
     changelog = "https://github.com/google/agi/releases/tag/v${version}";
-    platforms = [ "x86_64-linux" ];
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ kashw2 ];
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
+
+    maintainers = with lib.maintainers; [ kashw2 ];
+    platforms = [ "x86_64-linux" ];
   };
 }

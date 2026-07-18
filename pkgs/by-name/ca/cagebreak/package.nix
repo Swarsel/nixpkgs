@@ -7,8 +7,8 @@
   libdrm,
   libevdev,
   libinput,
-  libxkbcommon,
   libxcb-wm,
+  libxkbcommon,
   makeWrapper,
   meson,
   ninja,
@@ -21,9 +21,9 @@
   wayland,
   wayland-protocols,
   wayland-scanner,
-  withXwayland ? true,
-  xwayland,
   wlroots_0_19,
+  xwayland,
+  withXwayland ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,16 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-ADRtfzmn8DmDNbiJO3WbhQZiriJoUAG2TxPmx+RwPXE=";
   };
+
+  postPatch = ''
+    # TODO: investigate why is this happening
+    sed -i -e 's|<drm_fourcc.h>|<libdrm/drm_fourcc.h>|' *.c
+
+    # Patch cagebreak to read its default configuration from $out/share/cagebreak
+    sed -i "s|/etc/xdg/cagebreak|$out/share/cagebreak|" meson.build cagebreak.c
+    substituteInPlace meson.build \
+      --replace "/usr/share/licenses" "$out/share/licenses"
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -68,30 +78,20 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dxwayland=${lib.boolToString withXwayland}"
   ];
 
-  postPatch = ''
-    # TODO: investigate why is this happening
-    sed -i -e 's|<drm_fourcc.h>|<libdrm/drm_fourcc.h>|' *.c
-
-    # Patch cagebreak to read its default configuration from $out/share/cagebreak
-    sed -i "s|/etc/xdg/cagebreak|$out/share/cagebreak|" meson.build cagebreak.c
-    substituteInPlace meson.build \
-      --replace "/usr/share/licenses" "$out/share/licenses"
-  '';
-
   postFixup = lib.optionalString withXwayland ''
     wrapProgram $out/bin/cagebreak \
       --prefix PATH : "${lib.makeBinPath [ xwayland ]}"
   '';
 
+  passthru.tests.basic = nixosTests.cagebreak;
+
   meta = {
-    homepage = "https://github.com/project-repo/cagebreak";
     description = "Wayland tiling compositor inspired by ratpoison";
+    homepage = "https://github.com/project-repo/cagebreak";
+    changelog = "https://github.com/project-repo/cagebreak/blob/${finalAttrs.version}/Changelog.md";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;
-    changelog = "https://github.com/project-repo/cagebreak/blob/${finalAttrs.version}/Changelog.md";
     mainProgram = "cagebreak";
   };
-
-  passthru.tests.basic = nixosTests.cagebreak;
 })

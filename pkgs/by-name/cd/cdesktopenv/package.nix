@@ -2,40 +2,40 @@
   lib,
   stdenv,
   fetchurl,
-  libx11,
-  bison,
-  mksh,
-  perl,
-  libxinerama,
-  libxt,
-  libxext,
-  libtirpc,
-  motif,
-  libxft,
-  xbitmaps,
-  libjpeg,
-  libxmu,
-  libxdmcp,
-  libxscrnsaver,
+  autoPatchelfHook,
+  autoreconfHook,
   bdftopcf,
-  ncompress,
-  mkfontdir,
-  tcl,
+  bison,
+  flex,
+  glibcLocales,
+  libjpeg,
+  libtirpc,
+  libx11,
   libxaw,
   libxcrypt,
-  glibcLocales,
-  autoPatchelfHook,
-  makeWrapper,
-  xset,
-  xrdb,
-  autoreconfHook,
-  opensp,
-  flex,
+  libxdmcp,
+  libxext,
+  libxft,
+  libxinerama,
+  libxmu,
   libxpm,
+  libxscrnsaver,
+  libxt,
+  lmdb,
+  makeWrapper,
+  mkfontdir,
+  mksh,
+  motif,
+  ncompress,
+  opensp,
+  perl,
+  pkg-config,
   rpcsvc-proto,
   sessreg,
-  pkg-config,
-  lmdb,
+  tcl,
+  xbitmaps,
+  xrdb,
+  xset,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -70,6 +70,23 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs autogen.sh config.rpath contrib programs
   '';
 
+  nativeBuildInputs = [
+    bison
+    ncompress
+    autoPatchelfHook
+    makeWrapper
+    autoreconfHook
+    bdftopcf
+    mkfontdir
+    xset
+    xrdb
+    opensp
+    perl
+    flex
+    rpcsvc-proto
+    pkg-config
+  ];
+
   buildInputs = [
     libx11
     libxinerama
@@ -91,27 +108,10 @@ stdenv.mkDerivation (finalAttrs: {
     sessreg
     lmdb
   ];
-  nativeBuildInputs = [
-    bison
-    ncompress
-    autoPatchelfHook
-    makeWrapper
-    autoreconfHook
-    bdftopcf
-    mkfontdir
-    xset
-    xrdb
-    opensp
-    perl
-    flex
-    rpcsvc-proto
-    pkg-config
+
+  configureFlags = [
+    "--with-tcl=${tcl}/lib"
   ];
-
-  enableParallelBuilding = true;
-
-  # https://sourceforge.net/p/cdesktopenv/tickets/193/
-  hardeningDisable = [ "fortify" ];
 
   # Can probably remove after next release
   # https://sourceforge.net/p/cdesktopenv/code/ci/f0154141b1f1501490bac8e0235214bf8f00f715/
@@ -121,13 +121,13 @@ stdenv.mkDerivation (finalAttrs: {
     export LOCALE_ARCHIVE="${glibcLocales}/lib/locale/locale-archive"
   '';
 
-  configureFlags = [
-    "--with-tcl=${tcl}/lib"
-  ];
-
   preInstall = ''
     mkdir -p $out/opt/dt/bin
   '';
+
+  enableParallelBuilding = true;
+  # https://sourceforge.net/p/cdesktopenv/tickets/193/
+  hardeningDisable = [ "fortify" ];
 
   meta = {
     description = "Common Desktop Environment";

@@ -35,7 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/aces-aswf/aces_container";
     license = lib.licenses.ampas;
     maintainers = with lib.maintainers; [ paperdigits ];
-    mainProgram = "aces-container";
     platforms = lib.platforms.all;
+    mainProgram = "aces-container";
   };
 })

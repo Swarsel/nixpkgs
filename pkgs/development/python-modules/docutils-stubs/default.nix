@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   docutils,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "docutils-stubs";
   version = "0.0.22";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tk0miya";
@@ -21,6 +18,9 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-ng/f5e8ElFGNqtpdiQsv897TNkJ4gd++HAxON2l+80s=";
   };
+
+  # Module doesn't have tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -30,8 +30,7 @@ buildPythonPackage (finalAttrs: {
     docutils
   ];
 
-  # Module doesn't have tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "PEP 561 based Type information for docutils";

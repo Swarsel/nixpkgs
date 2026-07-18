@@ -1,18 +1,20 @@
 {
+  lib,
   fetchFromGitHub,
   rustPlatform,
-  lib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "minefair";
   version = "1.5.0";
+
   src = fetchFromGitHub {
     owner = "LyricLy";
     repo = "minefair";
     tag = finalAttrs.version;
     hash = "sha256-gABgSjS+ZhzmWJsCbbWMFstFAoTJ+Yc159CCo5nhYBc=";
   };
+
   cargoHash = "sha256-s4Wlp3IUPDuArf9N+9qWZH7JjQeczYi1phpUs7SNUd4=";
 
   meta = {

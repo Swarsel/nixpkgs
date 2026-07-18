@@ -1,4 +1,4 @@
-{ runCommand, pdal }:
+{ pdal, runCommand }:
 
 let
   inherit (pdal) pname;

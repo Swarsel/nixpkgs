@@ -1,47 +1,44 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-
+  fetchFromGitHub,
+  # Build tools
+  autoconf,
+  autoconf-archive,
+  automake116x,
+  bison,
+  # Runtime dependencies
+  boost,
   # Dependencies
   c-ares,
+  cmake,
   croncpp,
   double-conversion,
   expected-lite,
   fast-float,
   flatbuffers_23,
   gbenchmark,
+  gcc-unwrapped,
   gperftools,
   gtest,
   hdrhistogram_c,
-  liburing,
-  lz4,
-  pcre2,
-  pugixml,
-  rapidjson,
-  re2,
-  re-flex,
-  uni-algo,
-  xxhash,
-  zstd,
-
-  # Build tools
-  autoconf,
-  autoconf-archive,
-  automake116x,
-  bison,
-  cmake,
-  gcc-unwrapped,
-  ninja,
-  perl,
-
-  # Runtime dependencies
-  boost,
   libtool,
   libunwind,
+  liburing,
+  lz4,
+  ninja,
   openssl,
+  pcre2,
+  perl,
+  pugixml,
+  rapidjson,
+  re-flex,
+  re2,
+  uni-algo,
+  xxhash,
   zlib,
-
+  zstd,
+  withAsan ? false,
   # Options
   withAws ? true,
   withGcp ? true,
@@ -49,7 +46,6 @@
   withPcre ? true,
   withRe2 ? true,
   withSearch ? true,
-  withAsan ? false,
   withUsan ? false,
 }:
 
@@ -69,64 +65,64 @@ let
   # release (see helio/patches/abseil-20250512.1.patch), so it's pinned here
   # rather than taken from nixpkgs' abseil-cpp, which tracks a newer version.
   abseil-cpp-20250512 = fetchFromGitHub {
+    hash = "sha256-eB7OqTO9Vwts9nYQ/Mdq0Ds4T1KgmmpYdzU09VPWOhk=";
     owner = "abseil";
     repo = "abseil-cpp";
     tag = "20250512.1";
-    hash = "sha256-eB7OqTO9Vwts9nYQ/Mdq0Ds4T1KgmmpYdzU09VPWOhk=";
   };
 
   aws-sdk-cpp-1-11-717 = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-stDZg9dvKljnbZZUHEn1KmlgDdvW6BK7H7RtGk/nyEI=";
     owner = "aws";
     repo = "aws-sdk-cpp";
     tag = "1.11.717";
-    hash = "sha256-stDZg9dvKljnbZZUHEn1KmlgDdvW6BK7H7RtGk/nyEI=";
-    fetchSubmodules = true;
   };
 
   glog-absl = fetchFromGitHub {
+    hash = "sha256-68Hx3kIPgyMSdHCUpYr68Cw8V4Umtyd+4VLZc3zUb1s=";
     owner = "romange";
     repo = "glog";
     rev = "Absl";
-    hash = "sha256-68Hx3kIPgyMSdHCUpYr68Cw8V4Umtyd+4VLZc3zUb1s=";
   };
 
   jsoncons-dragonfly = fetchFromGitHub {
+    hash = "sha256-9W9GJpzKuqolXoz5iYiE1EbVWr7HiFqpMgZO1BQdi0s=";
     owner = "dragonflydb";
     repo = "jsoncons";
     rev = "Dragonfly1.5.0";
-    hash = "sha256-9W9GJpzKuqolXoz5iYiE1EbVWr7HiFqpMgZO1BQdi0s=";
   };
 
   # dragonfly's search module uses a fork of hnswlib with custom changes, so
   # this can't come from nixpkgs' hnswlib (nmslib upstream).
   hnswlib-dragonfly = fetchFromGitHub {
+    hash = "sha256-GFBjKzDauznGGfkXZqSFgbvBKxDXbx2rETqY5BnCIiw=";
     owner = "dragonflydb";
     repo = "hnswlib";
     rev = "d07dd1da2bf48b85d2f03b8396193ad7120f75c2";
-    hash = "sha256-GFBjKzDauznGGfkXZqSFgbvBKxDXbx2rETqY5BnCIiw=";
   };
 
   lua-dragonfly = fetchFromGitHub {
+    hash = "sha256-uLNe+hLihu4wMW/wstGnYdPa2bGPC5UiNE+VyNIYY2c=";
     owner = "dragonflydb";
     repo = "lua";
     rev = "Dragonfly-5.4.6a";
-    hash = "sha256-uLNe+hLihu4wMW/wstGnYdPa2bGPC5UiNE+VyNIYY2c=";
   };
 
   mimalloc224 = fetchFromGitHub {
+    hash = "sha256-+8xZT+mVEqlqabQc+1buVH/X6FZxvCd0rWMyjPu9i4o=";
     owner = "microsoft";
     repo = "mimalloc";
     tag = "v2.2.4";
-    hash = "sha256-+8xZT+mVEqlqabQc+1buVH/X6FZxvCd0rWMyjPu9i4o=";
   };
 
   # nixpkgs' libstemmer is older than the snowball release dragonfly's search
   # module builds against, so the source is pinned and built in-tree here.
   snowball-stemmer = fetchFromGitHub {
+    hash = "sha256-QPIPePddUqwpa0YMn0E7H9GZj3s2bEkJzZdXlrHeZbo=";
     owner = "snowballstem";
     repo = "snowball";
     tag = "v3.0.1";
-    hash = "sha256-QPIPePddUqwpa0YMn0E7H9GZj3s2bEkJzZdXlrHeZbo=";
   };
 
   withUnwind = !stdenv.targetPlatform.isAarch64;
@@ -142,6 +138,38 @@ stdenv.mkDerivation {
   postPatch = ''
     chmod +x helio/blaze.sh
   '';
+
+  nativeBuildInputs = [
+    autoconf
+    autoconf-archive
+    automake116x
+    bison
+    cmake
+    ninja
+    perl
+  ];
+
+  buildInputs = [
+    boost
+    libtool
+    openssl
+    zlib
+  ]
+  ++ lib.optional withPcre pcre2
+  ++ lib.optional withRe2 re2
+  ++ lib.optional withUnwind libunwind;
+
+  cmakeFlags = [
+    (lib.cmakeFeature "CMAKE_AR" "${gcc-unwrapped}/bin/gcc-ar")
+    (lib.cmakeFeature "CMAKE_RANLIB" "${gcc-unwrapped}/bin/gcc-ranlib")
+    (lib.cmakeBool "ENABLE_GIT_VERSION" false)
+    (lib.cmakeBool "WITH_ASAN" withAsan)
+    (lib.cmakeBool "WITH_AWS" withAws)
+    (lib.cmakeBool "WITH_GCP" withGcp)
+    (lib.cmakeBool "WITH_GPERF" withGperf)
+    (lib.cmakeBool "WITH_SEARCH" withSearch)
+    (lib.cmakeBool "WITH_USAN" withUsan)
+  ];
 
   preConfigure = ''
     # Create directory for nixpkgs dependencies
@@ -220,46 +248,11 @@ stdenv.mkDerivation {
     fi
   '';
 
-  nativeBuildInputs = [
-    autoconf
-    autoconf-archive
-    automake116x
-    bison
-    cmake
-    ninja
-    perl
-  ];
-
-  buildInputs = [
-    boost
-    libtool
-    openssl
-    zlib
-  ]
-  ++ lib.optional withPcre pcre2
-  ++ lib.optional withRe2 re2
-  ++ lib.optional withUnwind libunwind;
-
-  cmakeFlags = [
-    (lib.cmakeFeature "CMAKE_AR" "${gcc-unwrapped}/bin/gcc-ar")
-    (lib.cmakeFeature "CMAKE_RANLIB" "${gcc-unwrapped}/bin/gcc-ranlib")
-    (lib.cmakeBool "ENABLE_GIT_VERSION" false)
-    (lib.cmakeBool "WITH_ASAN" withAsan)
-    (lib.cmakeBool "WITH_AWS" withAws)
-    (lib.cmakeBool "WITH_GCP" withGcp)
-    (lib.cmakeBool "WITH_GPERF" withGperf)
-    (lib.cmakeBool "WITH_SEARCH" withSearch)
-    (lib.cmakeBool "WITH_USAN" withUsan)
-  ];
-
-  ninjaFlags = [ "dragonfly" ];
-
   # dragonflydb's tests rely heavily on outdated Python packages we don't
   # have in nixpkgs, and it would be a highly non-trivial endeavor to
   # recreate all of them locally to get them to run properly.
   doCheck = false;
 
-  dontUseNinjaInstall = true;
   installPhase = ''
     runHook preInstall
 
@@ -269,14 +262,19 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontUseNinjaInstall = true;
+  ninjaFlags = [ "dragonfly" ];
+
   meta = {
     description = "Modern replacement for Redis and Memcached";
     homepage = "https://dragonflydb.io/";
     license = lib.licenses.bsl11;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       typedrat
       yureien
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

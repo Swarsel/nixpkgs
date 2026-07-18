@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   awesomeversion,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytestCheckHook,
@@ -14,9 +14,6 @@
 buildPythonPackage rec {
   pname = "pyhaversion";
   version = "24.6.1";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "ludeeus";
@@ -31,6 +28,12 @@ buildPythonPackage rec {
       --replace-fail 'version = "0"' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -38,19 +41,16 @@ buildPythonPackage rec {
     awesomeversion
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "pyhaversion" ];
+  disabled = pythonOlder "3.12";
 
   disabledTests = [
     # Error fetching version information from HaVersionSource.SUPERVISOR Server disconnected
     "test_stable_version"
     "test_etag"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyhaversion" ];
 
   meta = {
     description = "Python module to the newest version number of Home Assistant";

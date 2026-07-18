@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   buildGhidraExtension,
-  z3,
   gradle,
+  z3,
 }:
 let
   ghidraPlatformName =
     {
-      x86_64-linux = "linux_x86_64";
-      aarch64-linux = "linux_x86_64";
       aarch64-darwin = "mac_arm_64";
+      aarch64-linux = "linux_x86_64";
+      x86_64-linux = "linux_x86_64";
     }
     .${stdenv.hostPlatform.system}
       or (throw "${stdenv.hostPlatform.system} is an unsupported platform");
@@ -50,21 +50,23 @@ let
     gradleFlags = [ "-PKAIJU_SKIP_Z3_BUILD=true" ];
 
     mitmCache = gradle.fetchDeps {
-      pkg = self;
       data = ./deps.json;
+      pkg = self;
     };
 
     meta = {
       description = "Java implementation of some features of the CERT Pharos Binary Analysis Framework for Ghidra";
       homepage = "https://github.com/CERTCC/kaiju";
-      downloadPage = "https://github.com/CERTCC/kaiju/releases/tag/${finalAttrs.version}";
       license = lib.licenses.bsd3;
       maintainers = [ lib.maintainers.ivyfanchiang ];
+
       platforms = [
         "x86_64-linux"
         "aarch64-linux"
         "aarch64-darwin"
       ];
+
+      downloadPage = "https://github.com/CERTCC/kaiju/releases/tag/${finalAttrs.version}";
     };
   });
 in

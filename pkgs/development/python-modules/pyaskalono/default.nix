@@ -1,27 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  nix-update-script,
   pytestCheckHook,
   rustPlatform,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "pyaskalono";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kumekay";
     repo = "pyaskalono";
     tag = "v${version}";
     hash = "sha256-gNQCtubPs8XjE+ZTuTTzZGkxOhK3/Fv3lDLparaUdaQ=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-rQP6So9tG/9cjB588v+6lp2h+0SjaiWPhKrSXgDYugE=";
   };
 
   nativeBuildInputs = [
@@ -33,6 +27,12 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-rQP6So9tG/9cjB588v+6lp2h+0SjaiWPhKrSXgDYugE=";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "askalono" ];
 
   meta = {

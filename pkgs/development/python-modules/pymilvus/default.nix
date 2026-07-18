@@ -1,41 +1,36 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  gitpython,
-  setuptools,
-  setuptools-scm,
-
+  # optional-dependencies
+  azure-storage-blob,
+  buildPythonPackage,
   # dependencies
   cachetools,
+  # build-system
+  gitpython,
   grpcio,
+  # tests
+  grpcio-testing,
+  minio,
   # milvus-lite, (unpackaged)
   orjson,
   pandas,
   protobuf,
-  python-dotenv,
-
-  # optional-dependencies
-  azure-storage-blob,
-  minio,
   pyarrow,
-  requests,
-  urllib3,
-
-  # tests
-  grpcio-testing,
   pytest-asyncio,
   pytest-benchmark,
   pytestCheckHook,
+  python-dotenv,
+  requests,
   scipy,
+  setuptools,
+  setuptools-scm,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pymilvus";
   version = "2.6.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "milvus-io";
@@ -44,18 +39,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vjXqGb4HYxa5qHpy8AJBO2G8s8AndJs+zGvxbfvwObY=";
   };
 
+  nativeCheckInputs = [
+    grpcio-testing
+    pytest-asyncio
+    pytest-benchmark
+    pytestCheckHook
+    scipy
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.bulk_writer;
+
   build-system = [
     gitpython
     setuptools
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "grpcio"
-  ];
-
-  pythonRemoveDeps = [
-    "milvus-lite"
   ];
 
   dependencies = [
@@ -69,26 +65,13 @@ buildPythonPackage (finalAttrs: {
     setuptools
   ];
 
-  optional-dependencies = {
-    bulk_writer = [
-      azure-storage-blob
-      minio
-      pyarrow
-      requests
-      urllib3
-    ];
-  };
+  disabledTestPaths = [
+    # requires running milvus server
+    "examples/"
 
-  pythonImportsCheck = [ "pymilvus" ];
-
-  nativeCheckInputs = [
-    grpcio-testing
-    pytest-asyncio
-    pytest-benchmark
-    pytestCheckHook
-    scipy
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.bulk_writer;
+    # tries to write to nix store
+    "tests/test_bulk_writer_stage.py"
+  ];
 
   disabledTests = [
     # tries to read .git
@@ -101,12 +84,25 @@ buildPythonPackage (finalAttrs: {
     "test_milvus_client_creates_unbound_alias"
   ];
 
-  disabledTestPaths = [
-    # requires running milvus server
-    "examples/"
+  optional-dependencies = {
+    bulk_writer = [
+      azure-storage-blob
+      minio
+      pyarrow
+      requests
+      urllib3
+    ];
+  };
 
-    # tries to write to nix store
-    "tests/test_bulk_writer_stage.py"
+  pyproject = true;
+  pythonImportsCheck = [ "pymilvus" ];
+
+  pythonRelaxDeps = [
+    "grpcio"
+  ];
+
+  pythonRemoveDeps = [
+    "milvus-lite"
   ];
 
   meta = {

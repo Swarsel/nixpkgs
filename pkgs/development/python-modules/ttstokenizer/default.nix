@@ -1,8 +1,8 @@
 {
   lib,
+  anyascii,
   buildPythonPackage,
   fetchPypi,
-  anyascii,
   inflect,
   nltk,
   numpy,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "ttstokenizer";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,10 +24,10 @@ buildPythonPackage rec {
     numpy
   ];
 
-  pythonImportsCheck = [ "ttstokenizer" ];
-
   # no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "ttstokenizer" ];
 
   meta = {
     description = "Tokenizer for Text to Speech (TTS) models";

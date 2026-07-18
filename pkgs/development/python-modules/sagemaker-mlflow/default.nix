@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   boto3,
-  mlflow-skinny,
-
+  buildPythonPackage,
   # tests
   matplotlib,
+  mlflow-skinny,
   pandas,
   pytestCheckHook,
   scikit-learn,
+  # build-system
+  setuptools,
   skops,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sagemaker-mlflow";
   version = "0.5.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -39,17 +34,6 @@ buildPythonPackage (finalAttrs: {
         "${finalAttrs.version}"
   '';
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    boto3
-    mlflow-skinny
-  ];
-
-  pythonImportsCheck = [ "sagemaker_mlflow" ];
-
   nativeCheckInputs = [
     matplotlib
     pandas
@@ -64,6 +48,17 @@ buildPythonPackage (finalAttrs: {
     export MLFLOW_ALLOW_FILE_STORE=true
   '';
 
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    boto3
+    mlflow-skinny
+  ];
+
   disabledTests = [
     # AssertionError: assert 's3' in '/build/source/not implemented/0/d3c16d2bad4245bf9fc68f86d2e7599d/artifacts'
     "test_log_metric"
@@ -77,6 +72,9 @@ buildPythonPackage (finalAttrs: {
     "test_presigned_url"
     "test_presigned_url_with_fields"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sagemaker_mlflow" ];
 
   meta = {
     description = "MLFlow plugin for SageMaker";

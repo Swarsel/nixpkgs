@@ -1,13 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
-  makeWrapper,
-  nixosTests,
-
+  buildGoModule,
   # for addons
   buildNpmPackage,
+  makeWrapper,
+  nix-update-script,
+  nixosTests,
   zip,
 }:
 
@@ -23,16 +22,8 @@ buildGoModule (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  vendorHash = "sha256-meToyr93nmKLZ//h8Gc0rp2hc4vOV9ULU+FbBXmbDv8=";
-
-  passthru.updateScript = nix-update-script { };
-
   nativeBuildInputs = [ makeWrapper ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-meToyr93nmKLZ//h8Gc0rp2hc4vOV9ULU+FbBXmbDv8=";
 
   postInstall = ''
     mkdir -p $out/share/addons
@@ -46,16 +37,17 @@ buildGoModule (finalAttrs: {
     cp config.yml_sample $out/share/examples/config.yml
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru = {
     omnom-addons = buildNpmPackage (finalAttrs': {
-      pname = "omnom-addons";
       inherit (finalAttrs) version src;
-
-      npmDepsHash = "sha256-CIzp6/mBTuSaEFv0lk3d/GZyq1VRDvCSoqrujz4AG/E=";
-      sourceRoot = "${finalAttrs'.src.name}/ext";
-      npmPackFlags = [ "--ignore-scripts" ];
-
+      pname = "omnom-addons";
       nativeBuildInputs = [ zip ];
+      npmDepsHash = "sha256-CIzp6/mBTuSaEFv0lk3d/GZyq1VRDvCSoqrujz4AG/E=";
 
       # Fix path for the `static` directory
       postConfigure = ''
@@ -78,18 +70,23 @@ buildGoModule (finalAttrs: {
       postCheck = ''
         npm run build-test
       '';
+
+      npmPackFlags = [ "--ignore-scripts" ];
+      sourceRoot = "${finalAttrs'.src.name}/ext";
     });
 
     tests = nixosTests.omnom;
   };
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Webpage bookmarking and snapshotting service";
     homepage = "https://omnom.zone/";
-    downloadPage = "https://github.com/asciimoo/omnom";
     changelog = "https://github.com/asciimoo/omnom/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    teams = [ lib.teams.ngi ];
     mainProgram = "omnom";
+    downloadPage = "https://github.com/asciimoo/omnom";
+    teams = [ lib.teams.ngi ];
   };
 })

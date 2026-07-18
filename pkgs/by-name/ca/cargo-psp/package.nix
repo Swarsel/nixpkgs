@@ -1,9 +1,9 @@
 {
   lib,
   fetchCrate,
-  rustPlatform,
   makeBinaryWrapper,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-psp";
@@ -14,11 +14,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Jud89nYJq4xZn2HudmSA82hOYwItrrTblhIfeqqIqm8=";
   };
 
-  cargoHash = "sha256-oL2KbhpqvPhtN7hpAuR6a383pPKlW1XuXkoew0ZvPUo=";
-
   nativeBuildInputs = [
     makeBinaryWrapper
   ];
+
+  cargoHash = "sha256-oL2KbhpqvPhtN7hpAuR6a383pPKlW1XuXkoew0ZvPUo=";
 
   postInstall = ''
     wrapProgram "$out/bin/cargo-psp" \
@@ -32,10 +32,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/overdrivenpotato/rust-psp/tree/master/cargo-psp";
     changelog = "https://github.com/overdrivenpotato/rust-psp/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "cargo-psp";
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = with lib.maintainers; [
       griffi-gh
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "cargo-psp";
   };
 })

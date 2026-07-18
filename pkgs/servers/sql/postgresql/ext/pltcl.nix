@@ -1,6 +1,6 @@
 {
-  buildEnv,
   lib,
+  buildEnv,
   postgresql,
   postgresqlTestExtension,
   tclPackages,
@@ -13,19 +13,19 @@ let
       pkgs = f tclPackages;
       paths = lib.concatMapStringsSep " " (pkg: "${pkg}/lib") pkgs;
       finalPackage = buildEnv {
-        pname = "${postgresql.pname}-pltcl";
         inherit (postgresql) version;
+        pname = "${postgresql.pname}-pltcl";
         paths = [ postgresql.pltcl ];
+
         passthru = {
           inherit withPackages;
-          wrapperArgs = [
-            ''--set TCLLIBPATH "${paths}"''
-          ];
+
           tests.extension = postgresqlTestExtension {
             finalPackage = finalPackage.withPackages (ps: [
               ps.mustache-tcl
               ps.tcllib
             ]);
+
             sql = ''
               CREATE EXTENSION pltclu;
               CREATE FUNCTION test() RETURNS VOID
@@ -35,7 +35,12 @@ let
               SELECT test();
             '';
           };
+
+          wrapperArgs = [
+            ''--set TCLLIBPATH "${paths}"''
+          ];
         };
+
         meta = {
           inherit (postgresql.meta)
             homepage
@@ -44,6 +49,7 @@ let
             teams
             platforms
             ;
+
           description = "PL/Tcl - Tcl Procedural Language";
         };
       };

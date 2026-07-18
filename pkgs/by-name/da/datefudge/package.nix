@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  coreutils,
   fetchgit,
   makeWrapper,
-  coreutils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,10 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BN/Ct1FRZjvpkRCPpRlXmjeRvrNnuJBXwwI1P2HCisc=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  buildInputs = [ coreutils ];
-
   postPatch = ''
     substituteInPlace Makefile \
      --replace "/usr" "/" \
@@ -28,20 +24,25 @@ stdenv.mkDerivation (finalAttrs: {
      --replace "@LIBDIR@" "$out/lib/"
   '';
 
-  installFlags = [ "DESTDIR=$(out)" ];
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ coreutils ];
 
   postInstall = ''
     chmod +x $out/lib/datefudge/datefudge.so
     wrapProgram $out/bin/datefudge --prefix PATH : ${coreutils}/bin
   '';
 
+  installFlags = [ "DESTDIR=$(out)" ];
+
   meta = {
     description = "Fake the system date";
+
     longDescription = ''
       datefudge is a small utility that pretends that the system time is
       different by pre-loading a small library which modifies the time,
       gettimeofday and clock_gettime system calls.
     '';
+
     homepage = "https://packages.qa.debian.org/d/datefudge.html";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;

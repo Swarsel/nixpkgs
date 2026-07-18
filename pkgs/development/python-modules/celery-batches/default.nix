@@ -2,14 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   celery,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "celery-batches";
   version = "0.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "clokep";
@@ -18,19 +17,17 @@ buildPythonPackage rec {
     hash = "sha256-+1cpauali+MjDox0esw0+bveOEroIQ0DkuHQuwm/i4Q=";
   };
 
+  # requires a running celery
+  doCheck = false;
   build-system = [ setuptools ];
+  dependencies = [ celery ];
+  pyproject = true;
+  pythonImportsCheck = [ "celery_batches" ];
 
   pythonRelaxDeps = [
     # https://github.com/clokep/celery-batches/pull/100
     "celery"
   ];
-
-  dependencies = [ celery ];
-
-  # requires a running celery
-  doCheck = false;
-
-  pythonImportsCheck = [ "celery_batches" ];
 
   meta = {
     description = "Allows processing of multiple Celery task requests together";

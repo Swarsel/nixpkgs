@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  unstableGitUpdater,
   stdenvNoCC,
+  unstableGitUpdater,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,16 +17,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     sparseCheckout = [ "themes" ];
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-  preferLocalBuild = true;
-
-  sourceRoot = "${finalAttrs.src.name}/themes";
   installPhase = ''
     runHook preInstall
     install -Dt $out/share/alacritty-theme *.toml
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  preferLocalBuild = true;
+  sourceRoot = "${finalAttrs.src.name}/themes";
 
   passthru.updateScript = unstableGitUpdater {
     hardcodeZeroVersion = true;

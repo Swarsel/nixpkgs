@@ -1,12 +1,12 @@
 {
-  notmuch,
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  lua5_4,
   installShellFiles,
+  lua5_4,
   nix-update-script,
+  notmuch,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "notmuch-mailmover";
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-fJljqNSPLM1JiyeGMNvub/4wk5L9+lVTqtgCdoe7S88=";
   };
 
-  cargoHash = "sha256-PeSlErwGBCZECYoWqmJrlRY7peNNY7c/wxd6R09uUz4=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -30,6 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     notmuch
     lua5_4
   ];
+
+  cargoHash = "sha256-PeSlErwGBCZECYoWqmJrlRY7peNNY7c/wxd6R09uUz4=";
 
   postInstall = ''
     installManPage share/notmuch-mailmover.1.gz
@@ -47,13 +47,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Application to assign notmuch tagged mails to IMAP folders";
-    mainProgram = "notmuch-mailmover";
     homepage = "https://github.com/michaeladler/notmuch-mailmover/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       michaeladler
       archer-65
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "notmuch-mailmover";
   };
 })

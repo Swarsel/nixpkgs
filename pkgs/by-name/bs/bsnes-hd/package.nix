@@ -1,19 +1,19 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   alsa-lib,
-  fetchFromGitHub,
   gtk3,
   gtksourceview3,
-  libx11,
-  libxv,
   libao,
   libicns,
   libpulseaudio,
+  libx11,
+  libxv,
   makeWrapper,
   openal,
   pkg-config,
-  stdenv,
   udev,
   unstableGitUpdater,
   wrapGAppsHook3,
@@ -76,8 +76,6 @@ stdenv.mkDerivation {
   ++ lib.optionals stdenv.hostPlatform.isLinux [ "hiro=gtk3" ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "hiro=cocoa" ];
 
-  enableParallelBuilding = true;
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/bin
     makeWrapper $out/{Applications/bsnes.app/Contents/MacOS,bin}/bsnes
@@ -90,18 +88,22 @@ stdenv.mkDerivation {
     )
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     updateScript = unstableGitUpdater { };
   };
 
   meta = {
-    homepage = "https://github.com/DerKoun/bsnes-hd";
     description = "Fork of bsnes that adds HD video features";
+    homepage = "https://github.com/DerKoun/bsnes-hd";
     license = lib.licenses.gpl3Only;
-    mainProgram = "bsnes";
+
     maintainers = with lib.maintainers; [
       stevebob
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "bsnes";
   };
 }

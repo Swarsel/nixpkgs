@@ -1,37 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatch-vcs,
-  hatchling,
-
-  # dependencies
-  session-info2,
-  typing-extensions,
-
   # optional-dependencies
   # datasets:
   anndata,
+  buildPythonPackage,
+  # build-system
+  hatch-vcs,
+  hatchling,
   pooch,
-  pyyaml,
-  tqdm,
   # settings:
   pydantic-settings,
-  python-dotenv,
-  # sphinx:
-  sphinx,
-
   # tests
   pytestCheckHook,
+  python-dotenv,
+  pyyaml,
+  # dependencies
+  session-info2,
+  # sphinx:
+  sphinx,
+  tqdm,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "scverse-misc";
   version = "0.1.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "scverse";
@@ -39,6 +33,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-PkvOaxGbZ1i10xgghdvGLCKiXcwg/eZzYvQ7Gp3K+JE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyyaml
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatch-vcs
@@ -57,25 +58,24 @@ buildPythonPackage (finalAttrs: {
       pyyaml
       tqdm
     ];
+
     settings = [
       pydantic-settings
       python-dotenv
     ];
+
     spatialdata = [
       # spatialdata (unpackaged)
     ];
+
     sphinx = [
       # pydocstring-rs (unpackaged)
       sphinx
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "scverse_misc" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyyaml
-  ];
 
   meta = {
     description = "Miscellaneous utility code used by scverse packages";

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   meson,
   ncurses,
   ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,14 +24,15 @@ stdenv.mkDerivation (finalAttrs: {
     meson
     ninja
   ];
+
   buildInputs = [ ncurses ];
 
   meta = {
     description = "Generic network load monitor";
     homepage = "https://github.com/mattthias/slurm";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mikaelfangel ];
+    platforms = lib.platforms.unix;
     mainProgram = "slurm";
   };
 })

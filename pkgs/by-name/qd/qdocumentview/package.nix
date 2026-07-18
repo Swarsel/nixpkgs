@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  cmake,
   kdePackages,
   meson,
   ninja,
   pkg-config,
-  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Widget to render multi-page documents";
-    mainProgram = "qdocumentview";
     homepage = "https://gitlab.com/extraqt/qdocumentview";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "qdocumentview";
   };
 })

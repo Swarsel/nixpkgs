@@ -2,21 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-
-  # build system
-  meson,
-  ninja,
-  pkg-config,
-
+  # darwin specific deps
+  darwin,
   # deps
   dbus,
   dri-pkgconfig-stub,
   font-util,
+  libGL,
+  libGLU,
+  libapplewm,
   libdrm,
   libepoxy,
   libgbm,
-  libGL,
-  libGLU,
   libpciaccess,
   libtirpc,
   libunwind,
@@ -38,22 +35,21 @@
   libxshmfence,
   mesa,
   mesa-gl-headers,
+  # build system
+  meson,
+  ninja,
   openssl,
   pixman,
+  pkg-config,
+  testers,
   udev,
+  util-macros,
+  writeScript,
   xkbcomp,
   xkeyboard-config,
   xorgproto,
   xtrans,
   zlib,
-
-  # darwin specific deps
-  darwin,
-  util-macros,
-  libapplewm,
-
-  writeScript,
-  testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xorg-server";
@@ -62,21 +58,26 @@ stdenv.mkDerivation (finalAttrs: {
   # quickly.
   version = "21.1.24";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://xorg/individual/xserver/xorg-server-${finalAttrs.version}.tar.xz";
     hash = "sha256-Gk6zbKZcw7G5NlZtZ3qXhuE8Ec1YBulRrFXz9c45hK8=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = lib.optionals stdenv.hostPlatform.isDarwin [
     ./darwin/bundle_main.patch
     ./darwin/find-cpp.patch
     ./darwin/stub.patch
   ];
+
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace hw/xquartz/mach-startup/stub.c \
+      --subst-var-by XQUARTZ_APP "$out/Applications/XQuartz.app"
+  '';
 
   strictDeps = true;
 
@@ -171,21 +172,18 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dudev_kms=false"
   ];
 
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace hw/xquartz/mach-startup/stub.c \
-      --subst-var-by XQUARTZ_APP "$out/Applications/XQuartz.app"
-  '';
-
-  # avoid linux rebuilds
-  ${if stdenv.hostPlatform.isDarwin then "hardeningDisable" else null} = [ "strictflexarrays1" ];
-
   # default X install symlinks this to Xorg, we want XQuartz
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     ln -sf $out/bin/Xquartz $out/bin/X
   '';
 
+  # avoid linux rebuilds
+  ${if stdenv.hostPlatform.isDarwin then "hardeningDisable" else null} = [ "strictflexarrays1" ];
+
   passthru = {
     inherit (finalAttrs) version; # needed by virtualbox guest additions
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -194,11 +192,11 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "X server implementation by X.org";
+
     longDescription = ''
       The X server accepts requests from client applications to create windows, which are (normally
       rectangular) "virtual screens" that the client program can draw into.
@@ -209,7 +207,9 @@ stdenv.mkDerivation (finalAttrs: {
       For a comprehensive overview of X Server and X Window System, consult the following article:
       https://en.wikipedia.org/wiki/X_server
     '';
+
     homepage = "https://x.org/wiki";
+
     license = with lib.licenses; [
       # because the license list is huge (1848 lines) this is documented by line range
       # https://gitlab.freedesktop.org/xorg/xserver/-/blob/f05f269f1d5bddafe71cdfb290b118820bf17fdd/COPYING
@@ -245,11 +245,13 @@ stdenv.mkDerivation (finalAttrs: {
       # https://gitlab.freedesktop.org/xorg/xserver/-/merge_requests/2098
       hpndSellVariantMitDisclaimerXserver # 1780-1793
     ];
-    mainProgram = "X";
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
-    pkgConfigModules = [ "xorg-server" ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "X";
+    pkgConfigModules = [ "xorg-server" ];
   };
 })

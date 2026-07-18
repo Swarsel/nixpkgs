@@ -1,36 +1,37 @@
 {
   lib,
-  llvmPackages,
   fetchurl,
   fetchFromGitHub,
-  linuxHeaders,
-  python3,
   curl,
-  which,
+  linuxHeaders,
+  llvmPackages,
   nix-update-script,
+  python3,
+  which,
   debugRuntime ? true,
-  runtimeAsserts ? false,
   extraKleeuClibcConfig ? { },
+  runtimeAsserts ? false,
 }:
 
 let
   localeSrcBase = "uClibc-locale-030818.tgz";
   localeSrc = fetchurl {
-    url = "http://www.uclibc.org/downloads/${localeSrcBase}";
     sha256 = "xDYr4xijjxjZjcz0YtItlbq5LwVUi7k/ZSmP6a+uvVc=";
+    url = "http://www.uclibc.org/downloads/${localeSrcBase}";
   };
   resolvedExtraKleeuClibcConfig = lib.mapAttrsToList (name: value: "${name}=${value}") (
     extraKleeuClibcConfig
     // {
-      "UCLIBC_DOWNLOAD_PREGENERATED_LOCALE_DATA" = "n";
-      "RUNTIME_PREFIX" = "/";
       "DEVEL_PREFIX" = "/";
+      "RUNTIME_PREFIX" = "/";
+      "UCLIBC_DOWNLOAD_PREGENERATED_LOCALE_DATA" = "n";
     }
   );
 in
 llvmPackages.stdenv.mkDerivation (finalAttrs: {
   pname = "klee-uclibc";
   version = "1.4";
+
   src = fetchFromGitHub {
     owner = "klee";
     repo = "klee-uclibc";
@@ -46,17 +47,18 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
-  # Some uClibc sources depend on Linux headers.
-  UCLIBC_KERNEL_HEADERS = "${linuxHeaders}/include";
+  makeFlags = [ "HAVE_DOT_CONFIG=y" ];
+
+  # Link the locale source into the correct place
+  preBuild = ''
+    ln -sf ${localeSrc} extra/locale/${localeSrcBase}
+  '';
 
   # HACK: needed for cross-compile.
   # See https://www.mail-archive.com/klee-dev@imperial.ac.uk/msg03141.html
   KLEE_CFLAGS = "-idirafter ${llvmPackages.clang}/resource-root/include";
-
-  prePatch = ''
-    patchShebangs --build ./configure
-    patchShebangs --build ./extra
-  '';
+  # Some uClibc sources depend on Linux headers.
+  UCLIBC_KERNEL_HEADERS = "${linuxHeaders}/include";
 
   # klee-uclibc configure does not support --prefix, so we override configurePhase entirely
   configurePhase = ''
@@ -87,14 +89,12 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  # Link the locale source into the correct place
-  preBuild = ''
-    ln -sf ${localeSrc} extra/locale/${localeSrcBase}
-  '';
-
-  makeFlags = [ "HAVE_DOT_CONFIG=y" ];
-
   enableParallelBuilding = true;
+
+  prePatch = ''
+    patchShebangs --build ./configure
+    patchShebangs --build ./extra
+  '';
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -105,10 +105,12 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Modified version of uClibc for KLEE";
+
     longDescription = ''
       klee-uclibc is a bitcode build of uClibc meant for compatibility with the
       KLEE symbolic virtual machine.
     '';
+
     homepage = "https://github.com/klee/klee-uclibc";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ numinit ];

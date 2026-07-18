@@ -14,12 +14,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0xqjw8df68f4kzkns5gcah61s5wk0m44qdk2z1d6388w6viwxhsz";
   };
 
+  nativeBuildInputs = [ openssh ];
+
   preConfigure = ''
     export ac_cv_func_malloc_0_nonnull=yes
     export ac_cv_func_realloc_0_nonnull=yes
   '';
-
-  nativeBuildInputs = [ openssh ];
 
   installPhase = ''
     install -D -m755 autossh      $out/bin/autossh                          || return 1
@@ -31,11 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.harding.motd.ca/autossh/";
     description = "Automatically restart SSH sessions and tunnels";
+    homepage = "https://www.harding.motd.ca/autossh/";
     license = lib.licenses.bsd1;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.unix;
     mainProgram = "autossh";
   };
 })

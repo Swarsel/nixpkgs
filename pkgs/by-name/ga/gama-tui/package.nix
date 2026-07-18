@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-PTyrSXLMr244+ZTvjBBUc1gmwYXBAs0bXZS2t3aSWFQ=";
+  # requires network access
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-X main.Version=v${finalAttrs.version}"
   ];
-
-  # requires network access
-  doCheck = false;
 
   meta = {
     description = "Manage your GitHub Actions from Terminal with great UI";

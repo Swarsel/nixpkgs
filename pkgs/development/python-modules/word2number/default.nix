@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   future,
   python,
   pythonOlder,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "word2number";
   version = "1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "akshaynagpal";
@@ -19,6 +18,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-dgHPEfieNDZnP6+YvywvN3ZzmeICav0WMYKkWDSJ/LE=";
   };
+
+  checkPhase = ''
+    ${lib.getExe python} unit_testing.py
+  '';
 
   build-system = [
     setuptools-scm
@@ -28,18 +31,16 @@ buildPythonPackage rec {
     future
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "word2number"
   ];
 
-  checkPhase = ''
-    ${lib.getExe python} unit_testing.py
-  '';
-
   meta = {
-    changelog = "https://github.com/akshaynagpal/w2n/releases/tag/${version}";
     description = "Convert number words (eg. twenty one) to numeric digits (21)";
     homepage = "http://w2n.readthedocs.io/";
+    changelog = "https://github.com/akshaynagpal/w2n/releases/tag/${version}";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers.booxter ];
   };

@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/kaitai-io/kaitai_struct_compiler";
     description = "Compiler to generate binary data parsers in C++ / C# / Go / Java / JavaScript / Lua / Perl / PHP / Python / Ruby ";
+    homepage = "https://github.com/kaitai-io/kaitai_struct_compiler";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ qubasa ];
     platforms = lib.platforms.unix;

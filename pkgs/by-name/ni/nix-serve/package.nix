@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   bzip2,
-  nix,
-  perl,
   makeWrapper,
+  nix,
   nixosTests,
+  perl,
 }:
 
 let
@@ -19,14 +19,12 @@ stdenv.mkDerivation {
   version = "0.2-${lib.substring 0 7 rev}";
 
   src = fetchFromGitHub {
+    inherit rev sha256;
     owner = "edolstra";
     repo = "nix-serve";
-    inherit rev sha256;
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontBuild = true;
 
   installPhase = ''
     install -Dm0755 nix-serve.psgi $out/libexec/nix-serve/nix-serve.psgi
@@ -48,6 +46,7 @@ stdenv.mkDerivation {
       --add-flags $out/libexec/nix-serve/nix-serve.psgi
   '';
 
+  dontBuild = true;
   /**
     The nix package that nix-serve got its nix perl bindings from.
   */
@@ -59,12 +58,12 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://github.com/edolstra/nix-serve";
     description = "Utility for sharing a Nix store as a binary cache";
+    homepage = "https://github.com/edolstra/nix-serve";
     license = lib.licenses.lgpl21;
-    # See https://github.com/edolstra/nix-serve/issues/57
-    broken = stdenv.hostPlatform.isDarwin;
     platforms = nix.meta.platforms;
     mainProgram = "nix-serve";
+    # See https://github.com/edolstra/nix-serve/issues/57
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

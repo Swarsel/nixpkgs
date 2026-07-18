@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   cython,
+  pytestCheckHook,
   setuptools,
   toolz,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cytoolz";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytoolz";
@@ -26,12 +25,7 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "dynamic = [\"version\"]" "version = \"${finalAttrs.version}\""
   '';
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
-  dependencies = [ toolz ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   # tests are located in cytoolz/tests, but we need to prevent import from the cytoolz source
   preCheck = ''
@@ -40,12 +34,18 @@ buildPythonPackage (finalAttrs: {
     sed -i "/testpaths/d" pyproject.toml
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  dependencies = [ toolz ];
+  pyproject = true;
 
   meta = {
+    description = "Cython implementation of Toolz: High performance functional utilities";
     homepage = "https://github.com/pytoolz/cytoolz/";
     changelog = "https://github.com/pytoolz/cytoolz/releases/tag/${finalAttrs.src.tag}";
-    description = "Cython implementation of Toolz: High performance functional utilities";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ sarahec ];
   };

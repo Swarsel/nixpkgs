@@ -1,35 +1,35 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchFromGitLab,
+  bash,
+  bubblewrap,
+  dbus,
+  docutils,
   flatpak,
   fuse3,
-  bubblewrap,
-  docutils,
-  systemdMinimal,
+  gdk-pixbuf,
   geoclue2,
   glib,
+  gobject-introspection,
   gsettings-desktop-schemas,
+  gst_all_1,
   json-glib,
+  libgudev,
+  librsvg,
   meson,
   ninja,
   nixosTests,
   pipewire,
-  gdk-pixbuf,
-  librsvg,
-  gobject-introspection,
-  python3,
   pkg-config,
-  stdenv,
-  runCommand,
-  wrapGAppsNoGuiHook,
-  bash,
-  dbus,
-  gst_all_1,
-  libgudev,
-  umockdev,
-  zynaddsubfx,
+  python3,
   replaceVars,
+  runCommand,
+  systemdMinimal,
+  umockdev,
+  wrapGAppsNoGuiHook,
+  zynaddsubfx,
   enableGeoLocation ? true,
   enableSystemd ? true,
 }:
@@ -38,21 +38,15 @@ let
   # Update this revision when updating this package, found in https://github.com/flatpak/xdg-desktop-portal/blob/master/subprojects/libglnx.wrap
   libglnxSrc = fetchFromGitLab {
     domain = "gitlab.gnome.org";
+    hash = "sha256-H8Bg9QCSkt/aBOaHLyHYC2ei6OU7UpcLq8zLurkYOuA=";
     owner = "GNOME";
     repo = "libglnx";
     rev = "ccea836b799256420788c463a638ded0636b1632";
-    hash = "sha256-H8Bg9QCSkt/aBOaHLyHYC2ei6OU7UpcLq8zLurkYOuA=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "xdg-desktop-portal";
   version = "1.20.4";
-
-  outputs = [
-    "out"
-    "installedTests"
-  ];
-  separateDebugInfo = true;
 
   src = fetchFromGitHub {
     owner = "flatpak";
@@ -60,6 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-wLQgJsVicOb8G7M5Qwd+t90UgNYTD04bZ5Ki85Alr1w=";
   };
+
+  outputs = [
+    "out"
+    "installedTests"
+  ];
 
   patches = [
     # The icon validator copied from Flatpak needs to access the gdk-pixbuf loaders
@@ -84,6 +83,20 @@ stdenv.mkDerivation (finalAttrs: {
     # test tries to read /proc/cmdline, which is not intended to be accessible in the sandbox
     ./trash-test.patch
   ];
+
+  postPatch = ''
+    mkdir -p subprojects/libglnx
+    cp -r ${libglnxSrc}/* subprojects/libglnx/
+
+    # until/unless bubblewrap ships a pkg-config file, meson has no way to find it when cross-compiling.
+    substituteInPlace meson.build \
+      --replace-fail "find_program('bwrap'"  "find_program('${lib.getExe bubblewrap}'"
+
+    patchShebangs src/generate-method-info.py
+    patchShebangs tests/run-test.sh
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     docutils # for rst2man
@@ -117,6 +130,22 @@ stdenv.mkDerivation (finalAttrs: {
     systemdMinimal # libsystemd
   ];
 
+  mesonFlags = [
+    "--sysconfdir=/etc"
+    "-Dinstalled-tests=true"
+    "-Dinstalled_test_prefix=${placeholder "installedTests"}"
+    "-Ddocumentation=disabled" # pulls in a whole lot of extra stuff
+    (lib.mesonEnable "systemd" enableSystemd)
+  ]
+  ++ lib.optionals (!enableGeoLocation) [
+    "-Dgeoclue=disabled"
+  ]
+  ++ lib.optionals (!finalAttrs.finalPackage.doCheck) [
+    "-Dtests=disabled"
+  ];
+
+  doCheck = true;
+
   nativeCheckInputs = [
     dbus
     gdk-pixbuf
@@ -138,36 +167,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   checkInputs = [ umockdev ];
 
-  mesonFlags = [
-    "--sysconfdir=/etc"
-    "-Dinstalled-tests=true"
-    "-Dinstalled_test_prefix=${placeholder "installedTests"}"
-    "-Ddocumentation=disabled" # pulls in a whole lot of extra stuff
-    (lib.mesonEnable "systemd" enableSystemd)
-  ]
-  ++ lib.optionals (!enableGeoLocation) [
-    "-Dgeoclue=disabled"
-  ]
-  ++ lib.optionals (!finalAttrs.finalPackage.doCheck) [
-    "-Dtests=disabled"
-  ];
-
-  strictDeps = true;
-
-  doCheck = true;
-
-  postPatch = ''
-    mkdir -p subprojects/libglnx
-    cp -r ${libglnxSrc}/* subprojects/libglnx/
-
-    # until/unless bubblewrap ships a pkg-config file, meson has no way to find it when cross-compiling.
-    substituteInPlace meson.build \
-      --replace-fail "find_program('bwrap'"  "find_program('${lib.getExe bubblewrap}'"
-
-    patchShebangs src/generate-method-info.py
-    patchShebangs tests/run-test.sh
-  '';
-
   preCheck = lib.optionalString finalAttrs.finalPackage.doCheck ''
     # For test_trash_file
     export HOME=$(mktemp -d)
@@ -188,6 +187,8 @@ stdenv.mkDerivation (finalAttrs: {
   preFixup = lib.optionalString (!finalAttrs.finalPackage.doCheck) ''
     mkdir $installedTests
   '';
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {

@@ -1,12 +1,11 @@
 {
   lib,
-  melpaBuild,
   fetchurl,
+  melpaBuild,
 }:
 
 melpaBuild {
   pname = "prolog-mode";
-  ename = "prolog";
   version = "1.28";
 
   src = fetchurl {
@@ -19,9 +18,11 @@ melpaBuild {
       --replace-fail ";; prolog.el ---" ";;; prolog.el ---"
   '';
 
+  ename = "prolog";
+
   meta = {
-    homepage = "https://bruda.ca/emacs/prolog_mode_for_emacs/";
     description = "Prolog mode for Emacs";
+    homepage = "https://bruda.ca/emacs/prolog_mode_for_emacs/";
     license = lib.licenses.gpl2Plus;
   };
 }

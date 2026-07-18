@@ -1,19 +1,19 @@
 {
   lib,
-  fetchFromGitHub,
-  runCommand,
   stdenv,
-  clang_20,
-  buildNpmPackage,
-  docify,
-  testers,
-  writeText,
-  jq,
+  fetchFromGitHub,
   basedpyright,
-  pkg-config,
+  buildNpmPackage,
+  clang_20,
+  docify,
+  jq,
   libsecret,
   nix-update-script,
+  pkg-config,
+  runCommand,
+  testers,
   versionCheckHook,
+  writeText,
 }:
 
 buildNpmPackage rec {
@@ -27,15 +27,6 @@ buildNpmPackage rec {
     hash = "sha256-8S83CTd/td7USKxfCI0cXd2gPBMivi4QMRQwVgxhs6w=";
   };
 
-  npmDepsHash = "sha256-humpJB+fv3+PITcPCz3uY2jNANb3P7sXy0lFP8Eg58I=";
-  npmWorkspace = "packages/pyright";
-
-  preBuild = ''
-    # Build the docstubs
-    cp -r packages/pyright-internal/typeshed-fallback docstubs
-    docify docstubs/stdlib --builtins-only --in-place
-  '';
-
   nativeBuildInputs = [
     docify
     pkg-config
@@ -43,6 +34,13 @@ buildNpmPackage rec {
   ++ lib.optional stdenv.hostPlatform.isDarwin clang_20; # clang_21 breaks keytar
 
   buildInputs = [ libsecret ];
+  npmDepsHash = "sha256-humpJB+fv3+PITcPCz3uY2jNANb3P7sXy0lFP8Eg58I=";
+
+  preBuild = ''
+    # Build the docstubs
+    cp -r packages/pyright-internal/typeshed-fallback docstubs
+    docify docstubs/stdlib --builtins-only --in-place
+  '';
 
   postInstall = ''
     mv "$out/bin/pyright" "$out/bin/basedpyright"
@@ -53,19 +51,15 @@ buildNpmPackage rec {
     rm -rf "$out/lib/node_modules/pyright-root/node_modules/keytar/build"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  npmWorkspace = "packages/pyright";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       # We are expecting 4 errors. Any other amount would indicate not working
       # stub files, for instance.
       simple = testers.testEqualContents {
-        assertion = "simple type checking";
-        expected = writeText "expected" ''
-          4
-        '';
         actual =
           runCommand "actual"
             {
@@ -73,6 +67,7 @@ buildNpmPackage rec {
                 jq
                 basedpyright
               ];
+
               base = writeText "test.py" ''
                 import sys
                 from time import tzset
@@ -87,6 +82,7 @@ buildNpmPackage rec {
                 else:
                     result_of_tzset_is_None: str = tzset()
               '';
+
               configFile = writeText "pyproject.toml" ''
                 [tool.pyright]
                 typeCheckingMode = "strict"
@@ -95,19 +91,29 @@ buildNpmPackage rec {
             ''
               (basedpyright --outputjson $base || true) | jq -r .summary.errorCount > $out
             '';
+
+        assertion = "simple type checking";
+
+        expected = writeText "expected" ''
+          4
+        '';
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/detachhead/basedpyright/releases/tag/${src.tag}";
     description = "Type checker for the Python language";
     homepage = "https://github.com/detachhead/basedpyright";
+    changelog = "https://github.com/detachhead/basedpyright/releases/tag/${src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "basedpyright";
+
     maintainers = with lib.maintainers; [
       kiike
       misilelab
     ];
+
+    mainProgram = "basedpyright";
   };
 }

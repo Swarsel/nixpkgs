@@ -3,21 +3,20 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  openssl,
-  libusb1,
-  libedit,
-  makeWrapper,
   curl,
   gengetopt,
-  patchelf,
-  pkg-config,
-  pcsclite,
   help2man,
+  jq,
+  libedit,
   libiconv,
-
+  libusb1,
+  makeWrapper,
+  openssl,
+  patchelf,
+  pcsclite,
+  pkg-config,
   # for installCheckPhase
   versionCheckHook,
-  jq,
   yubihsm-connector,
 }:
 
@@ -63,23 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     libiconv
   ];
 
-  # causes redefinition of _FORTIFY_SOURCE
-  hardeningDisable = [ "fortify3" ];
-
-  # libyubihsm.so performs a dlopen() to connectors in $out/lib,
-  # this will solve search path issues for both the command line tools
-  # and the PKCS#11 library without patching
-  postFixup =
-    lib.optionalString stdenv.hostPlatform.isLinux ''
-      patchelf --force-rpath --add-rpath "$out/lib" "$out/lib/libyubihsm.so"
-    ''
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      install_name_tool -add_rpath "$out/lib" "$out/lib/libyubihsm.dylib"
-    '';
-
   doInstallCheck = true;
-
-  __darwinAllowLocalNetworking = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
@@ -108,15 +91,32 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  # libyubihsm.so performs a dlopen() to connectors in $out/lib,
+  # this will solve search path issues for both the command line tools
+  # and the PKCS#11 library without patching
+  postFixup =
+    lib.optionalString stdenv.hostPlatform.isLinux ''
+      patchelf --force-rpath --add-rpath "$out/lib" "$out/lib/libyubihsm.so"
+    ''
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      install_name_tool -add_rpath "$out/lib" "$out/lib/libyubihsm.dylib"
+    '';
+
+  __darwinAllowLocalNetworking = true;
+  # causes redefinition of _FORTIFY_SOURCE
+  hardeningDisable = [ "fortify3" ];
+
   meta = {
-    mainProgram = "yubihsm-shell";
     description = "Thin wrapper around libyubihsm providing both an interactive and command-line interface to a YubiHSM";
     homepage = "https://github.com/Yubico/yubihsm-shell";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       matthewcroughan
       numinit
     ];
-    license = lib.licenses.asl20;
+
     platforms = lib.platforms.all;
+    mainProgram = "yubihsm-shell";
   };
 })

@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rdma-core,
-  openssl,
-  zlib,
-  xz,
-  expat,
+  autoconf,
+  automake,
   bashNonInteractive,
   boost,
-  curl,
-  pkg-config,
-  libxml2,
-  pciutils,
   busybox,
-  python3,
-  automake,
-  autoconf,
-  libtool,
+  curl,
+  expat,
   git,
-  # use this to shrink the package's footprint if necessary (e.g. for hardened appliances)
-  onlyFirmwareUpdater ? false,
+  libtool,
+  libxml2,
+  openssl,
+  pciutils,
+  pkg-config,
+  python3,
+  rdma-core,
+  xz,
+  zlib,
   # contains binary-only libraries
   enableDPA ? true,
+  # use this to shrink the package's footprint if necessary (e.g. for hardened appliances)
+  onlyFirmwareUpdater ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -60,11 +60,31 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
+  configureFlags = [
+    "--enable-xml2"
+    "--datarootdir=${placeholder "out"}/share"
+  ]
+  ++ lib.optionals (!onlyFirmwareUpdater) [
+    "--enable-adb-generic-tools"
+    "--enable-cs"
+    "--enable-dc"
+    "--enable-fw-mgr"
+    "--enable-inband"
+    "--enable-rdmem"
+  ]
+  ++ lib.optionals enableDPA [
+    "--enable-dpa"
+  ];
+
   preConfigure = ''
     export CPPFLAGS="-I$(pwd)/tools_layouts -isystem ${libxml2.dev}/include/libxml2"
     export INSTALL_BASEDIR=$out
     ./autogen.sh
   '';
+
+  dontDisableStatic = true; # the build fails without this. should probably be reported upstream
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
 
   # Cannot use wrapProgram since the python script's logic depends on the
   # filename and will get messed up if the executable is named ".xyz-wrapped".
@@ -100,35 +120,15 @@ stdenv.mkDerivation (finalAttrs: {
     '')
   ];
 
-  configureFlags = [
-    "--enable-xml2"
-    "--datarootdir=${placeholder "out"}/share"
-  ]
-  ++ lib.optionals (!onlyFirmwareUpdater) [
-    "--enable-adb-generic-tools"
-    "--enable-cs"
-    "--enable-dc"
-    "--enable-fw-mgr"
-    "--enable-inband"
-    "--enable-rdmem"
-  ]
-  ++ lib.optionals enableDPA [
-    "--enable-dpa"
-  ];
-
-  enableParallelBuilding = true;
-
-  hardeningDisable = [ "format" ];
-
-  dontDisableStatic = true; # the build fails without this. should probably be reported upstream
-
   meta = {
     description = "Open source version of Mellanox Firmware Tools (MFT)";
     homepage = "https://github.com/Mellanox/mstflint";
+
     license = with lib.licenses; [
       gpl2Only
       bsd2
     ];
+
     maintainers = with lib.maintainers; [ thillux ];
     platforms = lib.platforms.linux;
   };

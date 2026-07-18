@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gdk-pixbuf,
+  libwebp,
+  makeWrapper,
   meson,
   ninja,
   pkg-config,
-  makeWrapper,
-  gdk-pixbuf,
-  libwebp,
 }:
 
 let
@@ -25,6 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-IJEweV2ACFp+Ua2ESrRUNApXWBg3NED60FDKijYO5TI=";
   };
 
+  postPatch = ''
+    # It looks for gdk-pixbuf-thumbnailer in this package's bin rather than the gdk-pixbuf bin. We need to patch that.
+    substituteInPlace webp-pixbuf.thumbnailer.in \
+      --replace "@bindir@/gdk-pixbuf-thumbnailer" "$out/libexec/gdk-pixbuf-thumbnailer-webp"
+  '';
+
   nativeBuildInputs = [
     gdk-pixbuf.dev
     meson
@@ -41,12 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
   mesonFlags = [
     "-Dgdk_pixbuf_moduledir=${placeholder "out"}/${moduleDir}"
   ];
-
-  postPatch = ''
-    # It looks for gdk-pixbuf-thumbnailer in this package's bin rather than the gdk-pixbuf bin. We need to patch that.
-    substituteInPlace webp-pixbuf.thumbnailer.in \
-      --replace "@bindir@/gdk-pixbuf-thumbnailer" "$out/libexec/gdk-pixbuf-thumbnailer-webp"
-  '';
 
   postInstall = ''
     GDK_PIXBUF_MODULE_FILE="$out/${loadersPath}" \
@@ -68,8 +68,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "WebP GDK Pixbuf Loader library";
     homepage = "https://github.com/aruiz/webp-pixbuf-loader";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.cwyc ];
+    platforms = lib.platforms.unix;
     teams = [ lib.teams.gnome ];
   };
 })

@@ -7,14 +7,13 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "updfparser";
   version = "0-unstable-2024-03-24";
-  rev = "6060d123441a06df699eb275ae5ffdd50409b8f3";
 
   src = fetchFromGitea {
     inherit (finalAttrs) rev;
-    domain = "forge.soutade.fr";
     owner = "soutade";
     repo = "updfparser";
     hash = "sha256-HD73WGZ4e/3T7vQmwU/lRADtvsInFG62uqvJmF773Rk=";
+    domain = "forge.soutade.fr";
   };
 
   makeFlags = [
@@ -29,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dt $out/lib libupdfparser.a
     runHook postInstall
   '';
+
+  rev = "6060d123441a06df699eb275ae5ffdd50409b8f3";
 
   meta = {
     description = "Very simple PDF parser";

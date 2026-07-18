@@ -1,16 +1,15 @@
 {
-  mkKdeDerivation,
-  qtsvg,
-  qtdeclarative,
-  shared-mime-info,
-  poppler,
   libphonenumber,
+  mkKdeDerivation,
+  poppler,
   protobuf,
+  qtdeclarative,
+  qtsvg,
+  shared-mime-info,
 }:
 mkKdeDerivation {
   pname = "kitinerary";
 
-  extraNativeBuildInputs = [ shared-mime-info ];
   extraBuildInputs = [
     qtsvg
     qtdeclarative
@@ -18,4 +17,6 @@ mkKdeDerivation {
     libphonenumber
     protobuf
   ];
+
+  extraNativeBuildInputs = [ shared-mime-info ];
 }

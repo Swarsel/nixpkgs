@@ -11,8 +11,6 @@ in
 buildPythonPackage {
   inherit pname version;
 
-  pyproject = true;
-
   src = fetchFromGitHub {
     owner = "fboender";
     repo = "jsonxs";
@@ -21,6 +19,7 @@ buildPythonPackage {
   };
 
   build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Python library that uses path expression strings to get and set values in JSON";

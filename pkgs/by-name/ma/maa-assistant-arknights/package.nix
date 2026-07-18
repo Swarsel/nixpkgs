@@ -1,17 +1,17 @@
 {
   lib,
-  config,
-  callPackage,
   stdenv,
   fetchFromGitHub,
   asio,
+  callPackage,
   cmake,
+  config,
   libcpr,
   onnxruntime,
   opencv,
-  isBeta ? false,
-  cudaSupport ? config.cudaSupport,
   cudaPackages ? { },
+  cudaSupport ? config.cudaSupport,
+  isBeta ? false,
 }:
 
 let
@@ -28,6 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = if isBeta then sources.beta.hash else sources.stable.hash;
   };
+
+  postPatch = ''
+    cp -v ${fastdeploy.cmake}/Findonnxruntime.cmake cmake/
+  '';
 
   nativeBuildInputs = [
     asio
@@ -55,8 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  cmakeBuildType = "None";
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" true)
     (lib.cmakeBool "INSTALL_FLATTEN" false)
@@ -66,16 +68,13 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "MAA_VERSION" "v${finalAttrs.version}")
   ];
 
-  passthru.updateScript = ./update.sh;
-
-  postPatch = ''
-    cp -v ${fastdeploy.cmake}/Findonnxruntime.cmake cmake/
-  '';
-
   postInstall = ''
     mkdir -p $out/share/${finalAttrs.pname}
     mv $out/{Python,resource} $out/share/${finalAttrs.pname}
   '';
+
+  cmakeBuildType = "None";
+  passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Arknights assistant";

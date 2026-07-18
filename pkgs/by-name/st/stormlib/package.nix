@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bzip2,
   cmake,
-  fetchFromGitHub,
   libtomcrypt,
-  zlib,
   pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-gW3jR9XnBo5uEORu12TpGsUMFAS4w5snWPA/bIUt9UY=";
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "FRAMEWORK DESTINATION /Library/Frameworks" "FRAMEWORK DESTINATION Library/Frameworks"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -37,8 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
   ];
 
-  strictDeps = true;
-
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals stdenv.cc.isClang [
       "-Wno-implicit-function-declaration"
@@ -46,18 +51,15 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "FRAMEWORK DESTINATION /Library/Frameworks" "FRAMEWORK DESTINATION Library/Frameworks"
-  '';
-
   meta = {
-    homepage = "https://github.com/ladislav-zezula/StormLib";
     description = "Open-source project that can work with Blizzard MPQ archives";
+    homepage = "https://github.com/ladislav-zezula/StormLib";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aanderse
     ];
+
     platforms = lib.platforms.all;
     broken = stdenv.hostPlatform.isDarwin; # installation directory mismatch
   };

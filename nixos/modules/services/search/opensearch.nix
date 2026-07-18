@@ -31,73 +31,47 @@ in
       default = [ "opensearch" ];
     };
 
-    settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-
-        options."network.host" = lib.mkOption {
-          type = lib.types.str;
-          default = "127.0.0.1";
-          description = ''
-            Which port this service should listen on.
-          '';
-        };
-
-        options."cluster.name" = lib.mkOption {
-          type = lib.types.str;
-          default = "opensearch";
-          description = ''
-            The name of the cluster.
-          '';
-        };
-
-        options."discovery.type" = lib.mkOption {
-          type = lib.types.str;
-          default = "single-node";
-          description = ''
-            The type of discovery to use.
-          '';
-        };
-
-        options."http.port" = lib.mkOption {
-          type = lib.types.port;
-          default = 9200;
-          description = ''
-            The port to listen on for HTTP traffic.
-          '';
-        };
-
-        options."transport.port" = lib.mkOption {
-          type = lib.types.port;
-          default = 9300;
-          description = ''
-            The port to listen on for transport traffic.
-          '';
-        };
-
-        options."plugins.security.disabled" = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Whether to enable the security plugin,
-            `plugins.security.ssl.transport.keystore_filepath` or
-            `plugins.security.ssl.transport.server.pemcert_filepath` and
-            `plugins.security.ssl.transport.client.pemcert_filepath`
-            must be set for this plugin to be enabled.
-          '';
-        };
-      };
-
-      default = { };
+    dataDir = lib.mkOption {
+      apply = lib.converge (lib.removeSuffix "/");
+      default = "/var/lib/opensearch";
 
       description = ''
-        OpenSearch configuration.
+        Data directory for OpenSearch. If you change this, you need to
+        manually create the directory. You also need to create the
+        `opensearch` user and group, or change
+        [](#opt-services.opensearch.user) and
+        [](#opt-services.opensearch.group) to existing ones with
+        access to the directory.
       '';
+
+      type = lib.types.path;
+    };
+
+    extraCmdLineOptions = lib.mkOption {
+      default = [ ];
+      description = "Extra command line options for the OpenSearch launcher.";
+      type = lib.types.listOf lib.types.str;
+    };
+
+    extraJavaOptions = lib.mkOption {
+      default = [ ];
+      description = "Extra command line options for Java.";
+      example = [ "-Djava.net.preferIPv4Stack=true" ];
+      type = lib.types.listOf lib.types.str;
+    };
+
+    group = lib.mkOption {
+      default = "opensearch";
+
+      description = ''
+        The group OpenSearch runs as. Should be left at default unless
+        you have very specific needs.
+      '';
+
+      type = lib.types.str;
     };
 
     logging = lib.mkOption {
-      description = "opensearch logging configuration.";
-
       default = ''
         logger.action.name = org.opensearch.action
         logger.action.level = info
@@ -110,79 +84,145 @@ in
         rootLogger.level = info
         rootLogger.appenderRef.console.ref = console
       '';
+
+      description = "opensearch logging configuration.";
       type = lib.types.str;
-    };
-
-    dataDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/opensearch";
-      apply = lib.converge (lib.removeSuffix "/");
-      description = ''
-        Data directory for OpenSearch. If you change this, you need to
-        manually create the directory. You also need to create the
-        `opensearch` user and group, or change
-        [](#opt-services.opensearch.user) and
-        [](#opt-services.opensearch.group) to existing ones with
-        access to the directory.
-      '';
-    };
-
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "opensearch";
-      description = ''
-        The user OpenSearch runs as. Should be left at default unless
-        you have very specific needs.
-      '';
-    };
-
-    group = lib.mkOption {
-      type = lib.types.str;
-      default = "opensearch";
-      description = ''
-        The group OpenSearch runs as. Should be left at default unless
-        you have very specific needs.
-      '';
-    };
-
-    extraCmdLineOptions = lib.mkOption {
-      description = "Extra command line options for the OpenSearch launcher.";
-      default = [ ];
-      type = lib.types.listOf lib.types.str;
-    };
-
-    extraJavaOptions = lib.mkOption {
-      description = "Extra command line options for Java.";
-      default = [ ];
-      type = lib.types.listOf lib.types.str;
-      example = [ "-Djava.net.preferIPv4Stack=true" ];
     };
 
     restartIfChanged = lib.mkOption {
-      type = lib.types.bool;
+      default = true;
+
       description = ''
         Automatically restart the service on config change.
         This can be set to false to defer restarts on a server or cluster.
         Please consider the security implications of inadvertently running an older version,
         and the possibility of unexpected behavior caused by inconsistent versions across a cluster when disabling this option.
       '';
-      default = true;
+
+      type = lib.types.bool;
+    };
+
+    settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        OpenSearch configuration.
+      '';
+
+      type = lib.types.submodule {
+        options."cluster.name" = lib.mkOption {
+          default = "opensearch";
+
+          description = ''
+            The name of the cluster.
+          '';
+
+          type = lib.types.str;
+        };
+
+        options."discovery.type" = lib.mkOption {
+          default = "single-node";
+
+          description = ''
+            The type of discovery to use.
+          '';
+
+          type = lib.types.str;
+        };
+
+        options."http.port" = lib.mkOption {
+          default = 9200;
+
+          description = ''
+            The port to listen on for HTTP traffic.
+          '';
+
+          type = lib.types.port;
+        };
+
+        options."network.host" = lib.mkOption {
+          default = "127.0.0.1";
+
+          description = ''
+            Which port this service should listen on.
+          '';
+
+          type = lib.types.str;
+        };
+
+        options."plugins.security.disabled" = lib.mkOption {
+          default = true;
+
+          description = ''
+            Whether to enable the security plugin,
+            `plugins.security.ssl.transport.keystore_filepath` or
+            `plugins.security.ssl.transport.server.pemcert_filepath` and
+            `plugins.security.ssl.transport.client.pemcert_filepath`
+            must be set for this plugin to be enabled.
+          '';
+
+          type = lib.types.bool;
+        };
+
+        options."transport.port" = lib.mkOption {
+          default = 9300;
+
+          description = ''
+            The port to listen on for transport traffic.
+          '';
+
+          type = lib.types.port;
+        };
+
+        freeformType = settingsFormat.type;
+      };
+    };
+
+    user = lib.mkOption {
+      default = "opensearch";
+
+      description = ''
+        The user OpenSearch runs as. Should be left at default unless
+        you have very specific needs.
+      '';
+
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+
     systemd.services.opensearch = {
-      description = "OpenSearch Daemon";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-      path = [ pkgs.inetutils ];
       inherit (cfg) restartIfChanged;
+      after = [ "network.target" ];
+      description = "OpenSearch Daemon";
+
       environment = {
         OPENSEARCH_HOME = cfg.dataDir;
         OPENSEARCH_JAVA_OPTS = toString cfg.extraJavaOptions;
         OPENSEARCH_PATH_CONF = configDir;
       };
+
+      path = [ pkgs.inetutils ];
+
       serviceConfig = {
+        DynamicUser = usingDefaultUserAndGroup && usingDefaultDataDir;
+        ExecStart = "${cfg.package}/bin/opensearch ${toString cfg.extraCmdLineOptions}";
+
+        ExecStartPost = pkgs.writeShellScript "opensearch-start-post" ''
+          set -o errexit -o pipefail -o nounset -o errtrace
+          shopt -s inherit_errexit
+
+          # Make sure opensearch is up and running before dependents
+          # are started
+          while ! ${pkgs.curl}/bin/curl -sS -f http://${cfg.settings."network.host"}:${
+            toString cfg.settings."http.port"
+          } 2>/dev/null; do
+            sleep 1
+          done
+        '';
+
         ExecStartPre =
           let
             startPreFullPrivileges = ''
@@ -244,32 +284,19 @@ in
             "+${pkgs.writeShellScript "opensearch-start-pre-full-privileges" startPreFullPrivileges}"
             "${pkgs.writeShellScript "opensearch-start-pre-unprivileged" startPreUnprivileged}"
           ];
-        ExecStartPost = pkgs.writeShellScript "opensearch-start-post" ''
-          set -o errexit -o pipefail -o nounset -o errtrace
-          shopt -s inherit_errexit
 
-          # Make sure opensearch is up and running before dependents
-          # are started
-          while ! ${pkgs.curl}/bin/curl -sS -f http://${cfg.settings."network.host"}:${
-            toString cfg.settings."http.port"
-          } 2>/dev/null; do
-            sleep 1
-          done
-        '';
-        ExecStart = "${cfg.package}/bin/opensearch ${toString cfg.extraCmdLineOptions}";
-        User = cfg.user;
         Group = cfg.group;
         LimitNOFILE = "1024000";
         Restart = "always";
         TimeoutStartSec = "infinity";
-        DynamicUser = usingDefaultUserAndGroup && usingDefaultDataDir;
+        User = cfg.user;
       }
       // (lib.optionalAttrs usingDefaultDataDir {
         StateDirectory = "opensearch";
         StateDirectoryMode = "0700";
       });
-    };
 
-    environment.systemPackages = [ cfg.package ];
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 }

@@ -17,26 +17,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-dbFqc+zlUihf/gz4Oo3LtbOClDDDB/khlCbI9/UgD2E=";
   };
 
-  vendorHash = "sha256-7N+Zn7tzEG3dGeqNWmY98XUUKV7Y6g8wFZcQP9wea/8=";
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-
-  versionCheckProgramArg = "version";
-
-  doInstallCheck = true;
-
   nativeBuildInputs = [
     scdoc
   ];
 
+  vendorHash = "sha256-7N+Zn7tzEG3dGeqNWmY98XUUKV7Y6g8wFZcQP9wea/8=";
   makeFlags = [ "PREFIX=$(out)" ];
-
-  ldflags = [
-    # Recommended in 0.7.0 release notes https://git.sr.ht/~xenrox/hut/refs/v0.7.0
-    "-X main.version=${finalAttrs.version}"
-  ];
 
   postBuild = ''
     make $makeFlags completions doc/hut.1
@@ -46,9 +32,22 @@ buildGoModule (finalAttrs: {
     make $makeFlags install
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  ldflags = [
+    # Recommended in 0.7.0 release notes https://git.sr.ht/~xenrox/hut/refs/v0.7.0
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  versionCheckProgramArg = "version";
+
   meta = {
-    homepage = "https://sr.ht/~xenrox/hut/";
     description = "CLI tool for Sourcehut / sr.ht";
+    homepage = "https://sr.ht/~xenrox/hut/";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ fgaz ];
     mainProgram = "hut";

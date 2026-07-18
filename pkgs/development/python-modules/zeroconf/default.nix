@@ -1,8 +1,8 @@
 {
   lib,
-  cython,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  cython,
   ifaddr,
   poetry-core,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "zeroconf";
   version = "0.150.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jstasiak";
@@ -25,14 +24,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Etk8sQZotwmsM6HkArAl2sDZop77wTAcE4aUSIoM1ds=";
   };
 
-  build-system = [
-    cython
-    poetry-core
-    setuptools
-  ];
-
-  dependencies = [ ifaddr ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-codspeed
@@ -40,6 +31,16 @@ buildPythonPackage (finalAttrs: {
     pytest-timeout
     pytestCheckHook
   ];
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    cython
+    poetry-core
+    setuptools
+  ];
+
+  dependencies = [ ifaddr ];
 
   disabledTests = [
     # OSError: [Errno 19] No such device
@@ -50,7 +51,7 @@ buildPythonPackage (finalAttrs: {
     "test_launch_and_close_v4_v6"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "zeroconf"

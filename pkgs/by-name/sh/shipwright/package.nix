@@ -1,41 +1,41 @@
 {
-  stdenv,
-  cmake,
-  lsb-release,
-  ninja,
   lib,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
-  copyDesktopItems,
-  makeDesktopItem,
-  python3,
-  glew,
-  boost,
+  fetchFromGitHub,
   SDL2,
   SDL2_net,
-  pkg-config,
-  libpulseaudio,
-  libpng,
-  imagemagick,
-  zenity,
-  makeWrapper,
-  darwin,
-  libicns,
-  libzip,
-  nlohmann_json,
-  tinyxml-2,
-  spdlog,
-  writeTextFile,
-  fixDarwinDylibNames,
   applyPatches,
-  shipwright,
-  libopus,
-  opusfile,
-  libogg,
-  libvorbis,
+  boost,
   bzip2,
+  cmake,
+  copyDesktopItems,
+  darwin,
+  fixDarwinDylibNames,
+  glew,
+  imagemagick,
+  libicns,
+  libogg,
+  libopus,
+  libpng,
+  libpulseaudio,
+  libvorbis,
   libx11,
+  libzip,
+  lsb-release,
+  makeDesktopItem,
+  makeWrapper,
+  ninja,
+  nlohmann_json,
+  opusfile,
+  pkg-config,
+  python3,
   sdl_gamecontrollerdb,
+  shipwright,
+  spdlog,
+  tinyxml-2,
+  writeTextFile,
+  zenity,
 }:
 
 let
@@ -43,10 +43,10 @@ let
   # The following would normally get fetched at build time, or a specific version is required
 
   dr_libs = fetchFromGitHub {
+    hash = "sha256-ydFhQ8LTYDBnRTuETtfWwIHZpRciWfqGsZC6SuViEn0=";
     owner = "mackron";
     repo = "dr_libs";
     rev = "da35f9d6c7374a95353fd1df1d394d44ab66cf01";
-    hash = "sha256-ydFhQ8LTYDBnRTuETtfWwIHZpRciWfqGsZC6SuViEn0=";
   };
 
   imgui' = applyPatches {
@@ -56,27 +56,29 @@ let
       tag = "v1.91.9b-docking";
       hash = "sha256-mQOJ6jCN+7VopgZ61yzaCnt4R1QLrW7+47xxMhFRHLQ=";
     };
+
     patches = [
       "${shipwright.src}/libultraship/cmake/dependencies/patches/imgui-fixes-and-config.patch"
     ];
   };
 
   libgfxd = fetchFromGitHub {
+    hash = "sha256-AmHAa3/cQdh7KAMFOtz5TQpcM6FqO9SppmDpKPTjTt8=";
     owner = "glankk";
     repo = "libgfxd";
     rev = "008f73dca8ebc9151b205959b17773a19c5bd0da";
-    hash = "sha256-AmHAa3/cQdh7KAMFOtz5TQpcM6FqO9SppmDpKPTjTt8=";
   };
 
   prism = fetchFromGitHub {
+    hash = "sha256-jRPwO1Vub0cH12YMlME6kd8zGzKmcfIrIJZYpQJeOks=";
     owner = "KiritoDv";
     repo = "prism-processor";
     rev = "bbcbc7e3f890a5806b579361e7aa0336acd547e7";
-    hash = "sha256-jRPwO1Vub0cH12YMlME6kd8zGzKmcfIrIJZYpQJeOks=";
   };
 
   stb_impl = writeTextFile {
     name = "stb_impl.c";
+
     text = ''
       #define STB_IMAGE_IMPLEMENTATION
       #include "stb_image.h"
@@ -84,9 +86,9 @@ let
   };
 
   stb' = fetchurl {
+    hash = "sha256-xUsVponmofMsdeLsI6+kQuPg436JS3PBl00IZ5sg3Vw=";
     name = "stb_image.h";
     url = "https://raw.githubusercontent.com/nothings/stb/0bc88af4de5fb022db643c2d8e549a0927749354/stb_image.h";
-    hash = "sha256-xUsVponmofMsdeLsI6+kQuPg436JS3PBl00IZ5sg3Vw=";
   };
 
   stormlib' = applyPatches {
@@ -96,28 +98,30 @@ let
       tag = "v9.25";
       hash = "sha256-HTi2FKzKCbRaP13XERUmHkJgw8IfKaRJvsK3+YxFFdc=";
     };
+
     patches = [
       "${shipwright.src}/libultraship/cmake/dependencies/patches/stormlib-optimizations.patch"
     ];
   };
 
   thread_pool = fetchFromGitHub {
+    hash = "sha256-zhRFEmPYNFLqQCfvdAaG5VBNle9Qm8FepIIIrT9sh88=";
     owner = "bshoshany";
     repo = "thread-pool";
     tag = "v4.1.0";
-    hash = "sha256-zhRFEmPYNFLqQCfvdAaG5VBNle9Qm8FepIIIrT9sh88=";
   };
 
   metalcpp = fetchFromGitHub {
+    hash = "sha256-CSYIpmq478bla2xoPL/cGYKIWAeiORxyFFZr0+ixd7I";
     owner = "briaguya-ai";
     repo = "single-header-metal-cpp";
     tag = "macOS13_iOS16";
-    hash = "sha256-CSYIpmq478bla2xoPL/cGYKIWAeiORxyFFZr0+ixd7I";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "shipwright";
   version = "9.2.3";
+
   src = fetchFromGitHub {
     owner = "harbourmasters";
     repo = "shipwright";
@@ -125,6 +129,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jTKhvyFaP59+T85CI7IteMABggOt6WVvQJ1vbSz1ops=";
     fetchSubmodules = true;
     deepClone = true;
+
     postFetch = ''
       cd $out
       git branch --show-current > GIT_BRANCH
@@ -138,6 +143,15 @@ stdenv.mkDerivation (finalAttrs: {
     ./darwin-fixes.patch
     ./disable-downloading-stb_image.patch
   ];
+
+  postPatch = ''
+    substituteInPlace soh/src/boot/build.c.in \
+    --replace-fail "@CMAKE_PROJECT_GIT_BRANCH@" "$(cat GIT_BRANCH)" \
+    --replace-fail "@CMAKE_PROJECT_GIT_COMMIT_HASH@" "$(cat GIT_COMMIT_HASH)" \
+    --replace-fail "@CMAKE_PROJECT_GIT_COMMIT_TAG@" "$(cat GIT_COMMIT_TAG)"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -199,26 +213,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-int-conversion -Wno-implicit-int -Wno-elaborated-enum-base";
 
-  strictDeps = true;
-
-  dontAddPrefix = true;
-
-  # Linking fails without this
-  hardeningDisable = [ "format" ];
-
   preConfigure = ''
     mkdir stb
     cp ${stb'} ./stb/${stb'.name}
     cp ${stb_impl} ./stb/${stb_impl.name}
     substituteInPlace libultraship/cmake/dependencies/common.cmake \
       --replace-fail "\''${STB_DIR}" "$(readlink -f ./stb)"
-  '';
-
-  postPatch = ''
-    substituteInPlace soh/src/boot/build.c.in \
-    --replace-fail "@CMAKE_PROJECT_GIT_BRANCH@" "$(cat GIT_BRANCH)" \
-    --replace-fail "@CMAKE_PROJECT_GIT_COMMIT_HASH@" "$(cat GIT_COMMIT_HASH)" \
-    --replace-fail "@CMAKE_PROJECT_GIT_COMMIT_TAG@" "$(cat GIT_COMMIT_TAG)"
   '';
 
   postBuild = ''
@@ -267,33 +267,40 @@ stdenv.mkDerivation (finalAttrs: {
       codesign -f -s - $out/Applications/soh.app/Contents/MacOS/soh
     '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "soh";
+      exec = "soh";
+      genericName = "Ship of Harkinian";
+      icon = "soh";
+      name = "soh";
+    })
+  ];
+
+  dontAddPrefix = true;
+
   fixupPhase = lib.optionalString stdenv.hostPlatform.isLinux ''
     wrapProgram $out/lib/soh.elf --prefix PATH ":" ${lib.makeBinPath [ zenity ]}
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "soh";
-      icon = "soh";
-      exec = "soh";
-      comment = finalAttrs.meta.description;
-      genericName = "Ship of Harkinian";
-      desktopName = "soh";
-      categories = [ "Game" ];
-    })
-  ];
+  # Linking fails without this
+  hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://github.com/HarbourMasters/Shipwright";
     description = "PC port of Ocarina of Time with modern controls, widescreen, high-resolution, and more";
-    mainProgram = "soh";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    maintainers = with lib.maintainers; [ matteopacini ];
+    homepage = "https://github.com/HarbourMasters/Shipwright";
+
     license = with lib.licenses; [
       # OTRExporter, OTRGui, ZAPDTR, libultraship
       mit
       # Ship of Harkinian itself
       unfree
     ];
+
+    maintainers = with lib.maintainers; [ matteopacini ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "soh";
   };
 })

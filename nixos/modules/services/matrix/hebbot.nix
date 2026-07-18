@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -18,48 +18,53 @@ let
   mkTemplateOption =
     templateName:
     mkOption {
-      type = types.path;
       description = ''
         A path to the Markdown file for the ${templateName}.
       '';
+
+      type = types.path;
     };
 in
 {
-  meta.maintainers = [ ];
   options.services.hebbot = {
     enable = mkEnableOption "hebbot";
     package = lib.mkPackageOption pkgs "hebbot" { };
+
     botPasswordFile = mkOption {
-      type = types.path;
       description = ''
         A path to the password file for your bot.
 
         Consider using a path that does not end up in your Nix store
         as it would be world readable.
       '';
+
+      type = types.path;
     };
-    templates = {
-      project = mkTemplateOption "project template";
-      report = mkTemplateOption "report template";
-      section = mkTemplateOption "section template";
-    };
+
     settings = mkOption {
-      type = format.type;
       default = { };
+
       description = ''
         Configuration for Hebbot, see, for examples:
 
         - <https://github.com/matrix-org/twim-config/blob/master/config.toml>
         - <https://gitlab.gnome.org/Teams/Websites/thisweek.gnome.org/-/blob/main/hebbot/config.toml>
       '';
+
+      type = format.type;
+    };
+
+    templates = {
+      project = mkTemplateOption "project template";
+      report = mkTemplateOption "report template";
+      section = mkTemplateOption "section template";
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.hebbot = {
-      description = "hebbot - a TWIM-style Matrix bot written in Rust";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "hebbot - a TWIM-style Matrix bot written in Rust";
 
       preStart = ''
         ln -sf ${cfg.templates.project} ./project_template.md
@@ -75,12 +80,16 @@ in
 
       serviceConfig = {
         DynamicUser = true;
-        Restart = "on-failure";
         LoadCredential = "bot-password-file:${cfg.botPasswordFile}";
+        Restart = "on-failure";
         RestartSec = "10s";
         StateDirectory = "hebbot";
         WorkingDirectory = "/var/lib/hebbot";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = [ ];
 }

@@ -1,14 +1,13 @@
 {
   lib,
   stdenv,
-  orthanc,
   gtest,
   icu,
+  orthanc,
   zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "orthanc-framework";
   inherit (orthanc)
     src
     version
@@ -17,7 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmakeFlags
     ;
 
-  sourceRoot = "${finalAttrs.src.name}/OrthancFramework/SharedLibrary";
+  pname = "orthanc-framework";
 
   buildInputs = orthanc.buildInputs ++ [
     icu
@@ -29,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     "-L${lib.getLib gtest}"
     "-lgtest"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/OrthancFramework/SharedLibrary";
 
   meta = {
     description = "SDK for building Orthanc plugins and related applications";

@@ -1,25 +1,14 @@
 {
+  stdenv,
   postgresql,
   postgresqlTestHook,
-  stdenv,
 }:
 
 stdenv.mkDerivation {
-  name = "postgresql-test-hook-test";
   buildInputs = [ postgresqlTestHook ];
-  nativeCheckInputs = [ postgresql ];
-  dontUnpack = true;
   doCheck = true;
-  sql = ''
-    CREATE TABLE hello (
-      message text
-    );
-    INSERT INTO hello VALUES ('it '||'worked');
-    SELECT * FROM hello;
-  '';
-  postgresqlTestSetupPost = ''
-    TEST_POST_HOOK_RAN=1
-  '';
+  nativeCheckInputs = [ postgresql ];
+
   checkPhase = ''
     runHook preCheck
     sqlPath=$TMPDIR/test.sql
@@ -28,9 +17,25 @@ stdenv.mkDerivation {
     TEST_RAN=1
     runHook postCheck
   '';
+
   installPhase = ''
     [[ $TEST_RAN == 1 && $TEST_POST_HOOK_RAN == 1 ]]
     touch $out
   '';
+
   __structuredAttrs = true;
+  dontUnpack = true;
+  name = "postgresql-test-hook-test";
+
+  postgresqlTestSetupPost = ''
+    TEST_POST_HOOK_RAN=1
+  '';
+
+  sql = ''
+    CREATE TABLE hello (
+      message text
+    );
+    INSERT INTO hello VALUES ('it '||'worked');
+    SELECT * FROM hello;
+  '';
 }

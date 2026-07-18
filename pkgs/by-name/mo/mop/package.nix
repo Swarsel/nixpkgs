@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -15,8 +15,6 @@ buildGoModule {
     hash = "sha256-j6+bzWfYTBMjgJbyd6JQno2eFTUGHYAv8c4x1Ocp878=";
   };
 
-  vendorHash = "sha256-Jq6SMnCUvuccEP85x1EEYnafUEeBT+AmqeikFvesMYY=";
-
   postPatch = ''
     # unsafe.Slice requires go1.17 or later
     substituteInPlace go.mod --replace-fail 'go 1.15' 'go 1.17'
@@ -24,6 +22,8 @@ buildGoModule {
     # so need to explicitly require it
     echo 'require github.com/rivo/uniseg v0.2.0' >> go.mod
   '';
+
+  vendorHash = "sha256-Jq6SMnCUvuccEP85x1EEYnafUEeBT+AmqeikFvesMYY=";
 
   meta = {
     description = "Simple stock tracker implemented in go";

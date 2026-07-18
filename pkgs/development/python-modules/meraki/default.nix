@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   requests,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "meraki";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "meraki";
@@ -19,8 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-XP0wvq9CoUpjGsIKmzgLrAmxhJ0F2mHDXJZdeU+AEkE=";
   };
 
-  pythonRelaxDeps = [ "aiohttp" ];
-
+  # All tests require an API key
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -28,10 +27,9 @@ buildPythonPackage rec {
     requests
   ];
 
-  # All tests require an API key
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "meraki" ];
+  pythonRelaxDeps = [ "aiohttp" ];
 
   meta = {
     description = "Cisco Meraki cloud-managed platform dashboard API python library";

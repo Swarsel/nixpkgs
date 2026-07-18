@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "aiostream";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vxgmichel";
@@ -21,16 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-AxisfmFZMEFJ/zfYCTfelvUGIoz56w6dKoZAMDKOZzk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
   pythonImportsCheck = [ "aiostream" ];
 
   meta = {

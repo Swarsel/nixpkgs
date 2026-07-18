@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  testers,
-  cog,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  cog,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,8 +19,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-5y6spoRzl4yJ5GpiHHvGHJIdEFnsUdpIiuoWmym5GJY=";
+  env.CGO_ENABLED = 0;
 
-  subPackages = [ "cmd/cli" ];
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    mv $out/bin/cli $out/bin/cog
+  '';
 
   ldflags = [
     "-s"
@@ -28,22 +31,19 @@ buildGoModule (finalAttrs: {
     "-X=main.version=${finalAttrs.version}"
   ];
 
-  env.CGO_ENABLED = 0;
-
+  subPackages = [ "cmd/cli" ];
   passthru.tests.version = testers.testVersion { package = cog; };
 
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    mv $out/bin/cli $out/bin/cog
-  '';
-
   meta = {
-    changelog = "https://github.com/grafana/cog/releases/tag/v${finalAttrs.version}";
     description = "Grafana's code generation tool";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/grafana/cog";
+    changelog = "https://github.com/grafana/cog/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
+
     maintainers = [
       lib.maintainers.zebradil
     ];
+
     mainProgram = "cog";
   };
 })

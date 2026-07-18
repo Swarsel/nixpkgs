@@ -1,7 +1,7 @@
 {
+  lib,
   buildEnv,
   coq,
-  lib,
   makeBinaryWrapper,
   runCommand,
 }:
@@ -31,10 +31,6 @@ let
 in
 
 buildEnv {
-  name = "${coq.pname}-with-packages-${coq.version}";
-
-  paths = [ coq ] ++ allPackages;
-
   nativeBuildInputs = [ makeBinaryWrapper ];
 
   postBuild = ''
@@ -54,9 +50,12 @@ buildEnv {
     done
   '';
 
+  name = "${coq.pname}-with-packages-${coq.version}";
+  paths = [ coq ] ++ allPackages;
+
   passthru = coq.passthru // {
-    unwrapped = coq;
     packages = allPackages;
+    unwrapped = coq;
   };
 
   meta = coq.meta;

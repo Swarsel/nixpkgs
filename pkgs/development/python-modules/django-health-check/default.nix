@@ -1,57 +1,34 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  aio-pika,
   buildPythonPackage,
   celery,
-  fetchFromGitHub,
+  confluent-kafka,
+  dnspython,
+  feedparser,
   flit-core,
   flit-scm,
+  httpx,
+  libredirect,
+  psutil,
+  pytest-asyncio,
   pytest-cov-stub,
   pytest-django,
   pytestCheckHook,
   redis,
-  psutil,
-  dnspython,
-  pytest-asyncio,
-  libredirect,
-  confluent-kafka,
-  aio-pika,
-  httpx,
-  feedparser,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-health-check";
   version = "4.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "codingjoe";
     repo = "django-health-check";
     tag = finalAttrs.version;
     hash = "sha256-brC/gMqxo6BsfMA+4u9alOtIH4js4EgdExT1LL0QXxU=";
-  };
-
-  build-system = [
-    flit-core
-    flit-scm
-  ];
-
-  dependencies = [
-    dnspython
-  ];
-
-  optional-dependencies = {
-    psutil = [ psutil ];
-    celery = [ celery ];
-    kafka = [ confluent-kafka ];
-    rabbitmq = [ aio-pika ];
-    redis = [ redis ];
-    rss = [
-      httpx
-      feedparser
-    ];
-    atlassian = [ httpx ];
   };
 
   nativeCheckInputs = [
@@ -61,6 +38,20 @@ buildPythonPackage (finalAttrs: {
     psutil
     pytest-asyncio
     libredirect.hook
+  ];
+
+  preCheck = ''
+    echo "nameserver 127.0.0.1" > resolv.conf
+    export NIX_REDIRECTS=/etc/resolv.conf=$(realpath resolv.conf)
+  '';
+
+  build-system = [
+    flit-core
+    flit-scm
+  ];
+
+  dependencies = [
+    dnspython
   ];
 
   disabledTests = [
@@ -78,23 +69,34 @@ buildPythonPackage (finalAttrs: {
     "TestHealthCheckCommand"
   ];
 
-  pythonImportsCheck = [ "health_check" ];
+  optional-dependencies = {
+    atlassian = [ httpx ];
+    celery = [ celery ];
+    kafka = [ confluent-kafka ];
+    psutil = [ psutil ];
+    rabbitmq = [ aio-pika ];
+    redis = [ redis ];
 
-  preCheck = ''
-    echo "nameserver 127.0.0.1" > resolv.conf
-    export NIX_REDIRECTS=/etc/resolv.conf=$(realpath resolv.conf)
-  '';
+    rss = [
+      httpx
+      feedparser
+    ];
+  };
 
   preInstallCheck = ''
     export PYTHONPATH=$PWD:$PYTHONPATH
     export DJANGO_SETTINGS_MODULE=tests.testapp.settings
   '';
 
+  pyproject = true;
+  pythonImportsCheck = [ "health_check" ];
+
   meta = {
     description = "Pluggable app that runs a full check on the deployment";
     homepage = "https://github.com/codingjoe/django-health-check";
     changelog = "https://github.com/codingjoe/django-health-check/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       onny
       dav-wolff

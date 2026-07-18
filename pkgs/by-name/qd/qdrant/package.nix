@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   cacert,
-  protobuf,
-  pkg-config,
+  nix-update-script,
   openssl,
+  pkg-config,
+  protobuf,
   rust-jemalloc-sys,
   rust-jemalloc-sys-unprefixed,
+  rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-HLISCnfYM07jJ1jfER6i+zMlzYxWq+DJ2FVgpjkTytg=";
   };
 
-  cargoHash = "sha256-QG4HMADZmOu5ilFZBqogdrwBaBegoqNP9GvsDddUYbs=";
-
   nativeBuildInputs = [
     protobuf
     rustPlatform.bindgenHook
@@ -37,9 +35,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rust-jemalloc-sys-unprefixed
   ];
 
+  cargoHash = "sha256-QG4HMADZmOu5ilFZBqogdrwBaBegoqNP9GvsDddUYbs=";
   # Needed to get openssl-sys to use pkg-config.
   env.OPENSSL_NO_VENDOR = 1;
-
   nativeCheckInputs = [ cacert ];
 
   checkFlags = [
@@ -48,26 +46,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=common::metrics::procfs_metrics::test_child_processes"
   ];
 
-  # Fix cargo-auditable issue with bench_rocksdb = ["dep:rocksdb"]
-  auditable = false;
-
-  __darwinAllowLocalNetworking = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
+  __darwinAllowLocalNetworking = true;
+  # Fix cargo-auditable issue with bench_rocksdb = ["dep:rocksdb"]
+  auditable = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Vector Search Engine for the next generation of AI applications";
+
     longDescription = ''
       Expects a config file at config/config.yaml with content similar to
       https://github.com/qdrant/qdrant/blob/master/config/config.yaml
     '';
+
     homepage = "https://github.com/qdrant/qdrant";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       miniharinn
     ];

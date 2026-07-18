@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   parameterized,
   ply,
   pybind11,
@@ -14,14 +14,19 @@
 buildPythonPackage rec {
   pname = "pyomo";
   version = "6.9.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "pyomo";
     owner = "pyomo";
+    repo = "pyomo";
     tag = version;
     hash = "sha256-DHA/OukSK1p65imJEZg7hbErJGL7aQiDbW4vUUuSEko=";
   };
+
+  nativeCheckInputs = [
+    parameterized
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     cython
@@ -30,14 +35,6 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ ply ];
-
-  nativeCheckInputs = [
-    parameterized
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [ "pyomo" ];
 
   disabledTestPaths = [
     # Don't test the documentation and the examples
@@ -51,6 +48,9 @@ buildPythonPackage rec {
     # Test requires lsb_release
     "test_get_os_version"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyomo" ];
 
   meta = {
     description = "Python Optimization Modeling Objects";

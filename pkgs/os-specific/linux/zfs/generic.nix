@@ -4,55 +4,53 @@ let
       lib,
       stdenv,
       fetchFromGitHub,
-      autoreconfHook269,
-      util-linux,
-      nukeReferences,
-      coreutils,
-      linuxPackages,
-      perl,
-      udevCheckHook,
-      configFile ? "all",
-
-      # Userspace dependencies
-      zlib,
-      libuuid,
-      python3,
       attr,
-      openssl,
-      libtirpc,
-      nfs-utils,
+      autoreconfHook269,
+      coreutils,
+      curl,
       gawk,
       gnugrep,
       gnused,
-      systemd,
-      smartmontools,
-      enableMail ? false,
-      sysstat,
-      pkg-config,
-      curl,
-      pam,
+      libtirpc,
+      libuuid,
+      linuxPackages,
+      nfs-utils,
       nix-update-script,
-
+      nukeReferences,
+      openssl,
+      pam,
+      perl,
+      pkg-config,
+      python3,
+      smartmontools,
+      sysstat,
+      systemd,
+      udevCheckHook,
+      util-linux,
+      # Userspace dependencies
+      zlib,
+      configFile ? "all",
+      enableMail ? false,
+      enablePython ? true,
       # Kernel dependencies
       kernel ? null,
       kernelModuleMakeFlags ? [ ],
-      enablePython ? true,
       ...
     }@outerArgs:
 
     assert (configFile == "kernel") -> (kernel != null);
     {
-      version,
       hash,
+      kernelMaxSupportedMajorMinor,
+      kernelMinSupportedMajorMinor,
       kernelModuleAttribute,
+      tests,
+      version,
+      enableUnsupportedExperimentalKernel ? false, # allows building against unsupported Kernel versions
       extraLongDescription ? "",
       extraPatches ? [ ],
-      rev ? "zfs-${version}",
-      kernelMinSupportedMajorMinor,
-      kernelMaxSupportedMajorMinor,
-      enableUnsupportedExperimentalKernel ? false, # allows building against unsupported Kernel versions
       maintainers ? (with lib.maintainers; [ amarshall ]),
-      tests,
+      rev ? "zfs-${version}",
     }@innerArgs:
 
     let
@@ -89,15 +87,24 @@ let
     in
 
     stdenv'.mkDerivation {
-      name = "zfs-${configFile}-${version}${optionalString buildKernel "-${kernel.version}"}";
-      pname = "zfs";
       inherit version;
+      pname = "zfs";
 
       src = fetchFromGitHub {
+        inherit rev hash;
         owner = "openzfs";
         repo = "zfs";
-        inherit rev hash;
       };
+
+      outputs = [
+        "out"
+      ]
+      ++ optionals buildUser [
+        "dev"
+      ]
+      ++ optionals (!buildKernel) [
+        "man"
+      ];
 
       patches = extraPatches;
 
@@ -173,6 +180,7 @@ let
         pkg-config
         udevCheckHook
       ];
+
       buildInputs =
         optionals buildUser [
           zlib
@@ -184,15 +192,6 @@ let
         ++ optional buildUser openssl
         ++ optional buildUser curl
         ++ optional (buildUser && enablePython) python3;
-
-      # for zdb to get the rpath to libgcc_s, needed for pthread_cancel to work
-      env.NIX_CFLAGS_LINK = "-lgcc_s";
-
-      hardeningDisable = [
-        "fortify"
-        "stackprotector"
-        "pic"
-      ];
 
       configureFlags = [
         "--with-config=${configFile}"
@@ -221,15 +220,8 @@ let
         ++ map (f: "KERNEL_${f}") kernelModuleMakeFlags
       );
 
-      enableParallelBuilding = true;
-
-      doInstallCheck = true;
-
-      installFlags = [
-        "sysconfdir=\${out}/etc"
-        "DEFAULT_INITCONF_DIR=\${out}/default"
-        "INSTALL_MOD_PATH=\${out}"
-      ];
+      # for zdb to get the rpath to libgcc_s, needed for pthread_cancel to work
+      env.NIX_CFLAGS_LINK = "-lgcc_s";
 
       preConfigure = ''
         # The kernel module builds some tests during the configurePhase, this envvar controls their parallelism
@@ -268,6 +260,8 @@ let
           rm -rf $out/share/zfs/zfs-tests
         '';
 
+      doInstallCheck = true;
+
       postFixup =
         let
           path = "PATH=${
@@ -288,19 +282,26 @@ let
           done
         '';
 
-      outputs = [
-        "out"
-      ]
-      ++ optionals buildUser [
-        "dev"
-      ]
-      ++ optionals (!buildKernel) [
-        "man"
+      enableParallelBuilding = true;
+
+      hardeningDisable = [
+        "fortify"
+        "stackprotector"
+        "pic"
       ];
+
+      installFlags = [
+        "sysconfdir=\${out}/etc"
+        "DEFAULT_INITCONF_DIR=\${out}/default"
+        "INSTALL_MOD_PATH=\${out}"
+      ];
+
+      name = "zfs-${configFile}-${version}${optionalString buildKernel "-${kernel.version}"}";
 
       passthru = {
         inherit kernel;
         inherit enableMail kernelModuleAttribute;
+        inherit tests;
         latestCompatibleLinuxPackages = lib.warn "zfs.latestCompatibleLinuxPackages is deprecated and is now pointing at the default kernel. If using the stable LTS kernel (default `linuxPackages` is not possible then you must explicitly pin a specific kernel release. For example, `boot.kernelPackages = pkgs.linuxPackages_6_6`. Please be aware that non-LTS kernels are likely to go EOL before ZFS supports the latest supported non-LTS release, requiring manual intervention." linuxPackages;
 
         # The corresponding userspace tools to this instantiation
@@ -311,8 +312,6 @@ let
             configFile = "user";
           }
         ) innerArgs;
-
-        inherit tests;
       }
       // lib.optionalAttrs (kernelModuleAttribute != "zfs_unstable") {
         updateScript = nix-update-script {
@@ -324,7 +323,9 @@ let
       };
 
       meta = {
+        inherit maintainers;
         description = "ZFS Filesystem Linux" + (if buildUser then " Userspace Tools" else " Kernel Module");
+
         longDescription = ''
           ZFS is a filesystem that combines a logical volume manager with a
           Copy-On-Write filesystem with data integrity detection and repair,
@@ -335,6 +336,7 @@ let
           }
         ''
         + extraLongDescription;
+
         homepage = "https://github.com/openzfs/zfs";
         changelog = "https://github.com/openzfs/zfs/releases/tag/zfs-${version}";
         license = lib.licenses.cddl;
@@ -358,7 +360,6 @@ let
             isLoongArch64
           ];
 
-        inherit maintainers;
         mainProgram = "zfs";
         broken = buildKernel && !((kernelIsCompatible kernel) || enableUnsupportedExperimentalKernel);
       };

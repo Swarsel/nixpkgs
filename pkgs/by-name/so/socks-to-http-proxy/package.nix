@@ -1,19 +1,19 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  nix-update-script,
   openssl,
   pkg-config,
+  rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 let
   version = "0.5.0";
 in
 rustPlatform.buildRustPackage {
-  pname = "socks-to-http-proxy";
   inherit version;
+  pname = "socks-to-http-proxy";
 
   src = fetchFromGitHub {
     owner = "KaranGauswami";
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage {
     tag = "v${version}";
     hash = "sha256-adtrGMkYueplW6rJ+pK+6+LaMU++YeV48m2Ntliqsy4=";
   };
-
-  cargoHash = "sha256-jR0uX/edFby9OYCF0HVkRDT3fiz4bI3yGr8Yc3IlnRM=";
 
   nativeBuildInputs = [
     pkg-config
@@ -32,12 +30,11 @@ rustPlatform.buildRustPackage {
     openssl
   ];
 
+  cargoHash = "sha256-jR0uX/edFby9OYCF0HVkRDT3fiz4bI3yGr8Yc3IlnRM=";
   doCheck = false; # Skip network tests
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

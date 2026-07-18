@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
-  scipy,
   pdm-backend,
+  scipy,
 }:
 
 buildPythonPackage rec {
   pname = "numdifftools";
   version = "0.9.42";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pbrod";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-tNPv+KJuSmMHItHfRUjMIFtAFB+vC530sp+Am0VRG44=";
   };
 
+  # Tests requires algopy and other modules which are optional and/or not available
+  doCheck = false;
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  # Tests requires algopy and other modules which are optional and/or not available
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "numdifftools" ];
 
   meta = {

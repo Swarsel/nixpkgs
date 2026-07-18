@@ -13,8 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-f0IglrQEmLE4kJOVWCXxQbtn7WAUJJ2IQAlGPceEaHk=";
   };
 
-  enableParallelBuilding = false;
-
   outputs = [
     "dev"
     "out"
@@ -27,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     mv $out/share/html $doc/share/doc/libffcall
     rm -rf $out/share
   '';
+
+  enableParallelBuilding = false;
 
   meta = {
     description = "Foreign function call library";

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   numpy,
   poetry-core,
   pygments,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "pyairvisual";
   version = "2023.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -36,9 +35,6 @@ buildPythonPackage rec {
     pysmb
   ];
 
-  # this lets tests bind to localhost in sandbox mode on macOS
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     aresponses
     pytest-aiohttp
@@ -47,11 +43,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  # this lets tests bind to localhost in sandbox mode on macOS
+  __darwinAllowLocalNetworking = true;
+
   disabledTestPaths = [
     # Ignore the examples directory as the files are prefixed with test_.
     "examples/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyairvisual" ];
 
   meta = {

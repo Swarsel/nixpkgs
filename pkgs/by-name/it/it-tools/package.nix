@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nodejs,
-  pnpm_11,
   fetchPnpmDeps,
+  nodejs,
   pnpmConfigHook,
+  pnpm_11,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "it-tools";
@@ -24,17 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpm_11
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-ju8YO0IHIGJtCi5TnxvfLUXcTqKWnTBKAGFBhzQJTok=";
-  };
-
   buildPhase = ''
     runHook preBuild
 
@@ -51,6 +40,18 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-ju8YO0IHIGJtCi5TnxvfLUXcTqKWnTBKAGFBhzQJTok=";
+    pnpm = pnpm_11;
+  };
 
   meta = {
     description = "Self-hostable website containing handy tools for developers, with great UX";

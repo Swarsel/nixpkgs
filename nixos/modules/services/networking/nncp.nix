@@ -25,11 +25,12 @@ in
           The daemon will take configuration from
           [](#opt-programs.nncp.settings)
         '';
+
         extraArgs = mkOption {
-          type = with types; listOf str;
-          description = "Extra command-line arguments to pass to caller.";
           default = [ ];
+          description = "Extra command-line arguments to pass to caller.";
           example = [ "-autotoss" ];
+          type = with types; listOf str;
         };
       };
 
@@ -39,22 +40,27 @@ in
           The daemon will take configuration from
           [](#opt-programs.nncp.settings)
         '';
+
+        extraArgs = mkOption {
+          default = [ ];
+          description = "Extra command-line arguments to pass to daemon.";
+          example = [ "-autotoss" ];
+          type = with types; listOf str;
+        };
+
         socketActivation = {
           enable = mkEnableOption "socket activation for nncp-daemon";
+
           listenStreams = mkOption {
-            type = with types; listOf str;
+            default = [ "5400" ];
+
             description = ''
               TCP sockets to bind to.
               See [](#opt-systemd.sockets._name_.listenStreams).
             '';
-            default = [ "5400" ];
+
+            type = with types; listOf str;
           };
-        };
-        extraArgs = mkOption {
-          type = with types; listOf str;
-          description = "Extra command-line arguments to pass to daemon.";
-          default = [ ];
-          example = [ "-autotoss" ];
         };
       };
 
@@ -75,57 +81,63 @@ in
               lib.lists.any (x: hasAttr "calls" x && x.calls != [ ]) (attrValues neigh);
           in
           !callerCfg.enable || callerCongfigured;
+
         message = "NNCP caller enabled but call configuration is missing";
       }
     ];
 
     systemd.services."nncp-caller" = {
       inherit (callerCfg) enable;
+      after = [ "network.target" ];
       description = "Croned NNCP TCP daemon caller.";
       documentation = [ "http://www.nncpgo.org/nncp_002dcaller.html" ];
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
         ExecStart = ''${pkg}/bin/nncp-caller -noprogress -cfg "${nncpCfgFile}" ${lib.strings.escapeShellArgs callerCfg.extraArgs}'';
         Group = "uucp";
         UMask = "0002";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services."nncp-daemon" = mkIf daemonCfg.enable {
       enable = !daemonCfg.socketActivation.enable;
+      after = [ "network.target" ];
       description = "NNCP TCP syncronization daemon.";
       documentation = [ "http://www.nncpgo.org/nncp_002ddaemon.html" ];
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
         ExecStart = ''${pkg}/bin/nncp-daemon -noprogress -cfg "${nncpCfgFile}" ${lib.strings.escapeShellArgs daemonCfg.extraArgs}'';
-        Restart = "on-failure";
         Group = "uucp";
+        Restart = "on-failure";
         UMask = "0002";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services."nncp-daemon@" = mkIf daemonCfg.socketActivation.enable {
+      after = [ "network.target" ];
       description = "NNCP TCP syncronization daemon.";
       documentation = [ "http://www.nncpgo.org/nncp_002ddaemon.html" ];
-      after = [ "network.target" ];
+
       serviceConfig = {
         ExecStart = ''${pkg}/bin/nncp-daemon -noprogress -ucspi -cfg "${nncpCfgFile}" ${lib.strings.escapeShellArgs daemonCfg.extraArgs}'';
         Group = "uucp";
-        UMask = "0002";
+        StandardError = "journal";
         StandardInput = "socket";
         StandardOutput = "inherit";
-        StandardError = "journal";
+        UMask = "0002";
       };
     };
 
     systemd.sockets.nncp-daemon = mkIf daemonCfg.socketActivation.enable {
       inherit (daemonCfg.socketActivation) listenStreams;
-      description = "socket for NNCP TCP syncronization.";
       conflicts = [ "nncp-daemon.service" ];
-      wantedBy = [ "sockets.target" ];
+      description = "socket for NNCP TCP syncronization.";
       socketConfig.Accept = true;
+      wantedBy = [ "sockets.target" ];
     };
   };
 }

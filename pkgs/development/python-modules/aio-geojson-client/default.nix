@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiointercept,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   geojson,
   haversine,
   mock,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aio-geojson-client";
   version = "2026.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -24,18 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-gC6z3If8OJKDXqpBsWFMy5rYpeqZ2wjljw/dksD0XIU=";
   };
-
-  pythonRelaxDeps = [ "geojson" ];
-
-  __darwinAllowLocalNetworking = true;
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    geojson
-    haversine
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -45,7 +32,18 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    geojson
+    haversine
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "aio_geojson_client" ];
+  pythonRelaxDeps = [ "geojson" ];
 
   meta = {
     description = "Python module for accessing GeoJSON feeds";

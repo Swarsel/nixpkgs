@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lxml,
   pytestCheckHook,
   text-unidecode,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "sepaxml";
   version = "2.7.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "raphaelm";
@@ -30,6 +29,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "sepaxml" ];
 
   meta = {

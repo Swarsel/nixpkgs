@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -12,22 +12,25 @@ let
       options = {
         enable = lib.mkEnableOption "this template";
 
+        properties = lib.mkOption {
+          default = { };
+          description = "Additional properties";
+          type = lib.types.attrs;
+        };
+
         target = lib.mkOption {
           description = "Path in the container";
           type = lib.types.path;
         };
+
         template = lib.mkOption {
           description = ".tpl file for rendering the target";
           type = lib.types.path;
         };
+
         when = lib.mkOption {
           description = "Events which trigger a rewrite (create, copy)";
           type = lib.types.listOf (lib.types.str);
-        };
-        properties = lib.mkOption {
-          description = "Additional properties";
-          type = lib.types.attrs;
-          default = { };
         };
       };
     };
@@ -47,13 +50,14 @@ let
           source = tpl.template;
           target = "/templates/${tpl.name}.tpl";
         }) list;
+
         properties = lib.listToAttrs (
           map (
             tpl:
             lib.nameValuePair tpl.target {
-              when = tpl.when;
-              template = "${tpl.name}.tpl";
               properties = tpl.properties;
+              template = "${tpl.name}.tpl";
+              when = tpl.when;
             }
           ) list
         );
@@ -70,16 +74,12 @@ in
     ../image/file-options.nix
   ];
 
-  meta = {
-    teams = [ lib.teams.lxc ];
-  };
-
   options = {
     virtualisation.lxc = {
       templates = lib.mkOption {
-        description = "Templates for LXC images";
-        type = lib.types.attrsOf (lib.types.submodule templateSubmodule);
         default = { };
+        description = "Templates for LXC images";
+
         example = lib.literalExpression ''
           {
             # create /etc/hostname on container creation
@@ -106,36 +106,48 @@ in
             };
           };
         '';
+
+        type = lib.types.attrsOf (lib.types.submodule templateSubmodule);
       };
     };
   };
 
   config = {
-    system.nixos.tags = [
-      "lxc"
-      "metadata"
-    ];
     image.extension = "tar.xz";
     image.filePath = "tarball/${config.image.fileName}";
     system.build.image = config.system.build.metadata;
+
     system.build.metadata = pkgs.callPackage ../../lib/make-system-tarball.nix {
-      fileName = config.image.baseName;
       contents = [
         {
           source = toYAML "metadata.yaml" {
             architecture = builtins.elemAt (builtins.match "^([a-z0-9_]+).+" (toString pkgs.stdenv.hostPlatform.system)) 0;
             creation_date = 1;
+
             properties = {
               description = "${config.system.nixos.distroName} ${config.system.nixos.codeName} ${config.system.nixos.label} ${pkgs.stdenv.hostPlatform.system}";
               os = "${config.system.nixos.distroId}";
               release = "${config.system.nixos.codeName}";
             };
+
             templates = templates.properties;
           };
+
           target = "/metadata.yaml";
         }
       ]
       ++ templates.files;
+
+      fileName = config.image.baseName;
     };
+
+    system.nixos.tags = [
+      "lxc"
+      "metadata"
+    ];
+  };
+
+  meta = {
+    teams = [ lib.teams.lxc ];
   };
 }

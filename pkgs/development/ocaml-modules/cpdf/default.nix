@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocaml,
-  findlib,
   camlpdf,
+  findlib,
   nix-update-script,
+  ocaml,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,13 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-P3CQwYp23URVBDcdnrRAg7gAsOMIifwraIcFSJh8pd0=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
   ];
-  propagatedBuildInputs = [ camlpdf ];
 
-  strictDeps = true;
+  propagatedBuildInputs = [ camlpdf ];
 
   preInstall = ''
     mkdir -p $OCAMLFIND_DESTDIR
@@ -39,14 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "PDF Command Line Tools";
     homepage = "https://www.coherentpdf.com/";
     changelog = "https://github.com/johnwhitington/cpdf-source/blob/${finalAttrs.src.rev}/Changes.txt";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ vbgl ];
-    teams = with lib.teams; [ ngi ];
     mainProgram = "cpdf";
-    inherit (ocaml.meta) platforms;
     broken = lib.versionOlder ocaml.version "4.10";
+    teams = with lib.teams; [ ngi ];
   };
 })

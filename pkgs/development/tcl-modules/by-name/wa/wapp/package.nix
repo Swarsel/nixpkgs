@@ -13,8 +13,6 @@ mkTclDerivation {
     hash = "sha256-0e9yTVFYj1tYGU7EiXRPw35qfDzckzz4i3RV/8TttGw=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -27,9 +25,11 @@ mkTclDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://wapp.tcl-lang.org/home/doc/trunk/README.md";
     description = "Framework for writing web applications in Tcl";
+    homepage = "https://wapp.tcl-lang.org/home/doc/trunk/README.md";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ nat-418 ];
   };

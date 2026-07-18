@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "trampoline";
   version = "0.1.2";
-  format = "setuptools";
 
   # only wheel on pypi, no tags on git
   src = fetchFromGitLab {
@@ -18,9 +17,9 @@ buildPythonPackage {
     hash = "sha256-A/tuR+QW9sKh76Qjwn1uQxlVJgWrSFzXeBRDdnSi2o4=";
   };
 
-  pythonImportsCheck = [ "trampoline" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "trampoline" ];
 
   meta = {
     description = "Simple and tiny yield-based trampoline implementation for python";

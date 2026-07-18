@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "ueagle";
   version = "0.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jcalbert";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "uEagle" ];
 
   meta = {

@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "path";
   version = "17.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -38,6 +37,7 @@ buildPythonPackage rec {
     "test_utime"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "path" ];
 
   meta = {

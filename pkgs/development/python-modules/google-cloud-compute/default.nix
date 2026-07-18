@@ -14,19 +14,20 @@
 buildPythonPackage rec {
   pname = "google-cloud-compute";
   version = "1.42.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_compute";
     inherit version;
     hash = "sha256-CLHbxXWLqlSRCHvO+1dOWdkRUgtxTtp5tOvxy0KdjZg=";
+    pname = "google_cloud_compute";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -35,23 +36,23 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [
-    "google.cloud.compute"
-    "google.cloud.compute_v1"
-  ];
-
   disabledTestPaths = [
     # Disable tests that require credentials
     "tests/system/test_addresses.py"
     "tests/system/test_instance_group.py"
     "tests/system/test_pagination.py"
     "tests/system/test_smoke.py"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "google.cloud.compute"
+    "google.cloud.compute_v1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

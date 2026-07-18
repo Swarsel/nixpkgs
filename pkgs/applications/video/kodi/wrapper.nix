@@ -1,9 +1,9 @@
 {
   lib,
-  makeWrapper,
+  addons,
   buildEnv,
   kodi,
-  addons,
+  makeWrapper,
 }:
 
 let
@@ -28,11 +28,6 @@ let
 in
 
 buildEnv {
-  name = "${kodi.name}-env";
-
-  paths = [ kodi ] ++ addons;
-  pathsToLink = [ "/share" ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -47,6 +42,10 @@ buildEnv {
         }"
     done
   '';
+
+  name = "${kodi.name}-env";
+  paths = [ kodi ] ++ addons;
+  pathsToLink = [ "/share" ];
 
   meta = {
     inherit (kodi.meta) mainProgram;

@@ -3,14 +3,13 @@
 
 {
   lib,
-  python3,
   fetchFromGitHub,
   fetchpatch,
+  python3,
 }:
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "yargen";
   version = "0.23.4";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Neo23x0";
@@ -23,14 +22,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     # https://github.com/Neo23x0/yarGen/pull/33
     (fetchpatch {
       name = "use-built-in-scandir.patch";
-      url = "https://github.com/Neo23x0/yarGen/commit/cae14ac8efeb5536885792cae99d1d0f7fb6fde3.patch";
       sha256 = "0z6925r7n1iysld5c8li5nkm1dbxg8j7pn0626a4vic525vf8ndl";
+      url = "https://github.com/Neo23x0/yarGen/commit/cae14ac8efeb5536885792cae99d1d0f7fb6fde3.patch";
     })
     # https://github.com/Neo23x0/yarGen/pull/34
     (fetchpatch {
       name = "use-cwd-for-abspath.patch";
-      url = "https://github.com/Neo23x0/yarGen/commit/441dafb702149f5728c2c6736fc08741a46deb26.patch";
       sha256 = "lNp3oC2BM7tBzN4AetvPr+xJLz6KkZxQmsldeZaxJQU=";
+      url = "https://github.com/Neo23x0/yarGen/commit/441dafb702149f5728c2c6736fc08741a46deb26.patch";
     })
   ];
 
@@ -38,6 +37,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     substituteInPlace yarGen.py \
       --replace "./3rdparty/strings.xml" "$out/share/yarGen/3rdparty/strings.xml"
   '';
+
+  propagatedBuildInputs = with python3.pkgs; [
+    pefile
+    lxml
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -48,16 +52,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
-  propagatedBuildInputs = with python3.pkgs; [
-    pefile
-    lxml
-  ];
+  pyproject = false;
 
   meta = {
     description = "Generator for YARA rules";
-    mainProgram = "yarGen.py";
     homepage = "https://github.com/Neo23x0/yarGen";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "yarGen.py";
   };
 })

@@ -10,8 +10,8 @@ let
     version = "0-unstable-2018-06-17";
 
     src = fetchFromGitHub {
-      repo = "CoreSymbolication";
       owner = "matthewbauer";
+      repo = "CoreSymbolication";
       rev = "24c87c23664b3ee05dc7a5a87d647ae476a680e4";
       hash = "sha256-PzvLq94eNhP0+rLwGMKcMzxuD6MlrNI7iT/eV0obtSE=";
     };
@@ -23,19 +23,19 @@ let
       ../patches/0002-Add-CF_EXPORT-To-const-symbols.patch
     ];
 
-    dontBuild = true;
-
     installPhase = ''
       mkdir -p "$out/include"
       cp *.h "$out/include"
     '';
 
+    dontBuild = true;
+
     meta = {
       description = "Reverse engineered headers for Apple's CoreSymbolication framework";
       homepage = "https://github.com/matthewbauer/CoreSymbolication";
       license = lib.licenses.mit;
-      teams = [ lib.teams.darwin ];
       platforms = lib.platforms.darwin;
+      teams = [ lib.teams.darwin ];
     };
   });
 in

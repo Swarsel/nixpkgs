@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   glib,
   gtk3,
+  rustPlatform,
   wrapGAppsHook3,
 }:
 
@@ -31,10 +31,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "GTK viewer for the output of `nix store --query --tree`";
-    mainProgram = "nix-query-tree-viewer";
     homepage = "https://github.com/cdepillabout/nix-query-tree-viewer";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ cdepillabout ];
     platforms = lib.platforms.unix;
+    mainProgram = "nix-query-tree-viewer";
   };
 })

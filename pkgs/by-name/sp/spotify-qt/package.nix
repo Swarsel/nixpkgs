@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   cmake,
+  kdePackages,
   libxcb,
   procps,
-  kdePackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,20 +24,18 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /usr/bin/ps ${lib.getExe' procps "ps"}
   '';
 
+  nativeBuildInputs = [
+    cmake
+    kdePackages.wrapQtAppsHook
+  ];
+
   buildInputs = [
     libxcb
     kdePackages.qtbase
     kdePackages.qtsvg
   ];
 
-  nativeBuildInputs = [
-    cmake
-    kdePackages.wrapQtAppsHook
-  ];
-
   cmakeFlags = [ (lib.cmakeFeature "CMAKE_INSTALL_PREFIX" "") ];
-
-  installFlags = [ "DESTDIR=$(out)" ];
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/Applications
@@ -45,12 +43,14 @@ stdenv.mkDerivation (finalAttrs: {
     ln $out/Applications/spotify-qt.app/Contents/MacOS/spotify-qt $out/bin/spotify-qt
   '';
 
+  installFlags = [ "DESTDIR=$(out)" ];
+
   meta = {
     description = "Lightweight unofficial Spotify client using Qt";
-    mainProgram = "spotify-qt";
     homepage = "https://github.com/kraxarn/spotify-qt";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ iivusly ];
     platforms = lib.platforms.unix;
+    mainProgram = "spotify-qt";
   };
 })

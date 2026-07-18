@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildNpmPackage,
   typescript,
-  fetchFromGitHub,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -20,8 +20,6 @@ buildNpmPackage (finalAttrs: {
     typescript
   ];
 
-  dontNpmPrune = true;
-  npmWorkspace = "src/filesystem";
   npmDepsHash = "sha256-KhlTXcS+VDSPGnEus9fA0xhIxfTGwX1Cr5hbxFvdc2k=";
 
   # TODO: revisit this when https://github.com/NixOS/nixpkgs/pull/333759 has landed
@@ -33,13 +31,16 @@ buildNpmPackage (finalAttrs: {
     rm -rf $out/lib/node_modules/@modelcontextprotocol/servers/node_modules/.bin
   '';
 
+  dontNpmPrune = true;
+  npmWorkspace = "src/filesystem";
+
   meta = {
-    changelog = "https://github.com/modelcontextprotocol/servers/releases/tag/${finalAttrs.version}";
     description = "MCP server for filesystem access";
     homepage = "https://github.com/modelcontextprotocol/servers";
+    changelog = "https://github.com/modelcontextprotocol/servers/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ drupol ];
-    mainProgram = "mcp-server-filesystem";
     platforms = lib.platforms.all;
+    mainProgram = "mcp-server-filesystem";
   };
 })

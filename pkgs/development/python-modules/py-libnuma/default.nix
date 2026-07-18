@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   numactl,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "py-libnuma";
   version = "1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eedalong";
@@ -26,21 +25,21 @@ buildPythonPackage {
         'LIBNUMA = CDLL("${numactl}/lib/libnuma${stdenv.hostPlatform.extensions.sharedLibrary}")'
   '';
 
+  # Tests write NUMA configuration, which may be persistent until reboot.
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
     numactl
   ];
 
-  # Tests write NUMA configuration, which may be persistent until reboot.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "numa" ];
 
   meta = {
     description = "Python3 Interface to numa Linux library";
     homepage = "https://github.com/eedalong/pynuma";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
+    platforms = lib.platforms.linux;
   };
 }

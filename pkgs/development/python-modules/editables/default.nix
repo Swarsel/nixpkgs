@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "editables";
   version = "0.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-MJYn2bXErcDmaNjG+nusG6fIxdQVwtJ/YPCB+OgNHeI=";
   };
 
-  build-system = [ flit-core ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # Tests not included in archive.
   doCheck = false;
-
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "editables" ];
 
   meta = {

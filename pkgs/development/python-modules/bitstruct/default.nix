@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "bitstruct";
   version = "8.22.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eerimoq";
@@ -18,15 +17,16 @@ buildPythonPackage rec {
     hash = "sha256-Egiac+1x3HaaGV6ThjChfjKbT0WvQDb1EMuyOxLY7Kg=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bitstruct" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python bit pack/unpack package";

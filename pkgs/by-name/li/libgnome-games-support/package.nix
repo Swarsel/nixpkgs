@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  gettext,
   glib,
+  gnome,
   gtk3,
   libgee,
-  gettext,
-  vala,
-  gnome,
   libintl,
   meson,
   ninja,
+  pkg-config,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,9 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = gnome.updateScript {
+      freeze = true;
       packageName = "libgnome-games-support";
       versionPolicy = "odd-unstable";
-      freeze = true;
     };
   };
 
@@ -54,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Small library intended for internal use by GNOME Games, but it may be used by others";
     homepage = "https://gitlab.gnome.org/GNOME/libgnome-games-support";
     license = lib.licenses.lgpl3;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
-  buildGraalvmNativeImage,
   fetchurl,
-  writeScript,
-  writableTmpDirAsHomeHook,
+  buildGraalvmNativeImage,
+  stdenvNoCC,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
+  writeScript,
 }:
 
 buildGraalvmNativeImage (finalAttrs: {
@@ -18,6 +18,13 @@ buildGraalvmNativeImage (finalAttrs: {
   };
 
   strictDeps = true;
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    writableTmpDirAsHomeHook
+    versionCheckHook
+  ];
+
   __structuredAttrs = true;
 
   extraNativeImageBuildArgs = [
@@ -26,12 +33,6 @@ buildGraalvmNativeImage (finalAttrs: {
     "--no-fallback"
     "--native-image-info"
     "--features=clj_easy.graal_build_time.InitClojureClasses"
-  ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    writableTmpDirAsHomeHook
-    versionCheckHook
   ];
 
   passthru.updateScript = writeScript "update-clojure-lsp" ''
@@ -63,8 +64,8 @@ buildGraalvmNativeImage (finalAttrs: {
     description = "Language Server Protocol (LSP) for Clojure";
     homepage = "https://github.com/clojure-lsp/clojure-lsp";
     changelog = "https://github.com/clojure-lsp/clojure-lsp/releases/tag/${finalAttrs.version}";
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     license = lib.licenses.mit;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = [ lib.maintainers.ericdallo ];
     mainProgram = "clojure-lsp";
   };

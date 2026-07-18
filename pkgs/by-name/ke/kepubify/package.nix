@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-QOMLwDDvrDQAaK4M4QhBFTGD1CzblkDoA3ZqtCoRHtQ=";
+  excludedPackages = [ "kobotest" ];
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  excludedPackages = [ "kobotest" ];
 
   meta = {
     description = "EPUB to KEPUB converter";

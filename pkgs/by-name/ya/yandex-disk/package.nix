@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  patchelf,
+  rpmextract,
+  which,
   writeText,
   zlib,
-  rpmextract,
-  patchelf,
-  which,
 }:
 
 let
@@ -32,17 +32,19 @@ stdenv.mkDerivation rec {
   version = "0.1.6.1080";
 
   src = fetchurl {
+    sha256 = p.sha256;
+
     urls = [
       "https://repo.yandex.ru/yandex-disk/rpm/stable/${p.arch}/${pname}-${version}-1.fedora.${p.arch}.rpm"
       "https://web.archive.org/web/${p.webarchive}/https://repo.yandex.ru/yandex-disk/rpm/stable/${p.arch}/${pname}-${version}-1.fedora.${p.arch}.rpm"
     ];
-    sha256 = p.sha256;
   };
 
   buildInputs = [
     zlib
     stdenv.cc.cc
   ];
+
   builder = writeText "builder.sh" ''
     mkdir -pv $out/bin
     mkdir -pv $out/share
@@ -67,16 +69,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://help.yandex.com/disk/cli-clients.xml";
     description = "Free cloud file storage service";
-    maintainers = [
-    ];
-    platforms = [
-      "i686-linux"
-      "x86_64-linux"
-    ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
+
     longDescription = ''
       Yandex.Disk console client for Linux lets you manage files on Disk without
       using a window interface or programs that support WebDAV. The advantages
@@ -86,6 +80,19 @@ stdenv.mkDerivation rec {
        * faster syncing with Disk's server;
        * no need to be constantly connected to work with files.
     '';
+
+    homepage = "https://help.yandex.com/disk/cli-clients.xml";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    maintainers = [
+    ];
+
+    platforms = [
+      "i686-linux"
+      "x86_64-linux"
+    ];
+
     mainProgram = "yandex-disk";
   };
 }

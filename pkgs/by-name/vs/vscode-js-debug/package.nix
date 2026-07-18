@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   buildPackages,
+  clang_20,
   libsecret,
-  xcbuild,
-  pkg-config,
+  nix-update-script,
   node-gyp,
+  pkg-config,
   runCommand,
   vscode-js-debug,
-  nix-update-script,
-  clang_20,
+  xcbuild,
 }:
 buildNpmPackage rec {
   pname = "vscode-js-debug";
@@ -24,7 +24,13 @@ buildNpmPackage rec {
     hash = "sha256-1Mj7nfX5iVO0hhydCV/VbqN1x77WFEzG6/ahk1kN1fw=";
   };
 
-  npmDepsHash = "sha256-uTtA5XjHfuI2e9IuNAYfDNKZE8c/wa+CWqAsmd/M3Xk=";
+  postPatch = ''
+    ${lib.getExe buildPackages.jq} '
+      .scripts.postinstall |= empty |             # tries to install playwright, not necessary for build
+      .scripts.build |= "gulp dapDebugServer" |   # there is no build script defined
+      .bin |= "./dist/src/dapDebugServer.js"      # there is no bin output defined
+    ' ${src}/package.json > package.json
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -36,29 +42,14 @@ buildNpmPackage rec {
   ]; # clang_21 breaks it
 
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ libsecret ];
-
-  postPatch = ''
-    ${lib.getExe buildPackages.jq} '
-      .scripts.postinstall |= empty |             # tries to install playwright, not necessary for build
-      .scripts.build |= "gulp dapDebugServer" |   # there is no build script defined
-      .bin |= "./dist/src/dapDebugServer.js"      # there is no bin output defined
-    ' ${src}/package.json > package.json
-  '';
-
-  makeCacheWritable = true;
-
-  npmInstallFlags = [ "--include=dev" ];
+  npmDepsHash = "sha256-uTtA5XjHfuI2e9IuNAYfDNKZE8c/wa+CWqAsmd/M3Xk=";
 
   preBuild = ''
     export PATH="node_modules/.bin:$PATH"
   '';
 
-  passthru.updateScript = nix-update-script {
-    extraArgs = [
-      "--version-regex"
-      "v((?!\\d{4}\\.\\d\\.\\d{3}).*)"
-    ];
-  };
+  makeCacheWritable = true;
+  npmInstallFlags = [ "--include=dev" ];
 
   passthru.tests.test =
     runCommand "${pname}-test"
@@ -78,8 +69,16 @@ buildNpmPackage rec {
         fi
       '';
 
+  passthru.updateScript = nix-update-script {
+    extraArgs = [
+      "--version-regex"
+      "v((?!\\d{4}\\.\\d\\.\\d{3}).*)"
+    ];
+  };
+
   meta = {
     description = "DAP-compatible JavaScript debugger";
+
     longDescription = ''
       This is a [DAP](https://microsoft.github.io/debug-adapter-protocol/)-based
       JavaScript debugger. It debugs Node.js, Chrome, Edge, WebView2, VS Code
@@ -87,10 +86,11 @@ buildNpmPackage rec {
       Visual Studio Code since 1.46, and is gradually rolling out in Visual
       Studio proper.
     '';
+
     homepage = "https://github.com/microsoft/vscode-js-debug";
     changelog = "https://github.com/microsoft/vscode-js-debug/blob/v${version}/CHANGELOG.md";
-    mainProgram = "js-debug";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zeorin ];
+    mainProgram = "js-debug";
   };
 }

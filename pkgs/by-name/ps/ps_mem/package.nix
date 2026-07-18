@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ps_mem";
   version = "3.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pixelb";
@@ -17,7 +16,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   build-system = with python3Packages; [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ps_mem" ];
 
   meta = {

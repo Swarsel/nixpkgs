@@ -1,8 +1,8 @@
 {
-  bash,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  bash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ bash ];
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -27,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "List remote branches if they're merged and/or available locally";

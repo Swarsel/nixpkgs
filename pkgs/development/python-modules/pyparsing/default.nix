@@ -1,18 +1,17 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   jinja2,
+  pyparsing,
   pytestCheckHook,
   railroad-diagrams,
-  pyparsing,
 }:
 
 buildPythonPackage rec {
   pname = "pyparsing";
   version = "3.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyparsing";
@@ -22,15 +21,16 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   # circular dependencies with pytest if enabled by default
   doCheck = false;
+
   nativeCheckInputs = [
     jinja2
     pytestCheckHook
     railroad-diagrams
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyparsing" ];
 
   passthru.tests = {
@@ -40,14 +40,16 @@ buildPythonPackage rec {
   };
 
   meta = {
-    homepage = "https://github.com/pyparsing/pyparsing";
     description = "Python library for creating PEG parsers";
+
     longDescription = ''
       The pyparsing module is an alternative approach to creating and executing
       simple grammars, vs. the traditional lex/yacc approach, or the use of
       regular expressions. The pyparsing module provides a library of classes
       that client code uses to construct the grammar directly in Python code.
     '';
+
+    homepage = "https://github.com/pyparsing/pyparsing";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kamadorueda ];
   };

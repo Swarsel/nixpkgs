@@ -1,18 +1,19 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bash,
-  cacert,
   boost186,
+  cacert,
   pugixml,
   python3,
   python3Packages,
-  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "ipbus-uhal";
   version = "2.8.16";
+
   src = fetchFromGitHub {
     owner = "ipbus";
     repo = "ipbus-software";
@@ -20,19 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-R+a9VmONyWh3BEYoMjRcXKv+3HaNcKbJDnYH1hXHdPg=";
   };
 
-  nativeBuildInputs = [
-    cacert
-    (python3.withPackages (ps: [
-      ps.distutils
-      ps.pybind11
-    ]))
-  ];
-  buildInputs = [
-    boost186
-    pugixml
-    python3.pkgs.distutils
-    python3.pkgs.pybind11
-  ];
   postPatch = ''
     substituteInPlace config/Makefile.macros --replace-fail \
       'SHELL := /bin/bash' ""
@@ -43,7 +31,20 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs --build config/Makefile.macros
   '';
 
-  enableParallelBuilding = true;
+  nativeBuildInputs = [
+    cacert
+    (python3.withPackages (ps: [
+      ps.distutils
+      ps.pybind11
+    ]))
+  ];
+
+  buildInputs = [
+    boost186
+    pugixml
+    python3.pkgs.distutils
+    python3.pkgs.pybind11
+  ];
 
   makeFlags = [
     "Set=uhal"
@@ -57,8 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Software which pairs with ipbus-firmware";
+
     longDescription = ''
       Software that provide a reliable high-performance
       control link for particle-physics or other electronics,
@@ -66,9 +70,10 @@ stdenv.mkDerivation (finalAttrs: {
       for reading and modifying memory-mapped resources
       within FPGA-based hardware devices.
     '';
-    platforms = lib.platforms.linux;
+
     homepage = "https://ipbus.web.cern.ch/";
     maintainers = [ lib.maintainers.bashsu ];
+    platforms = lib.platforms.linux;
     mainProgram = "ipbus-uhal";
   };
 })

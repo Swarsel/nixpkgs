@@ -1,10 +1,10 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   ffmpeg,
-  wget,
+  python3Packages,
   versionCheckHook,
+  wget,
 }:
 
 let
@@ -18,9 +18,14 @@ let
   };
 in
 python3Packages.buildPythonApplication {
-  pname = "yle-dl";
   inherit version src;
-  pyproject = true;
+  pname = "yle-dl";
+
+  nativeCheckInputs = [
+    versionCheckHook
+    # tests require network access
+    # python3Packages.pytestCheckHook
+  ];
 
   build-system = with python3Packages; [ flit-core ];
 
@@ -30,15 +35,11 @@ python3Packages.buildPythonApplication {
     requests
   ];
 
+  pyproject = true;
+
   pythonPath = [
     wget
     ffmpeg
-  ];
-
-  nativeCheckInputs = [
-    versionCheckHook
-    # tests require network access
-    # python3Packages.pytestCheckHook
   ];
 
   meta = {

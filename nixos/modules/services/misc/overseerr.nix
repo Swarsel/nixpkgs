@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -9,35 +9,37 @@ let
   cfg = config.services.overseerr;
 in
 {
-  meta.maintainers = [ lib.maintainers.jf-uu ];
-
   options.services.overseerr = {
     enable = lib.mkEnableOption "Overseerr, a request management and media discovery tool for the Plex ecosystem";
-
     package = lib.mkPackageOption pkgs "overseerr" { };
 
     openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
       description = "Open a port in the firewall for the Overseerr web interface.";
+      type = lib.types.bool;
     };
 
     port = lib.mkOption {
-      type = lib.types.port;
       default = 5055;
       description = "The port which the Overseerr web UI should listen on.";
+      type = lib.types.port;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
+    };
+
     systemd.services.overseerr = {
-      description = "Request management and media discovery tool for the Plex ecosystem";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Request management and media discovery tool for the Plex ecosystem";
+
       environment = {
         CONFIG_DIRECTORY = "/var/lib/overseerr";
         PORT = toString cfg.port;
       };
+
       serviceConfig = {
         CapabilityBoundingSet = "";
         DynamicUser = true;
@@ -61,11 +63,13 @@ in
         ProtectSystem = "strict";
         RemoveIPC = true;
         Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
@@ -73,17 +77,19 @@ in
         StateDirectoryMode = "0700";
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
+
         Type = "exec";
       };
-    };
 
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = [ lib.maintainers.jf-uu ];
 }

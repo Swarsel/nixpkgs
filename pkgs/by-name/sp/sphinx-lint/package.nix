@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sphinx-lint";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sphinx-contrib";
@@ -15,6 +14,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Cg/14asXB1ivKSoGuLghne7kmQiXuimYTUqmdVqba6M=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    pytest-cov
+  ];
 
   build-system = [
     python3.pkgs.hatch-vcs
@@ -26,10 +30,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     regex
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    pytest-cov
-  ];
+  pyproject = true;
 
   meta = {
     description = "Check for stylistic and formal issues in .rst and .py files included in the documentation";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Command line editor for HCL";
-    mainProgram = "hcledit";
     homepage = "https://github.com/minamijoyo/hcledit";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "hcledit";
   };
 })

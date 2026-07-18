@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   freetype,
   fribidi,
+  imlib2,
   libxext,
   libxft,
+  libxinerama,
   libxpm,
   libxrandr,
   libxrender,
+  pkg-config,
   xorgproto,
-  libxinerama,
-  imlib2,
 }:
 
 stdenv.mkDerivation rec {
@@ -29,8 +29,8 @@ stdenv.mkDerivation rec {
     # Upstream fix to build against gcc-11.
     (fetchurl {
       name = "gcc-11.patch";
-      url = "http://git.fluxbox.org/fluxbox.git/patch/?id=22866c4d30f5b289c429c5ca88d800200db4fc4f";
       sha256 = "1x7126rlmzky51lk370fczssgnjs7i6wgfaikfib9pvn4vv945ai";
+      url = "http://git.fluxbox.org/fluxbox.git/patch/?id=22866c4d30f5b289c429c5ca88d800200db4fc4f";
     })
   ];
 
@@ -49,15 +49,16 @@ stdenv.mkDerivation rec {
     imlib2
   ];
 
-  enableParallelBuilding = true;
-
   preConfigure = ''
     substituteInPlace util/fluxbox-generate_menu.in \
       --subst-var-by PREFIX "$out"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Full-featured, light-resource X window manager";
+
     longDescription = ''
       Fluxbox is a X window manager based on Blackbox 0.61.1 window
       manager sources.  It is very light on resources and easy to
@@ -65,6 +66,7 @@ stdenv.mkDerivation rec {
       fast, desktop experience. It is written in C++ and licensed
       under MIT license.
     '';
+
     homepage = "https://fluxbox.org/";
     license = lib.licenses.mit;
     maintainers = [ ];

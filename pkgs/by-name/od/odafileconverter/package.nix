@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  dpkg,
   fetchurl,
-  qt6,
+  dpkg,
   libGL,
+  qt6,
 }:
 
 let
@@ -30,12 +30,13 @@ stdenv.mkDerivation rec {
     hash = "sha256-xxNjzVR1gXevR6NlFU8YDcUKHitSoTGZT9pUHBOjZ2Y=";
   };
 
-  buildInputs = [
-    qt6.qtbase
-  ];
   nativeBuildInputs = [
     dpkg
     qt6.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    qt6.qtbase
   ];
 
   installPhase = ''
@@ -45,6 +46,7 @@ stdenv.mkDerivation rec {
   '';
 
   dontWrapQtApps = true;
+
   fixupPhase = ''
     echo "setting interpreter"
     patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" $out/libexec/ODAFileConverter
@@ -64,12 +66,14 @@ stdenv.mkDerivation rec {
   meta = {
     description = "For converting between different versions of .dwg and .dxf";
     homepage = "https://www.opendesign.com/guestfiles/oda_file_converter";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       nagisa
       konradmalik
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "ODAFileConverter";
   };

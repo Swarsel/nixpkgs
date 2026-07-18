@@ -1,29 +1,36 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  gmp,
-  mpfr,
-  libmpc,
-  ppl,
-  cython,
   cysignals,
+  cython,
+  fetchPypi,
+  gmp,
   gmpy2,
-  sphinx,
-
+  libmpc,
+  mpfr,
+  ppl,
   # Reverse dependency
   sage,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "pplpy";
   version = "0.8.10";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-1CohbIKRTc9NfAAN68mLsza4+D4Ca6XZUszNn4B07/0=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
+
+  nativeBuildInputs = [
+    sphinx # docbuild, called by make
+  ];
 
   buildInputs = [
     gmp
@@ -32,19 +39,10 @@ buildPythonPackage rec {
     ppl
   ];
 
-  nativeBuildInputs = [
-    sphinx # docbuild, called by make
-  ];
-
   propagatedBuildInputs = [
     cython
     cysignals
     gmpy2
-  ];
-
-  outputs = [
-    "out"
-    "doc"
   ];
 
   postBuild = ''
@@ -61,6 +59,8 @@ buildPythonPackage rec {
     mv docs/build/html "$doc/share/doc/pplpy"
   '';
 
+  format = "setuptools";
+
   passthru.tests = {
     inherit sage;
   };
@@ -68,7 +68,7 @@ buildPythonPackage rec {
   meta = {
     description = "Python wrapper for ppl";
     homepage = "https://gitlab.com/videlec/pplpy";
-    teams = [ lib.teams.sage ];
     license = lib.licenses.gpl3;
+    teams = [ lib.teams.sage ];
   };
 }

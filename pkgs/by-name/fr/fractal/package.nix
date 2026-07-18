@@ -1,34 +1,34 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  nix-update-script,
+  appstream-glib,
+  blueprint-compiler,
   cargo,
-  meson,
-  ninja,
-  rustPlatform,
-  rustc,
-  pkg-config,
+  desktop-file-utils,
   glib,
+  glycin-loaders,
   grass-sass,
+  gst_all_1,
   gtk4,
   gtksourceview5,
   lcms2,
   libadwaita,
-  gst_all_1,
-  desktop-file-utils,
-  appstream-glib,
+  libglycin-gtk4,
+  libseccomp,
+  libshumate,
+  libwebp,
+  meson,
+  ninja,
+  nix-update-script,
   openssl,
   pipewire,
-  libshumate,
-  wrapGAppsHook4,
-  blueprint-compiler,
+  pkg-config,
+  rustPlatform,
+  rustc,
   sqlite,
+  wrapGAppsHook4,
   xdg-desktop-portal,
-  libseccomp,
-  libglycin-gtk4,
-  glycin-loaders,
-  libwebp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,16 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "14";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "fractal";
     tag = finalAttrs.version;
     hash = "sha256-pgu+O9fRyZiRYkxRTlPgnd5jaGPL1nN0agMR+x6+oGg=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-Fsw0hIAYiF+31PNuC5a9SatRatY7A8OwABhlyHIl1Lc=";
+    domain = "gitlab.gnome.org";
   };
 
   patches = [
@@ -105,6 +100,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-Fsw0hIAYiF+31PNuC5a9SatRatY7A8OwABhlyHIl1Lc=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -114,8 +114,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/World/fractal";
     changelog = "https://gitlab.gnome.org/World/fractal/-/releases/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
     mainProgram = "fractal";
+    teams = [ lib.teams.gnome ];
   };
 })

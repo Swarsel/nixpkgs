@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  smartmontools,
   fetchFromGitHub,
-  fetchzip,
   cmake,
-  qt6,
-  qdiskinfo,
-  themeBundle ? null,
+  fetchzip,
   nix-update-script,
+  qdiskinfo,
+  qt6,
+  smartmontools,
+  themeBundle ? null,
 }:
 
 let
@@ -56,8 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     smartmontools
   ];
 
-  cmakeBuildType = "MinSizeRel";
-
   cmakeFlags = [
     "-DQT_VERSION_MAJOR=6"
   ]
@@ -69,10 +67,13 @@ stdenv.mkDerivation (finalAttrs: {
       [ "-DCHARACTER_IS_RIGHT=OFF" ]
   );
 
-  postUnpack = ''
-    cp -r $sourceRoot $TMPDIR/src
-    sourceRoot=$TMPDIR/src
+  postInstall = ''
+    wrapProgram $out/bin/QDiskInfo \
+      --suffix PATH : ${smartmontools}/bin
   '';
+
+  cmakeBuildType = "MinSizeRel";
+
   patchPhase = lib.optionalString isThemed ''
     export SRCPATH=${themeBundle'.src}/CdiResource/themes/
     export DESTPATH=$sourceRoot/dist/theme/
@@ -88,9 +89,10 @@ stdenv.mkDerivation (finalAttrs: {
     cp $SRCPATH/${themeBundle'.paths.status}/SDdiskStatusGood-300.png $DESTPATH/good.png
     cp $SRCPATH/${themeBundle'.paths.status}/SDdiskStatusUnknown-300.png $DESTPATH/unknown.png
   '';
-  postInstall = ''
-    wrapProgram $out/bin/QDiskInfo \
-      --suffix PATH : ${smartmontools}/bin
+
+  postUnpack = ''
+    cp -r $sourceRoot $TMPDIR/src
+    sourceRoot=$TMPDIR/src
   '';
 
   passthru =
@@ -98,11 +100,12 @@ stdenv.mkDerivation (finalAttrs: {
       themeSources = import ./sources.nix { inherit fetchzip; };
     in
     rec {
-      themeBundles = import ./themes.nix { inherit themeSources; };
       tests = lib.flip lib.mapAttrs themeBundles (
         themeName: themeBundle:
         (qdiskinfo.override { inherit themeBundle; }).overrideAttrs { pname = "qdiskinfo-${themeName}"; }
       );
+
+      themeBundles = import ./themes.nix { inherit themeSources; };
       updateScript = nix-update-script { };
     };
 
@@ -110,10 +113,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "CrystalDiskInfo alternative for Linux";
     homepage = "https://github.com/edisionnano/QDiskInfo";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       roydubnium
       ryand56
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "QDiskInfo";
   };

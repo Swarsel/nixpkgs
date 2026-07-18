@@ -1,31 +1,32 @@
 {
   lib,
-  buildDunePackage,
-  ocaml-crunch,
   astring,
+  bash,
+  buildDunePackage,
   cmdliner,
   cppo,
+  fmt,
   fpath,
-  result,
-  tyxml,
-  markup,
-  yojson,
-  sexplib0,
   jq,
+  markup,
+  ocaml-crunch,
   odoc-parser,
   ppx_expect,
-  bash,
-  fmt,
+  result,
+  sexplib0,
+  tyxml,
+  yojson,
 }:
 
 buildDunePackage {
-  pname = "odoc";
   inherit (odoc-parser) version src;
+  pname = "odoc";
 
   nativeBuildInputs = [
     cppo
     ocaml-crunch
   ];
+
   buildInputs = [
     astring
     cmdliner
@@ -35,10 +36,13 @@ buildDunePackage {
     fmt
   ];
 
+  doCheck = true;
+
   nativeCheckInputs = [
     bash
     jq
   ];
+
   checkInputs = [
     markup
     yojson
@@ -46,7 +50,6 @@ buildDunePackage {
     jq
     ppx_expect
   ];
-  doCheck = true;
 
   preCheck = ''
     # some run.t files check the content of patchShebangs-ed scripts, so patch
@@ -57,10 +60,10 @@ buildDunePackage {
 
   meta = {
     description = "Documentation generator for OCaml";
-    mainProgram = "odoc";
-    license = lib.licenses.isc;
-    maintainers = [ lib.maintainers.vbgl ];
     homepage = "https://github.com/ocaml/odoc";
     changelog = "https://github.com/ocaml/odoc/blob/${odoc-parser.version}/CHANGES.md";
+    license = lib.licenses.isc;
+    maintainers = [ lib.maintainers.vbgl ];
+    mainProgram = "odoc";
   };
 }

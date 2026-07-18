@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unittestCheckHook,
+  buildPythonPackage,
   setuptools-scm,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "thorlabspm100";
   version = "1.2.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "clade";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "ThorlabsPM100" ];
 
   meta = {

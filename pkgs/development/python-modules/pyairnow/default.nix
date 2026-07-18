@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-aiohttp,
   pytest-asyncio,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyairnow";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asymworks";
@@ -22,10 +21,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-BGTtDMq5SnYrk1qT6OkGa1tkxYH5umbMC5Udmffyf+g=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
 
   nativeCheckInputs = [
     aioresponses
@@ -35,6 +30,9 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pyairnow" ];
 
   meta = {

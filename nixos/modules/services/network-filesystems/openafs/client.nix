@@ -56,67 +56,26 @@ in
 
       enable = mkOption {
         default = false;
-        type = types.bool;
         description = "Whether to enable the OpenAFS client.";
+        type = types.bool;
       };
 
       afsdb = mkOption {
         default = true;
-        type = types.bool;
         description = "Resolve cells via AFSDB DNS records.";
-      };
-
-      cellName = mkOption {
-        default = "";
-        type = types.str;
-        description = "Cell name.";
-        example = "grand.central.org";
-      };
-
-      globalCellServDBFile = mkOption {
-        default = pkgs.openafs.cellservdb;
-        defaultText = literalExpression "pkgs.openafs.cellservdb";
-        type = types.nullOr types.pathInStore;
-        description = ''
-          Global CellServDB file to be deployed. Set to `null` to only deploy the
-          cells in `cellServDB`. Any cells defined in `cellServDB` will override
-          cells in the global file.
-        '';
-        example = lib.literalExpression "./CellServDB";
-      };
-
-      cellServDB = mkOption {
-        default = { };
-        type = cellServDBType cfg.cellName;
-        description = ''
-          This cell's database server records, added to the global
-          CellServDB. See {manpage}`CellServDB(5)` man page for syntax. Ignored when
-          `afsdb` is set to `true`.
-        '';
-        example = {
-          "dns.fqdn.org" = [
-            {
-              ip = "1.2.3.4";
-              dnsname = "first.afsdb.server.dns.fqdn.org";
-            }
-            {
-              ip = "2.3.4.5";
-              dnsname = "second.afsdb.server.dns.fqdn.org";
-            }
-          ];
-        };
+        type = types.bool;
       };
 
       cache = {
         blocks = mkOption {
           default = 100000;
-          type = types.int;
           description = "Cache size in 1KB blocks.";
+          type = types.int;
         };
 
         chunksize = mkOption {
           default = 0;
-          type = types.ints.between 0 30;
+
           description = ''
             Size of each cache chunk given in powers of
             2. `0` resets the chunk size to its default
@@ -124,100 +83,161 @@ in
             diskcache). Maximum value is 30. Important performance
             parameter. Set to higher values when dealing with large files.
           '';
+
+          type = types.ints.between 0 30;
         };
 
         directory = mkOption {
           default = "/var/cache/openafs";
-          type = types.str;
           description = "Cache directory.";
+          type = types.str;
         };
 
         diskless = mkOption {
           default = false;
-          type = types.bool;
+
           description = ''
             Use in-memory cache for diskless machines. Has no real
             performance benefit anymore.
           '';
+
+          type = types.bool;
         };
+      };
+
+      cellName = mkOption {
+        default = "";
+        description = "Cell name.";
+        example = "grand.central.org";
+        type = types.str;
+      };
+
+      cellServDB = mkOption {
+        default = { };
+
+        description = ''
+          This cell's database server records, added to the global
+          CellServDB. See {manpage}`CellServDB(5)` man page for syntax. Ignored when
+          `afsdb` is set to `true`.
+        '';
+
+        example = {
+          "dns.fqdn.org" = [
+            {
+              dnsname = "first.afsdb.server.dns.fqdn.org";
+              ip = "1.2.3.4";
+            }
+            {
+              dnsname = "second.afsdb.server.dns.fqdn.org";
+              ip = "2.3.4.5";
+            }
+          ];
+        };
+
+        type = cellServDBType cfg.cellName;
       };
 
       crypt = mkOption {
         default = true;
-        type = types.bool;
         description = "Whether to enable (weak) protocol encryption.";
+        type = types.bool;
       };
 
       daemons = mkOption {
         default = 2;
-        type = types.int;
+
         description = ''
           Number of daemons to serve user requests. Numbers higher than 6
           usually do no increase performance. Default is sufficient for up
           to five concurrent users.
         '';
+
+        type = types.int;
       };
 
       fakestat = mkOption {
         default = false;
-        type = types.bool;
+
         description = ''
           Return fake data on stat() calls. If `true`,
           always do so. If `false`, only do so for
           cross-cell mounts (as these are potentially expensive).
         '';
+
+        type = types.bool;
+      };
+
+      globalCellServDBFile = mkOption {
+        default = pkgs.openafs.cellservdb;
+        defaultText = literalExpression "pkgs.openafs.cellservdb";
+
+        description = ''
+          Global CellServDB file to be deployed. Set to `null` to only deploy the
+          cells in `cellServDB`. Any cells defined in `cellServDB` will override
+          cells in the global file.
+        '';
+
+        example = lib.literalExpression "./CellServDB";
+        type = types.nullOr types.pathInStore;
       };
 
       inumcalc = mkOption {
         default = "compat";
-        type = types.strMatching "compat|md5";
+
         description = ''
           Inode calculation method. `compat` is
           computationally less expensive, but `md5` greatly
           reduces the likelihood of inode collisions in larger scenarios
           involving multiple cells mounted into one AFS space.
         '';
+
+        type = types.strMatching "compat|md5";
       };
 
       mountPoint = mkOption {
         default = "/afs";
-        type = types.str;
+
         description = ''
           Mountpoint of the AFS file tree, conventionally
           `/afs`. When set to a different value, only
           cross-cells that use the same value can be accessed.
         '';
+
+        type = types.str;
       };
 
       packages = {
         module = mkOption {
           default = config.boot.kernelPackages.openafs;
           defaultText = literalExpression "config.boot.kernelPackages.openafs";
-          type = types.package;
           description = "OpenAFS kernel module package. MUST match the userland package!";
+          type = types.package;
         };
+
         programs = mkOption {
           default = getBin pkgs.openafs;
           defaultText = literalExpression "getBin pkgs.openafs";
-          type = types.package;
           description = "OpenAFS programs package. MUST match the kernel module package!";
+          type = types.package;
         };
       };
 
       sparse = mkOption {
         default = true;
-        type = types.bool;
         description = "Minimal cell list in /afs.";
+        type = types.bool;
       };
 
       startDisconnected = mkOption {
         default = false;
-        type = types.bool;
+
         description = ''
           Start up in disconnected mode.  You need to execute
           `fs disco online` (as root) to switch to
           connected mode. Useful for roaming devices.
         '';
+
+        type = types.bool;
       };
 
     };
@@ -238,32 +258,28 @@ in
       }
     ];
 
-    environment.systemPackages = [ openafsBin ];
-
     environment.etc = {
-      clientCellServDB = {
-        source = cellServDB;
-        target = "openafs/CellServDB";
-        mode = "0644";
-      };
       clientCell = {
+        mode = "0644";
+        target = "openafs/ThisCell";
+
         text = ''
           ${cfg.cellName}
         '';
-        target = "openafs/ThisCell";
+      };
+
+      clientCellServDB = {
         mode = "0644";
+        source = cellServDB;
+        target = "openafs/CellServDB";
       };
     };
 
+    environment.systemPackages = [ openafsBin ];
+
     systemd.services.afsd = {
-      description = "AFS client";
-      wantedBy = [ "multi-user.target" ];
-      wants = lib.optional (!cfg.startDisconnected) "network-online.target";
       after = singleton (if cfg.startDisconnected then "network.target" else "network-online.target");
-      serviceConfig = {
-        RemainAfterExit = true;
-      };
-      restartIfChanged = false;
+      description = "AFS client";
 
       preStart = ''
         mkdir -p -m 0755 ${cfg.mountPoint}
@@ -293,6 +309,15 @@ in
         ${openafsBin}/sbin/afsd -shutdown
         ${pkgs.kmod}/sbin/rmmod libafs
       '';
+
+      restartIfChanged = false;
+
+      serviceConfig = {
+        RemainAfterExit = true;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = lib.optional (!cfg.startDisconnected) "network-online.target";
     };
   };
 }

@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  nodejs,
-  makeWrapper,
-  jre,
-  fetchzip,
-  buildNpmPackage,
   _experimental-update-script-combinators,
-  nix-update-script,
-  writeShellScript,
-  gnugrep,
-  nix-update,
+  buildNpmPackage,
   common-updater-scripts,
+  fetchzip,
+  gnugrep,
+  jre,
   libiconv,
+  makeWrapper,
+  nix-update,
+  nix-update-script,
+  nodejs,
+  rustPlatform,
+  writeShellScript,
 }:
 
 let
@@ -26,8 +26,8 @@ let
     description = "Formal specification language with TLA+ semantics";
     homepage = "https://quint-lang.org";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bugarela ];
+    platforms = lib.platforms.unix;
   };
 
   src = fetchFromGitHub {
@@ -39,16 +39,9 @@ let
 
   # Build the Quint CLI from source
   quint-cli = buildNpmPackage {
-    pname = "quint-cli";
     inherit version src nodejs;
-
-    sourceRoot = "${src.name}/quint";
-
+    pname = "quint-cli";
     npmDepsHash = "sha256-6vKu9OTw68A92uhk1vHYDld5ixUln2tZav8pi55/l4c=";
-
-    npmBuildScript = "compile";
-
-    dontNpmPrune = true;
 
     installPhase = ''
       runHook preInstall
@@ -60,6 +53,10 @@ let
       runHook postInstall
     '';
 
+    dontNpmPrune = true;
+    npmBuildScript = "compile";
+    sourceRoot = "${src.name}/quint";
+
     meta = metaCommon // {
       description = "CLI for the Quint formal specification language";
     };
@@ -67,20 +64,18 @@ let
 
   # Build the Rust evaluator from source
   quint-evaluator = rustPlatform.buildRustPackage {
+    inherit src;
     pname = "quint-evaluator";
     version = evaluatorVersion;
-    inherit src;
-
-    sourceRoot = "${src.name}/evaluator";
-
-    # Skip tests during build, as many rust tests rely on the Quint CLI
-    doCheck = false;
 
     buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
       libiconv
     ];
 
     cargoHash = "sha256-aGVs/J+lAPHOsi01xShfZHBeUjd6eONpraNuMkaVfO8=";
+    # Skip tests during build, as many rust tests rely on the Quint CLI
+    doCheck = false;
+    sourceRoot = "${src.name}/evaluator";
 
     meta = metaCommon // {
       description = "Evaluator for the Quint formal specification language";
@@ -89,19 +84,14 @@ let
 
   # Download Apalache. It runs on the JVM, so no need to build it from source.
   apalacheDist = fetchzip {
-    url = "https://github.com/apalache-mc/apalache/releases/download/v${apalacheVersion}/apalache.tgz";
     hash = "sha256-2Gy+wQOUyuauiGedDNPPHatwcphll3BuL3SD4D12XMI=";
+    url = "https://github.com/apalache-mc/apalache/releases/download/v${apalacheVersion}/apalache.tgz";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "quint";
   inherit version src;
-
+  pname = "quint";
   nativeBuildInputs = [ makeWrapper ];
-
-  dontBuild = true;
-
-  dontConfigure = true;
 
   installPhase = ''
     runHook preInstall
@@ -121,6 +111,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   passthru = {
     inherit
       quint-cli
@@ -128,6 +121,7 @@ stdenv.mkDerivation (finalAttrs: {
       apalacheDist
       apalacheVersion
       ;
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script {
         extraArgs = [

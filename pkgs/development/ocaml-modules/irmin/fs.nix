@@ -1,19 +1,18 @@
 {
+  alcotest,
+  astring,
   buildDunePackage,
   irmin,
-  astring,
-  logs,
-  lwt,
-  alcotest,
   irmin-test,
   irmin-watcher,
+  logs,
+  lwt,
 }:
 
 buildDunePackage {
 
-  pname = "irmin-fs";
-
   inherit (irmin) version src;
+  pname = "irmin-fs";
 
   propagatedBuildInputs = [
     irmin
@@ -22,13 +21,13 @@ buildDunePackage {
     lwt
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
     irmin-test
     irmin-watcher
   ];
-
-  doCheck = true;
 
   meta = irmin.meta // {
     description = "Generic file-system backend for Irmin";

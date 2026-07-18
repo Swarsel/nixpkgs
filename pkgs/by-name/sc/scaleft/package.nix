@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  rpmextract,
   patchelf,
-  testers,
+  rpmextract,
   scaleft,
+  testers,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,11 +20,6 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     patchelf
     rpmextract
-  ];
-
-  libPath = lib.makeLibraryPath [
-    stdenv.cc
-    stdenv.cc.cc
   ];
 
   buildCommand = ''
@@ -42,17 +37,22 @@ stdenv.mkDerivation rec {
     patchShebangs $out
   '';
 
+  libPath = lib.makeLibraryPath [
+    stdenv.cc
+    stdenv.cc.cc
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = scaleft;
-    command = "sft -v";
     version = "sft version ${version}";
+    command = "sft -v";
+    package = scaleft;
   };
 
   meta = {
     description = "Zero Trust software which you can use to secure your internal servers and services";
     homepage = "https://www.scaleft.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ jloyet ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "sft";

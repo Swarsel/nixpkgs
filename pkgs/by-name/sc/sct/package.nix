@@ -22,20 +22,22 @@ stdenv.mkDerivation {
     xorgproto
   ];
 
+  makeFlags = [ "PREFIX=$(out)" ];
+
   preInstall = ''
     mkdir -p $out/bin $out/share/man/man1
   '';
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
   meta = {
-    homepage = "https://www.umaxx.net/";
     description = "Minimal utility to set display colour temperature";
+    homepage = "https://www.umaxx.net/";
+    license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       raskin
       somasis
     ];
-    license = lib.licenses.isc;
+
     platforms = with lib.platforms; linux ++ freebsd ++ openbsd;
   };
 }

@@ -1,25 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cargo,
-  rustPlatform,
-  rustc,
-
   # dependencies
   msgpack,
-
   # testing
   pydantic,
   pytestCheckHook,
   python-dateutil,
   pytz,
+  rustPlatform,
+  rustc,
 }:
 
 buildPythonPackage rec {
   pname = "ormsgpack";
   version = "1.12.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aviramha";
@@ -28,10 +25,15 @@ buildPythonPackage rec {
     hash = "sha256-a2PgCCIPPJt6YNW7UFl9urYZkAoVj5Np0lbv4QfzMAs=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    hash = "sha256-PLLSVoQLsbTOIMqOsaaei/dm8SybfyqP0WLJW8hTOoo=";
-  };
+  # requires nightly features (feature(portable_simd))
+  env.RUSTC_BOOTSTRAP = true;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pydantic
+    python-dateutil
+    pytz
+  ];
 
   build-system = [
     cargo
@@ -40,19 +42,16 @@ buildPythonPackage rec {
     rustc
   ];
 
-  # requires nightly features (feature(portable_simd))
-  env.RUSTC_BOOTSTRAP = true;
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-PLLSVoQLsbTOIMqOsaaei/dm8SybfyqP0WLJW8hTOoo=";
+  };
 
   dependencies = [
     msgpack
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pydantic
-    python-dateutil
-    pytz
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "ormsgpack"
@@ -62,10 +61,12 @@ buildPythonPackage rec {
     description = "Fast msgpack serialization library for Python derived from orjson";
     homepage = "https://github.com/aviramha/ormsgpack";
     changelog = "https://github.com/aviramha/ormsgpack/releases/tag/${version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ sarahec ];
   };
 }

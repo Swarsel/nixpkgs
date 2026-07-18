@@ -10,7 +10,6 @@ in
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "nvpy";
   version = "2.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cpbotha";
@@ -18,15 +17,6 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-guNdLu/bCk89o5M3gQU7J0W4h7eZdLHM0FG5IAPLE7c=";
   };
-
-  build-system = with pythonPackages; [ setuptools ];
-
-  dependencies = with pythonPackages; [
-    markdown
-    docutils
-    simplenote
-    tkinter
-  ];
 
   # No tests
   doCheck = false;
@@ -39,13 +29,23 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     install -m644 README.rst "$out/share/doc/nvpy/README"
   '';
 
+  build-system = with pythonPackages; [ setuptools ];
+
+  dependencies = with pythonPackages; [
+    markdown
+    docutils
+    simplenote
+    tkinter
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "nvpy" ];
 
   meta = {
     description = "Simplenote-syncing note-taking tool inspired by Notational Velocity";
     homepage = "https://github.com/cpbotha/nvpy";
-    platforms = lib.platforms.linux;
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.linux;
     mainProgram = "nvpy";
   };
 })

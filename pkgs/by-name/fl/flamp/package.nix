@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  pkg-config,
+  fetchgit,
   fltk_1_3,
   gettext,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ stteague ];
     platforms = lib.platforms.unix;
-    broken = stdenv.system == "x86_64-darwin";
     mainProgram = "flamp";
+    broken = stdenv.system == "x86_64-darwin";
   };
 })

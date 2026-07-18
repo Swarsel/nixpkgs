@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
   aiohttp,
-  urllib3,
-  orjson,
   aresponses,
+  buildPythonPackage,
+  orjson,
+  pytestCheckHook,
   setuptools,
+  urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "tesla-powerwall";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jrester";
@@ -41,7 +40,7 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "tests/unit" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tesla_powerwall" ];
 
   meta = {

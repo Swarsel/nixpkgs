@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,7 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-LR5YN0M8PQjQMMsbhQvITFXuhNG8J/poijYeeh2fHYs=";
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
@@ -26,8 +26,6 @@ buildGoModule (finalAttrs: {
     "-X=main.VERSION=${finalAttrs.version}"
     "-X main.COMMIT=${finalAttrs.version}"
   ];
-
-  doInstallCheck = true;
 
   meta = {
     description = "Testing tool for HTTP/2 implementation";

@@ -2,16 +2,14 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
-  ocaml,
-  mdx,
   gitUpdater,
+  mdx,
+  ocaml,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "printbox";
   version = "0.12";
-
-  minimalOCamlVersion = "4.04";
 
   src = fetchFromGitHub {
     owner = "c-cube";
@@ -20,16 +18,15 @@ buildDunePackage (finalAttrs: {
     sha256 = "sha256-PQbr2sjASoWz0OHAMV6buAJERpnUJxVpLAigIVnADIc=";
   };
 
-  nativeCheckInputs = [ mdx.bin ];
-
   # mdx is not available for OCaml < 4.08
   doCheck = lib.versionAtLeast ocaml.version "4.08";
-
+  nativeCheckInputs = [ mdx.bin ];
+  minimalOCamlVersion = "4.04";
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
-    homepage = "https://github.com/c-cube/printbox/";
     description = "Allows to print nested boxes, lists, arrays, tables in several formats";
+    homepage = "https://github.com/c-cube/printbox/";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.romildo ];
   };

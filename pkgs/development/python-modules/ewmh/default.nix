@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "ewmh";
   version = "0.1.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,13 +15,13 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ python-xlib ];
-
   # No tests included
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/parkouss/pyewmh";
     description = "Implementation of EWMH (Extended Window Manager Hints), based on Xlib";
+    homepage = "https://github.com/parkouss/pyewmh";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ bandresen ];
   };

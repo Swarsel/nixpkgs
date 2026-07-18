@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  makeWrapper,
   jre,
+  makeWrapper,
+  unzip,
 }:
 
 stdenv.mkDerivation rec {
@@ -36,8 +36,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "http://developer.amazonwebservices.com/connect/entry.jspa?externalID=351";
     description = "Command-line tools to create and manage Amazon EC2 virtual machines";
+    homepage = "http://developer.amazonwebservices.com/connect/entry.jspa?externalID=351";
     license = lib.licenses.amazonsl;
   };
 }

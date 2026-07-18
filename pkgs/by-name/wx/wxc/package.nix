@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   cmake,
+  fetchFromCodeberg,
   libGL,
   wxwidgets_3_2,
 }:
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-wjby7F+Xi+H4avLGZxKJ7/LY2CJAGMIwBM7mfVzI1Bg=";
   };
 
-  sourceRoot = finalAttrs.src.name + "/wxc";
-
   nativeBuildInputs = [
     cmake
     wxwidgets_3_2 # in nativeBuildInputs because of wx-config
@@ -33,13 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
     bash generate-version-header.sh
   '';
 
+  sourceRoot = finalAttrs.src.name + "/wxc";
+
   meta = {
     description = "C language binding for wxWidgets";
     homepage = "https://wiki.haskell.org/WxHaskell";
+
     license = with lib.licenses; [
       lgpl2Plus
       wxWindowsException31
     ];
+
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = wxwidgets_3_2.meta.platforms;
   };

@@ -3,16 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   cairomm,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "adaptagrams";
   version = "0-unstable-2025-10-28";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mjwybrow";
@@ -21,7 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7tzDOass0ea+6vnfyA/jl2k6VWHCMtkE2I/eTeCFiYQ=";
   };
 
-  sourceRoot = "source/cola";
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -32,13 +29,18 @@ stdenv.mkDerivation (finalAttrs: {
     cairomm
   ];
 
+  __structuredAttrs = true;
+  sourceRoot = "source/cola";
+
   meta = {
     description = "Libraries for constraint-based layout and connector routing for diagrams.";
     homepage = "https://github.com/mjwybrow/adaptagrams";
     license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       wishstudio
     ];
+
     platforms = lib.platforms.all;
   };
 })

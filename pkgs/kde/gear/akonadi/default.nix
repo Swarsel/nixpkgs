@@ -1,14 +1,14 @@
 {
   lib,
-  mkKdeDerivation,
-  qttools,
   accounts-qt,
   kaccounts-integration,
-  shared-mime-info,
-  xz,
-  mariadb,
   libpq,
+  mariadb,
+  mkKdeDerivation,
+  qttools,
+  shared-mime-info,
   sqlite,
+  xz,
   backend ? "mysql",
 }:
 
@@ -26,6 +26,26 @@ mkKdeDerivation {
     ./ignore-mysql-config-timestamp.patch
   ];
 
+  # Hardcoded as a QString, which is UTF-16 so Nix can't pick it up automatically
+  postFixup = ''
+    mkdir -p $out/nix-support
+  ''
+  + lib.optionalString (backend == "mysql") ''
+    echo "${mariadb}" > $out/nix-support/depends
+  ''
+  + lib.optionalString (backend == "postgres") ''
+    echo "${libpq}" > $out/nix-support/depends
+  '';
+
+  extraBuildInputs = [
+    kaccounts-integration
+    accounts-qt
+    xz
+  ]
+  ++ lib.optionals (backend == "mysql") [ mariadb ]
+  ++ lib.optionals (backend == "postgres") [ libpq ]
+  ++ lib.optionals (backend == "sqlite") [ sqlite ];
+
   extraCmakeFlags = [
     "-DDATABASE_BACKEND=${lib.toUpper backend}"
   ]
@@ -40,25 +60,4 @@ mkKdeDerivation {
     qttools
     shared-mime-info
   ];
-
-  extraBuildInputs = [
-    kaccounts-integration
-    accounts-qt
-    xz
-  ]
-  ++ lib.optionals (backend == "mysql") [ mariadb ]
-  ++ lib.optionals (backend == "postgres") [ libpq ]
-  ++ lib.optionals (backend == "sqlite") [ sqlite ];
-
-  # Hardcoded as a QString, which is UTF-16 so Nix can't pick it up automatically
-
-  postFixup = ''
-    mkdir -p $out/nix-support
-  ''
-  + lib.optionalString (backend == "mysql") ''
-    echo "${mariadb}" > $out/nix-support/depends
-  ''
-  + lib.optionalString (backend == "postgres") ''
-    echo "${libpq}" > $out/nix-support/depends
-  '';
 }

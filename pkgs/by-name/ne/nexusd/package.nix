@@ -1,12 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "nexusd";
   version = "3.3.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "gammazero";
@@ -16,7 +15,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-1sZDoDcX/9upTZ8bL7l+ldsouBZVT+61RFSRaeB6Dm8=";
-
+  __structuredAttrs = true;
   subPackages = [ "nexusd" ];
 
   meta = {
@@ -24,7 +23,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/gammazero/nexus";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kiara ];
-    mainProgram = "nexusd";
     platforms = lib.platforms.unix;
+    mainProgram = "nexusd";
   };
 })

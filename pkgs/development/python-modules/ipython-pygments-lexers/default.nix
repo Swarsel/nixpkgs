@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pygments,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ipython-pygments-lexers";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ipython";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-p2WrFvCzHOuxPec9Wc1/xT6+fEUdcdDC1HTNmu5dm5Q=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ pygments ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  dependencies = [ pygments ];
+  pyproject = true;
   pythonImportsCheck = [ "ipython_pygments_lexers" ];
 
   meta = {

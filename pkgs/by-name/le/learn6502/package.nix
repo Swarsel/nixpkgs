@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  yarn-berry_4,
-  nodejs,
+  blueprint-compiler,
+  desktop-file-utils,
+  gjs,
+  gtksourceview5,
+  libadwaita,
   meson,
   ninja,
-  blueprint-compiler,
-  gtksourceview5,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  pkg-config,
-  writableTmpDirAsHomeHook,
-  gjs,
-  libadwaita,
-  writeShellScript,
   nix-update,
+  nodejs,
+  pkg-config,
+  wrapGAppsHook4,
+  writableTmpDirAsHomeHook,
+  writeShellScript,
+  yarn-berry_4,
 }:
 
 let
@@ -41,12 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     ./yarn-4.14-support.patch
   ];
 
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-Tne5kBgymwXfIkesEd8lHy2uqIJU8oy+9v8vSqG2WB8=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     nodejs
@@ -68,8 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     libadwaita
   ];
 
-  strictDeps = true;
-
   # yarnBerryConfigHook needs to run in the yarn.lock directory
   postConfigure = ''
     pushd ..
@@ -79,6 +72,13 @@ stdenv.mkDerivation (finalAttrs: {
   preBuild = ''
     popd
   '';
+
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-Tne5kBgymwXfIkesEd8lHy2uqIJU8oy+9v8vSqG2WB8=";
+  };
 
   passthru.updateScript = writeShellScript "update-learn6502" ''
     ${lib.getExe nix-update} learn6502 || true
@@ -96,9 +96,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Modern 6502 Assembly Learning Environment for GNOME";
     homepage = "https://github.com/JumpLink/Learn6502";
-    mainProgram = "eu.jumplink.Learn6502";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "eu.jumplink.Learn6502";
   };
 })

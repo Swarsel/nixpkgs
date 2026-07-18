@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   alglib,
-  unzip,
   autoPatchelfHook,
+  unzip,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,15 +23,6 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ (lib.getLib stdenv.cc.cc) ];
 
-  dontConfigure = true;
-
-  dontBuild = true;
-
-  unpackPhase = ''
-    mkdir -p $out/{bin,share/rainbowcrack}
-    unzip $src -d $out || true
-  '';
-
   installPhase = ''
     install -Dm644 $out/rainbowcrack-1.8-linux64/*.txt $out/share/rainbowcrack
     install -Dm755 $out/rainbowcrack-1.8-linux64/rt* $out/rainbowcrack-1.8-linux64/rcrack $out/bin
@@ -39,15 +30,22 @@ stdenv.mkDerivation rec {
     rm -rf $out/rainbowcrack-1.8-linux64
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   runtimeDependencies = [ alglib ];
+
+  unpackPhase = ''
+    mkdir -p $out/{bin,share/rainbowcrack}
+    unzip $src -d $out || true
+  '';
 
   meta = {
     description = "Rainbow table generator used for password cracking";
     homepage = "http://project-rainbowcrack.com";
-    maintainers = with lib.maintainers; [ tochiaha ];
     license = lib.licenses.unfree;
-    mainProgram = "rcrack";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ tochiaha ];
     platforms = [ "x86_64-linux64" ];
+    mainProgram = "rcrack";
   };
 }

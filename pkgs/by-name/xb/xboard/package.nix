@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  libx11,
-  xorgproto,
-  libxt,
-  libxaw,
-  libsm,
-  libice,
-  libxmu,
-  libxext,
-  gnuchess,
-  texinfo,
-  libxpm,
-  pkg-config,
-  librsvg,
   cairo,
-  pango,
+  fetchpatch,
+  gnuchess,
   gtk2,
+  libice,
+  librsvg,
+  libsm,
+  libx11,
+  libxaw,
+  libxext,
+  libxmu,
+  libxpm,
+  libxt,
+  pango,
+  pkg-config,
+  texinfo,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,12 +35,13 @@ stdenv.mkDerivation (finalAttrs: {
     #   https://savannah.gnu.org/patch/index.php?10211
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://savannah.gnu.org/patch/download.php?file_id=53275";
       sha256 = "sha256-ZOo9jAy1plFjhC5HXJQvXL+Zf7FL14asV3G4AwfgqTY=";
+      url = "https://savannah.gnu.org/patch/download.php?file_id=53275";
     })
   ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     xorgproto
@@ -61,10 +62,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GUI for chess engines";
-    mainProgram = "xboard";
     homepage = "https://www.gnu.org/software/xboard/";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl3Plus;
+    mainProgram = "xboard";
   };
 })

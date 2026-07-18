@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.oracle.com/database/berkeley-db/xml.html";
     description = "Embeddable XML database based on Berkeley DB";
+    homepage = "https://www.oracle.com/database/berkeley-db/xml.html";
     license = lib.licenses.agpl3Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;

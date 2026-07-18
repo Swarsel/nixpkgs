@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   autoPatchelfHook,
-  jdk8_headless,
+  bash,
+  bzip2,
+  callPackage,
+  coreutils,
+  cyrus_sasl,
   jdk11_headless,
   jdk21_headless,
-  bash,
-  coreutils,
-  which,
-  bzip2,
-  cyrus_sasl,
+  jdk8_headless,
+  libtirpc,
+  makeWrapper,
+  nixosTests,
+  openssl,
   protobuf,
   snappy,
+  spark,
+  which,
   zlib,
   zstd,
-  openssl,
-  nixosTests,
   sparkSupport ? true,
-  spark,
-  libtirpc,
-  callPackage,
 }:
 
 assert lib.elem stdenv.system [
@@ -33,16 +33,20 @@ assert lib.elem stdenv.system [
 let
   common =
     {
-      pname,
-      platformAttrs,
       jdk,
+      platformAttrs,
+      pname,
       tests,
     }:
     stdenv.mkDerivation (finalAttrs: {
       inherit pname;
-      jdk = platformAttrs.${stdenv.system}.jdk or jdk;
       version = platformAttrs.${stdenv.system}.version or (throw "Unsupported system: ${stdenv.system}");
+
       src = fetchurl {
+        inherit (platformAttrs.${stdenv.system} or (throw "Unsupported system: ${stdenv.system}"))
+          hash
+          ;
+
         url =
           "mirror://apache/hadoop/common/hadoop-${finalAttrs.version}/hadoop-${finalAttrs.version}"
           +
@@ -50,27 +54,13 @@ let
               "-${platformAttrs.${stdenv.system}.variant}"
           + lib.optionalString stdenv.hostPlatform.isAarch64 "-aarch64"
           + ".tar.gz";
-        inherit (platformAttrs.${stdenv.system} or (throw "Unsupported system: ${stdenv.system}"))
-          hash
-          ;
       };
-      doCheck = true;
-
-      # Build the container executor binary from source
-      # InstallPhase is not lazily evaluating containerExecutor for some reason
-      containerExecutor =
-        if stdenv.hostPlatform.isLinux then
-          (callPackage ./containerExecutor.nix {
-            inherit (finalAttrs) version;
-            inherit platformAttrs;
-          })
-        else
-          "";
 
       nativeBuildInputs = [
         makeWrapper
       ]
       ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+
       buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
         (lib.getLib stdenv.cc.cc)
         openssl
@@ -79,6 +69,8 @@ let
         snappy
         libtirpc
       ];
+
+      doCheck = true;
 
       installPhase = ''
         mkdir $out
@@ -141,13 +133,22 @@ let
         cp ${spark.src}/yarn/spark-${spark.version}-yarn-shuffle.jar $out/share/hadoop/yarn/
       '');
 
+      # Build the container executor binary from source
+      # InstallPhase is not lazily evaluating containerExecutor for some reason
+      containerExecutor =
+        if stdenv.hostPlatform.isLinux then
+          (callPackage ./containerExecutor.nix {
+            inherit (finalAttrs) version;
+            inherit platformAttrs;
+          })
+        else
+          "";
+
+      jdk = platformAttrs.${stdenv.system}.jdk or jdk;
       passthru = { inherit tests; };
 
       meta = {
-        homepage = "https://hadoop.apache.org/";
         description = "Framework for distributed processing of large data sets across clusters of computers";
-        license = lib.licenses.asl20;
-        sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
 
         longDescription = ''
           The Apache Hadoop software library is a framework that allows for
@@ -160,60 +161,76 @@ let
           so delivering a highly-availabile service on top of a cluster of
           computers, each of which may be prone to failures.
         '';
+
+        homepage = "https://hadoop.apache.org/";
+        license = lib.licenses.asl20;
+        sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
         maintainers = with lib.maintainers; [ illustris ];
         platforms = lib.attrNames platformAttrs;
       };
     });
 in
 {
+  hadoop2 = common {
+    pname = "hadoop";
+    jdk = jdk8_headless;
+
+    platformAttrs.x86_64-linux = {
+      version = "2.10.2";
+      hash = "sha256-xhA4zxqIRGNhIeBnJO9dLKf/gx/Bq+uIyyZwsIafEyo=";
+      srcHash = "sha256-ucxCyXiJo8aL6aNMhZgKEbn8sGKOoMPVREbMGSfSdAI=";
+    };
+
+    tests = nixosTests.hadoop2;
+  };
+
+  hadoop_3_3 = common {
+    pname = "hadoop";
+    jdk = jdk11_headless;
+
+    platformAttrs = rec {
+      aarch64-darwin = aarch64-linux;
+
+      aarch64-linux = x86_64-linux // {
+        hash = "sha256-5Lv2uA72BJEva5v2yncyPe5gKNCNOPNsoHffVt6KXQ0=";
+      };
+
+      x86_64-linux = {
+        version = "3.3.6";
+        hash = "sha256-9RlQWcDUECrap//xf3sqhd+Qa8tuGZSHFjGfmXhkGgQ=";
+        srcHash = "sha256-4OEsVhBNV9CJ+PN4FgCduUCVA9/el5yezSCZ6ko3+bU=";
+      };
+    };
+
+    # TODO: Package and add Intel Storage Acceleration Library
+    tests = nixosTests.hadoop_3_3;
+  };
+
   # Different version of hadoop support different java runtime versions
   # https://cwiki.apache.org/confluence/display/HADOOP/Hadoop+Java+Versions
   hadoop_3_4 = common {
     pname = "hadoop";
+    jdk = jdk21_headless;
+
     platformAttrs = rec {
+      aarch64-darwin = aarch64-linux;
+
+      aarch64-linux = {
+        version = "3.4.0";
+        hash = "sha256-QWxzKtNyw/AzcHMv0v7kj91pw1HO7VAN9MHO84caFk8=";
+        jdk = jdk11_headless;
+        srcHash = "sha256-viDF3LdRCZHqFycOYfN7nUQBPHiMCIjmu7jgIAaaK9E=";
+      };
+
       x86_64-linux = {
         version = "3.4.2";
         hash = "sha256-YySoP+EeUXiQQ2/G2AvIKVBu0lLL4kZXUrkSIJAN+4M=";
         srcHash = "sha256-AkZjpHk57S3pYiZambxgRHR7PD51HSI4H1HHW9ICah4=";
         variant = "lean";
       };
-      aarch64-linux = {
-        version = "3.4.0";
-        hash = "sha256-QWxzKtNyw/AzcHMv0v7kj91pw1HO7VAN9MHO84caFk8=";
-        srcHash = "sha256-viDF3LdRCZHqFycOYfN7nUQBPHiMCIjmu7jgIAaaK9E=";
-        jdk = jdk11_headless;
-      };
-      aarch64-darwin = aarch64-linux;
     };
-    jdk = jdk21_headless;
+
     # TODO: Package and add Intel Storage Acceleration Library
     tests = nixosTests.hadoop;
-  };
-  hadoop_3_3 = common {
-    pname = "hadoop";
-    platformAttrs = rec {
-      x86_64-linux = {
-        version = "3.3.6";
-        hash = "sha256-9RlQWcDUECrap//xf3sqhd+Qa8tuGZSHFjGfmXhkGgQ=";
-        srcHash = "sha256-4OEsVhBNV9CJ+PN4FgCduUCVA9/el5yezSCZ6ko3+bU=";
-      };
-      aarch64-linux = x86_64-linux // {
-        hash = "sha256-5Lv2uA72BJEva5v2yncyPe5gKNCNOPNsoHffVt6KXQ0=";
-      };
-      aarch64-darwin = aarch64-linux;
-    };
-    jdk = jdk11_headless;
-    # TODO: Package and add Intel Storage Acceleration Library
-    tests = nixosTests.hadoop_3_3;
-  };
-  hadoop2 = common {
-    pname = "hadoop";
-    platformAttrs.x86_64-linux = {
-      version = "2.10.2";
-      hash = "sha256-xhA4zxqIRGNhIeBnJO9dLKf/gx/Bq+uIyyZwsIafEyo=";
-      srcHash = "sha256-ucxCyXiJo8aL6aNMhZgKEbn8sGKOoMPVREbMGSfSdAI=";
-    };
-    jdk = jdk8_headless;
-    tests = nixosTests.hadoop2;
   };
 }

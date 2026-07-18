@@ -1,9 +1,9 @@
 {
-  callPackage,
-  requireFile,
-  config,
   lib,
+  callPackage,
+  config,
   cudaPackages,
+  requireFile,
   cudaSupport ? config.cudaSupport,
   /*
     If you want an older version or a version with web documentation or different language,
@@ -35,9 +35,6 @@
     `versionInfo` will take precedence over `version`, `lang`, & `webdoc`.
   */
   lang ? "en",
-  webdoc ? false,
-  version ? null,
-  versionInfo ? null,
   /*
     By default, this nix expression will try to find the installer in the Nix Store
     based on the filename and hash (either found in ./versions.nix or provided by user in `versionInfo`).
@@ -52,6 +49,9 @@
     ```
   */
   source ? null,
+  version ? null,
+  versionInfo ? null,
+  webdoc ? false,
 }:
 
 let
@@ -88,24 +88,23 @@ let
   selected = lib.defaultTo found-version versionInfo;
 
   defaultSource = requireFile {
-    name = selected.installer;
+    inherit (selected) hash;
+
     message = ''
       This nix expression requires that ${selected.installer} is
       already part of the store. Find the file on your Mathematica CD
       and add it to the nix store with nix-store --add-fixed sha256 <FILE>.
     '';
-    inherit (selected) hash;
+
+    name = selected.installer;
   };
 
 in
 
 callPackage ./generic.nix {
   inherit cudaSupport cudaPackages;
-
-  pname = "mathematica";
-
   inherit (selected) version lang;
-
+  pname = "mathematica";
   src = lib.defaultTo defaultSource source;
 
   meta = {
@@ -113,10 +112,12 @@ callPackage ./generic.nix {
     homepage = "https://www.wolfram.com/mathematica/";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       rafaelrc
       sandarukasa
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 }

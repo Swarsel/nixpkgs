@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "confight";
   version = "2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,18 +16,16 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ toml ];
-
-  pythonImportsCheck = [ "confight" ];
-
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "confight" ];
 
   meta = {
     description = "Python context manager for managing pid files";
-    mainProgram = "confight";
     homepage = "https://github.com/avature/confight";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ mkg20001 ];
+    mainProgram = "confight";
   };
 }

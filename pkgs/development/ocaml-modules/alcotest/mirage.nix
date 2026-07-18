@@ -1,19 +1,16 @@
 {
   lib,
-  buildDunePackage,
   alcotest,
-  lwt,
-  logs,
-  mirage-clock,
+  buildDunePackage,
   duration,
+  logs,
+  lwt,
+  mirage-clock,
 }:
 
 buildDunePackage {
-  pname = "alcotest-mirage";
-
   inherit (alcotest) version src;
-
-  duneVersion = "3";
+  pname = "alcotest-mirage";
 
   propagatedBuildInputs = [
     alcotest
@@ -24,9 +21,11 @@ buildDunePackage {
   ];
 
   doCheck = true;
+  duneVersion = "3";
 
   meta = alcotest.meta // {
     description = "Mirage implementation for Alcotest";
+
     maintainers = with lib.maintainers; [
       ulrikstrid
     ];

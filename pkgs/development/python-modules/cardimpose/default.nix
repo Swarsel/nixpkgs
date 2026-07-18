@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pymupdf,
+  setuptools,
 }:
 buildPythonPackage {
   pname = "cardimpose";
   version = "0.2.1-unstable-2024-12-28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frsche";
@@ -18,24 +17,25 @@ buildPythonPackage {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ pymupdf ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cardimpose" ];
 
   meta = {
-    mainProgram = "cardimpose";
     description = "Library for imposing PDF files";
+
     longDescription = ''
       Cardimpose is a Python library that makes it easy to arrange multiple
       copies of a PDF on a larger document, perfect for scenarios like printing
       business cards. The library lets you customize your layout while adding
       crop marks and comes with a handy command line tool.
     '';
+
     homepage = "https://github.com/frsche/cardimpose";
     license = lib.licenses.agpl3Only;
+    maintainers = [ lib.maintainers.me-and ];
     platforms = pymupdf.meta.platforms;
     badPlatforms = pymupdf.meta.badPlatforms or [ ];
-    maintainers = [ lib.maintainers.me-and ];
+    mainProgram = "cardimpose";
   };
 }

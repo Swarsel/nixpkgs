@@ -1,9 +1,9 @@
 {
   lib,
+  fetchurl,
+  appName,
   stdenvNoCC,
   unar,
-  appName,
-  fetchurl,
   ...
 }:
 builtins.mapAttrs
@@ -12,12 +12,14 @@ builtins.mapAttrs
     stdenvNoCC.mkDerivation {
       inherit name buildCommand;
       nativeBuildInputs = [ unar ];
+
       meta = {
-        sourceProvenance = with lib.sourceTypes; [
-          binaryBytecode
-        ];
         license = with lib.licenses; [
           unfree
+        ];
+
+        sourceProvenance = with lib.sourceTypes; [
+          binaryBytecode
         ];
       };
     }
@@ -26,12 +28,12 @@ builtins.mapAttrs
     if appName == "vanillatd" then
       let
         CCDEMO1_ZIP = fetchurl {
-          url = "https://archive.org/download/CommandConquerDemo/cc1demo1.zip";
           hash = "sha256-KdM4SctFCocmJCbMWbJbql4DO5TC40leyU+BPzvAn4c=";
+          url = "https://archive.org/download/CommandConquerDemo/cc1demo1.zip";
         };
         CCDEMO2_ZIP = fetchurl {
-          url = "https://archive.org/download/CommandConquerDemo/cc1demo2.zip";
           hash = "sha256-pCgEuE5AFcJur3qUOTmP3GCb/Wp7p7JyVn8Yeq17PEg=";
+          url = "https://archive.org/download/CommandConquerDemo/cc1demo2.zip";
         };
         demo = ''
           unar -no-directory ${CCDEMO1_ZIP} DEMO.MIX DEMOL.MIX SOUNDS.MIX SPEECH.MIX
@@ -51,8 +53,8 @@ builtins.mapAttrs
     else if appName == "vanillara" then
       let
         RA95DEMO_ZIP = fetchurl {
-          url = "https://archive.org/download/CommandConquerRedAlert_1020/ra95demo.zip";
           hash = "sha256-jEi9tTUj6k01OnkU2SNM5OPm9YMu60eztrAFhT6HSNI=";
+          url = "https://archive.org/download/CommandConquerRedAlert_1020/ra95demo.zip";
         };
         demo = ''
           unar -no-directory ${RA95DEMO_ZIP} ra95demo/INSTALL/MAIN.MIX ra95demo/INSTALL/REDALERT.MIX
@@ -60,12 +62,12 @@ builtins.mapAttrs
           install -D ra95demo/INSTALL/MAIN.MIX $out/main.mix
         '';
         REDALERT_ALLIED_ISO = fetchurl {
-          url = "https://archive.org/download/cnc-red-alert/redalert_allied.iso";
           hash = "sha256-Npx6hSTJetFlcb/Fi3UQEGuP0iLk9LIrRmAI7WgEtdw=";
+          url = "https://archive.org/download/cnc-red-alert/redalert_allied.iso";
         };
         REDALERT_SOVIETS_ISO = fetchurl {
-          url = "https://archive.org/download/cnc-red-alert/redalert_soviets.iso";
           hash = "sha256-aJGr+w1BaGaLwX/pU0lMmu6Cgn9pZ2D/aVafBdtds2Q=";
+          url = "https://archive.org/download/cnc-red-alert/redalert_soviets.iso";
         };
         retail-allied = ''
           unar -output-directory allied -no-directory ${REDALERT_ALLIED_ISO} MAIN.MIX INSTALL/REDALERT.MIX

@@ -25,10 +25,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/simon-v/bean-add/";
     description = "Beancount transaction entry assistant";
-    mainProgram = "bean-add";
+    homepage = "https://github.com/simon-v/bean-add/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
+    mainProgram = "bean-add";
   };
 }

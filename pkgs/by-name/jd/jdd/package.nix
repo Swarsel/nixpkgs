@@ -17,11 +17,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-KEg5X2wHx7KPHEL1zJd/DeDnR69FyB6pajpHIYdep2k=";
-
-  ldflags = [ "-X=main.version=${finalAttrs.version}" ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  ldflags = [ "-X=main.version=${finalAttrs.version}" ];
 
   meta = {
     description = "Johnny Decimal daemon for automatically organizing files into the correct drawer using their filename";

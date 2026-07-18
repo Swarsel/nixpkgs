@@ -1,11 +1,11 @@
 {
   lib,
-  mkKdeDerivation,
-  plasma-workspace,
-  pkg-config,
-  qtwebengine,
   libcec,
   libcec_platform,
+  mkKdeDerivation,
+  pkg-config,
+  plasma-workspace,
+  qtwebengine,
   sdl3,
 }:
 
@@ -20,13 +20,7 @@ mkKdeDerivation {
       --replace-fail @CMAKE_INSTALL_FULL_LIBEXECDIR@ "${plasma-workspace}/libexec"
   '';
 
-  extraCmakeFlags = [
-    (lib.cmakeBool "QT_FIND_PRIVATE_MODULES" true)
-  ];
-
-  extraNativeBuildInputs = [
-    pkg-config
-  ];
+  dontQmlLint = true;
 
   extraBuildInputs = [
     qtwebengine
@@ -36,7 +30,13 @@ mkKdeDerivation {
     sdl3
   ];
 
-  dontQmlLint = true;
+  extraCmakeFlags = [
+    (lib.cmakeBool "QT_FIND_PRIVATE_MODULES" true)
+  ];
+
+  extraNativeBuildInputs = [
+    pkg-config
+  ];
 
   passthru.providedSessions = [ "plasma-bigscreen-wayland" ];
 }

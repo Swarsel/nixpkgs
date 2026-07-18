@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "aioapns";
   version = "4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aioapns" ];
 
   meta = {

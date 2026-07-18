@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   iana-etc,
   installShellFiles,
   libredirect,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,13 +19,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-GvjjAlNmEmvZ7mknec9bpoVzCsf+xHmMm0uHi/P0/5g=";
   };
 
-  vendorHash = "sha256-DLwN9cEVEnlb3S4wfJs90EfcsxgjIH/3rEiwqjcftGY=";
-  proxyVendor = true;
-
   nativeBuildInputs = [
     installShellFiles
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libredirect.hook ];
+
+  vendorHash = "sha256-DLwN9cEVEnlb3S4wfJs90EfcsxgjIH/3rEiwqjcftGY=";
 
   preBuild = ''
     mkdir -p build/ui
@@ -34,6 +33,18 @@ buildGoModule (finalAttrs: {
   '';
 
   doCheck = false;
+
+  postInstall =
+    lib.optionalString
+      (stdenv.buildPlatform.canExecute stdenv.hostPlatform && stdenv.hostPlatform.isDarwin)
+      "export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/services=${iana-etc}/etc/services"
+    + lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+      export K9S_LOGS_DIR=$(mktemp -d)
+      installShellCompletion --cmd zarf \
+        --bash <($out/bin/zarf completion bash) \
+        --fish <($out/bin/zarf completion fish) \
+        --zsh  <($out/bin/zarf completion zsh)
+    '';
 
   ldflags = [
     "-s"
@@ -48,25 +59,17 @@ buildGoModule (finalAttrs: {
     "k8s.io/component-base/version.buildDate=1970-01-01T00:00:00Z"
   ];
 
-  postInstall =
-    lib.optionalString
-      (stdenv.buildPlatform.canExecute stdenv.hostPlatform && stdenv.hostPlatform.isDarwin)
-      "export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/services=${iana-etc}/etc/services"
-    + lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-      export K9S_LOGS_DIR=$(mktemp -d)
-      installShellCompletion --cmd zarf \
-        --bash <($out/bin/zarf completion bash) \
-        --fish <($out/bin/zarf completion fish) \
-        --zsh  <($out/bin/zarf completion zsh)
-    '';
+  proxyVendor = true;
 
   meta = {
     description = "DevSecOps for Air Gap & Limited-Connection Systems. https://zarf.dev";
-    mainProgram = "zarf";
     homepage = "https://zarf.dev";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ragingpastry
     ];
+
+    mainProgram = "zarf";
   };
 })

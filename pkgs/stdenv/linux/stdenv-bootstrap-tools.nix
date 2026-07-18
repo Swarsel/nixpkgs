@@ -31,18 +31,15 @@ let
   withLibnsl = !stdenv.hostPlatform.isLoongArch64;
 in
 stdenv.mkDerivation (finalAttrs: {
-  name = "stdenv-bootstrap-tools";
-
-  meta = {
-    # Increase priority to unblock nixpkgs-unstable
-    # https://github.com/NixOS/nixpkgs/pull/104679#issuecomment-732267288
-    schedulingPriority = 200;
-  };
-
   nativeBuildInputs = [
     buildPackages.nukeReferences
     buildPackages.cpio
   ];
+
+  # The result should not contain any references (store paths) so
+  # that we can safely copy them out of the store and to other
+  # locations in the store.
+  allowedReferences = [ ];
 
   buildCommand = ''
     set -x
@@ -201,18 +198,22 @@ stdenv.mkDerivation (finalAttrs: {
     nuke-refs $out/on-server/busybox
   ''; # */
 
-  # The result should not contain any references (store paths) so
-  # that we can safely copy them out of the store and to other
-  # locations in the store.
-  allowedReferences = [ ];
+  name = "stdenv-bootstrap-tools";
 
   passthru = {
     bootstrapFiles = {
-      # Make them their own store paths to test that busybox still works when the binary is named /nix/store/HASH-busybox
-      busybox = runCommand "busybox" { } "cp ${finalAttrs.finalPackage}/on-server/busybox $out";
       bootstrapTools =
         runCommand "bootstrap-tools.tar.xz" { }
           "cp ${finalAttrs.finalPackage}/on-server/bootstrap-tools.tar.xz $out";
+
+      # Make them their own store paths to test that busybox still works when the binary is named /nix/store/HASH-busybox
+      busybox = runCommand "busybox" { } "cp ${finalAttrs.finalPackage}/on-server/busybox $out";
     };
+  };
+
+  meta = {
+    # Increase priority to unblock nixpkgs-unstable
+    # https://github.com/NixOS/nixpkgs/pull/104679#issuecomment-732267288
+    schedulingPriority = 200;
   };
 })

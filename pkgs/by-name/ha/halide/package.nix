@@ -1,33 +1,34 @@
 {
   lib,
   stdenv,
-  llvmPackages,
   fetchFromGitHub,
-  fetchpatch2,
-  cmake,
-  flatbuffers,
-  libffi,
-  libpng,
-  libjpeg,
-  libgbm,
-  libGL,
-  eigen,
-  openblas,
   blas,
+  cmake,
+  ctestCheckHook,
+  eigen,
+  fetchpatch2,
+  flatbuffers,
   lapack,
-  removeReferencesTo,
+  libGL,
+  libffi,
+  libgbm,
+  libjpeg,
+  libpng,
+  llvmPackages,
   ninja,
-  pythonSupport ? false,
+  openblas,
   python3Packages,
-  wasmSupport ? false,
+  removeReferencesTo,
   wabt,
   doCheck ? true,
-  ctestCheckHook,
+  pythonSupport ? false,
+  wasmSupport ? false,
 }:
 
 assert blas.implementation == "openblas" && lapack.implementation == "openblas";
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit doCheck;
   pname = "halide";
   version = "21.0.0";
 
@@ -38,16 +39,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-A5EnZgXc9+L+bzWHftaL74nHmP8Jf0rnT5KJAAWvKis=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+  ];
+
   patches = [
     # Backport: properly initialize bf16 inputs in simd_op_check.
     (fetchpatch2 {
-      url = "https://github.com/halide/Halide/commit/acb58504f0ce02e07b8b9008668c8779d3561ec8.patch?full_index=1";
       hash = "sha256-n9avTYe8JFYQKeJQBQQV9xoOoYp0imXD2GQgifRym/A=";
+      url = "https://github.com/halide/Halide/commit/acb58504f0ce02e07b8b9008668c8779d3561ec8.patch?full_index=1";
     })
     # Backport: add Zen4/Zen5/AVXVNNI feature flags to simd_op_check's can_run_code.
     (fetchpatch2 {
-      url = "https://github.com/halide/Halide/commit/1b9be55dfaa162fad6a3ed3c6e8d83f966ce8af1.patch?full_index=1";
       hash = "sha256-5f6Q2Q1pvimlFV3lCcMzIHMIze6A8TmnMjVpQ8/ceyg=";
+      url = "https://github.com/halide/Halide/commit/1b9be55dfaa162fad6a3ed3c6e8d83f966ce8af1.patch?full_index=1";
     })
   ];
 
@@ -67,60 +73,16 @@ stdenv.mkDerivation (finalAttrs: {
         'if (FALSE)'
   '';
 
-  cmakeFlags = [
-    (lib.cmakeBool "WITH_PYTHON_BINDINGS" pythonSupport)
-    (lib.cmakeBool "WITH_TESTS" doCheck)
-    (lib.cmakeBool "WITH_TUTORIALS" doCheck)
-    # Disable performance tests since they may fail on busy machines
-    (lib.cmakeBool "WITH_TEST_PERFORMANCE" false)
-    # Disable fuzzing tests -- this has become the default upstream after the
-    # v16 release (See https://github.com/halide/Halide/commit/09c5d1d19ec8e6280ccbc01a8a12decfb27226ba)
-    # These tests also fail to compile on Darwin because of some missing command line options...
-    (lib.cmakeBool "WITH_TEST_FUZZ" false)
-    # Disable FetchContent and use versions from nixpkgs instead
-    (lib.cmakeBool "Halide_USE_FETCHCONTENT" false)
-    (lib.cmakeFeature "Halide_WASM_BACKEND" (if wasmSupport then "wabt" else "OFF"))
-    (lib.cmakeBool "Halide_LLVM_SHARED_LIBS" wasmSupport)
-  ];
-
-  outputs = [
-    "out"
-    "lib"
-  ];
-
-  inherit doCheck;
-
-  disabledTests = [
-    # Requires too much parallelism for remote builders.
-    "mullapudi2016_fibonacci"
-    # Tests performance---flaky in CI
-    "mullapudi2016_reorder"
-    # Take too long---we don't want to run these in CI.
-    "adams2019_test_apps_autoscheduler"
-    "anderson2021_test_apps_autoscheduler"
-    "correctness_cross_compilation"
-    "correctness_simd_op_check_hvx"
+  nativeBuildInputs = [
+    cmake
+    flatbuffers
+    removeReferencesTo
+    ninja
   ]
-  ++ lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
-    # Failed  Required regular expression not found
-    "mullapudi2016_histogram"
+  ++ lib.optionals pythonSupport [
+    python3Packages.python
+    python3Packages.pybind11
   ];
-
-  dontUseNinjaCheck = true;
-  nativeCheckInputs = [ ctestCheckHook ];
-
-  postInstall =
-    lib.optionalString pythonSupport ''
-      mkdir -p $lib/lib/${python3Packages.python.libPrefix}
-      mv -v $lib/lib/python3/site-packages $lib/lib/${python3Packages.python.libPrefix}
-      rmdir $lib/lib/python3/
-    ''
-    # Debug symbols in the runtime include references to clang, but they're not
-    # required for running the code. llvmPackages.clang increases the runtime
-    # closure by at least a GB which is a waste, so we remove references to clang.
-    + lib.optionalString (stdenv != llvmPackages.stdenv) ''
-      remove-references-to -t ${llvmPackages.clang} $lib/lib/libHalide*
-    '';
 
   # Note: only openblas and not atlas part of this Nix expression
   # see pkgs/development/libraries/science/math/liblapack/3.5.0.nix
@@ -142,37 +104,79 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals wasmSupport [ wabt ];
 
-  nativeBuildInputs = [
-    cmake
-    flatbuffers
-    removeReferencesTo
-    ninja
-  ]
-  ++ lib.optionals pythonSupport [
-    python3Packages.python
-    python3Packages.pybind11
-  ];
-
   propagatedBuildInputs = lib.optionals pythonSupport [
     python3Packages.numpy
     python3Packages.imageio
   ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "WITH_PYTHON_BINDINGS" pythonSupport)
+    (lib.cmakeBool "WITH_TESTS" doCheck)
+    (lib.cmakeBool "WITH_TUTORIALS" doCheck)
+    # Disable performance tests since they may fail on busy machines
+    (lib.cmakeBool "WITH_TEST_PERFORMANCE" false)
+    # Disable fuzzing tests -- this has become the default upstream after the
+    # v16 release (See https://github.com/halide/Halide/commit/09c5d1d19ec8e6280ccbc01a8a12decfb27226ba)
+    # These tests also fail to compile on Darwin because of some missing command line options...
+    (lib.cmakeBool "WITH_TEST_FUZZ" false)
+    # Disable FetchContent and use versions from nixpkgs instead
+    (lib.cmakeBool "Halide_USE_FETCHCONTENT" false)
+    (lib.cmakeFeature "Halide_WASM_BACKEND" (if wasmSupport then "wabt" else "OFF"))
+    (lib.cmakeBool "Halide_LLVM_SHARED_LIBS" wasmSupport)
+  ];
+
+  nativeCheckInputs = [ ctestCheckHook ];
+
+  postInstall =
+    lib.optionalString pythonSupport ''
+      mkdir -p $lib/lib/${python3Packages.python.libPrefix}
+      mv -v $lib/lib/python3/site-packages $lib/lib/${python3Packages.python.libPrefix}
+      rmdir $lib/lib/python3/
+    ''
+    # Debug symbols in the runtime include references to clang, but they're not
+    # required for running the code. llvmPackages.clang increases the runtime
+    # closure by at least a GB which is a waste, so we remove references to clang.
+    + lib.optionalString (stdenv != llvmPackages.stdenv) ''
+      remove-references-to -t ${llvmPackages.clang} $lib/lib/libHalide*
+    '';
+
+  disabledTests = [
+    # Requires too much parallelism for remote builders.
+    "mullapudi2016_fibonacci"
+    # Tests performance---flaky in CI
+    "mullapudi2016_reorder"
+    # Take too long---we don't want to run these in CI.
+    "adams2019_test_apps_autoscheduler"
+    "anderson2021_test_apps_autoscheduler"
+    "correctness_cross_compilation"
+    "correctness_simd_op_check_hvx"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
+    # Failed  Required regular expression not found
+    "mullapudi2016_histogram"
+  ];
+
+  dontUseNinjaCheck = true;
 
   meta = {
     description = "C++ based language for image processing and computational photography";
     homepage = "https://halide-lang.org";
     changelog = "https://github.com/halide/Halide/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       ck3d
       twesterhout
     ];
-    broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+    platforms = lib.platforms.all;
+
     badPlatforms = [
       # Build fails on darwin:
       # FAILED: [code=133] test/autoschedulers/anderson2021/anderson2021_demo.h
       lib.systems.inspect.patterns.isDarwin
     ];
+
+    broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   };
 })

@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   arrow,
   beautifulsoup4,
   bibtexparser,
   buildPythonPackage,
   deprecated,
   fake-useragent,
-  fetchFromGitHub,
   free-proxy,
   httpx,
   python-dotenv,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "scholarly";
   version = "1.7.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scholarly-python-package";
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-yvew63tGwSjwseHK7wDqm26xiyCztUzxMqBpwwLD798=";
   };
+
+  nativeCheckInputs = lib.concatAttrValues optional-dependencies;
 
   build-system = [
     setuptools
@@ -55,8 +56,7 @@ buildPythonPackage rec {
     tor = [ stem ];
   };
 
-  nativeCheckInputs = lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "scholarly" ];
 
   meta = {

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bash,
   gnused,
+  makeWrapper,
   which,
 }:
 
@@ -20,9 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ bash ];
 
   installPhase = ''
@@ -43,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fish, xonsh and zsh support for nix-shell";
-    license = lib.licenses.mit;
     homepage = "https://github.com/haslersn/any-nix-shell";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ haslersn ];
     mainProgram = "any-nix-shell";
   };

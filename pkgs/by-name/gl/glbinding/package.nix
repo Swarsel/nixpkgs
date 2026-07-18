@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ libGLU ];
 
   meta = {
-    homepage = "https://github.com/cginternals/glbinding/";
     description = "C++ binding for the OpenGL API, generated using the gl.xml specification";
+    homepage = "https://github.com/cginternals/glbinding/";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.mt-caret ];
   };

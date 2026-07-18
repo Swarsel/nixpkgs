@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -16,7 +16,6 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-mpe00J5iRwaH7hJIDP3fDuJSUOKk01COpOOvF1YJMyg=";
-
   # don't fetch playwright binary
   env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
 
@@ -27,13 +26,15 @@ buildNpmPackage (finalAttrs: {
 
   meta = {
     description = "Test your prompts, models, RAGs. Evaluate and compare LLM outputs, catch regressions, and improve prompt quality";
-    mainProgram = "promptfoo";
     homepage = "https://www.promptfoo.dev/";
     changelog = "https://github.com/promptfoo/promptfoo/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nathanielbrough
       jk
     ];
+
+    mainProgram = "promptfoo";
   };
 })

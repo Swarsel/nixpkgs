@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   installShellFiles,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "hydra";
@@ -17,37 +17,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-LnF1k/C9uPRY4xXeBCJPSQ8gxwwZx0N1e1s+Rhop5ic=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-KVCoDATyt5Qp0r3vGwdXqkjh0FEdNyKi6mXk99D6HD8=";
 
-  __structuredAttrs = true;
-  # `json1` not needed (see: https://github.com/ory/hydra/commit/93edc9ad894771c67f46ae2c57ee7e50382d73cd)
-  # `sqlite_omit_load_extension` consistency with upstream (see: https://github.com/ory/hydra/blob/master/.docker/Dockerfile-local-build#L20C58-L20C84). Will disable sqlite runtime extension loading (see: https://sqlite.org/loadext.html)
-  tags = [
-    "hsm"
-    "sqlite"
-    "sqlite_omit_load_extension"
-  ];
-
-  subPackages = [ "..." ];
-
-  ldflags = [
-    "-s"
-    "-X github.com/ory/hydra/v2/driver/config.Version=${finalAttrs.src.tag}"
-    "-X github.com/ory/hydra/v2/driver/config.Commit=${finalAttrs.src.rev}"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
-  # tests use dynamic port assignment via port `0`
-  __darwinAllowLocalNetworking = true;
-  preCheck = ''
-    export version="${finalAttrs.src.tag}"
-  '';
   checkFlags = [
     "-short"
   ];
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = [ "version" ];
+
+  preCheck = ''
+    export version="${finalAttrs.src.tag}"
+  '';
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd hydra \
@@ -56,8 +35,33 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/hydra completion zsh)
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  # tests use dynamic port assignment via port `0`
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-X github.com/ory/hydra/v2/driver/config.Version=${finalAttrs.src.tag}"
+    "-X github.com/ory/hydra/v2/driver/config.Commit=${finalAttrs.src.rev}"
+  ];
+
+  subPackages = [ "..." ];
+
+  # `json1` not needed (see: https://github.com/ory/hydra/commit/93edc9ad894771c67f46ae2c57ee7e50382d73cd)
+  # `sqlite_omit_load_extension` consistency with upstream (see: https://github.com/ory/hydra/blob/master/.docker/Dockerfile-local-build#L20C58-L20C84). Will disable sqlite runtime extension loading (see: https://sqlite.org/loadext.html)
+  tags = [
+    "hsm"
+    "sqlite"
+    "sqlite_omit_load_extension"
+  ];
+
+  versionCheckProgramArg = [ "version" ];
+
   meta = {
     description = "OpenID Certified™ OAuth 2.0 Server and OpenID Connect Provider";
+
     longDescription = ''
       Server implementation of the OAuth 2.0 authorization framework and the OpenID Connect Core 1.0. It follows
       [cloud architecture best practices](https://www.ory.com/docs/ecosystem/software-architecture-philosophy) and focuses on:
@@ -69,12 +73,15 @@ buildGoModule (finalAttrs: {
       - JWKS management
       - Low latency and high throughput
     '';
+
     homepage = "https://github.com/ory/hydra";
     changelog = "https://github.com/ory/hydra/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       debtquity
     ];
+
     mainProgram = "hydra";
   };
 })

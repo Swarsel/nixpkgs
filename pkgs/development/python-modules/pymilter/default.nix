@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  libmilter,
   berkeleydb,
+  buildPythonPackage,
+  libmilter,
   py3dns,
   pyasyncore,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pymilter";
   version = "1.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sdgathman";
@@ -21,25 +20,16 @@ buildPythonPackage rec {
     hash = "sha256-plaWXwDAIsVzEtrabZuZj7T4WNfz2ntQHgcMCVf5S70=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   buildInputs = [ libmilter ];
-
-  nativeCheckInputs = [
-    pyasyncore
-  ];
-
-  dependencies = [
-    berkeleydb
-    py3dns
-  ];
 
   preBuild = ''
     substituteInPlace Milter/greylist.py \
       --replace-fail "import thread" "import _thread as thread"
   '';
+
+  nativeCheckInputs = [
+    pyasyncore
+  ];
 
   # testpolicy: requires makemap (#100419)
   #   using exec -a makemap smtpctl results in "unknown group smtpq"
@@ -48,12 +38,22 @@ buildPythonPackage rec {
     rm testpolicy.py
   '';
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    berkeleydb
+    py3dns
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "Milter" ];
 
   meta = {
-    homepage = "http://bmsi.com/python/milter.html";
     description = "Python bindings for libmilter api";
-    maintainers = with lib.maintainers; [ yorickvp ];
+    homepage = "http://bmsi.com/python/milter.html";
     license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ yorickvp ];
   };
 }

@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsHook4,
+  copyDesktopItems,
+  glib,
   gobject-introspection,
   gtk4,
-  glib,
   makeDesktopItem,
-  copyDesktopItems,
   networkmanager,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nmgui";
   version = "1.0.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "s-adi-dev";
@@ -34,26 +33,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     glib
   ];
 
-  dependencies = with python3Packages; [
-    pygobject3
-    nmcli
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "nmgui";
-      exec = "nmgui";
-      icon = "network-wireless-symbolic";
-      comment = "GTK4-based Network Manager GUI using nmcli";
-      desktopName = "NM GUI";
-      categories = [
-        "Network"
-        "GTK"
-      ];
-      startupNotify = true;
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/{bin,share/applications,opt/nmgui}
@@ -70,13 +49,36 @@ python3Packages.buildPythonApplication (finalAttrs: {
       "''${gappsWrapperArgs[@]}"
   '';
 
+  dependencies = with python3Packages; [
+    pygobject3
+    nmcli
+  ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "GTK"
+      ];
+
+      comment = "GTK4-based Network Manager GUI using nmcli";
+      desktopName = "NM GUI";
+      exec = "nmgui";
+      icon = "network-wireless-symbolic";
+      name = "nmgui";
+      startupNotify = true;
+    })
+  ];
+
+  pyproject = false;
+
   meta = {
+    inherit (networkmanager.meta) platforms;
     description = "Python library for interacting with NetworkManager CLI";
     homepage = "https://github.com/s-adi-dev/nmgui";
+    changelog = "https://github.com/s-adi-dev/nmgui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ktechmidas ];
     mainProgram = "nmgui";
-    inherit (networkmanager.meta) platforms;
-    changelog = "https://github.com/s-adi-dev/nmgui/releases/tag/v${finalAttrs.version}";
   };
 })

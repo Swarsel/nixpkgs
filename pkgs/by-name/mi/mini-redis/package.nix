@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -16,8 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-vYphaQNMAHajod5oT/T3VJ12e6Qk5QOa5LQz6KsXvm8=";
   };
 
-  cargoHash = "sha256-oGyJxNzJX7PwMkDoT9Tb3xF0vWgQwuyIjKPgEkbPKyI=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -26,12 +24,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-oGyJxNzJX7PwMkDoT9Tb3xF0vWgQwuyIjKPgEkbPKyI=";
+  doCheck = false;
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
-  doCheck = false;
 
   meta = {
     description = "Incomplete, idiomatic implementation of a Redis client and server built with Tokio, for learning purposes";

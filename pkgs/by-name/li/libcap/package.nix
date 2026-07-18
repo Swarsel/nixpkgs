@@ -1,29 +1,28 @@
 {
-  stdenv,
   lib,
-  buildPackages,
+  stdenv,
   fetchurl,
-  runtimeShell,
-  pkgsBuildHost,
-  usePam ? !isStatic,
-  pam ? null,
-  isStatic ? stdenv.hostPlatform.isStatic,
-  go,
-  withGo ? lib.meta.availableOn stdenv.buildPlatform go && stdenv.hostPlatform.go.GOARCH != null,
-
   # passthru.tests
   bind,
+  buildPackages,
   chrony,
+  go,
   htop,
+  libcap,
   libgcrypt,
   libvirt,
   ntp,
+  pkgsBuildHost,
   qemu,
+  runtimeShell,
   squid,
+  testers,
   tor,
   uwsgi,
-  testers,
-  libcap,
+  isStatic ? stdenv.hostPlatform.isStatic,
+  pam ? null,
+  usePam ? !isStatic,
+  withGo ? lib.meta.availableOn stdenv.buildPlatform go && stdenv.hostPlatform.go.GOARCH != null,
 }:
 
 assert usePam -> pam != null;
@@ -46,9 +45,22 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional usePam "pam";
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-  ];
+  postPatch = ''
+    patchShebangs ./progs/mkcapshdoc.sh
+
+    # use full path to bash
+    substituteInPlace progs/capsh.c --replace "/bin/bash" "${runtimeShell}"
+
+    # set prefixes
+    substituteInPlace Make.Rules \
+      --replace 'prefix=/usr' "prefix=$lib" \
+      --replace 'exec_prefix=' "exec_prefix=$out" \
+      --replace 'lib_prefix=$(exec_prefix)' "lib_prefix=$lib" \
+      --replace 'inc_prefix=$(prefix)' "inc_prefix=$dev" \
+      --replace 'man_prefix=$(prefix)' "man_prefix=$doc"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = lib.optionals withGo [
     go
@@ -75,23 +87,6 @@ stdenv.mkDerivation rec {
     "LIBCSTATIC=yes"
   ];
 
-  postPatch = ''
-    patchShebangs ./progs/mkcapshdoc.sh
-
-    # use full path to bash
-    substituteInPlace progs/capsh.c --replace "/bin/bash" "${runtimeShell}"
-
-    # set prefixes
-    substituteInPlace Make.Rules \
-      --replace 'prefix=/usr' "prefix=$lib" \
-      --replace 'exec_prefix=' "exec_prefix=$out" \
-      --replace 'lib_prefix=$(exec_prefix)' "lib_prefix=$lib" \
-      --replace 'inc_prefix=$(prefix)' "inc_prefix=$dev" \
-      --replace 'man_prefix=$(prefix)' "man_prefix=$doc"
-  '';
-
-  installFlags = [ "RAISE_SETFCAP=no" ];
-
   postInstall = ''
     ${lib.optionalString (!isStatic) ''rm "$lib"/lib/*.a''}
     mkdir -p "$doc/share/doc/${pname}-${version}"
@@ -102,11 +97,15 @@ stdenv.mkDerivation rec {
     mv "$lib"/lib/security "$pam/lib"
   '';
 
-  strictDeps = true;
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ];
 
   disallowedReferences = lib.optionals withGo [
     pkgsBuildHost.go
   ];
+
+  installFlags = [ "RAISE_SETFCAP=no" ];
 
   passthru.tests = {
     inherit
@@ -121,6 +120,7 @@ stdenv.mkDerivation rec {
       tor
       uwsgi
       ;
+
     pkg-config = testers.hasPkgConfigModules {
       package = libcap;
     };
@@ -129,12 +129,13 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Library for working with POSIX capabilities";
     homepage = "https://sites.google.com/site/fullycapable";
-    platforms = lib.platforms.linux;
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.linux;
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "libcap_project" version;
+
     pkgConfigModules = [
       "libcap"
       "libpsx"
     ];
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "libcap_project" version;
   };
 }

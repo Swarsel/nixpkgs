@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-
-  # build-system
-  setuptools,
-
   # dependencies
   flask,
   jsonschema,
   mistune,
   packaging,
-  pyyaml,
-  six,
-  werkzeug,
-
   # tests
   pytestCheckHook,
+  pyyaml,
+  # build-system
+  setuptools,
+  six,
+  werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "flasgger";
   version = "0.9.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "flasgger";
@@ -35,12 +31,13 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/flasgger/flasgger/pull/633
     (fetchpatch {
+      hash = "sha256-DHaaY9W+cta3M2VA8S+ZQWacmgSpeyP03SKTiIlfBRM=";
       name = "fix-tests-with-click-8.2.patch";
       url = "https://github.com/flasgger/flasgger/commit/08591b60e988c0002fcf1b1e9f98b78e041d2732.patch";
-      hash = "sha256-DHaaY9W+cta3M2VA8S+ZQWacmgSpeyP03SKTiIlfBRM=";
     })
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -53,18 +50,17 @@ buildPythonPackage rec {
     werkzeug
   ];
 
-  pythonImportsCheck = [ "flasgger" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabledTestPaths = [
+    # missing flex dependency
+    "tests/test_examples.py"
+  ];
 
   enabledTestPaths = [
     "tests"
   ];
 
-  disabledTestPaths = [
-    # missing flex dependency
-    "tests/test_examples.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "flasgger" ];
 
   meta = {
     description = "Easy OpenAPI specs and Swagger UI for your Flask API";

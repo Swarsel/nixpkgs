@@ -1,14 +1,10 @@
 {
   lib,
   stdenv,
-  callPackage,
-  ctestCheckHook,
   fetchFromGitHub,
-  testers,
-
-  enableE57 ? lib.meta.availableOn stdenv.hostPlatform libe57format,
-
+  callPackage,
   cmake,
+  ctestCheckHook,
   curl,
   gdal,
   gtest,
@@ -23,9 +19,11 @@
   pkg-config,
   proj,
   sqlite,
+  testers,
   tiledb,
   zlib,
   zstd,
+  enableE57 ? lib.meta.availableOn stdenv.hostPlatform libe57format,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-htuvNheRwzpdSKc4FbwugBWWaCNC7/20TSKwRpLr+7Y=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -65,8 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     libe57format
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     "-DBUILD_PLUGIN_E57=${if enableE57 then "ON" else "OFF"}"
     "-DBUILD_PLUGIN_HDF=ON"
@@ -92,9 +90,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-  # tests are flaky and they seem to fail less often when they don't run in
-  # parallel
-  enableParallelChecking = false;
+
+  nativeCheckInputs = [
+    gdal # gdalinfo
+    ctestCheckHook
+  ];
+
+  postInstall = ''
+    patchShebangs --update --build $out/bin/pdal-config
+  '';
 
   disabledTests = [
     # Tests failing due to TileDB library implementation, disabled also
@@ -114,22 +118,19 @@ stdenv.mkDerivation (finalAttrs: {
     "pdal_io_copc_reader_test"
   ];
 
-  nativeCheckInputs = [
-    gdal # gdalinfo
-    ctestCheckHook
-  ];
-
-  postInstall = ''
-    patchShebangs --update --build $out/bin/pdal-config
-  '';
+  # tests are flaky and they seem to fail less often when they don't run in
+  # parallel
+  enableParallelChecking = false;
 
   passthru.tests = {
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "pdal --version";
       version = "pdal ${finalAttrs.finalPackage.version}";
+      command = "pdal --version";
+      package = finalAttrs.finalPackage;
     };
+
     pdal = callPackage ./tests.nix { pdal = finalAttrs.finalPackage; };
+
     pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
@@ -139,8 +140,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Point Data Abstraction Library. GDAL for point cloud data";
     homepage = "https://pdal.io";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.all;
     pkgConfigModules = [ "pdal" ];
+    teams = [ lib.teams.geospatial ];
   };
 })

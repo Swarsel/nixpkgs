@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   coreutils,
+  installShellFiles,
+  makeWrapper,
   runCommand,
   runtimeShell,
-  writeText,
   terraform-providers,
-  installShellFiles,
+  writeText,
 }:
 
 let
   generic =
     {
-      version,
       hash,
+      version,
       vendorHash ? null,
       ...
     }@attrs:
@@ -29,27 +29,15 @@ let
     in
     buildGoModule (
       {
-        pname = "terraform";
         inherit version vendorHash;
+        pname = "terraform";
 
         src = fetchFromGitHub {
+          inherit hash;
           owner = "hashicorp";
           repo = "terraform";
           rev = "v${version}";
-          inherit hash;
         };
-
-        # Set CGO_ENABLED based on platform:
-        # - Linux: CGO_ENABLED=0 for static linking (avoids LTO plugin issues)
-        # - Darwin: CGO_ENABLED=1 to avoid DNS resolution issues
-        # See: https://github.com/hashicorp/terraform/blob/main/BUILDING.md
-        env.CGO_ENABLED = if stdenv.hostPlatform.isDarwin then "1" else "0";
-
-        ldflags = [
-          "-s"
-          "-w"
-          "-X 'github.com/hashicorp/terraform/version.dev=no'"
-        ];
 
         postPatch = ''
           # Between go 1.23 and 1.24 the following GODEBUG setting was removed, and a new
@@ -61,23 +49,35 @@ let
           substituteInPlace go.mod \
             --replace-quiet 'godebug tlskyber=0' 'godebug tlsmlkem=0'
         '';
+
+        nativeBuildInputs = [ installShellFiles ];
+        # Set CGO_ENABLED based on platform:
+        # - Linux: CGO_ENABLED=0 for static linking (avoids LTO plugin issues)
+        # - Darwin: CGO_ENABLED=1 to avoid DNS resolution issues
+        # See: https://github.com/hashicorp/terraform/blob/main/BUILDING.md
+        env.CGO_ENABLED = if stdenv.hostPlatform.isDarwin then "1" else "0";
+
         postConfigure = ''
           # speakeasy hardcodes /bin/stty https://github.com/bgentry/speakeasy/issues/22
           substituteInPlace vendor/github.com/bgentry/speakeasy/speakeasy_unix.go \
             --replace-fail "/bin/stty" "${coreutils}/bin/stty"
         '';
 
-        nativeBuildInputs = [ installShellFiles ];
+        preCheck = ''
+          export HOME=$TMPDIR
+          export TF_SKIP_REMOTE_TESTS=1
+        '';
 
         postInstall = ''
           # https://github.com/posener/complete/blob/9a4745ac49b29530e07dc2581745a218b646b7a3/cmd/install/bash.go#L8
           installShellCompletion --bash --name terraform <(echo complete -C terraform terraform)
         '';
 
-        preCheck = ''
-          export HOME=$TMPDIR
-          export TF_SKIP_REMOTE_TESTS=1
-        '';
+        ldflags = [
+          "-s"
+          "-w"
+          "-X 'github.com/hashicorp/terraform/version.dev=no'"
+        ];
 
         subPackages = [ "." ];
 
@@ -86,6 +86,7 @@ let
           homepage = "https://www.terraform.io/";
           changelog = "https://github.com/hashicorp/terraform/blob/v${version}/CHANGELOG.md";
           license = lib.licenses.bsl11;
+
           maintainers = with lib.maintainers; [
             Chili-Man
             kalbasit
@@ -95,6 +96,7 @@ let
             techknowlogick
             qjoly
           ];
+
           mainProgram = "terraform";
         };
       }
@@ -115,9 +117,9 @@ let
           );
 
           passthru = {
-            withPlugins = newplugins: withPlugins (x: newplugins x ++ actualPlugins);
             full = withPlugins (p: lib.filter lib.isDerivation (lib.attrValues p.actualProviders));
-
+            override = x: (pluggable (terraform.override x)).withPlugins plugins;
+            overrideAttrs = f: (pluggable (terraform.overrideAttrs f)).withPlugins plugins;
             # Expose wrappers around the override* functions of the terraform
             # derivation.
             #
@@ -139,8 +141,7 @@ let
             #
             # See nixpkgs#158620 for details.
             overrideDerivation = f: (pluggable (terraform.overrideDerivation f)).withPlugins plugins;
-            overrideAttrs = f: (pluggable (terraform.overrideAttrs f)).withPlugins plugins;
-            override = x: (pluggable (terraform.override x)).withPlugins plugins;
+            withPlugins = newplugins: withPlugins (x: newplugins x ++ actualPlugins);
           };
         in
         # Don't bother wrapping unless we actually have plugins, since the wrapper will stop automatic downloading
@@ -154,12 +155,6 @@ let
             stdenv.mkDerivation {
               inherit (terraform) meta pname version;
               nativeBuildInputs = [ makeWrapper ];
-
-              # Expose the passthru set with the override functions
-              # defined above, as well as any passthru values already
-              # set on `terraform` at this point (relevant in case a
-              # user overrides attributes).
-              passthru = terraform.passthru // passthru;
 
               buildCommand = ''
                 # Create wrappers for terraform plugins because Terraform only
@@ -184,6 +179,12 @@ let
                   --set NIX_TERRAFORM_PLUGIN_DIR $out/libexec/terraform-providers \
                   --prefix PATH : "${lib.makeBinPath wrapperInputs}"
               '';
+
+              # Expose the passthru set with the override functions
+              # defined above, as well as any passthru values already
+              # set on `terraform` at this point (relevant in case a
+              # user overrides attributes).
+              passthru = terraform.passthru // passthru;
             }
           );
     in
@@ -201,9 +202,10 @@ rec {
 
   terraform_1 = mkTerraform {
     version = "1.15.8";
-    hash = "sha256-FeXebcNl/npEkEyMvwzeMYTEsl9t8Iz+4lBHd/HzQHQ=";
-    vendorHash = "sha256-l5n5PS2buGPvmx/U8vQeKk6BlZdJQQEujJxlPMTdg0k=";
     patches = [ ./provider-path-0_15.patch ];
+    vendorHash = "sha256-l5n5PS2buGPvmx/U8vQeKk6BlZdJQQEujJxlPMTdg0k=";
+    hash = "sha256-FeXebcNl/npEkEyMvwzeMYTEsl9t8Iz+4lBHd/HzQHQ=";
+
     passthru = {
       inherit plugins;
       tests = { inherit terraform_plugins_test; };

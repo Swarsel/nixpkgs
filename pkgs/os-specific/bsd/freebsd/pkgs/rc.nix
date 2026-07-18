@@ -1,23 +1,23 @@
 {
-  mkDerivation,
   lib,
-  sysctl,
   bash,
-  rcorder,
   bin,
-  stat,
-  id,
-  protect,
-  mount,
-  fsck,
-  logger,
+  devctl,
   devmatch,
-  sort,
+  fsck,
+  gnugrep,
+  id,
   kldload,
   kldstat,
-  devctl,
+  logger,
+  mkDerivation,
+  mount,
+  protect,
+  rcorder,
   sed,
-  gnugrep,
+  sort,
+  stat,
+  sysctl,
 }:
 let
   rcDepsPath = lib.makeBinPath [
@@ -41,9 +41,6 @@ let
   ];
 in
 mkDerivation {
-  path = "libexec/rc";
-  MK_TESTS = "no";
-
   outputs = [
     "out"
     "services"
@@ -60,21 +57,21 @@ mkDerivation {
   + (
     let
       bins = {
-        "/sbin/sysctl" = sysctl;
-        "/usr/bin/protect" = protect;
-        "/usr/bin/id" = id;
-        "/bin/ps" = bin;
-        "/bin/cpuset" = bin;
-        "/usr/bin/stat" = stat;
-        "/bin/rm" = bin;
-        "/bin/chmod" = bin;
         "/bin/cat" = bin;
-        "/bin/sync" = bin;
-        "/bin/sleep" = bin;
+        "/bin/chmod" = bin;
+        "/bin/cpuset" = bin;
         "/bin/date" = bin;
+        "/bin/ps" = bin;
+        "/bin/rm" = bin;
+        "/bin/sleep" = bin;
+        "/bin/sync" = bin;
+        "/sbin/sysctl" = sysctl;
+        "/usr/bin/id" = id;
         "/usr/bin/logger" = logger;
-        "logger" = logger;
+        "/usr/bin/protect" = protect;
+        "/usr/bin/stat" = stat;
         "kenv" = bin;
+        "logger" = logger;
       };
       scripts = [
         "rc"
@@ -95,9 +92,9 @@ mkDerivation {
     # replace executable references with nix store filepaths
     + lib.concatMapStringsSep "\n" (
       {
-        fname ? name,
         name,
         value,
+        fname ? name,
       }:
       ''
         sed -E -i -e "s|${fname}|${lib.getBin value}/bin/${lib.last (lib.splitString "/" fname)}|g" \
@@ -106,10 +103,12 @@ mkDerivation {
     + "\n"
   );
 
-  skipIncludesPhase = true;
-
   postInstall = ''
     makeFlags="$(sed -E -e 's/CONFDIR=[^ ]*//g' <<<"$makeFlags")"
     make $makeFlags installconfig
   '';
+
+  MK_TESTS = "no";
+  path = "libexec/rc";
+  skipIncludesPhase = true;
 }

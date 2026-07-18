@@ -15,6 +15,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Collection of simple Type 1 font manipulation programs";
+
     longDescription = ''
       t1utils is a collection of simple type-1 font manipulation programs.
       Together, they allow you to convert between PFA (ASCII) and PFB (binary)
@@ -23,9 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
       resources from a Macintosh font file or create a Macintosh Type 1 font
       file from a PFA or PFB font.
     '';
+
     homepage = "https://www.lcdf.org/type/";
     license = lib.licenses.mit-click;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
   };
 })

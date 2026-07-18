@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   callPackage,
-  stuffbin,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  stuffbin,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,18 +20,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-eora/+zJf60trmANEqAhYAQXfEMifyw5gLPKcqBW46w=";
   };
 
-  vendorHash = "sha256-t4l8872bniTmNIW4ias1gImURJgrR6htXkncqfrJ+AU=";
-
   nativeBuildInputs = [
     stuffbin
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.versionString=${finalAttrs.version}"
-    "-X \"main.buildString=v${finalAttrs.version} (${stdenv.hostPlatform.system})\""
-  ];
+  vendorHash = "sha256-t4l8872bniTmNIW4ias1gImURJgrR6htXkncqfrJ+AU=";
 
   postInstall = ''
     mv $out/bin/cmd $out/bin/listmonk
@@ -58,10 +51,18 @@ buildGoModule (finalAttrs: {
         ${lib.concatStringsSep " " vfsMappings}
     '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.versionString=${finalAttrs.version}"
+    "-X \"main.buildString=v${finalAttrs.version} (${stdenv.hostPlatform.system})\""
+  ];
+
   passthru = {
-    frontend = callPackage ./frontend.nix { inherit (finalAttrs) meta version src; };
     email-builder = callPackage ./email-builder.nix { inherit (finalAttrs) meta version src; };
+    frontend = callPackage ./frontend.nix { inherit (finalAttrs) meta version src; };
     tests = { inherit (nixosTests) listmonk; };
+
     updateScript = nix-update-script {
       extraArgs = [
         "-s"
@@ -74,12 +75,14 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "High performance, self-hosted, newsletter and mailing list manager with a modern dashboard";
-    mainProgram = "listmonk";
     homepage = "https://github.com/knadh/listmonk";
     changelog = "https://github.com/knadh/listmonk/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       hougo
     ];
-    license = lib.licenses.agpl3Only;
+
+    mainProgram = "listmonk";
   };
 })

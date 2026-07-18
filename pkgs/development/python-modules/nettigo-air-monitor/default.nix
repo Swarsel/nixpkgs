@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   aqipy-atmotech,
   buildPythonPackage,
   dacite,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-error-for-skips,
   pytestCheckHook,
@@ -18,9 +18,6 @@
 buildPythonPackage rec {
   pname = "nettigo-air-monitor";
   version = "5.0.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "bieniu";
@@ -34,6 +31,14 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-error-for-skips
+    pytestCheckHook
+    syrupy
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -43,13 +48,7 @@ buildPythonPackage rec {
     tenacity
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-error-for-skips
-    pytestCheckHook
-    syrupy
-  ];
+  disabled = pythonOlder "3.12";
 
   disabledTests = [
     # stuck in epoll
@@ -57,6 +56,7 @@ buildPythonPackage rec {
     "test_retry_success"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nettigo_air_monitor" ];
 
   meta = {

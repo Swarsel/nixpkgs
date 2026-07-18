@@ -1,30 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   flit-core,
-
+  mypy,
   # optional-dependencies
   platformdirs,
+  pytest,
+  pytest-xdist,
+  # tests
+  pytestCheckHook,
   requests,
   requests-cache,
   sphinx,
-  mypy,
-  pytest,
-  pytest-xdist,
   types-requests,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "intersphinx-registry";
   version = "0.2705.27";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Quansight-labs";
@@ -32,6 +27,17 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-yFpk3NZO2iCjuJ43WvssbDYxNJ6G6KfY5pcTCilsGQs=";
   };
+
+  # TODO: lots of failing tests
+  doCheck = false;
+
+  nativeCheckInputs = [
+    mypy
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.tests;
+
+  __structuredAttrs = true;
 
   build-system = [
     flit-core
@@ -46,6 +52,7 @@ buildPythonPackage (finalAttrs: {
       requests-cache
       sphinx
     ];
+
     tests = [
       mypy
       pytest
@@ -54,14 +61,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    mypy
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.tests;
-
-  # TODO: lots of failing tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "intersphinx_registry"
@@ -70,8 +70,8 @@ buildPythonPackage (finalAttrs: {
   meta = {
     description = "Utility package that provides a default intersphinx mapping";
     homepage = "https://github.com/Quansight-labs/intersphinx_registry";
-    mainProgram = "intersphinx-registry";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ eljamm ];
+    mainProgram = "intersphinx-registry";
   };
 })

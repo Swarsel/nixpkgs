@@ -16,8 +16,8 @@ in
     programs.turbovnc = {
 
       ensureHeadlessSoftwareOpenGL = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to set up NixOS such that TurboVNC's built-in software OpenGL
           implementation works.
@@ -33,6 +33,8 @@ in
           configuration that's incompatible with using headless software OpenGL
           in TurboVNC.
         '';
+
+        type = lib.types.bool;
       };
 
     };

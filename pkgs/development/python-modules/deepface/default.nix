@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fire,
   flask,
   flask-cors,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "deepface";
   version = "0.0.100";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "serengil";
@@ -41,6 +40,8 @@ buildPythonPackage rec {
       --replace-fail "opencv_path = self.__get_opencv_path()" "opencv_path = '/'.join(os.path.dirname(cv2.__file__).split(os.path.sep)[0:-4]) + \"/share/opencv4/haarcascades/\""
   '';
 
+  # requires internet connection
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -60,9 +61,7 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  # requires internet connection
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "deepface" ];
 
   meta = {

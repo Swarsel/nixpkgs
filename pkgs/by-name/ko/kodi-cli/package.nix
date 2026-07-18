@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  curl,
   bash,
+  curl,
   jq,
+  makeWrapper,
   youtube-dl,
   zenity,
 }:
@@ -45,10 +45,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/nawar/kodi-cli";
     description = "Kodi/XBMC bash script to send Kodi commands using JSON RPC. It also allows sending YouTube videos to Kodi";
+    homepage = "https://github.com/nawar/kodi-cli";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.pstn ];
+    platforms = lib.platforms.unix;
   };
 }

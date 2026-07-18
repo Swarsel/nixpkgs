@@ -8,16 +8,11 @@
 buildPythonPackage rec {
   pname = "kdl-py";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Y/P0bGJ33trc5E3PyUZyv25r8zMLkBIuATTCKFfimXM=";
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "kdl" ];
 
   checkPhase = ''
     runHook preCheck
@@ -26,6 +21,10 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "kdl" ];
 
   meta = {
     description = "Parser for the KDL language";

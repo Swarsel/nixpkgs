@@ -4,21 +4,13 @@
   fetchFromGitHub,
   autoreconfHook,
   pkg-config,
-
-  enablePython ? false,
   python3,
+  enablePython ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libplist";
   version = "2.7.0";
-
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-  ]
-  ++ lib.optional enablePython "py";
 
   src = fetchFromGitHub {
     owner = "libimobiledevice";
@@ -26,6 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-Rc1KwJR+Pb2lN8019q5ywERrR7WA2LuLRiEvNsZSxXc=";
   };
+
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+  ]
+  ++ lib.optional enablePython "py";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -36,10 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3
     python3.pkgs.cython
   ];
-
-  preAutoreconf = ''
-    export RELEASE_VERSION=${finalAttrs.version}
-  '';
 
   configureFlags = [
     "--enable-debug"
@@ -53,6 +48,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   postFixup = lib.optionalString enablePython ''
     moveToOutput "lib/${python3.libPrefix}" "$py"
+  '';
+
+  preAutoreconf = ''
+    export RELEASE_VERSION=${finalAttrs.version}
   '';
 
   meta = {

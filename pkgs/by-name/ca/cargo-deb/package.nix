@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  makeWrapper,
   dpkg,
+  makeWrapper,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,11 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-x/SUGHMW+MUpK+pFp3MfWc+2hgn5HDE0s12kp9Up1fY=";
   };
 
-  cargoHash = "sha256-Wd6Uj6fi4OtZJGz6QIzBNIdB5HnJzJWFMV53ucvr6Fw=";
-
   nativeBuildInputs = [
     makeWrapper
   ];
+
+  cargoHash = "sha256-Wd6Uj6fi4OtZJGz6QIzBNIdB5HnJzJWFMV53ucvr6Fw=";
 
   checkFlags = [
     # This is an FHS specific assert depending on glibc location
@@ -49,11 +49,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo subcommand that generates Debian packages from information in Cargo.toml";
-    mainProgram = "cargo-deb";
     homepage = "https://github.com/kornelski/cargo-deb";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-deb";
   };
 })

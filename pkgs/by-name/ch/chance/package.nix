@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitLab,
   blueprint-compiler,
   cargo,
   desktop-file-utils,
-  fetchFromGitLab,
   libadwaita,
   meson,
   ninja,
@@ -11,7 +12,6 @@
   pkg-config,
   rustPlatform,
   rustc,
-  stdenv,
   wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -23,11 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "rollit";
     tag = finalAttrs.version;
     hash = "sha256-25+/TvTba/QF7+QE8+O7u4yc9BNi0pcZeNj11dGkEfg=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-ObT3l/Exk6UzUGmzCed7mJ7hVzg8CsQIT3fe1RIUfIM=";
   };
 
   nativeBuildInputs = [
@@ -46,6 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
     libadwaita
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-ObT3l/Exk6UzUGmzCed7mJ7hVzg8CsQIT3fe1RIUfIM=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -54,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.com/zelikos/rollit/-/releases/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ Guanran928 ];
-    mainProgram = "rollit";
     platforms = lib.platforms.linux;
+    mainProgram = "rollit";
   };
 })

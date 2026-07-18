@@ -18,18 +18,19 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
     gfortran
   ];
 
+  __structuredAttrs = true;
+
   meta = {
     description = "A library to handle the *.meshb file format.";
     homepage = "https://github.com/LoicMarechal/libMeshb";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ tmarkus ];
+    platforms = lib.platforms.linux;
   };
 })

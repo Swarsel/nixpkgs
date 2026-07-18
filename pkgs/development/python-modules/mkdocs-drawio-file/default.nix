@@ -1,32 +1,30 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-  poetry-core,
-  beautifulsoup4,
   jinja2,
   lxml,
   mkdocs,
+  poetry-core,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-drawio-file";
   version = "1.5.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "mkdocs_drawio_file";
     inherit version;
     hash = "sha256-5OPaG98m7ycxtEUyAYWunomHwq+r10VBnzza3kYtHhE=";
+    pname = "mkdocs_drawio_file";
   };
+
+  # No tests available
+  doCheck = false;
 
   build-system = [
     poetry-core
-  ];
-
-  pythonRelaxDeps = [
-    "lxml"
   ];
 
   dependencies = [
@@ -37,12 +35,15 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "mkdocs_drawio_file"
   ];
 
-  # No tests available
-  doCheck = false;
+  pythonRelaxDeps = [
+    "lxml"
+  ];
 
   meta = {
     description = "Embedding files of Diagrams.net (Draw.io) into MkDocs";

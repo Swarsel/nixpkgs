@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  gitUpdater,
   libx11,
   libxfixes,
   libxrandr,
-  gitUpdater,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,17 +29,19 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "prefix=$(out)" ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://www.uninformativ.de/git/xpointerbarrier.git/";
     rev-prefix = "v";
+    url = "https://www.uninformativ.de/git/xpointerbarrier.git/";
   };
 
   meta = {
-    homepage = "https://www.uninformativ.de/git/xpointerbarrier/file/README.html";
     description = "Create X11 pointer barriers around your working area";
+    homepage = "https://www.uninformativ.de/git/xpointerbarrier/file/README.html";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       xzfc
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "xpointerbarrier";
   };

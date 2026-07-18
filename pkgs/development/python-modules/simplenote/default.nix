@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "simplenote";
   version = "2.1.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "simplenote-vim";
@@ -15,6 +14,8 @@ buildPythonPackage rec {
     rev = "v${version}";
     sha256 = "1grvvgzdybhxjydalnsgh2aaz3f48idv5lqs48gr0cn7n18xwhd5";
   };
+
+  format = "setuptools";
 
   meta = {
     description = "Python library for the simplenote.com web service";

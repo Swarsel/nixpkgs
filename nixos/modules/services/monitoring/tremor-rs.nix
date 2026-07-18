@@ -17,55 +17,14 @@ in
     services.tremor-rs = {
       enable = lib.mkEnableOption "Tremor event- or stream-processing system";
 
-      troyFileList = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
-        default = [ ];
-        description = "List of troy files to load.";
-      };
-
-      tremorLibDir = lib.mkOption {
-        type = lib.types.path;
-        default = "";
-        description = "Directory where to find /lib containing tremor script files";
-      };
-
       host = lib.mkOption {
-        type = lib.types.str;
         default = "127.0.0.1";
         description = "The host tremor should be listening on";
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 9898;
-        description = "the port tremor should be listening on";
+        type = lib.types.str;
       };
 
       loggerSettings = lib.mkOption {
-        description = "Tremor logger configuration";
         default = { };
-        type = loggerSettingsFormat.type;
-
-        example = {
-          refresh_rate = "30 seconds";
-          appenders.stdout.kind = "console";
-          root = {
-            level = "warn";
-            appenders = [ "stdout" ];
-          };
-          loggers = {
-            tremor_runtime = {
-              level = "debug";
-              appenders = [ "stdout" ];
-              additive = false;
-            };
-            tremor = {
-              level = "debug";
-              appenders = [ "stdout" ];
-              additive = false;
-            };
-          };
-        };
 
         defaultText = lib.literalExpression ''
           {
@@ -90,6 +49,53 @@ in
           }
         '';
 
+        description = "Tremor logger configuration";
+
+        example = {
+          appenders.stdout.kind = "console";
+
+          loggers = {
+            tremor = {
+              additive = false;
+              appenders = [ "stdout" ];
+              level = "debug";
+            };
+
+            tremor_runtime = {
+              additive = false;
+              appenders = [ "stdout" ];
+              level = "debug";
+            };
+          };
+
+          refresh_rate = "30 seconds";
+
+          root = {
+            appenders = [ "stdout" ];
+            level = "warn";
+          };
+        };
+
+        type = loggerSettingsFormat.type;
+
+      };
+
+      port = lib.mkOption {
+        default = 9898;
+        description = "the port tremor should be listening on";
+        type = lib.types.port;
+      };
+
+      tremorLibDir = lib.mkOption {
+        default = "";
+        description = "Directory where to find /lib containing tremor script files";
+        type = lib.types.path;
+      };
+
+      troyFileList = lib.mkOption {
+        default = [ ];
+        description = "List of troy files to load.";
+        type = lib.types.listOf lib.types.path;
       };
     };
   };
@@ -99,38 +105,39 @@ in
     environment.systemPackages = [ pkgs.tremor-rs ];
 
     systemd.services.tremor-rs = {
-      description = "Tremor event- or stream-processing system";
-      wantedBy = [ "multi-user.target" ];
-      requires = [ "network-online.target" ];
       after = [ "network-online.target" ];
-
+      description = "Tremor event- or stream-processing system";
       environment.TREMOR_PATH = "${pkgs.tremor-rs}/lib:${cfg.tremorLibDir}";
+      requires = [ "network-online.target" ];
 
       serviceConfig = {
-        ExecStart = "${pkgs.tremor-rs}/bin/tremor --logger-config ${loggerConfigFile} server run ${lib.concatStringsSep " " cfg.troyFileList} --api-host ${cfg.host}:${toString cfg.port}";
         DynamicUser = true;
-        Restart = "always";
+        ExecStart = "${pkgs.tremor-rs}/bin/tremor --logger-config ${loggerConfigFile} server run ${lib.concatStringsSep " " cfg.troyFileList} --api-host ${cfg.host}:${toString cfg.port}";
+        LockPersonality = true;
         NoNewPrivileges = true;
         PrivateTmp = true;
-        ProtectHome = true;
-        ProtectClock = true;
-        ProtectProc = "noaccess";
         ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        ProtectControlGroups = true;
-        ProtectHostname = true;
-        RestrictSUIDSGID = true;
-        RestrictRealtime = true;
-        RestrictNamespaces = true;
-        LockPersonality = true;
+        ProtectProc = "noaccess";
         RemoveIPC = true;
+        Restart = "always";
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

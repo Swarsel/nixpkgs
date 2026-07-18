@@ -3,38 +3,38 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  util-linux,
+  color-transformation-language,
+  exiftool,
+  exiv2,
+  expat,
+  fftwSinglePrec,
+  gtkmm3,
+  lcms2,
+  lensfun,
+  lerc,
+  libcanberra-gtk3,
+  libdatrie,
+  libepoxy,
+  libiptcdata,
+  libpthread-stubs,
+  libraw,
+  librsvg,
   libselinux,
   libsepol,
+  libsigcxx,
   libthai,
-  libdatrie,
-  lerc,
-  libxkbcommon,
-  libepoxy,
-  libxtst,
-  wrapGAppsHook3,
-  pixman,
-  libpthread-stubs,
-  gtkmm3,
   libxau,
   libxdmcp,
-  lcms2,
-  libraw,
-  libiptcdata,
-  fftwSinglePrec,
-  expat,
-  pcre2,
-  libsigcxx,
-  lensfun,
-  librsvg,
-  libcanberra-gtk3,
-  exiv2,
-  exiftool,
+  libxkbcommon,
+  libxtst,
   mimalloc,
-  openexr,
   opencolorio,
-  color-transformation-language,
+  openexr,
+  pcre2,
+  pixman,
+  pkg-config,
+  util-linux,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -109,6 +109,7 @@ stdenv.mkDerivation (finalAttrs: {
       "-Wno-deprecated-declarations"
       "-Wno-unused-result"
     ];
+
     # needed at least with gcc13 on aarch64-linux
     CXXFLAGS = toString [
       "-include"
@@ -121,7 +122,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://artraweditor.github.io";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ paperdigits ];
-    mainProgram = "ART";
     platforms = lib.platforms.linux;
+    mainProgram = "ART";
   };
 })

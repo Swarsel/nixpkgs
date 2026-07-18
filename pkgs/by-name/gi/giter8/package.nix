@@ -1,42 +1,40 @@
 {
   lib,
   stdenv,
-  jre,
   coursier,
+  giter8,
+  jre,
   makeWrapper,
   setJavaClassPath,
   testers,
-  giter8,
 }:
 
 let
   pname = "giter8";
   version = "0.18.0";
   deps = stdenv.mkDerivation {
-    name = "${pname}-deps-${version}";
     buildCommand = ''
       export COURSIER_CACHE=$(pwd)
       ${coursier}/bin/cs fetch org.foundweekends.giter8:giter8_2.13:${version} > deps
       mkdir -p $out/share/java
       cp $(< deps) $out/share/java/
     '';
-    outputHashMode = "recursive";
+
+    name = "${pname}-deps-${version}";
     outputHash = "sha256-MrFuyktyXADZ8lh/vzpVNi12IbKjM/Q8P7X8EE4KFNo=";
+    outputHashMode = "recursive";
   };
 in
 stdenv.mkDerivation {
   inherit pname version;
-
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     makeWrapper
     setJavaClassPath
   ];
-  buildInputs = [ deps ];
 
-  dontUnpack = true;
+  buildInputs = [ deps ];
 
   installPhase = ''
     runHook preInstall
@@ -48,24 +46,28 @@ stdenv.mkDerivation {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/g8 --version | grep -q "${version}"
   '';
 
-  passthru.updateScript = ./update.sh;
+  __structuredAttrs = true;
+  dontUnpack = true;
 
   passthru.tests.version = testers.testVersion {
-    package = giter8;
     command = "g8 --version";
+    package = giter8;
   };
+
+  passthru.updateScript = ./update.sh;
 
   meta = {
     description = "A command line tool to apply templates defined on GitHub";
     homepage = "https://www.foundweekends.org/giter8/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.asl20;
-    maintainers = [ lib.maintainers.agilesteel ];
     changelog = "https://github.com/foundweekends/giter8/releases/tag/v${version}";
+    license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = [ lib.maintainers.agilesteel ];
     mainProgram = "g8";
   };
 }

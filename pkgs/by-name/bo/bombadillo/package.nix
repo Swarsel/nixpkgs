@@ -1,7 +1,7 @@
 {
   lib,
-  fetchgit,
   buildGoModule,
+  fetchgit,
   installShellFiles,
 }:
 
@@ -15,14 +15,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-FjU9AyRAdGFr1bVpkmj5STkbzCXvpxOaOj7WNQJq7A0=";
   };
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  vendorHash = null;
-
   outputs = [
     "out"
     "man"
   ];
+
+  nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
 
   postInstall = ''
     installManPage bombadillo.1
@@ -30,8 +29,8 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Non-web client for the terminal, supporting Gopher, Gemini and more";
-    mainProgram = "bombadillo";
     homepage = "https://bombadillo.colorfield.space/";
     license = lib.licenses.gpl3;
+    mainProgram = "bombadillo";
   };
 })

@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   boto3,
   botocore,
-  snakemake-interface-common,
-  snakemake-interface-storage-plugins,
-  urllib3,
-
+  buildPythonPackage,
+  # build-system
+  poetry-core,
   # tests
   pytestCheckHook,
   snakemake,
+  snakemake-interface-common,
+  snakemake-interface-storage-plugins,
+  urllib3,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-storage-plugin-s3";
   version = "0.3.6";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -32,6 +27,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-hvyQ6V6POUBWTCWt9moQlH0RgSM4J36kjbXK4TtO8Bo=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -42,16 +44,6 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  pythonImportsCheck = [ "snakemake_storage_plugin_s3" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake
-    writableTmpDirAsHomeHook
-  ];
-
-  enabledTestPaths = [ "tests/tests.py" ];
-
   disabledTests = [
     # Requires internet access
     "test_storage"
@@ -61,6 +53,10 @@ buildPythonPackage (finalAttrs: {
     "test_group_workflow"
     "test_simple_workflow"
   ];
+
+  enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "snakemake_storage_plugin_s3" ];
 
   meta = {
     description = "Snakemake storage plugin for S3 API storage (AWS S3, MinIO, etc.)";

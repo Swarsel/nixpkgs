@@ -1,13 +1,14 @@
 {
   lib,
+  clr,
   makeImpureTest,
   opencl-cts,
-  clr,
 }:
 
 makeImpureTest {
+  nativeBuildInputs = [ opencl-cts ];
+  OCL_ICD_VENDORS = "${clr.icd}/etc/OpenCL/vendors";
   name = "opencl-cts";
-  testedPackage = "rocmPackages.clr";
 
   sandboxPaths = [
     "/sys"
@@ -15,12 +16,11 @@ makeImpureTest {
     "/dev/kfd"
   ];
 
-  nativeBuildInputs = [ opencl-cts ];
-  OCL_ICD_VENDORS = "${clr.icd}/etc/OpenCL/vendors";
-
   testScript = ''
     test_basic arraycopy arrayreadwrite astype barrier vector_swizzle work_item_functions
   '';
+
+  testedPackage = "rocmPackages.clr";
 
   meta = {
     teams = [ lib.teams.rocm ];

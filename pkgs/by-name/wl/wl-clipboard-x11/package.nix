@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  wl-clipboard,
   bash,
+  wl-clipboard,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,22 +17,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-i+oF1Mu72O5WPTWzqsvo4l2CERWWp4Jq/U0DffPZ8vg=";
   };
 
-  strictDeps = true;
-  buildInputs = [ bash ];
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   postPatch = ''
     substituteInPlace src/wl-clipboard-x11 \
       --replace '$(command -v wl-copy)' ${wl-clipboard}/bin/wl-copy \
       --replace '$(command -v wl-paste)' ${wl-clipboard}/bin/wl-paste
   '';
 
+  strictDeps = true;
+  buildInputs = [ bash ];
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
+
   meta = {
     description = "Wrapper to use wl-clipboard as a drop-in replacement for X11 clipboard tools";
     homepage = "https://github.com/brunelli/wl-clipboard-x11";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ artturin ];
-    mainProgram = "xclip";
     platforms = lib.platforms.linux;
+    mainProgram = "xclip";
   };
 })

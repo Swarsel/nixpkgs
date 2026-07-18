@@ -1,26 +1,23 @@
 {
   lib,
-  nixosTests,
-  cloud-utils,
-  dmidecode,
   fetchFromGitHub,
+  busybox,
+  cloud-utils,
+  coreutils,
+  dmidecode,
+  gitUpdater,
   iproute2,
+  nixosTests,
   openssh,
+  procps,
   python3,
   shadow,
   systemd,
-  coreutils,
-  gitUpdater,
-  busybox,
-  procps,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "cloud-init";
   version = "25.2";
-  pyproject = true;
-
-  namePrefix = "";
 
   src = fetchFromGitHub {
     owner = "canonical";
@@ -32,32 +29,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   patches = [
     ./0001-add-nixos-support.patch
     ./0002-fix-test-logs-on-nixos.patch
-  ];
-
-  prePatch = ''
-    substituteInPlace setup.py \
-      --replace /lib/systemd $out/lib/systemd
-
-    substituteInPlace cloudinit/net/networkd.py \
-      --replace '["/usr/sbin", "/bin"]' '["/usr/sbin", "/bin", "${iproute2}/bin", "${systemd}/bin"]'
-
-    substituteInPlace tests/unittests/test_net_activators.py \
-      --replace '["/usr/sbin", "/bin"]' \
-        '["/usr/sbin", "/bin", "${iproute2}/bin", "${systemd}/bin"]'
-
-    substituteInPlace tests/unittests/cmd/test_clean.py \
-      --replace "/bin/bash" "/bin/sh"
-  '';
-
-  postInstall = ''
-    install -D -m755 ./tools/write-ssh-key-fingerprints $out/libexec/write-ssh-key-fingerprints
-    for i in $out/libexec/*; do
-      wrapProgram $i --prefix PATH : "${lib.makeBinPath [ openssh ]}"
-    done
-  '';
-
-  build-system = with python3.pkgs; [
-    setuptools
   ];
 
   propagatedBuildInputs = with python3.pkgs; [
@@ -85,14 +56,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     procps
   ];
 
-  makeWrapperArgs = [
-    "--prefix PATH : ${
-      lib.makeBinPath [
-        dmidecode
-        cloud-utils.guest
-        busybox
-      ]
-    }/bin"
+  preCheck = ''
+    # TestTempUtils.test_mkdtemp_default_non_root does not like TMPDIR=/build
+    export TMPDIR=/tmp
+  '';
+
+  postInstall = ''
+    install -D -m755 ./tools/write-ssh-key-fingerprints $out/libexec/write-ssh-key-fingerprints
+    for i in $out/libexec/*; do
+      wrapProgram $i --prefix PATH : "${lib.makeBinPath [ openssh ]}"
+    done
+  '';
+
+  build-system = with python3.pkgs; [
+    setuptools
   ];
 
   disabledTests = [
@@ -125,10 +102,34 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_found_via_userdata"
   ];
 
-  preCheck = ''
-    # TestTempUtils.test_mkdtemp_default_non_root does not like TMPDIR=/build
-    export TMPDIR=/tmp
+  makeWrapperArgs = [
+    "--prefix PATH : ${
+      lib.makeBinPath [
+        dmidecode
+        cloud-utils.guest
+        busybox
+      ]
+    }/bin"
+  ];
+
+  namePrefix = "";
+
+  prePatch = ''
+    substituteInPlace setup.py \
+      --replace /lib/systemd $out/lib/systemd
+
+    substituteInPlace cloudinit/net/networkd.py \
+      --replace '["/usr/sbin", "/bin"]' '["/usr/sbin", "/bin", "${iproute2}/bin", "${systemd}/bin"]'
+
+    substituteInPlace tests/unittests/test_net_activators.py \
+      --replace '["/usr/sbin", "/bin"]' \
+        '["/usr/sbin", "/bin", "${iproute2}/bin", "${systemd}/bin"]'
+
+    substituteInPlace tests/unittests/cmd/test_clean.py \
+      --replace "/bin/bash" "/bin/sh"
   '';
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "cloudinit"
@@ -140,17 +141,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/canonical/cloud-init";
     description = "Provides configuration and customization of cloud instance";
+    homepage = "https://github.com/canonical/cloud-init";
     changelog = "https://github.com/canonical/cloud-init/raw/${finalAttrs.version}/ChangeLog";
+
     license = with lib.licenses; [
       asl20
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [
       illustris
       jfroche
     ];
+
     platforms = lib.platforms.all;
   };
 })

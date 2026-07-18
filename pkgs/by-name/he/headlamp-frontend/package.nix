@@ -4,21 +4,22 @@
 }:
 
 buildNpmPackage {
-  pname = "headlamp-frontend";
   inherit (headlamp-server) version src;
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  sourceRoot = "${headlamp-server.src.name}/frontend";
-
-  npmDepsHash = "sha256-73xc/GK1Cvz67D6ftYVRe5GARNgG5qD86CGK6uhoyWA=";
+  pname = "headlamp-frontend";
 
   postPatch = ''
     chmod -R u+w ../app
     cp ${headlamp-server.src}/app/package.json ../app/package.json
     substituteInPlace package.json --replace-fail '"prebuild": "npm run make-version",' ""
   '';
+
+  strictDeps = true;
+  npmDepsHash = "sha256-73xc/GK1Cvz67D6ftYVRe5GARNgG5qD86CGK6uhoyWA=";
+
+  env = {
+    NODE_OPTIONS = "--max-old-space-size=8096";
+    PUBLIC_URL = "./";
+  };
 
   preBuild = ''
     cat > .env <<EOF
@@ -30,16 +31,14 @@ buildNpmPackage {
     EOF
   '';
 
-  env = {
-    PUBLIC_URL = "./";
-    NODE_OPTIONS = "--max-old-space-size=8096";
-  };
-
   installPhase = ''
     runHook preInstall
     cp -r build $out
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+  sourceRoot = "${headlamp-server.src.name}/frontend";
 
   meta = {
     inherit (headlamp-server.meta)

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  cmake,
-  pkg-config,
   fetchFromGitHub,
-  lksctp-tools,
+  cmake,
   iproute2,
-  nix-update-script,
+  lksctp-tools,
   makeWrapper,
+  nix-update-script,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ueransim";
@@ -20,6 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-lTo/XYkRddyNdOpNO7MIAwq5mKMHDarCVzXjDomeXec=";
   };
 
+  postPatch = ''
+    substituteInPlace tools/nr-binder \
+      --replace-fail "./libdevbnd.so" "$out/lib/libdevbnd.so"
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -27,11 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ lksctp-tools ];
-
-  postPatch = ''
-    substituteInPlace tools/nr-binder \
-      --replace-fail "./libdevbnd.so" "$out/lib/libdevbnd.so"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -58,8 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open source 5G UE and RAN (gNodeB) implementation";
     homepage = "https://github.com/aligungr/UERANSIM";
     changelog = "https://github.com/aligungr/UERANSIM/releases";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ theobori ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ theobori ];
+    platforms = lib.platforms.linux;
   };
 })

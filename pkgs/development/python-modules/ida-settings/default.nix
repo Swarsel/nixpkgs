@@ -1,18 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
+  buildPythonPackage,
   ida-hcli,
   nix-update-script,
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ida-settings";
   version = "3.5.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "williballenthin";
@@ -26,15 +23,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.8.6,<0.9.0" "uv_build"
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ ida-hcli ];
-
-  pythonImportsCheck = [ "ida_settings" ];
-
   # Module has no tests
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ uv-build ];
+  dependencies = [ ida-hcli ];
+  pyproject = true;
+  pythonImportsCheck = [ "ida_settings" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

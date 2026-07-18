@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
-  fetchgit,
-  avahi,
-  gmp,
-  buildPackages,
+  stdenv,
   autoreconfHook,
+  avahi,
+  buildPackages,
+  fetchgit,
+  gmp,
+  guile,
   pkg-config,
   texinfo,
-  guile,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,22 +22,25 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
   nativeBuildInputs = [
     autoreconfHook
     guile
     pkg-config
     texinfo
   ];
+
   buildInputs = [ guile ];
+
   propagatedBuildInputs = [
     avahi
     gmp
   ];
 
-  doCheck = true;
   makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-unused-function";
+  doCheck = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   meta = {
     description = "Bindings to Avahi for GNU Guile";

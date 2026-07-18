@@ -15,8 +15,8 @@ let
   '';
 in
 symlinkJoin {
-  pname = "run-x16";
   inherit (emulator) version;
+  pname = "run-x16";
 
   paths = [
     emulator

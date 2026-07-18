@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  pyyaml,
-  rich,
-
+  buildPythonPackage,
+  distutils,
   # tests
   esptool,
   jsonschema,
   pytestCheckHook,
-  distutils,
+  # dependencies
+  pyyaml,
+  rich,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "esp-idf-size";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "espressif";
@@ -34,13 +30,6 @@ buildPythonPackage rec {
     ./1.x-compat.patch
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    pyyaml
-    rich
-  ];
-
   doCheck = false; # requires ESP-IDF
 
   nativeCheckInputs = [
@@ -49,6 +38,15 @@ buildPythonPackage rec {
     jsonschema
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    pyyaml
+    rich
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "esp_idf_size"

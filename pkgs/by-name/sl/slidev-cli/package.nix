@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
-  pnpm_10,
+  nix-update-script,
   nodejs,
   pnpmConfigHook,
-  nix-update-script,
+  pnpm_10,
 }:
 let
   pnpm = pnpm_10;
@@ -20,20 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "slidev";
     tag = "v${finalAttrs.version}";
     hash = "sha256-h9gVfGMLTm8NDSAR/OKl5XJRBduAPHQ9mp+jtNYtxFI=";
-  };
-
-  pnpmWorkspaces = [ "@slidev/cli..." ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      ;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-DGDzNvau1XjPjkGZqcFZGkjYd3cneXO/gCdnwjjkQDY=";
   };
 
   nativeBuildInputs = [
@@ -71,17 +57,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-DGDzNvau1XjPjkGZqcFZGkjYd3cneXO/gCdnwjjkQDY=";
+  };
+
+  pnpmWorkspaces = [ "@slidev/cli..." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/slidevjs/slidev/releases/tag/v${finalAttrs.version}";
     description = "Presentation slides for developers";
     homepage = "https://sli.dev";
+    changelog = "https://github.com/slidevjs/slidev/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pyrox0
       pluiedev
     ];
+
     mainProgram = "slidev";
   };
 })

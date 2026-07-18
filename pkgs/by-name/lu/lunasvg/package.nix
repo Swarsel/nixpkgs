@@ -36,22 +36,23 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.tests = {
-    pkg-config = testers.hasPkgConfigModules {
+    cmake-config = testers.hasCmakeConfigModules {
+      buildInputs = [ plutovg ];
+      moduleNames = [ "lunasvg" ];
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
-    cmake-config = testers.hasCmakeConfigModules {
+
+    pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
-      buildInputs = [ plutovg ];
-      moduleNames = [ "lunasvg" ];
       versionCheck = true;
     };
   };
 
   meta = {
+    description = "SVG rendering and manipulation library in C++";
     homepage = "https://github.com/sammycage/lunasvg";
     changelog = "https://github.com/sammycage/lunasvg/releases/tag/v${finalAttrs.version}";
-    description = "SVG rendering and manipulation library in C++";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.eymeric ];
     platforms = lib.platforms.all;

@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
-  gitUpdater,
   autoreconfHook,
   font-util,
+  gitUpdater,
+  stdenvNoCC,
   util-macros,
 }:
 
@@ -13,12 +13,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   version = "1.0.6";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "font";
     repo = "alias";
     tag = "font-alias-${finalAttrs.version}";
     hash = "sha256-WGCC4OTerSRf+2sGNqggSBzVVv7gcuP6s3QQHBLahdM=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   nativeBuildInputs = [
@@ -36,10 +36,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Common aliases for Xorg fonts";
     homepage = "https://gitlab.freedesktop.org/xorg/font/alias";
+
     license = with lib.licenses; [
       cronyx
       mit
     ];
+
     maintainers = with lib.maintainers; [ qweered ];
   };
 })

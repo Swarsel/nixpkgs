@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  desktop-file-utils,
+  libadwaita,
   meson,
+  mpfr,
   ninja,
   pkg-config,
   wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
-  mpfr,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,8 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple GTK postfix calculator for GNOME";
     homepage = "https://gitlab.com/leesonwai/sums";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "sums";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "sums";
   };
 })

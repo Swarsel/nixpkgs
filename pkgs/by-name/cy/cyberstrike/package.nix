@@ -1,7 +1,7 @@
 {
   lib,
-  bun,
   fetchFromGitHub,
+  bun,
   installShellFiles,
   makeBinaryWrapper,
   models-dev,
@@ -18,9 +18,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "cyberstrike";
   version = "1.1.15";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "CyberStrikeus";
     repo = "CyberStrike";
@@ -28,57 +25,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-U1yYTFZCjF3z+161CL4xyxYwcWJh5zCbGAOm/ctACSs=";
   };
 
-  node_modules = stdenvNoCC.mkDerivation {
-    pname = "${finalAttrs.pname}-node_modules";
-    inherit (finalAttrs) version src;
-
-    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-      "GIT_PROXY_COMMAND"
-      "SOCKS_SERVER"
-    ];
-
-    nativeBuildInputs = [
-      bun
-      writableTmpDirAsHomeHook
-    ];
-
-    dontConfigure = true;
-
-    buildPhase = ''
-      runHook preBuild
-
-      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
-      bun install \
-        --cpu="${if stdenvNoCC.hostPlatform.isAarch64 then "arm64" else "x64"}" \
-        --os="${if stdenvNoCC.hostPlatform.isLinux then "linux" else "darwin"}" \
-        --filter '!./' \
-        --filter './packages/cyberstrike' \
-        --frozen-lockfile \
-        --ignore-scripts \
-        --no-progress
-
-      bun --bun ./nix/scripts/canonicalize-node-modules.ts
-      bun --bun ./nix/scripts/normalize-bun-binaries.ts
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out
-      find . -type d -name node_modules -exec cp -R --parents {} $out \;
-
-      runHook postInstall
-    '';
-
-    # Required so fixed-output derivation does not retain store references
-    dontFixup = true;
-
-    outputHash = "sha256-O5p/2+14dFt/gbONLVSvqPdNmLgQ8L+cUTGp81Rm0js=";
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     bun
@@ -87,21 +34,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  configurePhase = ''
-    runHook preConfigure
-
-    cp -R ${finalAttrs.node_modules}/. .
-    patchShebangs node_modules
-    patchShebangs packages/*/node_modules
-
-    runHook postConfigure
-  '';
-
   env = {
-    MODELS_DEV_API_JSON = "${models-dev}/dist/_api.json";
+    CYBERSTRIKE_CHANNEL = "local";
     CYBERSTRIKE_DISABLE_MODELS_FETCH = true;
     CYBERSTRIKE_VERSION = finalAttrs.version;
-    CYBERSTRIKE_CHANNEL = "local";
+    MODELS_DEV_API_JSON = "${models-dev}/dist/_api.json";
   };
 
   buildPhase = ''
@@ -140,12 +77,75 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --zsh <(SHELL=/bin/zsh $out/bin/cyberstrike completion)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
 
-  doInstallCheck = true;
+  __structuredAttrs = true;
+
+  configurePhase = ''
+    runHook preConfigure
+
+    cp -R ${finalAttrs.node_modules}/. .
+    patchShebangs node_modules
+    patchShebangs packages/*/node_modules
+
+    runHook postConfigure
+  '';
+
+  node_modules = stdenvNoCC.mkDerivation {
+    inherit (finalAttrs) version src;
+    pname = "${finalAttrs.pname}-node_modules";
+
+    nativeBuildInputs = [
+      bun
+      writableTmpDirAsHomeHook
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
+      bun install \
+        --cpu="${if stdenvNoCC.hostPlatform.isAarch64 then "arm64" else "x64"}" \
+        --os="${if stdenvNoCC.hostPlatform.isLinux then "linux" else "darwin"}" \
+        --filter '!./' \
+        --filter './packages/cyberstrike' \
+        --frozen-lockfile \
+        --ignore-scripts \
+        --no-progress
+
+      bun --bun ./nix/scripts/canonicalize-node-modules.ts
+      bun --bun ./nix/scripts/normalize-bun-binaries.ts
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out
+      find . -type d -name node_modules -exec cp -R --parents {} $out \;
+
+      runHook postInstall
+    '';
+
+    dontConfigure = true;
+    # Required so fixed-output derivation does not retain store references
+    dontFixup = true;
+
+    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
+      "GIT_PROXY_COMMAND"
+      "SOCKS_SERVER"
+    ];
+
+    outputHash = "sha256-O5p/2+14dFt/gbONLVSvqPdNmLgQ8L+cUTGp81Rm0js=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
 
   versionCheckKeepEnvironment = [
     "HOME"
@@ -159,6 +159,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       config = "${placeholder "out"}/share/cyberstrike/schema.json";
       tui = "${placeholder "out"}/share/cyberstrike/tui.json";
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"

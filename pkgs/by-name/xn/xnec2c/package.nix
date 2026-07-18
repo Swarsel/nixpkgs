@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  wrapGAppsHook3,
-  pkg-config,
-  which,
-  gtk3,
   blas,
+  gtk3,
   lapack,
   nix-update-script,
+  pkg-config,
+  which,
+  wrapGAppsHook3,
 }:
 
 assert (!blas.isILP64) && (!lapack.isILP64);
@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     which
   ];
+
   buildInputs = [
     gtk3
     blas
@@ -40,13 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://www.xnec2c.org/";
     description = "Graphical antenna simulation";
-    mainProgram = "xnec2c";
+    homepage = "https://www.xnec2c.org/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ mvs ];
     platforms = lib.platforms.unix;
-
+    mainProgram = "xnec2c";
     # Darwin support likely to be fixed upstream in the next release
     broken = stdenv.hostPlatform.isDarwin;
   };

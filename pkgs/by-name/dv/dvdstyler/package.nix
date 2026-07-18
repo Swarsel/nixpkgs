@@ -4,8 +4,8 @@
   fetchurl,
   bison,
   cdrtools,
-  docbook_xml_dtd_412,
   docbook-xsl-nons,
+  docbook_xml_dtd_412,
   dvdauthor,
   dvdplusrwtools,
   ffmpeg_7,
@@ -18,18 +18,17 @@
   libjpeg,
   pkg-config,
   wrapGAppsHook3,
-  wxwidgets_3_2,
   wxsvg,
+  wxwidgets_3_2,
   xine-ui,
   xmlto,
   zip,
-
-  dvdisasterSupport ? true,
-  dvdisaster ? null,
-  udevSupport ? true,
-  udev ? null,
-  dbusSupport ? true,
   dbus ? null,
+  dbusSupport ? true,
+  dvdisaster ? null,
+  dvdisasterSupport ? true,
+  udev ? null,
+  udevSupport ? true,
 }:
 
 let
@@ -56,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     xmlto
     zip
   ];
+
   buildInputs = [
     cdrtools
     dvdauthor
@@ -72,8 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optionals dvdisasterSupport [ dvdisaster ]
   ++ optionals udevSupport [ udev ]
   ++ optionals dbusSupport [ dbus ];
-
-  enableParallelBuilding = true;
 
   preFixup =
     let
@@ -92,9 +90,11 @@ stdenv.mkDerivation (finalAttrs: {
       )
     '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://www.dvdstyler.org/";
     description = "DVD authoring software";
+
     longDescription = ''
       DVDStyler is a cross-platform free DVD authoring application for the
       creation of professional-looking DVDs. It allows not only burning of video
@@ -126,6 +126,8 @@ stdenv.mkDerivation (finalAttrs: {
       - copy any menu object or whole menu
       - customize navigation using DVD scripting
     '';
+
+    homepage = "https://www.dvdstyler.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; linux;

@@ -1,18 +1,17 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  unittestCheckHook,
-  setuptools,
+  fetchFromGitHub,
   beancount,
   beangulp,
+  buildPythonPackage,
   python-dateutil,
+  setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "beancount-periodic";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dallaslu";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-XuBDKG/iOS0gyfiwEEPjIckAbnfOKHjYwXW4CmUy8eA=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,13 +29,13 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "beancount_periodic" ];
+
   unittestFlags = [
     "-v"
     "tests"
   ];
-
-  pythonImportsCheck = [ "beancount_periodic" ];
 
   meta = {
     description = "Beancount plugin to generate periodic transactions";

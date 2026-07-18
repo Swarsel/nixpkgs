@@ -1,25 +1,23 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   click,
-  sortedcontainers,
+  fetchPypi,
   pyyaml,
+  setuptools,
+  sortedcontainers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cock";
   version = "0.11.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-Hi8aFxATsYcEO6qNzZnF73V8WLTQjb6Dw2xF4VgT2o4=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +26,12 @@ buildPythonPackage (finalAttrs: {
     pyyaml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cock" ];
 
   meta = {
-    homepage = "https://github.com/pohmelie/cock";
     description = "Configuration file with click";
+    homepage = "https://github.com/pohmelie/cock";
     license = lib.licenses.mit;
   };
 })

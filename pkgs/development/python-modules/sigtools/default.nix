@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   mock,
+  pythonAtLeast,
   repeated-test,
   setuptools-scm,
   sphinx,
   unittestCheckHook,
-  pythonAtLeast,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "sigtools";
   version = "4.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "epsy";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-q5Bzc6fgDJCqt0SA/C/mg2fbUFyXLcsRU+tSl8FdZdI=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ attrs ];
-
   nativeCheckInputs = [
     mock
     repeated-test
@@ -33,13 +28,16 @@ buildPythonPackage (finalAttrs: {
     unittestCheckHook
   ];
 
+  build-system = [ setuptools-scm ];
+  dependencies = [ attrs ];
+  pyproject = true;
+  pythonImportsCheck = [ "sigtools" ];
+
   unittestFlags = lib.optionals (pythonAtLeast "3.14") [
     "-s sigtools/tests"
     # python314 only: NameError: name 'o' is not defined
     "-k [!RoundTripTests.test_locals]"
   ];
-
-  pythonImportsCheck = [ "sigtools" ];
 
   meta = {
     description = "Utilities for working with inspect.Signature objects";

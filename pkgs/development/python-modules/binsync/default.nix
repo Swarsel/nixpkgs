@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   filelock,
   gitpython,
   libbs,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "binsync";
   version = "5.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "binsync";
@@ -28,6 +27,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-dRc/sF2eVCW1fX66PsF4xU1RbkSnn/sT/PFsRbvDpzY=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-qt
+    pyside6
+  ];
 
   build-system = [ setuptools ];
 
@@ -43,21 +48,16 @@ buildPythonPackage rec {
     wordfreq
   ];
 
-  optional-dependencies = {
-    ghidra = [ pyside6 ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-qt
-    pyside6
-  ];
-
   disabledTestPaths = [
     # Test tries to import angr-management
     "tests/test_angr_gui.py"
   ];
 
+  optional-dependencies = {
+    ghidra = [ pyside6 ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "binsync" ];
 
   meta = {

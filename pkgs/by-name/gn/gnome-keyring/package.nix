@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
   dbus,
-  libgcrypt,
-  pam,
-  python3,
-  glib,
-  libxslt,
-  gettext,
-  gcr,
-  libcap_ng,
-  libselinux,
-  p11-kit,
-  wrapGAppsNoGuiHook,
   docbook-xsl-nons,
   docbook_xml_dtd_43,
+  gcr,
+  gettext,
+  glib,
   gnome,
+  libcap_ng,
+  libgcrypt,
+  libselinux,
+  libxslt,
+  meson,
+  ninja,
+  p11-kit,
+  pam,
+  pkg-config,
+  python3,
+  wrapGAppsNoGuiHook,
   useWrappedDaemon ? true,
 }:
 
@@ -27,15 +27,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gnome-keyring";
   version = "50.0";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/gnome-keyring/${lib.versions.major finalAttrs.version}/gnome-keyring-${finalAttrs.version}.tar.xz";
+    hash = "sha256-y9cgYsU8lwK8LEczmRrV8FHKaCiCswkFooKbzxqOzHw=";
+  };
+
   outputs = [
     "out"
     "dev"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/gnome-keyring/${lib.versions.major finalAttrs.version}/gnome-keyring-${finalAttrs.version}.tar.xz";
-    hash = "sha256-y9cgYsU8lwK8LEczmRrV8FHKaCiCswkFooKbzxqOzHw=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -59,11 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     p11-kit
   ];
 
-  nativeCheckInputs = [
-    dbus
-    python3
-  ];
-
   mesonFlags = [
     # installation directories
     "-Dpkcs11-config=${placeholder "out"}/etc/pkcs11" # todo: this should probably be /share/p11-kit/modules
@@ -77,7 +74,11 @@ stdenv.mkDerivation (finalAttrs: {
   # - https://github.com/NixOS/nixpkgs/issues/51121
   # - At least “gnome-keyring:gkm::xdg-store / xdg-trust” is still flaky on 48.beta.
   doCheck = false;
-  strictDeps = true;
+
+  nativeCheckInputs = [
+    dbus
+    python3
+  ];
 
   checkPhase = ''
     runHook postCheck
@@ -120,13 +121,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Collection of components in GNOME that store secrets, passwords, keys, certificates and make them available to applications";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-keyring";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-keyring/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
+
     license = [
       # Most of the code (some is 2Plus)
       lib.licenses.lgpl21Plus
       # Some stragglers
       lib.licenses.gpl2Plus
     ];
-    teams = [ lib.teams.gnome ];
+
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

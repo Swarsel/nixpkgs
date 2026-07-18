@@ -12,13 +12,15 @@ in
 {
   options.hardware.bladeRF = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Enables udev rules for BladeRF devices. By default grants access
         to users in the "bladerf" group. You may want to install the
         libbladeRF package.
       '';
+
+      type = lib.types.bool;
     };
 
   };

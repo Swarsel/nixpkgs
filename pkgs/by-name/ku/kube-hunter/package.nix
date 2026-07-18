@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "kube-hunter";
   version = "0.6.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aquasecurity";
@@ -16,7 +15,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-+M8P/VSF9SKPvq+yNPjokyhggY7hzQ9qLLhkiTNbJls=";
   };
 
-  pythonRemoveDeps = [ "future" ];
+  postPatch = ''
+    substituteInPlace setup.cfg \
+      --replace "dataclasses" "" \
+      --replace "kubernetes==12.0.1" "kubernetes"
+  '';
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-cov-stub
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = with python3.pkgs; [ setuptools-scm ];
 
@@ -32,24 +41,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     kubernetes
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-cov-stub
-    pytestCheckHook
-    requests-mock
-  ];
-
-  postPatch = ''
-    substituteInPlace setup.cfg \
-      --replace "dataclasses" "" \
-      --replace "kubernetes==12.0.1" "kubernetes"
-  '';
-
-  pythonImportsCheck = [ "kube_hunter" ];
-
   disabledTests = [
     # Test is out-dated
     "test_K8sCveHunter"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "kube_hunter" ];
+  pythonRemoveDeps = [ "future" ];
 
   meta = {
     description = "Tool to search issues in Kubernetes clusters";

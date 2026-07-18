@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -29,16 +29,17 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
-    users.groups.onepassword-cli.gid = config.ids.gids.onepassword-cli;
 
     security.wrappers = {
       "op" = {
-        source = "${cfg.package}/bin/op";
-        owner = "root";
         group = "onepassword-cli";
-        setuid = false;
+        owner = "root";
         setgid = true;
+        setuid = false;
+        source = "${cfg.package}/bin/op";
       };
     };
+
+    users.groups.onepassword-cli.gid = config.ids.gids.onepassword-cli;
   };
 }

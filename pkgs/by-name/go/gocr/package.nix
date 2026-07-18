@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     "all"
     "libs"
   ];
-  installFlags = [ "libdir=/lib/" ]; # Specify libdir so Makefile will also install library.
 
   preInstall = "mkdir -p $out/lib";
 
@@ -32,9 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i -e 's|exec wish|exec ${tk}/bin/wish|' $out/bin/gocr.tcl
   '';
 
+  installFlags = [ "libdir=/lib/" ]; # Specify libdir so Makefile will also install library.
+
   meta = {
-    homepage = "https://jocr.sourceforge.net/";
     description = "GPL Optical Character Recognition";
+    homepage = "https://jocr.sourceforge.net/";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
   };

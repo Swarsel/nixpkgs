@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   aiohttp,
   async-timeout,
-  pillow,
+  buildPythonPackage,
   fetchPypi,
+  pillow,
 }:
 
 buildPythonPackage rec {
   pname = "python-family-hub-local";
   version = "0.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     hash = "sha256-bbOBlUJ4g+HOcJihEBAz3lsHR9Gn07z8st14FRFeJbc=";
+    extension = "zip";
   };
 
   propagatedBuildInputs = [
@@ -26,7 +25,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyfamilyhublocal" ];
 
   meta = {

@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-jmQ88flSMrS0CB7GNj1Ee60HZgroDKTwLk0i/kg6gVM=";
   };
 
-  cargoHash = "sha256-5ORjyzCkX3j62pL4S8CqSXExZUjTIO0db99oIuczEY0=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -30,6 +28,8 @@ rustPlatform.buildRustPackage {
     openssl
     zstd
   ];
+
+  cargoHash = "sha256-5ORjyzCkX3j62pL4S8CqSXExZUjTIO0db99oIuczEY0=";
 
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;

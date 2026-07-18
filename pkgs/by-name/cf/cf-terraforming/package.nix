@@ -1,11 +1,11 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  cf-terraforming,
-  testers,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  cf-terraforming,
+  installShellFiles,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,21 +19,11 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-jj8bU6n5dpuF9Gg+xh/JXYWODR1C+Q3Lq9oaKJRnm7E=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-JrHt7Av305bwl/RUf2ORz/lRVnoZfUVE4T400DQwjl0=";
-  ldflags = [
-    "-X github.com/cloudflare/cf-terraforming/internal/app/cf-terraforming/cmd.versionString=${finalAttrs.version}"
-  ];
-
   # The test suite insists on downloading a binary release of Terraform from
   # Hashicorp at runtime, which isn't going to work in a nix build
   doCheck = false;
-
-  passthru.tests = testers.testVersion {
-    package = cf-terraforming;
-    command = "cf-terraforming version";
-  };
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd cf-terraforming \
@@ -41,6 +31,15 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/cf-terraforming completion fish) \
       --zsh <($out/bin/cf-terraforming completion zsh)
   '';
+
+  ldflags = [
+    "-X github.com/cloudflare/cf-terraforming/internal/app/cf-terraforming/cmd.versionString=${finalAttrs.version}"
+  ];
+
+  passthru.tests = testers.testVersion {
+    command = "cf-terraforming version";
+    package = cf-terraforming;
+  };
 
   meta = {
     description = "Command line utility to facilitate terraforming your existing Cloudflare resources";

@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
-  pkg-config,
-  openssl,
-  writableTmpDirAsHomeHook,
-  podman,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  podman,
+  rustPlatform,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-zO+2UFu/KD2dtE2AkUVv5A1EBFMsSTl8gP18bCxquI8=";
   };
 
-  cargoHash = "sha256-fWdzaqyFT2ZFTy5AsejDgEm3E55syLKbYz5DW9Ra2PQ=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -33,7 +31,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-fWdzaqyFT2ZFTy5AsejDgEm3E55syLKbYz5DW9Ra2PQ=";
   env.OPENSSL_NO_VENDOR = true;
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    podman
+  ];
 
   postInstall = ''
     installShellCompletion \
@@ -41,19 +45,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh $releaseDir/build/snouty-*/out/_snouty
   '';
 
-  useNextest = true;
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    podman
-  ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   __darwinAllowLocalNetworking = true;
-
+  useNextest = true;
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -61,10 +57,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/antithesishq/snouty";
     changelog = "https://github.com/antithesishq/snouty/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       carlsverre
       winter
     ];
+
     mainProgram = "snouty";
   };
 })

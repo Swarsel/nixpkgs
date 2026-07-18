@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   fetchFromSourcehut,
   hareHook,
-  lib,
   scdoc,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,10 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
-    homepage = "https://himitsustore.org/";
+    inherit (hareHook.meta) platforms badPlatforms;
     description = "Secret storage manager";
+    homepage = "https://himitsustore.org/";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ auchter ];
-    inherit (hareHook.meta) platforms badPlatforms;
   };
 })

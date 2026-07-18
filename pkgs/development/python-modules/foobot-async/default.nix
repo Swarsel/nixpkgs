@@ -1,10 +1,10 @@
 {
   lib,
+  aiohttp,
+  aioresponses,
+  async-timeout,
   buildPythonPackage,
   fetchPypi,
-  aiohttp,
-  async-timeout,
-  aioresponses,
   pytestCheckHook,
   setuptools,
 }:
@@ -12,12 +12,11 @@
 buildPythonPackage rec {
   pname = "foobot-async";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "foobot_async";
     inherit version;
     hash = "sha256-QQjysk2m8QkOpLBdC8kfuoA9PcljgEwzKyrIAhxHB4c=";
+    pname = "foobot_async";
   };
 
   postPatch = ''
@@ -26,6 +25,11 @@ buildPythonPackage rec {
       --replace-fail "with async_timeout.timeout" "async with async_timeout.timeout"
   '';
 
+  nativeCheckInputs = [
+    aioresponses
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,11 +37,7 @@ buildPythonPackage rec {
     async-timeout
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "foobot_async" ];
 
   meta = {

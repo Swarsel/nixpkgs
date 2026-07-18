@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -10,54 +10,60 @@ let
   inherit (lib) maintainers mkOption types;
 in
 {
-  meta.maintainers = with maintainers; [ happysalada ];
-  meta.doc = ./pict-rs.md;
-
   options.services.pict-rs = {
     enable = lib.mkEnableOption "pict-rs server";
-
     package = lib.mkPackageOption pkgs "pict-rs" { };
 
+    address = mkOption {
+      default = "127.0.0.1";
+
+      description = ''
+        The IPv4 address to deploy the service to.
+      '';
+
+      type = types.str;
+    };
+
     dataDir = mkOption {
-      type = types.path;
       default = "/var/lib/pict-rs";
+
       description = ''
         The directory where to store the uploaded images & database.
       '';
+
+      type = types.path;
+    };
+
+    port = mkOption {
+      default = 8080;
+
+      description = ''
+        The port which to bind the service to.
+      '';
+
+      type = types.port;
     };
 
     repoPath = mkOption {
-      type = types.nullOr (types.path);
       default = null;
+
       description = ''
         The directory where to store the database.
         This option takes precedence over dataDir.
       '';
+
+      type = types.nullOr (types.path);
     };
 
     storePath = mkOption {
-      type = types.nullOr (types.path);
       default = null;
+
       description = ''
         The directory where to store the uploaded images.
         This option takes precedence over dataDir.
       '';
-    };
 
-    address = mkOption {
-      type = types.str;
-      default = "127.0.0.1";
-      description = ''
-        The IPv4 address to deploy the service to.
-      '';
-    };
-
-    port = mkOption {
-      type = types.port;
-      default = 8080;
-      description = ''
-        The port which to bind the service to.
-      '';
+      type = types.nullOr (types.path);
     };
   };
 
@@ -112,16 +118,21 @@ in
     systemd.services.pict-rs = {
       environment = {
         PICTRS__REPO__PATH = if cfg.repoPath != null then cfg.repoPath else "${cfg.dataDir}/sled-repo";
-        PICTRS__STORE__PATH = if cfg.storePath != null then cfg.storePath else "${cfg.dataDir}/files";
         PICTRS__SERVER__ADDRESS = "${cfg.address}:${toString cfg.port}";
+        PICTRS__STORE__PATH = if cfg.storePath != null then cfg.storePath else "${cfg.dataDir}/files";
       };
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
         DynamicUser = true;
-        StateDirectory = "pict-rs";
         ExecStart = "${lib.getBin cfg.package}/bin/pict-rs run";
+        StateDirectory = "pict-rs";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.doc = ./pict-rs.md;
+  meta.maintainers = with maintainers; [ happysalada ];
 
 }

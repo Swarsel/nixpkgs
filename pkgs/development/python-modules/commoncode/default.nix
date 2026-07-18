@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   attrs,
   beautifulsoup4,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   pytest-xdist,
   pytestCheckHook,
   requests,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "commoncode";
   version = "32.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nexB";
@@ -26,11 +25,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-A2FE+qhLQahuAtptP3hCnIUgh7j61Wf02avO6DM0b5E=";
   };
 
-  dontConfigure = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-xdist
+  ];
 
   build-system = [ setuptools-scm ];
-
-  pythonRelaxDeps = [ "beautifulsoup4" ];
 
   dependencies = [
     attrs
@@ -39,11 +39,6 @@ buildPythonPackage (finalAttrs: {
     requests
     saneyaml
     text-unidecode
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-xdist
   ];
 
   disabledTests = [
@@ -61,7 +56,10 @@ buildPythonPackage (finalAttrs: {
     "test_searchable_paths"
   ];
 
+  dontConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "commoncode" ];
+  pythonRelaxDeps = [ "beautifulsoup4" ];
 
   meta = {
     description = "Set of common utilities, originally split from ScanCode";

@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  electron_42,
-  nodejs-slim_24,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  darwin,
-  nix-update-script,
   _experimental-update-script-combinators,
-  writeShellApplication,
-  nix,
-  jq,
+  darwin,
+  electron_42,
+  fetchPnpmDeps,
   gnugrep,
-  podman,
+  jq,
   krunkit,
+  makeBinaryWrapper,
+  nix,
+  nix-update-script,
+  nodejs-slim_24,
+  pnpmConfigHook,
+  pnpm_10,
+  podman,
+  writeShellApplication,
   extraPackages ? [ ],
 }:
 
@@ -30,40 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "podman-desktop";
   version = "1.28.2";
 
-  passthru.updateScript = _experimental-update-script-combinators.sequence [
-    (nix-update-script { })
-    (lib.getExe (writeShellApplication {
-      name = "podman-desktop-dependencies-updater";
-      runtimeInputs = [
-        nix
-        jq
-        gnugrep
-      ];
-      runtimeEnv = {
-        PNAME = "podman-desktop";
-        PKG_FILE = toString ./package.nix;
-      };
-      text = ''
-        new_src="$(nix-build --attr "pkgs.$PNAME.src" --no-out-link)"
-        get_major_version() {
-          jq -r "$1" "$new_src/package.json" | grep --perl-regexp --only-matching '[0-9]+' | head -n 1
-        }
-
-        new_node_major="$(get_major_version '.engines.node')"
-        new_electron_major="$(get_major_version '.devDependencies.electron')"
-        new_pnpm_major="$(get_major_version '.packageManager')"
-
-        sed -i -E "s/nodejs_[0-9]+/nodejs_$new_node_major/g" "$PKG_FILE"
-        sed -i -E "s/electron_[0-9]+/electron_$new_electron_major/g" "$PKG_FILE"
-        sed -i -E "s/pnpm_[0-9]+/pnpm_$new_pnpm_major/g" "$PKG_FILE"
-      '';
-    }))
-    (nix-update-script {
-      # Changing the pnpm version requires updating `pnpmDeps.hash`.
-      extraArgs = [ "--version=skip" ];
-    })
-  ];
-
   src = fetchFromGitHub {
     owner = "podman-desktop";
     repo = "podman-desktop";
@@ -71,23 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8pp1lxWduKZuxDXmq3GQQ7w10PUC9wR667gO6u9OhSI=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-llkgy+JDJRxTZXxXHxza3RKdACU/Yd9xiGJ5CyptXpY=";
-  };
-
   patches = [
     # podman should be installed with nix; disable auto-installation
     ./extension-no-download-podman.patch
     ./system-defaults-dir.patch
   ];
-
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-    ELECTRON_OVERRIDE_DIST_PATH = electron.dist;
-  };
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -99,6 +53,11 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     darwin.autoSignDarwinBinariesHook
   ];
+
+  env = {
+    ELECTRON_OVERRIDE_DIST_PATH = electron.dist;
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -166,15 +125,61 @@ stdenv.mkDerivation (finalAttrs: {
       ''
     );
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-llkgy+JDJRxTZXxXHxza3RKdACU/Yd9xiGJ5CyptXpY=";
+  };
+
+  passthru.updateScript = _experimental-update-script-combinators.sequence [
+    (nix-update-script { })
+    (lib.getExe (writeShellApplication {
+      name = "podman-desktop-dependencies-updater";
+
+      runtimeEnv = {
+        PKG_FILE = toString ./package.nix;
+        PNAME = "podman-desktop";
+      };
+
+      runtimeInputs = [
+        nix
+        jq
+        gnugrep
+      ];
+
+      text = ''
+        new_src="$(nix-build --attr "pkgs.$PNAME.src" --no-out-link)"
+        get_major_version() {
+          jq -r "$1" "$new_src/package.json" | grep --perl-regexp --only-matching '[0-9]+' | head -n 1
+        }
+
+        new_node_major="$(get_major_version '.engines.node')"
+        new_electron_major="$(get_major_version '.devDependencies.electron')"
+        new_pnpm_major="$(get_major_version '.packageManager')"
+
+        sed -i -E "s/nodejs_[0-9]+/nodejs_$new_node_major/g" "$PKG_FILE"
+        sed -i -E "s/electron_[0-9]+/electron_$new_electron_major/g" "$PKG_FILE"
+        sed -i -E "s/pnpm_[0-9]+/pnpm_$new_pnpm_major/g" "$PKG_FILE"
+      '';
+    }))
+    (nix-update-script {
+      # Changing the pnpm version requires updating `pnpmDeps.hash`.
+      extraArgs = [ "--version=skip" ];
+    })
+  ];
+
   meta = {
+    inherit (electron.meta) platforms;
     description = "Graphical tool for developing on containers and Kubernetes";
     homepage = "https://podman-desktop.io";
     changelog = "https://github.com/podman-desktop/podman-desktop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       booxter
     ];
-    inherit (electron.meta) platforms;
+
     mainProgram = "podman-desktop";
   };
 })

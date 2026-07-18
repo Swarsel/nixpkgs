@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmocka,
   inih,
+  libseccomp,
   meson,
   ninja,
   pkg-config,
-  cmocka,
   scdoc,
-  wayland-scanner,
   wayland,
   wayland-protocols,
-  libseccomp,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,9 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  depsBuildBuild = [
-    pkg-config
-  ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -36,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     scdoc
     wayland-scanner
   ];
+
   buildInputs = [
     cmocka
     inih
@@ -46,13 +45,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   mesonFlags = lib.optional stdenv.hostPlatform.isLinux "-Dseccomp=enabled";
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Lightweight overlay bar for Wayland";
+
     longDescription = ''
       A lightweight overlay volume/backlight/progress/anything bar for Wayland,
       inspired by xob.
     '';
+
     changelog = "https://github.com/francma/wob/releases/tag/${finalAttrs.version}";
     license = lib.licenses.isc;
     maintainers = [ ];

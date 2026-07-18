@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "https://pcaro.es/d/otf-hermit-${version}.tar.gz";
-    stripRoot = false;
     hash = "sha256-RYXZ2yJ8BIxsgeEwhXz7g0NnWG3kMPZoJaOLMUQyWWQ=";
+    stripRoot = false;
   };
 
   installPhase = ''

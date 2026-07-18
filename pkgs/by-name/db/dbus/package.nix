@@ -1,31 +1,36 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  expat,
-  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
-  systemdMinimal,
   audit,
-  libcap_ng,
-  libapparmor,
   dbus,
-  docbook_xml_dtd_44,
   docbook-xsl-nons,
+  docbook_xml_dtd_44,
+  expat,
+  libapparmor,
+  libcap_ng,
+  libice,
+  libsm,
+  libx11,
   libxslt,
   meson,
   ninja,
+  pkg-config,
   python3,
-  x11Support ? (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin),
+  systemdMinimal,
   writeText,
-  libx11,
-  libsm,
-  libice,
+  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
+  x11Support ? (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin),
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "dbus";
   version = "1.16.2";
+
+  src = fetchurl {
+    url = "https://dbus.freedesktop.org/releases/dbus/dbus-${finalAttrs.version}.tar.xz";
+    sha256 = "sha256-C6KhpLFq/nvOssB+nOmajCw1COXewpDbtkM4S9a+t+I=";
+  };
 
   outputs = [
     "out"
@@ -34,13 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
     "man"
   ];
-
-  separateDebugInfo = true;
-
-  src = fetchurl {
-    url = "https://dbus.freedesktop.org/releases/dbus/dbus-${finalAttrs.version}.tar.xz";
-    sha256 = "sha256-C6KhpLFq/nvOssB+nOmajCw1COXewpDbtkM4S9a+t+I=";
-  };
 
   patches = [
     # Implement getgrouplist for platforms where it is not available (e.g. Illumos/Solaris)
@@ -64,6 +62,18 @@ stdenv.mkDerivation (finalAttrs: {
     #   Reason: no LC_RPATH's found
     ./set-install_rpath.patch
   ];
+
+  postPatch = ''
+    patchShebangs \
+      test/data/copy_data_for_tests.py \
+      meson_post_install.py
+
+    # Cleanup of runtime references
+    substituteInPlace ./dbus/dbus-sysdeps-unix.c \
+      --replace-fail 'DBUS_BINDIR "/dbus-launch"' "\"$lib/bin/dbus-launch\""
+    substituteInPlace ./tools/dbus-launch.c \
+      --replace-fail 'DBUS_DAEMONDIR"/dbus-daemon"' '"/run/current-system/sw/bin/dbus-daemon"'
+  '';
 
   strictDeps = true;
 
@@ -91,13 +101,6 @@ stdenv.mkDerivation (finalAttrs: {
     libapparmor
     libcap_ng
   ];
-  # ToDo: optional selinux?
-
-  __darwinAllowLocalNetworking = true;
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isStatic {
-    NIX_LDFLAGS = "-lcap-ng";
-  };
 
   mesonFlags = [
     "--libexecdir=${placeholder "out"}/libexec"
@@ -145,19 +148,11 @@ stdenv.mkDerivation (finalAttrs: {
     ''}"
   ];
 
+  env = lib.optionalAttrs stdenv.hostPlatform.isStatic {
+    NIX_LDFLAGS = "-lcap-ng";
+  };
+
   doCheck = true;
-
-  postPatch = ''
-    patchShebangs \
-      test/data/copy_data_for_tests.py \
-      meson_post_install.py
-
-    # Cleanup of runtime references
-    substituteInPlace ./dbus/dbus-sysdeps-unix.c \
-      --replace-fail 'DBUS_BINDIR "/dbus-launch"' "\"$lib/bin/dbus-launch\""
-    substituteInPlace ./tools/dbus-launch.c \
-      --replace-fail 'DBUS_DAEMONDIR"/dbus-daemon"' '"/run/current-system/sw/bin/dbus-daemon"'
-  '';
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     # For some reason, only these binaries reference the dylib by rpath instead of by an absolute install name.
@@ -173,6 +168,10 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s "$lib/bin/dbus-launch" "$out/bin/"
   '';
 
+  # ToDo: optional selinux?
+  __darwinAllowLocalNetworking = true;
+  separateDebugInfo = true;
+
   passthru = {
     dbus-launch = "${dbus.lib}/bin/dbus-launch";
   };
@@ -182,8 +181,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.freedesktop.org/wiki/Software/dbus/";
     changelog = "https://gitlab.freedesktop.org/dbus/dbus/-/blob/dbus-${finalAttrs.version}/NEWS";
     license = lib.licenses.gpl2Plus; # most is also under AFL-2.1
-    teams = [ lib.teams.freedesktop ];
     platforms = lib.platforms.unix;
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "freedesktop" finalAttrs.version;
+    teams = [ lib.teams.freedesktop ];
   };
 })

@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "langdetect";
   version = "1.0.9";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "langdetect" ];
 
   meta = {

@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   cmake,
+  fetchpatch2,
+  hunspell,
+  pkg-config,
   qt6,
   qt6Packages,
-  hunspell,
   zlib,
-  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,11 +22,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-//UhDSyCFIy/xhOKrTVoZFA0nh6q9xShAI5GxJrNz4w=";
   };
 
+  patches = [
+    (fetchpatch2 {
+      hash = "sha256-w4/u8ObJSQqHisZmxMSpJeveE+DJSgLqnfpEnizHsBg=";
+      name = "disable-auto-update.patch";
+      url = "https://sources.debian.org/data/main/t/texstudio/4.9.1%2Bds-1/debian/patches/0004-disable-auto-update.patch";
+    })
+  ];
+
   nativeBuildInputs = [
     cmake
     qt6.wrapQtAppsHook
     pkg-config
   ];
+
   buildInputs = [
     hunspell
     qt6.qt5compat
@@ -41,14 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtwayland
   ];
 
-  patches = [
-    (fetchpatch2 {
-      name = "disable-auto-update.patch";
-      url = "https://sources.debian.org/data/main/t/texstudio/4.9.1%2Bds-1/debian/patches/0004-disable-auto-update.patch";
-      hash = "sha256-w4/u8ObJSQqHisZmxMSpJeveE+DJSgLqnfpEnizHsBg=";
-    })
-  ];
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p "$out/Applications"
     mv "$out/bin/texstudio.app" "$out/Applications"
@@ -57,19 +58,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "TeX and LaTeX editor";
+
     longDescription = ''
       Fork of TeXMaker, this editor is a full fledged IDE for
       LaTeX editing with completion, structure viewer, preview,
       spell checking and support of any compilation chain.
     '';
+
     homepage = "https://texstudio.org";
     changelog = "https://github.com/texstudio-org/texstudio/blob/${finalAttrs.version}/utilities/manual/source/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       ajs124
       cfouche
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "texstudio";
   };
 })

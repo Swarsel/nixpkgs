@@ -12,13 +12,15 @@
 buildPythonPackage rec {
   pname = "pyexcel";
   version = "0.7.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-SJSD2MdnWk0E0KVaG13Qkldx4mYPpoEFyjQuSS9FnRs=";
   };
 
+  # Tests depend on pyexcel-xls & co. causing circular dependency.
+  # https://github.com/pyexcel/pyexcel/blob/dev/tests/requirements.txt
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +30,8 @@ buildPythonPackage rec {
     texttable
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyexcel" ];
-
-  # Tests depend on pyexcel-xls & co. causing circular dependency.
-  # https://github.com/pyexcel/pyexcel/blob/dev/tests/requirements.txt
-  doCheck = false;
 
   meta = {
     description = "Single API for reading, manipulating and writing data in csv, ods, xls, xlsx and xlsm files";

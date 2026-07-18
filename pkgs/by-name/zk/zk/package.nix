@@ -17,10 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Kq427Dfiys19GoUnalOxUxFhcQikwg7dd6diLH2kjEo=";
-
-  doCheck = false;
-
   env.CGO_ENABLED = 1;
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -29,15 +27,14 @@ buildGoModule (finalAttrs: {
     "-X=main.Version=${finalAttrs.version}"
   ];
 
+  tags = [ "fts5" ];
   passthru.updateScript = nix-update-script { };
 
-  tags = [ "fts5" ];
-
   meta = {
-    maintainers = with lib.maintainers; [ pinpox ];
-    license = lib.licenses.gpl3;
     description = "Zettelkasten plain text note-taking assistant";
     homepage = "https://github.com/zk-org/zk";
+    license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ pinpox ];
     mainProgram = "zk";
   };
 })

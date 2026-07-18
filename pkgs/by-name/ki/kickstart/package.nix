@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,19 +19,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-Km49POZwVS2vYmELG5f7kenKQwaHlMP/bZA5cZ995mE=";
 
-  buildFeatures = [ "cli" ];
-
   checkFlags = [
     # remote access
     "--skip=generation::tests::can_generate_from_remote_repo_with_subdir"
     "--skip=generation::tests::can_generate_from_remote_repo"
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  buildFeatures = [ "cli" ];
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

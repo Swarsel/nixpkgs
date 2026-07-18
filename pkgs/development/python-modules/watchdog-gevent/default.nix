@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "watchdog-gevent";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "watchdog_gevent";
     inherit version;
     hash = "sha256-rmuU0PjIzhxZVs2GX2ErYfRWzxmAF0S7olo0n+jowzc=";
+    pname = "watchdog_gevent";
   };
 
   postPatch = ''
@@ -28,6 +27,7 @@ buildPythonPackage rec {
       --replace-fail 'events == [FileModifiedEvent(__file__)]' 'FileModifiedEvent(__file__) in events'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,8 +35,7 @@ buildPythonPackage rec {
     watchdog
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "watchdog_gevent" ];
 
   meta = {

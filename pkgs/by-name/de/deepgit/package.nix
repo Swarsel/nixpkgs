@@ -1,13 +1,13 @@
 {
-  copyDesktopItems,
+  lib,
+  stdenv,
   fetchurl,
-  glib,
   adwaita-icon-theme,
+  copyDesktopItems,
+  glib,
   gtk3,
   jre,
-  lib,
   makeDesktopItem,
-  stdenv,
   wrapGAppsHook3,
 }:
 
@@ -19,6 +19,7 @@ stdenv.mkDerivation rec {
     url = "https://www.syntevo.com/downloads/deepgit/deepgit-linux-${
       lib.replaceStrings [ "." ] [ "_" ] version
     }.tar.gz";
+
     hash = "sha256-ILqwXDyW7/hZzoSxxaxv4bF5xsB/JFaOBYAJFb7xmdk=";
   };
 
@@ -31,41 +32,6 @@ stdenv.mkDerivation rec {
     adwaita-icon-theme
     gtk3
     jre
-  ];
-
-  preFixup = ''
-    gappsWrapperArgs+=(
-      --prefix LD_LIBRARY_PATH : ${
-        lib.makeLibraryPath [
-          glib
-          gtk3
-        ]
-      }
-      --set DEEPGIT_JAVA_HOME ${jre}
-    )
-    patchShebangs bin/deepgit.sh
-  '';
-
-  desktopItems = [
-    (makeDesktopItem rec {
-      name = "deepgit";
-      desktopName = "DeepGit";
-      keywords = [ "git" ];
-      comment = "Git-Client";
-      categories = [
-        "Development"
-        "RevisionControl"
-      ];
-      terminal = false;
-      startupNotify = true;
-      startupWMClass = desktopName;
-      exec = "deepgit";
-      mimeTypes = [
-        "x-scheme-handler/deepgit"
-        "x-scheme-handler/sourcetree"
-      ];
-      icon = "deepgit";
-    })
   ];
 
   installPhase = ''
@@ -84,6 +50,44 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --prefix LD_LIBRARY_PATH : ${
+        lib.makeLibraryPath [
+          glib
+          gtk3
+        ]
+      }
+      --set DEEPGIT_JAVA_HOME ${jre}
+    )
+    patchShebangs bin/deepgit.sh
+  '';
+
+  desktopItems = [
+    (makeDesktopItem rec {
+      categories = [
+        "Development"
+        "RevisionControl"
+      ];
+
+      comment = "Git-Client";
+      desktopName = "DeepGit";
+      exec = "deepgit";
+      icon = "deepgit";
+      keywords = [ "git" ];
+
+      mimeTypes = [
+        "x-scheme-handler/deepgit"
+        "x-scheme-handler/sourcetree"
+      ];
+
+      name = "deepgit";
+      startupNotify = true;
+      startupWMClass = desktopName;
+      terminal = false;
+    })
+  ];
 
   meta = {
     description = "Tool to investigate the history of source code";

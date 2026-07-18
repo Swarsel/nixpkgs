@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
+  flac,
+  gtk3,
+  lame,
+  libsForQt5,
   libuchardet,
+  monkeys-audio,
+  mp3gain,
+  opus-tools,
   pkg-config,
   shntool,
-  flac,
-  opus-tools,
-  vorbis-tools,
-  mp3gain,
-  lame,
-  taglib,
-  wavpack,
-  vorbisgain,
-  monkeys-audio,
   sox,
-  gtk3,
-  libsForQt5,
+  taglib,
+  vorbis-tools,
+  vorbisgain,
+  wavpack,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,12 +36,19 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libsForQt5.qtbase
     libsForQt5.qttools
     libuchardet
     taglib
   ];
+
+  postInstall = ''
+    wrapProgram $out/bin/flacon \
+      --suffix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}" \
+      --prefix PATH : "$bin_path";
+  '';
 
   bin_path = lib.makeBinPath [
     shntool
@@ -56,18 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
     sox
   ];
 
-  postInstall = ''
-    wrapProgram $out/bin/flacon \
-      --suffix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}" \
-      --prefix PATH : "$bin_path";
-  '';
-
   meta = {
     description = "Extracts audio tracks from an audio CD image to separate tracks";
-    mainProgram = "flacon";
     homepage = "https://flacon.github.io/";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ snglth ];
+    platforms = lib.platforms.linux;
+    mainProgram = "flacon";
   };
 })

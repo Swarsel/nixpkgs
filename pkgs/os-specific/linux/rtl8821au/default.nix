@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  kernel,
   bc,
+  kernel,
   nukeReferences,
 }:
 
@@ -24,13 +24,6 @@ stdenv.mkDerivation {
   ]
   ++ kernel.moduleBuildDependencies;
 
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
   makeFlags = [
     "ARCH=${stdenv.hostPlatform.linuxArch}"
     ("CONFIG_PLATFORM_I386_PC=" + (if stdenv.hostPlatform.isx86 then "y" else "n"))
@@ -43,12 +36,7 @@ stdenv.mkDerivation {
     "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
   ];
 
-  prePatch = ''
-    substituteInPlace ./Makefile \
-      --replace /lib/modules/ "${kernel.dev}/lib/modules/" \
-      --replace /sbin/depmod \# \
-      --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
-  '';
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   preInstall = ''
     mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
@@ -60,12 +48,24 @@ stdenv.mkDerivation {
 
   enableParallelBuilding = true;
 
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
+
+  prePatch = ''
+    substituteInPlace ./Makefile \
+      --replace /lib/modules/ "${kernel.dev}/lib/modules/" \
+      --replace /sbin/depmod \# \
+      --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
+  '';
+
   meta = {
     description = "rtl8821AU and rtl8812AU chipset driver with firmware";
     homepage = "https://github.com/morrownr/8821au-20210708";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ plchldr ];
+    platforms = lib.platforms.linux;
     broken = kernel.kernelOlder "5.4" || kernel.kernelAtLeast "6.15";
   };
 }

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  jdk,
-  makeWrapper,
   copyDesktopItems,
+  jdk,
   makeDesktopItem,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     copyDesktopItems
   ];
+
   buildInputs = [ jdk ];
 
   buildPhase = ''
@@ -48,12 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      type = "Application";
-      name = "stegsolve";
-      desktopName = "Stegsolve";
-      comment = "A steganographic image analyzer, solver and data extractor for challanges";
-      exec = "stegsolve";
       categories = [ "Graphics" ];
+      comment = "A steganographic image analyzer, solver and data extractor for challanges";
+      desktopName = "Stegsolve";
+      exec = "stegsolve";
+      name = "stegsolve";
+      type = "Application";
     })
   ];
 
@@ -61,10 +62,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Steganographic image analyzer, solver and data extractor for challanges";
     homepage = "https://www.wechall.net/forum/show/thread/527/Stegsolve_1.3/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       emilytrau
       fee1-dead
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "stegsolve";
   };

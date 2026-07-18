@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   future,
+  graphviz,
   kinparse,
   pyspice,
-  graphviz,
   sexpdata,
 }:
 buildPythonPackage rec {
   pname = "skidl";
   version = "2.2.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "devbisme";
@@ -30,13 +29,14 @@ buildPythonPackage rec {
 
   # Checks require availability of the kicad symbol libraries.
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "skidl" ];
 
   meta = {
     description = "SKiDL is a module that extends Python with the ability to design electronic circuits";
-    mainProgram = "netlist_to_skidl";
     homepage = "https://devbisme.github.io/skidl/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ matthuszagh ];
+    mainProgram = "netlist_to_skidl";
   };
 }

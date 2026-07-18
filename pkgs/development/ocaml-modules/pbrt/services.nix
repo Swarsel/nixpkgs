@@ -5,8 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "pbrt_services";
   inherit (pbrt) version src;
+  pname = "pbrt_services";
 
   propagatedBuildInputs = [
     pbrt

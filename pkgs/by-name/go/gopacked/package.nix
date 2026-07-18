@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,13 +16,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ooxVXNbqoh3XX3yFemAyqISNZ+PC8WJUe+ch2OnIdDo=";
-
   doCheck = false;
 
   meta = {
     description = "Simple text-based Minecraft modpack manager";
-    license = lib.licenses.agpl3Plus;
     homepage = finalAttrs.src.meta.homepage;
+    license = lib.licenses.agpl3Plus;
     maintainers = [ ];
   };
 })

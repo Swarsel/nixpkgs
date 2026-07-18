@@ -1,25 +1,40 @@
 {
   lib,
+  stdenv,
+  # "Configurable" options
+  bqn-interpreter,
   callPackage,
   fixDarwinDylibNames,
   libffi,
   mbqn-source,
   pkg-config,
-  stdenv,
+  enableLibcbqn ? ((stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin) && !enableReplxx),
   # Boolean flags
   enableReplxx ? false,
-  enableLibcbqn ? ((stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin) && !enableReplxx),
   generateBytecode ? false,
-  # "Configurable" options
-  bqn-interpreter,
 }:
 
 let
   sources = callPackage ./sources.nix { };
 in
 stdenv.mkDerivation {
-  pname = "cbqn" + lib.optionalString (!generateBytecode) "-standalone";
   inherit (sources.cbqn) version src;
+  pname = "cbqn" + lib.optionalString (!generateBytecode) "-standalone";
+
+  outputs = [
+    "out"
+  ]
+  ++ lib.optionals enableLibcbqn [
+    "lib"
+    "dev"
+  ];
+
+  postPatch = ''
+    sed -i '/SHELL =.*/ d' makefile
+    patchShebangs build/build
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -50,25 +65,6 @@ stdenv.mkDerivation {
     # embeddable interpreter as a shared lib
     "shared-o3"
   ];
-
-  outputs = [
-    "out"
-  ]
-  ++ lib.optionals enableLibcbqn [
-    "lib"
-    "dev"
-  ];
-
-  dontConfigure = true;
-
-  doInstallCheck = true;
-
-  strictDeps = true;
-
-  postPatch = ''
-    sed -i '/SHELL =.*/ d' makefile
-    patchShebangs build/build
-  '';
 
   preBuild = ''
     mkdir -p build/singeliLocal/
@@ -108,6 +104,8 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -120,9 +118,12 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/dzaima/CBQN/";
     description = "BQN implementation in C";
+    homepage = "https://github.com/dzaima/CBQN/";
+
     license = with lib.licenses; [
       # https://github.com/dzaima/CBQN?tab=readme-ov-file#licensing
       asl20
@@ -132,12 +133,14 @@ stdenv.mkDerivation {
       mit
       mpl20
     ];
-    mainProgram = "cbqn";
+
     maintainers = with lib.maintainers; [
       detegr
       shnarazk
       sternenseemann
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "cbqn";
   };
 }

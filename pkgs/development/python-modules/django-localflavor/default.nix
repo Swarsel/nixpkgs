@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   django,
-  python-stdnum,
-
   # tests
   pytest-django,
   pytestCheckHook,
+  python-stdnum,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-localflavor";
   version = "5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django";
@@ -27,12 +23,21 @@ buildPythonPackage rec {
     hash = "sha256-eYhkWfxoZlnxhCIaqBhoEt0+SbkZKkUNUAy4p3tYf4A=";
   };
 
+  env.DJANGO_SETTINGS_MODULE = "tests.settings";
+
+  nativeCheckInputs = [
+    pytest-django
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     django
     python-stdnum
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     # samples
@@ -45,17 +50,10 @@ buildPythonPackage rec {
     "localflavor.za"
   ];
 
-  nativeCheckInputs = [
-    pytest-django
-    pytestCheckHook
-  ];
-
-  env.DJANGO_SETTINGS_MODULE = "tests.settings";
-
   meta = {
-    changelog = "https://github.com/django/django-localflavor/blob/${src.tag}/docs/changelog.rst";
     description = "Country-specific Django helpers";
     homepage = "https://github.com/django/django-localflavor";
+    changelog = "https://github.com/django/django-localflavor/blob/${src.tag}/docs/changelog.rst";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ hexa ];
   };

@@ -1,15 +1,12 @@
 {
   lib,
-  makeWrapper,
-  symlinkJoin,
   evolution-data-server,
+  makeWrapper,
   plugins,
+  symlinkJoin,
 }:
 
 symlinkJoin {
-  name = "evolution-with-plugins";
-  paths = [ evolution-data-server ] ++ plugins;
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -44,4 +41,7 @@ symlinkJoin {
       sed -i "s@${builtins.storeDir}/[^/]*/@$out/@" $i
     done
   '';
+
+  name = "evolution-with-plugins";
+  paths = [ evolution-data-server ] ++ plugins;
 }

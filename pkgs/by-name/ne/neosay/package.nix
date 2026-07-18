@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,9 +24,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Pipe stdin to matrix";
-    mainProgram = "neosay";
     homepage = "https://github.com/donuts-are-good/neosay";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "neosay";
   };
 })

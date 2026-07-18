@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   autoreconfHook,
   boost,
   fuse,
@@ -10,18 +10,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  pname = "zkfuse";
   inherit (zookeeper_mt) version src;
-
-  sourceRoot = "apache-${zookeeper.pname}-${version}/zookeeper-contrib/zookeeper-contrib-zkfuse";
-
-  nativeBuildInputs = [ autoreconfHook ];
-  buildInputs = [
-    zookeeper_mt
-    log4cxx
-    boost
-    fuse
-  ];
+  pname = "zkfuse";
 
   postPatch = ''
     # Make the async API accessible, and use the proper include path.
@@ -29,6 +19,15 @@ stdenv.mkDerivation rec {
         -e '/"zookeeper\.h"/i#define THREADED' \
         -e 's,"zookeeper\.h",<zookeeper/zookeeper.h>,'
   '';
+
+  nativeBuildInputs = [ autoreconfHook ];
+
+  buildInputs = [
+    zookeeper_mt
+    log4cxx
+    boost
+    fuse
+  ];
 
   # c++17 (gcc-11's default) breaks the build as:
   #   zkadapter.h:616:33: error: ISO C++17 does not allow dynamic exception specifications
@@ -39,11 +38,13 @@ stdenv.mkDerivation rec {
     cp -v src/zkfuse $out/bin
   '';
 
+  sourceRoot = "apache-${zookeeper.pname}-${version}/zookeeper-contrib/zookeeper-contrib-zkfuse";
+
   meta = {
     description = "Utility to mount a Zookeeper instance as a file-system";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ ztzg ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ ztzg ];
+    platforms = lib.platforms.linux;
     mainProgram = "zkfuse";
   };
 }

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  libx11,
-  libxft,
   libclthreads,
   libclxclient,
   libjack2,
   libpng,
   libsndfile,
+  libx11,
+  libxft,
   zita-resampler,
 }:
 
@@ -32,11 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     zita-resampler
   ];
 
+  makeFlags = [ "PREFIX=$(out)" ];
+
   preConfigure = ''
     cd source
   '';
-
-  makeFlags = [ "PREFIX=$(out)" ];
 
   enableParallelBuilding = true;
 

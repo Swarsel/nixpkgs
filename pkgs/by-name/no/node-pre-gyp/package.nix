@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -17,19 +17,19 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-yNu66HlkOVsYv60saTf7M4QuN9B2euYFu5WB7UAwhUw=";
 
-  dontNpmBuild = true;
-
   postInstall = ''
     mv $out/bin/@mapbox/node-pre-gyp $out/bin
     rmdir $out/bin/@mapbox
   '';
 
+  dontNpmBuild = true;
+
   meta = {
-    changelog = "https://github.com/mapbox/node-pre-gyp/blob/${src.rev}/CHANGELOG.md";
     description = "Node.js tool for easy binary deployment of C++ addons";
     homepage = "https://github.com/mapbox/node-pre-gyp";
+    changelog = "https://github.com/mapbox/node-pre-gyp/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.bsd3;
-    mainProgram = "node-pre-gyp";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "node-pre-gyp";
   };
 }

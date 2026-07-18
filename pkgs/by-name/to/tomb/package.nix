@@ -1,16 +1,16 @@
 {
+  lib,
+  fetchFromGitHub,
   acl,
   coreutils,
   cryptsetup,
   e2fsprogs,
-  fetchFromGitHub,
   file,
   gawk,
   getent,
   gettext,
   gnugrep,
   gnupg,
-  lib,
   libargon2,
   lsof,
   makeBinaryWrapper,
@@ -52,13 +52,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-z7LkCes0wg+1bZrNXXy4Lh5VwMotCULJQy5DmCisu+Q=";
   };
 
-  nativeBuildInputs = [ makeBinaryWrapper ];
-
-  buildInputs = [
-    pinentry-curses
-    zsh
-  ];
-
   postPatch = ''
     # if not, it shows .tomb-wrapped when running
     substituteInPlace tomb \
@@ -67,6 +60,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     # Fix version variable
     sed -i 's/VERSION=".*"/VERSION="${finalAttrs.version}"/' tomb
   '';
+
+  nativeBuildInputs = [ makeBinaryWrapper ];
+
+  buildInputs = [
+    pinentry-curses
+    zsh
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -93,11 +93,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://dyne.org/tomb/";
     changelog = "https://github.com/dyne/tomb/blob/v${finalAttrs.version}/ChangeLog.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "tomb";
+
     maintainers = with lib.maintainers; [
       peterhoeg
       anthonyroussel
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "tomb";
   };
 })

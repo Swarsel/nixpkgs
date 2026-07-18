@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
   fontconfig,
   icu,
-  libdrm,
   libGL,
+  libdrm,
+  libgbm,
   libinput,
   libx11,
   libxcursor,
   libxkbcommon,
-  libgbm,
+  meson,
+  ninja,
+  nix-update-script,
   pixman,
+  pkg-config,
   seatd,
   srm-cuarzo,
   udev,
   wayland,
   xorgproto,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "louvre";
@@ -33,7 +33,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-wkOY3ARq7x3roRflRN8rMSbrI5B4amI+0CVJmfLYx2w=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     substituteInPlace examples/meson.build \
@@ -64,10 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
     xorgproto
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -76,8 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "C++ library for building Wayland compositors";
     homepage = "https://github.com/CuarzoSoftware/Louvre";
-    mainProgram = "louvre-views";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "louvre-views";
   };
 })

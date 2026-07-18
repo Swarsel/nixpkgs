@@ -20,38 +20,46 @@ in
 
       enable = lib.mkEnableOption "Eternal Terminal server";
 
+      logSize = lib.mkOption {
+        default = 20971520;
+
+        description = ''
+          The maximum log size.
+        '';
+
+        type = lib.types.int;
+      };
+
       port = lib.mkOption {
         default = 2022;
-        type = lib.types.port;
+
         description = ''
           The port the server should listen on. Will use the server's default (2022) if not specified.
 
           Make sure to open this port in the firewall if necessary.
         '';
-      };
 
-      verbosity = lib.mkOption {
-        default = 0;
-        type = lib.types.enum (lib.range 0 9);
-        description = ''
-          The verbosity level (0-9).
-        '';
+        type = lib.types.port;
       };
 
       silent = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           If enabled, disables all logging.
         '';
+
+        type = lib.types.bool;
       };
 
-      logSize = lib.mkOption {
-        default = 20971520;
-        type = lib.types.int;
+      verbosity = lib.mkOption {
+        default = 0;
+
         description = ''
-          The maximum log size.
+          The verbosity level (0-9).
         '';
+
+        type = lib.types.enum (lib.range 0 9);
       };
     };
   };
@@ -67,11 +75,10 @@ in
 
     systemd.services = {
       eternal-terminal = {
-        description = "Eternal Terminal server.";
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
+        description = "Eternal Terminal server.";
+
         serviceConfig = {
-          Type = "forking";
           ExecStart = "${pkgs.eternal-terminal}/bin/etserver --daemon --cfgfile=${pkgs.writeText "et.cfg" ''
             ; et.cfg : Config file for Eternal Terminal
             ;
@@ -84,9 +91,13 @@ in
             silent = ${if cfg.silent then "1" else "0"}
             logsize = ${toString cfg.logSize}
           ''}";
-          Restart = "on-failure";
+
           KillMode = "process";
+          Restart = "on-failure";
+          Type = "forking";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
   };

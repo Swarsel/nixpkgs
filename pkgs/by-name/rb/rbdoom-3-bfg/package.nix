@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   cmake,
   directx-shader-compiler,
   ispc,
   ncurses,
   openal,
   rapidjson,
-  SDL2,
   vulkan-headers,
   vulkan-loader,
   zlib,
@@ -47,16 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  cmakeDir = "../neo";
   cmakeFlags = [
     "-DFFMPEG=OFF"
     "-DBINKDEC=ON"
     "-DUSE_SYSTEM_RAPIDJSON=ON"
     "-DUSE_SYSTEM_ZLIB=ON"
   ];
-
-  # it caused build failure
-  hardeningDisable = [ "fortify3" ];
 
   installPhase = ''
     runHook preInstall
@@ -67,12 +63,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  cmakeDir = "../neo";
+  # it caused build failure
+  hardeningDisable = [ "fortify3" ];
+
   meta = {
-    homepage = "https://github.com/RobertBeckebans/RBDOOM-3-BFG";
     description = "Doom 3 BFG Edition with modern engine features";
-    mainProgram = "RBDoom3BFG";
+    homepage = "https://github.com/RobertBeckebans/RBDOOM-3-BFG";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ Zaechus ];
     platforms = lib.platforms.unix;
+    mainProgram = "RBDoom3BFG";
   };
 })

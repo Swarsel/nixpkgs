@@ -1,22 +1,18 @@
 {
   lib,
-  buildNpmPackage,
-
   stdenv,
-  libsecret,
-  python3,
-  pkg-config,
+  buildNpmPackage,
   clang_20,
-
+  libsecret,
+  pkg-config,
   pname,
+  python3,
   src,
   version,
 }:
 buildNpmPackage {
-  pname = "${pname}-node-deps";
   inherit version src;
-
-  npmDepsHash = "sha256-TCeIBrlsNuphW2gVsX97+Wu1lOG5gDwS7559YA1d10M=";
+  pname = "${pname}-node-deps";
 
   nativeBuildInputs = [
     python3
@@ -25,8 +21,7 @@ buildNpmPackage {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ clang_20 ]; # clang_21 breaks keytar
 
   buildInputs = [ libsecret ];
-
-  dontNpmBuild = true;
+  npmDepsHash = "sha256-TCeIBrlsNuphW2gVsX97+Wu1lOG5gDwS7559YA1d10M=";
 
   installPhase = ''
     runHook preInstall
@@ -36,4 +31,6 @@ buildNpmPackage {
 
     runHook postInstall
   '';
+
+  dontNpmBuild = true;
 }

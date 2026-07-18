@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-GN069be+ZUXBA0d8Mq4ffgTM8JHlDhlVZCw2AyAxVHw=";
+  # Disabled for now as there are some failures ("undefined:")
+  doCheck = false;
 
   ldflags = [
     "-w"
     "-s"
   ];
-
-  # Disabled for now as there are some failures ("undefined:")
-  doCheck = false;
 
   meta = {
     description = "Tool to perform OSINT tasks";

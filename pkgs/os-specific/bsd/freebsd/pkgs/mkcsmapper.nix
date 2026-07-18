@@ -1,20 +1,20 @@
 {
   stdenv,
-  mkDerivation,
   byacc,
   flex,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "usr.bin/mkcsmapper";
+  extraNativeBuildInputs = [
+    byacc
+    flex
+  ];
 
   extraPaths = [
     "lib/libc/iconv"
     "lib/libiconv_modules/mapper_std"
   ];
 
-  extraNativeBuildInputs = [
-    byacc
-    flex
-  ];
+  path = "usr.bin/mkcsmapper";
 }

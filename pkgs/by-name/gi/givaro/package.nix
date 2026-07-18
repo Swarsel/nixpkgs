@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  automake,
   autoconf,
-  libtool,
+  automake,
   autoreconfHook,
+  fetchpatch2,
   gmpxx,
+  libtool,
 }:
 stdenv.mkDerivation rec {
   pname = "givaro";
@@ -24,19 +24,18 @@ stdenv.mkDerivation rec {
     # skip gmp version check for cross-compiling, our version is new enough
     ./skip-gmp-check.patch
     (fetchpatch2 {
+      hash = "sha256-aI9PPjIQCvt9QKywxid+FVx71Buo8d6U7d+PLsKR4+k=";
       name = "libc++-support.patch";
       url = "https://github.com/linbox-team/givaro/commit/464d53db36038c36a72bbad48c97bc141f62e161.diff?full_index=1";
-      hash = "sha256-aI9PPjIQCvt9QKywxid+FVx71Buo8d6U7d+PLsKR4+k=";
     })
   ];
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     autoreconfHook
     autoconf
     automake
   ];
+
   buildInputs = [ libtool ];
   propagatedBuildInputs = [ gmpxx ];
 
@@ -56,18 +55,19 @@ stdenv.mkDerivation rec {
     "--${if stdenv.hostPlatform.fma4Support then "enable" else "disable"}-fma4"
   ];
 
+  doCheck = false;
   # On darwin, tests are linked to dylib in the nix store, so we need to make
   # sure tests run after installPhase.
   doInstallCheck = true;
+  enableParallelBuilding = true;
   installCheckTarget = "check";
-  doCheck = false;
 
   meta = {
     description = "C++ library for arithmetic and algebraic computations";
     homepage = "https://casys.gricad-pages.univ-grenoble-alpes.fr/givaro/";
-    mainProgram = "givaro-config";
     license = lib.licenses.cecill-b;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
+    mainProgram = "givaro-config";
   };
 }

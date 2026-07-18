@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
-  kdePackages,
-  hicolor-icon-theme,
-  papirus-folders,
-  color ? null,
   gitUpdater,
+  gtk3,
+  hicolor-icon-theme,
+  kdePackages,
+  papirus-folders,
+  stdenvNoCC,
+  color ? null,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -31,11 +31,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  # breeze-icons propagates qtbase
-  dontWrapQtApps = true;
-
-  dontDropIconThemeCache = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -50,17 +45,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
+  # breeze-icons propagates qtbase
+  dontWrapQtApps = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Pixel perfect icon theme for Linux";
     homepage = "https://github.com/PapirusDevelopmentTeam/papirus-icon-theme";
     license = lib.licenses.gpl3Only;
-    # darwin gives hash mismatch in source, probably because of file names differing only in case
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       romildo
       moni
     ];
+
+    # darwin gives hash mismatch in source, probably because of file names differing only in case
+    platforms = lib.platforms.linux;
   };
 })

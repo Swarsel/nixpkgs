@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  bashInteractive,
+  buildPythonPackage,
+  pytest-cov-stub,
   pytest-timeout,
   pytestCheckHook,
-  pytest-cov-stub,
   setuptools,
   setuptools-scm,
-  bashInteractive,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "shtab";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -34,14 +33,15 @@ buildPythonPackage (finalAttrs: {
     pytest-cov-stub
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "shtab" ];
 
   meta = {
     description = "Module for shell tab completion of Python CLI applications";
-    mainProgram = "shtab";
     homepage = "https://docs.iterative.ai/shtab/";
     changelog = "https://github.com/iterative/shtab/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "shtab";
   };
 })

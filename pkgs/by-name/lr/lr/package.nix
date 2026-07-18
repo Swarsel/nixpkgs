@@ -18,11 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/leahneukirchen/lr";
     description = "List files recursively";
+    homepage = "https://github.com/leahneukirchen/lr";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ vikanezrimaya ];
+    platforms = lib.platforms.all;
     mainProgram = "lr";
   };
 })

@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  gitMinimal,
   installShellFiles,
   makeBinaryWrapper,
-  gitMinimal,
   mercurial,
   nix,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,12 +20,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-BxtvT2k4mErYPU9lNpZlat9ULI2wKXQToic7+PgkCSk=";
   };
 
-  cargoHash = "sha256-4ACuHFzfuF4JWU0cPAJO+RPiA1HZ6o3b8K0C4NWJHmM=";
-
   nativeBuildInputs = [
     installShellFiles
     makeBinaryWrapper
   ];
+
+  cargoHash = "sha256-4ACuHFzfuF4JWU0cPAJO+RPiA1HZ6o3b8K0C4NWJHmM=";
+
+  env = {
+    GEN_ARTIFACTS = "artifacts";
+  };
 
   # disable tests that require internet access
   checkFlags = [
@@ -46,19 +50,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion artifacts/nurl.{bash,fish} --zsh artifacts/_nurl
   '';
 
-  env = {
-    GEN_ARTIFACTS = "artifacts";
-  };
-
   meta = {
     description = "Command-line tool to generate Nix fetcher calls from repository URLs";
     homepage = "https://github.com/nix-community/nurl";
     changelog = "https://github.com/nix-community/nurl/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       figsoda
       matthiasbeyer
     ];
+
     mainProgram = "nurl";
   };
 })

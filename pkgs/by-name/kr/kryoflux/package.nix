@@ -1,29 +1,32 @@
 {
-  stdenv,
   lib,
-  autoPatchelfHook,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  jre,
+  autoPatchelfHook,
   fmt_9,
+  jre,
   libusb1,
+  makeWrapper,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "kryoflux";
   version = "3.50";
+
   src = fetchurl {
     url = "https://www.kryoflux.com/download/kryoflux_${finalAttrs.version}_linux_r2.tar.gz";
     hash = "sha256-qGFXu0FkmCB7cffOqNiOluDUww19MA/UuEVElgmSd3o=";
   };
+
   nativeBuildInputs = [
     makeWrapper
     autoPatchelfHook
   ];
+
   buildInputs = [
     fmt_9
     libusb1
   ];
-  dontBuild = true;
+
   installPhase = ''
     runHook preInstall
 
@@ -43,12 +46,15 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+
   meta = {
     description = "Software UI to accompany KryoFlux, the renowned forensic floppy controller";
     homepage = "https://kryoflux.com";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    mainProgram = "kryoflux-ui";
     platforms = with lib.platforms; lib.intersectLists linux (x86_64 ++ aarch64);
+    mainProgram = "kryoflux-ui";
   };
 })

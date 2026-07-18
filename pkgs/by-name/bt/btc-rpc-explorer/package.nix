@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   pkg-config,
   python3,
   vips,
@@ -18,10 +18,6 @@ buildNpmPackage rec {
     hash = "sha256-L7mW1WIbHga6/UjMx4sP0MUhJIRytUhHVIEWMD2amQo=";
   };
 
-  npmDepsHash = "sha256-eYA2joO4wcV10xJeYLqCbvM2szWlqofmugoHHD9D30U=";
-
-  makeCacheWritable = true;
-
   nativeBuildInputs = [
     pkg-config
     python3
@@ -31,12 +27,14 @@ buildNpmPackage rec {
     vips
   ];
 
+  npmDepsHash = "sha256-eYA2joO4wcV10xJeYLqCbvM2szWlqofmugoHHD9D30U=";
   dontNpmBuild = true;
+  makeCacheWritable = true;
 
   meta = {
-    changelog = "https://github.com/janoside/btc-rpc-explorer/blob/${src.rev}/CHANGELOG.md";
     description = "Database-free, self-hosted Bitcoin explorer, via RPC to Bitcoin Core";
     homepage = "https://github.com/janoside/btc-rpc-explorer";
+    changelog = "https://github.com/janoside/btc-rpc-explorer/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     mainProgram = "btc-rpc-explorer";
   };

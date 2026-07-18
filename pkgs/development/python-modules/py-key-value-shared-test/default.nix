@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   uv-build,
 }:
@@ -10,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "py-key-value-shared-test";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "strawgate";
@@ -19,8 +17,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4ji+GzJTv1QnC5n/OaL9vR65j8BQmJsVGGnjjuulDiU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/key-value/key-value-shared-test";
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail \
@@ -28,14 +24,16 @@ buildPythonPackage (finalAttrs: {
         "uv_build"
   '';
 
+  # No tests
+  doCheck = false;
+
   build-system = [
     uv-build
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "key_value.shared_test" ];
-
-  # No tests
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/key-value/key-value-shared-test";
 
   meta = {
     description = "Utils for key-value-shared";

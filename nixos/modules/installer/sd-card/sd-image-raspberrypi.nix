@@ -13,11 +13,10 @@
     ./sd-image.nix
   ];
 
-  boot.loader.grub.enable = false;
-  boot.loader.generic-extlinux-compatible.enable = true;
-
   boot.consoleLogLevel = lib.mkDefault 7;
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_rpi1;
+  boot.loader.generic-extlinux-compatible.enable = true;
+  boot.loader.grub.enable = false;
 
   sdImage = {
     populateFirmwareCommands =
@@ -44,6 +43,7 @@
         cp ${pkgs.ubootRaspberryPi}/u-boot.bin firmware/u-boot-rpi1.bin
         cp ${configTxt} firmware/config.txt
       '';
+
     populateRootCommands = ''
       mkdir -p ./files/boot
       ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot

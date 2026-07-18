@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   astral,
   buildPythonPackage,
-  fetchFromGitHub,
   hypothesis,
   num2words,
   pdm-backend,
@@ -15,29 +15,12 @@
 buildPythonPackage rec {
   pname = "hdate";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "py-libhdate";
     repo = "py-libhdate";
     tag = "v${version}";
     hash = "sha256-6CCaHnpZEU7krLzkRKRF4Iui7Vd7AOfIn1fTzIdxPtw=";
-  };
-
-  pythonRelaxDeps = [
-    "astral"
-  ];
-
-  build-system = [
-    pdm-backend
-  ];
-
-  dependencies = [
-    num2words
-  ];
-
-  optional-dependencies = {
-    astral = [ astral ];
   };
 
   nativeCheckInputs = [
@@ -48,9 +31,26 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  build-system = [
+    pdm-backend
+  ];
+
+  dependencies = [
+    num2words
+  ];
+
   enabledTestPaths = [ "tests" ];
 
+  optional-dependencies = {
+    astral = [ astral ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "hdate" ];
+
+  pythonRelaxDeps = [
+    "astral"
+  ];
 
   meta = {
     description = "Python module for Jewish/Hebrew date and Zmanim";

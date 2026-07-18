@@ -2,18 +2,17 @@
   lib,
   buildPythonPackage,
   fetchFromCodeberg,
-  setuptools,
-  setuptools-scm,
   hypothesis,
   pytest-benchmark,
   pytest-timeout,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pyppmd";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "miurahr";
@@ -22,11 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-0t1vyVMtmhb38C2teJ/Lq7dx4usm4Bzx+k7Zalf/nXE=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeCheckInputs = [
     hypothesis
     pytest-benchmark
@@ -34,6 +28,12 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pytestFlags = [ "--benchmark-disable" ];
 
   pythonImportsCheck = [
@@ -45,6 +45,7 @@ buildPythonPackage rec {
     homepage = "https://codeberg.org/miurahr/pyppmd";
     changelog = "https://codeberg.org/miurahr/pyppmd/src/tag/v${version}/Changelog.rst#v${version}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       pitkling
       PopeRigby

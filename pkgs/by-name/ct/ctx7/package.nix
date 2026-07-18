@@ -2,14 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchPnpmDeps,
   makeWrapper,
   nix-update-script,
-  versionCheckHook,
-
   nodejs,
-  pnpm_10,
   pnpmConfigHook,
-  fetchPnpmDeps,
+  pnpm_10,
+  versionCheckHook,
 }:
 let
   pnpm = pnpm_10;
@@ -18,9 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ctx7";
   version = "0.5.4";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "upstash";
     repo = "context7";
@@ -28,19 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yyz4UraRm1JR/C7J2ib0nBU6zsNpKCWIWduTu7OlebM=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     nodejs
     pnpm
     pnpmConfigHook
     makeWrapper
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-S+TCwe4FJHjSLTUL/cPh+eRtWx/z7REUyfMNT0BgK7k=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -69,8 +60,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-S+TCwe4FJHjSLTUL/cPh+eRtWx/z7REUyfMNT0BgK7k=";
+  };
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -84,7 +83,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://context7.com/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ arunoruto ];
-    mainProgram = "ctx7";
     platforms = lib.platforms.unix;
+    mainProgram = "ctx7";
   };
 })

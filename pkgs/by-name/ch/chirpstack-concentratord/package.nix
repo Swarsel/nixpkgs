@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-  protobuf,
   libloragw-2g4,
   libloragw-sx1301,
   libloragw-sx1302,
+  nix-update-script,
+  protobuf,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "chirpstack-concentratord";
@@ -19,7 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-icvbZjqsDf/RLiDUyx0lQKRVHFh6FNxkLVkv9kckDBc=";
   };
 
-  cargoHash = "sha256-iJhNaXv5a8+9TZJGLdKZdq1VFE09w0L/05V1y6kabN0=";
+  nativeBuildInputs = [
+    protobuf
+    rustPlatform.bindgenHook
+  ];
 
   buildInputs = [
     libloragw-2g4
@@ -27,11 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libloragw-sx1302
   ];
 
-  nativeBuildInputs = [
-    protobuf
-    rustPlatform.bindgenHook
-  ];
-
+  cargoHash = "sha256-iJhNaXv5a8+9TZJGLdKZdq1VFE09w0L/05V1y6kabN0=";
   passthru.updateScript = nix-update-script { };
 
   meta = {

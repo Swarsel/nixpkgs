@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   flit-core,
   numpy,
   pydicom,
@@ -10,12 +9,12 @@
   pylibjpeg-libjpeg,
   pylibjpeg-openjpeg,
   pylibjpeg-rle,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pylibjpeg";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydicom";
@@ -24,8 +23,14 @@ buildPythonPackage rec {
     hash = "sha256-jMdNzruzr2VgEntFF5BBoK3yrq0VegtJNXAkCpHjsks=";
   };
 
-  build-system = [ flit-core ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    pydicom
+    pylibjpeg-data
+    pylibjpeg-libjpeg
+  ];
 
+  build-system = [ flit-core ];
   dependencies = [ numpy ];
 
   optional-dependencies =
@@ -38,13 +43,7 @@ buildPythonPackage rec {
     in
     extras // { all = lib.concatLists (lib.attrValues extras); };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pydicom
-    pylibjpeg-data
-    pylibjpeg-libjpeg
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pylibjpeg" ];
 
   meta = {

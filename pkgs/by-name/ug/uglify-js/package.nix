@@ -1,11 +1,11 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  testers,
+  buildNpmPackage,
   runCommand,
-  writeText,
+  testers,
   uglify-js,
+  writeText,
 }:
 
 buildNpmPackage rec {
@@ -19,28 +19,23 @@ buildNpmPackage rec {
     hash = "sha256-sMLQSB1+ux/ya/J22KGojlAxWhtPQdk22KdHy43zdyg=";
   };
 
-  npmDepsHash = "sha256-/Xb8DT7vSzZPEd+Z+z1BlFnrOeOwGP+nGv2K9iz6lKI=";
-
   postPatch = ''
     cp ${./package-lock.json} package-lock.json
   '';
 
+  npmDepsHash = "sha256-/Xb8DT7vSzZPEd+Z+z1BlFnrOeOwGP+nGv2K9iz6lKI=";
   dontNpmBuild = true;
 
   passthru = {
-    updateScript = ./update.sh;
     tests = {
       version = testers.testVersion { package = uglify-js; };
 
       simple = testers.testEqualContents {
-        assertion = "uglify-js minifies a basic js file";
-        expected = writeText "expected" ''
-          console.log(1);
-        '';
         actual =
           runCommand "actual"
             {
               nativeBuildInputs = [ uglify-js ];
+
               base = writeText "base" ''
                 console . log  ( ( 1 ) ) ;
               '';
@@ -48,16 +43,24 @@ buildNpmPackage rec {
             ''
               uglifyjs $base > $out
             '';
+
+        assertion = "uglify-js minifies a basic js file";
+
+        expected = writeText "expected" ''
+          console.log(1);
+        '';
       };
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
+    description = "JavaScript parser / mangler / compressor / beautifier toolkit";
     homepage = "https://github.com/mishoo/UglifyJS";
     changelog = "https://github.com/mishoo/UglifyJS/releases/tag/v" + version;
-    description = "JavaScript parser / mangler / compressor / beautifier toolkit";
-    mainProgram = "uglifyjs";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ lelgenio ];
+    mainProgram = "uglifyjs";
   };
 }

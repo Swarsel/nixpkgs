@@ -1,12 +1,12 @@
 {
   buildDunePackage,
-  trace,
   mtime,
+  trace,
 }:
 
 buildDunePackage {
-  pname = "trace-tef";
   inherit (trace) src version;
+  pname = "trace-tef";
 
   # This removes the dependency on the “atomic” package
   # (not available in nixpkgs)
@@ -15,14 +15,13 @@ buildDunePackage {
     substituteInPlace src/tef/dune --replace 'atomic ' ""
   '';
 
-  minimalOCamlVersion = "4.12";
-
   propagatedBuildInputs = [
     mtime
     trace
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "4.12";
 
   meta = trace.meta // {
     description = "Simple backend for trace, emitting Catapult JSON into a file";

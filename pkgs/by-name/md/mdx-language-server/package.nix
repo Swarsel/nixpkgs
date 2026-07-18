@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  nodejs,
   buildNpmPackage,
+  nodejs,
 }:
 
 buildNpmPackage rec {
@@ -19,7 +19,6 @@ buildNpmPackage rec {
   '';
 
   npmDepsHash = "sha256-IONV1wxETazDaXzYfqiYrM+A8c36VcnlzTj3lmxA9ug=";
-
   dontNpmBuild = true;
 
   meta = {

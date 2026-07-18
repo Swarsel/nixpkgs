@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "versioneer";
   version = "0.29";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-versioneer";
@@ -18,18 +17,17 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   # Couldn't get tests to work because, for instance, they used virtualenv and pip
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "versioneer" ];
 
   meta = {
     description = "Version-string management for VCS-controlled trees";
-    mainProgram = "versioneer";
     homepage = "https://github.com/python-versioneer/python-versioneer";
     changelog = "https://github.com/python-versioneer/python-versioneer/blob/${version}/NEWS.md";
     license = lib.licenses.publicDomain;
     maintainers = with lib.maintainers; [ jluttine ];
+    mainProgram = "versioneer";
   };
 }

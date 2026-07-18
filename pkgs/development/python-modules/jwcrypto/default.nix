@@ -1,9 +1,9 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cryptography,
   deprecated,
+  fetchPypi,
   pytestCheckHook,
   setuptools,
   typing-extensions,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "jwcrypto";
   version = "1.5.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,7 +27,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jwcrypto" ];
 
   meta = {

@@ -1,13 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   docker,
+  # build-system
+  hatchling,
   python-dotenv,
   typing-extensions,
   urllib3,
@@ -17,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "testcontainers";
   version = "4.14.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "testcontainers";
@@ -30,6 +27,8 @@ buildPythonPackage (finalAttrs: {
     echo "${finalAttrs.version}" > VERSION
   '';
 
+  # Tests require various container and database services running
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -40,8 +39,7 @@ buildPythonPackage (finalAttrs: {
     wrapt
   ];
 
-  # Tests require various container and database services running
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "testcontainers"

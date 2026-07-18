@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  git,
   coreutils,
+  git,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     install -m755 -Dt $out/bin git-secrets
     install -m444 -Dt $out/share/man/man1 git-secrets.1
@@ -34,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
         ]
       }"
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Prevents you from committing secrets and credentials into git repositories";

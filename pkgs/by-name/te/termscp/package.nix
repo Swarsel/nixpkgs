@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
-  dbus,
   fetchFromGitHub,
+  dbus,
+  nix-update-script,
   openssl,
   pkg-config,
   rustPlatform,
   samba,
+  stdenvNoCC,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Alp0/f0OqLD7UeJwDhr2OIuk1TPXLQPAVUsZOQzo5jI=";
   };
 
-  cargoHash = "sha256-7xD+86v0ITBKF8js4UKwoTJFHa20wt6PDqkazShBtvc=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -34,15 +32,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     samba
   ];
 
+  cargoHash = "sha256-7xD+86v0ITBKF8js4UKwoTJFHa20wt6PDqkazShBtvc=";
   # Needed to get openssl-sys to use pkg-config.
   env.OPENSSL_NO_VENDOR = 1;
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
-  checkFeatures = [ "isolated-tests" ];
   checkFlags = [
     # requires networking
     "--skip=cli::remote::test::test_should_make_remote_args_from_one_bookmark_and_one_remote_with_local_dir"
@@ -57,20 +50,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=system::watcher::test::should_poll_nothing"
   ];
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  checkFeatures = [ "isolated-tests" ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/veeso/termscp/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Feature rich terminal UI file transfer and explorer with support for SCP/SFTP/FTP/S3/SMB";
     homepage = "https://github.com/veeso/termscp";
+    changelog = "https://github.com/veeso/termscp/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "termscp";
+
     maintainers = with lib.maintainers; [
       fab
       gepbird
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "termscp";
   };
 })

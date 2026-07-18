@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
+  httpx,
   llm,
   llm-fragments-pypi,
-  httpx,
 }:
 
 buildPythonPackage rec {
   pname = "llm-fragments-pypi";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "samueldg";
@@ -27,8 +26,8 @@ buildPythonPackage rec {
     llm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llm_fragments_pypi" ];
-
   passthru.tests = llm.mkPluginTest llm-fragments-pypi;
 
   meta = {

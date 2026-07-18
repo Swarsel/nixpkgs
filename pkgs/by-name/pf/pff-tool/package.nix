@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   libpff,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-MDMrKaq/iz5WdLhh3rv2ODFdaMoaeFtacT8xmRf3Qec=";
   };
 
-  cargoHash = "sha256-SL+FTuVkgq0ll8SH7FgVapvemarc7ci0KtoGG16zxCM=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -29,6 +27,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libpff
   ];
 
+  cargoHash = "sha256-SL+FTuVkgq0ll8SH7FgVapvemarc7ci0KtoGG16zxCM=";
   # Tests require a sample PST/OST file.
   doCheck = false;
 

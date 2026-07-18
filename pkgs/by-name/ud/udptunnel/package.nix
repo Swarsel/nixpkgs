@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://code.google.com/archive/p/udptunnel/";
     description = "Tunnels TCP over UDP packets";
+    homepage = "https://code.google.com/archive/p/udptunnel/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = with lib.platforms; linux;

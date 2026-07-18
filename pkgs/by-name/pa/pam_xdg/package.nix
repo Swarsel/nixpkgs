@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pam,
   coreutils,
+  pam,
 }:
 stdenv.mkDerivation rec {
   pname = "pam_xdg";
@@ -14,24 +14,24 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-o4Fol6LouBQVLiGMAszEB+zBkBj8C1xMp057AvH3nl4=";
   };
 
-  buildInputs = [
-    pam
-  ];
-
   postPatch = ''
     substituteInPlace pam_xdg.c \
       --replace-fail '"/usr/bin/rm"' '"${coreutils}/bin/rm"'
   '';
+
+  buildInputs = [
+    pam
+  ];
 
   makeFlags = [
     "PREFIX=$(out)"
   ];
 
   meta = {
-    homepage = "https://www.sdaoden.eu/code-pam_xdg.html";
     description = "PAM module that manages XDG Base Directories";
+    homepage = "https://www.sdaoden.eu/code-pam_xdg.html";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = with lib; [ maintainers.aanderse ];
+    platforms = lib.platforms.unix;
   };
 }

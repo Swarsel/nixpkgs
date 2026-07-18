@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
-  nodejs,
-  pnpm_10,
-  pnpmConfigHook,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 let
   pnpm = pnpm_10;
@@ -28,15 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpm
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-lpp5YHemVI+LVO+g/OXvcEUGBhmfeSith9uhbnyT6Ac=";
-  };
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -48,12 +39,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-lpp5YHemVI+LVO+g/OXvcEUGBhmfeSith9uhbnyT6Ac=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/postcss/postcss/releases/tag/${finalAttrs.version}";
     description = "Transforming styles with JS plugins";
     homepage = "https://postcss.org/";
+    changelog = "https://github.com/postcss/postcss/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;

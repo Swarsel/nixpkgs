@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
   llvmPackages,
+  nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,21 +17,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-H+pgAckWFW/jPnIL6i90BBothX5zT3/hbcDhmdvdZmY=";
   };
 
-  cargoHash = "sha256-aGUlItPfrr3Uz/t1XEXBtGM285up3A5Wva1QMKwBrg0=";
-
   nativeBuildInputs = [
     llvmPackages.libclang
   ];
 
+  cargoHash = "sha256-aGUlItPfrr3Uz/t1XEXBtGM285up3A5Wva1QMKwBrg0=";
   env.LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
-
   passthru.update-script = nix-update-script { };
+
   meta = {
     description = " Nushell plugin for BSON (Binary JSON) format `from bson` and `to bson`";
     homepage = "https://github.com/Kissaki/nu_plugin_bson";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ philocalyst ];
-    mainProgram = "nu_plugin_bson";
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "nu_plugin_bson";
   };
 })

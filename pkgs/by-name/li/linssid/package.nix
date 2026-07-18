@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   boost,
-  wirelesstools,
   iw,
   libsForQt5,
+  pkg-config,
+  wirelesstools,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,18 +17,6 @@ stdenv.mkDerivation rec {
     url = "mirror://sourceforge/project/linssid/LinSSID_${version}/linssid_${version}.orig.tar.gz";
     sha256 = "13d35rlcjncd8lx3khkgn9x8is2xjd5fp6ns5xsn3w6l4xj9b4gl";
   };
-
-  nativeBuildInputs = [
-    pkg-config
-    libsForQt5.qmake
-    libsForQt5.wrapQtAppsHook
-  ];
-  buildInputs = [
-    libsForQt5.qtbase
-    libsForQt5.qtsvg
-    boost
-    libsForQt5.qwt6_1
-  ];
 
   patches = [ ./0001-unbundled-qwt.patch ];
 
@@ -44,6 +32,19 @@ stdenv.mkDerivation rec {
     rm -fr qwt-lib
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    libsForQt5.qmake
+    libsForQt5.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    libsForQt5.qtbase
+    libsForQt5.qtsvg
+    boost
+    libsForQt5.qwt6_1
+  ];
+
   qtWrapperArgs = [
     "--prefix PATH : ${
       lib.makeBinPath [
@@ -57,8 +58,8 @@ stdenv.mkDerivation rec {
     description = "Graphical wireless scanning for Linux";
     homepage = "https://sourceforge.net/projects/linssid/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
     mainProgram = "linssid";
   };
 }

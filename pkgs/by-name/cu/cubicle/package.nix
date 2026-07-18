@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  which,
   ocaml-ng,
+  which,
 }:
 
 let
@@ -13,6 +13,7 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "cubicle";
   version = "1.2.0";
+
   src = fetchurl {
     url = "https://github.com/cubicle-model-checker/cubicle/archive/refs/tags/${finalAttrs.version}.tar.gz";
     hash = "sha256-/EtbXpyXqRm0jGcMfGLAEwdr92061edjFys1V7/w6/Y=";
@@ -42,10 +43,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Open source model checker for verifying safety properties of array-based systems";
-    mainProgram = "cubicle";
     homepage = "https://cubicle.lri.fr/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ dwarfmaster ];
+    platforms = lib.platforms.unix;
+    mainProgram = "cubicle";
   };
 })

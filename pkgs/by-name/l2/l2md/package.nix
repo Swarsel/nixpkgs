@@ -23,15 +23,17 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Convert public-inbox archives to maildir messages";
-    mainProgram = "l2md";
+
     longDescription = ''
       Quick and dirty hack to import lore.kernel.org list archives via git,
       to export them in maildir format or through a pipe, and to keep them
       periodically synced.
     '';
+
     homepage = "https://git.kernel.org/pub/scm/linux/kernel/git/dborkman/l2md.git";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ yoctocell ];
     platforms = lib.platforms.unix;
+    mainProgram = "l2md";
   };
 }

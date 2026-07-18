@@ -1,17 +1,14 @@
 {
-  buildDunePackage,
   alcotest,
+  buildDunePackage,
   graphql_parser,
   rresult,
   yojson,
 }:
 
 buildDunePackage {
-  pname = "graphql";
-
   inherit (graphql_parser) version src;
-
-  duneVersion = "3";
+  pname = "graphql";
 
   propagatedBuildInputs = [
     graphql_parser
@@ -19,9 +16,9 @@ buildDunePackage {
     yojson
   ];
 
-  checkInputs = [ alcotest ];
-
   doCheck = true;
+  checkInputs = [ alcotest ];
+  duneVersion = "3";
 
   meta = graphql_parser.meta // {
     description = "Build GraphQL schemas and execute queries against them";

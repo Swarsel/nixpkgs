@@ -1,32 +1,32 @@
 {
   lib,
+  stdenv,
+  SDL2,
+  SDL2_mixer,
   buildDotnetModule,
   cctools,
   darwin,
   dotnetCorePackages,
   fetchFromForgejo,
-  libx11,
-  libgdiplus,
-  moltenvk,
   ffmpeg,
-  openal,
-  libsoundio,
-  sndio,
-  stdenv,
-  pulseaudio,
-  vulkan-loader,
   glew,
+  gtk3,
   libGL,
+  libgdiplus,
   libice,
   libsm,
+  libsoundio,
+  libx11,
   libxcursor,
   libxext,
   libxi,
   libxrandr,
+  moltenvk,
+  openal,
+  pulseaudio,
+  sndio,
   udev,
-  SDL2,
-  SDL2_mixer,
-  gtk3,
+  vulkan-loader,
   wrapGAppsHook3,
 }:
 
@@ -35,11 +35,11 @@ buildDotnetModule rec {
   version = "1.3.3";
 
   src = fetchFromForgejo {
-    domain = "git.ryujinx.app";
     owner = "projects";
     repo = "Ryubing";
     tag = version;
     hash = "sha256-LhQaXxmj5HIgfmrsDN8GhhVXlXHpDO2Q8JtNLaCq0mk=";
+    domain = "git.ryujinx.app";
   };
 
   nativeBuildInputs =
@@ -49,12 +49,53 @@ buildDotnetModule rec {
       darwin.sigtool
     ];
 
+  # Tests on Darwin currently fail because of Ryujinx.Tests.Unicorn
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  preInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
+    # workaround for https://github.com/Ryujinx/Ryujinx/issues/2349
+    mkdir -p $out/lib/sndio-6
+    ln -s ${sndio}/lib/libsndio.so $out/lib/sndio-6/libsndio.so.6
+  '';
+
+  preFixup = ''
+    ${lib.optionalString stdenv.hostPlatform.isLinux ''
+      mkdir -p $out/share/{applications,icons/hicolor/scalable/apps,mime/packages}
+
+      pushd ${src}/distribution/linux
+
+      install -D ./Ryujinx.desktop  $out/share/applications/Ryujinx.desktop
+      install -D ./Ryujinx.sh       $out/bin/Ryujinx.sh
+      install -D ./mime/Ryujinx.xml $out/share/mime/packages/Ryujinx.xml
+      install -D ../misc/Logo.svg   $out/share/icons/hicolor/scalable/apps/Ryujinx.svg
+
+      popd
+    ''}
+
+    # Don't make a softlink on OSX because of its case insensitivity
+    ${lib.optionalString (!stdenv.hostPlatform.isDarwin) "ln -s $out/bin/Ryujinx $out/bin/ryujinx"}
+  '';
+
+  dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
+
+  dotnetFlags = [
+    "/p:ExtraDefineConstants=DISABLE_UPDATER%2CFORCE_EXTERNAL_BASE_DIR"
+  ];
+
   enableParallelBuilding = false;
 
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
-  dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  executables = [
+    "Ryujinx"
+  ];
+
+  makeWrapperArgs = lib.optional stdenv.hostPlatform.isLinux [
+    # Without this Ryujinx fails to start on wayland. See https://github.com/Ryujinx/Ryujinx/issues/2714
+    "--set SDL_VIDEODRIVER x11"
+  ];
 
   nugetDeps = ./deps.json;
+  projectFile = "Ryujinx.sln";
 
   runtimeDeps = [
     libx11
@@ -86,56 +127,12 @@ buildDotnetModule rec {
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin moltenvk;
 
-  projectFile = "Ryujinx.sln";
   testProjectFile = "src/Ryujinx.Tests/Ryujinx.Tests.csproj";
-
-  # Tests on Darwin currently fail because of Ryujinx.Tests.Unicorn
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  dotnetFlags = [
-    "/p:ExtraDefineConstants=DISABLE_UPDATER%2CFORCE_EXTERNAL_BASE_DIR"
-  ];
-
-  executables = [
-    "Ryujinx"
-  ];
-
-  makeWrapperArgs = lib.optional stdenv.hostPlatform.isLinux [
-    # Without this Ryujinx fails to start on wayland. See https://github.com/Ryujinx/Ryujinx/issues/2714
-    "--set SDL_VIDEODRIVER x11"
-  ];
-
-  preInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
-    # workaround for https://github.com/Ryujinx/Ryujinx/issues/2349
-    mkdir -p $out/lib/sndio-6
-    ln -s ${sndio}/lib/libsndio.so $out/lib/sndio-6/libsndio.so.6
-  '';
-
-  preFixup = ''
-    ${lib.optionalString stdenv.hostPlatform.isLinux ''
-      mkdir -p $out/share/{applications,icons/hicolor/scalable/apps,mime/packages}
-
-      pushd ${src}/distribution/linux
-
-      install -D ./Ryujinx.desktop  $out/share/applications/Ryujinx.desktop
-      install -D ./Ryujinx.sh       $out/bin/Ryujinx.sh
-      install -D ./mime/Ryujinx.xml $out/share/mime/packages/Ryujinx.xml
-      install -D ../misc/Logo.svg   $out/share/icons/hicolor/scalable/apps/Ryujinx.svg
-
-      popd
-    ''}
-
-    # Don't make a softlink on OSX because of its case insensitivity
-    ${lib.optionalString (!stdenv.hostPlatform.isDarwin) "ln -s $out/bin/Ryujinx $out/bin/ryujinx"}
-  '';
-
   passthru.updateScript = ./updater.sh;
 
   meta = {
-    homepage = "https://ryujinx.app";
-    # historical changelog https://git.ryujinx.app/projects/Ryubing/wiki/Changelog
-    changelog = "https://git.ryujinx.app/projects/Ryubing/releases/tag/${src.tag}";
     description = "Experimental Nintendo Switch Emulator written in C# (community fork of Ryujinx)";
+
     longDescription = ''
       Ryujinx is an open-source Nintendo Switch emulator, created by gdkchan,
       written in C#. This emulator aims at providing excellent accuracy and
@@ -144,17 +141,24 @@ buildDotnetModule rec {
       2017. The project has since been abandoned on October 1st 2024 and QoL
       updates are now managed under a fork.
     '';
+
+    homepage = "https://ryujinx.app";
+    # historical changelog https://git.ryujinx.app/projects/Ryubing/wiki/Changelog
+    changelog = "https://git.ryujinx.app/projects/Ryubing/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jk
       artemist
       willow
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "Ryujinx";
   };
 }

@@ -1,18 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
   deptry,
   dncil,
   dnfile,
-  fetchFromGitHub,
   humanize,
   ida-netnode,
   ida-settings,
   jschema-to-python,
   msgspec,
-  mypy-protobuf,
   mypy,
+  mypy-protobuf,
   networkx,
   pefile,
   protobuf,
@@ -30,8 +30,8 @@
   rich,
   ruamel-yaml,
   sarif-om,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   stix2,
   types-colorama,
   types-protobuf,
@@ -47,9 +47,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "capa";
   version = "9.4.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mandiant";
@@ -58,6 +55,21 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-h9ML+TJe9NprBEy4W7XKahmUTM0d4vY0zIFs6MxYzZ8=";
     fetchSubmodules = true;
   };
+
+  nativeCheckInputs = [
+    pygithub
+    pytestCheckHook
+    pytest-instafail
+    pytest-sugar
+    types-colorama
+    types-protobuf
+    types-psutil
+    types-pyyaml
+    types-requests
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -86,8 +98,17 @@ buildPythonPackage (finalAttrs: {
     xmltodict
   ];
 
+  disabledTests = [
+    # AssertionError
+    "test_is_dev_environment"
+    "test_rule_cache_dev_environment"
+    "test_scripts"
+    "test_binexport_scripts"
+  ];
+
   optional-dependencies = {
     ghidra = [ pyghidra ];
+
     scripts = [
       jschema-to-python
       psutil
@@ -97,28 +118,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pygithub
-    pytestCheckHook
-    pytest-instafail
-    pytest-sugar
-    types-colorama
-    types-protobuf
-    types-psutil
-    types-pyyaml
-    types-requests
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "capa" ];
-
-  disabledTests = [
-    # AssertionError
-    "test_is_dev_environment"
-    "test_rule_cache_dev_environment"
-    "test_scripts"
-    "test_binexport_scripts"
-  ];
 
   meta = {
     description = "Tool to identify capabilities in executable files";

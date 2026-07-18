@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  mkfontscale,
-  fonttosfnt,
   bdf2psf,
   bdftopcf,
+  fonttosfnt,
   libfaketime,
+  mkfontscale,
 }:
 
 stdenv.mkDerivation {
@@ -71,6 +71,7 @@ stdenv.mkDerivation {
     description = ''
       A monospace bitmap font well suited for programming and terminal use
     '';
+
     homepage = "https://font.gohu.org/";
     license = lib.licenses.wtfpl;
     maintainers = with lib.maintainers; [ rnhmjoj ];

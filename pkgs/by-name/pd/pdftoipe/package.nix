@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchpatch,
   pkg-config,
   poppler,
-  fetchpatch,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,14 +18,14 @@ stdenv.mkDerivation rec {
     hash = "sha256-BLZKOq7/3QSuwR0yjrDiiIh9N93qk8ihbEPIQ2h+Ffc=";
   };
 
-  sourceRoot = "${src.name}/pdftoipe";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ poppler ];
 
   installPhase = ''
     install -D pdftoipe $out/bin/pdftoipe
   '';
+
+  sourceRoot = "${src.name}/pdftoipe";
 
   meta = {
     description = "Program that tries to convert arbitrary PDF documents to Ipe files";

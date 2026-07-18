@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  replaceVars,
-  makeBinaryWrapper,
-  perl,
+  buildNpmPackage,
   ghostscript,
-  vips,
+  makeBinaryWrapper,
   nixosTests,
+  perl,
+  replaceVars,
+  vips,
 }:
 
 buildNpmPackage rec {
@@ -45,8 +45,6 @@ buildNpmPackage rec {
     # to set the admin password
     ./expose-password-hashing.patch
   ];
-
-  npmDepsHash = "sha256-9SuimhLvEuruvFXuFm62DzgldngfiJneV6MDedGy6LY=";
 
   nativeBuildInputs = [
     perl
@@ -109,6 +107,8 @@ buildNpmPackage rec {
       LinuxInotify2
     ];
 
+  npmDepsHash = "sha256-9SuimhLvEuruvFXuFm62DzgldngfiJneV6MDedGy6LY=";
+
   buildPhase = ''
     runHook preBuild
 
@@ -161,12 +161,12 @@ buildNpmPackage rec {
   passthru.tests.module = nixosTests.lanraragi;
 
   meta = {
-    changelog = "https://github.com/Difegue/LANraragi/releases/tag/${src.tag}";
     description = "Web application for archival and reading of manga/doujinshi";
     homepage = "https://github.com/Difegue/LANraragi";
+    changelog = "https://github.com/Difegue/LANraragi/releases/tag/${src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "lanraragi";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.unix;
+    mainProgram = "lanraragi";
   };
 }

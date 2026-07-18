@@ -33,29 +33,25 @@ let
   ];
 
   failures = lib.runTests {
+    testAllOptionalRemainOptional = {
+      expected = true;
+      expr = (getConfig allOptionalRemainOptional)."NIXOS_FAKE_USB_DEBUG".optional;
+    };
+
     testEasy = {
-      expr = (getConfig { NIXOS_FAKE_USB_DEBUG = lib.kernel.yes; }).NIXOS_FAKE_USB_DEBUG;
       expected = {
-        tristate = "y";
-        optional = false;
         freeform = null;
+        optional = false;
+        tristate = "y";
       };
+
+      expr = (getConfig { NIXOS_FAKE_USB_DEBUG = lib.kernel.yes; }).NIXOS_FAKE_USB_DEBUG;
     };
 
     # mandatory flag should win over optional
     testMandatoryCheck = {
-      expr = (getConfig mandatoryVsOptionalConfig).NIXOS_FAKE_USB_DEBUG.optional;
       expected = false;
-    };
-
-    testYesWinsOverNo = {
-      expr = (getConfig mkDefaultWorksConfig)."NIXOS_TEST_BOOLEAN".tristate;
-      expected = "y";
-    };
-
-    testAllOptionalRemainOptional = {
-      expr = (getConfig allOptionalRemainOptional)."NIXOS_FAKE_USB_DEBUG".optional;
-      expected = true;
+      expr = (getConfig mandatoryVsOptionalConfig).NIXOS_FAKE_USB_DEBUG.optional;
     };
 
     # check that freeform options are unique
@@ -66,9 +62,14 @@ let
         res = builtins.tryEval ((getConfig freeformConfig).NIXOS_FAKE_MMC_BLOCK_MINORS.freeform);
       in
       {
-        expr = res.success;
         expected = false;
+        expr = res.success;
       };
+
+    testYesWinsOverNo = {
+      expected = "y";
+      expr = (getConfig mkDefaultWorksConfig)."NIXOS_TEST_BOOLEAN".tristate;
+    };
 
   };
 in

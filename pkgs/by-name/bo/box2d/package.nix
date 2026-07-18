@@ -2,26 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  replaceVars,
-
   # nativeBuildInputs
   cmake,
-  pkg-config,
-
   # buildInputs
   glfw3,
   imgui,
   libGLU,
+  libglut,
   libx11,
   libxcursor,
   libxi,
   libxinerama,
   libxrandr,
-  libglut,
-  xorgproto,
-
   nix-update-script,
+  pkg-config,
+  replaceVars,
+  xorgproto,
 }:
 
 let
@@ -43,21 +39,14 @@ stdenv.mkDerivation (finalAttrs: {
     # prevent CMake from trying to download some libraries from the internet
     (replaceVars ./cmake_dont_fetch_enkits.patch {
       enkits_src = fetchFromGitHub {
+        hash = "sha256-CerLj/WY+J3mrMvv7dGmZltjAM9v5C/IY4X+Ph78HVs=";
         owner = "dougbinks";
         repo = "enkiTS";
         rev = "686d0ec31829e0d9e5edf9ceb68c40f9b9b20ea9";
-        hash = "sha256-CerLj/WY+J3mrMvv7dGmZltjAM9v5C/IY4X+Ph78HVs=";
       };
     })
     ./cmake_use_system_glfw_and_imgui.patch
   ];
-
-  env.NIX_CFLAGS_COMPILE = toString (
-    lib.optionals stdenv.cc.isGNU [
-      # error: '*(float *)((char *)&localPointA + offsetof(b2Vec2, y))' may be used uninitialized
-      "-Wno-error=maybe-uninitialized"
-    ]
-  );
 
   nativeBuildInputs = [
     cmake
@@ -85,6 +74,13 @@ stdenv.mkDerivation (finalAttrs: {
     (cmakeBool "BOX2D_BUILD_UNIT_TESTS" finalAttrs.finalPackage.doCheck)
   ];
 
+  env.NIX_CFLAGS_COMPILE = toString (
+    lib.optionals stdenv.cc.isGNU [
+      # error: '*(float *)((char *)&localPointA + offsetof(b2Vec2, y))' may be used uninitialized
+      "-Wno-error=maybe-uninitialized"
+    ]
+  );
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -93,8 +89,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "2D physics engine";
     homepage = "https://box2d.org/";
     changelog = "https://github.com/erincatto/box2d/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.zlib;
   };
 })

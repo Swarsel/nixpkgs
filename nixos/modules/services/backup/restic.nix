@@ -11,66 +11,286 @@ let
 in
 {
   options.services.restic.backups = lib.mkOption {
+    default = { };
+
     description = ''
       Periodic backups to create with Restic.
     '';
+
+    example = {
+      commandbackup = {
+        command = [
+          "\${lib.getExe pkgs.sudo}"
+          "-u postgres"
+          "\${pkgs.postgresql}/bin/pg_dumpall"
+        ];
+
+        environmentFile = "/etc/nixos/secrets/restic-environment";
+        extraBackupArgs = [ "--tag database" ];
+        passwordFile = "/etc/nixos/secrets/restic-password";
+
+        pruneOpts = [
+          "--keep-daily 14"
+          "--keep-weekly 4"
+          "--keep-monthly 2"
+          "--group-by tags"
+        ];
+
+        repository = "s3:example.com/mybucket";
+      };
+
+      localbackup = {
+        exclude = [ "/home/*/.cache" ];
+        initialize = true;
+        passwordFile = "/etc/nixos/secrets/restic-password";
+        paths = [ "/home" ];
+        repository = "/mnt/backup-hdd";
+      };
+
+      remotebackup = {
+        extraOptions = [
+          "sftp.command='ssh backup@host -i /etc/nixos/secrets/backup-private-key -s sftp'"
+        ];
+
+        passwordFile = "/etc/nixos/secrets/restic-password";
+        paths = [ "/home" ];
+        repository = "sftp:backup@host:/backups/home";
+
+        timerConfig = {
+          OnCalendar = "00:05";
+          RandomizedDelaySec = "5h";
+        };
+      };
+    };
+
     type = lib.types.attrsOf (
       lib.types.submodule (
         { name, ... }:
         {
           options = {
-            passwordFile = lib.mkOption {
-              type = with lib.types; nullOr str;
+            package = lib.mkPackageOption pkgs "restic" { };
+
+            backupCleanupCommand = lib.mkOption {
               default = null;
+
               description = ''
-                Read the repository password from a file.
+                A script that must run after finishing the backup process.
               '';
-              example = "/etc/nixos/restic-password";
+
+              type = with lib.types; nullOr str;
+            };
+
+            backupPrepareCommand = lib.mkOption {
+              default = null;
+
+              description = ''
+                A script that must run before starting the backup process.
+              '';
+
+              type = with lib.types; nullOr str;
+            };
+
+            checkOpts = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                A list of options for 'restic check'.
+              '';
+
+              example = [
+                "--with-cache"
+              ];
+
+              type = lib.types.listOf lib.types.str;
+            };
+
+            command = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                Command to pass to --stdin-from-command. If null or an empty array, and `paths`/`dynamicFilesFrom`
+                are also null, no backup command will be run.
+              '';
+
+              example = [
+                "sudo"
+                "-u"
+                "postgres"
+                "pg_dumpall"
+              ];
+
+              type = lib.types.listOf lib.types.str;
+            };
+
+            createWrapper = lib.mkOption {
+              default = true;
+
+              description = ''
+                Whether to generate and add a script to the system path, that has the same environment variables set
+                as the systemd service. This can be used to e.g. mount snapshots or perform other opterations, without
+                having to manually specify most options.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            dynamicFilesFrom = lib.mkOption {
+              default = null;
+
+              description = ''
+                A script that produces a list of files to back up.  The
+                results of this command are given to the '--files-from'
+                option. The result is merged with paths specified via `paths`.
+              '';
+
+              example = "find /home/matt/git -type d -name .git";
+              type = with lib.types; nullOr str;
             };
 
             environmentFile = lib.mkOption {
-              type = with lib.types; nullOr str;
               default = null;
+
               description = ''
                 file containing the credentials to access the repository, in the
                 format of an EnvironmentFile as described by {manpage}`systemd.exec(5)`
               '';
+
+              type = with lib.types; nullOr str;
             };
 
-            rcloneOptions = lib.mkOption {
-              type =
-                with lib.types;
-                nullOr (
-                  attrsOf (oneOf [
-                    str
-                    bool
-                  ])
-                );
-              default = null;
+            exclude = lib.mkOption {
+              default = [ ];
+
               description = ''
-                Options to pass to rclone to control its behavior.
-                See <https://rclone.org/docs/#options> for
-                available options. When specifying option names, strip the
-                leading `--`. To set a flag such as
-                `--drive-use-trash`, which does not take a value,
-                set the value to the Boolean `true`.
+                Patterns to exclude when backing up. See
+                https://restic.readthedocs.io/en/latest/040_backup.html#excluding-files for
+                details on syntax.
               '';
-              example = {
-                bwlimit = "10M";
-                drive-use-trash = "true";
-              };
+
+              example = [
+                "/var/cache"
+                "/home/*/.cache"
+                ".git"
+              ];
+
+              type = lib.types.listOf lib.types.str;
+            };
+
+            extraBackupArgs = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                Extra arguments passed to restic backup.
+              '';
+
+              example = [
+                "--cleanup-cache"
+                "--exclude-file=/etc/nixos/restic-ignore"
+              ];
+
+              type = lib.types.listOf lib.types.str;
+            };
+
+            extraOptions = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                Extra extended options to be passed to the restic --option flag.
+              '';
+
+              example = [
+                "sftp.command='ssh backup@192.168.1.100 -i /home/user/.ssh/id_rsa -s sftp'"
+              ];
+
+              type = lib.types.listOf lib.types.str;
+            };
+
+            inhibitsSleep = lib.mkOption {
+              default = false;
+
+              description = ''
+                Prevents the system from sleeping while backing up.
+              '';
+
+              example = true;
+              type = lib.types.bool;
+            };
+
+            initialize = lib.mkOption {
+              default = false;
+
+              description = ''
+                Create the repository if it doesn't exist.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            passwordFile = lib.mkOption {
+              default = null;
+
+              description = ''
+                Read the repository password from a file.
+              '';
+
+              example = "/etc/nixos/restic-password";
+              type = with lib.types; nullOr str;
+            };
+
+            paths = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                Which paths to backup, in addition to ones specified via
+                `dynamicFilesFrom`.  If null or an empty array and
+                `dynamicFilesFrom` is also null, no backup command will be run.
+                 This can be used to create a prune-only job.
+              '';
+
+              example = [
+                "/var/lib/postgresql"
+                "/home/user/backup"
+              ];
+
+              # This is nullable for legacy reasons only. We should consider making it a pure listOf
+              # after some time has passed since this comment was added.
+              type = lib.types.nullOr (lib.types.listOf lib.types.str);
+            };
+
+            progressFps = lib.mkOption {
+              default = null;
+
+              description = ''
+                Controls the frequency of progress reporting.
+              '';
+
+              example = 0.1;
+              type = with lib.types; nullOr numbers.nonnegative;
+            };
+
+            pruneOpts = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                A list of options (--keep-\* et al.) for 'restic forget
+                --prune', to automatically prune old snapshots.  The
+                'forget' command is run *after* the 'backup' command, so
+                keep that in mind when constructing the --keep-\* options.
+              '';
+
+              example = [
+                "--keep-daily 7"
+                "--keep-weekly 5"
+                "--keep-monthly 12"
+                "--keep-yearly 75"
+              ];
+
+              type = lib.types.listOf lib.types.str;
             };
 
             rcloneConfig = lib.mkOption {
-              type =
-                with lib.types;
-                nullOr (
-                  attrsOf (oneOf [
-                    str
-                    bool
-                  ])
-                );
               default = null;
+
               description = ''
                 Configuration for the rclone remote being used for backup.
                 See the remote's specific options under rclone's docs at
@@ -84,17 +304,27 @@ in
                 option instead to specify secret values separately. Note that
                 options set here will override those set in the config file.
               '';
+
               example = {
-                type = "b2";
                 account = "xxx";
-                key = "xxx";
                 hard_delete = true;
+                key = "xxx";
+                type = "b2";
               };
+
+              type =
+                with lib.types;
+                nullOr (
+                  attrsOf (oneOf [
+                    str
+                    bool
+                  ])
+                );
             };
 
             rcloneConfigFile = lib.mkOption {
-              type = with lib.types; nullOr path;
               default = null;
+
               description = ''
                 Path to the file containing rclone configuration. This file
                 must contain configuration for the remote specified in this backup
@@ -102,265 +332,101 @@ in
                 `rcloneConfig` will override those set in this
                 file.
               '';
+
+              type = with lib.types; nullOr path;
             };
 
-            inhibitsSleep = lib.mkOption {
-              default = false;
-              type = lib.types.bool;
-              example = true;
+            rcloneOptions = lib.mkOption {
+              default = null;
+
               description = ''
-                Prevents the system from sleeping while backing up.
+                Options to pass to rclone to control its behavior.
+                See <https://rclone.org/docs/#options> for
+                available options. When specifying option names, strip the
+                leading `--`. To set a flag such as
+                `--drive-use-trash`, which does not take a value,
+                set the value to the Boolean `true`.
               '';
+
+              example = {
+                bwlimit = "10M";
+                drive-use-trash = "true";
+              };
+
+              type =
+                with lib.types;
+                nullOr (
+                  attrsOf (oneOf [
+                    str
+                    bool
+                  ])
+                );
             };
 
             repository = lib.mkOption {
-              type = with lib.types; nullOr str;
               default = null;
+
               description = ''
                 repository to backup to.
               '';
+
               example = "sftp:backup@192.168.1.100:/backups/${name}";
+              type = with lib.types; nullOr str;
             };
 
             repositoryFile = lib.mkOption {
-              type = with lib.types; nullOr path;
               default = null;
+
               description = ''
                 Path to the file containing the repository location to backup to.
               '';
+
+              type = with lib.types; nullOr path;
             };
 
-            paths = lib.mkOption {
-              # This is nullable for legacy reasons only. We should consider making it a pure listOf
-              # after some time has passed since this comment was added.
-              type = lib.types.nullOr (lib.types.listOf lib.types.str);
-              default = [ ];
-              description = ''
-                Which paths to backup, in addition to ones specified via
-                `dynamicFilesFrom`.  If null or an empty array and
-                `dynamicFilesFrom` is also null, no backup command will be run.
-                 This can be used to create a prune-only job.
-              '';
-              example = [
-                "/var/lib/postgresql"
-                "/home/user/backup"
-              ];
-            };
-
-            command = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              description = ''
-                Command to pass to --stdin-from-command. If null or an empty array, and `paths`/`dynamicFilesFrom`
-                are also null, no backup command will be run.
-              '';
-              example = [
-                "sudo"
-                "-u"
-                "postgres"
-                "pg_dumpall"
-              ];
-            };
-
-            exclude = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              description = ''
-                Patterns to exclude when backing up. See
-                https://restic.readthedocs.io/en/latest/040_backup.html#excluding-files for
-                details on syntax.
-              '';
-              example = [
-                "/var/cache"
-                "/home/*/.cache"
-                ".git"
-              ];
+            runCheck = lib.mkOption {
+              default = builtins.length config.services.restic.backups.${name}.checkOpts > 0;
+              defaultText = lib.literalExpression "builtins.length config.services.backups.${name}.checkOpts > 0";
+              description = "Whether to run the `check` command with the provided `checkOpts` options.";
+              example = true;
+              type = lib.types.bool;
             };
 
             timerConfig = lib.mkOption {
-              type = lib.types.nullOr (lib.types.attrsOf unitOption);
               default = {
                 OnCalendar = "daily";
                 Persistent = true;
               };
+
               description = ''
                 When to run the backup. See {manpage}`systemd.timer(5)` for
                 details. If null no timer is created and the backup will only
                 run when explicitly started.
               '';
+
               example = {
                 OnCalendar = "00:05";
-                RandomizedDelaySec = "5h";
                 Persistent = true;
+                RandomizedDelaySec = "5h";
               };
+
+              type = lib.types.nullOr (lib.types.attrsOf unitOption);
             };
 
             user = lib.mkOption {
-              type = lib.types.str;
               default = "root";
+
               description = ''
                 As which user the backup should run.
               '';
+
               example = "postgresql";
-            };
-
-            extraBackupArgs = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              description = ''
-                Extra arguments passed to restic backup.
-              '';
-              example = [
-                "--cleanup-cache"
-                "--exclude-file=/etc/nixos/restic-ignore"
-              ];
-            };
-
-            extraOptions = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              description = ''
-                Extra extended options to be passed to the restic --option flag.
-              '';
-              example = [
-                "sftp.command='ssh backup@192.168.1.100 -i /home/user/.ssh/id_rsa -s sftp'"
-              ];
-            };
-
-            initialize = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = ''
-                Create the repository if it doesn't exist.
-              '';
-            };
-
-            pruneOpts = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              description = ''
-                A list of options (--keep-\* et al.) for 'restic forget
-                --prune', to automatically prune old snapshots.  The
-                'forget' command is run *after* the 'backup' command, so
-                keep that in mind when constructing the --keep-\* options.
-              '';
-              example = [
-                "--keep-daily 7"
-                "--keep-weekly 5"
-                "--keep-monthly 12"
-                "--keep-yearly 75"
-              ];
-            };
-
-            runCheck = lib.mkOption {
-              type = lib.types.bool;
-              default = builtins.length config.services.restic.backups.${name}.checkOpts > 0;
-              defaultText = lib.literalExpression "builtins.length config.services.backups.${name}.checkOpts > 0";
-              description = "Whether to run the `check` command with the provided `checkOpts` options.";
-              example = true;
-            };
-
-            checkOpts = lib.mkOption {
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-              description = ''
-                A list of options for 'restic check'.
-              '';
-              example = [
-                "--with-cache"
-              ];
-            };
-
-            dynamicFilesFrom = lib.mkOption {
-              type = with lib.types; nullOr str;
-              default = null;
-              description = ''
-                A script that produces a list of files to back up.  The
-                results of this command are given to the '--files-from'
-                option. The result is merged with paths specified via `paths`.
-              '';
-              example = "find /home/matt/git -type d -name .git";
-            };
-
-            backupPrepareCommand = lib.mkOption {
-              type = with lib.types; nullOr str;
-              default = null;
-              description = ''
-                A script that must run before starting the backup process.
-              '';
-            };
-
-            backupCleanupCommand = lib.mkOption {
-              type = with lib.types; nullOr str;
-              default = null;
-              description = ''
-                A script that must run after finishing the backup process.
-              '';
-            };
-
-            package = lib.mkPackageOption pkgs "restic" { };
-
-            createWrapper = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = ''
-                Whether to generate and add a script to the system path, that has the same environment variables set
-                as the systemd service. This can be used to e.g. mount snapshots or perform other opterations, without
-                having to manually specify most options.
-              '';
-            };
-
-            progressFps = lib.mkOption {
-              type = with lib.types; nullOr numbers.nonnegative;
-              default = null;
-              description = ''
-                Controls the frequency of progress reporting.
-              '';
-              example = 0.1;
+              type = lib.types.str;
             };
           };
         }
       )
     );
-    default = { };
-    example = {
-      localbackup = {
-        paths = [ "/home" ];
-        exclude = [ "/home/*/.cache" ];
-        repository = "/mnt/backup-hdd";
-        passwordFile = "/etc/nixos/secrets/restic-password";
-        initialize = true;
-      };
-      remotebackup = {
-        paths = [ "/home" ];
-        repository = "sftp:backup@host:/backups/home";
-        passwordFile = "/etc/nixos/secrets/restic-password";
-        extraOptions = [
-          "sftp.command='ssh backup@host -i /etc/nixos/secrets/backup-private-key -s sftp'"
-        ];
-        timerConfig = {
-          OnCalendar = "00:05";
-          RandomizedDelaySec = "5h";
-        };
-      };
-      commandbackup = {
-        command = [
-          "\${lib.getExe pkgs.sudo}"
-          "-u postgres"
-          "\${pkgs.postgresql}/bin/pg_dumpall"
-        ];
-        extraBackupArgs = [ "--tag database" ];
-        repository = "s3:example.com/mybucket";
-        passwordFile = "/etc/nixos/secrets/restic-password";
-        environmentFile = "/etc/nixos/secrets/restic-environment";
-        pruneOpts = [
-          "--keep-daily 14"
-          "--keep-weekly 4"
-          "--keep-monthly 2"
-          "--group-by tags"
-        ];
-      };
-    };
   };
 
   config = {
@@ -370,6 +436,7 @@ in
           assertion =
             ((backup.repository == null) != (backup.repositoryFile == null))
             || (backup.environmentFile != null);
+
           message = "services.restic.backups.${name}: exactly one of repository, repositoryFile or environmentFile should be set";
         }
         {
@@ -379,6 +446,7 @@ in
               commandBackup = backup.command != [ ];
             in
             !(fileBackup && commandBackup);
+
           message = "services.restic.backups.${name}: cannot do both a command backup and a file backup at the same time.";
         }
         {
@@ -387,6 +455,29 @@ in
         }
       ]) config.services.restic.backups
     );
+
+    # generate wrapper scripts, as described in the createWrapper option
+    environment.systemPackages = lib.mapAttrsToList (
+      name: backup:
+      let
+        extraOptions = lib.concatMapStrings (arg: " -o ${arg}") backup.extraOptions;
+        resticCmd = "${lib.getExe backup.package}${extraOptions}";
+      in
+      pkgs.writeShellScriptBin "restic-${name}" ''
+        set -a  # automatically export variables
+        ${lib.optionalString (backup.environmentFile != null) "source ${backup.environmentFile}"}
+        # set same environment variables as the systemd service
+        ${lib.pipe config.systemd.services."restic-backups-${name}".environment [
+          (lib.filterAttrs (n: v: v != null && n != "PATH"))
+          (lib.mapAttrs (_: v: "${v}"))
+          lib.toShellVars
+        ]}
+        PATH=${config.systemd.services."restic-backups-${name}".environment.PATH}:$PATH
+
+        exec ${resticCmd} "$@"
+      ''
+    ) (lib.filterAttrs (_: v: v.createWrapper) config.services.restic.backups);
+
     systemd.services = lib.mapAttrs' (
       name: backup:
       let
@@ -421,6 +512,8 @@ in
       in
       lib.nameValuePair "restic-backups-${name}" (
         {
+          after = [ "network-online.target" ];
+
           environment = {
             # not %C, because that wouldn't work in the wrapper script
             RESTIC_CACHE_DIR = "/var/cache/restic-backups-${name}";
@@ -444,12 +537,14 @@ in
           // lib.optionalAttrs (backup.progressFps != null) {
             RESTIC_PROGRESS_FPS = toString backup.progressFps;
           };
+
           path = [ config.programs.ssh.package ];
           restartIfChanged = false;
-          wants = [ "network-online.target" ];
-          after = [ "network-online.target" ];
+
           serviceConfig = {
-            Type = "oneshot";
+            CacheDirectory = "restic-backups-${name}";
+            CacheDirectoryMode = "0700";
+
             ExecStart =
               lib.optionals doBackup [
                 "${resticCmd} backup ${
@@ -462,15 +557,17 @@ in
               ]
               ++ pruneCmd
               ++ checkCmd;
-            User = backup.user;
-            RuntimeDirectory = "restic-backups-${name}";
-            CacheDirectory = "restic-backups-${name}";
-            CacheDirectoryMode = "0700";
+
             PrivateTmp = true;
+            RuntimeDirectory = "restic-backups-${name}";
+            Type = "oneshot";
+            User = backup.user;
           }
           // lib.optionalAttrs (backup.environmentFile != null) {
             EnvironmentFile = backup.environmentFile;
           };
+
+          wants = [ "network-online.target" ];
         }
         // lib.optionalAttrs (backup.initialize || doBackup || backup.backupPrepareCommand != null) {
           preStart = ''
@@ -500,35 +597,14 @@ in
         }
       )
     ) config.services.restic.backups;
+
     systemd.timers = lib.mapAttrs' (
       name: backup:
       lib.nameValuePair "restic-backups-${name}" {
-        wantedBy = [ "timers.target" ];
         inherit (backup) timerConfig;
         unitConfig.X-OnlyManualStart = true;
+        wantedBy = [ "timers.target" ];
       }
     ) (lib.filterAttrs (_: backup: backup.timerConfig != null) config.services.restic.backups);
-
-    # generate wrapper scripts, as described in the createWrapper option
-    environment.systemPackages = lib.mapAttrsToList (
-      name: backup:
-      let
-        extraOptions = lib.concatMapStrings (arg: " -o ${arg}") backup.extraOptions;
-        resticCmd = "${lib.getExe backup.package}${extraOptions}";
-      in
-      pkgs.writeShellScriptBin "restic-${name}" ''
-        set -a  # automatically export variables
-        ${lib.optionalString (backup.environmentFile != null) "source ${backup.environmentFile}"}
-        # set same environment variables as the systemd service
-        ${lib.pipe config.systemd.services."restic-backups-${name}".environment [
-          (lib.filterAttrs (n: v: v != null && n != "PATH"))
-          (lib.mapAttrs (_: v: "${v}"))
-          lib.toShellVars
-        ]}
-        PATH=${config.systemd.services."restic-backups-${name}".environment.PATH}:$PATH
-
-        exec ${resticCmd} "$@"
-      ''
-    ) (lib.filterAttrs (_: v: v.createWrapper) config.services.restic.backups);
   };
 }

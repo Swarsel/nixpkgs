@@ -17,10 +17,8 @@ stdenv.mkDerivation {
     hash = "sha256-zXQD+IYuMV5vw27FpTpeCfh/mf0wvKzOvc4bplEDJCw=";
   };
 
-  buildInputs = [ curl ];
-
   nativeBuildInputs = [ autoreconfHook ];
-
+  buildInputs = [ curl ];
   enableParallelBuilding = true;
 
   meta = {

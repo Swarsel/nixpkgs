@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   apfel,
   applgrid,
+  autoreconfHook,
   lhapdf,
   root,
   zlib,
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     apfel
     applgrid
@@ -34,10 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Ultra-fast theory predictions for collider observables";
-    mainProgram = "apfelgrid-config";
-    license = lib.licenses.mit;
     homepage = "https://nhartland.github.io/APFELgrid/";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
+    mainProgram = "apfelgrid-config";
   };
 })

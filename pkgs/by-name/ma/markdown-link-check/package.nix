@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -17,16 +17,14 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-MBJZJsJ2Q0th0QBeDD7yJnv42Pot82IicD06qz1DPkw=";
-
   dontNpmBuild = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Checks all of the hyperlinks in a markdown text to determine if they are alive or dead";
-    mainProgram = "markdown-link-check";
     homepage = "https://github.com/tcort/markdown-link-check";
     license = lib.licenses.isc;
     maintainers = [ ];
+    mainProgram = "markdown-link-check";
   };
 }

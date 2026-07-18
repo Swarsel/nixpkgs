@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
-  fetchFromGitHub,
   lxml,
   paramiko,
   poetry-core,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-gvm";
   version = "26.11.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "greenbone";
@@ -24,20 +23,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-NTUDFZnDavHhl5AELMNj8AkwwVtY+96cMB9uhm4veQg=";
   };
 
-  build-system = [ poetry-core ];
+  nativeCheckInputs = [
+    pontos
+    pytestCheckHook
+  ];
 
-  pythonRelaxDeps = [ "defusedxml" ];
+  build-system = [ poetry-core ];
 
   dependencies = [
     defusedxml
     lxml
     paramiko
     typing-extensions
-  ];
-
-  nativeCheckInputs = [
-    pontos
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -47,7 +44,9 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_feed_xml_error" ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gvm" ];
+  pythonRelaxDeps = [ "defusedxml" ];
 
   meta = {
     description = "Collection of APIs that help with remote controlling a Greenbone Security Manager";

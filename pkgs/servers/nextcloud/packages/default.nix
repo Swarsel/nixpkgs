@@ -4,12 +4,12 @@
 
 {
   lib,
-  pkgs,
-  newScope,
-  apps ? lib.importJSON (./. + "/${ncVersion}.json"), # Support out-of-tree overrides
   callPackage,
   ncVersion,
+  newScope,
   nextcloud-notify_push,
+  pkgs,
+  apps ? lib.importJSON (./. + "/${ncVersion}.json"), # Support out-of-tree overrides
 }:
 
 let
@@ -26,18 +26,19 @@ let
       # Create a derivation from the official Nextcloud apps.
       # This takes the data generated from the go tool.
       mkNextcloudDerivation =
-        { pname, data }:
+        { data, pname }:
         pkgs.fetchNextcloudApp {
-          appName = pname;
-          appVersion = data.version;
-          license = appBaseDefs.${pname};
-          teams = [ lib.teams.nextcloud ];
           inherit (data)
             url
             hash
             description
             homepage
             ;
+
+          appName = pname;
+          appVersion = data.version;
+          license = appBaseDefs.${pname};
+          teams = [ lib.teams.nextcloud ];
         };
 
     }

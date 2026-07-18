@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  numpy,
   jsonschema,
+  numpy,
+  setuptools,
   svgwrite,
 }:
 
 buildPythonPackage rec {
   pname = "tskit";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,6 +23,9 @@ buildPythonPackage rec {
       --replace-fail "numpy>=2.0" "numpy"
   '';
 
+  # Pypi does not include test folder and too complex to compile from GitHub source
+  # will ask upstream to include tests in pypi
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,17 +34,14 @@ buildPythonPackage rec {
     svgwrite
   ];
 
-  # Pypi does not include test folder and too complex to compile from GitHub source
-  # will ask upstream to include tests in pypi
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tskit" ];
 
   meta = {
     description = "Tree sequence toolkit";
-    mainProgram = "tskit";
     homepage = "https://github.com/tskit-dev/tskit";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "tskit";
   };
 }

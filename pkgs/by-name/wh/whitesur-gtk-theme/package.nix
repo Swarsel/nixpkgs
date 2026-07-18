@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
   dialog,
+  gitUpdater,
   glib,
   gnome-themes-extra,
   jdupes,
@@ -12,15 +12,15 @@
   util-linux,
   altVariants ? [ ], # default: normal
   colorVariants ? [ ], # default: all
-  opacityVariants ? [ ], # default: all
-  themeVariants ? [ ], # default: default (BigSur-like theme)
-  schemeVariants ? [ ], # default: standard
+  darkerColor ? false, # default = false
   iconVariant ? null, # default: standard (Apple logo)
   nautilusStyle ? null, # default: stable (BigSur-like style)
+  opacityVariants ? [ ], # default: all
   panelOpacity ? null, # default: 15%
   panelSize ? null, # default: 32px
   roundedMaxWindow ? false, # default: false
-  darkerColor ? false, # default = false
+  schemeVariants ? [ ], # default: standard
+  themeVariants ? [ ], # default: default (BigSur-like theme)
 }:
 
 let
@@ -103,19 +103,6 @@ lib.checkListOfEnum "${pname}: window control buttons variants" [ "normal" "alt"
       hash = "sha256-tuon9XxMdrz9XNTp50sbss2gtx6H9hEZh8t2jSoqx28=";
     };
 
-    nativeBuildInputs = [
-      dialog
-      glib
-      jdupes
-      libxml2
-      sassc
-      util-linux
-    ];
-
-    buildInputs = [
-      gnome-themes-extra # adwaita engine for Gtk2
-    ];
-
     postPatch = ''
       find -name "*.sh" -print0 | while IFS= read -r -d ''' file; do
         patchShebangs "$file"
@@ -128,7 +115,18 @@ lib.checkListOfEnum "${pname}: window control buttons variants" [ "normal" "alt"
       substituteInPlace libs/lib-core.sh --replace-fail 'MY_HOME=$(getent passwd "''${MY_USERNAME}" | cut -d: -f6)' 'MY_HOME=/tmp'
     '';
 
-    dontBuild = true;
+    nativeBuildInputs = [
+      dialog
+      glib
+      jdupes
+      libxml2
+      sassc
+      util-linux
+    ];
+
+    buildInputs = [
+      gnome-themes-extra # adwaita engine for Gtk2
+    ];
 
     installPhase = ''
       runHook preInstall
@@ -154,13 +152,14 @@ lib.checkListOfEnum "${pname}: window control buttons variants" [ "normal" "alt"
       runHook postInstall
     '';
 
+    dontBuild = true;
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "MacOS BigSur like Gtk+ theme based on Elegant Design";
       homepage = "https://github.com/vinceliuice/WhiteSur-gtk-theme";
       license = lib.licenses.mit;
-      platforms = lib.platforms.unix;
       maintainers = with lib.maintainers; [ romildo ];
+      platforms = lib.platforms.unix;
     };
   }

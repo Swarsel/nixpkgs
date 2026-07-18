@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  makeWrapper,
+  stdenv,
   fetchzip,
-  testdisk,
+  findutils,
   imagemagick,
   jdk,
-  findutils,
+  makeWrapper,
   sleuthkit,
+  testdisk,
 }:
 let
   jdkWithJfx = jdk.override (
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     findutils
   ];
+
   buildInputs = [
     testdisk
     imagemagick
@@ -66,6 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Graphical interface to The Sleuth Kit and other open source digital forensics tools";
     homepage = "https://www.sleuthkit.org/autopsy";
     changelog = "https://github.com/sleuthkit/autopsy/releases/tag/autopsy-${finalAttrs.version}";
+
     # Autopsy brings a lot of vendored dependencies
     license = with lib.licenses; [
       asl20
@@ -79,10 +81,11 @@ stdenv.mkDerivation (finalAttrs: {
       mit
       gpl2Only
     ];
-    maintainers = with lib.maintainers; [ zebreus ];
-    mainProgram = "autopsy";
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ zebreus ];
     # Autopsy theoretically also supports darwin
     platforms = lib.platforms.x86_64;
+    mainProgram = "autopsy";
   };
 })

@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "silenthound";
   version = "0-unstable-2022-12-14";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "layer8secure";
@@ -21,7 +20,8 @@ python3.pkgs.buildPythonApplication {
     python-ldap
   ];
 
-  dontBuild = true;
+  # Only script available
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -31,8 +31,8 @@ python3.pkgs.buildPythonApplication {
     runHook postInstall
   '';
 
-  # Only script available
-  doCheck = false;
+  dontBuild = true;
+  pyproject = false;
 
   meta = {
     description = "Tool to enumerate an Active Directory Domain";

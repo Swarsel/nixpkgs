@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "flask-paginate";
   version = "2024.4.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lixxu";
@@ -19,15 +18,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-YaAgl+iuoXB0eWVzhmNq2UTOpM/tHfDISIb9CyaXiuA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ flask ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "flask_paginate" ];
-
+  build-system = [ setuptools ];
+  dependencies = [ flask ];
   enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "flask_paginate" ];
 
   meta = {
     description = "Pagination support for Flask";

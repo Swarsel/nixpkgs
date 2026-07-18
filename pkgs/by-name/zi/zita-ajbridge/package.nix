@@ -24,14 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
     zita-resampler
   ];
 
-  preConfigure = ''
-    cd ./source/
-  '';
-
   makeFlags = [
     "PREFIX=$(out)"
     "MANDIR=$(out)/share/man/man1"
   ];
+
+  preConfigure = ''
+    cd ./source/
+  '';
 
   enableParallelBuilding = true;
 

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   imagemagick,
   libimagequant,
   luajit,
   makeBinaryWrapper,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,11 +44,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Blazing-fast pywal-like color palette generator written in C";
     homepage = "https://github.com/nitinbhat972/cwal";
     license = lib.licenses.gpl3Only;
-    mainProgram = "cwal";
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       gustlik501
       nitinbhat972
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "cwal";
   };
 })

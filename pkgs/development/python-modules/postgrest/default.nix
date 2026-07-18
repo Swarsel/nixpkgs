@@ -1,23 +1,22 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  uv-build,
+  fetchFromGitHub,
+  buildPythonPackage,
+  deprecation,
   httpx,
   pydantic,
-  yarl,
-  strenum,
-  deprecation,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  strenum,
   unasync,
+  uv-build,
+  yarl,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "postgrest";
   version = "2.29.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "supabase";
@@ -25,19 +24,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-LaSlAYFvx/HHdfmc9J+KScVQ9JFGS98Yfihzn8F7t3g=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src/postgrest";
-
-  build-system = [ uv-build ];
-
-  dependencies = [
-    httpx
-    deprecation
-    pydantic
-    strenum
-    yarl
-  ]
-  ++ httpx.optional-dependencies.http2;
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -51,18 +37,31 @@ buildPythonPackage (finalAttrs: {
     unasync
   ];
 
-  pythonImportsCheck = [ "postgrest" ];
+  build-system = [ uv-build ];
+
+  dependencies = [
+    httpx
+    deprecation
+    pydantic
+    strenum
+    yarl
+  ]
+  ++ httpx.optional-dependencies.http2;
 
   disabledTestPaths = [
     "tests/_sync/"
     "tests/_async/"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "postgrest" ];
+  sourceRoot = "${finalAttrs.src.name}/src/postgrest";
+
   meta = {
     description = "Client library for Supabase Functions";
     homepage = "https://github.com/supabase/supabase-py";
     changelog = "https://github.com/supabase/supabase-py/blob/v${finalAttrs.src.tag}/CHANGELOG.md";
-    maintainers = with lib.maintainers; [ macbucheron ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ macbucheron ];
   };
 })

@@ -2,33 +2,31 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
   pyusb,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-yubico";
   version = "1.3.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-2EZkJ6pZIqxdS36cZbaTEIQnz1N9ZT1oyyEsBxPo5vU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyusb ];
-
   checkInputs = [ pytestCheckHook ];
-  pythonImportsCheck = [ "yubico" ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ pyusb ];
 
   disabledTests = [
     "usb" # requires a physical yubikey to test
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "yubico" ];
 
   meta = {
     description = "Python code to talk to YubiKeys";

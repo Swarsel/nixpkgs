@@ -5,9 +5,10 @@
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: {
     };
+
+    self = python;
   };
 in
 with python.pkgs;

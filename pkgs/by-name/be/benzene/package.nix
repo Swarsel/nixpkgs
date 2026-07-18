@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   boost,
   cmake,
@@ -17,12 +17,6 @@ stdenv.mkDerivation {
     hash = "sha256-3DX/OVjKXyeOmO6P6iz1FTkNQ0n7vUFkKQ5Ac+7t3l4=";
   };
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    boost
-    db
-  ];
-
   postPatch = ''
     # Fixes for boost v1.85.0+
     # https://github.com/cgao3/benzene-vanilla-cmake/issues/18
@@ -34,6 +28,13 @@ stdenv.mkDerivation {
       --replace-fail '-DABS_TOP_SRCDIR="''${top_srcdir}"' '-DABS_TOP_SRCDIR="$ENV{out}"' \
       --replace-fail '-DDATADIR="''${pkgdatadir}"' '-DDATADIR="$ENV{out}/share"'
   '';
+
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    boost
+    db
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -48,7 +49,7 @@ stdenv.mkDerivation {
     description = "Software for playing and solving the game of Hex";
     homepage = "https://github.com/cgao3/benzene-vanilla-cmake";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ eilvelia ];
+    platforms = lib.platforms.unix;
   };
 }

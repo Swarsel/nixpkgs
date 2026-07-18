@@ -15,19 +15,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-zpoOThjkL2Hu/ytxdqWcr2GXzN4Cm8hph7PJhSF5BlU=";
   };
 
-  cargoLock = {
-    lockFile = ./Cargo.lock;
-  };
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+  };
+
   meta = {
     description = "Rust utility to extract UEFI IFR data into human-readable text";
-    mainProgram = "ifrextractor";
     homepage = "https://github.com/LongSoft/IFRExtractor-RS";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ jiegec ];
+    mainProgram = "ifrextractor";
   };
 })

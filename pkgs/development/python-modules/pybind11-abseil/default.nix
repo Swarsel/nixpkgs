@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
   abseil-cpp,
+  buildPythonPackage,
+  cmake,
+  fetchpatch,
   pybind11,
   python,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pybind11-abseil";
   version = "202402.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "pybind";
@@ -23,19 +22,19 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-zwxCIhYMvexdSUmKM22OMBMEo0NRDgMtSVMDySFCn6U=";
       name = "pybind11_abseil.patch";
       url = "https://build.opensuse.org/public/source/openSUSE:Factory/pybind11-abseil/pybind11_abseil.patch?rev=2";
-      hash = "sha256-zwxCIhYMvexdSUmKM22OMBMEo0NRDgMtSVMDySFCn6U=";
     })
     (fetchpatch {
+      hash = "sha256-CLHOSni2ej6ICtvMtBoCIpR9CNPPibwIS+hYbOCAwBE=";
       name = "use-system-packages-if-possible.patch";
       url = "https://build.opensuse.org/public/source/openSUSE:Factory/pybind11-abseil/use-system-packages-if-possible.patch?rev=2";
-      hash = "sha256-CLHOSni2ej6ICtvMtBoCIpR9CNPPibwIS+hYbOCAwBE=";
     })
     (fetchpatch {
+      hash = "sha256-TU9AzvF83aROY4gwys2ITOcdtjEm4x2IbhX4cHNWp0M=";
       name = "0001-Install-headers-and-CMake-development-files.patch";
       url = "https://build.opensuse.org/public/source/openSUSE:Factory/pybind11-abseil/0001-Install-headers-and-CMake-development-files.patch?rev=2";
-      hash = "sha256-TU9AzvF83aROY4gwys2ITOcdtjEm4x2IbhX4cHNWp0M=";
     })
   ];
 
@@ -50,6 +49,8 @@ buildPythonPackage rec {
     (lib.cmakeFeature "CMAKE_INSTALL_PYDIR" "${placeholder "out"}/${python.sitePackages}")
     (lib.cmakeFeature "Python_EXECUTABLE" python.interpreter)
   ];
+
+  pyproject = false;
 
   meta = {
     description = "Pybind11 bindings for the Abseil C++ Common Libraries";

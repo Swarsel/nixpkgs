@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
-  makeBinaryWrapper,
-  poppler-utils,
-  tesseract,
+  buildGoModule,
   catdoc,
-  unrtf,
-  python3Packages,
+  makeBinaryWrapper,
   nix-update-script,
+  pkg-config,
+  poppler-utils,
+  python3Packages,
+  tesseract,
+  unrtf,
   writableTmpDirAsHomeHook,
 }:
 
@@ -24,19 +24,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-9qm9QSMko+ZHfKMMaTesA26X4OuemyB/w1w+0QOEpyE=";
   };
 
-  vendorHash = "sha256-GHmLCgL79BdGw/5zz50Y1kR/6JYNalvOj2zjIHQ9IF0=";
-
-  env.CGO_ENABLED = "0";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     makeBinaryWrapper
   ];
+
+  vendorHash = "sha256-GHmLCgL79BdGw/5zz50Y1kR/6JYNalvOj2zjIHQ9IF0=";
+  env.CGO_ENABLED = "0";
 
   # Run only unit tests for core packages; skip e2e tests that require Ollama
   checkPhase = ''
@@ -64,11 +58,12 @@ buildGoModule (finalAttrs: {
       }
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     writableTmpDirAsHomeHook
   ];
 
-  doInstallCheck = true;
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -81,6 +76,11 @@ buildGoModule (finalAttrs: {
 
     runHook postInstallCheck
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytest-cov-stub,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "in-place";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jwodder";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-PyOSuHHtftEPwL3mTwWYStZNXYX3EhptKfTu0PJjOZ8=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "in_place" ];
 
   meta = {

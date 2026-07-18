@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-scm,
   packaging,
-  setuptools-scm,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "nipreps-versions";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nipreps";
@@ -26,8 +25,8 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ packaging ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "nipreps_versions" ];
 
   meta = {

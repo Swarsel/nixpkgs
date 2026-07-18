@@ -2,12 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  python3,
   ghostscript,
-  qpdf,
-  poppler-utils,
   makeBinaryWrapper,
+  poppler-utils,
+  python3,
+  qpdf,
 }:
 
 let
@@ -31,7 +30,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ makeBinaryWrapper ];
-
   buildInputs = [ python ];
 
   installPhase = ''
@@ -52,8 +50,8 @@ stdenv.mkDerivation {
     description = "Tool to visually sign PDF files";
     homepage = "https://github.com/svenssonaxel/pdf-sign";
     license = lib.licenses.mit;
-    mainProgram = "pdf-sign";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.unix;
+    mainProgram = "pdf-sign";
   };
 }

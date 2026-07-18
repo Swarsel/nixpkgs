@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchYarnDeps,
   copyDesktopItems,
   electron,
+  fetchYarnDeps,
   fixup-yarn-lock,
   imagemagick,
   makeDesktopItem,
@@ -27,17 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AJbZDAEqGfVPuo+My8wxfFWVPelO6XK2pKsglmLyRTw=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-VY97NPnT1225l6SLyTI3qITBGF7rqE5xz6UVVucblcU=";
-  };
-
-  # required for electron
-  passthru.appOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/app/yarn.lock";
-    hash = "sha256-S9L/rveTuXF2vSqSDu+NlV5vP5f28lda/KMGU8iS1Zo=";
-  };
-
   outputs = [
     "out"
     "deps"
@@ -55,9 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     yarnConfigHook
     yarnInstallHook
   ];
-
-  dontConfigure = true;
-  yarnBuildScript = "electron";
 
   preBuild = ''
     originalOfflineMirror=$(yarn config --offline get yarn-offline-mirror)
@@ -109,29 +95,44 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "sylk";
-      exec = "sylk";
-      desktopName = "Sylk";
-      comment = "WebRTC client";
-      icon = "sylk-electron";
-      startupWMClass = "Sylk";
-      terminal = false;
       categories = [
         "Audio"
         "Video"
         "AudioVideo"
       ];
+
+      comment = "WebRTC client";
+      desktopName = "Sylk";
+      exec = "sylk";
+      icon = "sylk-electron";
+      name = "sylk";
+      startupWMClass = "Sylk";
+      terminal = false;
     })
   ];
+
+  dontConfigure = true;
+  yarnBuildScript = "electron";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-VY97NPnT1225l6SLyTI3qITBGF7rqE5xz6UVVucblcU=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
+  # required for electron
+  passthru.appOfflineCache = fetchYarnDeps {
+    hash = "sha256-S9L/rveTuXF2vSqSDu+NlV5vP5f28lda/KMGU8iS1Zo=";
+    yarnLock = finalAttrs.src + "/app/yarn.lock";
+  };
 
   meta = {
     description = "Desktop client for SylkServer, a multiparty conferencing tool";
     homepage = "https://sylkserver.com/";
-    license = lib.licenses.agpl3Plus;
     changelog = "https://github.com/AGProjects/sylk-webrtc/blob/${finalAttrs.src.rev}/changelog.txt";
-    mainProgram = "sylk";
+    license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ zimbatm ];
-    teams = with lib.teams; [ ngi ];
     platforms = electron.meta.platforms;
+    mainProgram = "sylk";
+    teams = with lib.teams; [ ngi ];
   };
 })

@@ -2,37 +2,37 @@
   lib,
   stdenv,
   fetchurl,
-  nixosTests,
-  pkg-config,
-  systemd,
-  gmp,
-  unbound,
-  bison,
-  flex,
-  pam,
-  libevent,
-  libcap_ng,
-  libxcrypt,
-  curl,
-  nspr,
   bash,
-  runtimeShell,
-  iproute2,
-  iptables,
-  procps,
+  bison,
   coreutils,
-  gnused,
-  gawk,
-  nss,
-  which,
-  python3,
-  libselinux,
-  ldns,
-  xmlto,
+  curl,
+  dns-root-data,
   docbook_xml_dtd_45,
   docbook_xsl,
   findXMLCatalogs,
-  dns-root-data,
+  flex,
+  gawk,
+  gmp,
+  gnused,
+  iproute2,
+  iptables,
+  ldns,
+  libcap_ng,
+  libevent,
+  libselinux,
+  libxcrypt,
+  nixosTests,
+  nspr,
+  nss,
+  pam,
+  pkg-config,
+  procps,
+  python3,
+  runtimeShell,
+  systemd,
+  unbound,
+  which,
+  xmlto,
 }:
 
 let
@@ -91,12 +91,6 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux libselinux;
 
-  prePatch = ''
-    # Replace wget with curl to save a dependency
-    substituteInPlace programs/letsencrypt/letsencrypt.in \
-      --replace-fail 'wget -q -P' '${curl}/bin/curl -s --remote-name-all --output-dir'
-  '';
-
   makeFlags = [
     "PREFIX=$(out)"
     "INITSYSTEM=systemd"
@@ -107,12 +101,6 @@ stdenv.mkDerivation rec {
     # Fix invalid XML files with libxml 2.14
     "XMLTO_FLAGS=--searchpath=$(abs_srcdir)/d.ipsec.conf:$(abs_srcdir)"
     "XMLTO_FLAGS+=--skip-validation"
-  ];
-
-  # Hack to make install work
-  installFlags = [
-    "VARDIR=\${out}/var"
-    "SYSCONFDIR=\${out}/etc"
   ];
 
   postInstall = ''
@@ -126,19 +114,34 @@ stdenv.mkDerivation rec {
         -i $out/bin/ipsec
   '';
 
+  # Hack to make install work
+  installFlags = [
+    "VARDIR=\${out}/var"
+    "SYSCONFDIR=\${out}/etc"
+  ];
+
+  prePatch = ''
+    # Replace wget with curl to save a dependency
+    substituteInPlace programs/letsencrypt/letsencrypt.in \
+      --replace-fail 'wget -q -P' '${curl}/bin/curl -s --remote-name-all --output-dir'
+  '';
+
   passthru.tests = { inherit (nixosTests) libreswan libreswan-nat; };
 
   meta = {
-    homepage = "https://libreswan.org";
     description = "Free software implementation of the VPN protocol based on IPSec and the Internet Key Exchange";
-    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+    homepage = "https://libreswan.org";
+
     license = with lib.licenses; [
       gpl2Plus
       mpl20
     ];
+
     maintainers = with lib.maintainers; [
       rnhmjoj
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     mainProgram = "ipsec";
   };
 }

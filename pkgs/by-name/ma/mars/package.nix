@@ -49,8 +49,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://mars-game.sourceforge.net/";
     description = "Game about fighting with ships in a 2D space setting";
+    homepage = "https://mars-game.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
     mainProgram = "mars";

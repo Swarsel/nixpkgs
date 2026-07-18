@@ -11,23 +11,18 @@
 buildPythonPackage rec {
   pname = "renson-endura-delta";
   version = "1.7.2";
-  pyproject = true;
 
   # github repo is gone
   src = fetchPypi {
-    pname = "renson_endura_delta";
     inherit version;
     hash = "sha256-bL4faNFh+ocNNspZCXE6/UZ4nH3mKkHSAEvwtN0xfoE=";
+    pname = "renson_endura_delta";
   };
 
   postPatch = ''
     substituteInPlace setup.py \
       --replace-fail "'pytest-runner'" ""
   '';
-
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
 
   doCheck = false; # no tests in sdist
 
@@ -36,6 +31,9 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "renson_endura_delta" ];
 
   meta = {

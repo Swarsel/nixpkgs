@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   charset-normalizer,
   dateparser,
   faust-cchardet,
-  fetchFromGitHub,
   lxml,
   pytestCheckHook,
   python-dateutil,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "htmldate";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adbar";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     hash = "sha256-3qtksgzqcgWtUv81Aqeh0nTWYnH0PjPLG4NuYChbV0g=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,23 +34,6 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  pythonRelaxDeps = [ "lxml" ];
-
-  optional-dependencies = {
-    speed = [
-      faust-cchardet
-      urllib3
-    ]
-    ++ urllib3.optional-dependencies.brotli;
-    all = [
-      faust-cchardet
-      urllib3
-    ]
-    ++ urllib3.optional-dependencies.brotli;
-  };
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # Tests that require an internet connection
     "test_input"
@@ -59,7 +42,23 @@ buildPythonPackage rec {
     "test_readme_examples"
   ];
 
+  optional-dependencies = {
+    all = [
+      faust-cchardet
+      urllib3
+    ]
+    ++ urllib3.optional-dependencies.brotli;
+
+    speed = [
+      faust-cchardet
+      urllib3
+    ]
+    ++ urllib3.optional-dependencies.brotli;
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "htmldate" ];
+  pythonRelaxDeps = [ "lxml" ];
 
   meta = {
     description = "Module for the extraction of original and updated publication dates from URLs and web pages";

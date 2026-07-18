@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  pkg-config,
-  texinfo,
+  babeltrace,
   bison,
+  expat,
   flex,
   glibc,
-  zlib,
-  zstd,
   gmp,
   mpfr,
   ncurses,
-  expat,
-  rocdbgapi,
   perl,
+  pkg-config,
   python3,
-  babeltrace,
+  rocdbgapi,
+  rocmUpdateScript,
   sourceHighlight,
+  texinfo,
+  zlib,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,6 +31,14 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "rocm-${finalAttrs.version}";
     hash = "sha256-oml/HLExnnjh7+axeWPZRWecpwK2BnzVOaGvXYhrxKs=";
   };
+
+  postPatch = ''
+    for file in *; do
+      if [ -f "$file" ]; then
+        patchShebangs "$file"
+      fi
+    done
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -84,13 +92,8 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-shared"
   ];
 
-  postPatch = ''
-    for file in *; do
-      if [ -f "$file" ]; then
-        patchShebangs "$file"
-      fi
-    done
-  '';
+  env.CFLAGS = "-Wno-switch -Wno-format-nonliteral -I${zstd.dev}/include -I${zlib.dev}/include -I${expat.dev}/include -I${ncurses.dev}/include";
+  env.CXXFLAGS = finalAttrs.env.CFLAGS;
 
   # The source directory for ROCgdb (based on upstream GDB) contains multiple project
   # of GNU’s toolchain (binutils and onther), we only need to install the GDB part.
@@ -98,16 +101,13 @@ stdenv.mkDerivation (finalAttrs: {
     make install-gdb
   '';
 
-  env.CFLAGS = "-Wno-switch -Wno-format-nonliteral -I${zstd.dev}/include -I${zlib.dev}/include -I${expat.dev}/include -I${ncurses.dev}/include";
-  env.CXXFLAGS = finalAttrs.env.CFLAGS;
-
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "ROCm source-level debugger for Linux, based on GDB";
     homepage = "https://github.com/ROCm/ROCgdb";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

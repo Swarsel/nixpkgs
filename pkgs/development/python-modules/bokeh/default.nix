@@ -1,51 +1,50 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  replaceVars,
-  colorama,
-  contourpy,
-  jinja2,
-  numpy,
-  nodejs,
-  packaging,
-  pandas,
-  pillow,
-  tornado,
-  pytestCheckHook,
-  pyyaml,
-  setuptools,
-  xyzservices,
   beautifulsoup4,
+  buildPythonPackage,
   channels,
   click,
+  colorama,
   colorcet,
+  contourpy,
+  fetchPypi,
   firefox,
   geckodriver,
   isort,
+  jinja2,
   json5,
   narwhals,
   nbconvert,
   networkx,
+  nodejs,
+  numpy,
+  packaging,
+  pandas,
+  pillow,
   psutil,
   pygments,
   pygraphviz,
   pytest,
   pytest-asyncio,
-  pytest-xdist,
   pytest-timeout,
+  pytest-xdist,
+  pytestCheckHook,
+  pyyaml,
+  replaceVars,
   requests,
   scipy,
   selenium,
+  setuptools,
   toml,
+  tornado,
   typing-extensions,
+  xyzservices,
 }:
 
 buildPythonPackage rec {
   pname = "bokeh";
   # update together with panel which is not straightforward
   version = "3.8.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -65,11 +64,7 @@ buildPythonPackage rec {
       --replace-fail 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
-  build-system = [
-    colorama
-    nodejs
-    setuptools
-  ];
+  doCheck = false; # need more work
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -97,6 +92,12 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  build-system = [
+    colorama
+    nodejs
+    setuptools
+  ];
+
   dependencies = [
     jinja2
     contourpy
@@ -110,15 +111,14 @@ buildPythonPackage rec {
     narwhals
   ];
 
-  doCheck = false; # need more work
-
+  pyproject = true;
   pythonImportsCheck = [ "bokeh" ];
 
   meta = {
     description = "Statistical and novel interactive HTML plots for Python";
-    mainProgram = "bokeh";
     homepage = "https://github.com/bokeh/bokeh";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "bokeh";
   };
 }

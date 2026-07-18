@@ -1,14 +1,15 @@
 {
-  stdenv,
   lib,
-  desktop-file-utils,
+  stdenv,
   fetchurl,
+  desktop-file-utils,
   elfutils,
   gettext,
   glib,
+  gnome,
   gtk4,
-  json-glib,
   itstool,
+  json-glib,
   libadwaita,
   libdex,
   libpanel,
@@ -21,23 +22,22 @@
   shared-mime-info,
   systemd,
   wrapGAppsHook4,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "sysprof";
   version = "50.0";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/sysprof/${lib.versions.major finalAttrs.version}/sysprof-${finalAttrs.version}.tar.xz";
+    hash = "sha256-qs5E6Q6Q9sNLsvvsjMtHuPgRAwgJeNZXWSh4Q8Mp1To=";
+  };
+
   outputs = [
     "out"
     "lib"
     "dev"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/sysprof/${lib.versions.major finalAttrs.version}/sysprof-${finalAttrs.version}.tar.xz";
-    hash = "sha256-qs5E6Q6Q9sNLsvvsjMtHuPgRAwgJeNZXWSh4Q8Mp1To=";
-  };
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -78,7 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "System-wide profiler for Linux";
-    homepage = "https://gitlab.gnome.org/GNOME/sysprof";
+
     longDescription = ''
       Sysprof is a sampling CPU profiler for Linux that uses the perf_event_open
       system call to profile the entire system, not just a single
@@ -86,8 +86,10 @@ stdenv.mkDerivation (finalAttrs: {
       do not need to be recompiled.  In fact they don't even have to
       be restarted.
     '';
+
+    homepage = "https://gitlab.gnome.org/GNOME/sysprof";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

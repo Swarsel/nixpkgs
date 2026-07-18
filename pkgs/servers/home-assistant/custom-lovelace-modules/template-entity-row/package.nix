@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -27,9 +27,9 @@ buildNpmPackage rec {
   '';
 
   meta = {
-    changelog = "https://github.com/thomasloven/lovelace-template-entity-row/releases/tag/${src.rev}";
     description = "Display whatever you want in an entities card row";
     homepage = "https://github.com/thomasloven/lovelace-template-entity-row";
+    changelog = "https://github.com/thomasloven/lovelace-template-entity-row/releases/tag/${src.rev}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
     platforms = lib.platforms.all;

@@ -14,11 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1pnri98a603xk47smnxr551svbmgbzcw018mq1k6srbrq6kaaz25";
   };
 
-  # Unfortunately, upstream appears inactive and the patches from the fork don’t apply cleanly.
-  # Modify `src/fastmix.cpp` to remove usage of the register storage class, which is
-  # not allowed in C++17 and is an error in clang 16.
-  prePatch = "substituteInPlace src/fastmix.cpp --replace 'register ' ''";
-
   outputs = [
     "out"
     "dev"
@@ -30,11 +25,16 @@ stdenv.mkDerivation (finalAttrs: {
        --replace /usr/bin/file ${file}/bin/file
   '';
 
+  # Unfortunately, upstream appears inactive and the patches from the fork don’t apply cleanly.
+  # Modify `src/fastmix.cpp` to remove usage of the register storage class, which is
+  # not allowed in C++17 and is an error in clang 16.
+  prePatch = "substituteInPlace src/fastmix.cpp --replace 'register ' ''";
+
   meta = {
     description = "MOD playing library";
     homepage = "https://modplug-xmms.sourceforge.net/";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ raskin ];
+    platforms = lib.platforms.unix;
   };
 })

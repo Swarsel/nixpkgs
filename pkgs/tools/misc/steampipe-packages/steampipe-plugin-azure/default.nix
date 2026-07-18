@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   steampipe,
 }:
@@ -18,12 +18,6 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-VHLRKdzHCXybcqSTV1xjTk1Edt1EwEmqYvUFtDQNZFM=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   doCheck = true;
 
   installPhase = ''
@@ -37,14 +31,19 @@ buildGoModule rec {
     runHook postInstall
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/turbot/steampipe-plugin-azure/blob/v${version}/CHANGELOG.md";
     description = "Azure Plugin for Steampipe";
-    homepage = "https://github.com/turbot/steampipe-plugin-azure";
-    license = lib.licenses.apsl20;
     longDescription = "Use SQL to instantly query Azure resources across regions and subscriptions.";
+    homepage = "https://github.com/turbot/steampipe-plugin-azure";
+    changelog = "https://github.com/turbot/steampipe-plugin-azure/blob/v${version}/CHANGELOG.md";
+    license = lib.licenses.apsl20;
     maintainers = [ ];
     platforms = steampipe.meta.platforms;
   };

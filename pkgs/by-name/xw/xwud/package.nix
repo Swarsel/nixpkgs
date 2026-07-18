@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
-  xorgproto,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xwud";
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -40,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Utility to display an image in XWD (X Window Dump) format";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xwud";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xwud";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xwud";
   };
 })

@@ -1,10 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
-
   python3,
+  rustPlatform,
   sqlite,
 }:
 
@@ -25,16 +24,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoHash = "sha256-bSnc8xFFcWONFX35G3S75ppqA2WF/M0EB/68BR1AgWM=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/biliup/biliup-rs/releases/tag/v${finalAttrs.version}";
     description = "CLI tool for uploading videos to Bilibili";
     homepage = "https://biliup.github.io/biliup-rs";
+    changelog = "https://github.com/biliup/biliup-rs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "biliup";
     platforms = lib.platforms.all;
+    mainProgram = "biliup";
   };
 })

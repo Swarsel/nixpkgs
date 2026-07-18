@@ -2,32 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  libsForQt5,
-  libraw,
-  exiv2,
-  zlib,
   alglib,
-  pkg-config,
-  makeDesktopItem,
+  cmake,
   copyDesktopItems,
+  exiv2,
+  libraw,
+  libsForQt5,
+  makeDesktopItem,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "hdrmerge";
   version = "0.5.0-unstable-2025-04-26";
+
   src = fetchFromGitHub {
     owner = "jcelaya";
     repo = "hdrmerge";
     rev = "3bbe43771ba15b899151721bc14aa57e86b60f2f";
     hash = "sha256-4FIGchwROXe8qLRBaYih2k9zDll2YoYGDj06SrIqK9Q=";
   };
-
-  # Disable find_package(ALGLIB REQUIRED) in the CMake file by providing a empty
-  # FindALGLIB.cmake, and provide ALGLIB_INCLUDES and ALGLIB_LIBRARIES ourselves
-  preConfigure = ''
-    touch cmake/FindALGLIB.cmake
-  '';
 
   nativeBuildInputs = [
     cmake
@@ -49,33 +44,41 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "ALGLIB_LIBRARIES" "alglib3")
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "HDRMerge";
-      genericName = "HDR raw image merge";
-      desktopName = "HDRMerge";
-      comment = finalAttrs.meta.description;
-      icon = "hdrmerge";
-      exec = "hdrmerge %F";
-      categories = [ "Graphics" ];
-      mimeTypes = [
-        "image/x-dcraw"
-        "image/x-adobe-dng"
-      ];
-      terminal = false;
-    })
-  ];
+  # Disable find_package(ALGLIB REQUIRED) in the CMake file by providing a empty
+  # FindALGLIB.cmake, and provide ALGLIB_INCLUDES and ALGLIB_LIBRARIES ourselves
+  preConfigure = ''
+    touch cmake/FindALGLIB.cmake
+  '';
 
   postInstall = ''
     install -Dm444 ../data/images/icon.png $out/share/icons/hicolor/128x128/apps/hdrmerge.png
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Graphics" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "HDRMerge";
+      exec = "hdrmerge %F";
+      genericName = "HDR raw image merge";
+      icon = "hdrmerge";
+
+      mimeTypes = [
+        "image/x-dcraw"
+        "image/x-adobe-dng"
+      ];
+
+      name = "HDRMerge";
+      terminal = false;
+    })
+  ];
+
   meta = {
-    homepage = "https://github.com/jcelaya/hdrmerge";
     description = "Combines two or more raw images into an HDR";
-    mainProgram = "hdrmerge";
+    homepage = "https://github.com/jcelaya/hdrmerge";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.paperdigits ];
+    platforms = lib.platforms.linux;
+    mainProgram = "hdrmerge";
   };
 })

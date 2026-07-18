@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   librevenge,
   libxml2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,10 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./libodfgen-add-include-cstdint-gcc15.patch
   ];
 
-  enableParallelBuilding = true;
-
-  configureFlags = lib.optional finalAttrs.finalPackage.doCheck "--enable-test";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -33,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
+  configureFlags = lib.optional finalAttrs.finalPackage.doCheck "--enable-test";
   doCheck = true;
 
   checkFlags = [
@@ -41,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   checkTarget = "launch_all";
+  enableParallelBuilding = true;
 
   meta = {
     description = "Base library for generating ODF documents";

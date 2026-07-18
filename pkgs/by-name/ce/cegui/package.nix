@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ogre,
-  freetype,
   boost,
+  cmake,
   expat,
+  freetype,
   libiconv,
+  ogre,
   unstableGitUpdater,
 }:
 
@@ -60,10 +60,10 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "http://cegui.org.uk/";
     description = "C++ Library for creating GUIs";
-    mainProgram = "CEGUISampleFramework-0.9999";
+    homepage = "http://cegui.org.uk/";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
+    mainProgram = "CEGUISampleFramework-0.9999";
   };
 }

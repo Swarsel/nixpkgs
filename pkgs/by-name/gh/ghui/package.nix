@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   bun,
   gh,
   git,
@@ -13,8 +13,6 @@
 buildNpmPackage (finalAttrs: {
   pname = "ghui";
   version = "0.4.6";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "kitlangton";
@@ -31,33 +29,8 @@ buildNpmPackage (finalAttrs: {
     cp ${./package-lock.json} package-lock.json
   '';
 
-  npmDepsHash = "sha256-pg+USHnvcxaXG/floNItLXNFJOPvuDltQCcN1qT/nng=";
-  npmDepsFetcherVersion = 3;
-
   nativeBuildInputs = [ bun ];
-
-  npmFlags = [
-    "--no-audit"
-    "--no-fund"
-  ];
-
-  npmBuildScript = "build:cli";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
-  postInstallCheck = ''
-    cd $out/lib/ghui
-    ${lib.getExe bun} -e '
-      await import("@effect/atom-react")
-      await import("@ghui/keymap")
-      await import("@opentui/core")
-      await import("@opentui/react")
-      await import("effect")
-      await import("react")
-      await import("scheduler")
-    '
-  '';
+  npmDepsHash = "sha256-pg+USHnvcxaXG/floNItLXNFJOPvuDltQCcN1qT/nng=";
 
   # The bundled CLI runs on Bun and resolves runtime dependencies from the
   # installed node_modules tree. gh is kept on PATH for GitHub API operations.
@@ -117,6 +90,30 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  npmBuildScript = "build:cli";
+  npmDepsFetcherVersion = 3;
+
+  npmFlags = [
+    "--no-audit"
+    "--no-fund"
+  ];
+
+  postInstallCheck = ''
+    cd $out/lib/ghui
+    ${lib.getExe bun} -e '
+      await import("@effect/atom-react")
+      await import("@ghui/keymap")
+      await import("@opentui/core")
+      await import("@opentui/react")
+      await import("effect")
+      await import("react")
+      await import("scheduler")
+    '
+  '';
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--generate-lockfile" ];
   };
@@ -126,9 +123,9 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/kitlangton/ghui";
     changelog = "https://github.com/kitlangton/ghui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ kitlangton ];
-    mainProgram = "ghui";
-    platforms = bun.meta.platforms;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ kitlangton ];
+    platforms = bun.meta.platforms;
+    mainProgram = "ghui";
   };
 })

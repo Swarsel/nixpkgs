@@ -36,6 +36,52 @@ let
   last = l: elemAt l ((length l) - 1);
 in
 rec {
+  # This is a very hacky way of programming this!
+  # A better way would be to reuse existing filtering by making multiple gitignore functions per each root.
+  # Then for each file find the set of roots with gitignores (and functions).
+  # This would make gitignoreFilterSource very different from gitignoreFilterPure.
+  # rootPath → gitignoresConcatenated
+  compileRecursiveGitignore =
+    root:
+    let
+      dirOrIgnore = file: type: baseNameOf file == ".gitignore" || type == "directory";
+      ignores = builtins.filterSource dirOrIgnore root;
+    in
+    readFile (
+      runCommand "${baseNameOf root}-recursive-gitignore" { } ''
+        cd ${ignores}
+
+        find -type f -exec sh -c '
+          rel="$(realpath --relative-to=. "$(dirname "$1")")/"
+          if [ "$rel" = "./" ]; then rel=""; fi
+
+          awk -v prefix="$rel" -v root="$1" -v top="$(test -z "$rel" && echo 1)" "
+            BEGIN { print \"# \"root }
+
+            /^!?[^\\/]+\/?$/ {
+              match(\$0, /^!?/, negation)
+              sub(/^!?/, \"\")
+
+              if (top) { middle = \"\" } else { middle = \"**/\" }
+
+              print negation[0] prefix middle \$0
+            }
+
+            /^!?(\\/|.*\\/.+$)/ {
+              match(\$0, /^!?/, negation)
+              sub(/^!?/, \"\")
+
+              if (!top) sub(/^\//, \"\")
+
+              print negation[0] prefix \$0
+            }
+
+            END { print \"\" }
+          " "$1"
+        ' sh {} \; > $out
+      ''
+    );
+
   # [["good/relative/source/file" true] ["bad.tmpfile" false]] -> root -> path
   filterPattern =
     patterns: root:
@@ -61,6 +107,49 @@ rec {
         )
       )
     );
+
+  # string|[string|file] (→ [string|file] → [string]) -> string
+  gitignoreCompileIgnore =
+    file_str_patterns: root:
+    let
+      onPath = f: a: if typeOf a == "path" then f a else a;
+      str_patterns = map (onPath readFile) (toList file_str_patterns);
+    in
+    concatStringsSep "\n" str_patterns;
+
+  gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
+
+  gitignoreFilterPure =
+    predicate: patterns: root: name: type:
+    gitignoreFilter (gitignoreCompileIgnore patterns root) root name type && predicate name type;
+
+  gitignoreFilterRecursiveSource =
+    predicate: patterns: root:
+    gitignoreFilterSourcePure predicate (withRecursiveGitignoreFile patterns root) root;
+
+  gitignoreFilterSource =
+    predicate: patterns: root:
+    gitignoreFilterSourcePure predicate (withGitignoreFile patterns root) root;
+
+  # filterSource derivatives
+  gitignoreFilterSourcePure =
+    predicate: patterns: root:
+    filterSource (gitignoreFilterPure predicate patterns root) root;
+
+  gitignoreRecursiveSource = gitignoreFilterSourcePure (_: _: true);
+
+  gitignoreSource =
+    patterns:
+    let
+      type = typeOf patterns;
+    in
+    if (type == "string" && pathExists patterns) || type == "path" then
+      throw "type error in gitignoreSource(patterns -> source -> path), " "use [] or \"\" if there are no additional patterns"
+    else
+      gitignoreFilterSource (_: _: true) patterns;
+
+  # "Predicate"-less alternatives
+  gitignoreSourcePure = gitignoreFilterSourcePure (_: _: true);
 
   # string -> [[regex bool]]
   gitignoreToPatterns =
@@ -161,98 +250,8 @@ rec {
       ) (computeNegation l)
     ) (filter (l: !isList l && !isComment l) (split "\n" gitignore));
 
-  gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
-
-  # string|[string|file] (→ [string|file] → [string]) -> string
-  gitignoreCompileIgnore =
-    file_str_patterns: root:
-    let
-      onPath = f: a: if typeOf a == "path" then f a else a;
-      str_patterns = map (onPath readFile) (toList file_str_patterns);
-    in
-    concatStringsSep "\n" str_patterns;
-
-  gitignoreFilterPure =
-    predicate: patterns: root: name: type:
-    gitignoreFilter (gitignoreCompileIgnore patterns root) root name type && predicate name type;
-
-  # This is a very hacky way of programming this!
-  # A better way would be to reuse existing filtering by making multiple gitignore functions per each root.
-  # Then for each file find the set of roots with gitignores (and functions).
-  # This would make gitignoreFilterSource very different from gitignoreFilterPure.
-  # rootPath → gitignoresConcatenated
-  compileRecursiveGitignore =
-    root:
-    let
-      dirOrIgnore = file: type: baseNameOf file == ".gitignore" || type == "directory";
-      ignores = builtins.filterSource dirOrIgnore root;
-    in
-    readFile (
-      runCommand "${baseNameOf root}-recursive-gitignore" { } ''
-        cd ${ignores}
-
-        find -type f -exec sh -c '
-          rel="$(realpath --relative-to=. "$(dirname "$1")")/"
-          if [ "$rel" = "./" ]; then rel=""; fi
-
-          awk -v prefix="$rel" -v root="$1" -v top="$(test -z "$rel" && echo 1)" "
-            BEGIN { print \"# \"root }
-
-            /^!?[^\\/]+\/?$/ {
-              match(\$0, /^!?/, negation)
-              sub(/^!?/, \"\")
-
-              if (top) { middle = \"\" } else { middle = \"**/\" }
-
-              print negation[0] prefix middle \$0
-            }
-
-            /^!?(\\/|.*\\/.+$)/ {
-              match(\$0, /^!?/, negation)
-              sub(/^!?/, \"\")
-
-              if (!top) sub(/^\//, \"\")
-
-              print negation[0] prefix \$0
-            }
-
-            END { print \"\" }
-          " "$1"
-        ' sh {} \; > $out
-      ''
-    );
-
   withGitignoreFile = patterns: root: toList patterns ++ [ ".git" ] ++ [ (root + "/.gitignore") ];
 
   withRecursiveGitignoreFile =
     patterns: root: toList patterns ++ [ ".git" ] ++ [ (compileRecursiveGitignore root) ];
-
-  # filterSource derivatives
-
-  gitignoreFilterSourcePure =
-    predicate: patterns: root:
-    filterSource (gitignoreFilterPure predicate patterns root) root;
-
-  gitignoreFilterSource =
-    predicate: patterns: root:
-    gitignoreFilterSourcePure predicate (withGitignoreFile patterns root) root;
-
-  gitignoreFilterRecursiveSource =
-    predicate: patterns: root:
-    gitignoreFilterSourcePure predicate (withRecursiveGitignoreFile patterns root) root;
-
-  # "Predicate"-less alternatives
-
-  gitignoreSourcePure = gitignoreFilterSourcePure (_: _: true);
-  gitignoreSource =
-    patterns:
-    let
-      type = typeOf patterns;
-    in
-    if (type == "string" && pathExists patterns) || type == "path" then
-      throw "type error in gitignoreSource(patterns -> source -> path), " "use [] or \"\" if there are no additional patterns"
-    else
-      gitignoreFilterSource (_: _: true) patterns;
-
-  gitignoreRecursiveSource = gitignoreFilterSourcePure (_: _: true);
 }

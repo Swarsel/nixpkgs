@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   runCommand,
   rubies ? null,
@@ -15,7 +15,6 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "chruby";
-
   version = "0.3.9";
 
   src = fetchFromGitHub {
@@ -44,7 +43,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/postmodern/chruby";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "chruby-exec";
     platforms = lib.platforms.unix;
+    mainProgram = "chruby-exec";
   };
 }

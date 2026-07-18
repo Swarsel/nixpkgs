@@ -1,21 +1,20 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  sphinx,
   pyyaml,
   rst2pdf,
-  lib,
+  setuptools,
+  sphinx,
 }:
 buildPythonPackage rec {
   pname = "sphinxcontrib-mermaid";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "sphinxcontrib_mermaid";
     hash = "sha256-z099RT0AETLqul0f31PUIEnwLpEyE8+DN0J0g7/KJvQ=";
+    pname = "sphinxcontrib_mermaid";
   };
 
   build-system = [ setuptools ];
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     rst2pdf
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sphinxcontrib.mermaid" ];
 
   meta = {

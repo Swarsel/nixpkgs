@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  sassc,
+  buildPackages,
+  gdk-pixbuf,
+  gtk-engine-murrine,
   gtk3,
   inkscape,
-  optipng,
-  gtk-engine-murrine,
-  gdk-pixbuf,
   librsvg,
+  meson,
+  ninja,
+  optipng,
   python3,
-  buildPackages,
+  sassc,
 }:
 
 stdenv.mkDerivation {
@@ -25,6 +25,18 @@ stdenv.mkDerivation {
     rev = "6615e4510485c5dc0b379746acc40f538d987c86";
     sha256 = "16h03x2m4j4hfwp7pdmw1navcy5q7di38jvigfgf263wajyxbznr";
   };
+
+  postPatch = ''
+    patchShebangs .
+
+    for file in $(find -name render-\*.sh); do
+      substituteInPlace "$file" \
+        --replace 'INKSCAPE="/usr/bin/inkscape"' \
+                  'INKSCAPE="${buildPackages.inkscape}/bin/inkscape"' \
+        --replace 'OPTIPNG="/usr/bin/optipng"' \
+                  'OPTIPNG="${buildPackages.optipng}/bin/optipng"'
+    done
+  '';
 
   nativeBuildInputs = [
     meson
@@ -45,27 +57,17 @@ stdenv.mkDerivation {
     gtk-engine-murrine
   ];
 
-  postPatch = ''
-    patchShebangs .
-
-    for file in $(find -name render-\*.sh); do
-      substituteInPlace "$file" \
-        --replace 'INKSCAPE="/usr/bin/inkscape"' \
-                  'INKSCAPE="${buildPackages.inkscape}/bin/inkscape"' \
-        --replace 'OPTIPNG="/usr/bin/optipng"' \
-                  'OPTIPNG="${buildPackages.optipng}/bin/optipng"'
-    done
-  '';
-
   meta = {
     description = "System76 Pop GTK+ Theme";
     homepage = "https://github.com/pop-os/gtk-theme";
+
     license = with lib.licenses; [
       gpl3
       lgpl21
       cc-by-sa-40
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

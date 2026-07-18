@@ -1,24 +1,23 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   apple-compress,
   asn1,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   hatchling,
-  lib,
   lzfse,
   pycryptodome,
   pylzss,
   pytestCheckHook,
   remotezip,
-  stdenv,
   uv-dynamic-versioning,
 }:
 
 buildPythonPackage rec {
   pname = "pyimg4";
   version = "0.8.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "m1stadev";
@@ -27,13 +26,14 @@ buildPythonPackage rec {
     hash = "sha256-rGFHd4MAJrbKhtX+Ey/zqQ/12wWxDyBBy1xPGDFQjao=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    remotezip
+  ];
+
   build-system = [
     hatchling
     uv-dynamic-versioning
-  ];
-
-  pythonRelaxDeps = [
-    "pylzss"
   ];
 
   dependencies = [
@@ -49,13 +49,6 @@ buildPythonPackage rec {
     lzfse
   ];
 
-  pythonImportsCheck = [ "pyimg4" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    remotezip
-  ];
-
   disabledTests = [
     # tests take forever
     "test_read_lzss_dec"
@@ -65,14 +58,21 @@ buildPythonPackage rec {
     "test_read_payp"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "pyimg4" ];
+
+  pythonRelaxDeps = [
+    "pylzss"
+  ];
+
   meta = {
-    # https://github.com/m1stadev/PyIMG4/pull/59
-    broken = lib.versionAtLeast asn1.version "3";
-    changelog = "https://github.com/m1stadev/PyIMG4/releases/tag/${src.tag}";
     description = "Python library/CLI tool for parsing Apple's Image4 format";
     homepage = "https://github.com/m1stadev/PyIMG4";
+    changelog = "https://github.com/m1stadev/PyIMG4/releases/tag/${src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "pyimg4";
     maintainers = [ lib.maintainers.dotlambda ];
+    mainProgram = "pyimg4";
+    # https://github.com/m1stadev/PyIMG4/pull/59
+    broken = lib.versionAtLeast asn1.version "3";
   };
 }

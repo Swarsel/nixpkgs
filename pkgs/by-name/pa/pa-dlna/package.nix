@@ -1,9 +1,9 @@
 {
   lib,
-  curl,
   fetchFromGitLab,
-  flac,
+  curl,
   ffmpeg-headless,
+  flac,
   lame,
   pulseaudio,
   python3,
@@ -12,9 +12,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pa-dlna";
   version = "1.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitLab {
     owner = "xdegaye";
@@ -34,6 +31,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail "/usr/bin/pa-dlna" "$out/bin/pa-dlna"
   '';
 
+  nativeCheckInputs = [
+    curl
+    ffmpeg-headless
+    python3.pkgs.pytestCheckHook
+  ];
+
+  postInstall = ''
+    install systemd/pa-dlna.service -Dt $out/share/systemd/user/
+  '';
+
+  __structuredAttrs = true;
   build-system = [ python3.pkgs.flit-core ];
 
   dependencies = with python3.pkgs; [
@@ -42,21 +50,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     systemd-python
   ];
 
-  postInstall = ''
-    install systemd/pa-dlna.service -Dt $out/share/systemd/user/
-  '';
-
-  nativeCheckInputs = [
-    curl
-    ffmpeg-headless
-    python3.pkgs.pytestCheckHook
-  ];
-
   disabledTests = [
     # path to parec is patched and which breaks the mocking
     "test_no_parec"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pa_dlna" ];
 
   meta = {

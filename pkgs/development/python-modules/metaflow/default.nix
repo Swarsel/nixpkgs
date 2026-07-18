@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   boto3,
+  buildPythonPackage,
+  python,
   requests,
   setuptools,
-  python,
 }:
 
 buildPythonPackage rec {
   pname = "metaflow";
   version = "2.19.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Netflix";
@@ -19,15 +18,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-A3r93vmWwpbdVXsaiY4Oo+LRjlkXCT8wpOTlNgQNxL0=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    boto3
-    requests
-  ];
 
   checkPhase = ''
     runHook preCheck
@@ -43,6 +33,16 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    boto3
+    requests
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "metaflow" ];
 
   meta = {

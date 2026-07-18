@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -16,8 +16,6 @@ stdenvNoCC.mkDerivation rec {
   };
 
   strictDeps = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     plugindir="$out/share/zsh/site-functions"
@@ -25,6 +23,9 @@ stdenvNoCC.mkDerivation rec {
     mkdir -p "$plugindir"
     cp -r -- F-Sy-H.plugin.zsh chroma functions share themes "$plugindir"/
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Feature-rich Syntax Highlighting for Zsh";

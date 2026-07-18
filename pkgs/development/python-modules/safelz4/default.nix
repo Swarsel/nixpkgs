@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  cargo,
-  rustPlatform,
-  rustc,
   buildPythonPackage,
-
+  cargo,
   # testing
   hypothesis,
-  pytestCheckHook,
   pytest-benchmark,
+  pytestCheckHook,
+  rustPlatform,
+  rustc,
   setuptools-rust,
   xxhash,
 }:
@@ -17,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "safelz4";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LVivona";
@@ -26,20 +24,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-t4pCykt2WsR/Ij/ylwKHLY/NYBdDLlZjMY2BX3ld9T4=";
   };
 
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ./Cargo.lock;
-  };
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
-
-  build-system = [
-    cargo
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-    rustc
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -49,6 +36,19 @@ buildPythonPackage (finalAttrs: {
   preCheck = ''
     export PATH=$out/bin:$PATH
   '';
+
+  build-system = [
+    cargo
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+    rustc
+  ];
+
+  cargoDeps = rustPlatform.importCargoLock {
+    lockFile = ./Cargo.lock;
+  };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "safelz4"

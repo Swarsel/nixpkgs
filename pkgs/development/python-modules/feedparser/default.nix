@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
   setuptools,
   sgmllib3k,
@@ -10,9 +10,6 @@
 buildPythonPackage rec {
   pname = "feedparser";
   version = "6.0.12";
-  pyproject = true;
-
-  __darwinAllowLocalNetworking = true;
 
   src = fetchFromGitHub {
     owner = "kurtmckee";
@@ -20,10 +17,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ZLn4Naf0CQG04iXfVJVimrBQ7TGBEPcEPCF3XMjX/Mo=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ sgmllib3k ];
 
   checkPhase = ''
     runHook preCheck
@@ -36,6 +29,10 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ sgmllib3k ];
+  pyproject = true;
   pythonImportsCheck = [ "feedparser" ];
 
   meta = {

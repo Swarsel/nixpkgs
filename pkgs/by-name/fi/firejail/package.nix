@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   libapparmor,
+  nixosTests,
+  pkg-config,
   which,
   xdg-dbus-proxy,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-rw1hNX8QFy5UFDx4vaYiiWV+hy7ji6XY6eEPvieGQoM=";
   };
 
+  patches = [
+    # By default fbuilder hardcodes the firejail binary to the install path.
+    # On NixOS the firejail binary is a setuid wrapper available in $PATH.
+    ./fbuilder-call-firejail-on-path.patch
+  ];
+
   nativeBuildInputs = [
     pkg-config
   ];
@@ -32,24 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   configureFlags = [
     "--enable-apparmor"
   ];
-
-  patches = [
-    # By default fbuilder hardcodes the firejail binary to the install path.
-    # On NixOS the firejail binary is a setuid wrapper available in $PATH.
-    ./fbuilder-call-firejail-on-path.patch
-  ];
-
-  prePatch = ''
-    # Fix the path to 'xdg-dbus-proxy' hardcoded in the 'common.h' file
-    substituteInPlace src/include/common.h \
-      --replace '/usr/bin/xdg-dbus-proxy' '${xdg-dbus-proxy}/bin/xdg-dbus-proxy'
-
-    # Workaround for regression introduced in 0.9.72 preventing usage of
-    # end-of-options indicator "--"
-    # See https://github.com/netblue30/firejail/issues/5659
-    substituteInPlace src/firejail/sandbox.c \
-      --replace " && !arg_doubledash" ""
-  '';
 
   preConfigure = ''
     sed -e 's@/bin/bash@${stdenv.shell}@g' -i $( grep -lr /bin/bash .)
@@ -87,14 +75,26 @@ stdenv.mkDerivation (finalAttrs: {
   # bash: src/fsec-optimize/fsec-optimize: No such file or directory
   enableParallelBuilding = false;
 
+  prePatch = ''
+    # Fix the path to 'xdg-dbus-proxy' hardcoded in the 'common.h' file
+    substituteInPlace src/include/common.h \
+      --replace '/usr/bin/xdg-dbus-proxy' '${xdg-dbus-proxy}/bin/xdg-dbus-proxy'
+
+    # Workaround for regression introduced in 0.9.72 preventing usage of
+    # end-of-options indicator "--"
+    # See https://github.com/netblue30/firejail/issues/5659
+    substituteInPlace src/firejail/sandbox.c \
+      --replace " && !arg_doubledash" ""
+  '';
+
   passthru.tests = nixosTests.firejail;
 
   meta = {
     description = "Namespace-based sandboxing tool for Linux";
+    homepage = "https://firejail.wordpress.com/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.linux;
-    homepage = "https://firejail.wordpress.com/";
     mainProgram = "firejail";
   };
 })

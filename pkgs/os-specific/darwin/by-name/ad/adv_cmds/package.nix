@@ -17,8 +17,6 @@ let
   xnu = sourceRelease "xnu"; # Can’t use xnuHeaders because adv_cmds is a transitive dependency of xnuHeaders.
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "adv_cmds-deps-private-headers";
-
     buildCommand = ''
       install -D -m644 -t "$out/include" \
         '${libplatform}/private/_simple.h' \
@@ -31,11 +29,11 @@ let
       install -D -m644 -t "$out/include/sys" \
         '${xnu}/bsd/sys/proc_private.h'
     '';
+
+    name = "adv_cmds-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "adv_cmds";
-
   outputs = [
     "out"
     "ps"
@@ -45,17 +43,17 @@ mkAppleDerivation {
   patches = [
     # We need `colldef` and `mklocale` due to building old locale data. Revert their removal.
     (fetchpatch2 {
-      url = "https://github.com/apple-oss-distributions/adv_cmds/commit/6bed8737a34dbb54782a18f47dccf933a9967a12.patch?full_index=1";
+      hash = "sha256-zDXYuYRak9t9ZnAacl3h5i36g7Law/fLdTKf+YDeRUk=";
+
       includes = [
         "colldef/*"
         "mklocale/*"
       ];
+
       revert = true;
-      hash = "sha256-zDXYuYRak9t9ZnAacl3h5i36g7Law/fLdTKf+YDeRUk=";
+      url = "https://github.com/apple-oss-distributions/adv_cmds/commit/6bed8737a34dbb54782a18f47dccf933a9967a12.patch?full_index=1";
     })
   ];
-
-  xcodeHash = "sha256-L27TYv2zdKx0WKTBgHSv9Q0FCwrW4o83EmtDyqFM1fs=";
 
   postPatch = ''
     # Meson generators require using @BASENAME@ in the output.
@@ -75,26 +73,30 @@ mkAppleDerivation {
     done
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
-
-  buildInputs = [
-    libxo
-    ncurses
-  ];
-
   nativeBuildInputs = [
     bison
     flex
     pkg-config
   ];
 
+  buildInputs = [
+    libxo
+    ncurses
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
+
   postInstall = ''
     moveToOutput bin/ps "$ps"
     ln -s "$ps/bin/ps" "$out/bin/ps"
   '';
 
+  releaseName = "adv_cmds";
+  xcodeHash = "sha256-L27TYv2zdKx0WKTBgHSv9Q0FCwrW4o83EmtDyqFM1fs=";
+
   meta = {
     description = "Advanced commands package for Darwin";
+
     license = [
       lib.licenses.apsl10
       lib.licenses.apsl20

@@ -2,47 +2,47 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gtk3,
-  vala,
-  enchant,
-  wrapGAppsHook3,
-  meson,
-  ninja,
-  desktop-file-utils,
-  gnome-online-accounts,
-  gsettings-desktop-schemas,
   adwaita-icon-theme,
+  cacert,
+  dbus,
+  desktop-file-utils,
+  enchant,
+  folks,
+  gcr,
+  gettext,
+  glib-networking,
+  glibcLocales,
+  gmime3,
+  gnome,
+  gnome-online-accounts,
+  gnutls,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gsound,
+  gspell,
+  gtk3,
+  icu,
+  isocodes,
+  itstool,
+  json-glib,
+  libgee,
+  libhandy,
   libpeas,
   libsecret,
-  gmime3,
-  isocodes,
-  icu,
-  libxml2,
-  gettext,
-  sqlite,
-  gcr,
-  json-glib,
-  itstool,
-  libgee,
-  gnome,
-  webkitgtk_4_1,
-  python3,
-  gnutls,
-  cacert,
-  xvfb-run,
-  glibcLocales,
-  dbus,
-  shared-mime-info,
-  libunwind,
-  folks,
-  glib-networking,
-  gobject-introspection,
-  gspell,
   libstemmer,
+  libunwind,
+  libxml2,
   libytnef,
-  libhandy,
-  gsound,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  shared-mime-info,
+  sqlite,
+  vala,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
+  xvfb-run,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,6 +53,21 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/geary/${lib.versions.major finalAttrs.version}/geary-${finalAttrs.version}.tar.xz";
     hash = "sha256-r60VEwKBfd8Ji15BbnrH8tXupWejuAu5C9PGKv0TuaE=";
   };
+
+  postPatch = ''
+    chmod +x build-aux/git_version.py
+
+    patchShebangs build-aux/git_version.py
+
+    # Only used for generating .pot file
+    # https://gitlab.gnome.org/GNOME/geary/-/merge_requests/856
+    substituteInPlace meson.build \
+      --replace-fail "appstream_glib = dependency('appstream-glib', version: '>=0.7.10')" ""
+
+    chmod +x desktop/geary-attach
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -95,6 +110,14 @@ stdenv.mkDerivation (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  mesonFlags = [
+    "-Dprofile=release"
+    "-Dcontractor=enabled" # install the contractor file (Pantheon specific)
+  ];
+
+  # Some tests time out.
+  doCheck = false;
+
   nativeCheckInputs = [
     dbus
     gnutls # for certtool
@@ -102,29 +125,6 @@ stdenv.mkDerivation (finalAttrs: {
     xvfb-run
     glibcLocales # required by Geary.ImapDb.DatabaseTest/utf8_case_insensitive_collation
   ];
-
-  mesonFlags = [
-    "-Dprofile=release"
-    "-Dcontractor=enabled" # install the contractor file (Pantheon specific)
-  ];
-
-  strictDeps = true;
-
-  postPatch = ''
-    chmod +x build-aux/git_version.py
-
-    patchShebangs build-aux/git_version.py
-
-    # Only used for generating .pot file
-    # https://gitlab.gnome.org/GNOME/geary/-/merge_requests/856
-    substituteInPlace meson.build \
-      --replace-fail "appstream_glib = dependency('appstream-glib', version: '>=0.7.10')" ""
-
-    chmod +x desktop/geary-attach
-  '';
-
-  # Some tests time out.
-  doCheck = false;
 
   checkPhase = ''
     runHook preCheck
@@ -152,11 +152,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Mail client for GNOME 3";
     homepage = "https://gitlab.gnome.org/GNOME/geary";
     changelog = "https://gitlab.gnome.org/GNOME/geary/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Mail client for GNOME 3";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

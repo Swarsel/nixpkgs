@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ninjavis";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chagui";
@@ -16,15 +15,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-4MXU43noG0mKwiXWrLu1tW9YGkU1YjP/UoUKZzVer14=";
   };
 
-  build-system = [
-    python3Packages.poetry-core
-  ];
-
-  pythonImportsCheck = [
-    "ninjavis"
-  ];
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -32,6 +24,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
     runHook postInstallCheck
   '';
+
+  build-system = [
+    python3Packages.poetry-core
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "ninjavis"
+  ];
 
   meta = {
     description = "Generate visualization from Ninja build logs";

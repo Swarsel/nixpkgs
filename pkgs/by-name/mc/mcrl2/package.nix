@@ -2,24 +2,36 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  libGLU,
-  libGL,
-  qt6,
   boost,
-  ninja,
+  cmake,
+  libGL,
+  libGLU,
   makeWrapper,
+  ninja,
+  qt6,
 }:
 
 stdenv.mkDerivation rec {
-  version = "202507";
-  build_nr = "0";
   pname = "mcrl2";
+  version = "202507";
 
   src = fetchurl {
     url = "https://www.mcrl2.org/download/release/mcrl2-${version}.${build_nr}.tar.gz";
     hash = "sha256-Ur7GGXbYvVmrEUq/CTRyuVNLDHKfFrYHJibo0JvYhyM=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+
+  buildInputs = [
+    libGLU
+    libGL
+    qt6.qtbase
+    boost
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin makeWrapper;
 
   postInstall = lib.optional stdenv.hostPlatform.isDarwin ''
     mkdir $out/Applications
@@ -45,28 +57,18 @@ stdenv.mkDerivation rec {
     done
   '';
 
-  nativeBuildInputs = [
-    cmake
-    ninja
-  ];
-
-  buildInputs = [
-    libGLU
-    libGL
-    qt6.qtbase
-    boost
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin makeWrapper;
-
+  build_nr = "0";
   dontWrapQtApps = true;
 
   meta = {
     description = "Toolset for model-checking concurrent systems and protocols";
+
     longDescription = ''
       A formal specification language with an associated toolset,
       that can be used for modelling, validation and verification of
       concurrent systems and protocols
     '';
+
     homepage = "https://www.mcrl2.org/";
     license = lib.licenses.boost;
     maintainers = with lib.maintainers; [ moretea ];

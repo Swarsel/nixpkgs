@@ -2,16 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "simanneal";
   version = "0.5.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "perrygeo";
@@ -20,10 +17,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-yKZHkrf6fM0WsHczIEK5Kxusz5dSBgydK3fLu1nDyvk=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "simanneal" ];
 
   meta = {

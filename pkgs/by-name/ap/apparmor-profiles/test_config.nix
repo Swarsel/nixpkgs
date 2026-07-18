@@ -1,17 +1,18 @@
 {
   lib,
-  runCommand,
-  util-linux,
   stdenv,
-  runtimeShell,
+  apparmor-parser,
   bashInteractive,
-
   # apparmor deps
   libapparmor,
-  apparmor-parser,
+  runCommand,
+  runtimeShell,
+  util-linux,
 }:
 (runCommand "logprof_conf"
   {
+    __structuredAttrs = true;
+
     header = ''
       [settings]
         # /etc/apparmor.d/ is read-only on NixOS
@@ -36,7 +37,6 @@
         ${bashInteractive}/bin/sh = icnu
         ${bashInteractive}/bin/bash = icnu
     '';
-    __structuredAttrs = true;
   }
   ''
     mkdir $out

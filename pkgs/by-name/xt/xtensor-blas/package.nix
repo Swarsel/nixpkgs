@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  doctest,
   openblas,
   xtensor,
   xtl,
-  doctest,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,18 +30,19 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     openblas
     xtensor
     xtl
   ];
-  nativeCheckInputs = [ doctest ];
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTS" finalAttrs.finalPackage.doCheck)
   ];
 
   doCheck = true;
+  nativeCheckInputs = [ doctest ];
 
   meta = {
     description = "Extension to the xtensor library offering bindings to BLAS and LAPACK";

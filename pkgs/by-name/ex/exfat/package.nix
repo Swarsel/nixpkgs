@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   fuse3,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,16 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5m8fiItEOO6piR132Gxq6SHOPN1rAFTuTVE+UI0V00k=";
   };
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
-  buildInputs = [ fuse3 ];
-
   outputs = [
     "out"
     "man"
   ];
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
+  buildInputs = [ fuse3 ];
 
   meta = {
     description = "Free exFAT file system implementation";

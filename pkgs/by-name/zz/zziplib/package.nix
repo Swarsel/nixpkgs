@@ -50,9 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/gdraheim/zziplib";
-    changelog = "https://github.com/gdraheim/zziplib/blob/v${finalAttrs.version}/ChangeLog";
     description = "Library to extract data from files archived in a zip file";
+
     longDescription = ''
       The zziplib library is intentionally lightweight, it offers the ability to
       easily extract data from files archived in a single zip file.
@@ -60,10 +59,15 @@ stdenv.mkDerivation (finalAttrs: {
       The implementation is based only on the (free) subset of compression with
       the zlib algorithm which is actually used by the zip/unzip tools.
     '';
+
+    homepage = "https://github.com/gdraheim/zziplib";
+    changelog = "https://github.com/gdraheim/zziplib/blob/v${finalAttrs.version}/ChangeLog";
+
     license = with lib.licenses; [
       lgpl2Plus
       mpl11
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

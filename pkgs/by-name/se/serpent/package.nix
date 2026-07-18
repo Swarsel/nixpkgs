@@ -6,7 +6,6 @@
 
 stdenv.mkDerivation {
   pname = "serpent";
-
   # I can't find any version numbers, so we're just using the date
   # of the last commit.
   version = "2016-03-05";
@@ -29,7 +28,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Compiler for the Serpent language for Ethereum";
-    mainProgram = "serpent";
+
     longDescription = ''
       Serpent is one of the high-level programming languages used to
       write Ethereum contracts. The language, as suggested by its name,
@@ -39,9 +38,11 @@ stdenv.mkDerivation {
       style, and at the same time adding special domain-specific
       features for contract programming.
     '';
+
     homepage = "https://github.com/ethereum/wiki/wiki/Serpent";
     license = with lib.licenses; [ wtfpl ];
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "serpent";
   };
 }

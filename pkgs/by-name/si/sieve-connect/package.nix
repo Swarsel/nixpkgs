@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  installShellFiles,
   makeWrapper,
   perlPackages,
-  installShellFiles,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,10 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1ghvfa5ifa68b6imh85bkmy00r93c5f9hs6d039axb73gmma580p";
   };
 
-  buildInputs = [ perlPackages.perl ];
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
+  ];
+
+  buildInputs = [ perlPackages.perl ];
+
+  buildFlags = [
+    "PERL5LIB=${perlPackages.makePerlPath [ perlPackages.FileSlurp ]}"
+    "bin"
+    "man"
   ];
 
   preBuild = ''
@@ -31,12 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     echo "${finalAttrs.version}" > versionfile
     echo "$(date +%Y-%m-%d)" > datefile
   '';
-
-  buildFlags = [
-    "PERL5LIB=${perlPackages.makePerlPath [ perlPackages.FileSlurp ]}"
-    "bin"
-    "man"
-  ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -61,15 +62,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Client for the MANAGESIEVE Protocol";
+
     longDescription = ''
       This is sieve-connect. A client for the ManageSieve protocol,
       as specifed in RFC 5804. Historically, this was MANAGESIEVE as
       implemented by timsieved in Cyrus IMAP.
     '';
+
     homepage = "https://github.com/philpennock/sieve-connect";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ das_j ];
+    platforms = lib.platforms.unix;
     mainProgram = "sieve-connect";
   };
 })

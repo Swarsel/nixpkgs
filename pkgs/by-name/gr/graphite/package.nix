@@ -1,31 +1,31 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  fetchzip,
-  rustPlatform,
-  fetchNpmDeps,
-  rustc,
-  cargo,
-  npmHooks,
-  lld,
-  pkg-config,
+  fetchFromGitHub,
   binaryen,
+  cargo,
   cargo-about,
-  nodejs,
-  wasm-bindgen-cli_0_2_121,
-  xz,
-  removeReferencesTo,
   cef-binary,
-  wayland,
-  openssl,
-  vulkan-loader,
+  fetchNpmDeps,
+  fetchzip,
   libGL,
-  libxkbcommon,
-  libxcursor,
   libx11,
   libxcb,
+  libxcursor,
+  libxkbcommon,
+  lld,
+  nodejs,
+  npmHooks,
+  openssl,
+  pkg-config,
+  removeReferencesTo,
+  rustPlatform,
+  rustc,
+  vulkan-loader,
+  wasm-bindgen-cli_0_2_121,
+  wayland,
+  xz,
 }:
 
 let
@@ -41,20 +41,20 @@ let
   brandingHash = "sha256-wAA6fR+NSxlCAqgwWmpiIAnji9k/jsMXpR0Vt04Ntmk=";
 
   src = fetchFromGitHub {
+    inherit rev;
     owner = "GraphiteEditor";
     repo = "Graphite";
-    inherit rev;
     hash = srcHash;
   };
 
   shaders = fetchurl {
-    url = "https://raw.githubusercontent.com/timon-schelling/graphite-artifacts/refs/heads/main/rev/${rev}/raster_nodes_shaders_entrypoint.wgsl";
     hash = shaderHash;
+    url = "https://raw.githubusercontent.com/timon-schelling/graphite-artifacts/refs/heads/main/rev/${rev}/raster_nodes_shaders_entrypoint.wgsl";
   };
 
   branding = fetchzip {
-    url = "https://github.com/Keavon/graphite-branded-assets/archive/${brandingRev}.tar.gz";
     hash = brandingHash;
+    url = "https://github.com/Keavon/graphite-branded-assets/archive/${brandingRev}.tar.gz";
   };
 
   libraries = [
@@ -71,6 +71,7 @@ let
   ];
   cefPath = cef-binary.overrideAttrs (finalAttrs: {
     pname = "cef-path";
+
     postInstall = ''
       find $out -mindepth 1 -delete
       strip ./Release/*.so*
@@ -84,8 +85,19 @@ let
   });
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "graphite";
   inherit version src;
+  pname = "graphite";
+
+  postPatch = ''
+    mkdir branding
+    cp -r ${branding}/* branding
+    cp $src/.branding branding/.branding
+
+    substituteInPlace $cargoDepsCopy/*/cef-dll-sys-*/build.rs \
+      --replace-fail \
+        'download_cef::check_archive_json(&package_version, &path.to_string_lossy())?;' \
+        ""
+  '';
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
@@ -102,38 +114,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = libraries;
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    src = finalAttrs.src;
-    hash = cargoHash;
-  };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) pname version;
-    src = "${finalAttrs.src}/frontend";
-    hash = npmHash;
-  };
-  npmRoot = "frontend";
-
-  postPatch = ''
-    mkdir branding
-    cp -r ${branding}/* branding
-    cp $src/.branding branding/.branding
-
-    substituteInPlace $cargoDepsCopy/*/cef-dll-sys-*/build.rs \
-      --replace-fail \
-        'download_cef::check_archive_json(&package_version, &path.to_string_lossy())?;' \
-        ""
-  '';
+  env.CEF_PATH = cefPath;
+  env.GRAPHITE_GIT_COMMIT_HASH = finalAttrs.src.rev;
+  env.RASTER_NODES_SHADER_PATH = shaders;
 
   postConfigure = ''
     # Prevent `package-installer.js` from trying to update npm dependencies
     touch -r frontend/package-lock.json -d '+1 year' frontend/node_modules/.install-timestamp
   '';
-
-  env.CEF_PATH = cefPath;
-  env.RASTER_NODES_SHADER_PATH = shaders;
-  env.GRAPHITE_GIT_COMMIT_HASH = finalAttrs.src.rev;
 
   buildPhase = ''
     runHook preBuild
@@ -166,19 +154,32 @@ stdenv.mkDerivation (finalAttrs: {
     remove-references-to -t ${rustc} $out/bin/graphite
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    src = finalAttrs.src;
+    hash = cargoHash;
+  };
+
   disallowedReferences = [ rustc ];
 
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) pname version;
+    src = "${finalAttrs.src}/frontend";
+    hash = npmHash;
+  };
+
+  npmRoot = "frontend";
   passthru.updateScript = ./update.nu;
 
   meta = {
     description = "Open source vector graphics editor and procedural design engine";
-    homepage = "https://graphite.art";
-    mainProgram = "graphite";
+
     longDescription = ''
       Graphite is an open source vector graphics editor and procedural design engine.
       Create and animate with a nondestructive editing workflow that
       combines layer-based compositing with node-based generative design.
     '';
+
+    homepage = "https://graphite.art";
 
     # All Graphite code is licensed under the Apache License 2.0.
     # This derivation also bundles the official branding assets
@@ -186,13 +187,15 @@ stdenv.mkDerivation (finalAttrs: {
     license = with lib.licenses; [
       asl20
       {
-        fullName = "Graphite Branding License";
-        url = "https://graphite.art/license/#branding";
         free = false;
+        fullName = "Graphite Branding License";
         redistributable = true;
+        url = "https://graphite.art/license/#branding";
       }
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ timon ];
+    platforms = lib.platforms.linux;
+    mainProgram = "graphite";
   };
 })

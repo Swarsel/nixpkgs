@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  coreutils,
+  gawk,
+  gnugrep,
   makeWrapper,
-  xwininfo,
+  procps,
   xdotool,
   xprop,
-  gawk,
-  coreutils,
-  gnugrep,
-  procps,
+  xwininfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,9 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-fHvGXaZL7MMvTnkap341B79PDDo2lOVPPcOH4AX/zXo=";
   };
 
-  dontBuild = true;
-
-  installFlags = [ "PREFIX=$(out)" ];
+  nativeBuildInputs = [ makeWrapper ];
 
   postInstall =
     let
@@ -43,14 +41,15 @@ stdenv.mkDerivation (finalAttrs: {
       wrapProgram $out/bin/tdrop --prefix PATH : ${binPath}
     '';
 
-  nativeBuildInputs = [ makeWrapper ];
+  dontBuild = true;
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Glorified WM-Independent Dropdown Creator";
-    mainProgram = "tdrop";
     homepage = "https://github.com/noctuid/tdrop";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "tdrop";
   };
 })

@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  requests,
-  pyyaml,
-  setuptools,
-  pytestCheckHook,
-  pytest-asyncio,
-  uvloop,
+  buildPythonPackage,
   hypercorn,
-  starlette,
   pydantic,
+  pytest-asyncio,
+  pytestCheckHook,
+  pyyaml,
+  requests,
+  setuptools,
+  starlette,
+  uvloop,
 }:
 
 buildPythonPackage rec {
   pname = "openapi3";
   version = "1.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Dorthu";
@@ -24,16 +23,6 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-Crn+nRbptRycnWJzH8Tm/BBLcBSRCcNtLX8NoKnSDdA=";
   };
-
-  # pydantic==1.10.2 only affects checks
-  pythonRelaxDeps = [ "pydantic" ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    requests
-    pyyaml
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -44,17 +33,27 @@ buildPythonPackage rec {
     starlette
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    requests
+    pyyaml
+  ];
+
   disabledTestPaths = [
     # tests old fastapi behaviour
     "tests/fastapi_test.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "openapi3" ];
+  # pydantic==1.10.2 only affects checks
+  pythonRelaxDeps = [ "pydantic" ];
 
   meta = {
-    changelog = "https://github.com/Dorthu/openapi3/releases/tag/${version}";
     description = "Python3 OpenAPI 3 Spec Parser";
     homepage = "https://github.com/Dorthu/openapi3";
+    changelog = "https://github.com/Dorthu/openapi3/releases/tag/${version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ techknowlogick ];
   };

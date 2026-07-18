@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  bison,
-  flex,
-  pkg-config,
-  darwin,
-  libsndfile,
   alsa-lib,
+  bison,
+  darwin,
+  flex,
   libjack2,
   libpulseaudio,
+  libsndfile,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.5.5.8";
   pname = "chuck";
+  version = "1.5.5.8";
 
   src = fetchFromGitHub {
     owner = "ccrma";
@@ -49,20 +49,22 @@ stdenv.mkDerivation (finalAttrs: {
     "CC=cc"
     "CXX=c++"
   ];
-  buildFlags = [ (if stdenv.hostPlatform.isDarwin then "mac" else "linux-all") ];
 
+  buildFlags = [ (if stdenv.hostPlatform.isDarwin then "mac" else "linux-all") ];
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=chuck-(.*)" ]; };
 
   meta = {
     description = "Programming language for real-time sound synthesis and music creation";
     homepage = "http://chuck.cs.princeton.edu";
+
     license = with lib.licenses; [
       gpl2Plus
       # or
       mit
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "chuck";
   };
 })

@@ -9,8 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "ocolor";
   version = "1.3.1";
 
-  minimalOCamlVersion = "4.02";
-
   src = fetchFromGitHub {
     owner = "marc-chevalier";
     repo = "ocolor";
@@ -22,10 +20,12 @@ buildDunePackage (finalAttrs: {
     cppo
   ];
 
+  minimalOCamlVersion = "4.02";
+
   meta = {
     description = "Print with style in your terminal using Format’s semantic tags";
+    homepage = "https://github.com/marc-chevalier/ocolor";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ toastal ];
-    homepage = "https://github.com/marc-chevalier/ocolor";
   };
 })

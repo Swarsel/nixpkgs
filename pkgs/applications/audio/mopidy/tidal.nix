@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   mopidy,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "Mopidy-Tidal";
   version = "0.3.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EbbLabs";
@@ -17,6 +16,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-1u1MMLtVNZkVhmUr5DW34TlJ2s/YGRKXjqi+SrtClR4=";
   };
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    pytest-mock
+  ];
+
   build-system = [ python3Packages.poetry-core ];
 
   dependencies = [
@@ -24,12 +28,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.tidalapi
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    pytest-mock
-  ];
-
   enabledTestPaths = [ "tests/" ];
+  pyproject = true;
 
   meta = {
     description = "Mopidy extension for playing music from Tidal";

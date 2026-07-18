@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  bison,
-  flex,
-  libsepol,
-  libselinux,
-  bzip2,
   audit,
+  bison,
+  bzip2,
+  flex,
+  libselinux,
+  libsepol,
+  pkg-config,
   enablePython ? !stdenv.hostPlatform.isStatic,
-  swig ? null,
   python3 ? null,
+  swig ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit (libsepol) se_url;
   pname = "libsemanage";
   version = "3.11";
-  inherit (libsepol) se_url;
 
   src = fetchurl {
     url = "${finalAttrs.se_url}/${finalAttrs.version}/libsemanage-${finalAttrs.version}.tar.gz";
@@ -74,10 +74,8 @@ stdenv.mkDerivation (finalAttrs: {
   #       |      ^
   # cc1: all warnings being treated as errors
   env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=clobbered" ];
-
-  installTargets = [ "install" ] ++ lib.optionals enablePython [ "install-pywrap" ];
-
   enableParallelBuilding = true;
+  installTargets = [ "install" ] ++ lib.optionals enablePython [ "install-pywrap" ];
 
   meta = removeAttrs libsepol.meta [ "outputsToInstall" ] // {
     description = "Policy management tools for SELinux";

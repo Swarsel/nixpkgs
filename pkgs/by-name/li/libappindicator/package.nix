@@ -1,26 +1,26 @@
 {
-  stdenv,
-  fetchgit,
   lib,
-  pkg-config,
+  stdenv,
   autoreconfHook,
-  glib,
   dbus-glib,
-  gtkVersion ? "3",
-  gtk2,
-  libindicator-gtk2,
-  libdbusmenu-gtk2,
-  gtk3,
-  libindicator-gtk3,
-  libdbusmenu-gtk3,
-  gtk-doc,
-  vala,
+  fetchgit,
+  glib,
   gobject-introspection,
-  monoSupport ? false,
-  mono,
+  gtk-doc,
   gtk-sharp-2_0,
   gtk-sharp-3_0,
+  gtk2,
+  gtk3,
+  libdbusmenu-gtk2,
+  libdbusmenu-gtk3,
+  libindicator-gtk2,
+  libindicator-gtk3,
+  mono,
+  pkg-config,
   testers,
+  vala,
+  gtkVersion ? "3",
+  monoSupport ? false,
 }:
 
 let
@@ -33,18 +33,19 @@ stdenv.mkDerivation (finalAttrs: {
       postfix = if monoSupport then "sharp" else "gtk${gtkVersion}";
     in
     "libappindicator-${postfix}";
-  version = "12.10.1+20.10.20200706.1";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  version = "12.10.1+20.10.20200706.1";
 
   src = fetchgit {
     url = "https://git.launchpad.net/ubuntu/+source/libappindicator";
     rev = "fe25e53bc7e39cd59ad6b3270cd7a6a9c78c4f44";
     sha256 = "0xjvbl4gn7ra2fs6gn2g9s787kzb5cg9hv79iqsz949rxh4iw32d";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -53,19 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     gobject-introspection
     gtk-doc
   ];
-
-  propagatedBuildInputs =
-    {
-      "2" = [
-        gtk2
-        libdbusmenu-gtk2
-      ];
-      "3" = [
-        gtk3
-        libdbusmenu-gtk3
-      ];
-    }
-    .${gtkVersion} or throwBadGtkVersion;
 
   buildInputs = [
     glib
@@ -85,9 +73,19 @@ stdenv.mkDerivation (finalAttrs: {
     .${gtkVersion} or throwBadGtkVersion
   ];
 
-  preAutoreconf = ''
-    gtkdocize
-  '';
+  propagatedBuildInputs =
+    {
+      "2" = [
+        gtk2
+        libdbusmenu-gtk2
+      ];
+
+      "3" = [
+        gtk3
+        libdbusmenu-gtk3
+      ];
+    }
+    .${gtkVersion} or throwBadGtkVersion;
 
   configureFlags = [
     "CFLAGS=-Wno-error"
@@ -103,24 +101,31 @@ stdenv.mkDerivation (finalAttrs: {
     "localstatedir=\${TMPDIR}"
   ];
 
+  preAutoreconf = ''
+    gtkdocize
+  '';
+
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Library to allow applications to export a menu into the Unity Menu bar";
     homepage = "https://launchpad.net/libappindicator";
+
     license = with lib.licenses; [
       lgpl21
       lgpl3
     ];
+
+    maintainers = [ lib.maintainers.msteen ];
+    platforms = lib.platforms.linux;
+    # TODO: Resolve the issues with the Mono bindings.
+    broken = monoSupport;
+
     pkgConfigModules =
       {
         "2" = [ "appindicator-0.1" ];
         "3" = [ "appindicator3-0.1" ];
       }
       .${gtkVersion} or throwBadGtkVersion;
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.msteen ];
-    # TODO: Resolve the issues with the Mono bindings.
-    broken = monoSupport;
   };
 })

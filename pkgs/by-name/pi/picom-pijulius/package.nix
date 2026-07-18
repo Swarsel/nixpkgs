@@ -1,9 +1,9 @@
 {
-  picom,
   lib,
-  writeShellScript,
   fetchFromGitHub,
+  picom,
   unstableGitUpdater,
+  writeShellScript,
 }:
 
 picom.overrideAttrs (previousAttrs: {
@@ -20,10 +20,11 @@ picom.overrideAttrs (previousAttrs: {
   dontVersionCheck = true;
 
   passthru.updateScript = unstableGitUpdater {
-    tagFormat = "v([A-Z]+)([a-z]+)|v([1-9]).([1-9])|v([1-9])-rc([1-9])";
     tagConverter = writeShellScript "picom-pijulius-tag-converter.sh" ''
       sed -e 's/v//g' -e 's/([A-Z])([a-z])+/8.2/g' -e 's/-rc([1-9])|-rc//g' -e 's/0/8.2/g'
     '';
+
+    tagFormat = "v([A-Z]+)([a-z]+)|v([1-9]).([1-9])|v([1-9])-rc([1-9])";
   };
 
   meta = {
@@ -36,6 +37,7 @@ picom.overrideAttrs (previousAttrs: {
 
     description = "Pijulius's picom fork with extensive animation support";
     homepage = "https://github.com/pijulius/picom";
+
     maintainers = with lib.maintainers; [
       YvesStraten
     ];

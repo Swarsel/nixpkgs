@@ -3,27 +3,21 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  pkg-config,
   fftw,
   fftwFloat,
+  libpng,
+  llvmPackages,
+  ninja,
+  pkg-config,
   python3,
   datatype ? "double",
-  libpng,
-  enableStatic ? stdenv.hostPlatform.isStatic,
   enableOpenmp ? false,
-  llvmPackages,
+  enableStatic ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "kissfft-${datatype}${lib.optionalString enableOpenmp "-openmp"}";
   version = "131.1.0";
-
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-  ];
 
   src = fetchFromGitHub {
     owner = "mborgerding";
@@ -32,11 +26,26 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ukikTVnmKomKXTo6zc+PhpZzEkzXN2imFwZOYlfR3Pk=";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+  ];
+
   patches = [
     # Fix FFTW dependency check
     # https://github.com/mborgerding/kissfft/pull/95
     ./fix-fftw-dependency-check.patch
   ];
+
+  # https://bugs.llvm.org/show_bug.cgi?id=45034
+  postPatch =
+    lib.optionalString
+      (stdenv.hostPlatform.isLinux && stdenv.cc.isClang && lib.versionOlder stdenv.cc.version "10")
+      ''
+        substituteInPlace CMakeLists.txt \
+          --replace "-ffast-math" ""
+      '';
 
   nativeBuildInputs = [
     cmake
@@ -48,10 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     lib.optionals (datatype != "simd") [ libpng ]
     # TODO: This may mismatch the LLVM version in the stdenv, see #79818.
     ++ lib.optional (enableOpenmp && stdenv.cc.isClang) llvmPackages.openmp;
-
-  nativeCheckInputs = [ (python3.withPackages (ps: [ ps.numpy ])) ];
-
-  checkInputs = [ (if datatype == "float" then fftwFloat else fftw) ];
 
   cmakeFlags = [
     (lib.cmakeFeature "KISSFFT_DATATYPE" datatype)
@@ -66,15 +71,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   doCheck = true;
-
-  # https://bugs.llvm.org/show_bug.cgi?id=45034
-  postPatch =
-    lib.optionalString
-      (stdenv.hostPlatform.isLinux && stdenv.cc.isClang && lib.versionOlder stdenv.cc.version "10")
-      ''
-        substituteInPlace CMakeLists.txt \
-          --replace "-ffast-math" ""
-      '';
+  nativeCheckInputs = [ (python3.withPackages (ps: [ ps.numpy ])) ];
+  checkInputs = [ (if datatype == "float" then fftwFloat else fftw) ];
 
   meta = {
     description = "Mixed-radix Fast Fourier Transform based up on the KISS principle";

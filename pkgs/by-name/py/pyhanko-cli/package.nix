@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   python3Packages,
   versionCheckHook,
-  nix-update-script,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pyhanko-cli";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MatthiasValvekens";
@@ -16,8 +15,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "pyhanko-cli/v${finalAttrs.version}";
     hash = "sha256-huOy04wY7xP1gZ5azsZYnMXLZ4MwMkLGujlgXTtjLy4=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/pkgs/pyhanko-cli";
 
   postPatch = ''
     substituteInPlace src/pyhanko/cli/version.py \
@@ -28,6 +25,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
   nativeBuildInputs = [
     python3Packages.pyprojectVersionPatchHook
   ];
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ]
+  ++ (with python3Packages; [
+    pytestCheckHook
+    pytest-asyncio
+    pyhanko.testData
+    requests-mock
+    freezegun
+    certomancer
+    aiohttp
+  ]);
 
   build-system = [ python3Packages.setuptools ];
 
@@ -43,23 +53,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ lib.concatAttrValues pyhanko.optional-dependencies;
 
-  nativeCheckInputs = [
-    versionCheckHook
-  ]
-  ++ (with python3Packages; [
-    pytestCheckHook
-    pytest-asyncio
-    pyhanko.testData
-    requests-mock
-    freezegun
-    certomancer
-    aiohttp
-  ]);
-
   disabledTestPaths = [
     # ImportError: cannot import name 'SOFTHSM' from 'test_utils.signing_commons'
     "tests/test_cli_signing_pkcs11.py"
   ];
+
+  pyproject = true;
+  sourceRoot = "${finalAttrs.src.name}/pkgs/pyhanko-cli";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -69,10 +69,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Sign and stamp PDF files";
-    mainProgram = "pyhanko";
     homepage = "https://github.com/MatthiasValvekens/pyHanko/tree/master/pkgs/pyhanko-cli";
     changelog = "https://github.com/MatthiasValvekens/pyHanko/blob/${finalAttrs.src.tag}/docs/changelog.rst#pyhanko-cli";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.antonmosich ];
+    mainProgram = "pyhanko";
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
+  accountsservice,
+  dbus,
+  glib,
   meson,
   ninja,
+  nix-update-script,
   nixos-artwork,
-  glib,
   pkg-config,
-  dbus,
   polkit,
-  accountsservice,
 }:
 
 stdenv.mkDerivation rec {

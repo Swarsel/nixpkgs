@@ -1,27 +1,28 @@
 {
+  alcotest,
   buildDunePackage,
   ff-pbt,
   ff-sig,
   zarith,
-  alcotest,
 }:
 
 buildDunePackage {
-  pname = "ff";
   inherit (ff-sig) version src;
-  duneVersion = "3";
+  pname = "ff";
 
   propagatedBuildInputs = [
     ff-sig
     zarith
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
     ff-pbt
   ];
 
-  doCheck = true;
+  duneVersion = "3";
 
   meta = ff-sig.meta // {
     description = "OCaml implementation of Finite Field operations";

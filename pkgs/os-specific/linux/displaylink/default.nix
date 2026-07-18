@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  unzip,
-  util-linux,
-  libusb1,
+  stdenv,
   evdi,
+  libusb1,
   makeBinaryWrapper,
   requireFile,
+  unzip,
+  util-linux,
 }:
 
 let
@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "6.2.0-30";
 
   src = requireFile rec {
-    name = "displaylink-620.zip";
     hash = "sha256-JQO7eEz4pdoPkhcn9tIuy5R4KyfsCniuw6eXw/rLaYE=";
+
     message = ''
       In order to install the DisplayLink drivers, you must first
       comply with DisplayLink's EULA and download the binaries and
@@ -51,20 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
 
       nix-prefetch-url --name ${name} https://www.synaptics.com/sites/default/files/exe_files/2025-09/DisplayLink%20USB%20Graphics%20Software%20for%20Ubuntu6.2-EXE.zip
     '';
+
+    name = "displaylink-620.zip";
   };
 
   nativeBuildInputs = [
     makeBinaryWrapper
     unzip
   ];
-
-  unpackPhase = ''
-    runHook preUnpack
-    unzip $src
-    chmod +x displaylink-driver-${finalAttrs.version}.run
-    ./displaylink-driver-${finalAttrs.version}.run --target . --noexec --nodiskspace
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -86,21 +80,31 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontStrip = true;
   dontPatchELF = true;
+  dontStrip = true;
+
+  unpackPhase = ''
+    runHook preUnpack
+    unzip $src
+    chmod +x displaylink-driver-${finalAttrs.version}.run
+    ./displaylink-driver-${finalAttrs.version}.run --target . --noexec --nodiskspace
+    runHook postUnpack
+  '';
 
   meta = {
     description = "DL-7xxx, DL-6xxx, DL-5xxx, DL-41xx and DL-3x00 Driver for Linux";
     homepage = "https://www.displaylink.com/";
-    hydraPlatforms = [ ];
     license = lib.licenses.unfree;
-    mainProgram = "DisplayLinkManager";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
       "aarch64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "DisplayLinkManager";
+    hydraPlatforms = [ ];
   };
 })

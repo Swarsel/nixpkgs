@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  autoPatchelfHook,
-  cacert,
   fetchurl,
+  autoPatchelfHook,
+  bash,
+  cacert,
   glib,
   libsecret,
   makeBinaryWrapper,
-  bash,
+  nix-update-script,
   nodejs,
   versionCheckHook,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,24 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
     makeBinaryWrapper
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     stdenv.cc.cc.lib
     glib
     libsecret
-  ];
-  sourceRoot = "package";
-  dontStrip = true;
-  # computer.node requires GUI/media libraries (X11, pipewire, libei, libjpeg,
-  # libpng) for screen-capture and input-simulation features that are not
-  # relevant for CLI use; ignore those missing deps rather than fail the build
-  # or pull in heavy dependencies.
-  autoPatchelfIgnoreMissingDeps = [
-    "libX11.so.6"
-    "libXtst.so.6"
-    "libjpeg.so.8"
-    "libpng16.so.16"
-    "libpipewire-0.3.so.0"
-    "libei.so.1"
   ];
 
   installPhase = ''
@@ -66,11 +53,26 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : "${lib.makeBinPath [ bash ]}"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   # TODO are these errors still present after moving to using the "universal"
   # package?
   doInstallCheck = !stdenv.hostPlatform.isDarwin; # skip on Darwin - OpenSSL errors in sandbox
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
+  # computer.node requires GUI/media libraries (X11, pipewire, libei, libjpeg,
+  # libpng) for screen-capture and input-simulation features that are not
+  # relevant for CLI use; ignore those missing deps rather than fail the build
+  # or pull in heavy dependencies.
+  autoPatchelfIgnoreMissingDeps = [
+    "libX11.so.6"
+    "libXtst.so.6"
+    "libjpeg.so.8"
+    "libpng16.so.16"
+    "libpipewire-0.3.so.0"
+    "libei.so.1"
+  ];
+
+  dontStrip = true;
+  sourceRoot = "package";
   # Looks like GitHub use tags for both pre-release and actually released
   # versions, but only the actual versions will be available as a GitHub
   # release, so use the release endpoint rather than nix-update-script`'s
@@ -82,14 +84,17 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/github/copilot-cli";
     changelog = "https://github.com/github/copilot-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       me-and
     ];
-    mainProgram = "copilot";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "copilot";
   };
 })

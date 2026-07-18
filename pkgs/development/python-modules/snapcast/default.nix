@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   construct,
   packaging,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "snapcast";
   version = "2.3.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "happyleavesaoc";
@@ -29,13 +28,14 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  pythonImportsCheck = [ "snapcast" ];
-
   disabledTests = [
     # AssertionError and TypeError
     "test_stream_setmeta"
     "est_stream_setproperty"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "snapcast" ];
 
   meta = {
     description = "Control Snapcast, a multi-room synchronous audio solution";

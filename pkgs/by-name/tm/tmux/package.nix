@@ -4,33 +4,28 @@
   fetchFromGitHub,
   autoreconfHook,
   bison,
+  common-updater-scripts,
+  curl,
+  jq,
   libevent,
+  libutempter,
   ncurses,
   pkg-config,
   runCommand,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
   systemdLibs,
+  utf8proc, # gets Unicode updates faster than glibc
+  versionCheckHook,
+  writeShellScript,
+  withSixel ? true,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
+  withUtempter ? stdenv.hostPlatform.isLinux,
   # broken on i686-linux https://github.com/tmux/tmux/issues/4597
   withUtf8proc ? !(stdenv.hostPlatform.is32bit),
-  utf8proc, # gets Unicode updates faster than glibc
-  withUtempter ? stdenv.hostPlatform.isLinux,
-  libutempter,
-  withSixel ? true,
-  versionCheckHook,
-  common-updater-scripts,
-  writeShellScript,
-  curl,
-  jq,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "tmux";
   version = "3.7b";
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "tmux";
@@ -38,6 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-CTq06XP997M0ODxQihTq34dI9H6jSRLUXLYuTWOwDpc=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -62,16 +62,15 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withUtempter [ "--enable-utempter" ]
   ++ lib.optionals withUtf8proc [ "--enable-utf8proc" ];
 
-  enableParallelBuilding = true;
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir $out/nix-support
     echo "${finalAttrs.passthru.terminfo}" >> $out/nix-support/propagated-user-env-packages
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-V";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+  versionCheckProgramArg = "-V";
 
   passthru = {
     terminfo = runCommand "tmux-terminfo" { nativeBuildInputs = [ ncurses ]; } (
@@ -90,6 +89,7 @@ stdenv.mkDerivation (finalAttrs: {
           ln -sv ${ncurses}/share/terminfo/t/{tmux,tmux-256color,tmux-direct} $out/share/terminfo/t
         ''
     );
+
     updateScript = writeShellScript "update-tmux" ''
       latest=$(${lib.getExe curl} --silent ''${GITHUB_TOKEN:+--header "Authorization: Bearer $GITHUB_TOKEN"} https://api.github.com/repos/tmux/tmux/releases/latest | ${lib.getExe jq} -r .tag_name)
       ${lib.getExe' common-updater-scripts "update-source-version"} tmux "$latest"
@@ -97,9 +97,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://tmux.github.io/";
-    downloadPage = "https://github.com/tmux/tmux";
     description = "Terminal multiplexer";
+
     longDescription = ''
       tmux is intended to be a modern, BSD-licensed alternative to programs such as GNU screen. Major features include:
         * A powerful, consistent, well-documented and easily scriptable command interface.
@@ -112,13 +111,18 @@ stdenv.mkDerivation (finalAttrs: {
         * Terminal locking, manually or after a timeout.
         * A clean, easily extended, BSD-licensed codebase, under active development.
     '';
+
+    homepage = "https://tmux.github.io/";
     changelog = "https://github.com/tmux/tmux/raw/${finalAttrs.version}/CHANGES";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
-    mainProgram = "tmux";
+
     maintainers = with lib.maintainers; [
       ethancedwards8
       fpletz
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "tmux";
+    downloadPage = "https://github.com/tmux/tmux";
   };
 })

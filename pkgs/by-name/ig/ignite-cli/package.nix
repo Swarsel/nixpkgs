@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  buildGoModule,
-  makeWrapper,
-  go,
   buf,
+  buildGoModule,
+  go,
+  makeWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -12,21 +12,16 @@ buildGoModule (finalAttrs: {
   version = "28.11.0";
 
   src = fetchFromGitHub {
-    repo = "cli";
     owner = "ignite";
+    repo = "cli";
     rev = "v${finalAttrs.version}";
     hash = "sha256-guhUvTyUy4YXn0+vtTpIehS731B0Htv9jai6yQ6gRP0=";
   };
 
-  vendorHash = "sha256-qbHmF+aE/rF0cm4QARVWOUBogBvfdlCUNaCdFRywt1I=";
-
   nativeBuildInputs = [ makeWrapper ];
-
+  vendorHash = "sha256-qbHmF+aE/rF0cm4QARVWOUBogBvfdlCUNaCdFRywt1I=";
   # Many tests require access to either executables, state or networking
   doCheck = false;
-
-  # Required for wrapProgram
-  allowGoReference = true;
 
   # Required for commands like `ignite version`, `ignite network` and others
   postFixup = ''
@@ -38,10 +33,13 @@ buildGoModule (finalAttrs: {
     }
   '';
 
+  # Required for wrapProgram
+  allowGoReference = true;
+
   meta = {
+    description = "All-in-one platform to build, launch, and maintain any crypto application on a sovereign and secured blockchain";
     homepage = "https://ignite.com/";
     changelog = "https://github.com/ignite/cli/releases/tag/v${finalAttrs.version}";
-    description = "All-in-one platform to build, launch, and maintain any crypto application on a sovereign and secured blockchain";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ kashw2 ];
     mainProgram = "ignite";

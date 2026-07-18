@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  bash,
+  buildGoModule,
   installShellFiles,
   restic,
-  bash,
-  testers,
   resticprofile,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -32,16 +32,8 @@ buildGoModule (finalAttrs: {
 
   '';
 
-  vendorHash = "sha256-M9S6F/Csz7HnOq8PSWjpENKm1704kVx9zDts1ieraTE=";
-
-  ldflags = [
-    "-X main.version=${finalAttrs.version}"
-    "-X main.commit=${finalAttrs.src.rev}"
-    "-X main.date=unknown"
-    "-X main.builtBy=nixpkgs"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-M9S6F/Csz7HnOq8PSWjpENKm1704kVx9zDts1ieraTE=";
 
   preCheck = ''
     rm batt/battery_test.go # tries to get battery data
@@ -69,23 +61,32 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  ldflags = [
+    "-X main.version=${finalAttrs.version}"
+    "-X main.commit=${finalAttrs.src.rev}"
+    "-X main.date=unknown"
+    "-X main.builtBy=nixpkgs"
+  ];
+
   passthru = {
     tests.version = testers.testVersion {
-      package = resticprofile;
       command = "resticprofile version";
+      package = resticprofile;
     };
   };
 
   meta = {
-    changelog = "https://github.com/creativeprojects/resticprofile/releases/tag/v${finalAttrs.version}";
     description = "Configuration profiles manager for restic backup";
     homepage = "https://creativeprojects.github.io/resticprofile/";
+    changelog = "https://github.com/creativeprojects/resticprofile/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl3Only
       lgpl3 # bash shell completion
     ];
-    mainProgram = "resticprofile";
+
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "resticprofile";
   };
 })

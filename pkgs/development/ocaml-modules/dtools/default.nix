@@ -1,14 +1,12 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "dtools";
   version = "0.4.6";
-
-  minimalOCamlVersion = "4.05";
 
   src = fetchFromGitHub {
     owner = "savonet";
@@ -17,9 +15,11 @@ buildDunePackage (finalAttrs: {
     sha256 = "sha256-MIZM/IlPWPa/r/f8EXkhU8gZctOZeAIGZgxoGMF2IkE=";
   };
 
+  minimalOCamlVersion = "4.05";
+
   meta = {
-    homepage = "https://github.com/savonet/ocaml-dtools";
     description = "Library providing various helper functions to make daemons";
+    homepage = "https://github.com/savonet/ocaml-dtools";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   decorator,
-  fetchFromGitHub,
   pbr,
   pytestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "retry2";
   version = "0.9.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eSAMTrade";
@@ -20,13 +19,10 @@ buildPythonPackage rec {
   };
 
   env.PBR_VERSION = version;
-
-  build-system = [ pbr ];
-
-  dependencies = [ decorator ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ pbr ];
+  dependencies = [ decorator ];
+  pyproject = true;
   pythonImportsCheck = [ "retry" ];
 
   meta = {

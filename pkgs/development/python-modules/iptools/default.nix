@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
-  version = "0.7.0";
   pname = "iptools";
-  pyproject = true;
+  version = "0.7.0";
 
   src = fetchFromGitHub {
     owner = "bd808";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-340Wc4QGwUqEEANM5EQzFaXxIWVf2fDr4qfCuxNEVBQ=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "iptools" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   enabledTestPaths = [ "tests/iptools/iptools_test.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "iptools" ];
 
   meta = {
     description = "Utilities for manipulating IP addresses including a class that can be used to include CIDR network blocks in Django's INTERNAL_IPS setting";

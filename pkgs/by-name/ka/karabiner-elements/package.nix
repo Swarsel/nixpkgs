@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   libarchive,
-  xar,
-  undmg,
   nix-update-script,
+  undmg,
+  xar,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,24 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     "driver"
   ];
 
-  nativeBuildInputs = [
-    libarchive
-    xar
-    undmg
-  ];
-
-  unpackPhase = ''
-    undmg $src
-    xar -xf Karabiner-Elements.pkg
-    cd Installer.pkg
-    zcat Payload | bsdcpio -i
-    cd ../Karabiner-DriverKit-VirtualHIDDevice.pkg
-    zcat Payload | bsdcpio -i
-    cd ..
-  '';
-
-  sourceRoot = ".";
-
   postPatch = ''
     shopt -s globstar
     for f in *.pkg/Library/**/Launch{Agents,Daemons}/*.plist; do
@@ -47,6 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "/Library/" "$out/Library/"
     done
   '';
+
+  nativeBuildInputs = [
+    libarchive
+    xar
+    undmg
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -59,13 +47,24 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   dontFixup = true; # notarization breaks if fixup is enabled
+  sourceRoot = ".";
+
+  unpackPhase = ''
+    undmg $src
+    xar -xf Karabiner-Elements.pkg
+    cd Installer.pkg
+    zcat Payload | bsdcpio -i
+    cd ../Karabiner-DriverKit-VirtualHIDDevice.pkg
+    zcat Payload | bsdcpio -i
+    cd ..
+  '';
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/pqrs-org/Karabiner-Elements/releases/tag/v${finalAttrs.version}";
     description = "Powerful utility for keyboard customization on macOS Ventura (13) or later";
     homepage = "https://karabiner-elements.pqrs.org/";
+    changelog = "https://github.com/pqrs-org/Karabiner-Elements/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ auscyber ];
     platforms = lib.platforms.darwin;

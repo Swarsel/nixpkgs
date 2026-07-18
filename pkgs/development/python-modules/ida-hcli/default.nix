@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   httpx,
   idapro,
   nix-update-script,
@@ -16,8 +16,8 @@
   pytest-mock,
   pytestCheckHook,
   questionary,
-  rich-click,
   rich,
+  rich-click,
   semantic-version,
   setuptools,
   tenacity,
@@ -28,9 +28,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ida-hcli";
   version = "0.18.5";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "HexRaysSA";
@@ -39,6 +36,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-n8hLgVgxqaU7Au6HVgOEUKOm1LV3Wx/v42gi2gOD3Jk=";
   };
 
+  nativeCheckInputs = [
+    pexpect
+    pytest-asyncio
+    pytest-httpx
+    pytest-mock
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -57,17 +64,6 @@ buildPythonPackage (finalAttrs: {
     tomli
   ];
 
-  nativeCheckInputs = [
-    pexpect
-    pytest-asyncio
-    pytest-httpx
-    pytest-mock
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [ "hcli" ];
-
   disabledTestPaths = [
     # Tests require IDA to be installed and configured
     "tests/integration/"
@@ -80,6 +76,8 @@ buildPythonPackage (finalAttrs: {
     "tests/lib/test_plugin_settings.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "hcli" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

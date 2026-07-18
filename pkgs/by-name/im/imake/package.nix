@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   fetchpatch,
+  pkg-config,
   replaceVars,
   tradcpp,
-  xorg-cf-files,
-  pkg-config,
-  xorgproto,
   writeScript,
+  xorg-cf-files,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "imake";
@@ -42,9 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ xorgproto ];
 
   configureFlags = [
@@ -78,12 +76,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Obsolete C preprocessor interface to the make utility";
     homepage = "https://gitlab.freedesktop.org/xorg/util/imake";
+
     license = with lib.licenses; [
       mitOpenGroup
       x11
     ];
-    mainProgram = "imake";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "imake";
   };
 })

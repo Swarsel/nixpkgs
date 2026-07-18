@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  zlib,
-  openssl,
   krb5,
+  openssl,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mscp";
@@ -25,7 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -37,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Transfer files over multiple SSH (SFTP) connections";
     homepage = "https://github.com/upa/mscp";
-    mainProgram = "mscp";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.unix;
+    mainProgram = "mscp";
   };
 })

@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   eglexternalplatform,
-  pkg-config,
-  meson,
-  ninja,
   libGL,
-  libgbm,
   libdrm,
+  libgbm,
   libx11,
   libxcb,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,9 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Sl/qc39H29wXsb5UYKGK7IciwTlbRBqA9omL2sgXpx0=";
   };
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -44,10 +42,12 @@ stdenv.mkDerivation (finalAttrs: {
     eglexternalplatform
   ];
 
+  __structuredAttrs = true;
   absolutizeEglExternalPlatformIcdJson = true;
 
-  strictDeps = true;
-  __structuredAttrs = true;
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
@@ -55,9 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "X11/XCB external platform library";
     homepage = "https://github.com/NVIDIA/egl-x11/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       ccicnce113424
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  _7zz,
   fetchurl,
+  _7zz,
 }:
 let
   common = import ./common.nix { inherit fetchurl; };
@@ -11,12 +11,8 @@ in
 stdenv.mkDerivation rec {
   inherit (common) pname version;
   src = common.sources.${system} or (throw "Source for ${pname} is not available for ${system}");
-
-  appName = "Roam Research";
-
-  sourceRoot = ".";
-
   nativeBuildInputs = [ _7zz ];
+
   installPhase = ''
     runHook preInstall
 
@@ -28,15 +24,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  appName = "Roam Research";
+  sourceRoot = ".";
+
   meta = {
     description = "Note-taking tool for networked thought";
     homepage = "https://roamresearch.com/";
-    maintainers = with lib.maintainers; [ dbalan ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ dbalan ];
+
     platforms = [
       "aarch64-darwin"
     ];
+
     mainProgram = "roam-research";
   };
 }

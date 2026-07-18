@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ZOAEdum6Zq4Qn0WvfFkiSW07aykT1OS38BxuS2Yf58A=";
   };
 
-  cargoHash = "sha256-J/DyJwWMMa8qaw5M5ZX2jzqt2AGyhLgp20h8gD18bKg=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -28,15 +26,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-J/DyJwWMMa8qaw5M5ZX2jzqt2AGyhLgp20h8gD18bKg=";
   # Needed to get openssl-sys to use pkg-config.
   env.OPENSSL_NO_VENDOR = 1;
-
-  __darwinAllowLocalNetworking = true;
-
-  # Testing only necessary for `bins`
-  cargoTestFlags = [
-    "--bins"
-  ];
 
   # Skip tests that require network access
   checkFlags = [
@@ -52,24 +44,35 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=io::data_reader_http::tests::read_range_googleapis"
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  __darwinAllowLocalNetworking = true;
+
+  # Testing only necessary for `bins`
+  cargoTestFlags = [
+    "--bins"
+  ];
+
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   meta = {
     description = "Toolbox for converting, checking and serving map tiles in various formats";
+
     longDescription = ''
       VersaTiles is a Rust-based project designed for processing and serving tile data efficiently.
       It supports multiple tile formats and offers various functionalities for handling tile data.
     '';
+
     homepage = "https://versatiles.org/";
-    downloadPage = "https://github.com/versatiles-org/versatiles-rs";
     changelog = "https://github.com/versatiles-org/versatiles-rs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wilhelmines ];
-    mainProgram = "versatiles";
     platforms = with lib.platforms; linux ++ darwin ++ windows;
+    mainProgram = "versatiles";
+    downloadPage = "https://github.com/versatiles-org/versatiles-rs";
   };
 })

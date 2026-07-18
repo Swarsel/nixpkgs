@@ -28,27 +28,36 @@ in
       notifications via UnifiedPush
     '';
 
+    environmentFile = mkOption {
+      default = null;
+
+      description = ''
+        Environment file (see {manpage}`systemd.exec(5)` "EnvironmentFile="
+        section for the syntax) passed to the service. This option can be
+        used to safely include secrets in the configuration.
+      '';
+
+      example = "/run/secrets/mollysocket";
+      type = with types; nullOr path;
+    };
+
+    logLevel = mkOption {
+      default = "info";
+      description = "Set the {env}`RUST_LOG` environment variable";
+      example = "debug";
+      type = types.str;
+    };
+
     settings = mkOption {
       default = { };
+
       description = ''
         Configuration for MollySocket. Available options are listed
         [here](https://github.com/mollyim/mollysocket#configuration).
       '';
+
       type = types.submodule {
-        freeformType = format.type;
         options = {
-          host = mkOption {
-            default = "127.0.0.1";
-            description = "Listening address of the web server";
-            type = types.str;
-          };
-
-          port = mkOption {
-            default = 8020;
-            description = "Listening port of the web server";
-            type = types.port;
-          };
-
           allowed_endpoints = mkOption {
             default = [ "*" ];
             description = "List of UnifiedPush servers";
@@ -62,26 +71,22 @@ in
             example = [ "abcdef-12345-tuxyz-67890" ];
             type = with types; listOf str;
           };
+
+          host = mkOption {
+            default = "127.0.0.1";
+            description = "Listening address of the web server";
+            type = types.str;
+          };
+
+          port = mkOption {
+            default = 8020;
+            description = "Listening port of the web server";
+            type = types.port;
+          };
         };
+
+        freeformType = format.type;
       };
-    };
-
-    environmentFile = mkOption {
-      default = null;
-      description = ''
-        Environment file (see {manpage}`systemd.exec(5)` "EnvironmentFile="
-        section for the syntax) passed to the service. This option can be
-        used to safely include secrets in the configuration.
-      '';
-      example = "/run/secrets/mollysocket";
-      type = with types; nullOr path;
-    };
-
-    logLevel = mkOption {
-      default = "info";
-      description = "Set the {env}`RUST_LOG` environment variable";
-      example = "debug";
-      type = types.str;
     };
   };
 
@@ -92,23 +97,17 @@ in
 
     # see https://github.com/mollyim/mollysocket/blob/main/mollysocket.service
     systemd.services.mollysocket = {
-      description = "MollySocket";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
+      description = "MollySocket";
       environment.RUST_LOG = cfg.logLevel;
-      serviceConfig = {
-        EnvironmentFile = cfg.environmentFile;
-        ExecStart = "${getExe package} server";
-        KillSignal = "SIGINT";
-        Restart = "on-failure";
-        StateDirectory = "mollysocket";
-        TimeoutStopSec = 5;
-        WorkingDirectory = "/var/lib/mollysocket";
 
+      serviceConfig = {
         # hardening
         DevicePolicy = "closed";
         DynamicUser = true;
+        EnvironmentFile = cfg.environmentFile;
+        ExecStart = "${getExe package} server";
+        KillSignal = "SIGINT";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -126,21 +125,32 @@ in
         ProtectProc = "invisible";
         ProtectSystem = "strict";
         RemoveIPC = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "mollysocket";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@resources"
           "~@privileged"
         ];
+
+        TimeoutStopSec = 5;
         UMask = "0077";
+        WorkingDirectory = "/var/lib/mollysocket";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

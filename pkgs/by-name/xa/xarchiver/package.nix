@@ -1,31 +1,31 @@
 {
   lib,
   stdenv,
-  bash,
   fetchFromGitHub,
+  bash,
+  bzip2,
+  coreutils,
+  desktopToDarwinBundle,
+  gnutar,
   gtk3,
-  pkg-config,
+  gzip,
   intltool,
+  lhasa,
   libxslt,
   makeWrapper,
-  coreutils,
-  zip,
-  unzip,
   p7zip,
+  pkg-config,
   unar,
-  gnutar,
-  bzip2,
-  gzip,
-  lhasa,
-  xz,
-  zstd,
+  unzip,
   wrapGAppsHook3,
-  desktopToDarwinBundle,
+  xz,
+  zip,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.5.4.27";
   pname = "xarchiver";
+  version = "0.5.4.27";
 
   src = fetchFromGitHub {
     owner = "ib";
@@ -33,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-s4RM9loFlKVcOtxNolt6+wZTp3ITdGaHTNUtDnAmqfs=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     intltool
@@ -67,13 +69,11 @@ stdenv.mkDerivation (finalAttrs: {
     }
   '';
 
-  strictDeps = true;
-
   meta = {
     description = "GTK frontend to 7z,zip,rar,tar,bzip2, gzip,arj, lha, rpm and deb (open and extract only)";
     homepage = "https://github.com/ib/xarchiver";
-    maintainers = [ ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.all;
     mainProgram = "xarchiver";
   };

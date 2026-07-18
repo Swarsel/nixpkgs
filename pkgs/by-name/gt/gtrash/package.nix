@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,22 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-odvj0YY18aishVWz5jWcLDvkYJLQ97ZSGpumxvxui4Y=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-JJA9kxNCtvfs51TzO7hEaS4UngBOEJuIIRIfHKSUMls=";
-
-  subPackages = [ "." ];
-
+  env.CGO_ENABLED = 0;
   # disabled because it is required to run on docker.
   doCheck = false;
-
-  env.CGO_ENABLED = 0;
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-    "-X main.builtBy=nixpkgs"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd gtrash \
@@ -40,6 +29,15 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/gtrash completion fish) \
       --zsh <($out/bin/gtrash completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.builtBy=nixpkgs"
+  ];
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Trash CLI manager written in Go";

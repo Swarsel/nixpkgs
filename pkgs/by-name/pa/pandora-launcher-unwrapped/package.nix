@@ -1,38 +1,31 @@
 {
-  addDriverRunpath,
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  imagemagick,
-  patchelf,
-  pkg-config,
-
+  addDriverRunpath,
   alsa-lib,
+  apple-sdk_15,
+  copyDesktopItems,
   dbus,
   fontconfig,
+  imagemagick,
   libGL,
   libseccomp,
   libxcb,
   libxkbcommon,
+  makeDesktopItem,
   openssl,
+  patchelf,
+  pkg-config,
+  rustPlatform,
   vulkan-loader,
   wayland,
-
-  copyDesktopItems,
-  makeDesktopItem,
-
-  apple-sdk_15,
-
   msaClientID ? null,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "pandora-launcher-unwrapped";
   version = "5.3.0";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Moulberry";
@@ -48,6 +41,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       'pub const CLIENT_ID: &str = "e5226706-5096-431d-9516-ae48fe263401";' \
       'pub const CLIENT_ID: &str = "${msaClientID}";'
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     rustPlatform.bindgenHook
@@ -74,21 +69,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     apple-sdk_15
   ];
 
-  doCheck = false; # there aren't any tests
-
   env.OPENSSL_NO_VENDOR = true;
-
-  dontUpdateAutotoolsGnuConfigScripts = true; # will modify vendor dir, which cargo doesn't allow
-  cargoVendorDir = "vendor"; # everything is vendored in-tree
-  dontCargoSetupPostUnpack = true;
-
-  desktopItems = lib.singleton (makeDesktopItem {
-    name = "com.moulberry.pandoralauncher";
-    desktopName = "Pandora Launcher";
-    genericName = "Unofficial Minecraft Launcher";
-    exec = "pandora_launcher";
-    icon = "pandora_launcher";
-  });
+  doCheck = false; # there aren't any tests
 
   postInstall = ''
     for size in 16 24 32 48 64 128 256; do
@@ -129,14 +111,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }" $out/bin/pandora_launcher
   '';
 
+  __structuredAttrs = true;
+  cargoVendorDir = "vendor"; # everything is vendored in-tree
+
+  desktopItems = lib.singleton (makeDesktopItem {
+    desktopName = "Pandora Launcher";
+    exec = "pandora_launcher";
+    genericName = "Unofficial Minecraft Launcher";
+    icon = "pandora_launcher";
+    name = "com.moulberry.pandoralauncher";
+  });
+
+  dontCargoSetupPostUnpack = true;
+  dontUpdateAutotoolsGnuConfigScripts = true; # will modify vendor dir, which cargo doesn't allow
+
   meta = {
     description = "Minecraft launcher that balances ease-of-use with powerful instance management features";
     homepage = "https://github.com/Moulberry/PandoraLauncher";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dtomvan
       eveeifyeve
     ];
+
     mainProgram = "pandora_launcher";
   };
 })

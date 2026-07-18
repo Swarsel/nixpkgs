@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   buildPackages,
   netsurf-buildsystem,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,10 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-YBTIQvYUVNL1oPgkPXqNe96bfaPM/cotNGx8CyxMBhs=";
   };
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ netsurf-buildsystem ];
 
   makeFlags = [
@@ -28,10 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     "BUILD_CC=$(CC_FOR_BUILD)"
   ];
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
   meta = {
-    homepage = "https://www.netsurf-browser.org/projects/libnsgif/";
-    description = "GIF Decoder for netsurf browser";
-    license = lib.licenses.mit;
     inherit (netsurf-buildsystem.meta) maintainers platforms;
+    description = "GIF Decoder for netsurf browser";
+    homepage = "https://www.netsurf-browser.org/projects/libnsgif/";
+    license = lib.licenses.mit;
   };
 })

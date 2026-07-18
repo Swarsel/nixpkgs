@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  intltool,
   autoreconfHook,
-  wrapGAppsHook3,
   gtk3,
   hicolor-icon-theme,
+  intltool,
   netpbm,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,24 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   # FIXME: remove when gettext is fixed
   patches = [ ./gettext-0.25.patch ];
 
-  configureFlags = [
-    "--enable-icon-browser"
-    "--with-gtk=gtk3"
-    "--with-rgb=${placeholder "out"}/share/yad/rgb.txt"
-  ];
-
-  buildInputs = [
-    gtk3
-    hicolor-icon-theme
-  ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-    intltool
-    wrapGAppsHook3
-  ];
-
   postPatch = ''
     sed -i src/file.c -e '21i#include <glib/gprintf.h>'
     sed -i src/form.c -e '21i#include <stdlib.h>'
@@ -51,22 +33,41 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm644 ${netpbm.out}/share/netpbm/misc/rgb.txt $out/share/yad/rgb.txt
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    intltool
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [
+    gtk3
+    hicolor-icon-theme
+  ];
+
+  configureFlags = [
+    "--enable-icon-browser"
+    "--with-gtk=gtk3"
+    "--with-rgb=${placeholder "out"}/share/yad/rgb.txt"
+  ];
+
   postAutoreconf = ''
     intltoolize
   '';
 
   meta = {
-    homepage = "https://github.com/v1cont/yad";
     description = "GUI dialog tool for shell scripts";
+
     longDescription = ''
       Yad (yet another dialog) is a GUI dialog tool for shell scripts. It is a
       fork of Zenity with many improvements, such as custom buttons, additional
       dialogs, pop-up menu in notification icon and more.
     '';
 
+    homepage = "https://github.com/v1cont/yad";
     license = lib.licenses.gpl3;
-    mainProgram = "yad";
     maintainers = [ ];
     platforms = with lib.platforms; linux;
+    mainProgram = "yad";
   };
 })

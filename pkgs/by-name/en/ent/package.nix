@@ -14,12 +14,7 @@ stdenv.mkDerivation {
     sha256 = "1v39jlj3lzr5f99avzs2j2z6anqqd64bzm1pdf6q84a5n8nxckn1";
   };
 
-  # Work around the "unpacker appears to have produced no directories"
-  # case that happens when the archive doesn't have a subdirectory.
-  sourceRoot = ".";
-
   nativeBuildInputs = [ unzip ];
-
   buildFlags = lib.optional stdenv.cc.isClang "CC=clang";
 
   installPhase = ''
@@ -27,11 +22,15 @@ stdenv.mkDerivation {
     cp ent $out/bin/
   '';
 
+  # Work around the "unpacker appears to have produced no directories"
+  # case that happens when the archive doesn't have a subdirectory.
+  sourceRoot = ".";
+
   meta = {
     description = "Pseudorandom Number Sequence Test Program";
     homepage = "https://www.fourmilab.ch/random/";
-    platforms = lib.platforms.all;
     license = lib.licenses.publicDomain;
+    platforms = lib.platforms.all;
     mainProgram = "ent";
   };
 }

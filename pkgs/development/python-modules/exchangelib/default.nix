@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cached-property,
   defusedxml,
   dnspython,
-  fetchFromGitHub,
   isodate,
   lxml,
   oauthlib,
@@ -14,10 +14,10 @@
   pytz,
   pyyaml,
   requests,
-  requests-ntlm,
   requests-gssapi,
-  requests-oauthlib,
   requests-mock,
+  requests-ntlm,
+  requests-oauthlib,
   setuptools,
   tzdata,
   tzlocal,
@@ -26,7 +26,6 @@
 buildPythonPackage rec {
   pname = "exchangelib";
   version = "5.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ecederstrand";
@@ -35,7 +34,13 @@ buildPythonPackage rec {
     hash = "sha256-tmJq0AZLuOic63ziIr173lbz6sDF/u75Y2ASYnHHDTM=";
   };
 
-  pythonRelaxDeps = [ "defusedxml" ];
+  nativeCheckInputs = [
+    psutil
+    python-dateutil
+    pytz
+    pyyaml
+    requests-mock
+  ];
 
   build-system = [ setuptools ];
 
@@ -59,21 +64,16 @@ buildPythonPackage rec {
       requests-gssapi
       # requests-negotiate-sspi
     ];
+
     kerberos = [ requests-gssapi ];
     # sspi = [
     #   requests-negotiate-sspi
     # ];
   };
 
-  nativeCheckInputs = [
-    psutil
-    python-dateutil
-    pytz
-    pyyaml
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "exchangelib" ];
+  pythonRelaxDeps = [ "defusedxml" ];
 
   meta = {
     description = "Client for Microsoft Exchange Web Services (EWS)";

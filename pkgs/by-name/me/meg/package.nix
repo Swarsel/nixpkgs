@@ -7,8 +7,6 @@ buildGoModule (finalAttrs: {
   pname = "meg";
   version = "0.3.0";
 
-  vendorHash = "sha256-kQsGRmK7Qqz36whd6RI7Gecj40MM0o/fgRv7a+4yGZI=";
-
   src = fetchFromGitHub {
     owner = "tomnomnom";
     repo = "meg";
@@ -16,11 +14,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uhfPNpvuuC9kBYUBCGE6X46TeZ5QxIcnDQ4HRrn2mT4=";
   };
 
+  vendorHash = "sha256-kQsGRmK7Qqz36whd6RI7Gecj40MM0o/fgRv7a+4yGZI=";
+
   meta = {
-    homepage = "https://github.com/tomnomnom/meg";
     description = "Fetch many paths for many hosts without flooding hosts";
-    mainProgram = "meg";
-    maintainers = with lib.maintainers; [ averagebit ];
+    homepage = "https://github.com/tomnomnom/meg";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ averagebit ];
+    mainProgram = "meg";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Twm/z627vXUVqJgAQ4pWjVGTgaSDhncHZVsImilWg4Q=";
   };
 
-  cargoHash = "sha256-ws+dqXGS0lsf+5dvUj/N16eEIH1FhgMhsnvYheYGm7s=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-ws+dqXGS0lsf+5dvUj/N16eEIH1FhgMhsnvYheYGm7s=";
 
   checkFlags = [
     # integration tests, need docker

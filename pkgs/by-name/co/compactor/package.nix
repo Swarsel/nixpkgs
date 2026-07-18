@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   asciidoctor,
   autoreconfHook,
-  pkg-config,
   boost186,
-  libctemplate,
-  libmaxminddb,
-  libpcap,
-  libtins,
-  openssl,
-  protobuf_21,
-  xz,
-  zlib,
   catch2,
   cbor-diag,
   cddl,
   diffutils,
+  fetchpatch,
   file,
+  libctemplate,
+  libmaxminddb,
+  libpcap,
+  libtins,
   mktemp,
   netcat,
+  openssl,
+  pkg-config,
+  protobuf_21,
   tcpdump,
   wireshark-cli,
+  xz,
+  zlib,
 }:
 let
   protobuf = protobuf_21;
@@ -36,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "dns-stats";
     repo = "compactor";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-5Z14suhO5ghhmZsSj4DsSoKm+ct2gQFO6qxhjmx4Xm4=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -48,16 +48,22 @@ stdenv.mkDerivation (finalAttrs: {
 
     # https://github.com/dns-stats/compactor/commit/f7deaf89f55a12c586b6662a3a7d04b10a4c7bcb
     (fetchpatch {
-      url = "https://github.com/dns-stats/compactor/commit/f7deaf89f55a12c586b6662a3a7d04b10a4c7bcb.patch";
       hash = "sha256-eEaVS5rfrLkRGc668PwVfb/xw3n1SoCm30xEf1NjbeY=";
+      url = "https://github.com/dns-stats/compactor/commit/f7deaf89f55a12c586b6662a3a7d04b10a4c7bcb.patch";
     })
   ];
+
+  postPatch = ''
+    patchShebangs test-scripts/
+    cp ${catch2}/include/catch2/catch.hpp tests/catch.hpp
+  '';
 
   nativeBuildInputs = [
     asciidoctor
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     boost186
     libctemplate
@@ -70,24 +76,18 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  postPatch = ''
-    patchShebangs test-scripts/
-    cp ${catch2}/include/catch2/catch.hpp tests/catch.hpp
-  '';
+  configureFlags = [
+    "--with-boost-libdir=${boost186.out}/lib"
+    "--with-boost=${boost186.dev}"
+  ];
 
   preConfigure = ''
     substituteInPlace configure \
       --replace "/usr/bin/file" "${file}/bin/file"
   '';
 
-  configureFlags = [
-    "--with-boost-libdir=${boost186.out}/lib"
-    "--with-boost=${boost186.dev}"
-  ];
-  enableParallelBuilding = true;
-  enableParallelInstalling = false; # race conditions when installing
-
   doCheck = !stdenv.hostPlatform.isDarwin; # check-dnstap.sh failing on Darwin
+
   nativeCheckInputs = [
     cbor-diag
     cddl
@@ -98,6 +98,9 @@ stdenv.mkDerivation (finalAttrs: {
     tcpdump
     wireshark-cli
   ];
+
+  enableParallelBuilding = true;
+  enableParallelInstalling = false; # race conditions when installing
 
   meta = {
     description = "Tools to capture DNS traffic and record it in C-DNS files";

@@ -1,27 +1,27 @@
 {
   lib,
   stdenv,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnetCorePackages,
   autoPatchelfHook,
-  copyDesktopItems,
-  makeDesktopItem,
-  icu,
-  zlib,
-  fontconfig,
-  openssl,
-  lttng-ust_2_12,
-  krb5,
   bash,
-  libxrandr,
-  libxi,
-  libxext,
-  libxcursor,
-  libx11,
-  libsm,
+  buildDotnetModule,
+  copyDesktopItems,
+  dotnetCorePackages,
+  fontconfig,
+  icu,
+  krb5,
   libice,
+  libsm,
+  libx11,
+  libxcursor,
+  libxext,
+  libxi,
+  libxrandr,
+  lttng-ust_2_12,
+  makeDesktopItem,
   nix-update-script,
+  openssl,
+  zlib,
 }:
 
 buildDotnetModule (finalAttrs: {
@@ -35,10 +35,6 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-MRhJ5l+G97mBBRQzir2s5TQhgzuIeGnOIFszVK1po3w=";
     fetchSubmodules = true;
   };
-
-  projectFile = "v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj";
-
-  nugetDeps = ./deps.json;
 
   postPatch = ''
     chmod +x v2rayN/ServiceLib/Sample/proxy_set_linux_sh
@@ -55,14 +51,6 @@ buildDotnetModule (finalAttrs: {
       --replace-fail 'Environment.GetEnvironmentVariable(Global.LocalAppData) == "1"' "false"
   '';
 
-  dotnetBuildFlags = [ "-p:PublishReadyToRun=false" ];
-
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-
-  dotnet-runtime = dotnetCorePackages.runtime_10_0;
-
-  executables = [ "v2rayN" ];
-
   nativeBuildInputs = [
     copyDesktopItems
     autoPatchelfHook
@@ -78,6 +66,30 @@ buildDotnetModule (finalAttrs: {
     (lib.getLib stdenv.cc.cc)
   ];
 
+  postInstall = ''
+    install -D --mode 0644 v2rayN/v2rayN.Desktop/v2rayN.png $out/share/icons/hicolor/256x256/apps/v2rayn.png
+  '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Network" ];
+      comment = "A GUI client for Windows and Linux, support Xray core and sing-box-core and others";
+      desktopName = "v2rayN";
+      exec = "v2rayN";
+      genericName = "v2rayN";
+      icon = "v2rayn";
+      name = "v2rayn";
+      terminal = false;
+    })
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  dotnetBuildFlags = [ "-p:PublishReadyToRun=false" ];
+  executables = [ "v2rayN" ];
+  nugetDeps = ./deps.json;
+  projectFile = "v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj";
+
   runtimeDeps = [
     libx11
     libxrandr
@@ -88,34 +100,19 @@ buildDotnetModule (finalAttrs: {
     libxext
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "v2rayn";
-      exec = "v2rayN";
-      icon = "v2rayn";
-      genericName = "v2rayN";
-      desktopName = "v2rayN";
-      categories = [ "Network" ];
-      terminal = false;
-      comment = "A GUI client for Windows and Linux, support Xray core and sing-box-core and others";
-    })
-  ];
-
-  postInstall = ''
-    install -D --mode 0644 v2rayN/v2rayN.Desktop/v2rayN.png $out/share/icons/hicolor/256x256/apps/v2rayn.png
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "GUI client support Xray core and sing-box-core and others";
     homepage = "https://github.com/2dust/v2rayN";
-    mainProgram = "v2rayN";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "v2rayN";
   };
 })

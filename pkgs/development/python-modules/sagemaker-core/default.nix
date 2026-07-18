@@ -1,35 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  # optional-dependencies
+  black,
   # dependencies
   boto3,
+  buildPythonPackage,
   importlib-metadata,
   jsonschema,
   mock,
+  pandas,
   platformdirs,
   pydantic,
-  pyyaml,
-  rich,
-
-  # optional-dependencies
-  black,
-  pandas,
   pylint,
   pytest,
-
   # tests
   pytestCheckHook,
+  pyyaml,
+  rich,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sagemaker-core";
   version = "1.0.78";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -38,15 +33,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-pSxOMbw6ZUdlVTYoSW5ZwpTTh5VEJFf8U6sNq6kb5vM=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
   build-system = [
     setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "boto3"
-    "importlib-metadata"
-    "mock"
-    "rich"
   ];
 
   dependencies = [
@@ -60,6 +53,14 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
+  disabledTestPaths = [
+    # Tries to import deprecated `sklearn`
+    "integ/test_codegen.py"
+
+    # botocore.exceptions.NoRegionError: You must specify a region
+    "tst/generated/test_logs.py"
+  ];
+
   optional-dependencies = {
     codegen = [
       black
@@ -69,21 +70,17 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "sagemaker_core"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  disabledTestPaths = [
-    # Tries to import deprecated `sklearn`
-    "integ/test_codegen.py"
-
-    # botocore.exceptions.NoRegionError: You must specify a region
-    "tst/generated/test_logs.py"
+  pythonRelaxDeps = [
+    "boto3"
+    "importlib-metadata"
+    "mock"
+    "rich"
   ];
 
   meta = {

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  cmake,
   alsa-lib,
-  udev,
+  cmake,
   qt6Packages,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     qt6Packages.wrapQtAppsHook
   ];
+
   buildInputs = [
     alsa-lib
     udev
@@ -37,9 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Collection of desktop applications for ALSA configuration";
     homepage = "https://gitlab.com/sebholt/qastools";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       avnik
     ];
+
     platforms = lib.platforms.linux;
   };
 })

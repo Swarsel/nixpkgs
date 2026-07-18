@@ -19,17 +19,6 @@ in
   # https://www.nongnu.org/ada-mode/
   ada-mode = super.ada-mode.overrideAttrs (
     finalAttrs: previousAttrs: {
-      # actually unpack source of ada-mode and wisi
-      # which are both needed to compile the tools
-      # we need at runtime
-      dontUnpack = false;
-      srcs = [
-        super.ada-mode.src
-        self.wisi.src
-      ];
-
-      sourceRoot = "ada-mode-${finalAttrs.version}";
-
       nativeBuildInputs = previousAttrs.nativeBuildInputs or [ ] ++ [
         buildPackages.gnat
         buildPackages.gprbuild
@@ -51,6 +40,17 @@ in
         + ''
           ./install.sh "$out"
         '';
+
+      # actually unpack source of ada-mode and wisi
+      # which are both needed to compile the tools
+      # we need at runtime
+      dontUnpack = false;
+      sourceRoot = "ada-mode-${finalAttrs.version}";
+
+      srcs = [
+        super.ada-mode.src
+        self.wisi.src
+      ];
 
       meta = previousAttrs.meta // {
         maintainers = [ lib.maintainers.sternenseemann ];
@@ -107,19 +107,19 @@ in
       applyOrgRoamMissingPatch = lib.versionOlder finalAttrs.version "0.8.22.0.20240205.070828";
     in
     {
-      dontUnpack = !applyOrgRoamMissingPatch;
       patches =
         if applyOrgRoamMissingPatch then
           previousAttrs.patches or [ ]
           ++ [
             (pkgs.fetchpatch {
+              hash = "sha256-UI72N3lCgro6bG75sWnbw9truREToQHEzZ1TeQAIMjo=";
               name = "fix-comilation-error-about-missing-org-roam.patch";
               url = "https://github.com/girzel/ebdb/commit/058f30a996eb9074feac8f94db4eb49e85ae08f1.patch";
-              hash = "sha256-UI72N3lCgro6bG75sWnbw9truREToQHEzZ1TeQAIMjo=";
             })
           ]
         else
           previousAttrs.patches or [ ];
+
       preBuild =
         if applyOrgRoamMissingPatch then
           previousAttrs.preBuild or ""
@@ -133,6 +133,8 @@ in
           ''
         else
           previousAttrs.preBuild or "";
+
+      dontUnpack = !applyOrgRoamMissingPatch;
     }
   );
 
@@ -153,10 +155,7 @@ in
   );
 
   jinx = super.jinx.overrideAttrs (old: {
-    dontUnpack = false;
-
     nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [ pkgs.pkg-config ];
-
     buildInputs = old.buildInputs or [ ] ++ [ pkgs.enchant_2 ];
 
     postBuild =
@@ -176,15 +175,17 @@ in
         rm $outd/jinx-mod.c $outd/emacs-module.h
       '';
 
+    dontUnpack = false;
+
     meta = old.meta // {
       maintainers = [ lib.maintainers.DamienCassou ];
     };
   });
 
   notes-mode = (mkHome super.notes-mode).overrideAttrs (old: {
-    dontUnpack = false;
-    buildInputs = old.buildInputs or [ ] ++ [ pkgs.perl ];
     nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [ pkgs.perl ];
+    buildInputs = old.buildInputs or [ ] ++ [ pkgs.perl ];
+
     preInstall =
       old.preInstall or ""
       + "\n"
@@ -196,16 +197,18 @@ in
         tar --create --verbose --file=$src $content_directory
         popd
       '';
+
     postFixup =
       old.postFixup or ""
       + "\n"
       + ''
         patchShebangs --host --update $out/share/emacs/site-lisp/elpa/$ename-$version/mkconfig
       '';
+
+    dontUnpack = false;
   });
 
   plz = super.plz.overrideAttrs (old: {
-    dontUnpack = false;
     postPatch =
       old.postPatch or ""
       + "\n"
@@ -213,6 +216,7 @@ in
         substituteInPlace plz.el \
           --replace-fail 'plz-curl-program "curl"' 'plz-curl-program "${lib.getExe pkgs.curl}"'
       '';
+
     preInstall =
       old.preInstall or ""
       + "\n"
@@ -220,6 +224,8 @@ in
         tar -cf "$ename-$version.tar" --transform "s,^,$ename-$version/," * .[!.]*
         src="$ename-$version.tar"
       '';
+
+    dontUnpack = false;
   });
 
   # https://sourceware.org/bugzilla/show_bug.cgi?id=32185
@@ -243,6 +249,7 @@ in
   # delete tests/seq-tests.el to workaround this
   seq = super.seq.overrideAttrs (old: {
     dontUnpack = false;
+
     postUnpack =
       old.postUnpack or ""
       + "\n"
@@ -259,6 +266,7 @@ in
   # https://github.com/alphapapa/taxy.el/issues/3
   taxy = super.taxy.overrideAttrs (old: {
     dontUnpack = false;
+
     postUnpack =
       old.postUnpack or ""
       + "\n"
@@ -289,6 +297,7 @@ in
   # only the first run errors, the second run works well, seems like an Emacs bug
   tramp = super.tramp.overrideAttrs (old: {
     dontUnpack = false;
+
     postUnpack =
       old.postUnpack or ""
       + "\n"
@@ -308,11 +317,12 @@ in
   wisitoken-grammar-mode = ignoreCompilationError super.wisitoken-grammar-mode; # elisp error
 
   xeft = super.xeft.overrideAttrs (old: {
-    dontUnpack = false;
     buildInputs = old.buildInputs or [ ] ++ [ pkgs.xapian ];
+
     buildPhase = old.buildPhase or "" + ''
       $CXX -shared -o xapian-lite${libExt} xapian-lite.cc -lxapian
     '';
+
     postInstall =
       old.postInstall or ""
       + "\n"
@@ -321,6 +331,8 @@ in
         install -m444 -t $outd xapian-lite${libExt}
         rm $outd/xapian-lite.cc $outd/emacs-module.h $outd/emacs-module-prelude.h $outd/demo.gif $outd/Makefile
       '';
+
+    dontUnpack = false;
   });
 
   # keep-sorted end

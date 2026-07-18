@@ -16,15 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MScjiuKHmep2CrVnDXbSOZ7MQzcGrD0kP1xkF+Z5tK0=";
   };
 
-  nativeBuildInputs = [ pandoc ];
-
   strictDeps = true;
-
+  nativeBuildInputs = [ pandoc ];
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Small C tool for Linux filesystem encryption";
-    mainProgram = "fscryptctl";
+
     longDescription = ''
       fscryptctl is a low-level tool written in C that handles raw keys and
       manages policies for Linux filesystem encryption, specifically the
@@ -39,10 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
       As fscryptctl is intended for advanced users, you should read the kernel
       documentation for filesystem encryption before using fscryptctl.
     '';
-    inherit (finalAttrs.src.meta) homepage;
+
     changelog = "https://github.com/google/fscryptctl/blob/master/NEWS.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "fscryptctl";
   };
 })

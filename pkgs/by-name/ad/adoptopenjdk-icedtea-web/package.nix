@@ -2,24 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cargo,
-  rustc,
   autoreconfHook,
-  jdk8,
-  glib,
-  firefox-unwrapped,
-  zip,
-  pkg-config,
-  npapi_sdk,
   bash,
   bc,
+  cargo,
+  firefox-unwrapped,
+  glib,
+  jdk8,
+  npapi_sdk,
+  pkg-config,
+  rustc,
+  zip,
 }:
 let
   jdk = jdk8;
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "adoptopenjdk-icedtea-web";
-
   version = "1.8.8";
 
   src = fetchFromGitHub {
@@ -29,11 +28,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-hpEVWG9ltNDL/0EFJjgQRRce+BLcCO4ZERULYZxyC1o=";
   };
 
+  patches = [ ./patches/0001-make-cargo-work-with-nix-build-on-linux.patch ];
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
     bc
   ];
+
   buildInputs = [
     cargo
     rustc
@@ -43,13 +45,23 @@ stdenv.mkDerivation (finalAttrs: {
     npapi_sdk
   ];
 
+  configureFlags = [
+    "--with-itw-libs=DISTRIBUTION"
+    "--with-jdk-home=${jdk.home}"
+    "--disable-docs"
+  ];
+
+  env = {
+    HOME = "/build";
+    XDG_CONFIG_HOME = "/build";
+  };
+
   preConfigure = ''
     configureFlagsArray+=("BIN_BASH=${bash}/bin/bash")
   '';
 
-  patches = [ ./patches/0001-make-cargo-work-with-nix-build-on-linux.patch ];
-
   doCheck = true;
+
   preCheck = ''
     # Needed for the below rust-launcher tests to pass
     # dirs_paths_helper::tests::check_config_files_paths
@@ -62,31 +74,22 @@ stdenv.mkDerivation (finalAttrs: {
     touch $XDG_CONFIG_HOME/icedtea-web/deployment.properties
   '';
 
-  env = {
-    HOME = "/build";
-    XDG_CONFIG_HOME = "/build";
-  };
-
-  configureFlags = [
-    "--with-itw-libs=DISTRIBUTION"
-    "--with-jdk-home=${jdk.home}"
-    "--disable-docs"
-  ];
-
-  mozillaPlugin = "/lib";
-
   postInstall = ''
     mkdir -p $out/share/applications
     cp javaws.desktop itweb-settings.desktop policyeditor.desktop $out/share/applications
   '';
 
+  mozillaPlugin = "/lib";
+
   meta = {
     description = "Java web browser plugin and an implementation of Java Web Start";
+
     longDescription = ''
       A Free Software web browser plugin running applets written in the Java
       programming language and an implementation of Java Web Start, originally
       based on the NetX project.
     '';
+
     homepage = "https://github.com/adoptopenjdk/icedtea-web";
     license = lib.licenses.WITH lib.licenses.gpl2Only lib.licenses.classpathException20;
     platforms = lib.platforms.linux;

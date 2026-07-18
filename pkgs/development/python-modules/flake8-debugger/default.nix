@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "flake8-debugger";
   version = "4.1.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "flake8_debugger" ];
 
   meta = {

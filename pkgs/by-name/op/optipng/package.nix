@@ -19,17 +19,6 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ libpng ];
 
-  # Workaround for crash in cexcept.h. See
-  # https://github.com/NixOS/nixpkgs/issues/28106
-  preConfigure = ''
-    export LD=$CC
-  '';
-
-  # OptiPNG does not like --static, --build or --host
-  dontDisableStatic = true;
-  dontAddStaticConfigureFlags = true;
-  configurePlatforms = [ ];
-
   configureFlags = [
     "--with-system-zlib"
     "--with-system-libpng"
@@ -37,6 +26,12 @@ stdenv.mkDerivation rec {
   ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
     #"-prefix=$out"
   ];
+
+  # Workaround for crash in cexcept.h. See
+  # https://github.com/NixOS/nixpkgs/issues/28106
+  preConfigure = ''
+    export LD=$CC
+  '';
 
   postInstall =
     if stdenv.hostPlatform != stdenv.buildPlatform && stdenv.hostPlatform.isWindows then
@@ -46,9 +41,14 @@ stdenv.mkDerivation rec {
     else
       null;
 
+  configurePlatforms = [ ];
+  dontAddStaticConfigureFlags = true;
+  # OptiPNG does not like --static, --build or --host
+  dontDisableStatic = true;
+
   meta = {
-    homepage = "https://optipng.sourceforge.net/";
     description = "PNG optimizer";
+    homepage = "https://optipng.sourceforge.net/";
     license = lib.licenses.zlib;
     platforms = lib.platforms.unix;
     mainProgram = "optipng";

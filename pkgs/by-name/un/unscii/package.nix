@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  bdftopcf,
-  fontforge,
   SDL,
   SDL_image,
+  bdftopcf,
+  fontforge,
   mkfontscale,
+  perl,
 }:
 
 let
@@ -26,13 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0msvqrq7x36p76a2n5bzkadh95z954ayqa08wxd017g4jpa1a4jd";
   };
 
-  nativeBuildInputs = [
-    perlenv
-    bdftopcf
-    fontforge
-    SDL
-    SDL_image
-    mkfontscale
+  outputs = [
+    "out"
+    "extra"
   ];
 
   # Fixes shebang -> wrapper problem on Darwin
@@ -42,6 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
         --replace "./$perltool" "${perlenv}/bin/perl ./$perltool"
     done
   '';
+
+  nativeBuildInputs = [
+    perlenv
+    bdftopcf
+    fontforge
+    SDL
+    SDL_image
+    mkfontscale
+  ];
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -71,13 +76,10 @@ stdenv.mkDerivation (finalAttrs: {
     mkfontscale "$extra"/share/fonts/*
   '';
 
-  outputs = [
-    "out"
-    "extra"
-  ];
-
   meta = {
     description = "Bitmapped character-art-friendly Unicode fonts";
+    homepage = "http://viznut.fi/unscii/";
+
     # Basically GPL2+ with font exception — because of the Unifont-augmented
     # version. The reduced version is public domain.
     license = with lib.licenses; [
@@ -85,7 +87,7 @@ stdenv.mkDerivation (finalAttrs: {
       fontException
       ofl
     ];
+
     maintainers = [ lib.maintainers.raskin ];
-    homepage = "http://viznut.fi/unscii/";
   };
 })

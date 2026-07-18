@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   cmake,
   libssh,
   openssl,
@@ -12,13 +12,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.8.0";
 
   src = fetchFromGitHub {
-    repo = "rtrlib";
     owner = "rtrlib";
+    repo = "rtrlib";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-ISb4ojcDvXY/88GbFMrA5V5+SGE6CmE5D+pokDTwotQ=";
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libssh
     openssl

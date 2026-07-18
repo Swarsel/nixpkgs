@@ -9,9 +9,9 @@
 
 {
   lib,
+  fetchurl,
   buildPlatform,
   callPackage,
-  fetchurl,
   kaem,
   mes,
   mes-libc,
@@ -37,8 +37,8 @@ let
     .${buildPlatform.system};
 
   tarball = fetchurl {
-    url = "https://gitlab.com/janneke/tinycc/-/archive/${rev}/tinycc-${rev}.tar.gz";
     sha256 = "sha256-16JBGJATAWP+lPylOi3+lojpdv0SR5pqyxOV2PiVx0A=";
+    url = "https://gitlab.com/janneke/tinycc/-/archive/${rev}/tinycc-${rev}.tar.gz";
   };
   src =
     (kaem.runCommand "tinycc-bootstrappable-${version}-source" { } ''
@@ -89,11 +89,13 @@ let
     description = "Tiny C Compiler's bootstrappable fork";
     homepage = "https://gitlab.com/janneke/tinycc";
     license = lib.licenses.lgpl21Only;
-    teams = [ lib.teams.minimal-bootstrap ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    teams = [ lib.teams.minimal-bootstrap ];
   };
 
   pname = "tinycc-boot-mes";
@@ -146,8 +148,8 @@ let
 
     libs = recompileLibc {
       inherit pname version src;
-      tcc = compiler;
       libtccOptions = mes-libc.CFLAGS + " -DTCC_TARGET_${tccTarget}=1";
+      tcc = compiler;
     };
   };
 
@@ -155,81 +157,96 @@ let
   # https://gitlab.com/janneke/tinycc/-/blob/80114c4da6b17fbaabb399cc29f427e368309bc8/boot.sh
 
   tinycc-boot0 = buildTinyccMes {
-    pname = "tinycc-boot0";
     inherit src version meta;
-    prev = tinycc-boot-mes;
+    pname = "tinycc-boot0";
+
     buildOptions = [
       "-D HAVE_LONG_LONG=1"
       "-D HAVE_SETJMP=1"
     ];
+
     libtccBuildOptions = [
       "-D HAVE_LONG_LONG=1"
       "-DTCC_TARGET_${tccTarget}=1"
     ];
+
+    prev = tinycc-boot-mes;
   };
 
   tinycc-boot1 = buildTinyccMes {
-    pname = "tinycc-boot1";
     inherit src version meta;
-    prev = tinycc-boot0;
+    pname = "tinycc-boot1";
+
     buildOptions = [
       "-D HAVE_BITFIELD=1"
       "-D HAVE_LONG_LONG=1"
       "-D HAVE_SETJMP=1"
     ];
+
     libtccBuildOptions = [
       "-D HAVE_LONG_LONG=1"
       "-DTCC_TARGET_${tccTarget}=1"
     ];
+
+    prev = tinycc-boot0;
   };
 
   tinycc-boot2 = buildTinyccMes {
-    pname = "tinycc-boot2";
     inherit src version meta;
-    prev = tinycc-boot1;
+    pname = "tinycc-boot2";
+
     buildOptions = [
       "-D HAVE_BITFIELD=1"
       "-D HAVE_FLOAT_STUB=1"
       "-D HAVE_LONG_LONG=1"
       "-D HAVE_SETJMP=1"
     ];
+
     libtccBuildOptions = [
       "-D HAVE_FLOAT_STUB=1"
       "-D HAVE_LONG_LONG=1"
       "-DTCC_TARGET_${tccTarget}=1"
     ];
+
+    prev = tinycc-boot1;
   };
 
   tinycc-boot3 = buildTinyccMes {
-    pname = "tinycc-boot3";
     inherit src version meta;
-    prev = tinycc-boot2;
+    pname = "tinycc-boot3";
+
     buildOptions = [
       "-D HAVE_BITFIELD=1"
       "-D HAVE_FLOAT=1"
       "-D HAVE_LONG_LONG=1"
       "-D HAVE_SETJMP=1"
     ];
+
     libtccBuildOptions = [
       "-D HAVE_FLOAT=1"
       "-D HAVE_LONG_LONG=1"
       "-DTCC_TARGET_${tccTarget}=1"
     ];
+
+    prev = tinycc-boot2;
   };
 in
 buildTinyccMes {
-  pname = "tinycc-bootstrappable";
   inherit src version meta;
-  prev = tinycc-boot3;
+  pname = "tinycc-bootstrappable";
+
   buildOptions = [
     "-D HAVE_BITFIELD=1"
     "-D HAVE_FLOAT=1"
     "-D HAVE_LONG_LONG=1"
     "-D HAVE_SETJMP=1"
   ];
+
   libtccBuildOptions = [
     "-D HAVE_FLOAT=1"
     "-D HAVE_LONG_LONG=1"
     "-DTCC_TARGET_${tccTarget}=1"
   ];
+
+  prev = tinycc-boot3;
 }

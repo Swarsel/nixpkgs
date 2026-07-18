@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cacert,
   dirty-equals,
   docker,
-  fetchFromGitHub,
   granian,
   httpx,
-  lib,
   pydantic,
   pytest-asyncio,
   pytestCheckHook,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyreqwest";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MarkusSintonen";
@@ -29,18 +28,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-o33/KkPBl4ActDV0R8KqWll6F47HPO3amHFI00rHryE=";
   };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-+flEikEImbiu/x+pJQz3rynYKmfjaS9N0/A1HSzH0jU=";
-  };
-
-  build-system = [
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-  ];
-
-  pythonImportsCheck = [ "pyreqwest" ];
 
   nativeCheckInputs = [
     cacert
@@ -58,15 +45,28 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
+  build-system = [
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-+flEikEImbiu/x+pJQz3rynYKmfjaS9N0/A1HSzH0jU=";
+  };
+
   disabledTestPaths = [
     # requires a running Docker daemon
     "tests/test_examples.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "pyreqwest" ];
+
   meta = {
-    changelog = "https://github.com/MarkusSintonen/pyreqwest/releases/tag/${finalAttrs.src.tag}";
     description = "Fast Python HTTP client based on Rust reqwest";
     homepage = "https://github.com/MarkusSintonen/pyreqwest";
+    changelog = "https://github.com/MarkusSintonen/pyreqwest/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.dotlambda ];
   };

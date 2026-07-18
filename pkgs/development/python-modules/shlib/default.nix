@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
-  pytestCheckHook,
   braceexpand,
+  buildPythonPackage,
+  flit-core,
   inform,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "shlib";
   version = "1.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KenKundert";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     patchShebangs .
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ flit-core ];
 
   dependencies = [
@@ -31,8 +31,7 @@ buildPythonPackage rec {
     inform
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "shlib" ];
 
   meta = {

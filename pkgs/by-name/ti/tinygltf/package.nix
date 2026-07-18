@@ -1,20 +1,15 @@
 {
   lib,
-
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-
   # nativeBuildInputs
   cmake,
+  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "tinygltf";
   version = "3.0.0";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "syoyo";
@@ -22,6 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qs/7O/nPXpMbn31smMfdd3V9zRbyhAnDyjZwlduseKU=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -33,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "TINYGLTF_INSTALL_VENDOR" true)
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

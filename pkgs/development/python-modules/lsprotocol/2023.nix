@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   cattrs,
-  fetchFromGitHub,
   flit-core,
   importlib-resources,
   jsonschema,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "lsprotocol";
   version = "2023.0.1"; # nixpkgs-update: no auto update
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -23,7 +22,17 @@ buildPythonPackage rec {
     hash = "sha256-PHjLKazMaT6W4Lve1xNxm6hEwqE3Lr2m5L7Q03fqb68=";
   };
 
-  sourceRoot = "${src.name}/packages/python";
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  checkInputs = [
+    importlib-resources
+    jsonschema
+    pyhamcrest
+  ];
+
+  preCheck = ''
+    cd ../../
+  '';
 
   build-system = [
     flit-core
@@ -32,14 +41,6 @@ buildPythonPackage rec {
   dependencies = [
     attrs
     cattrs
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  checkInputs = [
-    importlib-resources
-    jsonschema
-    pyhamcrest
   ];
 
   disabledTests = [
@@ -51,12 +52,9 @@ buildPythonPackage rec {
     "test_notebook_sync_options"
   ];
 
-  preCheck = ''
-    cd ../../
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "lsprotocol" ];
-
+  sourceRoot = "${src.name}/packages/python";
   passthru.skipBulkUpdate = true;
 
   meta = {
@@ -64,6 +62,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/microsoft/lsprotocol";
     changelog = "https://github.com/microsoft/lsprotocol/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       doronbehar
       fab

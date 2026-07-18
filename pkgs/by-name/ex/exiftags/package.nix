@@ -13,6 +13,10 @@ stdenv.mkDerivation rec {
     sha256 = "194ifl6hybx2a5x8jhlh9i56k3qfc6p2l72z0ii1b7v0bzg48myr";
   };
 
+  preInstall = ''
+    mkdir -p $out/bin $out/man/man1
+  '';
+
   patchPhase = ''
     sed -i -e s@/usr/local@$out@ Makefile
 
@@ -23,16 +27,13 @@ stdenv.mkDerivation rec {
       --replace-fail "int (*valfun)()" "int (*valfun)(struct exifprop *, struct exifprop *, unsigned char *, struct exiftags *)"
   '';
 
-  preInstall = ''
-    mkdir -p $out/bin $out/man/man1
-  '';
-
   meta = {
-    homepage = "http://johnst.org/sw/exiftags/";
     description = "Displays EXIF data from JPEG files";
+    homepage = "http://johnst.org/sw/exiftags/";
     license = lib.licenses.free;
     maintainers = [ ];
     platforms = with lib.platforms; unix;
+
     knownVulnerabilities = [
       "CVE-2023-50671"
       "CVE-2024-42851"

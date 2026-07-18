@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
   makeDesktopItem,
 }:
 
@@ -19,20 +19,27 @@ let
   };
 
   desktopItem = makeDesktopItem {
-    name = "apidog";
-    exec = "apidog %U";
-    icon = "apidog";
-    desktopName = "Apidog";
-    comment = "All-in-One API Platform: Design, Debug, Mock, Test, and Document.";
     categories = [
       "Development"
       "Utility"
     ];
+
+    comment = "All-in-One API Platform: Design, Debug, Mock, Test, and Document.";
+    desktopName = "Apidog";
+    exec = "apidog %U";
+    icon = "apidog";
     mimeTypes = [ "x-scheme-handler/apidog" ];
+    name = "apidog";
   };
 in
 appimageTools.wrapType2 {
   inherit pname version src;
+  desktopItems = [ desktopItem ];
+
+  extraInstallCommands = ''
+    install -Dm444 ${appimageContents}/apidog.png \
+      $out/share/icons/hicolor/512x512/apps/apidog.png
+  '';
 
   extraPkgs = pkgs: [
     pkgs.nss
@@ -49,20 +56,13 @@ appimageTools.wrapType2 {
     pkgs.nodejs
   ];
 
-  extraInstallCommands = ''
-    install -Dm444 ${appimageContents}/apidog.png \
-      $out/share/icons/hicolor/512x512/apps/apidog.png
-  '';
-
-  desktopItems = [ desktopItem ];
-
   meta = with lib; {
     description = "All-in-one API design, test, mock and documentation platform";
     homepage = "https://apidog.com";
     license = licenses.unfree;
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+    maintainers = with maintainers; [ DomagojAlaber ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "apidog";
-    maintainers = with maintainers; [ DomagojAlaber ];
   };
 }

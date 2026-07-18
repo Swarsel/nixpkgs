@@ -16,13 +16,14 @@
 buildPythonPackage rec {
   pname = "netmiko";
   version = "4.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-lwG7LBoV6y6AdMsuKMoAfGm5+lKWG4O5jHV+rWuA3u8=";
   };
 
+  # Tests require closed-source pyats and genie packages
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -36,9 +37,7 @@ buildPythonPackage rec {
     textfsm
   ];
 
-  # Tests require closed-source pyats and genie packages
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "netmiko" ];
 
   meta = {

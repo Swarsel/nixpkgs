@@ -1,25 +1,22 @@
 {
-  mkKdeDerivation,
-  pkg-config,
-
-  qtmultimedia,
-
   alsa-lib,
   audiofile,
   fftw,
   flac,
   id3lib,
+  libmad,
   libogg,
   libopus,
-  libmad,
   libpulseaudio,
   libsamplerate,
   libvorbis,
+  mkKdeDerivation,
+  pkg-config,
+  qtmultimedia,
 }:
 mkKdeDerivation {
   pname = "kwave";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtmultimedia
 
@@ -35,4 +32,6 @@ mkKdeDerivation {
     libsamplerate
     libvorbis
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 }

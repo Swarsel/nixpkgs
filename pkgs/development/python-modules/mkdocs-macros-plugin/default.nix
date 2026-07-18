@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   hjson,
   jinja2,
   mkdocs,
+  mkdocs-macros-test,
+  mkdocs-material,
+  mkdocs-test,
   packaging,
   pathspec,
+  pytestCheckHook,
   python-dateutil,
   pyyaml,
-  termcolor,
+  setuptools,
   super-collections,
-  mkdocs-test,
-  mkdocs-material,
-  mkdocs-macros-test,
+  termcolor,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-macros-plugin";
   version = "1.3.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fralau";
@@ -29,6 +28,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-bL7oWWDoF+zH34XSwFY2H9op/97zO43HS+oO6lNFEr4=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mkdocs-test
+    mkdocs-material
+    mkdocs-macros-test
+  ];
 
   build-system = [
     setuptools
@@ -46,20 +52,15 @@ buildPythonPackage rec {
     super-collections
   ];
 
-  pythonImportsCheck = [
-    "mkdocs_macros"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    mkdocs-test
-    mkdocs-material
-    mkdocs-macros-test
-  ];
-
   disabledTestPaths = [
     # we do not have brew and mkdocs-d2-plugin is also not packaged in nixpkgs,
     "test/plugin_d2/test_t2.py"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "mkdocs_macros"
   ];
 
   meta = {

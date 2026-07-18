@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   nix-update-script,
-  typing-extensions,
   pyright,
   pytest-asyncio,
   pytestCheckHook,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "nexus-rpc";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nexus-rpc";
@@ -29,6 +28,12 @@ buildPythonPackage rec {
       --replace-fail '["uv", "run", "pyright",' '["pyright",'
   '';
 
+  nativeCheckInputs = [
+    pyright
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [
     hatchling
   ];
@@ -37,11 +42,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pyright
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "nexusrpc"
@@ -54,6 +55,7 @@ buildPythonPackage rec {
     homepage = "https://temporal.io/";
     changelog = "https://github.com/nexus-rpc/sdk-python/releases/tag/${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jpds
     ];

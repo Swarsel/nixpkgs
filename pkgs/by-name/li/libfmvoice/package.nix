@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   unstableGitUpdater,
   zlib,
@@ -23,9 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-
-  enableParallelBuilding = true;
-
   buildInputs = [ zlib ];
 
   buildFlags = [
@@ -48,6 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = unstableGitUpdater { };

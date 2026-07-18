@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "uptime";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-fDACVHdbgHzkbj3LzaMKo7miBLnFenrB557m2+OUKXM=";
   };
 
-  build-system = [ setuptools ];
-
   # Tests are not shipped
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "uptime" ];
 
   meta = {

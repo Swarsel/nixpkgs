@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cached-property,
-  fetchFromGitHub,
   loguru,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "whoosh-reloaded";
   version = "2.7.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Sygil-Dev";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-frM8tw298Yz3u3rLK4CxWUXL6ymCSwYyYhXP/EdyjtQ=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     loguru
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "whoosh" ];
 
   meta = {

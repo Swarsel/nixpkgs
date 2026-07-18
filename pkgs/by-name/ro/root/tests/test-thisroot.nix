@@ -1,9 +1,9 @@
 {
   lib,
-  runCommand,
-  root,
   bash,
   fish,
+  root,
+  runCommand,
   tcsh,
   zsh,
 }:

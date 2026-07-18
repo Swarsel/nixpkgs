@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
+  aria2,
   libkiwix,
+  nix-update-script,
   pkg-config,
   qt6,
-  aria2,
 }:
 
 stdenv.mkDerivation rec {
@@ -46,10 +46,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Offline reader for Web content";
-    mainProgram = "kiwix-desktop";
     homepage = "https://kiwix.org";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ greg ];
+    platforms = lib.platforms.linux;
+    mainProgram = "kiwix-desktop";
   };
 }

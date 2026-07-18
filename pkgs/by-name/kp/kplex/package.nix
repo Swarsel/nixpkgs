@@ -1,11 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "kplex";
   version = "1.4";
+
   src = fetchFromGitHub {
     owner = "stripydog";
     repo = "kplex";

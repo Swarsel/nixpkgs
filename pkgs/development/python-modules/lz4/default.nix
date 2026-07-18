@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pkgconfig,
   psutil,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "lz4";
   version = "4.4.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-lz4";
@@ -23,11 +22,28 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-2D30n5j5r4+gcrjEXPu+WpZ4QsugCPyC1xCZuJIPcI0=";
   };
 
+  # for lz4.steam
+  env.PYLZ4_EXPERIMENTAL = true;
+
+  nativeCheckInputs = [
+    psutil
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  # prevent local lz4 directory from getting imported as it lacks native extensions
+  preCheck = ''
+    rm -r lz4
+    export PYTHONPATH=$out/${python.sitePackages}:$PYTHONPATH
+  '';
+
   build-system = [
     pkgconfig
     setuptools-scm
     setuptools
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "lz4"
@@ -36,25 +52,10 @@ buildPythonPackage (finalAttrs: {
     "lz4.stream"
   ];
 
-  nativeCheckInputs = [
-    psutil
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
-  # for lz4.steam
-  env.PYLZ4_EXPERIMENTAL = true;
-
-  # prevent local lz4 directory from getting imported as it lacks native extensions
-  preCheck = ''
-    rm -r lz4
-    export PYTHONPATH=$out/${python.sitePackages}:$PYTHONPATH
-  '';
-
   meta = {
-    changelog = "https://github.com/python-lz4/python-lz4/releases/tag/${finalAttrs.src.tag}";
     description = "LZ4 Bindings for Python";
     homepage = "https://github.com/python-lz4/python-lz4";
+    changelog = "https://github.com/python-lz4/python-lz4/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

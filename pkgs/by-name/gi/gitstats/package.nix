@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
   fetchpatch,
+  gnugrep,
+  gnuplot,
   installShellFiles,
   perl,
   python3,
-  gnuplot,
-  coreutils,
-  gnugrep,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,20 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
     # make gitstats compatible with python3
     # https://github.com/hoxu/gitstats/pull/105
     (fetchpatch {
+      hash = "sha256-sgjoj8eQ5CxQBffmhqymsmXb8peuaSbfFoWciLK3LOo=";
       name = "convert-gitstats-to-use-python3.patch";
       url = "https://github.com/hoxu/gitstats/commit/ca415668ce6b739ca9fefba6acd29c63b89f4211.patch";
-      hash = "sha256-sgjoj8eQ5CxQBffmhqymsmXb8peuaSbfFoWciLK3LOo=";
     })
   ];
-
-  nativeBuildInputs = [
-    installShellFiles
-    perl
-  ];
-
-  buildInputs = [ python3 ];
-
-  strictDeps = true;
 
   postPatch = ''
     sed -e "s|gnuplot_cmd = .*|gnuplot_cmd = '${gnuplot}/bin/gnuplot'|" \
@@ -48,6 +39,15 @@ stdenv.mkDerivation (finalAttrs: {
         -e "s|\<grep\>|${gnugrep}/bin/grep|g" \
         -i gitstats
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    installShellFiles
+    perl
+  ];
+
+  buildInputs = [ python3 ];
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -61,11 +61,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://gitstats.sourceforge.net/";
     description = "Git history statistics generator";
+    homepage = "https://gitstats.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = lib.platforms.all;
     mainProgram = "gitstats";
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
-  vala,
   granite,
   gtk3,
   libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  python3,
+  vala,
   wingpanel,
 }:
 
@@ -24,6 +24,11 @@ stdenv.mkDerivation rec {
     rev = version;
     sha256 = "sha256-HECK+IEUAKJ4F1TotTHF84j4BYS6EZdAtLBoM401+mw=";
   };
+
+  postPatch = ''
+    chmod +x meson/post_install.py
+    patchShebangs meson/post_install.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -39,11 +44,6 @@ stdenv.mkDerivation rec {
     libgee
     wingpanel
   ];
-
-  postPatch = ''
-    chmod +x meson/post_install.py
-    patchShebangs meson/post_install.py
-  '';
 
   passthru = {
     updateScript = nix-update-script { };

@@ -1,25 +1,30 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
-  version ? null,
+  mkCoqDerivation,
   ssreflect,
   stdlib,
+  version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "deriving";
-  owner = "arthuraa";
-
   inherit version;
+  pname = "deriving";
+
+  propagatedBuildInputs = [
+    ssreflect
+    stdlib
+  ];
+
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -34,21 +39,15 @@ mkCoqDerivation {
       ]
       null;
 
-  releaseRev = v: "v${v}";
-
-  release."0.2.3".hash = "sha256-LqrSlML5pA84FGY4C/xm1EKSgjDe+NaQCSFg2ggdPHE=";
-  release."0.2.2".hash = "sha256-qsbyQ4spg5vVLZkechb2LoBazGjMh7pR9sSS0s7tXxs=";
-  release."0.2.1".hash = "sha256-053bNa3rcy0fCs9CQoKPxDLXnKRHzteyClLDURpaZJo=";
-  release."0.2.0".hash = "sha256-xPsuEayHstjF0PGFJZJ+5cm0oMUrpoGLXN23op97vjM=";
-  release."0.1.1".hash = "sha256-Gu8aInLxTXfAFE0/gWRYI046Dx3Gv1j1+gx92v/UnPI=";
-  release."0.1.0".hash = "sha256:11crnjm8hyis1qllkks3d7r07s1rfzwvyvpijya3s6iqfh8c7xwh";
-
-  propagatedBuildInputs = [
-    ssreflect
-    stdlib
-  ];
-
   mlPlugin = true;
+  owner = "arthuraa";
+  release."0.1.0".hash = "sha256:11crnjm8hyis1qllkks3d7r07s1rfzwvyvpijya3s6iqfh8c7xwh";
+  release."0.1.1".hash = "sha256-Gu8aInLxTXfAFE0/gWRYI046Dx3Gv1j1+gx92v/UnPI=";
+  release."0.2.0".hash = "sha256-xPsuEayHstjF0PGFJZJ+5cm0oMUrpoGLXN23op97vjM=";
+  release."0.2.1".hash = "sha256-053bNa3rcy0fCs9CQoKPxDLXnKRHzteyClLDURpaZJo=";
+  release."0.2.2".hash = "sha256-qsbyQ4spg5vVLZkechb2LoBazGjMh7pR9sSS0s7tXxs=";
+  release."0.2.3".hash = "sha256-LqrSlML5pA84FGY4C/xm1EKSgjDe+NaQCSFg2ggdPHE=";
+  releaseRev = v: "v${v}";
 
   meta = {
     description = "Generic instances of MathComp classes";

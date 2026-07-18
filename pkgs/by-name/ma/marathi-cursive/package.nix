@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -23,10 +23,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/MihailJP/MarathiCursive";
     description = "Modi script font with Graphite and OpenType support";
-    maintainers = with lib.maintainers; [ mathnerd314 ];
+    homepage = "https://github.com/MihailJP/MarathiCursive";
     license = lib.licenses.mplus;
+    maintainers = with lib.maintainers; [ mathnerd314 ];
     platforms = lib.platforms.all;
   };
 }

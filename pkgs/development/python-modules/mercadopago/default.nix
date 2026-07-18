@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "mercadopago";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mercadopago";
@@ -17,6 +16,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-AYgYGY55hhvVY1lB6anJvjRquDRiNoDnpOFTuVdQniM=";
   };
+
+  # require internet
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -26,9 +28,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # require internet
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "mercadopago" ];
 
   meta = {

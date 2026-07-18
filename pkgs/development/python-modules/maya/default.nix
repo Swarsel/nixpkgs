@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dateparser,
-  fetchFromGitHub,
   freezegun,
   humanize,
   pendulum,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "maya";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "timofurrer";
@@ -49,12 +48,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "maya" ];
-
   disabledTests = [
     # https://github.com/timofurrer/maya/issues/202
     "test_parse_iso8601"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "maya" ];
 
   meta = {
     description = "Datetimes for Humans";

@@ -34,19 +34,51 @@ in
       enable = mkEnableOption "Ostinato agent-controller (Drone)";
 
       port = mkOption {
-        type = types.port;
         default = 7878;
+
         description = ''
           Port to listen on.
         '';
+
+        type = types.port;
+      };
+
+      portList = {
+        exclude = mkOption {
+          default = [ ];
+
+          description = ''
+            A list of ports does not appear on the port list managed by drone.
+          '';
+
+          example = [
+            "usbmon*"
+            "eth0"
+          ];
+
+          type = types.listOf types.str;
+        };
+
+        include = mkOption {
+          default = [ ];
+
+          description = ''
+            For a port to pass the filter and appear on the port list managed
+            by drone, it be allowed by this include list.
+          '';
+
+          example = [
+            "eth*"
+            "lo*"
+          ];
+
+          type = types.listOf types.str;
+        };
       };
 
       rateAccuracy = mkOption {
-        type = types.enum [
-          "High"
-          "Low"
-        ];
         default = "High";
+
         description = ''
           To ensure that the actual transmit rate is as close as possible to
           the configured transmit rate, Drone runs a busy-wait loop.
@@ -54,44 +86,25 @@ in
           utilization is 100% while the transmit is on. You can however,
           sacrifice the accuracy to reduce the CPU load.
         '';
+
+        type = types.enum [
+          "High"
+          "Low"
+        ];
       };
 
       rpcServer = {
         address = mkOption {
-          type = types.str;
           default = "0.0.0.0";
+
           description = ''
             By default, the Drone RPC server will listen on all interfaces and
             local IPv4 addresses for incoming connections from clients.  Specify
             a single IPv4 or IPv6 address if you want to restrict that.
             To listen on any IPv6 address, use ::
           '';
-        };
-      };
 
-      portList = {
-        include = mkOption {
-          type = types.listOf types.str;
-          default = [ ];
-          example = [
-            "eth*"
-            "lo*"
-          ];
-          description = ''
-            For a port to pass the filter and appear on the port list managed
-            by drone, it be allowed by this include list.
-          '';
-        };
-        exclude = mkOption {
-          type = types.listOf types.str;
-          default = [ ];
-          example = [
-            "usbmon*"
-            "eth0"
-          ];
-          description = ''
-            A list of ports does not appear on the port list managed by drone.
-          '';
+          type = types.str;
         };
       };
 
@@ -107,10 +120,12 @@ in
 
     systemd.services.drone = {
       description = "Ostinato agent-controller";
-      wantedBy = [ "multi-user.target" ];
+
       script = ''
         ${pkg}/bin/drone ${toString cfg.port} ${configFile}
       '';
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   gtk3,
-  wrapGAppsHook3,
   pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,17 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jRTlt8IYZZ6EDLyU7kLQ2bktQztnj15IUpqUBvntXU8=";
   };
 
-  # Note: don't change this to set sourceRoot, or updateAutotoolsGnuConfigScriptsHook
-  # on aarch64 doesn't find the files to patch and the aarch64 build fails!
-  preConfigure = "cd X11";
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     gtk3
   ];
+
+  # Note: don't change this to set sourceRoot, or updateAutotoolsGnuConfigScriptsHook
+  # on aarch64 doesn't find the files to patch and the aarch64 build fails!
+  preConfigure = "cd X11";
 
   preInstall = ''
     mkdir -vp $out/bin $out/share/man/man1 $out/share/gsettings-schemas/$name/glib-2.0/schemas $out/share/icons/hicolor/512x512/apps $out/share/applications
@@ -42,10 +43,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Clock application that morphs digits when they are changed";
+    license = lib.licenses.free; # TODO BSD on Gentoo, looks like MIT
     maintainers = with lib.maintainers; [ raskin ];
     platforms = with lib.platforms; linux ++ freebsd;
-    license = lib.licenses.free; # TODO BSD on Gentoo, looks like MIT
-    downloadPage = "http://www.jwz.org/xdaliclock/";
     mainProgram = "xdaliclock";
+    downloadPage = "http://www.jwz.org/xdaliclock/";
   };
 })

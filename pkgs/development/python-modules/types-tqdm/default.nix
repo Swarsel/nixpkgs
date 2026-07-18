@@ -9,21 +9,19 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-tqdm";
   version = "4.68.0.20260608";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "types_tqdm";
     inherit (finalAttrs) version;
     hash = "sha256-4d/d+HcPvDDsr5WuV8KGOXgxI1BkMI99/CsdZoSnYQc=";
+    pname = "types_tqdm";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ types-requests ];
 
   # This package does not have tests.
   doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ types-requests ];
+  pyproject = true;
 
   meta = {
     description = "Typing stubs for tqdm";

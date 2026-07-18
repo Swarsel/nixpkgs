@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,9 +15,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-Z8ufA2z5XeJ80Jfd6NSls/SurR8rMTO4zq88fQYGGpA=";
   };
 
-  proxyVendor = true; # darwin/linux hash mismatch
   vendorHash = "sha256-IaTNm119GO+1DkGYHFD8A8B/rWOVy0KAiXMhKj0zC/M=";
-
+  proxyVendor = true; # darwin/linux hash mismatch
   subPackages = [ "cmd/migrate" ];
 
   tags = [
@@ -47,10 +46,10 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/golang-migrate/migrate";
     description = "Database migrations. CLI and Golang library";
-    maintainers = [ ];
+    homepage = "https://github.com/golang-migrate/migrate";
     license = lib.licenses.mit;
+    maintainers = [ ];
     mainProgram = "migrate";
   };
 })

@@ -1,12 +1,12 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  openssl,
   lib,
   stdenv,
-  testers,
+  fetchFromGitHub,
   libetebase,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  testers,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "libetebase";
@@ -19,11 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-B+MfnYbxIbgMHFWWOYhap1MEbV3/NNYuR9goJDTNn9A=";
   };
 
-  cargoHash = "sha256-ZLQFERi38+0SUxWaYAL4AepgVuAQKo9pxjcMkzA55BM=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-ZLQFERi38+0SUxWaYAL4AepgVuAQKo9pxjcMkzA55BM=";
 
   postInstall = ''
     install -d $out/lib/pkgconfig
@@ -39,8 +37,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "C library for Etebase";
     homepage = "https://www.etebase.com/";
     license = lib.licenses.bsd3;
-    broken = stdenv.hostPlatform.isDarwin;
     maintainers = with lib.maintainers; [ laalsaas ];
+    broken = stdenv.hostPlatform.isDarwin;
     pkgConfigModules = [ "etebase" ];
   };
 })

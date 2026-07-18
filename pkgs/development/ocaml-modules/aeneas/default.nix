@@ -1,26 +1,21 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-
+  buildDunePackage,
   # propagatedBuildInputs,
   charon,
   core_unix,
   domainslib,
+  nix-update-script,
   ocamlgraph,
   ppx_deriving_yojson,
   progress,
   visitors,
-
-  nix-update-script,
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "aeneas";
   inherit (charon) version;
-  __structuredAttrs = true;
-
-  minimalOCamlVersion = "5.1";
+  pname = "aeneas";
 
   src = fetchFromGitHub {
     owner = "AeneasVerif";
@@ -28,8 +23,6 @@ buildDunePackage (finalAttrs: {
     tag = "nightly-${finalAttrs.version}";
     hash = "sha256-uQAGj3moRftf1OWIuzfRoFsO/tv0Hhx3X/8qRU0yOqk=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   propagatedBuildInputs = [
     charon
@@ -44,6 +37,9 @@ buildDunePackage (finalAttrs: {
   # The test suite consists of heavy integration tests that require the full
   # toolchain (Rust, charon and the F*/Coq/Lean backends), so it is not run here.
   doCheck = false;
+  __structuredAttrs = true;
+  minimalOCamlVersion = "5.1";
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=unstable" ];
@@ -54,7 +50,7 @@ buildDunePackage (finalAttrs: {
     homepage = "https://github.com/AeneasVerif/aeneas";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "aeneas";
     platforms = lib.platforms.all;
+    mainProgram = "aeneas";
   };
 })

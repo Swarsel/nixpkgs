@@ -1,9 +1,9 @@
 {
-  pkgs,
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
+  pkgs,
 }:
 buildGoModule {
   pname = "terraform-config-inspect";
@@ -17,14 +17,13 @@ buildGoModule {
   };
 
   vendorHash = "sha256-iYrSk9JqxvhYSJuSv/nhZep41gRr644ZzGFWXMGQgyc=";
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
-    mainProgram = "terraform-config-inspect";
     description = "CLI for shallow inspection of Terraform configurations";
     homepage = "https://github.com/hashicorp/terraform-config-inspect";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ drakon64 ];
+    mainProgram = "terraform-config-inspect";
   };
 }

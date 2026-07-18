@@ -1,24 +1,22 @@
 {
   lib,
-  fetchPypi,
-  buildPythonPackage,
-  replaceVars,
   addDriverRunpath,
-  setuptools,
+  buildPythonPackage,
   cudaPackages,
+  fetchPypi,
   nvidia-ml-py,
+  replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nvidia-ml-py";
   version = "13.610.43";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "nvidia_ml_py";
     inherit (finalAttrs) version;
     hash = "sha256-ZUN+tz1o0MYskxyk1FA4Ry+v8DvQuHKau6S4mfcNYPI=";
+    pname = "nvidia_ml_py";
   };
 
   patches = [
@@ -27,13 +25,15 @@ buildPythonPackage (finalAttrs: {
     })
   ];
 
+  # no tests
+  doCheck = false;
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
 
-  # no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pynvml" ];
 
   passthru.tests.tester-nvmlInit =

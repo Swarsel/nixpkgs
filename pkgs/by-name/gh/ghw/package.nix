@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -14,18 +14,17 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-olMKS+Bb+YK43I23zvxCp9XFkknwvqXorrYVlVomL+o=";
   };
+
   vendorHash = "sha256-REgtByhTlYQ3XyYleWAcrCymIWtWmltjx21tr2mtF7k=";
-
-  subPackages = [ "cmd/..." ];
   doCheck = false; # wants to read from /sys and other places not allowed
-
+  subPackages = [ "cmd/..." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Go HardWare discovery/inspection library";
-    mainProgram = "ghwc";
     homepage = "https://github.com/jaypipes/ghw";
-    maintainers = [ lib.maintainers.mmlb ];
     license = lib.licenses.asl20;
+    maintainers = [ lib.maintainers.mmlb ];
+    mainProgram = "ghwc";
   };
 })

@@ -28,11 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "BPF based visual packet rate monitor";
-    mainProgram = "bpfmon";
     homepage = "https://github.com/bbonev/bpfmon";
     changelog = "https://github.com/bbonev/bpfmon/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ arezvov ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ arezvov ];
     platforms = lib.platforms.linux;
+    mainProgram = "bpfmon";
   };
 })

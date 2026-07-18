@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "bypass-url-parser";
   version = "0.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "laluka";
@@ -16,6 +15,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-h9+kM2LmfPaaM7MK6lK/ARrArwvRn6d+3BW+rNTkqzA=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
+
+  preCheck = ''
+    # Some tests need the binary
+    export PATH=$out/bin:$PATH
+  '';
+
   build-system = with python3.pkgs; [ pdm-backend ];
 
   dependencies = with python3.pkgs; [
@@ -23,20 +29,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     docopt
   ];
 
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "bypass_url_parser" ];
-
-  preCheck = ''
-    # Some tests need the binary
-    export PATH=$out/bin:$PATH
-  '';
-
   disabledTests = [
     # Tests require network access
     "test_sample_usage"
     "test_sample_cli_usage"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "bypass_url_parser" ];
 
   meta = {
     description = "Tool that tests URL bypasses to reach a 40X protected page";

@@ -1,25 +1,24 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  setuptools-scm,
-  wheel,
-  importlib-metadata,
-  pyscaffold,
   configupdater,
+  fetchPypi,
+  importlib-metadata,
   pre-commit,
+  pyscaffold,
   pytest,
   pytest-cov,
   pytest-xdist,
+  setuptools,
+  setuptools-scm,
   tox,
   virtualenv,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "pyscaffoldext-travis";
   version = "0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -50,6 +49,7 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "pyscaffoldext.travis" ];
 
   meta = {

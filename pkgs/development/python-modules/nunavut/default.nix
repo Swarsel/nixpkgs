@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "nunavut";
   version = "2.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -36,22 +35,26 @@ buildPythonPackage rec {
   # No tests in pypy package and no git tags yet for release versions, see
   # https://github.com/UAVCAN/nunavut/issues/182
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "nunavut" ];
 
   meta = {
     description = "UAVCAN DSDL template engine";
-    mainProgram = "nnvg";
+
     longDescription = ''
       It exposes a pydsdl abstract syntax tree to Jinja2 templates allowing
       authors to generate code, schemas, metadata, documentation, etc.
     '';
+
     homepage = "https://nunavut.readthedocs.io/";
     changelog = "https://github.com/OpenCyphal/nunavut/releases/tag/${version}";
-    maintainers = with lib.maintainers; [ wucke13 ];
+
     license = with lib.licenses; [
       bsd3
       mit
     ];
+
+    maintainers = with lib.maintainers; [ wucke13 ];
+    mainProgram = "nnvg";
   };
 }

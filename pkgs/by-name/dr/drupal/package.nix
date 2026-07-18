@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitLab,
-  php,
   nixosTests,
+  php,
   writeScript,
 }:
 
@@ -11,20 +11,21 @@ php.buildComposerProject2 (finalAttrs: {
   version = "11.4.2";
 
   src = fetchFromGitLab {
-    domain = "git.drupalcode.org";
     owner = "project";
     repo = "drupal";
     tag = finalAttrs.version;
     hash = "sha256-GHhavn9H1x7xo72r9KSOSkrOzW4jEBAe033m2ATeh2E=";
+    domain = "git.drupalcode.org";
   };
 
-  composerNoPlugins = false;
   vendorHash = "sha256-1Qns0npuzdVONtkDk3tXlGib9VCnbM6zVOVIsMRfZks=";
+  composerNoPlugins = false;
 
   passthru = {
     tests = {
       inherit (nixosTests) drupal;
     };
+
     updateScript = writeScript "update.sh" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p nix-update xmlstarlet
@@ -39,11 +40,13 @@ php.buildComposerProject2 (finalAttrs: {
 
   meta = {
     description = "Drupal CMS";
-    license = lib.licenses.mit;
     homepage = "https://drupal.org/";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       OulipianSummer
     ];
+
     platforms = php.meta.platforms;
   };
 })

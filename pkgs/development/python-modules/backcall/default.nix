@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "backcall";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +19,8 @@ buildPythonPackage rec {
   checkPhase = ''
     py.test
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Specifications for callback functions passed in to an API";

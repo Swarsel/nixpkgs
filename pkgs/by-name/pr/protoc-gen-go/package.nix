@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-EAkrbx9pTBhZ0y0ub14PnMINrk1M6yEgnGapzpgXqBU=";
-
   subPackages = [ "cmd/protoc-gen-go" ];
 
   meta = {
     description = "Go support for Google's protocol buffers";
-    mainProgram = "protoc-gen-go";
     homepage = "https://google.golang.org/protobuf";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jojosch ];
+    mainProgram = "protoc-gen-go";
   };
 })

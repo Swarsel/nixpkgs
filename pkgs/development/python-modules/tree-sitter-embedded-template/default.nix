@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
+  buildPythonPackage,
   cargo,
+  pytestCheckHook,
+  rustPlatform,
   rustc,
   setuptools,
   tree-sitter,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "tree-sitter-embedded-template";
   version = "0.25.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tree-sitter";
@@ -22,10 +21,10 @@ buildPythonPackage rec {
     hash = "sha256-nBQain0Lc21jOgQFfvkyq615ZmT8qdMxtqIoUcOcO3A=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    hash = "sha256-C+P/fALEmRDrX59diXS/cdzffvJyn0qnCUD5nFsW+ww=";
-  };
+  nativeCheckInputs = [
+    pytestCheckHook
+    tree-sitter
+  ];
 
   build-system = [
     cargo
@@ -34,18 +33,19 @@ buildPythonPackage rec {
     setuptools
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-C+P/fALEmRDrX59diXS/cdzffvJyn0qnCUD5nFsW+ww=";
+  };
+
   optional-dependencies = {
     core = [
       tree-sitter
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "tree_sitter_embedded_template" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    tree-sitter
-  ];
 
   meta = {
     description = "Tree-sitter grammar for embedded template languages like ERB, EJS";

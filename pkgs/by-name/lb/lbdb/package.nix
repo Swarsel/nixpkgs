@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  bsd-finger,
-  withAbook ? true,
   abook,
-  withGnupg ? true,
+  bsd-finger,
   gnupg,
-  withGoobook ? true,
   goobook,
-  withKhard ? true,
   khard,
-  withMu ? true,
   mu,
+  perl,
+  withAbook ? true,
+  withGnupg ? true,
+  withGoobook ? true,
+  withKhard ? true,
+  withMu ? true,
 }:
 
 let
@@ -35,6 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-IS/i5A317T5Ulrxegh5LBoOmyVI7iIXn6HtjS8+SOog=";
   };
 
+  patches = [
+    ./add-methods-to-rc.patch
+  ];
+
   buildInputs = [
     perl'
   ]
@@ -53,18 +57,16 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional withKhard "--with-khard"
     ++ lib.optional withMu "--with-mu";
 
-  patches = [
-    ./add-methods-to-rc.patch
-  ];
-
   meta = {
-    homepage = "https://www.spinnaker.de/lbdb/";
     description = "Little Brother's Database";
+    homepage = "https://www.spinnaker.de/lbdb/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       kaiha
       bfortz
     ];
+
     platforms = lib.platforms.all;
   };
 })

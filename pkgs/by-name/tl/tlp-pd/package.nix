@@ -1,12 +1,11 @@
 {
   lib,
+  coreutils,
   python3Packages,
   tlp,
-  coreutils,
 }:
 
 python3Packages.buildPythonApplication {
-  pname = "tlp-pd";
   inherit (tlp)
     version
     src
@@ -14,26 +13,8 @@ python3Packages.buildPythonApplication {
     postPatch
     ;
 
-  pyproject = false; # Built with make
-
-  dependencies = with python3Packages; [
-    pygobject3
-    dbus-python
-  ];
-
+  pname = "tlp-pd";
   makeFlags = [ "DESTDIR=${placeholder "out"}" ];
-
-  installTargets = [
-    "install-pd"
-    "install-man-pd"
-  ];
-
-  makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ tlp ]}" ];
-
-  postInstall = ''
-    substituteInPlace $out/share/dbus-1/system-services/*.service \
-      --replace-fail "/bin/false" "${coreutils}/false"
-  '';
 
   checkPhase = ''
     runHook preCheck
@@ -46,6 +27,24 @@ python3Packages.buildPythonApplication {
     runHook postCheck
   '';
 
+  postInstall = ''
+    substituteInPlace $out/share/dbus-1/system-services/*.service \
+      --replace-fail "/bin/false" "${coreutils}/false"
+  '';
+
+  dependencies = with python3Packages; [
+    pygobject3
+    dbus-python
+  ];
+
+  installTargets = [
+    "install-pd"
+    "install-man-pd"
+  ];
+
+  makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ tlp ]}" ];
+  pyproject = false; # Built with make
+
   meta = {
     inherit (tlp.meta)
       homepage
@@ -54,6 +53,7 @@ python3Packages.buildPythonApplication {
       maintainers
       license
       ;
+
     description = "Power-profiles-daemon like DBus interface for TLP";
     mainProgram = "tlp-pd";
   };

@@ -1,23 +1,20 @@
 {
   buildDunePackage,
-  dune-configurator,
-  pkg-config,
   callPackage,
-  ffmpeg-base ? callPackage ./base.nix { },
-  ffmpeg-avutil,
-  ffmpeg-avcodec,
+  dune-configurator,
   ffmpeg,
+  ffmpeg-avcodec,
+  ffmpeg-avutil,
+  pkg-config,
+  ffmpeg-base ? callPackage ./base.nix { },
 }:
 
 buildDunePackage {
-  pname = "ffmpeg-av";
-
-  minimalOCamlVersion = "4.12";
-
   inherit (ffmpeg-base) version src;
-
+  pname = "ffmpeg-av";
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     ffmpeg-avutil
     ffmpeg-avcodec
@@ -25,6 +22,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "4.12";
 
   meta = ffmpeg-base.meta // {
     description = "Bindings for the ffmpeg libraries -- top-level helpers";

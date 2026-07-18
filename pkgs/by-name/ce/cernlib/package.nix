@@ -5,27 +5,27 @@
   cmake,
   freetype,
   gfortran,
-  openssl,
   libnsl,
-  motif,
-  libxt,
-  libxft,
-  libxaw,
   libx11,
+  libxaw,
   libxcrypt,
+  libxft,
+  libxt,
+  motif,
+  openssl,
 }:
 
 stdenv.mkDerivation rec {
-  version = "2025.09.18.4";
   pname = "cernlib";
-  year = lib.versions.major version;
+  version = "2025.09.18.4";
 
   src = fetchurl {
+    hash = "sha256-zhLZlR0CUtPPYr+99JpFnJ1er+L7YcoRLi5hKLERqR4=";
+
     urls = [
       "https://ftp.riken.jp/cernlib/download/${year}_source/tar/cernlib-cernlib-${version}-free.tar.gz"
       "https://cernlib.web.cern.ch/download/${year}_source/tar/cernlib-cernlib-${version}-free.tar.gz"
     ];
-    hash = "sha256-zhLZlR0CUtPPYr+99JpFnJ1er+L7YcoRLi5hKLERqR4=";
   };
 
   postPatch = ''
@@ -38,13 +38,8 @@ stdenv.mkDerivation rec {
       --replace-fail "struct termio" "struct termios"
   '';
 
-  # gfortran warning's on iframework messes with CMake's check_fortran_compiler_flag
-  # see also https://github.com/NixOS/nixpkgs/issues/27218
-  preConfigure = ''
-    export NIX_CFLAGS_COMPILE="$(echo $NIX_CFLAGS_COMPILE | sed 's|-iframework [^ ]*||g')"
-  '';
-
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     freetype
     gfortran
@@ -58,17 +53,25 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux libnsl;
 
+  # gfortran warning's on iframework messes with CMake's check_fortran_compiler_flag
+  # see also https://github.com/NixOS/nixpkgs/issues/27218
+  preConfigure = ''
+    export NIX_CFLAGS_COMPILE="$(echo $NIX_CFLAGS_COMPILE | sed 's|-iframework [^ ]*||g')"
+  '';
+
   setupHook = ./setup-hook.sh;
+  year = lib.versions.major version;
 
   meta = {
-    homepage = "http://cernlib.web.cern.ch";
     description = "Legacy collection of libraries and modules for data analysis in high energy physics";
+    homepage = "http://cernlib.web.cern.ch";
+    license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ veprbl ];
+
     platforms = [
       "aarch64-linux"
       "i686-linux"
       "x86_64-linux"
     ];
-    maintainers = with lib.maintainers; [ veprbl ];
-    license = lib.licenses.gpl2;
   };
 }

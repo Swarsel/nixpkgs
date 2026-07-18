@@ -5,16 +5,15 @@
 }:
 
 mkDerivation {
-  path = "share/i18n";
-
-  noLibc = true;
+  preBuild = ''
+    export makeFlags="$makeFlags ESDBDIR=$out/share/i18n/esdb CSMAPPERDIR=$out/share/i18n/csmapper"
+  '';
 
   extraNativeBuildInputs = [
     mkcsmapper
     mkesdb
   ];
 
-  preBuild = ''
-    export makeFlags="$makeFlags ESDBDIR=$out/share/i18n/esdb CSMAPPERDIR=$out/share/i18n/csmapper"
-  '';
+  noLibc = true;
+  path = "share/i18n";
 }

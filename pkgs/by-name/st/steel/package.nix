@@ -1,21 +1,20 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   curl,
-  pkg-config,
-  makeBinaryWrapper,
   installShellFiles,
   libgit2,
+  makeBinaryWrapper,
+  nix-update-script,
   oniguruma,
   openssl,
+  pkg-config,
+  rustPlatform,
   sqlite,
   zlib,
-
-  nix-update-script,
-  includeLSP ? true,
   includeForge ? true,
+  includeLSP ? true,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "steel";
@@ -28,7 +27,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-GZ0VeoAwVGnK/Px5IvBGIHlpEsAh2do/QPuYtLexLt4=";
   };
 
-  cargoHash = "sha256-Z5v+8bhIgBCB2pDB5AgX42vFiNkgqjU95gata0sLUrA=";
+  postPatch = ''
+    rm .cargo/config.toml
+  '';
 
   nativeBuildInputs = [
     curl
@@ -47,24 +48,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
-  postPatch = ''
-    rm .cargo/config.toml
-  '';
+  cargoHash = "sha256-Z5v+8bhIgBCB2pDB5AgX42vFiNkgqjU95gata0sLUrA=";
 
-  cargoBuildFlags = [
-    "--package"
-    "steel-interpreter"
-    "--package"
-    "cargo-steel-lib"
-  ]
-  ++ lib.optionals includeLSP [
-    "--package"
-    "steel-language-server"
-  ]
-  ++ lib.optionals includeForge [
-    "--package"
-    "steel-forge"
-  ];
+  env = {
+    OPENSSL_NO_VENDOR = true;
+    RUSTONIG_SYSTEM_LIBONIG = true;
+    STEEL_HOME = "${placeholder "out"}/lib/steel";
+  };
 
   # Tests are disabled since they always fail when building with Nix
   doCheck = false;
@@ -96,11 +86,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wrapProgram $out/bin/cargo-steel-lib --set-default STEEL_HOME "$out/lib/steel"
   '';
 
-  env = {
-    OPENSSL_NO_VENDOR = true;
-    RUSTONIG_SYSTEM_LIBONIG = true;
-    STEEL_HOME = "${placeholder "out"}/lib/steel";
-  };
+  cargoBuildFlags = [
+    "--package"
+    "steel-interpreter"
+    "--package"
+    "cargo-steel-lib"
+  ]
+  ++ lib.optionals includeLSP [
+    "--package"
+    "steel-language-server"
+  ]
+  ++ lib.optionals includeForge [
+    "--package"
+    "steel-forge"
+  ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -112,13 +111,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Embedded scheme interpreter in Rust";
     homepage = "https://github.com/mattwparas/steel";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    maintainers = with lib.maintainers; [ HeitorAugustoLN ];
-    mainProgram = "steel";
-    platforms = lib.platforms.unix;
+
     sourceProvenance = [ lib.sourceTypes.fromSource ];
+    maintainers = with lib.maintainers; [ HeitorAugustoLN ];
+    platforms = lib.platforms.unix;
+    mainProgram = "steel";
   };
 })

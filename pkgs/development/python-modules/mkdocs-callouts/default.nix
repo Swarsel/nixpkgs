@@ -2,15 +2,14 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   mkdocs,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mkdocs-callouts";
   version = "1.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sondregronas";
@@ -18,6 +17,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-I7KHZgUV67Ff9Nt1z1LVjia9eQ5V+7y24ZepkpooT2w=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -27,11 +28,11 @@ buildPythonPackage (finalAttrs: {
     mkdocs
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "mkdocs_callouts"
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "A simple MkDocs plugin that converts Obsidian callout blocks to mkdocs supported Admonitions";

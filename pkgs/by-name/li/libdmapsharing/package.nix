@@ -1,27 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   autoconf,
   automake,
+  avahi,
+  docbook-xsl-nons,
+  docbook_xml_dtd_43,
+  gdk-pixbuf,
+  glib,
+  gobject-introspection,
+  gst_all_1,
+  gtk-doc,
+  libsoup_3,
   libtool,
   pkg-config,
   vala,
-  avahi,
-  gdk-pixbuf,
-  gst_all_1,
-  glib,
-  gtk-doc,
-  docbook-xsl-nons,
-  docbook_xml_dtd_43,
-  gobject-introspection,
-  libsoup_3,
   withGtkDoc ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
 }:
 
 stdenv.mkDerivation rec {
   pname = "libdmapsharing";
   version = "3.9.13";
+
+  src = fetchFromGitLab {
+    owner = "GNOME";
+    repo = "libdmapsharing";
+    rev = "${lib.toUpper pname}_${lib.replaceStrings [ "." ] [ "_" ] version}";
+    sha256 = "oR9lpOFxgGfrtzncFT6dbmhKQfcuH/NvhOR/USHAHQc=";
+    domain = "gitlab.gnome.org";
+  };
 
   outputs = [
     "out"
@@ -31,15 +39,10 @@ stdenv.mkDerivation rec {
     "devdoc"
   ];
 
-  outputBin = "dev";
-
-  src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    owner = "GNOME";
-    repo = "libdmapsharing";
-    rev = "${lib.toUpper pname}_${lib.replaceStrings [ "." ] [ "_" ] version}";
-    sha256 = "oR9lpOFxgGfrtzncFT6dbmhKQfcuH/NvhOR/USHAHQc=";
-  };
+  postPatch = ''
+    substituteInPlace configure.ac \
+      --replace-fail pkg-config "$PKG_CONFIG"
+  '';
 
   strictDeps = true;
 
@@ -77,20 +80,17 @@ stdenv.mkDerivation rec {
     (lib.enableFeature withGtkDoc "gtk-doc")
   ];
 
-  postPatch = ''
-    substituteInPlace configure.ac \
-      --replace-fail pkg-config "$PKG_CONFIG"
-  '';
-
   preConfigure = ''
     NOCONFIGURE=1 ./autogen.sh
   '';
 
+  outputBin = "dev";
+
   meta = {
-    homepage = "https://www.flyn.org/projects/libdmapsharing/";
     description = "Library that implements the DMAP family of protocols";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://www.flyn.org/projects/libdmapsharing/";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 }

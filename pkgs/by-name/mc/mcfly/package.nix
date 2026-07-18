@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,8 +24,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-9oNfXNQywvgTREa0G1UbId4ezLSCem4IBkqE5X234hE=";
 
   meta = {
-    homepage = "https://github.com/cantino/mcfly";
     description = "Upgraded ctrl-r where history results make sense for what you're working on right now";
+    homepage = "https://github.com/cantino/mcfly";
     changelog = "https://github.com/cantino/mcfly/raw/v${finalAttrs.version}/CHANGELOG.txt";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.melkor333 ];

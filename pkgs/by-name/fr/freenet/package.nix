@@ -3,13 +3,13 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  jdk_headless,
-  jre,
-  gradle_8,
   bash,
   coreutils,
-  replaceVars,
+  gradle_8,
+  jdk_headless,
+  jre,
   nixosTests,
+  replaceVars,
   writeText,
 }:
 
@@ -18,19 +18,21 @@ let
   jdk = jdk_headless;
 
   freenet_ext = fetchurl {
-    url = "https://github.com/hyphanet/fred/releases/download/build01495/freenet-ext.jar";
     hash = "sha256-MvKz1r7t9UE36i+aPr72dmbXafCWawjNF/19tZuk158=";
+    url = "https://github.com/hyphanet/fred/releases/download/build01495/freenet-ext.jar";
   };
 
   seednodes = fetchFromGitHub {
+    hash = "sha256-c04gKNPZtiIdmKmPJ71iXIEXzOoBMw32I2rAsN1+a8Q=";
     name = "freenet-seednodes";
     owner = "hyphanet";
-    repo = "seedrefs";
-    rev = "b34dbc4d021c58c4a108214a71a9e1ab986c4e14";
-    hash = "sha256-c04gKNPZtiIdmKmPJ71iXIEXzOoBMw32I2rAsN1+a8Q=";
+
     postFetch = ''
       cat $out/* > $out/seednodes.fref
     '';
+
+    repo = "seedrefs";
+    rev = "b34dbc4d021c58c4a108214a71a9e1ab986c4e14";
   };
 
 in
@@ -50,29 +52,6 @@ stdenv.mkDerivation rec {
     jdk
   ];
 
-  wrapper = replaceVars ./freenetWrapper {
-    inherit
-      bash
-      coreutils
-      jre
-      seednodes
-      ;
-    # replaced in installPhase
-    CLASSPATH = null;
-  };
-
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  # using reproducible archives breaks the build
-  gradleInitScript = writeText "empty-init-script.gradle" "";
-
-  gradleFlags = [ "-Dorg.gradle.java.home=${jdk}" ];
-
-  gradleBuildTask = "jar";
-
   installPhase = ''
     runHook preInstall
 
@@ -87,6 +66,28 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  gradleBuildTask = "jar";
+  gradleFlags = [ "-Dorg.gradle.java.home=${jdk}" ];
+  # using reproducible archives breaks the build
+  gradleInitScript = writeText "empty-init-script.gradle" "";
+
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
+
+  wrapper = replaceVars ./freenetWrapper {
+    inherit
+      bash
+      coreutils
+      jre
+      seednodes
+      ;
+
+    # replaced in installPhase
+    CLASSPATH = null;
+  };
+
   passthru.tests = {
     inherit (nixosTests) freenet;
   };
@@ -94,11 +95,11 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Decentralised and censorship-resistant network";
     homepage = "https://freenetproject.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    changelog = "https://github.com/hyphanet/fred/blob/build${version}/NEWS.md";
     license = lib.licenses.gpl2Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ nagy ];
     platforms = with lib.platforms; linux;
-    changelog = "https://github.com/hyphanet/fred/blob/build${version}/NEWS.md";
     mainProgram = "freenet";
   };
 }

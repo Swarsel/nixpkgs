@@ -1,21 +1,22 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   django,
+  fetchPypi,
   gettext,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pretix-plugin-build";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-iLbqcCAbeK4PyLXiebpdE27rt6bOP7eXczIG2bdvvYo=";
   };
+
+  doCheck = false; # no tests
 
   build-system = [
     setuptools
@@ -26,7 +27,7 @@ buildPythonPackage rec {
     gettext
   ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   meta = {
     description = "";

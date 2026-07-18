@@ -1,18 +1,17 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
-  lib,
-  python-dateutil,
+  pdm-backend,
+  pytest-cov-stub,
   pytest-django,
   pytestCheckHook,
-  pytest-cov-stub,
-  pdm-backend,
+  python-dateutil,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "django-recurrence";
   version = "1.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -20,6 +19,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Hw9QebQuQfhooa6rhJ1+y7DTgPgaVF9kZzQ9H7NshmM=";
   };
+
+  nativeCheckInputs = [
+    pytest-django
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     pdm-backend
@@ -30,13 +35,8 @@ buildPythonPackage (finalAttrs: {
     python-dateutil
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "recurrence" ];
-
-  nativeCheckInputs = [
-    pytest-django
-    pytest-cov-stub
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Utility for working with recurring dates in Django";

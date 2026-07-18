@@ -16,13 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   dontConfigure = true;
-
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://mcpcpc.github.io/kirc/";
     description = "Tiny IRC client written in C99";
-    mainProgram = "kirc";
+
     longDescription = ''
       kirc is a tiny open-source Internet Relay Chat (IRC) client designed with
       usability and cross-platform compatibility in mind.
@@ -39,8 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
       - Full support for all RFC 2812 commands.
       - Easy customized color scheme definition.
     '';
+
+    homepage = "https://mcpcpc.github.io/kirc/";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "kirc";
   };
 })

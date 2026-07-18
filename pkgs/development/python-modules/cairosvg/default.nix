@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   cairocffi,
   cssselect2,
   defusedxml,
   pillow,
-  tinycss2,
-
   # testing
   pytestCheckHook,
+  # build-system
+  setuptools,
+  tinycss2,
 }:
 
 buildPythonPackage rec {
   pname = "cairosvg";
   version = "2.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Kozea";
@@ -29,6 +25,8 @@ buildPythonPackage rec {
     hash = "sha256-WtMFOYaN/cRrL1Q4ma/UkR3kNFObNhp0Gm7i9NQAqz8=";
   };
 
+  nativeBuildInputs = [ cairocffi ];
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,20 +37,16 @@ buildPythonPackage rec {
     tinycss2
   ];
 
-  nativeBuildInputs = [ cairocffi ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "cairosvg/test_api.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cairosvg" ];
 
   meta = {
+    description = "SVG converter based on Cairo";
     homepage = "https://cairosvg.org";
     changelog = "https://github.com/Kozea/CairoSVG/releases/tag/${version}";
     license = lib.licenses.lgpl3Plus;
-    description = "SVG converter based on Cairo";
-    mainProgram = "cairosvg";
     maintainers = [ lib.maintainers.sarahec ];
+    mainProgram = "cairosvg";
   };
 }

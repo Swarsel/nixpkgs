@@ -1,24 +1,24 @@
 {
   lib,
-  fetchFromGitHub,
-  makeDesktopItem,
-  writeShellScriptBin,
-  copyDesktopItems,
   stdenv,
-  makeWrapper,
-  replaceVars,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  electron,
-  jq,
-  tsx,
-  python3,
-  cmake,
-  xcodebuild,
+  fetchFromGitHub,
   cctools,
+  cmake,
+  copyDesktopItems,
   darwin,
+  electron,
+  fetchPnpmDeps,
+  jq,
+  makeDesktopItem,
+  makeWrapper,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  python3,
+  replaceVars,
+  tsx,
+  writeShellScriptBin,
+  xcodebuild,
 }:
 
 let
@@ -29,13 +29,15 @@ let
   libsession-util-nodejs = stdenv.mkDerivation (finalAttrs: {
     pname = "libsession-util-nodejs";
     version = "0.6.17"; # find version in pnpm-lock.yaml
+
     src = fetchFromGitHub {
       owner = "session-foundation";
       repo = "libsession-util-nodejs";
       tag = "v${finalAttrs.version}";
+      hash = "sha256-j7smb0Rgjdqs4l3ahUV2bFXyvieV6Mcoti6wjSRovLo=";
       fetchSubmodules = true;
       deepClone = true; # need git rev for all submodules
-      hash = "sha256-j7smb0Rgjdqs4l3ahUV2bFXyvieV6Mcoti6wjSRovLo=";
+
       # fetchgit is not reproducible with deepClone + fetchSubmodules:
       # https://github.com/NixOS/nixpkgs/issues/100498
       postFetch = ''
@@ -60,15 +62,6 @@ let
       python3
       fake-git # used in update_version.sh, libsession-util/external/oxen-libquic/cmake/check_submodule.cmake, etc.
     ];
-
-    dontUseCmakeConfigure = true;
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs) pname version src;
-      inherit pnpm;
-      fetcherVersion = 3;
-      hash = "sha256-oadNQJsSmwR/ADWO6Zu+Ji3CwkwupmQFX8OfUgKDtEU=";
-    };
 
     preBuild = ''
       # prevent downloading; see https://github.com/cmake-js/cmake-js/blob/v7.3.1/lib/dist.js
@@ -95,6 +88,15 @@ let
       runHook postInstall
     '';
 
+    dontUseCmakeConfigure = true;
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname version src;
+      inherit pnpm;
+      fetcherVersion = 3;
+      hash = "sha256-oadNQJsSmwR/ADWO6Zu+Ji3CwkwupmQFX8OfUgKDtEU=";
+    };
+
     meta = {
       homepage = "https://github.com/session-foundation/libsession-util-nodejs";
       # No license file, but gpl3Only makes sense because package.json says GPL-3.0,
@@ -107,20 +109,22 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "session-desktop";
   version = "1.18.0";
+
   src =
     (fetchFromGitHub {
       owner = "session-foundation";
       repo = "session-desktop";
       tag = "v${finalAttrs.version}";
+      hash = "sha256-xulsnbC3C7n+4hFeuzRS8XzzYTO6T2vR3jBxTkxHFHE=";
       fetchSubmodules = true;
       leaveDotGit = true;
+
       postFetch = ''
         pushd $out
         git rev-parse HEAD > .gitrev
         rm -rf .git
         popd
       '';
-      hash = "sha256-xulsnbC3C7n+4hFeuzRS8XzzYTO6T2vR3jBxTkxHFHE=";
     }).overrideAttrs
       (oldAttrs: {
         # https://github.com/NixOS/nixpkgs/issues/195117#issuecomment-1410398050
@@ -157,16 +161,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    npm_config_nodedir = electron.headers;
     ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
-  };
-
-  dontUseCmakeConfigure = true;
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-8z4EDHpsvM0AFbJy2JXoE4vjiLaDshTihMQsrQzXdEs=";
+    npm_config_nodedir = electron.headers;
   };
 
   buildPhase = ''
@@ -229,16 +225,25 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Session";
-      desktopName = "Session";
+      categories = [ "Network" ];
       comment = "Onion routing based messenger";
+      desktopName = "Session";
       exec = "session-desktop";
       icon = "session-desktop";
+      name = "Session";
       terminal = false;
       type = "Application";
-      categories = [ "Network" ];
     })
   ];
+
+  dontUseCmakeConfigure = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-8z4EDHpsvM0AFbJy2JXoE4vjiLaDshTihMQsrQzXdEs=";
+  };
 
   passthru = {
     inherit libsession-util-nodejs;
@@ -247,15 +252,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Onion routing based messenger";
-    mainProgram = "session-desktop";
     homepage = "https://getsession.org/";
-    downloadPage = "https://getsession.org/download";
     changelog = "https://github.com/session-foundation/session-desktop/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       alexnortung
       ulysseszhan
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "session-desktop";
+    downloadPage = "https://getsession.org/download";
   };
 })

@@ -1,4 +1,4 @@
-{ dhallPackages, fetchFromGitHub }:
+{ fetchFromGitHub, dhallPackages }:
 
 # This file tests that dhallPackages.generateDhallDirectoryPackage works.
 #
@@ -13,5 +13,6 @@ dhallPackages.generateDhallDirectoryPackage {
     rev = "e6a675c72ecd4dd23d254a02aea8181fe875747f";
     sha256 = "sha256-c/EZq76s/+hmLkaeJWKqgh2KrHuJRYI6kWry0E0YQ6s=";
   };
+
   file = "mydhallfile.dhall";
 }

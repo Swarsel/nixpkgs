@@ -1,11 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   dbus-glib,
   desktop-file-utils,
   enchant_2,
-  fetchFromGitHub,
   gtk2,
   isocodes,
-  lib,
   libcanberra-gtk2,
   libnotify,
   libproxy,
@@ -18,7 +19,6 @@
   perl,
   pkg-config,
   python3Packages,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,11 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  mesonFlags = [
-    "-Dwith-lua=lua"
-    "-Dtext-frontend=true"
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     meson
@@ -76,6 +71,11 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.setuptools
   ];
 
+  mesonFlags = [
+    "-Dwith-lua=lua"
+    "-Dtext-frontend=true"
+  ];
+
   postInstall = ''
     wrapProgram $out/bin/hexchat --prefix PYTHONPATH : "$PYTHONPATH"
   '';
@@ -84,7 +84,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Popular and easy to use graphical IRC (chat) client";
     homepage = "https://hexchat.github.io/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.linux;
   };
 })

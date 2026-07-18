@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -16,10 +16,10 @@ buildDunePackage (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/ocaml-ppx/ocaml-syntax-shims";
     description = "Backport new syntax to older OCaml versions";
-    mainProgram = "ocaml-syntax-shims";
+    homepage = "https://github.com/ocaml-ppx/ocaml-syntax-shims";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sternenseemann ];
+    mainProgram = "ocaml-syntax-shims";
   };
 })

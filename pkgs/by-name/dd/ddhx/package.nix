@@ -1,7 +1,7 @@
 {
   lib,
-  buildDubPackage,
   fetchFromGitHub,
+  buildDubPackage,
 }:
 buildDubPackage (finalAttrs: {
   pname = "ddhx";
@@ -14,7 +14,7 @@ buildDubPackage (finalAttrs: {
     hash = "sha256-1dbY7xUOpwihrppuB+tyHuV2b12E4Yv2J69LXULxmg0=";
   };
 
-  dubLock = ./dub-lock.json;
+  doCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -22,7 +22,7 @@ buildDubPackage (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = true;
+  dubLock = ./dub-lock.json;
 
   meta = {
     description = "Console text-mode hex editor, inspired by GNU nano and vim";

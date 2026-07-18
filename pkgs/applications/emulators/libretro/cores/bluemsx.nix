@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "bluemsx";
   version = "0-unstable-2026-07-04";
 
   src = fetchFromGitHub {
@@ -13,6 +12,8 @@ mkLibretroCore {
     rev = "fe7173f801fd2d6c3564ebe816797a44524e4bbf";
     hash = "sha256-NcDcFexU2jPWwQmWo9CK+jbYtEFiqZmzKLfrQrB9Cmg=";
   };
+
+  core = "bluemsx";
 
   meta = {
     description = "Port of BlueMSX to libretro";

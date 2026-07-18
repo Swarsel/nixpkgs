@@ -17,7 +17,15 @@ buildGoModule rec {
     sha256 = "sha256-FcrkfWE1m5OveK4YPgVmUbL/jkh2NEs9bfeCHm2H9P8=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-c5nQVQd4n978kFAAKcx5mX2Jz16ZOhS8iL/oxS1o5xs=";
+  # has no tests
+  doCheck = false;
+
+  preFixup = ''
+    wrapProgram $out/bin/${pname} \
+      --prefix PATH ":" "${lib.makeBinPath [ mpg123 ]}";
+  '';
 
   ldflags = [
     "-s"
@@ -25,21 +33,11 @@ buildGoModule rec {
     "-X=main.Version=${version}"
   ];
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  preFixup = ''
-    wrapProgram $out/bin/${pname} \
-      --prefix PATH ":" "${lib.makeBinPath [ mpg123 ]}";
-  '';
-
-  # has no tests
-  doCheck = false;
-
   meta = {
     description = "Yet another command-line Youdao Chinese dictionary";
-    mainProgram = "ydict";
     homepage = "https://github.com/TimothyYe/ydict";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zendo ];
+    mainProgram = "ydict";
   };
 }

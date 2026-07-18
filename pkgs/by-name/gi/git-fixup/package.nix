@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  git,
   coreutils,
-  gnused,
+  git,
   gnugrep,
+  gnused,
+  makeWrapper,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,17 +23,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   makeFlags = [
     "DESTDIR=${placeholder "out"}"
     "PREFIX="
-  ];
-
-  installFlags = [
-    "install"
-    "install-fish"
-    "install-zsh"
   ];
 
   postInstall = ''
@@ -47,6 +39,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         ]
       }"
   '';
+
+  dontBuild = true;
+
+  installFlags = [
+    "install"
+    "install-fish"
+    "install-zsh"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

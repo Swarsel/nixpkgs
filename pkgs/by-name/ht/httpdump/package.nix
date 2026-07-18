@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   libpcap,
 }:
 
@@ -16,9 +16,8 @@ buildGoModule {
     hash = "sha256-3BzvIaZKBr/HHplJe5hM7u8kigmMHxCvkiVXFZopUCQ=";
   };
 
-  vendorHash = "sha256-NKCAzx1+BkqZGeAORl7gCA7f9PSsyKxP2eggZyBB2l8=";
-
   propagatedBuildInputs = [ libpcap ];
+  vendorHash = "sha256-NKCAzx1+BkqZGeAORl7gCA7f9PSsyKxP2eggZyBB2l8=";
 
   ldflags = [
     "-s"
@@ -27,9 +26,9 @@ buildGoModule {
 
   meta = {
     description = "Parse and display HTTP traffic from network device or pcap file";
-    mainProgram = "httpdump";
     homepage = "https://github.com/hsiafan/httpdump";
     license = with lib.licenses; [ bsd2 ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "httpdump";
   };
 }

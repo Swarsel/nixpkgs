@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  kdePackages,
-  qt6,
   gitUpdater,
+  kdePackages,
+  ninja,
+  qt6,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "darkly";
@@ -51,9 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Modern style for Qt applications (fork of Lightly)";
     homepage = "https://github.com/Bali10050/Darkly";
     changelog = "https://github.com/Bali10050/Darkly/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.linux;
     license = with lib.licenses; [ gpl2Plus ];
     maintainers = with lib.maintainers; [ pluiedev ];
+    platforms = lib.platforms.linux;
     mainProgram = "darkly-settings6";
   };
 })

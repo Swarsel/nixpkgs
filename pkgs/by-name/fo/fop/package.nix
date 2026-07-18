@@ -1,9 +1,9 @@
 {
   lib,
   fetchurl,
-  maven,
   jre,
   makeWrapper,
+  maven,
   stripJavaArchivesHook,
 }:
 
@@ -18,15 +18,12 @@ maven.buildMavenPackage (finalAttrs: {
 
   patches = [ ./fix-maven-plugin-versions.patch ];
 
-  mvnHash = "sha256-KfIcc1MWGs7vZHPjfNgy3NBCAyTMtyvRTZfcN4LQVv8=";
-
-  buildOffline = true;
-  doCheck = false;
-
   nativeBuildInputs = [
     makeWrapper
     stripJavaArchivesHook
   ];
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -47,9 +44,12 @@ maven.buildMavenPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  buildOffline = true;
+  mvnHash = "sha256-KfIcc1MWGs7vZHPjfNgy3NBCAyTMtyvRTZfcN4LQVv8=";
+
   meta = {
-    changelog = "https://xmlgraphics.apache.org/fop/changes.html";
     description = "XML formatter driven by XSL Formatting Objects (XSL-FO)";
+
     longDescription = ''
       FOP is a Java application that reads a formatting object tree and then
       turns it into a wide variety of output presentations (including AFP, PCL,
@@ -62,17 +62,22 @@ maven.buildMavenPackage (finalAttrs: {
 
       This package contains the fop command line tool.
     '';
+
     homepage = "https://xmlgraphics.apache.org/fop/";
+    changelog = "https://xmlgraphics.apache.org/fop/changes.html";
     license = lib.licenses.asl20;
-    mainProgram = "fop";
-    maintainers = with lib.maintainers; [
-      bjornfor
-      tomasajt
-    ];
-    platforms = jre.meta.platforms;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependencies as jars
     ];
+
+    maintainers = with lib.maintainers; [
+      bjornfor
+      tomasajt
+    ];
+
+    platforms = jre.meta.platforms;
+    mainProgram = "fop";
   };
 })

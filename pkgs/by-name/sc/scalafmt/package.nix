@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  jre,
   coursier,
+  jre,
   makeWrapper,
   setJavaClassPath,
 }:
@@ -11,28 +11,28 @@ let
   baseName = "scalafmt";
   version = "3.11.1";
   deps = stdenv.mkDerivation {
-    name = "${baseName}-deps-${version}";
     buildCommand = ''
       export COURSIER_CACHE=$(pwd)
       ${coursier}/bin/cs fetch org.scalameta:scalafmt-cli_2.13:${version} > deps
       mkdir -p $out/share/java
       cp $(< deps) $out/share/java/
     '';
-    outputHashMode = "recursive";
+
+    name = "${baseName}-deps-${version}";
     outputHash = "sha256-EgkXDCbgn7OmH1e/us6lyNiei/qZMzFn/1Qh4LiraBo=";
+    outputHashMode = "recursive";
   };
 in
 stdenv.mkDerivation {
-  pname = baseName;
   inherit version;
+  pname = baseName;
 
   nativeBuildInputs = [
     makeWrapper
     setJavaClassPath
   ];
-  buildInputs = [ deps ];
 
-  dontUnpack = true;
+  buildInputs = [ deps ];
 
   installPhase = ''
     runHook preInstall
@@ -47,6 +47,7 @@ stdenv.mkDerivation {
     $out/bin/${baseName} --version | grep -q "${version}"
   '';
 
+  dontUnpack = true;
   passthru.updateScript = ./update.sh;
 
   meta = {

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   plover,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "plover-stitching";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "panathea";
@@ -25,6 +24,10 @@ buildPythonPackage (finalAttrs: {
     ./plover_stitching_pr-1_test-blackbox_modernise_and_fix_build.patch
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -33,18 +36,17 @@ buildPythonPackage (finalAttrs: {
     plover
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "plover_stitching"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {
     description = "S-t-i-t-c-h-i-n-g support for Plover";
     homepage = "https://github.com/panathea/plover_stitching";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       pandapip1
       ShamrockLee

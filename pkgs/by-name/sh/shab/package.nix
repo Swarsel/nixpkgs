@@ -1,17 +1,17 @@
 {
-  bash,
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  bash,
   runCommand,
   writeText,
-  fetchFromGitHub,
 }:
 let
   version = "1.0.0";
 
   shab = stdenv.mkDerivation {
-    pname = "shab";
     inherit version;
+    pname = "shab";
 
     src = fetchFromGitHub {
       owner = "zimbatm";
@@ -27,7 +27,6 @@ let
     '';
 
     doCheck = true;
-    doInstallCheck = true;
 
     checkPhase = ''
       ./test.sh
@@ -37,6 +36,8 @@ let
       mkdir -p $out/bin
       cp ./shab $out/bin/shab
     '';
+
+    doInstallCheck = true;
 
     installCheckPhase = ''
       [[ "$(echo 'Hello $entity' | entity=world $out/bin/shab)" == 'Hello world' ]]
@@ -48,11 +49,11 @@ let
 
     meta = {
       description = "Bash templating language";
-      mainProgram = "shab";
       homepage = "https://github.com/zimbatm/shab";
       license = lib.licenses.unlicense;
       maintainers = with lib.maintainers; [ zimbatm ];
       platforms = bash.meta.platforms;
+      mainProgram = "shab";
     };
   };
 

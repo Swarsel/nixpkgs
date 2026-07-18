@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  versionCheckHook,
+  libxft,
+  libxinerama,
+  libxrandr,
   nix-update-script,
   pkg-config,
-  libxrandr,
-  libxinerama,
-  libxft,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,19 +24,21 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     libxft
     libxrandr
     libxinerama
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
   versionCheckProgram = "${placeholder "out"}/bin/osd-echo";
   versionCheckProgramArg = "--help";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

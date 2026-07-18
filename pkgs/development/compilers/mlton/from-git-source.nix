@@ -1,24 +1,26 @@
 {
   lib,
+  stdenv,
   fetchgit,
   gmp,
-  mltonBootstrap,
-  url ? "https://github.com/mlton/mlton",
-  rev,
   hash,
-  stdenv,
+  mltonBootstrap,
+  rev,
   version,
   which,
   doCheck ? true,
+  url ? "https://github.com/mlton/mlton",
 }:
 
 stdenv.mkDerivation {
-  pname = "mlton";
   inherit version doCheck;
+  pname = "mlton";
 
   src = fetchgit {
     inherit url rev hash;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     which
@@ -26,11 +28,6 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ gmp ];
-
-  strictDeps = true;
-
-  # build fails otherwise
-  enableParallelBuilding = false;
 
   preBuild = ''
     find . -type f | grep -v -e '\.tgz''$' | xargs sed -i "s@/usr/bin/env bash@$(type -p bash)@"
@@ -45,5 +42,7 @@ stdenv.mkDerivation {
       )
   '';
 
+  # build fails otherwise
+  enableParallelBuilding = false;
   meta = import ./meta.nix { inherit lib; };
 }

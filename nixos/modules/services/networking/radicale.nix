@@ -29,53 +29,45 @@ let
 in
 {
   options.services.radicale = {
-    enable = mkEnableOption "Radicale CalDAV and CardDAV server";
-
-    package = mkOption {
-      description = "Radicale package to use.";
-      # Default cannot be pkgs.radicale because non-null values suppress
-      # warnings about incompatible configuration and storage formats.
-      type = with types; nullOr package // { inherit (package) description; };
-      default = null;
-      defaultText = literalExpression "pkgs.radicale";
-    };
-
     config = mkOption {
-      type = types.str;
       default = "";
+
       description = ''
         Radicale configuration, this will set the service
         configuration file.
         This option is mutually exclusive with {option}`settings`.
         This option is deprecated.  Use {option}`settings` instead.
       '';
+
+      type = types.str;
     };
 
-    settings = mkOption {
-      type = format.type;
-      default = { };
-      description = ''
-        Configuration for Radicale. See
-        <https://radicale.org/v3.html#configuration>.
-        This option is mutually exclusive with {option}`config`.
-      '';
-      example = literalExpression ''
-        server = {
-          hosts = [ "0.0.0.0:5232" "[::]:5232" ];
-        };
-        auth = {
-          type = "htpasswd";
-          htpasswd_filename = "/etc/radicale/users";
-          htpasswd_encryption = "bcrypt";
-        };
-        storage = {
-          filesystem_folder = "/var/lib/radicale/collections";
-        };
-      '';
+    enable = mkEnableOption "Radicale CalDAV and CardDAV server";
+
+    package = mkOption {
+      default = null;
+      defaultText = literalExpression "pkgs.radicale";
+      description = "Radicale package to use.";
+      # Default cannot be pkgs.radicale because non-null values suppress
+      # warnings about incompatible configuration and storage formats.
+      type = with types; nullOr package // { inherit (package) description; };
+    };
+
+    extraArgs = mkOption {
+      default = [ ];
+      description = "Extra arguments passed to the Radicale daemon.";
+      type = types.listOf types.str;
+    };
+
+    group = mkOption {
+      default = "radicale";
+      description = "Group under which Radicale runs.";
+      type = types.str;
     };
 
     rights = mkOption {
-      type = format.type;
+      default = { };
+
       description = ''
         Configuration for Radicale's rights file. See
         <https://radicale.org/v3.html#authentication-and-rights>.
@@ -83,7 +75,7 @@ in
         Setting this will also set {option}`settings.rights.type` and
         {option}`settings.rights.file` to appropriate values.
       '';
-      default = { };
+
       example = literalExpression ''
         root = {
           user = ".+";
@@ -101,24 +93,40 @@ in
           permissions = "rw";
         };
       '';
+
+      type = format.type;
     };
 
-    extraArgs = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      description = "Extra arguments passed to the Radicale daemon.";
+    settings = mkOption {
+      default = { };
+
+      description = ''
+        Configuration for Radicale. See
+        <https://radicale.org/v3.html#configuration>.
+        This option is mutually exclusive with {option}`config`.
+      '';
+
+      example = literalExpression ''
+        server = {
+          hosts = [ "0.0.0.0:5232" "[::]:5232" ];
+        };
+        auth = {
+          type = "htpasswd";
+          htpasswd_filename = "/etc/radicale/users";
+          htpasswd_encryption = "bcrypt";
+        };
+        storage = {
+          filesystem_folder = "/var/lib/radicale/collections";
+        };
+      '';
+
+      type = format.type;
     };
 
     user = mkOption {
-      type = types.str;
       default = "radicale";
       description = "User account under which Radicale runs.";
-    };
-
-    group = mkOption {
       type = types.str;
-      default = "radicale";
-      description = "Group under which Radicale runs.";
     };
   };
 
@@ -126,6 +134,7 @@ in
     assertions = [
       {
         assertion = cfg.settings == { } || cfg.config == "";
+
         message = ''
           The options services.radicale.config and services.radicale.settings
           are mutually exclusive.
@@ -133,6 +142,7 @@ in
       }
       {
         assertion = cfg.config != "" || (cfg.settings ? auth && cfg.settings.auth ? type);
+
         message = ''
           Radicale 3.5.0 changed the default value for `auth.type` from `none` to `denyall`.
           You probably don't want `denyall`, so please set this explicitly.
@@ -140,6 +150,103 @@ in
         '';
       }
     ];
+
+    environment.systemPackages = [ pkg ];
+
+    services.radicale.settings.rights = mkIf (cfg.rights != { }) {
+      file = toString rightsFile;
+      type = "from_file";
+    };
+
+    systemd.services.radicale = {
+      after = [ "network.target" ];
+      description = "A Simple Calendar and Contact Server";
+      requires = [ "network.target" ];
+
+      serviceConfig = {
+        # Hardening
+        CapabilityBoundingSet = [ "" ];
+
+        DeviceAllow = [
+          "/dev/stdin"
+          "/dev/urandom"
+        ];
+
+        DevicePolicy = "strict";
+
+        ExecStart = concatStringsSep " " (
+          [
+            "${pkg}/bin/radicale"
+            "-C"
+            confFile
+          ]
+          ++ (map escapeShellArg cfg.extraArgs)
+        );
+
+        Group = cfg.group;
+        IPAddressAllow = mkIf bindLocalhost "localhost";
+        IPAddressDeny = mkIf bindLocalhost "any";
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+
+        ReadWritePaths = lib.optional (hasAttrByPath [
+          "storage"
+          "filesystem_folder"
+        ] cfg.settings) cfg.settings.storage.filesystem_folder;
+
+        RemoveIPC = true;
+
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_UNIX" # To log with systemd
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        StateDirectory = "radicale/collections";
+        StateDirectoryMode = "0750";
+        SystemCallArchitectures = "native";
+
+        SystemCallFilter = [
+          "@system-service"
+          "~@privileged"
+          "~@resources"
+        ];
+
+        UMask = "0027";
+        User = cfg.user;
+        WorkingDirectory = "/var/lib/radicale";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups = mkIf (cfg.group == "radicale") {
+      radicale = { };
+    };
+
+    users.users = mkIf (cfg.user == "radicale") {
+      radicale = {
+        group = cfg.group;
+        isSystemUser = true;
+      };
+    };
 
     warnings =
       optional (cfg.package == null && versionOlder config.system.stateVersion "17.09") ''
@@ -159,91 +266,6 @@ in
         The option services.radicale.config is deprecated.
         Use services.radicale.settings instead.
       '';
-
-    services.radicale.settings.rights = mkIf (cfg.rights != { }) {
-      type = "from_file";
-      file = toString rightsFile;
-    };
-
-    environment.systemPackages = [ pkg ];
-
-    users.users = mkIf (cfg.user == "radicale") {
-      radicale = {
-        group = cfg.group;
-        isSystemUser = true;
-      };
-    };
-
-    users.groups = mkIf (cfg.group == "radicale") {
-      radicale = { };
-    };
-
-    systemd.services.radicale = {
-      description = "A Simple Calendar and Contact Server";
-      after = [ "network.target" ];
-      requires = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = concatStringsSep " " (
-          [
-            "${pkg}/bin/radicale"
-            "-C"
-            confFile
-          ]
-          ++ (map escapeShellArg cfg.extraArgs)
-        );
-        User = cfg.user;
-        Group = cfg.group;
-        StateDirectory = "radicale/collections";
-        StateDirectoryMode = "0750";
-        # Hardening
-        CapabilityBoundingSet = [ "" ];
-        DeviceAllow = [
-          "/dev/stdin"
-          "/dev/urandom"
-        ];
-        DevicePolicy = "strict";
-        IPAddressAllow = mkIf bindLocalhost "localhost";
-        IPAddressDeny = mkIf bindLocalhost "any";
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
-        NoNewPrivileges = true;
-        PrivateDevices = true;
-        PrivateTmp = true;
-        PrivateUsers = true;
-        ProcSubset = "pid";
-        ProtectClock = true;
-        ProtectControlGroups = true;
-        ProtectHome = true;
-        ProtectHostname = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectProc = "invisible";
-        ProtectSystem = "strict";
-        ReadWritePaths = lib.optional (hasAttrByPath [
-          "storage"
-          "filesystem_folder"
-        ] cfg.settings) cfg.settings.storage.filesystem_folder;
-        RemoveIPC = true;
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-          "AF_UNIX" # To log with systemd
-        ];
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-        SystemCallArchitectures = "native";
-        SystemCallFilter = [
-          "@system-service"
-          "~@privileged"
-          "~@resources"
-        ];
-        UMask = "0027";
-        WorkingDirectory = "/var/lib/radicale";
-      };
-    };
   };
 
   meta.maintainers = with lib.maintainers; [ dotlambda ];

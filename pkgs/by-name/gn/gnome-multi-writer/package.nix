@@ -14,9 +14,9 @@
   meson,
   ninja,
   pkg-config,
-  wrapGAppsHook3,
   polkit,
   udisks,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -56,10 +56,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Tool for writing an ISO file to multiple USB devices at once";
-    mainProgram = "gnome-multi-writer";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-multi-writer";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-multi-writer";
+    teams = [ lib.teams.gnome ];
   };
 }

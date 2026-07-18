@@ -25,22 +25,23 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     obs-studio
     qtbase
   ];
 
-  dontWrapQtApps = true;
-
   postInstall = ''
     rm -rf $out/obs-plugins $out/data
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "Plugin for OBS Studio to add a Media Controls dock";
     homepage = "https://github.com/exeldro/obs-media-controls";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
     platforms = lib.platforms.linux;
   };
 })

@@ -1,48 +1,38 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  pythonOlder,
-
-  # build-system
-  hatchling,
-
   # dependencies
   async-timeout,
-
-  # extras: circuit_breaker
-  pybreaker,
-
-  # extras: hiredis
-  hiredis,
-
-  # extras: jwt
-  pyjwt,
-
+  buildPythonPackage,
   # extras: ocsp
   cryptography,
-  pyopenssl,
-  requests,
-
+  # build-system
+  hatchling,
+  # extras: hiredis
+  hiredis,
+  # tests
+  numpy,
   # extras: otel
   opentelemetry-api,
   opentelemetry-exporter-otlp-proto-http,
   opentelemetry-sdk,
-
-  # extras: xxhash
-  xxhash,
-
-  # tests
-  numpy,
+  # extras: circuit_breaker
+  pybreaker,
+  # extras: jwt
+  pyjwt,
+  pyopenssl,
   pytest-asyncio,
   pytestCheckHook,
+  pythonOlder,
   redisTestHook,
+  requests,
+  # extras: xxhash
+  xxhash,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "redis";
   version = "8.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "redis";
@@ -51,38 +41,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-41i4oZmbWi87KBSaAAaZe2gPlCpgw6kEPne1IA3PHQM=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = lib.optionals (pythonOlder "3.11") [
-    async-timeout
-  ];
-
-  optional-dependencies = {
-    circuit_breaker = [ pybreaker ];
-    hiredis = [ hiredis ];
-    jwt = [ pyjwt ];
-    ocsp = [
-      cryptography
-      pyopenssl
-      requests
-    ];
-    otel = [
-      opentelemetry-api
-      opentelemetry-exporter-otlp-proto-http
-      opentelemetry-sdk
-    ];
-    xxhash = [ xxhash ];
-  };
-
-  pythonImportsCheck = [
-    "redis"
-    "redis.client"
-    "redis.cluster"
-    "redis.connection"
-    "redis.exceptions"
-    "redis.sentinel"
-    "redis.utils"
-  ];
+  # circular dependency via pybreaker
+  doCheck = false;
 
   nativeCheckInputs = [
     numpy
@@ -93,8 +53,10 @@ buildPythonPackage (finalAttrs: {
   ++ finalAttrs.passthru.optional-dependencies.circuit_breaker
   ++ finalAttrs.passthru.optional-dependencies.otel;
 
-  enabledTestMarks = [
-    "onlynoncluster"
+  build-system = [ hatchling ];
+
+  dependencies = lib.optionals (pythonOlder "3.11") [
+    async-timeout
   ];
 
   disabledTestMarks = [
@@ -118,8 +80,41 @@ buildPythonPackage (finalAttrs: {
     "test_lolwut"
   ];
 
-  # circular dependency via pybreaker
-  doCheck = false;
+  enabledTestMarks = [
+    "onlynoncluster"
+  ];
+
+  optional-dependencies = {
+    circuit_breaker = [ pybreaker ];
+    hiredis = [ hiredis ];
+    jwt = [ pyjwt ];
+
+    ocsp = [
+      cryptography
+      pyopenssl
+      requests
+    ];
+
+    otel = [
+      opentelemetry-api
+      opentelemetry-exporter-otlp-proto-http
+      opentelemetry-sdk
+    ];
+
+    xxhash = [ xxhash ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "redis"
+    "redis.client"
+    "redis.cluster"
+    "redis.connection"
+    "redis.exceptions"
+    "redis.sentinel"
+    "redis.utils"
+  ];
 
   passthru.tests = {
     pytest = finalAttrs.finalPackage.overrideAttrs {

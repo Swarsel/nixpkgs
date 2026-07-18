@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  apple-sdk_gstreamer,
   autoreconfHook,
-  pkg-config,
   gst_all_1,
   ipu6-camera-hal,
   libdrm,
   libva,
-  apple-sdk_gstreamer,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -22,22 +22,12 @@ stdenv.mkDerivation {
     hash = "sha256-BYURJfNz4D8bXbSeuWyUYnoifozFOq6rSfG9GBKVoHo=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
-
-  preConfigure = ''
-    # https://github.com/intel/ipu6-camera-hal/issues/1
-    export CHROME_SLIM_CAMHAL=ON
-    # https://github.com/intel/icamerasrc/issues/22
-    export STRIP_VIRTUAL_CHANNEL_CAMHAL=ON
-  '';
-
-  separateDebugInfo = true;
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   buildInputs = [
     gst_all_1.gstreamer
@@ -57,7 +47,16 @@ stdenv.mkDerivation {
     "-I${gst_all_1.gst-plugins-base.dev}/include/gstreamer-1.0"
   ];
 
+  preConfigure = ''
+    # https://github.com/intel/ipu6-camera-hal/issues/1
+    export CHROME_SLIM_CAMHAL=ON
+    # https://github.com/intel/icamerasrc/issues/22
+    export STRIP_VIRTUAL_CHANNEL_CAMHAL=ON
+  '';
+
+  __structuredAttrs = true;
   enableParallelBuilding = true;
+  separateDebugInfo = true;
 
   passthru = {
     inherit (ipu6-camera-hal) ipuVersion;

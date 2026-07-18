@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  ocaml,
-  findlib,
   camlp4,
+  findlib,
+  ocaml,
 }:
 
 stdenv.mkDerivation rec {
@@ -16,22 +16,22 @@ stdenv.mkDerivation rec {
     sha256 = "1b02yxcnsjhr05ssh2br2ka4hxsjpdw34ldl3nk33wfnkwk7g67q";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
     camlp4
   ];
 
-  strictDeps = true;
-
   createFindlibDestdir = true;
 
   meta = {
-    homepage = "http://config-file.forge.ocamlcore.org/";
-    platforms = ocaml.meta.platforms or [ ];
     description = "OCaml library used to manage the configuration file(s) of an application";
+    homepage = "http://config-file.forge.ocamlcore.org/";
     license = lib.licenses.lgpl2Plus;
-    broken = lib.versionAtLeast ocaml.version "5.0";
     maintainers = with lib.maintainers; [ vbgl ];
+    platforms = ocaml.meta.platforms or [ ];
+    broken = lib.versionAtLeast ocaml.version "5.0";
   };
 }

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
+  coreutils,
   fetchzip,
+  gitUpdater,
+  installShellFiles,
   jdk,
   makeWrapper,
-  installShellFiles,
-  coreutils,
   testers,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,14 +39,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "${lib.getExe finalAttrs.finalPackage} --version";
       version = "v${finalAttrs.version}";
+      command = "${lib.getExe finalAttrs.finalPackage} --version";
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = gitUpdater {
-      url = "https://github.com/spring-projects/spring-boot";
       ignoredVersions = ".*-(RC|M).*";
       rev-prefix = "v";
+      url = "https://github.com/spring-projects/spring-boot";
     };
   };
 
@@ -54,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = ''
       CLI which makes it easy to create spring-based applications
     '';
+
     longDescription = ''
       Spring Boot makes it easy to create stand-alone, production-grade
       Spring-based Applications that you can run. We take an opinionated view
@@ -65,12 +67,13 @@ stdenv.mkDerivation (finalAttrs: {
       by using java -jar or more traditional war deployments. We also provide
       a command line tool that runs “spring scripts”.
     '';
+
     homepage = "https://spring.io/projects/spring-boot";
     changelog = "https://github.com/spring-projects/spring-boot/releases/tag/v${finalAttrs.version}";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    mainProgram = "spring";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ moaxcp ];
+    platforms = lib.platforms.all;
+    mainProgram = "spring";
   };
 })

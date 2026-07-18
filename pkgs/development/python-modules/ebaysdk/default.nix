@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ebaysdk";
   version = "2.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
 
   # requires network
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "eBay SDK for Python";

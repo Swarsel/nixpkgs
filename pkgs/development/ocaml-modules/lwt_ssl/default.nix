@@ -2,15 +2,13 @@
   lib,
   fetchurl,
   buildDunePackage,
-  ssl,
   lwt,
+  ssl,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "lwt_ssl";
   version = "1.2.0";
-
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/ocsigen/lwt_ssl/releases/download/${finalAttrs.version}/lwt_ssl-${finalAttrs.version}.tbz";
@@ -22,9 +20,11 @@ buildDunePackage (finalAttrs: {
     lwt
   ];
 
+  duneVersion = "3";
+
   meta = {
-    homepage = "https://github.com/aantron/lwt_ssl";
     description = "OpenSSL binding with concurrent I/O";
+    homepage = "https://github.com/aantron/lwt_ssl";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.vbgl ];
   };

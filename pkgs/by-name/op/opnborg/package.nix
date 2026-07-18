@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,25 +18,23 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-B1fZsgb2h3Po4Zy9jUD6OOFAGr+Yw6vNBK+IurjzMSo=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
   ];
 
+  versionCheckProgram = "${placeholder "out"}/bin/opnborg";
   passthru.updateScript = nix-update-script { };
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/opnborg";
-
   meta = {
-    changelog = "https://github.com/paepckehh/opnborg/releases/tag/v${finalAttrs.version}";
-    homepage = "https://paepcke.de/opnborg";
     description = "Sefhosted OPNSense Appliance Backup & Configuration Management Portal";
+    homepage = "https://paepcke.de/opnborg";
+    changelog = "https://github.com/paepckehh/opnborg/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "opnborg";
     maintainers = with lib.maintainers; [ paepcke ];
+    mainProgram = "opnborg";
   };
 })

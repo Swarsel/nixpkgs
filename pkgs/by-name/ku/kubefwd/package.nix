@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,22 +17,24 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-MIz2pZerUjKjcViEPZQeduzga3d6fYPlWo7dGQ+OdR4=";
 
-  subPackages = [ "cmd/kubefwd" ];
-
   ldflags = [
     "-s"
     "-w"
     "-X=main.Version=${finalAttrs.version}"
   ];
 
+  subPackages = [ "cmd/kubefwd" ];
+
   meta = {
     description = "Bulk port forwarding Kubernetes services for local development";
     homepage = "https://kubefwd.com";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       cjimti
       iogamaster
     ];
+
     mainProgram = "kubefwd";
   };
 })

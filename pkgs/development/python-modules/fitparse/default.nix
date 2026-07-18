@@ -1,16 +1,13 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  pytestCheckHook,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools,
 }:
 buildPythonPackage rec {
   pname = "fitparse";
   version = "1.2.0";
-
-  pyproject = true;
-  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "dtcooper";
@@ -23,9 +20,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
   disabledTests = [
     "test_utils"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "fitparse"

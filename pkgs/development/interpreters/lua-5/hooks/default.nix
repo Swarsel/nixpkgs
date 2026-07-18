@@ -16,10 +16,11 @@ in
   bustedCheckHook = callPackage (
     { busted }:
     makeSetupHook {
-      name = "busted-check-hook";
       propagatedBuildInputs = [
         busted
       ];
+
+      name = "busted-check-hook";
       meta.license = lib.licenses.mit;
     } ./busted-check-hook.sh
   ) { };
@@ -27,8 +28,8 @@ in
   luarocksCheckHook = callPackage (
     { luarocks }:
     makeSetupHook {
-      name = "luarocks-check-hook";
       propagatedBuildInputs = [ luarocks ];
+      name = "luarocks-check-hook";
       meta.license = lib.licenses.mit;
     } ./luarocks-check-hook.sh
   ) { };

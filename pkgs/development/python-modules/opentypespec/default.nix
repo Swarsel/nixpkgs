@@ -2,20 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  unittestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "opentypespec";
   version = "1.9.2";
-  pyproject = true;
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +17,14 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ unittestCheckHook ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
+
   unittestFlagsArray = [
     "-s"
     "test"

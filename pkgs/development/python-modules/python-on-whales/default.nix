@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   pydantic,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-on-whales";
   version = "0.81.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gabrieldemarmiesse";
@@ -22,14 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-aCIKWrOg+tzI9KJWcBK0ElssgOdxU/RTXgDOhSlBG3g=";
   };
 
+  doCheck = false; # majority of tests require Docker and/or network access
   build-system = [ setuptools ];
 
   dependencies = [
     pydantic
   ];
 
-  doCheck = false; # majority of tests require Docker and/or network access
-
+  pyproject = true;
   pythonImportsCheck = [ "python_on_whales" ];
 
   meta = {

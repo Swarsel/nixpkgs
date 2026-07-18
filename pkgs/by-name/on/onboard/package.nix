@@ -1,15 +1,12 @@
 {
-  fetchurl,
-  fetchpatch,
-  stdenv,
   lib,
-  replaceVars,
+  stdenv,
+  fetchurl,
   aspellWithDicts,
-  at-spi2-core ? null,
-  atspiSupport ? true,
   bash,
-  glib,
   dconf,
+  fetchpatch,
+  glib,
   gobject-introspection,
   gsettings-desktop-schemas,
   gtk3,
@@ -19,16 +16,19 @@
   isocodes,
   libappindicator-gtk3,
   libcanberra-gtk3,
-  mousetweaks,
-  udev,
   libxkbcommon,
+  libxkbfile,
+  libxtst,
+  mousetweaks,
   pkg-config,
   procps,
   python3,
+  replaceVars,
+  udev,
   wrapGAppsHook3,
-  libxtst,
-  libxkbfile,
   yelp,
+  at-spi2-core ? null,
+  atspiSupport ? true,
 }:
 
 let
@@ -41,7 +41,6 @@ in
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "onboard";
   version = "${majorVersion}.1";
-  format = "setuptools";
 
   src = fetchurl {
     url = "https://launchpad.net/onboard/${majorVersion}/${finalAttrs.version}/+download/onboard-${finalAttrs.version}.tar.gz";
@@ -55,18 +54,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
     # Python 3.12 fixes (otherwise crashes at startup)
     (fetchpatch {
-      url = "https://github.com/void-linux/void-packages/raw/1be95325d320122efd5dedf7437839cfcca01f7a/srcpkgs/onboard/patches/python-3.12.patch";
       hash = "sha256-Lw5wlaWFlP5rFlEWmlPo5Ux8idrmhET/X9yiu+2Akkk=";
+      url = "https://github.com/void-linux/void-packages/raw/1be95325d320122efd5dedf7437839cfcca01f7a/srcpkgs/onboard/patches/python-3.12.patch";
     })
     (fetchpatch {
-      url = "https://github.com/void-linux/void-packages/raw/1be95325d320122efd5dedf7437839cfcca01f7a/srcpkgs/onboard/patches/thread-state.patch";
       hash = "sha256-fJfxD7HshroiEVkaKVBGV7py8tdOhbcprcmBQNuxR9U=";
+      url = "https://github.com/void-linux/void-packages/raw/1be95325d320122efd5dedf7437839cfcca01f7a/srcpkgs/onboard/patches/thread-state.patch";
     })
 
     # Fix for https://bugs.launchpad.net/onboard/+bug/1948723
     (fetchpatch {
-      url = "https://github.com/void-linux/void-packages/raw/9ef46bf26ac5acc1af5809f11c97b19c5e2233ed/srcpkgs/onboard/patches/fix-brokenformat.patch";
       hash = "sha256-r9mvJNWpPR1gsayuSSLpzIuafEKqtADYklre0Ju+KOM=";
+      url = "https://github.com/void-linux/void-packages/raw/9ef46bf26ac5acc1af5809f11c97b19c5e2233ed/srcpkgs/onboard/patches/fix-brokenformat.patch";
     })
 
     ./bool.patch
@@ -97,34 +96,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     libxkbfile
   ]
   ++ lib.optional atspiSupport at-spi2-core;
-
-  pythonPath = with python3.pkgs; [
-    dbus-python
-    distutils-extra
-    pyatspi
-    pycairo
-    pygobject3
-    systemd-python
-  ];
-
-  propagatedUserEnvPkgs = [ dconf ];
-
-  nativeCheckInputs = [
-    # for Onboard.SpellChecker.aspell_cmd doctests
-    (aspellWithDicts (dicts: with dicts; [ en ]))
-
-    # for Onboard.SpellChecker.hunspell_cmd doctests
-    customHunspell
-
-    # for Onboard.SpellChecker.hunspell doctests
-    hunspellDicts.en-us
-    hunspellDicts.es-es
-    hunspellDicts.it-it
-  ];
-
-  # Tests have never been enabled, and upstream uses nose as a test
-  # runner (though not as a library).
-  doCheck = false;
 
   preBuild = ''
     # Unnecessary file, has been removed upstream
@@ -174,6 +145,23 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace '"killall",' '"${procps}/bin/pkill", "-x",'
   '';
 
+  # Tests have never been enabled, and upstream uses nose as a test
+  # runner (though not as a library).
+  doCheck = false;
+
+  nativeCheckInputs = [
+    # for Onboard.SpellChecker.aspell_cmd doctests
+    (aspellWithDicts (dicts: with dicts; [ en ]))
+
+    # for Onboard.SpellChecker.hunspell_cmd doctests
+    customHunspell
+
+    # for Onboard.SpellChecker.hunspell doctests
+    hunspellDicts.en-us
+    hunspellDicts.es-es
+    hunspellDicts.it-it
+  ];
+
   # setuptools to get distutils with python 3.12
   installPhase = ''
     runHook preInstall
@@ -190,10 +178,22 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rm -rf  $out/share/icons/ubuntu-mono-*
   '';
 
+  format = "setuptools";
+  propagatedUserEnvPkgs = [ dconf ];
+
+  pythonPath = with python3.pkgs; [
+    dbus-python
+    distutils-extra
+    pyatspi
+    pycairo
+    pygobject3
+    systemd-python
+  ];
+
   meta = {
-    homepage = "https://launchpad.net/onboard";
     description = "Onscreen keyboard useful for tablet PC users and for mobility impaired users";
-    maintainers = [ ];
+    homepage = "https://launchpad.net/onboard";
     license = lib.licenses.gpl3;
+    maintainers = [ ];
   };
 })

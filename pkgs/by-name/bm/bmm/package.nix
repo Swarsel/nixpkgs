@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "bmm";
@@ -16,9 +16,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-AOGNMFAr32WZnyw5nNQa6svLpSc3UQonZ7RjZ5zap1I=";
-
   doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

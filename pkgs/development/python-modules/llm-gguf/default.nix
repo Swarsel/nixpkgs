@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   httpx,
   llama-cpp-python,
   llm,
   llm-gguf,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "llm-gguf";
   version = "0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -25,6 +22,8 @@ buildPythonPackage rec {
     hash = "sha256-ihMOiQnTfgZKICVDoQHLOMahrd+GiB+HwWFBMyIcs0A=";
   };
 
+  # Tests require internet access (downloading models)
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,11 +32,8 @@ buildPythonPackage rec {
     llama-cpp-python
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llm_gguf" ];
-
-  # Tests require internet access (downloading models)
-  doCheck = false;
-
   passthru.tests = llm.mkPluginTest llm-gguf;
 
   meta = {

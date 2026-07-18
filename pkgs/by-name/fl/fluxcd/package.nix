@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  fetchzip,
-  installShellFiles,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  fetchzip,
+  installShellFiles,
   writableTmpDirAsHomeHook,
 }:
 
@@ -15,15 +15,15 @@ let
   manifestsHash = "sha256-DeTjdgOZyvrpQvIoXyVUfRIbHoJ9o74FRuTpVgT1/3I=";
 
   manifests = fetchzip {
-    url = "https://github.com/fluxcd/flux2/releases/download/v${version}/manifests.tar.gz";
     hash = manifestsHash;
     stripRoot = false;
+    url = "https://github.com/fluxcd/flux2/releases/download/v${version}/manifests.tar.gz";
   };
 in
 
 buildGoModule rec {
-  pname = "fluxcd";
   inherit vendorHash version;
+  pname = "fluxcd";
 
   src = fetchFromGitHub {
     owner = "fluxcd";
@@ -32,33 +32,11 @@ buildGoModule rec {
     hash = srcHash;
   };
 
-  postUnpack = ''
-    cp -r ${manifests} source/cmd/flux/manifests
-
-    # disable tests that require network access
-    rm source/cmd/flux/create_secret_git_test.go
-  '';
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.VERSION=${version}"
-  ];
-
-  subPackages = [ "cmd/flux" ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  env.CGO_ENABLED = 0;
   # Required to workaround test error:
   #   panic: mkdir /homeless-shelter: permission denied
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
-  doInstallCheck = true;
-  installCheckPhase = ''
-    $out/bin/flux --version | grep ${version} > /dev/null
-  '';
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     for shell in bash fish zsh; do
@@ -67,25 +45,49 @@ buildGoModule rec {
     done
   '';
 
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    $out/bin/flux --version | grep ${version} > /dev/null
+  '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.VERSION=${version}"
+  ];
+
+  postUnpack = ''
+    cp -r ${manifests} source/cmd/flux/manifests
+
+    # disable tests that require network access
+    rm source/cmd/flux/create_secret_git_test.go
+  '';
+
+  subPackages = [ "cmd/flux" ];
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/fluxcd/flux2/releases/tag/v${version}";
     description = "Open and extensible continuous delivery solution for Kubernetes";
-    downloadPage = "https://github.com/fluxcd/flux2/";
+
     longDescription = ''
       Flux is a tool for keeping Kubernetes clusters in sync
       with sources of configuration (like Git repositories), and automating
       updates to configuration when there is new code to deploy.
     '';
+
     homepage = "https://fluxcd.io";
+    changelog = "https://github.com/fluxcd/flux2/releases/tag/v${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jlesquembre
       ryan4yin
       SchahinRohani
       stealthybox
     ];
+
     mainProgram = "flux";
+    downloadPage = "https://github.com/fluxcd/flux2/";
   };
 }

@@ -68,17 +68,19 @@ in
     networking.resolvconf = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Whether DNS configuration is managed by resolvconf.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkOption {
-        type = lib.types.package;
         default = pkgs.openresolv;
         defaultText = lib.literalExpression "pkgs.openresolv";
+
         description = ''
           The package that provides the system-wide resolvconf command. Defaults to `openresolv`
           if this module is enabled. Otherwise, can be used by other modules (for example {option}`services.resolved`) to
@@ -86,11 +88,26 @@ in
 
           This option generally shouldn't be set by the user.
         '';
+
+        type = lib.types.package;
+      };
+
+      dnsExtensionMechanism = lib.mkOption {
+        default = true;
+
+        description = ''
+          Enable the `edns0` option in {file}`resolv.conf`. With
+          that option set, `glibc` supports use of the extension mechanisms for
+          DNS (EDNS) specified in RFC 2671. The most popular user of that feature is DNSSEC,
+          which does not work without it.
+        '';
+
+        type = lib.types.bool;
       };
 
       dnsSingleRequest = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Recent versions of glibc will issue both ipv4 (A) and ipv6 (AAAA)
           address queries at the same time, from the same port. Sometimes upstream
@@ -99,55 +116,55 @@ in
           workaround for this is to specify the option 'single-request' in
           /etc/resolv.conf. This option enables that.
         '';
-      };
 
-      dnsExtensionMechanism = lib.mkOption {
         type = lib.types.bool;
-        default = true;
-        description = ''
-          Enable the `edns0` option in {file}`resolv.conf`. With
-          that option set, `glibc` supports use of the extension mechanisms for
-          DNS (EDNS) specified in RFC 2671. The most popular user of that feature is DNSSEC,
-          which does not work without it.
-        '';
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
-        example = "libc=NO";
+
         description = ''
           Extra configuration to append to {file}`resolvconf.conf`.
         '';
+
+        example = "libc=NO";
+        type = lib.types.lines;
       };
 
       extraOptions = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
+
+        description = ''
+          Set the options in {file}`/etc/resolv.conf`.
+        '';
+
         example = [
           "ndots:1"
           "rotate"
         ];
-        description = ''
-          Set the options in {file}`/etc/resolv.conf`.
-        '';
-      };
 
-      useLocalResolver = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Use local DNS server for resolving.
-        '';
+        type = lib.types.listOf lib.types.str;
       };
 
       subscriberFiles = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
         default = [ ];
+
         description = ''
           Files written by resolvconf updates
         '';
+
         internal = true;
+        type = lib.types.listOf lib.types.path;
+      };
+
+      useLocalResolver = lib.mkOption {
+        default = false;
+
+        description = ''
+          Use local DNS server for resolving.
+        '';
+
+        type = lib.types.bool;
       };
 
     };
@@ -172,6 +189,7 @@ in
       assertions = [
         {
           assertion = !(config.environment.etc ? "resolv.conf");
+
           message = ''
             networking.resolvconf.enable is true but environment.etc."resolv.conf"
             is also set. Set networking.resolvconf.enable = false if another
@@ -180,21 +198,13 @@ in
         }
       ];
 
-      users.groups.resolvconf = { };
-
+      environment.systemPackages = [ cfg.package ];
       networking.resolvconf.subscriberFiles = [ "/etc/resolv.conf" ];
 
-      environment.systemPackages = [ cfg.package ];
-
       systemd.services.resolvconf = {
-        description = "resolvconf update";
-
         before = [ "network-pre.target" ];
-        wants = [ "network-pre.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "resolvconf update";
         restartTriggers = [ config.environment.etc."resolvconf.conf".source ];
-        serviceConfig.Type = "oneshot";
-        serviceConfig.RemainAfterExit = true;
 
         script = ''
           ${lib.getExe cfg.package} -u
@@ -205,7 +215,14 @@ in
             -m default:group:resolvconf:rwx \
             /run/resolvconf
         '';
+
+        serviceConfig.RemainAfterExit = true;
+        serviceConfig.Type = "oneshot";
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-pre.target" ];
       };
+
+      users.groups.resolvconf = { };
 
     })
   ];

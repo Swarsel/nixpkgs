@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ cmake ];
 
   meta = {
-    homepage = "https://github.com/EmbeddedSynth/sonivox";
     description = "MIDI synthesizer library";
+    homepage = "https://github.com/EmbeddedSynth/sonivox";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.wegank ];
     platforms = lib.platforms.all;

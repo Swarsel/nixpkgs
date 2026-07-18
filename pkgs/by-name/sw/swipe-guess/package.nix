@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Completion plugin for touchscreen-keyboards on mobile devices";
     homepage = "https://git.sr.ht/~earboxer/swipeGuess/";
     license = lib.licenses.agpl3Only;
-    mainProgram = "swipeGuess";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "swipeGuess";
   };
 })

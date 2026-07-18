@@ -9,7 +9,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "xacrodoc";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adamheins";
@@ -17,6 +16,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-zuyd+lVcrz06yEgapoTjOZP+mxfOsk52rQE33aKV0qI=";
   };
+
+  strictDeps = true;
+
+  nativeCheckInputs = [
+    python3Packages.pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     python3Packages.hatchling
@@ -33,16 +40,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    python3Packages.pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "xacrodoc"
   ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   meta = {
     description = "Compile xacro files to plain URDF or MJCF from Python or the command line (no ROS required)";

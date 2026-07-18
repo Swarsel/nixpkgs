@@ -1,31 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
-  # dependencies
-  torch,
-  triton,
-
   # optional-dependencies
   accelerate,
+  buildPythonPackage,
   datasets,
   fire,
   huggingface-hub,
   pandas,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  # dependencies
+  torch,
   tqdm,
   transformers,
+  triton,
 }:
 
 buildPythonPackage {
   pname = "cut-cross-entropy";
   version = "25.7.2";
-  pyproject = true;
 
   # The `ml-cross-entropy` Pypi comes from a third-party.
   # Apple recommends installing from the repo's main branch directly
@@ -35,6 +31,8 @@ buildPythonPackage {
     rev = "b19a424ed30a05b8261cfa84d83b2601a9454c67"; # no tags
     hash = "sha256-AwUqKiI7XjEOZ7ofjQCOsqvxHyTFD4RZ70odPyxxntc=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -46,8 +44,11 @@ buildPythonPackage {
     triton
   ];
 
+  disabledTests = [
+    "test_vocab_parallel" # Requires CUDA but does not use pytest.skip
+  ];
+
   optional-dependencies = {
-    transformers = [ transformers ];
     all = [
       accelerate
       datasets
@@ -57,17 +58,15 @@ buildPythonPackage {
       tqdm
       transformers
     ];
+
+    transformers = [ transformers ];
     # `deepspeed` is not yet packaged in nixpkgs
     # ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
     #   deepspeed
     # ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  disabledTests = [
-    "test_vocab_parallel" # Requires CUDA but does not use pytest.skip
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "cut_cross_entropy"

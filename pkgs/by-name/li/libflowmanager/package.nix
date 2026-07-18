@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   bison,
   flex,
   libtrace,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     bison
     flex
   ];
-  buildInputs = [ libtrace ];
 
+  buildInputs = [ libtrace ];
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=^([0-9.-]+)$" ]; };
 
   meta = {

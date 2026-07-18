@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  gfortran,
   arpack,
-  spooles,
   blas,
+  gfortran,
   lapack,
+  spooles,
 }:
 
 assert (blas.isILP64 == lapack.isILP64 && blas.isILP64 == arpack.isILP64 && !blas.isILP64);
@@ -19,6 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.dhondt.de/ccx_${finalAttrs.version}.src.tar.bz2";
     hash = "sha256-OpTcx3WjH1cCKXNLNB1rBjAevcdZhj35Aci5vxhUwLw=";
   };
+
+  patches = [
+    ./calculix-ccx.patch
+  ];
+
+  postPatch = ''
+    cd ccx*/src
+  '';
 
   nativeBuildInputs = [ gfortran ];
 
@@ -34,14 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-std=legacy"
   ];
 
-  patches = [
-    ./calculix-ccx.patch
-  ];
-
-  postPatch = ''
-    cd ccx*/src
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -51,11 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.calculix.de";
     description = "Three-dimensional structural finite element program";
-    mainProgram = "ccx";
+    homepage = "http://www.calculix.de";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "ccx";
   };
 })

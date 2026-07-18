@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jsonschema,
   pytestCheckHook,
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "rachiopy";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rfverbruggen";
@@ -21,7 +20,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ requests ];
 
   nativeCheckInputs = [
@@ -29,6 +27,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rachiopy" ];
 
   meta = {

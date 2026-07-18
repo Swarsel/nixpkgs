@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "6.12.0";
   pname = "commons-bcel";
+  version = "6.12.0";
 
   src = fetchurl {
     url = "mirror://apache/commons/bcel/binaries/bcel-${finalAttrs.version}-bin.tar.gz";
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://commons.apache.org/proper/commons-bcel/";
     description = "Gives users a convenient way to analyze, create, and manipulate (binary) Java class files";
+    homepage = "https://commons.apache.org/proper/commons-bcel/";
+    license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
-    license = lib.licenses.asl20;
     platforms = with lib.platforms; unix;
   };
 })

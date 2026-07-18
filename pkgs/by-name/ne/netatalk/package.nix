@@ -5,36 +5,36 @@
   acl,
   autoreconfHook,
   avahi,
+  bison,
   bstring,
+  cracklib,
+  cups,
   db,
+  dbus,
+  dconf,
+  file,
+  flex,
+  glib,
+  iniparser,
   libevent,
   libgcrypt,
   libiconv,
-  openssl,
-  pam,
-  perl,
-  pkg-config,
+  libtirpc,
+  localsearch,
   meson,
   ninja,
-  file,
-  cracklib,
-  cups,
-  libtirpc,
   openldap,
-  glib,
-  dbus,
-  iniparser,
+  openssl,
+  pam,
   pandoc,
+  perl,
+  pkg-config,
   sqlite,
   talloc,
-  xapian,
-  flex,
-  bison,
-  dconf,
-  localsearch,
   tinysparql,
-  xapianSupport ? false,
+  xapian,
   localsearchSupport ? false,
+  xapianSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,6 +45,14 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/netatalk/netatalk/netatalk-${finalAttrs.version}.tar.xz";
     hash = "sha256-Ytd/WkkeaQhsFwb/fZ4BaRLg5ItD0MOnrmDDhLbWJbM=";
   };
+
+  # TODO: drop once upstream makes this path configurable.
+  postPatch = lib.optionalString localsearchSupport ''
+    substituteInPlace meson.build \
+      --replace-fail "install_emptydir('/etc/dconf/db')" "install_emptydir('etc/dconf/db')"
+    substituteInPlace config/dconf/meson.build \
+      --replace-fail "install_dir: '/etc/dconf/profile'" "install_dir: 'etc/dconf/profile'"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -107,14 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   ];
 
-  # TODO: drop once upstream makes this path configurable.
-  postPatch = lib.optionalString localsearchSupport ''
-    substituteInPlace meson.build \
-      --replace-fail "install_emptydir('/etc/dconf/db')" "install_emptydir('etc/dconf/db')"
-    substituteInPlace config/dconf/meson.build \
-      --replace-fail "install_dir: '/etc/dconf/profile'" "install_dir: 'etc/dconf/profile'"
-  '';
-
   # netatalk probes for the LocalSearch schema at configure time.
   preConfigure = lib.optionalString localsearchSupport ''
     export XDG_DATA_DIRS="''${XDG_DATA_DIRS:+$XDG_DATA_DIRS:}${localsearch}/share/gsettings-schemas/localsearch-${localsearch.version}"
@@ -126,10 +126,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Apple Filing Protocol Server";
     homepage = "https://netatalk.io/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       jcumming
       nulleric
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

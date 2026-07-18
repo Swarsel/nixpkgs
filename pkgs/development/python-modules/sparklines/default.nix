@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  termcolor,
   pytestCheckHook,
+  termcolor,
 }:
 
 buildPythonPackage rec {
   pname = "sparklines";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deeplook";
@@ -19,15 +18,6 @@ buildPythonPackage rec {
     sha256 = "sha256-jiMrxZMWN+moap0bDH+uy66gF4XdGst9HJpnboJrQm4=";
   };
 
-  propagatedBuildInputs = [
-    hatchling
-    termcolor
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "sparklines" ];
-
   postPatch = ''
     export TMPDIR=$PWD/tmp
     mkdir -p $TMPDIR
@@ -35,13 +25,24 @@ buildPythonPackage rec {
       --replace-fail "/tmp/" "$TMPDIR/"
   '';
 
+  propagatedBuildInputs = [
+    hatchling
+    termcolor
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "sparklines" ];
+
   meta = {
     description = "This Python package implements Edward Tufte's concept of sparklines, but limited to text only";
-    mainProgram = "sparklines";
     homepage = "https://github.com/deeplook/sparklines";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       rhoriguchi
     ];
-    license = lib.licenses.mit;
+
+    mainProgram = "sparklines";
   };
 }

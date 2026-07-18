@@ -1,16 +1,15 @@
 {
   lib,
-  openssl,
-  rsync,
-  python3,
   fetchFromGitHub,
   nixosTests,
+  openssl,
+  python3,
+  rsync,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "lxd-image-server";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Avature";
@@ -23,6 +22,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ./state.patch
     ./run.patch
   ];
+
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -47,18 +48,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     }"''
   ];
 
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lxd_image_server" ];
-
   passthru.tests.lxd-image-server = nixosTests.lxd-image-server;
 
   meta = {
     description = "Creates and manages a simplestreams lxd image server on top of nginx";
     homepage = "https://github.com/Avature/lxd-image-server";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mkg20001 ];
+    platforms = lib.platforms.unix;
     mainProgram = "lxd-image-server";
   };
 })

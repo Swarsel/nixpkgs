@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Command line utility to remove duplicates from the given input";
-    mainProgram = "huniq";
     homepage = "https://github.com/koraa/huniq";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "huniq";
   };
 })

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoPatchelfHook,
 }:
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "New symbolic model checker for the analysis of synchronous finite-state and infinite-state systems";
     homepage = "https://nusmv.fbk.eu/";
-    maintainers = with lib.maintainers; [ mgttlinger ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ mgttlinger ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

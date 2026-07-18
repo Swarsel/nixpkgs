@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   netaddr,
   requests,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pybbox";
   version = "0.0.5-alpha";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "HydrelioxGitHub";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Tests are incomplete and contain failing tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pybbox" ];
 
   meta = {

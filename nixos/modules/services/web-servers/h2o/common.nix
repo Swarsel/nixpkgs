@@ -1,14 +1,8 @@
 { lib }:
 {
   tlsRecommendationsOption = lib.mkOption {
-    type = lib.types.nullOr (
-      lib.types.enum [
-        "modern"
-        "intermediate"
-      ]
-    );
     default = null;
-    example = "intermediate";
+
     description = ''
       By default, H2O, without prejudice, will use as many TLS versions &
       cipher suites as it & the TLS library (OpenSSL) can support. The user is
@@ -37,5 +31,14 @@
       of H2O (such as `openssl_legacy`). This can be done with
       sevices.settings.h2o.package.
     '';
+
+    example = "intermediate";
+
+    type = lib.types.nullOr (
+      lib.types.enum [
+        "modern"
+        "intermediate"
+      ]
+    );
   };
 }

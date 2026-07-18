@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cffi,
-  fetchFromGitHub,
   hypothesis,
   libsodium,
-  pytestCheckHook,
   pytest-xdist,
+  pytestCheckHook,
   setuptools,
   sphinxHook,
 }:
@@ -14,11 +14,6 @@
 buildPythonPackage rec {
   pname = "pynacl";
   version = "1.6.2";
-  outputs = [
-    "out"
-    "doc"
-  ];
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyca";
@@ -26,6 +21,21 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-EzzJVRDgYQO6T8YIQjad/Eb9O+BXT4IpOpa48fpBPnc=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
+
+  nativeBuildInputs = [ sphinxHook ];
+  buildInputs = [ libsodium ];
+  env.SODIUM_INSTALL = "system";
+
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+    pytest-xdist
+  ];
 
   build-system = [
     cffi
@@ -35,21 +45,8 @@ buildPythonPackage rec {
   # cffi is listed in both build-system.requires and project.dependencies,
   # and is indeed needed in both when cross-compiling
   dependencies = [ cffi ];
-
-  nativeBuildInputs = [ sphinxHook ];
-
-  buildInputs = [ libsodium ];
-
   propagatedNativeBuildInputs = [ cffi ];
-
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-    pytest-xdist
-  ];
-
-  env.SODIUM_INSTALL = "system";
-
+  pyproject = true;
   pythonImportsCheck = [ "nacl" ];
 
   meta = {

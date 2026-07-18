@@ -1,25 +1,25 @@
 {
   lib,
   stdenv,
-  cargo,
-  desktop-file-utils,
   fetchurl,
+  _experimental-update-script-combinators,
+  cargo,
+  common-updater-scripts,
+  desktop-file-utils,
   glib,
   gnome,
+  gst_all_1,
   gtk4,
   itstool,
   libadwaita,
   libglycin,
   libglycin-gtk4,
-  gst_all_1,
   meson,
   ninja,
   pkg-config,
-  rustc,
   rustPlatform,
+  rustc,
   wrapGAppsHook4,
-  _experimental-update-script-combinators,
-  common-updater-scripts,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,12 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchurl {
     url = "mirror://gnome/sources/gnome-robots/${lib.versions.major finalAttrs.version}/gnome-robots-${finalAttrs.version}.tar.xz";
     hash = "sha256-YX5XTBX5Bhi4JJPJk51xdZatLOH/HeCq1cnDl2Yz03k=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    name = "gnome-robots-${finalAttrs.version}";
-    hash = "sha256-T3o4zlRLQzrLexSDI9A98bubehYFwJY1zBVUUNmrc9o=";
   };
 
   nativeBuildInputs = [
@@ -68,6 +62,12 @@ stdenv.mkDerivation (finalAttrs: {
     unset GST_PLUGIN_SYSTEM_PATH_1_0
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-T3o4zlRLQzrLexSDI9A98bubehYFwJY1zBVUUNmrc9o=";
+    name = "gnome-robots-${finalAttrs.version}";
+  };
+
   passthru = {
     updateScript =
       let
@@ -88,6 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
               update-source-version gnome-robots --ignore-same-version --source-key=cargoDeps.vendorStaging > /dev/null
             ''
           ];
+
           # Experimental feature: do not copy!
           supportedFeatures = [ "silent" ];
         };
@@ -99,12 +100,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Avoid the robots and make them crash into each other";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-robots";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-robots/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Avoid the robots and make them crash into each other";
-    mainProgram = "gnome-robots";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-robots";
+    teams = [ lib.teams.gnome ];
   };
 })

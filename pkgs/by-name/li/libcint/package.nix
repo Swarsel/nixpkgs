@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
   blas,
+  cmake,
   # Check Inputs
   python3,
 }:
@@ -23,8 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's/libcint.so/libcint${stdenv.hostPlatform.extensions.sharedLibrary}/g' testsuite/*.py
   '';
 
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
   buildInputs = [ blas ];
+
   cmakeFlags = [
     "-DENABLE_TEST=1"
     "-DQUICK_TEST=1"
@@ -34,23 +36,23 @@ stdenv.mkDerivation (finalAttrs: {
     "-DMIN_EXPCUTOFF:STRING=20"
   ];
 
-  strictDeps = true;
-
   doCheck = true;
   nativeCheckInputs = [ python3.pkgs.numpy ];
 
   meta = {
     description = "General GTO integrals for quantum chemistry";
+
     longDescription = ''
       libcint is an open source library for analytical Gaussian integrals.
       It provides C/Fortran API to evaluate one-electron / two-electron
       integrals for Cartesian / real-spheric / spinor Gaussian type functions.
     '';
+
     homepage = "http://wiki.sunqm.net/libcint";
-    downloadPage = "https://github.com/sunqm/libcint";
     changelog = "https://github.com/sunqm/libcint/blob/master/ChangeLog";
     license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/sunqm/libcint";
   };
 })

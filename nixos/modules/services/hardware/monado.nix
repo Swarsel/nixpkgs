@@ -21,23 +21,25 @@ in
 {
   options.services.monado = {
     enable = mkEnableOption "Monado user service";
-
     package = mkPackageOption pkgs "monado" { };
 
     defaultRuntime = mkOption {
-      type = types.bool;
+      default = false;
+
       description = ''
         Whether to enable Monado as the default OpenXR runtime on the system.
 
         Note that applications can bypass this option by setting an active
         runtime in a writable XDG_CONFIG_DIRS location like `~/.config`.
       '';
-      default = false;
+
       example = true;
+      type = types.bool;
     };
 
     forceDefaultRuntime = mkOption {
-      type = types.bool;
+      default = false;
+
       description = ''
         Whether to ensure that Monado is the active runtime set for the current
         user.
@@ -45,8 +47,9 @@ in
         This replaces the file `XDG_CONFIG_HOME/openxr/1/active_runtime.json`
         when starting the service.
       '';
-      default = false;
+
       example = true;
+      type = types.bool;
     };
 
     highPriority =
@@ -54,12 +57,20 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.etc."xdg/openxr/1/active_runtime.json" = mkIf cfg.defaultRuntime {
+      source = runtimeManifest;
+    };
+
+    environment.pathsToLink = [ "/share/openxr" ];
+    environment.systemPackages = [ cfg.package ];
+    hardware.graphics.extraPackages = [ pkgs.monado-vulkan-layers ];
+
     security.wrappers."monado-service" = mkIf cfg.highPriority {
-      setuid = false;
-      owner = "root";
-      group = "root";
       # cap_sys_nice needed for asynchronous reprojection
       capabilities = "cap_sys_nice+eip";
+      group = "root";
+      owner = "root";
+      setuid = false;
       source = lib.getExe' cfg.package "monado-service";
     };
 
@@ -67,23 +78,20 @@ in
 
     systemd.user = {
       services.monado = {
-        description = "Monado XR runtime service module";
-        requires = [ "monado.socket" ];
         conflicts = [ "monado-dev.service" ];
-
-        unitConfig.ConditionUser = "!root";
+        description = "Monado XR runtime service module";
 
         environment = {
+          IPC_EXIT_ON_DISCONNECT = mkDefault "off";
+          # Improves performance
+          # https://gitlab.com/gabmus/envision/-/blob/2f731053537044b1f72b259bea795473ea0c205a/src/profiles/lighthouse.rs#L19
+          U_PACING_APP_USE_MIN_FRAME_PERIOD = mkDefault "1";
+          # Needed to avoid libbasalt.so: cannot open shared object file: No such file or directory
+          VIT_SYSTEM_LIBRARY_PATH = mkDefault "${pkgs.basalt-monado}/lib/libbasalt.so";
           # Default options
           # https://gitlab.freedesktop.org/monado/monado/-/blob/4548e1738591d0904f8db4df8ede652ece889a76/src/xrt/targets/service/monado.in.service#L12
           XRT_COMPOSITOR_LOG = mkDefault "debug";
           XRT_PRINT_OPTIONS = mkDefault "on";
-          IPC_EXIT_ON_DISCONNECT = mkDefault "off";
-          # Needed to avoid libbasalt.so: cannot open shared object file: No such file or directory
-          VIT_SYSTEM_LIBRARY_PATH = mkDefault "${pkgs.basalt-monado}/lib/libbasalt.so";
-          # Improves performance
-          # https://gitlab.com/gabmus/envision/-/blob/2f731053537044b1f72b259bea795473ea0c205a/src/profiles/lighthouse.rs#L19
-          U_PACING_APP_USE_MIN_FRAME_PERIOD = mkDefault "1";
         };
 
         preStart = mkIf cfg.forceDefaultRuntime ''
@@ -96,45 +104,37 @@ in
           ln --symbolic --force ${runtimeManifest} "$activeRuntimePath"
         '';
 
+        requires = [ "monado.socket" ];
+        restartTriggers = [ cfg.package ];
+
         serviceConfig = {
           ExecStart =
             if cfg.highPriority then
               "${config.security.wrapperDir}/monado-service"
             else
               lib.getExe' cfg.package "monado-service";
+
           Restart = "no";
         };
 
-        restartTriggers = [ cfg.package ];
+        unitConfig.ConditionUser = "!root";
       };
 
       sockets.monado = {
-        description = "Monado XR service module connection socket";
         conflicts = [ "monado-dev.service" ];
-
-        unitConfig.ConditionUser = "!root";
-
-        socketConfig = {
-          ListenStream = "%t/monado_comp_ipc";
-          RemoveOnStop = true;
-
-          # If Monado crashes while starting up, we want to close incoming OpenXR connections
-          FlushPending = true;
-        };
-
+        description = "Monado XR service module connection socket";
         restartTriggers = [ cfg.package ];
 
+        socketConfig = {
+          # If Monado crashes while starting up, we want to close incoming OpenXR connections
+          FlushPending = true;
+          ListenStream = "%t/monado_comp_ipc";
+          RemoveOnStop = true;
+        };
+
+        unitConfig.ConditionUser = "!root";
         wantedBy = [ "sockets.target" ];
       };
-    };
-
-    environment.systemPackages = [ cfg.package ];
-    environment.pathsToLink = [ "/share/openxr" ];
-
-    hardware.graphics.extraPackages = [ pkgs.monado-vulkan-layers ];
-
-    environment.etc."xdg/openxr/1/active_runtime.json" = mkIf cfg.defaultRuntime {
-      source = runtimeManifest;
     };
   };
 

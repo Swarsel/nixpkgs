@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiomysql,
   aiopg,
   aiosqlite,
   asyncmy,
   asyncpg,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
   sqlalchemy,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "databases";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "encode";
@@ -25,20 +24,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ sqlalchemy ];
-
-  optional-dependencies = {
-    postgresql = [ asyncpg ];
-    asyncpg = [ asyncpg ];
-    aiopg = [ aiopg ];
-    mysql = [ aiomysql ];
-    aiomysql = [ aiomysql ];
-    asyncmy = [ asyncmy ];
-    sqlite = [ aiosqlite ];
-    aiosqlite = [ aiosqlite ];
-  };
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTestPaths = [
@@ -49,6 +35,18 @@ buildPythonPackage rec {
     "tests/test_connection_options.py"
   ];
 
+  optional-dependencies = {
+    aiomysql = [ aiomysql ];
+    aiopg = [ aiopg ];
+    aiosqlite = [ aiosqlite ];
+    asyncmy = [ asyncmy ];
+    asyncpg = [ asyncpg ];
+    mysql = [ aiomysql ];
+    postgresql = [ asyncpg ];
+    sqlite = [ aiosqlite ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "databases" ];
 
   meta = {

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "py-melissa-climate";
   version = "3.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kennedyshead";
@@ -20,23 +19,24 @@ buildPythonPackage rec {
     hash = "sha256-vKnIFrviCJLMqYUdKKJtqOmD1ZtgtMBMLApG+YiqZdY=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     aiohttp
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "melissa" ];
 
   meta = {
-    changelog = "https://github.com/kennedyshead/py-melissa-climate/releases/tag/${src.tag}";
     description = "API wrapper for Melissa Climate";
     homepage = "https://github.com/kennedyshead/py-melissa-climate";
+    changelog = "https://github.com/kennedyshead/py-melissa-climate/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.jamiemagee ];
   };

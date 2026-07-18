@@ -1,17 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
+  nix-update-script,
+  openssl,
   pkg-config,
   protobuf,
-  openssl,
+  rustPlatform,
   sqlite,
-  zstd,
-  cmake,
-
-  nix-update-script,
   versionCheckHook,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,13 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   patches = [ ];
 
-  cargoBuildFlags = [
-    "--bin"
-    "sqld"
-  ];
-
-  cargoHash = "sha256-n2STJfX1sEeSbr3v9xst3S7UgLrUIdqfokqlHLWCVzY=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -47,18 +39,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
-  env = {
-    ZSTD_SYS_USE_PKG_CONFIG = true;
+  cargoHash = "sha256-n2STJfX1sEeSbr3v9xst3S7UgLrUIdqfokqlHLWCVzY=";
 
+  env = {
     # error[E0425]: cannot find function `consume_budget` in module `tokio::task`
     RUSTFLAGS = "--cfg tokio_unstable";
+    ZSTD_SYS_USE_PKG_CONFIG = true;
   };
 
   # requires a complex setup with podman for the end-to-end tests
   doCheck = false;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoBuildFlags = [
+    "--bin"
+    "sqld"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libxext,
   libx11,
-  xorgproto,
+  libxext,
   mesa,
   meson,
   ninja,
+  pkg-config,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,18 +19,20 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://gitlab.freedesktop.org/vdpau/libvdpau/-/archive/${finalAttrs.version}/libvdpau-${finalAttrs.version}.tar.bz2";
     sha256 = "sha256-pdUKQrjCiP68BxUatkOsjeBqGERpZcckH4m06BCCGRM=";
   };
-  patches = [ ./tracing.patch ];
 
   outputs = [
     "out"
     "dev"
   ];
 
+  patches = [ ./tracing.patch ];
+
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
   ];
+
   buildInputs = [
     xorgproto
     libxext
@@ -53,10 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.freedesktop.org/wiki/Software/VDPAU/";
     description = "Library to use the Video Decode and Presentation API for Unix (VDPAU)";
+    homepage = "https://www.freedesktop.org/wiki/Software/VDPAU/";
     license = lib.licenses.mit; # expat version
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.vcunat ];
+    platforms = lib.platforms.unix;
   };
 })

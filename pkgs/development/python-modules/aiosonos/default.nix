@@ -1,19 +1,18 @@
 {
   lib,
-  aiohttp,
-  orjson,
-  faust-cchardet,
+  fetchFromGitHub,
   aiodns,
+  aiohttp,
   brotli,
   buildPythonPackage,
-  fetchFromGitHub,
+  faust-cchardet,
+  orjson,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiosonos";
   version = "0.1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "music-assistant";
@@ -27,6 +26,7 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
+  doCheck = false; # no tests
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,7 +37,7 @@ buildPythonPackage (finalAttrs: {
     brotli
   ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   pythonImportsCheck = [
     "aiosonos"

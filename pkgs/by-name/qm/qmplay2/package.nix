@@ -4,35 +4,35 @@
   alsa-lib,
   callPackage,
   cmake,
+  deno,
+  expat,
   ffmpeg,
   fribidi,
   game-music-emu,
-  libxdmcp,
-  libxv,
   libass,
   libcddb,
   libcdio,
-  libpulseaudio,
-  libsidplayfp,
-  libva,
-  libxcb,
-  ninja,
-  pkg-config,
-  shaderc,
-  qt5,
-  qt6,
-  taglib,
-  vulkan-headers,
-  vulkan-tools,
-  deno,
-  expat,
   libmpg123,
   libogg,
   libopenmpt,
+  libpulseaudio,
+  libsidplayfp,
   libsysprof-capture,
+  libva,
   libvorbis,
+  libxcb,
+  libxdmcp,
+  libxv,
+  ninja,
   pipewire,
+  pkg-config,
+  qt5,
+  qt6,
   rubberband,
+  shaderc,
+  taglib,
+  vulkan-headers,
+  vulkan-tools,
   # Configurable options
   qtVersion ? "6", # Can be 5 or 6
 }:
@@ -48,8 +48,8 @@ assert lib.elem qtVersion [
   "6"
 ];
 stdenv.mkDerivation (finalAttrs: {
-  pname = sources.qmplay2.pname + "-qt" + qtVersion;
   inherit (sources.qmplay2) version src;
+  pname = sources.qmplay2.pname + "-qt" + qtVersion;
 
   postPatch = ''
     pushd src
@@ -57,6 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
     chmod --recursive 744 qmvk
     popd
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -109,8 +111,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_WITH_QT6" false)
   ];
 
-  strictDeps = true;
-
   # Because we think it is better to use only lowercase letters!
   # But sometimes we come across case-insensitive filesystems...
   postInstall = ''
@@ -125,20 +125,24 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/zaps166/QMPlay2/";
     description = "Qt-based Multimedia player";
+
     longDescription = ''
       QMPlay2 is a video and audio player. It can play all formats supported by
       FFmpeg and libmodplug (including J2B and SFX). It also supports Audio CD,
       raw files, Rayman 2 music, and chiptunes. It also contains YouTube and
       MyFreeMP3 browser.
     '';
+
+    homepage = "https://github.com/zaps166/QMPlay2/";
     license = lib.licenses.lgpl3Plus;
-    mainProgram = "qmplay2";
+
     maintainers = with lib.maintainers; [
       kashw2
       ProxyVT
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "qmplay2";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   awesomeversion,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiomealie";
   version = "1.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joostlek";
@@ -26,6 +25,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-OROL48v5SniYtzuCYZWt9mSXcFqMTO0JB2K+Ym3Ksz4=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [ poetry-core ];
 
@@ -37,14 +44,7 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiomealie" ];
 
   meta = {

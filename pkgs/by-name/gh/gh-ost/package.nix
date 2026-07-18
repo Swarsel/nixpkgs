@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
 }:
 
@@ -18,12 +18,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = null;
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.AppVersion=${finalAttrs.version}"
-  ];
-
   checkFlags =
     let
       # Skip tests that require docker daemon
@@ -34,6 +28,12 @@ buildGoModule (finalAttrs: {
       ];
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.AppVersion=${finalAttrs.version}"
+  ];
 
   passthru.tests.version = testers.testVersion {
     package = finalAttrs.finalPackage;

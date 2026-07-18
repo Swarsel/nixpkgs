@@ -12,15 +12,14 @@ let
   useHostResolvConf = config.networking.resolvconf.enable && config.networking.useHostResolvConf;
 
   bootStage2 = pkgs.replaceVarsWith {
-    src = ./stage-2-init.sh;
     isExecutable = true;
+
     replacements = {
-      shell = "${pkgs.bash}/bin/bash";
-      systemConfig = null; # replaced in ../activation/top-level.nix
       inherit (config.boot) systemdExecutable stage2Greeting;
-      nixStoreMountOpts = lib.concatStringsSep " " (map lib.escapeShellArg config.boot.nixStoreMountOpts);
       inherit useHostResolvConf;
       inherit (config.system.build) earlyMountScript;
+      nixStoreMountOpts = lib.concatStringsSep " " (map lib.escapeShellArg config.boot.nixStoreMountOpts);
+
       path = lib.makeBinPath (
         [
           pkgs.coreutils
@@ -28,10 +27,16 @@ let
         ]
         ++ lib.optional useHostResolvConf pkgs.openresolv
       );
+
       postBootCommands = pkgs.writeText "local-cmds" ''
         ${config.boot.postBootCommands}
       '';
+
+      shell = "${pkgs.bash}/bin/bash";
+      systemConfig = null; # replaced in ../activation/top-level.nix
     };
+
+    src = ./stage-2-init.sh;
   };
 
 in
@@ -51,22 +56,24 @@ in
 
     boot = {
 
-      postBootCommands = mkOption {
-        default = "";
-        example = "rm -f /var/log/messages";
-        type = types.lines;
+      extraSystemdUnitPaths = mkOption {
+        default = [ ];
+
         description = ''
-          Shell commands to be executed just before systemd is started.
+          Additional paths that get appended to the SYSTEMD_UNIT_PATH environment variable
+          that can contain mutable unit files.
         '';
+
+        type = types.listOf types.str;
       };
 
       nixStoreMountOpts = mkOption {
-        type = types.listOf types.nonEmptyStr;
         default = [
           "ro"
           "nodev"
           "nosuid"
         ];
+
         description = ''
           Defines the mount options used on a bind mount for the {file}`/nix/store`.
           This affects the whole system except the nix store daemon, which will undo the bind mount.
@@ -75,32 +82,40 @@ in
           The store daemon should already not put device mappers or suid binaries in the store,
           meaning `nosuid` and `nodev` enforce what should already be the case.
         '';
+
+        type = types.listOf types.nonEmptyStr;
+      };
+
+      postBootCommands = mkOption {
+        default = "";
+
+        description = ''
+          Shell commands to be executed just before systemd is started.
+        '';
+
+        example = "rm -f /var/log/messages";
+        type = types.lines;
+      };
+
+      stage2Greeting = mkOption {
+        default = "<<< ${config.system.nixos.distroName} Stage 2 >>>";
+        defaultText = literalExpression ''"<<< ''${config.system.nixos.distroName} Stage 2 >>>"'';
+
+        description = ''
+          The greeting message displayed during NixOS stage 2 boot.
+        '';
+
+        type = types.str;
       };
 
       systemdExecutable = mkOption {
         default = "/run/current-system/systemd/lib/systemd/systemd";
-        type = types.str;
+
         description = ''
           The program to execute to start systemd.
         '';
-      };
 
-      stage2Greeting = mkOption {
         type = types.str;
-        default = "<<< ${config.system.nixos.distroName} Stage 2 >>>";
-        defaultText = literalExpression ''"<<< ''${config.system.nixos.distroName} Stage 2 >>>"'';
-        description = ''
-          The greeting message displayed during NixOS stage 2 boot.
-        '';
-      };
-
-      extraSystemdUnitPaths = mkOption {
-        default = [ ];
-        type = types.listOf types.str;
-        description = ''
-          Additional paths that get appended to the SYSTEMD_UNIT_PATH environment variable
-          that can contain mutable unit files.
-        '';
       };
     };
 

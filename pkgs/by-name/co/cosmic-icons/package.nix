@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  just,
-  pop-icon-theme,
   hicolor-icon-theme,
+  just,
   nix-update-script,
+  pop-icon-theme,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "cosmic-icons";
@@ -19,9 +19,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-QUTAYIQ6qAhjZK/9BZjJzTViECLUwO/MyaOqiRb1Ans=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
-
   nativeBuildInputs = [ just ];
 
   propagatedBuildInputs = [
@@ -29,13 +27,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
+  __structuredAttrs = true;
+  dontDropIconThemeCache = true;
+
   justFlags = [
     "--set"
     "prefix"
     (placeholder "out")
   ];
-
-  dontDropIconThemeCache = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -47,9 +46,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "System76 Cosmic icon theme for Linux";
     homepage = "https://github.com/pop-os/cosmic-icons";
+
     license = with lib.licenses; [
       cc-by-sa-40
     ];
+
     teams = [ lib.teams.cosmic ];
   };
 })

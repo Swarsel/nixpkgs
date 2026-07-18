@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchzip,
-  makeWrapper,
-  unzip,
   jre,
   libGL,
   libglvnd,
-  libx11,
-  libxext,
-  libxcursor,
-  libxrandr,
-  libxi,
-  libxxf86vm,
-  libxinerama,
   libpulseaudio,
+  libx11,
+  libxcursor,
+  libxext,
+  libxi,
+  libxinerama,
+  libxrandr,
+  libxxf86vm,
+  makeWrapper,
   udev,
-  zenity,
-  yad,
+  unzip,
   which,
+  yad,
+  zenity,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mixing-station";
@@ -26,17 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://mixingstation.app/backend/api/web/download/archive/mixing-station-pc/update/${finalAttrs.version}";
-    name = "mixing-station-${finalAttrs.version}.zip";
-    extension = "zip";
     hash = "sha256-WpjBqiYVuqIuDiigX2lg81I02qad/vZudqdWUe2h5Sw=";
+    extension = "zip";
+    name = "mixing-station-${finalAttrs.version}.zip";
     stripRoot = false;
   };
 
   nativeBuildInputs = [
     makeWrapper
   ];
-
-  dontBuild = true;
 
   installPhase =
     let
@@ -72,16 +70,20 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  dontBuild = true;
+
   meta = {
     description = "Remote control app for digital audio mixers (XAir, X32, dLive, etc.)";
     homepage = "https://mixingstation.app";
+    license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    maintainers = with lib.maintainers; [ korny666 ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "mixing-station";
-    license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [ korny666 ];
   };
 })

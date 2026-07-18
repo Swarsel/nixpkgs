@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aioconsole,
   bleak,
   buildPythonPackage,
   dbus-next,
-  fetchFromGitHub,
   numpy,
   pytest-asyncio,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "bless";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kevincar";
@@ -27,13 +26,6 @@ buildPythonPackage rec {
     sed -i -e '22,25d' setup.py
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    bleak
-    dbus-next
-  ];
-
   nativeCheckInputs = [
     aioconsole
     numpy
@@ -41,6 +33,14 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    bleak
+    dbus-next
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "bless" ];
 
   meta = {

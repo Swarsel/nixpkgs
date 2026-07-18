@@ -12,11 +12,12 @@ let
   gradle = gradle_8;
 
   jre = jre_minimal.override {
+    jdk = jre_headless;
+
     modules = [
       "java.base"
       "java.desktop"
     ];
-    jdk = jre_headless;
   };
 in
 stdenv.mkDerivation rec {
@@ -32,17 +33,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ gradle ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  gradleFlags = [ "-Dfile.encoding=utf-8" ];
-
-  gradleBuildTask = "shadowJar";
-
   installPhase = ''
     mkdir -p $out/{bin,share/pdftk,share/man/man1}
     cp build/libs/pdftk-all.jar $out/share/pdftk
@@ -56,17 +46,29 @@ stdenv.mkDerivation rec {
     cp ${src}/pdftk.1 $out/share/man/man1
   '';
 
+  __darwinAllowLocalNetworking = true;
+  gradleBuildTask = "shadowJar";
+  gradleFlags = [ "-Dfile.encoding=utf-8" ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
+
   meta = {
     description = "Command-line tool for working with PDFs";
     homepage = "https://gitlab.com/pdftk-java/pdftk";
+    license = lib.licenses.gpl2Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
-    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "pdftk";
   };

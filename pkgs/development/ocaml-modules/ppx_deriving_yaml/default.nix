@@ -1,12 +1,12 @@
 {
   lib,
-  buildDunePackage,
-  ocaml,
   fetchurl,
-  ppxlib,
   alcotest,
+  buildDunePackage,
   mdx,
+  ocaml,
   ppx_deriving,
+  ppxlib,
   yaml,
 }:
 
@@ -25,8 +25,19 @@ let
 in
 
 buildDunePackage (finalAttrs: {
-  pname = "ppx_deriving_yaml";
   inherit (param) version;
+  pname = "ppx_deriving_yaml";
+
+  src = fetchurl {
+    inherit (param) hash;
+    url = "https://github.com/patricoferris/ppx_deriving_yaml/releases/download/v${finalAttrs.version}/ppx_deriving_yaml-${finalAttrs.version}.tbz";
+  };
+
+  propagatedBuildInputs = [
+    ppxlib
+    ppx_deriving
+    yaml
+  ];
 
   env =
     # Fix build with gcc15
@@ -36,23 +47,13 @@ buildDunePackage (finalAttrs: {
         NIX_CFLAGS_COMPILE = "-std=gnu11";
       };
 
-  src = fetchurl {
-    url = "https://github.com/patricoferris/ppx_deriving_yaml/releases/download/v${finalAttrs.version}/ppx_deriving_yaml-${finalAttrs.version}.tbz";
-    inherit (param) hash;
-  };
-
-  propagatedBuildInputs = [
-    ppxlib
-    ppx_deriving
-    yaml
-  ];
-
   doCheck = true;
+  nativeCheckInputs = [ mdx.bin ];
+
   checkInputs = [
     alcotest
     mdx
   ];
-  nativeCheckInputs = [ mdx.bin ];
 
   meta = {
     description = "YAML codec generator for OCaml";

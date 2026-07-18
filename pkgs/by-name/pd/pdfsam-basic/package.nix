@@ -1,20 +1,19 @@
 {
   lib,
-  maven,
-  makeDesktopItem,
   fetchFromGitHub,
-  temurin-jre-bin-21,
-  temurin-bin-21,
-  glib,
-  libxxf86vm,
-  libxtst,
-  gtk3,
-  libGL,
-
   # native
   copyDesktopItems,
-  wrapGAppsHook3,
   gettext,
+  glib,
+  gtk3,
+  libGL,
+  libxtst,
+  libxxf86vm,
+  makeDesktopItem,
+  maven,
+  temurin-bin-21,
+  temurin-jre-bin-21,
+  wrapGAppsHook3,
 }:
 
 let
@@ -33,14 +32,6 @@ mavenOurJdk.buildMavenPackage rec {
     hash = "sha256-9IzYnWYE0OD1b4xybl3NdaBvVSw6C4+1ORUnrotqSuc=";
   };
 
-  mvnParameters = "-Drelease -Dmaven.test.skip";
-  mvnHash = "sha256-Y/wz/XuzDpT7qnk/pRBkv6PeI0GmqKXh54gqb7cWHHw=";
-
-  buildInputs = [
-    glib
-    libxxf86vm
-  ];
-
   nativeBuildInputs = [
     # Used as the main java implementation. Also the build relies upon jlink
     # which is included in this package.
@@ -48,6 +39,11 @@ mavenOurJdk.buildMavenPackage rec {
     gettext
     wrapGAppsHook3
     copyDesktopItems
+  ];
+
+  buildInputs = [
+    glib
+    libxxf86vm
   ];
 
   installPhase = ''
@@ -90,30 +86,36 @@ mavenOurJdk.buildMavenPackage rec {
   # https://github.com/torakiki/pdfsam/blob/master/pdfsam-basic/src/deb/pdfsam-basic.desktop
   desktopItems = [
     (makeDesktopItem {
-      name = "PDFsam Basic";
-      exec = "pdfsam-basic";
-      icon = "pdfsam-basic";
+      categories = [ "Office" ];
       comment = meta.description;
       desktopName = "PDFsam Basic";
+      exec = "pdfsam-basic";
       genericName = "PDF Split and Merge";
+      icon = "pdfsam-basic";
       mimeTypes = [ "application/pdf" ];
-      categories = [ "Office" ];
+      name = "PDFsam Basic";
     })
   ];
 
+  mvnHash = "sha256-Y/wz/XuzDpT7qnk/pRBkv6PeI0GmqKXh54gqb7cWHHw=";
+  mvnParameters = "-Drelease -Dmaven.test.skip";
+
   meta = {
-    homepage = "https://github.com/torakiki/pdfsam";
     description = "Multi-platform software designed to extract pages, split, merge, mix and rotate PDF files";
-    mainProgram = "pdfsam-basic";
+    homepage = "https://github.com/torakiki/pdfsam";
+    license = lib.licenses.agpl3Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.agpl3Plus;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       doronbehar
       _1000101
     ];
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "pdfsam-basic";
   };
 }

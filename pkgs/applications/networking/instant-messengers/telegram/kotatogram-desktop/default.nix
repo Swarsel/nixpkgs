@@ -9,8 +9,9 @@ let
   version = "1.4.9";
 in
 telegram-desktop.override {
-  pname = "kotatogram-desktop";
   inherit withWebkit;
+  pname = "kotatogram-desktop";
+
   unwrapped = telegram-desktop.unwrapped.overrideAttrs (old: {
     pname = "kotatogram-desktop-unwrapped";
     version = "${version}-unstable-2026-07-03";
@@ -25,16 +26,18 @@ telegram-desktop.override {
 
     meta = {
       description = "Kotatogram – experimental Telegram Desktop fork";
+
       longDescription = ''
         Unofficial desktop client for the Telegram messenger, based on Telegram Desktop.
 
         It contains some useful (or purely cosmetic) features, but they could be unstable. A detailed list is available here: https://kotatogram.github.io/changes
       '';
-      license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.all;
+
       homepage = "https://kotatogram.github.io";
       changelog = "https://github.com/kotatogram/kotatogram-desktop/releases/tag/k${version}";
+      license = lib.licenses.gpl3Only;
       maintainers = with lib.maintainers; [ ilya-fedin ];
+      platforms = lib.platforms.all;
       mainProgram = "Kotatogram";
     };
   });

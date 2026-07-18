@@ -1,15 +1,15 @@
 {
-  stdenvNoCC,
   lib,
-  protobuf,
-  rustPlatform,
   fetchFromGitHub,
-  pkgsBuildHost,
+  nix-update-script,
   openssl,
   pkg-config,
-  writableTmpDirAsHomeHook,
+  pkgsBuildHost,
+  protobuf,
+  rustPlatform,
+  stdenvNoCC,
   versionCheckHook,
-  nix-update-script,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,41 +27,40 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rm .cargo/config.toml
   '';
 
-  cargoHash = "sha256-gmuQxqDsO4mqLYsv9ahVAfxRu7IJAG47jFNRksC/kfI=";
-
   nativeBuildInputs = [
     protobuf
     pkg-config
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-gmuQxqDsO4mqLYsv9ahVAfxRu7IJAG47jFNRksC/kfI=";
 
   env = {
     NIX_LDFLAGS = lib.optionalString (
       with stdenvNoCC.hostPlatform; (isDarwin && isx86_64)
     ) "-framework AppKit";
+
     OPENSSL_NO_VENDOR = true;
     PROTOC = "${lib.getExe pkgsBuildHost.protobuf}";
   };
 
-  useNextest = true;
-
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  useNextest = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Signal Messenger client for terminal";
-    mainProgram = "gurk";
     homepage = "https://github.com/boxdot/gurk-rs";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       devhell
       mattkang
       nicknb
     ];
+
+    mainProgram = "gurk";
   };
 })

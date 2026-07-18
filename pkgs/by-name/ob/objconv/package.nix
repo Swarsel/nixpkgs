@@ -15,20 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-DFyo+8fvHEr+PMfMkBhxGliFr6y+i868SAKNHskMzHw=";
   };
 
-  nativeBuildInputs = [ unzip ];
-
   outputs = [
     "out"
     "doc"
   ];
 
-  unpackPhase = ''
-    mkdir -p "$name"
-    cd "$name"
-    unpackFile "$src"
-    unpackFile source.zip
-  '';
-
+  nativeBuildInputs = [ unzip ];
   buildPhase = "c++ -o objconv -O2 *.cpp";
 
   installPhase = ''
@@ -37,12 +29,19 @@ stdenv.mkDerivation (finalAttrs: {
     mv objconv-instructions.pdf $out/doc/objconv
   '';
 
+  unpackPhase = ''
+    mkdir -p "$name"
+    cd "$name"
+    unpackFile "$src"
+    unpackFile source.zip
+  '';
+
   meta = {
     description = "Object and executable file converter, modifier and disassembler";
-    mainProgram = "objconv";
     homepage = "https://www.agner.org/optimize/";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "objconv";
   };
 })

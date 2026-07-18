@@ -14,11 +14,13 @@ clangStdenv.mkDerivation rec {
   };
 
   patches = [ ./sat_solver.patch ];
+
   postPatch = ''
     substituteInPlace zchaff_solver.cpp --replace "// #define VERIFY_ON" "#define VERIFY_ON"
   '';
 
   makeFlags = [ "CC=${clangStdenv.cc.targetPrefix}c++" ];
+
   installPhase = ''
     runHook preInstall
     install -Dm755 -t $out/bin zchaff
@@ -26,11 +28,11 @@ clangStdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.princeton.edu/~chaff/zchaff.html";
     description = "Accelerated SAT Solver from Princeton";
-    mainProgram = "zchaff";
+    homepage = "https://www.princeton.edu/~chaff/zchaff.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.unix;
+    mainProgram = "zchaff";
   };
 }

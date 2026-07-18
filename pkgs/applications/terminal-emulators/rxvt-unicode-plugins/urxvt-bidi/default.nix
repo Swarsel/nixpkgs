@@ -1,9 +1,9 @@
 {
   lib,
   fetchurl,
+  fribidi,
   perlPackages,
   pkg-config,
-  fribidi,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -19,6 +19,7 @@ perlPackages.buildPerlPackage rec {
     pkg-config
     perlPackages.ExtUtilsPkgConfig
   ];
+
   buildInputs = [ fribidi ];
 
   postInstall = ''
@@ -30,10 +31,10 @@ perlPackages.buildPerlPackage rec {
   meta = {
     description = "Text::Bidi Perl package using fribidi, providing a urxvt plugin";
     homepage = "https://github.com/mkamensky/Text-Bidi";
-    maintainers = with lib.maintainers; [ doronbehar ];
-    platforms = with lib.platforms; unix;
     # Quote from the README:
     # same terms as the Perl 5 programming language system itself
     license = perlPackages.perl.meta.license;
+    maintainers = with lib.maintainers; [ doronbehar ];
+    platforms = with lib.platforms; unix;
   };
 }

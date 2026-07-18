@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "influxdb";
   version = "5.3.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -41,6 +40,14 @@ buildPythonPackage rec {
     done
   '';
 
+  nativeCheckInputs = [
+    mock
+    pandas
+    pytestCheckHook
+    requests-mock
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -49,15 +56,6 @@ buildPythonPackage rec {
     pytz
     requests
     six
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    mock
-    pandas
-    pytestCheckHook
-    requests-mock
   ];
 
   disabledTests = [
@@ -96,6 +94,7 @@ buildPythonPackage rec {
     "test_write_points_from_dataframe_with_time_precision"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "influxdb" ];
 
   meta = {

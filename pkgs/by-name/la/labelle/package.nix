@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  copyDesktopItems,
+  makeDesktopItem,
   python3Packages,
   qt6,
-  makeDesktopItem,
-  copyDesktopItems,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "labelle";
   version = "1.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "labelle-org";
@@ -23,8 +22,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     substituteInPlace pyproject.toml --replace-fail "Pillow>=8.1.2,<11" "Pillow>=8.1.2"
   '';
 
-  buildInputs = [ qt6.qtwayland ];
-
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
     python3Packages.hatchling
@@ -32,6 +29,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.hatch-vcs
     copyDesktopItems
   ];
+
+  buildInputs = [ qt6.qtwayland ];
 
   propagatedBuildInputs = with python3Packages; [
     darkdetect
@@ -47,16 +46,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "labelle GUI";
-      exec = "labelle-gui";
       desktopName = "labelle GUI";
+      exec = "labelle-gui";
+      name = "labelle GUI";
     })
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/labelle-org/labelle/releases/tag/${finalAttrs.src.tag}";
     description = "Print labels with LabelManager PnP from Dymo";
     homepage = "https://github.com/labelle-org/labelle";
+    changelog = "https://github.com/labelle-org/labelle/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fabianrig ];
     mainProgram = "labelle";

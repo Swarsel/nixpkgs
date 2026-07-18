@@ -14,8 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1acnl7khz8aasg230nbsx9dyf8716scgb5l3679cb2bdzxisl64l";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/bin $out/lib
 
@@ -29,13 +27,15 @@ stdenv.mkDerivation (finalAttrs: {
     chmod a+x "$out/bin/ditaa"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Convert ascii art diagrams into proper bitmap graphics";
     homepage = "https://github.com/stathissideris/ditaa";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.unix;
     mainProgram = "ditaa";
   };
 })

@@ -25,7 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/nicolas-van/multirun";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nickcao ];
-    mainProgram = "multirun";
     platforms = lib.platforms.all;
+    mainProgram = "multirun";
   };
 })

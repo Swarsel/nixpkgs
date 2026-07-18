@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   einops,
-  fetchFromGitHub,
   hyper-connections,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "local-attention";
   version = "1.11.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lucidrains";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
       --replace-fail "'pytest-runner'," ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,8 +34,7 @@ buildPythonPackage rec {
     torch
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "local_attention" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
-  buildLakePackage,
   fetchFromGitHub,
   Cli,
+  buildLakePackage,
 }:
 
 buildLakePackage {
@@ -17,8 +17,8 @@ buildLakePackage {
     hash = "sha256-V3bGQxTNs2G4MqaVxRb6WED1a7VaHfEo1HgBNqPipz8=";
   };
 
-  leanPackageName = "importGraph";
   leanDeps = [ Cli ];
+  leanPackageName = "importGraph";
 
   meta = {
     description = "Tools to analyse and visualise Lean 4 import structures";

@@ -14,16 +14,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "itkwasm";
   version = "1.0b195";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-1OQ0SieMEcrWiIgWT1dQxXdk9lCbWD+1xJ0jfIr0isU=";
   };
 
-  build-system = [ hatchling ];
-
   nativeBuildInputs = [ writableTmpDirAsHomeHook ];
+  # No test available
+  doCheck = false;
+  build-system = [ hatchling ];
 
   dependencies = [
     importlib-metadata
@@ -33,9 +33,7 @@ buildPythonPackage (finalAttrs: {
     wasmtime
   ];
 
-  # No test available
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "itkwasm" ];
 
   meta = {

@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  libx11,
   cairo,
   cpio,
-  lv2,
   libsndfile,
+  libx11,
+  lv2,
   pkg-config,
 }:
 
@@ -18,11 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "sjaehn";
     repo = "BVibratr";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     sha256 = "sha256-V3cy+JlpBjCYr4eyrr9fTuaA7bmi8A2SP5KA4o1qQDU=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     cairo
@@ -34,10 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/sjaehn/BVibratr";
     description = "Flavoured vibrato as an instrument LV2 plugin";
+    homepage = "https://github.com/sjaehn/BVibratr";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Plus;
   };
 })

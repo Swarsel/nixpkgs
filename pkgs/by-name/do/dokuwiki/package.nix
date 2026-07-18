@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeText,
-  nixosTests,
   dokuwiki,
+  nixosTests,
+  writeText,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,6 +17,30 @@ stdenv.mkDerivation rec {
     rev = "release-${version}";
     sha256 = "sha256-J7B+mvvGtAPK+WjlkHyadG61vli+zZfozfEmEynYQaE=";
   };
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/share/dokuwiki
+    cp -r * $out/share/dokuwiki
+    cp ${preload} $out/share/dokuwiki/inc/preload.php
+    cp ${phpLocalConfig} $out/share/dokuwiki/conf/local.php
+    cp ${phpPluginsLocalConfig} $out/share/dokuwiki/conf/plugins.local.php
+
+    runHook postInstall
+  '';
+
+  phpLocalConfig = writeText "local.php" ''
+    <?php
+      return require(getenv('DOKUWIKI_LOCAL_CONFIG'));
+    ?>
+  '';
+
+  phpPluginsLocalConfig = writeText "plugins.local.php" ''
+    <?php
+      return require(getenv('DOKUWIKI_PLUGINS_LOCAL_CONFIG'));
+    ?>
+  '';
 
   preload = writeText "preload.php" ''
     <?php
@@ -32,41 +56,17 @@ stdenv.mkDerivation rec {
       );
   '';
 
-  phpLocalConfig = writeText "local.php" ''
-    <?php
-      return require(getenv('DOKUWIKI_LOCAL_CONFIG'));
-    ?>
-  '';
-
-  phpPluginsLocalConfig = writeText "plugins.local.php" ''
-    <?php
-      return require(getenv('DOKUWIKI_PLUGINS_LOCAL_CONFIG'));
-    ?>
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/share/dokuwiki
-    cp -r * $out/share/dokuwiki
-    cp ${preload} $out/share/dokuwiki/inc/preload.php
-    cp ${phpLocalConfig} $out/share/dokuwiki/conf/local.php
-    cp ${phpPluginsLocalConfig} $out/share/dokuwiki/conf/plugins.local.php
-
-    runHook postInstall
-  '';
-
   passthru = {
     combine =
       {
-        basePackage ? dokuwiki,
-        plugins ? [ ],
-        templates ? [ ],
-        localConfig ? null,
-        pluginsConfig ? null,
         aclConfig ? null,
+        basePackage ? dokuwiki,
         extraConfigs ? { },
+        localConfig ? null,
+        plugins ? [ ],
+        pluginsConfig ? null,
         pname ? (p: "${p.pname}-combined"),
+        templates ? [ ],
       }:
       let
         isNotEmpty =
@@ -100,6 +100,7 @@ stdenv.mkDerivation rec {
           ${isNotEmpty aclConfig "ln -sf ${aclConfig} $out/share/dokuwiki/acl.auth.php"}
         '';
       });
+
     tests = {
       inherit (nixosTests) dokuwiki;
     };
@@ -107,12 +108,14 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Simple to use and highly versatile Open Source wiki software that doesn't require a database";
-    license = lib.licenses.gpl2Only;
     homepage = "https://www.dokuwiki.org";
-    platforms = lib.platforms.all;
+    license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       _1000101
       e1mo
     ];
+
+    platforms = lib.platforms.all;
   };
 }

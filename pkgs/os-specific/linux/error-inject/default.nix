@@ -1,13 +1,46 @@
 {
   lib,
   stdenv,
-  fetchzip,
   bison,
+  fetchzip,
   flex,
   rasdaemon,
 }:
 
 {
+  aer-inject = stdenv.mkDerivation rec {
+    pname = "aer-inject";
+    version = "9bd5e2c7886fca72f139cd8402488a2235957d41";
+
+    src = fetchzip {
+      url = "https://git.kernel.org/pub/scm/linux/kernel/git/gong.chen/aer-inject.git/snapshot/aer-inject-${version}.tar.gz";
+      sha256 = "0bh6mzpk2mr4xidkammmkfk21b4dbq793qjg25ryyxd1qv0c6cg4";
+    };
+
+    nativeBuildInputs = [
+      bison
+      flex
+    ];
+
+    # how is this necessary?
+    makeFlags = [ "DESTDIR=${placeholder "out"}" ];
+
+    postInstall = ''
+      mkdir $out/bin
+      mv $out/usr/local/aer-inject $out/bin/aer-inject
+
+      mkdir -p $out/examples
+      cp examples/* $out/examples/.
+    '';
+
+    meta = {
+      description = "PCIE AER error injection tool";
+      license = lib.licenses.gpl2Only;
+      maintainers = [ ];
+      platforms = lib.platforms.linux;
+    };
+  };
+
   edac-inject = rasdaemon.inject;
 
   mce-inject = stdenv.mkDerivation rec {
@@ -37,41 +70,8 @@
     meta = {
       description = "MCE error injection tool";
       license = lib.licenses.gpl2Only;
-      platforms = lib.platforms.linux;
       maintainers = [ ];
-    };
-  };
-
-  aer-inject = stdenv.mkDerivation rec {
-    pname = "aer-inject";
-    version = "9bd5e2c7886fca72f139cd8402488a2235957d41";
-
-    src = fetchzip {
-      url = "https://git.kernel.org/pub/scm/linux/kernel/git/gong.chen/aer-inject.git/snapshot/aer-inject-${version}.tar.gz";
-      sha256 = "0bh6mzpk2mr4xidkammmkfk21b4dbq793qjg25ryyxd1qv0c6cg4";
-    };
-
-    nativeBuildInputs = [
-      bison
-      flex
-    ];
-
-    # how is this necessary?
-    makeFlags = [ "DESTDIR=${placeholder "out"}" ];
-
-    postInstall = ''
-      mkdir $out/bin
-      mv $out/usr/local/aer-inject $out/bin/aer-inject
-
-      mkdir -p $out/examples
-      cp examples/* $out/examples/.
-    '';
-
-    meta = {
-      description = "PCIE AER error injection tool";
-      license = lib.licenses.gpl2Only;
       platforms = lib.platforms.linux;
-      maintainers = [ ];
     };
   };
 }

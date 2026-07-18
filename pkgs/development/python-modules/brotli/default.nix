@@ -8,9 +8,15 @@
 }:
 
 buildPythonPackage rec {
-  pname = "brotli";
   inherit (brotli) version src;
-  pyproject = true;
+  pname = "brotli";
+
+  buildInputs = [
+    brotli
+  ];
+
+  env.USE_SYSTEM_BROTLI = 1;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     pkgconfig
@@ -19,21 +25,13 @@ buildPythonPackage rec {
 
   # only returns information how to really build
   dontConfigure = true;
-
-  env.USE_SYSTEM_BROTLI = 1;
-
-  buildInputs = [
-    brotli
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "python/tests" ];
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/google/brotli/blob/${src.tag}/CHANGELOG.md";
-    homepage = "https://github.com/google/brotli";
     description = "Generic-purpose lossless compression algorithm";
+    homepage = "https://github.com/google/brotli";
+    changelog = "https://github.com/google/brotli/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mdaniels5757 ];
   };

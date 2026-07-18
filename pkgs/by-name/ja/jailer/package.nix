@@ -72,19 +72,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Jailer";
+      categories = [ "Development" ];
       desktopName = "Jailer";
       exec = "jailer";
       icon = "jailer";
-      categories = [ "Development" ];
+      name = "Jailer";
     })
   ];
 
   meta = {
     description = "Tool for database subsetting and relational data browsing";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/Wisser/Jailer";
     changelog = "https://github.com/Wisser/Jailer/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ guillaumematheron ];
     mainProgram = "jailer";
   };

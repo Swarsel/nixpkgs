@@ -1,15 +1,14 @@
 {
   buildDunePackage,
   camlp-streams,
-  xenstore_transport,
-  xenstore,
   lwt,
+  xenstore,
+  xenstore_transport,
 }:
 
 buildDunePackage {
-  pname = "xenstore-tool";
-
   inherit (xenstore_transport) src version;
+  pname = "xenstore-tool";
 
   buildInputs = [
     camlp-streams

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-ygKMNzHvbLR2A5HHrfY2C9ZUg0yng+JL3cyg6sBKqeQ=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -23,11 +21,13 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://github.com/deepestblue/sampradaya";
     description = "Unicode-compliant Grantha font";
-    maintainers = with lib.maintainers; [ mathnerd314 ];
+    homepage = "https://github.com/deepestblue/sampradaya";
     license = lib.licenses.ofl; # See font metadata
+    maintainers = with lib.maintainers; [ mathnerd314 ];
     platforms = lib.platforms.all;
   };
 }

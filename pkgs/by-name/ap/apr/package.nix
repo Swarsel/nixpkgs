@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  buildPackages,
   autoreconfHook,
+  buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,6 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SQMNktJXXac1eRtJbcMi885c/5SUd5uozCjH9Gxd6zI=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     ./cross-assume-dev-zero-mmappable.patch
   ];
@@ -24,15 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
     rm test/testsock.*
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-  outputBin = "dev";
-
-  preConfigure = ''
-    configureFlagsArray+=("--with-installbuilddir=$dev/share/build")
-  '';
+  # - Update libtool for macOS 11 support
+  # - Regenerate for cross fix patch
+  nativeBuildInputs = [ autoreconfHook ];
 
   configureFlags =
     lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
@@ -66,20 +65,20 @@ stdenv.mkDerivation (finalAttrs: {
       "ac_cv_header_windows_h=no"
     ];
 
-  # - Update libtool for macOS 11 support
-  # - Regenerate for cross fix patch
-  nativeBuildInputs = [ autoreconfHook ];
+  preConfigure = ''
+    configureFlagsArray+=("--with-installbuilddir=$dev/share/build")
+  '';
 
   doCheck = true;
-
   enableParallelBuilding = true;
+  outputBin = "dev";
 
   meta = {
-    homepage = "https://apr.apache.org/";
     description = "Apache Portable Runtime library";
-    mainProgram = "apr-1-config";
-    platforms = lib.platforms.all;
+    homepage = "https://apr.apache.org/";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "apr-1-config";
   };
 })

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cjkwrap";
   version = "2.2";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "fgallaire";
@@ -17,12 +16,11 @@ buildPythonPackage rec {
     hash = "sha256-0wTx3rnlUfQEE2/Z8Y7iwlsHk+CIy6ut+QIpC5yg4aM=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "cjkwrap" ];
-
   # no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "cjkwrap" ];
 
   meta = {
     description = "Library for wrapping and filling CJK text";

@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication rec {
   pname = "psudohash";
   version = "1.1.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "t3l3machus";
@@ -15,10 +14,6 @@ python3Packages.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-I/vHQraGmIWmx/v+szL5ZQJpjkSBaCpEx0r4Mc6FgKA=";
   };
-
-  dependencies = with python3Packages; [
-    tqdm
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -32,6 +27,12 @@ python3Packages.buildPythonApplication rec {
 
     runHook postInstall
   '';
+
+  dependencies = with python3Packages; [
+    tqdm
+  ];
+
+  pyproject = false;
 
   meta = {
     description = "Password list generator for orchestrating brute force attacks and cracking hashes";

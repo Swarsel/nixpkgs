@@ -27,31 +27,34 @@ in
 
     services.ax25.axlisten = {
 
-      enable = mkEnableOption "AX.25 axlisten daemon";
-
-      package = mkPackageOption pkgs "ax25-apps" { };
-
       config = mkOption {
-        type = types.str;
         default = "-art";
+
         description = ''
           Options that will be passed to the axlisten daemon.
         '';
+
+        type = types.str;
       };
+
+      enable = mkEnableOption "AX.25 axlisten daemon";
+      package = mkPackageOption pkgs "ax25-apps" { };
     };
   };
 
   config = mkIf cfg.enable {
 
     systemd.services.axlisten = {
-      description = "AX.25 traffic monitor";
-      wantedBy = [ "multi-user.target" ];
       after = [ "ax25-axports.target" ];
+      description = "AX.25 traffic monitor";
       requires = [ "ax25-axports.target" ];
+
       serviceConfig = {
-        Type = "exec";
         ExecStart = "${cfg.package}/bin/axlisten ${cfg.config}";
+        Type = "exec";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  awscli2,
-  jq,
-  unixtools,
   fetchFromGitHub,
-  installShellFiles,
+  awscli2,
   bashInteractive,
   getopt,
+  installShellFiles,
+  jq,
+  makeWrapper,
   python3,
+  unixtools,
 }:
 let
   runtimeDeps = [
@@ -32,16 +32,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-PR52T6XCrakQsBOJXf0PaYpYE5oMcIz5UDA4I9B7C38=";
   };
 
-  dontConfigure = true;
-
-  propagatedBuildInputs = runtimeDeps;
-
-  nativeBuildInputs = [
-    makeWrapper
-    installShellFiles
-    bashInteractive
-  ];
-
   patches = [
     ./0001-update-paths-to-placeholders.patch
     ./0002-fix-tests.patch
@@ -54,6 +44,14 @@ stdenv.mkDerivation {
     substituteAllInPlace ./scripts/build-completions
     substituteAllInPlace ./bin/bma
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    installShellFiles
+    bashInteractive
+  ];
+
+  propagatedBuildInputs = runtimeDeps;
 
   buildPhase = ''
     runHook preBuild
@@ -78,6 +76,7 @@ stdenv.mkDerivation {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     pushd $out
@@ -93,9 +92,11 @@ stdenv.mkDerivation {
     chmod +x $out/lib/*
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://bash-my-aws.org";
     description = "CLI commands for AWS";
+    homepage = "https://bash-my-aws.org";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomberek ];
     mainProgram = "bma";

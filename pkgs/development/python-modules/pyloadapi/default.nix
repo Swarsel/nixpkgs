@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-regex-commit,
   hatchling,
   pytest-asyncio,
@@ -16,9 +16,6 @@
 buildPythonPackage rec {
   pname = "pyloadapi";
   version = "2.1.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "tr4nt0r";
@@ -26,13 +23,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-yNv21WfuAttzPWpmgadClTx9ryMNFjMsPA31w9BGX+U=";
   };
-
-  build-system = [
-    hatch-regex-commit
-    hatchling
-  ];
-
-  dependencies = [ aiohttp ];
 
   nativeCheckInputs = [
     aioresponses
@@ -42,12 +32,21 @@ buildPythonPackage rec {
     python-dotenv
   ];
 
-  pythonImportsCheck = [ "pyloadapi" ];
+  build-system = [
+    hatch-regex-commit
+    hatchling
+  ];
+
+  dependencies = [ aiohttp ];
+  disabled = pythonOlder "3.12";
 
   disabledTestPaths = [
     # Tests require network access
     "tests/test_cli.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyloadapi" ];
 
   meta = {
     description = "Simple wrapper for pyLoad's API";

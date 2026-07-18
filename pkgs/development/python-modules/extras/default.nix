@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "extras";
   version = "1.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # error: invalid command 'test'
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Useful extra bits for Python - things that should be in the standard library";

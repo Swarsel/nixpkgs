@@ -21,7 +21,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Find and remove unused code in .nix source files";
     homepage = "https://github.com/astro/deadnix";
     license = lib.licenses.gpl3Only;
-    mainProgram = "deadnix";
     maintainers = with lib.maintainers; [ astro ];
+    mainProgram = "deadnix";
   };
 })

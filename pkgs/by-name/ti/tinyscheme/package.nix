@@ -16,9 +16,6 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-F7Cxv/0i89SdWDPiKhILM5A50s/aC0bW/FHdLwG0B60=";
   };
 
-  nativeBuildInputs = [ dos2unix ];
-
-  prePatch = "dos2unix makefile";
   patches = [
     # The alternate macOS main makes use of `ccommand` which seems to be
     # `MetroWerks CodeWarrier` specific:
@@ -35,9 +32,12 @@ stdenv.mkDerivation rec {
     # On macOS the library suffix is .dylib:
     ./03-macOS-SOsuf.patch
   ];
+
   postPatch = ''
     substituteInPlace scheme.c --replace "init.scm" "$out/lib/init.scm"
   '';
+
+  nativeBuildInputs = [ dos2unix ];
 
   installPhase = ''
     mkdir -p $out/bin $out/lib
@@ -46,12 +46,9 @@ stdenv.mkDerivation rec {
     cp scheme $out/bin/tinyscheme
   '';
 
+  prePatch = "dos2unix makefile";
+
   passthru.tests = {
-    # Checks that the program can run and exit:
-    simple = runCommand "${pname}-simple-test" { } ''
-      ${tinyscheme}/bin/tinyscheme <<<"(quit 0)"
-      echo "success" > $out
-    '';
     fileIo = runCommand "${pname}-file-io-test" { } ''
       ${tinyscheme}/bin/tinyscheme <<EOF
         (call-with-output-file "$out"
@@ -62,22 +59,31 @@ stdenv.mkDerivation rec {
             )))
       EOF
     '';
+
     helpText = runCommand "${pname}-help-text-test" { } ''
       ${tinyscheme}/bin/tinyscheme '-?' | tee > $out || :
       [[ "$(cat $out)" =~ ^Usage: ]]
+    '';
+
+    # Checks that the program can run and exit:
+    simple = runCommand "${pname}-simple-test" { } ''
+      ${tinyscheme}/bin/tinyscheme <<<"(quit 0)"
+      echo "success" > $out
     '';
   };
 
   meta = {
     description = "Lightweight Scheme implementation";
+
     longDescription = ''
       TinyScheme is a lightweight Scheme interpreter that implements as large a
       subset of R5RS as was possible without getting very large and complicated.
     '';
+
     homepage = "https://tinyscheme.sourceforge.net/";
     changelog = "https://tinyscheme.sourceforge.net/CHANGES";
     license = lib.licenses.bsdOriginal;
-    mainProgram = "tinyscheme";
     platforms = lib.platforms.unix;
+    mainProgram = "tinyscheme";
   };
 }

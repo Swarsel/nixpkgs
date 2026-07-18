@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   uv-dynamic-versioning,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ttls";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jschlyter";
@@ -19,16 +18,16 @@ buildPythonPackage rec {
     hash = "sha256-ETqjL7pl/FekzMusBtq8jMr72/j7Dy/zadcObSNaKqU=";
   };
 
+  # Module has no tests
+  doCheck = false;
+
   build-system = [
     hatchling
     uv-dynamic-versioning
   ];
 
   dependencies = [ aiohttp ];
-
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ttls" ];
 
   meta = {

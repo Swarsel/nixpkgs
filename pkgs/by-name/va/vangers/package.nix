@@ -1,15 +1,15 @@
 {
   lib,
-  fetchFromGitHub,
-  callPackage,
   stdenv,
-  cmake,
-  installShellFiles,
+  fetchFromGitHub,
   SDL2,
   SDL2_net,
+  callPackage,
+  cmake,
+  ffmpeg_7,
+  installShellFiles,
   libogg,
   libvorbis,
-  ffmpeg_7,
   zlib,
 }:
 
@@ -35,6 +35,11 @@ stdenv.mkDerivation {
 
   strictDeps = true;
 
+  nativeBuildInputs = [
+    cmake
+    installShellFiles
+  ];
+
   buildInputs = [
     SDL2
     SDL2_net
@@ -43,11 +48,6 @@ stdenv.mkDerivation {
     ffmpeg_7
     clunk
     zlib
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    installShellFiles
   ];
 
   installPhase = ''
@@ -63,9 +63,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Video game that combines elements of the racing and role-playing genres";
     homepage = "https://github.com/KranX/Vangers";
-    mainProgram = "vangers";
-    platforms = lib.platforms.all;
     license = with lib.licenses; [ gpl3Only ];
     maintainers = with lib.maintainers; [ _3JlOy-PYCCKUi ];
+    platforms = lib.platforms.all;
+    mainProgram = "vangers";
   };
 }

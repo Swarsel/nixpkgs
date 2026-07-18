@@ -12,20 +12,17 @@
 buildPythonPackage rec {
   pname = "testfixtures";
   version = "10.0.0";
-  pyproject = true;
+
   # DO NOT CONTACT upstream.
   # https://github.com/simplistix/ is only concerned with internal CI process.
   # Any attempt by non-standard pip workflows to comment on issues will
   # be met with hostility.
   # https://github.com/simplistix/testfixtures/issues/169
   # https://github.com/simplistix/testfixtures/issues/168
-
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-K5gpv39C8MqGACUHYuZyVXXaWa8Y2af4Kq4sl7FPD2Y=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     mock
@@ -34,18 +31,20 @@ buildPythonPackage rec {
     twisted
   ];
 
-  disabledTests = [
-    "test_filter_missing"
-    "test_filter_present"
-  ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # Django is too much hasle to setup at the moment
     "testfixtures/tests/test_django"
   ];
 
-  enabledTestPaths = [ "testfixtures/tests" ];
+  disabledTests = [
+    "test_filter_missing"
+    "test_filter_present"
+  ];
 
+  enabledTestPaths = [ "testfixtures/tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "testfixtures" ];
 
   meta = {

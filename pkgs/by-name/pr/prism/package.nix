@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-uKtVifw4dxJdVvHxytL+9qjXHEdTyiz8U8n/95MObdY=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

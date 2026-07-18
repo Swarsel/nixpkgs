@@ -4,13 +4,13 @@
   fetchFromGitHub,
   cmake,
   docutils,
-  pkg-config,
   glib,
   libpthread-stubs,
   libxau,
-  libxdmcp,
   libxcb-util,
+  libxdmcp,
   nixosTests,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -35,6 +35,7 @@ stdenv.mkDerivation {
     pkg-config
     docutils
   ];
+
   buildInputs = [
     glib
     libpthread-stubs
@@ -49,10 +50,12 @@ stdenv.mkDerivation {
     description = "Use external locker (such as i3lock) as X screen saver";
     homepage = "https://github.com/xdbob/xss-lock";
     license = lib.licenses.mit;
-    mainProgram = "xss-lock";
+
     maintainers = with lib.maintainers; [
       malyn
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "xss-lock";
   };
 }

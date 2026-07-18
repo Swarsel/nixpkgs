@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,9 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Emacs centric fork of parinfer-rust";
-    mainProgram = "parinfer-rust";
     homepage = "https://github.com/justinbarclay/parinfer-rust-emacs";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ brsvh ];
+    mainProgram = "parinfer-rust";
   };
 })

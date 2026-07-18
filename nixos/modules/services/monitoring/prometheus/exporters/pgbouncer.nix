@@ -19,41 +19,28 @@ let
     ;
 in
 {
-  port = 9127;
+  imports = [
+    (lib.mkRemovedOptionModule [ "connectionStringFile" ] ''
+      As replacement, the option `services.prometheus.exporters.pgbouncer.connectionEnvFile`
+      has been added. In contrast to `connectionStringFile` it must be an environment file
+      with the connection string being set to `PGBOUNCER_EXPORTER_CONNECTION_STRING`.
+
+      The change was necessary since the former option wrote the contents of the file
+      into the cmdline of the exporter making the connection string effectively
+      world-readable.
+    '')
+    {
+      options.assertions = options.assertions;
+      options.warnings = options.warnings;
+    }
+  ];
+
   extraOpts = {
     package = mkPackageOption pkgs "prometheus-pgbouncer-exporter" { };
 
-    telemetryPath = mkOption {
-      type = types.str;
-      default = "/metrics";
-      description = ''
-        Path under which to expose metrics.
-      '';
-    };
-
-    connectionString = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "postgres://admin:@localhost:6432/pgbouncer?sslmode=require";
-      description = ''
-        Connection string for accessing pgBouncer.
-
-        NOTE: You MUST keep pgbouncer as database name (special internal db)!!!
-
-        NOTE: ignore_startup_parameters MUST contain "extra_float_digits".
-
-        NOTE: Admin user (with password or passwordless) MUST exist in the
-        auth_file if auth_type other than "any" is used.
-
-        WARNING: this secret is stored in the world-readable Nix store!
-        Use [](#opt-services.prometheus.exporters.pgbouncer.connectionEnvFile) if the
-        URL contains a secret.
-      '';
-    };
-
     connectionEnvFile = mkOption {
-      type = types.nullOr types.str;
       default = null;
+
       description = ''
         File that must contain the environment variable
         `PGBOUNCER_EXPORTER_CONNECTION_STRING` which is set to the connection
@@ -69,11 +56,73 @@ in
 
         Mutually exclusive with [](#opt-services.prometheus.exporters.pgbouncer.connectionString).
       '';
+
+      type = types.nullOr types.str;
+    };
+
+    connectionString = mkOption {
+      default = null;
+
+      description = ''
+        Connection string for accessing pgBouncer.
+
+        NOTE: You MUST keep pgbouncer as database name (special internal db)!!!
+
+        NOTE: ignore_startup_parameters MUST contain "extra_float_digits".
+
+        NOTE: Admin user (with password or passwordless) MUST exist in the
+        auth_file if auth_type other than "any" is used.
+
+        WARNING: this secret is stored in the world-readable Nix store!
+        Use [](#opt-services.prometheus.exporters.pgbouncer.connectionEnvFile) if the
+        URL contains a secret.
+      '';
+
+      example = "postgres://admin:@localhost:6432/pgbouncer?sslmode=require";
+      type = types.nullOr types.str;
+    };
+
+    extraFlags = mkOption {
+      default = [ ];
+
+      description = ''
+        Extra commandline options when launching Prometheus.
+      '';
+
+      type = types.listOf types.str;
+    };
+
+    logFormat = mkOption {
+      default = "logfmt";
+
+      description = ''
+        Output format of log messages. One of: [logfmt, json]
+      '';
+
+      type = types.enum [
+        "logfmt"
+        "json"
+      ];
+    };
+
+    logLevel = mkOption {
+      default = "info";
+
+      description = ''
+        Only log messages with the given severity or above.
+      '';
+
+      type = types.enum [
+        "debug"
+        "info"
+        "warn"
+        "error"
+      ];
     };
 
     pidFile = mkOption {
-      type = types.nullOr types.str;
       default = null;
+
       description = ''
         Path to PgBouncer pid file.
 
@@ -85,60 +134,47 @@ in
         <https://prometheus.io/docs/instrumenting/writing_clientlibs/#process-metrics>.
 
       '';
+
+      type = types.nullOr types.str;
     };
 
-    webSystemdSocket = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Use systemd socket activation listeners instead of port listeners (Linux only).
-      '';
-    };
+    telemetryPath = mkOption {
+      default = "/metrics";
 
-    logLevel = mkOption {
-      type = types.enum [
-        "debug"
-        "info"
-        "warn"
-        "error"
-      ];
-      default = "info";
       description = ''
-        Only log messages with the given severity or above.
+        Path under which to expose metrics.
       '';
-    };
 
-    logFormat = mkOption {
-      type = types.enum [
-        "logfmt"
-        "json"
-      ];
-      default = "logfmt";
-      description = ''
-        Output format of log messages. One of: [logfmt, json]
-      '';
+      type = types.str;
     };
 
     webConfigFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         Path to configuration file that can enable TLS or authentication.
       '';
+
+      type = types.nullOr types.path;
     };
 
-    extraFlags = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
+    webSystemdSocket = mkOption {
+      default = false;
+
       description = ''
-        Extra commandline options when launching Prometheus.
+        Use systemd socket activation listeners instead of port listeners (Linux only).
       '';
+
+      type = types.bool;
     };
 
   };
 
+  port = 9127;
+
   serviceOpts = {
     after = [ "pgbouncer.service" ];
+
     script = concatStringsSep " " (
       [
         "exec -- ${escapeShellArg (getExe cfg.package)}"
@@ -168,29 +204,14 @@ in
       ++ cfg.extraFlags
     );
 
+    serviceConfig.EnvironmentFile = lib.mkIf (cfg.connectionEnvFile != null) [
+      cfg.connectionEnvFile
+    ];
+
     serviceConfig.RestrictAddressFamilies = [
       "AF_INET"
       "AF_INET6"
       "AF_UNIX"
     ];
-    serviceConfig.EnvironmentFile = lib.mkIf (cfg.connectionEnvFile != null) [
-      cfg.connectionEnvFile
-    ];
   };
-
-  imports = [
-    (lib.mkRemovedOptionModule [ "connectionStringFile" ] ''
-      As replacement, the option `services.prometheus.exporters.pgbouncer.connectionEnvFile`
-      has been added. In contrast to `connectionStringFile` it must be an environment file
-      with the connection string being set to `PGBOUNCER_EXPORTER_CONNECTION_STRING`.
-
-      The change was necessary since the former option wrote the contents of the file
-      into the cmdline of the exporter making the connection string effectively
-      world-readable.
-    '')
-    {
-      options.warnings = options.warnings;
-      options.assertions = options.assertions;
-    }
-  ];
 }

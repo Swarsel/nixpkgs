@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  cohere,
   llm,
   llm-command-r,
-  cohere,
-  pytestCheckHook,
   pytest-recording,
+  pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-command-r";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     hash = "sha256-PxICRds9NJQP64HwoL7Oxd39yaIrMdAyQEbhaumJCgo=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-recording
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,14 +35,8 @@ buildPythonPackage rec {
     llm
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-recording
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_command_r" ];
-
   passthru.tests = llm.mkPluginTest llm-command-r;
 
   meta = {

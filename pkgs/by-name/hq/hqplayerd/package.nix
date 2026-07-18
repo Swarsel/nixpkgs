@@ -1,11 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   addDriverRunpath,
   alsa-lib,
   autoPatchelfHook,
   cairo,
-  fetchurl,
+  callPackage,
   flac,
   gcc14,
   # gssdp,
@@ -18,8 +19,6 @@
   mpg123,
   rpmextract,
   wavpack,
-
-  callPackage,
 }:
 let
   rygel-hqplayerd = callPackage ./rygel.nix { };
@@ -32,10 +31,6 @@ stdenv.mkDerivation rec {
     url = "https://www.signalyst.eu/bins/hqplayerd/fc37/hqplayerd-${version}.fc37.x86_64.rpm";
     hash = "sha256-4wB32xFYpGcBdLqSZFkNXoS7IerPS8f6KIpn13ulqUY=";
   };
-
-  unpackPhase = ''
-    rpmextract $src
-  '';
 
   nativeBuildInputs = [
     addDriverRunpath
@@ -59,9 +54,6 @@ stdenv.mkDerivation rec {
     mpg123
     wavpack
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -101,9 +93,17 @@ stdenv.mkDerivation rec {
   # NB: addDriverRunpath needs to run _after_ autoPatchelfHook, which runs in
   # postFixup, so we tack it on here.
   doInstallCheck = true;
+
   installCheckPhase = ''
     addDriverRunpath $out/bin/hqplayerd
     $out/bin/hqplayerd --version
+  '';
+
+  dontBuild = true;
+  dontConfigure = true;
+
+  unpackPhase = ''
+    rpmextract $src
   '';
 
   passthru = {
@@ -111,16 +111,16 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
+    description = "High-end upsampling multichannel software embedded HD-audio player";
+    homepage = "https://www.signalyst.com/custom.html";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ lovesegfault ];
+    platforms = [ "x86_64-linux" ];
     # libsoup 2.4 and its dependents (specifically gupnp and gssdp) were
     # removed due to being insecure and having many known vulnerabilities. this
     # thus no longer builds. this may be unbroken by updating to hqplayer 6.0,
     # as it ostensibly removes the need for rygel and gupnp at all.
     broken = true;
-    homepage = "https://www.signalyst.com/custom.html";
-    description = "High-end upsampling multichannel software embedded HD-audio player";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ lovesegfault ];
   };
 }

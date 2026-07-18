@@ -1,10 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-
+  buildPythonPackage,
   # for passthru.tests
   distributed,
   jupyter-server,
@@ -13,7 +10,9 @@
   mitmproxy,
   pytest-tornado,
   pytest-tornasync,
+  pytestCheckHook,
   pyzmq,
+  setuptools,
   sockjs-tornado,
   urllib3,
 }:
@@ -21,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tornado";
   version = "6.5.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tornadoweb";
@@ -30,12 +28,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-iE0Tf95zmPoZJhw7FDLzTmv8HaWds3ZU5xzZSMvxFH4=";
   };
 
-  build-system = [ setuptools ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # To allow tests to pass on slower/high-load machines
   env.ASYNC_TEST_TIMEOUT = 30;
+  nativeCheckInputs = [ pytestCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # additional tests that have extra dependencies, run slowly, or produce more output than a simple pass/fail
@@ -43,9 +40,8 @@ buildPythonPackage (finalAttrs: {
     "maint/test"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tornado" ];
-
-  __darwinAllowLocalNetworking = true;
 
   passthru.tests = {
     inherit
@@ -63,9 +59,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://www.tornadoweb.org/en/stable/releases/${finalAttrs.src.tag}.html";
     description = "Web framework and asynchronous networking library";
     homepage = "https://www.tornadoweb.org/";
+    changelog = "https://www.tornadoweb.org/en/stable/releases/${finalAttrs.src.tag}.html";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

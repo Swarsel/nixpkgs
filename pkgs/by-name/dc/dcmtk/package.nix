@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  zlib,
+  fetchFromGitHub,
+  cmake,
+  libiconv,
+  libpng,
   libtiff,
   libxml2,
   openssl,
-  libiconv,
-  libpng,
-  cmake,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,20 +27,21 @@ stdenv.mkDerivation (finalAttrs: {
   # See https://salsa.debian.org/med-team/dcmtk
   patches = [
     (fetchurl {
-      url = "https://salsa.debian.org/med-team/dcmtk/-/raw/debian/3.6.9-4/debian/patches/01_dcmtk_3.6.0-1.patch";
       hash = "sha256-kDEZvPqcF8+PYID24srMoPSBPltmnGiJ67LHsLVcPYM=";
+      url = "https://salsa.debian.org/med-team/dcmtk/-/raw/debian/3.6.9-4/debian/patches/01_dcmtk_3.6.0-1.patch";
     })
     (fetchurl {
-      url = "https://salsa.debian.org/med-team/dcmtk/-/raw/debian/3.6.9-4/debian/patches/07_dont_export_all_executables.patch";
       hash = "sha256-5slFod+S7Yuj0u2CfTUw+MWZYuqQs4hgoGmh3KAUo+c=";
+      url = "https://salsa.debian.org/med-team/dcmtk/-/raw/debian/3.6.9-4/debian/patches/07_dont_export_all_executables.patch";
     })
     (fetchurl {
-      url = "https://salsa.debian.org/med-team/dcmtk/-/raw/debian/3.6.9-4/debian/patches/remove_version.patch";
       hash = "sha256-jcV2xQzKdNiBgcaFtaxdJpJCCSVOqGIsi/A4iqVM8U8=";
+      url = "https://salsa.debian.org/med-team/dcmtk/-/raw/debian/3.6.9-4/debian/patches/remove_version.patch";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libpng
     zlib
@@ -70,6 +71,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Collection of libraries and applications implementing large parts of the DICOM standard";
+
     longDescription = ''
       DCMTK is a collection of libraries and applications implementing large parts of the DICOM standard.
       It includes software for examining, constructing and converting DICOM image files, handling offline media,
@@ -77,6 +79,7 @@ stdenv.mkDerivation (finalAttrs: {
       DCMTK is is written in a mixture of ANSI C and C++.
       It comes in complete source code and is made available as "open source" software.
     '';
+
     homepage = "https://dicom.offis.de/dcmtk";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ iimog ];

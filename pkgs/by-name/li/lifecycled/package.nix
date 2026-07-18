@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "lifecycled";
@@ -26,6 +26,7 @@ buildGoModule (finalAttrs: {
     description = "Daemon for responding to AWS AutoScaling Lifecycle Hooks";
     homepage = "https://github.com/buildkite/lifecycled/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cole-h
     ];

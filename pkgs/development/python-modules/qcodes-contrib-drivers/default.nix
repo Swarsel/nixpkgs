@@ -1,32 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  versioningit,
-
   # dependencies
   autobahn,
+  buildPythonPackage,
   cffi,
   packaging,
   pandas,
-  qcodes,
-  python-dotenv,
-
   # tests
   pytest-mock,
   pytestCheckHook,
+  python-dotenv,
   pyvisa-sim,
+  qcodes,
+  # build-system
+  setuptools,
+  versioningit,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "qcodes-contrib-drivers";
   version = "0.25.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "QCoDeS";
@@ -34,6 +30,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-4ZVNd1cHqM3tuGcOxlBN8WX9i9u3XFlJ0zr06n7zpmI=";
   };
+
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+    pyvisa-sim
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     setuptools
@@ -49,15 +52,6 @@ buildPythonPackage (finalAttrs: {
     python-dotenv
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-    pyvisa-sim
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [ "qcodes_contrib_drivers" ];
-
   disabledTests =
     lib.optionals stdenv.hostPlatform.isDarwin [
       # At index 13 diff: 'sour6:volt 0.29000000000000004' != 'sour6:volt 0.29'
@@ -67,6 +61,9 @@ buildPythonPackage (finalAttrs: {
       # AssertionError: assert ['outp:trig4:...9999996', ...] == ['outp:trig4:...t 0.266', ...]
       "test_stability_diagram_external"
     ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "qcodes_contrib_drivers" ];
 
   meta = {
     description = "User contributed drivers for QCoDeS";

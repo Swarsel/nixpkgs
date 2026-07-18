@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "umalqurra";
   version = "0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # No tests included
   doCheck = false;
+  format = "setuptools";
 
   # See for license
   # https://github.com/tytkal/python-hijiri-ummalqura/issues/4

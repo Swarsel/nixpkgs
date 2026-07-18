@@ -14,7 +14,6 @@ mkTclDerivation rec {
     sha256 = "sha256-61sCvsua+Iv3SldHhd4eMpzzCjZ5EVMJOnkRT6xRw60=";
   };
 
-  dontBuild = true;
   propagatedBuildInputs = [ tk ];
 
   installPhase = ''
@@ -22,11 +21,13 @@ mkTclDerivation rec {
     cp -R *.tcl lang images "$out/lib/bwidget${version}"
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://sourceforge.net/projects/tcllib";
     description = "High-level widget set for Tcl/Tk";
-    maintainers = with lib.maintainers; [ agbrooks ];
+    homepage = "https://sourceforge.net/projects/tcllib";
     license = lib.licenses.tcltk;
+    maintainers = with lib.maintainers; [ agbrooks ];
     platforms = lib.platforms.unix;
   };
 }

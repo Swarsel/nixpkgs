@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "srt";
   version = "3.5.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,11 +20,12 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "srt" ];
 
   meta = {
-    homepage = "https://github.com/cdown/srt";
     description = "Tiny but featureful Python library for parsing, modifying, and composing SRT files";
+    homepage = "https://github.com/cdown/srt";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

@@ -1,26 +1,26 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  cmake,
-  pkg-config,
+  fetchFromGitHub,
   apacheHttpd,
   apr,
   aprutil,
   boost,
   cairo,
+  cmake,
   curl,
   glib,
   harfbuzz,
+  iana-etc,
   icu,
   iniparser,
+  jq,
   libmemcached,
   mapnik,
-  ps,
-  jq,
   memcached,
-  iana-etc,
   nix-update-script,
+  pkg-config,
+  ps,
 }:
 
 stdenv.mkDerivation rec {
@@ -54,8 +54,6 @@ stdenv.mkDerivation rec {
     mapnik
   ];
 
-  enableParallelBuilding = true;
-
   # Explicitly specify directory paths
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_INSTALL_BINDIR" "bin")
@@ -65,12 +63,7 @@ stdenv.mkDerivation rec {
     (lib.cmakeBool "ENABLE_TESTS" doCheck)
   ];
 
-  # And use DESTDIR to define the install destination
-  installFlags = [ "DESTDIR=$(out)" ];
-
   doCheck = true;
-  # Do not run tests in parallel
-  enableParallelChecking = false;
 
   nativeCheckInputs = [
     iana-etc
@@ -81,11 +74,16 @@ stdenv.mkDerivation rec {
     memcached
   ];
 
+  enableParallelBuilding = true;
+  # Do not run tests in parallel
+  enableParallelChecking = false;
+  # And use DESTDIR to define the install destination
+  installFlags = [ "DESTDIR=$(out)" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/openstreetmap/mod_tile";
     description = "Efficiently render and serve OpenStreetMap tiles using Apache and Mapnik";
+    homepage = "https://github.com/openstreetmap/mod_tile";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ jglukasik ];
     platforms = lib.platforms.linux;

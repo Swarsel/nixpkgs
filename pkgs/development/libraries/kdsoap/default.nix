@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   cmake,
   qtbase,
@@ -31,7 +31,6 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [ qtbase ];
-
   cmakeFlags = [ (lib.cmakeBool "KDSoap_QT6" isQt6) ];
 
   postInstall = ''
@@ -42,6 +41,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Qt-based client-side and server-side SOAP component";
+
     longDescription = ''
       KD Soap is a Qt-based client-side and server-side SOAP component.
 
@@ -49,11 +49,13 @@ stdenv.mkDerivation rec {
       provides the means to create web services without the need for any further
       component such as a dedicated web server.
     '';
+
     license = with lib.licenses; [
       gpl2
       gpl3
       lgpl21
     ];
+
     maintainers = [ ];
   };
 }

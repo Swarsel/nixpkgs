@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   matplotlib,
   numpy,
   pillow,
@@ -15,7 +14,6 @@
 buildPythonPackage rec {
   pname = "imgcat";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wookayin";
@@ -29,8 +27,6 @@ buildPythonPackage rec {
       --replace-fail "'pytest-runner<5.0'" ""
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     matplotlib
     numpy
@@ -40,6 +36,8 @@ buildPythonPackage rec {
     torch
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "imgcat" ];
 
   meta = {

@@ -17,26 +17,29 @@ buildGoModule rec {
 
   vendorHash = "sha256-uo3ZwFdD6aJ0WDGmt51l3hs9agUnv1cIQY/KMlNe5nI=";
 
-  subPackages = [
-    "./cnitool"
-  ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [
+    "./cnitool"
+  ];
+
   meta = {
     description = "Container Network Interface - networking for Linux containers";
-    mainProgram = "cnitool";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/containernetworking/cni";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       vdemeester
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "cnitool";
   };
 }

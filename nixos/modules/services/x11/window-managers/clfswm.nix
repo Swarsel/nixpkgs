@@ -20,13 +20,15 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+
     services.xserver.windowManager.session = singleton {
       name = "clfswm";
+
       start = ''
         ${cfg.package}/bin/clfswm &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ cfg.package ];
   };
 }

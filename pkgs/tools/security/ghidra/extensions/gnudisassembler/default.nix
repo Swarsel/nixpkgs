@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  buildGhidraExtension,
-  ghidra,
-  flex,
   bison,
-  texinfo,
+  buildGhidraExtension,
+  flex,
+  ghidra,
   perl,
-  zlib,
+  texinfo,
   xcbuild,
+  zlib,
 }:
 
 let
@@ -17,14 +17,13 @@ let
   # https://github.com/NationalSecurityAgency/ghidra/blob/7ab9bf6abffb6938d61d072040fc34ad3331332b/GPL/GnuDisassembler/build.gradle#L34-L35
   binutils-version = "2.44";
   binutils-src = fetchurl {
-    url = "mirror://gnu/binutils/binutils-${binutils-version}.tar.bz2";
     sha256 = "sha256-9mOQpmH6oRfQD6suec8tydCXtCzClr8/hnfR57RS3Do=";
+    url = "mirror://gnu/binutils/binutils-${binutils-version}.tar.bz2";
   };
 in
 buildGhidraExtension {
   pname = "gnudisassembler";
   version = lib.getVersion ghidra;
-
   src = "${ghidra}/lib/ghidra/Extensions/Ghidra/${ghidra.distroPrefix}_GnuDisassembler.zip";
 
   postPatch = ''
@@ -32,12 +31,6 @@ buildGhidraExtension {
     substituteInPlace build.gradle \
       --replace-fail 'ext.binutils = "binutils-2.41"' 'ext.binutils = "binutils-${binutils-version}"'
   '';
-
-  # Don't modify ELF stub resources
-  dontPatchELF = true;
-  dontStrip = true;
-
-  __darwinAllowLocalNetworking = true;
 
   nativeBuildInputs = [
     flex
@@ -48,7 +41,6 @@ buildGhidraExtension {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild ];
 
   buildInputs = [ zlib ];
-  gradleBuildTask = "assemble";
 
   installPhase = ''
     runHook preInstall
@@ -63,10 +55,16 @@ buildGhidraExtension {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true;
+  # Don't modify ELF stub resources
+  dontPatchELF = true;
+  dontStrip = true;
+  gradleBuildTask = "assemble";
+
   meta = {
     description = "Leverage the binutils disassembler capabilities for various processors";
     homepage = "https://ghidra-sre.org/";
-    downloadPage = "https://github.com/NationalSecurityAgency/ghidra/tree/master/GPL/GnuDisassembler";
     license = lib.licenses.gpl2Only;
+    downloadPage = "https://github.com/NationalSecurityAgency/ghidra/tree/master/GPL/GnuDisassembler";
   };
 }

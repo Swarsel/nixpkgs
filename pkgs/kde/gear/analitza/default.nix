@@ -1,21 +1,22 @@
 {
+  eigen,
   mkKdeDerivation,
   qt5compat,
+  qtdeclarative,
   qtsvg,
   qttools,
-  qtdeclarative,
-  eigen,
 }:
 mkKdeDerivation {
   pname = "analitza";
+
+  extraBuildInputs = [
+    qtdeclarative
+    eigen
+  ];
 
   extraNativeBuildInputs = [
     qt5compat
     qtsvg
     qttools
-  ];
-  extraBuildInputs = [
-    qtdeclarative
-    eigen
   ];
 }

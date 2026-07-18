@@ -1,12 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-
-  go,
   buildGoModule,
-
-  versionCheckHook,
+  go,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,8 +22,9 @@ buildGoModule (finalAttrs: {
   # vendor/github.com/golang/glog/internal/logsink/logsink.go:129:41:
   # predeclared any requires go1.18 or later (-lang was set to go1.16; check go.mod)
   patches = [ ./gomod.patch ];
-
   vendorHash = "sha256-Y/JgjWb2eFe4aCTU/v05rB5xH9TgZgZt2WITalj1nwc=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -35,17 +34,14 @@ buildGoModule (finalAttrs: {
     "-X main.GOVERSION=${go.version}"
   ];
 
-  doInstallCheck = true;
   versionCheckProgramArg = "--version";
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Prometheus exporter for SSL certificate";
     homepage = "https://github.com/amimof/node-cert-exporter";
     license = lib.licenses.asl20;
-    mainProgram = "node-cert-exporter";
     maintainers = with lib.maintainers; [ ibizaman ];
+    mainProgram = "node-cert-exporter";
   };
 })

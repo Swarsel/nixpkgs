@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule rec {
   pname = "ocb";
@@ -16,15 +16,8 @@ buildGoModule rec {
     hash = "sha256-EG//ddcXolvILucKYWZSoeqgFCE7u3/h8v/oX3pzafk=";
   };
 
-  sourceRoot = "${src.name}/cmd/builder";
   vendorHash = "sha256-SeLEg/xwSEr3uPZbjlLFny+OpfovcmKVD6BxCgoosz8=";
-
   env.CGO_ENABLED = 0;
-  ldflags = [
-    "-s"
-    "-w"
-    "-X go.opentelemetry.io/collector/cmd/builder/internal.version=${version}"
-  ];
 
   # Some tests download new dependencies for a modified go.mod. Nix doesn't allow network access so skipping.
   checkFlags = [
@@ -35,6 +28,14 @@ buildGoModule rec {
   postInstall = ''
     mv $out/bin/builder $out/bin/ocb
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X go.opentelemetry.io/collector/cmd/builder/internal.version=${version}"
+  ];
+
+  sourceRoot = "${src.name}/cmd/builder";
 
   meta = {
     description = "OpenTelemetry Collector";

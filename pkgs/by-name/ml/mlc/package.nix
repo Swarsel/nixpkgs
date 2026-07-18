@@ -13,23 +13,23 @@ stdenv.mkDerivation rec {
     sha256 = "EDa5V56qCPQxgCu4eddYiWDrk7vkYS0jisnG004L+jQ=";
   };
 
-  sourceRoot = "Linux";
+  nativeBuildInputs = [ patchelf ];
 
   installPhase = ''
     install -Dm755 mlc $out/bin/mlc
   '';
 
-  nativeBuildInputs = [ patchelf ];
-
   fixupPhase = ''
     patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" $out/bin/mlc
   '';
 
+  sourceRoot = "Linux";
+
   meta = {
-    homepage = "https://software.intel.com/content/www/us/en/develop/articles/intelr-memory-latency-checker.html";
     description = "Intel Memory Latency Checker";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://software.intel.com/content/www/us/en/develop/articles/intelr-memory-latency-checker.html";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ basvandijk ];
     platforms = with lib.platforms; linux;
     mainProgram = "mlc";

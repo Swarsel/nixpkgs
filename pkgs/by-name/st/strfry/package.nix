@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
-  openssl,
-  lmdb,
   flatbuffers,
-  libuv,
   libnotify,
+  libuv,
+  lmdb,
+  openssl,
+  perl,
   secp256k1,
   zlib-ng,
   zstd,
@@ -15,6 +15,7 @@
 stdenv.mkDerivation {
   pname = "strfry";
   version = "1.0.4";
+
   src = fetchFromGitHub {
     owner = "hoytech";
     repo = "strfry";
@@ -22,6 +23,10 @@ stdenv.mkDerivation {
     hash = "sha256-2+kPUgyb9ZtC51EK66d3SX2zyqnS6lju2jkIhakcudg";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    patchShebangs golpe/
+  '';
 
   nativeBuildInputs = [
     perl
@@ -37,10 +42,6 @@ stdenv.mkDerivation {
     zlib-ng # alternative to zlib1g-dev
     zstd # libzstd-dev
   ];
-
-  postPatch = ''
-    patchShebangs golpe/
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -58,9 +59,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Nostr relay implementation in C++";
     homepage = "https://github.com/hoytech/strfry";
-    mainProgram = "strfry";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ felixzieger ];
     platforms = lib.platforms.linux;
+    mainProgram = "strfry";
   };
 }

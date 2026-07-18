@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   cryptopp,
   curl,
-  fetchFromGitHub,
-  file,
   ffmpeg,
+  file,
   fuse3,
   icu,
   libmediainfo,
@@ -34,12 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
     # but the tags all point to the same commit,
     # so we just stick to the Linux tag to make the update script easy.
     tag = "${finalAttrs.version}_Linux";
+    hash = "sha256-RE4n4igAXhYNshnjjyeb2McmBKt5HY0oZ+U5SMMtQ2I=";
     fetchSubmodules = true;
     postCheckout = "git -C $out/sdk rev-parse --short HEAD > $out/sdk/.gitrev";
-    hash = "sha256-RE4n4igAXhYNshnjjyeb2McmBKt5HY0oZ+U5SMMtQ2I=";
   };
-
-  __structuredAttrs = true;
 
   patches = [
     # use pkg-config instead of vcpkg
@@ -73,8 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "find_package(ICU COMPONENTS uc data REQUIRED)" "find_package(ICU COMPONENTS i18n uc data REQUIRED)" \
       --replace-fail "target_link_libraries(SDKlib PRIVATE ICU::uc ICU::data)" "target_link_libraries(SDKlib PRIVATE ICU::i18n ICU::uc ICU::data)"
   '';
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     cmake
@@ -132,6 +128,9 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm755 ../src/client/mega-* -t $out/bin
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   preFixup = ''
     # use mega-exec from the same package instead of the one from PATH to avoid version mismatch
     for f in $out/bin/*; do
@@ -151,9 +150,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   # mega-exec wants to connect to megacmd server
   __darwinAllowLocalNetworking = finalAttrs.doInstallCheck;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
   versionCheckProgram = "${placeholder "out"}/bin/mega-version";
   versionCheckProgramArg = "-l";
 
@@ -165,15 +163,18 @@ stdenv.mkDerivation (finalAttrs: {
     description = "MEGA Command Line Interactive and Scriptable Application";
     homepage = "https://mega.io/cmd";
     changelog = "https://github.com/meganz/MEGAcmd/blob/${finalAttrs.src.tag}/build/megacmd/megacmd.changes";
+
     license = with lib.licenses; [
       bsd2
       gpl3Only
     ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       lunik1
       ulysseszhan
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "mega-cmd";
   };
 })

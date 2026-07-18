@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "ipymarkup";
   version = "0.9.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,10 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ intervaltree ];
-  pythonImportsCheck = [ "ipymarkup" ];
-
   # Upstream has no tests:
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "ipymarkup" ];
 
   meta = {
     description = "Collection of NLP visualizations for NER and syntax tree markup";

@@ -1,10 +1,10 @@
 {
-  cmake,
-  fetchurl,
-  gpgmepp,
   lib,
-  qtbase,
   stdenv,
+  fetchurl,
+  cmake,
+  gpgmepp,
+  qtbase,
   which,
 }:
 
@@ -17,22 +17,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-WzL+s+7kp/lALSK3IGSAkI3EO7TfOCkXwHXFEhFvjwg=";
   };
 
-  patches = [
-    ./includedir-absolute-path.patch
-  ];
-
   outputs = [
     "out"
     "dev"
   ];
 
-  nativeBuildInputs = [
-    cmake
+  patches = [
+    ./includedir-absolute-path.patch
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_WITH_QT5" (lib.versions.major qtbase.version == "5"))
-    (lib.cmakeBool "BUILD_WITH_QT6" (lib.versions.major qtbase.version == "6"))
+  nativeBuildInputs = [
+    cmake
   ];
 
   buildInputs = [
@@ -43,12 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
     gpgmepp
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_WITH_QT5" (lib.versions.major qtbase.version == "5"))
+    (lib.cmakeBool "BUILD_WITH_QT6" (lib.versions.major qtbase.version == "6"))
+  ];
+
   dontWrapQtApps = true;
 
   meta = {
-    changelog = "https://dev.gnupg.org/source/gpgmeqt/browse/master/NEWS;gpgmeqt-${finalAttrs.version}?as=remarkup";
     description = "Qt API bindings/wrapper for GPGME";
     homepage = "https://dev.gnupg.org/source/gpgmeqt/";
+    changelog = "https://dev.gnupg.org/source/gpgmeqt/browse/master/NEWS;gpgmeqt-${finalAttrs.version}?as=remarkup";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ lib.maintainers.dotlambda ];
     platforms = lib.platforms.unix;

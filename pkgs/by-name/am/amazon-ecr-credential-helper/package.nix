@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
   amazon-ecr-credential-helper,
+  buildGoModule,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,17 +19,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = null;
 
-  modRoot = "./ecr-login";
-
   ldflags = [
     "-s"
     "-w"
     "-X github.com/awslabs/amazon-ecr-credential-helper/ecr-login/version.Version=${finalAttrs.version}"
   ];
 
+  modRoot = "./ecr-login";
+
   passthru.tests.version = testers.testVersion {
-    package = amazon-ecr-credential-helper;
     command = "docker-credential-ecr-login -v";
+    package = amazon-ecr-credential-helper;
   };
 
   meta = {

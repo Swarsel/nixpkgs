@@ -2,20 +2,20 @@
 # the names of dependencies from that package set directly to avoid evaluation errors
 # in the case redistributable packages are not available.
 {
-  backendStdenv,
+  lib,
+  fetchFromGitHub,
   _cuda,
+  backendStdenv,
   cccl,
+  cudaNamePrefix,
   cuda_cudart,
   cuda_nvcc,
-  cudaNamePrefix,
-  fetchFromGitHub,
   flags,
   gitUpdater,
-  lib,
   mpi,
-  mpiSupport ? false,
   nccl,
   which,
+  mpiSupport ? false,
 }:
 let
   inherit (_cuda.lib) _mkMetaBroken;
@@ -24,11 +24,6 @@ let
   inherit (lib.lists) optionals;
 in
 backendStdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  # NOTE: Depends on the CUDA package set, so use cudaNamePrefix.
-  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
   pname = "nccl-tests";
   version = "2.19.1";
 
@@ -46,6 +41,8 @@ backendStdenv.mkDerivation (finalAttrs: {
         '-ccbin $(CXX)' \
         ""
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     which
@@ -71,8 +68,6 @@ backendStdenv.mkDerivation (finalAttrs: {
   ]
   ++ optionals mpiSupport [ "MPI=1" ];
 
-  enableParallelBuilding = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p "$out/bin"
@@ -82,11 +77,16 @@ backendStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+  # NOTE: Depends on the CUDA package set, so use cudaNamePrefix.
+  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
+
   passthru = {
     brokenAssertions = [
       {
-        message = "mpi is non-null when mpiSupport is true";
         assertion = mpiSupport -> mpi != null;
+        message = "mpi is non-null when mpiSupport is true";
       }
     ];
 
@@ -99,13 +99,15 @@ backendStdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Tests to check both the performance and the correctness of NVIDIA NCCL operations";
     homepage = "https://github.com/NVIDIA/nccl-tests";
+    license = licenses.bsd3;
+    maintainers = with maintainers; [ jmillerpdt ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
-    license = licenses.bsd3;
+
     broken = _mkMetaBroken finalAttrs;
-    maintainers = with maintainers; [ jmillerpdt ];
     teams = [ teams.cuda ];
   };
 })

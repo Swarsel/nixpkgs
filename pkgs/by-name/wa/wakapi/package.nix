@@ -1,16 +1,16 @@
 {
   lib,
-  buildGoLatestModule,
   fetchFromGitHub,
-  nixosTests,
+  buildGoLatestModule,
   nix-update-script,
+  nixosTests,
 }:
 let
   version = "2.17.4";
 in
 buildGoLatestModule {
-  pname = "wakapi";
   inherit version;
+  pname = "wakapi";
 
   src = fetchFromGitHub {
     owner = "muety";
@@ -19,19 +19,9 @@ buildGoLatestModule {
     hash = "sha256-pcKHDZH8CvRpKPaLyWPsHx7/U50xEq8JzbnEQG/9uYI=";
   };
 
-  vendorHash = "sha256-bXIbHSclJ61D3u1+nXEIRhzw611uosnnXWqT9boDMP0=";
-
-  # Not a go module required by the project, contains development utilities
-  excludedPackages = [ "scripts" ];
-
   # Fix up reported version
   postPatch = "echo ${version} > version.txt";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
+  vendorHash = "sha256-bXIbHSclJ61D3u1+nXEIRhzw611uosnnXWqT9boDMP0=";
   # <https://github.com/muety/wakapi/blob/8c9442b348e4280b388e1073d805058a951ae78e/.github/workflows/release.yml#L60>
   env.GOEXPERIMENT = "greenteagc,jsonv2";
 
@@ -52,20 +42,30 @@ buildGoLatestModule {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  # Not a go module required by the project, contains development utilities
+  excludedPackages = [ "scripts" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru = {
     nixos = nixosTests.wakapi;
     updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Minimalist self-hosted WakaTime-compatible backend for coding statistics";
     homepage = "https://wakapi.dev/";
     changelog = "https://github.com/muety/wakapi/releases/tag/${version}";
-    description = "Minimalist self-hosted WakaTime-compatible backend for coding statistics";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       t4ccer
       isabelroses
     ];
+
     mainProgram = "wakapi";
   };
 }

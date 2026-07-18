@@ -1,19 +1,18 @@
 {
-  wrapPython,
-  python,
   lib,
   stdenv,
   cmake,
-  qt5,
   distutils,
-  shiboken2,
   pyside2,
+  python,
+  qt5,
+  shiboken2,
+  wrapPython,
 }:
 
 stdenv.mkDerivation {
-  pname = "pyside2-tools";
-
   inherit (pyside2) version src;
+  pname = "pyside2-tools";
 
   patches = [
     # Upstream has a crazy build system only geared towards producing binary
@@ -34,18 +33,18 @@ stdenv.mkDerivation {
     distutils
     wrapPython
   ];
-  propagatedBuildInputs = [
-    shiboken2
-    pyside2
-  ];
+
   buildInputs = [
     python
     qt5.qtbase
   ];
 
-  cmakeFlags = [ "-DBUILD_TESTS=OFF" ];
+  propagatedBuildInputs = [
+    shiboken2
+    pyside2
+  ];
 
-  dontWrapQtApps = true;
+  cmakeFlags = [ "-DBUILD_TESTS=OFF" ];
 
   # The upstream build system consists of a `setup.py` whichs builds three
   # different python libraries and calls cmake as a subprocess.  We call cmake
@@ -63,10 +62,12 @@ stdenv.mkDerivation {
     wrapPythonPrograms
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "PySide2 development tools";
-    license = lib.licenses.gpl2;
     homepage = "https://wiki.qt.io/Qt_for_Python";
+    license = lib.licenses.gpl2;
     maintainers = [ ];
   };
 }

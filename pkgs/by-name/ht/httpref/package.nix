@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,10 +24,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Command line, offline, access to HTTP status code, common header, and port references";
-    mainProgram = "httpref";
     homepage = "https://github.com/dnnrly/httpref";
     changelog = "https://github.com/dnnrly/httpref/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "httpref";
   };
 })

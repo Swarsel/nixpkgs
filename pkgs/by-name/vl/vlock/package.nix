@@ -14,20 +14,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1b9gv7hmlb8swda5bn40lp1yki8b8wv29vdnhcjqfl6ir98551za";
   };
 
-  prePatch = ''
-    sed -i -e '/INSTALL/ {
-      s/-[og] [^ ]*//g; s/4711/755/
-    }' Makefile modules/Makefile
-  '';
-
   patches = [ ./eintr.patch ];
+  buildInputs = [ pam ];
 
   configureFlags = [
     "VLOCK_GROUP=root"
     "ROOT_GROUP=root"
   ];
 
-  buildInputs = [ pam ];
+  prePatch = ''
+    sed -i -e '/INSTALL/ {
+      s/-[og] [^ ]*//g; s/4711/755/
+    }' Makefile modules/Makefile
+  '';
 
   meta = {
     description = "Virtual console locking program";

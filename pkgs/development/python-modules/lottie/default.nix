@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "lottie";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ distutils ];
-
+  pyproject = true;
   pythonImportsCheck = [ "lottie" ];
 
   meta = {

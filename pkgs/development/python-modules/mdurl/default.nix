@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mdurl";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "executablebooks";
@@ -18,10 +17,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-wxV8DKeTwKpFTUBuGTQXaVHc0eW1//Y+2V8Kgs85TDM=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "mdurl" ];
 
   meta = {

@@ -1,21 +1,26 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  pkg-config,
-  intltool,
-  gobject-introspection,
-  glib,
-  gdk-pixbuf,
-  libxml2,
+  fetchurl,
   cairo,
-  pango,
+  gdk-pixbuf,
+  glib,
   gnome,
+  gobject-introspection,
+  intltool,
+  libxml2,
+  pango,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "lasem";
   version = "0.4.4";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/lasem/${lib.versions.majorMinor finalAttrs.version}/lasem-${finalAttrs.version}.tar.xz";
+    sha256 = "0fds3fsx84ylsfvf55zp65y8xqjj5n8gbhcsk02vqglivk7izw4v";
+  };
 
   outputs = [
     "bin"
@@ -25,11 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/lasem/${lib.versions.majorMinor finalAttrs.version}/lasem-${finalAttrs.version}.tar.xz";
-    sha256 = "0fds3fsx84ylsfvf55zp65y8xqjj5n8gbhcsk02vqglivk7izw4v";
-  };
 
   nativeBuildInputs = [
     pkg-config
@@ -45,8 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
-  enableParallelBuilding = true;
   doCheck = true;
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -57,11 +57,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "SVG and MathML rendering library";
-    mainProgram = "lasem-render-0.4";
-
     homepage = "https://github.com/LasemProject/lasem";
     license = lib.licenses.gpl2Plus;
-
     platforms = lib.platforms.unix;
+    mainProgram = "lasem-render-0.4";
   };
 })

@@ -1,35 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-
-  # build-system
-  setuptools,
-
-  # tests
-  versionCheckHook,
-
   # nativeBuildInputs for GUI
   gobject-introspection,
-  wrapGAppsHook4,
-
-  # dependencies (required for most functionality)
-  pyicu,
+  gtk4,
   lxml,
-  enableGui ? false,
+  prompt-toolkit,
   # for GUI only
   pygobject3,
-  gtk4,
-  enableCmd ? false,
-  prompt-toolkit,
+  # dependencies (required for most functionality)
+  pyicu,
+  # build-system
+  setuptools,
   tqdm,
+  # tests
+  versionCheckHook,
+  wrapGAppsHook4,
+  enableCmd ? false,
+  enableGui ? false,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyglossary";
   version = "5.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ilius";
@@ -37,6 +32,18 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Q2QS/Kg4iN1WMFTADfoqN9UC9da/5Bcp7ZjiZ5V3InM=";
   };
+
+  buildInputs = lib.optionals enableGui [
+    gtk4
+  ];
+
+  # Many issues with the tests: They require `cd tests` in `preCheck`; Some of
+  # them depend upon files in `tests/deprecated`; Even with workarounds to
+  # these 2 issues, many tests require network access. We don't enable the
+  # tests by not adding pytestCheckHook to this list.
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -58,17 +65,7 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  buildInputs = lib.optionals enableGui [
-    gtk4
-  ];
-
-  # Many issues with the tests: They require `cd tests` in `preCheck`; Some of
-  # them depend upon files in `tests/deprecated`; Even with workarounds to
-  # these 2 issues, many tests require network access. We don't enable the
-  # tests by not adding pytestCheckHook to this list.
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyglossary"

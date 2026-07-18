@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   beamPackages,
 }:
@@ -18,16 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ beamPackages.elixir ];
   buildInputs = [ beamPackages.erlang ];
-
   buildPhase = "mix escript.build";
   installPhase = "install -Dt $out/bin mix2nix";
 
   meta = {
     description = "Generate nix expressions from mix.lock file";
     homepage = "https://github.com/ydlr/mix2nix";
-    mainProgram = "mix2nix";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ydlr ];
+    mainProgram = "mix2nix";
     teams = [ lib.teams.beam ];
   };
 })

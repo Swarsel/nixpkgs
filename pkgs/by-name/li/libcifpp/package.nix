@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   boost,
   cmake,
-  fetchFromGitHub,
   eigen,
   zlib,
 }:
@@ -21,15 +21,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
 
-  cmakeFlags = [
-    # disable network access
-    "-DCIFPP_DOWNLOAD_CCD=OFF"
-  ];
-
   buildInputs = [
     boost
     eigen
     zlib
+  ];
+
+  cmakeFlags = [
+    # disable network access
+    "-DCIFPP_DOWNLOAD_CCD=OFF"
   ];
 
   # cmake requires the existence of this directory when building dssp

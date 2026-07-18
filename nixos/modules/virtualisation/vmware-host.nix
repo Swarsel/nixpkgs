@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -41,29 +41,35 @@ in
           :::
         '';
       };
+
       package = mkPackageOption pkgs "vmware-workstation" { };
-      extraPackages = mkOption {
-        type = with types; listOf package;
-        default = [ ];
-        description = "Extra packages to be used with VMware host.";
-        example = "with pkgs; [ ntfs3g ]";
-      };
+
       extraConfig = mkOption {
-        type = types.lines;
         default = "";
         description = "Add extra config to /etc/vmware/config";
+
         example = ''
           # Allow unsupported device's OpenGL and Vulkan acceleration for guest vGPU
           mks.gl.allowUnsupportedDrivers = "TRUE"
           mks.vk.allowUnsupportedDevices = "TRUE"
         '';
+
+        type = types.lines;
+      };
+
+      extraPackages = mkOption {
+        default = [ ];
+        description = "Extra packages to be used with VMware host.";
+        example = "with pkgs; [ ntfs3g ]";
+        type = with types; listOf package;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    boot.extraModulePackages = [ config.boot.kernelPackages.vmware ];
     boot.extraModprobeConfig = "alias char-major-10-229 fuse";
+    boot.extraModulePackages = [ config.boot.kernelPackages.vmware ];
+
     boot.kernelModules = [
       "vmw_pvscsi"
       "vmw_vmci"
@@ -72,8 +78,8 @@ in
       "fuse"
     ];
 
-    environment.systemPackages = [ cfg.package ] ++ cfg.extraPackages;
-    services.printing.drivers = [ cfg.package ];
+    environment.etc."vmware-installer".source = "${cfg.package}/etc/vmware-installer";
+    environment.etc."vmware/bootstrap".source = "${cfg.package}/etc/vmware/bootstrap";
 
     environment.etc."vmware/config".source =
       let
@@ -95,35 +101,87 @@ in
             ) >"$out"
           '';
 
-    environment.etc."vmware/bootstrap".source = "${cfg.package}/etc/vmware/bootstrap";
     environment.etc."vmware/icu".source = "${cfg.package}/etc/vmware/icu";
-    environment.etc."vmware-installer".source = "${cfg.package}/etc/vmware-installer";
+    environment.systemPackages = [ cfg.package ] ++ cfg.extraPackages;
 
     # SUID wrappers
-
     security.wrappers = {
       vmware-vmx = {
-        setuid = true;
-        owner = "root";
         group = "root";
+        owner = "root";
+        setuid = true;
         source = "${cfg.package}/lib/vmware/bin/.vmware-vmx-wrapped";
       };
     };
 
-    # Services
+    services.printing.drivers = [ cfg.package ];
 
-    systemd.services."vmware-wrappers" = {
-      description = "Create VMVare Wrappers";
+    systemd.services."vmware-authdlauncher" = {
+      description = "VMware Authentication Daemon";
+
+      serviceConfig = {
+        ExecStart = [ "${cfg.package}/bin/vmware-authdlauncher" ];
+        Type = "forking";
+      };
+
       wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services."vmware-networks" = {
+      after = [ "vmware-networks-configuration.service" ];
+      description = "VMware Networks";
+      requires = [ "vmware-networks-configuration.service" ];
+
+      serviceConfig = {
+        ExecCondition = [ "${pkgs.kmod}/bin/modprobe vmnet" ];
+        ExecStart = [ "${cfg.package}/bin/vmware-networks --start" ];
+        ExecStop = [ "${cfg.package}/bin/vmware-networks --stop" ];
+        Type = "forking";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services."vmware-networks-configuration" = {
+      description = "VMware Networks Configuration Generation";
+
+      serviceConfig = {
+        ExecStart = [
+          "${cfg.package}/bin/vmware-networks --postinstall vmware-player,0,1"
+        ];
+
+        RemainAfterExit = "yes";
+        Type = "oneshot";
+        UMask = "0077";
+      };
+
+      unitConfig.ConditionPathExists = "!/etc/vmware/networking";
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services."vmware-usbarbitrator" = {
+      description = "VMware USB Arbitrator";
+
+      serviceConfig = {
+        ExecStart = [ "${cfg.package}/bin/vmware-usbarbitrator -f" ];
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    # Services
+    systemd.services."vmware-wrappers" = {
+      after = [ "systemd-sysusers.service" ];
+
       before = [
         "vmware-authdlauncher.service"
         "vmware-networks-configuration.service"
         "vmware-networks.service"
         "vmware-usbarbitrator.service"
       ];
-      after = [ "systemd-sysusers.service" ];
-      serviceConfig.Type = "oneshot";
-      serviceConfig.RemainAfterExit = true;
+
+      description = "Create VMVare Wrappers";
+
       script = ''
         mkdir -p "${parentWrapperDir}"
         chmod 755 "${parentWrapperDir}"
@@ -146,49 +204,9 @@ in
           ln --symbolic "$wrapperDir" "${wrapperDir}"
         fi
       '';
-    };
 
-    systemd.services."vmware-authdlauncher" = {
-      description = "VMware Authentication Daemon";
-      serviceConfig = {
-        Type = "forking";
-        ExecStart = [ "${cfg.package}/bin/vmware-authdlauncher" ];
-      };
-      wantedBy = [ "multi-user.target" ];
-    };
-
-    systemd.services."vmware-networks-configuration" = {
-      description = "VMware Networks Configuration Generation";
-      unitConfig.ConditionPathExists = "!/etc/vmware/networking";
-      serviceConfig = {
-        UMask = "0077";
-        ExecStart = [
-          "${cfg.package}/bin/vmware-networks --postinstall vmware-player,0,1"
-        ];
-        Type = "oneshot";
-        RemainAfterExit = "yes";
-      };
-      wantedBy = [ "multi-user.target" ];
-    };
-
-    systemd.services."vmware-networks" = {
-      description = "VMware Networks";
-      after = [ "vmware-networks-configuration.service" ];
-      requires = [ "vmware-networks-configuration.service" ];
-      serviceConfig = {
-        Type = "forking";
-        ExecCondition = [ "${pkgs.kmod}/bin/modprobe vmnet" ];
-        ExecStart = [ "${cfg.package}/bin/vmware-networks --start" ];
-        ExecStop = [ "${cfg.package}/bin/vmware-networks --stop" ];
-      };
-      wantedBy = [ "multi-user.target" ];
-    };
-
-    systemd.services."vmware-usbarbitrator" = {
-      description = "VMware USB Arbitrator";
-      serviceConfig = {
-        ExecStart = [ "${cfg.package}/bin/vmware-usbarbitrator -f" ];
-      };
+      serviceConfig.RemainAfterExit = true;
+      serviceConfig.Type = "oneshot";
       wantedBy = [ "multi-user.target" ];
     };
   };

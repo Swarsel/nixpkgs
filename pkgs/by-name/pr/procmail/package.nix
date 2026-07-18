@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  gcc14Stdenv,
   fetchurl,
-  fetchpatch,
   buildPackages,
+  fetchpatch,
+  gcc14Stdenv,
 }@args:
 
 let
@@ -27,9 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix clang-16 and gcc-14 build failures:
     #   https://github.com/BuGlessRB/procmail/pull/7
     (fetchpatch {
+      hash = "sha256-CaQeDKwF0hNOrxioBj7EzkCdJdsq44KwkfA9s8xK88g=";
       name = "clang-16.patch";
       url = "https://github.com/BuGlessRB/procmail/commit/8cfd570fd14c8fb9983859767ab1851bfd064b64.patch";
-      hash = "sha256-CaQeDKwF0hNOrxioBj7EzkCdJdsq44KwkfA9s8xK88g=";
     })
   ];
 
@@ -56,6 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   # default target is binaries + manpages; manpages don't cross compile without more work.
   makeFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [ "bins" ];
+
   installTargets = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
     "install.bin"
   ];
@@ -64,7 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Mail processing and filtering utility";
     homepage = "https://github.com/BuGlessRB/procmail/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

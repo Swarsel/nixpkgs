@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   lxml,
   poetry-core,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "xpath-expressions";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "orf";
@@ -23,9 +22,9 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/orf/xpath-expressions/pull/4
     (fetchpatch {
+      hash = "sha256-IeV6ncJyt/w2s5TPpbM5a3pljNT6Bp5PIiqgTg2iTRA=";
       name = "replace-poetry-with-poetry-core.patch";
       url = "https://github.com/orf/xpath-expressions/commit/3c5900fd6b2d08dd9468707f35ab42072cf75bd3.patch";
-      hash = "sha256-IeV6ncJyt/w2s5TPpbM5a3pljNT6Bp5PIiqgTg2iTRA=";
     })
   ];
 
@@ -36,6 +35,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "xpath" ];
 
   meta = {

@@ -1,13 +1,14 @@
 {
+  lib,
+  fetchFromGitHub,
   bash,
   coreutils-prefixed,
   curl,
-  fetchFromGitHub,
-  gnused,
+  fzf,
   gnugrep,
+  gnused,
   installShellFiles,
   jq,
-  lib,
   makeWrapper,
   mplayer,
   mpv,
@@ -16,10 +17,9 @@
   stdenvNoCC,
   streamlink,
   vlc,
-  fzf,
+  withMplayer ? false,
   withMpv ? true,
   withVlc ? false,
-  withMplayer ? false,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -38,6 +38,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     substituteInPlace src/wtwitch --replace 'readonly SCRIPT_NAME="''${0##*/}"' 'readonly SCRIPT_NAME="wtwitch"'
   '';
 
+  nativeBuildInputs = [
+    scdoc
+    installShellFiles
+    makeWrapper
+  ];
+
   buildPhase = ''
     runHook preBuild
 
@@ -45,12 +51,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
-
-  nativeBuildInputs = [
-    scdoc
-    installShellFiles
-    makeWrapper
-  ];
 
   installPhase = ''
     runHook preInstall

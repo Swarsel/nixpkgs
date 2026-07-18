@@ -15,7 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ ncurses ];
-
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   installPhase = ''
@@ -27,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Colorized hexdump tool";
     homepage = "https://www.muppetlabs.com/~breadbox/software/xcd.html";
-    maintainers = [ lib.maintainers.xfnw ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.xfnw ];
     platforms = lib.platforms.unix;
     mainProgram = "xcd";
   };

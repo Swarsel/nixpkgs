@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -14,28 +14,31 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-eWPcFUo0yE2r4cL3kyFBcdHp0RBKUF3kgYqV5B55w0M=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/share/fonts/opentype
     cp $src $out/share/fonts/opentype/nasin-nanpa.otf
   '';
 
+  dontUnpack = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/ETBCOR/nasin-nanpa";
     description = ''UCSUR OpenType monospaced font for the Toki Pona writing system, Sitelen Pona ("main" version; uses UCSUR and ligatures from latin characters)'';
+
     longDescription = ''
       ni li nasin pi sitelen pona.
       sitelen ale pi nasin ni li sama mute weka.
       sitelen pi nasin ni li lon nasin UCSUR kin.
     '';
+
+    homepage = "https://github.com/ETBCOR/nasin-nanpa";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       somasis
       feathecutie
     ];
+
+    platforms = lib.platforms.all;
   };
 }

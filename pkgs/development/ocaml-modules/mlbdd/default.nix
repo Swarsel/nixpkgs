@@ -9,8 +9,6 @@ buildDunePackage {
   pname = "mlbdd";
   version = "0.7.3";
 
-  minimalOCamlVersion = "4.04";
-
   src = fetchFromGitHub {
     owner = "arlencox";
     repo = "mlbdd";
@@ -18,14 +16,14 @@ buildDunePackage {
     hash = "sha256-TUdgx+B5341VJsnP7iTHID7hNC+5G/I2xNM5F3mdb/A=";
   };
 
-  checkInputs = [ ounit ];
-
   doCheck = true;
+  checkInputs = [ ounit ];
+  minimalOCamlVersion = "4.04";
 
   meta = {
-    homepage = "https://github.com/arlencox/mlbdd";
     description = "Not-quite-so-simple Binary Decision Diagrams implementation for OCaml";
-    maintainers = with lib.maintainers; [ katrinafyi ];
+    homepage = "https://github.com/arlencox/mlbdd";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ katrinafyi ];
   };
 }

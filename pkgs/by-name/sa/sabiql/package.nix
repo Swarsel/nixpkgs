@@ -1,14 +1,14 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  rustPlatform,
-  rustc,
+  fetchFromGitHub,
   graphviz,
-  postgresql,
-  xdg-utils,
   makeBinaryWrapper,
   nix-update-script,
+  postgresql,
+  rustPlatform,
+  rustc,
+  xdg-utils,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Fm9AINbCoazT2OHPJUO7YHpLt1KpQ8jDfXAkX3Karl0=";
   };
 
-  cargoHash = "sha256-915W5zpavggfPN7artvgxkErWsx9eZ6953RX/eLQagg=";
-
   # Upstream use latest rust version need to patch use nixpkgs version
   postPatch = ''
     sed -i 's/rust-version\s*=\s*".*"/rust-version = "${rustc.version}"/' Cargo.toml
@@ -32,6 +30,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   nativeBuildInputs = [
     makeBinaryWrapper
   ];
+
+  cargoHash = "sha256-915W5zpavggfPN7artvgxkErWsx9eZ6953RX/eLQagg=";
 
   postInstall =
     let
@@ -46,15 +46,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --prefix PATH : ${lib.makeBinPath runtimePathDeps}
     '';
 
-  passthru.updateScript = nix-update-script { };
-
   __structuredAttrs = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fast PostgreSQL TUI written in Rust. driver-less, vim-first, with ER diagrams. No database drivers, no setup, just psql";
-    mainProgram = "sabiql";
     homepage = "https://github.com/riii111/sabiql";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ theeasternfurry ];
+    mainProgram = "sabiql";
   };
 })

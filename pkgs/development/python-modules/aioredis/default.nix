@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
-  fetchpatch,
-  fetchPypi,
   async-timeout,
-  typing-extensions,
+  buildPythonPackage,
+  fetchPypi,
+  fetchpatch,
   hiredis,
   isPyPy,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "aioredis";
   version = "2.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -22,10 +21,10 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/aio-libs-abandoned/aioredis-py/pull/1490
     (fetchpatch {
-      name = "python-3.11-compatibility.patch";
-      url = "https://github.com/aio-libs-abandoned/aioredis-py/commit/1b951502dc8f149fa66beafeea40c782f1c5c1d3.patch";
       hash = "sha256-EqkiYktxISg0Rv4ShXOksGvuUyljPxjJsfNOVaaax2o=";
       includes = [ "aioredis/exceptions.py" ];
+      name = "python-3.11-compatibility.patch";
+      url = "https://github.com/aio-libs-abandoned/aioredis-py/commit/1b951502dc8f149fa66beafeea40c782f1c5c1d3.patch";
     })
   ];
 
@@ -37,6 +36,7 @@ buildPythonPackage rec {
 
   # Wants to run redis-server, hardcoded FHS paths, too much trouble.
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Asyncio (PEP 3156) Redis client library";

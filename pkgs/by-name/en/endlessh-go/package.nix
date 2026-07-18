@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-HumLc9u7jVFk7228SYHptBEOSRdLp4r5QECYlYrO6KY=";
-
   env.CGO_ENABLED = 0;
 
   ldflags = [

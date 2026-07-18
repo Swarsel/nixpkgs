@@ -1,26 +1,20 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "bbot";
   version = "2.7.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-vpKezG1nJVxQE4Qijf8feeRFD4hjy98HznVDXL+MBkE=";
   };
 
-  pythonRelaxDeps = [
-    "dnspython"
-    "radixtarget"
-    "regex"
-    "tabulate"
-    "websockets"
-  ];
+  # Project has no tests
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     poetry-core
@@ -63,17 +57,26 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "dnspython"
+    "radixtarget"
+    "regex"
+    "tabulate"
+    "websockets"
+  ];
 
   meta = {
     description = "OSINT automation for hackers";
     homepage = "https://pypi.org/project/bbot/";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       fab
       robsliwi
     ];
+
     mainProgram = "bbot";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   dulwich,
   everett,
+  fetchPypi,
   importlib-metadata,
   jsonschema,
   numpy,
@@ -25,15 +25,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "comet-ml";
   version = "3.58.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   # No GitHub repository
   src = fetchPypi {
-    pname = "comet_ml";
     inherit (finalAttrs) version;
     hash = "sha256-fl+9ywbh3g1/mXRavW4V5aaLDyHcpUu+dMK4mQGVkEE=";
+    pname = "comet_ml";
   };
+
+  nativeCheckInputs = [
+    versionCheckHook
+    # Skip pytestCheckHook, as Python tests require a lot of additional dependencies to run.
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -58,16 +63,12 @@ buildPythonPackage (finalAttrs: {
     wurlitzer
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "comet_ml" ];
+
   pythonRelaxDeps = [
     "everett"
     "python-box"
-  ];
-
-  pythonImportsCheck = [ "comet_ml" ];
-
-  nativeCheckInputs = [
-    versionCheckHook
-    # Skip pytestCheckHook, as Python tests require a lot of additional dependencies to run.
   ];
 
   meta = {

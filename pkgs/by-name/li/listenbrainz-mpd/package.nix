@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
-  fetchFromCodeberg,
-  pkg-config,
   stdenv,
-  openssl,
-  libiconv,
-  sqlite,
-  installShellFiles,
   asciidoctor,
+  fetchFromCodeberg,
+  installShellFiles,
+  libiconv,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sqlite,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-087+l3calge6hKu3h84C98mIpW6qFAZwRMe4lkQCU4o=";
   };
-
-  cargoHash = "sha256-SxXEathWAGqdgeJmIn5h9Zvv7Z3DGXa4htkODf/ANRQ=";
 
   nativeBuildInputs = [
     pkg-config
@@ -45,12 +43,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ]
   );
 
-  buildFeatures = [
-    "shell_completion"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    "systemd"
-  ];
+  cargoHash = "sha256-SxXEathWAGqdgeJmIn5h9Zvv7Z3DGXa4htkODf/ANRQ=";
 
   postInstall = ''
     installShellCompletion \
@@ -62,17 +55,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage listenbrainz-mpd.1
   '';
 
+  buildFeatures = [
+    "shell_completion"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    "systemd"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "ListenBrainz submission client for MPD";
     homepage = "https://codeberg.org/elomatreb/listenbrainz-mpd";
     changelog = "https://codeberg.org/elomatreb/listenbrainz-mpd/src/tag/v${finalAttrs.version}/CHANGELOG.md";
-    description = "ListenBrainz submission client for MPD";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       DeeUnderscore
       Kladki
     ];
+
     mainProgram = "listenbrainz-mpd";
   };
 })

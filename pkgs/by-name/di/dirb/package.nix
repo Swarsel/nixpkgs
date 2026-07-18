@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   autoreconfHook,
   curl,
 }:
@@ -19,19 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0b7wc2gvgnyp54rxf1n9arn6ymrvdb633v6b3ah138hw4gg8lx7k";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-  buildInputs = [ curl ];
-
-  unpackPhase = ''
-    tar -xf $src
-    find . -exec chmod +x "{}" ";"
-    export sourceRoot="dirb222"
-  '';
-
   postPatch = ''
     sed -i "s#/usr#$out#" src/dirb.c
   '';
 
+  nativeBuildInputs = [ autoreconfHook ];
+  buildInputs = [ curl ];
   # Workaround build failure on -fno-common toolchains like upstream
   # gcc-10. Otherwise build fails as:
   #   ld: resume.o:/build/dirb222/src/variables.h:15: multiple definition of `curl';
@@ -44,11 +37,17 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/dirb/wordlists/ $out/share/wordlists/dirb
   '';
 
+  unpackPhase = ''
+    tar -xf $src
+    find . -exec chmod +x "{}" ";"
+    export sourceRoot="dirb222"
+  '';
+
   meta = {
     description = "Web content scanner";
     homepage = "https://dirb.sourceforge.net/";
-    maintainers = with lib.maintainers; [ bennofs ];
     license = with lib.licenses; [ gpl2Only ];
+    maintainers = with lib.maintainers; [ bennofs ];
     platforms = lib.platforms.unix;
   };
 })

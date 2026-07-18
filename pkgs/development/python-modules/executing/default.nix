@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # tests
+  asttokens,
+  buildPythonPackage,
+  littleutils,
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # tests
-  asttokens,
-  littleutils,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "executing";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alexmojaki";
@@ -25,15 +22,15 @@ buildPythonPackage rec {
     hash = "sha256-UlXuXBW9TmJ0xG/0yMdx8EDQDSzVgtsgFJIj/O7pmio=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeCheckInputs = [
     asttokens
     littleutils
     pytestCheckHook
+  ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
   ];
 
   disabledTests = [
@@ -46,6 +43,7 @@ buildPythonPackage rec {
     "test_many_source_for_filename_calls"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "executing" ];
 
   meta = {

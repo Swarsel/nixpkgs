@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
   colorclass,
-  fetchFromGitHub,
   poetry-core,
   pytest-cov-stub,
   pytest-xdist,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "terminaltables3";
   version = "4.0.0-unstable-2024-07-21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matthewdeanmartin";
@@ -23,8 +22,6 @@ buildPythonPackage rec {
     rev = "f1c465b36eb9b91a984d8864b21376e7c37075b8";
     hash = "sha256-UcEovh1Eb4QNPwLGDjCphPlJSSkOdhCJ2fK3tuSWOTc=";
   };
-
-  build-system = [ poetry-core ];
 
   nativeCheckInputs = [
     colorama
@@ -35,7 +32,7 @@ buildPythonPackage rec {
     termcolor
   ];
 
-  pythonImportsCheck = [ "terminaltables3" ];
+  build-system = [ poetry-core ];
 
   disabledTests = [
     # Tests are comparing CLI output
@@ -44,6 +41,9 @@ buildPythonPackage rec {
     "test_height"
     "test_width"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "terminaltables3" ];
 
   meta = {
     description = "Generate simple tables in terminals from a nested list of strings";

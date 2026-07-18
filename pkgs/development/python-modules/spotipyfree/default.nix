@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   pymongo,
   setuptools,
   spotapi,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "spotipyfree";
   version = "1.9.13";
-  pyproject = true;
 
   # no tags on GitHub
   src = fetchPypi {
@@ -18,6 +17,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jbeZNoB1Sep73ccJaggFZb2AGq5OSZf6f/OzWwFB+pA=";
   };
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,10 +26,8 @@ buildPythonPackage (finalAttrs: {
     spotapi
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "SpotipyFree" ];
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "Spotipy-compatible wrapper using SpotAPI";

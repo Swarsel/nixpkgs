@@ -8,11 +8,11 @@
   libftdi1,
   nix-update-script,
   pkg-config,
-  useLibFTDI ? true,
-  useOpenMP ? true,
   buildBluetooth ? true,
   buildBluetoothLowEnergy ? true,
   buildONNX ? true,
+  useLibFTDI ? true,
+  useOpenMP ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [ ];
 
+  postPatch = ''
+    find . -type f -name 'build.cmake' -exec \
+    sed -i 's/DESTINATION inc/DESTINATION include/g' {} \;
+  '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [
+    dbus
+  ]
+  ++ lib.optional (buildBluetooth || buildBluetoothLowEnergy) bluez
+  ++ lib.optional useLibFTDI libftdi1;
+
   cmakeFlags = [
     (lib.cmakeBool "USE_LIBFTDI" useLibFTDI)
     (lib.cmakeBool "USE_OPENMP" useOpenMP)
@@ -37,32 +53,18 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_ONNX" buildONNX)
   ];
 
-  buildInputs = [
-    dbus
-  ]
-  ++ lib.optional (buildBluetooth || buildBluetoothLowEnergy) bluez
-  ++ lib.optional useLibFTDI libftdi1;
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
-  postPatch = ''
-    find . -type f -name 'build.cmake' -exec \
-    sed -i 's/DESTINATION inc/DESTINATION include/g' {} \;
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Library to obtain, parse and analyze data (EEG, EMG, ECG) from biosensors";
     homepage = "https://brainflow.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pandapip1
       ziguana
     ];
+
     platforms = lib.platforms.all;
   };
 })

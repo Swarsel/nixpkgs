@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  go-md2man,
   fetchFromGitHub,
+  go-md2man,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,13 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ go-md2man ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
+    description = "Curses replacement for daemons and embedded apps";
     homepage = "https://github.com/bbonev/yascreen";
     changelog = "https://github.com/bbonev/yascreen/releases/tag/${finalAttrs.src.tag}";
-    description = "Curses replacement for daemons and embedded apps";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ lib.maintainers.arezvov ];
     platforms = lib.platforms.linux;

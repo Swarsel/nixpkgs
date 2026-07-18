@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -16,7 +16,7 @@ buildDunePackage (finalAttrs: {
   meta = {
     description = "Runtime for atdgen generated bucklescript converters";
     homepage = "https://github.com/ahrefs/atd";
-    maintainers = [ lib.maintainers.vbgl ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.vbgl ];
   };
 })

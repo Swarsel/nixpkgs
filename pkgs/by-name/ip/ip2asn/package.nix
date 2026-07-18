@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -19,9 +19,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-2wuxBwllrkPdmmBCt7DPQ38E2k3igAjbICun51bhopY=";
   };
 
-  cargoHash = "sha256-fYg0aIU8usueMg6cMWUcwMIFCinHdm6H7k9ywZGYfg8=";
+  nativeBuildInputs = [
+    pkg-config
+  ];
 
-  passthru.updateScript = nix-update-script { };
+  buildInputs = [
+    openssl
+  ];
+
+  cargoHash = "sha256-fYg0aIU8usueMg6cMWUcwMIFCinHdm6H7k9ywZGYfg8=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   cargoBuildFlags = [
     "-p"
@@ -39,16 +47,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "auto_update_tests::test_auto_update_skips_check_for_recent_cache"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  nativeBuildInputs = [
-    pkg-config
-  ];
-
-  buildInputs = [
-    openssl
-  ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI tool for mapping IP addresses to Autonomous System information";

@@ -14,7 +14,7 @@ stdenv.mkDerivation rec {
     tag = "v${version}";
     hash = "sha256-139OhAHxulXovyywBuz552lmDqoV7aLHKKNb81dOKDo=";
   };
-  dontBuild = true;
+
   installPhase = ''
     runHook preInstall
 
@@ -23,6 +23,8 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Weather Card with animated icons for Home Assistant Lovelace";

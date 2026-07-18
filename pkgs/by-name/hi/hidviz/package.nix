@@ -1,14 +1,14 @@
 {
   lib,
-  fetchFromGitHub,
-  cmake,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
+  asio_1_32_0,
+  cmake,
+  libusb1,
+  pkg-config,
+  protobuf,
   # Package dependencies
   qt6,
-  libusb1,
-  protobuf,
-  asio_1_32_0,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qttools
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     qt6.qtwebengine
     libusb1
@@ -44,10 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/hidviz/hidviz";
     description = "GUI application for in-depth analysis of USB HID class devices";
+    homepage = "https://github.com/hidviz/hidviz";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

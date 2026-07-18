@@ -1,18 +1,17 @@
 {
   lib,
-  writeShellScript,
-  coreutils,
-  gnused,
-  gnugrep,
-  curl,
-  gnupg,
-  nix,
   common-updater-scripts,
-
+  coreutils,
+  curl,
+  gnugrep,
+  gnupg,
+  gnused,
+  meta,
+  nix,
   # options
   pname,
   version,
-  meta,
+  writeShellScript,
   baseUrl ? "https://dist.torproject.org/torbrowser/",
   # name used to match published archive
   name ? "tor-browser",

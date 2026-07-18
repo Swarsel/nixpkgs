@@ -1,35 +1,27 @@
 {
   lib,
   stdenv,
-  rustPlatform,
+  # env
+  fetchurl,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  pkg-config,
-  python3,
-  autoPatchelfHook,
   autoAddDriverRunpath,
-
+  autoPatchelfHook,
+  config,
+  cudaPackages,
+  mistral-rs,
+  mkl,
+  nix-update-script,
   # buildInputs
   oniguruma,
   openssl,
-  mkl,
-
-  # env
-  fetchurl,
-
+  # nativeBuildInputs
+  pkg-config,
+  python3,
+  rustPlatform,
   versionCheckHook,
-
-  mistral-rs,
-  nix-update-script,
-
-  cudaPackages,
-  cudaCapability ? null,
-
-  config,
   # one of `[ null false "cuda" "mkl" "metal" ]`
   acceleration ? null,
-
+  cudaCapability ? null,
 }:
 
 let
@@ -74,7 +66,6 @@ in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mistral-rs";
   version = "0.9.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "EricLBuehler";
@@ -109,8 +100,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
           ""
     '';
 
-  cargoHash = "sha256-TULJ3mEAWp1ktPDPeBbUJGHhsEuo5T2qh3/JpS+8+ds=";
-
   nativeBuildInputs = [
     pkg-config
     python3
@@ -140,15 +129,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optionals mklSupport [ mkl ];
 
-  buildFeatures =
-    lib.optionals cudaSupport [ "cuda" ]
-    ++ lib.optionals mklSupport [ "mkl" ]
-    ++ lib.optionals (hostPlatform.isDarwin && metalSupport) [ "metal" ];
+  cargoHash = "sha256-TULJ3mEAWp1ktPDPeBbUJGHhsEuo5T2qh3/JpS+8+ds=";
 
   env = {
     # metal (proprietary) is not available in the darwin sandbox.
     # Hence, we must disable metal precompilation.
     MISTRALRS_METAL_PRECOMPILE = 0;
+    RUSTONIG_SYSTEM_LIBONIG = true;
 
     SWAGGER_UI_DOWNLOAD_URL =
       let
@@ -160,40 +147,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
         swaggerUiVersion = "5.17.14";
 
         swaggerUi = fetchurl {
-          url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v${swaggerUiVersion}.zip";
           hash = "sha256-SBJE0IEgl7Efuu73n3HZQrFxYX+cn5UU5jrL4T5xzNw=";
+          url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v${swaggerUiVersion}.zip";
         };
       in
       "file://${swaggerUi}";
-
-    RUSTONIG_SYSTEM_LIBONIG = true;
   }
   // (lib.optionalAttrs cudaSupport {
     CUDA_COMPUTE_CAP = cudaCapability';
-
     # We already list CUDA dependencies in buildInputs
     # We only set CUDA_TOOLKIT_ROOT_DIR to satisfy some redundant checks from upstream
     CUDA_TOOLKIT_ROOT_DIR = lib.getDev cudaPackages.cuda_cudart;
   });
-
-  appendRunpaths = lib.optionals cudaSupport [
-    (lib.makeLibraryPath [
-      cudaPackages.libcublas
-      cudaPackages.libcurand
-    ])
-  ];
-
-  # swagger-ui will once more be copied in the target directory during the check phase
-  # See https://github.com/juhaku/utoipa/blob/utoipa-swagger-ui-9.0.2/utoipa-swagger-ui/build.rs#L168
-  # Not deleting the existing unpacked archive leads to a `PermissionDenied` error
-  preCheck = ''
-    rm -rf target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/build/
-  '';
-
-  # Prevent checkFeatures from inheriting buildFeatures because
-  # - `cargo check ... --features=cuda` requires access to a real GPU
-  # - `cargo check ... --features=metal` (on darwin) requires the sandbox to be completely disabled
-  checkFeatures = [ ];
 
   checkFlags = [
     # Try to access internet
@@ -214,23 +179,53 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=unshare_is_denied_inside_child"
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+  # swagger-ui will once more be copied in the target directory during the check phase
+  # See https://github.com/juhaku/utoipa/blob/utoipa-swagger-ui-9.0.2/utoipa-swagger-ui/build.rs#L168
+  # Not deleting the existing unpacked archive leads to a `PermissionDenied` error
+  preCheck = ''
+    rm -rf target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/build/
+  '';
+
   # When started, mistralrs tries to load libcuda.so from the driver which is not available in the sandbox
   # mistralrs: error while loading shared libraries: libcuda.so.1: cannot open shared object file: No such file or directory
   doInstallCheck = !cudaSupport;
 
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  __structuredAttrs = true;
+
+  appendRunpaths = lib.optionals cudaSupport [
+    (lib.makeLibraryPath [
+      cudaPackages.libcublas
+      cudaPackages.libcurand
+    ])
+  ];
+
+  buildFeatures =
+    lib.optionals cudaSupport [ "cuda" ]
+    ++ lib.optionals mklSupport [ "mkl" ]
+    ++ lib.optionals (hostPlatform.isDarwin && metalSupport) [ "metal" ];
+
+  # Prevent checkFeatures from inheriting buildFeatures because
+  # - `cargo check ... --features=cuda` requires access to a real GPU
+  # - `cargo check ... --features=metal` (on darwin) requires the sandbox to be completely disabled
+  checkFeatures = [ ];
+
   passthru = {
     tests = {
-      withMkl = lib.optionalAttrs (hostPlatform.isLinux && hostPlatform.isx86_64) (
-        mistral-rs.override { acceleration = "mkl"; }
-      );
       withCuda = lib.optionalAttrs hostPlatform.isLinux (mistral-rs.override { acceleration = "cuda"; });
+
       withMetal = lib.optionalAttrs (hostPlatform.isDarwin && hostPlatform.isAarch64) (
         mistral-rs.override { acceleration = "metal"; }
       );
+
+      withMkl = lib.optionalAttrs (hostPlatform.isLinux && hostPlatform.isx86_64) (
+        mistral-rs.override { acceleration = "mkl"; }
+      );
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -240,7 +235,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/EricLBuehler/mistral.rs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "mistralrs";
+
     platforms =
       if cudaSupport then
         lib.platforms.linux
@@ -250,6 +245,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
         [ "x86_64-linux" ]
       else
         lib.platforms.unix;
+
+    mainProgram = "mistralrs";
     broken = mklSupport;
   };
 })

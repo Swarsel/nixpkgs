@@ -1,17 +1,16 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  git,
   stdenv,
-  testers,
+  fetchFromGitHub,
+  buildGoModule,
+  git,
   manifest-tool,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "manifest-tool";
   version = "2.2.1";
-  modRoot = "v2";
 
   src = fetchFromGitHub {
     owner = "estesp";
@@ -19,15 +18,19 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-3Vzeq81zLfJLV1XcnQLixL9+acjIegjspquvMsgtuXg=";
     leaveDotGit = true;
+
     postFetch = ''
       git -C $out rev-parse HEAD > $out/.git-revision
       rm -rf $out/.git
     '';
   };
 
+  nativeBuildInputs = [ git ];
   vendorHash = null;
 
-  nativeBuildInputs = [ git ];
+  preConfigure = ''
+    export ldflags+=" -X main.gitCommit=$(cat .git-revision)"
+  '';
 
   ldflags = [
     "-s"
@@ -40,9 +43,7 @@ buildGoModule (finalAttrs: {
     "-static"
   ];
 
-  preConfigure = ''
-    export ldflags+=" -X main.gitCommit=$(cat .git-revision)"
-  '';
+  modRoot = "v2";
 
   tags = lib.optionals stdenv.hostPlatform.isStatic [
     "cgo"
@@ -57,9 +58,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Command line tool to create and query container image manifest list/indexes";
-    mainProgram = "manifest-tool";
     homepage = "https://github.com/estesp/manifest-tool";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ tricktron ];
+    mainProgram = "manifest-tool";
   };
 })

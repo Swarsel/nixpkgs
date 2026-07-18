@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "sqlalchemy-citext";
   version = "1.8.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # tests are not packaged in pypi tarball
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "citext" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ySgWEGHlEJpfB/BZuRs1bELBspEaiaX/UnJai2V/hx0=";
-
   env.CGO_ENABLED = "0";
 
   passthru = {
@@ -26,13 +25,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Command line monitoring for goroutines";
+
     longDescription = ''
       To use it, instrument your Go code following the
       [usage description of the project](https://github.com/bcicen/grmon?tab=readme-ov-file#usage).
     '';
+
     homepage = "https://github.com/bcicen/grmon";
     license = lib.licenses.mit;
-    mainProgram = "grmon";
     maintainers = with lib.maintainers; [ katexochen ];
+    mainProgram = "grmon";
   };
 })

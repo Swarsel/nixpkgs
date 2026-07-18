@@ -1,22 +1,22 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  coreutils,
-  gcc,
-  musl,
   binutils,
+  buildPlatform,
+  coreutils,
+  diffutils,
+  findutils,
+  gawk,
+  gcc,
+  gnugrep,
   gnumake,
   gnupatch,
   gnused,
-  gnugrep,
-  gawk,
-  diffutils,
-  findutils,
   gnutar,
   gzip,
+  hostPlatform,
+  musl,
 }:
 let
   pname = "gcc-cxx";
@@ -28,26 +28,26 @@ let
   };
 
   ccSrc = fetchurl {
-    url = "mirror://gnu/gcc/gcc-${version}/gcc-g++-${version}.tar.gz";
     sha256 = "1fqqk5zkmdg4vmqzdmip9i42q6b82i3f6yc0n86n9021cr7ms2k9";
+    url = "mirror://gnu/gcc/gcc-${version}/gcc-g++-${version}.tar.gz";
   };
 
   gmpVersion = "4.3.2";
   gmp = fetchurl {
-    url = "mirror://gnu/gmp/gmp-${gmpVersion}.tar.gz";
     sha256 = "15rwq54fi3s11izas6g985y9jklm3xprfsmym3v1g6xr84bavqvv";
+    url = "mirror://gnu/gmp/gmp-${gmpVersion}.tar.gz";
   };
 
   mpfrVersion = "2.4.2";
   mpfr = fetchurl {
-    url = "mirror://gnu/mpfr/mpfr-${mpfrVersion}.tar.gz";
     sha256 = "0dxn4904dra50xa22hi047lj8kkpr41d6vb9sd4grca880c7wv94";
+    url = "mirror://gnu/mpfr/mpfr-${mpfrVersion}.tar.gz";
   };
 
   mpcVersion = "1.0.3";
   mpc = fetchurl {
-    url = "mirror://gnu/mpc/mpc-${mpcVersion}.tar.gz";
     sha256 = "1hzci2zrrd7v3g1jk35qindq05hbl0bhjcyyisq9z209xb3fqzb1";
+    url = "mirror://gnu/mpc/mpc-${mpcVersion}.tar.gz";
   };
 
   patches = [
@@ -105,9 +105,9 @@ bash.runCommand "${pname}-${version}"
       description = "GNU Compiler Collection, version ${version}";
       homepage = "https://gcc.gnu.org";
       license = lib.licenses.gpl3Plus;
-      teams = [ lib.teams.minimal-bootstrap ];
       platforms = lib.platforms.unix;
       mainProgram = "gcc";
+      teams = [ lib.teams.minimal-bootstrap ];
     };
   }
   ''

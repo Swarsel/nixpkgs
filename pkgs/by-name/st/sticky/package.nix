@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  gitUpdater,
+  glib,
   gobject-introspection,
+  gspell,
+  gtk3,
   meson,
   ninja,
   python3,
   wrapGAppsHook3,
   xapp,
-  glib,
-  gspell,
-  gtk3,
   xapp-symbolic-icons,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,11 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3 # for patchShebangs
   ];
 
-  pythonPath = with python3.pkgs; [
-    pygobject3
-    python-xapp
-  ];
-
   preFixup = ''
     buildPythonPath "$out ''${pythonPath[*]}"
 
@@ -61,6 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  pythonPath = with python3.pkgs; [
+    pygobject3
+    python-xapp
+  ];
+
   passthru = {
     updateScript = gitUpdater {
       ignoredVersions = "master.*";
@@ -69,13 +69,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Sticky notes app for the Linux desktop";
-    mainProgram = "sticky";
     homepage = "https://github.com/linuxmint/sticky";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       linsui
       bobby285271
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "sticky";
   };
 })

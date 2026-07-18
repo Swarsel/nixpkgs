@@ -1,17 +1,14 @@
 { buildNpmPackage }:
 
 {
-  version,
-  src,
   meta,
+  src,
+  version,
 }:
 
 buildNpmPackage {
-  pname = "coolercontrol-ui";
   inherit version src;
-  sourceRoot = "${src.name}/coolercontrol-ui";
-
-  npmDepsFetcherVersion = 2;
+  pname = "coolercontrol-ui";
   npmDepsHash = "sha256-zolbx5ROiFzNhPGcOnJjEiY3W2IXI24wLKPj3wRSLXU=";
 
   postBuild = ''
@@ -19,6 +16,8 @@ buildNpmPackage {
   '';
 
   dontInstall = true;
+  npmDepsFetcherVersion = 2;
+  sourceRoot = "${src.name}/coolercontrol-ui";
 
   meta = meta // {
     description = "${meta.description} (UI data)";

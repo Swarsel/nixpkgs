@@ -1,15 +1,14 @@
 {
   buildDunePackage,
-  irmin,
   fmt,
-  ptime,
+  irmin,
   mirage-clock,
+  ptime,
 }:
 
 buildDunePackage {
-  pname = "irmin-mirage";
-
   inherit (irmin) version src;
+  pname = "irmin-mirage";
 
   propagatedBuildInputs = [
     irmin

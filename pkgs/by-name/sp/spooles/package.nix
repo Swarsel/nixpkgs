@@ -14,8 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1pf5z3vvwd8smbpibyabprdvcmax0grzvx2y0liy98c7x6h5jid8";
   };
 
-  sourceRoot = ".";
-
   patches = [
     ./spooles.patch
     # fix compiler error where NULL is used as a zero parameter
@@ -27,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     substituteInPlace makefile --replace "-Wl,-soname," "-Wl,-install_name,$out/lib/"
   '';
+
+  nativeBuildInputs = [ perl ];
 
   buildPhase = ''
     make lib
@@ -49,11 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  nativeBuildInputs = [ perl ];
+  sourceRoot = ".";
 
   meta = {
-    homepage = "http://www.netlib.org/linalg/spooles/";
     description = "Library for solving sparse real and complex linear systems of equations";
+    homepage = "http://www.netlib.org/linalg/spooles/";
     license = lib.licenses.publicDomain;
     maintainers = [ ];
     platforms = lib.platforms.unix;

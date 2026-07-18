@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  libglvnd,
-  libtool,
   SDL2,
   SDL2_image,
   SDL2_mixer,
+  autoreconfHook,
+  libglvnd,
   libsm,
+  libtool,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -27,10 +27,13 @@ stdenv.mkDerivation {
     sed -i 's/^AUTOMAKE_OPTIONS = gnu$/AUTOMAKE_OPTIONS = foreign/' Makefile.am
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libglvnd
     libtool
@@ -39,7 +42,6 @@ stdenv.mkDerivation {
     SDL2_mixer
     libsm
   ];
-  strictDeps = true;
 
   env.NIX_CFLAGS_COMPILE = toString [
     "-I${lib.getDev SDL2_image}/include/SDL2"
@@ -49,8 +51,8 @@ stdenv.mkDerivation {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/adoptware/pinball";
     description = "Emilia Pinball simulator";
+    homepage = "https://github.com/adoptware/pinball";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ qyliss ];
     platforms = lib.platforms.linux;

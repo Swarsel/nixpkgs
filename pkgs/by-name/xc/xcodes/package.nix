@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  swiftPackages,
+  aria2,
+  makeWrapper,
   swift,
+  swiftPackages,
   swiftpm,
   swiftpm2nix,
-  makeWrapper,
-  aria2,
 }:
 let
   generated = swiftpm2nix.helpers ./generated;
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  configurePhase = generated.configure;
-
   installPhase = ''
     runHook preInstall
 
@@ -42,19 +40,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = generated.configure;
+
   meta = {
-    changelog = "https://github.com/XcodesOrg/xcodes/releases/tag/${finalAttrs.version}";
     description = "Command-line tool to install and switch between multiple versions of Xcode";
     homepage = "https://github.com/XcodesOrg/xcodes";
+    changelog = "https://github.com/XcodesOrg/xcodes/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       # unxip
       lgpl3Only
     ];
+
     maintainers = with lib.maintainers; [
       _0x120581f
       emilytrau
     ];
+
     platforms = lib.platforms.darwin;
   };
 })

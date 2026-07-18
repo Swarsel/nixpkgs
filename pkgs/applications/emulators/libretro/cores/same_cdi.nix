@@ -1,17 +1,16 @@
 {
   lib,
-  alsa-lib,
   fetchFromGitHub,
+  alsa-lib,
   fetchpatch2,
   libGL,
   libGLU,
+  libx11,
   mkLibretroCore,
   portaudio,
   python3,
-  libx11,
 }:
 mkLibretroCore {
-  core = "same_cdi";
   version = "0-unstable-2026-03-31";
 
   src = fetchFromGitHub {
@@ -23,10 +22,10 @@ mkLibretroCore {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-1vrMxnRtEWUt+6I/4PSfCPDIUAGKkXFd2UVr9473ngo=";
       # https://github.com/libretro/same_cdi/pull/19
       name = "Fixes_compilation_errors_as_per_issue_9.patch";
       url = "https://github.com/libretro/same_cdi/commit/bf3212315546cdd514118a4f3ea764fd9c401091.patch?full_index=1";
-      hash = "sha256-1vrMxnRtEWUt+6I/4PSfCPDIUAGKkXFd2UVr9473ngo=";
     })
   ];
 
@@ -39,7 +38,8 @@ mkLibretroCore {
     sed -i '1i #include <cstdint>' src/lib/util/corestr.cpp
   '';
 
-  extraNativeBuildInputs = [ python3 ];
+  core = "same_cdi";
+
   extraBuildInputs = [
     alsa-lib
     libGL
@@ -48,9 +48,12 @@ mkLibretroCore {
     libx11
   ];
 
+  extraNativeBuildInputs = [ python3 ];
+
   meta = {
     description = "SAME_CDI is a libretro core to play CD-i games";
     homepage = "https://github.com/libretro/same_cdi";
+
     license = with lib.licenses; [
       bsd3
       gpl2Plus

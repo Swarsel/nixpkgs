@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
-  vimUtils,
-  nix-update-script,
+  fetchFromGitHub,
   gitMinimal,
+  nix-update-script,
+  rustPlatform,
+  vimUtils,
 }:
 let
   version = "0-unstable-2026-01-10";
@@ -18,7 +18,6 @@ let
   jupyter-api-nvim-lib = rustPlatform.buildRustPackage {
     inherit version src;
     pname = "jupyter-api-nvim-lib";
-
     cargoHash = "sha256-Oe6NnnNBY2nzYkNYucPpR6iV/8a6/9ZUytKpdHWY+So=";
 
     env = {
@@ -28,8 +27,9 @@ let
   };
 in
 vimUtils.buildVimPlugin {
-  pname = "jupyter-api.nvim";
   inherit version src;
+  pname = "jupyter-api.nvim";
+
   preInstall =
     let
       ext = stdenv.hostPlatform.extensions.sharedLibrary;
@@ -40,18 +40,19 @@ vimUtils.buildVimPlugin {
     '';
 
   passthru = {
+    # needed for the update script
+    inherit jupyter-api-nvim-lib;
+
     updateScript = nix-update-script {
       attrPath = "vimPlugins.jupyter-api-nvim.jupyter-api-nvim-lib";
     };
-
-    # needed for the update script
-    inherit jupyter-api-nvim-lib;
   };
 
   meta = {
     description = "Library for interacting with Jupyter kernels from Neovim Lua";
     homepage = "https://github.com/bitbloxhub/jupyter-api.nvim/";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       bitbloxhub
     ];

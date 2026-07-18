@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   gnat,
   gprbuild,
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "CLI software to monitor the power consumption of software and hardware components";
     homepage = "https://github.com/joular/powerjoular";
-    maintainers = [ lib.maintainers.julienmalka ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.julienmalka ];
     platforms = lib.platforms.linux;
   };
 })

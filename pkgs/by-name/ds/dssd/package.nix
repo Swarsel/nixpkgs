@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   dbus,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,16 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-gAV4gwrfvYfc2f1tDY/cNOFMrQzrzHSmEFsKg7ke/6c=";
   };
 
-  cargoHash = "sha256-yX2/2TW3FNbqwzR6+5yP26E2Eps0bTJgJJrDIQG2KQU=";
-
   postPatch = ''
     substituteInPlace dssd.service org.freedesktop.secrets.service \
       --replace-fail /usr/bin/dssd $out/bin/dssd
   '';
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ dbus ];
+  cargoHash = "sha256-yX2/2TW3FNbqwzR6+5yP26E2Eps0bTJgJJrDIQG2KQU=";
 
   postInstall = ''
     install dssd.service -Dt $out/lib/systemd/user/
@@ -34,14 +33,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   __structuredAttrs = true;
-  strictDeps = true;
 
   meta = {
     description = "Dead Simple Secret Daemon";
     homepage = "https://github.com/ylxdzsw/dssd";
     license = lib.licenses.mit;
-    mainProgram = "dssd";
     maintainers = with lib.maintainers; [ phanirithvij ];
     platforms = lib.platforms.linux;
+    mainProgram = "dssd";
   };
 })

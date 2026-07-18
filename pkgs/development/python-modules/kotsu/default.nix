@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pandas,
-  typing-extensions,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-mock,
+  pytestCheckHook,
   scikit-learn,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "kotsu";
   version = "0.4.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "datavaluepeople";
@@ -33,6 +32,8 @@ buildPythonPackage rec {
     pytest-mock
     scikit-learn
   ];
+
+  format = "setuptools";
   pythonImportsCheck = [ "kotsu" ];
 
   meta = {

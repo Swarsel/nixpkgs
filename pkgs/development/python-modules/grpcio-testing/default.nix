@@ -13,12 +13,11 @@
 buildPythonPackage rec {
   pname = "grpcio-testing";
   version = "1.81.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "grpcio_testing";
     inherit version;
     hash = "sha256-MjcL3/wM0Jq63pKP2ID5Gb8HCv5dASot4UEkJ7LcGSE=";
+    pname = "grpcio_testing";
   };
 
   postPatch = ''
@@ -26,21 +25,21 @@ buildPythonPackage rec {
       --replace-fail '"grpcio>={version}".format(version=grpc_version.VERSION)' '"grpcio"'
   '';
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
 
   dependencies = [
     grpcio
     protobuf
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "grpc_testing" ];
 
-  # Module has no tests
-  doCheck = false;
+  pythonRelaxDeps = [
+    "protobuf"
+  ];
 
   meta = {
     description = "Testing utilities for gRPC Python";

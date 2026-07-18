@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-fCzh9pn+HWL60IvpPieaaZ+JjQZ1bbfYIyLEHDITK4U=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -23,15 +21,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fcitx 5 pinyin dictionary from zh.moegirl.org.cn";
     homepage = "https://github.com/outloudvi/mw2fcitx";
+
     license = with lib.licenses; [
       mit
       cc-by-nc-sa-30
     ];
+
     maintainers = with lib.maintainers; [ Guanran928 ];
     platforms = lib.platforms.all;
   };

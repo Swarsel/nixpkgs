@@ -1,28 +1,26 @@
 {
   lib,
+  fetchFromGitHub,
+  boto3,
+  botocore,
   buildPythonPackage,
   debugpy,
   docker,
-  fetchFromGitHub,
   kombu,
   poetry-core,
   psutil,
-  pytest-docker-tools,
   pytest,
-  tenacity,
-
+  pytest-docker-tools,
+  python-memcached,
   # optional dependencies
   redis,
-  python-memcached,
-  boto3,
-  botocore,
+  tenacity,
   urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-celery";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "celery";
@@ -37,18 +35,10 @@ buildPythonPackage rec {
       --replace 'celery = { version = "*" }' ""
   '';
 
-  pythonRelaxDeps = [
-    "debugpy"
-  ];
-
-  pythonRemoveDeps = [
-    "celery" # cyclic dependency
-    "setuptools" # https://github.com/celery/pytest-celery/pull/464
-  ];
-
-  build-system = [ poetry-core ];
-
   buildInputs = [ pytest ];
+  # Infinite recursion with celery
+  doCheck = false;
+  build-system = [ poetry-core ];
 
   dependencies = [
     debugpy
@@ -67,8 +57,10 @@ buildPythonPackage rec {
       botocore
       urllib3
     ];
-    redis = [ redis ];
+
     memcached = [ python-memcached ];
+    redis = [ redis ];
+
     sqs = [
       boto3
       botocore
@@ -76,8 +68,16 @@ buildPythonPackage rec {
     ];
   };
 
-  # Infinite recursion with celery
-  doCheck = false;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "debugpy"
+  ];
+
+  pythonRemoveDeps = [
+    "celery" # cyclic dependency
+    "setuptools" # https://github.com/celery/pytest-celery/pull/464
+  ];
 
   meta = {
     description = "Pytest plugin to enable celery.contrib.pytest";

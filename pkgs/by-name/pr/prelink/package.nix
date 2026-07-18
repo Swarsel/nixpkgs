@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  fetchgit,
+  stdenv,
   autoreconfHook,
+  fetchgit,
   libelf,
   libiberty,
   unstableGitUpdater,
@@ -14,17 +14,12 @@ stdenv.mkDerivation {
 
   src = fetchgit {
     url = "https://git.yoctoproject.org/prelink-cross";
-    branchName = "cross_prelink";
     rev = "ff2561c02ade96c5d4d56ddd4e27ff064840a176";
     sha256 = "sha256-wmX7ybrZDWEop9fiInZMvgK/fpEk3sq+Wu8DSWWIvQY=";
+    branchName = "cross_prelink";
   };
 
   strictDeps = true;
-
-  configurePlatforms = [
-    "build"
-    "host"
-  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -39,15 +34,19 @@ stdenv.mkDerivation {
   # most tests fail
   doCheck = false;
 
-  enableParallelBuilding = true;
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
 
+  enableParallelBuilding = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "ELF prelinking utility to speed up dynamic linking";
     homepage = "https://wiki.yoctoproject.org/wiki/Cross-Prelink";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ artturin ];
+    platforms = lib.platforms.linux;
   };
 }

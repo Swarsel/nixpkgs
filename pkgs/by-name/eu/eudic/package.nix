@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
+  at-spi2-atk,
   autoPatchelfHook,
   desktop-file-utils,
   dpkg,
-  makeWrapper,
-  libnotify,
-  libx11,
-  libxscrnsaver,
-  libxext,
-  libxtst,
-  libuuid,
-  libsecret,
-  xdg-utils,
-  xdg-utils-cxx,
-  at-spi2-atk,
+  e2fsprogs,
   # additional dependencies autoPatchelfHook discovered
   gtk3,
-  alsa-lib,
-  e2fsprogs,
-  nss,
+  libgbm,
   libgpg-error,
   libjack2,
-  libgbm,
+  libnotify,
+  libsecret,
+  libuuid,
+  libx11,
+  libxext,
+  libxscrnsaver,
+  libxtst,
+  makeWrapper,
+  nss,
+  xdg-utils,
+  xdg-utils-cxx,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,9 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "13.5.2";
 
   src = fetchurl {
-    name = "eudic.deb";
     url = "https://www.eudic.net/download/eudic.deb?v=${finalAttrs.version}";
     hash = "sha256-UPkDRaqWF/oydH6AMo3t3PUT5VU961EPLcFb5XwOXVs=";
+    name = "eudic.deb";
   };
 
   nativeBuildInputs = [
@@ -83,10 +83,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Authoritative English Dictionary Software Essential Tools for English Learners";
     homepage = "https://www.eudic.net/v4/en/app/eudic";
-    platforms = [ "x86_64-linux" ];
     license = lib.licenses.unfree;
-    maintainers = with lib.maintainers; [ onedragon ];
-    mainProgram = "eudic";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ onedragon ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "eudic";
   };
 })

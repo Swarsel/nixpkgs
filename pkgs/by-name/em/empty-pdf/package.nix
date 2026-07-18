@@ -1,17 +1,11 @@
 {
-  stdenvNoCC,
-  imagemagick,
   lib,
+  imagemagick,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
-  name = "empty-pdf";
-
-  __structuredAttrs = true;
   strictDeps = true;
-
-  dontUnpack = true;
-
   nativeBuildInputs = [ imagemagick ];
 
   buildPhase = ''
@@ -30,12 +24,18 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontUnpack = true;
+  name = "empty-pdf";
+
   meta = {
     description = "Empty PDF file intended for testing";
+
     maintainers = with lib.maintainers; [
       pandapip1
       thefossguy
     ];
+
     platforms = imagemagick.meta.platforms;
   };
 }

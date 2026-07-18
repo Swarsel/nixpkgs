@@ -1,14 +1,12 @@
 {
   lib,
-  ocaml,
   fetchurl,
-  version ? if lib.versionAtLeast ocaml.version "4.14" then "0.29.0" else "0.28.1",
   astring,
   base,
   camlp-streams,
-  cmdliner_1_0,
-  cmdliner_1,
   cmdliner,
+  cmdliner_1,
+  cmdliner_1_0,
   csexp,
   dune-build-info,
   either,
@@ -16,6 +14,7 @@
   fpath,
   menhirLib,
   menhirSdk,
+  ocaml,
   ocaml-version,
   ocp-indent,
   odoc-parser,
@@ -23,6 +22,7 @@
   stdio,
   uuseg,
   uutf,
+  version ? if lib.versionAtLeast ocaml.version "4.14" then "0.29.0" else "0.28.1",
   ...
 }:
 
@@ -31,10 +31,11 @@
 # Both have the same sources and very similar dependencies.
 
 rec {
-  tarballName = "ocamlformat-${version}.tbz";
+  inherit version;
 
   src = fetchurl {
     url = "https://github.com/ocaml-ppx/ocamlformat/releases/download/${version}/${tarballName}";
+
     sha256 =
       {
         "0.19.0" = "0ihgwl7d489g938m1jvgx8azdgq9f5np5mzqwwya797hx2m4dz32";
@@ -54,18 +55,6 @@ rec {
         "0.29.0" = "sha256-2sd/CpV654K7S4abB7mAOocqNPjB6uiQG0LSG2I8nbU=";
       }
       ."${version}";
-  };
-
-  inherit version;
-
-  odoc-parser_v = odoc-parser.override {
-    version =
-      if lib.versionAtLeast version "0.24.0" then
-        "2.0.0"
-      else if lib.versionAtLeast version "0.20.1" then
-        "1.0.1"
-      else
-        "0.9.0";
   };
 
   cmdliner_v =
@@ -104,4 +93,16 @@ rec {
         astring
       ]
   );
+
+  odoc-parser_v = odoc-parser.override {
+    version =
+      if lib.versionAtLeast version "0.24.0" then
+        "2.0.0"
+      else if lib.versionAtLeast version "0.20.1" then
+        "1.0.1"
+      else
+        "0.9.0";
+  };
+
+  tarballName = "ocamlformat-${version}.tbz";
 }

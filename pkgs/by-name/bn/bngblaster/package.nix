@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   cmocka,
-  fetchFromGitHub,
   jansson,
   libdict,
   libpcap,

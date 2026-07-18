@@ -1,23 +1,12 @@
 {
   lib,
-  skawarePackages,
   skalibs,
+  skawarePackages,
 }:
 
 skawarePackages.buildPackage {
   pname = "s6-portable-utils";
   version = "2.3.1.2";
-  sha256 = "sha256-z7kBhtDA6yBOHlxvk3nplBPFRrzPOLtudhd/gjcao6o=";
-
-  manpages = skawarePackages.buildManPages {
-    pname = "s6-portable-utils-man-pages";
-    version = "2.3.1.1.2";
-    sha256 = "sha256-WJxSSJVRY8Hz9QYwu81Qz90Tu2KHl8F3WeeZxFyK3gU=";
-    description = "Port of the documentation for the s6-portable-utils suite to mdoc";
-    maintainers = [ lib.maintainers.somasis ];
-  };
-
-  description = "Set of tiny general Unix utilities optimized for simplicity and small size";
 
   outputs = [
     "bin"
@@ -42,5 +31,17 @@ skawarePackages.buildPackage {
 
     mv doc $doc/share/doc/s6-portable-utils/html
   '';
+
+  description = "Set of tiny general Unix utilities optimized for simplicity and small size";
+
+  manpages = skawarePackages.buildManPages {
+    pname = "s6-portable-utils-man-pages";
+    version = "2.3.1.1.2";
+    description = "Port of the documentation for the s6-portable-utils suite to mdoc";
+    maintainers = [ lib.maintainers.somasis ];
+    sha256 = "sha256-WJxSSJVRY8Hz9QYwu81Qz90Tu2KHl8F3WeeZxFyK3gU=";
+  };
+
+  sha256 = "sha256-z7kBhtDA6yBOHlxvk3nplBPFRrzPOLtudhd/gjcao6o=";
 
 }

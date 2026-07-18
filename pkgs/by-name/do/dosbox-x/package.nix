@@ -2,12 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
+  SDL2,
+  SDL2_net,
   alsa-lib,
   autoreconfHook,
   ffmpeg,
   fluidsynth,
   freetype,
+  gitUpdater,
   glib,
   libGL,
   libicns,
@@ -20,8 +22,6 @@
   ncurses,
   pkg-config,
   python3,
-  SDL2,
-  SDL2_net,
   testers,
   yad,
   zlib,
@@ -85,12 +85,9 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
+  configureFlags = [ (lib.strings.enableFeature true "sdl2") ];
   # Tests for SDL_net.h for modem & IPX support, not automatically picked up due to being in SDL2 subdirectory
   env.NIX_CFLAGS_COMPILE = "-I${lib.getDev SDL2_net}/include/SDL2";
-
-  configureFlags = [ (lib.strings.enableFeature true "sdl2") ];
-
-  enableParallelBuilding = true;
 
   # Build optional App Bundle target, which needs at least one arch-suffixed binary
   postBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -111,21 +108,24 @@ stdenv.mkDerivation (finalAttrs: {
       makeWrapper $out/Applications/dosbox-x.app/Contents/MacOS/dosbox-x $out/bin/dosbox-x
     '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       # Version output on stderr, program returns status code 1
       command = "${lib.getExe finalAttrs.finalPackage} -version 2>&1 || true";
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = gitUpdater {
-      rev-prefix = "dosbox-x-v";
       ignoredVersions = "-osfree$";
+      rev-prefix = "dosbox-x-v";
     };
   };
 
   meta = {
-    homepage = "https://dosbox-x.com";
     description = "Cross-platform DOS emulator based on the DOSBox project";
+
     longDescription = ''
       DOSBox-X is an expanded fork of DOSBox with specific focus on running
       Windows 3.x/9x/Me, PC-98 and 3D support via 3dfx.
@@ -133,11 +133,15 @@ stdenv.mkDerivation (finalAttrs: {
       The full expanded feature list is available here:
       https://dosbox-x.com/wiki/DOSBox%E2%80%90X%E2%80%99s-Feature-Highlights
     '';
+
+    homepage = "https://dosbox-x.com";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       hughobrien
       OPNA2608
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "dosbox-x";
   };

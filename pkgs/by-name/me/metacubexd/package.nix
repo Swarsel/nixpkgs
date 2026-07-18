@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
+  fetchPnpmDeps,
   nix-update-script,
   nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
-  stdenv,
+  pnpm_10,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "metacubexd";
@@ -24,13 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpm_10
     nodejs
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-RcpRYowlEzvnPkEG8hsTvvb9RntfMzgk6+PFBRXIepI=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -51,13 +44,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-RcpRYowlEzvnPkEG8hsTvvb9RntfMzgk6+PFBRXIepI=";
+    pnpm = pnpm_10;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Clash.Meta Dashboard, The Official One, XD";
     homepage = "https://github.com/MetaCubeX/metacubexd";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ Guanran928 ];
+    platforms = lib.platforms.all;
   };
 })

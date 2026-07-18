@@ -2,22 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  regex,
   pytestCheckHook,
+  regex,
 }:
 
 buildPythonPackage rec {
   pname = "parsimonious";
   version = "0.11.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-4IA3fZiVe+7AU1gNOK5U/N98Rw+3hnC6S/i1+dXK0qk=";
   };
 
-  propagatedBuildInputs = [ regex ];
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace "regex>=2022.3.15" "regex"
+  '';
 
+  propagatedBuildInputs = [ regex ];
   nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
@@ -28,10 +31,7 @@ buildPythonPackage rec {
     "test_startswith_vs_regex"
   ];
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace "regex>=2022.3.15" "regex"
-  '';
+  format = "setuptools";
 
   pythonImportsCheck = [
     "parsimonious"

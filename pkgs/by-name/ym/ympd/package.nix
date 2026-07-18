@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libmpdclient,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,16 @@ stdenv.mkDerivation (finalAttrs: {
     ./bump-cmake-version.patch
   ];
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [
+    libmpdclient
+    openssl
+  ];
+
   # Workaround build failure on -fno-common toolchains like upstream
   # gcc-10. Otherwise build fails as:
   #   ld: CMakeFiles/ympd.dir/src/mpd_client.c.o:(.bss+0x0): multiple definition of `mpd';
@@ -31,21 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
   # Should be fixed by pending https://github.com/notandy/ympd/pull/191 (does not apply as is).
   env.NIX_CFLAGS_COMPILE = "-fcommon";
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  buildInputs = [
-    libmpdclient
-    openssl
-  ];
-
   meta = {
-    homepage = "https://github.com/notandy/ympd";
     description = "Standalone MPD Web GUI written in C, utilizing Websockets and Bootstrap/JS";
+    homepage = "https://github.com/notandy/ympd";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.siddharthist ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
     mainProgram = "ympd";
   };
 })

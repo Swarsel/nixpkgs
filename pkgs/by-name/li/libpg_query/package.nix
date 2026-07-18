@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  which,
-  squawk,
   protobufc,
+  squawk,
+  which,
   xxhash,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     "build_shared"
   ];
 
+  doCheck = true;
+
   installPhase = ''
     runHook preInstall
 
@@ -41,8 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = true;
-
   checkTarget = "test";
 
   passthru.tests = {
@@ -50,11 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pganalyze/libpg_query";
     description = "C library for accessing the PostgreSQL parser outside of the server environment";
+    homepage = "https://github.com/pganalyze/libpg_query";
     changelog = "https://github.com/pganalyze/libpg_query/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

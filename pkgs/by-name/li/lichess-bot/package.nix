@@ -1,18 +1,17 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  versionCheckHook,
-  writeShellApplication,
+  common-updater-scripts,
   curl,
   jq,
-  common-updater-scripts,
+  python3Packages,
+  versionCheckHook,
+  writeShellApplication,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "lichess-bot";
   version = "2026.5.12.2";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "lichess-bot-devs";
@@ -43,11 +42,14 @@ python3Packages.buildPythonApplication {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  pyproject = false;
   versionCheckProgramArg = "--disable_auto_logging";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = lib.getExe (writeShellApplication {

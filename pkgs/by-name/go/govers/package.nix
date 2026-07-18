@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -15,23 +15,23 @@ buildGoModule {
     hash = "sha256-lpc8wFKAB+A8mBm9q3qNzTM8ktFS1MYdIvZVFP0eiIs=";
   };
 
-  vendorHash = null;
-
   postPatch = ''
     go mod init github.com/rogpeppe/govers
   '';
 
-  dontRenameImports = true;
-
+  vendorHash = null;
   doCheck = false; # fails, silently
+  dontRenameImports = true;
 
   meta = {
     description = "Tool for rewriting Go import paths";
     homepage = "https://github.com/rogpeppe/govers";
     license = lib.licenses.bsd3;
-    mainProgram = "govers";
+
     maintainers = with lib.maintainers; [
       luftmensch-luftmensch
     ];
+
+    mainProgram = "govers";
   };
 }

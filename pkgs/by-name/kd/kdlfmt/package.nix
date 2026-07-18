@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Ftzf4gI7E5tPo8U5ZxUMqlY5+AK5IEUUAll+GsEKYpg=";
   };
 
-  cargoHash = "sha256-B/ir+Sf4uxQ9Fqmy6yEa3DMt0qdpfPrwD8lhUMOEUbo=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-B/ir+Sf4uxQ9Fqmy6yEa3DMt0qdpfPrwD8lhUMOEUbo=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd kdlfmt \
@@ -30,9 +29,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/kdlfmt completions zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -40,10 +38,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/hougesen/kdlfmt";
     changelog = "https://github.com/hougesen/kdlfmt/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       airrnot
       defelo
     ];
+
     mainProgram = "kdlfmt";
   };
 })

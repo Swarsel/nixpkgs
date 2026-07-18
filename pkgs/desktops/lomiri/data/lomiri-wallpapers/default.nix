@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitLab,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,9 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-NttA+je2jbE0q0EXZ5PSxrpB0ijRbqpSq0N0GCWEzJk=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -36,6 +33,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
@@ -44,7 +43,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.com/ubports/development/core/lomiri-wallpapers/-/blob/${finalAttrs.version}/ChangeLog";
     # On update, recheck debian/copyright for which licenses apply to the installed images
     license = with lib.licenses; [ cc-by-sa-30 ];
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.lomiri ];
   };
 })

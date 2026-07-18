@@ -1,11 +1,11 @@
 {
-  cmake,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   graphviz,
   jrl-cmakemodules,
-  lib,
   libsForQt5,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,14 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-602+CQAScZPNkuudwbRS1NJYYSoQCDwcRJcj8cS/10Q=";
   };
 
-  buildInputs = [
-    libsForQt5.qtbase
-    libsForQt5.qttools
-  ];
-
   nativeBuildInputs = [
     cmake
     libsForQt5.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    libsForQt5.qtbase
+    libsForQt5.qttools
   ];
 
   propagatedBuildInputs = [

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   datasets,
   dill,
   fsspec,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "evaluate";
   version = "0.4.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -28,6 +27,8 @@ buildPythonPackage rec {
     hash = "sha256-wK50bPJSwCNFJO0l6+15+GrbaFQNfAr/djn9JTOlwpw=";
   };
 
+  # most tests require internet access.
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,14 +45,12 @@ buildPythonPackage rec {
     packaging
   ];
 
-  # most tests require internet access.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "evaluate" ];
 
   meta = {
-    homepage = "https://huggingface.co/docs/evaluate/index";
     description = "Easily evaluate machine learning models and datasets";
+    homepage = "https://huggingface.co/docs/evaluate/index";
     changelog = "https://github.com/huggingface/evaluate/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bcdarwin ];

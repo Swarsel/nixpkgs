@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   gtk3,
+  pkg-config,
   wrapGAppsHook3,
 }:
 
@@ -18,26 +18,29 @@ stdenv.mkDerivation {
     hash = "sha256-q5BeLu0A2XJkJL8ptN4hj/iLhQmpb16QEhOuIhNzVaI=";
   };
 
-  buildInputs = [ gtk3 ];
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook3
   ];
 
+  buildInputs = [ gtk3 ];
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
     description = "Monitoring software for AMD Zen-based CPUs";
     homepage = "https://github.com/detiam/zenmonitor3";
-    mainProgram = "zenmonitor";
     license = lib.licenses.mit;
-    platforms = [
-      "i686-linux"
-      "x86_64-linux"
-    ];
+
     maintainers = with lib.maintainers; [
       alexbakker
       artturin
     ];
+
+    platforms = [
+      "i686-linux"
+      "x86_64-linux"
+    ];
+
+    mainProgram = "zenmonitor";
   };
 }

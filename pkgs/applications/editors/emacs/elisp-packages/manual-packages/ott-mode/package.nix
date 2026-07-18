@@ -1,11 +1,8 @@
 { melpaBuild, ott }:
 
 melpaBuild {
-  pname = "ott-mode";
-
   inherit (ott) src version;
-
-  files = ''("emacs/*.el")'';
+  pname = "ott-mode";
 
   postPatch = ''
     pushd emacs
@@ -15,8 +12,10 @@ melpaBuild {
     popd
   '';
 
+  files = ''("emacs/*.el")'';
+
   meta = {
-    description = "Emacs ott mode (from ott sources)";
     inherit (ott.meta) homepage license;
+    description = "Emacs ott mode (from ott sources)";
   };
 }

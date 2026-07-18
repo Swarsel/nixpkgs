@@ -20,24 +20,23 @@ stdenv.mkDerivation {
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
-  # Only copies udevs rules
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-
   installPhase = ''
     mkdir -p $out/lib/udev/rules.d
     cp dist/linux64/50-oryx.rules $out/lib/udev/rules.d/
     cp dist/linux64/50-wally.rules $out/lib/udev/rules.d/
   '';
 
+  doInstallCheck = true;
+  dontBuild = true;
+  # Only copies udevs rules
+  dontConfigure = true;
+  dontFixup = true;
+
   meta = {
     description = "udev rules for ZSA devices";
+    homepage = "https://github.com/zsa/wally/wiki/Linux-install#2-create-a-udev-rule-file";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ davidak ];
     platforms = lib.platforms.linux;
-    homepage = "https://github.com/zsa/wally/wiki/Linux-install#2-create-a-udev-rule-file";
   };
 }

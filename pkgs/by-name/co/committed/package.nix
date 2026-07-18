@@ -1,17 +1,17 @@
 {
   lib,
   fetchFromGitHub,
+  git,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
-  git,
 }:
 let
   version = "1.1.11";
 in
 rustPlatform.buildRustPackage {
-  pname = "committed";
   inherit version;
+  pname = "committed";
 
   src = fetchFromGitHub {
     owner = "crate-ci";
@@ -34,22 +34,24 @@ rustPlatform.buildRustPackage {
     git config --global user.email no@where
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Nitpicking commit history since beabf39";
     homepage = "https://github.com/crate-ci/committed";
     changelog = "https://github.com/crate-ci/committed/blob/v${version}/CHANGELOG.md";
-    description = "Nitpicking commit history since beabf39";
-    mainProgram = "committed";
+
     license = [
       lib.licenses.asl20 # or
       lib.licenses.mit
     ];
+
     maintainers = [ lib.maintainers.pigeonf ];
+    mainProgram = "committed";
   };
 }

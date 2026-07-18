@@ -1,28 +1,26 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   gnupg,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pycoin";
   version = "0.92.20241201";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-bpN74YFXPM8Cs1BkhEvsRt4TA4a0Xz3xltMHSox5BRI=";
   };
 
-  propagatedBuildInputs = [ setuptools ];
-
   postPatch = ''
     substituteInPlace ./pycoin/cmds/tx.py --replace '"gpg"' '"${gnupg}/bin/gpg"'
   '';
 
+  propagatedBuildInputs = [ setuptools ];
   nativeCheckInputs = [ pytestCheckHook ];
 
   # Disable tests depending on online services
@@ -32,6 +30,8 @@ buildPythonPackage rec {
     "test_tx_fetch_unspent"
     "test_tx_with_gpg"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Utilities for Bitcoin and altcoin addresses and transaction manipulation";

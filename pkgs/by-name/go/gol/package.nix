@@ -1,9 +1,9 @@
 {
   lib,
-  maven,
   fetchFromGitHub,
-  makeWrapper,
   jre,
+  makeWrapper,
+  maven,
 }:
 
 maven.buildMavenPackage rec {
@@ -16,9 +16,6 @@ maven.buildMavenPackage rec {
     tag = version;
     hash = "sha256-AnPm5Mooww9kAMWLnM36z8DVRGfIIEiqUE65tgNuKm8=";
   };
-
-  mvnHash = "sha256-kLSMLt0TMMuyWLU65Y+4CpEn5PIm/+nLg1+oBR5w3pI=";
-  mvnParameters = "compile assembly:single -Dmaven.test.skip=true";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -35,13 +32,18 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  mvnHash = "sha256-kLSMLt0TMMuyWLU65Y+4CpEn5PIm/+nLg1+oBR5w3pI=";
+  mvnParameters = "compile assembly:single -Dmaven.test.skip=true";
+
   meta = {
     description = "Command-line utility for creating and managing Geographic Object Libraries";
+
     longDescription = ''
       Use the GOL command-line utility to:
       - build and maintain Geographic Object Libraries (GeoDesk's compact database format for OpenStreetMap features)
       - perform GOQL queries and export the results in a variety of formats.
     '';
+
     homepage = "https://docs.geodesk.com/gol";
     license = lib.licenses.agpl3Only;
     maintainers = [ lib.maintainers.starsep ];

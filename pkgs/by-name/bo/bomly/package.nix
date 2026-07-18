@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   grype,
   makeBinaryWrapper,
   nix-update-script,
@@ -13,16 +13,12 @@ buildGoModule (finalAttrs: {
   pname = "bomly";
   version = "0.16.1";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "bomly-dev";
     repo = "bomly-cli";
     tag = "v${finalAttrs.version}";
     hash = "sha256-RJqYRCnE4lqR68lP9hL9hTOxXS3cPEgspBn2JgvffyM=";
   };
-
-  vendorHash = "sha256-W7FfqWV86D8fXZ4nm/0IVZuqocgo8/Sd9DA1Ef4SJ/4=";
 
   # .gitattributes excludes all testdata from the GitHub tarball
   postPatch = ''
@@ -31,16 +27,11 @@ buildGoModule (finalAttrs: {
   '';
 
   buildInputs = [ makeBinaryWrapper ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  vendorHash = "sha256-W7FfqWV86D8fXZ4nm/0IVZuqocgo8/Sd9DA1Ef4SJ/4=";
   # testdata directories are excluded from the GitHub tarball via .gitattributes
   doCheck = false;
-
-  ldflags = [
-    "-s"
-    "-X=main.version=${finalAttrs.version}"
-  ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = ''
     wrapProgram $out/bin/bomly --prefix PATH : "${
@@ -51,7 +42,12 @@ buildGoModule (finalAttrs: {
     }"
   '';
 
-  doInstallCheck = true;
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-X=main.version=${finalAttrs.version}"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

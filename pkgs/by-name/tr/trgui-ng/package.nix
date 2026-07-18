@@ -32,11 +32,10 @@ let
   };
 
   frontend = buildNpmPackage (finalAttrs: {
-    pname = "TrguiNG-frontend";
     inherit version src;
+    pname = "TrguiNG-frontend";
     npmDepsHash = "sha256-5ev3Aj1fIy/qvw543OwdGTTWmdqbpobJdTGlX5B2VD0=";
-
-    npmBuildScript = "webpack-prod";
+    env.TRGUING_VERSION = finalAttrs.version;
 
     installPhase = ''
       runHook preInstall
@@ -46,7 +45,7 @@ let
       runHook postInstall
     '';
 
-    env.TRGUING_VERSION = finalAttrs.version;
+    npmBuildScript = "webpack-prod";
 
     meta = meta // {
       description = "Web UI for Transmission torrent daemon";
@@ -55,10 +54,8 @@ let
 in
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "TrguiNG";
   inherit version src;
-
-  cargoHash = "sha256-coyKwBz26Ohl/+gJS8X+kTYOhaQ1pfY7/rbupF+CaUY=";
+  pname = "TrguiNG";
 
   postPatch = ''
     cp ${dbip-country-lite}/share/dbip/dbip-country-lite.mmdb src-tauri/dbip.mmdb
@@ -88,17 +85,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  cargoRoot = "src-tauri";
+  cargoHash = "sha256-coyKwBz26Ohl/+gJS8X+kTYOhaQ1pfY7/rbupF+CaUY=";
   buildAndTestSubdir = "src-tauri";
+  cargoRoot = "src-tauri";
 
   passthru = {
+    inherit frontend;
+
     updateScript = nix-update-script {
       extraArgs = [
         "-s"
         "frontend"
       ];
     };
-    inherit frontend;
   };
 
   meta = meta // {

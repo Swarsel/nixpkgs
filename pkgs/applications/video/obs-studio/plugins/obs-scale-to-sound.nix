@@ -18,7 +18,6 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ obs-studio ];
 
   cmakeFlags = [
@@ -26,10 +25,10 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "OBS filter plugin that scales a source reactively to sound levels";
     homepage = "https://github.com/dimtpap/obs-scale-to-sound";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

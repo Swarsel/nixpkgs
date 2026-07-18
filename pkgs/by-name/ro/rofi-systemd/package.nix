@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
+  gawk,
+  jq,
+  makeWrapper,
   rofi,
   systemd,
-  coreutils,
   util-linux,
-  gawk,
-  makeWrapper,
-  jq,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,11 +24,17 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/bin
     cp -a rofi-systemd $out/bin/rofi-systemd
+  '';
+
+  dontBuild = true;
+
+  fixupPhase = ''
+    patchShebangs $out/bin
+
+    wrapProgram $out/bin/rofi-systemd --prefix PATH : "${wrapperPath}"
   '';
 
   wrapperPath = lib.makeBinPath [
@@ -40,17 +46,11 @@ stdenv.mkDerivation rec {
     util-linux
   ];
 
-  fixupPhase = ''
-    patchShebangs $out/bin
-
-    wrapProgram $out/bin/rofi-systemd --prefix PATH : "${wrapperPath}"
-  '';
-
   meta = {
     description = "Control your systemd units using rofi";
     homepage = "https://github.com/IvanMalison/rofi-systemd";
-    maintainers = with lib.maintainers; [ imalison ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ imalison ];
     platforms = with lib.platforms; linux;
     mainProgram = "rofi-systemd";
   };

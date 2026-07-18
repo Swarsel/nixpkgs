@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,15 +16,14 @@ buildGoModule {
   };
 
   vendorHash = "sha256-N16GH8ZDyeWWBsaaG4RkJwzAbuQ7E8YjZAgVsfeECo4";
-
   doCheck = false; # requires a running testdb
 
   meta = {
     description = "CockroachDB generator for usage with SQLBoiler";
-    mainProgram = "sqlboiler-crdb";
     homepage = "https://github.com/glerchundi/sqlboiler-crdb/";
+    license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ dgollings ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.unfree;
+    mainProgram = "sqlboiler-crdb";
   };
 }

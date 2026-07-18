@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pillow,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pilkit";
   version = "3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matthewwithanm";
@@ -21,8 +20,12 @@ buildPythonPackage rec {
     hash = "sha256-NmD9PFCkz3lz4AnGoQUpkt35q0zvDVm+kx7lVDFBcHk=";
   };
 
-  nativeBuildInputs = [ setuptools ];
+  postPatch = ''
+    substituteInPlace pilkit/processors/resize.py \
+      --replace "Image.ANTIALIAS" "Image.Resampling.LANCZOS"
+  '';
 
+  nativeBuildInputs = [ setuptools ];
   propagatedBuildInputs = [ pillow ];
 
   nativeCheckInputs = [
@@ -31,11 +34,7 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
-  postPatch = ''
-    substituteInPlace pilkit/processors/resize.py \
-      --replace "Image.ANTIALIAS" "Image.Resampling.LANCZOS"
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "pilkit" ];
 
   meta = {

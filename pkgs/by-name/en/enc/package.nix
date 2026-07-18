@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
   installShellFiles,
 }:
@@ -18,18 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-VBtjULav6ks2BYMVnUmOn/bAvonGDPia0eO7pJ1P5+Q=";
   };
 
-  vendorHash = "sha256-u9PAYb51NZ4C1TqjwgzfSdcfAUrEcNfvwqjnZpyqB9I=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = ".";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/life4/enc/version.GitCommit=${finalAttrs.version}"
-  ];
-
+  vendorHash = "sha256-u9PAYb51NZ4C1TqjwgzfSdcfAUrEcNfvwqjnZpyqB9I=";
   nativeCheckInputs = [ git ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -39,11 +29,17 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/enc completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/life4/enc/version.GitCommit=${finalAttrs.version}"
+  ];
+
+  subPackages = ".";
+
   meta = {
-    homepage = "https://github.com/life4/enc";
-    changelog = "https://github.com/life4/enc/releases/tag/v${finalAttrs.version}";
     description = "Modern and friendly alternative to GnuPG";
-    mainProgram = "enc";
+
     longDescription = ''
       Enc is a CLI tool for encryption, a modern and friendly alternative to GnuPG.
       It is easy to use, secure by default and can encrypt and decrypt files using password or encryption keys,
@@ -51,7 +47,11 @@ buildGoModule (finalAttrs: {
       Our goal was to make encryption available to all engineers without the need to learn a lot of new words, concepts,
       and commands. It is the most beginner-friendly CLI tool for encryption, and keeping it that way is our top priority.
     '';
+
+    homepage = "https://github.com/life4/enc";
+    changelog = "https://github.com/life4/enc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rvnstn ];
+    mainProgram = "enc";
   };
 })

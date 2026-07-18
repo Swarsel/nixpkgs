@@ -1,11 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   huggingface-hub,
   loguru,
@@ -13,6 +9,8 @@
   numpy,
   onnxruntime,
   pillow,
+  # build-system
+  poetry-core,
   py-rust-stemmers,
   pystemmer,
   requests,
@@ -24,7 +22,6 @@
 buildPythonPackage rec {
   pname = "fastembed";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "qdrant";
@@ -33,6 +30,8 @@ buildPythonPackage rec {
     hash = "sha256-oHuu2hlEdmMjA6MDU4YQ5slu6NoYwQpsJI7mvFBSBhE=";
   };
 
+  # there is one test and it requires network
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -50,6 +49,7 @@ buildPythonPackage rec {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fastembed" ];
 
   pythonRelaxDeps = [
@@ -57,9 +57,6 @@ buildPythonPackage rec {
     "onnxruntime"
     "pillow"
   ];
-
-  # there is one test and it requires network
-  doCheck = false;
 
   meta = {
     description = "Fast, Accurate, Lightweight Python library to make State of the Art Embedding";

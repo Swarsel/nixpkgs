@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -14,6 +14,7 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-GXJjjCruDjL5+ag3aUJAHPLOvbwux9FBnyqXJ52WifE=";
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -24,22 +25,22 @@ buildGoModule (finalAttrs: {
 
   vendorHash = null;
 
+  preBuild = ''
+    ldflags+=" -X main.gitCommit=$(cat COMMIT)"
+    ldflags+=" -X 'main.buildTime=$(cat BUILD_TIME)'"
+  '';
+
   ldflags = [
     "-s"
     "-w"
     "-X main.gitRefName=${finalAttrs.src.rev}"
   ];
 
-  preBuild = ''
-    ldflags+=" -X main.gitCommit=$(cat COMMIT)"
-    ldflags+=" -X 'main.buildTime=$(cat BUILD_TIME)'"
-  '';
-
   meta = {
     description = "QR code generator (ASCII & PNG) for SEPA payments";
-    mainProgram = "payme";
     homepage = "https://github.com/jovandeginste/payme";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cimm ];
+    mainProgram = "payme";
   };
 })

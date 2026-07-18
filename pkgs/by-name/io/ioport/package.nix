@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  perl,
   fetchurl,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,10 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Direct access to I/O ports from the command line";
     homepage = "https://people.redhat.com/rjones/ioport/";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.cleverca22 ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ lib.maintainers.cleverca22 ];
   };
 })

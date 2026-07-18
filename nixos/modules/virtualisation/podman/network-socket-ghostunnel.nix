@@ -24,17 +24,19 @@ in
 
     services.ghostunnel = {
       enable = true;
+
       servers."podman-socket" = {
         inherit (cfg.tls) cert key cacert;
+        allowAll = lib.mkDefault true;
         listen = "${cfg.listenAddress}:${toString cfg.port}";
         target = "unix:/run/podman/podman.sock";
-        allowAll = lib.mkDefault true;
       };
     };
+
     systemd.services.ghostunnel-server-podman-socket.serviceConfig.SupplementaryGroups = [ "podman" ];
 
   };
 
-  meta.teams = [ lib.teams.podman ];
   meta.maintainers = [ lib.maintainers.roberth ];
+  meta.teams = [ lib.teams.podman ];
 }

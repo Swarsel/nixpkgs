@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   curl,
   libimobiledevice,
   libirecovery,
-  libzip,
   libusbmuxd,
+  libzip,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/libimobiledevice/idevicerestore";
     description = "Restore/upgrade firmware of iOS devices";
+
     longDescription = ''
       The idevicerestore tool allows to restore firmware files to iOS devices.
 
@@ -59,12 +59,16 @@ stdenv.mkDerivation (finalAttrs: {
 
       This will download and restore a device to the latest firmware available.
     '';
+
+    homepage = "https://github.com/libimobiledevice/idevicerestore";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       flokli
       nh2
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "idevicerestore";
   };
 })

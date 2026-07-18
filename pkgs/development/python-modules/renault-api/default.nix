@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   click,
   cryptography,
   dateparser,
-  fetchFromGitHub,
   marshmallow-dataclass,
   poetry-core,
   pyjwt,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "renault-api";
   version = "0.5.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hacf-fr";
@@ -28,6 +27,15 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-XUrI03gr3U0wfEXLNGaxGil2tOfXrmeUUuH5lVKF0e0=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+    syrupy
+    typeguard
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [ poetry-core ];
 
@@ -46,15 +54,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-    syrupy
-    typeguard
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "renault_api" ];
 
   meta = {

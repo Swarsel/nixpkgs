@@ -26,9 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/vtraag/libleidenalg/blob/${finalAttrs.src.tag}/CHANGELOG";
     description = "C++ library of Leiden algorithm";
     homepage = "https://github.com/vtraag/libleidenalg";
+    changelog = "https://github.com/vtraag/libleidenalg/blob/${finalAttrs.src.tag}/CHANGELOG";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
     platforms = lib.platforms.all;

@@ -1,11 +1,11 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  nix-update-script,
   openssl,
   pkg-config,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "flux9s";
@@ -18,23 +18,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-eX9qLhxSieZGxyLrHb2txrxekMElLIOeuVuxmOZH4Ak=";
   };
 
-  cargoHash = "sha256-bAgkDJnmcvH3aGhLjY1hn+tnAYmuDFewQ12K8qKTnsY=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-bAgkDJnmcvH3aGhLjY1hn+tnAYmuDFewQ12K8qKTnsY=";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "K9s-inspired terminal UI for monitoring Flux GitOps resources in real-time";
-    mainProgram = "flux9s";
     homepage = "https://flux9s.ca/";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.skyesoss ];
+    mainProgram = "flux9s";
   };
 })

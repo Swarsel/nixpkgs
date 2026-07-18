@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   asn1crypto,
   backports-zstd,
   buildPythonPackage,
@@ -27,7 +28,6 @@
   dissect-volume,
   dissect-xfs,
   docutils,
-  fetchFromGitHub,
   flow-record,
   fusepy,
   impacket,
@@ -46,7 +46,6 @@
 buildPythonPackage rec {
   pname = "dissect-target";
   version = "3.25.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -56,12 +55,16 @@ buildPythonPackage rec {
     fetchLFS = true;
   };
 
-  disabled = pythonAtLeast "3.14";
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "flow.record~=" "flow.record>="
   '';
+
+  nativeCheckInputs = [
+    docutils
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.full;
 
   build-system = [
     setuptools
@@ -83,41 +86,23 @@ buildPythonPackage rec {
     structlog
   ];
 
-  optional-dependencies = {
-    full = [
-      asn1crypto
-      backports-zstd
-      dissect-btrfs
-      dissect-cim
-      dissect-clfs
-      dissect-database
-      dissect-esedb
-      dissect-etl
-      dissect-extfs
-      dissect-fat
-      dissect-ffs
-      dissect-shellitem
-      dissect-sql
-      dissect-thumbcache
-      dissect-xfs
-      fusepy
-      ipython
-      pycryptodome
-      ruamel-yaml
-      yara-python
-    ];
-    yara = [ yara-python ] ++ optional-dependencies.full;
-    smb = [ impacket ] ++ optional-dependencies.full;
-    mqtt = [ paho-mqtt ] ++ optional-dependencies.full;
-  };
+  disabled = pythonAtLeast "3.14";
 
-  nativeCheckInputs = [
-    docutils
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.full;
-
-  pythonImportsCheck = [ "dissect.target" ];
+  disabledTestPaths = [
+    # Tests are using Windows paths, missing test files
+    "tests/plugins/apps/"
+    # ValueError: Invalid Locate file magic. Expected /x00LOCATE02/x00
+    "tests/plugins/os/unix/locate/"
+    # Missing plugin support
+    "tests/plugins/child/"
+    "tests/tools/test_dump.py"
+    "tests/plugins/os/"
+    "tests/test_container.py"
+    "tests/plugins/filesystem/"
+    "tests/filesystems/"
+    "tests/test_filesystem.py"
+    "tests/loaders/"
+  ];
 
   disabledTests = [
     "test_cp_directory"
@@ -158,21 +143,37 @@ buildPythonPackage rec {
     # test is broken on Darwin
     lib.optional stdenv.hostPlatform.isDarwin "test_fs_attrs_no_os_listxattr";
 
-  disabledTestPaths = [
-    # Tests are using Windows paths, missing test files
-    "tests/plugins/apps/"
-    # ValueError: Invalid Locate file magic. Expected /x00LOCATE02/x00
-    "tests/plugins/os/unix/locate/"
-    # Missing plugin support
-    "tests/plugins/child/"
-    "tests/tools/test_dump.py"
-    "tests/plugins/os/"
-    "tests/test_container.py"
-    "tests/plugins/filesystem/"
-    "tests/filesystems/"
-    "tests/test_filesystem.py"
-    "tests/loaders/"
-  ];
+  optional-dependencies = {
+    full = [
+      asn1crypto
+      backports-zstd
+      dissect-btrfs
+      dissect-cim
+      dissect-clfs
+      dissect-database
+      dissect-esedb
+      dissect-etl
+      dissect-extfs
+      dissect-fat
+      dissect-ffs
+      dissect-shellitem
+      dissect-sql
+      dissect-thumbcache
+      dissect-xfs
+      fusepy
+      ipython
+      pycryptodome
+      ruamel-yaml
+      yara-python
+    ];
+
+    mqtt = [ paho-mqtt ] ++ optional-dependencies.full;
+    smb = [ impacket ] ++ optional-dependencies.full;
+    yara = [ yara-python ] ++ optional-dependencies.full;
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "dissect.target" ];
 
   meta = {
     description = "Dissect module that provides a programming API and command line tools";

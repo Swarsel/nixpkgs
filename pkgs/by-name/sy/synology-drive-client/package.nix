@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
-  qt5,
+  stdenv,
   fetchurl,
   autoPatchelfHook,
+  cpio,
+  dbus,
   dpkg,
   glibc,
-  cpio,
-  xar,
-  undmg,
   gtk3,
-  pango,
   libxcb,
-  dbus,
+  pango,
   procps,
+  qt5,
   runCommand,
+  undmg,
+  xar,
   xwayland-run,
 }:
 let
@@ -25,17 +25,20 @@ let
   meta = {
     description = "Desktop application to synchronize files and folders between the computer and the Synology Drive server";
     homepage = "https://www.synology.com/en-global/dsm/feature/drive";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       jcouyang
       MoritzBoehme
       nivalux
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "synology-drive";
   };
   updateScript = ./update.sh;
@@ -65,6 +68,16 @@ let
       libxcb
     ];
 
+    installPhase = ''
+      cp -av $out/usr/* $out
+      rm -rf $out/usr
+      runHook postInstall
+    '';
+
+    postInstall = ''
+      substituteInPlace $out/bin/synology-drive --replace /opt $out/opt
+    '';
+
     unpackPhase = ''
       mkdir -p $out
       dpkg -x $src $out
@@ -76,18 +89,9 @@ let
       rm -rf $out/opt/Synology/SynologyDrive/package/cloudstation/icon-overlay
     '';
 
-    installPhase = ''
-      cp -av $out/usr/* $out
-      rm -rf $out/usr
-      runHook postInstall
-    '';
-
-    postInstall = ''
-      substituteInPlace $out/bin/synology-drive --replace /opt $out/opt
-    '';
-
     passthru = {
       inherit updateScript;
+
       tests = {
         wl =
           runCommand "${pname}-wayland"
@@ -146,6 +150,11 @@ let
       undmg
     ];
 
+    installPhase = ''
+      mkdir -p $out/Applications/
+      cp -R 'Synology Drive Client.app' $out/Applications/
+    '';
+
     postUnpack = ''
       xar -xf 'Install Synology Drive Client.pkg'
       cd synology-drive.installer.pkg
@@ -153,12 +162,6 @@ let
     '';
 
     sourceRoot = ".";
-
-    installPhase = ''
-      mkdir -p $out/Applications/
-      cp -R 'Synology Drive Client.app' $out/Applications/
-    '';
-
     passthru = { inherit updateScript; };
   });
 in

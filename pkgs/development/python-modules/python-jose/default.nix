@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   fetchpatch,
   pycrypto,
   pycryptodome,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "python-jose";
   version = "3.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mpdavis";
@@ -25,19 +24,16 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/mpdavis/python-jose/pull/393
     (fetchpatch {
+      hash = "sha256-bCzxZEWKYD20TLqzVv6neZlpU41otbVqaXc7C0Ky9BQ=";
       name = "fix-test_incorrect_public_key_hmac_signing.patch";
       url = "https://github.com/mpdavis/python-jose/commit/7c0e4c6640bdc9cd60ac66d96d5d90f4377873db.patch";
-      hash = "sha256-bCzxZEWKYD20TLqzVv6neZlpU41otbVqaXc7C0Ky9BQ=";
     })
   ];
 
-  pythonRemoveDeps = [
-    # These aren't needed if the cryptography backend is used:
-    # https://github.com/mpdavis/python-jose/blob/3.5.0/README.rst#cryptographic-backends
-    "ecdsa"
-    "pyasn1"
-    "rsa"
-  ];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -51,12 +47,16 @@ buildPythonPackage rec {
     pycryptodome = [ pycryptodome ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "jose" ];
+
+  pythonRemoveDeps = [
+    # These aren't needed if the cryptography backend is used:
+    # https://github.com/mpdavis/python-jose/blob/3.5.0/README.rst#cryptographic-backends
+    "ecdsa"
+    "pyasn1"
+    "rsa"
+  ];
 
   meta = {
     description = "JOSE implementation in Python";

@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cmake,
-  setuptools,
-
   # nativeBuildInputs
   autoAddDriverRunpath,
+  buildPythonPackage,
+  # build-system
+  cmake,
   cudaPackages,
-
   # dependencies
   numpy,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "gpu-rir";
   version = "0-unstable-2025-01-20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DavidDiazGuerra";
@@ -36,21 +32,9 @@ buildPythonPackage {
         "cmake_args = os.environ.get('cmakeFlags', \"\").split() + ["
   '';
 
-  build-system = [
-    cmake
-    setuptools
-  ];
-  dontUseCmakeConfigure = true;
-
   nativeBuildInputs = [
     autoAddDriverRunpath
     cudaPackages.cuda_nvcc
-  ];
-
-  # TODO: Investigate why (deprecated) FindCUDA fails to set these variables
-  cmakeFlags = [
-    (lib.cmakeFeature "CUDA_CUFFT_LIBARIES" "${lib.getLib cudaPackages.libcufft}/lib/libcufft.so")
-    (lib.cmakeFeature "CUDA_curand_LIBRARY" "${lib.getLib cudaPackages.libcurand}/lib/libcurand.so")
   ];
 
   buildInputs = with cudaPackages; [
@@ -60,19 +44,32 @@ buildPythonPackage {
     libcurand
   ];
 
+  # TODO: Investigate why (deprecated) FindCUDA fails to set these variables
+  cmakeFlags = [
+    (lib.cmakeFeature "CUDA_CUFFT_LIBARIES" "${lib.getLib cudaPackages.libcufft}/lib/libcufft.so")
+    (lib.cmakeFeature "CUDA_curand_LIBRARY" "${lib.getLib cudaPackages.libcurand}/lib/libcurand.so")
+  ];
+
+  # No tests
+  doCheck = false;
+
+  build-system = [
+    cmake
+    setuptools
+  ];
+
   dependencies = [
     numpy
     scipy
   ];
 
-  pythonImportsCheck = [ "gpuRIR" ];
+  dontUseCmakeConfigure = true;
   # Fails at import because there is no GPU access in the sandbox:
   # Check whether the following modules can be imported: gpuRIR
   # GPUassert: CUDA driver version is insufficient for CUDA runtime version /build/source/src/gpuRIR_cuda.cu 1037
   dontUsePythonImportsCheck = true;
-
-  # No tests
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "gpuRIR" ];
 
   meta = {
     description = "Python library for Room Impulse Response (RIR) simulation with GPU acceleration";

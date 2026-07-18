@@ -21,10 +21,12 @@ in
 
       password = lib.mkOption {
         default = "/etc/munge/munge.key";
-        type = lib.types.path;
+
         description = ''
           The path to a daemon's secret key.
         '';
+
+        type = lib.types.path;
       };
 
     };
@@ -37,27 +39,15 @@ in
 
     environment.systemPackages = [ pkgs.munge ];
 
-    users.users.munge = {
-      description = "Munge daemon user";
-      isSystemUser = true;
-      group = "munge";
-    };
-
-    users.groups.munge = { };
-
     systemd.services.munged = {
-      documentation = [
-        "man:munged(8)"
-        "man:mungekey(8)"
-      ];
-      wantedBy = [ "multi-user.target" ];
-      wants = [
-        "network-online.target"
-        "time-sync.target"
-      ];
       after = [
         "network-online.target"
         "time-sync.target"
+      ];
+
+      documentation = [
+        "man:munged(8)"
+        "man:mungekey(8)"
       ];
 
       path = [
@@ -66,16 +56,31 @@ in
       ];
 
       serviceConfig = {
-        ExecStartPre = "+${pkgs.coreutils}/bin/chmod 0400 ${cfg.password}";
         ExecStart = "${pkgs.munge}/bin/munged --foreground --key-file ${cfg.password}";
-        User = "munge";
+        ExecStartPre = "+${pkgs.coreutils}/bin/chmod 0400 ${cfg.password}";
         Group = "munge";
-        StateDirectory = "munge";
-        StateDirectoryMode = "0711";
         Restart = "on-failure";
         RuntimeDirectory = "munge";
+        StateDirectory = "munge";
+        StateDirectoryMode = "0711";
+        User = "munge";
       };
 
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "network-online.target"
+        "time-sync.target"
+      ];
+
+    };
+
+    users.groups.munge = { };
+
+    users.users.munge = {
+      description = "Munge daemon user";
+      group = "munge";
+      isSystemUser = true;
     };
 
   };

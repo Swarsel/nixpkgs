@@ -1,12 +1,12 @@
 {
   stdenv,
+  fetchpatch,
   mkKdeDerivation,
+  qqc2-desktop-style,
+  qt5compat,
+  qtdeclarative,
   qtsvg,
   qttools,
-  qtdeclarative,
-  qt5compat,
-  qqc2-desktop-style,
-  fetchpatch,
 }:
 # Kirigami has a runtime dependency on qqc2-desktop-style,
 # which has a build time dependency on Kirigami.
@@ -23,17 +23,19 @@ let
       ./rb-templates.patch
     ];
 
+    extraBuildInputs = [ qtdeclarative ];
+
     extraNativeBuildInputs = [
       qtsvg
       qttools
     ];
-    extraBuildInputs = [ qtdeclarative ];
+
     extraPropagatedBuildInputs = [ qt5compat ];
   };
 in
 stdenv.mkDerivation {
-  pname = "kirigami-wrapped";
   inherit (unwrapped) version;
+  pname = "kirigami-wrapped";
 
   propagatedBuildInputs = [
     unwrapped

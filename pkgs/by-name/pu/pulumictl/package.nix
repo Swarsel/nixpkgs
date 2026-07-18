@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -27,9 +27,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Swiss Army Knife for Pulumi Development";
-    mainProgram = "pulumictl";
     homepage = "https://github.com/pulumi/pulumictl";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ vincentbernat ];
+    mainProgram = "pulumictl";
   };
 })

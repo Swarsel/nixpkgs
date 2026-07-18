@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unittestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "zope-hookable";
   version = "8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -18,15 +17,12 @@ buildPythonPackage rec {
     hash = "sha256-pryx55dzvg+6jSUj4avskTnGKe6w1HkEh6v6OOlHIXY=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "zope.hookable" ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
-  unittestFlagsArray = [ "src/zope/hookable/tests" ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "zope.hookable" ];
   pythonNamespaces = [ "zope" ];
+  unittestFlagsArray = [ "src/zope/hookable/tests" ];
 
   meta = {
     description = "Supports the efficient creation of “hookable” objects";

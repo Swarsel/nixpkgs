@@ -1,7 +1,7 @@
 {
   bash,
-  writers,
   python3Packages,
+  writers,
 }:
 let
   writeCheckedBashBin =

@@ -1,21 +1,23 @@
 {
   lib,
-  python3Packages,
-  podman,
-  fetchPypi,
   ansible-lint,
+  fetchPypi,
+  podman,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ansible-navigator";
   version = "26.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "ansible_navigator";
     hash = "sha256-WyazCoFg4uPx0jLAG8u19l4dr806pQFzbYFadJwYfTM=";
+    pname = "ansible_navigator";
   };
+
+  # Tests want to run in tmux
+  doCheck = false;
 
   build-system = with python3Packages; [
     setuptools
@@ -34,9 +36,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     podman
   ];
 
-  # Tests want to run in tmux
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ansible_navigator" ];
 
   meta = {
@@ -44,6 +44,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://ansible.readthedocs.io/projects/navigator/";
     changelog = "https://github.com/ansible/ansible-navigator/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       melkor333
       ilkecan

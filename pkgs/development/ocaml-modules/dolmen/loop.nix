@@ -1,17 +1,24 @@
 {
   lib,
-  ocaml,
   buildDunePackage,
   dolmen,
   dolmen_type,
   gen,
-  pp_loc,
   mdx,
+  ocaml,
+  pp_loc,
 }:
 
 buildDunePackage {
-  pname = "dolmen_loop";
   inherit (dolmen) src version;
+  pname = "dolmen_loop";
+
+  propagatedBuildInputs = [
+    dolmen
+    dolmen_type
+    gen
+    pp_loc
+  ];
 
   env =
     # Fix build with gcc15
@@ -23,13 +30,6 @@ buildDunePackage {
       {
         NIX_CFLAGS_COMPILE = "-std=gnu11";
       };
-
-  propagatedBuildInputs = [
-    dolmen
-    dolmen_type
-    gen
-    pp_loc
-  ];
 
   doCheck = true;
   nativeCheckInputs = [ mdx.bin ];

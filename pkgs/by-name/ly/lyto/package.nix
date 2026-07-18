@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "lyto";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eeriemyxi";
@@ -26,6 +25,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sixel
     zeroconf
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "lyto"

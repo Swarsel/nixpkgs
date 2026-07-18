@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
-  pytestCheckHook,
   nodejs,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pscript";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "flexxui";
@@ -25,8 +24,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "ast.Ellipsis" "ast.Constant"
   '';
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [
     pytestCheckHook
     nodejs
@@ -37,12 +34,15 @@ buildPythonPackage (finalAttrs: {
     rm -rf pscript_legacy
   '';
 
-  pythonImportsCheck = [ "pscript" ];
+  build-system = [ flit-core ];
 
   disabledTests = [
     # https://github.com/flexxui/pscript/issues/69
     "test_async_and_await"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pscript" ];
 
   meta = {
     description = "Python to JavaScript compiler";

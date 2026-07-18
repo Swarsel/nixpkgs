@@ -1,31 +1,31 @@
 {
   lib,
   stdenv,
+  fetchurl,
+  buildIsHost,
+  buildPlatform,
+  enableLTO,
+  enableShared,
+  fetchpatch,
+  hostIsTarget,
+  hostPlatform,
   is13,
-  langC,
   langAda,
-  langObjC,
-  langObjCpp,
+  langC,
   langFortran,
   langGo,
-  reproducibleBuild,
-  profiledCompiler,
   langJit,
-  staticCompiler,
-  enableShared,
-  enableLTO,
-  version,
-  fetchpatch,
+  langObjC,
+  langObjCpp,
   majorVersion,
-  targetPlatform,
-  hostPlatform,
   noSysDirs,
-  buildPlatform,
-  fetchurl,
-  withoutTargetLibc,
+  profiledCompiler,
+  reproducibleBuild,
+  staticCompiler,
+  targetPlatform,
   threadsCross,
-  buildIsHost,
-  hostIsTarget,
+  version,
+  withoutTargetLibc,
 }:
 
 let
@@ -59,16 +59,18 @@ optionals noSysDirs (
   ]
   ++ (
     {
-      "16" = [
-        # Do not try looking for binaries and libraries in /lib and /usr/lib
+      "13" = [
         ./13/no-sys-dirs-riscv.patch
-        # Mangle the nix store hash in __FILE__ to prevent unneeded runtime references
-        #
-        # TODO: Remove these and the `useMacroPrefixMap` conditional
-        # in `cc-wrapper` once <https://gcc.gnu.org/PR111527>
-        # is fixed.
         ./13/mangle-NIX_STORE-in-__FILE__.patch
+        ./13/libsanitizer-fix-with-glibc-2.42.patch
       ];
+
+      "14" = [
+        ./13/no-sys-dirs-riscv.patch
+        ./13/mangle-NIX_STORE-in-__FILE__.patch
+        ./13/libsanitizer-fix-with-glibc-2.42.patch
+      ];
+
       "15" = [
         # Do not try looking for binaries and libraries in /lib and /usr/lib
         ./13/no-sys-dirs-riscv.patch
@@ -79,15 +81,16 @@ optionals noSysDirs (
         # is fixed.
         ./13/mangle-NIX_STORE-in-__FILE__.patch
       ];
-      "14" = [
+
+      "16" = [
+        # Do not try looking for binaries and libraries in /lib and /usr/lib
         ./13/no-sys-dirs-riscv.patch
+        # Mangle the nix store hash in __FILE__ to prevent unneeded runtime references
+        #
+        # TODO: Remove these and the `useMacroPrefixMap` conditional
+        # in `cc-wrapper` once <https://gcc.gnu.org/PR111527>
+        # is fixed.
         ./13/mangle-NIX_STORE-in-__FILE__.patch
-        ./13/libsanitizer-fix-with-glibc-2.42.patch
-      ];
-      "13" = [
-        ./13/no-sys-dirs-riscv.patch
-        ./13/mangle-NIX_STORE-in-__FILE__.patch
-        ./13/libsanitizer-fix-with-glibc-2.42.patch
       ];
     }
     ."${majorVersion}" or [ ]
@@ -145,31 +148,33 @@ optionals noSysDirs (
 # diffs from the Homebrew repo.
 ++ optionals canApplyIainsDarwinPatches (
   {
-    "15" = [
-      # Patches from https://github.com/iains/gcc-15-branch/compare/releases/gcc-15..gcc-15.1-darwin-rc1
+    # Patches from https://github.com/iains/gcc-13-branch/compare/b71f1de6e9cf7181a288c0f39f9b1ef6580cf5c8..gcc-13-3-darwin
+    "13" = [
       (fetchpatch {
-        name = "gcc-15-darwin-aarch64-support.patch";
-        url = "https://raw.githubusercontent.com/Homebrew/formula-patches/a25079204c1cb3d78ba9dd7dd22b8aecce7ce264/gcc/gcc-15.1.0.diff";
-        sha256 = "sha256-MJxSGv6LEP1sIM8cDqbmfUV7byV0bYgADeIBY/Teyu8=";
+        hash = "sha256-xqkBDFYZ6fdowtqR3kV7bR8a4Cu11RDokSzGn1k3a1w=";
+        name = "gcc-13-darwin-aarch64-support.patch";
+        url = "https://raw.githubusercontent.com/Homebrew/formula-patches/698885df7f624d0ce15bceb79a4d9760a473b502/gcc/gcc-13.4.0.diff";
       })
     ];
+
     "14" = [
       # Patches from https://github.com/iains/gcc-14-branch/compare/04696df09633baf97cdbbdd6e9929b9d472161d3..gcc-14.2-darwin-r2
       (fetchpatch {
+        hash = "sha256-BSTSYnkBJBEm++mGerVVyaCUC4dUyXq0N1tqbk25bO4=";
         # There are no upstream release tags nor a static branch for 14.3.0 in https://github.com/iains/gcc-14-branch.
         # aa4cd614456de65ee3417acb83c6cff0640144e9 is the merge base of https://github.com/iains/gcc-14-branch/tree/gcc-14-3-darwin-pre-0 and https://github.com/gcc-mirror/gcc/releases/tag/releases%2Fgcc-14.3.0
         # 3e1d48d240f4aa5223c701b5c231c66f66ab1126 is the newest commit of https://github.com/iains/gcc-14-branch/tree/gcc-14-3-darwin-pre-0
         name = "gcc-14-darwin-aarch64-support.patch";
         url = "https://github.com/iains/gcc-14-branch/compare/aa4cd614456de65ee3417acb83c6cff0640144e9..3e1d48d240f4aa5223c701b5c231c66f66ab1126.diff";
-        hash = "sha256-BSTSYnkBJBEm++mGerVVyaCUC4dUyXq0N1tqbk25bO4=";
       })
     ];
-    # Patches from https://github.com/iains/gcc-13-branch/compare/b71f1de6e9cf7181a288c0f39f9b1ef6580cf5c8..gcc-13-3-darwin
-    "13" = [
+
+    "15" = [
+      # Patches from https://github.com/iains/gcc-15-branch/compare/releases/gcc-15..gcc-15.1-darwin-rc1
       (fetchpatch {
-        name = "gcc-13-darwin-aarch64-support.patch";
-        url = "https://raw.githubusercontent.com/Homebrew/formula-patches/698885df7f624d0ce15bceb79a4d9760a473b502/gcc/gcc-13.4.0.diff";
-        hash = "sha256-xqkBDFYZ6fdowtqR3kV7bR8a4Cu11RDokSzGn1k3a1w=";
+        name = "gcc-15-darwin-aarch64-support.patch";
+        sha256 = "sha256-MJxSGv6LEP1sIM8cDqbmfUV7byV0bYgADeIBY/Teyu8=";
+        url = "https://raw.githubusercontent.com/Homebrew/formula-patches/a25079204c1cb3d78ba9dd7dd22b8aecce7ce264/gcc/gcc-15.1.0.diff";
       })
     ];
   }
@@ -179,10 +184,10 @@ optionals noSysDirs (
 # Use absolute path in GNAT dylib install names on Darwin
 ++ optionals (stdenv.hostPlatform.isDarwin && langAda) (
   {
-    "15" = [ ../patches/14/gnat-darwin-dylib-install-name-14.patch ];
-    "14" = [ ../patches/14/gnat-darwin-dylib-install-name-14.patch ];
     # After the Iains patch, GCC 13 and 14 share the same patch.
     "13" = [ ../patches/14/gnat-darwin-dylib-install-name-14.patch ];
+    "14" = [ ../patches/14/gnat-darwin-dylib-install-name-14.patch ];
+    "15" = [ ../patches/14/gnat-darwin-dylib-install-name-14.patch ];
   }
   .${majorVersion} or [ ]
 )
@@ -192,21 +197,21 @@ optionals noSysDirs (
 ) ./13/gnat13-aarch64-darwin-trampoline.patch
 
 ++ optional (targetPlatform.isWindows || targetPlatform.isCygwin) (fetchpatch {
+  hash = "sha256-+EYW9lG8CviVX7RyNHp+iX+8BRHUjt5b07k940khbbY=";
   name = "libstdc-fix-compilation-in-freestanding-win32.patch";
   url = "https://inbox.sourceware.org/gcc-patches/20250922182808.2599390-2-corngood@gmail.com/raw";
-  hash = "sha256-+EYW9lG8CviVX7RyNHp+iX+8BRHUjt5b07k940khbbY=";
 })
 
 ++ optionals targetPlatform.isCygwin [
   (fetchpatch {
+    hash = "sha256-mgzMRvgPdhj+Q2VRsFhpE2WQzg0CvWsc5/FRAsSU1Es=";
     name = "cygwin-fix-compilation-with-inhibit_libc.patch";
     url = "https://inbox.sourceware.org/gcc-patches/20250926170154.2222977-1-corngood@gmail.com/raw";
-    hash = "sha256-mgzMRvgPdhj+Q2VRsFhpE2WQzg0CvWsc5/FRAsSU1Es=";
   })
   (fetchpatch {
+    hash = "sha256-8I2G4430gkYoWgUued4unqhk8ZCajHf1dcivAeuLZ0E=";
     name = "cygwin-use-builtin_define_std-for-unix.patch";
     url = "https://inbox.sourceware.org/gcc-patches/20250922182808.2599390-3-corngood@gmail.com/raw";
-    hash = "sha256-8I2G4430gkYoWgUued4unqhk8ZCajHf1dcivAeuLZ0E=";
   })
 ]
 ++ optional (targetPlatform.isMusl && targetPlatform.isx86_32) ./libssp-noshared-musl32.patch

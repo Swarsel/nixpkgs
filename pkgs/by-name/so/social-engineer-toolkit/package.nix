@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   makeWrapper,
   metasploit,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "social-engineer-toolkit";
   version = "8.0.3";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "trustedsec";
@@ -43,6 +42,9 @@ python3Packages.buildPythonApplication rec {
     # pymssql
   ];
 
+  # Project has no tests
+  doCheck = false;
+
   installPhase = ''
     runHook preInstall
 
@@ -58,19 +60,20 @@ python3Packages.buildPythonApplication rec {
     "--prefix PYTHONPATH : \"${placeholder "out"}/share/social-engineer-toolkit\""
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = false;
 
   meta = {
     description = "Open-source penetration testing framework designed for social engineering";
+
     longDescription = ''
       The Social-Engineer Toolkit is an open-source penetration testing framework
       designed for social engineering. SET has a number of custom attack vectors
       that allow you to make a believable attack quickly.
     '';
+
     homepage = "https://github.com/trustedsec/social-engineer-toolkit";
-    mainProgram = "setoolkit";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ emilytrau ];
+    mainProgram = "setoolkit";
   };
 }

@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  source, # this is ./source.nix
-
   glib,
-  wrapGAppsHook3,
   gobject-introspection,
   meson,
-  pkg-config,
   ninja,
+  pkg-config,
+  python3,
+  source, # this is ./source.nix
   vala,
   wayland,
   wayland-scanner,
-  python3,
+  wrapGAppsHook3,
 }:
 let
   cleanArgs = lib.flip removeAttrs [
@@ -27,26 +26,21 @@ let
   buildAstalModule =
     {
       name,
-      sourceRoot ? "lib/${name}",
-      nativeBuildInputs ? [ ],
       buildInputs ? [ ],
-      website-path ? name,
       meta ? { },
+      nativeBuildInputs ? [ ],
+      sourceRoot ? "lib/${name}",
+      website-path ? name,
       ...
     }@args:
     stdenv.mkDerivation (
       finalAttrs:
       cleanArgs args
       // {
-        pname = "astal-${name}";
         inherit (source) version;
-
-        __structuredAttrs = true;
-        strictDeps = true;
-
+        pname = "astal-${name}";
         src = source;
-
-        sourceRoot = "${finalAttrs.src.name}/${sourceRoot}";
+        strictDeps = true;
 
         nativeBuildInputs = nativeBuildInputs ++ [
           wrapGAppsHook3
@@ -61,11 +55,14 @@ let
         ];
 
         buildInputs = [ glib ] ++ buildInputs;
+        __structuredAttrs = true;
+        sourceRoot = "${finalAttrs.src.name}/${sourceRoot}";
 
         meta = {
           homepage = "https://aylur.github.io/astal/guide/libraries/${website-path}";
           license = lib.licenses.lgpl21;
           maintainers = with lib.maintainers; [ PerchunPak ];
+
           platforms = [
             "aarch64-linux"
             "x86_64-linux"

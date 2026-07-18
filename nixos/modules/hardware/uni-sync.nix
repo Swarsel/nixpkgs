@@ -9,14 +9,14 @@ let
   cfg = config.hardware.uni-sync;
 in
 {
-  meta.maintainers = with maintainers; [ yunfachi ];
-
   options.hardware.uni-sync = {
     enable = mkEnableOption "udev rules and software for Lian Li Uni Controllers";
     package = mkPackageOption pkgs "uni-sync" { };
 
     devices = mkOption {
       default = [ ];
+      description = "List of controllers with their configurations.";
+
       example = literalExpression ''
         [
           {
@@ -52,23 +52,14 @@ in
           }
         ]
       '';
-      description = "List of controllers with their configurations.";
+
       type = types.listOf (
         types.submodule {
           options = {
-            device_id = mkOption {
-              type = types.str;
-              example = "VID:1111/PID:11111/SN:1111111111";
-              description = "Unique device ID displayed at each startup.";
-            };
-            sync_rgb = mkOption {
-              type = types.bool;
-              default = false;
-              example = true;
-              description = "Enable ARGB header sync.";
-            };
             channels = mkOption {
               default = [ ];
+              description = "List of channels connected to the controller.";
+
               example = literalExpression ''
                 [
                   {
@@ -88,28 +79,43 @@ in
                   }
                 ]
               '';
-              description = "List of channels connected to the controller.";
+
               type = types.listOf (
                 types.submodule {
                   options = {
                     mode = mkOption {
+                      default = "Manual";
+                      description = "\"PWM\" to enable PWM sync. \"Manual\" to set speed.";
+                      example = "PWM";
+
                       type = types.enum [
                         "Manual"
                         "PWM"
                       ];
-                      default = "Manual";
-                      example = "PWM";
-                      description = "\"PWM\" to enable PWM sync. \"Manual\" to set speed.";
                     };
+
                     speed = mkOption {
-                      type = types.int;
                       default = "50";
-                      example = "100";
                       description = "Fan speed as percentage (clamped between 0 and 100).";
+                      example = "100";
+                      type = types.int;
                     };
                   };
                 }
               );
+            };
+
+            device_id = mkOption {
+              description = "Unique device ID displayed at each startup.";
+              example = "VID:1111/PID:11111/SN:1111111111";
+              type = types.str;
+            };
+
+            sync_rgb = mkOption {
+              default = false;
+              description = "Enable ARGB header sync.";
+              example = true;
+              type = types.bool;
             };
           };
         }
@@ -125,4 +131,6 @@ in
     environment.systemPackages = [ cfg.package ];
     services.udev.packages = [ cfg.package ];
   };
+
+  meta.maintainers = with maintainers; [ yunfachi ];
 }

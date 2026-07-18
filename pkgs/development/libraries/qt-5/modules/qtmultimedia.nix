@@ -1,24 +1,27 @@
 {
-  qtModule,
   lib,
   stdenv,
-  qtbase,
-  qtdeclarative,
-  pkg-config,
   alsa-lib,
   gst_all_1,
   libpulseaudio,
-  wayland,
   # TODO: Clean up on `staging`.
   llvmPackages,
+  pkg-config,
+  qtModule,
+  qtbase,
+  qtdeclarative,
+  wayland,
 }:
 
 qtModule {
   pname = "qtmultimedia";
-  propagatedBuildInputs = [
-    qtbase
-    qtdeclarative
+
+  outputs = [
+    "bin"
+    "dev"
+    "out"
   ];
+
   nativeBuildInputs = [
     pkg-config
   ]
@@ -26,6 +29,7 @@ qtModule {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     llvmPackages.lld
   ];
+
   buildInputs =
     with gst_all_1;
     [
@@ -38,15 +42,17 @@ qtModule {
       alsa-lib
       wayland
     ];
-  outputs = [
-    "bin"
-    "dev"
-    "out"
+
+  propagatedBuildInputs = [
+    qtbase
+    qtdeclarative
   ];
-  qmakeFlags = [ "GST_VERSION=1.0" ];
+
   env = lib.optionalAttrs (stdenv.hostPlatform.isDarwin) {
-    NIX_LDFLAGS = "-lobjc";
     # TODO: Clean up on `staging`.
     NIX_CFLAGS_LINK = "-fuse-ld=lld";
+    NIX_LDFLAGS = "-lobjc";
   };
+
+  qmakeFlags = [ "GST_VERSION=1.0" ];
 }

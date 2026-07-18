@@ -3,12 +3,13 @@
   stdenv,
   fetchFromGitHub,
   libx11,
-  patches ? [ ],
   writeText,
   conf ? null,
+  patches ? [ ],
 }:
 
 stdenv.mkDerivation {
+  inherit patches;
   pname = "dwmblocks";
   version = "0-unstable-2024-08-24";
 
@@ -18,10 +19,6 @@ stdenv.mkDerivation {
     rev = "8cedd220684064f1433749ed2a19a6184c22cf07";
     hash = "sha256-QtYQB2mvw1k2LA8D+/cVnA8+GRDWjhIM6rxfi/IGjEw=";
   };
-
-  buildInputs = [ libx11 ];
-
-  inherit patches;
 
   postPatch =
     let
@@ -35,6 +32,7 @@ stdenv.mkDerivation {
         --replace-fail 'void termhandler()' 'void termhandler(int signum)'
     '';
 
+  buildInputs = [ libx11 ];
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {

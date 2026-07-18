@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   buildPythonPackage,
-  fetchFromGitHub,
   gremlinpython,
   hatchling,
   jsonpath-ng,
@@ -26,7 +26,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "awswrangler";
   version = "3.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -35,9 +34,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-utxSM8S3uelwrLHrXx5NglOmqjS7YKnAPujNS7UhWf8=";
   };
 
-  pythonRelaxDeps = [
-    "packaging"
-    "pyarrow"
+  nativeCheckInputs = [
+    moto
+    pyparsing
+    pytestCheckHook
   ];
 
   build-system = [ hatchling ];
@@ -58,19 +58,6 @@ buildPythonPackage (finalAttrs: {
     setuptools
   ];
 
-  optional-dependencies = {
-    sqlserver = [ pyodbc ];
-    sparql = [ sparqlwrapper ];
-  };
-
-  nativeCheckInputs = [
-    moto
-    pyparsing
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "awswrangler" ];
-
   enabledTestPaths = [
     # Subset of tests that run in upstream CI (many others require credentials)
     # https://github.com/aws/aws-sdk-pandas/blob/20fec775515e9e256e8cee5aee12966516608840/.github/workflows/minimal-tests.yml#L36-L43
@@ -78,6 +65,19 @@ buildPythonPackage (finalAttrs: {
     "tests/unit/test_session.py"
     "tests/unit/test_utils.py"
     "tests/unit/test_moto.py"
+  ];
+
+  optional-dependencies = {
+    sparql = [ sparqlwrapper ];
+    sqlserver = [ pyodbc ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "awswrangler" ];
+
+  pythonRelaxDeps = [
+    "packaging"
+    "pyarrow"
   ];
 
   meta = {

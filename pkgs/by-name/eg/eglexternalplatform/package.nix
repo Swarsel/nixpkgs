@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  buildPackages,
   meson,
   ninja,
-  buildPackages,
-  replaceVars,
   nix-update-script,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,18 +20,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tDKh1oSnOSG/XztHHYCwg1tDB7M6olOtJ8te+uan9ko=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
   ];
 
+  __structuredAttrs = true;
+
   setupHook = replaceVars ./setup-hook.sh {
     jq = lib.getExe buildPackages.jq;
     sponge = lib.getExe' buildPackages.moreutils "sponge";
   };
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
@@ -39,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "EGL External Platform interface";
     homepage = "https://github.com/NVIDIA/eglexternalplatform";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     maintainers = with lib.maintainers; [ ccicnce113424 ];
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
   };
 })

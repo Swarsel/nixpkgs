@@ -3,10 +3,6 @@
   buildPythonPackage,
   fetchPypi,
   fetchpatch,
-
-  # build-system
-  setuptools,
-
   # optional-dependencies
   lxml,
   matplotlib,
@@ -14,22 +10,21 @@
   pandas,
   pydot,
   pygraphviz,
-  scipy,
-  sympy,
-
   # tests
   pytest-xdist,
   pytestCheckHook,
-
   # reverse dependency
   sage,
+  scipy,
+  # build-system
+  setuptools,
+  sympy,
 }:
 
 buildPythonPackage rec {
   pname = "networkx";
   # upgrade may break sage, please test the sage build or ping @timokau on upgrade
   version = "3.6.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -37,25 +32,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  optional-dependencies = {
-    default = [
-      numpy
-      scipy
-      matplotlib
-      pandas
-    ];
-    extra = [
-      lxml
-      pygraphviz
-      pydot
-      sympy
-    ];
-  };
-
-  passthru.tests = {
-    inherit sage;
-  };
 
   nativeCheckInputs = [
     pytest-xdist
@@ -67,11 +43,33 @@ buildPythonPackage rec {
     "test_connected_raise"
   ];
 
+  optional-dependencies = {
+    default = [
+      numpy
+      scipy
+      matplotlib
+      pandas
+    ];
+
+    extra = [
+      lxml
+      pygraphviz
+      pydot
+      sympy
+    ];
+  };
+
+  pyproject = true;
+
+  passthru.tests = {
+    inherit sage;
+  };
+
   meta = {
-    changelog = "https://github.com/networkx/networkx/blob/networkx-${version}/doc/release/release_${version}.rst";
-    homepage = "https://networkx.github.io/";
-    downloadPage = "https://github.com/networkx/networkx";
     description = "Library for the creation, manipulation, and study of the structure, dynamics, and functions of complex networks";
+    homepage = "https://networkx.github.io/";
+    changelog = "https://github.com/networkx/networkx/blob/networkx-${version}/doc/release/release_${version}.rst";
     license = lib.licenses.bsd3;
+    downloadPage = "https://github.com/networkx/networkx";
   };
 }

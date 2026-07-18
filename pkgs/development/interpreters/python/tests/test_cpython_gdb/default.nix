@@ -1,8 +1,8 @@
 {
-  interpreter,
   gdb,
-  writeText,
+  interpreter,
   runCommand,
+  writeText,
 }:
 
 let

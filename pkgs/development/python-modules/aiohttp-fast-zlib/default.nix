@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   isal,
   poetry-core,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "aiohttp-fast-zlib";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -25,8 +24,8 @@ buildPythonPackage rec {
     sed -i "/addopts =/d" pyproject.toml
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
   build-system = [ poetry-core ];
-
   dependencies = [ aiohttp ];
 
   optional-dependencies = {
@@ -34,8 +33,7 @@ buildPythonPackage rec {
     zlib_ng = [ zlib-ng ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiohttp_fast_zlib" ];
 
   meta = {

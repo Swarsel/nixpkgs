@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,6 +19,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-oEgWfklxjP8+TxrhDKJgcTsanpqJpEiHXJyir8neYj8=";
 
+  # These tests use tempdir + cargo metadata subprocess which fails on Darwin
+  # sandboxes due to getcwd() differences (XNU vs Linux). Tracked upstream at
+  # https://github.com/otter-sec/anchor/issues/4751
+  checkFlags = map (t: "--skip=${t}") (
+    lib.optionals stdenv.hostPlatform.isDarwin [
+      "program::tests::discover_solana_programs_finds_sibling_programs_from_nested_member"
+      "program::tests::discover_solana_programs_lists_all_members_from_nested_member"
+    ]
+  );
+
   # Only build the anchor-cli package
   cargoBuildFlags = [
     "-p"
@@ -31,25 +41,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "anchor-cli"
   ];
 
-  # These tests use tempdir + cargo metadata subprocess which fails on Darwin
-  # sandboxes due to getcwd() differences (XNU vs Linux). Tracked upstream at
-  # https://github.com/otter-sec/anchor/issues/4751
-  checkFlags = map (t: "--skip=${t}") (
-    lib.optionals stdenv.hostPlatform.isDarwin [
-      "program::tests::discover_solana_programs_finds_sibling_programs_from_nested_member"
-      "program::tests::discover_solana_programs_lists_all_members_from_nested_member"
-    ]
-  );
-
   meta = {
     description = "Solana Sealevel Framework";
     homepage = "https://github.com/otter-sec/anchor";
     changelog = "https://github.com/otter-sec/anchor/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       Denommus
       _0xgsvs
     ];
+
     mainProgram = "anchor";
   };
 })

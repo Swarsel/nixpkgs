@@ -6,6 +6,9 @@ stdenv.mkDerivation {
   # tree, we can do this properly.
   #pname = "${klibc.pname}-shrunk";
   inherit (klibc) pname version;
+  inherit (klibc) meta;
+  allowedReferences = [ "out" ];
+
   buildCommand = ''
     mkdir -p $out/lib
     cp -prd ${klibc.out}/lib/klibc/bin $out/
@@ -20,7 +23,4 @@ stdenv.mkDerivation {
       #patchelf --set-interpreter $new $i
     done
   ''; # */
-  allowedReferences = [ "out" ];
-
-  inherit (klibc) meta;
 }

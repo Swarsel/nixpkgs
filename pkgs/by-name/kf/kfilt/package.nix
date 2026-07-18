@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,8 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-TR6DZ8jV2InNT0IkFurESWT+2F4NDy2lRYhAMy0/h5c=";
 
-  subPackages = [ "." ];
-
   ldflags = [
     "-s"
     "-w"
@@ -26,11 +24,13 @@ buildGoModule (finalAttrs: {
     "-X github.com/ryane/kfilt/cmd.GitCommit=${finalAttrs.src.rev}"
   ];
 
+  subPackages = [ "." ];
+
   meta = {
     description = "Command-line tool that filters Kubernetes resources";
-    mainProgram = "kfilt";
     homepage = "https://github.com/ryane/kfilt";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.ryane ];
+    mainProgram = "kfilt";
   };
 })

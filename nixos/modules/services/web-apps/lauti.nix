@@ -25,21 +25,35 @@ in
     enable = mkEnableOption "Lauti community event calendar web app";
 
     dataDir = lib.mkOption {
-      type = lib.types.path;
       default = if useLegacyDefault then "/var/lib/eintopf" else "/var/lib/lauti";
+
       description = ''
         Data directory for Lauti
       '';
+
+      type = lib.types.path;
+    };
+
+    secrets = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        A list of files containing the various secrets. Should be in the
+        format expected by systemd's `EnvironmentFile` directory.
+      '';
+
+      type = with types; listOf path;
     };
 
     settings = mkOption {
-      type = types.attrsOf types.str;
       default = { };
+
       description = ''
         Settings to configure web service. See
         <https://codeberg.org/Klasse-Methode/lauti/src/branch/main/DEPLOYMENT.md>
         for available options.
       '';
+
       example = literalExpression ''
         {
           LAUTI_ADDR = ":1234";
@@ -47,15 +61,8 @@ in
           LAUTI_TIMEZONE = "Europe/Berlin";
         }
       '';
-    };
 
-    secrets = lib.mkOption {
-      type = with types; listOf path;
-      description = ''
-        A list of files containing the various secrets. Should be in the
-        format expected by systemd's `EnvironmentFile` directory.
-      '';
-      default = [ ];
+      type = types.attrsOf types.str;
     };
 
   };
@@ -63,22 +70,18 @@ in
   config = mkIf cfg.enable {
 
     systemd.services.lauti = {
-      description = "Community event calendar web app";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
+      description = "Community event calendar web app";
       environment = cfg.settings;
-      serviceConfig = {
-        ExecStart = lib.getExe pkgs.lauti;
-        WorkingDirectory = cfg.dataDir;
-        StateDirectory = default;
-        EnvironmentFile = cfg.secrets;
 
+      serviceConfig = {
         # hardening
         AmbientCapabilities = "";
         CapabilityBoundingSet = "";
         DevicePolicy = "closed";
         DynamicUser = true;
+        EnvironmentFile = cfg.secrets;
+        ExecStart = lib.getExe pkgs.lauti;
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -96,20 +99,29 @@ in
         ProtectProc = "invisible";
         ProtectSystem = "strict";
         RemoveIPC = true;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = default;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
+
         UMask = "0077";
+        WorkingDirectory = cfg.dataDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
   };

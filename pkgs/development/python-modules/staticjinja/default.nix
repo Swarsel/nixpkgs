@@ -2,24 +2,23 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  poetry-core,
+  callPackage,
   docopt-ng,
   easywatch,
   jinja2,
-  pytestCheckHook,
-  pytest-check,
   markdown,
+  poetry-core,
+  pytest-check,
+  pytestCheckHook,
+  staticjinja,
   testers,
   tomlkit,
   typing-extensions,
-  staticjinja,
-  callPackage,
 }:
 
 buildPythonPackage rec {
   pname = "staticjinja";
   version = "5.0.0";
-  pyproject = true;
 
   # No tests in pypi
   src = fetchFromGitHub {
@@ -50,6 +49,8 @@ buildPythonPackage rec {
     export PATH="$PATH:$out/bin";
   '';
 
+  pyproject = true;
+
   passthru.tests = {
     version = testers.testVersion { package = staticjinja; };
     minimal-template = callPackage ./test-minimal-template { };
@@ -57,9 +58,9 @@ buildPythonPackage rec {
 
   meta = {
     description = "Library and cli tool that makes it easy to build static sites using Jinja2";
-    mainProgram = "staticjinja";
     homepage = "https://staticjinja.readthedocs.io/en/latest/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
+    mainProgram = "staticjinja";
   };
 }

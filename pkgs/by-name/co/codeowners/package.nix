@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "CLI and Go library for Github's CODEOWNERS file";
-    mainProgram = "codeowners";
     homepage = "https://github.com/hmarr/codeowners";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ yorickvp ];
+    mainProgram = "codeowners";
   };
 })

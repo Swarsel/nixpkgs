@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.segger.com/downloads/jlink/Ozone_Linux_V${
       lib.replaceString "." "" finalAttrs.version
     }_x86_64.tgz";
+
     hash = "sha256-UX7ZGWVtVphBMcQ0R0iiNYaDfSjYXjSpK9YMBHw2Pss=";
   };
 
@@ -45,28 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.getLib stdenv.cc.cc)
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      categories = [
-        "Development"
-        "Debugger"
-        "X-MandrivaLinux-MoreApplications-Development"
-      ];
-      comment = "SEGGER Ozone";
-      desktopName = "Ozone";
-      exec = "Ozone %%f";
-      icon = "Ozone";
-      keywords = [
-        "ARM"
-        "Development"
-        "Embedded"
-      ];
-      name = "segger-ozone";
-      startupNotify = true;
-      terminal = false;
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -78,8 +57,34 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Development"
+        "Debugger"
+        "X-MandrivaLinux-MoreApplications-Development"
+      ];
+
+      comment = "SEGGER Ozone";
+      desktopName = "Ozone";
+      exec = "Ozone %%f";
+      icon = "Ozone";
+
+      keywords = [
+        "ARM"
+        "Development"
+        "Embedded"
+      ];
+
+      name = "segger-ozone";
+      startupNotify = true;
+      terminal = false;
+    })
+  ];
+
   meta = {
     description = "J-Link Debugger and Performance Analyzer";
+
     longDescription = ''
       Ozone is a cross-platform debugger and performance analyzer for J-Link
       and J-Trace.
@@ -100,9 +105,10 @@ stdenv.mkDerivation (finalAttrs: {
       GCC, Clang, ARM, IAR. Output of other compilers may be supported but is
       not guaranteed to be.
     '';
+
     homepage = "https://www.segger.com/products/development-tools/ozone-j-link-debugger";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.bmilanov ];
     platforms = [ "x86_64-linux" ];
   };

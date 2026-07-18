@@ -1,15 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   entry-points-txt,
-  fetchFromGitHub,
   hatchling,
   headerparser,
   jsonschema,
   packaging,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   readme-renderer,
   setuptools,
   wheel-filename,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "wheel-inspect";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jwodder";
@@ -27,9 +26,11 @@ buildPythonPackage rec {
     hash = "sha256-yECgJLShCLiEyZmw9azNP5lwLeas10AfRu/RVMQGejg=";
   };
 
-  pythonRelaxDeps = [
-    "entry-points-txt"
-    "headerparser"
+  nativeCheckInputs = [
+    setuptools
+    pytestCheckHook
+    pytest-cov-stub
+    jsonschema
   ];
 
   build-system = [ hatchling ];
@@ -43,17 +44,17 @@ buildPythonPackage rec {
     wheel-filename
   ];
 
-  nativeCheckInputs = [
-    setuptools
-    pytestCheckHook
-    pytest-cov-stub
-    jsonschema
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
   ];
 
   pythonImportsCheck = [ "wheel_inspect" ];
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
+  pythonRelaxDeps = [
+    "entry-points-txt"
+    "headerparser"
   ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   testers,
 }:
 
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-MNrhOvdyYs99Z6Wwf2X+xCNRzc6erpLpFB/GHBJRhrg=";
   };
 
-  cargoHash = "sha256-QrUR3xHZ/1FFkBYt5qxi0mNVTvEaWBcLSjp6OnzR9GY=";
-
   strictDeps = true;
+  cargoHash = "sha256-QrUR3xHZ/1FFkBYt5qxi0mNVTvEaWBcLSjp6OnzR9GY=";
   __structuredAttrs = true;
 
   passthru = {
@@ -31,8 +30,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Screenshot clipboard paste fix for AI agents";
     homepage = "https://github.com/hqhq1025/clipaste";
     license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ aaronjheng ];
+    platforms = lib.platforms.darwin;
     mainProgram = "clipaste";
   };
 })

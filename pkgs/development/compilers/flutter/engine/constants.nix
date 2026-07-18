@@ -1,17 +1,16 @@
 { lib, platform }:
 let
   self = {
-    os =
-      if platform.isLinux then
-        "linux"
-      else if platform.isDarwin then
-        "macos"
-      else if platform.isWindows then
-        "windows"
+    alt-arch =
+      if platform.isx86_64 then
+        "x64"
+      else if platform.isAarch64 then
+        "arm64"
       else
-        throw "Unsupported OS \"${platform.parsed.kernel.name}\"";
+        platform.parsed.cpu.name;
 
     alt-os = if platform.isDarwin then "mac" else self.os;
+    alt-platform = "${self.os}-${self.alt-arch}";
 
     arch =
       if platform.isx86_64 then
@@ -33,16 +32,17 @@ let
       else
         throw "Unsupported CPU \"${platform.parsed.cpu.name}\"";
 
-    alt-arch =
-      if platform.isx86_64 then
-        "x64"
-      else if platform.isAarch64 then
-        "arm64"
+    os =
+      if platform.isLinux then
+        "linux"
+      else if platform.isDarwin then
+        "macos"
+      else if platform.isWindows then
+        "windows"
       else
-        platform.parsed.cpu.name;
+        throw "Unsupported OS \"${platform.parsed.kernel.name}\"";
 
     platform = "${self.os}-${self.arch}";
-    alt-platform = "${self.os}-${self.alt-arch}";
   };
 in
 self

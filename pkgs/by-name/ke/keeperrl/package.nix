@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  requireFile,
-  openal,
-  curl,
-  libogg,
-  libvorbis,
   SDL2,
   SDL2_image,
-  zlib,
   clang,
+  curl,
+  libogg,
   libtheora,
+  libvorbis,
+  openal,
+  requireFile,
+  zlib,
   unfree_assets ? false,
 }:
 
@@ -27,7 +27,6 @@ let
   };
 
   assets = requireFile rec {
-    name = "keeperrl_data_${version}.tar.gz";
     message = ''
       This nix expression requires that the KeeperRL art assets are already
       part of the store. These can be obtained from a purchased copy of the game
@@ -40,20 +39,14 @@ let
 
       "nix-prefetch-url file://$PWD/${name}".
     '';
+
+    name = "keeperrl_data_${version}.tar.gz";
     sha256 = "0115pxdzdyma2vicxgr0j21pp82gxdyrlj090s8ihp0b50f0nlll";
   };
 in
 
 stdenv.mkDerivation {
   inherit pname version;
-
-  srcs = [ free_src ] ++ lib.optional unfree_assets assets;
-
-  sourceRoot = free_src.name;
-
-  postUnpack = lib.optionalString unfree_assets ''
-    mv data $sourceRoot
-  '';
 
   buildInputs = [
     openal
@@ -67,18 +60,16 @@ stdenv.mkDerivation {
     clang
   ];
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-I${lib.getInclude SDL2}/include/SDL2"
-  ];
-
-  enableParallelBuilding = true;
-
   makeFlags = [
     "OPT=true"
     "RELEASE=true"
     "DATA_DIR=$(out)/share"
     "ENABLE_LOCAL_USER_DIR=true"
     "NO_STEAMWORKS=true"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-I${lib.getInclude SDL2}/include/SDL2"
   ];
 
   installPhase = ''
@@ -90,16 +81,27 @@ stdenv.mkDerivation {
     ${lib.optionalString unfree_assets "cp -r data $out/share"}
   '';
 
+  enableParallelBuilding = true;
+
+  postUnpack = lib.optionalString unfree_assets ''
+    mv data $sourceRoot
+  '';
+
+  sourceRoot = free_src.name;
+  srcs = [ free_src ] ++ lib.optional unfree_assets assets;
+
   meta = {
     description = "Dungeon management rogue-like";
-    mainProgram = "keeper";
     homepage = "https://keeperrl.com/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ onny ];
+
     # TODO: Add OS X
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "keeper";
   };
 }

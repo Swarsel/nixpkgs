@@ -16,35 +16,35 @@
 
 {
   lib,
-  pkgs',
   emacs',
+  pkgs',
 }:
 
 let
 
   mkElpaDevelPackages =
-    { pkgs, lib }:
+    { lib, pkgs }:
     import ../applications/editors/emacs/elisp-packages/elpa-devel-packages.nix {
       inherit (pkgs) pkgs buildPackages;
       inherit lib;
     };
 
   mkElpaPackages =
-    { pkgs, lib }:
+    { lib, pkgs }:
     import ../applications/editors/emacs/elisp-packages/elpa-packages.nix {
       inherit (pkgs) pkgs buildPackages;
       inherit lib;
     };
 
   mkNongnuDevelPackages =
-    { pkgs, lib }:
+    { lib, pkgs }:
     import ../applications/editors/emacs/elisp-packages/nongnu-devel-packages.nix {
       inherit (pkgs) pkgs buildPackages;
       inherit lib;
     };
 
   mkNongnuPackages =
-    { pkgs, lib }:
+    { lib, pkgs }:
     import ../applications/editors/emacs/elisp-packages/nongnu-packages.nix {
       inherit (pkgs) pkgs buildPackages;
       inherit lib;
@@ -52,19 +52,19 @@ let
 
   # Contains both melpa stable & unstable
   melpaGeneric =
-    { pkgs, lib }:
+    { lib, pkgs }:
     import ../applications/editors/emacs/elisp-packages/melpa-packages.nix {
       inherit lib pkgs;
     };
 
   mkManualPackages =
-    { pkgs, lib }:
+    { lib, pkgs }:
     import ../applications/editors/emacs/elisp-packages/manual-packages.nix {
       inherit lib pkgs;
     };
 
   emacsWithPackages =
-    { pkgs, lib }:
+    { lib, pkgs }:
     pkgs.callPackage ../applications/editors/emacs/build-support/wrapper.nix {
       inherit (pkgs) lndir;
       inherit lib;
@@ -75,15 +75,15 @@ lib.makeScope pkgs'.newScope (
   self:
   lib.makeOverridable (
     {
-      pkgs ? pkgs',
       lib ? pkgs.lib,
       elpaDevelPackages ? mkElpaDevelPackages { inherit pkgs lib; } self,
       elpaPackages ? mkElpaPackages { inherit pkgs lib; } self,
+      manualPackages ? mkManualPackages { inherit pkgs lib; } self,
+      melpaPackages ? melpaGeneric { inherit pkgs lib; } "unstable" self,
+      melpaStablePackages ? melpaGeneric { inherit pkgs lib; } "stable" self,
       nongnuDevelPackages ? mkNongnuDevelPackages { inherit pkgs lib; } self,
       nongnuPackages ? mkNongnuPackages { inherit pkgs lib; } self,
-      melpaStablePackages ? melpaGeneric { inherit pkgs lib; } "stable" self,
-      melpaPackages ? melpaGeneric { inherit pkgs lib; } "unstable" self,
-      manualPackages ? mkManualPackages { inherit pkgs lib; } self,
+      pkgs ? pkgs',
     }:
     (
       { }
@@ -117,6 +117,10 @@ lib.makeScope pkgs'.newScope (
       }
       // {
 
+        elpaBuild = pkgs.callPackage ../applications/editors/emacs/build-support/elpa.nix {
+          inherit (self) emacs;
+        };
+
         # Propagate overridden scope
         emacs = emacs'.overrideAttrs (old: {
           passthru = (old.passthru or { }) // {
@@ -124,19 +128,16 @@ lib.makeScope pkgs'.newScope (
           };
         });
 
-        trivialBuild = pkgs.callPackage ../applications/editors/emacs/build-support/trivial.nix {
-          inherit (self) emacs;
-        };
-
-        elpaBuild = pkgs.callPackage ../applications/editors/emacs/build-support/elpa.nix {
-          inherit (self) emacs;
-        };
+        emacsWithPackages = emacsWithPackages { inherit pkgs lib; } self;
 
         melpaBuild = pkgs.callPackage ../applications/editors/emacs/build-support/melpa.nix {
           inherit (self) emacs;
         };
 
-        emacsWithPackages = emacsWithPackages { inherit pkgs lib; } self;
+        trivialBuild = pkgs.callPackage ../applications/editors/emacs/build-support/trivial.nix {
+          inherit (self) emacs;
+        };
+
         withPackages = emacsWithPackages { inherit pkgs lib; } self;
 
       }
@@ -146,7 +147,6 @@ lib.makeScope pkgs'.newScope (
 
         # EXWM is not tagged very often, prefer it from elpa devel.
         inherit (elpaDevelPackages) exwm;
-
         # Telega uploads packages incompatible with stable tdlib to melpa
         # Prefer the one from melpa stable
         inherit (melpaStablePackages) telega;

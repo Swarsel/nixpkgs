@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  gdal,
-  setuptools,
-
   # dependencies
   attrs,
+  boto3,
+  buildPythonPackage,
   certifi,
   click,
   click-plugins,
   cligj,
-
-  # optional-dependencies
-  pyparsing,
-  shapely,
-  boto3,
-
+  # build-system
+  cython,
   # tests
   fsspec,
+  gdal,
+  # optional-dependencies
+  pyparsing,
   pytestCheckHook,
   pytz,
+  setuptools,
+  shapely,
   snuggs,
   versionCheckHook,
 }:
@@ -31,7 +27,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "fiona";
   version = "1.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Toblerity";
@@ -51,31 +46,7 @@ buildPythonPackage (finalAttrs: {
         --replace-fail parseString parse_string
     '';
 
-  build-system = [
-    cython
-    gdal # for gdal-config
-    setuptools
-  ];
-
   buildInputs = [ gdal ];
-
-  dependencies = [
-    attrs
-    certifi
-    click
-    click-plugins
-    cligj
-  ];
-
-  optional-dependencies = {
-    calc = [
-      pyparsing
-      shapely
-    ];
-    s3 = [ boto3 ];
-  };
-
-  pythonImportsCheck = [ "fiona" ];
 
   nativeCheckInputs = [
     fsspec
@@ -92,15 +63,24 @@ buildPythonPackage (finalAttrs: {
     rm -r fiona
   '';
 
+  build-system = [
+    cython
+    gdal # for gdal-config
+    setuptools
+  ];
+
+  dependencies = [
+    attrs
+    certifi
+    click
+    click-plugins
+    cligj
+  ];
+
   disabledTestMarks = [
     # Tests with gdal marker do not test the functionality of Fiona,
     # but they are used to check GDAL driver capabilities.
     "gdal"
-  ];
-
-  pytestFlags = [
-    # UserWarning: The parameter --where is used more than once. Remove its duplicate as parameters should be unique.
-    "-Wignore::UserWarning"
   ];
 
   disabledTests = [
@@ -122,12 +102,30 @@ buildPythonPackage (finalAttrs: {
     "test_append_memoryfile_drivers"
   ];
 
+  optional-dependencies = {
+    calc = [
+      pyparsing
+      shapely
+    ];
+
+    s3 = [ boto3 ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    # UserWarning: The parameter --where is used more than once. Remove its duplicate as parameters should be unique.
+    "-Wignore::UserWarning"
+  ];
+
+  pythonImportsCheck = [ "fiona" ];
+
   meta = {
     description = "OGR's neat, nimble, no-nonsense API for Python";
-    changelog = "https://github.com/Toblerity/Fiona/blob/${finalAttrs.src.tag}/CHANGES.txt";
-    mainProgram = "fio";
     homepage = "https://fiona.readthedocs.io/";
+    changelog = "https://github.com/Toblerity/Fiona/blob/${finalAttrs.src.tag}/CHANGES.txt";
     license = lib.licenses.bsd3;
+    mainProgram = "fio";
     teams = [ lib.teams.geospatial ];
   };
 })

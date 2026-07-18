@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   autoreconfHook,
-  pkg-config,
-  which,
-  gnuplot,
   giflib,
+  gnuplot,
   libjpeg,
   libpng,
   libtiff,
   libwebp,
+  nix-update-script,
   openjpeg,
+  pkg-config,
+  which,
   zlib,
 }:
 
@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     giflib
     libjpeg
@@ -40,22 +41,23 @@ stdenv.mkDerivation (finalAttrs: {
     openjpeg
     zlib
   ];
-  enableParallelBuilding = true;
+
+  # Fails on pngio_reg for unknown reason
+  doCheck = false; # !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     which
     gnuplot
   ];
 
-  # Fails on pngio_reg for unknown reason
-  doCheck = false; # !stdenv.hostPlatform.isDarwin;
-
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
+
   meta = {
-    maintainers = with lib.maintainers; [ patrickdag ];
     description = "Image processing and analysis library";
     homepage = "http://www.leptonica.org/";
     license = lib.licenses.bsd2; # http://www.leptonica.org/about-the-license.html
+    maintainers = with lib.maintainers; [ patrickdag ];
     platforms = lib.platforms.unix;
   };
 })

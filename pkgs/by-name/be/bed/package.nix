@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  which,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
+  which,
 }:
 buildGoModule (finalAttrs: {
   pname = "bed";
@@ -16,15 +16,16 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-NXTQMyCI4PKaQPxZqklH03BEDMUrTCNtFUj2FNwIsNM=";
   };
-  vendorHash = "sha256-tp83T6V4HM7SgpZASMWnIoqgw/s/DhdJMsCu2C6OuTo=";
 
   nativeBuildInputs = [ which ];
+  vendorHash = "sha256-tp83T6V4HM7SgpZASMWnIoqgw/s/DhdJMsCu2C6OuTo=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgramArg = "-version";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

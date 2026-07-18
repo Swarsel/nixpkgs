@@ -20,11 +20,11 @@
   pbr,
   prettytable,
   python,
+  python-subunit,
   pyyaml,
   setuptools,
   stestr,
   stevedore,
-  python-subunit,
   testscenarios,
   testtools,
   urllib3,
@@ -33,7 +33,6 @@
 buildPythonPackage rec {
   pname = "tempest";
   version = "46.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -45,7 +44,29 @@ buildPythonPackage rec {
       --replace-fail 'getheaders()' 'headers'
   '';
 
-  pythonRelaxDeps = [ "defusedxml" ];
+  nativeCheckInputs = [
+    hacking
+    oslotest
+    stestr
+  ];
+
+  checkPhase = ''
+    # Tests expect these applications available as such.
+    mkdir -p bin
+    export PATH="$PWD/bin:$PATH"
+    printf '#!${bash}/bin/bash\nexec ${python.interpreter} -m tempest.cmd.main "$@"\n' > bin/tempest
+    printf '#!${bash}/bin/bash\nexec ${python.interpreter} -m tempest.cmd.subunit_describe_calls "$@"\n' > bin/subunit-describe-calls
+    chmod +x bin/*
+
+    stestr --test-path tempest/tests run -e <(echo "
+      tempest.tests.common.test_concurrency.TestConcurrency.test_run_concurrent_tasks_dict_return_values
+      tempest.tests.common.test_concurrency.TestConcurrency.test_run_concurrent_tasks_multiple_workers
+      tempest.tests.common.test_concurrency.TestConcurrency.test_run_concurrent_tasks_single_process
+      tempest.tests.common.test_concurrency.TestConcurrency.test_run_concurrent_tasks_success
+      tempest.tests.common.test_concurrency.TestConcurrency.test_run_concurrent_tasks_with_exception
+      tempest.tests.lib.cli.test_execute.TestExecute.test_execute_with_prefix
+    ")
+  '';
 
   build-system = [ setuptools ];
 
@@ -73,31 +94,9 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    hacking
-    oslotest
-    stestr
-  ];
-
-  checkPhase = ''
-    # Tests expect these applications available as such.
-    mkdir -p bin
-    export PATH="$PWD/bin:$PATH"
-    printf '#!${bash}/bin/bash\nexec ${python.interpreter} -m tempest.cmd.main "$@"\n' > bin/tempest
-    printf '#!${bash}/bin/bash\nexec ${python.interpreter} -m tempest.cmd.subunit_describe_calls "$@"\n' > bin/subunit-describe-calls
-    chmod +x bin/*
-
-    stestr --test-path tempest/tests run -e <(echo "
-      tempest.tests.common.test_concurrency.TestConcurrency.test_run_concurrent_tasks_dict_return_values
-      tempest.tests.common.test_concurrency.TestConcurrency.test_run_concurrent_tasks_multiple_workers
-      tempest.tests.common.test_concurrency.TestConcurrency.test_run_concurrent_tasks_single_process
-      tempest.tests.common.test_concurrency.TestConcurrency.test_run_concurrent_tasks_success
-      tempest.tests.common.test_concurrency.TestConcurrency.test_run_concurrent_tasks_with_exception
-      tempest.tests.lib.cli.test_execute.TestExecute.test_execute_with_prefix
-    ")
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "tempest" ];
+  pythonRelaxDeps = [ "defusedxml" ];
 
   meta = {
     description = "OpenStack integration test suite that runs against live OpenStack cluster and validates an OpenStack deployment";

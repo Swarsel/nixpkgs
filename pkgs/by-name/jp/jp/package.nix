@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -9,9 +9,9 @@ buildGoModule (finalAttrs: {
   version = "0.2.1";
 
   src = fetchFromGitHub {
-    rev = finalAttrs.version;
     owner = "jmespath";
     repo = "jp";
+    rev = finalAttrs.version;
     hash = "sha256-a3WvLAdUZk+Y+L+opPDMBvdN5x5B6nAi/lL8JHJG/gY=";
   };
 
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Command line interface to the JMESPath expression language for JSON";
-    mainProgram = "jp";
     homepage = "https://github.com/jmespath/jp";
-    maintainers = with lib.maintainers; [ cransom ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ cransom ];
+    mainProgram = "jp";
   };
 })

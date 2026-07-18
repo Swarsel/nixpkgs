@@ -44,11 +44,11 @@ let
 
   mkSetupNat =
     {
-      iptables,
       dest,
-      internalIPs,
-      forwardPorts,
       externalIp,
+      forwardPorts,
+      internalIPs,
+      iptables,
     }:
     ''
       # We can't match on incoming interface in POSTROUTING, so
@@ -154,19 +154,19 @@ let
     ip46tables -w -t filter -N nixos-filter-forward
 
     ${mkSetupNat {
-      iptables = "iptables";
       inherit dest;
       inherit (cfg) internalIPs;
-      forwardPorts = filter (x: !(isIPv6 x.destination)) cfg.forwardPorts;
       externalIp = cfg.externalIP;
+      forwardPorts = filter (x: !(isIPv6 x.destination)) cfg.forwardPorts;
+      iptables = "iptables";
     }}
 
     ${optionalString cfg.enableIPv6 (mkSetupNat {
-      iptables = "ip6tables";
       dest = destIPv6;
-      internalIPs = cfg.internalIPv6s;
-      forwardPorts = filter (x: isIPv6 x.destination) cfg.forwardPorts;
       externalIp = cfg.externalIPv6;
+      forwardPorts = filter (x: isIPv6 x.destination) cfg.forwardPorts;
+      internalIPs = cfg.internalIPv6s;
+      iptables = "ip6tables";
     })}
 
     ${optionalString (cfg.dmzHost != null) ''
@@ -191,27 +191,31 @@ in
   options = {
 
     networking.nat.extraCommands = mkOption {
-      type = types.lines;
       default = "";
-      example = "iptables -A INPUT -p icmp -j ACCEPT";
+
       description = ''
         Additional shell commands executed as part of the nat
         initialisation script.
 
         This option is incompatible with the nftables based nat module.
       '';
+
+      example = "iptables -A INPUT -p icmp -j ACCEPT";
+      type = types.lines;
     };
 
     networking.nat.extraStopCommands = mkOption {
-      type = types.lines;
       default = "";
-      example = "iptables -D INPUT -p icmp -j ACCEPT || true";
+
       description = ''
         Additional shell commands executed as part of the nat
         teardown script.
 
         This option is incompatible with the nftables based nat module.
       '';
+
+      example = "iptables -D INPUT -p icmp -j ACCEPT || true";
+      type = types.lines;
     };
 
   };
@@ -227,23 +231,23 @@ in
 
       systemd.services = mkIf (!config.networking.firewall.enable) {
         nat = {
-          description = "Network Address Translation";
-          wantedBy = [ "network.target" ];
           after = [
             "network-pre.target"
             "systemd-modules-load.service"
           ];
+
+          description = "Network Address Translation";
           path = [ config.networking.firewall.package ];
-          unitConfig.ConditionCapability = "CAP_NET_ADMIN";
-
-          serviceConfig = {
-            Type = "oneshot";
-            RemainAfterExit = true;
-          };
-
+          postStop = flushNat;
           script = flushNat + setupNat;
 
-          postStop = flushNat;
+          serviceConfig = {
+            RemainAfterExit = true;
+            Type = "oneshot";
+          };
+
+          unitConfig.ConditionCapability = "CAP_NET_ADMIN";
+          wantedBy = [ "network.target" ];
         };
       };
     })

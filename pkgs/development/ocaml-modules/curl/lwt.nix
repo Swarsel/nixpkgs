@@ -1,13 +1,13 @@
 {
+  lib,
   buildDunePackage,
   curl,
-  lib,
   lwt,
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "curl_lwt";
   inherit (curl) version src;
+  pname = "curl_lwt";
 
   propagatedBuildInputs = [
     curl

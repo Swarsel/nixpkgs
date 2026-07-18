@@ -2,34 +2,33 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  evdev-proto,
+  glslang,
+  hwdata,
+  lcms2,
+  libGL,
+  libcap,
+  libdisplay-info,
+  libgbm,
+  libinput,
+  libliftoff,
+  libx11,
+  libxcb-errors,
+  libxcb-image,
+  libxcb-render-util,
+  libxcb-wm,
+  libxkbcommon,
   meson,
   ninja,
+  nixosTests,
+  pixman,
   pkg-config,
-  wayland-scanner,
-  libGL,
+  seatd,
+  testers,
+  vulkan-loader,
   wayland,
   wayland-protocols,
-  libinput,
-  libxkbcommon,
-  pixman,
-  libcap,
-  libgbm,
-  libxcb-wm,
-  libxcb-render-util,
-  libxcb-image,
-  libxcb-errors,
-  libx11,
-  hwdata,
-  seatd,
-  vulkan-loader,
-  glslang,
-  libliftoff,
-  libdisplay-info,
-  lcms2,
-  evdev-proto,
-  nixosTests,
-  testers,
-
+  wayland-scanner,
   enableXWayland ? true,
   xwayland ? null,
 }:
@@ -37,28 +36,26 @@
 let
   generic =
     {
-      version,
       hash,
+      version,
       extraBuildInputs ? [ ],
       extraNativeBuildInputs ? [ ],
       patches ? [ ],
       postPatch ? "",
     }:
     stdenv.mkDerivation (finalAttrs: {
-      pname = "wlroots";
       inherit version;
-
       inherit enableXWayland;
+      inherit patches postPatch;
+      pname = "wlroots";
 
       src = fetchFromGitLab {
-        domain = "gitlab.freedesktop.org";
+        inherit hash;
         owner = "wlroots";
         repo = "wlroots";
         rev = finalAttrs.version;
-        inherit hash;
+        domain = "gitlab.freedesktop.org";
       };
-
-      inherit patches postPatch;
 
       # $out for the library and $examples for the example programs (in examples):
       outputs = [
@@ -67,7 +64,6 @@ let
       ];
 
       strictDeps = true;
-      depsBuildBuild = [ pkg-config ];
 
       nativeBuildInputs = [
         meson
@@ -78,11 +74,6 @@ let
         hwdata
       ]
       ++ extraNativeBuildInputs;
-
-      propagatedBuildInputs = [
-        # The headers of wlroots #include <libinput.h>, and consumers of `wlroots` need not add it explicitly, hence we propagate it.
-        libinput
-      ];
 
       buildInputs = [
         libliftoff
@@ -107,6 +98,11 @@ let
       ++ lib.optional finalAttrs.enableXWayland xwayland
       ++ extraBuildInputs;
 
+      propagatedBuildInputs = [
+        # The headers of wlroots #include <libinput.h>, and consumers of `wlroots` need not add it explicitly, hence we propagate it.
+        libinput
+      ];
+
       mesonFlags = [
         (lib.mesonEnable "xwayland" finalAttrs.enableXWayland)
       ]
@@ -127,28 +123,36 @@ let
         done
       '';
 
+      depsBuildBuild = [ pkg-config ];
+
       # Test via TinyWL (the "minimum viable product" Wayland compositor based on wlroots):
       passthru.tests = {
-        tinywl = nixosTests.tinywl;
         pkg-config = testers.hasPkgConfigModules {
           package = finalAttrs.finalPackage;
         };
+
+        tinywl = nixosTests.tinywl;
       };
 
       meta = {
+        inherit (finalAttrs.src.meta) homepage;
         description = "Modular Wayland compositor library";
+
         longDescription = ''
           Pluggable, composable, unopinionated modules for building a Wayland
           compositor; or about 50,000 lines of code you were going to write anyway.
         '';
-        inherit (finalAttrs.src.meta) homepage;
+
         changelog = "https://gitlab.freedesktop.org/wlroots/wlroots/-/tags/${version}";
         license = lib.licenses.mit;
-        platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+
         maintainers = with lib.maintainers; [
           wineee
           doronbehar
         ];
+
+        platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+
         pkgConfigModules = [
           (
             if lib.versionOlder finalAttrs.version "0.18" then

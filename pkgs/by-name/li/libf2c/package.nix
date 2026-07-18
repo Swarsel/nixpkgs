@@ -14,16 +14,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1q78y8j8xpl8zdzdxmn5ablss56hi5a7vz3idam9l2nfx5q40h6a";
   };
 
-  unpackPhase = ''
-    mkdir build
-    cd build
-    unzip ${finalAttrs.src}
-  '';
-
   postPatch = ''
     substituteInPlace makefile.u \
       --replace-fail "ld" "${stdenv.cc.targetPrefix}ld"
   '';
+
+  nativeBuildInputs = [ unzip ];
 
   makeFlags = [
     "-f"
@@ -37,19 +33,23 @@ stdenv.mkDerivation (finalAttrs: {
     cp f2c.h $out/include
   '';
 
-  nativeBuildInputs = [ unzip ];
-
-  hardeningDisable = [ "format" ];
-
   # Makefile is missing depepdencies on generated headers:
   #   main.c:4:10: fatal error: signal1.h: No such file or directory
   enableParallelBuilding = false;
+  hardeningDisable = [ "format" ];
+
+  unpackPhase = ''
+    mkdir build
+    cd build
+    unzip ${finalAttrs.src}
+  '';
 
   meta = {
     description = "F2c converts Fortran 77 source code to C";
     homepage = "http://www.netlib.org/f2c/";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
+
     # Generates arith.h at build time. Uses non-standard fpu_control.h.
     broken =
       (!stdenv.buildPlatform.canExecute stdenv.hostPlatform)

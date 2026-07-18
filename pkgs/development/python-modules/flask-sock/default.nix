@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  pytestCheckHook,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
+  pytestCheckHook,
   setuptools,
   simple-websocket,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "flask-sock";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miguelgrinberg";
@@ -27,11 +26,10 @@ buildPythonPackage rec {
     simple-websocket
   ];
 
-  enabledTestPaths = [ "tests/test_flask_sock.py" ];
-
-  pythonImportsCheck = [ "flask_sock" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  enabledTestPaths = [ "tests/test_flask_sock.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "flask_sock" ];
 
   meta = {
     description = "WebSocket support for Flask";

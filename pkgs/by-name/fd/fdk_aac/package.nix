@@ -19,9 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  enableParallelBuilding = true;
-
   configureFlags = lib.optional exampleSupport "--enable-example";
+  enableParallelBuilding = true;
 
   meta = {
     description = "High-quality implementation of the AAC codec from Android";

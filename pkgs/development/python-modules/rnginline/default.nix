@@ -1,32 +1,30 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  pythonAtLeast,
-  poetry-core,
-  lxml,
   docopt-ng,
-  typing-extensions,
+  fetchPypi,
   importlib-metadata,
   importlib-resources,
-  pytestCheckHook,
+  lxml,
   mock,
+  poetry-core,
+  pytestCheckHook,
+  pythonAtLeast,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "rnginline";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-JWqzs+OqOynIAWYVgGrZiuiCqObAgGe6rBt0DcP3U6E=";
   };
 
-  pythonRelaxDeps = [
-    "docopt-ng"
-    "importlib-metadata"
-    "lxml"
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
   ];
 
   build-system = [ poetry-core ];
@@ -39,17 +37,19 @@ buildPythonPackage rec {
     importlib-resources
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
-
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
     # pathname2url now emits RFC 1738 authority-prefixed file URLs for absolute paths
     "test_file_url_roundtrip"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rnginline" ];
+
+  pythonRelaxDeps = [
+    "docopt-ng"
+    "importlib-metadata"
+    "lxml"
+  ];
 
   meta = {
     description = "Python library and command-line tool for loading multi-file RELAX NG schemas from arbitary URLs, and flattening them into a single RELAX NG schema";

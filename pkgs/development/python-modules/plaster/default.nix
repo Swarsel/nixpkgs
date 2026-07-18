@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "plaster";
   version = "1.1.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     pytestCheckHook
     pytest-cov-stub
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Loader interface around multiple config file formats";

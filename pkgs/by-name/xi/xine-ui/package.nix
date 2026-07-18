@@ -1,8 +1,11 @@
 {
   lib,
+  stdenv,
   autoreconfHook,
   curl,
   fetchhg,
+  libjpeg,
+  libpng,
   libxext,
   libxft,
   libxi,
@@ -10,15 +13,12 @@
   libxtst,
   libxv,
   libxxf86vm,
-  libjpeg,
-  libpng,
   lirc,
   ncurses,
   perl,
   pkg-config,
   readline,
   shared-mime-info,
-  stdenv,
   xine-lib,
   xorgproto,
 }:
@@ -39,6 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
     "lib"
     "man"
   ];
+
+  postPatch = ''
+    substituteInPlace src/common/getopt.h \
+      --replace-fail 'extern int getopt ();' 'extern int getopt (int ___argc, char *const *___argv, const char *__shortopts);'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -72,19 +79,12 @@ stdenv.mkDerivation (finalAttrs: {
     LIRC_LIBS = "-L ${lib.getLib lirc}/lib -llirc_client";
   };
 
-  postPatch = ''
-    substituteInPlace src/common/getopt.h \
-      --replace-fail 'extern int getopt ();' 'extern int getopt (int ___argc, char *const *___argv, const char *__shortopts);'
-  '';
-
-  strictDeps = true;
-
   meta = {
-    homepage = "https://xine.sourceforge.net/";
     description = "Xlib-based frontend for Xine video player";
+    homepage = "https://xine.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "xine";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "xine";
   };
 })

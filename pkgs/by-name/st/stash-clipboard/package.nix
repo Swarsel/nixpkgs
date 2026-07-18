@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "stash-clipboard";
@@ -16,9 +16,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-iXL3G1H8tNS1oPAoEvvx7qwWUef95NBU3dwlEe+34zw=";
-
   __structuredAttrs = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -26,11 +24,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/NotAShelf/stash";
     changelog = "https://github.com/NotAShelf/stash/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       NotAShelf
       fazzi
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "stash";
   };
 })

@@ -16,19 +16,27 @@
 buildPythonPackage rec {
   pname = "google-cloud-bigquery-storage";
   version = "2.36.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_bigquery_storage";
     inherit version;
     hash = "sha256-08HOnS06TXEWJZiJ3L48fHBQb3H2zmu+VKoKaLu6j48=";
+    pname = "google_cloud_bigquery_storage";
   };
 
-  build-system = [ setuptools ];
+  # Dependency loop with google-cloud-bigquery
+  doCheck = false;
 
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    google-auth
+    google-cloud-bigquery
+    pytestCheckHook
   ];
+
+  preCheck = ''
+    rm -r google
+  '';
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -42,23 +50,16 @@ buildPythonPackage rec {
     pyarrow = [ pyarrow ];
   };
 
-  nativeCheckInputs = [
-    google-auth
-    google-cloud-bigquery
-    pytestCheckHook
-  ];
-
-  # Dependency loop with google-cloud-bigquery
-  doCheck = false;
-
-  preCheck = ''
-    rm -r google
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.bigquery_storage"
     "google.cloud.bigquery_storage_v1"
     "google.cloud.bigquery_storage_v1beta2"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

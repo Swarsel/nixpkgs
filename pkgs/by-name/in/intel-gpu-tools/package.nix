@@ -2,25 +2,19 @@
   lib,
   stdenv,
   fetchFromGitLab,
-
-  # build time
-  bison,
-  docbook_xsl,
-  docutils,
-  flex,
-  gtk-doc,
-  meson,
-  ninja,
-  pkg-config,
-  util-macros,
-
   # runtime
   alsa-lib,
+  # build time
+  bison,
   cairo,
   curl,
+  docbook_xsl,
+  docutils,
   elfutils,
+  flex,
   glib,
   gsl,
+  gtk-doc,
   json_c,
   kmod,
   libdrm,
@@ -31,11 +25,15 @@
   libxext,
   libxrandr,
   libxv,
+  meson,
+  ninja,
   openssl,
   peg,
+  pkg-config,
   procps,
   python3,
   udev,
+  util-macros,
   valgrind,
   xmlrpc_c,
   xorgproto,
@@ -46,11 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.3";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "drm";
     repo = "igt-gpu-tools";
     tag = "v${finalAttrs.version}";
     hash = "sha256-CkVBImPPM93Q2SVpKzRAREd7cK+SmUgySiuq3LfO2O8=";
+    domain = "gitlab.freedesktop.org";
   };
 
   nativeBuildInputs = [
@@ -99,17 +97,19 @@ stdenv.mkDerivation (finalAttrs: {
   hardeningDisable = [ "bindnow" ];
 
   meta = {
-    changelog = "https://gitlab.freedesktop.org/drm/igt-gpu-tools/-/blob/v${finalAttrs.version}/NEWS";
-    homepage = "https://drm.pages.freedesktop.org/igt-gpu-tools/";
     description = "Tools for development and testing of the Intel DRM driver";
+    homepage = "https://drm.pages.freedesktop.org/igt-gpu-tools/";
+    changelog = "https://gitlab.freedesktop.org/drm/igt-gpu-tools/-/blob/v${finalAttrs.version}/NEWS";
     license = lib.licenses.mit;
-    platforms = [
-      "x86_64-linux"
-      "i686-linux"
-    ];
+
     maintainers = with lib.maintainers; [
       pSub
       ilkecan
+    ];
+
+    platforms = [
+      "x86_64-linux"
+      "i686-linux"
     ];
   };
 })

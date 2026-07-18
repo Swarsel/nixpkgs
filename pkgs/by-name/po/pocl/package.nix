@@ -3,18 +3,18 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   hwloc,
-  llvmPackages,
   libxml2, # required for statically linked llvm
-  spirv-llvm-translator,
-  spirv-tools,
+  llvmPackages,
   lttng-ust,
-  opencl-headers,
+  makeWrapper,
   ocl-icd,
+  opencl-headers,
+  pkg-config,
   python3,
   runCommand,
-  makeWrapper,
+  spirv-llvm-translator,
+  spirv-tools,
   writableTmpDirAsHomeHook,
 }:
 
@@ -56,28 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
       "static_cast<size_t>(Dev.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>())"
   '';
 
-  cmakeFlags =
-    (lib.mapAttrsToList lib.cmakeBool {
-      # avoid the runtime linker pulling in a different llvm e.g. from graphics drivers
-      "STATIC_LLVM" = true;
-      "ENABLE_POCL_BUILDING" = false;
-      "POCL_ICD_ABSOLUTE_PATH" = true;
-      "ENABLE_ICD" = true;
-      "ENABLE_REMOTE_CLIENT" = true;
-      "ENABLE_REMOTE_SERVER" = true;
-    })
-    ++ (lib.mapAttrsToList lib.cmakeFeature {
-      "CLANG" = "${clangWrapped}/bin/clang";
-      "CLANGXX" = "${clangWrapped}/bin/clang++";
-    })
-    # Only x86_64 supports "distro" which allows runtime detection of SSE/AVX
-    ++ lib.optionals stdenv.hostPlatform.isx86_64 [
-      (lib.cmakeFeature "KERNELLIB_HOST_CPU_VARIANTS" "distro")
-    ]
-    ++ lib.optionals (!stdenv.hostPlatform.isx86_64) [
-      (lib.cmakeFeature "LLC_HOST_CPU" "generic")
-    ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -99,11 +77,33 @@ stdenv.mkDerivation (finalAttrs: {
     lttng-ust
   ];
 
+  cmakeFlags =
+    (lib.mapAttrsToList lib.cmakeBool {
+      "ENABLE_ICD" = true;
+      "ENABLE_POCL_BUILDING" = false;
+      "ENABLE_REMOTE_CLIENT" = true;
+      "ENABLE_REMOTE_SERVER" = true;
+      "POCL_ICD_ABSOLUTE_PATH" = true;
+      # avoid the runtime linker pulling in a different llvm e.g. from graphics drivers
+      "STATIC_LLVM" = true;
+    })
+    ++ (lib.mapAttrsToList lib.cmakeFeature {
+      "CLANG" = "${clangWrapped}/bin/clang";
+      "CLANGXX" = "${clangWrapped}/bin/clang++";
+    })
+    # Only x86_64 supports "distro" which allows runtime detection of SSE/AVX
+    ++ lib.optionals stdenv.hostPlatform.isx86_64 [
+      (lib.cmakeFeature "KERNELLIB_HOST_CPU_VARIANTS" "distro")
+    ]
+    ++ lib.optionals (!stdenv.hostPlatform.isx86_64) [
+      (lib.cmakeFeature "LLC_HOST_CPU" "generic")
+    ];
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     writableTmpDirAsHomeHook
   ];
-
-  doInstallCheck = true;
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -121,11 +121,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://portablecl.org";
     changelog = "https://github.com/pocl/pocl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jansol
       johnrtitor
       xddxdd
     ];
+
     platforms = lib.platforms.unix;
   };
 })

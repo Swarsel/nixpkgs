@@ -1,18 +1,16 @@
 {
-  src,
-  version,
-  meta,
   stdenv,
   fetchYarnDeps,
+  meta,
   nodejs,
-  yarnConfigHook,
+  src,
+  version,
   yarnBuildHook,
+  yarnConfigHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "lasuite-drive-mail";
   inherit src version;
-
-  sourceRoot = "${finalAttrs.src.name}/src/mail";
+  pname = "lasuite-drive-mail";
 
   postPatch = ''
     substituteInPlace bin/html-to-plain-text bin/mjml-to-html \
@@ -21,20 +19,21 @@ stdenv.mkDerivation (finalAttrs: {
         '${placeholder "out"}'
   '';
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/src/mail/yarn.lock";
-    hash = "sha256-UPIb9QJk+zC8wYeBeDnmlGLhHDhsEOoT+qquFM1XyqU=";
-  };
-
   nativeBuildInputs = [
     nodejs
     yarnConfigHook
     yarnBuildHook
   ];
 
+  __structuredAttrs = true;
   dontInstall = true;
 
-  __structuredAttrs = true;
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-UPIb9QJk+zC8wYeBeDnmlGLhHDhsEOoT+qquFM1XyqU=";
+    yarnLock = "${finalAttrs.src}/src/mail/yarn.lock";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/src/mail";
 
   meta = meta // {
     description = "HTML mail templates for LaSuite Drive";

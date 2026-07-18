@@ -17,15 +17,15 @@ stdenv.mkDerivation {
     sha256 = "1iv2xiz9w8hbz684caw50fn4a9vc8ninfgaqafkh9sa8mzpfzcqr";
   };
 
-  buildInputs = [
-    libnetfilter_queue
-    libnfnetlink
-  ];
-
   postPatch = ''
     substituteInPlace preloader.c --replace /usr/local/ $out/
     substituteInPlace Makefile    --replace /usr/local/ $out/
   '';
+
+  buildInputs = [
+    libnetfilter_queue
+    libnfnetlink
+  ];
 
   preInstall = ''
     mkdir -p $out/bin $out/lib
@@ -35,7 +35,7 @@ stdenv.mkDerivation {
     description = "IPv4 and IPv6 address rate limiting evasion tool";
     homepage = "https://github.com/blechschmidt/freebind";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

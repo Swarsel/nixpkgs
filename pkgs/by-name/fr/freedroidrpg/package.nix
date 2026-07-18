@@ -1,30 +1,30 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  pkg-config,
+  fetchurl,
+  SDL,
+  SDL_gfx,
+  SDL_image,
+  SDL_mixer,
   gettext,
   glew,
-  python3,
-  SDL,
-  SDL_image,
-  SDL_gfx,
-  SDL_mixer,
+  libiconv,
+  libjpeg,
   libogg,
+  libpng,
   libvorbis,
   lua5_3,
-  libjpeg,
-  libpng,
+  pkg-config,
+  python3,
   zlib,
-  libiconv,
 }:
 
 let
   version = "1.0";
 in
 stdenv.mkDerivation {
-  pname = "freedroidrpg";
   inherit version;
+  pname = "freedroidrpg";
 
   src = fetchurl {
     url = "ftp://ftp.osuosl.org/pub/freedroid/freedroidRPG-${lib.versions.majorMinor version}/freedroidRPG-${version}.tar.gz";
@@ -58,12 +58,10 @@ stdenv.mkDerivation {
   ++ lib.optional stdenv.hostPlatform.isDarwin libiconv;
 
   env.SDL_CONFIG = lib.getExe' (lib.getDev SDL) "sdl-config";
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Isometric 3D RPG similar to game Diablo";
-    mainProgram = "freedroidRPG";
 
     longDescription = ''
       <para>
@@ -99,11 +97,10 @@ stdenv.mkDerivation {
     '';
 
     homepage = "https://www.freedroid.org/";
-
     license = lib.licenses.gpl2Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "freedroidRPG";
     hydraPlatforms = lib.platforms.linux; # sdl-config times out on darwin
   };
 }

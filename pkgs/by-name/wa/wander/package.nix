@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,14 +17,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-1+bKdIAWdg/+5FBDbtvjDV0xpZ5jot3y6F+KuLO9WVk=";
   };
 
-  vendorHash = "sha256-0S8tzP5yNUrH6fp+v7nbUPTMWzYXyGw+ZNcXkSN+tWY=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-0S8tzP5yNUrH6fp+v7nbUPTMWzYXyGw+ZNcXkSN+tWY=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd wander \
@@ -33,10 +27,15 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/wander completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
     description = "Terminal app/TUI for HashiCorp Nomad";
-    license = lib.licenses.mit;
     homepage = "https://github.com/robinovitch61/wander";
+    license = lib.licenses.mit;
     mainProgram = "wander";
   };
 })

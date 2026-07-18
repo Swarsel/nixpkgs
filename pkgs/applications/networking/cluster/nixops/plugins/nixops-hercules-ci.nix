@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unstableGitUpdater,
-  poetry-core,
+  buildPythonPackage,
   nixops,
+  poetry-core,
+  unstableGitUpdater,
 }:
 
 buildPythonPackage {
   pname = "nixops-hercules-ci";
   version = "0-unstable-2021-10-06";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hercules-ci";
@@ -27,8 +26,8 @@ buildPythonPackage {
     nixops
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nixops_hercules_ci" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

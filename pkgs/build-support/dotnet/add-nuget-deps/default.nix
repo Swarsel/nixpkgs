@@ -1,14 +1,14 @@
 {
-  writeShellScript,
-  runtimeShell,
-  nix,
   lib,
-  replaceVarsWith,
+  cacert,
+  callPackage,
+  fetchNupkg,
+  nix,
   nixfmt,
   nuget-to-json,
-  cacert,
-  fetchNupkg,
-  callPackage,
+  replaceVarsWith,
+  runtimeShell,
+  writeShellScript,
 }:
 
 {
@@ -64,21 +64,6 @@ attrs
       nugetDeps = deps;
     }
     // lib.optionalAttrs (nugetDeps == null || lib.isPath nugetDeps) rec {
-      fetch-drv =
-        let
-          pkg' = finalPackage.overrideAttrs (old: {
-            buildInputs = attrs.buildInputs or [ ];
-            nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [ cacert ];
-            keepNugetConfig = true;
-            dontBuild = true;
-            doCheck = false;
-            dontInstall = true;
-            doInstallCheck = false;
-            dontFixup = true;
-            doDist = false;
-          });
-        in
-        pkg'.overrideAttrs overrideFetchAttrs;
       fetch-deps =
         let
           drv = builtins.unsafeDiscardOutputDependency fetch-drv.drvPath;
@@ -86,6 +71,7 @@ attrs
           innerScript = replaceVarsWith {
             src = ./fetch-deps.sh;
             isExecutable = true;
+
             replacements = {
               binPath = lib.makeBinPath [
                 nixfmt
@@ -130,5 +116,21 @@ attrs
           NIX_BUILD_SHELL=${lib.escapeShellArg runtimeShell} ${nix}/bin/nix-shell \
             --pure --keep NUGET_HTTP_CACHE_PATH --run 'source '${lib.escapeShellArg innerScript}' '"''${depsFile@Q}" "${drv}"
         '';
+
+      fetch-drv =
+        let
+          pkg' = finalPackage.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [ cacert ];
+            buildInputs = attrs.buildInputs or [ ];
+            doCheck = false;
+            doInstallCheck = false;
+            doDist = false;
+            dontBuild = true;
+            dontFixup = true;
+            dontInstall = true;
+            keepNugetConfig = true;
+          });
+        in
+        pkg'.overrideAttrs overrideFetchAttrs;
     };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   eslint_d,
   testers,
 }:
@@ -18,12 +18,11 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-XFFjrAEXtNFSuIN5yn2AQeurY3cpF0silSgmIA17Wog=";
-
   dontNpmBuild = true;
 
   passthru.tests.version = testers.testVersion {
-    package = eslint_d;
     version = src.rev;
+    package = eslint_d;
   };
 
   meta = {

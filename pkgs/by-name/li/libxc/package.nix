@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
   cmake,
+  fetchpatch,
   gfortran,
   perl,
   version ? "6.2.2",
@@ -17,8 +17,8 @@ let
 
 in
 stdenv.mkDerivation rec {
-  pname = "libxc";
   inherit version;
+  pname = "libxc";
 
   src = fetchFromGitLab {
     owner = "libxc";
@@ -27,11 +27,16 @@ stdenv.mkDerivation rec {
     hash = versionHashes."${version}";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Fix build with newer CMake versions
     (fetchpatch {
-      url = "https://gitlab.com/libxc/libxc/-/commit/450202adb8a3d698841dca853f2999b1befd932e.patch";
       sha256 = "sha256-XDt7+TzszSu+X6/PS+T8Q9BP76+bAXC9FzkA6ueo/OA=";
+      url = "https://gitlab.com/libxc/libxc/-/commit/450202adb8a3d698841dca853f2999b1befd932e.patch";
     })
   ];
 
@@ -42,20 +47,11 @@ stdenv.mkDerivation rec {
         --replace "PROPERTIES TIMEOUT 1" "PROPERTIES TIMEOUT 30"
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   nativeBuildInputs = [
     perl
     cmake
     gfortran
   ];
-
-  preConfigure = ''
-    patchShebangs ./
-  '';
 
   cmakeFlags = [
     "-DENABLE_FORTRAN=ON"
@@ -68,14 +64,18 @@ stdenv.mkDerivation rec {
     "-DDISABLE_LXC=0"
   ];
 
+  preConfigure = ''
+    patchShebangs ./
+  '';
+
   doCheck = true;
 
   meta = {
     description = "Library of exchange-correlation functionals for density-functional theory";
-    mainProgram = "xc-info";
     homepage = "https://www.tddft.org/programs/Libxc/";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ markuskowa ];
+    platforms = lib.platforms.unix;
+    mainProgram = "xc-info";
   };
 }

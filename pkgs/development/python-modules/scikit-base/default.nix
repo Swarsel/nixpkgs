@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  toml,
+  buildPythonPackage,
   setuptools,
+  toml,
 }:
 
 buildPythonPackage rec {
   pname = "scikit-base";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sktime";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ toml ];
-
+  pyproject = true;
   pythonImportsCheck = [ "skbase" ];
 
   meta = {

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   apacheHttpd,
-  python3,
   ncurses,
+  python3,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,23 +18,23 @@ stdenv.mkDerivation rec {
     hash = "sha256-FhOSU8/4QoWa73bNi/qkgKm3CeEEdboh2MgxgQxcYzE=";
   };
 
+  postPatch = ''
+    substituteInPlace configure --replace '/usr/bin/lipo' 'lipo'
+  '';
+
   buildInputs = [
     apacheHttpd
     python3
     ncurses
   ];
 
-  postPatch = ''
-    substituteInPlace configure --replace '/usr/bin/lipo' 'lipo'
-  '';
-
   makeFlags = [
     "LIBEXECDIR=$(out)/modules"
   ];
 
   meta = {
-    homepage = "https://github.com/GrahamDumpleton/mod_wsgi";
     description = "Host Python applications in Apache through the WSGI interface";
+    homepage = "https://github.com/GrahamDumpleton/mod_wsgi";
     license = lib.licenses.asl20;
     platforms = lib.platforms.unix;
   };

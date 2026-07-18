@@ -6,7 +6,6 @@
 }:
 
 stdenv.mkDerivation rec {
-  name = "${pname}-${version}-${kernel.version}";
   pname = "nvidiabl";
   version = "2020-10-01";
 
@@ -18,13 +17,7 @@ stdenv.mkDerivation rec {
     sha256 = "1z57gbnayjid2jv782rpfpp13qdchmbr1vr35g995jfnj624nlgy";
   };
 
-  hardeningDisable = [ "pic" ];
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
-
-  preConfigure = ''
-    sed -i 's|/sbin/depmod|#/sbin/depmod|' Makefile
-  '';
 
   makeFlags = [
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
@@ -32,15 +25,24 @@ stdenv.mkDerivation rec {
     "KVER=${kernel.modDirVersion}"
   ];
 
+  preConfigure = ''
+    sed -i 's|/sbin/depmod|#/sbin/depmod|' Makefile
+  '';
+
+  hardeningDisable = [ "pic" ];
+  name = "${pname}-${version}-${kernel.version}";
+
   meta = {
     description = "Linux driver for setting the backlight brightness on laptops using NVIDIA GPU";
     homepage = "https://github.com/yorickvP/nvidiabl";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ yorickvp ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = with lib.maintainers; [ yorickvp ];
+
     broken = kernel.kernelAtLeast "5.18";
   };
 }

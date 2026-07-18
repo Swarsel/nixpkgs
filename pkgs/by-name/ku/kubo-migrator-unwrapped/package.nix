@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,20 +16,20 @@ buildGoModule (finalAttrs: {
     sparseCheckout = [ "fs-repo-migrations" ];
   };
 
-  sourceRoot = "${finalAttrs.src.name}/fs-repo-migrations";
-
   vendorHash = "sha256-/DqkBBtR/nU8gk3TFqNKY5zQU6BFMc3N8Ti+38mi/jk=";
-
   doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/fs-repo-migrations";
 
   meta = {
     description = "Run the appropriate migrations for migrating the filesystem repository of Kubo (migrations not included)";
     homepage = "https://github.com/ipfs/fs-repo-migrations";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       Luflosi
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "fs-repo-migrations";
   };
 })

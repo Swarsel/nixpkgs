@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  gdb,
-  python3,
   bintools-unwrapped,
-  file,
-  ps,
-  git,
   coreutils,
+  file,
+  gdb,
+  git,
+  makeWrapper,
+  ps,
+  python3,
 }:
 
 let
@@ -34,9 +34,33 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-KHPX4mGo+yy56Rmjd5yx8U5doXrACV2/ZCh+NeQxB0Y=";
   };
 
-  dontBuild = true;
-
   nativeBuildInputs = [ makeWrapper ];
+
+  nativeCheckInputs = [
+    gdb
+    file
+    ps
+    git
+    python3
+    python3.pkgs.pytest
+    python3.pkgs.pytest-xdist
+    python3.pkgs.keystone-engine
+    python3.pkgs.unicorn
+    python3.pkgs.capstone
+    python3.pkgs.ropper
+  ];
+
+  checkPhase = ''
+    # Skip some tests that require network access.
+    sed -i '/def test_cmd_shellcode_get(self):/i \ \ \ \ @unittest.skip(reason="not available in sandbox")' tests/runtests.py
+    sed -i '/def test_cmd_shellcode_search(self):/i \ \ \ \ @unittest.skip(reason="not available in sandbox")' tests/runtests.py
+
+    # Patch the path to /bin/ls.
+    sed -i 's+/bin/ls+${coreutils}/bin/ls+g' tests/runtests.py
+
+    # Run the tests.
+    make test
+  '';
 
   installPhase = ''
     mkdir -p $out/share/gef
@@ -54,37 +78,14 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
-  nativeCheckInputs = [
-    gdb
-    file
-    ps
-    git
-    python3
-    python3.pkgs.pytest
-    python3.pkgs.pytest-xdist
-    python3.pkgs.keystone-engine
-    python3.pkgs.unicorn
-    python3.pkgs.capstone
-    python3.pkgs.ropper
-  ];
-  checkPhase = ''
-    # Skip some tests that require network access.
-    sed -i '/def test_cmd_shellcode_get(self):/i \ \ \ \ @unittest.skip(reason="not available in sandbox")' tests/runtests.py
-    sed -i '/def test_cmd_shellcode_search(self):/i \ \ \ \ @unittest.skip(reason="not available in sandbox")' tests/runtests.py
-
-    # Patch the path to /bin/ls.
-    sed -i 's+/bin/ls+${coreutils}/bin/ls+g' tests/runtests.py
-
-    # Run the tests.
-    make test
-  '';
+  dontBuild = true;
 
   meta = {
     description = "Modern experience for GDB with advanced debugging features for exploit developers & reverse engineers";
-    mainProgram = "gef";
     homepage = "https://github.com/hugsy/gef";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ freax13 ];
+    platforms = lib.platforms.all;
+    mainProgram = "gef";
   };
 })

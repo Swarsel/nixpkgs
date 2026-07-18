@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  autoconf,
+  automake,
   autoreconfHook,
   docbook_xsl,
+  gitUpdater,
+  glib,
+  gtk-doc,
+  intltool,
+  libtool,
   libxslt,
   meson,
   pkg-config,
-  wrapGAppsHook3,
   python3,
-  autoconf,
-  automake,
-  glib,
-  gtk-doc,
-  libtool,
-  intltool,
-  gitUpdater,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,11 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.20.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "xfce";
     repo = "xfce4-dev-tools";
     rev = "xfce4-dev-tools-${finalAttrs.version}";
     hash = "sha256-eUfNa/9ksLCKtVwBRtHaVl7Yl95tukUaDdoLNfeR+Ew=";
+    domain = "gitlab.xfce.org";
   };
 
   nativeBuildInputs = [
@@ -54,23 +54,21 @@ stdenv.mkDerivation (finalAttrs: {
     libtool
   ];
 
-  dontUseMesonConfigure = true;
   configureFlags = [ "--enable-maintainer-mode" ];
-
+  dontUseMesonConfigure = true;
   enableParallelBuilding = true;
-
   setupHook = ./setup-hook.sh;
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "xfce4-dev-tools-";
     odd-unstable = true;
+    rev-prefix = "xfce4-dev-tools-";
   };
 
   meta = {
-    homepage = "https://gitlab.xfce.org/xfce/xfce4-dev-tools";
     description = "Autoconf macros and scripts to augment app build systems";
+    homepage = "https://gitlab.xfce.org/xfce/xfce4-dev-tools";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.xfce ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.xfce ];
   };
 })

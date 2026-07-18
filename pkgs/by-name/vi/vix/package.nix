@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   SDL,
+  autoreconfHook,
 }:
 
 stdenv.mkDerivation {
@@ -18,19 +18,18 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+  buildInputs = [ SDL ];
 
   configureFlags = [
     (lib.enableFeature (!stdenv.hostPlatform.isDarwin) "sdltest")
   ];
 
-  buildInputs = [ SDL ];
-
   meta = {
     description = "Visual Interface heXadecimal dump";
     homepage = "http://actinid.org/vix/";
     license = lib.licenses.gpl3;
-    mainProgram = "vix";
     # sys/io.h missing on other platforms
     platforms = [ "x86_64-linux" ];
+    mainProgram = "vix";
   };
 }

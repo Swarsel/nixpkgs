@@ -20,10 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-psMMF26+nTwdbtPfFFE3fXkatrh9Bp9qMsrdI/FmrDg=";
   };
 
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
-  ];
-
   nativeBuildInputs = [
     cmake
     validatePkgConfig
@@ -33,23 +29,29 @@ stdenv.mkDerivation (finalAttrs: {
     libiconv
   ];
 
-  passthru = {
-    updateScript = nix-update-script { };
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
+  ];
 
+  passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Unicode routines validation and transcoding at billions of characters per second";
     homepage = "https://github.com/simdutf/simdutf";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ wineee ];
-    pkgConfigModules = [ "simdutf" ];
     platforms = lib.platforms.all;
+    pkgConfigModules = [ "simdutf" ];
   };
 })

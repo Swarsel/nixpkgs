@@ -2,31 +2,33 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  makeWrapper,
-  nixosTests,
   # optional dependencies, the command(s) they provide
   coreutils, # mktemp
-  grub2, # grub-mount and grub-probe
   cryptsetup, # cryptsetup
-  libuuid, # blkid and blockdev
-  systemd, # udevadm
-  ntfs3g, # ntfs3g
   dmraid, # dmraid
+  grub2, # grub-mount and grub-probe
+  libuuid, # blkid and blockdev
   lvm2, # lvs
+  makeWrapper,
+  nixosTests,
+  ntfs3g, # ntfs3g
+  systemd, # udevadm
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.84";
   pname = "os-prober";
+  version = "1.84";
+
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "installer-team";
     repo = "os-prober";
     rev = finalAttrs.version;
     sha256 = "sha256-91UTiwg4qIi+aCzAto7tCd5WZFjI15XxR1/hZQ0fUa4=";
+    domain = "salsa.debian.org";
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   installPhase = ''
     # executables
     install -Dt $out/bin os-prober linux-boot-prober
@@ -51,6 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
         cp -r os-probes/mounted/powerpc/20macosx $out/lib/os-probes/mounted;
     fi;
   '';
+
   postFixup = ''
     for file in $(find $out  -type f ! -name newns) ; do
       substituteInPlace $file \
@@ -80,12 +83,13 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests = {
     os-prober = nixosTests.os-prober;
   };
+
   meta = {
     description = "Utility to detect other OSs on a set of drives";
     homepage = "http://packages.debian.org/source/sid/os-prober";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "os-prober";
     maintainers = with lib.maintainers; [ symphorien ];
     platforms = lib.platforms.linux;
+    mainProgram = "os-prober";
   };
 })

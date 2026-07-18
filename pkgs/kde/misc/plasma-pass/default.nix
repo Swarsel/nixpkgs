@@ -1,8 +1,7 @@
 {
   lib,
-  mkKdeDerivation,
   fetchurl,
-
+  mkKdeDerivation,
   oath-toolkit,
   qgpgme,
 }:

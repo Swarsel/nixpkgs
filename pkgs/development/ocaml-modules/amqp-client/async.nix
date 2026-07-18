@@ -1,17 +1,14 @@
 {
-  buildDunePackage,
-  async,
-  uri,
   amqp-client,
+  async,
+  buildDunePackage,
   ezxmlm,
+  uri,
 }:
 
 buildDunePackage {
-  pname = "amqp-client-async";
-
   inherit (amqp-client) version src;
-
-  doCheck = true;
+  pname = "amqp-client-async";
 
   buildInputs = [
     ezxmlm
@@ -22,6 +19,8 @@ buildDunePackage {
     async
     uri
   ];
+
+  doCheck = true;
 
   meta = amqp-client.meta // {
     description = "Amqp client library, async version";

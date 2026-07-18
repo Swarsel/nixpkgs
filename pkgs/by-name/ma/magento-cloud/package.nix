@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   makeBinaryWrapper,
   php,
-  writableTmpDirAsHomeHook,
+  stdenvNoCC,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "magento-cloud";
@@ -15,10 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://accounts.magento.cloud/sites/default/files/magento-cloud-v${finalAttrs.version}.phar";
     hash = "sha256-/CzHWQa/O1gW4x+b0acR0Cj8AE8Olhpgn7YcaDrLk9E=";
   };
-
-  dontUnpack = true;
-  dontBuild = true;
-  dontConfigure = true;
 
   nativeBuildInputs = [ makeBinaryWrapper ];
 
@@ -33,12 +29,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     writableTmpDirAsHomeHook
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
   versionCheckKeepEnvironment = [ "HOME" ];
 
   passthru = {
@@ -46,13 +46,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://experienceleague.adobe.com/en/docs/commerce-cloud-service/user-guide/dev-tools/cloud-cli/cloud-cli-overview";
     description = "Adobe Commerce Cloud CLI";
+
     longDescription = ''
       Adobe Commerce Cloud CLI enables developers and system administrators the ability to manage Cloud projects and environments, perform routines and run automation tasks locally.
     '';
-    mainProgram = "magento-cloud";
-    maintainers = with lib.maintainers; [ piotrkwiecinski ];
+
+    homepage = "https://experienceleague.adobe.com/en/docs/commerce-cloud-service/user-guide/dev-tools/cloud-cli/cloud-cli-overview";
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ piotrkwiecinski ];
+    mainProgram = "magento-cloud";
   };
 })

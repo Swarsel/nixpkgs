@@ -54,9 +54,9 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   meta = {
-    homepage = "https://acme.sh/";
-    changelog = "https://github.com/acmesh-official/acme.sh/releases/tag/${finalAttrs.version}";
+    inherit (coreutils.meta) platforms;
     description = "Pure Unix shell script implementing ACME client protocol";
+
     longDescription = ''
       An ACME Shell script: acme.sh
 
@@ -73,9 +73,11 @@ stdenv.mkDerivation (finalAttrs: {
       - IPv6 ready
       - Cron job notifications for renewal or error etc.
     '';
+
+    homepage = "https://acme.sh/";
+    changelog = "https://github.com/acmesh-official/acme.sh/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    inherit (coreutils.meta) platforms;
-    mainProgram = "acme.sh";
     maintainers = with lib.maintainers; [ miniharinn ];
+    mainProgram = "acme.sh";
   };
 })

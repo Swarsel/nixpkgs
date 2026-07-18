@@ -1,17 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  jre_headless,
-  maven,
-  jdk17,
-  makeWrapper,
-  writeShellApplication,
-  curl,
-  pcre,
   common-updater-scripts,
-  jq,
+  curl,
   gnused,
+  jdk17,
+  jq,
+  jre_headless,
+  makeWrapper,
+  maven,
+  pcre,
   versionCheckHook,
+  writeShellApplication,
 }:
 
 maven.buildMavenPackage rec {
@@ -25,20 +25,7 @@ maven.buildMavenPackage rec {
     hash = "sha256-0EFztL1hF1JaYc+6OUvmcPF9x5yA10Sy62f/Drmj4MU=";
   };
 
-  mvnJdk = jdk17;
-  mvnHash = "sha256-YG2eQnSCwg24DEp2CJ6awozTVcz8XBUmSSEb65UD7Rw=";
-
-  # Disables failing tests which either need network access or are flaky.
-  mvnParameters = lib.escapeShellArgs [
-    "-Dskip.installnodenpm=true"
-    "-Dskip.npm"
-    "-Dtest=!LanguageServerMediumTests,
-    !LanguageServerWithFoldersMediumTests,
-    !NotebookMediumTests,
-    !ConnectedModeMediumTests,
-    !JavaMediumTests,
-    !OpenNotebooksCacheTests"
-  ];
+  nativeBuildInputs = [ makeWrapper ];
 
   preBuild = ''
     echo -n "${version}" > src/main/resources/slls-version.txt
@@ -58,10 +45,23 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  mvnHash = "sha256-YG2eQnSCwg24DEp2CJ6awozTVcz8XBUmSSEb65UD7Rw=";
+  mvnJdk = jdk17;
+
+  # Disables failing tests which either need network access or are flaky.
+  mvnParameters = lib.escapeShellArgs [
+    "-Dskip.installnodenpm=true"
+    "-Dskip.npm"
+    "-Dtest=!LanguageServerMediumTests,
+    !LanguageServerWithFoldersMediumTests,
+    !NotebookMediumTests,
+    !ConnectedModeMediumTests,
+    !JavaMediumTests,
+    !OpenNotebooksCacheTests"
+  ];
+
   preVersionCheck = "export version=${lib.versions.majorMinor version}";
   versionCheckProgramArg = "-V";
 
@@ -71,6 +71,7 @@ maven.buildMavenPackage rec {
     in
     lib.getExe (writeShellApplication {
       name = "update-${pname}";
+
       runtimeInputs = [
         curl
         pcre
@@ -78,6 +79,7 @@ maven.buildMavenPackage rec {
         jq
         gnused
       ];
+
       text = ''
         if [ -z "''${GITHUB_TOKEN:-}" ]; then
             echo "no GITHUB_TOKEN provided - you could meet API request limiting" >&2
@@ -104,12 +106,14 @@ maven.buildMavenPackage rec {
 
   meta = {
     description = "Sonarlint language server";
-    mainProgram = "sonarlint-ls";
     homepage = "https://github.com/SonarSource/sonarlint-language-server";
     license = lib.licenses.lgpl3;
+
     maintainers = with lib.maintainers; [
       tricktron
       cizordj
     ];
+
+    mainProgram = "sonarlint-ls";
   };
 }

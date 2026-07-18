@@ -28,8 +28,8 @@ stdenv.mkDerivation rec {
   version = "2.1.0.203";
 
   src = fetchurl {
-    url = "https://vpn.net/installers/${pname}-${version}-${arch}.tgz";
     inherit sha256;
+    url = "https://vpn.net/installers/${pname}-${version}-${arch}.tgz";
   };
 
   installPhase = ''
@@ -41,15 +41,15 @@ stdenv.mkDerivation rec {
     ln -s $out/bin/hamachid $out/bin/hamachi
   '';
 
-  dontStrip = true;
   dontPatchELF = true;
+  dontStrip = true;
 
   meta = {
     description = "Hosted VPN service that lets you securely extend LAN-like networks to distributed teams";
     homepage = "https://secure.logmein.com/products/hamachi/";
     changelog = "https://support.logmeininc.com/central/help/whats-new-in-hamachi";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

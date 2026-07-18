@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3.pkgs.wrapPython
   ];
 
-  dontBuild = true;
-
   installPhase = ''
     install -Dm0755 vcs_query.py $out/bin/vcs_query
     patchShebangs $out/bin
@@ -30,9 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     patchPythonScript $out/bin/vcs_query
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/mageta/vcs_query";
     description = "Email query-command to use vCards in mutt and Vim";
+    homepage = "https://github.com/mageta/vcs_query";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ma27 ];
     mainProgram = "vcs_query";

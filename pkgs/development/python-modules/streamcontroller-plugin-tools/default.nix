@@ -1,14 +1,13 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   loguru,
   rpyc,
 }:
 buildPythonPackage rec {
   pname = "streamcontroller-plugin-tools";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "StreamController";
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     rpyc
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "streamcontroller_plugin_tools" ];
 
   meta = {

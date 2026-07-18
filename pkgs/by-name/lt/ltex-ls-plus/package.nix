@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeBinaryWrapper,
   jre_headless,
+  makeBinaryWrapper,
+  stdenvNoCC,
   jvmOptions ? [ ],
 }:
 
@@ -40,11 +40,11 @@ stdenvNoCC.mkDerivation rec {
       inherit (lib) licenses maintainers;
     in
     {
-      homepage = "https://ltex-plus.github.io/ltex-plus/";
       description = "LSP language server for LanguageTool";
+      homepage = "https://ltex-plus.github.io/ltex-plus/";
       license = licenses.mpl20;
-      mainProgram = "ltex-cli-plus";
       maintainers = [ maintainers.FirelightFlagboy ];
       platforms = jre_headless.meta.platforms;
+      mainProgram = "ltex-cli-plus";
     };
 }

@@ -1,14 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
+  beautifulsoup4,
   boto3,
   buildPythonPackage,
-  fetchFromGitHub,
   ftfy,
   mailchecker,
   openpyxl,
   orjson,
   phonenumbers,
-  beautifulsoup4,
+  pydantic,
   pytestCheckHook,
   python-dateutil,
   python-decouple,
@@ -16,7 +17,6 @@
   python-slugify,
   pyyaml,
   requests,
-  pydantic,
   setuptools,
   tomli-w,
   useful-types,
@@ -27,7 +27,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-benedict";
   version = "0.38.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fabiocaccamo";
@@ -36,7 +35,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-1YZqc0Ytqx4a1WGaqz5y0r2hw3okvax0/r267YTTGCE=";
   };
 
-  pythonRelaxDeps = [ "boto3" ];
+  nativeCheckInputs = [
+    orjson
+    pytestCheckHook
+    python-decouple
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [ setuptools ];
 
@@ -45,6 +49,21 @@ buildPythonPackage (finalAttrs: {
     python-slugify
     requests
     useful-types
+  ];
+
+  disabledTests = [
+    # Tests require network access
+    "test_from_base64_with_valid_url_valid_content"
+    "test_from_html_with_valid_file_valid_content"
+    "test_from_html_with_valid_url_valid_content"
+    "test_from_json_with_valid_url_valid_content"
+    "test_from_pickle_with_valid_url_valid_content"
+    "test_from_plist_with_valid_url_valid_content"
+    "test_from_query_string_with_valid_url_valid_content"
+    "test_from_toml_with_valid_url_valid_content"
+    "test_from_xls_with_valid_url_valid_content"
+    "test_from_xml_with_valid_url_valid_content"
+    "test_from_yaml_with_valid_url_valid_content"
   ];
 
   optional-dependencies = {
@@ -62,10 +81,12 @@ buildPythonPackage (finalAttrs: {
       xlrd
       xmltodict
     ];
+
     html = [
       beautifulsoup4
       xmltodict
     ];
+
     io = [
       beautifulsoup4
       openpyxl
@@ -74,46 +95,30 @@ buildPythonPackage (finalAttrs: {
       xlrd
       xmltodict
     ];
+
     parse = [
       ftfy
       mailchecker
       phonenumbers
       python-dateutil
     ];
+
     s3 = [ boto3 ];
     schema = [ pydantic ];
     toml = [ tomli-w ];
+
     xls = [
       openpyxl
       xlrd
     ];
+
     xml = [ xmltodict ];
     yaml = [ pyyaml ];
   };
 
-  nativeCheckInputs = [
-    orjson
-    pytestCheckHook
-    python-decouple
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
-  disabledTests = [
-    # Tests require network access
-    "test_from_base64_with_valid_url_valid_content"
-    "test_from_html_with_valid_file_valid_content"
-    "test_from_html_with_valid_url_valid_content"
-    "test_from_json_with_valid_url_valid_content"
-    "test_from_pickle_with_valid_url_valid_content"
-    "test_from_plist_with_valid_url_valid_content"
-    "test_from_query_string_with_valid_url_valid_content"
-    "test_from_toml_with_valid_url_valid_content"
-    "test_from_xls_with_valid_url_valid_content"
-    "test_from_xml_with_valid_url_valid_content"
-    "test_from_yaml_with_valid_url_valid_content"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "benedict" ];
+  pythonRelaxDeps = [ "boto3" ];
 
   meta = {
     description = "Module with keylist/keypath support";

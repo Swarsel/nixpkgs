@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage {
   cargoHash = "sha256-LTgAaTQXW0XEbe+WS47pqSb+eU7FqjdTSO2++C3J5aM=";
 
   meta = {
-    homepage = "https://github.com/evmar/n2";
     description = "Ninja compatible build system";
-    mainProgram = "n2";
+    homepage = "https://github.com/evmar/n2";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "n2";
   };
 }

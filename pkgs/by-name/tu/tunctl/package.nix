@@ -14,16 +14,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   makeFlags = [ "tunctl" ];
+
   installPhase = ''
     mkdir -p $out/bin
     cp tunctl $out/bin
   '';
 
   meta = {
-    homepage = "https://tunctl.sourceforge.net/";
     description = "Utility to set up and maintain TUN/TAP network interfaces";
-    mainProgram = "tunctl";
+    homepage = "https://tunctl.sourceforge.net/";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
+    mainProgram = "tunctl";
   };
 })

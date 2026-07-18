@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
-  setuptools,
   fetchFromGitHub,
-  requests,
-  pytestCheckHook,
+  buildPythonPackage,
   httmock,
   pytest-mock,
+  pytestCheckHook,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "irisclient";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "houqp";
@@ -21,22 +20,21 @@ buildPythonPackage rec {
     hash = "sha256-fXMw2BopkEqjklR6jr7QQIZyxLq6NHKm2rHwTCbtxR0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   checkInputs = [
     httmock
     pytestCheckHook
     pytest-mock
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "irisclient" ];
 
   meta = {
     description = "Python client for Iris REST api";
-    changelog = "https://github.com/houqp/iris-python-client/blob/${src.tag}/HISTORY.rst";
     homepage = "https://github.com/houqp/iris-python-client";
+    changelog = "https://github.com/houqp/iris-python-client/blob/${src.tag}/HISTORY.rst";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ onny ];
   };

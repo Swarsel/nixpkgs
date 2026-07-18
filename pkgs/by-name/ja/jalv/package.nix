@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libsForQt5,
   libjack2,
+  libsForQt5,
   lilv,
   lv2,
   meson,
@@ -63,8 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple but fully featured LV2 host for Jack";
     homepage = "http://drobilla.net/software/jalv";
     license = lib.licenses.isc;
-    mainProgram = if useQt then "jalv.qt5" else "jalv.gtk3";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = if useQt then "jalv.qt5" else "jalv.gtk3";
   };
 })

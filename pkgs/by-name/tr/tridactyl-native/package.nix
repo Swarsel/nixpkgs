@@ -1,7 +1,7 @@
 {
   lib,
-  buildNimPackage,
   fetchFromGitHub,
+  buildNimPackage,
 }:
 buildNimPackage {
   pname = "tridactyl-native";
@@ -14,23 +14,25 @@ buildNimPackage {
     hash = "sha256-gicdpWAoimZMNGLc8w0vtJiFFxeqxB8P4lgWDun7unM=";
   };
 
-  lockFile = ./lock.json;
-
   installPhase = ''
     mkdir -p "$out/lib/mozilla/native-messaging-hosts"
     sed -i -e "s|REPLACE_ME_WITH_SED|$out/bin/native_main|" "tridactyl.json"
     cp tridactyl.json "$out/lib/mozilla/native-messaging-hosts/"
   '';
 
+  lockFile = ./lock.json;
+
   meta = {
     description = "Native messenger for Tridactyl, a vim-like Firefox webextension";
-    mainProgram = "native_main";
     homepage = "https://github.com/tridactyl/native_messenger";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       timokau
       kiike
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "native_main";
   };
 }

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 buildGoModule (finalAttrs: {
@@ -15,21 +15,21 @@ buildGoModule (finalAttrs: {
     hash = "sha256-LGlcc/FoBiZ7YiZUyqdYmAoV9BgUm4h2/n/KQ3NzFa4=";
   };
 
+  vendorHash = "sha256-Zf7BdL0mljGFrRTx4JJxAUXUm6Uh/sVJP/zOJ4ef/CU=";
+
   ldflags = [
     "-s"
     "-w"
     "-X main.Version=${finalAttrs.version}"
   ];
 
-  vendorHash = "sha256-Zf7BdL0mljGFrRTx4JJxAUXUm6Uh/sVJP/zOJ4ef/CU=";
-
   passthru.tests = { inherit (nixosTests) litestream; };
 
   meta = {
     description = "Streaming replication for SQLite";
-    mainProgram = "litestream";
-    license = lib.licenses.asl20;
     homepage = "https://litestream.io/";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fbrs ];
+    mainProgram = "litestream";
   };
 })

@@ -1,27 +1,26 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  makeDesktopItem,
+  buildNpmPackage,
   copyDesktopItems,
+  electron,
+  gitMinimal,
+  makeDesktopItem,
   makeWrapper,
   nix-update-script,
-  electron,
-  python3,
   nodejs,
-  vips,
-  gitMinimal,
+  python3,
   removeReferencesTo,
+  vips,
   xcodebuild,
   zip,
 }:
 
 buildNpmPackage (finalAttrs: {
+  inherit nodejs;
   pname = "musicfree-desktop";
   version = "0.0.8";
-
-  inherit nodejs;
 
   src = fetchFromGitHub {
     owner = "maotoumao";
@@ -58,7 +57,18 @@ buildNpmPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcodebuild ]; # Used by better-sqlite3
 
+  buildInputs = [
+    vips # for sharp
+  ];
+
   npmDepsHash = "sha256-pEpU3JuxeMl0Oo/ZnmzH9/WdJ/3O2RUGofm7KXrKcAo=";
+
+  env = {
+    # Have more info in build logs and also prevent the fancy UI of electron-forge spamming the build logs
+    DEBUG = "electron-forge:*,electron-packager,@electron/get:*";
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+    SHARP_FORCE_GLOBAL_LIBVIPS = "1";
+  };
 
   postConfigure = ''
     # use Electron's headers to make node-gyp compile against the Electron ABI
@@ -93,35 +103,6 @@ buildNpmPackage (finalAttrs: {
     }
   '';
 
-  buildInputs = [
-    vips # for sharp
-  ];
-
-  # sharp tries to write to npm-deps/_libvips when compiling
-  makeCacheWritable = true;
-
-  npmBuildScript = "package";
-
-  env = {
-    SHARP_FORCE_GLOBAL_LIBVIPS = "1";
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-    # Have more info in build logs and also prevent the fancy UI of electron-forge spamming the build logs
-    DEBUG = "electron-forge:*,electron-packager,@electron/get:*";
-  };
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "musicfree-desktop";
-      desktopName = "MusicFree";
-      exec = "MusicFree %U";
-      icon = "musicfree-desktop";
-      type = "Application";
-      comment = finalAttrs.meta.description;
-      categories = [ "Utility" ];
-      mimeTypes = [ "x-scheme-handler/musicfree" ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -155,6 +136,22 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "MusicFree";
+      exec = "MusicFree %U";
+      icon = "musicfree-desktop";
+      mimeTypes = [ "x-scheme-handler/musicfree" ];
+      name = "musicfree-desktop";
+      type = "Application";
+    })
+  ];
+
+  # sharp tries to write to npm-deps/_libvips when compiling
+  makeCacheWritable = true;
+  npmBuildScript = "package";
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -163,7 +160,7 @@ buildNpmPackage (finalAttrs: {
     changelog = "https://github.com/maotoumao/MusicFreeDesktop/blob/${finalAttrs.src.tag}/changelog.md";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ ulysseszhan ];
-    mainProgram = "MusicFree";
     platforms = electron.meta.platforms;
+    mainProgram = "MusicFree";
   };
 })

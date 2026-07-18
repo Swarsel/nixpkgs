@@ -1,35 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
   applyPatches,
-
+  buildPythonPackage,
   # build-system
   cmake,
-  ninja,
-  scikit-build-core,
-  pybind11,
-  setuptools-scm,
-
+  # tests
+  cvxopt,
   # dependencies
   jinja2,
   joblib,
+  ninja,
   numpy,
-  scipy,
-
-  # tests
-  cvxopt,
+  pybind11,
   pytestCheckHook,
+  replaceVars,
+  scikit-build-core,
+  scipy,
+  setuptools-scm,
   torch,
 }:
 
 let
   qdldl_src = fetchFromGitHub {
+    hash = "sha256-qCeOs4UjZLuqlbiLgp6BMxvw4niduCPDOOqFt05zi2E=";
     owner = "osqp";
     repo = "qdldl";
     tag = "v0.1.8";
-    hash = "sha256-qCeOs4UjZLuqlbiLgp6BMxvw4niduCPDOOqFt05zi2E=";
   };
 
   osqp_src = applyPatches {
@@ -39,6 +36,7 @@ let
       tag = "v1.0.0";
       hash = "sha256-BOAytzJzHcggncQzeDrXwJOq8B3doWERJ6CKIVg1yJY=";
     };
+
     patches = [
       (replaceVars ./dont-fetch-qdldl.patch {
         inherit qdldl_src;
@@ -50,8 +48,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "osqp";
   version = "1.1.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "osqp";
@@ -66,6 +62,14 @@ buildPythonPackage (finalAttrs: {
     })
   ];
 
+  nativeCheckInputs = [
+    cvxopt
+    pytestCheckHook
+    torch
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     cmake
     ninja
@@ -73,7 +77,6 @@ buildPythonPackage (finalAttrs: {
     scikit-build-core
     setuptools-scm
   ];
-  dontUseCmakeConfigure = true;
 
   dependencies = [
     jinja2
@@ -82,14 +85,6 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  nativeCheckInputs = [
-    cvxopt
-    pytestCheckHook
-    torch
-  ];
-
-  pythonImportsCheck = [ "osqp" ];
-
   disabledTestPaths = [
     # CalledProcessError
     # Try to invoke `python setup.py build_ext --inplace`
@@ -97,8 +92,13 @@ buildPythonPackage (finalAttrs: {
     "src/osqp/tests/codegen_vectors_test.py"
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "osqp" ];
+
   meta = {
     description = "Operator Splitting QP Solver";
+
     longDescription = ''
       Numerical optimization package for solving problems in the form
         minimize        0.5 x' P x + q' x
@@ -106,12 +106,15 @@ buildPythonPackage (finalAttrs: {
 
       where x in R^n is the optimization variable
     '';
+
     homepage = "https://osqp.org/";
-    downloadPage = "https://github.com/oxfordcontrol/osqp-python/releases";
     changelog = "https://github.com/osqp/osqp-python/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
     ];
+
+    downloadPage = "https://github.com/oxfordcontrol/osqp-python/releases";
   };
 })

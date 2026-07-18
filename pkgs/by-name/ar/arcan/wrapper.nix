@@ -7,11 +7,8 @@
 }:
 
 symlinkJoin {
-  pname = name;
   inherit (arcan) version;
-
-  paths = appls ++ [ arcan ];
-
+  pname = name;
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -25,6 +22,8 @@ symlinkJoin {
         --set ARCAN_SCRIPTPATH "${placeholder "out"}/share/arcan/scripts/"
     done
   '';
+
+  paths = appls ++ [ arcan ];
 }
 # TODO: set ARCAN_STATEBASEPATH to $HOME/.arcan/resources/savestates/ - possibly
 # via a suitable script

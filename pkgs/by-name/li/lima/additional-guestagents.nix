@@ -9,12 +9,10 @@ let
   source = callPackage ./source.nix { };
 in
 buildGoModule (finalAttrs: {
-  pname = "lima-additional-guestagents";
-
   # Because agents must use the same version as lima, lima's updateScript should also update the shared src.
   # nixpkgs-update: no auto update
   inherit (source) version src vendorHash;
-
+  pname = "lima-additional-guestagents";
   env.CGO_ENABLED = "0";
 
   buildPhase =
@@ -40,10 +38,11 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     findutils
   ];
-  doInstallCheck = true;
 
   # Guest agents for the host's architecture are only in the "lima" package. So, we can't test this by running the binary.
   installCheckPhase = ''
@@ -56,6 +55,7 @@ buildGoModule (finalAttrs: {
 
   meta = source.meta // {
     description = "Lima Guest Agents for emulating non-native architectures";
+
     longDescription = ''
       This package should only be used when your guest's architecture differs from the host's.
 

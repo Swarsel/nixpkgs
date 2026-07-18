@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  autoreconfHook,
-  pkg-config,
-  glib,
-  elfutils,
-  bison,
-  flex,
   asciidoc,
-  xmlto,
+  autoreconfHook,
+  bison,
   docbook_xml_dtd_45,
   docbook_xsl,
+  elfutils,
+  ensureNewerSourcesForZipFilesHook,
+  fetchpatch,
+  flex,
+  glib,
+  pkg-config,
+  swig,
+  xmlto,
   enablePython ? false,
   python ? null,
   pythonPackages ? null,
-  swig,
-  ensureNewerSourcesForZipFilesHook,
 }:
 
 stdenv.mkDerivation rec {
@@ -68,7 +68,6 @@ stdenv.mkDerivation rec {
 
   # For cross-compilation of Python bindings
   makeFlags = [ "CFLAGS=-Wno-error=stringop-truncation -Wno-error=null-dereference" ];
-
   enableParallelBuilding = true;
 
   meta = {
@@ -76,7 +75,7 @@ stdenv.mkDerivation rec {
     homepage = "https://babeltrace.org";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wentasah ];
-    mainProgram = "babeltrace2";
     platforms = lib.platforms.all;
+    mainProgram = "babeltrace2";
   };
 }

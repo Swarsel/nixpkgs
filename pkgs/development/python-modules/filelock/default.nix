@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   pytest-asyncio,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "filelock";
   version = "3.29.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tox-dev";
@@ -22,11 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-efBEyjuCcLkHsfpG61eKN6ALk4QW4UMdNmD56rSgFLc=";
   };
 
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-mock
@@ -34,7 +28,10 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "filelock" ];
+  build-system = [
+    hatch-vcs
+    hatchling
+  ];
 
   disabledTestPaths = [
     # Circular dependency with virtualenv
@@ -43,10 +40,13 @@ buildPythonPackage rec {
     "tests/test_filelock.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "filelock" ];
+
   meta = {
-    changelog = "https://github.com/tox-dev/py-filelock/releases/tag/${version}";
     description = "Platform independent file lock for Python";
     homepage = "https://github.com/benediktschmitt/py-filelock";
+    changelog = "https://github.com/tox-dev/py-filelock/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

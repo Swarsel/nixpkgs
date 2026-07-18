@@ -10,18 +10,6 @@ let
 in
 
 {
-  # We put legacy `system` into `localSystem`, if `localSystem` was not passed.
-  # If neither is passed, assume we are building packages on the current
-  # (build, in GNU Autotools parlance) platform.
-  localSystem ? {
-    system = args.system or builtins.currentSystem;
-  },
-
-  # These are needed only because nix's `--arg` command-line logic doesn't work
-  # with unnamed parameters allowed by ...
-  system ? localSystem.system,
-  crossSystem ? localSystem,
-
   # Fallback: The contents of the configuration file found at $NIXPKGS_CONFIG or
   # $HOME/.config/nixpkgs/config.nix.
   config ?
@@ -38,12 +26,20 @@ in
       import configFile3
     else
       { },
-
+  crossSystem ? localSystem,
+  # We put legacy `system` into `localSystem`, if `localSystem` was not passed.
+  # If neither is passed, assume we are building packages on the current
+  # (build, in GNU Autotools parlance) platform.
+  localSystem ? {
+    system = args.system or builtins.currentSystem;
+  },
   # Overlays are used to extend Nixpkgs collection with additional
   # collections of packages.  These collection of packages are part of the
   # fix-point made by Nixpkgs.
   overlays ? import ./impure-overlays.nix,
-
+  # These are needed only because nix's `--arg` command-line logic doesn't work
+  # with unnamed parameters allowed by ...
+  system ? localSystem.system,
   ...
 }@args:
 

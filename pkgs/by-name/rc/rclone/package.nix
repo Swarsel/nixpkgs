@@ -1,27 +1,22 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   buildPackages,
-  installShellFiles,
-  versionCheckHook,
-  makeWrapper,
-  enableCmount ? true,
   fuse3,
-  macfuse-stubs,
+  installShellFiles,
   librclone,
+  macfuse-stubs,
+  makeWrapper,
   nix-update-script,
+  versionCheckHook,
+  enableCmount ? true,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "rclone";
   version = "1.74.4";
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "rclone";
@@ -30,9 +25,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-n+s9OiSwjiFwR1/DEd81YZIAyaMWMj0g8ORf6grnE3M=";
   };
 
-  vendorHash = "sha256-PVTcYFRr4Zb4VVsY6dkO+emZ48Nyr9aUBJbehFlDh9c=";
-
-  subPackages = [ "." ];
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -44,15 +40,7 @@ buildGoModule (finalAttrs: {
     if stdenv.hostPlatform.isDarwin then (macfuse-stubs.override { isFuse3 = false; }) else fuse3
   );
 
-  tags =
-    lib.optionals (!stdenv.hostPlatform.isDarwin) [ "fuse3" ]
-    ++ lib.optionals enableCmount [ "cmount" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/rclone/rclone/fs.Version=${finalAttrs.src.tag}"
-  ];
+  vendorHash = "sha256-PVTcYFRr4Zb4VVsY6dkO+emZ48Nyr9aUBJbehFlDh9c=";
 
   postConfigure = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
     substituteInPlace vendor/github.com/winfsp/cgofuse/fuse/host_cgo.go \
@@ -87,10 +75,24 @@ buildGoModule (finalAttrs: {
             --suffix PATH : "${lib.makeBinPath [ fuse3 ]}"
         '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/rclone/rclone/fs.Version=${finalAttrs.src.tag}"
+  ];
+
+  subPackages = [ "." ];
+
+  tags =
+    lib.optionals (!stdenv.hostPlatform.isDarwin) [ "fuse3" ]
+    ++ lib.optionals enableCmount [ "cmount" ];
+
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   versionCheckProgramArg = "version";
 
@@ -98,6 +100,7 @@ buildGoModule (finalAttrs: {
     tests = {
       inherit librclone;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -106,9 +109,11 @@ buildGoModule (finalAttrs: {
     homepage = "https://rclone.org";
     changelog = "https://github.com/rclone/rclone/blob/v${finalAttrs.version}/docs/content/changelog.md";
     license = lib.licenses.mit;
-    mainProgram = "rclone";
+
     maintainers = with lib.maintainers; [
       SuperSandro2000
     ];
+
+    mainProgram = "rclone";
   };
 })

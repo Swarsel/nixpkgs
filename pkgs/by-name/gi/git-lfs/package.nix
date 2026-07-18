@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
   asciidoctor,
-  installShellFiles,
+  buildGoModule,
   git,
-  versionCheckHook,
+  installShellFiles,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,21 +21,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-N5ckTnyA3mueZre+rMhFZBiAFgEu4pmtzkiUidXnan8=";
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-SUnZ9uN43CAw/iHC8cPBm3nYD03d3Pg2pYS2PwjDCnE=";
-
   nativeBuildInputs = [
     asciidoctor
     installShellFiles
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/git-lfs/git-lfs/v${lib.versions.major finalAttrs.version}/config.Vendor=${finalAttrs.version}"
-  ];
-
-  subPackages = [ "." ];
+  vendorHash = "sha256-SUnZ9uN43CAw/iHC8cPBm3nYD03d3Pg2pYS2PwjDCnE=";
 
   preBuild = ''
     CC= GOOS= GOARCH= go generate ./commands
@@ -46,10 +37,6 @@ buildGoModule (finalAttrs: {
   '';
 
   nativeCheckInputs = [ git ];
-
-  preCheck = ''
-    unset subPackages
-  '';
 
   checkFlags = lib.optionals stdenv.hostPlatform.isDarwin (
     let
@@ -82,6 +69,10 @@ buildGoModule (finalAttrs: {
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ]
   );
 
+  preCheck = ''
+    unset subPackages
+  '';
+
   postInstall = ''
     installManPage man/man*/*
   ''
@@ -92,26 +83,38 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/git-lfs completion zsh)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/git-lfs/git-lfs/v${lib.versions.major finalAttrs.version}/config.Vendor=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "." ];
 
   passthru = {
     updateScript = nix-update-script { };
   };
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Git extension for versioning large files";
     homepage = "https://git-lfs.github.com/";
     changelog = "https://github.com/git-lfs/git-lfs/raw/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       twey
       savtrip
     ];
+
     mainProgram = "git-lfs";
   };
 })

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cvxpy,
+  matplotlib,
   numpy,
   pandas,
-  scipy,
-  matplotlib,
   pytestCheckHook,
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pepit";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PerformanceEstimation";
@@ -28,6 +27,10 @@ buildPythonPackage rec {
       --replace-fail "{{VERSION_PLACEHOLDER}}" "${version}"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -40,9 +43,7 @@ buildPythonPackage rec {
     matplotlib
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "PEPit"
@@ -50,8 +51,8 @@ buildPythonPackage rec {
 
   meta = {
     description = "Performance Estimation in Python";
-    changelog = "https://pepit.readthedocs.io/en/latest/whatsnew/${version}.html";
     homepage = "https://pepit.readthedocs.io/";
+    changelog = "https://pepit.readthedocs.io/en/latest/whatsnew/${version}.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wegank ];
   };

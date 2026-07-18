@@ -1,19 +1,19 @@
 {
   lib,
-  rustPlatform,
-  fetchCrate,
-  pkg-config,
-  libgit2,
-  openssl,
   stdenv,
   expat,
+  fetchCrate,
   fontconfig,
   libGL,
-  libxrandr,
-  libxi,
-  libxcursor,
+  libgit2,
   libx11,
   libxcb,
+  libxcursor,
+  libxi,
+  libxrandr,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,8 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     inherit (finalAttrs) pname version;
     hash = "sha256-M/ljgtTHMSc7rY/a8CpKGNuOSdVDwRt6+tzPPHdpKOw=";
   };
-
-  cargoHash = "sha256-odcyKOveYCWQ35uh//s19Jtq7OqiUnkeqbh90VWHp9A=";
 
   nativeBuildInputs = [
     pkg-config
@@ -46,6 +44,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxcb
   ];
 
+  cargoHash = "sha256-odcyKOveYCWQ35uh//s19Jtq7OqiUnkeqbh90VWHp9A=";
+
+  env = {
+    LIBGIT2_NO_VENDOR = 1;
+  };
+
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     patchelf $out/bin/cargo-ui \
       --add-rpath ${
@@ -56,22 +60,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
       }
   '';
 
-  env = {
-    LIBGIT2_NO_VENDOR = 1;
-  };
-
   meta = {
     description = "GUI for Cargo";
-    mainProgram = "cargo-ui";
     homepage = "https://github.com/slint-ui/cargo-ui";
     changelog = "https://github.com/slint-ui/cargo-ui/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       asl20
       gpl3Only
     ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-ui";
   };
 })

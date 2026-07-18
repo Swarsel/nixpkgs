@@ -5,12 +5,8 @@
   setuptools,
 }:
 buildPythonPackage {
-  pname = "gpiod";
   inherit (libgpiod) version src;
-  pyproject = true;
-
-  build-system = [ setuptools ];
-
+  pname = "gpiod";
   buildInputs = [ libgpiod ];
 
   preConfigure = ''
@@ -19,6 +15,8 @@ buildPythonPackage {
 
   # Requires libgpiod built with --enable-tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "gpiod" ];
 
   meta = {

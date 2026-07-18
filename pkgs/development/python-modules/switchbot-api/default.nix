@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pycryptodome,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "switchbot-api";
   version = "2.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SeraphicCorp";
@@ -24,13 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mvGWuj+YpAqMg8dpICMwkY73vVwrvF6Klld2h2q1Mig=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    pycryptodome
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -41,6 +33,14 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+    pycryptodome
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "switchbot_api" ];
 
   meta = {

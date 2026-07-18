@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,13 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-cd8PotJPNdwpXKpuHbMQ4aJeNewDhyRvctAHimVdLS8=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/smeagol-wiki";
 
+  versionCheckProgram = "${placeholder "out"}/bin/smeagol-wiki";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -32,9 +32,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://smeagol.dev/";
     changelog = "https://github.com/AustinWise/smeagol/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
     mainProgram = "smeagol-wiki";
   };
 })

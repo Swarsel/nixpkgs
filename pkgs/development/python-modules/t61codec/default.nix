@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "t61codec";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exhuma";
@@ -18,15 +17,16 @@ buildPythonPackage rec {
     hash = "sha256-PNUahn6NpNWdK3yhcQ23qb08lkZeNW61GosShLiyPc8=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     poetry-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "t61codec" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python codec for T.61 strings";

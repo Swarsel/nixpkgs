@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  arpa2cm,
+  arpa2common,
   cmake,
   doxygen,
   graphviz,
-  arpa2common,
-  arpa2cm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Memory pooling for ARPA2 projects";
     homepage = "https://gitlab.com/arpa2/Quick-MEM/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ leungbk ];
+    platforms = lib.platforms.linux;
   };
 })

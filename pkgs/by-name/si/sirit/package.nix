@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   ninja,
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     ninja
   ];
+
   buildInputs = [ spirv-headers ];
 
   cmakeFlags = [
@@ -30,10 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Runtime SPIR-V assembler";
     homepage = "https://github.com/eden-emulator/sirit";
+
     license = with lib.licenses; [
       agpl3Plus
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ marcin-serwin ];
     platforms = lib.platforms.linux;
   };

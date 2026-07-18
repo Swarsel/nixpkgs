@@ -1,11 +1,11 @@
 {
   lib,
-  mkKdeDerivation,
-  replaceVars,
   kwin,
+  mkKdeDerivation,
+  pam,
   pkg-config,
   qttools,
-  pam,
+  replaceVars,
 }:
 mkKdeDerivation {
   pname = "plasma-login-manager";
@@ -14,15 +14,14 @@ mkKdeDerivation {
     ./config-path.patch
 
     (replaceVars ./kwin-path.patch {
-      kwin_wayland = lib.getExe' kwin "kwin_wayland";
       CMAKE_INSTALL_FULL_BINDIR = null;
+      kwin_wayland = lib.getExe' kwin "kwin_wayland";
     })
   ];
 
-  extraNativeBuildInputs = [
-    pkg-config
-    qttools
-  ];
+  postInstall = ''
+    install -Dm444 ${./defaults.conf} $out/lib/plasmalogin/defaults.conf
+  '';
 
   extraBuildInputs = [ pam ];
 
@@ -32,7 +31,8 @@ mkKdeDerivation {
     "-DINSTALL_PAM_CONFIGURATION=OFF"
   ];
 
-  postInstall = ''
-    install -Dm444 ${./defaults.conf} $out/lib/plasmalogin/defaults.conf
-  '';
+  extraNativeBuildInputs = [
+    pkg-config
+    qttools
+  ];
 }

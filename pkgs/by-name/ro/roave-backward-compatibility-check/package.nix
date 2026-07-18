@@ -17,16 +17,16 @@ php.buildComposerProject2 (finalAttrs: {
   };
 
   vendorHash = "sha256-68KE/ieWYST/jQMaaK5lLqBLEmI4YhYPOE4XuXNMfqM=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
-    changelog = "https://github.com/Roave/BackwardCompatibilityCheck/releases/tag/${finalAttrs.version}";
     description = "Tool that can be used to verify BC breaks between two versions of a PHP library";
     homepage = "https://github.com/Roave/BackwardCompatibilityCheck";
+    changelog = "https://github.com/Roave/BackwardCompatibilityCheck/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     mainProgram = "roave-backward-compatibility-check";
     teams = [ lib.teams.php ];

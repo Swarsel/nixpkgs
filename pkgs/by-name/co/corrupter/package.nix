@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   unstableGitUpdater,
 }:
 
@@ -18,7 +18,6 @@ buildGoModule {
   };
 
   vendorHash = null;
-
   # There are no tests available for this package.
   doCheck = false;
 

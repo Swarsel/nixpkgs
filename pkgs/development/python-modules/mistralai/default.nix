@@ -1,41 +1,35 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  eval-type-backport,
-  httpx,
-  jsonpath-python,
-  opentelemetry-api,
-  opentelemetry-semantic-conventions,
-  pydantic,
-  python-dateutil,
-  typing-inspection,
-
   # optional-dependencies
   authlib,
-  griffe,
-  mcp,
+  buildPythonPackage,
+  # dependencies
+  eval-type-backport,
   google-auth,
-  requests,
-  websockets,
+  griffe,
+  # build-system
+  hatchling,
+  httpx,
+  jsonpath-python,
+  mcp,
+  opentelemetry-api,
   opentelemetry-exporter-otlp-proto-http,
-
   # tests
   opentelemetry-sdk,
+  opentelemetry-semantic-conventions,
+  pydantic,
   pytest-asyncio,
   pytestCheckHook,
+  python-dateutil,
+  requests,
+  typing-inspection,
+  websockets,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mistralai";
   version = "2.5.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mistralai";
@@ -48,13 +42,21 @@ buildPythonPackage (finalAttrs: {
     python scripts/prepare_readme.py
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.agents
+  ++ finalAttrs.passthru.optional-dependencies.gcp
+  ++ finalAttrs.passthru.optional-dependencies.realtime
+  ++ finalAttrs.passthru.optional-dependencies.telemetry;
+
+  __structuredAttrs = true;
+
   build-system = [
     hatchling
   ];
 
-  pythonRelaxDeps = [
-    "opentelemetry-semantic-conventions"
-  ];
   dependencies = [
     eval-type-backport
     httpx
@@ -66,36 +68,6 @@ buildPythonPackage (finalAttrs: {
     typing-inspection
   ];
 
-  optional-dependencies = {
-    agents = [
-      authlib
-      griffe
-      mcp
-    ];
-    gcp = [
-      google-auth
-      requests
-    ];
-    realtime = [
-      websockets
-    ];
-    telemetry = [
-      opentelemetry-sdk
-      opentelemetry-exporter-otlp-proto-http
-    ];
-  };
-
-  pythonImportsCheck = [ "mistralai" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.agents
-  ++ finalAttrs.passthru.optional-dependencies.gcp
-  ++ finalAttrs.passthru.optional-dependencies.realtime
-  ++ finalAttrs.passthru.optional-dependencies.telemetry;
-
   disabledTestPaths = [
     # ModuleNotFoundError: No module named 'opentelemetry.instrumentation'
     "src/mistralai/extra/tests/test_otel_tracing.py"
@@ -105,11 +77,41 @@ buildPythonPackage (finalAttrs: {
     "src/mistralai/extra/tests/test_traceparent_hook.py::TestTraceparentInjectionHook::test_propagates_sampled_active_span"
   ];
 
+  optional-dependencies = {
+    agents = [
+      authlib
+      griffe
+      mcp
+    ];
+
+    gcp = [
+      google-auth
+      requests
+    ];
+
+    realtime = [
+      websockets
+    ];
+
+    telemetry = [
+      opentelemetry-sdk
+      opentelemetry-exporter-otlp-proto-http
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "mistralai" ];
+
+  pythonRelaxDeps = [
+    "opentelemetry-semantic-conventions"
+  ];
+
   meta = {
     description = "Python client library for Mistral AI platform";
     homepage = "https://github.com/mistralai/client-python";
     changelog = "https://github.com/mistralai/client-python/blob/${finalAttrs.src.tag}/RELEASES.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       mana-byte

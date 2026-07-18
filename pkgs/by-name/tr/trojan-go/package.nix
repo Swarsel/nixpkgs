@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule rec {
@@ -18,6 +18,8 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-c6H/8/dmCWasFKVR15U/kty4AzQAqmiL/VLKrPtH+s4=";
+  # tests fail due to requiring networking
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -35,17 +37,14 @@ buildGoModule rec {
     "other"
   ];
 
-  # tests fail due to requiring networking
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Proxy mechanism to bypass GFW";
     homepage = "https://p4gefau1t.github.io/trojan-go/";
     changelog = "https://github.com/p4gefau1t/trojan-go/releases/tag/v${version}";
-    maintainers = with lib.maintainers; [ ethancedwards8 ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ ethancedwards8 ];
     mainProgram = "trojan-go";
   };
 }

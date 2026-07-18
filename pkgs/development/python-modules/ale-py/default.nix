@@ -1,40 +1,33 @@
 {
   lib,
   stdenv,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cmake,
-  ninja,
-  nanobind,
-  scikit-build-core,
-  # linux-only
-  jax,
-
   # buildInputs
   SDL2,
-  opencv,
-  zlib,
-
-  # nativeBuildInputs
-  cudaPackages,
-
-  # dependencies
-  numpy,
-
+  buildPythonPackage,
   # tests
   chex,
+  # build-system
+  cmake,
+  config,
+  # nativeBuildInputs
+  cudaPackages,
   gymnasium,
+  # linux-only
+  jax,
+  nanobind,
+  ninja,
+  # dependencies
+  numpy,
+  opencv,
   pytestCheckHook,
+  scikit-build-core,
+  zlib,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ale-py";
   version = "0.12.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Farama-Foundation";
@@ -51,6 +44,25 @@ buildPythonPackage (finalAttrs: {
         'set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)'
   '';
 
+  nativeBuildInputs = lib.optionals config.cudaSupport [
+    # Required by opencv's cmake
+    cudaPackages.cuda_nvcc
+  ];
+
+  buildInputs = [
+    SDL2
+    zlib
+    opencv
+  ];
+
+  nativeCheckInputs = [
+    chex
+    gymnasium
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     cmake
     ninja
@@ -61,29 +73,12 @@ buildPythonPackage (finalAttrs: {
     jax
   ];
 
-  nativeBuildInputs = lib.optionals config.cudaSupport [
-    # Required by opencv's cmake
-    cudaPackages.cuda_nvcc
-  ];
-
-  dontUseCmakeConfigure = true;
-
-  buildInputs = [
-    SDL2
-    zlib
-    opencv
-  ];
-
   dependencies = [
     numpy
   ];
 
-  pythonImportsCheck = [ "ale_py" ];
-
-  nativeCheckInputs = [
-    chex
-    gymnasium
-    pytestCheckHook
+  disabledTestPaths = [
+    "tests/python/test_atari_vector_xla.py"
   ];
 
   disabledTests = [
@@ -110,16 +105,16 @@ buildPythonPackage (finalAttrs: {
     "test_state_serialize_roundtrip"
   ];
 
-  disabledTestPaths = [
-    "tests/python/test_atari_vector_xla.py"
-  ];
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "ale_py" ];
 
   meta = {
     description = "Simple framework that allows researchers and hobbyists to develop AI agents for Atari 2600 games";
-    mainProgram = "ale-import-roms";
     homepage = "https://github.com/mgbellemare/Arcade-Learning-Environment";
     changelog = "https://github.com/Farama-Foundation/Arcade-Learning-Environment/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ billhuang ];
+    mainProgram = "ale-import-roms";
   };
 })

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  simplejson,
+  buildPythonPackage,
   jsonschema,
   pyfakefs,
   pytestCheckHook,
+  setuptools,
+  simplejson,
 }:
 
 buildPythonPackage rec {
   pname = "validator-collection";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "insightindustry";
@@ -20,6 +19,11 @@ buildPythonPackage rec {
     tag = "v.${version}";
     hash = "sha256-CDPfIkZZRpl1rAzNpLKJfaBEGWUl71coic2jOHIgi6o=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyfakefs
+  ];
 
   build-system = [ setuptools ];
 
@@ -29,13 +33,6 @@ buildPythonPackage rec {
     simplejson # optional but preferred
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyfakefs
-  ];
-
-  pythonImportsCheck = [ "validator_collection" ];
-
   disabledTests = [
     # Issues with fake filesystem /var/data
     "test_writeable"
@@ -43,6 +40,9 @@ buildPythonPackage rec {
     "test_readable"
     "test_is_readable"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "validator_collection" ];
 
   meta = {
     description = "Python library of 60+ commonly-used validator functions";

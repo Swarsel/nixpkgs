@@ -1,11 +1,11 @@
 {
-  buildGoModule,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   fetchYarnDeps,
   go-rice,
-  lib,
   nodejs,
-  stdenv,
   yarnBuildHook,
   yarnConfigHook,
 }:
@@ -20,14 +20,9 @@ let
   };
 
   frontend = stdenv.mkDerivation {
-    pname = "statping-ng-frontend";
     inherit version;
+    pname = "statping-ng-frontend";
     src = "${src}/frontend";
-
-    yarnOfflineCache = fetchYarnDeps {
-      yarnLock = "${src}/frontend/yarn.lock";
-      hash = "sha256-e8GyKIJ0RopRliVMVrY8eEd6Qx/gTKbW3biPCSqbRrQ=";
-    };
 
     nativeBuildInputs = [
       nodejs
@@ -47,14 +42,16 @@ let
 
       runHook postInstall
     '';
+
+    yarnOfflineCache = fetchYarnDeps {
+      hash = "sha256-e8GyKIJ0RopRliVMVrY8eEd6Qx/gTKbW3biPCSqbRrQ=";
+      yarnLock = "${src}/frontend/yarn.lock";
+    };
   };
 in
 buildGoModule rec {
-  pname = "statping-ng";
   inherit version src;
-
-  proxyVendor = true;
-  vendorHash = "sha256-ZcNOI5/Fs7/U8/re89YpJ3qlMaQStLrrNHXiHuBQwQk=";
+  pname = "statping-ng";
 
   postPatch = ''
     ln -s "${frontend}" source/dist
@@ -64,24 +61,11 @@ buildGoModule rec {
     go-rice
   ];
 
+  vendorHash = "sha256-ZcNOI5/Fs7/U8/re89YpJ3qlMaQStLrrNHXiHuBQwQk=";
+
   preBuild = ''
     (cd source && rice embed-go)
   '';
-
-  subPackages = [
-    "cmd/"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.VERSION=${version}"
-  ];
-
-  tags = [
-    "netgo"
-    "ousergo"
-  ];
 
   doCheck = false;
 
@@ -90,14 +74,33 @@ buildGoModule rec {
     $out/bin/statping-ng version | grep ${version} > /dev/null
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.VERSION=${version}"
+  ];
+
+  proxyVendor = true;
+
+  subPackages = [
+    "cmd/"
+  ];
+
+  tags = [
+    "netgo"
+    "ousergo"
+  ];
+
   meta = {
     description = "Status Page for monitoring your websites and applications with beautiful graphs, analytics, and plugins";
     homepage = "https://github.com/statping-ng/statping-ng";
     changelog = "https://github.com/statping-ng/statping-ng/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       FKouhai
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "statping-ng";
   };

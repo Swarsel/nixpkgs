@@ -1,12 +1,12 @@
 {
   buildDunePackage,
-  redis,
   lwt,
+  redis,
 }:
 
 buildDunePackage {
-  pname = "redis-lwt";
   inherit (redis) version src;
+  pname = "redis-lwt";
 
   propagatedBuildInputs = [
     redis

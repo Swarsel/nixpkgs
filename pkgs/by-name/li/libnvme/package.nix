@@ -1,16 +1,16 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   bash,
   json_c,
   keyutils,
-  lib,
   meson,
   ninja,
   openssl,
   perl,
   pkg-config,
   python3,
-  stdenv,
   swig,
   systemd,
   # ImportError: cannot import name 'mlog' from 'mesonbuild'
@@ -21,14 +21,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libnvme";
   version = "1.16.1";
 
-  outputs = [ "out" ] ++ lib.optionals withDocs [ "man" ];
-
   src = fetchFromGitHub {
     owner = "linux-nvme";
     repo = "libnvme";
     rev = "v${finalAttrs.version}";
     hash = "sha256-/9snTFixG8bBAWPDJNiOmMEMmNnN451CdJqfp2y1lR4=";
   };
+
+  outputs = [ "out" ] ++ lib.optionals withDocs [ "man" ];
 
   postPatch = ''
     patchShebangs scripts
@@ -69,8 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "C Library for NVM Express on Linux";
     homepage = "https://github.com/linux-nvme/libnvme";
-    maintainers = with lib.maintainers; [ vifino ];
     license = with lib.licenses; [ lgpl21Plus ];
+    maintainers = with lib.maintainers; [ vifino ];
     platforms = lib.platforms.linux;
   };
 })

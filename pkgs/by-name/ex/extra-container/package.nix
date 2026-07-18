@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  glibcLocales,
   nixos-container,
   openssh,
-  glibcLocales,
-  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/erikarvstedt/extra-container";
     changelog = "https://github.com/erikarvstedt/extra-container/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.erikarvstedt ];
+    platforms = lib.platforms.linux;
     mainProgram = "extra-container";
   };
 })

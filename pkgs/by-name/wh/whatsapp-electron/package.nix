@@ -1,13 +1,13 @@
 {
   lib,
-  fetchFromGitHub,
-  makeWrapper,
-  electron,
   stdenv,
+  fetchFromGitHub,
   copyDesktopItems,
-  nodejs,
+  electron,
   fetchNpmDeps,
   makeDesktopItem,
+  makeWrapper,
+  nodejs,
   npmHooks,
 }:
 
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "whatsapp-electron";
     tag = "v${finalAttrs.version}";
     hash = "sha256-i3rk/wAr2MtJqXv7Z9uG0YzIsvaxrDvcXsXQhDEmzxw=";
-  };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-5AlnAtxiQDbJEbxthGT8DQhZG5tdkrFk0+47czalnlU=";
   };
 
   patches = [ ./icon.patch ];
@@ -71,29 +66,38 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "com.github.dagmoller.whatsapp-electron";
-      exec = "whatsapp-electron %u";
-      icon = "whatsapp";
-      desktopName = "Whatsapp";
-      startupWMClass = "com.github.dagmoller.whatsapp-electron";
       categories = [
         "Network"
         "InstantMessaging"
       ];
+
+      desktopName = "Whatsapp";
+      exec = "whatsapp-electron %u";
+      icon = "whatsapp";
+      name = "com.github.dagmoller.whatsapp-electron";
+      startupWMClass = "com.github.dagmoller.whatsapp-electron";
     })
   ];
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-5AlnAtxiQDbJEbxthGT8DQhZG5tdkrFk0+47czalnlU=";
+  };
 
   meta = {
     description = "Electron wrapper around Whatsapp";
     homepage = "https://github.com/dagmoller/whatsapp-electron";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       rucadi
     ];
-    mainProgram = "whatsapp-electron";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "whatsapp-electron";
   };
 })

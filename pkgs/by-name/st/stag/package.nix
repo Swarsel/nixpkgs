@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ncurses,
   fetchpatch,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,13 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fix compilation on aarch64 https://github.com/seenaburns/stag/pull/19
     (fetchpatch {
-      url = "https://github.com/seenaburns/stag/commit/0a5a8533d0027b2ee38d109adb0cb7d65d171497.diff";
       hash = "sha256-fqcsStduL3qfsp5wLJ0GLfEz0JRnOqsvpXB4gdWwVzg=";
+      url = "https://github.com/seenaburns/stag/commit/0a5a8533d0027b2ee38d109adb0cb7d65d171497.diff";
     })
     # fix compilation on darwin, add explicit void parameter https://github.com/seenaburns/stag/pull/22
     (fetchpatch {
-      url = "https://github.com/seenaburns/stag/commit/bf831b0fa47fdc3654a659c1bc12b584c5bad18c.patch";
       hash = "sha256-C7S+phw2K26EUweKLDVZey/bUeYcTohdGcf7wixYIdM=";
+      url = "https://github.com/seenaburns/stag/commit/bf831b0fa47fdc3654a659c1bc12b584c5bad18c.patch";
     })
   ];
 
@@ -42,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/seenaburns/stag";
     description = "Terminal streaming bar graph passed through stdin";
+    homepage = "https://github.com/seenaburns/stag";
     license = lib.licenses.bsdOriginal;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
     platforms = lib.platforms.unix;

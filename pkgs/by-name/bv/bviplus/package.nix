@@ -19,26 +19,24 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix pending upstream inclusion for ncurses-6.3 support:
     #  https://sourceforge.net/p/bviplus/bugs/7/
     (fetchpatch {
-      name = "ncurses-6.3.patch";
-      url = "https://sourceforge.net/p/bviplus/bugs/7/attachment/bviplus-ncurses-6.2.patch";
-      hash = "sha256-3ZC7pPew40quekb5JecPQg2gRFi0DXeMjxQPT5sTerw=";
       # svn patch, rely on prefix added by fetchpatch:
       extraPrefix = "";
+      hash = "sha256-3ZC7pPew40quekb5JecPQg2gRFi0DXeMjxQPT5sTerw=";
+      name = "ncurses-6.3.patch";
+      url = "https://sourceforge.net/p/bviplus/bugs/7/attachment/bviplus-ncurses-6.2.patch";
     })
   ];
 
   buildInputs = [ ncurses ];
-
   makeFlags = [ "PREFIX=$(out)" ];
-
   env.NIX_CFLAGS_COMPILE = "-Wno-implicit-int -fgnu89-inline";
 
   meta = {
     description = "Ncurses based hex editor with a vim-like interface";
     homepage = "https://bviplus.sourceforge.net";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "bviplus";
   };
 })

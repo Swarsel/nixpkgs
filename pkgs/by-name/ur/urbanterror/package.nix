@@ -1,47 +1,41 @@
 {
   lib,
-  fetchzip,
   stdenv,
+  SDL,
   copyDesktopItems,
-  imagemagick,
-  libicns,
-  makeBinaryWrapper,
   curl,
+  fetchzip,
+  imagemagick,
   libGL,
   libGLU,
-  openal,
+  libicns,
   libxxf86vm,
-  SDL,
+  makeBinaryWrapper,
   makeDesktopItem,
+  openal,
 }:
 
 let
   version = "4.3.4";
 
   urbanterror-maps = fetchzip {
+    hash = "sha256-C6Gb5PPECAOjQhmkrzkV6dpY/zHVtUj9oq3507o2PUI=";
     name = "urbanterror-maps";
+
     url = "http://cdn.urbanterror.info/urt/43/releases/zips/UrbanTerror${
       builtins.replaceStrings [ "." ] [ "" ] version
     }_full.zip";
-    hash = "sha256-C6Gb5PPECAOjQhmkrzkV6dpY/zHVtUj9oq3507o2PUI=";
   };
 
   urbanterror-source = fetchzip {
+    hash = "sha256-zF6Tkaj5WYkFU66VwpBFr1P18OJGrGgxnc/jvcvt8hA=";
     name = "urbanterror-source";
     url = "https://github.com/FrozenSand/ioq3-for-UrbanTerror-4/archive/release-${version}.zip";
-    hash = "sha256-zF6Tkaj5WYkFU66VwpBFr1P18OJGrGgxnc/jvcvt8hA=";
   };
 in
 stdenv.mkDerivation {
-  pname = "urbanterror";
   inherit version;
-
-  srcs = [
-    urbanterror-maps
-    urbanterror-source
-  ];
-
-  sourceRoot = "urbanterror-source";
+  pname = "urbanterror";
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -62,9 +56,6 @@ stdenv.mkDerivation {
   preConfigure = ''
     cp ${./Makefile.local} ./Makefile.local
   '';
-
-  installTargets = [ "copyfiles" ];
-  installFlags = [ "COPYDIR=$(out)/share/urbanterror" ];
 
   preInstall = ''
     mkdir -p $out/share/urbanterror
@@ -87,26 +78,34 @@ stdenv.mkDerivation {
     ln -s ${urbanterror-maps}/q3ut4 $out/share/urbanterror/
   '';
 
-  hardeningDisable = [ "format" ];
-
   desktopItems = [
     (makeDesktopItem {
-      name = "urbanterror";
-      exec = "urbanterror";
-      icon = "urbanterror";
-      comment = "A multiplayer tactical FPS on top of Quake 3 engine";
-      desktopName = "Urban Terror";
       categories = [
         "Game"
         "ActionGame"
       ];
+
+      comment = "A multiplayer tactical FPS on top of Quake 3 engine";
+      desktopName = "Urban Terror";
+      exec = "urbanterror";
+      icon = "urbanterror";
+      name = "urbanterror";
     })
+  ];
+
+  hardeningDisable = [ "format" ];
+  installFlags = [ "COPYDIR=$(out)/share/urbanterror" ];
+  installTargets = [ "copyfiles" ];
+  sourceRoot = "urbanterror-source";
+
+  srcs = [
+    urbanterror-maps
+    urbanterror-source
   ];
 
   meta = {
     description = "Multiplayer tactical FPS on top of Quake 3 engine";
-    homepage = "https://www.urbanterror.info";
-    license = lib.licenses.unfreeRedistributable;
+
     longDescription = ''
       Urban Terror is a free multiplayer first person shooter developed by
       FrozenSand, that (thanks to the ioquake3-code) does not require
@@ -114,8 +113,11 @@ stdenv.mkDerivation {
       tactical shooter; somewhat realism based, but the motto is "fun over
       realism". This results in a very unique, enjoyable and addictive game.
     '';
-    mainProgram = "urbanterror";
+
+    homepage = "https://www.urbanterror.info";
+    license = lib.licenses.unfreeRedistributable;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "urbanterror";
   };
 }

@@ -26,10 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C client library for Redis (key-value database)";
-    mainProgram = "credis-test";
     homepage = "https://code.google.com/archive/p/credis/";
     license = lib.licenses.bsd3; # from homepage
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
+    mainProgram = "credis-test";
   };
 })

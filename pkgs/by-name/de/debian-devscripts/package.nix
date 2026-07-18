@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  xz,
-  dpkg,
-  libxslt,
-  docbook_xsl,
-  makeWrapper,
-  writeShellScript,
-  python3Packages,
-  perlPackages,
-  curl,
-  gnupg,
-  diffutils,
-  nano,
-  pkg-config,
   bash-completion,
-  help2man,
-  nix-update-script,
-  sendmailPath ? "/run/wrappers/bin/sendmail",
-  runCommand,
   coreutils,
+  curl,
+  diffutils,
+  docbook_xsl,
+  dpkg,
+  gnupg,
+  help2man,
+  libxslt,
+  makeWrapper,
+  nano,
+  nix-update-script,
+  perlPackages,
+  pkg-config,
+  python3Packages,
+  runCommand,
   util-linux,
+  writeShellScript,
+  xz,
+  sendmailPath ? "/run/wrappers/bin/sendmail",
 }:
 
 let
@@ -35,11 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.26.8";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "debian";
     repo = "devscripts";
     tag = "v${finalAttrs.version}";
     hash = "sha256-MlBofpMoNQffZXUQnaqv0blRwHOIhmVuHWYsttoPP5M=";
+    domain = "salsa.debian.org";
   };
 
   patches = [
@@ -103,13 +103,11 @@ stdenv.mkDerivation (finalAttrs: {
     YAMLLibYAML
   ]);
 
-  pythonPath = with python3Packages; [
-    junit-xml
-    magic
-    python-apt
-    python-debian
-    requests
-    unidiff
+  makeFlags = [
+    "DESTDIR=$(out)"
+    "PREFIX="
+    "COMPL_DIR=/share/bash-completion/completions"
+    "PERLMOD_DIR=/share/devscripts"
   ];
 
   preConfigure = ''
@@ -133,13 +131,6 @@ stdenv.mkDerivation (finalAttrs: {
       -e 's/ translated_manpages//; s/--install-layout=deb//; s@--root="[^ ]*"@--prefix="'"$out"'"@' \
       -i Makefile* */Makefile*
   '';
-
-  makeFlags = [
-    "DESTDIR=$(out)"
-    "PREFIX="
-    "COMPL_DIR=/share/bash-completion/completions"
-    "PERLMOD_DIR=/share/devscripts"
-  ];
 
   preFixup = ''
     buildPythonPath "$out ''${pythonPath[*]}"
@@ -166,12 +157,14 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  passthru.updateScript = nix-update-script {
-    extraArgs = [
-      "--version-regex"
-      "^v([0-9.]+)$"
-    ];
-  };
+  pythonPath = with python3Packages; [
+    junit-xml
+    magic
+    python-apt
+    python-debian
+    requests
+    unidiff
+  ];
 
   passthru.tests.helpVersion =
     runCommand "debian-devscripts-test-help-version"
@@ -255,6 +248,13 @@ stdenv.mkDerivation (finalAttrs: {
 
         : >"$out"
       '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [
+      "--version-regex"
+      "^v([0-9.]+)$"
+    ];
+  };
 
   meta = {
     description = "Debian package maintenance scripts";

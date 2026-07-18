@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
   coreutils,
   fetchFromSourcehut,
   file,
   libcaca,
   makeWrapper,
-  python3,
   openssl,
+  python3,
   qrencode,
-  lib,
-  stdenv,
   yubikey-manager,
 }:
 
@@ -22,9 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     sha256 = "1914z0jgj7lni0nf3hslkjgkv87mhxdr92cmhmbzhpjgjgr23ydp";
   };
-  nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase =
     let
@@ -44,12 +43,15 @@ stdenv.mkDerivation (finalAttrs: {
       wrapProgram $out/bin/gen-oath-safe \
         --prefix PATH : ${path}
     '';
+
+  dontBuild = true;
+
   meta = {
-    homepage = "https://git.sr.ht/~mcepl/gen-oath-safe";
     description = "Script for generating HOTP/TOTP keys (and QR code)";
-    platforms = lib.platforms.unix;
+    homepage = "https://git.sr.ht/~mcepl/gen-oath-safe";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.makefu ];
+    platforms = lib.platforms.unix;
     mainProgram = "gen-oath-safe";
   };
 

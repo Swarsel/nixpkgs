@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   mslex,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "oslex";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "petamas";
@@ -18,6 +17,10 @@ buildPythonPackage (finalAttrs: {
     tag = "release/v${finalAttrs.version}";
     hash = "sha256-BTyLL3tb1P8VMGvTgoHGmwvFqf3gOyXOI+YmHuEjrKc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -27,9 +30,7 @@ buildPythonPackage (finalAttrs: {
     mslex
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "oslex"

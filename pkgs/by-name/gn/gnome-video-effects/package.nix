@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
   gettext,
   gnome,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,8 +35,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Collection of GStreamer effects to be used in different GNOME Modules";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-video-effects";
+    license = lib.licenses.gpl2;
     platforms = lib.platforms.unix;
     teams = [ lib.teams.gnome ];
-    license = lib.licenses.gpl2;
   };
 }

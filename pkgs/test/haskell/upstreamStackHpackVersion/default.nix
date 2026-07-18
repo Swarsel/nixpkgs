@@ -12,11 +12,11 @@
 # accesses the internet to download the upstream stack release.
 
 {
+  lib,
+  stdenv,
   cacert,
   curl,
-  lib,
   stack,
-  stdenv,
 }:
 
 let
@@ -109,6 +109,22 @@ in
 
 stdenv.mkDerivation {
 
+  nativeBuildInputs = [
+    curl
+    stack
+  ];
+
+  buildCommand = ''
+    # Make sure curl can access HTTPS sites, like GitHub.
+    #
+    # Note that we absolutely don't want the Nix store path of the cacert
+    # derivation in the testScript, because we don't want to rebuild this
+    # derivation when only the cacert derivation changes.
+    export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
+  ''
+  + testScript;
+
+  impureEnvVars = lib.fetchers.proxyImpureEnvVars;
   # This name is very important.
   #
   # The idea here is that want this derivation to be re-run everytime the
@@ -123,34 +139,15 @@ stdenv.mkDerivation {
   # version string, and a hash of the test script.  So Nix will know to
   # re-run this version when (and only when) one of those values change.
   name = "upstream-stack-hpack-version-test-${stack.name}-${hpack.name}-${testScriptHash}";
-
   # This is the sha256 hash for the string "success", which is output upon this
   # test succeeding.
   outputHash = "sha256-gbK9TqmMjbZlVPvI12N6GmmhMPMx/rcyt1yqtMSGj9U=";
-  outputHashMode = "flat";
   outputHashAlgo = "sha256";
-
-  nativeBuildInputs = [
-    curl
-    stack
-  ];
-
-  impureEnvVars = lib.fetchers.proxyImpureEnvVars;
-
-  buildCommand = ''
-    # Make sure curl can access HTTPS sites, like GitHub.
-    #
-    # Note that we absolutely don't want the Nix store path of the cacert
-    # derivation in the testScript, because we don't want to rebuild this
-    # derivation when only the cacert derivation changes.
-    export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
-  ''
-  + testScript;
+  outputHashMode = "flat";
 
   meta = {
     description = "Test that the stack in Nixpkgs uses the same version of Hpack as the upstream stack release";
     maintainers = with lib.maintainers; [ cdepillabout ];
-
     # This derivation internally runs a statically-linked version of stack from
     # upstream.  This statically-linked version of stack is only available for
     # x86_64-linux, so this test can only be run on x86_64-linux.

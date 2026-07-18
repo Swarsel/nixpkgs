@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   strictDeps = true;
-
   cargoHash = "sha256-IEtGulY6EqJ74ok1xLY64K1yKSZcmb/wyObtcaHYMRk=";
 
   postInstall = ''

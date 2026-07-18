@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   openssl,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "sslpsk-pmd3";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "doronz88";
@@ -20,16 +19,12 @@ buildPythonPackage rec {
     hash = "sha256-ZOPrMZhtHIpE7QMEYGti+ZjqVv93jzb74rG5Fwhjgyw=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   buildInputs = [
     openssl
   ];
 
-  pythonImportsCheck = [ "sslpsk_pmd3" ];
+  # tests are dysfunctional
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -40,13 +35,18 @@ buildPythonPackage rec {
     mv sslpsk_pmd3 src
   '';
 
-  # tests are dysfunctional
-  doCheck = false;
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sslpsk_pmd3" ];
 
   meta = {
-    changelog = "https://github.com/doronz88/sslpsk-pmd3/releases/tag/${src.tag}";
     description = "Adds TLS-PSK support to the Python ssl package";
     homepage = "https://github.com/doronz88/sslpsk-pmd3";
+    changelog = "https://github.com/doronz88/sslpsk-pmd3/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.dotlambda ];
   };

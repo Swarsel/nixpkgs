@@ -1,8 +1,9 @@
 {
   lib,
-  applyPatches,
-  coreutils,
   fetchFromGitHub,
+  applyPatches,
+  cmake,
+  coreutils,
   fmt_11,
   glm,
   gnugrep,
@@ -15,7 +16,6 @@
   mkLibretroCore,
   nix,
   nix-prefetch-git,
-  cmake,
   span-lite,
   unstableGitUpdater,
   writeShellApplication,
@@ -24,34 +24,34 @@ let
   # NOTE: before changing the following fetches, see the updateScript below
   # https://github.com/JesseTG/melonds-ds/blob/33c48260402865ef77667487528efd5ca7ce1233/cmake/FetchDependencies.cmake#L44
   melonDS-src = fetchFromGitHub {
+    hash = "sha256-+bMqpjspQzyRci3u0PEpR9oX3S9LBqP223y6VfI2j14=";
     owner = "JesseTG";
     repo = "melonDS";
     rev = "f6692dff8c0c53f77639a08e5e746a286312bb41";
-    hash = "sha256-+bMqpjspQzyRci3u0PEpR9oX3S9LBqP223y6VfI2j14=";
   };
   libretro-common-src = fetchFromGitHub {
+    hash = "sha256-NYxi1BADUgMAtLfmYcOIhTAnmJ/LYd0OyfPKx6lorw4=";
     owner = "JesseTG";
     repo = "libretro-common";
     rev = "8e2b884db16711a999a0e46a02a3dc0be294b048";
-    hash = "sha256-NYxi1BADUgMAtLfmYcOIhTAnmJ/LYd0OyfPKx6lorw4=";
   };
   embed-binaries-src = fetchFromGitHub {
+    hash = "sha256-EkK+ZCbrZ2Y9wJ864OIwRWDfHcmxzKMco0QAkLOQOwY=";
     owner = "andoalon";
     repo = "embed-binaries";
     rev = "078b62beba97e8192c99bfb16d5e17220cfc7598";
-    hash = "sha256-EkK+ZCbrZ2Y9wJ864OIwRWDfHcmxzKMco0QAkLOQOwY=";
   };
   pntr-src = fetchFromGitHub {
+    hash = "sha256-qGWPlHkcW/wavxRN76SHiEKCl2b1VZR+O9YrZOFZL0I=";
     owner = "robloach";
     repo = "pntr";
     rev = "650237a524ea4fc953de7223a1587c83f2696794";
-    hash = "sha256-qGWPlHkcW/wavxRN76SHiEKCl2b1VZR+O9YrZOFZL0I=";
   };
   yamc-src = fetchFromGitHub {
+    hash = "sha256-J5wAqF5yQ5KYArJJyKzaqscWsXq+KAPKXybYfVgasXs=";
     owner = "yohhoy";
     repo = "yamc";
     rev = "4e015a7e8eb0d61c34e6928676c8c78881a72d73";
-    hash = "sha256-J5wAqF5yQ5KYArJJyKzaqscWsXq+KAPKXybYfVgasXs=";
   };
   # using nixpkgs zlib gives a linking error
   zlib-src = applyPatches {
@@ -61,11 +61,11 @@ let
       rev = "925af44f3cde53c6b076611c297850091b5dc7bb";
       hash = "sha256-TkPLWSN5QcPlL9D0kc/yhH0/puE9bFND24aj5NVDKYs=";
     };
+
     patches = [ ./patches/melondsds-zlib-no-zconf-rename.patch ];
   };
 in
 mkLibretroCore rec {
-  core = "melondsds";
   version = "0-unstable-2026-03-03";
 
   src = fetchFromGitHub {
@@ -83,12 +83,6 @@ mkLibretroCore rec {
       --replace-fail "include(embed-binaries)" "include(${embed-binaries-src}/cmake/embed-binaries.cmake)"
   '';
 
-  makefile = "";
-  extraBuildInputs = [
-    libGL
-    libGLU
-  ];
-  extraNativeBuildInputs = [ cmake ];
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_LTO_RELEASE" false) # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=121831
     (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5") # required by yamc
@@ -107,10 +101,20 @@ mkLibretroCore rec {
   ];
 
   postBuild = "cd src/libretro";
+  core = "melondsds";
+
+  extraBuildInputs = [
+    libGL
+    libGLU
+  ];
+
+  extraNativeBuildInputs = [ cmake ];
+  makefile = "";
 
   passthru.updateScript = [
     (lib.getExe (writeShellApplication {
       name = "update-libretro-melondsds";
+
       runtimeInputs = [
         coreutils
         gnugrep
@@ -119,6 +123,7 @@ mkLibretroCore rec {
         nix
         nix-prefetch-git
       ];
+
       text = ''
         ${lib.escapeShellArgs (unstableGitUpdater {
           hardcodeZeroVersion = true;

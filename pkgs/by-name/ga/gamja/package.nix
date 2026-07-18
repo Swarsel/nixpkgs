@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromCodeberg,
   buildNpmPackage,
+  fetchFromCodeberg,
   writeText,
   # https://codeberg.org/emersion/gamja/src/branch/master/doc/config-file.md
   gamjaConfig ? null,
@@ -34,6 +34,7 @@ buildNpmPackage rec {
     description = "Simple IRC web client";
     homepage = "https://codeberg.org/emersion/gamja";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       motiejus
       apfelkuchen6

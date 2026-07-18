@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  vala,
-  pkg-config,
   desktop-file-utils,
-  wrapGAppsHook4,
-  gobject-introspection,
   gettext,
-  itstool,
-  libxml2,
-  gnome,
   glib,
+  gnome,
+  gobject-introspection,
   gtk4,
+  itstool,
   libadwaita,
   librsvg,
+  libxml2,
+  meson,
+  ninja,
   pango,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,11 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gnome-chess";
     description = "Play the classic two-player boardgame of chess";
-    mainProgram = "gnome-chess";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/gnome-chess";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-chess";
+    teams = [ lib.teams.gnome ];
   };
 })

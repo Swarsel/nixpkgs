@@ -5,13 +5,12 @@
 }:
 
 stdenv.mkDerivation {
-  name = "microhs-hello-world";
-  buildInputs = [ microhs ];
-
   src = writeTextDir "helloworld.hs" ''
     main :: IO ()
     main = putStrLn "Hello World"
   '';
+
+  buildInputs = [ microhs ];
 
   buildPhase = ''
     runHook preBuild
@@ -19,16 +18,19 @@ stdenv.mkDerivation {
     runHook postBuild
   '';
 
+  doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     ./Exe | grep "Hello World"
     runHook postCheck
   '';
-  doCheck = true;
 
   installPhase = ''
     runHook preInstall
     touch $out
     runHook postInstall
   '';
+
+  name = "microhs-hello-world";
 }

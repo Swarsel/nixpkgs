@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   cstruct,
   mirage-random,
 }:
@@ -9,10 +9,6 @@
 buildDunePackage (finalAttrs: {
   pname = "mirage-random-test";
   version = "0.1.0";
-
-  minimalOCamlVersion = "4.06";
-
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-random-test/releases/download/v${finalAttrs.version}/mirage-random-test-v${finalAttrs.version}.tbz";
@@ -23,6 +19,9 @@ buildDunePackage (finalAttrs: {
     cstruct
     mirage-random
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.06";
 
   meta = {
     description = "Stub random device implementation for testing";

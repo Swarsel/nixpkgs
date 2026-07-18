@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  pkg-config,
+  fetchpatch,
   mongoc,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     # fix pkg-config files
     # submitted upstream: https://github.com/mongodb/libmongocrypt/pull/634
     (fetchpatch {
-      url = "https://github.com/mongodb/libmongocrypt/commit/5514cf0a366c4d0dc1b0f2a62201f0f1161054da.diff";
       hash = "sha256-eMSn6MRnc3yKfU2u/Bg3juWiupDzY1DUGi1/HSRftIs=";
+      url = "https://github.com/mongodb/libmongocrypt/commit/5514cf0a366c4d0dc1b0f2a62201f0f1161054da.diff";
     })
   ];
 

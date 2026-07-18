@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  pnpm_10,
-  nodejs,
   fetchFromGitHub,
-  python3,
-  electron_42,
-  makeDesktopItem,
-  makeBinaryWrapper,
   copyDesktopItems,
+  electron_42,
   fetchPnpmDeps,
-  pnpmConfigHook,
+  makeBinaryWrapper,
+  makeDesktopItem,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  python3,
 }:
 let
   pnpm = pnpm_10;
@@ -34,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     ./0001-Remove-Windows-specific-dep.patch
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     nodejs
     pnpm
@@ -42,16 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeBinaryWrapper
     copyDesktopItems
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    prePnpmInstall = ''
-      cd electron
-    '';
-    fetcherVersion = 3;
-    hash = "sha256-dBoVmqSnJG0KsvLuZQVoZWX4m1BEqLYumofbNHgPgz0=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -104,25 +96,36 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "shiru";
-      exec = "shiru %U";
-      icon = "shiru";
-      desktopName = "Shiru";
-      genericName = "Personal Media Library";
-      comment = "Manage your personal media library, organize your collection, and stream your content in real time, no waiting required!";
       categories = [
         "Video"
         "AudioVideo"
       ];
+
+      comment = "Manage your personal media library, organize your collection, and stream your content in real time, no waiting required!";
+      desktopName = "Shiru";
+      exec = "shiru %U";
+      genericName = "Personal Media Library";
+      icon = "shiru";
       keywords = [ "Anime" ];
       mimeTypes = [ "x-scheme-handler/shiru" ];
+      name = "shiru";
     })
   ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-dBoVmqSnJG0KsvLuZQVoZWX4m1BEqLYumofbNHgPgz0=";
+
+    prePnpmInstall = ''
+      cd electron
+    '';
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -131,13 +134,16 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/RockinChaos/Shiru";
     changelog = "https://github.com/RockinChaos/Shiru/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       naomieow
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "shiru";
   };
 })

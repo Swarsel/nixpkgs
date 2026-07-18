@@ -38,6 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
+  doCheck = true;
+
+  checkPhase = ''
+    runHook preCheck
+    ant test
+    runHook postCheck
+  '';
+
   installPhase = ''
     runHook preInstall
 
@@ -51,18 +59,10 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = true;
-
-  checkPhase = ''
-    runHook preCheck
-    ant test
-    runHook postCheck
-  '';
-
   meta = {
-    changelog = "https://github.com/javacc/javacc/blob/${finalAttrs.src.rev}/docs/release-notes.md";
     description = "Parser generator for building parsers from grammars";
     homepage = "https://javacc.github.io/javacc";
+    changelog = "https://github.com/javacc/javacc/blob/${finalAttrs.src.rev}/docs/release-notes.md";
     license = lib.licenses.bsd2;
     mainProgram = "javacc";
   };

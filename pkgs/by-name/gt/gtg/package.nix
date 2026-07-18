@@ -2,19 +2,19 @@
   lib,
   fetchFromGitHub,
   fetchpatch,
-  meson,
-  python3Packages,
-  ninja,
-  gtk3,
-  wrapGAppsHook3,
+  gdk-pixbuf,
+  gettext,
   glib,
+  gobject-introspection,
+  gtk3,
   gtksourceview4,
   itstool,
-  gettext,
-  pango,
-  gdk-pixbuf,
   libsecret,
-  gobject-introspection,
+  meson,
+  ninja,
+  pango,
+  python3Packages,
+  wrapGAppsHook3,
   xvfb-run,
 }:
 
@@ -31,9 +31,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-i3F638ZGiKfSxVUZm6rzzPRpcIHLOO9dgV0SzNLSroI=";
       name = "replace-imp-with-importlib.patch";
       url = "https://github.com/getting-things-gnome/gtg/commit/568a00a3296d12cf3b2846c59bc99d13ecba7d47.patch";
-      hash = "sha256-i3F638ZGiKfSxVUZm6rzzPRpcIHLOO9dgV0SzNLSroI=";
     })
   ];
 
@@ -65,31 +65,32 @@ python3Packages.buildPythonApplication (finalAttrs: {
     vobject
   ];
 
+  preBuild = ''
+    export HOME="$TMP"
+  '';
+
   nativeCheckInputs = with python3Packages; [
     mock
     xvfb-run
     pytest
   ];
 
-  preBuild = ''
-    export HOME="$TMP"
-  '';
-
-  pyproject = false;
-
   checkPhase = "xvfb-run pytest ../tests/";
+  pyproject = false;
 
   meta = {
     description = "Personal tasks and TODO-list items organizer";
-    mainProgram = "gtg";
+
     longDescription = ''
       "Getting Things GNOME" (GTG) is a personal tasks and ToDo list organizer inspired by the "Getting Things Done" (GTD) methodology.
       GTG is intended to help you track everything you need to do and need to know, from small tasks to large projects.
     '';
+
     homepage = "https://github.com/getting-things-gnome/gtg";
-    downloadPage = "https://github.com/getting-things-gnome/gtg/releases";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ oyren ];
     platforms = lib.platforms.linux;
+    mainProgram = "gtg";
+    downloadPage = "https://github.com/getting-things-gnome/gtg/releases";
   };
 })

@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  scikit-build-core,
-  pybind11,
+  buildPythonPackage,
   cmake,
-  ninja,
-
   # buildInputs
   laszip,
+  ninja,
+  pybind11,
+  # build-system
+  scikit-build-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "laszip-python";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tmontaigu";
@@ -24,6 +21,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-fg9Joe5iDNT4w2j+zQuQIoxyAYpCAgLwhuqsBsJn6lU=";
   };
+
+  buildInputs = [ laszip ];
+  # There are no tests
+  doCheck = false;
 
   build-system = [
     cmake
@@ -33,12 +34,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dontUseCmakeConfigure = true;
-
-  buildInputs = [ laszip ];
-
-  # There are no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "laszip" ];
 
   meta = {

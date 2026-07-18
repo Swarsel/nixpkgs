@@ -11,13 +11,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytransportnswv2";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-U85dtE2mf0HQAACfVYnkzZjjA77kPhyZao3ved9+NqU=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "TransportNSWv2" ];
 
   meta = {

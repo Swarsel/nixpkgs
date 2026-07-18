@@ -12,11 +12,13 @@ in
     hardware.acpilight = {
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Enable acpilight.
           This will allow brightness control via xbacklight from users in the video group
         '';
+
+        type = lib.types.bool;
       };
     };
   };

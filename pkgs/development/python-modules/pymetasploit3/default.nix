@@ -12,13 +12,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "pymetasploit3";
   version = "1.0.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-y4YBQo6va+/NEuE+CWeueo0aEIHEnEZYBr1WH90qHxQ=";
   };
 
+  # No tests available on PyPI
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,18 +28,18 @@ buildPythonPackage (finalAttrs: {
     retry
   ];
 
-  # No tests available on PyPI
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pymetasploit3" ];
 
   meta = {
     description = "Library for Metasploit framework";
     homepage = "https://pypi.org/project/pymetasploit3/";
+
     license = with lib.licenses; [
       gpl2Only
       mit
     ];
+
     maintainers = with lib.maintainers; [ fab ];
   };
 })

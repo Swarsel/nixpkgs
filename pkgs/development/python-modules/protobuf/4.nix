@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
   buildPackages,
   buildPythonPackage,
   fetchpatch,
   isPyPy,
-  lib,
-  stdenv,
   numpy,
   protobuf,
   pytestCheckHook,
@@ -21,12 +21,8 @@ let
 in
 buildPythonPackage {
   inherit (protobuf) pname src;
-
   # protobuf 21 corresponds with its python library 4.21
   version = "4.${protobufVersionMajor}.${protobufVersionMinor}";
-  format = "setuptools";
-
-  sourceRoot = "${protobuf.src.name}/python";
 
   patches =
     lib.optionals (lib.versionAtLeast protobuf.version "22") [
@@ -37,19 +33,12 @@ buildPythonPackage {
     ]
     ++ lib.optionals (pythonAtLeast "3.11" && lib.versionOlder protobuf.version "22") [
       (fetchpatch {
-        name = "support-python311.patch";
-        url = "https://github.com/protocolbuffers/protobuf/commit/2206b63c4649cf2e8a06b66c9191c8ef862ca519.diff";
-        stripLen = 1; # because sourceRoot above
         hash = "sha256-3GaoEyZIhS3QONq8LEvJCH5TdO9PKnOgcQF0GlEiwFo=";
+        name = "support-python311.patch";
+        stripLen = 1; # because sourceRoot above
+        url = "https://github.com/protocolbuffers/protobuf/commit/2206b63c4649cf2e8a06b66c9191c8ef862ca519.diff";
       })
     ];
-
-  prePatch = ''
-    if [[ "$(<../version.json)" != *'"python": "'"$version"'"'* ]]; then
-      echo "Python library version mismatch. Derivation version: $version, actual: $(<../version.json)"
-      exit 1
-    fi
-  '';
 
   postPatch =
     # Remove the line in setup.py that forces compiling with C++14. Upstream's
@@ -71,20 +60,31 @@ buildPythonPackage {
     '';
 
   nativeBuildInputs = lib.optional isPyPy tzdata;
-
   buildInputs = [ protobuf ];
-
-  propagatedNativeBuildInputs = [
-    # For protoc of the same version.
-    buildPackages."protobuf_${protobufVersionMajor}"
-  ];
-
-  setupPyGlobalFlags = [ "--cpp_implementation" ];
 
   nativeCheckInputs = [
     pytestCheckHook
   ]
   ++ lib.optionals (lib.versionAtLeast protobuf.version "22") [ numpy ];
+
+  disabledTestPaths =
+    lib.optionals (lib.versionAtLeast protobuf.version "23") [
+      # The following commit (I think) added some internal test logic for Google
+      # that broke generator_test.py. There is a new proto file that setup.py is
+      # not generating into a .py file. However, adding this breaks a bunch of
+      # conflict detection in descriptor_test.py that I don't understand. So let's
+      # just disable generator_test.py for now.
+      #
+      #   https://github.com/protocolbuffers/protobuf/commit/5abab0f47e81ac085f0b2d17ec3b3a3b252a11f1
+      #
+      "google/protobuf/internal/generator_test.py"
+    ]
+    ++ lib.optionals (lib.versionAtLeast protobuf.version "25") [
+      "minimal_test.py" # ModuleNotFoundError: No module named 'google3'
+
+      # ImportError: cannot import name 'self_recursive_pb2' from 'google.protobuf.internal'
+      "google/protobuf/internal/message_test.py"
+    ];
 
   disabledTests = [
     # TypeError: np.False_ has type <class 'numpy.bool'>,
@@ -110,29 +110,27 @@ buildPythonPackage {
     "testInvalidTimestamp"
   ];
 
-  disabledTestPaths =
-    lib.optionals (lib.versionAtLeast protobuf.version "23") [
-      # The following commit (I think) added some internal test logic for Google
-      # that broke generator_test.py. There is a new proto file that setup.py is
-      # not generating into a .py file. However, adding this breaks a bunch of
-      # conflict detection in descriptor_test.py that I don't understand. So let's
-      # just disable generator_test.py for now.
-      #
-      #   https://github.com/protocolbuffers/protobuf/commit/5abab0f47e81ac085f0b2d17ec3b3a3b252a11f1
-      #
-      "google/protobuf/internal/generator_test.py"
-    ]
-    ++ lib.optionals (lib.versionAtLeast protobuf.version "25") [
-      "minimal_test.py" # ModuleNotFoundError: No module named 'google3'
+  format = "setuptools";
 
-      # ImportError: cannot import name 'self_recursive_pb2' from 'google.protobuf.internal'
-      "google/protobuf/internal/message_test.py"
-    ];
+  prePatch = ''
+    if [[ "$(<../version.json)" != *'"python": "'"$version"'"'* ]]; then
+      echo "Python library version mismatch. Derivation version: $version, actual: $(<../version.json)"
+      exit 1
+    fi
+  '';
+
+  propagatedNativeBuildInputs = [
+    # For protoc of the same version.
+    buildPackages."protobuf_${protobufVersionMajor}"
+  ];
 
   pythonImportsCheck = [
     "google.protobuf"
     "google.protobuf.internal._api_implementation" # Verify that --cpp_implementation worked
   ];
+
+  setupPyGlobalFlags = [ "--cpp_implementation" ];
+  sourceRoot = "${protobuf.src.name}/python";
 
   passthru = {
     inherit protobuf;

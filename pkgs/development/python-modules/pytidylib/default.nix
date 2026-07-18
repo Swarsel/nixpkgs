@@ -3,14 +3,13 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
-  unittestCheckHook,
   html-tidy,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pytidylib";
   version = "0.3.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -30,6 +29,7 @@ buildPythonPackage rec {
   '';
 
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Python wrapper for HTML Tidy (tidylib) on Python 2 and 3";

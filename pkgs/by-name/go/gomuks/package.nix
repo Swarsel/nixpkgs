@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  libnotify,
   makeDesktopItem,
   makeWrapper,
-  libnotify,
   olm,
   pulseaudio,
   sound-theme-freedesktop,
@@ -22,26 +22,25 @@ buildGoModule rec {
     sha256 = "sha256-bDJXo8d9K5UO599HDaABpfwc9/dJJy+9d24KMVZHyvI=";
   };
 
-  vendorHash = "sha256-0my58bVKLWbdTwhAnXMruNjujd07NXFn4bkRe1cUYpE=";
-
-  doCheck = false;
-
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ olm ];
+  vendorHash = "sha256-0my58bVKLWbdTwhAnXMruNjujd07NXFn4bkRe1cUYpE=";
+  doCheck = false;
 
   postInstall = ''
     cp -r ${
       makeDesktopItem {
-        name = "net.maunium.gomuks.desktop";
-        exec = "@out@/bin/gomuks";
-        terminal = true;
-        desktopName = "Gomuks";
-        genericName = "Matrix client";
         categories = [
           "Network"
           "Chat"
         ];
+
         comment = meta.description;
+        desktopName = "Gomuks";
+        exec = "@out@/bin/gomuks";
+        genericName = "Matrix client";
+        name = "net.maunium.gomuks.desktop";
+        terminal = true;
       }
     }/* $out/
     substituteAllInPlace $out/share/applications/*
@@ -59,10 +58,10 @@ buildGoModule rec {
   '';
 
   meta = {
-    homepage = "https://maunium.net/go/gomuks/";
     description = "Terminal based Matrix client written in Go";
-    mainProgram = "gomuks";
+    homepage = "https://maunium.net/go/gomuks/";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ chvp ];
+    mainProgram = "gomuks";
   };
 }

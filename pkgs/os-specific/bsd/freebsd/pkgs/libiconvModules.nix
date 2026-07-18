@@ -1,23 +1,16 @@
 {
-  mkDerivation,
+  csu,
   include,
   libcMinimal,
   libgcc,
-  csu,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libiconv_modules";
-  extraPaths = [
-    "lib/libc/iconv"
-  ];
-
   outputs = [
     "out"
     "debug"
   ];
-
-  noLibc = true;
 
   buildInputs = [
     include
@@ -29,4 +22,11 @@ mkDerivation {
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
     export makeFlags="$makeFlags SHLIBDIR=$out/lib/i18n"
   '';
+
+  extraPaths = [
+    "lib/libc/iconv"
+  ];
+
+  noLibc = true;
+  path = "lib/libiconv_modules";
 }

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   pkg-config,
 }:
 
@@ -18,9 +18,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Jz5C35rwnDz0CXcfcvWjkwScGNQO1uijF7JrtZhM7mI=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
+  ];
+
+  cmakeFlags = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
+    # Some x86 tests are interrupted by signal 10
+    "-DCMAKE_CTEST_ARGUMENTS=--exclude-regex;test_x86"
   ];
 
   env = lib.optionalAttrs stdenv.hostPlatform.isRiscV {
@@ -28,17 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_LDFLAGS = "-latomic";
   };
 
-  cmakeFlags = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
-    # Some x86 tests are interrupted by signal 10
-    "-DCMAKE_CTEST_ARGUMENTS=--exclude-regex;test_x86"
-  ];
-
   doCheck = true;
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   meta = {
     description = "Lightweight multi-platform CPU emulator library";

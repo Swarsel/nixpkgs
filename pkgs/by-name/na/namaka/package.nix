@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
-  pkg-config,
   oniguruma,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-1ka+5B90UAt7D5kkT9dOExGLJjtLM8dqLeBdFRoeuWg=";
   };
 
-  cargoHash = "sha256-0Hblz7Ri7QxWXDz9z235cNUYb0W/2IPA7E4AreisY9c=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     oniguruma
   ];
+
+  cargoHash = "sha256-0Hblz7Ri7QxWXDz9z235cNUYb0W/2IPA7E4AreisY9c=";
 
   env = {
     GEN_ARTIFACTS = "artifacts";
@@ -41,10 +41,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Snapshot testing tool for Nix based on haumea";
-    mainProgram = "namaka";
     homepage = "https://github.com/nix-community/namaka";
     changelog = "https://github.com/nix-community/namaka/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ figsoda ];
+    mainProgram = "namaka";
   };
 })

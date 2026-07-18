@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  iproute2,
   makeWrapper,
+  nftables,
+  nixosTests,
   perl,
   perlPackages,
-  tayga,
-  iproute2,
-  nftables,
   systemd,
-  nixosTests,
+  tayga,
 }:
 
 assert (lib.assertMsg systemd.withNetworkd "systemd for clatd must be built with networkd support");
@@ -65,7 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/toreanderson/clatd";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jmbaur ];
-    mainProgram = "clatd";
     platforms = lib.platforms.linux;
+    mainProgram = "clatd";
   };
 })

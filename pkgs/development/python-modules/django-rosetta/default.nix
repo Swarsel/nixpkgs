@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   polib,
   requests,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "django-rosetta";
   version = "0.10.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mbi";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-VnKbtzLY2+3RTk4gNZASuVSDGzfgoyr06RUNB2r0eDw=";
   };
 
+  # require internet connection
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # require internet connection
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "rosetta" ];
 
   meta = {

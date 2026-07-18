@@ -1,11 +1,11 @@
 {
-  version,
-  sha256,
   lib,
-  runCommand,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
+  runCommand,
+  sha256,
+  version,
 }:
 
 let
@@ -13,12 +13,12 @@ let
 in
 runCommand "optifine-${mcVersion}"
   {
-    pname = "optifine";
     inherit version;
+    pname = "optifine";
 
     src = fetchurl {
-      url = "https://optifine.net/download?f=OptiFine_${version}.jar";
       inherit sha256;
+      url = "https://optifine.net/download?f=OptiFine_${version}.jar";
       name = "OptiFine_${version}.jar";
     };
 
@@ -33,15 +33,17 @@ runCommand "optifine-${mcVersion}"
     };
 
     meta = {
-      homepage = "https://optifine.net/";
       description = "Minecraft ${mcVersion} optimization mod";
+
       longDescription = ''
         OptiFine is a Minecraft optimization mod.
         It allows Minecraft to run faster and look better with full support for HD textures and many configuration options.
         This is for version ${mcVersion} of Minecraft.
       '';
-      sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
+      homepage = "https://optifine.net/";
       license = lib.licenses.unfree;
+      sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
       maintainers = [ ];
       platforms = lib.platforms.unix;
       mainProgram = "optifine";

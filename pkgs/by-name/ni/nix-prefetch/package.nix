@@ -2,28 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
   # nativeBuildInputs
   asciidoc,
+  # wrapper
+  coreutils,
   docbook_xml_dtd_45,
   docbook_xsl,
+  fetchpatch,
+  gawk,
+  gitMinimal,
+  gitUpdater,
+  gnugrep,
+  gnused,
   installShellFiles,
+  jq,
   libxml2,
   libxslt,
   makeWrapper,
-
-  # wrapper
-  coreutils,
-  gawk,
-  gitMinimal,
-  gnugrep,
-  gnused,
-  jq,
   nix,
-
   versionCheckHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "nix-prefetch";
     tag = finalAttrs.version;
     hash = "sha256-6UOxRz/2Rhjl/9nyGJrl3fjl6Fkwc38HONi/UEw3my8=";
+
     # the stat call has to be in a subshell or we get the current date
     postFetch = ''
       echo $(stat -c %Y $out) > $out/.timestamp
@@ -43,9 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-9SYPcRFZaVyNjMUVdXbef5eGvLp/kr379eU9lG5GgE0=";
       name = "fix-prefetching-hash-key.patch";
       url = "https://github.com/msteen/nix-prefetch/commit/508237f48f7e2d8496ce54f38abbe57f44d0cbca.patch";
-      hash = "sha256-9SYPcRFZaVyNjMUVdXbef5eGvLp/kr379eU9lG5GgE0=";
     })
     # Fix compatibility with extendMkDerivation-based fetchers (fetchzip, fetchgit, etc.)
     # The curlFetcher and markFetcher functions assumed fetcher arguments are always
@@ -78,8 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  dontConfigure = true;
-
   buildPhase = ''
     a2x -a revdate=$(date --utc --date=@$(cat $src/.timestamp) +%d/%m/%Y) \
       -f manpage doc/nix-prefetch.1.asciidoc
@@ -109,10 +105,13 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r contrib/hello_rs $out/share/doc/nix-prefetch/contrib
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  dontConfigure = true;
 
   passthru = {
     updateScript = gitUpdater { };

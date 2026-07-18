@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  qt5,
   ffmpeg,
   gtest,
   libva,
+  pkg-config,
+  qt5,
 }:
 
 stdenv.mkDerivation {
@@ -21,10 +21,6 @@ stdenv.mkDerivation {
     hash = "sha256-Euw9S+iONAEENkFwo169x/+pcyeTXLe8wb70KKjv3bE=";
     fetchSubmodules = true;
   };
-
-  cmakeFlags = [
-    "-DBUILD_TESTS=OFF"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -42,6 +38,10 @@ stdenv.mkDerivation {
     qt5.qtgraphicaleffects
     ffmpeg
     libva
+  ];
+
+  cmakeFlags = [
+    "-DBUILD_TESTS=OFF"
   ];
 
   installPhase = ''

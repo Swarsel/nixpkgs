@@ -6,8 +6,8 @@
   ctestCheckHook,
   imath,
   libdeflate,
-  pkg-config,
   libjxl,
+  pkg-config,
   pkgsCross,
 }:
 
@@ -41,26 +41,26 @@ stdenv.mkDerivation rec {
     done
   '';
 
-  cmakeFlags = lib.optional stdenv.hostPlatform.isStatic "-DCMAKE_SKIP_RPATH=ON";
-
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   propagatedBuildInputs = [
     imath
     libdeflate
   ];
-  nativeCheckInputs = [
-    ctestCheckHook
-  ];
 
+  cmakeFlags = lib.optional stdenv.hostPlatform.isStatic "-DCMAKE_SKIP_RPATH=ON";
   # Without 'sse' enforcement tests fail on i686 as due to excessive precision as:
   #   error reading back channel B pixel 21,-76 got -nan expected -nan
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isi686 "-msse2 -mfpmath=sse";
-
   # https://github.com/AcademySoftwareFoundation/openexr/issues/1400
   doCheck = !stdenv.hostPlatform.isAarch32;
+
+  nativeCheckInputs = [
+    ctestCheckHook
+  ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isBigEndian [
     # https://github.com/AcademySoftwareFoundation/openexr/issues/1175

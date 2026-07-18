@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  makeWrapper,
-  pkg-config,
   glib,
   libwnck,
+  makeWrapper,
+  pkg-config,
   procps,
 }:
 
@@ -27,20 +27,21 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 2.8 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
     makeWrapper
   ];
+
   buildInputs = [
     glib
     libwnck
   ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 2.8 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   postInstall = ''
     wrapProgram $out/bin/xsuspender \
@@ -49,10 +50,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Auto-suspend inactive X11 applications";
-    mainProgram = "xsuspender";
     homepage = "https://kernc.github.io/xsuspender/";
     license = lib.licenses.wtfpl;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "xsuspender";
   };
 })

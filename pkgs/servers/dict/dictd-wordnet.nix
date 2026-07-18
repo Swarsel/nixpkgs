@@ -1,22 +1,21 @@
 {
   lib,
   stdenv,
+  libfaketime,
   python3,
   wordnet,
   writeScript,
-  libfaketime,
 }:
 
 stdenv.mkDerivation rec {
-  version = "542";
   pname = "dict-db-wordnet";
+  version = "542";
 
   buildInputs = [
     python3
     wordnet
     libfaketime
   ];
-  convert = ./wordnet_structures.py;
 
   builder = writeScript "builder.sh" ''
     . ${stdenv}/setup
@@ -32,6 +31,8 @@ stdenv.mkDerivation rec {
     echo en_US.UTF-8 > locale
   '';
 
+  convert = ./wordnet_structures.py;
+
   meta = {
     description = "Dictd-compatible version of WordNet";
 
@@ -42,7 +43,6 @@ stdenv.mkDerivation rec {
     '';
 
     homepage = "https://wordnet.princeton.edu/";
-
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

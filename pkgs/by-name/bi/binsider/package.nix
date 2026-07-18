@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "binsider";
@@ -17,21 +17,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-Lcnc2fVyzip+g/mZvbMarQHkjBTNhKB5kZVTHFsR+Xo=";
 
-  buildNoDefaultFeatures = !stdenv.hostPlatform.isLinux;
-
-  checkType = "debug";
   checkFlags = [
     "--skip=test_extract_strings"
     "--skip=test_init"
   ];
 
+  buildNoDefaultFeatures = !stdenv.hostPlatform.isLinux;
+  checkType = "debug";
+
   meta = {
     description = "Analyzer of executables using a terminal user interface";
     homepage = "https://github.com/orhun/binsider";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [ samueltardieu ];
     mainProgram = "binsider";
   };

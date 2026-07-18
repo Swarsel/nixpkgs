@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dj-database-url,
   dj-email-url,
   django-cache-url,
-  fetchFromGitHub,
   flit-core,
   marshmallow,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "environs";
   version = "15.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sloria";
@@ -23,13 +22,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-rsXR3KjLRdGnF8EX0TXzd0r61xY2rrNO5TDdoX1SnO0=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [
-    marshmallow
-    python-dotenv
-  ];
-
   nativeCheckInputs = [
     dj-database-url
     dj-email-url
@@ -37,6 +29,14 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ flit-core ];
+
+  dependencies = [
+    marshmallow
+    python-dotenv
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "environs" ];
 
   meta = {

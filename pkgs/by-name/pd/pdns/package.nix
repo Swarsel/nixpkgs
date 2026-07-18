@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  nixosTests,
   boost,
-  yaml-cpp,
-  libsodium,
-  sqlite,
-  protobuf,
-  openssl,
-  systemd,
-  mariadb-connector-c,
-  libpq,
-  lua,
-  openldap,
-  geoip,
   curl,
-  unixodbc,
+  geoip,
+  libpq,
+  libsodium,
   lmdb,
+  lua,
+  mariadb-connector-c,
+  nixosTests,
+  openldap,
+  openssl,
+  pkg-config,
+  protobuf,
+  sqlite,
+  systemd,
   tinycdb,
+  unixodbc,
+  yaml-cpp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,10 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://downloads.powerdns.com/releases/pdns-${finalAttrs.version}.tar.bz2";
     hash = "sha256-X7BdXhl/Y6tmfZuQXmncgpMkSolvvQRrNjCyI+pQUeY=";
   };
+
   # redact configure flags from version output to reduce closure size
   patches = [ ./version.patch ];
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     boost
     mariadb-connector-c
@@ -86,30 +87,30 @@ stdenv.mkDerivation (finalAttrs: {
     "sysconfdir=/etc/pdns"
   ];
 
+  doCheck = true;
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
   # We want the various utilities to look for the powerdns config in
   # /etc/pdns, but to actually install the sample config file in
   # $out
   installFlags = [ "sysconfdir=$(out)/etc/pdns" ];
 
-  enableParallelBuilding = true;
-  doCheck = true;
-
   passthru.tests = {
     nixos = nixosTests.powerdns;
   };
 
-  __structuredAttrs = true;
-
   meta = {
-    changelog = "https://doc.powerdns.com/authoritative/changelog/${lib.versions.majorMinor finalAttrs.version}.html#change-${finalAttrs.version}";
     description = "Authoritative DNS server";
     homepage = "https://www.powerdns.com";
-    platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin;
+    changelog = "https://doc.powerdns.com/authoritative/changelog/${lib.versions.majorMinor finalAttrs.version}.html#change-${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       mic92
       nickcao
     ];
+
+    platforms = lib.platforms.unix;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

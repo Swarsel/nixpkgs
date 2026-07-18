@@ -1,21 +1,18 @@
 {
   lib,
   stdenv,
-  fetchzip,
-
-  # nativeBuildInputs
-  makeWrapper,
-  copyDesktopItems,
-
-  # buildInputs
-  libGL,
   SDL2,
   SDL2_image,
   SDL2_mixer,
+  copyDesktopItems,
+  fetchzip,
+  # buildInputs
+  libGL,
   libx11,
-  zlib,
-
   makeDesktopItem,
+  # nativeBuildInputs
+  makeWrapper,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/sauerbraten/sauerbraten_${
       builtins.replaceStrings [ "-" ] [ "_" ] finalAttrs.version
     }_linux.tar.bz2";
+
     hash = "sha256-os3SmonqHRw1+5dIRVt7EeXfnSq298GiyKpusS1K3rM=";
   };
 
@@ -41,25 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2_mixer
     libx11
     zlib
-  ];
-
-  sourceRoot = "${finalAttrs.src.name}/src";
-
-  enableParallelBuilding = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "sauerbraten";
-      exec = "sauerbraten_client %u";
-      icon = "sauerbraten";
-      desktopName = "Sauerbraten";
-      comment = "FPS that uses an improved version of the Cube engine";
-      categories = [
-        "Application"
-        "Game"
-        "ActionGame"
-      ];
-    })
   ];
 
   installPhase = ''
@@ -80,19 +59,41 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Application"
+        "Game"
+        "ActionGame"
+      ];
+
+      comment = "FPS that uses an improved version of the Cube engine";
+      desktopName = "Sauerbraten";
+      exec = "sauerbraten_client %u";
+      icon = "sauerbraten";
+      name = "sauerbraten";
+    })
+  ];
+
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Free multiplayer & singleplayer first person shooter, the successor of the Cube FPS";
     homepage = "http://sauerbraten.org";
+    license = lib.licenses.unfreeRedistributable; # as an aggregate - data files have different licenses code is under zlib license
+
     maintainers = with lib.maintainers; [
       raskin
       ajs124
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "sauerbraten_client";
+
     hydraPlatforms =
       # raskin: tested amd64-linux;
       # not setting platforms because it is 0.5+ GiB of game data
       [ ];
-    license = lib.licenses.unfreeRedistributable; # as an aggregate - data files have different licenses code is under zlib license
-    platforms = lib.platforms.linux;
   };
 })

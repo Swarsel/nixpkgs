@@ -1,5 +1,5 @@
-{ mkDerivation, libsysdecode }:
+{ libsysdecode, mkDerivation }:
 mkDerivation {
-  path = "usr.bin/truss";
   buildInputs = [ libsysdecode ];
+  path = "usr.bin/truss";
 }

@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  fetchpatch,
-  makeFontsConf,
-  inkscape,
-  xcursorgen,
   bc,
+  fetchpatch,
+  inkscape,
+  makeFontsConf,
+  stdenvNoCC,
+  xcursorgen,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -24,8 +24,8 @@ stdenvNoCC.mkDerivation rec {
     # Fixes the build on inscape => 1.0, without this it generates empty cursor files
     (fetchpatch {
       name = "inkscape-1.0-compat";
-      url = "https://github.com/keeferrourke/capitaine-cursors/commit/9da0b53e6098ed023c5c24c6ef6bfb1f68a79924.patch";
       sha256 = "0lx5i60ahy6a2pir4zzlqn5lqsv6claqg8mv17l1a028h9aha3cv";
+      url = "https://github.com/keeferrourke/capitaine-cursors/commit/9da0b53e6098ed023c5c24c6ef6bfb1f68a79924.patch";
     })
   ];
 
@@ -33,14 +33,14 @@ stdenvNoCC.mkDerivation rec {
     patchShebangs .
   '';
 
-  # Complains about not being able to find the fontconfig config file otherwise
-  env.FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
-
   buildInputs = [
     inkscape
     xcursorgen
     bc
   ];
+
+  # Complains about not being able to find the fontconfig config file otherwise
+  env.FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
 
   buildPhase = ''
     for variant in dark light ; do
@@ -59,7 +59,7 @@ stdenvNoCC.mkDerivation rec {
     description = "X-cursor theme inspired by macOS and based on KDE Breeze";
     homepage = "https://github.com/keeferrourke/capitaine-cursors";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ eadwu ];
+    platforms = lib.platforms.linux;
   };
 }

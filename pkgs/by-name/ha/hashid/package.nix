@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication {
   pname = "hashid";
   version = "3.1.4-unstable-2015-03-17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "psypanda";
@@ -20,11 +19,13 @@ python3Packages.buildPythonApplication {
     setuptools
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Software to identify the different types of hashes";
     homepage = "https://github.com/psypanda/hashID";
-    mainProgram = "hashid";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    mainProgram = "hashid";
   };
 }

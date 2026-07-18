@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,6 +18,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-rDFwfRXd8oMNh8iOPEWM1eADFQjys0GwPVr2r5hLW4Y=";
 
+  passthru.tests = {
+    basic-functioniality = nixosTests.routinator;
+  };
+
   meta = {
     description = "RPKI Validator written in Rust";
     homepage = "https://github.com/NLnetLabs/routinator";
@@ -25,9 +29,5 @@ rustPlatform.buildRustPackage (finalAttrs: {
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ _0x4A6F ];
     mainProgram = "routinator";
-  };
-
-  passthru.tests = {
-    basic-functioniality = nixosTests.routinator;
   };
 })

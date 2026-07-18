@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  fpc,
-  makeWrapper,
   SDL2,
-  freetype,
-  physfs,
-  openal,
-  gamenetworkingsockets,
-  libx11,
   autoPatchelfHook,
   cmake,
+  fetchpatch,
+  fpc,
+  freetype,
+  gamenetworkingsockets,
+  libx11,
+  makeWrapper,
+  openal,
+  physfs,
   python3,
 }:
 
@@ -22,11 +22,11 @@ let
     version = "unstable-2025-10-16";
 
     src = fetchFromGitHub {
-      name = "base";
       owner = "opensoldat";
       repo = "base";
       rev = "5b6e5bef23f5c0d58fb1d4d887b9b94ebcf799b4";
       sha256 = "sha256-k3P4xSO7DgXn6EzDqlo+RHHTuMDPNvG5y+2iXqguh/M=";
+      name = "base";
     };
 
     nativeBuildInputs = [ python3 ];
@@ -41,10 +41,10 @@ let
     '';
 
     meta = {
+      inherit (src.meta) homepage;
       description = "Opensoldat's base game content";
       license = lib.licenses.cc-by-40;
       platforms = lib.platforms.all;
-      inherit (src.meta) homepage;
     };
   };
 
@@ -55,11 +55,11 @@ stdenv.mkDerivation rec {
   version = "unstable-2025-10-21";
 
   src = fetchFromGitHub {
-    name = "opensoldat";
     owner = "opensoldat";
     repo = "opensoldat";
     rev = "220468f558f6932ba1dc180a9ef84913d07ab324";
     sha256 = "sha256-BnTLuc/wucFNKh0jnVggpHNvLj/1kqL7i7fF7ORiIZA=";
+    name = "opensoldat";
   };
 
   nativeBuildInputs = [
@@ -67,11 +67,6 @@ stdenv.mkDerivation rec {
     makeWrapper
     autoPatchelfHook
     cmake
-  ];
-
-  cmakeFlags = [
-    "-DADD_ASSETS=OFF" # We provide base's smods via nix
-    "-DBUILD_GNS=OFF" # Don't build GameNetworkingSockets as an ExternalProject
   ];
 
   buildInputs = [
@@ -82,8 +77,11 @@ stdenv.mkDerivation rec {
     gamenetworkingsockets
     libx11
   ];
-  # TODO(@sternenseemann): set proper rpath via cmake, so we don't need autoPatchelfHook
-  runtimeDependencies = [ libx11 ];
+
+  cmakeFlags = [
+    "-DADD_ASSETS=OFF" # We provide base's smods via nix
+    "-DBUILD_GNS=OFF" # Don't build GameNetworkingSockets as an ExternalProject
+  ];
 
   # make sure opensoldat{,server} find their game archive,
   # let them write their state and configuration files
@@ -106,14 +104,20 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  # TODO(@sternenseemann): set proper rpath via cmake, so we don't need autoPatchelfHook
+  runtimeDependencies = [ libx11 ];
+
   meta = {
+    inherit (src.meta) homepage;
     description = "Unique 2D (side-view) multiplayer action game";
+
     license = [
       lib.licenses.mit
       base.meta.license
     ];
-    inherit (src.meta) homepage;
+
     maintainers = [ lib.maintainers.sternenseemann ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
 }:
@@ -17,21 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-KvPUIucPW+vTJ9HY1rtD9nwyei+JHhYGSBRDtEh8PGg=";
   };
 
-  vendorHash = "sha256-jCKO/ih/HRLZ5hv4Ib8qB9kIJagJQq79wtSqBi+BgCY=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-    "-X main.builtBy=nixpkgs"
-  ];
-
+  vendorHash = "sha256-jCKO/ih/HRLZ5hv4Ib8qB9kIJagJQq79wtSqBi+BgCY=";
   doCheck = false;
 
   postInstall = ''
@@ -40,6 +30,14 @@ buildGoModule (finalAttrs: {
     installShellCompletion --zsh completions/chezmoi.zsh
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.builtBy=nixpkgs"
+  ];
+
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

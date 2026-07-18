@@ -1,7 +1,7 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
@@ -23,13 +23,13 @@ let
     ] null;
 
   release = {
-    "1.3.2+9.1".hash = "sha256-tf+Hrfv/ZrLXryTjJchvLfydxzjkXB2hbL7P280Clzw=";
-    "1.3.2+9.0".hash = "sha256-/UHtK9fjpHTbra4/Cnsjt8fg1fvxx7U6kGjQPm15NwM=";
-    "1.3.2+8.20".hash = "sha256-RuX2aInSjwebs/aEOoisNxqcIPqDA2kWehN9tFYqOx4=";
-    "1.3.2+8.19".hash = "sha256-Zd7piAWlKPAZKEz7HVWxhnzOLbA/eR9C/E0T298MJVY=";
-    "1.3.2+8.18".hash = "sha256-D+tQ+1YrSbbqc54U5UlxW1Hhly49TB2pu1LEPL2Eo64=";
-    "1.3.2+8.17".hash = "sha256-2fw66z3yFKs5g+zNCeYXiEyxPzjUr+lGDciiQiuuMAs=";
     "1.3.2+8.16".hash = "sha256-+j2Mg9n4heXbhjRaqiTQfgBxRqfw6TPYbIuCdhu8OeE=";
+    "1.3.2+8.17".hash = "sha256-2fw66z3yFKs5g+zNCeYXiEyxPzjUr+lGDciiQiuuMAs=";
+    "1.3.2+8.18".hash = "sha256-D+tQ+1YrSbbqc54U5UlxW1Hhly49TB2pu1LEPL2Eo64=";
+    "1.3.2+8.19".hash = "sha256-Zd7piAWlKPAZKEz7HVWxhnzOLbA/eR9C/E0T298MJVY=";
+    "1.3.2+8.20".hash = "sha256-RuX2aInSjwebs/aEOoisNxqcIPqDA2kWehN9tFYqOx4=";
+    "1.3.2+9.0".hash = "sha256-/UHtK9fjpHTbra4/Cnsjt8fg1fvxx7U6kGjQPm15NwM=";
+    "1.3.2+9.1".hash = "sha256-tf+Hrfv/ZrLXryTjJchvLfydxzjkXB2hbL7P280Clzw=";
   };
 
   releaseRev = v: "refs/tags/v${v}";
@@ -38,7 +38,6 @@ in
 
 mkCoqDerivation {
   inherit version;
-  pname = "coq-hammer-tactics";
 
   inherit
     owner
@@ -47,6 +46,13 @@ mkCoqDerivation {
     release
     releaseRev
     ;
+
+  pname = "coq-hammer-tactics";
+  propagatedBuildInputs = [ stdlib ];
+  buildFlags = [ "tactics" ];
+  installTargets = [ "install-tactics" ];
+  mlPlugin = true;
+
   passthru = {
     inherit
       owner
@@ -56,13 +62,6 @@ mkCoqDerivation {
       releaseRev
       ;
   };
-
-  propagatedBuildInputs = [ stdlib ];
-
-  mlPlugin = true;
-
-  buildFlags = [ "tactics" ];
-  installTargets = [ "install-tactics" ];
 
   meta = {
     description = "Reconstruction tactics for the hammer for Coq";

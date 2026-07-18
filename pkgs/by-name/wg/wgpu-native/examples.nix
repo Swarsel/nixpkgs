@@ -2,25 +2,22 @@
   lib,
   stdenv,
   cmake,
-  pkg-config,
-  ninja,
-  makeWrapper,
-  wgpu-native,
   glfw,
-  wayland,
-  libxrandr,
   libx11,
-  vulkan-loader,
-
-  version,
+  libxrandr,
+  makeWrapper,
+  ninja,
+  pkg-config,
   src,
+  version,
+  vulkan-loader,
+  wayland,
+  wgpu-native,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   inherit version src;
   pname = "wgpu-native-examples";
-
-  sourceRoot = "${src.name}/examples";
 
   postPatch = ''
     substituteInPlace ./CMakeLists.txt \
@@ -46,18 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
-  runtimeInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    # Without wayland in library path, this warning is raised:
-    # "No windowing system present. Using surfaceless platform"
-    wayland
-    # Without vulkan-loader present, wgpu won't find any adapter
-    vulkan-loader
-  ];
-
-  makeWrapperArgs = lib.optionals (finalAttrs.runtimeInputs != [ ]) [
-    "--prefix LD_LIBRARY_PATH : ${toString (lib.makeLibraryPath finalAttrs.runtimeInputs)}"
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -80,6 +65,20 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  makeWrapperArgs = lib.optionals (finalAttrs.runtimeInputs != [ ]) [
+    "--prefix LD_LIBRARY_PATH : ${toString (lib.makeLibraryPath finalAttrs.runtimeInputs)}"
+  ];
+
+  runtimeInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    # Without wayland in library path, this warning is raised:
+    # "No windowing system present. Using surfaceless platform"
+    wayland
+    # Without vulkan-loader present, wgpu won't find any adapter
+    vulkan-loader
+  ];
+
+  sourceRoot = "${src.name}/examples";
 
   meta = wgpu-native.meta // {
     description = "Examples for the native WebGPU implementation based on wgpu-core";

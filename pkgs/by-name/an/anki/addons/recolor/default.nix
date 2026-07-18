@@ -1,19 +1,19 @@
 {
   lib,
-  anki-utils,
   fetchFromGitHub,
+  anki-utils,
 }:
 anki-utils.buildAnkiAddon (finalAttrs: {
   pname = "recolor";
   version = "3.3";
+
   src = fetchFromGitHub {
     owner = "AnKing-VIP";
     repo = "AnkiRecolor";
     tag = finalAttrs.version;
-    sparseCheckout = [ "src/addon" ];
     hash = "sha256-Rfie1m4wfwZvmxxFngt1tky1j5dIZKX7c64A1pSbE3c=";
+    sparseCheckout = [ "src/addon" ];
   };
-  sourceRoot = "${finalAttrs.src.name}/src/addon";
 
   patches = [
     # With this patch, Nix users only need to update their ReColor config when a
@@ -24,8 +24,11 @@ anki-utils.buildAnkiAddon (finalAttrs: {
     ./only-update-config-version-when-migration-happens.patch
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/src/addon";
+
   meta = {
     description = "ReColor your Anki desktop to whatever aesthetic you like";
+
     longDescription = ''
       This add-on must be configured with a theme to use. You can find some pre-made
       themes at <https://github.com/AnKing-VIP/AnkiRecolor/wiki/Themes>.
@@ -52,6 +55,7 @@ anki-utils.buildAnkiAddon (finalAttrs: {
       }
       ```
     '';
+
     homepage = "https://github.com/AnKing-VIP/AnkiRecolor";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ junestepp ];

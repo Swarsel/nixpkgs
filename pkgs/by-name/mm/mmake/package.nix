@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,24 +16,25 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-0z+sujzzBl/rtzXbhL4Os+jYfLUuO9PlXshUDxAH9DU=";
+  # Almost all tests require non-local networking, trying to resolve githubusercontent.com.
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  # Almost all tests require non-local networking, trying to resolve githubusercontent.com.
-  doCheck = false;
-
   meta = {
-    homepage = "https://github.com/tj/mmake";
     description = "Small program  which wraps make to provide additional functionality";
+
     longDescription = ''
       Mmake is a small program  which wraps make to provide additional
       functionality,  such   as  user-friendly  help   output,  remote
       includes,  and   eventually  more.   It  otherwise  acts   as  a
       pass-through to standard make.
     '';
+
+    homepage = "https://github.com/tj/mmake";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.gabesoft ];
     mainProgram = "mmake";

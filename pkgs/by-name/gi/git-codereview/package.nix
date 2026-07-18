@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
 }:
 
@@ -17,13 +17,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
+  nativeCheckInputs = [ git ];
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  nativeCheckInputs = [ git ];
 
   meta = {
     description = "Manage the code review process for Git changes using a Gerrit server";

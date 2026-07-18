@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  dpkg,
   fetchurl,
+  autoPatchelfHook,
+  dpkg,
   libgcc,
   libnetfilter_conntrack,
-  autoPatchelfHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "speedify";
@@ -47,16 +47,18 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://speedify.com/";
     description = "Use multiple internet connections in parallel";
+
     longDescription = ''
       Combine multiple internet connections (Wi-Fi, 4G, 5G, Ethernet, Starlink, Satellite, and more)
       to improve the stability, speed, and security of your online experiences.
       Check corresponding option {option}`services.speedify.enable`
     '';
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    homepage = "https://speedify.com/";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ zahrun ];
+    platforms = [ "x86_64-linux" ];
   };
 })

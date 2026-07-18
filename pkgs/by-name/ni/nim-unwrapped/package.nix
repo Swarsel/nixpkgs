@@ -5,29 +5,20 @@
   stdenv,
   fetchurl,
   boehmgc,
+  darwin,
   openssl,
   pcre,
   readline,
   sqlite,
-  darwin,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "nim-unwrapped";
   version = "2.2.10";
-  strictDeps = true;
 
   src = fetchurl {
     url = "https://nim-lang.org/download/nim-${finalAttrs.version}.tar.xz";
     hash = "sha256-eVe37QBCBrzxC8xPO0dEFTh45i8kMVUqmo6dP0Do1dU=";
   };
-
-  buildInputs = [
-    boehmgc
-    openssl
-    pcre
-    readline
-    sqlite
-  ];
 
   patches = [
     ./NIM_CONFIG_DIR.patch
@@ -43,35 +34,14 @@ stdenv.mkDerivation (finalAttrs: {
     # dlopen is widely used by Python, Ruby, Perl, ... what you're really telling me here is that your OS is fundamentally broken. That might be news for you, but it isn't for me.
   ];
 
-  configurePhase =
-    let
-      bootstrapCompiler = stdenv.mkDerivation {
-        pname = "nim-bootstrap";
-        inherit (finalAttrs) version src preBuild;
-        enableParallelBuilding = true;
-        buildPhase = ''
-          runHook preBuild
-          ./build.sh
-          runHook postBuild
-        '';
-        installPhase = ''
-          runHook preInstall
-          install -Dt $out/bin bin/nim
-          runHook postInstall
-        '';
-      };
-    in
-    ''
-      runHook preConfigure
-      cp ${bootstrapCompiler}/bin/nim bin/
-      echo 'define:nixbuild' >> config/nim.cfg
-      runHook postConfigure
-    '';
+  strictDeps = true;
 
-  kochArgs = [
-    "--cpu:${stdenv.hostPlatform.nim.cpu}"
-    "--os:${stdenv.hostPlatform.nim.os}"
-    "-d:release"
+  buildInputs = [
+    boehmgc
+    openssl
+    pcre
+    readline
+    sqlite
   ];
 
   preBuild = lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) ''
@@ -98,6 +68,40 @@ stdenv.mkDerivation (finalAttrs: {
     cp -a tools dist $out/nim/
     runHook postInstall
   '';
+
+  configurePhase =
+    let
+      bootstrapCompiler = stdenv.mkDerivation {
+        inherit (finalAttrs) version src preBuild;
+        pname = "nim-bootstrap";
+
+        buildPhase = ''
+          runHook preBuild
+          ./build.sh
+          runHook postBuild
+        '';
+
+        installPhase = ''
+          runHook preInstall
+          install -Dt $out/bin bin/nim
+          runHook postInstall
+        '';
+
+        enableParallelBuilding = true;
+      };
+    in
+    ''
+      runHook preConfigure
+      cp ${bootstrapCompiler}/bin/nim bin/
+      echo 'define:nixbuild' >> config/nim.cfg
+      runHook postConfigure
+    '';
+
+  kochArgs = [
+    "--cpu:${stdenv.hostPlatform.nim.cpu}"
+    "--os:${stdenv.hostPlatform.nim.os}"
+    "-d:release"
+  ];
 
   passthru = {
     nimHost = lib.warn "nimHost is deprecated, please use stdenv.hostPlatform.nim.os instead." stdenv.hostPlatform.nim.os;

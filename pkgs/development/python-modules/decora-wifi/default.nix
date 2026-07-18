@@ -2,23 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  requests,
   inflect,
+  requests,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "decora-wifi";
   version = "1.5";
-  pyproject = true;
 
   #No tag in github, so fetchPypi is OK to use.
   src = fetchPypi {
-    pname = "decora_wifi";
     inherit version;
     hash = "sha256-oWETtzZueNJC0lTWdLfk3SOuvnqrJ9wp5rOSPJxH3M4=";
+    pname = "decora_wifi";
   };
 
+  # No tests in Pypi source
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,10 +27,8 @@ buildPythonPackage rec {
     inflect
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "decora_wifi" ];
-
-  # No tests in Pypi source
-  doCheck = false;
 
   meta = {
     description = "Python library for controlling Leviton Decora Smart Wi-Fi devices";

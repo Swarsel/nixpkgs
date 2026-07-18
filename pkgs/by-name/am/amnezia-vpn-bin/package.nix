@@ -1,37 +1,35 @@
 {
-  stdenv,
-  fetchzip,
   lib,
-  libarchive,
-  makeWrapper,
+  stdenv,
+  at-spi2-atk,
   autoPatchelfHook,
-  libxkbcommon,
-  libxcb-cursor,
-  libxcb-wm,
-  libxcb-util,
-  libxcb-image,
-  libxcb-keysyms,
-  libxcb-render-util,
-  krb5,
+  bash,
   brotli,
+  fetchzip,
+  firebird,
   fontconfig,
   freetype,
   gtk3,
-  pango,
-  at-spi2-atk,
-  unixodbc,
-  firebird,
-  libdrm,
-  openldap,
-  bash,
   kdePackages,
+  krb5,
+  libarchive,
+  libdrm,
+  libxcb-cursor,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-util,
+  libxcb-wm,
+  libxkbcommon,
+  makeWrapper,
   nix-update-script,
+  openldap,
+  pango,
+  unixodbc,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "amnezia-vpn-bin";
   version = "4.8.19.0";
-
-  __structuredAttrs = true;
 
   src = fetchzip {
     url = "https://github.com/amnezia-vpn/amnezia-client/releases/download/${finalAttrs.version}/AmneziaVPN_${finalAttrs.version}_linux_x64.tar";
@@ -69,19 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     openldap
     kdePackages.wayland
   ];
-
-  # These libraries are not available in nixpkgs. They are Oracle Instant Client
-  # (libclntsh.so.23.1) and UCanAccess/Mimer SQL (libmimerapi.so) drivers that
-  # are bundled with Qt's SQlite database plugins (libqsqlora, libqsqlmimer).
-  # The Amnezia VPN binary ships pre-linked against these Qt database drivers
-  # even though it does not use them. Without ignoring these missing deps,
-  # autoPatchelfHook would fail the build.
-  autoPatchelfIgnoreMissingDeps = [
-    "libclntsh.so.23.1"
-    "libmimerapi.so"
-  ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -123,18 +108,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  # These libraries are not available in nixpkgs. They are Oracle Instant Client
+  # (libclntsh.so.23.1) and UCanAccess/Mimer SQL (libmimerapi.so) drivers that
+  # are bundled with Qt's SQlite database plugins (libqsqlora, libqsqlmimer).
+  # The Amnezia VPN binary ships pre-linked against these Qt database drivers
+  # even though it does not use them. Without ignoring these missing deps,
+  # autoPatchelfHook would fail the build.
+  autoPatchelfIgnoreMissingDeps = [
+    "libclntsh.so.23.1"
+    "libmimerapi.so"
+  ];
+
+  dontBuild = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Amnezia VPN Client (binary release)";
-    downloadPage = "https://amnezia.org/en/downloads";
     homepage = "https://github.com/amnezia-vpn/amnezia-client";
     license = lib.licenses.gpl3;
-    mainProgram = "AmneziaVPN";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ sund3RRR ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "AmneziaVPN";
+    downloadPage = "https://amnezia.org/en/downloads";
   };
 })

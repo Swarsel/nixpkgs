@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  jsonpatch,
   pytestCheckHook,
   requests,
-  jsonpatch,
-  schema,
   responses,
+  schema,
   setuptools,
   tqdm,
   urllib3,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "internetarchive";
   version = "5.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jjjake";
@@ -23,6 +22,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-OVjvx7Ne2NLXl5eA1HP89HyoTttR9XAx2AJdXiWMkqY=";
   };
+
+  nativeCheckInputs = [
+    responses
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,9 +38,10 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    responses
-    pytestCheckHook
+  disabledTestPaths = [
+    # Tests require network access
+    "tests/cli/test_ia.py"
+    "tests/cli/test_ia_download.py"
   ];
 
   disabledTests = [
@@ -49,12 +54,7 @@ buildPythonPackage (finalAttrs: {
     "test_upload_validate_identifier"
   ];
 
-  disabledTestPaths = [
-    # Tests require network access
-    "tests/cli/test_ia.py"
-    "tests/cli/test_ia_download.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "internetarchive" ];
 
   meta = {

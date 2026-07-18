@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   glib,
   gsl,
   libdivsufsort,
   llvmPackages,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,10 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ llvmPackages.openmp ];
 
   configureFlags = [ (lib.enableFeature finalAttrs.finalPackage.doCheck "unit-tests") ];
-
-  nativeCheckInputs = [ glib ];
-
   doCheck = true;
+  nativeCheckInputs = [ glib ];
 
   preCheck = ''
     patchShebangs ./test
@@ -47,7 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/evolbioinf/andi";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ natsukium ];
-    mainProgram = "andi";
     platforms = lib.platforms.all;
+    mainProgram = "andi";
   };
 })

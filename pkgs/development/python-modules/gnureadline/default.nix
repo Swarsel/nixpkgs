@@ -7,10 +7,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "8.3.3";
-  format = "setuptools";
   pname = "gnureadline";
-  disabled = isPyPy;
+  version = "8.3.3";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +16,9 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ pkgs.ncurses ];
+  disabled = isPyPy;
+  format = "setuptools";
+
   patchPhase = ''
     substituteInPlace setup.py --replace "/bin/bash" "${pkgs.bash}/bin/bash"
   '';

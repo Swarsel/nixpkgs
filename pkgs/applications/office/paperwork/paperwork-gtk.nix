@@ -1,23 +1,23 @@
 {
   lib,
-  callPackage,
-  python3Packages,
-  gtk3,
-  cairo,
   adwaita-icon-theme,
-  librsvg,
-  xvfb-run,
+  cairo,
+  callPackage,
   dbus,
-  libnotify,
-  wrapGAppsHook3,
-  which,
+  gdk-pixbuf,
   gettext,
   gobject-introspection,
-  gdk-pixbuf,
-  texliveSmall,
+  gtk3,
   imagemagick,
+  libnotify,
+  librsvg,
   perlPackages,
+  python3Packages,
+  texliveSmall,
+  which,
+  wrapGAppsHook3,
   writeScript,
+  xvfb-run,
 }:
 
 let
@@ -38,15 +38,6 @@ in
 python3Packages.buildPythonApplication rec {
   inherit src version;
   pname = "paperwork";
-  pyproject = true;
-
-  sample_docs = sample_documents // {
-    # a trick for the update script
-    name = "sample_documents";
-    src = sample_documents;
-  };
-
-  sourceRoot = "${src.name}/paperwork-gtk";
 
   postPatch = ''
     chmod a+w -R ..
@@ -55,8 +46,57 @@ python3Packages.buildPythonApplication rec {
     export HOME=$(mktemp -d)
   '';
 
+  nativeBuildInputs = [
+    wrapGAppsHook3
+    gobject-introspection
+    python3Packages.setuptools-scm
+    (lib.getBin gettext)
+    which
+    gdk-pixbuf # for the setup hook
+  ]
+  ++ documentation_deps;
+
+  buildInputs = [
+    adwaita-icon-theme
+    libnotify
+    librsvg
+    gtk3
+    cairo
+  ];
+
+  propagatedBuildInputs = with python3Packages; [
+    paperwork-backend
+    paperwork-shell
+    openpaperwork-gtk
+    openpaperwork-core
+    pypillowfight
+    pyxdg
+    setuptools
+  ];
+
   preBuild = ''
     make l10n_compile
+  '';
+
+  nativeCheckInputs = [ dbus ];
+
+  checkPhase = ''
+    runHook preCheck
+
+    # A few parts of chkdeps need to have a display and a dbus session, so we not
+    # only need to run a virtual X server + dbus but also have a large enough
+    # resolution, because the Cairo test tries to draw a 200x200 window.
+    xvfb-run -s '-screen 0 800x600x24' dbus-run-session \
+      --config-file=${dbus}/share/dbus-1/session.conf \
+      $out/bin/paperwork-gtk chkdeps
+
+    $out/bin/paperwork-cli chkdeps
+    $out/bin/paperwork-json chkdeps
+
+    # content of make test, without the dep on make install
+    python -m unittest discover --verbose -s tests
+
+    runHook postCheck
   '';
 
   postInstall = ''
@@ -83,62 +123,21 @@ python3Packages.buildPythonApplication rec {
     done
   '';
 
-  nativeCheckInputs = [ dbus ];
-
-  nativeBuildInputs = [
-    wrapGAppsHook3
-    gobject-introspection
-    python3Packages.setuptools-scm
-    (lib.getBin gettext)
-    which
-    gdk-pixbuf # for the setup hook
-  ]
-  ++ documentation_deps;
-
-  buildInputs = [
-    adwaita-icon-theme
-    libnotify
-    librsvg
-    gtk3
-    cairo
-  ];
-
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
-  checkPhase = ''
-    runHook preCheck
-
-    # A few parts of chkdeps need to have a display and a dbus session, so we not
-    # only need to run a virtual X server + dbus but also have a large enough
-    # resolution, because the Cairo test tries to draw a 200x200 window.
-    xvfb-run -s '-screen 0 800x600x24' dbus-run-session \
-      --config-file=${dbus}/share/dbus-1/session.conf \
-      $out/bin/paperwork-gtk chkdeps
-
-    $out/bin/paperwork-cli chkdeps
-    $out/bin/paperwork-json chkdeps
-
-    # content of make test, without the dep on make install
-    python -m unittest discover --verbose -s tests
-
-    runHook postCheck
-  '';
-
-  propagatedBuildInputs = with python3Packages; [
-    paperwork-backend
-    paperwork-shell
-    openpaperwork-gtk
-    openpaperwork-core
-    pypillowfight
-    pyxdg
-    setuptools
-  ];
-
   disallowedRequisites = documentation_deps;
+  dontWrapGApps = true;
+  pyproject = true;
+
+  sample_docs = sample_documents // {
+    src = sample_documents;
+    # a trick for the update script
+    name = "sample_documents";
+  };
+
+  sourceRoot = "${src.name}/paperwork-gtk";
 
   passthru.updateScript = writeScript "update.sh" ''
     #!/usr/bin/env nix-shell
@@ -153,10 +152,12 @@ python3Packages.buildPythonApplication rec {
     description = "Personal document manager for scanned documents";
     homepage = "https://openpaper.work/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aszlig
       symphorien
     ];
+
     platforms = lib.platforms.linux;
   };
 }

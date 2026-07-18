@@ -1,16 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   distutils,
-  fetchFromGitHub,
   python,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "setuptools";
   version = "82.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pypa";
@@ -38,6 +37,7 @@ buildPythonPackage (finalAttrs: {
 
   # Requires pytest, causing infinite recursion.
   doCheck = false;
+  pyproject = true;
 
   passthru.tests = {
     inherit distutils;
@@ -46,9 +46,11 @@ buildPythonPackage (finalAttrs: {
   meta = {
     description = "Utilities to facilitate the installation of Python packages";
     homepage = "https://github.com/pypa/setuptools";
+
     changelog = "https://setuptools.pypa.io/en/stable/history.html#v${
       lib.replaceString "." "-" finalAttrs.version
     }";
+
     license = with lib.licenses; [ mit ];
     platforms = python.meta.platforms;
     teams = [ lib.teams.python ];

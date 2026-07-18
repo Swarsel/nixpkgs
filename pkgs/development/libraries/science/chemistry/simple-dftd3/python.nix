@@ -1,18 +1,18 @@
 {
-  buildPythonPackage,
-  python,
-  simple-dftd3,
-  cffi,
-  numpy,
-  toml,
-  qcengine,
-  pyscf,
   ase,
-  pytestCheckHook,
-  meson-python,
+  buildPythonPackage,
+  cffi,
   meson,
-  setuptools,
+  meson-python,
+  numpy,
   pkg-config,
+  pyscf,
+  pytestCheckHook,
+  python,
+  qcengine,
+  setuptools,
+  simple-dftd3,
+  toml,
 }:
 
 buildPythonPackage {
@@ -23,13 +23,6 @@ buildPythonPackage {
     meta
     ;
 
-  pyproject = true;
-
-  build-system = [
-    meson-python
-    setuptools
-  ];
-
   nativeBuildInputs = [
     pkg-config
     meson
@@ -37,11 +30,11 @@ buildPythonPackage {
 
   buildInputs = [ simple-dftd3 ];
 
-  dependencies = [
-    cffi
-    numpy
-    toml
-  ];
+  preConfigure = ''
+    cd python
+  '';
+
+  doCheck = true;
 
   checkInputs = [
     ase
@@ -50,17 +43,10 @@ buildPythonPackage {
     pytestCheckHook
   ];
 
-  preConfigure = ''
-    cd python
-  '';
-
   # The compiled CFFI is not placed correctly before pytest invocation
   preCheck = ''
     find . -name "_libdftd3*" -exec cp {} ./dftd3/. \;
   '';
-
-  pythonImportsCheck = [ "dftd3" ];
-  doCheck = true;
 
   # Parameters need to be present in the python site packages directory, but they
   # are originally only present in the fortran package. This is a consequence of
@@ -68,4 +54,18 @@ buildPythonPackage {
   postInstall = ''
     ln -s ${simple-dftd3}/share/s-dftd3/parameters.toml $out/${python.sitePackages}/dftd3/.
   '';
+
+  build-system = [
+    meson-python
+    setuptools
+  ];
+
+  dependencies = [
+    cffi
+    numpy
+    toml
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dftd3" ];
 }

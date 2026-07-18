@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cargo,
+  cmake,
   fetchPnpmDeps,
+  nodejs_22,
   pnpmConfigHook,
   pnpm_10,
-  nodejs_22,
   rustPlatform,
-  cargo,
   rustc,
-  cmake,
   version ? "1.0.0",
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -24,23 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-EbxZe2JBj69F6bpPn4X7BTRE/dTb/mUIvvqw7oqhAe8=";
   };
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    pname = "rolldown";
-    version = finalAttrs.version;
-    src = finalAttrs.src;
-    hash = "sha256-VDDbS45Lefs/4x0fU1rULgBtjzZJgL1t2lYwENPknEE=";
-  };
-  pnpmDeps = fetchPnpmDeps {
-    pname = "rolldown";
-    version = finalAttrs.version;
-    src = finalAttrs.src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-pq94ZI0WW9XJFzecdiM/PaOUp7DSSOWWjRO91rd8Xs4=";
-  };
-
-  # cmake is only needed for Rust build (mimalloc-sys), not for a top-level configure
-  dontUseCmakeConfigure = true;
 
   nativeBuildInputs = [
     pnpmConfigHook
@@ -86,12 +69,31 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    pname = "rolldown";
+    version = finalAttrs.version;
+    src = finalAttrs.src;
+    hash = "sha256-VDDbS45Lefs/4x0fU1rULgBtjzZJgL1t2lYwENPknEE=";
+  };
+
+  # cmake is only needed for Rust build (mimalloc-sys), not for a top-level configure
+  dontUseCmakeConfigure = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    pname = "rolldown";
+    version = finalAttrs.version;
+    src = finalAttrs.src;
+    fetcherVersion = 3;
+    hash = "sha256-pq94ZI0WW9XJFzecdiM/PaOUp7DSSOWWjRO91rd8Xs4=";
+    pnpm = pnpm_10;
+  };
+
   meta = {
-    changelog = "https://github.com/rolldown/rolldown/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+    inherit (nodejs_22.meta) platforms;
     description = "Fast Rust-based bundler for JavaScript";
     homepage = "https://github.com/rolldown/rolldown";
+    changelog = "https://github.com/rolldown/rolldown/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.chrisportela ];
-    inherit (nodejs_22.meta) platforms;
   };
 })

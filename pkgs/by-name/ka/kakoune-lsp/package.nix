@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  replaceVars,
   perl,
+  replaceVars,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,7 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   patches = [ (replaceVars ./Hardcode-perl.patch { inherit perl; }) ];
-
   cargoHash = "sha256-TBjoUy2e9GLYa0fNI1NgC4rr32vZXqaUGYksaSHE8hg=";
 
   meta = {

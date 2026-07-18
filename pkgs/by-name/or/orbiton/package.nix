@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   makeWrapper,
   pkg-config,
-  withGui ? true,
   vte,
+  withGui ? true,
 }:
 
 buildGoModule rec {
@@ -21,8 +21,6 @@ buildGoModule rec {
     hash = "sha256-LwwHwi1NyKqyzJou4sh+gM2NxNdYvpBN2Zx8SIOHX40=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
@@ -30,7 +28,7 @@ buildGoModule rec {
   ];
 
   buildInputs = lib.optional withGui vte;
-
+  vendorHash = null;
   preBuild = "cd v2";
 
   checkFlags =

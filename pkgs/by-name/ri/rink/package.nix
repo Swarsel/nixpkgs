@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  openssl,
-  pkg-config,
-  ncurses,
+  asciidoctor,
   curl,
   installShellFiles,
-  asciidoctor,
   libiconv,
+  ncurses,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  version = "0.9.0";
   pname = "rink";
+  version = "0.9.0";
 
   src = fetchFromGitHub {
     owner = "tiffany352";
@@ -23,13 +23,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-JRXRN/jOwM3j59ckOcIlbLdSvV9PFueOPs/EVHCF8JE=";
   };
 
-  cargoHash = "sha256-qbMnJjJQbNqs6AAgMjtqPEMxIDxdF5a8/tWAVW0Vrig=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
     asciidoctor
   ];
+
   buildInputs = [
     ncurses
   ]
@@ -43,12 +42,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
       [ openssl ]
   );
 
-  # Some tests fail and/or attempt to use internet servers.
-  doCheck = false;
+  cargoHash = "sha256-qbMnJjJQbNqs6AAgMjtqPEMxIDxdF5a8/tWAVW0Vrig=";
 
   postBuild = ''
     make man
   '';
+
+  # Some tests fail and/or attempt to use internet servers.
+  doCheck = false;
 
   postInstall = ''
     installManPage build/*
@@ -56,15 +57,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Unit-aware calculator";
-    mainProgram = "rink";
     homepage = "https://rinkcalc.app";
+
     license = with lib.licenses; [
       mpl20
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [
       sb0
       keysmashes
     ];
+
+    mainProgram = "rink";
   };
 })

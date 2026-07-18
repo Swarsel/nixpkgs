@@ -1,10 +1,10 @@
 {
-  directoryListingUpdater,
-  fetchurl,
   lib,
-  stdenvNoCC,
+  fetchurl,
   coreutils,
+  directoryListingUpdater,
   kmod,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -19,8 +19,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   patches = [
 
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -41,12 +39,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   passthru.updateScript = directoryListingUpdater {
     url = "https://www.alsa-project.org/files/pub/lib/";
   };
 
   meta = {
-    homepage = "https://www.alsa-project.org/";
     description = "ALSA Use Case Manager configuration";
 
     longDescription = ''
@@ -54,7 +53,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       MIDI functionality to the Linux-based operating system.
     '';
 
+    homepage = "https://www.alsa-project.org/";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       roastiek
       mvs

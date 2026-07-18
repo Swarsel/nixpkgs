@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  dbus-signature-pyparsing,
+  buildPythonPackage,
   dbus-python,
-  pytestCheckHook,
-  hypothesis,
+  dbus-signature-pyparsing,
   hs-dbus-signature,
+  hypothesis,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "into-dbus-python";
   version = "0.8.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "stratis-storage";
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     hs-dbus-signature
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "into_dbus_python" ];
 
   meta = {

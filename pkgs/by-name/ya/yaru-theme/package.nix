@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  sassc,
-  pkg-config,
   glib,
-  ninja,
-  python3,
-  gtk3,
   gnome-themes-extra,
   gtk-engine-murrine,
-  humanity-icon-theme,
+  gtk3,
   hicolor-icon-theme,
+  humanity-icon-theme,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  sassc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-3cSVPObfmr62S6yTD2c8AO3s7lxb9KFVuYSydTIJ1jE=";
   };
 
+  postPatch = "patchShebangs .";
+
   nativeBuildInputs = [
     meson
     sassc
@@ -34,30 +36,32 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     python3
   ];
+
   buildInputs = [
     gtk3
     gnome-themes-extra
   ];
+
   propagatedBuildInputs = [
     humanity-icon-theme
     hicolor-icon-theme
   ];
-  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
 
   dontDropIconThemeCache = true;
-
-  postPatch = "patchShebangs .";
+  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
 
   meta = {
     description = "Ubuntu community theme 'yaru' - default Ubuntu theme since 18.10";
     homepage = "https://github.com/ubuntu/yaru";
+
     license = with lib.licenses; [
       cc-by-sa-40
       gpl3Plus
       lgpl21Only
       lgpl3Only
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ moni ];
+    platforms = lib.platforms.linux;
   };
 })

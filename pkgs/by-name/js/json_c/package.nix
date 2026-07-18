@@ -29,16 +29,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "JSON implementation in C";
+
     longDescription = ''
       JSON-C implements a reference counting object model that allows you to
       easily construct JSON objects in C, output them as JSON formatted strings
       and parse JSON formatted strings back into the C representation of JSON
       objects.
     '';
+
     homepage = "https://github.com/json-c/json-c/wiki";
     changelog = "https://github.com/json-c/json-c/blob/${finalAttrs.src.rev}/ChangeLog";
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.mit;
   };
 })

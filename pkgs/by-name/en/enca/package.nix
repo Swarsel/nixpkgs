@@ -23,9 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/Project-OSS-Revival/enca/blob/${finalAttrs.src.tag}/ChangeLog";
     description = "Detects the encoding of text files and reencodes them";
-    homepage = "https://cihar.com/software/enca/";
+
     longDescription = ''
       Enca detects the encoding of text files, on the basis of knowledge
       of their language. It can also convert them to other encodings,
@@ -34,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
       Unicode variants, independently on language.
     '';
 
+    homepage = "https://cihar.com/software/enca/";
+    changelog = "https://github.com/Project-OSS-Revival/enca/blob/${finalAttrs.src.tag}/ChangeLog";
     license = lib.licenses.gpl2Only;
 
   };

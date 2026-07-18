@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  fetchFromCodeberg,
+  stdenv,
   blueprint-compiler,
   desktop-file-utils,
+  fetchFromCodeberg,
   glib,
   gtk4,
   libadwaita,

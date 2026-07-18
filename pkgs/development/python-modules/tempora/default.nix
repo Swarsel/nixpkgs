@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jaraco-functools,
   pytest-freezer,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "tempora";
   version = "5.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -25,6 +24,11 @@ buildPythonPackage rec {
     sed -i "/coherent\.licensed/d" pyproject.toml
   '';
 
+  nativeCheckInputs = [
+    pytest-freezer
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -32,10 +36,7 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  nativeCheckInputs = [
-    pytest-freezer
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "tempora"
@@ -46,10 +47,10 @@ buildPythonPackage rec {
 
   meta = {
     description = "Objects and routines pertaining to date and time";
-    mainProgram = "calc-prorate";
     homepage = "https://github.com/jaraco/tempora";
     changelog = "https://github.com/jaraco/tempora/blob/${src.tag}/NEWS.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "calc-prorate";
   };
 }

@@ -1,41 +1,37 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-dso,
-
+  buildPythonPackage,
   # dependencies
   click,
   ordered-set,
   pillow,
+  # build-system
+  setuptools,
+  setuptools-dso,
   sortedcollections,
 }:
 
 buildPythonPackage rec {
   pname = "tilequant";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SkyTemple";
     repo = "tilequant";
     tag = version;
+    hash = "sha256-MgyKLwVdL2DRR8J88q7Q57rQiX4FTOlQ5rTY3UuhaJM=";
     # Fetch tilequant source files
     fetchSubmodules = true;
-    hash = "sha256-MgyKLwVdL2DRR8J88q7Q57rQiX4FTOlQ5rTY3UuhaJM=";
   };
+
+  doCheck = false; # there are no tests
 
   build-system = [
     setuptools
     setuptools-dso
   ];
 
-  pythonRelaxDeps = [
-    "click"
-  ];
   dependencies = [
     click
     ordered-set
@@ -44,9 +40,12 @@ buildPythonPackage rec {
     setuptools-dso
   ];
 
-  doCheck = false; # there are no tests
-
+  pyproject = true;
   pythonImportsCheck = [ "tilequant" ];
+
+  pythonRelaxDeps = [
+    "click"
+  ];
 
   meta = {
     description = "Tool for quantizing image colors using tile-based palette restrictions";

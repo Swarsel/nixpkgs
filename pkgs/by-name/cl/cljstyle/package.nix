@@ -1,8 +1,8 @@
 {
   lib,
+  fetchurl,
   buildGraalvmNativeImage,
   fetchMavenArtifact,
-  fetchurl,
   versionCheckHook,
 }:
 
@@ -15,31 +15,32 @@ buildGraalvmNativeImage (finalAttrs: {
     hash = "sha256-AkCuTZeDXbNBuwPZEMhYGF/oOGIKq5zVDwL8xwnj+mE=";
   };
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   extraNativeImageBuildArgs = [
     "-H:+ReportExceptionStackTraces"
     "--no-fallback"
     "-cp ${finalAttrs.finalPackage.passthru.graal-build-time.passthru.jar}"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = [ "version" ];
 
   # must be on classpath to build native image
   passthru.graal-build-time = fetchMavenArtifact {
-    repos = [ "https://repo.clojars.org/" ];
-    groupId = "com.github.clj-easy";
-    artifactId = "graal-build-time";
     version = "1.0.5";
+    artifactId = "graal-build-time";
+    groupId = "com.github.clj-easy";
     hash = "sha256-M6/U27a5n/QGuUzGmo8KphVnNa2K+LFajP5coZiFXoY=";
+    repos = [ "https://repo.clojars.org/" ];
   };
 
   meta = {
     description = "Tool for formatting Clojure code";
     homepage = "https://github.com/greglook/cljstyle";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.epl10;
     changelog = "https://github.com/greglook/cljstyle/blob/${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.epl10;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ psyclyx ];
     mainProgram = "cljstyle";
   };

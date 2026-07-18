@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,10 +20,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "A tiny CLI tool for controlling Nanoleaf";
-    mainProgram = "picoleaf";
     homepage = "https://github.com/tessro/picoleaf";
     changelog = "https://github.com/tessro/picoleaf/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sfrijters ];
+    mainProgram = "picoleaf";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   librime,
   rime-data,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rime-ls";
@@ -16,12 +16,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-jDn41hSDcQQO1d4G0XV6B/JZkryHtuoHUOYpmdE1Kxo=";
   };
 
-  cargoHash = "sha256-lmvIH6ssEqbkcDETzHL+Spd04B576o8dijigUR88l9c=";
-
   nativeBuildInputs = [ rustPlatform.bindgenHook ];
-
   buildInputs = [ librime ];
-
+  cargoHash = "sha256-lmvIH6ssEqbkcDETzHL+Spd04B576o8dijigUR88l9c=";
   # Set RIME_DATA_DIR to work around test_get_candidates during checkPhase
   env.RIME_DATA_DIR = "${rime-data}/share/rime-data";
 
@@ -29,8 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Language server for Rime input method engine";
     homepage = "https://github.com/wlh320/rime-ls";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ definfo ];
+    platforms = lib.platforms.linux;
     mainProgram = "rime_ls";
   };
 })

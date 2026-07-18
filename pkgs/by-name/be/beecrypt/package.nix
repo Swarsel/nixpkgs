@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Strong and fast cryptography toolkit library";
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl2;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

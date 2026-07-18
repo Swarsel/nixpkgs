@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  gtest,
   boost,
-  wt,
-  taglib,
-  libconfig,
-  libarchive,
-  graphicsmagick,
+  cmake,
   ffmpeg,
-  zlib,
-  stb,
-  openssl,
-  xxhash,
-  pugixml,
+  graphicsmagick,
+  gtest,
+  libarchive,
+  libconfig,
   onnxruntime,
+  openssl,
+  pkg-config,
+  pugixml,
+  stb,
+  taglib,
+  wt,
+  xxhash,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-uOijIipay4ncE8hP6vJG9vOGiD/Ad6WJHEQ7P1HKi/Y=";
   };
+
+  postPatch = ''
+    substituteInPlace src/libs/core/include/core/SystemPaths.hpp --replace-fail "/etc" "$out/share/lms"
+  '';
 
   strictDeps = true;
 
@@ -54,10 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     onnxruntime
   ];
 
-  postPatch = ''
-    substituteInPlace src/libs/core/include/core/SystemPaths.hpp --replace-fail "/etc" "$out/share/lms"
-  '';
-
   postInstall = ''
     substituteInPlace $out/share/lms/lms.conf --replace-fail "/usr/bin/ffmpeg" "${lib.getExe ffmpeg}"
     substituteInPlace $out/share/lms/lms.conf --replace-fail "/usr/share/Wt/resources" "${wt}/share/Wt/resources"
@@ -67,12 +67,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "Lightweight Music Server - Access your self-hosted music using a web interface";
     homepage = "https://github.com/epoupon/lms";
     changelog = "https://github.com/epoupon/lms/releases/tag/${finalAttrs.src.rev}";
-    description = "Lightweight Music Server - Access your self-hosted music using a web interface";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ mksafavi ];
     platforms = lib.platforms.linux;
     mainProgram = "lms";
-    maintainers = with lib.maintainers; [ mksafavi ];
   };
 })

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -31,6 +31,9 @@ in
 
   options.boot.swraid = {
     enable = lib.mkEnableOption "swraid support using mdadm" // {
+      default = enable_implicitly_for_old_state_versions;
+      defaultText = "`true` if stateVersion is older than 23.11";
+
       description = ''
         Whether to enable support for Linux MD RAID arrays.
 
@@ -44,32 +47,16 @@ in
         should detect it correctly in the standard installation
         procedure.
       '';
-      default = enable_implicitly_for_old_state_versions;
-      defaultText = "`true` if stateVersion is older than 23.11";
     };
 
     mdadmConf = lib.mkOption {
+      default = "";
       description = "Contents of {file}`/etc/mdadm.conf`.";
       type = lib.types.lines;
-      default = "";
     };
   };
 
   config = lib.mkIf cfg.enable {
-    warnings =
-      lib.mkIf (!enable_implicitly_for_old_state_versions && !minimum_config_is_set mdadm_conf)
-        [
-          "mdadm: Neither MAILADDR nor PROGRAM has been set. This will cause the `mdmon` service to crash."
-        ];
-
-    environment.systemPackages = [ pkgs.mdadm ];
-
-    environment.etc."mdadm.conf".text = lib.mkAfter cfg.mdadmConf;
-
-    services.udev.packages = [ pkgs.mdadm ];
-
-    systemd.packages = [ pkgs.mdadm ];
-
     boot.initrd = {
       availableKernelModules = [
         "md_mod"
@@ -78,6 +65,8 @@ in
         "raid10"
         "raid456"
       ];
+
+      extraFiles."/etc/mdadm.conf".source = pkgs.writeText "mdadm.conf" mdadm_conf.text;
 
       extraUdevRulesCommands = lib.mkIf (!config.boot.initrd.systemd.enable) ''
         cp -v ${pkgs.mdadm}/lib/udev/rules.d/*.rules $out/
@@ -93,16 +82,24 @@ in
         $out/bin/mdadm --version
       '';
 
-      extraFiles."/etc/mdadm.conf".source = pkgs.writeText "mdadm.conf" mdadm_conf.text;
+      services.udev.packages = [ pkgs.mdadm ];
 
       systemd = {
         contents."/etc/mdadm.conf".text = mdadm_conf.text;
-
-        packages = [ pkgs.mdadm ];
         initrdBin = [ pkgs.mdadm ];
+        packages = [ pkgs.mdadm ];
       };
-
-      services.udev.packages = [ pkgs.mdadm ];
     };
+
+    environment.etc."mdadm.conf".text = lib.mkAfter cfg.mdadmConf;
+    environment.systemPackages = [ pkgs.mdadm ];
+    services.udev.packages = [ pkgs.mdadm ];
+    systemd.packages = [ pkgs.mdadm ];
+
+    warnings =
+      lib.mkIf (!enable_implicitly_for_old_state_versions && !minimum_config_is_set mdadm_conf)
+        [
+          "mdadm: Neither MAILADDR nor PROGRAM has been set. This will cause the `mdmon` service to crash."
+        ];
   };
 }

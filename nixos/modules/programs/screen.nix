@@ -13,17 +13,18 @@ in
   options = {
     programs.screen = {
       enable = lib.mkEnableOption "screen, a basic terminal multiplexer";
-
       package = lib.mkPackageOption pkgs "screen" { };
 
       screenrc = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+        description = "The contents of {file}`/etc/screenrc` file";
+
         example = ''
           defscrollback 10000
           startup_message off
         '';
-        description = "The contents of {file}`/etc/screenrc` file";
+
+        type = lib.types.lines;
       };
     };
   };
@@ -33,6 +34,7 @@ in
       environment.etc.screenrc = {
         text = cfg.screenrc;
       };
+
       environment.systemPackages = [ cfg.package ];
       security.pam.services.screen = { };
     })

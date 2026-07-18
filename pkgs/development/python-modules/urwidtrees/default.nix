@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   setuptools,
   urwid,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "urwidtrees";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pazz";
@@ -20,12 +19,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ urwid ];
-
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "urwidtrees" ];
 
   meta = {

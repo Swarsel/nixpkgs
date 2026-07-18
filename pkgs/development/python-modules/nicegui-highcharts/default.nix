@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docutils,
-  fetchFromGitHub,
-  nicegui,
   hatchling,
+  nicegui,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nicegui-highcharts";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zauberzeug";
@@ -19,8 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-QvhvQU/na33ZYQbAuCJvsVDDRkTy+Z4STJg9vlZrQbY=";
   };
 
-  pythonRelaxDeps = [ "docutils" ];
-
+  # Module has no tests
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -28,10 +27,9 @@ buildPythonPackage (finalAttrs: {
     nicegui
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "nicegui_highcharts" ];
+  pythonRelaxDeps = [ "docutils" ];
 
   meta = {
     description = "NiceGUI with support for Highcharts";

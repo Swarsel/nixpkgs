@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "xlsxwriter";
   version = "3.2.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jmcnamara";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-nr7Qw24BzQo/qEpyM9687mUaebzzHv1FAPmsBVdMekg=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "xlsxwriter" ];
 
   meta = {

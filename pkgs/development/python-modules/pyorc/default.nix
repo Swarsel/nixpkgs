@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pybind11,
-  setuptools,
-  pytestCheckHook,
-  tzdata,
-  python,
+  buildPythonPackage,
   pkgs,
+  pybind11,
+  pytestCheckHook,
+  python,
+  setuptools,
+  tzdata,
 }:
 
 buildPythonPackage rec {
   pname = "pyorc";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "noirello";
@@ -29,21 +28,21 @@ buildPythonPackage rec {
         '"pybind11>2.6.0"'
   '';
 
-  build-system = [
-    pybind11
-    setuptools
-  ];
-
-  env = {
-    PYORC_SKIP_ORC_BUILD = "true";
-  };
-
   buildInputs = [
     pkgs.lz4
     pkgs.protobuf
     pkgs.snappy
     pkgs.zlib
     pkgs.zstd
+    pkgs.apache-orc
+  ];
+
+  env = {
+    PYORC_SKIP_ORC_BUILD = "true";
+  };
+
+  nativeCheckInputs = [
+    pytestCheckHook
     pkgs.apache-orc
   ];
 
@@ -61,19 +60,21 @@ buildPythonPackage rec {
     ln -s "${pkgs.apache-orc.src}/examples" "deps/"
   '';
 
+  build-system = [
+    pybind11
+    setuptools
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "pyorc"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pkgs.apache-orc
-  ];
-
   meta = {
-    changelog = "https://github.com/noirello/pyorc/blob/v${version}/CHANGELOG.rst";
     description = "Python module for Apache ORC file format";
     homepage = "https://github.com/noirello/pyorc";
+    changelog = "https://github.com/noirello/pyorc/blob/v${version}/CHANGELOG.rst";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -17,11 +17,7 @@ stdenvNoCC.mkDerivation rec {
   };
 
   postPatch = "patchShebangs scripts bin";
-
   strictDeps = true;
-  __structuredAttrs = true;
-
-  passthru.updateScript = nix-update-script { };
 
   buildPhase = ''
     runHook preBuild
@@ -37,12 +33,15 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Sandbox your local AI agents so they can read/write only what they need";
     homepage = "https://github.com/eugene1g/agent-safehouse";
-    mainProgram = "safehouse";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ myzel394 ];
+    platforms = lib.platforms.darwin;
+    mainProgram = "safehouse";
   };
 }

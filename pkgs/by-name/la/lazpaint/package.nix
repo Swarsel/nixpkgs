@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  lazarus-qt5,
-  fpc,
   autoPatchelfHook,
+  fpc,
+  lazarus-qt5,
   libsForQt5,
   libx11,
   python3,
@@ -20,18 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-yT1HyvJcYEJgMkQxzCSD8s7/ttemxZaur9T+As8WdIo=";
   };
-  bgrabitmap = fetchFromGitHub {
-    owner = "bgrabitmap";
-    repo = "bgrabitmap";
-    tag = "v11.6.6";
-    hash = "sha256-bA8tvo7Srm5kIZTVWEA2+gjqHab7LByyL/zqdQxeFlA=";
-  };
-  bgracontrols = fetchFromGitHub {
-    owner = "bgrabitmap";
-    repo = "bgracontrols";
-    tag = "v9.0.2";
-    hash = "sha256-HqX9n4VpOyMwTz3fTweTTqzW+jA2BU62mm/X7Iwjd/8=";
-  };
 
   nativeBuildInputs = [
     lazarus-qt5
@@ -43,10 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = with libsForQt5; [
     qtbase
     libqtpas
-  ];
-
-  runtimeDependencies = [
-    libx11
   ];
 
   preConfigure = ''
@@ -75,13 +59,31 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ python3 ]})
   '';
 
+  bgrabitmap = fetchFromGitHub {
+    hash = "sha256-bA8tvo7Srm5kIZTVWEA2+gjqHab7LByyL/zqdQxeFlA=";
+    owner = "bgrabitmap";
+    repo = "bgrabitmap";
+    tag = "v11.6.6";
+  };
+
+  bgracontrols = fetchFromGitHub {
+    hash = "sha256-HqX9n4VpOyMwTz3fTweTTqzW+jA2BU62mm/X7Iwjd/8=";
+    owner = "bgrabitmap";
+    repo = "bgracontrols";
+    tag = "v9.0.2";
+  };
+
+  runtimeDependencies = [
+    libx11
+  ];
+
   meta = {
     description = "Image editor like PaintBrush or Paint.Net";
     homepage = "https://lazpaint.github.io";
-    downloadPage = "https://github.com/bgrabitmap/lazpaint/";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ aleksana ];
+    platforms = lib.platforms.linux;
     mainProgram = "lazpaint";
+    downloadPage = "https://github.com/bgrabitmap/lazpaint/";
   };
 })

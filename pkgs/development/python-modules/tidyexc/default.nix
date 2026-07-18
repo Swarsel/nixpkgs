@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "tidyexc";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tidyexc" ];
 
   meta = {

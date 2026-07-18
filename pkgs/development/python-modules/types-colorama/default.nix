@@ -8,18 +8,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-colorama";
   version = "0.4.15.20260508";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_colorama";
     inherit (finalAttrs) version;
     hash = "sha256-OokWA55XRSvSH1fmdOHyIcqeTzGYk8Xju9N7hFwn2OY=";
+    pname = "types_colorama";
   };
-
-  build-system = [ setuptools ];
 
   # Module has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Typing stubs for colorama";

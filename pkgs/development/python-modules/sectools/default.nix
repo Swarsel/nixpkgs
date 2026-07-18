@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ldap3,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "sectools";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "p0dalirius";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-iZV7FFfzvirHj4Q2HZQPQTcMIQ7mpc4zQYWAnFwf+q8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ ldap3 ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ ldap3 ];
+  pyproject = true;
   pythonImportsCheck = [ "sectools" ];
 
   meta = {

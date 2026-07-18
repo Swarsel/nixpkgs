@@ -1,13 +1,12 @@
 {
   lib,
-  fetchFromSourcehut,
-  buildPackages,
   stdenv,
+  buildPackages,
+  fetchFromSourcehut,
   makeBinaryWrapper,
 }:
 
 stdenv.mkDerivation {
-  name = "mirth";
   version = "0-unstable-2026-05-28";
 
   src = fetchFromSourcehut {
@@ -16,6 +15,15 @@ stdenv.mkDerivation {
     rev = "b180112a547cb803e3bf5720a0bb08f8bffa9742";
     hash = "sha256-6nd1DrN3sGobmOh+E/8hYUFW2tBSFLdaEPXrViKDVSc=";
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "bin"
+    "doc"
+    "examples"
+    "vim"
+  ];
 
   postPatch =
     # Bug report: https://todo.sr.ht/~typeswitch/mirth/16
@@ -39,20 +47,7 @@ stdenv.mkDerivation {
       echo "bin/mirth3: CC := ${stdenv.cc.targetPrefix}cc \$(C99FLAGS) -O2" >>Makefile
     '';
 
-  outputs = [
-    "out"
-    "lib"
-    "bin"
-    "doc"
-    "examples"
-    "vim"
-  ];
-
   strictDeps = true;
-  __structuredAttrs = true;
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   nativeBuildInputs = [ makeBinaryWrapper ];
 
   buildFlags = [
@@ -91,15 +86,22 @@ stdenv.mkDerivation {
       --add-flags "-P $lib/lib/mirth"
   '';
 
+  __structuredAttrs = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  name = "mirth";
+
   meta = {
     description = "Concatenative functional programming language with strong static linear types";
+
     longDescription = ''
       Mirth is inspired by Forth, Joy, Haskell, Lisp, and monoidal category theory.
       Mirth compiles to C99.
     '';
+
     homepage = "https://git.sr.ht/~typeswitch/mirth";
     license = lib.licenses.bsd0;
-    mainProgram = "mirthc";
+    maintainers = with lib.maintainers; [ toastal ];
+
     # https://git.sr.ht/~typeswitch/mirth/tree/main/item/src/mirth.h#L4-22
     platforms = [
       "aarch64-darwin"
@@ -110,6 +112,7 @@ stdenv.mkDerivation {
       "x86_64-linux"
       "x86_64-windows"
     ];
-    maintainers = with lib.maintainers; [ toastal ];
+
+    mainProgram = "mirthc";
   };
 }

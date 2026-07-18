@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  coreutils,
+  dpkg,
+  file,
+  ghostscript,
+  gnugrep,
+  gnused,
   makeWrapper,
   perl,
-  gnused,
-  ghostscript,
-  file,
-  coreutils,
-  gnugrep,
   which,
 }:
 let
@@ -30,22 +30,21 @@ let
   ];
 in
 stdenv.mkDerivation {
-  pname = "cups-brother-mfcl2800dw";
   inherit version;
+  pname = "cups-brother-mfcl2800dw";
+
+  src = fetchurl {
+    url = "https://download.brother.com/welcome/dlf106048/mfcl2800dwpdrv-${version}.i386.deb";
+    hash = "sha256-sY92w0EFI69LxoNrhluIhqFOWZQOI+SJKKyuExvasgA=";
+  };
 
   nativeBuildInputs = [
     dpkg
     makeWrapper
     autoPatchelfHook
   ];
+
   buildInputs = [ perl ];
-
-  dontUnpack = true;
-
-  src = fetchurl {
-    url = "https://download.brother.com/welcome/dlf106048/mfcl2800dwpdrv-${version}.i386.deb";
-    hash = "sha256-sY92w0EFI69LxoNrhluIhqFOWZQOI+SJKKyuExvasgA=";
-  };
 
   installPhase = ''
     runHook preInstall
@@ -91,12 +90,14 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother MFC-L2750DW printer driver";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
-    platforms = map (arch: "${arch}-linux") arches;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.luftmensch-luftmensch ];
+    platforms = map (arch: "${arch}-linux") arches;
   };
 }

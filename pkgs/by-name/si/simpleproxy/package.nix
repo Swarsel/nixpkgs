@@ -8,7 +8,6 @@
 stdenv.mkDerivation rec {
   pname = "simpleproxy";
   version = "3.5";
-  rev = "v.${version}";
 
   src = fetchFromGitHub {
     inherit rev;
@@ -18,10 +17,11 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+  rev = "v.${version}";
 
   meta = {
-    homepage = "https://github.com/vzaliva/simpleproxy";
     description = "Simple TCP proxy";
+    homepage = "https://github.com/vzaliva/simpleproxy";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.montag451 ];
     mainProgram = "simpleproxy";

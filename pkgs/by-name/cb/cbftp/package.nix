@@ -20,8 +20,6 @@ stdenv.mkDerivation rec {
     openssl
   ];
 
-  dontConfigure = true;
-
   makeFlags = lib.optional stdenv.hostPlatform.isDarwin "OPTFLAGS=-O0";
 
   installPhase = ''
@@ -33,15 +31,19 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://cbftp.eu/";
     description = "Advanced multi-purpose FTP/FXP client";
+
     longDescription = ''
       Cbftp is an advanced multi-purpose FTP/FXP client that focuses on
       efficient large-scale data spreading, while also supporting most regular
       FTP/FXP use cases in a modern way. It runs in a terminal and provides a
       semi-graphical user interface through ncurses.
     '';
+
+    homepage = "https://cbftp.eu/";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = with lib.platforms; unix;

@@ -17,27 +17,28 @@ stdenv.mkDerivation rec {
   };
 
   buildInputs = [ oath-toolkit ];
-
   dontBuild = true;
-
-  patchPhase = ''
-    sed -i -e 's|OATH=\$(which oathtool)|OATH=${oath-toolkit}/bin/oathtool|' otp.bash
-  '';
 
   installFlags = [
     "PREFIX=$(out)"
     "BASHCOMPDIR=$(out)/share/bash-completion/completions"
   ];
 
+  patchPhase = ''
+    sed -i -e 's|OATH=\$(which oathtool)|OATH=${oath-toolkit}/bin/oathtool|' otp.bash
+  '';
+
   meta = {
     description = "Pass extension for managing one-time-password (OTP) tokens";
     homepage = "https://github.com/tadfisher/pass-otp";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       jwiegley
       tadfisher
       toonn
     ];
+
     platforms = lib.platforms.unix;
   };
 }

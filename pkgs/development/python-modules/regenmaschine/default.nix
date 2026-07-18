@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   poetry-core,
   pytest-aiohttp,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "regenmaschine";
   version = "2024.03.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -41,14 +40,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+
   disabledTestPaths = [
     # Examples are prefix with test_
     "examples/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "regenmaschine" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Python library for interacting with RainMachine smart sprinkler controllers";

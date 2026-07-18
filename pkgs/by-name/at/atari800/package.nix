@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   SDL,
   autoreconfHook,
-  fetchFromGitHub,
   libGL,
   libGLU,
   libx11,
@@ -46,14 +46,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://atari800.github.io/";
     description = "Atari 8-bit emulator";
+
     longDescription = ''
       Atari800 is the emulator of Atari 8-bit computer systems and 5200 game
       console for Unix, Linux, Amiga, MS-DOS, Atari TT/Falcon, MS-Windows, MS
       WinCE, Sega Dreamcast, Android and other systems supported by the SDL
       library.
     '';
+
+    homepage = "https://atari800.github.io/";
     license = with lib.licenses; [ gpl2Plus ];
     maintainers = [ ];
     platforms = lib.platforms.linux;

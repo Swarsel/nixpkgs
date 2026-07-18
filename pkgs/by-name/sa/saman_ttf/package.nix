@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -14,19 +14,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-hLlo4qtxL1RDiA9PpRvo2F7rdCVGPs2G8NHKydLfJXU=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
     install -Dm644 $src $out/share/fonts/truetype/SamanDere-Regular.ttf
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Medium contrast sans serif font for web use";
     homepage = "https://github.com/tcgumus/saman";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ gigahawk ];
+    platforms = lib.platforms.all;
   };
 })

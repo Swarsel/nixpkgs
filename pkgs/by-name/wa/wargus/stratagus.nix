@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  zlib,
+  SDL2,
+  SDL2_image,
+  SDL2_mixer,
   bzip2,
+  cmake,
+  libGL,
   libpng,
   libx11,
   lua5_1,
+  pkg-config,
   toluapp,
-  SDL2,
-  SDL2_mixer,
-  SDL2_image,
-  libGL,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,6 +26,7 @@ stdenv.mkDerivation rec {
     tag = "v${version}";
     sha256 = "sha256-VzTBd+59tGDdgp1ykdqXuBpT2pVHTnR71bb9/EVyW5Q=";
   };
+
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 2.9)" "cmake_minimum_required(VERSION 3.25)"
@@ -35,6 +36,7 @@ stdenv.mkDerivation rec {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     zlib
     bzip2
@@ -47,6 +49,7 @@ stdenv.mkDerivation rec {
     libGL
     libx11
   ];
+
   cmakeFlags = [
     "-DCMAKE_CXX_FLAGS=-Wno-error=format-overflow"
   ];

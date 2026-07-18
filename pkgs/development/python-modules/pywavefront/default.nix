@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  mock,
   pyglet,
   pytestCheckHook,
-  mock,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "PyWavefront";
   version = "1.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pywavefront";
@@ -22,13 +21,13 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ setuptools ];
 
-  optional-dependencies.visualization = [ pyglet ];
-
   nativeCheckInputs = [
     pytestCheckHook
     mock
   ];
 
+  optional-dependencies.visualization = [ pyglet ];
+  pyproject = true;
   pythonImportsCheck = [ "pywavefront" ];
 
   meta = {

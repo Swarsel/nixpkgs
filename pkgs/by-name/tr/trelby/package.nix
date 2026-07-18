@@ -1,17 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  gtk3,
   glib,
   gsettings-desktop-schemas,
+  gtk3,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "trelby";
   version = "2.4.16.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "trelby";
@@ -19,10 +18,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-YblilPQXjlSgkBstewfiuW0DZCnJw4dk6vZfEhdBGbk=";
   };
-
-  build-system = [
-    python3Packages.setuptools
-  ];
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -34,12 +29,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     gtk3
   ];
 
-  dependencies = with python3Packages; [
-    lxml
-    reportlab
-    wxpython
-  ];
-
   postInstall = ''
     install -Dm644 trelby/resources/trelby.desktop $out/share/applications/trelby.desktop
 
@@ -49,13 +38,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "Icon=trelby256" "Icon=trelby"
   '';
 
+  build-system = [
+    python3Packages.setuptools
+  ];
+
+  dependencies = with python3Packages; [
+    lxml
+    reportlab
+    wxpython
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Free, multiplatform, feature-rich screenwriting program";
     homepage = "https://www.trelby.org";
-    downloadPage = "https://github.com/trelby/trelby";
-    mainProgram = "trelby";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ isotoxal ];
+    platforms = lib.platforms.linux;
+    mainProgram = "trelby";
+    downloadPage = "https://github.com/trelby/trelby";
   };
 })

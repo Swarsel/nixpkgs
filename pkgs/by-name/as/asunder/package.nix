@@ -1,27 +1,27 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
-  makeWrapper,
-  gtk3,
-  libcddb,
-  intltool,
-  pkg-config,
+  autoreconfHook,
   cdparanoia,
-  mp3Support ? false,
-  lame,
-  oggSupport ? true,
-  vorbis-tools,
-  flacSupport ? true,
   flac,
-  opusSupport ? false,
+  gtk3,
+  intltool,
+  lame,
+  libcddb,
+  makeWrapper,
+  monkeys-audio,
   opus-tools,
-  wavpackSupport ? false,
+  pkg-config,
+  vorbis-tools,
   wavpack,
+  flacSupport ? true,
   #, musepackSupport ? false, TODO: mpcenc
   monkeysAudioSupport ? false,
-  monkeys-audio,
+  mp3Support ? false,
+  oggSupport ? true,
+  opusSupport ? false,
+  wavpackSupport ? false,
   #, aacSupport ? false, TODO: neroAacEnc
 }:
 
@@ -53,6 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     gtk3
     libcddb
@@ -65,16 +66,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Graphical Audio CD ripper and encoder for Linux";
-    mainProgram = "asunder";
-    homepage = "https://github.com/rizalmart/asunder-gtk3";
-    license = lib.licenses.gpl2;
-    maintainers = with lib.maintainers; [ mudri ];
-    platforms = lib.platforms.linux;
 
     longDescription = ''
       Asunder is a graphical Audio CD ripper and encoder for Linux. You can use
       it to save tracks from an Audio CD as any of WAV, MP3, OGG, FLAC, Opus,
       WavPack, Musepack, AAC, and Monkey's Audio files.
     '';
+
+    homepage = "https://github.com/rizalmart/asunder-gtk3";
+    license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ mudri ];
+    platforms = lib.platforms.linux;
+    mainProgram = "asunder";
   };
 })

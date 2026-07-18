@@ -1,24 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  gnumake42,
-  perl,
+  apron,
+  camlidl,
+  findlib,
   gmp,
+  gnumake42,
   mpfr,
   ocaml,
-  findlib,
-  camlidl,
-  apron,
+  perl,
 }:
 
 stdenv.mkDerivation rec {
-  version = "1.1";
   pname = "ocaml${ocaml.version}-elina";
+  version = "1.1";
+
   src = fetchurl {
     url = "https://files.sri.inf.ethz.ch/elina-${version}.tar.gz";
     sha256 = "1nymykskq1yx87y4xl6hl9i4q6kv0qaq25rniqgl1bfn883p1ysc";
   };
+
+  strictDeps = true;
 
   # fails with make 4.4
   nativeBuildInputs = [
@@ -35,9 +38,6 @@ stdenv.mkDerivation rec {
     mpfr
   ];
 
-  strictDeps = true;
-
-  prefixKey = "--prefix ";
   configureFlags = [
     "--use-apron"
     "--use-opam"
@@ -47,6 +47,7 @@ stdenv.mkDerivation rec {
   ++ lib.optional stdenv.hostPlatform.isDarwin "--absolute-dylibs";
 
   createFindlibDestdir = true;
+  prefixKey = "--prefix ";
 
   meta = {
     description = "ETH LIbrary for Numerical Analysis";

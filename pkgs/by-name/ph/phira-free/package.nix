@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
+  imagemagick,
   phira,
   phira-unwrapped,
-  imagemagick,
+  stdenvNoCC,
   ubuntu-classic,
 }:
 
@@ -11,10 +11,7 @@ phira.override {
   overrideAssets = stdenvNoCC.mkDerivation {
     pname = "phira-assets";
     version = phira.version;
-
     nativeBuildInputs = [ imagemagick ];
-
-    dontUnpack = true;
 
     installPhase = ''
       runHook preInstall
@@ -28,5 +25,7 @@ phira.override {
 
       runHook postInstall
     '';
+
+    dontUnpack = true;
   };
 }

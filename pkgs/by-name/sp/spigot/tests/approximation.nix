@@ -4,12 +4,9 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "spigot-approximation";
   inherit (spigot) version;
-
+  pname = "spigot-approximation";
   nativeBuildInputs = [ spigot ];
-
-  dontInstall = true;
 
   buildCommand = ''
     [ "$(spigot -b2 -d32 '(pi/1-355/113)')" = "-0.00000000000000000000010001111001" ]
@@ -17,5 +14,6 @@ stdenv.mkDerivation {
     touch $out
   '';
 
+  dontInstall = true;
   meta.timeout = 10;
 }

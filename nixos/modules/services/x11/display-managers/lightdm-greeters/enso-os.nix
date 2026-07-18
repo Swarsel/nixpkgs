@@ -30,69 +30,86 @@ in
   options = {
     services.xserver.displayManager.lightdm.greeters.enso = {
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to enable enso-os-greeter as the lightdm greeter
         '';
+
+        type = types.bool;
       };
 
-      theme = {
-        package = mkPackageOption pkgs "gnome-themes-extra" { };
-        name = mkOption {
-          type = types.str;
-          default = "Adwaita";
-          description = ''
-            Name of the theme to use for the lightdm-enso-os-greeter
-          '';
-        };
+      blur = mkOption {
+        default = false;
+
+        description = ''
+          Whether or not to enable blur
+        '';
+
+        type = types.bool;
       };
 
-      iconTheme = {
-        package = mkPackageOption pkgs "papirus-icon-theme" { };
-        name = mkOption {
-          type = types.str;
-          default = "ePapirus";
-          description = ''
-            Name of the icon theme to use for the lightdm-enso-os-greeter
-          '';
-        };
+      brightness = mkOption {
+        default = 7;
+
+        description = ''
+          Brightness
+        '';
+
+        type = types.int;
       };
 
       cursorTheme = {
         package = mkPackageOption pkgs "capitaine-cursors" { };
+
         name = mkOption {
-          type = types.str;
           default = "capitane-cursors";
+
           description = ''
             Name of the cursor theme to use for the lightdm-enso-os-greeter
           '';
+
+          type = types.str;
         };
       };
 
-      blur = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether or not to enable blur
-        '';
-      };
-
-      brightness = mkOption {
-        type = types.int;
-        default = 7;
-        description = ''
-          Brightness
-        '';
-      };
-
       extraConfig = mkOption {
-        type = types.lines;
         default = "";
+
         description = ''
           Extra configuration that should be put in the greeter.conf
           configuration file
         '';
+
+        type = types.lines;
+      };
+
+      iconTheme = {
+        package = mkPackageOption pkgs "papirus-icon-theme" { };
+
+        name = mkOption {
+          default = "ePapirus";
+
+          description = ''
+            Name of the icon theme to use for the lightdm-enso-os-greeter
+          '';
+
+          type = types.str;
+        };
+      };
+
+      theme = {
+        package = mkPackageOption pkgs "gnome-themes-extra" { };
+
+        name = mkOption {
+          default = "Adwaita";
+
+          description = ''
+            Name of the theme to use for the lightdm-enso-os-greeter
+          '';
+
+          type = types.str;
+        };
       };
     };
   };

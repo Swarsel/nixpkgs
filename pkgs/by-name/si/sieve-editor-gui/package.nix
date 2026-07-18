@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  nodejs_22,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  copyDesktopItems,
   electron,
   makeDesktopItem,
-  copyDesktopItems,
+  nodejs_22,
   runCommand,
   zip,
 }:
@@ -33,9 +33,6 @@ buildNpmPackage {
   pname = "sieve-editor-gui";
   version = "0.6.1-unstable-2025-03-12";
 
-  # npm dependency install fails with nodejs_24: https://github.com/NixOS/nixpkgs/issues/474535
-  nodejs = nodejs_22;
-
   src = fetchFromGitHub {
     owner = "thsmi";
     repo = "sieve";
@@ -43,12 +40,12 @@ buildNpmPackage {
     hash = "sha256-jR3+YaVQ+Yd2Xm40SzQNvwWMPe0mJ6bhT96hlUz3/qU=";
   };
 
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ copyDesktopItems ];
   npmDepsHash = "sha256-w2i7XsTx3hlsh/JbvShaxvDyFGcBpL66lMy7KL2tnzM=";
 
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ copyDesktopItems ];
-
-  npmBuildScript = "gulp";
-  npmBuildFlags = [ "app:package" ];
+  env = {
+    ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
+  };
 
   installPhase = ''
     runHook preInstall
@@ -77,33 +74,37 @@ buildNpmPackage {
     runHook postInstall
   '';
 
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
-  };
-
   desktopItems = [
     (makeDesktopItem {
-      name = "sieve-editor-gui";
-      exec = "sieve-editor-gui";
-      desktopName = "Sieve Editor";
-      icon = "sieve";
       categories = [
         "Utility"
         "Email"
       ];
+
       comment = "Tool to Manage Sieve Message Filters";
+      desktopName = "Sieve Editor";
+      exec = "sieve-editor-gui";
+      icon = "sieve";
+      name = "sieve-editor-gui";
     })
   ];
 
+  # npm dependency install fails with nodejs_24: https://github.com/NixOS/nixpkgs/issues/474535
+  nodejs = nodejs_22;
+  npmBuildFlags = [ "app:package" ];
+  npmBuildScript = "gulp";
+
   meta = {
+    inherit (electron.meta) platforms;
     description = "Activate, edit, delete and add Sieve scripts with a convenient interface";
     homepage = "https://github.com/thsmi/sieve";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       Silver-Golden
       fugi
     ];
+
     mainProgram = "sieve-editor-gui";
-    inherit (electron.meta) platforms;
   };
 }

@@ -16,13 +16,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-GnirEgJHgZVzxkFFVDU9795kgvMTitnH+xWd7ooNf7Y=";
   };
 
-  vendorHash = "sha256-vk9c+U8mKwT03dHV9labvCOM2Ip1vk7AeiTleEBuNP4=";
-
-  doCheck = false;
-
   buildInputs = [
     chromium
   ];
+
+  vendorHash = "sha256-vk9c+U8mKwT03dHV9labvCOM2Ip1vk7AeiTleEBuNP4=";
+  doCheck = false;
 
   meta = {
     description = "Archiving tool with an IM-style interface";

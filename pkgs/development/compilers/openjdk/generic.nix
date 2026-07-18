@@ -1,64 +1,72 @@
 {
-  featureVersion,
-
   lib,
   stdenv,
-
   fetchurl,
-  fetchpatch,
-
-  buildPackages,
-  autoPatchelfHook,
-  pkg-config,
-  autoconf,
-  lndir,
-  unzip,
-  ensureNewerSourcesForZipFilesHook,
-  pandoc,
-
-  cpio,
-  file,
-  which,
-  zip,
-  zlib,
-  cups,
-  freetype,
-  harfbuzz,
   alsa-lib,
-  libjpeg,
+  autoPatchelfHook,
+  autoconf,
+  buildPackages,
+  cacert,
+  cpio,
+  cups,
+  ensureNewerSourcesForZipFilesHook,
+  featureVersion,
+  fetchpatch,
+  file,
+  fontconfig,
+  freetype,
   giflib,
-  libpng,
+  glib,
+  gtk2,
+  gtk3,
+  harfbuzz,
+  jre-generate-cacerts,
   lcms2,
-  libx11,
+  liberation_ttf,
   libice,
+  libjpeg,
+  libpng,
+  libx11,
+  libxcursor,
   libxext,
-  libxrender,
-  libxtst,
-  libxt,
   libxi,
   libxinerama,
-  libxcursor,
   libxrandr,
-  fontconfig,
-
-  setJavaClassPath,
-
-  versionCheckHook,
-
-  liberation_ttf,
-  cacert,
-  jre-generate-cacerts,
-
+  libxrender,
+  libxt,
+  libxtst,
+  lndir,
   nixpkgs-openjdk-updater,
-
-  # TODO(@sternenseemann): gtk3 fails to evaluate in pkgsCross.ghcjs.buildPackages
-  # which should be fixable, this is a no-rebuild workaround for GHC.
-  headless ? lib.versionAtLeast featureVersion "21" && stdenv.targetPlatform.isGhcjs,
-
-  enableJavaFX ? false,
   openjfx17,
   openjfx21,
   openjfx25,
+  pandoc,
+  pkg-config,
+  setJavaClassPath,
+  temurin-bin-11,
+  temurin-bin-17,
+  temurin-bin-21,
+  temurin-bin-25,
+  temurin-bin-8,
+  unzip,
+  versionCheckHook,
+  which,
+  zip,
+  zlib,
+  enableGtk ? true,
+  enableJavaFX ? false,
+  # TODO(@sternenseemann): gtk3 fails to evaluate in pkgsCross.ghcjs.buildPackages
+  # which should be fixable, this is a no-rebuild workaround for GHC.
+  headless ? lib.versionAtLeast featureVersion "21" && stdenv.targetPlatform.isGhcjs,
+  jdk-bootstrap ?
+    {
+      "11" = temurin-bin-11.__spliced.buildBuild or temurin-bin-11;
+      "17" = temurin-bin-17.__spliced.buildBuild or temurin-bin-17;
+      "21" = temurin-bin-21.__spliced.buildBuild or temurin-bin-21;
+      "25" = temurin-bin-25.__spliced.buildBuild or temurin-bin-25;
+      "8" = temurin-bin-8.__spliced.buildBuild or temurin-bin-8;
+    }
+    .${featureVersion},
   openjfx_jdk ?
     {
       "17" = openjfx17;
@@ -66,26 +74,6 @@
       "25" = openjfx25;
     }
     .${featureVersion} or (throw "JavaFX is not supported on OpenJDK ${featureVersion}"),
-
-  enableGtk ? true,
-  gtk3,
-  gtk2,
-  glib,
-
-  temurin-bin-8,
-  temurin-bin-11,
-  temurin-bin-17,
-  temurin-bin-21,
-  temurin-bin-25,
-  jdk-bootstrap ?
-    {
-      "8" = temurin-bin-8.__spliced.buildBuild or temurin-bin-8;
-      "11" = temurin-bin-11.__spliced.buildBuild or temurin-bin-11;
-      "17" = temurin-bin-17.__spliced.buildBuild or temurin-bin-17;
-      "21" = temurin-bin-21.__spliced.buildBuild or temurin-bin-21;
-      "25" = temurin-bin-25.__spliced.buildBuild or temurin-bin-25;
-    }
-    .${featureVersion},
 }:
 
 let
@@ -112,10 +100,10 @@ let
       ""
     else
       {
-        i686-linux = "i386";
-        x86_64-linux = "amd64";
         aarch64-linux = "aarch64";
+        i686-linux = "i386";
         powerpc64le-linux = "ppc64le";
+        x86_64-linux = "amd64";
       }
       .${stdenv.system} or (throw "Unsupported platform ${stdenv.system}");
 
@@ -129,8 +117,9 @@ assert lib.assertMsg (lib.pathExists sourceFile)
   "OpenJDK ${featureVersion} is not a supported version";
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "openjdk" + lib.optionalString headless "-headless";
   inherit version;
+  inherit (source) src;
+  pname = "openjdk" + lib.optionalString headless "-headless";
 
   outputs = [
     "out"
@@ -138,8 +127,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (!atLeast11) [
     "jre"
   ];
-
-  inherit (source) src;
 
   patches = [
     (
@@ -201,25 +188,25 @@ stdenv.mkDerivation (finalAttrs: {
     # so grab the work-around from
     # https://src.fedoraproject.org/rpms/java-openjdk/pull-request/24
     (fetchurl {
-      url = "https://src.fedoraproject.org/rpms/java-openjdk/raw/06c001c7d87f2e9fe4fedeef2d993bcd5d7afa2a/f/rh1673833-remove_removal_of_wformat_during_test_compilation.patch";
       sha256 = "082lmc30x64x583vqq00c8y0wqih3y4r0mp1c4bqq36l22qv6b6r";
+      url = "https://src.fedoraproject.org/rpms/java-openjdk/raw/06c001c7d87f2e9fe4fedeef2d993bcd5d7afa2a/f/rh1673833-remove_removal_of_wformat_during_test_compilation.patch";
     })
   ]
   ++ lib.optionals (featureVersion == "17") [
     # Patch borrowed from Alpine to fix build errors with musl libc and recent gcc.
     # This is applied anywhere to prevent patchrot.
     (fetchurl {
-      url = "https://git.alpinelinux.org/aports/plain/community/openjdk17/FixNullPtrCast.patch?id=41e78a067953e0b13d062d632bae6c4f8028d91c";
       sha256 = "sha256-LzmSew51+DyqqGyyMw2fbXeBluCiCYsS1nCjt9hX6zo=";
+      url = "https://git.alpinelinux.org/aports/plain/community/openjdk17/FixNullPtrCast.patch?id=41e78a067953e0b13d062d632bae6c4f8028d91c";
     })
   ]
   ++ lib.optionals (atLeast11 && !atLeast25) [
     # Fix build for gnumake-4.4.1:
     #   https://github.com/openjdk/jdk/pull/12992
     (fetchpatch {
+      hash = "sha256-Qcm3ZmGCOYLZcskNjj7DYR85R4v07vYvvavrVOYL8vg=";
       name = "gnumake-4.4.1";
       url = "https://github.com/openjdk/jdk/commit/9341d135b855cc208d48e47d30cd90aafa354c36.patch";
-      hash = "sha256-Qcm3ZmGCOYLZcskNjj7DYR85R4v07vYvvavrVOYL8vg=";
     })
   ]
   ++ lib.optionals atLeast25 [
@@ -239,9 +226,16 @@ stdenv.mkDerivation (finalAttrs: {
     ./11/patches/fix-oopdesc-ptr-alignment-ub.patch
   ];
 
-  strictDeps = true;
+  postPatch = ''
+    chmod +x configure
+    patchShebangs --build configure
+  ''
+  + lib.optionalString atLeast25 ''
+    chmod +x make/scripts/*.{template,sh,pl}
+    patchShebangs --build make/scripts
+  '';
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -305,18 +299,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ setJavaClassPath ];
-
-  nativeInstallCheckInputs = lib.optionals atLeast23 [
-    versionCheckHook
-  ];
-
-  # JDK's build system attempts to specifically detect
-  # and special-case WSL, and we don't want it to do that,
-  # so pass the correct platform names explicitly
-  configurePlatforms = lib.optionals atLeast17 [
-    "build"
-    "host"
-  ];
 
   # https://openjdk.org/groups/build/doc/building.html
   configureFlags = [
@@ -388,21 +370,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildFlags = if atLeast17 then [ "images" ] else [ "all" ];
 
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  # -j flag is explicitly rejected by the build system:
-  #     Error: 'make -jN' is not supported, use 'make JOBS=N'
-  # Note: it does not make build sequential. Build system
-  # still runs in parallel.
-  enableParallelBuilding = false;
-
-  preConfigure =
-    # Set number of jobs to use when building.
-    ''
-      configureFlags+=("--with-jobs=''${NIX_BUILD_CORES}")
-    '';
-
   env = {
     NIX_CFLAGS_COMPILE =
       if atLeast17 then
@@ -463,21 +430,14 @@ stdenv.mkDerivation (finalAttrs: {
     DISABLE_HOTSPOT_OS_VERSION_CHECK = "ok";
   };
 
-  versionCheckProgram = lib.optionalString atLeast23 "${placeholder "out"}/bin/java";
+  preConfigure =
+    # Set number of jobs to use when building.
+    ''
+      configureFlags+=("--with-jobs=''${NIX_BUILD_CORES}")
+    '';
 
   # Fails with "No rule to make target 'y'."
   doCheck = false;
-
-  doInstallCheck = atLeast23;
-
-  postPatch = ''
-    chmod +x configure
-    patchShebangs --build configure
-  ''
-  + lib.optionalString atLeast25 ''
-    chmod +x make/scripts/*.{template,sh,pl}
-    patchShebangs --build make/scripts
-  '';
 
   installPhase = ''
     mkdir -p $out/lib
@@ -567,6 +527,12 @@ stdenv.mkDerivation (finalAttrs: {
     ''
   );
 
+  doInstallCheck = atLeast23;
+
+  nativeInstallCheckInputs = lib.optionals atLeast23 [
+    versionCheckHook
+  ];
+
   preFixup =
     # Set JAVA_HOME automatically.
     ''
@@ -583,10 +549,6 @@ stdenv.mkDerivation (finalAttrs: {
       printWords "${setJavaClassPath}" > $jre/nix-support/propagated-build-inputs
     '';
 
-  # If binaries in the jre output have RPATH dependencies on libraries from the out output, Nix will
-  # detect a cyclic reference and abort the build.
-  # To fix that, we need to patch the binaries from each output in separate auto-patchelf executions.
-  dontAutoPatchelf = true;
   postFixup = ''
     autoPatchelf -- $out
   ''
@@ -594,13 +556,35 @@ stdenv.mkDerivation (finalAttrs: {
     autoPatchelf -- $jre
   '';
 
+  __structuredAttrs = true;
+
+  # JDK's build system attempts to specifically detect
+  # and special-case WSL, and we don't want it to do that,
+  # so pass the correct platform names explicitly
+  configurePlatforms = lib.optionals atLeast17 [
+    "build"
+    "host"
+  ];
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   disallowedReferences = [ jdk-bootstrap' ];
+  # If binaries in the jre output have RPATH dependencies on libraries from the out output, Nix will
+  # detect a cyclic reference and abort the build.
+  # To fix that, we need to patch the binaries from each output in separate auto-patchelf executions.
+  dontAutoPatchelf = true;
+  # -j flag is explicitly rejected by the build system:
+  #     Error: 'make -jN' is not supported, use 'make JOBS=N'
+  # Note: it does not make build sequential. Build system
+  # still runs in parallel.
+  enableParallelBuilding = false;
+  separateDebugInfo = true;
+  versionCheckProgram = lib.optionalString atLeast23 "${placeholder "out"}/bin/java";
 
   passthru = {
-    home = "${finalAttrs.finalPackage}/lib/openjdk";
     # Shouldn't this be `jdk-bootstrap = jdk-bootstrap'`?
     inherit jdk-bootstrap;
     inherit (source) updateScript;
+    home = "${finalAttrs.finalPackage}/lib/openjdk";
   }
   // (if atLeast11 then { inherit gtk3; } else { inherit gtk2; })
   // lib.optionalAttrs (!atLeast23) {
@@ -611,11 +595,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open-source Java Development Kit";
     homepage = "https://openjdk.java.net/";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       infinidoge
     ];
-    teams = [ lib.teams.java ];
-    mainProgram = "java";
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
@@ -629,9 +613,12 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals atLeast17 [
       "riscv64-linux"
     ];
+
+    mainProgram = "java";
     # OpenJDK 8 was broken for musl at 2024-01-17. Tracking issue:
     # https://github.com/NixOS/nixpkgs/issues/281618
     # error: ‘isnanf’ was not declared in this scope
     broken = !atLeast11 && stdenv.hostPlatform.isMusl;
+    teams = [ lib.teams.java ];
   };
 })

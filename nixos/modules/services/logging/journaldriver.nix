@@ -23,60 +23,19 @@ in
 {
   options.services.journaldriver = {
     enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether to enable journaldriver to forward journald logs to
         Stackdriver Logging.
       '';
-    };
 
-    logLevel = mkOption {
-      type = types.str;
-      default = "info";
-      description = ''
-        Log level at which journaldriver logs its own output.
-      '';
-    };
-
-    logName = mkOption {
-      type = with types; nullOr str;
-      default = null;
-      description = ''
-        Configures the name of the target log in Stackdriver Logging.
-        This option can be set to, for example, the hostname of a
-        machine to improve the user experience in the logging
-        overview.
-      '';
-    };
-
-    googleCloudProject = mkOption {
-      type = with types; nullOr str;
-      default = null;
-      description = ''
-        Configures the name of the Google Cloud project to which to
-        forward journald logs.
-
-        This option is required on non-GCP machines, but should not be
-        set on GCP instances.
-      '';
-    };
-
-    logStream = mkOption {
-      type = with types; nullOr str;
-      default = null;
-      description = ''
-        Configures the name of the Stackdriver Logging log stream into
-        which to write journald entries.
-
-        This option is required on non-GCP machines, but should not be
-        set on GCP instances.
-      '';
+      type = types.bool;
     };
 
     applicationCredentials = mkOption {
-      type = with types; nullOr path;
       default = null;
+
       description = ''
         Path to the service account private key (in JSON-format) used
         to forward log entries to Stackdriver Logging on non-GCP
@@ -85,37 +44,89 @@ in
         This option is required on non-GCP machines, but should not be
         set on GCP instances.
       '';
+
+      type = with types; nullOr path;
+    };
+
+    googleCloudProject = mkOption {
+      default = null;
+
+      description = ''
+        Configures the name of the Google Cloud project to which to
+        forward journald logs.
+
+        This option is required on non-GCP machines, but should not be
+        set on GCP instances.
+      '';
+
+      type = with types; nullOr str;
+    };
+
+    logLevel = mkOption {
+      default = "info";
+
+      description = ''
+        Log level at which journaldriver logs its own output.
+      '';
+
+      type = types.str;
+    };
+
+    logName = mkOption {
+      default = null;
+
+      description = ''
+        Configures the name of the target log in Stackdriver Logging.
+        This option can be set to, for example, the hostname of a
+        machine to improve the user experience in the logging
+        overview.
+      '';
+
+      type = with types; nullOr str;
+    };
+
+    logStream = mkOption {
+      default = null;
+
+      description = ''
+        Configures the name of the Stackdriver Logging log stream into
+        which to write journald entries.
+
+        This option is required on non-GCP machines, but should not be
+        set on GCP instances.
+      '';
+
+      type = with types; nullOr str;
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.journaldriver = {
-      description = "Stackdriver Logging journal forwarder";
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Stackdriver Logging journal forwarder";
+
+      environment = {
+        GOOGLE_APPLICATION_CREDENTIALS = cfg.applicationCredentials;
+        GOOGLE_CLOUD_PROJECT = cfg.googleCloudProject;
+        LOG_NAME = cfg.logName;
+        LOG_STREAM = cfg.logStream;
+        RUST_LOG = cfg.logLevel;
+      };
 
       serviceConfig = {
+        DynamicUser = true;
         ExecStart = lib.getExe pkgs.journaldriver;
         Restart = "always";
-        DynamicUser = true;
-
         # This directive lets systemd automatically configure
         # permissions on /var/lib/journaldriver, the directory in
         # which journaldriver persists its cursor state.
         StateDirectory = "journaldriver";
-
         # This group is required for accessing journald.
         SupplementaryGroups = "systemd-journal";
       };
 
-      environment = {
-        RUST_LOG = cfg.logLevel;
-        LOG_NAME = cfg.logName;
-        LOG_STREAM = cfg.logStream;
-        GOOGLE_CLOUD_PROJECT = cfg.googleCloudProject;
-        GOOGLE_APPLICATION_CREDENTIALS = cfg.applicationCredentials;
-      };
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 }

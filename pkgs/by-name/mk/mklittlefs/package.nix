@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,8 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "earlephilhower";
     repo = "mklittlefs";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-qCL5EG5HyUjObaRReptuNqMKKxOnyP8ZQpOKdLV4F80=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -37,9 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
       + lib.optionalString stdenv.hostPlatform.isDarwin " -Wno-error=vla-cxx-extension";
   };
 
-  enableParallelBuilding = true;
-
   doCheck = true;
+
   checkPhase = ''
      runHook preCheck
 
@@ -56,11 +55,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  enableParallelBuilding = true;
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  wrapGAppsHook3,
+  gobject-introspection,
+  goocanvas_2,
+  gtk3,
+  gtkspell3,
   intltool,
+  isocodes,
   itstool,
   libxml2,
-  gobject-introspection,
-  gtk3,
-  goocanvas_2,
-  gtkspell3,
-  isocodes,
+  pkg-config,
   python3,
   tesseract4,
+  wrapGAppsHook3,
   extraOcrEngines ? [ ], # other supported engines are: ocrad gocr cuneiform
 }:
 
@@ -26,13 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sD0qWUndguJzTw0uy0FIqupFf4OX6dTFvcd+Mz+8Su0=";
   };
 
-  nativeBuildInputs = [
-    pkg-config
-    wrapGAppsHook3
-    intltool
-    itstool
-    libxml2
-    gobject-introspection
+  patches = [
+    # Compiles, but doesn't launch without this, see:
+    # https://gitlab.gnome.org/GNOME/ocrfeeder/-/issues/83
+    ./fix-launch.diff
   ];
 
   postPatch = ''
@@ -41,6 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "imp.find_module" "importlib.util.find_spec" \
       --replace-fail "distutils" "setuptools._distutils"
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    wrapGAppsHook3
+    intltool
+    itstool
+    libxml2
+    gobject-introspection
+  ];
 
   buildInputs = [
     gtk3
@@ -59,11 +65,11 @@ stdenv.mkDerivation (finalAttrs: {
       ]
     ))
   ];
-  patches = [
-    # Compiles, but doesn't launch without this, see:
-    # https://gitlab.gnome.org/GNOME/ocrfeeder/-/issues/83
-    ./fix-launch.diff
-  ];
+
+  preFixup = ''
+    gappsWrapperArgs+=(--prefix PATH : "${finalAttrs.enginesPath}")
+    gappsWrapperArgs+=(--set ISO_CODES_DIR "${isocodes}/share/xml/iso-codes")
+  '';
 
   enginesPath = lib.makeBinPath (
     [
@@ -72,16 +78,11 @@ stdenv.mkDerivation (finalAttrs: {
     ++ extraOcrEngines
   );
 
-  preFixup = ''
-    gappsWrapperArgs+=(--prefix PATH : "${finalAttrs.enginesPath}")
-    gappsWrapperArgs+=(--set ISO_CODES_DIR "${isocodes}/share/xml/iso-codes")
-  '';
-
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/ocrfeeder";
     description = "Complete Optical Character Recognition and Document Analysis and Recognition program";
-    maintainers = with lib.maintainers; [ doronbehar ];
+    homepage = "https://gitlab.gnome.org/GNOME/ocrfeeder";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ doronbehar ];
     platforms = lib.platforms.linux;
   };
 })

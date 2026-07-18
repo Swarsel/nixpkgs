@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   procps,
-  setuptools,
   pytest-mock,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "shellingham";
   version = "1.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sarugaku";
@@ -27,13 +26,13 @@ buildPythonPackage (finalAttrs: {
         'cmd = ["${lib.getExe' procps "ps"}",'
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytest-mock
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "shellingham" ];
 
   meta = {

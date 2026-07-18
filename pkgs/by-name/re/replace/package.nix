@@ -18,6 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  patches = [ ./malloc.patch ];
+
   makeFlags = [
     "TREE=\$(out)"
     "MANTREE=\$(TREE)/share/man"
@@ -31,13 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
   preInstall = "mkdir -p \$out/share/man";
   postInstall = "mv \$out/bin/replace \$out/bin/replace-literal";
 
-  patches = [ ./malloc.patch ];
-
   meta = {
     description = "Tool to replace verbatim strings";
     homepage = "https://replace.richardlloyd.org.uk/";
-    mainProgram = "replace-literal";
-    platforms = lib.platforms.unix;
     license = lib.licenses.unfree;
+    platforms = lib.platforms.unix;
+    mainProgram = "replace-literal";
   };
 })

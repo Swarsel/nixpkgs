@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
+  copyDesktopItems,
   godot3,
   libicns,
-  copyDesktopItems,
   makeDesktopItem,
+  makeWrapper,
   requireFile,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -14,18 +14,10 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.1.13.2";
 
   src = requireFile {
-    name = "Brotato.pck";
     url = "https://store.epicgames.com/en-US/p/brotato-ed4097";
     hash = "sha256-/k/rnypHS3Gtj5nHb1cnx1JvCiJAKe+1JxlXolWksS0=";
+    name = "Brotato.pck";
   };
-
-  srcIcon = fetchurl {
-    name = "brotato.icns";
-    url = "https://shared.fastly.steamstatic.com/community_assets/images/apps/1942280/c096e6b30bcb9749183fe5d1b78f77de7ae89383.icns";
-    hash = "sha256-6ZZ1kqdOjqwIByrX1Bqrhy2yMaShlsbsEhuDBTK77gw=";
-  };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -51,19 +43,28 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "brotato";
-      desktopName = "Brotato";
-      exec = "brotato";
-      icon = "brotato";
-      comment = finalAttrs.meta.description;
       categories = [
         "Game"
         "ActionGame"
         "Shooter"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Brotato";
+      exec = "brotato";
+      icon = "brotato";
+      name = "brotato";
       terminal = false;
     })
   ];
+
+  dontUnpack = true;
+
+  srcIcon = fetchurl {
+    hash = "sha256-6ZZ1kqdOjqwIByrX1Bqrhy2yMaShlsbsEhuDBTK77gw=";
+    name = "brotato.icns";
+    url = "https://shared.fastly.steamstatic.com/community_assets/images/apps/1942280/c096e6b30bcb9749183fe5d1b78f77de7ae89383.icns";
+  };
 
   meta = {
     description = "Only potato capable of handling 6 weapons at the same time";

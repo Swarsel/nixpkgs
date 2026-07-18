@@ -1,25 +1,25 @@
 {
   lib,
-  repoRevToNameMaybe,
   fetchgit,
   fetchzip,
+  repoRevToNameMaybe,
 }:
 
 lib.makeOverridable (
   {
     owner,
     repo,
-    tag ? null,
-    rev ? null,
-    name ? repoRevToNameMaybe repo (lib.revOrTag rev tag) "bitbucket",
-    fetchSubmodules ? false,
-    leaveDotGit ? false,
     deepClone ? false,
-    forceFetchGit ? false,
     fetchLFS ? false,
+    fetchSubmodules ? false,
+    forceFetchGit ? false,
+    leaveDotGit ? false,
+    meta ? { },
+    name ? repoRevToNameMaybe repo (lib.revOrTag rev tag) "bitbucket",
+    rev ? null,
     rootDir ? "",
     sparseCheckout ? lib.optional (rootDir != "") rootDir,
-    meta ? { },
+    tag ? null,
     ... # For hash agility
   }@args:
 
@@ -84,13 +84,15 @@ lib.makeOverridable (
               sparseCheckout
               fetchLFS
               ;
+
             url = gitRepoUrl;
           }
           // lib.optionalAttrs (leaveDotGit != null) { inherit leaveDotGit; }
         else
           {
-            url = "https://bitbucket.org/${owner}/${repo}/get/${revWithTag}.tar.gz";
             extension = "tar.gz";
+            url = "https://bitbucket.org/${owner}/${repo}/get/${revWithTag}.tar.gz";
+
             passthru = {
               inherit gitRepoUrl;
             };
@@ -103,8 +105,8 @@ lib.makeOverridable (
   in
   fetcher fetcherArgs
   // {
-    meta = newMeta;
     inherit owner repo tag;
     rev = revWithTag;
+    meta = newMeta;
   }
 )

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cmake,
   eigen,
-  fetchFromGitHub,
   mpi,
   pkgconfig,
   python,
@@ -18,9 +18,8 @@ let
   optionalCmakeBool = name: value: lib.optionals (value != null) [ (lib.cmakeBool name value) ];
 in
 buildPythonPackage rec {
-  version = "6.0.0";
   pname = "hoomd-blue";
-  pyproject = false; # Built with cmake
+  version = "6.0.0";
 
   src = fetchFromGitHub {
     owner = "glotzerlab";
@@ -34,18 +33,12 @@ buildPythonPackage rec {
     cmake
     pkgconfig
   ];
+
   buildInputs = [
     eigen
     mpi
   ];
 
-  dependencies = with python.pkgs; [
-    numpy
-    mpi4py
-    pybind11
-  ];
-
-  dontAddPrefix = true;
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTING" doCheck)
     (lib.cmakeFeature "CMAKE_INSTALL_PREFIX" "${placeholder "out"}/${python.sitePackages}")
@@ -60,9 +53,18 @@ buildPythonPackage rec {
   # But leave doCheck here so people can override it as they may expect.
   doCheck = true;
 
+  dependencies = with python.pkgs; [
+    numpy
+    mpi4py
+    pybind11
+  ];
+
+  dontAddPrefix = true;
+  pyproject = false; # Built with cmake
+
   meta = {
-    homepage = "https://glotzerlab.engin.umich.edu/software/";
     description = "HOOMD-blue is a general-purpose particle simulation toolkit";
+    homepage = "https://glotzerlab.engin.umich.edu/software/";
     changelog = "https://github.com/glotzerlab/hoomd-blue/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.bsd3;
     maintainers = [ ];

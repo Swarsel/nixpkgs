@@ -1,12 +1,12 @@
 {
-  mkDerivation,
+  lib,
   attoparsec,
   base,
   fetchgit,
   filepath,
   hercules-ci-optparse-applicative,
   hpack,
-  lib,
+  mkDerivation,
   nix-derivation,
   process,
   relude,
@@ -15,14 +15,13 @@
 mkDerivation rec {
   pname = "nix-run";
   version = "0.1.0.0-alpha.2";
+
   src = fetchgit {
     url = "https://tangled.org/did:plc:mojgntlezho4qt7uvcfkdndg/nix-run";
     tag = version;
     hash = "sha256-vnYD3N32H6eEPLis8eNlglXVY+guP5DDKCf2z7CLzwA=";
   };
-  isLibrary = false;
-  isExecutable = true;
-  libraryToolDepends = [ hpack ];
+
   executableHaskellDepends = [
     attoparsec
     base
@@ -33,8 +32,12 @@ mkDerivation rec {
     relude
     unix
   ];
-  prePatch = "hpack";
+
   homepage = "https://tangled.org/weethet.eurosky.social/nix-run";
+  isExecutable = true;
+  isLibrary = false;
+  libraryToolDepends = [ hpack ];
   license = lib.licenses.bsd3;
   mainProgram = "nix-run";
+  prePatch = "hpack";
 }

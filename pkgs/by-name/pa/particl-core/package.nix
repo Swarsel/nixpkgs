@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   boost,
   db48,
-  fetchFromGitHub,
   fetchpatch2,
   libevent,
   miniupnpc,
   openssl,
   pkg-config,
+  python3,
+  unixtools,
   zeromq,
   zlib,
-  unixtools,
-  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,15 +58,17 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "Privacy-Focused Marketplace & Decentralized Application Platform";
+
     longDescription = ''
       An open source, decentralized privacy platform built for global person to person eCommerce.
       RPC daemon and CLI client only.
     '';
+
     homepage = "https://particl.io/";
-    maintainers = with lib.maintainers; [ demyanrogozhin ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ demyanrogozhin ];
     platforms = lib.platforms.unix;
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

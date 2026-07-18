@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
   elementary-bluetooth-daemon,
-  libgee,
   gettext,
   granite7,
   gtk4,
+  libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
   switchboard,
+  vala,
 }:
 
 stdenv.mkDerivation rec {

@@ -1,29 +1,17 @@
 {
   lib,
   stdenv,
-  mkDerivation,
+  csu,
   include,
   libcMinimal,
-  csu,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libgcc_eh";
-  extraPaths = [
-    "lib/libgcc_s"
-    "lib/libcompiler_rt"
-    "lib/msun"
-    "lib/libc" # needs arch-specific fpmath files
-    "contrib/llvm-project/compiler-rt"
-    "contrib/llvm-project/libunwind"
-  ];
-
   outputs = [
     "out"
     "debug"
   ];
-
-  noLibc = true;
 
   buildInputs = [
     include
@@ -52,4 +40,16 @@ mkDerivation {
   '';
 
   alwaysKeepStatic = true;
+
+  extraPaths = [
+    "lib/libgcc_s"
+    "lib/libcompiler_rt"
+    "lib/msun"
+    "lib/libc" # needs arch-specific fpmath files
+    "contrib/llvm-project/compiler-rt"
+    "contrib/llvm-project/libunwind"
+  ];
+
+  noLibc = true;
+  path = "lib/libgcc_eh";
 }

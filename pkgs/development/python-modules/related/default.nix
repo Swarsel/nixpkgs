@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "related";
   version = "0.7.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -41,17 +40,14 @@ buildPythonPackage rec {
         "from urllib.parse import urlparse"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
-
-  pythonRemoveDeps = [ "future" ];
 
   dependencies = [
     attrs
     python-dateutil
     pyyaml
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # Source tarball doesn't contains all needed files
@@ -61,7 +57,9 @@ buildPythonPackage rec {
     "test_store_data_from_json"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "related" ];
+  pythonRemoveDeps = [ "future" ];
 
   meta = {
     description = "Nested Object Models in Python";

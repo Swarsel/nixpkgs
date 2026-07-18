@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-UNso+e/zYah0jApHZgWnQ3cUSV44HsMqPy4q4JMCyiA=";
-
   doCheck = false; # docker is need for test
 
   meta = {
     description = "Simulate massive Kubernetes clusters with low resource usage locally without kubelet";
     homepage = "https://kwok.sigs.k8s.io";
     changelog = "https://github.com/kubernetes-sigs/kwok/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.unix;
   };
 })

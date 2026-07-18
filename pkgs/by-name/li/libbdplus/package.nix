@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  gettext,
   libgcrypt,
   libgpg-error,
-  gettext,
 }:
 
 # library that allows libbluray to play BDplus protected bluray disks
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://www.videolan.org/developers/libbdplus.html";
     description = "Library to access BD+ protected Blu-Ray disks";
+    homepage = "http://www.videolan.org/developers/libbdplus.html";
     license = lib.licenses.lgpl21;
     maintainers = [ ];
     platforms = with lib.platforms; unix;

@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchzip,
   autoreconfHook,
-  writeScript,
   fetchpatch,
-  modelUrl ? "",
+  fetchzip,
+  writeScript,
   modelHash ? "", # Allow overriding the model URL and hash
+  modelUrl ? "",
 }:
 
 let
@@ -30,25 +30,21 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.2";
 
   src = fetchzip {
+    hash = "sha256-Qaf+0iOprq7ILRWNRkBjsniByctRa/lFVqiU5ZInF/Q=";
+
     urls = [
       "https://gitlab.xiph.org/xiph/rnnoise/-/archive/v${finalAttrs.version}/rnnoise-v${finalAttrs.version}.tar.gz"
       "https://github.com/xiph/rnnoise/archive/v${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-Qaf+0iOprq7ILRWNRkBjsniByctRa/lFVqiU5ZInF/Q=";
   };
 
   patches = [
     # remove when updating
     (fetchpatch {
-      url = "https://github.com/xiph/rnnoise/commit/372f7b4b76cde4ca1ec4605353dd17898a99de38.patch";
       hash = "sha256-Dzikb59hjVxd1XIEj/Je4evxtGORkaNcqE+zxOJMSvs=";
+      url = "https://github.com/xiph/rnnoise/commit/372f7b4b76cde4ca1ec4605353dd17898a99de38.patch";
     })
   ];
-
-  model = fetchurl {
-    url = model_url;
-    hash = model_hash;
-  };
 
   postPatch = ''
     tar xvomf ${finalAttrs.model}
@@ -59,6 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
   postInstall = ''
     install -Dt $out/bin examples/.libs/rnnoise_demo
   '';
+
+  model = fetchurl {
+    hash = model_hash;
+    url = model_url;
+  };
 
   passthru.updateScript = writeScript "update-rnnoise.sh" ''
     #!/usr/bin/env nix-shell
@@ -91,7 +92,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://people.xiph.org/~jm/demo/rnnoise/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ nh2 ];
-    mainProgram = "rnnoise_demo";
     platforms = lib.platforms.all;
+    mainProgram = "rnnoise_demo";
   };
 })

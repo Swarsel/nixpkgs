@@ -1,29 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  # documentation build dependencies
-  sphinxHook,
-  sphinx-rtd-theme,
-  matplotlib,
-  ipython,
-  # runtime dependencies
-  sphinx,
   beautifulsoup4,
+  buildPythonPackage,
+  ipython,
+  matplotlib,
   # check dependencies
   pytest,
+  setuptools,
+  # runtime dependencies
+  sphinx,
+  sphinx-rtd-theme,
+  # documentation build dependencies
+  sphinxHook,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-codeautolink";
   version = "0.18.1";
-  pyproject = true;
-
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   src = fetchFromGitHub {
     owner = "felix-hilden";
@@ -32,7 +26,10 @@ buildPythonPackage rec {
     hash = "sha256-kNnz8MzffqPCxS0uXdbw2ntcdGnz6KDBanFug5+SjOk=";
   };
 
-  build-system = [ setuptools ];
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   nativeBuildInputs = [
     sphinxHook
@@ -41,16 +38,17 @@ buildPythonPackage rec {
     ipython
   ];
 
-  sphinxRoot = "docs/src";
+  nativeCheckInputs = [ pytest ];
+  build-system = [ setuptools ];
 
   dependencies = [
     sphinx
     beautifulsoup4
   ];
 
-  nativeCheckInputs = [ pytest ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_codeautolink" ];
+  sphinxRoot = "docs/src";
 
   meta = {
     description = "Sphinx extension that makes code examples clickable";

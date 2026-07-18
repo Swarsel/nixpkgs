@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
 }:
 
@@ -16,12 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yv01jquPTnVk9fd1tqAt1Lxis+ZHZqdG3NiTFxfoXAE=";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-
-  strictDeps = true;
-
-  configureFlags = [ "--with-generic-jconfig" ];
-
   # Fix build with modern compilers (GCC 14+)
   # The bundled jpeg-6b-steg library uses K&R-style function declarations
   # that are incompatible with modern C standards
@@ -33,12 +27,16 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '#ifdef HAVE_PROTOTYPES' '#if 1  /* Force ANSI prototypes */'
   '';
 
+  strictDeps = true;
+  nativeBuildInputs = [ autoreconfHook ];
+  configureFlags = [ "--with-generic-jconfig" ];
+
   meta = {
     description = "Universal steganographic tool that allows the insertion of hidden information into the redundant bits of data sources";
     homepage = "https://github.com/resurrecting-open-source-projects/outguess";
     license = lib.licenses.bsdOriginal;
     maintainers = with lib.maintainers; [ HeitorAugustoLN ];
-    mainProgram = "outguess";
     platforms = lib.platforms.unix;
+    mainProgram = "outguess";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  perl,
+  fetchFromGitHub,
   autoreconfHook,
+  perl,
 }:
 
 let
@@ -14,11 +14,14 @@ let
   MojoLogClearable = perl.pkgs.buildPerlModule rec {
     pname = "Mojo-Log-Clearable";
     version = "1.001";
+
     src = fetchurl {
       url = "mirror://cpan/authors/id/D/DB/DBOOK/Mojo-Log-Clearable-${version}.tar.gz";
       hash = "sha256-guBqKdWemc4mC/xp77Wd7qeV2iRqY4wrQ5NRsHtsCnI=";
     };
+
     buildInputs = with perl.pkgs; [ ModuleBuildTiny ];
+
     propagatedBuildInputs = with perl.pkgs; [
       Mojolicious
       RoleTiny
@@ -58,14 +61,14 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  buildInputs = [ perl' ];
-  nativeBuildInputs = [ autoreconfHook ];
-
   postPatch = ''
     sed -i 's/^SUBDIRS =.*$/SUBDIRS = lib/' Makefile.am
   '';
 
+  nativeBuildInputs = [ autoreconfHook ];
+  buildInputs = [ perl' ];
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/znapzend --version
   '';
@@ -74,10 +77,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "High performance open source ZFS backup with mbuffer and ssh support";
     homepage = "https://www.znapzend.org";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       otwieracz
       ma27
     ];
+
     platforms = lib.platforms.all;
   };
 })

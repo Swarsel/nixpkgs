@@ -3,8 +3,8 @@
   stdenv,
   cmake,
   fetchgit,
-  libubox,
   libjson,
+  libubox,
 }:
 
 stdenv.mkDerivation {
@@ -17,12 +17,14 @@ stdenv.mkDerivation {
     hash = "sha256-fjxO77z+do5gZ7nLwHbC14UnP9cmZ5eANNn4X6Sudn0=";
   };
 
-  cmakeFlags = [ "-DBUILD_LUA=OFF" ];
+  nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libubox
     libjson
   ];
-  nativeBuildInputs = [ cmake ];
+
+  cmakeFlags = [ "-DBUILD_LUA=OFF" ];
 
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) [
@@ -34,7 +36,7 @@ stdenv.mkDerivation {
     description = "OpenWrt system message/RPC bus";
     homepage = "https://git.openwrt.org/?p=project/ubus.git;a=summary";
     license = lib.licenses.lgpl21Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ mkg20001 ];
+    platforms = lib.platforms.all;
   };
 }

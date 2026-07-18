@@ -1,7 +1,7 @@
 {
   lib,
-  repoRevToNameMaybe,
   fetchzip,
+  repoRevToNameMaybe,
 }:
 
 # gitweb example, snapshot support is optional in gitweb

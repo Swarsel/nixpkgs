@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "raccoon-scanner";
   version = "0.8.5-unstable-2025-06-10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "evyatarmeged";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-jcZKjQR92brWcB1+WSKkpoE0V5TLkfDCRu8TQY/hkoc=";
   };
 
+  # Project has no test
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -30,8 +31,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     xmltodict
   ];
 
-  # Project has no test
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Tool for reconnaissance and vulnerability scanning";

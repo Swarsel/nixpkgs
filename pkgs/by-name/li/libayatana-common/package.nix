@@ -1,10 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  testers,
   cmake,
+  gitUpdater,
   glib,
   gobject-introspection,
   gtest,
@@ -12,6 +11,7 @@
   lomiri,
   pkg-config,
   systemd,
+  testers,
   vala,
 }:
 
@@ -49,10 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  checkInputs = [
-    gtest
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "ENABLE_LOMIRI_FEATURES" true)
@@ -61,6 +57,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  checkInputs = [
+    gtest
+  ];
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -74,6 +74,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "libayatana-common"
     ];

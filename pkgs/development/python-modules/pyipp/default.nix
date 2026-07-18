@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   awesomeversion,
   backoff,
   buildPythonPackage,
   deepmerge,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "pyipp";
   version = "0.17.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ctalkington";
@@ -32,6 +31,15 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -42,22 +50,13 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyipp" ];
 
   meta = {
-    changelog = "https://github.com/ctalkington/python-ipp/releases/tag/${version}";
     description = "Asynchronous Python client for Internet Printing Protocol (IPP)";
     homepage = "https://github.com/ctalkington/python-ipp";
+    changelog = "https://github.com/ctalkington/python-ipp/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "mwoauth";
   version = "0.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -30,7 +29,7 @@ buildPythonPackage rec {
   # PyPI source has no tests included
   # https://github.com/mediawiki-utilities/python-mwoauth/issues/44
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "mwoauth" ];
 
   meta = {

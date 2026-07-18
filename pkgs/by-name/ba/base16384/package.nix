@@ -20,10 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Encode binary files to printable utf16be";
-    mainProgram = "base16384";
     homepage = "https://github.com/fumiama/base16384";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.all;
+    mainProgram = "base16384";
   };
 })

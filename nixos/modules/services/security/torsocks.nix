@@ -23,13 +23,14 @@ let
   wrapTorsocks =
     name: server:
     pkgs.writeTextFile {
+      destination = "/bin/${name}";
+      executable = true;
       name = name;
+
       text = ''
         #!${pkgs.runtimeShell}
         TORSOCKS_CONF_FILE=${pkgs.writeText "torsocks.conf" (configFile server)} ${pkgs.torsocks}/bin/torsocks "$@"
       '';
-      executable = true;
-      destination = "/bin/${name}";
     };
 
 in
@@ -37,37 +38,43 @@ in
   options = {
     services.tor.torsocks = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to build `/etc/tor/torsocks.conf`
           containing the specified global torsocks configuration.
         '';
+
+        type = lib.types.bool;
       };
 
-      server = lib.mkOption {
-        type = lib.types.str;
-        default = "127.0.0.1:9050";
-        example = "192.168.0.20:1234";
+      allowInbound = lib.mkOption {
+        default = false;
+
         description = ''
-          IP/Port of the Tor SOCKS server. Currently, hostnames are
-          NOT supported by torsocks.
+          Set Torsocks to accept inbound connections. If set to
+          `true`, listen() and accept() will be
+          allowed to be used with non localhost address.
         '';
+
+        type = lib.types.bool;
       };
 
       fasterServer = lib.mkOption {
-        type = lib.types.str;
         default = "127.0.0.1:9063";
-        example = "192.168.0.20:1234";
+
         description = ''
           IP/Port of the Tor SOCKS server for torsocks-faster wrapper suitable for HTTP.
           Currently, hostnames are NOT supported by torsocks.
         '';
+
+        example = "192.168.0.20:1234";
+        type = lib.types.str;
       };
 
       onionAddrRange = lib.mkOption {
-        type = lib.types.str;
         default = "127.42.42.0/24";
+
         description = ''
           Tor hidden sites do not have real IP addresses. This
           specifies what range of IP addresses will be handed to the
@@ -76,49 +83,57 @@ in
           ever need to actually connect to. This is similar to the
           MapAddress feature of the main tor daemon.
         '';
+
+        type = lib.types.str;
       };
 
-      socks5Username = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        example = "bob";
+      server = lib.mkOption {
+        default = "127.0.0.1:9050";
+
         description = ''
-          SOCKS5 username. The `TORSOCKS_USERNAME`
-          environment variable overrides this option if it is set.
+          IP/Port of the Tor SOCKS server. Currently, hostnames are
+          NOT supported by torsocks.
         '';
+
+        example = "192.168.0.20:1234";
+        type = lib.types.str;
       };
 
       socks5Password = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
         default = null;
-        example = "sekret";
+
         description = ''
           SOCKS5 password. The `TORSOCKS_PASSWORD`
           environment variable overrides this option if it is set.
         '';
+
+        example = "sekret";
+        type = lib.types.nullOr lib.types.str;
       };
 
-      allowInbound = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
+      socks5Username = lib.mkOption {
+        default = null;
+
         description = ''
-          Set Torsocks to accept inbound connections. If set to
-          `true`, listen() and accept() will be
-          allowed to be used with non localhost address.
+          SOCKS5 username. The `TORSOCKS_USERNAME`
+          environment variable overrides this option if it is set.
         '';
+
+        example = "bob";
+        type = lib.types.nullOr lib.types.str;
       };
 
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.etc."tor/torsocks.conf" = {
+      source = pkgs.writeText "torsocks.conf" (configFile cfg.server);
+    };
+
     environment.systemPackages = [
       pkgs.torsocks
       (wrapTorsocks "torsocks-faster" cfg.fasterServer)
     ];
-
-    environment.etc."tor/torsocks.conf" = {
-      source = pkgs.writeText "torsocks.conf" (configFile cfg.server);
-    };
   };
 }

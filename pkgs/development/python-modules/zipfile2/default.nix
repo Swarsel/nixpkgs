@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "zipfile2";
   version = "0.0.12-unstable-2024-09-28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cournape";
@@ -19,16 +18,16 @@ buildPythonPackage {
     hash = "sha256-jDOyIj0sQS1dIsar4nyk5V2mme3Zc6VTms49/4n93ho=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "zipfile2" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # PermissionError: [Errno 1] Operation not ...
     "test_extract"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "zipfile2" ];
 
   meta = {
     description = "Backwards-compatible improved zipfile class";

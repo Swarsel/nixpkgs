@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
   packaging,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "cs50";
   version = "9.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cs50";
@@ -36,6 +35,7 @@ buildPythonPackage rec {
     termcolor
   ];
 
+  pyproject = true;
   # Tests require docker containers, which are pulled from the internet.
   pythonImportsCheck = [ "cs50" ];
 
@@ -44,6 +44,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/cs50/python-cs50/";
     changelog = "https://github.com/cs50/python-cs50/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       amadejkastelic
       ethancedwards8

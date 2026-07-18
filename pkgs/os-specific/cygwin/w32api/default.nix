@@ -1,21 +1,20 @@
 {
   lib,
+  autoreconfHook,
   stdenvNoCC,
   stdenvNoLibc,
-  autoreconfHook,
   windows,
-
   headersOnly ? false,
 }:
 
 (if headersOnly then stdenvNoCC else stdenvNoLibc).mkDerivation (
   {
-    pname = "w32api${lib.optionalString headersOnly "-headers"}";
-
     inherit (windows.mingw_w64_headers)
       version
       src
       ;
+
+    pname = "w32api${lib.optionalString headersOnly "-headers"}";
 
     outputs = [
       "out"
@@ -23,7 +22,6 @@
     ++ lib.optional (!headersOnly) "dev";
 
     configureFlags = [ (lib.enableFeature true "w32api") ];
-
     enableParallelBuilding = true;
 
     passthru = {
@@ -32,14 +30,15 @@
     };
 
     meta = {
-      description = "MinGW w32api package for Cygwin";
       inherit (windows.mingw_w64_headers.meta)
         homepage
         downloadPage
         license
         ;
-      platforms = lib.platforms.cygwin;
+
+      description = "MinGW w32api package for Cygwin";
       maintainers = [ lib.maintainers.corngood ];
+      platforms = lib.platforms.cygwin;
     };
   }
   // (

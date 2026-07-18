@@ -18,10 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true; # Needed to build Python bindings
   };
 
-  sourceRoot = "${finalAttrs.src.name}/orocos_kdl";
-
   nativeBuildInputs = [ cmake ];
   propagatedBuildInputs = [ eigen ];
+  sourceRoot = "${finalAttrs.src.name}/orocos_kdl";
 
   meta = {
     description = "Kinematics and Dynamics Library";

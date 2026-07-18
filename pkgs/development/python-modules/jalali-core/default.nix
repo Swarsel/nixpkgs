@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "jalali-core";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "jalali_core";
     inherit version;
     hash = "sha256-9Ch8cMYwMj3PCjqybfkFuk1FHiMKwfZbO7L3d5eJSis=";
+    pname = "jalali_core";
   };
-
-  build-system = [ setuptools ];
 
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "jalali_core" ];
 
   meta = {

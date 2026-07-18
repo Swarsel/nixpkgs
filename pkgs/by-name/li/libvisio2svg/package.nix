@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libxml2
     freetype
@@ -41,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Library and tools to convert Microsoft Visio documents (VSS and VSD) to SVG";
     homepage = "https://github.com/kakwa/libvisio2svg";
-    maintainers = with lib.maintainers; [ erdnaxe ];
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ erdnaxe ];
     platforms = [ "x86_64-linux" ];
   };
 })

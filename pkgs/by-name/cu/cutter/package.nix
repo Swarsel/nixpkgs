@@ -1,18 +1,18 @@
 {
   lib,
-  fetchFromGitHub,
-  fetchpatch2,
   stdenv,
-  # for passthru.plugins
-  pkgs,
+  fetchFromGitHub,
   # nativeBuildInputs
   cmake,
-  pkg-config,
-  # Qt
-  qt6,
+  fetchpatch2,
   # buildInputs
   graphviz,
+  pkg-config,
+  # for passthru.plugins
+  pkgs,
   python3,
+  # Qt
+  qt6,
   rizin,
 }:
 
@@ -31,9 +31,9 @@ let
 
     patches = [
       (fetchpatch2 {
+        hash = "sha256-/C/s+Ui5F7MCxbzbChQ5Tv/oUHUQxXmk9xOnNI80xwQ=";
         name = "fix-shiboken6-type-index-case.patch";
         url = "https://github.com/rizinorg/cutter/commit/07fea9c772dc573588dc2e5771f0740ee1883738.patch?full_index=1";
-        hash = "sha256-/C/s+Ui5F7MCxbzbChQ5Tv/oUHUQxXmk9xOnNI80xwQ=";
       })
     ];
 
@@ -42,10 +42,6 @@ let
       pkg-config
       python3
       qt6.wrapQtAppsHook
-    ];
-
-    propagatedBuildInputs = [
-      python3.pkgs.pyside6
     ];
 
     buildInputs = [
@@ -60,6 +56,10 @@ let
     ]
     ++ lib.optionals stdenv.hostPlatform.isLinux [
       qt6.qtwayland
+    ];
+
+    propagatedBuildInputs = [
+      python3.pkgs.pyside6
     ];
 
     cmakeFlags = [
@@ -81,6 +81,7 @@ let
           enableCutterPlugin = true;
         };
       };
+
       withPlugins =
         filter:
         pkgs.callPackage ./wrapper.nix {
@@ -91,12 +92,12 @@ let
     };
 
     meta = {
+      inherit (rizin.meta) platforms;
       description = "Free and Open Source Reverse Engineering Platform powered by rizin";
       homepage = src.meta.homepage;
       license = lib.licenses.gpl3;
-      mainProgram = "cutter";
       maintainers = with lib.maintainers; [ mic92 ];
-      inherit (rizin.meta) platforms;
+      mainProgram = "cutter";
     };
   };
 in

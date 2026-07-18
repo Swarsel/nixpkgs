@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  gettext,
-  python3,
-  rsync,
-  cron,
-  openssh,
-  sshfs-fuse,
-  fuse3,
-  gocryptfs,
-  which,
-  ps,
-  gnugrep,
-  man,
   asciidoctor,
   bashNonInteractive,
+  cron,
+  fuse3,
+  gettext,
+  gnugrep,
+  gocryptfs,
+  makeWrapper,
+  man,
+  openssh,
+  ps,
+  python3,
+  rsync,
+  sshfs-fuse,
+  which,
 }:
 
 let
@@ -48,14 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/33Lx62S/9RcqrfJumE6/o3KnAObBa3DcmuGkcOXIQE=";
   };
 
-  __structuredAttrs = true;
-  strictDeps = true;
-  enableParallelBuilding = true;
   outputs = [
     "out"
     "man"
     "doc"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -68,8 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     python'
     bashNonInteractive
   ];
-
-  installFlags = [ "DEST=$(out)" ];
 
   configureFlags = [ "--python=${lib.getExe python'}" ];
 
@@ -97,24 +94,29 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/usr/share/doc" "$doc/share/doc" \
   '';
 
-  dontAddPrefix = true;
-
   preFixup = ''
     wrapProgram "$out/bin/backintime" \
       --prefix PATH : ${apps}
   '';
 
+  __structuredAttrs = true;
+  dontAddPrefix = true;
+  enableParallelBuilding = true;
+  installFlags = [ "DEST=$(out)" ];
+
   meta = {
-    homepage = "https://github.com/bit-team/backintime";
     description = "Simple backup tool for Linux";
-    license = lib.licenses.gpl2;
-    maintainers = with lib.maintainers; [ stephen-huan ];
-    platforms = lib.platforms.linux;
-    mainProgram = "backintime";
+
     longDescription = ''
       Back In Time is a simple backup tool (on top of rsync) for Linux
       inspired from "flyback project" and "TimeVault". The backup is
       done by taking snapshots of a specified set of directories.
     '';
+
+    homepage = "https://github.com/bit-team/backintime";
+    license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ stephen-huan ];
+    platforms = lib.platforms.linux;
+    mainProgram = "backintime";
   };
 })

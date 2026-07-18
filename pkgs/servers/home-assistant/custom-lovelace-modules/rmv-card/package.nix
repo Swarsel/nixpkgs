@@ -16,8 +16,6 @@ stdenv.mkDerivation {
     hash = "sha256-9chkS4wqkeNqeYGWdG00bwJOdDbsI+9VwWWfH+5TJoY=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -27,6 +25,7 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

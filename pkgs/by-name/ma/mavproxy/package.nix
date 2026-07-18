@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
   fetchpatch,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "MAVProxy";
   version = "1.8.74";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ArduPilot";
@@ -22,11 +21,13 @@ python3Packages.buildPythonApplication rec {
   patches = [
     # Remove python 2 future imports
     (fetchpatch {
-      url = "https://github.com/ArduPilot/MAVProxy/commit/db52f3f5d1991942026c00b51a3ce1ce85998cbd.patch";
       hash = "sha256-mNhOfXJMiUihsso3fjzlbeXW/3ENvrdkFSLo23dMCY4=";
+      url = "https://github.com/ArduPilot/MAVProxy/commit/db52f3f5d1991942026c00b51a3ce1ce85998cbd.patch";
     })
   ];
 
+  # No tests, but we can check the version
+  nativeInstallCheckInputs = [ versionCheckHook ];
   build-system = with python3Packages; [ setuptools ];
 
   dependencies =
@@ -47,17 +48,15 @@ python3Packages.buildPythonApplication rec {
       gnureadline
     ];
 
+  pyproject = true;
   pythonImportsCheck = [ "MAVProxy" ];
-
-  # No tests, but we can check the version
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "MAVLink proxy and command line ground station";
-    mainProgram = "mavproxy.py";
     homepage = "https://github.com/ArduPilot/MAVProxy";
     changelog = "https://github.com/ArduPilot/MAVProxy/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ lopsided98 ];
+    mainProgram = "mavproxy.py";
   };
 }

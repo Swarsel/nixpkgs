@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
 }:
@@ -17,13 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-jsvXglCf/FyJ3tasnOywXLA20k94yzbojPdX+dZVPfw=";
   };
 
-  vendorHash = "sha256-4OIJVL3N2mWOw7ZDP4xFCxa9zmUTPCA8N79TVoi1lys=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-X github.com/tursodatabase/turso-cli/internal/cmd.version=v${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-4OIJVL3N2mWOw7ZDP4xFCxa9zmUTPCA8N79TVoi1lys=";
 
   preCheck = ''
     export HOME=$(mktemp -d)
@@ -36,17 +31,23 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/turso completion zsh)
   '';
 
+  ldflags = [
+    "-X github.com/tursodatabase/turso-cli/internal/cmd.version=v${finalAttrs.version}"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI for Turso";
     homepage = "https://turso.tech";
-    mainProgram = "turso";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       zestsystem
       kashw2
       fryuni
     ];
+
+    mainProgram = "turso";
   };
 })

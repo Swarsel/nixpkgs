@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pdfannots";
   version = "0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "0xabu";
@@ -23,6 +22,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   propagatedBuildInputs = [
     python3.pkgs.pdfminer-six
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pdfannots"

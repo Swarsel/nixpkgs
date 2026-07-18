@@ -1,14 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
 buildGoModule rec {
   pname = "artifactory_exporter";
   version = "1.16.1";
-  rev = "v${version}";
 
   src = fetchFromGitHub {
     owner = "peimanja";
@@ -19,8 +18,6 @@ buildGoModule rec {
 
   vendorHash = "sha256-zTuqSPjKJng7Gf/RHo4KYpSzlGRrOVa/AEpz7ZDePyc=";
 
-  subPackages = [ "." ];
-
   ldflags = [
     "-s"
     "-w"
@@ -30,14 +27,16 @@ buildGoModule rec {
     "-X github.com/prometheus/common/version.BuildDate=19700101-00:00:00"
   ];
 
+  rev = "v${version}";
+  subPackages = [ "." ];
   passthru.tests = { inherit (nixosTests.prometheus-exporters) artifactory; };
 
   meta = {
     description = "JFrog Artifactory Prometheus Exporter";
-    mainProgram = "artifactory_exporter";
     homepage = "https://github.com/peimanja/artifactory_exporter";
     changelog = "https://github.com/peimanja/artifactory_exporter/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lbpdt ];
+    mainProgram = "artifactory_exporter";
   };
 }

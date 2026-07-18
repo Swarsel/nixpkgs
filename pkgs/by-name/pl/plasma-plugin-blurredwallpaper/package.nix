@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "plasma-plugin-blurredwallpaper";
@@ -30,10 +30,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Plasma 6 wallpaper plugin to blur the wallpaper of active window";
     homepage = "https://github.com/bouteillerAlan/blurredwallpaper";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       dr460nf1r3
       johnrtitor
     ];
+
     platforms = lib.platforms.linux;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "txaio";
   version = "25.12.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "crossbario";
@@ -18,14 +17,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/vlkjSOlQYbRpjMySBzoSBSXm0yxWSHmzIF3ZfFIR64=";
   };
 
-  build-system = [
-    hatchling
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
+  build-system = [
+    hatchling
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "txaio" ];
 
   meta = {

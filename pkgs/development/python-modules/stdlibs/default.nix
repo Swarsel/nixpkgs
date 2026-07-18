@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
 }:
 
 buildPythonPackage rec {
   pname = "stdlibs";
   version = "2026.2.26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "omnilib";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-5Brb214tglEEjsJXOvEhlaJgSYCUpOGPbHkmI9AWPoM=";
   };
 
-  build-system = [ flit-core ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "stdlibs" ];
 
   meta = {

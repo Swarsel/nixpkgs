@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   desktop-file-utils,
-  pantheon,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
   gettext,
   glib,
   gtk3,
   libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  pantheon,
+  pkg-config,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -52,10 +52,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Simple, fast, no-nonsense to-do (task) list designed for elementary OS";
     homepage = "https://github.com/dahenson/agenda";
-    maintainers = with lib.maintainers; [ xiorcale ];
-    teams = [ lib.teams.pantheon ];
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ xiorcale ];
+    platforms = lib.platforms.linux;
     mainProgram = "com.github.dahenson.agenda";
+    teams = [ lib.teams.pantheon ];
   };
 })

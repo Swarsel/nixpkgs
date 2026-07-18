@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "columnize";
   version = "3.11";
-  pyproject = true;
 
   # 3.11 is the git tag for the 0.3.11 version
   # r-ryantm keeps trying to change the version to 3.11
@@ -21,15 +20,16 @@ buildPythonPackage rec {
     hash = "sha256-YJEIujoRpLvUM4H4CB1nEJaYStFOSVKIGzchnptlt7M=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "columnize" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python module to align a simple (not nested) list in columns";

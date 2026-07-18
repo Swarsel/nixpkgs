@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gtk4,
   meson,
   ninja,
   pkg-config,
   vala,
-  gtk4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -33,8 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ gtk4 ];
-
-  strictDeps = true;
 
   meta = {
     description = "GTK4 library that includes customized widgets";

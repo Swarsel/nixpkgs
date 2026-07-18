@@ -1,15 +1,11 @@
 {
-  callPackage,
   lib,
   stdenv,
   fetchFromGitHub,
-
+  callPackage,
   # keep-sorted start
   cmake,
-  ninja,
-  pkg-config,
   # keep-sorted end
-
   # keep-sorted start
   cpptrace,
   fast-float,
@@ -20,9 +16,11 @@
   jsoncons,
   libevent,
   lz4,
+  ninja,
   onetbb,
   openssl,
   pegtl,
+  pkg-config,
   range-v3,
   rocksdb,
   snappy,
@@ -45,10 +43,10 @@ let
   mkCmakeFile =
     cmakeFile:
     {
-      findPackage ? null,
-      pkgConfig ? null,
-      libraries ? [ ],
       extraLines ? [ ],
+      findPackage ? null,
+      libraries ? [ ],
+      pkgConfig ? null,
     }:
     let
       mkLibEntry =
@@ -82,21 +80,22 @@ let
     '';
 
   luajit-src = fetchFromGitHub {
+    hash = "sha256-HINP9nahXHTManDMAAJBOUlSSxv5JZhlHs96HHkE7qE=";
     owner = "RocksLabs";
     repo = "LuaJIT";
     rev = "02dfcc34e93e57ac96e566d123c66ee01e650299";
-    hash = "sha256-HINP9nahXHTManDMAAJBOUlSSxv5JZhlHs96HHkE7qE=";
   };
 
   zlib-ng' = zlib-ng.override { withZlibCompat = true; };
   rocksdb' =
     (rocksdb.override {
-      zlib = zlib-ng';
       enableJemalloc = true;
+      zlib = zlib-ng';
     }).overrideAttrs
       (oldAttrs: {
-        cmakeFlags = (oldAttrs.cmakeFlags or [ ]) ++ [ (lib.cmakeBool "WITH_TBB" true) ];
         buildInputs = (oldAttrs.buildInputs or [ ]) ++ [ onetbb ];
+        cmakeFlags = (oldAttrs.cmakeFlags or [ ]) ++ [ (lib.cmakeBool "WITH_TBB" true) ];
+
         # On aarch64-darwin, libc++ hardening can trigger a SIGTRAP in
         # RocksDB's startup path via unique_ptr<T[]> bounds checks.
         hardeningDisable =
@@ -117,43 +116,45 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CAbhOX7dmyXgl0STNjzALseXUzrpTPNy9tjoPACe0Os=";
   };
 
-  __structuredAttrs = true;
-
   postPatch = ''
     # Replace FetchContent-based cmake files with system library finders
     ${mkCmakeFile "rocksdb" {
-      pkgConfig = {
-        varName = "ROCKSDB";
-        modules = "rocksdb";
-      };
       libraries = [
         {
-          name = "rocksdb_with_headers";
           linkLibs = "PkgConfig::ROCKSDB";
+          name = "rocksdb_with_headers";
         }
       ];
+
+      pkgConfig = {
+        modules = "rocksdb";
+        varName = "ROCKSDB";
+      };
     }}
     ${mkCmakeFile "libevent" {
-      pkgConfig = {
-        varName = "LIBEVENT";
-        modules = "libevent libevent_pthreads";
-      };
-      libraries = [
-        {
-          name = "event_with_headers";
-          linkLibs = "PkgConfig::LIBEVENT";
-        }
-      ];
       extraLines = [
         "if(ENABLE_OPENSSL)"
         "  pkg_check_modules(LIBEVENT_OPENSSL REQUIRED IMPORTED_TARGET libevent_openssl)"
         "  target_link_libraries(event_with_headers INTERFACE PkgConfig::LIBEVENT_OPENSSL)"
         "endif()"
       ];
+
+      libraries = [
+        {
+          linkLibs = "PkgConfig::LIBEVENT";
+          name = "event_with_headers";
+        }
+      ];
+
+      pkgConfig = {
+        modules = "libevent libevent_pthreads";
+        varName = "LIBEVENT";
+      };
     }}
     ${mkCmakeFile "fmt" { findPackage = "fmt"; }}
     ${mkCmakeFile "fast_float" {
       findPackage = "FastFloat";
+
       libraries = [
         {
           name = "fast_float";
@@ -163,52 +164,57 @@ stdenv.mkDerivation (finalAttrs: {
     }}
     ${mkCmakeFile "spdlog" { findPackage = "spdlog"; }}
     ${mkCmakeFile "snappy" {
-      pkgConfig = {
-        varName = "SNAPPY";
-        modules = "snappy";
-      };
       libraries = [
         {
           name = "snappy";
           target = "PkgConfig::SNAPPY";
         }
       ];
+
+      pkgConfig = {
+        modules = "snappy";
+        varName = "SNAPPY";
+      };
     }}
     ${mkCmakeFile "lz4" {
-      pkgConfig = {
-        varName = "LZ4";
-        modules = "liblz4";
-      };
       libraries = [
         {
           name = "lz4";
           target = "PkgConfig::LZ4";
         }
       ];
+
+      pkgConfig = {
+        modules = "liblz4";
+        varName = "LZ4";
+      };
     }}
     ${mkCmakeFile "zstd" {
-      pkgConfig = {
-        varName = "ZSTD";
-        modules = "libzstd";
-      };
       libraries = [
         {
           name = "zstd";
           target = "PkgConfig::ZSTD";
         }
       ];
+
+      pkgConfig = {
+        modules = "libzstd";
+        varName = "ZSTD";
+      };
     }}
     ${mkCmakeFile "zlib" {
       findPackage = "ZLIB";
+
       libraries = [
         {
-          name = "zlib_with_headers";
           linkLibs = "ZLIB::ZLIB";
+          name = "zlib_with_headers";
         }
       ];
     }}
     ${mkCmakeFile "tbb" {
       findPackage = "TBB";
+
       libraries = [
         {
           name = "tbb";
@@ -218,41 +224,44 @@ stdenv.mkDerivation (finalAttrs: {
     }}
     ${mkCmakeFile "gtest" {
       findPackage = "GTest";
+
       libraries = [
         {
-          name = "gtest_main";
           linkLibs = "GTest::gtest_main GTest::gtest";
+          name = "gtest_main";
         }
         {
-          name = "gmock";
           linkLibs = "GTest::gmock GTest::gtest";
+          name = "gmock";
         }
       ];
     }}
     ${mkCmakeFile "xxhash" {
-      pkgConfig = {
-        varName = "XXHASH";
-        modules = "libxxhash";
-      };
       libraries = [
         {
           name = "xxhash";
           target = "PkgConfig::XXHASH";
         }
       ];
+
+      pkgConfig = {
+        modules = "libxxhash";
+        varName = "XXHASH";
+      };
     }}
     ${mkCmakeFile "jemalloc" {
-      pkgConfig = {
-        varName = "JEMALLOC";
-        modules = "jemalloc";
-      };
       libraries = [
         {
-          name = "jemalloc";
-          linkLibs = "PkgConfig::JEMALLOC";
           compileDefs = "ENABLE_JEMALLOC";
+          linkLibs = "PkgConfig::JEMALLOC";
+          name = "jemalloc";
         }
       ];
+
+      pkgConfig = {
+        modules = "jemalloc";
+        varName = "JEMALLOC";
+      };
     }}
     ${mkCmakeFile "jsoncons" { libraries = [ { name = "jsoncons"; } ]; }}
     ${mkCmakeFile "span" { libraries = [ { name = "span-lite"; } ]; }}
@@ -305,6 +314,14 @@ stdenv.mkDerivation (finalAttrs: {
     # keep-sorted end
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "DISABLE_JEMALLOC" false)
+    (lib.cmakeBool "ENABLE_STATIC_LIBSTDCXX" false)
+    (lib.cmakeBool "ENABLE_LUAJIT" true)
+    (lib.cmakeBool "ENABLE_OPENSSL" true)
+    (lib.cmakeFeature "PORTABLE" "1")
+  ];
+
   preConfigure = ''
     # Copy LuaJIT to writable location for in-source build
     cp -r ${luajit-src} $TMPDIR/luajit
@@ -315,14 +332,6 @@ stdenv.mkDerivation (finalAttrs: {
     cmakeFlagsArray+=("-DFETCHCONTENT_SOURCE_DIR_LUAJIT=$TMPDIR/luajit")
   '';
 
-  cmakeFlags = [
-    (lib.cmakeBool "DISABLE_JEMALLOC" false)
-    (lib.cmakeBool "ENABLE_STATIC_LIBSTDCXX" false)
-    (lib.cmakeBool "ENABLE_LUAJIT" true)
-    (lib.cmakeBool "ENABLE_OPENSSL" true)
-    (lib.cmakeFeature "PORTABLE" "1")
-  ];
-
   installPhase = ''
     runHook preInstall
     install -Dm755 kvrocks -t $out/bin
@@ -331,8 +340,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
     hook = callPackage ./hook.nix { kvrocks = finalAttrs.finalPackage; };
+
     tests = {
       hook = callPackage ./hook-test.nix { kvrocks = finalAttrs.finalPackage; };
     };

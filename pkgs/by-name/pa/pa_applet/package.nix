@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libpulseaudio,
-  pkg-config,
-  gtk3,
-  glibc,
   autoconf,
   automake,
+  glibc,
+  gtk3,
   libnotify,
+  libpulseaudio,
   libx11,
+  pkg-config,
   xf86-input-evdev,
 }:
 
@@ -29,6 +29,7 @@ stdenv.mkDerivation {
     autoconf
     automake
   ];
+
   buildInputs = [
     gtk3
     libpulseaudio
@@ -38,21 +39,21 @@ stdenv.mkDerivation {
     xf86-input-evdev
   ];
 
+  # work around a problem related to gtk3 updates
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
+
   preConfigure = ''
     ./autogen.sh
   '';
-
-  # work around a problem related to gtk3 updates
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
 
   postInstall = "";
 
   meta = {
     description = "";
     homepage = "https://github.com/fernandotcl/pa-applet";
-    mainProgram = "pa-applet";
     license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "pa-applet";
   };
 }

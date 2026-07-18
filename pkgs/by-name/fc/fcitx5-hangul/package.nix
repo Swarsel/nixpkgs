@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  kdePackages,
-  gettext,
   fcitx5,
+  gettext,
+  kdePackages,
   libhangul,
   nixosTests,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {

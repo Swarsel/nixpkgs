@@ -1,27 +1,24 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  cmake,
-  pkg-config,
+  fetchFromGitHub,
   cimg,
+  cmake,
   libjpeg,
   libpng,
   nlohmann_json,
+  pkg-config,
 }:
 let
   excludelist = fetchurl {
-    url = "https://raw.githubusercontent.com/probonopd/AppImages/15a64c20dc23a0154622ba25829364323903b6b5/excludelist";
     sha256 = "sha256-UNsPiU80sWnEely8DBfbq2Hp7evKW8gmmh5qwb9L2tk=";
+    url = "https://raw.githubusercontent.com/probonopd/AppImages/15a64c20dc23a0154622ba25829364323903b6b5/excludelist";
   };
 in
 stdenv.mkDerivation {
   pname = "linuxdeploy-plugin-qt";
   version = "0-unstable-2026-03-07";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "linuxdeploy";
@@ -43,6 +40,8 @@ stdenv.mkDerivation {
       --replace-fail "wget --quiet \"\$url\" -O - " "cat ${excludelist}"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -59,12 +58,14 @@ stdenv.mkDerivation {
     "-DBUILD_TESTING=OFF"
   ];
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Qt plugin for linuxdeploy to bundle Qt applications into AppImage format";
     homepage = "https://github.com/linuxdeploy/linuxdeploy-plugin-qt";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ BatteredBunny ];
-    mainProgram = "linuxdeploy-plugin-qt";
     platforms = lib.platforms.linux;
+    mainProgram = "linuxdeploy-plugin-qt";
   };
 }

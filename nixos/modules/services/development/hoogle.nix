@@ -19,19 +19,41 @@ in
   options.services.hoogle = {
     enable = lib.mkEnableOption "Haskell documentation server";
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 8080;
+    extraOptions = lib.mkOption {
+      default = [ ];
+
       description = ''
-        Port number Hoogle will be listening to.
+        Additional command-line arguments to pass to
+        {command}`hoogle server`
       '';
+
+      example = [ "--no-security-headers" ];
+      type = lib.types.listOf lib.types.str;
+    };
+
+    haskellPackages = lib.mkOption {
+      default = pkgs.haskellPackages;
+      defaultText = lib.literalExpression "pkgs.haskellPackages";
+      description = "Which haskell package set to use.";
+      type = lib.types.attrs;
+    };
+
+    home = lib.mkOption {
+      default = "https://hoogle.haskell.org";
+      description = "Url for hoogle logo";
+      type = lib.types.str;
+    };
+
+    host = lib.mkOption {
+      default = "127.0.0.1";
+      description = "Set the host to bind on.";
+      type = lib.types.str;
     };
 
     packages = lib.mkOption {
-      type = lib.types.functionTo (lib.types.listOf lib.types.package);
       default = hp: [ ];
       defaultText = lib.literalExpression "hp: []";
-      example = lib.literalExpression "hp: with hp; [ text lens ]";
+
       description = ''
         The Haskell packages to generate documentation for.
 
@@ -39,35 +61,19 @@ in
         the {var}`haskellPackages` option as its sole parameter and
         returns a list of packages.
       '';
+
+      example = lib.literalExpression "hp: with hp; [ text lens ]";
+      type = lib.types.functionTo (lib.types.listOf lib.types.package);
     };
 
-    haskellPackages = lib.mkOption {
-      description = "Which haskell package set to use.";
-      type = lib.types.attrs;
-      default = pkgs.haskellPackages;
-      defaultText = lib.literalExpression "pkgs.haskellPackages";
-    };
+    port = lib.mkOption {
+      default = 8080;
 
-    home = lib.mkOption {
-      type = lib.types.str;
-      description = "Url for hoogle logo";
-      default = "https://hoogle.haskell.org";
-    };
-
-    host = lib.mkOption {
-      type = lib.types.str;
-      description = "Set the host to bind on.";
-      default = "127.0.0.1";
-    };
-
-    extraOptions = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [ "--no-security-headers" ];
       description = ''
-        Additional command-line arguments to pass to
-        {command}`hoogle server`
+        Port number Hoogle will be listening to.
       '';
+
+      type = lib.types.port;
     };
   };
 
@@ -75,22 +81,21 @@ in
     systemd.services.hoogle = {
       description = "Haskell documentation server";
 
-      wantedBy = [ "multi-user.target" ];
-
       serviceConfig = {
-        Restart = "always";
+        DynamicUser = true;
+
         ExecStart = ''
           ${hoogleEnv}/bin/hoogle server --local --port ${toString cfg.port} --home ${cfg.home} --host ${cfg.host} \
             ${lib.concatStringsSep " " cfg.extraOptions}
         '';
 
-        DynamicUser = true;
-
         ProtectHome = true;
-
+        Restart = "always";
         RuntimeDirectory = "hoogle";
         WorkingDirectory = "%t/hoogle";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

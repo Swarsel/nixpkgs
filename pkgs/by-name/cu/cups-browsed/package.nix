@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   avahi,
   cups,
-  fetchFromGitHub,
   glib,
-  lib,
   libcupsfilters,
   libppd,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,7 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Daemon for browsing the Bonjour broadcasts of shared, remote CUPS printers";
     homepage = "https://github.com/OpenPrinting/cups-browsed";
     license = lib.licenses.asl20;
-    mainProgram = "cups-browsed";
     platforms = lib.platforms.linux;
+    mainProgram = "cups-browsed";
   };
 })

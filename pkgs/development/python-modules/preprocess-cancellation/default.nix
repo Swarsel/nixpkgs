@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  shapely,
   pytestCheckHook,
+  shapely,
 }:
 
 buildPythonPackage rec {
   pname = "preprocess-cancellation";
   version = "0.2.1";
-  pyproject = true;
 
   # No tests in PyPI
   src = fetchFromGitHub {
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     EOF
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     poetry-core
   ];
@@ -38,8 +39,7 @@ buildPythonPackage rec {
     shapely = [ shapely ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "preprocess_cancellation" ];
 
   meta = {

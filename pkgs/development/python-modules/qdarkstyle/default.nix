@@ -1,7 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   helpdev,
   qtpy,
 }:
@@ -9,21 +9,21 @@
 buildPythonPackage rec {
   pname = "qdarkstyle";
   version = "3.2.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "QDarkStyle";
     hash = "sha256-DAt/dKbpISEAiZKzabq2BGgVfbHALNMNZKXpo7QC8a4=";
+    pname = "QDarkStyle";
   };
-
-  # No tests available
-  doCheck = false;
 
   propagatedBuildInputs = [
     helpdev
     qtpy
   ];
+
+  # No tests available
+  doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Dark stylesheet for Python and Qt applications";

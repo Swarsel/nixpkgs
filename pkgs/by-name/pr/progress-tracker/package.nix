@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   catch2_3,
   cmake,
-  fetchFromGitHub,
   gtkmm4,
   libadwaita,
   libuuid,
   pkg-config,
   spdlog,
-  stdenv,
   tinyxml-2,
   wrapGAppsHook4,
 }:
@@ -51,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple kanban-style task organiser";
     homepage = "https://github.com/smolBlackCat/progress-tracker";
     license = lib.licenses.mit;
-    mainProgram = "progress";
     maintainers = with lib.maintainers; [ Guanran928 ];
     platforms = lib.platforms.linux;
+    mainProgram = "progress";
   };
 })

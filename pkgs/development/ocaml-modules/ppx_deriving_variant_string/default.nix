@@ -2,8 +2,8 @@
   lib,
   fetchurl,
   buildDunePackage,
-  ppxlib,
   ounit2,
+  ppxlib,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -20,15 +20,16 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     ounit2
   ];
 
   meta = {
-    homepage = "https://github.com/ahrefs/ppx_deriving_variant_string";
     description = "OCaml PPX deriver that generates converters between regular or polymorphic variants and strings.";
+    homepage = "https://github.com/ahrefs/ppx_deriving_variant_string";
+    changelog = "https://raw.githubusercontent.com/ahrefs/ppx_deriving_variant_string/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.marijanp ];
-    changelog = "https://raw.githubusercontent.com/ahrefs/ppx_deriving_variant_string/${finalAttrs.version}/CHANGES.md";
   };
 })

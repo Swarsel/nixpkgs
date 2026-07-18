@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  qt6,
-  lm_sensors,
   cmake,
-  ninja,
   libcprime,
   libcsys,
+  lm_sensors,
+  ninja,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "System resource viewer from the C Suite";
-    mainProgram = "corestats";
     homepage = "https://gitlab.com/cubocore/coreapps/corestats";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "corestats";
   };
 })

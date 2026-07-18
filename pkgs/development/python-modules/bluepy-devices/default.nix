@@ -9,22 +9,19 @@
 buildPythonPackage (finalAttrs: {
   pname = "bluepy-devices";
   version = "0.2.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "bluepy_devices";
     inherit (finalAttrs) version;
     hash = "sha256-KNc0Spfd7Z+jGIClQNjSf2mKL6pZ1GL0c3EL3Hf8/ws=";
+    pname = "bluepy_devices";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ bluepy ];
 
   # Project has no test
   doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ bluepy ];
+  pyproject = true;
   pythonImportsCheck = [ "bluepy_devices" ];
 
   meta = {

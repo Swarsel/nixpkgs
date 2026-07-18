@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-sqlvirtualmachine";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     extension = "zip";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +30,7 @@ buildPythonPackage rec {
     msrestazure
   ];
 
-  # no tests included
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.common"

@@ -1,18 +1,18 @@
 {
   lib,
   fetchFromGitLab,
+  conjure-tor,
   glib,
-  python3Packages,
   gobject-introspection,
   gsettings-desktop-schemas,
-  tor,
   obfs4,
+  python3Packages,
   snowflake,
-  conjure-tor,
+  tor,
   wrapGAppsHook4,
+  withConjure ? true,
   withObfs4 ? true,
   withSnowflake ? true,
-  withConjure ? true,
 }:
 
 let
@@ -20,17 +20,15 @@ let
   version = "5.1.0";
 in
 python3Packages.buildPythonApplication {
-  pname = "tractor";
   inherit version;
-
-  pyproject = true;
+  pname = "tractor";
 
   src = fetchFromGitLab {
-    domain = "framagit.org";
     owner = "tractor";
     repo = "tractor";
     tag = version;
     hash = "sha256-pyGDxHOpaZutUhXRwGAN77fGNn68EWIGgWu80avkuSI=";
+    domain = "framagit.org";
   };
 
   patches = [ ./fix-gsettings-schema.patch ];
@@ -49,14 +47,6 @@ python3Packages.buildPythonApplication {
   ++ lib.optional withSnowflake snowflake
   ++ lib.optional withConjure conjure-tor;
 
-  dependencies = [
-    python3Packages.setuptools
-    python3Packages.fire
-    python3Packages.pygobject3
-    python3Packages.pysocks
-    python3Packages.stem
-  ];
-
   postInstall = ''
     mkdir -p "$out/share/glib-2.0/schemas"
     cp "$src/src/tractor/tractor.gschema.xml" "$out/share/glib-2.0/schemas"
@@ -74,18 +64,27 @@ python3Packages.buildPythonApplication {
     glib-compile-schemas "$out/share/glib-2.0/schemas"
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dependencies = [
+    python3Packages.setuptools
+    python3Packages.fire
+    python3Packages.pygobject3
+    python3Packages.pysocks
+    python3Packages.stem
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
+
   meta = {
-    homepage = "https://framagit.org/tractor/tractor";
     description = "Setup a proxy with Onion Routing via TOR and optionally obfs4proxy";
+    homepage = "https://framagit.org/tractor/tractor";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ mksafavi ];
     platforms = lib.platforms.linux;
     mainProgram = "tractor";
-    maintainers = with lib.maintainers; [ mksafavi ];
   };
 }

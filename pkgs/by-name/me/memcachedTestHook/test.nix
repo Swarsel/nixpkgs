@@ -1,19 +1,16 @@
 {
+  stdenv,
   memcachedTestHook,
   netcat,
-  stdenv,
 }:
 
 stdenv.mkDerivation {
-  name = "memcached-test-hook-test";
+  doCheck = true;
 
   nativeCheckInputs = [
     memcachedTestHook
     netcat
   ];
-
-  dontUnpack = true;
-  doCheck = true;
 
   preCheck = ''
     memcachedTestPort=11212
@@ -31,11 +28,13 @@ stdenv.mkDerivation {
     runHook postCheck
   '';
 
-  __darwinAllowLocalNetworking = true;
-
   installPhase = ''
     [[ $TEST_RAN == 1 ]]
     echo "test passed"
     touch $out
   '';
+
+  __darwinAllowLocalNetworking = true;
+  dontUnpack = true;
+  name = "memcached-test-hook-test";
 }

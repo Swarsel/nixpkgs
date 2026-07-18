@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   httpx,
   pydantic,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "fressnapftracker";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eifinger";
@@ -23,13 +22,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-gJsE/1HnUXEDa5Y7eLtHexx+G00MGQDZJu3pui9OeMM=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    httpx
-    pydantic
-  ];
 
   nativeCheckInputs = [
     pytest-asyncio
@@ -39,6 +31,14 @@ buildPythonPackage (finalAttrs: {
     respx
   ];
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    httpx
+    pydantic
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "fressnapftracker" ];
 
   meta = {

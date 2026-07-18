@@ -1,30 +1,24 @@
 {
   lib,
-  buildPackages,
   stdenv,
+  buildPackages,
+  gtest,
+  libgit2,
   mkMesonExecutable,
-  writableTmpDirAsHomeHook,
-
   nix-fetchers,
   nix-fetchers-c,
   nix-store-test-support,
-
-  libgit2,
   rapidcheck,
-  gtest,
-  runCommand,
-
-  # Configuration Options
-
-  version,
   resolvePath,
+  runCommand,
+  # Configuration Options
+  version,
+  writableTmpDirAsHomeHook,
 }:
 
 mkMesonExecutable (finalAttrs: {
-  pname = "nix-fetchers-tests";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-fetchers-tests";
 
   buildInputs = [
     nix-fetchers
@@ -42,13 +36,15 @@ mkMesonExecutable (finalAttrs: {
   mesonFlags = [
   ];
 
+  workDir = ./.;
+
   passthru = {
     tests = {
       run =
         runCommand "${finalAttrs.pname}-run"
           {
-            meta.broken = !stdenv.hostPlatform.emulatorAvailable buildPackages;
             buildInputs = [ writableTmpDirAsHomeHook ];
+            meta.broken = !stdenv.hostPlatform.emulatorAvailable buildPackages;
           }
           ''
             export _NIX_TEST_UNIT_DATA=${resolvePath ./data}

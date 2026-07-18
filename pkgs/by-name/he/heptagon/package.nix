@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  fetchpatch,
   makeWrapper,
   ocaml-ng,
-  fetchpatch,
 }:
 let
   ocamlPackages = ocaml-ng.ocamlPackages_5_3;
@@ -14,17 +14,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.05.00";
 
   src = fetchFromGitLab {
-    domain = "gitlab.inria.fr";
     owner = "synchrone";
     repo = "heptagon";
     rev = "v${finalAttrs.version}";
     hash = "sha256-b4O48MQT3Neh8a1Z5wRgS701w6XrwpsbSMprlqTT+CE=";
+    domain = "gitlab.inria.fr";
   };
 
   patches = [
     (fetchpatch {
-      url = "https://gitlab.inria.fr/synchrone/heptagon/-/commit/f10405e385ca25dc737727e0c210a44986929bf0.patch";
       hash = "sha256-Sn55jEoRDYnEUg4SjuBDCNN4TNl2Dwn1fTjb9O8O1bo=";
+      url = "https://gitlab.inria.fr/synchrone/heptagon/-/commit/f10405e385ca25dc737727e0c210a44986929bf0.patch";
     })
   ];
 
@@ -61,7 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.inria.fr/synchrone/heptagon";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ wegank ];
-    mainProgram = "heptc";
     platforms = lib.platforms.unix;
+    mainProgram = "heptc";
   };
 })

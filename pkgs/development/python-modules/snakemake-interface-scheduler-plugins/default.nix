@@ -1,18 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
-  # dependencies
-  snakemake-interface-common,
-
   # tests
   pytestCheckHook,
   snakemake,
-
+  # dependencies
+  snakemake-interface-common,
   # passthru
   snakemake-interface-scheduler-plugins,
 }:
@@ -20,8 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-interface-scheduler-plugins";
   version = "2.0.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -29,6 +23,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-BowMwZllFR9IKYUMhISAbf606awTxfmS/nQxkGgb4y8=";
   };
+
+  # Circular dependency with snakemake
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -38,17 +42,10 @@ buildPythonPackage (finalAttrs: {
     snakemake-interface-common
   ];
 
+  enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "snakemake_interface_scheduler_plugins" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake
-  ];
-
-  enabledTestPaths = [ "tests/tests.py" ];
-
-  # Circular dependency with snakemake
-  doCheck = false;
   passthru.tests.pytest = snakemake-interface-scheduler-plugins.overridePythonAttrs {
     doCheck = true;
   };

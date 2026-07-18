@@ -2,25 +2,21 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
-  # build-system
-  hatchling,
-
   # dependencies
   django,
-  sqlparse,
-
   # tests
   django-csp,
+  # build-system
+  hatchling,
   html5lib,
   jinja2,
   pygments,
+  sqlparse,
 }:
 
 buildPythonPackage rec {
   pname = "django-debug-toolbar";
   version = "7.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -33,13 +29,6 @@ buildPythonPackage rec {
     # not actually used and we don't have django-template-partials packaged
     sed -i "/template_partials/d" tests/settings.py
   '';
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    django
-    sqlparse
-  ];
 
   env = {
     DB_BACKEND = "sqlite3";
@@ -60,6 +49,14 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    django
+    sqlparse
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "debug_toolbar" ];
 
   meta = {

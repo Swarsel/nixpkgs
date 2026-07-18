@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   asynctest,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pyversasense";
   version = "0.0.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "imstevenxyz";
@@ -21,7 +20,6 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   doCheck = false; # asynctest unsupported on 3.11+
 
   nativeCheckInputs = [
@@ -29,8 +27,6 @@ buildPythonPackage rec {
     pytest-asyncio
     pytestCheckHook
   ];
-
-  enabledTestPaths = [ "tests/test.py" ];
 
   disabledTests = [
     # Tests are not properly mocking network requests
@@ -40,6 +36,8 @@ buildPythonPackage rec {
     "test_samples"
   ];
 
+  enabledTestPaths = [ "tests/test.py" ];
+  format = "setuptools";
   pythonImportsCheck = [ "pyversasense" ];
 
   meta = {

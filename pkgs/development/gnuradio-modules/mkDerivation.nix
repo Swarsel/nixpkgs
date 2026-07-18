@@ -28,8 +28,8 @@ let
 
       let
         args_ = {
-          enableParallelBuilding = args.enableParallelBuilding or true;
           nativeBuildInputs = (args.nativeBuildInputs or [ ]);
+
           # We add gnuradio and volk itself by default - most gnuradio based packages
           # will not consider it a dependency worth mentioning and it will almost
           # always be needed
@@ -37,6 +37,8 @@ let
             unwrapped
             unwrapped.volk
           ];
+
+          enableParallelBuilding = args.enableParallelBuilding or true;
         };
       in
       args // args_;

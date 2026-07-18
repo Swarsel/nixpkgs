@@ -1,28 +1,27 @@
 {
+  alcotest,
   buildDunePackage,
+  ca-certs-nss,
   dns,
-  dns-server,
   dns-mirage,
-  lru,
+  dns-server,
+  dnssec,
   duration,
-  randomconv,
+  lru,
   lwt,
-  mirage-sleep,
+  mirage-crypto-rng,
   mirage-mtime,
   mirage-ptime,
-  mirage-crypto-rng,
+  mirage-sleep,
+  randomconv,
   tcpip,
   tls,
   tls-mirage,
-  dnssec,
-  ca-certs-nss,
-  alcotest,
 }:
 
 buildDunePackage {
-  pname = "dns-resolver";
-
   inherit (dns) version src;
+  pname = "dns-resolver";
 
   propagatedBuildInputs = [
     dns
@@ -44,6 +43,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
   ];

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "lib4package";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anthonyharrison";
@@ -26,14 +25,16 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "lib4package"
   ];
 
   meta = {
-    changelog = "https://github.com/anthonyharrison/lib4package/releases/tag/${src.tag}";
     description = "Utility for handling package metadata to include in Software Bill of Materials (SBOMs)";
     homepage = "https://github.com/anthonyharrison/lib4package";
+    changelog = "https://github.com/anthonyharrison/lib4package/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage (finalAttrs: {
   pname = "i3-balance-workspace";
   version = "1.8.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -20,6 +19,8 @@ python3Packages.buildPythonPackage (finalAttrs: {
       --replace-fail 'poetry>=' 'poetry-core>='
   '';
 
+  doCheck = false; # project has no test
+
   build-system = [
     python3Packages.poetry-core
   ];
@@ -28,7 +29,7 @@ python3Packages.buildPythonPackage (finalAttrs: {
     python3Packages.i3ipc
   ];
 
-  doCheck = false; # project has no test
+  pyproject = true;
   pythonImportsCheck = [ "i3_balance_workspace" ];
 
   meta = {

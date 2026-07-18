@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pydanfossair";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JonasPed";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-ZTairxQbvijNiSomDoeZtmL/Hn3ce1Z5TEOf+0C8cYg=";
   };
 
-  build-system = [ setuptools ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pydanfossair" ];
 
   meta = {

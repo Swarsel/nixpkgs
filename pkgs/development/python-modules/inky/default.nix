@@ -1,22 +1,21 @@
 {
   lib,
-  python,
-  buildPythonPackage,
-  pytestCheckHook,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
+  gpiodevice,
   hatch-fancy-pypi-readme,
   hatch-requirements-txt,
+  hatchling,
   numpy,
   pillow,
+  pytestCheckHook,
+  python,
   smbus2,
   spidev,
-  gpiodevice,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "inky";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pimoroni";
@@ -24,6 +23,19 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-wHAAfTAJ0MEmGrZypH/YOkyMzC+sav8fBEXnk/Q2ed0=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  # The build explicitly copies over these docs files, which cause collisions with other pimoroni repos.
+  # Preserve the files (especially license), but move elsewhere.
+  postInstall = ''
+    mkdir -p $out/share/doc/${finalAttrs.pname}
+    mkdir -p $out/share/licenses/${finalAttrs.pname}
+
+    mv "$out/${python.sitePackages}/LICENSE" $out/share/licenses/${finalAttrs.pname}/
+    mv "$out/${python.sitePackages}/README.md" $out/share/doc/${finalAttrs.pname}/
+    mv "$out/${python.sitePackages}/CHANGELOG.md" $out/share/doc/${finalAttrs.pname}/
+  '';
 
   build-system = [
     hatchling
@@ -39,20 +51,8 @@ buildPythonPackage (finalAttrs: {
     gpiodevice
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "inky" ];
-
-  # The build explicitly copies over these docs files, which cause collisions with other pimoroni repos.
-  # Preserve the files (especially license), but move elsewhere.
-  postInstall = ''
-    mkdir -p $out/share/doc/${finalAttrs.pname}
-    mkdir -p $out/share/licenses/${finalAttrs.pname}
-
-    mv "$out/${python.sitePackages}/LICENSE" $out/share/licenses/${finalAttrs.pname}/
-    mv "$out/${python.sitePackages}/README.md" $out/share/doc/${finalAttrs.pname}/
-    mv "$out/${python.sitePackages}/CHANGELOG.md" $out/share/doc/${finalAttrs.pname}/
-  '';
 
   meta = {
     description = "Python library for Inky pHAT, Inky wHAT and Inky Impression e-paper displays for Raspberry Pi.";

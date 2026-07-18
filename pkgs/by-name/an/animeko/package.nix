@@ -2,87 +2,87 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  gradle,
-  autoPatchelfHook,
-  jetbrains, # Required by upstream due to JCEF dependency
-  fontconfig,
-  libxinerama,
-  libxrandr,
-  file,
-  gtk3,
-  glib,
-  cups,
-  lcms2,
+  aalib,
   alsa-lib,
-  libvlc,
-  libidn,
-  pulseaudio,
-  ffmpeg,
-  libva,
-  libdvbpsi,
-  libogg,
-  chromaprint,
-  protobuf_21,
-  libgcrypt,
-  libdvdnav,
-  libsecret,
   aribb24,
-  libavc1394,
-  libmpcdec,
-  libvorbis,
-  libebml,
+  autoPatchelfHook,
+  boost,
+  chromaprint,
+  cups,
   faad2,
+  fetchpatch,
+  ffmpeg,
+  ffmpeg_6,
+  file,
+  flac,
+  fontconfig,
+  glib,
+  gnupg,
+  gradle,
+  gtk3,
+  jetbrains, # Required by upstream due to JCEF dependency
+  lcms2,
+  libGL,
+  libarchive,
+  libavc1394,
+  libbluray,
+  libcaca,
+  libcddb,
+  libdc1394,
+  libdvbpsi,
+  libdvdnav,
+  libdvdread,
+  libebml,
+  libgcrypt,
+  libidn,
   libjpeg8,
   libkate,
-  librsvg,
-  libxpm,
-  qt5,
-  libupnp,
-  aalib,
-  libcaca,
+  libmad,
   libmatroska,
-  libopenmpt-modplug,
-  libsidplayfp,
-  shine,
-  libarchive,
-  gnupg,
-  srt,
-  libshout,
-  ffmpeg_6,
+  libmpcdec,
   libmpeg2,
+  libmtp,
+  libnfs,
+  libnotify,
+  libogg,
+  libopenmpt-modplug,
+  librsvg,
+  libsamplerate,
+  libsecret,
+  libshout,
+  libsidplayfp,
+  libspatialaudio,
+  libupnp,
+  libva,
+  libvlc,
+  libvncserver,
+  libvorbis,
+  libx11,
   libxcb-keysyms,
+  libxdamage,
+  libxinerama,
+  libxml2,
+  libxpm,
+  libxrandr,
   lirc,
   lua5_2,
-  taglib,
-  libspatialaudio,
-  libmtp,
-  speexdsp,
-  libsamplerate,
-  sox,
-  libmad,
-  libnotify,
-  taglib_1,
-  zvbi,
-  libdc1394,
-  libcddb,
-  libbluray,
-  libdvdread,
-  libvncserver,
-  twolame,
-  samba,
-  libnfs,
-  flac,
-  writeShellScript,
   nix-update,
-  libxml2,
-  boost,
-  thrift,
-  libGL,
-  libx11,
-  libxdamage,
-  nss,
   nspr,
+  nss,
+  protobuf_21,
+  pulseaudio,
+  qt5,
+  samba,
+  shine,
+  sox,
+  speexdsp,
+  srt,
+  taglib,
+  taglib_1,
+  thrift,
+  twolame,
+  writeShellScript,
+  zvbi,
 }:
 let
   thrift20 = thrift.overrideAttrs (old: {
@@ -95,18 +95,18 @@ let
       hash = "sha256-cwFTcaNHq8/JJcQxWSelwAGOLvZHoMmjGV3HBumgcWo=";
     };
 
-    cmakeFlags = (old.cmakeFlags or [ ]) ++ [
-      "-DCMAKE_POLICY_VERSION_MINIMUM=3.10"
-    ];
-
     patches = (old.patches or [ ]) ++ [
       # Fix build with gcc15
       # https://github.com/apache/thrift/pull/3078
       (fetchpatch {
+        hash = "sha256-pWcG6/BepUwc/K6cBs+6d74AWIhZ2/wXvCunb/KyB0s=";
         name = "thrift-add-missing-cstdint-include-gcc15.patch";
         url = "https://github.com/apache/thrift/commit/947ad66940cfbadd9b24ba31d892dfc1142dd330.patch";
-        hash = "sha256-pWcG6/BepUwc/K6cBs+6d74AWIhZ2/wXvCunb/KyB0s=";
       })
+    ];
+
+    cmakeFlags = (old.cmakeFlags or [ ]) ++ [
+      "-DCMAKE_POLICY_VERSION_MINIMUM=3.10"
     ];
   });
 
@@ -123,32 +123,16 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  patches = [
+    # Builtin updater will never work on NixOS, so we made a patch to disable updater
+    ./0001-no-update-checker.patch
+  ];
+
   postPatch = ''
     echo "kotlin.native.ignoreDisabledTargets=true" >> local.properties
     sed -i "s/^version.name=.*/version.name=${finalAttrs.version}/" gradle.properties
     sed -i "s/^package.version=.*/package.version=${finalAttrs.version}/" gradle.properties
   '';
-
-  gradleBuildTask = "createReleaseDistributable";
-
-  gradleUpdateTask = finalAttrs.gradleBuildTask;
-
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    pkg = finalAttrs.finalPackage;
-    data = ./deps.json;
-    silent = false;
-    useBwrap = false;
-  };
-
-  env = {
-    JAVA_HOME = jetbrains.jdk-21;
-    ANDROID_SDK_HOME = "$(pwd)";
-  };
-
-  gradleFlags = [
-    "-Dorg.gradle.java.home=${jetbrains.jdk-21}"
-  ];
 
   nativeBuildInputs = [
     gradle
@@ -234,12 +218,10 @@ stdenv.mkDerivation (finalAttrs: {
     libxdamage
   ];
 
-  patches = [
-    # Builtin updater will never work on NixOS, so we made a patch to disable updater
-    ./0001-no-update-checker.patch
-  ];
-
-  dontWrapQtApps = true;
+  env = {
+    ANDROID_SDK_HOME = "$(pwd)";
+    JAVA_HOME = jetbrains.jdk-21;
+  };
 
   doCheck = false;
 
@@ -262,6 +244,23 @@ stdenv.mkDerivation (finalAttrs: {
     ln -sf ${libvlc}/lib $out/lib/app/resources/
   '';
 
+  dontWrapQtApps = true;
+  gradleBuildTask = "createReleaseDistributable";
+
+  gradleFlags = [
+    "-Dorg.gradle.java.home=${jetbrains.jdk-21}"
+  ];
+
+  gradleUpdateTask = finalAttrs.gradleBuildTask;
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+    pkg = finalAttrs.finalPackage;
+    silent = false;
+    useBwrap = false;
+  };
+
   passthru.updateScript = writeShellScript "update-animeko" ''
     ${lib.getExe nix-update} animeko
     $(nix-build -A animeko.mitmCache.updateScript)
@@ -270,18 +269,22 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "One-stop platform for finding, following and watching anime";
     homepage = "https://github.com/open-ani/animeko";
-    mainProgram = "Ani";
     license = lib.licenses.agpl3Plus;
-    maintainers = with lib.maintainers; [
-      pokon548
-    ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
+
+    maintainers = with lib.maintainers; [
+      pokon548
+    ];
+
     platforms = [
       "x86_64-linux"
     ];
+
+    mainProgram = "Ani";
     # Mark broken due to a breaking change in JetBrains JCEF
     # https://github.com/NixOS/nixpkgs/pull/485812#issuecomment-4211365591
     broken = true;

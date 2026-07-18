@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  versionCheckHook,
+  buildNpmPackage,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -22,11 +22,12 @@ buildNpmPackage (finalAttrs: {
   ];
 
   npmDepsHash = "sha256-4ft5168ru+aGPvZAxASQ4wkjtfNG2e0sNhJTedbiKQA=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
   versionCheckProgram = "${placeholder "out"}/bin/tsc";
 
   passthru = {

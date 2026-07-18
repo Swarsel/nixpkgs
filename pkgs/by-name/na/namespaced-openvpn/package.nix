@@ -1,17 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  openvpn,
   iproute2,
   iptables,
+  openvpn,
+  python3Packages,
   util-linux,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "namespaced-openvpn";
   version = "0.6.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "slingamn";
@@ -19,12 +18,6 @@ python3Packages.buildPythonPackage rec {
     rev = "a3fa42b2d8645272cbeb6856e26a7ea9547cb7d1";
     sha256 = "+Fdaw9EGyFGH9/DSeVJczS8gPzAOv+qn+1U20zQBBqQ=";
   };
-
-  buildInputs = [
-    openvpn
-    iproute2
-    util-linux
-  ];
 
   postPatch = ''
     substituteInPlace namespaced-openvpn \
@@ -38,7 +31,12 @@ python3Packages.buildPythonPackage rec {
       --replace-fail "/sbin/iptables" "${iptables}/bin/iptables"
   '';
 
-  dontBuild = true;
+  buildInputs = [
+    openvpn
+    iproute2
+    util-linux
+  ];
+
   doCheck = false;
 
   installPhase = ''
@@ -46,9 +44,12 @@ python3Packages.buildPythonPackage rec {
     cp namespaced-openvpn seal-unseal-gateway $out/bin
   '';
 
+  dontBuild = true;
+  pyproject = false;
+
   meta = {
-    homepage = "https://github.com/slingamn/namespaced-openvpn";
     description = "Network namespace isolation for OpenVPN tunnels";
+    homepage = "https://github.com/slingamn/namespaced-openvpn";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.lodi ];
     platforms = lib.platforms.linux;

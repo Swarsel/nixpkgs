@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   autoPatchelfHook,
   libgcc,
   libxcrypt-legacy,
+  unzip,
   zlib,
 }:
 
@@ -20,16 +20,17 @@ stdenv.mkDerivation (finalAttrs: {
         attrs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
       suffix = selectSystem {
         aarch64-darwin = "macos-arm64";
-        x86_64-linux = "linux-x64";
         aarch64-linux = "linux-arm64";
+        x86_64-linux = "linux-x64";
       };
     in
     fetchurl {
       url = "https://github.com/ACINQ/phoenixd/releases/download/v${finalAttrs.version}/phoenixd-${finalAttrs.version}-${suffix}.zip";
+
       hash = selectSystem {
         aarch64-darwin = "sha256-eVrwJGjXZNl9e2QGtVVEHjptCMPQgGaxljDEqr7LE7s=";
-        x86_64-linux = "sha256-n/yvAisqpnbHs3XV0sHq0sUpq0+mqXmG+3LXRNmrLpI=";
         aarch64-linux = "sha256-mfhLpPXFvkO0mz4okdOXALIk8MR2CQQ8mZ6aI+QgNZs=";
+        x86_64-linux = "sha256-n/yvAisqpnbHs3XV0sHq0sUpq0+mqXmG+3LXRNmrLpI=";
       };
     };
 
@@ -57,6 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://phoenix.acinq.co/server";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ prusnak ];
+
     platforms = [
       "aarch64-linux"
       "aarch64-darwin"

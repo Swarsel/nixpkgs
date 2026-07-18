@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
+  nix-update-script,
   openssl,
   zlib,
-  nix-update-script,
 }:
 
 buildDotnetModule rec {
@@ -20,44 +20,42 @@ buildDotnetModule rec {
     hash = "sha256-0xjrw0ivSjQ7iQmDF9ZkDhYnbE34qW2uMD4DXvCfBZE=";
   };
 
+  # See https://github.com/NixOS/nixpkgs/pull/196648/commits/0fb17c04fe34ac45247d35a1e4e0521652d9c494
+  patches = [ ./add-runtime-identifier.patch ];
+
+  postPatch = ''
+    substituteInPlace pupdate.csproj \
+      --replace-fail @RuntimeIdentifier@ "${dotnetCorePackages.systemToDotnetRid stdenv.hostPlatform.system}"
+  '';
+
   buildInputs = [
     (lib.getLib stdenv.cc.cc)
     zlib
     openssl
   ];
 
-  # See https://github.com/NixOS/nixpkgs/pull/196648/commits/0fb17c04fe34ac45247d35a1e4e0521652d9c494
-  patches = [ ./add-runtime-identifier.patch ];
-  postPatch = ''
-    substituteInPlace pupdate.csproj \
-      --replace-fail @RuntimeIdentifier@ "${dotnetCorePackages.systemToDotnetRid stdenv.hostPlatform.system}"
-  '';
-
-  projectFile = "pupdate.csproj";
-
-  nugetDeps = ./deps.json;
-
-  selfContainedBuild = true;
-
-  executables = [ "pupdate" ];
+  dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
 
   dotnetFlags = [
     "-p:PackageRuntime=${dotnetCorePackages.systemToDotnetRid stdenv.hostPlatform.system} -p:TrimMode=partial"
   ];
 
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
-  dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  executables = [ "pupdate" ];
+  nugetDeps = ./deps.json;
+  projectFile = "pupdate.csproj";
+  selfContainedBuild = true;
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/mattpannella/pupdate";
     description = "Update utility for the openFPGA cores, firmware, and other stuff on your Analogue Pocket";
+    homepage = "https://github.com/mattpannella/pupdate";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "pupdate";
   };
 }

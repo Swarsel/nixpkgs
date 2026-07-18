@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   rustPlatform,
-  writableTmpDirAsHomeHook,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -34,13 +34,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=commands::exercises::tests::list_exercises_with_client_test"
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   __darwinAllowLocalNetworking = true;
+  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   meta = {
     description = "CLI for using the TestMyCode programming assignment evaluator";

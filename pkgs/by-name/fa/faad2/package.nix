@@ -41,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://sourceforge.net/projects/faac/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
-    mainProgram = "faad";
     platforms = lib.platforms.all;
+    mainProgram = "faad";
   };
 })

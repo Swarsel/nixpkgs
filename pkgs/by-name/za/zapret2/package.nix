@@ -1,19 +1,19 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  makeWrapper,
-  pkg-config,
   curl,
-  netcat,
   gawk,
   gnugrep,
-  luajit,
   ipset,
   libcap,
   libmnl,
-  libnfnetlink,
   libnetfilter_queue,
+  libnfnetlink,
+  luajit,
+  makeWrapper,
+  netcat,
+  pkg-config,
   systemdLibs,
   zlib,
 }:
@@ -22,26 +22,31 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "zapret2";
   version = "1.0.2";
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "bol-van";
     repo = "zapret2";
     tag = "v${finalAttrs.version}";
     hash = "sha256-pcAIvB/MfFJZFl5kPZjRZZOXgamfQm8hD4UGYC3jbro=";
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse --short=12 HEAD > COMMIT
       find "$out" -name .git -print0 | xargs -0 rm -rf
     '';
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
+
+  postPatch = ''
+    substituteInPlace "init.d/systemd/nfqws2@.service" \
+      --replace-fail "ExecSearchPath=/opt/zapret2/nfq2" "ExecSearchPath=$out/bin"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -61,15 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemdLibs
   ];
 
-  postPatch = ''
-    substituteInPlace "init.d/systemd/nfqws2@.service" \
-      --replace-fail "ExecSearchPath=/opt/zapret2/nfq2" "ExecSearchPath=$out/bin"
-  '';
-
-  preBuild = ''
-    makeFlagsArray+=("CFLAGS=-DZAPRET_GH_VER=${finalAttrs.src.tag} -DZAPRET_GH_HASH=`cat $src/COMMIT`")
-  '';
-
   makeFlags = [
     (if stdenv.hostPlatform.isLinux then "systemd" else "bsd")
     "TGT=${placeholder "out"}/bin"
@@ -79,6 +75,10 @@ stdenv.mkDerivation (finalAttrs: {
     ZAPRET_BASE = "${placeholder "out"}/share/zapret2";
     ZAPRET_RW = "/etc/zapret2";
   };
+
+  preBuild = ''
+    makeFlagsArray+=("CFLAGS=-DZAPRET_GH_VER=${finalAttrs.src.tag} -DZAPRET_GH_HASH=`cat $src/COMMIT`")
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -131,15 +131,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Anti-DPI software for bypassing DPI systems";
     homepage = "https://github.com/bol-van/zapret2";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ andre4ik3 ];
     platforms = lib.platforms.unix;
+    mainProgram = if stdenv.hostPlatform.isLinux then "nfqws2" else "dvtws2";
     # Darwin lacks ipdivert in kernel (making dvtws2 unusable) and zapret2
     # doesn't include tpws
     broken = stdenv.hostPlatform.isDarwin;
-    maintainers = with lib.maintainers; [ andre4ik3 ];
-    mainProgram = if stdenv.hostPlatform.isLinux then "nfqws2" else "dvtws2";
   };
 })

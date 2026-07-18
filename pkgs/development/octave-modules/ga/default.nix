@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,9 +14,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "Genetic optimization code";
     homepage = "https://gnu-octave.github.io/packages/ga/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Genetic optimization code";
   };
 }

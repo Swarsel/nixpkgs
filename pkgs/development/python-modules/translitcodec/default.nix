@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
@@ -12,8 +12,6 @@ in
 buildPythonPackage {
   inherit pname version;
 
-  format = "setuptools";
-
   src = fetchFromGitHub {
     owner = "claudep";
     repo = "translitcodec";
@@ -22,7 +20,7 @@ buildPythonPackage {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ pname ];
 
   meta = {

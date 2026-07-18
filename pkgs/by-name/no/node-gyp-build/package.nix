@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
   nix-update-script,
-
+  nodejs,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "node-gyp-build";
@@ -16,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-65EQGGpwL0C8AOhFyf62nVEt4e2pCS0lAv+20kt3Zdk=";
   };
-
-  dontBuild = true;
 
   buildInputs = [
     nodejs
@@ -37,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/lib/node_modules/node-gyp-build/build-test.js $out/bin/node-gyp-build-test
   '';
 
+  dontBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,22 +1,17 @@
 {
   lib,
   stdenv,
-
-  src,
-  version,
-
   autoreconfHook,
-  pkg-config,
-
   cyrus_sasl,
   openssl,
+  pkg-config,
+  src,
+  version,
   zlib,
 }:
 stdenv.mkDerivation {
-  pname = "mailspring-libetpan";
   inherit src version;
-
-  sourceRoot = "${src.name}/mailsync/Vendor/libetpan";
+  pname = "mailspring-libetpan";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -39,6 +34,8 @@ stdenv.mkDerivation {
     "-std=gnu17"
     "-Wno-error=incompatible-pointer-types"
   ];
+
+  sourceRoot = "${src.name}/mailsync/Vendor/libetpan";
 
   meta = {
     description = "Modified fork of the libetpan mail framework";

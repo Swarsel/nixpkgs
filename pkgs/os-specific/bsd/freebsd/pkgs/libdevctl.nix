@@ -2,6 +2,6 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "lib/libdevctl";
   alwaysKeepStatic = true;
+  path = "lib/libdevctl";
 }

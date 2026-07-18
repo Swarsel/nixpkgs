@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   ninja,
@@ -16,14 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TybHYS8QYpGXzmtLygbUp29AX/dgf/I3yQ0Teny7Cg4=";
   };
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail "-Werror" ""
-  '';
-
   outputs = [
     "out"
     "dev"
   ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail "-Werror" ""
+  '';
 
   strictDeps = true;
 

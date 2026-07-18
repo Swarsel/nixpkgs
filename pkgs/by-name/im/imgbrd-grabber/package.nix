@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
-  makeWrapper,
   catch2,
-  nodejs,
+  cmake,
   libpulseaudio,
+  makeWrapper,
+  nodejs,
   openssl,
+  qt6,
   rsync,
   typescript,
-  qt6,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "imgbrd-grabber";
@@ -23,39 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7EIXmqfTADG95vxKU1cFGnzZD3NJJN28HOF71YZD6nI=";
     fetchSubmodules = true;
   };
-
-  buildInputs =
-    with qt6;
-    [
-      qtbase
-      qtdeclarative
-      qttools
-      qtnetworkauth
-      qtmultimedia
-    ]
-    ++ [
-      openssl
-      libpulseaudio
-      typescript
-      nodejs
-    ];
-
-  nativeBuildInputs = [
-    makeWrapper
-    qt6.wrapQtAppsHook
-    cmake
-  ];
-
-  extraOutputsToLink = [ "doc" ];
-
-  preBuild = ''
-    export HOME=$TMPDIR
-
-    # the package.sh script provides some install helpers
-    # using this might make it easier to maintain/less likely for the
-    # install phase to fail across version bumps
-    patchShebangs ../scripts/package.sh
-  '';
 
   patches = [
     ./fix-for-qt6.patch
@@ -78,6 +45,37 @@ stdenv.mkDerivation (finalAttrs: {
     ln -sf ${catch2.src} tests/src/
   '';
 
+  nativeBuildInputs = [
+    makeWrapper
+    qt6.wrapQtAppsHook
+    cmake
+  ];
+
+  buildInputs =
+    with qt6;
+    [
+      qtbase
+      qtdeclarative
+      qttools
+      qtnetworkauth
+      qtmultimedia
+    ]
+    ++ [
+      openssl
+      libpulseaudio
+      typescript
+      nodejs
+    ];
+
+  preBuild = ''
+    export HOME=$TMPDIR
+
+    # the package.sh script provides some install helpers
+    # using this might make it easier to maintain/less likely for the
+    # install phase to fail across version bumps
+    patchShebangs ../scripts/package.sh
+  '';
+
   postInstall = ''
     # move the binaries to the share/Grabber folder so
     # some relative links can be resolved (e.g. settings.ini)
@@ -92,16 +90,19 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/Grabber/Grabber-cli $out/bin/Grabber-cli
   '';
 
+  extraOutputsToLink = [ "doc" ];
   sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Very customizable imageboard/booru downloader with powerful filenaming features";
-    license = lib.licenses.asl20;
     homepage = "https://bionus.github.io/imgbrd-grabber/";
-    mainProgram = "Grabber";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       evanjs
       luftmensch-luftmensch
     ];
+
+    mainProgram = "Grabber";
   };
 })

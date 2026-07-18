@@ -1,36 +1,36 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  makeWrapper,
+  autoconf,
+  cmake,
   dbus,
   ffmpeg,
-  x264,
-  libva,
+  git,
   gst_all_1,
-  libxv,
-  libxtst,
-  libxrender,
-  libxrandr,
+  libdrm,
+  libtool,
+  libva,
+  libxcomposite,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxft,
   libxi,
   libxinerama,
-  libxft,
-  libxfixes,
-  libxext,
-  libxcursor,
-  libxcomposite,
-  libdrm,
-  pkg-config,
+  libxkbcommon,
+  libxrandr,
+  libxrender,
+  libxtst,
+  libxv,
+  makeWrapper,
   pango,
   pipewire,
-  cmake,
-  git,
-  autoconf,
-  libtool,
+  pkg-config,
+  rustPlatform,
   typescript,
   wayland,
-  libxkbcommon,
+  x264,
 }:
 
 rustPlatform.buildRustPackage {
@@ -43,6 +43,18 @@ rustPlatform.buildRustPackage {
     rev = "56e29ecbde3a4aba994a9df047b5398feb447c1b";
     hash = "sha256-dHdgWrygSXqKf9fpYRVDj+Ql97Or/kjBfN/mECy2ipc=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    git
+    typescript
+    makeWrapper
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    pkg-config
+    autoconf
+    libtool
+  ];
 
   buildInputs = [
     ffmpeg
@@ -69,22 +81,17 @@ rustPlatform.buildRustPackage {
     libxkbcommon
   ];
 
-  nativeBuildInputs = [
-    cmake
-    git
-    typescript
-    makeWrapper
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    pkg-config
-    autoconf
-    libtool
-  ];
-
   cargoHash = "sha256-Mx8/zMG36qztbFYgqC7SB75bf8T0NkYQA+2Hs9/pnjk=";
 
-  cargoBuildFlags = [ "--features=ffmpeg-system" ];
-  cargoTestFlags = [ "--features=ffmpeg-system" ];
+  env = {
+    NIX_CFLAGS_COMPILE = toString [
+      "-Wno-incompatible-pointer-types"
+    ];
+  };
+
+  postInstall = ''
+    install -vDm755 weylus.desktop $out/share/applications/weylus.desktop
+  '';
 
   postFixup =
     let
@@ -97,21 +104,14 @@ rustPlatform.buildRustPackage {
       wrapProgram $out/bin/weylus --prefix GST_PLUGIN_PATH : ${GST_PLUGIN_PATH}
     '';
 
-  postInstall = ''
-    install -vDm755 weylus.desktop $out/share/applications/weylus.desktop
-  '';
-
-  env = {
-    NIX_CFLAGS_COMPILE = toString [
-      "-Wno-incompatible-pointer-types"
-    ];
-  };
+  cargoBuildFlags = [ "--features=ffmpeg-system" ];
+  cargoTestFlags = [ "--features=ffmpeg-system" ];
 
   meta = {
     description = "Use your tablet as graphic tablet/touch screen on your computer";
-    mainProgram = "weylus";
     homepage = "https://github.com/H-M-H/Weylus";
     license = with lib.licenses; [ agpl3Only ];
     maintainers = [ ];
+    mainProgram = "weylus";
   };
 }

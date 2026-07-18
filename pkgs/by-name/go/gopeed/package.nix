@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  flutter338,
   autoPatchelfHook,
   buildGoModule,
+  flutter338,
   keybinder3,
   libayatana-appindicator,
 }:
@@ -29,7 +29,6 @@ let
   libgopeed = buildGoModule {
     inherit version src;
     pname = "libgopeed";
-
     vendorHash = "sha256-XTVFqKn0JeOC/QFns0GhIYqu1FB+eFg6bgIi4G7Lw1o=";
 
     buildPhase = ''
@@ -48,13 +47,6 @@ in
 flutter338.buildFlutterApplication {
   inherit version src;
   pname = "gopeed";
-
-  sourceRoot = "${src.name}/ui/flutter";
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  gitHashes = lib.importJSON ./git-hashes.json;
-
   nativeBuildInputs = [ autoPatchelfHook ];
 
   buildInputs = [
@@ -78,6 +70,10 @@ flutter338.buildFlutterApplication {
     patchelf --add-needed libgopeed.so \
       --add-rpath $out/app/gopeed/lib $out/app/gopeed/gopeed
   '';
+
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  sourceRoot = "${src.name}/ui/flutter";
 
   passthru = {
     inherit libgopeed;

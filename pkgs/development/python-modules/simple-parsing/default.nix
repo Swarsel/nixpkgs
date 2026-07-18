@@ -1,22 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  hatchling,
-  uv-dynamic-versioning,
-
+  buildPythonPackage,
   # dependencies
   docstring-parser,
-  typing-extensions,
-
-  # optional-dependencies
-  tomli,
-  tomli-w,
-  pyyaml,
-
+  # build-system
+  hatchling,
   # tests
   matplotlib,
   numpy,
@@ -24,12 +13,18 @@
   pytest-benchmark,
   pytest-regressions,
   pytestCheckHook,
+  pythonAtLeast,
+  pyyaml,
+  # optional-dependencies
+  tomli,
+  tomli-w,
+  typing-extensions,
+  uv-dynamic-versioning,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "simple-parsing";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lebrice";
@@ -37,26 +32,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Nsr+I+BoVxockRGQAjG+ushRQ4CtWgkHrg5aVorSrvw=";
   };
-
-  build-system = [
-    hatchling
-    uv-dynamic-versioning
-  ];
-
-  dependencies = [
-    docstring-parser
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    toml = [
-      tomli
-      tomli-w
-    ];
-    yaml = [ pyyaml ];
-  };
-
-  pythonImportsCheck = [ "simple_parsing" ];
 
   nativeCheckInputs = [
     matplotlib
@@ -67,7 +42,15 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pytestFlags = [ "--benchmark-disable" ];
+  build-system = [
+    hatchling
+    uv-dynamic-versioning
+  ];
+
+  dependencies = [
+    docstring-parser
+    typing-extensions
+  ];
 
   disabledTests = [
     # AssertionError
@@ -93,10 +76,23 @@ buildPythonPackage (finalAttrs: {
     "test_pass_invalid_value_to_add_config_path_arg"
   ];
 
+  optional-dependencies = {
+    toml = [
+      tomli
+      tomli-w
+    ];
+
+    yaml = [ pyyaml ];
+  };
+
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
+  pythonImportsCheck = [ "simple_parsing" ];
+
   meta = {
     description = "Simple, Elegant, Typed Argument Parsing with argparse";
-    changelog = "https://github.com/lebrice/SimpleParsing/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/lebrice/SimpleParsing";
+    changelog = "https://github.com/lebrice/SimpleParsing/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

@@ -1,7 +1,8 @@
 {
+  lib,
+  stdenv,
   callPackage,
   fetchFromCodeberg,
-  lib,
   libGL,
   libevdev,
   libinput,
@@ -10,17 +11,16 @@
   pixman,
   pkg-config,
   scdoc,
-  stdenv,
   udev,
   versionCheckHook,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  withManpages ? true,
   wlroots_0_20,
   xwayland,
-  xwaylandSupport ? true,
   zig_0_16,
+  withManpages ? true,
+  xwaylandSupport ? true,
 }:
 let
   wlroots = wlroots_0_20;
@@ -30,16 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "river-classic";
   version = "0.3.17";
 
-  outputs = [ "out" ] ++ lib.optionals withManpages [ "man" ];
-
   src = fetchFromCodeberg {
     owner = "river";
     repo = "river-classic";
-    hash = "sha256-+Geq3AetoiHB8xkMGf9nsYq8Mse2fZ5Edg1iOZ30f1A=";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-+Geq3AetoiHB8xkMGf9nsYq8Mse2fZ5Edg1iOZ30f1A=";
   };
 
-  deps = callPackage ./build.zig.zon.nix { };
+  outputs = [ "out" ] ++ lib.optionals withManpages [ "man" ];
 
   nativeBuildInputs = [
     pkg-config
@@ -62,13 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional xwaylandSupport libx11;
 
-  zigBuildFlags = [
-    "--system"
-    "${finalAttrs.deps}"
-  ]
-  ++ lib.optional withManpages "-Dman-pages"
-  ++ lib.optional xwaylandSupport "-Dxwayland";
-
   postInstall = ''
     install -Dm644 contrib/river.desktop --target-directory=$out/share/wayland-sessions
     install -Dm755 example/init --target-directory=$out/example
@@ -76,7 +67,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  deps = callPackage ./build.zig.zon.nix { };
   versionCheckProgramArg = "-version";
+
+  zigBuildFlags = [
+    "--system"
+    "${finalAttrs.deps}"
+  ]
+  ++ lib.optional withManpages "-Dman-pages"
+  ++ lib.optional xwaylandSupport "-Dxwayland";
 
   passthru = {
     providedSessions = [ "river" ];
@@ -85,6 +84,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Dynamic tiling wayland compositor";
+
     longDescription = ''
       river-classic is a dynamic tiling Wayland compositor with
       flexible runtime configuration.
@@ -94,15 +94,18 @@ stdenv.mkDerivation (finalAttrs: {
       do not wish to deal with the majorly breaking changes from the
       river 0.4.0 release.
     '';
-    changelog = "https://codeberg.org/river/river-classic/releases/tag/v${finalAttrs.version}";
+
     homepage = "https://codeberg.org/river/river-classic";
+    changelog = "https://codeberg.org/river/river-classic/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "river";
+
     maintainers = with lib.maintainers; [
       adamcstephens
       moni
       rodrgz
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "river";
   };
 })

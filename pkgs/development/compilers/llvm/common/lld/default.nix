@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  llvm_meta,
-  release_version,
   buildLlvmPackages,
-  monorepoSrc ? null,
-  src ? null,
-  runCommand,
   cmake,
-  ninja,
-  libxml2,
+  fetchpatch,
+  getVersionFile,
   libllvm,
+  libxml2,
+  llvm_meta,
+  ninja,
+  release_version,
+  runCommand,
   version,
   devExtraCmakeFlags ? [ ],
-  getVersionFile,
-  fetchpatch,
+  monorepoSrc ? null,
+  src ? null,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "lld";
   inherit version;
+  pname = "lld";
 
   src =
     if monorepoSrc != null then
@@ -33,7 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
     else
       src;
 
-  sourceRoot = "${finalAttrs.src.name}/lld";
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
   patches = [
     (getVersionFile "lld/gnu-install-dirs.patch")
@@ -41,10 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (lib.versions.major release_version == "18") (
     # https://github.com/llvm/llvm-project/pull/97122
     fetchpatch {
-      name = "more-openbsd-program-headers.patch";
-      url = "https://github.com/llvm/llvm-project/commit/d7fd8b19e560fbb613159625acd8046d0df75115.patch";
-      stripLen = 1;
       hash = "sha256-7wTy7XDTx0+fhWQpW1KEuz7xJvpl42qMTUfd20KGOfA=";
+      name = "more-openbsd-program-headers.patch";
+      stripLen = 1;
+      url = "https://github.com/llvm/llvm-project/commit/d7fd8b19e560fbb613159625acd8046d0df75115.patch";
     }
   );
 
@@ -52,6 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     ninja
   ];
+
   buildInputs = [
     libllvm
     libxml2
@@ -68,15 +73,11 @@ stdenv.mkDerivation (finalAttrs: {
     LDFLAGS = "-Wl,-z,stack-size=2097152";
   };
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
+  sourceRoot = "${finalAttrs.src.name}/lld";
 
   meta = llvm_meta // {
-    homepage = "https://lld.llvm.org/";
     description = "LLVM linker (unwrapped)";
+
     longDescription = ''
       LLD is a linker from the LLVM project that is a drop-in replacement for
       system linkers and runs much faster than them. It also provides features
@@ -85,5 +86,7 @@ stdenv.mkDerivation (finalAttrs: {
       WebAssembly in descending order of completeness. Internally, LLD consists
       of several different linkers.
     '';
+
+    homepage = "https://lld.llvm.org/";
   };
 })

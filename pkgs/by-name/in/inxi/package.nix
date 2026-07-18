@@ -1,34 +1,34 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  perl,
-  perlPackages,
-  makeWrapper,
-  installShellFiles,
-  ps,
-  dnsutils, # dig is recommended for multiple categories
-  withRecommends ? false, # Install (almost) all recommended tools (see --recommends)
-  withRecommendedSystemPrograms ? withRecommends,
-  util-linuxMinimal,
+  binutils,
   dmidecode,
+  dnsutils, # dig is recommended for multiple categories
+  fetchFromCodeberg,
   file,
   hddtemp,
-  iproute2,
+  installShellFiles,
   ipmitool,
-  usbutils,
+  iproute2,
   kmod,
   lm_sensors,
+  makeWrapper,
+  mesa-demos,
+  pciutils,
+  perl,
+  perlPackages,
+  ps,
   smartmontools,
-  binutils,
   tree,
   upower,
-  pciutils,
-  withRecommendedDisplayInformationPrograms ? withRecommends,
-  mesa-demos,
-  xrandr,
-  xprop,
+  usbutils,
+  util-linuxMinimal,
   xdpyinfo,
+  xprop,
+  xrandr,
+  withRecommendedDisplayInformationPrograms ? withRecommends,
+  withRecommendedSystemPrograms ? withRecommends,
+  withRecommends ? false, # Install (almost) all recommended tools (see --recommends)
 }:
 
 let
@@ -73,10 +73,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JIBBYLpWKawmAEOVr7YoC6oBQdtlYuQcLFlt/ltswpc=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
+
   buildInputs = [ perl ];
 
   installPhase = ''
@@ -91,13 +97,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   meta = {
     description = "Full featured CLI system information tool";
+
     longDescription = ''
       inxi is a command line system information script built for console and
       IRC. It is also used a debugging tool for forum technical support to
@@ -105,13 +107,16 @@ stdenv.mkDerivation (finalAttrs: {
       system hardware, CPU, drivers, Xorg, Desktop, Kernel, gcc version(s),
       Processes, RAM usage, and a wide variety of other useful information.
     '';
+
     homepage = "https://smxi.org/docs/inxi.htm";
     changelog = "https://codeberg.org/smxi/inxi/src/tag/${finalAttrs.version}/inxi.changelog";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "inxi";
   };
 })

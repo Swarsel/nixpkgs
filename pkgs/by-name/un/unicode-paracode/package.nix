@@ -1,16 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  installShellFiles,
   gitUpdater,
+  installShellFiles,
+  python3Packages,
   unicode-character-database,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "unicode-paracode";
   version = "3.2-unstable-2025-01-31";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "garabik";
@@ -21,20 +20,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   nativeBuildInputs = [ installShellFiles ];
 
-  build-system = with python3Packages; [ setuptools ];
-
-  postFixup = ''
-    mkdir -p "$out/share/unicode"
-    ln -s "${unicode-character-database}/share/unicode/UnicodeData.txt" "$out/share/unicode/UnicodeData.txt"
-    # We want to keep /usr/share/unicode in the list for the Unihan files
-    substituteInPlace "$out/bin/.unicode-wrapped" \
-      --replace-fail "'/usr/share/unicode', " "'$out/share/unicode', '/usr/share/unicode', "
-  '';
-
-  postInstall = ''
-    installManPage paracode.1 unicode.1
-  '';
-
   checkPhase = ''
     runHook preCheck
 
@@ -44,6 +29,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postCheck
   '';
 
+  postInstall = ''
+    installManPage paracode.1 unicode.1
+  '';
+
+  postFixup = ''
+    mkdir -p "$out/share/unicode"
+    ln -s "${unicode-character-database}/share/unicode/UnicodeData.txt" "$out/share/unicode/UnicodeData.txt"
+    # We want to keep /usr/share/unicode in the list for the Unihan files
+    substituteInPlace "$out/bin/.unicode-wrapped" \
+      --replace-fail "'/usr/share/unicode', " "'$out/share/unicode', '/usr/share/unicode', "
+  '';
+
+  build-system = with python3Packages; [ setuptools ];
+  pyproject = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
@@ -51,7 +50,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/garabik/unicode";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.woffs ];
-    mainProgram = "unicode";
     platforms = lib.platforms.all;
+    mainProgram = "unicode";
   };
 })

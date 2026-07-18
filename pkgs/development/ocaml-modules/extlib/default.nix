@@ -1,7 +1,7 @@
 {
-  buildDunePackage,
   lib,
   fetchurl,
+  buildDunePackage,
   cppo,
 }:
 
@@ -15,12 +15,11 @@ buildDunePackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ cppo ];
-
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/ygrek/ocaml-extlib";
     description = "Enhancements to the OCaml Standard Library modules";
+    homepage = "https://github.com/ygrek/ocaml-extlib";
     license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.sternenseemann ];
   };

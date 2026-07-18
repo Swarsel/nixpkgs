@@ -15,24 +15,39 @@ in
 
 lib.extendMkDerivation {
   constructDrv = stdenv.mkDerivation;
+
   extendDrvArgs =
     finalAttrs:
 
     {
       buildInputs ? [ ],
+      ignoreCompilationError ? false,
+      meta ? { },
       nativeBuildInputs ? [ ],
       packageRequires ? [ ],
+      postInstall ? "",
       propagatedBuildInputs ? [ ],
       propagatedUserEnvPkgs ? [ ],
-      postInstall ? "",
-      meta ? { },
       turnCompilationWarningToError ? false,
-      ignoreCompilationError ? false,
       ...
     }@args:
 
     {
+      inherit packageRequires;
+      inherit turnCompilationWarningToError ignoreCompilationError;
+      strictDeps = args.strictDeps or true;
+
+      nativeBuildInputs = [
+        emacs
+        texinfo
+      ]
+      ++ nativeBuildInputs;
+
+      buildInputs = [ emacs ] ++ buildInputs;
+      propagatedBuildInputs = finalAttrs.packageRequires ++ propagatedBuildInputs;
+      __structuredAttrs = args.__structuredAttrs or true;
       name = args.name or "emacs-${finalAttrs.pname}-${finalAttrs.version}";
+      propagatedUserEnvPkgs = finalAttrs.packageRequires ++ propagatedUserEnvPkgs;
 
       unpackCmd =
         args.unpackCmd or ''
@@ -51,24 +66,9 @@ lib.extendMkDerivation {
           esac
         '';
 
-      inherit packageRequires;
-      buildInputs = [ emacs ] ++ buildInputs;
-      nativeBuildInputs = [
-        emacs
-        texinfo
-      ]
-      ++ nativeBuildInputs;
-      propagatedBuildInputs = finalAttrs.packageRequires ++ propagatedBuildInputs;
-      propagatedUserEnvPkgs = finalAttrs.packageRequires ++ propagatedUserEnvPkgs;
-
-      strictDeps = args.strictDeps or true;
-      __structuredAttrs = args.__structuredAttrs or true;
-
-      inherit turnCompilationWarningToError ignoreCompilationError;
-
       meta = {
-        broken = false;
         platforms = emacs.meta.platforms;
+        broken = false;
       }
       // optionalAttrs ((args.src.meta.homepage or "") != "") {
         homepage = args.src.meta.homepage;
@@ -77,8 +77,6 @@ lib.extendMkDerivation {
     }
 
     // optionalAttrs (emacs.withNativeCompilation or false) {
-
-      addEmacsNativeLoadPath = args.addEmacsNativeLoadPath or true;
 
       postInstall = ''
         # Besides adding the output directory to the native load path, make sure
@@ -105,6 +103,8 @@ lib.extendMkDerivation {
                || exit ${if finalAttrs.ignoreCompilationError then "0" else "\\$?"}"
       ''
       + postInstall;
+
+      addEmacsNativeLoadPath = args.addEmacsNativeLoadPath or true;
     };
 
 }

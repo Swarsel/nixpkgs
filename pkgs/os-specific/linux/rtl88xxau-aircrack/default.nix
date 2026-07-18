@@ -18,6 +18,11 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
+  preInstall = ''
+    mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
+  '';
+
+  enableParallelBuilding = true;
   hardeningDisable = [ "pic" ];
 
   prePatch = ''
@@ -27,27 +32,25 @@ stdenv.mkDerivation {
       --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
   '';
 
-  preInstall = ''
-    mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
-  '';
-
-  enableParallelBuilding = true;
-
   meta = {
     description = ''
       Aircrack-ng kernel module for Realtek 88XXau network cards
       (8811au, 8812au, 8814au and 8821au chipsets) with monitor mode and injection support.'';
+
     homepage = "https://github.com/aircrack-ng/rtl8812au";
     license = lib.licenses.gpl2Only;
+
     maintainers = [
       lib.maintainers.ja1den
       lib.maintainers.jethro
     ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
       "aarch64-linux"
     ];
+
     broken = kernel.kernelAtLeast "6.17";
   };
 }

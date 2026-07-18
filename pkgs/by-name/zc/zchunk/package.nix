@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   argp-standalone,
   callPackage,
   curl,
-  fetchFromGitHub,
   gitUpdater,
   meson,
   ninja,
   pkg-config,
-  stdenv,
   zstd,
 }:
 
@@ -23,6 +23,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cBOcU8e2AA4NNYe4j6NDqhK+21ZWNBoJMgKEhyJHpi4=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+    "man"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -35,26 +44,18 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ argp-standalone ];
 
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-    "man"
-  ];
-
-  strictDeps = true;
-
   passthru = {
-    updateScript = gitUpdater { };
     tests = lib.packagesFromDirectoryRecursive {
       inherit callPackage;
       directory = ./tests;
     };
+
+    updateScript = gitUpdater { };
   };
 
   meta = {
-    homepage = "https://github.com/zchunk/zchunk";
     description = "File format designed for highly efficient deltas while maintaining good compression";
+
     longDescription = ''
       zchunk is a compressed file format that splits the file into independent
       chunks. This allows you to only download changed chunks when downloading a
@@ -63,9 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
       zchunk files are protected with strong checksums to verify that the file
       you downloaded is, in fact, the file you wanted.
     '';
+
+    homepage = "https://github.com/zchunk/zchunk";
     license = lib.licenses.bsd2;
-    mainProgram = "zck";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "zck";
   };
 })

@@ -1,16 +1,15 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
-  lib,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "inject";
   version = "5.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ivankorobkov";
@@ -19,15 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-thVgKkpFtMwTMfeQ2r7xMvLtzBFJ/xIy6aUTq3400VA=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     hatchling
     hatch-vcs
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "inject" ];
 
   meta = {

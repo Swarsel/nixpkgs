@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   qt6,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "meteo-qt";
   version = "4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dglent";
@@ -28,6 +27,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.pyqt6
   ];
 
+  postFixup = ''
+    mv $out/${python3Packages.python.sitePackages}/usr/share $out/share
+  '';
+
   build-system = with python3Packages; [
     setuptools
     sip
@@ -38,13 +41,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyqt6
   ];
 
-  postFixup = ''
-    mv $out/${python3Packages.python.sitePackages}/usr/share $out/share
-  '';
-
-  pythonImportsCheck = [ "meteo_qt" ];
-
   makeWrapperArgs = [ "\${qtWrapperArgs[@]}" ];
+  pyproject = true;
+  pythonImportsCheck = [ "meteo_qt" ];
 
   meta = {
     description = "System tray application for weather status information";
@@ -52,7 +51,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/dglent/meteo-qt/blob/${finalAttrs.src.rev}/CHANGELOG";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ linuxissuper ];
-    mainProgram = "meteo-qt";
     platforms = lib.platforms.linux;
+    mainProgram = "meteo-qt";
   };
 })

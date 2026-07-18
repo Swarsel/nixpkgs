@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
 }:
@@ -35,12 +35,14 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/olets/zsh-abbr";
     description = "Zsh manager for auto-expanding abbreviations, inspired by fish shell";
+    homepage = "https://github.com/olets/zsh-abbr";
+
     license = with lib.licenses; [
       cc-by-nc-sa-40
       hl3
     ];
+
     maintainers = with lib.maintainers; [ icy-thought ];
     platforms = lib.platforms.all;
   };

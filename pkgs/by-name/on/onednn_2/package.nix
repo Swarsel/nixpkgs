@@ -1,8 +1,8 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
 }:
 
 # This was originally called mkl-dnn, then it was renamed to dnnl, and it has
@@ -21,6 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-oMPBORAdL2rk2ewyUrInYVHYBRvuvNX4p4rwykO3Rhs=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+  ];
+
   # Substituting for CMake 4 compat.
   # There's an upstream patch in v3 which does not cleanly apply.
   postPatch = ''
@@ -29,14 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
       "cmake_minimum_required(VERSION 2.8.12...3.13)"
   '';
 
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-  ];
-
   nativeBuildInputs = [ cmake ];
-
   # Tests fail on some Hydra builders, because they do not support SSE4.2.
   doCheck = false;
 
@@ -50,11 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/uxlfoundation/oneDNN/releases/tag/v${finalAttrs.version}";
     description = "oneAPI Deep Neural Network Library (oneDNN)";
     homepage = "http://uxlfoundation.github.io/oneDNN";
+    changelog = "https://github.com/uxlfoundation/oneDNN/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.rocm ];
   };
 })

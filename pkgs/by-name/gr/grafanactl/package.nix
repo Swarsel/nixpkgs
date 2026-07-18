@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,14 +19,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-DOEByenSD4BCQuyyLQvJxC7/UkPmpHZemMEKZbOwLbE=";
 
-  ldflags = [
-    "-X main.version=v${finalAttrs.version}"
-    "-X main.commit=unknown"
-    "-X main.date=unknown"
-  ];
-
-  subPackage = [ "cmd/grafanactl" ];
-
   postInstall = ''
     rm $out/bin/cmd-reference
     rm $out/bin/config-reference
@@ -34,10 +26,18 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  ldflags = [
+    "-X main.version=v${finalAttrs.version}"
+    "-X main.commit=unknown"
+    "-X main.date=unknown"
+  ];
+
+  subPackage = [ "cmd/grafanactl" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -10,21 +10,34 @@ let
   format = pkgs.formats.yaml { };
 in
 {
-  meta.maintainers = with lib.maintainers; [ fpletz ];
-
   options = {
     services.mediamtx = {
       enable = lib.mkEnableOption "MediaMTX";
-
       package = lib.mkPackageOption pkgs "mediamtx" { };
 
+      allowVideoAccess = lib.mkEnableOption ''
+        access to video devices like cameras on the system
+      '';
+
+      env = lib.mkOption {
+        default = { };
+        description = "Extra environment variables for MediaMTX";
+
+        example = {
+          MTX_CONFKEY = "mykey";
+        };
+
+        type = with lib.types; attrsOf anything;
+      };
+
       settings = lib.mkOption {
+        default = { };
+
         description = ''
           Settings for MediaMTX. Refer to the defaults at
           <https://github.com/bluenviron/mediamtx/blob/main/mediamtx.yml>.
         '';
-        type = format.type;
-        default = { };
+
         example = {
           paths = {
             cam = {
@@ -33,20 +46,9 @@ in
             };
           };
         };
-      };
 
-      env = lib.mkOption {
-        type = with lib.types; attrsOf anything;
-        description = "Extra environment variables for MediaMTX";
-        default = { };
-        example = {
-          MTX_CONFKEY = "mykey";
-        };
+        type = format.type;
       };
-
-      allowVideoAccess = lib.mkEnableOption ''
-        access to video devices like cameras on the system
-      '';
     };
   };
 
@@ -56,18 +58,20 @@ in
 
     systemd.services.mediamtx = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-
       environment = cfg.env;
 
       serviceConfig = {
         DynamicUser = true;
-        User = "mediamtx";
-        Group = "mediamtx";
-        SupplementaryGroups = lib.mkIf cfg.allowVideoAccess "video";
         ExecStart = "${cfg.package}/bin/mediamtx /etc/mediamtx.yaml";
+        Group = "mediamtx";
         Restart = "on-failure";
+        SupplementaryGroups = lib.mkIf cfg.allowVideoAccess "video";
+        User = "mediamtx";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ fpletz ];
 }

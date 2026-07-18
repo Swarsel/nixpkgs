@@ -1,13 +1,12 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
 }:
 buildKodiAddon rec {
   pname = "idna";
-  namespace = "script.module.idna";
   version = "3.10.0";
 
   src = fetchzip {
@@ -15,16 +14,19 @@ buildKodiAddon rec {
     sha256 = "sha256-wFS7rETO+VGeg1MxMEdb/cwVw5/TEoZF2CS3BjkxDlk=";
   };
 
+  namespace = "script.module.idna";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.idna";
     };
   };
 
   meta = {
-    homepage = "https://github.com/Freso/script.module.idna";
     description = "Internationalized Domain Names for Python";
+    homepage = "https://github.com/Freso/script.module.idna";
     license = lib.licenses.bsd3;
     teams = [ lib.teams.kodi ];
   };

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  perl,
   libptytty,
+  perl,
   readline,
 }:
 
@@ -42,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/hanslub42/rlwrap";
     changelog = "https://github.com/hanslub42/rlwrap/raw/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ jlesquembre ];
+    platforms = lib.platforms.unix;
     mainProgram = "rlwrap";
   };
 })

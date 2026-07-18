@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  perlPackages,
   gettext,
   libintl,
+  perlPackages,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -21,15 +21,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-TX5P3vLspq/geiaCFRzqeHgeCk6PliIULZ9wwIOi/U8=";
   };
 
+  patches = lib.optional stdenv.hostPlatform.isCygwin ./1.40.4-cygwin-nls.patch;
   strictDeps = true;
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     gettext
     perlPackages.perl
     perlPackages.LocaleGettext
   ];
+
   buildInputs = [
     perlPackages.LocaleGettext
     libintl
@@ -40,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = false; # target `check' is missing
-
-  patches = lib.optional stdenv.hostPlatform.isCygwin ./1.40.4-cygwin-nls.patch;
 
   # We don't use makeWrapper here because it uses substitutions our
   # bootstrap shell can't handle.
@@ -56,15 +54,19 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x $out/bin/help2man
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Generate man pages from `--help' output";
-    mainProgram = "help2man";
+
     longDescription = ''
       help2man produces simple manual pages from the ‘--help’ and ‘--version’ output of other commands.
     '';
+
     homepage = "https://www.gnu.org/software/help2man/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.all;
+    mainProgram = "help2man";
   };
 })

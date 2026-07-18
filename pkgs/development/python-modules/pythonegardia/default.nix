@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "pythonegardia";
   version = "1.0.52";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jeroenterheerdt";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has no tests, only two test file for manual interaction
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pythonegardia" ];
 
   meta = {

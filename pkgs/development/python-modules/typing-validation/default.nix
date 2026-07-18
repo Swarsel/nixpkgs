@@ -1,23 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  numpy,
   pytestCheckHook,
-
   setuptools,
   setuptools-scm,
-  wheel,
-
-  numpy,
-
   typing-extensions,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "typing-validation";
   version = "1.2.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hashberg-io";
@@ -26,6 +21,11 @@ buildPythonPackage rec {
     hash = "sha256-N0VAxlxB96NA01c/y4xtoLKoiqAxfhJJV0y/3w6H9ek=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    numpy
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -33,12 +33,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ typing-extensions ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    numpy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "typing_validation" ];
 
   meta = {

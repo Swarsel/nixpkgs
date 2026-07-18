@@ -1,33 +1,33 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchPypi,
-  six,
   requests,
+  six,
 }:
 
 buildPythonPackage rec {
-  version = "2.3.5";
-  format = "setuptools";
   pname = "pydocumentdb";
+  version = "2.3.5";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "1e6f072ae516fc061c9442f8ca470463b53dc626f0f6a86ff3a803293f4b50dd";
   };
 
-  # https://github.com/Azure/azure-cosmos-python/issues/183
-  preBuild = ''
-    touch changelog.md
-  '';
-
   propagatedBuildInputs = [
     six
     requests
   ];
 
+  # https://github.com/Azure/azure-cosmos-python/issues/183
+  preBuild = ''
+    touch changelog.md
+  '';
+
   # requires an active Azure Cosmos service
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Azure Cosmos DB API";

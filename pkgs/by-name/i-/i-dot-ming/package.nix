@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -28,7 +28,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Open source Pan-CJK serif typeface";
     homepage = "https://github.com/ichitenfont/I.Ming";
     license = lib.licenses.ipa;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.linsui ];
+    platforms = lib.platforms.all;
   };
 })

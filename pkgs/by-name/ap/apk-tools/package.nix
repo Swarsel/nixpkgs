@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
+  cmocka,
+  lua5_3,
   meson,
   ninja,
-  python3,
-  cmocka,
-  scdoc,
   openssl,
+  pkg-config,
+  python3,
+  scdoc,
   zlib,
   zstd,
   luaSupport ? stdenv.hostPlatform == stdenv.buildPlatform,
-  lua5_3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,12 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.0.5";
 
   src = fetchFromGitLab {
-    domain = "gitlab.alpinelinux.org";
     owner = "alpine";
     repo = "apk-tools";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-iuJFgsn4yfQYqichMVhnOHFYj+5xPZYnXaCW0ZkKbRU=";
+    domain = "gitlab.alpinelinux.org";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -47,8 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional luaSupport lua5_3;
 
-  strictDeps = true;
-
   mesonFlags = [
     (lib.mesonEnable "lua" luaSupport)
     (lib.mesonOption "lua_bin" "lua")
@@ -57,10 +57,10 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://gitlab.alpinelinux.org/alpine/apk-tools";
     description = "Alpine Package Keeper";
-    maintainers = [ ];
+    homepage = "https://gitlab.alpinelinux.org/alpine/apk-tools";
     license = lib.licenses.gpl2Only;
+    maintainers = [ ];
     mainProgram = "apk";
   };
 })

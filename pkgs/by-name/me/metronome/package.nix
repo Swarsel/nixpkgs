@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  cargo,
+  desktop-file-utils,
+  gst_all_1,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
   rustPlatform,
   rustc,
-  cargo,
   wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
-  gst_all_1,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,17 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.3.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "metronome";
     rev = finalAttrs.version;
     hash = "sha256-Sn2Ua/XxPnJjcQvWeOPkphl+BE7/BdOrUIpf+tLt20U=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    name = "metronome-${finalAttrs.version}";
-    hash = "sha256-T/x5LpODpKWGA40W1je6jw1DS9attVUK4ZjAnRAyf6k=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -56,18 +50,26 @@ stdenv.mkDerivation (finalAttrs: {
     stdenv.cc.isClang && lib.versionAtLeast stdenv.cc.version "16"
   ) "-Wno-error=incompatible-function-pointer-types";
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-T/x5LpODpKWGA40W1je6jw1DS9attVUK4ZjAnRAyf6k=";
+    name = "metronome-${finalAttrs.version}";
+  };
+
   meta = {
     description = "Keep the tempo";
+
     longDescription = ''
       Metronome beats the rhythm for you, you simply
       need to tell it the required time signature and
       beats per minutes. You can also tap to let the
       application guess the required beats per minute.
     '';
+
     homepage = "https://gitlab.gnome.org/World/metronome";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "metronome";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "metronome";
   };
 })

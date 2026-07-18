@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
-  tzdata,
   bison,
+  fetchpatch,
   flex,
+  tzdata,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.4.11";
   pname = "dateutils";
+  version = "0.4.11";
 
   src = fetchurl {
     url = "https://bitbucket.org/hroptatyr/dateutils/downloads/dateutils-${finalAttrs.version}.tar.xz";
@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # TODO: Remove when updating to the next release.
     (fetchpatch {
-      url = "https://github.com/hroptatyr/dateutils/commit/b30902c2f46288b570c7fa8de06e17cc7dfd6a37.patch";
       hash = "sha256-38LBUv4FLpK3TTIXXvIGr0qE0CSqF2IqCbZY5RGyi6Q=";
+      url = "https://github.com/hroptatyr/dateutils/commit/b30902c2f46288b570c7fa8de06e17cc7dfd6a37.patch";
     })
   ];
 
@@ -34,17 +34,16 @@ stdenv.mkDerivation (finalAttrs: {
     flex
     bison
   ];
+
   buildInputs = [ tzdata ]; # needed for datezone
-
-  enableParallelBuilding = true;
-
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Command-line utilities for date and time calculations and conversions";
     homepage = "http://www.fresse.org/dateutils/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.paperdigits ];
+    platforms = lib.platforms.unix;
   };
 })

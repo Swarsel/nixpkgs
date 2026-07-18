@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   runtimeShell,
   udevCheckHook,
 }:
@@ -17,19 +17,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-KUcsCk5ll+fjLS3HORHB6lirFMgGSNZBorgNPUFKW9Y=";
   };
 
-  nativeBuildInputs = [
-    udevCheckHook
-  ];
-
-  doInstallCheck = true;
-
-  deleteVendor = true;
-  vendorHash = "sha256-YhgCs5iYvY34EWh/bl47Dr3Nrfi55QK4T7i47C77B9w=";
-
   postPatch = ''
     substituteInPlace mk/xen-vcpu-hotplug.rules \
       --replace "/bin/sh" "${runtimeShell}"
   '';
+
+  nativeBuildInputs = [
+    udevCheckHook
+  ];
+
+  vendorHash = "sha256-YhgCs5iYvY34EWh/bl47Dr3Nrfi55QK4T7i47C77B9w=";
 
   buildPhase = ''
     runHook preBuild
@@ -47,6 +44,9 @@ buildGoModule (finalAttrs: {
 
     runHook postInstall
   '';
+
+  doInstallCheck = true;
+  deleteVendor = true;
 
   meta = {
     description = "XenServer guest utilities";

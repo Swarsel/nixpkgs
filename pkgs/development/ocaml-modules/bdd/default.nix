@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   stdlib-shims,
 }:
 

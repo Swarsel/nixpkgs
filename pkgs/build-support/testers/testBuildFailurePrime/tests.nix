@@ -1,7 +1,7 @@
 {
+  lib,
   emptyDirectory,
   hello,
-  lib,
   overrideStructuredAttrs,
   runCommand,
   stdenvNoCC,
@@ -19,12 +19,27 @@ let
         echo failing though
         exit 3
       '';
+
       expectedBuilderExitCode = 3;
       expectedBuilderLogEntries = [ "failing though" ];
+
       script = ''
         grep --silent -F 'ok-ish' "$failed/result"
       '';
     };
+
+    exitCodeNegativeTest = testers.testBuildFailure' {
+      drv = testers.testBuildFailure' {
+        drv = runCommand "exit-code" { } "exit 3";
+        # Default expected exit code is 1
+      };
+
+      expectedBuilderLogEntries = [
+        "ERROR: testBuilderExitCode: original builder produced exit code 3 but was expected to produce 1"
+      ];
+    };
+
+    exitCodeNegativeTestStructuredAttrs = overrideStructuredAttrs true final.exitCodeNegativeTest;
 
     happy = testers.testBuildFailure' {
       drv = runCommand "happy" { } ''
@@ -37,13 +52,16 @@ let
 
         exit 3
       '';
+
       expectedBuilderExitCode = 3;
+
       expectedBuilderLogEntries = [
         "failing though"
         "also stderr"
         ''line\nwith-\bbackslashes''
         "incomplete line - no newline"
       ];
+
       script = ''
         grep --silent -F 'ok-ish' "$failed/result"
       '';
@@ -53,10 +71,29 @@ let
 
     helloDoesNotFail = testers.testBuildFailure' {
       drv = testers.testBuildFailure hello;
+
       expectedBuilderLogEntries = [
         "testBuildFailure: The builder did not fail, but a failure was expected"
       ];
     };
+
+    logNegativeTest = testers.testBuildFailure' {
+      drv = testers.testBuildFailure' {
+        drv = runCommand "exit-code" { } ''
+          nixLog "apples"
+          exit 3
+        '';
+
+        expectedBuilderExitCode = 3;
+        expectedBuilderLogEntries = [ "bees" ];
+      };
+
+      expectedBuilderLogEntries = [
+        "ERROR: testBuilderLogEntries: original builder log does not contain 'bees'"
+      ];
+    };
+
+    logNegativeTestStructuredAttrs = overrideStructuredAttrs true final.logNegativeTest;
 
     multiOutput = testers.testBuildFailure' {
       drv =
@@ -73,9 +110,11 @@ let
             echo i am failing
             exit 1
           '';
+
       expectedBuilderLogEntries = [
         "i am failing"
       ];
+
       script = ''
         # Checking our note that dev is the default output
         echo $failed/_ | grep -- '-dev/_' >/dev/null
@@ -87,8 +126,14 @@ let
 
     sideEffects = testers.testBuildFailure' {
       drv = stdenvNoCC.mkDerivation {
-        name = "fail-with-side-effects";
         src = emptyDirectory;
+
+        buildPhase = ''
+          echo i am failing
+          exit 1
+        '';
+
+        name = "fail-with-side-effects";
 
         postHook = ''
           echo touching side-effect...
@@ -100,50 +145,19 @@ let
           fi
           touch side-effect
         '';
-
-        buildPhase = ''
-          echo i am failing
-          exit 1
-        '';
       };
+
       expectedBuilderLogEntries = [
         "touching side-effect..."
         "i am failing"
       ];
+
       script = ''
         [[ ! -e side-effect ]]
       '';
     };
 
     sideEffectsStructuredAttrs = overrideStructuredAttrs true final.sideEffects;
-
-    exitCodeNegativeTest = testers.testBuildFailure' {
-      drv = testers.testBuildFailure' {
-        drv = runCommand "exit-code" { } "exit 3";
-        # Default expected exit code is 1
-      };
-      expectedBuilderLogEntries = [
-        "ERROR: testBuilderExitCode: original builder produced exit code 3 but was expected to produce 1"
-      ];
-    };
-
-    exitCodeNegativeTestStructuredAttrs = overrideStructuredAttrs true final.exitCodeNegativeTest;
-
-    logNegativeTest = testers.testBuildFailure' {
-      drv = testers.testBuildFailure' {
-        drv = runCommand "exit-code" { } ''
-          nixLog "apples"
-          exit 3
-        '';
-        expectedBuilderExitCode = 3;
-        expectedBuilderLogEntries = [ "bees" ];
-      };
-      expectedBuilderLogEntries = [
-        "ERROR: testBuilderLogEntries: original builder log does not contain 'bees'"
-      ];
-    };
-
-    logNegativeTestStructuredAttrs = overrideStructuredAttrs true final.logNegativeTest;
   };
 in
 recurseIntoAttrs final

@@ -1,8 +1,8 @@
 {
   lib,
   fetchCrate,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
   testers,
 }:
 
@@ -11,9 +11,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "1.13.1";
 
   src = fetchCrate {
+    hash = "sha256-Luf6/kG0MgnBDyMLZGUSadPI60DOx5Jra3I3ezOGM4w=";
     pname = "cargo-shear";
     version = finalAttrs.version;
-    hash = "sha256-Luf6/kG0MgnBDyMLZGUSadPI60DOx5Jra3I3ezOGM4w=";
   };
 
   cargoHash = "sha256-d+3ZfygD4CzHLgT45KcCw2rr313eVO7PhGZpgJpbxW8=";
@@ -29,20 +29,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       version = testers.testVersion {
         package = finalAttrs.finalPackage;
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Detect and fix unused/misplaced dependencies from Cargo.toml";
-    mainProgram = "cargo-shear";
     homepage = "https://github.com/Boshen/cargo-shear";
     changelog = "https://github.com/Boshen/cargo-shear/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers.cathalmullan ];
+    mainProgram = "cargo-shear";
   };
 })

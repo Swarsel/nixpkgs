@@ -1,9 +1,9 @@
 {
   lib,
+  gvdb,
+  phoc,
   runCommand,
   yq-go,
-  phoc,
-  gvdb,
 }:
 
 runCommand "phoc-test-dependency-versions" { } ''

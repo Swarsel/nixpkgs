@@ -9,7 +9,6 @@
 
 stdenv.mkDerivation {
   pname = "lguf-brightness";
-
   version = "unstable-2018-02-11";
 
   src = fetchFromGitHub {
@@ -35,7 +34,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/periklis/lguf-brightness";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
-    mainProgram = "lguf_brightness";
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "lguf_brightness";
   };
 }

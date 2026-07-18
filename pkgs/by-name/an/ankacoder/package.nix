@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/anka-coder-fonts/AnkaCoder.${version}.zip";
-    stripRoot = false;
     hash = "sha256-14ItaSQ/fO/WDq0O4SXGWnZgiM0kayJrWQgsKb7bsyY=";
+    stripRoot = false;
   };
 
   installPhase = ''

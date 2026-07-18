@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -8,84 +8,101 @@ let
   cfg = config.services.beszel.agent;
 in
 {
-  meta.maintainers = with lib.maintainers; [
-    BonusPlay
-    arunoruto
-  ];
-
   options.services.beszel.agent = {
     enable = lib.mkEnableOption "beszel agent";
     package = lib.mkPackageOption pkgs "beszel" { };
-    openFirewall = (lib.mkEnableOption "") // {
-      description = "Whether to open the firewall port (default 45876).";
-    };
-    smartmon = {
-      enable = lib.mkOption {
-        default = false;
-        example = true;
-        description = "Include services.beszel.agent.smartmon.package in the Beszel agent path for disk monitoring and add the agent to the disk group.";
-        type = lib.types.bool;
-      };
-      package = lib.mkPackageOption pkgs "smartmontools" { };
-      deviceAllow = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        example = [
-          "/dev/sda"
-          "/dev/sdb"
-          "/dev/nvme0"
-        ];
-        description = ''
-          List of device paths to allow access to for SMART monitoring.
-          This is only needed if the ambient capabilities are not sufficient.
-          Devices will be granted read-only access.
-        '';
-      };
-    };
 
     environment = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = lib.types.attrsOf lib.types.str;
-        options = {
-          SKIP_SYSTEMD = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = ''
-              Whether to disable systemd service monitoring.
-              Enabling this option will skip systemd tracking and its setup in NixOS.
-            '';
-          };
-        };
-      };
       default = { };
+
       description = ''
         Environment variables for configuring the beszel-agent service.
         This field will end up public in /nix/store, for secret values (such as `KEY`) use `environmentFile`.
 
         See <https://www.beszel.dev/guide/environment-variables#agent> for available options.
       '';
+
+      type = lib.types.submodule {
+        options = {
+          SKIP_SYSTEMD = lib.mkOption {
+            default = false;
+
+            description = ''
+              Whether to disable systemd service monitoring.
+              Enabling this option will skip systemd tracking and its setup in NixOS.
+            '';
+
+            type = lib.types.bool;
+          };
+        };
+
+        freeformType = lib.types.attrsOf lib.types.str;
+      };
     };
+
     environmentFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
+
       description = ''
         File path containing environment variables for configuring the beszel-agent service in the format of an EnvironmentFile. See {manpage}`systemd.exec(5)`.
       '';
+
+      type = lib.types.nullOr lib.types.path;
     };
+
     extraPath = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
       default = [ ];
+
       description = ''
         Extra packages to add to beszel path (such as nvidia-smi or rocm-smi).
       '';
+
+      type = lib.types.listOf lib.types.package;
+    };
+
+    openFirewall = (lib.mkEnableOption "") // {
+      description = "Whether to open the firewall port (default 45876).";
+    };
+
+    smartmon = {
+      enable = lib.mkOption {
+        default = false;
+        description = "Include services.beszel.agent.smartmon.package in the Beszel agent path for disk monitoring and add the agent to the disk group.";
+        example = true;
+        type = lib.types.bool;
+      };
+
+      package = lib.mkPackageOption pkgs "smartmontools" { };
+
+      deviceAllow = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          List of device paths to allow access to for SMART monitoring.
+          This is only needed if the ambient capabilities are not sufficient.
+          Devices will be granted read-only access.
+        '';
+
+        example = [
+          "/dev/sda"
+          "/dev/sdb"
+          "/dev/nvme0"
+        ];
+
+        type = lib.types.listOf lib.types.str;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    services.udev.extraRules = lib.optionalString cfg.smartmon.enable ''
-      # Change NVMe devices to disk group ownership for S.M.A.R.T. monitoring
-      KERNEL=="nvme[0-9]*", GROUP="disk", MODE="0660"
-    '';
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [
+      (
+        if (builtins.hasAttr "PORT" cfg.environment) then
+          (lib.strings.toInt cfg.environment.PORT)
+        else
+          45876
+      )
+    ];
 
     # Add D-Bus policy for systemd service monitoring following https://beszel.dev/guide/systemd#services-not-appearing
     services.dbus.packages = lib.optionals (!cfg.environment.SKIP_SYSTEMD) [
@@ -110,19 +127,14 @@ in
       '')
     ];
 
-    users.users.beszel-agent = lib.mkIf (!cfg.environment.SKIP_SYSTEMD) {
-      isSystemUser = true;
-      group = "beszel-agent";
-    };
-
-    users.groups.beszel-agent = lib.mkIf (!cfg.environment.SKIP_SYSTEMD) { };
+    services.udev.extraRules = lib.optionalString cfg.smartmon.enable ''
+      # Change NVMe devices to disk group ownership for S.M.A.R.T. monitoring
+      KERNEL=="nvme[0-9]*", GROUP="disk", MODE="0660"
+    '';
 
     systemd.services.beszel-agent = {
-      description = "Beszel Server Monitoring Agent";
-
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
+      description = "Beszel Server Monitoring Agent";
 
       environment = lib.mapAttrs (
         _: value: if lib.isBool value then (lib.boolToString value) else value
@@ -142,28 +154,12 @@ in
         ];
 
       serviceConfig = {
-        ExecStart = ''
-          ${cfg.package}/bin/beszel-agent
-        '';
-
-        EnvironmentFile = cfg.environmentFile;
-
-        # adds ability to monitor docker/podman containers
-        SupplementaryGroups =
-          lib.optionals config.virtualisation.docker.enable [ "docker" ]
-          ++ lib.optionals (
-            config.virtualisation.podman.enable && config.virtualisation.podman.dockerSocket.enable
-          ) [ "podman" ]
-          ++ lib.optionals cfg.smartmon.enable [ "disk" ];
-
-        DynamicUser = true;
-        User = "beszel-agent";
-
         # Capabilities needed for SMART monitoring
         AmbientCapabilities = lib.mkIf cfg.smartmon.enable [
           "CAP_SYS_RAWIO"
           "CAP_SYS_ADMIN"
         ];
+
         CapabilityBoundingSet = lib.mkIf cfg.smartmon.enable [
           "CAP_SYS_RAWIO"
           "CAP_SYS_ADMIN"
@@ -173,6 +169,13 @@ in
         DeviceAllow = lib.mkIf (cfg.smartmon.enable && cfg.smartmon.deviceAllow != [ ]) (
           map (device: "${device} r") cfg.smartmon.deviceAllow
         );
+
+        DynamicUser = true;
+        EnvironmentFile = cfg.environmentFile;
+
+        ExecStart = ''
+          ${cfg.package}/bin/beszel-agent
+        '';
 
         LockPersonality = true;
         NoNewPrivileges = !cfg.smartmon.enable;
@@ -191,21 +194,37 @@ in
         RestartSec = "30s";
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+
+        # adds ability to monitor docker/podman containers
+        SupplementaryGroups =
+          lib.optionals config.virtualisation.docker.enable [ "docker" ]
+          ++ lib.optionals (
+            config.virtualisation.podman.enable && config.virtualisation.podman.dockerSocket.enable
+          ) [ "podman" ]
+          ++ lib.optionals cfg.smartmon.enable [ "disk" ];
+
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
         SystemCallFilter = [ "@system-service" ];
         Type = "simple";
         UMask = 27;
+        User = "beszel-agent";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
-    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [
-      (
-        if (builtins.hasAttr "PORT" cfg.environment) then
-          (lib.strings.toInt cfg.environment.PORT)
-        else
-          45876
-      )
-    ];
+    users.groups.beszel-agent = lib.mkIf (!cfg.environment.SKIP_SYSTEMD) { };
+
+    users.users.beszel-agent = lib.mkIf (!cfg.environment.SKIP_SYSTEMD) {
+      group = "beszel-agent";
+      isSystemUser = true;
+    };
   };
+
+  meta.maintainers = with lib.maintainers; [
+    BonusPlay
+    arunoruto
+  ];
 }

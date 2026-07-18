@@ -1,9 +1,9 @@
 {
   lib,
-  mkTclDerivation,
   fetchFromGitHub,
-  tcllib,
+  mkTclDerivation,
   nix-update-script,
+  tcllib,
 }:
 
 mkTclDerivation rec {

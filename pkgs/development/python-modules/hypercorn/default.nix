@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aioquic,
+  buildPythonPackage,
   h11,
   h2,
   httpx,
-  priority,
-  trio,
-  uvloop,
-  wsproto,
   pdm-backend,
+  priority,
   pytest-asyncio,
   pytest-trio,
   pytestCheckHook,
+  trio,
+  uvloop,
+  wsproto,
 }:
 
 buildPythonPackage rec {
   pname = "hypercorn";
   version = "0.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pgjones";
@@ -32,6 +31,15 @@ buildPythonPackage rec {
     sed -i "/^addopts/d" pyproject.toml
   '';
 
+  nativeCheckInputs = [
+    httpx
+    pytest-asyncio
+    pytest-trio
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -47,24 +55,15 @@ buildPythonPackage rec {
     uvloop = [ uvloop ];
   };
 
-  nativeCheckInputs = [
-    httpx
-    pytest-asyncio
-    pytest-trio
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "hypercorn" ];
 
   meta = {
-    changelog = "https://github.com/pgjones/hypercorn/blob/${src.tag}/CHANGELOG.rst";
-    homepage = "https://github.com/pgjones/hypercorn";
     description = "ASGI web server inspired by Gunicorn";
-    mainProgram = "hypercorn";
+    homepage = "https://github.com/pgjones/hypercorn";
+    changelog = "https://github.com/pgjones/hypercorn/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dgliwka ];
+    mainProgram = "hypercorn";
   };
 }

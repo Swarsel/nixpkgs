@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  # tests
+  dask,
+  netcdf4,
   # dependencies
   numpy,
   packaging,
   pyproj,
-  rasterio,
-  xarray,
-
-  # tests
-  dask,
-  netcdf4,
   pytestCheckHook,
-  stdenv,
+  rasterio,
+  # build-system
+  setuptools,
+  xarray,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "rioxarray";
   version = "0.22.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "corteva";
@@ -31,6 +27,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-+0TJeEjAKIqi6cbLZiv14dPKW8Xza+4tn/Erzn88ZS0=";
   };
+
+  nativeCheckInputs = [
+    dask
+    netcdf4
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -40,12 +42,6 @@ buildPythonPackage (finalAttrs: {
     pyproj
     rasterio
     xarray
-  ];
-
-  nativeCheckInputs = [
-    dask
-    netcdf4
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -73,6 +69,7 @@ buildPythonPackage (finalAttrs: {
     "test_open_rasterio_mask_chunk_clip"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rioxarray" ];
 
   meta = {

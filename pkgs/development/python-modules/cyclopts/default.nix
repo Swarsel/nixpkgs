@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   attrs,
+  bash,
   buildPythonPackage,
   docstring-parser,
-  fetchFromGitHub,
-  bash,
   fish,
   hatch-vcs,
   hatchling,
@@ -29,37 +29,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "cyclopts";
   version = "4.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BrianPugh";
     repo = "cyclopts";
     tag = "v${finalAttrs.version}";
     hash = "sha256-zmvqpRJGZnfmhOiHwYogMbqLaAkfIG34CFbRXUUEr0E=";
-  };
-
-  pythonRelaxDeps = [ "rich-rst" ];
-
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
-  dependencies = [
-    attrs
-    docstring-parser
-    rich
-    rich-rst
-  ];
-
-  optional-dependencies = {
-    trio = [ trio ];
-    yaml = [ pyyaml ];
-    mkdocs = [
-      mkdocs
-      markdown
-      pymdown-extensions
-    ];
   };
 
   nativeCheckInputs = [
@@ -78,7 +53,17 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
-  pythonImportsCheck = [ "cyclopts" ];
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
+
+  dependencies = [
+    attrs
+    docstring-parser
+    rich
+    rich-rst
+  ];
 
   disabledTests = [
     # Building docs
@@ -90,11 +75,27 @@ buildPythonPackage (finalAttrs: {
     "test_requires_equals_eq_form_value_completion"
   ];
 
+  optional-dependencies = {
+    mkdocs = [
+      mkdocs
+      markdown
+      pymdown-extensions
+    ];
+
+    trio = [ trio ];
+    yaml = [ pyyaml ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "cyclopts" ];
+  pythonRelaxDeps = [ "rich-rst" ];
+
   meta = {
     description = "Module to create CLIs based on Python type hints";
     homepage = "https://github.com/BrianPugh/cyclopts";
     changelog = "https://github.com/BrianPugh/cyclopts/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fab
       PerchunPak

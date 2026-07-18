@@ -4,8 +4,9 @@
   symlinkJoin,
 }:
 (symlinkJoin {
-  pname = "nodejs";
   inherit (nodejs-slim) version passthru meta;
+  pname = "nodejs";
+
   paths = [
     nodejs-slim
     nodejs-slim.npm

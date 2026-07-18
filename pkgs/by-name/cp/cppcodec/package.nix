@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/NixOS/nixpkgs/issues/445447
     # Luckily, this has been fixed on master.
     (fetchpatch {
+      hash = "sha256-0MCx3nTsey4Qonx+lyexbcxut0qIHOJZbkJ9u23Zuv8=";
       name = "modernize-cmake.patch";
       url = "https://github.com/tplgy/cppcodec/commit/8019b8b580f8573c33c50372baec7039dfe5a8ce.patch";
-      hash = "sha256-0MCx3nTsey4Qonx+lyexbcxut0qIHOJZbkJ9u23Zuv8=";
     })
   ];
 
@@ -32,13 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Header-only C++11 library for encode/decode functions as in RFC 4648";
+
     longDescription = ''
       Header-only C++11 library to encode/decode base64, base64url, base32,
       base32hex and hex (a.k.a. base16) as specified in RFC 4648, plus
       Crockford's base32.
     '';
+
     homepage = "https://github.com/tplgy/cppcodec";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       panicgh
     ];

@@ -1,27 +1,26 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  pydantic,
-  typing-extensions,
+  buildPythonPackage,
   cron-converter,
-  semver,
+  hatchling,
   pendulum,
   phonenumbers,
   pycountry,
+  pydantic,
   pymongo,
+  pytestCheckHook,
   python-ulid,
   pytz,
+  semver,
+  typing-extensions,
   tzdata,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pydantic-extra-types";
   version = "2.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydantic";
@@ -30,11 +29,20 @@ buildPythonPackage rec {
     hash = "sha256-aXhlfDBCpk8h3F4gXAQ40fVKxsoFvkmfO/roaqrGxho=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.all;
   build-system = [ hatchling ];
 
   dependencies = [
     pydantic
     typing-extensions
+  ];
+
+  # PermissionError accessing '/etc/localtime'
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [ "tests/test_pendulum_dt.py" ];
+
+  disabledTests = [
+    # https://github.com/pydantic/pydantic-extra-types/issues/346
+    "test_json_schema"
   ];
 
   optional-dependencies = {
@@ -49,34 +57,27 @@ buildPythonPackage rec {
       semver
       tzdata
     ];
+
     cron = [ cron-converter ];
+    pendulum = [ pendulum ];
     phonenumbers = [ phonenumbers ];
     pycountry = [ pycountry ];
-    semver = [ semver ];
     python_ulid = [ python-ulid ];
-    pendulum = [ pendulum ];
+    semver = [ semver ];
   };
+
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::DeprecationWarning"
   ];
 
-  disabledTests = [
-    # https://github.com/pydantic/pydantic-extra-types/issues/346
-    "test_json_schema"
-  ];
-
   pythonImportsCheck = [ "pydantic_extra_types" ];
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.all;
-
-  # PermissionError accessing '/etc/localtime'
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [ "tests/test_pendulum_dt.py" ];
-
   meta = {
-    changelog = "https://github.com/pydantic/pydantic-extra-types/blob/${src.tag}/HISTORY.md";
     description = "Extra Pydantic types";
     homepage = "https://github.com/pydantic/pydantic-extra-types";
+    changelog = "https://github.com/pydantic/pydantic-extra-types/blob/${src.tag}/HISTORY.md";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

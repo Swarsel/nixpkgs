@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  libgit2,
-  zlib,
   cmake,
-  versionCheckHook,
+  libgit2,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-fTmCL8b9Yp0DwgatGd7ODpq3z9b3Rqg/skqvjQkZvOU=";
   };
 
-  cargoHash = "sha256-48nNiUCtFdTksgkLGDkhWp2Tfy4NGt6ka1ntC8UHXO0=";
-
   nativeBuildInputs = [
     pkg-config
     cmake
@@ -33,9 +31,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-48nNiUCtFdTksgkLGDkhWp2Tfy4NGt6ka1ntC8UHXO0=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

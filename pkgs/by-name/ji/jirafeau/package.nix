@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  writeText,
   nixosTests,
+  writeText,
 }:
 let
   localConfig = writeText "config.local.php" ''
@@ -33,9 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Website permitting upload of a file in a simple way and giving a unique link to it";
-    license = lib.licenses.agpl3Plus;
     homepage = "https://gitlab.com/mojo42/Jirafeau";
-    platforms = lib.platforms.all;
+    license = lib.licenses.agpl3Plus;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

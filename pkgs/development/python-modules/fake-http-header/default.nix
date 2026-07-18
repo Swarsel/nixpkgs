@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,9 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "fake-http-header";
   version = "0.3.5-unstable-2025-07-09";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "MichaelTatarski";
@@ -20,10 +17,11 @@ buildPythonPackage (finalAttrs: {
     rev = "0f110477d3ecae916e88608a123360227bfb6109";
     hash = "sha256-CznvDjzUeA0THsiIhuzvEDb4gXsP8IujpSCjt857qSo=";
   };
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "fake_http_header" ];
 
   meta = with lib; {

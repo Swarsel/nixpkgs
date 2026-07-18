@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
-  poetry-core,
+  buildPythonPackage,
   django,
   django-pgtrigger,
+  nix-update-script,
+  poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "django-pgpubsub";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PaulGilmartin";
@@ -19,8 +18,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-Gl6NfBaoj3WKLHwJElbb27CYVQ83s3f86NUOZE7lHCk=";
   };
-
-  passthru.updateScript = nix-update-script { };
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -35,7 +32,9 @@ buildPythonPackage rec {
     django-pgtrigger
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pgpubsub" ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Lightweight background tasks using Django Channels and PostgreSQL NOTIFY/LISTEN";

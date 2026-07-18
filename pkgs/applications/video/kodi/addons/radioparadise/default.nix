@@ -1,15 +1,14 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
   requests,
 }:
 
 buildKodiAddon rec {
   pname = "radioparadise";
-  namespace = "script.radioparadise";
   version = "2.4.0";
 
   src = fetchzip {
@@ -21,16 +20,19 @@ buildKodiAddon rec {
     requests
   ];
 
+  namespace = "script.radioparadise";
+
   passthru = {
     pythonPath = "resources/lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.radioparadise";
     };
   };
 
   meta = {
-    homepage = "https://github.com/alxndr42/script.radioparadise";
     description = "Radio Paradise addon for Kodi";
+    homepage = "https://github.com/alxndr42/script.radioparadise";
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.kodi ];
   };

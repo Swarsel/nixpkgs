@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   glib,
   libsndfile,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://www.swamiproject.org/";
     description = "MIDI instrument patch files support library";
+    homepage = "http://www.swamiproject.org/";
     license = lib.licenses.lgpl21;
     maintainers = [ ];
     platforms = lib.platforms.unix;

@@ -1,4 +1,5 @@
 {
+  lib,
   stdenv,
   fetchurl,
   alsa-lib,
@@ -12,13 +13,18 @@
   gtk3,
   harfbuzz,
   lcms,
-  lib,
   libglvnd,
   libjack2,
   libjpeg,
   libnghttp2,
   libudev-zero,
+  libx11,
+  libxcb,
+  libxcb-util,
+  libxcb-wm,
+  libxcursor,
   libxkbcommon,
+  libxtst,
   makeWrapper,
   pango,
   pipewire,
@@ -26,12 +32,6 @@
   wrapGAppsHook3,
   xcb-imdkit,
   xdg-utils,
-  libxcb-util,
-  libxcb-wm,
-  libxtst,
-  libxcursor,
-  libx11,
-  libxcb,
   zlib,
 }:
 
@@ -40,9 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "5.3.13";
 
   src = fetchurl {
-    name = "bitwig-studio-${finalAttrs.version}.deb";
     url = "https://www.bitwig.com/dl/Bitwig%20Studio/${finalAttrs.version}/installer_linux/";
     hash = "sha256-tx+Dz9fTm4DIobwLa055ZOCMG+tU7vQl11NFnEKMAno=";
+    name = "bitwig-studio-${finalAttrs.version}.deb";
   };
 
   nativeBuildInputs = [
@@ -50,9 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     wrapGAppsHook3
   ];
-
-  dontBuild = true;
-  dontWrapGApps = true; # we only want $gappsWrapperArgs here
 
   buildInputs = [
     alsa-lib
@@ -126,21 +123,28 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  dontBuild = true;
+  dontWrapGApps = true; # we only want $gappsWrapperArgs here
+
   meta = {
     description = "Digital audio workstation";
+
     longDescription = ''
       Bitwig Studio is a multi-platform music-creation system for
       production, performance and DJing, with a focus on flexible
       editing tools and a super-fast workflow.
     '';
+
     homepage = "https://www.bitwig.com/";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       bfortz
       michalrus
       mrVanDalo
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    platforms = [ "x86_64-linux" ];
   };
 })

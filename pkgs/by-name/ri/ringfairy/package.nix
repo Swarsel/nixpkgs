@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage {
   pname = "ringfairy";
@@ -16,11 +16,9 @@ rustPlatform.buildRustPackage {
     hash = "sha256-dyqmjjhX3aehxoziV1C8Xsh/tNR2mhMBgcziPPNqqkA=";
   };
 
-  cargoHash = "sha256-Sa8vGQkE31r8hr53q46FzfEievlLJvBTvvOzqHyZEFY=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-Sa8vGQkE31r8hr53q46FzfEievlLJvBTvvOzqHyZEFY=";
 
   meta = {
     description = "Static webring generator in Rust";

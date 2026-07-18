@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -17,12 +17,12 @@ buildGoModule rec {
 
   vendorHash = "sha256-qbmaebQcD3cN+tbmzzJbry0AXz2LZFMoqbcBwGGrRo4=";
 
-  subPackages = [ "." ];
-
   ldflags = [
     "-s"
     "-w"
   ];
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Manages access to infrastructure such as Kubernetes";

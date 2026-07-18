@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeText,
+  jq,
   meson,
+  ninja,
   vulkan-headers,
   vulkan-utility-libraries,
-  ninja,
-  jq,
+  writeText,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,11 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-utility-libraries
   ];
 
-  # Help vulkan-loader find the layer
-  setupHook = writeText "setup-hook" ''
-    addToSearchPath XDG_DATA_DIRS @out@/share
-  '';
-
   # Include absolute paths to layer libraries in their associated
   # layer definition json files.
   preFixup = ''
@@ -46,11 +41,16 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # Help vulkan-loader find the layer
+  setupHook = writeText "setup-hook" ''
+    addToSearchPath XDG_DATA_DIRS @out@/share
+  '';
+
   meta = {
     description = "Vulkan layer to force a specific device to be used";
     homepage = "https://github.com/aejsmith/vkdevicechooser";
-    platforms = lib.platforms.unix;
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sigmike ];
+    platforms = lib.platforms.unix;
   };
 })

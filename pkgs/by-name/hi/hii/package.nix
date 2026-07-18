@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
   installShellFiles,
@@ -17,8 +17,6 @@ buildGoModule {
     sha256 = "sha256-CXpN57T+o5MPoUxwL48GfEedz05TK8+jPFgdSIdqk+8=";
   };
 
-  vendorHash = "sha256-lN/ESmpS8K0eC21F5RUbMN35I9b4uBE86CgAnhF1+VA=";
-
   outputs = [
     "out"
     "man"
@@ -26,6 +24,7 @@ buildGoModule {
   ];
 
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-lN/ESmpS8K0eC21F5RUbMN35I9b4uBE86CgAnhF1+VA=";
 
   postInstall = ''
     installManPage hii.1 hii.5
@@ -33,11 +32,11 @@ buildGoModule {
   '';
 
   meta = {
+    description = "A file-based IRC client inspired by ii";
     homepage = "https://github.com/nmeum/hii/";
     license = lib.licenses.gpl3Only;
-    description = "A file-based IRC client inspired by ii";
-    mainProgram = "hii";
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.sternenseemann ];
+    platforms = lib.platforms.unix;
+    mainProgram = "hii";
   };
 }

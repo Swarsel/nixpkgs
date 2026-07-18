@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   glib,
-  gtk3,
   gnome,
   gsettings-desktop-schemas,
-  wrapGAppsHook3,
-  libxtst,
-  libxfixes,
-  libxcursor,
+  gtk3,
   libx11,
+  libxcursor,
+  libxfixes,
+  libxtst,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -46,6 +46,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Provides mouse accessibility enhancements for the GNOME desktop";
+
     longDescription = ''
       Mousetweaks provides mouse accessibility enhancements for the GNOME
       desktop. These enhancements are:
@@ -60,10 +61,11 @@ stdenv.mkDerivation rec {
       The features can be activated and configured through the Universal Access
       panel of the GNOME Control Center.
     '';
+
     homepage = "https://gitlab.gnome.org/Archive/mousetweaks";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.johnazoidberg ];
+    platforms = lib.platforms.linux;
     mainProgram = "mousetweaks";
   };
 }

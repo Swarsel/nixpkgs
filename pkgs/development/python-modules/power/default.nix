@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "power";
   version = "1.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # Tests can't work because there is no power information available.
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Cross-platform system power status information";

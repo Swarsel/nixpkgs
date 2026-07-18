@@ -1,29 +1,29 @@
 {
-  dtc,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  dtc,
   nukeReferences,
   pkgsBuildBuild,
-  stdenv,
 }:
 
 let
   defaultVersion = "4.7.0";
 
   defaultSrc = fetchFromGitHub {
+    hash = "sha256-kvp3GDBZtKlephyW+oxHmXnqvCe1jL+PN1i/MCw6SX0=";
     owner = "OP-TEE";
     repo = "optee_os";
     rev = defaultVersion;
-    hash = "sha256-kvp3GDBZtKlephyW+oxHmXnqvCe1jL+PN1i/MCw6SX0=";
   };
 
   buildOptee = lib.makeOverridable (
     {
-      version ? null,
-      src ? null,
       platform,
       extraMakeFlags ? [ ],
       extraMeta ? { },
+      src ? null,
+      version ? null,
       ...
     }@args:
 
@@ -40,25 +40,19 @@ let
     stdenv.mkDerivation (
       {
         pname = "optee-os-${platform}";
-
         version = if src == null then defaultVersion else version;
-
         src = if src == null then defaultSrc else src;
-
-        postPatch = ''
-          patchShebangs $(find -type d -name scripts -printf '%p ')
-        '';
 
         outputs = [
           "out"
           "devkit"
         ];
 
+        postPatch = ''
+          patchShebangs $(find -type d -name scripts -printf '%p ')
+        '';
+
         strictDeps = true;
-
-        enableParallelBuilding = true;
-
-        depsBuildBuild = [ pkgsBuildBuild.stdenv.cc ];
 
         nativeBuildInputs = [
           dtc
@@ -98,6 +92,8 @@ let
           runHook postInstall
         '';
 
+        depsBuildBuild = [ pkgsBuildBuild.stdenv.cc ];
+        enableParallelBuilding = true;
         # The conventional build system for OPTEE trusted applications accepts
         # a TA_DEV_KIT_DIR parameter, which expects all artifacts (headers and
         # libraries) to exist in that directory. We populate a "devkit" Nix
@@ -123,15 +119,15 @@ in
 {
   inherit buildOptee;
 
-  opteeQemuArm = buildOptee {
-    platform = "vexpress";
-    extraMakeFlags = [ "PLATFORM_FLAVOR=qemu_virt" ];
-    extraMeta.platforms = [ "armv7l-linux" ];
-  };
-
   opteeQemuAarch64 = buildOptee {
-    platform = "vexpress";
     extraMakeFlags = [ "PLATFORM_FLAVOR=qemu_armv8a" ];
     extraMeta.platforms = [ "aarch64-linux" ];
+    platform = "vexpress";
+  };
+
+  opteeQemuArm = buildOptee {
+    extraMakeFlags = [ "PLATFORM_FLAVOR=qemu_virt" ];
+    extraMeta.platforms = [ "armv7l-linux" ];
+    platform = "vexpress";
   };
 }

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -12,7 +12,6 @@ in
 {
   options.services.realmd = {
     enable = mkEnableOption "realmd service for managing system enrollment in Active Directory domains";
-
     package = mkPackageOption pkgs "realmd" { };
   };
 
@@ -25,20 +24,23 @@ in
     };
 
     systemd.services.realmd = {
-      description = "Realm and Domain Configuration";
-      wantedBy = [ "multi-user.target" ];
-      partOf = [ "dbus.service" ];
-      requires = [ "dbus.service" ];
       after = [
         "network.target"
         "dbus.service"
       ];
+
+      description = "Realm and Domain Configuration";
+      partOf = [ "dbus.service" ];
+      requires = [ "dbus.service" ];
+
       serviceConfig = {
-        Type = "dbus";
         BusName = "org.freedesktop.realmd";
         ExecStart = "${cfg.package}/libexec/realmd";
         RuntimeDirectory = "realmd";
+        Type = "dbus";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

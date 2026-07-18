@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -18,8 +18,8 @@ buildNpmPackage rec {
   npmDepsHash = "sha256-5s420YWTc4bZ5oZRBjinw4lAfMTPrnrIWx4IM3Ysuqo=";
 
   meta = {
-    homepage = "https://github.com/AssemblyScript/assemblyscript";
     description = "TypeScript-like language for WebAssembly";
+    homepage = "https://github.com/AssemblyScript/assemblyscript";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lucperkins ];
   };

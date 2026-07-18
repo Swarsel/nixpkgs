@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  gettext,
-  setuptools,
+  buildPythonPackage,
   django,
+  gettext,
   pyjwt,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pretalx-venueless";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretalx";
@@ -21,7 +20,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ gettext ];
-
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,6 +27,7 @@ buildPythonPackage rec {
     pyjwt
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pretalx_venueless" ];
 
   meta = {

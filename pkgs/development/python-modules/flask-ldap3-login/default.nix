@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   flask,
   flask-wtf,
-  wtforms,
   ldap3,
   mock,
+  pytestCheckHook,
+  setuptools,
+  wtforms,
 }:
 
 buildPythonPackage rec {
   pname = "flask-ldap3-login";
   version = "1.0.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "nickw444";
@@ -24,6 +22,12 @@ buildPythonPackage rec {
     hash = "sha256-bWu+hCVnNRSWvXgB2pAcCdhXJQEg3mZeAfZgxUqVOkY=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,11 +37,7 @@ buildPythonPackage rec {
     wtforms
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_ldap3_login" ];
 
   meta = {

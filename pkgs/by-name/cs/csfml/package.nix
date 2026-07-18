@@ -28,18 +28,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ sfml ];
+
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_MODULE_PATH" "${sfml}/share/SFML/cmake/Modules/")
   ];
 
   meta = {
-    homepage = "https://www.sfml-dev.org/";
     description = "Simple and fast multimedia library";
+
     longDescription = ''
       SFML is a simple, fast, cross-platform and object-oriented multimedia API.
       It provides access to windowing, graphics, audio and network.
       It is written in C++, and has bindings for various languages such as C, .Net, Ruby, Python.
     '';
+
+    homepage = "https://www.sfml-dev.org/";
     license = lib.licenses.zlib;
     maintainers = [ lib.maintainers.jpdoyle ];
     platforms = lib.platforms.linux;

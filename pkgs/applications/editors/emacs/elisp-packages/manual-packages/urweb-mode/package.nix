@@ -1,28 +1,25 @@
 {
   lib,
-  melpaBuild,
-  urweb,
   cl-lib,
   flycheck,
+  melpaBuild,
+  urweb,
 }:
 
 melpaBuild {
-  pname = "urweb-mode";
-
   inherit (urweb) src version;
+  pname = "urweb-mode";
+  dontConfigure = true;
+  files = ''("src/elisp/*.el")'';
 
   packageRequires = [
     cl-lib
     flycheck
   ];
 
-  files = ''("src/elisp/*.el")'';
-
-  dontConfigure = true;
-
   meta = {
-    description = "Major mode for editing Ur/Web";
     inherit (urweb.meta) license homepage;
+    description = "Major mode for editing Ur/Web";
     maintainers = [ lib.maintainers.sternenseemann ];
   };
 }

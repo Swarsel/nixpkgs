@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
   appstream-glib,
-  gettext,
-  pkg-config,
-  wrapGAppsHook3,
-  gobject-introspection,
   autoreconfHook,
+  gettext,
+  gobject-introspection,
   gtk3,
   ibus,
   libhangul,
+  pkg-config,
   python3,
+  replaceVars,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -54,12 +54,12 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
-    isIbusEngine = true;
     description = "Ibus Hangul engine";
-    mainProgram = "ibus-setup-hangul";
     homepage = "https://github.com/libhangul/ibus-hangul";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "ibus-setup-hangul";
+    isIbusEngine = true;
   };
 }

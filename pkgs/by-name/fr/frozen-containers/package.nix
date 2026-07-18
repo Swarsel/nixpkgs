@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   nix-update-script,
@@ -25,11 +25,13 @@ stdenv.mkDerivation {
   meta = {
     description = "Header-only library that provides 0 cost initialization for immutable containers, fixed-size containers, and various algorithms";
     homepage = "https://github.com/serge-sans-paille/frozen";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       marcin-serwin
       szanko
     ];
-    license = lib.licenses.asl20;
+
     platforms = lib.platforms.all;
   };
 }

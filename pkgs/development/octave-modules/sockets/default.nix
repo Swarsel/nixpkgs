@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
+  buildOctavePackage,
   nix-update-script,
 }:
 
@@ -24,9 +24,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "Socket functions for networking from within octave";
     homepage = "https://gnu-octave.github.io/packages/sockets/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Socket functions for networking from within octave";
   };
 }

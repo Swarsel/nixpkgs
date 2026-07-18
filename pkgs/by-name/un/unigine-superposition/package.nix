@@ -1,30 +1,30 @@
 {
   lib,
-  glib,
   stdenv,
-  dbus,
-  freetype,
-  fontconfig,
-  zlib,
-  libsForQt5,
-  libxinerama,
-  libxcb,
-  libsm,
-  libxi,
-  libglvnd,
-  libxext,
-  libxrandr,
-  openssl,
-  libx11,
-  libice,
-  libxrender,
-  autoPatchelfHook,
-  makeWrapper,
-  xkeyboard_config,
   fetchurl,
+  autoPatchelfHook,
   buildFHSEnv,
-  openal,
+  dbus,
+  fontconfig,
+  freetype,
+  glib,
+  libglvnd,
+  libice,
+  libsForQt5,
+  libsm,
+  libx11,
+  libxcb,
+  libxext,
+  libxi,
+  libxinerama,
+  libxrandr,
+  libxrender,
   makeDesktopItem,
+  makeWrapper,
+  openal,
+  openssl,
+  xkeyboard_config,
+  zlib,
 }:
 
 let
@@ -86,11 +86,11 @@ let
   });
 
   desktopItem = makeDesktopItem {
-    name = "Superposition";
+    desktopName = "Superposition Benchmark";
     exec = "unigine-superposition";
     genericName = "A GPU Stress test tool from the UNIGINE";
     icon = "Superposition";
-    desktopName = "Superposition Benchmark";
+    name = "Superposition";
   };
 
 in
@@ -100,6 +100,21 @@ in
 
 buildFHSEnv {
   inherit pname version;
+
+  extraInstallCommands = ''
+    # create directories
+    mkdir -p $out/share/icons/hicolor $out/share/applications
+    # create .desktop file
+    ln -s ${desktopItem}/share/applications/* $out/share/applications
+    # install Superposition.desktop and icon
+    cp ${superposition}/lib/unigine/superposition/Superposition.png $out/share/icons/
+    for RES in 16 24 32 48 64 128 256; do
+      mkdir -p $out/share/icons/hicolor/"$RES"x"$RES"/apps
+      cp ${superposition}/lib/unigine/superposition/icons/superposition_icon_$RES.png $out/share/icons/hicolor/"$RES"x"$RES"/apps/Superposition.png
+    done
+  '';
+
+  runScript = "superposition";
 
   targetPkgs = pkgs: [
     superposition
@@ -123,26 +138,12 @@ buildFHSEnv {
     openal
     openssl
   ];
-  runScript = "superposition";
-
-  extraInstallCommands = ''
-    # create directories
-    mkdir -p $out/share/icons/hicolor $out/share/applications
-    # create .desktop file
-    ln -s ${desktopItem}/share/applications/* $out/share/applications
-    # install Superposition.desktop and icon
-    cp ${superposition}/lib/unigine/superposition/Superposition.png $out/share/icons/
-    for RES in 16 24 32 48 64 128 256; do
-      mkdir -p $out/share/icons/hicolor/"$RES"x"$RES"/apps
-      cp ${superposition}/lib/unigine/superposition/icons/superposition_icon_$RES.png $out/share/icons/hicolor/"$RES"x"$RES"/apps/Superposition.png
-    done
-  '';
 
   meta = {
     description = "Unigine Superposition GPU benchmarking tool";
     homepage = "https://benchmark.unigine.com/superposition";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "unigine-superposition";

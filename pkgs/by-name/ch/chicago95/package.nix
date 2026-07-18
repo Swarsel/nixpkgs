@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gtk3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -47,11 +47,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Windows 95 theme for GTK";
     homepage = "https://github.com/grassmunk/Chicago95";
     changelog = "https://github.com/grassmunk/Chicago95/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl3Plus
       mit
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ GabrielMaguire ];
+    platforms = lib.platforms.linux;
   };
 })

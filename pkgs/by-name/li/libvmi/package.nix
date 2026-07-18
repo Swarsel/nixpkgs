@@ -2,22 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  unstableGitUpdater,
-  autoreconfHook,
   autoconf-archive,
+  autoreconfHook,
   bison,
+  fetchpatch,
   flex,
   glib,
-  pkg-config,
   json_c,
-  libvirt,
-
-  legacyKVM ? false,
   libkvmi,
-
-  xenSupport ? true,
+  libvirt,
+  pkg-config,
+  unstableGitUpdater,
   xen,
+  legacyKVM ? false,
+  xenSupport ? true,
 }:
 
 let
@@ -36,18 +34,18 @@ in
 stdenv.mkDerivation {
   inherit pname version src;
 
-  patches = [
-    # Compatibility with GCC 15
-    (fetchpatch {
-      url = "https://github.com/libvmi/libvmi/commit/9deb49d17e7e675158ed3b19d405792254e22bdf.patch";
-      hash = "sha256-stjbHogH6JpCu3hTR+UUJGzUeq1TOWZPc8ocjUA7t/g=";
-    })
-  ];
-
   outputs = [
     "out"
     "lib"
     "dev"
+  ];
+
+  patches = [
+    # Compatibility with GCC 15
+    (fetchpatch {
+      hash = "sha256-stjbHogH6JpCu3hTR+UUJGzUeq1TOWZPc8ocjUA7t/g=";
+      url = "https://github.com/libvmi/libvmi/commit/9deb49d17e7e675158ed3b19d405792254e22bdf.patch";
+    })
   ];
 
   nativeBuildInputs = [
@@ -78,23 +76,27 @@ stdenv.mkDerivation {
   '';
 
   passthru = {
-    updateScript = unstableGitUpdater { tagPrefix = "v"; };
     inherit libVersion;
+    updateScript = unstableGitUpdater { tagPrefix = "v"; };
   };
 
   meta = {
     description = "C library for virtual machine introspection";
+
     longDescription = ''
       LibVMI is a C library with Python bindings that makes it easy to monitor the low-level
       details of a running virtual machine by viewing its memory, trapping on hardware events,
       and accessing the vCPU registers.
     '';
+
     homepage = "https://libvmi.com/";
+
     license = with lib.licenses; [
       gpl3Only
       lgpl3Only
     ];
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [ sigmasquadron ];
+    platforms = [ "x86_64-linux" ];
   };
 }

@@ -1,57 +1,49 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  pythonAtLeast,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  # tests
+  addBinToPathHook,
+  ase,
+  # dependencies
+  bibtexparser,
+  buildPythonPackage,
   # nativeBuildInputs
   cython,
   glibcLocales,
-
-  # dependencies
-  bibtexparser,
   joblib,
   matplotlib,
   monty,
+  moyopy,
+  # optional-dependencies
+  netcdf4,
   networkx,
+  numba,
   numpy,
   orjson,
   palettable,
   pandas,
   plotly,
   pybtex,
+  pytest-xdist,
+  pytestCheckHook,
+  pythonAtLeast,
   requests,
   ruamel-yaml,
   scipy,
+  # build-system
+  setuptools,
   spglib,
   sympy,
   tabulate,
   tqdm,
   uncertainties,
-
-  # optional-dependencies
-  netcdf4,
-  ase,
-  numba,
   vtk,
-
-  # tests
-  addBinToPathHook,
-  moyopy,
-  pytest-xdist,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pymatgen";
   version = "2025.10.7";
-  pyproject = true;
-
-  disabled = pythonAtLeast "3.13";
 
   src = fetchFromGitHub {
     owner = "materialsproject";
@@ -60,12 +52,30 @@ buildPythonPackage rec {
     hash = "sha256-pbnWSmU2rtqUbjZBmzJz3HE1t5zZTJv7HSfrcVUFxmU=";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     cython
     glibcLocales
   ];
+
+  nativeCheckInputs = [
+    addBinToPathHook
+    moyopy
+    pytestCheckHook
+    pytest-xdist
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  preCheck =
+    # ensure tests can find these
+    ''
+      export PMG_TEST_FILES_DIR="$(realpath ./tests/files)"
+    ''
+    # Prevents 'Fatal Python error: Aborted' on darwin during checkPhase
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      export MPLBACKEND="Agg"
+    '';
+
+  build-system = [ setuptools ];
 
   dependencies = [
     bibtexparser
@@ -89,39 +99,17 @@ buildPythonPackage rec {
     uncertainties
   ];
 
-  optional-dependencies = {
-    abinit = [ netcdf4 ];
-    ase = [ ase ];
-    electronic_structure = [
-      # fdint
-    ];
-    mlp = [
-      # chgnet
-      # matgl
-    ];
-    numba = [ numba ];
-    vis = [ vtk ];
-  };
+  disabled = pythonAtLeast "3.13";
 
-  pythonImportsCheck = [ "pymatgen" ];
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # Crash when running the pmg command
+    # Critical error: required built-in appearance SystemAppearance not found
+    "tests/cli/test_pmg_plot.py"
 
-  nativeCheckInputs = [
-    addBinToPathHook
-    moyopy
-    pytestCheckHook
-    pytest-xdist
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  preCheck =
-    # ensure tests can find these
-    ''
-      export PMG_TEST_FILES_DIR="$(realpath ./tests/files)"
-    ''
-    # Prevents 'Fatal Python error: Aborted' on darwin during checkPhase
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      export MPLBACKEND="Agg"
-    '';
+    # attempt to insert nil object from objects[1]
+    # https://github.com/materialsproject/pymatgen/issues/4452
+    "tests/io/abinit/test_abitimer.py"
+  ];
 
   disabledTests = [
     # Flaky
@@ -140,15 +128,25 @@ buildPythonPackage rec {
     "test_timer"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # Crash when running the pmg command
-    # Critical error: required built-in appearance SystemAppearance not found
-    "tests/cli/test_pmg_plot.py"
+  optional-dependencies = {
+    abinit = [ netcdf4 ];
+    ase = [ ase ];
 
-    # attempt to insert nil object from objects[1]
-    # https://github.com/materialsproject/pymatgen/issues/4452
-    "tests/io/abinit/test_abitimer.py"
-  ];
+    electronic_structure = [
+      # fdint
+    ];
+
+    mlp = [
+      # chgnet
+      # matgl
+    ];
+
+    numba = [ numba ];
+    vis = [ vtk ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pymatgen" ];
 
   meta = {
     description = "Robust materials analysis code that defines core object representations for structures and molecules";

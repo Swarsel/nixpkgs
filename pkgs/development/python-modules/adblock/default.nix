@@ -2,21 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   buildPythonPackage,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  publicsuffix-list,
+  fetchpatch,
   libiconv,
+  openssl,
+  pkg-config,
+  publicsuffix-list,
   pytestCheckHook,
+  rustPlatform,
   toml,
 }:
 
 buildPythonPackage rec {
   pname = "adblock";
   version = "0.6.0";
-  pyproject = true;
 
   # Pypi only has binary releases
   src = fetchFromGitHub {
@@ -29,9 +28,9 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/ArniDagur/python-adblock/pull/91
     (fetchpatch {
+      hash = "sha256-n9+LDs0no66OdNZxw3aU57ngWrAbmm6hx4qIuxXoatM=";
       name = "pep-621-compat.patch";
       url = "https://github.com/ArniDagur/python-adblock/commit/2a8716e0723b60390f0aefd0e05f40ba598ac73f.patch";
-      hash = "sha256-n9+LDs0no66OdNZxw3aU57ngWrAbmm6hx4qIuxXoatM=";
     })
   ];
 
@@ -39,11 +38,6 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace "0.0.0" "${version}"
   '';
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-fetJX6HQxRZ/Az7rJeU9S+s8ttgNPnJEvTLfzGt4xjk=";
-  };
 
   nativeBuildInputs = [
     pkg-config
@@ -72,10 +66,17 @@ buildPythonPackage rec {
     rm -r adblock
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-fetJX6HQxRZ/Az7rJeU9S+s8ttgNPnJEvTLfzGt4xjk=";
+  };
+
   disabledTestPaths = [
     # relies on directory removed above
     "tests/test_typestubs.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "adblock"
@@ -86,10 +87,12 @@ buildPythonPackage rec {
     description = "Python wrapper for Brave's adblocking library";
     homepage = "https://github.com/ArniDagur/python-adblock/";
     changelog = "https://github.com/ArniDagur/python-adblock/blob/${version}/CHANGELOG.md";
-    maintainers = with lib.maintainers; [ dotlambda ];
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
+    maintainers = with lib.maintainers; [ dotlambda ];
   };
 }

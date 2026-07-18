@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   libspnav,
+  pkg-config,
   qt6,
 }:
 
@@ -15,8 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "FreeSpacenav";
     repo = "spnavcfg";
     tag = "v${finalAttrs.version}";
-    fetchLFS = true;
     hash = "sha256-HYBb1/SgjayJjdA0N8UHPde3y4SugYiWIPP+3Eu3CEI=";
+    fetchLFS = true;
   };
 
   nativeBuildInputs = [
@@ -35,11 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://spacenav.sourceforge.net/";
     description = "Interactive configuration GUI for space navigator input devices";
+    homepage = "https://spacenav.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "spnavcfg";
   };
 })

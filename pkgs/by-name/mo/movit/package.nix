@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   SDL2,
+  eigen,
   fftw,
   gtest,
-  eigen,
-  libepoxy,
   libGL,
+  libepoxy,
   libx11,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {

@@ -1,8 +1,8 @@
 {
   lib,
-  melpaBuild,
   fetchFromGitHub,
   gzip,
+  melpaBuild,
   unstableGitUpdater,
 }:
 
@@ -17,13 +17,12 @@ melpaBuild {
     hash = "sha256-YESpl+gSSC1eIOEQ8QevfTZ0Ar9wO4pzC12wVmDpDOA=";
   };
 
+  files = ''(:defaults "msg")'';
   propagatedUserEnvPkgs = [ gzip ];
 
-  files = ''(:defaults "msg")'';
-
   meta = {
-    homepage = "https://github.com/misohena/el-easydraw";
     description = "Embedded drawing tool for Emacs";
+    homepage = "https://github.com/misohena/el-easydraw";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ brahyerr ];
   };

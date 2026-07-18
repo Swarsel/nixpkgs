@@ -1,21 +1,21 @@
 {
   lib,
-  runCommandLocal,
   gfal2-util,
+  runCommandLocal,
 }:
 
 # `url` and `urls` should only be overridden via `<pkg>.override`, but not `<pkg>.overrideAttrs`.
 {
+  allowSubstitutes ? true,
+  extraGfalCopyFlags ? [ ],
+  hash ? lib.fakeHash,
+  intermediateDestUrls ? [ ],
   name ? "",
   pname ? "",
-  version ? "",
-  urls ? [ ],
-  url ? if urls == [ ] then abort "Expect either non-empty `urls` or `url`" else lib.head urls,
-  hash ? lib.fakeHash,
   recursive ? false,
-  intermediateDestUrls ? [ ],
-  extraGfalCopyFlags ? [ ],
-  allowSubstitutes ? true,
+  url ? if urls == [ ] then abort "Expect either non-empty `urls` or `url`" else lib.head urls,
+  urls ? [ ],
+  version ? "",
 }:
 
 (runCommandLocal name { } ''
@@ -32,16 +32,16 @@
   (
     finalAttrs: previousAttrs:
     {
-      __structuredAttrs = true;
       inherit allowSubstitutes;
+      inherit url;
+      inherit recursive intermediateDestUrls;
       nativeBuildInputs = [ gfal2-util ];
+      __structuredAttrs = true;
+      gfalCopyFlags = extraGfalCopyFlags ++ lib.optional finalAttrs.recursive "--recursive";
+      outputHash = hash;
       outputHashAlgo = null;
       outputHashMode = if finalAttrs.recursive then "recursive" else "flat";
-      outputHash = hash;
-      inherit url;
       urls = if urls == [ ] then lib.singleton url else urls;
-      gfalCopyFlags = extraGfalCopyFlags ++ lib.optional finalAttrs.recursive "--recursive";
-      inherit recursive intermediateDestUrls;
     }
     // (
       if (pname != "" && version != "") then

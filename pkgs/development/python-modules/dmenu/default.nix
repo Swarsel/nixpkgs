@@ -1,25 +1,24 @@
 {
-  buildPythonPackage,
   lib,
-  fetchPypi,
+  buildPythonPackage,
   dmenu,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "dmenu-python";
   version = "0.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "dmenu";
     sha256 = "06v2fq0ciallbib7sbk4kncj0n3gdqp1kz8n5k2669x49wyh34wm";
+    pname = "dmenu";
   };
 
   propagatedBuildInputs = [ dmenu ];
-
   # No tests existing
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python wrapper for dmenu";

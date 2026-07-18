@@ -2,28 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libGL,
+  libdisplay-info,
+  libdrm,
+  libgbm,
+  libinput,
   meson,
   ninja,
   pkg-config,
-  libdisplay-info,
-  libdrm,
-  libGL,
-  libinput,
-  libgbm,
   seatd,
   udev,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "srm-cuarzo";
   version = "0.13.0-1";
-  rev = "v${finalAttrs.version}";
-  hash = "sha256-5BwLqAZdfO5vyEMPZImaxymvLoNuu6bOiOkvR8JERxg=";
 
   src = fetchFromGitHub {
     inherit (finalAttrs) rev hash;
     owner = "CuarzoSoftware";
     repo = "SRM";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     meson
@@ -41,21 +44,19 @@ stdenv.mkDerivation (finalAttrs: {
     udev
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   preConfigure = ''
     # The root meson.build file is in src/
     cd src
   '';
 
+  hash = "sha256-5BwLqAZdfO5vyEMPZImaxymvLoNuu6bOiOkvR8JERxg=";
+  rev = "v${finalAttrs.version}";
+
   meta = {
     description = "Simple Rendering Manager";
     homepage = "https://github.com/CuarzoSoftware/SRM";
+    license = lib.licenses.lgpl21Only;
     maintainers = [ ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.lgpl21Only;
   };
 })

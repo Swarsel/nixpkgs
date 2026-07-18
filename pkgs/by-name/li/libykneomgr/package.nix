@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  pcsclite,
-  libzip,
   help2man,
+  libzip,
+  pcsclite,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     pcsclite
     libzip
@@ -32,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C library to interact with the CCID-part of the Yubikey NEO";
     homepage = "https://developers.yubico.com/libykneomgr";
     license = lib.licenses.bsd3;
-    mainProgram = "ykneomgr";
     platforms = lib.platforms.unix;
+    mainProgram = "ykneomgr";
   };
 })

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   installShellFiles,
-  pkg-config,
   ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,12 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ ncurses ];
 
-  installFlags = [
-    "DESTDIR=$(out)"
-    "PREFIX="
-    "GAMES_DIR=bin"
-  ];
-
   preInstall = ''
     mkdir -p $out/bin
   '';
@@ -39,12 +33,18 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage man/*
   '';
 
+  installFlags = [
+    "DESTDIR=$(out)"
+    "PREFIX="
+    "GAMES_DIR=bin"
+  ];
+
   meta = {
     description = "Package of 18 text-based modern games";
     homepage = "https://github.com/abakh/nbsdgames";
     license = lib.licenses.cc0;
     maintainers = with lib.maintainers; [ sarcasticadmin ];
-    mainProgram = "nbsdgames";
     platforms = lib.platforms.all;
+    mainProgram = "nbsdgames";
   };
 })

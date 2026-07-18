@@ -16,15 +16,14 @@ ocamlPackages.buildDunePackage (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = with ocamlPackages; [ menhir ];
   buildInputs = with ocamlPackages; [ re ];
 
   meta = {
     description = "Simple tool which produces pretty-printed output from a Menhir parser file (.mly)";
-    mainProgram = "obelisk";
+    homepage = "https://github.com/Lelio-Brun/Obelisk";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
-    homepage = "https://github.com/Lelio-Brun/Obelisk";
+    mainProgram = "obelisk";
   };
 })

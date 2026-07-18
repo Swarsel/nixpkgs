@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  six,
+  buildPythonPackage,
   lark,
   pytestCheckHook,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "commentjson";
   version = "0.9.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "vaidik";
@@ -33,7 +32,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "commentjson" ];
 
   meta = {

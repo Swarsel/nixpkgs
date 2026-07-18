@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   makeWrapper,
   perlPackages,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -24,8 +24,8 @@ stdenvNoCC.mkDerivation rec {
       bin/ldap-schema-manager
   '';
 
-  buildInputs = [ perlPackages.perl ];
   nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ perlPackages.perl ];
 
   installPhase = ''
     mkdir -p $out/bin $out/share/man/man1
@@ -42,7 +42,7 @@ stdenvNoCC.mkDerivation rec {
     description = "Utilities to manage schema in .schema and .ldif format";
     homepage = "https://www.fusiondirectory.org/schema2ldif-project-and-components/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ das_j ];
+    platforms = lib.platforms.unix;
   };
 }

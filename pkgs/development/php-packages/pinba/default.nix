@@ -1,7 +1,7 @@
 {
-  buildPecl,
   lib,
   fetchFromGitHub,
+  buildPecl,
 }:
 
 buildPecl rec {
@@ -21,12 +21,14 @@ buildPecl rec {
 
   meta = {
     description = "PHP extension for Pinba";
+
     longDescription = ''
       Pinba is a MySQL storage engine that acts as a realtime monitoring and
       statistics server for PHP using MySQL as a read-only interface.
     '';
-    license = lib.licenses.lgpl2Plus;
+
     homepage = "http://pinba.org/";
+    license = lib.licenses.lgpl2Plus;
     teams = [ lib.teams.php ];
   };
 }

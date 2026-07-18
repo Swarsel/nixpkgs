@@ -1,16 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
   assimp,
   boost183,
   cacert,
   cereal,
   cgal_5,
+  cmake,
   curl,
   dbus,
   eigen,
@@ -25,27 +22,30 @@
   gtest,
   gtk3,
   hicolor-icon-theme,
+  libharu,
+  libnoise,
   libpng,
   libsecret,
+  libx11,
   makeFontsConf,
-  libnoise,
   mpfr,
   nanum,
+  ninja,
   nlopt,
-  opencascade-occt_7_6,
-  openvdb,
-  openexr,
-  opencv,
-  systemd,
   onetbb,
+  opencascade-occt_7_6,
+  opencv,
+  openexr,
+  openvdb,
+  pkg-config,
+  systemd,
   webkitgtk_4_1,
+  wrapGAppsHook3,
   wxwidgets_3_1,
-  libx11,
-  libharu,
-  withSystemd ? stdenv.hostPlatform.isLinux,
   # 3D viewport blank on NVIDIA proprietary GL; routes through Mesa + zink.
   # https://github.com/NixOS/nixpkgs/issues/498311
   withNvidiaGLWorkaround ? false,
+  withSystemd ? stdenv.hostPlatform.isLinux,
 }:
 let
   wxGTK' =
@@ -56,6 +56,7 @@ let
     }).overrideAttrs
       (old: {
         buildInputs = old.buildInputs ++ [ libsecret ];
+
         configureFlags = old.configureFlags ++ [
           # Disable noisy debug dialogs
           "--enable-debug=no"
@@ -77,6 +78,36 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-zIizozfZkaXo5wymuBFBCUu/lu+FyYTpa4+3SoC2x7k=";
   };
+
+  patches = [
+    # Fix for webkitgtk linking
+    ./patches/0001-not-for-upstream-CMakeLists-Link-against-webkit2gtk-.patch
+    # Fix an issue with
+    ./patches/dont-link-opencv-world-bambu.patch
+    # Don't link osmesa
+    ./patches/no-osmesa.patch
+    # Don't link cereal
+    ./patches/no-cereal.patch
+    # Cmake 4 support
+    ./patches/cmake.patch
+    # Disable nodejs
+    ./patches/no-device-web-node-download.patch
+  ];
+
+  postPatch =
+    # Since version 2.5.0 of nlopt we need to link to libnlopt, as libnlopt_cxx
+    # now seems to be integrated into the main lib.
+    ''
+      substituteInPlace cmake/modules/FindNLopt.cmake \
+        --replace-fail "nlopt_cxx" "nlopt"
+    ''
+    # Fix libharu include
+    + ''
+      substituteInPlace src/slic3r/GUI/Overview/AssemblyStepsUtils.cpp \
+        --replace-fail \
+          "#include <hpdf/hpdf.h>" \
+          "#include <hpdf.h>"
+    '';
 
   nativeBuildInputs = [
     cmake
@@ -124,61 +155,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withSystemd [ systemd ]
   ++ finalAttrs.checkInputs;
 
-  patches = [
-    # Fix for webkitgtk linking
-    ./patches/0001-not-for-upstream-CMakeLists-Link-against-webkit2gtk-.patch
-    # Fix an issue with
-    ./patches/dont-link-opencv-world-bambu.patch
-    # Don't link osmesa
-    ./patches/no-osmesa.patch
-    # Don't link cereal
-    ./patches/no-cereal.patch
-    # Cmake 4 support
-    ./patches/cmake.patch
-    # Disable nodejs
-    ./patches/no-device-web-node-download.patch
-  ];
-
-  postPatch =
-    # Since version 2.5.0 of nlopt we need to link to libnlopt, as libnlopt_cxx
-    # now seems to be integrated into the main lib.
-    ''
-      substituteInPlace cmake/modules/FindNLopt.cmake \
-        --replace-fail "nlopt_cxx" "nlopt"
-    ''
-    # Fix libharu include
-    + ''
-      substituteInPlace src/slic3r/GUI/Overview/AssemblyStepsUtils.cpp \
-        --replace-fail \
-          "#include <hpdf/hpdf.h>" \
-          "#include <hpdf.h>"
-    '';
-
-  doCheck = true;
-  checkInputs = [ gtest ];
-
-  separateDebugInfo = true;
-
-  env = {
-    # The build system uses custom logic - defined in
-    # cmake/modules/FindNLopt.cmake in the package source - for finding the nlopt
-    # library, which doesn't pick up the package in the nix store.  We
-    # additionally need to set the path via the NLOPT environment variable.
-    NLOPT = nlopt;
-
-    NIX_CFLAGS_COMPILE = toString [
-      "-DBOOST_TIMER_ENABLE_DEPRECATED"
-      # Disable compiler warnings that clutter the build log.
-      # It seems to be a known issue for Eigen:
-      # http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1221
-      "-Wno-ignored-attributes"
-      "-I${opencv}/include/opencv4"
-    ];
-
-    # prusa-slicer uses dlopen on `libudev.so` at runtime
-    NIX_LDFLAGS = lib.optionalString withSystemd "-ludev" + " -L${opencv}/lib -lopencv_imgcodecs";
-  };
-
   cmakeFlags = [
     (lib.cmakeBool "SLIC3R_STATIC" false)
     (lib.cmakeBool "SLIC3R_FHS" true)
@@ -197,6 +173,35 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "LIBNOISE_INCLUDE_DIR" "${lib.getInclude libnoise}/include/noise")
     (lib.cmakeFeature "LIBNOISE_LIBRARY" "${lib.getLib libnoise}/lib/libnoise-static.a")
   ];
+
+  env = {
+    NIX_CFLAGS_COMPILE = toString [
+      "-DBOOST_TIMER_ENABLE_DEPRECATED"
+      # Disable compiler warnings that clutter the build log.
+      # It seems to be a known issue for Eigen:
+      # http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1221
+      "-Wno-ignored-attributes"
+      "-I${opencv}/include/opencv4"
+    ];
+
+    # prusa-slicer uses dlopen on `libudev.so` at runtime
+    NIX_LDFLAGS = lib.optionalString withSystemd "-ludev" + " -L${opencv}/lib -lopencv_imgcodecs";
+    # The build system uses custom logic - defined in
+    # cmake/modules/FindNLopt.cmake in the package source - for finding the nlopt
+    # library, which doesn't pick up the package in the nix store.  We
+    # additionally need to set the path via the NLOPT environment variable.
+    NLOPT = nlopt;
+  };
+
+  doCheck = true;
+  checkInputs = [ gtest ];
+
+  # needed to prevent collisions between the LICENSE.txt files of
+  # bambu-studio and orca-slicer.
+  postInstall = ''
+    mv $out/LICENSE.txt $out/share/BambuStudio/LICENSE.txt
+    mv $out/README.md $out/share/BambuStudio/README.md
+  '';
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -227,17 +232,13 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  # needed to prevent collisions between the LICENSE.txt files of
-  # bambu-studio and orca-slicer.
-  postInstall = ''
-    mv $out/LICENSE.txt $out/share/BambuStudio/LICENSE.txt
-    mv $out/README.md $out/share/BambuStudio/README.md
-  '';
+  separateDebugInfo = true;
 
   meta = {
     description = "PC Software for BambuLab's 3D printers";
     homepage = "https://github.com/bambulab/BambuStudio";
     changelog = "https://github.com/bambulab/BambuStudio/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       agpl3Plus
       # Bambu Studio downloads and dlopens a proprietary networking library
@@ -247,12 +248,14 @@ stdenv.mkDerivation (finalAttrs: {
       # https://sfconservancy.org/news/2026/may/18/bambu-studio-3d-printer-agpl-violation-response/
       unfree
     ];
+
     maintainers = with lib.maintainers; [
       zhaofengli
       dsluijk
       miniharinn
     ];
-    mainProgram = "bambu-studio";
+
     platforms = lib.platforms.linux;
+    mainProgram = "bambu-studio";
   };
 })

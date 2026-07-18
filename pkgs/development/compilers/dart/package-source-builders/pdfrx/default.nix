@@ -4,12 +4,12 @@
   pdfium-binaries,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation {
-  pname = "pdfrx";
   inherit version src;
   inherit (src) passthru;
+  pname = "pdfrx";
 
   postPatch = lib.optionalString (lib.versionOlder version "2.2.9") ''
     substituteInPlace linux/CMakeLists.txt \

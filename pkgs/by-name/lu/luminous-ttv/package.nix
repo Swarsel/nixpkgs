@@ -20,13 +20,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Rust server to retrieve and relay a playlist for Twitch livestreams/VODs";
     homepage = "https://github.com/AlyoshaVasilieva/luminous-ttv";
-    downloadPage = "https://github.com/AlyoshaVasilieva/luminous-ttv/releases/latest";
     changelog = "https://github.com/AlyoshaVasilieva/luminous-ttv/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl3Only
       mit
     ];
-    mainProgram = "luminous-ttv";
+
     maintainers = with lib.maintainers; [ alex ];
+    mainProgram = "luminous-ttv";
+    downloadPage = "https://github.com/AlyoshaVasilieva/luminous-ttv/releases/latest";
   };
 })

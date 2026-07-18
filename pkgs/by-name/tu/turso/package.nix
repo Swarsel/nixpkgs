@@ -1,15 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "turso";
   version = "0.6.1";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tursodatabase";
@@ -19,6 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-bmyMjjjmKeDySDzyOJCtDHF9HD/u/A4Jt2qxpZgHVqY=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   cargoBuildFlags = [
     "--bin"
@@ -26,10 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoTestFlags = finalAttrs.cargoBuildFlags;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=^v([0-9.]+)$" ]; };
 
   meta = {

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
   requests,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "resend";
   version = "2.32.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "resend";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-wxro1Dgk7/ziPy2Z09teCyk99rxkDNODtlOugJDMUO0=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "resend" ];
 
   meta = {

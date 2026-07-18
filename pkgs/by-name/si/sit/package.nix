@@ -27,7 +27,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/thecloudexpanse/sit";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    mainProgram = "sit";
     platforms = lib.platforms.unix;
+    mainProgram = "sit";
   };
 }

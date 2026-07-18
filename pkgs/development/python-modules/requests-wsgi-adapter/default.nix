@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "requests-wsgi-adapter";
   version = "0.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # tests are not contained in pypi-release
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "WSGI Transport Adapter for Requests";

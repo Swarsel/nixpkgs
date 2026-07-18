@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  python3,
   bash,
+  buildGoModule,
   coreutils,
+  python3,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,7 +20,11 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-fkq6ow5sxzX26cR6mmGnb+xhwFl82VkW9zdVIkgX/ZE=";
 
-  excludedPackages = [ "cronexpr/cronexpr" ];
+  postConfigure = ''
+    # There are tests that set the shell to various paths
+    substituteInPlace cron/cron_test.go --replace /bin/sh ${bash}/bin/sh
+    substituteInPlace cron/cron_test.go --replace /bin/false ${coreutils}/bin/false
+  '';
 
   nativeCheckInputs = [
     python3
@@ -28,12 +32,7 @@ buildGoModule (finalAttrs: {
     coreutils
   ];
 
-  postConfigure = ''
-    # There are tests that set the shell to various paths
-    substituteInPlace cron/cron_test.go --replace /bin/sh ${bash}/bin/sh
-    substituteInPlace cron/cron_test.go --replace /bin/false ${coreutils}/bin/false
-  '';
-
+  excludedPackages = [ "cronexpr/cronexpr" ];
   ldflags = [ "-X main.Version=${finalAttrs.version}" ];
 
   meta = {

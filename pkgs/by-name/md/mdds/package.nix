@@ -19,9 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
-
   nativeCheckInputs = [ boost ];
 
   postInstall = ''
@@ -30,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://gitlab.com/mdds/mdds";
     description = "Collection of multi-dimensional data structure and indexing algorithms";
+    homepage = "https://gitlab.com/mdds/mdds";
     changelog = "https://gitlab.com/mdds/mdds/-/blob/${finalAttrs.version}/CHANGELOG";
     license = lib.licenses.mit;
     maintainers = [ ];

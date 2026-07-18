@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   coloredlogs,
-  fetchFromGitHub,
   jsonschema,
   pytest-asyncio,
   pytest-mock,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "zigpy-znp";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zigpy";
@@ -34,15 +33,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'dynamic = ["version"]' 'version = "${finalAttrs.version}"'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    coloredlogs
-    jsonschema
-    voluptuous
-    zigpy
-  ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-mock
@@ -52,7 +42,14 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pytestFlags = [ "--reruns=3" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    coloredlogs
+    jsonschema
+    voluptuous
+    zigpy
+  ];
 
   disabledTests = [
     # broken by https://github.com/zigpy/zigpy/pull/1635
@@ -60,6 +57,8 @@ buildPythonPackage (finalAttrs: {
     "test_request_concurrency"
   ];
 
+  pyproject = true;
+  pytestFlags = [ "--reruns=3" ];
   pythonImportsCheck = [ "zigpy_znp" ];
 
   meta = {

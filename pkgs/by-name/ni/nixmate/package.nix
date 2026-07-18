@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -17,21 +17,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-87Q64EURBJJjW49sTB/qQB8dCZDq1PGyqI4fKYwR8yI=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "All your NixOS tools in one TUI — generations, rebuilds, services, errors, and more";
     homepage = "https://github.com/daskladas/nixmate";
     changelog = "https://github.com/daskladas/nixmate/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       daskladas
     ];
+
     mainProgram = "nixmate";
   };
 })

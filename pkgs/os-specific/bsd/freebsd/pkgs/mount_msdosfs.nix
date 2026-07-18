@@ -1,12 +1,11 @@
 {
   lib,
-  mkDerivation,
   libkiconv,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/mount_msdosfs";
-  extraPaths = [ "sbin/mount" ];
   buildInputs = [ libkiconv ];
-
+  extraPaths = [ "sbin/mount" ];
+  path = "sbin/mount_msdosfs";
   meta.platforms = lib.platforms.freebsd;
 }

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
+  copyDesktopItems,
   jre,
   makeBinaryWrapper,
-  copyDesktopItems,
   makeDesktopItem,
 }:
 
 let
   desktopicon = fetchurl {
+    hash = "sha256-KCsXt1dnBNUEBKvusp5JpKOSH7u9gSwaUvvTMDKkg8Q=";
     name = "netlogo.png";
     url = "https://netlogoweb.org/assets/images/desktopicon.png";
-    hash = "sha256-KCsXt1dnBNUEBKvusp5JpKOSH7u9gSwaUvvTMDKkg8Q=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -29,17 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     copyDesktopItems
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "netlogo";
-      exec = "netlogo";
-      icon = "netlogo";
-      comment = "A multi-agent programmable modeling environment";
-      desktopName = "NetLogo";
-      categories = [ "Science" ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -54,17 +43,30 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Science" ];
+      comment = "A multi-agent programmable modeling environment";
+      desktopName = "NetLogo";
+      exec = "netlogo";
+      icon = "netlogo";
+      name = "netlogo";
+    })
+  ];
+
   meta = {
     description = "Multi-agent programmable modeling environment";
-    mainProgram = "netlogo";
+
     longDescription = ''
       NetLogo is a multi-agent programmable modeling environment. It is used by
       many tens of thousands of students, teachers and researchers worldwide.
     '';
+
     homepage = "https://ccl.northwestern.edu/netlogo/index.shtml";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl2;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.dpaetzel ];
     platforms = lib.platforms.linux;
+    mainProgram = "netlogo";
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   brotlipy,
   buildPythonPackage,
-  fetchFromGitHub,
   yarl,
 }:
 
 buildPythonPackage rec {
   pname = "garminconnect-aio";
   version = "0.1.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "cyberjunky";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "garminconnect_aio" ];
 
   meta = {

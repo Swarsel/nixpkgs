@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-  pytestCheckHook,
-  pytest-benchmark,
+  buildPythonPackage,
   nix-update-script,
+  pytest-benchmark,
+  pytestCheckHook,
+  rustPlatform,
 }:
 let
   pname = "fastcrc";
@@ -20,32 +20,30 @@ let
 in
 buildPythonPackage {
   inherit pname version src;
-  pyproject = true;
 
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
   ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-dWxQuWV3w1UM8yvLG/9SrJQxSSyWTXV0FWFDKjIHBf0=";
-  };
-
-  pythonImportsCheck = [ "fastcrc" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-benchmark
   ];
-
-  pytestFlags = [ "--benchmark-disable" ];
 
   # Python source files interfere with testing
   preCheck = ''
     rm -r fastcrc
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-dWxQuWV3w1UM8yvLG/9SrJQxSSyWTXV0FWFDKjIHBf0=";
+  };
+
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
+  pythonImportsCheck = [ "fastcrc" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

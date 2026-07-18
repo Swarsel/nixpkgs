@@ -1,61 +1,39 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # optional dependencies
   asgiref,
   blinker,
+  buildPythonPackage,
   django,
-  fastapi,
-  flask,
-  sanic,
-
   # tests
   django-redis,
-  pytest-django,
-  httpx,
   fakeredis,
+  fastapi,
+  flask,
+  httpx,
   jsonschema,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytest-django,
   pytest-mock,
+  pytestCheckHook,
   redis,
   redisTestHook,
+  sanic,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "dockerflow";
   version = "2026.03.04";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mozilla-services";
     repo = "python-dockerflow";
     tag = version;
     hash = "sha256-cNf9qsoIJY5aRsQ82WZPmOrq2V6Siidp2B36JFTnMVw=";
-  };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  optional-dependencies = {
-    django = [ django ];
-    flask = [
-      blinker
-      flask
-    ];
-    sanic = [ sanic ];
-    fastapi = [
-      asgiref
-      fastapi
-    ];
   };
 
   nativeCheckInputs = [
@@ -76,9 +54,13 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  disabledTests = [
-    # AssertionError: assert 'c7a05e2b-8a21-4255-a3ed-92cea1e74a62' is None
-    "test_mozlog_without_correlation_id_middleware"
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=tests.django.settings
+  '';
+
+  build-system = [
+    setuptools
+    setuptools-scm
   ];
 
   disabledTestPaths = [
@@ -88,18 +70,37 @@ buildPythonPackage rec {
     "tests/sanic/test_sanic.py"
   ];
 
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=tests.django.settings
-  '';
+  disabledTests = [
+    # AssertionError: assert 'c7a05e2b-8a21-4255-a3ed-92cea1e74a62' is None
+    "test_mozlog_without_correlation_id_middleware"
+  ];
+
+  optional-dependencies = {
+    django = [ django ];
+
+    fastapi = [
+      asgiref
+      fastapi
+    ];
+
+    flask = [
+      blinker
+      flask
+    ];
+
+    sanic = [ sanic ];
+  };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "dockerflow"
   ];
 
   meta = {
-    changelog = "https://github.com/mozilla-services/python-dockerflow/releases/tag/${src.tag}";
     description = "Python package to implement tools and helpers for Mozilla Dockerflow";
     homepage = "https://github.com/mozilla-services/python-dockerflow";
+    changelog = "https://github.com/mozilla-services/python-dockerflow/releases/tag/${src.tag}";
     license = lib.licenses.mpl20;
   };
 }

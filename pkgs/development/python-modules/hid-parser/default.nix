@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
-  pytestCheckHook,
   hypothesis,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "hid-parser";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "usb-tools";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-8aGyLTsBK5etwbqFkNinbLHCt20fsQEmuBvu3RrwCDA=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [
     pytestCheckHook
     hypothesis
   ];
 
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "hid_parser" ];
 
   meta = {

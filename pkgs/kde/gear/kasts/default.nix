@@ -1,20 +1,21 @@
 {
-  mkKdeDerivation,
-  qtsvg,
-  qtmultimedia,
-  pkg-config,
-  taglib_1,
   libvlc,
+  mkKdeDerivation,
+  pkg-config,
+  qtmultimedia,
+  qtsvg,
+  taglib_1,
 }:
 mkKdeDerivation {
   pname = "kasts";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtsvg
     qtmultimedia
     taglib_1
     libvlc
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
   meta.mainProgram = "kasts";
 }

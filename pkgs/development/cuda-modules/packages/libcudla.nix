@@ -1,11 +1,10 @@
 {
+  lib,
   backendStdenv,
   buildRedist,
   cudaOlder,
-  lib,
 }:
 buildRedist {
-  redistName = "cuda";
   pname = "libcudla";
 
   outputs = [
@@ -26,8 +25,10 @@ buildRedist {
 
   platformAssertions = [
     {
-      message = "Only Xavier (7.2) and Orin (8.7) Jetson devices are supported";
       assertion = lib.subtractLists [ "7.2" "8.7" ] backendStdenv.cudaCapabilities == [ ];
+      message = "Only Xavier (7.2) and Orin (8.7) Jetson devices are supported";
     }
   ];
+
+  redistName = "cuda";
 }

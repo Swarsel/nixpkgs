@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  pkg-config,
+  glib,
+  gusb,
   libfprint,
   libfprint-tod,
-  gusb,
-  udev,
+  meson,
+  ninja,
   nss,
   openssl,
-  meson,
   pixman,
-  ninja,
-  glib,
+  pkg-config,
+  udev,
 }:
 stdenv.mkDerivation {
   pname = "libfprint-2-tod1-vfs0090";
   version = "0.8.5";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "3v1n0";
     repo = "libfprint-tod-vfs0090";
     rev = "6084a1545589beec0c741200b18b0902cca225ba";
     sha256 = "sha256-tSML/8USd/LuHF/YGLvNgykixF6VYtfE4SXzeV47840=";
+    domain = "gitlab.freedesktop.org";
   };
 
   patches = [
@@ -38,6 +38,7 @@ stdenv.mkDerivation {
     meson
     ninja
   ];
+
   buildInputs = [
     libfprint
     libfprint-tod
@@ -64,8 +65,8 @@ stdenv.mkDerivation {
     description = "Libfprint-2-tod Touch OEM Driver for 2016 ThinkPad's fingerprint readers";
     homepage = "https://gitlab.freedesktop.org/3v1n0/libfprint-tod-vfs0090";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ valodim ];
+    platforms = lib.platforms.linux;
     # Does not compile against libfprint-tod, hasn't seen any maintenance
     # since 2020.
     broken = true;

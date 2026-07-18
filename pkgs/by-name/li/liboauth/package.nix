@@ -1,9 +1,9 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  nss,
+  fetchurl,
   nspr,
+  nss,
   pkg-config,
 }:
 
@@ -36,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    platforms = lib.platforms.all;
     description = "C library implementing the OAuth secure authentication protocol";
     homepage = "http://liboauth.sourceforge.net/";
     license = lib.licenses.mit;
+    platforms = lib.platforms.all;
   };
 
 })

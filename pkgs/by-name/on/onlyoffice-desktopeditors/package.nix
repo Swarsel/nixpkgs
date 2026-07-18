@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  buildFHSEnv,
   # Alphabetic ordering below
   alsa-lib,
   at-spi2-atk,
   atk,
   autoPatchelfHook,
+  buildFHSEnv,
   cairo,
   curl,
   dbus,
@@ -22,12 +22,24 @@
   gst_all_1,
   gtk2,
   gtk3,
+  libdrm,
+  libgbm,
   libnotify,
   libpulseaudio,
   libudev0-shim,
-  libdrm,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxtst,
   makeWrapper,
-  libgbm,
   noto-fonts-cjk-sans,
   nspr,
   nss,
@@ -35,18 +47,6 @@
   qt5,
   wrapGAppsHook3,
   xkeyboard_config,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxcb,
 }:
 let
 
@@ -79,7 +79,7 @@ let
   derivation = stdenv.mkDerivation rec {
     pname = "onlyoffice-desktopeditors";
     version = "9.1.0";
-    minor = null;
+
     src = fetchurl {
       url = "https://github.com/ONLYOFFICE/DesktopEditors/releases/download/v${version}/onlyoffice-desktopeditors_amd64.deb";
       hash = "sha256-D36E7hYCTJ9Lw9XnB8nxMGMJDJRhM+K+bviuM9uuzhk=";
@@ -131,8 +131,6 @@ let
       libxtst
     ];
 
-    dontWrapQtApps = true;
-
     installPhase = ''
       runHook preInstall
 
@@ -166,6 +164,9 @@ let
         # the bundled version of qt does not support wayland
       )
     '';
+
+    dontWrapQtApps = true;
+    minor = null;
   };
 
 in
@@ -176,14 +177,6 @@ in
 buildFHSEnv {
   inherit (derivation) pname version;
 
-  targetPkgs = pkgs': [
-    curl
-    derivation
-    noto-fonts-cjk-sans
-  ];
-
-  runScript = "/bin/onlyoffice-desktopeditors";
-
   extraInstallCommands = ''
     mkdir -p $out/share
     ln -s ${derivation}/share/icons $out/share
@@ -192,19 +185,29 @@ buildFHSEnv {
         --replace-fail "/usr/bin/onlyoffice-desktopeditors" "$out/bin/onlyoffice-desktopeditors"
   '';
 
+  runScript = "/bin/onlyoffice-desktopeditors";
+
+  targetPkgs = pkgs': [
+    curl
+    derivation
+    noto-fonts-cjk-sans
+  ];
+
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Office suite that combines text, spreadsheet and presentation editors allowing to create, view and edit local documents";
     homepage = "https://www.onlyoffice.com/";
-    downloadPage = "https://github.com/ONLYOFFICE/DesktopEditors/releases";
     changelog = "https://github.com/ONLYOFFICE/DesktopEditors/blob/master/CHANGELOG.md";
-    platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.agpl3Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       nh2
       gtrunsec
     ];
+
+    platforms = [ "x86_64-linux" ];
+    downloadPage = "https://github.com/ONLYOFFICE/DesktopEditors/releases";
   };
 }

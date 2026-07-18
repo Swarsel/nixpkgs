@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docutils,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "python-toolbox";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cool-RR";
@@ -19,12 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-DzrA1c3rAo/8DnYo0DE7Kft0uCBqEwdAaUDjg4K2Mn4=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     docutils
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # file imports 'dummy_threading', which was deprecated since py37
@@ -36,6 +35,8 @@ buildPythonPackage rec {
     # AssertionError
     "test_repr"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Tools for testing PySnooper";

@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pythonAtLeast,
   numpy,
+  pythonAtLeast,
 }:
 let
   pname = "paddle-bfloat";
@@ -11,12 +11,11 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "paddle_bfloat";
     inherit version;
     hash = "sha256-mrjQCtLsXOvqeHHMjuMx65FvMfZ2+wTh1ao9ZJE+9xw=";
+    pname = "paddle_bfloat";
   };
 
   postPatch = ''
@@ -26,14 +25,12 @@ buildPythonPackage {
       --replace "Py_TYPE(&NPyBfloat16_Descr) = &PyArrayDescr_Type" "Py_SET_TYPE(&NPyBfloat16_Descr, &PyArrayDescr_Type)"
   '';
 
-  disabled = pythonAtLeast "3.12";
-
   propagatedBuildInputs = [ numpy ];
-
-  pythonImportsCheck = [ "paddle_bfloat" ];
-
   # upstream has no tests
   doCheck = false;
+  disabled = pythonAtLeast "3.12";
+  format = "setuptools";
+  pythonImportsCheck = [ "paddle_bfloat" ];
 
   meta = {
     description = "Paddle numpy bfloat16 package";

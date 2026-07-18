@@ -1,8 +1,8 @@
 {
-  stdenv,
-  cmake,
   lib,
+  stdenv,
   fetchFromGitLab,
+  cmake,
   qt6,
 }:
 
@@ -22,6 +22,7 @@ stdenv.mkDerivation rec {
     qt6.qttools
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     qt6.qtmultimedia
     qt6.qtwayland
@@ -29,10 +30,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Learn and train typing with the ten-finger system";
-    mainProgram = "tipp10";
     homepage = "https://gitlab.com/tipp10/tipp10";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ sigmanificient ];
     platforms = lib.platforms.all;
+    mainProgram = "tipp10";
   };
 }

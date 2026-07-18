@@ -1,9 +1,9 @@
 {
   lib,
   fetchCrate,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,19 +16,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-2uYNwKjD0vX+C2Sj2epyTqe4sMqPa7cwVwoUHs3vtQE=";
-
-  passthru.updateScript = nix-update-script { };
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI tool for building changelogs from fragments";
     homepage = "https://github.com/nekitdev/changelogging";
     changelog = "https://github.com/nekitdev/changelogging/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.all;
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.nekitdev ];
+    platforms = lib.platforms.all;
     mainProgram = "changelogging";
   };
 })

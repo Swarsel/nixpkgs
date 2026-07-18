@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  makeWrapper,
   coreutils,
   findutils,
   gnugrep,
   jre,
+  libGL,
+  libpulseaudio,
+  makeWrapper,
+  nix-update-script,
   openssl,
   util-linux,
   wget,
   which,
   zenity,
-  libGL,
-  libpulseaudio,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,13 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  installFlags = [
-    "PREFIX=${placeholder "out"}"
-
-    # BINDIR defaults to $(PREFIX)/games
-    "BINDIR=${placeholder "out"}/bin"
-  ];
 
   postFixup = ''
     wrapProgram "$out/bin/pokemmo-installer" \
@@ -59,6 +52,13 @@ stdenv.mkDerivation (finalAttrs: {
         ]
       }
   '';
+
+  installFlags = [
+    "PREFIX=${placeholder "out"}"
+
+    # BINDIR defaults to $(PREFIX)/games
+    "BINDIR=${placeholder "out"}/bin"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

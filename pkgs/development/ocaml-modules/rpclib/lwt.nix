@@ -1,27 +1,28 @@
 {
-  buildDunePackage,
-  rpclib,
-  lwt,
   alcotest-lwt,
+  buildDunePackage,
+  lwt,
   ppx_deriving_rpc,
+  rpclib,
   yojson,
 }:
 
 buildDunePackage {
-  pname = "rpclib-lwt";
   inherit (rpclib) version src;
+  pname = "rpclib-lwt";
 
   propagatedBuildInputs = [
     lwt
     rpclib
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest-lwt
     ppx_deriving_rpc
     yojson
   ];
-  doCheck = true;
 
   meta = rpclib.meta // {
     description = "Library to deal with RPCs in OCaml - Lwt interface";

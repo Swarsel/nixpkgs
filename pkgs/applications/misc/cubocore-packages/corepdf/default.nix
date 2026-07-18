@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  kdePackages,
   cmake,
-  ninja,
-  pkg-config,
+  kdePackages,
   libcprime,
   libcsys,
+  ninja,
+  pkg-config,
   qdocumentview,
 }:
 
@@ -40,10 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "PDF viewer from the C Suite";
-    mainProgram = "corepdf";
     homepage = "https://gitlab.com/cubocore/coreapps/corepdf";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "corepdf";
   };
 })

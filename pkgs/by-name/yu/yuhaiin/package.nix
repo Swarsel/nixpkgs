@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -18,7 +18,9 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-FSm/oG0XkTqx93DrtVKoJAmIlkHNXEG20IanXuMxBgw=";
 
-  subPackages = [ "cmd/yuhaiin" ];
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags =
     let
@@ -36,9 +38,7 @@ buildGoModule (finalAttrs: {
       "-X ${module}/version.BuildDate=unknown"
     ];
 
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
+  subPackages = [ "cmd/yuhaiin" ];
 
   meta = {
     description = "Proxy kit for Linux/Windows/MacOS";

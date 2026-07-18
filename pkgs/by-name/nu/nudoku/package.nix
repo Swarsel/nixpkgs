@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   autoreconfHook,
-  pkg-config,
+  fetchpatch2,
   gettext,
   ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/jubalh/nudoku/commit/c5fd9156d2d1f2c95a5d87b07adeaee90a7f911d.patch?full_index=1";
       hash = "sha256-nvLKAUCDY3fQWjybVX8DaMBdk5CaegRRb/ENTI9kJ9k=";
+      url = "https://github.com/jubalh/nudoku/commit/c5fd9156d2d1f2c95a5d87b07adeaee90a7f911d.patch?full_index=1";
     })
   ];
 
@@ -32,15 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     gettext
   ];
+
   buildInputs = [ ncurses ];
 
   meta = {
     description = "Ncurses based sudoku game";
-    mainProgram = "nudoku";
     homepage = "https://jubalh.github.io/nudoku";
     license = lib.licenses.gpl3Only;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ weathercold ];
+    platforms = lib.platforms.all;
+    mainProgram = "nudoku";
   };
 })

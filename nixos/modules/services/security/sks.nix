@@ -13,11 +13,6 @@ let
 
 in
 {
-  meta.maintainers = with lib.maintainers; [
-    calbrecht
-    jcumming
-  ];
-
   options = {
 
     services.sks = {
@@ -30,9 +25,8 @@ in
       package = lib.mkPackageOption pkgs "sks" { };
 
       dataDir = lib.mkOption {
-        type = lib.types.path;
         default = "/var/db/sks";
-        example = "/var/lib/sks";
+
         # TODO: The default might change to "/var/lib/sks" as this is more
         # common. There's also https://github.com/NixOS/nixpkgs/issues/26256
         # and "/var/db" is not FHS compliant (seems to come from BSD).
@@ -41,11 +35,14 @@ in
           configuration files are located (e.g. KDB, PTree, membership and
           sksconf).
         '';
+
+        example = "/var/lib/sks";
+        type = lib.types.path;
       };
 
       extraDbConfig = lib.mkOption {
-        type = lib.types.str;
         default = "";
+
         description = ''
           Set contents of the files "KDB/DB_CONFIG" and "PTree/DB_CONFIG" within
           the ''${dataDir} directory. This is used to configure options for the
@@ -55,6 +52,8 @@ in
           "sampleConfig/DB_CONFIG" in the following repository:
           https://bitbucket.org/skskeyserver/sks-keyserver/src
         '';
+
+        type = lib.types.str;
       };
 
       hkpAddress = lib.mkOption {
@@ -62,23 +61,25 @@ in
           "127.0.0.1"
           "::1"
         ];
-        type = lib.types.listOf lib.types.str;
+
         description = ''
           Domain names, IPv4 and/or IPv6 addresses to listen on for HKP
           requests.
         '';
+
+        type = lib.types.listOf lib.types.str;
       };
 
       hkpPort = lib.mkOption {
         default = 11371;
-        type = lib.types.ints.u16;
         description = "HKP port to listen on.";
+        type = lib.types.ints.u16;
       };
 
       webroot = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = "${sksPkg.webSamples}/OpenPKG";
         defaultText = lib.literalExpression ''"''${package.webSamples}/OpenPKG"'';
+
         description = ''
           Source directory (will be symlinked, if not null) for the files the
           built-in webserver should serve. SKS (''${pkgs.sks.webSamples})
@@ -89,27 +90,13 @@ in
           anything other than alphanumeric characters and the '.' character
           will be ignored.
         '';
+
+        type = lib.types.nullOr lib.types.path;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-
-    users = {
-      users.sks = {
-        isSystemUser = true;
-        description = "SKS user";
-        home = cfg.dataDir;
-        createHome = true;
-        group = "sks";
-        useDefaultShell = true;
-        packages = [
-          sksPkg
-          pkgs.db
-        ];
-      };
-      groups.sks = { };
-    };
 
     systemd.services =
       let
@@ -118,10 +105,10 @@ in
       in
       {
         sks-db = {
+          after = [ "network.target" ];
           description = "SKS database server";
           documentation = [ "man:sks(8)" ];
-          after = [ "network.target" ];
-          wantedBy = [ "multi-user.target" ];
+
           preStart = ''
             ${lib.optionalString (cfg.webroot != null) "ln -sfT \"${cfg.webroot}\" web"}
             mkdir -p dump
@@ -142,14 +129,41 @@ in
               ln -sf ${dbConfig} $CONFIG_FILE
             done
           '';
+
           serviceConfig = {
-            WorkingDirectory = "~";
-            User = "sks";
+            ExecStart = "${sksPkg}/bin/sks db -hkp_address ${hkpAddress} -hkp_port ${hkpPort}";
             Group = "sks";
             Restart = "always";
-            ExecStart = "${sksPkg}/bin/sks db -hkp_address ${hkpAddress} -hkp_port ${hkpPort}";
+            User = "sks";
+            WorkingDirectory = "~";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
       };
+
+    users = {
+      groups.sks = { };
+
+      users.sks = {
+        createHome = true;
+        description = "SKS user";
+        group = "sks";
+        home = cfg.dataDir;
+        isSystemUser = true;
+
+        packages = [
+          sksPkg
+          pkgs.db
+        ];
+
+        useDefaultShell = true;
+      };
+    };
   };
+
+  meta.maintainers = with lib.maintainers; [
+    calbrecht
+    jcumming
+  ];
 }

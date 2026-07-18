@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  gcc_meta,
-  release_version,
-  version,
-  getVersionFile,
-  monorepoSrc ? null,
-  fetchpatch,
   autoreconfHook269,
-  runCommand,
+  fetchpatch,
+  gcc_meta,
+  getVersionFile,
   gettext,
+  release_version,
+  runCommand,
+  version,
+  monorepoSrc ? null,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libstdcxx";
   inherit version;
+  pname = "libstdcxx";
 
   src = runCommand "libstdcxx-src-${version}" { src = monorepoSrc; } ''
     runPhase unpackPhase
@@ -53,43 +53,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      name = "custom-threading-model.patch";
-      url = "https://github.com/gcc-mirror/gcc/commit/e5d853bbe9b05d6a00d98ad236f01937303e40c4.diff";
       hash = "sha256-f0XAim3uzHnUx5lm/xO00IqBHu4YUEHF2WY+c0yCF6Y=";
+
       includes = [
         "config/*"
         "libstdc++-v3/acinclude.m4"
       ];
+
+      name = "custom-threading-model.patch";
+      url = "https://github.com/gcc-mirror/gcc/commit/e5d853bbe9b05d6a00d98ad236f01937303e40c4.diff";
     })
     (getVersionFile "libstdcxx/force-regular-dirs.patch")
   ];
 
-  postUnpack = ''
-    mkdir -p ./build
-    buildRoot=$(readlink -e "./build")
-  '';
-
-  preAutoreconf = ''
-    sourceRoot=$(readlink -e "./libstdc++-v3")
-    cd $sourceRoot
-  '';
-
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     autoreconfHook269
     gettext
-  ];
-
-  preConfigure = ''
-    cd "$buildRoot"
-    configureScript=$sourceRoot/configure
-    chmod +x "$configureScript"
-  '';
-
-  configurePlatforms = [
-    "build"
-    "host"
   ];
 
   configureFlags = [
@@ -105,23 +84,46 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-default-libstdcxx-abi=new"
   ];
 
-  hardeningDisable = [
-    # PATH_MAX
-    "fortify"
-  ];
+  preConfigure = ''
+    cd "$buildRoot"
+    configureScript=$sourceRoot/configure
+    chmod +x "$configureScript"
+  '';
+
+  doCheck = true;
 
   postInstall = ''
     moveToOutput lib/libstdc++.modules.json "$dev"
   '';
 
-  doCheck = true;
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
+  enableParallelBuilding = true;
+
+  hardeningDisable = [
+    # PATH_MAX
+    "fortify"
+  ];
+
+  postUnpack = ''
+    mkdir -p ./build
+    buildRoot=$(readlink -e "./build")
+  '';
+
+  preAutoreconf = ''
+    sourceRoot=$(readlink -e "./libstdc++-v3")
+    cd $sourceRoot
+  '';
 
   passthru = {
     isGNU = true;
   };
 
   meta = gcc_meta // {
-    homepage = "https://gcc.gnu.org/onlinedocs/libstdc++";
     description = "GNU C++ Library";
+    homepage = "https://gcc.gnu.org/onlinedocs/libstdc++";
   };
 })

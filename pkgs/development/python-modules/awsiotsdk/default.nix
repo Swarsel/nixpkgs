@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   awscrt,
   boto3,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "awsiotsdk";
   version = "1.30.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -25,23 +24,22 @@ buildPythonPackage (finalAttrs: {
       --replace-fail  "__version__ = '1.0.0-dev'" "__version__ = '${finalAttrs.version}'"
   '';
 
-  pythonRelaxDeps = [ "awscrt" ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [ awscrt ];
-
   nativeCheckInputs = [
     boto3
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ awscrt ];
 
   disabledTestPaths = [
     # Those tests require a custom loader
     "servicetests/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "awsiot" ];
+  pythonRelaxDeps = [ "awscrt" ];
 
   meta = {
     description = "Next generation AWS IoT Client SDK for Python using the AWS Common Runtime";

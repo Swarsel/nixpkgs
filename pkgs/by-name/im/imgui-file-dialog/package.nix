@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   imgui,
   nix-update-script,
 }:
@@ -18,18 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-v5ROW4o4of3tUGMN/p/CNH1eWT+RNRlWvhI84HUMEGo=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  buildInputs = [ imgui ];
-
-  # Propagate imgui so users can find the headers (ImGuiFileDialog.h includes imgui.h)
-  propagatedBuildInputs = [ imgui ];
-
   outputs = [
     "out"
     "dev"
   ];
 
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ imgui ];
+  # Propagate imgui so users can find the headers (ImGuiFileDialog.h includes imgui.h)
+  propagatedBuildInputs = [ imgui ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

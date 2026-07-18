@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "rfc8785";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "trailofbits";
@@ -18,14 +17,15 @@ buildPythonPackage rec {
     hash = "sha256-0Gze3voFXEhf13DuTuBWDbYPmqHXs0FSRn2NprFWoB8=";
   };
 
-  build-system = [
-    flit-core
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
+  build-system = [
+    flit-core
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "rfc8785" ];
 
   meta = {

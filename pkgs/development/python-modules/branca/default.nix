@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jinja2,
   pytestCheckHook,
-  setuptools-scm,
   selenium,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "branca";
   version = "0.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-visualization";
@@ -25,16 +24,13 @@ buildPythonPackage rec {
     rm setup.cfg
   '';
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ jinja2 ];
-
   nativeCheckInputs = [
     pytestCheckHook
     selenium
   ];
 
-  pythonImportsCheck = [ "branca" ];
+  build-system = [ setuptools-scm ];
+  dependencies = [ jinja2 ];
 
   disabledTestPaths = [
     # Some tests require a browser
@@ -46,6 +42,9 @@ buildPythonPackage rec {
     "test_rendering_utf8_iframe"
     "test_rendering_figure_notebook"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "branca" ];
 
   meta = {
     description = "Generate complex HTML+JS pages with Python";

@@ -8,6 +8,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "zita-alsa-pcmi";
   version = "0.6.1";
+
   src = fetchurl {
     url = "https://kokkinizita.linuxaudio.org/linuxaudio/downloads/zita-alsa-pcmi-${finalAttrs.version}.tar.bz2";
     sha256 = "sha256-iil6zj16R0Ex7T+jIQacExM3eFtWojfW8WjIXueW1Ww=";
@@ -60,10 +61,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Successor of clalsadrv, provides easy access to ALSA PCM devices";
-    version = finalAttrs.version;
     homepage = "http://kokkinizita.linuxaudio.org/linuxaudio/downloads/index.html";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
+    version = finalAttrs.version;
   };
 })

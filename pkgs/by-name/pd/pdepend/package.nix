@@ -1,7 +1,7 @@
 {
-  php,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  php,
   versionCheckHook,
 }:
 
@@ -16,23 +16,24 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-2Ruubcm9IWZYu2LGeGeKm1tmHca0P5xlKYkuBCCV9ag=";
   };
 
-  composerLock = ./composer.lock;
   vendorHash = "sha256-IowPh4CymahgfbnvLS2QWu8e+TXya9AszTK+mlR/DTY=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  composerLock = ./composer.lock;
 
   meta = {
-    changelog = "https://github.com/pdepend/pdepend/releases/tag/${finalAttrs.version}";
     description = "Adaptation of JDepend for PHP";
-    homepage = "https://github.com/pdepend/pdepend";
-    license = lib.licenses.bsd3;
+
     longDescription = "
       PHP Depend is an adaptation of the established Java
       development tool JDepend. This tool shows you the quality
       of your design in terms of extensibility, reusability and
       maintainability.
     ";
+
+    homepage = "https://github.com/pdepend/pdepend";
+    changelog = "https://github.com/pdepend/pdepend/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.bsd3;
     mainProgram = "pdepend";
     teams = [ lib.teams.php ];
   };

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  adwaita-icon-theme,
   gdk-pixbuf,
-  librsvg,
+  gnome-icon-theme,
   gtk-engine-murrine,
   gtk3,
-  adwaita-icon-theme,
-  gnome-icon-theme,
-  numix-icon-theme-circle,
   hicolor-icon-theme,
+  librsvg,
+  numix-icon-theme-circle,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,13 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
-  dontDropIconThemeCache = true;
-  dontWrapQtApps = true;
-
   installPhase = ''
     patchShebangs .
     mkdir -p $out/share/themes
@@ -57,11 +50,18 @@ stdenv.mkDerivation (finalAttrs: {
     gtk-update-icon-cache $out/share/icons/Canta
   '';
 
+  dontDropIconThemeCache = true;
+  dontWrapQtApps = true;
+
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   meta = {
     description = "Flat Design theme for GTK based desktop environments";
     homepage = "https://github.com/vinceliuice/Canta-theme";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux; # numix-icon-theme-circle unavailable in darwin
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux; # numix-icon-theme-circle unavailable in darwin
   };
 })

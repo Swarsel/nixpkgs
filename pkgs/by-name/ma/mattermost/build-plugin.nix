@@ -1,40 +1,35 @@
 {
   lib,
   stdenv,
-  mattermost,
-  nodejs,
-  writeShellScriptBin,
   buildGoModule,
+  fetchNpmDeps,
   golangci-lint,
   gotestsum,
-  fetchNpmDeps,
-  npmHooks,
+  mattermost,
+  nodejs,
   npm-lockfile-fix,
+  npmHooks,
+  writeShellScriptBin,
 }:
 
 {
   # The name of the plugin.
   pname,
-  # The plugin version.
-  version,
   # The plugin source.
   src,
-
+  # The plugin version.
+  version,
+  # True to build the webapp.
+  buildWebapp ? true,
+  # Any extra attributes to pass to buildGoModule.
+  extraGoModuleAttrs ? { },
   # True to ignore golangci-lint warnings. By default set to true
   # since plugins warn about the Mattermost interface but build fine.
   ignoreGoLintWarnings ? true,
-
-  # The hash of the gomod vendor directory.
-  vendorHash ? lib.fakeHash,
-
-  # True to build the webapp.
-  buildWebapp ? true,
-
   # The npm dependency hash.
   npmDepsHash ? lib.fakeHash,
-
-  # Any extra attributes to pass to buildGoModule.
-  extraGoModuleAttrs ? { },
+  # The hash of the gomod vendor directory.
+  vendorHash ? lib.fakeHash,
 }:
 
 let
@@ -67,46 +62,7 @@ let
 in
 buildGoModule (
   rec {
-    name = "${pname}-${version}.tar.gz";
     inherit version src vendorHash;
-
-    npmDeps =
-      if buildWebapp then
-        fetchNpmDeps {
-          src = "${src}/webapp";
-          hash = npmDepsHash;
-          forceGitDeps = true;
-          postFetch = ''
-            ${lib.getExe npm-lockfile-fix} package-lock.json
-          '';
-        }
-      else
-        null;
-
-    makeCacheWritable = true;
-    forceGitDeps = true;
-
-    overrideModAttrs = final: {
-      preBuild = ''
-        go mod tidy
-      '';
-
-      # Adding the npm config hook here breaks things, and isn't even needed.
-      nativeBuildInputs = lib.lists.remove npmHooks.npmConfigHook final.nativeBuildInputs;
-    };
-
-    prePatch = lib.optionalString buildWebapp ''
-      # Move important node.js files up a level and symlink the originals so the setup hook finds them
-      for file in package.json package-lock.json node_modules; do
-        if [ -f "webapp/$file" ]; then
-          mv "webapp/$file" .
-        fi
-        (cd webapp && ln -vsf "../$file")
-      done
-
-      # Don't allow Go installation in the sandbox, but also don't fail
-      substituteInPlace Makefile --replace-warn '$(GO) install' '@echo $(GO) install'
-    '';
 
     nativeBuildInputs = [
       fakeGit
@@ -147,6 +103,46 @@ buildGoModule (
         exit 1
       fi
       cp -av "$plugin" $out
+    '';
+
+    forceGitDeps = true;
+    makeCacheWritable = true;
+    name = "${pname}-${version}.tar.gz";
+
+    npmDeps =
+      if buildWebapp then
+        fetchNpmDeps {
+          src = "${src}/webapp";
+          forceGitDeps = true;
+          hash = npmDepsHash;
+
+          postFetch = ''
+            ${lib.getExe npm-lockfile-fix} package-lock.json
+          '';
+        }
+      else
+        null;
+
+    overrideModAttrs = final: {
+      # Adding the npm config hook here breaks things, and isn't even needed.
+      nativeBuildInputs = lib.lists.remove npmHooks.npmConfigHook final.nativeBuildInputs;
+
+      preBuild = ''
+        go mod tidy
+      '';
+    };
+
+    prePatch = lib.optionalString buildWebapp ''
+      # Move important node.js files up a level and symlink the originals so the setup hook finds them
+      for file in package.json package-lock.json node_modules; do
+        if [ -f "webapp/$file" ]; then
+          mv "webapp/$file" .
+        fi
+        (cd webapp && ln -vsf "../$file")
+      done
+
+      # Don't allow Go installation in the sandbox, but also don't fail
+      substituteInPlace Makefile --replace-warn '$(GO) install' '@echo $(GO) install'
     '';
   }
   // extraGoModuleAttrs

@@ -1,20 +1,16 @@
 {
   lib,
+  buildPackages,
   clang,
   mkAppleDerivation,
-  buildPackages,
   shell_cmds,
 }:
 
 mkAppleDerivation {
-  releaseName = "developer_cmds";
-
   outputs = [
     "out"
     "man"
   ];
-
-  xcodeHash = "sha256-25SDn9+SzEZJPQQJaDxsxWKeUetNHhzliLfzD9BtyyI=";
 
   postPatch = ''
     substituteInPlace rpcgen/rpc_main.c \
@@ -25,8 +21,12 @@ mkAppleDerivation {
     HOST_PATH='${lib.getBin shell_cmds}/bin' patchShebangs --host "$out/bin"
   '';
 
+  releaseName = "developer_cmds";
+  xcodeHash = "sha256-25SDn9+SzEZJPQQJaDxsxWKeUetNHhzliLfzD9BtyyI=";
+
   meta = {
     description = "Developer commands for Darwin";
+
     license = [
       lib.licenses.bsd3
       lib.licenses.bsdOriginal

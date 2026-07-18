@@ -7,13 +7,13 @@
 buildPythonPackage rec {
   pname = "pip-install-test";
   version = "0.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-wzxGztmGW1mWPoblSQGUdSC9tzv5GEnN27AAdCWYu2c=";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "pip_install_test" ];
 
   meta = {

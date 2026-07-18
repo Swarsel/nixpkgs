@@ -18,22 +18,24 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace entr.c --replace /bin/cat ${coreutils}/bin/cat
     substituteInPlace entr.1 --replace /bin/cat cat
   '';
-  dontAddPrefix = true;
-  doCheck = true;
-  checkTarget = "test";
-  installFlags = [ "PREFIX=$(out)" ];
 
   env.TARGET_OS = stdenv.hostPlatform.uname.system;
+  doCheck = true;
+  checkTarget = "test";
+  dontAddPrefix = true;
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://eradman.com/entrproject/";
     description = "Run arbitrary commands when files change";
+    homepage = "https://eradman.com/entrproject/";
     changelog = "https://github.com/eradman/entr/raw/${finalAttrs.version}/NEWS";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       pSub
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "entr";
   };
 })

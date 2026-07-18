@@ -1,27 +1,27 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  replaceVars,
+  fetchurl,
+  dbus,
+  docbook_xml_dtd_45,
+  docbook_xsl,
+  gettext,
+  glib,
+  gnome,
+  gnome-desktop,
+  gnome-session-ctl,
+  gnome-settings-daemon,
+  gnome-shell,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  libxslt,
   meson,
   ninja,
   pkg-config,
-  gnome,
-  gobject-introspection,
-  glib,
-  gsettings-desktop-schemas,
-  gnome-desktop,
-  gnome-settings-daemon,
-  gnome-shell,
-  dbus,
-  xmlto,
-  docbook_xsl,
-  docbook_xml_dtd_45,
-  libxslt,
-  gettext,
+  replaceVars,
   systemd,
-  gnome-session-ctl,
   wrapGAppsNoGuiHook,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,20 +29,30 @@ stdenv.mkDerivation (finalAttrs: {
   # Also bump ./ctl.nix when bumping major version.
   version = "50.1";
 
-  outputs = [
-    "out"
-    "sessions"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/gnome-session/${lib.versions.major finalAttrs.version}/gnome-session-${finalAttrs.version}.tar.xz";
     hash = "sha256-Yom2r6RNPkyZnOV2H/iywQujCfVflCXysT+YIIyB9vs=";
   };
 
+  outputs = [
+    "out"
+    "sessions"
+  ];
+
   patches = [
     # https://github.com/NixOS/nixpkgs/pull/48517
     ./nixos_set_environment_done.patch
   ];
+
+  postPatch = ''
+    # Use our provided `gnome-session-ctl`
+    original="@libexecdir@/gnome-session-ctl"
+    replacement="${gnome-session-ctl}/libexec/gnome-session-ctl"
+
+    find data/ -type f -name "*.service.in" -exec sed -i \
+      -e s,$original,$replacement,g \
+      {} +
+  '';
 
   nativeBuildInputs = [
     gobject-introspection.setupHook
@@ -66,16 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  postPatch = ''
-    # Use our provided `gnome-session-ctl`
-    original="@libexecdir@/gnome-session-ctl"
-    replacement="${gnome-session-ctl}/libexec/gnome-session-ctl"
-
-    find data/ -type f -name "*.service.in" -exec sed -i \
-      -e s,$original,$replacement,g \
-      {} +
-  '';
-
   # We move the GNOME sessions to another output since gnome-session is a dependency of
   # GDM itself. If we do not hide them, it will show broken GNOME sessions when GDM is
   # enabled without proper GNOME installation.
@@ -97,12 +97,13 @@ stdenv.mkDerivation (finalAttrs: {
   separateDebugInfo = true;
 
   passthru = {
-    updateScript = gnome.updateScript {
-      packageName = "gnome-session";
-    };
     providedSessions = [
       "gnome"
     ];
+
+    updateScript = gnome.updateScript {
+      packageName = "gnome-session";
+    };
   };
 
   meta = {
@@ -110,7 +111,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/gnome-session";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-session/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

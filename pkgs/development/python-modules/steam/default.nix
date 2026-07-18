@@ -1,23 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  six,
+  buildPythonPackage,
+  cachetools,
+  gevent,
+  gevent-eventemitter,
+  protobuf,
   pycryptodomex,
   requests,
+  setuptools,
+  six,
   urllib3,
   vdf,
-  gevent,
-  protobuf,
-  gevent-eventemitter,
-  cachetools,
-  setuptools,
 }:
 buildPythonPackage rec {
   pname = "steam";
   version = "1.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ValvePython";
@@ -40,11 +38,13 @@ buildPythonPackage rec {
     cachetools
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Python package for interacting with Steam";
     homepage = "https://github.com/ValvePython/steam";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ weirdrock ];
+    platforms = lib.platforms.linux;
   };
 }

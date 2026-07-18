@@ -1,31 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  gdal,
-
-  # build-system
-  cython,
-  setuptools,
-  versioneer,
-
+  buildPythonPackage,
   # dependencies
   certifi,
-  numpy,
-  packaging,
-
+  # build-system
+  cython,
   # tests
   fiona,
+  gdal,
+  numpy,
+  packaging,
   pandas,
   pytest-benchmark,
   pytestCheckHook,
+  setuptools,
+  versioneer,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyogrio";
   version = "0.13.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "geopandas";
@@ -41,25 +36,11 @@ buildPythonPackage (finalAttrs: {
         "versioneer[toml]"
   '';
 
-  build-system = [
-    cython
-    setuptools
-    versioneer
-  ];
-
   nativeBuildInputs = [
     gdal # for gdal-config
   ];
 
   buildInputs = [ gdal ];
-
-  dependencies = [
-    certifi
-    numpy
-    packaging
-  ];
-
-  pythonImportsCheck = [ "pyogrio" ];
 
   nativeCheckInputs = [
     fiona
@@ -72,9 +53,28 @@ buildPythonPackage (finalAttrs: {
     rm pyogrio/__init__.py
   '';
 
+  __structuredAttrs = true;
+
+  build-system = [
+    cython
+    setuptools
+    versioneer
+  ];
+
+  dependencies = [
+    certifi
+    numpy
+    packaging
+  ];
+
   disabledTestMarks = [
     # disable tests which require network access
     "network"
+  ];
+
+  disabledTestPaths = [
+    # NameError: name 'shapely' is not defined
+    "pyogrio/tests/test_geopandas_io.py"
   ];
 
   disabledTests = [
@@ -87,10 +87,8 @@ buildPythonPackage (finalAttrs: {
     "test_zip_path_dataframe"
   ];
 
-  disabledTestPaths = [
-    # NameError: name 'shapely' is not defined
-    "pyogrio/tests/test_geopandas_io.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "pyogrio" ];
 
   meta = {
     description = "Vectorized spatial vector file format I/O using GDAL/OGR";

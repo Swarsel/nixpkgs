@@ -1,25 +1,24 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-
-  setuptools,
-
-  six,
   requests,
-  beautifulsoup4,
+  setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "feedfinder2";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-NwHuAabIX4uGWgScMLoLRgiFjIA/6OMNHSif2+idDv4=";
   };
 
+  # no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +27,7 @@ buildPythonPackage rec {
     beautifulsoup4
   ];
 
-  # no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "feedfinder2" ];
 
   meta = {

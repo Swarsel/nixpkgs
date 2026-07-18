@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  gtk4-layer-shell,
+  gtkmm4,
   makeWrapper,
   pkg-config,
-  gtkmm4,
-  gtk4-layer-shell,
 }:
 stdenv.mkDerivation {
   pname = "syspower";
@@ -18,14 +18,14 @@ stdenv.mkDerivation {
     hash = "sha256-gLkjyhLA0QDG/89uTp32VEoOlTGaDjqZm1aLy+X36qw=";
   };
 
-  buildInputs = [
-    gtkmm4
-    gtk4-layer-shell
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     pkg-config
+  ];
+
+  buildInputs = [
+    gtkmm4
+    gtk4-layer-shell
   ];
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
@@ -39,7 +39,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/System64fumo/syspower";
     license = lib.licenses.wtfpl;
     maintainers = with lib.maintainers; [ justdeeevin ];
-    mainProgram = "syspower";
     platforms = lib.platforms.linux;
+    mainProgram = "syspower";
   };
 }

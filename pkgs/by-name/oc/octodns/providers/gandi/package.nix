@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   octodns,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "octodns-gandi";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "octodns";
@@ -20,6 +19,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-HUAWGJ4/v1YxaCskgIqh53M4nH9AlK9xHyGQhe5P6UE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [
     setuptools
@@ -30,12 +34,8 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "octodns_gandi" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
 
   meta = {
     description = "Gandi v5 API provider for octoDNS";

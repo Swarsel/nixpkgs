@@ -14,26 +14,25 @@ in
   options = {
     services.redsocks = {
       enable = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether to enable redsocks.";
+        type = types.bool;
       };
 
-      log_debug = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Log connection progress.";
-      };
+      chroot = mkOption {
+        default = null;
 
-      log_info = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Log start and end of client sessions.";
+        description = ''
+          Chroot under which to run redsocks. Log file is opened before
+          chroot, but if logging to syslog /etc/localtime may be required.
+        '';
+
+        type = with types; nullOr str;
       };
 
       log = mkOption {
-        type = types.str;
         default = "stderr";
+
         description = ''
           Where to send logs.
 
@@ -43,15 +42,20 @@ in
             - syslog:FACILITY where FACILITY is any of "daemon", "local0",
               etc.
         '';
+
+        type = types.str;
       };
 
-      chroot = mkOption {
-        type = with types; nullOr str;
-        default = null;
-        description = ''
-          Chroot under which to run redsocks. Log file is opened before
-          chroot, but if logging to syslog /etc/localtime may be required.
-        '';
+      log_debug = mkOption {
+        default = false;
+        description = "Log connection progress.";
+        type = types.bool;
+      };
+
+      log_info = mkOption {
+        default = false;
+        description = "Log start and end of client sessions.";
+        type = types.bool;
       };
 
       redsocks = mkOption {
@@ -61,82 +65,30 @@ in
           The example shows how to configure a proxy to handle port 80 as HTTP
           relay, and all other ports as HTTP connect.
         '';
+
         example = [
           {
+            doNotRedirect = [ "-d 1.2.0.0/16" ];
             port = 23456;
             proxy = "1.2.3.4:8080";
-            type = "http-relay";
             redirectCondition = "--dport 80";
-            doNotRedirect = [ "-d 1.2.0.0/16" ];
+            type = "http-relay";
           }
           {
+            doNotRedirect = [ "-d 1.2.0.0/16" ];
             port = 23457;
             proxy = "1.2.3.4:8080";
-            type = "http-connect";
             redirectCondition = true;
-            doNotRedirect = [ "-d 1.2.0.0/16" ];
+            type = "http-connect";
           }
         ];
+
         type = types.listOf (
           types.submodule {
             options = {
-              ip = mkOption {
-                type = types.str;
-                default = "127.0.0.1";
-                description = ''
-                  IP on which redsocks should listen. Defaults to 127.0.0.1 for
-                  security reasons.
-                '';
-              };
-
-              port = mkOption {
-                type = types.port;
-                default = 12345;
-                description = "Port on which redsocks should listen.";
-              };
-
-              proxy = mkOption {
-                type = types.str;
-                description = ''
-                  Proxy through which redsocks should forward incoming traffic.
-                  Example: "example.org:8080"
-                '';
-              };
-
-              type = mkOption {
-                type = types.enum [
-                  "socks4"
-                  "socks5"
-                  "http-connect"
-                  "http-relay"
-                ];
-                description = "Type of proxy.";
-              };
-
-              login = mkOption {
-                type = with types; nullOr str;
-                default = null;
-                description = "Login to send to proxy.";
-              };
-
-              password = mkOption {
-                type = with types; nullOr str;
-                default = null;
-                description = ''
-                  Password to send to proxy. WARNING, this will end up
-                  world-readable in the store! Awaiting
-                  https://github.com/NixOS/nix/issues/8 to be able to fix.
-                '';
-              };
-
               disclose_src = mkOption {
-                type = types.enum [
-                  "false"
-                  "X-Forwarded-For"
-                  "Forwarded_ip"
-                  "Forwarded_ipport"
-                ];
                 default = "false";
+
                 description = ''
                   Way to disclose client IP to the proxy.
                     - "false": do not disclose
@@ -146,27 +98,74 @@ in
                     - "Forwarded_ip": add header "Forwarded: for=IP" (see RFC7239)
                     - "Forwarded_ipport": add header 'Forwarded: for="IP:port"'
                 '';
-              };
 
-              redirectInternetOnly = mkOption {
-                type = types.bool;
-                default = true;
-                description = "Exclude all non-globally-routable IPs from redsocks";
+                type = types.enum [
+                  "false"
+                  "X-Forwarded-For"
+                  "Forwarded_ip"
+                  "Forwarded_ipport"
+                ];
               };
 
               doNotRedirect = mkOption {
-                type = with types; listOf str;
                 default = [ ];
+
                 description = ''
                   Iptables filters that if matched will get the packet off of
                   redsocks.
                 '';
+
                 example = [ "-d 1.2.3.4" ];
+                type = with types; listOf str;
+              };
+
+              ip = mkOption {
+                default = "127.0.0.1";
+
+                description = ''
+                  IP on which redsocks should listen. Defaults to 127.0.0.1 for
+                  security reasons.
+                '';
+
+                type = types.str;
+              };
+
+              login = mkOption {
+                default = null;
+                description = "Login to send to proxy.";
+                type = with types; nullOr str;
+              };
+
+              password = mkOption {
+                default = null;
+
+                description = ''
+                  Password to send to proxy. WARNING, this will end up
+                  world-readable in the store! Awaiting
+                  https://github.com/NixOS/nix/issues/8 to be able to fix.
+                '';
+
+                type = with types; nullOr str;
+              };
+
+              port = mkOption {
+                default = 12345;
+                description = "Port on which redsocks should listen.";
+                type = types.port;
+              };
+
+              proxy = mkOption {
+                description = ''
+                  Proxy through which redsocks should forward incoming traffic.
+                  Example: "example.org:8080"
+                '';
+
+                type = types.str;
               };
 
               redirectCondition = mkOption {
-                type = with types; either bool str;
                 default = false;
+
                 description = ''
                   Conditions to make outbound packets go through this redsocks
                   instance.
@@ -182,12 +181,30 @@ in
                   implicitly added, as udp can only be proxied through redudp or
                   the like.
                 '';
+
+                type = with types; either bool str;
+              };
+
+              redirectInternetOnly = mkOption {
+                default = true;
+                description = "Exclude all non-globally-routable IPs from redsocks";
+                type = types.bool;
+              };
+
+              type = mkOption {
+                description = "Type of proxy.";
+
+                type = types.enum [
+                  "socks4"
+                  "socks5"
+                  "http-connect"
+                  "http-relay"
+                ];
               };
             };
           }
         );
       };
-
       # TODO: Add support for redudp and dnstc
     };
   };
@@ -265,20 +282,6 @@ in
       ) cfg.redsocks;
     in
     mkIf cfg.enable {
-      users.groups.redsocks = { };
-      users.users.redsocks = {
-        description = "Redsocks daemon";
-        group = "redsocks";
-        isSystemUser = true;
-      };
-
-      systemd.services.redsocks = {
-        description = "Redsocks";
-        after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
-        script = "${pkgs.redsocks}/bin/redsocks -c ${configfile}";
-      };
-
       networking.firewall.extraCommands = iptables;
 
       networking.firewall.extraStopCommands = concatImapStringsSep "\n" (
@@ -290,6 +293,21 @@ in
           block.redirectCondition != false
         ) "ip46tables -t nat -D OUTPUT -p tcp ${redCond block} -j ${chain} 2>/dev/null || true"
       ) cfg.redsocks;
+
+      systemd.services.redsocks = {
+        after = [ "network.target" ];
+        description = "Redsocks";
+        script = "${pkgs.redsocks}/bin/redsocks -c ${configfile}";
+        wantedBy = [ "multi-user.target" ];
+      };
+
+      users.groups.redsocks = { };
+
+      users.users.redsocks = {
+        description = "Redsocks daemon";
+        group = "redsocks";
+        isSystemUser = true;
+      };
     };
 
 }

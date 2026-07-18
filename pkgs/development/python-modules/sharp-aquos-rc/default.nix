@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "sharp-aquos-rc";
   version = "0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jmoore987";
@@ -19,19 +18,17 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ pyyaml ];
-
   # No tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sharp_aquos_rc" ];
 
   meta = {
-    homepage = "https://github.com/jmoore987/sharp_aquos_rc";
     description = "Control Sharp Aquos SmartTVs through the IP interface";
+    homepage = "https://github.com/jmoore987/sharp_aquos_rc";
     changelog = "https://github.com/jmoore987/sharp_aquos_rc/releases/tag/${version}";
-    maintainers = with lib.maintainers; [ jamiemagee ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ jamiemagee ];
   };
 }

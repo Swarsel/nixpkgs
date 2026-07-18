@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   cmake,
   ninja,
   pkg-config,
@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  sourceRoot = "source/src";
-
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_BUILD_TYPE" "Release")
   ];
@@ -38,13 +36,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "source/src";
+
   meta = {
     description = "Cross-platform snapshot-based fuzzer";
     homepage = "https://github.com/0vercl0k/wtf";
     changelog = "https://github.com/0vercl0k/wtf/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ mikehorn ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "wtf";
   };
 })

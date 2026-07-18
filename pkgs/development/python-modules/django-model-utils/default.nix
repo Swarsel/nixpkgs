@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "django-model-utils";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -18,18 +17,16 @@ buildPythonPackage rec {
     hash = "sha256-iRtTYXsgD8NYG3k9ZWAr2Nwazo3HUa6RgdbMeDxc7NI=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ django ];
-
   # Test requires postgres database
   doCheck = false;
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "model_utils" ];
 
   meta = {
-    homepage = "https://github.com/jazzband/django-model-utils";
     description = "Django model mixins and utilities";
+    homepage = "https://github.com/jazzband/django-model-utils";
     changelog = "https://github.com/jazzband/django-model-utils/blob/${version}/CHANGES.rst";
     license = lib.licenses.bsd3;
     maintainers = [ ];

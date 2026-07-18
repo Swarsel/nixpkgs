@@ -10,10 +10,6 @@ let
   xnu = sourceRelease "xnu";
 in
 mkAppleDerivation {
-  releaseName = "top";
-
-  xcodeHash = "sha256-YeBhEstvPh8IX8ArVc7U8IRU6vqPoOE6kBTqcqZonGc=";
-
   patches = [
     # Upstream removed aarch64 support from the 137 source release, but the removal can be reverted.
     # Otherwise, top will fail to run on aarch64-darwin.
@@ -31,12 +27,14 @@ mkAppleDerivation {
     cp ${xnu}/bsd/sys/{kern_memorystatus.h,reason.h} sys/
   '';
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libutil
     ncurses
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
+  releaseName = "top";
+  xcodeHash = "sha256-YeBhEstvPh8IX8ArVc7U8IRU6vqPoOE6kBTqcqZonGc=";
   meta.description = "Display information about processes";
 }

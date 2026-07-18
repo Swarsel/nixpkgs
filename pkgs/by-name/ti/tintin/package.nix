@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  zlib,
-  pcre2,
   gnutls,
+  pcre2,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://tintin.mudhalla.net/index.php";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ abathur ];
-    mainProgram = "tt++";
     platforms = lib.platforms.unix;
+    mainProgram = "tt++";
   };
 })

@@ -1,16 +1,16 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  adwaita-icon-theme,
   fetchpatch,
   gdk-pixbuf,
-  adwaita-icon-theme,
-  gpsbabel,
   glib-networking,
   glibcLocales,
   gobject-introspection,
+  gpsbabel,
   gtk3,
   perl,
+  python3,
   sqlite,
   tzdata,
   webkitgtk_4_1,
@@ -20,7 +20,6 @@
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = (
       self: super: {
         matplotlib = super.matplotlib.override {
@@ -28,12 +27,13 @@ let
         };
       }
     );
+
+    self = python;
   };
 in
 python.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pytrainer";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytrainer";
@@ -45,27 +45,21 @@ python.pkgs.buildPythonApplication (finalAttrs: {
   patches = [
     # Fix startup crash with SQLAlchemy 2.0
     (fetchpatch {
-      url = "https://github.com/pytrainer/pytrainer/commit/9847c76e61945466775bde038057bf5fd31ae089.patch";
       hash = "sha256-cGNu4lK0eQWzcSFTKc8g/qHSSHfy0ow4T3eT+zl5lPM=";
+      url = "https://github.com/pytrainer/pytrainer/commit/9847c76e61945466775bde038057bf5fd31ae089.patch";
     })
 
     # Port to webkigtk 4.1
     (fetchpatch {
-      url = "https://github.com/pytrainer/pytrainer/commit/eda968a8b48074f03efbdfbd692b46edef3658cd.patch";
       hash = "sha256-MdxsKO6DgncHhGlJWcEeyYiPKf3qdhMqXrYYC+jqros=";
+      url = "https://github.com/pytrainer/pytrainer/commit/eda968a8b48074f03efbdfbd692b46edef3658cd.patch";
     })
   ];
 
-  build-system = with python3.pkgs; [ setuptools ];
-
-  dependencies = with python.pkgs; [
-    sqlalchemy
-    python-dateutil
-    matplotlib
-    lxml
-    requests
-    gdal
-  ];
+  postPatch = ''
+    substituteInPlace pytrainer/platform.py \
+        --replace-fail 'sys.prefix' "\"$out\""
+  '';
 
   nativeBuildInputs = [
     gobject-introspection
@@ -81,16 +75,6 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     gdk-pixbuf
   ];
 
-  makeWrapperArgs = [
-    "--prefix"
-    "PATH"
-    ":"
-    (lib.makeBinPath [
-      perl
-      gpsbabel
-    ])
-  ];
-
   nativeCheckInputs = [
     glibcLocales
     perl
@@ -100,11 +84,6 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     mysqlclient
     psycopg2
   ]);
-
-  postPatch = ''
-    substituteInPlace pytrainer/platform.py \
-        --replace-fail 'sys.prefix' "\"$out\""
-  '';
 
   checkPhase = ''
     env \
@@ -116,15 +95,40 @@ python.pkgs.buildPythonApplication (finalAttrs: {
       ${python.interpreter} -m unittest
   '';
 
+  build-system = with python3.pkgs; [ setuptools ];
+
+  dependencies = with python.pkgs; [
+    sqlalchemy
+    python-dateutil
+    matplotlib
+    lxml
+    requests
+    gdal
+  ];
+
+  makeWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    (lib.makeBinPath [
+      perl
+      gpsbabel
+    ])
+  ];
+
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/pytrainer/pytrainer";
     description = "Application for logging and graphing sporting excursions";
-    mainProgram = "pytrainer";
+    homepage = "https://github.com/pytrainer/pytrainer";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       rycee
       dotlambda
     ];
-    license = lib.licenses.gpl2Plus;
+
     platforms = lib.platforms.linux;
+    mainProgram = "pytrainer";
   };
 })

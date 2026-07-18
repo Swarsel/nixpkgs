@@ -2,15 +2,14 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  requests,
-  pytest,
   flask,
+  pytest,
+  requests,
 }:
 
 buildPythonPackage rec {
-  version = "4.1";
-  format = "setuptools";
   pname = "roku";
+  version = "4.1";
 
   src = fetchFromGitHub {
     owner = "jcarbaugh";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     pytest
     flask
   ];
+
+  format = "setuptools";
   pythonImportsCheck = [ "roku" ];
 
   meta = {

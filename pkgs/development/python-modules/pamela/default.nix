@@ -13,8 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pamela";
   version = "1.2.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -28,13 +26,16 @@ buildPythonPackage (finalAttrs: {
         '"${lib.getLib pkgs.pam}/lib/libpam${stdenv.hostPlatform.extensions.sharedLibrary}"'
   '';
 
+  # No tests
+  doCheck = false;
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  # No tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "PAM interface using ctypes";

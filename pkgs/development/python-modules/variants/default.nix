@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "variants";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     six
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "variants" ];
 
   meta = {

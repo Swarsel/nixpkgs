@@ -1,4 +1,4 @@
-{ runCommand, kiesel }:
+{ kiesel, runCommand }:
 runCommand "kiesel-test-run"
   {
     nativeBuildInputs = [ kiesel ];

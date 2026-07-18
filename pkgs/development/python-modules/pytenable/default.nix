@@ -1,23 +1,23 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
   defusedxml,
-  fetchFromGitHub,
   gql,
   graphql-core,
   marshmallow,
-  pydantic-extra-types,
   pydantic,
+  pydantic-extra-types,
   pytest-cov-stub,
   pytest-datafiles,
   pytest-vcr,
   pytestCheckHook,
   python-box,
   python-dateutil,
+  requests,
   requests-pkcs12,
   requests-toolbelt,
-  requests,
   responses,
   restfly,
   semver,
@@ -28,7 +28,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytenable";
   version = "26.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tenable";
@@ -36,6 +35,15 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-KRZbrJgIxdNAnlmP7Ww/JasoDJqJZkBkd0qXm9gfXp4=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-datafiles
+    pytest-vcr
+    pytestCheckHook
+    requests-pkcs12
+    responses
+  ];
 
   build-system = [ setuptools ];
 
@@ -54,19 +62,6 @@ buildPythonPackage (finalAttrs: {
     restfly
     semver
     typing-extensions
-  ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-datafiles
-    pytest-vcr
-    pytestCheckHook
-    requests-pkcs12
-    responses
-  ];
-
-  pytestFlags = [
-    "-Wignore::pytest.PytestRemovedIn9Warning"
   ];
 
   disabledTestPaths = [
@@ -91,6 +86,12 @@ buildPythonPackage (finalAttrs: {
     "test_iterator_max_page_term"
     "test_iterator_pagination"
     "test_iterator_total_term"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::pytest.PytestRemovedIn9Warning"
   ];
 
   pythonImportsCheck = [ "tenable" ];

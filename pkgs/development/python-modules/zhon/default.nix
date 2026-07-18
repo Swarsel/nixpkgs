@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   unittestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "zhon";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tsroten";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-ghZp+5YXmTWf1EJKvdSlqccnxnaLliYR5HxX5DcWXiw=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "zhon" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -19,9 +19,9 @@ buildGoModule {
 
   meta = {
     description = "Parsing HTML at the command line";
-    mainProgram = "pup";
     homepage = "https://github.com/ericchiang/pup";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "pup";
   };
 }

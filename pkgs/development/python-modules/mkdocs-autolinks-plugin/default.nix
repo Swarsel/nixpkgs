@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mkdocs,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "mkdocs-autolinks-plugin";
   version = "071";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zachhannum";
@@ -19,13 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-mEbuB9VwK7po1TqtJfBSkItOVlI3/W3nD2LYRHgPpTA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ mkdocs ];
-
   # Module has no tests.
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ mkdocs ];
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs_autolinks_plugin" ];
 
   meta = {

@@ -4,21 +4,22 @@
   buildPythonPackage,
   fetchPypi,
   isodate,
-  typing-extensions,
   setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "azure-servicebus";
   version = "7.14.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_servicebus";
     inherit version;
     hash = "sha256-cKYzhFV67AvucndA57Jd7Snp5wG3dhF2RXf9dAI4lAI=";
+    pname = "azure_servicebus";
   };
 
+  # Tests require dev-tools
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Tests require dev-tools
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.servicebus" ];
 
   meta = {

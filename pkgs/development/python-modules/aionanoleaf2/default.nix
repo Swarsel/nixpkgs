@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aionanoleaf2";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "loebi-ch";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Auh69JY07nnZKRUGPkaqo4DjZNeNkY8FIlsjch3JLu4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # upstream has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aionanoleaf2" ];
 
   meta = {

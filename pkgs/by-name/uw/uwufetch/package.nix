@@ -40,22 +40,22 @@ stdenv.mkDerivation (finalAttrs: {
     "UWUFETCH_VERSION=${finalAttrs.version}"
   ];
 
-  installFlags = [
-    "DESTDIR=${placeholder "out"}"
-    "ETC_DIR=${placeholder "out"}/etc"
-  ];
-
   postFixup = ''
     wrapProgram $out/bin/uwufetch \
       --prefix PATH ":" ${lib.makeBinPath [ viu ]}
   '';
 
+  installFlags = [
+    "DESTDIR=${placeholder "out"}"
+    "ETC_DIR=${placeholder "out"}/etc"
+  ];
+
   meta = {
     description = "Meme system info tool for Linux";
     homepage = "https://github.com/TheDarkBug/uwufetch";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bbjubjub ];
+    platforms = lib.platforms.unix;
     mainProgram = "uwufetch";
   };
 })

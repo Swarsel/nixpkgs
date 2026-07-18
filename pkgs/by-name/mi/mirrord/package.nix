@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  testers,
-  mirrord,
   autoPatchelfHook,
+  mirrord,
+  testers,
 }:
 
 let
@@ -13,12 +13,7 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "mirrord";
   version = manifest.version;
-
   src = fetchurl (manifest.assets.${stdenv.hostPlatform.system});
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isElf [
     autoPatchelfHook
@@ -32,10 +27,15 @@ stdenv.mkDerivation (finalAttrs: {
     install -D $src $out/bin/mirrord
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
   passthru = {
     tests.version = testers.testVersion {
       package = mirrord;
     };
+
     updateScript = ./update.py;
   };
 
@@ -43,9 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Run local processes in the context of Kubernetes environment";
     homepage = "https://mirrord.dev/";
     license = lib.licenses.mit;
-    platforms = builtins.attrNames manifest.assets;
-    maintainers = with lib.maintainers; [ aaronjheng ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ aaronjheng ];
+    platforms = builtins.attrNames manifest.assets;
     mainProgram = "mirrord";
   };
 })

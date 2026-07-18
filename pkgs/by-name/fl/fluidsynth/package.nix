@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  buildPackages,
-  pkg-config,
-  cmake,
   alsa-lib,
+  buildPackages,
+  cmake,
   libjack2,
-  libsndfile,
   libpulseaudio,
+  libsndfile,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,9 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Real-time software synthesizer based on the SoundFont 2 specifications";
     homepage = "https://www.fluidsynth.org";
     license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       guylamar2006
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "fluidsynth";
   };

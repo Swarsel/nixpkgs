@@ -1,23 +1,23 @@
 {
   lib,
+  fetchFromGitHub,
+  attrs,
   buildPythonPackage,
   isPyPy,
-  fetchFromGitHub,
-  setuptools,
-  attrs,
   pexpect,
-  doCheck ? true,
-  pytestCheckHook,
   pytest-xdist,
-  sortedcontainers,
+  pytestCheckHook,
   pythonAtLeast,
+  setuptools,
+  sortedcontainers,
   tzdata,
+  doCheck ? true,
 }:
 
 buildPythonPackage rec {
+  inherit doCheck;
   pname = "hypothesis";
   version = "6.151.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "HypothesisWorks";
@@ -39,23 +39,12 @@ buildPythonPackage rec {
     sed -i -e '/sphinx_selective_exclude.eager_only/ d' docs/conf.py
   '';
 
-  postUnpack = "sourceRoot=$sourceRoot/hypothesis-python";
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    attrs
-    sortedcontainers
-  ];
-
   nativeCheckInputs = [
     pexpect
     pytest-xdist
     pytestCheckHook
   ]
   ++ lib.optionals isPyPy [ tzdata ];
-
-  inherit doCheck;
 
   # tox.ini changes how pytest runs and breaks it.
   # Activate the CI profile (similar to setupHook below)
@@ -67,19 +56,12 @@ buildPythonPackage rec {
     export HYPOTHESIS_PROFILE=ci
   '';
 
-  enabledTestPaths = [ "tests/cover" ];
+  build-system = [ setuptools ];
 
-  # Hypothesis by default activates several "Health Checks", including one that fires if the builder is "too slow".
-  # This check is disabled [1] if Hypothesis detects a CI environment, i.e. either `CI` or `TF_BUILD` is defined [2].
-  # We set `CI=1` here using a setup hook to avoid spurious failures [3].
-  #
-  # Example error message for reference:
-  # hypothesis.errors.FailedHealthCheck: Data generation is extremely slow: Only produced 2 valid examples in 1.28 seconds (1 invalid ones and 0 exceeded maximum size). Try decreasing size of the data you're generating (with e.g. max_size or max_leaves parameters).
-  #
-  # [1]: https://github.com/HypothesisWorks/hypothesis/blob/hypothesis-python-6.130.9/hypothesis-python/src/hypothesis/_settings.py#L816-L828
-  # [2]: https://github.com/HypothesisWorks/hypothesis/blob/hypothesis-python-6.130.9/hypothesis-python/src/hypothesis/_settings.py#L756
-  # [3]: https://github.com/NixOS/nixpkgs/issues/393637
-  setupHook = ./setup-hook.sh;
+  dependencies = [
+    attrs
+    sortedcontainers
+  ];
 
   disabledTests = [
     # racy, fails to find a file sometimes
@@ -128,18 +110,36 @@ buildPythonPackage rec {
     "test_bordering_on_a_leap_year"
   ];
 
+  enabledTestPaths = [ "tests/cover" ];
+  postUnpack = "sourceRoot=$sourceRoot/hypothesis-python";
+  pyproject = true;
   pythonImportsCheck = [ "hypothesis" ];
+  # Hypothesis by default activates several "Health Checks", including one that fires if the builder is "too slow".
+  # This check is disabled [1] if Hypothesis detects a CI environment, i.e. either `CI` or `TF_BUILD` is defined [2].
+  # We set `CI=1` here using a setup hook to avoid spurious failures [3].
+  #
+  # Example error message for reference:
+  # hypothesis.errors.FailedHealthCheck: Data generation is extremely slow: Only produced 2 valid examples in 1.28 seconds (1 invalid ones and 0 exceeded maximum size). Try decreasing size of the data you're generating (with e.g. max_size or max_leaves parameters).
+  #
+  # [1]: https://github.com/HypothesisWorks/hypothesis/blob/hypothesis-python-6.130.9/hypothesis-python/src/hypothesis/_settings.py#L816-L828
+  # [2]: https://github.com/HypothesisWorks/hypothesis/blob/hypothesis-python-6.130.9/hypothesis-python/src/hypothesis/_settings.py#L756
+  # [3]: https://github.com/NixOS/nixpkgs/issues/393637
+  setupHook = ./setup-hook.sh;
 
   meta = {
     description = "Library for property based testing";
-    mainProgram = "hypothesis";
     homepage = "https://github.com/HypothesisWorks/hypothesis";
+
     changelog = "https://hypothesis.readthedocs.io/en/latest/changes.html#v${
       lib.replaceStrings [ "." ] [ "-" ] version
     }";
+
     license = lib.licenses.mpl20;
+
     maintainers = [
       lib.maintainers.fliegendewurst
     ];
+
+    mainProgram = "hypothesis";
   };
 }

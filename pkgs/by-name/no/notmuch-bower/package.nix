@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  mercury,
-  pandoc,
-  ncurses,
-  gpgme,
   coreutils,
   file,
+  gpgme,
+  mercury,
+  ncurses,
+  pandoc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,14 +21,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-THIMCIk6ugPpogfQ5DTHIgFD7no5IIVYfz2mqBvKBlY=";
   };
 
-  nativeBuildInputs = [
-    mercury
-    pandoc
-  ];
   postPatch = ''
     substituteInPlace src/compose.m --replace 'shell_quoted("base64' 'shell_quoted("${coreutils}/bin/base64'
     substituteInPlace src/detect_mime_type.m --replace 'shell_quoted("file' 'shell_quoted("${file}/bin/file'
   '';
+
+  nativeBuildInputs = [
+    mercury
+    pandoc
+  ];
 
   buildInputs = [
     ncurses
@@ -53,11 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/wangp/bower";
     description = "Curses terminal client for the Notmuch email system";
-    mainProgram = "bower";
-    maintainers = with lib.maintainers; [ jgart ];
+    homepage = "https://github.com/wangp/bower";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ jgart ];
     platforms = lib.platforms.linux;
+    mainProgram = "bower";
   };
 })

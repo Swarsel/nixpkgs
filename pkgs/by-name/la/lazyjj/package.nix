@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  makeWrapper,
   jujutsu,
+  makeWrapper,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-xpRuXefP2agcZojvAUvODDOFJoEyTiMztJM3VNCeryA=";
   };
 
-  cargoHash = "sha256-LLbMR3FT5Ci7A9TlhRtU0rpMilXZXb4DH85/R776OQY=";
-
   nativeBuildInputs = [ makeWrapper ];
+  cargoHash = "sha256-LLbMR3FT5Ci7A9TlhRtU0rpMilXZXb4DH85/R776OQY=";
 
   nativeCheckInputs = [
     jujutsu
+  ];
+
+  checkFlags = [
+    # This tests checks the output of `jj diff`. However, `jj diff` had a change upstream making the test fail. Skip for now, until the test is updated.
+    "--skip=commander::files::tests::get_file_diff"
   ];
 
   postInstall = ''
@@ -30,25 +34,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ jujutsu ]}
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
   doInstallCheck = true;
 
-  checkFlags = [
-    # This tests checks the output of `jj diff`. However, `jj diff` had a change upstream making the test fail. Skip for now, until the test is updated.
-    "--skip=commander::files::tests::get_file_diff"
+  nativeInstallCheckInputs = [
+    versionCheckHook
   ];
 
   meta = {
     description = "TUI for Jujutsu/jj";
     homepage = "https://github.com/Cretezy/lazyjj";
     changelog = "https://github.com/Cretezy/lazyjj/releases/tag/v${finalAttrs.version}";
-    mainProgram = "lazyjj";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       colemickens
       GaetanLepage
     ];
+
+    mainProgram = "lazyjj";
   };
 })

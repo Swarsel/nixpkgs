@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "countryguess";
   version = "0.4.9";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "plotski";
@@ -19,15 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-RlOOao6aU3MylghDyOeg3poYQw+0UhljN79/ZBLjq24=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pytest-mock
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "countryguess" ];
 
   meta = {

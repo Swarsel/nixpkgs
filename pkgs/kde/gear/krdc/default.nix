@@ -1,20 +1,15 @@
 {
-  mkKdeDerivation,
-  pkg-config,
-  shared-mime-info,
-  qtwayland,
-  libssh,
-  libvncserver,
   freerdp,
   fuse3,
+  libssh,
+  libvncserver,
+  mkKdeDerivation,
+  pkg-config,
+  qtwayland,
+  shared-mime-info,
 }:
 mkKdeDerivation {
   pname = "krdc";
-
-  extraNativeBuildInputs = [
-    pkg-config
-    shared-mime-info
-  ];
 
   extraBuildInputs = [
     qtwayland
@@ -22,6 +17,11 @@ mkKdeDerivation {
     libvncserver
     freerdp
     fuse3
+  ];
+
+  extraNativeBuildInputs = [
+    pkg-config
+    shared-mime-info
   ];
 
   meta.mainProgram = "krdc";

@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "trak";
   version = "0.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lcfd";
@@ -16,14 +15,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-YJMX7pNRWdNPyWNZ1HfpdYsKSStRWLcianLz6nScMa8=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/cli";
+  build-system = [ python3Packages.poetry-core ];
 
   dependencies = with python3Packages; [
     questionary
     typer
   ];
 
-  build-system = [ python3Packages.poetry-core ];
+  pyproject = true;
+  sourceRoot = "${finalAttrs.src.name}/cli";
 
   meta = {
     description = "Keep a record of the time you dedicate to your projects";

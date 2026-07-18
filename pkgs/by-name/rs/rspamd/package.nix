@@ -1,18 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nixosTests,
-
-  # build
-  cmake,
-  glib,
-  perl,
-  pkg-config,
-
   # runtime
   blas,
+  # build
+  cmake,
   fmt,
+  glib,
   icu,
   jemalloc,
   lapack,
@@ -20,14 +15,16 @@
   libsodium,
   lua,
   luajit,
+  nixosTests,
   openssl,
   pcre,
+  perl,
+  pkg-config,
   ragel,
   sqlite,
   vectorscan,
   xxhash,
   zstd,
-
   # flags
   # https://gitlab.com/simple-nixos-mailserver/nixos-mailserver/-/issues/321
   # Enabling blas support breaks Bayes filter training from within Sieve pipe in Dovecot
@@ -101,20 +98,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   __structuredAttrs = true;
-
   passthru.tests = nixosTests.rspamd;
 
   meta = {
-    changelog = "https://github.com/rspamd/rspamd/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://rspamd.com";
-    license = lib.licenses.asl20;
     description = "Advanced spam filtering system";
+    homepage = "https://rspamd.com";
+    changelog = "https://github.com/rspamd/rspamd/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       avnik
       fpletz
       lewo
     ];
-    mainProgram = "rspamd";
+
     platforms = with lib.platforms; linux;
+    mainProgram = "rspamd";
   };
 })

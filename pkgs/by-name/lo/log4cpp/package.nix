@@ -16,10 +16,10 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://log4cpp.sourceforge.net/";
     description = "Logging framework for C++ patterned after Apache log4j";
-    mainProgram = "log4cpp-config";
+    homepage = "https://log4cpp.sourceforge.net/";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "log4cpp-config";
   };
 })

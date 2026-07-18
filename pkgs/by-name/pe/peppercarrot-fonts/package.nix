@@ -2,28 +2,25 @@
   lib,
   fetchFromGitLab,
   fontforge,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "peppercarrot-fonts";
   version = "1.0.0";
 
-  outputs = [
-    "out"
-    "webfont"
-  ];
-
   src = fetchFromGitLab {
-    domain = "framagit.org";
     owner = "peppercarrot";
     repo = "fonts";
     tag = "v${finalAttrs.version}";
     hash = "sha256-tabiNRJZRwSYGV3DtXhg0C78E7TlDQYcpa/5bJrkhfs=";
+    domain = "framagit.org";
   };
 
-  # Other folders include third-party fonts for other alphabets
-  sourceRoot = "${finalAttrs.src.name}/Latin";
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
   postPatch = ''
     # Some fonts are duplicated with symlinks
@@ -32,6 +29,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     # Already in pkgs.yanone-kaffeesatz
     rm YanoneKaffeesatz*
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     fontforge
@@ -46,15 +45,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  strictDeps = true;
   __structuredAttrs = true;
+  # Other folders include third-party fonts for other alphabets
+  sourceRoot = "${finalAttrs.src.name}/Latin";
 
   meta = {
     description = "Open fonts used in the webcomic Pepper&Carrot";
     homepage = "https://www.peppercarrot.com/en/fonts";
     changelog = "https://framagit.org/peppercarrot/fonts/-/blob/master/CHANGELOG.md";
-    platforms = lib.platforms.all;
-    maintainers = [ lib.maintainers.nim65s ];
+
     license =
       with lib.licenses;
       let
@@ -86,5 +85,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         ofl
         ofl10
       ];
+
+    maintainers = [ lib.maintainers.nim65s ];
+    platforms = lib.platforms.all;
   };
 })

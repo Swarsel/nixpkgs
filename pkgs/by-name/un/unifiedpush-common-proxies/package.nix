@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromCodeberg,
   buildGoModule,
+  fetchFromCodeberg,
 }:
 
 buildGoModule (finalAttrs: {

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo wrapper that encourages you after running commands";
-    mainProgram = "cargo-mommy";
     homepage = "https://github.com/Gankra/cargo-mommy";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ GoldsteinE ];
+    mainProgram = "cargo-mommy";
   };
 })

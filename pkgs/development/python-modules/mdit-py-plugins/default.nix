@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   markdown-it-py,
   pytest-regressions,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mdit-py-plugins";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "executablebooks";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MQU6u49KsWGaKeWU5v066kZidcfCoubqClxAapAZb9A=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ markdown-it-py ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-regressions
   ];
 
+  build-system = [ flit-core ];
+  dependencies = [ markdown-it-py ];
+  pyproject = true;
   pythonImportsCheck = [ "mdit_py_plugins" ];
 
   meta = {

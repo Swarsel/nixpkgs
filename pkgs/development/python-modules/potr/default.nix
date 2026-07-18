@@ -1,14 +1,13 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   pycrypto,
 }:
 
 buildPythonPackage rec {
   pname = "python-potr";
   version = "1.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pycrypto ];
+  format = "setuptools";
 
   meta = {
     description = "Pure Python OTR implementation";

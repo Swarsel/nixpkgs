@@ -10,12 +10,14 @@
 buildPythonPackage rec {
   pname = "thrift";
   version = "0.22.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-QugnavvV9U/h02SFi2h3vF5aSl7Wn2oAW5TKSRj+FGY=";
   };
+
+  # No tests. Breaks when not disabling.
+  doCheck = false;
 
   build-system = [
     distutils
@@ -23,10 +25,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ six ];
-
-  # No tests. Breaks when not disabling.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "thrift" ];
 
   meta = {

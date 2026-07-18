@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  installShellFiles,
-  pandoc,
   boost,
   bzip2,
+  cmake,
   expat,
+  installShellFiles,
   libosmium,
   lz4,
   nlohmann_json,
+  pandoc,
   protozero,
   zlib,
 }:
@@ -57,13 +57,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Multipurpose command line tool for working with OpenStreetMap data based on the Osmium library";
     homepage = "https://osmcode.org/osmium-tool/";
     changelog = "https://github.com/osmcode/osmium-tool/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       gpl3Plus
       mit
       bsd3
     ];
+
     maintainers = with lib.maintainers; [ das-g ];
-    teams = [ lib.teams.geospatial ];
     mainProgram = "osmium";
+    teams = [ lib.teams.geospatial ];
   };
 })

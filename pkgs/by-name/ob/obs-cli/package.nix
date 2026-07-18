@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
 }:
 
@@ -16,18 +16,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-4tjS+PWyP/T0zs4IGE6VQ5c+3tuqxlBwfpPBVEcim6c=";
   };
 
-  vendorHash = "sha256-tjQOHvmhHyVMqIJQvFaisEqci1wkB4ke/a+GSgwXzCo=";
-
-  proxyVendor = true;
-
   nativeBuildInputs = [
     makeWrapper
   ];
+
+  vendorHash = "sha256-tjQOHvmhHyVMqIJQvFaisEqci1wkB4ke/a+GSgwXzCo=";
 
   ldflags = [
     "-s"
     "-w"
   ];
+
+  proxyVendor = true;
 
   meta = {
     description = "Command-line remote control for OBS";

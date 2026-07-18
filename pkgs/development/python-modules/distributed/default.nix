@@ -1,12 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   click,
   cloudpickle,
@@ -17,6 +12,9 @@
   packaging,
   psutil,
   pyyaml,
+  # build-system
+  setuptools,
+  setuptools-scm,
   sortedcontainers,
   tblib,
   toolz,
@@ -27,8 +25,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "distributed";
   version = "2026.7.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "dask";
@@ -37,12 +33,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-JwN+Ey+Ii8mELa6oVS+SDiOPYyMcKdaiSjjMqDze+kc=";
   };
 
+  # When tested random tests would fail and not repeatably
+  doCheck = false;
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
-
-  pythonRelaxDeps = [ "dask" ];
 
   dependencies = [
     click
@@ -61,10 +59,9 @@ buildPythonPackage (finalAttrs: {
     zict
   ];
 
-  # When tested random tests would fail and not repeatably
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "distributed" ];
+  pythonRelaxDeps = [ "dask" ];
 
   meta = {
     description = "Distributed computation in Python";

@@ -1,26 +1,26 @@
 {
   lib,
-  callPackage,
-  nixosTests,
   stdenv,
   fetchurl,
+  acl, # EXT2/EXT3/XFS ACL support (optional)
   autoPatchelfHook,
-  rpmextract,
   brotli,
+  buildEnv,
+  callPackage,
+  gnugrep,
+  jdk, # Java GUI (needed for `enableGui`)
   libnghttp2,
   libxcrypt-legacy,
-  zlib,
   lvm2, # LVM image backup and restore functions (optional)
-  acl, # EXT2/EXT3/XFS ACL support (optional)
-  gnugrep,
-  procps,
-  jdk, # Java GUI (needed for `enableGui`)
-  buildEnv,
   makeWrapper,
-  enableGui ? false, # enables Java GUI `dsmj`
+  nixosTests,
+  procps,
+  rpmextract,
+  zlib,
+  dsmSysApi ? "/etc/tsm-client/api.dsm.sys",
   # path to `dsm.sys` configuration files
   dsmSysCli ? "/etc/tsm-client/cli.dsm.sys",
-  dsmSysApi ? "/etc/tsm-client/api.dsm.sys",
+  enableGui ? false, # enables Java GUI `dsmj`
 }:
 
 # For an explanation of optional packages
@@ -51,14 +51,8 @@
 let
 
   meta = {
-    homepage = "https://www.ibm.com/products/storage-protect";
-    downloadPage = "https://www.ibm.com/support/fixcentral/swg/selectFixes?product=ibm/StorageSoftware/IBM+Spectrum+Protect";
-    platforms = [ "x86_64-linux" ];
-    mainProgram = "dsmc";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
-    maintainers = [ lib.maintainers.yarny ];
     description = "IBM Storage Protect (Tivoli Storage Manager) CLI and API";
+
     longDescription = ''
       IBM Storage Protect (Tivoli Storage Manager) provides
       a single point of control for backup and recovery.
@@ -72,6 +66,14 @@ let
       The location of those files can
       be provided as build parameters.
     '';
+
+    homepage = "https://www.ibm.com/products/storage-protect";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ lib.maintainers.yarny ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "dsmc";
+    downloadPage = "https://www.ibm.com/support/fixcentral/swg/selectFixes?product=ibm/StorageSoftware/IBM+Spectrum+Protect";
   };
 
   passthru.tests = {
@@ -92,18 +94,20 @@ let
     }/client/v${major}r${minor}/Linux/LinuxX86/BA/v${major}${minor}${patch}/${version}-TIV-TSMBAC-LinuxX86.tar";
 
   unwrapped = stdenv.mkDerivation (finalAttrs: {
+    inherit meta passthru;
     pname = "tsm-client-unwrapped";
     version = "8.2.1.0";
+
     src = fetchurl {
       url = mkSrcUrl finalAttrs.version;
       hash = "sha512-Hlm4sk78I/+hVKwGsSDpwIihMqMeAlLtu4H/DLo2NVNMQnixZTYRch69hAR1PNaSS7qz8/oiI51AYTc6+JYdtA==";
     };
-    inherit meta passthru;
 
     nativeBuildInputs = [
       autoPatchelfHook
       rpmextract
     ];
+
     buildInputs = [
       brotli
       libnghttp2
@@ -111,22 +115,6 @@ let
       stdenv.cc.cc
       zlib
     ];
-    runtimeDependencies = [
-      (lib.attrsets.getLib lvm2)
-    ];
-    sourceRoot = ".";
-
-    postUnpack = ''
-      rpmextract TIVsm-API64.x86_64.rpm
-      rpmextract TIVsm-APIcit.x86_64.rpm
-      rpmextract TIVsm-BA.x86_64.rpm
-      rpmextract TIVsm-BAcit.x86_64.rpm
-      rpmextract TIVsm-BAhdw.x86_64.rpm
-      rpmextract TIVsm-JBB.x86_64.rpm
-      # use globbing so that version updates don't break the build:
-      rpmextract gskcrypt64-*.linux.x86_64.rpm
-      rpmextract gskssl64-*.linux.x86_64.rpm
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -142,6 +130,24 @@ let
         ln --symbolic --force --no-target-directory "$(readlink "$link" | sed 's|../opt|opt|')" "$link"
       done
     '';
+
+    postUnpack = ''
+      rpmextract TIVsm-API64.x86_64.rpm
+      rpmextract TIVsm-APIcit.x86_64.rpm
+      rpmextract TIVsm-BA.x86_64.rpm
+      rpmextract TIVsm-BAcit.x86_64.rpm
+      rpmextract TIVsm-BAhdw.x86_64.rpm
+      rpmextract TIVsm-JBB.x86_64.rpm
+      # use globbing so that version updates don't break the build:
+      rpmextract gskcrypt64-*.linux.x86_64.rpm
+      rpmextract gskssl64-*.linux.x86_64.rpm
+    '';
+
+    runtimeDependencies = [
+      (lib.attrsets.getLib lvm2)
+    ];
+
+    sourceRoot = ".";
   });
 
   binPath = lib.makeBinPath (
@@ -156,24 +162,10 @@ let
 in
 
 buildEnv {
-  pname = "tsm-client";
   inherit (unwrapped) version;
-  meta =
-    meta
-    // lib.attrsets.optionalAttrs enableGui {
-      mainProgram = "dsmj";
-    };
-  passthru = passthru // {
-    inherit unwrapped;
-  };
-  paths = [ unwrapped ];
+  pname = "tsm-client";
   nativeBuildInputs = [ makeWrapper ];
-  pathsToLink = [
-    "/"
-    "/bin"
-    "/opt/tivoli/tsm/client/ba/bin"
-    "/opt/tivoli/tsm/client/api/bin64"
-  ];
+
   # * Provide top-level symlinks `dsm_dir` and `dsmi_dir`
   #   to the so-called "installation directories"
   # * Add symlinks to the "installation directories"
@@ -196,4 +188,23 @@ buildEnv {
         --set DSM_DIR $out/dsm_dir
     done
   '';
+
+  paths = [ unwrapped ];
+
+  pathsToLink = [
+    "/"
+    "/bin"
+    "/opt/tivoli/tsm/client/ba/bin"
+    "/opt/tivoli/tsm/client/api/bin64"
+  ];
+
+  passthru = passthru // {
+    inherit unwrapped;
+  };
+
+  meta =
+    meta
+    // lib.attrsets.optionalAttrs enableGui {
+      mainProgram = "dsmj";
+    };
 }

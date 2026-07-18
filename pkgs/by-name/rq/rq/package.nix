@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-QyYTbMXikLSe3eYJRUALQJxUJjA6VlvaLMwGrxIKfZI=";
   };
 
-  cargoHash = "sha256-BwbGiLoygNUua+AAKw/JAAG1kuWLdnP+8o+FFuvbFlM=";
-
   postPatch = ''
     # Remove #[deny(warnings)] which is equivalent to -Werror in C.
     # Prevents build failures when upgrading rustc, which may give more warnings.
@@ -30,12 +28,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rm build.rs
   '';
 
+  cargoHash = "sha256-BwbGiLoygNUua+AAKw/JAAG1kuWLdnP+8o+FFuvbFlM=";
   env.VERGEN_SEMVER = finalAttrs.version;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -43,8 +42,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Tool for doing record analysis and transformation";
-    mainProgram = "rq";
     homepage = "https://github.com/dflemstr/rq";
     license = with lib.licenses; [ asl20 ];
+    mainProgram = "rq";
   };
 })

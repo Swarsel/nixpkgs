@@ -1,70 +1,59 @@
 {
   lib,
   stdenv,
-  fetchPypi,
   buildPythonPackage,
-  isPyPy,
-
+  cairo,
   # build-system
   certifi,
-  pkg-config,
-  pybind11,
-  meson-python,
-  setuptools-scm,
-  pytestCheckHook,
-  python,
-
-  # native libraries
-  ffmpeg-headless,
-  freetype,
-  qhull,
-  libraqm,
-
   # propagates
   contourpy,
   cycler,
+  fetchPypi,
+  # native libraries
+  ffmpeg-headless,
   fonttools,
+  freetype,
+  gobject-introspection,
+  gtk3,
+  ipykernel,
+  isPyPy,
   kiwisolver,
+  libraqm,
+  # required for headless detection
+  libx11,
+  # TODO: Clean up on `staging`.
+  llvmPackages,
+  meson-python,
   numpy,
   packaging,
   pillow,
-  pyparsing,
-  python-dateutil,
-
-  # GTK3
-  enableGtk3 ? false,
-  cairo,
-  gobject-introspection,
-  gtk3,
+  pkg-config,
+  pybind11,
   pycairo,
   pygobject3,
-
+  pyparsing,
+  pyqt5,
+  pytestCheckHook,
+  python,
+  python-dateutil,
+  qhull,
+  # Reverse dependency
+  sage,
+  setuptools-scm,
+  tkinter,
+  tornado,
+  wayland,
+  # GTK3
+  enableGtk3 ? false,
+  # nbagg
+  enableNbagg ? false,
+  # Qt
+  enableQt ? false,
   # Tk
   # Darwin has its own "MacOSX" backend, PyPy has tkagg backend and does not support tkinter
   enableTk ? (!stdenv.hostPlatform.isDarwin && !isPyPy),
-  tkinter,
-
-  # Qt
-  enableQt ? false,
-  pyqt5,
-
   # Webagg
   enableWebagg ? false,
-  tornado,
-
-  # nbagg
-  enableNbagg ? false,
-  ipykernel,
-
-  # required for headless detection
-  libx11,
-  wayland,
-
-  # Reverse dependency
-  sage,
-
-  # TODO: Clean up on `staging`.
-  llvmPackages,
 }:
 
 let
@@ -72,16 +61,13 @@ let
 in
 
 buildPythonPackage (finalAttrs: {
-  version = "3.11.0";
   pname = "matplotlib";
-  pyproject = true;
+  version = "3.11.0";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-aMDHvgGzDcyjY4k09/WR33NAEjXL2/DRqxxx59t/i1c=";
   };
-
-  env.XDG_RUNTIME_DIR = "/tmp";
 
   # Matplotlib tries to find Tcl/Tk by opening a Tk window and asking the
   # corresponding interpreter object for its library paths. This fails if
@@ -125,8 +111,41 @@ buildPythonPackage (finalAttrs: {
     gtk3
   ];
 
-  # clang-11: error: argument unused during compilation: '-fno-strict-overflow' [-Werror,-Wunused-command-line-argument]
-  hardeningDisable = lib.optionals stdenv.hostPlatform.isDarwin [ "strictoverflow" ];
+  mesonFlags = lib.mapAttrsToList lib.mesonBool {
+    # Otherwise GNU's `ar` binary fails to put symbols from libagg into the
+    # matplotlib shared objects. See:
+    # -https://github.com/matplotlib/matplotlib/issues/28260#issuecomment-2146243663
+    # -https://github.com/matplotlib/matplotlib/issues/28357#issuecomment-2155350739
+    b_lto = false;
+    system-freetype = true;
+    system-libraqm = true;
+    system-qhull = true;
+  };
+
+  # TODO: Clean up on `staging`.
+  env.${if stdenv.hostPlatform.isDarwin then "CC_LD" else null} = "lld";
+  env.${if stdenv.hostPlatform.isDarwin then "CXX_LD" else null} = "lld";
+  env.${if stdenv.hostPlatform.isDarwin then "OBJC_LD" else null} = "lld";
+  env.XDG_RUNTIME_DIR = "/tmp";
+  # Running the tests requires a specific freetype version, so pixel-to-pixel
+  # comparisons will pass. Since matplotlib depends directly & indirectly on
+  # freetype, this would be too expensive to even test this (correctly) in
+  # `passthru.tests`.
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    # https://matplotlib.org/devdocs/devel/testing.html#obtain-the-reference-images
+    find lib -name baseline_images -printf '%P\n' | while read p; do
+      cp -r lib/"$p" $out/${python.sitePackages}/"$p"
+    done
+    # Tests will fail without these files as well
+    cp \
+      lib/matplotlib/tests/{mpltest.ttf,cmr10.pfb,Courier10PitchBT-Bold.pfb} \
+      $out/${python.sitePackages}/matplotlib/tests/
+    # https://github.com/NixOS/nixpkgs/issues/255262
+    cd $out
+  '';
 
   build-system = [
     certifi
@@ -157,54 +176,25 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optionals enableNbagg [ ipykernel ]
   ++ lib.optionals enableTk [ tkinter ];
 
-  mesonFlags = lib.mapAttrsToList lib.mesonBool {
-    system-freetype = true;
-    system-qhull = true;
-    system-libraqm = true;
-    # Otherwise GNU's `ar` binary fails to put symbols from libagg into the
-    # matplotlib shared objects. See:
-    # -https://github.com/matplotlib/matplotlib/issues/28260#issuecomment-2146243663
-    # -https://github.com/matplotlib/matplotlib/issues/28357#issuecomment-2155350739
-    b_lto = false;
-  };
-
-  # TODO: Clean up on `staging`.
-  env.${if stdenv.hostPlatform.isDarwin then "CC_LD" else null} = "lld";
-  env.${if stdenv.hostPlatform.isDarwin then "CXX_LD" else null} = "lld";
-  env.${if stdenv.hostPlatform.isDarwin then "OBJC_LD" else null} = "lld";
+  # clang-11: error: argument unused during compilation: '-fno-strict-overflow' [-Werror,-Wunused-command-line-argument]
+  hardeningDisable = lib.optionals stdenv.hostPlatform.isDarwin [ "strictoverflow" ];
+  pyproject = true;
+  pythonImportsCheck = [ "matplotlib" ];
 
   passthru.tests = {
     inherit sage;
   };
 
-  pythonImportsCheck = [ "matplotlib" ];
-  # Running the tests requires a specific freetype version, so pixel-to-pixel
-  # comparisons will pass. Since matplotlib depends directly & indirectly on
-  # freetype, this would be too expensive to even test this (correctly) in
-  # `passthru.tests`.
-  doCheck = false;
-  nativeCheckInputs = [ pytestCheckHook ];
-  preCheck = ''
-    # https://matplotlib.org/devdocs/devel/testing.html#obtain-the-reference-images
-    find lib -name baseline_images -printf '%P\n' | while read p; do
-      cp -r lib/"$p" $out/${python.sitePackages}/"$p"
-    done
-    # Tests will fail without these files as well
-    cp \
-      lib/matplotlib/tests/{mpltest.ttf,cmr10.pfb,Courier10PitchBT-Bold.pfb} \
-      $out/${python.sitePackages}/matplotlib/tests/
-    # https://github.com/NixOS/nixpkgs/issues/255262
-    cd $out
-  '';
-
   meta = {
     description = "Python plotting library, making publication quality plots";
     homepage = "https://matplotlib.org/";
     changelog = "https://github.com/matplotlib/matplotlib/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       psfl
       bsd0
     ];
+
     maintainers = with lib.maintainers; [
       veprbl
       doronbehar

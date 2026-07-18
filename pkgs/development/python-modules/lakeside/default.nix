@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   protobuf,
   pycryptodome,
   requests,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "lakeside";
   version = "0.13";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "nkgilley";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "lakeside" ];
 
   meta = {

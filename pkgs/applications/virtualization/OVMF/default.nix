@@ -1,26 +1,52 @@
 {
-  stdenv,
-  nixosTests,
   lib,
-  edk2,
-  util-linux,
-  nasm,
-  acpica-tools,
-  llvmPackages,
+  stdenv,
   fetchFromGitLab,
-  python3,
-  pexpect,
-  xorriso,
-  qemu,
+  acpica-tools,
   dosfstools,
+  edk2,
+  llvmPackages,
   mtools,
+  nasm,
+  nixosTests,
+  pexpect,
+  python3,
+  qemu,
+  util-linux,
+  xorriso,
+  debug ? false,
   fdSize2MB ? false,
   fdSize4MB ? secureBoot,
-  secureBoot ? false,
-  systemManagementModeRequired ? secureBoot && stdenv.hostPlatform.isx86,
+  fwPrefix ?
+    {
+      aarch64 = "AAVMF";
+      loongarch64 = "LOONGARCH_VIRT";
+      riscv64 = "RISCV_VIRT";
+      x86_64 = "OVMF";
+    }
+    .${stdenv.hostPlatform.parsed.cpu.name}
+      or (throw "Unsupported OVMF `fwPrefix` on ${stdenv.hostPlatform.parsed.cpu.name}"),
+  httpSupport ? false,
+  metaPlatforms ? lib.subtractLists lib.platforms.i686 edk2.meta.platforms,
   # Whether to create an nvram variables template
   # which includes the MSFT secure boot keys
   msVarsTemplate ? false,
+  projectDscPath ?
+    {
+      aarch64 = "ArmVirtPkg/ArmVirtQemu.dsc";
+      loongarch64 = "OvmfPkg/LoongArchVirt/LoongArchVirtQemu.dsc";
+      riscv64 = "OvmfPkg/RiscVVirt/RiscVVirtQemu.dsc";
+      x86_64 = "OvmfPkg/OvmfPkgX64.dsc";
+    }
+    .${stdenv.hostPlatform.parsed.cpu.name}
+      or (throw "Unsupported OVMF `projectDscPath` on ${stdenv.hostPlatform.parsed.cpu.name}"),
+  secureBoot ? false,
+  # Usually, this option is broken, do not use it except if you know what you are
+  # doing.
+  sourceDebug ? false,
+  systemManagementModeRequired ? secureBoot && stdenv.hostPlatform.isx86,
+  tlsSupport ? false,
+  tpmSupport ? false,
   # When creating the nvram variables template with
   # the MSFT keys, we also must provide a certificate
   # to use as the PK and first KEK for the keystore.
@@ -31,44 +57,19 @@
   #
   # Ignored if msVarsTemplate is false.
   vendorPkKek ? "$NIX_BUILD_TOP/debian/PkKek-1-Debian.pem",
-  httpSupport ? false,
-  tpmSupport ? false,
-  tlsSupport ? false,
-  debug ? false,
-  # Usually, this option is broken, do not use it except if you know what you are
-  # doing.
-  sourceDebug ? false,
-  projectDscPath ?
-    {
-      x86_64 = "OvmfPkg/OvmfPkgX64.dsc";
-      aarch64 = "ArmVirtPkg/ArmVirtQemu.dsc";
-      riscv64 = "OvmfPkg/RiscVVirt/RiscVVirtQemu.dsc";
-      loongarch64 = "OvmfPkg/LoongArchVirt/LoongArchVirtQemu.dsc";
-    }
-    .${stdenv.hostPlatform.parsed.cpu.name}
-      or (throw "Unsupported OVMF `projectDscPath` on ${stdenv.hostPlatform.parsed.cpu.name}"),
-  fwPrefix ?
-    {
-      x86_64 = "OVMF";
-      aarch64 = "AAVMF";
-      riscv64 = "RISCV_VIRT";
-      loongarch64 = "LOONGARCH_VIRT";
-    }
-    .${stdenv.hostPlatform.parsed.cpu.name}
-      or (throw "Unsupported OVMF `fwPrefix` on ${stdenv.hostPlatform.parsed.cpu.name}"),
-  metaPlatforms ? lib.subtractLists lib.platforms.i686 edk2.meta.platforms,
 }:
 
 let
 
   platformSpecific = {
-    x86_64.msVarsArgs = {
-      flavor = "OVMF_4M";
-      archDir = "X64";
-    };
     aarch64.msVarsArgs = {
-      flavor = "AAVMF";
       archDir = "AARCH64";
+      flavor = "AAVMF";
+    };
+
+    x86_64.msVarsArgs = {
+      archDir = "X64";
+      flavor = "OVMF_4M";
     };
   };
 
@@ -82,17 +83,19 @@ let
 
   debian-edk-src = fetchFromGitLab {
     domain = "salsa.debian.org";
+    hash = "sha256-n/6T5UBwW8U49mYhITRZRgy2tNdipeU4ZgGGDu9OTkg=";
+    nonConeMode = true;
     owner = "qemu-team";
     repo = "edk2";
-    nonConeMode = true;
+
     sparseCheckout = [
       "debian/edk2-vars-generator.py"
       "debian/python"
       "debian/PkKek-1-*.pem"
       "debian/patches/OvmfPkg-X64-add-opt-org.tianocore-UninstallMemAttrPr.patch"
     ];
+
     tag = "debian/2025.02-8";
-    hash = "sha256-n/6T5UBwW8U49mYhITRZRgy2tNdipeU4ZgGGDu9OTkg=";
   };
 
   buildPrefix = "Build/*/*";
@@ -104,13 +107,19 @@ assert msVarsTemplate -> platformSpecific ? ${cpuName};
 assert msVarsTemplate -> platformSpecific.${cpuName} ? msVarsArgs;
 
 edk2.mkDerivation projectDscPath (finalAttrs: {
-  pname = "OVMF";
   inherit version;
+  pname = "OVMF";
 
   outputs = [
     "out"
     "fd"
   ];
+
+  patches = [
+    (debian-edk-src + "/debian/patches/OvmfPkg-X64-add-opt-org.tianocore-UninstallMemAttrPr.patch")
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     util-linux
@@ -129,15 +138,6 @@ edk2.mkDerivation projectDscPath (finalAttrs: {
     dosfstools
     mtools
   ];
-  strictDeps = true;
-
-  hardeningDisable = [
-    "format"
-    "stackprotector"
-    "pic"
-    "fortify"
-  ]
-  ++ lib.optional stdenv.hostPlatform.isAarch64 "relro";
 
   buildFlags =
     # IPv6 has no reason to be disabled.
@@ -159,18 +159,8 @@ edk2.mkDerivation projectDscPath (finalAttrs: {
       "-D TPM2_CONFIG_ENABLE"
     ];
 
-  buildConfig = if debug then "DEBUG" else "RELEASE";
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Qunused-arguments";
-
   env.PYTHON_COMMAND = "python3";
-
-  postUnpack = lib.optionalDrvAttr msVarsTemplate ''
-    ln -s ${debian-edk-src}/debian
-  '';
-
-  patches = [
-    (debian-edk-src + "/debian/patches/OvmfPkg-X64-add-opt-org.tianocore-UninstallMemAttrPr.patch")
-  ];
 
   postConfigure = lib.optionalDrvAttr msVarsTemplate ''
     tr -d '\n' < ${vendorPkKek} | sed \
@@ -244,34 +234,50 @@ edk2.mkDerivation projectDscPath (finalAttrs: {
     ln -s $fd/FV/AAVMF_VARS.fd $fd/AAVMF/vars-template-pflash.raw
   '';
 
+  buildConfig = if debug then "DEBUG" else "RELEASE";
   dontPatchELF = true;
+
+  hardeningDisable = [
+    "format"
+    "stackprotector"
+    "pic"
+    "fortify"
+  ]
+  ++ lib.optional stdenv.hostPlatform.isAarch64 "relro";
+
+  postUnpack = lib.optionalDrvAttr msVarsTemplate ''
+    ln -s ${debian-edk-src}/debian
+  '';
 
   passthru =
     let
       prefix = "${finalAttrs.finalPackage.fd}/FV/${fwPrefix}";
     in
     {
-      mergedFirmware = "${prefix}.fd";
+      inherit secureBoot systemManagementModeRequired;
       firmware = "${prefix}_CODE.fd";
-      variables = "${prefix}_VARS.fd";
-      variablesMs =
-        assert msVarsTemplate;
-        "${prefix}_VARS.ms.fd";
+      mergedFirmware = "${prefix}.fd";
       # This will test the EFI firmware for the host platform as part of the NixOS Tests setup.
       tests.basic-systemd-boot = nixosTests.systemd-boot.basic;
       tests.secureBoot-systemd-boot = nixosTests.systemd-boot.secureBoot;
-      inherit secureBoot systemManagementModeRequired;
+      variables = "${prefix}_VARS.fd";
+
+      variablesMs =
+        assert msVarsTemplate;
+        "${prefix}_VARS.ms.fd";
     };
 
   meta = {
     description = "Sample UEFI firmware for QEMU and KVM";
     homepage = "https://github.com/tianocore/tianocore.github.io/wiki/OVMF";
     license = lib.licenses.bsd2;
-    platforms = metaPlatforms;
+
     maintainers = with lib.maintainers; [
       adamcstephens
       mjoerg
       sigmasquadron
     ];
+
+    platforms = metaPlatforms;
   };
 })

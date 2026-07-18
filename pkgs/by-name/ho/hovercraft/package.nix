@@ -1,15 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   fetchpatch,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "hovercraft";
   version = "2.7";
-  pyproject = true;
-  disabled = !python3Packages.isPy3k;
 
   src = fetchFromGitHub {
     owner = "regebro";
@@ -18,9 +16,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-X6EaiVahAYAaFB65oqmj695wlJFXNseqz0SQLzGVD0w=";
   };
 
-  build-system = [ python3Packages.setuptools ];
+  patches = [
+    (fetchpatch {
+      hash = "sha256-qz4Kp4MxlS3KPKRB5/VESCI++66U9q6cjQ0cHy3QjTc=";
+      name = "fix tests with pygments 2.14";
+      url = "https://sources.debian.org/data/main/h/hovercraft/2.7-5/debian/patches/0003-Fix-tests-with-pygments-2.14.patch";
+    })
+  ];
 
   nativeCheckInputs = [ python3Packages.manuel ];
+  build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
     setuptools
@@ -30,19 +35,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pygments
     watchdog
   ];
-  patches = [
-    (fetchpatch {
-      name = "fix tests with pygments 2.14";
-      url = "https://sources.debian.org/data/main/h/hovercraft/2.7-5/debian/patches/0003-Fix-tests-with-pygments-2.14.patch";
-      hash = "sha256-qz4Kp4MxlS3KPKRB5/VESCI++66U9q6cjQ0cHy3QjTc=";
-    })
-  ];
+
+  disabled = !python3Packages.isPy3k;
+  pyproject = true;
 
   meta = {
     description = "Makes impress.js presentations from reStructuredText";
-    mainProgram = "hovercraft";
     homepage = "https://github.com/regebro/hovercraft";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.makefu ];
+    mainProgram = "hovercraft";
   };
 })

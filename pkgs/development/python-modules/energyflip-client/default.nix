@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-aiohttp,
   pytestCheckHook,
   yarl,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "energyflip-client";
   version = "0.2.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "dennisschroer";
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "energyflip" ];
 
   meta = {

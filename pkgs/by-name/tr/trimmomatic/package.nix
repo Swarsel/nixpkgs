@@ -3,9 +3,9 @@
   fetchFromGitHub,
   jre_minimal,
   makeWrapper,
-  stripJavaArchivesHook,
   maven,
   nix-update-script,
+  stripJavaArchivesHook,
 }:
 
 maven.buildMavenPackage rec {
@@ -18,8 +18,6 @@ maven.buildMavenPackage rec {
     rev = "v${version}";
     hash = "sha256-pLUjSVePN++G2XZrdKEdobgBO+UD0PZ9wlhSUlZ7na8=";
   };
-
-  mvnHash = "sha256-J72B3qAVfRZ3lXpNyM1HYmBJQBkzj+J79fLIUJqyPTU=";
 
   nativeBuildInputs = [
     makeWrapper
@@ -38,27 +36,33 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  mvnHash = "sha256-J72B3qAVfRZ3lXpNyM1HYmBJQBkzj+J79fLIUJqyPTU=";
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/usadellab/Trimmomatic/releases/tag/v${version}";
     description = "Flexible read trimming tool for Illumina NGS data";
+
     longDescription = ''
       Trimmomatic performs a variety of useful trimming tasks for illumina
       paired-end and single ended data: adapter trimming, quality trimming,
       cropping to a specified length, length filtering, quality score
       conversion.
     '';
+
     homepage = "http://www.usadellab.org/cms/?page=trimmomatic";
-    downloadPage = "https://github.com/usadellab/Trimmomatic/releases";
+    changelog = "https://github.com/usadellab/Trimmomatic/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
+
     sourceProvenance = [
       lib.sourceTypes.fromSource
       lib.sourceTypes.binaryBytecode # source bundles dependencies as jars
     ];
-    mainProgram = "trimmomatic";
+
     maintainers = [ lib.maintainers.kupac ];
+    mainProgram = "trimmomatic";
+    downloadPage = "https://github.com/usadellab/Trimmomatic/releases";
   };
 }

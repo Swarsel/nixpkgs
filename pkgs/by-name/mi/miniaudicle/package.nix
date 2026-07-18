@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
   bison,
   flex,
-  which,
-  alsa-lib,
-  libsndfile,
-  libpulseaudio,
-  libjack2,
   kdePackages,
+  libjack2,
+  libpulseaudio,
+  libsndfile,
+  which,
   audioBackend ? "pulse", # "pulse", "alsa", or "jack"
 }:
 
@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-LYr9Fc4Siqk0BFKHVXfIV2XskJYAN+/0P+nb6FJLsLE=";
     fetchSubmodules = true;
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   postPatch = ''
     echo '#define GIT_REVISION "${finalAttrs.version}-NixOS"' > git-rev.h
@@ -50,15 +48,16 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (audioBackend == "jack") libjack2;
 
   buildFlags = [ "linux-${audioBackend}" ];
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Light-weight integrated development environment for the ChucK digital audio programming language";
-    mainProgram = "miniAudicle";
     homepage = "https://audicle.cs.princeton.edu/mini/";
-    downloadPage = "https://audicle.cs.princeton.edu/mini/linux/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "miniAudicle";
     broken = stdenv.hostPlatform.isDarwin; # not attempted
+    downloadPage = "https://audicle.cs.princeton.edu/mini/linux/";
   };
 })

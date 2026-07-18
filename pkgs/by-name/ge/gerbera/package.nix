@@ -3,44 +3,44 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  nixosTests,
+  curl,
+  duktape,
+  exiv2,
+  ffmpeg,
+  ffmpegthumbnailer,
+  file,
+  fmt,
+  icu77,
+  inotify-tools,
+  jsoncpp,
+  libebml,
+  libexif,
   # required
   libiconv,
+  libmatroska,
+  libmysqlclient,
   libupnp,
   libuuid,
+  nixosTests,
+  pkg-config,
   pugixml,
   spdlog,
   sqlite,
+  taglib,
+  wavpack,
   zlib,
-  fmt,
-  jsoncpp,
-  icu77,
+  enableAvcodec ? false,
+  enableCurl ? true,
+  enableDuktape ? true,
+  enableExiv2 ? false,
+  enableFFmpegThumbnailer ? false,
+  enableInotifyTools ? true,
+  enableLibexif ? true,
+  enableLibmagic ? true,
+  enableLibmatroska ? true,
   # options
   enableMysql ? false,
-  libmysqlclient,
-  enableDuktape ? true,
-  duktape,
-  enableCurl ? true,
-  curl,
   enableTaglib ? true,
-  taglib,
-  enableLibmagic ? true,
-  file,
-  enableLibmatroska ? true,
-  libmatroska,
-  libebml,
-  enableAvcodec ? false,
-  ffmpeg,
-  enableLibexif ? true,
-  libexif,
-  enableExiv2 ? false,
-  exiv2,
-  enableFFmpegThumbnailer ? false,
-  ffmpegthumbnailer,
-  enableInotifyTools ? true,
-  inotify-tools,
-  wavpack,
   enableWavPack ? false,
 }:
 
@@ -54,66 +54,67 @@ let
 
   options = [
     {
-      name = "AVCODEC";
       enable = enableAvcodec;
+      name = "AVCODEC";
       packages = [ ffmpeg ];
     }
     {
-      name = "CURL";
       enable = enableCurl;
+      name = "CURL";
       packages = [ curl ];
     }
     {
-      name = "EXIF";
       enable = enableLibexif;
+      name = "EXIF";
       packages = [ libexif ];
     }
     {
-      name = "EXIV2";
       enable = enableExiv2;
+      name = "EXIV2";
       packages = [ exiv2 ];
     }
     {
-      name = "FFMPEGTHUMBNAILER";
       enable = enableFFmpegThumbnailer;
+      name = "FFMPEGTHUMBNAILER";
       packages = [ ffmpegthumbnailer ];
     }
     {
-      name = "INOTIFY";
       enable = enableInotifyTools;
+      name = "INOTIFY";
       packages = [ inotify-tools ];
     }
     {
-      name = "JS";
       enable = enableDuktape;
+      name = "JS";
       packages = [ duktape ];
     }
     {
-      name = "MAGIC";
       enable = enableLibmagic;
+      name = "MAGIC";
       packages = [ file ];
     }
     {
-      name = "MATROSKA";
       enable = enableLibmatroska;
+      name = "MATROSKA";
+
       packages = [
         libmatroska
         libebml
       ];
     }
     {
-      name = "MYSQL";
       enable = enableMysql;
+      name = "MYSQL";
       packages = [ libmysqlclient ];
     }
     {
-      name = "TAGLIB";
       enable = enableTaglib;
+      name = "TAGLIB";
       packages = [ taglib ];
     }
     {
-      name = "WAVPACK";
       enable = enableWavPack;
+      name = "WAVPACK";
       packages = [ wavpack ];
     }
   ];
@@ -126,8 +127,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.0.0";
 
   src = fetchFromGitHub {
-    repo = "gerbera";
     owner = "gerbera";
+    repo = "gerbera";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-dszd4WSTjOWwLNha0yq1gtC5kxCrJMhnnhKYaor8JyU=";
   };
@@ -144,12 +145,6 @@ stdenv.mkDerivation (finalAttrs: {
       ${mysqlPatch}
       substituteInPlace CMakeLists.txt --replace-fail /usr/share/bash-completion/completions $out/share/bash-completion/completions
     '';
-
-  cmakeFlags = [
-    # systemd service will be generated alongside the service
-    "-DWITH_SYSTEMD=OFF"
-  ]
-  ++ map (e: "-DWITH_${e.name}=${if e.enable then "ON" else "OFF"}") options;
 
   nativeBuildInputs = [
     cmake
@@ -170,17 +165,25 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ flatten (builtins.catAttrs "packages" (builtins.filter (e: e.enable) options));
 
+  cmakeFlags = [
+    # systemd service will be generated alongside the service
+    "-DWITH_SYSTEMD=OFF"
+  ]
+  ++ map (e: "-DWITH_${e.name}=${if e.enable then "ON" else "OFF"}") options;
+
   passthru.tests = { inherit (nixosTests) mediatomb; };
 
   meta = {
-    homepage = "https://docs.gerbera.io/";
-    changelog = "https://github.com/gerbera/gerbera/releases/tag/v${finalAttrs.version}";
     description = "UPnP Media Server for 2024";
+
     longDescription = ''
       Gerbera is a Mediatomb fork.
       It allows to stream your digital media through your home network and consume it on all kinds
       of UPnP supporting devices.
     '';
+
+    homepage = "https://docs.gerbera.io/";
+    changelog = "https://github.com/gerbera/gerbera/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ ardumont ];
     platforms = lib.platforms.linux;

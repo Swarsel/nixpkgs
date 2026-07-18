@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
+  configparser,
   fetchPypi,
   requests,
-  configparser,
 }:
 
 buildPythonPackage rec {
   pname = "protonup-ng";
   version = "0.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,15 +26,18 @@ buildPythonPackage rec {
   ];
 
   doCheck = false; # protonup does not have any tests
+  format = "setuptools";
   pythonImportsCheck = [ "protonup" ];
 
   meta = {
-    homepage = "https://github.com/cloudishBenne/protonup-ng";
     description = "CLI program and API to automate the installation and update of GloriousEggroll's Proton-GE";
+    homepage = "https://github.com/cloudishBenne/protonup-ng";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       cafkafk
     ];
+
     mainProgram = "protonup";
   };
 }

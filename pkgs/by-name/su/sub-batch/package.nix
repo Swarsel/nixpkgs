@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   rustPlatform,
 }:
@@ -23,7 +23,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/kl/sub-batch";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ erictapen ];
-    broken = stdenv.hostPlatform.isDarwin;
     mainProgram = "sub-batch";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

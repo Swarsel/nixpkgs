@@ -1,37 +1,49 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitLab,
-  setuptools,
-  setuptools-scm,
-  click,
-  python-keycloak,
-  python-jose,
-  pyyaml,
-  swh-core,
   aiocache,
+  buildPythonPackage,
+  click,
+  djangorestframework,
   httpx,
-  pytestCheckHook,
   pytest-django,
   pytest-mock,
-  djangorestframework,
+  pytestCheckHook,
+  python-jose,
+  python-keycloak,
+  pyyaml,
+  setuptools,
+  setuptools-scm,
   starlette,
+  swh-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "swh-auth";
   version = "0.10.2";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "gitlab.softwareheritage.org";
-    group = "swh";
     owner = "devel";
     repo = "swh-auth";
     tag = "v${finalAttrs.version}";
     hash = "sha256-fRkhSpgguBff+vIOploi8i2qzd9qmsswiC62rIcY5bE=";
+    domain = "gitlab.softwareheritage.org";
+    group = "swh";
   };
+
+  # Many broken tests on Darwin. Disabling them for now.
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    aiocache
+    djangorestframework
+    httpx
+    pytestCheckHook
+    pytest-django
+    pytest-mock
+    starlette
+  ];
 
   build-system = [
     setuptools
@@ -46,20 +58,8 @@ buildPythonPackage (finalAttrs: {
     swh-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "swh.auth" ];
-
-  # Many broken tests on Darwin. Disabling them for now.
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  nativeCheckInputs = [
-    aiocache
-    djangorestframework
-    httpx
-    pytestCheckHook
-    pytest-django
-    pytest-mock
-    starlette
-  ];
 
   meta = {
     description = "Set of utility libraries related to user authentication in applications and services based on the use of Keycloak and OpenID Connect";

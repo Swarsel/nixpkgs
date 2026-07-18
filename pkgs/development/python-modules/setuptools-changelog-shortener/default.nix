@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   tomli,
   wheel,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "setuptools-changelog-shortener";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fschulze";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   # upstream has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "setuptools_changelog_shortener" ];
 
   meta = {

@@ -1,25 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  php,
-  openssl,
+  autoPatchelfHook,
+  common-updater-scripts,
+  curl,
   hiredis,
   libck,
-  zstd,
   lz4,
-  autoPatchelfHook,
-  writeShellScript,
+  openssl,
+  php,
   runCommand,
-  curl,
-  common-updater-scripts,
+  writeShellScript,
+  zstd,
 }:
 
 let
   version = "0.30.0";
   hashes = {
     "aarch64-darwin" = {
-      platform = "darwin-arm64";
       hash = {
         "8.1" = "sha256-71TLrF9HvuocMLei89bGIibJIC1sD59RB9Vb6FBS49U=";
         "8.2" = "sha256-WFrJ0+gun1qs77s3URFTha/tZA8gSeqlGLT26twnjko=";
@@ -27,9 +26,11 @@ let
         "8.4" = "sha256-SQ9+/zD6n49e2/9nH6hotyIJ/xsQMX5A78hFTPK4/hg=";
         "8.5" = "+n+fE5soEbruH+L35B+bapU/Z7rSjjOD/4BgRmr3MVc=";
       };
+
+      platform = "darwin-arm64";
     };
+
     "aarch64-linux" = {
-      platform = "debian-aarch64+libssl3";
       hash = {
         "8.1" = "sha256-hetG8fEmMJccYWMQwPb3hml5thNeY2L6Y4gCDQmbDlo=";
         "8.2" = "sha256-HufvcT4QSkuoxDcaCWD+hmG1fORyTUBh1Vsfnv7krng=";
@@ -37,9 +38,11 @@ let
         "8.4" = "em1nZgGD1fAtvMxVeJBU4RZaA71/qMVLi0KCRAbilpM=";
         "8.5" = "d0f3PzvZZn1KmXy1Gm0gm5f3f58kt+/LTc3yWZqto2I=";
       };
+
+      platform = "debian-aarch64+libssl3";
     };
+
     "x86_64-linux" = {
-      platform = "debian-x86-64+libssl3";
       hash = {
         "8.1" = "sha256-La/TQDnQ0hqNhPMtLlwfw5cKtXCpjxBMTd6yvZM2O2M=";
         "8.2" = "sha256-+FavbnliF071lWFU55rhFNq6X2wpW9mHSstwQQTbnwQ=";
@@ -47,33 +50,37 @@ let
         "8.4" = "x9YXGxtqN3EL1lWCqAkIKKrO0b40BFalO6GExhF3p4c=";
         "8.5" = "8hU5Ft9i3L6pf2XY7rRLmSbQmZ3z1wjI+7sjiq/GHUU=";
       };
+
+      platform = "debian-x86-64+libssl3";
     };
   };
 
   makeSource =
-    { system, phpMajor }:
+    { phpMajor, system }:
     fetchurl {
+      sha256 =
+        hashes.${system}.hash.${phpMajor}
+          or (throw "Unsupported PHP version for relay ${phpMajor} on ${system}");
+
       url =
         "https://builds.r2.relay.so/v${version}/relay-v${version}-php"
         + phpMajor
         + "-"
         + hashes.${system}.platform
         + ".tar.gz";
-      sha256 =
-        hashes.${system}.hash.${phpMajor}
-          or (throw "Unsupported PHP version for relay ${phpMajor} on ${system}");
     };
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit version;
   pname = "relay";
-  extensionName = "relay";
 
   src = makeSource {
-    system = stdenv.hostPlatform.system;
     phpMajor = lib.versions.majorMinor php.version;
+    system = stdenv.hostPlatform.system;
   };
+
   nativeBuildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ autoPatchelfHook ];
+
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
     hiredis
     libck
@@ -81,7 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
     lz4
   ];
-  internalDeps = [ php.extensions.session ];
+
   installPhase = ''
     runHook preInstall
   ''
@@ -156,6 +163,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  extensionName = "relay";
+  internalDeps = [ php.extensions.session ];
+
   passthru = {
     tests.smokeTest = runCommand "php-relay-smoke-test" { } ''
       ${lib.getExe php} \
@@ -197,8 +207,8 @@ stdenv.mkDerivation (finalAttrs: {
                 lib.nameValuePair (builtins.replaceStrings [ "." ] [ "_" ] (lib.concatStringsSep "_" path)) (
                   finalAttrs.finalPackage.overrideAttrs (attrs: {
                     src = makeSource {
-                      system = builtins.head path;
                       phpMajor = builtins.head (builtins.tail (builtins.tail path));
+                      system = builtins.head path;
                     };
                   })
                 )
@@ -209,14 +219,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Next-generation Redis extension for PHP";
-    changelog = "https://github.com/cachewerk/relay/releases/tag/v${version}";
     homepage = "https://relay.so/";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    changelog = "https://github.com/cachewerk/relay/releases/tag/v${version}";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       tillkruss
       ostrolucky
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

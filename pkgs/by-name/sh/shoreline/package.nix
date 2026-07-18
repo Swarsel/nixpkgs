@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  pkg-config,
-  imagemagick,
+  stdenv,
   fetchFromGitHub,
   SDL2,
-  numactl,
-  libvncserver,
   freetype,
+  imagemagick,
+  libvncserver,
+  numactl,
+  pkg-config,
   unstableGitUpdater,
 }:
 stdenv.mkDerivation {

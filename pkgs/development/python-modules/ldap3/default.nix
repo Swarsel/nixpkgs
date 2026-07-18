@@ -1,18 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  fetchpatch,
   buildPythonPackage,
   dos2unix,
-  setuptools,
+  fetchpatch,
   pyasn1,
+  setuptools,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "ldap3";
   version = "2.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cannatag";
@@ -21,6 +20,26 @@ buildPythonPackage rec {
     hash = "sha256-B+Sb6zMifkSKfaPYrXML5ugHGanbH5CPKeVdHshe3R4=";
   };
 
+  patches = [
+    # fix pyasn1 0.5.0 compatibility
+    # https://github.com/cannatag/ldap3/pull/983
+    (fetchpatch {
+      hash = "sha256-A8qI0t1OV3bkKaSdhVWHFBC9MoSkWynqxpgznV+5gh8=";
+      url = "https://github.com/cannatag/ldap3/commit/ca689f4893b944806f90e9d3be2a746ee3c502e4.patch";
+    })
+  ];
+
+  nativeBuildInputs = [ dos2unix ];
+  nativeCheckInputs = [ unittestCheckHook ];
+
+  preCheck = ''
+    export SERVER=NONE
+  '';
+
+  build-system = [ setuptools ];
+  dependencies = [ pyasn1 ];
+  enabledTestPaths = [ "test/" ];
+
   prePatch = ''
     # patch fails to apply because of line endings
     dos2unix ldap3/utils/asn1.py
@@ -28,32 +47,11 @@ buildPythonPackage rec {
       --replace-fail '"version": "2.9",' '"version": "${version}",'
   '';
 
-  patches = [
-    # fix pyasn1 0.5.0 compatibility
-    # https://github.com/cannatag/ldap3/pull/983
-    (fetchpatch {
-      url = "https://github.com/cannatag/ldap3/commit/ca689f4893b944806f90e9d3be2a746ee3c502e4.patch";
-      hash = "sha256-A8qI0t1OV3bkKaSdhVWHFBC9MoSkWynqxpgznV+5gh8=";
-    })
-  ];
-
-  nativeBuildInputs = [ dos2unix ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [ pyasn1 ];
-
-  nativeCheckInputs = [ unittestCheckHook ];
-
-  enabledTestPaths = [ "test/" ];
-
-  preCheck = ''
-    export SERVER=NONE
-  '';
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/cannatag/ldap3";
     description = "Strictly RFC 4510 conforming LDAP V3 pure Python client library";
+    homepage = "https://github.com/cannatag/ldap3";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
   };

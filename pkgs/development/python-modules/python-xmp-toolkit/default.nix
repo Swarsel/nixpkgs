@@ -1,16 +1,15 @@
 {
-  buildPythonPackage,
-  exempi,
-  fetchFromGitHub,
-  pytz,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
+  exempi,
+  pytz,
 }:
 
 buildPythonPackage {
   pname = "python-xmp-toolkit";
   version = "2.0.2";
-  format = "setuptools";
 
   # PyPi has version 2.0.1; the tests fail
   # There are commits for a 2.0.2 release that was never published
@@ -25,15 +24,13 @@ buildPythonPackage {
     sha256 = "16bylcm183ilzp7mrpdzw0pzp6csv9v5v247914qsv2abg0hgl5y";
   };
 
-  buildInputs = [ exempi ];
-
-  propagatedBuildInputs = [ pytz ];
-
   postPatch = ''
     substituteInPlace libxmp/exempi.py \
       --replace "ctypes.util.find_library('exempi')" "'${exempi}/lib/libexempi${stdenv.hostPlatform.extensions.sharedLibrary}'"
   '';
 
+  buildInputs = [ exempi ];
+  propagatedBuildInputs = [ pytz ];
   # hangs on darwin + sandbox
   doCheck = !stdenv.hostPlatform.isDarwin;
 
@@ -41,9 +38,11 @@ buildPythonPackage {
     rm test/{test_exempi,test_files}.py
   '';
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/python-xmp-toolkit/python-xmp-toolkit";
     description = "Python XMP Toolkit for working with metadata";
+    homepage = "https://github.com/python-xmp-toolkit/python-xmp-toolkit";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

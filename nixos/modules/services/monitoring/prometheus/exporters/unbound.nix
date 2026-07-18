@@ -27,65 +27,75 @@ in
       "fetchType"
     ] "This option was removed, use the `unbound.host` option instead.")
     {
-      options.warnings = options.warnings;
       options.assertions = options.assertions;
+      options.warnings = options.warnings;
     }
   ];
 
-  port = 9167;
   extraOpts = {
     telemetryPath = mkOption {
-      type = types.str;
       default = "/metrics";
+
       description = ''
         Path under which to expose metrics.
       '';
+
+      type = types.str;
     };
 
     unbound = {
       ca = mkOption {
-        type = types.nullOr types.path;
         default = "/var/lib/unbound/unbound_server.pem";
-        example = null;
+
         description = ''
           Path to the Unbound server certificate authority
         '';
+
+        example = null;
+        type = types.nullOr types.path;
       };
 
       certificate = mkOption {
-        type = types.nullOr types.path;
         default = "/var/lib/unbound/unbound_control.pem";
-        example = null;
+
         description = ''
           Path to the Unbound control socket certificate
         '';
-      };
 
-      key = mkOption {
-        type = types.nullOr types.path;
-        default = "/var/lib/unbound/unbound_control.key";
         example = null;
-        description = ''
-          Path to the Unbound control socket key.
-        '';
+        type = types.nullOr types.path;
       };
 
       host = mkOption {
-        type = types.str;
         default = "tcp://127.0.0.1:8953";
-        example = "unix:///run/unbound/unbound.socket";
+
         description = ''
           Path to the unbound control socket. Supports unix domain sockets, as well as the TCP interface.
         '';
+
+        example = "unix:///run/unbound/unbound.socket";
+        type = types.str;
+      };
+
+      key = mkOption {
+        default = "/var/lib/unbound/unbound_control.key";
+
+        description = ''
+          Path to the Unbound control socket key.
+        '';
+
+        example = null;
+        type = types.nullOr types.path;
       };
     };
   };
+
+  port = 9167;
 
   serviceOpts = mkMerge (
     [
       {
         serviceConfig = {
-          User = "unbound"; # to access the unbound_control.key
           ExecStart = ''
             ${pkgs.prometheus-unbound-exporter}/bin/unbound_exporter \
               --unbound.host "${cfg.unbound.host}" \
@@ -96,11 +106,14 @@ in
               ${optionalString (cfg.unbound.key != null) "--unbound.key ${cfg.unbound.key}"} \
               ${toString cfg.extraFlags}
           '';
+
           RestrictAddressFamilies = [
             "AF_UNIX"
             "AF_INET"
             "AF_INET6"
           ];
+
+          User = "unbound"; # to access the unbound_control.key
         }
         // optionalAttrs (!config.services.unbound.enable) {
           DynamicUser = true;

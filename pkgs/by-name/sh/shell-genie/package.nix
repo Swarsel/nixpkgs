@@ -1,7 +1,7 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 with python3.pkgs;
@@ -9,18 +9,15 @@ with python3.pkgs;
 buildPythonPackage rec {
   pname = "shell-genie";
   version = "0.2.10";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "shell_genie";
     inherit version;
     hash = "sha256-z7LiAq2jLzqjg4Q/r9o7M6VbedeT34NyPpgctfqBp+8=";
+    pname = "shell_genie";
   };
 
-  pythonRelaxDeps = [
-    "openai"
-    "typer"
-  ];
+  # No tests available
+  doCheck = false;
 
   build-system = [
     poetry-core
@@ -35,11 +32,15 @@ buildPythonPackage rec {
     typer
   ];
 
-  # No tests available
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "shell_genie"
+  ];
+
+  pythonRelaxDeps = [
+    "openai"
+    "typer"
   ];
 
   meta = {

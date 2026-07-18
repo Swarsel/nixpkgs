@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
-  buildGo126Module,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  llvmPackages_20,
-  go_1_26,
-  xar,
-  binaryen,
   avrdude,
+  binaryen,
+  buildGo126Module,
   gdb,
+  go_1_26,
+  llvmPackages_20,
+  makeWrapper,
   openocd,
   runCommand,
+  xar,
   tinygoTests ? [ "smoketest" ],
 }:
 
@@ -37,6 +37,7 @@ let
 in
 
 buildGoModule (finalAttrs: {
+  inherit tinygoTests;
   pname = "tinygo";
   version = "0.41.1";
 
@@ -46,6 +47,7 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-8Zpvhx+xgC/Cjdm3zSpntLKOT4HsBU7lPWdLumWeFyw=";
     fetchSubmodules = true;
+
     # The public hydra server on `hydra.nixos.org` is configured with
     # `max_output_size` of 3GB. The purpose of this `postFetch` step
     # is to stay below that limit and save 4.1GiB and 428MiB in output
@@ -55,37 +57,9 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  vendorHash = "sha256-OO8o/s71jZIypfYZCLT6jwUPyQJ89AKg3DfzTrbrD/A=";
-
   patches = [
     ./0001-GNUmakefile.patch
   ];
-
-  nativeCheckInputs = [ binaryen ];
-  nativeBuildInputs = [
-    makeWrapper
-    lld
-  ];
-  buildInputs = [
-    llvm
-    clang.cc
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ xar ];
-
-  doCheck = (stdenv.buildPlatform.canExecute stdenv.hostPlatform);
-  inherit tinygoTests;
-
-  allowGoReference = true;
-  ldflags = [
-    "-X github.com/tinygo-org/tinygo/goenv.TINYGOROOT=${placeholder "out"}/share/tinygo"
-    "-X github.com/tinygo-org/tinygo/goenv.clangResourceDir=${clang.cc.lib}/lib/clang/${llvmMajor}"
-  ];
-  tags = [ "llvm${llvmMajor}" ];
-  subPackages = [ "." ];
-
-  # Output contains static libraries for different arm cpus
-  # and stripping could mess up these so only strip the compiler
-  stripDebugList = [ "bin" ];
 
   postPatch = ''
     # Borrow compiler-rt builtins from our source
@@ -97,6 +71,19 @@ buildGoModule (finalAttrs: {
       --replace "build/release/tinygo/bin" "$out/bin" \
       --replace "build/release/" "$out/share/"
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    lld
+  ];
+
+  buildInputs = [
+    llvm
+    clang.cc
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ xar ];
+
+  vendorHash = "sha256-OO8o/s71jZIypfYZCLT6jwUPyQJ89AKg3DfzTrbrD/A=";
 
   preBuild = ''
     export PATH=${bootstrapTools}:$PATH
@@ -115,20 +102,12 @@ buildGoModule (finalAttrs: {
     export TINYGOROOT=$(pwd)
   '';
 
+  doCheck = (stdenv.buildPlatform.canExecute stdenv.hostPlatform);
+  nativeCheckInputs = [ binaryen ];
+
   checkPhase = lib.optionalString (tinygoTests != [ ] && tinygoTests != null) ''
     make ''${tinygoTests[@]} TINYGO="$(pwd)/build/tinygo" MD5SUM=md5sum XTENSA=0
   '';
-
-  # GDB upstream does not support ARM darwin
-  runtimeDeps = [
-    go
-    clang.cc
-    lld
-    avrdude
-    openocd
-    binaryen
-  ]
-  ++ lib.optionals (!(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64)) [ gdb ];
 
   installPhase = ''
     runHook preInstall
@@ -141,10 +120,35 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  allowGoReference = true;
+
+  ldflags = [
+    "-X github.com/tinygo-org/tinygo/goenv.TINYGOROOT=${placeholder "out"}/share/tinygo"
+    "-X github.com/tinygo-org/tinygo/goenv.clangResourceDir=${clang.cc.lib}/lib/clang/${llvmMajor}"
+  ];
+
+  # GDB upstream does not support ARM darwin
+  runtimeDeps = [
+    go
+    clang.cc
+    lld
+    avrdude
+    openocd
+    binaryen
+  ]
+  ++ lib.optionals (!(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64)) [ gdb ];
+
+  # Output contains static libraries for different arm cpus
+  # and stripping could mess up these so only strip the compiler
+  stripDebugList = [ "bin" ];
+  subPackages = [ "." ];
+  tags = [ "llvm${llvmMajor}" ];
+
   meta = {
-    homepage = "https://tinygo.org/";
     description = "Go compiler for small places";
+    homepage = "https://tinygo.org/";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       muscaln
     ];

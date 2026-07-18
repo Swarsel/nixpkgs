@@ -27,7 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/msteinert/bstring";
     changelog = "https://github.com/msteinert/bstring/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ nulleric ];
+    platforms = lib.platforms.unix;
   };
 })

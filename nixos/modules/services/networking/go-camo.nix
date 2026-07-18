@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -18,53 +18,62 @@ in
 {
   options.services.go-camo = {
     enable = mkEnableOption "go-camo service";
-    listen = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      description = "Address:Port to bind to for HTTP (default: 0.0.0.0:8080).";
-      apply = v: optionalString (v != null) "--listen=${v}";
+
+    extraOptions = mkOption {
+      default = [ ];
+      description = "Extra options passed to the go-camo command.";
+      type = with types; listOf str;
     };
-    sslListen = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      description = "Address:Port to bind to for HTTPS.";
-      apply = v: optionalString (v != null) "--ssl-listen=${v}";
-    };
-    sslKey = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      description = "Path to TLS private key.";
-      apply = v: optionalString (v != null) "--ssl-key=${v}";
-    };
-    sslCert = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      description = "Path to TLS certificate.";
-      apply = v: optionalString (v != null) "--ssl-cert=${v}";
-    };
+
     keyFile = mkOption {
-      type = types.path;
       default = null;
+
       description = ''
         A file containing the HMAC key to use for signing URLs.
         The file can contain any string. Can be generated using "openssl rand -base64 18 > the_file".
       '';
+
+      type = types.path;
     };
-    extraOptions = mkOption {
-      type = with types; listOf str;
-      default = [ ];
-      description = "Extra options passed to the go-camo command.";
+
+    listen = mkOption {
+      apply = v: optionalString (v != null) "--listen=${v}";
+      default = null;
+      description = "Address:Port to bind to for HTTP (default: 0.0.0.0:8080).";
+      type = types.nullOr types.str;
+    };
+
+    sslCert = mkOption {
+      apply = v: optionalString (v != null) "--ssl-cert=${v}";
+      default = null;
+      description = "Path to TLS certificate.";
+      type = types.nullOr types.path;
+    };
+
+    sslKey = mkOption {
+      apply = v: optionalString (v != null) "--ssl-key=${v}";
+      default = null;
+      description = "Path to TLS private key.";
+      type = types.nullOr types.path;
+    };
+
+    sslListen = mkOption {
+      apply = v: optionalString (v != null) "--ssl-listen=${v}";
+      default = null;
+      description = "Address:Port to bind to for HTTPS.";
+      type = types.nullOr types.str;
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.go-camo = {
-      description = "go-camo service";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "go-camo service";
+
       environment = {
         GOCAMO_HMAC_FILE = "%d/hmac";
       };
+
       script = ''
         GOCAMO_HMAC="$(cat "$GOCAMO_HMAC_FILE")"
         export GOCAMO_HMAC
@@ -83,16 +92,21 @@ in
           )
         }
       '';
+
       serviceConfig = {
-        NoNewPrivileges = true;
-        ProtectSystem = "strict";
         DynamicUser = true;
-        User = "gocamo";
         Group = "gocamo";
+
         LoadCredential = [
           "hmac:${cfg.keyFile}"
         ];
+
+        NoNewPrivileges = true;
+        ProtectSystem = "strict";
+        User = "gocamo";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

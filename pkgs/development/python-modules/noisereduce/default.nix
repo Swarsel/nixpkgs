@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   joblib,
   matplotlib,
   numpy,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "noisereduce";
   version = "3.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "timsainb";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     hash = "sha256-CMXbl+9L01rtsD8BZ3nNomacsChy/1EGdUdWz7Ytbjk=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,8 +38,7 @@ buildPythonPackage rec {
     PyTorch = [ torch ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "noisereduce" ];
 
   meta = {

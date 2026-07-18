@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-/5nH7zHg8zxWFgtVzSnfp7RZGvPWiuGSEyhx9fE2Pvo=";
-
   excludedPackages = [ "bench" ];
 
   ldflags = [
@@ -25,8 +24,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://nsq.io/";
     description = "Realtime distributed messaging platform";
+    homepage = "https://nsq.io/";
     changelog = "https://github.com/nsqio/nsq/raw/v${finalAttrs.version}/ChangeLog.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ blakesmith ];

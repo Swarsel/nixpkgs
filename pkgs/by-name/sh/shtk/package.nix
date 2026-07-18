@@ -30,8 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     "SHTK_SHELL=${stdenv.shell}"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
 
   postInstall = ''
@@ -50,8 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
     rm -rf "$out/tests"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Application toolkit for programmers writing POSIX-compliant shell scripts";
+
     longDescription = ''
       The Shell Toolkit, or shtk for short, is an application toolkit
       for programmers writing POSIX-compliant shell scripts.
@@ -66,6 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
       dependencies to be installed, and is known to be compatible with at least
       bash, dash, pdksh and zsh.
     '';
+
     homepage = "https://github.com/jmmv/shtk";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.jmmv ];

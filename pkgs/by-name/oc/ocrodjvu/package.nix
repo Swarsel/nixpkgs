@@ -1,27 +1,26 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  cuneiform,
   djvulibre,
   docbook-xsl-ns,
   glibcLocales,
+  gocr,
   libxml2,
   libxml2Python,
   libxslt,
+  ocrad,
   pkg-config,
+  python3Packages,
   tesseract5,
   withCuneiform ? false,
-  cuneiform,
   withGocr ? false,
-  gocr,
   withOcrad ? false,
-  ocrad,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "ocrodjvu";
   version = "0.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "FriedrichFroebel";
@@ -30,22 +29,11 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-/TPo8YCE8JKKKBBeV12ilgTNDmuklwfy0TPI/7dBiOs=";
   };
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
   propagatedBuildInputs = [
   ]
   ++ lib.optional withCuneiform cuneiform
   ++ lib.optional withGocr gocr
   ++ lib.optional withOcrad ocrad;
-
-  dependencies = with python3Packages; [
-    lxml
-    python-djvulibre
-    pyicu
-    html5lib
-  ];
 
   nativeCheckInputs = [
     python3Packages.unittestCheckHook
@@ -57,6 +45,19 @@ python3Packages.buildPythonApplication rec {
     tesseract5
   ];
 
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  dependencies = with python3Packages; [
+    lxml
+    python-djvulibre
+    pyicu
+    html5lib
+  ];
+
+  pyproject = true;
+
   unittestFlagsArray = [
     "tests"
     "-v"
@@ -67,8 +68,8 @@ python3Packages.buildPythonApplication rec {
     homepage = "https://github.com/FriedrichFroebel/ocrodjvu";
     changelog = "https://github.com/FriedrichFroebel/ocrodjvu/blob/${version}/doc/changelog";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ dansbandit ];
+    platforms = lib.platforms.linux;
     mainProgram = "ocrodjvu";
   };
 }

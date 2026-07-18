@@ -1,13 +1,13 @@
 {
-  symlinkJoin,
   lib,
-  makeWrapper,
   folder-color-switcher,
+  makeWrapper,
   nemo,
   nemo-emblems,
   nemo-fileroller,
   nemo-python,
   python3,
+  symlinkJoin,
   extensions ? [ ],
   useDefaultExtensions ? true,
 }:
@@ -26,10 +26,6 @@ let
   nemoPythonExtensionsDeps = lib.concatMap (x: x.nemoPythonExtensionDeps or [ ]) selectedExtensions;
 in
 symlinkJoin {
-  name = "nemo-with-extensions-${nemo.version}";
-
-  paths = [ nemo ] ++ selectedExtensions;
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -54,6 +50,9 @@ symlinkJoin {
         --replace "${nemo}" "$out"
     done
   '';
+
+  name = "nemo-with-extensions-${nemo.version}";
+  paths = [ nemo ] ++ selectedExtensions;
 
   meta = removeAttrs nemo.meta [
     "name"

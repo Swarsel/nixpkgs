@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   zstd,
@@ -10,17 +10,17 @@
 buildPythonPackage rec {
   pname = "backports-zstd";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rogdham";
     repo = "backports.zstd";
     tag = "v${version}";
+    hash = "sha256-0FGYh6o26oeovZ23VYKmmY2nNzDHXIKU8/lBqUxuGQw=";
     fetchSubmodules = true;
+
     postFetch = ''
       rm -r "$out/src/c/zstd"
     '';
-    hash = "sha256-0FGYh6o26oeovZ23VYKmmY2nNzDHXIKU8/lBqUxuGQw=";
   };
 
   postPatch = ''
@@ -32,29 +32,28 @@ buildPythonPackage rec {
       --replace-fail "return __cached_interp_requires_environment" "return True"
   '';
 
-  build-system = [ setuptools ];
-
-  pypaBuildFlags = [ "--config-setting=--build-option=--system-zstd" ];
-
   buildInputs = [ zstd ];
-
-  pythonImportsCheck = [ "backports.zstd" ];
 
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
-  enabledTestPaths = [ "tests" ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # sandbox doesn't allow setting SUID bit
     "tests/test/test_tarfile.py::TestExtractionFilters::test_modes"
   ];
 
+  enabledTestPaths = [ "tests" ];
+  pypaBuildFlags = [ "--config-setting=--build-option=--system-zstd" ];
+  pyproject = true;
+  pythonImportsCheck = [ "backports.zstd" ];
+
   meta = {
-    changelog = "https://github.com/rogdham/backports.zstd/blob/${src.tag}/CHANGELOG.md";
     description = "Backport of compression.zstd";
     homepage = "https://github.com/rogdham/backports.zstd";
+    changelog = "https://github.com/rogdham/backports.zstd/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.psfl;
     maintainers = [ lib.maintainers.dotlambda ];
   };

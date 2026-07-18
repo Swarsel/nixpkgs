@@ -14,15 +14,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0sgwic99hxlb1av8cm0albzh8myb7r3lpcwxfm606l0bkc3h4pqh";
   };
 
-  patches = [ ./x86_64-cpuid.patch ];
-
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-  outputBin = "dev"; # oil-bugreport
 
+  patches = [ ./x86_64-cpuid.patch ];
   nativeBuildInputs = [ pkg-config ];
 
   # fix "argb_paint_i386.c:53:Incorrect register `%rax' used with `l' suffix"
@@ -33,13 +31,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   # fixes a cast in inline asm: easier than patching
   buildFlags = lib.optional stdenv.hostPlatform.isDarwin "CFLAGS=-fheinous-gnu-extensions";
+  outputBin = "dev"; # oil-bugreport
 
   meta = {
     description = "Library of simple functions that are optimized for various CPUs";
-    mainProgram = "oil-bugreport";
     homepage = "https://liboil.freedesktop.org";
     license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "oil-bugreport";
   };
 })

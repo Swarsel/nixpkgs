@@ -1,16 +1,14 @@
 {
+  lib,
+  fetchFromGitHub,
   autoAddDriverRunpath,
   cmake,
   cudaPackages,
-  fetchFromGitHub,
   fetchpatch,
-  lib,
 }:
 cudaPackages.backendStdenv.mkDerivation (finalAttrs: {
   pname = "xmrig-cuda";
   version = "6.22.1";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "xmrig";
@@ -18,25 +16,25 @@ cudaPackages.backendStdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-krS0ygKclXDLti24PDnBFUetOAYkYM8jty4C3PSOEWY=";
   };
+
   patches = [
     (fetchpatch {
-      url = "https://github.com/xmrig/xmrig-cuda/commit/5947ae05f87eb7966fbe0ad2db149a496f908e87.patch";
       hash = "sha256-5fxlc09DnJ2uNZAdhYdLv67RHCha7+SfMg9XzwwrN9o=";
+      url = "https://github.com/xmrig/xmrig-cuda/commit/5947ae05f87eb7966fbe0ad2db149a496f908e87.patch";
     })
     (fetchpatch {
-      url = "https://github.com/xmrig/xmrig-cuda/commit/d0065c315779b28f12944a74694f81e13fb01ece.patch";
       hash = "sha256-8lU3s2b1eh7fvcMze/FIiaURFrkypVGJisrE7w0aDM4=";
+      url = "https://github.com/xmrig/xmrig-cuda/commit/d0065c315779b28f12944a74694f81e13fb01ece.patch";
     })
   ];
+
   postPatch = ''
     substituteInPlace cmake/flags.cmake \
       --replace-fail 'set(CMAKE_CXX_STANDARD 11)' 'set(CMAKE_CXX_STANDARD 17)' \
       --replace-fail '-std=c++11' '-std=c++17'
   '';
 
-  cmakeFlags = [
-    "-DLIBCUDA_LIBRARY_DIR=${lib.getLib cudaPackages.cuda_cudart}/lib/stubs/"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoAddDriverRunpath
@@ -50,6 +48,10 @@ cudaPackages.backendStdenv.mkDerivation (finalAttrs: {
     cudaPackages.cuda_cudart
   ];
 
+  cmakeFlags = [
+    "-DLIBCUDA_LIBRARY_DIR=${lib.getLib cudaPackages.cuda_cudart}/lib/stubs/"
+  ];
+
   installPhase = ''
     runHook preInstall
 
@@ -58,13 +60,17 @@ cudaPackages.backendStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Monero (XMR) CPU miner, CUDA plugin";
     homepage = "https://github.com/xmrig/xmrig-cuda";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       albertlarsan68
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

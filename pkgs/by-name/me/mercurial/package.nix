@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchurl,
-  python3Packages,
-  makeWrapper,
-  gettext,
-  installShellFiles,
-  re2Support ? true,
-  rustSupport ? stdenv.hostPlatform.isLinux,
+  cacert,
   cargo,
+  gettext,
+  git,
+  gnupg,
+  installShellFiles,
+  makeWrapper,
+  python3Packages,
+  # test dependencies
+  runCommand,
   rustPlatform,
   rustc,
+  sqlite,
+  tk,
+  unzip,
+  which,
   fullBuild ? false,
   gitSupport ? fullBuild,
   guiSupport ? fullBuild,
-  tk,
   highlightSupport ? fullBuild,
-  # test dependencies
-  runCommand,
-  unzip,
-  which,
-  sqlite,
-  git,
-  cacert,
-  gnupg,
+  re2Support ? true,
+  rustSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 let
@@ -47,30 +47,6 @@ let
       hash = "sha256-8uyOfu7wUAWRcG03RVXwzrEYgiBo51+jsyvgfdIYT2w=";
     };
 
-    pyproject = false;
-
-    passthru = { inherit python; }; # pass it so that the same version can be used in hg2git
-
-    cargoDeps =
-      if rustSupport then
-        rustPlatform.fetchCargoVendor {
-          inherit src;
-          name = "mercurial-${version}";
-          hash = "sha256-OGsHK3Bh47V4n+7HYpVp/jymCz1QY45rkWlAW0Hob7g=";
-          sourceRoot = "mercurial-${version}/rust";
-        }
-      else
-        null;
-    cargoRoot = if rustSupport then "rust" else null;
-
-    # enable building with Python 3.14
-    # FIXME remove once PyO3 is updated in Cargo.lock
-    env.PYO3_USE_ABI3_FORWARD_COMPATIBILITY = 1;
-
-    propagatedBuildInputs =
-      lib.optional re2Support google-re2
-      ++ lib.optional gitSupport pygit2
-      ++ lib.optional highlightSupport pygments;
     nativeBuildInputs = [
       makeWrapper
       gettext
@@ -84,9 +60,18 @@ let
       cargo
       rustc
     ];
+
     buildInputs = [ docutils ];
 
+    propagatedBuildInputs =
+      lib.optional re2Support google-re2
+      ++ lib.optional gitSupport pygit2
+      ++ lib.optional highlightSupport pygments;
+
     makeFlags = [ "PREFIX=$(out)" ] ++ lib.optional rustSupport "PURE=--rust";
+    # enable building with Python 3.14
+    # FIXME remove once PyO3 is updated in Cargo.lock
+    env.PYO3_USE_ABI3_FORWARD_COMPATIBILITY = 1;
 
     postInstall =
       (lib.optionalString guiSupport ''
@@ -117,6 +102,21 @@ let
           --zsh contrib/zsh_completion
       '';
 
+    cargoDeps =
+      if rustSupport then
+        rustPlatform.fetchCargoVendor {
+          inherit src;
+          hash = "sha256-OGsHK3Bh47V4n+7HYpVp/jymCz1QY45rkWlAW0Hob7g=";
+          name = "mercurial-${version}";
+          sourceRoot = "mercurial-${version}/rust";
+        }
+      else
+        null;
+
+    cargoRoot = if rustSupport then "rust" else null;
+    pyproject = false;
+    passthru = { inherit python; }; # pass it so that the same version can be used in hg2git
+
     passthru.tests = {
       mercurial-tests = makeTests { flags = "--with-hg=$MERCURIAL_BASE/bin/hg"; };
     };
@@ -124,42 +124,30 @@ let
     meta = {
       description = "Fast, lightweight SCM system for very large distributed projects";
       homepage = "https://www.mercurial-scm.org";
-      downloadPage = "https://www.mercurial-scm.org/release/";
       changelog = "https://wiki.mercurial-scm.org/Release${lib.versions.majorMinor version}";
       license = lib.licenses.gpl2Plus;
+
       maintainers = with lib.maintainers; [
         lukegb
         euxane
         techknowlogick
       ];
+
       platforms = lib.platforms.unix;
       mainProgram = "hg";
+      downloadPage = "https://www.mercurial-scm.org/release/";
     };
   };
 
   makeTests =
     {
+      flags ? "",
       mercurial ? self,
       nameSuffix ? "",
-      flags ? "",
     }:
     runCommand "${mercurial.pname}${nameSuffix}-tests"
       {
         inherit (mercurial) src;
-
-        SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt"; # needed for git
-        MERCURIAL_BASE = mercurial;
-        nativeBuildInputs = [
-          python
-          unzip
-          which
-          sqlite
-          git
-          gnupg
-        ];
-
-        # https://bz.mercurial-scm.org/show_bug.cgi?id=6887
-        propagatedBuildInputs = [ setuptools ];
 
         postPatch = ''
           patchShebangs .
@@ -182,9 +170,21 @@ let
           done
         '';
 
+        nativeBuildInputs = [
+          python
+          unzip
+          which
+          sqlite
+          git
+          gnupg
+        ];
+
+        # https://bz.mercurial-scm.org/show_bug.cgi?id=6887
+        propagatedBuildInputs = [ setuptools ];
+        MERCURIAL_BASE = mercurial;
+        SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt"; # needed for git
         # This runs Mercurial _a lot_ of times.
         requiredSystemFeatures = [ "big-parallel" ];
-
         # Don't run tests if not-Linux or if cross-compiling.
         meta.broken = !stdenv.hostPlatform.isLinux || stdenv.buildPlatform != stdenv.hostPlatform;
       }
@@ -238,6 +238,10 @@ let
 in
 self.overridePythonAttrs (origAttrs: {
   passthru = origAttrs.passthru // rec {
+    tests = origAttrs.passthru.tests // {
+      withExtensions = withExtensions (pm: [ pm.hg-evolve ]);
+    };
+
     # withExtensions takes a function which takes the python packages set and
     # returns a list of extensions to install.
     #
@@ -257,17 +261,10 @@ self.overridePythonAttrs (origAttrs: {
         env = python.withPackages (ps: plugins);
       in
       stdenv.mkDerivation {
-        pname = "${self.pname}-with-extensions";
-
         inherit (self) src version meta;
-
-        buildInputs = self.buildInputs ++ self.propagatedBuildInputs;
+        pname = "${self.pname}-with-extensions";
         nativeBuildInputs = self.nativeBuildInputs;
-
-        dontUnpack = true;
-        dontPatch = true;
-        dontConfigure = true;
-        dontBuild = true;
+        buildInputs = self.buildInputs ++ self.propagatedBuildInputs;
         doCheck = false;
 
         installPhase = ''
@@ -293,10 +290,11 @@ self.overridePythonAttrs (origAttrs: {
 
           runHook postInstallCheck
         '';
-      };
 
-    tests = origAttrs.passthru.tests // {
-      withExtensions = withExtensions (pm: [ pm.hg-evolve ]);
-    };
+        dontBuild = true;
+        dontConfigure = true;
+        dontPatch = true;
+        dontUnpack = true;
+      };
   };
 })

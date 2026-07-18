@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  pip-chill,
   lxml,
+  pip-chill,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "free-proxy";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jundymek";
@@ -27,6 +26,8 @@ buildPythonPackage rec {
     lxml
     requests
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Free proxy scraper written in python";

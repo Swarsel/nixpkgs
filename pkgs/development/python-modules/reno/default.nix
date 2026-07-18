@@ -1,9 +1,9 @@
 {
-  buildPythonPackage,
-  dulwich,
-  docutils,
   lib,
   fetchFromGitHub,
+  buildPythonPackage,
+  docutils,
+  dulwich,
   git,
   gnupg,
   pbr,
@@ -11,14 +11,13 @@
   setuptools,
   sphinx,
   stestr,
-  testtools,
   testscenarios,
+  testtools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "reno";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -28,17 +27,6 @@ buildPythonPackage (finalAttrs: {
   };
 
   env.PBR_VERSION = finalAttrs.version;
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    dulwich
-    pbr
-    pyyaml
-    setuptools
-  ];
 
   nativeCheckInputs = [
     # Python packages
@@ -74,17 +62,29 @@ buildPythonPackage (finalAttrs: {
     runHook postCheck
   '';
 
-  pythonImportsCheck = [ "reno" ];
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    dulwich
+    pbr
+    pyyaml
+    setuptools
+  ];
 
   postInstallCheck = ''
     $out/bin/reno -h
   '';
 
+  pyproject = true;
+  pythonImportsCheck = [ "reno" ];
+
   meta = {
     description = "Release Notes Manager";
-    mainProgram = "reno";
     homepage = "https://docs.openstack.org/reno/latest";
     license = lib.licenses.asl20;
+    mainProgram = "reno";
     teams = [ lib.teams.openstack ];
   };
 })

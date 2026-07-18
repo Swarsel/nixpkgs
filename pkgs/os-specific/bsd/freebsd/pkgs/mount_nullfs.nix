@@ -3,8 +3,7 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/mount_nullfs";
   extraPaths = [ "sbin/mount" ];
-
+  path = "sbin/mount_nullfs";
   meta.platforms = lib.platforms.freebsd;
 }

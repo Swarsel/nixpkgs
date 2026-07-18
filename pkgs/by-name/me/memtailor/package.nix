@@ -1,8 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-
+  fetchFromGitHub,
   autoreconfHook,
   gtest,
 }:
@@ -17,28 +16,28 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cpM/oa4GAKDxs6yrxHngpvam18cGA2u9Ftvd2WW4vdI=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
   ];
+
+  configureFlags = [
+    (lib.withFeature finalAttrs.doCheck "gtest")
+  ];
+
+  doCheck = true;
 
   checkInputs = [
     gtest
   ];
 
   __structuredAttrs = true;
-
-  strictDeps = true;
-
-  configureFlags = [
-    (lib.withFeature finalAttrs.doCheck "gtest")
-  ];
-
   enableParallelBuilding = true;
-
-  doCheck = true;
 
   meta = {
     description = "C++ library of special purpose memory allocators";
+
     longDescription = ''
       Memtailor is a C++ library of special purpose memory allocators. It
       currently offers an arena allocator and a memory pool.
@@ -48,6 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
       memtailor allocator can also be more convenient due to the ability to
       free many allocations at one time.
     '';
+
     homepage = "https://github.com/Macaulay2/memtailor";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ coolcuber ];

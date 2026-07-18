@@ -17,10 +17,10 @@ in
 
   config = lib.mkIf cfg.enable {
     security.wrappers.intel_gpu_top = {
-      owner = "root";
-      group = "root";
-      source = "${pkgs.intel-gpu-tools}/bin/intel_gpu_top";
       capabilities = "cap_perfmon+ep";
+      group = "root";
+      owner = "root";
+      source = "${pkgs.intel-gpu-tools}/bin/intel_gpu_top";
     };
   };
 

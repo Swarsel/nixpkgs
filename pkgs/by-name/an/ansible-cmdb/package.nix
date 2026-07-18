@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  replaceVars,
-  python3Packages,
-  testers,
   ansible-cmdb,
+  python3Packages,
+  replaceVars,
+  testers,
 }:
 let
   inherit (python3Packages)
@@ -20,8 +20,6 @@ let
 in
 buildPythonApplication {
   inherit pname version;
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fboender";
@@ -44,9 +42,11 @@ buildPythonApplication {
     jsonxs
   ];
 
+  pyproject = true;
+
   passthru.tests.version = testers.testVersion {
-    package = ansible-cmdb;
     version = "v${version}";
+    package = ansible-cmdb;
   };
 
   meta = {

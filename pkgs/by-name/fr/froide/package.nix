@@ -1,31 +1,31 @@
 {
-  stdenv,
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
+  fetchPnpmDeps,
   gdal,
   geos,
-  fetchPnpmDeps,
+  makeWrapper,
+  nodejs,
+  playwright-driver,
   pnpmConfigHook,
   pnpm_10,
-  nodejs,
   postgresql,
   postgresqlTestHook,
-  playwright-driver,
+  python3Packages,
 }:
 let
   pnpm = pnpm_10;
 
   python = python3Packages.python.override {
     packageOverrides = self: super: {
-      django_5 = super.django_5.override { withGdal = true; };
       django = super.django_5;
+      django_5 = super.django_5.override { withGdal = true; };
+
       # custom python module part of froide
       dogtail = super.buildPythonPackage {
         pname = "dogtail";
         version = "0-unstable-2024-11-27";
-        pyproject = true;
 
         src = fetchFromGitHub {
           owner = "okfde";
@@ -35,6 +35,7 @@ let
         };
 
         build-system = with super; [ setuptools ];
+        pyproject = true;
       };
     };
   };
@@ -43,7 +44,6 @@ in
 python.pkgs.buildPythonApplication rec {
   pname = "froide";
   version = "0-unstable-2025-09-10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "okfde";
@@ -54,20 +54,55 @@ python.pkgs.buildPythonApplication rec {
 
   patches = [ ./django_42_storages.patch ];
 
-  # Relax dependency pinning
-  # Channels: https://github.com/okfde/froide/issues/995
-  pythonRelaxDeps = [
-    "channels"
-  ];
-
-  build-system = [ python.pkgs.setuptools ];
-
   nativeBuildInputs = [
     makeWrapper
     nodejs
     pnpmConfigHook
     pnpm
   ];
+
+  postBuild = ''
+    pnpm run build
+  '';
+
+  # Playwright tests not supported on RiscV yet
+  doCheck = lib.meta.availableOn stdenv.hostPlatform playwright-driver.browsers;
+
+  nativeCheckInputs = with python.pkgs; [
+    (postgresql.withPackages (p: [ p.postgis ]))
+    postgresqlTestHook
+    pytest-django
+    pytest-playwright
+    pytestCheckHook
+  ];
+
+  checkInputs = with python.pkgs; [
+    beautifulsoup4
+    pytest-asyncio
+    pytest-factoryboy
+    time-machine
+  ];
+
+  preCheck = ''
+    export PGUSER="froide"
+    export postgresqlEnableTCP=1
+    export postgresqlTestUserOptions="LOGIN SUPERUSER"
+    export GDAL_LIBRARY_PATH="${gdal}/lib/libgdal.so"
+    export GEOS_LIBRARY_PATH="${geos}/lib/libgeos_c.so"
+  ''
+  + lib.optionalString (!stdenv.hostPlatform.isRiscV) ''
+    export PLAYWRIGHT_BROWSERS_PATH="${playwright-driver.browsers}"
+  '';
+
+  postInstall = ''
+    cp -r build manage.py $out/${python.sitePackages}/froide/
+    makeWrapper $out/${python.sitePackages}/froide/manage.py $out/bin/froide \
+      --prefix PYTHONPATH : "${python3Packages.makePythonPath dependencies}" \
+      --set GDAL_LIBRARY_PATH "${gdal}/lib/libgdal.so" \
+      --set GEOS_LIBRARY_PATH "${geos}/lib/libgeos_c.so"
+  '';
+
+  build-system = [ python.pkgs.setuptools ];
 
   dependencies = with python.pkgs; [
     celery
@@ -120,44 +155,6 @@ python.pkgs.buildPythonApplication rec {
     websockets
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit
-      pname
-      version
-      src
-      pnpm
-      ;
-    fetcherVersion = 3;
-    hash = "sha256-NbfCVD+gmtoxuYUCumTKj9P72utK787VdlnuU4lMMGc=";
-  };
-
-  postBuild = ''
-    pnpm run build
-  '';
-
-  postInstall = ''
-    cp -r build manage.py $out/${python.sitePackages}/froide/
-    makeWrapper $out/${python.sitePackages}/froide/manage.py $out/bin/froide \
-      --prefix PYTHONPATH : "${python3Packages.makePythonPath dependencies}" \
-      --set GDAL_LIBRARY_PATH "${gdal}/lib/libgdal.so" \
-      --set GEOS_LIBRARY_PATH "${geos}/lib/libgeos_c.so"
-  '';
-
-  nativeCheckInputs = with python.pkgs; [
-    (postgresql.withPackages (p: [ p.postgis ]))
-    postgresqlTestHook
-    pytest-django
-    pytest-playwright
-    pytestCheckHook
-  ];
-
-  checkInputs = with python.pkgs; [
-    beautifulsoup4
-    pytest-asyncio
-    pytest-factoryboy
-    time-machine
-  ];
-
   disabledTests = [
     # Requires network connection: elastic_transport.ConnectionError
     "test_search_similar"
@@ -186,19 +183,25 @@ python.pkgs.buildPythonApplication rec {
     "test_make_request_logged_out_with_existing_account"
   ];
 
-  preCheck = ''
-    export PGUSER="froide"
-    export postgresqlEnableTCP=1
-    export postgresqlTestUserOptions="LOGIN SUPERUSER"
-    export GDAL_LIBRARY_PATH="${gdal}/lib/libgdal.so"
-    export GEOS_LIBRARY_PATH="${geos}/lib/libgeos_c.so"
-  ''
-  + lib.optionalString (!stdenv.hostPlatform.isRiscV) ''
-    export PLAYWRIGHT_BROWSERS_PATH="${playwright-driver.browsers}"
-  '';
+  pnpmDeps = fetchPnpmDeps {
+    inherit
+      pname
+      version
+      src
+      pnpm
+      ;
 
-  # Playwright tests not supported on RiscV yet
-  doCheck = lib.meta.availableOn stdenv.hostPlatform playwright-driver.browsers;
+    fetcherVersion = 3;
+    hash = "sha256-NbfCVD+gmtoxuYUCumTKj9P72utK787VdlnuU4lMMGc=";
+  };
+
+  pyproject = true;
+
+  # Relax dependency pinning
+  # Channels: https://github.com/okfde/froide/issues/995
+  pythonRelaxDeps = [
+    "channels"
+  ];
 
   passthru = {
     inherit python;

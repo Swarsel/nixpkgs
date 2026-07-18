@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   catch2,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,14 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ catch2 ];
 
   meta = {
     description = "Boxing primitive types in C++";
     homepage = "https://github.com/contour-terminal/boxed-cpp";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.moni ];
+    platforms = lib.platforms.unix;
   };
 })

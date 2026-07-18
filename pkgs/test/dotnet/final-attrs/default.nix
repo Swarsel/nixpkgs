@@ -1,9 +1,9 @@
 {
   lib,
-  dotnet-sdk,
   buildPackages, # buildDotnetModule
-  testers,
+  dotnet-sdk,
   runCommand,
+  testers,
 }:
 let
   copyrightString = "Original Copyright";
@@ -15,24 +15,26 @@ let
   inherit (buildPackages) buildDotnetModule;
 
   app-recursive = buildDotnetModule (finalAttrs: {
-    name = "final-attrs-rec-test-application";
     src = ../structured-attrs/src;
-    nugetDeps = ../structured-attrs/nuget-deps.json;
-    dotnetFlags = [ "--property:Copyright=${finalAttrs.passthru.copyrightString}" ];
     env.TargetFramework = "net${lib.versions.majorMinor (lib.getVersion dotnet-sdk)}";
     __structuredAttrs = true;
+    dotnetFlags = [ "--property:Copyright=${finalAttrs.passthru.copyrightString}" ];
+    name = "final-attrs-rec-test-application";
+    nugetDeps = ../structured-attrs/nuget-deps.json;
+
     passthru = {
       inherit copyrightString;
     };
   });
 
   app-const = buildDotnetModule {
-    name = "final-attrs-const-test-application";
     src = ../structured-attrs/src;
-    nugetDeps = ../structured-attrs/nuget-deps.json;
-    dotnetFlags = [ "--property:Copyright=${copyrightString}" ];
     env.TargetFramework = "net${lib.versions.majorMinor (lib.getVersion dotnet-sdk)}";
     __structuredAttrs = true;
+    dotnetFlags = [ "--property:Copyright=${copyrightString}" ];
+    name = "final-attrs-const-test-application";
+    nugetDeps = ../structured-attrs/nuget-deps.json;
+
     passthru = {
       inherit copyrightString;
     };
@@ -54,23 +56,26 @@ let
 in
 {
   check-output = testers.testEqualContents {
+    actual = run "dotnet-final-attrs-test-rec-output" app-recursive;
     assertion = "buildDotnetModule produces the expected output when called with a recursive function";
     expected = originalCopyright;
-    actual = run "dotnet-final-attrs-test-rec-output" app-recursive;
   };
+
   output-matches-const = testers.testEqualContents {
+    actual = run "dotnet-final-attrs-test-rec" app-recursive;
     assertion = "buildDotnetModule produces the same output when called with attrs or a recursive function";
     expected = run "dotnet-final-attrs-test-const" app-const;
-    actual = run "dotnet-final-attrs-test-rec" app-recursive;
   };
+
   override-has-no-effect = testers.testEqualContents {
+    actual = run "dotnet-final-attrs-test-override-const-output" (override app-const);
     assertion = "buildDotnetModule produces the expected output when called with a recursive function";
     expected = originalCopyright;
-    actual = run "dotnet-final-attrs-test-override-const-output" (override app-const);
   };
+
   override-modifies-output = testers.testEqualContents {
+    actual = run "dotnet-final-attrs-test-override-rec-output" (override app-recursive);
     assertion = "buildDotnetModule produces the expected output when called with a recursive function";
     expected = overridenCopyright;
-    actual = run "dotnet-final-attrs-test-override-rec-output" (override app-recursive);
   };
 }

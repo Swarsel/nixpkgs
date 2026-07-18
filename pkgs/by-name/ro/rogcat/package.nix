@@ -1,11 +1,10 @@
 {
   lib,
   fetchFromGitHub,
+  libudev-zero,
+  pkg-config,
   rustPlatform,
   versionCheckHook,
-
-  pkg-config,
-  libudev-zero,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-nXKvepuiBDIGo8Gga5tbbT/mnC6z+HipV5XYtlrURRU=";
   };
 
-  cargoHash = "sha256-cl09j96UfLvga4cJBSd1he9nfW3taQMY2e+UPltNQMI=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -29,6 +26,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libudev-zero
   ];
 
+  cargoHash = "sha256-cl09j96UfLvga4cJBSd1he9nfW3taQMY2e+UPltNQMI=";
   doInstallCheck = true;
 
   nativeInstallCheckInputs = [
@@ -41,7 +39,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/flxo/rogcat/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ genga898 ];
-    mainProgram = "rogcat";
     platforms = lib.platforms.linux;
+    mainProgram = "rogcat";
   };
 })

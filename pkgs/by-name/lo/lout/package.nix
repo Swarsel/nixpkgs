@@ -47,10 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://github.com/william8000/lout";
-
     license = lib.licenses.gpl3Plus;
-
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

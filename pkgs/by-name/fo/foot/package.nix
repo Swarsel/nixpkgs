@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
-  fetchFromCodeberg,
+  stdenv,
   fetchurl,
-  runCommand,
   fcft,
-  freetype,
-  pixman,
-  libxkbcommon,
+  fetchFromCodeberg,
   fontconfig,
-  wayland,
-  meson,
-  ninja,
-  ncurses,
-  scdoc,
-  tllist,
-  wayland-protocols,
-  wayland-scanner,
-  pkg-config,
-  utf8proc,
-  allowPgo ? !stdenv.hostPlatform.isMusl,
-  python3, # for PGO
   # for clang stdenv check
   foot,
+  freetype,
+  libxkbcommon,
   llvmPackages,
+  meson,
+  ncurses,
+  ninja,
+  pixman,
+  pkg-config,
+  python3, # for PGO
+  runCommand,
+  scdoc,
+  tllist,
+  utf8proc,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  allowPgo ? !stdenv.hostPlatform.isMusl,
 }:
 
 let
@@ -36,20 +36,19 @@ let
   #
   # For every bump, make sure that the hash is still accurate.
   stimulusGenerator = stdenv.mkDerivation {
-    name = "foot-generate-alt-random-writes";
-
     src = fetchurl {
       url = "https://codeberg.org/dnkl/foot/raw/tag/${version}/scripts/generate-alt-random-writes.py";
       hash = "sha256-d7oE3hSStET9Bz8PcmRHSZ+ga+7lrL3/oJdx7phNei8=";
     };
-
-    dontUnpack = true;
 
     buildInputs = [ python3 ];
 
     installPhase = ''
       install -Dm755 $src $out
     '';
+
+    dontUnpack = true;
+    name = "foot-generate-alt-random-writes";
   };
 
   stimuliFile = runCommand "pgo-stimulus-file" { } ''
@@ -96,8 +95,8 @@ let
   terminfoDir = "${placeholder "terminfo"}/share/terminfo";
 in
 stdenv.mkDerivation {
-  pname = "foot";
   inherit version;
+  pname = "foot";
 
   src = fetchFromCodeberg {
     owner = "dnkl";
@@ -106,11 +105,13 @@ stdenv.mkDerivation {
     hash = "sha256-jbE44SpMqDhOOT2o4Wh7UCdXn6bBqxOMskCHHTzEKmU=";
   };
 
-  separateDebugInfo = true;
-
-  depsBuildBuild = [
-    pkg-config
+  outputs = [
+    "out"
+    "terminfo"
+    "themes"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     wayland-scanner
@@ -136,17 +137,6 @@ stdenv.mkDerivation {
     utf8proc
   ];
 
-  # recommended build flags for performance optimized foot builds
-  # https://codeberg.org/dnkl/foot/src/branch/master/INSTALL.md#release-build
-  env.CFLAGS = if !doPgo then "-O3" else pgoCflags;
-
-  # ar with gcc plugins for lto objects
-  preConfigure = ''
-    export AR="${ar}"
-  '';
-
-  mesonBuildType = "release";
-
   # See https://codeberg.org/dnkl/foot/src/tag/1.9.2/INSTALL.md#options
   mesonFlags = [
     # Use lto
@@ -162,6 +152,15 @@ stdenv.mkDerivation {
     # Especially -Wunused-command-line-argument is a problem with clang
     "-Dwerror=false"
   ];
+
+  # recommended build flags for performance optimized foot builds
+  # https://codeberg.org/dnkl/foot/src/branch/master/INSTALL.md#release-build
+  env.CFLAGS = if !doPgo then "-O3" else pgoCflags;
+
+  # ar with gcc plugins for lto objects
+  preConfigure = ''
+    export AR="${ar}"
+  '';
 
   # build and run binary generating PGO profiles,
   # then reconfigure to build the normal foot binary utilizing PGO
@@ -182,24 +181,21 @@ stdenv.mkDerivation {
       llvm-profdata merge default_*profraw --output=default.profdata
     '';
 
+  doCheck = true;
+
   # Install example themes which can be added to foot.ini via the include
   # directive to a separate output to save a bit of space
   postInstall = ''
     moveToOutput share/foot/themes "$themes"
   '';
 
-  doCheck = true;
-
-  strictDeps = true;
-
-  outputs = [
-    "out"
-    "terminfo"
-    "themes"
+  depsBuildBuild = [
+    pkg-config
   ];
 
+  mesonBuildType = "release";
+  separateDebugInfo = true;
   passthru = { inherit stimulusGenerator; };
-  passthru.updateScript = ./update.sh;
 
   passthru.tests = {
     clang-default-compilation = foot.override {
@@ -218,15 +214,19 @@ stdenv.mkDerivation {
     });
   };
 
+  passthru.updateScript = ./update.sh;
+
   meta = {
+    description = "Fast, lightweight and minimalistic Wayland terminal emulator";
     homepage = "https://codeberg.org/dnkl/foot/";
     changelog = "https://codeberg.org/dnkl/foot/releases/tag/${version}";
-    description = "Fast, lightweight and minimalistic Wayland terminal emulator";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sternenseemann
       abbe
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "foot";
   };

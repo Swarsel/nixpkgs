@@ -2,21 +2,18 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  isPy3k,
   flit-core,
   flit-scm,
-  sympy,
-  pytestCheckHook,
+  isPy3k,
   pytest-cov-stub,
+  pytestCheckHook,
   sphinx,
+  sympy,
 }:
 
 buildPythonPackage rec {
   pname = "measurement";
   version = "4.0a8";
-  pyproject = true;
-
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "coddingtonbear";
@@ -37,6 +34,9 @@ buildPythonPackage rec {
     pytestCheckHook
     pytest-cov-stub
   ];
+
+  disabled = !isPy3k;
+  pyproject = true;
 
   meta = {
     description = "Use and manipulate unit-aware measurement objects in Python";

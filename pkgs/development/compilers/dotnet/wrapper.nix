@@ -1,61 +1,33 @@
 {
-  stdenv,
-  stdenvNoCC,
   lib,
-  writeText,
-  testers,
-  runCommand,
-  runCommandWith,
+  stdenv,
+  callPackage,
+  curl,
   darwin,
   expect,
-  curl,
-  installShellFiles,
-  callPackage,
-  zlib,
-  swiftPackages,
   icu,
+  installShellFiles,
   lndir,
-  replaceVars,
   nugetPackageHook,
-  xmlstarlet,
   pkgs,
+  replaceVars,
+  runCommand,
+  runCommandWith,
+  stdenvNoCC,
+  swiftPackages,
+  testers,
+  writeText,
+  xmlstarlet,
+  zlib,
 }:
 type: unwrapped:
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "${unwrapped.pname}-wrapped";
   inherit (unwrapped) version;
-
-  meta = {
-    description = "${unwrapped.meta.description or "dotnet"} (wrapper)";
-    mainProgram = "dotnet";
-    inherit (unwrapped.meta)
-      homepage
-      license
-      maintainers
-      platforms
-      broken
-      ;
-  };
-
+  pname = "${unwrapped.pname}-wrapped";
   src = unwrapped;
-  dontUnpack = true;
-
-  setupHooks = [
-    ./dotnet-setup-hook.sh
-  ]
-  ++ lib.optional (type == "sdk") (
-    replaceVars ./dotnet-sdk-setup-hook.sh {
-      inherit lndir xmlstarlet;
-    }
-  );
-
-  propagatedSandboxProfile = toString unwrapped.__propagatedSandboxProfile;
-
-  propagatedBuildInputs = lib.optional (type == "sdk") nugetPackageHook;
-
-  nativeBuildInputs = [ installShellFiles ];
-
   outputs = [ "out" ] ++ lib.optional (unwrapped ? man) "man";
+  nativeBuildInputs = [ installShellFiles ];
+  propagatedBuildInputs = lib.optional (type == "sdk") nugetPackageHook;
 
   installPhase = ''
     runHook preInstall
@@ -88,6 +60,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ln -s ${unwrapped.man} "$man"
   '';
 
+  dontUnpack = true;
+  propagatedSandboxProfile = toString unwrapped.__propagatedSandboxProfile;
+
+  setupHooks = [
+    ./dotnet-setup-hook.sh
+  ]
+  ++ lib.optional (type == "sdk") (
+    replaceVars ./dotnet-sdk-setup-hook.sh {
+      inherit lndir xmlstarlet;
+    }
+  );
+
   passthru =
     unwrapped.passthru
     // lib.optionalAttrs (unwrapped ? artifacts) {
@@ -95,29 +79,33 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     }
     // {
       inherit unwrapped;
+
       tests =
         let
           mkDotnetTest =
             {
-              name,
               stdenv ? stdenvNoCC,
-              template,
-              lang ? null,
-              usePackageSource ? false,
               build,
+              name,
+              template,
               buildInputs ? [ ],
-              runtime ? finalAttrs.finalPackage.runtime,
-              runInputs ? [ ],
+              lang ? null,
               run ? null,
               runAllowNetworking ? false,
+              runInputs ? [ ],
+              runtime ? finalAttrs.finalPackage.runtime,
+              usePackageSource ? false,
             }:
             let
               sdk = finalAttrs.finalPackage;
               built = stdenv.mkDerivation {
-                name = "${sdk.name}-test-${name}";
                 buildInputs = [ sdk ] ++ buildInputs ++ lib.optionals usePackageSource sdk.packages;
+                buildPhase = build;
+                dontPatchELF = true;
+                name = "${sdk.name}-test-${name}";
                 # make sure ICU works in a sandbox
                 propagatedSandboxProfile = toString sdk.__propagatedSandboxProfile;
+
                 unpackPhase =
                   let
                     unpackArgs = [
@@ -133,8 +121,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
                     cd test
                     dotnet new ${lib.escapeShellArgs unpackArgs} -o . --no-restore
                   '';
-                buildPhase = build;
-                dontPatchELF = true;
               };
             in
             # older SDKs don't include an embedded FSharp.Core package
@@ -148,16 +134,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
                   {
                     src = built;
                     nativeBuildInputs = [ built ] ++ runInputs;
+
                     passthru = {
                       inherit built;
                     };
                   }
                   // lib.optionalAttrs (stdenv.hostPlatform.isDarwin && runAllowNetworking) {
+                    __darwinAllowLocalNetworking = true;
+
                     sandboxProfile = ''
                       (allow network-inbound (local ip))
                       (allow mach-lookup (global-name "com.apple.FSEvents"))
                     '';
-                    __darwinAllowLocalNetworking = true;
                   }
                 )
                 (
@@ -182,52 +170,49 @@ stdenvNoCC.mkDerivation (finalAttrs: {
                 mkDotnetTest (
                   args
                   // {
+                    inherit lang;
                     name = "console-${name}-${suffix}";
                     template = "console";
-                    inherit lang;
                   }
                 );
             in
             lib.recurseIntoAttrs {
-              run = mkConsoleTest {
-                name = "run";
-                build = checkConsoleOutput "dotnet run";
-              };
-
               publish = mkConsoleTest {
-                name = "publish";
                 build = "dotnet publish -o $out/bin";
-                run = checkConsoleOutput "$src/bin/test";
-              };
-
-              self-contained = mkConsoleTest {
-                name = "self-contained";
-                usePackageSource = true;
-                build = "dotnet publish --use-current-runtime --sc -o $out";
-                runtime = null;
-                run = checkConsoleOutput "$src/test";
-              };
-
-              single-file = mkConsoleTest {
-                name = "single-file";
-                usePackageSource = true;
-                build = "dotnet publish --use-current-runtime -p:PublishSingleFile=true -o $out/bin";
-                runtime = null;
+                name = "publish";
                 run = checkConsoleOutput "$src/bin/test";
               };
 
               ready-to-run = mkConsoleTest {
-                name = "ready-to-run";
-                usePackageSource = true;
                 build = "dotnet publish --use-current-runtime -p:PublishReadyToRun=true -o $out/bin";
+                name = "ready-to-run";
                 run = checkConsoleOutput "$src/bin/test";
+                usePackageSource = true;
+              };
+
+              run = mkConsoleTest {
+                build = checkConsoleOutput "dotnet run";
+                name = "run";
+              };
+
+              self-contained = mkConsoleTest {
+                build = "dotnet publish --use-current-runtime --sc -o $out";
+                name = "self-contained";
+                run = checkConsoleOutput "$src/test";
+                runtime = null;
+                usePackageSource = true;
+              };
+
+              single-file = mkConsoleTest {
+                build = "dotnet publish --use-current-runtime -p:PublishSingleFile=true -o $out/bin";
+                name = "single-file";
+                run = checkConsoleOutput "$src/bin/test";
+                runtime = null;
+                usePackageSource = true;
               };
             }
             // lib.optionalAttrs finalAttrs.finalPackage.hasILCompiler {
               aot = mkConsoleTest {
-                name = "aot";
-                stdenv = if stdenv.hostPlatform.isDarwin then swiftPackages.stdenv else stdenv;
-                usePackageSource = true;
                 buildInputs = [
                   zlib
                 ]
@@ -235,27 +220,27 @@ stdenvNoCC.mkDerivation (finalAttrs: {
                   swiftPackages.swift
                   darwin.ICU
                 ];
+
                 build = ''
                   dotnet restore -p:PublishAot=true
                   dotnet publish -p:PublishAot=true -o $out/bin
                 '';
-                runtime = null;
+
+                name = "aot";
                 run = checkConsoleOutput "$src/bin/test";
+                runtime = null;
+                stdenv = if stdenv.hostPlatform.isDarwin then swiftPackages.stdenv else stdenv;
+                usePackageSource = true;
               };
             };
 
           mkWebTest =
             lang: suffix:
             mkDotnetTest {
-              name = "web-${suffix}";
-              template = "web";
               inherit lang;
               build = "dotnet publish -o $out/bin";
-              runtime = finalAttrs.finalPackage.aspnetcore;
-              runInputs = [
-                expect
-                curl
-              ];
+              name = "web-${suffix}";
+
               run = ''
                 expect <<"EOF"
                   set status 1
@@ -279,22 +264,31 @@ stdenvNoCC.mkDerivation (finalAttrs: {
                 EOF
                 touch $out
               '';
+
               runAllowNetworking = true;
+
+              runInputs = [
+                expect
+                curl
+              ];
+
+              runtime = finalAttrs.finalPackage.aspnetcore;
+              template = "web";
             };
         in
         unwrapped.passthru.tests or { }
         // {
           version = testers.testVersion {
-            package = finalAttrs.finalPackage;
             command = "HOME=$(mktemp -d) dotnet " + (if type == "sdk" then "--version" else "--info");
+            package = finalAttrs.finalPackage;
           };
         }
         // lib.optionalAttrs (type == "sdk") {
           buildDotnetModule = lib.recurseIntoAttrs (
             (pkgs.appendOverlays [
               (self: super: {
-                dotnet-sdk = finalAttrs.finalPackage;
                 dotnet-runtime = finalAttrs.finalPackage.runtime;
+                dotnet-sdk = finalAttrs.finalPackage;
               })
             ]).callPackage
               ../../../test/dotnet/default.nix
@@ -314,4 +308,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
           };
         };
     };
+
+  meta = {
+    inherit (unwrapped.meta)
+      homepage
+      license
+      maintainers
+      platforms
+      broken
+      ;
+
+    description = "${unwrapped.meta.description or "dotnet"} (wrapper)";
+    mainProgram = "dotnet";
+  };
 })

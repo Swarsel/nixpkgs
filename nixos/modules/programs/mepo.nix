@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -12,19 +12,21 @@ in
     enable = lib.mkEnableOption "Mepo, a fast, simple and hackable OSM map viewer";
 
     locationBackends = {
-      gpsd = lib.mkOption {
+      geoclue = lib.mkOption {
+        default = true;
+        description = "Whether to enable location detection via geoclue";
         type = lib.types.bool;
+      };
+
+      gpsd = lib.mkOption {
         default = false;
+
         description = ''
           Whether to enable location detection via gpsd.
           This may require additional configuration of gpsd, see [here](#opt-services.gpsd.enable)
         '';
-      };
 
-      geoclue = lib.mkOption {
         type = lib.types.bool;
-        default = true;
-        description = "Whether to enable location detection via geoclue";
       };
     };
   };
@@ -40,6 +42,7 @@ in
 
     services.geoclue2 = lib.mkIf cfg.locationBackends.geoclue {
       enable = true;
+
       appConfig.where-am-i = {
         isAllowed = true;
         isSystem = false;

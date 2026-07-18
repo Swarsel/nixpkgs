@@ -1,16 +1,16 @@
 {
   stdenv,
-  copyDesktopItems,
   autoPatchelfHook,
-  wrapGAppsHook4,
-  makeDesktopItem,
-  libusb1,
-  webkitgtk_4_1,
+  copyDesktopItems,
   libsoup_3,
-  pname,
-  version,
-  src,
+  libusb1,
+  makeDesktopItem,
   meta,
+  pname,
+  src,
+  version,
+  webkitgtk_4_1,
+  wrapGAppsHook4,
   ...
 }:
 stdenv.mkDerivation {
@@ -33,8 +33,6 @@ stdenv.mkDerivation {
     libsoup_3
   ];
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
 
@@ -50,15 +48,18 @@ stdenv.mkDerivation {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "keymapp";
-      icon = "keymapp";
-      desktopName = "Keymapp";
       categories = [
         "Settings"
         "HardwareSettings"
       ];
-      type = "Application";
+
+      desktopName = "Keymapp";
       exec = "keymapp";
+      icon = "keymapp";
+      name = "keymapp";
+      type = "Application";
     })
   ];
+
+  sourceRoot = ".";
 }

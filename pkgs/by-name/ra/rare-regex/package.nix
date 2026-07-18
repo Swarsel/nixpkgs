@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  withPcre2 ? stdenv.hostPlatform.isLinux,
+  buildGoModule,
   pcre2,
-  testers,
   rare-regex,
+  testers,
+  withPcre2 ? stdenv.hostPlatform.isLinux,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,21 +20,21 @@ buildGoModule (finalAttrs: {
     hash = "sha256-tzAbt9THSTYDvooU7yNQJhJaFM1bcKCabDNtiMpux3Q=";
   };
 
-  vendorHash = "sha256-wUOtxNjL/4MosACCzPTWKWrnMZhxINfN1ppkRsqDh9M=";
-
   buildInputs = lib.optionals withPcre2 [
     pcre2
+  ];
+
+  vendorHash = "sha256-wUOtxNjL/4MosACCzPTWKWrnMZhxINfN1ppkRsqDh9M=";
+
+  # Skip tests try /dev.
+  checkFlags = [
+    "-skip=TestNoMountTraverseWithSymlink"
   ];
 
   ldflags = [
     "-s"
     "-X=main.version=${finalAttrs.version}"
     "-X=main.buildSha=${finalAttrs.src.tag}"
-  ];
-
-  # Skip tests try /dev.
-  checkFlags = [
-    "-skip=TestNoMountTraverseWithSymlink"
   ];
 
   tags = lib.optionals withPcre2 [
@@ -50,9 +50,9 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Fast text scanner/regex extractor and realtime summarizer";
     homepage = "https://rare.zdyn.net";
-    maintainers = with lib.maintainers; [ liberodark ];
     changelog = "https://github.com/zix99/rare/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ liberodark ];
     mainProgram = "rare";
   };
 })

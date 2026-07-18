@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,8 +21,8 @@ buildGoModule (finalAttrs: {
     description = "Decrypt the admin password generated for the VM in OpenStack";
     homepage = "https://github.com/sapcc/nova-password";
     license = lib.licenses.asl20;
-    mainProgram = "nova-password";
     maintainers = with lib.maintainers; [ vinetos ];
     platforms = lib.platforms.all;
+    mainProgram = "nova-password";
   };
 })

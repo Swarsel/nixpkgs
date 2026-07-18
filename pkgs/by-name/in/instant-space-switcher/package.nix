@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  undmg,
   nix-update-script,
+  stdenvNoCC,
+  undmg,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,9 +15,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-48DH2Hu/XhLPr8jP2ArmLJLFbJmIupkrlqlFOsNnL7g=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ undmg ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -29,12 +28,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
   dontBuild = true;
   dontFixup = true;
-
-  __structuredAttrs = true;
-  strictDeps = true;
-
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -43,8 +40,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     changelog = "https://github.com/jurplel/InstantSpaceSwitcher/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ myzel394 ];
     platforms = lib.platforms.darwin;
     mainProgram = "isscli";
-    maintainers = with lib.maintainers; [ myzel394 ];
   };
 })

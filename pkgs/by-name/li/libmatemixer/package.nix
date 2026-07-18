@@ -1,18 +1,18 @@
 {
-  config,
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gettext,
-  glib,
-  alsaSupport ? stdenv.hostPlatform.isLinux,
   alsa-lib,
-  udev,
-  pulseaudioSupport ? config.pulseaudio or true,
-  libpulseaudio,
-  ossSupport ? false,
+  config,
+  gettext,
   gitUpdater,
+  glib,
+  libpulseaudio,
+  pkg-config,
+  udev,
+  alsaSupport ? stdenv.hostPlatform.isLinux,
+  ossSupport ? false,
+  pulseaudioSupport ? config.pulseaudio or true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,13 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = lib.optional ossSupport "--enable-oss";
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/libmatemixer";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/libmatemixer";
   };
 
   meta = {

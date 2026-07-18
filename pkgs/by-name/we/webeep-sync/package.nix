@@ -1,18 +1,18 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  writableTmpDirAsHomeHook,
-  makeWrapper,
-  electron,
-  nodejs,
-  zip,
-  makeDesktopItem,
-  copyDesktopItems,
   lib,
+  fetchFromGitHub,
+  copyDesktopItems,
+  electron,
+  fetchPnpmDeps,
+  makeDesktopItem,
+  makeWrapper,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  stdenvNoCC,
+  writableTmpDirAsHomeHook,
+  zip,
   withDebug ? false,
 }:
 
@@ -27,6 +27,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-wQUNhuhuARLJG0ZYRVpIAgUIbYDFTLC3sRH762HOmBY=";
   };
 
+  patches = [ ./workspace.patch ]; # TODO: waiting for PR https://github.com/toto04/webeep-sync/pull/138
+
   nativeBuildInputs = [
     pnpmConfigHook
     pnpm_10
@@ -38,18 +40,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     copyDesktopItems
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-IuI1asHqq2n1/hqf1NlRUG5/GU7HTLKCjalNooyPcO4=";
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-  };
-
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
   };
-
-  patches = [ ./workspace.patch ]; # TODO: waiting for PR https://github.com/toto04/webeep-sync/pull/138
 
   preBuild = ''
     # create the electron archive to be used by electron-packager
@@ -103,14 +96,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = finalAttrs.pname;
+      categories = [ "Education" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "WeBeep Sync";
       exec = finalAttrs.pname;
       icon = finalAttrs.pname; # Matches the PNG name we installed earlier
-      desktopName = "WeBeep Sync";
-      comment = finalAttrs.meta.description;
-      categories = [ "Education" ];
+      name = finalAttrs.pname;
     })
   ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-IuI1asHqq2n1/hqf1NlRUG5/GU7HTLKCjalNooyPcO4=";
+    pnpm = pnpm_10;
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -118,8 +118,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Keep all your WeBeep files synced on your computer";
     homepage = "https://github.com/toto04/webeep-sync";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.lnk3 ];
+    platforms = lib.platforms.linux;
     mainProgram = "webeep-sync";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,9 +18,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Sim17RybSM92H6OP0Od9gH/wqa+5cd4Lmli6Na8RDJk=";
-
   doCheck = !stdenv.hostPlatform.isDarwin;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,9 +1,8 @@
 {
-  python3,
+  lib,
   fetchFromGitHub,
   nixosTests,
-  lib,
-
+  python3,
   plugins ? ps: [ ],
 }:
 
@@ -24,8 +23,6 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-CsRLMqUgv4av0owZ/pegERcyyHddxyZffbc8/iTOcVA=";
   };
-
-  pyproject = false;
 
   propagatedBuildInputs =
     with python.pkgs;
@@ -76,6 +73,8 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
+  pyproject = false;
+
   passthru = {
     # PYTHONPATH of all dependencies used by the package
     inherit python;
@@ -87,11 +86,11 @@ python.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
+    description = "BGP sessions management tool";
     homepage = "https://peering-manager.net/";
     license = lib.licenses.asl20;
-    description = "BGP sessions management tool";
-    mainProgram = "peering-manager";
     maintainers = with lib.maintainers; [ yureka-wdz ];
     platforms = lib.platforms.linux;
+    mainProgram = "peering-manager";
   };
 })

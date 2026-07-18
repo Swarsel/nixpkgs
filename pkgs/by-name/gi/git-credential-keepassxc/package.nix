@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  withNotification ? false,
-  withYubikey ? false,
-  withStrictCaller ? false,
+  rustPlatform,
   withAll ? false,
+  withNotification ? false,
+  withStrictCaller ? false,
+  withYubikey ? false,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,12 +30,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Helper that allows Git (and shell scripts) to use KeePassXC as credential store";
+
     longDescription = ''
       git-credential-keepassxc is a Git credential helper that allows Git
       (and shell scripts) to get/store logins from/to KeePassXC.
       It communicates with KeePassXC using keepassxc-protocol which is
       originally designed for browser extensions.
     '';
+
     homepage = "https://github.com/Frederick888/git-credential-keepassxc";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];

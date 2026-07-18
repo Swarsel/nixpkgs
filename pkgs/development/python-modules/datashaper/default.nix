@@ -1,28 +1,27 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  poetry-core,
   dacite,
   diskcache,
+  fetchPypi,
   jsonschema,
   pandas,
+  poetry-core,
   pyarrow,
 }:
 
 buildPythonPackage rec {
   pname = "datashaper";
   version = "0.0.49";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Bb+6WWRHSmK91SWew/oBc9AeNlIItqSv9OoOYwlqdTM=";
   };
 
+  # pypi tarball has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [ "pyarrow" ];
 
   dependencies = [
     dacite
@@ -32,10 +31,9 @@ buildPythonPackage rec {
     pyarrow
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "datashaper" ];
-
-  # pypi tarball has no tests
-  doCheck = false;
+  pythonRelaxDeps = [ "pyarrow" ];
 
   meta = {
     description = "Collection of utilities for doing lightweight data wrangling";

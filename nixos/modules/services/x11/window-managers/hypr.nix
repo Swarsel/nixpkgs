@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.hypr ];
+
     services.xserver.windowManager.session = singleton {
       name = "hypr";
+
       start = ''
         ${pkgs.hypr}/bin/Hypr &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.hypr ];
   };
 }

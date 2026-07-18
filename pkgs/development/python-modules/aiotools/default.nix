@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
   async-lru,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-asyncio,
+  pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiotools";
   version = "2.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "achimnol";
@@ -19,6 +18,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-uIG3JPqep4NGtZa7Qo8SOK9Ca1GNKyuBasFtwR9oG8U=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
 
   build-system = [
     setuptools-scm
@@ -28,11 +32,7 @@ buildPythonPackage (finalAttrs: {
     async-lru
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiotools" ];
 
   meta = {

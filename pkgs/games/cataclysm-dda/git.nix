@@ -1,15 +1,15 @@
 {
   lib,
-  callPackage,
   fetchFromGitHub,
-  pkgs,
   attachPkgs,
-  tiles ? true,
+  callPackage,
+  pkgs,
   debug ? false,
-  useXdgDir ? false,
-  version ? "2024-12-11",
   rev ? "b871679a2d54dbc6bf3e6566033fadd2dc651592",
   sha256 ? "sha256-t9R0QPky7zvjgGMq4kV8DdQFToJ/qngbJCw+8FlQztM=",
+  tiles ? true,
+  useXdgDir ? false,
+  version ? "2024-12-11",
 }:
 
 let
@@ -18,13 +18,13 @@ let
   };
 
   self = common.overrideAttrs (common: rec {
-    pname = common.pname + "-git";
     inherit version;
+    pname = common.pname + "-git";
 
     src = fetchFromGitHub {
+      inherit rev sha256;
       owner = "CleverRaven";
       repo = "Cataclysm-DDA";
-      inherit rev sha256;
     };
 
     patches = [

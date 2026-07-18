@@ -1,32 +1,31 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   django-modelcluster,
-  fetchFromGitHub,
-  lib,
   python,
 }:
 
 buildPythonPackage rec {
   pname = "permissionedforms";
   version = "0.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
-    repo = "django-permissionedforms";
     owner = "wagtail";
+    repo = "django-permissionedforms";
     rev = "v${version}";
     sha256 = "sha256-DQzPGmh5UEVpGWnW3IrEVPkZZ8mdiW9J851Ej4agTDc=";
   };
 
   propagatedBuildInputs = [ django ];
-
   checkInputs = [ django-modelcluster ];
 
   checkPhase = ''
     ${python.interpreter} runtests.py
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "permissionedforms" ];
 
   meta = {

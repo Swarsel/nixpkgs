@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  osinfo-db-tools,
   gettext,
   libxml2,
+  osinfo-db-tools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,7 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/libosinfo/osinfo-db/";
     changelog = "https://gitlab.com/libosinfo/osinfo-db/-/commits/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.unix;
   };
 })

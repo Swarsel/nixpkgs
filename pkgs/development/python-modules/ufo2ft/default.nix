@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   booleanoperations,
   buildPythonPackage,
   cffsubr,
   compreffor,
   cu2qu,
   defcon,
-  fetchFromGitHub,
   fontmath,
   fonttools,
   pytestCheckHook,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "ufo2ft";
   version = "3.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -27,6 +26,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-6lo1WyLmXIcZnHDewwQekTxALHQAiCLNF7Kxj+nKBj8=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [
     setuptools-scm
@@ -46,11 +50,6 @@ buildPythonPackage rec {
   ++ fonttools.optional-dependencies.lxml
   ++ fonttools.optional-dependencies.ufo;
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    syrupy
-  ];
-
   disabledTests = [
     # Do not depend on skia.
     "test_removeOverlaps_CFF_pathops"
@@ -64,6 +63,7 @@ buildPythonPackage rec {
     "test_drop_glyph_names_variable"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ufo2ft" ];
 
   meta = {

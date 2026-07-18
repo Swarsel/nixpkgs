@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  argp-standalone,
   fetchFromGitHub,
+  argp-standalone,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,14 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1NmqG73sP25Uqf7DiSPgt7drONOg9ZkrtCS0tYVjSU0=";
   };
 
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-    argp-standalone
-  ];
-
   # Don't blow up on warnings; it makes upgrading the compiler difficult.
   postPatch = ''
     substituteInPlace Makefile --replace-fail "-Werror" ""
   '';
+
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+    argp-standalone
+  ];
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -45,7 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/jivanpal/drat/blob/main/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ philiptaron ];
-    mainProgram = "drat";
     platforms = lib.platforms.all;
+    mainProgram = "drat";
   };
 })

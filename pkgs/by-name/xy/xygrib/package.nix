@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   bzip2,
+  cmake,
   libnova,
-  proj,
   libpng,
   openjpeg,
+  proj,
   qt5,
 }:
 
 stdenv.mkDerivation {
-  version = "unstable-2022-05-16";
   pname = "xygrib";
+  version = "unstable-2022-05-16";
 
   src = fetchFromGitHub {
     owner = "opengribs";
@@ -22,11 +22,17 @@ stdenv.mkDerivation {
     hash = "sha256-qMMeRYIQqJpVRE3YjbXIiXHwS/CHs9l2QihszwQIr/A=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 3.1.0)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     qt5.qttools
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     bzip2
     qt5.qtbase
@@ -35,15 +41,11 @@ stdenv.mkDerivation {
     openjpeg
     libpng
   ];
+
   cmakeFlags = [
     "-DOPENJPEG_INCLUDE_DIR=${openjpeg.dev}/include/openjpeg-${lib.versions.majorMinor openjpeg.version}"
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "-DLIBNOVA_LIBRARY=${libnova}/lib/libnova.dylib" ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 3.1.0)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   postInstall =
     if stdenv.hostPlatform.isDarwin then
@@ -65,15 +67,17 @@ stdenv.mkDerivation {
       '';
 
   meta = {
-    homepage = "https://opengribs.org";
     description = "Weather Forecast Visualization";
-    mainProgram = "xygrib";
+
     longDescription = ''
       XyGrib is a leading opensource weather visualization package.
       It interacts with OpenGribs's Grib server providing a choice
       of global and large area atmospheric and wave models.
     '';
+
+    homepage = "https://opengribs.org";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.all;
+    mainProgram = "xygrib";
   };
 }

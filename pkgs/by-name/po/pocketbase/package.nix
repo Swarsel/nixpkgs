@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,11 +17,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Xu9jokD5Dkov5kZjO05q60YpM3NZlbwOZs0XJmQ8kC8=";
-
-  # This is the released subpackage from upstream repo
-  subPackages = [ "examples/base" ];
-
   env.CGO_ENABLED = 0;
+
+  postInstall = ''
+    mv $out/bin/base $out/bin/pocketbase
+  '';
 
   # Upstream build instructions
   ldflags = [
@@ -30,19 +30,19 @@ buildGoModule (finalAttrs: {
     "-X github.com/pocketbase/pocketbase.Version=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    mv $out/bin/base $out/bin/pocketbase
-  '';
-
+  # This is the released subpackage from upstream repo
+  subPackages = [ "examples/base" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Open Source realtime backend in 1 file";
     homepage = "https://github.com/pocketbase/pocketbase";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       thilobillerbeck
     ];
+
     mainProgram = "pocketbase";
   };
 })

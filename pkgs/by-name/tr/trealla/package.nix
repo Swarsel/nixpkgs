@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   libffi,
   openssl,
   readline,
-  stdenv,
   testers,
   valgrind,
   xxd,
@@ -39,16 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'GIT_VERSION :=' 'GIT_VERSION ?='
   '';
 
+  strictDeps = true;
   nativeBuildInputs = [ xxd ];
 
   buildInputs =
     lib.optionals enableFFI [ libffi ]
     ++ lib.optionals enableSSL [ openssl ]
     ++ lib.optionals (lineEditingLibrary == "readline") [ readline ];
-
-  nativeCheckInputs = lib.optionals finalAttrs.finalPackage.doCheck [ valgrind ];
-
-  strictDeps = true;
 
   makeFlags = [
     "GIT_VERSION=\"v${finalAttrs.version}\""
@@ -58,7 +55,9 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (!enableSSL) [ "NOSSL=1" ]
   ++ lib.optionals enableThreads [ "THREADS=1" ];
 
-  enableParallelBuilding = true;
+  doCheck = !valgrind.meta.broken;
+  nativeCheckInputs = lib.optionals finalAttrs.finalPackage.doCheck [ valgrind ];
+  checkFlags = [ "test" ] ++ lib.optionals checkLeaks [ "leaks" ];
 
   installPhase = ''
     runHook preInstall
@@ -66,22 +65,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = !valgrind.meta.broken;
-
-  checkFlags = [ "test" ] ++ lib.optionals checkLeaks [ "leaks" ];
+  enableParallelBuilding = true;
 
   passthru = {
     tests = {
       version = testers.testVersion {
-        package = finalAttrs.finalPackage;
         version = "v${finalAttrs.version}";
+        package = finalAttrs.finalPackage;
       };
     };
   };
 
   meta = {
-    homepage = "https://trealla-prolog.github.io/trealla/";
     description = "Compact, efficient Prolog interpreter written in ANSI C";
+
     longDescription = ''
       Trealla is a compact, efficient Prolog interpreter with ISO Prolog
       aspirations.
@@ -93,12 +90,16 @@ stdenv.mkDerivation (finalAttrs: {
       (where it doesn't seem to mean anything) and also a reference to the
       Trealla region of Western Australia.
     '';
+
+    homepage = "https://trealla-prolog.github.io/trealla/";
     changelog = "https://github.com/trealla-prolog/trealla/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       siraben
     ];
-    mainProgram = "tpl";
+
     platforms = lib.platforms.all;
+    mainProgram = "tpl";
   };
 })

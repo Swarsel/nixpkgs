@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage {
   pname = "pescea";
   version = "1.0.12";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "lazdavila";
@@ -21,6 +20,12 @@ buildPythonPackage {
     hash = "sha256-5TkFrGaSkQOORhf5a7SjkzggFLPyqe9k3M0B4ljhWTQ=";
   };
 
+  postPatch = ''
+    # https://github.com/lazdavila/pescea/pull/1
+    substituteInPlace setup.py \
+      --replace '"asyncio",' ""
+  '';
+
   propagatedBuildInputs = [ async-timeout ];
 
   nativeCheckInputs = [
@@ -29,12 +34,6 @@ buildPythonPackage {
     pytestCheckHook
   ];
 
-  postPatch = ''
-    # https://github.com/lazdavila/pescea/pull/1
-    substituteInPlace setup.py \
-      --replace '"asyncio",' ""
-  '';
-
   disabledTests = [
     # AssertionError: assert <State.BUSY: 'BusyWaiting'>...
     "test_updates_while_busy"
@@ -42,6 +41,7 @@ buildPythonPackage {
     "test_flow_control"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pescea" ];
 
   meta = {

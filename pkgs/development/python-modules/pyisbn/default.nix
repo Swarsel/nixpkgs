@@ -2,23 +2,20 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   hypothesis,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyisbn";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-cPVjgXlps/8IUGieULx/917puGXD+A+DWWSxMGxO1Rk=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     hypothesis
@@ -26,6 +23,8 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyisbn" ];
 
   meta = {

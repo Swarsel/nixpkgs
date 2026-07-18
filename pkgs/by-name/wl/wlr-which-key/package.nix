@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   cairo,
   glib,
   libxkbcommon,
   pango,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-2dVTN5aaXeGBUKhsuUyDfELyL4AcKoaPXD0gN7ydL/Y=";
   };
 
-  cargoHash = "sha256-v+4/lD00rjJvrQ2NQqFusZc0zQbM9mBG5T9bNioNGKQ=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -32,6 +30,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxkbcommon
     pango
   ];
+
+  cargoHash = "sha256-v+4/lD00rjJvrQ2NQqFusZc0zQbM9mBG5T9bNioNGKQ=";
 
   meta = {
     description = "Keymap manager for wlroots-based compositors";

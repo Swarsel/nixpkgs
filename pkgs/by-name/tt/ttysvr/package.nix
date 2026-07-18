@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  versionCheckHook,
-  nix-update-script,
   # Runtime deps:
   alsa-lib,
-  udev,
   libGL,
+  nix-update-script,
+  pkg-config,
+  rustPlatform,
+  udev,
+  versionCheckHook,
   vulkan-headers,
   vulkan-loader,
 }:
@@ -24,8 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-W8IglZVvhFqn0TH1ZBGWERizCxCQ+C4SckYFLCzB3yc=";
   };
 
-  cargoHash = "sha256-iMzHoB1nfRDDSpHBrwKzW64fw7aYqh7uB14idbHTKH0=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -38,6 +36,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     vulkan-loader
   ];
 
+  cargoHash = "sha256-iMzHoB1nfRDDSpHBrwKzW64fw7aYqh7uB14idbHTKH0=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     patchelf $out/bin/ttysvr \
       --add-rpath ${
@@ -48,11 +53,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       }
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -61,12 +61,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Screen saver for your terminal";
     homepage = "https://github.com/cxreiff/ttysvr";
     changelog = "https://github.com/cxreiff/ttysvr/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ griffi-gh ];
-    mainProgram = "ttysvr";
     platforms = with lib.platforms; linux;
+    mainProgram = "ttysvr";
   };
 })

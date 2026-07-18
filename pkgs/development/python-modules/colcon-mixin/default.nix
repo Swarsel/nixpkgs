@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   colcon,
   pytest-cov-stub,
   pytestCheckHook,
-  setuptools,
   scspell,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "colcon-mixin";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -22,12 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-XQpRDBTtrFOOlCRXKVImUtwrwirO0ELWifUpfQuyrrY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    colcon
-  ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
@@ -35,12 +28,20 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [
-    "colcon_mixin"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    colcon
   ];
 
   disabledTestPaths = [
     "test/test_flake8.py"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "colcon_mixin"
   ];
 
   meta = {

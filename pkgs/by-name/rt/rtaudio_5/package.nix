@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
-  config,
+  stdenv,
   fetchFromGitHub,
+  alsa-lib,
   cmake,
+  config,
+  libjack2,
+  libpulseaudio,
   pkg-config,
   alsaSupport ? stdenv.hostPlatform.isLinux,
-  alsa-lib,
-  pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-  jackSupport ? true,
-  libjack2,
   coreaudioSupport ? stdenv.hostPlatform.isDarwin,
+  jackSupport ? true,
+  pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

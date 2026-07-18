@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "vwsfriend";
   version = "0.24.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tillsteinbach";
@@ -15,8 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-k2LHPjV6ndYpPemLlDBp8oi5ner9LG123FwKTRgqNsM=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/vwsfriend";
 
   postPatch = ''
     # we don't need pytest-runner, pylint, etc.
@@ -27,8 +24,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   '';
 
   build-system = with python3.pkgs; [ setuptools ];
-
-  pythonRelaxDeps = true;
 
   dependencies =
     with python3.pkgs;
@@ -52,12 +47,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ++ weconnect.optional-dependencies.Images
     ++ hap-python.optional-dependencies.QRCode;
 
+  pyproject = true;
+  pythonRelaxDeps = true;
+  sourceRoot = "${finalAttrs.src.name}/vwsfriend";
+
   meta = {
-    changelog = "https://github.com/tillsteinbach/VWsFriend/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "VW WeConnect visualization and control";
     homepage = "https://github.com/tillsteinbach/VWsFriend";
+    changelog = "https://github.com/tillsteinbach/VWsFriend/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "vwsfriend";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "vwsfriend";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  mkYaziPlugin,
-  jdupes,
   bash,
+  jdupes,
+  mkYaziPlugin,
 }:
 mkYaziPlugin {
   pname = "dupes.yazi";

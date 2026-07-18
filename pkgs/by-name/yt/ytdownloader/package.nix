@@ -1,13 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   copyDesktopItems,
-  makeWrapper,
-  ffmpeg-headless,
-  yt-dlp,
-  makeDesktopItem,
   electron,
+  ffmpeg-headless,
+  makeDesktopItem,
+  makeWrapper,
+  yt-dlp,
 }:
 
 buildNpmPackage rec {
@@ -20,34 +20,6 @@ buildNpmPackage rec {
     tag = "v${version}";
     hash = "sha256-6HYVNtjGOQICiby4je3iYG9mPGMEXWTY+87HuUMaA2A=";
   };
-
-  npmDepsHash = "sha256-FiWtZBixg7iz/9YgqnhIIG6MYNql7ITOUXH7aBBv7Co=";
-  makeCacheWritable = true;
-
-  nativeBuildInputs = [
-    copyDesktopItems
-    makeWrapper
-  ];
-  buildInputs = [
-    ffmpeg-headless
-    yt-dlp
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "ytDownloader";
-      exec = "ytdownloader %U";
-      icon = "ytdownloader";
-      desktopName = "ytDownloader";
-      comment = "A modern GUI video and audio downloader";
-      categories = [ "Utility" ];
-      startupWMClass = "ytDownloader";
-    })
-  ];
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  dontNpmBuild = true;
 
   # Patch config dir to ~/.config/ytdownloader
   # Otherwise it stores config in ~/.config/Electron
@@ -65,6 +37,19 @@ buildNpmPackage rec {
       --replace-warn 'const autoUpdateDisabled = getId("autoUpdateDisabled");' 'const autoUpdateDisabled = "true";'
   '';
 
+  nativeBuildInputs = [
+    copyDesktopItems
+    makeWrapper
+  ];
+
+  buildInputs = [
+    ffmpeg-headless
+    yt-dlp
+  ];
+
+  npmDepsHash = "sha256-FiWtZBixg7iz/9YgqnhIIG6MYNql7ITOUXH7aBBv7Co=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+
   postInstall = ''
     makeWrapper ${electron}/bin/electron $out/bin/ytdownloader \
         --add-flags $out/lib/node_modules/ytdownloader/main.js \
@@ -72,6 +57,21 @@ buildNpmPackage rec {
 
     install -Dm444 assets/images/icon.png $out/share/icons/hicolor/512x512/apps/ytdownloader.png
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = "A modern GUI video and audio downloader";
+      desktopName = "ytDownloader";
+      exec = "ytdownloader %U";
+      icon = "ytdownloader";
+      name = "ytDownloader";
+      startupWMClass = "ytDownloader";
+    })
+  ];
+
+  dontNpmBuild = true;
+  makeCacheWritable = true;
 
   meta = {
     description = "Modern GUI video and audio downloader";

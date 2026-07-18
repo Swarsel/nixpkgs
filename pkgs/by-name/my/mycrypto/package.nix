@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
   makeDesktopItem,
 }:
 
@@ -11,8 +11,8 @@ let
   sha256 = "20eb48989b5ae5e60e438eff6830ac79a0d89ac26dff058097260e747e866444"; # Taken from release's checksums.txt.gpg
 
   src = fetchurl {
-    url = "https://github.com/mycryptohq/mycrypto/releases/download/${version}/linux-x86-64_${version}_MyCrypto.AppImage";
     inherit sha256;
+    url = "https://github.com/mycryptohq/mycrypto/releases/download/${version}/linux-x86-64_${version}_MyCrypto.AppImage";
   };
 
   appimageContents = appimageTools.extractType2 {
@@ -20,12 +20,12 @@ let
   };
 
   desktopItem = makeDesktopItem {
-    name = pname;
-    desktopName = pname;
+    categories = [ "Finance" ];
     comment = "MyCrypto is a free, open-source interface for interacting with the blockchain";
+    desktopName = pname;
     exec = pname;
     icon = "mycrypto";
-    categories = [ "Finance" ];
+    name = pname;
   };
 
 in
@@ -41,14 +41,16 @@ appimageTools.wrapType2 {
 
   meta = {
     description = "Free, open-source interface for interacting with the blockchain";
+
     longDescription = ''
       MyCrypto is an open-source, client-side tool for generating ether wallets,
       handling ERC-20 tokens, and interacting with the blockchain more easily.
     '';
+
     homepage = "https://mycrypto.com";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
     maintainers = [ ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "MyCrypto";
   };
 }

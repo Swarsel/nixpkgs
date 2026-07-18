@@ -1,21 +1,20 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 let
   version = "2.0.3";
 in
 python3Packages.buildPythonApplication {
-  pname = "ddsmt";
   inherit version;
-  pyproject = true;
+  pname = "ddsmt";
 
   src = fetchPypi {
     inherit version;
-    pname = "ddSMT";
     hash = "sha256-nmhEG4sUmgpgRUduVTtwDLGPJVKx+dEaPb+KjFRwV2Q=";
+    pname = "ddSMT";
   };
 
   nativeBuildInputs = with python3Packages; [
@@ -26,6 +25,8 @@ python3Packages.buildPythonApplication {
     gprof2dot
     progressbar
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Delta debugger for SMT benchmarks in SMT-LIB v2";

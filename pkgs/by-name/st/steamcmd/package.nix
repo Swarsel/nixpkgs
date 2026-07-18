@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  steam-run,
   coreutils,
+  stdenvNoCC,
+  steam-run,
   steamRoot ? "$HOME/.local/share/Steam",
 }:
 let
@@ -15,8 +15,8 @@ let
     in
     {
       x86_64-linux = fetchurl {
-        url = url "linux";
         hash = "sha256-zr8ARr/QjPRdprwJSuR6o56/QVXl7eQTc7V5uPEHHnw=";
+        url = url "linux";
       };
     };
 in
@@ -27,15 +27,6 @@ stdenvNoCC.mkDerivation {
   src =
     srcs.${stdenvNoCC.hostPlatform.system}
       or (throw "Unsupported system: ${stdenvNoCC.hostPlatform.system}");
-
-  # The source tarball does not have a single top-level directory.
-  preUnpack = ''
-    mkdir $name
-    cd $name
-    sourceRoot=.
-  '';
-
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p $out/share/steamcmd
@@ -52,14 +43,25 @@ stdenvNoCC.mkDerivation {
     chmod 0755 $out/bin/steamcmd
   '';
 
+  dontBuild = true;
+
+  # The source tarball does not have a single top-level directory.
+  preUnpack = ''
+    mkdir $name
+    cd $name
+    sourceRoot=.
+  '';
+
   meta = {
-    homepage = "https://developer.valvesoftware.com/wiki/SteamCMD";
     description = "Steam command-line tools";
-    mainProgram = "steamcmd";
+    homepage = "https://developer.valvesoftware.com/wiki/SteamCMD";
+    license = lib.licenses.unfreeRedistributable;
+    maintainers = with lib.maintainers; [ tadfisher ];
+
     platforms = [
       "x86_64-linux"
     ];
-    license = lib.licenses.unfreeRedistributable;
-    maintainers = with lib.maintainers; [ tadfisher ];
+
+    mainProgram = "steamcmd";
   };
 }

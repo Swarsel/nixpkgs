@@ -38,16 +38,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C header generator for LV2 plugins";
-    mainProgram = "ttl2c";
     homepage = "https://lvtk.org/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       bot-wxt1221
       fliegendewurst
     ];
+
     platforms = lib.platforms.unix;
+
     badPlatforms = [
       "aarch64-darwin"
     ];
+
+    mainProgram = "ttl2c";
   };
 })

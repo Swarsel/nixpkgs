@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  gettext,
   bzip2,
   db,
+  gettext,
   zlib,
 }:
 

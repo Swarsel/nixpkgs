@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   base58,
   beautifulsoup4,
   bech32,
@@ -8,7 +9,6 @@
   cbor,
   docx2python,
   eth-hash,
-  fetchFromGitHub,
   intervaltree,
   langdetect,
   lxml,
@@ -23,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "iocsearcher";
   version = "2.8.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "malicialab";
@@ -32,6 +31,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jNITY4X6ywlkjzS5Udpd46JG7PoycXyy0uJ7+UqjuF4=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -53,9 +54,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ eth-hash.optional-dependencies.pycryptodome;
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "iocsearcher" ];
 
   meta = {

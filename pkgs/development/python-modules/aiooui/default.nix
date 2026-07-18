@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "aiooui";
   version = "0.1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -28,14 +27,14 @@ buildPythonPackage rec {
       --replace-fail '"setuptools>=65.4.1", ' ""
   '';
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "aiooui" ];
 
   meta = {

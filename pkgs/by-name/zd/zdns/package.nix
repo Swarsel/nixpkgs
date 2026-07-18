@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,9 +25,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "CLI DNS lookup tool";
-    mainProgram = "zdns";
     homepage = "https://github.com/zmap/zdns";
     license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "zdns";
   };
 })

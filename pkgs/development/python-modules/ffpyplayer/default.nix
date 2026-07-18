@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pkg-config,
-
-  # build-system
-  cython,
-  setuptools,
-
   # buildInputs
   SDL2,
+  buildPythonPackage,
+  # build-system
+  cython,
   # ffpyplayer is not compatible with ffmpeg 7
   # https://github.com/matham/ffpyplayer/issues/16
   ffmpeg_6,
+  pkg-config,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ffpyplayer";
   version = "4.5.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "matham";
@@ -39,11 +35,6 @@ buildPythonPackage (finalAttrs: {
         "cython"
   '';
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -60,15 +51,22 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  pythonImportsCheck = [ "ffpyplayer" ];
-
   # No proper test suite
   doCheck = false;
+  __structuredAttrs = true;
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ffpyplayer" ];
 
   meta = {
-    changelog = "https://github.com/matham/ffpyplayer/releases/tag/v${finalAttrs.version}";
     description = "A cython implementation of an ffmpeg based player";
     homepage = "https://github.com/matham/ffpyplayer";
+    changelog = "https://github.com/matham/ffpyplayer/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ drupol ];
   };

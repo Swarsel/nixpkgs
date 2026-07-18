@@ -1,13 +1,13 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  makeWrapper,
-  installShellFiles,
   coreutils,
   findutils,
   gawk,
   iconv,
+  installShellFiles,
+  makeWrapper,
+  stdenvNoCC,
   wget,
 }:
 stdenvNoCC.mkDerivation rec {
@@ -21,6 +21,11 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-0I42UPWTdSzfRJodB1v3BNI5vwt8GRGpHR7eACoR9YQ=";
   };
 
+  nativeBuildInputs = [
+    makeWrapper
+    installShellFiles
+  ];
+
   buildInputs = [
     coreutils
     findutils
@@ -28,10 +33,7 @@ stdenvNoCC.mkDerivation rec {
     iconv
     wget
   ];
-  nativeBuildInputs = [
-    makeWrapper
-    installShellFiles
-  ];
+
   installPhase = ''
     installManPage DOC/podget.7
     install -m 755 -D podget $out/bin/podget
@@ -51,8 +53,8 @@ stdenvNoCC.mkDerivation rec {
     homepage = "https://github.com/dvehrs/podget";
     changelog = "https://github.com/dvehrs/podget/blob/dev/Changelog";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ _9R ];
+    platforms = lib.platforms.all;
     mainProgram = "podget";
   };
 }

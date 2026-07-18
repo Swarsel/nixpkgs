@@ -1,13 +1,14 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   aiohttp,
   aiomqtt,
   aioresponses,
   buildPythonPackage,
   click,
+  click-shell,
   construct,
-  fetchFromGitHub,
   freezegun,
   hatchling,
   paho-mqtt,
@@ -19,16 +20,14 @@
   pytest-asyncio,
   pytestCheckHook,
   pyyaml,
-  vacuum-map-parser-roborock,
-  click-shell,
   syrupy,
+  vacuum-map-parser-roborock,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-roborock";
   version = "5.25.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Python-roborock";
@@ -37,11 +36,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Uj7rr9vAdZBseeePQU1/3bILwsI0P2CDy1bGu6R90Cg=";
   };
 
-  pythonRelaxDeps = [
-    "protobuf"
-    "pycryptodome"
-  ];
+  nativeCheckInputs = [
+    aioresponses
+    freezegun
+    pytest-asyncio
+    pytestCheckHook
+    syrupy
+    writableTmpDirAsHomeHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -63,19 +68,13 @@ buildPythonPackage (finalAttrs: {
     pyshark
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    freezegun
-    pytest-asyncio
-    pytestCheckHook
-    syrupy
-    writableTmpDirAsHomeHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "roborock" ];
+
+  pythonRelaxDeps = [
+    "protobuf"
+    "pycryptodome"
+  ];
 
   meta = {
     description = "Python library & console tool for controlling Roborock vacuum";

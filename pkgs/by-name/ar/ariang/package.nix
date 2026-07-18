@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  nodejs_22,
   buildNpmPackage,
   copyDesktopItems,
   imagemagick,
-  xdg-utils,
   makeDesktopItem,
+  nodejs_22,
+  xdg-utils,
 }:
 
 buildNpmPackage rec {
@@ -20,16 +20,12 @@ buildNpmPackage rec {
     hash = "sha256-wPFZGNqVveDj9Dh0QSxyy93K7G91CACD4RzmgjaRxjI=";
   };
 
-  nodejs = nodejs_22;
-
-  npmDepsHash = "sha256-D+yqIDeJki0h6bT8eia8W8Xbokjgl4nlBXLApfhMwVc=";
-
-  makeCacheWritable = true;
-
   nativeBuildInputs = [
     copyDesktopItems
     imagemagick
   ];
+
+  npmDepsHash = "sha256-D+yqIDeJki0h6bT8eia8W8Xbokjgl4nlBXLApfhMwVc=";
 
   installPhase = ''
     runHook preInstall
@@ -52,20 +48,24 @@ buildNpmPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
-      desktopName = "AriaNg";
-      genericName = meta.description;
-      comment = meta.description;
-      exec = pname;
-      icon = pname;
-      terminal = false;
-      type = "Application";
       categories = [
         "Network"
         "WebBrowser"
       ];
+
+      comment = meta.description;
+      desktopName = "AriaNg";
+      exec = pname;
+      genericName = meta.description;
+      icon = pname;
+      name = pname;
+      terminal = false;
+      type = "Application";
     })
   ];
+
+  makeCacheWritable = true;
+  nodejs = nodejs_22;
 
   meta = {
     description = "Modern web frontend making aria2 easier to use";

@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   gevent,
+  setuptools,
   ssh-python,
   ssh2-python,
   unittestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "parallel-ssh";
   version = "2.16.0.post1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ParallelSSH";
@@ -20,6 +19,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-jwigzgW94pYkSfYbmyIg776DcML6zH5nYKK1aFs68j8=";
   };
+
+  nativeCheckInputs = [
+    unittestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -31,11 +34,8 @@ buildPythonPackage rec {
     ssh2-python
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pssh" ];
-
-  nativeCheckInputs = [
-    unittestCheckHook
-  ];
 
   meta = {
     description = "Asynchronous parallel SSH client library";

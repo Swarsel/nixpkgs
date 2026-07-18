@@ -1,13 +1,20 @@
 {
-  mkDerivation,
-  m4,
   compatIfNeeded,
-  zlib,
   libelf,
+  m4,
+  mkDerivation,
+  zlib,
 }:
 
 mkDerivation {
-  path = "lib/libdwarf";
+  buildInputs = compatIfNeeded ++ [
+    zlib
+    libelf
+  ];
+
+  MK_TESTS = "no";
+  extraNativeBuildInputs = [ m4 ];
+
   extraPaths = [
     "contrib/elftoolchain/libdwarf"
     "contrib/elftoolchain/common"
@@ -15,10 +22,6 @@ mkDerivation {
     "sys/sys/elf64.h"
     "sys/sys/elf_common.h"
   ];
-  extraNativeBuildInputs = [ m4 ];
-  buildInputs = compatIfNeeded ++ [
-    zlib
-    libelf
-  ];
-  MK_TESTS = "no";
+
+  path = "lib/libdwarf";
 }

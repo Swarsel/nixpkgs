@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  withOpenCL ? true,
   stdenv,
+  fetchFromGitHub,
   ocl-icd,
+  rustPlatform,
+  withOpenCL ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pghc2lTI81/z1bPJ6P2bFPyZkM8pko0V7lqv9rUUxWM=";
   };
 
-  cargoHash = "sha256-zuWPkaYltxOOLaR6NTVkf1WbKzUQByml45jNL+e5UJ0=";
-
   # LLVM Apple assembler rejects `:lo12:` combined with `@PAGEOFF`.
   postPatch = lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) ''
     substituteInPlace "$cargoDepsCopy"/*/sha1-asm-*/src/aarch64_apple.S \
@@ -30,9 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   buildInputs = lib.optional (withOpenCL && (!stdenv.hostPlatform.isDarwin)) ocl-icd;
-
+  cargoHash = "sha256-zuWPkaYltxOOLaR6NTVkf1WbKzUQByml45jNL+e5UJ0=";
   buildNoDefaultFeatures = !withOpenCL;
-
   # disable tests that require gpu
   checkNoDefaultFeatures = true;
 

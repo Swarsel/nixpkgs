@@ -1,23 +1,20 @@
 {
   lib,
   stdenv,
-  pkg-config,
-  libtool,
   autoreconfHook,
-  pcsclite,
-  libnfc,
-  python3,
-  help2man,
   gengetopt,
+  help2man,
+  libnfc,
+  libtool,
+  pcsclite,
+  pkg-config,
+  python3,
   vsmartcard-vpcd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "vsmartcard-pcsc-relay";
-
   inherit (vsmartcard-vpcd) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/pcsc-relay";
+  pname = "vsmartcard-pcsc-relay";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -41,12 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
     ))
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/pcsc-relay";
+
   meta = {
     description = "Relays a smart card using an contact-less interface";
     homepage = "https://frankmorgner.github.io/vsmartcard/pcsc-relay/README.html";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ stargate01 ];
     platforms = lib.platforms.all;
     broken = stdenv.hostPlatform.isDarwin;
-    maintainers = with lib.maintainers; [ stargate01 ];
   };
 })

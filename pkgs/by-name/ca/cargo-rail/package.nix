@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchCrate,
-  pkg-config,
   curl,
+  fetchCrate,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,14 +16,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-L8yh47lYvXVGOr8jDZ4Gk2rIfUnr88q9OR5/iDrJua0=";
   };
 
-  cargoHash = "sha256-XvXyG3N0cuqqm0LSe7MFj6oDlCQC3tFGa7rxyQIfa8o=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     curl
     openssl
   ];
+
+  cargoHash = "sha256-XvXyG3N0cuqqm0LSe7MFj6oDlCQC3tFGa7rxyQIfa8o=";
 
   # These fail because they need a git repository
   checkFlags = [
@@ -58,11 +58,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Graph-aware monorepo orchestration for Rust workspaces";
-    mainProgram = "cargo-rail";
     homepage = "https://github.com/loadingalias/cargo-rail";
     changelog = "https://github.com/loadingalias/cargo-rail/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
+    platforms = lib.platforms.unix;
+    mainProgram = "cargo-rail";
   };
 })

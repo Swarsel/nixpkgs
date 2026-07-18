@@ -1,22 +1,21 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "syntax-highlight";
   version = "2.1.30";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchzip {
     url = "https://github.com/sbarex/SourceCodeSyntaxHighlight/releases/download/${finalAttrs.version}/Syntax.Highlight.zip";
     hash = "sha256-URjobIBo43xtc2S6Ppr88lzeTo5KdbhF2T5weUjaxsA=";
     stripRoot = false;
   };
+
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -31,6 +30,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -38,9 +38,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/sbarex/SourceCodeSyntaxHighlight";
     changelog = "https://github.com/sbarex/SourceCodeSyntaxHighlight/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    maintainers = with lib.maintainers; [ kinnrai ];
-    mainProgram = "syntax_highlight_cli";
-    platforms = lib.platforms.darwin;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ kinnrai ];
+    platforms = lib.platforms.darwin;
+    mainProgram = "syntax_highlight_cli";
   };
 })

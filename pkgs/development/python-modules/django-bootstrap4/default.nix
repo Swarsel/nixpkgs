@@ -1,26 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
-  # non-propagates
-  django,
-
   # dependencies
   beautifulsoup4,
-
+  buildPythonPackage,
+  # non-propagates
+  django,
   # tests
   pytest-django,
   pytestCheckHook,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "django-bootstrap4";
   version = "26.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zostera";
@@ -34,12 +29,6 @@ buildPythonPackage rec {
       --replace-fail "uv_build>=0.9.6,<0.10.0" uv_build
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ beautifulsoup4 ];
-
-  pythonImportsCheck = [ "bootstrap4" ];
-
   nativeCheckInputs = [
     (django.override { withGdal = true; })
     pytest-django
@@ -49,6 +38,11 @@ buildPythonPackage rec {
   preCheck = ''
     export DJANGO_SETTINGS_MODULE=tests.app.settings
   '';
+
+  build-system = [ uv-build ];
+  dependencies = [ beautifulsoup4 ];
+  pyproject = true;
+  pythonImportsCheck = [ "bootstrap4" ];
 
   meta = {
     description = "Bootstrap 4 integration with Django";

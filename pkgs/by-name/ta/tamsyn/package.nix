@@ -10,8 +10,8 @@ let
   version = "1.11";
 in
 stdenv.mkDerivation {
-  pname = "tamsyn-font";
   inherit version;
+  pname = "tamsyn-font";
 
   src = fetchurl {
     url = "http://www.fial.com/~scott/tamsyn-font/download/tamsyn-font-${version}.tar.gz";
@@ -22,10 +22,6 @@ stdenv.mkDerivation {
     fontforge
     mkfontscale
   ];
-
-  unpackPhase = ''
-    tar -xzf $src --strip-components=1
-  '';
 
   postBuild = ''
     # convert pcf fonts to otb
@@ -44,17 +40,23 @@ stdenv.mkDerivation {
     mkfontdir "$out/share/fonts/misc"
   '';
 
+  unpackPhase = ''
+    tar -xzf $src --strip-components=1
+  '';
+
   meta = {
     description = "Monospace bitmap font aimed at programmers";
+
     longDescription = ''
       Tamsyn is a monospace bitmap font, primarily aimed at
       programmers. It was derived from Gilles Boccon-Gibod's MonteCarlo. Tamsyn
       font was further inspired by Gohufont, Terminus, Dina, Proggy, Fixedsys, and
       Consolas.
     '';
+
     homepage = "http://www.fial.com/~scott/tamsyn-font/";
-    downloadPage = "http://www.fial.com/~scott/tamsyn-font/download";
     license = lib.licenses.free;
     maintainers = [ lib.maintainers.rps ];
+    downloadPage = "http://www.fial.com/~scott/tamsyn-font/download";
   };
 }

@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  lib,
   mqttx-cli,
   nodejs,
-  stdenv,
   testers,
   yarnConfigHook,
   yarnInstallHook,
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "MQTTX";
     tag = "v${finalAttrs.version}";
     hash = "sha256-aUxhCUx89Qrqkv0zvgMZhC6SUQlxFoJs2elYtUlMio4=";
-  };
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/cli/yarn.lock";
-    hash = "sha256-bhqZLZRRAgsvxo2uAS7x77b5OtGn6x/M2tM72UI1Ayc=";
   };
 
   nativeBuildInputs = [
@@ -48,6 +43,11 @@ stdenv.mkDerivation (finalAttrs: {
     # rename binary so it does not conflict with the desktop app
     mv $out/bin/mqttx $out/bin/mqttx-cli
   '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-bhqZLZRRAgsvxo2uAS7x77b5OtGn6x/M2tM72UI1Ayc=";
+    yarnLock = "${finalAttrs.src}/cli/yarn.lock";
+  };
 
   passthru.tests.version = testers.testVersion { package = mqttx-cli; };
 

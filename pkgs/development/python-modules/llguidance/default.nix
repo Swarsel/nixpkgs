@@ -1,22 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
+  buildPythonPackage,
   # nativeBuildInputs
   cargo,
-  pkg-config,
-  rustPlatform,
-  rustc,
-
   # buildInputs
   oniguruma,
   openssl,
-
+  pkg-config,
   # tests
   pytestCheckHook,
+  pythonAtLeast,
+  rustPlatform,
+  rustc,
   torch,
   transformers,
 }:
@@ -24,19 +21,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "llguidance";
   version = "1.7.6";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "guidance-ai";
     repo = "llguidance";
     tag = "v${finalAttrs.version}";
     hash = "sha256-6FaT8hHjmtl878YN9yOjPPVH3QKRpJ8/HPbg0D/Zz2Q=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src pname version;
-    hash = "sha256-tAo6hDWUNm6h/DTOCVU/+o69wQ545THQBBdvN01bhTY=";
   };
 
   nativeBuildInputs = [
@@ -56,11 +46,6 @@ buildPythonPackage (finalAttrs: {
     RUSTONIG_SYSTEM_LIBONIG = true;
   };
 
-  pythonImportsCheck = [
-    "llguidance"
-    "llguidance._lib"
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     torch
@@ -71,6 +56,25 @@ buildPythonPackage (finalAttrs: {
   preCheck = ''
     rm -r python/llguidance
   '';
+
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src pname version;
+    hash = "sha256-tAo6hDWUNm6h/DTOCVU/+o69wQ545THQBBdvN01bhTY=";
+  };
+
+  disabledTestPaths = [
+    # Require internet access (https://huggingface.co)
+    "python/torch_tests/test_hf.py"
+    "python/torch_tests/test_llamacpp.py"
+    "python/torch_tests/test_tiktoken.py"
+    "scripts/tokenizer_test.py"
+  ]
+  ++ lib.optionals (pythonAtLeast "3.14") [
+    # RuntimeError: torch.compile is not supported on Python 3.14+
+    "python/torch_tests/test_bitmask.py"
+  ];
 
   disabledTests = [
     # Require internet access (https://huggingface.co)
@@ -87,16 +91,11 @@ buildPythonPackage (finalAttrs: {
     "test_mask_data_torch"
   ];
 
-  disabledTestPaths = [
-    # Require internet access (https://huggingface.co)
-    "python/torch_tests/test_hf.py"
-    "python/torch_tests/test_llamacpp.py"
-    "python/torch_tests/test_tiktoken.py"
-    "scripts/tokenizer_test.py"
-  ]
-  ++ lib.optionals (pythonAtLeast "3.14") [
-    # RuntimeError: torch.compile is not supported on Python 3.14+
-    "python/torch_tests/test_bitmask.py"
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "llguidance"
+    "llguidance._lib"
   ];
 
   meta = {

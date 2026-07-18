@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
   curl,
   feh,
   file,
   jq,
+  makeWrapper,
+  stdenvNoCC,
   util-linux,
   wget,
 }:
@@ -14,14 +14,14 @@ stdenvNoCC.mkDerivation rec {
   pname = "stylish";
   version = "0-unstable-2022-12-05";
 
-  nativeBuildInputs = [ makeWrapper ];
-
   src = fetchFromGitHub {
     owner = "thevinter";
     repo = "styli.sh";
     rev = "d595412a949c6cdc7e151ae0cf929aa1958aa7f1";
     hash = "sha256-lFnzrYnTFWe8bvK//aC1+TapWIFNsNP60Msn7D0tk/0=";
   };
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -45,9 +45,8 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/thevinter/styli.sh";
     description = "Shell script to manage wallpapers";
-    mainProgram = "styli.sh";
+
     longDescription = ''
       Styli.sh is a Bash script that aims to automate the tedious process
       of finding new wallpapers, downloading and switching them via the
@@ -56,7 +55,10 @@ stdenvNoCC.mkDerivation rec {
       a random image from the specified subreddits. If you have pywal it also
       can set automatically your terminal colors.
     '';
+
+    homepage = "https://github.com/thevinter/styli.sh";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tchab ];
+    mainProgram = "styli.sh";
   };
 }

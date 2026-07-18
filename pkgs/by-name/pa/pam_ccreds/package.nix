@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pam,
-  openssl,
   db,
+  openssl,
+  pam,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,9 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.padl.com/download/pam_ccreds-${finalAttrs.version}.tar.gz";
     sha256 = "1h7zyg1b1h69civyvrj95w22dg0y7lgw3hq4gqkdcg35w1y76fhz";
   };
-  patchPhase = ''
-    sed 's/-o root -g root//' -i Makefile.in
-  '';
 
   buildInputs = [
     pam
@@ -25,11 +22,15 @@ stdenv.mkDerivation (finalAttrs: {
     db
   ];
 
+  patchPhase = ''
+    sed 's/-o root -g root//' -i Makefile.in
+  '';
+
   meta = {
-    homepage = "https://www.padl.com/OSS/pam_ccreds.html";
     description = "PAM module to locally authenticate using an enterprise identity when the network is unavailable";
-    mainProgram = "ccreds_chkpwd";
+    homepage = "https://www.padl.com/OSS/pam_ccreds.html";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
+    mainProgram = "ccreds_chkpwd";
   };
 })

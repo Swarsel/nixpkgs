@@ -3,11 +3,11 @@
   stdenv,
   fetchurl,
   alsa-lib,
+  cmake,
   fluidsynth,
   libjack2,
-  cmake,
-  pkg-config,
   libsForQt5,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fluidsynth GUI";
-    mainProgram = "qsynth";
     homepage = "https://sourceforge.net/projects/qsynth";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "qsynth";
   };
 })

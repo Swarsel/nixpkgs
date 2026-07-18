@@ -17,18 +17,14 @@ let
   };
 in
 stdenv.mkDerivation {
-  name = "grub2_${grubPlatform}_image";
+  buildInputs =
+    lib.optional (grubPlatform == "xen") grub2_xen
+    ++ lib.optional (grubPlatform == "xen_pvh") grub2_xen_pvh;
 
   env = {
     GRUB_CONFIGS = "${./configs}";
     GRUB_FORMAT = "${targets.${stdenv.buildPlatform.system}.target}-${grubPlatform}";
   };
-
-  buildInputs =
-    lib.optional (grubPlatform == "xen") grub2_xen
-    ++ lib.optional (grubPlatform == "xen_pvh") grub2_xen_pvh;
-
-  dontUnpack = true;
 
   buildPhase = ''
     cp "$GRUB_CONFIGS"/* .
@@ -47,6 +43,8 @@ stdenv.mkDerivation {
   '';
 
   dontFixup = true;
+  dontUnpack = true;
+  name = "grub2_${grubPlatform}_image";
 
   meta = {
     description = "PvGrub2 image for booting ${
@@ -77,7 +75,7 @@ stdenv.mkDerivation {
           explanations.
         '';
 
-    teams = [ lib.teams.xen ];
     platforms = lib.attrNames targets;
+    teams = [ lib.teams.xen ];
   };
 }

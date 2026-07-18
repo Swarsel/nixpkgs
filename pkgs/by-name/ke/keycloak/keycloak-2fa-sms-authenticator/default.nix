@@ -1,8 +1,8 @@
 {
-  stdenv,
-  maven,
   lib,
+  stdenv,
   fetchFromGitHub,
+  maven,
 }:
 maven.buildMavenPackage rec {
   pname = "keycloak-2fa-sms-authenticator";
@@ -15,6 +15,13 @@ maven.buildMavenPackage rec {
     hash = "sha256-J7t/SRfK/LTcW7Y+D6bkHcXK+lKqUYLEqSpNWJUC3kQ=";
   };
 
+  installPhase = ''
+    runHook preInstall
+    install -Dm644 sms-authenticator/target/netzbegruenung.sms-authenticator-v${version}.jar \
+      $out/keycloak-2fa-sms-authenticator.jar
+    runHook postInstall
+  '';
+
   mvnHash =
     let
       mvnHashes = {
@@ -26,16 +33,9 @@ maven.buildMavenPackage rec {
     mvnHashes.${stdenv.hostPlatform.system}
       or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
-  installPhase = ''
-    runHook preInstall
-    install -Dm644 sms-authenticator/target/netzbegruenung.sms-authenticator-v${version}.jar \
-      $out/keycloak-2fa-sms-authenticator.jar
-    runHook postInstall
-  '';
-
   meta = {
-    homepage = "https://github.com/netzbegruenung/keycloak-mfa-plugins";
     description = "Keycloak authentication provider for 2FA via SMS";
+    homepage = "https://github.com/netzbegruenung/keycloak-mfa-plugins";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ anish ];
   };

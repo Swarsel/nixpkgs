@@ -1,31 +1,34 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  fetchzip,
   appimageTools,
-  makeWrapper,
   electron,
+  fetchzip,
+  makeWrapper,
+  stdenvNoCC,
 }:
 (stdenvNoCC.mkDerivation rec {
   pname = "revolt-desktop";
   version = "1.0.8";
-  dontConfigure = true;
+  nativeBuildInputs = [ makeWrapper ];
   dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Open source user-first chat platform";
     homepage = "https://revolt.chat/";
     changelog = "https://github.com/revoltchat/desktop/releases/tag/v${version}";
     license = lib.licenses.agpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       heyimnova
       magistau
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     mainProgram = "revolt-desktop";
   };
-  nativeBuildInputs = [ makeWrapper ];
 }).overrideAttrs
   (
     final: prev:
@@ -36,25 +39,23 @@
       {
         src =
           {
-            x86_64-linux = fetchurl {
-              url = "https://github.com/revoltchat/desktop/releases/download/v${version}/Revolt-${version}.AppImage";
-              hash = "sha256-L23Je5p7VmQpOLC+IfmQRk2CKKUm4rNBdsYLvqLTlRY=";
-            };
-            armv7l-linux = fetchurl {
-              url = "https://github.com/revoltchat/desktop/releases/download/v${version}/Revolt-${version}-armv7l.AppImage";
-              hash = "sha256-Qwya5tgHjMB8IJi0ueGmkzgQMQu+rlsDoWIVpl6Vj2w=";
-            };
             aarch64-linux = fetchurl {
-              url = "https://github.com/revoltchat/desktop/releases/download/v${version}/Revolt-${version}-arm64.AppImage";
               hash = "sha256-VQXyXaL4Ma3peO1duAlyFwkb1CRQ/4DNZhjiAnhms6I=";
+              url = "https://github.com/revoltchat/desktop/releases/download/v${version}/Revolt-${version}-arm64.AppImage";
+            };
+
+            armv7l-linux = fetchurl {
+              hash = "sha256-Qwya5tgHjMB8IJi0ueGmkzgQMQu+rlsDoWIVpl6Vj2w=";
+              url = "https://github.com/revoltchat/desktop/releases/download/v${version}/Revolt-${version}-armv7l.AppImage";
+            };
+
+            x86_64-linux = fetchurl {
+              hash = "sha256-L23Je5p7VmQpOLC+IfmQRk2CKKUm4rNBdsYLvqLTlRY=";
+              url = "https://github.com/revoltchat/desktop/releases/download/v${version}/Revolt-${version}.AppImage";
             };
           }
           .${stdenvNoCC.hostPlatform.system}
             or (throw "Unsupported system: ${stdenvNoCC.hostPlatform.system}");
-
-        appimageContents = appimageTools.extractType2 { inherit (final) src pname version; };
-
-        dontUnpack = true;
 
         installPhase = ''
           runHook preInstall
@@ -76,6 +77,9 @@
             --add-flags $out/share/revolt-desktop/resources/app.asar \
             --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform=wayland --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
         '';
+
+        appimageContents = appimageTools.extractType2 { inherit (final) src pname version; };
+        dontUnpack = true;
       }
     else
       assert stdenvNoCC.hostPlatform.isDarwin;

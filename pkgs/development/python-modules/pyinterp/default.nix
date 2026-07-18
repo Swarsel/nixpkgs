@@ -1,32 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  blas,
   # buildInputs
   boost,
-  blas,
-  eigen,
-  gtest,
-  pybind11,
-
+  buildPythonPackage,
   # build-system
   cmake,
-  setuptools,
-
   # dependencies
   dask,
+  eigen,
+  gtest,
   numpy,
-  xarray,
-
+  pybind11,
   # tests
   pytestCheckHook,
+  setuptools,
+  xarray,
 }:
 buildPythonPackage rec {
   pname = "pyinterp";
   version = "2025.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CNES";
@@ -54,14 +49,16 @@ buildPythonPackage rec {
      --replace-fail 'del version' ""
   '';
 
-  dontUseCmakeConfigure = true;
-
   buildInputs = [
     blas
     boost
     eigen
     gtest
     pybind11
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
   ];
 
   build-system = [
@@ -73,11 +70,6 @@ buildPythonPackage rec {
     dask
     numpy
     xarray
-  ];
-
-  pythonImportsCheck = [
-    "pyinterp"
-    "pyinterp.geohash"
   ];
 
   disabledTests = [
@@ -92,8 +84,12 @@ buildPythonPackage rec {
     "test_quadrivariate"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "pyinterp"
+    "pyinterp.geohash"
   ];
 
   meta = {

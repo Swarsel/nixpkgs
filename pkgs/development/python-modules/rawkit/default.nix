@@ -1,17 +1,16 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   fetchpatch,
   libraw,
-  pytest,
   mock,
+  pytest,
 }:
 
 buildPythonPackage rec {
   pname = "rawkit";
   version = "0.6.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,8 +20,8 @@ buildPythonPackage rec {
   patches = [
     # Python 3.7 compatibility
     (fetchpatch {
-      url = "https://github.com/photoshell/rawkit/commit/663e90afa835d398aedd782c87b8cd0bff64bc9f.patch";
       sha256 = "1cdw0x9bgk0b5jnpjnmd8jpbaryarr3cjqizq44366qh3l0jycxy";
+      url = "https://github.com/photoshell/rawkit/commit/663e90afa835d398aedd782c87b8cd0bff64bc9f.patch";
     })
   ];
 
@@ -36,6 +35,8 @@ buildPythonPackage rec {
   checkPhase = ''
     py.test tests
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "CTypes based LibRaw bindings for Python";

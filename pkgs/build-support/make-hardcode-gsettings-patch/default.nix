@@ -1,8 +1,8 @@
 {
-  runCommand,
-  gitMinimal,
   coccinelle,
+  gitMinimal,
   python3,
+  runCommand,
 }:
 
 /*
@@ -55,15 +55,16 @@
     }
 */
 {
+  schemaIdToVariableMapping,
   src,
   patches ? [ ],
-  schemaIdToVariableMapping,
   schemaExistsFunction ? null,
 }:
 
 runCommand "hardcode-gsettings.patch"
   {
     inherit src patches;
+
     nativeBuildInputs = [
       gitMinimal
       coccinelle

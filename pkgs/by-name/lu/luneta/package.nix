@@ -1,7 +1,7 @@
 {
   lib,
-  buildDubPackage,
   fetchFromGitHub,
+  buildDubPackage,
   ncurses,
 }:
 
@@ -22,9 +22,6 @@ buildDubPackage rec {
         --replace-fail "wint_t" "dchar"
   '';
 
-  # ncurses dub package version is locked to 1.0.0 instead of using ~master
-  dubLock = ./dub-lock.json;
-
   buildInputs = [ ncurses ];
 
   installPhase = ''
@@ -33,12 +30,15 @@ buildDubPackage rec {
     runHook postInstall
   '';
 
+  # ncurses dub package version is locked to 1.0.0 instead of using ~master
+  dubLock = ./dub-lock.json;
+
   meta = {
-    changelog = "https://github.com/fbeline/luneta/releases/tag/${src.rev}";
     description = "Interactive filter and fuzzy finder for the command-line";
     homepage = "https://github.com/fbeline/luneta";
+    changelog = "https://github.com/fbeline/luneta/releases/tag/${src.rev}";
     license = lib.licenses.gpl2Only;
-    mainProgram = "luneta";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "luneta";
   };
 }

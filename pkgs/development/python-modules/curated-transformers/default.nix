@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   catalogue,
   curated-tokenizers,
-  fetchFromGitHub,
   huggingface-hub,
   setuptools,
   tokenizers,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "curated-transformers";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     torch
   ];
 
+  pyproject = true;
   # Unit tests are hard to use, since most tests rely on downloading
   # models from Hugging Face Hub.
   pythonImportsCheck = [ "curated_transformers" ];

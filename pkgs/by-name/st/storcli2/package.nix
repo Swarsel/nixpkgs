@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   rpmextract,
+  stdenvNoCC,
   testers,
 }:
 stdenvNoCC.mkDerivation (
@@ -24,12 +24,22 @@ stdenvNoCC.mkDerivation (
 
     nativeBuildInputs = [ rpmextract ];
 
+    installPhase = ''
+      install -D ./opt/MegaRAID/storcli2/storcli2 $out/bin/storcli2
+    '';
+
+    dontBuild = true;
+    dontConfigure = true;
+    # Not needed because the binary is statically linked
+    dontFixup = false;
+    dontPatch = true;
+
     unpackPhase =
       let
         inherit (stdenvNoCC.hostPlatform) system;
         platforms = {
-          x86_64-linux = "Linux";
           aarch64-linux = "ARM/Linux";
+          x86_64-linux = "Linux";
         };
         platform = platforms.${system} or (throw "unsupported system: ${system}");
       in
@@ -37,37 +47,28 @@ stdenvNoCC.mkDerivation (
         rpmextract $src/Avenger_StorCLI/${platform}/storcli2-${verCode}-1.*.rpm
       '';
 
-    dontPatch = true;
-    dontConfigure = true;
-    dontBuild = true;
-
-    installPhase = ''
-      install -D ./opt/MegaRAID/storcli2/storcli2 $out/bin/storcli2
-    '';
-
-    # Not needed because the binary is statically linked
-    dontFixup = false;
-
     passthru.tests = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "${finalAttrs.meta.mainProgram} v";
       version = verCode;
+      command = "${finalAttrs.meta.mainProgram} v";
+      package = finalAttrs.finalPackage;
     };
 
     meta = {
+      description = "Storage Command Line Tool";
       # Unfortunately there is no better page for this.
       # Filter for downloads, set 100 items per page. Sort by newest does not work.
       # Then search manually for the latest version.
       homepage = "https://www.broadcom.com/support/download-search?pg=&pf=Host+Bus+Adapters&pn=&pa=&po=&dk=storcli2&pl=&l=false";
-      description = "Storage Command Line Tool";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       license = lib.licenses.unfree;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       maintainers = with lib.maintainers; [ edwtjo ];
-      mainProgram = "storcli2";
+
       platforms = [
         "x86_64-linux"
         "aarch64-linux"
       ];
+
+      mainProgram = "storcli2";
     };
   }
 )

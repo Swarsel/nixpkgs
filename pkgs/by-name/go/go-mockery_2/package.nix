@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
+  getent,
   go-task,
   gotestsum,
-  getent,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,8 +21,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-XJnxs+towKaW64TUvmgVsxtYYak6e5qc4u9EKuyHLSs=";
   };
 
-  proxyVendor = true;
   vendorHash = "sha256-BY/Z8xDWPbccwvAf0t71qkxFDI3JqEr7lIxctEzudQ0=";
+  env.CGO_ENABLED = 0;
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
@@ -30,22 +34,19 @@ buildGoModule (finalAttrs: {
     "-X github.com/vektra/mockery/v${lib.versions.major finalAttrs.version}/pkg/logging.SemVer=v${finalAttrs.version}"
   ];
 
-  env.CGO_ENABLED = 0;
-
+  proxyVendor = true;
   subPackages = [ "." ];
 
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
-
   meta = {
-    homepage = "https://github.com/vektra/mockery";
     description = "Mock code autogenerator for Golang - v2";
+    homepage = "https://github.com/vektra/mockery";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       fbrs
       jk
     ];
+
     mainProgram = "mockery";
-    license = lib.licenses.bsd3;
   };
 })

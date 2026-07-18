@@ -1,34 +1,33 @@
 {
   lib,
   stdenv,
-  version,
-  hash,
-  patches ? [ ],
   fetchFromGitHub,
-
   cmake,
+  hash,
   ninja,
   perl, # Project uses Perl for scripting and testing
   python3,
   python3Packages,
-
+  version,
   enableThreading ? true, # Threading can be disabled to increase security https://tls.mbed.org/kb/development/thread-safety-and-multi-threading
+  patches ? [ ],
 }:
 
 stdenv.mkDerivation rec {
-  pname = "mbedtls";
   inherit version;
+  inherit patches;
+  pname = "mbedtls";
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "Mbed-TLS";
     repo = "mbedtls";
     rev = "${pname}-${version}";
-    inherit hash;
     # mbedtls >= 3.6.0 uses git submodules
     fetchSubmodules = true;
   };
 
-  inherit patches;
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -40,21 +39,6 @@ stdenv.mkDerivation rec {
     python3Packages.jinja2
     python3Packages.jsonschema
   ];
-
-  strictDeps = true;
-
-  # trivialautovarinit on clang causes test failures
-  hardeningDisable = lib.optional stdenv.cc.isClang "trivialautovarinit";
-
-  postConfigure =
-    lib.optionalString (enableThreading && lib.versionOlder version "4.0") ''
-      perl scripts/config.pl set MBEDTLS_THREADING_C    # Threading abstraction layer
-      perl scripts/config.pl set MBEDTLS_THREADING_PTHREAD    # POSIX thread wrapper layer for the threading layer.
-    ''
-    + lib.optionalString (enableThreading && lib.versionAtLeast version "4.0") ''
-      python scripts/config.py set MBEDTLS_THREADING_C    # Threading abstraction layer
-      python scripts/config.py set MBEDTLS_THREADING_PTHREAD    # POSIX thread wrapper layer for the threading layer.
-    '';
 
   cmakeFlags = [
     "-DUSE_SHARED_MBEDTLS_LIBRARY=${if stdenv.hostPlatform.isStatic then "off" else "on"}"
@@ -87,21 +71,34 @@ stdenv.mkDerivation rec {
     "-DCMAKE_C_FLAGS=-fzero-init-padding-bits=unions"
   ];
 
-  doCheck = true;
+  postConfigure =
+    lib.optionalString (enableThreading && lib.versionOlder version "4.0") ''
+      perl scripts/config.pl set MBEDTLS_THREADING_C    # Threading abstraction layer
+      perl scripts/config.pl set MBEDTLS_THREADING_PTHREAD    # POSIX thread wrapper layer for the threading layer.
+    ''
+    + lib.optionalString (enableThreading && lib.versionAtLeast version "4.0") ''
+      python scripts/config.py set MBEDTLS_THREADING_C    # Threading abstraction layer
+      python scripts/config.py set MBEDTLS_THREADING_PTHREAD    # POSIX thread wrapper layer for the threading layer.
+    '';
 
+  doCheck = true;
   # Parallel checking causes test failures
   # https://github.com/Mbed-TLS/mbedtls/issues/4980
   enableParallelChecking = false;
+  # trivialautovarinit on clang causes test failures
+  hardeningDisable = lib.optional stdenv.cc.isClang "trivialautovarinit";
 
   meta = {
+    description = "Portable cryptographic and TLS library, formerly known as PolarSSL";
     homepage = "https://www.trustedfirmware.org/projects/mbed-tls/";
     changelog = "https://github.com/Mbed-TLS/mbedtls/blob/${pname}-${version}/ChangeLog";
-    description = "Portable cryptographic and TLS library, formerly known as PolarSSL";
+
     license = [
       lib.licenses.asl20 # or
       lib.licenses.gpl2Plus
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [ raphaelr ];
+    platforms = lib.platforms.all;
   };
 }

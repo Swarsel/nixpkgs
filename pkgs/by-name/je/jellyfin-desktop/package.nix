@@ -1,17 +1,17 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  cmake,
-  ninja,
-  python3,
-  kdePackages,
-  mpv-unwrapped,
-  libcec,
+  fetchFromGitHub,
   SDL2,
-  libxrandr,
   cacert,
+  cmake,
+  kdePackages,
+  libcec,
+  libxrandr,
+  mpv-unwrapped,
+  ninja,
   nix-update-script,
+  python3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "jellyfin-desktop";
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ITlYOrMS6COx9kDRSBi4wM6mzL/Q2G5X9GbABwDIOe4=";
     fetchSubmodules = true;
   };
+
   patches = [
     ./non-fatal-unique-app.patch
   ];
@@ -60,6 +61,12 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional stdenv.hostPlatform.isDarwin "-DUSE_STATIC_MPVQT=ON"
   ++ lib.optional (!stdenv.hostPlatform.isDarwin) "-DUSE_STATIC_MPVQT=OFF";
 
+  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    mkdir -p $out/bin $out/Applications
+    mv "$out/Jellyfin Desktop.app" $out/Applications
+    ln -s "$out/Applications/Jellyfin Desktop.app/Contents/MacOS/Jellyfin Desktop" $out/bin/jellyfindesktop
+  '';
+
   qtWrapperArgs = [
     "--set QT_STYLE_OVERRIDE Fusion"
     "--set NIX_SSL_CERT_FILE ${cacert}/etc/ssl/certs/ca-bundle.crt"
@@ -67,30 +74,28 @@ stdenv.mkDerivation (finalAttrs: {
     "--set-default QTWEBENGINE_FORCE_USE_GBM 0"
   ];
 
-  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    mkdir -p $out/bin $out/Applications
-    mv "$out/Jellyfin Desktop.app" $out/Applications
-    ln -s "$out/Applications/Jellyfin Desktop.app/Contents/MacOS/Jellyfin Desktop" $out/bin/jellyfindesktop
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/jellyfin/jellyfin-desktop";
     description = "Jellyfin Desktop Client";
+    homepage = "https://github.com/jellyfin/jellyfin-desktop";
+
     license = with lib.licenses; [
       gpl2Only
       mit
     ];
+
+    maintainers = with lib.maintainers; [
+      jojosch
+      paumr
+    ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
       "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [
-      jojosch
-      paumr
-    ];
+
     mainProgram = "jellyfin-desktop";
   };
 })

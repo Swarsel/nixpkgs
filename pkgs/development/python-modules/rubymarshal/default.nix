@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "rubymarshal";
   version = "1.2.10";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-iZtG5khSANCHhY/1YpWIF2T/Umj2/fAbfsxOTgPT7Xw=";
   };
 
-  build-system = [ hatchling ];
-
   # pypi doesn't distribute tests
   doCheck = false;
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "rubymarshal" ];
 
   meta = {

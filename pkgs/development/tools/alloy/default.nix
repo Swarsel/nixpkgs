@@ -3,34 +3,20 @@
   stdenv,
   fetchurl,
   jre,
-  makeWrapper,
   makeDesktopItem,
+  makeWrapper,
 }:
 
 let
   generic =
-    { version, sha256 }:
+    { sha256, version }:
     stdenv.mkDerivation rec {
-      pname = "alloy${lib.versions.major version}";
       inherit version;
+      pname = "alloy${lib.versions.major version}";
 
       src = fetchurl {
         inherit sha256;
         url = "https://github.com/AlloyTools/org.alloytools.alloy/releases/download/v${version}/org.alloytools.alloy.dist.jar";
-      };
-
-      desktopItem = makeDesktopItem rec {
-        name = pname;
-        exec = name;
-        icon = name;
-        desktopName = "Alloy ${lib.versions.major version}";
-        genericName = "Relational modelling tool";
-        comment = meta.description;
-        categories = [
-          "Development"
-          "IDE"
-          "Education"
-        ];
       };
 
       nativeBuildInputs = [ makeWrapper ];
@@ -47,8 +33,24 @@ let
         cp -r ${desktopItem}/share/applications $out/share
       '';
 
+      desktopItem = makeDesktopItem rec {
+        categories = [
+          "Development"
+          "IDE"
+          "Education"
+        ];
+
+        comment = meta.description;
+        desktopName = "Alloy ${lib.versions.major version}";
+        exec = name;
+        genericName = "Relational modelling tool";
+        icon = name;
+        name = pname;
+      };
+
       meta = {
         description = "Language & tool for relational models";
+
         longDescription = ''
           Alloy is a language for describing structures and a tool for exploring
           them. An Alloy model is a collection of constraints that describes a set
@@ -58,17 +60,20 @@ let
           finds structures that satisfy them. Structures are displayed graphically,
           and their appearance can be customized for the domain at hand.
         '';
+
         homepage = "https://alloytools.org/";
-        downloadPage = "https://alloytools.org/download.html";
-        sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
         license = lib.licenses.mit;
-        platforms = lib.platforms.unix;
+        sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
         maintainers = with lib.maintainers; [ notbandali ];
+        platforms = lib.platforms.unix;
+        downloadPage = "https://alloytools.org/download.html";
       };
     };
 
 in
 rec {
+  alloy = alloy5;
+
   alloy5 = generic {
     version = "5.1.0";
     sha256 = "sha256-o7Q+jsmWeUeuotUQG9lrPE6w2B6z3Ju6QcyWSTScaQo=";
@@ -78,6 +83,4 @@ rec {
     version = "6.2.0";
     sha256 = "sha256-a4wctbyTvt/HxhQ1xOGrbmiKJC3HAqOUYo2amAHtt40=";
   };
-
-  alloy = alloy5;
 }

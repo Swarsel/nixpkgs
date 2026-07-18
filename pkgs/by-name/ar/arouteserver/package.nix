@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   bgpq4,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "arouteserver";
   version = "1.23.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pierky";
@@ -24,9 +23,12 @@ python3Packages.buildPythonPackage rec {
       --replace-fail '"bgpq4"' '"${lib.getExe bgpq4}"'
   '';
 
-  build-system = with python3Packages; [ setuptools ];
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    requests-mock
+  ];
 
-  pythonRelaxDeps = [ "packaging" ];
+  build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
     aggregate6
@@ -38,32 +40,32 @@ python3Packages.buildPythonPackage rec {
     setuptools
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    requests-mock
+  disabledTests = [
+    # disable copyright year check of files
+    "current_year"
   ];
+
+  enabledTestPaths = [ "tests/static" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pierky"
     "pierky.arouteserver"
   ];
 
-  enabledTestPaths = [ "tests/static" ];
-
-  disabledTests = [
-    # disable copyright year check of files
-    "current_year"
-  ];
+  pythonRelaxDeps = [ "packaging" ];
 
   meta = {
     description = "Automatically build (and test) feature-rich configurations for BGP route servers";
-    mainProgram = "arouteserver";
     homepage = "https://github.com/pierky/arouteserver";
     changelog = "https://github.com/pierky/arouteserver/blob/v${version}/CHANGES.rst";
     license = with lib.licenses; [ gpl3Only ];
+
     maintainers = with lib.maintainers; [
       marcel
       johannwagner
     ];
+
+    mainProgram = "arouteserver";
   };
 }

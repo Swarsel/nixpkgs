@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   makeWrapper,
   networkmanager,
@@ -18,6 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "04jcfb2jy8yyrk4mg68krwh3zb5qcyj1aq1bwk96fhybrq9k2hhp";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   installPhase = ''
     runHook preInstall
 
@@ -33,8 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
-
-  nativeBuildInputs = [ makeWrapper ];
 
   meta = {
     description = "Rofi-based interface to enable VPN connections with NetworkManager";

@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  autoreconfHook,
-  gtk3,
   adwaita-icon-theme,
-  moka-icon-theme,
+  autoreconfHook,
   gnome-icon-theme,
+  gtk3,
   hicolor-icon-theme,
+  moka-icon-theme,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -33,16 +33,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
   postFixup = "gtk-update-icon-cache $out/share/icons/Arc";
+  dontDropIconThemeCache = true;
 
   meta = {
     description = "Arc icon theme";
     homepage = "https://github.com/horst3180/arc-icon-theme";
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ romildo ];
     # moka-icon-theme dependency is restricted to linux
     platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ romildo ];
   };
 })

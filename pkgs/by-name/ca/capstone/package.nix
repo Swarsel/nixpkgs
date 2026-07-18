@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   fixDarwinDylibNames,
 }:
 
@@ -17,11 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-uAiiKWKGjEATPE0Xc3g+aOLCz5ffIlDmf+7jaGwaZ4I=";
   };
 
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED_LIBS" true)
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ (lib.cmakeBool "CAPSTONE_BUILD_MACOS_THIN" true) ];
-
   nativeBuildInputs = [
     cmake
   ]
@@ -29,17 +24,24 @@ stdenv.mkDerivation (finalAttrs: {
     fixDarwinDylibNames
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED_LIBS" true)
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ (lib.cmakeBool "CAPSTONE_BUILD_MACOS_THIN" true) ];
+
   doCheck = true;
 
   meta = {
     description = "Advanced disassembly library";
     homepage = "http://www.capstone-engine.org";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       ris
     ];
-    mainProgram = "cstool";
+
     platforms = lib.platforms.unix;
+    mainProgram = "cstool";
   };
 })

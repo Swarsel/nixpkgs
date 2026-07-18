@@ -1,18 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "webthing-ws";
   version = "0.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-ecosystem";
@@ -21,6 +18,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-j7nc4yJczDs28RVFDHeQ2ZIG9mIW2m25AAeErVKi4E4=";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +28,7 @@ buildPythonPackage (finalAttrs: {
     async-timeout
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "webthing_ws" ];
 
   meta = {

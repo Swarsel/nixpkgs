@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   love,
   lua,
-  makeWrapper,
   makeDesktopItem,
+  makeWrapper,
   strip-nondeterminism,
   zip,
 }:
@@ -14,21 +14,6 @@
 stdenv.mkDerivation rec {
   pname = "duckmarines";
   version = "1.0c";
-
-  icon = fetchurl {
-    url = "http://tangramgames.dk/img/thumb/duckmarines.png";
-    sha256 = "07ypbwqcgqc5f117yxy9icix76wlybp1cmykc8f3ivdps66hl0k5";
-  };
-
-  desktopItem = makeDesktopItem {
-    name = "duckmarines";
-    exec = "duckmarines";
-    icon = icon;
-    comment = "Duck-themed action puzzle video game";
-    desktopName = "Duck Marines";
-    genericName = "duckmarines";
-    categories = [ "Game" ];
-  };
 
   src = fetchFromGitHub {
     owner = "SimonLarsen";
@@ -47,6 +32,7 @@ stdenv.mkDerivation rec {
     strip-nondeterminism
     zip
   ];
+
   buildInputs = [
     lua
     love
@@ -72,11 +58,25 @@ stdenv.mkDerivation rec {
     ln -s ${desktopItem}/share/applications/* $out/share/applications/
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [ "Game" ];
+    comment = "Duck-themed action puzzle video game";
+    desktopName = "Duck Marines";
+    exec = "duckmarines";
+    genericName = "duckmarines";
+    icon = icon;
+    name = "duckmarines";
+  };
+
+  icon = fetchurl {
+    sha256 = "07ypbwqcgqc5f117yxy9icix76wlybp1cmykc8f3ivdps66hl0k5";
+    url = "http://tangramgames.dk/img/thumb/duckmarines.png";
+  };
+
   meta = {
     description = "Duck-themed action puzzle video game";
     homepage = "https://github.com/SimonLarsen/duckmarines";
-    platforms = love.meta.platforms;
-    hydraPlatforms = [ ];
+
     license = with lib.licenses; [
       # code
       zlib
@@ -91,7 +91,10 @@ stdenv.mkDerivation rec {
       # tserial
       unfree
     ];
+
+    platforms = love.meta.platforms;
     downloadPage = "http://tangramgames.dk/games/duckmarines";
+    hydraPlatforms = [ ];
   };
 
 }

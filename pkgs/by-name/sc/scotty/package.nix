@@ -18,13 +18,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Sf1JuIWCscHPn7bA7spQ1zTKt+1kEehR+rEZ1+MTnoE=";
   };
 
-  # Otherwise checks fail with `panic: open /etc/protocols: operation not permitted` when sandboxing is enabled on Darwin
-  # https://github.com/NixOS/nixpkgs/pull/381645#issuecomment-2656211797
-  modPostBuild = ''
-    substituteInPlace vendor/modernc.org/libc/honnef.co/go/netdb/netdb.go \
-      --replace-fail '!os.IsNotExist(err)' '!os.IsNotExist(err) && !os.IsPermission(err)'
-  '';
-
   vendorHash = "sha256-AfCSp/f8jAy1a6PyYHMErmOOgADXTfliJPQgyNLhVFo=";
 
   env = {
@@ -32,6 +25,13 @@ buildGoModule (finalAttrs: {
     # https://git.sr.ht/~phw/scotty/tree/04eddfda33cc6f0b87dc0fcea43d5c4f50923ddc/item/internal/i18n/i18n.go#L30
     LC_ALL = "C.UTF-8";
   };
+
+  # Otherwise checks fail with `panic: open /etc/protocols: operation not permitted` when sandboxing is enabled on Darwin
+  # https://github.com/NixOS/nixpkgs/pull/381645#issuecomment-2656211797
+  modPostBuild = ''
+    substituteInPlace vendor/modernc.org/libc/honnef.co/go/netdb/netdb.go \
+      --replace-fail '!os.IsNotExist(err)' '!os.IsNotExist(err) && !os.IsPermission(err)'
+  '';
 
   passthru = {
     tests.version = testers.testVersion {

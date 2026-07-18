@@ -1,8 +1,8 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   alcotest,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -18,9 +18,9 @@ buildDunePackage (finalAttrs: {
   checkInputs = [ alcotest ];
 
   meta = {
+    description = "RFC 1035 Internet domain names";
     homepage = "https://github.com/hannesm/domain-name";
     changelog = "https://github.com/hannesm/domain-name/blob/v${finalAttrs.version}/CHANGES.md";
-    description = "RFC 1035 Internet domain names";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
   };

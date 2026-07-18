@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  installShellFiles,
   buildGoModule,
   go,
+  installShellFiles,
   makeWrapper,
   viceroy,
 }:
@@ -24,6 +24,7 @@ buildGoModule (finalAttrs: {
     # to retrieve the commit SHA, and remove the directory afterwards,
     # since it is not needed after that.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse --short HEAD > $out/COMMIT
@@ -31,16 +32,36 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  subPackages = [
-    "cmd/fastly"
-  ];
-
-  vendorHash = "sha256-8TM/gprIgItjw9rUAHh6eJ8ZHlbUoB5KyKmFJDM2xlU=";
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
+
+  vendorHash = "sha256-8TM/gprIgItjw9rUAHh6eJ8ZHlbUoB5KyKmFJDM2xlU=";
+
+  preBuild =
+    let
+      cliConfigToml = fetchurl {
+        hash = "sha256-r4ahroyU4hyTN88UK02FvXU8OTQ6OoNInt9WrzZk7Bk=";
+        url = "https://web.archive.org/web/20240910172801/https://developer.fastly.com/api/internal/cli-config";
+      };
+    in
+    ''
+      cp ${cliConfigToml} ./pkg/config/config.toml
+      ldflags+=" -X github.com/fastly/cli/pkg/revision.GitCommit=$(cat COMMIT)"
+    '';
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    export HOME="$(mktemp -d)"
+    installShellCompletion --cmd fastly \
+      --bash <($out/bin/fastly --completion-script-bash) \
+      --zsh <($out/bin/fastly --completion-script-zsh)
+  '';
+
+  preFixup = ''
+    wrapProgram $out/bin/fastly --prefix PATH : ${lib.makeBinPath [ viceroy ]} \
+      --set FASTLY_VICEROY_USE_PATH 1
+  '';
 
   # Flags as provided by the build automation of the project:
   #   https://github.com/fastly/cli/blob/7844f9f54d56f8326962112b5534e5c40e91bf09/.goreleaser.yml#L14-L18
@@ -52,38 +73,21 @@ buildGoModule (finalAttrs: {
     "-X github.com/fastly/cli/pkg/revision.GoHostOS=${go.GOHOSTOS}"
     "-X github.com/fastly/cli/pkg/revision.GoHostArch=${go.GOHOSTARCH}"
   ];
-  preBuild =
-    let
-      cliConfigToml = fetchurl {
-        url = "https://web.archive.org/web/20240910172801/https://developer.fastly.com/api/internal/cli-config";
-        hash = "sha256-r4ahroyU4hyTN88UK02FvXU8OTQ6OoNInt9WrzZk7Bk=";
-      };
-    in
-    ''
-      cp ${cliConfigToml} ./pkg/config/config.toml
-      ldflags+=" -X github.com/fastly/cli/pkg/revision.GitCommit=$(cat COMMIT)"
-    '';
 
-  preFixup = ''
-    wrapProgram $out/bin/fastly --prefix PATH : ${lib.makeBinPath [ viceroy ]} \
-      --set FASTLY_VICEROY_USE_PATH 1
-  '';
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    export HOME="$(mktemp -d)"
-    installShellCompletion --cmd fastly \
-      --bash <($out/bin/fastly --completion-script-bash) \
-      --zsh <($out/bin/fastly --completion-script-zsh)
-  '';
+  subPackages = [
+    "cmd/fastly"
+  ];
 
   meta = {
     description = "Command line tool for interacting with the Fastly API";
     homepage = "https://github.com/fastly/cli";
     changelog = "https://github.com/fastly/cli/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ereslibre
     ];
+
     mainProgram = "fastly";
   };
 })

@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
   blas,
   gfortran,
+  installShellFiles,
   lapack,
   openssl,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-suzivynlgk4VvDOC2dQR40n5IJHoJ736+ObdrM9dIqE=";
   };
 
-  cargoHash = "sha256-X8ENEtjH1RHU2+VwtkHsyVYK37O8doMlLk94O2BGqy0=";
-
   nativeBuildInputs = [ installShellFiles ];
 
   buildInputs = [
@@ -31,8 +29,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  # Enables build against a generic BLAS.
-  buildFeatures = [ "netlib" ];
+  cargoHash = "sha256-X8ENEtjH1RHU2+VwtkHsyVYK37O8doMlLk94O2BGqy0=";
 
   postInstall = ''
     # Install shell completions
@@ -41,6 +38,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
     installShellCompletion finalfusion.{bash,fish,zsh}
   '';
+
+  # Enables build against a generic BLAS.
+  buildFeatures = [ "netlib" ];
 
   meta = {
     description = "Utility for converting, quantizing, and querying word embeddings";

@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.hackedbox ];
+
     services.xserver.windowManager.session = singleton {
       name = "hackedbox";
+
       start = ''
         ${pkgs.hackedbox}/bin/hackedbox &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.hackedbox ];
   };
 }

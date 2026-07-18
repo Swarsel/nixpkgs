@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeShellScript,
   texliveBasic,
+  writeShellScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

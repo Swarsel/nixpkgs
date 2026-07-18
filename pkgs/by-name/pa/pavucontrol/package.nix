@@ -1,20 +1,20 @@
 {
-  fetchFromGitLab,
   lib,
   stdenv,
-  pkg-config,
-  intltool,
-  libpulseaudio,
-  gtkmm4,
-  libsigcxx,
-  # Since version 6.1, libcanberra is optional
-  withLibcanberra ? true,
-  libcanberra-gtk3,
-  json-glib,
+  fetchFromGitLab,
   adwaita-icon-theme,
-  wrapGAppsHook4,
+  gtkmm4,
+  intltool,
+  json-glib,
+  libcanberra-gtk3,
+  libpulseaudio,
+  libsigcxx,
   meson,
   ninja,
+  pkg-config,
+  wrapGAppsHook4,
+  # Since version 6.1, libcanberra is optional
+  withLibcanberra ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,12 +22,20 @@ stdenv.mkDerivation (finalAttrs: {
   version = "6.2";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "pulseaudio";
     repo = "pavucontrol";
     tag = "v${finalAttrs.version}";
     hash = "sha256-If76Qt2BFgGMYt2PSzDQWmNPsbzneZ6zW9yYnS3lo84=";
+    domain = "gitlab.freedesktop.org";
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    intltool
+    wrapGAppsHook4
+    meson
+    ninja
+  ];
 
   buildInputs = [
     libpulseaudio
@@ -38,14 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     adwaita-icon-theme
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    intltool
-    wrapGAppsHook4
-    meson
-    ninja
-  ];
-
   mesonFlags = [
     "--prefix=${placeholder "out"}"
     (lib.mesonEnable "lynx" false)
@@ -54,17 +54,19 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    changelog = "https://freedesktop.org/software/pulseaudio/pavucontrol/#news";
     description = "PulseAudio Volume Control";
-    homepage = "http://freedesktop.org/software/pulseaudio/pavucontrol/";
-    license = lib.licenses.gpl2Plus;
+
     longDescription = ''
       PulseAudio Volume Control (pavucontrol) provides a GTK
       graphical user interface to connect to a PulseAudio server and
       easily control the volume of all clients, sinks, etc.
     '';
-    mainProgram = "pavucontrol";
+
+    homepage = "http://freedesktop.org/software/pulseaudio/pavucontrol/";
+    changelog = "https://freedesktop.org/software/pulseaudio/pavucontrol/#news";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "pavucontrol";
   };
 })

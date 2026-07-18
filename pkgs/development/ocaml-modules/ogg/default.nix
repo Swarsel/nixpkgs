@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
   libogg,
 }:
@@ -17,14 +17,13 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-mVMuPPjQRfwtQqpoUaEtTilMcGO0MJ4xiOd0D7ucOEQ=";
   };
 
-  minimalOCamlVersion = "4.08";
-
   buildInputs = [ dune-configurator ];
   propagatedBuildInputs = [ libogg ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-ogg";
     description = "Bindings to libogg";
+    homepage = "https://github.com/savonet/ocaml-ogg";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

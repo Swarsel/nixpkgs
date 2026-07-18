@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ec2stepshell";
   version = "0-unstable-2023-04-07";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "saw-your-packet";
@@ -33,16 +32,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     termcolor
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "ec2stepshell"
   ];
 
   meta = {
     description = "AWS post-exploitation tool";
-    mainProgram = "ec2stepshell";
     homepage = "https://github.com/saw-your-packet/EC2StepShell";
     changelog = "https://github.com/saw-your-packet/EC2StepShell/blob/${finalAttrs.version}/CHANGELOG.txt";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "ec2stepshell";
   };
 })

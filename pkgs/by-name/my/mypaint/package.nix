@@ -2,17 +2,17 @@
   lib,
   fetchFromGitHub,
   fetchpatch,
-  gtk3,
+  gdk-pixbuf,
   gettext,
+  gobject-introspection,
+  gtk3,
+  hicolor-icon-theme,
   json_c,
   lcms2,
+  libmypaint,
   libpng,
   librsvg,
-  gobject-introspection,
-  libmypaint,
-  hicolor-icon-theme,
   mypaint-brushes,
-  gdk-pixbuf,
   pkg-config,
   python3,
   swig,
@@ -30,7 +30,6 @@ in
 buildPythonApplication (finalAttrs: {
   pname = "mypaint";
   version = "2.0.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "mypaint";
@@ -44,56 +43,60 @@ buildPythonApplication (finalAttrs: {
     # Fix build due to setuptools issue.
     # https://github.com/mypaint/mypaint/pull/1183
     (fetchpatch {
-      url = "https://github.com/mypaint/mypaint/commit/423950bec96d6057eac70442de577364d784a847.patch";
       hash = "sha256-OxJJOi20bFMRibL59zx6svtMrkgeMYyEvbdSXbZHqpc=";
+      url = "https://github.com/mypaint/mypaint/commit/423950bec96d6057eac70442de577364d784a847.patch";
     })
     # https://github.com/mypaint/mypaint/pull/1193
     (fetchpatch {
+      hash = "sha256-EI4WJbpZrCtFMKd6QdXlWpRpIHi37gJffDjclzTLaLc=";
       name = "python-3.11-compatibility.patch";
       url = "https://github.com/mypaint/mypaint/commit/032a155b72f2b021f66a994050d83f07342d04af.patch";
-      hash = "sha256-EI4WJbpZrCtFMKd6QdXlWpRpIHi37gJffDjclzTLaLc=";
     })
     # Fix drag-n-drop file opening
     (fetchpatch {
-      url = "https://github.com/mypaint/mypaint/commit/66b2ba98bd953afa73d0d6ac71040b14a4ea266b.patch";
       hash = "sha256-4AWXD/JMpNA5otl2ad1ZLVPW49pycuOXGcgfzvj0XEE=";
+      url = "https://github.com/mypaint/mypaint/commit/66b2ba98bd953afa73d0d6ac71040b14a4ea266b.patch";
     })
     # Fix crash with locked layer
     (fetchpatch {
-      url = "https://github.com/mypaint/mypaint/commit/0b720f8867f18acccc8e6ec770a9cc494aa81dcf.patch";
       hash = "sha256-ahYeERiMLA8yKIXQota6/ApAbOW0XwsHO2JkEEMm1Ow=";
+      url = "https://github.com/mypaint/mypaint/commit/0b720f8867f18acccc8e6ec770a9cc494aa81dcf.patch";
     })
     # Refactoring for the following patch to apply.
     (fetchpatch {
-      url = "https://github.com/mypaint/mypaint/commit/d7d2496401a112a178d5fa2e491f0cc7537d24cd.patch";
       hash = "sha256-dIW6qWqY96+bsUDQQtGtjENvypnh//Ep3xW+wooCJ14=";
+
       includes = [
         "gui/colors/hcywheel.py"
       ];
+
+      url = "https://github.com/mypaint/mypaint/commit/d7d2496401a112a178d5fa2e491f0cc7537d24cd.patch";
     })
     # Fix crash with hcy wheel masking
     (fetchpatch {
-      url = "https://github.com/mypaint/mypaint/commit/5496b1cd1113fcd46230d87760b7e6b51cc747bc.patch";
       hash = "sha256-h+sE1LW04xDU2rofH5KqXsY1M0jacfBNBC+Zb0i6y1w=";
+      url = "https://github.com/mypaint/mypaint/commit/5496b1cd1113fcd46230d87760b7e6b51cc747bc.patch";
     })
     # Format source so the later patches apply
     (fetchpatch {
-      url = "https://github.com/mypaint/mypaint/commit/69d1d553034a31c0a466050a4acb323787dd04e6.patch";
       hash = "sha256-nziaPgfZRzPUvQEyQUM4FQbasHLFFT88H8qucbYI0pA=";
+
       includes = [
         "lib/strokemap.py"
         "lib/stroke.py"
       ];
+
+      url = "https://github.com/mypaint/mypaint/commit/69d1d553034a31c0a466050a4acb323787dd04e6.patch";
     })
     # Fix numpy deprecation
     (fetchpatch {
-      url = "https://github.com/mypaint/mypaint/commit/2a92b6baf452aba2cff3cc0a7782b301da3933d7.patch";
       hash = "sha256-IkzdrA3pmeiihDOMzqIfc3uDd/wO3cI6dT+cVVhaQcI=";
+      url = "https://github.com/mypaint/mypaint/commit/2a92b6baf452aba2cff3cc0a7782b301da3933d7.patch";
     })
     # Fix numpy deprecation
     (fetchpatch {
-      url = "https://github.com/mypaint/mypaint/commit/ab017e073e83a4930a0fb09608682bf4b7ab1874.patch";
       hash = "sha256-7OFqH75/gJYRJ1vROUDIkUqoBowAolBYQ5anWtp228o=";
+      url = "https://github.com/mypaint/mypaint/commit/ab017e073e83a4930a0fb09608682bf4b7ab1874.patch";
     })
   ];
 
@@ -129,16 +132,28 @@ buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
-  nativeCheckInputs = [
-    gtk3
-  ];
-
   buildPhase = ''
     runHook preBuild
 
     ${python3.interpreter} setup.py build
 
     runHook postBuild
+  '';
+
+  # tests require unmaintained and removed nose, it should switch to pytest
+  # https://github.com/mypaint/mypaint/issues/1191
+  doCheck = false;
+
+  nativeCheckInputs = [
+    gtk3
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+
+    HOME=$TEMPDIR ${python3.interpreter} setup.py test
+
+    runHook postCheck
   '';
 
   installPhase = ''
@@ -149,29 +164,19 @@ buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
-  # tests require unmaintained and removed nose, it should switch to pytest
-  # https://github.com/mypaint/mypaint/issues/1191
-  doCheck = false;
-
-  checkPhase = ''
-    runHook preCheck
-
-    HOME=$TEMPDIR ${python3.interpreter} setup.py test
-
-    runHook postCheck
-  '';
-
   postInstall = ''
     substituteInPlace $out/share/thumbnailers/mypaint-ora.thumbnailer \
       --replace-fail "TryExec=mypaint-ora-thumbnailer" "TryExec=$out/bin/mypaint-ora-thumbnailer" \
       --replace-fail "Exec=mypaint-ora-thumbnailer" "Exec=$out/bin/mypaint-ora-thumbnailer"
   '';
 
+  pyproject = false;
+
   meta = {
     description = "Graphics application for digital painters";
     homepage = "http://mypaint.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ jtojnar ];
+    platforms = lib.platforms.linux;
   };
 })

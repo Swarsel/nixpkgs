@@ -1,19 +1,13 @@
 {
-  build-idris-package,
+  lib,
   fetchFromGitHub,
+  build-idris-package,
   contrib,
   jheiling-extras,
-  lib,
 }:
 build-idris-package {
   pname = "jheiling-js";
   version = "2016-03-09";
-
-  ipkgName = "js";
-  idrisDeps = [
-    contrib
-    jheiling-extras
-  ];
 
   src = fetchFromGitHub {
     owner = "jheiling";
@@ -21,6 +15,13 @@ build-idris-package {
     rev = "59763cd0c9715a9441931ae1077e501bb2ec6020";
     sha256 = "1mvpxwszh56cfrf509qiadn7gp2l4syanhvdq6v1br0y03g8wk9v";
   };
+
+  idrisDeps = [
+    contrib
+    jheiling-extras
+  ];
+
+  ipkgName = "js";
 
   meta = {
     description = "Js library for Idris";

@@ -1,18 +1,16 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   ocaml,
-  seq,
-  qcheck,
   ounit2,
+  qcheck,
+  seq,
 }:
 
 buildDunePackage (finalAttrs: {
-  version = "1.1";
   pname = "gen";
-  minimalOCamlVersion = "4.03";
-  duneVersion = "3";
+  version = "1.1";
 
   src = fetchFromGitHub {
     owner = "c-cube";
@@ -22,16 +20,19 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ seq ];
+  doCheck = lib.versionAtLeast ocaml.version "4.08";
+
   checkInputs = [
     qcheck
     ounit2
   ];
 
-  doCheck = lib.versionAtLeast ocaml.version "4.08";
+  duneVersion = "3";
+  minimalOCamlVersion = "4.03";
 
   meta = {
-    homepage = "https://github.com/c-cube/gen";
     description = "Simple, efficient iterators for OCaml";
+    homepage = "https://github.com/c-cube/gen";
     license = lib.licenses.bsd3;
   };
 })

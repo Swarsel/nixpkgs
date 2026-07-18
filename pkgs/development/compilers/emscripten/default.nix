@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
-  nodejs,
-  closurecompiler,
-  jre,
   binaryen,
-  llvmPackages,
-  symlinkJoin,
-  makeWrapper,
-  replaceVars,
   buildNpmPackage,
-  nix-update-script,
+  closurecompiler,
   emscripten,
+  jre,
+  llvmPackages,
+  makeWrapper,
+  nix-update-script,
+  nodejs,
+  python3,
+  replaceVars,
+  symlinkJoin,
 }:
 
 let
@@ -24,36 +24,18 @@ stdenv.mkDerivation rec {
   pname = "emscripten";
   version = "6.0.2";
 
-  llvmEnv = symlinkJoin {
-    name = "emscripten-llvm-${version}";
-    paths = with llvmPackages; [
-      clang-unwrapped
-      (lib.getLib clang-unwrapped)
-      lld
-      llvm
-    ];
-  };
-
-  nodeModules = buildNpmPackage {
-    name = "emscripten-node-modules-${version}";
-    inherit pname version src;
-
-    npmDepsHash = "sha256-uZSDPdMNT50JBg4e16cHDoon0cunxB/JyWWkj67X5ls=";
-
-    dontBuild = true;
-
-    # Copy node_modules directly.
-    installPhase = ''
-      cp -r node_modules $out/
-    '';
-  };
-
   src = fetchFromGitHub {
     owner = "emscripten-core";
     repo = "emscripten";
-    hash = "sha256-tFJ699cOOmv1uEsl5RzsIV5gosOgTvMX2UQYTb0x7Gk=";
     rev = version;
+    hash = "sha256-tFJ699cOOmv1uEsl5RzsIV5gosOgTvMX2UQYTb0x7Gk=";
   };
+
+  patches = [
+    (replaceVars ./0001-emulate-clang-sysroot-include-logic.patch {
+      resourceDir = "${llvmEnv}/lib/clang/${lib.versions.major llvmPackages.llvm.version}/";
+    })
+  ];
 
   strictDeps = true;
 
@@ -61,14 +43,9 @@ stdenv.mkDerivation rec {
     makeWrapper
     python3
   ];
+
   buildInputs = [
     nodejs
-  ];
-
-  patches = [
-    (replaceVars ./0001-emulate-clang-sysroot-include-logic.patch {
-      resourceDir = "${llvmEnv}/lib/clang/${lib.versions.major llvmPackages.llvm.version}/";
-    })
   ];
 
   buildPhase = ''
@@ -190,11 +167,36 @@ stdenv.mkDerivation rec {
         runHook postInstall
   '';
 
+  llvmEnv = symlinkJoin {
+    name = "emscripten-llvm-${version}";
+
+    paths = with llvmPackages; [
+      clang-unwrapped
+      (lib.getLib clang-unwrapped)
+      lld
+      llvm
+    ];
+  };
+
+  nodeModules = buildNpmPackage {
+    inherit pname version src;
+    npmDepsHash = "sha256-uZSDPdMNT50JBg4e16cHDoon0cunxB/JyWWkj67X5ls=";
+
+    # Copy node_modules directly.
+    installPhase = ''
+      cp -r node_modules $out/
+    '';
+
+    dontBuild = true;
+    name = "emscripten-node-modules-${version}";
+  };
+
   passthru = {
+    bintools = emscripten;
     # HACK: Make emscripten look more like a cc-wrapper to GHC
     # when building the javascript backend.
     targetPrefix = "em";
-    bintools = emscripten;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -204,13 +206,15 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://github.com/emscripten-core/emscripten";
     description = "LLVM-to-JavaScript Compiler";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/emscripten-core/emscripten";
+    license = lib.licenses.ncsa;
+
     maintainers = with lib.maintainers; [
       qknight
       willcohen
     ];
-    license = lib.licenses.ncsa;
+
+    platforms = lib.platforms.all;
   };
 }

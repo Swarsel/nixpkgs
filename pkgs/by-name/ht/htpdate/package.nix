@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.0.2";
   pname = "htpdate";
+  version = "2.0.2";
 
   src = fetchFromGitHub {
     owner = "twekkel";
@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility to fetch time and set the system clock over HTTP";
     homepage = "https://github.com/twekkel/htpdate";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ julienmalka ];
+    platforms = lib.platforms.linux;
     mainProgram = "htpdate";
   };
 })

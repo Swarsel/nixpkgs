@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   audioop-lts,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "standard-sunau";
   version = "3.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "youknowone";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
     hash = "sha256-vhGFTd1yXL4Frqli5D1GwOatwByDjvcP8sxgkdu6Jqg=";
   };
 
-  sourceRoot = "${src.name}/sunau";
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -28,9 +27,9 @@ buildPythonPackage rec {
     audioop-lts
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sunau" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  sourceRoot = "${src.name}/sunau";
 
   meta = {
     description = "Standard library sunau redistribution";

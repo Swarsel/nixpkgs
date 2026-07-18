@@ -1,21 +1,21 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  brotli,
+  buildPythonPackage,
+  cryptography,
+  ipython,
   isPyPy,
+  libpcap,
+  matplotlib,
   mock,
   python-can,
-  brotli,
-  ipython,
-  cryptography,
-  withVoipSupport ? true,
-  sox,
-  matplotlib,
   pyx,
-  withManufDb ? false,
+  sox,
   wireshark,
-  libpcap,
+  withManufDb ? false,
+  withVoipSupport ? true,
   # 2D/3D graphics and graphs TODO: VPython
   # TODO: nmap, numpy
 }:
@@ -23,9 +23,6 @@
 buildPythonPackage rec {
   pname = "scapy";
   version = "2.7.0";
-  format = "setuptools";
-
-  disabled = isPyPy;
 
   src = fetchFromGitHub {
     owner = "secdev";
@@ -53,6 +50,23 @@ buildPythonPackage rec {
   '';
 
   buildInputs = lib.optional withVoipSupport sox;
+  # Running the tests seems too complicated:
+  doCheck = false;
+
+  nativeCheckInputs = [
+    mock
+    python-can
+    brotli
+  ];
+
+  checkPhase = ''
+    # TODO: be more specific about files
+    patchShebangs .
+    .config/ci/test.sh
+  '';
+
+  disabled = isPyPy;
+  format = "setuptools";
 
   optional-dependencies = {
     all = [
@@ -61,26 +75,15 @@ buildPythonPackage rec {
       matplotlib
       pyx
     ];
+
     cli = [ ipython ];
   };
 
-  # Running the tests seems too complicated:
-  doCheck = false;
-  nativeCheckInputs = [
-    mock
-    python-can
-    brotli
-  ];
-  checkPhase = ''
-    # TODO: be more specific about files
-    patchShebangs .
-    .config/ci/test.sh
-  '';
   pythonImportsCheck = [ "scapy" ];
 
   meta = {
     description = "Python-based network packet manipulation program and library";
-    mainProgram = "scapy";
+
     longDescription = ''
       Scapy is a powerful Python-based interactive packet manipulation program
       and library.
@@ -102,12 +105,16 @@ buildPythonPackage rec {
       cross platform, and runs on many different platforms (Linux, OSX, *BSD,
       and Windows).
     '';
+
     homepage = "https://scapy.net/";
     changelog = "https://github.com/secdev/scapy/releases/tag/v${version}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       bjornfor
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "scapy";
   };
 }

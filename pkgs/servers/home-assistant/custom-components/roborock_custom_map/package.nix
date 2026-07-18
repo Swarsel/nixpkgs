@@ -1,12 +1,10 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "Lash-L";
-  domain = "roborock_custom_map";
   version = "0.1.6";
 
   src = fetchFromGitHub {
@@ -15,6 +13,9 @@ buildHomeAssistantComponent rec {
     tag = version;
     hash = "sha256-zAKGlhil6UE9Wlz3KhUg2XFIGblj/2jGtxVXP/+ryvw=";
   };
+
+  domain = "roborock_custom_map";
+  owner = "Lash-L";
 
   meta = {
     description = "This allows you to use the core Roborock integration with the Xiaomi Map Card";

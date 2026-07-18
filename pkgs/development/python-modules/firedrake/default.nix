@@ -1,65 +1,60 @@
 {
   lib,
-  newScope,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
-
-  # build-system
-  setuptools,
+  buildPythonPackage,
+  cachetools,
   cython,
-  pybind11,
-
   # dependencies
   decorator,
-  cachetools,
-  mpi4py,
-  firedrake-ufl,
+  # passthru
+  firedrake,
   firedrake-fiat,
+  firedrake-ufl,
   h5py,
+  immutabledict,
+  islpy,
   libsupermesh,
   loopy,
-  petsc4py,
-  petsctools,
+  matplotlib,
+  mpi-pytest,
+  mpi4py,
+  mpiCheckPhaseHook,
+  mpich,
+  newScope,
+  nix-update-script,
   numpy,
   packaging,
+  petsc4py,
+  petsctools,
   pkgconfig,
   progress,
   pyadjoint-ad,
+  pybind11,
   pycparser,
+  # tests
+  pytest,
+  python,
   pytools,
   requests,
   rtree,
   scipy,
+  # build-system
+  setuptools,
   sympy,
-  islpy,
-  matplotlib,
-  immutabledict,
-
-  # tests
-  pytest,
-  mpi-pytest,
-  mpiCheckPhaseHook,
   writableTmpDirAsHomeHook,
-
-  # passthru
-  firedrake,
-  mpich,
-  nix-update-script,
 }:
 let
   firedrakePackages = lib.makeScope newScope (self: {
     inherit (petsc4py.petscPackages) mpi hdf5;
-    mpi4py = self.callPackage mpi4py.override { };
     h5py = self.callPackage h5py.override { };
     mpi-pytest = self.callPackage mpi-pytest.override { };
+    mpi4py = self.callPackage mpi4py.override { };
   });
 in
 buildPythonPackage (finalAttrs: {
   pname = "firedrake";
   version = "2026.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firedrakeproject";
@@ -74,9 +69,34 @@ buildPythonPackage (finalAttrs: {
       "petsc4py==3.25.0" "petsc4py"
   '';
 
-  pythonRelaxDeps = [
-    "decorator"
+  nativeBuildInputs = [
+    firedrakePackages.mpi
   ];
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    pytest
+    firedrakePackages.mpi-pytest
+    mpiCheckPhaseHook
+    writableTmpDirAsHomeHook
+  ];
+
+  # run official smoke tests
+  checkPhase = ''
+    runHook preCheck
+
+    $out/bin/firedrake-check
+
+    runHook postCheck
+  '';
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    install_name_tool -add_rpath ${libsupermesh}/${python.sitePackages}/libsupermesh/lib \
+      $out/${python.sitePackages}/firedrake/cython/supermeshimpl.cpython-*-darwin.so
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     cython
@@ -88,10 +108,6 @@ buildPythonPackage (finalAttrs: {
     setuptools
     petsc4py
     rtree
-  ];
-
-  nativeBuildInputs = [
-    firedrakePackages.mpi
   ];
 
   dependencies = [
@@ -124,36 +140,22 @@ buildPythonPackage (finalAttrs: {
     islpy
   ];
 
-  postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    install_name_tool -add_rpath ${libsupermesh}/${python.sitePackages}/libsupermesh/lib \
-      $out/${python.sitePackages}/firedrake/cython/supermeshimpl.cpython-*-darwin.so
-  '';
-
-  doCheck = true;
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "firedrake" ];
 
-  nativeCheckInputs = [
-    pytest
-    firedrakePackages.mpi-pytest
-    mpiCheckPhaseHook
-    writableTmpDirAsHomeHook
+  pythonRelaxDeps = [
+    "decorator"
   ];
-
-  # run official smoke tests
-  checkPhase = ''
-    runHook preCheck
-
-    $out/bin/firedrake-check
-
-    runHook postCheck
-  '';
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
+    tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
+      mpich = firedrake.override {
+        petsc4py = petsc4py.override { mpi = mpich; };
+      };
+    };
 
     updateScript = nix-update-script {
       extraArgs = [
@@ -161,22 +163,18 @@ buildPythonPackage (finalAttrs: {
         "([0-9.]+)"
       ];
     };
-
-    tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
-      mpich = firedrake.override {
-        petsc4py = petsc4py.override { mpi = mpich; };
-      };
-    };
   };
 
   meta = {
-    homepage = "https://www.firedrakeproject.org";
-    downloadPage = "https://github.com/firedrakeproject/firedrake";
     description = "Automated Finite Element System";
+    homepage = "https://www.firedrakeproject.org";
+
     license = with lib.licenses; [
       bsd3
       lgpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ qbisi ];
+    downloadPage = "https://github.com/firedrakeproject/firedrake";
   };
 })

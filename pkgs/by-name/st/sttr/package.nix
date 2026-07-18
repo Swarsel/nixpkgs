@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,15 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-oZsciY9JCU1YjkhT6LEDclNC0ixOuZST5dnI9n0uzfo=";
   };
 
-  vendorHash = "sha256-nVocBBMOVW4q55dkVnmySozCsAbNnYjgPjoWDsAl7Uo=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-nVocBBMOVW4q55dkVnmySozCsAbNnYjgPjoWDsAl7Uo=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd sttr \
@@ -33,6 +26,12 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/sttr completion fish) \
       --zsh <($out/bin/sttr completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.version=${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Cross-platform cli tool to perform various operations on string";

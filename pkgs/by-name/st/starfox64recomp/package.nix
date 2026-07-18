@@ -1,25 +1,25 @@
 {
   lib,
-  sf64baserom ? null,
-  requireFile,
   fetchurl,
   fetchFromGitHub,
-  llvmPackages_19,
+  SDL2,
   cmake,
   copyDesktopItems,
+  directx-shader-compiler,
+  gtk3,
   installShellFiles,
+  llvmPackages_19,
+  makeDesktopItem,
   makeWrapper,
+  n64recomp,
   ninja,
   pkg-config,
   python3,
-  wrapGAppsHook3,
-  SDL2,
-  gtk3,
-  vulkan-loader,
-  makeDesktopItem,
-  n64recomp,
+  requireFile,
   sm64tools,
-  directx-shader-compiler,
+  vulkan-loader,
+  wrapGAppsHook3,
+  sf64baserom ? null,
 }:
 
 let
@@ -29,7 +29,8 @@ let
       sf64baserom
     else
       requireFile {
-        name = "starfox64.us.rev1.z64";
+        hash = "sha256-OFvPGQHtEvsRUvPCJ9GWjMVK5B6FZtpmaV33GvQKVz8=";
+
         message = ''
           starfox64recomp only supports the US version 1.1 of Starfox 64.
           Please dump your copy and rename it to starfox64.us.rev1.z64
@@ -37,13 +38,14 @@ let
           nix-store --add-fixed sha256 starfox64.us.rev1.z64
           See https://dumping.guide/carts/nintendo/n64 for more details.
         '';
-        hash = "sha256-OFvPGQHtEvsRUvPCJ9GWjMVK5B6FZtpmaV33GvQKVz8=";
+
+        name = "starfox64.us.rev1.z64";
       };
 
   comptool = fetchurl {
+    hash = "sha256-md56iEj6DKODKm3U0XrAygiaRlUgvFCSWfWyyh4lmzw=";
     name = "comptool.py";
     url = "https://raw.githubusercontent.com/sonicdcer/sf64/83eeee7d96fbe5a6b6fa013e13ed7eda8213b3e3/tools/comptool.py";
-    hash = "sha256-md56iEj6DKODKm3U0XrAygiaRlUgvFCSWfWyyh4lmzw=";
   };
 
 in
@@ -80,17 +82,6 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
     vulkan-loader
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Starfox64Recompiled";
-      icon = "Starfox64Recompiled";
-      exec = "Starfox64Recompiled";
-      comment = "Recompilation of Starfox 64";
-      desktopName = "Starfox64Recompiled";
-      categories = [ "Game" ];
-    })
-  ];
-
   preConfigure = ''
     ln -s ${baseRom} ./starfox64.us.rev1.z64
     cp ${n64recomp}/bin/* .
@@ -111,14 +102,6 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
       --replace-fail "\''${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${directx-shader-compiler}/lib/" \
       --replace-fail "\''${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc-linux" "${directx-shader-compiler}/bin/dxc"
   '';
-
-  # This is required or else nothing will build
-  hardeningDisable = [
-    "format"
-    "pic"
-    "stackprotector"
-    "zerocallusedregs"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -149,9 +132,29 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/Starfox64Recompiled --chdir "$out/bin/"
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Recompilation of Starfox 64";
+      desktopName = "Starfox64Recompiled";
+      exec = "Starfox64Recompiled";
+      icon = "Starfox64Recompiled";
+      name = "Starfox64Recompiled";
+    })
+  ];
+
+  # This is required or else nothing will build
+  hardeningDisable = [
+    "format"
+    "pic"
+    "stackprotector"
+    "zerocallusedregs"
+  ];
+
   meta = {
     description = "Static recompilation of Starfox 64 for PC (Windows/Linux)";
     homepage = "https://github.com/sonicdcer/Starfox64Recomp";
+
     license = with lib.licenses; [
 
       # Starfox64Recompiled
@@ -166,8 +169,9 @@ llvmPackages_19.stdenv.mkDerivation (finalAttrs: {
       # reverse engineering
       unfree
     ];
+
     maintainers = with lib.maintainers; [ qubitnano ];
-    mainProgram = "Starfox64Recompiled";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "Starfox64Recompiled";
   };
 })

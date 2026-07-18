@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-HiNydU40FprxVmRRZtnXom2kFYI04mbeuGTq8+BMh7o=";
   };
 
-  cargoHash = "sha256-tq0XqY2B7tC2ep8vH6T3nkAqxqhniqzYnhbkfB3SbHU=";
-
   nativeBuildInputs = lib.optionals stdenv.cc.isClang [ rustPlatform.bindgenHook ];
-
+  cargoHash = "sha256-tq0XqY2B7tC2ep8vH6T3nkAqxqhniqzYnhbkfB3SbHU=";
   # there are no tests
   doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

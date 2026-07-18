@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aiohwenergy";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DCSBL";
@@ -24,13 +23,11 @@ buildPythonPackage rec {
       --replace-fail "async_timeout" "asyncio"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aiohwenergy" ];
 
   meta = {

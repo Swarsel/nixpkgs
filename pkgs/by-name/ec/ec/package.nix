@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
   makeWrapper,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,8 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZG4y5GS/33hHhM1OwgcwF13CfzjxT93cGUfkB8j09cY=";
   };
 
-  vendorHash = "sha256-bV5y8zKculYULkFl9J95qebLOzdTT/LuYycqMmHKZ+g=";
-
   postPatch = ''
     substituteInPlace cmd/ec/main.go \
       --replace-fail \
@@ -28,13 +26,8 @@ buildGoModule (finalAttrs: {
         'var version = "${finalAttrs.version}"'
   '';
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ makeWrapper ];
-
+  vendorHash = "sha256-bV5y8zKculYULkFl9J95qebLOzdTT/LuYycqMmHKZ+g=";
   nativeCheckInputs = [ git ];
 
   postInstall = ''
@@ -48,6 +41,11 @@ buildGoModule (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -55,10 +53,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/chojs23/ec";
     changelog = "https://github.com/chojs23/ec/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kpbaks
       neo
     ];
+
     mainProgram = "ec";
   };
 })

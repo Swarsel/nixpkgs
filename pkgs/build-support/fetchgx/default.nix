@@ -1,23 +1,23 @@
 {
   lib,
-  stdenvNoCC,
+  cacert,
+  go,
   gx,
   gx-go,
-  go,
-  cacert,
+  stdenvNoCC,
 }:
 
 lib.fetchers.withNormalizedHash { } (
   {
     name,
-    src,
     outputHash,
     outputHashAlgo,
+    src,
   }:
 
   stdenvNoCC.mkDerivation {
-    name = "${name}-gxdeps";
     inherit src;
+    inherit outputHash outputHashAlgo;
 
     nativeBuildInputs = [
       cacert
@@ -26,23 +26,22 @@ lib.fetchers.withNormalizedHash { } (
       gx-go
     ];
 
-    inherit outputHash outputHashAlgo;
-    outputHashMode = "recursive";
-
-    dontConfigure = true;
-    doCheck = false;
-    doInstallCheck = false;
-
     buildPhase = ''
       export GOPATH=$(pwd)/vendor
       mkdir -p vendor
       gx install
     '';
 
+    doCheck = false;
+
     installPhase = ''
       mv vendor $out
     '';
 
+    doInstallCheck = false;
+    dontConfigure = true;
+    name = "${name}-gxdeps";
+    outputHashMode = "recursive";
     preferLocalBuild = true;
   }
 )

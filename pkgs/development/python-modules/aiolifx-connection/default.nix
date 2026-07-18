@@ -1,26 +1,24 @@
 {
   lib,
-  fetchPypi,
-  buildPythonPackage,
   aiolifx,
+  buildPythonPackage,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "aiolifx-connection";
   version = "1.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "aiolifx_connection";
     inherit version;
     hash = "sha256:09fydp5fqqh1s0vav39mw98i1la6qcgk17gch0m5ihyl9q50ks13";
+    pname = "aiolifx_connection";
   };
 
   propagatedBuildInputs = [ aiolifx ];
-
   # tests are not implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "aiolifx_connection" ];
 
   meta = {

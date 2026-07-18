@@ -1,14 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   appstream-glib,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   gettext,
   glib-networking,
   gobject-introspection,
   gtk4,
   gtksourceview5,
-  lib,
   libadwaita,
   libsoup_3,
   meson,
@@ -17,7 +18,6 @@
   pkg-config,
   python3,
   python3Packages,
-  stdenv,
   wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -71,12 +71,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Create @font-face kits easily";
     longDescription = "Webfont Bundler is a simple utility that allows you to generate woff, woff2 and the necessary CSS boilerplate from non-web font formats (otf and ttf).";
-    changelog = "https://github.com/rafaelmardojai/webfont-kit-generator/releases/tag/${finalAttrs.version}";
-    mainProgram = "webfontkitgenerator";
     homepage = "https://apps.gnome.org/WebfontKitGenerator/";
+    changelog = "https://github.com/rafaelmardojai/webfont-kit-generator/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ benediktbroich ];
-    teams = [ lib.teams.gnome-circle ];
     platforms = lib.platforms.unix;
+    mainProgram = "webfontkitgenerator";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

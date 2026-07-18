@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -21,19 +21,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     forceFetchGit = true; # Does not download all files otherwise
   };
 
-  cargoHash = "sha256-stjjP8VRHy5k9zMXWGikVNExXRFte0gVBEsbKmPY6U4=";
-
-  env = {
-    # Get openssl-sys to use pkg-config
-    OPENSSL_NO_VENDOR = 1;
-  };
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-stjjP8VRHy5k9zMXWGikVNExXRFte0gVBEsbKmPY6U4=";
+
+  env = {
+    # Get openssl-sys to use pkg-config
+    OPENSSL_NO_VENDOR = 1;
+  };
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd mago \
@@ -46,14 +45,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    changelog = "https://github.com/carthage-software/mago/releases/tag/${finalAttrs.version}";
     description = "Toolchain for PHP that aims to provide a set of tools to help developers write better code";
     homepage = "https://github.com/carthage-software/mago";
+    changelog = "https://github.com/carthage-software/mago/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hythera
       patka
     ];
+
     mainProgram = "mago";
   };
 })

@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "xyzservices";
   version = "2026.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,23 +23,24 @@ buildPythonPackage rec {
     setuptools-scm
   ];
 
-  disabledTestMarks = [
-    # requires network connections
-    "request"
-  ];
-
-  pythonImportsCheck = [ "xyzservices.providers" ];
-
   nativeCheckInputs = [
     mercantile
     pytestCheckHook
     requests
   ];
 
+  disabledTestMarks = [
+    # requires network connections
+    "request"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "xyzservices.providers" ];
+
   meta = {
-    changelog = "https://github.com/geopandas/xyzservices/releases/tag/${version}";
     description = "Source of XYZ tiles providers";
     homepage = "https://github.com/geopandas/xyzservices";
+    changelog = "https://github.com/geopandas/xyzservices/releases/tag/${version}";
     license = lib.licenses.bsd3;
     teams = [ lib.teams.geospatial ];
   };

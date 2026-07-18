@@ -1,19 +1,19 @@
 {
-  buildPythonPackage,
   lib,
-  python,
   fetchFromGitHub,
-  fetchpatch,
-  pyopenssl,
-  webcolors,
-  future,
+  aiohttp,
   atomicwrites,
   attrs,
+  buildPythonPackage,
+  fetchpatch,
+  future,
   logbook,
-  pygments,
   matrix-nio,
-  aiohttp,
+  pygments,
+  pyopenssl,
+  python,
   requests,
+  webcolors,
 }:
 
 let
@@ -28,8 +28,8 @@ let
   version = "0.3.0";
 in
 buildPythonPackage {
-  pname = "weechat-matrix";
   inherit version;
+  pname = "weechat-matrix";
 
   src = fetchFromGitHub {
     owner = "poljar";
@@ -41,14 +41,14 @@ buildPythonPackage {
   patches = [
     # server: remove set_npn_protocols()
     (fetchpatch {
-      url = "https://patch-diff.githubusercontent.com/raw/poljar/weechat-matrix/pull/309.patch";
       hash = "sha256-Grdht+TOFvCYRpL7uhPivqL7YzLoNVF3iQNHgbv1Te0=";
+      url = "https://patch-diff.githubusercontent.com/raw/poljar/weechat-matrix/pull/309.patch";
     })
     # Fix compatibility with matrix-nio 0.21
     (fetchpatch {
-      url = "https://github.com/poljar/weechat-matrix/commit/feae9fda26ea9de98da9cd6733980a203115537e.patch";
       hash = "sha256-MAfxJ85dqz5PNwp/GJdHA2VvXVdWh+Ayx5g0oHiw9rs=";
       includes = [ "matrix/config.py" ];
+      url = "https://github.com/poljar/weechat-matrix/commit/feae9fda26ea9de98da9cd6733980a203115537e.patch";
     })
   ];
 
@@ -65,12 +65,7 @@ buildPythonPackage {
     requests
   ];
 
-  passthru.scripts = [ "matrix.py" ];
-
-  dontBuild = true;
   doCheck = false;
-
-  pyproject = false;
 
   installPhase = ''
     mkdir -p $out/share $out/bin
@@ -90,7 +85,6 @@ buildPythonPackage {
     cp -r matrix $out/${python.sitePackages}/matrix
   '';
 
-  dontPatchShebangs = true;
   postFixup = ''
     addToSearchPath program_PYTHONPATH $out/${python.sitePackages}
     patchPythonScript $out/share/matrix.py
@@ -98,11 +92,16 @@ buildPythonPackage {
     substituteInPlace $out/${python.sitePackages}/matrix/uploads.py --replace-fail \"matrix_upload\" \"$out/bin/matrix_upload\"
   '';
 
+  dontBuild = true;
+  dontPatchShebangs = true;
+  pyproject = false;
+  passthru.scripts = [ "matrix.py" ];
+
   meta = {
     description = "Python plugin for Weechat that lets Weechat communicate over the Matrix protocol";
     homepage = "https://github.com/poljar/weechat-matrix";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ tilpner ];
+    platforms = lib.platforms.unix;
   };
 }

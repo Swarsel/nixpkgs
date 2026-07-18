@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchurl,
+  _experimental-update-script-combinators,
+  bubblewrap,
+  buildPackages,
+  cargo,
+  common-updater-scripts,
+  fontconfig,
+  gi-docgen,
+  glib,
+  glycin-loaders,
+  glycin-thumbnailer,
+  gnome,
+  gobject-introspection,
+  lcms2,
+  libglycin-gtk4,
+  libseccomp,
   makeSetupHook,
   meson,
   ninja,
   pkg-config,
-  rustc,
-  cargo,
   python3,
-  rustPlatform,
-  vala,
-  gi-docgen,
-  glib,
-  gobject-introspection,
-  glycin-loaders,
-  glycin-thumbnailer,
-  libglycin-gtk4,
-  fontconfig,
-  libseccomp,
-  lcms2,
-  gnome,
   replaceVars,
-  bubblewrap,
-  common-updater-scripts,
-  _experimental-update-script-combinators,
-  buildPackages,
+  rustPlatform,
+  rustc,
+  vala,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
@@ -34,23 +34,26 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libglycin";
   version = "2.1.1";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/glycin/${lib.versions.majorMinor finalAttrs.version}/glycin-${finalAttrs.version}.tar.xz";
+    hash = "sha256-jo6S4xKxTSxfOgR73FMFrcuZMe8BUM90v1JqN0Hm+zI=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
 
-  setupHook = ./path-hook.sh;
+  postPatch = ''
+    patchShebangs \
+      build-aux/crates-version.py
+    substituteInPlace libglycin/meson.build --replace-fail \
+      "cargo_output = cargo_target_dir / rust_target" \
+      "cargo_output = cargo_target_dir / '${stdenv.hostPlatform.rust.cargoShortTarget}' / rust_target"
+  '';
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/glycin/${lib.versions.majorMinor finalAttrs.version}/glycin-${finalAttrs.version}.tar.xz";
-    hash = "sha256-jo6S4xKxTSxfOgR73FMFrcuZMe8BUM90v1JqN0Hm+zI=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-BaIQs2be/W/dQFbO9KthJUWVE2vCT6H594geYJqzIzc=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -92,52 +95,21 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonBool "capi_docs" withIntrospection)
   ];
 
-  postPatch = ''
-    patchShebangs \
-      build-aux/crates-version.py
-    substituteInPlace libglycin/meson.build --replace-fail \
-      "cargo_output = cargo_target_dir / rust_target" \
-      "cargo_output = cargo_target_dir / '${stdenv.hostPlatform.rust.cargoShortTarget}' / rust_target"
-  '';
+  env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
 
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     moveToOutput "share/doc" "$devdoc"
   '';
 
-  env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-BaIQs2be/W/dQFbO9KthJUWVE2vCT6H594geYJqzIzc=";
+  };
 
-  strictDeps = true;
+  setupHook = ./path-hook.sh;
 
   passthru = {
-    updateScript =
-      let
-        updateSource = gnome.updateScript {
-          attrPath = "libglycin";
-          packageName = "glycin";
-        };
-        updateLockfile = {
-          command = [
-            "sh"
-            "-c"
-            ''
-              PATH=${
-                lib.makeBinPath [
-                  common-updater-scripts
-                ]
-              }
-              update-source-version libglycin --ignore-same-version --source-key=cargoDeps.vendorStaging > /dev/null
-            ''
-          ];
-          # Experimental feature: do not copy!
-          supportedFeatures = [ "silent" ];
-        };
-      in
-      _experimental-update-script-combinators.sequence [
-        updateSource
-        updateLockfile
-      ];
-
     patchVendorHook =
       makeSetupHook
         {
@@ -158,23 +130,56 @@ stdenv.mkDerivation (finalAttrs: {
         libglycin-gtk4
         ;
     };
+
+    updateScript =
+      let
+        updateSource = gnome.updateScript {
+          attrPath = "libglycin";
+          packageName = "glycin";
+        };
+        updateLockfile = {
+          command = [
+            "sh"
+            "-c"
+            ''
+              PATH=${
+                lib.makeBinPath [
+                  common-updater-scripts
+                ]
+              }
+              update-source-version libglycin --ignore-same-version --source-key=cargoDeps.vendorStaging > /dev/null
+            ''
+          ];
+
+          # Experimental feature: do not copy!
+          supportedFeatures = [ "silent" ];
+        };
+      in
+      _experimental-update-script-combinators.sequence [
+        updateSource
+        updateLockfile
+      ];
   };
 
   meta = {
     description = "Sandboxed and extendable image loading library";
     homepage = "https://gitlab.gnome.org/GNOME/glycin";
     changelog = "https://gitlab.gnome.org/GNOME/glycin/-/tags/${finalAttrs.version}";
+
     license =
       with lib.licenses;
       OR [
         mpl20
         lgpl21Plus
       ];
+
     maintainers = [ ];
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "glycin-2"
     ];
+
+    teams = [ lib.teams.gnome ];
   };
 })

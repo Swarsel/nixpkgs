@@ -16,14 +16,13 @@ buildGoModule rec {
   };
 
   vendorHash = null;
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) jitsi; };
 
   meta = {
     description = "Export Jitsi Videobridge metrics to Prometheus";
-    mainProgram = "jitsiexporter";
     homepage = "https://git.xsfx.dev/prometheus/jitsiexporter";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "jitsiexporter";
   };
 }

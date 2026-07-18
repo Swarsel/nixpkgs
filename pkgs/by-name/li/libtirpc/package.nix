@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   autoreconfHook,
   libkrb5,
 }:
@@ -14,6 +14,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://git.linux-nfs.org/?p=steved/libtirpc.git;a=snapshot;h=refs/tags/libtirpc-${
       lib.replaceStrings [ "." ] [ "-" ] finalAttrs.version
     };sf=tgz";
+
     hash = "sha256-VGftEr3xzCp8O3oqCjIZozlq599gxN5IsHBRaG37GP4=";
     name = "${finalAttrs.pname}-${finalAttrs.version}.tar.gz";
   };
@@ -23,36 +24,32 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  env.KRB5_CONFIG = "${libkrb5.dev}/bin/krb5-config";
-
+  strictDeps = true;
   nativeBuildInputs = [ autoreconfHook ];
   propagatedBuildInputs = [ libkrb5 ];
-  strictDeps = true;
-
-  preConfigure = ''
-    sed -es"|/etc/netconfig|$out/etc/netconfig|g" -i doc/Makefile.in tirpc/netconfig.h
-  '';
 
   configureFlags = lib.optional (
     stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17"
   ) "LDFLAGS=-Wl,--undefined-version";
 
-  enableParallelBuilding = true;
+  env.KRB5_CONFIG = "${libkrb5.dev}/bin/krb5-config";
+
+  preConfigure = ''
+    sed -es"|/etc/netconfig|$out/etc/netconfig|g" -i doc/Makefile.in tirpc/netconfig.h
+  '';
+
+  doCheck = true;
 
   preInstall = ''
     mkdir -p $out/etc
   '';
 
-  doCheck = true;
-
   __structuredAttrs = true;
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://sourceforge.net/projects/libtirpc/";
     description = "Transport-independent Sun RPC implementation (TI-RPC)";
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
-    maintainers = [ ];
+
     longDescription = ''
       Currently, NFS commands use the SunRPC routines provided by the
       glibc.  These routines do not support IPv6 addresses.  Ulrich
@@ -66,5 +63,10 @@ stdenv.mkDerivation (finalAttrs: {
       already supports IPv6.  So, the FreeBSD release 5.2.1 TI-RPC has
       been ported to replace the SunRPC of the glibc.
     '';
+
+    homepage = "https://sourceforge.net/projects/libtirpc/";
+    license = lib.licenses.bsd3;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

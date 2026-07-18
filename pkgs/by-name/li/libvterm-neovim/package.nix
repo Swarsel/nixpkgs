@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   libtool,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

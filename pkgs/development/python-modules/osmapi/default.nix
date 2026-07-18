@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   responses,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "osmapi";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "metaodi";
@@ -21,16 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-eohhbKcTkgfM6IuQyeiASlCtrqUwb0aFXqUCkDyvsS0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytestCheckHook
     responses
     xmltodict
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "osmapi" ];
 
   meta = {

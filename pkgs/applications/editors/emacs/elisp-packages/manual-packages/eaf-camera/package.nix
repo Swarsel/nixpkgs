@@ -1,14 +1,14 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
-  # JavaScript dependency
-  nodejs,
   fetchNpmDeps,
-  npmHooks,
+  melpaBuild,
   # Updater
   nix-update-script,
+  # JavaScript dependency
+  nodejs,
+  npmHooks,
 }:
 
 melpaBuild (finalAttrs: {
@@ -23,26 +23,19 @@ melpaBuild (finalAttrs: {
     hash = "sha256-tw4OA1Sbvj3eqm3B4Ou6Gxk3wegmS7wMy2/U+UGTCcY=";
   };
 
-  env.npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-MmNg4Qf1UhtUIpHjCcwk9MB59XGRhW9SzhO4yUcW1Ik=";
-  };
-
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
   ];
 
+  env.npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-MmNg4Qf1UhtUIpHjCcwk9MB59XGRhW9SzhO4yUcW1Ik=";
+    name = "${finalAttrs.pname}-npm-deps";
+  };
+
   postBuild = ''
     npm run build
-  '';
-
-  files = ''
-    ("*.el"
-     "*.py"
-     "*.js"
-     "src")
   '';
 
   postInstall = ''
@@ -52,15 +45,23 @@ melpaBuild (finalAttrs: {
     cp -r dist $LISPDIR/
   '';
 
+  files = ''
+    ("*.el"
+     "*.py"
+     "*.js"
+     "src")
+  '';
+
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
     eafPythonDeps = ps: [ ];
+    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
   };
 
   meta = {
     description = "Camera application for the EAF";
     homepage = "https://github.com/emacs-eaf/eaf-camera";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

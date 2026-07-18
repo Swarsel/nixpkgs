@@ -1,10 +1,10 @@
 {
-  jetbrains,
-  symlinkJoin,
   lib,
-  runCommand,
-  fetchzip,
   fetchurl,
+  fetchzip,
+  jetbrains,
+  runCommand,
+  symlinkJoin,
   # If not set, all IDEs are tested.
   ide ? null,
 }:
@@ -51,15 +51,15 @@ in
     let
       # This is a "normal plugin", it's output must be linked into /${pname}/plugins.
       nixidea = fetchzip {
-        url = "https://plugins.jetbrains.com/files/8607/786671/NixIDEA-0.4.0.18.zip";
         hash = "sha256-JShheBoOBiWM9HubMUJvBn4H3DnWykvqPyrmetaCZiM=";
+        url = "https://plugins.jetbrains.com/files/8607/786671/NixIDEA-0.4.0.18.zip";
       };
 
       # This is a plugin where the output contains a single JAR file. This JAR file needs to be linked directly in /${pname}/plugins.
       wakatime = fetchurl {
         executable = true;
-        url = "https://plugins.jetbrains.com/files/7425/760442/WakaTime.jar";
         hash = "sha256-DobKZKokueqq0z75d2Fo3BD8mWX9+LpGdT9C7Eu2fHc=";
+        url = "https://plugins.jetbrains.com/files/7425/760442/WakaTime.jar";
       };
 
       modify-ide =

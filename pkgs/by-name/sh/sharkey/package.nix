@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  nixosTests,
   bash,
   cairo,
   cctools,
+  fetchPnpmDeps,
   ffmpeg-headless,
   giflib,
   jemalloc,
   makeWrapper,
   nix-update-script,
+  nixosTests,
   nodejs-slim_22,
   pango,
   pixman,
   pkg-config,
-  pnpm_10_34_0,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10_34_0,
   python3,
   vips,
   xcbuild,
@@ -31,19 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2025.4.7";
 
   src = fetchFromGitLab {
-    domain = "activitypub.software";
     owner = "TransFem-org";
     repo = "Sharkey";
     tag = finalAttrs.version;
     hash = "sha256-Gfn/oB9cc7LCeQxrfxuCmF7Z9A3VUGZwnhBip07c0kY=";
     fetchSubmodules = true;
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-wrA5Huv7b/P+5MNbScN9KzNwdHMtuceHu+Lw/C9lKlI=";
+    domain = "activitypub.software";
   };
 
   nativeBuildInputs = [
@@ -165,8 +158,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postFixup
   '';
 
-  passthru.tests.sharkey = nixosTests.sharkey;
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-wrA5Huv7b/P+5MNbScN9KzNwdHMtuceHu+Lw/C9lKlI=";
+    pnpm = pnpm;
+  };
 
+  passthru.tests.sharkey = nixosTests.sharkey;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -174,10 +173,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://joinsharkey.org";
     changelog = "https://activitypub.software/TransFem-org/Sharkey/-/releases/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    platforms = with lib.platforms; linux ++ darwin;
-    mainProgram = "sharkey";
+
     maintainers = with lib.maintainers; [
       tmarkus
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "sharkey";
   };
 })

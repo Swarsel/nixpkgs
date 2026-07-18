@@ -1,45 +1,49 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  numpy,
-  scikit-build-core,
-
+  buildPythonPackage,
   # nativeBuildInputs
   cmake,
-  ninja,
-
-  # buildInputs
-  nanobind,
-  onetbb,
-
-  # dependencies
-  parsnip,
-  rowan,
-  scipy,
-
+  # build-system
+  cython,
   # tests
   gsd,
   matplotlib,
+  # buildInputs
+  nanobind,
+  ninja,
+  numpy,
+  onetbb,
+  # dependencies
+  parsnip,
   pytestCheckHook,
+  rowan,
+  scikit-build-core,
+  scipy,
   sympy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "freud";
   version = "3.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "glotzerlab";
     repo = "freud";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-NRI3cv3yQxAwkGxh0CFYEERNkjP51Z58vtCV9GlIESY=";
+    fetchSubmodules = true;
   };
+
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+
+  buildInputs = [
+    nanobind
+    onetbb
+  ];
 
   # Because we prefer to not `leaveDotGit`, we need to fool upstream into
   # thinking we left the .git files in the submodules, so cmake won't think we
@@ -51,20 +55,22 @@ buildPythonPackage (finalAttrs: {
     touch extern/{voro++,fsph,Eigen}/.git
   '';
 
+  nativeCheckInputs = [
+    gsd
+    matplotlib
+    pytestCheckHook
+    sympy
+  ];
+
+  # https://github.com/NixOS/nixpkgs/issues/255262
+  preCheck = ''
+    rm -rf freud
+  '';
+
   build-system = [
     cython
     numpy
     scikit-build-core
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    ninja
-  ];
-  dontUseCmakeConfigure = true;
-  buildInputs = [
-    nanobind
-    onetbb
   ];
 
   dependencies = [
@@ -73,17 +79,6 @@ buildPythonPackage (finalAttrs: {
     rowan
     scipy
   ];
-
-  nativeCheckInputs = [
-    gsd
-    matplotlib
-    pytestCheckHook
-    sympy
-  ];
-  # https://github.com/NixOS/nixpkgs/issues/255262
-  preCheck = ''
-    rm -rf freud
-  '';
 
   disabledTests = [
     # 4 tests fail with:
@@ -97,6 +92,8 @@ buildPythonPackage (finalAttrs: {
     "test_query_point_ne_points"
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "freud" ];
 
   meta = {

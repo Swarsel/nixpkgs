@@ -1,15 +1,15 @@
 {
   lib,
   callPackage,
-  symlinkJoin,
-  vimUtils,
-  tree-sitter,
-  tree-sitter-grammars,
   neovim,
   neovimUtils,
   runCommand,
   runCommandLocal,
+  symlinkJoin,
+  tree-sitter,
+  tree-sitter-grammars,
   vimPlugins,
+  vimUtils,
   writableTmpDirAsHomeHook,
 }:
 
@@ -34,6 +34,7 @@ let
             inherit language requires;
             isTreesitterQuery = true;
           };
+
           meta.description = "Queries for ${language} from nvim-treesitter";
         }
         ''
@@ -156,8 +157,8 @@ in
       withAllGrammars
       ;
 
-    queries = queriesWithDeps;
     parsers = grammarPlugins;
+    queries = queriesWithDeps;
 
     tests = {
       check-queries =
@@ -172,6 +173,7 @@ in
               nvimWithAllGrammars
               writableTmpDirAsHomeHook
             ];
+
             CI = true;
           }
           ''

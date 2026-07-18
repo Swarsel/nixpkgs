@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libsForQt5,
   libjack2,
+  libsForQt5,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "jamulus";
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     longDescription = "You also need to enable JACK and should enable several real-time optimizations. See project website for details";
     homepage = "https://github.com/corrados/jamulus";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ seb314 ];
     platforms = lib.platforms.linux;
     mainProgram = "jamulus";
-    maintainers = with lib.maintainers; [ seb314 ];
   };
 })

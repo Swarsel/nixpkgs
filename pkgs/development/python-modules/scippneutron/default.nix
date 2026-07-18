@@ -1,46 +1,41 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  anywidget,
+  buildPythonPackage,
+  cacert,
+  curl,
   # dependencies
   email-validator,
   h5py,
+  hypothesis,
+  ipykernel,
+  ipympl,
   lazy-loader,
   mpltoolbox,
   numpy,
   plopp,
+  pooch,
+  psutil,
   pydantic,
+  pytest-xdist,
+  # tests
+  pytestCheckHook,
   python-dateutil,
+  pythreejs,
+  sciline,
   scipp,
   scippnexus,
   scipy,
-
-  # tests
-  pytestCheckHook,
-  anywidget,
-  pooch,
-  hypothesis,
-  ipykernel,
-  ipympl,
-  psutil,
-  pytest-xdist,
-  pythreejs,
-  sciline,
+  # build-system
+  setuptools,
+  setuptools-scm,
   stdenvNoCC,
-  curl,
-  cacert,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "scippneutron";
   version = "26.7.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "scipp";
@@ -48,38 +43,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-a/d2TLqrCgUknZ6wIPQRvL/X6v96ZBuL1HjChASeci8=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    email-validator
-    h5py
-    lazy-loader
-    mpltoolbox
-    numpy
-    plopp
-    pydantic
-    python-dateutil
-    scipp
-    scippnexus
-    scipy
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    anywidget
-    hypothesis
-    ipykernel
-    ipympl
-    pooch
-    psutil
-    pytest-xdist
-    pythreejs
-    sciline
-  ];
 
   env = {
     # See: https://github.com/scipp/scippneutron/blob/26.7.0/src/scippneutron/data/__init__.py
@@ -89,29 +52,12 @@ buildPythonPackage (finalAttrs: {
         _version = "5";
       in
       stdenvNoCC.mkDerivation {
-        name = "plopp-test-data";
-        dontUnpack = true;
         strictDeps = true;
-        __structuredAttrs = true;
+
         nativeBuildInputs = [
           curl
         ];
-        configurePhase = ''
-          curlVersion=$(curl -V | head -1 | cut -d' ' -f2)
-          curl=(
-              curl
-              --location
-              --max-redirs 20
-              --retry 3
-              --retry-all-errors
-              --continue-at -
-              --disable-epsv
-              --cookie-jar cookies
-              --user-agent "curl/$curlVersion Nixpkgs"
-          )
-          export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
-          mkdir -p $out/${_version}
-        '';
+
         buildPhase =
           lib.pipe
             [
@@ -138,18 +84,76 @@ buildPythonPackage (finalAttrs: {
               ))
               (lib.concatStringsSep "\n")
             ];
-        dontInstall = true;
+
+        __structuredAttrs = true;
+
+        configurePhase = ''
+          curlVersion=$(curl -V | head -1 | cut -d' ' -f2)
+          curl=(
+              curl
+              --location
+              --max-redirs 20
+              --retry 3
+              --retry-all-errors
+              --continue-at -
+              --disable-epsv
+              --cookie-jar cookies
+              --user-agent "curl/$curlVersion Nixpkgs"
+          )
+          export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
+          mkdir -p $out/${_version}
+        '';
+
         dontFixup = true;
+        dontInstall = true;
+        dontUnpack = true;
+        name = "plopp-test-data";
         outputHash = "sha256-UxFphegP2VdQ7zMssAf8FQbrQqOr4+qVjcIugxz0ZxA=";
         outputHashMode = "recursive";
       };
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    anywidget
+    hypothesis
+    ipykernel
+    ipympl
+    pooch
+    psutil
+    pytest-xdist
+    pythreejs
+    sciline
+  ];
 
   # See <https://github.com/scipp/scippneutron/issues/710>. From some reason
   # the whole file has to be deleted, otherwise the tests are not disabled.
   preCheck = ''
     rm tests/masking_tool_test.py
   '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    email-validator
+    h5py
+    lazy-loader
+    mpltoolbox
+    numpy
+    plopp
+    pydantic
+    python-dateutil
+    scipp
+    scippnexus
+    scipy
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "scippneutron"

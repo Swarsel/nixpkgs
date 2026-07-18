@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   static3,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "dj-static";
   version = "0.0.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "heroku-python";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ django ];
-
   propagatedBuildInputs = [ static3 ];
-
-  pythonImportsCheck = [ "dj_static" ];
-
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "dj_static" ];
 
   meta = {
     description = "Serve production static files with Django";

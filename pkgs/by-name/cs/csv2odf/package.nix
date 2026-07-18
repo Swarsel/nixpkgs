@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchurl,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "csv2odf";
   version = "2.09";
-  pyproject = true;
 
   src = fetchurl {
     url = "mirror://sourceforge/project/csv2odf/csv2odf-${finalAttrs.version}/csv2odf-${finalAttrs.version}.tar.gz";
@@ -18,10 +17,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://sourceforge.net/p/csv2odf/wiki/Main_Page/";
     description = "Convert csv files to OpenDocument Format";
-    mainProgram = "csv2odf";
+
     longDescription = ''
       csv2odf is a command line tool that can convert a comma separated value
       (csv) file to an odf, ods, html, xlsx, or docx document that can be viewed in
@@ -33,6 +33,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       The output format (fonts, number formatting, etc.) is controlled by a
       template file that you can design in your office application of choice.
     '';
+
+    homepage = "https://sourceforge.net/p/csv2odf/wiki/Main_Page/";
     license = lib.licenses.gpl3;
+    mainProgram = "csv2odf";
   };
 })

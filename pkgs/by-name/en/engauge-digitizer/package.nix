@@ -4,10 +4,10 @@
   fetchFromGitHub,
   fftw,
   libjpeg,
-  log4cpp,
-  openjpeg,
   libpng12,
   libsForQt5,
+  log4cpp,
+  openjpeg,
   qt5,
 }:
 
@@ -39,20 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
     fftw
   ];
 
-  qmakeFlags = [
-    "CONFIG+=jpeg2000"
-    "CONFIG+=pdf"
-    "CONFIG+=log4cpp_null"
-  ];
-
   env = {
-    POPPLER_INCLUDE = "${libsForQt5.poppler.dev}/include/poppler/qt5";
-
-    POPPLER_LIB = "${libsForQt5.poppler}/lib";
-
     OPENJPEG_INCLUDE = "${openjpeg.dev}/include/openjpeg-${lib.versions.majorMinor openjpeg.version}";
-
     OPENJPEG_LIB = "${openjpeg}/lib";
+    POPPLER_INCLUDE = "${libsForQt5.poppler.dev}/include/poppler/qt5";
+    POPPLER_LIB = "${libsForQt5.poppler}/lib";
   };
 
   installPhase = ''
@@ -64,12 +55,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  qmakeFlags = [
+    "CONFIG+=jpeg2000"
+    "CONFIG+=pdf"
+    "CONFIG+=log4cpp_null"
+  ];
+
   meta = {
     description = "Engauge Digitizer is a tool for recovering graph data from an image file";
-    mainProgram = "engauge";
     homepage = "https://markummitchell.github.io/engauge-digitizer";
     license = with lib.licenses; [ gpl2Only ];
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
+    mainProgram = "engauge";
   };
 })

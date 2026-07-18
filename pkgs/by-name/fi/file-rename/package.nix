@@ -21,12 +21,12 @@ perlPackages.buildPerlPackage {
       --replace '/win/i' '/MSWin32/'
   '';
 
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
   postFixup = ''
     substituteInPlace $out/bin/rename \
       --replace "#!${perl}/bin/perl" "#!${perl}/bin/perl -I $out/${perl.libPrefix}"
   '';
-
-  doCheck = !stdenv.hostPlatform.isDarwin;
 
   meta = {
     description = "Perl extension for renaming multiple files";

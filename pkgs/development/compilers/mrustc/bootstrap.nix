@@ -2,41 +2,36 @@
   lib,
   stdenv,
   fetchurl,
+  cmake,
+  curl,
+  libffi,
+  libxml2,
+  llvm_20,
   mrustc,
   mrustc-minicargo,
-  llvm_20,
-  libffi,
-  cmake,
   perl,
-  python3,
-  zlib,
-  libxml2,
   pkg-config,
-  curl,
-  which,
+  python3,
   time,
+  which,
+  zlib,
 }:
 
 let
   mrustcTargetVersion = "1.90";
   rustcVersion = "1.90.0";
   rustcSrc = fetchurl {
-    url = "https://static.rust-lang.org/dist/rustc-${rustcVersion}-src.tar.gz";
     hash = "sha256-eZqfnLpO1TUeBxBIvPa1VgdV2QCWSN7zOkB91JYfm34=";
+    url = "https://static.rust-lang.org/dist/rustc-${rustcVersion}-src.tar.gz";
   };
   rustcDir = "rustc-${rustcVersion}-src";
   outputDir = "output-${rustcVersion}";
 in
 
 stdenv.mkDerivation rec {
+  inherit (mrustc) src;
   pname = "mrustc-bootstrap";
   version = "${mrustc.version}_${rustcVersion}";
-
-  inherit (mrustc) src;
-  postUnpack = "tar -xf ${rustcSrc} -C source/";
-
-  # the rust build system complains that nix alters the checksums
-  dontFixLibtool = true;
 
   patches = [
     ./patches/0001-dont-download-rustc.patch
@@ -47,11 +42,8 @@ stdenv.mkDerivation rec {
     patch -p0 -d ${rustcDir}/ < rustc-${rustcVersion}-src.patch
   '';
 
-  # rustc unfortunately needs cmake to compile llvm-rt but doesn't
-  # use it for the normal build. This disables cmake in Nix.
-  dontUseCmakeConfigure = true;
-
   strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     mrustc
@@ -62,6 +54,7 @@ stdenv.mkDerivation rec {
     time
     which
   ];
+
   buildInputs = [
     # for rustc
     llvm_20
@@ -119,6 +112,7 @@ stdenv.mkDerivation rec {
   '';
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     run_rustc/${outputDir}/prefix/bin/hello_world | grep "hello, world"
@@ -136,22 +130,33 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  # the rust build system complains that nix alters the checksums
+  dontFixLibtool = true;
+  # rustc unfortunately needs cmake to compile llvm-rt but doesn't
+  # use it for the normal build. This disables cmake in Nix.
+  dontUseCmakeConfigure = true;
+  postUnpack = "tar -xf ${rustcSrc} -C source/";
+
   meta = {
     inherit (src.meta) homepage;
     description = "Minimal build of Rust";
+
     longDescription = ''
       A minimal build of Rust, built from source using mrustc.
       This is useful for bootstrapping the main Rust compiler without
       an initial binary toolchain download.
     '';
-    maintainers = with lib.maintainers; [
-      progval
-      r-burns
-    ];
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
+    maintainers = with lib.maintainers; [
+      progval
+      r-burns
+    ];
+
     platforms = [ "x86_64-linux" ];
   };
 }

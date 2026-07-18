@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests = nixosTests.sanoid;
 
   meta = {
-    homepage = "https://www.ivarch.com/programs/pv.shtml";
     description = "Tool for monitoring the progress of data through a pipeline";
+    homepage = "https://www.ivarch.com/programs/pv.shtml";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
     platforms = lib.platforms.all;

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libpcap,
 }:
 
@@ -17,21 +17,21 @@ buildGoModule (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  subPackages = [
-    "op-node/cmd"
-    "op-proposer/cmd"
-    "op-batcher/cmd"
-  ];
-
-  vendorHash = "sha256-Sr9OECXbRa4SPe3owMto2EbnAIygeIEmZv73hvA6iww=";
-
   buildInputs = [
     libpcap
   ];
 
+  vendorHash = "sha256-Sr9OECXbRa4SPe3owMto2EbnAIygeIEmZv73hvA6iww=";
+
   ldflags = [
     "-s"
     "-w"
+  ];
+
+  subPackages = [
+    "op-node/cmd"
+    "op-proposer/cmd"
+    "op-batcher/cmd"
   ];
 
   meta = {

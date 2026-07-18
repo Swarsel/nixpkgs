@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -16,8 +16,6 @@ stdenvNoCC.mkDerivation rec {
   };
 
   strictDeps = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     plugindir="$out/share/zsh/${pname}"
@@ -26,13 +24,18 @@ stdenvNoCC.mkDerivation rec {
     cp -r -- history-* hsmw-* "$plugindir"/
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Multi-word, syntax highlighted history searching for Zsh";
     homepage = "https://github.com/zdharma-continuum/history-search-multi-word";
+
     license = with lib.licenses; [
       gpl3
       mit
     ];
+
     platforms = lib.platforms.unix;
   };
 }

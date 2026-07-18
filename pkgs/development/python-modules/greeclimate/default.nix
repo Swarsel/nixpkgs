@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   netifaces,
   pycryptodome,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "greeclimate";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cmroche";
@@ -21,16 +20,16 @@ buildPythonPackage rec {
     hash = "sha256-lDsMx08BDaUZwmT9afwj9SOMovOftNOlfNV5btSAW8E=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     netifaces
     pycryptodome
-  ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -49,6 +48,8 @@ buildPythonPackage rec {
     "test_issue_69_TemSen_40_should_not_set_firmware_v4"
     "test_issue_87_quiet_should_set_2"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "greeclimate"

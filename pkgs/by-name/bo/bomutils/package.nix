@@ -26,10 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
   env.NIX_CFLAGS_COMPILE = toString [ "-std=c++14" ];
 
   meta = {
-    homepage = "https://github.com/hogliux/bomutils";
     description = "Open source tools to create bill-of-materials files used in macOS installers";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/hogliux/bomutils";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ prusnak ];
+    platforms = lib.platforms.all;
   };
 })

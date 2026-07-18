@@ -33,11 +33,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-xOP/lmJcZSdTeAMsV/vDpA2cDC7e8NJU6W1PImzLhZ4=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-pVPS8+J9crn/Rt/PIW7yiVRmB1Y87vgNVojulU4tr7w=";
-  };
-
   nativeBuildInputs = [
     appstream-glib
     desktop-file-utils
@@ -64,17 +59,22 @@ stdenv.mkDerivation rec {
     libsoup_3
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-pVPS8+J9crn/Rt/PIW7yiVRmB1Y87vgNVojulU4tr7w=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Identify any songs in seconds";
-    mainProgram = "mousai";
     homepage = "https://github.com/SeaDve/Mousai";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
-    teams = [ lib.teams.gnome-circle ];
     platforms = lib.platforms.linux;
+    mainProgram = "mousai";
+    teams = [ lib.teams.gnome-circle ];
   };
 }

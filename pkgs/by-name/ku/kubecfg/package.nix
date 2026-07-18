@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,15 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uJ6G0puANDrnA5NOOWZSGt6gVgIOMUgLfZcBWoXutyo=";
   };
 
-  vendorHash = "sha256-eMDdbjsYXK5TxC+cIq3lJ+G7lp7Kt/HgoVPPHv2ESsk=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-eMDdbjsYXK5TxC+cIq3lJ+G7lp7Kt/HgoVPPHv2ESsk=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd kubecfg \
@@ -33,15 +26,23 @@ buildGoModule (finalAttrs: {
       --zsh  <($out/bin/kubecfg completion --shell=zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=v${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Tool for managing Kubernetes resources as code";
-    mainProgram = "kubecfg";
     homepage = "https://github.com/kubecfg/kubecfg";
     changelog = "https://github.com/kubecfg/kubecfg/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       benley
       qjoly
     ];
+
+    mainProgram = "kubecfg";
   };
 })

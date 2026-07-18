@@ -9,8 +9,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.6.3";
 
   src = fetchFromGitHub {
-    repo = "Prodigal";
     owner = "hyattpd";
+    repo = "Prodigal";
     rev = "v${finalAttrs.version}";
     sha256 = "1fs1hqk83qjbjhrvhw6ni75zakx5ki1ayy3v6wwkn3xvahc9hi5s";
   };
@@ -22,10 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fast, reliable protein-coding gene prediction for prokaryotic genomes";
-    mainProgram = "prodigal";
     homepage = "https://github.com/hyattpd/Prodigal";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ luispedro ];
+    platforms = lib.platforms.all;
+    mainProgram = "prodigal";
   };
 })

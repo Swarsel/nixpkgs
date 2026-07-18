@@ -1,7 +1,7 @@
 {
   lib,
-  buildPecl,
   fetchFromGitHub,
+  buildPecl,
   nix-update-script,
   php,
 }:
@@ -10,8 +10,8 @@ let
   version = "0.19.1";
 in
 buildPecl {
-  pname = "vld";
   inherit version;
+  pname = "vld";
 
   src = fetchFromGitHub {
     owner = "derickr";
@@ -22,7 +22,6 @@ buildPecl {
 
   # Tests relies on PHP 7.0
   doCheck = false;
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {

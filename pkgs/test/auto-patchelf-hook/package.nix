@@ -3,18 +3,18 @@
 # like a good candidate with a small closure, and trimmed it down.
 
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  autoPatchelfHook,
-  dpkg,
-  freetype,
-  curl,
   # This test checks that the behavior of autoPatchelfHook is correct whether
   # __structuredAttrs
   # (https://nixos.org/manual/nix/stable/language/advanced-attributes#adv-attr-structuredAttrs)
   # is set or not. Hence __structuredAttrs is provided as a parameter.
   __structuredAttrs,
+  autoPatchelfHook,
+  curl,
+  dpkg,
+  freetype,
 }:
 
 let
@@ -28,36 +28,28 @@ let
 in
 
 stdenv.mkDerivation {
-  name = "auto-patchelf-test";
+  inherit runtimeDependencies;
+  inherit __structuredAttrs;
 
   src = fetchurl {
     url = "https://tonelib.net/download/221222/ToneLib-Jam-amd64.deb";
     sha256 = "sha256-c6At2lRPngQPpE7O+VY/Hsfw+QfIb3COIuHfbqqIEuM=";
   };
 
-  unpackCmd = ''
-    dpkg -x $curSrc source
-  '';
-
   nativeBuildInputs = [
     dpkg
     autoPatchelfHook
+  ];
+
+  buildInputs = [
+    freetype
   ];
 
   installPhase = ''
     mv usr $out
   '';
 
-  buildInputs = [
-    freetype
-  ];
-
-  autoPatchelfIgnoreMissingDeps = [
-    "libGL.so.1"
-    "libasound.so.2"
-  ];
-
-  inherit runtimeDependencies;
+  doInstallCheck = true;
 
   # Additional phase performing the actual test.
   installCheckPhase =
@@ -98,8 +90,17 @@ stdenv.mkDerivation {
       ) allDeps
     );
 
-  doInstallCheck = true;
-  inherit __structuredAttrs;
+  autoPatchelfIgnoreMissingDeps = [
+    "libGL.so.1"
+    "libasound.so.2"
+  ];
+
+  name = "auto-patchelf-test";
+
+  unpackCmd = ''
+    dpkg -x $curSrc source
+  '';
+
   meta = {
     # Downloads an x86_64-linux only binary
     platforms = [ "x86_64-linux" ];

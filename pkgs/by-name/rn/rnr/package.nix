@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,10 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Command-line tool to batch rename files and directories";
-    mainProgram = "rnr";
     homepage = "https://github.com/ismaelgv/rnr";
     changelog = "https://github.com/ismaelgv/rnr/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "rnr";
   };
 })

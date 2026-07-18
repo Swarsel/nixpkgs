@@ -1,7 +1,7 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   yt-dlp,
 }:
 
@@ -16,13 +16,13 @@ buildLua {
     hash = "sha256-uZC7iDYqLUuXnqSLke4j6rLoufc/vFTE6Ehnpu//dxY=";
   };
 
-  scriptPath = "youtube-chat";
-
   installPhase = ''
     runHook preInstall
     install -D -t $out/share/mpv/scripts/youtube-chat main.lua
     runHook postInstall
   '';
+
+  scriptPath = "youtube-chat";
 
   passthru.extraWrapperArgs = [
     "--prefix"
@@ -35,7 +35,7 @@ buildLua {
     description = "MPV script to overlay youtube chat on top of a video using yt-dlp";
     homepage = "https://github.com/BanchouBoo/mpv-youtube-chat";
     license = lib.licenses.mit;
-    platforms = yt-dlp.meta.platforms;
     maintainers = with lib.maintainers; [ fliegendewurst ];
+    platforms = yt-dlp.meta.platforms;
   };
 }

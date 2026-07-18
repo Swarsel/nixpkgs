@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pysigma,
   pytest-cov-stub,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysigma-backend-elasticsearch";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SigmaHQ";
@@ -22,9 +21,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-eSf0uhjhO1Bc63EBy505tTGASTNJ/mK0943vBXAT9As=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ pysigma ];
+  # Starting with 2.0.0 all tests require network access
+  doCheck = false;
 
   nativeCheckInputs = [
     pytest-cov-stub
@@ -33,11 +31,11 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  # Starting with 2.0.0 all tests require network access
-  doCheck = false;
+  build-system = [ poetry-core ];
+  dependencies = [ pysigma ];
+  pyproject = true;
 
   #pythonImportsCheck = [ "sigma.backends.elasticsearch" ];
-
   meta = {
     description = "Library to support Elasticsearch for pySigma";
     homepage = "https://github.com/SigmaHQ/pySigma-backend-elasticsearch";

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "annotation-mono";
@@ -24,10 +24,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/qwerasd205/AnnotationMono";
     description = "Lovingly crafted handwriting-style monospace font";
+    homepage = "https://github.com/qwerasd205/AnnotationMono";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.theonlymrcat ];
+    platforms = lib.platforms.all;
   };
 })

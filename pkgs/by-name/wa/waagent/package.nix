@@ -1,11 +1,11 @@
 {
-  coreutils,
-  fetchFromGitHub,
   lib,
-  python312,
+  fetchFromGitHub,
   bash,
-  openssl,
+  coreutils,
   nixosTests,
+  openssl,
+  python312,
   udevCheckHook,
 }:
 
@@ -16,7 +16,6 @@ in
 python.pkgs.buildPythonApplication (finalAttrs: {
   pname = "waagent";
   version = "2.15.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -24,17 +23,12 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-P+jxn0W8LaTxDcvKlWjCK1Z9X1l/jf1s41bO9N34N0Q=";
   };
+
   patches = [
     # Suppress the following error when waagent tries to configure sshd:
     # Read-only file system: '/etc/ssh/sshd_config'
     ./dont-configure-sshd.patch
   ];
-
-  nativeBuildInputs = [
-    udevCheckHook
-  ];
-
-  doInstallCheck = true;
 
   # Replace tools used in udev rules with their full path and ensure they are present.
   postPatch = ''
@@ -48,9 +42,11 @@ python.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail '/usr/bin/openssl' '${openssl}/bin/openssl'
   '';
 
-  build-system = with python.pkgs; [ setuptools ];
+  nativeBuildInputs = [
+    udevCheckHook
+  ];
 
-  dependencies = with python.pkgs; [ distro ];
+  doInstallCheck = true;
 
   # The udev rules are placed to the wrong place.
   # Move them to their default location.
@@ -75,7 +71,10 @@ python.pkgs.buildPythonApplication (finalAttrs: {
       --argv0 $out/${python.sitePackages}/usr/sbin/waagent
   '';
 
+  build-system = with python.pkgs; [ setuptools ];
+  dependencies = with python.pkgs; [ distro ];
   dontWrapPythonPrograms = false;
+  pyproject = true;
 
   passthru.tests = {
     inherit (nixosTests) waagent;
@@ -83,14 +82,16 @@ python.pkgs.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Microsoft Azure Linux Agent (waagent)";
-    mainProgram = "waagent";
+
     longDescription = ''
       The Microsoft Azure Linux Agent (waagent)
       manages Linux provisioning and VM interaction with the Azure
       Fabric Controller'';
+
     homepage = "https://github.com/Azure/WALinuxAgent";
-    maintainers = with lib.maintainers; [ codgician ];
     license = with lib.licenses; [ asl20 ];
+    maintainers = with lib.maintainers; [ codgician ];
     platforms = lib.platforms.linux;
+    mainProgram = "waagent";
   };
 })

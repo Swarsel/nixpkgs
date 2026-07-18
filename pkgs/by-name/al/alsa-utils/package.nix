@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  directoryListingUpdater,
   fetchurl,
   alsa-lib,
   alsa-plugins,
+  directoryListingUpdater,
+  fftwFloat,
   gettext,
-  makeWrapper,
-  pkg-config,
-  ncurses,
   libsamplerate,
+  makeWrapper,
+  ncurses,
   pciutils,
+  pipewire,
+  pkg-config,
   procps,
+  symlinkJoin,
   tree,
   which,
-  fftwFloat,
-  pipewire,
   withPipewireLib ? true,
-  symlinkJoin,
 }:
 
 let
@@ -44,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     alsa-lib
     ncurses
@@ -56,7 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-udev-rules-dir=$(out)/lib/udev/rules.d"
   ];
 
-  installFlags = [ "ASOUND_STATE_DIR=$(TMPDIR)/dummy" ];
+  postInstall = ''
+    # udev rules are super broken, violating `udevadm verify` in various creative ways.
+    # NixOS has its own set of alsa udev rules, we can just delete the udev rules for this package
+    rm -rf $out/lib/udev
+  '';
 
   postFixup = ''
     mv $out/bin/alsa-info.sh $out/bin/alsa-info
@@ -73,23 +78,21 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  postInstall = ''
-    # udev rules are super broken, violating `udevadm verify` in various creative ways.
-    # NixOS has its own set of alsa udev rules, we can just delete the udev rules for this package
-    rm -rf $out/lib/udev
-  '';
+  installFlags = [ "ASOUND_STATE_DIR=$(TMPDIR)/dummy" ];
 
   passthru.updateScript = directoryListingUpdater {
     url = "https://www.alsa-project.org/files/pub/utils/";
   };
 
   meta = {
-    homepage = "http://www.alsa-project.org/";
     description = "ALSA, the Advanced Linux Sound Architecture utils";
+
     longDescription = ''
       The Advanced Linux Sound Architecture (ALSA) provides audio and
       MIDI functionality to the Linux-based operating system.
     '';
+
+    homepage = "http://www.alsa-project.org/";
 
     license = with lib.licenses; [
       gpl2Plus
@@ -97,9 +100,10 @@ stdenv.mkDerivation (finalAttrs: {
       lgpl21Plus # alsaucm
     ];
 
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

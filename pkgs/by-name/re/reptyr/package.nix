@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.10.0";
   pname = "reptyr";
+  version = "0.10.0";
 
   src = fetchFromGitHub {
     owner = "nelhage";
@@ -25,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = false;
 
   meta = {
+    description = "Reparent a running program to a new terminal";
+    homepage = "https://github.com/nelhage/reptyr";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ raskin ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
@@ -36,10 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
       "aarch64-linux"
       "riscv64-linux"
     ];
-    maintainers = with lib.maintainers; [ raskin ];
-    license = lib.licenses.mit;
-    description = "Reparent a running program to a new terminal";
+
     mainProgram = "reptyr";
-    homepage = "https://github.com/nelhage/reptyr";
   };
 })

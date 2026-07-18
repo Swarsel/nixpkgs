@@ -36,147 +36,152 @@ in
   options.networking.ucarp = {
     enable = mkEnableOption "ucarp, userspace implementation of CARP";
 
-    interface = mkOption {
-      type = types.str;
-      description = "Network interface to bind to.";
-      example = "eth0";
-    };
-
-    srcIp = mkOption {
-      type = types.str;
-      description = "Source (real) IP address of this host.";
-    };
-
-    vhId = mkOption {
-      type = types.ints.between 1 255;
-      description = "Virtual IP identifier shared between CARP hosts.";
-      example = 1;
-    };
-
-    passwordFile = mkOption {
-      type = types.str;
-      description = "File containing shared password between CARP hosts.";
-      example = "/run/keys/ucarp-password";
-    };
-
-    preempt = mkOption {
-      type = types.bool;
-      description = ''
-        Enable preemptive failover.
-        Thus, this host becomes the CARP master as soon as possible.
-      '';
-      default = false;
-    };
-
-    neutral = mkOption {
-      type = types.bool;
-      description = "Do not run downscript at start if the host is the backup.";
-      default = false;
-    };
-
-    addr = mkOption {
-      type = types.str;
-      description = "Virtual shared IP address.";
-    };
-
-    advBase = mkOption {
-      type = types.ints.unsigned;
-      description = "Advertisement frequency in seconds.";
-      default = 1;
-    };
-
-    advSkew = mkOption {
-      type = types.ints.unsigned;
-      description = "Advertisement skew in seconds.";
-      default = 0;
-    };
-
-    upscript = mkOption {
-      type = types.path;
-      description = ''
-        Command to run after become master, the interface name, virtual address
-        and optional extra parameters are passed as arguments.
-      '';
-      example = literalExpression ''
-        pkgs.writeScript "upscript" '''
-          #!/bin/sh
-          ''${pkgs.iproute2}/bin/ip addr add "$2"/24 dev "$1"
-        ''';
-      '';
-    };
-
-    downscript = mkOption {
-      type = types.path;
-      description = ''
-        Command to run after become backup, the interface name, virtual address
-        and optional extra parameters are passed as arguments.
-      '';
-      example = literalExpression ''
-        pkgs.writeScript "downscript" '''
-          #!/bin/sh
-          ''${pkgs.iproute2}/bin/ip addr del "$2"/24 dev "$1"
-        ''';
-      '';
-    };
-
-    deadratio = mkOption {
-      type = types.ints.unsigned;
-      description = "Ratio to consider a host as dead.";
-      default = 3;
-    };
-
-    shutdown = mkOption {
-      type = types.bool;
-      description = "Call downscript at exit.";
-      default = false;
-    };
-
-    ignoreIfState = mkOption {
-      type = types.bool;
-      description = "Ignore interface state, e.g., down or no carrier.";
-      default = false;
-    };
-
-    noMcast = mkOption {
-      type = types.bool;
-      description = "Use broadcast instead of multicast advertisements.";
-      default = false;
-    };
-
-    extraParam = mkOption {
-      type = types.nullOr types.str;
-      description = "Extra parameter to pass to the up/down scripts.";
-      default = null;
-    };
-
     package = mkPackageOption pkgs "ucarp" {
       extraDescription = ''
         Please note that the default package, pkgs.ucarp, has not received any
         upstream updates for a long time and can be considered as unmaintained.
       '';
     };
+
+    addr = mkOption {
+      description = "Virtual shared IP address.";
+      type = types.str;
+    };
+
+    advBase = mkOption {
+      default = 1;
+      description = "Advertisement frequency in seconds.";
+      type = types.ints.unsigned;
+    };
+
+    advSkew = mkOption {
+      default = 0;
+      description = "Advertisement skew in seconds.";
+      type = types.ints.unsigned;
+    };
+
+    deadratio = mkOption {
+      default = 3;
+      description = "Ratio to consider a host as dead.";
+      type = types.ints.unsigned;
+    };
+
+    downscript = mkOption {
+      description = ''
+        Command to run after become backup, the interface name, virtual address
+        and optional extra parameters are passed as arguments.
+      '';
+
+      example = literalExpression ''
+        pkgs.writeScript "downscript" '''
+          #!/bin/sh
+          ''${pkgs.iproute2}/bin/ip addr del "$2"/24 dev "$1"
+        ''';
+      '';
+
+      type = types.path;
+    };
+
+    extraParam = mkOption {
+      default = null;
+      description = "Extra parameter to pass to the up/down scripts.";
+      type = types.nullOr types.str;
+    };
+
+    ignoreIfState = mkOption {
+      default = false;
+      description = "Ignore interface state, e.g., down or no carrier.";
+      type = types.bool;
+    };
+
+    interface = mkOption {
+      description = "Network interface to bind to.";
+      example = "eth0";
+      type = types.str;
+    };
+
+    neutral = mkOption {
+      default = false;
+      description = "Do not run downscript at start if the host is the backup.";
+      type = types.bool;
+    };
+
+    noMcast = mkOption {
+      default = false;
+      description = "Use broadcast instead of multicast advertisements.";
+      type = types.bool;
+    };
+
+    passwordFile = mkOption {
+      description = "File containing shared password between CARP hosts.";
+      example = "/run/keys/ucarp-password";
+      type = types.str;
+    };
+
+    preempt = mkOption {
+      default = false;
+
+      description = ''
+        Enable preemptive failover.
+        Thus, this host becomes the CARP master as soon as possible.
+      '';
+
+      type = types.bool;
+    };
+
+    shutdown = mkOption {
+      default = false;
+      description = "Call downscript at exit.";
+      type = types.bool;
+    };
+
+    srcIp = mkOption {
+      description = "Source (real) IP address of this host.";
+      type = types.str;
+    };
+
+    upscript = mkOption {
+      description = ''
+        Command to run after become master, the interface name, virtual address
+        and optional extra parameters are passed as arguments.
+      '';
+
+      example = literalExpression ''
+        pkgs.writeScript "upscript" '''
+          #!/bin/sh
+          ''${pkgs.iproute2}/bin/ip addr add "$2"/24 dev "$1"
+        ''';
+      '';
+
+      type = types.path;
+    };
+
+    vhId = mkOption {
+      description = "Virtual IP identifier shared between CARP hosts.";
+      example = 1;
+      type = types.ints.between 1 255;
+    };
   };
 
   config = mkIf cfg.enable {
     systemd.services.ucarp = {
+      after = [ "network.target" ];
       description = "ucarp, userspace implementation of CARP";
 
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-
       serviceConfig = {
-        Type = "exec";
         ExecStart = ucarpExec;
-
-        ProtectSystem = "strict";
-        ProtectHome = true;
+        MemoryDenyWriteExecute = true;
         PrivateTmp = true;
         ProtectClock = true;
-        ProtectKernelModules = true;
         ProtectControlGroups = true;
-        MemoryDenyWriteExecute = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectSystem = "strict";
         RestrictRealtime = true;
+        Type = "exec";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

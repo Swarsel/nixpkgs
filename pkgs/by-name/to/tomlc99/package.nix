@@ -22,8 +22,8 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/cktan/tomlc99";
     description = "TOML v1.0.0-compliant library written in C99";
+    homepage = "https://github.com/cktan/tomlc99";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = with lib.platforms; unix;

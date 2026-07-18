@@ -1,34 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # dependencies
+  bokeh,
+  bokeh-sampledata,
+  buildPythonPackage,
+  colorcet,
+  dask,
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  bokeh,
-  colorcet,
   holoviews,
+  matplotlib,
   pandas,
-
+  parameterized,
+  plotly,
   # tests
   pytestCheckHook,
-  dask,
-  xarray,
-  bokeh-sampledata,
-  parameterized,
-  selenium,
-  matplotlib,
   scipy,
-  plotly,
+  selenium,
+  xarray,
 }:
 
 buildPythonPackage rec {
   pname = "hvplot";
   version = "0.12.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "holoviz";
@@ -36,18 +32,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-hJ9lgpM3AVyDeFxobUKDNYO39NKEejSDywOgnHPEm2c=";
   };
-
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
-  dependencies = [
-    bokeh
-    colorcet
-    holoviews
-    pandas
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -61,11 +45,22 @@ buildPythonPackage rec {
     plotly
   ];
 
-  disabledTests = [
-    # Legacy dask-expr implementation is deprecated
-    # NotImplementedError: The legacy implementation is no longer supported
-    "test_dask_dataframe_patched"
-    "test_dask_series_patched"
+  # need to set MPLBACKEND=agg for headless matplotlib for darwin
+  # https://github.com/matplotlib/matplotlib/issues/26292
+  preCheck = ''
+    export MPLBACKEND=agg
+  '';
+
+  build-system = [
+    hatch-vcs
+    hatchling
+  ];
+
+  dependencies = [
+    bokeh
+    colorcet
+    holoviews
+    pandas
   ];
 
   disabledTestPaths = [
@@ -83,12 +78,14 @@ buildPythonPackage rec {
     "hvplot/tests/testutil.py"
   ];
 
-  # need to set MPLBACKEND=agg for headless matplotlib for darwin
-  # https://github.com/matplotlib/matplotlib/issues/26292
-  preCheck = ''
-    export MPLBACKEND=agg
-  '';
+  disabledTests = [
+    # Legacy dask-expr implementation is deprecated
+    # NotImplementedError: The legacy implementation is no longer supported
+    "test_dask_dataframe_patched"
+    "test_dask_series_patched"
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hvplot.pandas" ];
 
   meta = {

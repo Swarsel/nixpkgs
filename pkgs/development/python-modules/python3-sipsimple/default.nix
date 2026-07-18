@@ -1,24 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   fetchurl,
-  fetchpatch,
-  nix-update-script,
-  cython,
-  setuptools,
+  fetchFromGitHub,
   alsa-lib,
+  buildPythonPackage,
+  cython,
+  fetchpatch,
   ffmpeg_7,
   libopus,
   libuuid,
   libv4l,
   libvpx,
+  nix-update-script,
   opencore-amr,
   openssl,
   pkg-config,
+  python3-application,
+  setuptools,
   sqlite,
   x264,
-  python3-application,
 }:
 let
   applyPatchesWhenAvailable =
@@ -33,7 +33,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "python3-sipsimple";
   version = "5.3.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AGProjects";
@@ -45,9 +44,9 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # Remove when version > 5.3.3.2-mac
     (fetchpatch {
+      hash = "sha256-MBiM9/yS5yX9QoZT7p76PI2rbBr22fZw6TAT4tw9iZk=";
       name = "0001-python3-sipsimple-port-to-cython-3.patch";
       url = "https://github.com/AGProjects/python3-sipsimple/commit/ccbbbb0225b2417bdf6ae07da96bffe367e242be.patch";
-      hash = "sha256-MBiM9/yS5yX9QoZT7p76PI2rbBr22fZw6TAT4tw9iZk=";
     })
   ];
 
@@ -62,11 +61,6 @@ buildPythonPackage (finalAttrs: {
     pkg-config
   ];
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
   buildInputs = [
     alsa-lib
     ffmpeg_7
@@ -78,10 +72,6 @@ buildPythonPackage (finalAttrs: {
     openssl
     sqlite
     x264
-  ];
-
-  dependencies = [
-    python3-application
   ];
 
   preConfigure = ''
@@ -105,24 +95,30 @@ buildPythonPackage (finalAttrs: {
   # no upstream tests exist
   doCheck = false;
 
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  dependencies = [
+    python3-application
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "sipsimple" ];
 
   passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [
-        "--version-regex"
-        "^(.*)-mac$"
-      ];
-    };
     extDeps = {
       pjsip = rec {
         # Hardcoded in get_dependencies.sh, checked at buildtime
         # need tarball specifically for buildscript to detect it
         version = "2.10";
+
         src = fetchurl {
           url = "https://github.com/pjsip/pjproject/archive/${version}.tar.gz";
           hash = "sha256-k2pMW5hgG1IyVGOjl93xGrQQbGp7BPjcfN03fvu1l94=";
         };
+
         patches = [
           # Backported https://github.com/pjsip/pjproject/commit/4a8d180529d6ffb0760838b1f8cadc4cb5f7ac03
           ./pjsip-0001-NEON.patch
@@ -134,29 +130,39 @@ buildPythonPackage (finalAttrs: {
           ./pjsip-0003-LoongArch64.patch
         ];
       };
+
       zrtpcpp = rec {
-        # Hardcoded in get_dependencies.sh, NOT checked at buildtime
-        rev = "6b3cd8e6783642292bad0c21e3e5e5ce45ff3e03";
         src = fetchFromGitHub {
+          inherit rev;
           owner = "wernerd";
           repo = "ZRTPCPP";
-          inherit rev;
           hash = "sha256-pGng1Y9N51nGBpiZbn2NTx4t2NGg4qkmbghTscJVhIA=";
+
           postFetch = ''
             # fix build with gcc15
             sed -e '9i #include <cstdint>' -i $out/zrtp/EmojiBase32.cpp
           '';
         };
+
+        # Hardcoded in get_dependencies.sh, NOT checked at buildtime
+        rev = "6b3cd8e6783642292bad0c21e3e5e5ce45ff3e03";
       };
+    };
+
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--version-regex"
+        "^(.*)-mac$"
+      ];
     };
   };
 
   meta = {
     description = "SIP SIMPLE SDK written in Python";
     homepage = "https://sipsimpleclient.org/";
-    downloadPage = "https://github.com/AGProjects/python3-sipsimple";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.ngi ];
     maintainers = [ lib.maintainers.ethancedwards8 ];
+    downloadPage = "https://github.com/AGProjects/python3-sipsimple";
+    teams = [ lib.teams.ngi ];
   };
 })

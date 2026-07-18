@@ -1,15 +1,14 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  hatchling,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pycompliance";
   version = "0.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rhmdnd";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-gCrKbKqRDlh9q9bETQ9NEPbf+40WKF1ltfBy6LYjlVw=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "pycompliance" ];
 
   meta = {

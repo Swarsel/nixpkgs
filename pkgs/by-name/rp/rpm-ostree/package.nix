@@ -2,47 +2,52 @@
   lib,
   stdenv,
   fetchurl,
-  ostree,
-  rpm,
-  which,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
+  bubblewrap,
   cargo,
-  rustc,
-  gobject-introspection,
-  gtk-doc,
-  libxml2,
-  libxslt,
-  docbook_xsl,
+  check,
+  cmake,
+  cppunit,
   docbook_xml_dtd_42,
   docbook_xml_dtd_43,
-  gperf,
-  cmake,
-  libcap,
+  docbook_xsl,
   glib,
-  systemd,
+  gobject-introspection,
+  gperf,
+  gtk-doc,
   json-glib,
-  libarchive,
-  libsolv,
-  librepo,
-  polkit,
-  bubblewrap,
-  pcre2,
-  check,
-  python3,
   json_c,
-  zchunk,
+  libarchive,
+  libcap,
   libmodulemd,
-  util-linux,
+  librepo,
+  libsolv,
+  libtool,
+  libxml2,
+  libxslt,
+  ostree,
+  pcre2,
+  pkg-config,
+  polkit,
+  python3,
+  rpm,
+  rustc,
   sqlite,
-  cppunit,
+  systemd,
+  util-linux,
+  which,
+  zchunk,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "rpm-ostree";
   version = "2026.1";
+
+  src = fetchurl {
+    url = "https://github.com/coreos/rpm-ostree/releases/download/v${finalAttrs.version}/rpm-ostree-${finalAttrs.version}.tar.xz";
+    hash = "sha256-/dgF4jN4Sq7pRFmSMWXmG21y0PlkPPOMf8QhP8CB+yA=";
+  };
 
   outputs = [
     "out"
@@ -50,11 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "https://github.com/coreos/rpm-ostree/releases/download/v${finalAttrs.version}/rpm-ostree-${finalAttrs.version}.tar.xz";
-    hash = "sha256-/dgF4jN4Sq7pRFmSMWXmG21y0PlkPPOMf8QhP8CB+yA=";
-  };
 
   nativeBuildInputs = [
     python3
@@ -105,6 +105,10 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-gtk-doc"
   ];
 
+  preConfigure = ''
+    env NOCONFIGURE=1 ./autogen.sh
+  '';
+
   dontUseCmakeConfigure = true;
 
   prePatch = ''
@@ -118,10 +122,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Do not try to install in global /usr/lib
     substituteInPlace Makefile-rpm-ostree.am \
       --replace '/usr/lib/kernel/install.d' '$(libdir)/kernel/install.d'
-  '';
-
-  preConfigure = ''
-    env NOCONFIGURE=1 ./autogen.sh
   '';
 
   meta = {

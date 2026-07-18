@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  qt6,
-  libxtst,
-  libx11,
   cmake,
-  ninja,
   libcprime,
   libcsys,
+  libx11,
+  libxtst,
+  ninja,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Virtual keyboard for X11 from the C Suite";
-    mainProgram = "corekeyboard";
     homepage = "https://gitlab.com/cubocore/coreapps/corekeyboard";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "corekeyboard";
   };
 })

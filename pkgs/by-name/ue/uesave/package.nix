@@ -1,12 +1,13 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "uesave";
   version = "0.7.1";
+
   src = fetchFromGitHub {
     owner = "trumank";
     repo = "uesave-rs";
@@ -15,18 +16,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-6VTy/KHk2mSDfRonxyen4kRMvwBS3uZjsZqMhBJ+boM=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   meta = {
-    maintainers = with lib.maintainers; [ xddxdd ];
     description = "Reading and writing Unreal Engine save files (commonly referred to as GVAS)";
     homepage = "https://github.com/trumank/uesave-rs";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ xddxdd ];
     mainProgram = "uesave";
   };
 })

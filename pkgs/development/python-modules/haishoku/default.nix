@@ -1,17 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   nix-update-script,
-
   pillow,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "haishoku";
   version = "1.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LanceGin";
@@ -20,15 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-LSoZopCaM5vbknGS9gG13OZIgghgqJvPtktUkBCH04Q=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pillow ];
-
   # no test
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pillow ];
+  pyproject = true;
   pythonImportsCheck = [ "haishoku" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

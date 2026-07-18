@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   cmake,
 }:
@@ -20,7 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Library for Voronoi integration of electron densities";
     homepage = "https://brehm-research.de/libvori.php";
     license = with lib.licenses; [ lgpl3Only ];
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.unix;
   };
 })

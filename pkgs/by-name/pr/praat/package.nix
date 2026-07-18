@@ -1,13 +1,13 @@
 {
-  alsa-lib,
-  fetchFromGitHub,
-  gtk3,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  alsa-lib,
+  gtk3,
+  libjack2,
   libpulseaudio,
   pkg-config,
-  stdenv,
   wrapGAppsHook3,
-  libjack2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,21 +40,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildFlags = [ "PRAAT_AUDIO=pulse" ];
-  installFlags = [ "PREFIX=${placeholder "out"}" ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     mv $out/share/applications/org.praat.Praat.desktop $out/share/applications/praat.desktop
   '';
 
+  enableParallelBuilding = true;
+  installFlags = [ "PREFIX=${placeholder "out"}" ];
+
   meta = {
     description = "Doing phonetics by computer";
-    mainProgram = "praat";
     homepage = "https://www.fon.hum.uva.nl/praat/";
     changelog = "https://github.com/praat/praat.github.io/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Plus; # Has some 3rd-party code in it though
     maintainers = with lib.maintainers; [ pancaek ];
     platforms = lib.platforms.linux;
+    mainProgram = "praat";
   };
 })

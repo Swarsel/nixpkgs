@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   atomicwrites,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   requests,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "fpyutils";
   version = "4.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frnmst";
@@ -29,13 +28,13 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  enabledTestPaths = [ "fpyutils/tests/*.py" ];
-
   disabledTests = [
     # Don't run test which requires bash
     "test_execute_command_live_output"
   ];
 
+  enabledTestPaths = [ "fpyutils/tests/*.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "fpyutils" ];
 
   meta = {

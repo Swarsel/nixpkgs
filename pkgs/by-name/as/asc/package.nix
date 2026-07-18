@@ -1,31 +1,31 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   SDL,
   SDL_image,
   SDL_mixer,
   SDL_sound,
-  libsigcxx,
-  physfs,
   boost,
+  bzip2,
   expat,
+  flac,
+  fluidsynth,
   freetype,
   libjpeg,
-  wxwidgets_3_2,
+  libmikmod,
+  libogg,
+  libpng,
+  libsigcxx,
+  libtiff,
+  libvorbis,
   lua,
   perl,
+  physfs,
   pkg-config,
-  zlib,
+  wxwidgets_3_2,
   zip,
-  bzip2,
-  libpng,
-  libtiff,
-  fluidsynth,
-  libmikmod,
-  libvorbis,
-  flac,
-  libogg,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -77,9 +77,7 @@ stdenv.mkDerivation {
     '';
 
     homepage = "https://www.asc-hq.org/";
-
     license = lib.licenses.gpl2Plus;
-
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
   };

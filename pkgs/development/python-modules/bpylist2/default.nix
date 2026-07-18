@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "bpylist2";
   version = "4.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "parabolala";
@@ -18,11 +17,6 @@ buildPythonPackage {
     hash = "sha256-OBwDQZL5++LZgpQM96tmplAh1Pjme3KGSNFTKqKUn00=";
   };
 
-  build-system = [ poetry-core ];
-
-  pythonImportsCheck = [ "bpylist2" ];
-  nativeCheckInputs = [ pytestCheckHook ];
-
   postPatch = ''
     substituteInPlace setup.cfg \
       --replace-fail "--pycodestyle" "" \
@@ -30,10 +24,15 @@ buildPythonPackage {
       --replace-fail "--mypy" ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ poetry-core ];
+  pyproject = true;
+  pythonImportsCheck = [ "bpylist2" ];
+
   meta = {
     description = "Parse and Generate binary plists and NSKeyedArchiver archives";
-    license = lib.licenses.mit;
     homepage = "https://github.com/parabolala/bpylist2";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sigmanificient ];
   };
 }

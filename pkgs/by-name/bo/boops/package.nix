@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  libx11,
   cairo,
-  lv2,
   libsndfile,
+  libx11,
+  lv2,
   pkg-config,
 }:
 
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     cairo
@@ -31,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/sjaehn/BOops";
     description = "Sound glitch effect sequencer LV2 plugin";
+    homepage = "https://github.com/sjaehn/BOops";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Plus;
   };
 })

@@ -8,8 +8,8 @@
   libpq,
   mpfr,
   ncurses,
-  plotutils,
   pkg-config,
+  plotutils,
   withPDFDoc ? true,
 }:
 
@@ -29,6 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals withPDFDoc [ "doc" ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
   ];
@@ -43,13 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
     libpq
   ];
 
-  strictDeps = true;
-
   postInstall =
     let
       pdfdoc = fetchurl {
-        url = "https://web.archive.org/web/20260503174213/https://algol68genie.nl/learning-algol-68-genie.pdf";
         hash = "sha256-eLMRf3XcAkr/Dmk7ieRe62x76VcCj+2QltHH7YtL15s=";
+        url = "https://web.archive.org/web/20260503174213/https://algol68genie.nl/learning-algol-68-genie.pdf";
       };
     in
     lib.optionalString withPDFDoc ''
@@ -57,8 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   meta = {
-    homepage = "https://algol68genie.nl/en/algol-68-genie/";
     description = "Algol 68 Genie compiler-interpreter";
+
     longDescription = ''
       Algol 68 Genie (a68g) is a recent checkout hybrid compiler-interpreter,
       written from scratch by Marcel van der Veer. It ranks among the most
@@ -68,9 +68,11 @@ stdenv.mkDerivation (finalAttrs: {
       regular expressions and sounds. It can be linked to GNU plotutils, the GNU
       scientific library and PostgreSQL.
     '';
+
+    homepage = "https://algol68genie.nl/en/algol-68-genie/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "a68g";
     maintainers = with lib.maintainers; [ tbutter ];
     platforms = lib.platforms.unix;
+    mainProgram = "a68g";
   };
 })

@@ -1,26 +1,21 @@
 {
   lib,
   stdenv,
+  editline,
+  lowdown,
   mkMesonLibrary,
-
-  nix-util,
-  nix-store,
-  nix-fetchers,
   nix-expr,
+  nix-fetchers,
   nix-flake,
   nix-main,
-  editline,
-  readline,
-  lowdown,
+  nix-store,
+  nix-util,
   nlohmann_json,
-
+  readline,
   # Configuration Options
-
   version,
-
   # Whether to enable Markdown rendering in the Nix binary.
   enableMarkdown ? !stdenv.hostPlatform.isWindows,
-
   # Which interactive line editor library to use for Nix's repl.
   #
   # Currently supported choices are:
@@ -31,10 +26,8 @@
 }:
 
 mkMesonLibrary (finalAttrs: {
-  pname = "nix-cmd";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-cmd";
 
   buildInputs = [
     ({ inherit editline readline; }.${readlineFlavor})
@@ -55,6 +48,8 @@ mkMesonLibrary (finalAttrs: {
     (lib.mesonEnable "markdown" enableMarkdown)
     (lib.mesonOption "readline-flavor" readlineFlavor)
   ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix ++ lib.platforms.windows;

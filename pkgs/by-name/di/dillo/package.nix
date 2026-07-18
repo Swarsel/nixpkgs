@@ -1,18 +1,18 @@
 {
   lib,
+  stdenv,
   autoreconfHook,
   fetchFromCodeberg,
   fltk_1_3,
   libjpeg,
   libpng,
-  libwebp,
   libressl,
+  libwebp,
   mbedtls,
+  nix-update-script,
   openssl,
   pkg-config,
-  stdenv,
   which,
-  nix-update-script,
   # Configurable options
   tlsLibrary ? "libressl",
 }:
@@ -37,6 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MzfY5Wyrt7ChTxp+BPNuDG10D8CefhgHjuaSvAiquZI=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -52,19 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
     fltk_1_3
   ];
 
-  outputs = [
-    "out"
-    "doc"
-    "man"
-  ];
-
-  strictDeps = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://dillo-browser.github.io/";
     description = "Fast graphical web browser with a small footprint";
+
     longDescription = ''
       Dillo is a fast and small graphical web browser with the following
       features:
@@ -80,9 +80,11 @@ stdenv.mkDerivation (finalAttrs: {
       - Is free software licensed with the GPLv3.
       - Helps authors to comply with web standards by using the bug meter.
     '';
-    mainProgram = "dillo";
-    maintainers = with lib.maintainers; [ fgaz ];
+
+    homepage = "https://dillo-browser.github.io/";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "dillo";
   };
 })

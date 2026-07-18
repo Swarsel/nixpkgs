@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  cmake,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
   cfitsio,
+  cmake,
   curl,
   eigen_3_4_0,
+  fetchpatch2,
   gettext,
   glib,
   gtest,
   gtk3,
   libnova,
   libusb1,
+  ninja,
+  pkg-config,
+  wrapGAppsHook3,
   wxwidgets_3_2,
 }:
 
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
   # is in masster, should be removed with next release
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/OpenPHDGuiding/phd2/commit/0927de6c8943fae7161457008b989bf72a05c638.patch?full_index=1";
       hash = "sha256-yo5YdZ4B7jx6p4TqFZc7RJsutsWzeNBUfinFAd8es7E=";
+      url = "https://github.com/OpenPHDGuiding/phd2/commit/0927de6c8943fae7161457008b989bf72a05c638.patch?full_index=1";
     })
   ];
 
@@ -74,13 +74,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://openphdguiding.org/";
     description = "Telescope auto-guidance application";
+    homepage = "https://openphdguiding.org/";
     changelog = "https://github.com/OpenPHDGuiding/phd2/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       returntoreality
     ];
+
     platforms = lib.platforms.linux;
   };
 })

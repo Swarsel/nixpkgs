@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cacert,
+  nix-update-script,
   python3,
   yubikey-manager,
-  nix-update-script,
-  cacert,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gam";
   version = "7.43.04";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GAM-team";
@@ -61,17 +60,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ''--run 'export GAMDRIVEDIR="$PWD"' ''
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gam" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command line management for Google Workspace";
-    mainProgram = "gam";
     homepage = "https://github.com/GAM-team/GAM/wiki";
     changelog = "https://github.com/GAM-team/GAM/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ thanegill ];
+    mainProgram = "gam";
   };
 
 })

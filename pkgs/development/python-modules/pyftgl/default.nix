@@ -1,15 +1,15 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   stdenv,
-  setuptools,
+  fetchFromGitHub,
   boost,
+  buildPythonPackage,
   freetype,
   ftgl,
-  libGLU,
   libGL,
+  libGLU,
   python,
+  setuptools,
 }:
 
 let
@@ -18,7 +18,6 @@ in
 buildPythonPackage rec {
   pname = "pyftgl";
   version = "0.4b";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "umlaeute";
@@ -26,8 +25,6 @@ buildPythonPackage rec {
     tag = version;
     sha256 = "sha256-mbzXpIPMNe6wfwaAAw/Ri8xaW6Z6kuNUhFFyzsiW7Is=";
   };
-
-  build-system = [ setuptools ];
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -44,6 +41,9 @@ buildPythonPackage rec {
     libGLU
     libGL
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Python bindings for FTGL (FreeType for OpenGL)";

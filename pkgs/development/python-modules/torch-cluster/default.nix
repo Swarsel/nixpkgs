@@ -1,31 +1,24 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # passthru
+  nix-update-script,
+  # buildInputs
+  pybind11,
+  # tests
+  pytestCheckHook,
+  # dependencies
+  scipy,
   # build-system
   setuptools,
   torch,
-
-  # buildInputs
-  pybind11,
-
-  # dependencies
-  scipy,
-
-  # tests
-  pytestCheckHook,
-
-  # passthru
-  nix-update-script,
 }:
 
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "torch-cluster";
   version = "1.6.3-unstable-2026-06-05";
-  pyproject = true;
-  __structuredAttrs = true;
 
   # Last stable release is from 2023
   # Development is still active, but nothing was properly tagged on GitHub or Pypi
@@ -37,20 +30,9 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     hash = "sha256-0VgJBo37IUXZT3NC40fQ9pttDM3J6l2ks0061Mv3hk8=";
   };
 
-  build-system = [
-    setuptools
-    torch
-  ];
-
   buildInputs = [
     pybind11
   ];
-
-  dependencies = [
-    scipy
-  ];
-
-  pythonImportsCheck = [ "torch_cluster" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -62,12 +44,26 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     rm -rf torch_cluster
   '';
 
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+    torch
+  ];
+
+  dependencies = [
+    scipy
+  ];
+
   disabledTests = lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
     # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
     # RuntimeError: Failed to initialize cpuinfo!
     "test_fps"
     "test_nearest"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "torch_cluster" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

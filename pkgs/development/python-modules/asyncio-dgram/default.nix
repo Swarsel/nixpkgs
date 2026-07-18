@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytest-asyncio,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "asyncio-dgram";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jsbronder";
@@ -20,15 +19,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-08XQHx+ArduVdkK5ZYq2lL2OWF9CvdSWcNLfc7ey2wI=";
   };
 
-  build-system = [ hatchling ];
+  # OSError: AF_UNIX path too long
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
-  # OSError: AF_UNIX path too long
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  build-system = [ hatchling ];
 
   disabledTests = [
     "test_protocol_pause_resume"
@@ -36,6 +35,7 @@ buildPythonPackage (finalAttrs: {
     "test_from_socket_bad_socket"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "asyncio_dgram" ];
 
   meta = {

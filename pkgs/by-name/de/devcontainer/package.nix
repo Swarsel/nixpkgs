@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  fetchYarnDeps,
   fetchFromGitHub,
-  fixup-yarn-lock,
-  nodejs,
-  node-gyp,
-  python3,
-  makeBinaryWrapper,
-  git,
   docker,
-  yarn,
   docker-compose,
+  fetchYarnDeps,
+  fixup-yarn-lock,
+  git,
+  makeBinaryWrapper,
   nix-update-script,
+  node-gyp,
+  nodejs,
+  python3,
+  yarn,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "devcontainer";
@@ -23,11 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "cli";
     tag = "v${finalAttrs.version}";
     hash = "sha256-bTJoMQnjmiFzUuaz+dukZ5NP9RznCNvvjmkTTY/Frwc=";
-  };
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-AgwXCWogxVDaeiv8dUBvbsLLxLDrkYqb0HPFORd3ieQ=";
   };
 
   nativeBuildInputs = [
@@ -79,6 +74,11 @@ stdenv.mkDerivation (finalAttrs: {
         ]
       }
   '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-AgwXCWogxVDaeiv8dUBvbsLLxLDrkYqb0HPFORd3ieQ=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 

@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Configuration tool for the VEIKK Linux driver";
     homepage = "https://github.com/jlam55555/veikk-linux-driver-gui/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.nicbk ];
+    platforms = lib.platforms.linux;
     mainProgram = "veikk-linux-driver-gui";
   };
 })

@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  ffmpeg,
-  makeWrapper,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  versionCheckHook,
-  nix-update-script,
+  buildGoModule,
+  ffmpeg,
   installShellFiles,
+  makeWrapper,
+  nix-update-script,
+  versionCheckHook,
   withEmbeddedLyric ? false,
 }:
 buildGoModule (finalAttrs: {
@@ -21,20 +21,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-5tMRAq37CZQYemXfJwmj9cj1gR5i9Zii9fqTPDCw45A=";
   };
 
-  vendorHash = "sha256-zVyUxpAqsWY3/dXlBhPX/o41UP5Afn38JauQsWUqLMk=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
 
   propagatedBuildInputs = lib.optional withEmbeddedLyric ffmpeg;
+  vendorHash = "sha256-zVyUxpAqsWY3/dXlBhPX/o41UP5Afn38JauQsWUqLMk=";
 
   postInstall =
     lib.optionalString withEmbeddedLyric ''
@@ -50,23 +43,32 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckKeepEnvironment = [ "XDG_CACHE_HOME" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
   preInstallCheck = ''
     # ERROR Failed to find cache directory
     export XDG_CACHE_HOME=$(mktemp -d)
   '';
 
+  versionCheckKeepEnvironment = [ "XDG_CACHE_HOME" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Waybar module for displaying song lyrics";
     homepage = "https://github.com/Nadim147c/waybar-lyric";
     license = lib.licenses.agpl3Only;
-    mainProgram = "waybar-lyric";
+
     maintainers = with lib.maintainers; [
       Nadim147c
       vanadium5000
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "waybar-lyric";
   };
 })

@@ -1,20 +1,17 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
+  pandoc,
   setuptools,
   unittestCheckHook,
-  pandoc,
-  lib,
 }:
 let
   version = "0.7.0";
 in
 buildPythonPackage {
-  pname = "emojis";
   inherit version;
-  pyproject = true;
-
-  build-system = [ setuptools ];
+  pname = "emojis";
 
   src = fetchFromGitHub {
     owner = "alexandrevicenzi";
@@ -31,9 +28,10 @@ buildPythonPackage {
     make pandoc
   '';
 
-  pythonImportsCheck = [ "emojis" ];
-
   nativeCheckInputs = [ unittestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "emojis" ];
 
   meta = {
     description = "Convert emoji names to emoji characters";

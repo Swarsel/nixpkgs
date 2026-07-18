@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '#include <curl/multi.h>' '#include <curl/curl.h>'
   '';
 
+  strictDeps = true;
   nativeBuildInputs = [ SDL ];
 
   buildInputs = [
@@ -28,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     curl
     openssl
   ];
-
-  strictDeps = true;
 
   makeFlags = [
     "CC:=$(CC)"
@@ -42,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://bellard.org/tinyemu/";
     description = "System emulator for the RISC-V and x86 architectures";
+
     longDescription = ''
       TinyEMU is a system emulator for the RISC-V and x86 architectures. Its
       purpose is to be small and simple while being complete.
@@ -64,10 +63,14 @@ stdenv.mkDerivation (finalAttrs: {
       - Small code, easy to modify, few external dependancies
       - Javascript version running Linux and Windows 2000.
     '';
+
+    homepage = "https://bellard.org/tinyemu/";
+
     license = with lib.licenses; [
       mit
       bsd2
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin;

@@ -1,7 +1,7 @@
 {
   lib,
-  fetchgit,
   fetchFromGitHub,
+  fetchgit,
 }:
 
 let
@@ -9,11 +9,12 @@ let
 
   mk = name: args: {
     inherit version;
+
     src = fetchgit {
       inherit (args) url rev sha256;
-      fetchLFS = false;
       fetchSubmodules = true;
       deepClone = false;
+      fetchLFS = false;
       leaveDotGit = false;
     };
   };
@@ -23,6 +24,7 @@ lib.mapAttrs mk (lib.importJSON ./srcs-generated.json)
   # qtpim has no official releases
   qtpim = {
     version = "unstable-2020-11-02";
+
     src = fetchFromGitHub {
       owner = "qt";
       repo = "qtpim";
@@ -35,22 +37,12 @@ lib.mapAttrs mk (lib.importJSON ./srcs-generated.json)
   # Has no kde/5.15 branch
   qtpositioning = rec {
     version = "5.15.2";
+
     src = fetchFromGitHub {
       owner = "qt";
       repo = "qtpositioning";
       rev = "v${version}";
       hash = "sha256-L/P+yAQItm3taPpCNoOOm7PNdOFZiIwJJYflk6JDWvU=";
-    };
-  };
-
-  # qtsystems has no official releases
-  qtsystems = {
-    version = "unstable-2019-01-03";
-    src = fetchFromGitHub {
-      owner = "qt";
-      repo = "qtsystems";
-      rev = "e3332ee38d27a134cef6621fdaf36687af1b6f4a";
-      hash = "sha256-P8MJgWiDDBCYo+icbNva0LODy0W+bmQTS87ggacuMP0=";
     };
   };
 
@@ -62,6 +54,18 @@ lib.mapAttrs mk (lib.importJSON ./srcs-generated.json)
       repo = "qtscript";
       rev = "v${version}-lts";
       hash = "sha256-kUY8uSEoHqQVPd4s5BoAW6n1hGXQOQcberqWF6rK60w=";
+    };
+  };
+
+  # qtsystems has no official releases
+  qtsystems = {
+    version = "unstable-2019-01-03";
+
+    src = fetchFromGitHub {
+      owner = "qt";
+      repo = "qtsystems";
+      rev = "e3332ee38d27a134cef6621fdaf36687af1b6f4a";
+      hash = "sha256-P8MJgWiDDBCYo+icbNva0LODy0W+bmQTS87ggacuMP0=";
     };
   };
 

@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  meson,
-  ninja,
-  pkg-config,
-  gi-docgen,
-  gobject-introspection,
-  docbook-xsl-nons,
-  docbook_xml_dtd_43,
-  help2man,
-  glib,
-  python3,
-  mesonEmulatorHook,
-  libgudev,
   bash-completion,
   bashNonInteractive,
+  buildPackages,
+  docbook-xsl-nons,
+  docbook_xml_dtd_43,
+  gi-docgen,
+  glib,
+  gobject-introspection,
+  help2man,
+  libgudev,
   libmbim,
   libqrtr-glib,
-  buildPackages,
+  meson,
+  mesonEmulatorHook,
+  ninja,
+  pkg-config,
+  python3,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
@@ -29,22 +29,25 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libqmi";
   version = "1.38.0";
 
+  src = fetchFromGitLab {
+    owner = "mobile-broadband";
+    repo = "libqmi";
+    rev = finalAttrs.version;
+    hash = "sha256-bJbNfnKVJuhy/6EJgu5b7t6vxNTex/5heTzMzTzVREw=";
+    domain = "gitlab.freedesktop.org";
+  };
+
   outputs = [
     "out"
     "dev"
   ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "mobile-broadband";
-    repo = "libqmi";
-    rev = finalAttrs.version;
-    hash = "sha256-bJbNfnKVJuhy/6EJgu5b7t6vxNTex/5heTzMzTzVREw=";
-  };
+  postPatch = ''
+    patchShebangs \
+      build-aux/qmi-codegen/qmi-codegen
+  '';
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -81,8 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
     libqrtr-glib
   ];
 
-  strictDeps = true;
-
   mesonFlags = [
     "-Dudevdir=${placeholder "out"}/lib/udev"
     (lib.mesonBool "gtk_doc" withIntrospection)
@@ -94,22 +95,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    patchShebangs \
-      build-aux/qmi-codegen/qmi-codegen
-  '';
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   meta = {
-    homepage = "https://www.freedesktop.org/wiki/Software/libqmi/";
     description = "Modem protocol helper library";
-    teams = [ lib.teams.freedesktop ];
-    platforms = lib.platforms.linux;
+    homepage = "https://www.freedesktop.org/wiki/Software/libqmi/";
+    changelog = "https://gitlab.freedesktop.org/mobile-broadband/libqmi/-/blob/${finalAttrs.version}/NEWS";
+
     license = with lib.licenses; [
       # Library
       lgpl2Plus
       # Tools
       gpl2Plus
     ];
-    changelog = "https://gitlab.freedesktop.org/mobile-broadband/libqmi/-/blob/${finalAttrs.version}/NEWS";
+
+    platforms = lib.platforms.linux;
+    teams = [ lib.teams.freedesktop ];
   };
 })

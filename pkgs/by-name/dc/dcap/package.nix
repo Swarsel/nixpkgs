@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
-  zlib,
   cunit,
+  libtool,
   libxcrypt,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "dcap";
@@ -20,27 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-hn4nkFTIbSUUhvf9UfsEqVhphAdNWmATaCrv8jOuC0Y=";
   };
 
-  nativeBuildInputs = [
-    autoconf
-    automake
-    libtool
-  ];
-  buildInputs = [
-    zlib
-    libxcrypt
-  ];
-
-  strictDeps = true;
-
-  preConfigure = ''
-    patchShebangs --build bootstrap.sh
-    ./bootstrap.sh
-  '';
-
-  doCheck = true;
-
-  checkInputs = [ cunit ];
-
   outputs = [
     "bin"
     "dev"
@@ -49,14 +28,35 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoconf
+    automake
+    libtool
+  ];
+
+  buildInputs = [
+    zlib
+    libxcrypt
+  ];
+
+  preConfigure = ''
+    patchShebangs --build bootstrap.sh
+    ./bootstrap.sh
+  '';
+
+  doCheck = true;
+  checkInputs = [ cunit ];
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "dCache access protocol client library";
     homepage = "https://github.com/dCache/dcap";
     changelog = "https://github.com/dCache/dcap/blob/master/ChangeLog";
     license = lib.licenses.lgpl2Only;
+    maintainers = with lib.maintainers; [ ShamrockLee ];
     platforms = lib.platforms.all;
     mainProgram = "dccp";
-    maintainers = with lib.maintainers; [ ShamrockLee ];
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

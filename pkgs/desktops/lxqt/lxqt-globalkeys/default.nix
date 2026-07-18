@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  lxqt-build-tools,
-  qtbase,
-  qttools,
-  qtsvg,
+  gitUpdater,
   kwindowsystem,
   liblxqt,
   libqtxdg,
+  lxqt-build-tools,
+  qtbase,
+  qtsvg,
+  qttools,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -43,8 +43,8 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-globalkeys";
     description = "LXQt service for global keyboard shortcuts registration";
+    homepage = "https://github.com/lxqt/lxqt-globalkeys";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxqt ];

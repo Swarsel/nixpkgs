@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  pythonPackages,
   mopidy,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-notify";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "phijor";
@@ -17,26 +16,26 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     hash = "sha256-oAOJvonDDmtpmzgu8Y+BczuLYpfrVlwASIFOW7rhZ94=";
   };
 
+  nativeBuildInputs = [
+    pythonPackages.pytestCheckHook
+  ];
+
   build-system = [
     pythonPackages.setuptools
   ];
-
-  pythonRelaxDeps = [ "pykka" ];
 
   dependencies = [
     mopidy
     pythonPackages.pydbus
   ];
 
-  nativeBuildInputs = [
-    pythonPackages.pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_notify" ];
+  pythonRelaxDeps = [ "pykka" ];
 
   meta = {
-    homepage = "https://github.com/phijor/mopidy-notify";
     description = "Mopidy extension for showing desktop notifications on track change";
+    homepage = "https://github.com/phijor/mopidy-notify";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.nim65s ];
   };

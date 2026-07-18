@@ -1,15 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   authlib,
   buildPythonPackage,
-  fetchFromGitHub,
   httpx,
   mashumaro,
   orjson,
+  poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-httpx,
-  poetry-core,
   pytestCheckHook,
   respx,
 }:
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "pydiscovergy";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jpbede";
@@ -31,6 +30,14 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-httpx
+    pytestCheckHook
+    respx
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -40,14 +47,7 @@ buildPythonPackage rec {
     orjson
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-httpx
-    pytestCheckHook
-    respx
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pydiscovergy" ];
 
   meta = {

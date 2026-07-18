@@ -12,16 +12,14 @@ let
   xnu = sourceRelease "xnu";
 in
 mkAppleDerivation (finalAttrs: {
-  releaseName = "AvailabilityVersions";
-
   patches = [
     # Add support for setting an upper bound, which is needed by the `gen-headers` script.
     # It avoids having pre-process the DSL to remove unwanted versions.
     ./patches/0001-Support-setting-an-upper-bound-on-versions.patch
   ];
 
-  buildInputs = [ bashNonInteractive ];
   nativeBuildInputs = [ unifdef ];
+  buildInputs = [ bashNonInteractive ];
 
   installPhase = ''
     runHook preInstall
@@ -97,9 +95,11 @@ mkAppleDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  releaseName = "AvailabilityVersions";
+
   meta = {
     description = "Generates Darwin Availability headers";
-    mainProgram = "gen-headers";
     platforms = lib.platforms.unix;
+    mainProgram = "gen-headers";
   };
 })

@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # dependencies
+  networkx,
+  numpy,
+  pandas,
+  # tests
+  pytestCheckHook,
+  scipp,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  networkx,
-
-  # tests
-  pytestCheckHook,
-  numpy,
-  pandas,
-  scipp,
   xarray,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cyclebane";
   version = "24.10.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "scipp";
@@ -30,6 +25,16 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-vD/Ajym37GdsJ7iMuhao1SgX+Pd7aapc3b2oujwcopk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    numpy
+    pandas
+    scipp
+    xarray
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -40,16 +45,10 @@ buildPythonPackage (finalAttrs: {
     networkx
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "cyclebane"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    numpy
-    pandas
-    scipp
-    xarray
   ];
 
   meta = {

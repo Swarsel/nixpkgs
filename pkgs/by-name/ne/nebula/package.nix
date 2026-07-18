@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
   withPkcs11 ? true,
 }:
@@ -19,14 +19,9 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-zzYywNbeccW4Ujig20oBUZsJBQFvCIkCNOuBMxGxaqE=";
 
-  subPackages = [
-    "cmd/nebula"
-    "cmd/nebula-cert"
-  ];
-
-  tags = lib.optional withPkcs11 "pkcs11";
-
-  ldflags = [ "-X main.Build=${finalAttrs.version}" ];
+  env = lib.optionalAttrs (!withPkcs11) {
+    CGO_ENABLED = 0;
+  };
 
   checkFlags = [
     "-v"
@@ -36,29 +31,35 @@ buildGoModule (finalAttrs: {
     "pkcs11"
   ];
 
-  env = lib.optionalAttrs (!withPkcs11) {
-    CGO_ENABLED = 0;
-  };
+  ldflags = [ "-X main.Build=${finalAttrs.version}" ];
+
+  subPackages = [
+    "cmd/nebula"
+    "cmd/nebula-cert"
+  ];
+
+  tags = lib.optional withPkcs11 "pkcs11";
 
   passthru.tests = {
-    e2e = finalAttrs.finalPackage.overrideAttrs (prev: {
-      # go test picks up all the tests if we do not limit the subpackages built
-      subPackages = [ ];
-
-      # Also run the e2e tests.
-      postCheck = ''
-        make e2ev
-      '';
-    });
-
     inherit (nixosTests.nebula)
       connectivity
       reload
       ;
+
+    e2e = finalAttrs.finalPackage.overrideAttrs (prev: {
+      # Also run the e2e tests.
+      postCheck = ''
+        make e2ev
+      '';
+
+      # go test picks up all the tests if we do not limit the subpackages built
+      subPackages = [ ];
+    });
   };
 
   meta = {
     description = "Overlay networking tool with a focus on performance, simplicity and security";
+
     longDescription = ''
       Nebula is a scalable overlay networking tool with a focus on performance,
       simplicity and security. It lets you seamlessly connect computers
@@ -74,9 +75,11 @@ buildGoModule (finalAttrs: {
       ideas together, resulting in a sum that is greater than its individual
       parts.
     '';
+
     homepage = "https://github.com/slackhq/nebula";
     changelog = "https://github.com/slackhq/nebula/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       herbetom
       numinit

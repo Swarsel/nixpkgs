@@ -1,15 +1,14 @@
 {
   lib,
-  requests,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  requests,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aladdin-connect";
   version = "0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "shoejosh";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-kLvMpSGa5WyDOH3ejAJyFGsB9IiMXp+nvVxM/ZkxyFw=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "aladdin_connect" ];
 
   meta = {

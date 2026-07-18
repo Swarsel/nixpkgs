@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cryptography,
   freezegun,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "jwt";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GehirnInc";
@@ -26,16 +25,15 @@ buildPythonPackage rec {
     substituteInPlace setup.cfg --replace "--flake8" ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ cryptography ];
-
   nativeCheckInputs = [
     pytestCheckHook
     freezegun
     pytest-cov-stub
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ cryptography ];
+  pyproject = true;
   pythonImportsCheck = [ "jwt" ];
 
   meta = {

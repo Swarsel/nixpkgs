@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -21,10 +21,12 @@ buildGoModule {
     description = "Yet another SIP003 plugin for shadowsocks, based on v2ray";
     homepage = "https://github.com/shadowsocks/v2ray-plugin/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ahrzb
       neverbehave
     ];
+
     mainProgram = "v2ray-plugin";
   };
 }

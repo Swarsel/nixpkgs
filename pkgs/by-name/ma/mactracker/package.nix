@@ -1,17 +1,17 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  unzip,
-  writeShellApplication,
-  curl,
   cacert,
-  libxml2,
-  xmlstarlet,
   common-updater-scripts,
-  versionCheckHook,
-  writeShellScript,
+  curl,
+  libxml2,
   re-plistbuddy,
+  stdenvNoCC,
+  unzip,
+  versionCheckHook,
+  writeShellApplication,
+  writeShellScript,
+  xmlstarlet,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,15 +23,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-c78Bj63nJ+/qejUiD7hBEJlxubmIc+wElazwHGRRyfI=";
   };
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-  dontUnpack = true;
-
   nativeBuildInputs = [ unzip ];
-
-  sourceRoot = "Mactracker.app";
 
   installPhase = ''
     runHook preInstall
@@ -40,8 +32,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+  dontUnpack = true;
+  sourceRoot = "Mactracker.app";
+
+  versionCheckProgram = writeShellScript "version-check" ''
+    ${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleVersion" "$1"
+  '';
+
+  versionCheckProgramArg = [ "${placeholder "out"}/Applications/Mactracker.app/Contents/Info.plist" ];
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "mactracker-update-script";
+
     runtimeInputs = [
       curl
       cacert
@@ -49,19 +57,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       xmlstarlet
       common-updater-scripts
     ];
+
     text = ''
       url="https://mactracker.ca/releasenotes-mac.html"
       version=$(curl -s "$url" | xmllint -html -xmlout - | xmlstarlet sel -t -v "//faq/h5[1]")
       update-source-version mactracker "$version"
     '';
   });
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = writeShellScript "version-check" ''
-    ${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleVersion" "$1"
-  '';
-  versionCheckProgramArg = [ "${placeholder "out"}/Applications/Mactracker.app/Contents/Info.plist" ];
-  doInstallCheck = true;
 
   meta = {
     description = "Provides detailed information on every Apple Macintosh, iPod, iPhone, iPad, and Apple Watch ever made";
@@ -70,6 +72,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ DimitarNestorov ];
+
     platforms = [
       "aarch64-darwin"
     ];

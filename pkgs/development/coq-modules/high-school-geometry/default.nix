@@ -1,14 +1,14 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "high-school-geometry";
   inherit version;
-  repo = "HighSchoolGeometry";
+  pname = "high-school-geometry";
+
   defaultVersion =
     with lib.versions;
     lib.switch coq.coq-version [
@@ -31,16 +31,18 @@ mkCoqDerivation {
     ] null;
 
   release = {
-    "8.16".hash = "sha256-HvUrZ6l7wCshuKUZs8rvfMkTEv+oXuogI5LICcD8Bn8=";
-    "8.13".hash = "sha256-5F/6155v0bWi5t7n4qU/GuR6jENngvWIIqJGPURzIeQ=";
-    "8.12".hash = "sha256-OF7sahU+5Ormkcrd8t6p2Kp/B2/Q/6zYTV3/XBvlGHc=";
     "8.11".hash = "sha256-sVGeBBAJ7a7f+EJU1aSUvIVe9ip9PakY4379XWvvoqw=";
+    "8.12".hash = "sha256-OF7sahU+5Ormkcrd8t6p2Kp/B2/Q/6zYTV3/XBvlGHc=";
+    "8.13".hash = "sha256-5F/6155v0bWi5t7n4qU/GuR6jENngvWIIqJGPURzIeQ=";
+    "8.16".hash = "sha256-HvUrZ6l7wCshuKUZs8rvfMkTEv+oXuogI5LICcD8Bn8=";
   };
+
   releaseRev = v: "v${v}";
+  repo = "HighSchoolGeometry";
 
   meta = {
     description = "Geometry in Coq for French high school";
-    maintainers = with lib.maintainers; [ definfo ];
     license = lib.licenses.lgpl21Plus;
+    maintainers = with lib.maintainers; [ definfo ];
   };
 }

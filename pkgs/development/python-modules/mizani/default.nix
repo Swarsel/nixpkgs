@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   matplotlib,
   palettable,
   pandas,
-  scipy,
-
   # tests
   pytest-cov-stub,
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mizani";
   version = "0.14.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "has2k1";
@@ -28,6 +24,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-aBBT0zrBFi2LW1pU83sxeRJh0B2IXa/0UNyXMfWSyAI=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -38,11 +39,7 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mizani" ];
 
   meta = {

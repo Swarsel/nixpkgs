@@ -2,8 +2,8 @@
   lib,
   stdenv,
   glibcLocales,
-  removeReferencesTo,
   graalvmPackages,
+  removeReferencesTo,
 }:
 
 lib.extendMkDerivation {
@@ -20,15 +20,17 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      dontUnpack ? true,
-      strictDeps ? true,
       __structuredAttrs ? true,
-
+      dontUnpack ? true,
+      env ? { },
+      executable ? finalAttrs.meta.mainProgram,
+      # Extra arguments to be passed to the native-image
+      extraNativeImageBuildArgs ? [ ],
       # The GraalVM derivation to use
       graalvmDrv ? graalvmPackages.graalvm-ce,
-
-      executable ? finalAttrs.meta.mainProgram,
-
+      # XMX size of GraalVM during build
+      graalvmXmx ? "-J-Xmx6g",
+      meta ? { },
       # Default native-image arguments. You probably don't want to set this,
       # except in special cases. In most cases, use extraNativeBuildArgs instead
       nativeImageBuildArgs ? [
@@ -40,24 +42,11 @@ lib.extendMkDerivation {
         "-march=compatibility"
         "--verbose"
       ],
-
-      # Extra arguments to be passed to the native-image
-      extraNativeImageBuildArgs ? [ ],
-
-      # XMX size of GraalVM during build
-      graalvmXmx ? "-J-Xmx6g",
-
-      env ? { },
-      meta ? { },
       passthru ? { },
+      strictDeps ? true,
       ...
     }@args:
     {
-      env = {
-        LC_ALL = "en_US.UTF-8";
-      }
-      // env;
-
       inherit dontUnpack strictDeps __structuredAttrs;
 
       nativeBuildInputs = (args.nativeBuildInputs or [ ]) ++ [
@@ -70,7 +59,10 @@ lib.extendMkDerivation {
       # As its `propagatedBuildInputs` is required for the build process with `native-image`, we must add it here as well.
       buildInputs = [ graalvmDrv ];
 
-      nativeImageArgs = nativeImageBuildArgs ++ extraNativeImageBuildArgs ++ [ graalvmXmx ];
+      env = {
+        LC_ALL = "en_US.UTF-8";
+      }
+      // env;
 
       buildPhase =
         args.buildPhase or ''
@@ -96,6 +88,7 @@ lib.extendMkDerivation {
       '';
 
       disallowedReferences = [ graalvmDrv ];
+      nativeImageArgs = nativeImageBuildArgs ++ extraNativeImageBuildArgs ++ [ graalvmXmx ];
 
       passthru = {
         inherit graalvmDrv;

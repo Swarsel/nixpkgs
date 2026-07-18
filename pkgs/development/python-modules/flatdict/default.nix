@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   hatch-vcs,
+  hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "flatdict";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gmr";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     hatch-vcs
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "flatdict" ];
 
   meta = {

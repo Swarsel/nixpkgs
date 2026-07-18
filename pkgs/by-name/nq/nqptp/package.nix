@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   gitUpdater,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.2.8";
   pname = "nqptp";
+  version = "1.2.8";
 
   src = fetchFromGitHub {
     owner = "mikebrady";
@@ -23,24 +23,26 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  passthru.updateScript = gitUpdater {
-    ignoredVersions = ".*(-dev|d0)";
-  };
-
   postInstall = ''
     mkdir -p $out/lib/systemd/system
     cp nqptp.service $out/lib/systemd/system
   '';
 
+  passthru.updateScript = gitUpdater {
+    ignoredVersions = ".*(-dev|d0)";
+  };
+
   meta = {
-    homepage = "https://github.com/mikebrady/nqptp";
     description = "Daemon and companion application to Shairport Sync that monitors timing data from any PTP clocks";
+    homepage = "https://github.com/mikebrady/nqptp";
     license = lib.licenses.gpl2Only;
-    mainProgram = "nqptp";
+
     maintainers = with lib.maintainers; [
       jordanisaacs
       adamcstephens
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+    mainProgram = "nqptp";
   };
 })

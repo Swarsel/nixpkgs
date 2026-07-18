@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   gtk3,
-  lib,
   libgee,
   libnotify,
   meson,
   ninja,
   pkg-config,
   pulseaudio,
-  stdenv,
   vala,
   wrapGAppsHook3,
 }:
@@ -42,14 +42,16 @@ stdenv.mkDerivation {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/Junker/mictray";
     description = "System tray application for microphone";
+
     longDescription = ''
       MicTray is a Lightweight system tray application which lets you control the microphone state and volume.
     '';
+
+    homepage = "https://github.com/Junker/mictray";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.anpryl ];
+    platforms = lib.platforms.linux;
     mainProgram = "mictray";
   };
 }

@@ -1,37 +1,33 @@
 {
   lib,
-  pythonPackages,
   fetchPypi,
-  mopidy,
   glibcLocales,
+  mopidy,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-moped";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "Mopidy-Moped";
     sha256 = "15461174037d87af93dd59a236d4275c5abf71cea0670ffff24a7d0399a8a2e4";
+    pname = "Mopidy-Moped";
   };
 
-  env.LC_ALL = "en_US.UTF-8";
   buildInputs = [ glibcLocales ];
-
-  build-system = [ pythonPackages.setuptools ];
-
-  dependencies = [ mopidy ];
-
+  env.LC_ALL = "en_US.UTF-8";
   # no tests implemented
   doCheck = false;
-
+  build-system = [ pythonPackages.setuptools ];
+  dependencies = [ mopidy ];
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_moped" ];
 
   meta = {
-    homepage = "https://github.com/martijnboland/moped";
     description = "Web client for Mopidy";
+    homepage = "https://github.com/martijnboland/moped";
     license = lib.licenses.mit;
     maintainers = [ ];
     hydraPlatforms = [ ];

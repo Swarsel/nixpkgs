@@ -12,34 +12,33 @@
 buildPythonPackage rec {
   pname = "matrix-client";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "matrix_client";
     inherit version;
     hash = "sha256-BnivQPLLLwkoqQikEMApdH1Ay5YaxaPxvQWqNVY8MVY=";
+    pname = "matrix_client";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "urllib3" ];
-
-  dependencies = [
-    requests
-    urllib3
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-  ];
 
   postPatch = ''
     substituteInPlace setup.py --replace \
       "pytest-runner~=5.1" ""
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+  ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    requests
+    urllib3
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "matrix_client" ];
+  pythonRelaxDeps = [ "urllib3" ];
 
   meta = {
     description = "Python Matrix Client-Server SDK";

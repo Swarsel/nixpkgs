@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "asdf-standard";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "asdf_standard";
     inherit version;
     hash = "sha256-WULK99FD859y9jRIQ3PH9AzkhXHR2zwnHhOFjjP+WWY=";
+    pname = "asdf_standard";
   };
-
-  build-system = [ setuptools-scm ];
 
   # Circular dependency on asdf
   doCheck = false;
-
+  build-system = [ setuptools-scm ];
+  pyproject = true;
   pythonImportsCheck = [ "asdf_standard" ];
 
   meta = {

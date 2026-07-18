@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -15,18 +15,16 @@ buildGoModule {
     hash = "sha256-kMHi5xKbiwO+/6Eb8oJz7ECoUybFE+IUDz7VfJueB3g=";
   };
 
-  vendorHash = "sha256-Layg1axFN86OFgxEyNFtIlm6Jtx317jZb/KH6IjJ8e4=";
-
   #add missing dependencies and hashes
   patches = [ ./go-modules.patch ];
-
+  vendorHash = "sha256-Layg1axFN86OFgxEyNFtIlm6Jtx317jZb/KH6IjJ8e4=";
   doCheck = false;
 
   meta = {
     description = "Monitors and prints changes to MacOS plists in real time";
     homepage = "https://github.com/catilac/plistwatch";
-    maintainers = with lib.maintainers; [ gdinh ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ gdinh ];
     platforms = lib.platforms.darwin;
   };
 }

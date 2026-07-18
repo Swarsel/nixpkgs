@@ -1,28 +1,24 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
+  curl,
   fetchCrate,
   nix-update-script,
   nodejs_latest,
-  pkg-config,
   openssl,
-  stdenv,
-  curl,
+  pkg-config,
+  rustPlatform,
 }:
 
 {
-  version ? src.version,
-  src,
   cargoDeps,
+  src,
+  version ? src.version,
 }:
 
 rustPlatform.buildRustPackage {
-  pname = "wasm-bindgen-cli";
-
   inherit version src cargoDeps;
-
-  __structuredAttrs = true;
-
+  pname = "wasm-bindgen-cli";
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -32,24 +28,26 @@ rustPlatform.buildRustPackage {
     curl
   ];
 
-  nativeCheckInputs = [ nodejs_latest ];
-
   # tests require it to be ran in the wasm-bindgen monorepo
   doCheck = false;
-
+  nativeCheckInputs = [ nodejs_latest ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Facilitating high-level interactions between wasm modules and JavaScript";
     homepage = "https://wasm-bindgen.github.io/wasm-bindgen/";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
-    description = "Facilitating high-level interactions between wasm modules and JavaScript";
+
     maintainers = with lib.maintainers; [
       rizary
       insipx
     ];
+
     mainProgram = "wasm-bindgen";
   };
 }

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sarge";
   version = "0.1.7.post1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "vsajip";
@@ -25,6 +24,7 @@ buildPythonPackage rec {
     "test_feeder"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "sarge" ];
 
   meta = {

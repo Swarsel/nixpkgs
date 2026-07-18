@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pkgs, # Only for pkgs.plantuml,
-  setuptools,
+  buildPythonPackage,
   httplib2,
   mkdocs,
+  pkgs, # Only for pkgs.plantuml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-build-plantuml";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "christo-ph";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
       --replace-fail "shutil.which('plantuml') or 'plantuml'" "'${lib.getExe pkgs.plantuml}'"
   '';
 
+  # No tests available
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,10 +34,8 @@ buildPythonPackage rec {
     mkdocs
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs_build_plantuml_plugin" ];
-
-  # No tests available
-  doCheck = false;
 
   meta = {
     description = "MkDocs plugin to help generate your plantuml images locally or remotely as files (NOT inline)";

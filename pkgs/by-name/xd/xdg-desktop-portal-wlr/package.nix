@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  bash,
   fetchFromGitHub,
-  makeWrapper,
-  meson,
-  ninja,
-  pkg-config,
-  wayland-protocols,
-  wayland-scanner,
+  bash,
   grim,
   inih,
   libdrm,
   libgbm,
+  makeWrapper,
+  meson,
+  ninja,
   pipewire,
+  pkg-config,
   scdoc,
   slurp,
   systemdLibs,
   wayland,
+  wayland-protocols,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -41,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-scanner
     makeWrapper
   ];
+
   buildInputs = [
     inih
     libdrm
@@ -65,11 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
     }
   '';
 
+  depsBuildBuild = [ pkg-config ];
+
   meta = {
-    homepage = "https://github.com/emersion/xdg-desktop-portal-wlr";
     description = "xdg-desktop-portal backend for wlroots";
+    homepage = "https://github.com/emersion/xdg-desktop-portal-wlr";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ minijackson ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.mit;
   };
 })

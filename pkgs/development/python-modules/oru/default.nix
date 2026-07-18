@@ -11,13 +11,13 @@
 buildPythonPackage rec {
   pname = "oru";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-wLD1v98Ez5rexQEvtR7XBiY40I8Lb2X9WzU9kcE5iVY=";
   };
 
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,8 +26,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "oru" ];
 
   meta = {

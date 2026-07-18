@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  sqlite,
+  innernet,
   installShellFiles,
   libiconv,
-  innernet,
+  rustPlatform,
+  sqlite,
   testers,
 }:
 
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7pvQFxXf1MCmnNNQIGGkI2jhL9jC/ZLZqwiJPSFC1b8=";
   };
 
-  cargoHash = "sha256-CaE2VH5CuOuEATcYrt7p7yQFQ5s0tZZomvy9VltRpRI=";
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
     installShellFiles
@@ -34,6 +32,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
+
+  cargoHash = "sha256-CaE2VH5CuOuEATcYrt7p7yQFQ5s0tZZomvy9VltRpRI=";
 
   postInstall = ''
     installManPage doc/innernet-server.8.gz
@@ -47,13 +47,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '');
 
   passthru.tests = {
-    serverVersion = testers.testVersion {
-      package = innernet;
-      command = "innernet-server --version";
-    };
     version = testers.testVersion {
-      package = innernet;
       command = "innernet --version";
+      package = innernet;
+    };
+
+    serverVersion = testers.testVersion {
+      command = "innernet-server --version";
+      package = innernet;
     };
   };
 
@@ -62,6 +63,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/tonarino/innernet";
     changelog = "https://github.com/tonarino/innernet/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       tomberek
       _0x4A6F

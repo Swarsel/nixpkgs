@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python-slugify,
+  buildPythonPackage,
   jinja2,
-  setuptools,
   pytestCheckHook,
+  python-slugify,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-nvd3";
   version = "0.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "areski";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-+J0lHAOjX3hbymjESQ6WpEnly+1Lv9o0ucIpBxTuS6s=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +27,8 @@ buildPythonPackage rec {
     jinja2
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "tests.py" ];
+  pyproject = true;
 
   meta = {
     description = "Python Wrapper for NVD3";

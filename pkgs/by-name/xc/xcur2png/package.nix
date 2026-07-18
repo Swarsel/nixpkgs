@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  pkg-config,
   libpng,
-  libxcursor,
   libx11,
+  libxcursor,
+  pkg-config,
   xorgproto,
 }:
 
@@ -27,15 +27,15 @@ stdenv.mkDerivation (finalAttrs: {
 
     # fix byte overflows due to off-by-one error
     (fetchpatch {
-      url = "https://github.com/eworm-de/xcur2png/commit/aa035462d950fab35d322cb87fd2f0d702251e82.patch";
       hash = "sha256-hlmJ/bcDSl1ADs0jp+JrAgAaMzielUSRVPad+plnSZg=";
+      url = "https://github.com/eworm-de/xcur2png/commit/aa035462d950fab35d322cb87fd2f0d702251e82.patch";
     })
 
     # fix gcc-14-build:
     #   https://github.com/eworm-de/xcur2png/pull/4
     (fetchpatch {
-      url = "https://github.com/eworm-de/xcur2png/commit/6fb03957aba8aebc3dc98a479fff9cddf85b9e7b.patch";
       hash = "sha256-COG4/MKfBAwQU5FqZeqEE4jJT4XII7AQ6ayRSuFcUmY=";
+      url = "https://github.com/eworm-de/xcur2png/commit/6fb03957aba8aebc3dc98a479fff9cddf85b9e7b.patch";
     })
   ];
 
@@ -51,11 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/eworm-de/xcur2png/releases";
     description = "Convert X cursors to PNG images";
+    homepage = "https://github.com/eworm-de/xcur2png/releases";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
     mainProgram = "xcur2png";
   };
 })

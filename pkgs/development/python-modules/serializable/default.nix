@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   simplejson,
   six,
   typechecks,
@@ -10,7 +10,6 @@
 buildPythonPackage {
   pname = "serializable";
   version = "unstable-2023-07-13";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "iskandr";
@@ -27,6 +26,7 @@ buildPythonPackage {
     typechecks
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "serializable" ];
 
   meta = {

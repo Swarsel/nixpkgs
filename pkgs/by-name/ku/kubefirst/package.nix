@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-/su9f8JVXaJrC7/rcX1LK/amolVmkRAtPF1bqzxcKh8=";
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -23,14 +24,12 @@ buildGoModule (finalAttrs: {
     "-X=github.com/konstructio/kubefirst-api/configs.K1Version=v${finalAttrs.version}"
   ];
 
-  doCheck = false;
-
   meta = {
     description = "Tool to create instant GitOps platforms that integrate some of the best tools in cloud native from scratch";
-    mainProgram = "kubefirst";
     homepage = "https://github.com/konstructio/kubefirst/";
     changelog = "https://github.com/konstructio/kubefirst/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ qjoly ];
+    mainProgram = "kubefirst";
   };
 })

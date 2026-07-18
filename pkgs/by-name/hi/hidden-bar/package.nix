@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -14,7 +14,7 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-qKX1KZ/fq1K9/7L1cop21MumkHVOmzsS8nvTjy52wLw=";
   };
 
-  sourceRoot = ".";
+  nativeBuildInputs = [ unzip ];
 
   installPhase = ''
     runHook preInstall
@@ -25,14 +25,14 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [ unzip ];
+  sourceRoot = ".";
 
   meta = {
     description = "Ultra-light MacOS utility that helps hide menu bar icons";
     homepage = "https://github.com/dwarvesf/hidden";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ _4evy ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

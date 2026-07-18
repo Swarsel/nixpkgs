@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   apr,
-  scons,
-  openssl,
   aprutil,
-  zlib,
-  libkrb5,
-  pkg-config,
-  libiconv,
   fetchpatch,
+  libiconv,
+  libkrb5,
+  openssl,
+  pkg-config,
+  scons,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,10 +22,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-voHvCLqiUW7Np2p3rffe97wyJ+61eLmjO0X3tB3AZOY=";
   };
 
+  patches = [
+    ./scons.patch
+
+    (fetchpatch {
+      hash = "sha256-FQJvXOIZ0iItvbbcu4kR88j74M7fOi7C/0NN3o1/ub4=";
+      url = "https://src.fedoraproject.org/rpms/libserf/raw/rawhide/f/libserf-1.3.9-errgetfunc.patch";
+    })
+  ];
+
   nativeBuildInputs = [
     pkg-config
     scons
   ];
+
   buildInputs = [
     apr
     openssl
@@ -34,17 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     libiconv
   ]
   ++ lib.optional (!stdenv.hostPlatform.isCygwin) libkrb5;
-
-  patches = [
-    ./scons.patch
-
-    (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/libserf/raw/rawhide/f/libserf-1.3.9-errgetfunc.patch";
-      hash = "sha256-FQJvXOIZ0iItvbbcu4kR88j74M7fOi7C/0NN3o1/ub4=";
-    })
-  ];
-
-  prefixKey = "PREFIX=";
 
   preConfigure = ''
     appendToVar sconsFlags "APR=$(echo ${apr.dev}/bin/*-config)"
@@ -58,14 +57,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  prefixKey = "PREFIX=";
 
   meta = {
     description = "HTTP client library based on APR";
     homepage = "https://serf.apache.org/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

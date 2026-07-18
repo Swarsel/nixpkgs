@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
-  gradle,
-  jdk21_headless,
+  stdenv,
   fetchFromGitHub,
-  stripJavaArchivesHook,
-  wrapGAppsHook4,
-  nix-update-script,
-  makeWrapper,
-  pkg-config,
-  gtk4,
-  libadwaita,
-  glib,
-  pango,
-  gdk-pixbuf,
+  adwaita-icon-theme,
   atk,
   cairo,
-  adwaita-icon-theme,
+  gdk-pixbuf,
+  glib,
+  gradle,
+  gtk4,
+  jdk21_headless,
+  libadwaita,
   librsvg,
+  makeWrapper,
+  nix-update-script,
+  pango,
+  pkg-config,
+  stripJavaArchivesHook,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,15 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  gradleFlags = [ "-Dfile.encoding=utf-8" ];
-
-  dontWrapGApps = true;
-
   doCheck = true;
 
   installPhase = ''
@@ -81,6 +72,7 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
   postFixup = ''
     makeWrapper ${jdk21_headless}/bin/java $out/bin/coulomb \
     --add-flags "-Djava.library.path=${lib.makeLibraryPath finalAttrs.buildInputs}" \
@@ -89,16 +81,26 @@ stdenv.mkDerivation (finalAttrs: {
     ''${gappsWrapperArgs[@]}
   '';
 
+  dontWrapGApps = true;
+  gradleFlags = [ "-Dfile.encoding=utf-8" ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple and beautiful circuit simulator app";
     homepage = "https://github.com/hamza-algohary/Coulomb";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thtrf
       _0xSA7
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "coulomb";
   };

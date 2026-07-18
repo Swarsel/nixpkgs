@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,10 +25,12 @@ buildGoModule (finalAttrs: {
     description = "Task Timer (tt) is a dead simple TUI task timer";
     homepage = "https://github.com/caarlos0/tasktimer";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       abbe
       caarlos0
     ];
+
     mainProgram = "tt";
   };
 })

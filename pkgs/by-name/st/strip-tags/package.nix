@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "strip-tags";
   version = "0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -16,6 +15,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-K+rImwURcN6UWjmFt7Y3YLC5s07zPAT5Xqd0k+3J9/s=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    pyyaml
+    versionCheckHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -27,11 +32,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     html5lib
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    pyyaml
-    versionCheckHook
-  ];
+  pyproject = true;
 
   meta = {
     description = "CLI tool for stripping tags from HTML";

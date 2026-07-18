@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -20,8 +20,8 @@ postgresqlBuildExtension rec {
     description = "Efficient querying of 'top values' for PostgreSQL";
     homepage = "https://github.com/citusdata/postgresql-topn";
     changelog = "https://github.com/citusdata/postgresql-topn/raw/v${version}/CHANGELOG.md";
+    license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ thoughtpolice ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.agpl3Only;
   };
 }

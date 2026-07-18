@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 
@@ -29,9 +29,7 @@ let
   modulePackages = map (m: kpkgs.${m}) modules;
   moduleConfig = mkIf cfg.kernel-modules.enable {
     boot.extraModulePackages = modulePackages;
-
     boot.kernelModules = modules;
-
     services.udev.packages = modulePackages;
   };
 
@@ -39,7 +37,6 @@ let
   firmwareConfig = mkIf cfg.firmware-daemon.enable {
     # Make system76-firmware-cli usable by root from the command line.
     environment.systemPackages = [ firmware-pkg ];
-
     services.dbus.packages = [ firmware-pkg ];
 
     systemd.services.system76-firmware-daemon = {
@@ -47,7 +44,6 @@ let
 
       serviceConfig = {
         ExecStart = "${firmware-pkg}/bin/system76-firmware-daemon";
-
         Restart = "on-failure";
       };
 
@@ -59,17 +55,18 @@ let
   powerConfig = mkIf cfg.power-daemon.enable {
     # Make system76-power usable by root from the command line.
     environment.systemPackages = [ power-pkg ];
-
     services.dbus.packages = [ power-pkg ];
 
     systemd.services.system76-power = {
       description = "System76 Power Daemon";
+
       serviceConfig = {
+        BusName = "com.system76.PowerDaemon";
         ExecStart = "${power-pkg}/bin/system76-power daemon";
         Restart = "on-failure";
         Type = "dbus";
-        BusName = "com.system76.PowerDaemon";
       };
+
       wantedBy = [ "multi-user.target" ];
     };
   };
@@ -82,24 +79,24 @@ in
       firmware-daemon.enable = mkOption {
         default = cfg.enableAll;
         defaultText = literalExpression "config.${opt.enableAll}";
-        example = true;
         description = "Whether to enable the system76 firmware daemon";
+        example = true;
         type = types.bool;
       };
 
       kernel-modules.enable = mkOption {
         default = cfg.enableAll;
         defaultText = literalExpression "config.${opt.enableAll}";
-        example = true;
         description = "Whether to make the system76 out-of-tree kernel modules available";
+        example = true;
         type = types.bool;
       };
 
       power-daemon.enable = mkOption {
         default = cfg.enableAll;
         defaultText = literalExpression "config.${opt.enableAll}";
-        example = true;
         description = "Whether to enable the system76 power daemon";
+        example = true;
         type = types.bool;
       };
     };

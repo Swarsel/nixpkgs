@@ -15,6 +15,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ openssl ];
+  env.NIX_CFLAGS_COMPILE = "-fno-stack-protector";
 
   preBuild = ''
     sed -e "s@/usr@$out@g" -i Makefile */Makefile */*/Makefile
@@ -22,14 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     sed -e "s@/var@$out/var@g" -i Makefile */Makefile */*/Makefile
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-fno-stack-protector";
-
   meta = {
     description = "Easy-to-use IPMI server management utility";
     homepage = "https://ipmiutil.sourceforge.net/";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.bsd3;
     downloadPage = "https://sourceforge.net/projects/ipmiutil/files/ipmiutil/";
   };
 })

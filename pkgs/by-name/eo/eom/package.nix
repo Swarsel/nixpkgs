@@ -4,30 +4,30 @@
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  gtk-doc,
-  mate-common,
-  pkg-config,
-  gettext,
-  itstool,
   exempi,
-  lcms2,
-  libexif,
-  libjpeg,
-  librsvg,
-  libxml2,
-  libpeas,
-  shared-mime-info,
-  gtk3,
-  mate-desktop,
-  hicolor-icon-theme,
-  wrapGAppsHook3,
-  yelp-tools,
+  gettext,
   gitUpdater,
   gnome,
+  gtk-doc,
+  gtk3,
+  hicolor-icon-theme,
+  itstool,
+  lcms2,
   libavif,
+  libexif,
   libheif,
+  libjpeg,
   libjxl,
+  libpeas,
+  librsvg,
+  libxml2,
+  mate-common,
+  mate-desktop,
+  pkg-config,
+  shared-mime-info,
   webp-pixbuf-loader,
+  wrapGAppsHook3,
+  yelp-tools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -67,8 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     # In postInstall to run before gappsWrapperArgsHook.
     export GDK_PIXBUF_MODULE_FILE="${
@@ -84,6 +82,8 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   '';
 
+  enableParallelBuilding = true;
+
   passthru.updateScript = gitUpdater {
     odd-unstable = true;
     rev-prefix = "v";
@@ -91,10 +91,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Image viewing and cataloging program for the MATE desktop";
-    mainProgram = "eom";
     homepage = "https://mate-desktop.org";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "eom";
     teams = [ lib.teams.mate ];
   };
 })

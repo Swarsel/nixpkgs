@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  kdePackages,
-  pkg-config,
+  fetchpatch,
   httplib,
+  kdePackages,
   libarchive,
-  libxdmcp,
   libpthread-stubs,
   libxcb-keysyms,
+  libxdmcp,
+  pkg-config,
   qt6,
-  fetchpatch,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "zeal";
@@ -28,9 +28,9 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/zealdocs/zeal/issues/1813
     # Can likely remove with 0.9
     (fetchpatch {
+      hash = "sha256-DKTvanO14NRFhiHayJIWXWO7gQSRyjCQ1XFAiEN86XI=";
       name = "fix-activateShortcut-protected.patch";
       url = "https://github.com/zealdocs/zeal/commit/f3714111ecad65ddedde43fc7c4f8c5bd240ff64.patch";
-      hash = "sha256-DKTvanO14NRFhiHayJIWXWO7gQSRyjCQ1XFAiEN86XI=";
     })
   ];
 
@@ -67,18 +67,22 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    inherit (qt6.qtbase.meta) platforms;
     description = "Simple offline API documentation browser";
+
     longDescription = ''
       Zeal is a simple offline API documentation browser inspired by Dash (macOS
       app), available for Linux and Windows.
     '';
+
     homepage = "https://zealdocs.org/";
     changelog = "https://github.com/zealdocs/zeal/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       peterhoeg
     ];
+
     mainProgram = "zeal";
-    inherit (qt6.qtbase.meta) platforms;
   };
 })

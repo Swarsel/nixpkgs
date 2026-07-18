@@ -7,7 +7,6 @@
 
 stdenv.mkDerivation rec {
   pname = "qbs";
-
   version = "1.24.1";
 
   src = fetchFromGitHub {
@@ -19,16 +18,16 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ libsForQt5.qmake ];
 
+  buildInputs = [
+    libsForQt5.qtbase
+    libsForQt5.qtscript
+  ];
+
   dontWrapQtApps = true;
 
   qmakeFlags = [
     "QBS_INSTALL_PREFIX=$(out)"
     "qbs.pro"
-  ];
-
-  buildInputs = [
-    libsForQt5.qtbase
-    libsForQt5.qtscript
   ];
 
   meta = {

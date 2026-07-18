@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
+  gnome-settings-daemon,
+  gtk4,
   meson,
   ninja,
+  nix-update-script,
+  pango,
+  pantheon,
   pkg-config,
   sassc,
   vala,
   wrapGAppsHook4,
-  gnome-settings-daemon,
-  gtk4,
-  pango,
-  pantheon,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,14 +58,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Unofficial system customization app for Pantheon";
+
     longDescription = ''
       Unofficial system customization app for Pantheon
       that lets you easily and safely customise your desktop's appearance.
     '';
+
     homepage = "https://github.com/pantheon-tweaks/pantheon-tweaks";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "pantheon-tweaks";
+    teams = [ lib.teams.pantheon ];
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   cmake,
   cmake-extras,
+  gitUpdater,
   glib,
   libglvnd,
   pkg-config,
   qtbase,
   qtdeclarative,
+  testers,
 }:
 
 let
@@ -31,25 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
   ];
-
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    qtdeclarative
-  ];
-
-  buildInputs = [
-    cmake-extras
-    glib
-  ]
-  ++ lib.optionals withQt6 [
-    libglvnd
-  ];
-
-  # Library
-  dontWrapQtApps = true;
 
   postPatch =
     # Upstream renamed WERROR option to ENABLE_WERROR, but forgot this line
@@ -74,16 +55,32 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail 'QML2_IMPORT_PATH=' 'QML2_IMPORT_PATH=${lib.getBin qtdeclarative}/${qtbase.qtQmlPrefix}:'
     '';
 
-  preBuild =
-    # For qmlplugindump
-    ''
-      export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
-    '';
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    qtdeclarative
+  ];
+
+  buildInputs = [
+    cmake-extras
+    glib
+  ]
+  ++ lib.optionals withQt6 [
+    libglvnd
+  ];
 
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_QT6" withQt6)
     (lib.cmakeBool "ENABLE_WERROR" true)
   ];
+
+  preBuild =
+    # For qmlplugindump
+    ''
+      export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
+    '';
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
@@ -94,8 +91,12 @@ stdenv.mkDerivation (finalAttrs: {
       mv -v $out/${qtbase.qtQmlPrefix}/GSettings $out/${qtbase.qtQmlPrefix}/GSettings.1.0
     '';
 
+  # Library
+  dontWrapQtApps = true;
+
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = gitUpdater {
       rev-prefix = "v";
     };
@@ -105,10 +106,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Library to access GSettings from Qt";
     homepage = "https://gitlab.com/ubports/core/gsettings-qt";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "gsettings-qt${lib.optionalString withQt6 "6"}"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

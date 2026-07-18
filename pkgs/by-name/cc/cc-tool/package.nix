@@ -20,31 +20,31 @@ stdenv.mkDerivation {
     hash = "sha256-3zZNzH+T/Wc3rn+ZmdpQ5U0Fs6ylT/QhX1pUUD8kPoE=";
   };
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
-  buildInputs = [
-    boost
-    libusb1
-  ];
-
   postPatch = ''
     substituteInPlace udev/90-cc-debugger.rules \
       --replace-fail 'MODE="0666"' 'MODE="0660", GROUP="plugdev", TAG+="uaccess"'
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
+  buildInputs = [
+    boost
+    libusb1
+  ];
+
   configureFlags = [
     "--with-boost=${lib.getDev boost}"
   ];
 
-  enableParallelBuilding = true;
-
-  doInstallCheck = true;
-
   postInstall = ''
     install -D udev/90-cc-debugger.rules $out/lib/udev/rules.d/90-cc-debugger.rules
   '';
+
+  doInstallCheck = true;
+  enableParallelBuilding = true;
 
   passthru.updateScript = unstableGitUpdater {
     tagPrefix = "v";
@@ -52,13 +52,15 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Command line tool for the Texas Instruments CC Debugger";
-    mainProgram = "cc-tool";
+
     longDescription = ''
       cc-tool provides support for Texas Instruments CC Debugger
     '';
+
     homepage = "https://github.com/dashesy/cc-tool";
     license = lib.licenses.gpl2;
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = [ lib.maintainers.CRTified ];
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "cc-tool";
   };
 }

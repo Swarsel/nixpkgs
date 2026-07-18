@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  autoreconfHook,
-  pkg-config,
-  cmocka,
   acl,
+  autoreconfHook,
+  cmocka,
+  fetchgit,
   libuuid,
   lzo,
+  pkg-config,
   util-linux,
   zlib,
   zstd,
@@ -23,11 +23,22 @@ stdenv.mkDerivation rec {
     hash = "sha256-+2wHGgwWzjj3DRbU82MLvrwB7AtgMg+7m+0MwPE4V1o=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  postPatch = ''
+    substituteInPlace ubifs-utils/mount.ubifs \
+      --replace-fail "/bin/mount" "${util-linux}/bin/mount"
+  '';
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ]
   ++ lib.optional doCheck cmocka;
+
   buildInputs = [
     acl
     libuuid
@@ -37,26 +48,13 @@ stdenv.mkDerivation rec {
     zstd
   ];
 
-  postPatch = ''
-    substituteInPlace ubifs-utils/mount.ubifs \
-      --replace-fail "/bin/mount" "${util-linux}/bin/mount"
-  '';
-
-  enableParallelBuilding = true;
-
   configureFlags = [
     (lib.enableFeature doCheck "unit-tests")
     (lib.enableFeature doCheck "tests")
   ];
 
   makeFlags = [ "AR:=$(AR)" ];
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   postInstall = ''
     mkdir -p $dev/lib
@@ -64,12 +62,14 @@ stdenv.mkDerivation rec {
     mv include $dev/
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Tools for MTD filesystems";
-    downloadPage = "https://git.infradead.org/mtd-utils.git";
-    license = lib.licenses.gpl2Plus;
     homepage = "http://www.linux-mtd.infradead.org/";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ skeuchel ];
     platforms = with lib.platforms; linux;
+    downloadPage = "https://git.infradead.org/mtd-utils.git";
   };
 }

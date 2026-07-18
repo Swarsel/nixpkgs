@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "jupyterhub-tmpauthenticator";
   version = "1.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ jupyterhub ];
-
   # No tests available in the package
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "tmpauthenticator" ];
 
   meta = {

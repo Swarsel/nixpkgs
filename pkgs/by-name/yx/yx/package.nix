@@ -22,34 +22,33 @@ stdenv.mkDerivation rec {
     # https://gitlab.com/tomalok/yx/-/issues/2
     ./0001-Don-t-strip-binary-when-installing.patch
     (fetchpatch {
+      hash = "sha256-0tNtkq1tZ96Ag5EJfUfDao/QxpRB4Jadop3OPBvhnlo=";
       # https://gitlab.com/tomalok/yx/-/merge_requests/10
       url = "https://gitlab.com/tomalok/yx/-/commit/5747ca40f4b0acb56d67fd29a818734d7b19d61a.patch";
-      hash = "sha256-0tNtkq1tZ96Ag5EJfUfDao/QxpRB4Jadop3OPBvhnlo=";
     })
   ];
+
+  strictDeps = true;
+  buildInputs = [ libyaml ];
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"
   ];
 
-  strictDeps = true;
-
-  buildInputs = [ libyaml ];
-
   doCheck = true;
 
   passthru.tests.version = testers.testVersion {
-    package = yx;
-    command = "${meta.mainProgram} -v";
     version = "v${yx.version}";
+    command = "${meta.mainProgram} -v";
+    package = yx;
   };
 
   meta = {
     description = "YAML Data Extraction Tool";
     homepage = "https://gitlab.com/tomalok/yx";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ twz123 ];
+    platforms = lib.platforms.all;
     mainProgram = "yx";
   };
 }

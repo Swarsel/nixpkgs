@@ -1,27 +1,23 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-
-  # build-system
-  poetry-core,
-
+  fetchFromGitHub,
+  # tests
+  beautifulsoup4,
+  buildPythonPackage,
   # dependencies
   django,
   markdown,
-  pyyaml,
-
-  # tests
-  beautifulsoup4,
-  pytestCheckHook,
-  pytest-django,
   mkdocs,
+  # build-system
+  poetry-core,
+  pytest-django,
+  pytestCheckHook,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "django-pattern-library";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "torchbox";
@@ -38,6 +34,8 @@ buildPythonPackage rec {
     markdown
   ];
 
+  env.DJANGO_SETTINGS_MODULE = "tests.settings.dev";
+
   nativeCheckInputs = [
     beautifulsoup4
     pytestCheckHook
@@ -45,8 +43,7 @@ buildPythonPackage rec {
     mkdocs # only needed for jinja2, we don't build docs
   ];
 
-  env.DJANGO_SETTINGS_MODULE = "tests.settings.dev";
-
+  pyproject = true;
   pythonImportsCheck = [ "pattern_library" ];
 
   meta = {

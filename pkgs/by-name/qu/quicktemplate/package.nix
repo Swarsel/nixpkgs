@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "quicktemplate";
@@ -17,8 +17,8 @@ buildGoModule (finalAttrs: {
   vendorHash = null;
 
   meta = {
-    homepage = "https://github.com/valyala/quicktemplate";
     description = "Fast, powerful, yet easy to use template engine for Go";
+    homepage = "https://github.com/valyala/quicktemplate";
     license = lib.licenses.mit;
     mainProgram = "qtc";
   };

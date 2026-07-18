@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
   olm,
 }:
@@ -10,6 +10,7 @@
 buildGoModule {
   pname = "go-neb";
   version = "unstable-2021-07-21";
+
   src = fetchFromGitHub {
     owner = "matrix-org";
     repo = "go-neb";
@@ -17,25 +18,23 @@ buildGoModule {
     sha256 = "sha256-kuH4vbvS4G1bczxUdY4bd4oL4pIZzuueUxdEp4xuzJM=";
   };
 
-  subPackages = [ "." ];
-
   buildInputs = [ olm ];
-
   vendorHash = "sha256-5Vg7aUkqiFIQuxmsDOJjvXoeA5NjMoBoD0XBhC+o4GA=";
-
   doCheck = false;
-
+  subPackages = [ "." ];
   passthru.tests.go-neb = nixosTests.go-neb;
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Extensible matrix bot written in Go";
-    mainProgram = "go-neb";
     homepage = "https://github.com/matrix-org/go-neb";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       hexa
       maralorn
     ];
+
+    mainProgram = "go-neb";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

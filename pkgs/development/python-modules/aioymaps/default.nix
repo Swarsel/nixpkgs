@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "aioymaps";
   version = "1.2.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-tEl2tX/mB8uYTYj1YFDs/2sPXiv6897jCEmsFCWBXYg=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aioymaps" ];
 
   meta = {

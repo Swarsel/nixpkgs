@@ -21,14 +21,16 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
+    inherit (ncurses.meta) platforms;
     description = "Curses development kit";
-    mainProgram = "cdk5-config";
     homepage = "https://invisible-island.net/cdk/";
     changelog = "https://invisible-island.net/cdk/CHANGES.html";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
-    inherit (ncurses.meta) platforms;
+
+    mainProgram = "cdk5-config";
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
-  clang,
   fetchFromGitHub,
   buildGoModule,
-  versionCheckHook,
-  nixosTests,
+  clang,
   nix-update-script,
+  nixosTests,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,15 +20,8 @@ buildGoModule (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  vendorHash = "sha256-S2dNFvMeZqGhzu+sIBGeaET4bQXfeucao6XR4QSTpog=";
-
-  proxyVendor = true;
-
   nativeBuildInputs = [ clang ];
-
-  hardeningDisable = [
-    "zerocallusedregs"
-  ];
+  vendorHash = "sha256-S2dNFvMeZqGhzu+sIBGeaET4bQXfeucao6XR4QSTpog=";
 
   buildPhase = ''
     runHook preBuild
@@ -51,13 +44,19 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  hardeningDisable = [
+    "zerocallusedregs"
+  ];
+
+  proxyVendor = true;
 
   passthru = {
     tests = {
       inherit (nixosTests) dae;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -65,11 +64,13 @@ buildGoModule (finalAttrs: {
     description = "Linux high-performance transparent proxy solution based on eBPF";
     homepage = "https://github.com/daeuniverse/dae";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       oluceps
       pokon548
       luochen1990
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "dae";
   };

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
-  fetchCrate,
   stdenv,
+  fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -14,9 +14,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-BEvtRNP/fuS1l7RbUT4+6jWIElEa23yGQCOi9k23B0o=";
   };
 
-  cargoHash = "sha256-fEeG076P6z5FojNG19QXQYTymJddLemt9L+v9OX/uxI=";
-
   nativeBuildInputs = [ rustPlatform.bindgenHook ];
+  cargoHash = "sha256-fEeG076P6z5FojNG19QXQYTymJddLemt9L+v9OX/uxI=";
 
   checkFlags = [
     # assertion failed: re.is_match(data) or blocked by sandbox

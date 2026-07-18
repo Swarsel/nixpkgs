@@ -8,8 +8,6 @@ buildPythonPackage rec {
   pname = "lazrs";
   version = "0.8.1";
 
-  pyproject = true;
-
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-K+LUgba6PkgxlQEvenrr7niY6GiKaWRIvzki7wx8L0E=";
@@ -26,16 +24,19 @@ buildPythonPackage rec {
     hash = "sha256-bMQl1URU4VnRPyw8WdZkZlBv3qldv+vpwd+ZxqPZ/JI=";
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "lazrs" ];
 
   meta = {
     description = "Python bindings for laz-rs";
     homepage = "https://github.com/laz-rs/laz-rs-python";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nh2
       chpatrick
     ];
+
     teams = [ lib.teams.geospatial ];
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  fetchFromGitHub,
   libsecret,
 }:
 buildDotnetModule rec {
@@ -16,25 +16,24 @@ buildDotnetModule rec {
     hash = "sha256-bpdxzVlQWQLNYTZHN25S6qa3NKHhDc+xV6NvzSNMVnQ=";
   };
 
-  projectFile = "src/msgraph-cli.csproj";
-
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  nugetDeps = ./deps.json;
+  projectFile = "src/msgraph-cli.csproj";
   runtimeDeps = [ libsecret ];
-
   passthru.updateScript = ./update.sh;
+
   meta = {
-    mainProgram = "mgc";
     description = "Microsoft Graph CLI";
     homepage = "https://github.com/microsoftgraph/msgraph-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nazarewk ];
+
     platforms = [
       "aarch64-darwin"
       "x86_64-linux"
     ];
+
+    mainProgram = "mgc";
   };
 }

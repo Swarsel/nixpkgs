@@ -1,18 +1,16 @@
 {
   lib,
   buildPythonPackage,
+  colorama,
   fetchPypi,
-
+  junit-xml,
   poetry-core,
   pyyaml,
-  colorama,
-  junit-xml,
 }:
 
 buildPythonPackage rec {
   pname = "refery";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,16 +24,16 @@ buildPythonPackage rec {
     junit-xml
   ];
 
-  pythonImportsCheck = [ "refery" ];
-
   # No tests yet
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "refery" ];
 
   meta = {
     description = "Functional testing tool";
     homepage = "https://github.com/RostanTabet/refery";
-    mainProgram = "refery";
-    maintainers = with lib.maintainers; [ rostan-t ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ rostan-t ];
+    mainProgram = "refery";
   };
 }

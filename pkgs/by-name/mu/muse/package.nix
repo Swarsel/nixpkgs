@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  kdePackages,
-  pkg-config,
   alsa-lib,
+  cmake,
   dssi,
   fluidsynth,
+  kdePackages,
   ladspa-header,
   libinstpatch,
   libjack2,
   liblo,
+  libsForQt5,
   libsamplerate,
   libsndfile,
   lilv,
   lrdf,
   lv2,
+  pkg-config,
   rtaudio,
   rubberband,
-  sord,
   serd,
-  libsForQt5,
+  sord,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-LxibuqopMHuKEfTWXSEXc1g3wTm2F3NQRiV71FHvaY0=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   nativeBuildInputs = [
     cmake
@@ -65,10 +63,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = toString [ "-I${lib.getDev serd}/include/serd-0" ];
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
-    homepage = "https://muse-sequencer.github.io/";
     description = "MIDI/Audio sequencer with recording and editing capabilities";
+
     longDescription = ''
       MusE is a MIDI/Audio sequencer with recording and editing capabilities
       written originally by Werner Schweer now developed and maintained
@@ -77,6 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
       MusE aims to be a complete multitrack virtual studio for Linux,
       it is published under the GNU General Public License.
     '';
+
+    homepage = "https://muse-sequencer.github.io/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

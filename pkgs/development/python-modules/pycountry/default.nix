@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pycountry";
   version = "26.2.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pycountry";
@@ -23,16 +22,15 @@ buildPythonPackage rec {
     sed -i "/pytest-cov/d" pyproject.toml
   '';
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "pycountry" ];
 
   meta = {
+    description = "ISO country, subdivision, language, currency and script definitions and their translations";
     homepage = "https://github.com/pycountry/pycountry";
     changelog = "https://github.com/pycountry/pycountry/blob/${src.tag}/HISTORY.txt";
-    description = "ISO country, subdivision, language, currency and script definitions and their translations";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
   stdenv,
-  testers,
+  fetchFromGitHub,
+  buildGoModule,
   revive,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,9 +26,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-KxDWd+fd30eOttNEB6kQDxc2Lnf5Rj2zTCohjyfjMnU=";
 
-  # Only build the revive package at the root.
-  subPackages = [ "." ];
-
   ldflags = [
     "-s"
     "-w"
@@ -36,11 +33,16 @@ buildGoModule (finalAttrs: {
     "-X github.com/mgechev/revive/cli.builtBy=nix"
   ];
 
+  # Only build the revive package at the root.
+  subPackages = [ "." ];
+
   passthru.tests = {
     version = testers.testVersion { package = revive; };
+
     simple-execution = testers.runCommand {
-      name = "Executes the linter";
       nativeBuildInputs = [ finalAttrs.finalPackage ];
+      name = "Executes the linter";
+
       script = ''
         # Write a simple go program.
         cat > main.go << EOF
@@ -65,11 +67,11 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Fast, configurable, extensible, flexible, and beautiful linter for Go";
-    mainProgram = "revive";
     longDescription = "Drop-in replacement for golint. Revive provides a framework for development of custom rules, and lets you define a strict preset for enhancing your development & code review processes";
     homepage = "https://revive.run";
-    downloadPage = "https://github.com/mgechev/revive";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ andrewfield ];
+    mainProgram = "revive";
+    downloadPage = "https://github.com/mgechev/revive";
   };
 })

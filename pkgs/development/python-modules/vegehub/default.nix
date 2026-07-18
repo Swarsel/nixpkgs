@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   poetry-core,
   pytest-asyncio,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "vegehub";
   version = "0.1.26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Thulrus";
@@ -25,24 +24,25 @@ buildPythonPackage rec {
     rm -r dist
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-  ];
-
-  pythonImportsCheck = [ "vegehub" ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "vegehub" ];
+
   meta = {
-    changelog = "https://github.com/Thulrus/VegeHubPyPiLib/releases/tag/${src.tag}";
     description = "Basic package for simplifying interactions with the Vegetronix VegeHub";
     homepage = "https://github.com/Thulrus/VegeHubPyPiLib";
+    changelog = "https://github.com/Thulrus/VegeHubPyPiLib/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

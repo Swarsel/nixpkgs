@@ -1,23 +1,16 @@
 {
   lib,
   stdenv,
+  bash,
   kernel,
   kernelModuleMakeFlags,
-  bash,
   lenovo-legion,
 }:
 
 stdenv.mkDerivation {
-  pname = "lenovo-legion-module";
   inherit (lenovo-legion) version src;
-
-  sourceRoot = "${lenovo-legion.src.name}/kernel_module";
-
-  hardeningDisable = [ "pic" ];
-
-  preConfigure = ''
-    sed -i -e '/depmod/d' ./Makefile
-  '';
+  pname = "lenovo-legion-module";
+  nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "SHELL=bash"
@@ -28,14 +21,19 @@ stdenv.mkDerivation {
     "DKMSDIR=${placeholder "out"}/lib/modules/${kernel.modDirVersion}/misc"
   ];
 
-  nativeBuildInputs = kernel.moduleBuildDependencies;
+  preConfigure = ''
+    sed -i -e '/depmod/d' ./Makefile
+  '';
+
+  hardeningDisable = [ "pic" ];
+  sourceRoot = "${lenovo-legion.src.name}/kernel_module";
 
   meta = {
     description = "Linux kernel module for controlling fan and power in Lenovo Legion laptops";
     homepage = "https://github.com/johnfanv2/LenovoLegionLinux";
     license = lib.licenses.gpl2Only;
-    platforms = [ "x86_64-linux" ];
     maintainers = [ lib.maintainers.ulrikstrid ];
+    platforms = [ "x86_64-linux" ];
     broken = kernel.kernelOlder "5.15";
   };
 }

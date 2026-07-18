@@ -13,16 +13,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "11a615225baa5f8bb686824423f50e4427acd3f70d394765bdff32801f0fd5b0";
   };
 
+  patches = [ ./shtool.patch ];
+
   configureFlags = [
     "ac_cv_va_copy=C99"
   ]
   ++ lib.optional stdenv.hostPlatform.isFreeBSD "--with-pic";
 
-  patches = [ ./shtool.patch ];
-
   meta = {
-    homepage = "http://www.ossp.org/pkg/lib/uuid/";
     description = "OSSP uuid ISO-C and C++ shared library";
+
     longDescription = ''
       OSSP uuid is a ISO-C:1999 application programming interface
       (API) and corresponding command line interface (CLI) for the
@@ -44,6 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
       short lifetime and to reliably identifying very persistent
       objects across a network.
     '';
+
+    homepage = "http://www.ossp.org/pkg/lib/uuid/";
     license = lib.licenses.bsd2;
     platforms = lib.platforms.all;
   };

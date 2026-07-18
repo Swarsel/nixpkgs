@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mqtt_cpp";
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ boost ];
 
   meta = {

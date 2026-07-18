@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lxml,
-  requests,
-  six,
   pyopenssl,
+  requests,
   setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "pyvmomi";
   version = "9.0.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vmware";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-4r0UtLR1dhhNQ+Lx12JiEozDAjMxPly+RR0LWRg/A4E=";
   };
 
+  # Requires old version of vcrpy
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,8 +36,7 @@ buildPythonPackage rec {
     ];
   };
 
-  # Requires old version of vcrpy
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyVim"

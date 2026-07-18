@@ -1,22 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchFromGitHub,
-  runCommand,
-  gitUpdater,
+  alsa-lib,
   catch2_3,
   cmake,
   fontconfig,
-  pkg-config,
-  libx11,
-  libxrandr,
-  libxinerama,
-  libxext,
-  libxcursor,
   freetype,
-  alsa-lib,
-
+  gitUpdater,
+  libx11,
+  libxcursor,
+  libxext,
+  libxinerama,
+  libxrandr,
+  pkg-config,
+  runCommand,
   # Only able to test this myself in Linux
   withStandalone ? stdenv.hostPlatform.isLinux,
 }:
@@ -25,8 +24,8 @@ let
   # Required version, base URL and expected location specified in cmake/CPM.cmake
   cpmDownloadVersion = "0.40.2";
   cpmSrc = fetchurl {
-    url = "https://github.com/cpm-cmake/CPM.cmake/releases/download/v${cpmDownloadVersion}/CPM.cmake";
     hash = "sha256-yM3DLAOBZTjOInge1ylk3IZLKjSjENO3EEgSpcotg10=";
+    url = "https://github.com/cpm-cmake/CPM.cmake/releases/download/v${cpmDownloadVersion}/CPM.cmake";
   };
   cpmSourceCache = runCommand "cpm-source-cache" { } ''
     mkdir -p $out/cpm
@@ -36,12 +35,14 @@ let
   pathMappings = [
     {
       from = "LV2";
+
       to = "${placeholder "out"}/${
         if stdenv.hostPlatform.isDarwin then "Library/Audio/Plug-Ins/LV2" else "lib/lv2"
       }";
     }
     {
       from = "VST3";
+
       to = "${placeholder "out"}/${
         if stdenv.hostPlatform.isDarwin then "Library/Audio/Plug-Ins/VST3" else "lib/vst3"
       }";
@@ -49,6 +50,7 @@ let
     # this one's a guess, don't know where ppl have agreed to put them yet
     {
       from = "CLAP";
+
       to = "${placeholder "out"}/${
         if stdenv.hostPlatform.isDarwin then "Library/Audio/Plug-Ins/CLAP" else "lib/clap"
       }";
@@ -87,8 +89,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "jerryuhoo";
     repo = "Fire";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-i8viPGErCuLSuRWstDtLwQ3XBz9gfiHin7Zvvq8l3kA=";
+    fetchSubmodules = true;
   };
 
   postPatch =
@@ -150,6 +152,8 @@ stdenv.mkDerivation (finalAttrs: {
     "-ffat-lto-objects"
   ]);
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   installPhase = ''
     runHook preInstall
 
@@ -164,8 +168,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   # Standalone dlopen's X11 libraries
   postFixup = lib.strings.optionalString (withStandalone && stdenv.hostPlatform.isLinux) ''
     patchelf --add-rpath ${lib.makeLibraryPath x11Libs} $out/bin/Fire
@@ -177,8 +179,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Multi-band distortion plugin by Wings";
     homepage = "https://www.bluewingsmusic.com/Fire";
     license = lib.licenses.agpl3Only; # Not clarified if Only or Plus
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ OPNA2608 ];
+    platforms = lib.platforms.unix;
   }
   // lib.optionalAttrs withStandalone {
     mainProgram = "Fire";

@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,33 +18,36 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-7RTaWi93WJV2HEVyljSzRVG+eCwo6+Ywq4Y+ng1UMww=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
-
-  passthru.updateScript = nix-update-script { };
 
   __structuredAttrs = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/cyberus-technology/usbvfiod";
     description = "A tool for USB device pass-through using the vfio-user protocol.";
+    homepage = "https://github.com/cyberus-technology/usbvfiod";
     changelog = "https://github.com/cyberus-technology/usbvfiod/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    mainProgram = "usbvfiod";
+
     maintainers = with lib.maintainers; [
       lbeierlieb
       snu
     ];
+
     platforms = [
       "aarch64-linux"
       "riscv64-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "usbvfiod";
   };
 })

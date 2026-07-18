@@ -1,38 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  lance-namespace-urllib3-client,
-  pyarrow,
-  # pylance,
-  typing-extensions,
-
-  # optional-dependencies
-  # dir
-  opendal,
   # glue
   boto3,
   botocore,
+  buildPythonPackage,
+  # build-system
+  hatchling,
   # hive2
   hive-metastore-client,
-  thrift,
-
+  lance-namespace,
+  # dependencies
+  lance-namespace-urllib3-client,
+  # optional-dependencies
+  # dir
+  opendal,
+  pyarrow,
   # tests
   pylance,
   pytestCheckHook,
-  lance-namespace,
+  thrift,
+  # pylance,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lance-namespace";
   version = "0.8.6";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "lancedb";
@@ -41,7 +35,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-QYzVsarjTg2arNNuCFbVgtA7rfLTm6AJD3liNr3QuSU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python/lance_namespace";
+  # Tests require pylance, which is a circular dependency
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pylance
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.optional-dependencies;
+
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -56,28 +59,25 @@ buildPythonPackage (finalAttrs: {
 
   optional-dependencies = {
     dir = [ opendal ];
+
     glue = [
       boto3
       botocore
     ];
+
     hive2 = [
       hive-metastore-client
       thrift
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "lance_namespace" ];
-
-  nativeCheckInputs = [
-    pylance
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.optional-dependencies;
-
-  # Tests require pylance, which is a circular dependency
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/python/lance_namespace";
 
   passthru.tests.pytest = lance-namespace.overridePythonAttrs {
+    doCheck = true;
+
     disabledTests = [
       # AttributeError: 'function' object has no attribute 'write_dataset'
       "test_create_table"
@@ -96,8 +96,6 @@ buildPythonPackage (finalAttrs: {
       "test_list_namespaces_schemas"
       "test_list_namespaces_top_level"
     ];
-
-    doCheck = true;
   };
 
   meta = {

@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  replaceVars,
+  buildGoModule,
   installShellFiles,
-  testers,
   org-stats,
+  replaceVars,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,8 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-QTjJ+4Qu5u+5ZCoIAQBxqdhjNI2CXUB8r2Zx8xfIiGw=";
   };
 
-  vendorHash = "sha256-0biuv94wGXiME181nlkvozhB+x4waGMgwXD9ColQWPw=";
-
   patches = [
     # patch in version information
     # since `debug.ReadBuildInfo` does not work with `go build
@@ -33,10 +31,7 @@ buildGoModule (finalAttrs: {
     installShellFiles
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-0biuv94wGXiME181nlkvozhB+x4waGMgwXD9ColQWPw=";
 
   postInstall = ''
     $out/bin/org-stats man > org-stats.1
@@ -48,10 +43,15 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/org-stats completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.tests = {
     version = testers.testVersion {
-      package = org-stats;
       command = "org-stats version";
+      package = org-stats;
     };
   };
 

@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  brotli,
   lib,
   fetchFromGitHub,
+  brotli,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,15 +17,13 @@ buildGoModule (finalAttrs: {
   };
 
   buildInputs = [ brotli ];
-
-  doCheck = false; # disabled because the tests don't work in a non-FHS compliant environment.
-
   vendorHash = "sha256-zDovN9J6IOE3TrXP60PPcsIc0PpXyEaqSR8i4i9MiHk=";
+  doCheck = false; # disabled because the tests don't work in a non-FHS compliant environment.
 
   meta = {
     description = "Command-line itch.io helper";
-    changelog = "https://github.com/itchio/butler/releases/tag/v${finalAttrs.version}/CHANGELOG.md";
     homepage = "http://itch.io";
+    changelog = "https://github.com/itchio/butler/releases/tag/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ naelstrof ];
   };

@@ -17,10 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Q85McGGSILE8BPwreCtih6my1nih9ameLKHFe1dgNWQ=";
-
   doCheck = false;
-
-  subPackages = [ "cmd/lego" ];
 
   ldflags = [
     "-s"
@@ -28,16 +25,18 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  meta = {
-    description = "Let's Encrypt client and ACME library written in Go";
-    license = lib.licenses.mit;
-    homepage = "https://go-acme.github.io/lego/";
-    teams = [ lib.teams.acme ];
-    mainProgram = "lego";
-  };
+  subPackages = [ "cmd/lego" ];
 
   passthru.tests = {
-    lego-http = nixosTests.acme.http01-builtin;
     lego-dns = nixosTests.acme.dns01;
+    lego-http = nixosTests.acme.http01-builtin;
+  };
+
+  meta = {
+    description = "Let's Encrypt client and ACME library written in Go";
+    homepage = "https://go-acme.github.io/lego/";
+    license = lib.licenses.mit;
+    mainProgram = "lego";
+    teams = [ lib.teams.acme ];
   };
 })

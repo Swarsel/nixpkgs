@@ -20,10 +20,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Deepmagic Information Gathering Tool";
-    mainProgram = "dmitry";
     homepage = "https://github.com/jaygreig86/dmitry";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "dmitry";
   };
 }

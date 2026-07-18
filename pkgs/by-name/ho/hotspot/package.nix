@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   binutils,
   cmake,
-  patchelfUnstable,
   elfutils,
-  fetchFromGitHub,
   fetchpatch,
   kddockwidgets,
   kdePackages,
   libelf,
+  patchelfUnstable,
   perf,
   qt6,
   rustc-demangle,
@@ -36,8 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.wrapQtAppsHook
   ];
 
-  cmakeFlags = [ (lib.strings.cmakeBool "QT6_BUILD" true) ];
-
   buildInputs = [
     (elfutils.override { enableDebuginfod = true; }) # perfparser needs to find debuginfod.h
     kddockwidgets
@@ -63,6 +61,15 @@ stdenv.mkDerivation (finalAttrs: {
     threadweaver
   ]);
 
+  cmakeFlags = [ (lib.strings.cmakeBool "QT6_BUILD" true) ];
+
+  preFixup = ''
+    patchelf \
+      --add-rpath ${lib.makeLibraryPath [ rustc-demangle ]} \
+      --add-needed librustc_demangle.so \
+      $out/libexec/hotspot-perfparser
+  '';
+
   qtWrapperArgs = [
     "--suffix PATH : ${
       lib.makeBinPath [
@@ -72,31 +79,29 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   ];
 
-  preFixup = ''
-    patchelf \
-      --add-rpath ${lib.makeLibraryPath [ rustc-demangle ]} \
-      --add-needed librustc_demangle.so \
-      $out/libexec/hotspot-perfparser
-  '';
-
   meta = {
     description = "GUI for Linux perf";
-    mainProgram = "hotspot";
+
     longDescription = ''
       hotspot is a GUI replacement for `perf report`.
       It takes a perf.data file, parses and evaluates its contents and
       then displays the result in a graphical way.
     '';
+
     homepage = "https://github.com/KDAB/hotspot";
     changelog = "https://github.com/KDAB/hotspot/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Only
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       nh2
       tmarkus
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "hotspot";
   };
 })

@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  runCommand,
   diagrams-as-code,
+  python3Packages,
+  runCommand,
 }:
 
 python3Packages.buildPythonPackage (finalAttrs: {
   pname = "diagrams-as-code";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dmytrostriletskyi";
@@ -18,6 +17,7 @@ python3Packages.buildPythonPackage (finalAttrs: {
     hash = "sha256-cd602eQvNCUQuCdn/RpcfURcDHjXLZ0gAG+SObB++Q0=";
   };
 
+  doCheck = false; # no tests
   build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
@@ -26,15 +26,14 @@ python3Packages.buildPythonPackage (finalAttrs: {
     pyyaml
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "diagrams_as_code" ];
+
   pythonRelaxDeps = [
     "diagrams"
     "pydantic"
     "pyyaml"
   ];
-
-  pythonImportsCheck = [ "diagrams_as_code" ];
-
-  doCheck = false; # no tests
 
   passthru.tests = {
     simple = runCommand "diagrams-as-code-test" { } ''

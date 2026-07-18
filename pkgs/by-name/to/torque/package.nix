@@ -2,20 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   autoreconfHook,
-  pkg-config,
-  flex,
   bison,
-
-  openssl,
-  groff,
-  libxml2,
-  util-linux,
-  libtool,
-  which,
-  coreutils,
   boost,
+  coreutils,
+  flex,
+  groff,
+  libtool,
+  libxml2,
+  openssl,
+  pkg-config,
+  util-linux,
+  which,
   zlib,
 }:
 
@@ -31,6 +29,17 @@ stdenv.mkDerivation {
     rev = "458883319157cfc5c509046d09f9eb8e68e8d398";
     sha256 = "1b56bc5j9wg87kcywzmhf7234byyrwax9v1pqsr9xmv2x7saakrr";
   };
+
+  postPatch = ''
+    substituteInPlace Makefile.am \
+      --replace-fail "contrib/init.d contrib/systemd" ""
+    substituteInPlace src/cmds/Makefile.am \
+      --replace-fail "/etc/" "$out/etc/"
+    substituteInPlace src/mom_rcp/pathnames.h \
+      --replace-fail /bin/cp ${coreutils}/bin/cp
+    substituteInPlace src/resmom/requests.c \
+      --replace-fail /bin/cp ${coreutils}/bin/cp
+  '';
 
   strictDeps = true;
 
@@ -53,21 +62,8 @@ stdenv.mkDerivation {
     zlib
   ];
 
-  enableParallelBuilding = true;
-
   # added to fix build with gcc7
   env.NIX_CFLAGS_COMPILE = "-Wno-error -fpermissive";
-
-  postPatch = ''
-    substituteInPlace Makefile.am \
-      --replace-fail "contrib/init.d contrib/systemd" ""
-    substituteInPlace src/cmds/Makefile.am \
-      --replace-fail "/etc/" "$out/etc/"
-    substituteInPlace src/mom_rcp/pathnames.h \
-      --replace-fail /bin/cp ${coreutils}/bin/cp
-    substituteInPlace src/resmom/requests.c \
-      --replace-fail /bin/cp ${coreutils}/bin/cp
-  '';
 
   preConfigure = ''
     # fix broken libxml2 detection
@@ -90,10 +86,12 @@ stdenv.mkDerivation {
     install -Dm755 torque.setup buildutils/pbs_mkdirs -t $out/bin/
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/adaptivecomputing/torque";
     description = "Resource management system for submitting and controlling jobs on supercomputers, clusters, and grids";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/adaptivecomputing/torque";
     license = lib.licenses.torque11;
+    platforms = lib.platforms.linux;
   };
 }

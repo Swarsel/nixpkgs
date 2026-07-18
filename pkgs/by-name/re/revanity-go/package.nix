@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libsodium,
   nix-update-script,
 }:
@@ -9,7 +9,6 @@
 buildGoModule (finalAttrs: {
   pname = "revanity-go";
   version = "0-unstable-2026-03-30";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ratspeak";
@@ -18,14 +17,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-utf9YcVCdWj78oDGxRSvTXRRXnUPLMypk77yBdOI24c=";
   };
 
-  vendorHash = null;
-
   buildInputs = [
     libsodium
   ];
 
+  vendorHash = null;
+  __structuredAttrs = true;
   ldflags = [ "-s" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

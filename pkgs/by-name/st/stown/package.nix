@@ -1,18 +1,17 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  nix-update-script,
+  python3Packages,
   tree,
   versionCheckHook,
-  nix-update-script,
 }:
 let
   version = "1.2.1";
 in
 python3Packages.buildPythonApplication {
-  pname = "stown";
   inherit version;
-  pyproject = true;
+  pname = "stown";
 
   src = fetchFromGitHub {
     owner = "rseichter";
@@ -21,16 +20,17 @@ python3Packages.buildPythonApplication {
     hash = "sha256-B3gNFVeMRvN+bqBNCBLU1YqjGVz9wCbHUknWTTU8S6A=";
   };
 
-  build-system = [
-    python3Packages.setuptools
-  ];
-
   nativeCheckInputs = [
     python3Packages.pytestCheckHook
     tree
     versionCheckHook
   ];
 
+  build-system = [
+    python3Packages.setuptools
+  ];
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

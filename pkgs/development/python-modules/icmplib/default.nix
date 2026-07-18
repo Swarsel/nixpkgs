@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "icmplib";
   version = "3.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ValentinBELYN";
@@ -18,6 +17,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "icmplib" ];
 
   meta = {

@@ -8,15 +8,13 @@ buildPythonPackage rec {
   pname = "drawille";
   version = "0.2.0";
 
-  format = "setuptools";
-
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-gVND4RYsWAUtTLZS75cPZ3Ht2QBC1UnsxuRTyXNqoa0=";
   };
 
   doCheck = false; # pypi package has no tests, git has no tags
-
+  format = "setuptools";
   pythonImportsCheck = [ "drawille" ];
 
   meta = {

@@ -1,15 +1,13 @@
 {
   lib,
   fetchFromCodeberg,
-  rustPlatform,
-  nixosTests,
-  stdenvNoCC,
   nix-update-script,
+  nixosTests,
   rust-jemalloc-sys,
+  rustPlatform,
+  stdenvNoCC,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "porxie";
   version = "0.3.3";
 
@@ -19,20 +17,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-nB0QbGJ6emO1WLbIYAvCni6Xjs1AgQo8in6Y3Tof01g=";
   };
-  cargoHash = "sha256-7iupGBdDvk4hofMVNuVTt67M7EOveYb3hD1mk2BJRbU=";
 
   buildInputs = [ rust-jemalloc-sys ];
+  cargoHash = "sha256-7iupGBdDvk4hofMVNuVTt67M7EOveYb3hD1mk2BJRbU=";
 
   checkFlags = [
     # Requires network access.
     "--skip=identity_service::tests::resolve_and_cache"
   ];
 
+  __structuredAttrs = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = lib.optionalAttrs stdenvNoCC.hostPlatform.isLinux {
       porxie = nixosTests.porxie;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -40,7 +41,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://codeberg.org/Blooym/porxie";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ blooym ];
-    mainProgram = "porxie";
     platforms = lib.platforms.unix;
+    mainProgram = "porxie";
   };
 })

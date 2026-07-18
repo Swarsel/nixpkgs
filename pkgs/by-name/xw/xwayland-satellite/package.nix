@@ -3,11 +3,11 @@
   fetchFromGitHub,
   installShellFiles,
   libxcb,
+  libxcb-cursor,
   makeBinaryWrapper,
   nix-update-script,
   pkg-config,
   rustPlatform,
-  libxcb-cursor,
   xwayland,
   withSystemd ? true,
 }:
@@ -23,12 +23,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-BUE41HjLIGPjq3U8VXPjf8asH8GaMI7FYdgrIHKFMXA=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   postPatch = ''
     substituteInPlace resources/xwayland-satellite.service \
       --replace-fail '/usr/local/bin' "$out/bin"
   '';
-
-  cargoHash = "sha256-16L6gsvze+m7XCJlOA1lsPNELE3D364ef2FTdkh0rVY=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -42,14 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxcb-cursor
   ];
 
-  buildNoDefaultFeatures = true;
-  buildFeatures = lib.optional withSystemd "systemd";
-
-  outputs = [
-    "out"
-    "man"
-  ];
-
+  cargoHash = "sha256-16L6gsvze+m7XCJlOA1lsPNELE3D364ef2FTdkh0rVY=";
   # All integration tests require a running display server
   doCheck = false;
 
@@ -65,22 +61,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --prefix PATH : "${lib.makeBinPath [ xwayland ]}"
   '';
 
+  buildFeatures = lib.optional withSystemd "systemd";
+  buildNoDefaultFeatures = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Xwayland outside your Wayland compositor";
+
     longDescription = ''
       Grants rootless Xwayland integration to any Wayland compositor implementing xdg_wm_base.
     '';
+
     homepage = "https://github.com/Supreeeme/xwayland-satellite";
     changelog = "https://github.com/Supreeeme/xwayland-satellite/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       if-loop69420
       sodiboo
       getchoo
     ];
-    mainProgram = "xwayland-satellite";
+
     platforms = lib.platforms.linux;
+    mainProgram = "xwayland-satellite";
   };
 })

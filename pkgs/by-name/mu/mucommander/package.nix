@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   gradle_8,
-  makeWrapper,
-  jdk,
   gsettings-desktop-schemas,
+  jdk,
+  makeWrapper,
 }:
 let
   # "Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0."
@@ -34,15 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  gradleBuildTask = "tgz";
-
   installPhase = ''
     mkdir -p $out/share/mucommander
     tar xvf build/distributions/mucommander-*.tgz --directory=$out/share/mucommander
@@ -52,9 +43,17 @@ stdenv.mkDerivation (finalAttrs: {
       --set JAVA_HOME ${jdk}
   '';
 
+  __darwinAllowLocalNetworking = true;
+  gradleBuildTask = "tgz";
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   meta = {
-    homepage = "https://www.mucommander.com/";
     description = "Cross-platform file manager";
+    homepage = "https://www.mucommander.com/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ jiegec ];
     platforms = lib.platforms.all;

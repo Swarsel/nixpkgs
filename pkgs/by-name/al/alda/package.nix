@@ -4,8 +4,8 @@
   fetchFromGitHub,
   buildGoModule,
   gradle,
-  makeWrapper,
   jre,
+  makeWrapper,
   symlinkJoin,
 }:
 let
@@ -20,53 +20,44 @@ let
   license = lib.licenses.epl20;
 
   alda_client = buildGoModule {
-    pname = "alda-client";
     inherit version src;
-
-    sourceRoot = "${src.name}/client";
+    pname = "alda-client";
     vendorHash = "sha256-h09w6ZLirLNxYv/ibeN5pCnXSvT+1FGiXiYNReZBMXI=";
+    env.CGO_ENABLED = 0;
 
     preBuild = ''
       go generate main.go
     '';
 
-    env.CGO_ENABLED = 0;
-    ldflags = [
-      "-w"
-      "-extldflags '-static'"
-    ];
-    tags = [ "netgo" ];
-    subPackages = [ "." ];
-
     postInstall = ''
       mv $out/bin/client $out/bin/alda
     '';
 
+    ldflags = [
+      "-w"
+      "-extldflags '-static'"
+    ];
+
+    sourceRoot = "${src.name}/client";
+    subPackages = [ "." ];
+    tags = [ "netgo" ];
+
     meta = {
       inherit license;
       homepage = "https://github.com/alda-lang/alda/tree/master/client";
-      broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
       maintainers = [ lib.maintainers.ericdallo ];
       platforms = lib.platforms.unix;
+      broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
     };
   };
   alda_player = stdenv.mkDerivation {
-    pname = "alda-player";
     inherit version src;
+    pname = "alda-player";
 
-    sourceRoot = "${src.name}/player";
     nativeBuildInputs = [
       gradle
       makeWrapper
     ];
-
-    mitmCache = gradle.fetchDeps {
-      inherit pname;
-      data = ./deps.json;
-    };
-    __darwinAllowLocalNetworking = true;
-
-    gradleBuildTask = "fatJar";
 
     installPhase = ''
       runHook preInstall
@@ -80,6 +71,16 @@ let
       runHook postInstall
     '';
 
+    __darwinAllowLocalNetworking = true;
+    gradleBuildTask = "fatJar";
+
+    mitmCache = gradle.fetchDeps {
+      inherit pname;
+      data = ./deps.json;
+    };
+
+    sourceRoot = "${src.name}/player";
+
     meta = {
       inherit license;
       homepage = "https://github.com/alda-lang/alda/tree/master/player";
@@ -90,6 +91,7 @@ let
 in
 symlinkJoin {
   inherit pname version;
+
   paths = [
     alda_client
     alda_player
@@ -99,10 +101,12 @@ symlinkJoin {
     inherit license;
     description = "Music programming language for musicians";
     homepage = "https://alda.io";
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
+
     maintainers = [ lib.maintainers.ericdallo ];
     platforms = lib.platforms.unix;
   };

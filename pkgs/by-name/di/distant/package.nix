@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  zlib,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,8 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rm .cargo/config.toml
   '';
 
-  cargoHash = "sha256-HEyPfkusgk8JEYAzIS8Zj5EU0MK4wt4amlsJqBEG/Kc=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -37,6 +35,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     zlib
   ];
+
+  cargoHash = "sha256-HEyPfkusgk8JEYAzIS8Zj5EU0MK4wt4amlsJqBEG/Kc=";
 
   env = {
     OPENSSL_NO_VENDOR = true;
@@ -61,12 +61,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=cli::client::fs_watch::should_support_watching_a_single_file"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __darwinAllowLocalNetworking = true;
 
   passthru = {
     updateScript = nix-update-script { };

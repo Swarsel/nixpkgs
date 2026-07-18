@@ -1,29 +1,30 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  rustc,
-  rust-bindgen,
-  rustfmt,
-  cargo,
-  llvmPackages ? rustc.llvmPackages,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
+  apple-sdk_15,
+  cargo,
+  deno,
   glib,
   glibc,
+  gn,
   icu,
   libffi,
-  python3,
-  gn,
   ninja,
-  xcbuild,
-  apple-sdk_15,
+  pkg-config,
+  python3,
+  rust-bindgen,
+  rustPlatform,
+  rustc,
+  rustfmt,
   symlinkJoin,
-  deno,
+  xcbuild,
+  llvmPackages ? rustc.llvmPackages,
 }:
 let
   rustToolchain = symlinkJoin {
     name = "rusty-v8-rust-toolchain";
+
     paths = [
       rustc
       rust-bindgen
@@ -47,13 +48,6 @@ let
   };
 
   clangBasePath = symlinkJoin {
-    name = "rusty-v8-llvm-toolchain";
-    paths = [
-      llvmPackages.clang-unwrapped.lib
-      llvmPackages.clang
-      llvmPackages.llvm
-      llvmPackages.lld
-    ];
     postBuild =
       if stdenv.targetPlatform.isDarwin then
         ''
@@ -67,6 +61,15 @@ let
           mkdir -p "$dir"
           ln -s ${llvmPackages.compiler-rt}/lib/linux/libclang_rt.builtins-* "$dir/libclang_rt.builtins${stdenv.hostPlatform.extensions.staticLibrary}"
         '';
+
+    name = "rusty-v8-llvm-toolchain";
+
+    paths = [
+      llvmPackages.clang-unwrapped.lib
+      llvmPackages.clang
+      llvmPackages.llvm
+      llvmPackages.lld
+    ];
   };
 in
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -77,8 +80,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "denoland";
     repo = "rusty_v8";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-n4dKtki9ov0lWBeLmMDI4Tpk8zQ8YYSf04QW6DTYisY=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -90,7 +93,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ./librusty_v8-darwin-fix-__rust_no_alloc_shim_is_unstable_v2.patch
   ];
 
-  cargoHash = "sha256-bGqg/6sfBaF/JpObgXyP4Mh+4P9zfuzd454m4wjluGw=";
+  postPatch = ''
+    ln -sv ${rustToolchain} third_party/rust-toolchain
+  '';
 
   nativeBuildInputs = [
     llvmPackages.clang
@@ -104,6 +109,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals stdenv.targetPlatform.isDarwin [
     xcbuild
   ];
+
   buildInputs = [
     glib
     icu
@@ -113,16 +119,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     apple-sdk_15
   ];
 
-  postPatch = ''
-    ln -sv ${rustToolchain} third_party/rust-toolchain
-  '';
+  cargoHash = "sha256-bGqg/6sfBaF/JpObgXyP4Mh+4P9zfuzd454m4wjluGw=";
 
   env = {
-    V8_FROM_SOURCE = 1;
-    PYTHON = "python3";
-    NINJA = lib.getExe ninja;
-    GN = lib.getExe gn;
-    RUSTC_BOOTSTRAP = 1;
+    CLANG_BASE_PATH = clangBasePath;
+
     EXTRA_GN_ARGS = lib.concatStringsSep " " (
       [
         "use_system_libffi=true"
@@ -134,20 +135,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ]
       ++ lib.optional stdenv.targetPlatform.isDarwin "mac_deployment_target=\"${stdenv.targetPlatform.darwinMinVersion}\""
     );
+
+    GN = lib.getExe gn;
     LIBCLANG_PATH = lib.makeLibraryPath [ llvmPackages.libclang ];
-    CLANG_BASE_PATH = clangBasePath;
+    NINJA = lib.getExe ninja;
+    PYTHON = "python3";
+    RUSTC_BOOTSTRAP = 1;
+    V8_FROM_SOURCE = 1;
   };
-
-  buildFeatures = [ "simdutf" ];
-
-  hardeningDisable = [
-    # rusty-v8 has its own default hardening flags, which are "extensive" for release builds as long as `use_custom_libcxx` stays true.
-    # Avoids many warnings about redefined macros (on build failures) and uses the upstream flag.
-    "libcxxhardeningfast"
-    # from Arch Linux: this uses malloc_usable_size, which is incompatible with fortification level 3
-    # https://gitlab.archlinux.org/archlinux/packaging/packages/deno/-/blob/cd9bdf9e67381da413142413646bd8648807510a/PKGBUILD#L49
-    "fortify3"
-  ];
 
   # Don't run checks on hydra as they've been observed to be flakey for us and
   # other distros CI: https://gitlab.alpinelinux.org/alpine/aports/-/blob/bec8b026686323b496365b825ad14fdf4473adf2/community/deno/APKBUILD#L79
@@ -155,6 +150,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # builds simultaneously.
   # A build with tests is included as part of `deno.passhtru.tests` via `librusty_v8.passthru.tests`
   doCheck = false;
+
   # Check related config is left in the main package so if someone uses
   # `overrideAttrs` to always build with tests, it'll all work.
   checkFlags = [
@@ -171,6 +167,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  buildFeatures = [ "simdutf" ];
+
+  hardeningDisable = [
+    # rusty-v8 has its own default hardening flags, which are "extensive" for release builds as long as `use_custom_libcxx` stays true.
+    # Avoids many warnings about redefined macros (on build failures) and uses the upstream flag.
+    "libcxxhardeningfast"
+    # from Arch Linux: this uses malloc_usable_size, which is incompatible with fortification level 3
+    # https://gitlab.archlinux.org/archlinux/packaging/packages/deno/-/blob/cd9bdf9e67381da413142413646bd8648807510a/PKGBUILD#L49
+    "fortify3"
+  ];
+
+  requiredSystemFeatures = [ "big-parallel" ];
+
   passthru = {
     tests = {
       build-with-unit-tests = deno.passthru.librusty_v8.overrideAttrs (fa: {
@@ -179,14 +188,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     };
   };
 
-  requiredSystemFeatures = [ "big-parallel" ];
-
   meta = {
     description = "Rust bindings for the V8 JavaScript engine";
     homepage = "https://github.com/denoland/rusty_v8";
     license = lib.licenses.mit;
     maintainers = deno.meta.maintainers;
-    maxSilent = 14400; # 4h, double the default of 7200s; sometimes needed for x86_64-darwin on hydra
     platforms = deno.meta.platforms;
+    maxSilent = 14400; # 4h, double the default of 7200s; sometimes needed for x86_64-darwin on hydra
   };
 })

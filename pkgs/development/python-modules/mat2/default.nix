@@ -1,34 +1,33 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  pytestCheckHook,
   fetchFromGitHub,
+  buildPythonPackage,
+  exiftool,
   fetchpatch,
   fetchpatch2,
-  replaceVars,
-  exiftool,
   ffmpeg,
-  setuptools,
-  wrapGAppsHook3,
   gdk-pixbuf,
   gnome,
   gobject-introspection,
-  librsvg,
-  poppler_gi,
-  webp-pixbuf-loader,
-  mutagen,
-  pygobject3,
-  pycairo,
-  dolphinIntegration ? false,
   kdePackages,
+  librsvg,
+  mutagen,
+  poppler_gi,
+  pycairo,
+  pygobject3,
+  pytestCheckHook,
+  replaceVars,
+  setuptools,
   versionCheckHook,
+  webp-pixbuf-loader,
+  wrapGAppsHook3,
+  dolphinIntegration ? false,
 }:
 
 buildPythonPackage rec {
   pname = "mat2";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jvoisin";
@@ -52,19 +51,19 @@ buildPythonPackage rec {
     # hardcode path to mat2 executable
     ./tests.patch
     (fetchpatch {
+      hash = "sha256-5h/nM1dK8HmYtoIBVGOvUegMFBpGxcfpn5O6QrjLi9M=";
       name = "fix-test_html.patch";
       url = "https://github.com/jvoisin/mat2/commit/00b4f110711754496932c59d5af3c0b2ed694484.patch";
-      hash = "sha256-5h/nM1dK8HmYtoIBVGOvUegMFBpGxcfpn5O6QrjLi9M=";
     })
     # Loosen test_climat2 assertions split across terminal-width boundaries.
     (fetchpatch2 {
-      url = "https://github.com/jvoisin/mat2/commit/690e01d475117a4e0c85f26154b26ef332f036be.patch?full_index=1";
       hash = "sha256-pDbY3E6BPp20orDOx7zxhCdAB+nAdpddTYjPYHStVLc=";
+      url = "https://github.com/jvoisin/mat2/commit/690e01d475117a4e0c85f26154b26ef332f036be.patch?full_index=1";
     })
     # Fix test_climat2 under Python 3.14+ argparse usage formatting.
     (fetchpatch2 {
-      url = "https://github.com/jvoisin/mat2/commit/05f34a17695be65b1ad9782911f87e000de8fc8b.patch?full_index=1";
       hash = "sha256-rIaXocT+LKM2De5iBPIPoBdFbdd17TJJPyFrPzNAJF0=";
+      url = "https://github.com/jvoisin/mat2/commit/05f34a17695be65b1ad9782911f87e000de8fc8b.patch?full_index=1";
     })
   ];
 
@@ -73,8 +72,6 @@ buildPythonPackage rec {
       --replace "@mat2@" "$out/bin/mat2" \
       --replace "@mat2svg@" "$out/share/icons/hicolor/scalable/apps/mat2.svg"
   '';
-
-  build-system = [ setuptools ];
 
   nativeBuildInputs = [
     gobject-introspection
@@ -86,11 +83,7 @@ buildPythonPackage rec {
     poppler_gi
   ];
 
-  dependencies = [
-    mutagen
-    pygobject3
-    pycairo
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   postInstall = ''
     export GDK_PIXBUF_MODULE_FILE="${
@@ -109,16 +102,23 @@ buildPythonPackage rec {
     install -Dm 444 dolphin/mat2.desktop -t "$out/share/kservices5/ServiceMenus"
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   nativeInstallCheckInputs = [ versionCheckHook ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    mutagen
+    pygobject3
+    pycairo
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Handy tool to trash your metadata";
     homepage = "https://github.com/jvoisin/mat2";
     changelog = "https://github.com/jvoisin/mat2/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.lgpl3Plus;
-    mainProgram = "mat2";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "mat2";
   };
 }

@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  unzip,
   nix-update-script,
+  unzip,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,10 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-zDa+NxoC9mAaITWEHzejJykWVnoqnlLQtzbu0vs3NoQ=";
   };
 
-  subPackages = [ "." ];
-
   vendorHash = "sha256-pjkBrHhIqLmSzwi1dKS5+aJrrAAIzNATOt3LgLsMtx0=";
-
+  doCheck = true;
   nativeCheckInputs = [ unzip ];
 
   preCheck = ''
@@ -29,16 +27,15 @@ buildGoModule (finalAttrs: {
     cd ..
   '';
 
-  doCheck = true;
-
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Go symbol recovery tool";
-    mainProgram = "GoReSym";
     homepage = "https://github.com/mandiant/GoReSym";
     changelog = "https://github.com/mandiant/GoReSym/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "GoReSym";
   };
 })

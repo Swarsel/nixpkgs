@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
+  # tests
+  dask,
   # dependencies
   numba,
   numpy,
-  scipy,
-
-  # tests
-  dask,
   pytest-cov-stub,
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sparse";
   version = "0.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydata";
@@ -29,6 +25,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-HHZ47TAgNbEEZj1sEe85yQRleW4Un2wfwQyFp4BPCbI=";
   };
+
+  nativeCheckInputs = [
+    dask
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -41,20 +43,15 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  nativeCheckInputs = [
-    dask
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sparse" ];
 
   meta = {
     description = "Sparse n-dimensional arrays computations";
     homepage = "https://sparse.pydata.org/";
     changelog = "https://sparse.pydata.org/en/stable/changelog.html";
-    downloadPage = "https://github.com/pydata/sparse/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    downloadPage = "https://github.com/pydata/sparse/releases/tag/${finalAttrs.src.tag}";
   };
 })

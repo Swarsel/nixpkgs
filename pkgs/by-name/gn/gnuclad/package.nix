@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   pkg-config,
 }:
@@ -14,13 +14,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0ka2kscpjff7gflsargv3r9fdaxhkf3nym9mfaln3pnq6q7fwdki";
   };
 
+  nativeBuildInputs = [ pkg-config ];
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-Wno-error=catch-value";
 
-  nativeBuildInputs = [ pkg-config ];
-
   meta = {
-    homepage = "https://launchpad.net/gnuclad";
     description = "Generating cladogram trees for the GNU/Linux distro timeline project";
+    homepage = "https://launchpad.net/gnuclad";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ mog ];
     platforms = lib.platforms.unix;

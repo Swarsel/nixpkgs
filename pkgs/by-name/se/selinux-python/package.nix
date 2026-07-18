@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  python3,
   gettext,
   libselinux,
   libsemanage,
   libsepol,
+  python3,
   setools,
 }:
 
@@ -19,15 +19,24 @@ let
   );
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit (libsepol) se_url;
   pname = "selinux-python";
   version = "3.10";
-
-  inherit (libsepol) se_url;
 
   src = fetchurl {
     url = "${finalAttrs.se_url}/${finalAttrs.version}/selinux-python-${finalAttrs.version}.tar.gz";
     hash = "sha256-nQpbafL7zOjlzNjg8X1W9x5gBadWOG+Ps2wx+UJBkaI=";
   };
+
+  postPatch = ''
+    # We would like to disable build isolation so we use the provided setuptools (this is part of a `pip install` command)
+    substituteInPlace sepolicy/Makefile --replace-fail 'echo --root' 'echo --no-build-isolation --root'
+
+    # Replace hardcoded paths.
+    substituteInPlace sepolgen/src/share/Makefile --replace-fail "/var/lib/sepolgen" \
+                                                            '$(PREFIX)/var/lib/sepolgen'
+    substituteInPlace po/Makefile --replace-fail "/usr/bin/install" "install"
+  '';
 
   strictDeps = true;
 
@@ -43,22 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     libselinux
   ];
 
-  pythonPath = [
-    python3.pkgs.libselinux.py
-    libsemanage.py
-    setools
-  ];
-
-  postPatch = ''
-    # We would like to disable build isolation so we use the provided setuptools (this is part of a `pip install` command)
-    substituteInPlace sepolicy/Makefile --replace-fail 'echo --root' 'echo --no-build-isolation --root'
-
-    # Replace hardcoded paths.
-    substituteInPlace sepolgen/src/share/Makefile --replace-fail "/var/lib/sepolgen" \
-                                                            '$(PREFIX)/var/lib/sepolgen'
-    substituteInPlace po/Makefile --replace-fail "/usr/bin/install" "install"
-  '';
-
   makeFlags = [
     "PREFIX=$(out)"
     # This makes pip successfully install it (note the test -n "$(DESTDIR)" nonsense)
@@ -70,14 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     "PYTHONLIBDIR=$(out)/${python3.sitePackages}"
     "LIBSEPOLA=${lib.getLib libsepol}/lib/libsepol.a"
   ];
-
-  preFixup = ''
-    patchShebangs --host $out/bin/*
-  '';
-
-  postFixup = ''
-    wrapPythonPrograms
-  '';
 
   doInstallCheck = true;
 
@@ -102,11 +87,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  preFixup = ''
+    patchShebangs --host $out/bin/*
+  '';
+
+  postFixup = ''
+    wrapPythonPrograms
+  '';
+
+  pythonPath = [
+    python3.pkgs.libselinux.py
+    libsemanage.py
+    setools
+  ];
+
   meta = {
-    description = "SELinux policy core utilities written in Python";
-    license = lib.licenses.gpl2Plus;
-    homepage = "https://selinuxproject.org";
     inherit (libsepol.meta) maintainers;
+    description = "SELinux policy core utilities written in Python";
+    homepage = "https://selinuxproject.org";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
   };
 })

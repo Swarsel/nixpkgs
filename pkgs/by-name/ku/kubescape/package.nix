@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
   installShellFiles,
   versionCheckHook,
@@ -19,24 +19,13 @@ buildGoModule (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-y17ZrVzeRVzODGuIFKV8nsMu2720d/I4HUfwdinwOg4=";
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [
     installShellFiles
     versionCheckHook
   ];
 
+  vendorHash = "sha256-y17ZrVzeRVzODGuIFKV8nsMu2720d/I4HUfwdinwOg4=";
   nativeCheckInputs = [ git ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.version=v${finalAttrs.version}"
-    "-X=github.com/kubescape/kubescape/v3/core/cautils.BuildNumber=v${finalAttrs.version}"
-  ];
 
   preCheck = ''
     export HOME=$(mktemp -d)
@@ -67,12 +56,20 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.version=v${finalAttrs.version}"
+    "-X=github.com/kubescape/kubescape/v3/core/cautils.BuildNumber=v${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "." ];
   versionCheckProgramArg = "version";
 
   meta = {
     description = "Tool for testing if Kubernetes is deployed securely";
-    homepage = "https://github.com/kubescape/kubescape";
-    changelog = "https://github.com/kubescape/kubescape/releases/tag/v${finalAttrs.version}";
+
     longDescription = ''
       Kubescape is the first open-source tool for testing if Kubernetes is
       deployed securely according to multiple frameworks: regulatory, customized
@@ -84,11 +81,16 @@ buildGoModule (finalAttrs: {
       time. Kubescape integrates natively with other DevOps tools, including
       Jenkins, CircleCI and Github workflows.
     '';
+
+    homepage = "https://github.com/kubescape/kubescape";
+    changelog = "https://github.com/kubescape/kubescape/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fab
       jk
     ];
+
     mainProgram = "kubescape";
   };
 })

@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   fetchurl,
-  setuptools-scm,
-  git,
-  sphinx,
-  pytestCheckHook,
+  fetchFromGitHub,
+  buildPythonPackage,
   cython,
   gcc,
+  git,
   graphviz,
+  pytestCheckHook,
+  setuptools-scm,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-automodapi";
   version = "0.22.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astropy";
@@ -25,23 +24,12 @@ buildPythonPackage rec {
     leaveDotGit = true;
   };
 
-  build-system = [ setuptools-scm ];
-
-  nativeBuildInputs = [ git ];
-
-  dependencies = [ sphinx ];
-
-  # https://github.com/astropy/sphinx-automodapi/issues/155
-  testInventory = fetchurl {
-    # Originally: https://docs.python.org/3/objects.inv
-    url = "https://web.archive.org/web/20221007193144/https://docs.python.org/3/objects.inv";
-    hash = "sha256-1cbUmdJJSoifkiIYa70SxnLsaK3F2gvnTEWo9vo/6rY=";
-  };
-
   postPatch = ''
     substituteInPlace sphinx_automodapi/tests/{helpers,test_cases}.py \
       --replace ", None)" ", (None, '${testInventory}'))"
   '';
+
+  nativeBuildInputs = [ git ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -50,7 +38,17 @@ buildPythonPackage rec {
     graphviz
   ];
 
+  build-system = [ setuptools-scm ];
+  dependencies = [ sphinx ];
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_automodapi" ];
+
+  # https://github.com/astropy/sphinx-automodapi/issues/155
+  testInventory = fetchurl {
+    hash = "sha256-1cbUmdJJSoifkiIYa70SxnLsaK3F2gvnTEWo9vo/6rY=";
+    # Originally: https://docs.python.org/3/objects.inv
+    url = "https://web.archive.org/web/20221007193144/https://docs.python.org/3/objects.inv";
+  };
 
   meta = {
     description = "Sphinx extension for generating API documentation";

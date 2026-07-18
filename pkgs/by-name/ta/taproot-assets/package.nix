@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-K8XwCRTj4UECZpVb8g7+6VAC4khTcnRrhPaKDXJvJCI=";
 
-  subPackages = [
-    "cmd/tapcli"
-    "cmd/tapd"
-  ];
-
   ldflags = [
     "-s"
     "-w"
+  ];
+
+  subPackages = [
+    "cmd/tapcli"
+    "cmd/tapd"
   ];
 
   meta = {

@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  desktop-file-utils,
-  nix-update-script,
   fetchFromGitHub,
+  desktop-file-utils,
   flatpak,
   gettext,
   glib,
   granite7,
   gtk4,
+  libxml2,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   vala,
-  libxml2,
   wrapGAppsHook4,
 }:
 
@@ -51,11 +51,11 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://github.com/elementary/sideload";
     description = "Flatpak installer, designed for elementary OS";
+    homepage = "https://github.com/elementary/sideload";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.sideload";
+    teams = [ lib.teams.pantheon ];
   };
 }

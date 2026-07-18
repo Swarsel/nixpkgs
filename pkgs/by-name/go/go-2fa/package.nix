@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,8 +15,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-cB5iADZwvJQwwK1GockE2uicFlqFMEAY6xyeXF5lnUY=";
   };
 
-  deleteVendor = true;
   vendorHash = "sha256-4h/+ZNxlJPYY0Kyu2vDE1pDXxC/kGE5JdnagWVOGzAE=";
+  deleteVendor = true;
 
   ldflags = [
     "-s"
@@ -24,10 +24,10 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://rsc.io/2fa";
     description = "Two-factor authentication on the command line";
-    mainProgram = "2fa";
+    homepage = "https://rsc.io/2fa";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ rvolosatovs ];
+    mainProgram = "2fa";
   };
 })

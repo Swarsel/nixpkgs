@@ -1,18 +1,18 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   blas,
   check,
   cmake,
   doxygen,
-  fetchFromGitHub,
   highs,
   lapack,
-  lib,
   pkg-config,
-  pythonSupport ? false,
   python3Packages,
   suitesparse,
-  stdenv,
   trlib,
+  pythonSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     blas
     check

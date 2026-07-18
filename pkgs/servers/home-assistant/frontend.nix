@@ -1,7 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
 }:
 
 buildPythonPackage (finalAttrs: {
@@ -9,27 +9,26 @@ buildPythonPackage (finalAttrs: {
   # https://github.com/home-assistant/home-assistant/blob/master/homeassistant/components/frontend/manifest.json
   pname = "home-assistant-frontend";
   version = "20260624.5";
-  format = "wheel";
 
   src = fetchPypi {
     inherit (finalAttrs) version;
+    hash = "sha256-7o0IaunCHh6jKlW8NxbMSwoNCfqcIKDqPV6Xgjz42Qg=";
+    dist = "py3";
     format = "wheel";
     pname = "home_assistant_frontend";
-    dist = "py3";
     python = "py3";
-    hash = "sha256-7o0IaunCHh6jKlW8NxbMSwoNCfqcIKDqPV6Xgjz42Qg=";
   };
-
-  # there is nothing to strip in this package
-  dontStrip = true;
 
   # no Python tests implemented
   doCheck = false;
+  # there is nothing to strip in this package
+  dontStrip = true;
+  format = "wheel";
 
   meta = {
-    changelog = "https://github.com/home-assistant/frontend/releases/tag/${finalAttrs.version}";
     description = "Frontend for Home Assistant";
     homepage = "https://github.com/home-assistant/frontend";
+    changelog = "https://github.com/home-assistant/frontend/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
     teams = [ lib.teams.home-assistant ];
   };

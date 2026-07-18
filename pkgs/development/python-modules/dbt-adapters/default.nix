@@ -16,21 +16,18 @@
 buildPythonPackage rec {
   pname = "dbt-adapters";
   version = "1.22.10";
-  pyproject = true;
 
   # missing tags on GitHub
   src = fetchPypi {
-    pname = "dbt_adapters";
     inherit version;
     hash = "sha256-KPyp+cLzEHBs4CyPew8pftyhTWvZeteSiqxVr0zily8=";
+    pname = "dbt_adapters";
   };
 
+  # circular dependencies
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
-
-  pythonRelaxDeps = [
-    "mashumaro"
-    "protobuf"
-  ];
 
   dependencies = [
     agate
@@ -43,12 +40,13 @@ buildPythonPackage rec {
   ]
   ++ mashumaro.optional-dependencies.msgpack;
 
+  pyproject = true;
   pythonImportsCheck = [ "dbt.adapters" ];
 
-  # circular dependencies
-  doCheck = false;
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  pythonRelaxDeps = [
+    "mashumaro"
+    "protobuf"
+  ];
 
   meta = {
     description = "Set of adapter protocols and base functionality that supports integration with dbt-core";

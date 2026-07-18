@@ -17,8 +17,8 @@ in
 
 {
   options.hardware.coral = {
-    usb.enable = mkEnableOption "Coral USB support";
     pcie.enable = mkEnableOption "Coral PCIe support";
+    usb.enable = mkEnableOption "Coral USB support";
   };
 
   config = mkMerge [
@@ -30,6 +30,7 @@ in
     })
     (mkIf cfg.pcie.enable {
       boot.extraModulePackages = with config.boot.kernelPackages; [ gasket ];
+
       services.udev.extraRules = ''
         SUBSYSTEM=="apex",MODE="0660",GROUP="coral"
       '';

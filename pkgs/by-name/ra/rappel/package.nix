@@ -19,7 +19,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ libedit ];
 
   installPhase = ''
@@ -32,11 +31,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/yrp604/rappel";
     description = "Pretty janky assembly REPL";
-    mainProgram = "rappel";
+    homepage = "https://github.com/yrp604/rappel";
     license = lib.licenses.bsdOriginal;
     maintainers = [ lib.maintainers.pamplemousse ];
     platforms = lib.platforms.linux;
+    mainProgram = "rappel";
   };
 }

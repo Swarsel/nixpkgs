@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  love,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
+  love,
+  makeDesktopItem,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,29 +17,10 @@ stdenv.mkDerivation rec {
     hash = "sha256-1bFjhN7jL/PMYMJH1ete6uyHTYsTGgoP60sf/sJTLlU=";
   };
 
-  icon = fetchurl {
-    url = "http://tangramgames.dk/img/thumb/sienna.png";
-    hash = "sha256-1grwCi1sKelqEH58pO0rTSnqG7JOfVByNKu2NCbMAos=";
-  };
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "sienna";
-      exec = "sienna";
-      icon = icon;
-      comment = "Fast-paced one button platformer";
-      desktopName = "Sienna";
-      genericName = "sienna";
-      categories = [ "Game" ];
-    })
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
   ];
-
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -52,13 +33,32 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Fast-paced one button platformer";
+      desktopName = "Sienna";
+      exec = "sienna";
+      genericName = "sienna";
+      icon = icon;
+      name = "sienna";
+    })
+  ];
+
+  dontUnpack = true;
+
+  icon = fetchurl {
+    hash = "sha256-1grwCi1sKelqEH58pO0rTSnqG7JOfVByNKu2NCbMAos=";
+    url = "http://tangramgames.dk/img/thumb/sienna.png";
+  };
+
   meta = {
     description = "Fast-paced one button platformer";
-    mainProgram = "sienna";
     homepage = "https://tangramgames.dk/games/sienna";
-    platforms = love.meta.platforms;
     license = lib.licenses.zlib;
     maintainers = [ ];
+    platforms = love.meta.platforms;
+    mainProgram = "sienna";
   };
 
 }

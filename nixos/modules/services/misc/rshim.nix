@@ -18,11 +18,44 @@ let
 in
 {
   options.services.rshim = {
-    enable = lib.mkEnableOption "user-space rshim driver for the BlueField SoC";
+    config = lib.mkOption {
+      default = { };
 
+      description = ''
+        Structural setting for the rshim configuration file
+        (`/etc/rshim.conf`). It can be used to specify the static mapping
+        between rshim devices and rshim names. It can also be used to ignore
+        some rshim devices.
+      '';
+
+      example = {
+        DISPLAY_LEVEL = 0;
+        none = "usb-1-1.4";
+        rshim0 = "usb-2-1.7";
+      };
+
+      type =
+        with lib.types;
+        attrsOf (oneOf [
+          int
+          str
+        ]);
+    };
+
+    enable = lib.mkEnableOption "user-space rshim driver for the BlueField SoC";
     package = lib.mkPackageOption pkgs "rshim-user-space" { };
 
     backend = lib.mkOption {
+      default = null;
+
+      description = ''
+        Specify the backend to attach. If not specified, the driver will scan
+        all rshim backends unless the `device` option is given with a device
+        name specified.
+      '';
+
+      example = "pcie";
+
       type =
         with lib.types;
         nullOr (enum [
@@ -30,64 +63,42 @@ in
           "pcie"
           "pcie_lf"
         ]);
-      description = ''
-        Specify the backend to attach. If not specified, the driver will scan
-        all rshim backends unless the `device` option is given with a device
-        name specified.
-      '';
-      default = null;
-      example = "pcie";
     };
 
     device = lib.mkOption {
-      type = with lib.types; nullOr str;
+      default = null;
+
       description = ''
         Specify the device name to attach. The backend driver can be deduced
         from the device name, thus the `backend` option is not needed.
       '';
-      default = null;
+
       example = "pcie-04:00.2";
+      type = with lib.types; nullOr str;
     };
 
     index = lib.mkOption {
-      type = with lib.types; nullOr int;
+      default = null;
+
       description = ''
         Specify the index to create device path `/dev/rshim<index>`. It's also
         used to create network interface name `tmfifo_net<index>`. This option
         is needed when multiple rshim instances are running.
       '';
-      default = null;
+
       example = 1;
+      type = with lib.types; nullOr int;
     };
 
     log-level = lib.mkOption {
-      type = lib.types.ints.between 0 4;
+      default = 2;
+
       description = ''
         Specify the log level (0:none, 1:error, 2:warning, 3:notice, 4:debug).
       '';
-      default = 2;
-      example = 4;
-    };
 
-    config = lib.mkOption {
-      type =
-        with lib.types;
-        attrsOf (oneOf [
-          int
-          str
-        ]);
-      description = ''
-        Structural setting for the rshim configuration file
-        (`/etc/rshim.conf`). It can be used to specify the static mapping
-        between rshim devices and rshim names. It can also be used to ignore
-        some rshim devices.
-      '';
-      default = { };
-      example = {
-        DISPLAY_LEVEL = 0;
-        rshim0 = "usb-2-1.7";
-        none = "usb-1-1.4";
-      };
+      example = 4;
+      type = lib.types.ints.between 0 4;
     };
   };
 
@@ -100,14 +111,17 @@ in
 
     systemd.services.rshim = {
       after = [ "network.target" ];
+
       serviceConfig = {
-        Restart = "always";
-        Type = "forking";
         ExecStart = [
           (lib.concatStringsSep " \\\n" rshimCommand)
         ];
+
         KillMode = "control-group";
+        Restart = "always";
+        Type = "forking";
       };
+
       wantedBy = [ "multi-user.target" ];
     };
   };

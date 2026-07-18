@@ -1,14 +1,13 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "iso-639";
   version = "0.4.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ setuptools ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/noumar/iso639";
     description = "ISO 639 library for Python";
+    homepage = "https://github.com/noumar/iso639";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ zraexy ];
   };

@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchurl,
   _cuda,
   cudaPackages,
-  fetchurl,
-  lib,
   stdenvNoCC,
 }:
 
@@ -11,11 +11,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   # https://github.com/NVIDIA/warp/blob/${version}/deps/libmathdx-deps.packman.xml
   pname = "libmathdx";
   version = "0.2.3";
-
-  outputs = [
-    "out"
-    "static"
-  ];
 
   src =
     let
@@ -36,6 +31,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
           aarch64-linux = "sha256-d/aBC+zU2ciaw3isv33iuviXYaLGLdVDdzynGk9SFck=";
           x86_64-linux = "sha256-CHIH0s4SnA67COtHBkwVCajW/3f0VxNBmuDLXy4LFIg=";
         };
+
         "13" = {
           aarch64-linux = "sha256-TetJbMts8tpmj5PV4+jpnUHMcooDrXUEKL3aGWqilKI=";
           x86_64-linux = "sha256-wLJLbRpQWa6QEm8ibm1gxt3mXvkWvu0vEzpnqTIvE1M=";
@@ -50,9 +46,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       }
     ) (hashes.${cudaMajorVersion}.${stdenvNoCC.hostPlatform.system} or null);
 
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
+  outputs = [
+    "out"
+    "static"
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -66,10 +63,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
   meta = {
     description = "Library used to integrate cuBLASDx and cuFFTDx into Warp";
     homepage = "https://developer.nvidia.com/cublasdx-downloads";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     license = with lib.licenses; [
       # By downloading and using the software, you agree to fully
       # comply with the terms and conditions of the NVIDIA Software
@@ -86,10 +87,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       # license:
       mit
     ];
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ yzx9 ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
-    maintainers = with lib.maintainers; [ yzx9 ];
   };
 })

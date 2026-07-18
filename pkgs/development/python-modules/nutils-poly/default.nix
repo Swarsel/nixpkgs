@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
+  buildPythonPackage,
   libiconv,
   numpy,
+  rustPlatform,
   unittestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nutils-poly";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nutils";
@@ -21,21 +20,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-dxFv4Az3uz6Du5dk5KZJ+unVbt3aZjxXliAQZhmBWDM=";
   };
 
+  nativeBuildInputs = [ rustPlatform.cargoSetupHook ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
+  nativeCheckInputs = [ unittestCheckHook ];
+  build-system = [ rustPlatform.maturinBuildHook ];
+
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit (finalAttrs) pname version src;
     hash = "sha256-3UBQJfMPVo37V7mJnN9loF1+vKh3JxFJWgynwsOnAg4=";
   };
 
-  nativeBuildInputs = [ rustPlatform.cargoSetupHook ];
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
-  build-system = [ rustPlatform.maturinBuildHook ];
-
   dependencies = [ numpy ];
-
-  nativeCheckInputs = [ unittestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nutils_poly" ];
 
   meta = {

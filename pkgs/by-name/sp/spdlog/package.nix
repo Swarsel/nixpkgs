@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  fmt,
-  catch2_3,
-  staticBuild ? stdenv.hostPlatform.isStatic,
-
   # passthru
   bear,
-  tiledb,
+  catch2_3,
+  cmake,
+  fetchpatch,
+  fmt,
   nix-update-script,
+  tiledb,
+  staticBuild ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,12 +24,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-bL3hQmERXNwGmDoi7+wLv/TkppGhG6cO47k1iZvJGzY=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "dev"
+  ];
+
   patches = [
     (fetchpatch {
+      hash = "sha256-jsw3AgTXeRdU2ncuzAkYp6SPrBKntz2I3NLOjAPkW78=";
+      name = "tests-timezone-Provide-DST-rules-when-setting-TZ-on-POSIX-systems";
       # Remove when updating past 1.17.0. Fixes `pkgsMusl.spdlog` build.
       url = "https://github.com/gabime/spdlog/commit/0f7562a0f9273cfc71fddc6ae52ebff7a490fa04.patch";
-      name = "tests-timezone-Provide-DST-rules-when-setting-TZ-on-POSIX-systems";
-      hash = "sha256-jsw3AgTXeRdU2ncuzAkYp6SPrBKntz2I3NLOjAPkW78=";
     })
   ];
 
@@ -48,11 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "SPDLOG_FMT_EXTERNAL" true)
   ];
 
-  outputs = [
-    "out"
-    "doc"
-    "dev"
-  ];
+  doCheck = true;
 
   postInstall = ''
     mkdir -p $out/share/doc/spdlog
@@ -64,12 +65,11 @@ stdenv.mkDerivation (finalAttrs: {
         '#define SPDLOG_FMT_EXTERNAL'
   '';
 
-  doCheck = true;
-
   passthru = {
     tests = {
       inherit bear tiledb;
     };
+
     updateScript = nix-update-script { };
   };
 

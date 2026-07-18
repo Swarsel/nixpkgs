@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1fixij04n8hgmaj8kw8i6vclwyd6n94x0n6ify73ynm6dfv8g37x";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
 
@@ -25,13 +23,15 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper "${jre}/bin/java" "$out"/bin/seyren --add-flags "-jar $src"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Alerting dashboard for Graphite";
-    mainProgram = "seyren";
     homepage = "https://github.com/scobal/seyren";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "seyren";
   };
 })

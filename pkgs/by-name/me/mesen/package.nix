@@ -1,13 +1,13 @@
 {
   lib,
-  clangStdenv,
-  buildDotnetModule,
-  dotnetCorePackages,
   fetchFromGitHub,
-  wrapGAppsHook3,
+  SDL2,
+  buildDotnetModule,
+  clangStdenv,
+  dotnetCorePackages,
   gtk3,
   libx11,
-  SDL2,
+  wrapGAppsHook3,
 }:
 
 buildDotnetModule rec {
@@ -30,40 +30,31 @@ buildDotnetModule rec {
     ./desktop-make-non-absolute-exec.patch
   ];
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  nativeBuildInputs = [ wrapGAppsHook3 ];
 
-  projectFile = [ "UI/UI.csproj" ];
+  postInstall = ''
+    ln -s ${passthru.core}/lib/MesenCore.* $out/lib/mesen
+  '';
+
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
 
   dotnetFlags = [
     "-p:RuntimeIdentifier=${dotnetCorePackages.systemToDotnetRid clangStdenv.hostPlatform.system}"
   ];
 
   executables = [ "Mesen" ];
-
   nugetDeps = ./deps.json;
-
-  nativeBuildInputs = [ wrapGAppsHook3 ];
-
+  projectFile = [ "UI/UI.csproj" ];
   runtimeDeps = [ gtk3 ];
-
-  postInstall = ''
-    ln -s ${passthru.core}/lib/MesenCore.* $out/lib/mesen
-  '';
 
   # according to upstream, compiling with clang creates a faster binary
   passthru.core = clangStdenv.mkDerivation {
-    pname = "mesen-core";
     inherit version src;
-
-    enableParallelBuilding = true;
-
+    pname = "mesen-core";
     strictDeps = true;
-
     nativeBuildInputs = [ SDL2 ];
-
     buildInputs = [ SDL2 ] ++ lib.optionals clangStdenv.hostPlatform.isLinux [ libx11 ];
-
     makeFlags = [ "core" ];
 
     installPhase = ''
@@ -71,13 +62,15 @@ buildDotnetModule rec {
       install -Dm755 InteropDLL/obj.*/MesenCore.* -t $out/lib
       runHook postInstall
     '';
+
+    enableParallelBuilding = true;
   };
 
   meta = {
     description = "Multi-system emulator that supports NES, SNES, Game Boy, Game Boy Advance, PC Engine, SMS/Game Gear and WonderSwan games";
     homepage = "https://www.mesen.ca";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "Mesen";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "Mesen";
   };
 }

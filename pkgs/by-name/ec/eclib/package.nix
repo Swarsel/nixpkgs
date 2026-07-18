@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pari,
-  ntl,
   gmp,
+  ntl,
+  pari,
+  flint ? null,
   # "FLINT is optional and only used for one part of sparse matrix reduction,
   # which is used in the modular symbol code but not mwrank or other elliptic
   # curve programs." -- https://github.com/JohnCremona/eclib/blob/master/README
   withFlint ? false,
-  flint ? null,
 }:
 
 assert withFlint -> flint != null;
@@ -18,6 +18,7 @@ assert withFlint -> flint != null;
 stdenv.mkDerivation (finalAttrs: {
   pname = "eclib";
   version = "20250627"; # upgrade might break the sage interface
+
   # sage tests to run:
   # src/sage/interfaces/mwrank.py
   # src/sage/libs/eclib
@@ -34,6 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/JohnCremona/eclib/releases/download/${finalAttrs.version}/eclib-${finalAttrs.version}.tar.bz2";
     hash = "sha256-uI1LUmEuSRxUFZRtnjXyBiyhAV7n+74LYfFY+nTLS8k=";
   };
+
+  nativeBuildInputs = [
+    autoreconfHook
+  ];
+
   buildInputs = [
     pari
     ntl
@@ -42,15 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withFlint [
     flint
   ];
-  nativeBuildInputs = [
-    autoreconfHook
-  ];
+
   doCheck = true;
+
   meta = {
     description = "Elliptic curve tools";
     homepage = "https://github.com/JohnCremona/eclib";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.sage ];
   };
 })

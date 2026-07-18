@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   fzf,
   packaging,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "iterfzf";
   version = "1.9.0.67.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dahlia";
@@ -31,6 +30,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'executable="fzf"' 'executable="${fzf}/bin/fzf"'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     flit-core
     setuptools
@@ -39,8 +40,6 @@ buildPythonPackage (finalAttrs: {
 
   dependencies = [ fzf ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # AttributeError
     "test_no_query"
@@ -48,6 +47,7 @@ buildPythonPackage (finalAttrs: {
     "test_supports_color_kwarg"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "iterfzf" ];
 
   meta = {

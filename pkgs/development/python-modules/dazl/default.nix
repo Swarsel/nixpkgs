@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   attrs,
-  httpx,
-  python-dateutil,
+  buildPythonPackage,
   googleapis-common-protos,
   grpcio,
+  httpx,
+  poetry-core,
   protobuf,
-  semver,
   pygments,
   pyopenssl,
-  typing-extensions,
   pytestCheckHook,
+  python-dateutil,
   pyyaml,
+  semver,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "dazl";
   version = "8.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "digital-asset";
@@ -29,9 +28,12 @@ buildPythonPackage rec {
     hash = "sha256-ZJBaamazyNAYU5xbUvNGLUV5OsyymCdJCoUvoUlIkm4=";
   };
 
-  pythonRelaxDeps = [
-    "grpcio"
-    "httpx"
+  # daml: command not found
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyyaml
   ];
 
   build-system = [ poetry-core ];
@@ -52,20 +54,18 @@ buildPythonPackage rec {
     tls-testing = [ pyopenssl ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "dazl" ];
 
-  # daml: command not found
-  doCheck = false;
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyyaml
+  pythonRelaxDeps = [
+    "grpcio"
+    "httpx"
   ];
 
   meta = {
     description = "High-level Ledger API client for Daml ledgers";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/digital-asset/dazl-client";
     changelog = "https://github.com/digital-asset/dazl-client/releases/tag/${src.tag}";
+    license = lib.licenses.asl20;
   };
 }

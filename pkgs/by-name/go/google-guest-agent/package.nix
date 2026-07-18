@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   coreutils,
-  makeWrapper,
   google-guest-configs,
   google-guest-oslogin,
   iproute2,
+  makeWrapper,
   procps,
 }:
 
@@ -21,11 +21,7 @@ buildGoModule (finalAttrs: {
     hash = "sha256-DP15KDnD09edBxOQDwP0cjVIFxjMzE1hu1Sbu6Faj9Y=";
   };
 
-  vendorHash = "sha256-PGvyDjhLwIKhR6NmwzbzjfkBK+FqsziAdsybQmCbtCc=";
-
   patches = [ ./disable-etc-mutation.patch ];
-
-  nativeBuildInputs = [ makeWrapper ];
 
   postPatch = ''
     substitute ${./fix-paths.patch} fix-paths.patch \
@@ -34,13 +30,8 @@ buildGoModule (finalAttrs: {
     patch -p1 < ./fix-paths.patch
   '';
 
-  # We don't add `shadow` here; it's added to PATH if `mutableUsers` is enabled.
-  binPath = lib.makeBinPath [
-    google-guest-configs
-    google-guest-oslogin
-    iproute2
-    procps
-  ];
+  nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-PGvyDjhLwIKhR6NmwzbzjfkBK+FqsziAdsybQmCbtCc=";
 
   # Skip tests which require networking.
   preCheck = ''
@@ -55,6 +46,14 @@ buildGoModule (finalAttrs: {
     wrapProgram $out/bin/google_guest_agent \
       --prefix PATH ":" "$binPath"
   '';
+
+  # We don't add `shadow` here; it's added to PATH if `mutableUsers` is enabled.
+  binPath = lib.makeBinPath [
+    google-guest-configs
+    google-guest-oslogin
+    iproute2
+    procps
+  ];
 
   meta = {
     description = "Guest Agent for Google Compute Engine";

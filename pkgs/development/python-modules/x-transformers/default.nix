@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
+  einops,
   # dependencies
   einx,
-  einops,
+  # build-system
+  hatchling,
   loguru,
   packaging,
-  torch,
-
   # tests
   pytestCheckHook,
+  pythonAtLeast,
+  torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "x-transformers";
   version = "2.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lucidrains";
@@ -30,6 +26,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-QnNNzPK1lLRpG/Z5tdZKME7tkfvn1lgo7zGUaK/Q548=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -40,18 +37,18 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # RuntimeError: torch.compile is not supported on Python 3.14+
   disabledTests = lib.optionals (pythonAtLeast "3.14") [ "test_up" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "x_transformers" ];
 
   meta = {
     description = "Concise but fully-featured transformer";
+
     longDescription = ''
       A simple but complete full-attention transformer with a set of promising experimental features from various papers.
     '';
+
     homepage = "https://github.com/lucidrains/x-transformers";
     changelog = "https://github.com/lucidrains/x-transformers/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;

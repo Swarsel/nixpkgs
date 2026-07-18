@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  cmake,
-  buildGoModule,
-  makeWrapper,
   fetchFromGitHub,
-  pythonPackages,
-  pkg-config,
-  systemd,
-  hostname,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  withDocker ? true,
-  extraTags ? [ ],
-  testers,
+  buildGoModule,
+  cmake,
   datadog-agent,
+  hostname,
+  makeWrapper,
+  pkg-config,
+  pythonPackages,
+  systemd,
+  testers,
+  extraTags ? [ ],
+  withDocker ? true,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 let
@@ -31,11 +31,12 @@ let
     hash = "sha256-oj4LFQiaEeSHcSx0Bar4vU7w/8gi0fgBGSAUjaD4SFc=";
   };
   rtloader = stdenv.mkDerivation {
+    inherit version;
     pname = "datadog-agent-rtloader";
     src = "${src}/rtloader";
-    inherit version;
     nativeBuildInputs = [ cmake ];
     buildInputs = [ python ];
+
     cmakeFlags = [
       "-DBUILD_DEMO=OFF"
       "-DDISABLE_PYTHON2=ON"
@@ -44,51 +45,8 @@ let
 
 in
 buildGoModule rec {
-  pname = "datadog-agent";
   inherit src version;
-
-  doCheck = false;
-
-  vendorHash = "sha256-5lqWfhMXrYyZkP/MYH/Uvgu0VHaDmYMOmBOc5xExLi4=";
-
-  subPackages = [
-    "cmd/agent"
-    "cmd/cluster-agent"
-    "cmd/dogstatsd"
-    "cmd/trace-agent"
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-  ];
-  buildInputs = [ rtloader ] ++ lib.optionals withSystemd [ systemd ];
-
-  proxyVendor = true;
-
-  env.PKG_CONFIG_PATH = "${python}/lib/pkgconfig";
-
-  tags = [
-    "ec2"
-    "kubelet"
-    "python"
-    "process"
-    "log"
-    "secrets"
-    "zlib"
-  ]
-  ++ lib.optionals withSystemd [ "systemd" ]
-  ++ lib.optionals withDocker [ "docker" ]
-  ++ extraTags;
-
-  ldflags = [
-    "-X ${goPackagePath}/pkg/version.Commit=${src.rev}"
-    "-X ${goPackagePath}/pkg/version.AgentVersion=${version}"
-    "-X ${goPackagePath}/pkg/serializer.AgentPayloadVersion=${payloadVersion}"
-    "-X ${goPackagePath}/pkg/collector/python.pythonHome3=${python}"
-    "-X ${goPackagePath}/pkg/config/setup.DefaultPython=3"
-    "-r ${python}/lib"
-  ];
+  pname = "datadog-agent";
 
   # DataDog use paths relative to the agent binary, so fix these.
   # We can't just point these to $out since that would introduce self-referential paths in the go modules,
@@ -101,6 +59,16 @@ buildGoModule rec {
     sed -e "s|/bin/hostname|${lib.getBin hostname}/bin/hostname|" \
         -i pkg/util/hostname/fqdn_nix.go
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ];
+
+  buildInputs = [ rtloader ] ++ lib.optionals withSystemd [ systemd ];
+  vendorHash = "sha256-5lqWfhMXrYyZkP/MYH/Uvgu0VHaDmYMOmBOc5xExLi4=";
+  env.PKG_CONFIG_PATH = "${python}/lib/pkgconfig";
+  doCheck = false;
 
   # Install the config files and python modules from the "dist" dir
   # into standard paths.
@@ -119,9 +87,40 @@ buildGoModule rec {
      ]
    }";
 
+  ldflags = [
+    "-X ${goPackagePath}/pkg/version.Commit=${src.rev}"
+    "-X ${goPackagePath}/pkg/version.AgentVersion=${version}"
+    "-X ${goPackagePath}/pkg/serializer.AgentPayloadVersion=${payloadVersion}"
+    "-X ${goPackagePath}/pkg/collector/python.pythonHome3=${python}"
+    "-X ${goPackagePath}/pkg/config/setup.DefaultPython=3"
+    "-r ${python}/lib"
+  ];
+
+  proxyVendor = true;
+
+  subPackages = [
+    "cmd/agent"
+    "cmd/cluster-agent"
+    "cmd/dogstatsd"
+    "cmd/trace-agent"
+  ];
+
+  tags = [
+    "ec2"
+    "kubelet"
+    "python"
+    "process"
+    "log"
+    "secrets"
+    "zlib"
+  ]
+  ++ lib.optionals withSystemd [ "systemd" ]
+  ++ lib.optionals withDocker [ "docker" ]
+  ++ extraTags;
+
   passthru.tests.version = testers.testVersion {
-    package = datadog-agent;
     command = "agent version";
+    package = datadog-agent;
   };
 
   meta = {
@@ -129,8 +128,10 @@ buildGoModule rec {
       Event collector for the DataDog analysis service
       -- v6 new golang implementation.
     '';
+
     homepage = "https://www.datadoghq.com";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
     ];

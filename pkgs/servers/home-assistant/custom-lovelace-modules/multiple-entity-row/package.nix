@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
   nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,11 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "lovelace-multiple-entity-row";
     tag = "v${finalAttrs.version}";
     hash = "sha256-B+FaOITLnNP+rUyDF3bRY+M0xDmWkoTSi+fpWW9khG8=";
-  };
-
-  offlineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-LuXzfRV/jXe4jt9whkHRjAUxvLyhzikQ3WoXzpTQWe0=";
   };
 
   nativeBuildInputs = [
@@ -38,6 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  offlineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-LuXzfRV/jXe4jt9whkHRjAUxvLyhzikQ3WoXzpTQWe0=";
+  };
 
   meta = {
     description = "Show multiple entity states and attributes on entity rows in Home Assistant's Lovelace UI";

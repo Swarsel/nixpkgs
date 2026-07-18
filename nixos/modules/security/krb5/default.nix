@@ -53,12 +53,17 @@ in
 
       settings = mkOption {
         default = { };
-        type = format.type;
+
         description = ''
           Structured contents of the {file}`krb5.conf` file. See
           {manpage}`krb5.conf(5)` for details about configuration.
         '';
+
         example = {
+          domain_realm = {
+            "mit.edu" = "ATHENA.MIT.EDU";
+          };
+
           include = [ "/run/secrets/secret-krb5.conf" ];
           includedir = [ "/run/secrets/secret-krb5.conf.d" ];
 
@@ -66,26 +71,25 @@ in
             default_realm = "ATHENA.MIT.EDU";
           };
 
+          logging = {
+            admin_server = "SYSLOG:NOTICE";
+            default = "SYSLOG:NOTICE";
+            kdc = "SYSLOG:NOTICE";
+          };
+
           realms = {
             "ATHENA.MIT.EDU" = {
               admin_server = "athena.mit.edu";
+
               kdc = [
                 "athena01.mit.edu"
                 "athena02.mit.edu"
               ];
             };
           };
-
-          domain_realm = {
-            "mit.edu" = "ATHENA.MIT.EDU";
-          };
-
-          logging = {
-            kdc = "SYSLOG:NOTICE";
-            admin_server = "SYSLOG:NOTICE";
-            default = "SYSLOG:NOTICE";
-          };
         };
+
+        type = format.type;
       };
     };
   };
@@ -101,6 +105,7 @@ in
             "krb5"
             "heimdal"
           ];
+
           message = ''
             `security.krb5.package` must be one of:
 
@@ -114,8 +119,8 @@ in
     ];
 
     environment = mkIf cfg.enable {
-      systemPackages = [ cfg.package ];
       etc."krb5.conf".source = format.generate "krb5.conf" cfg.settings;
+      systemPackages = [ cfg.package ];
     };
   };
 

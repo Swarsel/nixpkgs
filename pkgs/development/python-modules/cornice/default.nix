@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  colander,
+  pyramid,
+  pytest-cache,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pyramid,
-  pytestCheckHook,
-  pytest-cache,
   webtest,
-  colander,
 }:
 
 buildPythonPackage rec {
   pname = "cornice";
   version = "6.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Cornices";
@@ -23,24 +22,25 @@ buildPythonPackage rec {
     hash = "sha256-jAf8unDPpr/ZAWkb9LhOW4URjwcRnaYVUKmfnYBStTg=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ pyramid ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cache
     webtest
     colander
   ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ pyramid ];
+  pyproject = true;
   pythonImportsCheck = [ "cornice" ];
 
   meta = {
-    homepage = "https://github.com/mozilla-services/cornice";
     description = "Build Web Services with Pyramid";
+    homepage = "https://github.com/mozilla-services/cornice";
     license = lib.licenses.mpl20;
     maintainers = [ ];
   };

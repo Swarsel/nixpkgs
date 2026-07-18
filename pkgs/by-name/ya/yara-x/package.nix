@@ -1,11 +1,11 @@
 {
   lib,
-  buildPackages,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  installShellFiles,
+  buildPackages,
   cargo-c,
+  installShellFiles,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -20,21 +20,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-CokjFTQoFT9k/2/MuQSbfzHonW4V0F8hskhqDvpCesM=";
   };
 
-  cargoHash = "sha256-wMh8F++16tQ0IUhacBPb4rDcydmDKZKzQf8EK/qDJXo=";
-
-  env = {
-    CARGO_PROFILE_RELEASE_LTO = "fat";
-    CARGO_PROFILE_RELEASE_CODEGEN_UNITS = "1";
-  };
-
   nativeBuildInputs = [
     installShellFiles
     cargo-c
   ];
 
+  cargoHash = "sha256-wMh8F++16tQ0IUhacBPb4rDcydmDKZKzQf8EK/qDJXo=";
+
+  env = {
+    CARGO_PROFILE_RELEASE_CODEGEN_UNITS = "1";
+    CARGO_PROFILE_RELEASE_LTO = "fat";
+  };
+
   postBuild = ''
     ${buildPackages.rust.envVars.setEnv} cargo cbuild --release --frozen --prefix=${placeholder "out"} --target ${stdenv.hostPlatform.rust.rustcTarget}
   '';
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
+
+  checkFlags = [
+    # Seems to be flaky
+    "--skip=scanner::blocks::tests::block_scanner_timeout"
+  ];
 
   postInstall = ''
     ${buildPackages.rust.envVars.setEnv} cargo cinstall --release --frozen --prefix=${placeholder "out"} --target ${stdenv.hostPlatform.rust.rustcTarget}
@@ -46,26 +55,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/yr completion zsh)
   '';
 
-  checkFlags = [
-    # Seems to be flaky
-    "--skip=scanner::blocks::tests::block_scanner_timeout"
-  ];
-  checkType = "debug";
-
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
   doInstallCheck = true;
+  checkType = "debug";
 
   meta = {
     description = "Tool to do pattern matching for malware research";
     homepage = "https://virustotal.github.io/yara-x/";
     changelog = "https://github.com/VirusTotal/yara-x/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       fab
       lesuisse
     ];
+
     mainProgram = "yr";
   };
 })

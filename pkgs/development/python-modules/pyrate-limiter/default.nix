@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  uv-dynamic-versioning,
-
-  # optional dependencies
-  filelock,
-  psycopg,
-  psycopg-pool,
-  redis,
-
   # test
   aiohttp,
-  pytestCheckHook,
+  buildPythonPackage,
+  # optional dependencies
+  filelock,
+  # build-system
+  hatchling,
+  psycopg,
+  psycopg-pool,
   pytest-asyncio,
   pytest-xdist,
+  pytestCheckHook,
+  redis,
   redisTestHook,
+  uv-dynamic-versioning,
 }:
 
 buildPythonPackage rec {
   pname = "pyrate-limiter";
   version = "4.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vutran1710";
@@ -32,28 +28,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-DT4WyGrayI12Sid6yLOit68vW/YT4cHsRYjd4oo0/J8=";
   };
-
-  build-system = [
-    hatchling
-    uv-dynamic-versioning
-  ];
-
-  optional-dependencies = {
-    all = [
-      filelock
-      redis
-      psycopg
-      psycopg-pool
-    ];
-  };
-
-  # Show each test name and track the slowest
-  # This helps with identifying bottlenecks in the test suite
-  # that are causing the build to time out on Hydra.
-  pytestFlags = [
-    "--durations=10"
-    "-vv"
-  ];
 
   nativeCheckInputs = [
     aiohttp
@@ -63,6 +37,14 @@ buildPythonPackage rec {
     pytest-xdist
     redis
     redisTestHook
+  ];
+
+  # For redisTestHook
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    hatchling
+    uv-dynamic-versioning
   ];
 
   disabledTestPaths = [
@@ -79,8 +61,24 @@ buildPythonPackage rec {
     "tests/test_multi_bucket.py"
   ];
 
-  # For redisTestHook
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    all = [
+      filelock
+      redis
+      psycopg
+      psycopg-pool
+    ];
+  };
+
+  pyproject = true;
+
+  # Show each test name and track the slowest
+  # This helps with identifying bottlenecks in the test suite
+  # that are causing the build to time out on Hydra.
+  pytestFlags = [
+    "--durations=10"
+    "-vv"
+  ];
 
   pythonImportsCheck = [ "pyrate_limiter" ];
 

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
-  xorgproto,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xrefresh";
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -39,12 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility to refresh all or part of an X screen";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xrefresh";
+
     license = with lib.licenses; [
       mitOpenGroup
       hpnd
     ];
-    mainProgram = "xrefresh";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xrefresh";
   };
 })

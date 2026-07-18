@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   packaging,
   pytest,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-rerunfailures";
   version = "16.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -20,13 +19,11 @@ buildPythonPackage rec {
     hash = "sha256-T4l4AoUHvT6GjHyRK2TA3vPTxRicZ5pvgFgDtbkOGMw=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ packaging ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ packaging ];
+  pyproject = true;
 
   meta = {
     description = "Pytest plugin to re-run tests to eliminate flaky failures";

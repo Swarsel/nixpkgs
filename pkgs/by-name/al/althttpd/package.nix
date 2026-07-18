@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchfossil,
-  openssl,
   nix-update-script,
+  openssl,
 }:
 
 stdenv.mkDerivation {
@@ -17,7 +17,6 @@ stdenv.mkDerivation {
   };
 
   buildInputs = [ openssl ];
-
   makeFlags = [ "CC:=$(CC)" ];
 
   installPhase = ''

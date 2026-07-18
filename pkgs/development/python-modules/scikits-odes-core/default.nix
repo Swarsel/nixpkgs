@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "scikits-odes-core";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bmcage";
@@ -17,14 +16,12 @@ buildPythonPackage rec {
     hash = "sha256-lqkPCVMQIVpZrkNUhYhAlFU71eUAaWwN8v66L7Rz91U=";
   };
 
-  sourceRoot = "${src.name}/packages/scikits-odes-core";
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "scikits_odes_core" ];
-
   # no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "scikits_odes_core" ];
+  sourceRoot = "${src.name}/packages/scikits-odes-core";
 
   meta = {
     description = "Core support module for scikits-odes";

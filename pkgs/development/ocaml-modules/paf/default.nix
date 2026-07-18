@@ -1,24 +1,24 @@
 {
-  buildDunePackage,
   lib,
   fetchurl,
+  alcotest-lwt,
+  bigstringaf,
+  buildDunePackage,
+  cstruct,
+  faraday,
+  fmt,
   h1,
   h2,
-  tls-mirage,
-  mimic,
   ke,
-  bigstringaf,
-  faraday,
-  tls,
-  lwt,
   logs,
-  fmt,
+  lwt,
+  mimic,
   mirage-crypto-rng,
-  tcpip,
   ptime,
+  tcpip,
+  tls,
+  tls-mirage,
   uri,
-  alcotest-lwt,
-  cstruct,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -29,8 +29,6 @@ buildDunePackage (finalAttrs: {
     url = "https://github.com/dinosaure/paf-le-chien/releases/download/${finalAttrs.version}/paf-${finalAttrs.version}.tbz";
     hash = "sha256-0q07gZpzUyDoWlA4m/P+EGSvvVKAZ7RwVkpOziqzG2M=";
   };
-
-  minimalOCamlVersion = "4.08";
 
   propagatedBuildInputs = [
     h1
@@ -46,6 +44,7 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     lwt
     logs
@@ -57,11 +56,12 @@ buildDunePackage (finalAttrs: {
   ];
 
   __darwinAllowLocalNetworking = true;
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "HTTP/AF and MirageOS";
+    homepage = "https://github.com/dinosaure/paf-le-chien";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sternenseemann ];
-    homepage = "https://github.com/dinosaure/paf-le-chien";
   };
 })

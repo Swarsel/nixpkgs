@@ -1,11 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   cmake,
   exiv2,
+  gitUpdater,
   imagemagick,
   libglvnd,
   libmediainfo,
@@ -13,6 +12,7 @@
   lomiri-thumbnailer,
   lomiri-ui-extras,
   lomiri-ui-toolkit,
+  nixosTests,
   pkg-config,
   qqc2-suru-style,
   qtbase,
@@ -113,21 +113,25 @@ stdenv.mkDerivation (finalAttrs: {
         format-png
         ;
     };
+
     updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Photo gallery application for Ubuntu Touch devices";
     homepage = "https://gitlab.com/ubports/development/apps/lomiri-gallery-app";
+
     changelog = "https://gitlab.com/ubports/development/apps/lomiri-gallery-app/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = with lib.licenses; [
       gpl3Only
       cc-by-sa-30
     ];
-    teams = [ lib.teams.lomiri ];
-    mainProgram = "lomiri-gallery-app";
+
     platforms = lib.platforms.linux;
+    mainProgram = "lomiri-gallery-app";
+    teams = [ lib.teams.lomiri ];
   };
 })

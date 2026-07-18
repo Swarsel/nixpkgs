@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
-  findlib,
-  ocamlbuild,
-  topkg,
+  SDL2,
   ctypes,
   ctypes-foreign,
-  result,
-  SDL2,
+  findlib,
+  ocaml,
+  ocamlbuild,
   pkg-config,
+  result,
+  topkg,
 }:
 
 let
@@ -20,8 +20,9 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "ocaml${ocaml.version}-${pname}";
   inherit version;
+  inherit (topkg) buildPhase installPhase;
+  pname = "ocaml${ocaml.version}-${pname}";
 
   src = fetchurl {
     url = "${webpage}/releases/${pname}-${version}.tbz";
@@ -37,7 +38,9 @@ stdenv.mkDerivation {
     ocamlbuild
     topkg
   ];
+
   buildInputs = [ topkg ];
+
   propagatedBuildInputs = [
     SDL2
     ctypes
@@ -53,13 +56,11 @@ stdenv.mkDerivation {
       --replace ".byte" ".native"
   '';
 
-  inherit (topkg) buildPhase installPhase;
-
   meta = {
-    homepage = webpage;
-    description = "Thin bindings to the cross-platform SDL library";
-    license = lib.licenses.isc;
     inherit (ocaml.meta) platforms;
+    description = "Thin bindings to the cross-platform SDL library";
+    homepage = webpage;
+    license = lib.licenses.isc;
     broken = lib.versionOlder ocaml.version "4.03";
   };
 }

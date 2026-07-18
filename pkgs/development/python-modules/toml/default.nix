@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "toml";
   version = "0.10.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +17,7 @@ buildPythonPackage rec {
   # looking in the home directory for a binary test runner and b) using
   # git to download a test suite.
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python library for parsing and creating TOML";

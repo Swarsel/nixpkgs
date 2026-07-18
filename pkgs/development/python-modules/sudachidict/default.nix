@@ -1,15 +1,14 @@
 {
-  buildPythonPackage,
   fetchFromGitHub,
-  sudachidict,
+  buildPythonPackage,
   setuptools,
+  sudachidict,
   sudachipy,
 }:
 
 buildPythonPackage rec {
-  pname = "sudachidict-${sudachidict.dict-type}";
   inherit (sudachidict) version meta;
-  pyproject = true;
+  pname = "sudachidict-${sudachidict.dict-type}";
 
   src = fetchFromGitHub {
     owner = "WorksApplications";
@@ -17,8 +16,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-2YI/9y222/mbzDi/3GgwPjAdwnH8qw7viuaQnrVqsZA=";
   };
-
-  sourceRoot = "${src.name}/python";
 
   # setup script tries to get data from the network but we use the nixpkgs' one
   postPatch = ''
@@ -31,14 +28,15 @@ buildPythonPackage rec {
       --replace "%%DICT_TYPE%%" ${sudachidict.dict-type}
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ sudachipy ];
-
   # we need to prepare some files before the build
   # https://github.com/WorksApplications/SudachiDict/blob/develop/package_python.sh
   preBuild = ''
     install -Dm644 ${sudachidict}/share/system.dic -t sudachidict_${sudachidict.dict-type}/resources
     touch sudachidict_${sudachidict.dict-type}/__init__.py
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ sudachipy ];
+  pyproject = true;
+  sourceRoot = "${src.name}/python";
 }

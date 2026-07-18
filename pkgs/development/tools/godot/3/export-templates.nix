@@ -3,19 +3,16 @@
 godot3.overrideAttrs (
   self: base: {
     pname = "godot3-export-templates";
+    godotBinInstallPath = "share/godot/templates/${self.version}.stable";
     godotBuildDescription = "nix export templates";
-
+    godotBuildTarget = "release";
+    installedGodotBinName = "linux_${self.godotBuildPlatform}_64_${self.godotBuildTarget}";
     # As described in default.nix, adding the link flags to pulseaudio in detect.py was necessary to
     # allow the dlopen calls to succeed in Nix builds of godot. However, it seems that this *breaks*
     # the export templates, resulting in programs exported from godot using these export templates to
     # be unable to load this library.
     shouldAddLinkFlagsToPulse = false;
-
     shouldBuildTools = false;
-    godotBuildTarget = "release";
-    godotBinInstallPath = "share/godot/templates/${self.version}.stable";
-    installedGodotBinName = "linux_${self.godotBuildPlatform}_64_${self.godotBuildTarget}";
-
     # https://docs.godotengine.org/en/stable/development/compiling/optimizing_for_size.html
     # Stripping reduces the template size from around 500MB to 40MB for Linux.
     # This also impacts the size of the exported games.

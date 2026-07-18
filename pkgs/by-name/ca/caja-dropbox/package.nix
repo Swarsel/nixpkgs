@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
-  pkg-config,
-  gobject-introspection,
-  gdk-pixbuf,
   caja,
-  gtk3,
-  python3,
   dropbox,
+  gdk-pixbuf,
   gitUpdater,
+  gobject-introspection,
+  gtk3,
+  pkg-config,
+  python3,
+  replaceVars,
 }:
 
 let
@@ -54,22 +54,23 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--with-caja-extension-dir=$$out/lib/caja/extensions-2.0" ];
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/caja-dropbox";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/caja-dropbox";
   };
 
   meta = {
     description = "Dropbox extension for Caja file manager";
     homepage = "https://github.com/mate-desktop/caja-dropbox";
+
     license = with lib.licenses; [
       gpl3Plus
       cc-by-nd-30
     ];
+
     platforms = lib.platforms.unix;
     teams = [ lib.teams.mate ];
   };

@@ -21,71 +21,44 @@ in
 
   options = {
 
+    networking.nat.dmzHost = mkOption {
+      default = null;
+
+      description = ''
+        The local IP address to which all traffic that does not match any
+        forwarding rule is forwarded.
+      '';
+
+      example = "10.0.0.1";
+      type = types.nullOr types.str;
+    };
+
     networking.nat.enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether to enable Network Address Translation (NAT). A
         properly configured firewall or a trusted L2 on all network
         interfaces is required to prevent unauthorized access to
         the internal network.
       '';
+
+      type = types.bool;
     };
 
     networking.nat.enableIPv6 = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether to enable IPv6 NAT.
       '';
-    };
 
-    networking.nat.internalInterfaces = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "eth0" ];
-      description = ''
-        The interfaces for which to perform NAT. Packets coming from
-        these interface and destined for the external interface will
-        be rewritten.
-      '';
-    };
-
-    networking.nat.internalIPs = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "192.168.1.0/24" ];
-      description = ''
-        The IP address ranges for which to perform NAT.  Packets
-        coming from these addresses (on any interface) and destined
-        for the external interface will be rewritten.
-      '';
-    };
-
-    networking.nat.internalIPv6s = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "fc00::/64" ];
-      description = ''
-        The IPv6 address ranges for which to perform NAT.  Packets
-        coming from these addresses (on any interface) and destined
-        for the external interface will be rewritten.
-      '';
-    };
-
-    networking.nat.externalInterface = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "eth1";
-      description = ''
-        The name of the external network interface.
-      '';
+      type = types.bool;
     };
 
     networking.nat.externalIP = mkOption {
-      type = types.nullOr types.str;
       default = null;
-      example = "203.0.113.123";
+
       description = ''
         The public IP address to which packets from the local
         network are to be rewritten.  If this is left empty, the
@@ -93,12 +66,14 @@ in
         used.  Only connections made to this IP address will be
         forwarded to the internal network when using forwardPorts.
       '';
+
+      example = "203.0.113.123";
+      type = types.nullOr types.str;
     };
 
     networking.nat.externalIPv6 = mkOption {
-      type = types.nullOr types.str;
       default = null;
-      example = "2001:dc0:2001:11::175";
+
       description = ''
         The public IPv6 address to which packets from the local
         network are to be rewritten.  If this is left empty, the
@@ -106,68 +81,114 @@ in
         used.  Only connections made to this IP address will be
         forwarded to the internal network when using forwardPorts.
       '';
+
+      example = "2001:dc0:2001:11::175";
+      type = types.nullOr types.str;
+    };
+
+    networking.nat.externalInterface = mkOption {
+      default = null;
+
+      description = ''
+        The name of the external network interface.
+      '';
+
+      example = "eth1";
+      type = types.nullOr types.str;
     };
 
     networking.nat.forwardPorts = mkOption {
-      type =
-        with types;
-        listOf (submodule {
-          options = {
-            sourcePort = mkOption {
-              type = types.either types.int (types.strMatching "[[:digit:]]+:[[:digit:]]+");
-              example = 8080;
-              description = "Source port of the external interface; to specify a port range, use a string with a colon (e.g. \"60000:61000\")";
-            };
-
-            destination = mkOption {
-              type = types.str;
-              example = "10.0.0.1:80";
-              description = "Forward connection to destination ip:port (or [ipv6]:port); to specify a port range, use ip:start-end";
-            };
-
-            proto = mkOption {
-              type = types.str;
-              default = "tcp";
-              example = "udp";
-              description = "Protocol of forwarded connection";
-            };
-
-            loopbackIPs = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              example = literalExpression ''[ "55.1.2.3" ]'';
-              description = "Public IPs for NAT reflection; for connections to `loopbackip:sourcePort` from the host itself and from other hosts behind NAT";
-            };
-          };
-        });
       default = [ ];
-      example = [
-        {
-          sourcePort = 8080;
-          destination = "10.0.0.1:80";
-          proto = "tcp";
-        }
-        {
-          sourcePort = 8080;
-          destination = "[fc00::2]:80";
-          proto = "tcp";
-        }
-      ];
+
       description = ''
         List of forwarded ports from the external interface to
         internal destinations by using DNAT. Destination can be
         IPv6 if IPv6 NAT is enabled.
       '';
+
+      example = [
+        {
+          destination = "10.0.0.1:80";
+          proto = "tcp";
+          sourcePort = 8080;
+        }
+        {
+          destination = "[fc00::2]:80";
+          proto = "tcp";
+          sourcePort = 8080;
+        }
+      ];
+
+      type =
+        with types;
+        listOf (submodule {
+          options = {
+            destination = mkOption {
+              description = "Forward connection to destination ip:port (or [ipv6]:port); to specify a port range, use ip:start-end";
+              example = "10.0.0.1:80";
+              type = types.str;
+            };
+
+            loopbackIPs = mkOption {
+              default = [ ];
+              description = "Public IPs for NAT reflection; for connections to `loopbackip:sourcePort` from the host itself and from other hosts behind NAT";
+              example = literalExpression ''[ "55.1.2.3" ]'';
+              type = types.listOf types.str;
+            };
+
+            proto = mkOption {
+              default = "tcp";
+              description = "Protocol of forwarded connection";
+              example = "udp";
+              type = types.str;
+            };
+
+            sourcePort = mkOption {
+              description = "Source port of the external interface; to specify a port range, use a string with a colon (e.g. \"60000:61000\")";
+              example = 8080;
+              type = types.either types.int (types.strMatching "[[:digit:]]+:[[:digit:]]+");
+            };
+          };
+        });
     };
 
-    networking.nat.dmzHost = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "10.0.0.1";
+    networking.nat.internalIPs = mkOption {
+      default = [ ];
+
       description = ''
-        The local IP address to which all traffic that does not match any
-        forwarding rule is forwarded.
+        The IP address ranges for which to perform NAT.  Packets
+        coming from these addresses (on any interface) and destined
+        for the external interface will be rewritten.
       '';
+
+      example = [ "192.168.1.0/24" ];
+      type = types.listOf types.str;
+    };
+
+    networking.nat.internalIPv6s = mkOption {
+      default = [ ];
+
+      description = ''
+        The IPv6 address ranges for which to perform NAT.  Packets
+        coming from these addresses (on any interface) and destined
+        for the external interface will be rewritten.
+      '';
+
+      example = [ "fc00::/64" ];
+      type = types.listOf types.str;
+    };
+
+    networking.nat.internalInterfaces = mkOption {
+      default = [ ];
+
+      description = ''
+        The interfaces for which to perform NAT. Packets coming from
+        these interface and destined for the external interface will
+        be rewritten.
+      '';
+
+      example = [ "eth0" ];
+      type = types.listOf types.str;
     };
 
   };
@@ -189,13 +210,7 @@ in
       }
     ];
 
-    # Use the same iptables package as in config.networking.firewall.
-    # When the firewall is enabled, this should be deduplicated without any
-    # error.
-    environment.systemPackages = [ config.networking.firewall.package ];
-
     boot = {
-      kernelModules = [ "nf_nat_ftp" ];
       kernel.sysctl = {
         "net.ipv4.conf.all.forwarding" = mkOverride 99 true;
         "net.ipv4.conf.default.forwarding" = mkOverride 99 true;
@@ -204,13 +219,19 @@ in
         # Do not prevent IPv6 autoconfiguration.
         # See <http://strugglers.net/~andy/blog/2011/09/04/linux-ipv6-router-advertisements-and-forwarding/>.
         "net.ipv6.conf.all.accept_ra" = mkOverride 99 2;
-        "net.ipv6.conf.default.accept_ra" = mkOverride 99 2;
-
         # Forward IPv6 packets.
         "net.ipv6.conf.all.forwarding" = mkOverride 99 true;
+        "net.ipv6.conf.default.accept_ra" = mkOverride 99 2;
         "net.ipv6.conf.default.forwarding" = mkOverride 99 true;
       };
+
+      kernelModules = [ "nf_nat_ftp" ];
     };
+
+    # Use the same iptables package as in config.networking.firewall.
+    # When the firewall is enabled, this should be deduplicated without any
+    # error.
+    environment.systemPackages = [ config.networking.firewall.package ];
 
   };
 }

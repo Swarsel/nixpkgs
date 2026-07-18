@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   desktop-file-utils,
+  elementary-default-settings,
   gettext,
-  pkg-config,
   gnome-keyring,
   gnome-session,
-  wingpanel,
-  orca,
-  onboard,
-  elementary-default-settings,
   gnome-settings-daemon,
-  runtimeShell,
-  systemd,
-  writeText,
   meson,
   ninja,
+  nix-update-script,
+  onboard,
+  orca,
+  pkg-config,
+  runtimeShell,
+  systemd,
+  wingpanel,
+  writeText,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -74,11 +74,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
-
     providedSessions = [
       "pantheon-wayland"
     ];
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

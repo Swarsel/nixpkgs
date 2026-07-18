@@ -1,16 +1,16 @@
 {
   lib,
   fetchFromGitLab,
-  fetchpatch2,
-  python3Packages,
   appstream,
   desktop-file-utils,
+  fetchpatch2,
   gobject-introspection,
-  pkg-config,
-  meson,
-  wrapGAppsHook4,
   libadwaita,
+  meson,
+  pkg-config,
+  python3Packages,
   tractor,
+  wrapGAppsHook4,
 }:
 let
   # This package should be updated together with pkgs/by-name/tr/tractor/package.nix
@@ -18,23 +18,16 @@ let
 in
 python3Packages.buildPythonApplication {
 
-  pname = "carburetor";
   inherit version;
-
-  pyproject = false;
+  pname = "carburetor";
 
   src = fetchFromGitLab {
-    domain = "framagit.org";
     owner = "tractor";
     repo = "carburetor";
     tag = version;
     hash = "sha256-mHuD9fxHTmTfEdAsiqTtFVzxXEjD8VIDNDKF2RjcAUg=";
+    domain = "framagit.org";
   };
-
-  build-system = [
-    meson
-    python3Packages.meson-python
-  ];
 
   nativeBuildInputs = [
     appstream
@@ -46,6 +39,17 @@ python3Packages.buildPythonApplication {
 
   buildInputs = [ libadwaita ];
 
+  preFixup = ''
+    substituteInPlace $out/share/applications/io.frama.tractor.carburetor.desktop \
+      --replace-fail "Exec=gapplication launch io.frama.tractor.carburetor" "Exec=$out/bin/carburetor"
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  build-system = [
+    meson
+    python3Packages.meson-python
+  ];
+
   dependencies = [
     python3Packages.pycountry
     python3Packages.pygobject3
@@ -53,19 +57,14 @@ python3Packages.buildPythonApplication {
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    substituteInPlace $out/share/applications/io.frama.tractor.carburetor.desktop \
-      --replace-fail "Exec=gapplication launch io.frama.tractor.carburetor" "Exec=$out/bin/carburetor"
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = false;
 
   meta = {
-    homepage = "https://framagit.org/tractor/carburetor";
     description = "Graphical settings app for Tractor in GTK";
+    homepage = "https://framagit.org/tractor/carburetor";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ mksafavi ];
     platforms = lib.platforms.linux;
     mainProgram = "carburetor";
-    maintainers = with lib.maintainers; [ mksafavi ];
   };
 }

@@ -1,13 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-
-  # dependencies
-  cmake-format,
-
   # tests
   cmake,
+  # dependencies
+  cmake-format,
+  python3Packages,
   versionCheckHook,
 }:
 
@@ -22,7 +20,6 @@ in
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "cmake-language-server";
   version = "0.1.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "regen100";
@@ -38,17 +35,6 @@ pythonPackages.buildPythonApplication (finalAttrs: {
         "CALL_TIMEOUT = 2" \
         "CALL_TIMEOUT = 10"
   '';
-
-  build-system = with pythonPackages; [
-    pdm-backend
-  ];
-  dontUseCmakeConfigure = true;
-
-  dependencies = with pythonPackages; [
-    pygls
-  ];
-
-  pythonImportsCheck = [ "cmake_language_server" ];
 
   nativeCheckInputs = [
     cmake
@@ -66,6 +52,14 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     echo "__version__ = \"$PDM_BUILD_SCM_VERSION\"" > cmake_language_server/version.py
   '';
 
+  build-system = with pythonPackages; [
+    pdm-backend
+  ];
+
+  dependencies = with pythonPackages; [
+    pygls
+  ];
+
   disabledTests = [
     # AssertionError: CTEST_SCP_COMMAND not found
     "test_parse_variables"
@@ -76,6 +70,10 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     # AssertionError: assert 'Boost' in [...
     "test_completions_triggercharacter"
   ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "cmake_language_server" ];
 
   meta = {
     description = "CMake LSP Implementation";

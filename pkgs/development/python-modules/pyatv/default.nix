@@ -1,12 +1,13 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
+  buildPythonPackage,
   chacha20poly1305-reuseable,
   cryptography,
   deepdiff,
-  fetchFromGitHub,
   ifaddr,
   miniaudio,
   protobuf,
@@ -21,7 +22,6 @@
   requests,
   setuptools,
   srptools,
-  stdenv,
   tabulate,
   tinytag,
   zeroconf,
@@ -30,7 +30,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyatv";
   version = "0.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "postlund";
@@ -39,20 +38,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-UNBpVB2H+xr0ijdlfK/Hrh6k3lhRSqHkthjWp/WZsaQ=";
   };
 
-  pythonRelaxDeps = [
-    "aiohttp"
-    "async_timeout"
-    "bitarray"
-    "chacha20poly1305-reuseable"
-    "cryptography"
-    "ifaddr"
-    "miniaudio"
-    "protobuf"
-    "requests"
-    "srptools"
-    "zeroconf"
+  nativeCheckInputs = [
+    deepdiff
+    pyfakefs
+    (pytest-aiohttp.override { pytest-asyncio = pytest-asyncio_0; })
+    pytest-asyncio_0
+    pytest-httpserver
+    pytest-timeout
+    pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -71,14 +67,10 @@ buildPythonPackage (finalAttrs: {
     zeroconf
   ];
 
-  nativeCheckInputs = [
-    deepdiff
-    pyfakefs
-    (pytest-aiohttp.override { pytest-asyncio = pytest-asyncio_0; })
-    pytest-asyncio_0
-    pytest-httpserver
-    pytest-timeout
-    pytestCheckHook
+  disabledTestPaths = [
+    # Test doesn't work in the sandbox
+    "tests/protocols/companion/test_companion_auth.py"
+    "tests/protocols/mrp/test_mrp_auth.py"
   ];
 
   disabledTests =
@@ -91,15 +83,22 @@ buildPythonPackage (finalAttrs: {
       "test_stream_retransmission"
     ];
 
-  disabledTestPaths = [
-    # Test doesn't work in the sandbox
-    "tests/protocols/companion/test_companion_auth.py"
-    "tests/protocols/mrp/test_mrp_auth.py"
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyatv" ];
+
+  pythonRelaxDeps = [
+    "aiohttp"
+    "async_timeout"
+    "bitarray"
+    "chacha20poly1305-reuseable"
+    "cryptography"
+    "ifaddr"
+    "miniaudio"
+    "protobuf"
+    "requests"
+    "srptools"
+    "zeroconf"
+  ];
 
   meta = {
     description = "Python client library for the Apple TV";

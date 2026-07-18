@@ -1,23 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  libpulseaudio,
-  libnotify,
+  fetchpatch2,
   gobject-introspection,
+  libnotify,
+  libpulseaudio,
   python3Packages,
   unstableGitUpdater,
-  fetchpatch2,
   writableTmpDirAsHomeHook,
   extraLibs ? [ ],
 }:
 
 python3Packages.buildPythonApplication rec {
+  pname = "i3pystatus";
   # i3pystatus moved to rolling release:
   # https://github.com/enkore/i3pystatus/issues/584
   version = "3.35-unstable-2026-04-21";
-  pname = "i3pystatus";
-  pyproject = true;
-  build-system = [ python3Packages.setuptools ];
 
   src = fetchFromGitHub {
     owner = "enkore";
@@ -29,11 +27,15 @@ python3Packages.buildPythonApplication rec {
   patches = [
     # absolutifies the path to the test data in buds test so it can be run from anywhere
     (fetchpatch2 {
+      hash = "sha256-kSf2Nrypw8CCHC7acDkQXI27178HA3NJlyRWkHyYOGs=";
       # https://github.com/enkore/i3pystatus/pull/869
       url = "https://github.com/enkore/i3pystatus/commit/7a39c3527566411eb1b3e4f79191839ac4b0424e.patch";
-      hash = "sha256-kSf2Nrypw8CCHC7acDkQXI27178HA3NJlyRWkHyYOGs=";
     })
   ];
+
+  postPatch = ''
+    makeWrapperArgs+=(--set GI_TYPELIB_PATH "$GI_TYPELIB_PATH")
+  '';
 
   nativeBuildInputs = [ gobject-introspection ];
 
@@ -48,14 +50,13 @@ python3Packages.buildPythonApplication rec {
     writableTmpDirAsHomeHook
   ];
 
-  # Upstream tests construct ElementCall via __new__ without Module.__init__, so
-  # output/_output is never set (AttributeError on .output after run()).
-  disabledTests = [
-    "test_active_output"
-    "test_empty_output"
-    "test_error_output"
-    "test_format_includes_room_alias"
-  ];
+  postInstall = ''
+    makeWrapper ${python3Packages.python.interpreter} $out/bin/${pname}-python-interpreter \
+      --prefix PYTHONPATH : "$PYTHONPATH" \
+      ''${makeWrapperArgs[@]}
+  '';
+
+  build-system = [ python3Packages.setuptools ];
 
   dependencies =
     with python3Packages;
@@ -71,6 +72,15 @@ python3Packages.buildPythonApplication rec {
     ]
     ++ extraLibs;
 
+  # Upstream tests construct ElementCall via __new__ without Module.__init__, so
+  # output/_output is never set (AttributeError on .output after run()).
+  disabledTests = [
+    "test_active_output"
+    "test_empty_output"
+    "test_error_output"
+    "test_format_includes_room_alias"
+  ];
+
   makeWrapperArgs = [
     # LC_TIME != C results in locale.Error: unsupported locale setting
     "--set"
@@ -82,31 +92,26 @@ python3Packages.buildPythonApplication rec {
     "${lib.makeLibraryPath [ libpulseaudio ]}"
   ];
 
-  postPatch = ''
-    makeWrapperArgs+=(--set GI_TYPELIB_PATH "$GI_TYPELIB_PATH")
-  '';
-
-  postInstall = ''
-    makeWrapper ${python3Packages.python.interpreter} $out/bin/${pname}-python-interpreter \
-      --prefix PYTHONPATH : "$PYTHONPATH" \
-      ''${makeWrapperArgs[@]}
-  '';
-
+  pyproject = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    mainProgram = "i3pystatus";
-    homepage = "https://github.com/enkore/i3pystatus";
     description = "Complete replacement for i3status";
+
     longDescription = ''
       i3pystatus is a growing collection of python scripts for status output compatible
       to i3status / i3bar of the i3 window manager.
     '';
+
+    homepage = "https://github.com/enkore/i3pystatus";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       igsha
       lucasew
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "i3pystatus";
   };
 }

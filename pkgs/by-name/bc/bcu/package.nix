@@ -1,14 +1,14 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
   libftdi1,
   libusb1,
   libyaml,
   ncurses,
   nix-update-script,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,7 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "version=\`git describe --tags --long\`" "version=${finalAttrs.src.tag}"
   '';
 
-  enableParallelBuilding = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -44,20 +43,21 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  passthru.updateScript = nix-update-script { };
-
   env.NIX_CFLAGS_COMPILE = "-Wno-pointer-sign -Wno-deprecated-declarations -Wno-switch";
 
   preFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
     ln -sf $out/bin/bcu_mac $out/bin/bcu
   '';
 
+  enableParallelBuilding = true;
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "NXP i.MX remote control and power measurement tools";
     homepage = "https://github.com/nxp-imx/bcu";
     license = lib.licenses.bsd3;
-    mainProgram = "bcu";
     maintainers = [ lib.maintainers.jmbaur ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "bcu";
   };
 })

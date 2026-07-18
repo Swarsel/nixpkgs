@@ -1,24 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  python,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
   # dependencies
   btrees,
+  buildPythonPackage,
+  # tests
+  manuel,
   persistent,
+  python,
+  pythonAtLeast,
+  # build-system
+  setuptools,
   transaction,
   zc-lockfile,
   zconfig,
   zodbpickle,
   zope-interface,
-
-  # tests
-  manuel,
   zope-testing,
   zope-testrunner,
 }:
@@ -26,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "zodb";
   version = "6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -50,6 +46,16 @@ buildPythonPackage (finalAttrs: {
     rm -vf src/ZODB/tests/testblob.py
   '';
 
+  nativeCheckInputs = [
+    manuel
+    zope-testing
+    zope-testrunner
+  ];
+
+  checkPhase = ''
+    ${python.interpreter} -m zope.testrunner --test-path=src []
+  '';
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -62,22 +68,14 @@ buildPythonPackage (finalAttrs: {
     zope-interface
   ];
 
-  nativeCheckInputs = [
-    manuel
-    zope-testing
-    zope-testrunner
-  ];
-
-  checkPhase = ''
-    ${python.interpreter} -m zope.testrunner --test-path=src []
-  '';
+  pyproject = true;
 
   meta = {
     description = "Zope Object Database: object database and persistence";
     homepage = "https://zodb-docs.readthedocs.io/";
     changelog = "https://github.com/zopefoundation/ZODB/blob/${finalAttrs.src.tag}/CHANGES.rst";
-    downloadPage = "https://github.com/zopefoundation/ZODB";
     license = lib.licenses.zpl21;
     maintainers = [ ];
+    downloadPage = "https://github.com/zopefoundation/ZODB";
   };
 })

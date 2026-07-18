@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "azure-synapse-managedprivateendpoints";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     hash = "sha256-kA6urM/9zQEBKySKfQSQCMkoB7dJ7dHJB0ypJIVUwX4=";
+    extension = "zip";
   };
 
   build-system = [ setuptools ];
@@ -27,9 +26,9 @@ buildPythonPackage rec {
     msrest
   ];
 
-  pythonNamespaces = [ "azure.synapse" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.synapse.managedprivateendpoints" ];
+  pythonNamespaces = [ "azure.synapse" ];
 
   meta = {
     description = "Microsoft Azure Synapse Managed Private Endpoints Client Library";

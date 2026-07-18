@@ -1,15 +1,17 @@
 {
-  stdenv,
   lib,
-  autoreconfHook,
+  stdenv,
   fetchurl,
+  autoreconfHook,
+  buildEnv,
+  gdm,
   gettext,
   glib,
+  gnome,
   gnome-bluetooth,
   gnome-desktop,
   gnome-panel,
   gnome-session,
-  gnome,
   gsettings-desktop-schemas,
   gtk3,
   ibus,
@@ -17,22 +19,20 @@
   libpulseaudio,
   libxkbfile,
   libxml2,
+  libxxf86vm,
   metacity,
+  nixosTests,
+  pam,
   pkg-config,
   polkit,
-  gdm,
   replaceVars,
+  runCommand,
   systemd,
   tecla,
   upower,
-  pam,
   wrapGAppsHook3,
   writeTextFile,
   xkeyboard_config,
-  libxxf86vm,
-  nixosTests,
-  runCommand,
-  buildEnv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,12 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     -Exec=gnome-flashback
     +Exec=$out/bin/gnome-flashback
     END_PATCH
-  '';
-
-  postInstall = ''
-    rm -r $out/share/gnome-session
-    rm -r $out/share/xsessions
-    rm $out/libexec/gnome-flashback-metacity
   '';
 
   nativeBuildInputs = [
@@ -94,52 +88,31 @@ stdenv.mkDerivation (finalAttrs: {
     xkeyboard_config
   ];
 
-  doCheck = true;
-
-  enableParallelBuilding = true;
-
   env = {
     PKG_CONFIG_LIBGNOME_PANEL_LAYOUTSDIR = "${placeholder "out"}/share/gnome-panel/layouts";
     PKG_CONFIG_LIBGNOME_PANEL_MODULESDIR = "${placeholder "out"}/lib/gnome-panel/modules";
   };
 
+  doCheck = true;
+
+  postInstall = ''
+    rm -r $out/share/gnome-session
+    rm -r $out/share/xsessions
+    rm $out/libexec/gnome-flashback-metacity
+  '';
+
+  enableParallelBuilding = true;
+
   passthru = {
-    updateScript = gnome.updateScript {
-      packageName = "gnome-flashback";
-      versionPolicy = "odd-unstable";
-    };
-
-    mkWmApplication =
-      {
-        wmName,
-        wmLabel,
-        wmCommand,
-      }:
-      writeTextFile {
-        name = "gnome-flashback-${wmName}-wm";
-        destination = "/share/applications/${wmName}.desktop";
-        text = ''
-          [Desktop Entry]
-          Type=Application
-          Encoding=UTF-8
-          Name=${wmLabel}
-          Exec=${wmCommand}
-          NoDisplay=true
-          X-GNOME-WMName=${wmLabel}
-          X-GNOME-Autostart-Phase=WindowManager
-          X-GNOME-Provides=windowmanager
-          X-GNOME-Autostart-Notify=false
-        '';
-      };
-
     mkGnomeSession =
       {
-        wmName,
         wmLabel,
+        wmName,
       }:
       writeTextFile {
-        name = "gnome-flashback-${wmName}-gnome-session";
         destination = "/share/gnome-session/sessions/gnome-flashback-${wmName}.session";
+        name = "gnome-flashback-${wmName}-gnome-session";
+
         text = ''
           [GNOME Session]
           Name=GNOME Flashback (${wmLabel})
@@ -148,13 +121,14 @@ stdenv.mkDerivation (finalAttrs: {
 
     mkSessionForWm =
       {
-        wmName,
-        wmLabel,
         wmCommand,
+        wmLabel,
+        wmName,
       }:
       writeTextFile {
-        name = "gnome-flashback-${wmName}-xsession";
         destination = "/share/xsessions/gnome-flashback-${wmName}.desktop";
+        name = "gnome-flashback-${wmName}-xsession";
+
         text = ''
           [Desktop Entry]
           Name=GNOME Flashback (${wmLabel})
@@ -171,10 +145,10 @@ stdenv.mkDerivation (finalAttrs: {
 
     mkSystemdTargetForWm =
       {
-        wmName,
-        wmLabel,
-        wmCommand,
         enableGnomePanel,
+        wmCommand,
+        wmLabel,
+        wmName,
       }:
       runCommand "gnome-flashback-${wmName}.target" { } (
         ''
@@ -204,18 +178,47 @@ stdenv.mkDerivation (finalAttrs: {
         ''
       );
 
+    mkWmApplication =
+      {
+        wmCommand,
+        wmLabel,
+        wmName,
+      }:
+      writeTextFile {
+        destination = "/share/applications/${wmName}.desktop";
+        name = "gnome-flashback-${wmName}-wm";
+
+        text = ''
+          [Desktop Entry]
+          Type=Application
+          Encoding=UTF-8
+          Name=${wmLabel}
+          Exec=${wmCommand}
+          NoDisplay=true
+          X-GNOME-WMName=${wmLabel}
+          X-GNOME-Autostart-Phase=WindowManager
+          X-GNOME-Provides=windowmanager
+          X-GNOME-Autostart-Notify=false
+        '';
+      };
+
     tests = {
       inherit (nixosTests) gnome-flashback;
+    };
+
+    updateScript = gnome.updateScript {
+      packageName = "gnome-flashback";
+      versionPolicy = "odd-unstable";
     };
   };
 
   meta = {
     description = "GNOME 2.x-like session for GNOME 3";
-    mainProgram = "gnome-flashback";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-flashback";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-flashback/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-flashback";
+    teams = [ lib.teams.gnome ];
   };
 })

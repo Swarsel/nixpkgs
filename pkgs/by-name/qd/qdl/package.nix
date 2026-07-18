@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  meson,
-  pkg-config,
-  libxml2,
-  libusb1,
-  libzip,
   cmocka,
+  fetchpatch2,
+  libusb1,
+  libxml2,
+  libzip,
+  meson,
   ninja,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # allow VERSION to be overridden, will land in 2.8
     (fetchpatch2 {
-      url = "https://github.com/linux-msm/qdl/commit/6f8700ed81b3614baa12786a9845c9abeab1e178.patch";
       hash = "sha256-fDC34Wq4MadDDLHVQ5zuRKE2zD2dOMTU8EGINcJTYuI=";
+      url = "https://github.com/linux-msm/qdl/commit/6f8700ed81b3614baa12786a9845c9abeab1e178.patch";
     })
   ];
 
@@ -38,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmocka
     ninja
   ];
+
   buildInputs = [
     libxml2
     libusb1
@@ -55,18 +56,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/linux-msm/qdl";
     description = "Tool for flashing images to Qualcomm devices";
+    homepage = "https://github.com/linux-msm/qdl";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       muscaln
       anas
       numinit
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "qdl";
   };

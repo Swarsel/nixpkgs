@@ -1,6 +1,6 @@
 {
-  mkKdeDerivation,
   breeze,
+  mkKdeDerivation,
   qtsvg,
 }:
 mkKdeDerivation {

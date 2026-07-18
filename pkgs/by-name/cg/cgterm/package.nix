@@ -30,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/MagerValp/CGTerm";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    mainProgram = "cg-term";
     platforms = lib.platforms.all;
+    mainProgram = "cg-term";
   };
 })

@@ -1,41 +1,36 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  hatch-vcs,
-
   # dependencies
   build,
+  buildPythonPackage,
+  hatch-vcs,
+  # build-system
+  hatchling,
+  # tests
+  imagemagick,
+  jsonschema,
+  magicgui,
+  # passthru
+  napari, # reverse dependency, for tests
+  napari-plugin-engine,
+  numpy,
   platformdirs,
   psygnal,
   pydantic,
   pydantic-extra-types,
+  pytest-pretty,
+  pytestCheckHook,
   pyyaml,
   rich,
   tomli,
   tomli-w,
   typer,
-
-  # tests
-  imagemagick,
-  jsonschema,
-  magicgui,
-  napari-plugin-engine,
-  numpy,
-  pytest-pretty,
-  pytestCheckHook,
-
-  # passthru
-  napari, # reverse dependency, for tests
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "napari-npe2";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "napari";
@@ -43,6 +38,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-cR7hf5v+RgcENY3rSHnOB4E/TONVYvHKS5i3Kv1Sbuc=";
   };
+
+  nativeCheckInputs = [
+    imagemagick
+    jsonschema
+    magicgui
+    napari-plugin-engine
+    numpy
+    pytest-pretty
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -62,18 +67,6 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
-  pythonImportsCheck = [ "npe2" ];
-
-  nativeCheckInputs = [
-    imagemagick
-    jsonschema
-    magicgui
-    napari-plugin-engine
-    numpy
-    pytest-pretty
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Require internet connection
     "test_cli_fetch"
@@ -87,6 +80,9 @@ buildPythonPackage (finalAttrs: {
     "test_cli_convert_svg"
     "test_conversion"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "npe2" ];
 
   passthru.tests = {
     inherit napari;

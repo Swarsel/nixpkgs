@@ -2,22 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  hatchling,
-  hatch-vcs,
   hatch-fancy-pypi-readme,
+  hatch-vcs,
+  hatchling,
   pygments,
 }:
 
 buildPythonPackage rec {
   pname = "accessible-pygments";
   version = "0.0.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "accessible_pygments";
     inherit version;
     hash = "sha256-QJGNPmorYZrUJMuR5Va9O9iGVEPZ8i8dzfeeM8gEaHI=";
+    pname = "accessible_pygments";
   };
+
+  # Tests only execute pygments with these styles
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -26,9 +28,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ pygments ];
-
-  # Tests only execute pygments with these styles
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "a11y_pygments"

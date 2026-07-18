@@ -1,8 +1,8 @@
 # mostly copied from https://github.com/9001/copyparty/blob/hovudstraum/contrib/package/nix/partftpy/default.nix
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 buildPythonPackage rec {
@@ -21,10 +21,8 @@ buildPythonPackage rec {
     rm -r t
   '';
 
-  pyproject = true;
-
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "partftpy.TftpServer" ];
 
   meta = {

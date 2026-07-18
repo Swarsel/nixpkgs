@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   cg3,
-  fetchFromGitHub,
   fetchpatch,
   hfst,
   hfst-ospell,
@@ -30,16 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
     # allow building with python311.
     # patch is incorporated upstream and should be removed on the next update
     (fetchpatch {
+      hash = "sha256-Q4fi5HMmO0fq8YI833vgv2EYp//9Um/xFoRk28WrUMk=";
       name = "python311.patch";
       url = "https://github.com/flammie/omorfi/commit/9736452ae6624060dbea0876a722c3731e776357.patch";
-      hash = "sha256-Q4fi5HMmO0fq8YI833vgv2EYp//9Um/xFoRk28WrUMk=";
     })
   ];
-
-  # Fix for omorfi-hyphenate.sh file not found error
-  postInstall = ''
-    ln -s $out/share/omorfi/{omorfi.hyphenate-rules.hfst,omorfi.hyphenate.hfst}
-  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -63,6 +58,19 @@ stdenv.mkDerivation (finalAttrs: {
     icu
   ];
 
+  # Enable all features
+  configureFlags = [
+    "--enable-labeled-segments"
+    "--enable-lemmatiser"
+    "--enable-segmenter"
+    "--enable-hyphenator"
+  ];
+
+  # Fix for omorfi-hyphenate.sh file not found error
+  postInstall = ''
+    ln -s $out/share/omorfi/{omorfi.hyphenate-rules.hfst,omorfi.hyphenate.hfst}
+  '';
+
   # Wrap shell scripts so they find the Python scripts
   # omorfi.bash inexplicably fails when wrapped
   preFixup = ''
@@ -73,14 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
       fi
     done
   '';
-
-  # Enable all features
-  configureFlags = [
-    "--enable-labeled-segments"
-    "--enable-lemmatiser"
-    "--enable-segmenter"
-    "--enable-hyphenator"
-  ];
 
   meta = {
     description = "Analysis for Finnish text";

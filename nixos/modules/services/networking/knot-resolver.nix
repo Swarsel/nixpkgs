@@ -9,15 +9,15 @@ let
   # pkgs.writers.yaml_1_1.generate with additional kresctl validate
   configFile = pkgs.callPackage (
     {
-      runCommandLocal,
       remarshal_0_17,
+      runCommandLocal,
       stdenv,
     }:
     runCommandLocal "knot-resolver.yaml"
       {
         nativeBuildInputs = [ remarshal_0_17 ];
-        value = builtins.toJSON cfg.settings;
         passAsFile = [ "value" ];
+        value = builtins.toJSON cfg.settings;
       }
       ''
         json2yaml "$valuePath" "$out"
@@ -31,51 +31,51 @@ let
   ) { };
 in
 {
-  meta.maintainers = [
-    lib.maintainers.vcunat # upstream developer
-    lib.maintainers.leona
-    lib.maintainers.osnyx
-  ];
-
   ###### interface
   options.services.knot-resolver = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable knot-resolver (version 6) domain name server.
         DNSSEC validation is turned on by default.
         If you want to use knot-resolver 5, please use services.kresd.
       '';
+
+      type = lib.types.bool;
     };
+
     managerPackage = lib.mkPackageOption pkgs "knot-resolver-manager_6" {
       example = "pkgs.knot-resolver-manager_6.override { extraFeatures = true; }";
     };
+
     settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Nix-based (RFC 42) configuration for Knot Resolver.
+        For configuration reference (described as YAML) see
+        <https://www.knot-resolver.cz/documentation/latest/config-overview.html>
+      '';
+
       type = lib.types.submodule {
-        freeformType = (pkgs.formats.yaml { }).type;
         options = {
           network.listen = lib.mkOption {
-            type = lib.types.listOf (
-              lib.types.submodule {
-                freeformType = (pkgs.formats.yaml { }).type;
-              }
-            );
-            description = "List of interfaces to listen to and its configuration.";
             default = [
               {
+                freebind = false;
                 interface = [ "127.0.0.1" ];
                 kind = "dns";
-                freebind = false;
               }
             ]
             ++ lib.optionals config.networking.enableIPv6 [
               {
+                freebind = false;
                 interface = [ "::1" ];
                 kind = "dns";
-                freebind = false;
               }
             ];
+
             defaultText = lib.literalExpression ''
               [
                 {
@@ -92,40 +92,40 @@ in
                 }
                ];
             '';
+
+            description = "List of interfaces to listen to and its configuration.";
+
+            type = lib.types.listOf (
+              lib.types.submodule {
+                freeformType = (pkgs.formats.yaml { }).type;
+              }
+            );
           };
+
           workers = lib.mkOption {
+            default = 1;
+
+            description = ''
+              The number of running kresd (Knot Resolver daemon) workers. If set to 'auto', it is equal to number of CPUs available.
+            '';
+
             type = lib.types.oneOf [
               (lib.types.enum [ "auto" ])
               lib.types.ints.unsigned
             ];
-            default = 1;
-            description = ''
-              The number of running kresd (Knot Resolver daemon) workers. If set to 'auto', it is equal to number of CPUs available.
-            '';
           };
         };
+
+        freeformType = (pkgs.formats.yaml { }).type;
       };
-      default = { };
-      description = ''
-        Nix-based (RFC 42) configuration for Knot Resolver.
-        For configuration reference (described as YAML) see
-        <https://www.knot-resolver.cz/documentation/latest/config-overview.html>
-      '';
     };
   };
 
   ###### implementation
   config = lib.mkIf cfg.enable {
-    users.users.knot-resolver = {
-      isSystemUser = true;
-      group = "knot-resolver";
-      description = "Knot-resolver daemon user";
-    };
-    users.groups.knot-resolver = { };
-    networking.resolvconf.useLocalResolver = lib.mkDefault true;
-
     environment = {
       etc."knot-resolver/config.yaml".source = configFile;
+
       systemPackages = [
         # We just avoid including the other binaries, e.g. supervisorctl.
         (pkgs.runCommandLocal "knot-resolver-cmds" { } ''
@@ -135,26 +135,41 @@ in
       ];
     };
 
+    networking.resolvconf.useLocalResolver = lib.mkDefault true;
     systemd.packages = [ cfg.managerPackage.kresd ]; # the unit gets patched a bit just below
+
     systemd.services."knot-resolver" = {
-      wantedBy = [ "multi-user.target" ];
-      stopIfChanged = false;
       reloadTriggers = [
         configFile
       ];
+
       serviceConfig = {
-        ExecStart = "${cfg.managerPackage}/bin/knot-resolver";
-        ExecReload = "${cfg.managerPackage}/bin/kresctl reload";
-
-        StateDirectory = "knot-resolver";
-        StateDirectoryMode = "0770";
-
-        RuntimeDirectory = "knot-resolver";
-        RuntimeDirectoryMode = "0770";
-
         CacheDirectory = "knot-resolver";
         CacheDirectoryMode = "0770";
+        ExecReload = "${cfg.managerPackage}/bin/kresctl reload";
+        ExecStart = "${cfg.managerPackage}/bin/knot-resolver";
+        RuntimeDirectory = "knot-resolver";
+        RuntimeDirectoryMode = "0770";
+        StateDirectory = "knot-resolver";
+        StateDirectoryMode = "0770";
       };
+
+      stopIfChanged = false;
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.knot-resolver = { };
+
+    users.users.knot-resolver = {
+      description = "Knot-resolver daemon user";
+      group = "knot-resolver";
+      isSystemUser = true;
     };
   };
+
+  meta.maintainers = [
+    lib.maintainers.vcunat # upstream developer
+    lib.maintainers.leona
+    lib.maintainers.osnyx
+  ];
 }

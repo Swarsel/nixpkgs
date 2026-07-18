@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  glib,
   meson,
   ninja,
-  glib,
   pkg-config,
   unstableGitUpdater,
 }:
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DHqNGtm14tSDKpSZiYGaCaK9ouZPjSJOhq/9CLCMhQw=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -31,17 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
-  strictDeps = true;
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/labwc/labwc-menu-generator";
     description = "Menu generator for labwc";
-    mainProgram = "labwc-menu-generator";
+    homepage = "https://github.com/labwc/labwc-menu-generator";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
+    mainProgram = "labwc-menu-generator";
   };
 })

@@ -13,18 +13,18 @@ stdenv.mkDerivation rec {
     sha256 = "07f5glwwlrpdvj8ky265q8fp3i3r4mz1vd6yvvxnnvpa764rdjfs";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     install -dm755 "$out/bin"
     install -m755 $src $out/bin/${pname}
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Jailbreak for iPhone 5s though iPhone X, iOS 12.0 and up";
     homepage = "https://checkra.in/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ onny ];
     platforms = lib.platforms.linux;
   };

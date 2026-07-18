@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   autoPatchelfHook,
 }:
 
@@ -9,8 +9,8 @@ let
   # Upstream replaces minor versions, so use cached URLs.
   srcs = {
     "x86_64-linux" = fetchurl {
-      url = "https://web.archive.org/web/20231109221336id_/https://ftp.perforce.com/perforce/r23.1/bin.linux26x86_64/helix-core-server.tgz";
       sha256 = "b68c4907cf9258ab47102e8f0e489c11d528a8f614bfa45e3a2fa198639e2362";
+      url = "https://web.archive.org/web/20231109221336id_/https://ftp.perforce.com/perforce/r23.1/bin.linux26x86_64/helix-core-server.tgz";
     };
   };
 in
@@ -23,27 +23,28 @@ stdenv.mkDerivation {
       "p4d is not available for ${stdenv.hostPlatform.system}";
     srcs.${stdenv.hostPlatform.system};
 
-  sourceRoot = ".";
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
-
-  dontBuild = true;
 
   installPhase = ''
     install -D -t $out/bin p4broker p4d p4p
     install -D -t $out/doc/p4d -m 0644 *.txt
   '';
 
+  dontBuild = true;
+  sourceRoot = ".";
+
   meta = {
     description = "Perforce Helix Core Server";
     homepage = "https://www.perforce.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    mainProgram = "p4d";
-    platforms = builtins.attrNames srcs;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       corngood
       impl
     ];
+
+    platforms = builtins.attrNames srcs;
+    mainProgram = "p4d";
   };
 }

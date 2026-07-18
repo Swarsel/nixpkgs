@@ -16,20 +16,19 @@ stdenv.mkDerivation {
     sha256 = "sha256-pwHFllwTznhgZAGtGsULoLLBZlCllGt1eBmUKoJ/2wk=";
   };
 
-  patches = [
-    ./btrfs-progs-6-10-1.patch
-  ];
-
-  __structuredAttrs = true;
-  strictDeps = true;
-  enableParallelBuilding = true;
-
   outputs = [
     "out"
     "man"
   ];
 
+  patches = [
+    ./btrfs-progs-6-10-1.patch
+  ];
+
+  strictDeps = true;
   buildInputs = [ btrfs-progs ];
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
 
   installFlags = [
     "PREFIX=${placeholder "out"}"
@@ -37,10 +36,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Find compression type/ratio on a file or set of files in the Btrfs filesystem";
-    mainProgram = "compsize";
     homepage = "https://github.com/kilobyte/compsize";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ sandarukasa ];
     platforms = lib.platforms.linux;
+    mainProgram = "compsize";
   };
 }

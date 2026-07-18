@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  sqlite,
   gtest,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,25 +21,29 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     cmake
   ];
+
   buildInputs = [
     sqlite
     gtest
   ];
-  doCheck = true;
 
   cmakeFlags = [
     "-DSQLITECPP_INTERNAL_SQLITE=OFF"
     "-DSQLITECPP_BUILD_TESTS=ON"
   ];
 
+  doCheck = true;
+
   meta = {
-    homepage = "https://srombauts.github.io/SQLiteCpp/";
     description = "C++ SQLite3 wrapper";
+    homepage = "https://srombauts.github.io/SQLiteCpp/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = [
       lib.maintainers.jbedo
       lib.maintainers.doronbehar
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

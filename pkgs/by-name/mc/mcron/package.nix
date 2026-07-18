@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   guile,
   pkg-config,
 }:
@@ -22,7 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ guile ];
-
   doCheck = true;
 
   meta = {
@@ -37,7 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://www.gnu.org/software/mcron/";
-
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
   };

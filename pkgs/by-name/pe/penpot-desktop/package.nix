@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildNpmPackage,
   copyDesktopItems,
   electron_41,
-  fetchFromGitHub,
   jq,
   makeDesktopItem,
   makeWrapper,
   nodejs_24,
-  stdenv,
 }:
 
 let
@@ -28,23 +28,15 @@ buildNpmPackage rec {
     hash = "sha256-/vRF5eqtjdmd2Qmb+OAgKfLJmh78S0WrLWA94SeOJQA=";
   };
 
-  makeCacheWritable = true;
-  npmFlags = [
-    "--engine-strict"
-    "--legacy-peer-deps"
-  ];
-  npmDepsHash = "sha256-hu2v2Dw2SRs4Egmsi5hb81vgnZDjQahLXyAYm/uaMao=";
-  # Do not run the default build script as it leads to errors caused by the electron-builder configuration
-  dontNpmBuild = true;
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
   nativeBuildInputs = [
     jq
     nodejs
     makeWrapper
     copyDesktopItems
   ];
+
+  npmDepsHash = "sha256-hu2v2Dw2SRs4Egmsi5hb81vgnZDjQahLXyAYm/uaMao=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   preBuild = ''
     if [[ $(jq --raw-output '.devDependencies.electron' < package.json | grep -E --only-matching '\^[0-9]+' | sed -e 's/\^//') != ${lib.escapeShellArg (lib.versions.major electron.version)} ]]; then
@@ -87,19 +79,28 @@ buildNpmPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Penpot";
-      exec = "penpot-desktop %U";
       inherit icon;
+      categories = [ "Graphics" ];
       comment = description;
       desktopName = "Penpot";
-      categories = [ "Graphics" ];
+      exec = "penpot-desktop %U";
+      name = "Penpot";
     })
   ];
 
+  # Do not run the default build script as it leads to errors caused by the electron-builder configuration
+  dontNpmBuild = true;
+  makeCacheWritable = true;
+
+  npmFlags = [
+    "--engine-strict"
+    "--legacy-peer-deps"
+  ];
+
   meta = {
-    changelog = "https://github.com/author-more/penpot-desktop/releases/tag/v${version}";
     inherit description;
     homepage = "https://github.com/author-more/penpot-desktop";
+    changelog = "https://github.com/author-more/penpot-desktop/releases/tag/v${version}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ ntbbloodbath ];
     platforms = electron.meta.platforms;

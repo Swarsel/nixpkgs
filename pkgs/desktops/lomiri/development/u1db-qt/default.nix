@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  gitUpdater,
-  testers,
   cmake,
   dbus-test-runner,
+  fetchpatch,
+  gitUpdater,
   pkg-config,
   qtbase,
   qtdeclarative,
   qttools,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,9 +34,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Remove when https://gitlab.com/ubports/development/core/u1db-qt/-/merge_requests/8 merged & in release
     (fetchpatch {
+      hash = "sha256-CILMcvqXrTbEL/N2Tic4IsKLnTtmFJ2QbV3r4PsQ5t0=";
       name = "0001-u1db-qt-Use-BUILD_TESTING.patch";
       url = "https://gitlab.com/ubports/development/core/u1db-qt/-/commit/df5d526df26c056d54bfa532a3a3fa025d655690.patch";
-      hash = "sha256-CILMcvqXrTbEL/N2Tic4IsKLnTtmFJ2QbV3r4PsQ5t0=";
     })
   ];
 
@@ -66,13 +66,9 @@ stdenv.mkDerivation (finalAttrs: {
     qtdeclarative
   ];
 
-  nativeCheckInputs = [ dbus-test-runner ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_DOCS" true)
   ];
-
-  dontWrapQtApps = true;
 
   preBuild = ''
     # Executes qmlplugindump
@@ -80,6 +76,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  nativeCheckInputs = [ dbus-test-runner ];
 
   preCheck = ''
     export QT_QPA_PLATFORM=minimal
@@ -95,6 +92,8 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput share/u1db-qt/examples $examples
   '';
 
+  dontWrapQtApps = true;
+
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     updateScript = gitUpdater { };
@@ -105,8 +104,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/u1db-qt";
     changelog = "https://gitlab.com/ubports/development/core/u1db-qt/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
     pkgConfigModules = [ "libu1db-qt5" ];
+    teams = [ lib.teams.lomiri ];
   };
 })

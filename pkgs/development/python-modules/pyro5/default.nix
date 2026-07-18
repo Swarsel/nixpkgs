@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  serpent,
+  buildPythonPackage,
   pytestCheckHook,
+  serpent,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyro5";
   version = "5.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "irmen";
@@ -20,13 +19,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-WVvUh/XPk+/1iRARAVD3fgmlJu60DZps7kRaZxuiwBo=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ serpent ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ pytestCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ serpent ];
 
   disabledTests = [
     # Ignore network related tests, which fail in sandbox
@@ -40,6 +36,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "Socket" ];
 
+  pyproject = true;
   pythonImportsCheck = [ "Pyro5" ];
 
   meta = {

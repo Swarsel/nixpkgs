@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-pep517,
   aiohttp,
+  buildPythonPackage,
+  pdm-pep517,
 }:
 
 buildPythonPackage rec {
   pname = "imeon-inverter-api";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Imeon-Inverters-for-Home-Assistant";
@@ -18,26 +17,26 @@ buildPythonPackage rec {
     hash = "sha256-8tecWWDYFq+kAqWM9vKhM15LKnEVqaDBkH6jh0xwIsE=";
   };
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ pdm-pep517 ];
+
+  dependencies = [
+    aiohttp
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "imeon_inverter_api" ];
 
   pythonRemoveDeps = [
     # https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api/pull/1
     "async-timeout"
   ];
 
-  dependencies = [
-    aiohttp
-  ];
-
-  pythonImportsCheck = [ "imeon_inverter_api" ];
-
-  # upstream has no tests
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api/releases/tag/${src.tag}";
     description = "Standalone API to collect data from the Imeon Energy Inverters that uses HTTP POST/GET";
     homepage = "https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api";
+    changelog = "https://github.com/Imeon-Inverters-for-Home-Assistant/inverter-api/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

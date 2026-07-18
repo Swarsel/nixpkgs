@@ -1,8 +1,8 @@
 {
   config,
-  options,
   lib,
   pkgs,
+  options,
   utils,
   jdk25_headless,
   ...
@@ -30,27 +30,69 @@ let
   );
 in
 {
+  imports = [
+    (lib.mkRemovedOptionModule [
+      "services"
+      "unifi"
+      "dataDir"
+    ] "You should move contents of dataDir to /var/lib/unifi/data")
+    (lib.mkRenamedOptionModule [ "services" "unifi" "openPorts" ] [ "services" "unifi" "openFirewall" ])
+  ];
+
   options = {
     services.unifi.enable = lib.mkEnableOption "UniFi controller service";
 
+    services.unifi.extraJvmOptions = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Set extra options to pass to the JVM.
+      '';
+
+      example = lib.literalExpression ''["-Xlog:gc"]'';
+      type = with lib.types; listOf str;
+    };
+
+    services.unifi.initialJavaHeapSize = lib.mkOption {
+      default = null;
+
+      description = ''
+        Set the initial heap size for the JVM in MB. If this option isn't set, the
+        JVM will decide this value at runtime.
+      '';
+
+      example = 1024;
+      type = with lib.types; nullOr int;
+    };
+
     services.unifi.jrePackage = lib.mkOption {
-      type = lib.types.package;
       default = cfg.unifiPackage.passthru.jrePackage or jdk25_headless;
       defaultText = lib.literalExpression "unifiPackage.passthru.jrePackage";
 
       description = ''
         Which Java runtime to use.
       '';
+
+      type = lib.types.package;
     };
 
-    services.unifi.unifiPackage = lib.mkPackageOption pkgs "unifi" { };
+    services.unifi.maximumJavaHeapSize = lib.mkOption {
+      default = null;
+
+      description = ''
+        Set the maximum heap size for the JVM in MB. If this option isn't set, the
+        JVM will decide this value at runtime.
+      '';
+
+      example = 4096;
+      type = with lib.types; nullOr int;
+    };
 
     services.unifi.mongodbPackage = lib.mkPackageOption pkgs "mongodb" {
       default = "mongodb-7_0";
     };
 
     services.unifi.openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
 
       description = ''
@@ -60,39 +102,11 @@ in
         work. For remote login, you should additionally open (or forward) port
         8443.
       '';
+
+      type = lib.types.bool;
     };
 
-    services.unifi.initialJavaHeapSize = lib.mkOption {
-      type = with lib.types; nullOr int;
-      default = null;
-      example = 1024;
-
-      description = ''
-        Set the initial heap size for the JVM in MB. If this option isn't set, the
-        JVM will decide this value at runtime.
-      '';
-    };
-
-    services.unifi.maximumJavaHeapSize = lib.mkOption {
-      type = with lib.types; nullOr int;
-      default = null;
-      example = 4096;
-
-      description = ''
-        Set the maximum heap size for the JVM in MB. If this option isn't set, the
-        JVM will decide this value at runtime.
-      '';
-    };
-
-    services.unifi.extraJvmOptions = lib.mkOption {
-      type = with lib.types; listOf str;
-      default = [ ];
-      example = lib.literalExpression ''["-Xlog:gc"]'';
-
-      description = ''
-        Set extra options to pass to the JVM.
-      '';
-    };
+    services.unifi.unifiPackage = lib.mkPackageOption pkgs "unifi" { };
   };
 
   config = lib.mkIf cfg.enable {
@@ -104,6 +118,7 @@ in
             options.services.unifi.unifiPackage.highestPrio < (lib.mkOptionDefault { }).priority
             && options.services.unifi.mongodbPackage.highestPrio < (lib.mkOptionDefault { }).priority
           );
+
         message = ''
           Support for UniFi < 8 has been dropped; please explicitly set
           `services.unifi.unifiPackage` and `services.unifi.mongodbPackage`.
@@ -119,15 +134,6 @@ in
         '';
       }
     ];
-
-    users.users.unifi = {
-      isSystemUser = true;
-      group = "unifi";
-      description = "UniFi controller daemon user";
-      home = "${stateDir}";
-    };
-
-    users.groups.unifi = { };
 
     # https://help.ubnt.com/hc/en-us/articles/218506997
     networking.firewall = lib.mkIf cfg.openFirewall {
@@ -145,10 +151,8 @@ in
     };
 
     systemd.services.unifi = {
-      description = "UniFi controller daemon";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-
+      description = "UniFi controller daemon";
       # This a HACK to fix missing dependencies of dynamic libs extracted from jars
       environment.LD_LIBRARY_PATH = with pkgs.stdenv; "${cc.cc.lib}/lib";
 
@@ -159,53 +163,8 @@ in
       ];
 
       serviceConfig = {
-        Type = "notify";
-        ExecStart = "${cmd} start";
-        ExecStop = [
-          "${cmd} stop"
-          "${lib.getExe' pkgs.util-linux "waitpid"} -t 30 -e $MAINPID"
-        ];
-        Restart = "always";
-        User = "unifi";
-        UMask = "0077";
-        WorkingDirectory = "${stateDir}";
-
         # Hardening
         AmbientCapabilities = "";
-        CapabilityBoundingSet = "";
-        # ProtectClock= adds DeviceAllow=char-rtc r
-        DeviceAllow = "";
-        DevicePolicy = "closed";
-        LockPersonality = true;
-        NoNewPrivileges = true;
-        PrivateDevices = true;
-        PrivateMounts = true;
-        PrivateTmp = true;
-        PrivateUsers = true;
-        ProtectClock = true;
-        ProtectControlGroups = true;
-        ProtectHome = true;
-        ProtectHostname = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectSystem = "strict";
-        RemoveIPC = true;
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-        SystemCallErrorNumber = "EPERM";
-        SystemCallFilter = [ "@system-service" ];
-
-        StateDirectory = "unifi";
-        RuntimeDirectory = "unifi";
-        LogsDirectory = "unifi";
-        CacheDirectory = "unifi";
-
-        TemporaryFileSystem = [
-          # required as we want to create bind mounts below
-          "${stateDir}/webapps:rw"
-        ];
 
         # We must create the binary directories as bind mounts instead of symlinks
         # This is because the controller resolves all symlinks to absolute paths
@@ -219,21 +178,68 @@ in
           "${cfg.unifiPackage}/webapps/ROOT:${stateDir}/webapps/ROOT"
         ];
 
-        # Needs network access
-        PrivateNetwork = false;
+        CacheDirectory = "unifi";
+        CapabilityBoundingSet = "";
+        # ProtectClock= adds DeviceAllow=char-rtc r
+        DeviceAllow = "";
+        DevicePolicy = "closed";
+        ExecStart = "${cmd} start";
 
+        ExecStop = [
+          "${cmd} stop"
+          "${lib.getExe' pkgs.util-linux "waitpid"} -t 30 -e $MAINPID"
+        ];
+
+        LockPersonality = true;
+        LogsDirectory = "unifi";
         # Cannot be true due to OpenJDK
         MemoryDenyWriteExecute = false;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        # Needs network access
+        PrivateNetwork = false;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        RemoveIPC = true;
+        Restart = "always";
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RuntimeDirectory = "unifi";
+        StateDirectory = "unifi";
+        SystemCallErrorNumber = "EPERM";
+        SystemCallFilter = [ "@system-service" ];
+
+        TemporaryFileSystem = [
+          # required as we want to create bind mounts below
+          "${stateDir}/webapps:rw"
+        ];
+
+        Type = "notify";
+        UMask = "0077";
+        User = "unifi";
+        WorkingDirectory = "${stateDir}";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.unifi = { };
+
+    users.users.unifi = {
+      description = "UniFi controller daemon user";
+      group = "unifi";
+      home = "${stateDir}";
+      isSystemUser = true;
     };
   };
-
-  imports = [
-    (lib.mkRemovedOptionModule [
-      "services"
-      "unifi"
-      "dataDir"
-    ] "You should move contents of dataDir to /var/lib/unifi/data")
-    (lib.mkRenamedOptionModule [ "services" "unifi" "openPorts" ] [ "services" "unifi" "openFirewall" ])
-  ];
 }

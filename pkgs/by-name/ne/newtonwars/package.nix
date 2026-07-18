@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  libglut,
-  libGLU,
   libGL,
+  libGLU,
+  libglut,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation {
@@ -20,15 +20,12 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     libglut
     libGL
     libGLU
   ];
-
-  patchPhase = ''
-    sed -i "s;font24.raw;$out/share/font24.raw;g" display.c
-  '';
 
   buildPhase = "sh build-linux.sh";
 
@@ -43,12 +40,16 @@ stdenv.mkDerivation {
       --prefix LD_LIBRARY_PATH ":" ${libGL}/lib
   '';
 
+  patchPhase = ''
+    sed -i "s;font24.raw;$out/share/font24.raw;g" display.c
+  '';
+
   meta = {
     description = "Space battle game with gravity as the main theme";
     homepage = "https://github.com/Draradech/NewtonWars";
-    mainProgram = "nw";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.mit;
+    mainProgram = "nw";
   };
 }

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   asn1crypto,
+  buildPythonPackage,
   cbor2,
   cryptography,
   pyopenssl,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "webauthn";
   version = "2.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "duo-labs";
@@ -21,8 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-aZDptKJPFU6Oo4vKkIWkqkJ5ogDe5x3v7PAQRixWFe4=";
   };
-
-  build-system = [ setuptools ];
 
   propagatedBuildInputs = [
     asn1crypto
@@ -32,7 +29,8 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "webauthn" ];
 
   meta = {

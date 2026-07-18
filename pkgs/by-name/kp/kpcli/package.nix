@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "4.1.3";
   pname = "kpcli";
+  version = "4.1.3";
 
   src = fetchurl {
     url = "mirror://sourceforge/kpcli/kpcli-${finalAttrs.version}.pl";
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ perl ];
-
-  dontUnpack = true;
 
   installPhase = ''
     mkdir -p $out/{bin,share}
@@ -59,16 +57,20 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "KeePass Command Line Interface";
-    mainProgram = "kpcli";
+
     longDescription = ''
       KeePass Command Line Interface (CLI) / interactive shell.
       Use this program to access and manage your KeePass 1.x or 2.x databases from a Unix-like command line.
     '';
-    license = lib.licenses.artistic1;
+
     homepage = "http://kpcli.sourceforge.net";
-    platforms = lib.platforms.all;
+    license = lib.licenses.artistic1;
     maintainers = [ lib.maintainers.j-keck ];
+    platforms = lib.platforms.all;
+    mainProgram = "kpcli";
   };
 })

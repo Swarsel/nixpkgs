@@ -1,23 +1,22 @@
 {
   lib,
   fetchFromGitHub,
-  gitUpdater,
   buildPythonPackage,
+  defcon,
+  fonttools,
+  gitUpdater,
+  orjson,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
-  fonttools,
-  orjson,
   typing-extensions,
-  ufonormalizer,
   ufolib2,
-  defcon,
+  ufonormalizer,
 }:
 
 buildPythonPackage rec {
   pname = "vfblib";
   version = "0.11.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LucasFonts";
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools-scm[toml]>=9.2.0" "setuptools-scm"
   '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -45,13 +46,12 @@ buildPythonPackage rec {
     defcon
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "vfbLib" ];
+
   pythonRelaxDeps = [
     "ufonormalizer"
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "vfbLib" ];
 
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 

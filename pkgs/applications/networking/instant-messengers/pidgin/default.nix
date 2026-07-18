@@ -1,45 +1,45 @@
 {
+  lib,
   stdenv,
-  callPackage,
   fetchurl,
-  makeWrapper,
   aspell,
   avahi,
   cacert,
+  callPackage,
+  cyrus_sasl,
   dbus,
   dbus-glib,
   farstream,
   gettext,
+  gnutls,
   gst_all_1,
   gtk2,
   gtk2-x11,
   gtkspell2,
   intltool,
-  lib,
-  libice,
-  libsm,
-  libxscrnsaver,
-  libxext,
   libgcrypt,
   libgnt,
+  libice,
   libidn,
+  libsm,
   libstartup_notification,
+  libxext,
   libxml2,
+  libxscrnsaver,
+  makeWrapper,
   ncurses,
   nspr,
   nss,
+  openssl,
   perlPackages,
+  pidgin,
+  pidginPackages,
   pkg-config,
   python3,
-  pidgin,
   plugins ? [ ],
-  withOpenssl ? false,
-  openssl,
-  withGnutls ? false,
-  gnutls,
   withCyrus_sasl ? true,
-  cyrus_sasl,
-  pidginPackages,
+  withGnutls ? false,
+  withOpenssl ? false,
 }:
 
 # FIXME: clean the mess around choosing the SSL library (nss by default)
@@ -54,12 +54,15 @@ let
       sha256 = "sha256-D/yZlN7xAmD5ilXNEy3u+o3EqYNUUcwOmCdHvUWOI1Y=";
     };
 
+    patches = [
+      ./add-search-path.patch
+      ./pidgin-makefile.patch
+    ];
+
     nativeBuildInputs = [
       makeWrapper
       intltool
     ];
-
-    env.NIX_CFLAGS_COMPILE = "-I${gst_all_1.gst-plugins-base.dev}/include/gstreamer-1.0";
 
     buildInputs =
       let
@@ -110,11 +113,6 @@ let
     ++ lib.optional stdenv.hostPlatform.isLinux gtk2
     ++ lib.optional stdenv.hostPlatform.isDarwin gtk2-x11;
 
-    patches = [
-      ./add-search-path.patch
-      ./pidgin-makefile.patch
-    ];
-
     configureFlags = [
       "--with-nspr-includes=${nspr.dev}/include/nspr"
       "--with-nspr-libs=${nspr.out}/lib"
@@ -138,7 +136,7 @@ let
     ]
     ++ lib.optionals stdenv.cc.isClang [ "CFLAGS=-Wno-error=int-conversion" ];
 
-    enableParallelBuilding = true;
+    env.NIX_CFLAGS_COMPILE = "-I${gst_all_1.gst-plugins-base.dev}/include/gstreamer-1.0";
 
     postInstall = ''
       wrapProgram $out/bin/pidgin \
@@ -146,6 +144,7 @@ let
     '';
 
     doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
     # In particular, this detects missing python imports in some of the tools.
     postFixup =
       let
@@ -159,23 +158,26 @@ let
         done
       '';
 
+    enableParallelBuilding = true;
+
     passthru = {
       makePluginPath = lib.makeSearchPathOutput "lib" "lib/purple-${lib.versions.major version}";
+
       withPlugins =
         pluginfn:
         callPackage ./wrapper.nix {
-          plugins = pluginfn pidginPackages;
           pidgin = unwrapped;
+          plugins = pluginfn pidginPackages;
         };
     };
 
     meta = {
       description = "Multi-protocol instant messaging client";
-      mainProgram = "pidgin";
       homepage = "https://pidgin.im/";
       license = lib.licenses.gpl2Plus;
-      platforms = lib.platforms.unix;
       maintainers = [ ];
+      platforms = lib.platforms.unix;
+      mainProgram = "pidgin";
     };
   };
 

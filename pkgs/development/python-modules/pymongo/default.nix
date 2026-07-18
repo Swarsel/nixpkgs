@@ -1,31 +1,32 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  hatchling,
-  hatch-requirements-txt,
-  setuptools,
-  dnspython,
-
   # for passthru.tests
   celery, # check-input only
+  dnspython,
+  fetchPypi,
   flask-pymongo,
+  hatch-requirements-txt,
+  hatchling,
   kombu, # check-input only
   mongoengine,
   motor,
   pymongo-inmemory,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pymongo";
   version = "4.16.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "pymongo";
     hash = "sha256-i6hAUGX24lim+HL+YteXoo84OhIXjHFTwB7QToRcYAw=";
+    pname = "pymongo";
   };
+
+  # Tests call a running mongodb instance
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -34,10 +35,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ dnspython ];
-
-  # Tests call a running mongodb instance
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pymongo" ];
 
   passthru.tests = {

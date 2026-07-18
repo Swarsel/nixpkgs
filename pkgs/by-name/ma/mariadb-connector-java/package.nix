@@ -1,7 +1,7 @@
 {
   lib,
-  maven,
   fetchFromGitHub,
+  maven,
   nix-update-script,
 }:
 
@@ -16,8 +16,6 @@ maven.buildMavenPackage rec {
     hash = "sha256-ScdrBSJKbVyD/omPrxiZvuaa5uOo2d3SqX/ozalMWHk=";
   };
 
-  mvnHash = "sha256-CiUXHrabVX+ragocKbd4erIWr7J4kuWYcKYCDycpIrs=";
-
   doCheck = false; # Requires networking
 
   installPhase = ''
@@ -26,6 +24,7 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  mvnHash = "sha256-CiUXHrabVX+ragocKbd4erIWr7J4kuWYcKYCDycpIrs=";
   passthru.updateScript = nix-update-script { };
 
   meta = {

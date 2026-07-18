@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  dpkg,
-  gawk,
-  perl,
-  wget,
   binutils,
   bzip2,
   coreutils,
-  util-linux,
+  debootstrap,
+  dpkg,
+  gawk,
   gnugrep,
   gnupg,
-  gnutar,
   gnused,
+  gnutar,
   gzip,
-  xz,
-  zstd,
   makeWrapper,
   nix-update-script,
+  perl,
   testers,
-  debootstrap,
+  util-linux,
+  wget,
+  xz,
+  zstd,
 }:
 
 # USAGE like this: debootstrap sid /tmp/target-chroot-directory
@@ -49,16 +49,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.0.140_bpo12+1";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "installer-team";
     repo = "debootstrap";
     tag = finalAttrs.version;
     hash = "sha256-4vINaMRo6IrZ6e2/DAJ06ODy2BWm4COR1JDSY52upUc=";
+    domain = "salsa.debian.org";
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -89,17 +87,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = debootstrap;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://salsa.debian.org/installer-team/debootstrap/-/blob/${finalAttrs.version}/debian/changelog";
     description = "Tool to create a Debian system in a chroot";
     homepage = "https://wiki.debian.org/Debootstrap";
+    changelog = "https://salsa.debian.org/installer-team/debootstrap/-/blob/${finalAttrs.version}/debian/changelog";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;

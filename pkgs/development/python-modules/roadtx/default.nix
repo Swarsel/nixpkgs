@@ -15,15 +15,13 @@
 buildPythonPackage (finalAttrs: {
   pname = "roadtx";
   version = "1.22.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-2GIJAjLxOqy3E+5j1gnby8F5IAvdnChMT4Lfq5I5zeE=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,6 +34,7 @@ buildPythonPackage (finalAttrs: {
     signxml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "roadtools.roadtx" ];
 
   meta = {

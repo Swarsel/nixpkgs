@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
   testers,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  enableParallelBuilding = true;
-
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   # Upstream Makefile has no install target.
@@ -30,24 +28,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
-    updateScript = unstableGitUpdater { };
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
+      version = "0.1";
       # Upstream exits non-zero even on successful -V.
       command = "{ qrcode -V || true; }";
-      version = "0.1";
+      package = finalAttrs.finalPackage;
     };
+
+    updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "QR-code encoder and decoder";
     homepage = "https://github.com/qsantos/qrcode";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       lucasew
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "qrcode";
   };

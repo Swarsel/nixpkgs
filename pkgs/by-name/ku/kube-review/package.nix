@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,17 +17,19 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-xHiHeSoiT/5h8pHTBTq1g/zJtnCbcUs+qMJ4vHjWzog=";
+
   ldflags = [
     "-X github.com/anderseknert/kube-review/cmd.version=v${finalAttrs.version}"
   ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Create Kubernetes AdmissionReview requests from Kubernetes resource manifests";
-    mainProgram = "kube-review";
     homepage = "https://github.com/anderseknert/kube-review";
     changelog = "https://github.com/anderseknert/kube-review/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.ardubev16 ];
+    mainProgram = "kube-review";
   };
 })

@@ -15,8 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-q2ZqFVdjg5HSH4kiwoC1W+a8VgHNxBgNeMaw5n97isc=";
   };
 
-  buildInputs = [ jre_headless ];
   nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ jre_headless ];
 
   installPhase = ''
     runHook preInstall
@@ -33,12 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/redis-developer/riot";
     description = "Get data in and out of Redis";
-    mainProgram = "riot-redis";
+    homepage = "https://github.com/redis-developer/riot";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ wesnel ];
+    mainProgram = "riot-redis";
     teams = [ lib.teams.redis ];
   };
 })

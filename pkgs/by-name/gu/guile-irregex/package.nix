@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
   fetchzip,
-  mitscheme,
   guile,
-  lib,
+  mitscheme,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "guile-irregex";
@@ -49,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "IrRegular Expressions";
+
     longDescription = ''
       A fully portable and efficient R[4567]RS implementation of regular expressions, supporting
       both POSIX syntax with various (irregular) PCRE extensions, as well as SCSH's SRE syntax, with
@@ -58,6 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
       Matching may be performed over standard Scheme strings, or over arbitrarily chunked streams of
       strings.
     '';
+
     homepage = "https://synthcode.com/scheme/irregex";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ knightpp ];

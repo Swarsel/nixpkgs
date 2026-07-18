@@ -1,7 +1,7 @@
 {
+  buildFHSEnv,
   callPackage,
   makeFontsConf,
-  buildFHSEnv,
   tiling_wm ? false,
 }:
 
@@ -9,11 +9,12 @@ let
   mkStudio =
     opts:
     callPackage (import ./common.nix opts) {
+      inherit buildFHSEnv;
+      inherit tiling_wm;
+
       fontsConf = makeFontsConf {
         fontDirectories = [ ];
       };
-      inherit buildFHSEnv;
-      inherit tiling_wm;
     };
   stableVersion = {
     version = "2026.1.1.10"; # "Android Studio Quail 1 | 2026.1.1 Patch 2"
@@ -32,37 +33,36 @@ let
   };
 in
 {
-  # Attributes are named by their corresponding release channels
-
-  stable = mkStudio (
-    stableVersion
-    // {
-      channel = "stable";
-      pname = "android-studio";
-    }
-  );
-
   beta = mkStudio (
     betaVersion
     // {
-      channel = "beta";
       pname = "android-studio-beta";
-    }
-  );
-
-  dev = mkStudio (
-    latestVersion
-    // {
-      channel = "dev";
-      pname = "android-studio-dev";
+      channel = "beta";
     }
   );
 
   canary = mkStudio (
     latestVersion
     // {
-      channel = "canary";
       pname = "android-studio-canary";
+      channel = "canary";
+    }
+  );
+
+  dev = mkStudio (
+    latestVersion
+    // {
+      pname = "android-studio-dev";
+      channel = "dev";
+    }
+  );
+
+  # Attributes are named by their corresponding release channels
+  stable = mkStudio (
+    stableVersion
+    // {
+      pname = "android-studio";
+      channel = "stable";
     }
   );
 }

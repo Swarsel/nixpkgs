@@ -1,7 +1,7 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   makeWrapper,
   unstableGitUpdater,
 }:
@@ -16,9 +16,6 @@ buildLua {
     rev = "01a0396c075d5f8bbd1de5b571e6231f8899ab65";
     sha256 = "sha256-veoRFzUCRH8TrvR7x+WWoycpDyxqrJZ/bnp61dVc0pE=";
   };
-  passthru.updateScript = unstableGitUpdater { };
-
-  nativeBuildInputs = [ makeWrapper ];
 
   postPatch = ''
     substituteInPlace cutter.lua \
@@ -31,13 +28,16 @@ buildLua {
       --replace-fail '~/.config/mpv/scripts' "''${XDG_CONFIG_HOME:-~/.config}/mpv/cutter"
   '';
 
-  passthru.scriptName = "cutter.lua";
-  extraScriptsToCopy = [ "c_concat.sh" ];
+  nativeBuildInputs = [ makeWrapper ];
 
   postInstall = ''
     wrapProgram $out/share/mpv/scripts/c_concat.sh \
       --run "mkdir -p ~/.config/mpv/cutter/"
   '';
+
+  extraScriptsToCopy = [ "c_concat.sh" ];
+  passthru.scriptName = "cutter.lua";
+  passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Cut videos and concat them automatically";

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   python,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "django-parler";
   version = "2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-parler";
@@ -18,10 +17,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-tRGifFPCXF3aa3PQWKw3tl1H1TY+lgcChUP1VdwG1cE=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ django ];
 
   # Disable failing test: article.tests.AdminArticleTestCase.test_admin_add
   # AssertionError: '<h1>Ajout de Article (Hollandais)</h1>' not found in ...
@@ -35,6 +30,10 @@ buildPythonPackage rec {
     ${python.interpreter} runtests.py
     runHook postCheck
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ django ];
+  pyproject = true;
 
   meta = {
     description = "Simple Django model translations without nasty hacks";

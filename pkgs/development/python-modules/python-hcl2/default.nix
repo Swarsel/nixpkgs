@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lark,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "python-hcl2";
   version = "7.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "amplify-education";
@@ -20,16 +19,16 @@ buildPythonPackage rec {
     hash = "sha256-aHaDZvgpiINUEdSYlUVwa0l80mujb9F04eboAdiuzDc=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ lark ];
-
+  pyproject = true;
   pythonImportsCheck = [ "hcl2" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Parser for HCL2 written in Python using Lark";

@@ -1,39 +1,37 @@
 {
   lib,
   stdenv,
-  buildPackages,
-  pkg-config,
   fetchurl,
-  meson,
-  ninja,
-  wrapGAppsHook3,
-  gobject-introspection,
-  gettext,
-  yelp-tools,
-  itstool,
-  python3,
-  gtk3,
-  gnome,
-  replaceVars,
   at-spi2-atk,
   at-spi2-core,
-  dbus,
-  xkbcomp,
-  procps,
-  gnugrep,
-  coreutils,
-  gsettings-desktop-schemas,
-  speechd-minimal,
   brltty,
-  liblouis,
+  buildPackages,
+  coreutils,
+  dbus,
+  gettext,
+  gnome,
+  gnugrep,
+  gobject-introspection,
+  gsettings-desktop-schemas,
   gst_all_1,
+  gtk3,
+  itstool,
+  liblouis,
+  meson,
+  ninja,
+  pkg-config,
+  procps,
+  python3,
+  replaceVars,
+  speechd-minimal,
+  wrapGAppsHook3,
+  xkbcomp,
+  yelp-tools,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "orca";
   version = "50.2";
-
-  pyproject = false;
 
   src = fetchurl {
     url = "mirror://gnome/sources/orca/${lib.versions.major finalAttrs.version}/orca-${finalAttrs.version}.tar.xz";
@@ -49,8 +47,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     })
   ];
 
-  # needed for cross-compilation
-  depsBuildBuild = [ pkg-config ];
+  strictDeps = false;
 
   nativeBuildInputs = [
     # cross-compilation support requires the host environment's build time
@@ -67,21 +64,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     itstool
     gobject-introspection
   ];
-
-  pythonPath = with python3.pkgs; [
-    dasbus
-    pygobject3
-    dbus-python
-    pyxdg
-    brltty
-    liblouis
-    psutil
-    speechd-minimal
-    gst-python
-    setproctitle
-  ];
-
-  strictDeps = false;
 
   buildInputs = [
     python3
@@ -100,12 +82,28 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     export GI_TYPELIB_PATH=${buildPackages.gtk3}/lib/girepository-1.0''${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}
   '';
 
-  dontWrapGApps = true; # Prevent double wrapping
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
     substituteInPlace $out/lib/systemd/user/orca.service --replace-fail ExecStart=orca ExecStart=$out/bin/orca
   '';
+
+  # needed for cross-compilation
+  depsBuildBuild = [ pkg-config ];
+  dontWrapGApps = true; # Prevent double wrapping
+  pyproject = false;
+
+  pythonPath = with python3.pkgs; [
+    dasbus
+    pygobject3
+    dbus-python
+    pyxdg
+    brltty
+    liblouis
+    psutil
+    speechd-minimal
+    gst-python
+    setproctitle
+  ];
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -114,10 +112,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://orca.gnome.org/";
-    changelog = "https://gitlab.gnome.org/GNOME/orca/-/blob/main/NEWS";
     description = "Screen reader";
-    mainProgram = "orca";
+
     longDescription = ''
       A free, open source, flexible and extensible screen reader that provides
       access to the graphical desktop via speech and refreshable braille.
@@ -128,8 +124,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
       Needs `services.gnome.at-spi2-core.enable = true;` in `configuration.nix`.
     '';
-    teams = [ lib.teams.gnome ];
+
+    homepage = "https://orca.gnome.org/";
+    changelog = "https://gitlab.gnome.org/GNOME/orca/-/blob/main/NEWS";
     license = lib.licenses.lgpl21;
     platforms = lib.platforms.linux;
+    mainProgram = "orca";
+    teams = [ lib.teams.gnome ];
   };
 })

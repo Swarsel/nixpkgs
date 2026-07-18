@@ -1,17 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  jupyterhub,
-  escapism,
   docker,
+  escapism,
+  fetchPypi,
+  jupyterhub,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dockerspawner";
   version = "14.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # tests require docker
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dockerspawner" ];
 
   meta = {

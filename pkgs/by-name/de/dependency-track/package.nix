@@ -1,23 +1,23 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  cyclonedx-cli,
   fetchpatch2,
   jre_headless,
-  protobuf_30,
-  xmlstarlet,
-  cyclonedx-cli,
   makeWrapper,
   maven,
   nix-update-script,
   nixosTests,
+  protobuf_30,
+  xmlstarlet,
 }:
 let
   version = "4.14.2";
 
   frontend = buildNpmPackage {
-    pname = "dependency-track-frontend";
     inherit version;
+    pname = "dependency-track-frontend";
 
     src = fetchFromGitHub {
       owner = "DependencyTrack";
@@ -26,22 +26,22 @@ let
       hash = "sha256-/MH1YjEJdRjYjenkzOcp7oytudsJcinPbc9OAGFnI/Q=";
     };
 
+    patches = [
+      (fetchpatch2 {
+        hash = "sha256-Wo+6yXa/8jB/pph0DTNsFz6lK3sedvro+7yvLSKes9c=";
+        url = "https://github.com/DependencyTrack/frontend/pull/1575.patch?full_index=1";
+      })
+    ];
+
+    npmDepsHash = "sha256-md+PGEC1/Kl2MQhhYldSErcsDSefbPvwVDsw0Yklq1E=";
+
     installPhase = ''
       mkdir $out
       cp -R ./dist $out/
     '';
 
-    patches = [
-      (fetchpatch2 {
-        url = "https://github.com/DependencyTrack/frontend/pull/1575.patch?full_index=1";
-        hash = "sha256-Wo+6yXa/8jB/pph0DTNsFz6lK3sedvro+7yvLSKes9c=";
-      })
-    ];
-
-    npmDepsHash = "sha256-md+PGEC1/Kl2MQhhYldSErcsDSefbPvwVDsw0Yklq1E=";
     forceGitDeps = true;
     makeCacheWritable = true;
-
     # The prepack script runs the build script, which we'd rather do in the build phase.
     npmPackFlags = [ "--ignore-scripts" ];
   };
@@ -87,48 +87,13 @@ maven.buildMavenPackage rec {
     pom.xml
   '';
 
-  mvnJdk = jre_headless;
-  mvnHash = "sha256-pshUDIPPGGGzxg5WJXC3mjnqGXn8HVowFCb2l5f6zjA=";
-  manualMvnArtifacts = [
-    "com.coderplus.maven.plugins:copy-rename-maven-plugin:1.0.1"
-    # added to saticfy protobuf compiler plugin dependency resolving
-    "jakarta.el:jakarta.el-api:5.0.1"
-    "com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations:2.19.1"
-    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.21.0"
-    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.3"
-    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.21.2"
-    "io.micrometer:micrometer-core:1.16.0"
-    "io.micrometer:micrometer-observation:1.16.0"
-  ];
-  buildOffline = true;
-
-  mvnDepsParameters = lib.escapeShellArgs [
-    "-Dmaven.test.skip=true"
-    "-P enhance"
-    "-P embedded-jetty"
-  ];
-
-  mvnParameters = lib.escapeShellArgs [
-    "-Dmaven.test.skip=true"
-    "-P enhance"
-    "-P embedded-jetty"
-    "-Dservices.bom.merge.skip=false"
-    "-Dlogback.configuration.file=${src}/src/main/docker/logback.xml"
-    "-Dcyclonedx-cli.path=${lib.getExe cyclonedx-cli}"
-  ];
-
-  afterDepsSetup = ''
-    mvn cyclonedx:makeBom -Dmaven.repo.local=$mvnDeps/.m2 \
-      org.codehaus.mojo:exec-maven-plugin:exec@merge-services-bom
-  '';
-
-  doCheck = false;
-
   nativeBuildInputs = [
     makeWrapper
     xmlstarlet
     protobuf_30
   ];
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -140,11 +105,50 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  afterDepsSetup = ''
+    mvn cyclonedx:makeBom -Dmaven.repo.local=$mvnDeps/.m2 \
+      org.codehaus.mojo:exec-maven-plugin:exec@merge-services-bom
+  '';
+
+  buildOffline = true;
+
+  manualMvnArtifacts = [
+    "com.coderplus.maven.plugins:copy-rename-maven-plugin:1.0.1"
+    # added to saticfy protobuf compiler plugin dependency resolving
+    "jakarta.el:jakarta.el-api:5.0.1"
+    "com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations:2.19.1"
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.21.0"
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.3"
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.21.2"
+    "io.micrometer:micrometer-core:1.16.0"
+    "io.micrometer:micrometer-observation:1.16.0"
+  ];
+
+  mvnDepsParameters = lib.escapeShellArgs [
+    "-Dmaven.test.skip=true"
+    "-P enhance"
+    "-P embedded-jetty"
+  ];
+
+  mvnHash = "sha256-pshUDIPPGGGzxg5WJXC3mjnqGXn8HVowFCb2l5f6zjA=";
+  mvnJdk = jre_headless;
+
+  mvnParameters = lib.escapeShellArgs [
+    "-Dmaven.test.skip=true"
+    "-P enhance"
+    "-P embedded-jetty"
+    "-Dservices.bom.merge.skip=false"
+    "-Dlogback.configuration.file=${src}/src/main/docker/logback.xml"
+    "-Dcyclonedx-cli.path=${lib.getExe cyclonedx-cli}"
+  ];
+
   passthru = {
     inherit frontend;
+
     tests = {
       inherit (nixosTests) dependency-track;
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "-s"
@@ -154,14 +158,16 @@ maven.buildMavenPackage rec {
   };
 
   meta = {
+    inherit (jre_headless.meta) platforms;
     description = "Intelligent Component Analysis platform that allows organizations to identify and reduce risk in the software supply chain";
     homepage = "https://github.com/DependencyTrack/dependency-track";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       e1mo
       xanderio
     ];
+
     mainProgram = "dependency-track";
-    inherit (jre_headless.meta) platforms;
   };
 }

@@ -1,11 +1,11 @@
 {
+  lib,
   _cuda,
   backendStdenv,
   buildRedist,
-  cuda_cudart,
   cudaAtLeast,
   cudaMajorMinorVersion,
-  lib,
+  cuda_cudart,
   libcudla, # only for Jetson
   patchelf,
 }:
@@ -32,7 +32,6 @@ buildRedist (
     cudaCapabilitiesJSON = builtins.toJSON cudaCapabilities;
   in
   {
-    redistName = "tensorrt";
     pname = "tensorrt";
 
     outputs = [
@@ -50,8 +49,6 @@ buildRedist (
       "static"
       # "stubs" removed in postInstall
     ];
-
-    allowFHSReferences = true;
 
     nativeBuildInputs = [ patchelf ];
 
@@ -98,14 +95,6 @@ buildRedist (
           }
         fi
       '';
-
-    autoPatchelfIgnoreMissingDeps =
-      optionals (hostRedistSystem == "linux-aarch64") [
-        "libnvdla_compiler.so"
-      ]
-      ++ optionals (tensorrtAtLeast "10.13.3") [
-        "libcuda.so.1"
-      ];
 
     # Create a symlink for the Onnx header files in include/onnx
     # NOTE(@connorbaker): This is shared with the tensorrt-oss package, with the `out` output swapped with `include`.
@@ -158,49 +147,67 @@ buildRedist (
         --add-needed libnvinfer_plugin.so.${majorVersion}
     '';
 
+    allowFHSReferences = true;
+
+    autoPatchelfIgnoreMissingDeps =
+      optionals (hostRedistSystem == "linux-aarch64") [
+        "libnvdla_compiler.so"
+      ]
+      ++ optionals (tensorrtAtLeast "10.13.3") [
+        "libcuda.so.1"
+      ];
+
     # NOTE: Like cuDNN, NVIDIA offers forward compatibility within a major releases of CUDA.
     platformAssertions = [
       {
+        assertion = tensorrtAtLeast100 -> allCCNewerThan70;
+
         message =
           "tensorrt releases since 10.0.0 (found ${finalAttrs.version})"
           + " support CUDA compute capabilities 7.0 and newer (found ${cudaCapabilitiesJSON})";
-        assertion = tensorrtAtLeast100 -> allCCNewerThan70;
       }
       {
+        assertion =
+          tensorrtAtLeast100 && hostRedistSystem == "linux-aarch64" -> cudaCapabilities == [ "8.7" ];
+
         message =
           "tensorrt releases since 10.0.0 (found ${finalAttrs.version})"
           + " support only CUDA compute capability 8.7 (Jetson Orin) for pre-Thor Jetson devices"
           + " (found ${cudaCapabilitiesJSON})";
-        assertion =
-          tensorrtAtLeast100 && hostRedistSystem == "linux-aarch64" -> cudaCapabilities == [ "8.7" ];
       }
       {
+        assertion = tensorrtAtLeast100 && hostRedistSystem == "linux-aarch64" -> cudaAtLeast "12.4";
+
         message =
           "tensorrt releases since 10.0.0 (found ${finalAttrs.version})"
           + " support CUDA 12.4 and newer for pre-Thor Jetson devices (found ${cudaMajorMinorVersion})";
-        assertion = tensorrtAtLeast100 && hostRedistSystem == "linux-aarch64" -> cudaAtLeast "12.4";
       }
       {
+        assertion = tensorrtAtLeast105 -> allCCNewerThan75;
+
         message =
           "tensorrt releases since 10.5.0 (found ${finalAttrs.version})"
           + " support CUDA compute capabilities 7.5 and newer (found ${cudaCapabilitiesJSON})";
-        assertion = tensorrtAtLeast105 -> allCCNewerThan75;
       }
     ];
 
+    redistName = "tensorrt";
+
     meta = {
       description = "SDK that facilitates high-performance machine learning inference";
+
       longDescription = ''
         NVIDIA TensorRT is an SDK that facilitates high-performance machine learning inference. It complements training
         frameworks such as TensorFlow, PyTorch, and MXNet. It focuses on running an already-trained network quickly and
         efficiently on NVIDIA hardware.
       '';
+
       homepage = "https://developer.nvidia.com/tensorrt";
+      changelog = "https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/release-notes.html#release-notes";
+      license = _cuda.lib.licenses.tensorrt;
       # NOTE: As of 2025-08-31, TensorRT doesn't follow the standard naming convention for URL paths that the rest of
       # the redistributables do. As such, we need to specify downloadPage manually.
       downloadPage = "https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt";
-      changelog = "https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/release-notes.html#release-notes";
-      license = _cuda.lib.licenses.tensorrt;
 
       knownVulnerabilities =
         # https://github.com/NixOS/nixpkgs/issues/522570

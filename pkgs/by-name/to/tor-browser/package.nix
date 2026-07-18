@@ -2,66 +2,56 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
-  copyDesktopItems,
-  makeWrapper,
-  writeText,
-  autoPatchelfHook,
-  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
-  wrapGAppsHook3,
-  callPackage,
-
+  alsa-lib,
+  apulse,
   atk,
+  autoPatchelfHook,
   cairo,
+  callPackage,
+  copyDesktopItems,
   dbus,
   dbus-glib,
+  ffmpeg_7,
   fontconfig,
   freetype,
   gdk-pixbuf,
   glib,
   gtk3,
-  libxcb,
+  libGL,
+  libdrm,
+  libgbm,
+  libnotify,
+  libpulseaudio,
+  libva,
   libx11,
+  libxcb,
   libxext,
+  libxkbcommon,
   libxrender,
   libxt,
   libxtst,
-  libgbm,
+  makeDesktopItem,
+  makeWrapper,
   pango,
+  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
   pciutils,
-  zlib,
-
-  libnotifySupport ? stdenv.hostPlatform.isLinux,
-  libnotify,
-
-  waylandSupport ? stdenv.hostPlatform.isLinux,
-  libxkbcommon,
-  libdrm,
-  libGL,
-
-  mediaSupport ? true,
-  ffmpeg_7,
-
-  audioSupport ? mediaSupport,
-
-  pipewireSupport ? audioSupport,
   pipewire,
-
-  pulseaudioSupport ? audioSupport,
-  libpulseaudio,
-  apulse,
-  alsa-lib,
-
-  libvaSupport ? mediaSupport,
-  libva,
-
-  # Whether to use IPC for communicating with Tor
-  useIPCTorService ? false,
+  wrapGAppsHook3,
+  writeText,
+  zlib,
+  audioSupport ? mediaSupport,
   # Whether to disable multiprocess support
   disableContentSandbox ? false,
-
   # Extra preferences
   extraPrefs ? "",
+  libnotifySupport ? stdenv.hostPlatform.isLinux,
+  libvaSupport ? mediaSupport,
+  mediaSupport ? true,
+  pipewireSupport ? audioSupport,
+  pulseaudioSupport ? audioSupport,
+  # Whether to use IPC for communicating with Tor
+  useIPCTorService ? false,
+  waylandSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 let
@@ -105,24 +95,26 @@ let
   version = "15.0.18";
 
   sources = {
-    x86_64-linux = fetchurl {
-      urls = [
-        "https://archive.torproject.org/tor-package-archive/torbrowser/${version}/tor-browser-linux-x86_64-${version}.tar.xz"
-        "https://dist.torproject.org/torbrowser/${version}/tor-browser-linux-x86_64-${version}.tar.xz"
-        "https://tor.eff.org/dist/torbrowser/${version}/tor-browser-linux-x86_64-${version}.tar.xz"
-        "https://tor.calyxinstitute.org/dist/torbrowser/${version}/tor-browser-linux-x86_64-${version}.tar.xz"
-      ];
-      hash = "sha256-4e7G8M/iKU65ECMVhxGjaJwHfwVZ49RD7ro6YJT43v0=";
-    };
-
     i686-linux = fetchurl {
+      hash = "sha256-lLShsQQ2thSSp4PRK9Fhza6e01Myj2mUP4qqCeyilXo=";
+
       urls = [
         "https://archive.torproject.org/tor-package-archive/torbrowser/${version}/tor-browser-linux-i686-${version}.tar.xz"
         "https://dist.torproject.org/torbrowser/${version}/tor-browser-linux-i686-${version}.tar.xz"
         "https://tor.eff.org/dist/torbrowser/${version}/tor-browser-linux-i686-${version}.tar.xz"
         "https://tor.calyxinstitute.org/dist/torbrowser/${version}/tor-browser-linux-i686-${version}.tar.xz"
       ];
-      hash = "sha256-lLShsQQ2thSSp4PRK9Fhza6e01Myj2mUP4qqCeyilXo=";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-4e7G8M/iKU65ECMVhxGjaJwHfwVZ49RD7ro6YJT43v0=";
+
+      urls = [
+        "https://archive.torproject.org/tor-package-archive/torbrowser/${version}/tor-browser-linux-x86_64-${version}.tar.xz"
+        "https://dist.torproject.org/torbrowser/${version}/tor-browser-linux-x86_64-${version}.tar.xz"
+        "https://tor.eff.org/dist/torbrowser/${version}/tor-browser-linux-x86_64-${version}.tar.xz"
+        "https://tor.calyxinstitute.org/dist/torbrowser/${version}/tor-browser-linux-x86_64-${version}.tar.xz"
+      ];
     };
   };
 
@@ -130,16 +122,16 @@ let
     lib.generators.toINI { } {
       # Some light branding indicating this build uses our distro preferences
       Global = {
-        id = "nixos";
         version = "1.0";
         about = "Tor Browser for NixOS";
+        id = "nixos";
       };
     }
   );
 in
 stdenv.mkDerivation rec {
-  pname = "tor-browser";
   inherit version;
+  pname = "tor-browser";
 
   src =
     sources.${stdenv.hostPlatform.system}
@@ -152,42 +144,12 @@ stdenv.mkDerivation rec {
     makeWrapper
     wrapGAppsHook3
   ];
+
   buildInputs = [
     gtk3
     alsa-lib
     dbus-glib
     libxtst
-  ];
-
-  # Firefox uses "relrhack" to manually process relocations from a fixed offset
-  patchelfFlags = [ "--no-clobber-old-sections" ];
-
-  preferLocalBuild = true;
-  allowSubstitutes = false;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "tor-browser";
-      exec = "tor-browser %U";
-      icon = "tor-browser";
-      desktopName = "Tor Browser";
-      genericName = "Web Browser";
-      comment = meta.description;
-      categories = [
-        "Network"
-        "WebBrowser"
-        "Security"
-      ];
-      mimeTypes = [
-        "text/html"
-        "text/xml"
-        "application/xhtml+xml"
-        "application/vnd.mozilla.xul+xml"
-        "x-scheme-handler/http"
-        "x-scheme-handler/https"
-      ];
-      startupWMClass = "Tor Browser";
-    })
   ];
 
   buildPhase = ''
@@ -329,8 +291,43 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  allowSubstitutes = false;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "WebBrowser"
+        "Security"
+      ];
+
+      comment = meta.description;
+      desktopName = "Tor Browser";
+      exec = "tor-browser %U";
+      genericName = "Web Browser";
+      icon = "tor-browser";
+
+      mimeTypes = [
+        "text/html"
+        "text/xml"
+        "application/xhtml+xml"
+        "application/vnd.mozilla.xul+xml"
+        "x-scheme-handler/http"
+        "x-scheme-handler/https"
+      ];
+
+      name = "tor-browser";
+      startupWMClass = "Tor Browser";
+    })
+  ];
+
+  # Firefox uses "relrhack" to manually process relocations from a fixed offset
+  patchelfFlags = [ "--no-clobber-old-sections" ];
+  preferLocalBuild = true;
+
   passthru = {
     inherit sources;
+
     updateScript = callPackage ./update.nix {
       inherit pname version meta;
     };
@@ -338,18 +335,9 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Privacy-focused browser routing traffic through the Tor network";
-    mainProgram = "tor-browser";
     homepage = "https://www.torproject.org/";
-    donationPage = "https://donate.torproject.org/";
     changelog = "https://gitlab.torproject.org/tpo/applications/tor-browser-build/-/raw/maint-${lib.versions.majorMinor version}/projects/browser/Bundle-Data/Docs-TBB/ChangeLog.txt";
-    platforms = lib.attrNames sources;
-    maintainers = with lib.maintainers; [
-      c4patino
-      felschr
-      hax404
-      panicgh
-      whispersofthedawn
-    ];
+
     # MPL2.0+, GPL+, &c.  While it's not entirely clear whether
     # the compound is "libre" in a strict sense (some components place certain
     # restrictions on redistribution), it's free enough for our purposes.
@@ -359,6 +347,19 @@ stdenv.mkDerivation rec {
       lgpl3Plus
       free
     ];
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    maintainers = with lib.maintainers; [
+      c4patino
+      felschr
+      hax404
+      panicgh
+      whispersofthedawn
+    ];
+
+    platforms = lib.attrNames sources;
+    mainProgram = "tor-browser";
+    donationPage = "https://donate.torproject.org/";
   };
 }

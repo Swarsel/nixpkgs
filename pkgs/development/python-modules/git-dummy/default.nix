@@ -1,25 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   gitpython,
-  pydantic-settings,
-  typer,
-
   # nativeBuildInputs
   installShellFiles,
+  pydantic-settings,
+  # build-system
+  setuptools,
+  typer,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "git-dummy";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "initialcommit-com";
@@ -27,14 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-viybxn2J7SO7NgSvjwlP+tgtm+H6QrACafIy82d9XEk=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    gitpython
-    pydantic-settings
-    typer
-  ];
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -46,6 +34,16 @@ buildPythonPackage (finalAttrs: {
         --fish <($out/bin/git-dummy --show-completion fish) \
         --zsh <($out/bin/git-dummy --show-completion zsh)
     '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    gitpython
+    pydantic-settings
+    typer
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Generate dummy Git repositories populated with the desired number of commits, branches, and structure";

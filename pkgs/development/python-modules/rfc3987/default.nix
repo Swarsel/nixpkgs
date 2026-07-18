@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "rfc3987";
   version = "1.3.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,10 +14,12 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
+  format = "setuptools";
+
   meta = {
+    description = "Parsing and validation of URIs (RFC 3986) and IRIs (RFC 3987)";
     homepage = "https://pypi.org/project/rfc3987/";
     license = lib.licenses.gpl3Plus;
-    description = "Parsing and validation of URIs (RFC 3986) and IRIs (RFC 3987)";
     maintainers = with lib.maintainers; [ vanschelven ];
   };
 }

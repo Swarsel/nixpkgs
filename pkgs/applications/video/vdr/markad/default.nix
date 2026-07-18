@@ -1,25 +1,20 @@
 {
   lib,
   stdenv,
-  vdr,
   fetchFromGitHub,
   ffmpeg,
+  vdr,
 }:
 stdenv.mkDerivation rec {
   pname = "vdr-markad";
   version = "4.2.22";
 
   src = fetchFromGitHub {
-    repo = "vdr-plugin-markad";
     owner = "kfb77";
-    hash = "sha256-Sp9saT/w3QwLEz9mo4kMUrXMXc5S/DOxm4nN1FPEgtk=";
+    repo = "vdr-plugin-markad";
     tag = "V${version}";
+    hash = "sha256-Sp9saT/w3QwLEz9mo4kMUrXMXc5S/DOxm4nN1FPEgtk=";
   };
-
-  buildInputs = [
-    vdr
-    ffmpeg
-  ];
 
   postPatch = ''
     substituteInPlace command/Makefile --replace '/usr' ""
@@ -32,6 +27,11 @@ stdenv.mkDerivation rec {
       --replace "/var/lib/markad" "$out/var/lib/markad"
   '';
 
+  buildInputs = [
+    vdr
+    ffmpeg
+  ];
+
   buildFlags = [
     "DESTDIR=$(out)"
     "VDRDIR=${vdr.dev}/lib/pkgconfig"
@@ -41,9 +41,9 @@ stdenv.mkDerivation rec {
 
   meta = {
     inherit (src.meta) homepage;
-    description = "Plugin for VDR that marks advertisements";
-    mainProgram = "markad";
-    maintainers = [ lib.maintainers.ck3d ];
     inherit (vdr.meta) platforms license;
+    description = "Plugin for VDR that marks advertisements";
+    maintainers = [ lib.maintainers.ck3d ];
+    mainProgram = "markad";
   };
 }

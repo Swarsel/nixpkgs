@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost186,
-  openssl,
+  cmake,
   llvmPackages_18,
+  openssl,
 }:
 let
   # std::char_traits has been removed
@@ -37,6 +37,7 @@ stdenvForCppNetlib.mkDerivation rec {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     # io_service.hpp has been removed in boost 1.87+
     boost186

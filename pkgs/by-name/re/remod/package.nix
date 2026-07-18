@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
   versionCheckHook,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,11 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7tLxvh/pLlt3Y+PkNF0s5f/wh/wGdeDtt0dc4eQqWlw=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-94i1wduLWCGHZNoohhBfjt3i2qsWr6UznKLHXH4im+c=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -35,22 +30,27 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
   ];
 
-  yarnBuildScript = "prepare";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  yarnBuildScript = "prepare";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-94i1wduLWCGHZNoohhBfjt3i2qsWr6UznKLHXH4im+c=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/samuela/remod/releases/tag/v${finalAttrs.version}";
     description = "chmod for human beings";
     homepage = "https://github.com/samuela/remod";
+    changelog = "https://github.com/samuela/remod/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "remod";

@@ -1,8 +1,8 @@
 {
   callPackage,
-  test,
-  stubs,
   should,
+  stubs,
+  test,
 }:
 let
   bundlerEnv = callPackage ./default.nix stubs // {
@@ -10,15 +10,15 @@ let
   };
 
   justName = bundlerEnv {
-    name = "test-0.1.2";
     gemset = ./test/gemset.nix;
+    name = "test-0.1.2";
   };
 
   pnamed = bundlerEnv {
     pname = "test";
     gemdir = ./test;
-    gemset = ./test/gemset.nix;
     gemfile = ./test/Gemfile;
+    gemset = ./test/gemset.nix;
     lockfile = ./test/Gemfile.lock;
   };
 in
@@ -33,9 +33,9 @@ builtins.concatLists [
       "postBuild"
     ])
     {
-      name = should.equal "test-0.1.2";
       env = should.beASet;
       postBuild = should.havePrefix "/nix/store";
+      name = should.equal "test-0.1.2";
     }
   ])
 ]

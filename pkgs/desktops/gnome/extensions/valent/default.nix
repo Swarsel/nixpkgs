@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  gitUpdater,
   meson,
   ninja,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,8 +24,9 @@ stdenv.mkDerivation rec {
   ];
 
   passthru = {
-    extensionUuid = "valent@andyholmes.ca";
     extensionPortalSlug = "valent";
+    extensionUuid = "valent@andyholmes.ca";
+
     updateScript = gitUpdater {
       rev-prefix = "v";
     };

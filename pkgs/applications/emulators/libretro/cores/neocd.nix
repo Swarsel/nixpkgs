@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "neocd";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-1rmoV6jxClTSRWNzsYepP8VSHKbSB+HUOLkvRrvYz/c=";
   };
 
+  core = "neocd";
   makefile = "Makefile";
 
   meta = {

@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  buildPackages,
   alsa-lib,
+  buildPackages,
   libx11,
 }:
 
@@ -19,8 +19,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libx11 ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
+
+  installPhase = ''
+    install -Dm755 -t $out/bin ./minivmac
+  '';
+
+  # ensure libasound can be dlopen()'ed
+  postFixup = ''
+    patchelf --add-rpath "${lib.getLib alsa-lib}/lib" $out/bin/minivmac
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -37,21 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  installPhase = ''
-    install -Dm755 -t $out/bin ./minivmac
-  '';
-
-  # ensure libasound can be dlopen()'ed
-  postFixup = ''
-    patchelf --add-rpath "${lib.getLib alsa-lib}/lib" $out/bin/minivmac
-  '';
-
   meta = {
     description = "Miniature early Macintosh emulator (fork from erichelgeson)";
     homepage = "https://github.com/erichelgeson/minivmac";
     license = lib.licenses.gpl2;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ lib.maintainers.flokli ];
     platforms = lib.platforms.linux;
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
   };
 })

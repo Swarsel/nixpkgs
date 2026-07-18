@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
-  fetchzip,
-  replaceVars,
-  dpkg,
+  stdenv,
   autoPatchelfHook,
   cups,
-  tcl,
-  tk,
+  dpkg,
+  fetchzip,
   libx11,
   makeWrapper,
+  replaceVars,
+  tcl,
+  tk,
 }:
 let
   debPlatform =
@@ -51,17 +51,12 @@ stdenv.mkDerivation rec {
     autoPatchelfHook
     makeWrapper
   ];
+
   buildInputs = [
     cups
     tcl
     tk
   ];
-
-  sourceRoot = ".";
-  unpackCmd = "dpkg-deb -x $curSrc/fxlinuxprintutil_${version}_${debPlatform}.deb .";
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p $out
@@ -76,11 +71,16 @@ stdenv.mkDerivation rec {
     }
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
+  unpackCmd = "dpkg-deb -x $curSrc/fxlinuxprintutil_${version}_${debPlatform}.deb .";
+
   meta = {
     description = "Optional configuration tool for fxlinuxprint";
     homepage = "https://onlinesupport.fujixerox.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

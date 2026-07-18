@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   icalendar,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
   python-dateutil,
   pytz,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "django-scheduler";
   version = "1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "llazzaro";
@@ -22,24 +21,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-TgIp2oqju3O6zPp3WMEB9HeNgAJILNkWWfbDFmMQ3eA=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    icalendar
-    python-dateutil
-    pytz
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-django
-  ];
-
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=tests.settings
-  '';
 
   patches = [
     # Remove in Django 5.1
@@ -53,12 +34,31 @@ buildPythonPackage rec {
       --replace-fail "SHA1PasswordHasher" "PBKDF2PasswordHasher"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-django
+  ];
+
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=tests.settings
+  '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    icalendar
+    python-dateutil
+    pytz
+  ];
+
   disabledTests = lib.optionals (lib.versionAtLeast django.version "5.1") [
     # test_delete_event_authenticated_user - AssertionError: 302 != 200
     "test_delete_event_authenticated_user"
     "test_event_creation_authenticated_user"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "schedule" ];
 
   meta = {

@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiosqlite,
   banks,
@@ -7,7 +8,6 @@
   dataclasses-json,
   deprecated,
   dirtyjson,
-  fetchFromGitHub,
   filetype,
   fsspec,
   hatchling,
@@ -15,8 +15,8 @@
   llama-index-workflows,
   nest-asyncio,
   networkx,
-  nltk-data,
   nltk,
+  nltk-data,
   numpy,
   openai,
   pandas,
@@ -30,8 +30,8 @@
   spacy,
   sqlalchemy,
   tenacity,
-  tinytag,
   tiktoken,
+  tinytag,
   tree-sitter,
   typing-inspect,
 }:
@@ -39,7 +39,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "llama-index-core";
   version = "0.14.23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "run-llama";
@@ -47,8 +46,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-JH8J8lnW3QNMWUV5MD4zWoc9zaXfvGRxVXtI47sPg2o=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/${finalAttrs.pname}";
 
   # When `llama-index` is imported, it uses `nltk` to look for the following files and tries to
   # download them if they aren't present.
@@ -64,9 +61,11 @@ buildPythonPackage (finalAttrs: {
     cp -r ${nltk-data.punkt}/tokenizers/punkt/* llama_index/core/_static/nltk_cache/tokenizers/punkt/
   '';
 
-  pythonRelaxDeps = [
-    "setuptools"
-    "tenacity"
+  nativeCheckInputs = [
+    tree-sitter
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
   ];
 
   build-system = [ hatchling ];
@@ -99,15 +98,6 @@ buildPythonPackage (finalAttrs: {
     tiktoken
     typing-inspect
   ];
-
-  nativeCheckInputs = [
-    tree-sitter
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "llama_index" ];
 
   disabledTestPaths = [
     # Tests require network access
@@ -160,6 +150,16 @@ buildPythonPackage (finalAttrs: {
     # RuntimeError
     "test_str"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "llama_index" ];
+
+  pythonRelaxDeps = [
+    "setuptools"
+    "tenacity"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/${finalAttrs.pname}";
 
   meta = {
     description = "Data framework for your LLM applications";

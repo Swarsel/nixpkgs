@@ -1,15 +1,14 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
-  pkg-config,
+  buildKodiBinaryAddon,
   glm,
   libGL,
+  pkg-config,
+  rel,
 }:
 buildKodiBinaryAddon rec {
   pname = "screensaver-asteroids";
-  namespace = "screensaver.asteroids";
   version = "21.0.2";
 
   src = fetchFromGitHub {
@@ -19,15 +18,17 @@ buildKodiBinaryAddon rec {
     hash = "sha256-cepo7amJn6y1J9hVSt35VgOz/ixT7l/UfjtmHOajBrw=";
   };
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     glm
     libGL
   ];
 
+  extraNativeBuildInputs = [ pkg-config ];
+  namespace = "screensaver.asteroids";
+
   meta = {
-    homepage = "https://github.com/xbmc/screensaver.asteroids";
     description = "Screensaver that plays Asteroids";
+    homepage = "https://github.com/xbmc/screensaver.asteroids";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];

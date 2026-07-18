@@ -3,26 +3,24 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  flint,
   gmp,
-  zstd,
   mpfr,
   zlib,
-  flint,
+  zstd,
 }:
 let
   zstd_src = fetchFromGitHub {
+    hash = "sha256-EPsLRjCCj0ruQ+z7eBzr/ACF0wh5LzUmdpbw/w5moWU=";
     owner = "facebook";
     repo = "zstd";
     # latest commit on dev (only branch that has that folder) that changed zlibWrapper (https://github.com/facebook/zstd/commits/dev/zlibWrapper)
     rev = "0b96e6d42a9b22eb472a050fcd2cc4be3ffb8e2b";
-    hash = "sha256-EPsLRjCCj0ruQ+z7eBzr/ACF0wh5LzUmdpbw/w5moWU=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "form";
   version = "5.0.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "form-dev";
@@ -42,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     flint
   ];
+
+  __structuredAttrs = true;
 
   postUnpack = ''
     mkdir -p source/extern/zstd

@@ -1,20 +1,19 @@
 {
   buildDunePackage,
+  gmp,
+  mirage-crypto,
+  mirage-crypto-rng,
   ohex,
   ounit2,
   randomconv,
-  mirage-crypto,
-  mirage-crypto-rng,
   zarith,
-  gmp,
 }:
 
 buildDunePackage {
-  pname = "mirage-crypto-pk";
-
   inherit (mirage-crypto) version src;
-
+  pname = "mirage-crypto-pk";
   buildInputs = [ gmp ];
+
   propagatedBuildInputs = [
     mirage-crypto
     mirage-crypto-rng
@@ -22,6 +21,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     ohex
     ounit2

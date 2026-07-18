@@ -1,24 +1,25 @@
 {
   lib,
+  azure-common,
+  azure-mgmt-core,
   buildPythonPackage,
   fetchPypi,
   isodate,
-  azure-common,
-  azure-mgmt-core,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-applicationinsights";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_applicationinsights";
     inherit version;
     hash = "sha256-FVMTkPEs49dnzT8ZSa82qjkHfBRclS/sTYAwPIbse2w=";
+    pname = "azure_mgmt_applicationinsights";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +28,8 @@ buildPythonPackage rec {
     isodate
   ];
 
+  pyproject = true;
   pythonNamespaces = [ "azure.mgmt" ];
-
-  # has no tests
-  doCheck = false;
 
   meta = {
     description = "This is the Microsoft Azure Application Insights Management Client Library";

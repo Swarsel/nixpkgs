@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "paperless-asn-qr-codes";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "entropia";
@@ -21,21 +20,22 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     python3.pkgs.hatchling
   ];
 
-  pythonRelaxDeps = [
-    "reportlab"
-  ];
-
   dependencies = with python3.pkgs; [
     reportlab
     reportlab-qrcode
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "paperless_asn_qr_codes" ];
 
+  pythonRelaxDeps = [
+    "reportlab"
+  ];
+
   meta = {
-    changelog = "https://codeberg.org/entropia/paperless-asn-qr-codes/releases/tag/${finalAttrs.src.tag}";
     description = "Command line utility for generating ASN labels for paperless with both a human-readable representation, as well as a QR code for machine consumption";
     homepage = "https://github.com/entropia/paperless-asn-qr-codes";
+    changelog = "https://codeberg.org/entropia/paperless-asn-qr-codes/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ xanderio ];
     mainProgram = "paperless-asn-qr-codes";

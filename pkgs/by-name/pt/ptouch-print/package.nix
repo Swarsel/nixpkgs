@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
   cmake,
   fetchgit,
   gd,
   gettext,
   git,
-  lib,
   libjpeg,
   libpng,
   libusb1,
   pkg-config,
-  stdenv,
   zlib,
 }:
 
@@ -51,7 +51,7 @@ stdenv.mkDerivation {
     description = "Command line tool to print labels on Brother P-Touch printers on Linux";
     homepage = "https://dominic.familie-radermacher.ch/projekte/ptouch-print/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ptouch-print";
     platforms = lib.platforms.unix;
+    mainProgram = "ptouch-print";
   };
 }

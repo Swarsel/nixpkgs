@@ -17,14 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-FwBsFgFNPbIL1bzQU1Uxf6JAxWKJXaJx1iZV+1hchX0=";
   };
 
-  nativeBuildInputs = [
-    lowdown-unsandboxed
-  ];
-
   postPatch = ''
     substituteInPlace app/Makefile \
       --replace "-march=native" ""
   '';
+
+  nativeBuildInputs = [
+    lowdown-unsandboxed
+  ];
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"

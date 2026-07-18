@@ -2,8 +2,8 @@
   lib,
   fetchurl,
   buildDunePackage,
-  testo-util,
   cmdliner,
+  testo-util,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -21,9 +21,9 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
+    description = "Test framework for OCaml";
     homepage = "https://github.com/mjambon/testo";
     license = lib.licenses.isc;
-    description = "Test framework for OCaml";
     maintainers = [ lib.maintainers.vbgl ];
   };
 })

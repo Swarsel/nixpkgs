@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   cunit,
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     cmake
   ];
+
   buildInputs = [
     cunit
   ];
@@ -39,9 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
+    description = "C library of key-value data structures";
     homepage = "https://github.com/rtbrick/libdict/";
     changelog = "https://github.com/rtbrick/libdict/releases/tag/${finalAttrs.version}";
-    description = "C library of key-value data structures";
     license = lib.licenses.bsd2;
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  anki-utils,
   fetchFromGitHub,
-  unstableGitUpdater,
+  anki-utils,
   python3,
+  unstableGitUpdater,
 }:
 
 anki-utils.buildAnkiAddon (finalAttrs: {
@@ -28,6 +28,7 @@ anki-utils.buildAnkiAddon (finalAttrs: {
 
   meta = {
     description = "Anki add-on that supports the FSRS algorithm";
+
     longDescription = ''
       FSRS Helper is an Anki add-on that supports the FSRS algorithm. It has eight main features:
 
@@ -54,9 +55,10 @@ anki-utils.buildAnkiAddon (finalAttrs: {
 
       For a list of all configuration options, please refer to [config.md](https://github.com/open-spaced-repetition/fsrs4anki-helper/blob/${finalAttrs.src.rev}/config.md).
     '';
+
     homepage = "https://github.com/open-spaced-repetition/fsrs4anki-helper";
-    downloadPage = "https://ankiweb.net/shared/info/759844606";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ eljamm ];
+    downloadPage = "https://ankiweb.net/shared/info/759844606";
   };
 })

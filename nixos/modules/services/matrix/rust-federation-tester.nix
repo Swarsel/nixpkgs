@@ -11,46 +11,49 @@ let
 
   configFile = "/run/rust-federation-tester/config.yaml";
   commonServiceConfig = {
-    DynamicUser = true;
-    RuntimeDirectory = "rust-federation-tester";
-    RuntimeDirectoryPreserve = true;
-    StateDirectory = "rust-federation-tester";
-    User = "rust-federation-tester";
-    WorkingDirectory = "%t/rust-federation-tester";
-
-    # Hardening
-    UMask = "0077";
     CapabilityBoundingSet = [ "" ];
     DevicePolicy = "closed";
-    PrivateTmp = true;
-    ProtectHome = true;
-    ProtectSystem = "strict";
+    DynamicUser = true;
+    LockPersonality = true;
     MemoryDenyWriteExecute = true;
     NoNewPrivileges = true;
-    LockPersonality = true;
     PrivateDevices = true;
     PrivateMounts = true;
+    PrivateTmp = true;
     ProcSubset = "pid";
     ProtectClock = true;
     ProtectControlGroups = true;
+    ProtectHome = true;
     ProtectHostname = true;
     ProtectKernelLogs = true;
     ProtectKernelModules = true;
     ProtectKernelTunables = true;
     ProtectProc = "invisible";
+    ProtectSystem = "strict";
     RemoveIPC = true;
+
     RestrictAddressFamilies = [
       "AF_INET"
       "AF_INET6"
       "AF_UNIX"
     ];
+
     RestrictNamespaces = true;
     RestrictRealtime = true;
     RestrictSUIDSGID = true;
+    RuntimeDirectory = "rust-federation-tester";
+    RuntimeDirectoryPreserve = true;
+    StateDirectory = "rust-federation-tester";
     SystemCallArchitectures = "native";
+
     SystemCallFilter = [
       "@system-service"
     ];
+
+    # Hardening
+    UMask = "0077";
+    User = "rust-federation-tester";
+    WorkingDirectory = "%t/rust-federation-tester";
   };
 
   secretsInjection = utils.genJqSecretsReplacement {
@@ -62,41 +65,6 @@ in
     enable = lib.mkEnableOption "rust-federation-tester";
 
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = lib.types.json;
-        options = {
-          frontend_url = lib.mkOption {
-            type = lib.types.str;
-            example = "federation-tester.example.org";
-            description = ''
-              URL of the service's frontend.
-            '';
-          };
-
-          database_url = lib.mkOption {
-            type = lib.types.str;
-            default = "sqlite:///var/lib/rust-federation-tester/db?mode=rwc";
-            example = "postgres://localhost/db?currentSchema=schema";
-            description = ''
-              The database to store accounts and statistics.
-            '';
-          };
-
-          smtp = {
-            enabled = lib.mkEnableOption "mail delivery for configured alerts";
-          };
-
-          listen_addr = lib.mkOption {
-            type = lib.types.str;
-            default = "[::]:8080";
-            example = "unix:/run/rust-federation-tester/rust-federation-tester.sock";
-            description = ''
-              Address the API server should listen on.
-            '';
-          };
-        };
-      };
-
       description = ''
         Settings representing the values in {file}`config.yaml` of the service.
 
@@ -104,40 +72,55 @@ in
 
         [`config.yaml.example`]: https://github.com/MTRNord/rust-federation-tester/blob/main/config.yaml.example
       '';
+
+      type = lib.types.submodule {
+        options = {
+          database_url = lib.mkOption {
+            default = "sqlite:///var/lib/rust-federation-tester/db?mode=rwc";
+
+            description = ''
+              The database to store accounts and statistics.
+            '';
+
+            example = "postgres://localhost/db?currentSchema=schema";
+            type = lib.types.str;
+          };
+
+          frontend_url = lib.mkOption {
+            description = ''
+              URL of the service's frontend.
+            '';
+
+            example = "federation-tester.example.org";
+            type = lib.types.str;
+          };
+
+          listen_addr = lib.mkOption {
+            default = "[::]:8080";
+
+            description = ''
+              Address the API server should listen on.
+            '';
+
+            example = "unix:/run/rust-federation-tester/rust-federation-tester.sock";
+            type = lib.types.str;
+          };
+
+          smtp = {
+            enabled = lib.mkEnableOption "mail delivery for configured alerts";
+          };
+        };
+
+        freeformType = lib.types.json;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.sockets.rust-federation-tester = {
-      description = "Matrix-Federation-Tester in Rust socket";
-      wantedBy = [ "sockets.target" ];
-      listenStreams = [ (lib.removePrefix "unix:" cfg.settings.listen_addr) ];
-    };
-
-    systemd.services.rust-federation-tester-setup = {
-      description = "Matrix-Federation-Tester in Rust";
-      path = [ pkgs.rust-federation-tester ];
-
-      serviceConfig = lib.mkMerge [
-        commonServiceConfig
-        {
-          Type = "oneshot";
-          RemainAfterExit = true;
-          LoadCredential = secretsInjection.credentials;
-          ExecStart = "${pkgs.writeShellScript "rust-federation-tester-setup" ''
-            ${secretsInjection.script}
-
-            migration up
-          ''}";
-        }
-      ];
-    };
-
     systemd.services.rust-federation-tester = {
-      description = "Matrix-Federation-Tester in Rust";
-      wantedBy = [ "multi-user.target" ];
-      documentation = [ "https://github.com/MTRNord/rust-federation-tester" ];
       after = [ "rust-federation-tester-setup.service" ];
+      description = "Matrix-Federation-Tester in Rust";
+      documentation = [ "https://github.com/MTRNord/rust-federation-tester" ];
       requires = [ "rust-federation-tester-setup.service" ];
 
       serviceConfig = lib.mkMerge [
@@ -148,6 +131,34 @@ in
           Restart = "on-failure";
         }
       ];
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.rust-federation-tester-setup = {
+      description = "Matrix-Federation-Tester in Rust";
+      path = [ pkgs.rust-federation-tester ];
+
+      serviceConfig = lib.mkMerge [
+        commonServiceConfig
+        {
+          ExecStart = "${pkgs.writeShellScript "rust-federation-tester-setup" ''
+            ${secretsInjection.script}
+
+            migration up
+          ''}";
+
+          LoadCredential = secretsInjection.credentials;
+          RemainAfterExit = true;
+          Type = "oneshot";
+        }
+      ];
+    };
+
+    systemd.sockets.rust-federation-tester = {
+      description = "Matrix-Federation-Tester in Rust socket";
+      listenStreams = [ (lib.removePrefix "unix:" cfg.settings.listen_addr) ];
+      wantedBy = [ "sockets.target" ];
     };
   };
 }

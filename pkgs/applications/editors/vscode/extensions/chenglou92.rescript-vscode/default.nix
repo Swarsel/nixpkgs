@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  vscode-utils,
   callPackage,
+  vscode-utils,
 }:
 let
   extVersion = "1.72.0";
@@ -26,29 +26,32 @@ let
 in
 
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "rescript-vscode";
-    publisher = "chenglou92";
-    inherit version;
-    hash = "sha256-2fN8bq6X1Lm9/5+wNMzL8I0bUVMFetXDWVObUJeVYbU=";
-  };
-
-  # For rescript-language-server
-  passthru.rescript-editor-analysis = rescript-editor-analysis;
-
-  strictDeps = true;
   postPatch = ''
     rm -r ${analysisDir}
     ln -s ${rescript-editor-analysis}/bin ${analysisDir}
   '';
 
+  strictDeps = true;
+
+  mktplcRef = {
+    inherit version;
+    hash = "sha256-2fN8bq6X1Lm9/5+wNMzL8I0bUVMFetXDWVObUJeVYbU=";
+    name = "rescript-vscode";
+    publisher = "chenglou92";
+  };
+
+  # For rescript-language-server
+  passthru.rescript-editor-analysis = rescript-editor-analysis;
+
   meta = {
     description = "Official VSCode plugin for ReScript";
     homepage = "https://github.com/rescript-lang/rescript-vscode";
+    license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.jayesh-bhoot
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    license = lib.licenses.mit;
   };
 }

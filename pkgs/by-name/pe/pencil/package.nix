@@ -1,14 +1,12 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  makeWrapper,
-  wrapGAppsHook3,
   # build dependencies
   alsa-lib,
-  atk,
   at-spi2-atk,
   at-spi2-core,
+  atk,
   cairo,
   cups,
   dbus,
@@ -20,22 +18,24 @@
   glibc,
   gtk3,
   libuuid,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxtst,
+  makeWrapper,
   nspr,
   nss,
   pango,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxcb,
   systemd,
+  wrapGAppsHook3,
 }:
 let
 
@@ -76,21 +76,13 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.1.0";
   pname = "pencil";
+  version = "3.1.0";
 
   src = fetchurl {
     url = "https://pencil.evolus.vn/dl/V${finalAttrs.version}.ga/pencil_${finalAttrs.version}.ga_amd64.deb";
     sha256 = "01ae54b1a1351b909eb2366c6ec00816e1deba370e58f35601cf7368f10aaba3";
   };
-
-  sourceRoot = ".";
-
-  unpackCmd = ''
-    ar p "$src" data.tar.gz | tar xz
-  '';
-
-  dontBuild = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -134,17 +126,26 @@ stdenv.mkDerivation (finalAttrs: {
         --prefix LD_LIBRARY_PATH : $out/opt/pencil
     '';
 
+  dontBuild = true;
+  sourceRoot = ".";
+
+  unpackCmd = ''
+    ar p "$src" data.tar.gz | tar xz
+  '';
+
   meta = {
     description = "GUI prototyping/mockup tool";
-    mainProgram = "pencil";
     homepage = "https://pencil.evolus.vn/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.gpl2; # Commercial license is also available
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       bjornfor
       prikhi
       mrVanDalo
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "pencil";
   };
 })

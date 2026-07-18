@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  php,
-  makeWrapper,
+  ghostscript,
   imagemagick,
   librsvg,
-  potrace,
+  makeWrapper,
   pdftk,
-  ghostscript,
+  php,
+  potrace,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,9 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -55,13 +52,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Web software for signing PDFs and also organize pages, edit metadata and compress pdf";
-    mainProgram = "signaturepdf";
     homepage = "https://pdf.24eme.fr/";
     changelog = "https://github.com/24eme/signaturepdf/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ DamienCassou ];
+    platforms = lib.platforms.all;
+    mainProgram = "signaturepdf";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeBinaryWrapper,
   jre_headless,
+  makeBinaryWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -31,11 +31,11 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://valentjn.github.io/ltex/";
     description = "LSP language server for LanguageTool";
+    homepage = "https://valentjn.github.io/ltex/";
     license = lib.licenses.mpl20;
-    mainProgram = "ltex-ls";
     maintainers = with lib.maintainers; [ vinnymeller ];
     platforms = jre_headless.meta.platforms;
+    mainProgram = "ltex-ls";
   };
 }

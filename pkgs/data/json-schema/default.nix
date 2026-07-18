@@ -1,8 +1,8 @@
 {
   lib,
-  newScope,
   json-schema-catalog-rs,
   jsonschema-cli,
+  newScope,
 }:
 let
   inherit (lib) concatMapAttrs optionalAttrs;

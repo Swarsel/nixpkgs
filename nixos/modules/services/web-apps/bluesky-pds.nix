@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -48,115 +48,11 @@ in
 
   options.services.bluesky-pds = {
     enable = mkEnableOption "pds";
-
     package = mkPackageOption pkgs "bluesky-pds" { };
 
-    settings = mkOption {
-      type = types.submodule {
-        freeformType = types.attrsOf (
-          types.oneOf [
-            (types.nullOr types.str)
-            types.port
-          ]
-        );
-        options = {
-          PDS_PORT = mkOption {
-            type = types.port;
-            default = 3000;
-            description = "Port to listen on";
-          };
-
-          PDS_HOSTNAME = mkOption {
-            type = types.str;
-            example = "pds.example.com";
-            description = "Instance hostname (base domain name)";
-          };
-
-          PDS_BLOB_UPLOAD_LIMIT = mkOption {
-            type = types.str;
-            default = "104857600";
-            description = "Size limit of uploaded blobs in bytes";
-          };
-
-          PDS_DID_PLC_URL = mkOption {
-            type = types.str;
-            default = "https://plc.directory";
-            description = "URL of DID PLC directory";
-          };
-
-          PDS_BSKY_APP_VIEW_URL = mkOption {
-            type = types.str;
-            default = "https://api.bsky.app";
-            description = "URL of bsky frontend";
-          };
-
-          PDS_BSKY_APP_VIEW_DID = mkOption {
-            type = types.str;
-            default = "did:web:api.bsky.app";
-            description = "DID of bsky frontend";
-          };
-
-          PDS_REPORT_SERVICE_URL = mkOption {
-            type = types.str;
-            default = "https://mod.bsky.app";
-            description = "URL of mod service";
-          };
-
-          PDS_REPORT_SERVICE_DID = mkOption {
-            type = types.str;
-            default = "did:plc:ar7c4by46qjdydhdevvrndac";
-            description = "DID of mod service";
-          };
-
-          PDS_CRAWLERS = mkOption {
-            type = types.str;
-            default = "https://bsky.network";
-            description = "URL of crawlers";
-          };
-
-          PDS_DATA_DIRECTORY = mkOption {
-            type = types.str;
-            default = "/var/lib/pds";
-            description = "Directory to store state";
-          };
-
-          PDS_BLOBSTORE_DISK_LOCATION = mkOption {
-            type = types.nullOr types.str;
-            default = "/var/lib/pds/blocks";
-            description = "Store blobs at this location, set to null to use e.g. S3";
-          };
-
-          LOG_ENABLED = mkOption {
-            type = types.nullOr types.str;
-            default = "true";
-            description = "Enable logging";
-          };
-
-          PDS_RATE_LIMITS_ENABLED = mkOption {
-            type = types.nullOr types.str;
-            default = "true";
-            description = "Enable rate limiting";
-          };
-
-          PDS_INVITE_REQUIRED = mkOption {
-            type = types.nullOr types.str;
-            default = "true";
-            description = "Require invite code for registration";
-          };
-        };
-      };
-
-      description = ''
-        Environment variables to set for the service. Secrets should be
-        specified using {option}`environmentFile`.
-
-        Refer to <https://github.com/bluesky-social/atproto/blob/main/packages/pds/src/config/env.ts> for available environment variables.
-      '';
-    };
-
     environmentFiles = mkOption {
-      type = types.listOf types.path;
       default = [ ];
+
       description = ''
         File to load environment variables from. Loaded variables override
         values set in {option}`environment`.
@@ -172,23 +68,129 @@ in
         openssl ecparam --name secp256k1 --genkey --noout --outform DER | tail --bytes=+8 | head --bytes=32 | xxd --plain --cols 32
         ```
       '';
-    };
 
-    pdsadmin = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        defaultText = false;
-        description = "Add pdsadmin script to PATH";
-      };
+      type = types.listOf types.path;
     };
 
     goat = {
       enable = mkOption {
-        type = types.bool;
         default = cfg.enable;
         defaultText = literalExpression "config.services.bluesky-pds.enable";
         description = "Add goat to PATH";
+        type = types.bool;
+      };
+    };
+
+    pdsadmin = {
+      enable = mkOption {
+        default = false;
+        defaultText = false;
+        description = "Add pdsadmin script to PATH";
+        type = types.bool;
+      };
+    };
+
+    settings = mkOption {
+      description = ''
+        Environment variables to set for the service. Secrets should be
+        specified using {option}`environmentFile`.
+
+        Refer to <https://github.com/bluesky-social/atproto/blob/main/packages/pds/src/config/env.ts> for available environment variables.
+      '';
+
+      type = types.submodule {
+        options = {
+          LOG_ENABLED = mkOption {
+            default = "true";
+            description = "Enable logging";
+            type = types.nullOr types.str;
+          };
+
+          PDS_BLOBSTORE_DISK_LOCATION = mkOption {
+            default = "/var/lib/pds/blocks";
+            description = "Store blobs at this location, set to null to use e.g. S3";
+            type = types.nullOr types.str;
+          };
+
+          PDS_BLOB_UPLOAD_LIMIT = mkOption {
+            default = "104857600";
+            description = "Size limit of uploaded blobs in bytes";
+            type = types.str;
+          };
+
+          PDS_BSKY_APP_VIEW_DID = mkOption {
+            default = "did:web:api.bsky.app";
+            description = "DID of bsky frontend";
+            type = types.str;
+          };
+
+          PDS_BSKY_APP_VIEW_URL = mkOption {
+            default = "https://api.bsky.app";
+            description = "URL of bsky frontend";
+            type = types.str;
+          };
+
+          PDS_CRAWLERS = mkOption {
+            default = "https://bsky.network";
+            description = "URL of crawlers";
+            type = types.str;
+          };
+
+          PDS_DATA_DIRECTORY = mkOption {
+            default = "/var/lib/pds";
+            description = "Directory to store state";
+            type = types.str;
+          };
+
+          PDS_DID_PLC_URL = mkOption {
+            default = "https://plc.directory";
+            description = "URL of DID PLC directory";
+            type = types.str;
+          };
+
+          PDS_HOSTNAME = mkOption {
+            description = "Instance hostname (base domain name)";
+            example = "pds.example.com";
+            type = types.str;
+          };
+
+          PDS_INVITE_REQUIRED = mkOption {
+            default = "true";
+            description = "Require invite code for registration";
+            type = types.nullOr types.str;
+          };
+
+          PDS_PORT = mkOption {
+            default = 3000;
+            description = "Port to listen on";
+            type = types.port;
+          };
+
+          PDS_RATE_LIMITS_ENABLED = mkOption {
+            default = "true";
+            description = "Enable rate limiting";
+            type = types.nullOr types.str;
+          };
+
+          PDS_REPORT_SERVICE_DID = mkOption {
+            default = "did:plc:ar7c4by46qjdydhdevvrndac";
+            description = "DID of mod service";
+            type = types.str;
+          };
+
+          PDS_REPORT_SERVICE_URL = mkOption {
+            default = "https://mod.bsky.app";
+            description = "URL of mod service";
+            type = types.str;
+          };
+        };
+
+        freeformType = types.attrsOf (
+          types.oneOf [
+            (types.nullOr types.str)
+            types.port
+          ]
+        );
       };
     };
   };
@@ -198,65 +200,68 @@ in
       optional cfg.pdsadmin.enable pdsadminWrapper ++ optional cfg.goat.enable pkgs.atproto-goat;
 
     systemd.services.bluesky-pds = {
+      after = [ "network-online.target" ];
       description = "bluesky pds";
 
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-
       serviceConfig = {
-        ExecStart = getExe cfg.package;
+        CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
+        DeviceAllow = [ "" ];
+
         Environment = lib.mapAttrsToList (k: v: "${k}=${if builtins.isInt v then toString v else v}") (
           lib.filterAttrs (_: v: v != null) cfg.settings
         );
 
         EnvironmentFile = cfg.environmentFiles;
-        User = "pds";
+        ExecStart = getExe cfg.package;
         Group = "pds";
-        StateDirectory = "pds";
-        StateDirectoryMode = "0755";
-        Restart = "always";
-
-        # Hardening
-        RemoveIPC = true;
-        CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
+        LockPersonality = true;
+        MemoryDenyWriteExecute = false; # required by V8 JIT
         NoNewPrivileges = true;
         PrivateDevices = true;
-        ProtectClock = true;
-        ProtectKernelLogs = true;
-        ProtectControlGroups = true;
-        ProtectKernelModules = true;
         PrivateMounts = true;
-        SystemCallArchitectures = [ "native" ];
-        MemoryDenyWriteExecute = false; # required by V8 JIT
-        RestrictNamespaces = true;
-        RestrictSUIDSGID = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
         ProtectHostname = true;
-        LockPersonality = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+        # Hardening
+        RemoveIPC = true;
+        Restart = "always";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
+
+        RestrictNamespaces = true;
         RestrictRealtime = true;
-        DeviceAllow = [ "" ];
-        ProtectSystem = "strict";
-        ProtectProc = "invisible";
-        ProcSubset = "pid";
-        ProtectHome = true;
-        PrivateUsers = true;
-        PrivateTmp = true;
+        RestrictSUIDSGID = true;
+        StateDirectory = "pds";
+        StateDirectoryMode = "0755";
+        SystemCallArchitectures = [ "native" ];
         UMask = "0077";
+        User = "pds";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
     users = {
+      groups.pds = { };
+
       users.pds = {
         group = "pds";
         isSystemUser = true;
       };
-      groups.pds = { };
     };
 
   };

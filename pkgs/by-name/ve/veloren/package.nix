@@ -1,28 +1,25 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitLab,
-  pkg-config,
   stdenv,
-
-  # Linux-only
-  vulkan-loader,
+  fetchFromGitLab,
   alsa-lib,
-  udev,
-  libxcb,
-  libxkbcommon,
   autoPatchelfHook,
-  libx11,
-  libxi,
-  libxcursor,
-  libxrandr,
-  wayland,
-
-  # Both platforms
-  shaderc,
-
   # macOS-only
   desktopToDarwinBundle,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  pkg-config,
+  rustPlatform,
+  # Both platforms
+  shaderc,
+  udev,
+  # Linux-only
+  vulkan-loader,
+  wayland,
 }:
 
 let
@@ -33,21 +30,15 @@ let
   rev = "1d12f35edd6cdbfc1fb921c167cdd7beeeffe248";
 in
 rustPlatform.buildRustPackage {
-  pname = "veloren";
   inherit version;
+  pname = "veloren";
 
   src = fetchFromGitLab {
+    inherit rev;
     owner = "veloren";
     repo = "veloren";
-    inherit rev;
     hash = "sha256-tngIwFq18kvOU2XwCQoeLWjiVDjrJgOf3XIYz2J2cWs=";
   };
-
-  cargoPatches = [
-    ./fix-assets-path.patch
-  ];
-
-  cargoHash = "sha256-1qLE1UeP2i0xaOGLniZzdjIkBbme6rctGfcO9Kfoh5E=";
 
   postPatch = ''
     # Fix hashbrown on rust ≥1.95
@@ -93,26 +84,32 @@ rustPlatform.buildRustPackage {
     stdenv.cc.cc # libgcc_s.so.1
   ];
 
-  buildNoDefaultFeatures = true;
-  buildFeatures = [ "default-publish" ];
+  cargoHash = "sha256-1qLE1UeP2i0xaOGLniZzdjIkBbme6rctGfcO9Kfoh5E=";
 
   env = {
     # Enable unstable features, see https://gitlab.com/veloren/veloren/-/issues/264
     RUSTC_BOOTSTRAP = true;
-
+    # Use system shaderc
+    SHADERC_LIB_DIR = "${shaderc.lib}/lib";
     # Set version info, required by veloren-common
     VELOREN_GIT_VERSION = "/${lib.substring 0 8 rev}/${timestamp}";
-
     # Save game data under user's home directory,
     # otherwise it defaults to $out/bin/../userdata
     VELOREN_USERDATA_STRATEGY = "system";
-
-    # Use system shaderc
-    SHADERC_LIB_DIR = "${shaderc.lib}/lib";
   };
 
   # Some tests require internet access
   doCheck = false;
+
+  postInstall = ''
+    # Icons
+    install -Dm644 assets/voxygen/net.veloren.veloren.desktop -t "$out/share/applications"
+    install -Dm644 assets/voxygen/net.veloren.veloren.png -t "$out/share/icons/hicolor/256x256/apps"
+    install -Dm644 assets/voxygen/net.veloren.veloren.metainfo.xml -t "$out/share/metainfo"
+
+    # Assets directory
+    mkdir -p "$out/share/veloren"; cp -ar assets "$out/share/veloren/"
+  '';
 
   appendRunpaths = lib.optionals stdenv.hostPlatform.isLinux [
     (lib.makeLibraryPath (
@@ -130,26 +127,25 @@ rustPlatform.buildRustPackage {
     ))
   ];
 
-  postInstall = ''
-    # Icons
-    install -Dm644 assets/voxygen/net.veloren.veloren.desktop -t "$out/share/applications"
-    install -Dm644 assets/voxygen/net.veloren.veloren.png -t "$out/share/icons/hicolor/256x256/apps"
-    install -Dm644 assets/voxygen/net.veloren.veloren.metainfo.xml -t "$out/share/metainfo"
+  buildFeatures = [ "default-publish" ];
+  buildNoDefaultFeatures = true;
 
-    # Assets directory
-    mkdir -p "$out/share/veloren"; cp -ar assets "$out/share/veloren/"
-  '';
+  cargoPatches = [
+    ./fix-assets-path.patch
+  ];
 
   meta = {
     description = "Open world, open source voxel RPG";
     homepage = "https://www.veloren.net";
     license = lib.licenses.gpl3Only;
-    mainProgram = "veloren-voxygen";
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       rnhmjoj
       philocalyst
       tomodachi94
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "veloren-voxygen";
   };
 }

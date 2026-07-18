@@ -3,20 +3,20 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  bzip2,
+  doxygen,
+  libnl,
   libqb,
   libxml2,
-  libnl,
   lksctp-tools,
+  lz4,
+  lzo,
   nss,
   openssl,
-  bzip2,
-  lzo,
-  lz4,
+  pkg-config,
   xz,
   zlib,
   zstd,
-  doxygen,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,10 +54,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "VPN on steroids";
     homepage = "https://kronosnet.org/";
+
     license = with lib.licenses; [
       lgpl21Plus
       gpl2Plus
     ];
+
     maintainers = with lib.maintainers; [ ryantm ];
   };
 })

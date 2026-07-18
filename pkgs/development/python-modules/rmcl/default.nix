@@ -1,9 +1,9 @@
 {
   lib,
+  asks,
   buildPythonPackage,
   fetchPypi,
   poetry-core,
-  asks,
   trio,
   xdg,
 }:
@@ -11,8 +11,6 @@
 buildPythonPackage rec {
   pname = "rmcl";
   version = "0.4.2";
-
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -34,7 +32,7 @@ buildPythonPackage rec {
 
   # upstream has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "rmcl" ];
 
   meta = {

@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   django,
+  django-autoslug,
   django-extensions,
-  pytest-django,
-  pytestCheckHook,
+  hatchling,
   mock,
   mock-django,
-  django-autoslug,
+  pytest-django,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "django-organizations";
   version = "2.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bennylope";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-MgXB2gr7tWBXpgVfxLMI0RQWwAbhXlxdzyqk7XdEsWE=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    django
-    django-extensions
-  ];
 
   nativeCheckInputs = [
     pytest-django
@@ -39,6 +31,14 @@ buildPythonPackage rec {
     django-autoslug
   ];
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    django
+    django-extensions
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "organizations" ];
 
   meta = {

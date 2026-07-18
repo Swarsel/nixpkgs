@@ -1,19 +1,18 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
+  archive_tool,
+  buildKodiAddon,
   dateutil,
+  infotagger,
   requests,
   routing,
   vfs-libarchive,
-  archive_tool,
   youtube,
-  infotagger,
 }:
 
 buildKodiAddon rec {
   pname = "iagl";
-  namespace = "plugin.program.iagl";
   version = "3.0.9";
 
   src = fetchFromGitHub {
@@ -33,9 +32,11 @@ buildKodiAddon rec {
     infotagger
   ];
 
+  namespace = "plugin.program.iagl";
+
   meta = {
-    homepage = "https://github.com/zach-morris/plugin.program.iagl";
     description = "Launch Games from the Internet using Kodi";
+    homepage = "https://github.com/zach-morris/plugin.program.iagl";
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.kodi ];
   };

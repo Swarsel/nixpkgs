@@ -121,6 +121,7 @@ let
         exif
         sodium
       ];
+
     extraConfig = "max_input_vars = 5000";
   };
 in
@@ -128,70 +129,53 @@ in
   # interface
   options.services.moodle = {
     enable = mkEnableOption "Moodle web application";
-
     package = mkPackageOption pkgs "moodle" { };
 
-    initialPassword = mkOption {
-      type = types.str;
-      example = "correcthorsebatterystaple";
-      description = ''
-        Specifies the initial password for the admin, i.e. the password assigned if the user does not already exist.
-        The password specified here is world-readable in the Nix store, so it should be changed promptly.
-      '';
-    };
-
     database = {
-      type = mkOption {
-        type = types.enum [
-          "mysql"
-          "pgsql"
-        ];
-        default = "mysql";
-        description = "Database engine to use.";
+      createLocally = mkOption {
+        default = true;
+        description = "Create the database and database user locally.";
+        type = types.bool;
       };
 
       host = mkOption {
-        type = types.str;
         default = "localhost";
         description = "Database host address.";
+        type = types.str;
+      };
+
+      name = mkOption {
+        default = "moodle";
+        description = "Database name.";
+        type = types.str;
+      };
+
+      passwordFile = mkOption {
+        default = null;
+
+        description = ''
+          A file containing the password corresponding to
+          {option}`database.user`.
+        '';
+
+        example = "/run/keys/moodle-dbpassword";
+        type = types.nullOr types.path;
       };
 
       port = mkOption {
-        type = types.port;
-        description = "Database host port.";
         default =
           {
             mysql = 3306;
             pgsql = 5432;
           }
           .${cfg.database.type};
+
         defaultText = literalExpression "3306";
-      };
-
-      name = mkOption {
-        type = types.str;
-        default = "moodle";
-        description = "Database name.";
-      };
-
-      user = mkOption {
-        type = types.str;
-        default = "moodle";
-        description = "Database user.";
-      };
-
-      passwordFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        example = "/run/keys/moodle-dbpassword";
-        description = ''
-          A file containing the password corresponding to
-          {option}`database.user`.
-        '';
+        description = "Database host port.";
+        type = types.port;
       };
 
       socket = mkOption {
-        type = types.nullOr types.path;
         default =
           if mysqlLocal then
             "/run/mysqld/mysqld.sock"
@@ -199,19 +183,85 @@ in
             "/run/postgresql"
           else
             null;
+
         defaultText = literalExpression "/run/mysqld/mysqld.sock";
         description = "Path to the unix socket file to use for authentication.";
+        type = types.nullOr types.path;
       };
 
-      createLocally = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Create the database and database user locally.";
+      type = mkOption {
+        default = "mysql";
+        description = "Database engine to use.";
+
+        type = types.enum [
+          "mysql"
+          "pgsql"
+        ];
+      };
+
+      user = mkOption {
+        default = "moodle";
+        description = "Database user.";
+        type = types.str;
       };
     };
 
+    extraConfig = mkOption {
+      default = "";
+
+      description = ''
+        Any additional text to be appended to the config.php
+        configuration file. This is a PHP script. For configuration
+        details, see <https://docs.moodle.org/37/en/Configuration_file>.
+      '';
+
+      example = ''
+        $CFG->disableupdatenotifications = true;
+      '';
+
+      type = types.lines;
+    };
+
+    initialPassword = mkOption {
+      description = ''
+        Specifies the initial password for the admin, i.e. the password assigned if the user does not already exist.
+        The password specified here is world-readable in the Nix store, so it should be changed promptly.
+      '';
+
+      example = "correcthorsebatterystaple";
+      type = types.str;
+    };
+
+    poolConfig = mkOption {
+      default = {
+        "pm" = "dynamic";
+        "pm.max_children" = 32;
+        "pm.max_requests" = 500;
+        "pm.max_spare_servers" = 4;
+        "pm.min_spare_servers" = 2;
+        "pm.start_servers" = 2;
+      };
+
+      description = ''
+        Options for the Moodle PHP pool. See the documentation on `php-fpm.conf`
+        for details on configuration directives.
+      '';
+
+      type =
+        with types;
+        attrsOf (oneOf [
+          str
+          int
+          bool
+        ]);
+    };
+
     virtualHost = mkOption {
-      type = types.submodule (import ../web-servers/apache-httpd/vhost-options.nix);
+      description = ''
+        Apache configuration can be done by adapting {option}`services.httpd.virtualHosts`.
+        See [](#opt-services.httpd.virtualHosts) for further information.
+      '';
+
       example = literalExpression ''
         {
           hostName = "moodle.example.org";
@@ -220,45 +270,8 @@ in
           enableACME = true;
         }
       '';
-      description = ''
-        Apache configuration can be done by adapting {option}`services.httpd.virtualHosts`.
-        See [](#opt-services.httpd.virtualHosts) for further information.
-      '';
-    };
 
-    poolConfig = mkOption {
-      type =
-        with types;
-        attrsOf (oneOf [
-          str
-          int
-          bool
-        ]);
-      default = {
-        "pm" = "dynamic";
-        "pm.max_children" = 32;
-        "pm.start_servers" = 2;
-        "pm.min_spare_servers" = 2;
-        "pm.max_spare_servers" = 4;
-        "pm.max_requests" = 500;
-      };
-      description = ''
-        Options for the Moodle PHP pool. See the documentation on `php-fpm.conf`
-        for details on configuration directives.
-      '';
-    };
-
-    extraConfig = mkOption {
-      type = types.lines;
-      default = "";
-      description = ''
-        Any additional text to be appended to the config.php
-        configuration file. This is a PHP script. For configuration
-        details, see <https://docs.moodle.org/37/en/Configuration_file>.
-      '';
-      example = ''
-        $CFG->disableupdatenotifications = true;
-      '';
+      type = types.submodule (import ../web-servers/apache-httpd/vhost-options.nix);
     };
   };
 
@@ -269,6 +282,7 @@ in
       {
         assertion =
           cfg.database.createLocally -> cfg.database.user == user && cfg.database.user == cfg.database.name;
+
         message = "services.moodle.database.user must be set to ${user} if services.moodle.database.createLocally is set true";
       }
       {
@@ -277,56 +291,16 @@ in
       }
     ];
 
-    services.mysql = mkIf mysqlLocal {
-      enable = true;
-      package = mkDefault pkgs.mariadb;
-      ensureDatabases = [ cfg.database.name ];
-      ensureUsers = [
-        {
-          name = cfg.database.user;
-          ensurePermissions = {
-            "${cfg.database.name}.*" =
-              "SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES, DROP, INDEX, ALTER";
-          };
-        }
-      ];
-    };
-
-    services.postgresql = mkIf pgsqlLocal {
-      enable = true;
-      ensureDatabases = [ cfg.database.name ];
-      ensureUsers = [
-        {
-          name = cfg.database.user;
-          ensureDBOwnership = true;
-        }
-      ];
-    };
-
-    services.phpfpm.pools.moodle = {
-      inherit user group;
-      phpPackage = phpExt;
-      phpEnv.MOODLE_CONFIG = "${moodleConfig}";
-      phpOptions = ''
-        zend_extension = opcache.so
-        opcache.enable = 1
-        max_input_vars = 5000
-      '';
-      settings = {
-        "listen.owner" = config.services.httpd.user;
-        "listen.group" = config.services.httpd.group;
-      }
-      // cfg.poolConfig;
-    };
-
     services.httpd = {
       enable = true;
       adminAddr = mkDefault cfg.virtualHost.adminAddr;
       extraModules = [ "proxy_fcgi" ];
+
       virtualHosts.${cfg.virtualHost.hostName} = mkMerge [
         cfg.virtualHost
         {
           documentRoot = mkForce "${cfg.package}/share/moodle";
+
           extraConfig = ''
             <Directory "${cfg.package}/share/moodle">
               <FilesMatch "\.php$">
@@ -342,16 +316,74 @@ in
       ];
     };
 
-    systemd.tmpfiles.settings."10-moodle".${stateDir}.d = {
+    services.mysql = mkIf mysqlLocal {
+      enable = true;
+      package = mkDefault pkgs.mariadb;
+      ensureDatabases = [ cfg.database.name ];
+
+      ensureUsers = [
+        {
+          ensurePermissions = {
+            "${cfg.database.name}.*" =
+              "SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES, DROP, INDEX, ALTER";
+          };
+
+          name = cfg.database.user;
+        }
+      ];
+    };
+
+    services.phpfpm.pools.moodle = {
       inherit user group;
-      mode = "0750";
+      phpEnv.MOODLE_CONFIG = "${moodleConfig}";
+
+      phpOptions = ''
+        zend_extension = opcache.so
+        opcache.enable = 1
+        max_input_vars = 5000
+      '';
+
+      phpPackage = phpExt;
+
+      settings = {
+        "listen.group" = config.services.httpd.group;
+        "listen.owner" = config.services.httpd.user;
+      }
+      // cfg.poolConfig;
+    };
+
+    services.postgresql = mkIf pgsqlLocal {
+      enable = true;
+      ensureDatabases = [ cfg.database.name ];
+
+      ensureUsers = [
+        {
+          ensureDBOwnership = true;
+          name = cfg.database.user;
+        }
+      ];
+    };
+
+    systemd.services.httpd.after =
+      optional mysqlLocal "mysql.service" ++ optional pgsqlLocal "postgresql.target";
+
+    systemd.services.moodle-cron = {
+      after = [ "moodle-init.service" ];
+      description = "Moodle cron service";
+      environment.MOODLE_CONFIG = moodleConfig;
+
+      serviceConfig = {
+        ExecStart = "${phpExt}/bin/php ${cfg.package}/share/moodle/admin/cli/cron.php";
+        Group = group;
+        User = user;
+      };
     };
 
     systemd.services.moodle-init = {
-      wantedBy = [ "multi-user.target" ];
-      before = [ "phpfpm-moodle.service" ];
       after = optional mysqlLocal "mysql.service" ++ optional pgsqlLocal "postgresql.target";
+      before = [ "phpfpm-moodle.service" ];
       environment.MOODLE_CONFIG = moodleConfig;
+
       script = ''
         ${phpExt}/bin/php ${cfg.package}/share/moodle/admin/cli/check_database_schema.php && rc=$? || rc=$?
 
@@ -365,34 +397,30 @@ in
 
         true
       '';
+
       serviceConfig = {
-        User = user;
         Group = group;
         Type = "oneshot";
-      };
-    };
-
-    systemd.services.moodle-cron = {
-      description = "Moodle cron service";
-      after = [ "moodle-init.service" ];
-      environment.MOODLE_CONFIG = moodleConfig;
-      serviceConfig = {
         User = user;
-        Group = group;
-        ExecStart = "${phpExt}/bin/php ${cfg.package}/share/moodle/admin/cli/cron.php";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.timers.moodle-cron = {
       description = "Moodle cron timer";
-      wantedBy = [ "timers.target" ];
+
       timerConfig = {
         OnCalendar = "minutely";
       };
+
+      wantedBy = [ "timers.target" ];
     };
 
-    systemd.services.httpd.after =
-      optional mysqlLocal "mysql.service" ++ optional pgsqlLocal "postgresql.target";
+    systemd.tmpfiles.settings."10-moodle".${stateDir}.d = {
+      inherit user group;
+      mode = "0750";
+    };
 
     users.users.${user} = {
       group = group;

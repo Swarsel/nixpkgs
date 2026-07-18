@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "xdg-base-dirs";
   version = "6.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "srstevenson";
@@ -18,16 +17,15 @@ buildPythonPackage rec {
     hash = "sha256-iXK9WURTfmpl5vd7RsT0ptwfrb5UQQFqMMCu3+vL+EY=";
   };
 
-  nativeBuildInputs = [ poetry-core ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "xdg_base_dirs" ];
-
   # remove coverage flags from pytest config
   postPatch = ''
     sed -i /addopts/d pyproject.toml
   '';
+
+  nativeBuildInputs = [ poetry-core ];
+  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "xdg_base_dirs" ];
 
   meta = {
     description = "Implementation of the XDG Base Directory Specification in Python";

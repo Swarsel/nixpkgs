@@ -5,37 +5,37 @@
   autoconf-archive,
   autoreconfHook,
   bison,
-  flex,
-  openssl,
-  libcap,
   curl,
-  which,
-  eventlog,
-  pkg-config,
-  glib,
-  hiredis,
-  systemd,
-  perl,
-  python3,
-  riemann_c_client,
-  protobufc,
-  paho-mqtt-c,
-  python3Packages,
-  libnet,
-  json_c,
-  libuuid,
-  libivykis,
-  libxslt,
   docbook_xsl,
-  pcre2,
-  mongoc,
-  rabbitmq-c,
-  libesmtp,
-  rdkafka,
+  eventlog,
+  flex,
+  glib,
   gperf,
-  withGrpc ? true,
   grpc,
+  hiredis,
+  json_c,
+  libcap,
+  libesmtp,
+  libivykis,
+  libnet,
+  libuuid,
+  libxslt,
+  mongoc,
+  openssl,
+  paho-mqtt-c,
+  pcre2,
+  perl,
+  pkg-config,
   protobuf,
+  protobufc,
+  python3,
+  python3Packages,
+  rabbitmq-c,
+  rdkafka,
+  riemann_c_client,
+  systemd,
+  which,
+  withGrpc ? true,
 }:
 let
   python-deps =
@@ -74,6 +74,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7t1Q3qaPMp36siQALmeB27G6hfsql+kepERGB0yPsVU=";
     fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [
     autoreconfHook
     autoconf-archive
@@ -132,20 +138,17 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ (lib.optionals withGrpc [ "--enable-grpc" ]);
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.syslog-ng.com";
     description = "Next-generation syslogd with advanced networking and filtering capabilities";
+    homepage = "https://www.syslog-ng.com";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
+
     maintainers = with lib.maintainers; [ vifino ];
     platforms = lib.platforms.linux;
   };

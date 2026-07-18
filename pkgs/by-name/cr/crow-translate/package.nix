@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitLab,
   cmake,
+  kdePackages,
   leptonica,
+  onnxruntime,
   qt6,
   tesseract,
   testers,
-  kdePackages,
-  onnxruntime,
   withPiper ? true,
 }:
 
@@ -17,12 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.0.2";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "office";
     repo = "crow-translate";
     tag = "v${finalAttrs.version}";
     hash = "sha256-hrxYC6zdh4aG9AkHZcnOE5jihJSo3xrq0hzBRE8NtRw=";
     fetchSubmodules = true;
+    domain = "invent.kde.org";
   };
 
   postPatch = ''
@@ -49,10 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withPiper [
     onnxruntime
   ];
+
   cmakeFlags = [
     (lib.cmakeBool "ONNXRuntime_USE_STATIC" false)
     (lib.cmakeBool "WITH_PIPER_TTS" withPiper)
   ];
+
   # Necessary for KWin D-BUS authorization for taking screenshots, without
   # which the app falls back to interactive capture, which has some limitations.
   postInstall = ''

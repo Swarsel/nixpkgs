@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ehK1fqHrSy6J6DThBR7s+LA+nP5DHDkwSRsR/NIg4g8=";
-
-  subPackages = [ "." ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  __structuredAttrs = true;
+  subPackages = [ "." ];
 
   meta = {
     description = "Simple and Efficient Comic Reader";

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitLab,
   fetchpatch,
-  runCommand,
   mafft,
+  runCommand,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,21 +20,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-g89cFcnrLMlU/RLhS1kzCYPd5BWaH7wdz6tR+Ys3bVE=";
       name = "reduce-extern-symbols-alpine-compat";
       url = "https://gitlab.com/sysimm/mafft/-/commit/aa3b7d54e0a05c5ed7d665c094c3d89f2b6a907f.patch";
-      hash = "sha256-g89cFcnrLMlU/RLhS1kzCYPd5BWaH7wdz6tR+Ys3bVE=";
     })
+  ];
+
+  makeFlags = [
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "PREFIX=$(out)"
   ];
 
   preBuild = ''
     cd ./core
     make clean
   '';
-
-  makeFlags = [
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "PREFIX=$(out)"
-  ];
 
   passthru.tests = {
     simple = runCommand "${finalAttrs.pname}-test" { } ''

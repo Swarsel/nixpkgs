@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   requests,
   six,
   websocket-client,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "socketio-client";
   version = "0.7.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "invisibleroads";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   # Perform networking tests.
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "socketIO_client" ];
 
   meta = {

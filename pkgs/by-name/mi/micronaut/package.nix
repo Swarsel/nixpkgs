@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchzip,
+  installShellFiles,
   jdk,
   makeWrapper,
-  installShellFiles,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Modern, JVM-based, full-stack framework for building microservice applications";
+
     longDescription = ''
       Micronaut is a modern, JVM-based, full stack microservices framework
       designed for building modular, easily testable microservice applications.
@@ -41,10 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
       Micronaut, your application startup time and memory consumption are
       not bound to the size of your codebase.
     '';
+
     homepage = "https://micronaut.io/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ moaxcp ];
+    platforms = lib.platforms.all;
     mainProgram = "mn";
   };
 })

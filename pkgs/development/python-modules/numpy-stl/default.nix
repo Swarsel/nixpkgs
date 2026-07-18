@@ -12,25 +12,23 @@
 buildPythonPackage rec {
   pname = "numpy-stl";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "numpy_stl";
     inherit version;
     hash = "sha256-WiDD95zdqgq8akuZ9Uhqzu1PiBUvKbGaV6zIROGD/U0=";
+    pname = "numpy_stl";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ cython ];
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   dependencies = [
     numpy
     python-utils
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "stl" ];
 
   meta = {

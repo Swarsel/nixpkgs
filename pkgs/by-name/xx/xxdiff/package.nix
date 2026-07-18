@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  docutils,
   bison,
+  docutils,
   flex,
   libsForQt5,
 }:
@@ -19,6 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-nRXvqhO128XsAFy4KrsrSYKpzWnciXGJV6QkuqRa07w=";
   };
 
+  postPatch = ''
+    substituteInPlace xxdiff.pro \
+      --replace-fail "../bin" "./bin"
+  '';
+
   nativeBuildInputs = [
     bison
     docutils
@@ -28,18 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ libsForQt5.qtbase ];
-
-  dontUseQmakeConfigure = true;
-
   # c++11 and above is needed for building with Qt 5.9+
   env.NIX_CFLAGS_COMPILE = toString [ "-std=c++14" ];
-
-  sourceRoot = "${finalAttrs.src.name}/src";
-
-  postPatch = ''
-    substituteInPlace xxdiff.pro \
-      --replace-fail "../bin" "./bin"
-  '';
 
   preConfigure = ''
     make -f Makefile.bootstrap
@@ -54,15 +49,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUseQmakeConfigure = true;
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Graphical file and directories comparator and merge tool";
-    mainProgram = "xxdiff";
     homepage = "http://furius.ca/xxdiff/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       pSub
       raskin
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "xxdiff";
   };
 })

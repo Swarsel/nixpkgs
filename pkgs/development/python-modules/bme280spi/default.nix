@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "bme280spi";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,15 +15,15 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ spidev ];
-
   # no tests implemented
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Library for BME280 sensor through spidev";
-    mainProgram = "bme280spi";
     homepage = "https://github.com/Kuzj/bme280spi";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "bme280spi";
   };
 }

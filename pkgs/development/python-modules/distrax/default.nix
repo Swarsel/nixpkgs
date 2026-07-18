@@ -1,30 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
   chex,
+  # tests
+  dm-haiku,
+  # build-system
+  flit-core,
   jax,
   jaxlib,
   numpy,
-  tensorflow-probability,
-
-  # tests
-  dm-haiku,
   pytest-xdist,
   pytestCheckHook,
+  tensorflow-probability,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "distrax";
   version = "0.1.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "google-deepmind";
@@ -33,13 +28,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MZGaK55FHQPVwgzZ2RPOohYgotw+o1ca0k6bLd/sjFQ=";
   };
 
+  nativeCheckInputs = [
+    dm-haiku
+    pytest-xdist
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     flit-core
   ];
 
-  pythonRemoveDeps = [
-    "tfp-nightly"
-  ];
   dependencies = [
     absl-py
     chex
@@ -49,13 +49,38 @@ buildPythonPackage (finalAttrs: {
     tensorflow-probability
   ];
 
-  nativeCheckInputs = [
-    dm-haiku
-    pytest-xdist
-    pytestCheckHook
-  ];
+  disabledTestPaths = [
+    # Since jax 0.6.0:
+    # TypeError: <lambda>() got an unexpected keyword argument 'accuracy'
+    "distrax/_src/bijectors/lambda_bijector_test.py"
 
-  pythonImportsCheck = [ "distrax" ];
+    # TypeErrors
+    "distrax/_src/bijectors/tfp_compatible_bijector_test.py"
+    "distrax/_src/distributions/distribution_from_tfp_test.py"
+    "distrax/_src/distributions/laplace_test.py"
+    "distrax/_src/distributions/multinomial_test.py"
+    "distrax/_src/distributions/mvn_diag_plus_low_rank_test.py"
+    "distrax/_src/distributions/mvn_kl_test.py"
+    "distrax/_src/distributions/straight_through_test.py"
+    "distrax/_src/distributions/tfp_compatible_distribution_test.py"
+    "distrax/_src/distributions/transformed_test.py"
+    "distrax/_src/distributions/uniform_test.py"
+    "distrax/_src/utils/transformations_test.py"
+    # https://github.com/google-deepmind/distrax/pull/270
+    "distrax/_src/distributions/deterministic_test.py"
+    "distrax/_src/distributions/epsilon_greedy_test.py"
+    "distrax/_src/distributions/gamma_test.py"
+    "distrax/_src/distributions/greedy_test.py"
+    "distrax/_src/distributions/gumbel_test.py"
+    "distrax/_src/distributions/logistic_test.py"
+    "distrax/_src/distributions/log_stddev_normal_test.py"
+    "distrax/_src/distributions/mvn_diag_test.py"
+    "distrax/_src/distributions/mvn_full_covariance_test.py"
+    "distrax/_src/distributions/mvn_tri_test.py"
+    "distrax/_src/distributions/one_hot_categorical_test.py"
+    "distrax/_src/distributions/softmax_test.py"
+    "distrax/_src/utils/hmm_test.py"
+  ];
 
   disabledTests = [
     # execnet.gateway_base.DumpError: can't serialize <class 'method'>
@@ -92,37 +117,11 @@ buildPythonPackage (finalAttrs: {
     "test_von_mises_sample_moments"
   ];
 
-  disabledTestPaths = [
-    # Since jax 0.6.0:
-    # TypeError: <lambda>() got an unexpected keyword argument 'accuracy'
-    "distrax/_src/bijectors/lambda_bijector_test.py"
+  pyproject = true;
+  pythonImportsCheck = [ "distrax" ];
 
-    # TypeErrors
-    "distrax/_src/bijectors/tfp_compatible_bijector_test.py"
-    "distrax/_src/distributions/distribution_from_tfp_test.py"
-    "distrax/_src/distributions/laplace_test.py"
-    "distrax/_src/distributions/multinomial_test.py"
-    "distrax/_src/distributions/mvn_diag_plus_low_rank_test.py"
-    "distrax/_src/distributions/mvn_kl_test.py"
-    "distrax/_src/distributions/straight_through_test.py"
-    "distrax/_src/distributions/tfp_compatible_distribution_test.py"
-    "distrax/_src/distributions/transformed_test.py"
-    "distrax/_src/distributions/uniform_test.py"
-    "distrax/_src/utils/transformations_test.py"
-    # https://github.com/google-deepmind/distrax/pull/270
-    "distrax/_src/distributions/deterministic_test.py"
-    "distrax/_src/distributions/epsilon_greedy_test.py"
-    "distrax/_src/distributions/gamma_test.py"
-    "distrax/_src/distributions/greedy_test.py"
-    "distrax/_src/distributions/gumbel_test.py"
-    "distrax/_src/distributions/logistic_test.py"
-    "distrax/_src/distributions/log_stddev_normal_test.py"
-    "distrax/_src/distributions/mvn_diag_test.py"
-    "distrax/_src/distributions/mvn_full_covariance_test.py"
-    "distrax/_src/distributions/mvn_tri_test.py"
-    "distrax/_src/distributions/one_hot_categorical_test.py"
-    "distrax/_src/distributions/softmax_test.py"
-    "distrax/_src/utils/hmm_test.py"
+  pythonRemoveDeps = [
+    "tfp-nightly"
   ];
 
   meta = {
@@ -131,6 +130,7 @@ buildPythonPackage (finalAttrs: {
     changelog = "https://github.com/google-deepmind/distrax/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ onny ];
+
     badPlatforms = [
       # SystemError: nanobind::detail::nb_func_error_except(): exception could not be translated!
       lib.systems.inspect.patterns.isDarwin

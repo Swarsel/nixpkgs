@@ -25,12 +25,14 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Tests SSL/TLS services and discover supported cipher suites";
-    mainProgram = "sslscan";
     homepage = "https://github.com/rbsec/sslscan";
     changelog = "https://github.com/rbsec/sslscan/blob/${version}/Changelog";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       fpletz
     ];
+
+    mainProgram = "sslscan";
   };
 }

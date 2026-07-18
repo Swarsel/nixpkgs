@@ -11,20 +11,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "aliyun-log-fastpb";
   version = "0.3.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "aliyun_log_fastpb";
     inherit (finalAttrs) version;
     hash = "sha256-dG4/tVx+brlxXoUqdcrFck6Zh3jAmtF+Aiso63axp0E=";
+    pname = "aliyun_log_fastpb";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-WPjJalEd/3jrx8pFP/RbHqQqMuloemTLeVjXjpOoJsQ=";
-  };
+  # Missing dependency logs_pb2
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     cargo
@@ -33,11 +29,13 @@ buildPythonPackage (finalAttrs: {
     rustc
   ];
 
-  # Missing dependency logs_pb2
-  doCheck = false;
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-WPjJalEd/3jrx8pFP/RbHqQqMuloemTLeVjXjpOoJsQ=";
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "aliyun_log_fastpb" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

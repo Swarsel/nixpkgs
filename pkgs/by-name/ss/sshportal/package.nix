@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,14 +15,14 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-XJ8Hgc8YoJaH2gYOvoYhcpY4qgasgyr4M+ecKJ/RXTs=";
   };
 
+  vendorHash = "sha256-4dMZwkLHS14OGQVPq5VaT/aEpHEJ/4b2P6q3/WiDicM=";
+
   ldflags = [
     "-X main.GitTag=${finalAttrs.version}"
     "-X main.GitSha=${finalAttrs.version}"
     "-s"
     "-w"
   ];
-
-  vendorHash = "sha256-4dMZwkLHS14OGQVPq5VaT/aEpHEJ/4b2P6q3/WiDicM=";
 
   meta = {
     description = "Simple, fun and transparent SSH (and telnet) bastion server";

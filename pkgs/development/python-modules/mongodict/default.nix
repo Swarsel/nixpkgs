@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "mongodict";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pymongo ];
+  format = "setuptools";
 
   meta = {
     description = "MongoDB-backed Python dict-like interface";

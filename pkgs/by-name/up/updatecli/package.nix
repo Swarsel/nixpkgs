@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  go,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
+  buildGoModule,
+  go,
   installShellFiles,
+  nix-update-script,
   testers,
   updatecli,
 }:
@@ -21,31 +21,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-24ZL2o5TauhPFDG6evOSHJUX3ZMDlekpUu5zvh2ZEQE=";
   };
 
-  proxyVendor = true;
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-q53DDtSBYaXJElJZU4KV4Y3o0OIuOTPF0pskqpmQWXk=";
-
+  env.CGO_ENABLED = 0;
   # tests require network access
   doCheck = false;
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/updatecli/updatecli/pkg/core/version.BuildTime=unknown"
-    ''-X "github.com/updatecli/updatecli/pkg/core/version.GoVersion=go version go${lib.getVersion go}"''
-    "-X github.com/updatecli/updatecli/pkg/core/version.Version=${finalAttrs.version}"
-  ];
-
-  passthru = {
-    updateScript = nix-update-script { };
-    tests.version = testers.testVersion {
-      package = updatecli;
-      command = "updatecli version";
-    };
-  };
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd updatecli \
@@ -57,18 +37,41 @@ buildGoModule (finalAttrs: {
     installManPage updatecli.1
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/updatecli/updatecli/pkg/core/version.BuildTime=unknown"
+    ''-X "github.com/updatecli/updatecli/pkg/core/version.GoVersion=go version go${lib.getVersion go}"''
+    "-X github.com/updatecli/updatecli/pkg/core/version.Version=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+
+  passthru = {
+    tests.version = testers.testVersion {
+      command = "updatecli version";
+      package = updatecli;
+    };
+
+    updateScript = nix-update-script { };
+  };
+
   meta = {
     description = "Declarative Dependency Management tool";
+
     longDescription = ''
       Updatecli is a command-line tool used to define and apply update strategies.
     '';
+
     homepage = "https://www.updatecli.io";
     changelog = "https://github.com/updatecli/updatecli/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
-    mainProgram = "updatecli";
+
     maintainers = with lib.maintainers; [
       croissong
       lpostula
     ];
+
+    mainProgram = "updatecli";
   };
 })

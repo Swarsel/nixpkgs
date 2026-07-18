@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  coreutils,
   fetchFromGitHub,
+  coreutils,
   mtools,
   p7zip,
   qt5,
@@ -22,18 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-psX15XicPXAsd36BhuvK0G3GQS8hV/hazzO0HByCqV4=";
   };
 
-  setSourceRoot = ''
-    sourceRoot=$(echo */src/unetbootin)
-  '';
-
-  buildInputs = [
-    qt5.qtbase
-    qt5.qttools
-    qt5.qmake
-  ];
-
-  nativeBuildInputs = [ qt5.wrapQtAppsHook ];
-
   # Lots of nice hard-coded paths...
   postPatch = ''
     substituteInPlace unetbootin.cpp \
@@ -51,6 +39,14 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace unetbootin.desktop \
       --replace /usr/bin $out/bin
   '';
+
+  nativeBuildInputs = [ qt5.wrapQtAppsHook ];
+
+  buildInputs = [
+    qt5.qtbase
+    qt5.qttools
+    qt5.qmake
+  ];
 
   preConfigure = ''
     lupdate unetbootin.pro
@@ -77,6 +73,10 @@ stdenv.mkDerivation (finalAttrs: {
     }"
     "--set QT_X11_NO_MITSHM 1"
   ];
+
+  setSourceRoot = ''
+    sourceRoot=$(echo */src/unetbootin)
+  '';
 
   meta = {
     description = "Tool to create bootable live USB drives from ISO images";

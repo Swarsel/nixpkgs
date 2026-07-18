@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -19,9 +19,9 @@ buildGoModule {
 
   meta = {
     description = "IP lookups for open ports and vulnerabilities from internetdb.shodan.io";
-    mainProgram = "sdlookup";
     homepage = "https://github.com/j3ssie/sdlookup";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "sdlookup";
   };
 }

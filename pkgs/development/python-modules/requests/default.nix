@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
   chardet,
   charset-normalizer,
-  fetchFromGitHub,
   idna,
   pysocks,
   pytest-mock,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "requests";
   version = "2.34.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "psf";
@@ -27,6 +26,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-J2/sNpFUDHkNBeN7BfiMamv7YaWixZAZHxaqmPVEptc=";
   };
 
+  nativeCheckInputs = [
+    pytest-mock
+    pytest-xdist
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.socks;
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,18 +43,10 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  optional-dependencies = {
-    security = [ ];
-    socks = [ pysocks ];
-    use_chardet_on_py3 = [ chardet ];
-  };
-
-  nativeCheckInputs = [
-    pytest-mock
-    pytest-xdist
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.socks;
+  disabledTestPaths = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
+    # Fatal Python error: Aborted
+    "tests/test_lowlevel.py"
+  ];
 
   disabledTests = [
     # Disable tests that require network access and use httpbin
@@ -70,14 +69,14 @@ buildPythonPackage (finalAttrs: {
     "test_text_response"
   ];
 
-  disabledTestPaths = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
-    # Fatal Python error: Aborted
-    "tests/test_lowlevel.py"
-  ];
+  optional-dependencies = {
+    security = [ ];
+    socks = [ pysocks ];
+    use_chardet_on_py3 = [ chardet ];
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "requests" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "HTTP library for Python";

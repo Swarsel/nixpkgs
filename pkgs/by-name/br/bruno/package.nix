@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  clang_20,
   fetchFromGitHub,
   buildNpmPackage,
+  cairo,
+  clang_20,
+  copyDesktopItems,
+  electron,
+  jq,
+  makeDesktopItem,
+  makeWrapper,
+  moreutils,
   nix-update-script,
   nodejs_22,
-  electron,
-  makeWrapper,
-  copyDesktopItems,
-  makeDesktopItem,
-  pkg-config,
-  pixman,
-  cairo,
-  pango,
   npm-lockfile-fix,
-  jq,
-  moreutils,
+  pango,
+  pixman,
+  pkg-config,
 }:
 
 buildNpmPackage rec {
@@ -34,10 +34,18 @@ buildNpmPackage rec {
     '';
   };
 
-  nodejs = nodejs_22;
+  postPatch = ''
+    substituteInPlace scripts/build-electron.sh \
+      --replace-fail 'if [ "$1" == "snap" ]; then' 'exit 0; if [ "$1" == "snap" ]; then'
 
-  npmDepsHash = "sha256-4VsSXiHj/INCu4ryZ+JxPbfDpsgIb5eYvOUYz+gbKEE=";
-  npmFlags = [ "--legacy-peer-deps" ];
+    # disable telemetry
+    substituteInPlace packages/bruno-app/src/providers/App/index.js \
+      --replace-fail "useTelemetry({ version });" ""
+
+    # fix version reported in sidebar and about page
+    ${jq}/bin/jq '.version |= "${version}"' packages/bruno-electron/package.json | ${moreutils}/bin/sponge packages/bruno-electron/package.json
+    ${jq}/bin/jq '.version |= "${version}"' packages/bruno-app/package.json | ${moreutils}/bin/sponge packages/bruno-app/package.json
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -54,40 +62,14 @@ buildNpmPackage rec {
     pango
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "bruno";
-      desktopName = "Bruno";
-      exec = "bruno %U";
-      icon = "bruno";
-      comment = "Opensource API Client for Exploring and Testing APIs";
-      categories = [ "Development" ];
-      startupWMClass = "Bruno";
-    })
-  ];
-
-  postPatch = ''
-    substituteInPlace scripts/build-electron.sh \
-      --replace-fail 'if [ "$1" == "snap" ]; then' 'exit 0; if [ "$1" == "snap" ]; then'
-
-    # disable telemetry
-    substituteInPlace packages/bruno-app/src/providers/App/index.js \
-      --replace-fail "useTelemetry({ version });" ""
-
-    # fix version reported in sidebar and about page
-    ${jq}/bin/jq '.version |= "${version}"' packages/bruno-electron/package.json | ${moreutils}/bin/sponge packages/bruno-electron/package.json
-    ${jq}/bin/jq '.version |= "${version}"' packages/bruno-app/package.json | ${moreutils}/bin/sponge packages/bruno-app/package.json
-  '';
+  npmDepsHash = "sha256-4VsSXiHj/INCu4ryZ+JxPbfDpsgIb5eYvOUYz+gbKEE=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
 
   postConfigure = ''
     # sh: line 1: /build/source/packages/bruno-common/node_modules/.bin/rollup: cannot execute: required file not found
     patchShebangs packages/*/node_modules
   '';
 
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
-
-  # remove giflib dependency
-  npmRebuildFlags = [ "--ignore-scripts" ];
   preBuild = ''
     # upstream keeps removing and adding back canvas, only patch it when it is present
     if [[ -e node_modules/canvas/binding.gyp ]]; then
@@ -147,8 +129,6 @@ buildNpmPackage rec {
     runHook postBuild
   '';
 
-  npmPackFlags = [ "--ignore-scripts" ];
-
   installPhase = ''
     runHook preInstall
 
@@ -186,13 +166,30 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      comment = "Opensource API Client for Exploring and Testing APIs";
+      desktopName = "Bruno";
+      exec = "bruno %U";
+      icon = "bruno";
+      name = "bruno";
+      startupWMClass = "Bruno";
+    })
+  ];
+
+  nodejs = nodejs_22;
+  npmFlags = [ "--legacy-peer-deps" ];
+  npmPackFlags = [ "--ignore-scripts" ];
+  # remove giflib dependency
+  npmRebuildFlags = [ "--ignore-scripts" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Open-source IDE For exploring and testing APIs";
     homepage = "https://www.usebruno.com";
     license = lib.licenses.mit;
-    mainProgram = "bruno";
+
     maintainers = with lib.maintainers; [
       gepbird
       kashw2
@@ -201,6 +198,8 @@ buildNpmPackage rec {
       water-sucks
       starsep
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "bruno";
   };
 }

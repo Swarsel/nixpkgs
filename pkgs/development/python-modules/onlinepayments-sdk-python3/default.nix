@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
-  requests-toolbelt,
+  buildPythonPackage,
   mockito,
   pytestCheckHook,
+  requests,
+  requests-toolbelt,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "onlinepayments-sdk-python3";
   version = "4.23.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wl-online-payments-direct";
@@ -21,16 +20,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-IX9kiM5ZtX4uzW+D+Bbt8535CqMtdTtv0mpDo5Swstg=";
   };
 
+  nativeCheckInputs = [
+    mockito
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     requests
     requests-toolbelt
-  ];
-
-  nativeCheckInputs = [
-    mockito
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
@@ -43,6 +42,8 @@ buildPythonPackage (finalAttrs: {
     "testConnection_request"
     "testConnection_response"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "onlinepayments"

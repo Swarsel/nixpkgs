@@ -1,12 +1,12 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  buildPackages,
+  help2man,
   libiconv,
   libunistring,
-  help2man,
   texinfo,
-  buildPackages,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -23,7 +23,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-9VeRG/YXFiHh9y/zX1sYJbs1tS7UUyXc3ukx5dPAeHo=";
   };
 
-  strictDeps = true;
   # Beware: non-bootstrap libidn2 is overridden by ./hack.nix
   outputs = [
     "bin"
@@ -33,7 +32,7 @@ stdenv.mkDerivation rec {
     "devdoc"
   ];
 
-  enableParallelBuilding = true;
+  strictDeps = true;
 
   # The above patch causes the documentation to be regenerated, so the
   # documentation tools are required.
@@ -41,11 +40,12 @@ stdenv.mkDerivation rec {
     help2man
     texinfo
   ];
+
   buildInputs = [ libunistring ] ++ lib.optional stdenv.hostPlatform.isDarwin libiconv;
   depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.gnu.org/software/libidn/#libidn2";
     description = "Free software implementation of IDNA2008 and TR46";
 
     longDescription = ''
@@ -57,14 +57,17 @@ stdenv.mkDerivation rec {
       detailed information.
     '';
 
-    mainProgram = "idn2";
+    homepage = "https://www.gnu.org/software/libidn/#libidn2";
+
     license = with lib.licenses; [
       lgpl3Plus
       gpl2Plus
       gpl3Plus
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.all;
+    mainProgram = "idn2";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "gnu" version;
   };
 }

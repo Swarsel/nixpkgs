@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   testers,
   treegen,
@@ -29,8 +29,8 @@ buildGoModule (finalAttrs: {
   passthru = {
     tests = {
       version = testers.testVersion {
-        package = treegen;
         command = "treegen --version";
+        package = treegen;
       };
     };
 
@@ -38,12 +38,12 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/bilbilak/treegen/blob/main/CHANGELOG.md";
     description = "ASCII Tree Directory and File Structure Generator";
     homepage = "https://github.com/bilbilak/treegen";
+    changelog = "https://github.com/bilbilak/treegen/blob/main/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "treegen";
     maintainers = with lib.maintainers; [ _4r7if3x ];
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "treegen";
   };
 })

@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     installShellFiles
   ];
 
-  configureScript = "src/configure";
-
   makeFlags = [
     "-C"
     "src"
@@ -42,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage man/man1/pyenv.1
     installShellCompletion completions/pyenv.{bash,fish,zsh}
   '';
+
+  configureScript = "src/configure";
 
   meta = {
     description = "Simple Python version management";

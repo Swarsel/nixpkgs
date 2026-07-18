@@ -1,8 +1,8 @@
 {
   lib,
-  mkKdeDerivation,
   fetchurl,
   doxygen,
+  mkKdeDerivation,
 }:
 mkKdeDerivation rec {
   pname = "kdsoap-ws-discovery-client";
@@ -14,6 +14,5 @@ mkKdeDerivation rec {
   };
 
   extraNativeBuildInputs = [ doxygen ];
-
   meta.license = [ lib.licenses.gpl3Plus ];
 }

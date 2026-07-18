@@ -1,17 +1,18 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
-  stdlib,
   findutils,
+  mkCoqDerivation,
+  stdlib,
   version ? null,
 }:
 
 (mkCoqDerivation {
-  pname = "coqutil";
-  owner = "mit-plv";
-
   inherit version;
+  pname = "coqutil";
+  nativeBuildInputs = [ findutils ];
+  propagatedBuildInputs = [ ];
+
   defaultVersion =
     let
       case = case: out: { inherit case out; };
@@ -23,14 +24,11 @@
       (case (range "8.17" "8.20") "0.0.5")
     ] null;
 
-  releaseRev = v: "v${v}";
-  release."0.0.7".hash = "sha256-A5QDQscZ9BUxxcGTI2RDYOKTZoCYexJQuGNl9i+Wt/g=";
-  release."0.0.6".hash = "sha256-c/ddrj0ahuaj9Zu7YBqK7Q0ur+LK7Fgaa//nxQpQcm4=";
+  owner = "mit-plv";
   release."0.0.5".hash = "sha256-vkZIAAr82GNuCGlCVRgSCj/nqIdD8FITBiX1a8fybqw=";
-
-  nativeBuildInputs = [ findutils ];
-
-  propagatedBuildInputs = [ ];
+  release."0.0.6".hash = "sha256-c/ddrj0ahuaj9Zu7YBqK7Q0ur+LK7Fgaa//nxQpQcm4=";
+  release."0.0.7".hash = "sha256-A5QDQscZ9BUxxcGTI2RDYOKTZoCYexJQuGNl9i+Wt/g=";
+  releaseRev = v: "v${v}";
 
   meta = {
     description = "Coq library for tactics, basic definitions, sets, maps";

@@ -2,44 +2,45 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  SDL2,
   blueprint-compiler,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
+  desktop-file-utils,
+  feedbackd,
   glib,
   gtk4,
-  desktop-file-utils,
   itstool,
-  python3,
   json-glib,
-  libgee,
+  libGL,
   libadwaita,
   libarchive,
+  libepoxy,
+  libgee,
   libglycin,
   libglycin-gtk4,
   libhighscore,
   libmanette,
-  sqlite,
-  libGL,
-  libepoxy,
-  libpulseaudio,
-  SDL2,
-  librsvg,
   libmirage,
-  feedbackd,
+  libpulseaudio,
+  librsvg,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  sqlite,
   unstableGitUpdater,
+  vala,
 }:
 
 let
   libmanette-1-alpha = libmanette.overrideAttrs (prev: {
     version = "0.2.13-unstable-2025-10-10";
+
     src = fetchFromGitLab {
-      domain = "gitlab.gnome.org";
       owner = "GNOME";
       repo = "libmanette";
       rev = "9b1b45e2aa3221938cd23e5f87a79b69e1996f64";
       hash = "sha256-4Vinc3sBU2PJmOZUOrod6AJbRq6W2nNLcC//FVHGuhg=";
+      domain = "gitlab.gnome.org";
     };
 
     buildInputs = prev.buildInputs ++ [ libadwaita ];
@@ -50,11 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0-unstable-2026-02-01";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "highscore";
     rev = "281d8e1d7d9abaa8452b869d1d52d4a933a00d26";
     hash = "sha256-HQD8Dge/nSvIDgiekCxHzCmRl4cO98Er8X24ZoP8OiQ=";
+    domain = "gitlab.gnome.org";
   };
 
   patches = [
@@ -111,9 +112,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (libhighscore.meta) maintainers platforms;
     description = "Rewrite of Highscore, formerly gnome-games";
     homepage = "https://gitlab.gnome.org/World/highscore/";
     license = lib.licenses.gpl3Plus;
-    inherit (libhighscore.meta) maintainers platforms;
   };
 })

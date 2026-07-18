@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  arrow-cpp,
+  aws-crt-cpp,
+  aws-sdk-cpp,
   cmake,
   curl,
+  nix,
   openssl,
   zlib,
-  aws-crt-cpp,
-  nix,
-  arrow-cpp,
-  aws-sdk-cpp,
   # Allow building a limited set of APIs, e.g. ["s3" "ec2"].
   apis ? [ "*" ],
   # Whether to enable AWS' custom memory management.
@@ -33,6 +33,7 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit requiredSystemFeatures;
   pname = "aws-sdk-cpp";
   # nixpkgs-update: no auto update
   version = "1.11.647";
@@ -43,6 +44,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-RJKR0xw3HTNItaLGyYCjibmfK3UBDA4hfAZzQ0xYg9U=";
   };
+
+  # FIXME: might be nice to put different APIs in different outputs
+  # (e.g. libaws-cpp-sdk-s3.so in output "s3").
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     # Append the dev output to path hints in finding Aws.h to avoid
@@ -71,13 +79,6 @@ stdenv.mkDerivation (finalAttrs: {
     # EPSILON is exceeded
     rm tests/aws-cpp-sdk-core-tests/aws/client/AdaptiveRetryStrategyTest.cpp
   '';
-
-  # FIXME: might be nice to put different APIs in different outputs
-  # (e.g. libaws-cpp-sdk-s3.so in output "s3").
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -110,25 +111,24 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=deprecated-declarations"
   ];
 
+  __darwinAllowLocalNetworking = true;
+
   postFixupHooks = [
     # This bodge is necessary so that the file that the generated -config.cmake file
     # points to an existing directory.
     "mkdir -p $out/include"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  inherit requiredSystemFeatures;
-
   passthru = {
     tests = {
       inherit nix arrow-cpp;
+
       cmake-find-package = stdenv.mkDerivation {
         pname = "aws-sdk-cpp-cmake-find-package-test";
         version = "0";
-        dontUnpack = true;
         nativeBuildInputs = [ cmake ];
         buildInputs = [ aws-sdk-cpp ];
+
         buildCommand = ''
           cat > CMakeLists.txt <<'EOF'
           find_package(AWSSDK)
@@ -152,6 +152,8 @@ stdenv.mkDerivation (finalAttrs: {
             exit 1
           fi
         '';
+
+        dontUnpack = true;
       };
     };
   };
@@ -160,8 +162,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C++ interface for Amazon Web Services";
     homepage = "https://github.com/aws/aws-sdk-cpp";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     # building ec2 runs out of memory: cc1plus: out of memory allocating 33554372 bytes after a total of 74424320 bytes
     broken = stdenv.buildPlatform.is32bit && ((builtins.elem "ec2" apis) || (builtins.elem "*" apis));
   };

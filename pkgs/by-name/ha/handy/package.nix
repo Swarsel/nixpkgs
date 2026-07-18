@@ -2,44 +2,42 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  cmake,
-  bun,
-  nodejs,
-  cctools,
-  cargo-tauri,
-  jq,
-  writableTmpDirAsHomeHook,
-  makeBinaryWrapper,
-  swift,
-  apple-sdk_26,
-  symlinkJoin,
-
-  # Linux-only
-  webkitgtk_4_1,
-  gtk3,
-  glib,
-  libsoup_3,
   alsa-lib,
+  alsa-plugins,
+  apple-sdk_26,
+  bun,
+  cargo-tauri,
+  cctools,
+  cmake,
+  glib,
+  glib-networking,
+  gst_all_1,
+  gtk-layer-shell,
+  gtk3,
+  jq,
   libayatana-appindicator,
   libevdev,
-  libxtst,
-  gtk-layer-shell,
-  vulkan-loader,
-  vulkan-headers,
-  spirv-headers,
-  shaderc,
-  gst_all_1,
-  glib-networking,
+  libsoup_3,
   libx11,
-  pipewire,
-  alsa-plugins,
-  wrapGAppsHook4,
-
+  libxtst,
+  makeBinaryWrapper,
+  nodejs,
   # Cross-platform
   onnxruntime,
   openssl,
+  pipewire,
+  pkg-config,
+  rustPlatform,
+  shaderc,
+  spirv-headers,
+  swift,
+  symlinkJoin,
+  vulkan-headers,
+  vulkan-loader,
+  # Linux-only
+  webkitgtk_4_1,
+  wrapGAppsHook4,
+  writableTmpDirAsHomeHook,
 }:
 let
   gstPlugins = lib.optionals stdenv.hostPlatform.isLinux (
@@ -57,19 +55,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "handy";
   version = "0.9.0";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "cjpais";
     repo = "Handy";
     tag = "v${finalAttrs.version}";
     hash = "sha256-jRzy8nsLtlNrYXb4LWP5SK6XpIy2pguNcZno3m6Mkqw=";
   };
-
-  cargoRoot = "src-tauri";
-  cargoHash = "sha256-Ag02t6KwKvgO1kKsQ4RAw9X+rWYNhDyav2N6i4o7ifQ=";
-
-  nativeInstallInputs = [ jq ];
 
   postPatch = ''
     patch_json() {
@@ -140,17 +131,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libx11
   ];
 
-  ortLibLocation = "${lib.getLib onnxruntime}/lib";
+  cargoHash = "sha256-Ag02t6KwKvgO1kKsQ4RAw9X+rWYNhDyav2N6i4o7ifQ=";
 
   # Handy relies on onnx and gstreamer being available at runtime, picked up by wrapGapps.
   env = {
-    ORT_LIB_LOCATION = "${lib.getLib onnxruntime}/lib";
-    ORT_PREFER_DYNAMIC_LINK = "1";
-
     # Normally GST plugins will live in their own folder. This conjoins them into one as the application expects.
     GST_PLUGIN_SYSTEM_PATH_1_0 = lib.optionalString stdenv.hostPlatform.isLinux (
       lib.makeSearchPathOutput "lib" "lib/gstreamer-1.0" gstPlugins
     );
+
+    ORT_LIB_LOCATION = "${lib.getLib onnxruntime}/lib";
+    ORT_PREFER_DYNAMIC_LINK = "1";
   }
   // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     SWIFTC = lib.getExe' swift "swiftc"; # Explicit so the Handy build system can avoid xcrun
@@ -169,6 +160,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
       patchShebangs node_modules
       bun run build
     '';
+
+  # Skip broken tests, mirroring CI configuration (https://github.com/cjpais/Handy/blob/main/.github/workflows/test.yml)
+  checkFlags = [
+    "--skip=helpers::clamshell::tests::test_is_laptop"
+    "--skip=helpers::clamshell::tests::test_clamshell_check"
+  ];
+
+  preCheck = ''
+    cd ${finalAttrs.cargoRoot}
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    export DYLD_LIBRARY_PATH="${finalAttrs.env.ORT_LIB_LOCATION}''${DYLD_LIBRARY_PATH:+:''${DYLD_LIBRARY_PATH}}"
+  '';
 
   # If removed, the binary is produced, but not the app bundle for any platform.
   installPhase = ''
@@ -200,31 +204,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
       "$out/Applications/Handy.app/Contents/MacOS/handy"
   '';
 
-  preCheck = ''
-    cd ${finalAttrs.cargoRoot}
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    export DYLD_LIBRARY_PATH="${finalAttrs.env.ORT_LIB_LOCATION}''${DYLD_LIBRARY_PATH:+:''${DYLD_LIBRARY_PATH}}"
-  '';
-
-  # Skip broken tests, mirroring CI configuration (https://github.com/cjpais/Handy/blob/main/.github/workflows/test.yml)
-  checkFlags = [
-    "--skip=helpers::clamshell::tests::test_is_laptop"
-    "--skip=helpers::clamshell::tests::test_clamshell_check"
-  ];
+  __structuredAttrs = true;
+  cargoRoot = "src-tauri";
+  nativeInstallInputs = [ jq ];
+  ortLibLocation = "${lib.getLib onnxruntime}/lib";
 
   passthru = {
+    alsaPluginDirectory = symlinkJoin {
+      name = "combined-alsaPlugins";
+
+      paths = [
+        "${pipewire}/lib/alsa-lib"
+        "${alsa-plugins}/lib/alsa-lib"
+      ];
+    };
+
     # The hook and deps fetcher in https://github.com/NixOS/nixpkgs/pull/376299 should simplify this dramatically.
     frontendDeps = stdenv.mkDerivation {
-      pname = "handy-frontend-deps";
       inherit (finalAttrs) src version;
+      pname = "handy-frontend-deps";
 
       nativeBuildInputs = [
         bun
         writableTmpDirAsHomeHook
       ];
-
-      dontConfigure = true;
 
       buildPhase = ''
         runHook preBuild
@@ -242,44 +245,41 @@ rustPlatform.buildRustPackage (finalAttrs: {
         runHook postInstall
       '';
 
+      dontConfigure = true;
       dontFixup = true;
 
       outputHash =
         {
-          "x86_64-linux" = "sha256-1jZBFvX9Ch3jNGPgSnOE8yNCXlHru7tcMJZ5uNZtE1g=";
-          "aarch64-linux" = "sha256-MsY2tOdBg11OMyQLRkLoVKxyrcqa0yVddfcYuIVWSxw=";
           "aarch64-darwin" = "sha256-Fw0va7mq0F36qa15bDFVL01Q5pEprWhza78CzurLoLg=";
+          "aarch64-linux" = "sha256-MsY2tOdBg11OMyQLRkLoVKxyrcqa0yVddfcYuIVWSxw=";
+          "x86_64-linux" = "sha256-1jZBFvX9Ch3jNGPgSnOE8yNCXlHru7tcMJZ5uNZtE1g=";
         }
         .${stdenv.hostPlatform.system};
 
       outputHashMode = "recursive";
     };
-
-    alsaPluginDirectory = symlinkJoin {
-      name = "combined-alsaPlugins";
-      paths = [
-        "${pipewire}/lib/alsa-lib"
-        "${alsa-plugins}/lib/alsa-lib"
-      ];
-    };
   };
 
   meta = {
     description = "Free, open source, offline speech-to-text application";
+
     longDescription = ''
       Handy is a cross-platform desktop application providing simple,
       privacy-focused speech transcription. Press a shortcut, speak, and
       have your words appear in any text field — entirely on your own
       computer, with no audio sent to the cloud.
     '';
+
     homepage = "https://handy.computer";
     changelog = "https://github.com/cjpais/Handy/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "handy";
+
     maintainers = with lib.maintainers; [
       faukah
       philocalyst
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "handy";
   };
 })

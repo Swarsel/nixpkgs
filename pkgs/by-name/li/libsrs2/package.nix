@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 
@@ -15,12 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Next generation SRS library from the original designer of SRS";
-    mainProgram = "srs";
+    homepage = "https://www.libsrs2.org/";
+
     license = with lib.licenses; [
       gpl2
       bsd3
     ];
-    homepage = "https://www.libsrs2.org/";
+
     platforms = lib.platforms.linux;
+    mainProgram = "srs";
   };
 })

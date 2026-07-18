@@ -1,13 +1,13 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   bce-python-sdk,
+  buildPythonPackage,
+  click,
+  fetchPypi,
+  prettytable,
+  psutil,
   requests,
   tqdm,
-  psutil,
-  click,
-  prettytable,
 }:
 
 let
@@ -16,16 +16,16 @@ let
   format = "wheel";
 in
 buildPythonPackage {
-  pname = "aistudio-sdk";
   inherit version format;
+  pname = "aistudio-sdk";
 
   # No source code dist available
   src = fetchPypi {
-    pname = "aistudio_sdk";
     inherit version format;
-    dist = "py3";
-    python = "py3";
     hash = "sha256-v8lq9yQ6wu4zAwFISapAKHF8zlr6Yir4z+Oh1E0ZQdY=";
+    dist = "py3";
+    pname = "aistudio_sdk";
+    python = "py3";
   };
 
   dependencies = [
@@ -45,8 +45,8 @@ buildPythonPackage {
     description = "Python client library for the AIStudio API";
     homepage = "https://pypi.org/project/aistudio-sdk";
     license = lib.licenses.unfree;
-    mainProgram = "aistudio";
-    maintainers = with lib.maintainers; [ kyehn ];
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
+    maintainers = with lib.maintainers; [ kyehn ];
+    mainProgram = "aistudio";
   };
 }

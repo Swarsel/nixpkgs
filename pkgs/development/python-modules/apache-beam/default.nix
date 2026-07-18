@@ -1,74 +1,69 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  distlib,
-  grpcio-tools,
-  jinja2,
-  jsonpickle,
-  jsonschema,
-  mypy-protobuf,
-  redis,
-  setuptools,
-  yapf,
-
   # dependencies
   beartype,
+  buildPythonPackage,
   crcmod,
   cryptography,
+  # build-system
+  cython,
   dill,
+  distlib,
+  docstring-parser,
   envoy-data-plane,
   fastavro,
   fasteners,
+  freezegun,
   grpcio,
+  grpcio-tools,
   httplib2,
+  hypothesis,
+  jinja2,
+  jsonpickle,
+  jsonschema,
+  mock,
+  mypy-protobuf,
   numpy,
   objsize,
   orjson,
+  pandas,
+  parameterized,
   pillow,
   proto-plus,
   protobuf,
+  psycopg2,
   pyarrow,
   pydot,
-  pymongo,
-  python-dateutil,
-  pytz,
-  regex,
-  requests,
-  typing-extensions,
-  zstandard,
-
-  # tests
-  python,
-  docstring-parser,
-  freezegun,
-  hypothesis,
-  mock,
-  pandas,
-  parameterized,
-  psycopg2,
   pyhamcrest,
+  pymongo,
   pytest-xdist,
   pytestCheckHook,
+  # tests
+  python,
+  python-dateutil,
+  pythonAtLeast,
+  pytz,
   pyyaml,
+  redis,
+  regex,
+  requests,
   requests-mock,
   scikit-learn,
+  setuptools,
   sqlalchemy,
   tenacity,
   testcontainers,
+  typing-extensions,
   which,
-  pythonAtLeast,
+  yapf,
+  zstandard,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "apache-beam";
   version = "2.75.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "apache";
@@ -76,8 +71,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jlY46uVYECZGrT4hCd2eo6QoM4zUm+veGcgcPsHdD5A=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/sdks/python";
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -89,15 +82,34 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "  copy_tests_from_docs()" ""
   '';
 
-  pythonRelaxDeps = [
-    "cryptography"
-    "envoy-data-plane"
-    "httplib2"
-    "jsonpickle"
-    "objsize"
-    "protobuf"
-    "pyarrow"
+  nativeCheckInputs = [
+    docstring-parser
+    freezegun
+    hypothesis
+    mock
+    pandas
+    parameterized
+    psycopg2
+    pyhamcrest
+    pytest-xdist
+    pytestCheckHook
+    pyyaml
+    requests-mock
+    scikit-learn
+    sqlalchemy
+    tenacity
+    testcontainers
+    which
   ];
+
+  # Make sure we're running the tests for the actually installed
+  # package, so that cython's .so files are available.
+  preCheck = ''
+    cd $out/${python.sitePackages}
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   build-system = [
     cython
@@ -138,38 +150,6 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
     zstandard
   ];
-
-  enableParallelBuilding = true;
-
-  __darwinAllowLocalNetworking = true;
-
-  pythonImportsCheck = [ "apache_beam" ];
-
-  nativeCheckInputs = [
-    docstring-parser
-    freezegun
-    hypothesis
-    mock
-    pandas
-    parameterized
-    psycopg2
-    pyhamcrest
-    pytest-xdist
-    pytestCheckHook
-    pyyaml
-    requests-mock
-    scikit-learn
-    sqlalchemy
-    tenacity
-    testcontainers
-    which
-  ];
-
-  # Make sure we're running the tests for the actually installed
-  # package, so that cython's .so files are available.
-  preCheck = ''
-    cd $out/${python.sitePackages}
-  '';
 
   disabledTestPaths = [
     #  FileNotFoundError: [Errno 2] No such file or directory:
@@ -374,6 +354,22 @@ buildPythonPackage (finalAttrs: {
     # TypeError: Unable to deterministically encode ...
     "test_deterministic_key"
   ];
+
+  enableParallelBuilding = true;
+  pyproject = true;
+  pythonImportsCheck = [ "apache_beam" ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+    "envoy-data-plane"
+    "httplib2"
+    "jsonpickle"
+    "objsize"
+    "protobuf"
+    "pyarrow"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/sdks/python";
 
   meta = {
     description = "Unified model for defining both batch and streaming data-parallel processing pipelines";

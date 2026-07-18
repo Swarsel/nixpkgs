@@ -17,26 +17,28 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-ikCn68wh+46KCEAHjlt7ATrIcPyIpL/WwR0b0rfdWfY=";
 
-  subPackages = [
-    "cmd/tkey-verification"
-  ];
-
   ldflags = [
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
 
+  subPackages = [
+    "cmd/tkey-verification"
+  ];
+
   meta = {
     description = "Vendor signing and user verification of TKey genuineness";
     homepage = "https://tillitis.se/app/tkey-device-verification/";
-    downloadPage = "https://github.com/tillitis/tkey-verification/releases";
+    changelog = "https://github.com/tillitis/tkey-verification/releases/tag/${finalAttrs.src.tag}";
+
     license = [
       lib.licenses.bsd2
       # GPL2Only binaries
       lib.licenses.gpl2Only
     ];
-    changelog = "https://github.com/tillitis/tkey-verification/releases/tag/${finalAttrs.src.tag}";
+
     maintainers = [ lib.maintainers.akechishiro ];
     platforms = lib.platforms.all;
+    downloadPage = "https://github.com/tillitis/tkey-verification/releases";
   };
 })

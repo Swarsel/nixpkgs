@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 
@@ -31,8 +31,8 @@ let
   launchers =
     pkgs.runCommand "${cfg.package.pname}-launchers-${cfg.package.version}"
       {
-        src = cfg.package;
         nativeBuildInputs = with pkgs; [ makeWrapper ];
+        src = cfg.package;
       }
       ''
         mkdir -p $out/bin
@@ -68,115 +68,92 @@ in
   options = {
     services.mobilizon = {
       enable = mkEnableOption "Mobilizon federated organization and mobilization platform";
+      package = mkPackageOption pkgs "mobilizon" { };
 
       nginx.enable = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Whether an Nginx virtual host should be
           set up to serve Mobilizon.
         '';
+
+        type = lib.types.bool;
       };
 
-      package = mkPackageOption pkgs "mobilizon" { };
-
       settings = mkOption {
+        default = { };
+
+        description = ''
+          Mobilizon Elixir documentation, see
+          <https://docs.joinmobilizon.org/administration/configure/reference/>
+          for supported values.
+        '';
+
         type =
           let
             elixirTypes = settingsFormat.lib.types;
           in
           types.submodule {
-            freeformType = settingsFormat.type;
-
             options = {
               ":mobilizon" = {
 
-                "Mobilizon.Web.Endpoint" = {
-                  url.host = mkOption {
-                    type = elixirTypes.str;
-                    defaultText = lib.literalMD ''
-                      ''${settings.":mobilizon".":instance".hostname}
-                    '';
-                    description = ''
-                      Your instance's hostname for generating URLs throughout the app
-                    '';
-                  };
-
-                  http = {
-                    port = mkOption {
-                      type = elixirTypes.port;
-                      default = 4000;
-                      description = ''
-                        The port to run the server
-                      '';
-                    };
-                    ip = mkOption {
-                      type = elixirTypes.tuple;
-                      default = settingsFormat.lib.mkTuple [
-                        0
-                        0
-                        0
-                        0
-                        0
-                        0
-                        0
-                        1
-                      ];
-                      description = ''
-                        The IP address to listen on. Defaults to [::1] notated as a byte tuple.
-                      '';
-                    };
-                  };
-
-                  has_reverse_proxy = mkOption {
-                    type = elixirTypes.bool;
-                    default = true;
-                    description = ''
-                      Whether you use a reverse proxy
-                    '';
-                  };
-                };
-
                 ":instance" = {
-                  name = mkOption {
-                    type = elixirTypes.str;
-                    description = ''
-                      The fallback instance name if not configured into the admin UI
-                    '';
-                  };
-
-                  hostname = mkOption {
-                    type = elixirTypes.str;
-                    description = ''
-                      Your instance's hostname
-                    '';
-                  };
-
                   email_from = mkOption {
-                    type = elixirTypes.str;
                     defaultText = literalExpression ''
                       noreply@''${settings.":mobilizon".":instance".hostname}
                     '';
+
                     description = ''
                       The email for the From: header in emails
                     '';
+
+                    type = elixirTypes.str;
                   };
 
                   email_reply_to = mkOption {
-                    type = elixirTypes.str;
                     defaultText = literalExpression ''
                       ''${email_from}
                     '';
+
                     description = ''
                       The email for the Reply-To: header in emails
                     '';
+
+                    type = elixirTypes.str;
+                  };
+
+                  hostname = mkOption {
+                    description = ''
+                      Your instance's hostname
+                    '';
+
+                    type = elixirTypes.str;
+                  };
+
+                  name = mkOption {
+                    description = ''
+                      The fallback instance name if not configured into the admin UI
+                    '';
+
+                    type = elixirTypes.str;
                   };
                 };
 
                 "Mobilizon.Storage.Repo" = {
-                  socket_dir = mkOption {
+                  database = mkOption {
+                    default = "mobilizon_prod";
+
+                    description = ''
+                      Name of the database
+                    '';
+
                     type = types.nullOr elixirTypes.str;
+                  };
+
+                  socket_dir = mkOption {
                     default = postgresqlSocketDir;
+
                     description = ''
                       Path to the postgres socket directory.
 
@@ -189,34 +166,80 @@ in
                       instructions on how to setup your database:
                       <https://docs.joinmobilizon.org/administration/install/release/#database-setup>
                     '';
+
+                    type = types.nullOr elixirTypes.str;
                   };
 
                   username = mkOption {
-                    type = types.nullOr elixirTypes.str;
                     default = user;
+
                     description = ''
                       User used to connect to the database
                     '';
+
+                    type = types.nullOr elixirTypes.str;
+                  };
+                };
+
+                "Mobilizon.Web.Endpoint" = {
+                  has_reverse_proxy = mkOption {
+                    default = true;
+
+                    description = ''
+                      Whether you use a reverse proxy
+                    '';
+
+                    type = elixirTypes.bool;
                   };
 
-                  database = mkOption {
-                    type = types.nullOr elixirTypes.str;
-                    default = "mobilizon_prod";
-                    description = ''
-                      Name of the database
+                  http = {
+                    ip = mkOption {
+                      default = settingsFormat.lib.mkTuple [
+                        0
+                        0
+                        0
+                        0
+                        0
+                        0
+                        0
+                        1
+                      ];
+
+                      description = ''
+                        The IP address to listen on. Defaults to [::1] notated as a byte tuple.
+                      '';
+
+                      type = elixirTypes.tuple;
+                    };
+
+                    port = mkOption {
+                      default = 4000;
+
+                      description = ''
+                        The port to run the server
+                      '';
+
+                      type = elixirTypes.port;
+                    };
+                  };
+
+                  url.host = mkOption {
+                    defaultText = lib.literalMD ''
+                      ''${settings.":mobilizon".":instance".hostname}
                     '';
+
+                    description = ''
+                      Your instance's hostname for generating URLs throughout the app
+                    '';
+
+                    type = elixirTypes.str;
                   };
                 };
               };
             };
-          };
-        default = { };
 
-        description = ''
-          Mobilizon Elixir documentation, see
-          <https://docs.joinmobilizon.org/administration/configure/reference/>
-          for supported values.
-        '';
+            freeformType = settingsFormat.type;
+          };
       };
     };
   };
@@ -239,27 +262,24 @@ in
               1
             ]
           );
+
         message = "Setting the IP mobilizon listens on is only possible when the nginx config is not used, as it is hardcoded there.";
       }
     ];
 
+    # So that we have the `mobilizon` and `mobilizon_ctl` commands.
+    # The `mobilizon remote` command is useful for dropping a shell into the
+    # running Mobilizon instance, and `mobilizon_ctl` is used for common
+    # management tasks (e.g. adding users).
+    environment.systemPackages = [ launchers ];
+
     services.mobilizon.settings = {
       ":mobilizon" = {
-        "Mobilizon.Web.Endpoint" = {
-          server = true;
-          url.host = mkDefault instanceSettings.hostname;
-          secret_key_base = settingsFormat.lib.mkGetEnv { envVariable = "MOBILIZON_INSTANCE_SECRET"; };
-        };
-
-        "Mobilizon.Web.Auth.Guardian".secret_key = settingsFormat.lib.mkGetEnv {
-          envVariable = "MOBILIZON_AUTH_SECRET";
-        };
-
         ":instance" = {
-          registrations_open = mkDefault false;
           demo = mkDefault false;
           email_from = mkDefault "noreply@${instanceSettings.hostname}";
           email_reply_to = mkDefault instanceSettings.email_from;
+          registrations_open = mkDefault false;
         };
 
         "Mobilizon.Storage.Repo" = {
@@ -267,17 +287,93 @@ in
           adapter = settingsFormat.lib.mkAtom "Ecto.Adapters.Postgres";
           pool_size = mkDefault 10;
         };
+
+        "Mobilizon.Web.Auth.Guardian".secret_key = settingsFormat.lib.mkGetEnv {
+          envVariable = "MOBILIZON_AUTH_SECRET";
+        };
+
+        "Mobilizon.Web.Endpoint" = {
+          secret_key_base = settingsFormat.lib.mkGetEnv { envVariable = "MOBILIZON_INSTANCE_SECRET"; };
+          server = true;
+          url.host = mkDefault instanceSettings.hostname;
+        };
       };
 
       ":tzdata".":data_dir" = "/var/lib/mobilizon/tzdata/";
+    };
+
+    # Nginx config taken from support/nginx/mobilizon-release.conf
+    services.nginx =
+      let
+        inherit (cfg.settings.":mobilizon".":instance") hostname;
+        proxyPass = "http://[::1]:" + toString cfg.settings.":mobilizon"."Mobilizon.Web.Endpoint".http.port;
+      in
+      lib.mkIf cfg.nginx.enable {
+        enable = true;
+
+        virtualHosts."${hostname}" = {
+          enableACME = lib.mkDefault true;
+          forceSSL = lib.mkDefault true;
+
+          locations."/" = {
+            inherit proxyPass;
+
+            extraConfig = ''
+              expires off;
+              add_header Cache-Control "public, max-age=0, s-maxage=0, must-revalidate" always;
+            '';
+
+            proxyWebsockets = true;
+            recommendedProxySettings = lib.mkDefault true;
+          };
+
+          locations."~ ^/(assets|img)" = {
+            extraConfig = ''
+              access_log off;
+              add_header Cache-Control "public, max-age=31536000, s-maxage=31536000, immutable";
+            '';
+
+            root = "${cfg.package}/lib/mobilizon-${cfg.package.version}/priv/static";
+          };
+
+          locations."~ ^/(media|proxy)" = {
+            inherit proxyPass;
+
+            # Combination of HTTP/1.1 and disabled request buffering is
+            # needed to directly forward chunked responses
+            extraConfig = ''
+              proxy_http_version 1.1;
+              proxy_request_buffering off;
+              access_log off;
+              add_header Cache-Control "public, max-age=31536000, s-maxage=31536000, immutable";
+            '';
+
+            recommendedProxySettings = lib.mkDefault true;
+          };
+        };
+      };
+
+    services.postgresql = mkIf isLocalPostgres {
+      enable = true;
+      ensureDatabases = [ repoSettings.database ];
+
+      ensureUsers = [
+        {
+          # Given that `dbUser` is potentially arbitrarily custom, we will perform
+          # manual fixups in mobilizon-postgres.
+          # TODO(to maintainers of mobilizon): Feel free to simplify your setup by using `ensureDBOwnership`.
+          ensureDBOwnership = false;
+          name = dbUser;
+        }
+      ];
+
+      extensions = ps: with ps; [ postgis ];
     };
 
     # This somewhat follows upstream's systemd service here:
     # https://framagit.org/framasoft/mobilizon/-/blob/master/support/systemd/mobilizon.service
     systemd.services.mobilizon = {
       description = "Mobilizon federated organization and mobilization platform";
-
-      wantedBy = [ "multi-user.target" ];
 
       path = with pkgs; [
         gawk
@@ -293,23 +389,57 @@ in
       ];
 
       serviceConfig = {
-        ExecStartPre = "${launchers}/bin/mobilizon_ctl migrate";
         ExecStart = "${launchers}/bin/mobilizon start";
+        ExecStartPre = "${launchers}/bin/mobilizon_ctl migrate";
         ExecStop = "${launchers}/bin/mobilizon stop";
-
-        User = user;
         Group = group;
-
-        StateDirectory = "mobilizon";
-
-        Restart = "on-failure";
-
+        NoNewPrivileges = true;
         PrivateTmp = true;
         ProtectSystem = "full";
-        NoNewPrivileges = true;
-
         ReadWritePaths = mkIf isLocalPostgres postgresqlSocketDir;
+        Restart = "on-failure";
+        StateDirectory = "mobilizon";
+        User = user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    # Add the required PostgreSQL extensions to the local PostgreSQL server,
+    # if local PostgreSQL is configured.
+    systemd.services.mobilizon-postgresql = mkIf isLocalPostgres {
+      after = [ "postgresql.target" ];
+
+      before = [
+        "mobilizon.service"
+        "mobilizon-setup-secrets.service"
+      ];
+
+      description = "Mobilizon PostgreSQL setup";
+      path = [ postgresql ];
+
+      # Taken from here:
+      # https://framagit.org/framasoft/mobilizon/-/blob/1.1.0/priv/templates/setup_db.eex
+      # TODO(to maintainers of mobilizon): the owner database alteration is necessary
+      # as PostgreSQL 15 changed their behaviors w.r.t. to privileges.
+      # See https://github.com/NixOS/nixpkgs/issues/216989 to get rid
+      # of that workaround.
+      script = ''
+        psql "${repoSettings.database}" -c "\
+          CREATE EXTENSION IF NOT EXISTS postgis; \
+          CREATE EXTENSION IF NOT EXISTS pg_trgm; \
+          CREATE EXTENSION IF NOT EXISTS unaccent;"
+        psql -tAc 'ALTER DATABASE "${repoSettings.database}" OWNER TO "${dbUser}";'
+
+      '';
+
+      serviceConfig = {
+        Restart = "on-failure";
+        Type = "oneshot";
+        User = config.services.postgresql.superUser;
+      };
+
+      wantedBy = [ "mobilizon.service" ];
     };
 
     # Create the needed secrets before running Mobilizon, so that they are not
@@ -320,9 +450,8 @@ in
     # service could be abstracted in the future, and used by other Elixir
     # projects.
     systemd.services.mobilizon-setup-secrets = {
-      description = "Mobilizon setup secrets";
       before = [ "mobilizon.service" ];
-      wantedBy = [ "mobilizon.service" ];
+      description = "Mobilizon setup secrets";
 
       script =
         let
@@ -354,47 +483,13 @@ in
         '';
 
       serviceConfig = {
-        Type = "oneshot";
-        User = user;
         Group = group;
         StateDirectory = "mobilizon";
-      };
-    };
-
-    # Add the required PostgreSQL extensions to the local PostgreSQL server,
-    # if local PostgreSQL is configured.
-    systemd.services.mobilizon-postgresql = mkIf isLocalPostgres {
-      description = "Mobilizon PostgreSQL setup";
-
-      after = [ "postgresql.target" ];
-      before = [
-        "mobilizon.service"
-        "mobilizon-setup-secrets.service"
-      ];
-      wantedBy = [ "mobilizon.service" ];
-
-      path = [ postgresql ];
-
-      # Taken from here:
-      # https://framagit.org/framasoft/mobilizon/-/blob/1.1.0/priv/templates/setup_db.eex
-      # TODO(to maintainers of mobilizon): the owner database alteration is necessary
-      # as PostgreSQL 15 changed their behaviors w.r.t. to privileges.
-      # See https://github.com/NixOS/nixpkgs/issues/216989 to get rid
-      # of that workaround.
-      script = ''
-        psql "${repoSettings.database}" -c "\
-          CREATE EXTENSION IF NOT EXISTS postgis; \
-          CREATE EXTENSION IF NOT EXISTS pg_trgm; \
-          CREATE EXTENSION IF NOT EXISTS unaccent;"
-        psql -tAc 'ALTER DATABASE "${repoSettings.database}" OWNER TO "${dbUser}";'
-
-      '';
-
-      serviceConfig = {
         Type = "oneshot";
-        User = config.services.postgresql.superUser;
-        Restart = "on-failure";
+        User = user;
       };
+
+      wantedBy = [ "mobilizon.service" ];
     };
 
     systemd.tmpfiles.rules = [
@@ -406,76 +501,13 @@ in
       "Z /var/lib/mobilizon 700 mobilizon mobilizon - -"
     ];
 
-    services.postgresql = mkIf isLocalPostgres {
-      enable = true;
-      ensureDatabases = [ repoSettings.database ];
-      ensureUsers = [
-        {
-          name = dbUser;
-          # Given that `dbUser` is potentially arbitrarily custom, we will perform
-          # manual fixups in mobilizon-postgres.
-          # TODO(to maintainers of mobilizon): Feel free to simplify your setup by using `ensureDBOwnership`.
-          ensureDBOwnership = false;
-        }
-      ];
-      extensions = ps: with ps; [ postgis ];
-    };
-
-    # Nginx config taken from support/nginx/mobilizon-release.conf
-    services.nginx =
-      let
-        inherit (cfg.settings.":mobilizon".":instance") hostname;
-        proxyPass = "http://[::1]:" + toString cfg.settings.":mobilizon"."Mobilizon.Web.Endpoint".http.port;
-      in
-      lib.mkIf cfg.nginx.enable {
-        enable = true;
-        virtualHosts."${hostname}" = {
-          enableACME = lib.mkDefault true;
-          forceSSL = lib.mkDefault true;
-          locations."/" = {
-            inherit proxyPass;
-            proxyWebsockets = true;
-            recommendedProxySettings = lib.mkDefault true;
-            extraConfig = ''
-              expires off;
-              add_header Cache-Control "public, max-age=0, s-maxage=0, must-revalidate" always;
-            '';
-          };
-          locations."~ ^/(assets|img)" = {
-            root = "${cfg.package}/lib/mobilizon-${cfg.package.version}/priv/static";
-            extraConfig = ''
-              access_log off;
-              add_header Cache-Control "public, max-age=31536000, s-maxage=31536000, immutable";
-            '';
-          };
-          locations."~ ^/(media|proxy)" = {
-            inherit proxyPass;
-            recommendedProxySettings = lib.mkDefault true;
-            # Combination of HTTP/1.1 and disabled request buffering is
-            # needed to directly forward chunked responses
-            extraConfig = ''
-              proxy_http_version 1.1;
-              proxy_request_buffering off;
-              access_log off;
-              add_header Cache-Control "public, max-age=31536000, s-maxage=31536000, immutable";
-            '';
-          };
-        };
-      };
+    users.groups.${group} = { };
 
     users.users.${user} = {
       description = "Mobilizon daemon user";
       group = group;
       isSystemUser = true;
     };
-
-    users.groups.${group} = { };
-
-    # So that we have the `mobilizon` and `mobilizon_ctl` commands.
-    # The `mobilizon remote` command is useful for dropping a shell into the
-    # running Mobilizon instance, and `mobilizon_ctl` is used for common
-    # management tasks (e.g. adding users).
-    environment.systemPackages = [ launchers ];
   };
 
   meta.maintainers = with lib.maintainers; [

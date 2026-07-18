@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "pyskyqhub";
   version = "0.1.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "RogerSelwyn";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # Tests require physical hardware
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyskyqhub" ];
 
   meta = {

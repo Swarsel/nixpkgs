@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   gettext,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
+  gitUpdater,
   glib,
   gtk3,
   libwnck,
   libxfce4ui,
   libxfce4util,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
   xfce4-panel,
   xfconf,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,8 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.xfce.org/panel-plugins/xfce4-windowck-plugin";
     rev-prefix = "xfce4-windowck-plugin-";
+    url = "https://gitlab.xfce.org/panel-plugins/xfce4-windowck-plugin";
   };
 
   meta = {

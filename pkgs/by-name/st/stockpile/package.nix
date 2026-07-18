@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
+  appstream-glib,
+  blueprint-compiler,
+  desktop-file-utils,
   fetchFromCodeberg,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
   vala,
   wrapGAppsHook4,
-  blueprint-compiler,
-  desktop-file-utils,
-  appstream-glib,
-  libadwaita,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,9 +45,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Keep count of restockable items";
     homepage = "https://codeberg.org/turtle/stockpile";
-    mainProgram = "stockpile";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "stockpile";
   };
 })

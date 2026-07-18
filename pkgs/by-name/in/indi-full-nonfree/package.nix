@@ -2,13 +2,14 @@
   lib,
   stdenv,
   indi-3rdparty,
-  indilib,
   indi-with-drivers,
+  indilib,
 }:
 
 indi-with-drivers.override {
-  pname = "indi-full-nonfree";
   inherit (indilib) version;
+  pname = "indi-full-nonfree";
+
   extraDrivers = builtins.filter (attrs: lib.meta.availableOn stdenv.hostPlatform attrs) (
     builtins.attrValues indi-3rdparty
   );

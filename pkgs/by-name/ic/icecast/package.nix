@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   curl,
   libigloo,
   libkate,
@@ -11,9 +10,10 @@
   libvorbis,
   libxml2,
   libxslt,
+  nixosTests,
+  pkg-config,
   rhash,
   speex,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,7 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Server software for streaming multimedia";
-    mainProgram = "icecast";
 
     longDescription = ''
       Icecast is a streaming media server which currently supports
@@ -61,5 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ jcumming ];
     platforms = with lib.platforms; unix;
+    mainProgram = "icecast";
   };
 })

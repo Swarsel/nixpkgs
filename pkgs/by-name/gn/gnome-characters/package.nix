@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
+  desktop-file-utils,
+  gettext,
+  gjs,
+  glib,
+  gnome,
+  gnome-desktop,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk4,
+  libadwaita,
+  libunistring,
   meson,
   ninja,
-  pkg-config,
-  gettext,
-  gnome,
-  glib,
-  gtk4,
   pango,
+  pkg-config,
   wrapGAppsHook4,
-  desktop-file-utils,
-  gobject-introspection,
-  gjs,
-  libunistring,
-  libadwaita,
-  gsettings-desktop-schemas,
-  gnome-desktop,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,8 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
-  dontWrapGApps = true;
-
   postFixup = ''
     # Fixes https://github.com/NixOS/nixpkgs/issues/31168
     file="$out/share/org.gnome.Characters/org.gnome.Characters"
@@ -60,16 +58,18 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGApp "$file"
   '';
 
+  dontWrapGApps = true;
+
   passthru = {
     updateScript = gnome.updateScript { packageName = "gnome-characters"; };
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Characters/";
     description = "Simple utility application to find and insert unusual characters";
-    mainProgram = "gnome-characters";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://apps.gnome.org/Characters/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-characters";
+    teams = [ lib.teams.gnome ];
   };
 })

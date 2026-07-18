@@ -8,20 +8,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-regex";
   version = "2026.6.28.20260630";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_regex";
     inherit (finalAttrs) version;
     hash = "sha256-X6/kNLV409d2QKq5SKPr/J7+pyNBK/rlVRs/VQhqtqc=";
+    pname = "types_regex";
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "regex-stubs" ];
 
   # Module has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "regex-stubs" ];
 
   meta = {
     description = "Typing stubs for regex";

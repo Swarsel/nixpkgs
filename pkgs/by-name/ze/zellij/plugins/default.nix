@@ -19,11 +19,9 @@ let
         pname
         version
         ;
-      name = "zellij-plugin-${finalAttrs.pname}-${finalAttrs.version}.wasm";
 
       src = pkg;
 
-      dontUnpack = true;
       buildPhase = ''
         resultFile=$(find "$src" -name '*.wasm')
         if [ $(echo "$resultFile" | wc -l) -ne 1 ]; then
@@ -36,8 +34,12 @@ let
         cp "$resultFile" "$out"
       '';
 
+      dontUnpack = true;
+      name = "zellij-plugin-${finalAttrs.pname}-${finalAttrs.version}.wasm";
+
       passthru = pkg.passthru or { } // {
         unwrapped = pkg;
+
         updateScript = pkg.passthru.updateScript or nix-update-script {
           attrPath = "zellijPlugins.${attrName}.unwrapped";
         };

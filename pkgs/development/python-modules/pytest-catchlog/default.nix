@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pytest-catchlog";
   version = "1.2.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,14 +18,14 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ unzip ];
   buildInputs = [ pytest ];
-  checkPhase = "make test";
-
   # Requires pytest < 3.1
   doCheck = false;
+  checkPhase = "make test";
+  format = "setuptools";
 
   meta = {
-    license = lib.licenses.mit;
-    homepage = "https://pypi.org/project/pytest-catchlog/";
     description = "py.test plugin to catch log messages. This is a fork of pytest-capturelog";
+    homepage = "https://pypi.org/project/pytest-catchlog/";
+    license = lib.licenses.mit;
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cython,
+  fetchPypi,
   pexpect,
   python,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "cpyparsing";
   version = "2.4.7.2.4.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +28,7 @@ buildPythonPackage rec {
     ${python.interpreter} tests/cPyparsing_test.py
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "cPyparsing" ];
 
   meta = {

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  tcl,
-  makeWrapper,
   autoreconfHook,
+  buildPackages,
   fetchpatch,
+  makeWrapper,
   replaceVars,
+  tcl,
 }:
 
 tcl.mkTclDerivation rec {
@@ -19,18 +19,23 @@ tcl.mkTclDerivation rec {
     hash = "sha256-Safag7C92fRtBKBN7sGcd2e7mjI+QMR4H4nK92C5LDQ=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     (replaceVars ./fix-build-time-run-tcl.patch {
       tcl = "${buildPackages.tcl}/bin/tclsh";
     })
     # The following patches fix compilation with clang 15+
     (fetchpatch {
-      url = "https://sourceforge.net/p/expect/patches/24/attachment/0001-Add-prototype-to-function-definitions.patch";
       hash = "sha256-X2Vv6VVM3KjmBHo2ukVWe5YTVXRmqe//Kw2kr73OpZs=";
+      url = "https://sourceforge.net/p/expect/patches/24/attachment/0001-Add-prototype-to-function-definitions.patch";
     })
     (fetchpatch {
-      url = "https://sourceforge.net/p/expect/patches/_discuss/thread/b813ca9895/6759/attachment/expect-configure-c99.patch";
       hash = "sha256-PxQQ9roWgVXUoCMxkXEgu+it26ES/JuzHF6oML/nk54=";
+      url = "https://sourceforge.net/p/expect/patches/_discuss/thread/b813ca9895/6759/attachment/expect-configure-c99.patch";
     })
     ./0004-enable-cross-compilation.patch
     # Include `sys/ioctl.h` and `util.h` on Darwin, which are required for `ioctl` and `openpty`.
@@ -44,12 +49,12 @@ tcl.mkTclDerivation rec {
     sed -i "s,/bin/stty,$(type -p stty),g" configure.in
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     makeWrapper
   ];
-
-  strictDeps = true;
 
   env = {
     NIX_CFLAGS_COMPILE = toString (
@@ -60,27 +65,21 @@ tcl.mkTclDerivation rec {
     );
   };
 
-  hardeningDisable = [ "format" ];
-
   postInstall = ''
     tclWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ tcl ]})
     ${lib.optionalString stdenv.hostPlatform.isDarwin "tclWrapperArgs+=(--prefix DYLD_LIBRARY_PATH : $out/lib/expect${version})"}
   '';
 
+  hardeningDisable = [ "format" ];
   tclRequiresCheck = [ "Expect" ];
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   meta = {
     description = "Tool for automating interactive applications";
     homepage = "https://expect.sourceforge.net/";
     license = lib.licenses.publicDomain;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
     platforms = lib.platforms.unix;
     mainProgram = "expect";
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
     broken = tcl.isTcl9;
   };
 }

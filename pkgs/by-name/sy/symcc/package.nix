@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  llvm,
   clang,
-  z3,
+  cmake,
+  llvm,
   makeWrapper,
+  ninja,
+  z3,
 }:
 
 stdenv.mkDerivation {
@@ -22,27 +22,8 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
-  cmakeFlags = [
-    "-DZ3_TRUST_SYSTEM_VERSION=on"
-    "-DSYMCC_RT_BACKEND=qsym"
-  ];
-
   postPatch = ''
     echo 'install(TARGETS SymCC LIBRARY DESTINATION '\$'{CMAKE_INSTALL_LIBDIR})' >> CMakeLists.txt
-  '';
-
-  postInstall = ''
-    cp SymCCRuntime-prefix/src/SymCCRuntime-build/libsymcc-rt.{a,so} $out/lib/
-
-    install -Dm755 symcc sym++ -t $out/bin
-
-    wrapProgram $out/bin/symcc \
-      --set SYMCC_RUNTIME_DIR $out/lib \
-      --set SYMCC_PASS_DIR $out/lib
-
-    wrapProgram $out/bin/sym++ \
-      --set SYMCC_RUNTIME_DIR $out/lib \
-      --set SYMCC_PASS_DIR $out/lib
   '';
 
   nativeBuildInputs = [
@@ -57,6 +38,25 @@ stdenv.mkDerivation {
     llvm
     z3
   ];
+
+  cmakeFlags = [
+    "-DZ3_TRUST_SYSTEM_VERSION=on"
+    "-DSYMCC_RT_BACKEND=qsym"
+  ];
+
+  postInstall = ''
+    cp SymCCRuntime-prefix/src/SymCCRuntime-build/libsymcc-rt.{a,so} $out/lib/
+
+    install -Dm755 symcc sym++ -t $out/bin
+
+    wrapProgram $out/bin/symcc \
+      --set SYMCC_RUNTIME_DIR $out/lib \
+      --set SYMCC_PASS_DIR $out/lib
+
+    wrapProgram $out/bin/sym++ \
+      --set SYMCC_RUNTIME_DIR $out/lib \
+      --set SYMCC_PASS_DIR $out/lib
+  '';
 
   meta = {
     description = "Efficient compiler-based symbolic execution";

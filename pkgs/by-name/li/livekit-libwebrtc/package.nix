@@ -1,54 +1,54 @@
 {
-  stdenv,
-  clang,
-  gclient2nix,
   lib,
-  gn,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  xcbuild,
-  lld,
-  llvm,
-  python3,
-  ninja,
-  git,
-  cpio,
-  pkg-config,
-  glib,
   alsa-lib,
-  pulseaudio,
-  nasm,
   brotli,
+  clang,
+  cpio,
+  fetchpatch,
+  ffmpeg_8,
   fontconfig,
   freetype,
+  gclient2nix,
+  git,
+  glib,
+  gn,
   harfbuzz,
   icu,
   jsoncpp,
-  libpng,
-  libwebp,
-  libxml2,
-  libxslt,
-  minizip,
-  ffmpeg_8,
+  libGL,
   libepoxy,
   libgbm,
-  libGL,
+  libpng,
+  libwebp,
+  libx11,
   libxcomposite,
   libxdamage,
   libxext,
   libxfixes,
-  libxrandr,
-  libxtst,
-  pipewire,
-  libx11,
   libxi,
+  libxml2,
+  libxrandr,
+  libxslt,
+  libxtst,
+  lld,
+  llvm,
+  minizip,
+  nasm,
+  ninja,
+  pipewire,
+  pkg-config,
+  pulseaudio,
+  python3,
+  xcbuild,
 }:
 let
   platformMap = {
-    "x86_64" = "x64";
-    "i686" = "x86";
-    "arm" = "arm";
     "aarch64" = "arm64";
+    "arm" = "arm";
+    "i686" = "x86";
+    "x86_64" = "x64";
   };
   cpuName = stdenv.hostPlatform.parsed.cpu.name;
   gnArch = platformMap."${cpuName}" or (throw "unsupported arch ${cpuName}");
@@ -60,8 +60,8 @@ let
     else
       throw "unknown platform ${stdenv.hostPlatform.config}";
   boringSslSymbols = fetchurl {
-    url = "https://raw.githubusercontent.com/livekit/rust-sdks/refs/tags/webrtc-dac8015-6/webrtc-sys/libwebrtc/boringssl_prefix_symbols.txt";
     hash = "sha256-dAweArv8zjsFPENEKi9mNBQkt4y+hh3rCqG6QZjRC20=";
+    url = "https://raw.githubusercontent.com/livekit/rust-sdks/refs/tags/webrtc-dac8015-6/webrtc-sys/libwebrtc/boringssl_prefix_symbols.txt";
   };
   gnSystemLibraries = import ./mkSystemLibraries.nix {
     inherit
@@ -84,38 +84,40 @@ stdenv.mkDerivation {
   pname = "livekit-libwebrtc";
   version = "137-unstable-2026-03-12";
 
-  gclientDeps = gclient2nix.importGclientDeps ./sources.json;
-  sourceRoot = "src";
+  outputs = [
+    "dev"
+    "out"
+  ];
 
   patches = [
     # Adds missing dependencies to generated LICENSE
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/livekit/rust-sdks/a4343fe9d88fcc96f8e88959c90d509abbd0307b/webrtc-sys/libwebrtc/patches/add_licenses.patch";
       hash = "sha256-9A4KyRW1K3eoQxsTbPX0vOnj66TCs2Fxjpsu5wO8mGI=";
+      url = "https://raw.githubusercontent.com/livekit/rust-sdks/a4343fe9d88fcc96f8e88959c90d509abbd0307b/webrtc-sys/libwebrtc/patches/add_licenses.patch";
     })
     # Fixes the certificate chain, required for Let's Encrypt certs
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/livekit/rust-sdks/a4343fe9d88fcc96f8e88959c90d509abbd0307b/webrtc-sys/libwebrtc/patches/ssl_verify_callback_with_native_handle.patch";
       hash = "sha256-RBvRcJzoKItpEbqpe07YZe1D1ZVGS12EnDSISldGy+0=";
+      url = "https://raw.githubusercontent.com/livekit/rust-sdks/a4343fe9d88fcc96f8e88959c90d509abbd0307b/webrtc-sys/libwebrtc/patches/ssl_verify_callback_with_native_handle.patch";
     })
     # Adds dependencies and features required by livekit
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/livekit/rust-sdks/a4343fe9d88fcc96f8e88959c90d509abbd0307b/webrtc-sys/libwebrtc/patches/add_deps.patch";
       hash = "sha256-DwRtGdU5sppmiFsVuyhJoVCQrRl5JFmZJfxgUPhYXBg=";
+      url = "https://raw.githubusercontent.com/livekit/rust-sdks/a4343fe9d88fcc96f8e88959c90d509abbd0307b/webrtc-sys/libwebrtc/patches/add_deps.patch";
     })
     # Fix gcc-related errors
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/livekit/rust-sdks/a4343fe9d88fcc96f8e88959c90d509abbd0307b/webrtc-sys/libwebrtc/patches/force_gcc.patch";
+      extraPrefix = "build/";
       hash = "sha256-1d73Pi1HkbunjYvp1NskUNE4xXbCmnh++rC6NrCJHbY=";
       stripLen = 1;
-      extraPrefix = "build/";
+      url = "https://raw.githubusercontent.com/livekit/rust-sdks/a4343fe9d88fcc96f8e88959c90d509abbd0307b/webrtc-sys/libwebrtc/patches/force_gcc.patch";
     })
     # fix a gcc-related dav1d compile option
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/livekit/rust-sdks/a4343fe9d88fcc96f8e88959c90d509abbd0307b/webrtc-sys/libwebrtc/patches/david_disable_gun_source_macro.patch";
+      extraPrefix = "third_party/";
       hash = "sha256-RCZpeeSQHaxkL3dY2oFFXDjYeU0KHw7idQFONGge8+0=";
       stripLen = 1;
-      extraPrefix = "third_party/";
+      url = "https://raw.githubusercontent.com/livekit/rust-sdks/a4343fe9d88fcc96f8e88959c90d509abbd0307b/webrtc-sys/libwebrtc/patches/david_disable_gun_source_macro.patch";
     })
     # Required for dynamically linking to ffmpeg libraries, exposing symbols,
     # and hiding PipeWire symbols via version script (Linux only) to prevent
@@ -198,11 +200,6 @@ stdenv.mkDerivation {
       --replace-fail '$clang_arch-apple-macos' '$clang_arch-apple-darwin'
   '';
 
-  outputs = [
-    "dev"
-    "out"
-  ];
-
   nativeBuildInputs =
     (builtins.concatLists (
       lib.mapAttrsToList (
@@ -245,6 +242,12 @@ stdenv.mkDerivation {
     libxi
   ]);
 
+  env = {
+    # ensure install_name_tool has enough space in binary headers
+    # to replace rpaths with very long nix store paths
+    NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-headerpad_max_install_names";
+  };
+
   preConfigure = ''
     echo "generate_location_tags = true" >> build/config/gclient_args.gni
     echo "0" > build/util/LASTCHANGE.committime
@@ -252,6 +255,53 @@ stdenv.mkDerivation {
     python build/linux/unbundle/replace_gn_files.py \
         --system-libraries ${toString (builtins.attrNames gnSystemLibraries)}
   '';
+
+  postBuild =
+    lib.optionalString stdenv.hostPlatform.isLinux ''
+      objcopy --redefine-syms="${boringSslSymbols}" "libwebrtc.so"
+    ''
+    + ''
+      # Generate licenses
+      python3 "../../tools_webrtc/libs/generate_licenses.py" \
+          --target ${if stdenv.hostPlatform.isDarwin then ":webrtc" else ":default"} $PWD $PWD
+    '';
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/lib
+    mkdir -p $dev/include
+
+    install -m0644 obj/webrtc.ninja obj/modules/desktop_capture/desktop_capture.ninja args.gn LICENSE.md $dev
+
+    pushd ../..
+    find . -name "*.h" -print | cpio -pd $dev/include
+    find . -name "*.inc" -print | cpio -pd $dev/include
+    popd
+  ''
+  + lib.optionalString stdenv.hostPlatform.isLinux ''
+    install -m0644 libwebrtc.so libthird_party_boringssl.so $out/lib
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    install -m0644 WebRTC.framework/Versions/A/WebRTC $out/lib/libwebrtc.dylib
+    install -m0644 libthird_party_boringssl.dylib $out/lib
+  ''
+  + ''
+    ln -s $out/lib $dev/lib
+
+    runHook postInstall
+  '';
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    boringssl="$out/lib/libthird_party_boringssl.dylib"
+    webrtc="$out/lib/libwebrtc.dylib"
+
+    install_name_tool -id "$boringssl" "$boringssl"
+    install_name_tool -id "$webrtc" "$webrtc"
+    install_name_tool -change @rpath/libthird_party_boringssl.dylib "$boringssl" "$webrtc"
+  '';
+
+  gclientDeps = gclient2nix.importGclientDeps ./sources.json;
 
   gnFlags = [
     "is_debug=false"
@@ -309,67 +359,19 @@ stdenv.mkDerivation {
     "desktop_capture_objc"
   ];
 
-  env = {
-    # ensure install_name_tool has enough space in binary headers
-    # to replace rpaths with very long nix store paths
-    NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-headerpad_max_install_names";
-  };
-
-  postBuild =
-    lib.optionalString stdenv.hostPlatform.isLinux ''
-      objcopy --redefine-syms="${boringSslSymbols}" "libwebrtc.so"
-    ''
-    + ''
-      # Generate licenses
-      python3 "../../tools_webrtc/libs/generate_licenses.py" \
-          --target ${if stdenv.hostPlatform.isDarwin then ":webrtc" else ":default"} $PWD $PWD
-    '';
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/lib
-    mkdir -p $dev/include
-
-    install -m0644 obj/webrtc.ninja obj/modules/desktop_capture/desktop_capture.ninja args.gn LICENSE.md $dev
-
-    pushd ../..
-    find . -name "*.h" -print | cpio -pd $dev/include
-    find . -name "*.inc" -print | cpio -pd $dev/include
-    popd
-  ''
-  + lib.optionalString stdenv.hostPlatform.isLinux ''
-    install -m0644 libwebrtc.so libthird_party_boringssl.so $out/lib
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    install -m0644 WebRTC.framework/Versions/A/WebRTC $out/lib/libwebrtc.dylib
-    install -m0644 libthird_party_boringssl.dylib $out/lib
-  ''
-  + ''
-    ln -s $out/lib $dev/lib
-
-    runHook postInstall
-  '';
-
-  postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    boringssl="$out/lib/libthird_party_boringssl.dylib"
-    webrtc="$out/lib/libwebrtc.dylib"
-
-    install_name_tool -id "$boringssl" "$boringssl"
-    install_name_tool -id "$webrtc" "$webrtc"
-    install_name_tool -change @rpath/libthird_party_boringssl.dylib "$boringssl" "$webrtc"
-  '';
-
+  sourceRoot = "src";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "WebRTC library used by livekit";
     homepage = "https://github.com/livekit/rust-sdks/";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       WeetHet
       niklaskorz
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

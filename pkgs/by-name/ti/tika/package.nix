@@ -1,25 +1,25 @@
 {
   lib,
   stdenv,
-  maven,
-  jdk17,
-  jre17_minimal,
   fetchFromGitHub,
   fetchpatch,
+  jdk17,
+  jre17_minimal,
   makeWrapper,
-  mvnDepsHash ? null,
-  enableGui ? true,
-  enableOcr ? true,
+  maven,
+  nixosTests,
   runCommand,
   tesseract,
-  nixosTests,
+  enableGui ? true,
+  enableOcr ? true,
+  mvnDepsHash ? null,
 }:
 
 let
   mvnDepsHashes = {
-    "x86_64-linux" = "sha256-ZlGOxVXU63AKzfWeOLGPa2l8v+Rv8Bzr4H/Er62cxk8=";
-    "aarch64-linux" = "sha256-CrOYBEnp8cVpdF2PrpGQjmdYH8ZKupm9Jf1LVyNoObk=";
     "aarch64-darwin" = "sha256-zvvko6wSJoc2cgMLl7XVmypq0vVTirrIpJiEdypPlrU=";
+    "aarch64-linux" = "sha256-CrOYBEnp8cVpdF2PrpGQjmdYH8ZKupm9Jf1LVyNoObk=";
+    "x86_64-linux" = "sha256-ZlGOxVXU63AKzfWeOLGPa2l8v+Rv8Bzr4H/Er62cxk8=";
   };
 
   knownMvnDepsHash =
@@ -27,6 +27,8 @@ let
       or (lib.warn "This platform doesn't have a default mvnDepsHash value, you'll need to specify it manually" lib.fakeHash);
 
   jdk = jre17_minimal.override {
+    jdk = jdk17;
+
     modules = [
       "java.base"
       "java.desktop"
@@ -35,7 +37,6 @@ let
       "java.naming"
       "java.sql"
     ];
-    jdk = jdk17;
   };
 in
 maven.buildMavenPackage rec {
@@ -51,33 +52,11 @@ maven.buildMavenPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-LHM2SafZ85f53mWWSbA4ZQ/QSiDeiwNnzAbLGqGQqPM=";
       name = "CVE-2025-54988.patch";
       url = "https://github.com/apache/tika/commit/bfee6d5569fe9197c4ea947a96e212825184ca33.patch";
-      hash = "sha256-LHM2SafZ85f53mWWSbA4ZQ/QSiDeiwNnzAbLGqGQqPM=";
     })
   ];
-
-  buildOffline = true;
-
-  manualMvnArtifacts = [
-    "org.objenesis:objenesis:2.1"
-    "org.apache.apache.resources:apache-jar-resource-bundle:1.5"
-    "org.apache.maven.surefire:surefire-junit-platform:3.1.2"
-    "org.junit.platform:junit-platform-launcher:1.10.0"
-  ];
-
-  mvnJdk = jdk17;
-  mvnHash = if mvnDepsHash != null then mvnDepsHash else knownMvnDepsHash;
-
-  mvnParameters = toString (
-    [
-      "-DskipTests=true" # skip tests (out of memory exceptions)
-      "-Dossindex.skip" # skip dependency with vulnerability (recommended by upstream)
-    ]
-    ++ lib.optionals (!enableGui) [
-      "-am -pl :tika-server-standard"
-    ]
-  );
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -119,13 +98,35 @@ maven.buildMavenPackage rec {
       runHook postInstall
     '';
 
+  buildOffline = true;
+
+  manualMvnArtifacts = [
+    "org.objenesis:objenesis:2.1"
+    "org.apache.apache.resources:apache-jar-resource-bundle:1.5"
+    "org.apache.maven.surefire:surefire-junit-platform:3.1.2"
+    "org.junit.platform:junit-platform-launcher:1.10.0"
+  ];
+
+  mvnHash = if mvnDepsHash != null then mvnDepsHash else knownMvnDepsHash;
+  mvnJdk = jdk17;
+
+  mvnParameters = toString (
+    [
+      "-DskipTests=true" # skip tests (out of memory exceptions)
+      "-Dossindex.skip" # skip dependency with vulnerability (recommended by upstream)
+    ]
+    ++ lib.optionals (!enableGui) [
+      "-am -pl :tika-server-standard"
+    ]
+  );
+
   passthru.tests = {
     inherit (nixosTests) tika;
   };
 
   meta = {
-    changelog = "https://github.com/apache/tika/blob/${src.rev}/CHANGES.txt";
     description = "Toolkit for extracting metadata and text from over a thousand different file types";
+
     longDescription = ''
       The Apache Tika™ toolkit detects and extracts metadata and text
       from over a thousand different file types (such as PPT, XLS, and PDF).
@@ -133,13 +134,17 @@ maven.buildMavenPackage rec {
       making Tika useful for search engine indexing, content analysis,
       translation, and much more.
     '';
+
     homepage = "https://tika.apache.org";
+    changelog = "https://github.com/apache/tika/blob/${src.rev}/CHANGES.txt";
     license = lib.licenses.asl20;
-    mainProgram = "tika-server";
-    maintainers = with lib.maintainers; [ tomasajt ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # maven dependencies
     ];
+
+    maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "tika-server";
   };
 }

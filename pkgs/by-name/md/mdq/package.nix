@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,20 +18,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-3HXPN0E4HRMVtHZbmmUO+2bPd2C8rTjTVHGcFPM2OFY=";
-
-  passthru.updateScript = nix-update-script { };
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Like jq but for Markdown: find specific elements in a md doc";
     homepage = "https://github.com/yshavit/mdq";
     changelog = "https://github.com/yshavit/mdq/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ DimitarNestorov ];
     mainProgram = "mdq";
   };

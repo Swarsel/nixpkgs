@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
-  pkg-config,
   cmake,
+  installShellFiles,
   libsForQt5,
+  pkg-config,
   pugixml,
 }:
 let
   singleApplication = fetchFromGitHub {
+    hash = "sha256-qjpPYPe1Oism6TetD/dMvTo1qyZKOsOPW+MzzNpJf3A=";
     owner = "itay-grudev";
     repo = "SingleApplication";
     tag = "v3.2.0";
-    hash = "sha256-qjpPYPe1Oism6TetD/dMvTo1qyZKOsOPW+MzzNpJf3A=";
   };
 in
 stdenv.mkDerivation rec {
@@ -41,14 +41,6 @@ stdenv.mkDerivation rec {
       --replace-fail "DEFINED BUILD_WITH_KF5" "BUILD_WITH_KF5"
   '';
 
-  cmakeFlags = [
-    "-DBUILD_WITH_KF5=OFF"
-    # relies on vendored catch2
-    "-DPACKAGE_TESTS=OFF"
-    "-DFETCHCONTENT_SOURCE_DIR_SINGLEAPPLICATION=${singleApplication}"
-    "-DBUILD_PUGIXML=OFF"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -63,13 +55,12 @@ stdenv.mkDerivation rec {
     pugixml
   ];
 
-  qtWrapperArgs = [
-    "--add-flags"
-    "--common-elements-dir=${placeholder "out"}/share/qelectrotech/elements"
-    "--add-flags"
-    "--common-tbt-dir=${placeholder "out"}/share/qelectrotech/titleblocks"
-    "--add-flags"
-    "--lang-dir=${placeholder "out"}/share/qelectrotech/lang"
+  cmakeFlags = [
+    "-DBUILD_WITH_KF5=OFF"
+    # relies on vendored catch2
+    "-DPACKAGE_TESTS=OFF"
+    "-DFETCHCONTENT_SOURCE_DIR_SINGLEAPPLICATION=${singleApplication}"
+    "-DBUILD_PUGIXML=OFF"
   ];
 
   installPhase = ''
@@ -91,13 +82,22 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  qtWrapperArgs = [
+    "--add-flags"
+    "--common-elements-dir=${placeholder "out"}/share/qelectrotech/elements"
+    "--add-flags"
+    "--common-tbt-dir=${placeholder "out"}/share/qelectrotech/titleblocks"
+    "--add-flags"
+    "--lang-dir=${placeholder "out"}/share/qelectrotech/lang"
+  ];
+
   meta = {
     description = "Free software to create electric diagrams";
-    mainProgram = "qelectrotech";
     homepage = "https://qelectrotech.org/";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ yvesf ];
     platforms = libsForQt5.qtbase.meta.platforms;
+    mainProgram = "qelectrotech";
     broken = stdenv.hostPlatform.isDarwin;
   };
 }

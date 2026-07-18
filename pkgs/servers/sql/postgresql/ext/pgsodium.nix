@@ -1,7 +1,7 @@
 {
-  bash,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  bash,
   libsodium,
   postgresql,
   postgresqlBuildExtension,
@@ -31,9 +31,11 @@ postgresqlBuildExtension (finalAttrs: {
 
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
+
     postgresqlExtraSettings = ''
       shared_preload_libraries=pgsodium
     '';
+
     sql = ''
       CREATE EXTENSION pgsodium;
 

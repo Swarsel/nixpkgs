@@ -11,13 +11,18 @@ in
   options = {
     services.g810-led = {
       enable = lib.mkEnableOption "g810-led, a Linux LED controller for some Logitech G Keyboards";
+      package = lib.mkPackageOption pkgs "g810-led" { };
       earlySetup = lib.mkEnableOption "g810-led in early stage initrd";
 
-      package = lib.mkPackageOption pkgs "g810-led" { };
-
       profile = lib.mkOption {
-        type = lib.types.nullOr lib.types.lines;
         default = null;
+
+        description = ''
+          Keyboard profile to apply at boot time.
+
+          The upstream repository provides [example configurations](https://github.com/MatMoul/g810-led/tree/master/sample_profiles).
+        '';
+
         example = ''
           # G810-LED Profile (turn all keys on)
 
@@ -27,27 +32,23 @@ in
           # Commit changes
           c
         '';
-        description = ''
-          Keyboard profile to apply at boot time.
 
-          The upstream repository provides [example configurations](https://github.com/MatMoul/g810-led/tree/master/sample_profiles).
-        '';
+        type = lib.types.nullOr lib.types.lines;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.etc."g810-led/profile".text = lib.mkIf (cfg.profile != null) cfg.profile;
-
     boot.initrd = lib.mkIf (cfg.earlySetup && cfg.profile != null) {
-      services.udev.packages = [ cfg.package ];
       services.udev.binPackages = [ cfg.package ];
+      services.udev.packages = [ cfg.package ];
 
       systemd.contents = {
         "/etc/g810-led/profile".text = cfg.profile;
       };
     };
 
+    environment.etc."g810-led/profile".text = lib.mkIf (cfg.profile != null) cfg.profile;
     services.udev.packages = [ cfg.package ];
   };
 

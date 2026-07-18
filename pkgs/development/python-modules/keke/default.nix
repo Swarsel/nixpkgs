@@ -3,30 +3,31 @@
   buildPythonPackage,
   fetchPypi,
   setuptools,
-  wheel,
   setuptools-scm,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "keke";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-H0U6DgZOHKtkPnF/xSNqBGPnD4BViP0JBKpehKKTTzs=";
   };
 
+  nativeBuildInputs = [ setuptools-scm ];
+
   installCheckPhase = ''
     python -m keke.tests
   '';
-
-  nativeBuildInputs = [ setuptools-scm ];
 
   build-system = [
     setuptools
     wheel
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "keke"

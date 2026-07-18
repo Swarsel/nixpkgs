@@ -2,18 +2,42 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  perl,
-  nixosTests,
   autoreconfHook,
-  brotliSupport ? false,
   brotli,
-  c-aresSupport ? false,
   c-aresMinimal,
-  gnutlsSupport ? false,
+  # for passthru.tests
+  coeurl,
+  curlpp,
+  fetchpatch,
   gnutls,
-  gsaslSupport ? false,
   gsasl,
+  haskellPackages,
+  libidn2,
+  libkrb5,
+  libpsl,
+  libssh2,
+  nghttp2,
+  nghttp3,
+  ngtcp2,
+  nixosTests,
+  ocamlPackages,
+  openldap,
+  openssl,
+  perl,
+  phpExtensions,
+  pkg-config,
+  pkgsStatic,
+  python3,
+  rtmpdump,
+  rustls-ffi,
+  testers,
+  tests,
+  zlib,
+  zstd,
+  brotliSupport ? false,
+  c-aresSupport ? false,
+  gnutlsSupport ? false,
+  gsaslSupport ? false,
   gssSupport ?
     with stdenv.hostPlatform;
     (
@@ -29,43 +53,18 @@
         # not worth the effort.
         !(isDarwin && (stdenv.buildPlatform != stdenv.hostPlatform))
     ),
-  libkrb5,
   http2Support ? true,
-  nghttp2,
   http3Support ? false,
-  nghttp3,
-  ngtcp2,
-  websocketSupport ? false,
   idnSupport ? false,
-  libidn2,
   ldapSupport ? false,
-  openldap,
   opensslSupport ? zlibSupport,
-  openssl,
   pslSupport ? false,
-  libpsl,
   rtmpSupport ? false,
-  rtmpdump,
-  scpSupport ? zlibSupport && !stdenv.hostPlatform.isSunOS && !stdenv.hostPlatform.isCygwin,
-  libssh2,
   rustlsSupport ? false,
-  rustls-ffi,
+  scpSupport ? zlibSupport && !stdenv.hostPlatform.isSunOS && !stdenv.hostPlatform.isCygwin,
+  websocketSupport ? false,
   zlibSupport ? true,
-  zlib,
   zstdSupport ? false,
-  zstd,
-
-  # for passthru.tests
-  coeurl,
-  curlpp,
-  haskellPackages,
-  ocamlPackages,
-  phpExtensions,
-  pkgsStatic,
-  python3,
-  tests,
-  testers,
-  fetchpatch,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -87,21 +86,15 @@ stdenv.mkDerivation (finalAttrs: {
   version = "8.21.0";
 
   src = fetchurl {
+    hash = "sha256-qhtmpw6s6D3GJFCHRWRsCK5WHeUSq0A63/uTrIf8cuY=";
+
     urls = [
       "https://curl.haxx.se/download/curl-${finalAttrs.version}.tar.xz"
       "https://github.com/curl/curl/releases/download/curl-${
         builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version
       }/curl-${finalAttrs.version}.tar.xz"
     ];
-    hash = "sha256-qhtmpw6s6D3GJFCHRWRsCK5WHeUSq0A63/uTrIf8cuY=";
   };
-
-  # this could be accomplished by updateAutotoolsGnuConfigScriptsHook, but that causes infinite recursion
-  # necessary for FreeBSD code path in configure
-  postPatch = ''
-    substituteInPlace ./config.guess --replace-fail /usr/bin/uname uname
-    patchShebangs scripts
-  '';
 
   outputs = [
     "bin"
@@ -110,33 +103,21 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "devdoc"
   ];
-  separateDebugInfo = stdenv.hostPlatform.isLinux;
 
-  enableParallelBuilding = true;
+  # this could be accomplished by updateAutotoolsGnuConfigScriptsHook, but that causes infinite recursion
+  # necessary for FreeBSD code path in configure
+  postPatch = ''
+    substituteInPlace ./config.guess --replace-fail /usr/bin/uname uname
+    patchShebangs scripts
+  '';
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  env = {
-    CXX = "${stdenv.cc.targetPrefix}c++";
-    CXXCPP = "${stdenv.cc.targetPrefix}c++ -E";
-  }
-  // lib.optionalAttrs (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isStatic) {
-    # Not having this causes curl’s `configure` script to fail with static builds on Darwin because
-    # some of curl’s propagated inputs need libiconv.
-    NIX_LDFLAGS = "-liconv";
-  };
 
   nativeBuildInputs = [
     pkg-config
     perl
   ]
   ++ lib.optionals stdenv.hostPlatform.isOpenBSD [ autoreconfHook ];
-
-  nativeCheckInputs = [
-    # See https://github.com/curl/curl/pull/16928
-    openssl
-  ];
 
   # Zlib and OpenSSL must be propagated because `libcurl.la' contains
   # "-lz -lssl", which aren't necessary direct build inputs of
@@ -161,12 +142,6 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional rustlsSupport rustls-ffi
     ++ lib.optional zlibSupport zlib
     ++ lib.optional zstdSupport zstd;
-
-  # for the second line see https://curl.haxx.se/mail/tracker-2014-03/0087.html
-  preConfigure = ''
-    sed -e 's|/usr/bin|/no-such-path|g' -i.bak configure
-    rm src/tool_hugehelp.c
-  '';
 
   configureFlags = [
     "--enable-versioned-symbols"
@@ -209,10 +184,32 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-ca-path=/etc/ssl/certs"
   ];
 
+  env = {
+    CXX = "${stdenv.cc.targetPrefix}c++";
+    CXXCPP = "${stdenv.cc.targetPrefix}c++ -E";
+  }
+  // lib.optionalAttrs (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isStatic) {
+    # Not having this causes curl’s `configure` script to fail with static builds on Darwin because
+    # some of curl’s propagated inputs need libiconv.
+    NIX_LDFLAGS = "-liconv";
+  };
+
+  # for the second line see https://curl.haxx.se/mail/tracker-2014-03/0087.html
+  preConfigure = ''
+    sed -e 's|/usr/bin|/no-such-path|g' -i.bak configure
+    rm src/tool_hugehelp.c
+  '';
+
   # takes 14 minutes on a 24 core and because many other packages depend on curl
   # they cannot be run concurrently and are a bottleneck
   # tests are available in passthru.tests.withCheck
   doCheck = false;
+
+  nativeCheckInputs = [
+    # See https://github.com/curl/curl/pull/16928
+    openssl
+  ];
+
   preCheck = ''
     patchShebangs tests/
   ''
@@ -225,8 +222,6 @@ stdenv.mkDerivation (finalAttrs: {
     # different resolving behaviour?
     rm tests/data/test1592
   '';
-
-  __darwinAllowLocalNetworking = true;
 
   postInstall = ''
     moveToOutput bin/curl-config "$dev"
@@ -243,51 +238,62 @@ stdenv.mkDerivation (finalAttrs: {
     ln $out/lib/libcurl${stdenv.hostPlatform.extensions.sharedLibrary} $out/lib/libcurl-gnutls${stdenv.hostPlatform.extensions.sharedLibrary}.4.4.0
   '';
 
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+  separateDebugInfo = stdenv.hostPlatform.isLinux;
+
   passthru =
     let
       useThisCurl = attr: attr.override { curl = finalAttrs.finalPackage; };
     in
     {
       inherit opensslSupport openssl;
+
       tests = {
-        withCheck = finalAttrs.finalPackage.overrideAttrs (_: {
-          doCheck = true;
-        });
+        coeurl = useThisCurl coeurl;
+        curlpp = useThisCurl curlpp;
+
         fetchpatch = tests.fetchpatch.simple.override {
           fetchpatch = (fetchpatch.override { fetchurl = useThisCurl fetchurl; }) // {
             version = 1;
           };
         };
-        curlpp = useThisCurl curlpp;
-        coeurl = useThisCurl coeurl;
+
         haskell-curl = useThisCurl haskellPackages.curl;
-        ocaml-curly = useThisCurl ocamlPackages.curly;
-        pycurl = useThisCurl python3.pkgs.pycurl;
-        php-curl = useThisCurl phpExtensions.curl;
         # error: attribute 'override' missing
         # Additional checking with support http3 protocol.
         # nginx-http3 = useThisCurl nixosTests.nginx-http3;
         nginx-http3 = nixosTests.nginx-http3;
+        ocaml-curly = useThisCurl ocamlPackages.curly;
+        php-curl = useThisCurl phpExtensions.curl;
         pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+        pycurl = useThisCurl python3.pkgs.pycurl;
         static = pkgsStatic.curl;
+
+        withCheck = finalAttrs.finalPackage.overrideAttrs (_: {
+          doCheck = true;
+        });
       };
     };
 
   meta = {
-    changelog = "https://curl.se/ch/${finalAttrs.version}.html";
     description = "Command line tool for transferring files with URL syntax";
     homepage = "https://curl.se/";
-    donationPage = "https://curl.se/donation.html";
+    changelog = "https://curl.se/ch/${finalAttrs.version}.html";
     license = lib.licenses.curl;
+
     maintainers = with lib.maintainers; [
       Scrumplex
     ];
-    teams = [ lib.teams.security-review ];
+
     platforms = lib.platforms.all;
+    mainProgram = "curl";
     # Fails to link against static gss
     broken = stdenv.hostPlatform.isStatic && gssSupport;
-    pkgConfigModules = [ "libcurl" ];
-    mainProgram = "curl";
+    donationPage = "https://curl.se/donation.html";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "haxx" finalAttrs.version;
+    pkgConfigModules = [ "libcurl" ];
+    teams = [ lib.teams.security-review ];
   };
 })

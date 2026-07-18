@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
   boost,
   libbacktrace,
+  meson,
+  ninja,
   unstableGitUpdater,
 }:
 
@@ -20,8 +20,6 @@ stdenv.mkDerivation {
     sha256 = "vKtY6ZEkyK2K+BzJCSo30f9MpERpPlUnarFIlvJ1Giw=";
   };
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString (stdenv.hostPlatform.isDarwin) "-DBOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED=1";
-
   nativeBuildInputs = [
     meson
     ninja
@@ -31,6 +29,8 @@ stdenv.mkDerivation {
     boost
     libbacktrace
   ];
+
+  env.NIX_CFLAGS_COMPILE = lib.optionalString (stdenv.hostPlatform.isDarwin) "-DBOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED=1";
 
   passthru = {
     updateScript = unstableGitUpdater { };

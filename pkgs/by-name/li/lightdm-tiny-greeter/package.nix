@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  linkFarm,
-  lightdm-tiny-greeter,
   fetchFromGitHub,
-  pkg-config,
-  lightdm,
-  gtk3,
-  glib,
-  wrapGAppsHook3,
   config,
+  glib,
+  gtk3,
+  lightdm,
+  lightdm-tiny-greeter,
+  linkFarm,
+  pkg-config,
+  wrapGAppsHook3,
   conf ? config.lightdm-tiny-greeter.conf or "",
 }:
 
@@ -28,15 +28,12 @@ stdenv.mkDerivation rec {
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     lightdm
     gtk3
     glib
   ];
-
-  postUnpack = lib.optionalString (conf != "") ''
-    cp ${builtins.toFile "config.h" conf} source/config.h
-  '';
 
   buildPhase = ''
     mkdir -p $out/bin $out/share/xgreeters
@@ -50,18 +47,22 @@ stdenv.mkDerivation rec {
       --replace "Exec=lightdm-tiny-greeter" "Exec=$out/bin/lightdm-tiny-greeter"
   '';
 
+  postUnpack = lib.optionalString (conf != "") ''
+    cp ${builtins.toFile "config.h" conf} source/config.h
+  '';
+
   passthru.xgreeters = linkFarm "lightdm-tiny-greeter-xgreeters" [
     {
-      path = "${lightdm-tiny-greeter}/share/xgreeters/lightdm-tiny-greeter.desktop";
       name = "lightdm-tiny-greeter.desktop";
+      path = "${lightdm-tiny-greeter}/share/xgreeters/lightdm-tiny-greeter.desktop";
     }
   ];
 
   meta = {
     description = "Tiny multi user lightdm greeter";
-    mainProgram = "lightdm-tiny-greeter";
     homepage = "https://github.com/tobiohlala/lightdm-tiny-greeter";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.linux;
+    mainProgram = "lightdm-tiny-greeter";
   };
 }

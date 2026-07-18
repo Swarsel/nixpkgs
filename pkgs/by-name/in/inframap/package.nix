@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,13 +15,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-SH72GmEzHNF26TNCctBglSvtYXVFf6fIBmg8L74OiZg=";
   };
 
+  vendorHash = "sha256-cEKrxuuksMEEVJEZ9/ZU2/MMxWZKlO05DkNX4n3ug/0=";
+
   ldflags = [
     "-s"
     "-w"
     "-X=github.com/cycloidio/inframap/cmd.Version=${finalAttrs.version}"
   ];
-
-  vendorHash = "sha256-cEKrxuuksMEEVJEZ9/ZU2/MMxWZKlO05DkNX4n3ug/0=";
 
   meta = {
     description = "Read your tfstate or HCL to generate a graph specific for each provider, showing only the resources that are most important/relevant";

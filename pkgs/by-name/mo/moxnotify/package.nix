@@ -1,22 +1,22 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   clang,
-  libclang,
-  makeWrapper,
-  lua5_4,
   dbus,
-  wayland,
-  wayland-protocols,
-  pipewire,
-  vulkan-loader,
-  libxkbcommon,
-  libGL,
-  sqlite,
   fontconfig,
   freetype,
+  libGL,
+  libclang,
+  libxkbcommon,
+  lua5_4,
+  makeWrapper,
+  pipewire,
+  pkg-config,
+  rustPlatform,
+  sqlite,
+  vulkan-loader,
+  wayland,
+  wayland-protocols,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,8 +29,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "6726af08621072e0c95a147cf4ae63ea66c7e857";
     hash = "sha256-tTgY/813WaW3K8QKbj6qwCVKOAA8zMqy97Q7Z5qA0JM=";
   };
-
-  cargoHash = "sha256-o2YyPa7bX9585lsicJjhj1xJ1jMdU5mlxbEn/6zSy8U=";
 
   nativeBuildInputs = [
     pkg-config
@@ -53,13 +51,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libclang.lib
   ];
 
+  cargoHash = "sha256-o2YyPa7bX9585lsicJjhj1xJ1jMdU5mlxbEn/6zSy8U=";
   # Set LIBCLANG_PATH for bindgen
   env.LIBCLANG_PATH = "${libclang.lib}/lib";
-
-  # Workspace members - build both daemon and ctl
-  cargoBuildFlags = [ "--workspace" ];
-  cargoTestFlags = [ "--workspace" ];
-
   # Skip tests for now as they may require display/audio systems
   doCheck = false;
 
@@ -92,6 +86,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
         ]
       }
   '';
+
+  # Workspace members - build both daemon and ctl
+  cargoBuildFlags = [ "--workspace" ];
+  cargoTestFlags = [ "--workspace" ];
 
   meta = {
     description = "Feature-rich hardware-accelerated keyboard driven Wayland notification daemon";

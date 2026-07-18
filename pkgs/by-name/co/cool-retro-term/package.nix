@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.2.0";
   pname = "cool-retro-term";
+  version = "1.2.0";
 
   src = fetchFromGitHub {
     owner = "Swordfish90";
@@ -17,9 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-PewHLVmo+RTBHIQ/y2FBkgXsIvujYd7u56JdFC10B4c=";
   };
 
-  patchPhase = ''
-    sed -i -e '/qmltermwidget/d' cool-retro-term.pro
-  '';
+  nativeBuildInputs = [
+    libsForQt5.qmake
+    libsForQt5.wrapQtAppsHook
+  ];
 
   buildInputs = [
     libsForQt5.qtbase
@@ -27,13 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qtquickcontrols2
     libsForQt5.qtgraphicaleffects
   ];
-
-  nativeBuildInputs = [
-    libsForQt5.qmake
-    libsForQt5.wrapQtAppsHook
-  ];
-
-  installFlags = [ "INSTALL_ROOT=$(out)" ];
 
   preFixup = ''
     mv $out/usr/share $out/share
@@ -44,19 +38,27 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/bin/cool-retro-term.app/Contents/MacOS/cool-retro-term $out/bin/cool-retro-term
   '';
 
+  installFlags = [ "INSTALL_ROOT=$(out)" ];
+
+  patchPhase = ''
+    sed -i -e '/qmltermwidget/d' cool-retro-term.pro
+  '';
+
   passthru.tests.test = nixosTests.terminal-emulators.cool-retro-term;
 
   meta = {
     description = "Terminal emulator which mimics the old cathode display";
+
     longDescription = ''
       cool-retro-term is a terminal emulator which tries to mimic the look and
       feel of the old cathode tube screens. It has been designed to be
       eye-candy, customizable, and reasonably lightweight.
     '';
+
     homepage = "https://github.com/Swordfish90/cool-retro-term";
     license = lib.licenses.gpl3Plus;
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = [ ];
+    platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "cool-retro-term";
   };
 })

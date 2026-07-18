@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -17,14 +17,13 @@ rustPlatform.buildRustPackage rec {
   };
 
   cargoHash = "sha256-jymWM0DCR6jUE1Kyhbx6HHf6YlrGu1THKTyDHaPG+Vs=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Rust adapter for Buildkite Test Analytics";
-    mainProgram = "buildkite-test-collector";
     homepage = "https://buildkite.com/test-analytics";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ jfroche ];
+    mainProgram = "buildkite-test-collector";
   };
 }

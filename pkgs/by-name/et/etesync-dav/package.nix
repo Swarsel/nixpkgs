@@ -1,15 +1,14 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   nixosTests,
   python3Packages,
-  fetchFromGitHub,
   radicale,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "etesync-dav";
   version = "0.35.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "etesync";
@@ -23,9 +22,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ./radicale-3-6-compat.patch
   ];
 
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
-
-  pythonRelaxDeps = [ "radicale" ];
 
   dependencies =
     with python3Packages;
@@ -41,20 +39,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ requests.optional-dependencies.socks;
 
-  doCheck = false;
+  pyproject = true;
+  pythonRelaxDeps = [ "radicale" ];
 
   passthru.tests = {
     inherit (nixosTests) etesync-dav;
   };
 
   meta = {
-    homepage = "https://www.etesync.com";
     description = "Secure, end-to-end encrypted, and privacy respecting sync for contacts, calendars and tasks";
-    mainProgram = "etesync-dav";
+    homepage = "https://www.etesync.com";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       valodim
     ];
+
+    mainProgram = "etesync-dav";
     broken = stdenv.hostPlatform.isDarwin; # pyobjc-framework-Cocoa is missing
   };
 })

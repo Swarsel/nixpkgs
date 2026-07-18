@@ -1,14 +1,14 @@
 {
   lib,
-  callPackage,
-  writeScript,
-  beam,
-  mix2nix,
   fetchFromGitHub,
-  git,
+  beam,
+  callPackage,
   cmake,
-  nixosTests,
+  git,
+  mix2nix,
   nixfmt,
+  nixosTests,
+  writeScript,
   mobilizon-frontend ? callPackage ./frontend.nix { },
 }:
 
@@ -19,7 +19,6 @@ let
 in
 beamPackages.mixRelease rec {
   inherit (common) pname version src;
-
   # A typo that is a build failure on elixir 1.18
   patches = [ ./alias.patch ];
 
@@ -27,107 +26,6 @@ beamPackages.mixRelease rec {
     git
     cmake
   ];
-
-  mixNixDeps = import ./mix.nix {
-    inherit beamPackages lib;
-    overrides = (
-      final: prev:
-      (lib.mapAttrs (
-        _: value:
-        value.override {
-          appConfigPath = src + "/config";
-        }
-      ) prev)
-      // {
-        fast_html = prev.fast_html.override {
-          nativeBuildInputs = [ cmake ];
-          dontUseCmakeConfigure = true;
-        };
-        ex_cldr = prev.ex_cldr.overrideAttrs (old: {
-          # We have to use the GitHub sources, as it otherwise tries to download
-          # the locales at build time.
-          src = fetchFromGitHub {
-            owner = "elixir-cldr";
-            repo = "cldr";
-            rev = "v${old.version}";
-            hash =
-              assert old.version == "2.47.2";
-              "sha256-XiShurm4i/Qxop1nE4Z/8tMj5953kUqn+4kBrILxO+Y=";
-          };
-          postInstall = ''
-            cp $src/priv/cldr/locales/* $out/lib/erlang/lib/ex_cldr-${old.version}/priv/cldr/locales/
-          '';
-        });
-
-        # The remainder are Git dependencies (and their deps) that are not supported by mix2nix currently.
-        web_push_encryption = beamPackages.buildMix {
-          name = "web_push_encryption";
-          version = "0.3.1";
-          src = fetchFromGitHub {
-            owner = "danhper";
-            repo = "elixir-web-push-encryption";
-            rev = "6e143dcde0a2854c4f0d72816b7ecab696432779";
-            hash = "sha256-Da+/28SPZuUQBi8fQj31zmMvhMrYUaQIW4U4E+mRtMg=";
-          };
-          beamDeps = with final; [
-            httpoison
-            jose
-          ];
-        };
-        icalendar = beamPackages.buildMix rec {
-          name = "icalendar";
-          version = "1.1.2";
-          src = fetchFromGitHub {
-            owner = "mobilizon-tools";
-            repo = name;
-            rev = "b8fc5360b1755f60f2768d40f6aca949ef598a00";
-            hash = "sha256-UAdlYTRt1itkR/dmC2/AM89MlJIABJw9N0XfYR6IcVI=";
-          };
-          beamDeps = with final; [
-            mix_test_watch
-            ex_doc
-            timex
-          ];
-        };
-        rajska = beamPackages.buildMix rec {
-          name = "rajska";
-          version = "1.3.3";
-          src = fetchFromGitHub {
-            owner = "tcitworld";
-            repo = name;
-            rev = "0c036448e261e8be6a512581c592fadf48982d84";
-            hash = "sha256-4pfply1vTAIT2Xvm3kONmrCK05xKfXFvcb8EKoSCXBE=";
-          };
-          beamDeps = with final; [
-            ex_doc
-            credo
-            absinthe
-            excoveralls
-            hammer
-            mock
-          ];
-        };
-        exkismet = beamPackages.buildMix rec {
-          name = "exkismet";
-          version = "0.0.3";
-          src = fetchFromGitHub {
-            owner = "tcitworld";
-            repo = name;
-            rev = "8b5485fde00fafbde20f315bec387a77f7358334";
-            hash = "sha256-ttgCWoBKU7VTjZJBhZNtqVF4kN7psBr/qOeR65MbTqw=";
-          };
-          beamDeps = with final; [
-            httpoison
-            ex_doc
-            credo
-            doctor
-            dialyxir
-          ];
-        };
-
-      }
-    );
-  };
 
   # Install the compiled js part
   preBuild = ''
@@ -139,16 +37,137 @@ beamPackages.mixRelease rec {
     mix phx.digest --no-deps-check
   '';
 
+  mixNixDeps = import ./mix.nix {
+    inherit beamPackages lib;
+
+    overrides = (
+      final: prev:
+      (lib.mapAttrs (
+        _: value:
+        value.override {
+          appConfigPath = src + "/config";
+        }
+      ) prev)
+      // {
+        ex_cldr = prev.ex_cldr.overrideAttrs (old: {
+          # We have to use the GitHub sources, as it otherwise tries to download
+          # the locales at build time.
+          src = fetchFromGitHub {
+            owner = "elixir-cldr";
+            repo = "cldr";
+            rev = "v${old.version}";
+
+            hash =
+              assert old.version == "2.47.2";
+              "sha256-XiShurm4i/Qxop1nE4Z/8tMj5953kUqn+4kBrILxO+Y=";
+          };
+
+          postInstall = ''
+            cp $src/priv/cldr/locales/* $out/lib/erlang/lib/ex_cldr-${old.version}/priv/cldr/locales/
+          '';
+        });
+
+        exkismet = beamPackages.buildMix rec {
+          version = "0.0.3";
+
+          src = fetchFromGitHub {
+            owner = "tcitworld";
+            repo = name;
+            rev = "8b5485fde00fafbde20f315bec387a77f7358334";
+            hash = "sha256-ttgCWoBKU7VTjZJBhZNtqVF4kN7psBr/qOeR65MbTqw=";
+          };
+
+          beamDeps = with final; [
+            httpoison
+            ex_doc
+            credo
+            doctor
+            dialyxir
+          ];
+
+          name = "exkismet";
+        };
+
+        fast_html = prev.fast_html.override {
+          nativeBuildInputs = [ cmake ];
+          dontUseCmakeConfigure = true;
+        };
+
+        icalendar = beamPackages.buildMix rec {
+          version = "1.1.2";
+
+          src = fetchFromGitHub {
+            owner = "mobilizon-tools";
+            repo = name;
+            rev = "b8fc5360b1755f60f2768d40f6aca949ef598a00";
+            hash = "sha256-UAdlYTRt1itkR/dmC2/AM89MlJIABJw9N0XfYR6IcVI=";
+          };
+
+          beamDeps = with final; [
+            mix_test_watch
+            ex_doc
+            timex
+          ];
+
+          name = "icalendar";
+        };
+
+        rajska = beamPackages.buildMix rec {
+          version = "1.3.3";
+
+          src = fetchFromGitHub {
+            owner = "tcitworld";
+            repo = name;
+            rev = "0c036448e261e8be6a512581c592fadf48982d84";
+            hash = "sha256-4pfply1vTAIT2Xvm3kONmrCK05xKfXFvcb8EKoSCXBE=";
+          };
+
+          beamDeps = with final; [
+            ex_doc
+            credo
+            absinthe
+            excoveralls
+            hammer
+            mock
+          ];
+
+          name = "rajska";
+        };
+
+        # The remainder are Git dependencies (and their deps) that are not supported by mix2nix currently.
+        web_push_encryption = beamPackages.buildMix {
+          version = "0.3.1";
+
+          src = fetchFromGitHub {
+            owner = "danhper";
+            repo = "elixir-web-push-encryption";
+            rev = "6e143dcde0a2854c4f0d72816b7ecab696432779";
+            hash = "sha256-Da+/28SPZuUQBi8fQj31zmMvhMrYUaQIW4U4E+mRtMg=";
+          };
+
+          beamDeps = with final; [
+            httpoison
+            jose
+          ];
+
+          name = "web_push_encryption";
+        };
+
+      }
+    );
+  };
+
   passthru = {
+    inherit mixNixDeps;
+    elixirPackage = beamPackages.elixir;
     tests = { inherit (nixosTests) mobilizon; };
+
     updateScript = writeScript "update-mobilizon" ''
       set -euo pipefail
 
       ${lib.getExe mix2nix} '${src}/mix.lock' > pkgs/by-name/mo/mobilizon/mix.nix
       ${lib.getExe nixfmt} pkgs/by-name/mo/mobilizon/mix.nix
     '';
-    elixirPackage = beamPackages.elixir;
-    inherit mixNixDeps;
   };
 
   meta = {
@@ -156,6 +175,7 @@ beamPackages.mixRelease rec {
     homepage = "https://joinmobilizon.org/";
     changelog = "https://framagit.org/framasoft/mobilizon/-/releases/${src.tag}";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       minijackson
       erictapen

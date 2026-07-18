@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  lib,
   nix-update-script,
   rustPlatform,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,12 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-knwrx1hfSBmgZLqmcAOf4Rtc5yVO50IdrzovAgOgQD0=";
   };
 
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
-  cargoHash = "sha256-/Tz5WqnBIU4vXKhGsODZKD1sFti797Ya6OHeg4I7Flk=";
-
   # Tests try to invoke the binary from "target/debug/hledger-fmt"
   # https://github.com/mondeja/hledger-fmt/blob/783abdb32eefb20195c7e9562858552935bb9c8e/src/cli/tests.rs#L5
   postPatch = ''
@@ -31,14 +25,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
       'target/debug' "target/${stdenv.hostPlatform.rust.rustcTargetSpec}/$cargoCheckType"
   '';
 
-  buildFeatures = [
-    "manpages"
+  nativeBuildInputs = [
+    installShellFiles
   ];
+
+  cargoHash = "sha256-/Tz5WqnBIU4vXKhGsODZKD1sFti797Ya6OHeg4I7Flk=";
 
   postInstall = ''
     installManPage --name hledger-fmt.1 \
       "target/${stdenv.hostPlatform.rust.rustcTargetSpec}/assets/example.1"
   '';
+
+  buildFeatures = [
+    "manpages"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

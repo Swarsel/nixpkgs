@@ -1,30 +1,14 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
-
-  useMinimalFeatures ? false,
-  useArmadillo ? (!useMinimalFeatures),
-  useArrow ? (!useMinimalFeatures),
-  useHDF ? (!useMinimalFeatures),
-  useJava ? (!useMinimalFeatures),
-  useLibAvif ? (!useMinimalFeatures),
-  useLibHEIF ? (!useMinimalFeatures),
-  useLibJXL ? (!useMinimalFeatures),
-  useMysql ? (!useMinimalFeatures),
-  useNetCDF ? (!useMinimalFeatures),
-  usePoppler ? (!useMinimalFeatures),
-  usePostgres ? (!useMinimalFeatures),
-  useTiledb ?
-    (!useMinimalFeatures) && !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64),
-
   ant,
   armadillo,
   arrow-cpp,
   bison,
   brunsli,
   c-blosc,
+  callPackage,
   cfitsio,
   cmake,
   crunch,
@@ -53,8 +37,8 @@
   libjpeg,
   libjxl,
   libmysqlclient,
-  libpq,
   libpng,
+  libpq,
   libspatialite,
   libtiff,
   libwebp,
@@ -79,6 +63,20 @@
   xz,
   zlib,
   zstd,
+  useArmadillo ? (!useMinimalFeatures),
+  useArrow ? (!useMinimalFeatures),
+  useHDF ? (!useMinimalFeatures),
+  useJava ? (!useMinimalFeatures),
+  useLibAvif ? (!useMinimalFeatures),
+  useLibHEIF ? (!useMinimalFeatures),
+  useLibJXL ? (!useMinimalFeatures),
+  useMinimalFeatures ? false,
+  useMysql ? (!useMinimalFeatures),
+  useNetCDF ? (!useMinimalFeatures),
+  usePoppler ? (!useMinimalFeatures),
+  usePostgres ? (!useMinimalFeatures),
+  useTiledb ?
+    (!useMinimalFeatures) && !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64),
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -105,33 +103,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals useJava [
     ant
     jdk
-  ];
-
-  cmakeFlags = [
-    "-DGDAL_USE_INTERNAL_LIBS=OFF"
-    "-DGEOTIFF_INCLUDE_DIR=${lib.getDev libgeotiff}/include"
-    "-DGEOTIFF_LIBRARY_RELEASE=${lib.getLib libgeotiff}/lib/libgeotiff${stdenv.hostPlatform.extensions.sharedLibrary}"
-    "-DMYSQL_INCLUDE_DIR=${lib.getDev libmysqlclient}/include/mysql"
-    "-DMYSQL_LIBRARY=${lib.getLib libmysqlclient}/lib/${
-      lib.optionalString (libmysqlclient.pname != "mysql") "mysql/"
-    }libmysqlclient${stdenv.hostPlatform.extensions.sharedLibrary}"
-  ]
-  ++ lib.optionals finalAttrs.doInstallCheck [
-    "-DBUILD_TESTING=ON"
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    "-DCMAKE_SKIP_BUILD_RPATH=ON" # without, libgdal.so can't find libmariadb.so
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON"
-  ]
-  ++ lib.optionals (!useTiledb) [
-    "-DGDAL_USE_TILEDB=OFF"
-  ]
-  ++ lib.optionals (!useJava) [
-    # This is not strictly needed as the Java bindings wouldn't build anyway if
-    # ant/jdk were not available.
-    "-DBUILD_JAVA_BINDINGS=OFF"
   ];
 
   buildInputs =
@@ -219,19 +190,33 @@ stdenv.mkDerivation (finalAttrs: {
     ++ darwinDeps
     ++ nonDarwinDeps;
 
-  pythonPath = [ python3Packages.numpy ];
-  postInstall = ''
-    wrapPythonProgramsIn "$out/bin" "$out ''${pythonPath[*]}"
-  ''
-  + lib.optionalString useJava ''
-    cd $out/lib
-    ln -s ./jni/libgdalalljni${stdenv.hostPlatform.extensions.sharedLibrary}
-    cd -
-  '';
+  cmakeFlags = [
+    "-DGDAL_USE_INTERNAL_LIBS=OFF"
+    "-DGEOTIFF_INCLUDE_DIR=${lib.getDev libgeotiff}/include"
+    "-DGEOTIFF_LIBRARY_RELEASE=${lib.getLib libgeotiff}/lib/libgeotiff${stdenv.hostPlatform.extensions.sharedLibrary}"
+    "-DMYSQL_INCLUDE_DIR=${lib.getDev libmysqlclient}/include/mysql"
+    "-DMYSQL_LIBRARY=${lib.getLib libmysqlclient}/lib/${
+      lib.optionalString (libmysqlclient.pname != "mysql") "mysql/"
+    }libmysqlclient${stdenv.hostPlatform.extensions.sharedLibrary}"
+  ]
+  ++ lib.optionals finalAttrs.doInstallCheck [
+    "-DBUILD_TESTING=ON"
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    "-DCMAKE_SKIP_BUILD_RPATH=ON" # without, libgdal.so can't find libmariadb.so
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON"
+  ]
+  ++ lib.optionals (!useTiledb) [
+    "-DGDAL_USE_TILEDB=OFF"
+  ]
+  ++ lib.optionals (!useJava) [
+    # This is not strictly needed as the Java bindings wouldn't build anyway if
+    # ant/jdk were not available.
+    "-DBUILD_JAVA_BINDINGS=OFF"
+  ];
 
-  enableParallelBuilding = true;
-
-  doInstallCheck = true;
   # preCheck rather than preInstallCheck because this is what pytestCheckHook
   # calls (coming from the python world)
   preCheck = ''
@@ -245,6 +230,22 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/OSGeo/gdal/blob/v3.9.0/autotest/gdrivers/bag.py#L54
     export CI=1
   '';
+
+  postCheck = ''
+    popd # autotest
+  '';
+
+  postInstall = ''
+    wrapPythonProgramsIn "$out/bin" "$out ''${pythonPath[*]}"
+  ''
+  + lib.optionalString useJava ''
+    cd $out/lib
+    ln -s ./jni/libgdalalljni${stdenv.hostPlatform.extensions.sharedLibrary}
+    cd -
+  '';
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = with python3Packages; [
     pytestCheckHook
     pytest-benchmark
@@ -252,9 +253,9 @@ stdenv.mkDerivation (finalAttrs: {
     filelock
     lxml
   ];
-  pytestFlags = [
-    "--benchmark-disable"
-  ];
+
+  __darwinAllowLocalNetworking = true;
+
   disabledTestPaths = [
     # tests that attempt to make network requests
     "gcore/basic_test.py::test_hint_http"
@@ -267,6 +268,7 @@ stdenv.mkDerivation (finalAttrs: {
     # Trace/BPT trap: 5 on macOS
     "gcore/hdf4multidim.py"
   ];
+
   disabledTests = [
     # tests that attempt to make network requests
     "test_jp2openjpeg_45"
@@ -315,23 +317,27 @@ stdenv.mkDerivation (finalAttrs: {
     # is absent in the minimal build
     "test_zarr_read_simple_sharding"
   ];
-  postCheck = ''
-    popd # autotest
-  '';
 
+  enableParallelBuilding = true;
+
+  pytestFlags = [
+    "--benchmark-disable"
+  ];
+
+  pythonPath = [ python3Packages.numpy ];
   passthru.tests = callPackage ./tests.nix { gdal = finalAttrs.finalPackage; };
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    changelog = "https://github.com/OSGeo/gdal/blob/${finalAttrs.src.tag}/NEWS.md";
     description = "Translator library for raster geospatial data formats";
     homepage = "https://www.gdal.org/";
+    changelog = "https://github.com/OSGeo/gdal/blob/${finalAttrs.src.tag}/NEWS.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dotlambda
     ];
-    teams = [ lib.teams.geospatial ];
+
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.geospatial ];
   };
 })

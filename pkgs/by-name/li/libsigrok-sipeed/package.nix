@@ -3,19 +3,19 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libzip,
-  glib,
-  libusb1,
-  libftdi1,
-  check,
-  libserialport,
-  doxygen,
-  glibmm,
-  python3,
-  hidapi,
-  libieee1284,
   bluez,
+  check,
+  doxygen,
+  glib,
+  glibmm,
+  hidapi,
+  libftdi1,
+  libieee1284,
+  libserialport,
+  libusb1,
+  libzip,
+  pkg-config,
+  python3,
   sigrok-firmware-fx2lafw,
 }:
 #To future maintainers this package should be deprecated and or removed when https://github.com/sigrokproject/libsigrok/pull/275 gets merged
@@ -31,7 +31,7 @@ stdenv.mkDerivation {
     hash = "sha256-4aqX+OX4bBsvvb7b1XHKqG6u1Ek3floXDfjr27usZwo=";
   };
 
-  enableParallelBuilding = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -39,6 +39,7 @@ stdenv.mkDerivation {
     pkg-config
     python3
   ];
+
   buildInputs = [
     libzip
     glib
@@ -54,8 +55,6 @@ stdenv.mkDerivation {
     bluez
   ];
 
-  strictDeps = true;
-
   postInstall = ''
     mkdir -p $out/etc/udev/rules.d
     cp contrib/*.rules $out/etc/udev/rules.d
@@ -65,6 +64,7 @@ stdenv.mkDerivation {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -76,13 +76,17 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "A fork of libsigrok with slogic devices support ";
     homepage = "https://github.com/sipeed/libsigrok/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       qubic
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

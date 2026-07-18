@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   curl,
   dnsdbq,
-  fetchFromGitHub,
   jansson,
-  lib,
   nix-update-script,
-  stdenv,
   testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -17,16 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "dnsdbq";
     rev = "v${finalAttrs.version}";
     hash = "sha256-5Pi8xFZXnU3abIsH9m6xqrQ6NnEtAbhMU6HXsOYP0gg=";
-  };
-
-  passthru = {
-    updateScript = nix-update-script { };
-    tests = {
-      version = testers.testVersion {
-        package = dnsdbq;
-        command = "dnsdbq -v";
-      };
-    };
   };
 
   nativeBuildInputs = [
@@ -49,12 +39,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   extraOutputsToInstall = [ "man" ];
 
+  passthru = {
+    tests = {
+      version = testers.testVersion {
+        command = "dnsdbq -v";
+        package = dnsdbq;
+      };
+    };
+
+    updateScript = nix-update-script { };
+  };
+
   meta = {
     description = "C99 program that accesses passive DNS database systems";
     homepage = "https://github.com/dnsdb/dnsdbq";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ x123 ];
-    mainProgram = "dnsdbq";
     platforms = lib.platforms.all;
+    mainProgram = "dnsdbq";
   };
 })

@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-GA9qKuFh1YOaUPuAQ//VJqScLJaqxHIyLl/TDnOTsdY=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -26,7 +25,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/brave/brave-search-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ vitorpavani ];
-    mainProgram = "bx";
     platforms = lib.platforms.all;
+    mainProgram = "bx";
   };
 })

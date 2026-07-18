@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   astor,
   buildPythonPackage,
-  fetchFromGitHub,
   funcparserlib,
   hy,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "hy";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hylang";
@@ -25,11 +24,6 @@ buildPythonPackage rec {
 
   # https://github.com/hylang/hy/blob/1.0a4/get_version.py#L9-L10
   env.HY_VERSION = version;
-
-  build-system = [ setuptools ];
-
-  dependencies = [ funcparserlib ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
@@ -37,13 +31,17 @@ buildPythonPackage rec {
     export PATH="$out/bin:$PATH"
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ funcparserlib ];
+  pyproject = true;
   pythonImportsCheck = [ "hy" ];
 
   passthru = {
     tests.version = testers.testVersion {
-      package = hy;
       command = "hy -v";
+      package = hy;
     };
+
     # For backwards compatibility with removed pkgs/development/interpreters/hy
     # Example usage:
     #   hy.withPackages (ps: with ps; [ hyrule requests ])
@@ -60,6 +58,7 @@ buildPythonPackage rec {
     homepage = "https://hylang.org/";
     changelog = "https://github.com/hylang/hy/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mazurel
       nixy

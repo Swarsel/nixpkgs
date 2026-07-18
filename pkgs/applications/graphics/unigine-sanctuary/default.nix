@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   autoPatchelfHook,
-  libx11,
-  libxext,
-  libxrandr,
-  libxinerama,
-  libglvnd,
-  openal,
-  glibc,
-  makeDesktopItem,
   copyDesktopItems,
+  glibc,
   imagemagick,
   liberation_ttf,
+  libglvnd,
+  libx11,
+  libxext,
+  libxinerama,
+  libxrandr,
+  makeDesktopItem,
+  makeWrapper,
+  openal,
 }:
 stdenv.mkDerivation rec {
   pname = "unigine-sanctuary";
@@ -25,10 +25,19 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-KKi70ctkEm+tx0kjBMWVKMLDrJ1TsPH+CKLDMXA6OdU=";
   };
 
-  libPath = lib.makeLibraryPath [
-    libglvnd
-    openal
-    glibc
+  nativeBuildInputs = [
+    autoPatchelfHook
+    makeWrapper
+    imagemagick
+    copyDesktopItems
+  ];
+
+  buildInputs = [
+    stdenv.cc.cc
+    libx11
+    libxext
+    libxrandr
+    libxinerama
   ];
 
   installPhase = ''
@@ -63,41 +72,34 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Sanctuary";
+      desktopName = "Sanctuary Benchmark";
       exec = "Sanctuary";
       genericName = "A GPU Stress test tool from the UNIGINE";
       icon = "Sanctuary";
-      desktopName = "Sanctuary Benchmark";
+      name = "Sanctuary";
     })
-  ];
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    makeWrapper
-    imagemagick
-    copyDesktopItems
-  ];
-
-  buildInputs = [
-    stdenv.cc.cc
-    libx11
-    libxext
-    libxrandr
-    libxinerama
   ];
 
   dontUnpack = true;
 
+  libPath = lib.makeLibraryPath [
+    libglvnd
+    openal
+    glibc
+  ];
+
   meta = {
     description = "Unigine Heaven GPU benchmarking tool";
     homepage = "https://benchmark.unigine.com/sanctuary";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     mainProgram = "Sanctuary";
   };
 }

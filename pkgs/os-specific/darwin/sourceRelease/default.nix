@@ -15,10 +15,10 @@ let
   lockinfo = lockfile.${name};
 in
 fetchFromGitHub {
+  inherit (lockinfo) hash;
   owner = "apple-oss-distributions";
   repo = name;
   rev = lockinfo.rev or "${name}-${lockinfo.version}";
-  inherit (lockinfo) hash;
 }
 // {
   inherit (lockinfo) version;

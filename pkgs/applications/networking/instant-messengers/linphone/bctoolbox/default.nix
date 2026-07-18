@@ -1,15 +1,15 @@
 {
-  bcunit,
-  bc-decaf,
-  mkLinphoneDerivation,
-  bc-mbedtls,
   lib,
-
+  bc-decaf,
+  bc-mbedtls,
+  bcunit,
+  mkLinphoneDerivation,
   # tests
   testers,
 }:
 mkLinphoneDerivation (finalAttrs: {
   pname = "bctoolbox";
+  strictDeps = true;
 
   propagatedBuildInputs = [
     bcunit
@@ -24,26 +24,27 @@ mkLinphoneDerivation (finalAttrs: {
     "-DENABLE_OPENSSL=NO"
   ];
 
-  strictDeps = true;
-
   passthru.tests = {
     cmake-config = testers.hasCmakeConfigModules {
-      package = finalAttrs.finalPackage;
       moduleNames = [
         "BCToolbox"
       ];
+
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
     description = "Utilities library for Linphone";
-    mainProgram = "bctoolbox_tester";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       jluttine
       naxdy
       raskin
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "bctoolbox_tester";
   };
 })

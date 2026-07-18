@@ -1,27 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  uv-build,
-
   affine,
   async-tiff,
+  buildPythonPackage,
   defusedxml,
+  jsonschema,
+  morecantile,
   numpy,
-  pyproj,
-
   # tests
   pydantic,
-  rasterio,
-  morecantile,
-  jsonschema,
+  pyproj,
   pytest-asyncio,
+  pytestCheckHook,
+  rasterio,
+  uv-build,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "async-geotiff";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "developmentseed";
@@ -30,6 +27,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-VC4I1ZDKC2Joh2lxscZ1UWp5p5wOEPKjTq+Ty2Z0PJc=";
     fetchSubmodules = true;
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  checkInputs = [
+    jsonschema
+    morecantile
+    rasterio
+    pydantic
+    pytest-asyncio
+  ];
 
   build-system = [ uv-build ];
 
@@ -41,17 +48,8 @@ buildPythonPackage (finalAttrs: {
     pyproj
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "async_geotiff" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  checkInputs = [
-    jsonschema
-    morecantile
-    rasterio
-    pydantic
-    pytest-asyncio
-  ];
 
   meta = {
     description = "Fast, async GeoTIFF and COG reader for Python";

@@ -1,27 +1,23 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-
-  # build-system
-  setuptools,
-
   # dependencies
   amaranth,
+  apollo-fpga,
+  buildPythonPackage,
   libusb1,
   pyserial,
-  pyusb,
-  pyvcd,
-  usb-protocol,
-
   # tests
   pytestCheckHook,
-  apollo-fpga,
+  pyusb,
+  pyvcd,
+  # build-system
+  setuptools,
+  usb-protocol,
 }:
 buildPythonPackage rec {
   pname = "luna-usb";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "greatscottgadgets";
@@ -36,6 +32,11 @@ buildPythonPackage rec {
       --replace-fail 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    apollo-fpga
+  ];
+
   build-system = [
     setuptools
   ];
@@ -49,23 +50,20 @@ buildPythonPackage rec {
     usb-protocol
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    apollo-fpga
-  ];
-
   enabledTestPaths = [
     "tests/"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "luna"
   ];
 
   meta = {
-    changelog = "https://github.com/greatscottgadgets/luna/releases/tag/${src.tag}";
     description = "Amaranth HDL framework for monitoring, hacking, and developing USB devices";
     homepage = "https://github.com/greatscottgadgets/luna";
+    changelog = "https://github.com/greatscottgadgets/luna/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ carlossless ];
   };

@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  givaro,
-  pkg-config,
   blas,
-  lapack,
   fflas-ffpack,
+  givaro,
   gmpxx,
+  lapack,
+  pkg-config,
 }:
 
 assert (!blas.isILP64) && (!lapack.isILP64);
@@ -52,19 +52,17 @@ stdenv.mkDerivation (finalAttrs: {
     "--${if stdenv.hostPlatform.fma4Support then "enable" else "disable"}-fma4"
   ];
 
+  doCheck = true;
+  enableParallelBuilding = true;
   # https://github.com/linbox-team/linbox/issues/304
   hardeningDisable = [ "fortify3" ];
 
-  doCheck = true;
-
-  enableParallelBuilding = true;
-
   meta = {
     description = "C++ library for exact, high-performance linear algebra";
-    mainProgram = "linbox-config";
-    license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.sage ];
-    platforms = lib.platforms.unix;
     homepage = "https://linalg.org/";
+    license = lib.licenses.lgpl21Plus;
+    platforms = lib.platforms.unix;
+    mainProgram = "linbox-config";
+    teams = [ lib.teams.sage ];
   };
 })

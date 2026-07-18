@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,19 +18,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-sS4z5NImUdk0EnQ+BGPofFZtXZsomfUXXbHNDmVqAos=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
-
   # Requires unstable features
   env.RUSTC_BOOTSTRAP = true;
-
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/illdefined/integrity-scrub";
     description = "Scrub dm-integrity devices";
+    homepage = "https://github.com/illdefined/integrity-scrub";
     license = lib.licenses.cc0;
     maintainers = with lib.maintainers; [ mvs ];
     platforms = lib.platforms.linux;

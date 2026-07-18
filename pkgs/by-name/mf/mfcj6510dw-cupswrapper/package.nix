@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  mfcj6510dwlpr,
-  makeWrapper,
   bash,
+  makeWrapper,
+  mfcj6510dwlpr,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,6 +17,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     bash # shebang
   ];
@@ -63,11 +64,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother MFC-J6510DW CUPS wrapper driver";
+    homepage = "http://www.brother.com/";
     license = with lib.licenses; gpl2Plus;
+    maintainers = with lib.maintainers; [ ramkromberg ];
     platforms = with lib.platforms; linux;
     downloadPage = "http://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=mfcj6510dw_all&os=128";
-    maintainers = with lib.maintainers; [ ramkromberg ];
   };
 }

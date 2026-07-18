@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
+  autoPatchelfHook,
+  libGL,
+  libxkbcommon,
   nix-update-script,
   rustPlatform,
-  fetchFromGitHub,
   versionCheckHook,
-  autoPatchelfHook,
   wayland,
-  libxkbcommon,
-  libGL,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,9 +22,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-AdLpP01VeeAAOBEeX/dxLPdAqTfgH9X+NDCmFgqA3hs=";
   };
 
-  cargoHash = "sha256-FB8zvWhO+ZbzWjkQCnf3ghgM+IL4px7QNO4dLPcczec=";
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+  cargoHash = "sha256-FB8zvWhO+ZbzWjkQCnf3ghgM+IL4px7QNO4dLPcczec=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   runtimeDependencies = [
     libGL
@@ -34,16 +35,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxkbcommon
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Color picker for Oklch";
+
     longDescription = ''
       A standalone color picker application using the Oklch
       colorspace (based on Oklab)
     '';
+
     homepage = "https://github.com/eero-lehtinen/oklch-color-picker";
     changelog = "https://github.com/eero-lehtinen/oklch-color-picker/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;

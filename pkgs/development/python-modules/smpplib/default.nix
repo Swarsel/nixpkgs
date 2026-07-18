@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  python,
-  six,
   mock,
   pytestCheckHook,
+  python,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "smpplib";
   version = "2.2.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +28,7 @@ buildPythonPackage rec {
     rm -rf $out/${python.sitePackages}/tests
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "smpplib" ];
 
   meta = {

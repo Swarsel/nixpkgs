@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-imagebuilder";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -28,6 +27,7 @@ buildPythonPackage (finalAttrs: {
 
   # No tests included
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.common"

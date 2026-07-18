@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  dialog,
   fetchzip,
-  libglut,
-  libxmu,
-  libxi,
-  libx11,
-  libice,
-  libGLU,
-  libGL,
-  libsm,
-  libxext,
+  glfw,
   glibc,
+  libGL,
+  libGLU,
+  libgccjit,
+  libglut,
+  libice,
+  libsm,
+  libx11,
+  libxext,
+  libxi,
+  libxmu,
   lua,
   luabind,
-  glfw,
-  libgccjit,
-  dialog,
   makeWrapper,
 }:
 let
@@ -45,19 +45,20 @@ stdenv.mkDerivation rec {
     if stdenv.hostPlatform.system == "x86_64-linux" then
       fetchzip {
         url = "https://icesl.loria.fr/assets/other/download.php?build=${version}&os=amd64";
-        extension = "zip";
         sha256 = "0rrnkqkhlsjclif5cjbf17qz64vs95ja49xarxjvq54wb4jhbs4l";
+        extension = "zip";
       }
     else if stdenv.hostPlatform.system == "i686-linux" then
       fetchzip {
         url = "https://icesl.loria.fr/assets/other/download.php?build=${version}&os=i386";
-        extension = "zip";
         sha256 = "0n2yyxzw0arkc70f0qli4n5chdlh9vc7aqizk4v7825mcglhwlyh";
+        extension = "zip";
       }
     else
       throw "Unsupported architecture";
 
   nativeBuildInputs = [ makeWrapper ];
+
   installPhase = ''
     cp -r ./ $out
     rm $out/bin/*.so
@@ -76,12 +77,13 @@ stdenv.mkDerivation rec {
   meta = {
     description = "GPU-accelerated procedural modeler and slicer for 3D printing";
     homepage = "https://icesl.loria.fr/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.inria-icesl;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ mgttlinger ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    maintainers = with lib.maintainers; [ mgttlinger ];
   };
 }

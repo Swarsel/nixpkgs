@@ -2,14 +2,13 @@
   lib,
   fetchFromCodeberg,
   nix-update-script,
-  yt-dlp,
   python3Packages,
+  yt-dlp,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gallery-dl";
   version = "1.32.5";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "mikf";
@@ -18,19 +17,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-6E4PgJ6VWI0c6TyQOZ0siqsMxNNLpymy8/rANWaBVnU=";
   };
 
+  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
   build-system = [ python3Packages.setuptools ];
 
   dependencies = [
     python3Packages.requests
     python3Packages.pysocks
     yt-dlp
-  ];
-
-  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
-
-  disabledTests = [
-    # requires network access
-    "test_init"
   ];
 
   disabledTestPaths = [
@@ -42,19 +35,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test/test_ytdl.py"
   ];
 
-  pythonImportsCheck = [ "gallery_dl" ];
+  disabledTests = [
+    # requires network access
+    "test_init"
+  ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "gallery_dl" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://codeberg.org/mikf/gallery-dl/src/tag/v${finalAttrs.version}/CHANGELOG.md";
     description = "Command-line program to download image-galleries and -collections from several image hosting sites";
     homepage = "https://codeberg.org/mikf/gallery-dl";
+    changelog = "https://codeberg.org/mikf/gallery-dl/src/tag/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl2Only;
-    mainProgram = "gallery-dl";
+
     maintainers = with lib.maintainers; [
       dawidsowa
       _4evy
     ];
+
+    mainProgram = "gallery-dl";
   };
 })

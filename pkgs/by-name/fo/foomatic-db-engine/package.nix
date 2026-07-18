@@ -1,19 +1,19 @@
 {
   lib,
-  perlPackages,
   fetchFromGitHub,
-  withCupsAccess ? false, # needed to access local cups server
+  autoconf,
+  automake,
   cups,
   cups-filters,
   curl,
-  withSocketAccess ? false, # needed to access network printers
-  netcat-gnu,
-  withSMBAccess ? false, # needed to access SMB-connected printers
-  samba,
-  autoconf,
-  automake,
   file,
   makeWrapper,
+  netcat-gnu,
+  perlPackages,
+  samba,
+  withCupsAccess ? false, # needed to access local cups server
+  withSMBAccess ? false, # needed to access SMB-connected printers
+  withSocketAccess ? false, # needed to access network printers
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -31,10 +31,11 @@ perlPackages.buildPerlPackage rec {
 
   outputs = [ "out" ];
 
-  propagatedBuildInputs = [
-    perlPackages.Clone
-    perlPackages.DBI
-    perlPackages.XMLLibXML
+  nativeBuildInputs = [
+    autoconf
+    automake
+    file
+    makeWrapper
   ];
 
   buildInputs = [
@@ -54,12 +55,30 @@ perlPackages.buildPerlPackage rec {
   # shared via the SMB protocol, but it needs the `smbclient` binary
   ++ lib.optional withSMBAccess samba;
 
-  nativeBuildInputs = [
-    autoconf
-    automake
-    file
-    makeWrapper
+  propagatedBuildInputs = [
+    perlPackages.Clone
+    perlPackages.DBI
+    perlPackages.XMLLibXML
   ];
+
+  configureFlags = [
+    "--sysconfdir=${placeholder "out"}/etc"
+    "LIBDIR=${placeholder "out"}/share/foomatic"
+    "PERLPREFIX=${placeholder "out"}"
+  ];
+
+  preConfigure = ''
+    ./make_configure
+  '';
+
+  doCheck = false; # no tests, would fail
+
+  postFixup = ''
+    for bin in "${placeholder "out"}/bin"/*; do
+      test '!' -L "$bin" || continue  # skip symlink
+      wrapProgram "$bin" --set PERL5LIB "$PERL5LIB"
+    done
+  '';
 
   # sed-substitute indirection is more robust against
   # characters in paths that might need escaping
@@ -69,37 +88,20 @@ perlPackages.buildPerlPackage rec {
     touch Makefile.PL  # `buildPerlPackage` fails unless this exists
   '';
 
-  preConfigure = ''
-    ./make_configure
-  '';
-
-  configureFlags = [
-    "--sysconfdir=${placeholder "out"}/etc"
-    "LIBDIR=${placeholder "out"}/share/foomatic"
-    "PERLPREFIX=${placeholder "out"}"
-  ];
-
-  postFixup = ''
-    for bin in "${placeholder "out"}/bin"/*; do
-      test '!' -L "$bin" || continue  # skip symlink
-      wrapProgram "$bin" --set PERL5LIB "$PERL5LIB"
-    done
-  '';
-
-  doCheck = false; # no tests, would fail
-
   meta = {
-    changelog = "https://github.com/OpenPrinting/foomatic-db-engine/blob/${src.rev}/ChangeLog";
     description = "OpenPrinting printer support database engine";
-    downloadPage = "https://www.openprinting.org/download/foomatic/";
-    homepage = "https://openprinting.github.io/projects/02-foomatic/";
-    license = lib.licenses.gpl2Only;
-    maintainers = [ lib.maintainers.yarny ];
+
     longDescription = ''
       Foomatic's database engine generates PPD files
       from the data in Foomatic's XML database.
       It also contains scripts to directly
       generate print queues and handle jobs.
     '';
+
+    homepage = "https://openprinting.github.io/projects/02-foomatic/";
+    changelog = "https://github.com/OpenPrinting/foomatic-db-engine/blob/${src.rev}/ChangeLog";
+    license = lib.licenses.gpl2Only;
+    maintainers = [ lib.maintainers.yarny ];
+    downloadPage = "https://www.openprinting.org/download/foomatic/";
   };
 }

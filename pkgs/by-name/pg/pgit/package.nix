@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  runCommand,
+  buildGoModule,
   git, # for passthru tests
   pgit, # for passthru tests
+  runCommand,
 }:
 
 buildGoModule (finalAttrs: {
@@ -43,7 +43,7 @@ buildGoModule (finalAttrs: {
     description = "static site generator for git";
     homepage = "https://pgit.pico.sh/";
     license = lib.licenses.mit;
-    mainProgram = "pgit";
     maintainers = with lib.maintainers; [ jaculabilis ];
+    mainProgram = "pgit";
   };
 })

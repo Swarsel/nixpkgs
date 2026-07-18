@@ -10,13 +10,14 @@
 buildPythonPackage rec {
   pname = "gin-config";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-DG6lAm3tknyMk8mQsBxpUlfB30RuReVJoVjPvHnhntY=";
   };
 
+  # PyPI archive does not ship with tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   optional-dependencies = {
@@ -24,9 +25,7 @@ buildPythonPackage rec {
     torch = [ torch ];
   };
 
-  # PyPI archive does not ship with tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "gin" ];
 
   meta = {

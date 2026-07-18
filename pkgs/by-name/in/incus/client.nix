@@ -1,15 +1,14 @@
 {
-  lts ? false,
+  lib,
+  buildGoModule,
+  fetchpatch2,
+  installShellFiles,
   meta,
   patches,
   src,
   vendorHash,
   version,
-
-  lib,
-  buildGoModule,
-  installShellFiles,
-  fetchpatch2,
+  lts ? false,
 }:
 let
   pname = "incus${lib.optionalString lts "-lts"}-client";
@@ -24,13 +23,11 @@ buildGoModule {
     version
     ;
 
-  env.CGO_ENABLED = 0;
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "cmd/incus" ];
-
   patches = evaluatedPatches;
+  nativeBuildInputs = [ installShellFiles ];
+  env.CGO_ENABLED = 0;
+  # don't run the full incus test suite
+  doCheck = false;
 
   postInstall = ''
     # Needed for builds on systems with auto-allocate-uids to pass.
@@ -45,8 +42,7 @@ buildGoModule {
       --zsh <($out/bin/incus completion zsh)
   '';
 
-  # don't run the full incus test suite
-  doCheck = false;
+  subPackages = [ "cmd/incus" ];
 
   meta = meta // {
     platforms = lib.platforms.linux ++ lib.platforms.darwin;

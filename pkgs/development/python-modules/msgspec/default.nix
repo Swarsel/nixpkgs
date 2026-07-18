@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   attrs,
+  buildPythonPackage,
   coverage,
   furo,
   ipython,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "msgspec";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jcrist";
@@ -37,10 +36,17 @@ buildPythonPackage rec {
     hash = "sha256-DWDmnSuo12oXl9NVfNhIOtWrQeJ9DMmHxOyHY33Datk=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
+
+  # `tests/typing` runs type checkers
+  enabledTestPaths = [ "tests/unit" ];
 
   optional-dependencies = {
     dev = [
@@ -51,6 +57,7 @@ buildPythonPackage rec {
     ]
     ++ optional-dependencies.doc
     ++ optional-dependencies.test;
+
     doc = [
       furo
       ipython
@@ -58,6 +65,7 @@ buildPythonPackage rec {
       sphinx-copybutton
       sphinx-design
     ];
+
     test = [
       attrs
       msgpack
@@ -65,17 +73,12 @@ buildPythonPackage rec {
     ]
     ++ optional-dependencies.yaml
     ++ optional-dependencies.toml;
+
     toml = [ tomli-w ];
     yaml = [ pyyaml ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  # `tests/typing` runs type checkers
-  enabledTestPaths = [ "tests/unit" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "msgspec" ];
 
   meta = {

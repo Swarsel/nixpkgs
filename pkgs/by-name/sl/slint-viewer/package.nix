@@ -1,22 +1,20 @@
 {
   lib,
   stdenv,
-  rustPlatform,
+  autoPatchelfHook,
   fetchCrate,
-
   fontconfig,
   libGL,
   libx11,
   libxcursor,
   libxi,
   libxkbcommon,
+  nix-update-script,
   pkg-config,
   qt6,
-  wayland,
-
-  autoPatchelfHook,
-  nix-update-script,
+  rustPlatform,
   versionCheckHook,
+  wayland,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "slint-viewer";
@@ -27,7 +25,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Jo2nAYUx6N2fJvX4hHckRKr2gr6xsGW9lNMD45+/uNY=";
   };
 
-  cargoHash = "sha256-TsM2CFsNDu4SRPcDwAWoPOtWPMf/Z3R9HlSlh4Ly92s=";
+  nativeBuildInputs = [
+    autoPatchelfHook
+    pkg-config
+    qt6.wrapQtAppsHook
+  ];
 
   buildInputs = [
     qt6.qtbase
@@ -36,11 +38,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libGL
   ];
 
-  nativeBuildInputs = [
-    autoPatchelfHook
-    pkg-config
-    qt6.wrapQtAppsHook
-  ];
+  cargoHash = "sha256-TsM2CFsNDu4SRPcDwAWoPOtWPMf/Z3R9HlSlh4Ly92s=";
+  # There are no tests
+  doCheck = false;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   # stolen from the surfer package
   runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux [
@@ -52,20 +54,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland
   ];
 
-  # There are no tests
-  doCheck = false;
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Viewer for .slint files from the Slint Project";
-    mainProgram = "slint-viewer";
     homepage = "https://crates.io/crates/slint-viewer";
     changelog = "https://github.com/slint-ui/slint/blob/master/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ dtomvan ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "slint-viewer";
   };
 })

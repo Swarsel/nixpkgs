@@ -1,27 +1,26 @@
 {
   lib,
-  mkDerivation,
-  libpam,
   libbsm,
+  libpam,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/su";
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
 
+  postPatch = ''
+    sed -E -i -e '/BINOWN|BINMODE|PRECIOUSPROG/d' $BSDSRCDIR/usr.bin/su/Makefile
+  '';
+
   buildInputs = [
     libpam
     libbsm
   ];
 
-  postPatch = ''
-    sed -E -i -e '/BINOWN|BINMODE|PRECIOUSPROG/d' $BSDSRCDIR/usr.bin/su/Makefile
-  '';
-
+  path = "usr.bin/su";
   meta.mainProgram = "su";
   meta.platforms = lib.platforms.freebsd;
 }

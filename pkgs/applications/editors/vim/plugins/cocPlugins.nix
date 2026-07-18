@@ -1,8 +1,8 @@
 {
   lib,
   buildVimPlugin,
-  pkgs,
   coc-nginx,
+  pkgs,
 }:
 final: prev:
 let

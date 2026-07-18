@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  gtk4,
   glib,
   granite7,
+  gtk4,
   libadwaita,
   libcanberra,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
   wayland-scanner,
   wrapGAppsHook4,
 }:
@@ -28,10 +28,6 @@ stdenv.mkDerivation rec {
   };
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     glib # for glib-compile-schemas
@@ -51,6 +47,10 @@ stdenv.mkDerivation rec {
     libcanberra
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -59,8 +59,8 @@ stdenv.mkDerivation rec {
     description = "GTK notification server for Pantheon";
     homepage = "https://github.com/elementary/notifications";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
     mainProgram = "io.elementary.notifications";
+    teams = [ lib.teams.pantheon ];
   };
 }

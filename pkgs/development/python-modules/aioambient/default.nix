@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   poetry-core,
   pytest-aiohttp,
   pytest-asyncio,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "aioambient";
   version = "2025.02.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -32,6 +31,14 @@ buildPythonPackage rec {
       --replace-fail poetry-core==2.0.1 poetry-core
   '';
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-aiohttp
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -43,18 +50,9 @@ buildPythonPackage rec {
     yarl
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    aresponses
-    pytest-aiohttp
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   # Ignore the examples directory as the files are prefixed with test_
   disabledTestPaths = [ "examples/" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aioambient" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
+  lib,
+  black,
   buildPythonPackage,
   fetchPypi,
-  lib,
   hatchling,
-  black,
   lxml,
   pytest,
   requests,
@@ -13,12 +13,11 @@
 buildPythonPackage rec {
   pname = "python-wayland-extra";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "python_wayland_extra";
     hash = "sha256-HSBOCWP3o/BHmg3LO+LU+GpYkEYSqdljjYcEPdOnxZk=";
+    pname = "python_wayland_extra";
   };
 
   postPatch = ''
@@ -26,6 +25,8 @@ buildPythonPackage rec {
       --replace-fail ', "black", "lxml", "requests", "pytest", "ruff"' ""
   '';
 
+  # requires working wayland display
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -33,9 +34,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # requires working wayland display
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "wayland" ];
 
   meta = {

@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitLab,
   buildPythonPackage,
   croniter,
   dj-database-url,
+  django,
   django-valkey,
   django-vcache,
-  django,
-  fetchFromGitLab,
   hatchling,
   orjson,
   postgresql,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "django-vtasks";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "glitchtip";
@@ -40,21 +39,6 @@ buildPythonPackage rec {
       --replace-fail "async def test_async_stale_connection():" "@pytest.mark.asyncio
     async def test_async_stale_connection():"
   '';
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    django
-    orjson
-    croniter
-  ];
-
-  optional-dependencies = {
-    metrics = [ prometheus-client ];
-    valkey = [ django-vcache ] ++ lib.optional (pythonOlder "3.14") pyzstd;
-  };
-
-  pythonImportsCheck = [ "django_vtasks" ];
 
   env = {
     DATABASE_URL = "postgresql://postgres@%2Fbuild%2Frun%2Fpostgresql";
@@ -76,15 +60,33 @@ buildPythonPackage rec {
     redisTestHook # contains valkey
   ];
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    django
+    orjson
+    croniter
+  ];
+
+  optional-dependencies = {
+    metrics = [ prometheus-client ];
+    valkey = [ django-vcache ] ++ lib.optional (pythonOlder "3.14") pyzstd;
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "django_vtasks" ];
+
   meta = {
     description = "Very fast valkey/postgres django tasks backend";
     homepage = "https://gitlab.com/glitchtip/django-vtasks";
     changelog = "https://gitlab.com/glitchtip/django-vtasks/-/releases/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       defelo
       felbinger
     ];
+
     broken = lib.versionOlder (lib.versions.major django.version) "6";
   };
 }

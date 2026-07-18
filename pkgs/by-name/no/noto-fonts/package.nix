@@ -1,12 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
-  rename,
   nixosTests,
-  variants ? [ ],
-  suffix ? "",
+  rename,
+  stdenvNoCC,
   longDescription ? ''
     When text is rendered by a computer, sometimes characters are
     displayed as “tofu”. They are little boxes to indicate your device
@@ -17,6 +15,8 @@
     Google’s goal is to see “no more tofu”.  Noto has multiple styles and
     weights, and freely available to all.
   '',
+  suffix ? "",
+  variants ? [ ],
 }:
 let
   _variants = map (variant: builtins.replaceStrings [ " " ] [ "" ] variant) variants;
@@ -32,13 +32,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-bKuHct2pG7E6/vJYd/pdcRRHjcv0q8p4dJTKNYWUMtc=";
   };
 
-  nativeBuildInputs = [
-    rename
-  ];
-
   outputs = [
     "out"
     "megamerge" # Experimental fonts created by merging regular notofonts
+  ];
+
+  nativeBuildInputs = [
+    rename
   ];
 
   installPhase = ''
@@ -81,22 +81,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     rename 's/\[.*\]//' $out/share/fonts/noto/*
   '';
 
+  passthru.tests = { inherit (nixosTests) noto-fonts; };
+
   passthru.updateScript = gitUpdater {
     rev-prefix = "noto-monthly-release-";
   };
 
-  passthru.tests = { inherit (nixosTests) noto-fonts; };
-
   meta = {
+    inherit longDescription;
     description = "Beautiful and free fonts for many languages";
     homepage = "https://www.google.com/get/noto/";
-    inherit longDescription;
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       mathnerd314
       emily
       jopejoe1
     ];
+
+    platforms = lib.platforms.all;
   };
 })

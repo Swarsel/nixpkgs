@@ -1,20 +1,20 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
-  fetchzip,
-  fetchurl,
-  git,
-  perl,
-  python3,
   stdenv,
-  stdenvNoCC,
+  fetchurl,
+  fetchFromGitHub,
+  autoPatchelfHook,
+  cmake,
+  fetchzip,
+  git,
+  jq,
   ninja,
   nix-prefetch-git,
-  autoPatchelfHook,
-  jq,
-  removeReferencesTo,
   nixosTests,
+  perl,
+  python3,
+  removeReferencesTo,
+  stdenvNoCC,
   writers,
 }:
 
@@ -38,14 +38,16 @@ in
 stdenvNoCC.mkDerivation rec {
 
   pname = "osquery";
-
   version = info.osquery.rev;
-
   src = fetchFromGitHub info.osquery;
 
   patches = [
     ./Remove-git-reset.patch
   ];
+
+  postPatch = ''
+    substituteInPlace cmake/install_directives.cmake --replace "/control" "control"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -58,8 +60,9 @@ stdenvNoCC.mkDerivation rec {
     removeReferencesTo
   ];
 
-  postPatch = ''
-    substituteInPlace cmake/install_directives.cmake --replace "/control" "control"
+  postInstall = ''
+    rm -rf $out/control
+    remove-references-to -t ${toolchain} $out/bin/osqueryd
   '';
 
   configurePhase = ''
@@ -77,16 +80,13 @@ stdenvNoCC.mkDerivation rec {
 
   disallowedReferences = [ toolchain ];
 
-  postInstall = ''
-    rm -rf $out/control
-    remove-references-to -t ${toolchain} $out/bin/osqueryd
-  '';
-
   passthru = {
     inherit opensslSrc toolchain;
+
     tests = {
       inherit (nixosTests) osquery;
     };
+
     updateScript = writers.writePython3 "osquery-update" {
       makeWrapperArgs = "--prefix PATH : ${lib.makeBinPath [ nix-prefetch-git ]}";
     } (builtins.readFile ./update.py);
@@ -95,16 +95,20 @@ stdenvNoCC.mkDerivation rec {
   meta = {
     description = "SQL powered operating system instrumentation, monitoring, and analytics";
     homepage = "https://osquery.io";
+
     license = with lib.licenses; [
       gpl2Only
       asl20
     ];
-    platforms = lib.platforms.linux;
+
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       znewman01
       lewo
       lesuisse
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
-  stdenv,
   lib,
-  python3,
-  nix-update-script,
+  stdenv,
+  fetchFromGitHub,
   cmake,
+  nix-update-script,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,32 +15,49 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "atcoder";
     repo = "ac-library";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-1wwzN/JPS6daj1vDFuEN5z20tMdLfMvEKti0sxCVlHA=";
+    fetchSubmodules = true;
   };
+
+  outputs = [
+    "dev"
+    "out"
+  ];
+
   patches = [
     # Fix type_traits_test assumptions about char signedness on platforms
     # where char is unsigned by default (e.g. aarch64-linux).
     # Reported upstream: https://github.com/atcoder/ac-library/issues/191
     ./fix-char-signedness-tests.patch
   ];
-  outputs = [
-    "dev"
-    "out"
-  ];
 
   buildInputs = [
     python3
   ];
+
+  env = {
+    NIX_CFLAGS_COMPILE = toString [
+      "-Wno-error=array-bounds"
+    ];
+  };
+
+  installPhase = ''
+    runHook preInstall
+
+    install -d $dev/include/atcoder
+    install -m644 atcoder/* $dev/include/atcoder/
+    install -Dm755 expander.py $out/bin/expander
+
+    runHook postInstall
+  '';
+
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     python3.pkgs.pytest
     cmake
   ];
 
-  dontUseCmakeConfigure = true;
-
-  doInstallCheck = true;
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -59,32 +76,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  dontUseCmakeConfigure = true;
   # We don't need -fno-strict-overflow because it will break UBSanitize's overflow check especially when the operation number is static definded.
   hardeningDisable = [ "strictoverflow" ];
-
-  env = {
-    NIX_CFLAGS_COMPILE = toString [
-      "-Wno-error=array-bounds"
-    ];
-  };
-
-  installPhase = ''
-    runHook preInstall
-
-    install -d $dev/include/atcoder
-    install -m644 atcoder/* $dev/include/atcoder/
-    install -Dm755 expander.py $out/bin/expander
-
-    runHook postInstall
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Official library of AtCoder";
     homepage = "https://github.com/atcoder/ac-library";
-    license = lib.licenses.cc0;
     changelog = "https://github.com/atcoder/ac-library/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.cc0;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.all;
   };

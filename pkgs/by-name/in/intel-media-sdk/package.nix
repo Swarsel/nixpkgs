@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
+  fetchpatch,
   gtest,
   libdrm,
   libpciaccess,
+  libpthread-stubs,
   libva,
   libx11,
   libxau,
   libxdmcp,
-  libpthread-stubs,
-  fetchpatch,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -32,9 +32,9 @@ stdenv.mkDerivation rec {
     ./nixos-search-onevplrt-in-run-opengl-driver-lib.patch
     # https://github.com/Intel-Media-SDK/MediaSDK/pull/3005
     (fetchpatch {
+      hash = "sha256-OPwGzcMTctJvHcKn5bHqV8Ivj4P7+E4K9WOKgECqf04=";
       name = "include-cstdint-explicitly.patch";
       url = "https://github.com/Intel-Media-SDK/MediaSDK/commit/a4f37707c1bfdd5612d3de4623ffb2d21e8c1356.patch";
-      hash = "sha256-OPwGzcMTctJvHcKn5bHqV8Ivj4P7+E4K9WOKgECqf04=";
     })
   ];
 
@@ -64,12 +64,16 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Intel Media SDK";
     homepage = "https://github.com/Intel-Media-SDK/MediaSDK";
-    mainProgram = "mfx-tracer-config";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       midchildan
       pjungkamp
     ];
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "mfx-tracer-config";
+
     knownVulnerabilities = [
       ''
         End of life with various local privilege escalation vulnerabilites:
@@ -80,6 +84,5 @@ stdenv.mkDerivation rec {
           - CVE-2023-48368
       ''
     ];
-    platforms = [ "x86_64-linux" ];
   };
 }

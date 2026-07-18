@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unstableGitUpdater,
-  poetry-core,
+  buildPythonPackage,
   nixops,
+  poetry-core,
+  unstableGitUpdater,
 }:
 
 buildPythonPackage {
   pname = "nixops-encrypted-links";
   version = "0-unstable-2021-02-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nix-community";
@@ -33,8 +32,8 @@ buildPythonPackage {
     nixops
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nixops_encrypted_links" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

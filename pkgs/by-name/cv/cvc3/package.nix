@@ -1,9 +1,9 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
-  flex,
   bison,
+  flex,
+  gccStdenv,
   gmp,
   perl,
 }:
@@ -22,20 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1VsdYAbPusP21MCGlkVYkCw+0O+masSZz7IZPz7krPc=";
   };
 
-  buildInputs = [
-    gmp'
-    flex
-    bison
-    perl
-  ];
-
   patches = [ ./cvc3-2.4.1-gccv6-fix.patch ];
-
-  # fails to configure on darwin due to gmp not found
-  configureFlags = [
-    "LIBS=-L${gmp'}/lib"
-    "CXXFLAGS=-I${gmp'.dev}/include"
-  ];
 
   postPatch = ''
     sed -e "s@ /bin/bash@bash@g" -i Makefile.std
@@ -47,17 +34,31 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  meta = {
-    description = "Prover for satisfiability modulo theory (SMT)";
-    mainProgram = "cvc3";
-    maintainers = with lib.maintainers; [ raskin ];
-    platforms = lib.platforms.unix;
-    license = lib.licenses.free;
-    homepage = "https://cs.nyu.edu/acsys/cvc3/index.html";
-  };
+  buildInputs = [
+    gmp'
+    flex
+    bison
+    perl
+  ];
+
+  # fails to configure on darwin due to gmp not found
+  configureFlags = [
+    "LIBS=-L${gmp'}/lib"
+    "CXXFLAGS=-I${gmp'.dev}/include"
+  ];
+
   passthru = {
     updateInfo = {
       downloadPage = "https://cs.nyu.edu/acsys/cvc3/download.html";
     };
+  };
+
+  meta = {
+    description = "Prover for satisfiability modulo theory (SMT)";
+    homepage = "https://cs.nyu.edu/acsys/cvc3/index.html";
+    license = lib.licenses.free;
+    maintainers = with lib.maintainers; [ raskin ];
+    platforms = lib.platforms.unix;
+    mainProgram = "cvc3";
   };
 })

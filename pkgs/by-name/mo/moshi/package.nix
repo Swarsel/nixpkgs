@@ -1,28 +1,24 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  pkg-config,
-  python3,
-  autoPatchelfHook,
+  alsa-lib,
   autoAddDriverRunpath,
-
+  autoPatchelfHook,
+  config,
+  cudaPackages,
   # buildInputs
   libopus,
-  oniguruma,
-  openssl,
-  sentencepiece,
-  alsa-lib,
-
   # passthru
   moshi,
   nix-update-script,
-
-  config,
-  cudaPackages,
+  oniguruma,
+  openssl,
+  # nativeBuildInputs
+  pkg-config,
+  python3,
+  rustPlatform,
+  sentencepiece,
   cudaCapability ? null,
 }:
 
@@ -51,10 +47,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-MkZsLRQE5Swdyp9l/cvPvznWxRfKuYecj+TTgb3ufKU=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/rust";
-
-  cargoHash = "sha256-BxV8oZlN+6cVb3GwhY7TKWxHEpY3WVEhN6A6+5NMOyU=";
 
   nativeBuildInputs = [
     pkg-config
@@ -90,9 +82,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cudaPackages.libcurand
   ];
 
-  buildFeatures =
-    lib.optionals stdenv.hostPlatform.isDarwin [ "metal" ]
-    ++ lib.optionals config.cudaSupport [ "cuda" ];
+  cargoHash = "sha256-BxV8oZlN+6cVb3GwhY7TKWxHEpY3WVEhN6A6+5NMOyU=";
 
   env = {
     # use system oniguruma
@@ -100,7 +90,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   }
   // lib.optionalAttrs config.cudaSupport {
     CUDA_COMPUTE_CAP = cudaCapability';
-
     # We already list CUDA dependencies in buildInputs
     # We only set CUDA_TOOLKIT_ROOT_DIR to satisfy some redundant checks from upstream
     CUDA_TOOLKIT_ROOT_DIR = lib.getDev cudaPackages.cuda_cudart;
@@ -113,12 +102,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ])
   ];
 
+  buildFeatures =
+    lib.optionals stdenv.hostPlatform.isDarwin [ "metal" ]
+    ++ lib.optionals config.cudaSupport [ "cuda" ];
+
+  sourceRoot = "${finalAttrs.src.name}/rust";
+
   passthru = {
     tests = {
       withCuda = lib.optionalAttrs stdenv.hostPlatform.isLinux (
         moshi.override { config.cudaSupport = true; }
       );
     };
+
     updateScript = nix-update-script {
       extraArgs = [ "--generate-lockfile" ];
     };

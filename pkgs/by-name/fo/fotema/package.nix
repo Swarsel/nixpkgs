@@ -1,32 +1,29 @@
 {
   lib,
-  applyPatches,
-  clangStdenv,
   fetchFromGitHub,
-  rustPlatform,
-
+  applyPatches,
+  appstream,
+  cargo,
+  clangStdenv,
+  desktop-file-utils,
+  ffmpeg,
+  glib,
+  glycin-loaders,
+  gtk4,
+  libadwaita,
+  libglycin,
+  libseccomp,
+  libshumate,
   meson,
   ninja,
-  pkg-config,
-  cargo,
-  rustc,
-  appstream,
-  desktop-file-utils,
-  glib,
-  gtk4,
-  libglycin,
-  wrapGAppsHook4,
-
-  libadwaita,
-  openssl,
-  ffmpeg,
-  onnxruntime,
-  libshumate,
-  opencv,
-  libseccomp,
-  glycin-loaders,
-
   nix-update-script,
+  onnxruntime,
+  opencv,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 # Apparently `bindgenHook` + `libclang` is not enough.
 # opencv-binding-generator *really* wants to execute `clang` itself...
@@ -46,13 +43,7 @@ clangStdenv.mkDerivation (finalAttrs: {
     ./cargo-lock-bump-ffmpeg-next.patch
   ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version;
-    src = applyPatches {
-      inherit (finalAttrs) src patches;
-    };
-    hash = "sha256-AEZY1QODq4F+CTrJce14qA6XSZjv29wSwIqUjZPWJo4=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -82,8 +73,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     glycin-loaders
   ];
 
-  strictDeps = true;
-
   env = {
     OPENSSL_NO_VENDOR = true;
     # Use system OnnxRuntime
@@ -97,14 +86,24 @@ clangStdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version;
+
+    src = applyPatches {
+      inherit (finalAttrs) src patches;
+    };
+
+    hash = "sha256-AEZY1QODq4F+CTrJce14qA6XSZjv29wSwIqUjZPWJo4=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Photo gallery for Linux";
     homepage = "https://github.com/blissd/fotema";
     license = with lib.licenses; [ gpl3Plus ];
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pluiedev ];
+    platforms = lib.platforms.linux;
     mainProgram = "fotema";
   };
 })

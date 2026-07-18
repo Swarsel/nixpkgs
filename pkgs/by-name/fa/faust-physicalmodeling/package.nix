@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  bash,
+  stdenv,
   fetchFromGitHub,
+  bash,
   faust2jaqt,
   faust2lv2,
 }:
@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     bash
   ];
-
-  dontWrapQtApps = true;
 
   buildPhase = ''
     runHook preBuild
@@ -54,12 +52,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "Physical models included with faust compiled as jack standalone and lv2 instruments";
     homepage = "https://github.com/grame-cncm/faust/tree/master-dev/examples/physicalModeling";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ magnetophon ];
+    platforms = lib.platforms.linux;
     # compiles stuff for the build platform, difficult to do properly
     broken = stdenv.hostPlatform != stdenv.buildPlatform;
   };

@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildGoModule,
   pkgs,
-  fetchFromGitHub,
-  lib,
 }:
 
 buildGoModule.override
@@ -10,8 +10,8 @@ buildGoModule.override
     stdenv = pkgs.clangStdenv;
   }
   (finalAttrs: {
-    version = "0.6.6";
     pname = "bigquery-emulator";
+    version = "0.6.6";
 
     src = fetchFromGitHub {
       owner = "goccy";
@@ -20,16 +20,14 @@ buildGoModule.override
       hash = "sha256-iAVbxbm1G7FIWTB5g6Ff8h2dZjZssONA2MOCGuvK180=";
     };
 
-    vendorHash = "sha256-TQlsivudutyPFW+3HHX7rYuoB5wafmDTAO1TElO/8pc=";
-
     postPatch = ''
       # main module does not contain package
       rm -r internal/cmd/generator
     '';
 
-    ldflags = [ "-s -w -X main.version=${finalAttrs.version} -X main.revision=v${finalAttrs.version}" ];
-
+    vendorHash = "sha256-TQlsivudutyPFW+3HHX7rYuoB5wafmDTAO1TElO/8pc=";
     doCheck = false;
+    ldflags = [ "-s -w -X main.version=${finalAttrs.version} -X main.revision=v${finalAttrs.version}" ];
 
     meta = {
       description = "BigQuery emulator server implemented in Go";

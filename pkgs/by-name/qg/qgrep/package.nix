@@ -13,15 +13,15 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "zeux";
     repo = "qgrep";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-TeXOzfb1Nu6hz9l6dXGZY+xboscPapKm0Z264hv1Aww=";
+    fetchSubmodules = true;
   };
 
   patches = [
     (fetchpatch {
+      hash = "sha256-lCMvpuLZluT6Rw8RFZ2uY9bffPBoq6sRVWYLUmeXfOg=";
       name = "gcc-13.patch";
       url = "https://github.com/zeux/qgrep/commit/8810ab153ec59717a5d7537b3e7812c01cd80848.patch";
-      hash = "sha256-lCMvpuLZluT6Rw8RFZ2uY9bffPBoq6sRVWYLUmeXfOg=";
     })
   ];
 
@@ -42,10 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fast regular expression grep for source code with incremental index updates";
-    mainProgram = "qgrep";
     homepage = "https://github.com/zeux/qgrep";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.yrashk ];
     platforms = lib.platforms.all;
+    mainProgram = "qgrep";
   };
 })

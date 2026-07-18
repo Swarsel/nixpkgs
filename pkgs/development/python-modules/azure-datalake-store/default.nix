@@ -12,14 +12,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "azure-datalake-store";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_datalake_store";
     inherit (finalAttrs) version;
     hash = "sha256-U2TURFqrFUocfLECFWKcPORs5ceqrxYHGJDAP65ToDU=";
+    pname = "azure_datalake_store";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +30,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "This project is the Python filesystem library for Azure Data Lake Store";

@@ -1,15 +1,15 @@
 {
   buildDunePackage,
+  conduit-mirage,
+  faraday-lwt,
   gluten,
   gluten-lwt,
-  faraday-lwt,
-  conduit-mirage,
   mirage-flow,
 }:
 
 buildDunePackage {
-  pname = "gluten-mirage";
   inherit (gluten) src version;
+  pname = "gluten-mirage";
 
   propagatedBuildInputs = [
     gluten-lwt

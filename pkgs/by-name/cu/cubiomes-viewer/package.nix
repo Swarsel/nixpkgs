@@ -22,14 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '$$[QT_INSTALL_BINS]/lrelease' lrelease
   '';
 
-  buildInputs = [
-    qt5.qtbase
-  ];
-
   nativeBuildInputs = [
     qt5.qmake
     qt5.qttools
     qt5.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    qt5.qtbase
   ];
 
   preBuild = ''
@@ -62,15 +62,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/Cubitect/cubiomes-viewer";
     description = "Graphical Minecraft seed finder and map viewer";
-    mainProgram = "cubiomes-viewer";
+
     longDescription = ''
       Cubiomes Viewer provides a graphical interface for the efficient and flexible seed-finding
       utilities provided by cubiomes and a map viewer for the Minecraft biomes and structure generation.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://github.com/Cubitect/cubiomes-viewer";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "cubiomes-viewer";
   };
 })

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  makeDesktopItem,
-  darwin,
-  pnpm_10,
-  pnpmConfigHook,
-  nodejs,
-  electron,
-  nix-update-script,
   fetchFromGitHub,
+  darwin,
+  electron,
   fetchPnpmDeps,
+  makeDesktopItem,
+  makeWrapper,
+  nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
   vikunja,
 }:
 
@@ -25,24 +25,8 @@ let
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  name = "vikunja-desktop-${version}";
-  pname = finalAttrs.name;
   inherit version src;
-
-  sourceRoot = "${finalAttrs.src.name}/desktop";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      patches
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = "sha256-2jyb5BYEkopZCbS19flUgCopiJWngyFxkXsyMuOpJEU=";
-  };
+  pname = finalAttrs.name;
 
   patches = [
     # pnpm 10.29.3 changed `pnpm ls --json`; older electron-builder omits runtime deps.
@@ -50,10 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     # electron-builder 26.15.3 version already present in upstream main.
     ./electron-builder-26.15.3.patch
   ];
-
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
-  };
 
   nativeBuildInputs = [
     makeWrapper
@@ -65,6 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     darwin.autoSignDarwinBinariesHook
   ];
+
+  env = {
+    ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -121,33 +105,51 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # The desktop item properties should be kept in sync with data from upstream:
+  desktopItem = makeDesktopItem {
+    categories = [
+      "ProjectManagement"
+      "Office"
+    ];
+
+    comment = finalAttrs.meta.description;
+    desktopName = "Vikunja Desktop";
+    exec = executableName;
+    genericName = "To-Do list app";
+    icon = "vikunja";
+    name = "vikunja-desktop";
+  };
+
   # Do not attempt generating a tarball for vikunja-frontend again.
   distPhase = ''
     true
   '';
 
-  passthru.updateScript = nix-update-script { };
+  name = "vikunja-desktop-${version}";
 
-  # The desktop item properties should be kept in sync with data from upstream:
-  desktopItem = makeDesktopItem {
-    name = "vikunja-desktop";
-    exec = executableName;
-    icon = "vikunja";
-    desktopName = "Vikunja Desktop";
-    genericName = "To-Do list app";
-    comment = finalAttrs.meta.description;
-    categories = [
-      "ProjectManagement"
-      "Office"
-    ];
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      patches
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-2jyb5BYEkopZCbS19flUgCopiJWngyFxkXsyMuOpJEU=";
+    pnpm = pnpm_10;
   };
 
+  sourceRoot = "${finalAttrs.src.name}/desktop";
+  passthru.updateScript = nix-update-script { };
+
   meta = {
+    inherit (electron.meta) platforms;
     description = "Desktop App of the Vikunja to-do list app";
     homepage = "https://vikunja.io/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ kolaente ];
     mainProgram = "vikunja-desktop";
-    inherit (electron.meta) platforms;
   };
 })

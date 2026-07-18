@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   falcon,
-  fetchFromGitHub,
   furl,
   hatchling,
   jsonschema,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pook";
   version = "2.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "h2non";
@@ -24,14 +23,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-pStAlxhyZ1eDER17yLYc1r+kGpEZFW+mi0y3nrPA1CQ=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    furl
-    jsonschema
-    xmltodict
-  ];
 
   nativeCheckInputs = [
     falcon
@@ -41,11 +32,14 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "pook" ];
+  # Tests use sockets
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
 
-  disabledTests = [
-    # furl compat issue
-    "test_headers_not_matching"
+  dependencies = [
+    furl
+    jsonschema
+    xmltodict
   ];
 
   disabledTestPaths = [
@@ -55,8 +49,13 @@ buildPythonPackage rec {
     "tests/unit/interceptors/"
   ];
 
-  # Tests use sockets
-  __darwinAllowLocalNetworking = true;
+  disabledTests = [
+    # furl compat issue
+    "test_headers_not_matching"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pook" ];
 
   meta = {
     description = "HTTP traffic mocking and testing";

@@ -2,32 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  applyPatches,
-  autoreconfHook,
-  nix-update-script,
-
-  # Required dependencies.
-  openssl,
-  zlib,
-  libxml2,
-
-  # Optional dependencies.
-  e2fsprogs,
-  bzip2,
-  xz, # lzma
-
   # Platform-specific dependencies.
   acl,
-  musl-fts,
-
-  # for tests
-  testers,
-  python3,
+  applyPatches,
+  autoreconfHook,
+  bzip2,
+  # Optional dependencies.
+  e2fsprogs,
+  libxml2,
   libxslt, # xsltproc
+  makeWrapper,
+  musl-fts,
+  nix-update-script,
+  # Required dependencies.
+  openssl,
+  python3,
   runCommand,
   runCommandCC,
-  makeWrapper,
+  # for tests
+  testers,
   xar,
+  xz, # lzma
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xar${lib.optionalString (e2fsprogs == null) "-minimal"}";
@@ -40,6 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QdK7NTN3A/EWr+vdfT5ZLTdX+wOmfnqvL5yJeiiPwtM=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
   # Update patch set with
   #   git clone https://github.com/apple-oss-distributions/xar
   #   cd xar
@@ -49,20 +51,20 @@ stdenv.mkDerivation (finalAttrs: {
   #   rm -r ../pkgs/by-name/xa/xar/patches
   #   git format-patch --zero-commit --output-directory ../pkgs/by-name/xa/xar/patches main
   patches = lib.filesystem.listFilesRecursive ./patches;
-
-  # We do not use or modify files outside of the xar subdirectory.
-  patchFlags = [ "-p2" ];
-  sourceRoot = "${finalAttrs.src.name}/xar";
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
   strictDeps = true;
-
   nativeBuildInputs = [ autoreconfHook ];
+
+  buildInputs = [
+    # NB we use OpenSSL instead of CommonCrypto on Darwin.
+    openssl
+    zlib
+    libxml2
+    bzip2
+    xz
+    e2fsprogs
+  ]
+  ++ lib.optional stdenv.hostPlatform.isLinux acl
+  ++ lib.optional stdenv.hostPlatform.isMusl musl-fts;
 
   env.NIX_CFLAGS_COMPILE = toString (
     [
@@ -79,17 +81,9 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  buildInputs = [
-    # NB we use OpenSSL instead of CommonCrypto on Darwin.
-    openssl
-    zlib
-    libxml2
-    bzip2
-    xz
-    e2fsprogs
-  ]
-  ++ lib.optional stdenv.hostPlatform.isLinux acl
-  ++ lib.optional stdenv.hostPlatform.isMusl musl-fts;
+  # We do not use or modify files outside of the xar subdirectory.
+  patchFlags = [ "-p2" ];
+  sourceRoot = "${finalAttrs.src.name}/xar";
 
   passthru =
     let
@@ -107,10 +101,10 @@ stdenv.mkDerivation (finalAttrs: {
         runCommand "xar-impure-tests-integration-test"
           {
             src = patchedSource;
+            nativeBuildInputs = [ makeWrapper ];
+            pythonInterpreter = pythonForTests.interpreter;
             xar = finalAttrs.finalPackage;
             xsltproc = lib.getBin libxslt;
-            pythonInterpreter = pythonForTests.interpreter;
-            nativeBuildInputs = [ makeWrapper ];
           }
           ''
             makeWrapper "$pythonInterpreter" "$out/bin/$name" \
@@ -122,8 +116,8 @@ stdenv.mkDerivation (finalAttrs: {
 
       tests = lib.optionalAttrs (stdenv.buildPlatform.canExecute stdenv.hostPlatform) {
         version = testers.testVersion {
-          package = finalAttrs.finalPackage;
           version = "1.8dev";
+          package = finalAttrs.finalPackage;
         };
 
         integrationTest =
@@ -131,12 +125,14 @@ stdenv.mkDerivation (finalAttrs: {
             {
               src = patchedSource;
               strictDeps = true;
-              pythonExecutable = pythonForTests.executable;
+
               nativeBuildInputs = [
                 finalAttrs.finalPackage
                 pythonForTests
                 libxslt
               ];
+
+              pythonExecutable = pythonForTests.executable;
             }
             ''
               "$pythonExecutable" "$src"/xar/test/run-all.py
@@ -149,6 +145,7 @@ stdenv.mkDerivation (finalAttrs: {
               src = patchedSource;
               strictDeps = true;
               nativeBuildInputs = [ finalAttrs.finalPackage ];
+
               buildInputs = [
                 finalAttrs.finalPackage
                 openssl
@@ -175,12 +172,12 @@ stdenv.mkDerivation (finalAttrs: {
     };
 
   meta = {
-    homepage = "https://github.com/apple-oss-distributions/xar";
     description = "Easily extensible archive format";
+    homepage = "https://github.com/apple-oss-distributions/xar";
     license = lib.licenses.bsd3;
     maintainers = lib.attrValues { inherit (lib.maintainers) tie; };
-    teams = [ lib.teams.darwin ];
     platforms = lib.platforms.unix;
     mainProgram = "xar";
+    teams = [ lib.teams.darwin ];
   };
 })

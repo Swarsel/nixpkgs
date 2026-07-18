@@ -1,13 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   anyio,
+  buildPythonPackage,
   gobject-introspection,
   gtk3,
   imagemagick,
   keyring,
   librsvg,
+  nixosTests,
   pulseaudio,
   pytest-asyncio,
   pytest-lazy-fixture,
@@ -19,14 +20,10 @@
   requests,
   setuptools-scm,
   xorg-server,
-  nixosTests,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "qtile-extras";
   version = "0.36.0";
-  # nixpkgs-update: no auto update
-  # should be updated alongside with `qtile`
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "elParaguayo";
@@ -34,10 +31,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-H2A5Y+ukTkUqjQB5eQVuOMYpf7T8RgQlNlQ25wlWwr8=";
   };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ gtk3 ];
 
   nativeCheckInputs = [
     anyio
@@ -57,6 +50,23 @@ buildPythonPackage (finalAttrs: {
     # stravalib  # marked as broken due to https://github.com/stravalib/stravalib/issues/379
   ];
 
+  preCheck = ''
+    export HOME=$(mktemp -d)
+    export GDK_PIXBUF_MODULE_FILE=${librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
+    sed -i 's#/usr/bin/sleep#sleep#' test/widget/test_snapcast.py
+  '';
+
+  build-system = [ setuptools-scm ];
+  dependencies = [ gtk3 ];
+
+  disabledTestPaths = [
+    # Needs a running DBUS
+    "test/widget/test_iwd.py"
+    "test/widget/test_upower.py"
+    # Marked as broken due to https://github.com/stravalib/stravalib/issues/379
+    "test/widget/test_strava.py"
+  ];
+
   disabledTests = [
     # Needs a running DBUS
     "test_brightness_power_saving"
@@ -74,27 +84,16 @@ buildPythonPackage (finalAttrs: {
     "test_image_size_vertical"
   ];
 
-  disabledTestPaths = [
-    # Needs a running DBUS
-    "test/widget/test_iwd.py"
-    "test/widget/test_upower.py"
-    # Marked as broken due to https://github.com/stravalib/stravalib/issues/379
-    "test/widget/test_strava.py"
-  ];
+  # nixpkgs-update: no auto update
+  # should be updated alongside with `qtile`
+  pyproject = true;
 
   pytestFlags = [
     "--reruns 3"
     "--reruns-delay 5"
   ];
 
-  preCheck = ''
-    export HOME=$(mktemp -d)
-    export GDK_PIXBUF_MODULE_FILE=${librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
-    sed -i 's#/usr/bin/sleep#sleep#' test/widget/test_snapcast.py
-  '';
-
   pythonImportsCheck = [ "qtile_extras" ];
-
   passthru.tests.qtile-extras = nixosTests.qtile-extras;
 
   meta = {

@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
   alsa-lib,
+  cmake,
+  espeak,
+  fetchpatch,
   gpsd,
-  gpsdSupport ? false,
   hamlib_4,
-  hamlib ? hamlib_4,
-  hamlibSupport ? true,
+  nix-update-script,
   perl,
   portaudio,
   python3,
-  espeak,
   udev,
   udevCheckHook,
   versionCheckHook,
-  nix-update-script,
   extraScripts ? false,
+  gpsdSupport ? false,
+  hamlib ? hamlib_4,
+  hamlibSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,32 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-CCJr3l4RxYZLrdCRwio64EzpDyErlV9JDOXD6TH8p9o=";
   };
-
-  nativeBuildInputs = [
-    cmake
-    udevCheckHook
-  ];
-
-  strictDeps = true;
-
-  buildInputs =
-    lib.optionals stdenv.hostPlatform.isLinux [
-      alsa-lib
-      udev
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [ portaudio ]
-    ++ lib.optionals gpsdSupport [ gpsd ]
-    ++ lib.optionals hamlibSupport [ hamlib ]
-    ++ lib.optionals extraScripts [
-      python3
-      perl
-      espeak
-    ];
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  preConfigure = lib.optionals (!extraScripts) ''
-    echo "" > scripts/CMakeLists.txt
-  '';
 
   # TODO: It would be great if we could make these configurable
   postPatch = ''
@@ -79,22 +53,48 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail espeak ${lib.getBin espeak}
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    udevCheckHook
+  ];
+
+  buildInputs =
+    lib.optionals stdenv.hostPlatform.isLinux [
+      alsa-lib
+      udev
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [ portaudio ]
+    ++ lib.optionals gpsdSupport [ gpsd ]
+    ++ lib.optionals hamlibSupport [ hamlib ]
+    ++ lib.optionals extraScripts [
+      python3
+      perl
+      espeak
+    ];
+
+  preConfigure = lib.optionals (!extraScripts) ''
+    echo "" > scripts/CMakeLists.txt
+  '';
+
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = [ "-u" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Soundcard Packet TNC, APRS Digipeater, IGate, APRStt gateway";
     homepage = "https://github.com/wb2osz/direwolf/";
-    mainProgram = "direwolf";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       lasandell
       sarcasticadmin
       pandapip1
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "direwolf";
   };
 })

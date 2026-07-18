@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   ddt,
-  fetchFromGitHub,
   igraph,
   igraph-c,
   libleidenalg,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "leidenalg";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vtraag";
@@ -22,26 +21,25 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-E8mFzEVzff3BEt5sPDXy8/ofZgVfzgiUyIqT59/Trd0=";
   };
 
-  build-system = [ setuptools-scm ];
-
   buildInputs = [
     igraph-c
     libleidenalg
   ];
-
-  dependencies = [ igraph ];
 
   nativeCheckInputs = [
     ddt
     unittestCheckHook
   ];
 
+  build-system = [ setuptools-scm ];
+  dependencies = [ igraph ];
+  pyproject = true;
   pythonImportsCheck = [ "leidenalg" ];
 
   meta = {
-    changelog = "https://github.com/vtraag/leidenalg/blob/${finalAttrs.src.tag}/CHANGELOG";
     description = "Implementation of the Leiden algorithm for various quality functions to be used with igraph in Python";
     homepage = "https://github.com/vtraag/leidenalg";
+    changelog = "https://github.com/vtraag/leidenalg/blob/${finalAttrs.src.tag}/CHANGELOG";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ jboy ];
   };

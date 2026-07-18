@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   pkg-config,
-  soapysdr,
   sdrplay,
+  soapysdr,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/pothosware/SoapySDRPlay3";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.pmenke ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

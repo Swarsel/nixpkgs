@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  guile ? null,
   guileSupport ? false,
   pkg-config ? null,
-  guile ? null,
 }:
 
 assert guileSupport -> (pkg-config != null && guile != null);
@@ -18,7 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "12f5zzyq2w56g95nni65hc0g5p7154033y2f3qmjvd016szn5qnn";
   };
 
-  patchFlags = [ "-p0" ];
+  outputs = [
+    "out"
+    "man"
+    "info"
+  ];
+
   patches = [
     # Purity: don't look for library dependencies (of the form `-lfoo') in /lib
     # and /usr/lib. It's a stupid feature anyway. Likewise, when searching for
@@ -32,17 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = lib.optionals guileSupport [ pkg-config ];
   buildInputs = lib.optionals guileSupport [ guile ];
-
   configureFlags = lib.optional guileSupport "--with-guile";
-
-  outputs = [
-    "out"
-    "man"
-    "info"
-  ];
+  patchFlags = [ "-p0" ];
 
   meta = {
     description = "Tool to control the generation of non-source files from sources";
+
     longDescription = ''
       Make is a tool which controls the generation of executables and
       other non-source files of a program from the program's source files.
@@ -53,11 +53,11 @@ stdenv.mkDerivation (finalAttrs: {
       should write a makefile for it, so that it is possible to use Make
       to build and install the program.
     '';
-    homepage = "https://www.gnu.org/software/make/";
 
+    homepage = "https://www.gnu.org/software/make/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
-    mainProgram = "make";
     platforms = lib.platforms.all;
+    mainProgram = "make";
   };
 })

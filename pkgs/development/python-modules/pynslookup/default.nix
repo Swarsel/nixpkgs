@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   dnspython,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pynslookup";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wesinator";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-GdI5Jg/+HjdtbzpLa28z/ZUGPJL9vEbJ+Jd4HP4pQCY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ dnspython ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ dnspython ];
+  pyproject = true;
   pythonImportsCheck = [ "nslookup" ];
 
   meta = {

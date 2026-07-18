@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiooss2,
   buildPythonPackage,
-  fetchFromGitHub,
   fsspec,
   oss2,
   setuptools-scm,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "ossfs";
   version = "2025.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fsspec";
@@ -19,12 +18,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-2i7zxLCi4wNCwzWNUbC6lvvdRkK+ksUWds+H6QG6bW4=";
   };
-
-  pythonRelaxDeps = [
-    "aiooss2"
-    "fsspec"
-    "oss2"
-  ];
 
   nativeBuildInputs = [
     setuptools-scm
@@ -38,8 +31,14 @@ buildPythonPackage rec {
 
   # Most tests require network access
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ossfs" ];
+
+  pythonRelaxDeps = [
+    "aiooss2"
+    "fsspec"
+    "oss2"
+  ];
 
   meta = {
     description = "Filesystem for Alibaba Cloud (Aliyun) Object Storage System (OSS)";

@@ -1,18 +1,18 @@
 {
+  hash,
   version,
   mcabalVersion ? "0.5.3.0-31f1b5dec81561a1b1d36b8e3065ce091dce2ec6",
   rev ? "refs/tags/v${version}",
-  hash,
 }:
 
 {
   lib,
-  buildPackages,
-  pkgsBuildBuild,
-  callPackage,
-  fetchFromGitHub,
-  microhs-boot,
   stdenv,
+  fetchFromGitHub,
+  buildPackages,
+  callPackage,
+  microhs-boot,
+  pkgsBuildBuild,
   versionCheckHook,
 }:
 
@@ -21,10 +21,10 @@ let
     inherit version;
 
     src = fetchFromGitHub {
+      inherit rev hash;
       owner = "augustss";
       repo = "MicroHs";
       fetchSubmodules = true;
-      inherit rev hash;
     };
 
     patches = [
@@ -47,18 +47,22 @@ let
 
     meta = {
       description = "Small compiler for Haskell";
+
       longDescription = ''
         A compiler for an extended subset of Haskell 2010.
         The compiler translates to combinators and can compile itself.
       '';
+
       homepage = "https://github.com/augustss/MicroHs";
       license = lib.licensesSpdx."Apache-2.0";
-      mainProgram = "mhs";
+
       maintainers = with lib.maintainers; [
         AlexandreTunstall
         steeleduncan
       ];
+
       platforms = lib.platforms.all;
+      mainProgram = "mhs";
     };
   };
 

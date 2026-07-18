@@ -1,11 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   antlr4,
   antlr4-python3-runtime,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
-  setuptools_80,
   jre_minimal,
   pydevd,
   pytest-mock,
@@ -13,12 +12,12 @@
   pythonAtLeast,
   pyyaml,
   replaceVars,
+  setuptools_80,
 }:
 
 buildPythonPackage rec {
   pname = "omegaconf";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "omry";
@@ -44,14 +43,7 @@ buildPythonPackage rec {
     sed -i 's/antlr4-python3-runtime==.*/antlr4-python3-runtime/' requirements/base.txt
   '';
 
-  build-system = [ setuptools_80 ];
-
   nativeBuildInputs = [ jre_minimal ];
-
-  dependencies = [
-    antlr4-python3-runtime
-    pyyaml
-  ];
 
   nativeCheckInputs = [
     attrs
@@ -60,11 +52,11 @@ buildPythonPackage rec {
     pytest7CheckHook
   ];
 
-  pythonImportsCheck = [ "omegaconf" ];
+  build-system = [ setuptools_80 ];
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-    "-Wignore::UserWarning"
+  dependencies = [
+    antlr4-python3-runtime
+    pyyaml
   ];
 
   disabledTests = [
@@ -77,6 +69,15 @@ buildPythonPackage rec {
     "test_to_yaml"
     "test_type_str"
   ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+    "-Wignore::UserWarning"
+  ];
+
+  pythonImportsCheck = [ "omegaconf" ];
 
   meta = {
     description = "Framework for configuring complex applications";

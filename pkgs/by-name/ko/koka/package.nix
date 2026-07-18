@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkgsHostTarget,
-  haskellPackages,
   cmake,
+  haskellPackages,
   makeWrapper,
+  pkgsHostTarget,
 }:
 
 let
@@ -20,14 +20,17 @@ let
   };
 
   kklib = stdenv.mkDerivation {
-    pname = "kklib";
     inherit version;
+    pname = "kklib";
     src = "${src}/kklib";
-    nativeBuildInputs = [ cmake ];
+
     outputs = [
       "out"
       "dev"
     ];
+
+    nativeBuildInputs = [ cmake ];
+
     postInstall = ''
       mkdir -p ''${!outputDev}/share/koka/v${version}
       cp -a ../../kklib ''${!outputDev}/share/koka/v${version}
@@ -43,17 +46,23 @@ let
   ];
 in
 haskellPackages.mkDerivation {
-  pname = "koka";
   inherit version src;
+  pname = "koka";
+  doCheck = false;
 
-  isLibrary = false;
-  isExecutable = true;
+  postInstall = ''
+    mkdir -p $out/share/koka/v${version}
+    cp -a lib $out/share/koka/v${version}
+    ln -s ${kklib.dev}/share/koka/v${version}/kklib $out/share/koka/v${version}
+    wrapProgram "$out/bin/koka" \
+      --set CC "${lib.getBin cc}/bin/${cc.targetPrefix}cc" \
+      --prefix PATH : "${lib.makeSearchPath "bin" runtimeDeps}"
+  '';
 
   buildTools = [ makeWrapper ];
-
-  libraryToolDepends = with haskellPackages; [
-    hpack
-  ];
+  changelog = "https://github.com/koka-lang/koka/blob/v${version}/doc/spec/news.mdk";
+  description = "Koka language compiler and interpreter";
+  doHaddock = false;
 
   executableHaskellDepends = with haskellPackages; [
     FloatingHex
@@ -85,27 +94,20 @@ haskellPackages.mkDerivation {
     alex
   ];
 
-  postInstall = ''
-    mkdir -p $out/share/koka/v${version}
-    cp -a lib $out/share/koka/v${version}
-    ln -s ${kklib.dev}/share/koka/v${version}/kklib $out/share/koka/v${version}
-    wrapProgram "$out/bin/koka" \
-      --set CC "${lib.getBin cc}/bin/${cc.targetPrefix}cc" \
-      --prefix PATH : "${lib.makeSearchPath "bin" runtimeDeps}"
-  '';
-
-  doHaddock = false;
-
-  doCheck = false;
-
-  prePatch = "hpack";
-
-  description = "Koka language compiler and interpreter";
   homepage = "https://github.com/koka-lang/koka";
-  changelog = "https://github.com/koka-lang/koka/blob/v${version}/doc/spec/news.mdk";
+  isExecutable = true;
+  isLibrary = false;
+
+  libraryToolDepends = with haskellPackages; [
+    hpack
+  ];
+
   license = lib.licenses.asl20;
+
   maintainers = with lib.maintainers; [
     siraben
     sternenseemann
   ];
+
+  prePatch = "hpack";
 }

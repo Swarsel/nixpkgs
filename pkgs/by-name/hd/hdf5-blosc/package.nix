@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   c-blosc,
   cmake,
   hdf5,
-  fetchFromGitHub,
   nix-update-script,
 }:
 
@@ -19,23 +19,25 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-pM438hUEdzdZEGYxoKlBAHi1G27auj9uGSeiXwVPAE8=";
   };
 
-  patches = [ ./no-external-blosc.patch ];
-
   outputs = [
     "out"
     "dev"
     "plugin"
   ];
 
+  patches = [ ./no-external-blosc.patch ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.8.10)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     c-blosc
     hdf5
   ];
-
-  preConfigure = ''
-    substituteInPlace CMakeLists.txt --replace-fail 'set(BLOSC_INSTALL_DIR "''${CMAKE_CURRENT_BINARY_DIR}/blosc")' 'set(BLOSC_INSTALL_DIR "${c-blosc}")'
-  '';
 
   cmakeFlags = [
     "-DPLUGIN_INSTALL_PATH=${placeholder "plugin"}/hdf5/lib/plugin"
@@ -43,17 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
     "-DBUILD_TESTS=ON"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.8.10)" "cmake_minimum_required(VERSION 3.10)"
+  preConfigure = ''
+    substituteInPlace CMakeLists.txt --replace-fail 'set(BLOSC_INSTALL_DIR "''${CMAKE_CURRENT_BINARY_DIR}/blosc")' 'set(BLOSC_INSTALL_DIR "${c-blosc}")'
   '';
+
+  doCheck = true;
 
   postInstall = ''
     mkdir -p $out/lib/pkgconfig
     substituteAll ${./blosc_filter.pc.in} $out/lib/pkgconfig/blosc_filter.pc
   '';
-
-  doCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

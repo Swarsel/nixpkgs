@@ -1,17 +1,16 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  setuptools-scm,
   docutils,
+  fetchPypi,
   pyparsing,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "amply";
   version = "0.1.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,20 +18,23 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
+
   propagatedBuildInputs = [
     docutils
     pyparsing
   ];
-  nativeCheckInputs = [ pytestCheckHook ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
   pythonImportsCheck = [ "amply" ];
 
   meta = {
-    homepage = "https://github.com/willu47/amply";
     description = ''
       Allows you to load and manipulate AMPL/GLPK data as Python data structures
     '';
-    maintainers = with lib.maintainers; [ ris ];
+
+    homepage = "https://github.com/willu47/amply";
     license = lib.licenses.epl10;
+    maintainers = with lib.maintainers; [ ris ];
   };
 }

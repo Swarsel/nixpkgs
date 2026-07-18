@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  openssl,
-  libpq,
   libiconv,
-  protobuf,
-  rustfmt,
+  libpq,
   nixosTests,
+  openssl,
+  protobuf,
+  rustPlatform,
+  rustfmt,
 }:
 let
   pinData = lib.importJSON ./pin.json;
@@ -26,11 +26,10 @@ rustPlatform.buildRustPackage rec {
     fetchSubmodules = true;
   };
 
-  preConfigure = ''
-    echo 'pub const VERSION: &str = "${version}";' > crates/utils/src/version.rs
-  '';
-
-  cargoHash = pinData.serverCargoHash;
+  nativeBuildInputs = [
+    protobuf
+    rustfmt
+  ];
 
   buildInputs = [
     libpq
@@ -39,24 +38,24 @@ rustPlatform.buildRustPackage rec {
     libiconv
   ];
 
+  cargoHash = pinData.serverCargoHash;
+
   env = {
+    OPENSSL_INCLUDE_DIR = "${openssl.dev}/include";
     # Using OPENSSL_NO_VENDOR is not an option on darwin
     # As of version 0.10.35 rust-openssl looks for openssl on darwin
     # with a hardcoded path to /usr/lib/libssl.x.x.x.dylib
     # https://github.com/sfackler/rust-openssl/blob/master/openssl-sys/build/find_normal.rs#L115
     OPENSSL_LIB_DIR = "${lib.getLib openssl}/lib";
-    OPENSSL_INCLUDE_DIR = "${openssl.dev}/include";
-
     PROTOC = "${protobuf}/bin/protoc";
     PROTOC_INCLUDE = "${protobuf}/include";
-
     # #[deny(warnings)] trips on newer rustc
     RUSTFLAGS = "--cap-lints warn";
   };
-  nativeBuildInputs = [
-    protobuf
-    rustfmt
-  ];
+
+  preConfigure = ''
+    echo 'pub const VERSION: &str = "${version}";' > crates/utils/src/version.rs
+  '';
 
   checkFlags = [
     # test requires database access
@@ -73,18 +72,20 @@ rustPlatform.buildRustPackage rec {
     rm $out/lib/libhtml2md.so
   '';
 
-  passthru.updateScript = ./update.py;
   passthru.tests.lemmy-server = nixosTests.lemmy;
+  passthru.updateScript = ./update.py;
 
   meta = {
     description = "🐀 Building a federated alternative to reddit in rust";
     homepage = "https://join-lemmy.org/";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       happysalada
       billewanick
       georgyo
     ];
+
     mainProgram = "lemmy_server";
   };
 }

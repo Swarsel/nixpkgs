@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pyplatec";
   version = "1.4.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,6 +14,7 @@ buildPythonPackage rec {
   };
 
   env.NIX_CFLAGS_COMPILE = "-std=c++11";
+  format = "setuptools";
 
   meta = {
     description = "Library to simulate plate tectonics with Python bindings";

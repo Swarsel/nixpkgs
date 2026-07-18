@@ -1,17 +1,17 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  autoPatchelfHook,
+  buildGoModule,
+  copyDesktopItems,
   fetchNpmDeps,
   imagemagick,
-  npmHooks,
+  makeDesktopItem,
   nodejs,
+  npmHooks,
+  pkg-config,
   wails,
   webkitgtk_4_1,
-  pkg-config,
-  copyDesktopItems,
-  makeDesktopItem,
-  autoPatchelfHook,
   writeScript,
 }:
 
@@ -31,17 +31,6 @@ buildGoModule (finalAttrs: {
       --replace-fail "prefStore.autoCheckUpdate" "false"
   '';
 
-  vendorHash = "sha256-DaD/NM1ZNVt0X/CJuaGfHqeS9ySTWFd0y5bzog6Yn+E=";
-
-  env = {
-    CGO_ENABLED = 1;
-    npmDeps = fetchNpmDeps {
-      src = "${finalAttrs.src}/frontend";
-      hash = "sha256-DUYUk4OK5UWDanSR5hSVDYloYX4fYD41omYThzi/700=";
-    };
-    npmRoot = "frontend";
-  };
-
   nativeBuildInputs = [
     wails
     pkg-config
@@ -53,6 +42,18 @@ buildGoModule (finalAttrs: {
   ];
 
   buildInputs = [ webkitgtk_4_1 ];
+  vendorHash = "sha256-DaD/NM1ZNVt0X/CJuaGfHqeS9ySTWFd0y5bzog6Yn+E=";
+
+  env = {
+    CGO_ENABLED = 1;
+
+    npmDeps = fetchNpmDeps {
+      src = "${finalAttrs.src}/frontend";
+      hash = "sha256-DUYUk4OK5UWDanSR5hSVDYloYX4fYD41omYThzi/700=";
+    };
+
+    npmRoot = "frontend";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -61,21 +62,6 @@ buildGoModule (finalAttrs: {
 
     runHook postBuild
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "tiny-rdm";
-      exec = "tiny-rdm %U";
-      icon = "tiny-rdm";
-      type = "Application";
-      terminal = false;
-      desktopName = "Tiny RDM";
-      startupWMClass = "tinyrdm";
-      categories = [ "Office" ];
-      mimeTypes = [ "x-scheme-handler/tinyrdm" ];
-      comment = "Tiny Redis Desktop Manager";
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -87,8 +73,24 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Office" ];
+      comment = "Tiny Redis Desktop Manager";
+      desktopName = "Tiny RDM";
+      exec = "tiny-rdm %U";
+      icon = "tiny-rdm";
+      mimeTypes = [ "x-scheme-handler/tinyrdm" ];
+      name = "tiny-rdm";
+      startupWMClass = "tinyrdm";
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
   passthru = {
     inherit (finalAttrs.env) npmDeps;
+
     updateScript = writeScript "update-tiny-rdm" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p bash nix nix-update common-updater-scripts
@@ -107,9 +109,9 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Modern, colorful, super lightweight Redis GUI client";
     homepage = "https://github.com/tiny-craft/tiny-rdm";
-    mainProgram = "tiny-rdm";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "tiny-rdm";
   };
 })

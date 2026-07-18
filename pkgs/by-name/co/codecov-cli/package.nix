@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "codecov-cli";
   version = "11.2.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "getsentry";
@@ -16,14 +15,7 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-8KBemqwMqiio4pnftsBgnFj69Bgb5jQr5YlMegujPZY=";
   };
 
-  sourceRoot = "${src.name}/${pname}";
-
   build-system = with python3Packages; [ setuptools ];
-
-  pythonRelaxDeps = [
-    "click"
-    "responses"
-  ];
 
   dependencies = with python3Packages; [
     click
@@ -33,6 +25,15 @@ python3Packages.buildPythonApplication rec {
     sentry-sdk
     test-results-parser
   ];
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "click"
+    "responses"
+  ];
+
+  sourceRoot = "${src.name}/${pname}";
 
   meta = {
     description = "Codecov Command Line Interface";

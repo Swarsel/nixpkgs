@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  gnuradio,
-  spdlog,
-  mpir,
   boost,
-  volk,
-  python3Packages,
+  cmake,
   gmpxx,
+  gnuradio,
+  mpir,
+  python3Packages,
+  spdlog,
+  volk,
 }:
 
 stdenv.mkDerivation {
@@ -24,7 +24,6 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -40,6 +39,8 @@ stdenv.mkDerivation {
     gmpxx
     python3Packages.numpy
   ];
+
+  __structuredAttrs = true;
 
   meta = {
     description = "Gnuradio module for real-time decoding of unencrypted DECT voice chnanels";

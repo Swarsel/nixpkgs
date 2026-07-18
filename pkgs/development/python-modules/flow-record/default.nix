@@ -1,19 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   duckdb,
   elastic-transport,
   elasticsearch,
   fastavro,
-  fetchFromGitHub,
   httpx,
   lz4,
   maxminddb,
   msgpack,
   pytest7CheckHook,
   pytz,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   structlog,
   tqdm,
   zstandard,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "flow-record";
   version = "3.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -31,41 +30,18 @@ buildPythonPackage rec {
     hash = "sha256-hJZCWF81pMeHOZGc6zTA046hV1J0PNQGMlPD3mgyrRI=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ msgpack ];
-
-  optional-dependencies = {
-    compression = [
-      lz4
-      zstandard
-    ];
-    duckdb = [
-      duckdb
-      pytz
-    ];
-    elastic = [ elasticsearch ];
-    geoip = [ maxminddb ];
-    avro = [ fastavro ] ++ fastavro.optional-dependencies.snappy;
-    splunk = [ httpx ];
-    # xlsx = [ openpyxl ]; # Not available
-    full = [
-      structlog
-      tqdm
-    ]
-    ++ optional-dependencies.compression;
-  };
-
   nativeCheckInputs = [
     elastic-transport
     pytest7CheckHook
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pythonImportsCheck = [ "flow.record" ];
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ msgpack ];
 
   disabledTestPaths = [
     # Input not available
@@ -75,6 +51,35 @@ buildPythonPackage rec {
   ];
 
   disabledTests = [ "test_rdump_fieldtype_path_json" ];
+
+  optional-dependencies = {
+    avro = [ fastavro ] ++ fastavro.optional-dependencies.snappy;
+
+    compression = [
+      lz4
+      zstandard
+    ];
+
+    duckdb = [
+      duckdb
+      pytz
+    ];
+
+    elastic = [ elasticsearch ];
+
+    # xlsx = [ openpyxl ]; # Not available
+    full = [
+      structlog
+      tqdm
+    ]
+    ++ optional-dependencies.compression;
+
+    geoip = [ maxminddb ];
+    splunk = [ httpx ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "flow.record" ];
 
   meta = {
     description = "Library for defining and creating structured data";

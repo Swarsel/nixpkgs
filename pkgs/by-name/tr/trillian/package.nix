@@ -1,13 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "trillian";
   version = "1.7.3";
-  vendorHash = "sha256-PomzPYtLEDx0mjTTidfp9dlvnW4mcVIka5AekPNYU2g=";
 
   src = fetchFromGitHub {
     owner = "google";
@@ -15,6 +14,8 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-QOR98Xpf2iwGpqzEuB58gMsbYITiksMX4JmfqiKjeVw=";
   };
+
+  vendorHash = "sha256-PomzPYtLEDx0mjTTidfp9dlvnW4mcVIka5AekPNYU2g=";
 
   subPackages = [
     "cmd/trillian_log_server"
@@ -25,8 +26,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/google/trillian";
     description = "Transparent, highly scalable and cryptographically verifiable data store";
+    homepage = "https://github.com/google/trillian";
     license = [ lib.licenses.asl20 ];
     maintainers = [ ];
   };

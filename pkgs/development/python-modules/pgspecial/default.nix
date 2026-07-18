@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   buildPythonPackage,
   click,
   configobj,
@@ -11,18 +12,31 @@
   setuptools,
   setuptools-scm,
   sqlparse,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "pgspecial";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-2mx/zHvve7ATLcIEb3TsZROx/m8MgOVSjWMNFLfEhJ0=";
   };
+
+  env = {
+    PGDATABASE = "_test_db";
+    PGUSER = "postgres";
+  };
+
+  # postgresqlTestHook is not available on Darwin
+  doCheck = stdenv.hostPlatform.isLinux;
+
+  nativeCheckInputs = [
+    configobj
+    pytestCheckHook
+    postgresqlTestHook
+    postgresql
+  ];
 
   build-system = [
     setuptools
@@ -35,28 +49,14 @@ buildPythonPackage rec {
     psycopg
   ];
 
-  # postgresqlTestHook is not available on Darwin
-  doCheck = stdenv.hostPlatform.isLinux;
-
-  nativeCheckInputs = [
-    configobj
-    pytestCheckHook
-    postgresqlTestHook
-    postgresql
-  ];
-
-  pytestFlags = [ "-vvv" ];
-
-  env = {
-    PGDATABASE = "_test_db";
-    PGUSER = "postgres";
-  };
-
   disabledTests = [
     "test_slash_d_view_verbose"
     "test_slash_ddp"
     "test_slash_ddp_pattern"
   ];
+
+  pyproject = true;
+  pytestFlags = [ "-vvv" ];
 
   meta = {
     description = "Meta-commands handler for Postgres Database";

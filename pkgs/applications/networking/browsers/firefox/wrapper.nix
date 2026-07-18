@@ -1,41 +1,40 @@
 {
-  stdenv,
   lib,
-  makeDesktopItem,
-  makeWrapper,
-  lndir,
-  config,
+  stdenv,
+  adwaita-icon-theme,
+  alsa-lib,
   buildPackages,
-  jq,
-  xdg-utils,
-  writeText,
-
+  config,
+  cups,
   ## various stuff that can be plugged in
   ffmpeg_7,
-  libxxf86vm,
-  libxxf86dga,
-  libxt,
-  libxscrnsaver,
-  libxext,
-  libx11,
-  alsa-lib,
-  libpulseaudio,
+  jq,
   libcanberra-gtk3,
-  libglvnd,
-  libnotify,
-  opensc,
-  adwaita-icon-theme,
-  pipewire,
-  udev,
-  libkrb5,
-  libva,
   libgbm,
-  cups,
-  pciutils,
-  vulkan-loader,
-  sndio,
+  libglvnd,
   libjack2,
+  libkrb5,
+  libnotify,
+  libpulseaudio,
+  libva,
+  libx11,
+  libxext,
+  libxscrnsaver,
+  libxt,
+  libxxf86dga,
+  libxxf86vm,
+  lndir,
+  makeDesktopItem,
+  makeWrapper,
+  opensc,
+  pciutils,
+  pipewire,
+  sndio,
   speechd-minimal,
+  udev,
+  vulkan-loader,
+  writeText,
+  xdg-utils,
   zlib,
 }:
 
@@ -61,29 +60,28 @@ let
   wrapper =
     {
       applicationName ? browser.binaryName or (lib.getName browser), # Note: this is actually *binary* name and is different from browser.applicationName, which is *app* name!
-      pname ? applicationName,
-      version ? lib.getVersion browser,
-      nameSuffix ? "",
-      icon ? applicationName,
-      wmClass ? applicationName,
-      nativeMessagingHosts ? [ ],
-      pkcs11Modules ? [ ],
-      useGlvnd ? (!isDarwin),
       cfg ? config.${applicationName} or { },
-
+      extraAutoConfig ? "",
+      # For more information about policies visit
+      # https://mozilla.github.io/policy-templates/
+      extraPolicies ? { },
+      extraPoliciesFiles ? [ ],
       ## Following options are needed for extra prefs & policies
       # For more information about anti tracking (german website)
       # visit https://wiki.kairaven.de/open/app/firefox
       extraPrefs ? "",
       extraPrefsFiles ? [ ],
-      # For more information about policies visit
-      # https://mozilla.github.io/policy-templates/
-      extraPolicies ? { },
-      extraPoliciesFiles ? [ ],
-      extraAutoConfig ? "",
-      libName ? browser.libName or applicationName, # Important for tor package or the like
-      nixExtensions ? null,
       hasMozSystemDirPatch ? (lib.hasPrefix "firefox" pname && !lib.hasSuffix "-bin" pname),
+      icon ? applicationName,
+      libName ? browser.libName or applicationName, # Important for tor package or the like
+      nameSuffix ? "",
+      nativeMessagingHosts ? [ ],
+      nixExtensions ? null,
+      pkcs11Modules ? [ ],
+      pname ? applicationName,
+      useGlvnd ? (!isDarwin),
+      version ? lib.getVersion browser,
+      wmClass ? applicationName,
     }:
 
     let
@@ -214,161 +212,17 @@ let
 
     in
     stdenv.mkDerivation (finalAttrs: {
-      __structuredAttrs = true;
-      strictDeps = true;
       inherit pname version;
-
-      desktopItem = makeDesktopItem (
-        {
-          name = launcherName;
-          exec = "${launcherName} --name ${wmClass} %U";
-          inherit icon;
-          desktopName = browser.applicationName;
-          startupNotify = true;
-          startupWMClass = wmClass;
-          terminal = false;
-        }
-        // (
-          if lib.strings.hasPrefix "thunderbird" libName then
-            {
-              genericName = "Email Client";
-              comment = "Read and write e-mails or RSS feeds, or manage tasks on calendars.";
-              categories = [
-                "Network"
-                "Chat"
-                "Email"
-                "Feed"
-                "GTK"
-                "News"
-              ];
-              keywords = [
-                "mail"
-                "email"
-                "e-mail"
-                "messages"
-                "rss"
-                "calendar"
-                "address book"
-                "addressbook"
-                "chat"
-              ];
-              mimeTypes = [
-                "message/rfc822"
-                "x-scheme-handler/mailto"
-                "text/calendar"
-                "text/x-vcard"
-              ];
-              actions = {
-                profile-manager-window = {
-                  name = "Profile Manager";
-                  exec = "${launcherName} --ProfileManager";
-                };
-              };
-            }
-          else
-            {
-              genericName = "Web Browser";
-              categories = [
-                "Network"
-                "WebBrowser"
-              ];
-              mimeTypes = [
-                "text/html"
-                "text/xml"
-                "application/xhtml+xml"
-                "application/vnd.mozilla.xul+xml"
-                "x-scheme-handler/http"
-                "x-scheme-handler/https"
-              ];
-              actions = {
-                new-window = {
-                  name = "New Window";
-                  exec = "${launcherName} --new-window %U";
-                };
-                new-private-window = {
-                  name = "New Private Window";
-                  exec = "${launcherName} --private-window %U";
-                };
-                profile-manager-window = {
-                  name = "Profile Manager";
-                  exec = "${launcherName} --ProfileManager";
-                };
-              };
-            }
-        )
-      );
+      strictDeps = true;
 
       nativeBuildInputs = [
         makeWrapper
         lndir
         jq
       ];
+
       buildInputs = lib.optionals (!isDarwin) [ browser.gtk3 ];
-
-      makeWrapperArgs = [
-        "--prefix"
-        "LD_LIBRARY_PATH"
-        ":"
-        "${finalAttrs.libs}"
-
-        "--suffix"
-        "PATH"
-        ":"
-        "${placeholder "out"}/bin"
-
-        "--set"
-        "MOZ_APP_LAUNCHER"
-        launcherName
-
-        "--set"
-        "MOZ_LEGACY_PROFILES"
-        "1"
-
-        "--set"
-        "MOZ_ALLOW_DOWNGRADE"
-        "1"
-      ]
-      ++ lib.optionals (!isDarwin) [
-        "--suffix"
-        "GTK_PATH"
-        ":"
-        "${lib.concatStringsSep ":" finalAttrs.gtk_modules}"
-
-        "--suffix"
-        "XDG_DATA_DIRS"
-        ":"
-        "${adwaita-icon-theme}/share"
-
-        "--set-default"
-        "MOZ_ENABLE_WAYLAND"
-        "1"
-
-      ]
-      ++ lib.optionals (!xdg-utils.meta.broken && !isDarwin) [
-        # make xdg-open overridable at runtime
-        "--suffix"
-        "PATH"
-        ":"
-        "${lib.makeBinPath [ xdg-utils ]}"
-
-      ]
-      ++ lib.optionals hasMozSystemDirPatch [
-        "--set"
-        "MOZ_SYSTEM_DIR"
-        "${placeholder "out"}/lib/mozilla"
-
-      ]
-      ++ lib.optionals (!hasMozSystemDirPatch && allNativeMessagingHosts != [ ]) [
-        "--run"
-        "mkdir -p \${MOZ_HOME:-~/.mozilla}/native-messaging-hosts"
-
-      ]
-      ++ lib.optionals (!hasMozSystemDirPatch) (
-        lib.concatMap (ext: [
-          "--run"
-          "ln -sfLt \${MOZ_HOME:-~/.mozilla}/native-messaging-hosts ${ext}/lib/mozilla/native-messaging-hosts/*"
-        ]) allNativeMessagingHosts
-      );
+      __structuredAttrs = true;
 
       buildCommand =
         let
@@ -584,16 +438,170 @@ let
           #############################
         '';
 
-      preferLocalBuild = true;
+      desktopItem = makeDesktopItem (
+        {
+          inherit icon;
+          desktopName = browser.applicationName;
+          exec = "${launcherName} --name ${wmClass} %U";
+          name = launcherName;
+          startupNotify = true;
+          startupWMClass = wmClass;
+          terminal = false;
+        }
+        // (
+          if lib.strings.hasPrefix "thunderbird" libName then
+            {
+              actions = {
+                profile-manager-window = {
+                  exec = "${launcherName} --ProfileManager";
+                  name = "Profile Manager";
+                };
+              };
 
-      libs = lib.makeLibraryPath libs + ":" + lib.makeSearchPathOutput "lib" "lib64" libs;
+              categories = [
+                "Network"
+                "Chat"
+                "Email"
+                "Feed"
+                "GTK"
+                "News"
+              ];
+
+              comment = "Read and write e-mails or RSS feeds, or manage tasks on calendars.";
+              genericName = "Email Client";
+
+              keywords = [
+                "mail"
+                "email"
+                "e-mail"
+                "messages"
+                "rss"
+                "calendar"
+                "address book"
+                "addressbook"
+                "chat"
+              ];
+
+              mimeTypes = [
+                "message/rfc822"
+                "x-scheme-handler/mailto"
+                "text/calendar"
+                "text/x-vcard"
+              ];
+            }
+          else
+            {
+              actions = {
+                new-private-window = {
+                  exec = "${launcherName} --private-window %U";
+                  name = "New Private Window";
+                };
+
+                new-window = {
+                  exec = "${launcherName} --new-window %U";
+                  name = "New Window";
+                };
+
+                profile-manager-window = {
+                  exec = "${launcherName} --ProfileManager";
+                  name = "Profile Manager";
+                };
+              };
+
+              categories = [
+                "Network"
+                "WebBrowser"
+              ];
+
+              genericName = "Web Browser";
+
+              mimeTypes = [
+                "text/html"
+                "text/xml"
+                "application/xhtml+xml"
+                "application/vnd.mozilla.xul+xml"
+                "x-scheme-handler/http"
+                "x-scheme-handler/https"
+              ];
+            }
+        )
+      );
+
+      disallowedRequisites = [ stdenv.cc ];
       gtk_modules = map (x: x + x.gtkModule) gtk_modules;
+      libs = lib.makeLibraryPath libs + ":" + lib.makeSearchPathOutput "lib" "lib64" libs;
+
+      makeWrapperArgs = [
+        "--prefix"
+        "LD_LIBRARY_PATH"
+        ":"
+        "${finalAttrs.libs}"
+
+        "--suffix"
+        "PATH"
+        ":"
+        "${placeholder "out"}/bin"
+
+        "--set"
+        "MOZ_APP_LAUNCHER"
+        launcherName
+
+        "--set"
+        "MOZ_LEGACY_PROFILES"
+        "1"
+
+        "--set"
+        "MOZ_ALLOW_DOWNGRADE"
+        "1"
+      ]
+      ++ lib.optionals (!isDarwin) [
+        "--suffix"
+        "GTK_PATH"
+        ":"
+        "${lib.concatStringsSep ":" finalAttrs.gtk_modules}"
+
+        "--suffix"
+        "XDG_DATA_DIRS"
+        ":"
+        "${adwaita-icon-theme}/share"
+
+        "--set-default"
+        "MOZ_ENABLE_WAYLAND"
+        "1"
+
+      ]
+      ++ lib.optionals (!xdg-utils.meta.broken && !isDarwin) [
+        # make xdg-open overridable at runtime
+        "--suffix"
+        "PATH"
+        ":"
+        "${lib.makeBinPath [ xdg-utils ]}"
+
+      ]
+      ++ lib.optionals hasMozSystemDirPatch [
+        "--set"
+        "MOZ_SYSTEM_DIR"
+        "${placeholder "out"}/lib/mozilla"
+
+      ]
+      ++ lib.optionals (!hasMozSystemDirPatch && allNativeMessagingHosts != [ ]) [
+        "--run"
+        "mkdir -p \${MOZ_HOME:-~/.mozilla}/native-messaging-hosts"
+
+      ]
+      ++ lib.optionals (!hasMozSystemDirPatch) (
+        lib.concatMap (ext: [
+          "--run"
+          "ln -sfLt \${MOZ_HOME:-~/.mozilla}/native-messaging-hosts ${ext}/lib/mozilla/native-messaging-hosts/*"
+        ]) allNativeMessagingHosts
+      );
+
+      preferLocalBuild = true;
 
       passthru = {
         unwrapped = browser;
       };
 
-      disallowedRequisites = [ stdenv.cc ];
       meta = browser.meta // {
         inherit (browser.meta) description;
         mainProgram = launcherName;

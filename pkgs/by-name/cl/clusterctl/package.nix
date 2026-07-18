@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  clusterctl,
   installShellFiles,
   testers,
-  clusterctl,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,21 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ValaeZiYlSXydMwmcGMcBXETWweu3d4XRb+fHnangp4=";
   };
 
-  vendorHash = "sha256-GeZUJozumnxXGIJ4moXxuLDATeJDRbTeGDdscZIvjh0=";
-
-  subPackages = [ "cmd/clusterctl" ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags =
-    let
-      t = "sigs.k8s.io/cluster-api/version";
-    in
-    [
-      "-X ${t}.gitMajor=${lib.versions.major finalAttrs.version}"
-      "-X ${t}.gitMinor=${lib.versions.minor finalAttrs.version}"
-      "-X ${t}.gitVersion=v${finalAttrs.version}"
-    ];
+  vendorHash = "sha256-GeZUJozumnxXGIJ4moXxuLDATeJDRbTeGDdscZIvjh0=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     # errors attempting to write config to read-only $HOME
@@ -45,18 +32,30 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/clusterctl completion zsh)
   '';
 
+  ldflags =
+    let
+      t = "sigs.k8s.io/cluster-api/version";
+    in
+    [
+      "-X ${t}.gitMajor=${lib.versions.major finalAttrs.version}"
+      "-X ${t}.gitMinor=${lib.versions.minor finalAttrs.version}"
+      "-X ${t}.gitVersion=v${finalAttrs.version}"
+    ];
+
+  subPackages = [ "cmd/clusterctl" ];
+
   passthru.tests.version = testers.testVersion {
-    package = clusterctl;
-    command = "HOME=$TMPDIR clusterctl version";
     version = "v${finalAttrs.version}";
+    command = "HOME=$TMPDIR clusterctl version";
+    package = clusterctl;
   };
 
   meta = {
-    changelog = "https://github.com/kubernetes-sigs/cluster-api/releases/tag/${finalAttrs.src.rev}";
     description = "Kubernetes cluster API tool";
-    mainProgram = "clusterctl";
     homepage = "https://cluster-api.sigs.k8s.io/";
+    changelog = "https://github.com/kubernetes-sigs/cluster-api/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ qjoly ];
+    mainProgram = "clusterctl";
   };
 })

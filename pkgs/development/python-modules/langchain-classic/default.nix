@@ -1,50 +1,44 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  langchain-core,
-  langchain-text-splitters,
-  langsmith,
-  pydantic,
-  pyyaml,
-  requests,
-  sqlalchemy,
-
   # tests
   blockbuster,
+  buildPythonPackage,
   cffi,
   freezegun,
+  # update
+  gitUpdater,
+  # build-system
+  hatchling,
+  # dependencies
+  langchain-core,
   langchain-openai,
   langchain-tests,
+  langchain-text-splitters,
+  langsmith,
   lark,
   numpy,
   packaging,
   pandas,
+  pydantic,
   pytest-asyncio,
   pytest-dotenv,
   pytest-mock,
   pytest-socket,
   pytest-xdist,
   pytest8_3CheckHook,
+  pyyaml,
+  requests,
   requests-mock,
   responses,
+  sqlalchemy,
   syrupy,
   toml,
-
-  # update
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-classic";
   version = "1.0.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -52,20 +46,6 @@ buildPythonPackage (finalAttrs: {
     tag = "langchain-classic==${finalAttrs.version}";
     hash = "sha256-Xskg6bPmRv7iLjppUF11rqmHg2YJWETVT1EMhzK7Svo=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/libs/langchain";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    langchain-core
-    langchain-text-splitters
-    langsmith
-    pydantic
-    pyyaml
-    requests
-    sqlalchemy
-  ];
 
   nativeCheckInputs = [
     blockbuster
@@ -91,9 +71,17 @@ buildPythonPackage (finalAttrs: {
     toml
   ];
 
-  enabledTestPaths = [
-    # integration_tests require network access, database access and require `OPENAI_API_KEY`, etc.
-    "tests/unit_tests"
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    langchain-core
+    langchain-text-splitters
+    langsmith
+    pydantic
+    pyyaml
+    requests
+    sqlalchemy
   ];
 
   disabledTests = [
@@ -101,16 +89,24 @@ buildPythonPackage (finalAttrs: {
     "test_socket_disabled"
   ];
 
+  enabledTestPaths = [
+    # integration_tests require network access, database access and require `OPENAI_API_KEY`, etc.
+    "tests/unit_tests"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "langchain_classic" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/langchain";
+
   # Bulk updater selects wrong tag
   passthru = {
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-classic==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-classic==";
     };
   };
-
-  pythonImportsCheck = [ "langchain_classic" ];
 
   meta = {
     description = "Classic (0.x) compatibility layer for LangChain";

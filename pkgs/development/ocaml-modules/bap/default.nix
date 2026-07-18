@@ -1,50 +1,51 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  ocaml,
-  findlib,
-  ocamlbuild,
-  ocaml_oasis,
+  fetchFromGitHub,
   bitstring,
   camlzip,
   cmdliner,
   core_kernel,
   ezjsonm,
   fileutils,
-  jane_rope ? null,
-  mmap,
+  findlib,
+  frontc,
+  libxml2,
+  linenoise,
+  llvm,
   lwt,
+  makeWrapper,
+  mmap,
+  ncurses,
+  ocaml,
+  ocaml_oasis,
+  ocamlbuild,
   ocamlgraph,
   ocurl,
-  re,
-  uri,
-  zarith,
+  ounit,
   piqi,
   piqi-ocaml,
-  uuidm,
-  llvm,
-  frontc,
-  ounit,
-  ppx_jane,
-  parsexp ? null,
-  utop,
-  libxml2,
-  ncurses,
-  linenoise,
   ppx_bap,
   ppx_bitstring,
-  yojson,
+  ppx_jane,
+  re,
+  uri,
+  utop,
+  uuidm,
   which,
-  makeWrapper,
   writeText,
+  yojson,
   z3,
+  zarith,
+  jane_rope ? null,
+  parsexp ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "ocaml${ocaml.version}-bap";
   version = "2.5.0+pr1621";
+
   src = fetchFromGitHub {
     owner = "BinaryAnalysisPlatform";
     repo = "bap";
@@ -52,17 +53,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-LUZZOgG1T8xa5jLA/fDft8ofYb/Yf6QjTrl6AlLY7H0=";
   };
 
-  sigs = fetchurl {
-    url = "https://github.com/BinaryAnalysisPlatform/bap/releases/download/v${finalAttrs.version}/sigs.zip";
-    sha256 = "0d69jd28z4g64mglq94kj5imhmk5f6sgcsh9q2nij3b0arpcliwk";
-  };
-
-  createFindlibDestdir = true;
-
-  setupHook = writeText "setupHook.sh" ''
-    export CAML_LD_LIBRARY_PATH="''${CAML_LD_LIBRARY_PATH-}''${CAML_LD_LIBRARY_PATH:+:}''$1/lib/ocaml/${ocaml.version}/site-lib/ocaml${ocaml.version}-bap-${finalAttrs.version}/"
-    export CAML_LD_LIBRARY_PATH="''${CAML_LD_LIBRARY_PATH-}''${CAML_LD_LIBRARY_PATH:+:}''$1/lib/ocaml/${ocaml.version}/site-lib/ocaml${ocaml.version}-bap-${finalAttrs.version}-llvm-plugins/"
-  '';
+  patches = [
+    ./curses_is_ncurses.patch
+  ];
 
   nativeBuildInputs = [
     which
@@ -108,6 +101,15 @@ stdenv.mkDerivation (finalAttrs: {
     yojson
   ];
 
+  configureFlags = [
+    "--enable-everything ${finalAttrs.disableIda} ${finalAttrs.disableGhidra}"
+    "--with-llvm-config=${llvm.dev}/bin/llvm-config"
+  ];
+
+  preConfigure = ''
+    substituteInPlace oasis/monads --replace-warn core_kernel.rope jane_rope
+  '';
+
   installPhase = ''
     runHook preInstall
     export OCAMLPATH=$OCAMLPATH:$OCAMLFIND_DESTDIR;
@@ -122,21 +124,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  disableIda = "--disable-ida";
+  createFindlibDestdir = true;
   disableGhidra = "--disable-ghidra";
+  disableIda = "--disable-ida";
 
-  patches = [
-    ./curses_is_ncurses.patch
-  ];
-
-  preConfigure = ''
-    substituteInPlace oasis/monads --replace-warn core_kernel.rope jane_rope
+  setupHook = writeText "setupHook.sh" ''
+    export CAML_LD_LIBRARY_PATH="''${CAML_LD_LIBRARY_PATH-}''${CAML_LD_LIBRARY_PATH:+:}''$1/lib/ocaml/${ocaml.version}/site-lib/ocaml${ocaml.version}-bap-${finalAttrs.version}/"
+    export CAML_LD_LIBRARY_PATH="''${CAML_LD_LIBRARY_PATH-}''${CAML_LD_LIBRARY_PATH:+:}''$1/lib/ocaml/${ocaml.version}/site-lib/ocaml${ocaml.version}-bap-${finalAttrs.version}-llvm-plugins/"
   '';
 
-  configureFlags = [
-    "--enable-everything ${finalAttrs.disableIda} ${finalAttrs.disableGhidra}"
-    "--with-llvm-config=${llvm.dev}/bin/llvm-config"
-  ];
+  sigs = fetchurl {
+    sha256 = "0d69jd28z4g64mglq94kj5imhmk5f6sgcsh9q2nij3b0arpcliwk";
+    url = "https://github.com/BinaryAnalysisPlatform/bap/releases/download/v${finalAttrs.version}/sigs.zip";
+  };
 
   meta = {
     description = "Platform for binary analysis. It is written in OCaml, but can be used from other languages";

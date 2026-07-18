@@ -1,20 +1,22 @@
 {
   lib,
-  writeShellApplication,
-  jq,
-  curl,
-  nix-prefetch-git,
   common-updater-scripts,
+  curl,
+  jq,
+  nix-prefetch-git,
+  writeShellApplication,
 }:
 
 lib.getExe (writeShellApplication {
   name = "nzp-updater";
+
   runtimeInputs = [
     jq
     curl
     nix-prefetch-git
     common-updater-scripts
   ];
+
   text = ''
     youngest=0
     update() {

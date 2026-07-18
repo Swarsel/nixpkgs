@@ -1,16 +1,14 @@
 {
   buildDunePackage,
-  gitlab,
   cohttp,
   cohttp-lwt-jsoo,
+  gitlab,
   js_of_ocaml-lwt,
 }:
 
 buildDunePackage {
-  pname = "gitlab-jsoo";
   inherit (gitlab) version src;
-
-  minimalOCamlVersion = "4.08";
+  pname = "gitlab-jsoo";
 
   propagatedBuildInputs = [
     gitlab
@@ -20,6 +18,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "4.08";
 
   meta = gitlab.meta // {
     description = "Gitlab APIv4 JavaScript library";

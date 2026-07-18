@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cachetools,
   decorator,
-  fetchFromGitHub,
   pysmt,
   pytestCheckHook,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "claripy";
   version = "9.2.193";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "angr";
@@ -23,8 +22,7 @@ buildPythonPackage rec {
     hash = "sha256-nZ7ORbhi0R79pcHpkx/lRVdfUsoutCqU+zHX8AICTUE=";
   };
 
-  # z3 does not provide a dist-info, so python-runtime-deps-check will fail
-  pythonRemoveDeps = [ "z3-solver" ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -39,9 +37,10 @@ buildPythonPackage rec {
   ]
   ++ z3-solver.requiredPythonModules;
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "claripy" ];
+  # z3 does not provide a dist-info, so python-runtime-deps-check will fail
+  pythonRemoveDeps = [ "z3-solver" ];
 
   meta = {
     description = "Python abstraction layer for constraint solvers";

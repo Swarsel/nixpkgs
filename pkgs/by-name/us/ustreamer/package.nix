@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
+  glib,
+  jansson,
+  janus-gateway,
   libbsd,
+  libdrm,
   libevent,
   libjpeg,
-  libdrm,
-  pkg-config,
-  janus-gateway,
-  glib,
-  alsa-lib,
-  speex,
-  jansson,
   libopus,
   nixosTests,
+  pkg-config,
+  python3Packages,
+  speex,
   systemdLibs,
   which,
-  python3Packages,
-  withSystemd ? true,
   withJanus ? true,
   withPython ? true,
+  withSystemd ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ustreamer";
@@ -31,6 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-02mEZ14fwCrdmXUGhyKrkoo5IZ6/pDJZ/oREaZZe1RA=";
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    which
+  ];
 
   buildInputs = [
     libbsd
@@ -59,11 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
     libopus
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    which
-  ];
-
   makeFlags = [
     "PREFIX=${placeholder "out"}"
     "WITH_V4P=1"
@@ -82,12 +82,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
-
   passthru.tests = { inherit (nixosTests) ustreamer; };
 
   meta = {
-    homepage = "https://github.com/pikvm/ustreamer";
     description = "Lightweight and fast MJPG-HTTP streamer";
+
     longDescription = ''
       µStreamer is a lightweight and very quick server to stream MJPG video from
       any V4L2 device to the net. All new browsers have native support of this
@@ -95,11 +94,15 @@ stdenv.mkDerivation (finalAttrs: {
       µStreamer is a part of the Pi-KVM project designed to stream VGA and HDMI
       screencast hardware data with the highest resolution and FPS possible.
     '';
+
+    homepage = "https://github.com/pikvm/ustreamer";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       tfc
       matthewcroughan
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "ustreamer";
   };

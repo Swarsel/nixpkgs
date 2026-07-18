@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
-  fetchNpmDeps,
   fetchurl,
+  fetchFromGitHub,
   buildGoModule,
-  npmHooks,
-  nodejs,
-  turbo,
-  linkFarm,
+  fetchNpmDeps,
   installShellFiles,
+  linkFarm,
   nixosTests,
+  nodejs,
+  npmHooks,
+  turbo,
 }:
 
 let
@@ -19,6 +19,7 @@ let
   pluginsArchive = linkFarm "perses-plugin-archive" (
     lib.mapAttrsToList (name: plugin: {
       name = "${name}-${plugin.version}.tar.gz";
+
       path = fetchurl {
         inherit (plugin) url hash;
       };
@@ -49,41 +50,7 @@ buildGoModule (finalAttrs: {
     installShellFiles
   ];
 
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) version src;
-    pname = "${finalAttrs.pname}-ui";
-    sourceRoot = "${finalAttrs.src.name}/${finalAttrs.npmRoot}";
-    hash = "sha256-yhqpwxWhnYBewDsYYP5R1n45dDTz6Wz3IJri77FBdO8=";
-  };
-
-  npmRoot = "ui";
-
-  overrideModAttrs = oldAttrs: {
-    nativeBuildInputs = lib.remove npmHooks.npmConfigHook oldAttrs.nativeBuildInputs;
-    preBuild = null;
-  };
-
   vendorHash = "sha256-dAvDBJGpY4Dlx4D9hR6VSUt+ppJLJPNNu5smsyutSC8=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/prometheus/common/version.Version=${finalAttrs.version}"
-    "-X github.com/prometheus/common/version.Revision=${finalAttrs.src.tag}"
-    "-X github.com/prometheus/common/version.Branch=${finalAttrs.src.tag}"
-    "-X github.com/prometheus/common/version.Date=1970-01-01"
-    "-X github.com/perses/perses/pkg/model/api/config.DefaultPluginPath=/run/perses/plugins"
-    "-X github.com/perses/perses/pkg/model/api/config.DefaultArchivePluginPath=${pluginsArchive}"
-  ];
-
-  subPackages = [
-    "cmd/percli"
-    "cmd/perses"
-  ];
-
-  prePatch = ''
-    patchShebangs .
-  '';
 
   preBuild = ''
     pushd "$npmRoot"
@@ -106,6 +73,7 @@ buildGoModule (finalAttrs: {
   '');
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -116,12 +84,44 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/prometheus/common/version.Version=${finalAttrs.version}"
+    "-X github.com/prometheus/common/version.Revision=${finalAttrs.src.tag}"
+    "-X github.com/prometheus/common/version.Branch=${finalAttrs.src.tag}"
+    "-X github.com/prometheus/common/version.Date=1970-01-01"
+    "-X github.com/perses/perses/pkg/model/api/config.DefaultPluginPath=/run/perses/plugins"
+    "-X github.com/perses/perses/pkg/model/api/config.DefaultArchivePluginPath=${pluginsArchive}"
+  ];
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) version src;
+    pname = "${finalAttrs.pname}-ui";
+    hash = "sha256-yhqpwxWhnYBewDsYYP5R1n45dDTz6Wz3IJri77FBdO8=";
+    sourceRoot = "${finalAttrs.src.name}/${finalAttrs.npmRoot}";
+  };
+
+  npmRoot = "ui";
+
+  overrideModAttrs = oldAttrs: {
+    nativeBuildInputs = lib.remove npmHooks.npmConfigHook oldAttrs.nativeBuildInputs;
+    preBuild = null;
+  };
+
+  prePatch = ''
+    patchShebangs .
+  '';
+
+  subPackages = [
+    "cmd/percli"
+    "cmd/perses"
+  ];
+
   passthru = {
-    updateScript = ./update.sh;
-
-    tests.nixos = nixosTests.perses;
-
     inherit pluginsArchive;
+    tests.nixos = nixosTests.perses;
+    updateScript = ./update.sh;
   };
 
   meta = {

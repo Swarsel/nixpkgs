@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchurl,
   argp-standalone,
   dbus,
   dbus_cplusplus,
-  fetchurl,
   glibmm,
   libavc1394,
   libconfig,
@@ -13,11 +13,11 @@
   libxmlxx3,
   pkg-config,
   python3,
+  qt5,
   scons,
+  udevCheckHook,
   which,
   withMixer ? false,
-  qt5,
-  udevCheckHook,
 }:
 
 let
@@ -39,34 +39,18 @@ stdenv.mkDerivation rec {
   pname = "ffado";
   version = "2.4.9";
 
+  src = fetchurl {
+    url = "https://www.ffado.org/files/libffado-${version}.tgz";
+    hash = "sha256-xELFL60Ryv1VE7tOhGyFHxAchIT4karFRe0ZDo/U0Q8=";
+  };
+
   outputs = [
     "out"
     "bin"
     "dev"
   ];
 
-  src = fetchurl {
-    url = "https://www.ffado.org/files/libffado-${version}.tgz";
-    hash = "sha256-xELFL60Ryv1VE7tOhGyFHxAchIT4karFRe0ZDo/U0Q8=";
-  };
-
-  prePatch = ''
-    substituteInPlace ./support/tools/ffado-diag.in \
-      --replace /lib/modules/ "/run/booted-system/kernel-modules/lib/modules/"
-
-    # prevent build tools from leaking into closure
-    substituteInPlace support/tools/SConscript --replace-fail \
-      'support/tools/ffado-diag --static' \
-      "echo '"'See `nix-store --query --tree ${placeholder "out"}`.'"'"
-  ''
-  + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    # skip the CC sanity check, since that requires invoking cross-compiled binaries during build
-    substituteInPlace SConstruct \
-      --replace-fail 'conf.CompilerCheck()' 'True' \
-      --replace-fail "pkg-config" "$PKG_CONFIG"
-    substituteInPlace admin/pkgconfig.py \
-      --replace-fail "pkg-config" "$PKG_CONFIG"
-  '';
+  strictDeps = true;
 
   nativeBuildInputs = [
     scons
@@ -78,21 +62,6 @@ stdenv.mkDerivation rec {
     python
     python.pkgs.pyqt5
     qt5.wrapQtAppsHook
-  ];
-
-  prefixKey = "PREFIX=";
-  sconsFlags = [
-    "CUSTOM_ENV=True" # tell SConstruct to use nixpkgs' CC/CXX/CFLAGS
-    "DETECT_USERSPACE_ENV=False"
-    "DEBUG=False"
-    "ENABLE_ALL=True"
-    "BUILD_TESTS=True"
-    "BUILD_MIXER=${if withMixer then "True" else "False"}"
-    "UDEVDIR=${placeholder "out"}/lib/udev/rules.d"
-    "PYPKGDIR=${placeholder "out"}/${python.sitePackages}"
-    "BINDIR=${placeholder "bin"}/bin"
-    "INCLUDEDIR=${placeholder "dev"}/include"
-    "PYTHON_INTERPRETER=${python.interpreter}"
   ];
 
   buildInputs = [
@@ -114,22 +83,58 @@ stdenv.mkDerivation rec {
     NIX_LDFLAGS = "-largp";
   };
 
-  enableParallelBuilding = true;
-  dontWrapQtApps = true;
-  strictDeps = true;
   doInstallCheck = true;
 
   preFixup = lib.optionalString withMixer ''
     wrapQtApp "$bin/bin/ffado-mixer"
   '';
 
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+
+  prePatch = ''
+    substituteInPlace ./support/tools/ffado-diag.in \
+      --replace /lib/modules/ "/run/booted-system/kernel-modules/lib/modules/"
+
+    # prevent build tools from leaking into closure
+    substituteInPlace support/tools/SConscript --replace-fail \
+      'support/tools/ffado-diag --static' \
+      "echo '"'See `nix-store --query --tree ${placeholder "out"}`.'"'"
+  ''
+  + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    # skip the CC sanity check, since that requires invoking cross-compiled binaries during build
+    substituteInPlace SConstruct \
+      --replace-fail 'conf.CompilerCheck()' 'True' \
+      --replace-fail "pkg-config" "$PKG_CONFIG"
+    substituteInPlace admin/pkgconfig.py \
+      --replace-fail "pkg-config" "$PKG_CONFIG"
+  '';
+
+  prefixKey = "PREFIX=";
+
+  sconsFlags = [
+    "CUSTOM_ENV=True" # tell SConstruct to use nixpkgs' CC/CXX/CFLAGS
+    "DETECT_USERSPACE_ENV=False"
+    "DEBUG=False"
+    "ENABLE_ALL=True"
+    "BUILD_TESTS=True"
+    "BUILD_MIXER=${if withMixer then "True" else "False"}"
+    "UDEVDIR=${placeholder "out"}/lib/udev/rules.d"
+    "PYPKGDIR=${placeholder "out"}/${python.sitePackages}"
+    "BINDIR=${placeholder "bin"}/bin"
+    "INCLUDEDIR=${placeholder "dev"}/include"
+    "PYTHON_INTERPRETER=${python.interpreter}"
+  ];
+
   meta = {
-    homepage = "http://www.ffado.org";
     description = "FireWire audio drivers";
+    homepage = "http://www.ffado.org";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       michojel
     ];
+
     platforms = lib.platforms.linux;
   };
 }

@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   flit-core,
-
   # dependencies
   mdformat,
   mdformat-footnote,
   mdformat-front-matters,
   mdformat-gfm,
   mdit-py-plugins,
-  ruamel-yaml,
-
   # tests
   pytestCheckHook,
+  ruamel-yaml,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mdformat-myst";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "executablebooks";
@@ -30,6 +26,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-y0zN47eK0UqTHx6ft/OrczAjdHdmPKIByCnz1c1JURQ=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ flit-core ];
 
   dependencies = [
@@ -41,8 +38,7 @@ buildPythonPackage (finalAttrs: {
     ruamel-yaml
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mdformat_myst" ];
 
   meta = {

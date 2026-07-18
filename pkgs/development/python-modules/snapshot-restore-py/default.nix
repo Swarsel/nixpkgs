@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
 buildPythonPackage rec {
   pname = "snapshot-restore-py";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -17,10 +16,9 @@ buildPythonPackage rec {
     hash = "sha256-sixVSQcEqLTUrKxYAM13gzqttWnbXPMII0V/gtXM1IE=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "snapshot_restore_py" ];
 
   meta = {

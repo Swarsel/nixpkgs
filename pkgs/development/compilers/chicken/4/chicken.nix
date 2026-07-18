@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   darwin,
+  makeWrapper,
   bootstrap-chicken ? null,
 }:
 
@@ -23,15 +23,19 @@ let
       "linux"; # Should be a sane default
 in
 stdenv.mkDerivation {
-  pname = "chicken";
   inherit version;
-
-  binaryVersion = 8;
+  pname = "chicken";
 
   src = fetchurl {
     url = "https://code.call-cc.org/releases/${version}/chicken-${version}.tar.gz";
     sha256 = "0hvckhi5gfny3mlva6d7y9pmx7cbwvq0r7mk11k3sdiik9hlkmdd";
   };
+
+  # We need a bootstrap-chicken to regenerate the c-files after
+  # applying a patch to add support for CHICKEN_REPOSITORY_EXTRA
+  patches = lib.optionals (bootstrap-chicken != null) [
+    ./0001-Introduce-CHICKEN_REPOSITORY_EXTRA.patch
+  ];
 
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     # There is not enough space in the load command to accomodate a full path to the store,
@@ -39,28 +43,6 @@ stdenv.mkDerivation {
     sed -e '/POSTINSTALL_PROGRAM_FLAGS = /{s|$(LIBDIR)|@executable_path/../lib|}' \
       -i Makefile.macosx
   '';
-
-  setupHook = lib.optional (bootstrap-chicken != null) ./setup-hook.sh;
-
-  # -fno-strict-overflow is not a supported argument in clang on darwin
-  hardeningDisable = lib.optionals stdenv.hostPlatform.isDarwin [ "strictoverflow" ];
-
-  makeFlags = [
-    "PLATFORM=${platform}"
-    "PREFIX=$(out)"
-    "VARDIR=$(out)/var/lib"
-  ]
-  ++ (lib.optionals stdenv.hostPlatform.isDarwin [
-    "XCODE_TOOL_PATH=${darwin.binutils.bintools}/bin"
-    "C_COMPILER=$(CC)"
-    "POSTINSTALL_PROGRAM=${stdenv.cc.targetPrefix}install_name_tool"
-  ]);
-
-  # We need a bootstrap-chicken to regenerate the c-files after
-  # applying a patch to add support for CHICKEN_REPOSITORY_EXTRA
-  patches = lib.optionals (bootstrap-chicken != null) [
-    ./0001-Introduce-CHICKEN_REPOSITORY_EXTRA.patch
-  ];
 
   nativeBuildInputs = [
     makeWrapper
@@ -72,6 +54,17 @@ stdenv.mkDerivation {
   buildInputs = lib.optionals (bootstrap-chicken != null) [
     bootstrap-chicken
   ];
+
+  makeFlags = [
+    "PLATFORM=${platform}"
+    "PREFIX=$(out)"
+    "VARDIR=$(out)/var/lib"
+  ]
+  ++ (lib.optionals stdenv.hostPlatform.isDarwin [
+    "XCODE_TOOL_PATH=${darwin.binutils.bintools}/bin"
+    "C_COMPILER=$(CC)"
+    "POSTINSTALL_PROGRAM=${stdenv.cc.targetPrefix}install_name_tool"
+  ]);
 
   preBuild = lib.optionalString (bootstrap-chicken != null) ''
     # Backup the build* files - those are generated from hostname,
@@ -93,14 +86,15 @@ stdenv.mkDerivation {
     done
   '';
 
-  # TODO: Assert csi -R files -p '(pathname-file (repository-path))' == binaryVersion
+  binaryVersion = 8;
+  # -fno-strict-overflow is not a supported argument in clang on darwin
+  hardeningDisable = lib.optionals stdenv.hostPlatform.isDarwin [ "strictoverflow" ];
+  setupHook = lib.optional (bootstrap-chicken != null) ./setup-hook.sh;
 
+  # TODO: Assert csi -R files -p '(pathname-file (repository-path))' == binaryVersion
   meta = {
-    homepage = "http://www.call-cc.org/";
-    license = lib.licenses.bsd3;
-    maintainers = with lib.maintainers; [ corngood ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin; # Maybe other Unix
     description = "Portable compiler for the Scheme programming language";
+
     longDescription = ''
       CHICKEN is a compiler for the Scheme programming language.
       CHICKEN produces portable and efficient C, supports almost all
@@ -108,5 +102,10 @@ stdenv.mkDerivation {
       enhancements and extensions. CHICKEN runs on Linux, macOS,
       Windows, and many Unix flavours.
     '';
+
+    homepage = "http://www.call-cc.org/";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ corngood ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin; # Maybe other Unix
   };
 }

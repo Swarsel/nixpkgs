@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  boost,
   SDL2,
   SDL2_image,
   SDL2_ttf,
-  libpng,
-  glew,
+  boost,
+  callPackage,
+  cmake,
+  doxygen,
+  fetchpatch,
   gettext,
+  glew,
+  libogg,
+  libpng,
   libsndfile,
   libvorbis,
-  libogg,
-  physfs,
   openal,
-  xmlstarlet,
-  doxygen,
+  physfs,
   python3,
-  callPackage,
-  fetchpatch,
+  xmlstarlet,
 }:
 
 let
@@ -40,10 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/colobot/colobot/commit/1561854b03500d39955c66971c9c98de1937d7e6.patch";
-      relative = "colobot-app/src";
       extraPrefix = "src/app/";
       hash = "sha256-TVd/TsmFb1qQILUJr6E1zdFl/bQkREYKC/cm2I3M/iw=";
+      relative = "colobot-app/src";
+      url = "https://github.com/colobot/colobot/commit/1561854b03500d39955c66971c9c98de1937d7e6.patch";
     })
   ];
 
@@ -59,6 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
     doxygen
     python3
   ];
+
   buildInputs = [
     boost
     SDL2
@@ -83,8 +84,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://colobot.info/";
     description = "Real-time strategy game with programmable bots";
+    homepage = "https://colobot.info/";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.linux;

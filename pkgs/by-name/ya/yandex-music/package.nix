@@ -1,29 +1,28 @@
 {
-  fetchurl,
-  stdenvNoCC,
   lib,
+  fetchurl,
+  fetchFromGitHub,
+  asar,
+  electron,
+  jq,
   makeWrapper,
   p7zip,
-  asar,
-  jq,
   python3,
-  electron,
-  fetchFromGitHub,
+  stdenvNoCC,
+  # Yandex Music's custom Windows-styled titlebar. Also makes the window frameless.
+  customTitleBar ? false,
+  # Whether to enable developers tools
+  devTools ? false,
   electronArguments ? "",
-
+  # Whether to leave application in tray disregarding of its play state
+  trayAlways ? false,
   # Whether to enable tray menu by default
   trayEnabled ? true,
   # Style of tray: 1 - default style, 2 - mono black, 3 - mono white
   trayStyle ? 1,
-  # Whether to leave application in tray disregarding of its play state
-  trayAlways ? false,
-  # Whether to enable developers tools
-  devTools ? false,
   # Vibe animation FPS can be  from 0 (black screen) to any reasonable number.
   # Recommended 25 - 144. Default 25.
   vibeAnimationMaxFps ? 25,
-  # Yandex Music's custom Windows-styled titlebar. Also makes the window frameless.
-  customTitleBar ? false,
 }:
 assert lib.assertMsg (trayStyle >= 1 && trayStyle <= 3) "Tray style must be withing 1 and 3";
 assert lib.assertMsg (vibeAnimationMaxFps >= 0) "Vibe animation max FPS must be greater then 0";
@@ -47,43 +46,11 @@ stdenvNoCC.mkDerivation rec {
     makeWrapper
   ];
 
-  passthru.updateScript = ./update.sh;
-
-  ymExe =
-    let
-      ym_info = builtins.fromJSON (builtins.readFile ./ym_info.json);
-    in
-    fetchurl {
-      url = ym_info.exe_link;
-      hash = ym_info.exe_hash;
-    };
-
   buildPhase = ''
     runHook preBuild
     bash "./repack.sh" -o "./app" "$ymExe"
     runHook postBuild
   '';
-
-  config =
-    let
-      inherit (lib) optionalString;
-    in
-    ''
-      ELECTRON_ARGS="${electronArguments}"
-      VIBE_ANIMATION_MAX_FPS=${toString vibeAnimationMaxFps}
-    ''
-    + optionalString trayEnabled ''
-      TRAY_ENABLED=${toString trayStyle}
-    ''
-    + optionalString trayAlways ''
-      ALWAYS_LEAVE_TO_TRAY=1
-    ''
-    + optionalString devTools ''
-      DEV_TOOLS=1
-    ''
-    + optionalString customTitleBar ''
-      CUSTOM_TITLE_BAR=1
-    '';
 
   installPhase = ''
     runHook preInstall
@@ -110,13 +77,45 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  config =
+    let
+      inherit (lib) optionalString;
+    in
+    ''
+      ELECTRON_ARGS="${electronArguments}"
+      VIBE_ANIMATION_MAX_FPS=${toString vibeAnimationMaxFps}
+    ''
+    + optionalString trayEnabled ''
+      TRAY_ENABLED=${toString trayStyle}
+    ''
+    + optionalString trayAlways ''
+      ALWAYS_LEAVE_TO_TRAY=1
+    ''
+    + optionalString devTools ''
+      DEV_TOOLS=1
+    ''
+    + optionalString customTitleBar ''
+      CUSTOM_TITLE_BAR=1
+    '';
+
+  ymExe =
+    let
+      ym_info = builtins.fromJSON (builtins.readFile ./ym_info.json);
+    in
+    fetchurl {
+      hash = ym_info.exe_hash;
+      url = ym_info.exe_link;
+    };
+
+  passthru.updateScript = ./update.sh;
+
   meta = {
     description = "Personal recommendations, selections for any occasion and new music";
     homepage = "https://music.yandex.ru/";
-    downloadPage = "https://music.yandex.ru/download/";
     changelog = "https://github.com/cucumber-sp/yandex-music-linux/releases/tag/v${version}";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ shved ];
+    platforms = lib.platforms.linux;
+    downloadPage = "https://music.yandex.ru/download/";
   };
 }

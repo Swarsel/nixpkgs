@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "labmath";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,12 +15,12 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "labmath" ];
 
   meta = {
-    homepage = "https://pypi.org/project/labmath";
     description = "Module for basic math in the general vicinity of computational number theory";
+    homepage = "https://pypi.org/project/labmath";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
   };

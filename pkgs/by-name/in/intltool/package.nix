@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  buildPackages,
   fetchpatch,
   gettext,
   perlPackages,
-  buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,11 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (fetchpatch {
       name = "perl5.26-regex-fixes.patch";
+      sha256 = "12q2140867r5d0dysly72khi7b0mm2gd7nlm1k81iyg7fxgnyz45";
+
       urls = [
         "https://sources.debian.org/data/main/i/intltool/0.51.0-5/debian/patches/perl5.26-regex-fixes.patch"
         "https://src.fedoraproject.org/rpms/intltool/raw/d8d2ef29fb122a42a6b6678eb1ec97ae56902af2/f/intltool-perl5.26-regex-fixes.patch"
       ];
-      sha256 = "12q2140867r5d0dysly72khi7b0mm2gd7nlm1k81iyg7fxgnyz45";
     })
   ];
 
@@ -33,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     XMLParser
   ];
+
   propagatedBuildInputs = [
     gettext
   ]
@@ -46,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace $f --replace "${buildPackages.perl}" "${perlPackages.perl}"
     done
   '';
+
   meta = {
     description = "Translation helper tool";
     homepage = "https://launchpad.net/intltool/";

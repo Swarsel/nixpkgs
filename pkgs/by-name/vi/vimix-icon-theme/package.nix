@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
   gtk3,
   hicolor-icon-theme,
   jdupes,
+  stdenvNoCC,
   colorVariants ? [ ], # default: all
 }:
 
@@ -34,6 +34,10 @@ lib.checkListOfEnum "vimix-icon-theme: color variants"
       hash = "sha256-HNwEqp6G9nZDIJo9b6FD4d5NSXUx523enENM0NVwviA=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       gtk3
       jdupes
@@ -42,16 +46,6 @@ lib.checkListOfEnum "vimix-icon-theme: color variants"
     propagatedBuildInputs = [
       hicolor-icon-theme
     ];
-
-    dontDropIconThemeCache = true;
-
-    # These fixup steps are slow and unnecessary for this package
-    dontPatchELF = true;
-    dontRewriteSymlinks = true;
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -66,13 +60,17 @@ lib.checkListOfEnum "vimix-icon-theme: color variants"
       runHook postInstall
     '';
 
+    dontDropIconThemeCache = true;
+    # These fixup steps are slow and unnecessary for this package
+    dontPatchELF = true;
+    dontRewriteSymlinks = true;
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "Material Design icon theme based on Paper icon theme";
       homepage = "https://github.com/vinceliuice/vimix-icon-theme";
       license = with lib.licenses; [ cc-by-sa-40 ];
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ romildo ];
+      platforms = lib.platforms.linux;
     };
   }

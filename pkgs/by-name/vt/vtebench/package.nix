@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  makeWrapper,
-  versionCheckHook,
   bash,
-  gnuplot,
   gitUpdater,
+  gnuplot,
+  makeWrapper,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "vtebench";
@@ -18,19 +18,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-2uuH7JTilKC+yVY+sMG0lMzLFzRefqEyM/L5gnMDIJw=";
   };
-  cargoHash = "sha256-3PQA5rw5eiqHfQCZPAgN7FF/mPK2YeZd3TT4SCnBp3I=";
 
+  strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ bash ];
-  strictDeps = true;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-3PQA5rw5eiqHfQCZPAgN7FF/mPK2YeZd3TT4SCnBp3I=";
 
   postInstall = ''
     mkdir -p $out/share/vtebench
     cp -r benchmarks gnuplot{,_summary}.sh -t $out/share/vtebench
   '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = ''
     # The benchmarks and gnuplot helpers are all shell scripts
@@ -55,6 +55,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Generate benchmarks for terminal emulators";
+
     longDescription = ''
       A tool for benchmarking terminal emulator PTY read performance.
 
@@ -62,14 +63,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
       automatically. Run `vtebench-gnuplot` or `vtebench-gnuplot-summary`
       to run the `gnuplot.sh` and `gnuplot_summary.sh` scripts respectively.
     '';
+
     homepage = "https://github.com/alacritty/vtebench";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       pluiedev
     ];
+
     mainProgram = "vtebench";
   };
 })

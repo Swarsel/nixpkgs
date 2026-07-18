@@ -7,7 +7,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pencompy";
   version = "0.0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -16,7 +15,7 @@ buildPythonPackage (finalAttrs: {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pencompy" ];
 
   meta = {

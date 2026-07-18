@@ -1,22 +1,21 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   aria2,
+  desktop-file-utils,
+  ffmpeg,
+  gobject-introspection,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
+  python3Packages,
   wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
-  ffmpeg,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "varia";
   version = "2025.10.14-1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "giantpinkrobots";
@@ -38,19 +37,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libadwaita
   ];
 
-  dependencies = with python3Packages; [
-    pygobject3
-    aria2p
-    yt-dlp
-    emoji-country-flag
-  ];
-
   postInstall = ''
     rm $out/bin/varia
     mv $out/bin/varia-py.py $out/bin/varia
   '';
-
-  dontWrapGApps = true;
 
   # This replaces original varia wrapper
   preFixup = ''
@@ -62,12 +52,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
+  dependencies = with python3Packages; [
+    pygobject3
+    aria2p
+    yt-dlp
+    emoji-country-flag
+  ];
+
+  dontWrapGApps = true;
+  pyproject = false;
+
   meta = {
     description = "Simple download manager based on aria2 and libadwaita";
     homepage = "https://giantpinkrobots.github.io/varia";
     license = lib.licenses.mpl20;
-    mainProgram = "varia";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "varia";
   };
 })

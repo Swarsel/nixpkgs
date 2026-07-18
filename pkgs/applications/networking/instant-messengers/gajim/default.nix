@@ -1,38 +1,36 @@
 {
   lib,
   fetchFromGitLab,
+  adwaita-icon-theme,
+  docutils,
+  farstream,
   gettext,
-  wrapGAppsHook3,
-
+  glib-networking,
+  gobject-introspection,
+  gsound,
+  gst-libav,
+  gst-plugins-base,
+  gst-plugins-good,
+  gstreamer,
+  gtk4,
+  gtksourceview5,
+  gupnp-igd,
+  libadwaita,
+  libappindicator-gtk3,
+  libnice,
+  libsecret,
+  libspelling,
   # Native dependencies
   python3,
-  gtk4,
-  gobject-introspection,
-  adwaita-icon-theme,
-  gtksourceview5,
-  glib-networking,
-  libadwaita,
-
+  wrapGAppsHook3,
+  enableAppIndicator ? true,
   # Optional dependencies
   enableJingle ? true,
-  farstream,
-  gstreamer,
-  gst-plugins-base,
-  gst-libav,
-  gst-plugins-good,
-  libnice,
-  enableSecrets ? true,
-  libsecret,
   enableRST ? true,
-  docutils,
-  enableSpelling ? true,
-  libspelling,
-  enableUPnP ? true,
-  gupnp-igd,
-  enableAppIndicator ? true,
-  libappindicator-gtk3,
+  enableSecrets ? true,
   enableSoundNotifications ? true,
-  gsound,
+  enableSpelling ? true,
+  enableUPnP ? true,
   extraPythonPackages ? ps: [ ],
 }:
 
@@ -41,14 +39,22 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   version = "2.4.7.1";
 
   src = fetchFromGitLab {
-    domain = "dev.gajim.org";
     owner = "gajim";
     repo = "gajim";
     tag = "${finalAttrs.version}+win";
     hash = "sha256-/X2Xp1ZnPLTZc1Hf4Kp6R/+mezU6qoUhaT9OskYlnOY=";
+    domain = "dev.gajim.org";
   };
 
-  pyproject = true;
+  # necessary for wrapGAppsHook3
+  strictDeps = false;
+
+  nativeBuildInputs = [
+    gettext
+    wrapGAppsHook3
+    gobject-introspection
+    libadwaita
+  ];
 
   buildInputs = [
     gtk4
@@ -69,27 +75,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   ++ lib.optional enableUPnP gupnp-igd
   ++ lib.optional enableAppIndicator libappindicator-gtk3
   ++ lib.optional enableSoundNotifications gsound;
-
-  nativeBuildInputs = [
-    gettext
-    wrapGAppsHook3
-    gobject-introspection
-    libadwaita
-  ];
-
-  dontWrapGApps = true;
-
-  preBuild = ''
-    python make.py build --dist unix
-  '';
-
-  postInstall = ''
-    python make.py install --dist unix --prefix=$out
-  '';
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
 
   propagatedBuildInputs =
     with python3.pkgs;
@@ -116,29 +101,43 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ++ lib.optional enableRST docutils
     ++ extraPythonPackages python3.pkgs;
 
+  preBuild = ''
+    python make.py build --dist unix
+  '';
+
   nativeCheckInputs = [
     python3.pkgs.pytestCheckHook
   ];
 
-  # necessary for wrapGAppsHook3
-  strictDeps = false;
+  postInstall = ''
+    python make.py install --dist unix --prefix=$out
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  dontWrapGApps = true;
+  pyproject = true;
 
   meta = {
-    homepage = "http://gajim.org/";
     description = "XMPP chat client";
     longDescription = "Gajim aims to be an easy to use and fully-featured XMPP client. Just chat with your friends or family, easily share pictures and thoughts or discuss the news with your groups.";
+    homepage = "http://gajim.org/";
     changelog = "https://dev.gajim.org/gajim/gajim/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       hlad
       vbgl
       haansn08
     ];
-    donationPage = "https://liberapay.com/Gajim";
-    downloadPage = "http://gajim.org/download/";
+
     platforms = lib.platforms.linux;
     mainProgram = "gajim";
+    donationPage = "https://liberapay.com/Gajim";
+    downloadPage = "http://gajim.org/download/";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "gajim" finalAttrs.version;
   };
 })

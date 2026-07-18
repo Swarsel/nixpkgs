@@ -1,10 +1,10 @@
 {
-  rustPlatform,
   lib,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   oniguruma,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,11 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pkg-config
   ];
 
-  env = {
-    OPENSSL_NO_VENDOR = 1;
-    RUSTONIG_SYSTEM_LIBONIG = 1;
-  };
-
   buildInputs = [
     openssl
     oniguruma
@@ -34,10 +29,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-nJ+nof2YhyLrNuLVy69kYj5tw+aG4IJm6nVxHkczbko=";
 
+  env = {
+    OPENSSL_NO_VENDOR = 1;
+    RUSTONIG_SYSTEM_LIBONIG = 1;
+  };
+
   meta = {
+    description = "Terminal for Kubernetes";
     homepage = "https://kty.dev/";
     changelog = "https://github.com/grampelberg/kty/releases/tag/v${finalAttrs.version}";
-    description = "Terminal for Kubernetes";
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.unix;
     mainProgram = "kty";

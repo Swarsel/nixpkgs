@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gtk3,
-  pcre2,
-  glib,
   desktop-file-utils,
+  gettext,
+  glib,
+  gtk3,
+  icu,
   meson,
   ninja,
+  pcre2,
   pkg-config,
   wrapGAppsHook3,
-  gettext,
-  icu,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   google-auth,
   google-auth-oauthlib,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "gspread";
   version = "6.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "burnash";
@@ -35,6 +34,7 @@ buildPythonPackage rec {
     pytest8_3CheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gspread" ];
 
   meta = {

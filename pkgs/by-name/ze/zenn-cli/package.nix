@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchPnpmDeps,
   makeWrapper,
   nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
   testers,
 }:
 let
@@ -29,20 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpm_10
     makeWrapper
   ];
-
-  pnpmWorkspaces = [ "zenn-cli..." ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-uxeZnYZzwyNOZN1x1f6tzcYgPbJhSc3gTdsfaE+967w=";
-  };
 
   preBuild = ''
     echo VITE_EMBED_SERVER_ORIGIN="https://embed.zenn.studio" > packages/zenn-cli/.env
@@ -71,6 +57,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-uxeZnYZzwyNOZN1x1f6tzcYgPbJhSc3gTdsfaE+967w=";
+    pnpm = pnpm_10;
+  };
+
+  pnpmWorkspaces = [ "zenn-cli..." ];
+
   passthru = {
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
   };
@@ -81,7 +82,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/zenn-dev/zenn-editor/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ natsukium ];
-    mainProgram = "zenn";
     platforms = nodejs.meta.platforms;
+    mainProgram = "zenn";
   };
 })

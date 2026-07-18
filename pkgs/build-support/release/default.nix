@@ -22,114 +22,17 @@ in
 
 rec {
 
-  sourceTarball =
-    args:
-    import ./source-tarball.nix (
-      {
-        inherit
-          lib
-          stdenv
-          autoconf
-          automake
-          libtool
-          ;
-      }
-      // args
-    );
-
-  makeSourceTarball = sourceTarball; # compatibility
-
-  binaryTarball =
-    args:
-    import ./binary-tarball.nix (
-      {
-        inherit lib stdenv;
-      }
-      // args
-    );
-
-  mvnBuild =
-    args:
-    import ./maven-build.nix (
-      {
-        inherit lib stdenv;
-      }
-      // args
-    );
-
-  nixBuild =
-    args:
-    import ./nix-build.nix (
-      {
-        inherit lib stdenv;
-      }
-      // args
-    );
-
-  coverageAnalysis =
-    args:
-    nixBuild (
-      {
-        inherit lcov enableGCOVInstrumentation makeGCOVReport;
-        doCoverageAnalysis = true;
-      }
-      // args
-    );
-
-  clangAnalysis =
-    args:
-    nixBuild (
-      {
-        inherit clang-analyzer;
-        doClangAnalysis = true;
-      }
-      // args
-    );
-
-  coverityAnalysis =
-    args:
-    nixBuild (
-      {
-        inherit cov-build xz;
-        doCoverityAnalysis = true;
-      }
-      // args
-    );
-
-  rpmBuild =
-    args:
-    import ./rpm-build.nix (
-      {
-        inherit lib vmTools;
-      }
-      // args
-    );
-
-  debBuild =
-    args:
-    import ./debian-build.nix (
-      {
-        inherit
-          lib
-          stdenv
-          vmTools
-          checkinstall
-          ;
-      }
-      // args
-    );
-
   aggregate =
     {
-      name,
       constituents,
+      name,
       meta ? { },
     }:
     pkgs.runCommand name
       {
         inherit constituents meta;
-        preferLocalBuild = true;
         _hydraAggregate = true;
+        preferLocalBuild = true;
       }
       ''
         mkdir -p $out/nix-support
@@ -143,6 +46,15 @@ rec {
           fi
         done
       '';
+
+  binaryTarball =
+    args:
+    import ./binary-tarball.nix (
+      {
+        inherit lib stdenv;
+      }
+      // args
+    );
 
   /*
     Create a channel job which success depends on the success of all of
@@ -166,22 +78,12 @@ rec {
       name,
       src,
       constituents ? [ ],
-      meta ? { },
       isNixOS ? true,
+      meta ? { },
       ...
     }@args:
     stdenv.mkDerivation (
       {
-        preferLocalBuild = true;
-        _hydraAggregate = true;
-
-        dontConfigure = true;
-        dontBuild = true;
-
-        patchPhase = optionalString isNixOS ''
-          touch .update-on-nixos-rebuild
-        '';
-
         installPhase = ''
           mkdir -p $out/{tarballs,nix-support}
 
@@ -200,11 +102,109 @@ rec {
           done
         '';
 
+        _hydraAggregate = true;
+        dontBuild = true;
+        dontConfigure = true;
+
+        patchPhase = optionalString isNixOS ''
+          touch .update-on-nixos-rebuild
+        '';
+
+        preferLocalBuild = true;
+
         meta = meta // {
           isHydraChannel = true;
         };
       }
       // removeAttrs args [ "meta" ]
+    );
+
+  clangAnalysis =
+    args:
+    nixBuild (
+      {
+        inherit clang-analyzer;
+        doClangAnalysis = true;
+      }
+      // args
+    );
+
+  coverageAnalysis =
+    args:
+    nixBuild (
+      {
+        inherit lcov enableGCOVInstrumentation makeGCOVReport;
+        doCoverageAnalysis = true;
+      }
+      // args
+    );
+
+  coverityAnalysis =
+    args:
+    nixBuild (
+      {
+        inherit cov-build xz;
+        doCoverityAnalysis = true;
+      }
+      // args
+    );
+
+  debBuild =
+    args:
+    import ./debian-build.nix (
+      {
+        inherit
+          lib
+          stdenv
+          vmTools
+          checkinstall
+          ;
+      }
+      // args
+    );
+
+  makeSourceTarball = sourceTarball; # compatibility
+
+  mvnBuild =
+    args:
+    import ./maven-build.nix (
+      {
+        inherit lib stdenv;
+      }
+      // args
+    );
+
+  nixBuild =
+    args:
+    import ./nix-build.nix (
+      {
+        inherit lib stdenv;
+      }
+      // args
+    );
+
+  rpmBuild =
+    args:
+    import ./rpm-build.nix (
+      {
+        inherit lib vmTools;
+      }
+      // args
+    );
+
+  sourceTarball =
+    args:
+    import ./source-tarball.nix (
+      {
+        inherit
+          lib
+          stdenv
+          autoconf
+          automake
+          libtool
+          ;
+      }
+      // args
     );
 
 }

@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  gfortran,
   cairo,
   freetype,
+  gfortran,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,8 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    description = "Scientific plotting library for C/Fortran";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Scientific plotting library for C/Fortran";
     changelog = "${finalAttrs.src.meta.homepage}/blob/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ doronbehar ];

@@ -1,22 +1,9 @@
 {
-  replaceVars,
   cudaLibPaths,
+  replaceVars,
 }:
 {
   version = "13.3.1";
-  sourceHash = "sha256-k8ZNWw2ZpNepcWzv8TJfoxSGVn6HUCYfamEDESIcUQY=";
-
-  nvidiaLibsPatch = replaceVars ./patch-nvidia-libs-paths_13_3.patch {
-    inherit (cudaLibPaths)
-      libcudart
-      libcufile
-      libnvfatbin
-      libnvjitlink
-      libnvml
-      libnvrtc
-      libnvvm
-      ;
-  };
 
   # Remove cuda-pathfinder from build-system requirements
   postPatch = ''
@@ -25,11 +12,6 @@
         '"cuda-pathfinder>=1.5",' \
         ""
   '';
-
-  pythonImportsCheck = [
-    "cuda.bindings.nvfatbin"
-    "cuda.bindings.nvml"
-  ];
 
   disabledTests = [
     # Requires GPU discovery support not available in the test environment
@@ -55,4 +37,23 @@
     "test_set_stats_level"
     "test_stats_start_stop"
   ];
+
+  nvidiaLibsPatch = replaceVars ./patch-nvidia-libs-paths_13_3.patch {
+    inherit (cudaLibPaths)
+      libcudart
+      libcufile
+      libnvfatbin
+      libnvjitlink
+      libnvml
+      libnvrtc
+      libnvvm
+      ;
+  };
+
+  pythonImportsCheck = [
+    "cuda.bindings.nvfatbin"
+    "cuda.bindings.nvml"
+  ];
+
+  sourceHash = "sha256-k8ZNWw2ZpNepcWzv8TJfoxSGVn6HUCYfamEDESIcUQY=";
 }

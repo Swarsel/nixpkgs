@@ -1,39 +1,39 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   copyDesktopItems,
-  makeDesktopItem,
-  imagemagick,
-  libxtst,
-  libxrandr,
-  libxinerama,
-  libxdmcp,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  xvfb,
-  freetype,
-  expat,
-  libGL,
-  libjack2,
   curl,
-  webkitgtk_4_1,
-  libsysprof-capture,
-  pcre2,
-  util-linux,
-  libselinux,
-  libsepol,
-  libthai,
-  libxkbcommon,
+  expat,
+  freetype,
+  imagemagick,
+  lerc,
+  libGL,
   libdatrie,
   libepoxy,
-  lerc,
-  sqlite,
+  libjack2,
+  libselinux,
+  libsepol,
+  libsysprof-capture,
+  libthai,
+  libx11,
+  libxcomposite,
+  libxcursor,
+  libxdmcp,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
+  libxtst,
+  makeDesktopItem,
   ninja,
+  pcre2,
+  pkg-config,
+  sqlite,
+  util-linux,
+  webkitgtk_4_1,
+  xvfb,
   # Disable VST building by default, since NixOS doesn't have a VST license
   enableVST2 ? false,
 }:
@@ -55,20 +55,7 @@ stdenv.mkDerivation {
         GIT_CONFIG_VALUE_0 = "git@github.com:";
       });
 
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "socalabs-sid";
-      desktopName = "Socalabs SID";
-      comment = "Socalabs Commodore 64 SID Emulation Plugin (Standalone)";
-      icon = "SID";
-      exec = "SID";
-      categories = [
-        "Audio"
-        "AudioVideo"
-      ];
-    })
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -112,20 +99,16 @@ stdenv.mkDerivation {
     "--preset ninja-gcc"
   ];
 
-  patchPhase = ''
-    substituteInPlace CMakeLists.txt \
-    --replace-fail 'FORMATS Standalone VST VST3 AU LV2' 'FORMATS Standalone ${lib.optionalString enableVST2 "VST"} VST3 LV2'
-
-    # we need to patch JUCE itself to enable jack MIDI support
-    # please https://github.com/juce-framework/JUCE/issues/952
-    # TODO: remove when juce updates :D
-    substituteInPlace modules/juce/modules/juce_audio_devices/native/juce_Midi_linux.cpp \
-    --replace-fail "port = client.createPort (portName, forInput, false);" "port = client.createPort (portName, forInput, true);"
-  '';
-
-  cmakeBuildType = "Release";
-
-  strictDeps = true;
+  env.NIX_LDFLAGS = toString [
+    "-lX11"
+    "-lXext"
+    "-lXcomposite"
+    "-lXcursor"
+    "-lXinerama"
+    "-lXrandr"
+    "-lXtst"
+    "-lXdmcp"
+  ];
 
   preBuild = ''
     # build takes 10 years without this set
@@ -155,23 +138,41 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  env.NIX_LDFLAGS = toString [
-    "-lX11"
-    "-lXext"
-    "-lXcomposite"
-    "-lXcursor"
-    "-lXinerama"
-    "-lXrandr"
-    "-lXtst"
-    "-lXdmcp"
+  cmakeBuildType = "Release";
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "AudioVideo"
+      ];
+
+      comment = "Socalabs Commodore 64 SID Emulation Plugin (Standalone)";
+      desktopName = "Socalabs SID";
+      exec = "SID";
+      icon = "SID";
+      name = "socalabs-sid";
+      type = "Application";
+    })
   ];
+
+  patchPhase = ''
+    substituteInPlace CMakeLists.txt \
+    --replace-fail 'FORMATS Standalone VST VST3 AU LV2' 'FORMATS Standalone ${lib.optionalString enableVST2 "VST"} VST3 LV2'
+
+    # we need to patch JUCE itself to enable jack MIDI support
+    # please https://github.com/juce-framework/JUCE/issues/952
+    # TODO: remove when juce updates :D
+    substituteInPlace modules/juce/modules/juce_audio_devices/native/juce_Midi_linux.cpp \
+    --replace-fail "port = client.createPort (portName, forInput, false);" "port = client.createPort (portName, forInput, true);"
+  '';
 
   meta = {
     description = "Socalabs Commodore 64 SID Emulation Plugin";
     homepage = "https://socalabs.com/synths/commodore-64-sid/";
-    mainProgram = "SID";
-    platforms = lib.platforms.linux;
     license = [ lib.licenses.gpl3 ] ++ lib.optional enableVST2 lib.licenses.unfree;
     maintainers = [ lib.maintainers.l1npengtul ];
+    platforms = lib.platforms.linux;
+    mainProgram = "SID";
   };
 }

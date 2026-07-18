@@ -1,9 +1,9 @@
 {
-  faust,
   alsa-lib,
+  buildPackages,
+  faust,
   qt5,
   writeText,
-  buildPackages,
 }:
 let
   # Wrap the binary coming out of the the compilation script, so it knows QT_PLUGIN_PATH
@@ -22,14 +22,10 @@ let
 in
 faust.wrapWithBuildEnv {
 
-  baseName = "faust2alqt";
-
   propagatedBuildInputs = [
     alsa-lib
     qt5.qtbase
   ];
-
-  dontWrapQtApps = true;
 
   preFixup = ''
     for script in "$out"/bin/*; do
@@ -39,4 +35,7 @@ faust.wrapWithBuildEnv {
       sed -i "/QMAKE=/c\ QMAKE="${qt5.qtbase.dev}/bin/qmake"" $script
     done
   '';
+
+  baseName = "faust2alqt";
+  dontWrapQtApps = true;
 }

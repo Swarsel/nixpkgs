@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  eigen,
   fetchpatch,
+  glew,
+  libGL,
+  libGLU,
   libsForQt5,
   vcg,
-  glew,
-  libGLU,
-  eigen,
-  libGL,
 }:
 
 stdenv.mkDerivation {
@@ -25,11 +25,15 @@ stdenv.mkDerivation {
   patches = [
     # https://github.com/cfcohen/openbrf/pull/7
     (fetchpatch {
+      hash = "sha256-rNxAw6Le6QXMSirIAMhMmqVgNJLq6osnEOhWrY3mTpM=";
       name = "fix-build-against-newer-vcglib.patch";
       url = "https://github.com/cfcohen/openbrf/commit/6d82a25314a393e72bfbe2ffc3965bcac407df4c.patch";
-      hash = "sha256-rNxAw6Le6QXMSirIAMhMmqVgNJLq6osnEOhWrY3mTpM=";
     })
   ];
+
+  postPatch = ''
+    sed -i 's,^VCGLIB .*,VCGLIB = ${vcg}/include,' openBrf.pro
+  '';
 
   nativeBuildInputs = [
     libsForQt5.qmake
@@ -43,13 +47,7 @@ stdenv.mkDerivation {
     eigen
   ];
 
-  qmakeFlags = [ "openBrf.pro" ];
-
   env.NIX_CFLAGS_COMPILE = "-isystem ${lib.getDev eigen}/include/eigen3";
-
-  postPatch = ''
-    sed -i 's,^VCGLIB .*,VCGLIB = ${vcg}/include,' openBrf.pro
-  '';
 
   installPhase = ''
     install -Dm755 openBrf $out/share/openBrf/openBrf
@@ -73,13 +71,14 @@ stdenv.mkDerivation {
   '';
 
   dontPatchELF = true;
+  qmakeFlags = [ "openBrf.pro" ];
 
   meta = {
     description = "Tool to edit resource files (BRF)";
-    mainProgram = "openBrf";
     homepage = "https://github.com/cfcohen/openbrf";
-    maintainers = [ ];
     license = lib.licenses.free;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "openBrf";
   };
 }

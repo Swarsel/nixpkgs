@@ -1,6 +1,6 @@
 {
-  pkgs,
   lib,
+  pkgs,
   qtcreator,
   ...
 }:
@@ -16,6 +16,7 @@ in
 pkgs.symlinkJoin {
   inherit (qtcreator) version meta;
   name = "qtcreator-with-plugins";
+
   paths = [
     qtcreator_runner
     qtcreator

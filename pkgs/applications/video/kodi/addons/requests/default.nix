@@ -1,17 +1,16 @@
 {
   lib,
-  rel,
-  buildKodiAddon,
-  fetchzip,
   addonUpdateScript,
+  buildKodiAddon,
   certifi,
   chardet,
+  fetchzip,
   idna,
+  rel,
   urllib3,
 }:
 buildKodiAddon rec {
   pname = "requests";
-  namespace = "script.module.requests";
   version = "2.31.0";
 
   src = fetchzip {
@@ -26,16 +25,19 @@ buildKodiAddon rec {
     urllib3
   ];
 
+  namespace = "script.module.requests";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.requests";
     };
   };
 
   meta = {
-    homepage = "http://python-requests.org";
     description = "Python HTTP for Humans";
+    homepage = "http://python-requests.org";
     license = lib.licenses.asl20;
     teams = [ lib.teams.kodi ];
   };

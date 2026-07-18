@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -27,8 +27,8 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Fcitx5 themes based on Rosé Pine";
     homepage = "https://github.com/rose-pine/fcitx5";
+    license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ rosehobgoblin ];
     platforms = lib.platforms.all;
-    license = lib.licenses.unfree;
   };
 }

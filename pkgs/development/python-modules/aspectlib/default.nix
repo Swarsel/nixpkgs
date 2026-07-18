@@ -3,18 +3,16 @@
   buildPythonPackage,
   fetchPypi,
   fetchpatch,
-  setuptools,
   fields,
   process-tests,
   pytestCheckHook,
+  setuptools,
   tornado,
 }:
 
 buildPythonPackage rec {
   pname = "aspectlib";
   version = "2.0.0";
-
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,15 +22,24 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/ionelmc/python-aspectlib/pull/25
     (fetchpatch {
+      hash = "sha256-gtPFtwDsGIMkHTyuoiLk+SAGgB2Wyx/Si9HIdoIsvI8=";
       name = "darwin-compat.patch";
       url = "https://github.com/ionelmc/python-aspectlib/commit/ef2c12304f08723dc8e79d1c59bc32c946d758dc.patch";
-      hash = "sha256-gtPFtwDsGIMkHTyuoiLk+SAGgB2Wyx/Si9HIdoIsvI8=";
     })
   ];
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ fields ];
+
+  nativeCheckInputs = [
+    process-tests
+    pytestCheckHook
+    tornado
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pytestFlags = [ "-Wignore::DeprecationWarning" ];
 
   pythonImportsCheck = [
     "aspectlib"
@@ -41,20 +48,10 @@ buildPythonPackage rec {
     "aspectlib.test"
   ];
 
-  nativeCheckInputs = [
-    process-tests
-    pytestCheckHook
-    tornado
-  ];
-
-  pytestFlags = [ "-Wignore::DeprecationWarning" ];
-
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    changelog = "https://github.com/ionelmc/python-aspectlib/blob/v${version}/CHANGELOG.rst";
     description = "Aspect-oriented programming, monkey-patch and decorators library";
     homepage = "https://github.com/ionelmc/python-aspectlib";
+    changelog = "https://github.com/ionelmc/python-aspectlib/blob/v${version}/CHANGELOG.rst";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

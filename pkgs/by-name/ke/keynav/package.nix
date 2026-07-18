@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  cairo,
+  glib,
   libx11,
-  xorgproto,
-  libxtst,
-  libxi,
   libxext,
+  libxi,
   libxinerama,
   libxrandr,
-  glib,
-  cairo,
+  libxtst,
+  pkg-config,
   xdotool,
+  xorgproto,
 }:
 
 let
@@ -29,7 +29,14 @@ stdenv.mkDerivation {
     hash = "sha256-y4ONq6fDBFhVGASvz28zlJRXfkCE/j8GDcbq/j8xvUY=";
   };
 
+  postPatch = ''
+    echo >>VERSION MAJOR=0
+    echo >>VERSION RELEASE=${release}
+    echo >>VERSION REVISION=0
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     xorgproto
@@ -42,12 +49,6 @@ stdenv.mkDerivation {
     cairo
     xdotool
   ];
-
-  postPatch = ''
-    echo >>VERSION MAJOR=0
-    echo >>VERSION RELEASE=${release}
-    echo >>VERSION REVISION=0
-  '';
 
   installPhase = ''
     mkdir -p $out/bin $out/share/keynav/doc

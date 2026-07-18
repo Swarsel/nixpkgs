@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "html-table-parser-python3";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "schmijos";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-okYl0T12wVld7GVbFQH2hgEVKXSScipJN/vYaiRVdGY=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "html_table_parser" ];
 
   meta = {

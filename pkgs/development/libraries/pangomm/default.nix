@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  cairomm,
+  glibmm,
+  gnome,
   meson,
   ninja,
-  python3,
   pango,
-  glibmm,
-  cairomm,
-  gnome,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation rec {
@@ -32,6 +32,7 @@ stdenv.mkDerivation rec {
     ninja
     python3
   ];
+
   propagatedBuildInputs = [
     pango
     glibmm
@@ -42,23 +43,14 @@ stdenv.mkDerivation rec {
 
   passthru = {
     updateScript = gnome.updateScript {
+      freeze = true;
       packageName = "pangomm";
       versionPolicy = "odd-unstable";
-      freeze = true;
     };
   };
 
   meta = {
     description = "C++ interface to the Pango text rendering library";
-    homepage = "https://www.pango.org/";
-    license = with lib.licenses; [
-      lgpl2
-      lgpl21
-    ];
-    maintainers = with lib.maintainers; [
-      raskin
-    ];
-    platforms = lib.platforms.unix;
 
     longDescription = ''
       Pango is a library for laying out and rendering of text, with an
@@ -67,5 +59,18 @@ stdenv.mkDerivation rec {
       far has been done in the context of the GTK widget toolkit.
       Pango forms the core of text and font handling for GTK.
     '';
+
+    homepage = "https://www.pango.org/";
+
+    license = with lib.licenses; [
+      lgpl2
+      lgpl21
+    ];
+
+    maintainers = with lib.maintainers; [
+      raskin
+    ];
+
+    platforms = lib.platforms.unix;
   };
 }

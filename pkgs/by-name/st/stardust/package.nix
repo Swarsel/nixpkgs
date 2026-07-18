@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
-  libtiff,
-  libxml2,
-  sdl12-compat,
-  libx11,
-  libxi,
-  libxmu,
-  libxext,
-  libGLU,
   libGL,
+  libGLU,
+  libtiff,
+  libx11,
+  libxext,
+  libxi,
+  libxml2,
+  libxmu,
+  sdl12-compat,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,13 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-t5cykB5zHYYj4tlk9QDhL7YQVgEScBZw9OIVXz5NOqc=";
   };
 
+  patches = [ ./pointer-fix.patch ];
   strictDeps = true;
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     sdl12-compat
     libxml2
   ];
+
   buildInputs = [
     zlib
     libtiff
@@ -43,26 +44,26 @@ stdenv.mkDerivation (finalAttrs: {
     libGL
   ];
 
-  patches = [ ./pointer-fix.patch ];
-
-  installFlags = [ "bindir=${placeholder "out"}/bin" ];
-
-  hardeningDisable = [ "format" ];
-
   postConfigure = ''
     substituteInPlace config.h \
       --replace-fail '#define PACKAGE ""' '#define PACKAGE "stardust"'
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+  installFlags = [ "bindir=${placeholder "out"}/bin" ];
+
   meta = {
     description = "Space flight simulator";
     homepage = "http://iwar.free.fr/spip/rubrique2.html";
-    mainProgram = "stardust";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       marcin-serwin
     ];
+
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "stardust";
   };
 })

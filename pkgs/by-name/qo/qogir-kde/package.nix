@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -67,7 +67,7 @@ stdenvNoCC.mkDerivation {
     description = "Flat Design theme for KDE Plasma desktop";
     homepage = "https://github.com/vinceliuice/Qogir-kde";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.all;
   };
 }

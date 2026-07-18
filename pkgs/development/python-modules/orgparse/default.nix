@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   hatch-vcs,
+  hatchling,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "orgparse";
   version = "0.4.20251020";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "karlicoss";
@@ -19,18 +18,16 @@ buildPythonPackage rec {
     hash = "sha256-RJ+1HVI9OgbylBxdEztpQ4v0MG0PUFqXlFfe0vsDaTg=";
   };
 
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "orgparse" ];
 
   preCheck = ''
     rm conftest.py
   '';
+
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
 
   disabledTestPaths = [
     # Ignoring doc folder
@@ -44,6 +41,9 @@ buildPythonPackage rec {
     "test_data[04_logbook]"
     "test_level_0_timestamps"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "orgparse" ];
 
   meta = {
     description = "Emacs org-mode parser in Python";

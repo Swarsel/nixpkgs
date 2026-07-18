@@ -1,12 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "uro";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "s0md3v";
@@ -16,6 +15,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   build-system = [ python3Packages.setuptools ];
+  pyproject = true;
 
   meta = {
     description = "declutters url lists for crawling/pentesting";

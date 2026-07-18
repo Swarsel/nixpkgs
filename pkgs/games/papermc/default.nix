@@ -1,7 +1,7 @@
 let
   versions = builtins.fromJSON (builtins.readFile ./versions.json);
 in
-{ callPackage, lib, ... }:
+{ lib, callPackage, ... }:
 let
   latestVersion = lib.last (builtins.sort lib.versionOlder (builtins.attrNames versions));
   escapeVersion = builtins.replaceStrings [ "." ] [ "_" ];

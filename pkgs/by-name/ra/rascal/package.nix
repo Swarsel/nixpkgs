@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jdk,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,21 +18,21 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jdk ];
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/bin
     makeWrapper ${jdk}/bin/java $out/bin/rascal \
       --add-flags "-jar ${finalAttrs.src}"
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://www.rascal-mpl.org/";
     description = "Command-line REPL for the Rascal metaprogramming language";
-    mainProgram = "rascal";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://www.rascal-mpl.org/";
     license = lib.licenses.epl10;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "rascal";
   };
 })

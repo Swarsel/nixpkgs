@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pillow,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "timg";
   version = "1.1.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,6 +23,8 @@ buildPythonPackage rec {
     pillow
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "timg"
   ];
@@ -32,6 +33,7 @@ buildPythonPackage rec {
     description = "Display an image in terminal";
     homepage = "https://github.com/adzierzanowski/timg";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       euxane
       renesat

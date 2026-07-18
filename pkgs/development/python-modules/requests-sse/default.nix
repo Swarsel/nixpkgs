@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   requests,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "requests-sse";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "overcat";
@@ -17,6 +16,9 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-+Zv7k+cYux7aBZk9MN7ySZh+pQUHNa6KjwxQ4l4aFxA=";
   };
+
+  # tests require internet access
+  doCheck = false;
 
   build-system = [
     poetry-core
@@ -26,12 +28,11 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "requests_sse"
   ];
-
-  # tests require internet access
-  doCheck = false;
 
   meta = {
     description = "Server-sent events python client library based on requests";

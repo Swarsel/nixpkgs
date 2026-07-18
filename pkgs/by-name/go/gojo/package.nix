@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,17 +18,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-XTrKbOXKxUjCC505ZVHbTaEvdxD4Zv0BFQhby3VwS4M=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgramArg = "-v";
+
   postInstallCheck = ''
     $out/bin/gojo --help > /dev/null
     seq 1 10 | $out/bin/gojo -a | grep '^\[1,2,3,4,5,6,7,8,9,10\]$' > /dev/null
   '';
-  doInstallCheck = true;
 
+  versionCheckProgramArg = "-v";
   passthru.updateScript = nix-update-script { };
 
   meta = {

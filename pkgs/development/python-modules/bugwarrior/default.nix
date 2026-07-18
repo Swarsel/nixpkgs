@@ -1,44 +1,40 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   click,
-  dogpile-cache,
-  jinja2,
-  lockfile,
-  pydantic,
-  python-dateutil,
-  requests,
-  taskw,
-
   # optional-dependencies
   # bts
   debianbts,
-  # bugzilla
-  python-bugzilla,
+  # tests
+  docutils,
+  dogpile-cache,
   # gmail
   google-api-python-client,
   google-auth-oauthlib,
+  jinja2,
   # jira
   jira,
   # keyring
   keyring,
+  lockfile,
   # trac
   offtrac,
-
-  # tests
-  docutils,
+  pydantic,
   pytestCheckHook,
+  # bugzilla
+  python-bugzilla,
+  python-dateutil,
+  requests,
   responses,
+  # build-system
+  setuptools,
   sphinx,
   sphinx-click,
   sphinx-inline-tabs,
+  taskw,
   taskwarrior3,
   versionCheckHook,
   writableTmpDirAsHomeHook,
@@ -47,7 +43,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "bugwarrior";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GothenburgBitFactory";
@@ -55,6 +50,19 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Px0yOIdXalIJdXMmjMnpl74aaUzaptS8Esy21NMZH98=";
   };
+
+  nativeCheckInputs = [
+    docutils
+    pytestCheckHook
+    responses
+    sphinx
+    sphinx-click
+    sphinx-inline-tabs
+    taskwarrior3
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -70,36 +78,13 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ pydantic.optional-dependencies.email;
 
-  optional-dependencies = {
-    bts = [ debianbts ];
-    bugzilla = [ python-bugzilla ];
-    gmail = [
-      google-api-python-client
-      google-auth-oauthlib
-    ];
-    jira = [ jira ];
-    keyring = [ keyring ];
-    trac = [ offtrac ];
-  };
-
-  nativeCheckInputs = [
-    docutils
-    pytestCheckHook
-    responses
-    sphinx
-    sphinx-click
-    sphinx-inline-tabs
-    taskwarrior3
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
   disabledTestPaths = [
     # Optional dependencies for these services aren't packaged.
     "tests/test_kanboard.py"
     "tests/test_phab.py"
     "tests/test_todoist.py"
   ];
+
   disabledTests = [
     # Requires ini2toml dependency, which isn't packaged.
     "TestIni2Toml"
@@ -119,18 +104,35 @@ buildPythonPackage (finalAttrs: {
     "test_manpage_build_without_warning"
   ];
 
+  optional-dependencies = {
+    bts = [ debianbts ];
+    bugzilla = [ python-bugzilla ];
+
+    gmail = [
+      google-api-python-client
+      google-auth-oauthlib
+    ];
+
+    jira = [ jira ];
+    keyring = [ keyring ];
+    trac = [ offtrac ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "bugwarrior" ];
 
   meta = {
-    homepage = "https://github.com/GothenburgBitFactory/bugwarrior";
     description = "Sync github, bitbucket, bugzilla, and trac issues with taskwarrior";
+    homepage = "https://github.com/GothenburgBitFactory/bugwarrior";
     changelog = "https://github.com/GothenburgBitFactory/bugwarrior/blob/${finalAttrs.src.tag}/CHANGELOG.rst";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
-    mainProgram = "bugwarrior";
+
     maintainers = with lib.maintainers; [
       pierron
       ryneeverett
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "bugwarrior";
   };
 })

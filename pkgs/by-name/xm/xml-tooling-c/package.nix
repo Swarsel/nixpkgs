@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   autoreconfHook,
-  pkg-config,
   boost,
   curl,
-  openssl,
+  fetchFromCodeberg,
   log4shib,
+  openssl,
+  pkg-config,
+  unstableGitUpdater,
   xercesc,
   xml-security-c,
-  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-czmBu7ThDwq+x7FahgZDMHqid8jeUNnTuKMI/Fj4IIw=";
   };
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
   buildInputs = [
     boost
     curl
@@ -33,25 +38,18 @@ stdenv.mkDerivation (finalAttrs: {
     xml-security-c
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
-
   configureFlags = [
     "--with-boost=${boost.dev}"
   ];
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString (!stdenv.hostPlatform.isDarwin) "-std=c++14";
-
   enableParallelBuilding = true;
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Low-level library that provides a high level interface to XML processing for OpenSAML 2";
-    platforms = lib.platforms.unix;
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.sigmanificient ];
+    platforms = lib.platforms.unix;
   };
 })

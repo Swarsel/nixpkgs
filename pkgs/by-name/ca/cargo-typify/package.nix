@@ -1,10 +1,10 @@
 {
   lib,
-  rustfmt,
-  rustPlatform,
   fetchFromGitHub,
   gitUpdater,
   makeWrapper,
+  rustPlatform,
+  rustfmt,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,23 +18,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Ym3xPMn36+Y8dnImmuegjwrARPzozhwI+qhDCXmFsHg=";
   };
 
-  cargoHash = "sha256-3hh4M5cqwLDHcHI+YGKXQOeTXGcVTec+xk+mZcVp0IU=";
+  strictDeps = true;
 
   nativeBuildInputs = [
     rustfmt
     makeWrapper
   ];
 
-  cargoBuildFlags = [
-    "--package"
-    "cargo-typify"
-  ];
-  cargoTestFlags = [
-    "--package"
-    "cargo-typify"
-  ];
-
-  strictDeps = true;
+  cargoHash = "sha256-3hh4M5cqwLDHcHI+YGKXQOeTXGcVTec+xk+mZcVp0IU=";
 
   preCheck = ''
     # cargo-typify depends on rustfmt-wrapper, which requires RUSTFMT:
@@ -45,6 +36,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wrapProgram $out/bin/cargo-typify \
       --set RUSTFMT "${lib.getExe rustfmt}"
   '';
+
+  cargoBuildFlags = [
+    "--package"
+    "cargo-typify"
+  ];
+
+  cargoTestFlags = [
+    "--package"
+    "cargo-typify"
+  ];
 
   meta = {
     description = "JSON Schema to Rust type converter";

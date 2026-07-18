@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchPnpmDeps,
-  electron_40,
-  nodejs-slim,
-  pnpm_10_29_2,
-  pnpmConfigHook,
-  makeWrapper,
-  writableTmpDirAsHomeHook,
-  copyDesktopItems,
-  cctools,
-  autoPatchelfHook,
-  pkg-config,
-  makeDesktopItem,
-  nix-update-script,
   alsa-lib,
+  autoPatchelfHook,
+  cctools,
+  copyDesktopItems,
+  electron_40,
+  fetchPnpmDeps,
   libevdev,
   libx11,
-  libxi,
   libxfixes,
+  libxi,
   libxtst,
+  makeDesktopItem,
+  makeWrapper,
+  nix-update-script,
+  nodejs-slim,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_10_29_2,
   wayland,
+  writableTmpDirAsHomeHook,
   commandLineArgs ? "",
 }:
 
@@ -50,12 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "isAutoUpdate)" "false)"
   '';
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-9Vx4WzQjwNxPAkz+FjjqnMQxJviP4e0EhkQBN9Y+ujo=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     nodejs-slim
@@ -83,12 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
   ];
 
-  autoPatchelfIgnoreMissingDeps = [
-    "libc.musl-*.so.*"
-  ];
-
-  strictDeps = true;
-
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isLinux "-I${lib.getDev libevdev}/include/libevdev-1.0";
@@ -109,20 +98,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "cherry-studio";
-      desktopName = "Cherry Studio";
-      comment = "A powerful AI assistant for producer.";
-      exec = "cherry-studio --no-sandbox %U";
-      terminal = false;
-      icon = "cherry-studio";
-      startupWMClass = "CherryStudio";
-      categories = [ "Utility" ];
-      mimeTypes = [ "x-scheme-handler/cherrystudio" ];
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -150,15 +125,40 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  autoPatchelfIgnoreMissingDeps = [
+    "libc.musl-*.so.*"
+  ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = "A powerful AI assistant for producer.";
+      desktopName = "Cherry Studio";
+      exec = "cherry-studio --no-sandbox %U";
+      icon = "cherry-studio";
+      mimeTypes = [ "x-scheme-handler/cherrystudio" ];
+      name = "cherry-studio";
+      startupWMClass = "CherryStudio";
+      terminal = false;
+    })
+  ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-9Vx4WzQjwNxPAkz+FjjqnMQxJviP4e0EhkQBN9Y+ujo=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Desktop client that supports for multiple LLM providers";
     homepage = "https://github.com/CherryHQ/cherry-studio";
     changelog = "https://github.com/CherryHQ/cherry-studio/releases/tag/v${finalAttrs.version}";
-    mainProgram = "cherry-studio";
-    platforms = with lib.platforms; linux ++ darwin;
-    maintainers = with lib.maintainers; [ xiaoxiangmoe ];
     license = with lib.licenses; [ agpl3Only ];
+    maintainers = with lib.maintainers; [ xiaoxiangmoe ];
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "cherry-studio";
   };
 })

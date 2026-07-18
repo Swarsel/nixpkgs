@@ -10,14 +10,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "tplink-omada-client";
   version = "1.5.9";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "tplink_omada_client";
     inherit (finalAttrs) version;
     hash = "sha256-DjWfz7D29RiMPa7rHm6rdSPI33pAj4JdWwk7EuLEbvk=";
+    pname = "tplink_omada_client";
   };
 
+  # Module have no tests
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage (finalAttrs: {
     awesomeversion
   ];
 
-  # Module have no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tplink_omada_client" ];
 
   meta = {

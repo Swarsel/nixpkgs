@@ -10,19 +10,15 @@ let
 
 in
 {
-  meta = {
-    teams = [ lib.teams.xfce ];
-  };
-
   options = {
     programs.thunar = {
       enable = lib.mkEnableOption "Thunar, the Xfce file manager";
 
       plugins = lib.mkOption {
         default = [ ];
-        type = lib.types.listOf lib.types.package;
         description = "List of thunar plugins to install.";
         example = lib.literalExpression "with pkgs; [ thunar-archive-plugin thunar-volman ]";
+        type = lib.types.listOf lib.types.package;
       };
 
     };
@@ -38,6 +34,8 @@ in
         package
       ];
 
+      programs.xfconf.enable = true;
+
       services.dbus.packages = [
         package
       ];
@@ -45,8 +43,10 @@ in
       systemd.packages = [
         package
       ];
-
-      programs.xfconf.enable = true;
     }
   );
+
+  meta = {
+    teams = [ lib.teams.xfce ];
+  };
 }

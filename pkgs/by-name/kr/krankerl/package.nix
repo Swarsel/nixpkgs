@@ -1,13 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
   dbus,
-  sqlite,
   file,
   makeWrapper,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sqlite,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-fFtjQFkNB5vn9nlFJI6nRdqxB9PmOGl3ySZ5LG2tgPg=";
   };
 
-  cargoHash = "sha256-tu+PJeGm8u5TSuoPBhaO4k6PkmI9JduuLlaQjvBv05E=";
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
@@ -34,16 +32,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
+  cargoHash = "sha256-tu+PJeGm8u5TSuoPBhaO4k6PkmI9JduuLlaQjvBv05E=";
+
   nativeCheckInputs = [
     file
   ];
 
   meta = {
     description = "CLI helper to manage, package and publish Nextcloud apps";
-    mainProgram = "krankerl";
     homepage = "https://github.com/ChristophWurst/krankerl";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.linux;
+    mainProgram = "krankerl";
   };
 })

@@ -32,21 +32,22 @@ stdenv.mkDerivation rec {
     ''-DCMAKE_CXX_FLAGS="-Wno-error=deprecated-declarations"''
   ];
 
-  dontWrapQtApps = true;
-
   postInstall = ''
     rm -rf $out/data
     rm -rf $out/obs-plugins
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "Plugin for OBS Studio to add vertical canvas";
     homepage = "https://github.com/Aitum/obs-vertical-canvas";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       flexiondotorg
       jonhermansen
     ];
-    license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
   };
 }

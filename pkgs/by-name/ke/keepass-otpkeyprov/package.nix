@@ -9,8 +9,8 @@
 let
   version = "2.6";
   drv = stdenv.mkDerivation {
-    pname = "otpkeyprov";
     inherit version;
+    pname = "otpkeyprov";
 
     src = fetchzip {
       url = "https://keepass.info/extensions/v2/otpkeyprov/OtpKeyProv-${version}.zip";
@@ -18,25 +18,26 @@ let
       stripRoot = false;
     };
 
-    meta = {
-      description = "Key provider based on one-time passwords";
-      homepage = "https://keepass.info/plugins.html#otpkeyprov";
-      platforms = with lib.platforms; linux;
-      license = lib.licenses.gpl2;
-      maintainers = [ lib.maintainers.Enteee ];
-    };
-
-    pluginFilename = "OtpKeyProv.plgx";
-
     installPhase = ''
       mkdir -p $out/lib/dotnet/keepass/
       cp $pluginFilename $out/lib/dotnet/keepass/$pluginFilename
     '';
+
+    pluginFilename = "OtpKeyProv.plgx";
+
+    meta = {
+      description = "Key provider based on one-time passwords";
+      homepage = "https://keepass.info/plugins.html#otpkeyprov";
+      license = lib.licenses.gpl2;
+      maintainers = [ lib.maintainers.Enteee ];
+      platforms = with lib.platforms; linux;
+    };
   };
 in
 # Mono is required to compile plugin at runtime, after loading.
 buildEnv {
   inherit (drv) pname version;
+
   paths = [
     mono
     drv

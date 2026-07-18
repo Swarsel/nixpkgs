@@ -8,9 +8,9 @@
   nix-update-script,
   nlohmann_json,
   ocl-icd,
+  onetbb,
   opencl-clhpp,
   opencl-headers,
-  onetbb,
   openvino,
   openvino-tokenizers,
   pkg-config,
@@ -21,24 +21,24 @@ let
   inherit (lib) cmakeBool cmakeFeature;
 
   minja-src = fetchFromGitHub {
+    hash = "sha256-aqOpLNB7XiY/W2gDRtnAqx37gMhHMRCJQmcX24vGIxA=";
     owner = "google";
     repo = "minja";
     rev = "3e4c61c616eda133cfb1e440fc7a14bf1729bbee";
-    hash = "sha256-aqOpLNB7XiY/W2gDRtnAqx37gMhHMRCJQmcX24vGIxA=";
   };
 
   safetensors-h-src = fetchFromGitHub {
+    hash = "sha256-sBgm4panHB9X2RghC3Qi0wEL0k9uUz+h60pfxTGZ0BA=";
     owner = "hsnyder";
     repo = "safetensors.h";
     rev = "974a85d7dfd6e010558353226638bb26d6b9d756";
-    hash = "sha256-sBgm4panHB9X2RghC3Qi0wEL0k9uUz+h60pfxTGZ0BA=";
   };
 
   gguflib-src = fetchFromGitHub {
+    hash = "sha256-yoIjTATYs2IzT/LnCz+G6PtxVXZ27B0mZOIipZbaOI8=";
     owner = "Lourdle";
     repo = "gguf-tools";
     rev = "bac796ada809ac293e685db59b075971181cb008";
-    hash = "sha256-yoIjTATYs2IzT/LnCz+G6PtxVXZ27B0mZOIipZbaOI8=";
   };
 
   python = python3Packages.python.withPackages (ps: [ ps.pybind11 ]);
@@ -56,8 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "openvino-genai";
   version = "2026.2.1.0";
 
-  __structuredAttrs = true;
-
   src =
     assert lib.hasPrefix openvino.version finalAttrs.version;
     fetchFromGitHub {
@@ -72,6 +70,23 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "python"
   ];
+
+  patches = [
+    # gguf_utils' format() is a function template declared in gguf.hpp but
+    # defined in gguf.cpp, so instantiations from other TUs are unresolved at
+    # link time (surfaces as an ImportError on libopenvino_genai.so load).
+    # Move the definition into the header.
+    ./move-gguf-format-template-into-header.patch
+  ];
+
+  postPatch = ''
+    # pybind11 3.0 removed keep_alive support from def_property/def_readwrite.
+    # parsers is vector<shared_ptr<Parser>> so shared_ptr ref-counting is sufficient.
+    substituteInPlace src/python/py_generation_config.cpp \
+      --replace-fail ', py::keep_alive<1, 2>()' ""
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -88,23 +103,6 @@ stdenv.mkDerivation (finalAttrs: {
     onetbb
     openvino
   ];
-
-  strictDeps = true;
-
-  patches = [
-    # gguf_utils' format() is a function template declared in gguf.hpp but
-    # defined in gguf.cpp, so instantiations from other TUs are unresolved at
-    # link time (surfaces as an ImportError on libopenvino_genai.so load).
-    # Move the definition into the header.
-    ./move-gguf-format-template-into-header.patch
-  ];
-
-  postPatch = ''
-    # pybind11 3.0 removed keep_alive support from def_property/def_readwrite.
-    # parsers is vector<shared_ptr<Parser>> so shared_ptr ref-counting is sufficient.
-    substituteInPlace src/python/py_generation_config.cpp \
-      --replace-fail ', py::keep_alive<1, 2>()' ""
-  '';
 
   cmakeFlags = [
     # Point cmake's FetchContent at pre-packaged nixpkgs sources so nothing is
@@ -134,6 +132,30 @@ stdenv.mkDerivation (finalAttrs: {
     (cmakeBool "ENABLE_TOOLS" false)
     (cmakeBool "ENABLE_XGRAMMAR" false)
   ];
+
+  # C++ exception with description "Exception from src/inference/src/cpp/core.cpp:272:
+  # Exception from src/inference/src/dev/core_impl.cpp:706:
+  # Device with "CPU" name is not registered in the OpenVINO Runtime
+  doCheck = !stdenv.hostPlatform.isAarch64;
+  nativeCheckInputs = [ openvino-tokenizers ];
+
+  preCheck = ''
+    mkdir -p tests/cpp/data
+    cp -r ${finalAttrs.src}/tests/cpp/data/. tests/cpp/data/
+    export OPENVINO_TOKENIZERS_PATH_GENAI="${openvino-tokenizers}/lib/libopenvino_tokenizers.so"
+  '';
+
+  checkPhase = ''
+    runHook preCheck
+    # GetCacheTypesRealModel and LLMPipelineBackendRealModel require on-disk
+    # model data (CACHE_TYPES_CSV + TEST_MODELS_BASE_DIR) unavailable in the
+    # Nix sandbox; with zero ValuesIn entries GTest ≥ 1.12 reports them via
+    # GoogleTestVerification.UninstantiatedParameterizedTestSuite<*>, so
+    # exclude that verification check for these two suites.
+    ./tests/cpp/tests_continuous_batching \
+      --gtest_filter="-GoogleTestVerification.UninstantiatedParameterizedTestSuite*"
+    runHook postCheck
+  '';
 
   postInstall = ''
     # cmake installs to runtime/{include,cmake,lib/...}; move to standard paths.
@@ -174,47 +196,24 @@ stdenv.mkDerivation (finalAttrs: {
     autoPatchelfLibs+=("$out/lib" "${openvino}/runtime/lib/intel64")
   '';
 
-  nativeCheckInputs = [ openvino-tokenizers ];
-
-  # C++ exception with description "Exception from src/inference/src/cpp/core.cpp:272:
-  # Exception from src/inference/src/dev/core_impl.cpp:706:
-  # Device with "CPU" name is not registered in the OpenVINO Runtime
-  doCheck = !stdenv.hostPlatform.isAarch64;
-
-  preCheck = ''
-    mkdir -p tests/cpp/data
-    cp -r ${finalAttrs.src}/tests/cpp/data/. tests/cpp/data/
-    export OPENVINO_TOKENIZERS_PATH_GENAI="${openvino-tokenizers}/lib/libopenvino_tokenizers.so"
-  '';
-
-  checkPhase = ''
-    runHook preCheck
-    # GetCacheTypesRealModel and LLMPipelineBackendRealModel require on-disk
-    # model data (CACHE_TYPES_CSV + TEST_MODELS_BASE_DIR) unavailable in the
-    # Nix sandbox; with zero ValuesIn entries GTest ≥ 1.12 reports them via
-    # GoogleTestVerification.UninstantiatedParameterizedTestSuite<*>, so
-    # exclude that verification check for these two suites.
-    ./tests/cpp/tests_continuous_batching \
-      --gtest_filter="-GoogleTestVerification.UninstantiatedParameterizedTestSuite*"
-    runHook postCheck
-  '';
-
+  __structuredAttrs = true;
   enableParallelBuilding = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Generative AI inference pipeline library built on OpenVINO Runtime";
+
     longDescription = ''
       OpenVINO GenAI provides a high-level C++ and Python API for running large
       language models and other generative AI workloads using OpenVINO Runtime as
       the inference backend. It supports continuous batching, speculative decoding,
       and a range of text, image, and speech generation pipelines.
     '';
+
     homepage = "https://github.com/openvinotoolkit/openvino.genai";
     changelog = "https://github.com/openvinotoolkit/openvino.genai/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ jpds ];
+    platforms = lib.platforms.linux;
   };
 })

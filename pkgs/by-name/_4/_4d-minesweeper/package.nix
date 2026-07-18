@@ -1,14 +1,15 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  unzip,
+  fetchFromGitHub,
   alsa-lib,
   gcc-unwrapped,
   git,
   godot3-export-templates,
   godot3-headless,
   libGLU,
+  libglvnd,
+  libpulseaudio,
   libx11,
   libxcursor,
   libxext,
@@ -17,8 +18,7 @@
   libxinerama,
   libxrandr,
   libxrender,
-  libglvnd,
-  libpulseaudio,
+  unzip,
   zlib,
 }:
 
@@ -75,16 +75,16 @@ stdenv.mkDerivation {
     runHook postBuild
   '';
 
-  dontInstall = true;
   dontFixup = true;
+  dontInstall = true;
   dontStrip = true;
 
   meta = {
-    homepage = "https://github.com/Alzager/4D-Minesweeper-Archived";
     description = "4D Minesweeper game written in Godot";
+    homepage = "https://github.com/Alzager/4D-Minesweeper-Archived";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "4d-minesweeper";
   };
 }

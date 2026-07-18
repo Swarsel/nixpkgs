@@ -1,14 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   alsa-lib,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
 }:
 
 buildPythonPackage rec {
   pname = "simpleaudio";
   version = "1.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "hamiltron";
@@ -18,12 +17,12 @@ buildPythonPackage rec {
   };
 
   patches = [ ./python312-fix.patch ];
-
   buildInputs = [ alsa-lib ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/hamiltron/py-simple-audio";
     description = "Simple audio playback Python extension - cross-platform, asynchronous, dependency-free";
+    homepage = "https://github.com/hamiltron/py-simple-audio";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lucus16 ];
   };

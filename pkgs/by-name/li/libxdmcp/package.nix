@@ -3,13 +3,18 @@
   stdenv,
   fetchurl,
   pkg-config,
-  xorgproto,
-  writeScript,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxdmcp";
   version = "1.1.5";
+
+  src = fetchurl {
+    url = "mirror://xorg/individual/lib/libXdmcp-${finalAttrs.version}.tar.xz";
+    hash = "sha256-2KUiKCjDratwrfaaVYPx0y617OBDBPf4OStqNTqiIow=";
+  };
 
   outputs = [
     "out"
@@ -17,17 +22,13 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  src = fetchurl {
-    url = "mirror://xorg/individual/lib/libXdmcp-${finalAttrs.version}.tar.xz";
-    hash = "sha256-2KUiKCjDratwrfaaVYPx0y617OBDBPf4OStqNTqiIow=";
-  };
-
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ xorgproto ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -36,7 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -44,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxdmcp";
     license = lib.licenses.mitOpenGroup;
     maintainers = [ ];
-    pkgConfigModules = [ "xdmcp" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xdmcp" ];
   };
 })

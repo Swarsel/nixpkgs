@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  sphinx,
+  buildPythonPackage,
   flit-core,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxext-rediraffe";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wpilibsuite";
@@ -18,17 +17,16 @@ buildPythonPackage rec {
     hash = "sha256-OW+MNQbPfJa8+jcpWZxTKD+EAv1gyo5tmcYAGba4u3c=";
   };
 
+  # tests require seleniumbase which is not currently in nixpkgs
+  doCheck = false;
   build-system = [ flit-core ];
 
   dependencies = [
     sphinx
   ];
 
-  # tests require seleniumbase which is not currently in nixpkgs
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinxext.rediraffe" ];
-
   pythonNamespaces = [ "sphinxext" ];
 
   meta = {

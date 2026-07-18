@@ -1,58 +1,54 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  python3,
+  fetchurl,
   fetchFromGitHub,
+  actdiag,
   autoreconfHook,
-  installShellFiles,
-  enableStandardFeatures ? false,
-  sourceHighlight,
-  highlight,
-  graphviz,
-  texliveMinimal,
-  dblatexFull,
-  libxslt,
-  w3m-batch,
-  lynx,
-  imagemagick,
-  lilypond,
-  libxml2,
-  docbook_xml_dtd_45,
-  docbook_xsl_ns,
-  docbook_xsl,
-  fop,
-  epubcheck,
-  gnused,
+  blockdiag,
+  buildPackages,
   coreutils,
-
-  # if true, enable all the below filters and backends
-  enableExtraPlugins ? false,
-
+  dblatexFull,
+  docbook_xml_dtd_45,
+  docbook_xsl,
+  docbook_xsl_ns,
+  epubcheck,
+  fop,
+  gnused,
+  graphviz,
+  highlight,
+  imagemagick,
+  installShellFiles,
+  jre,
+  libxml2,
+  libxslt,
+  lilypond,
+  lynx,
+  mscgen,
+  nwdiag,
+  python3,
+  qrencode,
+  seqdiag,
+  sourceHighlight,
+  texliveMinimal,
   # unzip is needed to extract filter and backend plugins
   unzip,
-  # filters
-  enableDitaaFilter ? false,
-  jre,
-  enableMscgenFilter ? false,
-  mscgen,
-  enableDiagFilter ? false,
-  blockdiag,
-  seqdiag,
-  actdiag,
-  nwdiag,
-  enableQrcodeFilter ? false,
-  qrencode,
-  enableMatplotlibFilter ? false,
+  w3m-batch,
   enableAafigureFilter ? false,
   # backends
   enableDeckjsBackend ? false,
-  enableOdfBackend ? false,
-
+  enableDiagFilter ? false,
+  # filters
+  enableDitaaFilter ? false,
+  # if true, enable all the below filters and backends
+  enableExtraPlugins ? false,
   # java is problematic on some platforms, where it is unfree
   enableJava ? true,
-
-  buildPackages,
+  enableMatplotlibFilter ? false,
+  enableMscgenFilter ? false,
+  enableOdfBackend ? false,
+  enableQrcodeFilter ? false,
+  enableStandardFeatures ? false,
 }:
 
 let
@@ -83,24 +79,24 @@ let
   #
 
   ditaaFilterSrc = fetchurl {
-    url = "https://asciidoc-ditaa-filter.googlecode.com/files/ditaa-filter-1.1.zip";
     sha256 = "0p7hm2a1xywx982ia3vg4c0lam5sz0xknsc10i2a5vswy026naf6";
+    url = "https://asciidoc-ditaa-filter.googlecode.com/files/ditaa-filter-1.1.zip";
   };
 
   mscgenFilterSrc = fetchurl {
-    url = "https://asciidoc-mscgen-filter.googlecode.com/files/mscgen-filter-1.2.zip";
     sha256 = "1nfwmj375gpv5dn9i770pjv59aihzy2kja0fflsk96xwnlqsqq61";
+    url = "https://asciidoc-mscgen-filter.googlecode.com/files/mscgen-filter-1.2.zip";
   };
 
   diagFilterSrc = fetchurl {
+    sha256 = "1qlqrdbqkdqqgfdhjsgdws1al0sacsyq6jmwxdfy7r8k7bv7n7mm";
     # unfortunately no version number
     url = "https://asciidoc-diag-filter.googlecode.com/files/diag_filter.zip";
-    sha256 = "1qlqrdbqkdqqgfdhjsgdws1al0sacsyq6jmwxdfy7r8k7bv7n7mm";
   };
 
   qrcodeFilterSrc = fetchurl {
-    url = "https://asciidoc-qrencode-filter.googlecode.com/files/qrcode-filter-1.0.zip";
     sha256 = "0h4bql1nb4y4fmg2yvlpfjhvy22ln8jsaxdr10f8bfcg5lr0zkxs";
+    url = "https://asciidoc-qrencode-filter.googlecode.com/files/qrcode-filter-1.0.zip";
   };
 
   # there are no archives or tags, using latest commit in master branch as per 2013-09-22
@@ -110,13 +106,13 @@ let
     in
     fetchurl {
       name = "mplw-${commit}.tar.gz";
-      url = "https://api.github.com/repos/lvv/mplw/tarball/${commit}";
       sha256 = "0yfhkm2dr8gnp0fcg25x89hwiymkri2m5cyqzmzragzwj0hbmcf1";
+      url = "https://api.github.com/repos/lvv/mplw/tarball/${commit}";
     };
 
   aafigureFilterSrc = fetchurl {
-    url = "https://asciidoc-aafigure-filter.googlecode.com/files/aafigure-filter-1.1.zip";
     sha256 = "1hq2s30dvmv5dqvj0xm1qwdwafhgm9w1iyr0lr0c40cyk8h00j8j";
+    url = "https://asciidoc-aafigure-filter.googlecode.com/files/aafigure-filter-1.1.zip";
   };
 
   #
@@ -124,19 +120,19 @@ let
   #
 
   deckjsBackendSrc = fetchurl {
-    url = "https://github.com/downloads/houqp/asciidoc-deckjs/deckjs-1.6.2.zip";
     sha256 = "1siy1j8naj5irrrrv5bfgl4d8nal6j9pyahy4f50wmrr9wv59s46";
+    url = "https://github.com/downloads/houqp/asciidoc-deckjs/deckjs-1.6.2.zip";
   };
 
   # the odf backend is actually two plugins: odt + odp
   odtBackendSrc = fetchurl {
-    url = "https://github.com/downloads/dagwieers/asciidoc-odf/odt-backend-0.1.zip";
     sha256 = "1zaa97h9sx6ncxcdkl1x3ggydi7f8kjgvrnpjnkjiizi45k350kw";
+    url = "https://github.com/downloads/dagwieers/asciidoc-odf/odt-backend-0.1.zip";
   };
 
   odpBackendSrc = fetchurl {
-    url = "https://github.com/downloads/dagwieers/asciidoc-odf/odp-backend-0.1.zip";
     sha256 = "08ya4bskygzqkfqwjllpg31qc5k08xp2k78z9b2480g8y57bfy10";
+    url = "https://github.com/downloads/dagwieers/asciidoc-odf/odp-backend-0.1.zip";
   };
 
 in
@@ -145,8 +141,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "asciidoc"
     + lib.optionalString enableStandardFeatures "-full"
     + lib.optionalString enableExtraPlugins "-with-plugins";
+
   version = "10.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asciidoc-py";
@@ -154,12 +150,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-td3C7xTWfSzdo9Bbz0dHW2oPaCQYmUE9H2sUFfg5HH0=";
   };
-
-  nativeBuildInputs = [
-    autoreconfHook
-    installShellFiles
-    unzip
-  ];
 
   # install filters early, so their shebangs are patched too
   postPatch = ''
@@ -297,14 +287,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace "python3 -m asciidoc.a2x" "${buildPackages.asciidoc}/bin/a2x"
   '';
 
-  build-system = with python3.pythonOnBuildForHost.pkgs; [ setuptools ];
+  nativeBuildInputs = [
+    autoreconfHook
+    installShellFiles
+    unzip
+  ];
 
   postBuild = ''
     make manpages
-  '';
-
-  postInstall = ''
-    installManPage doc/asciidoc.1 doc/a2x.1 doc/testasciidoc.1
   '';
 
   nativeCheckInputs = with python3.pkgs; [
@@ -320,8 +310,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postCheck
   '';
 
+  postInstall = ''
+    installManPage doc/asciidoc.1 doc/a2x.1 doc/testasciidoc.1
+  '';
+
+  build-system = with python3.pythonOnBuildForHost.pkgs; [ setuptools ];
+  pyproject = true;
+
   meta = {
     description = "Text-based document generation system";
+
     longDescription = ''
       AsciiDoc is a text document format for writing notes, documentation,
       articles, books, ebooks, slideshows, web pages, man pages and blogs.
@@ -332,17 +330,21 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       the backend output markups (which can be almost any type of SGML/XML
       markup) can be customized and extended by the user.
     '';
+
+    homepage = "https://asciidoc-py.github.io/";
+    changelog = "https://github.com/asciidoc-py/asciidoc-py/blob/${finalAttrs.version}/CHANGELOG.adoc";
+    license = lib.licenses.gpl2Plus;
+
     sourceProvenance = [
       lib.sourceTypes.fromSource
     ]
     ++ lib.optional _enableDitaaFilter lib.sourceTypes.binaryBytecode;
-    homepage = "https://asciidoc-py.github.io/";
-    changelog = "https://github.com/asciidoc-py/asciidoc-py/blob/${finalAttrs.version}/CHANGELOG.adoc";
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       bjornfor
       dotlambda
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

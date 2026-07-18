@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  argp-standalone,
   parted,
   systemd,
-  argp-standalone,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,6 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux "extra"; # f3brew, f3fix, f3probe
 
+  postInstall = ''
+    install -Dm555 -t $out/bin scripts/{f3write.h2w,log-f3wr}
+    install -Dm444 -t $out/share/doc/f3 LICENSE README.rst
+  '';
+
   installFlags = [
     "PREFIX=${placeholder "out"}"
   ];
@@ -48,15 +53,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux "install-extra";
 
-  postInstall = ''
-    install -Dm555 -t $out/bin scripts/{f3write.h2w,log-f3wr}
-    install -Dm444 -t $out/share/doc/f3 LICENSE README.rst
-  '';
-
   meta = {
     description = "Fight Flash Fraud";
     homepage = "https://fight-flash-fraud.readthedocs.io/en/stable/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       makefu
     ];

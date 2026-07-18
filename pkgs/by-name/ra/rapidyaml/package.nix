@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   git,
 }:
 
@@ -13,9 +13,9 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "biojppm";
     repo = "rapidyaml";
-    fetchSubmodules = true;
     tag = "v${finalAttrs.version}";
     hash = "sha256-NjpEpjBFB2Ydfo81VzOYoMPqMdJbIYcQWBRcxCbJlY4=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [

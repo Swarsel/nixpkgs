@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "syncer";
   version = "2.0.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "miyakogi";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # Tests require an not maintained package (xfail)
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "syncer" ];
 
   meta = {

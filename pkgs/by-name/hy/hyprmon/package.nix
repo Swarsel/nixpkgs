@@ -1,7 +1,7 @@
 {
-  buildGo126Module,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGo126Module,
 }:
 buildGo126Module (finalAttrs: {
   pname = "hyprmon";
@@ -17,12 +17,12 @@ buildGo126Module (finalAttrs: {
   vendorHash = "sha256-U2fw/1tnRwmd9qzEcrMduZbbNU67NbDhG2Id5IHj5js=";
 
   meta = {
-    description = "TUI monitor configuration tool for Hyprland with visual layout, drag-and-drop, and profile management";
     inherit (finalAttrs.src.meta) homepage;
+    description = "TUI monitor configuration tool for Hyprland with visual layout, drag-and-drop, and profile management";
     changelog = "${finalAttrs.src.meta.homepage}/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ onatustun ];
-    mainProgram = "hyprmon";
     platforms = lib.platforms.linux;
+    mainProgram = "hyprmon";
   };
 })

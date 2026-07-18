@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  python3,
-  pkg-config,
-  ldc,
-  dconf,
+  appstream,
   dbus,
-  gsettings-desktop-schemas,
+  dconf,
   desktop-file-utils,
   gettext,
+  gsettings-desktop-schemas,
   gtkd,
+  ldc,
   libsecret,
-  wrapGAppsHook3,
   libunwind,
-  appstream,
+  meson,
+  ninja,
   nixosTests,
+  pkg-config,
+  python3,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,10 +31,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-KP0ojwyZ5FaYKW0nK9mGGAiz1h+gTbfjCUDCgN2LAO8=";
   };
 
-  # Default upstream else LDC fails to link
-  mesonBuildType = [
-    "debugoptimized"
-  ];
+  postPatch = ''
+    chmod +x meson_post_install.py
+    patchShebangs meson_post_install.py
+    # https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=tilix
+    substituteInPlace source/gx/tilix/{prefeditor/prefdialog.d,terminal/terminal.d} \
+      --replace-fail "(Align." "(GtkAlign."
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -57,13 +60,10 @@ stdenv.mkDerivation (finalAttrs: {
     libunwind
   ];
 
-  postPatch = ''
-    chmod +x meson_post_install.py
-    patchShebangs meson_post_install.py
-    # https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=tilix
-    substituteInPlace source/gx/tilix/{prefeditor/prefdialog.d,terminal/terminal.d} \
-      --replace-fail "(Align." "(GtkAlign."
-  '';
+  # Default upstream else LDC fails to link
+  mesonBuildType = [
+    "debugoptimized"
+  ];
 
   passthru.tests.test = nixosTests.terminal-emulators.tilix;
 
@@ -71,10 +71,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tiling terminal emulator following the Gnome Human Interface Guidelines";
     homepage = "https://gnunn1.github.io/tilix-web";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       midchildan
       jtbx
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "tilix";
   };

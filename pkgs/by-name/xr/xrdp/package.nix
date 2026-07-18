@@ -1,33 +1,33 @@
 {
   lib,
   stdenv,
-  applyPatches,
   fetchFromGitHub,
-  pkg-config,
-  which,
-  perl,
+  _experimental-update-script-combinators,
+  applyPatches,
   autoconf,
   automake,
-  libtool,
-  openssl,
-  systemd,
-  pam,
   fuse3,
+  gitUpdater,
+  lame,
   libdrm,
   libjpeg,
-  libopus,
-  nasm,
-  xorg-server,
-  libxrandr,
-  libxfixes,
-  libx11,
-  xauth,
-  lame,
-  pixman,
   libjpeg_turbo,
-  _experimental-update-script-combinators,
-  gitUpdater,
+  libopus,
+  libtool,
+  libx11,
+  libxfixes,
+  libxrandr,
+  nasm,
   nixosTests,
+  openssl,
+  pam,
+  perl,
+  pixman,
+  pkg-config,
+  systemd,
+  which,
+  xauth,
+  xorg-server,
 }:
 
 let
@@ -41,6 +41,16 @@ let
       rev = "v${version}";
       hash = "sha256-P7mgdHIq7/Vkk5CR4mUYtQ0xBjh3J2QrYAobKbw1KXM=";
     };
+
+    postPatch = ''
+      # patch from Debian, allows to run xrdp daemon under unprivileged user
+      substituteInPlace module/rdpClientCon.c \
+        --replace 'g_sck_listen(dev->listen_sck);' 'g_sck_listen(dev->listen_sck); g_chmod_hex(dev->uds_data, 0x0660);'
+
+      substituteInPlace configure.ac \
+        --replace 'moduledir=`pkg-config xorg-server --variable=moduledir`' "moduledir=$out/lib/xorg/modules" \
+        --replace 'sysconfdir="/etc"' "sysconfdir=$out/etc"
+    '';
 
     nativeBuildInputs = [
       pkg-config
@@ -56,23 +66,12 @@ let
       libdrm
     ];
 
-    postPatch = ''
-      # patch from Debian, allows to run xrdp daemon under unprivileged user
-      substituteInPlace module/rdpClientCon.c \
-        --replace 'g_sck_listen(dev->listen_sck);' 'g_sck_listen(dev->listen_sck); g_chmod_hex(dev->uds_data, 0x0660);'
-
-      substituteInPlace configure.ac \
-        --replace 'moduledir=`pkg-config xorg-server --variable=moduledir`' "moduledir=$out/lib/xorg/modules" \
-        --replace 'sysconfdir="/etc"' "sysconfdir=$out/etc"
-    '';
-
     preConfigure = ''
       ./bootstrap
       export XRDP_CFLAGS="-I${xrdp.src}/common -I${libdrm.dev}/include -I${libdrm.dev}/include/libdrm"
     '';
 
     enableParallelBuilding = true;
-
     passthru.updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
@@ -82,16 +81,23 @@ let
 
     src = applyPatches {
       inherit version;
-      patches = [ ./dynamic_config.patch ];
       name = "xrdp-patched-${version}";
+      patches = [ ./dynamic_config.patch ];
+
       src = fetchFromGitHub {
         owner = "neutrinolabs";
         repo = "xrdp";
         rev = "v${version}";
-        fetchSubmodules = true;
         hash = "sha256-BoIpWafUWznRHN8BaZmld8vVbZtywaGiooGPnDtDCjM=";
+        fetchSubmodules = true;
       };
     };
+
+    postPatch = ''
+      substituteInPlace sesman/sesexec/xauth.c --replace "xauth -q" "${xauth}/bin/xauth -q"
+
+      substituteInPlace configure.ac --replace /usr/include/ ""
+    '';
 
     nativeBuildInputs = [
       pkg-config
@@ -118,17 +124,6 @@ let
       libxrandr
     ];
 
-    postPatch = ''
-      substituteInPlace sesman/sesexec/xauth.c --replace "xauth -q" "${xauth}/bin/xauth -q"
-
-      substituteInPlace configure.ac --replace /usr/include/ ""
-    '';
-
-    preConfigure = ''
-      (cd librfxcodec && ./bootstrap && ./configure --prefix=$out --enable-static --disable-shared)
-      ./bootstrap
-    '';
-    dontDisableStatic = true;
     configureFlags = [
       "--with-systemdsystemunitdir=/var/empty"
       "--enable-fuse"
@@ -144,10 +139,10 @@ let
       "--enable-vsock"
     ];
 
-    installFlags = [
-      "DESTDIR=$(out)"
-      "prefix="
-    ];
+    preConfigure = ''
+      (cd librfxcodec && ./bootstrap && ./configure --prefix=$out --enable-static --disable-shared)
+      ./bootstrap
+    '';
 
     postInstall = ''
       # remove generated keys (as non-deterministic)
@@ -180,16 +175,27 @@ let
       EOF
     '';
 
+    dontDisableStatic = true;
     enableParallelBuilding = true;
+
+    installFlags = [
+      "DESTDIR=$(out)"
+      "prefix="
+    ];
 
     passthru = {
       inherit xorgxrdp;
+
+      tests = {
+        inherit (nixosTests) xrdp;
+      };
+
       updateScript = _experimental-update-script-combinators.sequence (
         map (item: item.command) [
           (gitUpdater {
-            rev-prefix = "v";
             attrPath = "xrdp.src";
             ignoredVersions = [ "beta" ];
+            rev-prefix = "v";
           })
           {
             command = [
@@ -198,23 +204,22 @@ let
             ];
           }
           (gitUpdater {
-            rev-prefix = "v";
             attrPath = "xrdp.xorgxrdp";
+            rev-prefix = "v";
           })
         ]
       );
-      tests = {
-        inherit (nixosTests) xrdp;
-      };
     };
 
     meta = {
       description = "Open source RDP server";
       homepage = "https://github.com/neutrinolabs/xrdp";
       license = lib.licenses.asl20;
+
       maintainers = with lib.maintainers; [
         chvp
       ];
+
       platforms = lib.platforms.linux;
     };
   };

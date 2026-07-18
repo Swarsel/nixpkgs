@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  qt6,
-  minizip,
   fetchFromGitHub,
+  minizip,
   nix-update-script,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,14 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jEXY0RoSKLE3fpdAygyUahaLRlz4X8Xnq+talZwrSRM=";
   };
 
-  buildInputs = [
-    minizip
-    qt6.qtbase
-  ];
-
   nativeBuildInputs = [
     qt6.qmake
     qt6.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    minizip
+    qt6.qtbase
   ];
 
   makeFlags = [
@@ -50,12 +50,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/Youda008/DoomRunner/blob/${finalAttrs.src.rev}/changelog.txt";
     description = "Preset-oriented graphical launcher of various ported Doom engines";
     homepage = "https://github.com/Youda008/DoomRunner";
+    changelog = "https://github.com/Youda008/DoomRunner/blob/${finalAttrs.src.rev}/changelog.txt";
     license = lib.licenses.gpl3Only;
-    mainProgram = "DoomRunner";
     maintainers = with lib.maintainers; [ keenanweaver ];
     platforms = lib.platforms.all;
+    mainProgram = "DoomRunner";
   };
 })

@@ -7,12 +7,12 @@
   SDL2_mixer,
   fontconfig,
   freealut,
-  libglut,
   ftgl,
   gettext,
   glpng,
   libGL,
   libGLU,
+  libglut,
   openal,
   pkg-config,
   quesoglc,
@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     gettext
     pkg-config
   ];
+
   buildInputs = [
     SDL2
     SDL2_image
@@ -58,11 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://chromium-bsu.sourceforge.net/";
     description = "Fast paced, arcade-style, top-scrolling space shooter";
-    mainProgram = "chromium-bsu";
+    homepage = "http://chromium-bsu.sourceforge.net/";
     license = lib.licenses.artistic1;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "chromium-bsu";
   };
 })

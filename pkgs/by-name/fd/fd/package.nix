@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
+  fd,
   installShellFiles,
   rust-jemalloc-sys,
+  rustPlatform,
   testers,
-  fd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,11 +20,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-D1FCry69KqXgLxU4rVmgKjkM3JqeBRQDfbp3sJtVAbU=";
   };
 
-  cargoHash = "sha256-nsFtnt8z1qohOtHpLk3cstrVXi/yOMMPCTt/SEEB1F0=";
-
   nativeBuildInputs = [ installShellFiles ];
-
   buildInputs = [ rust-jemalloc-sys ];
+  cargoHash = "sha256-nsFtnt8z1qohOtHpLk3cstrVXi/yOMMPCTt/SEEB1F0=";
 
   # skip flaky test
   checkFlags = [
@@ -50,24 +48,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Simple, fast and user-friendly alternative to find";
+
     longDescription = ''
       `fd` is a simple, fast and user-friendly alternative to `find`.
 
       While it does not seek to mirror all of `find`'s powerful functionality,
       it provides sensible (opinionated) defaults for 80% of the use cases.
     '';
+
     homepage = "https://github.com/sharkdp/fd";
     changelog = "https://github.com/sharkdp/fd/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       dywedir
       ma27
       zowoq
       matthiasbeyer
     ];
+
     mainProgram = "fd";
   };
 })

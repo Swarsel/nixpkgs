@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   hugo,
 }:
 
@@ -16,8 +16,6 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-QCc/T4SWifVGeN7YpH0YJTZZw+OMC9QapSEmGX5acSQ=";
   };
 
-  dontNpmBuild = true;
-
   npmDepsHash = "sha256-P6XHXR4QcVCRz5ju36OzCTNxXtW9RYxkfhbp7kJVfoY=";
 
   postFixup = ''
@@ -25,15 +23,19 @@ buildNpmPackage (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ hugo ]}
   '';
 
+  dontNpmBuild = true;
+
   meta = {
     description = "CLI to initialize and configure a Blowfish project";
     homepage = "https://blowfish.page";
     changelog = "https://github.com/nunocoracao/blowfish-tools/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       eripa
       thattemperature
     ];
+
     mainProgram = "blowfish-tools";
   };
 })

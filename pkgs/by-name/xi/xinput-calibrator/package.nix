@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitLab,
   desktop-file-utils,
-  pkg-config,
+  libx11,
+  libxi,
+  libxrandr,
   meson,
   ninja,
-  libxrandr,
-  libxi,
-  libx11,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,11 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.8.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "xorg/app";
     repo = "xinput-calibrator";
     tag = "v${finalAttrs.version}";
     hash = "sha256-BxLBLv6g3hfj2ydIliZitGK/oYepvz1LYknvSWnNG58=";
+    domain = "gitlab.freedesktop.org";
   };
 
   nativeBuildInputs = [
@@ -37,12 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://gitlab.freedesktop.org/xorg/app/xinput-calibrator";
     description = "Generic touchscreen calibration program for X.Org";
+    homepage = "https://gitlab.freedesktop.org/xorg/app/xinput-calibrator";
+
     license = with lib.licenses; [
       cc-by-sa-30 # icon
       mit
     ];
+
     maintainers = [ lib.maintainers.flosse ];
     platforms = lib.platforms.linux;
     mainProgram = "xinput_calibrator";

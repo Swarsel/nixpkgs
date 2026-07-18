@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nodejs,
-  pnpm_11,
   fetchPnpmDeps,
-  pnpmConfigHook,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "opencloud-web";
@@ -17,13 +17,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     repo = "web";
     tag = "v${finalAttrs.version}";
     hash = "sha256-BiOue8+zQ3+6RLiDbLMnxKEen2aav3bljji4d+0Hr5c=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-gCsgnOEi9rvtwTZy8J/i63D92Gl2V9ZihxCJ+Y5hLUE=";
   };
 
   nativeBuildInputs = [
@@ -45,6 +38,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-gCsgnOEi9rvtwTZy8J/i63D92Gl2V9ZihxCJ+Y5hLUE=";
+    pnpm = pnpm_11;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -52,10 +52,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/opencloud-eu/web";
     changelog = "https://github.com/opencloud-eu/web/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       christoph-heiss
       k900
     ];
+
     platforms = lib.platforms.all;
   };
 })

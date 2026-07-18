@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
-  makeWrapper,
   coreutils,
   dosfstools,
   findutils,
   gawk,
   gnugrep,
   grub2_light,
+  installShellFiles,
+  makeWrapper,
   ncurses,
   ntfs3g,
-  parted,
   p7zip,
+  parted,
   util-linux,
-  wimlib,
-  wget,
   versionCheckHook,
+  wget,
+  wimlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "5.2.4";
   pname = "woeusb";
+  version = "5.2.4";
 
   src = fetchFromGitHub {
     owner = "WoeUSB";
@@ -31,11 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-HB1E7rP/U58dyL3j6YnhF5AOGAcHqmA/ZZ5JNBDibco=";
   };
 
-  nativeBuildInputs = [
-    installShellFiles
-    makeWrapper
-  ];
-
   postPatch = ''
     # Emulate version smudge filter (see .gitattributes, .gitconfig).
     for file in sbin/woeusb share/man/man1/woeusb.1; do
@@ -43,6 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail '@@WOEUSB_VERSION@@' '${finalAttrs.version}'
     done
   '';
+
+  nativeBuildInputs = [
+    installShellFiles
+    makeWrapper
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -73,10 +73,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "Create bootable USB disks from Windows ISO images";

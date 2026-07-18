@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   doxygen,
-  fetchFromGitHub,
   installShellFiles,
   testers,
   zlib,
@@ -13,18 +13,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "liberasurecode";
   version = "1.6.5";
 
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-  ];
-
   src = fetchFromGitHub {
     owner = "openstack";
     repo = "liberasurecode";
     tag = finalAttrs.version;
     hash = "sha256-242p6lyLM+0UpuYvQqz87Z1S0oayxGXz7CZJW7fbgBk=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+  ];
 
   postPatch = ''
     substituteInPlace doc/doxygen.cfg.in \
@@ -66,7 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Erasure Code API library written in C with pluggable Erasure Code backends";
     homepage = "https://github.com/openstack/liberasurecode";
     license = lib.licenses.bsd2;
-    teams = [ lib.teams.openstack ];
     pkgConfigModules = [ "erasurecode-1" ];
+    teams = [ lib.teams.openstack ];
   };
 })

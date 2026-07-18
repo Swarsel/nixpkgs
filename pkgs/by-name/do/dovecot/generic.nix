@@ -1,59 +1,59 @@
 {
-  version,
   hash,
   patches,
+  version,
 }:
 {
-  autoreconfHook,
-  stdenv,
   lib,
+  stdenv,
+  autoreconfHook,
+  bison,
   buildPackages,
+  bzip2,
+  clucene-core_2,
+  coreutils,
+  cyrus_sasl,
+  dovecot_pigeonhole,
+  fetchpatch,
   fetchzip,
   flex,
-  bison,
+  icu75,
+  inotify-tools,
+  libapparmor,
+  libcap,
+  libexttextcat,
+  libmysqlclient,
+  libpq,
+  libsodium,
+  libstemmer,
+  libtirpc,
+  libunwind,
+  libxcrypt,
+  lua5_3,
+  lz4,
+  nixosTests,
+  openldap,
+  openssl,
+  pam,
+  pcre2,
   perl,
   pkg-config,
+  rpcsvc-proto,
+  sqlite,
   systemd,
-  openssl,
-  bzip2,
-  lz4,
+  xapian,
+  xz,
   zlib,
   zstd,
-  xz,
-  inotify-tools,
-  pam,
-  libcap,
-  coreutils,
-  clucene-core_2,
-  icu75,
-  libexttextcat,
-  libsodium,
-  libxcrypt,
-  libstemmer,
-  cyrus_sasl,
-  xapian,
-  nixosTests,
-  fetchpatch,
-  rpcsvc-proto,
-  libtirpc,
-  dovecot_pigeonhole,
   withApparmor ? false,
-  libapparmor,
   withLDAP ? true,
-  openldap,
-  withPCRE2 ? lib.strings.versionAtLeast version "2.4",
-  pcre2,
-  withUnwind ? false,
-  libunwind,
+  withLua ? false,
   # Auth modules
   withMySQL ? false,
-  libmysqlclient,
+  withPCRE2 ? lib.strings.versionAtLeast version "2.4",
   withPgSQL ? false,
-  libpq,
   withSQLite ? true,
-  sqlite,
-  withLua ? false,
-  lua5_3,
+  withUnwind ? false,
 }:
 let
   # The `nativeBuildInputs` version of `mysql_config` emits headers and libraries for
@@ -70,8 +70,57 @@ let
   '';
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "dovecot";
   inherit version;
+  pname = "dovecot";
+
+  src = fetchzip {
+    inherit hash;
+    url = "https://dovecot.org/releases/${lib.versions.majorMinor finalAttrs.version}/dovecot-${finalAttrs.version}.tar.gz";
+  };
+
+  patches =
+    (patches fetchpatch)
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      # fix timespec calls
+      ./timespec.patch
+    ];
+
+  postPatch = ''
+    sed -i -E \
+      -e 's!/bin/sh\b!${stdenv.shell}!g' \
+      -e 's!([^[:alnum:]/_-])/bin/([[:alnum:]]+)\b!\1${coreutils}/bin/\2!g' \
+      -e 's!([^[:alnum:]/_-])(head|sleep|cat)\b!\1${coreutils}/bin/\2!g' \
+      src/lib-program-client/test-program-client-local.c
+
+    patchShebangs src/lib-smtp/test-bin/*.sh
+    sed -i -s -E 's!\bcat\b!${coreutils}/bin/cat!g' src/lib-smtp/test-bin/*.sh
+
+    patchShebangs src/config/settings-get.pl
+  ''
+  + (
+    let
+      filePath =
+        if lib.strings.versionAtLeast version "2.4" then
+          "src/lib-auth/test-password-scheme.c"
+        else
+          "src/auth/test-libpassword.c";
+    in
+    ''
+      # DES-encrypted passwords are not supported by Nixpkgs anymore
+      sed '/test_password_scheme("CRYPT"/d' -i ${filePath}
+    ''
+  )
+  + lib.optionalString stdenv.hostPlatform.isLinux ''
+    export systemdsystemunitdir=$out/etc/systemd/system
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace configure.ac \
+    --replace-fail \
+      'NOPLUGIN_LDFLAGS="-no-undefined"' \
+      'NOPLUGIN_LDFLAGS="-undefined dynamic_lookup"'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     flex
@@ -118,71 +167,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withSQLite sqlite
   ++ lib.optional withLua lua5_3;
 
-  src = fetchzip {
-    url = "https://dovecot.org/releases/${lib.versions.majorMinor finalAttrs.version}/dovecot-${finalAttrs.version}.tar.gz";
-    inherit hash;
-  };
-
-  enableParallelBuilding = true;
-
-  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-liconv";
-
-  postPatch = ''
-    sed -i -E \
-      -e 's!/bin/sh\b!${stdenv.shell}!g' \
-      -e 's!([^[:alnum:]/_-])/bin/([[:alnum:]]+)\b!\1${coreutils}/bin/\2!g' \
-      -e 's!([^[:alnum:]/_-])(head|sleep|cat)\b!\1${coreutils}/bin/\2!g' \
-      src/lib-program-client/test-program-client-local.c
-
-    patchShebangs src/lib-smtp/test-bin/*.sh
-    sed -i -s -E 's!\bcat\b!${coreutils}/bin/cat!g' src/lib-smtp/test-bin/*.sh
-
-    patchShebangs src/config/settings-get.pl
-  ''
-  + (
-    let
-      filePath =
-        if lib.strings.versionAtLeast version "2.4" then
-          "src/lib-auth/test-password-scheme.c"
-        else
-          "src/auth/test-libpassword.c";
-    in
-    ''
-      # DES-encrypted passwords are not supported by Nixpkgs anymore
-      sed '/test_password_scheme("CRYPT"/d' -i ${filePath}
-    ''
-  )
-  + lib.optionalString stdenv.hostPlatform.isLinux ''
-    export systemdsystemunitdir=$out/etc/systemd/system
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace configure.ac \
-    --replace-fail \
-      'NOPLUGIN_LDFLAGS="-no-undefined"' \
-      'NOPLUGIN_LDFLAGS="-undefined dynamic_lookup"'
-  '';
-
-  preBuild =
-    lib.optionalString (lib.strings.versionOlder version "2.4" && stdenv.hostPlatform.isDarwin)
-      ''
-        export NIX_LDFLAGS="$NIX_LDFLAGS -undefined dynamic_lookup"
-      '';
-
-  # We need this for sysconfdir, see remark below.
-  installFlags = [ "DESTDIR=$(out)" ];
-
-  postInstall = ''
-    cp -r $out/$out/* $out
-    rm -rf $out/$(echo "$out" | cut -d "/" -f2)
-  '';
-
-  patches =
-    (patches fetchpatch)
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      # fix timespec calls
-      ./timespec.patch
-    ];
-
   configureFlags = [
     # It will hardcode this for /var/lib/dovecot.
     # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=626211
@@ -223,13 +207,38 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withPgSQL "--with-pgsql"
   ++ lib.optional withSQLite "--with-sqlite";
 
+  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-liconv";
+
+  preBuild =
+    lib.optionalString (lib.strings.versionOlder version "2.4" && stdenv.hostPlatform.isDarwin)
+      ''
+        export NIX_LDFLAGS="$NIX_LDFLAGS -undefined dynamic_lookup"
+      '';
+
   doCheck = !stdenv.hostPlatform.isDarwin;
 
-  strictDeps = true;
+  postInstall = ''
+    cp -r $out/$out/* $out
+    rm -rf $out/$(echo "$out" | cut -d "/" -f2)
+  '';
+
+  enableParallelBuilding = true;
+  # We need this for sysconfdir, see remark below.
+  installFlags = [ "DESTDIR=$(out)" ];
+
+  passthru = {
+    inherit dovecot_pigeonhole;
+
+    tests = {
+      inherit (nixosTests) dovecot;
+      opensmtpd-interaction = nixosTests.opensmtpd;
+    };
+  };
 
   meta = {
-    homepage = "https://dovecot.org/";
     description = "Open source IMAP and POP3 email server written with security primarily in mind";
+    homepage = "https://dovecot.org/";
+
     license = with lib.licenses; [
       mit
       publicDomain
@@ -237,7 +246,7 @@ stdenv.mkDerivation (finalAttrs: {
       bsd3
       bsdOriginal
     ];
-    mainProgram = "dovecot";
+
     maintainers = with lib.maintainers; [
       das_j
       fpletz
@@ -245,13 +254,8 @@ stdenv.mkDerivation (finalAttrs: {
       jappie3
       prince213
     ];
+
     platforms = lib.platforms.unix;
-  };
-  passthru = {
-    inherit dovecot_pigeonhole;
-    tests = {
-      opensmtpd-interaction = nixosTests.opensmtpd;
-      inherit (nixosTests) dovecot;
-    };
+    mainProgram = "dovecot";
   };
 })

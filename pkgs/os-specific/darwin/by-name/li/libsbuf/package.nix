@@ -1,10 +1,10 @@
 {
   lib,
-  bootstrapStdenv,
+  stdenv,
   fetchurl,
+  bootstrapStdenv,
   meson,
   ninja,
-  stdenv,
 }:
 
 # Apple ships libsbuf with macOS 14 but does not provide any source releases.
@@ -18,43 +18,6 @@ bootstrapStdenv.mkDerivation (finalAttrs: {
     "dev"
     "man"
   ];
-
-  srcs = [
-    (fetchurl {
-      name = "subr_sbuf.c";
-      url = "https://cgit.freebsd.org/src/plain/sys/kern/subr_sbuf.c?h=release/${finalAttrs.version}";
-      hash = "sha256-+wIcXz2wuYzOXmbxjDYBh7lIpoVtw+SW/l7oMXFJUcc=";
-    })
-    (fetchurl {
-      name = "subr_prf.c";
-      url = "https://cgit.freebsd.org/src/plain/sys/kern/subr_prf.c?h=release/${finalAttrs.version}";
-      hash = "sha256-Sd+kJ7/RwwndK1N6YvqQqPTQRA0ajPAT0yk0rOPRpW8=";
-    })
-    (fetchurl {
-      name = "usbuf.h";
-      url = "https://cgit.freebsd.org/src/plain/sys/sys/sbuf.h?h=release/${finalAttrs.version}";
-      hash = "sha256-CCwh9kI/X1u16hHWiiBipvBzDKvo2S2OFtI4Jo6HF0E=";
-    })
-    (fetchurl {
-      name = "sbuf.9";
-      url = "https://cgit.freebsd.org/src/plain/share/man/man9/sbuf.9?h=release/${finalAttrs.version}";
-      hash = "sha256-43uUIGvYX0NvikcGTTJHrokHvubQ89ztLv/BK3MP0YY=";
-    })
-  ];
-
-  sourceRoot = "source";
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    mkdir "$sourceRoot"
-    for src in "''${srcs[@]}"; do
-      destFilename=$(basename "$src")
-      cp "$src" "$sourceRoot/''${src#*-}"
-    done
-
-    runHook postUnpack
-  '';
 
   patches = [
     # Fix up sources to build on Darwin and follow the same ABI used by Apple.
@@ -73,14 +36,52 @@ bootstrapStdenv.mkDerivation (finalAttrs: {
   ];
 
   __structuredAttrs = true;
+  sourceRoot = "source";
+
+  srcs = [
+    (fetchurl {
+      hash = "sha256-+wIcXz2wuYzOXmbxjDYBh7lIpoVtw+SW/l7oMXFJUcc=";
+      name = "subr_sbuf.c";
+      url = "https://cgit.freebsd.org/src/plain/sys/kern/subr_sbuf.c?h=release/${finalAttrs.version}";
+    })
+    (fetchurl {
+      hash = "sha256-Sd+kJ7/RwwndK1N6YvqQqPTQRA0ajPAT0yk0rOPRpW8=";
+      name = "subr_prf.c";
+      url = "https://cgit.freebsd.org/src/plain/sys/kern/subr_prf.c?h=release/${finalAttrs.version}";
+    })
+    (fetchurl {
+      hash = "sha256-CCwh9kI/X1u16hHWiiBipvBzDKvo2S2OFtI4Jo6HF0E=";
+      name = "usbuf.h";
+      url = "https://cgit.freebsd.org/src/plain/sys/sys/sbuf.h?h=release/${finalAttrs.version}";
+    })
+    (fetchurl {
+      hash = "sha256-43uUIGvYX0NvikcGTTJHrokHvubQ89ztLv/BK3MP0YY=";
+      name = "sbuf.9";
+      url = "https://cgit.freebsd.org/src/plain/share/man/man9/sbuf.9?h=release/${finalAttrs.version}";
+    })
+  ];
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    mkdir "$sourceRoot"
+    for src in "''${srcs[@]}"; do
+      destFilename=$(basename "$src")
+      cp "$src" "$sourceRoot/''${src#*-}"
+    done
+
+    runHook postUnpack
+  '';
 
   meta = {
     description = "Safely compose and manipulate strings in C";
     homepage = "https://www.freebsd.org";
+
     license = [
       lib.licenses.bsd2
       lib.licenses.bsd3
     ];
+
     platforms = lib.platforms.darwin;
   };
 })

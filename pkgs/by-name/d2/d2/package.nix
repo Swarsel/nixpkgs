@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
-  git,
-  testers,
+  buildGoModule,
   d2,
+  git,
+  installShellFiles,
   libdrm,
   libgbm,
   makeWrapper,
   playwright-driver,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,16 +24,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZRAvMcJKQmvcBbT2foKDYS0gTeqOZqFu3V3iXIbfLsQ=";
   };
 
-  vendorHash = "sha256-UZDk2upJ0xTSAg/DpRHCzdAOLnaeI0WLMJ6jNt8elKI=";
-
-  excludedPackages = [ "./e2etests" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X oss.terrastruct.com/d2/lib/version.Version=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
@@ -44,7 +34,13 @@ buildGoModule (finalAttrs: {
     playwright-driver.browsers
   ];
 
+  vendorHash = "sha256-UZDk2upJ0xTSAg/DpRHCzdAOLnaeI0WLMJ6jNt8elKI=";
   nativeCheckInputs = [ git ];
+
+  preCheck = ''
+    # See https://github.com/terrastruct/d2/blob/master/docs/CONTRIBUTING.md#running-tests.
+    export TESTDATA_ACCEPT=1
+  '';
 
   postInstall = ''
     installManPage ci/release/template/man/d2.1
@@ -55,24 +51,29 @@ buildGoModule (finalAttrs: {
       --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath finalAttrs.buildInputs}
   '';
 
-  preCheck = ''
-    # See https://github.com/terrastruct/d2/blob/master/docs/CONTRIBUTING.md#running-tests.
-    export TESTDATA_ACCEPT=1
-  '';
+  excludedPackages = [ "./e2etests" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X oss.terrastruct.com/d2/lib/version.Version=v${finalAttrs.version}"
+  ];
 
   passthru.tests.version = testers.testVersion {
-    package = d2;
     version = "v${finalAttrs.version}";
+    package = d2;
   };
 
   meta = {
     description = "Modern diagram scripting language that turns text to diagrams";
-    mainProgram = "d2";
     homepage = "https://d2lang.com";
     changelog = "https://github.com/terrastruct/d2/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       kashw2
     ];
+
+    mainProgram = "d2";
   };
 })

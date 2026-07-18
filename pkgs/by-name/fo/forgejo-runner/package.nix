@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   buildGoModule,
   fetchFromGitea,
-  nixosTests,
-  versionCheckHook,
-  nix-update-script,
   gitMinimal,
   makeWrapper,
+  nix-update-script,
+  nixosTests,
+  versionCheckHook,
 }:
 
 let
@@ -58,29 +58,16 @@ buildGoModule (finalAttrs: {
   version = "12.13.0";
 
   src = fetchFromGitea {
-    domain = "code.forgejo.org";
     owner = "forgejo";
     repo = "runner";
     rev = "v${finalAttrs.version}";
     hash = "sha256-wrHZ4vgWNw0tbcNpZesU5SoV2gqle1MJcPjj6lNMwOw=";
+    domain = "code.forgejo.org";
   };
 
-  vendorHash = "sha256-du7fXehcxZ70Lsr5VCkz646G0Us/XwM4Sl98HXimoao=";
-
   nativeBuildInputs = [ makeWrapper ];
-
-  # See upstream Makefile
-  # https://code.forgejo.org/forgejo/runner/src/branch/main/Makefile
-  tags = [
-    "netgo"
-    "osusergo"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X code.forgejo.org/forgejo/runner/v12/internal/pkg/ver.version=${finalAttrs.src.rev}"
-  ];
+  vendorHash = "sha256-du7fXehcxZ70Lsr5VCkz646G0Us/XwM4Sl98HXimoao=";
+  nativeCheckInputs = [ gitMinimal ];
 
   checkFlags = [
     "-skip ${lib.concatStringsSep "|" disabledTests}"
@@ -98,18 +85,31 @@ buildGoModule (finalAttrs: {
     ln -s $out/bin/forgejo-runner $out/bin/act_runner
   '';
 
-  nativeCheckInputs = [ gitMinimal ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X code.forgejo.org/forgejo/runner/v12/internal/pkg/ver.version=${finalAttrs.src.rev}"
+  ];
+
+  # See upstream Makefile
+  # https://code.forgejo.org/forgejo/runner/src/branch/main/Makefile
+  tags = [
+    "netgo"
+    "osusergo"
+  ];
+
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
       latest = nixosTests.forgejo.sqlite3;
       lts = nixosTests.forgejo-lts.sqlite3;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -118,7 +118,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://code.forgejo.org/forgejo/runner/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ nrabulinski ];
-    teams = [ lib.teams.forgejo ];
     mainProgram = "forgejo-runner";
+    teams = [ lib.teams.forgejo ];
   };
 })

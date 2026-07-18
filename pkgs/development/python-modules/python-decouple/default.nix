@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "python-decouple";
   version = "3.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "HBNetwork";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "decouple" ];
 
   meta = {

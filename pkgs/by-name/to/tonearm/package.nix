@@ -1,4 +1,5 @@
 {
+  lib,
   buildGoModule,
   cairo,
   copyDesktopItems,
@@ -10,12 +11,11 @@
   graphene,
   gst_all_1,
   gtk4,
-  lib,
   libadwaita,
-  libsecret,
   librsvg,
-  makeDesktopItem,
+  libsecret,
   makeBinaryWrapper,
+  makeDesktopItem,
   nix-update-script,
   pango,
   pkg-config,
@@ -25,6 +25,7 @@
 let
   libraryPath = symlinkJoin {
     name = "tonearm-puregotk-lib-folder";
+
     paths = [
       cairo
       gdk-pixbuf
@@ -40,19 +41,21 @@ let
   };
 in
 buildGoModule (finalAttrs: {
-  __structuredAttrs = true;
   pname = "tonearm";
   version = "1.4.2";
+
   src = fetchFromCodeberg {
     owner = "dergs";
     repo = "Tonearm";
     tag = "v${finalAttrs.version}";
     hash = "sha256-XXL0PfBNBuYkoDocZTWr26ogcgPJX6fUkzj9ccEmt84=";
   };
-  vendorHash = "sha256-vOkOSquBbWjx1eK7h3vmmHKzaopkbu2iL5mbknMo1Kg=";
 
-  ldflags = [
-    "-X \"codeberg.org/dergs/tonearm/internal/ui.Version=${finalAttrs.version}\""
+  nativeBuildInputs = [
+    pkg-config
+    copyDesktopItems
+    makeBinaryWrapper
+    wrapGAppsHook4
   ];
 
   buildInputs = [
@@ -64,37 +67,9 @@ buildGoModule (finalAttrs: {
     gtk4
     libsecret
   ];
+
+  vendorHash = "sha256-vOkOSquBbWjx1eK7h3vmmHKzaopkbu2iL5mbknMo1Kg=";
   doCheck = false;
-  nativeBuildInputs = [
-    pkg-config
-    copyDesktopItems
-    makeBinaryWrapper
-    wrapGAppsHook4
-  ];
-
-  subPackages = [
-    "cmd/tonearm"
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "dev.dergs.Tonearm";
-      exec = "tonearm %u";
-      icon = "dev.dergs.Tonearm";
-      comment = "Tonearm is a GTK client for TIDAL written in GoLang.";
-      desktopName = "Tonearm";
-      mimeTypes = [
-        "x-scheme-handler/tidal"
-      ];
-      categories = [
-        "Audio"
-        "AudioVideo"
-        "Music"
-        "GNOME"
-        "GTK"
-      ];
-    })
-  ];
 
   postInstall = ''
     wrapProgram $out/bin/tonearm \
@@ -108,17 +83,52 @@ buildGoModule (finalAttrs: {
     glib-compile-schemas $out/share/glib-2.0/schemas
   '';
 
+  __structuredAttrs = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "AudioVideo"
+        "Music"
+        "GNOME"
+        "GTK"
+      ];
+
+      comment = "Tonearm is a GTK client for TIDAL written in GoLang.";
+      desktopName = "Tonearm";
+      exec = "tonearm %u";
+      icon = "dev.dergs.Tonearm";
+
+      mimeTypes = [
+        "x-scheme-handler/tidal"
+      ];
+
+      name = "dev.dergs.Tonearm";
+    })
+  ];
+
+  ldflags = [
+    "-X \"codeberg.org/dergs/tonearm/internal/ui.Version=${finalAttrs.version}\""
+  ];
+
+  subPackages = [
+    "cmd/tonearm"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "GTK client for TIDAL written in Golang";
     homepage = "https://codeberg.org/dergs/Tonearm";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       drafolin
       nilathedragon
     ];
-    mainProgram = "tonearm";
+
     platforms = lib.platforms.unix;
+    mainProgram = "tonearm";
   };
 })

@@ -28,16 +28,18 @@ stdenv.mkDerivation (finalAttrs: {
     description = ''
       A Groovy-based DSL for working with remote SSH servers
     '';
-    mainProgram = "sshoogr";
+
     longDescription = ''
       The sshoogr (pronounced [ʃʊgə]) is a Groovy-based DSL library for working
       with remote servers through SSH. The DSL allows: connecting, executing
       remote commands, copying files and directories, creating tunnels in a
       simple and concise way.
     '';
+
     homepage = "https://github.com/aestasit/sshoogr";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ moaxcp ];
+    platforms = lib.platforms.all;
+    mainProgram = "sshoogr";
   };
 })

@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  pbr,
-  setuptools,
-
   # dependencies
   aiohttp,
-
+  buildPythonPackage,
   # tests
   ddt,
+  fetchPypi,
+  # build-system
+  pbr,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aioresponses";
   version = "0.7.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -44,8 +40,6 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ aiohttp ];
 
-  pythonImportsCheck = [ "aioresponses" ];
-
   nativeCheckInputs = [
     ddt
     pytestCheckHook
@@ -57,6 +51,9 @@ buildPythonPackage rec {
     "test_pass_through_with_origin_params"
     "test_pass_through_unmatched_requests"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aioresponses" ];
 
   meta = {
     description = "Helper to mock/fake web requests in python aiohttp package";

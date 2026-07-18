@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  versioneer,
-  pyyaml,
+  buildPythonPackage,
   cloudpickle,
   pytestCheckHook,
+  pyyaml,
+  setuptools,
+  versioneer,
 }:
 
 buildPythonPackage rec {
   pname = "donfig";
   version = "0.8.1.post1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytroll";
@@ -26,6 +25,11 @@ buildPythonPackage rec {
       --replace-fail "versioneer[toml]==0.28" versioneer
   '';
 
+  nativeCheckInputs = [
+    cloudpickle
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     versioneer
@@ -35,10 +39,7 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    cloudpickle
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "donfig"

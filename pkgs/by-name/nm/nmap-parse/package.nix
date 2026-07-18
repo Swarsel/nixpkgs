@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "nmap-parse";
   version = "0-unstable-2022-09-26";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "jonny1102";
@@ -25,6 +24,9 @@ python3.pkgs.buildPythonApplication {
     tabulate
   ];
 
+  # Project has no tests
+  doCheck = false;
+
   installPhase = ''
     runHook preInstall
 
@@ -36,8 +38,7 @@ python3.pkgs.buildPythonApplication {
     runHook postInstall
   '';
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = false;
 
   meta = {
     description = "Command line nmap XML parser";

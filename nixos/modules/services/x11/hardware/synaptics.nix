@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 
@@ -36,154 +36,167 @@ in
     services.xserver.synaptics = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether to enable touchpad support. Deprecated: Consider services.libinput.enable.";
-      };
-
-      dev = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        example = "/dev/input/event0";
-        description = ''
-          Path for touchpad device.  Set to null to apply to any
-          auto-detected touchpad.
-        '';
+        type = types.bool;
       };
 
       accelFactor = mkOption {
-        type = types.nullOr types.str;
         default = "0.001";
         description = "Cursor acceleration (how fast speed increases from minSpeed to maxSpeed).";
-      };
-
-      minSpeed = mkOption {
         type = types.nullOr types.str;
-        default = "0.6";
-        description = "Cursor speed factor for precision finger motion.";
-      };
-
-      maxSpeed = mkOption {
-        type = types.nullOr types.str;
-        default = "1.0";
-        description = "Cursor speed factor for highest-speed finger motion.";
-      };
-
-      scrollDelta = mkOption {
-        type = types.nullOr types.int;
-        default = null;
-        example = 75;
-        description = "Move distance of the finger for a scroll event.";
-      };
-
-      twoFingerScroll = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to enable two-finger drag-scrolling. Overridden by horizTwoFingerScroll and vertTwoFingerScroll.";
-      };
-
-      horizTwoFingerScroll = mkOption {
-        type = types.bool;
-        default = cfg.twoFingerScroll;
-        defaultText = literalExpression "config.${opt.twoFingerScroll}";
-        description = "Whether to enable horizontal two-finger drag-scrolling.";
-      };
-
-      vertTwoFingerScroll = mkOption {
-        type = types.bool;
-        default = cfg.twoFingerScroll;
-        defaultText = literalExpression "config.${opt.twoFingerScroll}";
-        description = "Whether to enable vertical two-finger drag-scrolling.";
-      };
-
-      horizEdgeScroll = mkOption {
-        type = types.bool;
-        default = !cfg.horizTwoFingerScroll;
-        defaultText = literalExpression "! config.${opt.horizTwoFingerScroll}";
-        description = "Whether to enable horizontal edge drag-scrolling.";
-      };
-
-      vertEdgeScroll = mkOption {
-        type = types.bool;
-        default = !cfg.vertTwoFingerScroll;
-        defaultText = literalExpression "! config.${opt.vertTwoFingerScroll}";
-        description = "Whether to enable vertical edge drag-scrolling.";
-      };
-
-      tapButtons = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Whether to enable tap buttons.";
-      };
-
-      buttonsMap = mkOption {
-        type = types.listOf types.int;
-        default = [
-          1
-          2
-          3
-        ];
-        example = [
-          1
-          3
-          2
-        ];
-        description = "Remap touchpad buttons.";
-        apply = map toString;
-      };
-
-      fingersMap = mkOption {
-        type = types.listOf types.int;
-        default = [
-          1
-          2
-          3
-        ];
-        example = [
-          1
-          3
-          2
-        ];
-        description = "Remap several-fingers taps.";
-        apply = map toString;
-      };
-
-      palmDetect = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to enable palm detection (hardware support required)";
-      };
-
-      palmMinWidth = mkOption {
-        type = types.nullOr types.int;
-        default = null;
-        example = 5;
-        description = "Minimum finger width at which touch is considered a palm";
-      };
-
-      palmMinZ = mkOption {
-        type = types.nullOr types.int;
-        default = null;
-        example = 20;
-        description = "Minimum finger pressure at which touch is considered a palm";
-      };
-
-      horizontalScroll = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Whether to enable horizontal scrolling (on touchpad)";
       };
 
       additionalOptions = mkOption {
-        type = types.str;
         default = "";
+
+        description = ''
+          Additional options for synaptics touchpad driver.
+        '';
+
         example = ''
           Option "RTCornerButton" "2"
           Option "RBCornerButton" "3"
         '';
+
+        type = types.str;
+      };
+
+      buttonsMap = mkOption {
+        apply = map toString;
+
+        default = [
+          1
+          2
+          3
+        ];
+
+        description = "Remap touchpad buttons.";
+
+        example = [
+          1
+          3
+          2
+        ];
+
+        type = types.listOf types.int;
+      };
+
+      dev = mkOption {
+        default = null;
+
         description = ''
-          Additional options for synaptics touchpad driver.
+          Path for touchpad device.  Set to null to apply to any
+          auto-detected touchpad.
         '';
+
+        example = "/dev/input/event0";
+        type = types.nullOr types.str;
+      };
+
+      fingersMap = mkOption {
+        apply = map toString;
+
+        default = [
+          1
+          2
+          3
+        ];
+
+        description = "Remap several-fingers taps.";
+
+        example = [
+          1
+          3
+          2
+        ];
+
+        type = types.listOf types.int;
+      };
+
+      horizEdgeScroll = mkOption {
+        default = !cfg.horizTwoFingerScroll;
+        defaultText = literalExpression "! config.${opt.horizTwoFingerScroll}";
+        description = "Whether to enable horizontal edge drag-scrolling.";
+        type = types.bool;
+      };
+
+      horizTwoFingerScroll = mkOption {
+        default = cfg.twoFingerScroll;
+        defaultText = literalExpression "config.${opt.twoFingerScroll}";
+        description = "Whether to enable horizontal two-finger drag-scrolling.";
+        type = types.bool;
+      };
+
+      horizontalScroll = mkOption {
+        default = true;
+        description = "Whether to enable horizontal scrolling (on touchpad)";
+        type = types.bool;
+      };
+
+      maxSpeed = mkOption {
+        default = "1.0";
+        description = "Cursor speed factor for highest-speed finger motion.";
+        type = types.nullOr types.str;
+      };
+
+      minSpeed = mkOption {
+        default = "0.6";
+        description = "Cursor speed factor for precision finger motion.";
+        type = types.nullOr types.str;
+      };
+
+      palmDetect = mkOption {
+        default = false;
+        description = "Whether to enable palm detection (hardware support required)";
+        type = types.bool;
+      };
+
+      palmMinWidth = mkOption {
+        default = null;
+        description = "Minimum finger width at which touch is considered a palm";
+        example = 5;
+        type = types.nullOr types.int;
+      };
+
+      palmMinZ = mkOption {
+        default = null;
+        description = "Minimum finger pressure at which touch is considered a palm";
+        example = 20;
+        type = types.nullOr types.int;
+      };
+
+      scrollDelta = mkOption {
+        default = null;
+        description = "Move distance of the finger for a scroll event.";
+        example = 75;
+        type = types.nullOr types.int;
+      };
+
+      tapButtons = mkOption {
+        default = true;
+        description = "Whether to enable tap buttons.";
+        type = types.bool;
+      };
+
+      twoFingerScroll = mkOption {
+        default = false;
+        description = "Whether to enable two-finger drag-scrolling. Overridden by horizTwoFingerScroll and vertTwoFingerScroll.";
+        type = types.bool;
+      };
+
+      vertEdgeScroll = mkOption {
+        default = !cfg.vertTwoFingerScroll;
+        defaultText = literalExpression "! config.${opt.vertTwoFingerScroll}";
+        description = "Whether to enable vertical edge drag-scrolling.";
+        type = types.bool;
+      };
+
+      vertTwoFingerScroll = mkOption {
+        default = cfg.twoFingerScroll;
+        defaultText = literalExpression "config.${opt.twoFingerScroll}";
+        description = "Whether to enable vertical two-finger drag-scrolling.";
+        type = types.bool;
       };
 
     };
@@ -192,10 +205,14 @@ in
 
   config = mkIf cfg.enable {
 
-    services.xserver.modules = [ pkg.out ];
+    assertions = [
+      {
+        assertion = !config.services.libinput.enable;
+        message = "Synaptics and libinput are incompatible, you cannot enable both.";
+      }
+    ];
 
     environment.etc.${etcFile}.source = "${pkg.out}/share/X11/xorg.conf.d/70-synaptics.conf";
-
     environment.systemPackages = [ pkg ];
 
     services.xserver.config = ''
@@ -236,12 +253,7 @@ in
       EndSection
     '';
 
-    assertions = [
-      {
-        assertion = !config.services.libinput.enable;
-        message = "Synaptics and libinput are incompatible, you cannot enable both.";
-      }
-    ];
+    services.xserver.modules = [ pkg.out ];
 
   };
 

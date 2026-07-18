@@ -1,31 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
-  # dependencies
-  scikit-learn,
-  numpy,
-  scipy,
+  buildPythonPackage,
   colorama,
-  packaging,
-
   # tests
   jupyter,
   matplotlib,
   nbconvert,
   nbformat,
+  numpy,
+  packaging,
   pytestCheckHook,
+  # dependencies
+  scikit-learn,
+  scipy,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "bayesian-optimization";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bayesian-optimization";
@@ -39,6 +35,15 @@ buildPythonPackage rec {
       --replace-fail "uv_build>=0.7.21,<0.8.0" "uv_build"
   '';
 
+  nativeCheckInputs = [
+    jupyter
+    matplotlib
+    nbconvert
+    nbformat
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ uv-build ];
 
   dependencies = [
@@ -49,17 +54,8 @@ buildPythonPackage rec {
     packaging
   ];
 
-  nativeCheckInputs = [
-    jupyter
-    matplotlib
-    nbconvert
-    nbformat
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bayes_opt" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Python implementation of global optimization with gaussian processes";

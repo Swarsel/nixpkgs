@@ -1,28 +1,30 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
   aiohttp,
   aiohttp-socks,
   aiorpcx,
+  buildPythonPackage,
+  click,
   cryptography,
   electrum-ecc,
-  click,
+  fetchPypi,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "electrum-aionostr";
   version = "0.1.0";
-  pyproject = true;
-  build-system = [ setuptools ];
 
   src = fetchPypi {
-    pname = "electrum_aionostr";
     inherit version;
     hash = "sha256-N3T46DEjiCcuEIUahpyfTT1KVNjVZIUcNuLcQCl77IQ=";
+    pname = "electrum_aionostr";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  checkInputs = [ click ];
+  build-system = [ setuptools ];
 
   dependencies = [
     aiohttp
@@ -32,16 +34,13 @@ buildPythonPackage rec {
     electrum-ecc
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  checkInputs = [ click ];
-
-  pythonImportsCheck = [ "electrum_aionostr" ];
-
   disabledTests = [
     # command line interface is broken
     "test_command_line_interface"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "electrum_aionostr" ];
 
   meta = {
     description = "Asyncio nostr client";

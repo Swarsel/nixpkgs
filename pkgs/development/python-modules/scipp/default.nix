@@ -1,46 +1,40 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  scikit-build-core,
-  setuptools,
-  setuptools-scm,
-
-  # nativeBuildInputs
-  cmake,
-  ninja,
-
-  # dependencies
-  numpy,
-  units-llnl,
-
+  beautifulsoup4,
   # buildInputs
   boost,
+  buildPythonPackage,
+  # nativeBuildInputs
+  cmake,
   eigen,
   gtest,
-  pybind11,
-  onetbb,
-
-  # tests
-  pytestCheckHook,
-  scipy,
-  beautifulsoup4,
-  ipython,
-  matplotlib,
-  pandas,
-  numba,
-  xarray,
   h5py,
   hypothesis,
+  ipython,
+  matplotlib,
+  ninja,
+  numba,
+  # dependencies
+  numpy,
+  onetbb,
+  pandas,
+  pybind11,
+  # tests
+  pytestCheckHook,
+  # build-system
+  scikit-build-core,
+  scipy,
+  setuptools,
+  setuptools-scm,
+  units-llnl,
+  xarray,
 }:
 
 buildPythonPackage rec {
   pname = "scipp";
   version = "26.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scipp";
@@ -48,24 +42,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-Jbp7dOEAnXe9kBcYt35iC01i6FnZkFY5n9okGCeuuL4=";
   };
-  env = {
-    SKIP_REMOTE_SOURCES = "true";
-  };
-
-  build-system = [
-    scikit-build-core
-    setuptools
-    setuptools-scm
-  ];
 
   nativeBuildInputs = [
     cmake
     ninja
-  ];
-  dontUseCmakeConfigure = true;
-
-  dependencies = [
-    numpy
   ];
 
   buildInputs = [
@@ -76,6 +56,10 @@ buildPythonPackage rec {
     units-llnl.passthru.top-level
     onetbb
   ];
+
+  env = {
+    SKIP_REMOTE_SOURCES = "true";
+  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -89,6 +73,20 @@ buildPythonPackage rec {
     h5py
     hypothesis
   ];
+
+  build-system = [
+    scikit-build-core
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    numpy
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
   pytestFlags = [
     # See https://github.com/scipp/scipp/issues/3721
     "--hypothesis-profile=ci"

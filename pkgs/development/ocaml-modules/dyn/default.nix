@@ -6,15 +6,15 @@
 }:
 
 buildDunePackage {
-  pname = "dyn";
   inherit (dune) version src;
-
-  dontAddPrefix = true;
+  pname = "dyn";
 
   propagatedBuildInputs = [
     ordering
     pp
   ];
+
+  dontAddPrefix = true;
 
   meta = dune.meta // {
     description = "Dynamic type";

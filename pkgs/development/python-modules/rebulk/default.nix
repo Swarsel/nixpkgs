@@ -10,19 +10,16 @@
 buildPythonPackage rec {
   pname = "rebulk";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-DTC/gPygD6nGlxhaxHXarJveX2Rs4zOMn/XV3B69/rw=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ regex ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ regex ];
+  pyproject = true;
   pythonImportsCheck = [ "rebulk" ];
 
   meta = {

@@ -14,11 +14,7 @@ stdenv.mkDerivation {
     hash = "sha256-G+xDYKJvHPMzwnktkg9cpNTv9E9d5QFgDjReuKH57HQ=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ fontforge ];
-
-  dontConfigure = true;
 
   buildPhase = ''
     runHook preBuild
@@ -50,10 +46,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+  sourceRoot = ".";
+
   meta = {
     description = "Linux Libertine Fonts";
     homepage = "http://linuxlibertine.sf.net";
-    maintainers = with lib.maintainers; [ erdnaxe ];
     license = lib.licenses.ofl;
+    maintainers = with lib.maintainers; [ erdnaxe ];
   };
 }

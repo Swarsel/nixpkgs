@@ -1,22 +1,19 @@
 {
   lib,
-  callPackage,
+  stdenv,
   fetchFromGitHub,
-
-  rustPlatform,
-
+  bzip2,
+  callPackage,
+  coreutils,
+  nix-update-script,
   pkg-config,
   python3,
   python3Packages,
-  bzip2,
-  zstd,
-  stdenv,
-
-  coreutils,
+  rustPlatform,
   sqlite,
-  writeShellApplication,
   symlinkJoin,
-  nix-update-script,
+  writeShellApplication,
+  zstd,
 }:
 
 let
@@ -34,38 +31,39 @@ let
   meta = {
     description = "Open source selfhosted spreadsheet engine";
     homepage = "https://github.com/ironcalc/IronCalc";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    mainProgram = "ironcalc";
+
     maintainers = with lib.maintainers; [ phanirithvij ];
-    teams = with lib.teams; [ ngi ];
+    mainProgram = "ironcalc";
     # see checkNoDefaultFeatures below
     broken = stdenv.hostPlatform.isAarch64;
+    teams = with lib.teams; [ ngi ];
   };
 
   server = rustPlatform.buildRustPackage {
-    pname = "ironcalc-server";
     inherit src version;
-
-    buildAndTestSubdir = "webapp/app.ironcalc.com/server";
-    cargoRoot = "webapp/app.ironcalc.com/server";
-
-    cargoHash = "sha256-46IwZJI9AOs+IQFbfz89A2yIi5db7rVMVNsO9W+tn+c=";
-
-    __structuredAttrs = true;
+    pname = "ironcalc-server";
     strictDeps = true;
-
     nativeBuildInputs = [ pkg-config ];
+
     buildInputs = [
       bzip2
       zstd
     ];
 
+    cargoHash = "sha256-46IwZJI9AOs+IQFbfz89A2yIi5db7rVMVNsO9W+tn+c=";
+
     postInstall = ''
       install -Dm644 webapp/app.ironcalc.com/server/init_db.sql $out/share/ironcalc/init_db.sql
     '';
+
+    __structuredAttrs = true;
+    buildAndTestSubdir = "webapp/app.ironcalc.com/server";
+    cargoRoot = "webapp/app.ironcalc.com/server";
 
     meta = meta // {
       description = "IronCalc server package";
@@ -82,16 +80,15 @@ let
     ;
 
   tools = rustPlatform.buildRustPackage {
-    pname = "ironcalc-tools";
     inherit src version;
     inherit cargoHash;
+    pname = "ironcalc-tools";
 
     patches = [
       # nix specific issue, can't reproduce without nix, not upstreaming
       ./0001-FIX-test-message.patch
     ];
 
-    __structuredAttrs = true;
     strictDeps = true;
 
     nativeBuildInputs = [
@@ -105,13 +102,8 @@ let
     ];
 
     doCheck = true;
-
-    # for aarch64-darwin and aarch64-linux
-    # there are a lot of undefined references to Py
-    # https://github.com/PyO3/pyo3/issues/1800
-    checkNoDefaultFeatures = stdenv.hostPlatform.isAarch64;
-
     doInstallCheck = true;
+
     installCheckPhase = ''
       runHook preInstallCheck
       { $out/bin/xlsx_2_icalc 2>&1 || true; } | grep -q "Usage:"
@@ -120,6 +112,12 @@ let
       test -f test.ic
       runHook postInstallCheck
     '';
+
+    __structuredAttrs = true;
+    # for aarch64-darwin and aarch64-linux
+    # there are a lot of undefined references to Py
+    # https://github.com/PyO3/pyo3/issues/1800
+    checkNoDefaultFeatures = stdenv.hostPlatform.isAarch64;
 
     meta = meta // {
       description = "IronCalc helper tools";
@@ -157,15 +155,16 @@ let
   docs = callPackage ./docs.nix { };
 in
 symlinkJoin {
-  pname = "ironcalc";
   inherit version;
+  inherit meta;
+  pname = "ironcalc";
+  strictDeps = true;
+  __structuredAttrs = true;
+
   paths = [
     tools
     wrapper
   ];
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   passthru =
     let
@@ -188,10 +187,9 @@ symlinkJoin {
         src
         cargoHash
         ;
-      updateScript = [ ./update.sh ];
+
       tests = exports;
+      updateScript = [ ./update.sh ];
     }
     // exports;
-
-  inherit meta;
 }

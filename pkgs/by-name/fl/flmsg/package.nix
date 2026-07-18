@@ -8,21 +8,21 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "4.0.23";
   pname = "flmsg";
+  version = "4.0.23";
 
   src = fetchurl {
     url = "mirror://sourceforge/fldigi/flmsg-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-3eR0wrzkNjlqm5xW5dtgihs33cVUmZeS0/rf+xnPeRY=";
   };
 
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
   buildInputs = [
     fltk_1_3
     libjpeg
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
   ];
 
   meta = {

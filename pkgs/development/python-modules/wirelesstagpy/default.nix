@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
+  buildPythonPackage,
   pytestCheckHook,
+  requests,
   requests-mock,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "wirelesstagpy";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sergeymaysak";
@@ -20,21 +19,21 @@ buildPythonPackage rec {
     hash = "sha256-xmcXBlApteGAQwfNx6fmFkP7enRy3Iy19+6mAjc7LWA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytestCheckHook
     requests-mock
   ];
 
-  enabledTests = [ "test" ];
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   disabledTestPaths = [
     # Requires tl.testing dependency
     "test/test_cloud_push.py"
   ];
+
+  enabledTests = [ "test" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "wirelesstagpy"

@@ -30,14 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
     "VER=${finalAttrs.version}"
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-DluaL_reg=luaL_Reg"; # needed since luajit-2.1.0-beta3
+
   preBuild = ''
     for f in src/*.h; do
       substituteInPlace $f \
         --replace "#include <luajit-2.0/" "#include <"
     done
   '';
-
-  env.NIX_CFLAGS_COMPILE = "-DluaL_reg=luaL_Reg"; # needed since luajit-2.1.0-beta3
 
   installPhase = ''
     mkdir -p $out/bin
@@ -46,13 +46,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "HTTP benchmarking tool";
-    homepage = "https://github.com/wg/wrk";
+
     longDescription = ''
       wrk is a modern HTTP benchmarking tool capable of generating
       significant load when run on a single multi-core CPU. It
       combines a multithreaded design with scalable event notification
       systems such as epoll and kqueue.
     '';
+
+    homepage = "https://github.com/wg/wrk";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ragge ];
     platforms = lib.platforms.unix;

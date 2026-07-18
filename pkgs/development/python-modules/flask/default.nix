@@ -1,42 +1,37 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  flit-core,
-
-  # dependencies
-  blinker,
-  click,
-  itsdangerous,
-  jinja2,
-  werkzeug,
-
   # optional-dependencies
   asgiref,
-  python-dotenv,
-
-  # tests
-  pytestCheckHook,
-
+  # dependencies
+  blinker,
+  buildPythonPackage,
+  click,
+  fetchPypi,
   # reverse dependencies
   flask-limiter,
   flask-restful,
   flask-restx,
+  # build-system
+  flit-core,
+  itsdangerous,
+  jinja2,
   moto,
+  # tests
+  pytestCheckHook,
+  python-dotenv,
+  werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "flask";
   version = "3.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-v2VsFcgBkO1iitCM39Oqo1vrCHhV4vSUkQqjd0zE/Yc=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -52,7 +47,7 @@ buildPythonPackage rec {
     dotenv = [ python-dotenv ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
+  pyproject = true;
 
   passthru.tests = {
     inherit
@@ -64,12 +59,8 @@ buildPythonPackage rec {
   };
 
   meta = {
-    changelog = "https://flask.palletsprojects.com/en/stable/changes/#version-${
-      lib.replaceStrings [ "." ] [ "-" ] version
-    }";
-    homepage = "https://flask.palletsprojects.com/";
     description = "Python micro framework for building web applications";
-    mainProgram = "flask";
+
     longDescription = ''
       Flask is a lightweight WSGI web application framework. It is
       designed to make getting started quick and easy, with the ability
@@ -77,7 +68,15 @@ buildPythonPackage rec {
       around Werkzeug and Jinja and has become one of the most popular
       Python web application frameworks.
     '';
+
+    homepage = "https://flask.palletsprojects.com/";
+
+    changelog = "https://flask.palletsprojects.com/en/stable/changes/#version-${
+      lib.replaceStrings [ "." ] [ "-" ] version
+    }";
+
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ nickcao ];
+    mainProgram = "flask";
   };
 }

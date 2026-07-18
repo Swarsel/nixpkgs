@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
   variant ? "Gruvbox-Dark-Brown",
 }:
 let
@@ -41,7 +41,7 @@ lib.checkListOfEnum "${pname}: variant"
       description = "Gruvbox themes for kvantum";
       homepage = "https://github.com/sachnr/gruvbox-kvantum-themes";
       license = lib.licenses.gpl3;
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ istudyatuni ];
+      platforms = lib.platforms.linux;
     };
   }

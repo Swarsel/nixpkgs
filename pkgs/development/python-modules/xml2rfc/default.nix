@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   configargparse,
   decorator,
   dict2xml,
-  fetchFromGitHub,
   google-i18n-address,
   intervaltree,
   jinja2,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "xml2rfc";
   version = "3.33.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ietf-tools";
@@ -39,9 +38,21 @@ buildPythonPackage rec {
       --replace-fail "test flaketest" "test"
   '';
 
-  build-system = [ setuptools ];
+  # Requires Noto Serif and Roboto Mono font
+  doCheck = false;
 
-  pythonRelaxDeps = [ "lxml" ];
+  nativeCheckInputs = [
+    decorator
+    pycairo
+    pytestCheckHook
+    python-fontconfig
+  ];
+
+  checkPhase = ''
+    make tests-no-network
+  '';
+
+  build-system = [ setuptools ];
 
   dependencies = [
     configargparse
@@ -58,33 +69,23 @@ buildPythonPackage rec {
     wcwidth
   ];
 
-  nativeCheckInputs = [
-    decorator
-    pycairo
-    pytestCheckHook
-    python-fontconfig
-  ];
-
-  # Requires Noto Serif and Roboto Mono font
-  doCheck = false;
-
-  checkPhase = ''
-    make tests-no-network
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "xml2rfc" ];
+  pythonRelaxDeps = [ "lxml" ];
 
   meta = {
     description = "Tool generating IETF RFCs and drafts from XML sources";
-    mainProgram = "xml2rfc";
     homepage = "https://github.com/ietf-tools/xml2rfc";
     changelog = "https://github.com/ietf-tools/xml2rfc/blob/${src.tag}/CHANGELOG.md";
     # Well, parts might be considered unfree, if being strict; see:
     # http://metadata.ftp-master.debian.org/changelogs/non-free/x/xml2rfc/xml2rfc_2.9.6-1_copyright
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       vcunat
       yrashk
     ];
+
+    mainProgram = "xml2rfc";
   };
 }

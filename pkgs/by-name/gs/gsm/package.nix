@@ -20,6 +20,18 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-o8QMZHGSg4P0q/yy6PJAEqH1Yr4vF7jWchRdWYZoGpI=";
   };
 
+  makeFlags = [
+    "SHELL=${stdenv.shell}"
+    "INSTALL_ROOT=$(out)"
+  ];
+
+  preBuild = ''
+    makeFlagsArray+=(CC="$CC")
+  '';
+
+  preInstall = "mkdir -p $out/{bin,lib,man/man1,man/man3,include/gsm}";
+  parallelBuild = false;
+
   patchPhase = ''
     # Fix include directory
     sed -e 's,$(GSM_INSTALL_ROOT)/inc,$(GSM_INSTALL_ROOT)/include/gsm,' -i Makefile
@@ -45,26 +57,15 @@ stdenv.mkDerivation rec {
     ''
   );
 
-  preBuild = ''
-    makeFlagsArray+=(CC="$CC")
-  '';
-
-  makeFlags = [
-    "SHELL=${stdenv.shell}"
-    "INSTALL_ROOT=$(out)"
-  ];
-
-  preInstall = "mkdir -p $out/{bin,lib,man/man1,man/man3,include/gsm}";
-
-  parallelBuild = false;
-
   meta = {
     description = "Lossy speech compression codec";
     homepage = "https://www.quut.com/gsm/";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.unix;
   };
 }

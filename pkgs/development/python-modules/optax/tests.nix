@@ -1,23 +1,18 @@
 {
   buildPythonPackage,
   dm-haiku,
+  flax,
+  optax,
   pytest-xdist,
   pytestCheckHook,
   tensorflow,
   tensorflow-datasets,
-  flax,
-  optax,
 }:
 
 buildPythonPackage {
-  format = "setuptools";
-  pname = "optax-tests";
   inherit (optax) version;
-
+  pname = "optax-tests";
   src = optax.testsout;
-
-  dontBuild = true;
-  dontInstall = true;
 
   nativeCheckInputs = [
     dm-haiku
@@ -32,4 +27,8 @@ buildPythonPackage {
     # See https://github.com/deepmind/optax/issues/323
     "examples/lookahead_mnist_test.py"
   ];
+
+  dontBuild = true;
+  dontInstall = true;
+  format = "setuptools";
 }

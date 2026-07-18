@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "open-garage";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Danielhiversen";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "opengarage" ];
 
   meta = {

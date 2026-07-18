@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
   distutils,
-  fetchFromGitHub,
   greenlet,
   ipython,
   jinja2,
@@ -16,14 +17,12 @@
   pythonOlder,
   rich,
   setuptools,
-  stdenv,
   textual,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "memray";
   version = "1.19.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bloomberg";
@@ -31,13 +30,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-A9XbVpuW/MlMNdFq5bbpg90GFh5c1aEWQOvGAOXyUgc=";
   };
-
-  build-system = [
-    distutils
-    setuptools
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -50,13 +42,6 @@ buildPythonPackage (finalAttrs: {
     pkgs.elfutils # for `-ldebuginfod`
   ];
 
-  dependencies = [
-    pkgconfig
-    textual
-    jinja2
-    rich
-  ];
-
   nativeCheckInputs = [
     ipython
     pytest-cov-stub
@@ -65,7 +50,24 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals (pythonOlder "3.14") [ greenlet ];
 
-  pythonImportsCheck = [ "memray" ];
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    distutils
+    setuptools
+  ];
+
+  dependencies = [
+    pkgconfig
+    textual
+    jinja2
+    rich
+  ];
+
+  disabledTestPaths = [
+    # Very time-consuming and some tests fails (performance-related?)
+    "tests/integration/test_main.py"
+  ];
 
   disabledTests = [
     # Import issue
@@ -81,10 +83,8 @@ buildPythonPackage (finalAttrs: {
     "test_unmerge_threads"
   ];
 
-  disabledTestPaths = [
-    # Very time-consuming and some tests fails (performance-related?)
-    "tests/integration/test_main.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "memray" ];
 
   meta = {
     description = "Memory profiler for Python";

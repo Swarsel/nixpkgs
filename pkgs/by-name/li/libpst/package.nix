@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
   bzip2,
   doxygen,
+  fetchpatch,
   gettext,
   imagemagick,
   libgsf,
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # readpst: Fix a build with gcc/C23 standard
     (fetchpatch {
-      url = "https://github.com/pst-format/libpst/commit/cc600ee98c4ed23b8ab0bc2cf6b6c6e9cb587e89.patch";
       hash = "sha256-lD6vJrRbqnlG69+aU0v32UTxD0NfKNr6vPcysXK7ir0=";
+      url = "https://github.com/pst-format/libpst/commit/cc600ee98c4ed23b8ab0bc2cf6b6c6e9cb587e89.patch";
     })
   ];
 
@@ -53,8 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://www.five-ten-sg.com/libpst/";
     description = "Library to read PST (MS Outlook Personal Folders) files";
+    homepage = "https://www.five-ten-sg.com/libpst/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

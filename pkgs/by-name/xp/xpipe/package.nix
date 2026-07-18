@@ -1,29 +1,29 @@
 {
-  stdenvNoCC,
   lib,
-  fetchzip,
-  makeDesktopItem,
-  autoPatchelfHook,
-  zlib,
-  fontconfig,
-  udev,
-  gtk3,
-  freetype,
   alsa-lib,
-  makeShellWrapper,
+  autoPatchelfHook,
+  fetchzip,
+  fontconfig,
+  freetype,
+  gtk3,
   libx11,
-  libxext,
-  libxdamage,
-  libxfixes,
   libxcb,
   libxcomposite,
   libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
   libxi,
   libxrender,
   libxtst,
   libxxf86vm,
-  util-linux,
+  makeDesktopItem,
+  makeShellWrapper,
   socat,
+  stdenvNoCC,
+  udev,
+  util-linux,
+  zlib,
 }:
 
 let
@@ -51,17 +51,14 @@ stdenvNoCC.mkDerivation rec {
   version = "23.6";
 
   src = fetchzip {
-    url = "https://github.com/xpipe-io/xpipe/releases/download/${version}/xpipe-portable-linux-${arch}.tar.gz";
     inherit hash;
+    url = "https://github.com/xpipe-io/xpipe/releases/download/${version}/xpipe-portable-linux-${arch}.tar.gz";
   };
 
   nativeBuildInputs = [
     autoPatchelfHook
     makeShellWrapper
   ];
-
-  # Ignore libavformat dependencies as we don't need them
-  autoPatchelfIgnoreMissingDeps = true;
 
   buildInputs = [
     fontconfig
@@ -85,16 +82,6 @@ stdenvNoCC.mkDerivation rec {
     util-linux
     socat
   ];
-
-  desktopItem = makeDesktopItem {
-    categories = [ "Network" ];
-    comment = "Your entire server infrastructure at your fingertips";
-    desktopName = displayname;
-    exec = "/opt/${pname}/bin/xpipe open %U";
-    genericName = "Shell connection hub";
-    icon = "/opt/${pname}/logo.png";
-    name = displayname;
-  };
 
   installPhase = ''
     runHook preInstall
@@ -141,18 +128,33 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  # Ignore libavformat dependencies as we don't need them
+  autoPatchelfIgnoreMissingDeps = true;
+
+  desktopItem = makeDesktopItem {
+    categories = [ "Network" ];
+    comment = "Your entire server infrastructure at your fingertips";
+    desktopName = displayname;
+    exec = "/opt/${pname}/bin/xpipe open %U";
+    genericName = "Shell connection hub";
+    icon = "/opt/${pname}/logo.png";
+    name = displayname;
+  };
+
   meta = {
     description = "Cross-platform shell connection hub and remote file manager";
     homepage = "https://github.com/xpipe-io/${pname}";
-    downloadPage = "https://github.com/xpipe-io/${pname}/releases/latest";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     changelog = "https://github.com/xpipe-io/${pname}/releases/tag/${version}";
+
     license = [
       lib.licenses.asl20
       lib.licenses.unfree
     ];
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ crschnick ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "xpipe";
+    downloadPage = "https://github.com/xpipe-io/${pname}/releases/latest";
   };
 }

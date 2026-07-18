@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  updateAutotoolsGnuConfigScriptsHook,
-  # for passthru.tests
-  python3,
-  perlPackages,
   haskellPackages,
   luaPackages,
   ocamlPackages,
+  perlPackages,
+  # for passthru.tests
+  python3,
   testers,
+  updateAutotoolsGnuConfigScriptsHook,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -22,31 +22,25 @@ let
   tag = "R_${lib.replaceStrings [ "." ] [ "_" ] version}";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "expat";
   inherit version;
+  pname = "expat";
 
   src = fetchurl {
     url =
       with finalAttrs;
       "https://github.com/libexpat/libexpat/releases/download/${tag}/${pname}-${version}.tar.xz";
+
     hash = "sha256-OtibhYjmZEvU5JmBSA1IshKJ7rvNTwoaSvscKfmbarQ=";
   };
-
-  strictDeps = true;
-  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
 
   outputs = [
     "out"
     "dev"
   ]; # TODO: fix referrers
-  outputBin = "dev";
 
-  enableParallelBuilding = true;
-
+  strictDeps = true;
+  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
   configureFlags = lib.optional stdenv.hostPlatform.isFreeBSD "--with-pic";
-
-  outputMan = "dev"; # tiny page for a dev tool
-
   doCheck = true; # not cross;
 
   preCheck = ''
@@ -60,6 +54,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "$"'{_IMPORT_PREFIX}' $out
   '';
 
+  enableParallelBuilding = true;
+  outputBin = "dev";
+  outputMan = "dev"; # tiny page for a dev tool
+
   passthru.tests = {
     inherit python3;
     inherit (python3.pkgs) xmltodict;
@@ -67,18 +65,19 @@ stdenv.mkDerivation (finalAttrs: {
     inherit (perlPackages) XMLSAXExpat XMLParser;
     inherit (luaPackages) luaexpat;
     inherit (ocamlPackages) ocaml_expat;
+
     pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
-    changelog = "https://github.com/libexpat/libexpat/blob/${tag}/expat/Changes";
-    homepage = "https://libexpat.github.io/";
     description = "Stream-oriented XML parser library written in C";
-    mainProgram = "xmlwf";
-    platforms = lib.platforms.all;
+    homepage = "https://libexpat.github.io/";
+    changelog = "https://github.com/libexpat/libexpat/blob/${tag}/expat/Changes";
     license = lib.licenses.mit; # expat version
+    platforms = lib.platforms.all;
+    mainProgram = "xmlwf";
     pkgConfigModules = [ "expat" ];
   };
 })

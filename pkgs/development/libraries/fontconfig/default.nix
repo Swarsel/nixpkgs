@@ -1,23 +1,30 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  autoreconfHook,
+  dejavu_fonts,
+  expat,
+  freetype,
+  gitUpdater,
+  gperf,
+  libxslt,
   pkg-config,
   python3,
-  freetype,
-  expat,
-  libxslt,
-  gperf,
-  dejavu_fonts,
-  autoreconfHook,
-  versionCheckHook,
   testers,
-  gitUpdater,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "fontconfig";
   version = "2.18.1";
+
+  # GitLab repositrory does not include pre-generated man pages.
+  # ref: https://github.com/NixOS/nixpkgs/pull/401037#discussion_r2055430206
+  src = fetchurl {
+    url = "https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/${finalAttrs.version}/fontconfig-${finalAttrs.version}.tar.xz";
+    hash = "sha256-IwDz2/pyU7OkT0/uzbyN+kXd5dws+3H86vMfOUy0EDE=";
+  };
 
   outputs = [
     "bin"
@@ -26,12 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
   ]; # $out contains all the config
 
-  # GitLab repositrory does not include pre-generated man pages.
-  # ref: https://github.com/NixOS/nixpkgs/pull/401037#discussion_r2055430206
-  src = fetchurl {
-    url = "https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/${finalAttrs.version}/fontconfig-${finalAttrs.version}.tar.xz";
-    hash = "sha256-IwDz2/pyU7OkT0/uzbyN+kXd5dws+3H86vMfOUy0EDE=";
-  };
+  postPatch = ''
+    # Requires networking.
+    sed -i '/check_PROGRAMS += test-crbug1004254/d' test/Makefile.am
+
+    # Test causes error without patch shebangs.
+    patchShebangs doc/check-whitespace-in-args.py \
+      doc/check-missing-doc.py
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -46,15 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     expat
   ];
 
-  postPatch = ''
-    # Requires networking.
-    sed -i '/check_PROGRAMS += test-crbug1004254/d' test/Makefile.am
-
-    # Test causes error without patch shebangs.
-    patchShebangs doc/check-whitespace-in-args.py \
-      doc/check-missing-doc.py
-  '';
-
   configureFlags = [
     "--sysconfdir=/etc"
     "--with-arch=${stdenv.hostPlatform.parsed.cpu.name}"
@@ -67,16 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_va_copy=C99"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  installFlags = [
-    # Don't try to write to /var/cache/fontconfig at install time.
-    "fc_cachedir=$(TMPDIR)/dummy"
-    "RUN_FC_CACHE_TEST=false"
-    "sysconfdir=${placeholder "out"}/etc"
-  ];
 
   postInstall = ''
     cd "$out/etc/fonts"
@@ -91,11 +82,11 @@ stdenv.mkDerivation (finalAttrs: {
     rm -r $bin/share/man/man3
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "bin"}/bin/fc-list";
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -106,6 +97,17 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstallCheck
   '';
+
+  enableParallelBuilding = true;
+
+  installFlags = [
+    # Don't try to write to /var/cache/fontconfig at install time.
+    "fc_cachedir=$(TMPDIR)/dummy"
+    "RUN_FC_CACHE_TEST=false"
+    "sysconfdir=${placeholder "out"}/etc"
+  ];
+
+  versionCheckProgram = "${placeholder "bin"}/bin/fc-list";
 
   passthru = {
     tests = {
@@ -124,7 +126,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "http://fontconfig.org/";
     license = lib.licenses.bsd2; # custom but very bsd-like
     platforms = lib.platforms.all;
-    teams = [ lib.teams.freedesktop ];
     pkgConfigModules = [ "fontconfig" ];
+    teams = [ lib.teams.freedesktop ];
   };
 })

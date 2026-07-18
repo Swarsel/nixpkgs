@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "immutables";
   version = "0.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MagicStack";
@@ -22,20 +21,20 @@ buildPythonPackage rec {
     rm tests/conftest.py
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  disabledTests = [
-    # Version mismatch
-    "testMypyImmu"
-  ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # avoid dependency on mypy
     "tests/test_mypy.py"
   ];
 
+  disabledTests = [
+    # Version mismatch
+    "testMypyImmu"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "immutables" ];
 
   meta = {

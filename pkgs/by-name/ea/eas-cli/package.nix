@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  yarn-berry_4,
-  nodejs,
   jq,
   makeWrapper,
+  nodejs,
   pkg-config,
   python3,
+  yarn-berry_4,
 }:
 let
   version = "20.4.0";
@@ -27,7 +27,6 @@ in
 # cc is necessary because of building an npm package without a prebuilt binary
 #  for ARM. See comment in nativeBuildInputs below.
 stdenv.mkDerivation (finalAttrs: {
-  pname = "eas-cli";
   inherit
     src
     version
@@ -35,10 +34,14 @@ stdenv.mkDerivation (finalAttrs: {
     patches
     ;
 
-  yarnOfflineCache = yarn-berry_4.fetchYarnBerryDeps {
-    inherit src missingHashes patches;
-    hash = "sha256-dOx4T009+FMFEvTZtlyJpAUo2UYBm1O1hIyBnSbqIgw=";
-  };
+  pname = "eas-cli";
+
+  postPatch = ''
+    # Disable Nx integration in Lerna to avoid the native pseudo terminal panic in the sandbox.
+    tmpfile="$(mktemp)"
+    jq '.useNx = false' lerna.json > "$tmpfile"
+    mv "$tmpfile" lerna.json
+  '';
 
   nativeBuildInputs = [
     yarn-berry_4
@@ -56,13 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     python3
   ];
-
-  postPatch = ''
-    # Disable Nx integration in Lerna to avoid the native pseudo terminal panic in the sandbox.
-    tmpfile="$(mktemp)"
-    jq '.useNx = false' lerna.json > "$tmpfile"
-    mv "$tmpfile" lerna.json
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -89,10 +85,15 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/eas --suffix PATH : ${lib.makeBinPath [ nodejs ]}
   '';
 
+  yarnOfflineCache = yarn-berry_4.fetchYarnBerryDeps {
+    inherit src missingHashes patches;
+    hash = "sha256-dOx4T009+FMFEvTZtlyJpAUo2UYBm1O1hIyBnSbqIgw=";
+  };
+
   meta = {
-    changelog = "https://github.com/expo/eas-cli/releases/tag/v${finalAttrs.version}";
     description = "EAS command line tool from submodule";
     homepage = "https://github.com/expo/eas-cli";
+    changelog = "https://github.com/expo/eas-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zestsystem ];
   };

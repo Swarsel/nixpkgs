@@ -1,6 +1,6 @@
 {
-  fetchCrate,
   lib,
+  fetchCrate,
   libkrb5,
   nix-update-script,
   pkg-config,
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-mOmTBj/NqWqsc3JfpD8vmafevWpaHTnwqM3wuKwxlxc=";
   };
 
-  cargoHash = "sha256-paMTih5b1RxmXUEjglnj4Hy6SRJE78m1FQP4lags6yo=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -28,10 +26,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libkrb5
   ];
 
+  cargoHash = "sha256-paMTih5b1RxmXUEjglnj4Hy6SRJE78m1FQP4lags6yo=";
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -10,12 +10,11 @@
 buildPythonPackage rec {
   pname = "async-tkinter-loop";
   version = "0.10.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "async_tkinter_loop";
     hash = "sha256-y4gDOXXk4z1gAQVeB+/gOzia4SfICJiXV47pdaEQRp4=";
+    pname = "async_tkinter_loop";
   };
 
   nativeBuildInputs = [
@@ -27,9 +26,9 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  pythonRemoveDeps = [ "asyncio" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "async_tkinter_loop" ];
+  pythonRemoveDeps = [ "asyncio" ];
 
   meta = {
     description = "Implementation of asynchronous mainloop for tkinter, the use of which allows using async handler functions";

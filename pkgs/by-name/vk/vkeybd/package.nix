@@ -19,11 +19,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     alsa-lib
     libx11
     tcl
     tk
+  ];
+
+  makeFlags = [
+    "TKLIB=-l${tk.libPrefix}"
+    "TCLLIB=-l${tcl.libPrefix}"
   ];
 
   configurePhase = ''
@@ -35,16 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  makeFlags = [
-    "TKLIB=-l${tk.libPrefix}"
-    "TCLLIB=-l${tcl.libPrefix}"
-  ];
-
   meta = {
     description = "Virtual MIDI keyboard";
     homepage = "https://www.alsa-project.org/~tiwai/alsa.html";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

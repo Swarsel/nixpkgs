@@ -1,66 +1,66 @@
 {
   lib,
   stdenv,
-  targetPackages,
   fetchurl,
-  fetchpatch,
-  noSysDirs,
-  langC ? true,
-  langCC ? true,
-  langFortran ? false,
-  langAda ? false,
-  langObjC ? stdenv.targetPlatform.isDarwin,
-  langObjCpp ? stdenv.targetPlatform.isDarwin,
-  langGo ? false,
-  reproducibleBuild ? true,
-  profiledCompiler ? false,
-  langJit ? false,
-  langRust ? false,
-  cargo,
-  staticCompiler ? false,
-  enableShared ? stdenv.targetPlatform.hasSharedLibraries,
-  enableDefaultPie ? stdenv.targetPlatform.hasSharedLibraries,
-  enableLTO ? stdenv.hostPlatform.hasSharedLibraries,
-  texinfo ? null,
-  perl ? null, # optional, for texi2pod (then pod2man)
-  gmp,
-  mpfr,
-  libmpc,
-  gettext,
-  which,
-  patchelf,
-  binutils,
+  apple-sdk_14,
+  apple-sdk_15,
   autoconf269,
-  isl ? null, # optional, for the Graphite optimization framework.
-  zlib ? null,
-  libucontext ? null,
-  gnat-bootstrap ? null,
+  binutils,
+  buildPackages,
+  callPackage,
+  cargo,
+  darwin,
+  fetchpatch,
+  flex,
+  gettext,
+  gmp,
+  libmpc,
+  libxcrypt,
+  majorMinorVersion,
+  mpfr,
+  noSysDirs,
+  nukeReferences,
+  patchelf,
+  pkgsBuildTarget,
+  targetPackages,
+  which,
   # Allows only computing system equality once across every file responsible for
   # building gcc. Not part of the public API
   _systemInfo ? {
     buildIsHost = lib.systems.equals stdenv.buildPlatform stdenv.hostPlatform;
     hostIsTarget = lib.systems.equals stdenv.hostPlatform stdenv.targetPlatform;
   },
-  enableMultilib ? false,
-  enablePlugin ? _systemInfo.buildIsHost, # Whether to support user-supplied plug-ins
-  name ? "gcc",
-  libcCross ? null,
-  threadsCross ? { }, # for MinGW
-  withoutTargetLibc ? stdenv.targetPlatform.libc == null,
-  flex,
-  gnused ? null,
-  buildPackages,
-  pkgsBuildTarget,
-  libxcrypt,
   disableGdbPlugin ?
     !enablePlugin
     || (stdenv.targetPlatform.isAvr && stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64),
-  nukeReferences,
-  callPackage,
-  majorMinorVersion,
-  apple-sdk_14,
-  apple-sdk_15,
-  darwin,
+  enableDefaultPie ? stdenv.targetPlatform.hasSharedLibraries,
+  enableLTO ? stdenv.hostPlatform.hasSharedLibraries,
+  enableMultilib ? false,
+  enablePlugin ? _systemInfo.buildIsHost, # Whether to support user-supplied plug-ins
+  enableShared ? stdenv.targetPlatform.hasSharedLibraries,
+  gnat-bootstrap ? null,
+  gnused ? null,
+  isl ? null, # optional, for the Graphite optimization framework.
+  langAda ? false,
+  langC ? true,
+  langCC ? true,
+  langFortran ? false,
+  langGo ? false,
+  langJit ? false,
+  langObjC ? stdenv.targetPlatform.isDarwin,
+  langObjCpp ? stdenv.targetPlatform.isDarwin,
+  langRust ? false,
+  libcCross ? null,
+  libucontext ? null,
+  name ? "gcc",
+  perl ? null, # optional, for texi2pod (then pod2man)
+  profiledCompiler ? false,
+  reproducibleBuild ? true,
+  staticCompiler ? false,
+  texinfo ? null,
+  threadsCross ? { }, # for MinGW
+  withoutTargetLibc ? stdenv.targetPlatform.libc == null,
+  zlib ? null,
 }:
 
 let
@@ -128,6 +128,7 @@ let
       stageNameAddon
       crossNameAddon
       ;
+
     # inherit generated with 'nix eval --json --impure --expr "with import ./. {}; lib.attrNames (lib.functionArgs gcc${majorVersion}.cc.override)" | jq '.[]' --raw-output'
     inherit
       apple-sdk_14
@@ -208,11 +209,34 @@ assert reproducibleBuild -> profiledCompiler == false;
 pipe
   ((callFile ./common/builder.nix { }) (
     {
+      inherit patches;
+
+      inherit
+        noSysDirs
+        staticCompiler
+        withoutTargetLibc
+        libcCross
+        crossMingw
+        ;
+
+      inherit (callFile ./common/dependencies.nix { })
+        depsBuildBuild
+        nativeBuildInputs
+        depsBuildTarget
+        buildInputs
+        depsTargetTarget
+        ;
+
+      inherit targetConfig;
+
+      inherit (callFile ./common/strip-attributes.nix { })
+        stripDebugList
+        stripDebugListTarget
+        preFixup
+        ;
+
+      inherit enableShared enableMultilib;
       pname = "${crossNameAddon}${name}";
-      # retain snapshot date in package version, but not in final version
-      # as the version is frequently used to construct pathnames (at least
-      # in cc-wrapper).
-      name = "${crossNameAddon}${name}-${version}";
       version = baseVersion;
 
       src = fetchurl {
@@ -221,12 +245,9 @@ pipe
             "mirror://gcc/snapshots/${majorVersion}-${snapDate}/gcc-${majorVersion}-${snapDate}.tar.xz"
           else
             "mirror://gcc/releases/gcc-${version}/gcc-${version}.tar.xz";
+
         ${if is13 then "hash" else "sha256"} = gccVersions.srcHashForVersion version;
       };
-
-      inherit patches;
-
-      __structuredAttrs = true;
 
       outputs = [
         "out"
@@ -234,15 +255,6 @@ pipe
         "info"
       ]
       ++ optional (!langJit) "lib";
-
-      setOutputFlags = false;
-
-      libc_dev = stdenv.cc.libc_dev;
-
-      hardeningDisable = [
-        "format"
-        "stackclashprotection"
-      ];
 
       postPatch = ''
         configureScripts=$(find . -name configure)
@@ -304,37 +316,7 @@ pipe
         )
       '';
 
-      inherit
-        noSysDirs
-        staticCompiler
-        withoutTargetLibc
-        libcCross
-        crossMingw
-        ;
-
-      inherit (callFile ./common/dependencies.nix { })
-        depsBuildBuild
-        nativeBuildInputs
-        depsBuildTarget
-        buildInputs
-        depsTargetTarget
-        ;
-
-      preConfigure = (callFile ./common/pre-configure.nix { }) + ''
-        ln -sf ${libxcrypt}/include/crypt.h libsanitizer/sanitizer_common/crypt.h
-      '';
-
-      dontDisableStatic = true;
-
-      configurePlatforms = [
-        "build"
-        "host"
-        "target"
-      ];
-
       configureFlags = callFile ./common/configure-flags.nix { inherit targetPrefix; };
-
-      inherit targetConfig;
 
       buildFlags =
         # we do not yet have Nix-driven profiling
@@ -346,18 +328,12 @@ pipe
         in
         optional (target != "") target;
 
-      inherit (callFile ./common/strip-attributes.nix { })
-        stripDebugList
-        stripDebugListTarget
-        preFixup
-        ;
-
-      # https://gcc.gnu.org/PR109898
-      enableParallelInstalling = false;
-
       env = mapAttrs (_: v: toString v) {
 
-        NIX_NO_SELF_RPATH = true;
+        inherit (callFile ./common/extra-target-flags.nix { })
+          EXTRA_FLAGS_FOR_TARGET
+          EXTRA_LDFLAGS_FOR_TARGET
+          ;
 
         # https://gcc.gnu.org/install/specific.html#x86-64-x-solaris210
         ${if hostPlatform.system == "x86_64-solaris" then "CC" else null} = "gcc -m64";
@@ -371,25 +347,49 @@ pipe
         # Cross-compiling, we need gcc not to read ./specs in order to build the g++
         # compiler (after the specs for the cross-gcc are created). Having
         # LIBRARY_PATH= makes gcc read the specs from ., and the build breaks.
-
         CPATH = optionals hostIsTarget (
           makeSearchPathOutput "dev" "include" ([ ] ++ optional (zlib != null) zlib)
         );
 
         LIBRARY_PATH = optionals hostIsTarget (makeLibraryPath (optional (zlib != null) zlib));
 
-        NIX_LDFLAGS = optionalString hostPlatform.isSunOS "-lm";
-
         # Override isysroot for GNAT on Darwin due to SDK version sensitivity; GNAT 14+ requires Apple SDK 15 or later.
         NIX_CFLAGS_COMPILE = optionalString (
           hostPlatform.isDarwin && langAda
         ) "-isysroot ${appleSdk.sdkroot}";
 
-        inherit (callFile ./common/extra-target-flags.nix { })
-          EXTRA_FLAGS_FOR_TARGET
-          EXTRA_LDFLAGS_FOR_TARGET
-          ;
+        NIX_LDFLAGS = optionalString hostPlatform.isSunOS "-lm";
+        NIX_NO_SELF_RPATH = true;
       };
+
+      preConfigure = (callFile ./common/pre-configure.nix { }) + ''
+        ln -sf ${libxcrypt}/include/crypt.h libsanitizer/sanitizer_common/crypt.h
+      '';
+
+      __structuredAttrs = true;
+
+      configurePlatforms = [
+        "build"
+        "host"
+        "target"
+      ];
+
+      dontDisableStatic = true;
+      enableParallelBuilding = true;
+      # https://gcc.gnu.org/PR109898
+      enableParallelInstalling = false;
+
+      hardeningDisable = [
+        "format"
+        "stackclashprotection"
+      ];
+
+      libc_dev = stdenv.cc.libc_dev;
+      # retain snapshot date in package version, but not in final version
+      # as the version is frequently used to construct pathnames (at least
+      # in cc-wrapper).
+      name = "${crossNameAddon}${name}-${version}";
+      setOutputFlags = false;
 
       passthru = {
         inherit
@@ -402,7 +402,7 @@ pipe
           langGo
           version
           ;
-        isGNU = true;
+
         hardeningUnsupportedFlags =
           optional (
             !(targetPlatform.isLinux && targetPlatform.isx86_64 && targetPlatform.libc == "glibc")
@@ -412,10 +412,9 @@ pipe
             "fortify"
             "format"
           ];
-      };
 
-      enableParallelBuilding = true;
-      inherit enableShared enableMultilib;
+        isGNU = true;
+      };
 
       meta = {
         inherit (callFile ./common/meta.nix { inherit targetPrefix; })

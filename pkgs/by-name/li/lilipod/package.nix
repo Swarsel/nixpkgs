@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   shadow,
   util-linux,
 }:
@@ -47,6 +47,7 @@ buildGoModule rec {
 
   meta = {
     description = "Very simple (as in few features) container and image manager";
+
     longDescription = ''
       Lilipod is a very simple container manager with minimal features to:
 
@@ -55,10 +56,11 @@ buildGoModule rec {
 
       It tries to keep a somewhat compatible CLI interface with Podman/Docker/Nerdctl.
     '';
+
     homepage = "https://github.com/89luca89/lilipod";
     license = lib.licenses.gpl3Only;
-    mainProgram = "lilipod";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "lilipod";
   };
 }

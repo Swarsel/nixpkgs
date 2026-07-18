@@ -2,17 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  testers,
-
-  static ? stdenv.hostPlatform.isStatic,
-  snappySupport ? false,
-
+  fetchpatch,
   lz4,
   snappy,
+  testers,
   zlib,
   zstd,
+  snappySupport ? false,
+  static ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,13 +27,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # backport patch for cmake 4 compatibility
     (fetchpatch {
-      url = "https://github.com/Blosc/c-blosc/commit/051b9d2cb9437e375dead8574f66d80ebce47bee.patch?full_index=1";
       hash = "sha256-90dUd8KQqq+uVbngfoKF45rmFxbLVVgZjg0Xfc/vpcc=";
+      url = "https://github.com/Blosc/c-blosc/commit/051b9d2cb9437e375dead8574f66d80ebce47bee.patch?full_index=1";
     })
     # backport patch for gcc 15 compatibility
     (fetchpatch {
-      url = "https://github.com/Blosc/c-blosc/commit/774f6a0ebaa0c617f7f13ccf6bc89d17eba04654.patch?full_index=1";
       hash = "sha256-C5nwMXjmlxkBvN1/4fuGTgFANqTD/+ikxYPLo1fwm6Q=";
+      url = "https://github.com/Blosc/c-blosc/commit/774f6a0ebaa0c617f7f13ccf6bc89d17eba04654.patch?full_index=1";
     })
   ];
 
@@ -71,16 +69,15 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional snappySupport "-DDEACTIVATE_SNAPPY=OFF";
 
   doCheck = !static;
-
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Blocking, shuffling and loss-less compression library";
     homepage = "https://www.blosc.org";
     changelog = "https://github.com/Blosc/c-blosc/releases/tag/v${finalAttrs.version}";
-    pkgConfigModules = [ "blosc" ];
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ris ];
+    platforms = lib.platforms.all;
+    pkgConfigModules = [ "blosc" ];
   };
 })

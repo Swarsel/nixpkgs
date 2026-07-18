@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -16,7 +16,6 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-SQtUgX3yNXwUxZxPvNdYAtLBAu++2DiAx301X0LnAQo=";
-
   npmBuildScript = "package";
 
   meta = {

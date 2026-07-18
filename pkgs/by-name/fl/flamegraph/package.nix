@@ -16,21 +16,8 @@ stdenv.mkDerivation {
     sha256 = "sha256-hvp1HxmgNbe85kxe0NyolFUd+kPPBDYAt+g2K8pE1Ak=";
   };
 
-  buildInputs = [ perl ];
-
   strictDeps = true;
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin
-    for x in $src/*.pl $src/*.awk $src/dev/*.pl $src/dev/*.d; do
-      cp $x $out/bin
-    done
-
-    runHook postInstall
-  '';
-
+  buildInputs = [ perl ];
   doCheck = true;
 
   nativeCheckInputs = [
@@ -44,15 +31,28 @@ stdenv.mkDerivation {
     runHook postCheck
   '';
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin
+    for x in $src/*.pl $src/*.awk $src/dev/*.pl $src/dev/*.d; do
+      cp $x $out/bin
+    done
+
+    runHook postInstall
+  '';
+
   meta = {
+    description = "Visualization for profiled code";
+    homepage = "https://www.brendangregg.com/flamegraphs.html";
+
     license = with lib.licenses; [
       asl20
       cddl
       gpl2Plus
     ];
-    homepage = "https://www.brendangregg.com/flamegraphs.html";
-    description = "Visualization for profiled code";
-    mainProgram = "flamegraph.pl";
+
     platforms = lib.platforms.unix;
+    mainProgram = "flamegraph.pl";
   };
 }

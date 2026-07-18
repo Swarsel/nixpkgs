@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  pkg-config,
   audiofile,
   bzip2,
   glib,
   libgcrypt,
+  perl,
+  pkg-config,
   zlib,
 }:
 
@@ -33,14 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  enableParallelBuilding = true;
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://fuse-emulator.sourceforge.net/libspectrum.php";
     description = "ZX Spectrum input and output support library";
+    homepage = "https://fuse-emulator.sourceforge.net/libspectrum.php";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

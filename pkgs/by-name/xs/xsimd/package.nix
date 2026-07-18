@@ -38,16 +38,20 @@ stdenv.mkDerivation (finalAttrs: {
   checkTarget = "xtest";
 
   meta = {
+    description = "C++ wrappers for SIMD intrinsics";
+    homepage = "https://github.com/xtensor-stack/xsimd";
+
     changelog = "https://github.com/xtensor-stack/xsimd/blob/${finalAttrs.version}/Changelog.rst#${
       builtins.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }";
-    description = "C++ wrappers for SIMD intrinsics";
-    homepage = "https://github.com/xtensor-stack/xsimd";
+
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       tobim
       doronbehar
     ];
+
     platforms = lib.platforms.all;
   };
 })

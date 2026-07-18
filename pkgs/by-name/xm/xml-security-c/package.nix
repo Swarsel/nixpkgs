@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   autoreconfHook,
+  fetchFromCodeberg,
+  openssl,
   pkg-config,
+  unstableGitUpdater,
   xalanc,
   xercesc,
-  openssl,
-  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,12 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-D60JtD4p9ERh6sowvwBHtE9XWVm3D8saooagDvA6ZtQ=";
   };
 
-  configureFlags = [
-    "--with-openssl"
-    "--with-xerces"
-    "--with-xalan"
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -38,13 +32,19 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
+  configureFlags = [
+    "--with-openssl"
+    "--with-xerces"
+    "--with-xalan"
+  ];
+
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://shibboleth.atlassian.net/wiki/spaces/DEV/pages/3726671873/Santuario";
     description = "C++ Implementation of W3C security standards for XML";
+    homepage = "https://shibboleth.atlassian.net/wiki/spaces/DEV/pages/3726671873/Santuario";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ drawbu ];
+    platforms = lib.platforms.unix;
   };
 })

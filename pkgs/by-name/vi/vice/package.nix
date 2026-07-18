@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchurl,
-  bison,
-  flex,
-  perl,
-  curl,
-  libpng,
-  giflib,
-  alsa-lib,
-  readline,
-  libGLU,
-  libGL,
-  pkg-config,
-  gtk3,
-  glew,
   SDL,
   SDL_image,
-  dos2unix,
-  xa,
-  file,
-  wrapGAppsHook3,
-  xdg-utils,
-  libevdev,
-  pulseaudio,
+  alsa-lib,
+  bison,
+  curl,
   desktop-file-utils,
+  dos2unix,
+  file,
+  flex,
+  giflib,
+  glew,
+  gtk3,
+  libGL,
+  libGLU,
+  libevdev,
+  libpng,
+  perl,
+  pkg-config,
+  pulseaudio,
+  readline,
+  wrapGAppsHook3,
+  xa,
+  xdg-utils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -81,8 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs .
   '';
 
-  enableParallelBuilding = true;
-
   preInstall = ''
     # env var for `desktop-file-install`
     export DESKTOP_FILE_INSTALL_DIR=$out/share/applications
@@ -97,6 +95,8 @@ stdenv.mkDerivation (finalAttrs: {
       install -D data/common/vice-''${binary}_1024.svg $out/share/icons/hicolor/scalable/apps/vice-''${binary}.svg
     done
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Emulators for a variety of 8-bit Commodore computers";

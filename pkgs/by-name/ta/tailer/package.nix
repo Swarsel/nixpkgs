@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   tailer,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -33,8 +33,8 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "CLI tool to insert lines when command output stops";
     homepage = "https://github.com/hionay/tailer";
-    maintainers = with lib.maintainers; [ liberodark ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ liberodark ];
     mainProgram = "tailer";
   };
 })

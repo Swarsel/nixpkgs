@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,13 +16,10 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-2DwFkkoODDuLOxF63F1ywoXzjcMn/+H2ycRWlJlNcCI=";
-
+  env.NODE_OPTIONS = "--openssl-legacy-provider";
   dontNpmBuild = true;
-
   # The prepack script runs the build script, which we'd rather do in the build phase.
   npmPackFlags = [ "--ignore-scripts" ];
-
-  env.NODE_OPTIONS = "--openssl-legacy-provider";
 
   meta = {
     description = "Command-line tool to share directories and files to mobile devices";

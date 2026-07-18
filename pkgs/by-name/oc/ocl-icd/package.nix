@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ruby,
-  opencl-headers,
   autoreconfHook,
+  opencl-headers,
+  ruby,
   windows,
 }:
 
@@ -39,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "OpenCL ICD Loader for ${opencl-headers.name}";
-    mainProgram = "cllayerinfo";
     homepage = "https://github.com/OCL-dev/ocl-icd";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
     maintainers = with lib.maintainers; [ r-burns ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "cllayerinfo";
   };
 })

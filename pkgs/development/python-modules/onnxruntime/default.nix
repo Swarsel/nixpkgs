@@ -1,19 +1,17 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  onnxruntime,
   autoPatchelfHook,
-
-  # buildInputs
-  onednn,
-  re2,
-
-  # dependencies
-  openvino,
+  buildPythonPackage,
   coloredlogs,
   numpy,
+  # buildInputs
+  onednn,
+  onnxruntime,
+  # dependencies
+  openvino,
   packaging,
+  re2,
 }:
 
 # onnxruntime requires an older protobuf.
@@ -31,26 +29,8 @@
 
 buildPythonPackage {
   inherit (onnxruntime) pname version;
-  format = "wheel";
   src = onnxruntime.dist;
-
-  unpackPhase = ''
-    cp -r $src dist
-    chmod +w dist
-  '';
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isLinux {
-    NIX_LDFLAGS = "-z,noexecstack";
-  };
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
-
-  # This project requires fairly large dependencies such as sympy which we really don't always need.
-  pythonRemoveDeps = [
-    "flatbuffers"
-    "protobuf"
-    "sympy"
-  ];
 
   # Libraries are not linked correctly.
   buildInputs = [
@@ -80,11 +60,17 @@ buildPythonPackage {
     ++ lib.optionals stdenv.hostPlatform.isLinux [ openvino ]
   );
 
+  env = lib.optionalAttrs stdenv.hostPlatform.isLinux {
+    NIX_LDFLAGS = "-z,noexecstack";
+  };
+
   dependencies = [
     coloredlogs
     numpy
     packaging
   ];
+
+  format = "wheel";
 
   # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
   # terminate called after throwing an instance of 'onnxruntime::OnnxRuntimeException'
@@ -96,6 +82,18 @@ buildPythonPackage {
       [
         "onnxruntime"
       ];
+
+  # This project requires fairly large dependencies such as sympy which we really don't always need.
+  pythonRemoveDeps = [
+    "flatbuffers"
+    "protobuf"
+    "sympy"
+  ];
+
+  unpackPhase = ''
+    cp -r $src dist
+    chmod +w dist
+  '';
 
   meta = onnxruntime.meta;
 }

@@ -14,6 +14,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "http://www.nikhef.nl/user/h24/qcdnum-files/download/qcdnum${
       builtins.replaceStrings [ "-" ] [ "" ] finalAttrs.version
     }.tar.gz";
+
     hash = "sha256-4Qj5JreEA1LkCAunGRTTQD7YEYNk+HcQ4iH97DIO4gA=";
   };
 
@@ -28,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Very fast QCD evolution program written in FORTRAN77";
-    mainProgram = "qcdnum-config";
-    license = lib.licenses.gpl3;
     homepage = "https://www.nikhef.nl/~h24/qcdnum/index.html";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
+    mainProgram = "qcdnum-config";
   };
 })

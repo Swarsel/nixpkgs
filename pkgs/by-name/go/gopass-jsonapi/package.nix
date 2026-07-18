@@ -1,26 +1,26 @@
 {
   lib,
-  makeWrapper,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
-  writableTmpDirAsHomeHook,
-  jq,
+  buildGoModule,
   gnupg,
   gopass,
+  installShellFiles,
+  jq,
+  makeWrapper,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 let
   # https://github.com/gopasspw/gopass-jsonapi/blob/v1.16.0/internal/jsonapi/manifest/manifest_path_linux.go
   manifestPaths = {
-    firefox = "$out/lib/mozilla/native-messaging-hosts/com.justwatch.gopass.json";
+    brave = "$out/etc/opt/chrome/native-messaging-hosts/com.justwatch.gopass.json";
     chrome = "$out/etc/opt/chrome/native-messaging-hosts/com.justwatch.gopass.json";
     chromium = "$out/etc/chromium/native-messaging-hosts/com.justwatch.gopass.json";
-    brave = "$out/etc/opt/chrome/native-messaging-hosts/com.justwatch.gopass.json";
-    vivaldi = "$out/etc/opt/vivaldi/native-messaging-hosts/com.justwatch.gopass.json";
+    firefox = "$out/lib/mozilla/native-messaging-hosts/com.justwatch.gopass.json";
     iridium = "$out/etc/iridium-browser/native-messaging-hosts/com.justwatch.gopass.json";
     slimjet = "$out/etc/opt/slimjet/native-messaging-hosts/com.justwatch.gopass.json";
+    vivaldi = "$out/etc/opt/vivaldi/native-messaging-hosts/com.justwatch.gopass.json";
   };
 in
 buildGoModule (finalAttrs: {
@@ -34,22 +34,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-JN/SC7lvPVTONNbOUmgu//xK/GaR5Tljxn99Zb1J/kQ=";
   };
 
-  vendorHash = "sha256-Ki0gzhDkoUvgTCN4bYrqvN0u3AgdG22MWxcVHIE9lUQ=";
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
     writableTmpDirAsHomeHook
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-    "-X main.commit=${finalAttrs.src.rev}"
-  ];
+  vendorHash = "sha256-Ki0gzhDkoUvgTCN4bYrqvN0u3AgdG22MWxcVHIE9lUQ=";
 
   postInstall = ''
     # Generate native messaging manifests for Chrome and Firefox.
@@ -90,15 +81,25 @@ buildGoModule (finalAttrs: {
     chmod +x $out/lib/gopass/browser-jsonapi-wrapper.sh
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   postFixup = ''
     wrapProgram $out/bin/gopass-jsonapi \
       --prefix PATH : "${gopass.wrapperPath}"
   '';
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.commit=${finalAttrs.src.rev}"
   ];
+
+  subPackages = [ "." ];
   versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
@@ -106,10 +107,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/gopasspw/gopass-jsonapi";
     changelog = "https://github.com/gopasspw/gopass-jsonapi/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       maxhbr
       doronbehar
     ];
+
     mainProgram = "gopass-jsonapi";
   };
 })

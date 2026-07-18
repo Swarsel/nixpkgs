@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "dockerpty";
   version = "0.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
+  format = "setuptools";
 
   meta = {
     description = "Functionality needed to operate the pseudo-tty (PTY) allocated to a docker container";

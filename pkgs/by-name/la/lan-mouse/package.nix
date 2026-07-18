@@ -1,14 +1,14 @@
 {
-  stdenv,
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   glib,
   gtk4,
   libadwaita,
   libx11,
   libxtst,
   pkg-config,
+  rustPlatform,
   wrapGAppsHook4,
 }:
 
@@ -48,8 +48,8 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/feschber/lan-mouse";
     changelog = "https://github.com/feschber/lan-mouse/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "lan-mouse";
     maintainers = with lib.maintainers; [ pedrohlc ];
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "lan-mouse";
   };
 }

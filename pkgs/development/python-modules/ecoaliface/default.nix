@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "ecoaliface";
   version = "0.7.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "ecoaliface" ];
 
   meta = {

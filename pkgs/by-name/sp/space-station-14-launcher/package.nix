@@ -1,40 +1,39 @@
 {
   lib,
   stdenv,
-  config,
-  nix-update-script,
-  buildDotnetModule,
-  dotnetCorePackages,
   fetchFromGitHub,
-  iconConvTools,
-  copyDesktopItems,
-  makeDesktopItem,
-  libx11,
-  libice,
-  libsm,
-  libxi,
-  libxcursor,
-  libxext,
-  libxrandr,
-  libGL,
-  freetype,
-  glib,
   alsa-lib,
-  libjack2,
-  pipewire,
-  libpulseaudio,
   at-spi2-atk,
   at-spi2-core,
-  libxkbcommon,
-  wayland,
-  fontconfig,
+  buildDotnetModule,
+  config,
+  copyDesktopItems,
   dbus,
+  dotnetCorePackages,
+  fontconfig,
+  freetype,
+  glib,
+  iconConvTools,
+  libGL,
+  libice,
+  libjack2,
+  libpulseaudio,
+  libsm,
+  libx11,
+  libxcursor,
+  libxext,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  makeDesktopItem,
+  nix-update-script,
+  pipewire,
+  soundfont-fluid,
+  wayland,
   alsaSupport ? stdenv.hostPlatform.isLinux,
   jackSupport ? stdenv.hostPlatform.isLinux,
   pipewireSupport ? stdenv.hostPlatform.isLinux,
   pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-  soundfont-fluid,
-
   # Path to set ROBUST_SOUNDFONT_OVERRIDE to, essentially the default soundfont used.
   soundfont-path ? "${soundfont-fluid}/share/soundfonts/FluidR3_GM2-2.sf2",
 }:
@@ -45,10 +44,6 @@ in
 buildDotnetModule rec {
   inherit pname;
 
-  # Workaround to prevent buildDotnetModule from overriding assembly versions.
-  # If you inherit version it will break loading Robust.LoaderApi when connecting to a server!
-  name = "${pname}-${version}";
-
   src = fetchFromGitHub {
     owner = "space-wizards";
     repo = "SS14.Launcher";
@@ -57,22 +52,34 @@ buildDotnetModule rec {
     fetchSubmodules = true;
   };
 
-  buildType = "Release";
-  selfContainedBuild = false;
-
-  projectFile = [
-    "SS14.Loader/SS14.Loader.csproj"
-    "SS14.Launcher/SS14.Launcher.csproj"
+  nativeBuildInputs = [
+    iconConvTools
+    copyDesktopItems
   ];
 
-  nugetDeps = ./deps.json;
+  postInstall = ''
+    mkdir -p $out/lib/space-station-14-launcher/loader
+    cp -r SS14.Loader/bin/${buildType}/*/*/* $out/lib/space-station-14-launcher/loader/
 
-  passthru = {
-    inherit version;
-  };
+    icoFileToHiColorTheme SS14.Launcher/Assets/icon.ico ${pname} $out
+  '';
 
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  buildType = "Release";
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = meta.description;
+      desktopName = "Space Station 14 Launcher";
+      exec = meta.mainProgram;
+      icon = pname;
+      name = pname;
+      startupWMClass = meta.mainProgram;
+    })
+  ];
+
   dotnet-runtime = dotnetCorePackages.runtime_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
 
   dotnetFlags = [
     "-p:FullRelease=true"
@@ -80,9 +87,19 @@ buildDotnetModule rec {
     "-nologo"
   ];
 
-  nativeBuildInputs = [
-    iconConvTools
-    copyDesktopItems
+  executables = [ "SS14.Launcher" ];
+  # ${soundfont-path} is escaped here:
+  # https://github.com/NixOS/nixpkgs/blob/d29975d32b1dc7fe91d5cb275d20f8f8aba399ad/pkgs/build-support/setup-hooks/make-wrapper.sh#L126C35-L126C45
+  # via https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html under ${parameter@operator}
+  makeWrapperArgs = [ "--set ROBUST_SOUNDFONT_OVERRIDE ${soundfont-path}" ];
+  # Workaround to prevent buildDotnetModule from overriding assembly versions.
+  # If you inherit version it will break loading Robust.LoaderApi when connecting to a server!
+  name = "${pname}-${version}";
+  nugetDeps = ./deps.json;
+
+  projectFile = [
+    "SS14.Loader/SS14.Loader.csproj"
+    "SS14.Launcher/SS14.Launcher.csproj"
   ];
 
   runtimeDeps = [
@@ -108,31 +125,11 @@ buildDotnetModule rec {
   ++ lib.optional pipewireSupport pipewire
   ++ lib.optional pulseaudioSupport libpulseaudio;
 
-  # ${soundfont-path} is escaped here:
-  # https://github.com/NixOS/nixpkgs/blob/d29975d32b1dc7fe91d5cb275d20f8f8aba399ad/pkgs/build-support/setup-hooks/make-wrapper.sh#L126C35-L126C45
-  # via https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html under ${parameter@operator}
-  makeWrapperArgs = [ "--set ROBUST_SOUNDFONT_OVERRIDE ${soundfont-path}" ];
+  selfContainedBuild = false;
 
-  executables = [ "SS14.Launcher" ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = pname;
-      exec = meta.mainProgram;
-      icon = pname;
-      desktopName = "Space Station 14 Launcher";
-      comment = meta.description;
-      categories = [ "Game" ];
-      startupWMClass = meta.mainProgram;
-    })
-  ];
-
-  postInstall = ''
-    mkdir -p $out/lib/space-station-14-launcher/loader
-    cp -r SS14.Loader/bin/${buildType}/*/*/* $out/lib/space-station-14-launcher/loader/
-
-    icoFileToHiColorTheme SS14.Launcher/Assets/icon.ico ${pname} $out
-  '';
+  passthru = {
+    inherit version;
+  };
 
   passthru.updateScript = nix-update-script { };
 

@@ -5,10 +5,10 @@
   dpkg,
   jdk11_headless,
   makeWrapper,
-  writeText,
-  xorg-server,
-  xf86-video-dummy,
   nixosTests,
+  writeText,
+  xf86-video-dummy,
+  xorg-server,
 }:
 
 let
@@ -25,12 +25,12 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "jibri";
   version = "8.0-183-g7b406bf";
+
   src = fetchurl {
     url = "https://download.jitsi.org/stable/jibri_${finalAttrs.version}-1_all.deb";
     sha256 = "QF7BkLizAsEzjC6PdTyPFAFf82AzukTnxHxLHyz5Kco=";
   };
 
-  dontBuild = true;
   nativeBuildInputs = [
     dpkg
     makeWrapper
@@ -50,13 +50,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.updateScript = ./update.sh;
-
+  dontBuild = true;
   passthru.tests = { inherit (nixosTests) jibri; };
+  passthru.updateScript = ./update.sh;
 
   meta = {
     description = "JItsi BRoadcasting Infrastructure";
-    mainProgram = "jibri";
+
     longDescription = ''
       Jibri provides services for recording or streaming a Jitsi Meet conference.
       It works by launching a Chrome instance rendered in a virtual framebuffer and capturing and
@@ -64,10 +64,12 @@ stdenv.mkDerivation (finalAttrs: {
       no other applications using the display or audio devices. Only one recording at a time is
       supported on a single jibri.
     '';
+
     homepage = "https://github.com/jitsi/jibri";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
-    teams = [ lib.teams.jitsi ];
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.linux;
+    mainProgram = "jibri";
+    teams = [ lib.teams.jitsi ];
   };
 })

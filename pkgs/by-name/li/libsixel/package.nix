@@ -2,12 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gd,
+  gdk-pixbuf,
   meson,
   ninja,
-  gdk-pixbuf,
-  gd,
   pkg-config,
-
   # Enable linking against image loading libraries as part of the
   # implementation of the sixel_helper_{load,write}_image_file() functions.
   # These helper functions are not needed for the main functionality of the
@@ -33,18 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-obzBZAknN3N7+Bvtd0+JHuXcemVb7wRv+Pt4VjS6Bck=";
   };
 
-  buildInputs = lib.optionals withGd [
-    gdk-pixbuf
-    gd
-  ];
-
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
   ];
 
-  doCheck = true;
+  buildInputs = lib.optionals withGd [
+    gdk-pixbuf
+    gd
+  ];
 
   mesonFlags = [
     "-Dtests=enabled"
@@ -60,11 +57,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dpng=disabled"
   ];
 
+  doCheck = true;
+
   meta = {
     description = "SIXEL library for console graphics, and converter programs";
     homepage = "https://github.com/libsixel/libsixel";
-    maintainers = with lib.maintainers; [ hzeller ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ hzeller ];
     platforms = lib.platforms.unix;
   };
 })

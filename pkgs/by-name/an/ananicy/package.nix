@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
+  fetchpatch,
   makeWrapper,
+  python3,
   schedtool,
   sysctl,
   util-linux,
-  fetchpatch,
 }:
 
 stdenv.mkDerivation {
@@ -25,10 +25,10 @@ stdenv.mkDerivation {
     # https://github.com/Nefelim4ag/Ananicy/pull/437
     # fix makefile destinations
     (fetchpatch {
-      url = "https://github.com/Nefelim4ag/Ananicy/commit/dbda0f50670de3f249991706ef1cc107c5197a2f.patch";
-      sha256 = "sha256-vMcJxekg2QUbm253CLAv3tmo5kedSlw+/PI/LamNWwc=";
       # only used for debian packaging. lets exclude it so the patch applies even when that file is changed
       excludes = [ "package.sh" ];
+      sha256 = "sha256-vMcJxekg2QUbm253CLAv3tmo5kedSlw+/PI/LamNWwc=";
+      url = "https://github.com/Nefelim4ag/Ananicy/commit/dbda0f50670de3f249991706ef1cc107c5197a2f.patch";
     })
   ];
 
@@ -39,9 +39,6 @@ stdenv.mkDerivation {
     "PREFIX=$(out)"
     "SYSCONFDIR=${placeholder "out"}/etc"
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   postInstall = ''
     wrapProgram $out/bin/ananicy \
@@ -57,12 +54,15 @@ stdenv.mkDerivation {
       --replace "/usr/bin/ananicy" "$out/bin/ananicy"
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/Nefelim4ag/Ananicy";
     description = "Another auto nice daemon, with community rules support";
+    homepage = "https://github.com/Nefelim4ag/Ananicy";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ artturin ];
+    platforms = lib.platforms.linux;
     mainProgram = "ananicy";
   };
 }

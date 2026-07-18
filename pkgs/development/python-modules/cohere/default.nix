@@ -1,31 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  # optional-dependencies
+  aiohttp,
+  buildPythonPackage,
   # dependencies
   fastavro,
   httpx,
+  httpx-aiohttp,
+  oci,
+  # build-system
+  poetry-core,
   pydantic,
   pydantic-core,
   requests,
   tokenizers,
   types-requests,
   typing-extensions,
-
-  # optional-dependencies
-  aiohttp,
-  httpx-aiohttp,
-  oci,
 }:
 
 buildPythonPackage rec {
   pname = "cohere";
   version = "7.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cohere-ai";
@@ -34,6 +30,8 @@ buildPythonPackage rec {
     hash = "sha256-iFqzWuWOKbJcvmGFEI0jt0fkBlZHlzmzZXZO7tIn638=";
   };
 
+  # tests require CO_API_KEY
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -47,22 +45,21 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  pythonRelaxDeps = [
-    "pydantic-core"
-  ];
-
   optional-dependencies = {
     aiohttp = [
       aiohttp
       httpx-aiohttp
     ];
+
     oci = [ oci ];
   };
 
-  # tests require CO_API_KEY
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "cohere" ];
+
+  pythonRelaxDeps = [
+    "pydantic-core"
+  ];
 
   meta = {
     description = "Simplify interfacing with the Cohere API";

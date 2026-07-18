@@ -6,12 +6,12 @@
   alsa-utils,
   fltk_1_3,
   libjack2,
-  libxft,
-  libxpm,
   libjpeg,
   libpng,
   libsamplerate,
   libsndfile,
+  libxft,
+  libxpm,
   zlib,
 }:
 
@@ -23,8 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/rakarrack/rakarrack-${finalAttrs.version}.tar.bz2";
     sha256 = "1rpf63pdn54c4yg13k7cb1w1c7zsvl97c4qxcpz41c8l91xd55kn";
   };
-
-  hardeningDisable = [ "format" ];
 
   patches = [
     ./fltk-path.patch
@@ -46,11 +44,13 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Multi-effects processor emulating a guitar effects pedalboard";
     homepage = "https://rakarrack.sourceforge.net";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

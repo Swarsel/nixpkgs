@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  pytestCheckHook,
   setuptools,
   termcolor,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-sugar";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,8 @@ buildPythonPackage rec {
       --replace-fail "startdir" "start_path"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
@@ -31,7 +32,7 @@ buildPythonPackage rec {
     termcolor
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Plugin that changes the default look and feel of pytest";

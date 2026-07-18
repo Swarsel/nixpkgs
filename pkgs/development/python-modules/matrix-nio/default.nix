@@ -1,52 +1,45 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiofiles,
   aiohttp,
   aiohttp-socks,
-  h11,
-  h2,
-  jsonschema,
-  pycryptodome,
-  unpaddedbase64,
-
-  # optional-dependencies
-  atomicwrites,
-  cachetools,
-  peewee,
-  python-olm,
-
   # tests
   aioresponses,
+  # optional-dependencies
+  atomicwrites,
+  buildPythonPackage,
+  cachetools,
   faker,
+  h11,
+  h2,
   hpack,
   hyperframe,
   hypothesis,
-  pytest-aiohttp,
-  pytest-asyncio_0,
-  pytest-benchmark,
-  pytestCheckHook,
-
+  jsonschema,
   # passthru tests
   nixosTests,
   opsdroid,
   pantalaimon,
+  peewee,
+  pycryptodome,
+  pytest-aiohttp,
+  pytest-asyncio_0,
+  pytest-benchmark,
+  pytestCheckHook,
+  python-olm,
+  # build-system
+  setuptools,
+  unpaddedbase64,
   weechatScripts,
   zulip,
-
   withOlm ? false,
 }:
 
 buildPythonPackage rec {
   pname = "matrix-nio";
   version = "0.25.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "poljar";
@@ -58,6 +51,17 @@ buildPythonPackage rec {
   patches = [
     # Ignore olm import failures when testing
     ./allow-tests-without-olm.patch
+  ];
+
+  nativeCheckInputs = [
+    aioresponses
+    faker
+    hpack
+    hyperframe
+    hypothesis
+    (pytest-aiohttp.override { pytest-asyncio = pytest-asyncio_0; })
+    pytest-benchmark
+    pytestCheckHook
   ];
 
   build-system = [ setuptools ];
@@ -73,33 +77,6 @@ buildPythonPackage rec {
     unpaddedbase64
   ]
   ++ lib.optionals withOlm optional-dependencies.e2e;
-
-  optional-dependencies = {
-    e2e = [
-      atomicwrites
-      cachetools
-      python-olm
-      peewee
-    ];
-  };
-
-  pythonRelaxDeps = [
-    "aiofiles"
-    "aiohttp-socks" # Pending matrix-nio/matrix-nio#516
-  ];
-
-  nativeCheckInputs = [
-    aioresponses
-    faker
-    hpack
-    hyperframe
-    hypothesis
-    (pytest-aiohttp.override { pytest-asyncio = pytest-asyncio_0; })
-    pytest-benchmark
-    pytestCheckHook
-  ];
-
-  pytestFlags = [ "--benchmark-disable" ];
 
   disabledTestPaths = lib.optionals (!withOlm) [
     "tests/encryption_test.py"
@@ -150,6 +127,23 @@ buildPythonPackage rec {
     "test_sync_token_restoring"
   ];
 
+  optional-dependencies = {
+    e2e = [
+      atomicwrites
+      cachetools
+      python-olm
+      peewee
+    ];
+  };
+
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
+
+  pythonRelaxDeps = [
+    "aiofiles"
+    "aiohttp-socks" # Pending matrix-nio/matrix-nio#516
+  ];
+
   passthru.tests = {
     inherit (nixosTests)
       dendrite
@@ -157,15 +151,17 @@ buildPythonPackage rec {
       matrix-conduit
       mjolnir
       ;
+
     inherit (weechatScripts) weechat-matrix;
     inherit opsdroid pantalaimon zulip;
   };
 
   meta = {
+    description = "Python Matrix client library, designed according to sans I/O principles";
     homepage = "https://github.com/poljar/matrix-nio";
     changelog = "https://github.com/poljar/matrix-nio/blob/${version}/CHANGELOG.md";
-    description = "Python Matrix client library, designed according to sans I/O principles";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       tilpner
       symphorien

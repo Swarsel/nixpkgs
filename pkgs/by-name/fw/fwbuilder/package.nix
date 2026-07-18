@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  libsForQt5,
   ninja,
   wayland,
   wayland-protocols,
-  libsForQt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,15 +41,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GUI Firewall Management Application";
+
     longDescription = ''
       Firewall Builder is a GUI firewall management application for iptables,
       PF, Cisco ASA/PIX/FWSM, Cisco router ACL and more. Firewall configuration
       data is stored in a central file that can scale to hundreds of firewalls
       managed from a single UI.
     '';
+
     homepage = "https://github.com/fwbuilder/fwbuilder";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ elatov ];
+    platforms = lib.platforms.linux;
   };
 })

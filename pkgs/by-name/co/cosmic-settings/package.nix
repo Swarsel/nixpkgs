@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   cmake,
-  just,
-  libcosmicAppHook,
-  pkg-config,
+  cosmic-randr,
   expat,
-  libinput,
   fontconfig,
   freetype,
   isocodes,
-  pipewire,
-  pulseaudio,
-  udev,
-  cosmic-randr,
-  xkeyboard_config,
+  just,
+  libcosmicAppHook,
+  libinput,
   nix-update-script,
   nixosTests,
+  pipewire,
+  pkg-config,
+  pulseaudio,
+  rustPlatform,
+  udev,
+  xkeyboard_config,
 }:
 let
   libcosmicAppHook' = (libcosmicAppHook.__spliced.buildHost or libcosmicAppHook).override {
@@ -36,17 +36,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "epoch-${finalAttrs.version}";
     hash = "sha256-zs8QJc8bLbLLj1lqLsxdgkVOLIHqk+fOEyNEEmViv0g=";
   };
-
-  cargoPatches = [
-    # A different reference to the `libcosmic` crate was added
-    # Remove this patch once upstream fixes their lockfile.
-    ./dedup-libcosmic.patch
-  ];
-
-  cargoHash = "sha256-rYjizOCcLJ4aq3UB5xEwWq5+KvrSi5PCUTIwUM/wegM=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -66,6 +55,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     udev
   ];
 
+  cargoHash = "sha256-rYjizOCcLJ4aq3UB5xEwWq5+KvrSi5PCUTIwUM/wegM=";
+
+  preFixup = ''
+    libcosmicAppWrapperArgs+=(
+      --prefix PATH : ${lib.makeBinPath [ cosmic-randr ]}
+      --prefix XDG_DATA_DIRS : ${lib.makeSearchPathOutput "bin" "share" [ isocodes ]}
+      --set-default X11_BASE_RULES_XML ${xkeyboard_config}/share/X11/xkb/rules/base.xml
+      --set-default X11_BASE_EXTRA_RULES_XML ${xkeyboard_config}/share/X11/xkb/rules/extra.xml
+    )
+  '';
+
+  __structuredAttrs = true;
+
+  cargoPatches = [
+    # A different reference to the `libcosmic` crate was added
+    # Remove this patch once upstream fixes their lockfile.
+    ./dedup-libcosmic.patch
+  ];
+
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -78,14 +86,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
-  preFixup = ''
-    libcosmicAppWrapperArgs+=(
-      --prefix PATH : ${lib.makeBinPath [ cosmic-randr ]}
-      --prefix XDG_DATA_DIRS : ${lib.makeSearchPathOutput "bin" "share" [ isocodes ]}
-      --set-default X11_BASE_RULES_XML ${xkeyboard_config}/share/X11/xkb/rules/base.xml
-      --set-default X11_BASE_EXTRA_RULES_XML ${xkeyboard_config}/share/X11/xkb/rules/extra.xml
-    )
-  '';
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -109,8 +110,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Settings for the COSMIC Desktop Environment";
     homepage = "https://github.com/pop-os/cosmic-settings";
     license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
     mainProgram = "cosmic-settings";
     teams = [ lib.teams.cosmic ];
-    platforms = lib.platforms.linux;
   };
 })

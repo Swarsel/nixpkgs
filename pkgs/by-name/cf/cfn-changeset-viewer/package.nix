@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,21 +18,20 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-NyWZ+8ArlUCsuBN5wZA9vnuX/3HFtuI42/V1+RIKom0=";
-
-  dontNpmBuild = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
+  dontNpmBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI to view the changes calculated in a CloudFormation ChangeSet in a more human-friendly way";
     homepage = "https://github.com/trek10inc/cfn-changeset-viewer";
     license = lib.licenses.mit;
-    mainProgram = "cfn-changeset-viewer";
     maintainers = with lib.maintainers; [ surfaceflinger ];
+    mainProgram = "cfn-changeset-viewer";
   };
 }

@@ -21,20 +21,16 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-HFtyLak9VZNlcZImuxIccm7DwNxMZ96jTx5Q5ODRSgI=";
   };
 
-  buildInputs = [
-    openssl
-    qtbase
-    qt5compat
-  ];
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
 
-  dontWrapQtApps = true;
-
-  # tells CMake to use this CA bundle file if it is accessible
-  preConfigure = "export QC_CERTSTORE_PATH=/etc/ssl/certs/ca-certificates.crt";
+  buildInputs = [
+    openssl
+    qtbase
+    qt5compat
+  ];
 
   cmakeFlags = [
     (lib.cmakeBool "QT6" isQt6)
@@ -42,11 +38,15 @@ stdenv.mkDerivation rec {
     "-Dqca_CERTSTORE=/etc/ssl/certs/ca-certificates.crt"
   ];
 
+  # tells CMake to use this CA bundle file if it is accessible
+  preConfigure = "export QC_CERTSTORE_PATH=/etc/ssl/certs/ca-certificates.crt";
+  dontWrapQtApps = true;
+
   meta = {
     description = "Qt Cryptographic Architecture";
     homepage = "https://invent.kde.org/libraries/qca";
-    maintainers = [ ];
     license = lib.licenses.lgpl21Plus;
+    maintainers = [ ];
     platforms = with lib.platforms; unix;
   };
 }

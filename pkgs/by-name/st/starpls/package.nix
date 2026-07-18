@@ -1,9 +1,9 @@
 {
-  rustPlatform,
   lib,
-  testers,
   fetchFromGitHub,
   protobuf,
+  rustPlatform,
+  testers,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "starpls";
@@ -16,25 +16,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-t9kdpBKyGM61CKhtfO5urVVzyKpL0bX0pZuf0djDdCw=";
   };
 
-  cargoHash = "sha256-5xYfQRm7U7sEQiJEfjaLznoXUxHsxnLmIEA/OxTkjFg=";
-
-  # Only build the starpls language server, not the xtask build helper, which
-  # would otherwise leak into $out/bin.
-  cargoBuildFlags = [ "-p starpls" ];
-
   nativeBuildInputs = [
     protobuf
   ];
 
+  cargoHash = "sha256-5xYfQRm7U7sEQiJEfjaLznoXUxHsxnLmIEA/OxTkjFg=";
   # The tests assume Bazel build and environment variables set like
   # RUNFILES_DIR which don't have an equivalent in Cargo.
   doCheck = false;
+  # Only build the starpls language server, not the xtask build helper, which
+  # would otherwise leak into $out/bin.
+  cargoBuildFlags = [ "-p starpls" ];
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "starpls version";
       version = "v${finalAttrs.version}";
+      command = "starpls version";
+      package = finalAttrs.finalPackage;
     };
   };
 
@@ -42,9 +40,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Language server for Starlark";
     homepage = "https://github.com/withered-magic/starpls";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ aaronjheng ];
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
+    maintainers = with lib.maintainers; [ aaronjheng ];
+    platforms = lib.platforms.all;
     mainProgram = "starpls";
   };
 })

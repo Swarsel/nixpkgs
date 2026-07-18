@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
-  pkg-config,
-  libsForQt5,
-  libnitrokey,
+  cmake,
   cppcodec,
+  libnitrokey,
+  libsForQt5,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,23 +20,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-c6EC5uuMna07xVHDRFq0UDwuSeopZTmZGZ9ZD5zaq8Y=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    libsForQt5.wrapQtAppsHook
-    libsForQt5.qttools
-  ];
-
-  cmakeFlags = [
-    "-DADD_GIT_INFO=OFF"
-    "-DBASH_COMPLETION_PATH=share/bash-completion/completions"
-  ];
-
-  buildInputs = [
-    libnitrokey
-    cppcodec
-  ];
-
   # CMake 3.1 is deprecated and is no longer supported by CMake > 4
   # https://github.com/NixOS/nixpkgs/issues/445447
   postPatch = ''
@@ -48,20 +31,41 @@ stdenv.mkDerivation rec {
       "cmake_policy(SET CMP0043 NEW)"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    libsForQt5.wrapQtAppsHook
+    libsForQt5.qttools
+  ];
+
+  buildInputs = [
+    libnitrokey
+    cppcodec
+  ];
+
+  cmakeFlags = [
+    "-DADD_GIT_INFO=OFF"
+    "-DBASH_COMPLETION_PATH=share/bash-completion/completions"
+  ];
+
   meta = {
     description = "Provides extra functionality for the Nitrokey Pro and Storage";
-    mainProgram = "nitrokey-app";
+
     longDescription = ''
       The nitrokey-app provides a QT system tray widget with which you can
       access the extra functionality of a Nitrokey Storage or Nitrokey Pro.
       See https://www.nitrokey.com/ for more information.
     '';
+
     homepage = "https://github.com/Nitrokey/nitrokey-app";
     changelog = "https://github.com/Nitrokey/nitrokey-app/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       kaiha
       panicgh
     ];
+
+    mainProgram = "nitrokey-app";
   };
 }

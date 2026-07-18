@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   fontconfig,
   freetype,
   libx11,
@@ -15,10 +14,10 @@
   libxinerama,
   libxrandr,
   libxtst,
+  pkg-config,
   writableTmpDirAsHomeHook,
-
-  buildVST3 ? true,
   buildLV2 ? true,
+  buildVST3 ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "tiagolr";
     repo = "gate12";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-dyeIWD315+aKZRwtkRYaWNOS8bNDFboMVPHHe7l+IIY=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -54,8 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
     libxtst
   ];
-
-  enableParallelBuilding = true;
 
   cmakeFlags = [
     (lib.cmakeBool "COPY_PLUGIN_AFTER_BUILD" false)
@@ -97,15 +94,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Trance gate / volume shaper";
     homepage = "https://github.com/tiagolr/gate12";
     changelog = "https://github.com/tiagolr/gate12/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       magnetophon
       mrtnvgr
     ];
+
     platforms = lib.platforms.all;
   };
 })

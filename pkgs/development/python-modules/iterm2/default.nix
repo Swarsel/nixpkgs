@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "iterm2";
   version = "2.13";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,14 +25,14 @@ buildPythonPackage rec {
   # iterm2 won't build on python 2 because it depends on websockets
   # which is disabled below python 3.3.
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "iterm2" ];
 
   meta = {
     description = "Python interface to iTerm2's scripting API";
     homepage = "https://github.com/gnachman/iTerm2";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ jeremyschlatter ];
+    platforms = lib.platforms.darwin;
   };
 }

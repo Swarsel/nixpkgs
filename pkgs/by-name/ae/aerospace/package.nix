@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   fetchzip,
   gitUpdater,
   installShellFiles,
-  lib,
-  stdenv,
   versionCheckHook,
 }:
 
@@ -12,9 +12,8 @@ let
   version = "0.21.2-Beta";
 in
 stdenv.mkDerivation {
-  pname = "aerospace";
-
   inherit version;
+  pname = "aerospace";
 
   src = fetchzip {
     url = "https://github.com/nikitabobko/AeroSpace/releases/download/v${version}/AeroSpace-v${version}.zip";
@@ -40,22 +39,23 @@ stdenv.mkDerivation {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/nikitabobko/AeroSpace.git";
     rev-prefix = "v";
+    url = "https://github.com/nikitabobko/AeroSpace.git";
   };
 
   meta = {
-    license = lib.licenses.mit;
-    mainProgram = "aerospace";
-    homepage = "https://github.com/nikitabobko/AeroSpace";
     description = "i3-like tiling window manager for macOS";
-    platforms = lib.platforms.darwin;
-    maintainers = with lib.maintainers; [ alexandru0-dev ];
+    homepage = "https://github.com/nikitabobko/AeroSpace";
+    license = lib.licenses.mit;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ alexandru0-dev ];
+    platforms = lib.platforms.darwin;
+    mainProgram = "aerospace";
   };
 }

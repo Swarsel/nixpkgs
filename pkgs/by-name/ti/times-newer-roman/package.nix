@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -11,8 +11,8 @@ stdenvNoCC.mkDerivation {
 
   src = fetchzip {
     url = "https://web.archive.org/web/20210609022835/https://timesnewerroman.com/assets/TimesNewerRoman.zip";
-    stripRoot = false;
     hash = "sha256-wO4rxyJNQyhRLpswCYKXdeiXy5G+iWyxulYCHZb60QM=";
+    stripRoot = false;
   };
 
   nativeBuildInputs = [ installFonts ];

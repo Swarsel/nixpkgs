@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  hanzidentifier,
   hatchling,
   unittestCheckHook,
-  hanzidentifier,
   zhon,
 }:
 
 buildPythonPackage rec {
   pname = "dragonmapper";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tsroten";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-3SRSu/9cpg2YcEuPFxBXg6KHgRSX5SiMAFbyE40m6ks=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     zhon
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dragonmapper" ];
 
   meta = {

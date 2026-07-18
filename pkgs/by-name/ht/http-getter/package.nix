@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
   curl,
+  fetchpatch,
   pkg-config,
 }:
 
@@ -21,9 +21,9 @@ stdenv.mkDerivation {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-/fQP0AlEKm/hDj9POGjdAPoW4Z+UExaNnk9PbvW22uE=";
       name = "cmake4-fix";
       url = "https://github.com/tohojo/http-getter/commit/a3646c4cd5f4558f942c2323bbeb83d82a6ce8c1.patch?full_index=1";
-      hash = "sha256-/fQP0AlEKm/hDj9POGjdAPoW4Z+UExaNnk9PbvW22uE=";
     })
   ];
 
@@ -31,13 +31,14 @@ stdenv.mkDerivation {
     cmake
     pkg-config
   ];
+
   buildInputs = [ curl ];
 
   meta = {
-    homepage = "https://github.com/tohojo/http-getter";
     description = "Simple getter for HTTP URLs using cURL";
-    mainProgram = "http-getter";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/tohojo/http-getter";
     license = lib.licenses.gpl3;
+    platforms = lib.platforms.unix;
+    mainProgram = "http-getter";
   };
 }

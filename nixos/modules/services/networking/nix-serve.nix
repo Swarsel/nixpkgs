@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -14,34 +14,47 @@ in
   options = {
     services.nix-serve = {
       enable = mkEnableOption "nix-serve, the standalone Nix binary cache server";
-
-      port = mkOption {
-        type = types.port;
-        default = 5000;
-        description = ''
-          Port number where nix-serve will listen on.
-        '';
-      };
+      package = mkPackageOption pkgs "nix-serve" { };
 
       bindAddress = mkOption {
-        type = types.str;
         default = "0.0.0.0";
+
         description = ''
           IP address where nix-serve will bind its listening socket.
         '';
+
+        type = types.str;
       };
 
-      package = mkPackageOption pkgs "nix-serve" { };
+      extraParams = mkOption {
+        default = "";
+
+        description = ''
+          Extra command line parameters for nix-serve.
+        '';
+
+        type = types.separatedString " ";
+      };
 
       openFirewall = mkOption {
-        type = types.bool;
         default = false;
         description = "Open ports in the firewall for nix-serve.";
+        type = types.bool;
+      };
+
+      port = mkOption {
+        default = 5000;
+
+        description = ''
+          Port number where nix-serve will listen on.
+        '';
+
+        type = types.port;
       };
 
       secretKeyFile = mkOption {
-        type = types.nullOr types.str;
         default = null;
+
         description = ''
           The path to the file used for signing derivation data.
           Generate with:
@@ -52,33 +65,30 @@ in
 
           For more details see {manpage}`nix-store(1)`.
         '';
-      };
 
-      extraParams = mkOption {
-        type = types.separatedString " ";
-        default = "";
-        description = ''
-          Extra command line parameters for nix-serve.
-        '';
+        type = types.nullOr types.str;
       };
     };
   };
 
   config = mkIf cfg.enable {
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
+    };
+
     nix.settings = lib.optionalAttrs (lib.versionAtLeast config.nix.package.version "2.4") {
       extra-allowed-users = [ "nix-serve" ];
     };
 
     systemd.services.nix-serve = {
-      description = "nix-serve binary cache server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "nix-serve binary cache server";
+      environment.NIX_REMOTE = "daemon";
 
       path = [
         config.nix.package.out
         pkgs.bzip2.bin
       ];
-      environment.NIX_REMOTE = "daemon";
 
       script = ''
         ${lib.optionalString (cfg.secretKeyFile != null) ''
@@ -88,19 +98,19 @@ in
       '';
 
       serviceConfig = {
-        Restart = "always";
-        RestartSec = "5s";
-        User = "nix-serve";
-        Group = "nix-serve";
         DynamicUser = true;
+        Group = "nix-serve";
+
         LoadCredential = lib.optionalString (
           cfg.secretKeyFile != null
         ) "NIX_SECRET_KEY_FILE:${cfg.secretKeyFile}";
-      };
-    };
 
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
+        Restart = "always";
+        RestartSec = "5s";
+        User = "nix-serve";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

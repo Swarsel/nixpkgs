@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "wordninja";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     wheel
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "wordninja" ];
 
   meta = {

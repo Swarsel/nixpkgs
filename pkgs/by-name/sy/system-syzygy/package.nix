@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   SDL2,
-  makeWrapper,
   makeDesktopItem,
+  makeWrapper,
+  rustPlatform,
 }:
 
 let
   desktopFile = makeDesktopItem {
-    name = "system-syzygy";
-    exec = "@out@/bin/syzygy";
+    categories = [ "Game" ];
     comment = "A puzzle game";
     desktopName = "System Syzygy";
-    categories = [ "Game" ];
+    exec = "@out@/bin/syzygy";
+    name = "system-syzygy";
   };
 in
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,7 +30,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ SDL2 ];
-
   cargoHash = "sha256-H/iG6vsmtpBGYBBqNQG5EpyZaUtfXfVaHv4fkxwqrD0=";
 
   postInstall = ''
@@ -42,11 +41,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Story and a puzzle game, where you solve a variety of puzzle";
-    mainProgram = "syzygy";
     homepage = "https://mdsteele.games/syzygy";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.marius851000 ];
+    mainProgram = "syzygy";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

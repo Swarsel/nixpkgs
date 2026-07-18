@@ -1,6 +1,5 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   appstream-glib,
   desktop-file-utils,
@@ -11,16 +10,15 @@
   libadwaita,
   meson,
   ninja,
-  pkg-config,
-  wrapGAppsHook4,
   nix-update-script,
+  pkg-config,
+  python3,
+  wrapGAppsHook4,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "portfolio";
   version = "1.0.3";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "tchx84";
@@ -62,11 +60,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ln -s dev.tchx84.Portfolio "$out/bin/portfolio"
   '';
 
-  # Prevent double wrapping
-  dontWrapGApps = true;
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  # Prevent double wrapping
+  dontWrapGApps = true;
+  pyproject = false;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -77,11 +77,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/tchx84/Portfolio";
     changelog = "https://github.com/tchx84/Portfolio/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
-    mainProgram = "dev.tchx84.Portfolio";
+
     maintainers = with lib.maintainers; [
       dotlambda
       chuangzhu
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "dev.tchx84.Portfolio";
   };
 })

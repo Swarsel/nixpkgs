@@ -25,16 +25,28 @@ in
     services.gpsd = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable `gpsd`, a GPS service daemon.
         '';
+
+        type = lib.types.bool;
+      };
+
+      debugLevel = lib.mkOption {
+        default = 0;
+
+        description = ''
+          The debugging level.
+        '';
+
+        type = lib.types.int;
       };
 
       devices = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ "/dev/ttyUSB0" ];
+
         description = ''
           List of devices that `gpsd` should subscribe to.
 
@@ -44,11 +56,60 @@ in
           which case it specifies an input source for DGPS or ntrip
           data.
         '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      extraArgs = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          A list of extra command line arguments to pass to gpsd.
+          Check {manpage}`gpsd(8)` mangpage for possible arguments.
+        '';
+
+        example = [
+          "-r"
+          "-s"
+          "19200"
+        ];
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      listenany = lib.mkOption {
+        default = false;
+
+        description = ''
+          Listen on all addresses rather than just loopback.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      nowait = lib.mkOption {
+        default = false;
+
+        description = ''
+          don't wait for client connects to poll GPS
+        '';
+
+        type = lib.types.bool;
+      };
+
+      port = lib.mkOption {
+        default = 2947;
+
+        description = ''
+          The port where to listen for TCP connections.
+        '';
+
+        type = lib.types.port;
       };
 
       readonly = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Whether to enable the broken-device-safety, otherwise
           known as read-only mode.  Some popular bluetooth and USB
@@ -61,52 +122,8 @@ in
           platform independent method to identify
           serial-over-Bluetooth devices would also be nice.
         '';
-      };
 
-      nowait = lib.mkOption {
         type = lib.types.bool;
-        default = false;
-        description = ''
-          don't wait for client connects to poll GPS
-        '';
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 2947;
-        description = ''
-          The port where to listen for TCP connections.
-        '';
-      };
-
-      debugLevel = lib.mkOption {
-        type = lib.types.int;
-        default = 0;
-        description = ''
-          The debugging level.
-        '';
-      };
-
-      listenany = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Listen on all addresses rather than just loopback.
-        '';
-      };
-
-      extraArgs = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        example = [
-          "-r"
-          "-s"
-          "19200"
-        ];
-        description = ''
-          A list of extra command line arguments to pass to gpsd.
-          Check {manpage}`gpsd(8)` mangpage for possible arguments.
-        '';
       };
 
     };
@@ -117,21 +134,11 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    users.users.gpsd = {
-      inherit uid;
-      group = "gpsd";
-      description = "gpsd daemon user";
-      home = "/var/empty";
-    };
-
-    users.groups.gpsd = { inherit gid; };
-
     systemd.services.gpsd = {
-      description = "GPSD daemon";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "GPSD daemon";
+
       serviceConfig = {
-        Type = "forking";
         ExecStart =
           let
             devices = utils.escapeSystemdExecArgs cfg.devices;
@@ -146,7 +153,20 @@ in
               ${extraArgs}                                          \
               ${devices}
           '';
+
+        Type = "forking";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.gpsd = { inherit gid; };
+
+    users.users.gpsd = {
+      inherit uid;
+      description = "gpsd daemon user";
+      group = "gpsd";
+      home = "/var/empty";
     };
 
   };

@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  sphinx,
   openpyxl,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-excel-table";
   version = "1.0.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,17 +20,16 @@ buildPythonPackage rec {
     openpyxl
   ];
 
-  pythonImportsCheck = [ "sphinxcontrib.excel_table" ];
-
   # No tests present upstream
   doCheck = false;
-
+  format = "setuptools";
+  pythonImportsCheck = [ "sphinxcontrib.excel_table" ];
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {
     description = "Sphinx excel-table extension";
     homepage = "https://github.com/hackerain/sphinxcontrib-excel-table";
-    maintainers = with lib.maintainers; [ raboof ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ raboof ];
   };
 }

@@ -1,14 +1,14 @@
 {
-  stdenv,
-  cmake,
-  pkg-config,
-  glib,
-  libao,
-  intltool,
-  libmirage,
-  coreutils,
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
+  cmake,
+  coreutils,
+  glib,
+  intltool,
+  libao,
+  libmirage,
+  pkg-config,
   writeScript,
 }:
 
@@ -58,6 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Suite of tools for emulating optical drives and discs";
+
     longDescription = ''
       CDEmu consists of:
 
@@ -69,10 +70,11 @@ stdenv.mkDerivation (finalAttrs: {
 
       Optical media emulated by CDemu can be mounted within Linux. Automounting is also allowed.
     '';
+
     homepage = "https://cdemu.sourceforge.io/about/daemon/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bendlas ];
+    platforms = lib.platforms.linux;
     mainProgram = "cdemu-daemon";
   };
 })

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  ninja,
   SDL2,
   SDL2_mixer,
+  cmake,
+  ninja,
+  pkg-config,
   simpleini,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
   ];
+
   buildInputs = [
     SDL2
     SDL2_mixer
@@ -37,13 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/petitlapin/Li-Ri";
     description = "Drive a toy wood engine and collect all the coaches to win";
-    maintainers = with lib.maintainers; [
-      jcumming
-      marcin-serwin
-    ];
-    platforms = with lib.platforms; linux;
+    homepage = "https://github.com/petitlapin/Li-Ri";
+
     license = with lib.licenses; [
       # Code
       gpl2Only
@@ -53,6 +50,13 @@ stdenv.mkDerivation (finalAttrs: {
       # Metadata
       cc0
     ];
+
+    maintainers = with lib.maintainers; [
+      jcumming
+      marcin-serwin
+    ];
+
+    platforms = with lib.platforms; linux;
     mainProgram = "Li-ri";
   };
 })

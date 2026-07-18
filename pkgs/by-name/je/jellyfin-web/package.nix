@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   buildNpmPackage,
-  nodejs_22,
-  nix-update-script,
-  pkg-config,
-  xcbuild,
-  pango,
   giflib,
   jellyfin,
+  nix-update-script,
+  nodejs_22,
+  pango,
+  pkg-config,
+  xcbuild,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "jellyfin-web";
@@ -24,21 +24,10 @@ buildNpmPackage (finalAttrs: {
       hash = "sha256-3Gyg0eSbOXO0wgdgzuOtD8nDmSM37z7Bc0fKcbo9ffA=";
     };
 
-  nodejs = nodejs_22;
-
   postPatch = ''
     substituteInPlace webpack.common.js \
       --replace-fail "git describe --always --dirty" "echo ${finalAttrs.src.rev}"
   '';
-
-  npmDepsHash = "sha256-4kZo50xY/SvjpHToeIt0E91yeM7ab6Q6XtBMU5zSrF4=";
-
-  preBuild = ''
-    # using sass-embedded fails at executing node_modules/sass-embedded-linux-x64/dart-sass/src/dart
-    rm -r node_modules/sass-embedded*
-  '';
-
-  npmBuildScript = [ "build:production" ];
 
   nativeBuildInputs = [ pkg-config ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild ];
 
@@ -49,6 +38,13 @@ buildNpmPackage (finalAttrs: {
     giflib
   ];
 
+  npmDepsHash = "sha256-4kZo50xY/SvjpHToeIt0E91yeM7ab6Q6XtBMU5zSrF4=";
+
+  preBuild = ''
+    # using sass-embedded fails at executing node_modules/sass-embedded-linux-x64/dart-sass/src/dart
+    rm -r node_modules/sass-embedded*
+  '';
+
   installPhase = ''
     runHook preInstall
 
@@ -58,12 +54,15 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  nodejs = nodejs_22;
+  npmBuildScript = [ "build:production" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Web Client for Jellyfin";
     homepage = "https://jellyfin.org/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       nyanloutre
       minijackson

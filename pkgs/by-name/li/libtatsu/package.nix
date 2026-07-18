@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libplist,
-  libimobiledevice-glue,
   curl,
+  libimobiledevice-glue,
+  libplist,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vf4xBTTGDJCTj4TMLOhojjAfzSbkx+ogGBnf+UeumG0=";
   };
 
-  preAutoreconf = ''
-    echo ${finalAttrs.version} > .tarball-version
-    export PACKAGE_VERSION=${finalAttrs.version}
-  '';
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -36,11 +31,16 @@ stdenv.mkDerivation (finalAttrs: {
     curl
   ];
 
+  preAutoreconf = ''
+    echo ${finalAttrs.version} > .tarball-version
+    export PACKAGE_VERSION=${finalAttrs.version}
+  '';
+
   meta = {
     description = "Library handling the communication with Apple's Tatsu Signing Server (TSS)";
     homepage = "https://github.com/libimobiledevice/libtatsu";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ nxm ];
+    platforms = lib.platforms.unix;
   };
 })

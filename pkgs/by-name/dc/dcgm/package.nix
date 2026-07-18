@@ -3,20 +3,20 @@
   stdenv,
   fetchFromGitHub,
   autoAddDriverRunpath,
+  boost186,
   catch2_3,
   cmake,
-  ctestCheckHook,
   coreutils,
-  mpi,
-  mpiCheckPhaseHook,
-  ninja,
+  ctestCheckHook,
   cudaPackages_12,
-  boost186,
   fmt_10,
   git,
   jsoncpp,
   libevent,
   lshw,
+  mpi,
+  mpiCheckPhaseHook,
+  ninja,
   plog,
   python3,
   replaceVars,
@@ -97,7 +97,11 @@ stdenv.mkDerivation {
     })
   ];
 
-  hardeningDisable = [ "all" ];
+  postPatch = ''
+    while read -r -d "" file; do
+      substituteInPlace "$file" --replace-quiet @dcgm_out@ "$out"
+    done < <(find . '(' -name '*.h' -or -name '*.cpp' ')' -print0)
+  '';
 
   strictDeps = true;
 
@@ -126,11 +130,19 @@ stdenv.mkDerivation {
     libevent
   ];
 
+  # Add our paths to the CMake flags so FindCuda.cmake can find them.
+  cmakeFlags = lib.concatMap mkCudaFlags cudaPackageSets;
+  # Lots of dodgy C++.
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
+  doCheck = true;
+
   nativeCheckInputs = [
     mpi
     ctestCheckHook
     mpiCheckPhaseHook
   ];
+
+  __structuredAttrs = true;
 
   disabledTests = [
     # Fail due to lack of `/sys` in the sandbox.
@@ -151,35 +163,22 @@ stdenv.mkDerivation {
     "GetPluginCudalessDir returns cudaless directory in plugin directory"
   ];
 
-  # Add our paths to the CMake flags so FindCuda.cmake can find them.
-  cmakeFlags = lib.concatMap mkCudaFlags cudaPackageSets;
-
-  # Lots of dodgy C++.
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
-
-  doCheck = true;
-  dontUseNinjaCheck = true;
-
-  postPatch = ''
-    while read -r -d "" file; do
-      substituteInPlace "$file" --replace-quiet @dcgm_out@ "$out"
-    done < <(find . '(' -name '*.h' -or -name '*.cpp' ')' -print0)
-  '';
-
   disallowedReferences = lib.concatMap getCudaPackages cudaPackageSets;
-
-  __structuredAttrs = true;
+  dontUseNinjaCheck = true;
+  hardeningDisable = [ "all" ];
 
   meta = {
     description = "Data Center GPU Manager (DCGM) is a daemon that allows users to monitor NVIDIA data-center GPUs";
     homepage = "https://developer.nvidia.com/dcgm";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched
       sinrohit-desco
     ];
-    mainProgram = "dcgmi";
+
     platforms = lib.platforms.linux;
+    mainProgram = "dcgmi";
   };
 }

@@ -25,27 +25,84 @@ let
   computedConfigFile = if cfg.configFile == null then emptyConfigFile else cfg.configFile;
 in
 {
-  port = 9221;
   extraOpts = {
     package = mkPackageOption pkgs "prometheus-pve-exporter" { };
 
-    environmentFile = mkOption {
-      type = with types; nullOr path;
-      default = null;
-      example = "/etc/prometheus-pve-exporter/pve.env";
-      description = ''
-        Path to the service's environment file. This path can either be a computed path in /nix/store or a path in the local filesystem.
+    collectors = {
+      config = mkOption {
+        default = true;
 
-        The environment file should NOT be stored in /nix/store as it contains passwords and/or keys in plain text.
+        description = ''
+          Collect PVE onboot status
+        '';
 
-        Environment reference: <https://github.com/prometheus-pve/prometheus-pve-exporter#authentication>
-      '';
+        type = types.bool;
+      };
+
+      cluster = mkOption {
+        default = true;
+
+        description = ''
+          Collect PVE cluster info
+        '';
+
+        type = types.bool;
+      };
+
+      node = mkOption {
+        default = true;
+
+        description = ''
+          Collect PVE node info
+        '';
+
+        type = types.bool;
+      };
+
+      replication = mkOption {
+        default = true;
+
+        description = ''
+          Collect PVE replication info
+        '';
+
+        type = types.bool;
+      };
+
+      resources = mkOption {
+        default = true;
+
+        description = ''
+          Collect PVE resources info
+        '';
+
+        type = types.bool;
+      };
+
+      status = mkOption {
+        default = true;
+
+        description = ''
+          Collect Node/VM/CT status
+        '';
+
+        type = types.bool;
+      };
+
+      version = mkOption {
+        default = true;
+
+        description = ''
+          Collect PVE version info
+        '';
+
+        type = types.bool;
+      };
     };
 
     configFile = mkOption {
-      type = with types; nullOr path;
       default = null;
-      example = "/etc/prometheus-pve-exporter/pve.yml";
+
       description = ''
         Path to the service's config file. This path can either be a computed path in /nix/store or a path in the local filesystem.
 
@@ -55,84 +112,57 @@ in
 
         Configuration reference: <https://github.com/prometheus-pve/prometheus-pve-exporter/#authentication>
       '';
+
+      example = "/etc/prometheus-pve-exporter/pve.yml";
+      type = with types; nullOr path;
+    };
+
+    environmentFile = mkOption {
+      default = null;
+
+      description = ''
+        Path to the service's environment file. This path can either be a computed path in /nix/store or a path in the local filesystem.
+
+        The environment file should NOT be stored in /nix/store as it contains passwords and/or keys in plain text.
+
+        Environment reference: <https://github.com/prometheus-pve/prometheus-pve-exporter#authentication>
+      '';
+
+      example = "/etc/prometheus-pve-exporter/pve.env";
+      type = with types; nullOr path;
     };
 
     server = {
-      keyFile = mkOption {
-        type = with types; nullOr path;
-        default = null;
-        example = "/var/lib/prometheus-pve-exporter/privkey.key";
-        description = ''
-          Path to a SSL private key file for the server
-        '';
-      };
-
       certFile = mkOption {
-        type = with types; nullOr path;
         default = null;
-        example = "/var/lib/prometheus-pve-exporter/full-chain.pem";
+
         description = ''
           Path to a SSL certificate file for the server
         '';
-      };
-    };
 
-    collectors = {
-      status = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Collect Node/VM/CT status
-        '';
+        example = "/var/lib/prometheus-pve-exporter/full-chain.pem";
+        type = with types; nullOr path;
       };
-      version = mkOption {
-        type = types.bool;
-        default = true;
+
+      keyFile = mkOption {
+        default = null;
+
         description = ''
-          Collect PVE version info
+          Path to a SSL private key file for the server
         '';
-      };
-      node = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Collect PVE node info
-        '';
-      };
-      cluster = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Collect PVE cluster info
-        '';
-      };
-      resources = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Collect PVE resources info
-        '';
-      };
-      config = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Collect PVE onboot status
-        '';
-      };
-      replication = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Collect PVE replication info
-        '';
+
+        example = "/var/lib/prometheus-pve-exporter/privkey.key";
+        type = with types; nullOr path;
       };
     };
   };
+
+  port = 9221;
+
   serviceOpts = {
     serviceConfig = {
       DynamicUser = cfg.environmentFile == null;
-      LoadCredential = "configFile:${computedConfigFile}";
+
       ExecStart = ''
         ${cfg.package}/bin/pve_exporter \
           --${optionalString (!cfg.collectors.status) "no-"}collector.status \
@@ -147,6 +177,8 @@ in
           --config.file %d/configFile \
           --web.listen-address ${cfg.listenAddress}:${toString cfg.port}
       '';
+
+      LoadCredential = "configFile:${computedConfigFile}";
     }
     // optionalAttrs (cfg.environmentFile != null) {
       EnvironmentFile = cfg.environmentFile;

@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "python-logstash";
   version = "0.4.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # no tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python logging handler for Logstash";

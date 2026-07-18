@@ -9,31 +9,31 @@
 let
   buildMavenPackage =
     {
+      pname,
       src,
-      sourceRoot ? null,
+      version,
       buildOffline ? false,
       doCheck ? true,
-      prePatch ? null,
-      patches ? [ ],
-      postPatch ? null,
-      pname,
-      version,
-      mvnJdk ? jdk,
-      mvnHash ? "",
+      manualMvnArtifacts ? [ ],
+      manualMvnSources ? [ ],
+      mvnDepsParameters ? "",
+      mvnFetchExtraArgs ? { },
       /**
         Maven goal to execute. Normally the the default should be used, but some special cases need other goals.
       */
       mvnGoal ? "package",
+      mvnHash ? "",
+      mvnJdk ? jdk,
       /**
         Set the Maven offline argument, `-o`. Normally the default is preferred, but to call `mvn deploy` with
         a directory destination `-o` must be removed. In that case we rely on the Nix sandbox to keep things hermetic.
       */
       mvnOffline ? true,
-      mvnFetchExtraArgs ? { },
-      mvnDepsParameters ? "",
-      manualMvnArtifacts ? [ ],
-      manualMvnSources ? [ ],
       mvnParameters ? "",
+      patches ? [ ],
+      postPatch ? null,
+      prePatch ? null,
+      sourceRoot ? null,
       ...
     }@args:
 
@@ -47,7 +47,6 @@ let
 
       fetchedMavenDeps = stdenv.mkDerivation (
         {
-          pname = "maven-deps-${pname}";
           inherit
             src
             sourceRoot
@@ -57,6 +56,8 @@ let
             version
             ;
 
+          pname = "maven-deps-${pname}";
+
           nativeBuildInputs = [
             maven
           ]
@@ -65,8 +66,6 @@ let
           env = mvnFetchExtraArgs.env or { } // {
             JAVA_HOME = mvnJdk;
           };
-
-          impureEnvVars = lib.fetchers.proxyImpureEnvVars;
 
           buildPhase = ''
             runHook preBuild
@@ -128,9 +127,10 @@ let
 
           # don't do any fixup
           dontFixup = true;
+          impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+          outputHash = mvnHash;
           outputHashAlgo = if mvnHash != "" then null else "sha256";
           outputHashMode = "recursive";
-          outputHash = mvnHash;
         }
         // (removeAttrs mvnFetchExtraArgs [ "env" ])
       );

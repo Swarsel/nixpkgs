@@ -36,67 +36,74 @@ let
   proxy = types.submodule {
     options = {
       interface = mkOption {
-        type = types.nullOr types.str;
+        default = null;
+
         description = ''
           Listen for any Neighbor Solicitation messages on this interface,
           and respond to them according to a set of rules.
           Defaults to the name of the attrset.
         '';
-        default = null;
+
+        type = types.nullOr types.str;
       };
+
       router = mkOption {
-        type = types.bool;
+        default = true;
+
         description = ''
           Turns on or off the router flag for Neighbor Advertisement Messages.
         '';
-        default = true;
+
+        type = types.bool;
       };
-      timeout = mkOption {
-        type = types.int;
-        description = ''
-          Controls how long to wait for a Neighbor Advertisement Message before
-          invalidating the entry, in milliseconds.
-        '';
-        default = 500;
-      };
-      ttl = mkOption {
-        type = types.int;
-        description = ''
-          Controls how long a valid or invalid entry remains in the cache, in
-          milliseconds.
-        '';
-        default = 30000;
-      };
+
       rules = mkOption {
-        type = types.attrsOf rule;
+        default = { };
+
         description = ''
           This is a rule that the target address is to match against. If no netmask
           is provided, /128 is assumed. You may have several rule sections, and the
           addresses may or may not overlap.
         '';
-        default = { };
+
+        type = types.attrsOf rule;
+      };
+
+      timeout = mkOption {
+        default = 500;
+
+        description = ''
+          Controls how long to wait for a Neighbor Advertisement Message before
+          invalidating the entry, in milliseconds.
+        '';
+
+        type = types.int;
+      };
+
+      ttl = mkOption {
+        default = 30000;
+
+        description = ''
+          Controls how long a valid or invalid entry remains in the cache, in
+          milliseconds.
+        '';
+
+        type = types.int;
       };
     };
   };
 
   rule = types.submodule {
     options = {
-      network = mkOption {
-        type = types.nullOr types.str;
-        description = ''
-          This is the target address is to match against. If no netmask
-          is provided, /128 is assumed. The addresses of several rules
-          may or may not overlap.
-          Defaults to the name of the attrset.
-        '';
+      interface = mkOption {
         default = null;
+        description = "Interface to use when method is iface.";
+        type = types.nullOr types.str;
       };
+
       method = mkOption {
-        type = types.enum [
-          "static"
-          "iface"
-          "auto"
-        ];
+        default = "auto";
+
         description = ''
           static: Immediately answer any Neighbor Solicitation Messages
             (if they match the IP rule).
@@ -106,12 +113,25 @@ let
           auto: Same as iface, but instead of manually specifying the outgoing
             interface, check for a matching route in /proc/net/ipv6_route.
         '';
-        default = "auto";
+
+        type = types.enum [
+          "static"
+          "iface"
+          "auto"
+        ];
       };
-      interface = mkOption {
-        type = types.nullOr types.str;
-        description = "Interface to use when method is iface.";
+
+      network = mkOption {
         default = null;
+
+        description = ''
+          This is the target address is to match against. If no netmask
+          is provided, /128 is assumed. The addresses of several rules
+          may or may not overlap.
+          Defaults to the name of the attrset.
+        '';
+
+        type = types.nullOr types.str;
       };
     };
   };
@@ -120,91 +140,107 @@ in
 {
   options.services.ndppd = {
     enable = mkEnableOption "daemon that proxies NDP (Neighbor Discovery Protocol) messages between interfaces";
+
+    configFile = mkOption {
+      default = null;
+      description = "Path to configuration file.";
+      type = types.nullOr types.path;
+    };
+
     interface = mkOption {
-      type = types.nullOr types.str;
+      default = null;
+
       description = ''
         Interface which is on link-level with router.
         (Legacy option, use services.ndppd.proxies.\<interface\>.rules.\<network\> instead)
       '';
-      default = null;
+
       example = "eth0";
-    };
-    network = mkOption {
       type = types.nullOr types.str;
+    };
+
+    network = mkOption {
+      default = null;
+
       description = ''
         Network that we proxy.
         (Legacy option, use services.ndppd.proxies.\<interface\>.rules.\<network\> instead)
       '';
-      default = null;
+
       example = "1111::/64";
+      type = types.nullOr types.str;
     };
-    configFile = mkOption {
-      type = types.nullOr types.path;
-      description = "Path to configuration file.";
-      default = null;
-    };
-    routeTTL = mkOption {
-      type = types.int;
-      description = ''
-        This tells 'ndppd' how often to reload the route file /proc/net/ipv6_route,
-        in milliseconds.
-      '';
-      default = 30000;
-    };
+
     proxies = mkOption {
-      type = types.attrsOf proxy;
+      default = { };
+
       description = ''
         This sets up a listener, that will listen for any Neighbor Solicitation
         messages, and respond to them according to a set of rules.
       '';
-      default = { };
+
       example = literalExpression ''
         {
           eth0.rules."1111::/64" = {};
         }
       '';
+
+      type = types.attrsOf proxy;
+    };
+
+    routeTTL = mkOption {
+      default = 30000;
+
+      description = ''
+        This tells 'ndppd' how often to reload the route file /proc/net/ipv6_route,
+        in milliseconds.
+      '';
+
+      type = types.int;
     };
   };
 
   config = mkIf cfg.enable {
+    services.ndppd.proxies = mkIf (cfg.interface != null && cfg.network != null) {
+      ${cfg.interface}.rules.${cfg.network} = { };
+    };
+
+    systemd.services.ndppd = {
+      after = [ "network-pre.target" ];
+      description = "NDP Proxy Daemon";
+
+      documentation = [
+        "man:ndppd(1)"
+        "man:ndppd.conf(5)"
+      ];
+
+      serviceConfig = {
+        # Sandboxing
+        CapabilityBoundingSet = "CAP_NET_RAW CAP_NET_ADMIN";
+        ExecStart = "${pkgs.ndppd}/bin/ndppd -c ${ndppdConf}";
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        RestrictAddressFamilies = "AF_INET6 AF_PACKET AF_NETLINK";
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
     warnings = mkIf (cfg.interface != null && cfg.network != null) [
       ''
         The options services.ndppd.interface and services.ndppd.network will probably be removed soon,
         please use services.ndppd.proxies.<interface>.rules.<network> instead.
       ''
     ];
-
-    services.ndppd.proxies = mkIf (cfg.interface != null && cfg.network != null) {
-      ${cfg.interface}.rules.${cfg.network} = { };
-    };
-
-    systemd.services.ndppd = {
-      description = "NDP Proxy Daemon";
-      documentation = [
-        "man:ndppd(1)"
-        "man:ndppd.conf(5)"
-      ];
-      after = [ "network-pre.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = "${pkgs.ndppd}/bin/ndppd -c ${ndppdConf}";
-
-        # Sandboxing
-        CapabilityBoundingSet = "CAP_NET_RAW CAP_NET_ADMIN";
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-        RestrictAddressFamilies = "AF_INET6 AF_PACKET AF_NETLINK";
-        RestrictNamespaces = true;
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-      };
-    };
   };
 }

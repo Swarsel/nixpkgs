@@ -1,6 +1,6 @@
 {
-  qtModule,
   fetchFromGitHub,
+  qtModule,
   qtbase,
 }:
 

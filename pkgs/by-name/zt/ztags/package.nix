@@ -30,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    inherit (zig.meta) platforms;
     description = "Generate tags files for Zig projects";
     homepage = "https://github.com/gpanders/ztags";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "ztags";
-    inherit (zig.meta) platforms;
   };
 })

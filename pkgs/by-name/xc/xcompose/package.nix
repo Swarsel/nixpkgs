@@ -1,15 +1,14 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  xorgproto,
   libx11,
+  python3,
+  xorgproto,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "xcompose";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Udzu";
@@ -31,6 +30,8 @@ python3.pkgs.buildPythonApplication rec {
   dependencies = with python3.pkgs; [
     pygtrie
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "xcompose"

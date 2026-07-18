@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -9,35 +9,26 @@ let
   defaultUser = "papra";
   defaultGroup = "papra";
   defaultEnv = {
-    SERVER_SERVE_PUBLIC_DIR = true;
-    PORT = 1221;
     DATABASE_URL = "file:/var/lib/papra/db.sqlite";
     DOCUMENT_STORAGE_FILESYSTEM_ROOT = "/var/lib/papra/local-documents";
+    PORT = 1221;
+    SERVER_SERVE_PUBLIC_DIR = true;
   };
 in
 {
   options = {
     services.papra = {
       enable = lib.mkEnableOption "Papra";
-
-      user = lib.mkOption {
-        default = defaultUser;
-        type = lib.types.str;
-        description = "User under which Papra runs.";
-      };
-
-      group = lib.mkOption {
-        default = defaultGroup;
-        type = lib.types.str;
-        description = ''
-          If the default user "${defaultUser}" is configured then this is the primary
-          group of that user.
-        '';
-      };
-
       package = lib.mkPackageOption pkgs "papra" { };
 
       environment = lib.mkOption {
+        default = defaultEnv;
+        description = "Environment variables to set for the service.";
+
+        example = {
+          PORT = 1221;
+        };
+
         type =
           with lib.types;
           attrsOf (oneOf [
@@ -48,45 +39,35 @@ in
             path
             package
           ]);
-        default = defaultEnv;
-        example = {
-          PORT = 1221;
-        };
-        description = "Environment variables to set for the service.";
       };
 
       environmentFile = lib.mkOption {
-        type = with lib.types; nullOr path;
         default = null;
         description = "Environment file, usefult to provide secrets to the service";
+        type = with lib.types; nullOr path;
+      };
+
+      group = lib.mkOption {
+        default = defaultGroup;
+
+        description = ''
+          If the default user "${defaultUser}" is configured then this is the primary
+          group of that user.
+        '';
+
+        type = lib.types.str;
+      };
+
+      user = lib.mkOption {
+        default = defaultUser;
+        description = "User under which Papra runs.";
+        type = lib.types.str;
       };
     };
   };
-  config = lib.mkIf cfg.enable {
-    users = {
-      users = lib.optionalAttrs (cfg.user == defaultUser) {
-        "${defaultUser}" = {
-          description = "Papra service user";
-          isSystemUser = true;
-          group = cfg.group;
-        };
-      };
-      groups = lib.optionalAttrs (cfg.group == defaultGroup) {
-        "${defaultGroup}" = { };
-      };
-    };
 
+  config = lib.mkIf cfg.enable {
     systemd.services.papra = {
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Restart = "on-failure";
-        ExecStartPre = "${lib.getExe' cfg.package "papra-migrate-up"}";
-        ExecStart = "${lib.getExe' cfg.package "papra"}";
-        User = cfg.user;
-        Group = cfg.group;
-        StateDirectory = "papra";
-        EnvironmentFile = cfg.environmentFile;
-      };
       environment =
         let
           environmentwithDefaults = defaultEnv // cfg.environment;
@@ -94,6 +75,32 @@ in
         (lib.mapAttrs (
           _: s: if lib.isBool s then lib.boolToString s else toString s
         ) environmentwithDefaults);
+
+      serviceConfig = {
+        EnvironmentFile = cfg.environmentFile;
+        ExecStart = "${lib.getExe' cfg.package "papra"}";
+        ExecStartPre = "${lib.getExe' cfg.package "papra-migrate-up"}";
+        Group = cfg.group;
+        Restart = "on-failure";
+        StateDirectory = "papra";
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users = {
+      groups = lib.optionalAttrs (cfg.group == defaultGroup) {
+        "${defaultGroup}" = { };
+      };
+
+      users = lib.optionalAttrs (cfg.user == defaultUser) {
+        "${defaultUser}" = {
+          description = "Papra service user";
+          group = cfg.group;
+          isSystemUser = true;
+        };
+      };
     };
   };
 

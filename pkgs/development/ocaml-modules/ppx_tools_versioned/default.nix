@@ -9,8 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "ppx_tools_versioned";
   version = "5.4.0";
 
-  duneVersion = "3";
-
   src = fetchFromGitHub {
     owner = "ocaml-ppx";
     repo = "ppx_tools_versioned";
@@ -19,10 +17,11 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ ocaml-migrate-parsetree ];
+  duneVersion = "3";
 
   meta = {
-    homepage = "https://github.com/let-def/ppx_tools_versioned";
     description = "Tools for authors of syntactic tools (such as ppx rewriters)";
+    homepage = "https://github.com/let-def/ppx_tools_versioned";
     license = lib.licenses.gpl2;
     maintainers = [ ];
   };

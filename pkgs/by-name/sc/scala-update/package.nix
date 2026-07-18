@@ -1,23 +1,15 @@
 {
   lib,
-  stdenvNoCC,
-  coursier,
   buildGraalvmNativeImage,
+  coursier,
+  stdenvNoCC,
 }:
 
 buildGraalvmNativeImage (finalAttrs: {
   pname = "scala-update";
   version = "0.2.2";
-
-  buildInputs = [ finalAttrs.finalPackage.passthru.deps ];
-
   src = "${finalAttrs.finalPackage.passthru.deps}/share/java/scala-update_2.13-${finalAttrs.version}.jar";
-
-  extraNativeImageBuildArgs = [
-    "--no-fallback"
-    "--enable-url-protocols=https"
-    "update.Main"
-  ];
+  buildInputs = [ finalAttrs.finalPackage.passthru.deps ];
 
   buildPhase = ''
     runHook preBuild
@@ -35,17 +27,24 @@ buildGraalvmNativeImage (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  extraNativeImageBuildArgs = [
+    "--no-fallback"
+    "--enable-url-protocols=https"
+    "update.Main"
+  ];
+
   passthru.deps = stdenvNoCC.mkDerivation {
-    name = "scala-update-deps-${finalAttrs.version}";
     buildCommand = ''
       export COURSIER_CACHE=$(pwd)
       ${lib.getExe coursier} fetch io.github.kitlangton:scala-update_2.13:${finalAttrs.version} > deps
       mkdir -p $out/share/java
       cp $(< deps) $out/share/java/
     '';
-    outputHashMode = "recursive";
-    outputHashAlgo = "sha256";
+
+    name = "scala-update-deps-${finalAttrs.version}";
     outputHash = "kNnFzzHn+rFq4taqRYjBYaDax0MHW+vIoSFVN3wxA8M=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
   };
 
   meta = {

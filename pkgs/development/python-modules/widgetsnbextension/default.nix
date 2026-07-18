@@ -1,14 +1,13 @@
 {
   buildPythonPackage,
   fetchPypi,
-  jupyter-packaging,
   ipywidgets,
+  jupyter-packaging,
 }:
 
 buildPythonPackage rec {
   pname = "widgetsnbextension";
   version = "4.0.15";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,11 +15,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ jupyter-packaging ];
-
-  pythonImportsCheck = [ "widgetsnbextension" ];
-
   # No tests in archive
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "widgetsnbextension" ];
 
   meta = {
     description = "IPython HTML widgets for Jupyter";

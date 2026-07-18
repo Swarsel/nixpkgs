@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   # build inputs
   typing-extensions,
   uri-template,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "json-home-client";
   version = "1.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "plinss";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     uri-template
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "json_home_client" ];
 
   meta = {

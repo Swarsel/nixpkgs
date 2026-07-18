@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   SDL2,
   SDL2_mixer,
   alsa-lib,
+  cmake,
   libpng,
-  pcre,
   makeDesktopItem,
+  pcre,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -40,28 +40,10 @@ stdenv.mkDerivation rec {
     pcre
   ];
 
-  hardeningDisable = [ "all" ];
-
   # Enable wizard mode
   cmakeFlags = [ "-DCMAKE_CXX_FLAGS=-DWIZARD" ];
-
   # Help CMake find SDL_mixer.h
   env.NIX_CFLAGS_COMPILE = "-I${lib.getDev SDL2_mixer}/include/SDL2";
-
-  # Create "ivan.desktop" file
-  ivanDesktop = makeDesktopItem {
-    name = pname;
-    exec = pname;
-    icon = "ivan.png";
-    desktopName = "IVAN";
-    genericName = pname;
-    categories = [
-      "Game"
-      "AdventureGame"
-      "RolePlaying"
-    ];
-    comment = meta.description;
-  };
 
   # Create appropriate directories. Copy icons and desktop item to these directories.
   postInstall = ''
@@ -79,8 +61,27 @@ stdenv.mkDerivation rec {
     cp ${ivanDesktop}/share/applications/* $out/share/applications
   '';
 
+  hardeningDisable = [ "all" ];
+
+  # Create "ivan.desktop" file
+  ivanDesktop = makeDesktopItem {
+    categories = [
+      "Game"
+      "AdventureGame"
+      "RolePlaying"
+    ];
+
+    comment = meta.description;
+    desktopName = "IVAN";
+    exec = pname;
+    genericName = pname;
+    icon = "ivan.png";
+    name = pname;
+  };
+
   meta = {
     description = "Graphical roguelike game";
+
     longDescription = ''
       Iter Vehemens ad Necem (IVAN) is a graphical roguelike game, which currently
       runs in Windows, DOS, Linux, and OS X. It features advanced bodypart and
@@ -88,10 +89,11 @@ stdenv.mkDerivation rec {
 
       This is a fan continuation of IVAN by members of Attnam.com
     '';
+
     homepage = "https://attnam.com/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "ivan";
   };
 }

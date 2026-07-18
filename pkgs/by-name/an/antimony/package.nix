@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libpng,
-  python3,
-  libGLU,
-  libGL,
-  libsForQt5,
-  ncurses,
   cmake,
+  copyDesktopItems,
   flex,
   lemon,
+  libGL,
+  libGLU,
+  libpng,
+  libsForQt5,
   makeDesktopItem,
-  copyDesktopItems,
+  ncurses,
+  python3,
 }:
 
 let
@@ -39,10 +39,13 @@ stdenv.mkDerivation {
     sed -i "s,python3,${python3.executable}," CMakeLists.txt
   '';
 
-  postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
-    install -Dm644 $src/deploy/icon.svg $out/share/icons/hicolor/scalable/apps/antimony.svg
-    install -Dm644 ${./mimetype.xml} $out/share/mime/packages/antimony.xml
-  '';
+  nativeBuildInputs = [
+    cmake
+    flex
+    lemon
+    libsForQt5.wrapQtAppsHook
+    copyDesktopItems
+  ];
 
   buildInputs = [
     libpng
@@ -54,47 +57,47 @@ stdenv.mkDerivation {
     ncurses
   ];
 
-  nativeBuildInputs = [
-    cmake
-    flex
-    lemon
-    libsForQt5.wrapQtAppsHook
-    copyDesktopItems
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "antimony";
-      desktopName = "Antimony";
-      comment = "Tree-based Modeler";
-      genericName = "CAD Application";
-      exec = "antimony %f";
-      icon = "antimony";
-      categories = [
-        "Graphics"
-        "Science"
-        "Engineering"
-      ];
-      mimeTypes = [
-        "application/x-extension-sb"
-        "application/x-antimony"
-      ];
-      startupWMClass = "antimony";
-    })
-  ];
-
   cmakeFlags = [
     "-DGITREV=${gitRev}"
     "-DGITTAG=${gitTag}"
     "-DGITBRANCH=${gitBranch}"
   ];
 
+  postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
+    install -Dm644 $src/deploy/icon.svg $out/share/icons/hicolor/scalable/apps/antimony.svg
+    install -Dm644 ${./mimetype.xml} $out/share/mime/packages/antimony.xml
+  '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Graphics"
+        "Science"
+        "Engineering"
+      ];
+
+      comment = "Tree-based Modeler";
+      desktopName = "Antimony";
+      exec = "antimony %f";
+      genericName = "CAD Application";
+      icon = "antimony";
+
+      mimeTypes = [
+        "application/x-extension-sb"
+        "application/x-antimony"
+      ];
+
+      name = "antimony";
+      startupWMClass = "antimony";
+    })
+  ];
+
   meta = {
     description = "Computer-aided design (CAD) tool from a parallel universe";
-    mainProgram = "antimony";
     homepage = "https://github.com/mkeeter/antimony";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rnhmjoj ];
     platforms = lib.platforms.linux;
+    mainProgram = "antimony";
   };
 }

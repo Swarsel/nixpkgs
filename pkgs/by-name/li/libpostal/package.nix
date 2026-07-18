@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchzip,
   autoreconfHook,
+  fetchzip,
   withData ? false,
 }:
 
 let
   releases = "https://github.com/openvenues/libpostal/releases";
   assets-base = fetchzip {
-    url = "${releases}/download/v1.0.0/libpostal_data.tar.gz";
     hash = "sha256-FpGCkkRhVzyr08YcO0/iixxw0RK+3Of0sv/DH3GbbME=";
     stripRoot = false;
+    url = "${releases}/download/v1.0.0/libpostal_data.tar.gz";
   };
   assets-parser = fetchzip {
-    url = "${releases}/download/v1.0.0/parser.tar.gz";
     hash = "sha256-OHETb3e0GtVS2b4DgklKDlrE/8gxF7XZ3FwmCTqZbqQ=";
     stripRoot = false;
+    url = "${releases}/download/v1.0.0/parser.tar.gz";
   };
   assets-language-classifier = fetchzip {
-    url = "${releases}/download/v1.0.0/language_classifier.tar.gz";
     hash = "sha256-/Gn931Nx4UDBaiFUgGqC/NJUIKQ5aZT/+OYSlcfXva8=";
     stripRoot = false;
+    url = "${releases}/download/v1.0.0/language_classifier.tar.gz";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -55,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${assets-base}/address_expansions                 $out/share/libpostal/address_expansions
     ln -s ${assets-parser}/address_parser                   $out/share/libpostal/address_parser
   '';
+
   doCheck = withData;
 
   meta = {
@@ -62,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/openvenues/libpostal";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.Thra11 ];
-    mainProgram = "libpostal_data";
     platforms = lib.platforms.unix;
+    mainProgram = "libpostal_data";
   };
 })

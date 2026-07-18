@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   libx11,
-  libxrandr,
   libxinerama,
+  libxrandr,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/jceb/srandrd";
     description = "Simple randr daemon";
+    homepage = "https://github.com/jceb/srandrd";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.utdemir ];
+    platforms = lib.platforms.linux;
     mainProgram = "srandrd";
   };
 

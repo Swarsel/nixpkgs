@@ -1,32 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   anthropic,
-  langchain-core,
-  pydantic,
-
   # tests
   blockbuster,
-  langchain,
-  langchain-tests,
-  pytest-asyncio,
-  pytestCheckHook,
-
+  buildPythonPackage,
   # passthru
   gitUpdater,
+  # build-system
+  hatchling,
+  langchain,
+  langchain-core,
+  langchain-tests,
+  pydantic,
+  pytest-asyncio,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-anthropic";
   version = "1.4.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -34,19 +28,6 @@ buildPythonPackage (finalAttrs: {
     tag = "langchain-anthropic==${finalAttrs.version}";
     hash = "sha256-MX+DhFEkRNZ3IEKMXFT61XR6hEx2WPdGGaA0b/KlPZE=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/libs/partners/anthropic";
-
-  build-system = [ hatchling ];
-
-  # Langchain always tracks the latest release of anthropic whether or not it's needed
-  pythonRelaxDeps = [ "anthropic" ];
-
-  dependencies = [
-    anthropic
-    langchain-core
-    pydantic
-  ];
 
   nativeCheckInputs = [
     blockbuster
@@ -56,8 +37,13 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  enabledTestPaths = [
-    "tests/unit_tests"
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    anthropic
+    langchain-core
+    pydantic
   ];
 
   disabledTests = [
@@ -67,22 +53,32 @@ buildPythonPackage (finalAttrs: {
     "test_anthropic_model_params"
   ];
 
+  enabledTestPaths = [
+    "tests/unit_tests"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "langchain_anthropic" ];
+  # Langchain always tracks the latest release of anthropic whether or not it's needed
+  pythonRelaxDeps = [ "anthropic" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/partners/anthropic";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-anthropic==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-anthropic==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     description = "Build LangChain applications with Anthropic";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/partners/anthropic";
+    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.sarahec
     ];

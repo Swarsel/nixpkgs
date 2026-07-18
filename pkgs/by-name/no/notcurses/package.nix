@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  ffmpeg,
   libdeflate,
   libunistring,
   ncurses,
   pandoc,
   pkg-config,
+  qrcodegen,
   zlib,
   multimediaSupport ? true,
-  ffmpeg,
   qrcodegenSupport ? true,
-  qrcodegen,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,22 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
   ];
+
+  # https://github.com/dankamongmen/notcurses/issues/2661
+  postPatch = ''
+    substituteInPlace tools/notcurses-core.pc.in \
+      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
+      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
+    substituteInPlace tools/notcurses-ffi.pc.in \
+      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
+      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
+    substituteInPlace tools/notcurses++.pc.in \
+      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
+      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
+    substituteInPlace tools/notcurses.pc.in \
+      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
+      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -50,25 +66,10 @@ stdenv.mkDerivation (finalAttrs: {
     lib.optional qrcodegenSupport "-DUSE_QRCODEGEN=ON"
     ++ lib.optional (!multimediaSupport) "-DUSE_MULTIMEDIA=none";
 
-  # https://github.com/dankamongmen/notcurses/issues/2661
-  postPatch = ''
-    substituteInPlace tools/notcurses-core.pc.in \
-      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
-      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
-    substituteInPlace tools/notcurses-ffi.pc.in \
-      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
-      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
-    substituteInPlace tools/notcurses++.pc.in \
-      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
-      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
-    substituteInPlace tools/notcurses.pc.in \
-      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
-      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
-  '';
-
   meta = {
-    homepage = "https://github.com/dankamongmen/notcurses";
+    inherit (ncurses.meta) platforms;
     description = "Blingful TUIs and character graphics";
+
     longDescription = ''
       Notcurses is a library facilitating complex TUIs on modern terminal
       emulators, supporting vivid colors, multimedia, and Unicode to the maximum
@@ -78,8 +79,9 @@ stdenv.mkDerivation (finalAttrs: {
       It is not a source-compatible X/Open Curses implementation, nor a
       replacement for NCURSES on existing systems.
     '';
+
+    homepage = "https://github.com/dankamongmen/notcurses";
     license = lib.licenses.asl20;
     maintainers = [ ];
-    inherit (ncurses.meta) platforms;
   };
 })

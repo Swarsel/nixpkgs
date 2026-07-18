@@ -1,8 +1,8 @@
 {
-  localSystem,
-  config,
   lib,
   bootstrapFiles,
+  config,
+  localSystem,
 }:
 let
   minbootSupportedSystems = [
@@ -16,14 +16,16 @@ if minbootSupported then
     callPackage = lib.callPackageWith { inherit lib config; };
     minimal-bootstrap = lib.recurseIntoAttrs (
       import ../../os-specific/linux/minimal-bootstrap {
-        buildPlatform = localSystem;
-        hostPlatform = localSystem;
         inherit lib config;
-        fetchurl = import ../../build-support/fetchurl/boot.nix {
-          system = localSystem;
-          inherit (config) rewriteURL;
-        };
+        buildPlatform = localSystem;
         checkMeta = callPackage ../generic/check-meta.nix { };
+
+        fetchurl = import ../../build-support/fetchurl/boot.nix {
+          inherit (config) rewriteURL;
+          system = localSystem;
+        };
+
+        hostPlatform = localSystem;
       }
     );
     compilerPackage =
@@ -44,17 +46,16 @@ if minbootSupported then
   assert minimal-bootstrap.bash-static.passthru.isFromMinBootstrap or false; # sanity check
   {
     inherit minimal-bootstrap;
-    isMinimalBootstrap = true;
+    bash = minimal-bootstrap.bash-static;
+
+    disallowedInFinalStdenv = lib.attrsets.catAttrs "out" (
+      builtins.filter (drv: lib.attrsets.isDerivation drv) (builtins.attrValues minimal-bootstrap)
+    );
 
     dummyStdenv = {
       name = "bootstrap-stage0";
 
       overrides = self: super: {
-        # We thread stage0's stdenv through under this name so downstream stages
-        # can use it for wrapping gcc too. This way, downstream stages don't need
-        # to refer to this stage directly, which violates the principle that each
-        # stage should only access the stage that came before it.
-        ccWrapperStdenv = self.stdenv;
         # The Glibc include directory cannot have the same prefix as the
         # GCC include directory, since GCC gets confused otherwise (it
         # will search the Glibc headers before the GCC headers).  So
@@ -62,37 +63,48 @@ if minbootSupported then
         # stage1.
         ${localSystem.libc} = self.stdenv.mkDerivation {
           pname = "bootstrap-stage0-${localSystem.libc}";
-          strictDeps = true;
           version = "minimal-bootstrap";
-          enableParallelBuilding = true;
+          strictDeps = true;
+
           buildCommand = ''
             mkdir -p $out
             ln -s ${libcPackage}/lib $out/lib
             ln -s ${libcPackage}/include $out/include
           '';
+
+          enableParallelBuilding = true;
           passthru.isFromBootstrapFiles = true;
         };
-        gcc-unwrapped = compilerPackage;
+
         binutils = import ../../build-support/bintools-wrapper {
-          name = "bootstrap-stage0-binutils-wrapper";
-          nativeTools = false;
-          nativeLibc = false;
-          expand-response-params = "";
           inherit lib;
+
           inherit (self)
             stdenvNoCC
             coreutils
             gnugrep
             libc
             ;
+
           bintools = minimal-bootstrap.binutils-static;
+          expand-response-params = "";
+          name = "bootstrap-stage0-binutils-wrapper";
+          nativeLibc = false;
+          nativeTools = false;
           runtimeShell = "${minimal-bootstrap.bash}/bin/bash";
         };
+
+        # We thread stage0's stdenv through under this name so downstream stages
+        # can use it for wrapping gcc too. This way, downstream stages don't need
+        # to refer to this stage directly, which violates the principle that each
+        # stage should only access the stage that came before it.
+        ccWrapperStdenv = self.stdenv;
         coreutils = minimal-bootstrap.coreutils-static;
+        gcc-unwrapped = compilerPackage;
         gnugrep = minimal-bootstrap.gnugrep-static;
       };
     };
-    bash = minimal-bootstrap.bash-static;
+
     initialPath = with minimal-bootstrap; [
       bash-static
       binutils-static
@@ -111,9 +123,8 @@ if minbootSupported then
       patchelf-static
       xz-static
     ];
-    disallowedInFinalStdenv = lib.attrsets.catAttrs "out" (
-      builtins.filter (drv: lib.attrsets.isDerivation drv) (builtins.attrValues minimal-bootstrap)
-    );
+
+    isMinimalBootstrap = true;
   }
 else
   let
@@ -127,16 +138,13 @@ else
   assert bootstrapTools.passthru.isFromBootstrapFiles or false; # sanity check
   {
     inherit bootstrapTools;
-    isMinimalBootstrap = false;
+    bash = bootstrapTools;
+    disallowedInFinalStdenv = [ bootstrapTools ];
+
     dummyStdenv = {
       name = "bootstrap-stage0";
 
       overrides = self: super: {
-        # We thread stage0's stdenv through under this name so downstream stages
-        # can use it for wrapping gcc too. This way, downstream stages don't need
-        # to refer to this stage directly, which violates the principle that each
-        # stage should only access the stage that came before it.
-        ccWrapperStdenv = self.stdenv;
         # The Glibc include directory cannot have the same prefix as the
         # GCC include directory, since GCC gets confused otherwise (it
         # will search the Glibc headers before the GCC headers).  So
@@ -144,9 +152,9 @@ else
         # stage1.
         ${localSystem.libc} = self.stdenv.mkDerivation {
           pname = "bootstrap-stage0-${localSystem.libc}";
-          strictDeps = true;
           version = "bootstrap-tools";
-          enableParallelBuilding = true;
+          strictDeps = true;
+
           buildCommand = ''
             mkdir -p $out
             ln -s ${bootstrapTools}/lib $out/lib
@@ -157,29 +165,40 @@ else
           + lib.optionalString (localSystem.libc == "musl") ''
             ln -s ${bootstrapTools}/include-libc $out/include
           '';
+
+          enableParallelBuilding = true;
           passthru.isFromBootstrapFiles = true;
         };
-        gcc-unwrapped = bootstrapTools;
+
         binutils = import ../../build-support/bintools-wrapper {
-          name = "bootstrap-stage0-binutils-wrapper";
-          nativeTools = false;
-          nativeLibc = false;
-          expand-response-params = "";
           inherit lib;
+
           inherit (self)
             stdenvNoCC
             coreutils
             gnugrep
             libc
             ;
+
           bintools = bootstrapTools;
+          expand-response-params = "";
+          name = "bootstrap-stage0-binutils-wrapper";
+          nativeLibc = false;
+          nativeTools = false;
           runtimeShell = "${bootstrapTools}/bin/bash";
         };
+
+        # We thread stage0's stdenv through under this name so downstream stages
+        # can use it for wrapping gcc too. This way, downstream stages don't need
+        # to refer to this stage directly, which violates the principle that each
+        # stage should only access the stage that came before it.
+        ccWrapperStdenv = self.stdenv;
         coreutils = bootstrapTools;
+        gcc-unwrapped = bootstrapTools;
         gnugrep = bootstrapTools;
       };
     };
-    bash = bootstrapTools;
+
     initialPath = [ bootstrapTools ];
-    disallowedInFinalStdenv = [ bootstrapTools ];
+    isMinimalBootstrap = false;
   }

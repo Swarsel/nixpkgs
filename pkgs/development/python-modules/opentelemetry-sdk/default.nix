@@ -5,17 +5,21 @@
   opentelemetry-api,
   opentelemetry-semantic-conventions,
   opentelemetry-test-utils,
-  typing-extensions,
   pytestCheckHook,
+  typing-extensions,
 }:
 
 let
   self = buildPythonPackage {
     inherit (opentelemetry-api) version src;
     pname = "opentelemetry-sdk";
-    pyproject = true;
+    doCheck = false;
 
-    sourceRoot = "${opentelemetry-api.src.name}/opentelemetry-sdk";
+    nativeCheckInputs = [
+      flaky
+      opentelemetry-test-utils
+      pytestCheckHook
+    ];
 
     build-system = [ hatchling ];
 
@@ -25,24 +29,16 @@ let
       typing-extensions
     ];
 
-    nativeCheckInputs = [
-      flaky
-      opentelemetry-test-utils
-      pytestCheckHook
-    ];
-
     disabledTestPaths = [ "tests/performance/benchmarks/" ];
-
+    pyproject = true;
     pythonImportsCheck = [ "opentelemetry.sdk" ];
-
-    doCheck = false;
-
+    sourceRoot = "${opentelemetry-api.src.name}/opentelemetry-sdk";
     # Enable tests via passthru to avoid cyclic dependency with opentelemetry-test-utils.
     passthru.tests.${self.pname} = self.overridePythonAttrs { doCheck = true; };
 
     meta = opentelemetry-api.meta // {
-      homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-sdk";
       description = "OpenTelemetry Python SDK";
+      homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-sdk";
     };
   };
 in

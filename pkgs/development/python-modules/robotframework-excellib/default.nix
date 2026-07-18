@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   openpyxl,
   robotframework,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "robotframework-excellib";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,10 +23,10 @@ buildPythonPackage rec {
     robotframework
   ];
 
-  pythonImportsCheck = [ "ExcelLibrary" ];
-
   # upstream has no tests
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "ExcelLibrary" ];
 
   meta = {
     description = "Robot Framework library for working with Excel documents";

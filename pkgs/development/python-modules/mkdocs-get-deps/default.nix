@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   importlib-metadata,
   mergedeep,
   platformdirs,
-  pyyaml,
   pytestCheckHook,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-get-deps";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkdocs";
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-DahmSYWYhVch950InYBiCh6qz1pH2Kibf5ixwCNdsTg=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -31,8 +31,7 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs_get_deps" ];
 
   meta = {

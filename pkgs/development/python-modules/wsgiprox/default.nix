@@ -1,18 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  certauth,
   setuptools,
   six,
-  certauth,
 }:
 
 buildPythonPackage {
   pname = "wsgiprox";
   version = "1.5.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "webrecorder";
@@ -22,6 +19,9 @@ buildPythonPackage {
     hash = "sha256-EquddaNrVceyJHuQMCajKHGZX2Q7ebR0Zhvi2pl2WEw=";
   };
 
+  # See https://github.com/webrecorder/wsgiprox/issues/6
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,10 +29,8 @@ buildPythonPackage {
     certauth
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "wsgiprox" ];
-
-  # See https://github.com/webrecorder/wsgiprox/issues/6
-  doCheck = false;
 
   meta = {
     description = "Python WSGI Middleware for adding HTTP/S proxy support to any WSGI Application";

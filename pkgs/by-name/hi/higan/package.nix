@@ -1,22 +1,22 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   alsa-lib,
-  fetchFromGitHub,
   gtk3,
   gtksourceview3,
+  installShellFiles,
   libGL,
   libGLU,
-  libx11,
-  libxv,
   libao,
   libicns,
   libpulseaudio,
+  libx11,
+  libxv,
   openal,
-  installShellFiles,
   pkg-config,
   runtimeShell,
-  stdenv,
   udev,
   unstableGitUpdater,
 }:
@@ -31,6 +31,13 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "8f4df010715298455b92cfc0821ea833770a8b5a";
     hash = "sha256-sYMVe+Sj8tR7Off+Cgl+4pndTIforXgIOMoXrAdyd9s=";
   };
+
+  patches = [
+    # Includes cmath header
+    ./patches/0001-include-cmath.patch
+    # Uses png2icns instead of sips
+    ./patches/0002-sips-to-png2icns.patch
+  ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -56,17 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     openal
     udev
   ];
-
-  patches = [
-    # Includes cmath header
-    ./patches/0001-include-cmath.patch
-    # Uses png2icns instead of sips
-    ./patches/0002-sips-to-png2icns.patch
-  ];
-
-  dontConfigure = true;
-
-  enableParallelBuilding = true;
 
   buildPhase =
     let
@@ -164,11 +160,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+  enableParallelBuilding = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/higan-emu/higan";
     description = "Open-source, cycle-accurate multi-system emulator";
+
     longDescription = ''
       higan is a multi-system emulator, originally developed by Near, with an
       uncompromising focus on accuracy and code readability.
@@ -180,6 +178,8 @@ stdenv.mkDerivation (finalAttrs: {
       Neo Geo Pocket Color, WonderSwan, WonderSwan Color, SwanCrystal, Pocket
       Challenge V2.
     '';
+
+    homepage = "https://github.com/higan-emu/higan";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   gitUpdater,
   gtk-layer-shell,
@@ -9,7 +10,6 @@
   ninja,
   pkg-config,
   scdoc,
-  stdenv,
   wayland,
   wayland-protocols,
   # gtk-layer-shell fails to cross-compile due to a hard dependency
@@ -35,9 +35,15 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  postPatch = ''
+    substituteInPlace style.css \
+      --replace "/usr/share/wlogout" "$out/share/wlogout"
+
+    substituteInPlace main.c \
+      --replace "/etc/wlogout" "$out/etc/wlogout"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -56,32 +62,26 @@ stdenv.mkDerivation (finalAttrs: {
     gtk-layer-shell
   ];
 
-  strictDeps = true;
-
   mesonFlags = [
     "--datadir=${placeholder "out"}/share"
     "--sysconfdir=${placeholder "out"}/etc"
   ];
 
-  postPatch = ''
-    substituteInPlace style.css \
-      --replace "/usr/share/wlogout" "$out/share/wlogout"
-
-    substituteInPlace main.c \
-      --replace "/etc/wlogout" "$out/etc/wlogout"
-  '';
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   passthru = {
     updateScript = gitUpdater { };
   };
 
   meta = {
-    homepage = "https://github.com/ArtsyMacaw/wlogout";
+    inherit (wayland.meta) platforms;
     description = "Wayland based logout menu";
+    homepage = "https://github.com/ArtsyMacaw/wlogout";
     changelog = "https://github.com/ArtsyMacaw/wlogout/releases/tag/${finalAttrs.src.rev}";
     license = with lib.licenses; [ mit ];
-    mainProgram = "wlogout";
     maintainers = with lib.maintainers; [ iogamaster ];
-    inherit (wayland.meta) platforms;
+    mainProgram = "wlogout";
   };
 })

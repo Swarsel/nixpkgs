@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   parameterized,
-  unittestCheckHook,
   setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pypika";
   version = "0.50.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kayak";
@@ -19,13 +18,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-gjHr4tWy1kL7IxOe5QmH0S/HB+MsF/IOIQcTu3yjv6c=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     parameterized
     unittestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pypika" ];
 
   meta = {

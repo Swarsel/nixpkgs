@@ -9,6 +9,7 @@ let
 
   meta = {
     description = "Innovative superfamily of fonts for code";
+
     longDescription = ''
       Since the earliest days of the teletype machine, code has been set in
       monospaced type — letters, on a grid. Monaspace is a new type system that
@@ -28,6 +29,7 @@ let
       Monaspace offers a more expressive palette for code and the tools we use
       to work with it.
     '';
+
     homepage = "https://monaspace.githubnext.com/";
     license = lib.licenses.ofl;
     maintainers = [ ];
@@ -36,21 +38,22 @@ let
 
   makeFont =
     {
-      pname,
+      baseUrl,
+      destination,
       fontFamily,
+      hash,
+      meta,
+      pname,
       variant,
       version,
-      baseUrl,
-      hash,
-      destination,
-      meta,
     }:
     stdenvNoCC.mkDerivation {
       inherit pname version;
+      inherit meta;
 
       src = fetchzip {
-        url = "${baseUrl}/v${version}/${fontFamily}-${variant}-v${version}.zip";
         inherit hash;
+        url = "${baseUrl}/v${version}/${fontFamily}-${variant}-v${version}.zip";
       };
 
       installPhase = ''
@@ -61,7 +64,6 @@ let
 
         runHook postInstall
       '';
-      inherit meta;
     };
 
   makePackages =
@@ -88,15 +90,16 @@ let
   defaultFonts = lib.removeAttrs allFonts (builtins.attrNames woffFonts);
 in
 symlinkJoin {
-  pname = "monaspace";
   inherit (fonts) version;
+  inherit meta;
+  pname = "monaspace";
   paths = builtins.attrValues defaultFonts;
+
   passthru = allFonts // {
     woff = symlinkJoin {
-      pname = "monaspace-webfonts";
       inherit (fonts) version;
+      pname = "monaspace-webfonts";
       paths = builtins.attrValues woffFonts;
     };
   };
-  inherit meta;
 }

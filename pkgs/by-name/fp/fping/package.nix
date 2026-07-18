@@ -13,14 +13,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-FcTjK2xV/xBbr+A+jJHHyhsu2jG/mnEnMmu4eIfuGP4=";
   };
 
-  configureFlags = [
-    "--enable-ipv6"
-    "--enable-ipv4"
-  ];
-
   outputs = [
     "out"
     "man"
+  ];
+
+  configureFlags = [
+    "--enable-ipv6"
+    "--enable-ipv4"
   ];
 
   meta = {
@@ -28,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "http://fping.org/";
     changelog = "https://github.com/schweikert/fping/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd0;
-    mainProgram = "fping";
     maintainers = with lib.maintainers; [ fab ];
     platforms = lib.platforms.all;
+    mainProgram = "fping";
   };
 })

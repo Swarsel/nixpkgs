@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   base64,
+  buildDunePackage,
   cmdliner,
   opam,
   opam-repository,
@@ -11,11 +11,8 @@
 }:
 
 buildDunePackage {
-  pname = "opam-client";
-
   inherit (opam) src version;
-
-  configureFlags = [ "--disable-checks" ];
+  pname = "opam-client";
 
   propagatedBuildInputs = [
     base64
@@ -25,6 +22,8 @@ buildDunePackage {
     opam-state
     re
   ];
+
+  configureFlags = [ "--disable-checks" ];
 
   meta = opam.meta // {
     description = "Actions on the opam root, switches, installations, and front-end";

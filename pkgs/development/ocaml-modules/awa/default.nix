@@ -1,21 +1,21 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  base64,
+  buildDunePackage,
+  cmdliner,
+  eqaf,
+  fmt,
+  logs,
   mirage-crypto,
   mirage-crypto-ec,
-  mirage-crypto-rng,
   mirage-crypto-pk,
-  x509,
-  ohex,
-  eqaf,
-  mtime,
-  logs,
-  fmt,
-  cmdliner,
-  base64,
-  zarith,
+  mirage-crypto-rng,
   mirage-mtime,
+  mtime,
+  ohex,
+  x509,
+  zarith,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -42,6 +42,7 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     cmdliner
     fmt

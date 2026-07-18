@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  pkg-config,
-  util-macros,
+  fetchgit,
   libdrm,
   libpciaccess,
   libx11,
   libxext,
   libxv,
   libxvmc,
+  pkg-config,
   udev,
-  xorgproto,
+  util-macros,
   xorg-server,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-video-openchrome";
@@ -50,11 +50,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "VIA Technologies UniChrome and Chrome9 IGP video driver for the Xorg X server";
+
     longDescription = ''
       OpenChrome DDX is an open source implementation of X.Org Server DDX (Device Dependent X)
       graphics device driver for VIA Technologies UniChrome and Chrome9 IGPs. (Integrated Graphics
       Processor) OpenChrome DDX handles only 2D and video acceleration.
     '';
+
     homepage = "http://www.freedesktop.org/wiki/Openchrome";
     license = lib.licenses.mit;
     maintainers = [ ];

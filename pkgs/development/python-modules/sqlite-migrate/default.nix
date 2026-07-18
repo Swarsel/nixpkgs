@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "sqlite-migrate";
   version = "0.1b0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,11 +17,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ sqlite-utils ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sqlite_migrate" ];
 
   meta = {

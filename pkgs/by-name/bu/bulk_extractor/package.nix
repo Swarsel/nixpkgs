@@ -8,10 +8,10 @@
   libewf,
   libxml2,
   openssl,
-  zlib,
   pkg-config,
   python3,
   re2,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,12 +35,12 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/be20_api/feature_recorder_set.cpp --replace-fail '#warn ' '#warning '
   '';
 
-  enableParallelBuilding = true;
   nativeBuildInputs = [
     pkg-config
     python3
     autoreconfHook
   ];
+
   buildInputs = [
     exiv2
     flex
@@ -51,6 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     re2
   ];
 
+  enableParallelBuilding = true;
+
   preAutoreconf = ''
     python3 etc/makefile_builder.py
     autoheader -f
@@ -59,6 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Digital forensics tool for extracting information from file systems";
+
     longDescription = ''
       bulk_extractor is a C++ program that scans a disk image, a file, or a
       directory of files and extracts useful information without parsing
@@ -66,12 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
       feature files that can be easily inspected, parsed, or processed with
       automated tools.
     '';
-    mainProgram = "bulk_extractor";
+
     homepage = "https://github.com/simsong/bulk_extractor";
-    downloadPage = "http://downloads.digitalcorpora.org/downloads/bulk_extractor/";
     changelog = "https://github.com/simsong/bulk_extractor/blob/${finalAttrs.src.rev}/ChangeLog";
-    maintainers = [ ];
-    platforms = with lib.platforms; unix ++ windows;
+
     license = with lib.licenses; [
       mit
       cpl10
@@ -80,5 +81,10 @@ stdenv.mkDerivation (finalAttrs: {
       lgpl3Only
       lib.licenses.openssl
     ];
+
+    maintainers = [ ];
+    platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "bulk_extractor";
+    downloadPage = "http://downloads.digitalcorpora.org/downloads/bulk_extractor/";
   };
 })

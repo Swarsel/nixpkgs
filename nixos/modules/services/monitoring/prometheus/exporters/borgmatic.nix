@@ -9,20 +9,22 @@ let
   cfg = config.services.prometheus.exporters.borgmatic;
 in
 {
-  port = 9996;
   extraOpts.configFile = lib.mkOption {
-    type = lib.types.path;
     default = "/etc/borgmatic/config.yaml";
+
     description = ''
       The path to the borgmatic config file
     '';
+
+    type = lib.types.path;
   };
+
+  port = 9996;
 
   serviceOpts = {
     serviceConfig = {
       DynamicUser = false;
-      ProtectSystem = false;
-      ProtectHome = lib.mkForce false;
+
       ExecStart = ''
         ${pkgs.prometheus-borgmatic-exporter}/bin/borgmatic-exporter run \
           --host ${cfg.listenAddress} \
@@ -30,6 +32,9 @@ in
           --config ${toString cfg.configFile} \
           ${lib.concatMapStringsSep " " (f: lib.escapeShellArg f) cfg.extraFlags}
       '';
+
+      ProtectHome = lib.mkForce false;
+      ProtectSystem = false;
     };
   };
 }

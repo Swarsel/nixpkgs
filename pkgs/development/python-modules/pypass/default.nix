@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   buildPythonPackage,
   click,
   colorama,
@@ -11,8 +11,8 @@
   pbr,
   pexpect,
   pytestCheckHook,
-  setuptools,
   replaceVars,
+  setuptools,
   tree,
   xclip,
 }:
@@ -22,7 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pypass";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -33,26 +32,14 @@ buildPythonPackage (finalAttrs: {
   patches = [
     (replaceVars ./mark-executables.patch {
       git_exec = "${gitMinimal}/bin/git";
-      grep_exec = "${gnugrep}/bin/grep";
       gpg_exec = "${gnupg}/bin/gpg2";
+      grep_exec = "${gnugrep}/bin/grep";
       tree_exec = "${tree}/bin/tree";
       xclip_exec = "${xclip}/bin/xclip";
     })
   ];
 
-  pythonRemoveDeps = [
-    "enum34"
-  ];
-
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ pbr ];
-
-  dependencies = [
-    click
-    colorama
-    pexpect
-  ];
 
   nativeCheckInputs = [
     gitMinimal
@@ -69,17 +56,30 @@ buildPythonPackage (finalAttrs: {
     make setup_gpg
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    click
+    colorama
+    pexpect
+  ];
+
   # Presumably this test needs the X clipboard, which we don't have
   # as the test environment is non-graphical.
   disabledTests = [ "test_show_clip" ];
+  pyproject = true;
+
+  pythonRemoveDeps = [
+    "enum34"
+  ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Password manager pass in Python";
-    mainProgram = "pypass";
     homepage = "https://github.com/aviau/python-pass";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ jluttine ];
+    platforms = lib.platforms.all;
+    mainProgram = "pypass";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

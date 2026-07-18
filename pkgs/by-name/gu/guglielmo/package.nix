@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   airspy,
-  rtl-sdr,
-  fdk_aac,
+  cmake,
   faad2,
+  fdk_aac,
   fftwFloat,
   libsForQt5,
-  libsndfile,
   libsamplerate,
+  libsndfile,
+  pkg-config,
   portaudio,
+  rtl-sdr,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,15 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-W+KTwtxbTDrtONmkw95gXT28n3k9KS364WOzLLJdGLM=";
   };
 
-  postInstall = ''
-    mv $out/linux-bin $out/bin
-  '';
-
   nativeBuildInputs = [
     cmake
     pkg-config
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     airspy
     rtl-sdr
@@ -48,6 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qwt
   ];
 
+  postInstall = ''
+    mv $out/linux-bin $out/bin
+  '';
+
   postFixup = ''
     # guglielmo opens SDR libraries at run time
     patchelf --add-rpath "${
@@ -60,10 +61,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt based FM / Dab tuner";
-    mainProgram = "guglielmo";
     homepage = "https://github.com/marcogrecopriolo/guglielmo";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux;
+    mainProgram = "guglielmo";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  buildPackages,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  buildPackages,
   installShellFiles,
   nix-update-script,
 }:
@@ -19,15 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-/dE3IsooCuIi3e+1RRA50wKB2NE8ohf46wFqZcdFKq0=";
   };
 
-  vendorHash = "sha256-66hugAa31RWQxGNsVpfyLzZoXbW7KQ73ggvvInn8dw8=";
-
-  excludedPackages = [
-    "demo/*"
-    "exampleoc"
-    "integration_tests/"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-66hugAa31RWQxGNsVpfyLzZoXbW7KQ73ggvvInn8dw8=";
 
   postInstall = ''
     # The normal binary names are far too generic
@@ -45,6 +38,12 @@ buildGoModule (finalAttrs: {
         --fish <(${emulator} $out/bin/gnmidiff completion fish)
     ''
   );
+
+  excludedPackages = [
+    "demo/*"
+    "exampleoc"
+    "integration_tests/"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

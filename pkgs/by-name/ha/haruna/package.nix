@@ -4,9 +4,9 @@
   fetchFromGitLab,
   cmake,
   ffmpeg-headless,
+  kdePackages,
   kdsingleapplication,
   libass,
-  kdePackages,
   pkg-config,
   qt6,
   yt-dlp,
@@ -28,6 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/application.cpp \
       --replace '"yt-dlp"' '"${lib.getExe yt-dlp}"'
   '';
+
+  nativeBuildInputs = [
+    cmake
+    kdePackages.extra-cmake-modules
+    pkg-config
+    qt6.wrapQtAppsHook
+  ];
 
   buildInputs = [
     kdePackages.breeze-icons
@@ -52,18 +59,12 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtbase
   ];
 
-  nativeBuildInputs = [
-    cmake
-    kdePackages.extra-cmake-modules
-    pkg-config
-    qt6.wrapQtAppsHook
-  ];
-
   env.LANG = "C.UTF-8";
 
   meta = {
-    homepage = "https://invent.kde.org/multimedia/haruna";
     description = "Open source video player built with Qt/QML and libmpv";
+    homepage = "https://invent.kde.org/multimedia/haruna";
+
     license = with lib.licenses; [
       bsd3
       cc-by-40
@@ -73,10 +74,12 @@ stdenv.mkDerivation (finalAttrs: {
       gpl3Plus
       wtfpl
     ];
+
     maintainers = with lib.maintainers; [
       jojosch
       kashw2
     ];
+
     mainProgram = "haruna";
   };
 })

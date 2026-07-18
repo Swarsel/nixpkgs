@@ -1,38 +1,34 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   stdenv,
-
-  # build-system
-  setuptools,
-
+  fetchFromGitHub,
   # dependencies
   accelerate,
-  huggingface-hub,
-  numpy,
-  packaging,
-  psutil,
-  pyyaml,
-  safetensors,
-  torch,
-  tqdm,
-  transformers,
-
+  buildPythonPackage,
   # tests
   datasets,
   diffusers,
+  huggingface-hub,
+  numpy,
+  packaging,
   parameterized,
+  psutil,
   pytest-cov-stub,
   pytest-xdist,
   pytestCheckHook,
+  pyyaml,
+  safetensors,
   scipy,
+  # build-system
+  setuptools,
+  torch,
+  tqdm,
+  transformers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "peft";
   version = "0.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -40,6 +36,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qlM8yEN/CJZbSAGNCltS4JQSzstVXRVqu47qZbLPVNc=";
   };
+
+  nativeCheckInputs = [
+    datasets
+    diffusers
+    parameterized
+    pytest-cov-stub
+    pytest-xdist
+    pytestCheckHook
+    scipy
+  ];
 
   build-system = [ setuptools ];
 
@@ -55,35 +61,6 @@ buildPythonPackage (finalAttrs: {
     tqdm
     transformers
   ];
-
-  pythonImportsCheck = [ "peft" ];
-
-  nativeCheckInputs = [
-    datasets
-    diffusers
-    parameterized
-    pytest-cov-stub
-    pytest-xdist
-    pytestCheckHook
-    scipy
-  ];
-
-  enabledTestPaths = [ "tests" ];
-
-  disabledTests =
-    lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
-      # RuntimeError: Failed to initialize cpuinfo!
-      "test_randlora_dtypes"
-      "test_shira_dtypes"
-      "test_vblora_dtypes"
-      "test_vera_dtypes"
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      # These tests fail when MPS devices are detected
-      "gpu"
-      "test_save_load"
-      "test_resume_training_model_with_topk_weights"
-    ];
 
   disabledTestPaths = [
     # ValueError: Can't find 'adapter_config.json'
@@ -118,9 +95,28 @@ buildPythonPackage (finalAttrs: {
     "tests/test_low_level_api.py"
   ];
 
+  disabledTests =
+    lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
+      # RuntimeError: Failed to initialize cpuinfo!
+      "test_randlora_dtypes"
+      "test_shira_dtypes"
+      "test_vblora_dtypes"
+      "test_vera_dtypes"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      # These tests fail when MPS devices are detected
+      "gpu"
+      "test_save_load"
+      "test_resume_training_model_with_topk_weights"
+    ];
+
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
+  pythonImportsCheck = [ "peft" ];
+
   meta = {
-    homepage = "https://github.com/huggingface/peft";
     description = "State-of-the art parameter-efficient fine tuning";
+    homepage = "https://github.com/huggingface/peft";
     changelog = "https://github.com/huggingface/peft/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bcdarwin ];

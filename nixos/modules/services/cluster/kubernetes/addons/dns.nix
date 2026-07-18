@@ -1,8 +1,8 @@
 {
   config,
-  options,
-  pkgs,
   lib,
+  pkgs,
+  options,
   ...
 }:
 let
@@ -16,7 +16,6 @@ in
 {
   imports = [
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2605;
       from = [
         "services"
         "kubernetes"
@@ -24,6 +23,9 @@ in
         "dns"
         "coredns"
       ];
+
+      sinceRelease = 2605;
+
       to = [
         "services"
         "kubernetes"
@@ -37,65 +39,40 @@ in
   options.services.kubernetes.addons.dns = {
     enable = lib.mkEnableOption "kubernetes dns addon";
 
-    clusterIp = lib.mkOption {
-      description = "Dns addon clusterIP";
+    clusterDomain = lib.mkOption {
+      default = "cluster.local";
+      description = "Dns cluster domain";
+      type = lib.types.str;
+    };
 
+    clusterIp = lib.mkOption {
       # this default is also what kubernetes users
       default =
         (lib.concatStringsSep "." (
           lib.take 3 (lib.splitString "." config.services.kubernetes.apiserver.serviceClusterIpRange)
         ))
         + ".254";
+
       defaultText = lib.literalMD ''
         The `x.y.z.254` IP of
         `config.${options.services.kubernetes.apiserver.serviceClusterIpRange}`.
       '';
+
+      description = "Dns addon clusterIP";
       type = lib.types.str;
-    };
-
-    clusterDomain = lib.mkOption {
-      description = "Dns cluster domain";
-      default = "cluster.local";
-      type = lib.types.str;
-    };
-
-    replicas = lib.mkOption {
-      description = "Number of DNS pod replicas to deploy in the cluster.";
-      default = 2;
-      type = lib.types.int;
-    };
-
-    reconcileMode = lib.mkOption {
-      description = ''
-        Controls the addon manager reconciliation mode for the DNS addon.
-
-        Setting reconcile mode to EnsureExists makes it possible to tailor DNS behavior by editing the coredns ConfigMap.
-
-        See: <https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/addon-manager/README.md>.
-      '';
-      default = "Reconcile";
-      type = lib.types.enum [
-        "Reconcile"
-        "EnsureExists"
-      ];
     };
 
     corednsImage = lib.mkOption {
+      default = pkgs.dockerTools.buildImage {
+        config.Entrypoint = [ "${pkgs.coredns}/bin/coredns" ];
+        name = "coredns";
+      };
+
       description = "Docker image to seed for the CoreDNS container.";
       type = lib.types.package;
-      default = pkgs.dockerTools.buildImage {
-        name = "coredns";
-        config.Entrypoint = [ "${pkgs.coredns}/bin/coredns" ];
-      };
     };
 
     corefile = lib.mkOption {
-      description = ''
-        Custom coredns corefile configuration.
-
-        See: <https://coredns.io/manual/toc/#configuration>.
-      '';
-      type = lib.types.str;
       default = ''
         .:${toString ports.dns} {
           errors
@@ -111,6 +88,7 @@ in
           reload
           loadbalance
         }'';
+
       defaultText = lib.literalExpression ''
         '''
           .:${toString ports.dns} {
@@ -129,120 +107,67 @@ in
           }
         '''
       '';
+
+      description = ''
+        Custom coredns corefile configuration.
+
+        See: <https://coredns.io/manual/toc/#configuration>.
+      '';
+
+      type = lib.types.str;
+    };
+
+    reconcileMode = lib.mkOption {
+      default = "Reconcile";
+
+      description = ''
+        Controls the addon manager reconciliation mode for the DNS addon.
+
+        Setting reconcile mode to EnsureExists makes it possible to tailor DNS behavior by editing the coredns ConfigMap.
+
+        See: <https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/addon-manager/README.md>.
+      '';
+
+      type = lib.types.enum [
+        "Reconcile"
+        "EnsureExists"
+      ];
+    };
+
+    replicas = lib.mkOption {
+      default = 2;
+      description = "Number of DNS pod replicas to deploy in the cluster.";
+      type = lib.types.int;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    services.kubernetes.kubelet.seedDockerImages = lib.singleton (cfg.corednsImage);
-
-    services.kubernetes.addonManager.bootstrapAddons = {
-      coredns-cr = {
-        apiVersion = "rbac.authorization.k8s.io/v1";
-        kind = "ClusterRole";
-        metadata = {
-          labels = {
-            "addonmanager.kubernetes.io/mode" = "Reconcile";
-            k8s-app = "kube-dns";
-            "kubernetes.io/cluster-service" = "true";
-            "kubernetes.io/bootstrapping" = "rbac-defaults";
-          };
-          name = "system:coredns";
-        };
-        rules = [
-          {
-            apiGroups = [ "" ];
-            resources = [
-              "endpoints"
-              "services"
-              "pods"
-              "namespaces"
-            ];
-            verbs = [
-              "list"
-              "watch"
-            ];
-          }
-          {
-            apiGroups = [ "" ];
-            resources = [ "nodes" ];
-            verbs = [ "get" ];
-          }
-          {
-            apiGroups = [ "discovery.k8s.io" ];
-            resources = [ "endpointslices" ];
-            verbs = [
-              "list"
-              "watch"
-            ];
-          }
-        ];
-      };
-
-      coredns-crb = {
-        apiVersion = "rbac.authorization.k8s.io/v1";
-        kind = "ClusterRoleBinding";
-        metadata = {
-          annotations = {
-            "rbac.authorization.kubernetes.io/autoupdate" = "true";
-          };
-          labels = {
-            "addonmanager.kubernetes.io/mode" = "Reconcile";
-            k8s-app = "kube-dns";
-            "kubernetes.io/cluster-service" = "true";
-            "kubernetes.io/bootstrapping" = "rbac-defaults";
-          };
-          name = "system:coredns";
-        };
-        roleRef = {
-          apiGroup = "rbac.authorization.k8s.io";
-          kind = "ClusterRole";
-          name = "system:coredns";
-        };
-        subjects = [
-          {
-            kind = "ServiceAccount";
-            name = "coredns";
-            namespace = "kube-system";
-          }
-        ];
-      };
-    };
-
     services.kubernetes.addonManager.addons = {
-      coredns-sa = {
-        apiVersion = "v1";
-        kind = "ServiceAccount";
-        metadata = {
-          labels = {
-            "addonmanager.kubernetes.io/mode" = "Reconcile";
-            k8s-app = "kube-dns";
-            "kubernetes.io/cluster-service" = "true";
-          };
-          name = "coredns";
-          namespace = "kube-system";
-        };
-      };
-
       coredns-cm = {
         apiVersion = "v1";
+
+        data = {
+          Corefile = cfg.corefile;
+        };
+
         kind = "ConfigMap";
+
         metadata = {
           labels = {
             "addonmanager.kubernetes.io/mode" = cfg.reconcileMode;
             k8s-app = "kube-dns";
             "kubernetes.io/cluster-service" = "true";
           };
+
           name = "coredns";
           namespace = "kube-system";
-        };
-        data = {
-          Corefile = cfg.corefile;
         };
       };
 
       coredns-deploy = {
         apiVersion = "apps/v1";
         kind = "Deployment";
+
         metadata = {
           labels = {
             "addonmanager.kubernetes.io/mode" = cfg.reconcileMode;
@@ -250,28 +175,35 @@ in
             "kubernetes.io/cluster-service" = "true";
             "kubernetes.io/name" = "CoreDNS";
           };
+
           name = "coredns";
           namespace = "kube-system";
         };
+
         spec = {
           replicas = cfg.replicas;
+
           selector = {
             matchLabels = {
               k8s-app = "kube-dns";
             };
           };
+
           strategy = {
             rollingUpdate = {
               maxUnavailable = 1;
             };
+
             type = "RollingUpdate";
           };
+
           template = {
             metadata = {
               labels = {
                 k8s-app = "kube-dns";
               };
             };
+
             spec = {
               containers = [
                 {
@@ -279,20 +211,26 @@ in
                     "-conf"
                     "/etc/coredns/Corefile"
                   ];
+
                   image = with cfg.corednsImage; "${imageName}:${imageTag}";
                   imagePullPolicy = "Never";
+
                   livenessProbe = {
                     failureThreshold = 5;
+
                     httpGet = {
                       path = "/health";
                       port = ports.health;
                       scheme = "HTTP";
                     };
+
                     initialDelaySeconds = 60;
                     successThreshold = 1;
                     timeoutSeconds = 5;
                   };
+
                   name = "coredns";
+
                   ports = [
                     {
                       containerPort = ports.dns;
@@ -310,23 +248,29 @@ in
                       protocol = "TCP";
                     }
                   ];
+
                   resources = {
                     limits = {
                       memory = "170Mi";
                     };
+
                     requests = {
                       cpu = "100m";
                       memory = "70Mi";
                     };
                   };
+
                   securityContext = {
                     allowPrivilegeEscalation = false;
+
                     capabilities = {
                       add = [ "NET_BIND_SERVICE" ];
                       drop = [ "all" ];
                     };
+
                     readOnlyRootFilesystem = true;
                   };
+
                   volumeMounts = [
                     {
                       mountPath = "/etc/coredns";
@@ -336,11 +280,15 @@ in
                   ];
                 }
               ];
+
               dnsPolicy = "Default";
+
               nodeSelector = {
                 "beta.kubernetes.io/os" = "linux";
               };
+
               serviceAccountName = "coredns";
+
               tolerations = [
                 {
                   effect = "NoSchedule";
@@ -351,6 +299,7 @@ in
                   operator = "Exists";
                 }
               ];
+
               volumes = [
                 {
                   configMap = {
@@ -360,8 +309,10 @@ in
                         path = "Corefile";
                       }
                     ];
+
                     name = "coredns";
                   };
+
                   name = "config-volume";
                 }
               ];
@@ -370,39 +321,61 @@ in
         };
       };
 
+      coredns-sa = {
+        apiVersion = "v1";
+        kind = "ServiceAccount";
+
+        metadata = {
+          labels = {
+            "addonmanager.kubernetes.io/mode" = "Reconcile";
+            k8s-app = "kube-dns";
+            "kubernetes.io/cluster-service" = "true";
+          };
+
+          name = "coredns";
+          namespace = "kube-system";
+        };
+      };
+
       coredns-svc = {
         apiVersion = "v1";
         kind = "Service";
+
         metadata = {
           annotations = {
             "prometheus.io/port" = toString ports.metrics;
             "prometheus.io/scrape" = "true";
           };
+
           labels = {
             "addonmanager.kubernetes.io/mode" = "Reconcile";
             k8s-app = "kube-dns";
             "kubernetes.io/cluster-service" = "true";
             "kubernetes.io/name" = "CoreDNS";
           };
+
           name = "kube-dns";
           namespace = "kube-system";
         };
+
         spec = {
           clusterIP = cfg.clusterIp;
+
           ports = [
             {
               name = "dns";
               port = 53;
-              targetPort = ports.dns;
               protocol = "UDP";
+              targetPort = ports.dns;
             }
             {
               name = "dns-tcp";
               port = 53;
-              targetPort = ports.dns;
               protocol = "TCP";
+              targetPort = ports.dns;
             }
           ];
+
           selector = {
             k8s-app = "kube-dns";
           };
@@ -410,7 +383,92 @@ in
       };
     };
 
+    services.kubernetes.addonManager.bootstrapAddons = {
+      coredns-cr = {
+        apiVersion = "rbac.authorization.k8s.io/v1";
+        kind = "ClusterRole";
+
+        metadata = {
+          labels = {
+            "addonmanager.kubernetes.io/mode" = "Reconcile";
+            k8s-app = "kube-dns";
+            "kubernetes.io/bootstrapping" = "rbac-defaults";
+            "kubernetes.io/cluster-service" = "true";
+          };
+
+          name = "system:coredns";
+        };
+
+        rules = [
+          {
+            apiGroups = [ "" ];
+
+            resources = [
+              "endpoints"
+              "services"
+              "pods"
+              "namespaces"
+            ];
+
+            verbs = [
+              "list"
+              "watch"
+            ];
+          }
+          {
+            apiGroups = [ "" ];
+            resources = [ "nodes" ];
+            verbs = [ "get" ];
+          }
+          {
+            apiGroups = [ "discovery.k8s.io" ];
+            resources = [ "endpointslices" ];
+
+            verbs = [
+              "list"
+              "watch"
+            ];
+          }
+        ];
+      };
+
+      coredns-crb = {
+        apiVersion = "rbac.authorization.k8s.io/v1";
+        kind = "ClusterRoleBinding";
+
+        metadata = {
+          annotations = {
+            "rbac.authorization.kubernetes.io/autoupdate" = "true";
+          };
+
+          labels = {
+            "addonmanager.kubernetes.io/mode" = "Reconcile";
+            k8s-app = "kube-dns";
+            "kubernetes.io/bootstrapping" = "rbac-defaults";
+            "kubernetes.io/cluster-service" = "true";
+          };
+
+          name = "system:coredns";
+        };
+
+        roleRef = {
+          apiGroup = "rbac.authorization.k8s.io";
+          kind = "ClusterRole";
+          name = "system:coredns";
+        };
+
+        subjects = [
+          {
+            kind = "ServiceAccount";
+            name = "coredns";
+            namespace = "kube-system";
+          }
+        ];
+      };
+    };
+
     services.kubernetes.kubelet.clusterDns = lib.mkDefault [ cfg.clusterIp ];
+    services.kubernetes.kubelet.seedDockerImages = lib.singleton (cfg.corednsImage);
   };
 
   meta.buildDocsInSandbox = false;

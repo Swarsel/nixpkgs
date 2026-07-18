@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  meson,
-  ninja,
-  vala,
-  glib,
-  itstool,
-  wrapGAppsHook3,
   desktop-file-utils,
-  libsoup_3,
+  glib,
+  gst_all_1,
+  gtk3,
+  itstool,
   json-glib,
   libgee,
-  gtk3,
+  libsoup_3,
+  meson,
+  ninja,
   pantheon,
-  gst_all_1,
+  pkg-config,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,14 +55,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/louis77/tuner";
     description = "App to discover and play internet radio stations";
+    homepage = "https://github.com/louis77/tuner";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
-    mainProgram = "com.github.louis77.tuner";
+
     maintainers = with lib.maintainers; [
       abbe
       aleksana
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "com.github.louis77.tuner";
   };
 })

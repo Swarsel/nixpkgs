@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   perl,
+  pkg-config,
   systemd,
 }:
 
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     perl
   ];
+
   buildInputs = [ systemd ];
 
   makeFlags = [
@@ -35,15 +36,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Lightweight hotkey daemon";
+
     longDescription = ''
       Triggerhappy is a hotkey daemon developed with small and embedded systems in
       mind, e.g. linux based routers. It attaches to the input device files and
       interprets the event data received and executes scripts configured in its
       configuration.
     '';
+
     homepage = "https://github.com/wertarbyte/triggerhappy/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ taha ];
+    platforms = lib.platforms.linux;
   };
 })

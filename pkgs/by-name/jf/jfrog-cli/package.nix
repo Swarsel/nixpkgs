@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nodejs,
+  buildGoModule,
   nix-update-script,
+  nodejs,
   writableTmpDirAsHomeHook,
 }:
 
@@ -18,8 +18,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-AcydCwarePzysegEH9QUgbp0v2SP8J56rAYFBF6FxO0=";
   };
 
-  proxyVendor = true;
   vendorHash = "sha256-gghTbLH/o88u9smpe5gDUM0a4Zk0x/J9unABnqaKo58=";
+
+  nativeCheckInputs = [
+    nodejs
+    writableTmpDirAsHomeHook
+  ];
 
   checkFlags = "-skip=^(TestReleaseBundle|TestVisibilitySendUsage_RtCurl_E2E)";
 
@@ -28,23 +32,20 @@ buildGoModule (finalAttrs: {
     mv $out/bin/jfrog-cli $out/bin/jf
   '';
 
-  nativeCheckInputs = [
-    nodejs
-    writableTmpDirAsHomeHook
-  ];
-
+  __darwinAllowLocalNetworking = true;
+  proxyVendor = true;
   passthru.updateScript = nix-update-script { };
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    homepage = "https://github.com/jfrog/jfrog-cli";
     description = "Client for accessing to JFrog's Artifactory and Mission Control through their respective REST APIs";
+    homepage = "https://github.com/jfrog/jfrog-cli";
     changelog = "https://github.com/jfrog/jfrog-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "jf";
+
     maintainers = with lib.maintainers; [
       detegr
     ];
+
+    mainProgram = "jf";
   };
 })

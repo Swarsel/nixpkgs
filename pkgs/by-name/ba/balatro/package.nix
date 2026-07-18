@@ -1,19 +1,19 @@
 {
-  fetchurl,
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
+  copyDesktopItems,
+  curl,
   love,
   lovely-injector,
-  curl,
-  p7zip,
-  copyDesktopItems,
-  makeWrapper,
   makeDesktopItem,
+  makeWrapper,
+  p7zip,
   requireFile,
   src ? null,
-  withMods ? true,
   withBridgePatch ? true,
   withLinuxPatch ? true,
+  withMods ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "balatro";
@@ -24,8 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
       src
     else
       requireFile {
-        name = "Balatro-${finalAttrs.version}.exe";
         url = "https://store.steampowered.com/app/2379780/Balatro/";
+        # Use `nix --extra-experimental-features nix-command hash file --sri --type sha256` to get the correct hash
+        hash = "sha256-DXX+FkrM8zEnNNSzesmHiN0V8Ljk+buLf5DE5Z3pP0c=";
+
         message = ''
           You must own Balatro in order to install it with Nix.  The Steam,
           Google Play, and Xbox PC versions are supported.
@@ -57,15 +59,9 @@ stdenv.mkDerivation (finalAttrs: {
               src = /nix/store/g44bp7ymc7qlkfv5f03b55cgs1wdmkzl-com.playstack.balatro.android.apk;
             }
         '';
-        # Use `nix --extra-experimental-features nix-command hash file --sri --type sha256` to get the correct hash
-        hash = "sha256-DXX+FkrM8zEnNNSzesmHiN0V8Ljk+buLf5DE5Z3pP0c=";
-      };
 
-  srcIcon = fetchurl {
-    name = "balatro.png";
-    url = "https://play-lh.googleusercontent.com/RSPv_SMlA3Lun8VHaJD7xCBQg29eCJR9sNJtZNJGlybVs8byYVLz4WnohrbLScC9srg";
-    hash = "sha256-GoStvXBYI8x5b8T0wwH5D5C3Kahu0ssCyOM8MoLxy8Q=";
-  };
+        name = "Balatro-${finalAttrs.version}.exe";
+      };
 
   nativeBuildInputs = [
     p7zip
@@ -79,19 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withMods [
     lovely-injector
     curl
-  ];
-
-  dontUnpack = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "balatro";
-      desktopName = "Balatro";
-      exec = "balatro";
-      keywords = [ "Game" ];
-      categories = [ "Game" ];
-      icon = "balatro";
-    })
   ];
 
   buildPhase = ''
@@ -159,18 +142,41 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      desktopName = "Balatro";
+      exec = "balatro";
+      icon = "balatro";
+      keywords = [ "Game" ];
+      name = "balatro";
+    })
+  ];
+
+  dontUnpack = true;
+
+  srcIcon = fetchurl {
+    hash = "sha256-GoStvXBYI8x5b8T0wwH5D5C3Kahu0ssCyOM8MoLxy8Q=";
+    name = "balatro.png";
+    url = "https://play-lh.googleusercontent.com/RSPv_SMlA3Lun8VHaJD7xCBQg29eCJR9sNJtZNJGlybVs8byYVLz4WnohrbLScC9srg";
+  };
+
   meta = {
     description = "Poker roguelike";
+
     longDescription = ''
       Balatro is a hypnotically satisfying deckbuilder where you play illegal poker hands,
       discover game-changing jokers, and trigger adrenaline-pumping, outrageous combos.
     '';
-    license = lib.licenses.unfree;
+
     homepage = "https://store.steampowered.com/app/2379780/Balatro/";
+    license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       antipatico
       appsforartists
     ];
+
     platforms = love.meta.platforms;
     mainProgram = "balatro";
   };

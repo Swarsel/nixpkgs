@@ -1,33 +1,30 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
-  # dependencies
-  numpy,
-  types-pytz,
-
-  # tests
-  pytestCheckHook,
   beautifulsoup4,
+  buildPythonPackage,
   html5lib,
   jinja2,
   lxml,
   matplotlib,
+  # dependencies
+  numpy,
   odfpy,
   openpyxl,
   pandas,
+  # build-system
+  poetry-core,
   pyarrow,
   pyreadstat,
+  # tests
+  pytestCheckHook,
   python-calamine,
   scipy,
   sqlalchemy,
   tables,
   tabulate,
+  types-pytz,
   typing-extensions,
   xarray,
   xlsxwriter,
@@ -36,7 +33,6 @@
 buildPythonPackage rec {
   pname = "pandas-stubs";
   version = "3.0.3.260530";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pandas-dev";
@@ -44,13 +40,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-vPXz4ibNbFE2B14pkGPN5EDAwhA92VgFXzMLR9da6WQ=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    numpy
-    types-pytz
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -72,6 +61,13 @@ buildPythonPackage rec {
     xarray
     xlsxwriter
     python-calamine
+  ];
+
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    numpy
+    types-pytz
   ];
 
   disabledTests = [
@@ -101,6 +97,7 @@ buildPythonPackage rec {
     "test_astype_complex" # `c32` and `complex256`
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pandas" ];
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "tmb";
   version = "0.1.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "alemuro";
@@ -17,14 +16,12 @@ buildPythonPackage rec {
     hash = "sha256-XuRhRmeTXAplb14UwISyzaqEIrFeg8/aCdMxUccMUos=";
   };
 
-  env.VERSION = version;
-
   propagatedBuildInputs = [ requests ];
-
-  pythonImportsCheck = [ "tmb" ];
-
+  env.VERSION = version;
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "tmb" ];
 
   meta = {
     description = "Python library that interacts with TMB API";

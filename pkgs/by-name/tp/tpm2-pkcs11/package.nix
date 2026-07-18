@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
   buildEnv,
@@ -6,23 +9,20 @@
   cmocka,
   dbus,
   expect,
-  fetchFromGitHub,
   glibc,
   gnutls,
   iproute2,
-  lib,
   libyaml,
   makeWrapper,
+  nix-update-script,
+  nss,
   opensc,
   openssh,
   openssl,
-  nix-update-script,
-  nss,
   p11-kit,
   patchelf,
   pkg-config,
   python3,
-  stdenv,
   sqlite,
   swtpm,
   tpm2-abrmd,
@@ -35,10 +35,10 @@
   which,
   xxd,
   abrmdSupport ? false,
-  fapiSupport ? true,
   defaultToFapi ? false,
   enableFuzzing ? false,
   extraDescription ? null,
+  fapiSupport ? true,
 }:
 
 let
@@ -54,6 +54,12 @@ chosenStdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-89lChdkheSEC0JKMKNXN11BqjeJgt1Hdk+QxjLPY72M=";
   };
+
+  outputs = [
+    "out"
+    "bin"
+    "dev"
+  ];
 
   # Disable Java‐based tests because of missing dependencies
   patches =
@@ -82,18 +88,6 @@ chosenStdenv.mkDerivation (finalAttrs: {
     # of the autoreconfHook stuff
     ./bootstrap
   '';
-
-  configureFlags = [
-    (lib.enableFeature finalAttrs.doCheck "unit")
-    (lib.enableFeature finalAttrs.doCheck "integration")
-
-    # Strangely, it uses --with-fapi=yes|no instead of a normal configure flag.
-    "--with-fapi=${lib.boolToYesNo fapiSupport}"
-  ]
-  ++ lib.optionals enableFuzzing [
-    "--enable-fuzzing"
-    "--disable-hardening"
-  ];
 
   strictDeps = true;
 
@@ -127,6 +121,20 @@ chosenStdenv.mkDerivation (finalAttrs: {
     tpm2-tss
   ];
 
+  configureFlags = [
+    (lib.enableFeature finalAttrs.doCheck "unit")
+    (lib.enableFeature finalAttrs.doCheck "integration")
+
+    # Strangely, it uses --with-fapi=yes|no instead of a normal configure flag.
+    "--with-fapi=${lib.boolToYesNo fapiSupport}"
+  ]
+  ++ lib.optionals enableFuzzing [
+    "--enable-fuzzing"
+    "--disable-hardening"
+  ];
+
+  doCheck = true;
+
   nativeCheckInputs = [
     dbus
     expect
@@ -150,28 +158,17 @@ chosenStdenv.mkDerivation (finalAttrs: {
     tpm2-abrmd
   ];
 
-  enableParallelBuilding = true;
-  hardeningDisable = lib.optional enableFuzzing "all";
-
-  outputs = [
-    "out"
-    "bin"
-    "dev"
-  ];
-
-  doCheck = true;
-  dontStrip = true;
-  dontPatchELF = true;
-
   preCheck =
     let
       openssl-modules = buildEnv {
         name = "openssl-modules";
-        pathsToLink = [ "/lib/ossl-modules" ];
+
         paths = map lib.getLib [
           openssl
           tpm2-openssl
         ];
+
+        pathsToLink = [ "/lib/ossl-modules" ];
       };
     in
     ''
@@ -222,18 +219,28 @@ chosenStdenv.mkDerivation (finalAttrs: {
         $out/lib/libtpm2_pkcs11.so.0.0.0
     '';
 
+  dontPatchELF = true;
+  dontStrip = true;
+  enableParallelBuilding = true;
+  hardeningDisable = lib.optional enableFuzzing "all";
+
   passthru = rec {
-    esapi = tpm2-pkcs11-esapi;
-    fapi = tpm2-pkcs11-fapi;
     abrmd = tpm2-pkcs11.override {
       abrmdSupport = true;
     };
+
+    esapi = tpm2-pkcs11-esapi;
+
     esapi-abrmd = tpm2-pkcs11-esapi.override {
       abrmdSupport = true;
     };
+
+    fapi = tpm2-pkcs11-fapi;
+
     fapi-abrmd = tpm2-pkcs11-fapi.override {
       abrmdSupport = true;
     };
+
     tests = {
       inherit
         esapi
@@ -243,6 +250,7 @@ chosenStdenv.mkDerivation (finalAttrs: {
         fapi-abrmd
         ;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -250,10 +258,11 @@ chosenStdenv.mkDerivation (finalAttrs: {
     description =
       "PKCS#11 interface for TPM2 hardware"
       + lib.optionalString (extraDescription != null) " ${extraDescription}";
+
     homepage = "https://github.com/tpm2-software/tpm2-pkcs11";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ numinit ];
+    platforms = lib.platforms.linux;
     mainProgram = "tpm2_ptool";
   };
 })

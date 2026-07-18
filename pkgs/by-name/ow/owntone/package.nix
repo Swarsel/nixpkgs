@@ -1,18 +1,13 @@
 {
-  config,
   lib,
   stdenv,
+  fetchFromGitHub,
   autoPatchelfHook,
   autoreconfHook,
-  fetchFromGitHub,
-  nix-update-script,
-
-  chromecastSupport ? config.chromecast or stdenv.hostPlatform.isLinux,
-  pulseSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-
   avahi,
-  curl,
   bison,
+  config,
+  curl,
   ffmpeg,
   flex,
   gettext,
@@ -30,15 +25,18 @@
   libunistring,
   libwebsockets,
   libxml2,
+  nix-update-script,
   pkg-config,
   protobufc,
   sqlite,
   zlib,
+  chromecastSupport ? config.chromecast or stdenv.hostPlatform.isLinux,
+  pulseSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "29.2";
   pname = "owntone";
+  version = "29.2";
 
   src = fetchFromGitHub {
     owner = "owntone";
@@ -46,6 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-cCbCShIgopm3HhNVyvr6Q8fe8LkxwNE/51/0qkS27WE=";
   };
+
+  patches = [
+    ./gettext-0.25.patch
+  ];
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -83,22 +85,20 @@ stdenv.mkDerivation (finalAttrs: {
     lib.optionals chromecastSupport [ "--enable-chromecast" ]
     ++ lib.optionals pulseSupport [ "--with-pulseaudio" ];
 
-  patches = [
-    ./gettext-0.25.patch
-  ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Media server to stream audio to AirPlay and Chromecast receivers";
     homepage = "https://github.com/owntone/owntone-server";
-    downloadPage = "https://github.com/owntone/owntone-server/releases/tag/${finalAttrs.version}";
     changelog = "https://github.com/owntone/owntone-server/releases/tag/${finalAttrs.version}";
-    mainProgram = "owntone";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       hensoko
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "owntone";
+    downloadPage = "https://github.com/owntone/owntone-server/releases/tag/${finalAttrs.version}";
   };
 })

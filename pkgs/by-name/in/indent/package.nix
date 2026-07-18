@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  buildPackages,
   fetchpatch,
   libintl,
-  texinfo,
-  buildPackages,
   pkgsStatic,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,14 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-OLXBlYTdEuFK8SIsyC5Xr/hHWlvXiRqY2h79w+H5pGk=";
       name = "CVE-2023-40305.part-1.patch";
       url = "https://git.savannah.gnu.org/cgit/indent.git/patch/?id=df4ab2d19e247d059e0025789ba513418073ab6f";
-      hash = "sha256-OLXBlYTdEuFK8SIsyC5Xr/hHWlvXiRqY2h79w+H5pGk=";
     })
     (fetchpatch {
+      hash = "sha256-t+QF7N1aqQ28J2O8esZ2bc5K042cUuZR4MeMeuWIgPw=";
       name = "CVE-2023-40305.part-2.patch";
       url = "https://git.savannah.gnu.org/cgit/indent.git/patch/?id=2685cc0bef0200733b634932ea7399b6cf91b6d7";
-      hash = "sha256-t+QF7N1aqQ28J2O8esZ2bc5K042cUuZR4MeMeuWIgPw=";
     })
   ];
 
@@ -37,12 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
     sed -E -i 's/else-comment-2-br(-ce)?.c//g' regression/TEST
   '';
 
-  makeFlags = [ "AR=${stdenv.cc.targetPrefix}ar" ];
-
   strictDeps = true;
   nativeBuildInputs = [ texinfo ];
   buildInputs = [ libintl ];
-  depsBuildBuild = [ buildPackages.stdenv.cc ]; # needed when cross-compiling
+  makeFlags = [ "AR=${stdenv.cc.targetPrefix}ar" ];
 
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optional stdenv.cc.isClang "-Wno-implicit-function-declaration"
@@ -51,17 +49,17 @@ stdenv.mkDerivation (finalAttrs: {
     ) "-Wno-unused-but-set-variable"
   );
 
-  hardeningDisable = [ "format" ];
-
   doCheck = true;
-
+  depsBuildBuild = [ buildPackages.stdenv.cc ]; # needed when cross-compiling
+  hardeningDisable = [ "format" ];
   passthru.tests.static = pkgsStatic.indent;
+
   meta = {
-    homepage = "https://www.gnu.org/software/indent/";
     description = "Source code reformatter";
-    mainProgram = "indent";
+    homepage = "https://www.gnu.org/software/indent/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.mmahut ];
     platforms = lib.platforms.unix;
+    mainProgram = "indent";
   };
 })

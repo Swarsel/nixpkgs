@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   cmake,
-  ninja,
+  fetchpatch2,
   llvmPackages,
-  onetbb,
   mpi,
-  mpiSupport ? true,
+  ninja,
+  onetbb,
   testers,
+  mpiSupport ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "viskores";
@@ -53,7 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Viskores/viskores";
     changelog = "https://github.com/Viskores/viskores/releases/tag/${finalAttrs.src.tag}";
     license = with lib.licenses; [ bsd3 ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
   };
 })

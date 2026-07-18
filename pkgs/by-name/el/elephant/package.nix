@@ -1,20 +1,19 @@
 {
-  # list of providers to enable, all are enabled by default
-  # e.g. enabledProviders = ["files"] will only install the files provider
-  enabledProviders ? null,
-
+  lib,
+  fetchFromGitHub,
   bluez,
   buildGoModule,
   fd,
-  fetchFromGitHub,
   imagemagick,
-  lib,
   libqalculate,
   makeWrapper,
   nix-update-script,
   protobuf,
   protoc-gen-go,
   wl-clipboard,
+  # list of providers to enable, all are enabled by default
+  # e.g. enabledProviders = ["files"] will only install the files provider
+  enabledProviders ? null,
 }:
 let
   providerEnabled = provider: (enabledProviders == null) || lib.elem provider enabledProviders;
@@ -40,15 +39,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-h7Rw0vlb0n0Jsk21WJPm7H+1T1bG+PEuxE5cJ2TZl8A=";
   };
 
-  vendorHash = "sha256-EWXZ+9/QDRpidpVHBcfJgp0xoc3YtRsiC/UTk1R+FSY=";
-
-  buildInputs = [ protobuf ];
   nativeBuildInputs = [
     makeWrapper
     protoc-gen-go
   ];
 
-  subPackages = [ "cmd/elephant" ];
+  buildInputs = [ protobuf ];
+  vendorHash = "sha256-EWXZ+9/QDRpidpVHBcfJgp0xoc3YtRsiC/UTk1R+FSY=";
 
   postBuild =
     (
@@ -82,20 +79,24 @@ buildGoModule (finalAttrs: {
       --set ELEPHANT_PROVIDER_DIR "$out/lib/elephant/providers"
   '';
 
+  subPackages = [ "cmd/elephant" ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Data provider service and backend for building custom application launchers";
-    changelog = "https://github.com/abenz1267/elephant/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/abenz1267/elephant";
+    changelog = "https://github.com/abenz1267/elephant/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       adamcstephens
       saadndm
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "elephant";
   };
 })

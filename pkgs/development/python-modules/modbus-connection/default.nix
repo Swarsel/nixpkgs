@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  hatchling,
   pymodbus,
   pyprojectVersionPatchHook,
   pytest-asyncio,
@@ -13,8 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "modbus-connection";
   version = "3.6.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -27,6 +25,14 @@ buildPythonPackage (finalAttrs: {
     pyprojectVersionPatchHook
   ];
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  __structuredAttrs = true;
+
   build-system = [
     hatchling
   ];
@@ -36,6 +42,7 @@ buildPythonPackage (finalAttrs: {
       pymodbus
     ]
     ++ pymodbus.optional-dependencies.serial;
+
     tmodbus = [
       tmodbus
     ]
@@ -43,11 +50,7 @@ buildPythonPackage (finalAttrs: {
     ++ tmodbus.optional-dependencies.smart;
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+  pyproject = true;
 
   pythonImportsCheck = [
     "modbus_connection"

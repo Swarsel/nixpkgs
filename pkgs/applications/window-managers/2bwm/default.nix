@@ -2,18 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  patches,
+  libx11,
   libxcb,
   libxcb-keysyms,
-  libxcb-wm,
-  libx11,
   libxcb-util,
+  libxcb-wm,
+  patches,
   xcbutilxrm,
 }:
 
 stdenv.mkDerivation rec {
-  version = "0.3";
+  # Allow users set their own list of patches
+  inherit patches;
   pname = "2bwm";
+  version = "0.3";
 
   src = fetchFromGitHub {
     owner = "venam";
@@ -21,11 +23,6 @@ stdenv.mkDerivation rec {
     rev = "v${version}";
     sha256 = "1xwib612ahv4rg9yl5injck89dlpyp5475xqgag0ydfd0r4sfld7";
   };
-
-  # Allow users set their own list of patches
-  inherit patches;
-
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   buildInputs = [
     libxcb
@@ -36,11 +33,12 @@ stdenv.mkDerivation rec {
     xcbutilxrm
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
   installPhase = "make install DESTDIR=$out PREFIX=\"\"";
 
   meta = {
-    homepage = "https://github.com/venam/2bwm";
     description = "Fast floating WM written over the XCB library and derived from mcwm";
+    homepage = "https://github.com/venam/2bwm";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sternenseemann ];
     platforms = lib.platforms.unix;

@@ -1,14 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "txm";
   version = "0.1.4";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "thatmagicalcat";
@@ -18,19 +17,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-ZGoIIPuDZUata7YmKOMCYcwc8Dlxo0s8W6eogK8qWsE=";
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal math rendering engine with LaTeX support";
     homepage = "https://github.com/thatmagicalcat/txm";
     changelog = "https://github.com/thatmagicalcat/txm/releases/tag/v${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ DuskyElf ];
-    mainProgram = "txm";
     platforms = lib.platforms.all;
+    mainProgram = "txm";
   };
 })

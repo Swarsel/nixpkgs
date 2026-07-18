@@ -23,10 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "File activity monitoring tool";
-    mainProgram = "fnotifystat";
     homepage = "https://github.com/ColinIanKing/fnotifystat";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ womfoo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "fnotifystat";
   };
 })

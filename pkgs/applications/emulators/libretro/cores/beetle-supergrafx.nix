@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "mednafen-supergrafx";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-VO8Bn67n3D9fxbbTxwbf9iKLDueIi98zIso1qMQcrMI=";
   };
 
+  core = "mednafen-supergrafx";
   makefile = "Makefile";
 
   meta = {

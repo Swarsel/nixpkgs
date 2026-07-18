@@ -1,21 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
   requests,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "osadl-matrix";
   version = "2024.05.23.010555";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "priv-kweihmann";
@@ -24,20 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vcSaWDX8P07Bj035vGq5dZYO+WkZOod7tTubWygl27k=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     requests
   ];
 
-  # Upstream setup.cfg has addopts, requiring pytest-{cov,forked,random-order}.
-  # Clearing it is simpler than replicating those plugins, especially since
-  # they only affect how tests run.
-  pytestFlags = [
-    "--override-ini=addopts="
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
   ];
 
   disabledTests = [
@@ -51,6 +42,15 @@ buildPythonPackage (finalAttrs: {
     "test_license"
   ];
 
+  pyproject = true;
+
+  # Upstream setup.cfg has addopts, requiring pytest-{cov,forked,random-order}.
+  # Clearing it is simpler than replicating those plugins, especially since
+  # they only affect how tests run.
+  pytestFlags = [
+    "--override-ini=addopts="
+  ];
+
   pythonImportsCheck = [
     "osadl_matrix"
   ];
@@ -58,10 +58,12 @@ buildPythonPackage (finalAttrs: {
   meta = {
     description = "OSADL license compatibility matrix as a CSV";
     homepage = "https://github.com/priv-kweihmann/osadl-matrix";
+
     license = with lib.licenses; [
       cc-by-40
       unlicense
     ];
+
     maintainers = with lib.maintainers; [ eljamm ];
     teams = with lib.teams; [ ngi ];
   };

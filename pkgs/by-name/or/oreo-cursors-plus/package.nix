@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  ruby,
   inkscape,
-  xcursorgen,
+  ruby,
+  stdenvNoCC,
   writeText,
+  xcursorgen,
   cursorsConf ? null, # If set to a string, overwrites contents of './cursors.conf'
 }:
 let
@@ -14,6 +14,7 @@ in
 stdenvNoCC.mkDerivation {
   pname = "oreo-cursors-plus";
   version = "0-unstable-2023-06-05";
+
   src = fetchFromGitHub {
     owner = "Souravgoswami";
     repo = "oreo-cursors";
@@ -28,17 +29,6 @@ stdenvNoCC.mkDerivation {
     inkscape
     xcursorgen
   ];
-
-  # './cursors.conf' contains definitions of cursor variations to generate.
-  configurePhase = ''
-    runHook preConfigure
-
-    ${lib.optionalString (cursorsConf != null) ''
-      cp ${newCursorsConf} cursors.conf
-    ''}
-
-    runHook postConfigure
-  '';
 
   # The repo already contains the default cursors pre-generated in './dist'. Just copy these if './cursors.conf' is not overwritten.
   # Otherwise firs remove all default variations and build.
@@ -64,11 +54,22 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  # './cursors.conf' contains definitions of cursor variations to generate.
+  configurePhase = ''
+    runHook preConfigure
+
+    ${lib.optionalString (cursorsConf != null) ''
+      cp ${newCursorsConf} cursors.conf
+    ''}
+
+    runHook postConfigure
+  '';
+
   meta = {
     description = "Colored Material cursors with cute animations";
     homepage = "https://github.com/Souravgoswami/oreo-cursors";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ michaelBrunner ];
+    platforms = lib.platforms.all;
   };
 }

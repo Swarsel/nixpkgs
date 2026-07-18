@@ -20,6 +20,7 @@ in
     services.hans = {
       clients = lib.mkOption {
         default = { };
+
         description = ''
           Each attribute of this option defines a systemd service that
           runs hans. Many or none may be defined.
@@ -28,6 +29,7 @@ in
           where «name» is the name of the
           corresponding attribute name.
         '';
+
         example = lib.literalExpression ''
           {
             foo = {
@@ -36,27 +38,28 @@ in
             }
           }
         '';
+
         type = lib.types.attrsOf (
           lib.types.submodule {
             options = {
-              server = lib.mkOption {
-                type = lib.types.str;
-                default = "";
-                description = "IP address of server running hans";
-                example = "192.0.2.1";
-              };
-
               extraConfig = lib.mkOption {
-                type = lib.types.str;
                 default = "";
                 description = "Additional command line parameters";
                 example = "-v";
+                type = lib.types.str;
               };
 
               passwordFile = lib.mkOption {
-                type = lib.types.str;
                 default = "";
                 description = "File that contains password";
+                type = lib.types.str;
+              };
+
+              server = lib.mkOption {
+                default = "";
+                description = "IP address of server running hans";
+                example = "192.0.2.1";
+                type = lib.types.str;
               };
 
             };
@@ -66,35 +69,35 @@ in
 
       server = {
         enable = lib.mkOption {
-          type = lib.types.bool;
           default = false;
           description = "enable hans server";
-        };
-
-        ip = lib.mkOption {
-          type = lib.types.str;
-          default = "";
-          description = "The assigned ip range";
-          example = "198.51.100.0";
-        };
-
-        respondToSystemPings = lib.mkOption {
           type = lib.types.bool;
-          default = false;
-          description = "Force hans respond to ordinary pings";
         };
 
         extraConfig = lib.mkOption {
-          type = lib.types.str;
           default = "";
           description = "Additional command line parameters";
           example = "-v";
+          type = lib.types.str;
+        };
+
+        ip = lib.mkOption {
+          default = "";
+          description = "The assigned ip range";
+          example = "198.51.100.0";
+          type = lib.types.str;
         };
 
         passwordFile = lib.mkOption {
-          type = lib.types.str;
           default = "";
           description = "File that contains password";
+          type = lib.types.str;
+        };
+
+        respondToSystemPings = lib.mkOption {
+          default = false;
+          description = "Force hans respond to ordinary pings";
+          type = lib.types.bool;
         };
       };
 
@@ -113,16 +116,19 @@ in
     systemd.services =
       let
         createHansClientService = name: cfg: {
-          description = "hans client - ${name}";
           after = [ "network.target" ];
-          wantedBy = [ "multi-user.target" ];
+          description = "hans client - ${name}";
+
           script = "${pkgs.hans}/bin/hans -f -u ${hansUser} ${cfg.extraConfig} -c ${cfg.server} ${
             lib.optionalString (cfg.passwordFile != "") "-p $(cat \"${cfg.passwordFile}\")"
           }";
+
           serviceConfig = {
-            RestartSec = "30s";
             Restart = "always";
+            RestartSec = "30s";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
       in
       lib.listToAttrs (
@@ -132,12 +138,14 @@ in
       )
       // {
         hans = lib.mkIf (cfg.server.enable) {
-          description = "hans, ip over icmp server daemon";
           after = [ "network.target" ];
-          wantedBy = [ "multi-user.target" ];
+          description = "hans, ip over icmp server daemon";
+
           script = "${pkgs.hans}/bin/hans -f -u ${hansUser} ${cfg.server.extraConfig} -s ${cfg.server.ip} ${lib.optionalString cfg.server.respondToSystemPings "-r"} ${
             lib.optionalString (cfg.server.passwordFile != "") "-p $(cat \"${cfg.server.passwordFile}\")"
           }";
+
+          wantedBy = [ "multi-user.target" ];
         };
       };
 

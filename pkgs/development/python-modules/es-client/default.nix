@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
   click,
@@ -8,7 +9,6 @@
   ecs-logging,
   elastic-transport,
   elasticsearch8,
-  fetchFromGitHub,
   hatchling,
   mock,
   pytest-asyncio,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "es-client";
   version = "9.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "untergeek";
@@ -31,7 +30,12 @@ buildPythonPackage rec {
     hash = "sha256-83EBDmbZuOAVT2oYn98s6XTZrB38lx03nozAkBqHfgg=";
   };
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
+    requests
+  ];
 
   build-system = [ hatchling ];
 
@@ -48,15 +52,6 @@ buildPythonPackage rec {
     voluptuous
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-    requests
-  ];
-
-  pythonImportsCheck = [ "es_client" ];
-
   disabledTests = [
     # Tests require local Elasticsearch instance
     "test_bad_version_raises"
@@ -68,6 +63,10 @@ buildPythonPackage rec {
     "test_skip_version_check"
     "TestCLIExample"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "es_client" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Module for building Elasticsearch client objects";

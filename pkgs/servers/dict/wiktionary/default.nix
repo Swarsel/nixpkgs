@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  python3,
   dict,
   glibcLocales,
   libfaketime,
+  python3,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,8 +24,6 @@ stdenv.mkDerivation rec {
     libfaketime
   ];
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/share/dictd/
     cd $out/share/dictd
@@ -36,16 +34,19 @@ stdenv.mkDerivation rec {
     echo en_US.UTF-8 > locale
   '';
 
+  dontUnpack = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "DICT version of English Wiktionary";
     homepage = "https://en.wiktionary.org/";
-    maintainers = with lib.maintainers; [ qyliss ];
-    platforms = lib.platforms.all;
+
     license = with lib.licenses; [
       cc-by-sa-30
       fdl11Plus
     ];
+
+    maintainers = with lib.maintainers; [ qyliss ];
+    platforms = lib.platforms.all;
   };
 }

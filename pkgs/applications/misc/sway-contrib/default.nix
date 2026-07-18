@@ -1,20 +1,19 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  coreutils,
-  makeWrapper,
-  sway-unwrapped,
-  installShellFiles,
-  wl-clipboard,
-  libnotify,
-  slurp,
-  grim,
-  jq,
-  gnugrep,
   bash,
-
+  coreutils,
+  gnugrep,
+  grim,
+  installShellFiles,
+  jq,
+  libnotify,
+  makeWrapper,
   python3Packages,
+  slurp,
+  stdenvNoCC,
+  sway-unwrapped,
+  wl-clipboard,
 }:
 
 let
@@ -36,11 +35,7 @@ in
 
   grimshot = stdenvNoCC.mkDerivation {
     inherit version src;
-
     pname = "grimshot";
-
-    dontBuild = true;
-    dontConfigure = true;
 
     outputs = [
       "out"
@@ -48,11 +43,14 @@ in
     ];
 
     strictDeps = true;
+
     nativeBuildInputs = [
       makeWrapper
       installShellFiles
     ];
+
     buildInputs = [ bash ];
+
     installPhase = ''
       installManPage grimshot/grimshot.1
       installShellCompletion --cmd grimshot grimshot/grimshot-completion.bash
@@ -83,6 +81,9 @@ in
       fi
     '';
 
+    dontBuild = true;
+    dontConfigure = true;
+
     meta = meta // {
       description = "Helper for screenshots within sway";
       maintainers = [ ];
@@ -97,25 +98,23 @@ in
     in
     python3Packages.buildPythonApplication {
       inherit version src;
-
       pname = "sway-${lname}";
-
-      pyproject = false;
-      dontBuild = true;
-      dontConfigure = true;
-
       propagatedBuildInputs = [ python3Packages.i3ipc ];
 
       installPhase = ''
         install -Dm 0755 $src/${lname}.py $out/bin/${lname}.py
       '';
 
+      dontBuild = true;
+      dontConfigure = true;
+      pyproject = false;
+
       meta =
 
         meta // {
           description = "It makes inactive sway windows transparent";
-          mainProgram = "${lname}.py";
           maintainers = [ ];
+          mainProgram = "${lname}.py";
         };
     };
 

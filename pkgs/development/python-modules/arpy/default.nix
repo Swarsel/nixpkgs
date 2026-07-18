@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unittestCheckHook,
 }:
@@ -9,9 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "arpy";
   version = "2.3.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "viraptor";
@@ -20,10 +17,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jD1XJJhcpJymn0CwZ65U06xLKm1JjHffmx/umEO7a5s=";
   };
 
-  build-system = [ setuptools ];
-
   checkInputs = [ unittestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "arpy" ];
 
   meta = {

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
-  pyyaml,
   pythonAtLeast,
+  pyyaml,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "configargparse";
   version = "1.7.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bw2";
@@ -21,24 +20,26 @@ buildPythonPackage rec {
     hash = "sha256-ZRdwA3X1TCv0BIwr1gFeSi6UuziXiazciKw/6ewkpRE=";
   };
 
-  build-system = [
-    setuptools-scm
-  ];
-
-  optional-dependencies = {
-    yaml = [ pyyaml ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
     mock
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [
+    setuptools-scm
+  ];
+
   disabledTests = lib.optionals (pythonAtLeast "3.13") [
     # regex mismatch
     "testMutuallyExclusiveArgs"
   ];
+
+  format = "setuptools";
+
+  optional-dependencies = {
+    yaml = [ pyyaml ];
+  };
 
   pythonImportsCheck = [ "configargparse" ];
 

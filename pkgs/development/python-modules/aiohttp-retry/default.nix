@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  pytestCheckHook,
   pytest-aiohttp,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aiohttp-retry";
   version = "2.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "inyutin";
@@ -25,20 +24,17 @@ buildPythonPackage rec {
       --replace-fail 'version="2.9.0"' 'version="${version}"'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     pytest-aiohttp
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "aiohttp_retry" ];
-
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pytestFlags = [ "--asyncio-mode=auto" ];
+  pythonImportsCheck = [ "aiohttp_retry" ];
 
   meta = {
     description = "Retry client for aiohttp";

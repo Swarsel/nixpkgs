@@ -1,19 +1,19 @@
 {
-  buildDunePackage,
   lib,
   fetchFromGitHub,
-  which,
-  ocsigen_server,
-  lwt_react,
-  ppx_deriving,
-  ppx_optcomp,
+  buildDunePackage,
+  js_of_ocaml-lwt,
   js_of_ocaml-ocamlbuild,
   js_of_ocaml-ppx,
   js_of_ocaml-ppx_deriving_json,
-  js_of_ocaml-lwt,
   js_of_ocaml-tyxml,
   lwt_ppx,
+  lwt_react,
+  ocsigen_server,
   ocsipersist,
+  ppx_deriving,
+  ppx_optcomp,
+  which,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -27,9 +27,12 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-VJHt64XheW+JPZ3pynlOvpTgXf5nE9HCB4K1bWUXmAs=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     which
   ];
+
   buildInputs = [
     js_of_ocaml-ocamlbuild
     js_of_ocaml-ppx_deriving_json
@@ -47,12 +50,9 @@ buildDunePackage (finalAttrs: {
     ppx_deriving
   ];
 
-  strictDeps = true;
-
   setupHook = [ ./setup-hook.sh ];
 
   meta = {
-    homepage = "http://ocsigen.org/eliom/";
     description = "OCaml Framework for programming Web sites and client/server Web applications";
 
     longDescription = ''
@@ -67,6 +67,7 @@ buildDunePackage (finalAttrs: {
       Ocsigen Js_of_ocaml.
     '';
 
+    homepage = "http://ocsigen.org/eliom/";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.gal_bolle ];
   };

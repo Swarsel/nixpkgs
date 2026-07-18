@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  wxwidgets_3_2,
-  gtk3,
-  zlib,
-  libjpeg,
-  libvncserver,
   cmake,
-  pkg-config,
-  libsysprof-capture,
-  pcre2,
-  util-linux,
+  fetchpatch,
+  gtk3,
+  lerc,
+  libdatrie,
+  libepoxy,
+  libjpeg,
   libselinux,
   libsepol,
+  libsysprof-capture,
   libthai,
-  libdatrie,
-  libxtst,
+  libvncserver,
   libxdmcp,
-  lerc,
   libxkbcommon,
-  libepoxy,
+  libxtst,
+  pcre2,
+  pkg-config,
+  util-linux,
   wrapGAppsHook3,
+  wxwidgets_3_2,
+  zlib,
 }:
 
 let
@@ -55,8 +55,8 @@ stdenv.mkDerivation {
 
     # silences a compiler warning
     (fetchpatch {
-      url = "https://github.com/bk138/multivnc/commit/002ba7f6b5b88dac3da5c08f99be1f237dcde904.patch";
       hash = "sha256-Qnk7RrUaw9jsaNTbzYqsH0LU8ivT9xX2jfxrES82ArE=";
+      url = "https://github.com/bk138/multivnc/commit/002ba7f6b5b88dac3da5c08f99be1f237dcde904.patch";
     })
   ];
 
@@ -65,6 +65,12 @@ stdenv.mkDerivation {
   postPatch = ''
     rm -rfv libvncserver libsshtunnel libjpeg-turbo libressl libssh2
   '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    wrapGAppsHook3
+  ];
 
   buildInputs = [
     gtk3
@@ -88,17 +94,11 @@ stdenv.mkDerivation {
     libxtst
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    wrapGAppsHook3
-  ];
-
   meta = {
-    mainProgram = "multivnc";
     description = "Cross-platform Multicast-enabled VNC viewer based on LibVNCClient";
     homepage = "https://github.com/bk138/multivnc";
-    maintainers = with lib.maintainers; [ rhelmot ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ rhelmot ];
+    mainProgram = "multivnc";
   };
 }

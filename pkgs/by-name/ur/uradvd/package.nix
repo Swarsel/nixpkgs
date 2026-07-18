@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   gitMinimal,
   uradvd,
@@ -15,8 +15,8 @@ stdenv.mkDerivation {
     owner = "freifunk-gluon";
     repo = "uradvd";
     rev = "1e64364d323acb8c71285a6fb85d384334e7007d";
-    deepClone = true;
     hash = "sha256-+MDhBuCPJ/dcKw4/z4PnXXGoNomIz/0QI32XfLR6fK0=";
+    deepClone = true;
   };
 
   nativeBuildInputs = [
@@ -31,17 +31,18 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "Tiny IPv6 Router Advertisement Daemon";
     homepage = "https://github.com/freifunk-gluon/uradvd";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ aiyion ];
+    platforms = lib.platforms.linux;
     mainProgram = "uradvd";
   };
 }

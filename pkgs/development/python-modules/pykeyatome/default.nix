@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   fake-useragent,
-  fetchFromGitHub,
   pytest-aiohttp,
   pytestCheckHook,
   requests,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pykeyatome";
   version = "2.1.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jugla";
@@ -44,14 +43,15 @@ buildPythonPackage rec {
     "test_relog_after_session_down"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pykeyatome" ];
 
   meta = {
     description = "Python module to get data from Atome Key";
-    mainProgram = "pykeyatome";
     homepage = "https://github.com/jugla/pyKeyAtome";
     changelog = "https://github.com/jugla/pyKeyAtome/releases/tag/V${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "pykeyatome";
   };
 }

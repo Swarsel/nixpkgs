@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  libxext,
   libx11,
+  libxext,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "spacenavd";
@@ -22,7 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--disable-debug" ];
-
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   postInstall = ''
@@ -32,11 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://spacenav.sourceforge.net/";
     description = "Device driver and SDK for 3Dconnexion 3D input devices";
     longDescription = "A free, compatible alternative, to the proprietary 3Dconnexion device driver and SDK, for their 3D input devices (called 'space navigator', 'space pilot', 'space traveller', etc)";
+    homepage = "https://spacenav.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sohalt ];
+    platforms = lib.platforms.unix;
   };
 })

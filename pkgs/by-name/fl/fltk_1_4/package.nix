@@ -1,53 +1,45 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  cairo,
   cmake,
-  pkg-config,
-  zlib,
-  libjpeg,
-  libpng,
+  doxygen,
   fontconfig,
   freetype,
-  libx11,
-  libxext,
-  libxinerama,
-  libxfixes,
-  libxcursor,
-  libxft,
-  libxrender,
-
-  withGL ? true,
+  glew,
+  graphviz,
   libGL,
   libGLU,
-  glew,
-
+  libdecor,
+  libjpeg,
+  libpng,
+  libx11,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxft,
+  libxinerama,
+  libxkbcommon,
+  libxrender,
+  # TODO: Clean up on `staging`
+  llvmPackages,
+  nix-update-script,
+  pango,
+  pkg-config,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  zlib,
   withCairo ? true,
-  cairo,
-
+  withDocs ? true,
+  withExamples ? (stdenv.buildPlatform == stdenv.hostPlatform),
+  withGL ? true,
   # pango depends on Xft, and implicitly enables cairo.
   # So only enable pango if cairo is enabled too.
   withPango ? withXorg && withCairo,
-  pango,
-
-  withDocs ? true,
-  doxygen,
-  graphviz,
-
-  withXorg ? stdenv.hostPlatform.isLinux,
-
   withWayland ? stdenv.hostPlatform.isLinux && withCairo,
-  wayland,
-  wayland-protocols,
-  libxkbcommon,
-  wayland-scanner,
-  libdecor,
-
-  withExamples ? (stdenv.buildPlatform == stdenv.hostPlatform),
-
-  nix-update-script,
-  # TODO: Clean up on `staging`
-  llvmPackages,
+  withXorg ? stdenv.hostPlatform.isLinux,
 }:
 
 # pango support depends on Xft
@@ -68,9 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   outputs = [ "out" ] ++ lib.optional withExamples "bin" ++ lib.optional withDocs "doc";
-
-  # Manually move example & test binaries to $bin to avoid cyclic dependencies on dev binaries
-  outputBin = lib.optionalString withExamples "out";
 
   postPatch = ''
     patchShebangs documentation/make_*
@@ -215,6 +204,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/$out/" "/"
   '';
 
+  # Manually move example & test binaries to $bin to avoid cyclic dependencies on dev binaries
+  outputBin = lib.optionalString withExamples "out";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -223,12 +215,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/fltk/fltk/blob/${finalAttrs.src.tag}/CHANGES.txt";
     description = "C++ cross-platform lightweight GUI library";
     homepage = "https://www.fltk.org";
-    platforms = lib.platforms.unix;
+    changelog = "https://github.com/fltk/fltk/blob/${finalAttrs.src.tag}/CHANGES.txt";
     # LGPL2 with static linking exception
     # https://www.fltk.org/COPYING.php
     license = lib.licenses.lgpl2Only;
+    platforms = lib.platforms.unix;
   };
 })

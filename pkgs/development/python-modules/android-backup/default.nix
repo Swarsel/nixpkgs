@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycrypto,
   python,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "android-backup";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bluec0re";
@@ -24,6 +23,7 @@ buildPythonPackage (finalAttrs: {
     ${python.interpreter} -m android_backup.tests
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "android_backup" ];
 
   meta = {

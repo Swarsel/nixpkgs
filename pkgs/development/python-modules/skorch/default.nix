@@ -1,34 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  numpy,
-  pandas,
-  scikit-learn,
-  scipy,
-  tabulate,
-  torch,
-  tqdm,
-
+  buildPythonPackage,
   # tests
   flaky,
+  # dependencies
+  numpy,
   openssl,
+  pandas,
   pytest-cov-stub,
   pytestCheckHook,
   safetensors,
+  scikit-learn,
+  scipy,
+  # build-system
+  setuptools,
+  tabulate,
+  torch,
+  tqdm,
   transformers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "skorch";
   version = "1.4.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "skorch-dev";
@@ -37,6 +32,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-il3S5cfW47tKvMQGr/BfbEjMEMVzBF4gSrQhR1uKxks=";
   };
 
+  nativeCheckInputs = [
+    flaky
+    openssl
+    pytest-cov-stub
+    pytestCheckHook
+    safetensors
+    transformers
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -49,13 +54,17 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  nativeCheckInputs = [
-    flaky
-    openssl
-    pytest-cov-stub
-    pytestCheckHook
-    safetensors
-    transformers
+  disabledTestPaths = [
+    # tries to download missing HuggingFace data
+    "skorch/tests/test_dataset.py"
+    "skorch/tests/test_hf.py"
+    "skorch/tests/llm/test_llm_classifier.py"
+
+    # These tests fail when running in parallel for all platforms with:
+    # "RuntimeError: The server socket has failed to listen on any local
+    # network address because they use the same hardcoded port."
+    # This happens on every platform with sandboxing enabled.
+    "skorch/tests/test_history.py"
   ];
 
   disabledTests = [
@@ -75,19 +84,7 @@ buildPythonPackage (finalAttrs: {
     "test_fit_lbfgs_optimizer"
   ];
 
-  disabledTestPaths = [
-    # tries to download missing HuggingFace data
-    "skorch/tests/test_dataset.py"
-    "skorch/tests/test_hf.py"
-    "skorch/tests/llm/test_llm_classifier.py"
-
-    # These tests fail when running in parallel for all platforms with:
-    # "RuntimeError: The server socket has failed to listen on any local
-    # network address because they use the same hardcoded port."
-    # This happens on every platform with sandboxing enabled.
-    "skorch/tests/test_history.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "skorch" ];
 
   meta = {

@@ -1,15 +1,14 @@
 {
   lib,
   fetchurl,
-  python3Packages,
   gnupg,
   pass,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "pass-import";
   version = "3.5";
-  format = "setuptools";
 
   src = fetchurl {
     url = "https://github.com/roddhjav/${pname}/releases/download/v${version}/${pname}-${version}.tar.gz";
@@ -34,9 +33,9 @@ python3Packages.buildPythonApplication rec {
     python3Packages.pytestCheckHook
   ];
 
-  disabledTests = [
-    "test_import_gnome_keyring" # requires dbus, which pytest doesn't support
-  ];
+  postCheck = ''
+    $out/bin/pimport --list-exporters --list-importers
+  '';
 
   postInstall = ''
     mkdir -p $out/lib/password-store/extensions
@@ -48,20 +47,24 @@ python3Packages.buildPythonApplication rec {
     cp -r share $out/
   '';
 
-  postCheck = ''
-    $out/bin/pimport --list-exporters --list-importers
-  '';
+  disabledTests = [
+    "test_import_gnome_keyring" # requires dbus, which pytest doesn't support
+  ];
+
+  format = "setuptools";
 
   meta = {
     description = "Pass extension for importing data from existing password managers";
-    mainProgram = "pimport";
     homepage = "https://github.com/roddhjav/pass-import";
     changelog = "https://github.com/roddhjav/pass-import/blob/v${version}/CHANGELOG.rst";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       fpletz
       tadfisher
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "pimport";
   };
 }

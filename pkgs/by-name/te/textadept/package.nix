@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   cmake,
-  withQt ? true,
   libsForQt5,
-  withCurses ? false,
   ncurses,
+  withCurses ? false,
+  withQt ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  version = "12.9";
   pname = "textadept";
+  version = "12.9";
 
   src = fetchFromGitHub {
     owner = "orbitalquark";
@@ -21,7 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ] ++ lib.optionals withQt [ libsForQt5.wrapQtAppsHook ];
-
   buildInputs = lib.optionals withQt [ libsForQt5.qtbase ] ++ lib.optionals withCurses ncurses;
 
   cmakeFlags =
@@ -44,15 +43,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Extensible text editor based on Scintilla with Lua scripting";
     homepage = "http://foicica.com/textadept";
-    downloadPage = "https://github.com/orbitalquark/textadept";
     changelog = "https://github.com/orbitalquark/textadept/releases/tag/textadept_${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       raskin
       mirrexagon
       arcuru
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "textadept";
+    downloadPage = "https://github.com/orbitalquark/textadept";
   };
 })

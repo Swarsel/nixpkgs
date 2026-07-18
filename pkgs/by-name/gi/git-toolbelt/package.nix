@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  git,
   fzf,
+  git,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -39,9 +39,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/nvie/git-toolbelt/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Suite of useful Git commands that aid with scripting or every day command line usage";
     homepage = "https://github.com/nvie/git-toolbelt";
+    changelog = "https://github.com/nvie/git-toolbelt/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.all;

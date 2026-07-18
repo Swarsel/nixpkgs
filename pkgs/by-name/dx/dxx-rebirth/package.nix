@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  scons,
-  pkg-config,
+  fetchFromGitHub,
   SDL2,
   SDL2_image,
   SDL2_mixer,
-  libGLU,
   libGL,
+  libGLU,
   libpng,
   physfs,
+  pkg-config,
+  scons,
   unstableGitUpdater,
 }:
 
 let
   music = fetchurl {
-    url = "https://www.dxx-rebirth.com/download/dxx/res/d2xr-sc55-music.dxa";
     sha256 = "05mz77vml396mff43dbs50524rlm4fyds6widypagfbh5hc55qdc";
+    url = "https://www.dxx-rebirth.com/download/dxx/res/d2xr-sc55-music.dxa";
   };
 
 in
@@ -48,10 +48,6 @@ stdenv.mkDerivation {
     SDL2_mixer
   ];
 
-  enableParallelBuilding = true;
-
-  sconsFlags = [ "sdl2=1" ];
-
   env.NIX_CFLAGS_COMPILE = toString [
     "-Wno-format-nonliteral"
     "-Wno-format-truncation"
@@ -62,6 +58,8 @@ stdenv.mkDerivation {
     install -Dm644 -t $out/share/doc/dxx-rebirth *.txt
   '';
 
+  enableParallelBuilding = true;
+  sconsFlags = [ "sdl2=1" ];
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

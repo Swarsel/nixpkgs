@@ -1,16 +1,17 @@
 {
   lib,
   stdenv,
-  buildEnv,
   fetchFromGitHub,
+  buildEnv,
   mono,
 }:
 
 let
   version = "1.8.4.2";
   drv = stdenv.mkDerivation {
-    pname = "keepasshttp";
     inherit version;
+    pname = "keepasshttp";
+
     src = fetchFromGitHub {
       owner = "pfn";
       repo = "keepasshttp";
@@ -21,24 +22,25 @@ let
       sha256 = "0bkzxggbqx7sql3sp46bqham6r457in0vrgh3ai3lw2jrw79pwmh";
     };
 
-    meta = {
-      description = "KeePass plugin to expose password entries securely (256bit AES/CBC) over HTTP";
-      homepage = "https://github.com/pfn/keepasshttp";
-      platforms = with lib.platforms; linux;
-      license = lib.licenses.gpl3;
-    };
-
-    pluginFilename = "KeePassHttp.plgx";
-
     installPhase = ''
       mkdir -p $out/lib/dotnet/keepass/
       cp $pluginFilename $out/lib/dotnet/keepass/$pluginFilename
     '';
+
+    pluginFilename = "KeePassHttp.plgx";
+
+    meta = {
+      description = "KeePass plugin to expose password entries securely (256bit AES/CBC) over HTTP";
+      homepage = "https://github.com/pfn/keepasshttp";
+      license = lib.licenses.gpl3;
+      platforms = with lib.platforms; linux;
+    };
   };
 in
 # Mono is required to compile plugin at runtime, after loading.
 buildEnv {
   inherit (drv) pname version;
+
   paths = [
     mono
     drv

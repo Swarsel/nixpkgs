@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  brotli,
   cmake,
-  pkg-config,
-  libx11,
-  procps,
-  python3,
+  gtest,
   libdwarf,
   libglvnd,
-  gtest,
-  brotli,
-  enableGui ? true,
   libsForQt5,
+  libx11,
+  pkg-config,
+  procps,
+  python3,
+  enableGui ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,15 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    python3
+  ]
+  ++ lib.optionals enableGui [
+    libsForQt5.wrapQtAppsHook
+  ];
+
   # LD_PRELOAD wrappers need to be statically linked to work against all kinds
   # of games -- so it's fine to use e.g. bundled snappy.
   buildInputs = [
@@ -40,22 +49,9 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qtbase
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    python3
-  ]
-  ++ lib.optionals enableGui [
-    libsForQt5.wrapQtAppsHook
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_GUI" enableGui)
   ];
-
-  # Don't automatically wrap all binaries, I prefer to explicitly only wrap
-  # `qapitrace`.
-  dontWrapQtApps = true;
 
   postFixup = ''
 
@@ -96,9 +92,13 @@ stdenv.mkDerivation (finalAttrs: {
     wrapQtApp $out/bin/qapitrace
   '';
 
+  # Don't automatically wrap all binaries, I prefer to explicitly only wrap
+  # `qapitrace`.
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "https://apitrace.github.io";
     description = "Tools to trace OpenGL, OpenGL ES, Direct3D, and DirectDraw APIs";
+    homepage = "https://apitrace.github.io";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
   };

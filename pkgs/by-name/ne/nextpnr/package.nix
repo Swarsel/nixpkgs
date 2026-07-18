@@ -2,31 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
-  python3,
+  cmake,
   eigen,
-  python3Packages,
   icestorm,
-  trellis,
   llvmPackages,
-
+  python3,
+  python3Packages,
+  trellis,
   enableGui ? false,
-  wrapQtAppsHook ? null,
   qtbase ? null,
+  wrapQtAppsHook ? null,
 }:
 
 let
   boostPython = boost.override {
-    python = python3;
     enablePython = true;
+    python = python3;
   };
 
   prjbeyond_src = fetchFromGitHub {
+    hash = "sha256-B/VmKgMu6f2Y8umE+NgGD5W0FYBIfDcMVwgHocFzreA=";
     owner = "YosysHQ-GmbH";
     repo = "prjbeyond-db";
     rev = "f49f66be674d9857c657930353b867ba94bcbdd7";
-    hash = "sha256-B/VmKgMu6f2Y8umE+NgGD5W0FYBIfDcMVwgHocFzreA=";
   };
 in
 
@@ -38,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "YosysHQ";
     repo = "nextpnr";
     tag = "nextpnr-${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-goHHEvkBw+9s3RHGfQtRaueXRBnoI14TmfGmb+1WPAY=";
+    fetchSubmodules = true;
   };
 
   # Don't use #embed macro for chipdb binary embeddings - otherwise getting spurious type narrowing errors.
@@ -48,6 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace CMakeLists.txt \
       --replace-fail "check_cxx_compiler_hash_embed(HAS_HASH_EMBED CXX_FLAGS_HASH_EMBED)" ""
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -101,14 +102,12 @@ stdenv.mkDerivation (finalAttrs: {
     wrapQtApp $out/bin/nextpnr-himbaechel
   '';
 
-  strictDeps = true;
-
   meta = {
     description = "Place and route tool for FPGAs";
     homepage = "https://github.com/yosyshq/nextpnr";
     changelog = "https://github.com/YosysHQ/nextpnr/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.all;
   };
 })

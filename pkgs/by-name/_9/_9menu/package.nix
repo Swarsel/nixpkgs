@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
-  meson,
-  ninja,
   libx11,
   libxext,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     meson
     ninja
   ];
+
   buildInputs = [
     libx11
     libxext
@@ -39,11 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/arnoldrobbins/9menu";
     description = "Simple X11 menu program for running commands";
-    mainProgram = "9menu";
+    homepage = "https://github.com/arnoldrobbins/9menu";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = libx11.meta.platforms;
+    mainProgram = "9menu";
   };
 })

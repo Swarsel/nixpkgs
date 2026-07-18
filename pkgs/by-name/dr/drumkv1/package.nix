@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
-  pkg-config,
+  stdenv,
   fetchurl,
+  alsa-lib,
   cmake,
   libjack2,
-  alsa-lib,
-  libsndfile,
   liblo,
-  lv2,
-  qt6,
+  libsndfile,
   libx11,
+  lv2,
+  pkg-config,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/drumkv1/drumkv1-${finalAttrs.version}.tar.gz";
     hash = "sha256-jTOTOziCrycFyMe6wIfUnw7d6p+gNZfO7Q9BcZOyOME=";
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+    qt6.wrapQtAppsHook
+  ];
 
   buildInputs = [
     libjack2
@@ -34,12 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtsvg
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-    qt6.wrapQtAppsHook
-  ];
-
   cmakeFlags = [
     # disable experimental feature "LV2 port change request"
     "-DCONFIG_LV2_PORT_CHANGE_REQUEST=false"
@@ -49,10 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Old-school drum-kit sampler synthesizer with stereo fx";
-    mainProgram = "drumkv1_jack";
     homepage = "http://drumkv1.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ theredstonedev ];
+    platforms = lib.platforms.linux;
+    mainProgram = "drumkv1_jack";
   };
 })

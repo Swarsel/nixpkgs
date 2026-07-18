@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
   logmatic-python,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "reconplogger";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "omni-us";
@@ -23,12 +22,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/+nPLji8iGTBpWTCR83JRfxMltMYjP62KrB+HRTQQE8=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    testfixtures
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     logmatic-python
     pyyaml
   ];
+
+  enabledTestPaths = [ "reconplogger_tests.py" ];
 
   optional-dependencies = {
     all = [
@@ -37,14 +43,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    testfixtures
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "reconplogger" ];
-
-  enabledTestPaths = [ "reconplogger_tests.py" ];
 
   meta = {
     description = "Module to ease the standardization of logging within omni:us";

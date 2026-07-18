@@ -2,9 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  withPython ? true,
-
   cairo,
   cmake,
   curl,
@@ -26,6 +23,7 @@
   python3,
   swig,
   zlib,
+  withPython ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -101,7 +99,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://mapserver.org/";
     changelog = "https://mapserver.org/development/changelog/";
     license = lib.licenses.mit;
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.geospatial ];
   };
 })

@@ -2,36 +2,36 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  apr,
+  boost,
   callPackage,
-  libglut,
+  cmake,
+  curl,
+  fltk_1_3,
   freealut,
-  libGLU,
+  glew,
   libGL,
+  libGLU,
+  libglut,
   libice,
   libjpeg,
-  openal,
-  plib,
+  libpng,
   libsm,
   libunwind,
   libx11,
-  xorgproto,
   libxext,
   libxi,
   libxmu,
   libxt,
+  nix-update-script,
+  openal,
+  plib,
+  qt5,
   simgear,
+  udev,
+  xorgproto,
   xz,
   zlib,
-  boost,
-  cmake,
-  libpng,
-  udev,
-  fltk_1_3,
-  apr,
-  qt5,
-  glew,
-  curl,
-  nix-update-script,
 }:
 
 let
@@ -52,6 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     freealut
     libjpeg
@@ -91,8 +92,6 @@ stdenv.mkDerivation (finalAttrs: {
     lib.cmakeFeature "CMAKE_OSX_DEPLOYMENT_TARGET" "11.0"
   );
 
-  qtWrapperArgs = [ "--set FG_ROOT ${finalAttrs.passthru.data}/share/FlightGear" ];
-
   postInstall = ''
     # Remove redundant AppImage artifacts
     rm -rf "$out/appdir"
@@ -107,12 +106,12 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s "$out/Applications/FlightGear.app/Contents/MacOS/FlightGear" "$out/bin/fgfs"
   '';
 
-  passthru = {
-    updateScript = nix-update-script { };
+  qtWrapperArgs = [ "--set FG_ROOT ${finalAttrs.passthru.data}/share/FlightGear" ];
 
+  passthru = {
     data = stdenv.mkDerivation {
-      pname = "flightgear-data";
       inherit (finalAttrs) version;
+      pname = "flightgear-data";
 
       src = fetchFromGitLab {
         owner = "flightgear";
@@ -121,27 +120,31 @@ stdenv.mkDerivation (finalAttrs: {
         hash = "sha256-B7WCEMrHtSW4Yk2HM+ZjgKt5GeQrSmvxKITqAYXKSuw=";
       };
 
-      dontUnpack = true;
-
       installPhase = ''
         mkdir -p "$out/share/FlightGear"
         cp -a "$src"/* "$out/share/FlightGear/"
       '';
+
+      dontUnpack = true;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "A free and highly sophisticated flight simulator";
     homepage = "https://www.flightgear.org/";
     changelog = "https://www.flightgear.org/download/releases/2024-1-5"; # TODO: Use finalattrs when back on stable tracking
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       kirillrdy
       philocalyst
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    hydraPlatforms = [ ]; # disabled from hydra because it's so big
-    license = lib.licenses.gpl2Plus;
     mainProgram = "fgfs";
+    hydraPlatforms = [ ]; # disabled from hydra because it's so big
   };
 })

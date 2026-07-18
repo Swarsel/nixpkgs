@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
-
   # propagates
   pyopenssl,
-  requests,
-  six,
-
   # tests
   pytestCheckHook,
+  requests,
   responses,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "paypalhttp";
   version = "1.0.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "paypal";
@@ -28,9 +25,9 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-K2hO3XRrJ+Gm+rLtWRPy0E2syLS4RhNNHIA3w4xVYtY=";
       # fix content-type header case sensitiyivy
       url = "https://github.com/paypal/paypalhttp_python/commit/72609783230663b8e34c6f0384837db7b166c8f4.patch";
-      hash = "sha256-K2hO3XRrJ+Gm+rLtWRPy0E2syLS4RhNNHIA3w4xVYtY=";
     })
   ];
 
@@ -50,10 +47,12 @@ buildPythonPackage rec {
     responses
   ];
 
+  format = "setuptools";
+
   meta = {
-    changelog = "https://github.com/paypal/paypalhttp_python/releases/tag/${version}";
     description = "PayPalHttp is a generic HTTP Client";
     homepage = "https://github.com/paypal/paypalhttp_python";
+    changelog = "https://github.com/paypal/paypalhttp_python/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

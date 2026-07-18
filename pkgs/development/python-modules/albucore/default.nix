@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   numpy,
   opencv-python,
+  pytestCheckHook,
+  setuptools,
   simsimd,
   stringzilla,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "albucore";
   version = "0.0.24";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "albumentations-team";
@@ -22,8 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-frVMPW3au/6vPRY89GIt7chCPkUMl13DpPqCPqIjz/o=";
   };
 
-  pythonRelaxDeps = [ "opencv-python" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,10 +31,9 @@ buildPythonPackage rec {
     stringzilla
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "albucore" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pythonRelaxDeps = [ "opencv-python" ];
   # albumentations doesn't support newer versions of albucore
   # and has been archived upstream in favor of relicensed `albumentationsx`
   passthru.skipBulkUpdate = true;

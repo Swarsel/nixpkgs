@@ -1,24 +1,23 @@
 {
   buildDunePackage,
   dns,
-  dns-tsig,
   dns-mirage,
-  randomconv,
-  x509,
-  mirage-sleep,
-  mirage-ptime,
+  dns-tsig,
   logs,
+  lwt,
+  mirage-crypto-ec,
   mirage-crypto-pk,
   mirage-crypto-rng,
-  mirage-crypto-ec,
-  lwt,
+  mirage-ptime,
+  mirage-sleep,
+  randomconv,
   tcpip,
+  x509,
 }:
 
 buildDunePackage {
-  pname = "dns-certify";
-
   inherit (dns) version src;
+  pname = "dns-certify";
 
   propagatedBuildInputs = [
     dns

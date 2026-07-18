@@ -1,21 +1,17 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
-
   # tests
   addBinToPathHook,
   gitMinimal,
+  python3,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: {
-      pydantic = super.pydantic_1;
-
       # python-on-whales is the only aiohttp dependency that is incompatible with pydantic_1
       # Override aiohttp to remove this dependency
       aiohttp = super.aiohttp.overridePythonAttrs (old: {
@@ -34,18 +30,21 @@ let
         doCheck = false;
       });
 
+      pydantic = super.pydantic_1;
+
       versioningit = super.versioningit.overridePythonAttrs (old: {
         # Tests fail with pydantic_1
         # AttributeError: type object 'CaseDetails' has no attribute 'model_validate_...
         doCheck = false;
       });
     };
+
+    self = python;
   };
 in
 python.pkgs.buildPythonApplication rec {
   pname = "dbx";
   version = "0.8.19";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "databrickslabs";
@@ -71,16 +70,19 @@ python.pkgs.buildPythonApplication rec {
         '[t.split("=") for t in multiple_argument] if multiple_argument else []'
   '';
 
-  pythonRelaxDeps = [
-    "cryptography"
-    "databricks-cli"
-    "pydantic"
-    "rich"
-    "tenacity"
-    "typer"
-  ];
-
-  pythonRemoveDeps = [ "mlflow-skinny" ];
+  nativeCheckInputs = [
+    addBinToPathHook
+    gitMinimal
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ]
+  ++ (with python.pkgs; [
+    pytest-asyncio
+    pytest-mock
+    pytest-timeout
+    pytest-xdist
+    pytestCheckHook
+  ]);
 
   build-system = with python.pkgs; [
     hatch-vcs
@@ -107,28 +109,11 @@ python.pkgs.buildPythonApplication rec {
     watchdog
   ];
 
-  optional-dependencies = with python.pkgs; {
-    aws = [ boto3 ];
-    azure = [
-      azure-storage-blob
-      azure-identity
-    ];
-    gcp = [ google-cloud-storage ];
-  };
-
-  nativeCheckInputs = [
-    addBinToPathHook
-    gitMinimal
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ]
-  ++ (with python.pkgs; [
-    pytest-asyncio
-    pytest-mock
-    pytest-timeout
-    pytest-xdist
-    pytestCheckHook
-  ]);
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # ERROR fsevents:fsevents.py:310 Unhandled exception in FSEventsEmitter
+    # SystemError: Cannot start fsevents stream. Use a kqueue or polling observer instead.
+    "tests/unit/sync/test_event_handler.py"
+  ];
 
   disabledTests = [
     # Fails because of dbfs CLI wrong call
@@ -143,13 +128,30 @@ python.pkgs.buildPythonApplication rec {
     "test_storage_serde"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # ERROR fsevents:fsevents.py:310 Unhandled exception in FSEventsEmitter
-    # SystemError: Cannot start fsevents stream. Use a kqueue or polling observer instead.
-    "tests/unit/sync/test_event_handler.py"
+  optional-dependencies = with python.pkgs; {
+    aws = [ boto3 ];
+
+    azure = [
+      azure-storage-blob
+      azure-identity
+    ];
+
+    gcp = [ google-cloud-storage ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "dbx" ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+    "databricks-cli"
+    "pydantic"
+    "rich"
+    "tenacity"
+    "typer"
   ];
 
-  pythonImportsCheck = [ "dbx" ];
+  pythonRemoveDeps = [ "mlflow-skinny" ];
 
   meta = {
     description = "CLI tool for advanced Databricks jobs management";

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   bluetooth-data-tools,
   bluetooth-sensor-state-data,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-cov-stub,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "qingping-ble";
   version = "1.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bluetooth-devices";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mUlOSagQADaHDiJkyFdEz3voh8a/zGb1RwqCI3PywYU=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -30,11 +34,7 @@ buildPythonPackage (finalAttrs: {
     sensor-state-data
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "qingping_ble" ];
 
   meta = {

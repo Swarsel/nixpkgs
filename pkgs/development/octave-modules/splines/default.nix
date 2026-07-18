@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,12 +14,14 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "Additional spline functions";
     homepage = "https://gnu-octave.github.io/packages/splines/";
+
     license = with lib.licenses; [
       gpl3Plus
       publicDomain
     ];
+
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Additional spline functions";
   };
 }

@@ -1,44 +1,43 @@
 {
-  config,
-  cairo,
-  cmake,
-  fetchFromGitHub,
-  fetchpatch,
-  libuv,
-  libxdmcp,
-  libpthread-stubs,
-  libxcb,
-  pkg-config,
-  python3,
-  python3Packages, # sphinx-build
   lib,
   stdenv,
-  xcbproto,
-  libxcb-util,
+  fetchFromGitHub,
+  alsa-lib,
+  cairo,
+  cmake,
+  config,
+  curl,
+  fetchpatch,
+  i3,
+  jsoncpp,
+  libmpdclient,
+  libnl,
+  libpthread-stubs,
+  libpulseaudio,
+  libuv,
+  libxcb,
   libxcb-cursor,
   libxcb-image,
   libxcb-render-util,
+  libxcb-util,
   libxcb-wm,
-  xcbutilxrm,
+  libxdmcp,
   makeWrapper,
+  pkg-config,
+  python3,
+  python3Packages, # sphinx-build
   removeReferencesTo,
-  alsa-lib,
-  curl,
-  libmpdclient,
-  libpulseaudio,
   wirelesstools,
-  libnl,
-  i3,
-  jsoncpp,
-
+  xcbproto,
+  xcbutilxrm,
   # override the variables ending in 'Support' to enable or disable modules
   alsaSupport ? true,
   githubSupport ? false,
-  mpdSupport ? false,
-  pulseSupport ? config.pulseaudio or false,
-  iwSupport ? false,
-  nlSupport ? true,
   i3Support ? false,
+  iwSupport ? false,
+  mpdSupport ? false,
+  nlSupport ? true,
+  pulseSupport ? config.pulseaudio or false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,6 +51,30 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5PYKl6Hi4EYEmUBwkV0rLiwxNqIyR5jwm495YnNs0gI=";
     fetchSubmodules = true;
   };
+
+  patches = [
+    # FIXME: remove after version update
+    (fetchpatch {
+      name = "gcc15-cstdint-fix.patch";
+      sha256 = "sha256-Mf9R4u1Kq4yqLqTFD5ZoLjrK+GmlvtSsEyRFRCiQ72U=";
+      url = "https://github.com/polybar/polybar/commit/f99e0b1c7a5b094f5a04b14101899d0cb4ece69d.patch";
+    })
+
+    ./remove-hardcoded-etc.diff
+  ];
+
+  # Replace hardcoded /etc when copying and reading the default config.
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail "/etc" $out
+    substituteAllInPlace src/utils/file.cpp
+    # Fix gcc15 build: i3ipcpp forces -std=c++11 but the jsoncpp library was
+    # compiled with C++17 (JSONCPP_HAS_STRING_VIEW=1), causing ABI mismatch.
+    # The i3ipcpp code resolves operator[](const char*) but the library only
+    # exports operator[](std::string_view). Bump i3ipcpp to C++17 to match.
+    substituteInPlace lib/i3ipcpp/CMakeLists.txt --replace-fail \
+      "-std=c++11" \
+      "-std=c++17"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -87,30 +110,6 @@ stdenv.mkDerivation (finalAttrs: {
     i3
   ];
 
-  patches = [
-    # FIXME: remove after version update
-    (fetchpatch {
-      name = "gcc15-cstdint-fix.patch";
-      url = "https://github.com/polybar/polybar/commit/f99e0b1c7a5b094f5a04b14101899d0cb4ece69d.patch";
-      sha256 = "sha256-Mf9R4u1Kq4yqLqTFD5ZoLjrK+GmlvtSsEyRFRCiQ72U=";
-    })
-
-    ./remove-hardcoded-etc.diff
-  ];
-
-  # Replace hardcoded /etc when copying and reading the default config.
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail "/etc" $out
-    substituteAllInPlace src/utils/file.cpp
-    # Fix gcc15 build: i3ipcpp forces -std=c++11 but the jsoncpp library was
-    # compiled with C++17 (JSONCPP_HAS_STRING_VIEW=1), causing ABI mismatch.
-    # The i3ipcpp code resolves operator[](const char*) but the library only
-    # exports operator[](std::string_view). Bump i3ipcpp to C++17 to match.
-    substituteInPlace lib/i3ipcpp/CMakeLists.txt --replace-fail \
-      "-std=c++11" \
-      "-std=c++17"
-  '';
-
   postInstall = ''
     remove-references-to -t ${stdenv.cc} $out/bin/polybar
   ''
@@ -120,19 +119,23 @@ stdenv.mkDerivation (finalAttrs: {
   '');
 
   meta = {
-    homepage = "https://polybar.github.io/";
-    changelog = "https://github.com/polybar/polybar/releases/tag/${finalAttrs.version}";
     description = "Fast and easy-to-use tool for creating status bars";
+
     longDescription = ''
       Polybar aims to help users build beautiful and highly customizable
       status bars for their desktop environment, without the need of
       having a black belt in shell scripting.
     '';
+
+    homepage = "https://polybar.github.io/";
+    changelog = "https://github.com/polybar/polybar/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       moni
     ];
-    mainProgram = "polybar";
+
     platforms = lib.platforms.linux;
+    mainProgram = "polybar";
   };
 })

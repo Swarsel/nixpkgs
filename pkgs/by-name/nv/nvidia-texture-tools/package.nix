@@ -16,6 +16,12 @@ stdenv.mkDerivation {
     hash = "sha256-BYNm8CxPQbfmnnzNmOQ2Dc8HSyO8mkqzYsBZ5T80398=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+  ];
+
   postPatch = ''
     # Make a recently added pure virtual function just virtual,
     # to keep compatibility.
@@ -32,12 +38,6 @@ stdenv.mkDerivation {
     sed -i '/bc1enc/d' src/nvtt/tests/CMakeLists.txt
     sed -i '/libsquish/d;/CMP_Core/d' extern/CMakeLists.txt
   '';
-
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-  ];
 
   nativeBuildInputs = [
     cmake

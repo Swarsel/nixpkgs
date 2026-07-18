@@ -1,7 +1,8 @@
 { lib }:
 description: {
-  homepage = "https://ceph.io/en/";
   inherit description;
+  homepage = "https://ceph.io/en/";
+
   license = with lib.licenses; [
     lgpl21
     gpl2Only
@@ -9,6 +10,7 @@ description: {
     mit
     publicDomain
   ];
+
   maintainers = with lib.maintainers; [
     adev
     ak
@@ -17,6 +19,7 @@ description: {
     nh2
     benaryorg
   ];
+
   platforms = [
     "x86_64-linux"
     "aarch64-linux"

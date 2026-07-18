@@ -7,12 +7,14 @@
 buildGoModule (finalAttrs: {
   pname = "qcal";
   version = "0.9.3";
+
   src = fetchFromSourcehut {
     owner = "~psic4t";
     repo = "qcal";
     rev = finalAttrs.version;
     hash = "sha256-VnUbell8/9nnx+FBfXSV+jwQ4SwaX0kzZsp9MeD8uT4=";
   };
+
   vendorHash = null;
 
   # Replace "config-sample.json" in error message with the absolute path
@@ -32,7 +34,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://git.sr.ht/~psic4t/qcal";
     changelog = "https://git.sr.ht/~psic4t/qcal/refs/${finalAttrs.version}";
     license = lib.licenses.gpl3;
-    mainProgram = "qcal";
     maintainers = with lib.maintainers; [ antonmosich ];
+    mainProgram = "qcal";
   };
 })

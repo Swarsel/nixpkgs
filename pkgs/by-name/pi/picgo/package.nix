@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs_22,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  electron_41,
-  makeWrapper,
   copyDesktopItems,
+  electron_41,
+  fetchPnpmDeps,
   makeDesktopItem,
-  writableTmpDirAsHomeHook,
+  makeWrapper,
   nix-update-script,
+  nodejs_22,
+  pnpmConfigHook,
+  pnpm_10,
+  writableTmpDirAsHomeHook,
 }:
 let
   pnpm = pnpm_10;
@@ -25,14 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "PicGo";
     tag = "v${finalAttrs.version}";
     hash = "sha256-uxgrtuxcIlwCuz3X2hL0ZSpq8hMA4JxQD8ibNFw+35g=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) version src;
-    inherit pnpm;
-    pname = "picgo";
-    hash = "sha256-a08WFoWcjo0mV1eu8oOQgbOiu/xfpoMxx3v17Eltsbk=";
-    fetcherVersion = 3; # lockfileVersion 9.0 corresponds to fetcherVersion 3
   };
 
   nativeBuildInputs = [
@@ -114,34 +106,45 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "picgo";
-      desktopName = "PicGo";
-      genericName = "Picture Uploader";
-      comment = "A simple & beautiful tool for pictures uploading";
-      exec = "picgo %U";
-      icon = "picgo";
       categories = [
         "Utility"
         "Graphics"
       ];
+
+      comment = "A simple & beautiful tool for pictures uploading";
+      desktopName = "PicGo";
+      exec = "picgo %U";
+      genericName = "Picture Uploader";
+      icon = "picgo";
       mimeTypes = [ "x-scheme-handler/picgo" ];
+      name = "picgo";
       startupWMClass = "picgo";
     })
   ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) version src;
+    inherit pnpm;
+    pname = "picgo";
+    fetcherVersion = 3; # lockfileVersion 9.0 corresponds to fetcherVersion 3
+    hash = "sha256-a08WFoWcjo0mV1eu8oOQgbOiu/xfpoMxx3v17Eltsbk=";
+  };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple tool for uploading pictures";
+
     longDescription = ''
       PicGo is a simple & beautiful tool for uploading pictures built by `electron-vue`.
       It supports uploading images to various cloud storage services and clipboard management.
       The application features a plugin system for extending functionality.
     '';
+
     homepage = "https://picgo.app";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ qrzbing ];
     platforms = lib.platforms.linux;
     mainProgram = "picgo";
-    maintainers = with lib.maintainers; [ qrzbing ];
   };
 })

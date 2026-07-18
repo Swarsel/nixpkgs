@@ -1,11 +1,11 @@
 {
-  python3,
   lib,
-  runCommand,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   gitUpdater,
   imagemagick,
+  python3,
+  runCommand,
 }:
 
 let
@@ -13,11 +13,6 @@ let
   self = p.buildPythonApplication rec {
     pname = "backgroundremover";
     version = "0.4.4";
-    pyproject = true;
-
-    build-system = [
-      p.setuptools
-    ];
 
     src = fetchFromGitHub {
       owner = "nadermx";
@@ -26,23 +21,16 @@ let
       hash = "sha256-S6irFkNw+5HHr3ziMRxaeg3QoXWe1qqf10CGTTHKpb4=";
     };
 
-    models = runCommand "background-remover-models" { } ''
-      mkdir $out
-      cat ${src}/models/u2a{a,b,c,d} > $out/u2net.pth
-      cat ${src}/models/u2ha{a,b,c,d} > $out/u2net_human_seg.pth
-      cp ${src}/models/u2netp.pth $out
-    '';
-
     postPatch = ''
       rm -rf *dist
       substituteInPlace backgroundremover/bg.py backgroundremover/u2net/detect.py \
         --replace-fail 'os.path.expanduser(os.path.join("~", ".u2net", model_name + ".pth"))' "os.path.join(\"$models\", model_name + \".pth\")"
     '';
 
-    pythonRelaxDeps = [
-      "pillow"
-      "torchvision"
-      "moviepy"
+    doCheck = false; # no tests
+
+    build-system = [
+      p.setuptools
     ];
 
     dependencies = [
@@ -72,17 +60,32 @@ let
       p.waitress
     ];
 
+    models = runCommand "background-remover-models" { } ''
+      mkdir $out
+      cat ${src}/models/u2a{a,b,c,d} > $out/u2net.pth
+      cat ${src}/models/u2ha{a,b,c,d} > $out/u2net_human_seg.pth
+      cp ${src}/models/u2netp.pth $out
+    '';
+
+    pyproject = true;
     pythonImportsCheck = [ "backgroundremover" ];
+
+    pythonRelaxDeps = [
+      "pillow"
+      "torchvision"
+      "moviepy"
+    ];
 
     passthru = {
       inherit models;
+
       tests = {
         image =
           let
             # random no copyright car image from the internet
             demoImage = fetchurl {
-              url = "https://pics.craiyon.com/2023-07-16/38653769ac3b4e068181cb5ab1e542a1.webp";
               hash = "sha256-Kvd06eZdibgDbabVVe0+cNTeS1rDnMXIZZpPlHIlfBo=";
+              url = "https://pics.craiyon.com/2023-07-16/38653769ac3b4e068181cb5ab1e542a1.webp";
             };
           in
           runCommand "backgroundremover-image-test.png"
@@ -98,18 +101,17 @@ let
               backgroundremover -i input.png -o $out
             '';
       };
+
       updateScript = gitUpdater { rev-prefix = "v"; };
     };
 
-    doCheck = false; # no tests
-
     meta = {
-      mainProgram = "backgroundremover";
       description = "Command line tool to remove background from image and video, made by nadermx to power";
       homepage = "https://BackgroundRemoverAI.com";
-      downloadPage = "https://github.com/nadermx/backgroundremover/releases";
       license = lib.licenses.mit;
       maintainers = [ ];
+      mainProgram = "backgroundremover";
+      downloadPage = "https://github.com/nadermx/backgroundremover/releases";
     };
   };
 in

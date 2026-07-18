@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pynmea2";
   version = "1.19.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,16 +19,15 @@ buildPythonPackage rec {
   patches = [
     # Removed depreciated imp and replaced with importlib, https://github.com/Knio/pynmea2/pull/164
     (fetchpatch {
+      hash = "sha256-jeFyfukT+0NLNxvNCxL7TzL/8oKmKOam5ZUIvjdvN/Q=";
       name = "remove-imp.patch";
       url = "https://github.com/Knio/pynmea2/commit/c56717b5e859e978ad3b52b8f826faa5d50489f8.patch";
-      hash = "sha256-jeFyfukT+0NLNxvNCxL7TzL/8oKmKOam5ZUIvjdvN/Q=";
     })
   ];
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pynmea2" ];
 
   meta = {

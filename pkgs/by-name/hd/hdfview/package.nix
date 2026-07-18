@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   ant,
-  jdk,
+  copyDesktopItems,
   hdf4,
   hdf5,
+  jdk,
   makeDesktopItem,
-  copyDesktopItems,
   strip-nondeterminism,
   stripJavaArchivesHook,
 }:
@@ -41,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    HDFLIBS = (hdf4.override { javaSupport = true; }).out;
     HDF5LIBS = (hdf5.override { javaSupport = true; }).out;
+    HDFLIBS = (hdf4.override { javaSupport = true; }).out;
   };
 
   buildPhase =
@@ -56,18 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
 
       runHook postBuild
     '';
-
-  desktopItem = makeDesktopItem rec {
-    name = "HDFView";
-    desktopName = name;
-    exec = name;
-    icon = name;
-    comment = finalAttrs.finalPackage.meta.description;
-    categories = [
-      "Science"
-      "DataVisualization"
-    ];
-  };
 
   installPhase = ''
     runHook preInstall
@@ -95,13 +83,25 @@ stdenv.mkDerivation (finalAttrs: {
     find $out/lib/app{,/mods}/doc/javadocs -name "*.html" -exec strip-nondeterminism --type javadoc {} +
   '';
 
+  desktopItem = makeDesktopItem rec {
+    categories = [
+      "Science"
+      "DataVisualization"
+    ];
+
+    comment = finalAttrs.finalPackage.meta.description;
+    desktopName = name;
+    exec = name;
+    icon = name;
+    name = "HDFView";
+  };
+
   meta = {
     description = "Visual tool for browsing and editing HDF4 and HDF5 files";
-    license = lib.licenses.free; # BSD-like
     homepage = "https://www.hdfgroup.org/downloads/hdfview";
-    downloadPage = "https://github.com/HDFGroup/hdfview";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.free; # BSD-like
     maintainers = with lib.maintainers; [ jiegec ];
+    platforms = lib.platforms.unix;
     mainProgram = "HDFView";
     # Startup issue is described here:
     # https://github.com/NixOS/nixpkgs/issues/340048 A possible solution is
@@ -110,5 +110,6 @@ stdenv.mkDerivation (finalAttrs: {
     # But it requires us to update swt, which is a bit hard, the swt update is tracked here:
     # https://github.com/NixOS/nixpkgs/issues/219771
     broken = true;
+    downloadPage = "https://github.com/HDFGroup/hdfview";
   };
 })

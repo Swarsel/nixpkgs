@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoconf,
   automake,
-  pkg-config,
-  zlib,
-  libpng,
-  libjpeg,
-  libwebp,
-  libtiff,
-  withXorg ? true,
-  libxpm,
-  libavif,
+  fetchpatch,
   fontconfig,
   freetype,
+  libavif,
+  libjpeg,
+  libpng,
+  libtiff,
+  libwebp,
+  libxpm,
+  pkg-config,
+  zlib,
+  withXorg ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,22 +27,20 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0qas3q9xz3wgw06dm2fj0i189rain6n60z1vyq50d5h7wbn25s1z";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+  ];
+
   patches = [
     (fetchpatch {
       # included in > 2.3.3
       name = "restore-GD_FLIP.patch";
-      url = "https://github.com/libgd/libgd/commit/f4bc1f5c26925548662946ed7cfa473c190a104a.diff";
       sha256 = "XRXR3NOkbEub3Nybaco2duQk0n8vxif5mTl2AUacn9w=";
+      url = "https://github.com/libgd/libgd/commit/f4bc1f5c26925548662946ed7cfa473c190a104a.diff";
     })
   ];
-
-  hardeningDisable = [ "format" ];
-
-  configureFlags = [
-    "--enable-gd-formats"
-  ]
-  # -pthread gets passed to clang, causing warnings
-  ++ lib.optional stdenv.hostPlatform.isDarwin "--enable-werror=no";
 
   nativeBuildInputs = [
     autoconf
@@ -64,21 +62,21 @@ stdenv.mkDerivation (finalAttrs: {
     libxpm
   ];
 
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-  ];
-
-  enableParallelBuilding = true;
+  configureFlags = [
+    "--enable-gd-formats"
+  ]
+  # -pthread gets passed to clang, causing warnings
+  ++ lib.optional stdenv.hostPlatform.isDarwin "--enable-werror=no";
 
   doCheck = false; # fails 2 tests
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://libgd.github.io/";
     description = "Dynamic image creation library";
+    homepage = "https://libgd.github.io/";
     license = lib.licenses.free; # some custom license
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -26,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Personal media streamer";
     homepage = "https://airsonic.github.io";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.all;
   };
 })

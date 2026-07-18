@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  llvmPackages,
-  elfutils,
-  bcc,
-  libbpf,
-  libbfd,
-  libopcodes,
-  glibc,
-  cereal,
   asciidoctor,
-  cmake,
-  pkg-config,
-  flex,
+  bcc,
   bison,
+  cereal,
+  cmake,
+  elfutils,
+  fetchpatch,
+  flex,
+  glibc,
+  libbfd,
+  libbpf,
+  libopcodes,
+  llvmPackages,
+  nixosTests,
+  pkg-config,
   util-linux,
   xxd,
-  nixosTests,
 }:
 
 stdenv.mkDerivation rec {
@@ -32,16 +32,9 @@ stdenv.mkDerivation rec {
     hash = "sha256-h3gFnQq48oM5uK07xrykOCSJxhr6dqcyVUDoIKIRREY=";
   };
 
-  buildInputs = with llvmPackages; [
-    llvm
-    libclang
-    elfutils
-    bcc
-    libbpf
-    libbfd
-    libopcodes
-    cereal
-    asciidoctor
+  outputs = [
+    "out"
+    "man"
   ];
 
   nativeBuildInputs = [
@@ -52,6 +45,18 @@ stdenv.mkDerivation rec {
     llvmPackages.llvm.dev
     util-linux
     xxd
+  ];
+
+  buildInputs = with llvmPackages; [
+    llvm
+    libclang
+    elfutils
+    bcc
+    libbpf
+    libbfd
+    libopcodes
+    cereal
+    asciidoctor
   ];
 
   cmakeFlags = [
@@ -69,11 +74,6 @@ stdenv.mkDerivation rec {
     sed -i -e "1s:#!/usr/bin/env bpftrace:#!$out/bin/bpftrace:" $out/share/bpftrace/tools/*.bt
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   passthru.tests = {
     inherit (nixosTests) bpf;
   };
@@ -82,8 +82,8 @@ stdenv.mkDerivation rec {
     description = "High-level tracing language for Linux eBPF";
     homepage = "https://github.com/bpftrace/bpftrace";
     changelog = "https://github.com/bpftrace/bpftrace/releases/tag/v${version}";
-    mainProgram = "bpftrace";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       rvl
       thoughtpolice
@@ -91,6 +91,8 @@ stdenv.mkDerivation rec {
       mfrw
       illustris
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "bpftrace";
   };
 }

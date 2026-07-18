@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication {
   pname = "i3-wk-switch";
   version = "2020-03-18";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "tmfink";
@@ -17,8 +16,6 @@ python3Packages.buildPythonApplication {
   };
 
   propagatedBuildInputs = with python3Packages; [ i3ipc ];
-
-  dontBuild = true;
   doCheck = false;
 
   installPhase = ''
@@ -26,12 +23,15 @@ python3Packages.buildPythonApplication {
     cp i3-wk-switch.py "$out/bin/i3-wk-switch"
   '';
 
+  dontBuild = true;
+  pyproject = false;
+
   meta = {
     description = "XMonad-like workspace switching for i3 and sway";
-    mainProgram = "i3-wk-switch";
+    homepage = "https://travisf.net/i3-wk-switcher";
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.mit;
-    homepage = "https://travisf.net/i3-wk-switcher";
+    mainProgram = "i3-wk-switch";
   };
 }

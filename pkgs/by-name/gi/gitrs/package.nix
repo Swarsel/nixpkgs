@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libiconv,
+  libz,
   openssl,
   pkg-config,
-  libiconv,
   rustPlatform,
-  libz,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+43XJroPNWmdUC6FDL84rZWrJm5fzuUXfpDkAMyVQQg=";
   };
 
-  cargoHash = "sha256-uDDk1wztXdINPSVF6MvDy+lHIClMLp13HZSTpIgLypM=";
-
   nativeBuildInputs = [
     pkg-config # for openssl
   ];
@@ -33,6 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
     libz
   ];
+
+  cargoHash = "sha256-uDDk1wztXdINPSVF6MvDy+lHIClMLp13HZSTpIgLypM=";
 
   meta = {
     description = "Simple, opinionated, tool, written in Rust, for declaratively managing Git repos on your machine";

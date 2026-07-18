@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-lgKYVgJlmUJ/msdIqG7EKAZuISie1lG7+VeCF/rcSlE=";
-
   # Would need files to scan which are not shipped by the project
   doCheck = false;
 
   meta = {
     description = "Static analysis tool for securing Go code";
-    mainProgram = "gokart";
     homepage = "https://github.com/praetorian-inc/gokart";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "gokart";
   };
 })

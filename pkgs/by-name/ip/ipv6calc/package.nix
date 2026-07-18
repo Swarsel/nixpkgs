@@ -6,8 +6,8 @@
   ip2location-c,
   openssl,
   perl,
-  libmaxminddb ? null,
   geolite-legacy ? null,
+  libmaxminddb ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-+u+7XdW0bS3nE5djdy7I1/NHZdXU9QKukZAvTkWsCK0=";
   };
 
+  postPatch = ''
+    patchShebangs *.sh */*.sh
+    for i in {,databases/}lib/Makefile.in; do
+      substituteInPlace $i --replace "/sbin/ldconfig" "ldconfig"
+    done
+  '';
+
   buildInputs = [
     libmaxminddb
     geolite-legacy
@@ -29,13 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
     perl
   ];
-
-  postPatch = ''
-    patchShebangs *.sh */*.sh
-    for i in {,databases/}lib/Makefile.in; do
-      substituteInPlace $i --replace "/sbin/ldconfig" "ldconfig"
-    done
-  '';
 
   configureFlags = [
     "--prefix=${placeholder "out"}"
@@ -60,6 +60,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Calculate/manipulate (not only) IPv6 addresses";
+
     longDescription = ''
       ipv6calc is a small utility to manipulate (not only) IPv6 addresses and
       is able to do other tricky things. Intentions were convering a given
@@ -68,6 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
       difficult) migrating the Perl program ip6_int into.
       Now only one utiltity is needed to do a lot.
     '';
+
     homepage = "http://www.deepspace6.net/projects/ipv6calc.html";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];

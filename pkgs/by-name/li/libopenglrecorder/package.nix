@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libjpeg,
-  libvpx,
-  openh264,
-  withPulse ? stdenv.hostPlatform.isLinux,
   libpulseaudio,
   libvorbis,
+  libvpx,
+  openh264,
+  pkg-config,
+  withPulse ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation {

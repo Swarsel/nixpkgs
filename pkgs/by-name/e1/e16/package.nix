@@ -2,10 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   freetype,
+  gitUpdater,
   imlib2,
+  libpulseaudio,
   libsm,
+  libsndfile,
   libxcomposite,
   libxdamage,
   libxext,
@@ -13,12 +15,10 @@
   libxft,
   libxinerama,
   libxrandr,
-  libpulseaudio,
-  libsndfile,
   pango,
   perl,
+  pkg-config,
   python3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/enlightenment/e16-${finalAttrs.version}.tar.xz";
     hash = "sha256-ZQTsIy/BiO/xUiCu+bc2n406F0unAinxyYLjVRfUSiQ=";
   };
+
+  postPatch = ''
+    substituteInPlace scripts/e_gen_menu --replace "/usr/local:" "/run/current-system/sw:/usr/local:"
+    substituteInPlace scripts/e_gen_menu --replace "'/opt'" "'/opt', '/run/current-system/sw'"
+    substituteInPlace scripts/e_gen_menu --replace "'/.local'" "'/.nix-profile', '/.local'"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -52,22 +58,16 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
-  postPatch = ''
-    substituteInPlace scripts/e_gen_menu --replace "/usr/local:" "/run/current-system/sw:/usr/local:"
-    substituteInPlace scripts/e_gen_menu --replace "'/opt'" "'/opt', '/run/current-system/sw'"
-    substituteInPlace scripts/e_gen_menu --replace "'/.local'" "'/.nix-profile', '/.local'"
-  '';
-
   passthru.updateScript = gitUpdater {
-    url = "https://git.enlightenment.org/e16/e16";
     rev-prefix = "v";
+    url = "https://git.enlightenment.org/e16/e16";
   };
 
   meta = {
-    homepage = "https://www.enlightenment.org/e16";
     description = "Enlightenment DR16 window manager";
+    homepage = "https://www.enlightenment.org/e16";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
   };
 })

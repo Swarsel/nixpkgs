@@ -1,31 +1,22 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-
   cmake,
-  ninja,
-
-  glog,
-  gflags,
-  folly,
   fb303,
-  wangle,
   fbthrift,
+  folly,
+  gflags,
+  glog,
   gtest,
-
+  ninja,
   nix-update-script,
+  wangle,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "edencommon";
   version = "2026.01.19.00";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "facebookexperimental";
@@ -34,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gTf3NgxCYaIJ4ubkPKrPct4D6IsHnTZRAzrDHoErDNM=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     ./glog-0.7.patch
   ]
@@ -41,6 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
     # Test discovery timeout is bizarrely flaky on `x86_64-darwin`
     ./increase-test-discovery-timeout.patch
   ];
+
+  postPatch = ''
+    # The CMake build requires the FBThrift Python support even though
+    # it’s not used, presumably because of the relevant code having
+    # been moved in from another repository.
+    substituteInPlace CMakeLists.txt \
+      --replace-fail \
+        'find_package(FBThrift CONFIG REQUIRED COMPONENTS cpp2 py)' \
+        'find_package(FBThrift CONFIG REQUIRED COMPONENTS cpp2)'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -85,27 +91,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
-  postPatch = ''
-    # The CMake build requires the FBThrift Python support even though
-    # it’s not used, presumably because of the relevant code having
-    # been moved in from another repository.
-    substituteInPlace CMakeLists.txt \
-      --replace-fail \
-        'find_package(FBThrift CONFIG REQUIRED COMPONENTS cpp2 py)' \
-        'find_package(FBThrift CONFIG REQUIRED COMPONENTS cpp2)'
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Shared library for Meta's source control filesystem tools (EdenFS and Watchman)";
     homepage = "https://github.com/facebookexperimental/edencommon";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       kylesferrazza
       emily
       techknowlogick
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

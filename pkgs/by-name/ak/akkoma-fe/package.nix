@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitea,
   fetchYarnDeps,
-  writableTmpDirAsHomeHook,
-  yarnConfigHook,
-  yarnBuildHook,
-  nodejs,
   jpegoptim,
+  nix-update-script,
+  nodejs,
   oxipng,
   svgo,
-  nix-update-script,
+  writableTmpDirAsHomeHook,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,20 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.19.0";
 
   src = fetchFromGitea {
-    domain = "akkoma.dev";
     owner = "AkkomaGang";
     repo = "akkoma-fe";
     tag = "v${finalAttrs.version}";
     hash = "sha256-2uyyW/Ai0lbjj/nxjpN039iskg9UQ4QqUmjnhvsj33k=";
-
+    domain = "akkoma.dev";
     # upstream repository archive fetching is broken
     forceFetchGit = true;
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-oGmO2AVa6tGYIvs3K7bJ+5db6NxTjO1ZR40aZ/yJQ2M=";
-  };
+  postPatch = ''
+    # Build scripts assume to be used within a Git repository checkout
+    sed -E -i '/^let commitHash =/,/;$/clet commitHash = "${finalAttrs.src.rev}";' \
+      build/webpack.prod.conf.js
+  '';
 
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
@@ -42,12 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     oxipng
     svgo
   ];
-
-  postPatch = ''
-    # Build scripts assume to be used within a Git repository checkout
-    sed -E -i '/^let commitHash =/,/;$/clet commitHash = "${finalAttrs.src.rev}";' \
-      build/webpack.prod.conf.js
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -61,6 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-oGmO2AVa6tGYIvs3K7bJ+5db6NxTjO1ZR40aZ/yJQ2M=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch=stable" ];

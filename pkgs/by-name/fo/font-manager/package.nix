@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  adwaita-icon-theme,
+  desktop-file-utils,
   fetchpatch,
-  meson,
-  ninja,
   gettext,
-  python3,
-  pkg-config,
-  libxml2,
-  json-glib,
-  sqlite,
-  itstool,
-  yelp-tools,
-  vala,
+  glib-networking,
+  gobject-introspection,
   gsettings-desktop-schemas,
   gtk4,
-  adwaita-icon-theme,
+  itstool,
+  json-glib,
   libarchive,
-  desktop-file-utils,
+  libsoup_3,
+  libxml2,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3,
+  sqlite,
+  vala,
+  webkitgtk_6_0,
   wrapGAppsHook4,
-  gobject-introspection,
+  yelp-tools,
   # withWebkit enables the "webkit" feature, also known as Google Fonts
   withWebkit ? true,
-  glib-networking,
-  libsoup_3,
-  webkitgtk_6_0,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,9 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # TODO: drop this patch when updating beyond version 0.9.4
     (fetchpatch {
+      hash = "sha256-bRn+jVjBu6ZqmQCErgcqxv6OyFa4hkPYB5bvK7rEibA=";
       name = "fix-reproducible-build-issue.patch";
       url = "https://github.com/FontManager/font-manager/commit/cc0c148d90741e39615e3380d283f684a052dd94.patch";
-      hash = "sha256-bRn+jVjBu6ZqmQCErgcqxv6OyFa4hkPYB5bvK7rEibA=";
     })
   ];
 
@@ -87,10 +87,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://fontmanager.github.io/";
-    changelog = "https://github.com/FontManager/font-manager/raw/refs/tags/${finalAttrs.version}/CHANGELOG";
     description = "Simple font management for GTK desktop environments";
-    mainProgram = "font-manager";
+
     longDescription = ''
       Font Manager is intended to provide a way for average users to
       easily manage desktop fonts, without having to resort to command
@@ -100,8 +98,12 @@ stdenv.mkDerivation (finalAttrs: {
 
       Font Manager is NOT a professional-grade font management solution.
     '';
+
+    homepage = "https://fontmanager.github.io/";
+    changelog = "https://github.com/FontManager/font-manager/raw/refs/tags/${finalAttrs.version}/CHANGELOG";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
+    mainProgram = "font-manager";
   };
 })

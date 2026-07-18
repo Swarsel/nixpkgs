@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   poetry-core,
-  pytest-asyncio,
   pytest-aiohttp,
+  pytest-asyncio,
   pytestCheckHook,
   ujson,
   yarl,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pyoutbreaksnearme";
   version = "2023.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -34,8 +33,6 @@ buildPythonPackage rec {
     yarl
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     aresponses
     pytest-asyncio
@@ -43,11 +40,14 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+
   disabledTestPaths = [
     # Ignore the examples directory as the files are prefixed with test_.
     "examples/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyoutbreaksnearme" ];
 
   meta = {

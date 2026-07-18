@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   bcc,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
@@ -17,17 +17,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   propagatedBuildInputs = [ bcc ];
-
-  pyproject = false; # none
-
   installPhase = "install -D sockdump.py $out/bin/sockdump";
+  pyproject = false; # none
 
   meta = finalAttrs.src.meta // {
     description = "Dump unix domain socket traffic with bpf";
-    mainProgram = "sockdump";
     license = lib.licenses.unlicense;
+
     maintainers = with lib.maintainers; [
       picnoir
     ];
+
+    mainProgram = "sockdump";
   };
 })

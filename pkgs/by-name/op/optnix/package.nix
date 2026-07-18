@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromSourcehut,
   buildGoModule,
+  fetchFromSourcehut,
   installShellFiles,
   nix-update-script,
   scdoc,
@@ -10,6 +10,7 @@
 buildGoModule (finalAttrs: {
   pname = "optnix";
   version = "0.3.2";
+
   src = fetchFromSourcehut {
     owner = "~watersucks";
     repo = "optnix";
@@ -17,12 +18,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-FLp+/X0r6NANPYzlj2si8JNmwd5iJPcOdQIJ9f5LLUg=";
   };
 
-  vendorHash = "sha256-g/H91PiHWSRRQOkaobw2wAYX/07DFxWTCTlKzf7BT1Y=";
-
   nativeBuildInputs = [
     installShellFiles
     scdoc
   ];
+
+  vendorHash = "sha256-g/H91PiHWSRRQOkaobw2wAYX/07DFxWTCTlKzf7BT1Y=";
 
   env = {
     CGO_ENABLED = 0;
@@ -56,8 +57,8 @@ buildGoModule (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/water-sucks/optnix";
     description = "Options searcher for Nix module systems";
+    homepage = "https://github.com/water-sucks/optnix";
     changelog = "https://github.com/water-sucks/optnix/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ water-sucks ];

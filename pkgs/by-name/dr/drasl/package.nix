@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchNpmDeps,
-  npmHooks,
   go-swag,
-  nodejs,
   nix-update-script,
+  nodejs,
+  npmHooks,
 }:
 buildGoModule (finalAttrs: {
   pname = "drasl";
@@ -19,27 +19,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-GHwgN1yWf/xav2t03/09x/U0c6fRBDmEn0mDIv+V9ic=";
   };
 
+  postPatch = ''
+    substituteInPlace build_config.go --replace-fail "\"/usr/share/drasl\"" "\"$out/share/drasl\""
+  '';
+
   nativeBuildInputs = [
     go-swag
     nodejs
     npmHooks.npmConfigHook
   ];
 
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-L0y04zLgno5kKUACyokma8uk/fNY2mwdMwsq217SCqI=";
-  };
-
   vendorHash = "sha256-4Rk59bnDFYpraoGvkBUW6Z5fiXUmm2RLwS1wxScWAMQ=";
-
-  overrideModAttrs = oldAttrs: {
-    nativeBuildInputs = lib.filter (drv: drv != npmHooks.npmConfigHook) oldAttrs.nativeBuildInputs;
-    preBuild = null;
-  };
-
-  postPatch = ''
-    substituteInPlace build_config.go --replace-fail "\"/usr/share/drasl\"" "\"$out/share/drasl\""
-  '';
 
   preBuild = ''
     make prebuild
@@ -50,6 +40,16 @@ buildGoModule (finalAttrs: {
     cp -R ./{assets,view,public,locales} "$out/share/drasl"
   '';
 
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-L0y04zLgno5kKUACyokma8uk/fNY2mwdMwsq217SCqI=";
+  };
+
+  overrideModAttrs = oldAttrs: {
+    nativeBuildInputs = lib.filter (drv: drv != npmHooks.npmConfigHook) oldAttrs.nativeBuildInputs;
+    preBuild = null;
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -58,10 +58,12 @@ buildGoModule (finalAttrs: {
     description = "Yggdrasil-compatible API server for Minecraft";
     homepage = "https://github.com/unmojang/drasl";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       evan-goode
       ungeskriptet
     ];
+
     mainProgram = "drasl";
   };
 })

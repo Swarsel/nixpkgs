@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   ewmhlib,
   pymonctl,
-  pywinbox,
   python-xlib,
+  pywinbox,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
-  version = "0.4.01";
   pname = "pywinctl";
-  pyproject = true;
+  version = "0.4.01";
 
   src = fetchFromGitHub {
     owner = "Kalmat";
@@ -22,6 +21,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-l9wUnEjOpKrjulruUX+AqQIjduDfX+iMmSv/V32jpdc=";
   };
 
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,14 +32,14 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   # requires x session (use ewmhlib)
   pythonImportsCheck = [ ];
-  doCheck = false;
 
   meta = {
+    description = "Cross-Platform module to get info on and control windows on screen";
     homepage = "https://github.com/Kalmat/PyWinCtl";
     license = lib.licenses.bsd3;
-    description = "Cross-Platform module to get info on and control windows on screen";
     maintainers = with lib.maintainers; [ sigmanificient ];
   };
 })

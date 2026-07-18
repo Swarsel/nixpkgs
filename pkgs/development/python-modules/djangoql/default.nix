@@ -1,26 +1,21 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  python,
   django,
-  setuptools,
+  fetchPypi,
   ply,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "djangoql";
   version = "0.19.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-vOCdUoV4V7InRPkyQfFtXGKhsRing04civoUvruWTu4=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ ply ];
 
   nativeCheckInputs = [ django ];
 
@@ -29,6 +24,9 @@ buildPythonPackage (finalAttrs: {
     ${python.executable} test_project/manage.py test core.tests
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ ply ];
+  pyproject = true;
   pythonImportsCheck = [ "djangoql" ];
 
   meta = {

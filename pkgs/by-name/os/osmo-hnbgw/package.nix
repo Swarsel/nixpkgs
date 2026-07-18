@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  libasn1c,
+  libosmo-netif,
+  libosmo-sigtran,
   libosmocore,
   lksctp-tools,
-  libosmo-netif,
-  libasn1c,
-  libosmo-sigtran,
   osmo-iuh,
   osmo-mgw,
+  pkg-config,
 }:
 
 let
@@ -51,11 +51,11 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Osmocom Home NodeB Gateway, for attaching femtocells to the 3G CN (OsmoMSC, OsmoSGSN)";
-    mainProgram = "osmo-hnbgw";
     homepage = "https://osmocom.org/projects/osmohnbgw";
     license = lib.licenses.agpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "osmo-hnbgw";
     # fails to compile; out of date
     broken = true;
   };

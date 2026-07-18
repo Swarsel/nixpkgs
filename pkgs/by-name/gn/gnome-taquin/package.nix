@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  pkg-config,
-  gnome,
   adwaita-icon-theme,
-  gtk3,
-  wrapGAppsHook3,
-  librsvg,
-  gsound,
+  desktop-file-utils,
+  fetchpatch,
   gettext,
+  gnome,
+  gsound,
+  gtk3,
   itstool,
+  librsvg,
   libxml2,
   meson,
   ninja,
-  vala,
+  pkg-config,
   python3,
-  desktop-file-utils,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,12 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix build with recent Vala.
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/gnome-taquin/-/commit/99dea5e7863e112f33f16e59898c56a4f1a547b3.patch";
       hash = "sha256-U7djuMhb1XJaKAPyogQjaunOkbBK24r25YD7BgH05P4=";
+      url = "https://gitlab.gnome.org/GNOME/gnome-taquin/-/commit/99dea5e7863e112f33f16e59898c56a4f1a547b3.patch";
     })
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/gnome-taquin/-/commit/66be44dc20d114e449fc33156e3939fd05dfbb16.patch";
       hash = "sha256-RN41RCLHlJyXTARSH9qjsmpYi1UFeMRssoYxRsbngDQ=";
+      url = "https://gitlab.gnome.org/GNOME/gnome-taquin/-/commit/66be44dc20d114e449fc33156e3939fd05dfbb16.patch";
     })
   ];
 
@@ -66,11 +66,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gnome-taquin";
     description = "Move tiles so that they reach their places";
-    mainProgram = "gnome-taquin";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/gnome-taquin";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-taquin";
+    teams = [ lib.teams.gnome ];
   };
 })

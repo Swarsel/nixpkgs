@@ -12,14 +12,11 @@
 buildPythonPackage rec {
   pname = "vulture";
   version = "2.14";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-y4J3kCoRON7qt5bsW+9wdqbgJIyjYHo/Pe4LbZ6bhBU=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     pint
@@ -28,11 +25,14 @@ buildPythonPackage rec {
     toml
   ];
 
+  build-system = [ setuptools ];
+
   disabledTestPaths = [
     # missing pytype package/executable
     "tests/test_pytype.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "vulture" ];
 
   meta = {

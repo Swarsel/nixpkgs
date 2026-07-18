@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pyasyncore,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "pysecretsocks";
   version = "0.9.1-unstable-2023-11-04";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BC-SECURITY";
@@ -18,13 +17,11 @@ buildPythonPackage {
     hash = "sha256-3jvMVsoKgBN4eRc6hyj7X/uu7NoJvofsbljVcgGfcPc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyasyncore ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pyasyncore ];
+  pyproject = true;
   pythonImportsCheck = [ "secretsocks" ];
 
   meta = {

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   just,
-  pkg-config,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,16 +21,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-RYvc/3FoRnNkuYBVfCG75Bmfb8JWW1H4GKXyhq7CxaQ=";
   };
 
-  cargoHash = "sha256-q0RJST1yeqPBjU5MseNZIrZw+brfDtQLKiw7wyViflE=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     just
     pkg-config
   ];
 
+  cargoHash = "sha256-q0RJST1yeqPBjU5MseNZIrZw+brfDtQLKiw7wyViflE=";
+  __structuredAttrs = true;
   dontUseJustBuild = true;
 
   justFlags = [
@@ -41,6 +38,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "cargo-target-dir"
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -61,11 +60,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-screenshot";
     description = "Screenshot tool for the COSMIC Desktop Environment";
+    homepage = "https://github.com/pop-os/cosmic-screenshot";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
     mainProgram = "cosmic-screenshot";
+    teams = [ lib.teams.cosmic ];
   };
 })

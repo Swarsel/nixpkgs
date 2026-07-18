@@ -25,6 +25,7 @@ let
 in
 buildDotnetModule {
   inherit pname dotnet-sdk dotnet-runtime;
+  version = "10.0.0-preview.25564.2";
 
   src = fetchFromGitHub {
     owner = "dotnet";
@@ -33,18 +34,13 @@ buildDotnetModule {
     hash = "sha256-mWYSp3L9FgDlDIyQMkd7mfn1jZ3mbeShPcok3QDP4yQ=";
   };
 
-  version = "10.0.0-preview.25564.2";
-  projectFile = "src/Razor/src/rzls/rzls.csproj";
-  useDotnetFromEnv = true;
-  nugetDeps = ./deps.json;
-
-  nativeBuildInputs = [ jq ];
-
   postPatch = ''
     # Upstream uses rollForward = latestPatch, which pins to an *exact* .NET SDK version.
     jq '.sdk.rollForward = "latestMinor"' < global.json > global.json.tmp
     mv global.json.tmp global.json
   '';
+
+  nativeBuildInputs = [ jq ];
 
   dotnetFlags = [
     # this removes the Microsoft.WindowsDesktop.App.Ref dependency
@@ -56,18 +52,24 @@ buildDotnetModule {
     "-p:InformationalVersion=$version"
   ];
 
+  nugetDeps = ./deps.json;
+  projectFile = "src/Razor/src/rzls/rzls.csproj";
+  useDotnetFromEnv = true;
+
   passthru = {
     updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://github.com/dotnet/razor";
     description = "Razor language server";
+    homepage = "https://github.com/dotnet/razor";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bretek
       tris203
     ];
+
     mainProgram = "rzls";
   };
 }

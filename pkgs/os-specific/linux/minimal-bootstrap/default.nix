@@ -1,10 +1,10 @@
 {
   lib,
-  config,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
+  buildPlatform,
   checkMeta,
+  config,
+  hostPlatform,
 }:
 
 lib.makeScope
@@ -32,19 +32,25 @@ lib.makeScope
     with self;
     (
       {
-        supportedSystems = [
-          "i686-linux"
-          "x86_64-linux"
-        ];
+        inherit (self.stage0-posix)
+          kaem
+          m2libc
+          mescc-tools
+          mescc-tools-extra
+          ;
 
-        bash_2_05 = callPackage ./bash/2.nix { tinycc = tinycc-mes; };
+        inherit (callPackage ./utils.nix { inherit hostPlatform; })
+          derivationWithMeta
+          writeTextFile
+          writeText
+          ;
 
         bash = callPackage ./bash {
           bootBash = bash_2_05;
-          tinycc = tinycc-musl;
           coreutils = coreutils-musl;
           gnumake = gnumake-musl;
           gnutar = gnutar-musl;
+          tinycc = tinycc-musl;
         };
 
         bash-static = callPackage ./bash/static.nix {
@@ -53,10 +59,12 @@ lib.makeScope
           gnutar = gnutar-latest;
         };
 
+        bash_2_05 = callPackage ./bash/2.nix { tinycc = tinycc-mes; };
+
         binutils = callPackage ./binutils {
-          tinycc = tinycc-musl;
           gnumake = gnumake-musl;
           gnutar = gnutar-musl;
+          tinycc = tinycc-musl;
         };
 
         binutils-static = callPackage ./binutils/static.nix {
@@ -72,9 +80,9 @@ lib.makeScope
         };
 
         bzip2 = callPackage ./bzip2 {
-          tinycc = tinycc-musl;
           gnumake = gnumake-musl;
           gnutar = gnutar-musl;
+          tinycc = tinycc-musl;
         };
 
         bzip2-static = callPackage ./bzip2/static.nix {
@@ -87,10 +95,11 @@ lib.makeScope
 
         coreutils-musl = callPackage ./coreutils/musl.nix {
           bash = bash_2_05;
-          tinycc = tinycc-musl;
           gnumake = gnumake-musl;
           gnutar = gnutar-musl;
+          tinycc = tinycc-musl;
         };
+
         coreutils-static = callPackage ./coreutils/static.nix {
           gcc = gcc-latest;
           gnumake = gnumake-musl;
@@ -99,9 +108,9 @@ lib.makeScope
 
         diffutils = callPackage ./diffutils {
           bash = bash_2_05;
-          tinycc = tinycc-musl;
           gnumake = gnumake-musl;
           gnutar = gnutar-musl;
+          tinycc = tinycc-musl;
         };
 
         diffutils-static = callPackage ./diffutils/static.nix {
@@ -111,9 +120,9 @@ lib.makeScope
         };
 
         findutils = callPackage ./findutils {
-          tinycc = tinycc-musl;
           gnumake = gnumake-musl;
           gnutar = gnutar-musl;
+          tinycc = tinycc-musl;
         };
 
         findutils-static = callPackage ./findutils/static.nix {
@@ -122,34 +131,22 @@ lib.makeScope
           gnutar = gnutar-latest;
         };
 
-        gawk-mes = callPackage ./gawk/mes.nix {
-          bash = bash_2_05;
-          tinycc = tinycc-mes;
-          gnused = gnused-mes;
-        };
-
         gawk = callPackage ./gawk {
           bash = bash_2_05;
-          tinycc = tinycc-musl;
-          gnumake = gnumake-musl;
-          gnutar = gnutar-musl;
           bootGawk = gawk-mes;
-        };
-
-        gcc46 = callPackage ./gcc/4.6.nix {
+          gnumake = gnumake-musl;
+          gnutar = gnutar-musl;
           tinycc = tinycc-musl;
-          gnumake = gnumake-musl;
-          gnutar = gnutar-musl;
         };
 
-        gcc46-cxx = callPackage ./gcc/4.6.cxx.nix {
-          gcc = gcc46;
-          gnumake = gnumake-musl;
-          gnutar = gnutar-musl;
+        gawk-mes = callPackage ./gawk/mes.nix {
+          bash = bash_2_05;
+          gnused = gnused-mes;
+          tinycc = tinycc-mes;
         };
 
-        gcc10 = callPackage ./gcc/10.nix {
-          gcc = gcc46-cxx;
+        gawk-static = callPackage ./gawk/static.nix {
+          gcc = gcc-latest;
           gnumake = gnumake-musl;
           gnutar = gnutar-latest;
         };
@@ -158,6 +155,24 @@ lib.makeScope
           gcc = gcc10;
           gnumake = gnumake-musl;
           gnutar = gnutar-latest;
+        };
+
+        gcc10 = callPackage ./gcc/10.nix {
+          gcc = gcc46-cxx;
+          gnumake = gnumake-musl;
+          gnutar = gnutar-latest;
+        };
+
+        gcc46 = callPackage ./gcc/4.6.nix {
+          gnumake = gnumake-musl;
+          gnutar = gnutar-musl;
+          tinycc = tinycc-musl;
+        };
+
+        gcc46-cxx = callPackage ./gcc/4.6.cxx.nix {
+          gcc = gcc46;
+          gnumake = gnumake-musl;
+          gnutar = gnutar-musl;
         };
 
         gnugrep = callPackage ./gnugrep {
@@ -181,12 +196,12 @@ lib.makeScope
 
         gnumake-musl = callPackage ./gnumake/musl.nix {
           bash = bash_2_05;
-          tinycc = tinycc-musl;
           gawk = gawk-mes;
           gnumakeBoot = gnumake;
           # GNU Make's release tarball relies on preserved mtimes for
           # pregenerated Autotools files.
           gnutar = gnutar-musl;
+          tinycc = tinycc-musl;
         };
 
         gnumake-static = callPackage ./gnumake/static.nix {
@@ -205,8 +220,8 @@ lib.makeScope
 
         gnused = callPackage ./gnused {
           bash = bash_2_05;
-          tinycc = tinycc-musl;
           gnused = gnused-mes;
+          tinycc = tinycc-musl;
         };
 
         gnused-mes = callPackage ./gnused/mes.nix {
@@ -222,8 +237,8 @@ lib.makeScope
 
         gnutar = callPackage ./gnutar/mes.nix {
           bash = bash_2_05;
-          tinycc = tinycc-mes;
           gnused = gnused-mes;
+          tinycc = tinycc-mes;
         };
 
         # FIXME: better package naming scheme
@@ -235,8 +250,8 @@ lib.makeScope
 
         gnutar-musl = callPackage ./gnutar/musl.nix {
           bash = bash_2_05;
-          tinycc = tinycc-musl;
           gnused = gnused-mes;
+          tinycc = tinycc-musl;
         };
 
         gnutar-static = callPackage ./gnutar/static.nix {
@@ -245,16 +260,16 @@ lib.makeScope
           gnutarBoot = gnutar-latest;
         };
 
+        gzip = callPackage ./gzip {
+          bash = bash_2_05;
+          gnused = gnused-mes;
+          tinycc = tinycc-bootstrappable;
+        };
+
         gzip-static = callPackage ./gzip/static.nix {
           gcc = gcc-latest;
           gnumake = gnumake-musl;
           gnutar = gnutar-latest;
-        };
-
-        gzip = callPackage ./gzip {
-          bash = bash_2_05;
-          tinycc = tinycc-bootstrappable;
-          gnused = gnused-mes;
         };
 
         heirloom = callPackage ./heirloom {
@@ -271,22 +286,8 @@ lib.makeScope
         };
 
         ln-boot = callPackage ./ln-boot { };
-
         mes = callPackage ./mes { };
-
         mes-libc = callPackage ./mes/libc.nix { };
-
-        musl-tcc-intermediate = callPackage ./musl/tcc.nix {
-          bash = bash_2_05;
-          tinycc = tinycc-mes;
-          gnused = gnused-mes;
-        };
-
-        musl-tcc = callPackage ./musl/tcc.nix {
-          bash = bash_2_05;
-          tinycc = tinycc-musl-intermediate;
-          gnused = gnused-mes;
-        };
 
         musl = callPackage ./musl {
           gcc = gcc46;
@@ -296,6 +297,18 @@ lib.makeScope
         musl-static = callPackage ./musl/static.nix {
           gcc = gcc-latest;
           gnumake = gnumake-musl;
+        };
+
+        musl-tcc = callPackage ./musl/tcc.nix {
+          bash = bash_2_05;
+          gnused = gnused-mes;
+          tinycc = tinycc-musl-intermediate;
+        };
+
+        musl-tcc-intermediate = callPackage ./musl/tcc.nix {
+          bash = bash_2_05;
+          gnused = gnused-mes;
+          tinycc = tinycc-mes;
         };
 
         patchelf-static = callPackage ./patchelf/static.nix {
@@ -312,63 +325,12 @@ lib.makeScope
 
         stage0-posix = callPackage ./stage0-posix { };
 
-        inherit (self.stage0-posix)
-          kaem
-          m2libc
-          mescc-tools
-          mescc-tools-extra
-          ;
+        supportedSystems = [
+          "i686-linux"
+          "x86_64-linux"
+        ];
 
-        tinycc-bootstrappable = lib.recurseIntoAttrs (callPackage ./tinycc/bootstrappable.nix { });
-
-        tinycc-mes = lib.recurseIntoAttrs (callPackage ./tinycc/mes.nix { });
-
-        tinycc-musl-intermediate = lib.recurseIntoAttrs (
-          callPackage ./tinycc/musl.nix {
-            bash = bash_2_05;
-            musl = musl-tcc-intermediate;
-            tinycc = tinycc-mes;
-          }
-        );
-
-        tinycc-musl = lib.recurseIntoAttrs (
-          callPackage ./tinycc/musl.nix {
-            bash = bash_2_05;
-            musl = musl-tcc;
-            tinycc = tinycc-musl-intermediate;
-          }
-        );
-
-        gawk-static = callPackage ./gawk/static.nix {
-          gcc = gcc-latest;
-          gnumake = gnumake-musl;
-          gnutar = gnutar-latest;
-        };
-
-        xz = callPackage ./xz {
-          bash = bash_2_05;
-          tinycc = tinycc-musl;
-          gnumake = gnumake-musl;
-          gnutar = gnutar-musl;
-        };
-
-        xz-static = callPackage ./xz/static.nix {
-          gcc = gcc-latest;
-          gnumake = gnumake-musl;
-          gnutar = gnutar-latest;
-        };
-
-        zlib = callPackage ./zlib {
-          gcc = gcc-latest;
-          gnumake = gnumake-musl;
-          gnutar = gnutar-latest;
-        };
-
-        inherit (callPackage ./utils.nix { inherit hostPlatform; })
-          derivationWithMeta
-          writeTextFile
-          writeText
-          ;
+        test = tests.full;
 
         tests = {
           bootstrap-chain = kaem.runCommand "minimal-bootstrap-bootstrap-chain-test" { } ''
@@ -401,26 +363,6 @@ lib.makeScope
             mkdir ''${out}
           '';
 
-          static-tools = kaem.runCommand "minimal-bootstrap-static-tools-test" { } ''
-            echo ${bash-static.tests.get-version}
-            echo ${binutils-static.tests.get-version}
-            echo ${bzip2-static.tests.get-version}
-            echo ${bzip2-static.tests.compress}
-            echo ${coreutils-static.tests.get-version}
-            echo ${diffutils-static.tests.get-version}
-            echo ${findutils-static.tests.get-version}
-            echo ${gawk-static.tests.get-version}
-            echo ${gnugrep-static.tests.get-version}
-            echo ${gnumake-static.tests.get-version}
-            echo ${gnupatch-static.tests.get-version}
-            echo ${gnused-static.tests.get-version}
-            echo ${gnutar-static.tests.get-version}
-            echo ${gzip-static.tests.get-version}
-            echo ${patchelf-static.tests.get-version}
-            echo ${xz-static.tests.get-version}
-            mkdir ''${out}
-          '';
-
           compiler = kaem.runCommand "minimal-bootstrap-compiler-test" { } (
             ''
               echo ${gcc46.tests.get-version}
@@ -443,9 +385,65 @@ lib.makeScope
             echo ${tests.compiler}
             mkdir ''${out}
           '';
+
+          static-tools = kaem.runCommand "minimal-bootstrap-static-tools-test" { } ''
+            echo ${bash-static.tests.get-version}
+            echo ${binutils-static.tests.get-version}
+            echo ${bzip2-static.tests.get-version}
+            echo ${bzip2-static.tests.compress}
+            echo ${coreutils-static.tests.get-version}
+            echo ${diffutils-static.tests.get-version}
+            echo ${findutils-static.tests.get-version}
+            echo ${gawk-static.tests.get-version}
+            echo ${gnugrep-static.tests.get-version}
+            echo ${gnumake-static.tests.get-version}
+            echo ${gnupatch-static.tests.get-version}
+            echo ${gnused-static.tests.get-version}
+            echo ${gnutar-static.tests.get-version}
+            echo ${gzip-static.tests.get-version}
+            echo ${patchelf-static.tests.get-version}
+            echo ${xz-static.tests.get-version}
+            mkdir ''${out}
+          '';
         };
 
-        test = tests.full;
+        tinycc-bootstrappable = lib.recurseIntoAttrs (callPackage ./tinycc/bootstrappable.nix { });
+        tinycc-mes = lib.recurseIntoAttrs (callPackage ./tinycc/mes.nix { });
+
+        tinycc-musl = lib.recurseIntoAttrs (
+          callPackage ./tinycc/musl.nix {
+            bash = bash_2_05;
+            musl = musl-tcc;
+            tinycc = tinycc-musl-intermediate;
+          }
+        );
+
+        tinycc-musl-intermediate = lib.recurseIntoAttrs (
+          callPackage ./tinycc/musl.nix {
+            bash = bash_2_05;
+            musl = musl-tcc-intermediate;
+            tinycc = tinycc-mes;
+          }
+        );
+
+        xz = callPackage ./xz {
+          bash = bash_2_05;
+          gnumake = gnumake-musl;
+          gnutar = gnutar-musl;
+          tinycc = tinycc-musl;
+        };
+
+        xz-static = callPackage ./xz/static.nix {
+          gcc = gcc-latest;
+          gnumake = gnumake-musl;
+          gnutar = gnutar-latest;
+        };
+
+        zlib = callPackage ./zlib {
+          gcc = gcc-latest;
+          gnumake = gnumake-musl;
+          gnutar = gnutar-latest;
+        };
       }
       // (lib.optionalAttrs (hostPlatform.libc == "glibc")) {
         gcc-glibc = callPackage ./gcc/glibc.nix {
@@ -456,9 +454,9 @@ lib.makeScope
 
         glibc = callPackage ./glibc {
           gcc = gcc-latest;
+          gnugrep = gnugrep-static;
           gnumake = gnumake-musl;
           gnutar = gnutar-latest;
-          gnugrep = gnugrep-static;
         };
       }
     )

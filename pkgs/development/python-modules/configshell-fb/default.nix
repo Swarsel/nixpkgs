@@ -2,15 +2,14 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  hatchling,
   hatch-vcs,
+  hatchling,
   pyparsing,
 }:
 
 buildPythonPackage rec {
   pname = "configshell-fb";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "open-iscsi";
@@ -18,6 +17,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-q/Tx/9BBnxW6busbrigeesxNa5NvBgfKYDNeDquDTOc=";
   };
+
+  # Module has no tests
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -28,9 +30,7 @@ buildPythonPackage rec {
     pyparsing
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "configshell" ];
 
   meta = {

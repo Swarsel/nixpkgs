@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
   gtk-engine-murrine,
+  gtk3,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "kanagawa-gtk-theme";
@@ -20,10 +20,6 @@ stdenvNoCC.mkDerivation {
     gtk3
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -32,6 +28,10 @@ stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
 
   meta = {
     description = "GTK theme with the Kanagawa colour palette";

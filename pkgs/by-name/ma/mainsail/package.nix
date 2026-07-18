@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nodejs_22,
 }:
 
@@ -17,9 +17,6 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-HIErBrQ0VP4vdCFZe7uT5b1q+QdSSf08CIQmNcSryZ8=";
-
-  nodejs = nodejs_22;
-
   # Prevent Cypress binary download.
   env.CYPRESS_INSTALL_BINARY = 0;
 
@@ -37,15 +34,19 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  nodejs = nodejs_22;
+
   meta = {
     description = "Web interface for managing and controlling 3D printers with Klipper";
     homepage = "https://docs.mainsail.xyz";
     changelog = "https://github.com/mainsail-crew/mainsail/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       lovesegfault
       wulfsta
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

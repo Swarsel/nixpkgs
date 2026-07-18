@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  stdenvNoCC,
   fetchurl,
   appimageTools,
-  electron,
-  makeWrapper,
   asar,
   autoPatchelfHook,
+  electron,
   libusb1,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 let
@@ -17,8 +17,8 @@ let
 
   src = fetchurl {
     url = "https://github.com/UltimateHackingKeyboard/agent/releases/download/v${version}/UHK.Agent-${version}-linux-x86_64.AppImage";
-    name = "${pname}-${version}.AppImage";
     sha256 = "sha256-44wjTl2zexRbwB9CMHVl6zPQ238DhsCFtf2yaYyXMgg=";
+    name = "${pname}-${version}.AppImage";
   };
 
   appimageContents = appimageTools.extract {
@@ -27,8 +27,6 @@ let
 in
 stdenvNoCC.mkDerivation {
   inherit pname version src;
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     asar
@@ -39,10 +37,6 @@ stdenvNoCC.mkDerivation {
   buildInputs = [
     (lib.getLib stdenv.cc.cc)
     libusb1
-  ];
-
-  autoPatchelfIgnoreMissingDeps = [
-    "libc.musl-x86_64.so.1"
   ];
 
   installPhase = ''
@@ -69,14 +63,22 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  autoPatchelfIgnoreMissingDeps = [
+    "libc.musl-x86_64.so.1"
+  ];
+
+  dontUnpack = true;
+
   meta = {
     description = "Configuration application of the Ultimate Hacking Keyboard";
     homepage = "https://github.com/UltimateHackingKeyboard/agent";
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       nickcao
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 }

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   curl,
   fribidi,
-  rlwrap,
   gawk,
   groff,
-  ncurses,
   hexdump,
+  makeWrapper,
+  ncurses,
+  rlwrap,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  installFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
     wrapProgram $out/bin/trans \
@@ -42,11 +40,13 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  installFlags = [ "PREFIX=$(out)" ];
+
   meta = {
-    homepage = "https://www.soimort.org/translate-shell";
     description = "Command-line translator using Google Translate, Bing Translator, Yandex.Translate, and Apertium";
+    homepage = "https://www.soimort.org/translate-shell";
     license = lib.licenses.unlicense;
-    mainProgram = "trans";
     platforms = lib.platforms.unix;
+    mainProgram = "trans";
   };
 })

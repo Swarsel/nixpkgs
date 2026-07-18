@@ -1,16 +1,13 @@
 {
   lib,
   stdenv, # for tests
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "jsmn";
   version = "1.1.0";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "zserge";
@@ -19,8 +16,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Vv8Cqb+WZZVnmtVZ12JYd5/qUrqLqi4lvNsUyj9NnRQ=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -30,15 +26,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
   passthru.tests.suite = stdenv.mkDerivation {
-    pname = "jsmn-tests";
-
     inherit (finalAttrs) version src;
-
-    dontConfigure = true;
-    dontBuild = true;
-
+    pname = "jsmn-tests";
     doCheck = true;
+
     checkPhase = ''
       runHook preCheck
 
@@ -54,13 +50,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       runHook postInstall
     '';
+
+    dontBuild = true;
+    dontConfigure = true;
   };
 
   meta = {
     description = "Minimalistic JSON parser in C";
-    maintainers = with lib.maintainers; [ BatteredBunny ];
     homepage = "https://github.com/zserge/jsmn";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ BatteredBunny ];
     platforms = lib.platforms.all;
   };
 })

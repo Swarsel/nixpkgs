@@ -1,7 +1,7 @@
 {
-  supportedSystems,
   nixpkgs,
   pkgs,
+  supportedSystems,
 }:
 
 pkgs.runCommand "nixpkgs-release-checks"

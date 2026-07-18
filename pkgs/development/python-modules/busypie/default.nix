@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-timeout,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "busypie";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rockem";
@@ -21,17 +20,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MIwME5QM0BDpYP9frraJP/1v0lTZpPzgbqAawpGAcU0=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-timeout
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "busypie" ];
 
   meta = {

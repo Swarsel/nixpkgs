@@ -5,9 +5,8 @@
 }:
 
 stdenvNoCC.mkDerivation {
-  pname = "uiua386";
-
   inherit (uiua) src version;
+  pname = "uiua386";
 
   installPhase = ''
     runHook preInstall

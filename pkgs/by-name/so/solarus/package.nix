@@ -2,22 +2,21 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  nix-update-script,
-  cmake,
-  ninja,
-  luajit,
   SDL2,
   SDL2_image,
   SDL2_ttf,
-  physfs,
+  cmake,
   glm,
-  openal,
   libmodplug,
   libvorbis,
-
+  luajit,
+  ninja,
+  nix-update-script,
+  openal,
+  physfs,
+  solarus-launcher,
   # tests
   solarus-quest-editor,
-  solarus-launcher,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,10 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     ninja
   ];
+
   buildInputs = [
     luajit
     SDL2
@@ -67,12 +68,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Zelda-like ARPG game engine";
+
     longDescription = ''
       Solarus is a game engine for Zelda-like ARPG games written in lua.
       Many full-fledged games have been writen for the engine.
     '';
+
     homepage = "https://www.solarus-games.org";
-    mainProgram = "solarus-run";
+
     license = with lib.licenses; [
       # code
       gpl3Plus
@@ -80,7 +83,9 @@ stdenv.mkDerivation (finalAttrs: {
       cc-by-sa-30
       cc-by-sa-40
     ];
+
     maintainers = with lib.maintainers; [ marcin-serwin ];
     platforms = lib.platforms.linux;
+    mainProgram = "solarus-run";
   };
 })

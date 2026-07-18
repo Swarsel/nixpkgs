@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libpcap,
-  which,
   libcap,
+  libpcap,
   makeWrapper,
   nix-update-script,
   openonload,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7VQwep078hXdXE4pqGUe2CLqnPdDuWupcyuC+NCM5Ms=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     which
     makeWrapper
@@ -32,16 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
     openonload
   ];
 
-  enableParallelBuilding = true;
   makeFlags = [
     "CITOOLS_LIB=${lib.getDev openonload}/lib/libcitools1.a"
     "CIUL_LIB=${lib.getDev openonload}/lib/libciul1.a"
-  ];
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
   ];
 
   installPhase = ''
@@ -72,6 +71,7 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --add-rpath ${openonload.lib}/lib $lib/lib/libonload_zf.so
   '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

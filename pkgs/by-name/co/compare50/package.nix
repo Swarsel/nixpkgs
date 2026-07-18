@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "compare50";
   version = "1.2.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cs50";
@@ -23,6 +22,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # auto included in current python version, no install needed
     substituteInPlace setup.py --replace-fail \
       'importlib' ' '
+  '';
+
+  nativeCheckInputs = [ versionCheckHook ];
+
+  # repo does not use pytest
+  checkPhase = ''
+    runHook preCheck
+
+    ${python3Packages.python.interpreter} -m tests
+
+    runHook postCheck
   '';
 
   build-system = [
@@ -41,33 +51,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "compare50" ];
+
   pythonRelaxDeps = [
     "attrs"
     "numpy"
     "termcolor"
   ];
 
-  pythonImportsCheck = [ "compare50" ];
-
-  nativeCheckInputs = [ versionCheckHook ];
-
-  # repo does not use pytest
-  checkPhase = ''
-    runHook preCheck
-
-    ${python3Packages.python.interpreter} -m tests
-
-    runHook postCheck
-  '';
-
   meta = {
     description = "Tool for detecting similarity in code supporting over 300 languages";
     homepage = "https://cs50.readthedocs.io/projects/compare50/en/latest/";
-    downloadPage = "https://github.com/cs50/compare50";
     changelog = "https://github.com/cs50/compare50/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    platforms = lib.platforms.unix;
     mainProgram = "compare50";
+    downloadPage = "https://github.com/cs50/compare50";
   };
 })

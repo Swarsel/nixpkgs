@@ -1,8 +1,9 @@
 {
-  cmake,
-  fetchFromGitHub,
-  gmp,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
+  gmp,
   libidn2,
   libunistring,
   mbedtls_4,
@@ -11,7 +12,6 @@
   nix-update-script,
   nixosTests,
   readline,
-  stdenv,
   versionCheckHook,
   xxd,
 }:
@@ -26,6 +26,22 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-vViQ9ZAhajIfCQvOtKjMO2wj8CRt/1h/dzHHFevbbFU=";
   };
+
+  postPatch = ''
+    substituteInPlace src/version.c.in \
+      --replace-fail "@GIT_VERSION@" "v${finalAttrs.version}" \
+      --replace-fail "@GIT_DATE@" "1970-01-01" \
+      --replace-fail "@GIT_BRANCH@" "master" \
+      --replace-fail "@GIT_TAG@" "v${finalAttrs.version}" \
+      --replace-fail "@GIT_HASH@" "builtfromreleasetarball"
+
+    # Remove hard-coded absolute path to the pihole script, rely on it
+    # being provided by $PATH.  Use execvp instead of execv so PATH is
+    # followed.
+    substituteInPlace src/api/action.c \
+      --replace-fail "/usr/local/bin/pihole" "pihole" \
+      --replace-fail "execv" "execvp"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -46,22 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "STATIC" stdenv.hostPlatform.isStatic)
   ];
 
-  postPatch = ''
-    substituteInPlace src/version.c.in \
-      --replace-fail "@GIT_VERSION@" "v${finalAttrs.version}" \
-      --replace-fail "@GIT_DATE@" "1970-01-01" \
-      --replace-fail "@GIT_BRANCH@" "master" \
-      --replace-fail "@GIT_TAG@" "v${finalAttrs.version}" \
-      --replace-fail "@GIT_HASH@" "builtfromreleasetarball"
-
-    # Remove hard-coded absolute path to the pihole script, rely on it
-    # being provided by $PATH.  Use execvp instead of execv so PATH is
-    # followed.
-    substituteInPlace src/api/action.c \
-      --replace-fail "/usr/local/bin/pihole" "pihole" \
-      --replace-fail "execv" "execvp"
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -70,14 +70,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   passthru = {
     settingsTemplate = ./pihole.toml;
     tests = nixosTests.pihole-ftl;
     updateScript = nix-update-script { };
   };
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Pi-hole FTL engine";

@@ -1,8 +1,8 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   ffmpeg,
+  python3Packages,
 }:
 
 let
@@ -27,7 +27,6 @@ let
 in
 python3Packages.buildPythonApplication {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "S0AndS0";
@@ -57,6 +56,8 @@ python3Packages.buildPythonApplication {
     rich
     pick
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Play any radios from around the globe right from the terminal";

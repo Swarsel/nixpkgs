@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
+  SDL2_image,
+  SDL2_mixer,
+  SDL2_ttf,
   cmake,
   glib,
   gst_all_1,
   makeWrapper,
   pkg-config,
   python3,
-  SDL2,
-  SDL2_image,
-  SDL2_mixer,
-  SDL2_ttf,
+  runtimeShell,
   sqlite,
   zlib,
-  runtimeShell,
 }:
 
 stdenv.mkDerivation {
@@ -56,15 +56,6 @@ stdenv.mkDerivation {
     gst-plugins-good
   ]);
 
-  configurePhase = ''
-    runHook preConfigure
-
-    cmake RetroFE/Source -BRetroFE/Build -DCMAKE_BUILD_TYPE=Release \
-      -DVERSION_MAJOR=0 -DVERSION_MINOR=0 -DVERSION_BUILD=0 \
-
-    runHook postConfigure
-  '';
-
   buildPhase = ''
     cmake --build RetroFE/Build
     python Scripts/Package.py --os=linux --build=full
@@ -105,6 +96,15 @@ stdenv.mkDerivation {
     wrapProgram "$out/bin/retrofe" \
       --prefix GST_PLUGIN_PATH : "$GST_PLUGIN_SYSTEM_PATH_1_0" \
       --run 'export RETROFE_PATH=''${RETROFE_PATH:-$PWD}'
+  '';
+
+  configurePhase = ''
+    runHook preConfigure
+
+    cmake RetroFE/Source -BRetroFE/Build -DCMAKE_BUILD_TYPE=Release \
+      -DVERSION_MAJOR=0 -DVERSION_MINOR=0 -DVERSION_BUILD=0 \
+
+    runHook postConfigure
   '';
 
   meta = {

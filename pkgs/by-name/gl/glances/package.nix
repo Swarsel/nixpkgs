@@ -12,9 +12,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "glances";
   version = "4.5.5";
-  pyproject = true;
-
-  disabled = python3Packages.isPyPy;
 
   src = fetchFromGitHub {
     owner = "nicolargo";
@@ -23,20 +20,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-RiAt797YS468lmwH68O9/KlbV46DAqd25O8J0wNIDsU=";
   };
 
-  build-system = with python3Packages; [ setuptools ];
-
-  # On Darwin this package segfaults due to mismatch of pure and impure
-  # CoreFoundation. This issues was solved for binaries but for interpreted
-  # scripts a workaround below is still required.
-  # Relevant: https://github.com/NixOS/nixpkgs/issues/24693
-  makeWrapperArgs = lib.optionals stdenv.hostPlatform.isDarwin [
-    "--set"
-    "DYLD_FRAMEWORK_PATH"
-    "/System/Library/Frameworks"
-  ];
-
   # some tests fail in darwin sandbox
   doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs =
+    with python3Packages;
+    [
+      chevron
+      pytestCheckHook
+      selenium
+    ]
+    ++ [
+      podman
+      which
+    ];
+
+  build-system = with python3Packages; [ setuptools ];
 
   dependencies =
     with python3Packages;
@@ -57,21 +56,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ [ which ]
     ++ lib.optionals stdenv.hostPlatform.isLinux [ hddtemp ];
 
-  passthru.tests = {
-    service = nixosTests.glances;
-  };
-
-  nativeCheckInputs =
-    with python3Packages;
-    [
-      chevron
-      pytestCheckHook
-      selenium
-    ]
-    ++ [
-      podman
-      which
-    ];
+  disabled = python3Packages.isPyPy;
 
   disabledTestPaths = [
     # Message: Unable to obtain driver for chrome
@@ -94,15 +79,33 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_pipe"
   ];
 
+  # On Darwin this package segfaults due to mismatch of pure and impure
+  # CoreFoundation. This issues was solved for binaries but for interpreted
+  # scripts a workaround below is still required.
+  # Relevant: https://github.com/NixOS/nixpkgs/issues/24693
+  makeWrapperArgs = lib.optionals stdenv.hostPlatform.isDarwin [
+    "--set"
+    "DYLD_FRAMEWORK_PATH"
+    "/System/Library/Frameworks"
+  ];
+
+  pyproject = true;
+
+  passthru.tests = {
+    service = nixosTests.glances;
+  };
+
   meta = {
-    homepage = "https://nicolargo.github.io/glances/";
     description = "Cross-platform curses-based monitoring tool";
-    mainProgram = "glances";
+    homepage = "https://nicolargo.github.io/glances/";
     changelog = "https://github.com/nicolargo/glances/blob/${finalAttrs.src.tag}/NEWS.rst";
     license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       koral
       miniharinn
     ];
+
+    mainProgram = "glances";
   };
 })

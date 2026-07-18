@@ -33,9 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "Humorous typo-based git runner; drives a car over the terminal";
     homepage = "https://r-wos.org/hacks/gti";
     license = lib.licenses.mit;
-    description = "Humorous typo-based git runner; drives a car over the terminal";
     platforms = lib.platforms.unix;
     mainProgram = "gti";
   };

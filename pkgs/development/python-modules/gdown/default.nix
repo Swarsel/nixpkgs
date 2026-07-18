@@ -15,12 +15,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "gdown";
   version = "6.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-NhxuBMbKM131C51x9AvP6atw+yahsOiQpCcmd4E4lVM=";
   };
+
+  checkPhase = ''
+    $out/bin/gdown --help > /dev/null
+  '';
 
   build-system = [
     hatchling
@@ -37,10 +40,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ requests.optional-dependencies.socks;
 
-  checkPhase = ''
-    $out/bin/gdown --help > /dev/null
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "gdown" ];
 
   meta = {

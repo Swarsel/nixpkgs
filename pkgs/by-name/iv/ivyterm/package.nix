@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
   libadwaita,
-  vte-gtk4,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  vte-gtk4,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Xr4oXg+kZPDImY7BlKUHwgi5AtCArH1vf3+s117luTQ=";
   };
 
-  cargoHash = "sha256-aBo+IAM+tAzUazw9XE80EACWyQtDIQjm33Q20p49L5s=";
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook4
@@ -33,6 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libadwaita
     vte-gtk4
   ];
+
+  cargoHash = "sha256-aBo+IAM+tAzUazw9XE80EACWyQtDIQjm33Q20p49L5s=";
 
   postInstall = ''
     install -D data/com.tomiyou.ivyTerm.desktop -t $out/share/applications

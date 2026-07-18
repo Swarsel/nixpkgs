@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gtk2,
-  glibmm,
-  cairomm,
-  pangomm,
   atkmm,
+  cairomm,
+  glibmm,
+  gtk2,
+  pangomm,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,7 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   enableParallelBuilding = true;
 
   meta = {
@@ -52,9 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://gtkmm.org/";
-
     license = lib.licenses.lgpl2Plus;
-
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
   };

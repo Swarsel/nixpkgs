@@ -2,27 +2,26 @@
   lib,
   buildDunePackage,
   dns-client-mirage,
-  mimic,
   happy-eyeballs-mirage,
+  mimic,
 }:
 
 buildDunePackage {
-  pname = "mimic-happy-eyeballs";
-
   inherit (mimic) src version;
-
-  minimalOCamlVersion = "4.08";
+  pname = "mimic-happy-eyeballs";
 
   propagatedBuildInputs = [
     dns-client-mirage
     mimic
     happy-eyeballs-mirage
   ];
+
   doCheck = false;
+  minimalOCamlVersion = "4.08";
 
   meta = {
+    inherit (mimic.meta) license homepage;
     description = "Happy-eyeballs integration into mimic";
     maintainers = [ lib.maintainers.ulrikstrid ];
-    inherit (mimic.meta) license homepage;
   };
 }

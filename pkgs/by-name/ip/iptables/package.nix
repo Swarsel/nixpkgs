@@ -3,37 +3,34 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
-  pruneLibtoolFiles,
-  flex,
+  bash,
+  bashNonInteractive,
   bison,
+  flex,
+  gitUpdater,
+  iana-etc,
+  iproute2,
+  iputils,
   libmnl,
   libnetfilter_conntrack,
   libnfnetlink,
   libnftnl,
   libpcap,
-  bash,
-  bashNonInteractive,
-  nftablesCompat ? true,
-  gitUpdater,
-
+  nftables,
+  pkg-config,
+  pruneLibtoolFiles,
+  python3,
+  shadow,
+  strace,
+  util-linux,
   # For tests
   vmTools,
-  python3,
-  util-linux,
-  nftables,
-  strace,
-  iana-etc,
-  shadow,
-  iproute2,
-  iputils,
+  nftablesCompat ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "iptables";
   version = "1.8.13";
-
-  __structuredAttrs = true;
 
   src = fetchurl {
     url = "https://www.netfilter.org/projects/iptables/files/iptables-${finalAttrs.version}.tar.xz";
@@ -75,8 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (!nftablesCompat) "--disable-nftables";
 
-  enableParallelBuilding = true;
-
   postInstall = lib.optionalString nftablesCompat ''
     rm $out/sbin/{iptables,iptables-restore,iptables-save,ip6tables,ip6tables-restore,ip6tables-save}
     ln -sv xtables-nft-multi $out/bin/iptables
@@ -87,21 +82,22 @@ stdenv.mkDerivation (finalAttrs: {
     ln -sv xtables-nft-multi $out/bin/ip6tables-save
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+
   outputChecks.lib.disallowedRequisites = [
     bash
     bashNonInteractive
   ];
 
   passthru = {
-    updateScript = gitUpdater {
-      url = "https://git.netfilter.org/iptables";
-      rev-prefix = "v";
-    };
-
     # Tests are run in a VM because they require access to the kernel (to modify rule chains)
     tests.withCheck = vmTools.runInLinuxVM (
       finalAttrs.finalPackage.overrideAttrs (_: {
-        memSize = 4096;
+        # Save some resources by not installing anything
+        outputs = [ "out" ];
+        doCheck = true;
+
         nativeCheckInputs = [
           python3
           util-linux
@@ -112,8 +108,6 @@ stdenv.mkDerivation (finalAttrs: {
           iproute2
           iputils
         ];
-
-        doCheck = true;
 
         preCheck = ''
           # Tests require /etc/{ethertypes,protocols,services}
@@ -148,27 +142,31 @@ stdenv.mkDerivation (finalAttrs: {
           patchShebangs xlate-test.py iptables-test.py iptables/tests
         '';
 
-        # Save some resources by not installing anything
-        outputs = [ "out" ];
         postCheck = ''
           touch "$out"
         '';
 
-        dontInstall = true;
         dontFixup = true;
+        dontInstall = true;
+        memSize = 4096;
       })
     );
+
+    updateScript = gitUpdater {
+      rev-prefix = "v";
+      url = "https://git.netfilter.org/iptables";
+    };
   };
 
   meta = {
     description = "Program to configure the Linux IP packet filtering ruleset";
     homepage = "https://www.netfilter.org/projects/iptables/index.html";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ fpletz ];
     platforms = lib.platforms.linux;
     mainProgram = "iptables";
-    maintainers = with lib.maintainers; [ fpletz ];
-    teams = [ lib.teams.security-review ];
-    license = lib.licenses.gpl2Plus;
     downloadPage = "https://www.netfilter.org/projects/iptables/files/";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "netfilter" finalAttrs.version;
+    teams = [ lib.teams.security-review ];
   };
 })

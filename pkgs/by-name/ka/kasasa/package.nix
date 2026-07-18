@@ -1,15 +1,15 @@
 {
-  desktop-file-utils,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  desktop-file-utils,
   gettext,
   gtk4,
-  lib,
   libadwaita,
   libportal-gtk4,
   meson,
   ninja,
   pkg-config,
-  stdenv,
   wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -40,16 +40,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Snip and pin useful information to a small floating window";
+
     longDescription = ''
       Clip and pin what's important to a small floating window, so you don't
       have to switch between windows or workspaces repeatedly. The window can
       become miniaturized or have its opacity reduced, in order to not block
       what's behind it.
     '';
+
     homepage = "https://github.com/KelvinNovais/Kasasa";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "kasasa";
     maintainers = with lib.maintainers; [ yajo ];
     platforms = lib.platforms.linux;
+    mainProgram = "kasasa";
   };
 })

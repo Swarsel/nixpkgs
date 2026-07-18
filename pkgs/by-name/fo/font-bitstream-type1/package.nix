@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  mkfontscale,
   fontforge,
+  mkfontscale,
   writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {

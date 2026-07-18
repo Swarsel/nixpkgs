@@ -1,17 +1,16 @@
 {
   lib,
-  hatchling,
+  fetchFromGitHub,
   alembic,
   buildPythonPackage,
-  fetchFromGitHub,
-  sqlalchemy,
+  hatchling,
   pytestCheckHook,
+  sqlalchemy,
 }:
 
 buildPythonPackage rec {
   pname = "dataset";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pudo";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-A8X1Gv+b+K90LAZ5YDjeUbl3Y1fiaFwGj6urapLN3AQ=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -29,9 +30,8 @@ buildPythonPackage rec {
     sqlalchemy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dataset" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Toolkit for Python-based database access";

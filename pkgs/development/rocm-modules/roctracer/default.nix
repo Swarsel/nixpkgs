@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
   clr,
-  rocm-device-libs,
-  libxml2,
+  cmake,
   doxygen,
-  graphviz,
   gcc-unwrapped,
+  graphviz,
   libbacktrace,
-  rocm-runtime,
+  libxml2,
   python3Packages,
+  rocm-device-libs,
+  rocm-runtime,
+  rocmUpdateScript,
   buildDocs ? false, # Nothing seems to be generated, so not making the output
   buildTests ? false,
 }:
@@ -20,6 +20,18 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "roctracer";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-systems";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-Ps9b/MMdxXthGV96ZDg0kZGPdmn7Sy5if1a/Fjx2fEE=";
+
+    sparseCheckout = [
+      "projects/roctracer"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -31,17 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
     "test"
   ];
 
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-systems";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/roctracer"
-      "shared"
-    ];
-    hash = "sha256-Ps9b/MMdxXthGV96ZDg0kZGPdmn7Sy5if1a/Fjx2fEE=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/roctracer";
+  postPatch = ''
+    export HIP_DEVICE_LIB_PATH=${rocm-device-libs}/amdgcn/bitcode
+  ''
+  + lib.optionalString (!buildTests) ''
+    substituteInPlace CMakeLists.txt \
+      --replace "add_subdirectory(test)" ""
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -73,17 +81,8 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=array-bounds"
   ];
 
-  postPatch = ''
-    export HIP_DEVICE_LIB_PATH=${rocm-device-libs}/amdgcn/bitcode
-  ''
-  + lib.optionalString (!buildTests) ''
-    substituteInPlace CMakeLists.txt \
-      --replace "add_subdirectory(test)" ""
-  '';
-
   # Tests always fail, probably need GPU
   # doCheck = buildTests;
-
   postInstall =
     lib.optionalString buildDocs ''
       mkdir -p $doc
@@ -106,13 +105,14 @@ stdenv.mkDerivation (finalAttrs: {
       rm -rf $out/test
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/roctracer";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "Tracer callback/activity library";
     homepage = "https://github.com/ROCm/rocm-systems/tree/develop/projects/roctracer";
     license = with lib.licenses; [ mit ]; # mitx11
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

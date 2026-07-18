@@ -8,22 +8,22 @@
 buildPythonPackage (finalAtrrs: {
   pname = "easyprocess";
   version = "1.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "EasyProcess";
     inherit (finalAtrrs) version;
     hash = "sha256-iFiYMCpXqrlIlz6LXTKkIpOSufstmGqx1P/VkOW6kOw=";
+    pname = "EasyProcess";
   };
+
+  # No tests
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
   ];
 
-  # No tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Easy to use python subprocess interface";

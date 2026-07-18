@@ -2,38 +2,42 @@
   lib,
   stdenv,
   buildPythonPackage,
-  setuptools,
-  fetchPypi,
-  pkg-config,
   dbus,
-  lndir,
   dbus-python,
-  sip,
-  pyqt5-sip,
-  pyqt-builder,
+  fetchPypi,
   libsForQt5,
+  lndir,
   mesa,
+  pkg-config,
+  pkgsBuildTarget,
+  pyqt-builder,
+  pyqt5-sip,
+  setuptools,
+  sip,
+  dbusSupport ? !stdenv.hostPlatform.isDarwin,
   enableVerbose ? true,
   withConnectivity ? false,
-  withMultimedia ? false,
-  withWebSockets ? false,
   withLocation ? false,
+  withMultimedia ? false,
   withSerialPort ? false,
   withTools ? false,
-  pkgsBuildTarget,
-  dbusSupport ? !stdenv.hostPlatform.isDarwin,
+  withWebSockets ? false,
 }:
 
 buildPythonPackage rec {
   pname = "pyqt5";
   version = "5.15.10";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "PyQt5";
     inherit version;
     hash = "sha256-1Gt4BLGxCk/5F1P4ET5bVYDStEYvMiYoji2ESXM0iYo=";
+    pname = "PyQt5";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Fix some wrong assumptions by ./project.py
@@ -93,27 +97,6 @@ buildPythonPackage rec {
       rm config-tests/cfgtest_QtPrintSupport.cpp
     '';
 
-  enableParallelBuilding = true;
-  # HACK: paralellize compilation of make calls within pyqt's setup.py
-  # pkgs/stdenv/generic/setup.sh doesn't set this for us because
-  # make gets called by python code and not its build phase
-  # format=pyproject means the pip-build-hook hook gets used to build this project
-  # pkgs/development/interpreters/python/hooks/pip-build-hook.sh
-  # does not use the enableParallelBuilding flag
-  postUnpack = ''
-    export MAKEFLAGS+="''${enableParallelBuilding:+-j$NIX_BUILD_CORES}"
-  '';
-
-  # tons of warnings from subpackages, no point in playing whack-a-mole
-  env = lib.optionalAttrs (!enableVerbose) { NIX_CFLAGS_COMPILE = "-w"; };
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  dontWrapQtApps = true;
-
   nativeBuildInputs = [
     pkg-config
   ]
@@ -161,20 +144,25 @@ buildPythonPackage rec {
     pyqt5-sip
   ];
 
-  passthru = {
-    inherit sip pyqt5-sip;
-    multimediaEnabled = withMultimedia;
-    WebSocketsEnabled = withWebSockets;
-    connectivityEnabled = withConnectivity;
-    locationEnabled = withLocation;
-    serialPortEnabled = withSerialPort;
-    toolsEnabled = withTools;
-  };
-
-  dontConfigure = true;
-
+  # tons of warnings from subpackages, no point in playing whack-a-mole
+  env = lib.optionalAttrs (!enableVerbose) { NIX_CFLAGS_COMPILE = "-w"; };
   # Checked using pythonImportsCheck
   doCheck = false;
+  dontConfigure = true;
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+
+  # HACK: paralellize compilation of make calls within pyqt's setup.py
+  # pkgs/stdenv/generic/setup.sh doesn't set this for us because
+  # make gets called by python code and not its build phase
+  # format=pyproject means the pip-build-hook hook gets used to build this project
+  # pkgs/development/interpreters/python/hooks/pip-build-hook.sh
+  # does not use the enableParallelBuilding flag
+  postUnpack = ''
+    export MAKEFLAGS+="''${enableParallelBuilding:+-j$NIX_BUILD_CORES}"
+  '';
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "PyQt5"
@@ -190,10 +178,20 @@ buildPythonPackage rec {
   ++ lib.optional withSerialPort "PyQt5.QtSerialPort"
   ++ lib.optional withTools "PyQt5.QtDesigner";
 
+  passthru = {
+    inherit sip pyqt5-sip;
+    WebSocketsEnabled = withWebSockets;
+    connectivityEnabled = withConnectivity;
+    locationEnabled = withLocation;
+    multimediaEnabled = withMultimedia;
+    serialPortEnabled = withSerialPort;
+    toolsEnabled = withTools;
+  };
+
   meta = {
+    inherit (mesa.meta) platforms;
     description = "Python bindings for Qt5";
     homepage = "https://riverbankcomputing.com/";
     license = lib.licenses.gpl3Only;
-    inherit (mesa.meta) platforms;
   };
 }

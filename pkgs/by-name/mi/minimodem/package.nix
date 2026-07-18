@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  alsa-lib,
   autoconf,
   automake,
-  libtool,
   fftw,
   fftwSinglePrec,
-  alsa-lib,
-  libsndfile,
   libpulseaudio,
+  libsndfile,
+  libtool,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
-  version = "0.24-1";
   pname = "minimodem";
+  version = "0.24-1";
 
   src = fetchFromGitHub {
     owner = "kamalmostafa";
@@ -30,6 +30,7 @@ stdenv.mkDerivation rec {
     automake
     libtool
   ];
+
   buildInputs = [
     fftw
     fftwSinglePrec
@@ -47,6 +48,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "General-purpose software audio FSK modem";
+
     longDescription = ''
       Minimodem is a command-line program which decodes (or generates) audio
       modem tones at any specified baud rate, using various framing protocols. It
@@ -54,10 +56,11 @@ stdenv.mkDerivation rec {
       standard FSK protocols such as Bell103, Bell202, RTTY, NOAA SAME, and
       Caller-ID.
     '';
+
     homepage = "http://www.whence.com/minimodem/";
     license = lib.licenses.gpl3Plus;
-    platforms = with lib.platforms; linux;
     maintainers = with lib.maintainers; [ relrod ];
+    platforms = with lib.platforms; linux;
     mainProgram = "minimodem";
   };
 }

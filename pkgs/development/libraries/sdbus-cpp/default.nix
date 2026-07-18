@@ -10,18 +10,18 @@
 let
   generic =
     {
+      hash,
       version,
       rev ? "v${version}",
-      hash,
     }:
     stdenv.mkDerivation (finalAttrs: {
-      pname = "sdbus-cpp";
       inherit version;
+      pname = "sdbus-cpp";
 
       src = fetchFromGitHub {
+        inherit rev hash;
         owner = "kistler-group";
         repo = "sdbus-cpp";
-        inherit rev hash;
       };
 
       nativeBuildInputs = [
@@ -41,9 +41,8 @@ let
       ];
 
       meta = {
-        homepage = "https://github.com/Kistler-Group/sdbus-cpp";
-        changelog = "https://github.com/Kistler-Group/sdbus-cpp/blob/v${version}/ChangeLog";
         description = "High-level C++ D-Bus library designed to provide easy-to-use yet powerful API";
+
         longDescription = ''
           sdbus-c++ is a high-level C++ D-Bus library for Linux designed to provide
           expressive, easy-to-use API in modern C++.
@@ -53,6 +52,9 @@ let
           suffers from a number of (unresolved) bugs, concurrency issues and
           inherent design complexities and limitations.
         '';
+
+        homepage = "https://github.com/Kistler-Group/sdbus-cpp";
+        changelog = "https://github.com/Kistler-Group/sdbus-cpp/blob/v${version}/ChangeLog";
         license = lib.licenses.lgpl2Only;
         maintainers = with lib.maintainers; [ etwas ];
         platforms = lib.platforms.linux;

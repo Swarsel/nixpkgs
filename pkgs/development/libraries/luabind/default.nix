@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  lua,
   boost,
   cmake,
+  lua,
 }:
 
 stdenv.mkDerivation {
@@ -18,15 +18,7 @@ stdenv.mkDerivation {
     sha256 = "sha256-JcOsoQHRvdzF2rsZBW6egOwIy7+7C4wy0LiYmbV590Q";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  buildInputs = [ boost ];
-
-  propagatedBuildInputs = [ lua ];
-
-  passthru = {
-    inherit lua;
-  };
+  patches = [ ./0.9.1-discover-luajit.patch ];
 
   # CMake 2.8.3 is deprecated and is no longer supported by CMake > 4
   # https://github.com/NixOS/nixpkgs/issues/445447
@@ -36,11 +28,17 @@ stdenv.mkDerivation {
       "cmake_minimum_required(VERSION 3.10)"
   '';
 
-  patches = [ ./0.9.1-discover-luajit.patch ];
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ boost ];
+  propagatedBuildInputs = [ lua ];
+
+  passthru = {
+    inherit lua;
+  };
 
   meta = {
-    homepage = "https://github.com/Oberon00/luabind";
     description = "Library that helps you create bindings between C++ and Lua";
+    homepage = "https://github.com/Oberon00/luabind";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
   };

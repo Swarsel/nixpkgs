@@ -7,25 +7,24 @@
   gtk3,
   libGL,
   libGLU,
+  libpng,
   libsm,
   libxinerama,
   libxtst,
   libxxf86vm,
+  # TODO: Clean up on `staging`.
+  llvmPackages,
   pkg-config,
+  webkitgtk_4_1,
   xorgproto,
   compat28 ? false,
   compat30 ? true,
   unicode ? true,
   withCurl ? false,
-  withPrivateFonts ? false,
   withEGL ? true,
   withMesa ? !stdenv.hostPlatform.isDarwin,
+  withPrivateFonts ? false,
   withWebKit ? stdenv.hostPlatform.isDarwin,
-  webkitgtk_4_1,
-  libpng,
-
-  # TODO: Clean up on `staging`.
-  llvmPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -130,8 +129,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.wxwidgets.org/";
     description = "Cross-Platform C++ GUI Library";
+
     longDescription = ''
       wxWidgets gives you a single, easy-to-use API for writing GUI applications
       on multiple platforms that still utilize the native platform's controls
@@ -142,10 +141,14 @@ stdenv.mkDerivation (finalAttrs: {
       multithreading, image loading and saving in a variety of popular formats,
       database support, HTML viewing and printing, and much more.
     '';
+
+    homepage = "https://www.wxwidgets.org/";
+
     license = with lib.licenses; [
       lgpl2Plus
       wxWindowsException31
     ];
+
     platforms = lib.platforms.unix;
   };
 })

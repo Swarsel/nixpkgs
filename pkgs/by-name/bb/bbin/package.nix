@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  babashka-unwrapped,
   gitUpdater,
   makeWrapper,
-  babashka-unwrapped,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -19,9 +19,6 @@ stdenvNoCC.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -40,16 +37,19 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   passthru = {
     updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
-    homepage = "https://github.com/babashka/bbin";
-    description = "Install any Babashka script or project with one command";
-    mainProgram = "bbin";
-    license = lib.licenses.mit;
     inherit (babashka-unwrapped.meta) platforms;
+    description = "Install any Babashka script or project with one command";
+    homepage = "https://github.com/babashka/bbin";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sohalt ];
+    mainProgram = "bbin";
   };
 }

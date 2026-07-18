@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   orjson,
   pytest-asyncio,
   pytest-error-for-skips,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "accuweather";
   version = "5.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bieniu";
@@ -24,14 +23,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-IXsf78AN5Gl6itQBfxwMEWE0ggoUohD0RgMgsgLaXOI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    orjson
-    yarl
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -41,6 +32,15 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    orjson
+    yarl
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "accuweather" ];
 
   meta = {

@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "smpmgr";
   version = "0.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "intercreate";
@@ -17,14 +16,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-Kcd6D995bS9GbytkTPam0KKuqNjuajMjDMfKx7TWm20=";
   };
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    versionCheckHook
+  ];
+
   build-system = with python3Packages; [
     poetry-core
     poetry-dynamic-versioning
-  ];
-
-  pythonRelaxDeps = [
-    "typer"
-    "smpclient"
   ];
 
   dependencies =
@@ -36,12 +35,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ smpclient.optional-dependencies.all;
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    versionCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "smpmgr" ];
+
+  pythonRelaxDeps = [
+    "typer"
+    "smpclient"
+  ];
 
   meta = {
     description = "Simple Management Protocol (SMP) Manager for remotely managing MCU firmware";

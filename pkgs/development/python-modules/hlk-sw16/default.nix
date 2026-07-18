@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "hlk-sw16";
   version = "0.0.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jameshilliard";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # no tests implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "hlk_sw16" ];
 
   meta = {

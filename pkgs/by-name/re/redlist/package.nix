@@ -1,13 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "redlist";
   version = "0-unstable-2026-01-30";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Laharah";
@@ -15,6 +14,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rev = "3d465a12d79331eefde52351b441d8e0875f93e3";
     hash = "sha256-eROvTs4WCVeXE2+4FICC9Rl5bjIkf0E5sYvqCaskXEw=";
   };
+
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace-fail '"pytest-runner"' ""
+  '';
 
   build-system = with python3Packages; [
     setuptools
@@ -33,16 +37,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ aiohttp.optional-dependencies.speedups;
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace-fail '"pytest-runner"' ""
-  '';
+  pyproject = true;
 
   meta = {
     description = "Convert Spotify playlists to local m3u's and fill the gaps";
-    mainProgram = "redlist";
     homepage = "https://github.com/Laharah/redlist";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ lilahummel ];
+    mainProgram = "redlist";
   };
 })

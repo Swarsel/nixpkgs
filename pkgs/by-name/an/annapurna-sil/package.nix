@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,13 +23,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://software.sil.org/annapurna";
     description = "Unicode-based font family with broad support for writing systems that use the Devanagari script";
+
     longDescription = ''
       Annapurna SIL is a Unicode-based font family with broad support for writing systems that use the Devanagari script. Inspired by traditional calligraphic forms, the design is intended to be highly readable, reasonably compact, and visually attractive.
     '';
+
+    homepage = "https://software.sil.org/annapurna";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.kmein ];
+    platforms = lib.platforms.all;
   };
 })

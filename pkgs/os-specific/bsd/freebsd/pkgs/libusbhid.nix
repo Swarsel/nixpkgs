@@ -3,13 +3,12 @@
   mkDerivation,
 }:
 mkDerivation {
-  path = "lib/libusbhid";
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
 
+  path = "lib/libusbhid";
   meta.platforms = lib.platforms.freebsd;
 }

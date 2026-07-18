@@ -1,22 +1,17 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pybibget";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-M6CIctTOVn7kIPmsoHQmYl2wQaUzfel7ryw/3ebQitg=";
   };
-
-  build-system = [
-    python3.pkgs.setuptools
-  ];
 
   propagatedBuildInputs = with python3.pkgs; [
     lxml
@@ -33,6 +28,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   # Tests for this application do not run on NixOS, and binaries were
   # manually tested instead
   doCheck = false;
+
+  build-system = [
+    python3.pkgs.setuptools
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Command line utility to automatically retrieve BibTeX citations from MathSciNet, arXiv, PubMed and doi.org";

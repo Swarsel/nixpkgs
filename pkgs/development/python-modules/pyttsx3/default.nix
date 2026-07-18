@@ -7,18 +7,18 @@
 buildPythonPackage rec {
   pname = "pyttsx3";
   version = "2.99";
-  format = "wheel";
 
   src = fetchPypi {
     inherit pname version;
-    format = "wheel";
     sha256 = "sha256-/z5P91bCTXK58/LzBODtqv0PWK2w5vS5DZMEQM2osgc=";
     dist = "py3";
+    format = "wheel";
     python = "py3";
   };
 
   # This package has no tests
   doCheck = false;
+  format = "wheel";
 
   meta = {
     description = "Offline text-to-speech synthesis library";

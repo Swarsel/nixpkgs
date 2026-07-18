@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   httpx,
   httpx-sse,
   llm,
   llm-mistral,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-httpx,
+  pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-mistral";
   version = "0.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -24,6 +23,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-4ajvsq0sm3/vdiHUuNxHsHKdX58VNNpHIwhWI0ws+08=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-httpx
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     setuptools
@@ -35,15 +41,8 @@ buildPythonPackage rec {
     llm
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-httpx
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_mistral" ];
-
   passthru.tests = llm.mkPluginTest llm-mistral;
 
   meta = {

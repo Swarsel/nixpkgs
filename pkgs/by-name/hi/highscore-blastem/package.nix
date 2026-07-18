@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libhighscore,
   meson,
   ninja,
   pkg-config,
-  libhighscore,
   unstableGitUpdater,
 }:
 
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "d19e9a8ddd0accf017f44dcc81bdd2661f63f25f";
     hash = "sha256-KetitwqL4S0T4GayeTdwR5hG/LVUF+mJ8oGIN6XPLfU=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/highscore";
 
   postPatch = ''
     patchShebangs gen-db.sh
@@ -40,15 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
     libhighscore
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/highscore";
+
   passthru.updateScript = unstableGitUpdater {
     hardcodeZeroVersion = true;
   };
 
   meta = {
+    inherit (libhighscore.meta) maintainers platforms;
     description = "Port of BlastEm to Highscore";
     homepage = "https://github.com/highscore-emu/blastem-highscore";
     license = lib.licenses.gpl3Plus;
-    inherit (libhighscore.meta) maintainers platforms;
     badPlatforms = lib.platforms.aarch64;
   };
 })

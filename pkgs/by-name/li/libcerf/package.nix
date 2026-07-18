@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  cmake,
+  stdenv,
   fetchFromGitLab,
+  cmake,
   gnuplot,
   nix-update-script,
   perl,
@@ -13,11 +13,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.3";
 
   src = fetchFromGitLab {
-    domain = "jugit.fz-juelich.de";
     owner = "mlz";
     repo = "libcerf";
     tag = "v${finalAttrs.version}";
     hash = "sha256-EPloejabyLzLP+GIPSIsh6dZDk2WodSEU6CPoICRxnM=";
+    domain = "jugit.fz-juelich.de";
   };
 
   nativeBuildInputs = [
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     tests = {
       inherit gnuplot;
     };
+
     updateScript = nix-update-script { };
   };
 

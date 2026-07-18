@@ -42,6 +42,7 @@ let
       f (
         {
           inherit (pkgs) fetchFromGitHub;
+
           postFetch = ''
             sed -i 's/curl/curl --insecure/g' $out/thirdparty/{fetch-thirdparty-deps,noget}.sh
             $out/thirdparty/fetch-thirdparty-deps.sh
@@ -57,13 +58,13 @@ rec {
   # and to provide defaults for those that are optional.
   buildOpenRAEngine =
     {
-      name ? null,
-      version,
       description,
       homepage,
       mods,
       src,
+      version,
       installExperimental ? "",
+      name ? null,
     }@engine:
     # Allow specifying the name at a later point if no name has been given.
     let
@@ -83,19 +84,19 @@ rec {
   # See `buildOpenRAEngine`.
   buildOpenRAMod =
     {
-      name ? null,
-      version,
-      title,
       description,
+      engine,
       homepage,
       src,
-      engine,
+      title,
+      version,
+      name ? null,
     }@mod:
     (
       {
+        src,
         version,
         mods ? [ ],
-        src,
       }@engine:
       let
         builder =
@@ -103,11 +104,12 @@ rec {
           pkgs.callPackage ./mod.nix (
             common
             // {
-              mod = mod // {
-                inherit name;
-              };
               engine = engine // {
                 inherit mods;
+              };
+
+              mod = mod // {
+                inherit name;
               };
             }
           );

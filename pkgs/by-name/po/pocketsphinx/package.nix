@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   doxygen,
-  fetchFromGitHub,
   gitUpdater,
   graphviz,
   gst_all_1,
   perl,
   pkg-config,
-  testers,
   sox,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-bB/k1KRrdP52MN5iZr2Q2MGWh0JOCsqJxccUyVu2Va0=";
   };
+
+  outputs = [
+    "out"
+    "data"
+    "dev"
+    "lib"
+    "man"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -39,33 +47,27 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_INSTALL_DATADIR" "${placeholder "data"}/share")
   ];
 
-  outputs = [
-    "out"
-    "data"
-    "dev"
-    "lib"
-    "man"
-  ];
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   nativeCheckInputs = [
     perl
     sox
   ];
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   passthru = {
-    updateScript = gitUpdater {
-      rev-prefix = "v";
-      ignoredVersions = "rc";
-    };
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
+    updateScript = gitUpdater {
+      ignoredVersions = "rc";
+      rev-prefix = "v";
+    };
   };
 
   meta = {
     description = "Small speech recognizer";
     homepage = "https://github.com/cmusphinx/pocketsphinx";
     changelog = "https://github.com/cmusphinx/pocketsphinx/blob/v${finalAttrs.version}/NEWS";
+
     license =
       with lib.licenses;
       AND [
@@ -73,8 +75,9 @@ stdenv.mkDerivation (finalAttrs: {
         bsd3
         mit
       ];
-    pkgConfigModules = [ "pocketsphinx" ];
-    mainProgram = "pocketsphinx";
+
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    mainProgram = "pocketsphinx";
+    pkgConfigModules = [ "pocketsphinx" ];
   };
 })

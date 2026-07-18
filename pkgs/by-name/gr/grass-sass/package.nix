@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -14,16 +14,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-2wJBYTOfaPBm+24ABl1cOs4W7UsRPYn70PSFDRRMCyU=";
-
   # tests require rust nightly
   doCheck = false;
 
   meta = {
     description = "Sass compiler written purely in Rust";
     homepage = "https://github.com/connorskees/grass";
+
     changelog = "https://github.com/connorskees/grass/blob/master/CHANGELOG.md#${
       lib.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }";
+
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "grass";

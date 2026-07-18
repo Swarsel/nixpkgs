@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
+  check,
   cmake,
   expat,
-  check,
   pkg-config,
 }:
 
@@ -24,13 +24,14 @@ stdenv.mkDerivation rec {
     pkg-config
     check
   ];
+
   buildInputs = [ expat ];
 
   meta = {
-    homepage = "https://github.com/libwbxml/libwbxml";
     description = "WBXML Library (aka libwbxml) contains a library and its associated tools to Parse, Encode and Handle WBXML documents";
+    homepage = "https://github.com/libwbxml/libwbxml";
+    license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ mh ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.lgpl21Plus;
   };
 }

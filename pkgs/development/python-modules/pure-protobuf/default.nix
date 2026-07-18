@@ -1,37 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   poetry-dynamic-versioning,
-  typing-extensions,
-  pytestCheckHook,
+  pydantic,
   pytest-benchmark,
   pytest-cov-stub,
-  pydantic,
+  pytestCheckHook,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pure-protobuf";
   version = "3.1.5";
 
-  pyproject = true;
   # < 3.10 requires get-annotations which isn't packaged yet
-
   src = fetchFromGitHub {
     owner = "eigenein";
     repo = "protobuf";
     tag = version;
     hash = "sha256-Gr5fKpagSUzH34IKHb+pBta4q71AqYa/KG9XW2AxZqk=";
   };
-
-  build-system = [
-    poetry-core
-    poetry-dynamic-versioning
-    typing-extensions
-  ];
-
-  dependencies = [ typing-extensions ];
 
   nativeCheckInputs = [
     pydantic
@@ -40,8 +30,15 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
-  pytestFlags = [ "--benchmark-disable" ];
+  build-system = [
+    poetry-core
+    poetry-dynamic-versioning
+    typing-extensions
+  ];
 
+  dependencies = [ typing-extensions ];
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
   pythonImportsCheck = [ "pure_protobuf" ];
 
   meta = {

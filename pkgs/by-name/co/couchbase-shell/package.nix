@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  testers,
-  nix-update-script,
   couchbase-shell,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-t4y0VxjRaJ5G/vpqq3/oLE/pIXSDAk+l+9fCcr9n6I4=";
   };
 
-  cargoHash = "sha256-f2WYczO2kr5BloXGLjjlnmyaKlr9+IH7i8cqGFUEcVA=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -31,6 +29,7 @@ rustPlatform.buildRustPackage rec {
     openssl
   ];
 
+  cargoHash = "sha256-f2WYczO2kr5BloXGLjjlnmyaKlr9+IH7i8cqGFUEcVA=";
   # tests need couchbase server
   doCheck = false;
 
@@ -38,6 +37,7 @@ rustPlatform.buildRustPackage rec {
     tests.version = testers.testVersion {
       package = couchbase-shell;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -46,7 +46,7 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://couchbase.sh/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ petrkozorezov ];
-    mainProgram = "cbsh";
     platforms = lib.platforms.linux;
+    mainProgram = "cbsh";
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  fuse3,
-  testers,
   blobfuse,
+  buildGoModule,
+  fuse3,
   nix-update-script,
+  testers,
 }:
 
 let
@@ -18,20 +18,17 @@ let
   };
 in
 buildGoModule {
-  pname = "blobfuse";
   inherit version src;
-
-  vendorHash = "sha256-I2/0BzT9KiMBpzReSll0dKY0uzULRx49fcVGD/z4BPQ=";
-
+  pname = "blobfuse";
   buildInputs = [ fuse3 ];
-
+  vendorHash = "sha256-I2/0BzT9KiMBpzReSll0dKY0uzULRx49fcVGD/z4BPQ=";
   # Many tests depend on network or needs to be configured to pass. See the link below for a starting point
   # https://github.com/NixOS/nixpkgs/pull/201196/files#diff-e669dbe391f8856f4564f26023fe147a7b720aeefe6869ab7a218f02a8247302R20
   doCheck = false;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = blobfuse; };
+    updateScript = nix-update-script { };
   };
 
   meta = {

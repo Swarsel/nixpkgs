@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  sqlite,
-  libpq,
-  zlib,
   acl,
+  gettext,
+  libpq,
   ncurses,
   openssl,
   readline,
-  gettext,
+  sqlite,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,26 +64,29 @@ stdenv.mkDerivation (finalAttrs: {
     "gt_cv_func_CFPreferencesCopyAppValue=yes"
   ];
 
-  installFlags = [
-    "logdir=\${out}/logdir"
-    "working_dir=\${out}/workdir"
-  ];
-
   postInstall = ''
     mkdir -p $out/bin
     ln -s $out/sbin/* $out/bin
   '';
 
+  installFlags = [
+    "logdir=\${out}/logdir"
+    "working_dir=\${out}/workdir"
+  ];
+
   meta = {
     description = "Enterprise ready, Network Backup Tool";
     homepage = "http://bacula.org/";
+
     license = with lib.licenses; [
       agpl3Only
       bsd2
     ];
+
     maintainers = with lib.maintainers; [
       eleanor
     ];
+
     platforms = lib.platforms.all;
   };
 })

@@ -3,31 +3,28 @@
   fetchurl,
   fetchFromGitHub,
   buildPythonPackage,
-  python,
-
-  # build-system
-  setuptools,
-
   # dependencies
   otb,
-
+  pytest-cov-stub,
   # tests
   pytestCheckHook,
-  pytest-cov-stub,
+  python,
   requests,
+  # build-system
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 let
   # fetch the test data separately or else none of the test will work
   # https://github.com/orfeotoolbox/pyotb/blob/develop/tests/tests_data.py
   spotImage = fetchurl {
-    url = "https://gitlab.orfeo-toolbox.org/orfeotoolbox/otb/-/raw/develop/Data/Input/SP67_FR_subset_1.tif";
     sha256 = "sha256-MuWY/g7KI+F23lFY/+AX5MLWJlIgHCr5BvFjDHzpWgY=";
+    url = "https://gitlab.orfeo-toolbox.org/orfeotoolbox/otb/-/raw/develop/Data/Input/SP67_FR_subset_1.tif";
   };
 
   pleiadesImage = fetchurl {
-    url = "https://gitlab.orfeo-toolbox.org/orfeotoolbox/otb/-/raw/develop/Data/Baseline/OTB/Images/prTvOrthoRectification_pleiades-1_noDEM.tif";
     sha256 = "sha256-1EsGAJdHgBIb/gfbh4Y7yEEmYHb54bSx4fEMKssZ/oA=";
+    url = "https://gitlab.orfeo-toolbox.org/orfeotoolbox/otb/-/raw/develop/Data/Baseline/OTB/Images/prTvOrthoRectification_pleiades-1_noDEM.tif";
   };
 
   otbWithPy = otb.override {
@@ -38,7 +35,6 @@ in
 buildPythonPackage rec {
   pname = "pyotb";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "orfeotoolbox";
@@ -66,22 +62,18 @@ buildPythonPackage rec {
         "PLEIADES_IMG_URL = '$HOME/prTvOrthoRectification_pleiades-1_noDEM.tif'"
   '';
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [ otbWithPy ];
-
-  pythonRelaxDeps = [ "numpy" ];
-
-  pythonImportsCheck = [ "pyotb" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
     requests
     writableTmpDirAsHomeHook
   ];
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [ otbWithPy ];
 
   disabledTests = [
     # test requires network access as inputs needs to be url
@@ -92,12 +84,16 @@ buildPythonPackage rec {
     "test_summarize_strip_output"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "pyotb" ];
+  pythonRelaxDeps = [ "numpy" ];
+
   meta = {
     description = "Python extension of Orfeo Toolbox";
     homepage = "https://github.com/orfeotoolbox/pyotb";
     changelog = "https://github.com/orfeotoolbox/pyotb/releases/tag/${version}";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.geospatial ];
     maintainers = with lib.maintainers; [ daspk04 ];
+    teams = [ lib.teams.geospatial ];
   };
 }

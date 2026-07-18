@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   expat,
   ffmpeg,
+  fontconfig,
   freetype,
+  libGLU,
   libarchive,
   libjpeg,
-  libGLU,
+  openal,
+  pkg-config,
   sfml_2,
   zlib,
-  openal,
-  fontconfig,
 }:
 
 stdenv.mkDerivation {

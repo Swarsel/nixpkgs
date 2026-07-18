@@ -1,41 +1,36 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  numba,
-  numpy,
-  pynndescent,
-  scikit-learn,
-  scipy,
-  tqdm,
-
   # optional-dependencies
   bokeh,
+  buildPythonPackage,
   colorcet,
   dask,
   datashader,
   holoviews,
   matplotlib,
+  # dependencies
+  numba,
+  numpy,
   pandas,
-  scikit-image,
-  seaborn,
-  tensorflow,
-  tensorflow-probability,
-
+  pynndescent,
   # tests
   pytestCheckHook,
+  scikit-image,
+  scikit-learn,
+  scipy,
+  seaborn,
+  # build-system
+  setuptools,
+  tensorflow,
+  tensorflow-probability,
+  tqdm,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "umap-learn";
   version = "0.5.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lmcinnes";
@@ -43,6 +38,11 @@ buildPythonPackage (finalAttrs: {
     tag = "release-${finalAttrs.version}";
     hash = "sha256-NORv3wJliKfft/+kMNKL133PKPN88Pt23yqbT1LjUKE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -53,35 +53,6 @@ buildPythonPackage (finalAttrs: {
     scikit-learn
     scipy
     tqdm
-  ];
-
-  optional-dependencies = {
-    plot = [
-      bokeh
-      colorcet
-      dask
-      datashader
-      holoviews
-      matplotlib
-      pandas
-      scikit-image
-      seaborn
-    ];
-
-    parametric_umap = [
-      tensorflow
-      tensorflow-probability
-    ];
-
-    tbb = [
-      # Not packaged.
-      #tbb
-    ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
   ];
 
   disabledTests = [
@@ -98,6 +69,32 @@ buildPythonPackage (finalAttrs: {
     # tensorflow maybe incompatible? https://github.com/lmcinnes/umap/issues/821
     "test_save_load"
   ];
+
+  optional-dependencies = {
+    parametric_umap = [
+      tensorflow
+      tensorflow-probability
+    ];
+
+    plot = [
+      bokeh
+      colorcet
+      dask
+      datashader
+      holoviews
+      matplotlib
+      pandas
+      scikit-image
+      seaborn
+    ];
+
+    tbb = [
+      # Not packaged.
+      #tbb
+    ];
+  };
+
+  pyproject = true;
 
   meta = {
     description = "Uniform Manifold Approximation and Projection";

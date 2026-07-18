@@ -1,23 +1,20 @@
 {
   lib,
   stdenv,
-
-  buildNpmPackage,
   fetchFromGitHub,
-  pkg-config,
-  electron,
-  chromium,
+  buildNpmPackage,
   cacert,
+  chromium,
   clojure,
-  git,
-  vips,
-
-  writeShellScriptBin,
   copyDesktopItems,
+  electron,
+  git,
   makeDesktopItem,
   makeWrapper,
-
   nixosTests,
+  pkg-config,
+  vips,
+  writeShellScriptBin,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "repath-studio";
@@ -36,9 +33,10 @@ buildNpmPackage (finalAttrs: {
     ./pin-clojure.patch
   ];
 
-  makeCacheWritable = true;
-
-  npmDepsHash = "sha256-IvKHLxX7rTB3AGDzNQIVNhfXs0C6TVATdVGUDHGrpOo=";
+  postPatch = ''
+    substituteInPlace shadow-cljs.edn \
+      --replace-fail ":shadow-git-inject/version" '"v${finalAttrs.version}"'
+  '';
 
   nativeBuildInputs = [
     finalAttrs.passthru.clojureWithHome
@@ -49,16 +47,12 @@ buildNpmPackage (finalAttrs: {
 
   # For 'sharp' dependency, otherwise it will try to build it
   buildInputs = [ vips ];
+  npmDepsHash = "sha256-IvKHLxX7rTB3AGDzNQIVNhfXs0C6TVATdVGUDHGrpOo=";
 
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = true;
     PUPPETEER_SKIP_DOWNLOAD = true;
   };
-
-  postPatch = ''
-    substituteInPlace shadow-cljs.edn \
-      --replace-fail ":shadow-git-inject/version" '"v${finalAttrs.version}"'
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -73,6 +67,19 @@ buildNpmPackage (finalAttrs: {
       -c.electronVersion=${electron.version}
 
     runHook postBuild
+  '';
+
+  # chromium package not available for darwin
+  doCheck = stdenv.hostPlatform.isLinux;
+
+  checkPhase = ''
+    runHook preCheck
+    export ELECTRON_OVERRIDE_DIST_PATH="$electron_dist"
+    export PUPPETEER_EXECUTABLE_PATH=${chromium}/bin/chromium
+    export CHROME_BIN=${chromium}/bin/chromium
+    npm run test
+    unset ELECTRON_OVERRIDE_DIST_PATH
+    runHook postCheck
   '';
 
   installPhase = ''
@@ -104,35 +111,24 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
-  # chromium package not available for darwin
-  doCheck = stdenv.hostPlatform.isLinux;
-  checkPhase = ''
-    runHook preCheck
-    export ELECTRON_OVERRIDE_DIST_PATH="$electron_dist"
-    export PUPPETEER_EXECUTABLE_PATH=${chromium}/bin/chromium
-    export CHROME_BIN=${chromium}/bin/chromium
-    npm run test
-    unset ELECTRON_OVERRIDE_DIST_PATH
-    runHook postCheck
-  '';
-
   desktopItems = [
     (makeDesktopItem {
-      name = "Repath Studio";
+      categories = [ "Graphics" ];
+      comment = "Vector graphics editor, that combines procedural tooling with traditional design workflows";
       desktopName = "Repath Studio";
       exec = "repath-studio %U";
-      type = "Application";
-      terminal = false;
       icon = "repath-studio";
-      comment = "Vector graphics editor, that combines procedural tooling with traditional design workflows";
-      categories = [ "Graphics" ];
+      name = "Repath Studio";
+      terminal = false;
+      type = "Application";
     })
   ];
+
+  makeCacheWritable = true;
 
   passthru = {
     # this was taken and adapted from "logseq" package's nixpkgs derivation
     clojureHome = stdenv.mkDerivation {
-      name = "repath-studio-${finalAttrs.version}-clojure-home";
       inherit (finalAttrs) src patches;
 
       nativeBuildInputs = [
@@ -187,10 +183,10 @@ buildNpmPackage (finalAttrs: {
       '';
 
       dontFixup = true;
-
+      name = "repath-studio-${finalAttrs.version}-clojure-home";
       outputHash = "sha256-2ijBbKXKiXStWAyeLoRv8OSMoCfB2xA1TVw6xtlBPes=";
-      outputHashMode = "recursive";
       outputHashAlgo = "sha256";
+      outputHashMode = "recursive";
     };
 
     clojureWithHome = writeShellScriptBin "clojure" ''
@@ -199,19 +195,19 @@ buildNpmPackage (finalAttrs: {
       exec ${lib.getExe' clojure "clojure"} "$@"
     '';
 
-    updateScript = ./update.sh;
     tests = { inherit (nixosTests) repath-studio; };
+    updateScript = ./update.sh;
   };
 
   meta = {
-    changelog = "https://github.com/repath-studio/repath-studio/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Cross-platform vector graphics editor, that combines procedural tooling with traditional design workflows";
     homepage = "https://repath.studio";
-    downloadPage = "https://github.com/repath-studio/repath-studio";
+    changelog = "https://github.com/repath-studio/repath-studio/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
-    mainProgram = "repath-studio";
     maintainers = with lib.maintainers; [ phanirithvij ];
-    teams = with lib.teams; [ ngi ];
     platforms = electron.meta.platforms;
+    mainProgram = "repath-studio";
+    downloadPage = "https://github.com/repath-studio/repath-studio";
+    teams = with lib.teams; [ ngi ];
   };
 })

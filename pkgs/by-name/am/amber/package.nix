@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   libiconv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,11 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-vmgUWPxfJhzKmDq5aP/ZpyY5c/y7+ZzEEcjaTl6aUUo=";
   };
 
-  cargoHash = "sha256-ejBu7ijActk7Je8zr10Ei1ULv9ZP00gNdZO3zdK2AM4=";
-
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
+
+  cargoHash = "sha256-ejBu7ijActk7Je8zr10Ei1ULv9ZP00gNdZO3zdK2AM4=";
 
   meta = {
     description = "Code search-and-replace tool";

@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  metakernel,
-  svgwrite,
-  ipywidgets,
+  buildPythonPackage,
   cairosvg,
+  ipywidgets,
+  metakernel,
   numpy,
+  setuptools,
+  svgwrite,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "calysto";
   version = "1.0.6";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Calysto";
@@ -24,6 +21,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-lr/cHFshpFs/PGMCsa3FKMRPTP+eE9ziH5XCpV+KzO8=";
   };
 
+  # there are no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +34,7 @@ buildPythonPackage (finalAttrs: {
     numpy
   ];
 
-  # there are no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "calysto" ];
 
   meta = {

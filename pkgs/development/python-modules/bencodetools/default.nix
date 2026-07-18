@@ -1,18 +1,15 @@
 {
-  buildPythonPackage,
   bencodetools,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
 buildPythonPackage {
   inherit (bencodetools) pname version src;
-  pyproject = true;
-
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
   dontConfigure = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "bencode"

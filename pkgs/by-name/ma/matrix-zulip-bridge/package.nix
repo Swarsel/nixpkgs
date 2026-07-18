@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "MatrixZulipBridge";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GearKite";
@@ -33,16 +32,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     zulip-emoji-mapping
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "matrixzulipbridge"
+  ];
+
   pythonRelaxDeps = [
     "bidict"
     "markdownify"
     "mautrix"
     "ruamel-yaml"
     "zulip-emoji-mapping"
-  ];
-
-  pythonImportsCheck = [
-    "matrixzulipbridge"
   ];
 
   meta = {

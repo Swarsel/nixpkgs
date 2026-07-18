@@ -1,19 +1,16 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitLab,
-  pytestCheckHook,
-
-  setuptools,
-
+  buildPythonPackage,
   ghostscript_headless,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ghostscript";
   version = "0.7";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "pdftools";
@@ -34,12 +31,12 @@ buildPythonPackage rec {
         --replace-fail 'cdll.LoadLibrary("libgs.so")' 'cdll.LoadLibrary("${lib.getLib ghostscript_headless}/lib/libgs${extLib}")'
     '';
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
+  ];
+
+  build-system = [
+    setuptools
   ];
 
   disabledTests = [
@@ -51,6 +48,7 @@ buildPythonPackage rec {
     "test_stdin"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ghostscript" ];
 
   meta = {

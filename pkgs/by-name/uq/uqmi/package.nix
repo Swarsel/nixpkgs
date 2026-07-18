@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
-  fetchgit,
+  stdenv,
   cmake,
-  perl,
-  libubox,
+  fetchgit,
   json_c,
+  libubox,
+  perl,
 }:
 
 stdenv.mkDerivation {
@@ -27,6 +27,7 @@ stdenv.mkDerivation {
     cmake
     perl
   ];
+
   buildInputs = [
     libubox
     json_c
@@ -43,11 +44,13 @@ stdenv.mkDerivation {
     description = "Tiny QMI command line utility";
     homepage = "https://git.openwrt.org/?p=project/uqmi.git;a=summary";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       fpletz
       mkg20001
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "uqmi";
   };
 }

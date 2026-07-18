@@ -1,12 +1,12 @@
 {
-  writeShellScript,
   lib,
   curl,
-  jq,
   git,
   gnugrep,
   gnused,
+  jq,
   nix-update,
+  writeShellScript,
 }:
 
 writeShellScript "update-esphome" ''

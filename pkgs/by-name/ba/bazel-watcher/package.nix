@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
+  bazel-watcher,
   buildGoModule,
   testers,
-  bazel-watcher,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-u1Zg/M9DSkwscy49qtPQygk1gyxKaPbhlFDYNtBQ9NY=";
-
   # The dependency github.com/fsnotify/fsevents requires CGO
   env.CGO_ENABLED = if stdenv.hostPlatform.isDarwin then "1" else "0";
+
   ldflags = [
     "-s"
     "-X main.Version=${finalAttrs.version}"
@@ -31,17 +31,17 @@ buildGoModule (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = bazel-watcher;
       command = "ibazel version";
+      package = bazel-watcher;
     };
   };
 
   meta = {
-    homepage = "https://github.com/bazelbuild/bazel-watcher";
     description = "Tools for building Bazel targets when source files change";
+    homepage = "https://github.com/bazelbuild/bazel-watcher";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ kalbasit ];
-    mainProgram = "ibazel";
     platforms = lib.platforms.all;
+    mainProgram = "ibazel";
   };
 })

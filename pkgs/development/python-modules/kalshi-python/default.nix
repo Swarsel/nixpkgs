@@ -1,14 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  pytestCheckHook,
   certifi,
   cryptography,
+  fetchPypi,
   lazy-imports,
   pydantic,
+  pytestCheckHook,
   python-dateutil,
+  setuptools,
   six,
   typing-extensions,
   urllib3,
@@ -17,13 +17,18 @@
 buildPythonPackage rec {
   pname = "kalshi-python";
   version = "2.1.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "kalshi_python";
     hash = "sha256-FsHRuqfmdF31l5E/L08/eVhWkN7JhgJkFSUzMrYNuOY=";
+    pname = "kalshi_python";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     certifi
@@ -36,11 +41,7 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  build-system = [ setuptools ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "kalshi_python"

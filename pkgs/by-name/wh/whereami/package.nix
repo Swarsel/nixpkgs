@@ -20,13 +20,13 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=strict-prototypes";
-
   makeFlags = [
     "-C_gnu-make"
     "build-library"
     "binsubdir=platform"
   ];
+
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=strict-prototypes";
 
   installPhase = ''
     runHook preInstall
@@ -41,10 +41,12 @@ stdenv.mkDerivation {
   meta = {
     description = "Locate the current executable and running module/library";
     homepage = "https://github.com/gpakosz/whereami";
+
     license = with lib.licenses; [
       mit
       wtfpl
     ];
+
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.all;
   };

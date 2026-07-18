@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
-  python-dotenv,
   fetchFromGitHub,
-  setuptools,
+  azure-identity,
+  buildPythonPackage,
   httpx,
   microsoft-kiota-abstractions,
   microsoft-kiota-authentication-azure,
   microsoft-kiota-http,
   microsoft-kiota-serialization-json,
-  azure-identity,
   pytest-asyncio,
   pytestCheckHook,
+  python-dotenv,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "msgraph-core";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoftgraph";
@@ -25,6 +24,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-1fgLW6tpaDMOIaAU92ty9JYx/bZxDs4VjNPDCPIze/A=";
   };
+
+  nativeCheckInputs = [
+    azure-identity
+    microsoft-kiota-serialization-json
+    pytest-asyncio
+    pytestCheckHook
+    python-dotenv
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,14 +43,7 @@ buildPythonPackage rec {
   ]
   ++ httpx.optional-dependencies.http2;
 
-  nativeCheckInputs = [
-    azure-identity
-    microsoft-kiota-serialization-json
-    pytest-asyncio
-    pytestCheckHook
-    python-dotenv
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "msgraph_core" ];
 
   meta = {

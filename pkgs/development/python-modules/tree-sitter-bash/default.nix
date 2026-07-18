@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   tree-sitter,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tree-sitter-bash";
   version = "0.25.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tree-sitter";
@@ -18,6 +17,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ONQ1Ljk3aRWjElSWD2crCFZraZoRj3b3/VELz1789GE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    tree-sitter
+  ];
 
   build-system = [
     setuptools
@@ -29,12 +33,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "tree_sitter_bash" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    tree-sitter
-  ];
 
   meta = {
     description = "Bash grammar for tree-sitter";

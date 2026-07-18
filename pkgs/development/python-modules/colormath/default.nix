@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   networkx,
   numpy,
   pytest8_3CheckHook,
@@ -14,7 +14,6 @@ buildPythonPackage rec {
   # versions, should be included in versions > 3.0
   # https://github.com/gtaylor/python-colormath/issues/104
   version = "3.0.0-unstable-2021-04-17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gtaylor";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     hash = "sha256-eACVPIQFgiGiVmQ/PjUxP/UH/hBOsCywz5PlgpA4dk4=";
   };
 
+  nativeCheckInputs = [ pytest8_3CheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,8 +30,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [ pytest8_3CheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "colormath" ];
 
   meta = {

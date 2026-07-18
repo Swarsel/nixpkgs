@@ -42,9 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Static analysis tool to find bugs in Java programs automatically";
     homepage = "https://findbugs.sourceforge.net/";
+    license = lib.licenses.lgpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ pSub ];
     platforms = with lib.platforms; unix;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.lgpl3;
   };
 })

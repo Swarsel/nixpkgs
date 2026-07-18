@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,23 +9,24 @@
 buildPythonPackage (finalAttrs: {
   pname = "mistune";
   version = "2.0.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-AkYRPLJJLbh1xr5Wl0p8iTMzvybNkokchfYxUc7gnTQ=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "mistune" ];
 
   meta = {
-    changelog = "https://github.com/lepture/mistune/blob/v${finalAttrs.version}/docs/changes.rst";
     description = "Sane Markdown parser with useful plugins and renderers";
     homepage = "https://github.com/lepture/mistune";
+    changelog = "https://github.com/lepture/mistune/blob/v${finalAttrs.version}/docs/changes.rst";
+    license = lib.licenses.bsd3;
+    maintainers = [ ];
+
     knownVulnerabilities = [
       "GHSA-h7ww-273w-6cm8"
       "CVE-2026-44896"
@@ -56,7 +57,5 @@ buildPythonPackage (finalAttrs: {
       "GHSA-jxhr-4j38-fpxg"
       "GHSA-8ppg-4vv7-9p53"
     ];
-    license = lib.licenses.bsd3;
-    maintainers = [ ];
   };
 })

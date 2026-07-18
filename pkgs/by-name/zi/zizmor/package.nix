@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rust-jemalloc-sys,
   installShellFiles,
   nix-update-script,
+  rust-jemalloc-sys,
   rustPlatform,
   versionCheckHook,
 }:
@@ -20,15 +20,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-AL4y9lB60zvWhr5U6vzVyg0DhxFCaKkP8+6DWdg2vYA=";
   };
 
-  cargoHash = "sha256-PGU9R6EKT+9ZdgxBgQqlvvmyEtDRG6zT2EdQPzlPIM0=";
+  nativeBuildInputs = lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    installShellFiles
+  ];
 
   buildInputs = [
     rust-jemalloc-sys
   ];
 
-  nativeBuildInputs = lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
-    installShellFiles
-  ];
+  cargoHash = "sha256-PGU9R6EKT+9ZdgxBgQqlvvmyEtDRG6zT2EdQPzlPIM0=";
 
   checkFlags = [
     # need network
@@ -50,9 +50,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish <("$out/bin/zizmor" --completions fish)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=^v([0-9.]+\\.[0-9.]+\\.[0-9.])+$" ];

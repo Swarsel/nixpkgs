@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
-  util-macros,
   libx11,
   libxaw,
   libxmu,
   libxt,
+  pkg-config,
+  util-macros,
 }:
 
 stdenv.mkDerivation rec {
@@ -16,11 +16,11 @@ stdenv.mkDerivation rec {
   version = "1.2.5";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "xorg/app";
     repo = "xedit";
     rev = "${pname}-${version}";
     sha256 = "sha256-+nWtoqm+5ie2U5nFJRioftMkxJFNtws09kTelmWhqgA=";
+    domain = "gitlab.freedesktop.org";
   };
 
   # ./lisp/mathimp.c:493:10: error: implicitly declaring library function 'finite' with type 'int (double)'
@@ -35,6 +35,7 @@ stdenv.mkDerivation rec {
     pkg-config
     util-macros
   ];
+
   buildInputs = [
     libx11
     libxaw
@@ -52,8 +53,8 @@ stdenv.mkDerivation rec {
     homepage = "https://gitlab.freedesktop.org/xorg/app/xedit";
     license = with lib.licenses; [ mit ];
     platforms = lib.platforms.unix;
+    mainProgram = "xedit";
     # never built on aarch64-darwin, x86_64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin;
-    mainProgram = "xedit";
   };
 }

@@ -1,16 +1,13 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-
   autoreconfHook,
-  texinfo,
-  perl,
-
-  python3,
   bash,
   nix-update-script,
+  perl,
+  python3,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,17 +46,21 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://bashdb.sourceforge.net/";
     description = "A gdb-like debugger for bash";
+
     longDescription = ''
       The Bash Debugger Project is a source-code debugger for bash that follows
       the gdb command syntax.
     '';
+
+    homepage = "https://bashdb.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "bashdb";
+
     maintainers = with lib.maintainers; [
       jk
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "bashdb";
   };
 })

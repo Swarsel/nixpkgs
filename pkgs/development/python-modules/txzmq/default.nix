@@ -10,12 +10,11 @@
 buildPythonPackage rec {
   pname = "txzmq";
   version = "1.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "txZMQ";
     hash = "sha256-jWB9C/CcqUYAuOQvByHb5D7lOgRwGCNErHrOfljcYXc=";
+    pname = "txZMQ";
   };
 
   propagatedBuildInputs = [
@@ -24,7 +23,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "txzmq" ];
 
   meta = {

@@ -1,17 +1,17 @@
 {
   lib,
-  fetchFromGitHub,
-  fetchpatch2,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  ncurses,
+  fetchpatch2,
   libcap,
   libnl,
-  sensorsSupport ? (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isStatic),
   lm_sensors,
-  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
+  ncurses,
+  pkg-config,
   systemdLibs,
+  sensorsSupport ? (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isStatic),
+  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
   withVimKeys ? false,
 }:
 
@@ -28,10 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mw7pixNk+AF2Hz8YUkkUleQpR8yNF0pb1NjYgID076A=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = lib.optional withVimKeys (fetchpatch2 {
+    hash = "sha256-fZDTA2dCOmXxUYD6Wm41q7TxL7fgQOj8a/8yJC7Zags=";
     name = "vim-keybindings.patch";
     url = "https://aur.archlinux.org/cgit/aur.git/plain/vim-keybindings.patch?h=htop-vim&id=d10f022b3ca1207200187a55f5b116a5bd8224f7";
-    hash = "sha256-fZDTA2dCOmXxUYD6Wm41q7TxL7fgQOj8a/8yJC7Zags=";
   });
 
   # upstream removed pkg-config support and uses dlopen now
@@ -70,11 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional sensorsSupport "--enable-sensors";
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   postFixup =
     let
       optionalPatch = pred: so: lib.optionalString pred "patchelf --add-needed ${so} $out/bin/htop";
@@ -87,17 +87,21 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description =
       "Interactive process viewer" + lib.optionalString withVimKeys ", with vim-style keybindings";
+
     homepage =
       if withVimKeys then "https://aur.archlinux.org/packages/htop-vim" else "https://htop.dev";
+
+    changelog = "https://github.com/htop-dev/htop/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       rob
       relrod
       SuperSandro2000
       thiagokokada
     ];
-    changelog = "https://github.com/htop-dev/htop/blob/${finalAttrs.version}/ChangeLog";
+
+    platforms = lib.platforms.all;
     mainProgram = "htop";
   };
 })

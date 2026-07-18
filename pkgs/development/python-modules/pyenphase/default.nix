@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   awesomeversion,
   buildPythonPackage,
   envoy-utils,
-  fetchFromGitHub,
   lxml,
   orjson,
   poetry-core,
@@ -23,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyenphase";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyenphase";
@@ -32,7 +31,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-UGH3zDoTBrnpTK1rdDRKIC4XhJVhkEFCvAdUCN9cj6U=";
   };
 
-  pythonRelaxDeps = [ "tenacity" ];
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-timeout
+    pytestCheckHook
+    python-jsonpath
+    respx
+    syrupy
+  ];
 
   build-system = [ poetry-core ];
 
@@ -46,23 +54,14 @@ buildPythonPackage (finalAttrs: {
     tenacity
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-timeout
-    pytestCheckHook
-    python-jsonpath
-    respx
-    syrupy
-  ];
-
   disabledTestPaths = [
     # Tests need network access
     "tests/test_retries.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyenphase" ];
+  pythonRelaxDeps = [ "tenacity" ];
 
   meta = {
     description = "Library to control enphase envoy";

@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  ocamlPackages,
   dune,
   mpfr,
+  ocamlPackages,
   ppl,
 }:
 
@@ -16,6 +16,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/jasmin-lang/jasmin/releases/download/v${finalAttrs.version}/jasmin-compiler-v${finalAttrs.version}.tar.bz2";
     hash = "sha256-eOn5KWNAPx7Z+VMm8mclUyxDlW8Q/MR9EayUxmojb1I=";
   };
+
+  outputs = [
+    "bin"
+    "lib"
+    "out"
+  ];
 
   nativeBuildInputs = with ocamlPackages; [
     ocaml
@@ -42,12 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     zarith
   ];
 
-  outputs = [
-    "bin"
-    "lib"
-    "out"
-  ];
-
   preInstall = ''
     export PREFIX=$lib
     export DUNE_OPTS="--prefix=$bin --libdir=$out/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib"
@@ -58,7 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/jasmin-lang/jasmin/";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
-    mainProgram = "jasminc";
     platforms = lib.platforms.all;
+    mainProgram = "jasminc";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  mkCoqDerivation,
-  single ? false,
   coq,
   equations,
+  mkCoqDerivation,
+  single ? false,
   version ? null,
 }@args:
 
@@ -28,12 +28,12 @@ let
       (case "8.20" "1.3.4-8.20")
     ] null;
   release = {
-    "1.0-beta2-8.11".hash = "sha256-I9YNk5Di6Udvq5/xpLSNflfjRyRH8fMnRzbo3uhpXNs=";
-    "1.0-beta2-8.12".hash = "sha256-I8gpmU9rUQJh0qfp5KOgDNscVvCybm5zX4TINxO1TVA=";
-    "1.0-beta2-8.13".hash = "sha256-IC56/lEDaAylUbMCfG/3cqOBZniEQk8jmI053DBO5l8=";
     "1.0-8.14".hash = "sha256-iRnaNeHt22JqxMNxOGPPycrO9EoCVjusR2s0GfON1y0=";
     "1.0-8.15".hash = "sha256-8RUC5dHNfLJtJh+IZG4nPTAVC8ZKVh2BHedkzjwLf/k=";
     "1.0-8.16".hash = "sha256-7rkCAN4PNnMgsgUiiLe2TnAliknN75s2SfjzyKCib/o=";
+    "1.0-beta2-8.11".hash = "sha256-I9YNk5Di6Udvq5/xpLSNflfjRyRH8fMnRzbo3uhpXNs=";
+    "1.0-beta2-8.12".hash = "sha256-I8gpmU9rUQJh0qfp5KOgDNscVvCybm5zX4TINxO1TVA=";
+    "1.0-beta2-8.13".hash = "sha256-IC56/lEDaAylUbMCfG/3cqOBZniEQk8jmI053DBO5l8=";
     "1.1-8.14".hash = "sha256-6vViCNQl6BnGgOHX3P/OLfFXN4aUfv4RbDokfz2BgQI=";
     "1.1-8.15".hash = "sha256-qCD3wFW4E+8vSVk4XoZ0EU4PVya0al+JorzS9nzmR/0=";
     "1.1-8.16".hash = "sha256-cTK4ptxpPPlqxAhasZFX3RpSlsoTZwhTqs2A3BZy9sA=";
@@ -52,43 +52,53 @@ let
 
   # list of core metacoq packages and their dependencies
   packages = {
-    "utils" = [ ];
-    "common" = [ "utils" ];
-    "template-coq" = [ "common" ];
-    "pcuic" =
-      if (lib.versionAtLeast coq.coq-version "8.17" || coq.coq-version == "dev") then
-        [ "common" ]
-      else
-        [ "template-coq" ];
-    "safechecker" = [ "pcuic" ];
-    "template-pcuic" = [
-      "template-coq"
-      "pcuic"
-    ];
-    "erasure" = [
-      "safechecker"
-      "template-pcuic"
-    ];
-    "quotation" = [
-      "template-coq"
-      "pcuic"
-      "template-pcuic"
-    ];
-    "safechecker-plugin" = [
-      "template-pcuic"
-      "safechecker"
-    ];
-    "erasure-plugin" = [
-      "template-pcuic"
-      "erasure"
-    ];
-    "translations" = [ "template-coq" ];
     "all" = [
       "safechecker-plugin"
       "erasure-plugin"
       "translations"
       "quotation"
     ];
+
+    "common" = [ "utils" ];
+
+    "erasure" = [
+      "safechecker"
+      "template-pcuic"
+    ];
+
+    "erasure-plugin" = [
+      "template-pcuic"
+      "erasure"
+    ];
+
+    "pcuic" =
+      if (lib.versionAtLeast coq.coq-version "8.17" || coq.coq-version == "dev") then
+        [ "common" ]
+      else
+        [ "template-coq" ];
+
+    "quotation" = [
+      "template-coq"
+      "pcuic"
+      "template-pcuic"
+    ];
+
+    "safechecker" = [ "pcuic" ];
+
+    "safechecker-plugin" = [
+      "template-pcuic"
+      "safechecker"
+    ];
+
+    "template-coq" = [ "common" ];
+
+    "template-pcuic" = [
+      "template-coq"
+      "pcuic"
+    ];
+
+    "translations" = [ "template-coq" ];
+    "utils" = [ ];
   };
 
   template-coq = metacoq_ "template-coq";
@@ -117,35 +127,15 @@ let
               owner
               ;
 
-            mlPlugin = true;
             propagatedBuildInputs = [
               equations
               coq.ocamlPackages.zarith
             ]
             ++ metacoq-deps;
 
-            patchPhase =
-              if lib.versionAtLeast coq.coq-version "8.17" || coq.coq-version == "dev" then
-                ''
-                  patchShebangs ./configure.sh
-                  patchShebangs ./template-coq/update_plugin.sh
-                  patchShebangs ./template-coq/gen-src/to-lower.sh
-                  patchShebangs ./safechecker-plugin/clean_extraction.sh
-                  patchShebangs ./erasure-plugin/clean_extraction.sh
-                  echo "CAMLFLAGS+=-w -60 # Unused module" >> ./safechecker/Makefile.plugin.local
-                  sed -i -e 's/mv $i $newi;/mv $i tmp; mv tmp $newi;/' ./template-coq/gen-src/to-lower.sh ./safechecker-plugin/clean_extraction.sh ./erasure-plugin/clean_extraction.sh
-                ''
-              else
-                ''
-                  patchShebangs ./configure.sh
-                  patchShebangs ./template-coq/update_plugin.sh
-                  patchShebangs ./template-coq/gen-src/to-lower.sh
-                  patchShebangs ./pcuic/clean_extraction.sh
-                  patchShebangs ./safechecker/clean_extraction.sh
-                  patchShebangs ./erasure/clean_extraction.sh
-                  echo "CAMLFLAGS+=-w -60 # Unused module" >> ./safechecker/Makefile.plugin.local
-                  sed -i -e 's/mv $i $newi;/mv $i tmp; mv tmp $newi;/' ./template-coq/gen-src/to-lower.sh ./pcuic/clean_extraction.sh ./safechecker/clean_extraction.sh ./erasure/clean_extraction.sh
-                '';
+            preBuild = ''
+              cd ${pkgpath}
+            '';
 
             configurePhase =
               lib.optionalString (package == "all") pkgallMake
@@ -169,9 +159,30 @@ let
                 ./configure.sh local
               '';
 
-            preBuild = ''
-              cd ${pkgpath}
-            '';
+            mlPlugin = true;
+
+            patchPhase =
+              if lib.versionAtLeast coq.coq-version "8.17" || coq.coq-version == "dev" then
+                ''
+                  patchShebangs ./configure.sh
+                  patchShebangs ./template-coq/update_plugin.sh
+                  patchShebangs ./template-coq/gen-src/to-lower.sh
+                  patchShebangs ./safechecker-plugin/clean_extraction.sh
+                  patchShebangs ./erasure-plugin/clean_extraction.sh
+                  echo "CAMLFLAGS+=-w -60 # Unused module" >> ./safechecker/Makefile.plugin.local
+                  sed -i -e 's/mv $i $newi;/mv $i tmp; mv tmp $newi;/' ./template-coq/gen-src/to-lower.sh ./safechecker-plugin/clean_extraction.sh ./erasure-plugin/clean_extraction.sh
+                ''
+              else
+                ''
+                  patchShebangs ./configure.sh
+                  patchShebangs ./template-coq/update_plugin.sh
+                  patchShebangs ./template-coq/gen-src/to-lower.sh
+                  patchShebangs ./pcuic/clean_extraction.sh
+                  patchShebangs ./safechecker/clean_extraction.sh
+                  patchShebangs ./erasure/clean_extraction.sh
+                  echo "CAMLFLAGS+=-w -60 # Unused module" >> ./safechecker/Makefile.plugin.local
+                  sed -i -e 's/mv $i $newi;/mv $i tmp; mv tmp $newi;/' ./template-coq/gen-src/to-lower.sh ./pcuic/clean_extraction.sh ./safechecker/clean_extraction.sh ./erasure/clean_extraction.sh
+                '';
 
             meta = {
               homepage = "https://metacoq.github.io/";
@@ -215,11 +226,11 @@ let
             && lib.versions.isLt "1.2" o.version
           )
           {
-            patchPhase = "";
-            configurePhase = "";
             preBuild = "";
             buildPhase = "echo doing nothing";
             installPhase = "echo doing nothing";
+            configurePhase = "";
+            patchPhase = "";
           }
       );
     in

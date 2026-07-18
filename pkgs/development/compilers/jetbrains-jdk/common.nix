@@ -2,46 +2,46 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  jdk,
-  git,
   autoconf,
-  unzip,
-  rsync,
-  shaderc,
-  vulkan-headers,
-  libxdamage,
-  libxxf86vm,
-  libxrandr,
-  libxi,
-  libxcursor,
-  libxrender,
-  libx11,
-  libxext,
-  libxkbcommon,
-  libxcb,
-  nss,
-  nspr,
+  fontconfig,
+  git,
+  jdk,
   libdrm,
   libgbm,
-  wayland,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxrender,
+  libxxf86vm,
+  nspr,
+  nss,
+  rsync,
+  shaderc,
   udev,
-  fontconfig,
+  unzip,
+  vulkan-headers,
+  wayland,
   debugBuild ? false,
   withJcef ? true,
 }:
 
 {
-  javaVersion,
   build,
+  homePath,
+  javaVersion,
   sourceDateEpoch,
   srcHash,
-  homePath,
-  jcefPackage ? null,
+  extraBuildInputs ? [ ],
   extraBuildPhase ? "",
-  vendorVersionString ? null,
   extraConfigureFlags ? [ ],
   extraNativeBuildInputs ? [ ],
-  extraBuildInputs ? [ ],
+  jcefPackage ? null,
+  vendorVersionString ? null,
 }:
 
 assert debugBuild -> withJcef;
@@ -58,13 +58,14 @@ let
   openjdkTag = "jbr-release-${javaVersion}b${build}";
 in
 jdk.overrideAttrs (oldAttrs: {
-  pname = "jetbrains-jdk" + lib.optionalString withJcef "-jcef";
   inherit
     javaVersion
     build
     version
     openjdkTag
     ;
+
+  pname = "jetbrains-jdk" + lib.optionalString withJcef "-jcef";
 
   src = fetchFromGitHub {
     owner = "JetBrains";
@@ -73,15 +74,29 @@ jdk.overrideAttrs (oldAttrs: {
     hash = srcHash;
   };
 
+  patches = [ ];
+
+  nativeBuildInputs = [
+    git
+    autoconf
+    unzip
+    rsync
+    shaderc # glslc
+  ]
+  ++ extraNativeBuildInputs
+  ++ oldAttrs.nativeBuildInputs;
+
+  buildInputs = [
+    vulkan-headers
+  ]
+  ++ extraBuildInputs
+  ++ oldAttrs.buildInputs or [ ];
+
   env = (oldAttrs.env or { }) // {
     BOOT_JDK = jdk.home;
     # run `git log -1 --pretty=%ct` in jdk repo for new value on update
     SOURCE_DATE_EPOCH = sourceDateEpoch;
   };
-
-  patches = [ ];
-
-  dontConfigure = true;
 
   buildPhase = ''
     runHook preBuild
@@ -153,8 +168,6 @@ jdk.overrideAttrs (oldAttrs: {
     chmod +x $out/lib/openjdk/lib/chrome-sandbox
   '';
 
-  dontStrip = debugBuild;
-
   postFixup = ''
     # Build the set of output library directories to rpath against
     LIBDIRS="${
@@ -193,24 +206,17 @@ jdk.overrideAttrs (oldAttrs: {
     done
   '';
 
-  nativeBuildInputs = [
-    git
-    autoconf
-    unzip
-    rsync
-    shaderc # glslc
-  ]
-  ++ extraNativeBuildInputs
-  ++ oldAttrs.nativeBuildInputs;
+  dontConfigure = true;
+  dontStrip = debugBuild;
 
-  buildInputs = [
-    vulkan-headers
-  ]
-  ++ extraBuildInputs
-  ++ oldAttrs.buildInputs or [ ];
+  passthru = oldAttrs.passthru // {
+    home = homePath;
+  };
 
   meta = {
+    inherit (jdk.meta) license platforms mainProgram;
     description = "OpenJDK fork to better support Jetbrains's products";
+
     longDescription = ''
       JetBrains Runtime is a runtime environment for running IntelliJ Platform
       based products on Windows, Mac OS X, and Linux. JetBrains Runtime is
@@ -221,16 +227,13 @@ jdk.overrideAttrs (oldAttrs: {
       JetBrains Runtime is not a certified build of OpenJDK. Please, use at
       your own risk.
     '';
+
     homepage = "https://confluence.jetbrains.com/display/JBR/JetBrains+Runtime";
-    inherit (jdk.meta) license platforms mainProgram;
+
     maintainers = with lib.maintainers; [
       aoli-al
     ];
 
     broken = stdenv.hostPlatform.isDarwin;
-  };
-
-  passthru = oldAttrs.passthru // {
-    home = homePath;
   };
 })

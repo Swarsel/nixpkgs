@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   autoconf-archive,
-  pkg-config,
+  autoreconfHook,
+  icu,
   leptonica,
   libpng,
   libtiff,
-  icu,
-  pango,
   opencl-headers,
+  pango,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,8 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i src/dict/matchdefs.h -e '1i #include <cstdint>'
   '';
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
@@ -54,6 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     pango
     opencl-headers
   ];
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "OCR engine";

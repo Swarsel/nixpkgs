@@ -13,12 +13,17 @@
 buildPythonPackage rec {
   pname = "envisage";
   version = "7.0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-1rspOLu0XE7xdmxV7W9sHHK2/OcEaKyfWw780e+MHZc=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    export HOME=$PWD/HOME
+  '';
 
   build-system = [ setuptools ];
 
@@ -31,12 +36,7 @@ buildPythonPackage rec {
   ]
   ++ apptools.optional-dependencies.preferences;
 
-  preCheck = ''
-    export HOME=$PWD/HOME
-  '';
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "envisage" ];
 
   meta = {

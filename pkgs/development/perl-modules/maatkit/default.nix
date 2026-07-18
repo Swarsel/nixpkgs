@@ -1,8 +1,8 @@
 {
-  buildPerlPackage,
   lib,
   fetchurl,
   DBDmysql,
+  buildPerlPackage,
 }:
 
 buildPerlPackage {
@@ -15,7 +15,6 @@ buildPerlPackage {
   };
 
   outputs = [ "out" ];
-
   buildInputs = [ DBDmysql ];
 
   preConfigure = ''
@@ -34,6 +33,7 @@ buildPerlPackage {
 
   meta = {
     description = "Database toolkit";
+
     longDescription = ''
       You can use Maatkit to prove replication is working correctly, fix
       corrupted data, automate repetitive tasks, speed up your servers, and
@@ -42,7 +42,8 @@ buildPerlPackage {
       In addition to MySQL, there is support for PostgreSQL, Memcached, and a
       growing variety of other databases and technologies.
     '';
-    license = lib.licenses.gpl2Plus;
+
     homepage = "https://code.google.com/archive/p/maatkit/";
+    license = lib.licenses.gpl2Plus;
   };
 }

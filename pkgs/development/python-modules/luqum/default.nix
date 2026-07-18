@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   elastic-transport,
   elasticsearch-dsl,
-  fetchFromGitHub,
   ply,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "luqum";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jurismarches";
@@ -28,7 +27,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ ply ];
 
   nativeCheckInputs = [
@@ -38,13 +36,14 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
-  pythonImportsCheck = [ "luqum" ];
-
   disabledTestPaths = [
     # Tests require an Elasticsearch instance
     "tests/test_elasticsearch/test_es_integration.py"
     "tests/test_elasticsearch/test_es_naming.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "luqum" ];
 
   meta = {
     description = "Lucene query parser generating ElasticSearch queries";

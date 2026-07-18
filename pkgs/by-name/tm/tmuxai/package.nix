@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
   writableTmpDirAsHomeHook,
@@ -19,6 +19,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Wzc7EDaW0fA76Fh4obqyAHiowXXxNbJXknkHXFBcKjY=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -27,16 +35,7 @@ buildGoModule (finalAttrs: {
     "-X=github.com/alvinunreal/tmuxai/internal.Date=1970-01-01T00:00:00Z"
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
   versionCheckKeepEnvironment = [ "HOME" ];
-  doInstallCheck = true;
-
-  __darwinAllowLocalNetworking = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

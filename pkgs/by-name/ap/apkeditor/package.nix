@@ -3,11 +3,10 @@
   stdenv,
   fetchFromGitHub,
   callPackage,
-  versionCheckHook,
-
-  jre,
   gradle,
+  jre,
   makeWrapper,
+  versionCheckHook,
 }:
 
 let
@@ -18,21 +17,20 @@ let
       outJar = "share/${projectName}/${projectName}.jar";
       self = stdenv.mkDerivation (
         {
-          __darwinAllowLocalNetworking = true;
-
-          buildInputs = [ jre ];
+          inherit outJar;
           nativeBuildInputs = [ gradle ];
-
-          gradleFlags = [ "-Dfile.encoding=utf-8" ];
-          gradleBuildTask = "jar";
+          buildInputs = [ jre ];
           doCheck = true;
 
-          inherit outJar;
           installPhase = ''
             runHook preInstall
             install -Dm644 build/libs/*.jar $out/${outJar}
             runHook postInstall
           '';
+
+          __darwinAllowLocalNetworking = true;
+          gradleBuildTask = "jar";
+          gradleFlags = [ "-Dfile.encoding=utf-8" ];
         }
         // args
         // {
@@ -61,12 +59,6 @@ let
     REAndroidLibrary {
       inherit pname version projectName;
 
-      # When you need to update **/deps.json for the dependencies (e.g. for smali),
-      # run `nix build apkeditor.passthru.deps.smali.mitmCache.updateScript`.
-      passthru.deps = {
-        inherit arsclib smali jcommand;
-      };
-
       src = fetchFromGitHub {
         owner = "REAndroid";
         repo = "APKEditor";
@@ -84,8 +76,6 @@ let
         makeWrapper
       ];
 
-      gradleBuildTask = "fatJar";
-
       # The paths libs/*.jar are hardcoded in build.gradle of APKEditor:
       # https://github.com/REAndroid/APKEditor/blob/V1.4.1/build.gradle#L24-L31
       preConfigure = ''
@@ -102,6 +92,13 @@ let
 
       doInstallCheck = true;
       nativeInstallCheckInputs = [ versionCheckHook ];
+      gradleBuildTask = "fatJar";
+
+      # When you need to update **/deps.json for the dependencies (e.g. for smali),
+      # run `nix build apkeditor.passthru.deps.smali.mitmCache.updateScript`.
+      passthru.deps = {
+        inherit arsclib smali jcommand;
+      };
 
       passthru.updateScript = ./update.sh;
 
@@ -109,8 +106,8 @@ let
         description = "Powerful android apk resources editor";
         homepage = "https://github.com/REAndroid/APKEditor";
         changelog = "https://github.com/REAndroid/APKEditor/releases/tag/V${version}";
-        maintainers = with lib.maintainers; [ ulysseszhan ];
         license = lib.licenses.asl20;
+        maintainers = with lib.maintainers; [ ulysseszhan ];
         platforms = lib.platforms.all;
         mainProgram = "APKEditor";
       };

@@ -1,9 +1,9 @@
 {
-  coreutils,
+  lib,
   fetchFromGitHub,
+  coreutils,
   gzip,
   jq,
-  lib,
   makeWrapper,
   qrencode,
   stdenvNoCC,
@@ -22,8 +22,6 @@ stdenvNoCC.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/bin
     cp -a quill-qr.sh $out/bin/quill-qr.sh
@@ -39,12 +37,14 @@ stdenvNoCC.mkDerivation rec {
     }"
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Print QR codes for use with https://p5deo-6aaaa-aaaab-aaaxq-cai.raw.ic0.app";
-    mainProgram = "quill-qr.sh";
     homepage = "https://github.com/colonelpanic8/quill-qr";
+    license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ imalison ];
     platforms = with lib.platforms; linux;
-    license = lib.licenses.unfree;
+    mainProgram = "quill-qr.sh";
   };
 }

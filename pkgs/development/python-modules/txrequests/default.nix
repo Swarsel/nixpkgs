@@ -1,17 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  twisted,
-  requests,
   cryptography,
+  fetchPypi,
+  requests,
+  twisted,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "txrequests";
   version = "0.9.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,8 +25,8 @@ buildPythonPackage rec {
 
   # Require network access
   doCheck = false;
-
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Asynchronous Python HTTP for Humans";

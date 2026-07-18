@@ -1,26 +1,25 @@
 {
   lib,
   buildPythonPackage,
-  pythonAtLeast,
   fetchPypi,
-  setuptools,
-  pandas,
   lxml,
+  pandas,
+  pythonAtLeast,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pandas-datareader";
   version = "0.10.0";
-  pyproject = true;
-
-  disabled = pythonAtLeast "3.12";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "9fc3c63d39bc0c10c2683f1c6d503ff625020383e38f6cbe14134826b454d5a6";
   };
 
+  # Tests are trying to load data over the network
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +28,8 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Tests are trying to load data over the network
-  doCheck = false;
+  disabled = pythonAtLeast "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "pandas_datareader" ];
 
   meta = {

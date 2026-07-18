@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hypothesis,
   marshmallow,
   poetry-core,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "dataclasses-json";
   version = "0.6.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lidatong";
@@ -34,26 +33,19 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
-  build-system = [
-    poetry-core
-    poetry-dynamic-versioning
-  ];
-
-  pythonRelaxDeps = [ "marshmallow" ];
-
-  dependencies = [
-    typing-inspect
-    marshmallow
-  ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
 
-  disabledTests = [
-    # fails to deserialize None with marshmallow 4.0
-    "test_deserialize"
+  build-system = [
+    poetry-core
+    poetry-dynamic-versioning
+  ];
+
+  dependencies = [
+    typing-inspect
+    marshmallow
   ];
 
   disabledTestPaths = [
@@ -63,7 +55,14 @@ buildPythonPackage rec {
     "tests/test_annotations.py"
   ];
 
+  disabledTests = [
+    # fails to deserialize None with marshmallow 4.0
+    "test_deserialize"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "dataclasses_json" ];
+  pythonRelaxDeps = [ "marshmallow" ];
 
   meta = {
     description = "Simple API for encoding and decoding dataclasses to and from JSON";

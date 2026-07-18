@@ -26,7 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-
   nativeBuildInputs = [ ocaml ];
 
   buildPhase = ''
@@ -62,10 +61,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Cryptographic protocol verifier in the computational model";
-    mainProgram = "cryptoverif";
     homepage = "https://bblanche.gitlabpages.inria.fr/CryptoVerif/";
     license = lib.licenses.cecill-b;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.thoughtpolice ];
+    platforms = lib.platforms.unix;
+    mainProgram = "cryptoverif";
   };
 })

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "logging-tree";
   version = "1.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "brandon-rhodes";
@@ -18,10 +17,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-9MeCx708EUe5dmFkol+HISzdBX+yar1HjKIAwmg1msA=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "logging_tree" ];
 
   meta = {

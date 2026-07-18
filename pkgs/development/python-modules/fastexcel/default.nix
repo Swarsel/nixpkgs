@@ -1,39 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-
+  buildPythonPackage,
   # nativeBuildInputs
   cargo,
-  rustc,
-
   # optional-dependencies
   pandas,
   polars,
   pyarrow,
-
   # tests
   pytest-mock,
   pytestCheckHook,
+  rustPlatform,
+  rustc,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fastexcel";
   version = "0.20.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ToucanToco";
     repo = "fastexcel";
     tag = "v${finalAttrs.version}";
     hash = "sha256-lceUFw9+FsEoCWSNieCYGJW+pCqCpfthEAFCfXKdpj0=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-04jqysfab+mEir1f2kc15DCdueu1h+HS4FOIol4sBZY=";
   };
 
   nativeBuildInputs = [
@@ -43,34 +33,45 @@ buildPythonPackage (finalAttrs: {
     rustc
   ];
 
-  optional-dependencies = {
-    pyarrow = [
-      pyarrow
-    ];
-    pandas = [
-      pandas
-      pyarrow
-    ];
-    polars = [
-      polars
-    ];
-  };
-
-  pythonImportsCheck = [
-    "fastexcel"
-    "fastexcel._fastexcel"
-  ];
-
-  preCheck = ''
-    rm -rf python/fastexcel
-  '';
-
   nativeCheckInputs = [
     pandas
     polars
     pyarrow
     pytest-mock
     pytestCheckHook
+  ];
+
+  preCheck = ''
+    rm -rf python/fastexcel
+  '';
+
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-04jqysfab+mEir1f2kc15DCdueu1h+HS4FOIol4sBZY=";
+  };
+
+  optional-dependencies = {
+    pandas = [
+      pandas
+      pyarrow
+    ];
+
+    polars = [
+      polars
+    ];
+
+    pyarrow = [
+      pyarrow
+    ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "fastexcel"
+    "fastexcel._fastexcel"
   ];
 
   meta = {

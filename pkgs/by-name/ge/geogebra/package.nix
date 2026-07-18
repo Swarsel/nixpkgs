@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  jre,
   libGL,
   libxxf86vm,
-  jre,
   makeDesktopItem,
   makeWrapper,
   unzip,
@@ -15,49 +15,58 @@ let
   version = "5-0-785-0";
 
   srcIcon = fetchurl {
-    url = "https://web.archive.org/web/20200227000442if_/https://static.geogebra.org/images/geogebra-logo.svg";
     hash = "sha256-Vd7Wteya04JJT4WNirXe8O1sfVKUgc0hKGOy7d47Xgc=";
+    url = "https://web.archive.org/web/20200227000442if_/https://static.geogebra.org/images/geogebra-logo.svg";
   };
 
   desktopItem = makeDesktopItem {
-    name = "geogebra";
-    exec = "geogebra";
-    icon = "geogebra";
-    desktopName = "Geogebra";
-    genericName = "Geogebra";
-    comment = meta.description;
     categories = [
       "Education"
       "Science"
       "Math"
     ];
+
+    comment = meta.description;
+    desktopName = "Geogebra";
+    exec = "geogebra";
+    genericName = "Geogebra";
+    icon = "geogebra";
+
     mimeTypes = [
       "application/vnd.geogebra.file"
       "application/vnd.geogebra.tool"
     ];
+
+    name = "geogebra";
   };
 
   meta = {
     description = "Dynamic mathematics software with graphics, algebra and spreadsheets";
+
     longDescription = ''
       Dynamic mathematics software for all levels of education that brings
       together geometry, algebra, spreadsheets, graphing, statistics and
       calculus in one easy-to-use package.
     '';
+
     homepage = "https://www.geogebra.org/";
-    maintainers = with lib.maintainers; [
-      sikmir
-      soupglasses
-    ];
+
     license = with lib.licenses; [
       gpl3
       cc-by-nc-sa-30
       geogebra
     ];
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode # some jars include native binaries
     ];
+
+    maintainers = with lib.maintainers; [
+      sikmir
+      soupglasses
+    ];
+
     platforms = with lib.platforms; linux ++ darwin;
     hydraPlatforms = [ ];
   };
@@ -71,14 +80,13 @@ let
       desktopItem
       ;
 
-    preferLocalBuild = true;
-
     src = fetchurl {
+      hash = "sha256-cL4ERKZpE9Y6IdOjvYiX3nIIW3E2qoqkpMyTszvFseM=";
+
       urls = [
         "https://download.geogebra.org/installers/5.0/GeoGebra-Linux-Portable-${version}.tar.bz2"
         "https://web.archive.org/web/20230627211902/https://download.geogebra.org/installers/5.0/GeoGebra-Linux-Portable-${version}.tar.bz2"
       ];
-      hash = "sha256-cL4ERKZpE9Y6IdOjvYiX3nIIW3E2qoqkpMyTszvFseM=";
     };
 
     nativeBuildInputs = [ makeWrapper ];
@@ -106,22 +114,21 @@ let
       install -Dm644 "${srcIcon}" \
         "$out/share/icons/hicolor/scalable/apps/geogebra.svg"
     '';
+
+    preferLocalBuild = true;
   };
 
   darwinPkg = stdenv.mkDerivation {
     inherit pname version meta;
 
-    preferLocalBuild = true;
-
     src = fetchurl {
+      hash = "sha256-KHjNH8c3/aMJ5CcwCwW9z0QRxJwqYU5I610zpMMruBQ=";
+
       urls = [
         "https://download.geogebra.org/installers/5.0/GeoGebra-MacOS-Installer-withJava-${version}-x64.zip"
         "https://web.archive.org/web/20230627211427/https://download.geogebra.org/installers/5.0/GeoGebra-MacOS-Installer-withJava-${version}-x64.zip"
       ];
-      hash = "sha256-KHjNH8c3/aMJ5CcwCwW9z0QRxJwqYU5I610zpMMruBQ=";
     };
-
-    dontUnpack = true;
 
     nativeBuildInputs = [ unzip ];
 
@@ -129,6 +136,9 @@ let
       install -dm755 $out/Applications
       unzip $src -d $out/Applications
     '';
+
+    dontUnpack = true;
+    preferLocalBuild = true;
   };
 in
 if stdenv.hostPlatform.isDarwin then darwinPkg else linuxPkg

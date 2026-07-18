@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "websurfx";
@@ -16,17 +16,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-qSgNyK9W38wAkL0EM9HIFJOilPNQWeHRNpiasGbBL0I=";
   };
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ openssl ];
-
-  cargoHash = "sha256-oI9+nMDkmRLxN0dw/X1zchsSUrr5ZC4qQgXoBKR0AbU=";
-
   postPatch = ''
     substituteInPlace src/handler.rs \
       --replace-fail "/etc/xdg" "$out/etc/xdg" \
       --replace-fail "/opt/websurfx" "$out/opt/websurfx"
   '';
+
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-oI9+nMDkmRLxN0dw/X1zchsSUrr5ZC4qQgXoBKR0AbU=";
 
   postInstall = ''
     mkdir -p $out/etc/xdg
@@ -38,10 +36,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Open source alternative to searx";
+
     longDescription = ''
       An open source alternative to searx which provides a modern-looking,
       lightning-fast, privacy respecting, secure meta search engine.
     '';
+
     homepage = "https://github.com/neon-mmd/websurfx";
     changelog = "https://github.com/neon-mmd/websurfx/releases";
     license = lib.licenses.agpl3Plus;

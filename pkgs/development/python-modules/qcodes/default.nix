@@ -1,66 +1,61 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  versioningit,
-
   # dependencies
   broadbean,
+  buildPythonPackage,
   cf-xarray,
   dask,
+  # tests
+  deepdiff,
+  # optional-dependencies
+  furo,
   h5netcdf,
   h5py,
+  hypothesis,
   ipykernel,
   ipywidgets,
   jsonschema,
   libcst,
+  lxml,
   matplotlib,
+  nbsphinx,
   networkx,
   numpy,
   opentelemetry-api,
   packaging,
   pandas,
   pillow,
-  pyarrow,
-  pyvisa,
-  ruamel-yaml,
-  tabulate,
-  tqdm,
-  typing-extensions,
-  uncertainties,
-  websockets,
-  xarray,
-
-  # optional-dependencies
-  furo,
-  nbsphinx,
-  pyvisa-sim,
-  scipy,
-  sphinx,
-  sphinx-issues,
-  towncrier,
-
-  # tests
-  deepdiff,
-  hypothesis,
-  lxml,
   pip,
+  pyarrow,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-mock,
   pytest-rerunfailures,
   pytest-xdist,
   pytestCheckHook,
+  pyvisa,
+  pyvisa-sim,
+  ruamel-yaml,
+  scipy,
+  # build-system
+  setuptools,
+  sphinx,
+  sphinx-issues,
+  tabulate,
+  towncrier,
+  tqdm,
+  typing-extensions,
+  uncertainties,
+  versioningit,
+  websockets,
   writableTmpDirAsHomeHook,
+  xarray,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "qcodes";
   version = "0.56.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -78,6 +73,25 @@ buildPythonPackage (finalAttrs: {
         "'ignore:Model_336 is deprecated:qcodes.utils.deprecate.QCoDeSDeprecationWarning'," \
         ""
   '';
+
+  nativeCheckInputs = [
+    deepdiff
+    hypothesis
+    libcst
+    lxml
+    pip
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-mock
+    pytest-rerunfailures
+    pytest-xdist
+    pytestCheckHook
+    pyvisa-sim
+    sphinx
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -111,63 +125,8 @@ buildPythonPackage (finalAttrs: {
     xarray
   ];
 
-  optional-dependencies = {
-    docs = [
-      # autodocsumm
-      furo
-      nbsphinx
-      pyvisa-sim
-      # qcodes-loop
-      scipy
-      sphinx
-      # sphinx-favicon
-      sphinx-issues
-      # sphinx-jsonschema
-      # sphinxcontrib-towncrier
-      towncrier
-    ];
-    loop = [
-      # qcodes-loop
-    ];
-    refactor = [
-      libcst
-    ];
-    zurichinstruments = [
-      # zhinst-qcodes
-    ];
-  };
-
-  nativeCheckInputs = [
-    deepdiff
-    hypothesis
-    libcst
-    lxml
-    pip
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-mock
-    pytest-rerunfailures
-    pytest-xdist
-    pytestCheckHook
-    pyvisa-sim
-    sphinx
-    writableTmpDirAsHomeHook
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  pytestFlags = [
-    "-v"
-    "--hypothesis-profile ci"
-    # Follow upstream with settings
-    "--durations=20"
-
-    # ERROR tests/test_interactive_widget.py - DeprecationWarning: Jupyter is migrating its paths to use standard platformdirs
-    # given by the platformdirs library.  To remove this warning and
-    # see the appropriate new directories, set the environment variable
-    # `JUPYTER_PLATFORM_DIRS=1` and then run `jupyter --paths`.
-    # The use of platformdirs will be the default in `jupyter_core` v6
-    "-Wignore::DeprecationWarning"
+  disabledTestMarks = [
+    "serial"
   ];
 
   disabledTestPaths = [
@@ -177,10 +136,6 @@ buildPythonPackage (finalAttrs: {
     "tests/dataset/test_dataset_basic.py"
     # qcodes.utils.deprecate.QCoDeSDeprecationWarning: Model_336 is deprecated
     "tests/drivers/test_lakeshore_336_legacy.py"
-  ];
-
-  disabledTestMarks = [
-    "serial"
   ];
 
   disabledTests = [
@@ -206,16 +161,63 @@ buildPythonPackage (finalAttrs: {
     "test_step_ramp"
   ];
 
+  optional-dependencies = {
+    docs = [
+      # autodocsumm
+      furo
+      nbsphinx
+      pyvisa-sim
+      # qcodes-loop
+      scipy
+      sphinx
+      # sphinx-favicon
+      sphinx-issues
+      # sphinx-jsonschema
+      # sphinxcontrib-towncrier
+      towncrier
+    ];
+
+    loop = [
+      # qcodes-loop
+    ];
+
+    refactor = [
+      libcst
+    ];
+
+    zurichinstruments = [
+      # zhinst-qcodes
+    ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-v"
+    "--hypothesis-profile ci"
+    # Follow upstream with settings
+    "--durations=20"
+
+    # ERROR tests/test_interactive_widget.py - DeprecationWarning: Jupyter is migrating its paths to use standard platformdirs
+    # given by the platformdirs library.  To remove this warning and
+    # see the appropriate new directories, set the environment variable
+    # `JUPYTER_PLATFORM_DIRS=1` and then run `jupyter --paths`.
+    # The use of platformdirs will be the default in `jupyter_core` v6
+    "-Wignore::DeprecationWarning"
+  ];
+
   pythonImportsCheck = [ "qcodes" ];
 
   meta = {
     description = "Python-based data acquisition framework";
-    changelog = "https://github.com/QCoDeS/Qcodes/releases/tag/${finalAttrs.src.tag}";
-    downloadPage = "https://github.com/QCoDeS/Qcodes";
     homepage = "https://qcodes.github.io/Qcodes/";
+    changelog = "https://github.com/QCoDeS/Qcodes/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
     ];
+
+    downloadPage = "https://github.com/QCoDeS/Qcodes";
   };
 })

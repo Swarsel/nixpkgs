@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "tika";
   version = "3.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,13 +22,14 @@ buildPythonPackage rec {
 
   # Requires network
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ pname ];
 
   meta = {
     description = "Python binding to the Apache Tika™ REST services";
-    mainProgram = "tika-python";
     homepage = "https://github.com/chrismattmann/tika-python";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ Flakebi ];
+    mainProgram = "tika-python";
   };
 }

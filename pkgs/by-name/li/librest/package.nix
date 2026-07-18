@@ -2,21 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
   gi-docgen,
   glib,
+  gnome,
+  gobject-introspection,
   json-glib,
   libsoup_3,
   libxml2,
-  gobject-introspection,
-  gnome,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "librest";
   version = "0.10.2";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/librest/${lib.versions.majorMinor finalAttrs.version}/librest-${finalAttrs.version}.tar.xz";
+    sha256 = "e2y5Ers6Is+n3PAFkl3LYogwJNsMCQmUhufWhRGFybg=";
+  };
 
   outputs = [
     "out"
@@ -24,13 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/librest/${lib.versions.majorMinor finalAttrs.version}/librest-${finalAttrs.version}.tar.xz";
-    sha256 = "e2y5Ers6Is+n3PAFkl3LYogwJNsMCQmUhufWhRGFybg=";
-  };
-
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -59,6 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  depsBuildBuild = [ pkg-config ];
   separateDebugInfo = true;
 
   passthru = {

@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   coreutils,
+  dbus,
   gnugrep,
-  util-linux,
+  kbd,
   kmod,
   procps,
-  kbd,
-  dbus,
+  util-linux,
 }:
 
 let
@@ -62,8 +62,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://pm-utils.freedesktop.org/wiki/";
     description = "Small collection of scripts that handle suspend and resume on behalf of HAL";
+    homepage = "https://pm-utils.freedesktop.org/wiki/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
   };

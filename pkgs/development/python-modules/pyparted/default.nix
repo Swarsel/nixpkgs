@@ -5,19 +5,17 @@
   buildPythonPackage,
   isPyPy,
   pkgs,
-  six,
   pytestCheckHook,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "pyparted";
   version = "3.13.0";
-  format = "setuptools";
-  disabled = isPyPy;
 
   src = fetchFromGitHub {
-    repo = "pyparted";
     owner = "dcantrell";
+    repo = "pyparted";
     tag = "v${version}";
     hash = "sha256-AiUCCrEbDD0OxrvXs1YN3/1IE7SuVasC2YCirIG58iU=";
   };
@@ -34,20 +32,24 @@ buildPythonPackage rec {
       tests/test__ped_ped.py
   '';
 
+  nativeBuildInputs = [ pkgs.pkg-config ];
+  propagatedBuildInputs = [ pkgs.parted ];
+
   preConfigure = ''
     PATH="${pkgs.parted}/sbin:$PATH"
   '';
 
-  nativeBuildInputs = [ pkgs.pkg-config ];
   nativeCheckInputs = [
     six
     pytestCheckHook
   ];
-  propagatedBuildInputs = [ pkgs.parted ];
+
+  disabled = isPyPy;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/dcantrell/pyparted/";
     description = "Python interface for libparted";
+    homepage = "https://github.com/dcantrell/pyparted/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
   };

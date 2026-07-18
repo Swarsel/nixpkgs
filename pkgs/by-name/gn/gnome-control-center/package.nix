@@ -1,8 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  replaceVars,
+  fetchurl,
   accountsservice,
   adwaita-icon-theme,
   blueprint-compiler,
@@ -12,19 +11,22 @@
   dbus,
   docbook-xsl-nons,
   fontconfig,
+  gcr_4,
   gdk-pixbuf,
   gettext,
   glib,
   glib-networking,
-  gcr_4,
   glibc,
+  gmobile,
+  gnome,
   gnome-bluetooth,
   gnome-color-manager,
   gnome-desktop,
   gnome-online-accounts,
+  gnome-remote-desktop,
   gnome-settings-daemon,
   gnome-tecla,
-  gnome,
+  gnome-user-share,
   gsettings-desktop-schemas,
   gsound,
   gst_all_1,
@@ -32,45 +34,43 @@
   gtk4,
   ibus,
   json-glib,
+  libadwaita,
+  libepoxy,
   libgtop,
   libgudev,
-  libadwaita,
-  libkrb5,
   libjxl,
+  libkrb5,
+  libnma-gtk4,
   libpulseaudio,
   libpwquality,
   librsvg,
-  webp-pixbuf-loader,
   libsecret,
   libsoup_3,
   libwacom,
   libxml2,
   libxslt,
+  localsearch,
   meson,
   modemmanager,
   mutter,
   networkmanager,
   networkmanagerapplet,
-  libnma-gtk4,
   ninja,
   pkg-config,
   polkit,
   python3,
+  replaceVars,
   samba,
   setxkbmap,
   shadow,
   shared-mime-info,
   sound-theme-freedesktop,
   tinysparql,
-  localsearch,
   tzdata,
   udisks,
   upower,
   wayland-scanner,
-  libepoxy,
-  gmobile,
-  gnome-user-share,
-  gnome-remote-desktop,
+  webp-pixbuf-loader,
   wrapGAppsHook4,
   xorg-server,
 }:
@@ -86,9 +86,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (replaceVars ./paths.patch {
-      gcm = gnome-color-manager;
       inherit glibc tzdata shadow;
       inherit cups networkmanagerapplet;
+      gcm = gnome-color-manager;
     })
   ];
 
@@ -158,6 +158,13 @@ stdenv.mkDerivation (finalAttrs: {
     gst_all_1.gst-plugins-good
   ];
 
+  preConfigure = ''
+    # For ITS rules
+    addToSearchPath "XDG_DATA_DIRS" "${polkit.out}/share"
+  '';
+
+  doCheck = true;
+
   nativeCheckInputs = [
     dbus
     python3.pkgs.pygobject3 # for test-networkmanager-service.py
@@ -165,13 +172,6 @@ stdenv.mkDerivation (finalAttrs: {
     setxkbmap
     xorg-server # for Xvfb
   ];
-
-  doCheck = true;
-
-  preConfigure = ''
-    # For ITS rules
-    addToSearchPath "XDG_DATA_DIRS" "${polkit.out}/share"
-  '';
 
   preCheck = ''
     # Basically same as https://github.com/NixOS/nixpkgs/pull/141299
@@ -214,9 +214,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Utilities to configure the GNOME desktop";
-    mainProgram = "gnome-control-center";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-control-center";
+    teams = [ lib.teams.gnome ];
   };
 })

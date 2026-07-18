@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  openssl,
-  libssh2,
   gpgme,
+  libssh2,
+  openssl,
   versionCheckHook,
 }:
 
@@ -34,17 +34,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--with-plugins" ];
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "-h";
-  doInstallCheck = true;
 
   meta = {
     description = "Modular and multi processing pass phrase cracking tool";
     homepage = "https://leidecker.info/projects/phrasendrescher/index.shtml";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = lib.platforms.all;
     mainProgram = "pd";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pydantic,
   pytest-asyncio,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "lifx-emulator-core";
   version = "3.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Djelibeybi";
@@ -22,8 +21,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-bZ+u/OKFDYV0kQLeVQPDyLKC9KCTJydbl0xnuOsrh+0=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/lifx-emulator-core";
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -31,15 +35,9 @@ buildPythonPackage (finalAttrs: {
     pyyaml
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "lifx_emulator" ];
+  sourceRoot = "${finalAttrs.src.name}/packages/lifx-emulator-core";
 
   meta = {
     description = "Core Python library for emulating LIFX devices using the LAN protocol";

@@ -1,49 +1,49 @@
 {
   lib,
   stdenv,
-  writeShellScript,
-  nix-update,
-  curl,
-  jq,
-  git,
-  git-lfs,
   fetchurl,
-  wrapGAppsHook3,
   alsa-lib,
+  asar,
   at-spi2-atk,
   cairo,
+  copyDesktopItems,
   coreutils,
   cups,
+  curl,
   dbus,
   expat,
   gdk-pixbuf,
+  git,
+  git-lfs,
   glib,
   gtk3,
-  libgbm,
-  nss,
-  nspr,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
-  libx11,
-  libxshmfence,
-  libxkbfile,
-  libxcb,
-  libdrm,
-  libsecret,
-  libxkbcommon,
-  pango,
-  systemd,
   hunspellDicts,
-  useHunspell ? true,
-  languages ? [ "en_US" ],
-  withNemoAction ? true,
+  jq,
+  libdrm,
+  libgbm,
+  libsecret,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxkbcommon,
+  libxkbfile,
+  libxrandr,
+  libxshmfence,
   makeDesktopItem,
-  copyDesktopItems,
-  asar,
+  nix-update,
+  nspr,
+  nss,
+  pango,
   python3,
+  systemd,
+  wrapGAppsHook3,
+  writeShellScript,
+  languages ? [ "en_US" ],
+  useHunspell ? true,
+  withNemoAction ? true,
 }:
 
 let
@@ -95,17 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
     finalAttrs.passthru.srcs.${stdenv.hostPlatform.system}
       or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
-  passthru.srcs = {
-    x86_64-linux = fetchurl {
-      url = "https://github.com/pulsar-edit/pulsar/releases/download/v${finalAttrs.version}/Linux.pulsar-${finalAttrs.version}.tar.gz";
-      hash = "sha256-66kubyDMEHgRdT38TTESMIZ+wQPPXWHBc0jYY3aMSkU=";
-    };
-    aarch64-linux = fetchurl {
-      url = "https://github.com/pulsar-edit/pulsar/releases/download/v${finalAttrs.version}/ARM.Linux.pulsar-${finalAttrs.version}-arm64.tar.gz";
-      hash = "sha256-MTWqUlbfjJlIQVy0YBLbenMzA7Xgnkr34nr2t8nhofc=";
-    };
-  };
-
   # strip leading `.` from $0.
   # for .pulsar.sh-wrapped to correctly set ATOM_BASE_NAME
   # (`--argv0` shenanigans in makeWrapper does not work)
@@ -126,9 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
     libxkbfile
   ];
-
-  dontBuild = true;
-  dontConfigure = true;
 
   installPhase = ''
     runHook preInstall
@@ -244,20 +230,36 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Pulsar";
-      desktopName = "Pulsar";
-      exec = "pulsar";
-      icon = "pulsar";
-      comment = "A Community-led Hyper-Hackable Text Editor";
-      genericName = "Text Editor";
       categories = [
         "Development"
         "TextEditor"
         "Utility"
       ];
+
+      comment = "A Community-led Hyper-Hackable Text Editor";
+      desktopName = "Pulsar";
+      exec = "pulsar";
+      genericName = "Text Editor";
+      icon = "pulsar";
       mimeTypes = [ "text/plain" ];
+      name = "Pulsar";
     })
   ];
+
+  dontBuild = true;
+  dontConfigure = true;
+
+  passthru.srcs = {
+    aarch64-linux = fetchurl {
+      hash = "sha256-MTWqUlbfjJlIQVy0YBLbenMzA7Xgnkr34nr2t8nhofc=";
+      url = "https://github.com/pulsar-edit/pulsar/releases/download/v${finalAttrs.version}/ARM.Linux.pulsar-${finalAttrs.version}-arm64.tar.gz";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-66kubyDMEHgRdT38TTESMIZ+wQPPXWHBc0jYY3aMSkU=";
+      url = "https://github.com/pulsar-edit/pulsar/releases/download/v${finalAttrs.version}/Linux.pulsar-${finalAttrs.version}.tar.gz";
+    };
+  };
 
   passthru.updateScript = writeShellScript "update-pulsar" ''
     set -euo pipefail
@@ -277,19 +279,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Community-led Hyper-Hackable Text Editor";
+
     longDescription = ''
       A Community-led Hyper-Hackable Text Editor, Forked from Atom, built on Electron.
       Designed to be deeply customizable, but still approachable using the default configuration.
     '';
+
     homepage = "https://github.com/pulsar-edit/pulsar";
     changelog = "https://github.com/pulsar-edit/pulsar/blob/v${finalAttrs.version}/CHANGELOG.md";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       bryango
       pbsds
     ];
+
+    platforms = lib.platforms.linux;
     # https://www.electronjs.org/docs/latest/tutorial/electron-timelines
     # a bump is expected (pulsar v1.131.0 bumped electron 12.2.3 -> 30.0.9 in february 2026)
     knownVulnerabilities = [ "Electron version 30 is EOL" ];

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,15 +16,14 @@ buildGoModule {
   };
 
   vendorHash = "sha256-ok71QlBHGasGVt+CGwGqhgmx5JLkQcdlU/KX+W1A5Ws=";
-
   subPackages = [ "." ];
 
   meta = {
     description = "Interactive Go interpreter and debugger with generics and macros";
-    mainProgram = "gomacro";
     homepage = "https://github.com/cosmos72/gomacro";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ shofius ];
+    mainProgram = "gomacro";
     broken = true;
   };
 }

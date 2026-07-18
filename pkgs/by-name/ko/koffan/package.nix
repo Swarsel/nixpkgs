@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -24,9 +24,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Free selfhosted groceries list for families and shared households";
-    mainProgram = "shopping-list";
     homepage = "https://github.com/PanSalut/Koffan";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lykos153 ];
+    mainProgram = "shopping-list";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hypothesis,
   numpy,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "fastnumbers";
   version = "5.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SethMMorton";
@@ -22,13 +21,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-7UjUkZPGsrtdQhgisI5IA37WvgGGiEXsey9NhATy064=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ typing-extensions ];
 
   # Tests fail due to numeric precision differences on ARM
   # See https://github.com/SethMMorton/fastnumbers/issues/28
@@ -40,8 +32,14 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pytestFlags = [ "--hypothesis-profile=standard" ];
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
 
+  dependencies = [ typing-extensions ];
+  pyproject = true;
+  pytestFlags = [ "--hypothesis-profile=standard" ];
   pythonImportsCheck = [ "fastnumbers" ];
 
   meta = {

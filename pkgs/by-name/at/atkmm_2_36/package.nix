@@ -4,10 +4,10 @@
   fetchurl,
   atk,
   glibmm_2_68,
-  pkg-config,
   gnome,
   meson,
   ninja,
+  pkg-config,
   python3,
 }:
 
@@ -25,16 +25,16 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  propagatedBuildInputs = [
-    atk
-    glibmm_2_68
-  ];
-
   nativeBuildInputs = [
     pkg-config
     meson
     ninja
     python3
+  ];
+
+  propagatedBuildInputs = [
+    atk
+    glibmm_2_68
   ];
 
   doCheck = true;
@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C++ wrappers for ATK accessibility toolkit";
-    license = lib.licenses.lgpl21Plus;
     homepage = "https://gtkmm.org";
+    license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.unix;
   };
 })

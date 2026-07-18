@@ -1,33 +1,29 @@
 {
   lib,
+  # optional-dependencies
+  argcomplete,
+  # dependencies
+  attrs,
   buildPythonPackage,
   callPackage,
   fetchPypi,
-  writeText,
-
+  hypothesis,
+  iniconfig,
+  mock,
+  packaging,
+  pluggy,
+  pygments,
+  requests,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  attrs,
-  iniconfig,
-  packaging,
-  pluggy,
-
-  # optional-dependencies
-  argcomplete,
-  hypothesis,
-  mock,
-  pygments,
-  requests,
+  writeText,
   xmlschema,
 }:
 
 buildPythonPackage rec {
   pname = "pytest";
   version = "9.0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -38,6 +34,13 @@ buildPythonPackage rec {
     "out"
     "testout"
   ];
+
+  doCheck = false;
+
+  postInstall = ''
+    mkdir $testout
+    cp -R testing $testout/testing
+  '';
 
   build-system = [
     setuptools
@@ -63,13 +66,8 @@ buildPythonPackage rec {
     ];
   };
 
-  postInstall = ''
-    mkdir $testout
-    cp -R testing $testout/testing
-  '';
-
-  doCheck = false;
-  passthru.tests.pytest = callPackage ./tests.nix { };
+  pyproject = true;
+  pythonImportsCheck = [ "pytest" ];
 
   # Remove .pytest_cache when using py.test in a Nix build
   setupHook = writeText "pytest-hook" ''
@@ -92,13 +90,13 @@ buildPythonPackage rec {
     appendToVar preDistPhases pytestRemoveBytecodePhase
   '';
 
-  pythonImportsCheck = [ "pytest" ];
+  passthru.tests.pytest = callPackage ./tests.nix { };
 
   meta = {
     description = "Framework for writing tests";
     homepage = "https://docs.pytest.org";
     changelog = "https://github.com/pytest-dev/pytest/releases/tag/${version}";
-    teams = [ lib.teams.python ];
     license = lib.licenses.mit;
+    teams = [ lib.teams.python ];
   };
 }

@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchurl,
+  fetchFromGitHub,
   copyDesktopItems,
   electron,
-  fetchFromGitHub,
-  fetchurl,
-  lib,
   makeDesktopItem,
   makeWrapper,
   stdenvNoCC,
@@ -20,41 +20,9 @@ stdenvNoCC.mkDerivation (
   finalAttrs:
   (
     {
+      pname = "${finalAttrs.binName}-bin";
       # https://github.com/toeverything/AFFiNE/releases/tag/v0.18.1
       version = "0.18.1";
-      githubSourceCode = fetchFromGitHub {
-        owner = "toeverything";
-        repo = "AFFiNE";
-        rev = "8b066a4b398aace25a20508a8e3c1a381721971f";
-        hash = "sha256-TWwojG3lqQlQFX3BKoFjJ27a3T/SawXgNDO6fP6gW4k=";
-      };
-      productName = if buildType == "stable" then "AFFiNE" else "AFFiNE-" + buildType;
-      binName = lib.toLower finalAttrs.productName;
-      pname = "${finalAttrs.binName}-bin";
-      meta = {
-        description = "Workspace with fully merged docs, whiteboards and databases";
-        longDescription = ''
-          AFFiNE is an open-source, all-in-one workspace and an operating
-          system for all the building blocks that assemble your knowledge
-          base and much more -- wiki, knowledge management, presentation
-          and digital assets
-        '';
-        homepage = "https://affine.pro/";
-        license = lib.licenses.mit;
-        maintainers = with lib.maintainers; [
-          richar
-          redyf
-          xiaoxiangmoe
-        ];
-        platforms = [
-          "aarch64-darwin"
-          "x86_64-linux"
-        ];
-        sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
-      }
-      // lib.optionalAttrs hostPlatform.isLinux {
-        mainProgram = finalAttrs.binName;
-      };
 
       src = (
         let
@@ -111,6 +79,46 @@ stdenvNoCC.mkDerivation (
 
             runHook postInstall
           '';
+
+      binName = lib.toLower finalAttrs.productName;
+
+      githubSourceCode = fetchFromGitHub {
+        hash = "sha256-TWwojG3lqQlQFX3BKoFjJ27a3T/SawXgNDO6fP6gW4k=";
+        owner = "toeverything";
+        repo = "AFFiNE";
+        rev = "8b066a4b398aace25a20508a8e3c1a381721971f";
+      };
+
+      productName = if buildType == "stable" then "AFFiNE" else "AFFiNE-" + buildType;
+
+      meta = {
+        description = "Workspace with fully merged docs, whiteboards and databases";
+
+        longDescription = ''
+          AFFiNE is an open-source, all-in-one workspace and an operating
+          system for all the building blocks that assemble your knowledge
+          base and much more -- wiki, knowledge management, presentation
+          and digital assets
+        '';
+
+        homepage = "https://affine.pro/";
+        license = lib.licenses.mit;
+        sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+
+        maintainers = with lib.maintainers; [
+          richar
+          redyf
+          xiaoxiangmoe
+        ];
+
+        platforms = [
+          "aarch64-darwin"
+          "x86_64-linux"
+        ];
+      }
+      // lib.optionalAttrs hostPlatform.isLinux {
+        mainProgram = finalAttrs.binName;
+      };
     }
     // lib.optionalAttrs hostPlatform.isLinux {
       desktopItems =
@@ -119,15 +127,15 @@ stdenvNoCC.mkDerivation (
         in
         [
           (makeDesktopItem {
-            name = binName;
-            desktopName = productName;
-            comment = "AFFiNE Desktop App";
-            exec = "${binName} %U";
-            terminal = false;
-            icon = binName;
-            startupWMClass = binName;
             categories = [ "Utility" ];
+            comment = "AFFiNE Desktop App";
+            desktopName = productName;
+            exec = "${binName} %U";
+            icon = binName;
             mimeTypes = [ "x-scheme-handler/${binName}" ];
+            name = binName;
+            startupWMClass = binName;
+            terminal = false;
           })
         ];
     }

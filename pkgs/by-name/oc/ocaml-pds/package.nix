@@ -38,17 +38,18 @@ stdenv.mkDerivation (finalAttrs: {
     ocaml_sqlite3
   ];
 
+  makeFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
+
   buildFlags = [ "all" ];
 
   preInstall = ''
     mkdir -p $out/bin
   '';
 
-  makeFlags = [
-    "PREFIX=${placeholder "out"}"
-  ];
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/pds --help
@@ -57,9 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "A tool to build Makefiles for OCaml projects";
+
     longDescription = ''
       pds is a build system for Ocaml that is meant to make it easy to build a project that follows a particular layout by generating a makefile for the project. The input to pds is a config file, pds.conf, and a directory structure, which is always the current working directory, and the output is the build description.
     '';
+
     homepage = "https://hg.sr.ht/~mmatalka/pds";
     changelog = "https://hg.sr.ht/~mmatalka/pds#changelog";
     license = lib.licenses.bsd3;

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  selectolax,
-  pytestCheckHook,
+  mkdocs-material,
   pytest-click,
   pytest-timeout,
-  mkdocs-material,
+  pytestCheckHook,
+  selectolax,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-glightbox";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blueswen";
@@ -21,6 +20,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-6HkBeZHBLR3HqWh3WjjCqxR85nQuQqq9+7UwbXOZHRk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-click
+    pytest-timeout
+    mkdocs-material
+  ];
 
   build-system = [
     hatchling
@@ -30,11 +36,9 @@ buildPythonPackage rec {
     selectolax
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-click
-    pytest-timeout
-    mkdocs-material
+  disabledTestPaths = [
+    # dont execute benchmarks on hydra
+    "tests/test_perf.py"
   ];
 
   disabledTests = [
@@ -42,10 +46,7 @@ buildPythonPackage rec {
     "privacy"
   ];
 
-  disabledTestPaths = [
-    # dont execute benchmarks on hydra
-    "tests/test_perf.py"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "mkdocs_glightbox"

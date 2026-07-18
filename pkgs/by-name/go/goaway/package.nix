@@ -1,13 +1,13 @@
 {
   lib,
-  buildGo126Module,
   fetchFromGitHub,
+  buildGo126Module,
   fetchPnpmDeps,
   makeWrapper,
   net-tools,
   nodejs,
-  pnpm_10,
   pnpmConfigHook,
+  pnpm_10,
   stdenvNoCC,
 }:
 
@@ -24,18 +24,8 @@ let
   };
 
   goaway-web = stdenvNoCC.mkDerivation (finalAttrs: {
-    pname = "goaway-web";
     inherit version src;
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs) pname version src;
-      inherit pnpm;
-      sourceRoot = "${finalAttrs.src.name}/client";
-      fetcherVersion = 3;
-      hash = "sha256-GM86Os1OQaagD61BEIIsqhWJNVPFA9Z5RiYWyHlQlwY=";
-    };
-
-    pnpmRoot = "client";
+    pname = "goaway-web";
 
     nativeBuildInputs = [
       nodejs
@@ -59,17 +49,38 @@ let
       runHook postInstall
     '';
 
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname version src;
+      inherit pnpm;
+      fetcherVersion = 3;
+      hash = "sha256-GM86Os1OQaagD61BEIIsqhWJNVPFA9Z5RiYWyHlQlwY=";
+      sourceRoot = "${finalAttrs.src.name}/client";
+    };
+
+    pnpmRoot = "client";
+
   });
 in
 buildGo126Module (finalAttrs: {
-  pname = "goaway";
   inherit
     version
     src
     goaway-web
     ;
 
+  pname = "goaway";
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-tSTvySLBo9cM9+Ul45TrGDruTllE/HWLdYmzqMDIYEQ=";
+
+  preBuild = ''
+    rm -rf client/dist
+    cp -r ${goaway-web} client/dist
+  '';
+
+  postInstall = ''
+    wrapProgram $out/bin/goaway \
+     --prefix PATH : $out/bin:${lib.makeBinPath [ net-tools ]}
+  '';
 
   ldflags = [
     "-s"
@@ -78,18 +89,6 @@ buildGo126Module (finalAttrs: {
     "-X=main.commit=${finalAttrs.src.tag}"
     "-X=main.date=1970-01-01T00:00:00Z"
   ];
-
-  preBuild = ''
-    rm -rf client/dist
-    cp -r ${goaway-web} client/dist
-  '';
-
-  nativeBuildInputs = [ makeWrapper ];
-
-  postInstall = ''
-    wrapProgram $out/bin/goaway \
-     --prefix PATH : $out/bin:${lib.makeBinPath [ net-tools ]}
-  '';
 
   meta = {
     description = "Lightweight DNS sinkhole written in Go with a modern dashboard client";

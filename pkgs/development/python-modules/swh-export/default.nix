@@ -1,41 +1,53 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
-  setuptools,
-  setuptools-scm,
   boto3,
+  buildPythonPackage,
   click,
   luigi,
-  tqdm,
-  pyorc,
+  pkgs,
   plyvel,
+  pyorc,
+  pytest-click,
+  pytest-mock,
+  pytestCheckHook,
   python,
-  types-requests,
+  setuptools,
+  setuptools-scm,
   swh-core,
   swh-journal,
   swh-model,
   swh-storage,
-  pytestCheckHook,
-  pytest-click,
-  pytest-mock,
+  tqdm,
+  types-requests,
   tzdata,
-  pkgs,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "swh-export";
   version = "1.11.7";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "gitlab.softwareheritage.org";
-    group = "swh";
     owner = "devel";
     repo = "swh-export";
     tag = "v${finalAttrs.version}";
     hash = "sha256-aDIGbkyRMNoQOdlXwqfLyRqDfK6jNFMVFJv67OY1SCg=";
+    domain = "gitlab.softwareheritage.org";
+    group = "swh";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-click
+    pytest-mock
+    pkgs.zstd
+    pkgs.pv
+  ];
+
+  preCheck = ''
+    # provide timezone data, works only on linux
+    export TZDIR=${tzdata}/${python.sitePackages}/tzdata/zoneinfo
+  '';
 
   build-system = [
     setuptools
@@ -56,21 +68,6 @@ buildPythonPackage (finalAttrs: {
     swh-storage
   ];
 
-  preCheck = ''
-    # provide timezone data, works only on linux
-    export TZDIR=${tzdata}/${python.sitePackages}/tzdata/zoneinfo
-  '';
-
-  pythonImportsCheck = [ "swh.export" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-click
-    pytest-mock
-    pkgs.zstd
-    pkgs.pv
-  ];
-
   disabledTests = [
     # I don't know how to fix the following error
     # E       fixture 'kafka_server' not found
@@ -82,6 +79,9 @@ buildPythonPackage (finalAttrs: {
     "test_parallel_journal_processor_masked_origin"
     "test_parallel_journal_processor_masked_origin_visit_statuses"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "swh.export" ];
 
   meta = {
     description = "Software Heritage dataset tools";

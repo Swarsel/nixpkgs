@@ -1,7 +1,7 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   git,
 }:
 buildDotnetModule rec {
@@ -13,24 +13,23 @@ buildDotnetModule rec {
     repo = "min-ed-launcher";
     tag = "v${version}";
     hash = "sha256-blqGq6PORBEtCLO007TR3xJ6UXX8nFSOIoFh8Dc/5B8=";
-
     leaveDotGit = true; # During build the current commit is appended to the version
   };
 
-  projectFile = "MinEdLauncher.sln";
-  nugetDeps = ./deps.json;
   buildInputs = [
     git # During build the current commit is appended to the version
   ];
 
   executables = [ "MinEdLauncher" ];
+  nugetDeps = ./deps.json;
+  projectFile = "MinEdLauncher.sln";
 
   meta = {
-    homepage = "https://github.com/rfvgyhn/min-ed-launcher";
     description = "Minimal Elite Dangerous Launcher";
+    homepage = "https://github.com/rfvgyhn/min-ed-launcher";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ jiriks74 ];
     platforms = lib.platforms.x86_64;
     mainProgram = "MinEdLauncher";
-    maintainers = with lib.maintainers; [ jiriks74 ];
   };
 }

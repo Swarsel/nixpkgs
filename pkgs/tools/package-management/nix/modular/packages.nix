@@ -1,12 +1,12 @@
 {
   lib,
-  splicePackages,
   nixDependencies,
-  pkgs,
-  teams,
   otherSplices,
-  version,
+  pkgs,
+  splicePackages,
   src,
+  teams,
+  version,
 }:
 let
   officialRelease = true;
@@ -23,6 +23,7 @@ let
       }
       {
         inherit otherSplices;
+
         f = import ./packaging/components.nix {
           inherit
             lib

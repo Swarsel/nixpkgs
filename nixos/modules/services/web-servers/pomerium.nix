@@ -15,14 +15,41 @@ in
     enable = mkEnableOption "the Pomerium authenticating reverse proxy";
 
     configFile = mkOption {
-      type = with types; nullOr path;
       default = null;
       description = "Path to Pomerium config YAML. If set, overrides services.pomerium.settings.";
+      type = with types; nullOr path;
+    };
+
+    secretsFile = mkOption {
+      default = null;
+
+      description = ''
+        Path to file containing secrets for Pomerium, in systemd
+        EnvironmentFile format. See the {manpage}`systemd.exec(5)` man page.
+      '';
+
+      type = with types; nullOr path;
+    };
+
+    settings = mkOption {
+      default = { };
+
+      description = ''
+        The contents of Pomerium's config.yaml, in Nix expressions.
+
+        Specifying configFile will override this in its entirety.
+
+        See [the Pomerium
+        configuration reference](https://pomerium.io/reference/) for more information about what to put
+        here.
+      '';
+
+      type = format.type;
     };
 
     useACMEHost = mkOption {
-      type = with types; nullOr str;
       default = null;
+
       description = ''
         If set, use a NixOS-generated ACME certificate with the specified name.
 
@@ -34,29 +61,8 @@ in
         If you're using an HTTP-based challenge, you should use the
         Pomerium-native autocert option instead.
       '';
-    };
 
-    settings = mkOption {
-      description = ''
-        The contents of Pomerium's config.yaml, in Nix expressions.
-
-        Specifying configFile will override this in its entirety.
-
-        See [the Pomerium
-        configuration reference](https://pomerium.io/reference/) for more information about what to put
-        here.
-      '';
-      default = { };
-      type = format.type;
-    };
-
-    secretsFile = mkOption {
-      type = with types; nullOr path;
-      default = null;
-      description = ''
-        Path to file containing secrets for Pomerium, in systemd
-        EnvironmentFile format. See the {manpage}`systemd.exec(5)` man page.
-      '';
+      type = with types; nullOr str;
     };
   };
 
@@ -68,21 +74,18 @@ in
     in
     mkIf cfg.enable {
       systemd.services.pomerium = {
-        description = "Pomerium authenticating reverse proxy";
-        wants = [
-          "network.target"
-        ]
-        ++ (optional (cfg.useACMEHost != null) "acme-${cfg.useACMEHost}.service");
         after = [
           "network.target"
         ]
         ++ (optional (cfg.useACMEHost != null) "acme-${cfg.useACMEHost}.service");
-        wantedBy = [ "multi-user.target" ];
+
+        description = "Pomerium authenticating reverse proxy";
+
         environment = optionalAttrs (cfg.useACMEHost != null) {
           CERTIFICATE_FILE = "fullchain.pem";
           CERTIFICATE_KEY_FILE = "key.pem";
         };
-        startLimitIntervalSec = 60;
+
         script = ''
           if [[ -v CREDENTIALS_DIRECTORY ]]; then
             cd "$CREDENTIALS_DIRECTORY"
@@ -91,38 +94,44 @@ in
         '';
 
         serviceConfig = {
-          DynamicUser = true;
-          StateDirectory = [ "pomerium" ];
-
-          PrivateUsers = false; # breaks CAP_NET_BIND_SERVICE
-          MemoryDenyWriteExecute = false; # breaks LuaJIT
-
-          NoNewPrivileges = true;
-          PrivateTmp = true;
-          PrivateDevices = true;
-          DevicePolicy = "closed";
-          ProtectSystem = "strict";
-          ProtectHome = true;
-          ProtectControlGroups = true;
-          ProtectKernelModules = true;
-          ProtectKernelTunables = true;
-          ProtectKernelLogs = true;
-          RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
-          RestrictNamespaces = true;
-          RestrictRealtime = true;
-          RestrictSUIDSGID = true;
-          LockPersonality = true;
-          SystemCallArchitectures = "native";
-
-          EnvironmentFile = cfg.secretsFile;
           AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
           CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
+          DevicePolicy = "closed";
+          DynamicUser = true;
+          EnvironmentFile = cfg.secretsFile;
 
           LoadCredential = optionals (cfg.useACMEHost != null) [
             "fullchain.pem:/var/lib/acme/${cfg.useACMEHost}/fullchain.pem"
             "key.pem:/var/lib/acme/${cfg.useACMEHost}/key.pem"
           ];
+
+          LockPersonality = true;
+          MemoryDenyWriteExecute = false; # breaks LuaJIT
+          NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateTmp = true;
+          PrivateUsers = false; # breaks CAP_NET_BIND_SERVICE
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectSystem = "strict";
+          RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          StateDirectory = [ "pomerium" ];
+          SystemCallArchitectures = "native";
         };
+
+        startLimitIntervalSec = 60;
+        wantedBy = [ "multi-user.target" ];
+
+        wants = [
+          "network.target"
+        ]
+        ++ (optional (cfg.useACMEHost != null) "acme-${cfg.useACMEHost}.service");
       };
 
       # postRun hooks on cert renew can't be used to restart Nginx since renewal
@@ -130,23 +139,25 @@ in
       # which allows the acme-order-renew-$cert.target to signify the successful updating
       # of certs end-to-end.
       systemd.services.pomerium-config-reload = mkIf (cfg.useACMEHost != null) {
-        # TODO(lukegb): figure out how to make config reloading work with credentials.
-
-        wantedBy = [
-          "acme-order-renew-${cfg.useACMEHost}.service"
-          "multi-user.target"
-        ];
         after = [ "acme-order-renew-${cfg.useACMEHost}.service" ];
+
+        serviceConfig = {
+          ExecCondition = "/run/current-system/systemd/bin/systemctl -q is-active pomerium.service";
+          ExecStart = "/run/current-system/systemd/bin/systemctl --no-block restart pomerium.service";
+          TimeoutSec = 60;
+          Type = "oneshot";
+        };
+
         # Block reloading if not all certs exist yet.
         unitConfig.ConditionPathExists = [
           "${config.security.acme.certs.${cfg.useACMEHost}.directory}/fullchain.pem"
         ];
-        serviceConfig = {
-          Type = "oneshot";
-          TimeoutSec = 60;
-          ExecCondition = "/run/current-system/systemd/bin/systemctl -q is-active pomerium.service";
-          ExecStart = "/run/current-system/systemd/bin/systemctl --no-block restart pomerium.service";
-        };
+
+        # TODO(lukegb): figure out how to make config reloading work with credentials.
+        wantedBy = [
+          "acme-order-renew-${cfg.useACMEHost}.service"
+          "multi-user.target"
+        ];
       };
     };
 }

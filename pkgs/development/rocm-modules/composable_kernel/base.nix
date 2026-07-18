@@ -2,24 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
   clr,
-  rocminfo,
-  python3,
-  hipify,
+  cmake,
   gitMinimal,
   gtest,
+  hipify,
   jemalloc,
+  python3,
+  rocm-cmake,
+  rocmUpdateScript,
+  rocminfo,
   zstd,
-  buildTests ? false,
   buildExamples ? false,
-  # limits prebuilt kernel selection to those needed for MIOPEN (currently "*conv*")
-  # Other kernels can still be used if treating CK as a header only library
-  # and building specific instances, as done with ck4inductor/torch
-  miOpenReqLibsOnly ? true,
-  withDeprecatedKernels ? false,
+  buildTests ? false,
   gpuTargets ? (
     clr.localGpuTargets or [
       "gfx900"
@@ -33,16 +28,28 @@
       "gfx12-generic"
     ]
   ),
+  # limits prebuilt kernel selection to those needed for MIOPEN (currently "*conv*")
+  # Other kernels can still be used if treating CK as a header only library
+  # and building specific instances, as done with ck4inductor/torch
+  miOpenReqLibsOnly ? true,
+  withDeprecatedKernels ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  preBuild = ''
-    echo "This derivation isn't intended to be built directly and only exists to be overridden and built in chunks";
-    exit 1
-  '';
-
   pname = "composable_kernel_base";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-Zs6wwPmys1kUlgDD4XzKKw273nH/Ur3HtuYxJjvjDs0=";
+
+    sparseCheckout = [
+      "projects/composablekernel"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -54,17 +61,42 @@ stdenv.mkDerivation (finalAttrs: {
     "example"
   ];
 
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/composablekernel"
-      "shared"
-    ];
-    hash = "sha256-Zs6wwPmys1kUlgDD4XzKKw273nH/Ur3HtuYxJjvjDs0=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/composablekernel";
+  patches = [
+    # Hacky fix for failure for some targets when all targets are selected out
+    # for a non-optional at link time kernel
+    ./fix-empty-offload-targets.diff
+  ];
+
+  postPatch =
+    # Reduce configure time by preventing thousands of clang-tidy targets being added
+    # We will never call them
+    # Never build profiler
+    ''
+      substituteInPlace library/src/utility/CMakeLists.txt library/src/tensor_operation_instance/gpu/CMakeLists.txt \
+        --replace-fail clang_tidy_check '#clang_tidy_check'
+      substituteInPlace CMakeLists.txt \
+        --replace-fail "add_subdirectory(profiler)" ""
+      substituteInPlace cmake/EnableCompilerWarnings.cmake \
+        --replace-fail "-Werror" ""
+    ''
+    + lib.optionalString (!withDeprecatedKernels) ''
+      substituteInPlace include/ck/ck.hpp \
+        --replace-fail "CK_BUILD_DEPRECATED 1" "CK_BUILD_DEPRECATED 0"
+    ''
+    # Optionally remove tests
+    + lib.optionalString (!buildTests) ''
+      substituteInPlace CMakeLists.txt \
+        --replace-fail "add_subdirectory(test)" ""
+      substituteInPlace codegen/CMakeLists.txt \
+        --replace-fail "include(ROCMTest)" ""
+    ''
+    # Optionally remove examples
+    + lib.optionalString (!buildExamples) ''
+      substituteInPlace CMakeLists.txt \
+        --replace-fail "add_subdirectory(example)" ""
+    '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     # Deliberately not using ninja
@@ -84,13 +116,6 @@ stdenv.mkDerivation (finalAttrs: {
     clr
     zstd
   ];
-
-  strictDeps = true;
-  enableParallelBuilding = true;
-  env.ROCM_PATH = clr;
-  # Speed up build by ~7% with jemalloc (template torture test workload means allocation heavy clang invocations)
-  env.LD_PRELOAD = "${jemalloc}/lib/libjemalloc.so";
-  env.MALLOC_CONF = "background_thread:true,metadata_thp:auto,dirty_decay_ms:10000,muzzy_decay_ms:10000";
 
   cmakeFlags = [
     (lib.cmakeBool "MIOPEN_REQ_LIBS_ONLY" miOpenReqLibsOnly)
@@ -132,40 +157,15 @@ stdenv.mkDerivation (finalAttrs: {
     "-DGOOGLETEST_DIR=${gtest.src}" # Custom linker names
   ];
 
-  patches = [
-    # Hacky fix for failure for some targets when all targets are selected out
-    # for a non-optional at link time kernel
-    ./fix-empty-offload-targets.diff
-  ];
+  # Speed up build by ~7% with jemalloc (template torture test workload means allocation heavy clang invocations)
+  env.LD_PRELOAD = "${jemalloc}/lib/libjemalloc.so";
+  env.MALLOC_CONF = "background_thread:true,metadata_thp:auto,dirty_decay_ms:10000,muzzy_decay_ms:10000";
+  env.ROCM_PATH = clr;
 
-  postPatch =
-    # Reduce configure time by preventing thousands of clang-tidy targets being added
-    # We will never call them
-    # Never build profiler
-    ''
-      substituteInPlace library/src/utility/CMakeLists.txt library/src/tensor_operation_instance/gpu/CMakeLists.txt \
-        --replace-fail clang_tidy_check '#clang_tidy_check'
-      substituteInPlace CMakeLists.txt \
-        --replace-fail "add_subdirectory(profiler)" ""
-      substituteInPlace cmake/EnableCompilerWarnings.cmake \
-        --replace-fail "-Werror" ""
-    ''
-    + lib.optionalString (!withDeprecatedKernels) ''
-      substituteInPlace include/ck/ck.hpp \
-        --replace-fail "CK_BUILD_DEPRECATED 1" "CK_BUILD_DEPRECATED 0"
-    ''
-    # Optionally remove tests
-    + lib.optionalString (!buildTests) ''
-      substituteInPlace CMakeLists.txt \
-        --replace-fail "add_subdirectory(test)" ""
-      substituteInPlace codegen/CMakeLists.txt \
-        --replace-fail "include(ROCMTest)" ""
-    ''
-    # Optionally remove examples
-    + lib.optionalString (!buildExamples) ''
-      substituteInPlace CMakeLists.txt \
-        --replace-fail "add_subdirectory(example)" ""
-    '';
+  preBuild = ''
+    echo "This derivation isn't intended to be built directly and only exists to be overridden and built in chunks";
+    exit 1
+  '';
 
   postInstall =
     lib.optionalString buildTests ''
@@ -177,10 +177,13 @@ stdenv.mkDerivation (finalAttrs: {
       mv $out/bin/example_* $example/bin
     '';
 
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/projects/composablekernel";
+
   passthru = {
     inherit gpuTargets miOpenReqLibsOnly;
-    updateScript = rocmUpdateScript { inherit finalAttrs; };
     anyGfx9Target = lib.lists.any (lib.strings.hasPrefix "gfx9") gpuTargets;
+
     anyMfmaTarget =
       (lib.lists.intersectLists gpuTargets [
         "gfx908"
@@ -188,14 +191,16 @@ stdenv.mkDerivation (finalAttrs: {
         "gfx942"
         "gfx950"
       ]) != [ ];
+
+    updateScript = rocmUpdateScript { inherit finalAttrs; };
   };
 
   meta = {
     description = "Performance portable programming model for machine learning tensor operators";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/composablekernel";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
     broken = true; # this base package shouldn't be built directly
+    teams = [ lib.teams.rocm ];
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
+  buildFishPlugin,
   unstableGitUpdater,
 }:
 buildFishPlugin {

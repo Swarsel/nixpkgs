@@ -17,9 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1KWoGbdjF8VI4th/ZjAzASgsLEuS3xiwObulzxQAppA=";
   };
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [ sfml_2 ];
-
   postPatch = ''
     substituteInPlace src/main.cpp \
       --replace-fail "res/" "$out/opt/antsimulator/"
@@ -31,6 +28,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "res/" "$out/opt/antsimulator/"
   '';
 
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ sfml_2 ];
+
   installPhase = ''
     runHook preInstall
 
@@ -41,11 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/johnBuffer/AntSimulator";
     description = "Simple Ants simulator";
-    mainProgram = "antsimulator";
+    homepage = "https://github.com/johnBuffer/AntSimulator";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "antsimulator";
   };
 })

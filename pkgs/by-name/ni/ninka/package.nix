@@ -26,8 +26,6 @@ perlPackages.buildPerlPackage {
     SpreadsheetParseExcel
   ];
 
-  doCheck = false; # hangs
-
   preConfigure = ''
     sed -i.bak -e 's;#!/usr/bin/perl;#!${perl}/bin/perl;g' \
         ./bin/ninka-excel ./bin/ninka ./bin/ninka-sqlite \
@@ -37,12 +35,14 @@ perlPackages.buildPerlPackage {
     perl Makefile.PL
   '';
 
+  doCheck = false; # hangs
+
   meta = {
     description = "Sentence based license detector";
-    mainProgram = "ninka";
     homepage = "http://ninka.turingmachine.org/";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "ninka";
   };
 }

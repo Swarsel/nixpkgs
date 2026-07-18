@@ -1,14 +1,16 @@
 {
-  mkDerivation,
   libdevinfo,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/devmatch";
   outputs = [
     "out"
     "debug"
   ];
+
   buildInputs = [
     libdevinfo
   ];
+
+  path = "sbin/devmatch";
 }

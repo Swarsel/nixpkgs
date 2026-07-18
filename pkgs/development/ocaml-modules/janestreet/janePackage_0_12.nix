@@ -6,10 +6,10 @@
 }:
 
 {
-  pname,
-  version ? defaultVersion,
-  duneVersion ? "3",
   hash,
+  pname,
+  duneVersion ? "3",
+  version ? defaultVersion,
   ...
 }@args:
 
@@ -18,8 +18,6 @@ buildDunePackage (
   // {
     inherit version duneVersion;
 
-    minimalOCamlVersion = "4.07";
-
     src = fetchFromGitHub {
       owner = "janestreet";
       repo = pname;
@@ -27,9 +25,11 @@ buildDunePackage (
       sha256 = hash;
     };
 
+    minimalOCamlVersion = "4.07";
+
     meta = {
-      license = lib.licenses.mit;
       homepage = "https://github.com/janestreet/${pname}";
+      license = lib.licenses.mit;
     }
     // args.meta;
   }

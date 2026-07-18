@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
+  applyPatches,
   # Requires Go 1.26, drop when that's the default.
   buildGo126Module,
   nix-update-script,
   versionCheckHook,
-  applyPatches,
 }:
 
 buildGo126Module (finalAttrs: {
@@ -13,27 +13,21 @@ buildGo126Module (finalAttrs: {
   version = "0.18.0";
 
   src = applyPatches {
+    # Trim the patch version, not needed anyway.
+    postPatch = ''
+      sed -i 's/go 1.26.2/go 1.26/' go.mod
+    '';
+
     src = fetchFromGitHub {
       owner = "gomods";
       repo = "athens";
       tag = "v${finalAttrs.version}";
       hash = "sha256-sFNxAG0hIxsoKCuef/ROy2MOjA7iC5ehXRvnUr20U0Y=";
     };
-    # Trim the patch version, not needed anyway.
-    postPatch = ''
-      sed -i 's/go 1.26.2/go 1.26/' go.mod
-    '';
   };
 
   vendorHash = "sha256-nTkrma32+JR+5a5u/XM+EFh9o7YwKMvZJ9cz4evo7Ec=";
-
   env.CGO_ENABLED = "0";
-  ldflags = [
-    "-s"
-    "-X github.com/gomods/athens/pkg/build.version=${finalAttrs.version}"
-  ];
-
-  subPackages = [ "cmd/proxy" ];
 
   postInstall = ''
     mv $out/bin/proxy $out/bin/athens
@@ -42,6 +36,12 @@ buildGo126Module (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  ldflags = [
+    "-s"
+    "-X github.com/gomods/athens/pkg/build.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/proxy" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -49,11 +49,13 @@ buildGo126Module (finalAttrs: {
     homepage = "https://github.com/gomods/athens";
     changelog = "https://github.com/gomods/athens/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "athens";
+
     maintainers = with lib.maintainers; [
       katexochen
       malt3
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "athens";
   };
 })

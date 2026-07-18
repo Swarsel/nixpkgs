@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  hatchling,
   pytestCheckHook,
   pythonAtLeast,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "python-picnic-api2";
   version = "1.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "codesalatdev";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
       --replace-fail '"Accept-Encoding": "gzip, deflate",' '"Accept-Encoding": "gzip, deflate, zstd",'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -33,19 +33,18 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  pythonImportsCheck = [ "python_picnic_api2" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # tests access the actual API
     "integration_tests"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "python_picnic_api2" ];
+
   meta = {
-    changelog = "https://github.com/codesalatdev/python-picnic-api/releases/tag/${src.tag}";
     description = "Fork of the Unofficial Python wrapper for the Picnic API";
     homepage = "https://github.com/codesalatdev/python-picnic-api";
+    changelog = "https://github.com/codesalatdev/python-picnic-api/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

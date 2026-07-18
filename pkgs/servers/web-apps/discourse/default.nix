@@ -1,54 +1,52 @@
 {
-  stdenv,
-  pkgs,
-  makeWrapper,
-  runCommand,
   lib,
-  writeShellScript,
+  stdenv,
   fetchFromGitHub,
-  bundlerEnv,
-  callPackage,
-  nixosTests,
-
-  defaultGemConfig,
-  ruby_3_3,
-  gzip,
-  gnutar,
-  git,
-  cacert,
-  util-linux,
-  gawk,
-  net-tools,
-  imagemagick,
-  optipng,
-  pngquant,
-  libjpeg,
-  jpegoptim,
-  gifsicle,
-  jhead,
-  oxipng,
-  libpsl,
-  redis,
-  postgresql,
-  which,
   brotli,
-  procps,
-  rsync,
-  icu,
-  rustPlatform,
   buildRubyGem,
-  rustc,
+  bundlerEnv,
+  cacert,
+  callPackage,
   cargo,
-  pnpm_10,
+  defaultGemConfig,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  svgo,
-  nodejs-slim_22,
+  gawk,
+  gifsicle,
+  git,
+  gnutar,
+  gzip,
+  icu,
+  imagemagick,
+  jhead,
+  jpegoptim,
   jq,
+  libjpeg,
+  libpsl,
+  makeWrapper,
   moreutils,
+  net-tools,
+  nixosTests,
+  nodejs-slim_22,
+  optipng,
+  oxipng,
+  pkgs,
+  pngquant,
+  pnpmConfigHook,
+  pnpm_10,
+  postgresql,
+  procps,
+  redis,
+  rsync,
+  ruby_3_3,
+  runCommand,
+  rustPlatform,
+  rustc,
+  svgo,
   terser,
   uglify-js,
-
+  util-linux,
+  which,
+  writeShellScript,
   plugins ? [ ],
 }:
 
@@ -103,13 +101,13 @@ let
 
   mkDiscoursePlugin =
     {
+      src,
+      bundlerEnvArgs ? { },
+      meta ? null,
       name ? null,
       pname ? null,
-      version ? null,
-      meta ? null,
-      bundlerEnvArgs ? { },
       preserveGemsDir ? false,
-      src,
+      version ? null,
       ...
     }@args:
     let
@@ -132,8 +130,6 @@ let
       }
       // removeAttrs args [ "bundlerEnvArgs" ]
       // {
-        dontConfigure = true;
-        dontBuild = true;
         installPhase = ''
           runHook preInstall
           mkdir -p $out
@@ -157,6 +153,9 @@ let
               runHook postInstall
             ''
         );
+
+        dontBuild = true;
+        dontConfigure = true;
       }
     );
 
@@ -177,16 +176,9 @@ let
       '';
 
   rubyEnv = bundlerEnv {
-    name = "discourse-ruby-env-${version}";
     inherit version ruby;
-    gemdir = ./rubyEnv;
-    gemset = import ./rubyEnv/gemset.nix;
+
     gemConfig = defaultGemConfig // {
-      mini_racer = attrs: {
-        buildInputs = [ icu ];
-        dontBuild = false;
-        NIX_LDFLAGS = "-licui18n";
-      };
       libv8-node =
         attrs:
         let
@@ -204,7 +196,6 @@ let
           '';
         in
         {
-          dontBuild = false;
           postPatch = ''
             cp ${noopScript} libexec/build-libv8
             cp ${noopScript} libexec/build-monolith
@@ -212,71 +203,34 @@ let
             cp ${noopScript} libexec/extract-node
             cp ${linkFiles} libexec/inject-libv8
           '';
+
+          dontBuild = false;
         };
-      mini_suffix = attrs: {
-        propagatedBuildInputs = [ libpsl ];
+
+      mini_racer = attrs: {
+        buildInputs = [ icu ];
+        NIX_LDFLAGS = "-licui18n";
         dontBuild = false;
+      };
+
+      mini_suffix = attrs: {
         # Use our libpsl instead of the vendored one, which isn't
         # available for aarch64. It has to be called
         # libpsl.x86_64.so or it isn't found.
         postPatch = ''
           cp $(readlink -f ${lib.getLib libpsl}/lib/libpsl.so) vendor/libpsl.x86_64.so
         '';
-      };
-      tokenizers = attrs: {
-        cargoDeps = rustPlatform.fetchCargoVendor {
-          inherit (buildRubyGem { inherit (attrs) gemName version source; })
-            name
-            src
-            unpackPhase
-            nativeBuildInputs
-            ;
-          hash = "sha256-Yxcerq4Wil1nrEzHoEmsTAj4VnUmrwRlA3WO2b72yOc=";
-        };
 
+        propagatedBuildInputs = [ libpsl ];
         dontBuild = false;
-
-        nativeBuildInputs = [
-          cargo
-          rustc
-          rustPlatform.cargoSetupHook
-          rustPlatform.bindgenHook
-        ];
-
-        disallowedReferences = [
-          rustc.unwrapped
-        ];
-
-        preInstall = ''
-          export CARGO_HOME="$PWD/../.cargo/"
-        '';
-
-        postInstall = ''
-          find $out -type f -name .rustc_info.json -delete
-        '';
       };
+
       tiktoken_ruby = attrs: {
-        cargoDeps = rustPlatform.fetchCargoVendor {
-          inherit (buildRubyGem { inherit (attrs) gemName version source; })
-            name
-            src
-            unpackPhase
-            nativeBuildInputs
-            ;
-          hash = "sha256-zyGK+XJpMls6w0Uydegqsj4TH4IrVxANm0qmpR7+95I=";
-        };
-
-        dontBuild = false;
-
         nativeBuildInputs = [
           cargo
           rustc
           rustPlatform.cargoSetupHook
           rustPlatform.bindgenHook
-        ];
-
-        disallowedReferences = [
-          rustc.unwrapped
         ];
 
         preInstall = ''
@@ -288,8 +242,62 @@ let
           #mv -v $GEM_HOME/gems/${attrs.gemName}-${attrs.version}/lib/{glfm_markdown/glfm_markdown.so,}
           find $out -type f -name .rustc_info.json -delete
         '';
+
+        cargoDeps = rustPlatform.fetchCargoVendor {
+          inherit (buildRubyGem { inherit (attrs) gemName version source; })
+            name
+            src
+            unpackPhase
+            nativeBuildInputs
+            ;
+
+          hash = "sha256-zyGK+XJpMls6w0Uydegqsj4TH4IrVxANm0qmpR7+95I=";
+        };
+
+        disallowedReferences = [
+          rustc.unwrapped
+        ];
+
+        dontBuild = false;
+      };
+
+      tokenizers = attrs: {
+        nativeBuildInputs = [
+          cargo
+          rustc
+          rustPlatform.cargoSetupHook
+          rustPlatform.bindgenHook
+        ];
+
+        preInstall = ''
+          export CARGO_HOME="$PWD/../.cargo/"
+        '';
+
+        postInstall = ''
+          find $out -type f -name .rustc_info.json -delete
+        '';
+
+        cargoDeps = rustPlatform.fetchCargoVendor {
+          inherit (buildRubyGem { inherit (attrs) gemName version source; })
+            name
+            src
+            unpackPhase
+            nativeBuildInputs
+            ;
+
+          hash = "sha256-Yxcerq4Wil1nrEzHoEmsTAj4VnUmrwRlA3WO2b72yOc=";
+        };
+
+        disallowedReferences = [
+          rustc.unwrapped
+        ];
+
+        dontBuild = false;
       };
     };
+
+    gemdir = ./rubyEnv;
+    gemset = import ./rubyEnv/gemset.nix;
 
     groups = [
       "default"
@@ -297,32 +305,13 @@ let
       "development"
       "test"
     ];
+
+    name = "discourse-ruby-env-${version}";
   };
 
   assets = stdenv.mkDerivation {
-    pname = "discourse-assets";
     inherit version src;
-
-    pnpmDeps = fetchPnpmDeps {
-      pname = "discourse-assets";
-      inherit version src pnpm;
-      fetcherVersion = 3;
-      hash = "sha256-xft/2x0iti0yJ53uI9q2+FSvKgWWfKQzlMlPFz3RZsE=";
-    };
-
-    nativeBuildInputs = runtimeDeps ++ [
-      (postgresql.withPackages (ps: [
-        ps.pgvector
-      ]))
-      redis
-      uglify-js
-      terser
-      jq
-      moreutils
-      nodejs-slim_22
-      pnpmConfigHook
-      pnpm
-    ];
+    pname = "discourse-assets";
 
     outputs = [
       "out"
@@ -351,15 +340,29 @@ let
       ./prebuild-asset-processor.patch
     ];
 
-    env.RAILS_ENV = "production";
-    env.DISCOURSE_DOWNLOAD_PRE_BUILT_ASSETS = "0";
-    # Allow to use different bundler version than the lockfile has
-    env.BUNDLER_VERSION = pkgs.bundler.version;
-
     # requires full git and repository, even a src `leaveDotGit` is not enough. So patch this function to return the version
     postPatch = ''
       substituteInPlace script/assemble_ember_build.rb --replace-fail "def core_tree_hash" "def core_tree_hash; return \"v${version}\""
     '';
+
+    nativeBuildInputs = runtimeDeps ++ [
+      (postgresql.withPackages (ps: [
+        ps.pgvector
+      ]))
+      redis
+      uglify-js
+      terser
+      jq
+      moreutils
+      nodejs-slim_22
+      pnpmConfigHook
+      pnpm
+    ];
+
+    # Allow to use different bundler version than the lockfile has
+    env.BUNDLER_VERSION = pkgs.bundler.version;
+    env.DISCOURSE_DOWNLOAD_PRE_BUILT_ASSETS = "0";
+    env.RAILS_ENV = "production";
 
     # We have to set up an environment that is close enough to
     # production ready or the assets:precompile task refuses to
@@ -419,17 +422,18 @@ let
     # The node_modules output by design has broken symlinks, as it refers to the source code.
     # They are resolved in the primary discourse derivation.
     dontCheckForBrokenSymlinks = true;
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit version src pnpm;
+      pname = "discourse-assets";
+      fetcherVersion = 3;
+      hash = "sha256-xft/2x0iti0yJ53uI9q2+FSvKgWWfKQzlMlPFz3RZsE=";
+    };
   };
 
   discourse = stdenv.mkDerivation {
-    pname = "discourse";
     inherit version src;
-
-    buildInputs = [
-      rubyEnv
-      rubyEnv.wrappedRuby
-      rubyEnv.bundler
-    ];
+    pname = "discourse";
 
     patches = [
       # Load a separate NixOS site settings file
@@ -478,6 +482,12 @@ let
         sed -Ei "s,require_relative (\"|')([[:alnum:]].*)(\"|'),require_relative '$out/share/discourse/config/\2'," {} \;
     '';
 
+    buildInputs = [
+      rubyEnv
+      rubyEnv.wrappedRuby
+      rubyEnv.bundler
+    ];
+
     buildPhase = ''
       runHook preBuild
 
@@ -519,12 +529,15 @@ let
         mkDiscoursePlugin
         assets
         ;
+
       inherit (pkgs)
         discourseAllPlugins
         ;
+
       enabledPlugins = plugins;
       plugins = callPackage ./plugins/all-plugins.nix { inherit mkDiscoursePlugin; };
       ruby = rubyEnv.wrappedRuby;
+
       tests = {
         inherit (nixosTests)
           discourse
@@ -532,15 +545,18 @@ let
           ;
       };
     };
+
     meta = {
+      description = "Open source discussion platform";
       homepage = "https://www.discourse.org/";
-      platforms = lib.platforms.linux;
+      license = lib.licenses.gpl2Plus;
+
       maintainers = with lib.maintainers; [
         leona
         talyz
       ];
-      license = lib.licenses.gpl2Plus;
-      description = "Open source discussion platform";
+
+      platforms = lib.platforms.linux;
     };
   };
 in

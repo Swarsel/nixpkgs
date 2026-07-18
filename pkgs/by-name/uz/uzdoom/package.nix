@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   bzip2,
   cmake,
   gtk3,
@@ -12,7 +13,6 @@
   ninja,
   openal,
   pkg-config,
-  SDL2,
   vulkan-loader,
   zlib,
   zmusic,
@@ -30,6 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   outputs = [ "out" ] ++ lib.optionals stdenv.hostPlatform.isLinux [ "doc" ];
+
+  postPatch = ''
+    substituteInPlace tools/updaterevision/UpdateRevision.cmake \
+      --replace-fail "unknown" "${finalAttrs.src.tag}"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -50,11 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     zmusic
   ];
-
-  postPatch = ''
-    substituteInPlace tools/updaterevision/UpdateRevision.cmake \
-      --replace-fail "unknown" "${finalAttrs.src.tag}"
-  '';
 
   cmakeFlags = [
     (lib.cmakeBool "DYN_GTK" false)
@@ -85,18 +85,22 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/UZDoom/UZDoom";
     description = "Modder-friendly OpenGL and Vulkan source port based on the DOOM engine";
-    mainProgram = "uzdoom";
+
     longDescription = ''
       UZDoom is a feature centric port for all Doom engine games, based on
       GZDoom, adding an advanced renderer and powerful scripting capabilities
     '';
+
+    homepage = "https://github.com/UZDoom/UZDoom";
     license = lib.licenses.gpl3Plus;
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = with lib.maintainers; [
       Gliczy
       keenanweaver
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "uzdoom";
   };
 })

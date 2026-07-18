@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   mock,
   pyserial,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pylacrosse";
   version = "0.5";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "hthiery";
@@ -27,22 +24,22 @@ buildPythonPackage (finalAttrs: {
       --replace "version = version," "version = '${finalAttrs.version}',"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyserial ];
-
   nativeCheckInputs = [
     mock
     pytestCheckHook
   ];
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ pyserial ];
+  pyproject = true;
   pythonImportsCheck = [ "pylacrosse" ];
 
   meta = {
     description = "Python library for Jeelink LaCrosse";
-    mainProgram = "pylacrosse";
     homepage = "https://github.com/hthiery/python-lacrosse";
     license = with lib.licenses; [ lgpl2Plus ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "pylacrosse";
   };
 })

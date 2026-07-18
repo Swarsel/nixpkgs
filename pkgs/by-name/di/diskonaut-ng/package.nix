@@ -1,14 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-
-  __structuredAttrs = true;
 
   pname = "diskonaut-ng";
   version = "0.13.2";
@@ -21,10 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-+NwZbR3fRj8Wi95GtsUQFWOyaZ0ekC4chsoJ5rsH3Zg=";
-
   # 1 passed; 44 failed https://hydra.nixos.org/build/148943783/nixlog/1
   doCheck = !stdenv.hostPlatform.isDarwin;
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -32,9 +29,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/neunenak/diskonaut";
     changelog = "https://github.com/neunenak/diskonaut/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gregshuflin
     ];
+
     mainProgram = "diskonaut";
   };
 })

@@ -1,22 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unstableGitUpdater,
-  poetry-core,
+  buildPythonPackage,
   pdfrw,
+  poetry-core,
   reportlab,
   rmscene,
   setuptools,
   svglib,
+  unstableGitUpdater,
   xdg,
 }:
 
 buildPythonPackage {
   pname = "rmrl";
   version = "0.2.1-unstable-2023-06-01";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "benneti";
@@ -27,12 +25,6 @@ buildPythonPackage {
 
   nativeBuildInputs = [
     poetry-core
-  ];
-
-  pythonRelaxDeps = [
-    "reportlab"
-    "rmscene"
-    "xdg"
   ];
 
   propagatedBuildInputs = [
@@ -46,8 +38,14 @@ buildPythonPackage {
 
   # upstream has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "rmrl" ];
+
+  pythonRelaxDeps = [
+    "reportlab"
+    "rmscene"
+    "xdg"
+  ];
 
   passthru.updateScript = unstableGitUpdater { };
 

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pythonOlder,
 }:
@@ -9,9 +9,6 @@
 buildPythonPackage rec {
   pname = "aioonkyo";
   version = "0.4.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "arturpragacz";
@@ -20,11 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-hLtyQWChWBddefDUT/+7e/w6i/DPEm/zw+EqOPgGsUI=";
   };
 
-  build-system = [ hatchling ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ hatchling ];
+  disabled = pythonOlder "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "aioonkyo" ];
 
   meta = {

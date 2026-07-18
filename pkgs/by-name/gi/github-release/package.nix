@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,26 +18,27 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  ldflags = [ "-s" ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  ldflags = [ "-s" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Commandline app to create and edit releases on Github (and upload artifacts)";
-    mainProgram = "github-release";
+
     longDescription = ''
       A small commandline app written in Go that allows you to easily create and
       delete releases of your projects on Github.
       In addition it allows you to attach files to those releases.
     '';
-    license = lib.licenses.mit;
+
     homepage = "https://github.com/github-release/github-release";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ardumont
     ];
+
+    mainProgram = "github-release";
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchzip,
   autoPatchelfHook,
-  makeBinaryWrapper,
-  jq,
   dotnet-runtime,
-  zlib,
+  fetchzip,
+  jq,
   libzen,
+  makeBinaryWrapper,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -51,8 +51,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    mainProgram = "avdump3";
     description = "Tool for extracting audio/video metadata from media files and uploading it to AniDB";
+
     longDescription = ''
       AVDump is a tool to extract meta information from media files while at the
       same time calculating multiple hashes. Based on that information reports
@@ -60,18 +60,23 @@ stdenv.mkDerivation {
       to send those reports back to AniDB and thereby quickly filling in missing
       metadata for new files.
     '';
+
     homepage = "https://wiki.anidb.net/Avdump3";
-    sourceProvenance = with lib.sourceTypes; [
-      binaryNativeCode
-      binaryBytecode
-    ];
+
     # partial source code available under MIT license at https://github.com/DvdKhl/AVDump3
     license = with lib.licenses; [
       mit
       unfree
     ];
+
+    sourceProvenance = with lib.sourceTypes; [
+      binaryNativeCode
+      binaryBytecode
+    ];
+
     maintainers = with lib.maintainers; [ kini ];
     # NOTE: aarch64-linux may also work but hasn't been tested; co-maintainers welcome.
     platforms = [ "x86_64-linux" ];
+    mainProgram = "avdump3";
   };
 }

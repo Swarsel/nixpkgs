@@ -1,11 +1,9 @@
 {
   lib,
-  mkDerivation,
   libbsddialog,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/kbdmap";
-
   outputs = [
     "out"
     "man"
@@ -16,6 +14,7 @@ mkDerivation {
     libbsddialog
   ];
 
+  path = "usr.sbin/kbdmap";
   meta.mainProgram = "kbdmap";
   meta.platforms = lib.platforms.freebsd;
 }

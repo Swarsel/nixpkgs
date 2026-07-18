@@ -1,23 +1,17 @@
 {
   stdenv,
-  toKodiAddon,
   addonDir,
+  toKodiAddon,
 }:
 {
-  name ? "${attrs.pname}-${attrs.version}",
   namespace,
+  name ? "${attrs.pname}-${attrs.version}",
   sourceDir ? "",
   ...
 }@attrs:
 toKodiAddon (
   stdenv.mkDerivation (
     {
-      name = "kodi-" + name;
-
-      dontStrip = true;
-
-      extraRuntimeDependencies = [ ];
-
       installPhase = ''
         runHook preInstall
 
@@ -30,6 +24,10 @@ toKodiAddon (
 
         runHook postInstall
       '';
+
+      dontStrip = true;
+      extraRuntimeDependencies = [ ];
+      name = "kodi-" + name;
     }
     // attrs
   )

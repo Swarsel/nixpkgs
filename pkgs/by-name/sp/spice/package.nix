@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
+  cyrus_sasl,
+  gdk-pixbuf,
+  glib,
+  gst_all_1,
+  libcacard,
+  libjpeg,
+  libopus,
+  libxext,
+  libxfixes,
+  libxinerama,
+  libxrandr,
+  libxrender,
+  lz4,
   meson,
   ninja,
-  pkg-config,
-  pixman,
-  alsa-lib,
   openssl,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxrender,
-  libxinerama,
-  libjpeg,
-  zlib,
-  spice-protocol,
-  python3,
-  glib,
-  cyrus_sasl,
-  libcacard,
-  lz4,
-  libopus,
-  gst_all_1,
   orc,
-  gdk-pixbuf,
+  pixman,
+  pkg-config,
+  python3,
+  spice-protocol,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,6 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./remove-rt-on-darwin.patch
   ];
+
+  postPatch = ''
+    patchShebangs build-aux
+  '';
 
   nativeBuildInputs = [
     glib
@@ -76,15 +80,11 @@ stdenv.mkDerivation (finalAttrs: {
     gdk-pixbuf
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-fno-stack-protector";
-
   mesonFlags = [
     "-Dgstreamer=1.0"
   ];
 
-  postPatch = ''
-    patchShebangs build-aux
-  '';
+  env.NIX_CFLAGS_COMPILE = "-fno-stack-protector";
 
   postInstall = ''
     ln -s spice-server $out/include/spice
@@ -92,6 +92,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Complete open source solution for interaction with virtualized desktop devices";
+
     longDescription = ''
       The Spice project aims to provide a complete open source solution for interaction
       with virtualized desktop devices.The Spice project deals with both the virtualized
@@ -99,12 +100,14 @@ stdenv.mkDerivation (finalAttrs: {
       VD-Interfaces. The VD-Interfaces (VDI) enable both ends of the solution to be easily
       utilized by a third-party component.
     '';
+
     homepage = "https://www.spice-space.org/";
     license = lib.licenses.lgpl21;
 
     maintainers = with lib.maintainers; [
       atemu
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
   };
 })

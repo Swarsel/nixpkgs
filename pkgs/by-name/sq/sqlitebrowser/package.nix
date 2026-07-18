@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libsForQt5,
-  sqlcipher,
   nix-update-script,
+  pkg-config,
+  sqlcipher,
 }:
 
 let
@@ -41,6 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'cmake_minimum_required(VERSION 2.8.12.2)' 'cmake_minimum_required(VERSION 3.16)'
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    qt'.qttools
+    qt'.wrapQtAppsHook
+  ];
+
   buildInputs = [
     qt'.qtbase
     qt'.qcustomplot
@@ -48,13 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     sqlcipher
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin qt'.qtmacextras;
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    qt'.qttools
-    qt'.wrapQtAppsHook
-  ];
 
   cmakeFlags = [
     "-Wno-dev"
@@ -66,6 +66,9 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "QSCINTILLA_INCLUDE_DIR" "${lib.getDev qt'.qscintilla}/include")
   ];
 
+  env.LANG = "C.UTF-8";
+  doCheck = true;
+
   postInstall = lib.optional stdenv.hostPlatform.isDarwin ''
     # Copy the icon file to the app bundle
     target="$(find . -name "*.app")"
@@ -76,21 +79,19 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r *.app $out/Applications
   '';
 
-  env.LANG = "C.UTF-8";
-
-  doCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "DB Browser for SQLite";
-    mainProgram = "sqlitebrowser";
     homepage = "https://sqlitebrowser.org/";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       peterhoeg
       savtrip
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "sqlitebrowser";
   };
 })

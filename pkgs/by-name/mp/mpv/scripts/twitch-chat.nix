@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildLua,
   curl,
-  fetchFromGitHub,
-  lib,
   nix-update-script,
 }:
 buildLua {
@@ -14,13 +14,11 @@ buildLua {
     repo = "mpv-twitch-chat";
     rev = "1e9d2dfcd8ab9c343cc6a3c55363994dbafe5b58";
     hash = "sha256-vtv5YZO7qROhUL3TKCKaNfvv1uCjQv9kvfo7sno24BE=";
-
     postFetch = "rm $out/screenshot.webp";
   };
 
-  scriptPath = ".";
-
   runtime-dependencies = [ curl ];
+  scriptPath = ".";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

@@ -1,7 +1,7 @@
 {
   lib,
-  buildDubPackage,
   fetchFromGitHub,
+  buildDubPackage,
   versionCheckHook,
 }:
 
@@ -16,16 +16,14 @@ buildDubPackage rec {
     hash = "sha256-7lZhYlK07VWpSRnzawJ2RL69/U/AH/qPyQY4VfbnVn4=";
   };
 
-  preBuild = ''
-    mkdir -p bin/
-    echo "v${version}" > bin/dubhash.txt
-  '';
-
   patches = [
     ./fix_version.patch
   ];
 
-  dubLock = ./dub-lock.json;
+  preBuild = ''
+    mkdir -p bin/
+    echo "v${version}" > bin/dubhash.txt
+  '';
 
   doCheck = true;
 
@@ -35,18 +33,20 @@ buildDubPackage rec {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  dubLock = ./dub-lock.json;
 
   meta = {
     description = "Swiss-army knife for D source code";
-    changelog = "https://github.com/dlang-community/D-Scanner/releases/tag/v${version}";
     homepage = "https://github.com/dlang-community/D-Scanner";
-    mainProgram = "dscanner";
-    maintainers = with lib.maintainers; [ ipsavitsky ];
+    changelog = "https://github.com/dlang-community/D-Scanner/releases/tag/v${version}";
     license = lib.licenses.boost;
+    maintainers = with lib.maintainers; [ ipsavitsky ];
+    mainProgram = "dscanner";
   };
 }

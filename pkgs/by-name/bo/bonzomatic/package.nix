@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  makeWrapper,
   alsa-lib,
+  cmake,
   fontconfig,
-  mesa_glu,
   libxcursor,
+  libxext,
+  libxi,
   libxinerama,
   libxrandr,
+  makeWrapper,
+  mesa_glu,
   xinput,
-  libxi,
-  libxext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,10 +58,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/gargaj/bonzomatic";
     license = lib.licenses.unlicense;
     maintainers = [ lib.maintainers.ilian ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "bonzomatic";
   };
 })

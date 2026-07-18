@@ -54,8 +54,8 @@
 */
 drv:
 {
-  formats,
   compressors,
+  formats,
   extraFindOperands ? "",
 }:
 let

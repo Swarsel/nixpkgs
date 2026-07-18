@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
   nix-update-script,
@@ -19,19 +19,19 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-92lKUBkSx5Rvm1FfZLAd3LZS+TPAasRYOMFLTt/QzXc=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-X main.version=${version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Update outdated Go dependencies interactively";
-    changelog = "https://github.com/oligot/go-mod-upgrade/releases/tag/v${version}/CHANGELOG.md";
     homepage = "https://github.com/oligot/go-mod-upgrade";
+    changelog = "https://github.com/oligot/go-mod-upgrade/releases/tag/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ polyfloyd ];
   };

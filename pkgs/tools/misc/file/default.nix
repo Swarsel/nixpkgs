@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   buildPackages,
-  zlib,
   libgnurx,
-  updateAutotoolsGnuConfigScriptsHook,
   testers,
+  updateAutotoolsGnuConfigScriptsHook,
+  zlib,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -19,11 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "5.48";
 
   src = fetchurl {
+    hash = "sha256-7RRlaIOyOjZLQFfAVZXZMlLam8Rz0wEGUZUZ0NoUEoM=";
+
     urls = [
       "https://astron.com/pub/file/file-${finalAttrs.version}.tar.gz"
       "https://distfiles.macports.org/file/file-${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-7RRlaIOyOjZLQFfAVZXZMlLam8Rz0wEGUZUZ0NoUEoM=";
   };
 
   outputs = [
@@ -33,30 +34,30 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     updateAutotoolsGnuConfigScriptsHook
   ];
-  buildInputs = [ zlib ] ++ lib.optional stdenv.hostPlatform.isMinGW libgnurx;
 
-  # https://bugs.astron.com/view.php?id=382
-  doCheck = !stdenv.buildPlatform.isMusl;
+  buildInputs = [ zlib ] ++ lib.optional stdenv.hostPlatform.isMinGW libgnurx;
 
   # In native builds, it will use the newly-compiled file instead.
   makeFlags = lib.optional (
     !lib.systems.equals stdenv.hostPlatform stdenv.buildPlatform
   ) "FILE_COMPILE=${lib.getExe buildPackages.file}";
 
+  # https://bugs.astron.com/view.php?id=382
+  doCheck = !stdenv.buildPlatform.isMusl;
+  enableParallelBuilding = true;
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
-    homepage = "https://darwinsys.com/file";
     description = "Program that shows the type of files";
-    maintainers = with lib.maintainers; [ doronbehar ];
+    homepage = "https://darwinsys.com/file";
     license = lib.licenses.bsd2;
-    pkgConfigModules = [ "libmagic" ];
+    maintainers = with lib.maintainers; [ doronbehar ];
     platforms = lib.platforms.all;
     mainProgram = "file";
+    pkgConfigModules = [ "libmagic" ];
   };
 })

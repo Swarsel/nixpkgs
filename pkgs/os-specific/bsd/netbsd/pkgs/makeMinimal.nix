@@ -1,28 +1,25 @@
 {
-  mkDerivation,
   bsdSetupHook,
-  netbsdSetupHook,
   make,
   make-rules,
+  mkDerivation,
+  netbsdSetupHook,
 }:
 
 mkDerivation {
-  path = "tools/make";
-
-  buildInputs = [ ];
-  nativeBuildInputs = [
-    bsdSetupHook
-    netbsdSetupHook
-  ];
-
-  skipIncludesPhase = true;
-
   postPatch = ''
     patchShebangs $COMPONENT_PATH/configure
 
     # make needs this to pick up our sys make files
     appendToVar NIX_CFLAGS_COMPILE "-D_PATH_DEFSYSPATH=\"$out/share/mk\""
   '';
+
+  nativeBuildInputs = [
+    bsdSetupHook
+    netbsdSetupHook
+  ];
+
+  buildInputs = [ ];
 
   buildPhase = ''
     runHook preBuild
@@ -44,4 +41,6 @@ mkDerivation {
   '';
 
   extraPaths = [ make.path ];
+  path = "tools/make";
+  skipIncludesPhase = true;
 }

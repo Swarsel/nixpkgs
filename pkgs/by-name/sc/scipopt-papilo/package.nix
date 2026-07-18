@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
-  boost,
   blas,
+  boost,
+  cmake,
+  gfortran,
   gmp,
   onetbb,
-  gfortran,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,12 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
     #   > compilation terminated.
     (lib.cmakeBool "SOPLEX" false)
   ];
+
   doCheck = true;
+
   meta = {
-    maintainers = with lib.maintainers; [ pmeinhold ];
     description = "Parallel Presolve for Integer and Linear Optimization";
-    license = lib.licenses.lgpl3Plus;
     homepage = "https://github.com/scipopt/papilo";
+    license = lib.licenses.lgpl3Plus;
+    maintainers = with lib.maintainers; [ pmeinhold ];
     mainProgram = "papilo";
   };
 })

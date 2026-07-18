@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchzip,
-  nixosTests,
   installShellFiles,
+  nixosTests,
 }:
 
 stdenv.mkDerivation rec {
@@ -37,10 +37,10 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Jottacloud CLI";
     homepage = "https://www.jottacloud.com/";
-    downloadPage = "https://repo.jotta.us/archives/linux/";
-    maintainers = with lib.maintainers; [ evenbrenden ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ evenbrenden ];
     platforms = [ "x86_64-linux" ];
+    downloadPage = "https://repo.jotta.us/archives/linux/";
   };
 }

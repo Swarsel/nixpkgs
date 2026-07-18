@@ -18,13 +18,15 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+
     services.xserver.windowManager.session = singleton {
       name = "stumpwm";
+
       start = ''
         ${cfg.package}/bin/stumpwm &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ cfg.package ];
   };
 }

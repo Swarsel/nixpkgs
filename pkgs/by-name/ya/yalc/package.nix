@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
   nodejs,
+  stdenvNoCC,
+  unstableGitUpdater,
   yarnBuildHook,
   yarnConfigHook,
   yarnInstallHook,
-  unstableGitUpdater,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -22,11 +22,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-v8OhLVuRhnyN2PrslgVVS0r56wGhYYmjoz3ZUZ95xBc=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-+w3azJEnRx4v3nJ3rhpLWt6CjOFhMMmr1UL5hg2ZR48=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -34,13 +29,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     nodejs
   ];
 
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-+w3azJEnRx4v3nJ3rhpLWt6CjOFhMMmr1UL5hg2ZR48=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Work with yarn/npm packages locally like a boss";
-    mainProgram = "yalc";
     homepage = "https://github.com/wclr/yalc";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "yalc";
   };
 })

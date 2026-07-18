@@ -1,38 +1,38 @@
 {
-  stdenv,
   lib,
-  applyPatches,
+  stdenv,
   fetchFromGitHub,
+  applyPatches,
   autoconf,
   automake,
   bison,
-  cmake,
-  pkg-config,
-  libtool,
   civetweb,
+  cmake,
   coreutils,
   curl,
   flex,
   gnutls,
+  icu,
   libconfig,
   libdaemon,
   libev,
+  libevent,
   libgcrypt,
   libinjection,
   libmicrohttpd,
+  libtool,
   libuuid,
   lz4,
   nlohmann_json,
   openssl,
   pcre,
   perl,
-  python3,
-  prometheus-cpp,
-  zlib,
-  texinfo,
+  pkg-config,
   postgresql_16,
-  icu,
-  libevent,
+  prometheus-cpp,
+  python3,
+  texinfo,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -75,11 +75,7 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  enableParallelBuilding = true;
-
   env.GIT_VERSION = finalAttrs.version;
-
-  dontConfigure = true;
 
   # replace and fix some vendored dependencies
   preBuild = # sh
@@ -117,6 +113,7 @@ stdenv.mkDerivation (finalAttrs: {
           map
             (x: {
               inherit (x) f;
+
               p = x.p // {
                 src = applyPatches {
                   inherit (x.p) src patches;
@@ -158,6 +155,7 @@ stdenv.mkDerivation (finalAttrs: {
               }
               {
                 f = "prometheus-cpp";
+
                 p = prometheus-cpp.overrideAttrs (
                   finalAttrs: _: {
                     version = "1.1.0";
@@ -221,12 +219,15 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i s_/usr/bin/proxysql_$out/bin/proxysql_ $out/lib/systemd/system/*.service
   '';
 
+  dontConfigure = true;
+  enableParallelBuilding = true;
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "High-performance MySQL proxy";
-    mainProgram = "proxysql";
     homepage = "https://proxysql.com/";
     license = with lib.licenses; [ gpl3Only ];
     platforms = lib.platforms.unix;
+    mainProgram = "proxysql";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

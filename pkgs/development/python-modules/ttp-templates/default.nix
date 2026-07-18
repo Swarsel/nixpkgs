@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pydantic,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ttp-templates";
   version = "0.5.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dmulyalin";
@@ -18,17 +17,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-W6F0/CGm713HhCtgqv+tEDm5mlkx0JJRmnUc9j+Fnvs=";
   };
 
-  nativeBuildInputs = [ poetry-core ];
-
-  dependencies = [ pydantic ];
-
   postPatch = ''
     # Drop circular dependency on ttp
     sed -i '/ttp =/d' pyproject.toml
   '';
 
+  nativeBuildInputs = [ poetry-core ];
   # Circular dependency on ttp
   doCheck = false;
+  dependencies = [ pydantic ];
+  pyproject = true;
 
   meta = {
     description = "Template Text Parser Templates collections";

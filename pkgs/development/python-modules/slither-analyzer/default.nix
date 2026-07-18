@@ -1,34 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # nativeBuildInputs
-  makeWrapper,
-
+  buildPythonPackage,
   # dependencies
   crytic-compile,
+  # build-system
+  hatchling,
+  # nativeBuildInputs
+  makeWrapper,
   packaging,
   prettytable,
-  web3,
-
-  # tests
-  versionCheckHook,
-  writableTmpDirAsHomeHook,
-
   # postFixup
   solc,
-
+  # tests
+  versionCheckHook,
+  web3,
+  writableTmpDirAsHomeHook,
   withSolc ? false,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "slither-analyzer";
   version = "0.11.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "crytic";
@@ -37,9 +30,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-sy1vE9XniwyvvZRFnnKhPfmYh2auHHcMel9sZx2YK3c=";
   };
 
-  build-system = [ hatchling ];
-
   nativeBuildInputs = [ makeWrapper ];
+
+  nativeCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  postFixup = lib.optionalString withSolc ''
+    wrapProgram $out/bin/slither \
+      --prefix PATH : "${lib.makeBinPath [ solc ]}"
+  '';
+
+  build-system = [ hatchling ];
 
   dependencies = [
     crytic-compile
@@ -48,16 +51,7 @@ buildPythonPackage (finalAttrs: {
     web3
   ];
 
-  nativeCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
-  versionCheckKeepEnvironment = [ "HOME" ];
-
-  postFixup = lib.optionalString withSolc ''
-    wrapProgram $out/bin/slither \
-      --prefix PATH : "${lib.makeBinPath [ solc ]}"
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "slither"
@@ -76,21 +70,27 @@ buildPythonPackage (finalAttrs: {
     "slither.vyper_parsing"
   ];
 
+  versionCheckKeepEnvironment = [ "HOME" ];
+
   meta = {
     description = "Static Analyzer for Solidity";
+
     longDescription = ''
       Slither is a Solidity static analysis framework written in Python 3. It
       runs a suite of vulnerability detectors, prints visual information about
       contract details, and provides an API to easily write custom analyses.
     '';
+
     homepage = "https://github.com/trailofbits/slither";
     changelog = "https://github.com/crytic/slither/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "slither";
+
     maintainers = with lib.maintainers; [
       arturcygan
       fab
       hellwolf
     ];
+
+    mainProgram = "slither";
   };
 })

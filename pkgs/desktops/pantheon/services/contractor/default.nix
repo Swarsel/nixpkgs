@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  python3,
-  ninja,
-  pkg-config,
-  vala,
-  glib,
-  libgee,
   dbus,
+  glib,
   glib-networking,
+  libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  python3,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -53,7 +53,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/contractor";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "contractor";
+    teams = [ lib.teams.pantheon ];
   };
 }

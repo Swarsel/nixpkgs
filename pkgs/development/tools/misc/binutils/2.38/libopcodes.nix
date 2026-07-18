@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  buildPackages,
   autoreconfHook,
-  bison,
   binutils-unwrapped_2_38,
-  libiberty,
+  bison,
+  buildPackages,
   libbfd_2_38,
+  libiberty,
 }:
 
 stdenv.mkDerivation {
-  pname = "libopcodes";
   inherit (binutils-unwrapped_2_38) version src;
+  pname = "libopcodes";
 
   outputs = [
     "out"
@@ -28,19 +28,15 @@ stdenv.mkDerivation {
     find . ../include/opcode -type f -exec sed {} -i -e 's/"bfd.h"/<bfd.h>/' \;
   '';
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [
     autoreconfHook
     bison
   ];
+
   buildInputs = [ libiberty ];
   # dis-asm.h includes bfd.h
   propagatedBuildInputs = [ libbfd_2_38 ];
 
-  configurePlatforms = [
-    "build"
-    "host"
-  ];
   configureFlags = [
     "--enable-targets=all"
     "--enable-64-bit-bfd"
@@ -48,6 +44,12 @@ stdenv.mkDerivation {
     "--enable-shared"
   ];
 
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   enableParallelBuilding = true;
 
   meta = {

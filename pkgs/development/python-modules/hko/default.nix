@@ -1,28 +1,25 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
   poetry-core,
-  aiohttp,
 }:
 
 buildPythonPackage rec {
   pname = "hko";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-6FzdaSaw7sX52wM8HbHFGtKdR2JBg3B2cMZnP7RfQzs=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
-
   # Tests require network access
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "hko" ];
 
   meta = {

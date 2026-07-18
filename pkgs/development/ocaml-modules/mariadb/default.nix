@@ -3,9 +3,9 @@
   fetchurl,
   buildDunePackage,
   ctypes,
-  mariadb,
-  libmysqlclient,
   dune-configurator,
+  libmysqlclient,
+  mariadb,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -27,8 +27,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "OCaml bindings for MariaDB";
+    homepage = "https://github.com/ocaml-community/ocaml-mariadb";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bcc32 ];
-    homepage = "https://github.com/ocaml-community/ocaml-mariadb";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  doxygen,
   fetchFromGitLab,
+  doxygen,
   meson,
   ninja,
   pcre2,
@@ -37,7 +37,9 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     python3
   ];
+
   buildInputs = [ pcre2 ];
+
   propagatedBuildInputs = [
     serd
     zix
@@ -46,12 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "http://drobilla.net/software/sord";
     description = "Lightweight C library for storing RDF data in memory";
+    homepage = "http://drobilla.net/software/sord";
+
     license = with lib.licenses; [
       bsd0
       isc
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

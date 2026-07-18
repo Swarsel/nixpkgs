@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchurl,
   appimageTools,
   desktop-file-utils,
-  fetchurl,
 }:
 
 let
@@ -22,8 +22,8 @@ let
   hash = onenote.hash.${stdenv.hostPlatform.system};
 
   src = fetchurl {
-    url = "https://github.com/patrikx3/onenote/releases/download/v${version}/P3X-OneNote-${version}${plat}.AppImage";
     inherit hash;
+    url = "https://github.com/patrikx3/onenote/releases/download/v${version}/P3X-OneNote-${version}${plat}.AppImage";
   };
 
   appimageContents = appimageTools.extractType2 {
@@ -48,14 +48,16 @@ appimageTools.wrapType2 {
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://github.com/patrikx3/onenote";
     description = "Linux Electron Onenote - A Linux compatible version of OneNote";
+    homepage = "https://github.com/patrikx3/onenote";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tiagolobocastro ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "p3x-onenote";
   };
 }

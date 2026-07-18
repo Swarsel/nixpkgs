@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-pGXFuyYJPNcMEd0vPrmbdY/CeOF0AXwrNJEfrBBe4I0=";
-
   # based on https://github.com/wader/jq-lsp/blob/master/.goreleaser.yml
   env.CGO_ENABLED = 0;
 

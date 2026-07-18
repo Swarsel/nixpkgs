@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   chardet,
   gitpython,
+  hatchling,
   pygments,
-  rich,
   pytestCheckHook,
+  rich,
 }:
 
 buildPythonPackage rec {
   pname = "pygount";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "roskakori";
@@ -21,6 +20,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-1Ws/8znFusdn2jKFvbiPD7ZRbOnPDqBZceMizWfeVlM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -33,10 +36,6 @@ buildPythonPackage rec {
     rich
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # requires network access
     "test_can_find_files_from_mixed_cloned_git_remote_url_and_local"
@@ -44,14 +43,15 @@ buildPythonPackage rec {
     "test_succeeds_on_not_git_extension"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pygount" ];
 
   meta = {
     description = "Count lines of code for hundreds of languages using pygments";
-    mainProgram = "pygount";
     homepage = "https://github.com/roskakori/pygount";
     changelog = "https://github.com/roskakori/pygount/blob/${src.tag}/docs/changes.md";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ nickcao ];
+    mainProgram = "pygount";
   };
 }

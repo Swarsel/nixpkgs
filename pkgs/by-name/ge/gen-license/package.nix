@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Create licenses for your projects right from your terminal";
-    mainProgram = "gen-license";
     homepage = "https://github.com/nexxeln/license-generator";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ryanccn ];
+    mainProgram = "gen-license";
   };
 })

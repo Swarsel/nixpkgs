@@ -9,7 +9,6 @@ let
   self = python3Packages.buildPythonApplication {
     pname = "ophis";
     version = "2.2-unstable-2024-07-28";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "michaelcmartin";
@@ -19,14 +18,15 @@ let
     };
 
     build-system = [ python3Packages.setuptools ];
+    pyproject = true;
 
     passthru = {
       updateScript = unstableGitUpdater { };
     };
 
     meta = {
-      homepage = "http://michaelcmartin.github.io/Ophis/";
       description = "Cross-assembler for the 6502 series of microprocessors";
+
       longDescription = ''
         Ophis is an assembler for the 6502 microprocessor - the famous chip used
         in the vast majority of the classic 8-bit computers and consoles. Its
@@ -34,9 +34,11 @@ let
         has successfully been used to create programs for the Nintendo
         Entertainment System, the Atari 2600, and the Commodore 64.
       '';
+
+      homepage = "http://michaelcmartin.github.io/Ophis/";
       license = lib.licenses.mit;
-      mainProgram = "ophis";
       maintainers = [ ];
+      mainProgram = "ophis";
     };
   };
 in

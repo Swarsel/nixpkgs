@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  runtimeShell,
-
-  # build
-  poetry-core,
-
+  buildPythonPackage,
   # propagates
   docutils,
-
+  fetchpatch,
+  # build
+  poetry-core,
   # tests
   pytestCheckHook,
   readme-renderer,
+  runtimeShell,
   textile,
 }:
 
 buildPythonPackage rec {
   pname = "python-creole";
   version = "1.4.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jedie";
@@ -32,13 +28,11 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/jedie/python-creole/pull/77
     (fetchpatch {
+      hash = "sha256-WtoEQyu/154Cfj6eSnNA+t37+o7Ij328QGMKxwcLg5k=";
       name = "replace-poetry-with-poetry-core.patch";
       url = "https://github.com/jedie/python-creole/commit/bfc46730ab4a189f3142246cead8d26005a28671.patch";
-      hash = "sha256-WtoEQyu/154Cfj6eSnNA+t37+o7Ij328QGMKxwcLg5k=";
     })
   ];
-
-  nativeBuildInputs = [ poetry-core ];
 
   postPatch = ''
     substituteInPlace Makefile \
@@ -47,9 +41,8 @@ buildPythonPackage rec {
     sed -i "/-cov/d" pytest.ini
   '';
 
+  nativeBuildInputs = [ poetry-core ];
   propagatedBuildInputs = [ docutils ];
-
-  pythonImportsCheck = [ "creole" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -60,18 +53,6 @@ buildPythonPackage rec {
   preCheck = ''
     export PATH=$out/bin:$PATH
   '';
-
-  disabledTests = [
-    # macro didn't expect argument
-    "test_macro_wrong_arguments_quite"
-    "test_macro_wrong_arguments_with_error_report"
-    # rendering mismatches, likely docutils version mismatch
-    "test_headlines1"
-    "test_simple_table"
-    # - <string>:5: (ERROR/3) Document or section may not begin with a transition.
-    # + <string>:5: (WARNING/2) Document or section may not begin with a transition.
-    "test_non_valid_readme"
-  ];
 
   disabledTestPaths = [
     # requires poetry
@@ -89,6 +70,21 @@ buildPythonPackage rec {
     "creole/tests/test_cross_compare_all.py::CrossCompareTests::test_link_with_unknown_protocol"
     "creole/tests/test_cross_compare_all.py::CrossCompareTests::test_link_without_title"
   ];
+
+  disabledTests = [
+    # macro didn't expect argument
+    "test_macro_wrong_arguments_quite"
+    "test_macro_wrong_arguments_with_error_report"
+    # rendering mismatches, likely docutils version mismatch
+    "test_headlines1"
+    "test_simple_table"
+    # - <string>:5: (ERROR/3) Document or section may not begin with a transition.
+    # + <string>:5: (WARNING/2) Document or section may not begin with a transition.
+    "test_non_valid_readme"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "creole" ];
 
   meta = {
     description = "Creole markup tools written in Python";

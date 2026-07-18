@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   boost,
-  zlib,
+  bzip2,
+  callPackage,
+  expect,
+  fetchpatch,
+  gmp,
+  less,
   libidn,
   lua,
+  openssl,
   pcre,
-  sqlite,
   perl,
   pkg-config,
-  expect,
-  less,
-  bzip2,
-  gmp,
-  openssl,
-  autoreconfHook,
+  sqlite,
   texinfo,
-  fetchpatch,
-  callPackage,
+  zlib,
 }:
 
 let
@@ -31,14 +31,13 @@ in
 assert perlVersion != "";
 
 stdenv.mkDerivation rec {
-  pname = "monotone";
   inherit version;
+  pname = "monotone";
 
   #  src = fetchurl {
   #    url = "http://monotone.ca/downloads/${version}/monotone-${version}.tar.bz2";
   #    sha256 = "124cwgi2q86hagslbk5idxbs9j896rfjzryhr6z63r6l485gcp7r";
   #  };
-
   # My mirror of upstream Monotone repository
   # Could fetchmtn, but circular dependency; snapshot requested
   # https://lists.nongnu.org/archive/html/monotone-devel/2021-05/msg00000.html
@@ -54,9 +53,9 @@ stdenv.mkDerivation rec {
     ./monotone-1.1-adapt-to-botan2.patch
     (fetchpatch {
       name = "rm-clang-float128-hack.patch";
-      url = "https://github.com/7c6f434c/monotone-mirror/commit/5f01a3a9326a8dbdae7fc911b208b7c319e5f456.patch";
       revert = true;
       sha256 = "0fzjdv49dx5lzvqhkvk50lkccagwx8h0bfha4a0k6l4qh36f9j7c";
+      url = "https://github.com/7c6f434c/monotone-mirror/commit/5f01a3a9326a8dbdae7fc911b208b7c319e5f456.patch";
     })
     ./monotone-1.1-gcc-14.patch
   ];
@@ -71,13 +70,12 @@ stdenv.mkDerivation rec {
       {} +
   '';
 
-  env.CXXFLAGS = " --std=c++11 ";
-
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
     texinfo
   ];
+
   buildInputs = [
     boost
     zlib
@@ -93,6 +91,8 @@ stdenv.mkDerivation rec {
     perl
   ];
 
+  env.CXXFLAGS = " --std=c++11 ";
+
   postInstall = ''
     mkdir -p $out/share/${pname}-${version}
     cp -rv contrib/ $out/share/${pname}-${version}/contrib
@@ -106,12 +106,11 @@ stdenv.mkDerivation rec {
   '';
 
   #doCheck = true; # some tests fail (and they take VERY long)
-
   meta = {
     description = "Free distributed version control system";
     homepage = "https://github.com/7c6f434c/monotone-mirror";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
   };
 }

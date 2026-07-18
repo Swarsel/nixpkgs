@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "past-time";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fabaff";
@@ -16,6 +15,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-1t43GAcA3Dd5F2xO0JMmq8f5cbmmcO2I7TIGaVa1ebw=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [
+    freezegun
+    pytestCheckHook
+  ];
+
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -23,11 +27,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    freezegun
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "past_time" ];
 
   meta = {

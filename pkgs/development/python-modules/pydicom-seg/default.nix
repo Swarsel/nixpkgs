@@ -1,49 +1,41 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   jsonschema,
   numpy,
+  # build-system
+  poetry-core,
   pydicom,
-  simpleitk,
-
   # tests
   pytestCheckHook,
+  simpleitk,
 }:
 
 buildPythonPackage rec {
   pname = "pydicom-seg";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "razorx89";
     repo = "pydicom-seg";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-2Y3fZHKfZqdp5EU8HfVsmJ5JFfVGZuAR7+Kj7qaTiPM=";
+    fetchSubmodules = true;
   };
 
   patches = [
     # https://github.com/razorx89/pydicom-seg/pull/54
     (fetchpatch {
+      hash = "sha256-xBOVjWZPjyQ8gSj6JLe9B531e11TI3FUFFtL+IelZOM=";
       name = "replace-poetry-with-poetry-core.patch";
       url = "https://github.com/razorx89/pydicom-seg/commit/ac91eaefe3b0aecfe745869972c08de5350d2b61.patch";
-      hash = "sha256-xBOVjWZPjyQ8gSj6JLe9B531e11TI3FUFFtL+IelZOM=";
     })
   ];
 
-  pythonRelaxDeps = [
-    "jsonschema"
-    "numpy"
-  ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -53,9 +45,13 @@ buildPythonPackage rec {
     simpleitk
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pydicom_seg" ];
+
+  pythonRelaxDeps = [
+    "jsonschema"
+    "numpy"
+  ];
 
   meta = {
     description = "Medical segmentation file reading and writing";

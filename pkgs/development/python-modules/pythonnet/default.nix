@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  pythonAtLeast,
-  pytestCheckHook,
-  pycparser,
-  psutil,
-  dotnet-sdk_10,
   buildDotnetModule,
+  buildPythonPackage,
   clr-loader,
+  dotnet-sdk_10,
+  psutil,
+  pycparser,
+  pytestCheckHook,
+  pythonAtLeast,
   setuptools,
 }:
 
@@ -26,18 +26,14 @@ let
   # build is done in `buildPythonPackage` below.
   dotnet-build = buildDotnetModule {
     inherit pname version src;
+    dotnet-sdk = dotnet-sdk_10;
+    nugetDeps = ./deps.json;
     projectFile = "src/runtime/Python.Runtime.csproj";
     testProjectFile = "src/testing/Python.Test.csproj";
-    nugetDeps = ./deps.json;
-    dotnet-sdk = dotnet-sdk_10;
   };
 in
 buildPythonPackage {
   inherit pname version src;
-
-  disabled = pythonAtLeast "3.14";
-
-  pyproject = true;
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -57,26 +53,29 @@ buildPythonPackage {
       --replace-fail '        # fw = "net6.0"' '        fw = "net10.0"'
   '';
 
-  buildInputs = dotnet-build.nugetDeps;
-
   nativeBuildInputs = [
     setuptools
     dotnet-sdk_10
   ];
+
+  buildInputs = dotnet-build.nugetDeps;
 
   propagatedBuildInputs = [
     pycparser
     clr-loader
   ];
 
-  pytestFlags = [
-    # Run tests using .NET Core, Mono is unsupported for now due to find_library problem in clr-loader
-    "--runtime=coreclr"
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     psutil # needed for memory leak tests
+  ];
+
+  disabled = pythonAtLeast "3.14";
+  pyproject = true;
+
+  pytestFlags = [
+    # Run tests using .NET Core, Mono is unsupported for now due to find_library problem in clr-loader
+    "--runtime=coreclr"
   ];
 
   # Rerun this when updating to refresh Nuget dependencies
@@ -87,11 +86,13 @@ buildPythonPackage {
     homepage = "https://pythonnet.github.io";
     changelog = "https://github.com/pythonnet/pythonnet/releases/tag/${src.tag}";
     license = lib.licenses.mit;
-    # <https://github.com/pythonnet/pythonnet/issues/898>
-    badPlatforms = [ "aarch64-linux" ];
+
     maintainers = with lib.maintainers; [
       jraygauthier
       mdarocha
     ];
+
+    # <https://github.com/pythonnet/pythonnet/issues/898>
+    badPlatforms = [ "aarch64-linux" ];
   };
 }

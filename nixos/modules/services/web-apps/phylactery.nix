@@ -12,24 +12,23 @@ in
 {
   options.services.phylactery = {
     enable = mkEnableOption "Phylactery server";
+    package = mkPackageOption pkgs "phylactery" { };
 
     host = mkOption {
-      type = types.str;
       default = "localhost";
       description = "Listen host for Phylactery";
-    };
-
-    port = mkOption {
-      type = types.port;
-      description = "Listen port for Phylactery";
+      type = types.str;
     };
 
     library = mkOption {
-      type = types.path;
       description = "Path to CBZ library";
+      type = types.path;
     };
 
-    package = mkPackageOption pkgs "phylactery" { };
+    port = mkOption {
+      description = "Listen port for Phylactery";
+      type = types.port;
+    };
   };
 
   config = mkIf cfg.enable {
@@ -39,13 +38,13 @@ in
         PHYLACTERY_LIBRARY = "${cfg.library}";
       };
 
-      wantedBy = [ "multi-user.target" ];
-
       serviceConfig = {
         ConditionPathExists = cfg.library;
         DynamicUser = true;
         ExecStart = "${cfg.package}/bin/phylactery";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

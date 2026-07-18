@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unstableGitUpdater,
-  poetry-core,
+  buildPythonPackage,
   nixops,
+  poetry-core,
   python-digitalocean,
+  unstableGitUpdater,
 }:
 
 buildPythonPackage {
   pname = "nixops-digitalocean";
   version = "0.1.0-unstable-2022-08-14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nix-community";
@@ -38,8 +37,8 @@ buildPythonPackage {
     python-digitalocean
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nixops_digitalocean" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

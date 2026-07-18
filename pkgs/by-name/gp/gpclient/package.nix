@@ -1,6 +1,5 @@
 {
   lib,
-  rustPlatform,
   stdenv,
   atk,
   autoconf,
@@ -11,8 +10,8 @@
   glib,
   glib-networking,
   gmp,
-  gnutls,
   gnugrep,
+  gnutls,
   gpauth,
   gtk3,
   iproute2,
@@ -28,14 +27,13 @@
   pango,
   perl,
   pkg-config,
+  rustPlatform,
   systemd,
   zlib,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 rustPlatform.buildRustPackage {
-  pname = "gpclient";
-
   # Keep automatic updates anchored on gpauth so the bot updates both
   # package outputs in one PR.
   # nixpkgs-update: no auto update
@@ -46,7 +44,24 @@ rustPlatform.buildRustPackage {
     version
     ;
 
-  buildAndTestSubdir = "apps/gpclient";
+  pname = "gpclient";
+
+  postPatch = ''
+    substituteInPlace crates/openconnect/src/vpn_utils.rs \
+      --replace-fail /usr/local/libexec/gpclient/vpnc-script $out/libexec/gpclient/vpnc-script \
+      --replace-fail /usr/libexec/gpclient/vpnc-script $out/libexec/gpclient/vpnc-script \
+      --replace-fail /usr/local/libexec/gpclient/hipreport.sh $out/libexec/gpclient/hipreport.sh \
+      --replace-fail /usr/libexec/gpclient/hipreport.sh $out/libexec/gpclient/hipreport.sh
+
+    substituteInPlace crates/common/src/constants.rs \
+      --replace-fail /usr/bin/gpauth ${gpauth}/bin/gpauth \
+      --replace-fail /opt/homebrew/bin/gpauth ${gpauth}/bin/gpauth \
+      --replace-fail /usr/local/bin/gpauth ${gpauth}/bin/gpauth \
+      --replace-fail /usr/bin/gpclient $out/bin/gpclient \
+      --replace-fail /usr/bin/gpservice $out/bin/gpservice \
+      --replace-fail /opt/homebrew/ $out/ \
+      --replace-fail /usr/local/ $out/
+  '';
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -58,6 +73,7 @@ rustPlatform.buildRustPackage {
     automake
     libtool
   ];
+
   buildInputs = [
     glib
     glib-networking
@@ -79,23 +95,6 @@ rustPlatform.buildRustPackage {
     gtk3
     pango
   ];
-
-  postPatch = ''
-    substituteInPlace crates/openconnect/src/vpn_utils.rs \
-      --replace-fail /usr/local/libexec/gpclient/vpnc-script $out/libexec/gpclient/vpnc-script \
-      --replace-fail /usr/libexec/gpclient/vpnc-script $out/libexec/gpclient/vpnc-script \
-      --replace-fail /usr/local/libexec/gpclient/hipreport.sh $out/libexec/gpclient/hipreport.sh \
-      --replace-fail /usr/libexec/gpclient/hipreport.sh $out/libexec/gpclient/hipreport.sh
-
-    substituteInPlace crates/common/src/constants.rs \
-      --replace-fail /usr/bin/gpauth ${gpauth}/bin/gpauth \
-      --replace-fail /opt/homebrew/bin/gpauth ${gpauth}/bin/gpauth \
-      --replace-fail /usr/local/bin/gpauth ${gpauth}/bin/gpauth \
-      --replace-fail /usr/bin/gpclient $out/bin/gpclient \
-      --replace-fail /usr/bin/gpservice $out/bin/gpservice \
-      --replace-fail /opt/homebrew/ $out/ \
-      --replace-fail /usr/local/ $out/
-  '';
 
   postInstall = ''
     cp -r packaging/files/usr/libexec $out/libexec
@@ -146,4 +145,6 @@ rustPlatform.buildRustPackage {
     wrapProgram "$out/bin/gpclient" \
       --prefix GIO_EXTRA_MODULES : ${glib-networking}/lib/gio/modules
   '';
+
+  buildAndTestSubdir = "apps/gpclient";
 }

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchYarnDeps,
   fetchFromGitHub,
+  fetchYarnDeps,
+  nix-update-script,
+  nodejs,
   yarnBuildHook,
   yarnConfigHook,
   yarnInstallHook,
-  nodejs,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "sql-formatter";
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cUTijVuBerUlK8xDbq1u6f0P6aSgXjcDaTf/F9jMBAA=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-zcCYGTuaPkizZHc4K6RAPWwMnP5LtnyaLbF9xcPpNBs=";
-  };
-
   nativeBuildInputs = [
     yarnBuildHook
     yarnConfigHook
@@ -32,13 +27,18 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
   ];
 
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-zcCYGTuaPkizZHc4K6RAPWwMnP5LtnyaLbF9xcPpNBs=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Whitespace formatter for different query languages";
     homepage = "https://sql-formatter-org.github.io/sql-formatter";
     license = lib.licenses.mit;
-    mainProgram = "sql-formatter";
     maintainers = [ ];
+    mainProgram = "sql-formatter";
   };
 })

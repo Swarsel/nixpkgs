@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,19 +24,17 @@ stdenv.mkDerivation (finalAttrs: {
     ./clang-fix-build.patch
 
     (fetchpatch {
+      hash = "sha256-QBlzH37Xwwnn1y8pM941Zesz18p2EazfeD0lCU8n6nI=";
       name = "freebsd-14.patch";
       url = "https://github.com/sctplab/usrsctp/commit/ac559d2a95277e5e0827e9ee5a1d3b1b50e0822a.patch";
-      hash = "sha256-QBlzH37Xwwnn1y8pM941Zesz18p2EazfeD0lCU8n6nI=";
     })
 
     (fetchpatch {
+      hash = "sha256-Hxp1SGwmpm6UK//KFLQoOmmI0a1QpSNaTaEEUbC8jbg=";
       name = "usrsctp-fix-cmake-4.patch";
       url = "https://github.com/sctplab/usrsctp/commit/7569d2ce1e8658534369ad9726ca62139211db84.patch";
-      hash = "sha256-Hxp1SGwmpm6UK//KFLQoOmmI0a1QpSNaTaEEUbC8jbg=";
     })
   ];
-
-  nativeBuildInputs = [ cmake ];
 
   # https://github.com/sctplab/usrsctp/issues/662
   postPatch = ''
@@ -45,11 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '$'{prefix}/'$'{CMAKE_INSTALL_INCLUDEDIR} '$'{CMAKE_INSTALL_FULL_INCLUDEDIR}
   '';
 
+  nativeBuildInputs = [ cmake ];
+
   meta = {
-    homepage = "https://github.com/sctplab/usrsctp";
     description = "Portable SCTP userland stack";
-    maintainers = with lib.maintainers; [ misuzu ];
+    homepage = "https://github.com/sctplab/usrsctp";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ misuzu ];
     platforms = lib.platforms.unix;
   };
 })

@@ -1,25 +1,25 @@
 {
   lib,
   fetchurl,
+  djvulibre,
   fetchpatch,
-  perlPackages,
-  wrapGAppsHook3,
-  # libs
-  librsvg,
-  sane-backends,
-  sane-frontends,
+  file,
+  ghostscript,
   # runtime dependencies
   imagemagick,
+  # libs
+  librsvg,
   libtiff,
-  djvulibre,
-  poppler-utils,
-  ghostscript,
-  unpaper,
   pdftk,
+  perlPackages,
+  poppler-utils,
+  sane-backends,
+  sane-frontends,
+  tesseract,
+  unpaper,
+  wrapGAppsHook3,
   # test dependencies
   xvfb-run,
-  file,
-  tesseract,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -31,10 +31,21 @@ perlPackages.buildPerlPackage rec {
     hash = "sha256-DUME9nI9B2+Gj+sBPj176SXfuxDc3CMXfby/Zga31fo=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     # fixes an error with utf8 file names. See https://sourceforge.net/p/gscan2pdf/bugs/400
     ./image-utf8-fix.patch
   ];
+
+  # Required for the program to properly load its SVG assets
+  postPatch = ''
+    substituteInPlace bin/gscan2pdf \
+      --replace-fail "/usr/share" "$out/share"
+  '';
 
   nativeBuildInputs = [ wrapGAppsHook3 ];
 
@@ -74,37 +85,6 @@ perlPackages.buildPerlPackage rec {
     SubOverride
   ]);
 
-  # Required for the program to properly load its SVG assets
-  postPatch = ''
-    substituteInPlace bin/gscan2pdf \
-      --replace-fail "/usr/share" "$out/share"
-  '';
-
-  postInstall = ''
-    # Remove impurity
-    find $out -type f -name "*.pod" -delete
-
-    # Add runtime dependencies
-    wrapProgram "$out/bin/gscan2pdf" \
-      --prefix PATH : "${sane-backends}/bin" \
-      --prefix PATH : "${imagemagick}/bin" \
-      --prefix PATH : "${libtiff}/bin" \
-      --prefix PATH : "${djvulibre}/bin" \
-      --prefix PATH : "${poppler-utils}/bin" \
-      --prefix PATH : "${ghostscript}/bin" \
-      --prefix PATH : "${unpaper}/bin" \
-      --prefix PATH : "${pdftk}/bin"
-  '';
-
-  enableParallelBuilding = true;
-
-  installTargets = [ "install" ];
-
-  outputs = [
-    "out"
-    "man"
-  ];
-
   nativeCheckInputs = [
     imagemagick
     libtiff
@@ -136,6 +116,25 @@ perlPackages.buildPerlPackage rec {
     xvfb-run -s '-screen 0 800x600x24' \
       make test
   '';
+
+  postInstall = ''
+    # Remove impurity
+    find $out -type f -name "*.pod" -delete
+
+    # Add runtime dependencies
+    wrapProgram "$out/bin/gscan2pdf" \
+      --prefix PATH : "${sane-backends}/bin" \
+      --prefix PATH : "${imagemagick}/bin" \
+      --prefix PATH : "${libtiff}/bin" \
+      --prefix PATH : "${djvulibre}/bin" \
+      --prefix PATH : "${poppler-utils}/bin" \
+      --prefix PATH : "${ghostscript}/bin" \
+      --prefix PATH : "${unpaper}/bin" \
+      --prefix PATH : "${pdftk}/bin"
+  '';
+
+  enableParallelBuilding = true;
+  installTargets = [ "install" ];
 
   meta = {
     description = "GUI to produce PDFs or DjVus from scanned documents";

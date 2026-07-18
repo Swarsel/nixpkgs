@@ -1,8 +1,8 @@
 {
   lib,
-  buildNpmPackage,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
   makeWrapper,
   nodejs,
 }:
@@ -17,9 +17,8 @@ buildNpmPackage rec {
     hash = "sha256-fk+BiQ6jM/SvBioz56WHIhWGErgroCvagQq6/vMWCyk=";
   };
 
-  npmDepsHash = "sha256-x6ccAOq0yZ8DfZLIp2ZNpT8HMAjBr+e4gsEOUOskABs=";
-
   nativeBuildInputs = [ makeWrapper ];
+  npmDepsHash = "sha256-x6ccAOq0yZ8DfZLIp2ZNpT8HMAjBr+e4gsEOUOskABs=";
 
   postInstall = ''
     makeWrapper ${lib.getExe nodejs} "$out/bin/nextcloud-whiteboard-server" \

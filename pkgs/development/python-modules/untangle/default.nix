@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unittestCheckHook,
+  buildPythonPackage,
   defusedxml,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "untangle";
   version = "1.2.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "stchris";
@@ -20,8 +19,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ defusedxml ];
-
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
 
   unittestFlagsArray = [
     "-s"

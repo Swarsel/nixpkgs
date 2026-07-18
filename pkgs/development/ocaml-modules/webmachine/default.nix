@@ -1,19 +1,16 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   cohttp,
   dispatch,
-  ptime,
   ounit,
+  ptime,
 }:
 
 buildDunePackage rec {
   pname = "webmachine";
   version = "0.7.0";
-  duneVersion = "3";
-
-  minimalOCamlVersion = "4.03";
 
   src = fetchFromGitHub {
     owner = "inhabitedtype";
@@ -28,14 +25,15 @@ buildDunePackage rec {
     ptime
   ];
 
-  checkInputs = [ ounit ];
-
   doCheck = true;
+  checkInputs = [ ounit ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.03";
 
   meta = {
+    description = "REST toolkit for OCaml";
     homepage = "https://github.com/inhabitedtype/ocaml-webmachine";
     license = lib.licenses.bsd3;
-    description = "REST toolkit for OCaml";
     maintainers = [ lib.maintainers.vbgl ];
   };
 

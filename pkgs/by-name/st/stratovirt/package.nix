@@ -1,17 +1,17 @@
 {
   lib,
-  rustPlatform,
-  fetchgit,
-  pkg-config,
-  pixman,
-  libcap_ng,
-  cyrus_sasl,
-  libpulseaudio,
-  gtk3,
-  libusbgx,
   alsa-lib,
-  linuxHeaders,
+  cyrus_sasl,
+  fetchgit,
+  gtk3,
+  libcap_ng,
+  libpulseaudio,
   libseccomp,
+  libusbgx,
+  linuxHeaders,
+  pixman,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-1Ex6ahKBoVRikSqrgHGYaBFzWkPFDm8bGVyB7KmO8tI=";
   };
-
-  cargoHash = "sha256-tNFF5WdQyNqkj2ahtpOfGTHriHpMGtV1UurO3teKFcU=";
 
   nativeBuildInputs = [
     pkg-config
@@ -43,15 +41,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libseccomp
   ];
 
+  cargoHash = "sha256-tNFF5WdQyNqkj2ahtpOfGTHriHpMGtV1UurO3teKFcU=";
+
   meta = {
-    homepage = "https://gitee.com/openeuler/stratovirt";
     description = "Virtual Machine Manager from Huawei";
+    homepage = "https://gitee.com/openeuler/stratovirt";
     license = lib.licenses.mulan-psl2;
     maintainers = with lib.maintainers; [ astro ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "stratovirt";
   };
 })

@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  writeShellScriptBin,
-  cmake,
-  ninja,
-  pkg-config,
-  makeWrapper,
-  zlib,
-  libpng,
+  fetchFromGitHub,
   SDL2,
   SDL2_net,
+  cmake,
+  copyDesktopItems,
   hidapi,
+  libpng,
+  makeDesktopItem,
+  makeWrapper,
+  ninja,
+  pkg-config,
   qt6,
   vulkan-loader,
-  makeDesktopItem,
-  copyDesktopItems,
+  writeShellScriptBin,
+  zlib,
 }:
 
 let
   cheats-json = fetchurl {
-    url = "https://raw.githubusercontent.com/simple64/cheat-parser/87963b7aca06e0d4632b66bc5ffe7d6b34060f4f/cheats.json";
     hash = "sha256-rS/4Mdi+18C2ywtM5nW2XaJkC1YnKZPc4YdQ3mCfESU=";
+    url = "https://raw.githubusercontent.com/simple64/cheat-parser/87963b7aca06e0d4632b66bc5ffe7d6b34060f4f/cheats.json";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -46,7 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
@@ -69,8 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtwebsockets
     qt6.qtwayland
   ];
-
-  dontUseCmakeConfigure = true;
 
   buildPhase = ''
     runHook preBuild
@@ -96,28 +93,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "simple64";
-      desktopName = "simple64";
-      genericName = "Nintendo 64 Emulator";
-      exec = "simple64-gui";
-      mimeTypes = [ "application/x-n64-rom" ];
-      icon = "simple64";
-      terminal = false;
       categories = [
         "Game"
         "Emulator"
       ];
+
+      desktopName = "simple64";
+      exec = "simple64-gui";
+      genericName = "Nintendo 64 Emulator";
+      icon = "simple64";
+      mimeTypes = [ "application/x-n64-rom" ];
+      name = "simple64";
+      terminal = false;
     })
   ];
+
+  dontUseCmakeConfigure = true;
 
   meta = {
     description = "Easy to use N64 emulator";
     homepage = "https://simple64.github.io";
     license = lib.licenses.gpl3Only;
-    mainProgram = "simple64-gui";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.linux;
+    mainProgram = "simple64-gui";
   };
 })

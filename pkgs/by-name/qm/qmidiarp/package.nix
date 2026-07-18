@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchgit,
+  alsa-lib,
   autoreconfHook,
+  fetchgit,
+  libjack2,
   lv2,
   pkg-config,
   qt5,
-  alsa-lib,
-  libjack2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,8 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchgit {
     url = "https://git.code.sf.net/p/qmidiarp/code";
-    sha256 = "sha256-xTDI1QtgOOMexzFKvYWhlfpXv8uXaoD4o+G6XF8/Cw8=";
     rev = "qmidiarp-${finalAttrs.version}";
+    sha256 = "sha256-xTDI1QtgOOMexzFKvYWhlfpXv8uXaoD4o+G6XF8/Cw8=";
   };
 
   nativeBuildInputs = [
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Advanced MIDI arpeggiator";
-    mainProgram = "qmidiarp";
+
     longDescription = ''
       An advanced MIDI arpeggiator, programmable step sequencer and LFO for Linux.
       It can hold any number of arpeggiator, sequencer, or LFO modules running in
@@ -46,7 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://qmidiarp.sourceforge.net";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ sjfloat ];
+    platforms = lib.platforms.linux;
+    mainProgram = "qmidiarp";
   };
 })

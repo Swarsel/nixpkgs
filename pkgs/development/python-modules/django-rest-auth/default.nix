@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   django-allauth,
   djangorestframework,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "django-rest-auth";
   version = "0.9.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Tivix";
@@ -33,15 +32,16 @@ buildPythonPackage rec {
     six
   ];
 
+  # tests are icnompatible with current django version
+  doCheck = false;
+
   nativeCheckInputs = [
     django-allauth
     drf-jwt
     responses
   ];
 
-  # tests are icnompatible with current django version
-  doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "rest_auth" ];
 
   meta = {

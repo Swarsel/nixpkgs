@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pygmars";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nexB";
@@ -18,12 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-AbBhWR9ycOFrxS7Vz0bSsSyS3FEEm2bXJAvMhIba6XQ=";
   };
 
-  dontConfigure = true;
-
-  build-system = [ setuptools-scm ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools-scm ];
+  dontConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "pygmars" ];
 
   meta = {

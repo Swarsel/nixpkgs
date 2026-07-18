@@ -1,32 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  pkg-config,
-  which,
-  perl,
-  jq,
-  libxrandr,
-  coreutils,
   cairo,
+  coreutils,
   dbus,
-  systemd,
   gdk-pixbuf,
   glib,
+  jq,
+  libnotify,
+  librsvg,
   libx11,
+  libxinerama,
+  libxrandr,
   libxscrnsaver,
+  makeWrapper,
+  nix-update-script,
+  pango,
+  perl,
+  pkg-config,
+  systemd,
+  versionCheckHook,
   wayland,
   wayland-protocols,
-  libxinerama,
-  libnotify,
-  pango,
+  which,
   xorgproto,
-  librsvg,
-  versionCheckHook,
-  nix-update-script,
-  withX11 ? true,
   withWayland ? true,
+  withX11 ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,6 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Idh/moq+OjD3VpZKJ3blO1JAK7PPX42z15rQz/JZb84=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     perl
@@ -67,11 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withWayland [
     wayland
     wayland-protocols
-  ];
-
-  outputs = [
-    "out"
-    "man"
   ];
 
   makeFlags = [
@@ -104,10 +104,11 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "jq" "${lib.getExe jq}"
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -118,11 +119,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://dunst-project.org/";
     changelog = "https://github.com/dunst-project/dunst/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
-    mainProgram = "dunst";
+
     maintainers = with lib.maintainers; [
       gepbird
     ];
+
     # NOTE: 'unix' or even 'all' COULD work too, I'm not sure
     platforms = lib.platforms.linux;
+    mainProgram = "dunst";
   };
 })

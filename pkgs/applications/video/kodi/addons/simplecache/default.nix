@@ -1,14 +1,13 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
 }:
 
 buildKodiAddon rec {
   pname = "simplecache";
-  namespace = "script.module.simplecache";
   version = "2.0.2";
 
   src = fetchzip {
@@ -16,16 +15,19 @@ buildKodiAddon rec {
     sha256 = "sha256-xdOBIi99nspcDIKkjxcW1r/BqL8O9NxdDViTuvMtUmo=";
   };
 
+  namespace = "script.module.simplecache";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.simplecache";
     };
   };
 
   meta = {
-    homepage = "https://github.com/kodi-community-addons/script.module.simplecache";
     description = "Simple object cache for Kodi addons";
+    homepage = "https://github.com/kodi-community-addons/script.module.simplecache";
     license = lib.licenses.asl20;
     teams = [ lib.teams.kodi ];
   };

@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # tests
+  aiohttp,
+  buildPythonPackage,
+  # dependencies
+  fsspec,
+  pytestCheckHook,
+  pyyaml,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  fsspec,
-  pyyaml,
-
-  # tests
-  aiohttp,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pyyaml-include";
   version = "2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tanbro";
@@ -27,6 +23,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-nswSYRTZ6LTLSGh78DnrXl3q06Ap1J1IMKOESv1lJoY=";
   };
+
+  nativeCheckInputs = [
+    aiohttp
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -38,14 +41,8 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    aiohttp
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "yaml_include" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Extending PyYAML with a custom constructor for including YAML files within YAML files";

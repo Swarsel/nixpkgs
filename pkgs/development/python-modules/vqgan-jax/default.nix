@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   flax,
   jax,
   jaxlib,
+  setuptools,
   transformers,
 }:
 
 buildPythonPackage {
   pname = "vqgan-jax";
   version = "unstable-2022-04-20";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "patil-suraj";
@@ -23,9 +20,10 @@ buildPythonPackage {
     hash = "sha256-OZihAXpE0UsgauQ38XDmAF+lrIgz05uK0ro8SCdVsPc=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ jaxlib ];
+  doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
   dependencies = [
     flax
@@ -33,8 +31,7 @@ buildPythonPackage {
     transformers
   ];
 
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "vqgan_jax" ];
 
   meta = {

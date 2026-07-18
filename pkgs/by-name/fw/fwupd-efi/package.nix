@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  gnu-efi,
   meson,
   ninja,
-  gnu-efi,
+  pkg-config,
   python3,
   python3Packages,
 }:
@@ -21,6 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-resmgi+t1YahXWxt1ZPgAXW3L0ejBclwcA8W8AS31is=";
   };
 
+  postPatch = ''
+    patchShebangs \
+      efi/generate_binary.py \
+      efi/generate_sbat.py
+  '';
+
   nativeBuildInputs = [
     meson
     ninja
@@ -32,12 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     gnu-efi
   ];
-
-  postPatch = ''
-    patchShebangs \
-      efi/generate_binary.py \
-      efi/generate_sbat.py
-  '';
 
   mesonFlags = [
     "-Defi-includedir=${gnu-efi}/include/efi"
@@ -53,8 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     homepage = "https://fwupd.org/";
-    maintainers = [ ];
     license = lib.licenses.lgpl21Plus;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
   };
 })

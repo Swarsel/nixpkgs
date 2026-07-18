@@ -1,14 +1,13 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   click,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "click-log";
   version = "0.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ click ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/click-contrib/click-log/";
     description = "Logging integration for Click";
+    homepage = "https://github.com/click-contrib/click-log/";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

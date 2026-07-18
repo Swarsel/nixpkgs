@@ -15,12 +15,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ mpi ];
-
   makeFlags = [ "arch=Linux_MPI" ];
-
-  enableParallelBuilding = true;
-
-  dontConfigure = true;
 
   installPhase = ''
     runHook preInstall
@@ -33,12 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+  enableParallelBuilding = true;
+
   meta = {
     description = "HPC conjugate gradient benchmark";
     homepage = "https://www.hpcg-benchmark.org";
-    platforms = lib.platforms.linux;
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.linux;
     mainProgram = "xhpcg";
   };
 })

@@ -4,15 +4,15 @@
   fetchFromGitHub,
   cmake,
   dbus,
-  libx11,
+  gtk3,
+  libayatana-appindicator,
   libusb1,
+  libx11,
+  libxkbcommon,
   pkg-config,
   udev,
   wayland,
   wayland-scanner,
-  libxkbcommon,
-  gtk3,
-  libayatana-appindicator,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,13 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/houmain/keymapper/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Cross-platform context-aware key remapper";
     homepage = "https://github.com/houmain/keymapper";
+    changelog = "https://github.com/houmain/keymapper/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "keymapper";
+
     maintainers = [
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "keymapper";
   };
 })

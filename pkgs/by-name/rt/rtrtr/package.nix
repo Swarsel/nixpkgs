@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,13 +16,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-n6dpORKh9ul9VQXKXtnkuewUnQOmge99HljUgVpO2HM=";
   };
 
-  cargoHash = "sha256-3Atv3lEQIiM5MNjdQdLUnUDb3rHICxDAhQq0yuLSgtA=";
   nativeBuildInputs = [ pkg-config ];
-
+  cargoHash = "sha256-3Atv3lEQIiM5MNjdQdLUnUDb3rHICxDAhQq0yuLSgtA=";
   buildNoDefaultFeatures = true;
 
   meta = {
     description = "RPKI data proxy";
+
     longDescription = ''
       TRTR is an RPKI data proxy, designed to collect Validated ROA Payloads
       from one or more sources in multiple formats and dispatch it onwards. It
@@ -31,6 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       servers. RTRTR can read RPKI data from multiple RPKI Relying Party packages via
       RTR and JSON and, in turn, provide an RTR service for routers to connect to.
     '';
+
     homepage = "https://github.com/NLnetLabs/rtrtr";
     changelog = "https://github.com/NLnetLabs/rtrtr/blob/v${finalAttrs.version}/Changelog.md";
     license = lib.licenses.bsd3;

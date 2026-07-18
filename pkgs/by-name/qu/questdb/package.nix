@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   fetchurl,
   jdk17_headless,
-  lib,
   makeBinaryWrapper,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "High-performance, open-source SQL database for applications in financial services, IoT, machine learning, DevOps and observability";
     homepage = "https://questdb.io/";
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = [ lib.maintainers.jacfal ];
     platforms = lib.platforms.linux;
   };

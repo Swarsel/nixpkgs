@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  ncurses,
-  libvorbis,
   SDL,
+  fetchpatch,
+  libvorbis,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix pending upstream inclusion for ncurses-6.3 support:
     #  https://github.com/stragulus/mp3blaster/pull/8
     (fetchpatch {
+      hash = "sha256-4Xcg7/7nKc7iiBZe5otIXjZNjBW9cOs6p6jQQOcRFCE=";
       name = "ncurses-6.3.patch";
       url = "https://github.com/stragulus/mp3blaster/commit/62168cba5eaba6ffe56943552837cf033cfa96ed.patch";
-      hash = "sha256-4Xcg7/7nKc7iiBZe5otIXjZNjBW9cOs6p6jQQOcRFCE=";
     })
   ];
 

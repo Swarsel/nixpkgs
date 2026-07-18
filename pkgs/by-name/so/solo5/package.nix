@@ -26,31 +26,37 @@ let
   ];
 in
 stdenv.mkDerivation {
-  pname = "solo5";
   inherit version;
-
-  nativeBuildInputs = [
-    makeWrapper
-    pkg-config
-  ];
-  buildInputs = lib.optional (stdenv.hostPlatform.isLinux) libseccomp;
+  pname = "solo5";
 
   src = fetchurl {
     url = "https://github.com/Solo5/solo5/releases/download/v${version}/solo5-v${version}.tar.gz";
     hash = "sha256-UfYkyE1k5S57kRLaYk7hRE4lOCuzjzcTv4SNtlqk9DU=";
   };
 
-  configurePhase = ''
-    runHook preConfigure
-    sh configure.sh --prefix=/
-    runHook postConfigure
+  nativeBuildInputs = [
+    makeWrapper
+    pkg-config
+  ];
+
+  buildInputs = lib.optional (stdenv.hostPlatform.isLinux) libseccomp;
+  doCheck = stdenv.hostPlatform.isLinux;
+
+  nativeCheckInputs = [
+    util-linux
+    qemu_test
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+    patchShebangs tests
+    substituteInPlace scripts/virtio-run/solo5-virtio-run.sh \
+      --replace " -no-acpi" ""
+    ./tests/bats-core/bats ./tests/tests.bats
+    runHook postCheck
   '';
 
-  enableParallelBuilding = true;
-
-  separateDebugInfo = true;
   # debugging requires information for both the unikernel and the tender
-
   installPhase = ''
     runHook preInstall
     export DESTDIR=$out
@@ -75,29 +81,26 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  doCheck = stdenv.hostPlatform.isLinux;
-  nativeCheckInputs = [
-    util-linux
-    qemu_test
-  ];
-  checkPhase = ''
-    runHook preCheck
-    patchShebangs tests
-    substituteInPlace scripts/virtio-run/solo5-virtio-run.sh \
-      --replace " -no-acpi" ""
-    ./tests/bats-core/bats ./tests/tests.bats
-    runHook postCheck
+  configurePhase = ''
+    runHook preConfigure
+    sh configure.sh --prefix=/
+    runHook postConfigure
   '';
+
+  enableParallelBuilding = true;
+  separateDebugInfo = true;
 
   meta = {
     description = "Sandboxed execution environment";
     homepage = "https://github.com/solo5/solo5";
     license = lib.licenses.isc;
+
     platforms = lib.mapCartesianProduct ({ arch, os }: "${arch}-${os}") {
       arch = [
         "aarch64"
         "x86_64"
       ];
+
       os = [
         "freebsd"
         "genode"

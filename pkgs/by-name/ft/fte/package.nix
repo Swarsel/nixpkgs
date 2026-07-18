@@ -2,28 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  perl,
+  gpm,
   libx11,
   libxpm,
-  gpm,
   ncurses,
+  perl,
   slang,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "fte";
   version = "0.50.02";
-
-  ftesrc = fetchurl {
-    url = "mirror://sourceforge/fte/fte-20110708-src.zip";
-    hash = "sha256-1jEcVC0/DyiQpUpmHDtnIo4nuJS0Fk6frynwFPJUSZ4=";
-  };
-
-  ftecommon = fetchurl {
-    url = "mirror://sourceforge/fte/fte-20110708-common.zip";
-    hash = "sha256-WEEVeLMZWHZfQtK/Kbeu3Z+RaVXCwZyWkJocA+Akavc=";
-  };
 
   src = [
     finalAttrs.ftesrc
@@ -31,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ unzip ];
+
   buildInputs = [
     perl
     libx11
@@ -40,14 +31,23 @@ stdenv.mkDerivation (finalAttrs: {
     slang
   ];
 
-  hardeningDisable = [ "all" ];
-  enableParallelBuilding = true;
-
-  env.NIX_CFLAGS_COMPILE = "-DHAVE_STRLCAT -DHAVE_STRLCPY";
-  installFlags = [ "INSTALL_NONROOT=1" ];
-
   # not setting it cause fte to not find xfte
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
+  env.NIX_CFLAGS_COMPILE = "-DHAVE_STRLCAT -DHAVE_STRLCPY";
+  enableParallelBuilding = true;
+
+  ftecommon = fetchurl {
+    hash = "sha256-WEEVeLMZWHZfQtK/Kbeu3Z+RaVXCwZyWkJocA+Akavc=";
+    url = "mirror://sourceforge/fte/fte-20110708-common.zip";
+  };
+
+  ftesrc = fetchurl {
+    hash = "sha256-1jEcVC0/DyiQpUpmHDtnIo4nuJS0Fk6frynwFPJUSZ4=";
+    url = "mirror://sourceforge/fte/fte-20110708-src.zip";
+  };
+
+  hardeningDisable = [ "all" ];
+  installFlags = [ "INSTALL_NONROOT=1" ];
 
   meta = {
     description = "Free text editor for developers";

@@ -1,15 +1,14 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
-  uv-build,
   prompt-toolkit,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "noneprompt";
   version = "0.1.11";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,13 +20,11 @@ buildPythonPackage rec {
       --replace-fail "uv_build >=0.8.3, <0.9.0" uv_build
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ prompt-toolkit ];
-
   # no test
   doCheck = false;
-
+  build-system = [ uv-build ];
+  dependencies = [ prompt-toolkit ];
+  pyproject = true;
   pythonImportsCheck = [ "noneprompt" ];
 
   meta = {

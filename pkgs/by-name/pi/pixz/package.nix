@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  asciidoc,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
-  asciidoc,
-  libxslt,
-  libxml2,
   docbook_xml_dtd_45,
   docbook_xsl,
   libarchive,
+  libtool,
+  libxml2,
+  libxslt,
+  pkg-config,
   xz,
 }:
 
@@ -19,11 +19,19 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "pixz";
   version = "1.0.7";
 
+  src = fetchFromGitHub {
+    owner = "vasi";
+    repo = "pixz";
+    rev = "v${finalAttrs.version}";
+    sha256 = "163axxs22w7pghr786hda22mnlpvmi50hzhfr9axwyyjl9n41qs2";
+  };
+
   nativeBuildInputs = [
     pkg-config
     autoconf
     automake
   ];
+
   buildInputs = [
     libtool
     asciidoc
@@ -34,17 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
     libarchive
     xz
   ];
-  preBuild = ''
-    echo "XML_CATALOG_FILES='$XML_CATALOG_FILES'"
-  '';
-  src = fetchFromGitHub {
-    owner = "vasi";
-    repo = "pixz";
-    rev = "v${finalAttrs.version}";
-    sha256 = "163axxs22w7pghr786hda22mnlpvmi50hzhfr9axwyyjl9n41qs2";
-  };
+
   preConfigure = ''
     ./autogen.sh
+  '';
+
+  preBuild = ''
+    echo "XML_CATALOG_FILES='$XML_CATALOG_FILES'"
   '';
 
   meta = {

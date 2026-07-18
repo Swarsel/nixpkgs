@@ -14,9 +14,9 @@
   sqlite,
   testers,
   zlib,
-  sqliteSupport ? true,
-  postgresqlSupport ? true,
   mysqlSupport ? true,
+  postgresqlSupport ? true,
+  sqliteSupport ? true,
 }:
 
 assert lib.assertMsg (lib.elem true [
@@ -31,11 +31,9 @@ rustPlatform.buildRustPackage rec {
 
   src = fetchCrate {
     inherit version;
-    crateName = "diesel_cli";
     hash = "sha256-zxlV3AbG5cBBGUk3hx9U3OR26lB3G2QQlcxTg00WJZQ=";
+    crateName = "diesel_cli";
   };
-
-  cargoHash = "sha256-GytJ0Eq4LkdSq1fosXFoC0nI7bY0VdM8oOV/tvyUSMg=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -52,11 +50,12 @@ rustPlatform.buildRustPackage rec {
     zlib
   ];
 
-  buildNoDefaultFeatures = true;
-  buildFeatures =
-    lib.optional sqliteSupport "sqlite"
-    ++ lib.optional postgresqlSupport "postgres"
-    ++ lib.optional mysqlSupport "mysql";
+  cargoHash = "sha256-GytJ0Eq4LkdSq1fosXFoC0nI7bY0VdM8oOV/tvyUSMg=";
+  # Fix the build with mariadb, which otherwise shows "error adding symbols:
+  # DSO missing from command line" errors for libz and libssl.
+  env.NIX_LDFLAGS = lib.optionalString mysqlSupport "-lz -lssl -lcrypto";
+  # Tests currently fail due to *many* duplicate definition errors
+  doCheck = false;
 
   checkFlags = [
     # all of these require a live database to be running
@@ -73,10 +72,6 @@ rustPlatform.buildRustPackage rec {
     "--skip=infer_schema_internals::pg::test::get_table_data_loads_column_information"
     "--skip=infer_schema_internals::pg::test::gets_table_comment"
   ];
-  cargoCheckFeatures = buildFeatures;
-
-  # Tests currently fail due to *many* duplicate definition errors
-  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd diesel \
@@ -85,9 +80,13 @@ rustPlatform.buildRustPackage rec {
       --zsh <($out/bin/diesel completions zsh)
   '';
 
-  # Fix the build with mariadb, which otherwise shows "error adding symbols:
-  # DSO missing from command line" errors for libz and libssl.
-  env.NIX_LDFLAGS = lib.optionalString mysqlSupport "-lz -lssl -lcrypto";
+  buildFeatures =
+    lib.optional sqliteSupport "sqlite"
+    ++ lib.optional postgresqlSupport "postgres"
+    ++ lib.optional mysqlSupport "mysql";
+
+  buildNoDefaultFeatures = true;
+  cargoCheckFeatures = buildFeatures;
 
   passthru = {
     tests.version = testers.testVersion { package = diesel-cli; };
@@ -98,10 +97,12 @@ rustPlatform.buildRustPackage rec {
     description = "Database tool for working with Rust projects that use Diesel";
     homepage = "https://diesel.rs";
     changelog = "https://github.com/diesel-rs/diesel/releases/tag/v${version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ getchoo ];
     mainProgram = "diesel";
   };

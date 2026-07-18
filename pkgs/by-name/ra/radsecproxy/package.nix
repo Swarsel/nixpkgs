@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
   autoreconfHook,
   nettle,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,8 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://radsecproxy.github.io/";
     description = "Generic RADIUS proxy that supports both UDP and TLS (RadSec) RADIUS transports";
+    homepage = "https://radsecproxy.github.io/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = with lib.platforms; linux;

@@ -1,49 +1,43 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  installShellFiles,
-
-  # build-system
-  setuptools,
-  versioneer,
-
   # dependencies
   attrs,
   autobahn,
   automat,
+  buildPythonPackage,
   click,
   cryptography,
+  gitUpdater,
   humanize,
+  hypothesis,
+  installShellFiles,
   iterable-io,
+  magic-wormhole-mailbox-server,
+  magic-wormhole-transit-relay,
+  # tests
+  net-tools,
+  # optional-dependencies
+  noiseprotocol,
   pynacl,
+  pytest-twisted,
+  pytestCheckHook,
   qrcode,
+  # build-system
+  setuptools,
   spake2,
   tqdm,
   twisted,
   txtorcon,
-  zipstream-ng,
-
-  # optional-dependencies
-  noiseprotocol,
-
-  # tests
-  net-tools,
   unixtools,
-  hypothesis,
-  magic-wormhole-mailbox-server,
-  magic-wormhole-transit-relay,
-  pytestCheckHook,
-  pytest-twisted,
-
-  gitUpdater,
+  versioneer,
+  zipstream-ng,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "magic-wormhole";
   version = "0.24.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "magic-wormhole";
@@ -63,6 +57,33 @@ buildPythonPackage (finalAttrs: {
     + lib.optionalString stdenv.hostPlatform.isLinux ''
       sed -i -e "s|'ifconfig'|'${net-tools}/bin/ifconfig'|" src/wormhole/ipaddrs.py
     '';
+
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
+  nativeCheckInputs = [
+    hypothesis
+    magic-wormhole-mailbox-server
+    magic-wormhole-transit-relay
+    pytestCheckHook
+    pytest-twisted
+  ]
+  ++ finalAttrs.finalPackage.optional-dependencies.dilation
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ unixtools.locale ];
+
+  postInstall = ''
+    install -Dm644 docs/wormhole.1 $out/share/man/man1/wormhole.1
+
+    # https://github.com/magic-wormhole/magic-wormhole/issues/619
+    installShellCompletion --cmd ${finalAttrs.meta.mainProgram} \
+      --bash wormhole_complete.bash \
+      --fish wormhole_complete.fish \
+      --zsh wormhole_complete.zsh
+    rm $out/wormhole_complete.*
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -92,39 +113,13 @@ buildPythonPackage (finalAttrs: {
     dilation = [ noiseprotocol ];
   };
 
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
-  nativeCheckInputs = [
-    hypothesis
-    magic-wormhole-mailbox-server
-    magic-wormhole-transit-relay
-    pytestCheckHook
-    pytest-twisted
-  ]
-  ++ finalAttrs.finalPackage.optional-dependencies.dilation
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ unixtools.locale ];
-
-  __darwinAllowLocalNetworking = true;
-
-  postInstall = ''
-    install -Dm644 docs/wormhole.1 $out/share/man/man1/wormhole.1
-
-    # https://github.com/magic-wormhole/magic-wormhole/issues/619
-    installShellCompletion --cmd ${finalAttrs.meta.mainProgram} \
-      --bash wormhole_complete.bash \
-      --fish wormhole_complete.fish \
-      --zsh wormhole_complete.zsh
-    rm $out/wormhole_complete.*
-  '';
-
+  pyproject = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    changelog = "https://github.com/magic-wormhole/magic-wormhole/blob/${finalAttrs.src.rev}/NEWS.md";
     description = "Securely transfer data between computers";
     homepage = "https://magic-wormhole.readthedocs.io/";
+    changelog = "https://github.com/magic-wormhole/magic-wormhole/blob/${finalAttrs.src.rev}/NEWS.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.mjoerg ];
     mainProgram = "wormhole";

@@ -1,64 +1,64 @@
 {
+  lib,
   stdenv,
-  buildPackages,
-  v4l-utils,
   fetchFromGitHub,
-  fetchpatch,
-  meson,
-  pkg-config,
-  ninja,
+  SDL2,
+  buildPackages,
+  catch2_3,
   cmake,
-  libxxf86vm,
-  libxtst,
-  libxres,
-  libxrender,
-  libxmu,
-  libxi,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  xwininfo,
-  xprop,
-  libxcb,
+  fetchpatch,
+  gbenchmark,
+  glm,
+  glslang,
+  hwdata,
+  lcms,
+  libavif,
+  libcap,
+  libdecor,
   libdrm,
   libei,
-  vulkan-loader,
+  libinput,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxi,
+  libxkbcommon,
+  libxmu,
+  libxrender,
+  libxres,
+  libxtst,
+  libxxf86vm,
+  luajit,
+  makeBinaryWrapper,
+  meson,
+  ninja,
+  nix-update-script,
+  pipewire,
+  pixman,
+  pkg-config,
+  python3,
+  stb,
+  v4l-utils,
   vulkan-headers,
+  vulkan-loader,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxkbcommon,
-  glm,
-  gbenchmark,
-  libcap,
-  libavif,
-  SDL2,
-  pipewire,
-  pixman,
-  python3,
-  libinput,
-  glslang,
-  hwdata,
-  stb,
   wlroots_0_19,
-  libdecor,
-  lcms,
-  lib,
-  luajit,
-  catch2_3,
-  makeBinaryWrapper,
-  nix-update-script,
+  xprop,
+  xwininfo,
   enableExecutable ? true,
   enableWsi ? false,
 }:
 let
   frogShaders = fetchFromGitHub {
+    hash = "sha256-gR1AeAHV/Kn4ntiEDUSPxASLMFusV6hgSGrTbMCBUZA=";
     owner = "misyltoad";
     repo = "GamescopeShaders";
     rev = "v0.1";
-    hash = "sha256-gR1AeAHV/Kn4ntiEDUSPxASLMFusV6hgSGrTbMCBUZA=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -69,8 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ValveSoftware";
     repo = "gamescope";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-+4jEQAUGKOFJkLUJHIz1hVx7kbt+wMhLcbboiz0PC/E=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -82,15 +82,15 @@ stdenv.mkDerivation (finalAttrs: {
     # Pending upstream patch to allow using system libraries
     # See: https://github.com/ValveSoftware/gamescope/pull/1846
     (fetchpatch {
-      url = "https://github.com/ValveSoftware/gamescope/commit/4ce1a91fb219f570b0871071a2ec8ac97d90c0bc.diff";
       hash = "sha256-O358ScIIndfkc1S0A8g2jKvFWoCzcXB/g6lRJamqOI4=";
+      url = "https://github.com/ValveSoftware/gamescope/commit/4ce1a91fb219f570b0871071a2ec8ac97d90c0bc.diff";
     })
 
     # Pending upstream patch to support stb_image_resize2.h
     # See: https://github.com/ValveSoftware/gamescope/pull/2130
     (fetchpatch {
-      url = "https://github.com/ValveSoftware/gamescope/commit/d49a2aded261030e649fee42ad295f1ef56b736b.diff";
       hash = "sha256-Uh08ZRaV912ZOsl1DMpbVLxIgh4jEXevgihQf2W9KFk=";
+      url = "https://github.com/ValveSoftware/gamescope/commit/d49a2aded261030e649fee42ad295f1ef56b736b.diff";
     })
   ];
 
@@ -107,22 +107,7 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs default_extras_install.sh
   '';
 
-  mesonFlags = [
-    (lib.mesonBool "enable_gamescope" enableExecutable)
-    (lib.mesonBool "enable_gamescope_wsi_layer" enableWsi)
-
-    (lib.mesonOption "glm_include_dir" "${lib.getInclude glm}/include")
-    (lib.mesonOption "stb_include_dir" "${lib.getInclude stb}/include/stb")
-  ];
-
-  # don't install vendored vkroots etc
-  mesonInstallFlags = [ "--skip-subprojects" ];
-
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -186,6 +171,14 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  mesonFlags = [
+    (lib.mesonBool "enable_gamescope" enableExecutable)
+    (lib.mesonBool "enable_gamescope_wsi_layer" enableWsi)
+
+    (lib.mesonOption "glm_include_dir" "${lib.getInclude glm}/include")
+    (lib.mesonOption "stb_include_dir" "${lib.getInclude stb}/include/stb")
+  ];
+
   postInstall = lib.optionalString enableExecutable ''
     # using patchelf unstable because the stable version corrupts the binary
     ${lib.getExe buildPackages.patchelfUnstable} $out/bin/gamescope \
@@ -205,12 +198,19 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r ${frogShaders}/* $out/share/gamescope/reshade/
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  # don't install vendored vkroots etc
+  mesonInstallFlags = [ "--skip-subprojects" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "SteamOS session compositing window manager";
     homepage = "https://github.com/ValveSoftware/gamescope";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       pedrohlc
       Scrumplex
@@ -218,6 +218,7 @@ stdenv.mkDerivation (finalAttrs: {
       k900
       Gliczy
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "gamescope";
   };

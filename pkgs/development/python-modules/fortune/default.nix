@@ -8,9 +8,8 @@ let
   version = "1.1.2";
 in
 buildPythonPackage {
-  pname = "fortune";
   inherit version;
-  pyproject = true;
+  pname = "fortune";
 
   src = fetchFromCodeberg {
     owner = "jamesansley";
@@ -20,12 +19,13 @@ buildPythonPackage {
   };
 
   build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "A rewrite of fortune in python";
-    mainProgram = "fortune";
     homepage = "https://codeberg.org/jamesansley/fortune";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "fortune";
   };
 }

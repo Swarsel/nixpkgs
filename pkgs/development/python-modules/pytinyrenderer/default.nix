@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pytinyrenderer";
   version = "0.0.14";
-  pyproject = true;
 
   # github has no tags
   src = fetchPypi {
@@ -16,16 +15,18 @@ buildPythonPackage rec {
     hash = "sha256-X+20eYUJy5EaA6O8no3o1NWqNrHeUuuHjv7xBLlaPRU=";
   };
 
+  # There are no tests in the pypi archive
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "pytinyrenderer"
   ];
-
-  # There are no tests in the pypi archive
-  doCheck = false;
 
   meta = {
     description = "Python bindings for Tiny Renderer";

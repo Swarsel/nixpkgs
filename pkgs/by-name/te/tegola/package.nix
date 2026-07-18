@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   buildNpmPackage,
-  fetchFromGitHub,
 }:
 let
   version = "0.21.2";
@@ -15,11 +15,9 @@ let
   };
 
   frontend = buildNpmPackage {
-    pname = "tegola-ui";
     inherit version;
-
+    pname = "tegola-ui";
     src = "${src}/ui";
-
     npmDepsHash = "sha256-DHJ+l3ceLieGG97kH1ri+7yZAv7R2lVYRdBhjXCy/iM=";
 
     installPhase = ''
@@ -28,18 +26,9 @@ let
   };
 in
 buildGoModule {
-  pname = "tegola";
   inherit version src;
-
+  pname = "tegola";
   vendorHash = null;
-
-  subPackages = [ "cmd/tegola" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/go-spatial/tegola/internal/build.Version=${version}"
-  ];
 
   preBuild = ''
     rm -rf ui/dist
@@ -47,11 +36,19 @@ buildGoModule {
     go generate ./server
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/go-spatial/tegola/internal/build.Version=${version}"
+  ];
+
+  subPackages = [ "cmd/tegola" ];
+
   meta = {
-    homepage = "https://www.tegola.io/";
     description = "Mapbox Vector Tile server";
+    homepage = "https://www.tegola.io/";
+    license = lib.licenses.mit;
     mainProgram = "tegola";
     teams = [ lib.teams.geospatial ];
-    license = lib.licenses.mit;
   };
 }

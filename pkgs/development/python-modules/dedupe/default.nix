@@ -1,37 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  setuptools,
-
   # dependencies
   affinegap,
   btrees,
+  buildPythonPackage,
   categorical-distance,
+  # build-system
+  cython,
+  dedupe,
   dedupe-levenshtein-search,
   doublemetaphone,
   haversine,
   highered,
   numpy,
-  scikit-learn,
-  simplecosine,
-  zope-index,
-  dedupe,
-
   # tests
   pytest-cov-stub,
   pytestCheckHook,
   python,
   runCommand,
+  scikit-learn,
+  setuptools,
+  simplecosine,
+  zope-index,
 }:
 
 buildPythonPackage rec {
   pname = "dedupe";
   version = "3.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dedupeio";
@@ -39,6 +35,16 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-tfBJeaeZw5w5OwM+AOfy9H6P2zbShjN/kuzEbpxATHI=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  # Remove source directory so pytest imports compiled extension from $out
+  preCheck = ''
+    rm -rf dedupe
+  '';
 
   build-system = [
     cython
@@ -59,15 +65,7 @@ buildPythonPackage rec {
     zope-index
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
-  # Remove source directory so pytest imports compiled extension from $out
-  preCheck = ''
-    rm -rf dedupe
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "dedupe"

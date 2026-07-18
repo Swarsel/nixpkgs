@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   pyocd,
   pypemicro,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pyocd-pemicro";
   version = "1.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyocd";
@@ -28,11 +27,12 @@ buildPythonPackage rec {
 
   # upstream has no tests
   doCheck = false;
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/pyocd/pyocd-pemicro/releases/tag/v${version}";
     description = "PEMicro probe plugin for pyOCD";
     homepage = "https://github.com/pyocd/pyocd-pemicro";
+    changelog = "https://github.com/pyocd/pyocd-pemicro/releases/tag/v${version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

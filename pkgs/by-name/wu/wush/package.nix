@@ -1,14 +1,14 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 let
   version = "0.4.1";
 in
 buildGoModule {
-  pname = "wush";
   inherit version;
+  pname = "wush";
 
   src = fetchFromGitHub {
     owner = "coder";
@@ -18,19 +18,18 @@ buildGoModule {
   };
 
   vendorHash = "sha256-3/DDtqVj7NNoJlNmKC+Q+XGS182E9OYkKMZ/2viANNQ=";
+  env.CGO_ENABLED = 0;
 
   ldflags = [
     "-s -w -X main.version=${version}"
   ];
 
-  env.CGO_ENABLED = 0;
-
   meta = {
-    homepage = "https://github.com/coder/wush";
     description = "Transfer files between computers via WireGuard";
+    homepage = "https://github.com/coder/wush";
     changelog = "https://github.com/coder/wush/releases/tag/v${version}";
     license = lib.licenses.cc0;
-    mainProgram = "wush";
     maintainers = with lib.maintainers; [ abbe ];
+    mainProgram = "wush";
   };
 }

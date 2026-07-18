@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-o06HnN/E8QWRFOqd9Sxolm4g/fI5+6hYITptnRNAFag=";
   };
 
-  cargoHash = "sha256-8xbmVQHMXs9rq4iP5Svx2Zdg/B9WuZuq+hKsokk2m78=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-8xbmVQHMXs9rq4iP5Svx2Zdg/B9WuZuq+hKsokk2m78=";
 
   postInstall = ''
     installManPage target/man/hyprdim.1
@@ -36,8 +35,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Automatically dim windows in Hyprland when switching between them";
     homepage = "https://github.com/donovanglover/hyprdim";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ donovanglover ];
+    platforms = lib.platforms.linux;
     mainProgram = "hyprdim";
   };
 })

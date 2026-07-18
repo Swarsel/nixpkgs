@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ libx11 ];
 
   meta = {
-    homepage = "http://henning-bekel.de/xchainkeys/";
     description = "Standalone X11 program to create chained key bindings";
+    homepage = "http://henning-bekel.de/xchainkeys/";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.unix;
     mainProgram = "xchainkeys";

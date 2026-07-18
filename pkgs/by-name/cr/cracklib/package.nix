@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  zlib,
   bash,
   buildPackages,
   nix-update-script,
   pkgsCross,
   pkgsStatic,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ORpJje4TGw1STtvRiNEwUwSDbLXdS+WgXGlc1Wtf/gw=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   outputs = [
     "bin"
     "out"
@@ -32,7 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -59,21 +56,26 @@ stdenv.mkDerivation (finalAttrs: {
       | cracklib-packer $out/share/cracklib/pw_dict
     '';
 
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       cross =
         let
           systemString = if stdenv.buildPlatform.isAarch64 then "gnu64" else "aarch64-multiplatform";
         in
         pkgsCross.${systemString}.cracklib;
+
       static = pkgsStatic.cracklib;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/cracklib/cracklib";
     description = "Password checking library";
+    homepage = "https://github.com/cracklib/cracklib";
     changelog = "https://github.com/cracklib/cracklib/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl21;
     maintainers = [ ];

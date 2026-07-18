@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ansi";
   version = "0.3.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tehmaze";
@@ -19,8 +18,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "ansi.colour"

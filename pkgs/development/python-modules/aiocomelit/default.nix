@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   orjson,
   pint,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiocomelit";
   version = "2.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chemelli74";
@@ -23,6 +22,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-T48aRtuF9eNrW5L97CGkjc2PCdRzbuGCvhdWCuqe7yk=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    anyio
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,13 +38,7 @@ buildPythonPackage (finalAttrs: {
     pint
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    anyio
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiocomelit" ];
 
   meta = {

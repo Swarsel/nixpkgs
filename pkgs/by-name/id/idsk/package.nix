@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/cpcsdk/idsk/commit/52fa3cdcc10d4ba6c75cab10ca7067b129198d92.patch";
       hash = "sha256-Ll0apllNj+fP7kZ1n+bBowrlskLK1bIashxxgPVVxmg=";
+      url = "https://github.com/cpcsdk/idsk/commit/52fa3cdcc10d4ba6c75cab10ca7067b129198d92.patch";
     })
   ];
 
@@ -41,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/cpcsdk/idsk";
     changelog = "https://github.com/cpcsdk/idsk/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "iDSK";
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.all;
+    mainProgram = "iDSK";
   };
 })

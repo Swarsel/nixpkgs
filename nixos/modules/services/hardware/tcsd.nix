@@ -1,9 +1,9 @@
 # tcsd daemon.
 {
   config,
-  options,
-  pkgs,
   lib,
+  pkgs,
+  options,
   ...
 }:
 let
@@ -42,53 +42,61 @@ in
 
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Whether to enable tcsd, a Trusted Computing management service
           that provides TCG Software Stack (TSS).  The tcsd daemon is
           the only portal to the Trusted Platform Module (TPM), a hardware
           chip on the motherboard.
         '';
+
+        type = lib.types.bool;
       };
 
-      user = lib.mkOption {
-        default = "tss";
-        type = lib.types.str;
-        description = "User account under which tcsd runs.";
-      };
+      conformanceCred = lib.mkOption {
+        default = "${cfg.stateDir}/conformance.cert";
+        defaultText = lib.literalExpression ''"''${config.${opt.stateDir}}/conformance.cert"'';
 
-      group = lib.mkOption {
-        default = "tss";
-        type = lib.types.str;
-        description = "Group account under which tcsd runs.";
-      };
-
-      stateDir = lib.mkOption {
-        default = "/var/lib/tpm";
-        type = lib.types.path;
         description = ''
-          The location of the system persistent storage file.
-          The system persistent storage file holds keys and data across
-          restarts of the TCSD and system reboots.
-        '';
+          Path to the conformance credential for your TPM.
+          See also the platformCred option'';
+
+        type = lib.types.path;
+      };
+
+      endorsementCred = lib.mkOption {
+        default = "${cfg.stateDir}/endorsement.cert";
+        defaultText = lib.literalExpression ''"''${config.${opt.stateDir}}/endorsement.cert"'';
+
+        description = ''
+          Path to the endorsement credential for your TPM.
+          See also the platformCred option'';
+
+        type = lib.types.path;
       };
 
       firmwarePCRs = lib.mkOption {
         default = "0,1,2,3,4,5,6,7";
-        type = lib.types.str;
         description = "PCR indices used in the TPM for firmware measurements.";
+        type = lib.types.str;
+      };
+
+      group = lib.mkOption {
+        default = "tss";
+        description = "Group account under which tcsd runs.";
+        type = lib.types.str;
       };
 
       kernelPCRs = lib.mkOption {
         default = "8,9,10,11,12";
-        type = lib.types.str;
         description = "PCR indices used in the TPM for kernel measurements.";
+        type = lib.types.str;
       };
 
       platformCred = lib.mkOption {
         default = "${cfg.stateDir}/platform.cert";
         defaultText = lib.literalExpression ''"''${config.${opt.stateDir}}/platform.cert"'';
-        type = lib.types.path;
+
         description = ''
           Path to the platform credential for your TPM. Your TPM
           manufacturer may have provided you with a set of credentials
@@ -97,24 +105,26 @@ in
           this credential will be encrypted as part of that process.
           See the 1.1b TPM Main specification section 9.3 for information
           on this process. '';
+
+        type = lib.types.path;
       };
 
-      conformanceCred = lib.mkOption {
-        default = "${cfg.stateDir}/conformance.cert";
-        defaultText = lib.literalExpression ''"''${config.${opt.stateDir}}/conformance.cert"'';
-        type = lib.types.path;
+      stateDir = lib.mkOption {
+        default = "/var/lib/tpm";
+
         description = ''
-          Path to the conformance credential for your TPM.
-          See also the platformCred option'';
+          The location of the system persistent storage file.
+          The system persistent storage file holds keys and data across
+          restarts of the TCSD and system reboots.
+        '';
+
+        type = lib.types.path;
       };
 
-      endorsementCred = lib.mkOption {
-        default = "${cfg.stateDir}/endorsement.cert";
-        defaultText = lib.literalExpression ''"''${config.${opt.stateDir}}/endorsement.cert"'';
-        type = lib.types.path;
-        description = ''
-          Path to the endorsement credential for your TPM.
-          See also the platformCred option'';
+      user = lib.mkOption {
+        default = "tss";
+        description = "User account under which tcsd runs.";
+        type = lib.types.str;
       };
     };
 
@@ -133,25 +143,27 @@ in
       ACTION=="add", KERNEL=="tpm[0-9]*", TAG+="systemd"
     '';
 
+    systemd.services.tcsd = {
+      after = [ "dev-tpm0.device" ];
+      description = "Manager for Trusted Computing resources";
+      documentation = [ "man:tcsd(8)" ];
+      requires = [ "dev-tpm0.device" ];
+
+      serviceConfig = {
+        ExecStart = "${pkgs.trousers}/sbin/tcsd -f -c ${tcsdConf}";
+        Group = cfg.group;
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
     systemd.tmpfiles.rules = [
       # Initialise the state directory
       "d ${cfg.stateDir} 0770 ${cfg.user} ${cfg.group} - -"
     ];
 
-    systemd.services.tcsd = {
-      description = "Manager for Trusted Computing resources";
-      documentation = [ "man:tcsd(8)" ];
-
-      requires = [ "dev-tpm0.device" ];
-      after = [ "dev-tpm0.device" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
-        ExecStart = "${pkgs.trousers}/sbin/tcsd -f -c ${tcsdConf}";
-      };
-    };
+    users.groups = lib.optionalAttrs (cfg.group == "tss") { tss = { }; };
 
     users.users = lib.optionalAttrs (cfg.user == "tss") {
       tss = {
@@ -159,7 +171,5 @@ in
         isSystemUser = true;
       };
     };
-
-    users.groups = lib.optionalAttrs (cfg.group == "tss") { tss = { }; };
   };
 }

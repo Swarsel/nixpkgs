@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
+  pkg-config,
   zlib,
 }:
 
@@ -22,6 +22,7 @@ stdenv.mkDerivation {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [ zlib ];
 
   meta = {

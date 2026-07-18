@@ -1,14 +1,13 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
   docutils,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "statistics";
   version = "1.0.3.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ docutils ];
-
   # statistics package does not have any tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python 2.* port of 3.4 Statistics Module";

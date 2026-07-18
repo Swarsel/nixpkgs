@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  gitUpdater,
+  SDL2,
   cmake,
+  fetchpatch,
+  fontconfig,
+  gitUpdater,
+  gtk3,
   pkg-config,
   python3,
-  SDL2,
-  fontconfig,
-  gtk3,
   wrapGAppsHook3,
 }:
 
@@ -27,22 +27,10 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-DK+K4F0+QGqaoWCyc8AvuIsaiTCqhAG6AsTNg2hegh0=";
       name = "fix-darwin-build.patch";
       url = "https://github.com/OpenBoardView/OpenBoardView/commit/a1de2e5de908afd83eceed757260f6425314af2e.patch?full_index=1";
-      hash = "sha256-DK+K4F0+QGqaoWCyc8AvuIsaiTCqhAG6AsTNg2hegh0=";
     })
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    python3
-    wrapGAppsHook3
-  ];
-  buildInputs = [
-    SDL2
-    fontconfig
-    gtk3
   ];
 
   postPatch = ''
@@ -51,11 +39,23 @@ stdenv.mkDerivation rec {
     substituteInPlace CMakeLists.txt --replace "fixup_bundle" "#fixup_bundle"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    python3
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [
+    SDL2
+    fontconfig
+    gtk3
+  ];
+
   cmakeFlags = [
     "-DGLAD_REPRODUCIBLE=On"
   ];
 
-  dontWrapGApps = true;
   postFixup =
     lib.optionalString stdenv.hostPlatform.isDarwin ''
       mkdir -p "$out/Applications"
@@ -66,16 +66,18 @@ stdenv.mkDerivation rec {
         --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ gtk3 ]}
     '';
 
+  dontWrapGApps = true;
+
   passthru.updateScript = gitUpdater {
     ignoredVersions = ''.*\.90\..*'';
   };
 
   meta = {
     description = "Linux SDL/ImGui edition software for viewing .brd files";
-    mainProgram = "openboardview";
     homepage = "https://github.com/OpenBoardView/OpenBoardView";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ k3a ];
+    platforms = lib.platforms.unix;
+    mainProgram = "openboardview";
   };
 }

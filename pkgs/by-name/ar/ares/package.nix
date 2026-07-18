@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   alsa-lib,
   apple-sdk,
   cmake,
@@ -8,19 +9,18 @@
   gtksourceview3,
   libGL,
   libGLU,
-  libx11,
-  libxv,
   libao,
   libpulseaudio,
-  libretro-shaders-slang,
   librashader,
-  ninja,
+  libretro-shaders-slang,
+  libx11,
+  libxv,
   moltenvk,
+  ninja,
   openal,
   pkg-config,
   replaceVars,
   sdl3,
-  stdenv,
   udev,
   vulkan-loader,
   wrapGAppsHook3,
@@ -36,6 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-LXLt4hYjpnLrzu+0dLfXr4lEF7drZwSRjgaCAaD79+g=";
     stripRoot = false;
   };
+
+  patches = [
+    (replaceVars ./darwin-build-fixes.patch {
+      sdkVersion = apple-sdk.version;
+    })
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -67,12 +73,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpulseaudio
     openal
     udev
-  ];
-
-  patches = [
-    (replaceVars ./darwin-build-fixes.patch {
-      sdkVersion = apple-sdk.version;
-    })
   ];
 
   cmakeFlags = [
@@ -116,11 +116,11 @@ stdenv.mkDerivation (finalAttrs: {
       '';
 
   meta = {
-    homepage = "https://ares-emu.net";
     description = "Open-source multi-system emulator with a focus on accuracy and preservation";
+    homepage = "https://ares-emu.net";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ nadiaholmquist ];
-    mainProgram = "ares";
     platforms = lib.platforms.unix;
+    mainProgram = "ares";
   };
 })

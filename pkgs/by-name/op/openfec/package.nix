@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  fetchzip,
+  stdenv,
   cmake,
+  fetchzip,
   gitUpdater,
 }:
 
@@ -50,8 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/roc-streaming/openfec.git";
     rev-prefix = "v";
+    url = "https://github.com/roc-streaming/openfec.git";
   };
 
   meta = {

@@ -1,26 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   asynctest,
   buildPythonPackage,
-  fetchFromGitHub,
-  setuptools,
   pyserial-asyncio,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
   zigpy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "zigpy-cc";
   version = "0.5.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   # https://github.com/Martiusweb/asynctest/issues/152
   # broken by upstream python bug with asynctest and
   # is used exclusively by home-assistant with python 3.8
-
   src = fetchFromGitHub {
     owner = "zigpy";
     repo = "zigpy-cc";
@@ -28,19 +24,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-U3S8tQ3zPlexZDt5GvCd+rOv7CBVeXJJM1NGe7nRl2o=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    pyserial-asyncio
-    zigpy
-  ];
-
   doCheck = false; # asynctest unsupported on 3.11+
 
   nativeCheckInputs = [
     asynctest
     pytest-asyncio
     pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    pyserial-asyncio
+    zigpy
   ];
 
   disabledTests = [
@@ -51,6 +48,7 @@ buildPythonPackage (finalAttrs: {
     "tests/test_application.py "
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "zigpy_cc" ];
 
   meta = {

@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-storage-file-datalake";
   version = "12.23.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_storage_file_datalake";
     inherit version;
     hash = "sha256-lM4aIJ5ya846VCZoIpAfoZDSApyJtSvm9eeNfl+xCS8=";
+    pname = "azure_storage_file_datalake";
   };
 
+  # Tests are only available in mono repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,10 +34,8 @@ buildPythonPackage rec {
     aio = [ azure-core ] ++ azure-core.optional-dependencies.aio;
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "azure.storage.filedatalake" ];
-
-  # Tests are only available in mono repo
-  doCheck = false;
 
   meta = {
     description = "Microsoft Azure File DataLake Storage Client Library for Python";

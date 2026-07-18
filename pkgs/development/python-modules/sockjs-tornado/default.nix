@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "sockjs-tornado";
   version = "1.0.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ tornado ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/mrjoes/sockjs-tornado/";
     description = "SockJS python server implementation on top of Tornado framework";
+    homepage = "https://github.com/mrjoes/sockjs-tornado/";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

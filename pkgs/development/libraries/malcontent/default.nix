@@ -2,26 +2,34 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  accountsservice,
+  coreutils,
+  dbus,
+  glib,
+  glib-testing,
+  gobject-introspection,
+  malcontent-ui,
   meson,
   ninja,
-  pkg-config,
-  gobject-introspection,
-  wrapGAppsNoGuiHook,
-  glib,
-  coreutils,
-  accountsservice,
-  dbus,
-  pam,
-  polkit,
-  glib-testing,
-  python3,
   nixosTests,
-  malcontent-ui,
+  pam,
+  pkg-config,
+  polkit,
+  python3,
+  wrapGAppsNoGuiHook,
 }:
 
 stdenv.mkDerivation rec {
   pname = "malcontent";
   version = "0.13.1";
+
+  src = fetchFromGitLab {
+    owner = "pwithnall";
+    repo = "malcontent";
+    rev = version;
+    hash = "sha256-ekRi4yXu8u8t1AjyS3bD6tdqqnqtKyI6yZs+28LnfRY=";
+    domain = "gitlab.freedesktop.org";
+  };
 
   outputs = [
     "bin"
@@ -33,14 +41,6 @@ stdenv.mkDerivation rec {
     "installedTests"
   ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "pwithnall";
-    repo = "malcontent";
-    rev = version;
-    hash = "sha256-ekRi4yXu8u8t1AjyS3bD6tdqqnqtKyI6yZs+28LnfRY=";
-  };
-
   patches = [
     # Allow installing installed tests to a separate output.
     ./installed-tests-path.patch
@@ -48,6 +48,14 @@ stdenv.mkDerivation rec {
     # Do not build things that are part of malcontent-ui package
     ./better-separation.patch
   ];
+
+  postPatch = ''
+    substituteInPlace libmalcontent/tests/app-filter.c \
+      --replace-fail "/usr/bin/true" "${coreutils}/bin/true" \
+      --replace-fail "/bin/true" "${coreutils}/bin/true" \
+      --replace-fail "/usr/bin/false" "${coreutils}/bin/false" \
+      --replace-fail "/bin/false" "${coreutils}/bin/false"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -81,14 +89,6 @@ stdenv.mkDerivation rec {
     "-Dui=disabled"
   ];
 
-  postPatch = ''
-    substituteInPlace libmalcontent/tests/app-filter.c \
-      --replace-fail "/usr/bin/true" "${coreutils}/bin/true" \
-      --replace-fail "/bin/true" "${coreutils}/bin/true" \
-      --replace-fail "/usr/bin/false" "${coreutils}/bin/false" \
-      --replace-fail "/bin/false" "${coreutils}/bin/false"
-  '';
-
   postInstall = ''
     # `giDiscoverSelf` only picks up paths in `out` output.
     # This needs to be in `postInstall` so that it runs before
@@ -98,12 +98,19 @@ stdenv.mkDerivation rec {
 
   passthru = {
     tests = {
-      installedTests = nixosTests.installed-tests.malcontent;
       inherit malcontent-ui;
+      installedTests = nixosTests.installed-tests.malcontent;
     };
   };
 
   meta = {
+    inherit (polkit.meta) platforms badPlatforms;
+    description = "Parental controls library";
+    homepage = "https://gitlab.freedesktop.org/pwithnall/malcontent";
+    license = lib.licenses.lgpl21Plus;
+    maintainers = with lib.maintainers; [ jtojnar ];
+    mainProgram = "malcontent-client";
+
     # We need to install Polkit & AccountsService data files in `out`
     # but `buildEnv` only uses `bin` when both `bin` and `out` are present.
     outputsToInstall = [
@@ -111,12 +118,5 @@ stdenv.mkDerivation rec {
       "out"
       "man"
     ];
-
-    description = "Parental controls library";
-    mainProgram = "malcontent-client";
-    homepage = "https://gitlab.freedesktop.org/pwithnall/malcontent";
-    license = lib.licenses.lgpl21Plus;
-    maintainers = with lib.maintainers; [ jtojnar ];
-    inherit (polkit.meta) platforms badPlatforms;
   };
 }

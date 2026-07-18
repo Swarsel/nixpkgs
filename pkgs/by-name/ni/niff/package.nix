@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 let
   version = "0.1";
 in
 stdenv.mkDerivation {
-  pname = "niff";
   inherit version;
+  pname = "niff";
 
   src = fetchFromGitHub {
     owner = "FRidh";
@@ -21,12 +21,12 @@ stdenv.mkDerivation {
 
   buildInputs = [ python3 ];
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/bin
     cp niff $out/bin/niff
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Program that compares two Nix expressions and determines which attributes changed";

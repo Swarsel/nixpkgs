@@ -1,24 +1,23 @@
 {
   lib,
+  fetchFromGitHub,
   beets,
   buildPythonPackage,
-  fetchFromGitHub,
+  filelock,
   httpx,
+  nix-update-script,
   packaging,
   poetry-core,
   pycountry,
   pytest-cov-stub,
   pytestCheckHook,
   rich-tables,
-  filelock,
   writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "beetcamp";
   version = "0.24.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "snejus";
@@ -29,16 +28,6 @@ buildPythonPackage (finalAttrs: {
 
   patches = [
     ./remove-git-pytest-option.diff
-  ];
-
-  build-system = [
-    poetry-core
-  ];
-
-  dependencies = [
-    httpx
-    packaging
-    pycountry
   ];
 
   nativeBuildInputs = [
@@ -53,23 +42,36 @@ buildPythonPackage (finalAttrs: {
     filelock
   ];
 
+  build-system = [
+    poetry-core
+  ];
+
+  dependencies = [
+    httpx
+    packaging
+    pycountry
+  ];
+
   disabledTests = [
     # AssertionError: assert ''
     "test_get_html"
   ];
 
+  pyproject = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       beets-with-beetcamp = beets.override {
         pluginOverrides = {
           beetcamp = {
-            enable = true;
             propagatedBuildInputs = [ finalAttrs.finalPackage ];
+            enable = true;
           };
         };
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -77,9 +79,11 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/snejus/beetcamp";
     changelog = "https://github.com/snejus/beetcamp/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl2Only;
+
     maintainers = [
       lib.maintainers._9999years
     ];
+
     mainProgram = "beetcamp";
   };
 })

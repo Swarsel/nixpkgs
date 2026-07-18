@@ -1,23 +1,24 @@
 {
-  appimageTools,
-  fetchurl,
-  runCommand,
   lib,
-  makeDesktopItem,
+  fetchurl,
+  appimageTools,
   copyDesktopItems,
   imagemagick,
-  writeShellScript,
+  makeDesktopItem,
   nix-update,
+  runCommand,
+  writeShellScript,
 }:
 let
   icon =
     runCommand "xnviewmp-icon.png"
       {
-        nativeBuildInputs = [ imagemagick ];
         src = fetchurl {
           url = "https://www.xnview.com/img/app-xnsoft-360.webp";
           hash = "sha256-wIzF/WOsPcrYFYC/kGZi6FSJFuErci5EMONjrx1VCdQ=";
         };
+
+        nativeBuildInputs = [ imagemagick ];
       }
       ''
         magick $src -resize 512x512 $out
@@ -38,25 +39,26 @@ appimageTools.wrapType2 rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "xnviewmp";
+      categories = [ "Graphics" ];
+      comment = "An efficient multimedia viewer, browser and converter";
       desktopName = "XnView MP";
       exec = "xnviewmp %F";
       icon = "xnviewmp";
-      comment = "An efficient multimedia viewer, browser and converter";
-      categories = [ "Graphics" ];
+      name = "xnviewmp";
     })
-  ];
-
-  extraPkgs = pkgs: [
-    pkgs.qt5.qtbase
   ];
 
   extraInstallCommands = ''
     install -m 444 -D ${icon} $out/share/icons/hicolor/512x512/apps/xnviewmp.png
   '';
 
+  extraPkgs = pkgs: [
+    pkgs.qt5.qtbase
+  ];
+
   passthru = {
     inherit src;
+
     updateScript = writeShellScript "update-xnviewmp" ''
       latestVersion=$(curl --fail --silent "http://www.xnview.com/update.txt" | awk -F= '/\[XnViewMP\]/{getline; if($1=="version") print $2}')
       ${lib.getExe nix-update} xnviewmp --version $latestVersion
@@ -65,13 +67,13 @@ appimageTools.wrapType2 rec {
 
   meta = {
     description = "Efficient multimedia viewer, browser and converter";
-    changelog = "https://www.xnview.com/mantisbt/changelog_page.php";
     homepage = "https://www.xnview.com/en/xnviewmp/";
-    downloadPage = "https://download.xnview.com/old_versions/XnView_MP/";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    changelog = "https://www.xnview.com/mantisbt/changelog_page.php";
     license = lib.licenses.unfree;
-    mainProgram = "xnviewmp";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ oddlama ];
     platforms = lib.platforms.linux;
+    mainProgram = "xnviewmp";
+    downloadPage = "https://download.xnview.com/old_versions/XnView_MP/";
   };
 }

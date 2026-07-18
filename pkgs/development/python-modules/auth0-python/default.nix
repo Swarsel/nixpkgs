@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   callee,
   cryptography,
-  fetchFromGitHub,
   mock,
   poetry-core,
   poetry-dynamic-versioning,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "auth0-python";
   version = "4.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "auth0";
@@ -51,8 +50,6 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonRelaxDeps = [ "cryptography" ];
-
   disabledTests = [
     # Tries to ping websites (e.g. google.com)
     "can_timeout"
@@ -60,7 +57,9 @@ buildPythonPackage rec {
     "test_options_are_used_and_override"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "auth0" ];
+  pythonRelaxDeps = [ "cryptography" ];
 
   meta = {
     description = "Auth0 Python SDK";

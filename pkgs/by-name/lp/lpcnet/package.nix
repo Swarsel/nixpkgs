@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   cmake,
   codec2,
   sox,
@@ -24,21 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./darwin.patch
   ];
 
-  passthru = {
-    # Prebuilt neural network model that is needed during the build - can be overwritten
-    nnmodel = fetchurl {
-      url = "http://rowetel.com/downloads/deep/lpcnet_191005_v1.0.tgz";
-      hash = "sha256-UJRAkkdR/dh/+qVoPuPd3ZN69cgzuRBMzOZdUWFJJsg=";
-    };
-  };
-
-  preConfigure = ''
-    mkdir build
-    cp \
-      ${finalAttrs.finalPackage.passthru.nnmodel} \
-      build/${finalAttrs.finalPackage.passthru.nnmodel.name}
-  '';
-
   nativeBuildInputs = [
     cmake
   ];
@@ -51,7 +36,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
   ];
 
+  preConfigure = ''
+    mkdir build
+    cp \
+      ${finalAttrs.finalPackage.passthru.nnmodel} \
+      build/${finalAttrs.finalPackage.passthru.nnmodel.name}
+  '';
+
   doCheck = true;
+
   nativeCheckInputs = [
     # NOTE: From some reason, the tests pass without this on x86_64-linux, but
     # not on aarch64-linux, although the relevant test is not enabled
@@ -60,14 +53,24 @@ stdenv.mkDerivation (finalAttrs: {
     sox
   ];
 
+  passthru = {
+    # Prebuilt neural network model that is needed during the build - can be overwritten
+    nnmodel = fetchurl {
+      hash = "sha256-UJRAkkdR/dh/+qVoPuPd3ZN69cgzuRBMzOZdUWFJJsg=";
+      url = "http://rowetel.com/downloads/deep/lpcnet_191005_v1.0.tgz";
+    };
+  };
+
   meta = {
     description = "Experimental Neural Net speech coding for FreeDV";
     homepage = "https://github.com/drowe67/LPCNet";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       doronbehar
       mvs
     ];
+
     platforms = lib.platforms.all;
   };
 })

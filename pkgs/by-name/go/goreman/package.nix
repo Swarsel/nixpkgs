@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
 }:
 
@@ -24,15 +24,15 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "goreman version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Foreman clone written in go language";
-    mainProgram = "goreman";
     homepage = "https://github.com/mattn/goreman";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zimbatm ];
+    mainProgram = "goreman";
   };
 })

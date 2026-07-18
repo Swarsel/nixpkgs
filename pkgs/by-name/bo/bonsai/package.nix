@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromSourcehut,
   gitUpdater,
   hareHook,
@@ -25,11 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
-  enableParallelBuilding = true;
-
   doCheck = true;
-
+  enableParallelBuilding = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

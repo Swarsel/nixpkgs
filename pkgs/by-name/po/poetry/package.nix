@@ -1,8 +1,8 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   fetchPypi,
+  python3,
 }:
 
 let
@@ -19,6 +19,7 @@ let
       # it's likely to become relevant again after the next Poetry update.
       poetry-core = super.poetry-core.overridePythonAttrs (old: rec {
         version = "2.4.0";
+
         src = fetchFromGitHub {
           owner = "python-poetry";
           repo = "poetry-core";
@@ -29,20 +30,21 @@ let
     }
     // (plugins self);
   python = python3.override (old: {
-    self = python;
     packageOverrides = lib.composeManyExtensions (
       (if old ? packageOverrides then [ old.packageOverrides ] else [ ]) ++ [ newPackageOverrides ]
     );
+
+    self = python;
   });
 
   plugins =
     ps: with ps; {
       poetry-audit-plugin = callPackage ./plugins/poetry-audit-plugin.nix { };
       poetry-plugin-export = callPackage ./plugins/poetry-plugin-export.nix { };
-      poetry-plugin-up = callPackage ./plugins/poetry-plugin-up.nix { };
       poetry-plugin-migrate = callPackage ./plugins/poetry-plugin-migrate.nix { };
       poetry-plugin-poeblix = callPackage ./plugins/poetry-plugin-poeblix.nix { };
       poetry-plugin-shell = callPackage ./plugins/poetry-plugin-shell.nix { };
+      poetry-plugin-up = callPackage ./plugins/poetry-plugin-up.nix { };
     };
 
   # selector is a function mapping pythonPackages to a list of plugins
@@ -54,8 +56,6 @@ let
     in
     python.pkgs.toPythonApplication (
       python.pkgs.poetry.overridePythonAttrs (old: {
-        dependencies = old.dependencies ++ selected;
-
         # save some build time when adding plugins by disabling tests
         doCheck = selected == [ ];
 
@@ -65,9 +65,11 @@ let
           rm $out/nix-support/propagated-build-inputs
         '';
 
+        dependencies = old.dependencies ++ selected;
+
         passthru = {
-          plugins = plugins python.pkgs;
           inherit withPlugins python;
+          plugins = plugins python.pkgs;
         };
       })
     );

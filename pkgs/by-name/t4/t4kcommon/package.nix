@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  pkg-config,
   SDL,
   SDL_image,
   SDL_mixer,
   SDL_net,
   SDL_ttf,
+  cmake,
+  fetchpatch,
   libpng,
   librsvg,
   libxml2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.1.1";
   pname = "t4kcommon";
+  version = "0.1.1";
 
   src = fetchFromGitHub {
     owner = "tux4kids";
@@ -29,23 +29,23 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # patch from debian to support libpng16 instead of libpng12
     (fetchpatch {
-      url = "https://salsa.debian.org/tux4kids-pkg-team/t4kcommon/raw/f7073fa384f5a725139f54844e59b57338b69dc7/debian/patches/libpng16.patch";
       hash = "sha256-auQ8VvOyvLE1PD2dfeHZJV+MzIt1OtUa7OcOqsXTAYI=";
+      url = "https://salsa.debian.org/tux4kids-pkg-team/t4kcommon/raw/f7073fa384f5a725139f54844e59b57338b69dc7/debian/patches/libpng16.patch";
     })
     # Fix "Cannot specify link libraries for target "linebreak" which is not built by this project."
     ./linebreak-fix.patch
   ];
 
-  # Workaround build failure on -fno-common toolchains like upstream
-  # gcc-10. Otherwise build fails as:
-  #   ld: CMakeFiles/t4k_common.dir/t4k_throttle.c.o:(.bss+0x0): multiple definition of
-  #     `wrapped_lines'; CMakeFiles/t4k_common.dir/t4k_audio.c.o:(.bss+0x0): first defined here
-  env.NIX_CFLAGS_COMPILE = "-fcommon -DGNULIB_UNISTR_U8_MBTOUC_UNSAFE -Wno-incompatible-pointer-types -std=gnu17";
+  postPatch = ''
+    substituteInPlace {src/,./}CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     SDL
     SDL_image
@@ -57,10 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
-  postPatch = ''
-    substituteInPlace {src/,./}CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
-  '';
+  # Workaround build failure on -fno-common toolchains like upstream
+  # gcc-10. Otherwise build fails as:
+  #   ld: CMakeFiles/t4k_common.dir/t4k_throttle.c.o:(.bss+0x0): multiple definition of
+  #     `wrapped_lines'; CMakeFiles/t4k_common.dir/t4k_audio.c.o:(.bss+0x0): first defined here
+  env.NIX_CFLAGS_COMPILE = "-fcommon -DGNULIB_UNISTR_U8_MBTOUC_UNSAFE -Wno-incompatible-pointer-types -std=gnu17";
 
   meta = {
     description = "Library of code shared between tuxmath and tuxtype";

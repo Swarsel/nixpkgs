@@ -1,7 +1,7 @@
 {
-  curl,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  curl,
   postgresql,
   postgresqlBuildExtension,
   postgresqlTestExtension,
@@ -20,12 +20,12 @@ postgresqlBuildExtension (finalAttrs: {
     hash = "sha256-HCfNzMPt80nGeVwlstUCeMpdNZYd9KhLLHYyD/Hvuhk=";
   };
 
-  buildInputs = postgresql.buildInputs ++ [
-    curl
-  ];
-
   nativeBuildInputs = [
     python3
+  ];
+
+  buildInputs = postgresql.buildInputs ++ [
+    curl
   ];
 
   makeFlags = [ "USE_PGXS=1" ];
@@ -38,6 +38,7 @@ postgresqlBuildExtension (finalAttrs: {
     assert postgresql.pname == "orioledb-postgres";
     {
       inherit (postgresql.meta) description maintainers;
+
       license = lib.licenses.OR [
         lib.licenses.asl20
         lib.licenses.postgresql

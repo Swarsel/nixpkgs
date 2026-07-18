@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   geopy,
   imageio,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "env-canada";
   version = "0.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "michaeldavie";
@@ -29,6 +28,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-QSMc7MLN83aNGr8EKbtE1NINZuO2sCuwHs64K1d5b50=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    freezegun
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [ setuptools ];
 
@@ -42,13 +48,6 @@ buildPythonPackage (finalAttrs: {
     pillow
     python-dateutil
     voluptuous
-  ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    freezegun
-    pytestCheckHook
-    syrupy
   ];
 
   disabledTests = [
@@ -67,6 +66,7 @@ buildPythonPackage (finalAttrs: {
     "test_layer_image_caching"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "env_canada" ];
 
   meta = {

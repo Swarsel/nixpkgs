@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -15,13 +15,13 @@ rustPlatform.buildRustPackage {
     hash = "sha256-saK9CxN4Ek1QBlPOydzEFei1217gPe5MZrUaUHh80hI=";
   };
 
-  cargoLock = {
-    lockFile = ./Cargo.lock;
-  };
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
+
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+  };
 
   postFixup = "mv $out/lib/*.so $out/lib/libnss_xhosts.so.2";
 

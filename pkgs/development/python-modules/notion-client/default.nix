@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   httpx,
   pytest-asyncio,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "notion-client";
   version = "2.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ramnes";
@@ -22,10 +21,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-15IPycaLk8r0/bUphL+IDypBMhgdX1tAUS50VD3p/00=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ httpx ];
 
   nativeCheckInputs = [
     anyio
@@ -35,12 +30,16 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "notion_client" ];
+  build-system = [ setuptools ];
+  dependencies = [ httpx ];
 
   disabledTests = [
     # Test requires network access
     "test_api_http_response_error"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "notion_client" ];
 
   meta = {
     description = "Python client for the official Notion API";

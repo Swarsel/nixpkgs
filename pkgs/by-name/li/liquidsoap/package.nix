@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchFromGitHub,
-  which,
-  pkg-config,
-  libjpeg,
-  ocaml-ng,
   awscli2,
   bubblewrap,
   curl,
   dune,
   ffmpeg_8-full,
+  libjpeg,
+  makeWrapper,
+  ocaml-ng,
+  pkg-config,
+  which,
   yt-dlp,
   runtimePackages ? [
     awscli2
@@ -41,34 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Compatibility with camlimages 5.0.5
     substituteInPlace src/core/optionals/camlimages/dune \
       --replace-warn camlimages.all_formats camlimages.core
-  '';
-
-  dontConfigure = true;
-
-  buildPhase = ''
-    runHook preBuild
-
-    dune build --release @install
-
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    dune install --prefix "$out"
-
-    runHook postInstall
-  '';
-
-  fixupPhase = ''
-    runHook preFixup
-
-    wrapProgram $out/bin/liquidsoap \
-      --set LIQ_LADSPA_PATH /run/current-system/sw/lib/ladspa \
-      --prefix PATH : ${lib.makeBinPath runtimePackages}
-
-    runHook postFixup
   '';
 
   strictDeps = true;
@@ -154,16 +126,46 @@ stdenv.mkDerivation (finalAttrs: {
     ocamlPackages.yaml
   ];
 
+  buildPhase = ''
+    runHook preBuild
+
+    dune build --release @install
+
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+
+    dune install --prefix "$out"
+
+    runHook postInstall
+  '';
+
+  dontConfigure = true;
+
+  fixupPhase = ''
+    runHook preFixup
+
+    wrapProgram $out/bin/liquidsoap \
+      --set LIQ_LADSPA_PATH /run/current-system/sw/lib/ladspa \
+      --prefix PATH : ${lib.makeBinPath runtimePackages}
+
+    runHook postFixup
+  '';
+
   meta = {
     description = "Swiss-army knife for multimedia streaming";
-    mainProgram = "liquidsoap";
     homepage = "https://www.liquidsoap.info/";
     changelog = "https://raw.githubusercontent.com/savonet/liquidsoap/main/CHANGES.md";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       dandellion
       juaningan
     ];
-    license = lib.licenses.gpl2Plus;
+
     platforms = ocamlPackages.ocaml.meta.platforms or [ ];
+    mainProgram = "liquidsoap";
   };
 })

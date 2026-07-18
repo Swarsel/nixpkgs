@@ -16,20 +16,18 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-nQSVAEb57kcboaqTa344eIsDC7qRiCAA6M9x77hsTio=";
   };
 
-  composerLock = ./composer.lock;
   vendorHash = "sha256-VIwZQutV2qlz0kZDQCncEM8Wa2zT9o+oM9O+FmhiTas=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  composerLock = ./composer.lock;
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/tag/v${finalAttrs.version}";
     description = "Tool to automatically fix PHP coding standards issues";
     homepage = "https://cs.symfony.com/";
+    changelog = "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "php-cs-fixer";
     maintainers = [ lib.maintainers.patka ];
+    mainProgram = "php-cs-fixer";
   };
 })

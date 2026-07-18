@@ -1,9 +1,9 @@
 {
   lib,
-  buildGraalvmNativeImage,
   fetchurl,
-  writeScript,
+  buildGraalvmNativeImage,
   installShellFiles,
+  writeScript,
 }:
 
 buildGraalvmNativeImage (finalAttrs: {
@@ -17,12 +17,11 @@ buildGraalvmNativeImage (finalAttrs: {
 
   nativeBuildInputs = [ installShellFiles ];
 
-  extraNativeImageBuildArgs = [
-    "-H:+ReportExceptionStackTraces"
-    "--no-fallback"
-    "--native-image-info"
-    "--enable-preview"
-  ];
+  postInstall = ''
+    installShellCompletion --cmd bb --bash ${./completions/bb.bash}
+    installShellCompletion --cmd bb --zsh ${./completions/bb.zsh}
+    installShellCompletion --cmd bb --fish ${./completions/bb.fish}
+  '';
 
   doInstallCheck = true;
 
@@ -39,11 +38,12 @@ buildGraalvmNativeImage (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  postInstall = ''
-    installShellCompletion --cmd bb --bash ${./completions/bb.bash}
-    installShellCompletion --cmd bb --zsh ${./completions/bb.zsh}
-    installShellCompletion --cmd bb --fish ${./completions/bb.fish}
-  '';
+  extraNativeImageBuildArgs = [
+    "-H:+ReportExceptionStackTraces"
+    "--no-fallback"
+    "--native-image-info"
+    "--enable-preview"
+  ];
 
   passthru.updateScript = writeScript "update-babashka" ''
     #!/usr/bin/env nix-shell
@@ -74,6 +74,7 @@ buildGraalvmNativeImage (finalAttrs: {
 
   meta = {
     description = "Clojure babushka for the grey areas of Bash";
+
     longDescription = ''
       The main idea behind babashka is to leverage Clojure in places where you
       would be using bash otherwise.
@@ -98,11 +99,12 @@ buildGraalvmNativeImage (finalAttrs: {
       - Batteries included (tools.cli, cheshire, ...)
       - Library support via popular tools like the clojure CLI
     '';
+
     homepage = "https://github.com/babashka/babashka";
     changelog = "https://github.com/babashka/babashka/blob/v${finalAttrs.version}/CHANGELOG.md";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.epl10;
-    mainProgram = "bb";
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       bandresen
       bhougland
@@ -110,5 +112,7 @@ buildGraalvmNativeImage (finalAttrs: {
       DerGuteMoritz
       jlesquembre
     ];
+
+    mainProgram = "bb";
   };
 })

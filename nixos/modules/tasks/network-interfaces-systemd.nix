@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 
@@ -39,6 +39,7 @@ let
       optionalAttrs (gateway != null && gateway.interface != null) {
         networks."40-${gateway.interface}" = {
           matchConfig.Name = gateway.interface;
+
           routes = [
             (
               {
@@ -59,22 +60,25 @@ let
 
   genericDhcpNetworks = mkIf cfg.useDHCP {
     networks."99-ethernet-default-dhcp" = {
-      matchConfig = {
-        Type = "ether";
-        Kind = "!*"; # physical interfaces have no kind
-      };
       DHCP = "yes";
+
+      matchConfig = {
+        Kind = "!*"; # physical interfaces have no kind
+        Type = "ether";
+      };
+
       networkConfig.IPv6PrivacyExtensions = "kernel";
     };
+
     networks."99-wireless-client-dhcp" = {
-      matchConfig.WLANInterfaceType = "station";
       DHCP = "yes";
-      networkConfig.IPv6PrivacyExtensions = "kernel";
       # We also set the route metric to one more than the default
       # of 1024, so that Ethernet is preferred if both are
       # available.
       dhcpV4Config.RouteMetric = 1025;
       ipv6AcceptRAConfig.RouteMetric = 1025;
+      matchConfig.WLANInterfaceType = "station";
+      networkConfig.IPv6PrivacyExtensions = "kernel";
     };
   };
 
@@ -82,29 +86,48 @@ let
     forEach interfaces (i: {
       links = mkIf i.wakeOnLan.enable {
         "40-${i.name}" = {
-          matchConfig.name = i.name;
           linkConfig.WakeOnLan = concatStringsSep " " i.wakeOnLan.policy;
+          matchConfig.name = i.name;
         };
       };
+
       netdevs = mkIf i.virtual {
         "40-${i.name}" = {
-          netdevConfig = {
-            Name = i.name;
-            Kind = i.virtualType;
-          };
           "${i.virtualType}Config" = optionalAttrs (i.virtualOwner != null) {
             User = i.virtualOwner;
           };
+
+          netdevConfig = {
+            Kind = i.virtualType;
+            Name = i.name;
+          };
         };
       };
+
       networks."40-${i.name}" = {
-        name = mkDefault i.name;
         DHCP = mkForce (
           dhcpStr (
             if i.useDHCP != null then i.useDHCP else (config.networking.useDHCP && i.ipv4.addresses == [ ])
           )
         );
+
         address = forEach (interfaceIps i) (ip: "${ip.address}/${toString ip.prefixLength}");
+
+        bridgeConfig = optionalAttrs i.proxyARP {
+          ProxyARP = i.proxyARP;
+        };
+
+        linkConfig =
+          optionalAttrs (i.macAddress != null) {
+            MACAddress = i.macAddress;
+          }
+          // optionalAttrs (i.mtu != null) {
+            MTUBytes = toString i.mtu;
+          };
+
+        name = mkDefault i.name;
+        networkConfig.IPv6PrivacyExtensions = "kernel";
+
         routes = forEach (interfaceRoutes i) (
           route:
           mkMerge [
@@ -166,17 +189,6 @@ let
             })
           ]
         );
-        networkConfig.IPv6PrivacyExtensions = "kernel";
-        linkConfig =
-          optionalAttrs (i.macAddress != null) {
-            MACAddress = i.macAddress;
-          }
-          // optionalAttrs (i.mtu != null) {
-            MTUBytes = toString i.mtu;
-          };
-        bridgeConfig = optionalAttrs i.proxyARP {
-          ProxyARP = i.proxyARP;
-        };
       };
     })
   );
@@ -186,10 +198,11 @@ let
       name: bridge: {
         netdevs."40-${name}" = {
           netdevConfig = {
-            Name = name;
             Kind = "bridge";
+            Name = name;
           };
         };
+
         networks = listToAttrs (
           forEach bridge.interfaces (
             bi:
@@ -208,11 +221,13 @@ let
       name: vlan: {
         netdevs."40-${name}" = {
           netdevConfig = {
-            Name = name;
             Kind = "vlan";
+            Name = name;
           };
+
           vlanConfig.Id = vlan.id;
         };
+
         networks."40-${vlan.interface}" = {
           vlan = [ name ];
         };
@@ -226,6 +241,9 @@ in
   config = mkMerge [
 
     (mkIf config.boot.initrd.network.enable {
+      boot.initrd.availableKernelModules =
+        optional (cfg.bridges != { }) "bridge" ++ optional (cfg.vlans != { }) "8021q";
+
       # Note this is if initrd.network.enable, not if
       # initrd.systemd.network.enable. By setting the latter and not the
       # former, the user retains full control over the configuration.
@@ -236,8 +254,6 @@ in
         bridgeNetworks
         vlanNetworks
       ];
-      boot.initrd.availableKernelModules =
-        optional (cfg.bridges != { }) "bridge" ++ optional (cfg.vlans != { }) "8021q";
     })
 
     (mkIf cfg.useNetworkd {
@@ -274,6 +290,9 @@ in
       );
 
       networking.dhcpcd.enable = mkDefault false;
+      # We need to prefill the slaved devices with networking options
+      # This forces the network interface creator to initialize slaves.
+      networking.interfaces = listToAttrs (map (i: nameValuePair i { }) slaves);
 
       systemd.network = mkMerge [
         {
@@ -287,10 +306,6 @@ in
           flip mapAttrsToList cfg.bonds (
             name: bond: {
               netdevs."40-${name}" = {
-                netdevConfig = {
-                  Name = name;
-                  Kind = "bond";
-                };
                 bondConfig =
                   let
                     # manual mapping as of 2017-02-03
@@ -300,39 +315,42 @@ in
                     driverOptionMapping =
                       let
                         trans = f: optName: {
-                          valTransform = f;
                           optNames = [ optName ];
+                          valTransform = f;
                         };
                         simp = trans id;
                         ms = trans (v: v + "ms");
                       in
                       {
-                        Mode = simp "mode";
-                        TransmitHashPolicy = simp "xmit_hash_policy";
-                        LACPTransmitRate = simp "lacp_rate";
-                        MIIMonitorSec = ms "miimon";
-                        UpDelaySec = ms "updelay";
-                        DownDelaySec = ms "downdelay";
-                        LearnPacketIntervalSec = simp "lp_interval";
-                        AdSelect = simp "ad_select";
-                        FailOverMACPolicy = simp "fail_over_mac";
-                        ARPValidate = simp "arp_validate";
+                        ARPAllTargets = simp "arp_all_targets";
+                        ARPIPTargets = simp "arp_ip_target";
                         # apparently in ms for this value?! Upstream bug?
                         ARPIntervalSec = simp "arp_interval";
-                        ARPIPTargets = simp "arp_ip_target";
-                        ARPAllTargets = simp "arp_all_targets";
-                        PrimaryReselectPolicy = simp "primary_reselect";
-                        ResendIGMP = simp "resend_igmp";
-                        PacketsPerSlave = simp "packets_per_slave";
+                        ARPValidate = simp "arp_validate";
+                        AdSelect = simp "ad_select";
+                        AllSlavesActive = simp "all_slaves_active";
+                        DownDelaySec = ms "downdelay";
+                        FailOverMACPolicy = simp "fail_over_mac";
+
                         GratuitousARP = {
-                          valTransform = id;
                           optNames = [
                             "num_grat_arp"
                             "num_unsol_na"
                           ];
+
+                          valTransform = id;
                         };
-                        AllSlavesActive = simp "all_slaves_active";
+
+                        LACPTransmitRate = simp "lacp_rate";
+                        LearnPacketIntervalSec = simp "lp_interval";
+                        MIIMonitorSec = ms "miimon";
                         MinLinks = simp "min_links";
+                        Mode = simp "mode";
+                        PacketsPerSlave = simp "packets_per_slave";
+                        PrimaryReselectPolicy = simp "primary_reselect";
+                        ResendIGMP = simp "resend_igmp";
+                        TransmitHashPolicy = simp "xmit_hash_policy";
+                        UpDelaySec = ms "updelay";
                       };
 
                     do = bond.driverOptions;
@@ -366,6 +384,11 @@ in
                   in
                   seq assertNoUnknownOption (buildOptionSet (filterSystemdOptions driverOptionMapping));
 
+                netdevConfig = {
+                  Kind = "bond";
+                  Name = name;
+                };
+
               };
 
               networks = listToAttrs (
@@ -384,12 +407,14 @@ in
           flip mapAttrsToList cfg.macvlans (
             name: macvlan: {
               netdevs."40-${name}" = {
-                netdevConfig = {
-                  Name = name;
-                  Kind = "macvlan";
-                };
                 macvlanConfig = optionalAttrs (macvlan.mode != null) { Mode = macvlan.mode; };
+
+                netdevConfig = {
+                  Kind = "macvlan";
+                  Name = name;
+                };
               };
+
               networks."40-${macvlan.interface}" = {
                 macvlan = [ name ];
               };
@@ -400,14 +425,16 @@ in
           flip mapAttrsToList cfg.ipvlans (
             name: ipvlan: {
               netdevs."40-${name}" = {
-                netdevConfig = {
-                  Name = name;
-                  Kind = "ipvlan";
-                };
                 ipvlanConfig =
                   optionalAttrs (ipvlan.mode != null) { Mode = lib.toUpper ipvlan.mode; }
                   // optionalAttrs (ipvlan.flags != null) { Flags = ipvlan.flags; };
+
+                netdevConfig = {
+                  Kind = "ipvlan";
+                  Name = name;
+                };
               };
+
               networks."40-${ipvlan.interface}" = {
                 ipvlan = [ name ];
               };
@@ -418,20 +445,21 @@ in
           flip mapAttrsToList cfg.fooOverUDP (
             name: fou: {
               netdevs."40-${name}" = {
-                netdevConfig = {
-                  Name = name;
-                  Kind = "fou";
-                };
                 # unfortunately networkd cannot encode dependencies of netdevs on addresses/routes,
                 # so we cannot specify Local=, Peer=, PeerPort=. this looks like a missing feature
                 # in networkd.
                 fooOverUDPConfig = {
-                  Port = fou.port;
                   Encapsulation = if fou.protocol != null then "FooOverUDP" else "GenericUDPEncapsulation";
+                  Port = fou.port;
                 }
                 // (optionalAttrs (fou.protocol != null) {
                   Protocol = fou.protocol;
                 });
+
+                netdevConfig = {
+                  Kind = "fou";
+                  Name = name;
+                };
               };
             }
           )
@@ -441,9 +469,10 @@ in
             name: sit: {
               netdevs."40-${name}" = {
                 netdevConfig = {
-                  Name = name;
                   Kind = "sit";
+                  Name = name;
                 };
+
                 tunnelConfig =
                   (optionalAttrs (sit.remote != null) {
                     Remote = sit.remote;
@@ -456,15 +485,16 @@ in
                   })
                   // (optionalAttrs (sit.encapsulation.type != "6in4") (
                     {
-                      FooOverUDP = true;
                       Encapsulation = if sit.encapsulation.type == "fou" then "FooOverUDP" else "GenericUDPEncapsulation";
                       FOUDestinationPort = sit.encapsulation.port;
+                      FooOverUDP = true;
                     }
                     // (optionalAttrs (sit.encapsulation.sourcePort != null) {
                       FOUSourcePort = sit.encapsulation.sourcePort;
                     })
                   ));
               };
+
               networks = mkIf (sit.dev != null) {
                 "40-${sit.dev}" = {
                   tunnel = [ name ];
@@ -478,9 +508,10 @@ in
             name: ipip: {
               netdevs."40-${name}" = {
                 netdevConfig = {
-                  Name = name;
                   Kind = if ipip.encapsulation.type == "ipip" then "ipip" else "ip6tnl";
+                  Name = name;
                 };
+
                 tunnelConfig =
                   (optionalAttrs (ipip.remote != null) {
                     Remote = ipip.remote;
@@ -492,11 +523,12 @@ in
                     TTL = ipip.ttl;
                   })
                   // (optionalAttrs (ipip.encapsulation.type != "ipip") {
+                    EncapsulationLimit = ipip.encapsulation.type;
                     # IPv6 tunnel options
                     Mode = if ipip.encapsulation.type == "4in6" then "ipip6" else "ip6ip6";
-                    EncapsulationLimit = ipip.encapsulation.type;
                   });
               };
+
               networks = mkIf (ipip.dev != null) {
                 "40-${ipip.dev}" = {
                   tunnel = [ name ];
@@ -510,9 +542,10 @@ in
             name: gre: {
               netdevs."40-${name}" = {
                 netdevConfig = {
-                  Name = name;
                   Kind = gre.type;
+                  Name = name;
                 };
+
                 tunnelConfig =
                   (optionalAttrs (gre.remote != null) {
                     Remote = gre.remote;
@@ -524,6 +557,7 @@ in
                     TTL = gre.ttl;
                   });
               };
+
               networks = mkIf (gre.dev != null) {
                 "40-${gre.dev}" = {
                   tunnel = [ name ];
@@ -534,10 +568,6 @@ in
         ))
         vlanNetworks
       ];
-
-      # We need to prefill the slaved devices with networking options
-      # This forces the network interface creator to initialize slaves.
-      networking.interfaces = listToAttrs (map (i: nameValuePair i { }) slaves);
 
       systemd.services =
         let
@@ -554,35 +584,42 @@ in
                 ofRules = pkgs.writeText "vswitch-${n}-openFlowRules" v.openFlowRules;
               in
               {
-                description = "Open vSwitch Interface ${n}";
-                wantedBy = [
-                  "network.target"
-                  (subsystemDevice n)
-                ];
-                # and create bridge before systemd-networkd starts because it might create internal interfaces
-                before = [ "systemd-networkd.service" ];
-                # shutdown the bridge when network is shutdown
-                partOf = [ "network.target" ];
-                # requires ovs-vswitchd to be alive at all times
-                bindsTo = [ "ovs-vswitchd.service" ];
                 # start switch after physical interfaces and vswitch daemon
                 after = [
                   "network-pre.target"
                   "ovs-vswitchd.service"
                 ]
                 ++ deps;
-                wants = deps; # if one or more interface fails, the switch should continue to run
-                serviceConfig.Type = "oneshot";
-                serviceConfig.RemainAfterExit = true;
+
+                # and create bridge before systemd-networkd starts because it might create internal interfaces
+                before = [ "systemd-networkd.service" ];
+                # requires ovs-vswitchd to be alive at all times
+                bindsTo = [ "ovs-vswitchd.service" ];
+                description = "Open vSwitch Interface ${n}";
+                # shutdown the bridge when network is shutdown
+                partOf = [ "network.target" ];
+
                 path = [
                   pkgs.iproute2
                   config.virtualisation.vswitch.package
                 ];
+
+                postStop = ''
+                  echo "Cleaning Open vSwitch ${n}"
+                  echo "Shutting down internal ${n} interface"
+                  ip link set dev ${n} down || true
+                  echo "Deleting flows for ${n}"
+                  ovs-ofctl --protocols=${v.openFlowVersion} del-flows ${n} || true
+                  echo "Deleting Open vSwitch ${n}"
+                  ovs-vsctl --if-exists del-br ${n} || true
+                '';
+
                 preStart = ''
                   echo "Resetting Open vSwitch ${n}..."
                   ovs-vsctl --if-exists del-br ${n} -- add-br ${n} \
                             -- set bridge ${n} protocols=${concatStringsSep "," v.supportedOpenFlowVersions}
                 '';
+
                 script = ''
                   echo "Configuring Open vSwitch ${n}..."
                   ovs-vsctl ${
@@ -607,15 +644,16 @@ in
                   echo "Adding OpenFlow rules for Open vSwitch ${n}..."
                   ovs-ofctl --protocols=${v.openFlowVersion} add-flows ${n} ${ofRules}
                 '';
-                postStop = ''
-                  echo "Cleaning Open vSwitch ${n}"
-                  echo "Shutting down internal ${n} interface"
-                  ip link set dev ${n} down || true
-                  echo "Deleting flows for ${n}"
-                  ovs-ofctl --protocols=${v.openFlowVersion} del-flows ${n} || true
-                  echo "Deleting Open vSwitch ${n}"
-                  ovs-vsctl --if-exists del-br ${n} || true
-                '';
+
+                serviceConfig.RemainAfterExit = true;
+                serviceConfig.Type = "oneshot";
+
+                wantedBy = [
+                  "network.target"
+                  (subsystemDevice n)
+                ];
+
+                wants = deps; # if one or more interface fails, the switch should continue to run
               }
             );
         in

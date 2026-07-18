@@ -17,14 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ zlib ];
+  makeFlags = lib.optional stdenv.hostPlatform.isStatic "AR=${stdenv.cc.targetPrefix}ar";
 
   # Avoid hardcoding gcc to allow environments with a different
   # C compiler to build
   preConfigure = ''
     sed -i '/^CC/d' Makefile
   '';
-
-  makeFlags = lib.optional stdenv.hostPlatform.isStatic "AR=${stdenv.cc.targetPrefix}ar";
 
   # it's unclear which headers are intended to be part of the public interface
   # so we may find ourselves having to add more here over time
@@ -43,10 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Software package for mapping low-divergent sequences against a large reference genome, such as the human genome";
-    mainProgram = "bwa";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://bio-bwa.sourceforge.net/";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ luispedro ];
     platforms = lib.platforms.unix;
+    mainProgram = "bwa";
   };
 })

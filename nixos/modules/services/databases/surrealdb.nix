@@ -13,40 +13,27 @@ in
   options = {
     services.surrealdb = {
       enable = lib.mkEnableOption "SurrealDB, a scalable, distributed, collaborative, document-graph database, for the realtime web";
-
       package = lib.mkPackageOption pkgs "surrealdb" { };
 
       dbPath = lib.mkOption {
-        type = lib.types.str;
+        default = "rocksdb:///var/lib/surrealdb/";
+
         description = ''
           The path that surrealdb will write data to. Use null for in-memory.
           Can be one of "memory", "rocksdb://:path", "surrealkv://:path", "tikv://:addr", "fdb://:addr".
         '';
-        default = "rocksdb:///var/lib/surrealdb/";
+
         example = "memory";
-      };
-
-      host = lib.mkOption {
         type = lib.types.str;
-        description = ''
-          The host that surrealdb will connect to.
-        '';
-        default = "127.0.0.1";
-        example = "127.0.0.1";
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        description = ''
-          The port that surrealdb will connect to.
-        '';
-        default = 8000;
-        example = 8000;
       };
 
       extraFlags = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
+
+        description = ''
+          Specify a list of additional command line flags.
+        '';
+
         example = [
           "--allow-all"
           "--user"
@@ -54,9 +41,30 @@ in
           "--pass"
           "root"
         ];
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      host = lib.mkOption {
+        default = "127.0.0.1";
+
         description = ''
-          Specify a list of additional command line flags.
+          The host that surrealdb will connect to.
         '';
+
+        example = "127.0.0.1";
+        type = lib.types.str;
+      };
+
+      port = lib.mkOption {
+        default = 8000;
+
+        description = ''
+          The port that surrealdb will connect to.
+        '';
+
+        example = 8000;
+        type = lib.types.port;
       };
     };
   };
@@ -67,37 +75,39 @@ in
     environment.systemPackages = [ cfg.package ];
 
     systemd.services.surrealdb = {
-      description = "A scalable, distributed, collaborative, document-graph database, for the realtime web";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "A scalable, distributed, collaborative, document-graph database, for the realtime web";
 
       serviceConfig = {
-        ExecStart = "${cfg.package}/bin/surreal start --bind ${cfg.host}:${toString cfg.port} ${lib.strings.concatStringsSep " " cfg.extraFlags} -- ${cfg.dbPath}";
-        DynamicUser = true;
-        Restart = "on-failure";
-        StateDirectory = "surrealdb";
         CapabilityBoundingSet = "";
+        DynamicUser = true;
+        ExecStart = "${cfg.package}/bin/surreal start --bind ${cfg.host}:${toString cfg.port} ${lib.strings.concatStringsSep " " cfg.extraFlags} -- ${cfg.dbPath}";
+        LockPersonality = true;
         NoNewPrivileges = true;
         PrivateTmp = true;
-        ProtectHome = true;
-        ProtectClock = true;
-        ProtectProc = "noaccess";
         ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        ProtectControlGroups = true;
-        ProtectHostname = true;
-        RestrictSUIDSGID = true;
-        RestrictRealtime = true;
-        RestrictNamespaces = true;
-        LockPersonality = true;
+        ProtectProc = "noaccess";
         RemoveIPC = true;
+        Restart = "on-failure";
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        StateDirectory = "surrealdb";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

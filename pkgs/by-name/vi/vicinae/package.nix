@@ -1,23 +1,23 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   cmark-gfm,
   coreutils,
-  fetchFromGitHub,
   fetchNpmDeps,
   glaze,
   kdePackages,
-  lib,
   libqalculate,
+  libxml2,
   minizip,
   ninja,
   nodejs,
   npmHooks,
   pkg-config,
   qt6,
-  stdenv,
-  wayland,
-  libxml2,
   udevCheckHook,
+  wayland,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "vicinae";
@@ -30,27 +30,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1c6rl+PMI61l3H2a8Ks1qbFGW2psHs0FamJd/Vzq6NY=";
   };
 
-  apiDeps = fetchNpmDeps {
-    src = "${finalAttrs.src}/src/typescript/api";
-    hash = "sha256-Im8fSG9sbaSynrN5gLsWVaPgH5g4Zp+x+FUPIBXrKjg=";
-  };
+  postPatch = ''
+    # Toggle telemetry from opt-out to opt-in
+    substituteInPlace extra/config.jsonc \
+      --replace-fail '"system_info": true' '"system_info": false'
 
-  extensionManagerDeps = fetchNpmDeps {
-    src = "${finalAttrs.src}/src/typescript/extension-manager";
-    hash = "sha256-pEgqFgvdz7Bcc+LznCI+KlD1XEfUuWFWjS24MJ7sx3k=";
-  };
-
-  cmakeFlags = lib.mapAttrsToList lib.cmakeFeature {
-    "VICINAE_GIT_TAG" = "v${finalAttrs.version}";
-    "VICINAE_PROVENANCE" = "nix";
-    "INSTALL_NODE_MODULES" = "OFF";
-    "INSTALL_BROWSER_NATIVE_HOST" = "OFF";
-    "USE_SYSTEM_GLAZE" = "ON";
-    "CMAKE_INSTALL_PREFIX" = placeholder "out";
-    "CMAKE_INSTALL_DATAROOTDIR" = "share";
-    "CMAKE_INSTALL_BINDIR" = "bin";
-    "CMAKE_INSTALL_LIBDIR" = "lib";
-  };
+    local postPatchHooks=()
+    source ${npmHooks.npmConfigHook}/nix-support/setup-hook
+    npmRoot=src/typescript/api npmDeps=${finalAttrs.apiDeps} npmConfigHook
+    npmRoot=src/typescript/extension-manager npmDeps=${finalAttrs.extensionManagerDeps} npmConfigHook
+  '';
 
   strictDeps = true;
 
@@ -78,16 +67,36 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
-  postPatch = ''
-    # Toggle telemetry from opt-out to opt-in
-    substituteInPlace extra/config.jsonc \
-      --replace-fail '"system_info": true' '"system_info": false'
+  cmakeFlags = lib.mapAttrsToList lib.cmakeFeature {
+    "CMAKE_INSTALL_BINDIR" = "bin";
+    "CMAKE_INSTALL_DATAROOTDIR" = "share";
+    "CMAKE_INSTALL_LIBDIR" = "lib";
+    "CMAKE_INSTALL_PREFIX" = placeholder "out";
+    "INSTALL_BROWSER_NATIVE_HOST" = "OFF";
+    "INSTALL_NODE_MODULES" = "OFF";
+    "USE_SYSTEM_GLAZE" = "ON";
+    "VICINAE_GIT_TAG" = "v${finalAttrs.version}";
+    "VICINAE_PROVENANCE" = "nix";
+  };
 
-    local postPatchHooks=()
-    source ${npmHooks.npmConfigHook}/nix-support/setup-hook
-    npmRoot=src/typescript/api npmDeps=${finalAttrs.apiDeps} npmConfigHook
-    npmRoot=src/typescript/extension-manager npmDeps=${finalAttrs.extensionManagerDeps} npmConfigHook
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ udevCheckHook ];
+
+  postFixup = ''
+    substituteInPlace $out/share/systemd/user/vicinae.service \
+      --replace-fail "/bin/kill" "${lib.getExe' coreutils "kill"}"\
+      --replace-fail "ExecStart=vicinae" "ExecStart=$out/bin/vicinae"
   '';
+
+  apiDeps = fetchNpmDeps {
+    src = "${finalAttrs.src}/src/typescript/api";
+    hash = "sha256-Im8fSG9sbaSynrN5gLsWVaPgH5g4Zp+x+FUPIBXrKjg=";
+  };
+
+  extensionManagerDeps = fetchNpmDeps {
+    src = "${finalAttrs.src}/src/typescript/extension-manager";
+    hash = "sha256-pEgqFgvdz7Bcc+LznCI+KlD1XEfUuWFWjS24MJ7sx3k=";
+  };
 
   qtWrapperArgs = [
     "--prefix PATH :  ${
@@ -98,25 +107,18 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   ];
 
-  postFixup = ''
-    substituteInPlace $out/share/systemd/user/vicinae.service \
-      --replace-fail "/bin/kill" "${lib.getExe' coreutils "kill"}"\
-      --replace-fail "ExecStart=vicinae" "ExecStart=$out/bin/vicinae"
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ udevCheckHook ];
-
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Native, fast, extensible launcher for the desktop";
     homepage = "https://github.com/vicinaehq/vicinae";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       whispersofthedawn
       zstg
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "vicinae";
   };

@@ -1,10 +1,10 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
   libsForQt5,
   openscenegraph,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,13 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+rjy2a266p755Mbfk6jRApiERpOL8axHklK0cYokX40=";
   };
 
-  buildInputs = [ libsForQt5.qtbase ];
-
   nativeBuildInputs = [
     cmake
     libsForQt5.wrapQtAppsHook
   ];
 
+  buildInputs = [ libsForQt5.qtbase ];
   propagatedBuildInputs = [ openscenegraph ];
 
   cmakeFlags = [
@@ -35,10 +34,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Qt bindings for OpenSceneGraph";
     homepage = "https://github.com/openscenegraph/osgQt";
+
     license = with lib.licenses; [
       lgpl21Only
       wxWindowsException31
     ];
+
     maintainers = [ lib.maintainers.nim65s ];
     platforms = lib.platforms.unix;
   };

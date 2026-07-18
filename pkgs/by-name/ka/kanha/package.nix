@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   openssl,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -11,13 +11,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    pname = "kanha";
     hash = "sha256-ftTmYCkra3x/oDgGJ2WSf6yLeKXkwLJXhjuBdv7fVLY=";
+    pname = "kanha";
   };
 
-  cargoHash = "sha256-bO37UYApe1CbwcfG8j/1UPu6DlYqlGPLsh0epxh8x3M=";
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-bO37UYApe1CbwcfG8j/1UPu6DlYqlGPLsh0epxh8x3M=";
 
   meta = {
     description = "Web-app pentesting suite written in rust";

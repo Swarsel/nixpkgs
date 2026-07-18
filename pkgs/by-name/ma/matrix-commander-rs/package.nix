@@ -2,9 +2,9 @@
   lib,
   fetchFromGitHub,
   openssl,
+  perl,
   pkg-config,
   rustPlatform,
-  perl,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,14 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SyAKKSPGO8yjP3Pgsr2sPW5cpNyNLiYTy7CDDAXdztw=";
   };
 
-  cargoHash = "sha256-X1xBhJ0B4FcC66qKtYZbcX2+92hy2R4fM/GYBI8AFTY=";
-
   nativeBuildInputs = [
     pkg-config
     perl
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-X1xBhJ0B4FcC66qKtYZbcX2+92hy2R4fM/GYBI8AFTY=";
 
   meta = {
     description = "CLI-based Matrix client app for sending and receiving";

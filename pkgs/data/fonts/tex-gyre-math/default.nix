@@ -7,28 +7,31 @@
 let
   variants = {
     bonum = {
-      displayName = "Bonum";
       version = "1.005";
-      sha256 = "1b6x7siypyxp1lhq7xxdqafwbn6p2p3xm3jb38q999sv8cgslxz8";
+      displayName = "Bonum";
       outputHash = "1zjaxkzidqmxakh9d61n0by9mi8hrmir45jppjj6hzwhm3rvknff";
+      sha256 = "1b6x7siypyxp1lhq7xxdqafwbn6p2p3xm3jb38q999sv8cgslxz8";
     };
+
     pagella = {
-      displayName = "Pagella";
       version = "1.632";
-      sha256 = "0f4cgq9w0lc1fbcbfqiv19mdhivbsscl13jmb0ln685641ci2sjr";
+      displayName = "Pagella";
       outputHash = "0wz2n1dpx9b8a0qgqy8vl712fxhi87mhcda281xaad62chndwf6k";
+      sha256 = "0f4cgq9w0lc1fbcbfqiv19mdhivbsscl13jmb0ln685641ci2sjr";
     };
+
     schola = {
-      displayName = "Schola";
       version = "1.533";
-      sha256 = "0caqgkz7gz700h5a1mai0gq8hv7skrgs5nnrs1f7zw1mb9g53ya9";
+      displayName = "Schola";
       outputHash = "0jk4bpxki95a9lmfj4cgpnv1jwlkh8qixbkf498n1x7hkaz03f5n";
+      sha256 = "0caqgkz7gz700h5a1mai0gq8hv7skrgs5nnrs1f7zw1mb9g53ya9";
     };
+
     termes = {
-      displayName = "Termes";
       version = "1.543";
-      sha256 = "10ayqfpryfn1l35hy0vwyjzw3a6mfsnzgf78vsnccgk2gz1g9vhz";
+      displayName = "Termes";
       outputHash = "0pa433cgshlypbyrrlp3qq0wg972rngcp37pr8pxdfshgz13q1mm";
+      sha256 = "10ayqfpryfn1l35hy0vwyjzw3a6mfsnzgf78vsnccgk2gz1g9vhz";
     };
   };
 
@@ -36,20 +39,21 @@ let
     variant:
     {
       displayName,
-      version,
-      sha256,
       outputHash,
+      sha256,
+      version,
     }:
     let
       dotless_version = builtins.replaceStrings [ "." ] [ "" ] version;
     in
     stdenv.mkDerivation rec {
-      pname = "tex-gyre-${variant}-math";
       inherit version;
+      inherit outputHash;
+      pname = "tex-gyre-${variant}-math";
 
       src = fetchzip {
-        url = "https://www.gust.org.pl/projects/e-foundry/tg-math/download/texgyre${variant}-math-${dotless_version}.zip";
         inherit sha256;
+        url = "https://www.gust.org.pl/projects/e-foundry/tg-math/download/texgyre${variant}-math-${dotless_version}.zip";
       };
 
       installPhase = ''
@@ -59,7 +63,6 @@ let
 
       outputHashAlgo = "sha256";
       outputHashMode = "recursive";
-      inherit outputHash;
 
       meta = {
         longDescription = ''
@@ -67,6 +70,7 @@ let
           ${displayName} family of fonts (see
           http://www.gust.org.pl/projects/e-foundry/tex-gyre/) in the OpenType format.
         '';
+
         homepage = "http://www.gust.org.pl/projects/e-foundry/tg-math";
         # "The TeX Gyre Math fonts are licensed under the GUST Font License (GFL),
         # which is a free license, legally equivalent to the LaTeX Project Public

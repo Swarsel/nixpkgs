@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchNpmDeps,
+  nix-update-script,
+  nixosTests,
   nodejs,
   npmHooks,
   versionCheckHook,
-  nixosTests,
-  nix-update-script,
 }:
 buildGoModule (finalAttrs: {
   pname = "sshwifty";
@@ -25,16 +25,6 @@ buildGoModule (finalAttrs: {
     npmHooks.npmConfigHook
   ];
 
-  overrideModAttrs = oldAttrs: {
-    nativeBuildInputs = lib.filter (drv: drv != npmHooks.npmConfigHook) oldAttrs.nativeBuildInputs;
-    preBuild = null;
-  };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-6E7QAJO4R9Iszc8olyPnLUUAmrvMLDFivV3QN11qa60=";
-  };
-
   vendorHash = "sha256-lJv1mBwwd9CTbSFVdu7H3Y9jkAJStMEa2SRYKAGOQUI=";
 
   preBuild = ''
@@ -42,20 +32,31 @@ buildGoModule (finalAttrs: {
     npm run generate
   '';
 
+  postInstall = ''
+    find $out/bin ! -name sshwifty -type f -exec rm -rf {} \;
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   ldflags = [
     "-s"
     "-X github.com/nirui/sshwifty/application.version=${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    find $out/bin ! -name sshwifty -type f -exec rm -rf {} \;
-  '';
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-6E7QAJO4R9Iszc8olyPnLUUAmrvMLDFivV3QN11qa60=";
+  };
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  overrideModAttrs = oldAttrs: {
+    nativeBuildInputs = lib.filter (drv: drv != npmHooks.npmConfigHook) oldAttrs.nativeBuildInputs;
+    preBuild = null;
+  };
 
   passthru = {
     tests = { inherit (nixosTests) sshwifty; };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version=unstable"

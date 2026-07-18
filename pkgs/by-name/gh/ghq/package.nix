@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGo126Module,
   fetchFromGitHub,
-  installShellFiles,
-  testers,
-  nix-update-script,
+  buildGo126Module,
   ghq,
+  installShellFiles,
+  nix-update-script,
+  testers,
 }:
 
 buildGo126Module (finalAttrs: {
@@ -20,15 +20,9 @@ buildGo126Module (finalAttrs: {
     sha256 = "sha256-SmcgBwd5k/lAv9bwYRpkIM0fil2ajSlT8zznP7bgpDk=";
   };
 
-  vendorHash = "sha256-8aC1J/mM7ZTEQBdZwstvHxMKDPqgzjzYztC7shuwu/Q=";
-
-  doCheck = false;
-
-  ldflags = [
-    "-X=main.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-8aC1J/mM7ZTEQBdZwstvHxMKDPqgzjzYztC7shuwu/Q=";
+  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion \
@@ -37,18 +31,23 @@ buildGo126Module (finalAttrs: {
       --zsh $src/misc/zsh/_ghq
   '';
 
+  ldflags = [
+    "-X=main.Version=${finalAttrs.version}"
+  ];
+
   passthru = {
     tests.version = testers.testVersion {
       package = ghq;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Remote repository management made easy";
     homepage = "https://github.com/x-motemen/ghq";
-    maintainers = with lib.maintainers; [ sigma ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ sigma ];
     mainProgram = "ghq";
   };
 })

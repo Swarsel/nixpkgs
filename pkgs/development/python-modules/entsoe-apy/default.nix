@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-  isodate,
+  buildPythonPackage,
   httpx,
+  isodate,
   loguru,
+  pytestCheckHook,
+  setuptools,
   xsdata-pydantic,
 }:
 
@@ -21,7 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-IzZ20ZCdJRxzCQDLX5Gs78ynPHGp5kdTbDA+fsdVhlM=";
   };
 
-  pyproject = true;
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,7 +31,7 @@ buildPythonPackage rec {
     isodate
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "entsoe"

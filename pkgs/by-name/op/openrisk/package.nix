@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,15 +17,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-BLowqqlMLDtsthS4uKeycmtG7vASG25CARGpUcuibcw=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-w"
     "-s"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
 
   meta = {
     description = "Tool that generates an AI-based risk score";

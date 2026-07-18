@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  versionCheckHook,
   autoPatchelfHook,
-  writableTmpDirAsHomeHook,
   makeWrapper,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "sprite";
@@ -15,6 +15,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://sprites-binaries.t3.storage.dev/client/v${finalAttrs.version}/sprite-${
       if stdenv.hostPlatform.isLinux then "linux" else "darwin"
     }-${if stdenv.hostPlatform.isx86_64 then "amd64" else "arm64"}.tar.gz";
+
     hash =
       {
         aarch64-darwin = "sha256-0EbsXuNdSC9lfTR9lQFgGk9nYg200f+tZY8xcXmqTzc=";
@@ -24,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
       .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ makeWrapper ] ++ lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
 
   installPhase = ''
@@ -34,22 +33,24 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/sprite --set UPGRADE_CHECK false
   '';
 
-  passthru.updateScript = ./update.sh;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
-  versionCheckProgramArg = "--version";
+
+  sourceRoot = ".";
   versionCheckKeepEnvironment = "HOME";
-  doInstallCheck = true;
+  versionCheckProgramArg = "--version";
+  passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Command Line Interactive for sprites, stateful sandbox environments with checkpoint & restore";
     homepage = "https://sprites.dev";
     license = lib.licenses.unfree;
-    mainProgram = "sprite";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ drawbu ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "sprite";
   };
 })

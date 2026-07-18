@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  scipy,
+  buildPythonPackage,
   numpy,
   pydoe,
-
+  # dependencies
+  scipy,
+  # build-system
+  setuptools,
   # tests
   unittestCheckHook,
 }:
@@ -18,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pwlf";
   version = "2.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cjekel";
@@ -26,6 +22,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-En8zgImub4hMVphl7c0OkdQJ1LRTEBw0kI8dSs4V+N8=";
   };
+
+  nativeCheckInputs = [ unittestCheckHook ];
 
   build-system = [
     setuptools
@@ -37,8 +35,7 @@ buildPythonPackage (finalAttrs: {
     pydoe
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pwlf" ];
 
   meta = {

@@ -1,12 +1,12 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  makeWrapper,
-  wget,
   gnugrep,
+  makeWrapper,
   nix-update-script,
+  stdenvNoCC,
   testers,
+  wget,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -20,15 +20,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-sqMtB5THrspxkapB8eBfb9LNEnghE0UolivOvOEf7cs=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
-  nativeBuildInputs = [ makeWrapper ];
-
   patches = [
     # https://github.com/89luca89/distrobox/issues/408
     ./relative-default-icon.patch
   ];
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -52,24 +49,30 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     echo 'container_additional_volumes="/nix:/nix"' > $out/share/distrobox/distrobox.conf
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Wrapper around podman or docker to create and start containers";
+
     longDescription = ''
       Use any linux distribution inside your terminal. Enable both backward and
       forward compatibility with software and freedom to use whatever distribution
       you’re more comfortable with
     '';
+
     homepage = "https://distrobox.it/";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "distrobox";
   };
 })

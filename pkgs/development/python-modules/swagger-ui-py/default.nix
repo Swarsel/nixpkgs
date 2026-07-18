@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   jinja2,
   packaging,
   pyyaml,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "swagger-ui-py";
   version = "25.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PWZER";
@@ -25,6 +22,7 @@ buildPythonPackage rec {
   };
 
   env.VERSION = version;
+  doCheck = false; # huge dependency closure on all sorts of web frameworks, http clients, etc.
 
   build-system = [
     setuptools
@@ -36,16 +34,16 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  doCheck = false; # huge dependency closure on all sorts of web frameworks, http clients, etc.
+  pyproject = true;
 
   pythonImportsCheck = [
     "swagger_ui"
   ];
 
   meta = {
-    changelog = "https://github.com/PWZER/swagger-ui-py/releases/tag/${src.tag}";
     description = "Swagger UI for Python web framework, such Tornado, Flask and Sanic. https://pwzer.github.io/swagger-ui-py";
     homepage = "https://github.com/PWZER/swagger-ui-py";
+    changelog = "https://github.com/PWZER/swagger-ui-py/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ hexa ];
   };

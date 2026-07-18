@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   llvmPackages,
-  testers,
   nix-update-script,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,7 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # TODO: Remove when NixOS/nixpkgs#536365 reaches master.
   nativeBuildInputs = [ llvmPackages.lld ];
-
   env.NIX_CFLAGS_COMPILE = "-Wall -Wextra -Werror -mmacosx-version-min=10.9 -framework Foundation -framework IOBluetooth";
   # TODO: Remove when NixOS/nixpkgs#536365 reaches master.
   env.NIX_CFLAGS_LINK = "--ld-path=${lib.getExe' llvmPackages.lld "ld64.lld"}";
@@ -40,12 +39,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/toy/blueutil/blob/main/CHANGELOG.md";
     description = "CLI for bluetooth on OSX";
     homepage = "https://github.com/toy/blueutil";
+    changelog = "https://github.com/toy/blueutil/blob/main/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "blueutil";
     maintainers = with lib.maintainers; [ azuwis ];
     platforms = lib.platforms.darwin;
+    mainProgram = "blueutil";
   };
 })

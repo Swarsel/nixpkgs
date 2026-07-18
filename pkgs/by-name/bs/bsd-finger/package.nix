@@ -3,6 +3,9 @@
   stdenv,
   fetchurl,
   fetchpatch,
+  # Deprecated options
+  # Remove them before next version of either Nixpkgs or bsd-finger itself
+  buildClient ? null,
   # Configurable options
   buildProduct ? # can be "client" or "daemon"
     if buildClient != null then
@@ -12,9 +15,6 @@
       '' (if buildClient then "client" else "daemon")
     else
       "client",
-  # Deprecated options
-  # Remove them before next version of either Nixpkgs or bsd-finger itself
-  buildClient ? null,
 }:
 
 assert lib.elem buildProduct [
@@ -41,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
       # Patches original finger sources to make the programs more robust and
       # compatible
       (fetchpatch {
-        url = generateUrl "01-legacy";
         hash = "sha256-84znJLXez4w6WB2nOW+PHK/0srE0iG9nGAjO1/AGczw=";
+        url = generateUrl "01-legacy";
       })
 
       # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=518559
@@ -76,22 +76,22 @@ stdenv.mkDerivation (finalAttrs: {
       # [1] with LDAP, it is typically the case that one can iterate through
       # only the first 100 results from a query.
       (fetchpatch {
-        url = generateUrl "02-518559-nsswitch-sources";
         hash = "sha256-oBXJ/kr/czevWk0TcsutGINNwCoHnEStRT8Jfgp/lbM=";
+        url = generateUrl "02-518559-nsswitch-sources";
       })
 
       # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=468454
       # Implement IPv6 capacity for the server Fingerd.
       (fetchpatch {
-        url = generateUrl "03-468454-fingerd-ipv6";
         hash = "sha256-a5+qoy2UKa2nCJrwrfJ5VPZoACFXFQ1j/rweoMYW1Z0=";
+        url = generateUrl "03-468454-fingerd-ipv6";
       })
 
       # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=468454
       # Implement IPv6 capability for the client Finger.
       (fetchpatch {
-        url = generateUrl "04-468454-finger-ipv6";
         hash = "sha256-cg93NL02lJm/5Freegb3EbjDAQVkurLEEJifcyQRRfk=";
+        url = generateUrl "04-468454-finger-ipv6";
       })
 
       # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=547014
@@ -107,8 +107,8 @@ stdenv.mkDerivation (finalAttrs: {
       #
       # This patch sidesteps what finger considers a malformed passwd entry:
       (fetchpatch {
-        url = generateUrl "05-547014-netgroup";
         hash = "sha256-d+ufp7nPZwW+t+EWASzHrXT/O6zSzt6OOV12cKVo3P0=";
+        url = generateUrl "05-547014-netgroup";
       })
 
       # Decrease timeout length during connect().
@@ -122,14 +122,14 @@ stdenv.mkDerivation (finalAttrs: {
       # user of the Finger service.
       # Author: Mats Erik Andersson <debian@gisladisker.se>
       (fetchpatch {
-        url = generateUrl "06-572211-decrease-timeout";
         hash = "sha256-KtNGU5mmX1nnxQc7XnYoUuVW4We2cF81+x6EQrHF7g0=";
+        url = generateUrl "06-572211-decrease-timeout";
       })
 
       # Use cmake as build system
       (fetchpatch {
-        url = generateUrl "use-cmake-as-buildsystem";
         hash = "sha256-YOmkF6Oxowy15mCE1pCvHKnLEXglijWFG6eydnZJFhM=";
+        url = generateUrl "use-cmake-as-buildsystem";
       })
 
       # Debian-specific changes to the cmake build system (that NixOS will also
@@ -137,14 +137,14 @@ stdenv.mkDerivation (finalAttrs: {
       # Adds -D_GNU_SOURCE, which will enable many C extensions that finger
       # benefits from
       (fetchpatch {
-        url = generateUrl "use-cmake-as-buildsystem-debian-extras";
         hash = "sha256-T3DWpyyz15JCiVJ41RrJEhsmicei8G3OaKpxvzOCcBU=";
+        url = generateUrl "use-cmake-as-buildsystem-debian-extras";
       })
 
       # Fix typo at fingerd man page (Josue Ortega <josue@debian.org>)
       (fetchpatch {
-        url = generateUrl "fix-fingerd-man-typo";
         hash = "sha256-f59osGi0a8Tkm2Vxg2+H2brH8WproCDvbPf4jXwi6ag=";
+        url = generateUrl "fix-fingerd-man-typo";
       })
     ];
 
@@ -196,14 +196,16 @@ stdenv.mkDerivation (finalAttrs: {
         "daemon" = "Remote user information server";
       }
       .${buildProduct};
+
     license = lib.licenses.bsdOriginal;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
+
     mainProgram =
       {
         "client" = "finger";
         "daemon" = "fingerd";
       }
       .${buildProduct};
-    maintainers = [ ];
-    platforms = lib.platforms.linux;
   };
 })

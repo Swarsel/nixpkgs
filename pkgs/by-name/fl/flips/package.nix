@@ -2,13 +2,12 @@
   lib,
   stdenv,
   fetchFromGitea,
-  libdivsufsort,
-  pkg-config,
-
-  withGTK3 ? !stdenv.hostPlatform.isDarwin,
   gtk3,
+  libdivsufsort,
   llvmPackages,
+  pkg-config,
   wrapGAppsHook3,
+  withGTK3 ? !stdenv.hostPlatform.isDarwin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,12 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "198";
 
   src = fetchFromGitea {
-    domain = "git.disroot.org";
     owner = "Sir_Walrus";
     repo = "Flips";
     tag = "v${finalAttrs.version}";
     hash = "sha256-zYGDcUbtzstk1sTKgX2Mna0rzH7z6Dic+OvjZLI1umI=";
+    domain = "git.disroot.org";
   };
+
+  patches = [ ./use-system-libdivsufsort.patch ];
 
   nativeBuildInputs = [
     pkg-config
@@ -33,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withGTK3 gtk3
   ++ lib.optional (withGTK3 && stdenv.hostPlatform.isDarwin) llvmPackages.openmp;
-
-  patches = [ ./use-system-libdivsufsort.patch ];
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"

@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   packaging,
   primepy,
+  setuptools,
   torch,
   torchaudio,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "torch-pitch-shift";
   version = "1.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KentoNishi";
@@ -21,8 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-QuDz9IpmBdzfMjwAuG2Ln0x2OL/w3RVd/EfO4Ws78dw=";
   };
 
-  pythonRelaxDeps = [ "torchaudio" ];
-
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,10 +31,9 @@ buildPythonPackage rec {
     torchaudio
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "torch_pitch_shift" ];
+  pythonRelaxDeps = [ "torchaudio" ];
 
   meta = {
     description = "Pitch-shift audio clips quickly with PyTorch (CUDA supported)! Additional utilities for searching efficient transformations are included";

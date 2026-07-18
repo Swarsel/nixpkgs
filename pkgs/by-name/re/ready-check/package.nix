@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ready-check";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sesh";
@@ -26,6 +25,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     thttp
     tld
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "ready"

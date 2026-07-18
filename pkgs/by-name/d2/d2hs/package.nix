@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  cmake,
-  pkg-config,
-  nlohmann_json,
-  spdlog,
   argparse,
+  cmake,
   curl,
+  nix-update-script,
+  nlohmann_json,
+  pkg-config,
+  spdlog,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,24 +36,25 @@ stdenv.mkDerivation (finalAttrs: {
     curl
   ];
 
-  enableParallelBuilding = true;
-
-  passthru.updateScript = nix-update-script { };
-
   installPhase = ''
     runHook preInstall
     install -Dm755 ./d2hs $out/bin/d2hs
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+  passthru.updateScript = nix-update-script { };
+
   meta = {
-    homepage = "https://github.com/Neboer/DNS2HostsSyncer";
     description = "Small tool for periodically syncing dns records to hosts";
+    homepage = "https://github.com/Neboer/DNS2HostsSyncer";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       peigongdsd
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "d2hs";
   };
 })

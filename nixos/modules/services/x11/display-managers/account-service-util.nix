@@ -1,31 +1,31 @@
 {
+  lib,
   accountsservice,
   glib,
   gobject-introspection,
   python3,
   wrapGAppsNoGuiHook,
-  lib,
 }:
 
 python3.pkgs.buildPythonApplication {
-  name = "set-session";
-
-  pyproject = false;
-
-  src = ./set-session.py;
+  buildInputs = [
+    accountsservice
+    glib
+  ];
 
   dontUnpack = true;
 
-  strictDeps = false;
+  installPhase = ''
+    mkdir -p $out/bin
+    cp $src $out/bin/set-session
+    chmod +x $out/bin/set-session
+  '';
+
+  name = "set-session";
 
   nativeBuildInputs = [
     wrapGAppsNoGuiHook
     gobject-introspection
-  ];
-
-  buildInputs = [
-    accountsservice
-    glib
   ];
 
   propagatedBuildInputs = with python3.pkgs; [
@@ -33,11 +33,9 @@ python3.pkgs.buildPythonApplication {
     ordered-set
   ];
 
-  installPhase = ''
-    mkdir -p $out/bin
-    cp $src $out/bin/set-session
-    chmod +x $out/bin/set-session
-  '';
+  pyproject = false;
+  src = ./set-session.py;
+  strictDeps = false;
 
   meta = {
     teams = [ lib.teams.pantheon ];

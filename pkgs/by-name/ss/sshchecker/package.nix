@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,13 +19,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Dedicated SSH brute-forcing tool";
-    mainProgram = "sshchecker";
+
     longDescription = ''
       sshchecker is a fast dedicated SSH brute-forcing tool to check
       SSH login on the giving IP list.
     '';
+
     homepage = "https://github.com/lazytools/sshchecker";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "sshchecker";
   };
 })

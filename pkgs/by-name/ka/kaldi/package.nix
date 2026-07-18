@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  openblas,
-  blas,
-  lapack,
-  icu,
-  cmake,
-  pkg-config,
   fetchFromGitHub,
-  python3,
   _experimental-update-script-combinators,
+  blas,
+  cmake,
   common-updater-scripts,
+  icu,
+  lapack,
+  openblas,
+  pkg-config,
+  python3,
   ripgrep,
   unstableGitUpdater,
   writeShellScript,
@@ -28,6 +28,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-ZnVSQTETrMeU+pkqy50ldAe8g1pbnG7VS1utcUy28ls=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    python3
+  ];
+
+  buildInputs = [
+    openblas
+    icu
+  ];
+
   cmakeFlags = [
     "-DKALDI_BUILD_TEST=off"
     "-DBUILD_SHARED_LIBS=on"
@@ -36,17 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DFETCHCONTENT_SOURCE_DIR_OPENFST:PATH=${finalAttrs.passthru.sources.openfst}"
     # Fix the build with CMake 4 (openfst does not contain cmake_minimum_required)
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.10"
-  ];
-
-  buildInputs = [
-    openblas
-    icu
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    python3
   ];
 
   preConfigure = ''
@@ -70,10 +70,9 @@ stdenv.mkDerivation (finalAttrs: {
     sources = {
       # rev from https://github.com/kaldi-asr/kaldi/blob/master/cmake/third_party/openfst.cmake
       openfst = fetchFromGitHub {
-        owner = "kkm000";
-        repo = "openfst";
-        rev = "338225416178ac36b8002d70387f5556e44c8d05";
         hash = "sha256-9xsL78mkR40zkoRYWsH+iaPa5MYc4BzwslzxGKv4j4I=";
+        owner = "kkm000";
+
         postFetch = ''
           cd "$out"
           # https://github.com/kkm000/openfst/issues/59
@@ -81,6 +80,9 @@ stdenv.mkDerivation (finalAttrs: {
           # Patch for compiling openfst with gcc >= 15
           patch -p1 < ${./fix-gcc15-copy-constructor.patch}
         '';
+
+        repo = "openfst";
+        rev = "338225416178ac36b8002d70387f5556e44c8d05";
       };
     };
 

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoreconfHook,
   libnsl,
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/thkukuk/ypbind-mt";
     changelog = "https://github.com/thkukuk/ypbind-mt/blob/master/NEWS";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "ypbind";
     maintainers = with lib.maintainers; [ BarrOff ];
     platforms = lib.platforms.linux;
+    mainProgram = "ypbind";
   };
 })

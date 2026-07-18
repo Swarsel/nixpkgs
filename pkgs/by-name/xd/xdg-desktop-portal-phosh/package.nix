@@ -1,30 +1,30 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  cargo,
+  desktop-file-utils,
+  docutils,
+  gettext,
+  glib,
   gnome-desktop,
   libadwaita,
   meson,
   ninja,
   pkg-config,
-  xdg-desktop-portal,
-  rustc,
-  desktop-file-utils,
-  cargo,
-  docutils,
-  glib,
   rustPlatform,
-  gettext,
+  rustc,
+  xdg-desktop-portal,
 }:
 let
   # Derived from subprojects/pfs.wrap
   pfs = fetchFromGitLab {
     domain = "gitlab.gnome.org";
     group = "World";
+    hash = "sha256-u0Ac3DJ0FaawlRNQwPp6tVKJkUaFHH/r1T0QRa4bIaU=";
     owner = "Phosh";
     repo = "pfs";
     tag = "v0.1.0";
-    hash = "sha256-u0Ac3DJ0FaawlRNQwPp6tVKJkUaFHH/r1T0QRa4bIaU=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -32,18 +32,15 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.55.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    group = "World";
     owner = "Phosh";
     repo = "xdg-desktop-portal-phosh";
     tag = "v${finalAttrs.version}";
     hash = "sha256-oHjBuQ9kD1RnBKSi+w3xxYBPrByzqsmKVOMIoHepoyQ=";
+    domain = "gitlab.gnome.org";
+    group = "World";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-cPuyI0PtdbAgbZ3ZCTRIBcjNROVi0wCHSfST+kzJSd4=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -64,7 +61,10 @@ stdenv.mkDerivation (finalAttrs: {
     xdg-desktop-portal
   ];
 
-  strictDeps = true;
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-cPuyI0PtdbAgbZ3ZCTRIBcjNROVi0wCHSfST+kzJSd4=";
+  };
 
   prePatch = ''
     cp -r ${pfs} subprojects/pfs
@@ -78,8 +78,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "A backend implementation for xdg-desktop-portal that is using GTK/GNOME/Phosh to provide interfaces that aren't provided by the GTK portal";
     homepage = "https://gitlab.gnome.org/World/Phosh/xdg-desktop-portal-phosh";
     changelog = "https://gitlab.gnome.org/World/Phosh/xdg-desktop-portal-phosh/-/blob/main/NEWS";
+    license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ armelclo ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Only;
   };
 })

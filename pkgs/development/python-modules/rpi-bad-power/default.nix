@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 let
@@ -12,7 +12,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "shenxn";
@@ -22,10 +21,9 @@ buildPythonPackage {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  pythonImportsCheck = [ "rpi_bad_power" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "rpi_bad_power" ];
 
   meta = {
     description = "Python library to detect bad power supply on Raspberry Pi";

@@ -12,18 +12,17 @@
 buildPythonPackage rec {
   pname = "casa-formats-io";
   version = "0.3.0";
-  format = "setuptools";
-  prproject = true;
 
   src = fetchPypi {
-    pname = "casa_formats_io";
     inherit version;
     hash = "sha256-FpQj0XeZ7vvOzUM/+5qG6FRwNXl3gzoUBItYdQ1M4m4=";
+    pname = "casa_formats_io";
   };
 
-  build-system = [ setuptools-scm ];
-
   nativeBuildInputs = [ oldest-supported-numpy ];
+  # Tests require a large (800 Mb) dataset
+  doCheck = false;
+  build-system = [ setuptools-scm ];
 
   dependencies = [
     astropy
@@ -31,9 +30,8 @@ buildPythonPackage rec {
     numpy
   ];
 
-  # Tests require a large (800 Mb) dataset
-  doCheck = false;
-
+  format = "setuptools";
+  prproject = true;
   pythonImportsCheck = [ "casa_formats_io" ];
 
   meta = {

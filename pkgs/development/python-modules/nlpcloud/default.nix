@@ -2,27 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "nlpcloud";
   version = "1.1.47";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-zj6hurPEzNlbrD6trq+zQHBNg4lJMGw+XHV51rBa9Mk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # upstream has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "nlpcloud" ];
 
   meta = {

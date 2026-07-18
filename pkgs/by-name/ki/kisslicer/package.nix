@@ -1,11 +1,11 @@
 {
-  fetchzip,
-  libx11,
-  libGLU,
-  libGL,
-  makeWrapper,
   lib,
   stdenv,
+  fetchzip,
+  libGL,
+  libGLU,
+  libx11,
+  makeWrapper,
 }:
 
 let
@@ -58,8 +58,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Convert STL files into Gcode";
     homepage = "http://www.kisslicer.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.cransom ];
     platforms = [ "x86_64-linux" ];
   };

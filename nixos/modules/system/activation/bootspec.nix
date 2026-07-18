@@ -5,8 +5,8 @@
 # See: https://github.com/NixOS/rfcs/pull/125
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -18,29 +18,6 @@ let
   schemas = {
     v1 = rec {
       filename = "boot.json";
-      json = pkgs.writeText filename (
-        builtins.toJSON
-          # Merge extensions first to not let them shadow NixOS bootspec data.
-          (
-            cfg.extensions
-            // {
-              "org.nixos.bootspec.v1" = {
-                system = config.boot.kernelPackages.stdenv.hostPlatform.system;
-                label = "${config.system.nixos.distroName} ${config.system.nixos.codeName} ${config.system.nixos.label} (Linux ${config.boot.kernelPackages.kernel.modDirVersion})";
-              }
-              // lib.optionalAttrs config.boot.kernel.enable {
-                kernel = "${config.boot.kernelPackages.kernel}/${config.system.boot.loader.kernelFile}";
-                kernelParams = config.boot.kernelParams;
-              }
-              // lib.optionalAttrs config.boot.initrd.enable {
-                initrd = "${config.system.build.initialRamdisk}/${config.system.boot.loader.initrdFile}";
-              }
-              // lib.optionalAttrs hasAtLeastOneInitrdSecret {
-                initrdSecrets = "${config.system.build.initialRamdiskSecretAppender}/bin/append-initrd-secrets";
-              };
-            }
-          )
-      );
 
       generator =
         let
@@ -92,6 +69,30 @@ let
         in
         "${toplevelInjector} | ${specialisationInjector} > $out/${filename}";
 
+      json = pkgs.writeText filename (
+        builtins.toJSON
+          # Merge extensions first to not let them shadow NixOS bootspec data.
+          (
+            cfg.extensions
+            // {
+              "org.nixos.bootspec.v1" = {
+                label = "${config.system.nixos.distroName} ${config.system.nixos.codeName} ${config.system.nixos.label} (Linux ${config.boot.kernelPackages.kernel.modDirVersion})";
+                system = config.boot.kernelPackages.stdenv.hostPlatform.system;
+              }
+              // lib.optionalAttrs config.boot.kernel.enable {
+                kernel = "${config.boot.kernelPackages.kernel}/${config.system.boot.loader.kernelFile}";
+                kernelParams = config.boot.kernelParams;
+              }
+              // lib.optionalAttrs config.boot.initrd.enable {
+                initrd = "${config.system.build.initialRamdisk}/${config.system.boot.loader.initrdFile}";
+              }
+              // lib.optionalAttrs hasAtLeastOneInitrdSecret {
+                initrdSecrets = "${config.system.build.initialRamdiskSecretAppender}/bin/append-initrd-secrets";
+              };
+            }
+          )
+      );
+
       validator = pkgs.writeCueValidator ./bootspec.cue {
         document = "Document"; # Universal validator for any version as long the schema is correctly set.
       };
@@ -106,18 +107,17 @@ in
   ];
 
   options.boot.bootspec = {
+    package = lib.mkPackageOption pkgs "bootspec" { };
+
     enableValidation = lib.mkEnableOption ''
       the validation of bootspec documents for each build.
             This will introduce Go in the build-time closure as we are relying on [Cuelang](https://cuelang.org/) for schema validation.
             Enable this option if you want to ascertain that your documents are correct
     '';
 
-    package = lib.mkPackageOption pkgs "bootspec" { };
-
     extensions = lib.mkOption {
-      # NOTE(RaitoBezarius): this is not enough to validate: extensions."osRelease" = drv; those are picked up by cue validation.
-      type = lib.types.attrsOf lib.types.anything; # <namespace>: { ...namespace-specific fields }
       default = { };
+
       description = ''
         User-defined data that extends the bootspec document.
 
@@ -125,6 +125,19 @@ in
         between applications, it is **highly recommended** to use a
         unique namespace for your extensions.
       '';
+
+      # NOTE(RaitoBezarius): this is not enough to validate: extensions."osRelease" = drv; those are picked up by cue validation.
+      type = lib.types.attrsOf lib.types.anything; # <namespace>: { ...namespace-specific fields }
+    };
+
+    filename = lib.mkOption {
+      default = schemas.v1.filename;
+      internal = true;
+    };
+
+    validator = lib.mkOption {
+      default = schemas.v1.validator;
+      internal = true;
     };
 
     # This will be run as a part of the `systemBuilder` in ./top-level.nix. This
@@ -132,18 +145,8 @@ in
     # be used for a variety of things (though, for now, it's only used to report
     # the path of the `toplevel` itself and the `init` executable).
     writer = lib.mkOption {
-      internal = true;
       default = schemas.v1.generator;
-    };
-
-    validator = lib.mkOption {
       internal = true;
-      default = schemas.v1.validator;
-    };
-
-    filename = lib.mkOption {
-      internal = true;
-      default = schemas.v1.filename;
     };
   };
 }

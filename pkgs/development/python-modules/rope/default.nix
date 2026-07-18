@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytoolconfig,
+  buildPythonPackage,
   pytest-timeout,
   pytestCheckHook,
   pythonAtLeast,
+  pytoolconfig,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "rope";
   version = "1.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-rope";
@@ -21,16 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-LcxpJhMtyk0kT759ape9zQzdwmL1321Spdbg9zuuXtI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pytoolconfig ] ++ pytoolconfig.optional-dependencies.global;
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     pytest-timeout
     pytestCheckHook
   ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ pytoolconfig ] ++ pytoolconfig.optional-dependencies.global;
 
   disabledTests = [
     "test_search_submodule"
@@ -43,6 +40,8 @@ buildPythonPackage rec {
     "test_hint_parametrized_iterable"
     "test_hint_parametrized_iterator"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Python refactoring library";

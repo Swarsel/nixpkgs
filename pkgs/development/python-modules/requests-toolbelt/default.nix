@@ -13,15 +13,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "requests-toolbelt";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-doGgo9BHAStb3A7jfX+PB+vnarCMrsz8OSHOI8iNW8Y=";
   };
-
-  build-system = [ setuptools ];
-  dependencies = [ requests ];
 
   nativeCheckInputs = [
     betamax
@@ -29,6 +25,9 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
     trustme
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   disabledTests = [
     # incompatible with urllib3 2.0
@@ -40,6 +39,7 @@ buildPythonPackage (finalAttrs: {
     "test_request_with_base"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "requests_toolbelt" ];
 
   meta = {

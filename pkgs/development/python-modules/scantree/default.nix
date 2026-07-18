@@ -1,23 +1,26 @@
 {
   lib,
+  attrs,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  versioneer,
-  attrs,
   pathspec,
   pytestCheckHook,
+  setuptools,
+  versioneer,
 }:
 
 buildPythonPackage rec {
   pname = "scantree";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Fb1cskSDsE2yxwZTYE6Oo1IumAh9t+OKuEgvBTmEwKw=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -29,12 +32,10 @@ buildPythonPackage rec {
     pathspec
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "scantree"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {

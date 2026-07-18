@@ -1,25 +1,25 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  runCommand,
+  fetchFromGitHub,
   cmake,
   ffmpeg,
   glslang,
   libdrm,
-  libglvnd,
   libffi,
+  libglvnd,
   libpng,
   libx11,
   libxau,
-  libxdmcp,
   libxcb,
+  libxdmcp,
   makeWrapper,
   mesa,
   ninja,
   pkg-config,
   python3,
+  runCommand,
   spirv-headers,
   vulkan-headers,
   vulkan-loader,
@@ -31,8 +31,8 @@
 }:
 let
   renderdoc = fetchurl {
-    url = "https://raw.githubusercontent.com/baldurk/renderdoc/v1.1/renderdoc/api/app/renderdoc_app.h";
     hash = "sha256-57XwqlsbDq3GOhxiTAyn9a8TOqhX1qQnGw7z0L22ho4=";
+    url = "https://raw.githubusercontent.com/baldurk/renderdoc/v1.1/renderdoc/api/app/renderdoc_app.h";
   };
 
   # The build system expects all these dependencies inside the external folder and
@@ -45,10 +45,10 @@ let
 
   # Use pinned version from vulkan-video-samples
   shaderc-src = fetchFromGitHub {
+    hash = "sha256-DIpgHiYAZlCIQ/uCZ3qSucPUZ1j3tKg0VgZVun+1UnI=";
     owner = "google";
     repo = "shaderc";
     tag = "v2024.4";
-    hash = "sha256-DIpgHiYAZlCIQ/uCZ3qSucPUZ1j3tKg0VgZVun+1UnI=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -62,15 +62,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Nv0aX4lzX4mvh71U7BbHXXaM0UN2itzKyIpdIQ22fM0=";
   };
 
-  prePatch = ''
-    mkdir -p external/renderdoc/src
-
-    cp -r ${renderdoc} external/renderdoc/src/renderdoc_app.h
-
-    ${sources.prePatch}
-
-    chmod u+w -R external
-  '';
+  nativeBuildInputs = [
+    cmake
+    makeWrapper
+    ninja
+    pkg-config
+    python3
+    wayland-scanner
+  ];
 
   buildInputs = [
     ffmpeg
@@ -87,19 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
     wayland-protocols
     zlib
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    makeWrapper
-    ninja
-    pkg-config
-    python3
-    wayland-scanner
-  ];
-
-  depsBuildBuild = [
-    pkg-config
   ];
 
   cmakeFlags = [
@@ -132,7 +118,20 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "--deqp-archive-dir=$out/archive-dir"
   '';
 
-  passthru.updateScript = ./update.sh;
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  prePatch = ''
+    mkdir -p external/renderdoc/src
+
+    cp -r ${renderdoc} external/renderdoc/src/renderdoc_app.h
+
+    ${sources.prePatch}
+
+    chmod u+w -R external
+  '';
+
   passthru.tests.lavapipe =
     runCommand "vulkan-cts-tests-lavapipe"
       {
@@ -145,6 +144,8 @@ stdenv.mkDerivation (finalAttrs: {
         deqp-vk -n dEQP-VK.api.smoke.triangle
         touch $out
       '';
+
+  passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Khronos Vulkan Conformance Tests";

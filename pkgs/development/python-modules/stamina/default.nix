@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
   dirty-equals,
-  fetchFromGitHub,
   hatch-fancy-pypi-readme,
   hatch-vcs,
   hatchling,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "stamina";
   version = "25.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hynek";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-PsoEo53JeD9zrqRmvPotTiX4lM16aJXB3Gr1+mFTEYA=";
   };
+
+  nativeCheckInputs = [
+    anyio
+    dirty-equals
+    pytestCheckHook
+  ];
 
   build-system = [
     hatch-fancy-pypi-readme
@@ -35,12 +40,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    anyio
-    dirty-equals
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "stamina" ];
 
   meta = {

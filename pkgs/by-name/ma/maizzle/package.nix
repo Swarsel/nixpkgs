@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,14 +16,13 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-ZPZALeuerHXAJuoCcqIwxsChuhBJ/zABYjb7+pcs4pU=";
-
   dontNpmBuild = true;
 
   meta = {
     description = "CLI tool for the Maizzle Email Framework";
     homepage = "https://github.com/maizzle/cli";
     license = lib.licenses.mit;
-    mainProgram = "maizzle";
     maintainers = with lib.maintainers; [ happysalada ];
+    mainProgram = "maizzle";
   };
 }

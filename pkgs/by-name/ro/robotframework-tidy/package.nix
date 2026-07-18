@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "robotframework-tidy";
   version = "4.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MarketSquare";
@@ -16,9 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-WAuB+kTEZAG1uVEXVY1CdIDGeRRHo5AT1bHs8/wBBcc=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
   build-system = with python3.pkgs; [ setuptools ];
-
-  pythonRelaxDeps = [ "rich_click" ];
 
   dependencies = with python3.pkgs; [
     robotframework
@@ -30,8 +28,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     jinja2
     tomli-w
   ];
-
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
 
   # click 8.3.x regression breaks `--list` / `--generate-config` optional-value flags (pallets/click#3130)
   disabledTestPaths = [
@@ -47,6 +43,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "tests/utest/test_cli.py::TestGenerateConfig::test_generate_config_with_cli_config"
     "tests/utest/test_cli.py::TestGenerateConfig::test_missing_dependency"
   ];
+
+  pyproject = true;
+  pythonRelaxDeps = [ "rich_click" ];
 
   meta = {
     description = "Code autoformatter for Robot Framework";

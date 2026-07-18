@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchFromSourcehut,
   autoreconfHook,
   bison,
+  fetchFromSourcehut,
   flex,
   help2man,
   perl,
-  tk,
   python3,
+  tk,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,14 +40,13 @@ stdenv.mkDerivation (finalAttrs: {
   #     multiple definition of `line_number'; ifm-main.o:src/ifm-main.c:46: first defined here
   # gnu17: libvars uses K&R-style () prototypes; C23 redefines them as (void).
   env.NIX_CFLAGS_COMPILE = "-fcommon -std=gnu17";
-
   enableParallelBuilding = false; # ifm-scan.l:16:10: fatal error: ifm-parse.h: No such file or directory
 
   meta = {
-    homepage = "https://bitbucket.org/zondo/ifm";
     description = "Interactive fiction mapper";
+    homepage = "https://bitbucket.org/zondo/ifm";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

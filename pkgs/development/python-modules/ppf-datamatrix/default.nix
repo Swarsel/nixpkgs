@@ -1,16 +1,14 @@
 {
   lib,
-  buildPythonPackage,
-  setuptools-scm,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ppf-datamatrix";
   version = "0.2";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adrianschlatter";
@@ -19,17 +17,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-g6KTUUYDXUlFmV0Rg3Mp23huAb+j+LTWrvY8wuYB90g=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  pythonImportsCheck = [ "ppf.datamatrix" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools-scm ];
+  pyproject = true;
+  pythonImportsCheck = [ "ppf.datamatrix" ];
 
   meta = {
     description = "Pure-python package to generate data matrix codes";
     homepage = "https://github.com/adrianschlatter/ppf.datamatrix";
+    changelog = "https://github.com/adrianschlatter/ppf.datamatrix/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kurogeek ];
-    changelog = "https://github.com/adrianschlatter/ppf.datamatrix/releases/tag/${finalAttrs.src.tag}";
   };
 })

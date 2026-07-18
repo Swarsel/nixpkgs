@@ -15,12 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "stc";
   version = "5.0";
 
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-  ];
-
   src = fetchFromGitHub {
     owner = "stclib";
     repo = "STC";
@@ -28,15 +22,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JiFyJN+hAbzTHqim1i6TJFmKfHlnOfP3yDLCZDE7uqo=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+  ];
+
   patches = [
     # Backport pkg-config support and follow-up fixes from upstream.
     (fetchpatch {
-      url = "https://github.com/stclib/STC/commit/92751b4d04b2d980d640b28bd22a9cd651d77c6a.patch";
       hash = "sha256-11sE5pS7sqdfCGsGlvajkfgCf+QIkRFp4Js2//kAI3s=";
+      url = "https://github.com/stclib/STC/commit/92751b4d04b2d980d640b28bd22a9cd651d77c6a.patch";
     })
     (fetchpatch {
-      url = "https://github.com/stclib/STC/commit/0fa9ad03516ba0f71b38674f0ec631929368f385.patch";
       hash = "sha256-e1rhrKaf9fFAmSi8Puo494iG+hAdHZFzyn8IJoKjdAI=";
+      url = "https://github.com/stclib/STC/commit/0fa9ad03516ba0f71b38674f0ec631929368f385.patch";
     })
   ];
 

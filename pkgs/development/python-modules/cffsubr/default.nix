@@ -9,14 +9,13 @@
   ninja,
   pytestCheckHook,
   scikit-build,
-  setuptools_80,
   setuptools-scm,
+  setuptools_80,
 }:
 
 buildPythonPackage rec {
   pname = "cffsubr";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -30,6 +29,8 @@ buildPythonPackage rec {
       --replace-fail 'build_cmd=build_release_cmd' 'build_cmd="true"'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     distutils_80
     setuptools_80
@@ -39,20 +40,17 @@ buildPythonPackage rec {
     setuptools-scm
   ];
 
-  dontUseCmakeConfigure = true;
-
   dependencies = [ fonttools ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "cffsubr" ];
 
   meta = {
-    changelog = "https://github.com/adobe-type-tools/cffsubr/releases/tag/v${version}";
     description = "Standalone CFF subroutinizer based on AFDKO tx";
-    mainProgram = "cffsubr";
     homepage = "https://github.com/adobe-type-tools/cffsubr";
+    changelog = "https://github.com/adobe-type-tools/cffsubr/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "cffsubr";
   };
 }

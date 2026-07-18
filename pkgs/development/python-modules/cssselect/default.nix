@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  pytestCheckHook,
   lxml,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cssselect";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     lxml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cssselect" ];
 
   meta = {

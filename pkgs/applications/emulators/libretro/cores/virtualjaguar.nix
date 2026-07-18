@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "virtualjaguar";
   version = "0-unstable-2026-05-09";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-lHQsApSoZNvyTp6D3lOBHyLCQ321cirUVXZRHXvIdP4=";
   };
 
+  core = "virtualjaguar";
   makefile = "Makefile";
 
   meta = {

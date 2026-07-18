@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pgsrip";
   version = "0.1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ratoaq2";
@@ -29,6 +28,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setuptools
     trakit
   ];
+
+  pyproject = true;
 
   pythonRelaxDeps = [
     "click"

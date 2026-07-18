@@ -5,13 +5,13 @@
   meson,
   ninja,
   pkg-config,
+  runtimeShell,
   scdoc,
-  wayland-scanner,
+  systemdLibs,
   wayland,
   wayland-protocols,
-  runtimeShell,
+  wayland-scanner,
   systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
-  systemdLibs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fxDwRfAXb9D6epLlyWnXpy9g8V3ovJRpQ/f3M4jxY/s=";
   };
 
+  postPatch = ''
+    substituteInPlace main.c \
+      --replace '"sh"' '"${runtimeShell}"'
+  '';
+
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -34,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     scdoc
     wayland-scanner
   ];
+
   buildInputs = [
     wayland
     wayland-protocols
@@ -45,21 +51,20 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dlogind=${if systemdSupport then "enabled" else "disabled"}"
   ];
 
-  postPatch = ''
-    substituteInPlace main.c \
-      --replace '"sh"' '"${runtimeShell}"'
-  '';
+  depsBuildBuild = [ pkg-config ];
 
   meta = {
-    description = "Idle management daemon for Wayland";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Idle management daemon for Wayland";
+
     longDescription = ''
       Sway's idle management daemon. It is compatible with any Wayland
       compositor which implements the KDE idle protocol.
     '';
+
     license = lib.licenses.mit;
-    mainProgram = "swayidle";
     maintainers = with lib.maintainers; [ wineee ];
     platforms = lib.platforms.linux;
+    mainProgram = "swayidle";
   };
 })

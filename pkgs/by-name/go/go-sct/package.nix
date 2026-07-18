@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  libxrandr,
+  buildGoModule,
   libx11,
+  libxrandr,
   wayland,
 }:
 
@@ -23,13 +23,13 @@ buildGoModule {
     rm -f geoip/geoip_test.go
   '';
 
-  vendorHash = "sha256-Rx5/oORink2QtRcD+JqbyFroWYhuYmuYDzZ391R4Jsw=";
-
   buildInputs = [
     libx11
     libxrandr
     wayland.dev
   ];
+
+  vendorHash = "sha256-Rx5/oORink2QtRcD+JqbyFroWYhuYmuYDzZ391R4Jsw=";
 
   ldflags = [
     "-s"

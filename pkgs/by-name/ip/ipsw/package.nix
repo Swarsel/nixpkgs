@@ -6,8 +6,8 @@
 }:
 
 buildGo126Module (finalAttrs: {
-  version = "3.1.672";
   pname = "ipsw";
+  version = "3.1.672";
 
   src = fetchFromGitHub {
     owner = "blacktop";

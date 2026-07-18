@@ -1,9 +1,9 @@
 deps@{
+  lib,
+  stdenv,
   cacert,
   formats,
-  lib,
   lychee,
-  stdenv,
   writeShellApplication,
 }:
 let
@@ -34,56 +34,23 @@ let
   lycheeLinkCheck =
     {
       site,
+      extraArgs ? [ ],
+      extraConfig ? { },
+      lychee ? deps.lychee,
       relocatable ? null,
       remap ? { },
-      lychee ? deps.lychee,
-      extraConfig ? { },
-      extraArgs ? [ ],
     }:
     stdenv.mkDerivation (finalAttrs: {
-      name = "lychee-link-check";
-      __structuredAttrs = true;
       inherit site;
+      inherit extraArgs;
+
       nativeBuildInputs = [
         finalAttrs.passthru.lychee
         cacert
       ];
-      configFile = (formats.toml { }).generate "lychee.toml" finalAttrs.passthru.config;
-      inherit extraArgs;
 
-      # These can be overridden with overrideAttrs if needed.
-      passthru = {
-        inherit lychee remap;
-        config = {
-          include_fragments = "full";
-          root_dir =
-            if relocatable == false then
-              finalAttrs.site
-            else
-              "/root-relative-links-are-forbidden-use-relative-links";
-        }
-        // lib.optionalAttrs (finalAttrs.passthru.remap != { }) {
-          remap = mapAttrsToList (
-            name: value: withCheckedName name "${name} ${toURL value}"
-          ) finalAttrs.passthru.remap;
-        }
-        // extraConfig;
-        # NOTE: The online wrapper does not implement the relocatable hint message.
-        # It uses the same configFile (with the fake root_dir), so root-relative
-        # links still fail, but without the custom explanation.
-        online = writeShellApplication {
-          name = "run-lychee-online";
-          runtimeInputs = [ finalAttrs.passthru.lychee ];
-          # Comment out to run shellcheck:
-          checkPhase = "";
-          text = ''
-            site=${finalAttrs.site}
-            configFile=${finalAttrs.configFile}
-            echo Checking links on $site
-            exec lychee --config $configFile ${lib.escapeShellArgs extraArgs} $site "$@"
-          '';
-        };
-      };
+      __structuredAttrs = true;
+
       buildCommand = ''
         echo Checking internal links on $site
         rc=0
@@ -115,6 +82,47 @@ let
         fi
         touch $out
       '';
+
+      configFile = (formats.toml { }).generate "lychee.toml" finalAttrs.passthru.config;
+      name = "lychee-link-check";
+
+      # These can be overridden with overrideAttrs if needed.
+      passthru = {
+        inherit lychee remap;
+
+        config = {
+          include_fragments = "full";
+
+          root_dir =
+            if relocatable == false then
+              finalAttrs.site
+            else
+              "/root-relative-links-are-forbidden-use-relative-links";
+        }
+        // lib.optionalAttrs (finalAttrs.passthru.remap != { }) {
+          remap = mapAttrsToList (
+            name: value: withCheckedName name "${name} ${toURL value}"
+          ) finalAttrs.passthru.remap;
+        }
+        // extraConfig;
+
+        # NOTE: The online wrapper does not implement the relocatable hint message.
+        # It uses the same configFile (with the fake root_dir), so root-relative
+        # links still fail, but without the custom explanation.
+        online = writeShellApplication {
+          # Comment out to run shellcheck:
+          checkPhase = "";
+          name = "run-lychee-online";
+          runtimeInputs = [ finalAttrs.passthru.lychee ];
+
+          text = ''
+            site=${finalAttrs.site}
+            configFile=${finalAttrs.configFile}
+            echo Checking links on $site
+            exec lychee --config $configFile ${lib.escapeShellArgs extraArgs} $site "$@"
+          '';
+        };
+      };
     });
 
 in

@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  cinnamon-desktop,
+  cinnamon-menus,
+  cinnamon-translations,
+  colord,
+  gettext,
   glib,
   glib-networking,
-  gettext,
-  cinnamon-desktop,
   gtk3,
-  libnotify,
-  libxml2,
-  colord,
-  polkit,
-  cinnamon-menus,
-  networkmanager,
   libgudev,
-  libwacom,
-  wrapGAppsHook3,
   libnma,
+  libnotify,
+  libwacom,
   libxi,
-  modemmanager,
-  xorgproto,
+  libxml2,
   meson,
+  modemmanager,
+  networkmanager,
   ninja,
-  cinnamon-translations,
+  pkg-config,
+  polkit,
   python3,
   upower,
+  wrapGAppsHook3,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,6 +38,20 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-TjTwtTFbiC4A4qe9TIyZJtGrSymujhEgM8SpZQ92RZA=";
   };
+
+  postPatch = ''
+    patchShebangs meson_install_schemas.py
+  '';
+
+  nativeBuildInputs = [
+    libxml2 # xmllint
+    pkg-config
+    meson
+    ninja
+    wrapGAppsHook3
+    gettext
+    python3
+  ];
 
   buildInputs = [
     gtk3
@@ -58,31 +72,17 @@ stdenv.mkDerivation (finalAttrs: {
     upower
   ];
 
-  postPatch = ''
-    patchShebangs meson_install_schemas.py
-  '';
-
   mesonFlags = [
     # use locales from cinnamon-translations
     "--localedir=${cinnamon-translations}/share/locale"
   ];
 
-  nativeBuildInputs = [
-    libxml2 # xmllint
-    pkg-config
-    meson
-    ninja
-    wrapGAppsHook3
-    gettext
-    python3
-  ];
-
   meta = {
-    homepage = "https://github.com/linuxmint/cinnamon-control-center";
     description = "Collection of configuration plugins used in cinnamon-settings";
-    mainProgram = "cinnamon-control-center";
+    homepage = "https://github.com/linuxmint/cinnamon-control-center";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
+    mainProgram = "cinnamon-control-center";
     teams = [ lib.teams.cinnamon ];
   };
 })

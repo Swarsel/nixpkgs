@@ -1,7 +1,7 @@
 {
   lib,
-  build-idris-package,
   fetchFromGitHub,
+  build-idris-package,
 }:
 
 build-idris-package {

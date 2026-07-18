@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  appstream,
+  appstream-glib,
+  desktop-file-utils,
+  gettext,
+  girara,
+  gitUpdater,
+  libarchive,
   meson,
   ninja,
   pkg-config,
   zathura_core,
-  girara,
-  gettext,
-  libarchive,
-  desktop-file-utils,
-  appstream,
-  appstream-glib,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,20 +43,23 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.PKG_CONFIG_ZATHURA_PLUGINDIR = "lib/zathura";
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://pwmt.org/projects/zathura-cb/";
     description = "Zathura CB plugin";
+
     longDescription = ''
       The zathura-cb plugin adds comic book support to zathura.
     '';
+
+    homepage = "https://pwmt.org/projects/zathura-cb/";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       jlesquembre
       mithicspirit
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

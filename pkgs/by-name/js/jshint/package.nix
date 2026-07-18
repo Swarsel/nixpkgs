@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -17,7 +17,6 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-4P1rQmNIENbJPFqpbgnrq4V2tZe4MWySIphwUtnNcuc=";
-
   env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "1";
 
   postBuild = ''

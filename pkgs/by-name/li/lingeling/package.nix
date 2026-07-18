@@ -16,11 +16,26 @@ stdenv.mkDerivation rec {
     hash = "sha256-gVFznoptP9Ukux+1jbUpXZDPbc45EAdQ4UyeaD2cX0M=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+  ];
+
   patches = [
     # Fix incompatible pointer type errors from GCC 15
     # https://github.com/arminbiere/lingeling/pull/11
     ./gcc-15.patch
   ];
+
+  installPhase = ''
+    mkdir -p $out/bin $lib/lib $dev/include
+
+    cp lglib.h  $dev/include
+    cp liblgl.a $lib/lib
+
+    cp lingeling plingeling treengeling ilingeling blimc $out/bin
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -39,26 +54,11 @@ stdenv.mkDerivation rec {
     runHook postConfigure
   '';
 
-  installPhase = ''
-    mkdir -p $out/bin $lib/lib $dev/include
-
-    cp lglib.h  $dev/include
-    cp liblgl.a $lib/lib
-
-    cp lingeling plingeling treengeling ilingeling blimc $out/bin
-  '';
-
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-  ];
-
   meta = {
     description = "Fast SAT solver";
     homepage = "http://fmv.jku.at/lingeling/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.unix;
   };
 }

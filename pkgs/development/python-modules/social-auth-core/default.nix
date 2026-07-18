@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
   defusedxml,
-  fetchFromGitHub,
   httpretty,
   lxml,
   oauthlib,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "social-auth-core";
   version = "4.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-social-auth";
@@ -45,15 +44,6 @@ buildPythonPackage rec {
     requests-oauthlib
   ];
 
-  optional-dependencies = {
-    openidconnect = [ python-jose ];
-    saml = [
-      lxml
-      python3-saml
-    ];
-    azuread = [ cryptography ];
-  };
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytest-xdist
@@ -73,6 +63,17 @@ buildPythonPackage rec {
     "social_core/tests/backends/test_steam.py::SteamOpenIdMissingSteamIdTest::test_partial_pipeline"
   ];
 
+  optional-dependencies = {
+    azuread = [ cryptography ];
+    openidconnect = [ python-jose ];
+
+    saml = [
+      lxml
+      python3-saml
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "social_core" ];
 
   meta = {

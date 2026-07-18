@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gtk3,
+  gtklock,
   meson,
   ninja,
   pkg-config,
-  gtk3,
-  gtklock,
   systemd,
 }:
 
@@ -21,14 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Zakdta1i0o7S2AbHydlonnh5OMGVgGjB2H/AiHgQT9A=";
   };
 
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-  ];
-
-  buildInputs = [ gtk3 ];
-
   postPatch =
     let
       systemctl = lib.getExe' systemd "systemctl";
@@ -40,6 +32,13 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail '"systemctl suspend"' '"${systemctl} suspend"'
     '';
 
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+  ];
+
+  buildInputs = [ gtk3 ];
   passthru.tests.testModule = gtklock.testModule finalAttrs.finalPackage;
 
   meta = {

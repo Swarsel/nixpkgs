@@ -1,29 +1,23 @@
 {
   lib,
-  buildPackages,
   stdenv,
+  buildPackages,
+  gtest,
   mkMesonExecutable,
-  writableTmpDirAsHomeHook,
-
+  nix-expr-test-support,
   nix-flake,
   nix-flake-c,
-  nix-expr-test-support,
-
   rapidcheck,
-  gtest,
-  runCommand,
-
-  # Configuration Options
-
-  version,
   resolvePath,
+  runCommand,
+  # Configuration Options
+  version,
+  writableTmpDirAsHomeHook,
 }:
 
 mkMesonExecutable (finalAttrs: {
-  pname = "nix-flake-tests";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-flake-tests";
 
   buildInputs = [
     nix-flake
@@ -36,13 +30,15 @@ mkMesonExecutable (finalAttrs: {
   mesonFlags = [
   ];
 
+  workDir = ./.;
+
   passthru = {
     tests = {
       run =
         runCommand "${finalAttrs.pname}-run"
           {
-            meta.broken = !stdenv.hostPlatform.emulatorAvailable buildPackages;
             buildInputs = [ writableTmpDirAsHomeHook ];
+            meta.broken = !stdenv.hostPlatform.emulatorAvailable buildPackages;
           }
           ''
             export _NIX_TEST_UNIT_DATA=${resolvePath ./data}

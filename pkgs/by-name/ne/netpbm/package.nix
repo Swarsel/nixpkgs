@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
+  buildPackages,
   fetchsvn,
-  pkg-config,
+  flex,
+  jbigkit,
   libjpeg,
   libpng,
-  jbigkit,
-  flex,
-  zlib,
-  perl,
+  libtiff,
+  libx11,
   libxml2,
   makeWrapper,
-  libtiff,
+  perl,
+  pkg-config,
+  zlib,
   enableX11 ? false,
-  libx11,
-  buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,17 +23,25 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "netpbm";
   version = "11.14.0";
 
+  src = fetchsvn {
+    url = "https://svn.code.sf.net/p/netpbm/code/advanced";
+    rev = "5182";
+    sha256 = "sha256-VbVN08WVXQYXlEBK1yIKj5aIWWaBhim4rQc68ViA/vA=";
+  };
+
   outputs = [
     "bin"
     "out"
     "dev"
   ];
 
-  src = fetchsvn {
-    url = "https://svn.code.sf.net/p/netpbm/code/advanced";
-    rev = "5182";
-    sha256 = "sha256-VbVN08WVXQYXlEBK1yIKj5aIWWaBhim4rQc68ViA/vA=";
-  };
+  postPatch = ''
+    # Install libnetpbm.so symlink to correct destination
+    substituteInPlace lib/Makefile \
+      --replace '/sharedlink' '/lib'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -52,14 +60,31 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional enableX11 libx11;
 
-  strictDeps = true;
+  env = {
+    STRIPPROG = "${lib.getBin stdenv.cc.bintools.bintools}/bin/${stdenv.cc.targetPrefix}strip";
+  }
+  // lib.optionalAttrs stdenv.cc.isClang {
+    NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
+  };
 
-  enableParallelBuilding = true;
+  installPhase = ''
+    runHook preInstall
 
-  postPatch = ''
-    # Install libnetpbm.so symlink to correct destination
-    substituteInPlace lib/Makefile \
-      --replace '/sharedlink' '/lib'
+    make package pkgdir=$out
+
+    rm -rf $out/*_template $out/{pkginfo,README,VERSION} $out/man/web
+
+    mkdir -p $out/share/netpbm
+    mv $out/misc $out/share/netpbm/
+
+    moveToOutput bin "''${!outputBin}"
+
+    # wrap any scripts that expect other programs in the package to be in their PATH
+    for prog in ppmquant; do
+        wrapProgram "''${!outputBin}/bin/$prog" --prefix PATH : "''${!outputBin}/bin"
+    done
+
+    runHook postInstall
   '';
 
   configurePhase = ''
@@ -99,39 +124,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  env = {
-    STRIPPROG = "${lib.getBin stdenv.cc.bintools.bintools}/bin/${stdenv.cc.targetPrefix}strip";
-  }
-  // lib.optionalAttrs stdenv.cc.isClang {
-    NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
-  };
-
-  installPhase = ''
-    runHook preInstall
-
-    make package pkgdir=$out
-
-    rm -rf $out/*_template $out/{pkginfo,README,VERSION} $out/man/web
-
-    mkdir -p $out/share/netpbm
-    mv $out/misc $out/share/netpbm/
-
-    moveToOutput bin "''${!outputBin}"
-
-    # wrap any scripts that expect other programs in the package to be in their PATH
-    for prog in ppmquant; do
-        wrapProgram "''${!outputBin}/bin/$prog" --prefix PATH : "''${!outputBin}/bin"
-    done
-
-    runHook postInstall
-  '';
-
+  enableParallelBuilding = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://sourceforge.net/p/netpbm/code/${finalAttrs.src.rev}/tree/advanced/doc/HISTORY";
-    homepage = "https://netpbm.sourceforge.net/";
     description = "Toolkit for manipulation of graphic images";
+    homepage = "https://netpbm.sourceforge.net/";
+    changelog = "https://sourceforge.net/p/netpbm/code/${finalAttrs.src.rev}/tree/advanced/doc/HISTORY";
     license = lib.licenses.free; # http://netpbm.svn.code.sourceforge.net/p/netpbm/code/trunk/doc/copyright_summary
     platforms = with lib.platforms; linux ++ darwin;
   };

@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  perlPackages,
   jdk,
+  perlPackages,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -14,18 +14,16 @@ perlPackages.buildPerlPackage rec {
     sha256 = "sha256-Pvdv+WxTmEd92KERNOJm5TikhwZ/aQajrIo4v9EcEeA=";
   };
 
-  postPatch = ''
-    substituteInPlace wwwroot/cgi-bin/awstats.pl \
-      --replace /usr/share/awstats/ "$out/wwwroot/cgi-bin/"
-  '';
-
   outputs = [
     "bin"
     "out"
     "doc"
   ]; # bin just links the user-run executable
 
-  propagatedBuildOutputs = [ ]; # otherwise out propagates bin -> cycle
+  postPatch = ''
+    substituteInPlace wwwroot/cgi-bin/awstats.pl \
+      --replace /usr/share/awstats/ "$out/wwwroot/cgi-bin/"
+  '';
 
   buildInputs = with perlPackages; [
     JSONXS
@@ -65,10 +63,12 @@ perlPackages.buildPerlPackage rec {
     mv docs "$doc/share/doc/awstats"
   '';
 
+  propagatedBuildOutputs = [ ]; # otherwise out propagates bin -> cycle
+
   meta = {
-    changelog = "https://www.awstats.org/docs/awstats_changelog.txt";
     description = "Real-time logfile analyzer to get advanced statistics";
     homepage = "https://awstats.org";
+    changelog = "https://www.awstats.org/docs/awstats_changelog.txt";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
     mainProgram = "awstats";

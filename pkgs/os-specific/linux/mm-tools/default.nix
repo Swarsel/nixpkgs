@@ -4,11 +4,9 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "mm-tools";
   inherit (linux) version src;
-
+  pname = "mm-tools";
   makeFlags = [ "sbindir=${placeholder "out"}/bin" ];
-
   preConfigure = "cd tools/mm";
 
   meta = {

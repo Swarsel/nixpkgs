@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "redgtech-api";
   version = "0.1.38";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "redgtech-automacao";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-28hA0ay4oBNiJAsLPuEv7hP/V76Q/+MdwBwvAlNpO1k=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "redgtech_api" ];
 
   meta = {

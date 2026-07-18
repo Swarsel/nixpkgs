@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchzip,
   cmake,
+  fetchzip,
   gmp,
   mpfr,
 }:
 
 let
   satlib-bmc = fetchzip {
-    url = "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/BMC/bmc.tar.gz";
-    stripRoot = false;
     sha256 = "sha256-F1Jfrj4iMMf/3LFCShIDMs4JfLkJ51Z4wkL1FDT9b/A=";
+    stripRoot = false;
+    url = "https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/BMC/bmc.tar.gz";
   };
 
   # needed for mpfr 4.2.0+ support
@@ -54,6 +54,7 @@ stdenv.mkDerivation {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     gmp
     mpfr
@@ -70,6 +71,7 @@ stdenv.mkDerivation {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -83,11 +85,14 @@ stdenv.mkDerivation {
   meta = {
     description = "Fast solver for the #SAT model counting problem";
     homepage = "https://github.com/Laakeri/sharpsat-td";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ ris ];
+
     # uses clhash, which is non-portable
     platforms = [
       "x86_64-linux"

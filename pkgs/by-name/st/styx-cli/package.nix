@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -19,11 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-7eqw0Qjj2VV2KYGSOVoLl8nyuMCTMpLte2lVL7MQPpI=";
 
-  cargoBuildFlags = [
-    "--package"
-    "styx-cli"
-  ];
-
   checkFlags = [
     # These tests don't like nix's build environment
     "--skip=error::tests::test_missing_field_diagnostic"
@@ -35,6 +30,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  cargoBuildFlags = [
+    "--package"
+    "styx-cli"
+  ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--use-github-releases"
@@ -44,15 +44,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/bearcove/styx/releases/tag/styx-cli-v${finalAttrs.version}";
     description = "Document language for mortals";
-    downloadPage = "https://github.com/bearcove/styx";
     homepage = "https://styx.bearcove.eu/";
+    changelog = "https://github.com/bearcove/styx/releases/tag/styx-cli-v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ lib.maintainers.pyrox0 ];
     mainProgram = "styx";
+    downloadPage = "https://github.com/bearcove/styx";
   };
 })

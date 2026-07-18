@@ -10,8 +10,6 @@ let
   configFile = configFormat.generate "lact-config.yaml" cfg.settings;
 in
 {
-  meta.maintainers = [ lib.maintainers.johnrtitor ];
-
   options.services.lact = {
     enable = lib.mkEnableOption null // {
       description = ''
@@ -29,9 +27,6 @@ in
 
     settings = lib.mkOption {
       default = { };
-      type = lib.types.submodule {
-        freeformType = configFormat.type;
-      };
 
       description = ''
         Settings for LACT.
@@ -45,23 +40,28 @@ in
         and thus LACT daemon will not be able to modify it through the GUI.
         :::
       '';
+
+      type = lib.types.submodule {
+        freeformType = configFormat.type;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-    systemd.packages = [ cfg.package ];
-
     environment.etc."lact/config.yaml" = lib.mkIf (cfg.settings != { }) {
       source = configFile;
     };
 
+    environment.systemPackages = [ cfg.package ];
+    systemd.packages = [ cfg.package ];
+
     systemd.services.lactd = {
       description = "LACT GPU Control Daemon";
-      wantedBy = [ "multi-user.target" ];
-
       # Restart when the config file changes.
       restartTriggers = lib.mkIf (cfg.settings != { }) [ configFile ];
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = [ lib.maintainers.johnrtitor ];
 }

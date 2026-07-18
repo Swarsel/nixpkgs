@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   meson,
   meson-python,
   numpy,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "numpy-financial";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "numpy";
@@ -21,6 +20,10 @@ buildPythonPackage rec {
     hash = "sha256-6hSi5Y292Ikfb2m2SLvIHJS0nZcGKgGzvybgmpxReWI=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     meson
     meson-python
@@ -28,17 +31,13 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ numpy ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "numpy_financial" ];
 
   meta = {
+    description = "Collection of elementary financial functions";
     homepage = "https://numpy.org/numpy-financial/";
     changelog = "https://github.com/numpy/numpy-financial/releases/tag/v${version}";
-    description = "Collection of elementary financial functions";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ flokli ];
   };

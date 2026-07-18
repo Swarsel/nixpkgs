@@ -1,10 +1,10 @@
 {
-  mkKdeDerivation,
   lib,
   fetchurl,
+  glib,
+  mkKdeDerivation,
   pkg-config,
   polkit,
-  glib,
 }:
 mkKdeDerivation rec {
   pname = "polkit-qt-1";
@@ -17,11 +17,12 @@ mkKdeDerivation rec {
 
   patches = [ ./full-paths.patch ];
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     glib
     polkit
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 
   meta.license = with lib.licenses; [
     bsd3

@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  testers,
   installShellFiles,
+  testers,
 }:
 
 # this expression is mostly automated, and you are STRONGLY
@@ -28,11 +28,11 @@ let
     let
       suffix =
         {
+          aarch64-darwin = "darwin_arm64";
+          aarch64-linux = "linux_arm64";
           # map the platform name to the golang toolchain suffix
           # NOTE: must be synchronized with update.sh!
           x86_64-linux = "linux_amd64";
-          aarch64-linux = "linux_arm64";
-          aarch64-darwin = "darwin_arm64";
         }
         ."${stdenv.hostPlatform.system}" or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
@@ -44,51 +44,55 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit src;
   pname = "infisical";
   version = version;
-  inherit src;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  doCheck = true;
-  dontConfigure = true;
-  dontStrip = true;
-
-  sourceRoot = ".";
   buildPhase = "chmod +x ./infisical";
+  doCheck = true;
   checkPhase = "./infisical --version";
+
   installPhase = ''
     mkdir -p $out/bin/ $out/share/completions/ $out/share/man/
     cp infisical $out/bin
     cp completions/* $out/share/completions/
     cp manpages/* $out/share/man/
   '';
+
   postInstall = ''
     installManPage share/man/infisical.1.gz
     installShellCompletion share/completions/infisical.{bash,fish,zsh}
   '';
 
+  dontConfigure = true;
+  dontStrip = true;
+  sourceRoot = ".";
+
   passthru = {
-    updateScript = ./update.sh;
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Official Infisical CLI";
+
     longDescription = ''
       Infisical is the open-source secret management platform:
       Sync secrets across your team/infrastructure and prevent secret leaks.
     '';
+
     homepage = "https://infisical.com";
     changelog = "https://github.com/infisical/infisical/releases/tag/infisical-cli%2Fv${version}";
     license = lib.licenses.mit;
-    mainProgram = "infisical";
     maintainers = with lib.maintainers; [ hausken ];
-    teams = [ lib.teams.infisical ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "infisical";
+    teams = [ lib.teams.infisical ];
   };
 })

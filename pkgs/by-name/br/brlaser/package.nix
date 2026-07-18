@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  zlib,
   cups,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,16 +35,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "CUPS driver for Brother laser printers";
+
     longDescription = ''
       Although most Brother printers support a standard printer language such as PCL or PostScript, not all do. If you have a monochrome Brother laser printer (or multi-function device) and the other open source drivers don't work, this one might help.
 
       This driver is known to work with many printers in the DCP, HL and MFC series, along with a few others.
       See the homepage for a full list.
     '';
+
     homepage = "https://github.com/Owl-Maintain/brlaser";
     changelog = "https://github.com/Owl-Maintain/brlaser/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.linux;
   };
 })

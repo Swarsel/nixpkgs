@@ -1,7 +1,8 @@
 {
   lib,
-  desktop-file-utils,
+  stdenv,
   fetchFromGitHub,
+  desktop-file-utils,
   gobject-introspection,
   gtk4,
   libadwaita,
@@ -9,7 +10,6 @@
   ninja,
   pkg-config,
   python3,
-  stdenv,
   wrapGAppsHook4,
 }:
 
@@ -44,12 +44,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/fkinoshita/Telegraph/releases/v${finalAttrs.version}";
     description = "Write and decode Morse";
     homepage = "https://github.com/fkinoshita/Telegraph";
+    changelog = "https://github.com/fkinoshita/Telegraph/releases/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "telegraph";
     maintainers = with lib.maintainers; [ michaelgrahamevans ];
     platforms = lib.platforms.linux;
+    mainProgram = "telegraph";
   };
 })

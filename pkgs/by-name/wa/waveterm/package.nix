@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  autoPatchelfHook,
-  atk,
+  alsa-lib,
   at-spi2-atk,
-  cups,
-  libdrm,
-  gtk3,
-  pango,
+  atk,
+  autoPatchelfHook,
   cairo,
+  cups,
+  dpkg,
+  expat,
+  gtk3,
+  libGL,
+  libdrm,
+  libgbm,
   libx11,
+  libxcb,
   libxcomposite,
   libxdamage,
   libxext,
   libxfixes,
   libxrandr,
-  libgbm,
-  expat,
-  libxcb,
-  alsa-lib,
-  nss,
   nspr,
-  vips,
+  nss,
+  pango,
   udev,
-  libGL,
   unzip,
+  vips,
 }:
 let
   selectSystem = attrs: attrs.${stdenv.hostPlatform.system};
@@ -38,14 +38,16 @@ let
   metaCommon = {
     description = "Open-source, cross-platform terminal for seamless workflows";
     homepage = "https://www.waveterm.dev";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.asl20;
+    maintainers = [ ];
+
     platforms = [
       "aarch64-linux"
       "aarch64-darwin"
       "x86_64-linux"
     ];
-    maintainers = [ ];
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 
   linux = stdenv.mkDerivation {
@@ -54,15 +56,16 @@ let
     src =
       let
         arch = selectSystem {
-          x86_64-linux = "amd64";
           aarch64-linux = "arm64";
+          x86_64-linux = "amd64";
         };
       in
       fetchurl {
         url = "https://github.com/wavetermdev/waveterm/releases/download/v${version}/waveterm-linux-${arch}-${version}.deb";
+
         hash = selectSystem {
-          x86_64-linux = "sha256-q2rdc/DpVVRDK2X9QyS8w7gkHZAQR+Wopn40Vip9CeE=";
           aarch64-linux = "sha256-hPcZp0mBzEnaY+e+Kg5XynROWduydutQ2davhLg9bI4=";
+          x86_64-linux = "sha256-q2rdc/DpVVRDK2X9QyS8w7gkHZAQR+Wopn40Vip9CeE=";
         };
       };
 
@@ -133,6 +136,7 @@ let
       in
       fetchurl {
         url = "https://github.com/wavetermdev/waveterm/releases/download/v${version}/Wave-darwin-${arch}-${version}.zip";
+
         hash = selectSystem {
           aarch64-darwin = "sha256-NY/KFFGgtrQr9YL32nudWeTIGNDjswelcOD1wo+Jh3s=";
         };

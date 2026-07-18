@@ -1,8 +1,8 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -13,8 +13,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     inherit (finalAttrs) pname version;
     sha256 = "sha256-hkk8JCR1cWrYJFOlSfZkGtSHvPQcQ9O+0MMLfq9x0us=";
   };
-
-  pyproject = true;
 
   nativeCheckInputs = with python3Packages; [
     pytestCheckHook
@@ -34,13 +32,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     zstandard
   ];
 
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Comic strip downloader and archiver";
-    mainProgram = "dosage";
     homepage = "https://dosage.rocks/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ toonn ];
+    mainProgram = "dosage";
   };
 })

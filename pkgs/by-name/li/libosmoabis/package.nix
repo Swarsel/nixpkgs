@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
-  pkg-config,
-  libosmocore,
+  autoreconfHook,
   libosmo-netif,
+  libosmocore,
   linphonePackages,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-jJD7XvwOBisN6womVSrY+V78KpFZ7WBvvh757dAS8y0=";
   };
-
-  configureFlags = [ "enable_dahdi=false" ];
 
   postPatch = ''
     echo "${finalAttrs.version}" > .tarball-version
@@ -38,15 +36,18 @@ stdenv.mkDerivation (finalAttrs: {
     linphonePackages.bctoolbox
   ];
 
+  configureFlags = [ "enable_dahdi=false" ];
   enableParallelBuilding = true;
 
   meta = {
     description = "Osmocom Abis interface library";
     homepage = "https://github.com/osmocom/libosmo-abis";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       markuskowa
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

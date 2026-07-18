@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   allegro5,
   libGL,
+  pkg-config,
   wrapGAppsHook3,
 }:
 
@@ -23,12 +23,11 @@ stdenv.mkDerivation {
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     allegro5
     libGL
   ];
-
-  dontWrapGApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -51,18 +50,22 @@ stdenv.mkDerivation {
       "''${gappsWrapperArgs[@]}"
   '';
 
+  dontWrapGApps = true;
+
   meta = {
     description = "Real-time strategy game with programmable units";
-    mainProgram = "liberation-circuit";
+
     longDescription = ''
       Escape from a hostile computer system!
       Harvest data to create an armada of battle-processes to aid your escape!
       Take command directly and play the game as an RTS, or use the game's built-in
       editor and compiler to write your own unit AI in a simplified version of C.
     '';
+
     homepage = "https://linleyh.itch.io/liberation-circuit";
-    maintainers = with lib.maintainers; [ emilytrau ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.linux;
+    mainProgram = "liberation-circuit";
   };
 }

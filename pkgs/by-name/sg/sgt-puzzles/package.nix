@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
+  cmake,
   desktop-file-utils,
   gtk3,
-  libx11,
-  cmake,
-  imagemagick,
-  pkg-config,
-  perl,
-  wrapGAppsHook3,
-  nixosTests,
-  writeScript,
   halibut,
+  imagemagick,
+  libx11,
+  nixosTests,
+  perl,
+  pkg-config,
+  wrapGAppsHook3,
+  writeScript,
   isMobile ? false,
 }:
 
@@ -25,11 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Pcl8wCXrnjQ68jMpZMhWcvKiHanqk1efMbzGbjOHupc=";
   };
 
-  sgt-puzzles-menu = fetchurl {
-    url = "https://raw.githubusercontent.com/gentoo/gentoo/720e614d0107e86fc1e520bac17726578186843d/games-puzzle/sgt-puzzles/files/sgt-puzzles.menu";
-    hash = "sha256-dXbx6C5/uu0S1FxfOLJ8TjdoJ/IW9VjEsRfJ8VIHHCE=";
-  };
-
   nativeBuildInputs = [
     cmake
     desktop-file-utils
@@ -40,12 +35,12 @@ stdenv.mkDerivation (finalAttrs: {
     halibut # For help pages
   ];
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString isMobile "-DSTYLUS_BASED";
-
   buildInputs = [
     gtk3
     libx11
   ];
+
+  env.NIX_CFLAGS_COMPILE = lib.optionalString isMobile "-DSTYLUS_BASED";
 
   postInstall = ''
     for i in  $(basename -s $out/bin/*); do
@@ -75,8 +70,14 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm644 ${finalAttrs.sgt-puzzles-menu} -t $out/etc/xdg/menus/applications-merged/
   '';
 
+  sgt-puzzles-menu = fetchurl {
+    hash = "sha256-dXbx6C5/uu0S1FxfOLJ8TjdoJ/IW9VjEsRfJ8VIHHCE=";
+    url = "https://raw.githubusercontent.com/gentoo/gentoo/720e614d0107e86fc1e520bac17726578186843d/games-puzzle/sgt-puzzles/files/sgt-puzzles.menu";
+  };
+
   passthru = {
     tests.sgt-puzzles = nixosTests.sgt-puzzles;
+
     updateScript = writeScript "update-sgt-puzzles" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p curl pcre common-updater-scripts
@@ -90,12 +91,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simon Tatham's portable puzzle collection";
+    homepage = "https://www.chiark.greenend.org.uk/~sgtatham/puzzles/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       raskin
       tomfitzhenry
     ];
+
     platforms = lib.platforms.linux;
-    homepage = "https://www.chiark.greenend.org.uk/~sgtatham/puzzles/";
   };
 })

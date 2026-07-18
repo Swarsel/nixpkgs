@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  asciidoc,
   fetchFromGitHub,
+  asciidoc,
   cmake,
-  kdePackages,
-  pkg-config,
   icecream,
+  kdePackages,
+  libarchive,
   libcap_ng,
   lzo,
+  pkg-config,
   qt6,
   zstd,
-  libarchive,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     icecream
     qt6.qtbase

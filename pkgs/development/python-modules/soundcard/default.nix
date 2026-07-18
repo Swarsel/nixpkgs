@@ -1,8 +1,8 @@
 {
+  lib,
   buildPythonPackage,
   cffi,
   fetchPypi,
-  lib,
   libpulseaudio,
   numpy,
   setuptools,
@@ -14,17 +14,11 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-m0bWSib5fNfYi8/Dhcl8Bp+Xxew0BOTnwjdxWYqM9Hs=";
   };
-
-  patchPhase = ''
-    substituteInPlace soundcard/pulseaudio.py \
-      --replace "'pulse'" "'${libpulseaudio}/lib/libpulse.so'"
-  '';
 
   build-system = [ setuptools ];
 
@@ -33,10 +27,15 @@ buildPythonPackage {
     numpy
   ];
 
+  patchPhase = ''
+    substituteInPlace soundcard/pulseaudio.py \
+      --replace "'pulse'" "'${libpulseaudio}/lib/libpulse.so'"
+  '';
+
+  pyproject = true;
   # doesn't work because there are not many soundcards in the
   # sandbox. See VM-test
   # pythonImportsCheck = [ "soundcard" ];
-
   passthru.tests.vm-with-soundcard = testers.runNixOSTest ./test.nix;
 
   meta = {

@@ -1,10 +1,12 @@
 {
   lib,
-  tracee,
   makeWrapper,
+  tracee,
 }:
 tracee.overrideAttrs (old: {
   pname = old.pname + "-integration";
+  outputs = [ "out" ];
+
   postPatch = old.postPatch or "" + ''
     # fix the test to look at nixos paths for running programs
       # --replace-fail '"integration.tes"' '"tracee-integrat"' \
@@ -22,7 +24,9 @@ tracee.overrideAttrs (old: {
     substituteInPlace tests/testutils/tracee.go \
       --replace-fail "../../dist/tracee" "${lib.getExe tracee}"
   '';
+
   nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [ makeWrapper ];
+
   buildPhase = ''
     runHook preBuild
     # copy existing built object to dist
@@ -36,15 +40,17 @@ tracee.overrideAttrs (old: {
     CGO_LDFLAGS="$(pkg-config --libs libbpf)" go test -tags core,ebpf,integration -c -o $GOPATH/tracee-integration/ ./tests/integration/...
     runHook postBuild
   '';
+
   doCheck = false;
+
   installPhase = ''
     mkdir -p $out/bin
     mv $GOPATH/tracee-integration/{integration.test,syscaller} $out/bin/
     # cp -r ${tracee}/bin/signatures $out/bin/
   '';
+
   doInstallCheck = false;
 
-  outputs = [ "out" ];
   meta = old.meta // {
     outputsToInstall = [ "out" ];
   };

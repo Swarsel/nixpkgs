@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   hatchling,
+  pytestCheckHook,
   sure,
 }:
 
 buildPythonPackage rec {
   pname = "py-partiql-parser";
   version = "0.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "getmoto";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-99GkYfsscifVAws+Rgn1Tb2FZxY/4OtNvOoXGGmzbco=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     pytestCheckHook
     sure
   ];
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "py_partiql_parser" ];
 
   meta = {

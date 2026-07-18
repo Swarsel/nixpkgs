@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  gdk-pixbuf,
-  optipng,
-  librsvg,
-  gtk3,
-  pantheon,
   adwaita-icon-theme,
+  gdk-pixbuf,
   gnome-icon-theme,
+  gtk3,
   hicolor-icon-theme,
+  librsvg,
+  optipng,
+  pantheon,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-snNh6883YUmzU1OG8jLf41/0NrEzfwFikyVtX1JeNdw=";
   };
+
+  postPatch = ''
+    substituteInPlace svgtopng/Makefile --replace "-O0" "-O"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -39,15 +43,11 @@ stdenv.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
-  postPatch = ''
-    substituteInPlace svgtopng/Makefile --replace "-O0" "-O"
-  '';
-
   postInstall = ''
     make icon-caches
   '';
+
+  dontDropIconThemeCache = true;
 
   meta = {
     description = "Elementary icons for Xfce and other GTK desktops like GNOME";

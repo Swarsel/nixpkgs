@@ -21,12 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1dRLhctJBkPQcH4aIYbzoymYwvbquqlIFHm2XK7uV8A=";
   };
 
-  buildInputs = [
-    boehmgc
-    glib
-    libgee
-    ncurses
-  ];
   nativeBuildInputs = [
     perl
     pkg-config
@@ -36,19 +30,23 @@ stdenv.mkDerivation (finalAttrs: {
   # newly-produced binary can't be run at build-time.
   ++ lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) help2man;
 
+  buildInputs = [
+    boehmgc
+    glib
+    libgee
+    ncurses
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
   # Tests can't be run because most of them rely on the ability to
   # fiddle with the terminal.
   doCheck = false;
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
   # XXX: Work around cross-compilation-unfriendly `gl_FUNC_FSTATAT' macro.
   gl_cv_func_fstatat_zero_flag = "yes";
 
   meta = {
-    homepage = "https://www.gnu.org/software/zile/";
-    changelog = "https://git.savannah.gnu.org/cgit/zile.git/plain/NEWS?h=v${finalAttrs.version}";
     description = "Implements Lua Editors";
+
     longDescription = ''
       GNU Zile is a text editor development kit, so that you can (relatively)
       quickly develop your own ideal text editor without reinventing the wheel
@@ -77,6 +75,9 @@ stdenv.mkDerivation (finalAttrs: {
       Lossy Emacs.  Zile has been written to be as similar as possible to Emacs;
       every Emacs user should feel at home.
     '';
+
+    homepage = "https://www.gnu.org/software/zile/";
+    changelog = "https://git.savannah.gnu.org/cgit/zile.git/plain/NEWS?h=v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.unix;

@@ -13,18 +13,18 @@ stdenv.mkDerivation {
     sha256 = "15qlvdfwbiclljj7075ycm78yzqahzrgl4ky8pymix5179acm05h";
   };
 
-  unpackPhase = ''
-    tar -zxf $src
-  '';
-
   installPhase = ''
     mkdir -p $out/bin
     cp wavrsocvt $out/bin
   '';
 
+  unpackPhase = ''
+    tar -zxf $src
+  '';
+
   meta = {
     description = "Convert .wav files into sound files for Lego NXT brick";
-    mainProgram = "wavrsocvt";
+
     longDescription = ''
       wavrsocvt is a command-line utility which can be used from a
       terminal window or script to convert .wav files into sound
@@ -34,8 +34,10 @@ stdenv.mkDerivation {
       supported sample rates in the standard NXT firmware).
       You can then upload these with e.g. nxt-python.
     '';
+
     homepage = "https://bricxcc.sourceforge.net/";
     license = lib.licenses.mpl11;
     platforms = with lib.platforms; linux;
+    mainProgram = "wavrsocvt";
   };
 }

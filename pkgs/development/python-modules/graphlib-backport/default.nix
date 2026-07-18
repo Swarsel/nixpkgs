@@ -2,15 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   poetry-core,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "graphlib-backport";
   version = "1.1.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mariushelf";
@@ -30,6 +28,7 @@ buildPythonPackage rec {
     poetry-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "graphlib" ];
 
   meta = {

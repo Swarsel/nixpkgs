@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  sassc,
   gnome-themes-extra,
   gtk-engine-murrine,
+  sassc,
+  stdenvNoCC,
   unstableGitUpdater,
   colorVariants ? [ ],
+  iconVariants ? [ ],
   sizeVariants ? [ ],
   themeVariants ? [ ],
   tweakVariants ? [ ],
-  iconVariants ? [ ],
 }:
 
 let
@@ -84,18 +84,12 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants lib
       hash = "sha256-KZR5vuMQnLa7AK77YB11BqgqwQHVVFfIe/rXzcocbwk=";
     };
 
-    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
-    nativeBuildInputs = [ sassc ];
-    buildInputs = [ gnome-themes-extra ];
-
-    dontBuild = true;
-
-    passthru.updateScript = unstableGitUpdater { };
-
     postPatch = ''
       patchShebangs themes/install.sh
     '';
+
+    nativeBuildInputs = [ sassc ];
+    buildInputs = [ gnome-themes-extra ];
 
     installPhase = ''
       runHook preInstall
@@ -115,11 +109,15 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants lib
       runHook postInstall
     '';
 
+    dontBuild = true;
+    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+    passthru.updateScript = unstableGitUpdater { };
+
     meta = {
       description = "GTK theme based on the Nightfox colour palette";
       homepage = "https://github.com/Fausto-Korpsvart/Nightfox-GTK-Theme";
       license = lib.licenses.gpl3Plus;
-      platforms = lib.platforms.unix;
       maintainers = [ ];
+      platforms = lib.platforms.unix;
     };
   }

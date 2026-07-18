@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
   autoreconfHook,
-  perl,
   freetype,
   harfbuzz,
+  perl,
+  pkg-config,
   qt5,
   enableGUI ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.8.4";
   pname = "ttfautohint";
+  version = "1.8.4";
 
   src = fetchurl {
     url = "mirror://savannah/freetype/ttfautohint-${finalAttrs.version}.tar.gz";
@@ -50,16 +50,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Automatic hinter for TrueType fonts";
-    mainProgram = "ttfautohint";
+
     longDescription = ''
       A library and two programs which take a TrueType font as the
       input, remove its bytecode instructions (if any), and return a
       new font where all glyphs are bytecode hinted using the
       information given by FreeType’s auto-hinting module.
     '';
+
     homepage = "https://www.freetype.org/ttfautohint";
     license = lib.licenses.gpl2Plus; # or the FreeType License (BSD + advertising clause)
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "ttfautohint";
   };
 })

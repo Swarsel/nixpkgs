@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   copyDesktopItems,
+  jre8,
   makeDesktopItem,
   unzip,
-  jre8,
   logOutput ? false,
 }:
 
@@ -17,13 +17,6 @@ stdenv.mkDerivation rec {
     url = "https://github.com/fleneindre/fleneindre.github.io/raw/master/downloads/JQuake_${version}_linux.zip";
     sha256 = "sha256-Q9R5Qhk8Qodw2d99nL2aG5WGpIyvKmjzfkRK7xJzoc0=";
   };
-
-  nativeBuildInputs = [
-    unzip
-    copyDesktopItems
-  ];
-
-  sourceRoot = ".";
 
   postPatch = ''
     # JQuake emits a lot of debug-like messages on stdout. Either drop the output
@@ -39,8 +32,10 @@ stdenv.mkDerivation rec {
       --replace "[JAR FOLDER]" "\$(mktemp -p /tmp -d jquake-errlog-XXX)"
   '';
 
-  dontConfigure = true;
-  dontBuild = true;
+  nativeBuildInputs = [
+    unzip
+    copyDesktopItems
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -60,22 +55,26 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "JQuake";
+      comment = "Real-time earthquake map of Japan";
       desktopName = "JQuake";
       exec = "JQuake";
-      comment = "Real-time earthquake map of Japan";
+      name = "JQuake";
     })
   ];
+
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
 
   meta = {
     description = "Real-time earthquake map of Japan";
     homepage = "https://jquake.net";
-    downloadPage = "https://jquake.net/en/terms.html?os=linux&arch=any";
     changelog = "https://jquake.net/en/changelog.html";
-    maintainers = with lib.maintainers; [ nessdoor ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ nessdoor ];
     platforms = lib.platforms.linux;
     mainProgram = "JQuake";
+    downloadPage = "https://jquake.net/en/terms.html?os=linux&arch=any";
   };
 }

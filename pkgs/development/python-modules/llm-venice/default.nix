@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-venice,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "llm-venice";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ar-jan";
@@ -19,15 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-jshOfbZUccmK6sRCDTzkE7tOKX2ILue93Jp2GFoGTxY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ llm ];
-
   # Reaches out to the real API
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ llm ];
+  pyproject = true;
   pythonImportsCheck = [ "llm_venice" ];
-
   passthru.tests = llm.mkPluginTest llm-venice;
 
   meta = {

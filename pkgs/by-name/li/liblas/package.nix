@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   boost,
   cmake,
+  fetchpatch,
+  fixDarwinDylibNames,
+  laszip_2,
   libgeotiff,
   libtiff,
-  laszip_2,
   zlib,
-  fixDarwinDylibNames,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,9 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-cOm5ElnR2mK+ofU0F4xzYTkFa3Oq8r/WSm4qo45vkt8=";
       name = "fix-gcc15.patch";
       url = "https://gitlab.archlinux.org/archlinux/packaging/packages/liblas/-/raw/1.8.1.r128+gded46373-17/liblas-gcc15.patch";
-      hash = "sha256-cOm5ElnR2mK+ofU0F4xzYTkFa3Oq8r/WSm4qo45vkt8=";
     })
   ];
 
@@ -63,8 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "LAS 1.0/1.1/1.2 ASPRS LiDAR data translation toolset";
     homepage = "https://liblas.org";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     teams = with lib.teams; [ geospatial ];
   };
 })

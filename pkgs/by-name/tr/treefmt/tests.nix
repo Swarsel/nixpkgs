@@ -1,10 +1,10 @@
 {
   lib,
+  nixfmt,
   runCommand,
   runCommandLocal,
   testers,
   treefmt,
-  nixfmt,
 }:
 let
   inherit (treefmt) buildConfig withConfig;
@@ -19,18 +19,18 @@ let
     );
 
   nixfmtExampleConfig = {
-    on-unmatched = "info";
-    tree-root-file = ".git/index";
-
     formatter.nixfmt = {
       command = "nixfmt";
       includes = [ "*.nix" ];
     };
+
+    on-unmatched = "info";
+    tree-root-file = ".git/index";
   };
 
   nixfmtExamplePackage = withConfig {
-    settings = nixfmtExampleConfig;
     runtimeInputs = [ nixfmt ];
+    settings = nixfmtExampleConfig;
   };
 
   wellFormattedTree = runCommandLocal "well-formatted-project" { } ''
@@ -57,14 +57,15 @@ let
 in
 {
   buildConfigEmpty = testEqualContents {
-    assertion = "`buildConfig { }` builds an empty config file";
     actual = buildConfig { };
+    assertion = "`buildConfig { }` builds an empty config file";
     expected = "";
   };
 
   buildConfigExample = testEqualContents {
-    assertion = "`buildConfig` builds the example config";
     actual = buildConfig nixfmtExampleConfig;
+    assertion = "`buildConfig` builds the example config";
+
     expected = ''
       on-unmatched = "info"
       tree-root-file = ".git/index"
@@ -76,11 +77,13 @@ in
   };
 
   buildConfigModules = testEqualContents {
-    assertion = "`buildConfig` evaluates modules to build a config";
     actual = buildConfig [
       nixfmtExampleConfig
       { tree-root-file = lib.mkForce "overridden"; }
     ];
+
+    assertion = "`buildConfig` evaluates modules to build a config";
+
     expected = ''
       on-unmatched = "info"
       tree-root-file = "overridden"
@@ -91,11 +94,10 @@ in
     '';
   };
 
-  nixfmtExampleCheckPasses = nixfmtExamplePackage.check wellFormattedTree;
-
   nixfmtExampleCheckFails = testers.testBuildFailure' {
     drv = nixfmtExamplePackage.check unformattedTree;
     expectedBuilderExitCode = 1;
+
     expectedBuilderLogEntries = [
       "diff --git a/file.nix b/file.nix"
       "-  foo=\"bar\";"
@@ -107,17 +109,14 @@ in
     ];
   };
 
+  nixfmtExampleCheckPasses = nixfmtExamplePackage.check wellFormattedTree;
+
   runNixfmtExample =
     runCommand "run-nixfmt-example"
       {
         nativeBuildInputs = [ nixfmtExamplePackage ];
-        input = ''
-          {
-            foo="bar";
-            attrs={};
-            list=[];
-          }
-        '';
+        __structuredAttrs = true;
+
         expected = ''
           {
             foo = "bar";
@@ -125,7 +124,14 @@ in
             list = [ ];
           }
         '';
-        __structuredAttrs = true;
+
+        input = ''
+          {
+            foo="bar";
+            attrs={};
+            list=[];
+          }
+        '';
       }
       ''
         export XDG_CACHE_HOME=$(mktemp -d)

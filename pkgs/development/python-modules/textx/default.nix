@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
-  python,
   fetchFromGitHub,
   arpeggio,
-  click,
+  buildPythonPackage,
   callPackage,
+  click,
   flit-core,
+  python,
 }:
 
 let
   textx = buildPythonPackage rec {
     pname = "textx";
     version = "4.4.0";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "textx";
@@ -27,9 +26,8 @@ let
       "testout"
     ];
 
-    build-system = [ flit-core ];
-
-    dependencies = [ arpeggio ];
+    # Circular dependencies, do tests in passthru.tests instead.
+    doCheck = false;
 
     postInstall = ''
       # FileNotFoundError: [Errno 2] No such file or directory: '$out/lib/python3.10/site-packages/textx/textx.tx
@@ -40,10 +38,10 @@ let
       cp -r tests $testout/tests
     '';
 
+    build-system = [ flit-core ];
+    dependencies = [ arpeggio ];
+    pyproject = true;
     pythonImportsCheck = [ "textx" ];
-
-    # Circular dependencies, do tests in passthru.tests instead.
-    doCheck = false;
 
     passthru.tests = {
       textxTests = callPackage ./tests.nix {
@@ -58,30 +56,29 @@ let
     };
 
     meta = {
-      changelog = "https://github.com/textX/textX/blob/${src.tag}/CHANGELOG.md";
       description = "Domain-specific languages and parsers in Python";
-      mainProgram = "textx";
       homepage = "https://github.com/textx/textx/";
+      changelog = "https://github.com/textX/textX/blob/${src.tag}/CHANGELOG.md";
       license = lib.licenses.mit;
       maintainers = [ ];
+      mainProgram = "textx";
     };
   };
 
   textx-data-dsl = buildPythonPackage rec {
+    inherit (textx) src;
     pname = "textx-data-dsl";
     version = "1.0.0";
-    pyproject = true;
-
-    inherit (textx) src;
-    pathToSourceRoot = "tests/functional/registration/projects/data_dsl";
-    sourceRoot = "${src.name}/" + pathToSourceRoot;
-
     build-system = [ flit-core ];
 
     dependencies = [
       textx
       textx-types-dsl
     ];
+
+    pathToSourceRoot = "tests/functional/registration/projects/data_dsl";
+    pyproject = true;
+    sourceRoot = "${src.name}/" + pathToSourceRoot;
 
     meta = {
       inherit (textx.meta) license maintainers;
@@ -91,20 +88,19 @@ let
   };
 
   textx-flow-codegen = buildPythonPackage rec {
+    inherit (textx) src;
     pname = "textx-flow-codegen";
     version = "1.0.0";
-    pyproject = true;
-
-    inherit (textx) src;
-
-    pathToSourceRoot = "tests/functional/registration/projects/flow_codegen";
-    sourceRoot = "${src.name}/" + pathToSourceRoot;
-
     build-system = [ flit-core ];
+
     dependencies = [
       textx
       click
     ];
+
+    pathToSourceRoot = "tests/functional/registration/projects/flow_codegen";
+    pyproject = true;
+    sourceRoot = "${src.name}/" + pathToSourceRoot;
 
     meta = {
       inherit (textx.meta) license maintainers;
@@ -114,17 +110,14 @@ let
   };
 
   textx-flow-dsl = buildPythonPackage rec {
+    inherit (textx) src;
     pname = "textx-flow-dsl";
     version = "1.0.0";
-    pyproject = true;
-
-    inherit (textx) src;
-
-    pathToSourceRoot = "tests/functional/registration/projects/flow_dsl";
-    sourceRoot = "${src.name}/" + pathToSourceRoot;
-
     build-system = [ flit-core ];
     dependencies = [ textx ];
+    pathToSourceRoot = "tests/functional/registration/projects/flow_dsl";
+    pyproject = true;
+    sourceRoot = "${src.name}/" + pathToSourceRoot;
 
     meta = {
       inherit (textx.meta) license maintainers;
@@ -134,17 +127,14 @@ let
   };
 
   textx-types-dsl = buildPythonPackage rec {
+    inherit (textx) src;
     pname = "textx-types-dsl";
     version = "1.0.0";
-    pyproject = true;
-
-    inherit (textx) src;
-
-    pathToSourceRoot = "tests/functional/registration/projects/types_dsl";
-    sourceRoot = "${src.name}/" + pathToSourceRoot;
-
     build-system = [ flit-core ];
     dependencies = [ textx ];
+    pathToSourceRoot = "tests/functional/registration/projects/types_dsl";
+    pyproject = true;
+    sourceRoot = "${src.name}/" + pathToSourceRoot;
 
     meta = {
       inherit (textx.meta) license maintainers;
@@ -154,17 +144,14 @@ let
   };
 
   textx-example-project = buildPythonPackage rec {
+    inherit (textx) src;
     pname = "textx-example-project";
     version = "1.0.0";
-    pyproject = true;
-
-    inherit (textx) src;
-
-    pathToSourceRoot = "tests/functional/subcommands/example_project";
-    sourceRoot = "${src.name}/" + pathToSourceRoot;
-
     build-system = [ flit-core ];
     dependencies = [ textx ];
+    pathToSourceRoot = "tests/functional/subcommands/example_project";
+    pyproject = true;
+    sourceRoot = "${src.name}/" + pathToSourceRoot;
 
     meta = {
       inherit (textx.meta) license maintainers;

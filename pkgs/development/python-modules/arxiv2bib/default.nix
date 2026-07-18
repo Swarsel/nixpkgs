@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   setuptools,
   unittestCheckHook,
@@ -10,9 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "arxiv2bib";
   version = "1.0.8";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   # Missing tests on Pypi
   src = fetchFromGitHub {
@@ -22,24 +19,26 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-b8HMerITPGY9bjRIeJzpPKiBHH+uPEx2S+xSILqP4s4=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     unittestCheckHook
     mock
   ];
+
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "arxiv2bib" ];
+
   unittestFlagsArray = [
     "-s"
     "tests"
   ];
 
-  pythonImportsCheck = [ "arxiv2bib" ];
-
   meta = {
     description = "Get a BibTeX entry from an arXiv id number, using the arxiv.org API";
-    mainProgram = "arxiv2bib";
     homepage = "http://nathangrigg.github.io/arxiv2bib/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.nico202 ];
+    mainProgram = "arxiv2bib";
   };
 })

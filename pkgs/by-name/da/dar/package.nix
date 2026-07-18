@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  which,
   attr,
-  e2fsprogs,
+  bzip2,
   curl,
+  e2fsprogs,
+  fetchzip,
+  gpgme,
   libargon2,
+  libgcrypt,
   librsync,
   libthreadar,
-  gpgme,
-  libgcrypt,
-  openssl,
-  bzip2,
   lz4,
   lzo,
+  openssl,
+  which,
   xz,
   zlib,
   zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.8.5";
   pname = "dar";
+  version = "2.8.5";
 
   src = fetchzip {
     url = "mirror://sourceforge/dar/dar-${finalAttrs.version}.tar.gz";
@@ -64,20 +64,19 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-threadar"
   ];
 
-  hardeningDisable = [ "format" ];
-
-  enableParallelBuilding = true;
-
   postInstall = ''
     # Disable html help
     rm -r "$out"/share/dar
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "http://dar.linux.free.fr";
     description = "Disk ARchiver, allows backing up files into indexed archives";
-    maintainers = with lib.maintainers; [ izorkin ];
+    homepage = "http://dar.linux.free.fr";
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ izorkin ];
     platforms = lib.platforms.unix;
   };
 })

@@ -1,17 +1,17 @@
 {
-  callPackage,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  callPackage,
   freetype,
   gumbo,
   harfbuzz,
   jbig2dec,
-  lib,
   libjpeg,
   libz,
   mujs,
   mupdf,
   openjpeg,
-  stdenv,
   zig_0_14,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -31,8 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     zig_0_14
   ];
 
-  zigBuildFlags = [ "--release=fast" ];
-
   buildInputs = [
     mupdf
     harfbuzz
@@ -49,13 +47,15 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${callPackage ./build.zig.zon.nix { }} $ZIG_GLOBAL_CACHE_DIR/p
   '';
 
+  zigBuildFlags = [ "--release=fast" ];
+
   meta = {
-    broken = true; # build phase wants to fetch from github
+    inherit (zig_0_14.meta) platforms;
     description = "PDF viewer for terminals using the Kitty image protocol";
     homepage = "https://github.com/freref/fancy-cat";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ ciflire ];
     mainProgram = "fancy-cat";
-    inherit (zig_0_14.meta) platforms;
+    broken = true; # build phase wants to fetch from github
   };
 })

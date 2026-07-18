@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   ncurses,
   pkg-config,
-  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "7.1.5";
   pname = "multitail";
+  version = "7.1.5";
 
   src = fetchFromGitHub {
     owner = "folkertvanheusden";
@@ -36,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://github.com/folkertvanheusden/multitail";
     description = "tail on steroids";
+    homepage = "https://github.com/folkertvanheusden/multitail";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.asl20;
     mainProgram = "multitail";
   };
 })

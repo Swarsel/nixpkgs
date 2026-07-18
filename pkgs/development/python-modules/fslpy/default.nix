@@ -1,35 +1,41 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
-  setuptools,
+  buildPythonPackage,
   dill,
   h5py,
+  indexed-gzip,
   nibabel,
   numpy,
-  scipy,
-  indexed-gzip,
   pillow,
+  pytest-cov-stub,
+  pytestCheckHook,
   rtree,
+  scipy,
+  setuptools,
+  tomli,
   trimesh,
   wxpython,
-  pytestCheckHook,
-  pytest-cov-stub,
-  tomli,
 }:
 
 buildPythonPackage rec {
   pname = "fslpy";
   version = "3.23.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "git.fmrib.ox.ac.uk";
     owner = "fsl";
     repo = "fslpy";
     tag = version;
     hash = "sha256-lY/7TNOqGK0pRm5Rne1nrqXVQDZPkHwlZV9ITsOwp9Q=";
+    domain = "git.fmrib.ox.ac.uk";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    tomli
+  ]
+  ++ optional-dependencies.extra;
 
   build-system = [ setuptools ];
 
@@ -40,23 +46,6 @@ buildPythonPackage rec {
     numpy
     scipy
   ];
-
-  optional-dependencies = {
-    extra = [
-      indexed-gzip
-      pillow
-      rtree
-      trimesh
-      wxpython
-    ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    tomli
-  ]
-  ++ optional-dependencies.extra;
 
   disabledTestPaths = [
     # tries to download data:
@@ -76,6 +65,18 @@ buildPythonPackage rec {
     "fsl/tests/test_run.py"
     "fsl/tests/test_wrappers"
   ];
+
+  optional-dependencies = {
+    extra = [
+      indexed-gzip
+      pillow
+      rtree
+      trimesh
+      wxpython
+    ];
+  };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "fsl"

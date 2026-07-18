@@ -1,20 +1,19 @@
 {
   lib,
-  awscli,
   fetchFromGitHub,
+  awscli,
   python3,
 }:
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: { sqlalchemy = super.sqlalchemy_1_4; };
+    self = python;
   };
 in
 python.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pacu";
   version = "1.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RhinoSecurityLabs";
@@ -23,13 +22,13 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-Hrks6mvvmmdCMxprB/SPlkfcSu6uyoEVtb0eUD3CALo=";
   };
 
-  pythonRelaxDeps = [
-    "dsnap"
-    "sqlalchemy-utils"
-    "sqlalchemy"
-    "pycognito"
-    "qrcode"
-    "urllib3"
+  postBuild = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  nativeCheckInputs = with python.pkgs; [
+    moto
+    pytestCheckHook
   ];
 
   build-system = with python.pkgs; [ poetry-core ];
@@ -57,17 +56,6 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     urllib3
   ]);
 
-  nativeCheckInputs = with python.pkgs; [
-    moto
-    pytestCheckHook
-  ];
-
-  postBuild = ''
-    export HOME=$(mktemp -d)
-  '';
-
-  pythonImportsCheck = [ "pacu" ];
-
   disabledTests = [
     # sAttributeError: module 'moto' has no attribute 'mock_s3'
     "test_update"
@@ -76,6 +64,18 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     # AttributeError: module 'moto' has no attribute 'mock_cognitoidp'
     "test_cognito__attack_minimal"
     "test_cognito__attack_sanity"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pacu" ];
+
+  pythonRelaxDeps = [
+    "dsnap"
+    "sqlalchemy-utils"
+    "sqlalchemy"
+    "pycognito"
+    "qrcode"
+    "urllib3"
   ];
 
   meta = {

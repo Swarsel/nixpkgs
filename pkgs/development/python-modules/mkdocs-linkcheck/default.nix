@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   requests,
 }:
 
 buildPythonPackage {
   pname = "mkdocs-linkcheck";
   version = "unstable-2021-08-24";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "byrnereese";
@@ -23,17 +22,20 @@ buildPythonPackage {
     requests
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "mkdocs_linkcheck" ];
 
   meta = {
     description = "Validate links in Markdown files for static site generators like MkDocs, Hugo or Jekyll";
-    mainProgram = "mkdocs-linkcheck";
+
     longDescription = ''
       This is not a MkDocs plugin, but a companion tool that is useful to validate links in Markdown files for
       static site generators like MkDocs, Hugo or Jekyll. It can be used with any text files containing links.
     '';
+
     homepage = "https://github.com/byrnereese/mkdocs-linkcheck";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ totoroot ];
+    mainProgram = "mkdocs-linkcheck";
   };
 }

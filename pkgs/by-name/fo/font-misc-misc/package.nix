@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  font-util,
   bdftopcf,
+  font-util,
   mkfontscale,
+  pkg-config,
   writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -27,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ font-util ];
-
   configureFlags = [ "--with-fontrootdir=$(out)/share/fonts/X11" ];
 
   passthru = {

@@ -24,7 +24,6 @@ python3.pkgs.buildPythonApplication {
     timetagger
   ];
 
-  format = "custom";
   installPhase = ''
     mkdir -p $out/bin
     echo "#!${python3.interpreter}" >> $out/bin/timetagger
@@ -33,4 +32,6 @@ python3.pkgs.buildPythonApplication {
     wrapProgram $out/bin/timetagger \
       --set TIMETAGGER_BIND "${addr}:${toString port}"
   '';
+
+  format = "custom";
 }

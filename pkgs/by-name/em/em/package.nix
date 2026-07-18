@@ -14,8 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "http://pgas.freeshell.org/C/em/";
     description = "Editor for Mortals";
+
     longDescription = ''
       Em is a QMC variant of the standard Unix text editor - ed. It includes all
       of ed, so the documentation for ed is fully applicable to em. Em also has
@@ -23,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
       interaction and increase its usefulness to users at fast vdu terminals
       (such as the ITT's at QMC).
     '';
+
+    homepage = "http://pgas.freeshell.org/C/em/";
     license = lib.licenses.publicDomain;
     maintainers = [ ];
     platforms = lib.platforms.unix;

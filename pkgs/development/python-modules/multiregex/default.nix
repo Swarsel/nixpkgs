@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyahocorasick,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "multiregex";
   version = "2.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "quantco";
@@ -20,15 +19,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-BWADzarhnzcz2ZvD33XcQpQIIJ0hmhUT33HyUbB1wH0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ pyahocorasick ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "multiregex" ];
 
   meta = {

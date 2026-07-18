@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/nihui/ruapu";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aleksana ];
-    mainProgram = "ruapu";
     platforms = lib.platforms.all;
+    mainProgram = "ruapu";
   };
 })

@@ -5,8 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "caqti-driver-postgresql";
   inherit (caqti) version src;
+  pname = "caqti-driver-postgresql";
 
   propagatedBuildInputs = [
     caqti

@@ -2,17 +2,16 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   ipython,
   matplotlib,
   numpy,
   pandas,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "summarytools";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     pandas
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "summarytools" ];
 
   meta = {

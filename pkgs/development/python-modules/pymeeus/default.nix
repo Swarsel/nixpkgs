@@ -2,28 +2,27 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytest7CheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pymeeus";
   version = "0.5.12";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "PyMeeus";
     inherit version;
     hash = "sha256-VI9xhr2LlsvAac9kmo6ON33OSax0SGcJhJ/mOpnK1oQ=";
+    pname = "PyMeeus";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytest7CheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/architest/pymeeus";
     description = "Library of astronomical algorithms";
+    homepage = "https://github.com/architest/pymeeus";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ jluttine ];
   };

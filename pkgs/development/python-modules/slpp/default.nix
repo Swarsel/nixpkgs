@@ -10,21 +10,18 @@
 buildPythonPackage rec {
   pname = "slpp";
   version = "1.2.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "SLPP";
     inherit version;
     hash = "sha256-If3ZMoNICQxxpdMnc+juaKq4rX7MMi9eDMAQEUy1Scg=";
+    pname = "SLPP";
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ six ];
-
   # No tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "slpp" ];
 
   meta = {

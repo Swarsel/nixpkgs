@@ -1,8 +1,8 @@
 {
+  lib,
   fetchurl,
   gitUpdater,
   jre,
-  lib,
   makeWrapper,
   stdenvNoCC,
   testers,
@@ -17,8 +17,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-0Jexm9SDxQOEebE6XHHp+vjy9RBlhPDBIKd3CrC9s2c=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -29,14 +27,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --add-flags "-jar $out/share/wiremock/wiremock.jar"
   '';
 
+  dontUnpack = true;
+
   passthru = {
     tests.version = testers.testVersion {
       command = "${lib.getExe finalAttrs.finalPackage} --version";
       package = finalAttrs.finalPackage;
     };
+
     updateScript = gitUpdater {
-      url = "https://github.com/wiremock/wiremock.git";
       ignoredVersions = "(alpha|beta|rc).*";
+      url = "https://github.com/wiremock/wiremock.git";
     };
   };
 
@@ -44,13 +45,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Flexible tool for building mock APIs";
     homepage = "https://wiremock.org/";
     changelog = "https://github.com/wiremock/wiremock/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       bobvanderlinden
       anthonyroussel
     ];
-    mainProgram = "wiremock";
+
     platforms = jre.meta.platforms;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.asl20;
+    mainProgram = "wiremock";
   };
 })

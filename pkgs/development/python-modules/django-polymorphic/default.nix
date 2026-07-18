@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  django,
+  buildPythonPackage,
   dj-database-url,
+  django,
   django-test-migrations,
+  hatchling,
   pytest-cov-stub,
   pytest-django,
   pytest-playwright,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "django-polymorphic";
   version = "4.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-polymorphic";
@@ -23,10 +22,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-8MZrQErWWd4GiNaIEnGvj4jONGFzsi3bu5NervF4AnE=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [ django ];
 
   nativeCheckInputs = [
     dj-database-url
@@ -37,18 +32,22 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ django ];
+
   disabledTestPaths = [
     # RuntimeError: Playwright failed to start. This often happens if browser drivers are missing.
     "src/polymorphic/tests/test_admin.py"
     "src/polymorphic/tests/examples/views/test.py::ViewExampleTests::test_view_example"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "polymorphic" ];
 
   meta = {
-    changelog = "https://github.com/jazzband/django-polymorphic/releases/tag/${src.tag}";
-    homepage = "https://github.com/django-polymorphic/django-polymorphic";
     description = "Improved Django model inheritance with automatic downcasting";
+    homepage = "https://github.com/django-polymorphic/django-polymorphic";
+    changelog = "https://github.com/jazzband/django-polymorphic/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

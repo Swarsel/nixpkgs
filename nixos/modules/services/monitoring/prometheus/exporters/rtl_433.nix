@@ -10,8 +10,6 @@ let
   cfg = config.services.prometheus.exporters.rtl_433;
 in
 {
-  port = 9550;
-
   extraOpts =
     let
       mkMatcherOptionType =
@@ -19,69 +17,78 @@ in
         with lib.types;
         listOf (submodule {
           options = {
-            name = lib.mkOption {
-              type = str;
-              description = "Name to match.";
-            };
             "${field}" = lib.mkOption {
-              type = int;
               description = description;
+              type = int;
             };
+
             location = lib.mkOption {
-              type = str;
               description = "Location to match.";
+              type = str;
+            };
+
+            name = lib.mkOption {
+              description = "Name to match.";
+              type = str;
             };
           };
         });
     in
     {
+      channels = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          List of channel matchers to export.
+        '';
+
+        example = [
+          {
+            channel = 6543;
+            location = "Kitchen";
+            name = "Acurite";
+          }
+        ];
+
+        type = mkMatcherOptionType "channel" "Channel to match.";
+      };
+
+      ids = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          List of ID matchers to export.
+        '';
+
+        example = [
+          {
+            id = 1;
+            location = "Bedroom";
+            name = "Nexus";
+          }
+        ];
+
+        type = mkMatcherOptionType "id" "ID to match.";
+      };
+
       rtl433Flags = lib.mkOption {
-        type = lib.types.str;
         default = "-C si";
-        example = "-C si -R 19";
+
         description = ''
           Flags passed verbatim to rtl_433 binary.
           Having `-C si` (the default) is recommended since only Celsius temperatures are parsed.
         '';
-      };
-      channels = lib.mkOption {
-        type = mkMatcherOptionType "channel" "Channel to match.";
-        default = [ ];
-        example = [
-          {
-            name = "Acurite";
-            channel = 6543;
-            location = "Kitchen";
-          }
-        ];
-        description = ''
-          List of channel matchers to export.
-        '';
-      };
-      ids = lib.mkOption {
-        type = mkMatcherOptionType "id" "ID to match.";
-        default = [ ];
-        example = [
-          {
-            name = "Nexus";
-            id = 1;
-            location = "Bedroom";
-          }
-        ];
-        description = ''
-          List of ID matchers to export.
-        '';
+
+        example = "-C si -R 19";
+        type = lib.types.str;
       };
     };
 
+  port = 9550;
+
   serviceOpts = {
     serviceConfig = {
-      # rtl-sdr udev rules make supported USB devices +rw by plugdev.
-      SupplementaryGroups = "plugdev";
-      # rtl_433 needs rw access to the USB radio.
-      PrivateDevices = lib.mkForce false;
       DeviceAllow = lib.mkForce "char-usb_device rw";
-      RestrictAddressFamilies = [ "AF_NETLINK" ];
 
       ExecStart =
         let
@@ -96,6 +103,12 @@ in
             ${lib.concatStringsSep " \\\n  " matchers} \
             ${lib.concatStringsSep " \\\n  " cfg.extraFlags}
         '';
+
+      # rtl_433 needs rw access to the USB radio.
+      PrivateDevices = lib.mkForce false;
+      RestrictAddressFamilies = [ "AF_NETLINK" ];
+      # rtl-sdr udev rules make supported USB devices +rw by plugdev.
+      SupplementaryGroups = "plugdev";
     };
   };
 }

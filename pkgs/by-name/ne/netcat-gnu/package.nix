@@ -16,9 +16,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility which reads and writes data across network connections";
     homepage = "https://netcat.sourceforge.net/";
-    mainProgram = "netcat";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ RossComputerGuy ];
+    platforms = lib.platforms.unix;
+    mainProgram = "netcat";
   };
 })

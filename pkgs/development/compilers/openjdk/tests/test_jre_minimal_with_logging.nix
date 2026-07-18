@@ -1,13 +1,14 @@
 {
-  runCommand,
   callPackage,
   jdk,
   jre_minimal,
+  runCommand,
 }:
 
 let
   hello-logging = callPackage ./hello-logging.nix {
     jdk = jdk;
+
     jre = jre_minimal.override {
       modules = [
         "java.base"

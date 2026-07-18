@@ -1,15 +1,15 @@
 {
   lib,
-  callPackage,
   fetchurl,
-  jetbrains,
+  callPackage,
   jdk,
-  debugBuild ? false,
-  withJcef ? true,
-  wayland-scanner,
-  wayland-protocols,
+  jetbrains,
   libxkbcommon,
   speechd-minimal,
+  wayland-protocols,
+  wayland-scanner,
+  debugBuild ? false,
+  withJcef ? true,
 }:
 
 let
@@ -19,9 +19,9 @@ let
       hash = "sha256-zCcXuiEYL2N4Q+WT96ouVDwdZVSohgU/QA2BkGlnZZ0=";
     in
     fetchurl {
+      hash = hash;
       # We only need the wayland protocols file
       url = "https://raw.githubusercontent.com/GNOME/gtk/${rev}/gdk/wayland/protocol/gtk-shell.xml";
-      hash = hash;
     };
   # To get the new tag:
   # git clone https://github.com/jetbrains/jetbrainsruntime
@@ -37,11 +37,7 @@ callPackage ./common.nix
   }
   {
     inherit javaVersion build;
-    # run `git log -1 --pretty=%ct` in jdk repo for new value on update
-    sourceDateEpoch = 1780959777;
-    srcHash = "sha256-N+7D++Cxu0RGWChEWW8gtNz7E2I8qM2AFbXv4luAXto=";
-    homePath = "${jetbrains.jdk}/lib/openjdk";
-    jcefPackage = jetbrains.jcef;
+
     extraBuildPhase = ''
       cp -r ${gtk-protocols.out} gtk-shell.xml
 
@@ -54,12 +50,20 @@ callPackage ./common.nix
           "--with-speechd-include=/usr/include/speech-dispatcher" \
           "--with-speechd-include=${lib.getDev speechd-minimal}/include/speech-dispatcher"
     '';
-    vendorVersionString = "nix/JBR-${javaVersion}-b${build}${if withJcef then "-jcef" else ""}";
+
     extraConfigureFlags = [
       "--with-wayland-protocols=${wayland-protocols.out}/share/wayland-protocols"
     ];
+
     extraNativeBuildInputs = [
       wayland-scanner
       libxkbcommon
     ];
+
+    homePath = "${jetbrains.jdk}/lib/openjdk";
+    jcefPackage = jetbrains.jcef;
+    # run `git log -1 --pretty=%ct` in jdk repo for new value on update
+    sourceDateEpoch = 1780959777;
+    srcHash = "sha256-N+7D++Cxu0RGWChEWW8gtNz7E2I8qM2AFbXv4luAXto=";
+    vendorVersionString = "nix/JBR-${javaVersion}-b${build}${if withJcef then "-jcef" else ""}";
   }

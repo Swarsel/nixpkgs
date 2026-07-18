@@ -1,46 +1,41 @@
 {
   lib,
   stdenv,
-  pkgsi686Linux,
   fetchurl,
-  cups,
-  dpkg,
-  gnused,
-  makeWrapper,
-  ghostscript,
-  file,
   a2ps,
   coreutils,
+  cups,
+  dpkg,
+  file,
   gawk,
+  ghostscript,
+  gnused,
+  makeWrapper,
+  pkgsi686Linux,
 }:
 
 let
   version = "3.0.1-1";
   cupsdeb = fetchurl {
-    url = "https://download.brother.com/welcome/dlf101546/hl1210wcupswrapper-${version}.i386.deb";
     sha256 = "0395mnw6c7qpjgjch9in5q9p2fjdqvz9bwfwp6q1hzhs08ryk7w0";
+    url = "https://download.brother.com/welcome/dlf101546/hl1210wcupswrapper-${version}.i386.deb";
   };
   lprdeb = fetchurl {
-    url = "https://download.brother.com/welcome/dlf101547/hl1210wlpr-${version}.i386.deb";
     sha256 = "1sl3g2cd4a2gygryrr27ax3qaa65cbirz3kzskd8afkwqpmjyv7j";
+    url = "https://download.brother.com/welcome/dlf101547/hl1210wlpr-${version}.i386.deb";
   };
 in
 stdenv.mkDerivation {
-  pname = "cups-brother-hl1210W";
   inherit version;
-
-  srcs = [
-    lprdeb
-    cupsdeb
-  ];
+  pname = "cups-brother-hl1210W";
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     cups
     ghostscript
     dpkg
     a2ps
   ];
-  dontUnpack = true;
 
   installPhase = ''
     # install lpr
@@ -95,11 +90,18 @@ stdenv.mkDerivation {
       }
   '';
 
+  dontUnpack = true;
+
+  srcs = [
+    lprdeb
+    cupsdeb
+  ];
+
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother HL1210W printer driver";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = lib.platforms.linux;
     downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=nz&lang=en&prod=hl1210w_eu_as&os=128";
   };

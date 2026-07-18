@@ -1,24 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   docopt,
-  websocket-client,
-
+  # build-system
+  poetry-core,
   # tests
   pytestCheckHook,
+  websocket-client,
 }:
 
 buildPythonPackage rec {
   pname = "stomp-py";
   version = "8.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jasonrbriggs";
@@ -26,6 +22,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-UkNmE0+G9d3k1OhkNl98Jy5sP6MAywynzBmBtK9mZ90=";
   };
+
+  doCheck = false; # needs external services setup
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     poetry-core
@@ -36,12 +38,7 @@ buildPythonPackage rec {
     websocket-client
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  doCheck = false; # needs external services setup
-
+  pyproject = true;
   pythonImportsCheck = [ "stomp" ];
 
   meta = {

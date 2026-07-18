@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   npm-lockfile-fix,
 }:
@@ -15,6 +15,7 @@ buildNpmPackage rec {
     repo = "opencommit";
     rev = "v${version}";
     hash = "sha256-ny1JDrDS8Lcsf9a+9djCJjrZi4kEn9FS+5CYYZ2c160=";
+
     postFetch = ''
       cd $out
       # Fix lockfile issues with bundled dependencies
@@ -23,7 +24,6 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-rRmGFg3/EbzNkrGojdTZ7PUqYr/Gjj1Ju2+s3M9P2DY=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

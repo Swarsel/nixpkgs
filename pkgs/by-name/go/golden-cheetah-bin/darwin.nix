@@ -1,10 +1,10 @@
 {
-  fetchurl,
   stdenv,
-  makeWrapper,
-  undmg,
-  pname,
+  fetchurl,
   commonMeta,
+  makeWrapper,
+  pname,
+  undmg,
   version,
 }:
 
@@ -23,7 +23,6 @@ stdenv.mkDerivation {
     makeWrapper
     undmg
   ];
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -32,6 +31,9 @@ stdenv.mkDerivation {
     makeWrapper "$out/Applications/GoldenCheetah.app/Contents/MacOS/GoldenCheetah" "$out/bin/GoldenCheetah"
     runHook postInstall
   '';
+
+  dontBuild = true;
+
   meta = {
     inherit (commonMeta)
       description

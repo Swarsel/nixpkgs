@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -15,23 +15,24 @@ buildGoModule {
     hash = "sha256-L7OemAPCv7epOVmjrDDtiGqQqzscm5zj3C6dsZP4uUc=";
   };
 
-  vendorHash = null;
-
   postPatch = ''
     go mod init github.com/LK4D4/vndr
   '';
 
+  vendorHash = null;
   # Tests rely on the 'vndr' binary being in the PATH already.
   doCheck = false;
 
   meta = {
     description = "Stupid golang vendoring tool, inspired by docker vendor script";
-    mainProgram = "vndr";
     homepage = "https://github.com/LK4D4/vndr";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       vdemeester
       rvolosatovs
     ];
-    license = lib.licenses.asl20;
+
+    mainProgram = "vndr";
   };
 }

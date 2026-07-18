@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
-  # dependencies
-  scapy,
-
   # tests
   blockbuster,
+  buildPythonPackage,
+  # build-system
+  poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  # dependencies
+  scapy,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiodhcpwatcher";
   version = "1.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -28,10 +24,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-a6svFLu0nmVVVVCg/evdmygTPj8VP+mjKTaaZGA0TQk=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ scapy ];
 
   nativeCheckInputs = [
     blockbuster
@@ -41,6 +33,9 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ scapy ];
+  pyproject = true;
   pythonImportsCheck = [ "aiodhcpwatcher" ];
 
   meta = {

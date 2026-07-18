@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
-  nodejs,
-  pnpm_9,
-  pnpmConfigHook,
-  nix-update-script,
   n8n,
+  nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_9,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,13 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpm_9
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_9;
-    fetcherVersion = 3;
-    hash = "sha256-hMjWFjDhc61HGkQOG/q2EU8pPShUhtHSTe+6wUAa5M4=";
-  };
-
   buildPhase = ''
     runHook preBuild
     pnpm run build
@@ -46,6 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r dist package.json $out/lib/node_modules/n8n-nodes-evolution-api/
     runHook postInstall
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-hMjWFjDhc61HGkQOG/q2EU8pPShUhtHSTe+6wUAa5M4=";
+    pnpm = pnpm_9;
+  };
 
   passthru.updateScript = nix-update-script { };
 

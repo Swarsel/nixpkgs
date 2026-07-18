@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bash,
   coreutils,
-  fetchFromGitHub,
   gawk,
   gnugrep,
   gnused,
@@ -41,13 +41,20 @@ resholve.mkDerivation {
       --replace '[ ! -r "$lib" ] && { "$lib: library not found."; exit 1; }' ""
   '';
 
+  nativeBuildInputs = [ help2man ];
+
+  makeFlags = [
+    "DESTDIR=$(out)"
+    "PREFIX="
+  ];
+
   solutions = {
     mons = {
-      scripts = [
-        "bin/mons"
-        "lib/libshlist/liblist.sh"
-      ];
-      interpreter = "${bash}/bin/sh";
+      fix = {
+        "$XRANDR" = [ "xrandr" ];
+        "$lib" = [ "lib/libshlist/liblist.sh" ];
+      };
+
       inputs = [
         bash
         coreutils
@@ -56,11 +63,12 @@ resholve.mkDerivation {
         gnused
         xrandr
       ];
-      fix = {
-        "$lib" = [ "lib/libshlist/liblist.sh" ];
-        "$XRANDR" = [ "xrandr" ];
-      };
+
+      interpreter = "${bash}/bin/sh";
+
       keep = {
+        "$OFlag" = true;
+        "$SFlag" = true;
         /*
           has a whole slate of *flag variables that it sets to either
           the true or false builtin and then executes...
@@ -68,26 +76,22 @@ resholve.mkDerivation {
         "$aFlag" = true;
         "$dFlag" = true;
         "$eFlag" = true;
+        "$iFlag" = true;
+        "$is_flag" = true;
         "$mFlag" = true;
         "$nFlag" = true;
         "$oFlag" = true;
-        "$sFlag" = true;
-        "$OFlag" = true;
-        "$SFlag" = true;
         "$pFlag" = true;
-        "$iFlag" = true;
+        "$sFlag" = true;
         "$xFlag" = true;
-        "$is_flag" = true;
       };
+
+      scripts = [
+        "bin/mons"
+        "lib/libshlist/liblist.sh"
+      ];
     };
   };
-
-  nativeBuildInputs = [ help2man ];
-
-  makeFlags = [
-    "DESTDIR=$(out)"
-    "PREFIX="
-  ];
 
   meta = {
     description = "POSIX Shell script to quickly manage 2-monitors display";

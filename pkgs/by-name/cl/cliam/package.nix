@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,17 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-59nPoH0+k1umMwFg95hQHOr/SRGKqr1URFG7xtVRiTs=";
   };
 
-  vendorHash = "sha256-Tcz8W/PX+9WE+0iFVhqHuElJI7qWD+AdwOKdTc7FQTE=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/securisec/cliam/cli/version.Version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-Tcz8W/PX+9WE+0iFVhqHuElJI7qWD+AdwOKdTc7FQTE=";
 
   postBuild = ''
     # should be called cliam
@@ -41,11 +35,17 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/cliam completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/securisec/cliam/cli/version.Version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Cloud agnostic IAM permissions enumerator";
-    mainProgram = "cliam";
     homepage = "https://github.com/securisec/cliam";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "cliam";
   };
 })

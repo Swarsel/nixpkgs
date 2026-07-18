@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  autoPatchelfHook,
   installShellFiles,
   libsForQt5,
-  autoPatchelfHook,
 }:
 
 stdenv.mkDerivation rec {
@@ -36,6 +36,11 @@ stdenv.mkDerivation rec {
     libsForQt5.qtxmlpatterns
   ];
 
+  postInstall = ''
+    installManPage dist/debian/*.1
+    install -Dm644 dist/debian/valentina.sharedmimeinfo $out/share/mime/packages/valentina.xml
+  '';
+
   qmakeFlags = [
     "-r"
     "PREFIX=${placeholder "out"}"
@@ -45,17 +50,12 @@ stdenv.mkDerivation rec {
     "CONFIG+=noDebugSymbols"
   ];
 
-  postInstall = ''
-    installManPage dist/debian/*.1
-    install -Dm644 dist/debian/valentina.sharedmimeinfo $out/share/mime/packages/valentina.xml
-  '';
-
   meta = {
     description = "Open source sewing pattern drafting software";
     homepage = "https://smart-pattern.com.ua/";
     changelog = "https://gitlab.com/smart-pattern/valentina/-/blob/v${version}/ChangeLog.txt";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

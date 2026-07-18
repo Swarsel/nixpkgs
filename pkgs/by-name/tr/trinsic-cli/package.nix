@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchurl,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -13,14 +13,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-lPw55QcGMvY2YRYJGq4WC0fPbKiika4NF55tlb+i6So=";
   };
 
-  cargoVendorDir = "vendor";
   doCheck = false;
+  cargoVendorDir = "vendor";
 
   meta = {
     description = "Trinsic CLI";
+
     longDescription = ''
       Command line interface for Trinsic Ecosystems
     '';
+
     homepage = "https://trinsic.id/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ tmarkovski ];

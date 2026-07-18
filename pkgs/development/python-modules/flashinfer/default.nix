@@ -6,24 +6,21 @@
 # environment variable `CUDA_HOME` to `cudatoolkit`.
 {
   lib,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-
   # build-system
   apache-tvm-ffi,
-  setuptools,
-
-  # nativeBuildInputs
-  cmake,
-  ninja,
-  cudaPackages,
-
+  buildPythonPackage,
   # dependencies
   click,
+  # nativeBuildInputs
+  cmake,
+  config,
+  cudaPackages,
   einops,
+  ninja,
   numpy,
   nvidia-ml-py,
+  setuptools,
   tabulate,
   torch,
   tqdm,
@@ -32,20 +29,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "flashinfer";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "flashinfer-ai";
     repo = "flashinfer";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-Hq3oTeEJHRvXwThI8vc06E3Ot/FnPP0sZUfze3ISa2o=";
+    fetchSubmodules = true;
   };
-
-  build-system = [
-    apache-tvm-ffi
-    setuptools
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -53,14 +44,14 @@ buildPythonPackage (finalAttrs: {
     (lib.getBin cudaPackages.cuda_nvcc)
   ];
 
-  dontUseCmakeConfigure = true;
-
   buildInputs = with cudaPackages; [
     cccl
     cuda_cudart
     libcublas
     libcurand
   ];
+
+  env.FLASHINFER_CUDA_ARCH_LIST = lib.concatStringsSep ";" torch.cudaCapabilities;
 
   # FlashInfer offers two installation modes:
   #
@@ -81,12 +72,11 @@ buildPythonPackage (finalAttrs: {
     export MAX_JOBS="$NIX_BUILD_CORES"
   '';
 
-  env.FLASHINFER_CUDA_ARCH_LIST = lib.concatStringsSep ";" torch.cudaCapabilities;
-
-  pythonRemoveDeps = [
-    "nvidia-cudnn-frontend"
-    "nvidia-cutlass-dsl"
+  build-system = [
+    apache-tvm-ffi
+    setuptools
   ];
+
   dependencies = [
     click
     einops
@@ -97,10 +87,17 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
+  pythonRemoveDeps = [
+    "nvidia-cudnn-frontend"
+    "nvidia-cutlass-dsl"
+  ];
+
   meta = {
-    broken = !torch.cudaSupport || !config.cudaSupport;
-    homepage = "https://flashinfer.ai/";
     description = "Library and kernel generator for Large Language Models";
+
     longDescription = ''
       FlashInfer is a library and kernel generator for Large Language Models
       that provides high-performance implementation of LLM GPU kernels such as
@@ -108,10 +105,15 @@ buildPythonPackage (finalAttrs: {
       and inference, and delivers state-of-the-art performance across diverse
       scenarios.
     '';
+
+    homepage = "https://flashinfer.ai/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       breakds
       daniel-fahey
     ];
+
+    broken = !torch.cudaSupport || !config.cudaSupport;
   };
 })

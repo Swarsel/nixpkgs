@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pastel";
   version = "0.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,13 +15,16 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytest ];
+
   checkPhase = ''
     pytest
   '';
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/sdispater/pastel";
     description = "Bring colors to your terminal";
+    homepage = "https://github.com/sdispater/pastel";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jakewaksbaum ];
   };

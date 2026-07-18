@@ -1,31 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   cons,
   etuples,
   logical-unification,
   multipledispatch,
-  toolz,
-  typing-extensions,
-
   # tests
   py,
   pytest-html,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  toolz,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "minikanren";
   version = "1.0.5";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pythological";
@@ -33,6 +28,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-lCQ0mKT99zK5A74uoo/9bP+eFdm3MC43Fh8+P2krXrs=";
   };
+
+  nativeCheckInputs = [
+    py
+    pytest-html
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -48,11 +51,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    py
-    pytest-html
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pytestFlags = [
     "--html=testing-report.html"

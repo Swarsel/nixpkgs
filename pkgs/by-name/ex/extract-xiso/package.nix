@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
 }:
@@ -17,17 +17,18 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ cmake ];
-
   doCheck = true;
 
   meta = {
     description = "Command line utility created by in to allow the creation, modification, and extraction of XISOs (Xbox ISOs)";
     homepage = "https://github.com/XboxDev/extract-xiso";
     license = lib.licenses.bsdOriginal;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       Marker06
     ];
+
+    platforms = lib.platforms.unix;
   };
 
 })

@@ -1,16 +1,16 @@
 {
   lib,
-  aiohttp-socks,
+  fetchFromGitHub,
   aiohttp,
+  aiohttp-socks,
   beautifulsoup4,
   buildPythonPackage,
   dateparser,
   dnspython,
-  fetchFromGitHub,
   lookyloo-models,
   orjson,
-  playwright-stealth,
   playwright,
+  playwright-stealth,
   poetry-core,
   pure-magic-rs,
   pydub,
@@ -27,7 +27,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "playwrightcapture";
   version = "1.40.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Lookyloo";
@@ -36,16 +35,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Gqid9Pei8c8llX2r29kdr/ruSU7967Rbzc3RF1PBLNI=";
   };
 
-  pythonRelaxDeps = [
-    "aiohttp"
-    "aiohttp-socks"
-    "beautifulsoup4"
-    "orjson"
-    "playwright"
-    "setuptools"
-    "tzdata"
-  ];
-
+  # Module has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -76,10 +67,18 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "playwrightcapture" ];
+
+  pythonRelaxDeps = [
+    "aiohttp"
+    "aiohttp-socks"
+    "beautifulsoup4"
+    "orjson"
+    "playwright"
+    "setuptools"
+    "tzdata"
+  ];
 
   meta = {
     description = "Capture a URL with Playwright";

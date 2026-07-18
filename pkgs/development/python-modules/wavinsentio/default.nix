@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "wavinsentio";
   version = "0.5.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Xw21JeQA0OMtyATey+LYmf3tRDcSME1bkQeAK0wFhHU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "wavinsentio" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
-  runCommand,
   jq,
   nix,
   nixosTests,
+  runCommand,
 }:
 let
   facterDebug = nixosTests.facter.nodes.machine.hardware.facter.debug;
@@ -16,10 +16,11 @@ runCommand "facter-debug-nvd-test"
       jq
       nix
     ];
+
     __structuredAttrs = true;
-    unsafeDiscardReferences.out = true;
-    exportReferencesGraph.withFacter = [ withFacter ];
     exportReferencesGraph.noFacter = [ noFacter ];
+    exportReferencesGraph.withFacter = [ withFacter ];
+    unsafeDiscardReferences.out = true;
   }
   ''
     # Set up nix environment with read-only store but writable state

@@ -1,51 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  setuptools,
-
   # optional-dependencies
   aiohttp,
-  pydantic,
-  flask,
-  pyyaml,
-
+  buildPythonPackage,
+  # build-system
+  cython,
   # tests
   fastapi,
+  flask,
   httpx,
   mypy-boto3-s3,
   numpy,
+  pydantic,
   pytest-asyncio,
   pytestCheckHook,
+  pyyaml,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dependency-injector";
   version = "4.49.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ets-labs";
     repo = "python-dependency-injector";
     tag = finalAttrs.version;
     hash = "sha256-ncxKYzkV10hA2D8U1/zvkYJ/VFhNUsvRaOBNjzhIdtA=";
-  };
-
-  build-system = [
-    cython
-    setuptools
-  ];
-
-  optional-dependencies = {
-    aiohttp = [ aiohttp ];
-    pydantic = [ pydantic ];
-    flask = [ flask ];
-    yaml = [ pyyaml ];
   };
 
   nativeCheckInputs = [
@@ -59,7 +42,12 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pythonImportsCheck = [ "dependency_injector" ];
+  __structuredAttrs = true;
+
+  build-system = [
+    cython
+    setuptools
+  ];
 
   disabledTestPaths = [
     # Exclude tests for EOL Python releases
@@ -71,6 +59,16 @@ buildPythonPackage (finalAttrs: {
     # Requires unpackaged fast-depends
     "tests/unit/wiring/test_fastdepends.py"
   ];
+
+  optional-dependencies = {
+    aiohttp = [ aiohttp ];
+    flask = [ flask ];
+    pydantic = [ pydantic ];
+    yaml = [ pyyaml ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "dependency_injector" ];
 
   meta = {
     description = "Dependency injection microframework for Python";

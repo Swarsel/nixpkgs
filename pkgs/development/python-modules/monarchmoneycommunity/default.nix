@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   gql,
   oathtool,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "monarchmoneycommunity";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bradleyseanf";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-3dOBFXzWJzLQ3Lr1lqwYxJ7s4uiUZatwEdZx3lRnhGs=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +29,7 @@ buildPythonPackage (finalAttrs: {
     oathtool
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "monarchmoney" ];
 
   meta = {

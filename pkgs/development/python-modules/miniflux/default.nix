@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
+  buildPythonPackage,
   pytestCheckHook,
+  requests,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "miniflux";
   version = "1.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miniflux";
@@ -17,13 +16,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-xzQozsf6FURdf5HI6U8/26jbFmVYWDqXFt77iZ7pqP8=";
   };
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
-  pythonImportsCheck = [ "miniflux" ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
+  pythonImportsCheck = [ "miniflux" ];
 
   meta = {
     description = "Miniflux Python API Client";

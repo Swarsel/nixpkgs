@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  breakpad,
   cmake,
   curl,
-  breakpad,
   pkg-config,
 }:
 
@@ -29,22 +29,24 @@ stdenv.mkDerivation (finalAttrs: {
     breakpad
   ];
 
-  cmakeBuildType = "RelWithDebInfo";
-
   cmakeFlags = [
     "-DSENTRY_BREAKPAD_SYSTEM=On"
     "-DSENTRY_BACKEND=breakpad"
   ];
 
+  cmakeBuildType = "RelWithDebInfo";
+
   meta = {
-    homepage = "https://github.com/getsentry/sentry-native";
     description = "Sentry SDK for C, C++ and native applications";
+    homepage = "https://github.com/getsentry/sentry-native";
     changelog = "https://github.com/getsentry/sentry-native/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       wheelsandmetal
       daniel-fahey
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

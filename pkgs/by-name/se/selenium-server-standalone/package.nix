@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  jre,
-  htmlunit-driver,
   chromedriver,
+  htmlunit-driver,
+  jre,
+  makeWrapper,
   chromeSupport ? true,
 }:
 
@@ -23,8 +23,6 @@ stdenv.mkDerivation rec {
     sha256 = "1jzkx0ahsb27zzzfvjqv660x9fz2pbcddgmhdzdmasxns5vipxxc";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
 
@@ -37,15 +35,19 @@ stdenv.mkDerivation rec {
       --add-flags "org.openqa.grid.selenium.GridLauncherV3"
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.seleniumhq.org/";
     description = "Selenium Server for remote WebDriver";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "http://www.seleniumhq.org/";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       coconnor
     ];
-    mainProgram = "selenium-server";
+
     platforms = lib.platforms.all;
+    mainProgram = "selenium-server";
   };
 }

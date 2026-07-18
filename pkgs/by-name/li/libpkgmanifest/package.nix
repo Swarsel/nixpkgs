@@ -11,15 +11,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libpkgmanifest";
   version = "0.5.9";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "rpm-software-management";
     repo = "libpkgmanifest";
     tag = "v${finalAttrs.version}";
     hash = "sha256-NWuUu1By7MORITgqac09cOMYrVB91xqiUgxN+7sDPMw=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -39,12 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_INSTALL_LIBDIR" "lib")
   ];
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Library for working with RPM manifests";
     homepage = "https://github.com/rpm-software-management/libpkgmanifest";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ katexochen ];
-    mainProgram = "libpkgmanifest";
     platforms = lib.platforms.all;
+    mainProgram = "libpkgmanifest";
   };
 })

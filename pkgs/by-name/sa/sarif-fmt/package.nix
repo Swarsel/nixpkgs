@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchCrate,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,7 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-h4g4+2yiqr3CTkSgv8fTHEVQwSunFfYFhIczSGA+M5U=";
-
   # `test_clippy` (the only test we enable) is broken on Darwin
   # because `--enable-profiler` is not enabled in rustc on Darwin
   # error[E0463]: can't find crate for profiler_builtins
@@ -32,8 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_clipp"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
     updateScript = nix-update-script { };

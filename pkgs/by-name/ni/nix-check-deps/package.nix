@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   unstableGitUpdater,
 }:
 
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-1fazKGz3PtyTvcIW+PY/LwYc6JlErSO9ZFisTUXJdhc=";
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
@@ -25,7 +24,7 @@ rustPlatform.buildRustPackage {
     homepage = "https://github.com/LordGrimmauld/nix-check-deps";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
-    mainProgram = "nix-check-deps";
     platforms = lib.platforms.unix;
+    mainProgram = "nix-check-deps";
   };
 }

@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://sourceforge.net/projects/freedos-edlin/";
     description = "FreeDOS line editor";
+    homepage = "https://sourceforge.net/projects/freedos-edlin/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; unix;

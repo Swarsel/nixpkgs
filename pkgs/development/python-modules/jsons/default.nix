@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   pythonAtLeast,
   typish,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "jsons";
   version = "1.6.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ramonhagenaars";
@@ -40,6 +39,7 @@ buildPythonPackage rec {
     "test_dump_load_parameterized_collections"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "jsons" ];
 
   meta = {

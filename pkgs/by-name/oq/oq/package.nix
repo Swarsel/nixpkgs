@@ -22,18 +22,18 @@ crystal.buildCrystalPackage rec {
   buildInputs = [ libxml2 ];
   nativeCheckInputs = [ jq ];
 
-  format = "shards";
-
   postInstall = ''
     wrapProgram "$out/bin/oq" \
       --prefix PATH : "${lib.makeBinPath [ jq ]}"
   '';
 
+  format = "shards";
+
   meta = {
     description = "Performant, and portable jq wrapper";
-    mainProgram = "oq";
     homepage = "https://blacksmoke16.github.io/oq/";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
+    mainProgram = "oq";
   };
 }

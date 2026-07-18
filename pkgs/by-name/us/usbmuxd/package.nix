@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libimobiledevice,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,10 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     libusb1
   ];
 
-  preAutoreconf = ''
-    export RELEASE_VERSION=${finalAttrs.version}
-  '';
-
   configureFlags = [
     "--with-udevrulesdir=${placeholder "out"}/lib/udev/rules.d"
     "--with-systemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
@@ -40,9 +36,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
 
+  preAutoreconf = ''
+    export RELEASE_VERSION=${finalAttrs.version}
+  '';
+
   meta = {
-    homepage = "https://github.com/libimobiledevice/usbmuxd";
     description = "Socket daemon to multiplex connections from and to iOS devices";
+
     longDescription = ''
       usbmuxd stands for "USB multiplexing daemon". This daemon is in charge of
       multiplexing connections over USB to an iOS device. To users, it means
@@ -52,9 +52,11 @@ stdenv.mkDerivation (finalAttrs: {
       a virtual network device. Multiple connections to different TCP ports can happen
       in parallel. The higher-level layers are handled by libimobiledevice.
     '';
+
+    homepage = "https://github.com/libimobiledevice/usbmuxd";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ProxyVT ];
+    platforms = lib.platforms.unix;
     mainProgram = "usbmuxd";
   };
 })

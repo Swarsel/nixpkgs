@@ -1,33 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  doxygen,
+  matplotlib,
+  pelican,
   pybind11,
   pytestCheckHook,
-  python-dateutil,
-  doxygen,
   python,
-  pelican,
-  matplotlib,
+  python-dateutil,
 }:
 
 buildPythonPackage rec {
   pname = "pytomlpp";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bobfang1992";
     repo = "pytomlpp";
     rev = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-RRsjnZK0FJiSkpWxurs9vJFyo2SUAKyFKXoJ8bcsHKI=";
+    fetchSubmodules = true;
   };
 
   # The latest setuptools has deprecated `setup_requires` and will attempt to automatically invoke `pip` to install dependencies during the build.
   patches = [ ./0001-remove-setup_requires.patch ];
-
   buildInputs = [ pybind11 ];
+  doCheck = true;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -39,7 +38,9 @@ buildPythonPackage rec {
     matplotlib
   ];
 
-  doCheck = true;
+  preCheck = ''
+    cd tests
+  '';
 
   disabledTests = [
     # incompatible with pytest7
@@ -49,10 +50,7 @@ buildPythonPackage rec {
     "test_decode_encode_binary"
   ];
 
-  preCheck = ''
-    cd tests
-  '';
-
+  format = "setuptools";
   pythonImportsCheck = [ "pytomlpp" ];
 
   meta = {

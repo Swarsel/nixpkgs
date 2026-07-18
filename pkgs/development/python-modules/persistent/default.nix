@@ -1,14 +1,12 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  isPyPy,
-
-  # build-systems
-  setuptools,
-
   # dependencies
   cffi,
+  fetchPypi,
+  isPyPy,
+  # build-systems
+  setuptools,
   zope-deferredimport,
   zope-interface,
 }:
@@ -16,7 +14,6 @@
 buildPythonPackage rec {
   pname = "persistent";
   version = "6.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -31,6 +28,7 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals (!isPyPy) [ cffi ];
 
+  pyproject = true;
   pythonImportsCheck = [ "persistent" ];
 
   meta = {

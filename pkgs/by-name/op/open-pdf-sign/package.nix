@@ -1,15 +1,15 @@
 {
-  jre,
   lib,
-  makeBinaryWrapper,
-  nix-update-script,
   fetchFromGitHub,
+  jre,
+  makeBinaryWrapper,
   maven,
+  nix-update-script,
 }:
 
 maven.buildMavenPackage rec {
-  version = "0.3.0";
   pname = "open-pdf-sign";
+  version = "0.3.0";
 
   src = fetchFromGitHub {
     owner = "open-pdf-sign";
@@ -26,14 +26,6 @@ maven.buildMavenPackage rec {
     sed -i '/dirtyQualifier/d' ./pom.xml
   '';
 
-  mvnHash = "sha256-2+6OU1CysNfGnESvAUbqK9RvRDlgIiWGuGC9sHza39c=";
-
-  # Disable test requires the network, we also set the version
-  mvnParameters = lib.escapeShellArgs [
-    "-Dtest=!SignerTest#testSignPdf"
-    "-Dexternal.version=${version}"
-  ];
-
   nativeBuildInputs = [
     makeBinaryWrapper
   ];
@@ -49,6 +41,14 @@ maven.buildMavenPackage rec {
 
     runHook postInstall
   '';
+
+  mvnHash = "sha256-2+6OU1CysNfGnESvAUbqK9RvRDlgIiWGuGC9sHza39c=";
+
+  # Disable test requires the network, we also set the version
+  mvnParameters = lib.escapeShellArgs [
+    "-Dtest=!SignerTest#testSignPdf"
+    "-Dexternal.version=${version}"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };

@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   lit,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "outputcheck";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stp";
@@ -33,8 +32,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   nativeCheckInputs = [ lit ];
 
-  build-system = with python3.pkgs; [ setuptools ];
-
   checkPhase = ''
     runHook preCheck
 
@@ -43,6 +40,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postCheck
   '';
 
+  build-system = with python3.pkgs; [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "OutputCheck" ];
 
   meta = {

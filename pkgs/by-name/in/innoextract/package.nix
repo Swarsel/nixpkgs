@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  makeWrapper,
   boost188,
-  xz,
+  cmake,
   libiconv,
-  withGog ? false,
-  unar ? null,
+  makeWrapper,
   unstableGitUpdater,
+  xz,
+  unar ? null,
+  withGog ? false,
 }:
 
 stdenv.mkDerivation {
@@ -23,6 +23,15 @@ stdenv.mkDerivation {
     hash = "sha256-bgACPDo1phjIiwi336JEB1UAJKyL2NmCVOhyZxBFLJo=";
   };
 
+  strictDeps = true;
+
+  # Python is reported as missing during the build, however
+  # including Python does not change the output.
+  nativeBuildInputs = [
+    cmake
+    makeWrapper
+  ];
+
   buildInputs = [
     xz
     # pin to oplder boost188 as boost189
@@ -30,16 +39,6 @@ stdenv.mkDerivation {
     boost188
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
-  # Python is reported as missing during the build, however
-  # including Python does not change the output.
-
-  nativeBuildInputs = [
-    cmake
-    makeWrapper
-  ];
-
-  strictDeps = true;
 
   # we need unar to for multi-archive extraction
   postFixup = lib.optionalString withGog ''

@@ -1,33 +1,30 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  qt5,
+  fetchFromGitHub,
   copyDesktopItems,
-  makeDesktopItem,
-  protobuf_21,
-  libpcap,
-  wireshark,
-  gzip,
   diffutils,
   gawk,
+  gzip,
   libnl,
+  libpcap,
+  makeDesktopItem,
+  protobuf_21,
+  qt5,
+  wireshark,
 }:
 let
   protobuf = protobuf_21;
 
   ostinatoIcon = fetchurl {
-    url = "https://ostinato.org/images/site-logo.png";
     hash = "sha256-9cBngj8pNOTTWNdvZaND79aa14OnrqvXq0zjzQNJDXA=";
+    url = "https://ostinato.org/images/site-logo.png";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "ostinato";
   version = "1.3.0";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pstavirs";
@@ -36,13 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/fPUxGeh5Cc3rb+1mR0chkiFPw5m+O6KtWDvzLn0iYo=";
   };
 
-  buildInputs = [
-    qt5.qtbase
-    protobuf
-    libpcap
-    qt5.qtscript
-    libnl
-  ];
+  patches = [ ./drone_ini.patch ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -52,25 +44,13 @@ stdenv.mkDerivation (finalAttrs: {
     protobuf
   ];
 
-  patches = [ ./drone_ini.patch ];
-  prePatch = ''
-    sed -i 's|/usr/include/libnl3|${libnl.dev}/include/libnl3|' server/drone.pro
-  '';
-
-  desktopItems = lib.singleton (makeDesktopItem {
-    name = "ostinato";
-    desktopName = "Ostinato";
-    genericName = "Packet/Traffic Generator and Analyzer";
-    comment = "Network packet and traffic generator and analyzer with a friendly GUI";
-    categories = [ "Network" ];
-    startupNotify = true;
-    exec = "@out@/bin/ostinato";
-    icon = ostinatoIcon;
-    extraConfig = {
-      "GenericName[it]" = "Generatore ed Analizzatore di pacchetti di rete";
-      "Comment[it]" = "Generatore ed Analizzatore di pacchetti di rete con interfaccia amichevole";
-    };
-  });
+  buildInputs = [
+    qt5.qtbase
+    protobuf
+    libpcap
+    qt5.qtscript
+    libnl
+  ];
 
   preFixup = ''
     substituteInPlace $out/share/applications/ostinato.desktop \
@@ -85,9 +65,32 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
+  __structuredAttrs = true;
+
+  desktopItems = lib.singleton (makeDesktopItem {
+    categories = [ "Network" ];
+    comment = "Network packet and traffic generator and analyzer with a friendly GUI";
+    desktopName = "Ostinato";
+    exec = "@out@/bin/ostinato";
+
+    extraConfig = {
+      "Comment[it]" = "Generatore ed Analizzatore di pacchetti di rete con interfaccia amichevole";
+      "GenericName[it]" = "Generatore ed Analizzatore di pacchetti di rete";
+    };
+
+    genericName = "Packet/Traffic Generator and Analyzer";
+    icon = ostinatoIcon;
+    name = "ostinato";
+    startupNotify = true;
+  });
+
   # `cd common; qmake ostproto.pro; make pdmlreader.o`:
   # pdmlprotocol.h:23:25: fatal error: protocol.pb.h: No such file or directory
   enableParallelBuilding = false;
+
+  prePatch = ''
+    sed -i 's|/usr/include/libnl3|${libnl.dev}/include/libnl3|' server/drone.pro
+  '';
 
   meta = {
     description = "Packet traffic generator and analyzer";

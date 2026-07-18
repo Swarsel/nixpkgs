@@ -1,20 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
-  setuptools,
-
   click,
+  fetchPypi,
   pydantic,
-
+  setuptools,
   thefuzz,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dbgpu";
   version = "2025.12";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -32,6 +28,7 @@ buildPythonPackage (finalAttrs: {
     fuzz = [ thefuzz ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "dbgpu" ];
 
   meta = {

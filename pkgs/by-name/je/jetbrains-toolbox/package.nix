@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
-  buildFHSEnv,
-  fetchzip,
   fetchurl,
   appimageTools,
+  buildFHSEnv,
+  fetchzip,
+  stdenvNoCC,
   undmg,
 }:
 
@@ -19,15 +19,18 @@ let
     homepage = "https://www.jetbrains.com/toolbox-app";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       ners
       fabiob
     ];
+
     platforms = [
       "aarch64-linux"
       "aarch64-darwin"
       "x86_64-linux"
     ];
+
     mainProgram = "jetbrains-toolbox";
   };
 
@@ -53,52 +56,28 @@ let
     version:
     let
       archSuffix = selectCpu {
-        x86_64 = "";
         aarch64 = "-arm64";
+        x86_64 = "";
       };
       hash = selectSystem {
-        x86_64-linux = "sha256-GhrN3oGdNqE4cYJmSAeRATk2yS6AVF6z+/VIb7ttoJc=";
-        aarch64-linux = "sha256-vI0niFirdAnYKF7+1+ACD31i86PgpPXUfKPkHttusRo=";
         aarch64-darwin = "sha256-islydrfr1j2OlC3wyzGss+NlzjcyrMydYSv6fjFf4D0=";
+        aarch64-linux = "sha256-vI0niFirdAnYKF7+1+ACD31i86PgpPXUfKPkHttusRo=";
+        x86_64-linux = "sha256-GhrN3oGdNqE4cYJmSAeRATk2yS6AVF6z+/VIb7ttoJc=";
       };
     in
     selectKernel {
-      linux = fetchzip {
-        url = "https://download-cdn.jetbrains.com/toolbox/jetbrains-toolbox-${version}${archSuffix}.tar.gz";
-        inherit hash;
-      };
       darwin = fetchurl {
-        url = "https://download-cdn.jetbrains.com/toolbox/jetbrains-toolbox-${version}${archSuffix}.dmg";
         inherit hash;
+        url = "https://download-cdn.jetbrains.com/toolbox/jetbrains-toolbox-${version}${archSuffix}.dmg";
+      };
+
+      linux = fetchzip {
+        inherit hash;
+        url = "https://download-cdn.jetbrains.com/toolbox/jetbrains-toolbox-${version}${archSuffix}.tar.gz";
       };
     };
 in
 selectKernel {
-  linux =
-    let
-      src = sourceForVersion version;
-    in
-    buildFHSEnv {
-      inherit pname version meta;
-      passthru = {
-        inherit src updateScript;
-      };
-      multiPkgs =
-        pkgs:
-        with pkgs;
-        [
-          icu
-          libappindicator-gtk3
-        ]
-        ++ appimageTools.defaultFhsEnvArgs.multiPkgs pkgs;
-      runScript = "${src}/bin/jetbrains-toolbox --update-failed";
-
-      extraInstallCommands = ''
-        install -Dm0644 ${src}/bin/jetbrains-toolbox.desktop -t $out/share/applications
-        install -Dm0644 ${src}/bin/toolbox-tray-color.png $out/share/icons/hicolor/32x32/apps/jetbrains-toolbox.png
-      '';
-    };
-
   darwin = stdenvNoCC.mkDerivation (finalAttrs: {
     inherit
       pname
@@ -107,10 +86,7 @@ selectKernel {
       ;
 
     src = sourceForVersion finalAttrs.version;
-
     nativeBuildInputs = [ undmg ];
-
-    sourceRoot = "JetBrains Toolbox.app";
 
     installPhase = ''
       runHook preInstall
@@ -122,8 +98,38 @@ selectKernel {
       runHook postInstall
     '';
 
+    sourceRoot = "JetBrains Toolbox.app";
+
     passthru = {
       inherit updateScript;
     };
   });
+
+  linux =
+    let
+      src = sourceForVersion version;
+    in
+    buildFHSEnv {
+      inherit pname version meta;
+
+      extraInstallCommands = ''
+        install -Dm0644 ${src}/bin/jetbrains-toolbox.desktop -t $out/share/applications
+        install -Dm0644 ${src}/bin/toolbox-tray-color.png $out/share/icons/hicolor/32x32/apps/jetbrains-toolbox.png
+      '';
+
+      multiPkgs =
+        pkgs:
+        with pkgs;
+        [
+          icu
+          libappindicator-gtk3
+        ]
+        ++ appimageTools.defaultFhsEnvArgs.multiPkgs pkgs;
+
+      runScript = "${src}/bin/jetbrains-toolbox --update-failed";
+
+      passthru = {
+        inherit src updateScript;
+      };
+    };
 }

@@ -1,36 +1,36 @@
 {
   lib,
   stdenv,
-  fetchFromGitLab,
   fetchFromGitHub,
-  gperf,
+  fetchFromGitLab,
+  asciidoctor,
+  boost,
+  cmake,
+  emilua,
+  fmt,
   gawk,
   gitUpdater,
-  pkg-config,
-  boost,
-  luajit_openresty,
-  asciidoctor,
-  emilua,
+  gperf,
   liburing,
+  luajit_openresty,
   openssl,
-  cmake,
-  fmt,
+  pkg-config,
   zlib,
 }:
 
 let
   td-wrap = fetchFromGitHub {
+    hash = "sha256-/TaPYy+FUOVhyocDZ13zwR07xbzp6g8c6xvAGVFLQvk=";
     owner = "tdlib";
     repo = "td";
     rev = "4041ecb535802ba1c55fcd11adf5d3ada41c2be7";
-    hash = "sha256-/TaPYy+FUOVhyocDZ13zwR07xbzp6g8c6xvAGVFLQvk=";
   };
 
   trial-circular-wrap = fetchFromGitHub {
+    hash = "sha256-Xd8bX3z9PZWU17N9R95HXdj6qo9at5FBL/+PTVaJgkw=";
     owner = "breese";
     repo = "trial.protocol";
     rev = "79149f604a49b8dfec57857ca28aaf508069b669";
-    hash = "sha256-Xd8bX3z9PZWU17N9R95HXdj6qo9at5FBL/+PTVaJgkw=";
   };
 in
 stdenv.mkDerivation rec {
@@ -45,16 +45,15 @@ stdenv.mkDerivation rec {
     fetchSubmodules = true;
   };
 
-  buildInputs = [
-    emilua
-    liburing
-    fmt
-    luajit_openresty
-    openssl
-    boost
-    td-wrap
-    trial-circular-wrap
-  ];
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.4 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)" \
+      --replace-warn 'pkg_get_variable(EMILUA_PLUGINSDIR emilua pluginsdir)' 'set(EMILUA_PLUGINSDIR "${"$"}{CMAKE_INSTALL_PREFIX}/${emilua.sitePackages}")'
+    substituteInPlace td/CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
+    substituteInPlace td/td/generate/tl-parser/CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.0 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     gperf
@@ -65,15 +64,16 @@ stdenv.mkDerivation rec {
     zlib
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.4 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)" \
-      --replace-warn 'pkg_get_variable(EMILUA_PLUGINSDIR emilua pluginsdir)' 'set(EMILUA_PLUGINSDIR "${"$"}{CMAKE_INSTALL_PREFIX}/${emilua.sitePackages}")'
-    substituteInPlace td/CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
-    substituteInPlace td/td/generate/tl-parser/CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.0 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
-  '';
+  buildInputs = [
+    emilua
+    liburing
+    fmt
+    luajit_openresty
+    openssl
+    boost
+    td-wrap
+    trial-circular-wrap
+  ];
 
   passthru = {
     updateScript = gitUpdater { rev-prefix = "v"; };

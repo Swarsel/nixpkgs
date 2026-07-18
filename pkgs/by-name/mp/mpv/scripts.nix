@@ -29,8 +29,8 @@ let
               scriptName-is-valid =
                 runCommand "mpvScripts.${name}.passthru.tests.scriptName-is-valid"
                   {
-                    meta.maintainers = with lib.maintainers; [ nicoo ];
                     preferLocalBuild = true;
+                    meta.maintainers = with lib.maintainers; [ nicoo ];
                   }
                   ''
                     if [ -e "${fullScriptPath}" ]; then
@@ -55,8 +55,8 @@ let
                 single-main-in-script-dir =
                   runCommand "mpvScripts.${name}.passthru.tests.single-main-in-script-dir"
                     {
-                      meta.maintainers = with lib.maintainers; [ nicoo ];
                       preferLocalBuild = true;
+                      meta.maintainers = with lib.maintainers; [ nicoo ];
                     }
                     ''
                       die() {
@@ -100,16 +100,19 @@ let
       autodeint
       autoload
       ; # added 2024-11-28
+
     inherit (self.eisa01)
       smart-copy-paste-2
       smartskip
       ; # added 2025-03-09
+
     inherit (self.occivink)
       blacklistExtensions
       crop
       encode
       seekTo
       ; # added 2024-11-28
+
     mpv-cheatsheet = throw "'mpv-cheatsheet' is no longer maintained, use 'mpv-cheatsheet-ng' instead"; # added 2026-02-13
     youtube-quality = throw "'youtube-quality' is no longer maintained, use 'quality-menu' instead"; # added 2023-07-14
   };

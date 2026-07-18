@@ -1,46 +1,43 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  cmake,
+  fetchFromGitHub,
+  SDL2,
+  SDL2_mixer,
   argtable,
+  cmake,
   enet,
   libconfuse,
-  libnatpmp,
   libepoxy,
+  libnatpmp,
   libpng,
   libxmp,
   miniupnpc,
-  opusfile,
-  SDL2,
-  SDL2_mixer,
-  unzip,
-  zlib,
   nix-update-script,
+  opusfile,
+  unzip,
   versionCheckHook,
+  zlib,
 }:
 
 let
   assets = fetchurl {
-    url = "https://www.omf2097.com/pub/files/omf/openomf-assets.zip";
     hash = "sha256-3kcseGrfnmGL9LcaXyy4W7CwkPJ9orMAjzBUU6jepn0=";
+    url = "https://www.omf2097.com/pub/files/omf/openomf-assets.zip";
   };
   icons = fetchurl {
-    url = "https://www.omf2097.com/pub/files/omf/openomf-icons.zip";
     hash = "sha256-8LWmrkY3ZiXcuVe0Zj90RQFUTwM27dJ4ev9TiBGoVk0=";
+    url = "https://www.omf2097.com/pub/files/omf/openomf-icons.zip";
   };
   musicRemixes = fetchurl {
-    url = "https://github.com/omf2097/openomf-music-mod/releases/download/1.0/openomf-mods-1.0.zip";
     hash = "sha256-uiaM6n+dDcTeBNNnypEWXPNG8Xac1JQXCTfVkORfvi0=";
+    url = "https://github.com/omf2097/openomf-music-mod/releases/download/1.0/openomf-mods-1.0.zip";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "openomf";
   version = "0.8.6";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "omf2097";
@@ -63,6 +60,8 @@ stdenv.mkDerivation (finalAttrs: {
         "/usr/local/share/games:/usr/share/games:/usr/local/share:/usr/share" \
         "$out/share/games"
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -97,11 +96,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "One Must Fall 2097 Remake";
+
     longDescription = ''
       OpenOMF is an open-source remake of the 1994 DOS fighting game One Must
       Fall 2097 by Diversions Entertainment. It reimplements the original
@@ -119,11 +119,12 @@ stdenv.mkDerivation (finalAttrs: {
            (e.g. ~/.local/state, giving ~/.local/state/mods)
         3. SDL's preference path, ~/.local/share/OpenOMF/mods
     '';
+
     homepage = "https://www.openomf.org";
     changelog = "https://github.com/omf2097/openomf/releases/tag/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ keenanweaver ];
-    mainProgram = "openomf";
     platforms = lib.platforms.all;
+    mainProgram = "openomf";
   };
 })

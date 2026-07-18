@@ -1,7 +1,7 @@
 {
   lib,
-  pkgsStatic,
   fetchFromGitHub,
+  pkgsStatic,
 }:
 
 pkgsStatic.rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,7 +16,6 @@ pkgsStatic.rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-+T9aGsewRHdmKMtZisXv4st+9kBTNtEZnPraLz8S4e8=";
-
   env.RUSTFLAGS = "--cfg tokio_unstable";
 
   checkFlags = [
@@ -60,12 +59,12 @@ pkgsStatic.rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/wykurz/rcp/releases/tag/v${finalAttrs.version}";
     description = "Tools to efficiently copy, remove and link large filesets";
     homepage = "https://github.com/wykurz/rcp";
+    changelog = "https://github.com/wykurz/rcp/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ mit ];
-    mainProgram = "rcp";
     maintainers = with lib.maintainers; [ wykurz ];
+    mainProgram = "rcp";
     # procfs only supports Linux and Android
     broken = pkgsStatic.stdenv.hostPlatform.isDarwin;
   };

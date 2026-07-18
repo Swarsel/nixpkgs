@@ -1,9 +1,9 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  stdcompat,
+  buildDunePackage,
   ppxlib,
+  stdcompat,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -23,8 +23,8 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/thierry-martinez/ppx_show";
     description = "OCaml PPX deriver for deriving show based on ppxlib";
+    homepage = "https://github.com/thierry-martinez/ppx_show";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ niols ];
   };

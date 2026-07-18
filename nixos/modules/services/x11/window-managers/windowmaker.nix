@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.windowmaker ];
+
     services.xserver.windowManager.session = singleton {
       name = "windowmaker";
+
       start = ''
         ${pkgs.windowmaker}/bin/wmaker &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.windowmaker ];
   };
 }

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "protocol";
   version = "0-unstable-2019-03-28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "luismartingarcia";
@@ -22,6 +21,7 @@ python3.pkgs.buildPythonApplication {
   '';
 
   build-system = with python3.pkgs; [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "ASCII Header Generator for Network Protocols";

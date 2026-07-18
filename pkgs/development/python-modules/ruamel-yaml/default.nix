@@ -2,30 +2,27 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
+  isPyPy,
   ruamel-base,
   ruamel-yaml-clib,
-  isPyPy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ruamel-yaml";
   version = "0.19.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "ruamel_yaml";
     inherit version;
     hash = "sha256-U+tmzSeEnv+Wjr+PC/YfRs2sLaHR81dt1MzumyXDGZM=";
+    pname = "ruamel_yaml";
   };
 
   nativeBuildInputs = [ setuptools ];
-
+  propagatedBuildInputs = [ ruamel-base ] ++ lib.optional (!isPyPy) ruamel-yaml-clib;
   # Tests use relative paths
   doCheck = false;
-
-  propagatedBuildInputs = [ ruamel-base ] ++ lib.optional (!isPyPy) ruamel-yaml-clib;
-
+  pyproject = true;
   pythonImportsCheck = [ "ruamel.yaml" ];
 
   meta = {

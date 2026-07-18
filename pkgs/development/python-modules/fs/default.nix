@@ -19,10 +19,6 @@
 buildPythonPackage rec {
   pname = "fs";
   version = "2.4.16";
-  pyproject = true;
-
-  # https://github.com/PyFilesystem/pyfilesystem2/issues/596
-  disabled = pythonAtLeast "3.14";
 
   src = fetchPypi {
     inherit pname version;
@@ -35,14 +31,7 @@ buildPythonPackage rec {
       --replace ThreadedTestFTPd FtpdThreadWrapper
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    setuptools
-    six
-    appdirs
-    pytz
-  ];
+  env.LC_ALL = "en_US.utf-8";
 
   nativeCheckInputs = [
     pyftpdlib
@@ -54,11 +43,22 @@ buildPythonPackage rec {
     glibcLocales
   ];
 
-  env.LC_ALL = "en_US.utf-8";
-
   preCheck = ''
     HOME=$(mktemp -d)
   '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    setuptools
+    six
+    appdirs
+    pytz
+  ];
+
+  # https://github.com/PyFilesystem/pyfilesystem2/issues/596
+  disabled = pythonAtLeast "3.14";
 
   disabledTestPaths = [
     # Circular dependency with parameterized
@@ -83,18 +83,17 @@ buildPythonPackage rec {
     "test_ftpfs"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fs" ];
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    # https://github.com/PyFilesystem/pyfilesystem2/issues/577
-    broken = lib.versionAtLeast setuptools.version "82";
     description = "Filesystem abstraction";
     homepage = "https://github.com/PyFilesystem/pyfilesystem2";
     changelog = "https://github.com/PyFilesystem/pyfilesystem2/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    # https://github.com/PyFilesystem/pyfilesystem2/issues/577
+    broken = lib.versionAtLeast setuptools.version "82";
   };
 }

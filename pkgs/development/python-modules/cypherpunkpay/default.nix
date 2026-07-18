@@ -1,37 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   apscheduler,
   bitstring,
+  buildPythonPackage,
   cffi,
   ecdsa,
   monero,
+  # build-system
+  poetry-core,
   pypng,
   pyqrcode,
   pyramid,
   pyramid-jinja2,
   pysocks,
+  # tests
+  pytestCheckHook,
   pytz,
   requests,
   tzlocal,
   waitress,
-  yoyo-migrations,
-
-  # tests
-  pytestCheckHook,
   webtest,
+  yoyo-migrations,
 }:
 
 buildPythonPackage rec {
   pname = "cypherpunkpay";
   version = "1.0.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CypherpunkPay";
@@ -40,14 +36,9 @@ buildPythonPackage rec {
     hash = "sha256-X0DB0PVwR0gRnt3jixFzglWAOPKBMvqTOG6pK6OJ03w=";
   };
 
-  pythonRelaxDeps = [
-    "bitstring"
-    "cffi"
-    "ecdsa"
-    "pypng"
-    "tzlocal"
-    "yoyo-migrations"
-    "waitress"
+  nativeCheckInputs = [
+    pytestCheckHook
+    webtest
   ];
 
   build-system = [
@@ -70,16 +61,6 @@ buildPythonPackage rec {
     tzlocal
     waitress
     yoyo-migrations
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    webtest
-  ];
-
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-    "-Wignore::UserWarning"
   ];
 
   disabledTestPaths = [
@@ -106,16 +87,35 @@ buildPythonPackage rec {
     "tests/acceptance/views_dummystore"
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+    "-Wignore::UserWarning"
+  ];
+
   pythonImportsCheck = [ "cypherpunkpay" ];
+
+  pythonRelaxDeps = [
+    "bitstring"
+    "cffi"
+    "ecdsa"
+    "pypng"
+    "tzlocal"
+    "yoyo-migrations"
+    "waitress"
+  ];
 
   meta = {
     description = "Modern self-hosted software for accepting Bitcoin";
     homepage = "https://github.com/CypherpunkPay/CypherpunkPay";
     changelog = "https://github.com/CypherpunkPay/CypherpunkPay/releases/tag/v${version}";
+
     license = with lib.licenses; [
       mit # or
       unlicense
     ];
+
     maintainers = with lib.maintainers; [ prusnak ];
   };
 }

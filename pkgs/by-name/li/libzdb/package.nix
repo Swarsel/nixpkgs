@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  fetchFromBitbucket,
-  nix-update-script,
   autoconf,
   automake,
+  fetchFromBitbucket,
   libtool,
+  nix-update-script,
   re2c,
   sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.5.0";
   pname = "libzdb";
+  version = "3.5.0";
 
   src = fetchFromBitbucket {
     owner = "tildeslash";
@@ -21,16 +21,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fZSTu/BGIFsbEHSB/+2SObb9myg+Iyc1IDxnpv/EEhU=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoconf
     automake
     libtool
     re2c
   ];
+
   buildInputs = [ sqlite ];
-
-  strictDeps = true;
-
   preConfigure = "sh ./bootstrap";
 
   passthru.updateScript = nix-update-script {
@@ -43,9 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Small, easy to use Open Source Database Connection Pool Library";
     homepage = "http://www.tildeslash.com/libzdb/";
-    downloadPage = "https://bitbucket.org/tildeslash/libzdb/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ maevii ];
+    platforms = lib.platforms.linux;
+    downloadPage = "https://bitbucket.org/tildeslash/libzdb/";
   };
 })

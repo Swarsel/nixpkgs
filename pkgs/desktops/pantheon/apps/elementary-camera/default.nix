@@ -1,12 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   glib,
   granite7,
   gst_all_1,
@@ -14,7 +9,12 @@
   libadwaita,
   libcanberra,
   libgee,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -60,7 +60,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/camera";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.camera";
+    teams = [ lib.teams.pantheon ];
   };
 }

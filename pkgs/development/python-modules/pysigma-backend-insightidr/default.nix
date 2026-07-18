@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pysigma,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pysigma-backend-insightidr";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SigmaHQ";
@@ -19,18 +18,9 @@ buildPythonPackage rec {
     hash = "sha256-dc25zDYQeU9W9qwrRz7zsM2wOl8kMapDvwFhB6VOwhY=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ pysigma ];
-
-  pythonRelaxDeps = [ "pysigma" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [
-    "sigma.backends.insight_idr"
-    "sigma.pipelines.insight_idr"
-  ];
+  build-system = [ poetry-core ];
+  dependencies = [ pysigma ];
 
   disabledTests = [
     # Tests are outdated
@@ -64,6 +54,15 @@ buildPythonPackage rec {
     "test_insight_idr_value_eq_or_query"
     "test_insight_idr_value_in_list_query"
   ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "sigma.backends.insight_idr"
+    "sigma.pipelines.insight_idr"
+  ];
+
+  pythonRelaxDeps = [ "pysigma" ];
 
   meta = {
     description = "Library to support the Rapid7 InsightIDR backend for pySigma";

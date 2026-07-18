@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "django-webpack-loader";
   version = "3.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-webpack";
@@ -18,12 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-yWOzMjXauwOwlEjcZpjl/z6kE5bOYAdb+map1dHupWs=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ django ];
-
   doCheck = false; # tests require fetching node_modules
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "webpack_loader" ];
 
   meta = {

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "dosbox-pure";
   version = "0-unstable-2026-07-06";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-4KPYwvtVLrzZcn3LYqSWmP+qWFjtNsCjrVY/L93/ZOE=";
   };
 
+  core = "dosbox-pure";
   hardeningDisable = [ "format" ];
   makefile = "Makefile";
 

@@ -30,18 +30,14 @@ stdenv.mkDerivation {
 
   inherit pname version;
 
-  buildInputs = [
-    aeronAll
-    aeronSamples
-  ];
-
   nativeBuildInputs = [
     makeWrapper
   ];
 
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
+  buildInputs = [
+    aeronAll
+    aeronSamples
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -70,6 +66,10 @@ stdenv.mkDerivation {
     wrap "${pname}-cluster-tool" io.aeron.cluster.ClusterTool
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
   passthru = {
     jar = aeronAll.jar;
   };
@@ -78,10 +78,12 @@ stdenv.mkDerivation {
     description = "Low-latency messaging library";
     homepage = "https://aeron.io/";
     license = lib.licenses.asl20;
-    mainProgram = "${pname}-media-driver";
-    maintainers = [ lib.maintainers.vaci ];
+
     sourceProvenance = [
       lib.sourceTypes.binaryBytecode
     ];
+
+    maintainers = [ lib.maintainers.vaci ];
+    mainProgram = "${pname}-media-driver";
   };
 }

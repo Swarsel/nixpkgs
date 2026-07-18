@@ -1,5 +1,5 @@
-{ mkDerivation, libutil, ... }:
+{ libutil, mkDerivation, ... }:
 mkDerivation {
-  path = "usr.sbin/nscd";
   buildInputs = [ libutil ];
+  path = "usr.sbin/nscd";
 }

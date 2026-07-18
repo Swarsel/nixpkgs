@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   jq,
-  nix,
   makeWrapper,
+  nix,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,10 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "NixOS like terraform-json generator";
     homepage = "https://terranix.org";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       mrVanDalo
       sshine
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

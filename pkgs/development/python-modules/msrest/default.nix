@@ -1,32 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiodns,
   aiohttp,
   azure-core,
+  buildPythonPackage,
   certifi,
+  httpretty,
   isodate,
-  requests,
-  requests-oauthlib,
-
+  pytest-aiohttp,
   # tests
   pytestCheckHook,
-  pytest-aiohttp,
-  httpretty,
+  pythonAtLeast,
+  requests,
+  requests-oauthlib,
+  # build-system
+  setuptools,
   trio,
 }:
 
 buildPythonPackage {
   pname = "msrest";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -36,6 +32,13 @@ buildPythonPackage {
     rev = "2d8fd04f68a124d0f3df7b81584accc3270b1afc";
     hash = "sha256-1EXXXflhDeU+erdI+NsWxSX76ooDTl3+MyQwRzm2xV0=";
   };
+
+  nativeCheckInputs = [
+    httpretty
+    pytest-aiohttp
+    pytestCheckHook
+    trio
+  ];
 
   build-system = [ setuptools ];
 
@@ -49,11 +52,11 @@ buildPythonPackage {
     requests-oauthlib
   ];
 
-  nativeCheckInputs = [
-    httpretty
-    pytest-aiohttp
-    pytestCheckHook
-    trio
+  disabledTestPaths = [
+    # 2 AssertionErrors... See:
+    # https://github.com/Azure/msrest-for-python/issues/267
+    "tests/asynctests/test_async_client.py::TestServiceClient::test_client_send"
+    "tests/test_client.py::TestServiceClient::test_client_send"
   ];
 
   disabledTests = [
@@ -77,19 +80,14 @@ buildPythonPackage {
     "test_eventgrid_domain_auth"
   ];
 
-  disabledTestPaths = [
-    # 2 AssertionErrors... See:
-    # https://github.com/Azure/msrest-for-python/issues/267
-    "tests/asynctests/test_async_client.py::TestServiceClient::test_client_send"
-    "tests/test_client.py::TestServiceClient::test_client_send"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "msrest" ];
 
   meta = {
     description = "Runtime library for AutoRest generated Python clients";
     homepage = "https://github.com/Azure/msrest-for-python";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bendlas
       maxwilson

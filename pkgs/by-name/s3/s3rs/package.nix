@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  python3,
-  perl,
-  openssl,
   fetchFromGitHub,
+  openssl,
+  perl,
   pkg-config,
+  python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,14 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-mJ1bMfv/HY74TknpRvu8RIs1d2VlNreEVtHCtQSHQw8=";
   };
 
-  cargoHash = "sha256-z7de/TZXyNsb+dxWcNFdJsaGsM3Ld2A0jorNMAVOZOg=";
-
   nativeBuildInputs = [
     python3
     perl
     pkg-config
   ];
+
   buildInputs = [ openssl ];
+  cargoHash = "sha256-z7de/TZXyNsb+dxWcNFdJsaGsM3Ld2A0jorNMAVOZOg=";
 
   meta = {
     description = "S3 cli client with multi configs with diffent provider";

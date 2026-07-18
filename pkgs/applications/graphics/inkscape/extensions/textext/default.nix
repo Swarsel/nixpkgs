@@ -1,16 +1,16 @@
 {
   lib,
-  writeScript,
   fetchFromGitHub,
-  replaceVars,
-  inkscape,
-  pdflatex,
-  lualatex,
-  python3,
-  wrapGAppsHook3,
   gobject-introspection,
   gtk3,
   gtksourceview3,
+  inkscape,
+  lualatex,
+  pdflatex,
+  python3,
+  replaceVars,
+  wrapGAppsHook3,
+  writeScript,
 }:
 
 let
@@ -22,7 +22,6 @@ in
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "textext";
   version = "1.13.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "textext";
@@ -43,6 +42,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ./interpreter.patch
   ];
 
+  # strictDeps do not play nicely with introspection setup hooks.
+  # https://github.com/NixOS/nixpkgs/issues/56943
+  strictDeps = false;
+
   nativeBuildInputs = [
     wrapGAppsHook3
     gobject-introspection
@@ -62,19 +65,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     python3.pkgs.tinycss2
   ];
 
-  # strictDeps do not play nicely with introspection setup hooks.
-  # https://github.com/NixOS/nixpkgs/issues/56943
-  strictDeps = false;
-
-  # TexText doesn’t have a 'bdist_wheel' target.
-  dontUseSetuptoolsBuild = true;
-
-  # TexText doesn’t have a 'test' target.
-  doCheck = false;
-
-  # Avoid wrapping two times by just using Python’s wrapping.
-  dontWrapGApps = true;
-
   buildPhase = ''
     runHook preBuild
 
@@ -92,6 +82,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
     runHook postBuild
   '';
+
+  # TexText doesn’t have a 'test' target.
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -116,6 +109,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     wrapPythonProgramsIn "$out/share/inkscape/extensions/textext" "$out ''${pythonPath[*]}"
     cp ${launchScript} $out/share/inkscape/extensions/textext/launch.sh
   '';
+
+  # TexText doesn’t have a 'bdist_wheel' target.
+  dontUseSetuptoolsBuild = true;
+  # Avoid wrapping two times by just using Python’s wrapping.
+  dontWrapGApps = true;
+  format = "setuptools";
 
   meta = {
     description = "Re-editable LaTeX graphics for Inkscape";

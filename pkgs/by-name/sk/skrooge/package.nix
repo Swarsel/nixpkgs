@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   cmake,
-  pkg-config,
   grantlee,
-  sqlcipher,
-  libofx,
-  shared-mime-info,
   kdePackages,
+  libofx,
+  pkg-config,
+  shared-mime-info,
+  sqlcipher,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,8 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Personal finances manager, powered by KDE";
+    homepage = "https://skrooge.org/";
     license = with lib.licenses; [ gpl3 ];
     maintainers = with lib.maintainers; [ joko ];
-    homepage = "https://skrooge.org/";
   };
 })

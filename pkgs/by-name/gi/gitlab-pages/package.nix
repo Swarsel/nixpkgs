@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitLab,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,19 +17,20 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-PUW4cgAiM1GTtvja894OZ4pe0SWChf5JsL4/fkns2kI=";
-  subPackages = [ "." ];
 
   ldflags = [
     "-X"
     "main.VERSION=${finalAttrs.version}"
   ];
 
+  subPackages = [ "." ];
+
   meta = {
     description = "Daemon used to serve static websites for GitLab users";
-    mainProgram = "gitlab-pages";
     homepage = "https://gitlab.com/gitlab-org/gitlab-pages";
     changelog = "https://gitlab.com/gitlab-org/gitlab-pages/-/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+    mainProgram = "gitlab-pages";
     teams = [ lib.teams.gitlab ];
   };
 })

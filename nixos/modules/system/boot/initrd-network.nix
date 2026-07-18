@@ -56,8 +56,8 @@ in
   options = {
 
     boot.initrd.network.enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Add network connectivity support to initrd. The network may be
         configured using the `ip` kernel parameter,
@@ -71,12 +71,14 @@ in
         `lspci -v | grep -iA8 'network\|ethernet'`
         will tell you which.
       '';
+
+      type = types.bool;
     };
 
     boot.initrd.network.flushBeforeStage2 = mkOption {
-      type = types.bool;
       default = !config.boot.initrd.systemd.enable;
       defaultText = "!config.boot.initrd.systemd.enable";
+
       description = ''
         Whether to clear the configuration of the interfaces that were set up in
         the initrd right before stage 2 takes over. Stage 2 will do the regular network
@@ -85,47 +87,64 @@ in
         The default is false when systemd is enabled in initrd,
         because the systemd-networkd documentation suggests it.
       '';
+
+      type = types.bool;
+    };
+
+    boot.initrd.network.postCommands = mkOption {
+      default = "";
+
+      description = ''
+        Shell commands to be executed after stage 1 of the
+        boot has initialised the network.
+      '';
+
+      type = types.lines;
     };
 
     boot.initrd.network.udhcpc.enable = mkOption {
       default = config.networking.useDHCP && !config.boot.initrd.systemd.enable;
       defaultText = lib.literalExpression "config.networking.useDHCP";
-      type = types.bool;
+
       description = ''
         Enables the udhcpc service during stage 1 of the boot process. This
         defaults to {option}`networking.useDHCP`. Therefore, this useful if
         useDHCP is off but the initramfs should do dhcp.
       '';
+
+      type = types.bool;
     };
 
     boot.initrd.network.udhcpc.extraArgs = mkOption {
       default = [ ];
-      type = types.listOf types.str;
+
       description = ''
         Additional command-line arguments passed verbatim to
         udhcpc if {option}`boot.initrd.network.enable` and
         {option}`boot.initrd.network.udhcpc.enable` are enabled.
       '';
-    };
 
-    boot.initrd.network.postCommands = mkOption {
-      default = "";
-      type = types.lines;
-      description = ''
-        Shell commands to be executed after stage 1 of the
-        boot has initialised the network.
-      '';
+      type = types.listOf types.str;
     };
 
   };
 
   config = mkIf cfg.enable {
 
-    boot.initrd.kernelModules = [ "af_packet" ];
-
     boot.initrd.extraUtilsCommands = mkIf (!config.boot.initrd.systemd.enable) ''
       copy_bin_and_libs ${pkgs.klibc}/lib/klibc/bin.static/ipconfig
     '';
+
+    boot.initrd.kernelModules = [ "af_packet" ];
+
+    boot.initrd.postMountCommands =
+      mkIf (cfg.flushBeforeStage2 && !config.boot.initrd.systemd.enable)
+        ''
+          for iface in $ifaces; do
+            ip address flush dev "$iface"
+            ip link set dev "$iface" down
+          done
+        '';
 
     boot.initrd.preLVMCommands = mkIf (!config.boot.initrd.systemd.enable) (
       mkBefore (
@@ -159,15 +178,6 @@ in
         + cfg.postCommands
       )
     );
-
-    boot.initrd.postMountCommands =
-      mkIf (cfg.flushBeforeStage2 && !config.boot.initrd.systemd.enable)
-        ''
-          for iface in $ifaces; do
-            ip address flush dev "$iface"
-            ip link set dev "$iface" down
-          done
-        '';
 
   };
 

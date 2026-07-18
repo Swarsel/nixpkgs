@@ -1,8 +1,8 @@
 {
   lib,
+  fetchurl,
   appimageTools,
   makeWrapper,
-  fetchurl,
 }:
 
 let
@@ -18,7 +18,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit src pname version;
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
@@ -33,10 +32,10 @@ appimageTools.wrapType2 {
 
   meta = {
     description = "Feature-rich GraphQL Client IDE";
-    mainProgram = "altair";
     homepage = "https://github.com/altair-graphql/altair";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ evalexpr ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "altair";
   };
 }

@@ -1,32 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  fmt,
-  ninja,
-  writeScriptBin,
-  writeText,
-  perl,
-  XMLLibXML,
-  XMLLibXSLT,
-  makeWrapper,
-  zlib,
-  enableStoneSense ? true,
-  allegro5,
-  libGLU,
-  libGL,
   SDL,
   SDL2,
-  coreutils,
-  util-linux,
-  ncurses,
-  strace,
+  XMLLibXML,
+  XMLLibXSLT,
+  allegro5,
   binutils,
-  gnused,
+  cmake,
+  coreutils,
   dfVersion,
   dfVersions,
+  fetchpatch,
+  fmt,
+  gnused,
+  libGL,
+  libGLU,
+  makeWrapper,
+  ncurses,
+  ninja,
+  perl,
+  strace,
+  util-linux,
+  writeScriptBin,
+  writeText,
+  zlib,
+  enableStoneSense ? true,
 }:
 
 let
@@ -104,8 +104,8 @@ let
   '';
 in
 stdenv.mkDerivation {
-  pname = "dfhack";
   inherit version;
+  pname = "dfhack";
 
   # Beware of submodules
   src = fetchFromGitHub {
@@ -118,46 +118,32 @@ stdenv.mkDerivation {
 
   patches =
     optional (versionOlder version "0.44.12-r3") (fetchpatch {
-      name = "fix-stonesense.patch";
-      url = "https://github.com/DFHack/stonesense/commit/f5be6fe5fb192f01ae4551ed9217e97fd7f6a0ae.patch";
       extraPrefix = "plugins/stonesense/";
-      stripLen = 1;
       hash = "sha256-wje6Mkct29eyMOcJnbdefwBOLJko/s4JcJe52ojuW+8=";
+      name = "fix-stonesense.patch";
+      stripLen = 1;
+      url = "https://github.com/DFHack/stonesense/commit/f5be6fe5fb192f01ae4551ed9217e97fd7f6a0ae.patch";
     })
     ++ optional (versionOlder version "0.47.04-r1") (fetchpatch {
+      hash = "sha256-p+mKhmYbnhWKNiGPMjbYO505Gcg634n0nudqH0NX3KY=";
       name = "fix-protobuf.patch";
       url = "https://github.com/DFHack/dfhack/commit/7bdf958518d2892ee89a7173224a069c4a2190d8.patch";
-      hash = "sha256-p+mKhmYbnhWKNiGPMjbYO505Gcg634n0nudqH0NX3KY=";
     })
     ++ optional needs50Patches (fetchpatch {
+      hash = "sha256-uLX0gdVSzKEVibyUc1UxcQzdYkRm6D8DF+1eSOxM+qU=";
       name = "use-system-sdl2.patch";
       url = "https://github.com/DFHack/dfhack/commit/734fb730d72e53ebe67f4a041a24dd7c50307ee3.patch";
-      hash = "sha256-uLX0gdVSzKEVibyUc1UxcQzdYkRm6D8DF+1eSOxM+qU=";
     })
     ++ optional needs50Patches (fetchpatch {
+      hash = "sha256-QuDtGURhP+nM+x+8GIKO5LrMcmBkl9JSHHIeqzqGIPQ=";
       name = "rename-lerp.patch";
       url = "https://github.com/DFHack/dfhack/commit/389dcf5cfcdb8bfb8deeb05fa5756c9f4f5709d1.patch";
-      hash = "sha256-QuDtGURhP+nM+x+8GIKO5LrMcmBkl9JSHHIeqzqGIPQ=";
     })
     # Newer versions use SDL_GetBasePath and SDL_GetPrefPath with a Windows-esque directory
     # that mismatches where we have historically stored data in nixpkgs:
     # https://github.com/libsdl-org/SDL/blob/release-2.24.x/src/filesystem/unix/SDL_sysfilesystem.c#L136
     # Use SDL_GetPrefPath since this takes XDG_DATA_HOME into account (which is correct).
     ++ optional (versionAtLeast version "52.02-r2") ./use-df-linux-dir.patch;
-
-  env = {
-    # gcc 11 fix
-    CXXFLAGS = optionalString (versionOlder version "0.47.05-r3") "-fpermissive";
-
-    NIX_CFLAGS_COMPILE = toString (
-      [
-        "-Wno-error=deprecated-enum-enum-conversion"
-      ]
-      ++ optionals (versionOlder version "0.47") [
-        "-fpermissive"
-      ]
-    );
-  };
 
   nativeBuildInputs = [
     cmake
@@ -184,12 +170,6 @@ stdenv.mkDerivation {
     fmt
   ];
 
-  preConfigure = ''
-    # Trick the build system into believing we have .git.
-    mkdir -p .git/modules/library/xml
-    touch .git/index .git/modules/library/xml/index
-  '';
-
   cmakeFlags = [
     # Race condition in `Generating codegen.out.xml and df/headers` that is fixed when using Ninja.
     "-GNinja"
@@ -210,6 +190,26 @@ stdenv.mkDerivation {
     "-DFETCHCONTENT_FULLY_DISCONNECTED=ON"
     "-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=${fetchOverrides}"
   ];
+
+  env = {
+    # gcc 11 fix
+    CXXFLAGS = optionalString (versionOlder version "0.47.05-r3") "-fpermissive";
+
+    NIX_CFLAGS_COMPILE = toString (
+      [
+        "-Wno-error=deprecated-enum-enum-conversion"
+      ]
+      ++ optionals (versionOlder version "0.47") [
+        "-fpermissive"
+      ]
+    );
+  };
+
+  preConfigure = ''
+    # Trick the build system into believing we have .git.
+    mkdir -p .git/modules/library/xml
+    touch .git/index .git/modules/library/xml/index
+  '';
 
   preFixup = ''
     # Wrap dfhack scripts.
@@ -260,14 +260,16 @@ stdenv.mkDerivation {
     description = "Memory hacking library for Dwarf Fortress and a set of tools that use it";
     homepage = "https://github.com/DFHack/dfhack/";
     license = licenses.zlib;
-    platforms = [
-      "x86_64-linux"
-      "i686-linux"
-    ];
+
     maintainers = with maintainers; [
       robbinch
       a1russell
       numinit
+    ];
+
+    platforms = [
+      "x86_64-linux"
+      "i686-linux"
     ];
   };
 }

@@ -6,9 +6,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.2.0";
-  format = "setuptools";
   pname = "ifaddr";
+  version = "0.2.0";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,12 +15,12 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "ifaddr" ];
 
   meta = {
-    homepage = "https://github.com/pydron/ifaddr";
     description = "Enumerates all IP addresses on all network adapters of the system";
+    homepage = "https://github.com/pydron/ifaddr";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

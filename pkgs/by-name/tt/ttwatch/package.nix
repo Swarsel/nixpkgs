@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  perl,
-  pkg-config,
-  openssl,
   curl,
   libusb1,
+  openssl,
+  perl,
+  pkg-config,
   protobufc,
   enableUnsafe ? false,
 }:
@@ -23,11 +23,17 @@ stdenv.mkDerivation {
     sha256 = "0yd2hs9d03gfvwm1vywpg2qga6x5c74zrj665wf9aa8gmn96hv8r";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 2.8)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     perl
     pkg-config
   ];
+
   buildInputs = [
     openssl
     curl
@@ -41,16 +47,11 @@ stdenv.mkDerivation {
     chmod +x $out/bin/ttbin2mysports
   '';
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 2.8)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
-    homepage = "https://github.com/ryanbinns/ttwatch";
     description = "Linux TomTom GPS Watch Utilities";
-    maintainers = with lib.maintainers; [ dotlambda ];
+    homepage = "https://github.com/ryanbinns/ttwatch";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ dotlambda ];
     platforms = with lib.platforms; linux;
   };
 }

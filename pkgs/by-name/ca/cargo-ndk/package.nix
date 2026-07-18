@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,12 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo extension for building Android NDK projects";
-    mainProgram = "cargo-ndk";
     homepage = "https://github.com/bbqsrc/cargo-ndk";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = [ ];
+    mainProgram = "cargo-ndk";
   };
 })

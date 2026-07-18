@@ -4,16 +4,16 @@
 # ```
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  alsa-lib,
+  autoPatchelfHook,
+  bubblewrap,
   installShellFiles,
   makeBinaryWrapper,
-  autoPatchelfHook,
-  alsa-lib,
   procps,
   ripgrep,
-  bubblewrap,
   socat,
+  stdenvNoCC,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -25,27 +25,21 @@ let
   platformManifestEntry = manifest.platforms.${platformKey};
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "claude-code";
   inherit (manifest) version;
+  pname = "claude-code";
 
   src = fetchurl {
     url = "${baseUrl}/${finalAttrs.version}/${platformKey}/claude";
     sha256 = platformManifestEntry.checksum;
   };
 
-  dontUnpack = true;
-  dontBuild = true;
-  __noChroot = stdenv.hostPlatform.isDarwin;
-  # otherwise the bun runtime is executed instead of the binary
-  dontStrip = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     installShellFiles
     makeBinaryWrapper
   ]
   ++ lib.optionals stdenv.hostPlatform.isElf [ autoPatchelfHook ];
-
-  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -79,27 +73,28 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     writableTmpDirAsHomeHook
     versionCheckHook
   ];
+
+  __noChroot = stdenv.hostPlatform.isDarwin;
+  dontBuild = true;
+  # otherwise the bun runtime is executed instead of the binary
+  dontStrip = true;
+  dontUnpack = true;
   versionCheckKeepEnvironment = [ "HOME" ];
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster";
     homepage = "https://github.com/anthropics/claude-code";
-    downloadPage = "https://claude.com/product/claude-code";
     changelog = "https://github.com/anthropics/claude-code/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = [
-      "aarch64-darwin"
-      "aarch64-linux"
-      "x86_64-linux"
-    ];
+
     maintainers = with lib.maintainers; [
       adeci
       malo
@@ -109,6 +104,14 @@ stdenv.mkDerivation (finalAttrs: {
       oskarwires
       xiaoxiangmoe
     ];
+
+    platforms = [
+      "aarch64-darwin"
+      "aarch64-linux"
+      "x86_64-linux"
+    ];
+
     mainProgram = "claude";
+    downloadPage = "https://claude.com/product/claude-code";
   };
 })

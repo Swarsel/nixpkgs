@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   libpcap,
   # Can't be build with both pcap and rawsocket tags
   withPcap ? (!stdenv.hostPlatform.isLinux && !withRawsocket),
@@ -20,22 +20,25 @@ buildGoModule {
     hash = "sha256-V9XBCHih409IqKx3TM37fvxYzP0bv46M0DgKgj64RFg=";
   };
 
+  buildInputs = lib.optional withPcap libpcap;
   vendorHash = "sha256-0MJlz7HAhRThn8O42yhvU3p5HgTG8AkPM0ksSjWYAC4=";
 
   ldflags = [
     "-s"
     "-w"
   ];
-  buildInputs = lib.optional withPcap libpcap;
+
   tags = lib.optional withPcap "pcap" ++ lib.optional withRawsocket "rawsocket";
 
   meta = {
-    homepage = "https://github.com/macronut/phantomsocks";
     description = "Cross-platform proxy client/server for Linux/Windows/macOS";
+
     longDescription = ''
       A cross-platform proxy tool that could be used to modify TCP packets
       to implement TCB desync to bypass detection and censoring.
     '';
+
+    homepage = "https://github.com/macronut/phantomsocks";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ oluceps ];
     mainProgram = "phantomsocks";

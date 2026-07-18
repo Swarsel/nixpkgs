@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  installShellFiles,
   fetchFromGitHub,
-  zig_0_15,
   callPackage,
-  versionCheckHook,
+  installShellFiles,
   nasm,
+  versionCheckHook,
+  zig_0_15,
 }:
 
 let
@@ -23,24 +23,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-YiyhhVV73XfVoYCRcYU7PL+Vrcwaf2FINH0W+Ejcu4Q=";
   };
 
-  postConfigure = ''
-    ln -s ${callPackage ./build.zig.zon.nix { }} $ZIG_GLOBAL_CACHE_DIR/p
-  '';
-
   nativeBuildInputs = [
     installShellFiles
     zig
     nasm
   ];
 
-  doInstallCheck = true;
+  postConfigure = ''
+    ln -s ${callPackage ./build.zig.zon.nix { }} $ZIG_GLOBAL_CACHE_DIR/p
+  '';
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
 
   meta = {
-    homepage = "https://github.com/dmtrKovalenko/odiff";
     description = "SIMD-first image comparison library";
+    homepage = "https://github.com/dmtrKovalenko/odiff";
     changelog = "https://github.com/dmtrKovalenko/odiff/releases";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ddogfoodd ];

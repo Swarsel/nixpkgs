@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   libev,
@@ -20,13 +20,6 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    libev
-    libnl
-    libpcap
-  ];
-
   postPatch = ''
     substituteInPlace googletest/CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 2.8.8)" "cmake_minimum_required(VERSION 3.10)"
@@ -36,6 +29,14 @@ stdenv.mkDerivation {
     # https://gcc.gnu.org/gcc-15/porting_to.html#header-dep-changes
     sed -e '1i #include <cstdint>' -i googletest/googletest/src/gtest-death-test.cc
   '';
+
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    libev
+    libnl
+    libpcap
+  ];
 
   meta = {
     description = "Open Apple Wireless Direct Link (AWDL) implementation written in C";

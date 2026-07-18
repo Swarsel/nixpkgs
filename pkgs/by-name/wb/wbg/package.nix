@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromCodeberg,
-  pkg-config,
+  libjpeg,
+  libjxl,
+  # Optional dependencies
+  libpng,
+  libwebp,
   meson,
   ninja,
   pixman,
+  pkg-config,
   tllist,
   wayland,
-  wayland-scanner,
   wayland-protocols,
-  libjxl,
-  enablePNG ? true,
+  wayland-scanner,
   enableJPEG ? true,
+  enablePNG ? true,
   enableWebp ? true,
-  # Optional dependencies
-  libpng,
-  libjpeg,
-  libwebp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,8 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional enableJPEG libjpeg
   ++ lib.optional enableWebp libwebp;
 
-  mesonBuildType = "release";
-
   mesonFlags = [
     (lib.mesonEnable "png" enablePNG)
     (lib.mesonEnable "jpeg" enableJPEG)
@@ -60,6 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
   env.NIX_CFLAGS_COMPILE = toString [
     "-Wno-error=maybe-uninitialized"
   ];
+
+  mesonBuildType = "release";
 
   meta = {
     description = "Wallpaper application for Wayland compositors";

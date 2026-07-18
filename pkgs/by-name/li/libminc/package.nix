@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  zlib,
+  hdf5,
   netcdf,
   nifticlib,
-  hdf5,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,10 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     zlib
     nifticlib
   ];
+
   propagatedBuildInputs = [
     netcdf
     hdf5
@@ -42,16 +44,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = !stdenv.hostPlatform.isDarwin;
+
   # -j1: see https://github.com/BIC-MNI/libminc/issues/110
   checkPhase = ''
     ctest -j1 --output-on-failure
   '';
 
   meta = {
-    homepage = "https://github.com/BIC-MNI/libminc";
     description = "Medical imaging library based on HDF5";
+    homepage = "https://github.com/BIC-MNI/libminc";
+    license = lib.licenses.free;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.free;
   };
 })

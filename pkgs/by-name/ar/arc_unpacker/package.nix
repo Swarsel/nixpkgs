@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  makeWrapper,
-  ninja,
   boost,
-  libpng,
+  catch2,
+  cmake,
+  fetchpatch,
   libiconv,
   libjpeg,
-  zlib,
-  openssl,
+  libpng,
   libwebp,
-  catch2,
+  makeWrapper,
+  ninja,
+  openssl,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -65,6 +65,8 @@ stdenv.mkDerivation {
     zlib
   ];
 
+  doCheck = true;
+
   checkPhase =
     let
       checkTarget = [
@@ -101,8 +103,6 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
-
-  doCheck = true;
 
   meta = {
     description = "Tool to extract files from visual novel archives";

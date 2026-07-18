@@ -1,16 +1,18 @@
 {
-  mkDerivation,
   libcapsicum,
   libcasper,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/logger";
   outputs = [
     "out"
     "debug"
   ];
+
   buildInputs = [
     libcasper
     libcapsicum
   ];
+
+  path = "usr.bin/logger";
 }

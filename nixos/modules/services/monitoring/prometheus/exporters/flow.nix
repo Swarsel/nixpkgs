@@ -17,38 +17,42 @@ let
     ;
 in
 {
-  port = 9590;
   extraOpts = {
-    brokers = mkOption {
-      type = types.listOf types.str;
-      example = literalExpression ''[ "kafka.example.org:19092" ]'';
-      description = "List of Kafka brokers to connect to.";
+    asn = mkOption {
+      description = "The ASN being monitored.";
+      example = 65542;
+      type = types.ints.positive;
     };
 
-    asn = mkOption {
-      type = types.ints.positive;
-      example = 65542;
-      description = "The ASN being monitored.";
+    brokers = mkOption {
+      description = "List of Kafka brokers to connect to.";
+      example = literalExpression ''[ "kafka.example.org:19092" ]'';
+      type = types.listOf types.str;
     };
 
     partitions = mkOption {
-      type = types.listOf types.int;
       default = [ ];
+
       description = ''
         The number of the partitions to consume, none means all.
       '';
+
+      type = types.listOf types.int;
     };
 
     topic = mkOption {
-      type = types.str;
-      example = "pmacct.acct";
       description = "The Kafka topic to consume from.";
+      example = "pmacct.acct";
+      type = types.str;
     };
   };
+
+  port = 9590;
 
   serviceOpts = {
     serviceConfig = {
       DynamicUser = true;
+
       ExecStart = ''
         ${pkgs.prometheus-flow-exporter}/bin/flow-exporter \
           -asn ${toString cfg.asn} \

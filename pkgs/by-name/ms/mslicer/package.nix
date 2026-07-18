@@ -1,16 +1,16 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   libglvnd,
+  libx11,
+  libxcursor,
+  libxi,
   libxkbcommon,
+  libxrandr,
   nix-update-script,
   rustPlatform,
   vulkan-loader,
   wayland,
-  libxrandr,
-  libxi,
-  libxcursor,
-  libx11,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,11 +24,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-kDpV9UlqiqV+/h0PWk6fsOWumCHben4gkQk1mEXE5wk=";
   };
 
-  cargoHash = "sha256-o1igInyC0N8TorQ/naKbRyTTdZiaSNquVy0i0jzNcAk=";
-
   postPatch = ''
     patchShebangs --build dist/msla_format/generate.sh
   '';
+
+  strictDeps = true;
 
   buildInputs = [
     libglvnd
@@ -40,6 +40,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxi
     libx11
   ];
+
+  cargoHash = "sha256-o1igInyC0N8TorQ/naKbRyTTdZiaSNquVy0i0jzNcAk=";
 
   # Force linking to libEGL, which is always dlopen()ed, and to
   # libwayland-client & libxkbcommon, which is dlopen()ed based on the
@@ -60,9 +62,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   # Build all binaries (e.g. the cli `slicer`) -- not just the default `mslicer` GUI application:
   cargoBuildFlags = [ "--workspace" ];
-
-  strictDeps = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

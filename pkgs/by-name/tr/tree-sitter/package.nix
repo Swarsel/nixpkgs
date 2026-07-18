@@ -1,26 +1,26 @@
 {
   lib,
   stdenv,
-  newScope,
   fetchFromGitHub,
   fetchFromGitLab,
-  fetchFromSourcehut,
-  fetchFromCodeberg,
-  fetchpatch,
-  nix-update-script,
-  which,
-  rustPlatform,
-  runCommand,
+  buildPackages,
+  callPackage,
+  cmake,
   emscripten,
+  fetchFromCodeberg,
+  fetchFromSourcehut,
+  fetchpatch,
+  installShellFiles,
+  linkFarm,
+  newScope,
+  nix-update-script,
   openssl,
   pkg-config,
-  callPackage,
-  linkFarm,
+  runCommand,
+  rustPlatform,
   substitute,
-  installShellFiles,
-  buildPackages,
-  cmake,
   wasmtime_36,
+  which,
   enableShared ? !stdenv.hostPlatform.isStatic,
   enableStatic ? stdenv.hostPlatform.isStatic,
   wasmSupport ? false,
@@ -93,6 +93,7 @@ let
               lib.strings.removePrefix "tree-sitter-" (lib.strings.removeSuffix "-grammar" name)
             ))
             + ".so";
+
           path = "${drv}/parser";
         }
       ) grammars
@@ -117,10 +118,11 @@ let
     self:
     builtGrammars
     // {
-      derivations = grammarDerivationsFrom self;
       allGrammars = lib.filter (p: !(p.meta.broken or false)) (
         lib.attrValues (grammarDerivationsFrom self)
       );
+
+      derivations = grammarDerivationsFrom self;
       withPlugins = grammarFn: mkGrammarLinkFarm (grammarFn (grammarDerivationsFrom self));
     }
   );
@@ -140,39 +142,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-3egxdusYHQs8PadxGZ44+VWtlTcGBrcqlWMUyUzpWnY=";
-
-  cargoBuildFeatures = lib.optionals wasmSupport [ "wasm" ];
-
-  buildInputs = [
-    installShellFiles
-  ]
-  ++ lib.optionals wasmSupport [
-    wasmtime_36
-  ]
-  ++ lib.optionals webUISupport [
-    openssl
-  ];
-  nativeBuildInputs = [
-    rustPlatform.bindgenHook
-    which
-  ]
-  ++ lib.optionals wasmSupport [
-    cmake
-  ]
-  ++ lib.optionals webUISupport [
-    emscripten
-    pkg-config
-  ];
-
   patches = lib.optionals (!webUISupport) [
     (substitute {
       src = ./remove-web-interface.patch;
     })
     (fetchpatch {
+      hash = "sha256-ZNjdNateHVHDy0/txlAW8TUdz+DVxLKXpw8ojZbIQS8=";
       name = "feat: allow `-` in grammar names";
       url = "https://github.com/tree-sitter/tree-sitter/commit/7d3c32125379c1dc02f47277bcd4eceaac299bdb.diff";
-      hash = "sha256-ZNjdNateHVHDy0/txlAW8TUdz+DVxLKXpw8ojZbIQS8=";
     })
   ];
 
@@ -189,6 +166,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
           --replace-fail 'all: libtree-sitter.a libtree-sitter.$(SOEXT) tree-sitter.pc' 'all: libtree-sitter.a tree-sitter.pc'
       sed -i '/^install:/,/^[^[:space:]]/ { /$(SOEXT/d; }' ./Makefile
     '';
+
+  nativeBuildInputs = [
+    rustPlatform.bindgenHook
+    which
+  ]
+  ++ lib.optionals wasmSupport [
+    cmake
+  ]
+  ++ lib.optionals webUISupport [
+    emscripten
+    pkg-config
+  ];
+
+  buildInputs = [
+    installShellFiles
+  ]
+  ++ lib.optionals wasmSupport [
+    wasmtime_36
+  ]
+  ++ lib.optionals webUISupport [
+    openssl
+  ];
+
+  cargoHash = "sha256-3egxdusYHQs8PadxGZ44+VWtlTcGBrcqlWMUyUzpWnY=";
 
   # The Makefile install can't enable the wasm feature.
   cmakeFlags = lib.optionals wasmSupport [
@@ -207,6 +208,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     export EM_CACHE=$(pwd)/.emscriptencache
     cargo run --package xtask -- build-wasm --debug
   '';
+
+  # test result: FAILED. 120 passed; 13 failed; 0 ignored; 0 measured; 0 filtered out
+  doCheck = false;
 
   postInstall = ''
     PREFIX=$out make install
@@ -233,9 +237,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish "${buildPackages.tree-sitter}"/share/fish/*/*
   '';
 
-  # test result: FAILED. 120 passed; 13 failed; 0 ignored; 0 measured; 0 filtered out
-  doCheck = false;
-
   # CMake builds libtree-sitter with wasm support; cargo still builds the CLI.
   ${if wasmSupport then "configurePhase" else null} = ''
     cmakeConfigurePhase
@@ -245,6 +246,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ${if wasmSupport then "postBuild" else null} = ''
     cmake --build $cmakeBuildDir
   '';
+
+  cargoBuildFeatures = lib.optionals wasmSupport [ "wasm" ];
 
   passthru = {
     inherit
@@ -256,8 +259,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     # Keep legacy `pkgs.tree-sitter` views wired to the overridable scope.
     inherit (grammarsScope) allGrammars withPlugins;
-
-    updateScript = nix-update-script { };
 
     tests = {
       # make sure all grammars build
@@ -276,13 +277,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
           touch $out
         '';
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/tree-sitter/tree-sitter";
     description = "Parser generator tool and an incremental parsing library";
-    mainProgram = "tree-sitter";
-    changelog = "https://github.com/tree-sitter/tree-sitter/releases/tag/v${finalAttrs.version}";
+
     longDescription = ''
       Tree-sitter is a parser generator tool and an incremental parsing library.
       It can build a concrete syntax tree for a source file and efficiently update the syntax tree as the source file is edited.
@@ -294,10 +295,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
       * Robust enough to provide useful results even in the presence of syntax errors
       * Dependency-free so that the runtime library (which is written in pure C) can be embedded in any application
     '';
+
+    homepage = "https://github.com/tree-sitter/tree-sitter";
+    changelog = "https://github.com/tree-sitter/tree-sitter/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       uncenter
       amaanq
     ];
+
+    mainProgram = "tree-sitter";
   };
 })

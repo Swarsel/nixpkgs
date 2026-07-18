@@ -2,55 +2,33 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
-  gnused,
-  coreutils,
-  psutils,
-  gnugrep,
-  ghostscript,
-  file,
   a2ps,
+  coreutils,
+  dpkg,
+  file,
   gawk,
-  which,
+  ghostscript,
+  gnugrep,
+  gnused,
+  makeWrapper,
   pkgsi686Linux,
+  psutils,
+  which,
 }:
 
 stdenv.mkDerivation rec {
   pname = "cups-brother-${model}";
   version = "1.1.4-0";
-  lprVersion = "1.1.2-1";
-
-  model = "hl3170cdw";
-  cupsFileNo = "006743";
-  lprFileNo = "007056";
 
   src = fetchurl {
     url = "https://download.brother.com/welcome/dlf${cupsFileNo}/${model}_cupswrapper_GPL_source_${version}.tar.gz";
     hash = "sha256-E3GSwiMRkuiCIJYkDozoYUPfOqvopPqPPQt1uaMDEAU=";
   };
 
-  lprdeb = fetchurl {
-    url = "https://download.brother.com/welcome/dlf${lprFileNo}/${model}lpr-${lprVersion}.i386.deb";
-    hash = "sha256-N1GjQHth5k4qhbfWLInzub9DcNsee4gKc3EW2WIfrko=";
-  };
-
   nativeBuildInputs = [
     makeWrapper
     dpkg
   ];
-
-  preUnpack = ''
-    dpkg-deb -x ${lprdeb} $out
-  '';
-
-  prePatch = ''
-    substituteInPlace brcupsconfig/brcups_commands.h \
-      --replace-fail "brprintconf[30]=\"" "brprintconf[130]=\"$out/usr/bin/"
-
-    substituteInPlace brcupsconfig/brcupsconfig.c \
-      --replace-fail "exec[300]" "exec[400]"
-  '';
 
   makeFlags = [ "--directory=brcupsconfig" ];
 
@@ -146,22 +124,50 @@ stdenv.mkDerivation rec {
       }
   '';
 
+  cupsFileNo = "006743";
+  lprFileNo = "007056";
+  lprVersion = "1.1.2-1";
+
+  lprdeb = fetchurl {
+    hash = "sha256-N1GjQHth5k4qhbfWLInzub9DcNsee4gKc3EW2WIfrko=";
+    url = "https://download.brother.com/welcome/dlf${lprFileNo}/${model}lpr-${lprVersion}.i386.deb";
+  };
+
+  model = "hl3170cdw";
+
+  prePatch = ''
+    substituteInPlace brcupsconfig/brcups_commands.h \
+      --replace-fail "brprintconf[30]=\"" "brprintconf[130]=\"$out/usr/bin/"
+
+    substituteInPlace brcupsconfig/brcupsconfig.c \
+      --replace-fail "exec[300]" "exec[400]"
+  '';
+
+  preUnpack = ''
+    dpkg-deb -x ${lprdeb} $out
+  '';
+
   meta = {
-    homepage = "https://www.brother.com/";
     description = "Brother ${model} printer driver";
-    sourceProvenance = with lib.sourceTypes; [
-      binaryNativeCode
-      fromSource
-    ];
+    homepage = "https://www.brother.com/";
+
     license = with lib.licenses; [
       unfree
       gpl2Plus
     ];
+
+    sourceProvenance = with lib.sourceTypes; [
+      binaryNativeCode
+      fromSource
+    ];
+
+    maintainers = with lib.maintainers; [ luna_1024 ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=${model}_all&os=128";
-    maintainers = with lib.maintainers; [ luna_1024 ];
   };
 }

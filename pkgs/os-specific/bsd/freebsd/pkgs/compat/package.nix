@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  mkDerivation,
-  versionData,
+  boot-install,
   bsdSetupHook,
+  expat,
+  freebsd-lib,
   freebsdSetupHook,
   makeMinimal,
-  boot-install,
+  mkDerivation,
+  versionData,
   which,
-  freebsd-lib,
-  expat,
   zlib,
   extraSrc ? [ ],
 }:
@@ -20,7 +20,45 @@ in
 
 mkDerivation {
   pname = "compat";
-  path = "tools/build";
+
+  nativeBuildInputs = [
+    bsdSetupHook
+    freebsdSetupHook
+    makeMinimal
+    boot-install
+
+    which
+  ];
+
+  buildInputs = [
+    expat
+    zlib
+  ];
+
+  makeFlags = [
+    "STRIP=-s" # flag to install, not command
+    "MK_WERROR=no"
+    "HOST_INCLUDE_ROOT=${lib.getDev stdenv.cc.libc}/include"
+    "INSTALL=boot-install"
+  ];
+
+  preBuild = ''
+    NIX_CFLAGS_COMPILE+=' -I../../include -I../../sys'
+
+    cp ../../sys/${mkBsdMachine stdenv}/include/elf.h ../../sys/sys
+    cp ../../sys/${mkBsdMachine stdenv}/include/elf.h ../../sys/sys/${mkBsdMachine stdenv}
+  ''
+  + lib.optionalString stdenv.hostPlatform.isx86 ''
+    cp ../../sys/x86/include/elf.h ../../sys/x86
+  '';
+
+  # This one has an ifdefed `#include_next` that makes it annoying.
+  postInstall = ''
+    rm ''${!outputDev}/0-include/libelf.h
+  '';
+
+  alwaysKeepStatic = true;
+
   extraPaths = [
     "lib/libc/db"
     "lib/libc/stdlib" # getopt
@@ -169,45 +207,7 @@ mkDerivation {
   ]
   ++ extraSrc;
 
-  preBuild = ''
-    NIX_CFLAGS_COMPILE+=' -I../../include -I../../sys'
-
-    cp ../../sys/${mkBsdMachine stdenv}/include/elf.h ../../sys/sys
-    cp ../../sys/${mkBsdMachine stdenv}/include/elf.h ../../sys/sys/${mkBsdMachine stdenv}
-  ''
-  + lib.optionalString stdenv.hostPlatform.isx86 ''
-    cp ../../sys/x86/include/elf.h ../../sys/x86
-  '';
-
-  setupHooks = [
-    ../../../../../build-support/setup-hooks/role.bash
-    ./compat-setup-hook.sh
-  ];
-
-  # This one has an ifdefed `#include_next` that makes it annoying.
-  postInstall = ''
-    rm ''${!outputDev}/0-include/libelf.h
-  '';
-
-  nativeBuildInputs = [
-    bsdSetupHook
-    freebsdSetupHook
-    makeMinimal
-    boot-install
-
-    which
-  ];
-  buildInputs = [
-    expat
-    zlib
-  ];
-
-  makeFlags = [
-    "STRIP=-s" # flag to install, not command
-    "MK_WERROR=no"
-    "HOST_INCLUDE_ROOT=${lib.getDev stdenv.cc.libc}/include"
-    "INSTALL=boot-install"
-  ];
+  path = "tools/build";
 
   preIncludes = ''
     mkdir -p $out/{0,1}-include
@@ -220,10 +220,13 @@ mkDerivation {
     cp --no-preserve=mode -r cross-build/include/darwin/* $out/1-include
   '';
 
+  setupHooks = [
+    ../../../../../build-support/setup-hooks/role.bash
+    ./compat-setup-hook.sh
+  ];
+
   # Compat is for making other platforms look like FreeBSD (e.g. to
   # build build-time dependencies for building FreeBSD packages). It is
   # not needed when building for FreeBSD.
   meta.platforms = lib.platforms.linux;
-
-  alwaysKeepStatic = true;
 }

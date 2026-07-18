@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  libcec_platform,
+  libraspberrypi,
   pkg-config,
   udev,
-  libcec_platform,
   withLibraspberrypi ? false,
-  libraspberrypi,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     cmake
   ];
+
   buildInputs = [
     libcec_platform
   ]

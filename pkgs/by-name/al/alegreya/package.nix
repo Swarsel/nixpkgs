@@ -1,18 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "alegreya";
   version = "2.008";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "huertatipografica";
@@ -21,10 +16,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     sha256 = "1m5xr95y6qxxv2ryvhfck39d6q5hxsr51f530fshg53x48l2mpwr";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
     description = "Elegant and versatile font family for comfortable reading";
+
     longDescription = ''
       Alegreya is a typeface originally intended for literature. Among its crowning characteristics, it conveys a dynamic and varied rhythm which facilitates the reading of long texts. Also, it provides freshness to the page while referring to the calligraphic letter, not as a literal interpretation, but rather in a contemporary typographic language.
 
@@ -40,9 +41,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       Designed by Juan Pablo del Peral for Huerta Tipográfica.
     '';
+
     homepage = "https://www.huertatipografica.com/en/fonts/alegreya-ht-pro";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ Thra11 ];
+    platforms = lib.platforms.all;
   };
 })

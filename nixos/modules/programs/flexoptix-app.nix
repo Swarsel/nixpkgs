@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -12,7 +12,6 @@ in
   options = {
     programs.flexoptix-app = {
       enable = lib.mkEnableOption "FLEXOPTIX app + udev rules";
-
       package = lib.mkPackageOption pkgs "flexoptix-app" { };
     };
   };

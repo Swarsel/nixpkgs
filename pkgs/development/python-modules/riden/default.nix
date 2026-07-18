@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   modbus-tk,
   poetry-core,
   pyserial,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "riden";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "geeksville";
@@ -20,6 +19,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-uR1CsVsGn/QC4krHaxl6GqRnTPbFdRaqyMEl2RVMHPU=";
   };
+
+  # Module has no tests
+  doCheck = false;
 
   build-system = [
     poetry-core
@@ -32,9 +34,7 @@ buildPythonPackage rec {
     pyserial
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "riden" ];
 
   meta = {

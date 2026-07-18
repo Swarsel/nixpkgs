@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  readline,
   autoreconfHook,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,9 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ readline ];
 
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
+
     description = "Minimalistic terminal program for communicating
     with devices over a serial connection";
-    inherit (finalAttrs.src.meta) homepage;
+
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ emantor ];
     platforms = with lib.platforms; linux;

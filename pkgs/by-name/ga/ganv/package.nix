@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  cmake,
   graphviz,
   gtk2,
   gtkmm2,
   meson,
   ninja,
-  cmake,
   pkg-config,
 }:
 
@@ -22,6 +22,8 @@ stdenv.mkDerivation {
     hash = "sha256-DzODtYI8uwP65ck8Q90QEnjQbvPobepeQVgNZZjF+jk=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     meson
@@ -35,17 +37,15 @@ stdenv.mkDerivation {
     graphviz
   ];
 
-  strictDeps = true;
-
   # libintl detection does not work even if provided
   mesonAutoFeatures = "disabled";
 
   meta = {
     description = "Interactive Gtk canvas widget for graph-based interfaces";
-    mainProgram = "ganv_bench";
     homepage = "http://drobilla.net";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ t4ccer ];
     platforms = lib.platforms.linux;
+    mainProgram = "ganv_bench";
   };
 }

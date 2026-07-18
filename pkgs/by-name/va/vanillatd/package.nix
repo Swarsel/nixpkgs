@@ -1,31 +1,26 @@
 {
   lib,
   stdenv,
-  stdenvNoCC,
   fetchFromGitHub,
-
   # buildInputs
   SDL2,
-  libcxx,
-  openal,
-
-  # nativeBuildInputs
-  cmake,
-  git,
-  pkg-config,
-  imagemagick,
-  libicns,
-  copyDesktopItems,
-
-  makeDesktopItem,
-
   # passthru
   callPackage,
-  symlinkJoin,
+  # nativeBuildInputs
+  cmake,
+  copyDesktopItems,
+  git,
+  imagemagick,
+  libcxx,
+  libicns,
+  makeDesktopItem,
+  openal,
+  pkg-config,
   rsync,
-
-  appName ? "vanillatd",
+  stdenvNoCC,
+  symlinkJoin,
   CMAKE_BUILD_TYPE ? "RelWithDebInfo", # "Choose the type of build, recommended options are: Debug Release RelWithDebInfo"
+  appName ? "vanillatd",
 }:
 assert lib.assertOneOf "appName" appName [
   "vanillatd"
@@ -42,14 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "ebc8083d5d149f98abc20f460a512a2d16fdc59f";
     hash = "sha256-iUF9UFc0FMvOwLkGqSyLYGy5E8YqNySqDp5VVUa+u4o=";
   };
-  # TODO: Remove this. Just add this flag to ignore the format-security error temporarily.
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
-
-  buildInputs = [
-    SDL2
-    libcxx
-    openal
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -64,6 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
     copyDesktopItems
   ];
 
+  buildInputs = [
+    SDL2
+    libcxx
+    openal
+  ];
+
   cmakeFlags = [
     (lib.cmakeBool "BUILD_VANILLATD" (appName == "vanillatd"))
     (lib.cmakeBool "BUILD_VANILLARA" (appName == "vanillara"))
@@ -71,6 +64,9 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_REMASTERRA" (appName == "remasterra"))
     (lib.cmakeFeature "CMAKE_BUILD_TYPE" CMAKE_BUILD_TYPE)
   ];
+
+  # TODO: Remove this. Just add this flag to ignore the format-security error temporarily.
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
 
   # TODO: Fix this from the upstream
   # remove the old FindSDL2.cmake logic, use cmake's built-in SDL2 support
@@ -103,19 +99,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = appName;
-      desktopName = appName;
+      categories = [ "Game" ];
+
       comment =
         {
-          "vanillatd" = "Command & Conquer: Tiberian Dawn";
           "vanillara" = "Command & Conquer: Red Alert";
+          "vanillatd" = "Command & Conquer: Tiberian Dawn";
         }
         ."${appName}";
+
+      desktopName = appName;
       exec = appName;
-      terminal = false;
       icon = appName;
+      name = appName;
       startupWMClass = appName;
-      categories = [ "Game" ];
+      terminal = false;
     })
   ];
 
@@ -135,11 +133,10 @@ stdenv.mkDerivation (finalAttrs: {
           };
         in
         stdenvNoCC.mkDerivation {
-          pname = "${appName}-with-packages";
           inherit (finalAttrs.finalPackage) version meta;
-
-          buildInputs = [ dataDerivation ] ++ finalAttrs.buildInputs;
+          pname = "${appName}-with-packages";
           nativeBuildInputs = [ rsync ];
+          buildInputs = [ dataDerivation ] ++ finalAttrs.buildInputs;
 
           buildCommand =
             let
@@ -166,12 +163,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description =
       {
-        "vanillatd" =
-          "Vanilla Conquer is a modern, multi-platform source port of Command & Conquer: Tiberian Dawn";
         "vanillara" =
           "Vanilla Conquer is a modern, multi-platform source port of Command & Conquer: Red Alert";
+
+        "vanillatd" =
+          "Vanilla Conquer is a modern, multi-platform source port of Command & Conquer: Tiberian Dawn";
       }
       ."${appName}";
+
     homepage = "https://github.com/TheAssemblyArmada/Vanilla-Conquer";
     license = with lib.licenses; [ gpl3Only ];
     sourceProvenance = with lib.sourceTypes; [ fromSource ];

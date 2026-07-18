@@ -1,32 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
-  python,
-
+  buildPythonPackage,
   # nativeBuildInputs
   cmake,
   doxygen,
-  nanobind,
-
-  # propagatedBuildInputs
-  suitesparse,
   eigen,
   jrl-cmakemodules,
-
+  nanobind,
+  nix-update-script,
   # dependencies
   numpy,
-
   # checkInputs
   pytest,
+  python,
   scipy,
+  # propagatedBuildInputs
+  suitesparse,
 }:
 
 buildPythonPackage rec {
   pname = "nanoeigenpy";
   version = "0.5.0";
-  pyproject = false; # Built with cmake
 
   src = fetchFromGitHub {
     owner = "Simple-Robotics";
@@ -34,6 +29,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-FWNIZFzY7BXC3vQKsIUFIJr3dQ8V1+OOmt5mKQP9/3M=";
   };
+
+  outputs = [
+    "dev"
+    "doc"
+    "out"
+  ];
 
   # Fix:
   # > PermissionError: [Errno 13] Permission denied:
@@ -43,22 +44,6 @@ buildPythonPackage rec {
       "$""{Python_SITELIB}" \
       "${python.sitePackages}"
   '';
-
-  outputs = [
-    "dev"
-    "doc"
-    "out"
-  ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "INSTALL_DOCUMENTATION" true)
-    (lib.cmakeBool "BUILD_TESTING" true)
-    (lib.cmakeBool "BUILD_WITH_CHOLMOD_SUPPORT" true)
-    # Accelerate support in eigen requires
-    # https://gitlab.com/libeigen/eigen/-/merge_requests/856
-    # which is not in the current eigen v3.4.0-unstable-2022-05-19
-    # (lib.cmakeBool "BUILD_WITH_ACCELERATE_SUPPORT" stdenv.hostPlatform.isDarwin)
-  ];
 
   strictDeps = true;
 
@@ -74,8 +59,14 @@ buildPythonPackage rec {
     jrl-cmakemodules
   ];
 
-  dependencies = [
-    numpy
+  cmakeFlags = [
+    (lib.cmakeBool "INSTALL_DOCUMENTATION" true)
+    (lib.cmakeBool "BUILD_TESTING" true)
+    (lib.cmakeBool "BUILD_WITH_CHOLMOD_SUPPORT" true)
+    # Accelerate support in eigen requires
+    # https://gitlab.com/libeigen/eigen/-/merge_requests/856
+    # which is not in the current eigen v3.4.0-unstable-2022-05-19
+    # (lib.cmakeBool "BUILD_WITH_ACCELERATE_SUPPORT" stdenv.hostPlatform.isDarwin)
   ];
 
   checkInputs = [
@@ -83,17 +74,20 @@ buildPythonPackage rec {
     scipy
   ];
 
-  # Ensure the unit tests are built
-  preInstallCheck = "make test";
-
-  pythonImportsCheck = [ "nanoeigenpy" ];
-
-  passthru.updateScript = nix-update-script { };
-
   postFixup = ''
     substituteInPlace $dev/lib/cmake/nanoeigenpy/nanoeigenpyConfig.cmake \
       --replace-fail $out $dev
   '';
+
+  dependencies = [
+    numpy
+  ];
+
+  # Ensure the unit tests are built
+  preInstallCheck = "make test";
+  pyproject = false; # Built with cmake
+  pythonImportsCheck = [ "nanoeigenpy" ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Support library for bindings between Eigen in C++ and Python, based on nanobind";

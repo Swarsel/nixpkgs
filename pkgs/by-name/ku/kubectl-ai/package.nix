@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,9 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-LWOJhncRZ1f9I5BtPl4LPcEMWYhl8rZDk5pWDuO+2Nk=";
-
-  # Build the main command
-  subPackages = [ "cmd" ];
+  doCheck = false;
 
   postInstall = ''
     mv $out/bin/{cmd,kubectl-ai}
@@ -30,7 +28,8 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  doCheck = false;
+  # Build the main command
+  subPackages = [ "cmd" ];
 
   meta = {
     description = "AI powered Kubernetes Assistant";

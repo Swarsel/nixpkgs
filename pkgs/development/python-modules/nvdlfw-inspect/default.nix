@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  pyyaml,
-  torch,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # dependencies
+  pyyaml,
+  # build-system
+  setuptools,
+  torch,
 }:
 
 # nixpkgs-update: no auto update
@@ -20,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "nvdlfw-inspect";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "NVIDIA";
@@ -29,6 +25,10 @@ buildPythonPackage (finalAttrs: {
     rev = "3a7314ac44f8479a3368a69ac4c7938e40e6104c";
     hash = "sha256-qLyPzdwIIXHUDeP226w4yo2B1fqOKZ3yeSXrG3pNQyk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -39,11 +39,8 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nvdlfw_inspect" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Facilitates debugging convergence issues and testing new algorithms/recipes for training LLMs using Nvidia libraries";

@@ -3,18 +3,15 @@
   stdenv,
   fetchFromGitHub,
   buildGoModule,
-
+  catch2,
   cmake,
   curl,
-  go,
-  unzip,
-  zip,
-
-  catch2,
   cxxopts,
   fmt,
-
+  go,
+  unzip,
   versionCheckHook,
+  zip,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "protonmail-export";
@@ -24,20 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ProtonMail";
     repo = "proton-mail-export";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-ZYUqbxT9Aq3iaXdaCag4xstbrm9z9X435zm/Qz8OOyM=";
+    fetchSubmodules = true;
   };
-
-  goModules =
-    (buildGoModule {
-      inherit (finalAttrs) pname src version;
-      sourceRoot = "${finalAttrs.src.name}/go-lib";
-      vendorHash = "sha256-jtrfxKPFTiowllHDR7fo8GaeyhcPxAAXehBTk4bXKn8=";
-
-      nativeBuildInputs = [ unzip ];
-
-      proxyVendor = true;
-    }).goModules;
 
   postPatch = ''
     echo "" > vcpkg/scripts/buildsystems/vcpkg.cmake
@@ -51,12 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     substituteInPlace cli/bin/main.cpp --replace-fail \
       'execPath = etcpp::getExecutableDir();' 'execPath = std::filesystem::u8path(std::getenv("HOME")) / ".config" / "protonmail-export";'
-  '';
-
-  preConfigure = ''
-    export GOCACHE=$TMPDIR/go-cache
-    export GOPATH=$TMPDIR/go
-    export GOPROXY=file://$goModules
   '';
 
   nativeBuildInputs = [
@@ -73,6 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
     cxxopts
   ];
 
+  preConfigure = ''
+    export GOCACHE=$TMPDIR/go-cache
+    export GOPATH=$TMPDIR/go
+    export GOPROXY=file://$goModules
+  '';
+
   postInstall =
     let
       so = "proton-mail-export${stdenv.hostPlatform.extensions.library}";
@@ -87,18 +73,29 @@ stdenv.mkDerivation (finalAttrs: {
         $out/bin/proton-mail-export-cli
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  goModules =
+    (buildGoModule {
+      inherit (finalAttrs) pname src version;
+      nativeBuildInputs = [ unzip ];
+      vendorHash = "sha256-jtrfxKPFTiowllHDR7fo8GaeyhcPxAAXehBTk4bXKn8=";
+      proxyVendor = true;
+      sourceRoot = "${finalAttrs.src.name}/go-lib";
+    }).goModules;
+
   versionCheckProgram = "${placeholder "out"}/bin/proton-mail-export-cli";
-  doInstallCheck = true;
 
   meta = {
     description = "Export your Proton Mail emails as eml files";
     homepage = "https://github.com/ProtonMail/proton-mail-export";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.ryand56 ];
+    platforms = lib.platforms.unix;
     mainProgram = "proton-mail-export-cli";
   };
 })

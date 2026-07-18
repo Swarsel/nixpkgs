@@ -1,14 +1,13 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "todoist-python";
   version = "8.1.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "todoist" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  writers,
+  rustPlatform,
   versionCheckHook,
+  writers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,21 +18,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-30OXowgIVSXMFEZVM74kwU8mdDuXVngsISyVQ0MB+VQ=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   cargoBuildFlags = [
     "--package"
     "xee"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   meta = {
     description = "XML Execution Engine written in Rust";
+
     longDescription = ''
       Load XML documents, issue XPath expressions against them, including in
       a REPL, and pretty-print XML documents. A Swiss Army knife CLI for XML.
     '';
+
     homepage = "https://github.com/Paligo/xee";
     changelog = "https://github.com/Paligo/xee/releases/tag/xee-v${finalAttrs.version}";
     license = lib.licenses.mit;

@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   gfortran,
-  buildType ? "meson",
+  mctc-lib,
   meson,
   ninja,
-  cmake,
   pkg-config,
   python3,
-  mctc-lib,
+  buildType ? "meson",
 }:
 
 assert (
@@ -30,10 +30,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-zfrxdrZ1Um52qTRNGJoqZNQuHhK3xM/mKfk0aBLrcjw=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Fix wrong generation of package config include paths
     ./pkgconfig.patch
   ];
+
+  postPatch = ''
+    patchShebangs --build config/install-mod.py
+  '';
 
   nativeBuildInputs = [
     gfortran
@@ -48,20 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ mctc-lib ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  postPatch = ''
-    patchShebangs --build config/install-mod.py
-  '';
-
   meta = {
     description = "Molecular structure store for testing";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/grimme-lab/mstore";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
   };
 })

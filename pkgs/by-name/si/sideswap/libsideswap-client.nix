@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
-  systemd,
   protobuf,
+  rustPlatform,
+  systemd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "9b0eea90b18007621eb15282d0064976dfedfa91";
     hash = "sha256-vnuDIcdHRmTdx/6iRd1g0AQqvvm3ZJs2e8yyx78UDZ4=";
   };
-
-  cargoHash = "sha256-GzAR58UYictCfC6U9mcBZUcejy6jP9brLuKB2yVgccM=";
 
   # sideswap_client uses vergen to detect Git commit hash at build time. It
   # tries to access .git directory which is not present in Nix build dir.
@@ -37,20 +35,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pkg-config
     protobuf
   ];
+
   buildInputs = [ systemd ];
+  cargoHash = "sha256-GzAR58UYictCfC6U9mcBZUcejy6jP9brLuKB2yVgccM=";
+  # Test gdk_registry_cache::tests::basic hangs in Nix build invironment.
+  doCheck = false;
 
   cargoBuildFlags = [
     "--package"
     "sideswap_client"
   ];
 
-  # Test gdk_registry_cache::tests::basic hangs in Nix build invironment.
-  doCheck = false;
-
   meta = {
     description = "Rust library for Sideswap";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ starius ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
+  aemu,
   fetchFromGitiles,
   fetchpatch,
+  libdrm,
+  libglvnd,
+  libx11,
+  # TODO: Clean up on `staging`.
+  llvmPackages,
   meson,
   ninja,
   pkg-config,
   python3,
-  aemu,
-  libdrm,
-  libglvnd,
   vulkan-headers,
   vulkan-loader,
-  libx11,
-  # TODO: Clean up on `staging`.
-  llvmPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     llvmPackages.lld
   ];
+
   buildInputs = [
     aemu
     libglvnd
@@ -58,6 +59,9 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform libdrm) [ libdrm ];
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    # TODO: Clean up on `staging`.
+    NIX_CFLAGS_LINK = "-fuse-ld=lld";
+
     NIX_LDFLAGS = toString [
       "-framework Cocoa"
       "-framework IOKit"
@@ -66,8 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
       "-framework QuartzCore"
       "-needed-lvulkan"
     ];
-    # TODO: Clean up on `staging`.
-    NIX_CFLAGS_LINK = "-fuse-ld=lld";
   };
 
   # dlopens libvulkan.
@@ -76,8 +78,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://android.googlesource.com/platform/hardware/google/gfxstream";
     description = "Graphics Streaming Kit";
+    homepage = "https://android.googlesource.com/platform/hardware/google/gfxstream";
     license = lib.licenses.free; # https://android.googlesource.com/platform/hardware/google/gfxstream/+/refs/heads/main/LICENSE
     maintainers = with lib.maintainers; [ qyliss ];
     platforms = aemu.meta.platforms;

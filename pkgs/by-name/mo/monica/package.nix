@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   nixosTests,
   dataDir ? "/var/lib/monica",
@@ -14,8 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7ZdOSI/gldSWub5FIyYQw3gpLe+PRAnq03u6DXdZ2YE=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir $out
     cp -R * $out/
@@ -24,15 +22,18 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${dataDir}/storage $out/storage
   '';
 
+  dontBuild = true;
   passthru.tests.monica = nixosTests.monica;
 
   meta = {
     description = "Personal CRM";
-    homepage = "https://www.monicahq.com/";
+
     longDescription = ''
       Remember everything about your friends, family and business
       relationships.
     '';
+
+    homepage = "https://www.monicahq.com/";
     license = lib.licenses.agpl3Plus;
     platforms = lib.platforms.all;
   };

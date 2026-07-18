@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "ms-cv";
   version = "0.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "OpenXbox";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
   '';
 
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Correlation vector implementation in python";

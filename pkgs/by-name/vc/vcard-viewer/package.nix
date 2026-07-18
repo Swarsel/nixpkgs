@@ -1,16 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "vcard-viewer";
   version = "0.1.2";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "affolter-engineering";
@@ -20,11 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-D2XR3cGmj3xZS49sRvKwCRXDAPEAK9MWAciMxfixrTY=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

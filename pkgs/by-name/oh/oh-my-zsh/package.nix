@@ -5,22 +5,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bash,
+  cacert,
+  common-updater-scripts,
+  coreutils,
+  curl,
+  git,
+  gnused,
+  jq,
+  nix,
   nixosTests,
   writeScript,
-  common-updater-scripts,
-  git,
-  nix,
-  jq,
-  coreutils,
-  gnused,
-  curl,
-  cacert,
-  bash,
 }:
 
 stdenv.mkDerivation rec {
-  version = "2026-02-19";
   pname = "oh-my-zsh";
+  version = "2026-02-19";
 
   src = fetchFromGitHub {
     owner = "ohmyzsh";
@@ -119,6 +119,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Framework for managing your zsh configuration";
+
     longDescription = ''
       Oh My Zsh is a framework for managing your zsh configuration.
 
@@ -127,6 +128,7 @@ stdenv.mkDerivation rec {
 
         $ cp -v $(nix-env -q --out-path oh-my-zsh | cut -d' ' -f3)/share/oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
     '';
+
     homepage = "https://ohmyz.sh/";
     license = lib.licenses.mit;
     platforms = lib.platforms.all;

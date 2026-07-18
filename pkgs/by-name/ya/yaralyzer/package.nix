@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   gitUpdater,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "yaralyzer";
   version = "1.3.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "michelcrypt4d4mus";
@@ -27,9 +26,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     yara-python
   ];
 
-  pythonRelaxDeps = [ "rich" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "yaralyzer" ];
+  pythonRelaxDeps = [ "rich" ];
 
   passthru = {
     updateScript = gitUpdater { rev-prefix = "v"; };

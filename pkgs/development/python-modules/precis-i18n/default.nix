@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "precis-i18n";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "byllyfish";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "precis_i18n" ];
 
   meta = {

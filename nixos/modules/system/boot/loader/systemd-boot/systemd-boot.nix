@@ -32,26 +32,13 @@ let
   edk2ShellEspPath = "efi/edk2-uefi-shell/shell.efi";
 
   systemdBootBuilder = pkgs.replaceVarsWith {
-    name = "systemd-boot";
-
     dir = "bin";
-
-    src = checkedSource;
-
     isExecutable = true;
+    name = "systemd-boot";
 
     replacements = rec {
       inherit (builtins) storeDir;
-
       inherit (pkgs) python3;
-
-      systemd = config.systemd.package;
-
-      nix = config.nix.package.out;
-
-      timeout = if config.boot.loader.timeout == null then "menu-force" else config.boot.loader.timeout;
-
-      configurationLimit = if cfg.configurationLimit == null then 0 else cfg.configurationLimit;
 
       inherit (cfg)
         consoleMode
@@ -61,13 +48,12 @@ let
         ;
 
       inherit (efi) efiSysMountPoint canTouchEfiVariables;
+      inherit (config.system.nixos) distroName;
+      bootCounting = if cfg.bootCounting.enable then "True" else "False";
+      bootCountingTries = cfg.bootCounting.tries;
 
       bootMountPoint =
         if cfg.xbootldrMountPoint != null then cfg.xbootldrMountPoint else efi.efiSysMountPoint;
-
-      nixosDir = "/EFI/nixos";
-
-      inherit (config.system.nixos) distroName;
 
       checkMountpoints = pkgs.writeShellScript "check-mountpoints" ''
         fail() {
@@ -79,6 +65,8 @@ let
           "${pkgs.util-linuxMinimal}/bin/findmnt ${cfg.xbootldrMountPoint} > /dev/null || fail xbootldrMountPoint ${cfg.xbootldrMountPoint}"
         }
       '';
+
+      configurationLimit = if cfg.configurationLimit == null then 0 else cfg.configurationLimit;
 
       copyExtraFiles = pkgs.writeShellScript "copy-extra-files" ''
         ${concatStrings (
@@ -96,9 +84,13 @@ let
         )}
       '';
 
-      bootCountingTries = cfg.bootCounting.tries;
-      bootCounting = if cfg.bootCounting.enable then "True" else "False";
+      nix = config.nix.package.out;
+      nixosDir = "/EFI/nixos";
+      systemd = config.systemd.package;
+      timeout = if config.boot.loader.timeout == null then "menu-force" else config.boot.loader.timeout;
     };
+
+    src = checkedSource;
   };
 
   finalSystemdBootBuilder = pkgs.writeScript "install-systemd-boot.sh" ''
@@ -109,8 +101,6 @@ let
   '';
 in
 {
-
-  meta.maintainers = with lib.maintainers; [ julienmalka ];
 
   imports = [
     (mkRenamedOptionModule
@@ -167,18 +157,283 @@ in
     enable = mkOption {
       default = false;
 
-      type = types.bool;
-
       description = ''
         Whether to enable the systemd-boot (formerly gummiboot) EFI boot manager.
         For more information about systemd-boot:
         <https://www.freedesktop.org/wiki/Software/systemd/systemd-boot/>
       '';
+
+      type = types.bool;
+    };
+
+    bootCounting = {
+      enable = mkEnableOption ''
+        [Automatic Boot Assessment](https://systemd.io/AUTOMATIC_BOOT_ASSESSMENT/).
+
+        New boot entries are written with a boot counter in the file name. On
+        each boot, systemd-boot decrements the counter; once the booted system
+        reaches `boot-complete.target`, `systemd-bless-boot.service` removes the
+        counter and marks the entry as good. An entry whose counter reaches zero
+        is considered bad and will be skipped in favour of an older generation
+      '';
+
+      tries = mkOption {
+        default = 3;
+
+        description = ''
+          Number of boot attempts a freshly written entry is given before it is
+          considered bad.
+        '';
+
+        type = types.ints.positive;
+      };
+    };
+
+    configurationLimit = mkOption {
+      default = null;
+
+      description = ''
+        Maximum number of latest generations in the boot menu.
+        Useful to prevent boot partition running out of disk space.
+
+        `null` means no limit i.e. all generations
+        that have not been garbage collected yet.
+      '';
+
+      example = 120;
+      type = types.nullOr types.int;
+    };
+
+    consoleMode = mkOption {
+      default = "keep";
+
+      description = ''
+        The resolution of the console. The following values are valid:
+
+        - `"0"`: Standard UEFI 80x25 mode
+        - `"1"`: 80x50 mode, not supported by all devices
+        - `"2"`: The first non-standard mode provided by the device firmware, if any
+        - `"5"`: Applicable for SteamDeck where this mode represent horizontal mode
+        - `"auto"`: Pick a suitable mode automatically using heuristics
+        - `"max"`: Pick the highest-numbered available mode
+        - `"keep"`: Keep the mode selected by firmware (the default)
+      '';
+
+      type = types.enum [
+        "0"
+        "1"
+        "2"
+        "5"
+        "auto"
+        "max"
+        "keep"
+      ];
+    };
+
+    editor = mkOption {
+      default = true;
+
+      description = ''
+        Whether to allow editing the kernel command-line before
+        boot. It is recommended to set this to false, as it allows
+        gaining root access by passing init=/bin/sh as a kernel
+        parameter. However, it is enabled by default for backwards
+        compatibility.
+      '';
+
+      type = types.bool;
+    };
+
+    edk2-uefi-shell = {
+      enable = mkOption {
+        default = false;
+
+        description = ''
+          Make the EDK2 UEFI Shell available from the systemd-boot menu.
+          It can be used to manually boot other operating systems or for debugging.
+        '';
+
+        type = types.bool;
+      };
+
+      sortKey = mkOption {
+        default = "o_edk2-uefi-shell";
+
+        description = ''
+          `systemd-boot` orders the menu entries by their sort keys,
+          so if you want something to appear after all the NixOS entries,
+          it should start with {file}`o` or onwards.
+
+          See also {option}`boot.loader.systemd-boot.sortKey`..
+        '';
+
+        type = types.str;
+      };
+    };
+
+    extraEntries = mkOption {
+      default = { };
+
+      description = ''
+        Any additional entries you want added to the `systemd-boot` menu.
+        These entries will be copied to {file}`$BOOT/loader/entries`.
+        Each attribute name denotes the destination file name,
+        and the corresponding attribute value is the contents of the entry.
+
+        To control the ordering of the entry in the boot menu, use the sort-key
+        field, see
+        <https://uapi-group.org/specifications/specs/boot_loader_specification/#sorting>
+        and {option}`boot.loader.systemd-boot.sortKey`.
+      '';
+
+      example = literalExpression ''
+        { "memtest86.conf" = '''
+          title Memtest86+
+          efi /efi/memtest86/memtest.efi
+          sort-key z_memtest
+        '''; }
+      '';
+
+      type = types.attrsOf types.lines;
+    };
+
+    extraFiles = mkOption {
+      default = { };
+
+      description = ''
+        A set of files to be copied to {file}`$BOOT`.
+        Each attribute name denotes the destination file name in
+        {file}`$BOOT`, while the corresponding
+        attribute value specifies the source file.
+      '';
+
+      example = literalExpression ''
+        { "efi/memtest86/memtest.efi" = pkgs.memtest86plus.efi; }
+      '';
+
+      type = types.attrsOf types.path;
+    };
+
+    extraInstallCommands = mkOption {
+      default = "";
+
+      description = ''
+        Additional shell commands inserted in the bootloader installer
+        script after generating menu entries. It can be used to expand
+        on extra boot entries that cannot incorporate certain pieces of
+        information (such as the resulting `init=` kernel parameter).
+      '';
+
+      example = ''
+        default_cfg=$(cat /boot/loader/loader.conf | grep default | awk '{print $2}')
+        init_value=$(cat /boot/loader/entries/$default_cfg | grep init= | awk '{print $2}')
+        sed -i "s|@INIT@|$init_value|g" /boot/custom/config_with_placeholder.conf
+      '';
+
+      type = types.lines;
+    };
+
+    graceful = mkOption {
+      default = false;
+
+      description = ''
+        Invoke `bootctl install` with the `--graceful` option,
+        which ignores errors when EFI variables cannot be written or when the EFI System Partition
+        cannot be found. Currently only applies to random seed operations.
+
+        Only enable this option if `systemd-boot` otherwise fails to install, as the
+        scope or implication of the `--graceful` option may change in the future.
+      '';
+
+      type = types.bool;
+    };
+
+    installDeviceTree = mkOption {
+      default = with config.hardware.deviceTree; enable && name != null;
+      defaultText = "with config.hardware.deviceTree; enable && name != null";
+
+      description = ''
+        Install the devicetree blob specified by `config.hardware.deviceTree.name`
+        to the ESP and instruct systemd-boot to pass this DTB to linux.
+      '';
+    };
+
+    memtest86 = {
+      enable = mkOption {
+        default = false;
+
+        description = ''
+          Make Memtest86+ available from the systemd-boot menu. Memtest86+ is a
+          program for testing memory.
+        '';
+
+        type = types.bool;
+      };
+
+      sortKey = mkOption {
+        default = "o_memtest86";
+
+        description = ''
+          `systemd-boot` orders the menu entries by their sort keys,
+          so if you want something to appear after all the NixOS entries,
+          it should start with {file}`o` or onwards.
+
+          See also {option}`boot.loader.systemd-boot.sortKey`.
+        '';
+
+        type = types.str;
+      };
+    };
+
+    netbootxyz = {
+      enable = mkOption {
+        default = false;
+
+        description = ''
+          Make `netboot.xyz` available from the
+          `systemd-boot` menu. `netboot.xyz`
+          is a menu system that allows you to boot OS installers and
+          utilities over the network.
+        '';
+
+        type = types.bool;
+      };
+
+      sortKey = mkOption {
+        default = "o_netbootxyz";
+
+        description = ''
+          `systemd-boot` orders the menu entries by their sort keys,
+          so if you want something to appear after all the NixOS entries,
+          it should start with {file}`o` or onwards.
+
+          See also {option}`boot.loader.systemd-boot.sortKey`.
+        '';
+
+        type = types.str;
+      };
+    };
+
+    rebootForBitlocker = mkOption {
+      default = false;
+
+      description = ''
+        Enable *EXPERIMENTAL* BitLocker support.
+
+        Try to detect BitLocker encrypted drives along with an active
+        TPM. If both are found and Windows Boot Manager is selected in
+        the boot menu, set the "BootNext" EFI variable and restart the
+        system. The firmware will then start Windows Boot Manager
+        directly, leaving the TPM PCRs in expected states so that
+        Windows can unseal the encryption key.
+      '';
+
+      type = types.bool;
     };
 
     sortKey = mkOption {
       default = "nixos";
-      type = types.str;
+
       description = ''
         The sort key used for the NixOS bootloader entries.
         This key determines sorting relative to non-NixOS entries.
@@ -203,260 +458,13 @@ in
         It also means that updating the sort-key will only affect new generations,
         while old ones will keep the sort-key that they were originally built with.
       '';
-    };
 
-    editor = mkOption {
-      default = true;
-
-      type = types.bool;
-
-      description = ''
-        Whether to allow editing the kernel command-line before
-        boot. It is recommended to set this to false, as it allows
-        gaining root access by passing init=/bin/sh as a kernel
-        parameter. However, it is enabled by default for backwards
-        compatibility.
-      '';
-    };
-
-    xbootldrMountPoint = mkOption {
-      default = null;
-      type = types.nullOr types.str;
-      description = ''
-        Where the XBOOTLDR partition is mounted.
-
-        If set, this partition will be used as $BOOT to store boot loader entries and extra files
-        instead of the EFI partition. As per the bootloader specification, it is recommended that
-        the EFI and XBOOTLDR partitions be mounted at `/efi` and `/boot`, respectively.
-      '';
-    };
-
-    configurationLimit = mkOption {
-      default = null;
-      example = 120;
-      type = types.nullOr types.int;
-      description = ''
-        Maximum number of latest generations in the boot menu.
-        Useful to prevent boot partition running out of disk space.
-
-        `null` means no limit i.e. all generations
-        that have not been garbage collected yet.
-      '';
-    };
-
-    installDeviceTree = mkOption {
-      default = with config.hardware.deviceTree; enable && name != null;
-      defaultText = "with config.hardware.deviceTree; enable && name != null";
-      description = ''
-        Install the devicetree blob specified by `config.hardware.deviceTree.name`
-        to the ESP and instruct systemd-boot to pass this DTB to linux.
-      '';
-    };
-
-    extraInstallCommands = mkOption {
-      default = "";
-      example = ''
-        default_cfg=$(cat /boot/loader/loader.conf | grep default | awk '{print $2}')
-        init_value=$(cat /boot/loader/entries/$default_cfg | grep init= | awk '{print $2}')
-        sed -i "s|@INIT@|$init_value|g" /boot/custom/config_with_placeholder.conf
-      '';
-      type = types.lines;
-      description = ''
-        Additional shell commands inserted in the bootloader installer
-        script after generating menu entries. It can be used to expand
-        on extra boot entries that cannot incorporate certain pieces of
-        information (such as the resulting `init=` kernel parameter).
-      '';
-    };
-
-    consoleMode = mkOption {
-      default = "keep";
-
-      type = types.enum [
-        "0"
-        "1"
-        "2"
-        "5"
-        "auto"
-        "max"
-        "keep"
-      ];
-
-      description = ''
-        The resolution of the console. The following values are valid:
-
-        - `"0"`: Standard UEFI 80x25 mode
-        - `"1"`: 80x50 mode, not supported by all devices
-        - `"2"`: The first non-standard mode provided by the device firmware, if any
-        - `"5"`: Applicable for SteamDeck where this mode represent horizontal mode
-        - `"auto"`: Pick a suitable mode automatically using heuristics
-        - `"max"`: Pick the highest-numbered available mode
-        - `"keep"`: Keep the mode selected by firmware (the default)
-      '';
-    };
-
-    memtest86 = {
-      enable = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Make Memtest86+ available from the systemd-boot menu. Memtest86+ is a
-          program for testing memory.
-        '';
-      };
-
-      sortKey = mkOption {
-        default = "o_memtest86";
-        type = types.str;
-        description = ''
-          `systemd-boot` orders the menu entries by their sort keys,
-          so if you want something to appear after all the NixOS entries,
-          it should start with {file}`o` or onwards.
-
-          See also {option}`boot.loader.systemd-boot.sortKey`.
-        '';
-      };
-    };
-
-    netbootxyz = {
-      enable = mkOption {
-        default = false;
-        type = types.bool;
-        description = ''
-          Make `netboot.xyz` available from the
-          `systemd-boot` menu. `netboot.xyz`
-          is a menu system that allows you to boot OS installers and
-          utilities over the network.
-        '';
-      };
-
-      sortKey = mkOption {
-        default = "o_netbootxyz";
-        type = types.str;
-        description = ''
-          `systemd-boot` orders the menu entries by their sort keys,
-          so if you want something to appear after all the NixOS entries,
-          it should start with {file}`o` or onwards.
-
-          See also {option}`boot.loader.systemd-boot.sortKey`.
-        '';
-      };
-    };
-
-    edk2-uefi-shell = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Make the EDK2 UEFI Shell available from the systemd-boot menu.
-          It can be used to manually boot other operating systems or for debugging.
-        '';
-      };
-
-      sortKey = mkOption {
-        type = types.str;
-        default = "o_edk2-uefi-shell";
-        description = ''
-          `systemd-boot` orders the menu entries by their sort keys,
-          so if you want something to appear after all the NixOS entries,
-          it should start with {file}`o` or onwards.
-
-          See also {option}`boot.loader.systemd-boot.sortKey`..
-        '';
-      };
-    };
-
-    extraEntries = mkOption {
-      type = types.attrsOf types.lines;
-      default = { };
-      example = literalExpression ''
-        { "memtest86.conf" = '''
-          title Memtest86+
-          efi /efi/memtest86/memtest.efi
-          sort-key z_memtest
-        '''; }
-      '';
-      description = ''
-        Any additional entries you want added to the `systemd-boot` menu.
-        These entries will be copied to {file}`$BOOT/loader/entries`.
-        Each attribute name denotes the destination file name,
-        and the corresponding attribute value is the contents of the entry.
-
-        To control the ordering of the entry in the boot menu, use the sort-key
-        field, see
-        <https://uapi-group.org/specifications/specs/boot_loader_specification/#sorting>
-        and {option}`boot.loader.systemd-boot.sortKey`.
-      '';
-    };
-
-    extraFiles = mkOption {
-      type = types.attrsOf types.path;
-      default = { };
-      example = literalExpression ''
-        { "efi/memtest86/memtest.efi" = pkgs.memtest86plus.efi; }
-      '';
-      description = ''
-        A set of files to be copied to {file}`$BOOT`.
-        Each attribute name denotes the destination file name in
-        {file}`$BOOT`, while the corresponding
-        attribute value specifies the source file.
-      '';
-    };
-
-    graceful = mkOption {
-      default = false;
-
-      type = types.bool;
-
-      description = ''
-        Invoke `bootctl install` with the `--graceful` option,
-        which ignores errors when EFI variables cannot be written or when the EFI System Partition
-        cannot be found. Currently only applies to random seed operations.
-
-        Only enable this option if `systemd-boot` otherwise fails to install, as the
-        scope or implication of the `--graceful` option may change in the future.
-      '';
-    };
-
-    bootCounting = {
-      enable = mkEnableOption ''
-        [Automatic Boot Assessment](https://systemd.io/AUTOMATIC_BOOT_ASSESSMENT/).
-
-        New boot entries are written with a boot counter in the file name. On
-        each boot, systemd-boot decrements the counter; once the booted system
-        reaches `boot-complete.target`, `systemd-bless-boot.service` removes the
-        counter and marks the entry as good. An entry whose counter reaches zero
-        is considered bad and will be skipped in favour of an older generation
-      '';
-      tries = mkOption {
-        default = 3;
-        type = types.ints.positive;
-        description = ''
-          Number of boot attempts a freshly written entry is given before it is
-          considered bad.
-        '';
-      };
-    };
-
-    rebootForBitlocker = mkOption {
-      default = false;
-
-      type = types.bool;
-
-      description = ''
-        Enable *EXPERIMENTAL* BitLocker support.
-
-        Try to detect BitLocker encrypted drives along with an active
-        TPM. If both are found and Windows Boot Manager is selected in
-        the boot menu, set the "BootNext" EFI variable and restart the
-        system. The firmware will then start Windows Boot Manager
-        directly, leaving the TPM PCRs in expected states so that
-        Windows can unseal the encryption key.
-      '';
+      type = types.str;
     };
 
     windows = mkOption {
       default = { };
+
       description = ''
         Make Windows bootable from systemd-boot. This option is not necessary when Windows and
         NixOS use the same EFI System Partition (ESP). In that case, Windows will automatically be
@@ -467,6 +475,7 @@ in
 
         The attribute name is used for the title of the menu entry and internal file names.
       '';
+
       example = literalExpression ''
         {
           "10".efiDeviceHandle = "HD0c3";
@@ -481,14 +490,13 @@ in
           };
         }
       '';
+
       type = types.attrsOf (
         types.submodule (
           { name, ... }:
           {
             options = {
               efiDeviceHandle = mkOption {
-                type = types.str;
-                example = "HD1b3";
                 description = ''
                   The device handle of the EFI System Partition (ESP) where the Windows bootloader is
                   located. This is the device handle that the EDK2 UEFI Shell uses to load the
@@ -506,22 +514,15 @@ in
 
                   This option is required, there is no useful default.
                 '';
-              };
 
-              title = mkOption {
+                example = "HD1b3";
                 type = types.str;
-                example = "Michaelsoft Binbows";
-                default = "Windows ${name}";
-                defaultText = ''attribute name of this entry, prefixed with "Windows "'';
-                description = ''
-                  The title of the boot menu entry.
-                '';
               };
 
               sortKey = mkOption {
-                type = types.str;
                 default = "o_windows_${name}";
                 defaultText = ''attribute name of this entry, prefixed with "o_windows_"'';
+
                 description = ''
                   `systemd-boot` orders the menu entries by their sort keys,
                   so if you want something to appear after all the NixOS entries,
@@ -529,11 +530,39 @@ in
 
                   See also {option}`boot.loader.systemd-boot.sortKey`..
                 '';
+
+                type = types.str;
+              };
+
+              title = mkOption {
+                default = "Windows ${name}";
+                defaultText = ''attribute name of this entry, prefixed with "Windows "'';
+
+                description = ''
+                  The title of the boot menu entry.
+                '';
+
+                example = "Michaelsoft Binbows";
+                type = types.str;
               };
             };
           }
         )
       );
+    };
+
+    xbootldrMountPoint = mkOption {
+      default = null;
+
+      description = ''
+        Where the XBOOTLDR partition is mounted.
+
+        If set, this partition will be used as $BOOT to store boot loader entries and extra files
+        instead of the EFI partition. As per the bootloader specification, it is recommended that
+        the EFI and XBOOTLDR partitions be mounted at `/efi` and `/boot`, respectively.
+      '';
+
+      type = types.nullOr types.str;
     };
   };
 
@@ -560,6 +589,7 @@ in
           cfg.installDeviceTree
           -> config.hardware.deviceTree.enable
           -> config.hardware.deviceTree.name != null;
+
         message = "Cannot install devicetree without 'config.hardware.deviceTree.enable' enabled and 'config.hardware.deviceTree.name' set";
       }
     ]
@@ -594,21 +624,13 @@ in
       }
     ]) (builtins.attrNames cfg.windows);
 
+    boot.bootspec.extensions."org.nixos.systemd-boot" = {
+      inherit (config.boot.loader.systemd-boot) sortKey;
+      devicetree = lib.mkIf cfg.installDeviceTree "${config.hardware.deviceTree.package}/${config.hardware.deviceTree.name}";
+    };
+
     boot.loader.grub.enable = mkDefault false;
-
     boot.loader.supportsInitrdSecrets = true;
-
-    boot.loader.systemd-boot.extraFiles = mkMerge [
-      (mkIf cfg.memtest86.enable {
-        "efi/memtest86/memtest.efi" = pkgs.memtest86plus.efi;
-      })
-      (mkIf cfg.netbootxyz.enable {
-        "efi/netbootxyz/netboot.xyz.efi" = "${pkgs.netbootxyz-efi}";
-      })
-      (mkIf (cfg.edk2-uefi-shell.enable || cfg.windows != { }) {
-        ${edk2ShellEspPath} = "${pkgs.edk2-uefi-shell}/shell.efi";
-      })
-    ];
 
     boot.loader.systemd-boot.extraEntries = mkMerge (
       [
@@ -644,19 +666,27 @@ in
       }) cfg.windows)
     );
 
-    boot.bootspec.extensions."org.nixos.systemd-boot" = {
-      inherit (config.boot.loader.systemd-boot) sortKey;
-      devicetree = lib.mkIf cfg.installDeviceTree "${config.hardware.deviceTree.package}/${config.hardware.deviceTree.name}";
-    };
+    boot.loader.systemd-boot.extraFiles = mkMerge [
+      (mkIf cfg.memtest86.enable {
+        "efi/memtest86/memtest.efi" = pkgs.memtest86plus.efi;
+      })
+      (mkIf cfg.netbootxyz.enable {
+        "efi/netbootxyz/netboot.xyz.efi" = "${pkgs.netbootxyz-efi}";
+      })
+      (mkIf (cfg.edk2-uefi-shell.enable || cfg.windows != { }) {
+        ${edk2ShellEspPath} = "${pkgs.edk2-uefi-shell}/shell.efi";
+      })
+    ];
 
     system = {
-      build.installBootLoader = finalSystemdBootBuilder;
-
       boot.loader.id = "systemd-boot";
+      build.installBootLoader = finalSystemdBootBuilder;
 
       requiredKernelConfig = with config.lib.kernelConfig; [
         (isYes "EFI_STUB")
       ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ julienmalka ];
 }

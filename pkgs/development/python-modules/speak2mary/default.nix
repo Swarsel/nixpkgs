@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "speak2mary";
   version = "1.5.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-5W2E/leT/IiXFVXD+LSPE99zGlz+yKm5XCv830rt8O0=";
   };
 
-  build-system = [ setuptools ];
-
   # Tests require a running MaryTTS server
   doCheck = false;
-
+  build-system = [ setuptools ];
+  format = "setuptools";
   pythonImportsCheck = [ "speak2mary" ];
 
   meta = {

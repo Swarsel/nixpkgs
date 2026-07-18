@@ -1,15 +1,14 @@
 {
-  python3Packages,
   lib,
   fetchFromGitHub,
   gettext,
+  python3Packages,
   pdfSupport ? true,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "linkchecker";
   version = "10.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "linkchecker";
@@ -19,6 +18,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   nativeBuildInputs = [ gettext ];
+
+  nativeCheckInputs = with python3Packages; [
+    pyopenssl
+    parameterized
+    pytestCheckHook
+    pyftpdlib
+  ];
+
+  # Needed for tests to be able to create a ~/.local/share/linkchecker/plugins directory
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = with python3Packages; [
     hatchling
@@ -36,33 +49,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ lib.optional pdfSupport pdfminer-six;
 
-  nativeCheckInputs = with python3Packages; [
-    pyopenssl
-    parameterized
-    pytestCheckHook
-    pyftpdlib
-  ];
-
-  # Needed for tests to be able to create a ~/.local/share/linkchecker/plugins directory
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
   disabledTests = [
     "test_timeit2" # flakey, and depends sleep being precise to the milisecond
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
 
   meta = {
     description = "Check websites for broken links";
-    mainProgram = "linkchecker";
     homepage = "https://linkcheck.github.io/linkchecker/";
     changelog = "https://github.com/linkchecker/linkchecker/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       peterhoeg
       tweber
     ];
+
+    mainProgram = "linkchecker";
   };
 })

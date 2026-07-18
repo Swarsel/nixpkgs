@@ -1,26 +1,20 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-
-  setuptools,
-
+  fetchPypi,
   matplotlib,
   numpy,
-  scipy,
-  tqdm,
-  scikit-learn,
-  scikit-image,
-
   pytestCheckHook,
+  scikit-image,
+  scikit-learn,
+  scipy,
+  setuptools,
+  tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lime";
   version = "0.2.0.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -32,6 +26,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "random_seed" "rng"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -43,14 +39,14 @@ buildPythonPackage (finalAttrs: {
     scikit-image
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # touches network
     "lime/tests/test_lime_text.py"
     # slightly flaky
     "lime/tests/test_lime_tabular.py::TestLimeTabular::test_lime_explainer_entropy_discretizer"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "lime.exceptions"

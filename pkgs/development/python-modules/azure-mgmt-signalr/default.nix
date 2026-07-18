@@ -1,27 +1,27 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  msrest,
-  msrestazure,
   azure-common,
   azure-mgmt-core,
+  buildPythonPackage,
+  fetchPypi,
+  msrest,
+  msrestazure,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-signalr";
   version = "1.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
-    extension = "zip";
     hash = "sha256-jbFhVoJbObpvcVJr2VoUzY5CmSblJ6OK7Q3l17SARfg=";
+    extension = "zip";
   };
 
+  # has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +31,7 @@ buildPythonPackage (finalAttrs: {
     azure-mgmt-core
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.signalr" ];
 
   meta = {

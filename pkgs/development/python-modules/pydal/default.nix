@@ -3,30 +3,23 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
+  legacy-cgi,
   pytestCheckHook,
   setuptools,
-  legacy-cgi,
 }:
 
 buildPythonPackage rec {
   pname = "pydal";
   version = "20260313.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-LfjeQV3aiCHwopHNZkWfuImyhFjuZQF3j2guVVMIR+k=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
   checkInputs = [ legacy-cgi ];
-
-  enabledTestPaths = [
-    "tests/*.py"
-  ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # these tests already seem to be broken on the upstream
@@ -47,6 +40,11 @@ buildPythonPackage rec {
     "test_scheduler"
   ];
 
+  enabledTestPaths = [
+    "tests/*.py"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pydal" ];
 
   meta = {

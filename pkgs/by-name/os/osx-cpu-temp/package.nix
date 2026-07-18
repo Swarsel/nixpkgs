@@ -9,11 +9,11 @@ stdenv.mkDerivation {
   version = "unstable-2020-12-04";
 
   src = fetchFromGitHub {
-    name = "osx-cpu-temp-source";
     owner = "lavoiesl";
     repo = "osx-cpu-temp";
     rev = "6ec951be449badcb7fb84676bbc2c521e600e844";
     sha256 = "1nlibgr55bpln6jbdf8vqcp0fj9zv9343vflb7s9w0yh33fsbg9d";
+    name = "osx-cpu-temp-source";
   };
 
   installPhase = ''

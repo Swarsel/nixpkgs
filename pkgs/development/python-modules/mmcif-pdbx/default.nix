@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mmcif-pdbx";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Electrostatics";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pdbx" ];
 
   meta = {

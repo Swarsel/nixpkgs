@@ -17,42 +17,55 @@ let
     ;
 in
 {
-  port = 9876;
   extraOpts = {
+    endpoint = mkOption {
+      default = "https://agent.buildkite.com/v3";
+
+      description = ''
+        The Buildkite Agent API endpoint.
+      '';
+
+      type = types.str;
+    };
+
+    interval = mkOption {
+      default = "30s";
+
+      description = ''
+        How often to update metrics.
+      '';
+
+      example = "1min";
+      type = types.str;
+    };
+
+    queues = mkOption {
+      default = null;
+
+      description = ''
+        Which specific queues to process.
+      '';
+
+      example = literalExpression ''[ "my-queue1" "my-queue2" ]'';
+      type = with types; nullOr (listOf str);
+    };
+
     tokenPath = mkOption {
-      type = types.nullOr types.path;
       apply = final: if final == null then null else toString final;
+
       description = ''
         The token from your Buildkite "Agents" page.
 
         A run-time path to the token file, which is supposed to be provisioned
         outside of Nix store.
       '';
-    };
-    interval = mkOption {
-      type = types.str;
-      default = "30s";
-      example = "1min";
-      description = ''
-        How often to update metrics.
-      '';
-    };
-    endpoint = mkOption {
-      type = types.str;
-      default = "https://agent.buildkite.com/v3";
-      description = ''
-        The Buildkite Agent API endpoint.
-      '';
-    };
-    queues = mkOption {
-      type = with types; nullOr (listOf str);
-      default = null;
-      example = literalExpression ''[ "my-queue1" "my-queue2" ]'';
-      description = ''
-        Which specific queues to process.
-      '';
+
+      type = types.nullOr types.path;
     };
   };
+
+  port = 9876;
+
   serviceOpts = {
     script =
       let
@@ -67,6 +80,7 @@ in
           ${optionalString (cfg.queues != null) queues} \
           -prometheus-addr "${cfg.listenAddress}:${toString cfg.port}" ${concatStringsSep " " cfg.extraFlags}
       '';
+
     serviceConfig = {
       DynamicUser = false;
       RuntimeDirectory = "buildkite-agent-metrics";

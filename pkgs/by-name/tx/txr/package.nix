@@ -15,19 +15,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8N4BLtYiGOBJ0Jo5rmqTh1mNjqwSp8LX2dkGwnw271Q=";
   };
 
-  buildInputs = [ libffi ];
-
-  enableParallelBuilding = true;
-
-  doCheck = true;
-  checkTarget = "tests";
-
   postPatch = ''
     substituteInPlace tests/017/realpath.tl --replace /usr/bin /bin
     substituteInPlace tests/017/realpath.expected --replace /usr/bin /bin
 
     substituteInPlace tests/018/process.tl --replace /usr/bin/env ${lib.getBin coreutils}/bin/env
   '';
+
+  buildInputs = [ libffi ];
+  doCheck = true;
 
   preCheck =
     let
@@ -55,9 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/vim-plugins/txr $out/share/nvim/site
   '';
 
+  checkTarget = "tests";
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://nongnu.org/txr";
     description = "Original, New Programming Language for Convenient Data Munging";
+
     longDescription = ''
       TXR is a general-purpose, multi-paradigm programming language. It
       comprises two languages integrated into a single tool: a text scanning and
@@ -68,6 +67,8 @@ stdenv.mkDerivation (finalAttrs: {
       at the command line, to data scanning and extracting scripts, to full
       application development in a wide range of areas.
     '';
+
+    homepage = "https://nongnu.org/txr";
     changelog = "https://www.kylheku.com/cgit/txr/tree/RELNOTES?h=txr-${finalAttrs.version}";
     license = lib.licenses.bsd2;
     maintainers = [ ];

@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "lexy";
   version = "0.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "antoniorodr";
@@ -17,6 +16,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-OT+RaoIC+CxHHFdi3Hp405B/tWCTsPPrK8aDowKOUFc=";
   };
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   build-system = [
     python3Packages.setuptools
@@ -38,14 +40,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ];
   };
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "lexy"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

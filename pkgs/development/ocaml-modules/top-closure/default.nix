@@ -1,9 +1,8 @@
 { buildDunePackage, dune }:
 
 buildDunePackage {
-  pname = "top-closure";
   inherit (dune) version src;
-
+  pname = "top-closure";
   dontAddPrefix = true;
 
   meta = dune.meta // {

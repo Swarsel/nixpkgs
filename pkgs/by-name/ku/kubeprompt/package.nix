@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-UUMulGnqfIshN2WIejZgwrWWlywj5TpnAQ4A5/d0NCE=";
+  doCheck = false;
 
   ldflags = [
     "-w"
@@ -23,13 +24,11 @@ buildGoModule (finalAttrs: {
     "-X github.com/jlesquembre/kubeprompt/pkg/version.Version=${finalAttrs.version}"
   ];
 
-  doCheck = false;
-
   meta = {
     description = "Kubernetes prompt";
-    mainProgram = "kubeprompt";
     homepage = "https://github.com/jlesquembre/kubeprompt";
     license = lib.licenses.epl20;
     maintainers = with lib.maintainers; [ jlesquembre ];
+    mainProgram = "kubeprompt";
   };
 })

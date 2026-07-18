@@ -1,29 +1,31 @@
 {
   lib,
   stdenv,
-  ocaml_oasis,
-  ocaml,
   findlib,
+  ocaml,
+  ocaml_oasis,
   ocamlbuild,
 }:
 
 {
   pname,
   version,
-  nativeBuildInputs ? [ ],
+  createFindlibDestdir ? true,
+  dontStrip ? true,
   meta ? {
     platforms = ocaml.meta.platforms or [ ];
   },
   minimumOCamlVersion ? null,
-  createFindlibDestdir ? true,
-  dontStrip ? true,
+  nativeBuildInputs ? [ ],
   ...
 }@args:
 
 stdenv.mkDerivation (
   args
   // {
-    name = "ocaml${ocaml.version}-${pname}-${version}";
+    inherit createFindlibDestdir;
+    inherit dontStrip;
+    strictDeps = true;
 
     nativeBuildInputs = [
       ocaml
@@ -32,11 +34,6 @@ stdenv.mkDerivation (
       ocaml_oasis
     ]
     ++ nativeBuildInputs;
-
-    inherit createFindlibDestdir;
-    inherit dontStrip;
-
-    strictDeps = true;
 
     buildPhase = ''
       runHook preBuild
@@ -58,6 +55,8 @@ stdenv.mkDerivation (
       ocaml setup.ml -install
       runHook postInstall
     '';
+
+    name = "ocaml${ocaml.version}-${pname}-${version}";
 
     meta = args.meta // {
       broken = args ? minimumOCamlVersion && lib.versionOlder ocaml.version args.minimumOCamlVersion;

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "maxcube-api";
   version = "0.4.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "hackercowboy";
@@ -27,6 +26,8 @@ buildPythonPackage rec {
     "testSendRadioMsgClosesConnectionOnErrorAndRetriesIfReusingConnection"
     "testSendRadioMsgReusesConnection"
   ];
+
+  format = "setuptools";
 
   pythonImportsCheck = [
     "maxcube"

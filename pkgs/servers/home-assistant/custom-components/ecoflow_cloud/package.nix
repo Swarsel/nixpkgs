@@ -1,16 +1,14 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   jsonpath-ng,
+  nix-update-script,
   paho-mqtt,
   protobuf,
-  nix-update-script,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "tolwi";
-  domain = "ecoflow_cloud";
   version = "1.4.1";
 
   src = fetchFromGitHub {
@@ -20,23 +18,26 @@ buildHomeAssistantComponent rec {
     hash = "sha256-vN+po7S+/QxAHnVHJ0EpQGoxXBmcKNMRTCOPdeZ0f90=";
   };
 
-  ignoreVersionRequirement = [
-    "protobuf"
-  ];
-
   dependencies = [
     jsonpath-ng
     paho-mqtt
     protobuf
   ];
 
+  domain = "ecoflow_cloud";
+
+  ignoreVersionRequirement = [
+    "protobuf"
+  ];
+
+  owner = "tolwi";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/tolwi/hassio-ecoflow-cloud/releases/tag/v${version}";
     description = "Home Assistant component for EcoFlow Cloud";
     homepage = "https://github.com/tolwi/hassio-ecoflow-cloud";
-    maintainers = with lib.maintainers; [ ananthb ];
+    changelog = "https://github.com/tolwi/hassio-ecoflow-cloud/releases/tag/v${version}";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ ananthb ];
   };
 }

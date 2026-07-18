@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   httpbin,
   multidict,
+  pytest-cov-stub,
   pytestCheckHook,
   requests,
   setuptools,
   six,
   wsgiprox,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage rec {
   pname = "warcio";
   version = "1.7.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "webrecorder";
@@ -27,10 +26,10 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-3izm9LvAeOFixiIUUqmd5flZIxH92+NxL7jeu35aObQ=";
       # Add offline mode to skip tests that require an internet connection, https://github.com/webrecorder/warcio/pull/135
       name = "add-offline-option.patch";
       url = "https://github.com/webrecorder/warcio/pull/135/commits/2546fe457c57ab0b391764a4ce419656458d9d07.patch";
-      hash = "sha256-3izm9LvAeOFixiIUUqmd5flZIxH92+NxL7jeu35aObQ=";
     })
   ];
 
@@ -48,22 +47,24 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
-  pytestFlags = [
-    "--offline"
-  ];
-
   disabledTestPaths = [
     "test/test_capture_http_proxy.py"
+  ];
+
+  format = "setuptools";
+
+  pytestFlags = [
+    "--offline"
   ];
 
   pythonImportsCheck = [ "warcio" ];
 
   meta = {
     description = "Streaming WARC/ARC library for fast web archive IO";
-    mainProgram = "warcio";
     homepage = "https://github.com/webrecorder/warcio";
     changelog = "https://github.com/webrecorder/warcio/blob/master/CHANGELIST.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ Luflosi ];
+    mainProgram = "warcio";
   };
 }

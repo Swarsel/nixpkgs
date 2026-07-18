@@ -10,63 +10,76 @@ let
   inherit (lib) mkOption types;
 in
 {
-  port = 9354;
-
   extraOpts = {
     delugeHost = mkOption {
-      type = types.str;
       default = "localhost";
+
       description = ''
         Hostname where deluge server is running.
       '';
-    };
 
-    delugePort = mkOption {
-      type = types.port;
-      default = 58846;
-      description = ''
-        Port where deluge server is listening.
-      '';
-    };
-
-    delugeUser = mkOption {
       type = types.str;
-      default = "localclient";
-      description = ''
-        User to connect to deluge server.
-      '';
     };
 
     delugePassword = mkOption {
-      type = types.nullOr types.str;
       default = null;
+
       description = ''
         Password to connect to deluge server.
 
         This stores the password unencrypted in the nix store and is thus considered unsafe. Prefer
         using the delugePasswordFile option.
       '';
+
+      type = types.nullOr types.str;
     };
 
     delugePasswordFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         File containing the password to connect to deluge server.
       '';
+
+      type = types.nullOr types.path;
+    };
+
+    delugePort = mkOption {
+      default = 58846;
+
+      description = ''
+        Port where deluge server is listening.
+      '';
+
+      type = types.port;
+    };
+
+    delugeUser = mkOption {
+      default = "localclient";
+
+      description = ''
+        User to connect to deluge server.
+      '';
+
+      type = types.str;
     };
 
     exportPerTorrentMetrics = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Enable per-torrent metrics.
 
         This may significantly increase the number of time series depending on the number of
         torrents in your Deluge instance.
       '';
+
+      type = types.bool;
     };
   };
+
+  port = 9354;
+
   serviceOpts = {
     script = ''
       passwordfile="$CREDENTIALS_DIRECTORY/password-file"
@@ -78,10 +91,6 @@ in
     '';
 
     serviceConfig = {
-      LoadCredential = lib.mkIf (config.services.prometheus.exporters.deluge.delugePasswordFile != null) [
-        "password-file:${config.services.prometheus.exporters.deluge.delugePasswordFile}"
-      ];
-
       Environment = [
         "LISTEN_PORT=${toString cfg.port}"
         "LISTEN_ADDRESS=${toString cfg.listenAddress}"
@@ -95,6 +104,10 @@ in
       ]
       ++ lib.optionals cfg.exportPerTorrentMetrics [
         "PER_TORRENT_METRICS=1"
+      ];
+
+      LoadCredential = lib.mkIf (config.services.prometheus.exporters.deluge.delugePasswordFile != null) [
+        "password-file:${config.services.prometheus.exporters.deluge.delugePasswordFile}"
       ];
     };
   };

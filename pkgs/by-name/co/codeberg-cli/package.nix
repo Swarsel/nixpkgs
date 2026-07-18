@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   fetchFromCodeberg,
   installShellFiles,
-  lib,
   openssl,
   pkg-config,
   rustPlatform,
-  stdenv,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "codeberg-cli";
@@ -18,13 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-yjWAL4Tu9nuQsy8fDhga5lsxYwooE0fW70zfp7Dqq3Y=";
   };
 
-  cargoHash = "sha256-AD4VLGsxkfl1UwJmZhR183Gk7ltjEyH9tlt+iKNs5J0=";
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-AD4VLGsxkfl1UwJmZhR183Gk7ltjEyH9tlt+iKNs5J0=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd berg \

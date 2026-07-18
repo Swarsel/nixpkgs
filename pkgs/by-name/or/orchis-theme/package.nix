@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
   gnome-themes-extra,
   gtk-engine-murrine,
+  gtk3,
   sassc,
+  stdenvNoCC,
   border-radius ? null, # Suggested: 2 < value < 16
   tweaks ? [ ], # can be "solid" "compact" "black" "primary" "macos" "submenu" "nord|dracula"
   withWallpapers ? false,
@@ -41,8 +41,8 @@ lib.checkListOfEnum "${pname}: theme tweaks" validTweaks tweaks
     version = "2025-04-25";
 
     src = fetchFromGitHub {
-      repo = "Orchis-theme";
       owner = "vinceliuice";
+      repo = "Orchis-theme";
       rev = version;
       hash = "sha256-+2/CsgJ+rdDpCp+r5B/zys3PtFgtnu+ohTEUOtJNd1Y=";
     };
@@ -53,8 +53,6 @@ lib.checkListOfEnum "${pname}: theme tweaks" validTweaks tweaks
     ];
 
     buildInputs = [ gnome-themes-extra ];
-
-    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
 
     preInstall = ''
       mkdir -p $out/share/themes
@@ -72,11 +70,13 @@ lib.checkListOfEnum "${pname}: theme tweaks" validTweaks tweaks
       runHook postInstall
     '';
 
+    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+
     meta = {
       description = "Material Design theme for GNOME/GTK based desktop environments";
       homepage = "https://github.com/vinceliuice/Orchis-theme";
       license = lib.licenses.gpl3Plus;
-      platforms = lib.platforms.linux;
       maintainers = [ lib.maintainers.fufexan ];
+      platforms = lib.platforms.linux;
     };
   }

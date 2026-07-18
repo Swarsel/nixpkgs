@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytz,
-  websockets,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
+  pytz,
+  setuptools,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "bluecurrent-api";
   version = "1.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bluecurrent";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     hash = "sha256-px4kZOvMUP5aGOQ1uxWnY6w77Woie/hVVdyylW8uSX4=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,15 +34,9 @@ buildPythonPackage rec {
     websockets
   ];
 
-  pythonRelaxDeps = [ "websockets" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bluecurrent_api" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-  ];
+  pythonRelaxDeps = [ "websockets" ];
 
   meta = {
     description = "Wrapper for the Blue Current websocket api";

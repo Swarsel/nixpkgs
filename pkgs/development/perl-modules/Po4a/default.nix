@@ -1,27 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  LocaleGettext,
+  ModuleBuild,
+  PodParser,
+  SGMLSpm,
+  SyntaxKeywordTry,
+  TextWrapI18N,
+  UnicodeLineBreak,
+  YAMLTiny,
+  bash,
+  buildPerlPackage,
+  docbook_sgml_dtd_41,
+  docbook_xml_dtd_45,
   docbook_xsl,
   docbook_xsl_ns,
   gettext,
+  glibcLocales,
   libxml2,
   libxslt,
-  glibcLocales,
-  docbook_xml_dtd_45,
-  docbook_sgml_dtd_41,
   opensp,
-  bash,
   perl,
-  buildPerlPackage,
-  ModuleBuild,
-  TextWrapI18N,
-  LocaleGettext,
-  SGMLSpm,
-  UnicodeLineBreak,
-  PodParser,
-  YAMLTiny,
-  SyntaxKeywordTry,
   writeShellScriptBin,
 }:
 
@@ -70,6 +70,8 @@ buildPerlPackage rec {
       glibcLocales
     ];
 
+  buildInputs = [ bash ];
+
   # TODO: TermReadKey was temporarily removed from propagatedBuildInputs to unfreeze the build
   propagatedBuildInputs =
     lib.optionals (!stdenv.hostPlatform.isMusl) [
@@ -83,8 +85,6 @@ buildPerlPackage rec {
       YAMLTiny
       SyntaxKeywordTry
     ];
-
-  buildInputs = [ bash ];
 
   env = {
     LC_ALL = "en_US.UTF-8";

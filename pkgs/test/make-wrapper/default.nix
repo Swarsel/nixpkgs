@@ -1,11 +1,11 @@
 {
   lib,
-  writeText,
-  writeCBin,
-  writeShellScript,
   makeWrapper,
   runCommand,
   which,
+  writeCBin,
+  writeShellScript,
+  writeText,
   ...
 }:
 
@@ -33,8 +33,8 @@ let
 
   mkWrapperBinary =
     {
-      name,
       args,
+      name,
       wrapped ? wrappedBinaryVar,
     }:
     runCommand name
@@ -66,45 +66,49 @@ runCommand "make-wrapper-test"
     nativeBuildInputs = [
       which
       (mkWrapperBinary {
-        name = "test-argv0";
         args = [
           "--argv0"
           "foo"
         ];
+
+        name = "test-argv0";
         wrapped = "${wrappedArgv0}/bin/wrapped-argv0";
       })
       (mkWrapperBinary {
-        name = "test-set";
         args = [
           "--set"
           "VAR"
           "abc"
         ];
+
+        name = "test-set";
       })
       (mkWrapperBinary {
-        name = "test-set-default";
         args = [
           "--set-default"
           "VAR"
           "abc"
         ];
+
+        name = "test-set-default";
       })
       (mkWrapperBinary {
-        name = "test-unset";
         args = [
           "--unset"
           "VAR"
         ];
+
+        name = "test-unset";
       })
       (mkWrapperBinary {
-        name = "test-run";
         args = [
           "--run"
           "echo bar"
         ];
+
+        name = "test-run";
       })
       (mkWrapperBinary {
-        name = "test-run-and-set";
         args = [
           "--run"
           "export VAR=foo"
@@ -112,56 +116,62 @@ runCommand "make-wrapper-test"
           "VAR"
           "bar"
         ];
+
+        name = "test-run-and-set";
       })
       (mkWrapperBinary {
-        name = "test-args";
         args = [
           "--add-flags"
           "abc"
           "--append-flags"
           "xyz"
         ];
+
+        name = "test-args";
         wrapped = wrappedBinaryArgs;
       })
       (mkWrapperBinary {
-        name = "test-arg";
         args = [
           "--add-flag"
           "abc 'aaaaa' jkhhjk"
           "--append-flag"
           "xyz ggg"
         ];
+
+        name = "test-arg";
         wrapped = wrappedBinaryArgs;
       })
       (mkWrapperBinary {
-        name = "test-prefix";
         args = [
           "--prefix"
           "VAR"
           ":"
           "abc"
         ];
+
+        name = "test-prefix";
       })
       (mkWrapperBinary {
-        name = "test-prefix-noglob";
         args = [
           "--prefix"
           "VAR"
           ":"
           "./*"
         ];
+
+        name = "test-prefix-noglob";
       })
       (mkWrapperBinary {
-        name = "test-suffix";
         args = [
           "--suffix"
           "VAR"
           ":"
           "abc"
         ];
+
+        name = "test-suffix";
       })
       (mkWrapperBinary {
-        name = "test-prefix-and-suffix";
         args = [
           "--prefix"
           "VAR"
@@ -172,51 +182,58 @@ runCommand "make-wrapper-test"
           ":"
           "bar"
         ];
+
+        name = "test-prefix-and-suffix";
       })
       (mkWrapperBinary {
-        name = "test-prefix-multi";
         args = [
           "--prefix"
           "VAR"
           ":"
           "abc:foo:foo"
         ];
+
+        name = "test-prefix-multi";
       })
       (mkWrapperBinary {
-        name = "test-suffix-each";
         args = [
           "--suffix-each"
           "VAR"
           ":"
           "foo bar:def"
         ];
+
+        name = "test-suffix-each";
       })
       (mkWrapperBinary {
-        name = "test-prefix-each";
         args = [
           "--prefix-each"
           "VAR"
           ":"
           "foo bar:def"
         ];
+
+        name = "test-prefix-each";
       })
       (mkWrapperBinary {
-        name = "test-suffix-contents";
         args = [
           "--suffix-contents"
           "VAR"
           ":"
           "${foofile} ${barfile}"
         ];
+
+        name = "test-suffix-contents";
       })
       (mkWrapperBinary {
-        name = "test-prefix-contents";
         args = [
           "--prefix-contents"
           "VAR"
           ":"
           "${foofile} ${barfile}"
         ];
+
+        name = "test-prefix-contents";
       })
     ];
   }

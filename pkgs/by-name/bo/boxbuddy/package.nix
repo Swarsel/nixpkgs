@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
-  libadwaita,
   distrobox,
+  libadwaita,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-9BGgm4yRjCarJIGP/G9gPj/qsYWb96XGJmpgLj3XCdM=";
   };
-
-  cargoHash = "sha256-2ipLO2b/mEEwSl0PSCq6m9tBhhaiDj9mXXVO4pr/78c=";
 
   # The software assumes it is installed either in flatpak or in the home directory
   # so the xdg data path needs to be patched here
@@ -38,6 +36,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libadwaita
   ];
 
+  cargoHash = "sha256-2ipLO2b/mEEwSl0PSCq6m9tBhhaiDj9mXXVO4pr/78c=";
+  doCheck = false; # No checks defined
+
   postInstall = ''
     cp icons/* ./
     XDG_DATA_HOME=$out/share INSTALL_DIR=$out ./scripts/install.sh
@@ -49,14 +50,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
-  doCheck = false; # No checks defined
-
   meta = {
     description = "Unofficial GUI for managing your Distroboxes, written with GTK4 + Libadwaita";
     homepage = "https://dvlv.github.io/BoxBuddyRS";
     license = lib.licenses.mit;
-    mainProgram = "boxbuddy-rs";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "boxbuddy-rs";
   };
 })

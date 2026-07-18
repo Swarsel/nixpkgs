@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Libc wrapper providing per-user hosts file";
     homepage = "https://github.com/figiel/hosts";
-    maintainers = [ lib.maintainers.bobvanderlinden ];
     license = lib.licenses.cc0;
+    maintainers = [ lib.maintainers.bobvanderlinden ];
     platforms = lib.platforms.linux;
   };
 })

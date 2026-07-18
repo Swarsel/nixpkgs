@@ -9,24 +9,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.5.0";
 
   src = fetchurl {
+    hash = "sha256-ZwZCtDwPqifr1olh77F+vnB2iPkbaAlWbd1gYTlRLAE=";
+
     urls = [
       "mirror://gnu/gprolog/gprolog-${finalAttrs.version}.tar.gz"
       "http://www.gprolog.org/gprolog-${finalAttrs.version}.tar.gz"
       "https://github.com/didoudiaz/gprolog/archive/refs/tags/v${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-ZwZCtDwPqifr1olh77F+vnB2iPkbaAlWbd1gYTlRLAE=";
   };
-
-  __structuredAttrs = true;
-  enableParallelBuilding = true;
-
-  hardeningDisable = lib.optional stdenv.hostPlatform.isi686 "pic";
-
-  patchPhase = ''
-    sed -i -e "s|/tmp/make.log|$TMPDIR/make.log|g" Pl2Wam/check_boot
-  '';
-
-  sourceRoot = "gprolog-${finalAttrs.version}/src";
 
   configureFlags = [
     "--without-links-dir"
@@ -43,13 +33,18 @@ stdenv.mkDerivation (finalAttrs: {
     mv -v $out/[A-Z]* $out/gprolog.ico $out/share/gprolog-${finalAttrs.version}
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+  hardeningDisable = lib.optional stdenv.hostPlatform.isi686 "pic";
+
+  patchPhase = ''
+    sed -i -e "s|/tmp/make.log|$TMPDIR/make.log|g" Pl2Wam/check_boot
+  '';
+
+  sourceRoot = "gprolog-${finalAttrs.version}/src";
+
   meta = {
-    homepage = "https://www.gnu.org/software/gprolog/";
     description = "GNU Prolog, a free Prolog compiler with constraint solving over finite domains";
-    license = with lib.licenses; [
-      lgpl3Plus # and/or
-      gpl2Plus
-    ];
 
     longDescription = ''
       GNU Prolog is a free Prolog compiler with constraint solving
@@ -74,6 +69,13 @@ stdenv.mkDerivation (finalAttrs: {
       the user combining the power of constraint programming to the
       declarativity of logic programming.
     '';
+
+    homepage = "https://www.gnu.org/software/gprolog/";
+
+    license = with lib.licenses; [
+      lgpl3Plus # and/or
+      gpl2Plus
+    ];
 
     platforms = lib.platforms.all;
   };

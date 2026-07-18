@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   cmake,
   llvmPackages,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,31 +17,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7S/+po+a6DkUCnfCrwBMfMnsHzbLcvSiPxEmQc2Hzr0=";
   };
 
-  buildFeatures = [ "uniffi" ];
-
-  cargoHash = "sha256-30eLUzxBiGwQqWOD8MR9eOG8LWM5T8eTQuMTK3bjmV8=";
-
-  # Skip tests because they download bitcoin-core and electrs zip files, and then fail
-  doCheck = false;
-
   nativeBuildInputs = [
     cmake
     llvmPackages.clang
     rustPlatform.bindgenHook
   ];
 
+  cargoHash = "sha256-30eLUzxBiGwQqWOD8MR9eOG8LWM5T8eTQuMTK3bjmV8=";
+  # Skip tests because they download bitcoin-core and electrs zip files, and then fail
+  doCheck = false;
   # Add CFLAGS to suppress the stringop-overflow error during aws-lc-sys compilation.
   NIX_CFLAGS_COMPILE = "-Wno-error=stringop-overflow";
+  buildFeatures = [ "uniffi" ];
 
   meta = {
     description = "Embeds the LDK node implementation compiled as shared library objects";
     homepage = "https://github.com/getAlby/ldk-node";
     changelog = "https://github.com/getAlby/ldk-node/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ bleetube ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  cython,
-  setuptools,
+  buildPythonPackage,
   cmake,
-  symengine,
+  cython,
   pytest,
-  sympy,
   python,
+  setuptools,
+  symengine,
+  sympy,
 }:
 
 buildPythonPackage rec {
   pname = "symengine";
   version = "0.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "symengine";
@@ -27,13 +26,6 @@ buildPythonPackage rec {
     substituteInPlace setup.py \
       --replace-fail "'cython>=0.29.24'" "'cython'"
   '';
-
-  build-system = [
-    cython
-    setuptools
-  ];
-
-  dontUseCmakeConfigure = true;
 
   nativeBuildInputs = [
     cmake
@@ -56,6 +48,14 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
 
   meta = {
     description = "Python library providing wrappers to SymEngine";

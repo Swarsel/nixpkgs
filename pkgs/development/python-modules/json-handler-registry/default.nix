@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "json-handler-registry";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromBitbucket {
     owner = "massultidev";
@@ -20,14 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-oB2zsA6H1D27m87+mBKCDaN/kuxtc74RY29zSXovBKU=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     dataclasses-json
     pytest-mock
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "json_handler_registry" ];
 
   meta = {

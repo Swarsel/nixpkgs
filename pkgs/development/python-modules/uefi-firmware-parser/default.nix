@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   nix-update-script,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "uefi-firmware-parser";
   version = "1.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "theopolis";
@@ -24,10 +23,9 @@ buildPythonPackage (finalAttrs: {
     setuptools-scm
   ];
 
-  pythonRemoveDeps = [ "future" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "uefi_firmware" ];
-
+  pythonRemoveDeps = [ "future" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -35,8 +33,8 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/theopolis/uefi-firmware-parser";
     changelog = "https://github.com/theopolis/uefi-firmware-parser/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "uefi-firmware-parser";
     maintainers = [ lib.maintainers.elliotberman ];
     platforms = lib.platforms.unix;
+    mainProgram = "uefi-firmware-parser";
   };
 })

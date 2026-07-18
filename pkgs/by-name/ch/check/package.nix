@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -13,13 +13,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "02m25y9m46pb6n46s51av62kpd936lkfv3b13kfpckgvmh5lxpm8";
   };
 
+  # Test can randomly fail: https://hydra.nixos.org/build/7243912
+  doCheck = false;
+
   # fortify breaks the libcompat vsnprintf implementation
   hardeningDisable = lib.optionals (
     stdenv.hostPlatform.isMusl && (stdenv.hostPlatform != stdenv.buildPlatform)
   ) [ "fortify" ];
-
-  # Test can randomly fail: https://hydra.nixos.org/build/7243912
-  doCheck = false;
 
   meta = {
     description = "Unit testing framework for C";
@@ -34,9 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://libcheck.github.io/check/";
-
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "checkmk";
     platforms = lib.platforms.all;
+    mainProgram = "checkmk";
   };
 })

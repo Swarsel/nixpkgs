@@ -1,23 +1,22 @@
 {
   lib,
   buildDunePackage,
+  ca-certs,
   conduit-lwt,
-  ppx_sexp_conv,
-  lwt,
-  uri,
   ipaddr,
   ipaddr-sexp,
-  ca-certs,
   logs,
-  lwt_ssl,
+  lwt,
   lwt_log,
+  lwt_ssl,
+  ppx_sexp_conv,
   ssl,
+  uri,
 }:
 
 buildDunePackage {
-  pname = "conduit-lwt-unix";
   inherit (conduit-lwt) version src;
-
+  pname = "conduit-lwt-unix";
   buildInputs = [ ppx_sexp_conv ];
 
   propagatedBuildInputs = [
@@ -32,6 +31,7 @@ buildDunePackage {
   ];
 
   doCheck = !lib.versionAtLeast lwt.version "6.0.0";
+
   checkInputs = [
     lwt_log
     ssl

@@ -7,29 +7,20 @@
   lark,
   libcst,
   parso,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-xdist,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "hypothesmith";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-lsFIAtbI6F2JdSZBdoeNtUso0u2SH9v+3C5rjOPIFxY=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    hypothesis
-    lark
-    libcst
-  ];
 
   nativeCheckInputs = [
     black
@@ -39,6 +30,14 @@ buildPythonPackage rec {
     pytest-xdist
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    hypothesis
+    lark
+    libcst
+  ];
+
   disabledTests = [
     # super slow
     "test_source_code_from_libcst_node_type"
@@ -46,6 +45,7 @@ buildPythonPackage rec {
     "test_black_autoformatter_from_grammar"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hypothesmith" ];
 
   meta = {

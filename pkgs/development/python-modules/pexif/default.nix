@@ -7,12 +7,13 @@
 buildPythonPackage (finalAttrs: {
   pname = "pexif";
   version = "0.15";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     sha256 = "45a3be037c7ba8b64bbfc48f3586402cc17de55bb9d7357ef2bc99954a18da3f";
   };
+
+  format = "setuptools";
 
   meta = {
     description = "Module for editing JPEG EXIF data";

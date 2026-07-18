@@ -1,16 +1,16 @@
 {
   lib,
-  llvmPackages,
   fetchFromGitHub,
   cmake,
-  ninja,
   help2man,
   irods,
+  llvmPackages,
+  ninja,
 }:
 
 llvmPackages.stdenv.mkDerivation (finalAttrs: {
-  pname = "irods-icommands";
   inherit (irods) version;
+  pname = "irods-icommands";
 
   src = fetchFromGitHub {
     owner = "irods";
@@ -39,7 +39,9 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
       maintainers
       platforms
       ;
+
     description = irods.meta.description + " CLI clients";
+
     longDescription = irods.meta.longDescription + ''
 
       This package provides the CLI clients, called 'icommands'.

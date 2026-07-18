@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
   dnspython,
   expiringdict,
-  fetchFromGitHub,
   hatchling,
   importlib-resources,
   pem,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "checkdmarc";
   version = "5.17.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "domainaware";
@@ -29,11 +28,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-OI96936+4Jcx3VuPmHI2tcIssPxC7ofmLwWcvZxMw7E=";
   };
 
-  pythonRelaxDeps = [
-    "cryptography"
-    "xmltodict"
-  ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -50,10 +45,6 @@ buildPythonPackage (finalAttrs: {
     xmltodict
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "checkdmarc" ];
-
   disabledTests = [
     # Tests require network access
     "testBIMI"
@@ -68,6 +59,14 @@ buildPythonPackage (finalAttrs: {
     "testGetDnskeyCache"
     "testIncludeMissingSPF"
     "testKnownGood"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "checkdmarc" ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+    "xmltodict"
   ];
 
   meta = {

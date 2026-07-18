@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
   libsForQt5,
+  pkg-config,
   qemu,
 }:
 
@@ -47,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Qt-based front-end for QEMU emulator";
     homepage = "https://qtemu.org";
     license = lib.licenses.gpl2;
-    platforms = with lib.platforms; linux;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = with lib.platforms; linux;
     mainProgram = "qtemu";
   };
 })

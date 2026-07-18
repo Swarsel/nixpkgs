@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
   alsa-lib,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-v90FfF4vP5UPy8VnQFvYMKiCrledgNMpWbJR59Cv6a0=";
   };
 
-  cargoHash = "sha256-u6H+4cikI/jmcKpA2Ty2DjZF8wLiNylFMInA6sdNl0k=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     alsa-lib
   ];
+
+  cargoHash = "sha256-u6H+4cikI/jmcKpA2Ty2DjZF8wLiNylFMInA6sdNl0k=";
 
   meta = {
     description = "Cross-platform music live coding in terminal";

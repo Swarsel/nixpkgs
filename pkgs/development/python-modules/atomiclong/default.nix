@@ -10,19 +10,16 @@
 buildPythonPackage rec {
   pname = "atomiclong";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-yxN4xM1nbW8kNkHFDid1BKv0X3Dx6nbkRu/Nu2liS74=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   dependencies = [ cffi ];
-
+  pyproject = true;
   pythonImportsCheck = [ "atomiclong" ];
 
   meta = {

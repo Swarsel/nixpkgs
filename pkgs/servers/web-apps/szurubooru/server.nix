@@ -1,12 +1,12 @@
 {
-  src,
-  version,
   lib,
-  nixosTests,
   fetchPypi,
-  python3,
   ffmpeg_4-full,
+  nixosTests,
+  python3,
+  src,
   szurubooru,
+  version,
 }:
 
 let
@@ -14,27 +14,27 @@ let
     (self: super: {
       alembic = super.alembic.overridePythonAttrs (oldAttrs: rec {
         version = "1.14.1";
+
         src = fetchPypi {
-          pname = "alembic";
           inherit version;
           sha256 = "sha256-SW6IgkWlOt8UmPyrMXE6Rpxlg2+N524BOZqhw+kN0hM=";
+          pname = "alembic";
         };
+
         doCheck = false;
       });
     })
   ];
 
   python = python3.override {
-    self = python;
     packageOverrides = lib.composeManyExtensions overrides;
+    self = python;
   };
 in
 
 python.pkgs.buildPythonApplication {
-  pname = "szurubooru-server";
   inherit version;
-  pyproject = true;
-
+  pname = "szurubooru-server";
   src = "${src}/server";
 
   patches = [
@@ -42,6 +42,7 @@ python.pkgs.buildPythonApplication {
   ];
 
   nativeBuildInputs = with python.pkgs; [ setuptools ];
+
   propagatedBuildInputs = with python.pkgs; [
     certifi
     coloredlogs
@@ -58,16 +59,16 @@ python.pkgs.buildPythonApplication {
     yt-dlp
   ];
 
-  makeWrapperArgs = [
-    "--prefix PATH : ${lib.makeBinPath [ ffmpeg_4-full ]}"
-  ];
-
   postInstall = ''
     mkdir $out/bin
     install -m0755 $src/szuru-admin $out/bin/szuru-admin
   '';
 
-  passthru.tests.szurubooru = nixosTests.szurubooru;
+  makeWrapperArgs = [
+    "--prefix PATH : ${lib.makeBinPath [ ffmpeg_4-full ]}"
+  ];
+
+  pyproject = true;
 
   # Database migration. Needs the szurubooru server in its environment for the
   # migration to complete successfully.
@@ -76,6 +77,9 @@ python.pkgs.buildPythonApplication {
       szurubooru.server
     ];
   });
+
+  passthru.tests.szurubooru = nixosTests.szurubooru;
+
   # Waitress is used to run the serer.
   passthru.waitress = python.pkgs.waitress.overrideAttrs (old: {
     propagatedBuildInputs = old.propagatedBuildInputs ++ [

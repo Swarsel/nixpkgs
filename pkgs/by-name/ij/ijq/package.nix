@@ -1,12 +1,12 @@
 {
+  lib,
   buildGo126Module,
   fetchFromCodeberg,
-  lib,
-  jq,
   installShellFiles,
+  jq,
   makeBinaryWrapper,
-  scdoc,
   nix-update-script,
+  scdoc,
 }:
 
 buildGo126Module (finalAttrs: {
@@ -20,19 +20,13 @@ buildGo126Module (finalAttrs: {
     hash = "sha256-U4UKhWI/xd7+rLa350oIFlCqbiMSZe3ztPFR0uierOo=";
   };
 
-  vendorHash = "sha256-aU/0CIbI49OwgY6ioT50uPxld/rHAve3+KoILgPpWSQ=";
-
   nativeBuildInputs = [
     installShellFiles
     makeBinaryWrapper
     scdoc
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-aU/0CIbI49OwgY6ioT50uPxld/rHAve3+KoILgPpWSQ=";
 
   postBuild = ''
     scdoc < ijq.1.scd > ijq.1
@@ -44,17 +38,25 @@ buildGo126Module (finalAttrs: {
       --prefix PATH : "${lib.makeBinPath [ jq ]}"
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Interactive wrapper for jq";
-    mainProgram = "ijq";
     homepage = "https://codeberg.org/gpanders/ijq";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       justinas
       mattpolzin
       SuperSandro2000
     ];
+
+    mainProgram = "ijq";
   };
 })

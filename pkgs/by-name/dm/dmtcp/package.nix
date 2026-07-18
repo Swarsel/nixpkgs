@@ -18,14 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5laifZ/8oYJrNO5JOggCbPKmA9XiHEC79C/hk+0TdeQ=";
   };
 
-  dontDisableStatic = true;
-
-  nativeCheckInputs = [
-    perl
-    python3
-  ];
-  env.HAS_PYTHON3 = "yes";
-
   patches = [ ./ld-linux-so-buffer-size.patch ];
 
   postPatch = ''
@@ -46,16 +38,28 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "os.getenv('USER')" "\"nixbld1\""
   '';
 
+  env.HAS_PYTHON3 = "yes";
+
+  nativeCheckInputs = [
+    perl
+    python3
+  ];
+
+  dontDisableStatic = true;
+
   meta = {
     description = "Distributed MultiThreaded Checkpointing";
+
     longDescription = ''
       DMTCP (Distributed MultiThreaded Checkpointing) is a tool to
       transparently checkpointing the state of an arbitrary group of
       programs spread across many machines and connected by sockets. It does
       not modify the user's program or the operating system.
     '';
+
     homepage = "http://dmtcp.github.io/";
     license = lib.licenses.lgpl3Plus; # most files seem this or LGPL-2.1+
+
     platforms = lib.intersectLists lib.platforms.linux (
       lib.platforms.x86 ++ lib.platforms.aarch ++ lib.platforms.riscv
     );

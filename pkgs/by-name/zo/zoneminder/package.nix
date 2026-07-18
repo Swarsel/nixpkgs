@@ -1,35 +1,35 @@
 {
-  stdenv,
   lib,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
-  cmake,
-  makeWrapper,
-  pkg-config,
+  fetchFromGitHub,
   arp-scan,
+  cmake,
+  coreutils,
   curl,
   ffmpeg,
   glib,
   iproute2,
   libjpeg,
+  libmysqlclient,
   libselinux,
   libsepol,
-  mp4v2,
-  libmysqlclient,
+  makeWrapper,
   mariadb,
+  mp4v2,
+  nixosTests,
   nlohmann_json,
   pcre2,
   perl,
   perlPackages,
+  pkg-config,
   polkit,
+  procps,
+  psmisc,
   systemd,
   util-linuxMinimal,
   x264,
   zlib,
-  coreutils,
-  procps,
-  psmisc,
-  nixosTests,
 }:
 
 # NOTES:
@@ -72,12 +72,13 @@
 let
   addons = [
     {
-      # XXX: not tested with 1.38.x.
-      path = "scripts/ZoneMinder/lib/ZoneMinder/Control/Xiaomi.pm";
       src = fetchurl {
         url = "https://gist.githubusercontent.com/joshstrange/73a2f24dfaf5cd5b470024096ce2680f/raw/e964270c5cdbf95e5b7f214f7f0fc6113791530e/Xiaomi.pm";
         sha256 = "04n1ap8fx66xfl9q9rypj48pzbgzikq0gisfsfm8wdsmflarz43v";
       };
+
+      # XXX: not tested with 1.38.x.
+      path = "scripts/ZoneMinder/lib/ZoneMinder/Control/Xiaomi.pm";
     }
   ];
 
@@ -175,6 +176,12 @@ stdenv.mkDerivation rec {
       --subst-var-by srcHash "`basename $out`"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    makeWrapper
+    pkg-config
+  ];
+
   buildInputs = [
     arp-scan
     curl
@@ -216,12 +223,6 @@ stdenv.mkDerivation rec {
     DataEntropy # zmupdate.pl
   ]);
 
-  nativeBuildInputs = [
-    cmake
-    makeWrapper
-    pkg-config
-  ];
-
   cmakeFlags = [
     "-DWITH_SYSTEMD=ON"
     "-DZM_LOGDIR=/var/log/${dirName}"
@@ -233,11 +234,6 @@ stdenv.mkDerivation rec {
     "-DZM_WEB_USER=${user}"
     "-DZM_WEB_GROUP=${user}"
   ];
-
-  passthru = {
-    inherit dirName;
-    tests = nixosTests.zoneminder;
-  };
 
   postInstall = ''
     PERL5LIB="$PERL5LIB''${PERL5LIB:+:}$out/${perl.libPrefix}"
@@ -265,6 +261,11 @@ stdenv.mkDerivation rec {
       rm $f
     done
   '';
+
+  passthru = {
+    inherit dirName;
+    tests = nixosTests.zoneminder;
+  };
 
   meta = {
     description = "Video surveillance software system";

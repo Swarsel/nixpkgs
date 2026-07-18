@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libxcrypt,
   nixosTests,
 }:
@@ -18,19 +18,19 @@ buildGoModule (finalAttrs: {
   };
 
   buildInputs = [ libxcrypt ];
-
   vendorHash = null;
-
   passthru.tests = { inherit (nixosTests) portunus; };
 
   meta = {
     description = "Self-contained user/group management and authentication service";
     homepage = "https://github.com/majewsky/portunus";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       majewsky
       SuperSandro2000
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

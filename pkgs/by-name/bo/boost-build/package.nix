@@ -27,11 +27,6 @@ stdenv.mkDerivation {
       sha256 = "1r4rwlq87ydmsdqrik4ly5iai796qalvw7603mridg2nwcbbnf54";
     });
 
-  # b2 is in a subdirectory of boost source tarballs
-  postUnpack = lib.optionalString (useBoost ? src) ''
-    sourceRoot="$sourceRoot/tools/build"
-  '';
-
   patches =
     useBoost.boostBuildPatches or [ ]
     ++ lib.optional (
@@ -76,10 +71,15 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  # b2 is in a subdirectory of boost source tarballs
+  postUnpack = lib.optionalString (useBoost ? src) ''
+    sourceRoot="$sourceRoot/tools/build"
+  '';
+
   meta = {
     homepage = "https://www.boost.org/build/";
     license = lib.licenses.boost;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

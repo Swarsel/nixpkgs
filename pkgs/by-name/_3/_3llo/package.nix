@@ -5,15 +5,13 @@
 
 bundlerApp {
   pname = "3llo";
-
-  gemdir = ./.;
-
   exes = [ "3llo" ];
+  gemdir = ./.;
 
   meta = {
     description = "Trello interactive CLI on terminal";
-    license = lib.licenses.mit;
     homepage = "https://github.com/qcam/3llo";
+    license = lib.licenses.mit;
     maintainers = [ ];
   };
 }

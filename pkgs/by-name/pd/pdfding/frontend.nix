@@ -2,18 +2,16 @@
   stdenv,
   fetchNpmDeps,
   fetchzip,
-  npmHooks,
-
   nodejs,
+  npmHooks,
   pdfding,
 }:
 let
   pdfjsVersion = "5.5.207"; # see update script
   pdfjsHash = "sha256-HikisEa6L+BqsG6imgWhV+4J46BluU5zqU1nFZAG0eM=";
   pdfjs = fetchzip {
-    url = "https://github.com/mozilla/pdf.js/releases/download/v${pdfjsVersion}/pdfjs-${pdfjsVersion}-dist.zip";
     hash = pdfjsHash;
-    stripRoot = false;
+
     postFetch = ''
       rm -rf $out/web/locale \
       $out/web/standard_fonts \
@@ -22,25 +20,20 @@ let
       # remove source maps
       find "$out" -name '*.map' -exec rm -f '{}' \;
     '';
+
+    stripRoot = false;
+    url = "https://github.com/mozilla/pdf.js/releases/download/v${pdfjsVersion}/pdfjs-${pdfjsVersion}-dist.zip";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "pdfding-frontend";
   inherit (pdfding) src version;
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    name = "pdfding-${finalAttrs.version}-npm-deps";
-    hash = "sha256-TDX2xoHj07aUeuLPt/TlgkdRdTiv3fNbriChzEB4EXk=";
-  };
+  pname = "pdfding-frontend";
+  strictDeps = true;
 
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
   ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   # keeping the file structure same as upstream to minimise confusion
   buildPhase = ''
@@ -68,6 +61,14 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
+
+  __structuredAttrs = true;
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-TDX2xoHj07aUeuLPt/TlgkdRdTiv3fNbriChzEB4EXk=";
+    name = "pdfding-${finalAttrs.version}-npm-deps";
+  };
 
   passthru = {
     inherit pdfjs;

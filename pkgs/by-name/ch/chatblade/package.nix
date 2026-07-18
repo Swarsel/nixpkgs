@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "chatblade";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -16,13 +15,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   doCheck = false; # there are no tests
 
-  pythonImportsCheck = [ "chatblade" ];
-
   build-system = with python3Packages; [
     setuptools
   ];
-
-  pythonRelaxDeps = true;
 
   dependencies = with python3Packages; [
     openai
@@ -33,11 +28,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tiktoken
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "chatblade" ];
+  pythonRelaxDeps = true;
+
   meta = {
-    homepage = "https://github.com/npiv/chatblade/";
     description = "CLI Swiss Army Knife for ChatGPT";
-    mainProgram = "chatblade";
+    homepage = "https://github.com/npiv/chatblade/";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ deejayem ];
+    mainProgram = "chatblade";
   };
 })

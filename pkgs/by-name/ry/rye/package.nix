@@ -1,21 +1,17 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-
+  buildPackages,
   # nativeBuildInputs
   installShellFiles,
-  pkg-config,
-
-  # buildInputs
-  openssl,
-  stdenv,
-
-  buildPackages,
-  versionCheckHook,
-
   # passthru
   nix-update-script,
+  # buildInputs
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,12 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-K9xad5Odza0Oxz49yMJjqpfh3cCgmWnbAlv069fHV6Q=";
   };
 
-  cargoHash = "sha256-+gFa8hruXIweFm24XvfhqXZxNLAYKVNX+xBSCdAk54A=";
-
-  env = {
-    OPENSSL_NO_VENDOR = 1;
-  };
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -44,16 +34,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  postInstall =
-    let
-      emulator = stdenv.hostPlatform.emulator buildPackages;
-    in
-    ''
-      installShellCompletion --cmd rye \
-        --bash <(${emulator} $out/bin/rye self completion -s bash) \
-        --fish <(${emulator} $out/bin/rye self completion -s fish) \
-        --zsh <(${emulator} $out/bin/rye self completion -s zsh)
-    '';
+  cargoHash = "sha256-+gFa8hruXIweFm24XvfhqXZxNLAYKVNX+xBSCdAk54A=";
+
+  env = {
+    OPENSSL_NO_VENDOR = 1;
+  };
 
   checkFlags = [
     "--skip=utils::test_is_inside_git_work_tree"
@@ -90,10 +75,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_version"
   ];
 
+  postInstall =
+    let
+      emulator = stdenv.hostPlatform.emulator buildPackages;
+    in
+    ''
+      installShellCompletion --cmd rye \
+        --bash <(${emulator} $out/bin/rye self completion -s bash) \
+        --fish <(${emulator} $out/bin/rye self completion -s fish) \
+        --zsh <(${emulator} $out/bin/rye self completion -s zsh)
+    '';
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

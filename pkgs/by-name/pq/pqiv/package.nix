@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   ffmpeg,
   gtk3,
   imagemagick,
   libarchive,
   libspectre,
   libwebp,
+  pkg-config,
   poppler,
 }:
 

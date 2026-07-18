@@ -1,30 +1,29 @@
 {
   lib,
   stdenv,
-  appimageTools,
   fetchurl,
-  graphicsmagick,
-  makeWrapper,
-  copyDesktopItems,
-  autoPatchelfHook,
-  libxxf86vm,
-  libxrandr,
-  libxext,
-  libxcursor,
-  libx11,
-  xrandr,
-  libxcb,
-  libpulseaudio,
-  libGL,
-  udev,
-  xdg-utils,
-  electron,
   addDriverRunpath,
-  makeDesktopItem,
-
-  jdk8,
+  appimageTools,
+  autoPatchelfHook,
+  copyDesktopItems,
+  electron,
+  graphicsmagick,
   jdk17,
   jdk21,
+  jdk8,
+  libGL,
+  libpulseaudio,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxext,
+  libxrandr,
+  libxxf86vm,
+  makeDesktopItem,
+  makeWrapper,
+  udev,
+  xdg-utils,
+  xrandr,
   jdks ? [
     jdk8
     jdk17
@@ -38,11 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = appimageTools.extract {
     inherit (finalAttrs) pname version;
+
     src = fetchurl {
       url = "https://cdn-raw.gdl.gg/launcher/GDLauncher__${finalAttrs.version}__linux__x64.AppImage";
       hash = "sha256-d5ZvWSLA/7mY0540TDLMW9qmEFA5xC6Zd83IWakOmGo=";
     };
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     graphicsmagick
@@ -55,23 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcb
     stdenv.cc.cc.lib
   ];
-
-  strictDeps = true;
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/share/gdlauncher-carbon/resources
-    cp -r $src/resources/{binaries,app.asar} $out/share/gdlauncher-carbon/resources/
-
-    # The provided icon is a bit large for some systems, so make smaller ones
-    for size in 48 96 128 256 512; do
-      gm convert $src/@gddesktop.png -resize ''${size}x''${size} icon_$size.png
-      install -D icon_$size.png $out/share/icons/hicolor/''${size}x''${size}/apps/gdlauncher-carbon.png
-    done
-
-    runHook postInstall
-  '';
 
   postConfigure =
     let
@@ -108,22 +93,39 @@ stdenv.mkDerivation (finalAttrs: {
         --add-flags $out/share/gdlauncher-carbon/resources/app.asar
     '';
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/share/gdlauncher-carbon/resources
+    cp -r $src/resources/{binaries,app.asar} $out/share/gdlauncher-carbon/resources/
+
+    # The provided icon is a bit large for some systems, so make smaller ones
+    for size in 48 96 128 256 512; do
+      gm convert $src/@gddesktop.png -resize ''${size}x''${size} icon_$size.png
+      install -D icon_$size.png $out/share/icons/hicolor/''${size}x''${size}/apps/gdlauncher-carbon.png
+    done
+
+    runHook postInstall
+  '';
+
   desktopItems = [
     (makeDesktopItem {
-      # Note the desktop file name should be GDLauncher to match the window's
-      # client id for window icon purposes on wayland.
-      name = "GDLauncher";
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "GDLauncher";
       exec = "gdlauncher-carbon";
       icon = "gdlauncher-carbon";
-      desktopName = "GDLauncher";
-      comment = finalAttrs.meta.description;
-      categories = [ "Game" ];
+
       keywords = [
         "launcher"
         "mod manager"
         "minecraft"
       ];
+
       mimeTypes = [ "x-scheme-handler/gdlauncher" ];
+      # Note the desktop file name should be GDLauncher to match the window's
+      # client id for window icon purposes on wayland.
+      name = "GDLauncher";
     })
   ];
 
@@ -131,11 +133,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple, yet powerful Minecraft custom launcher with a strong focus on the user experience";
     homepage = "https://gdlauncher.com/";
     license = lib.licenses.bsl11;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       huantian
       TsubakiDev
     ];
+
     platforms = lib.platforms.linux;
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 })

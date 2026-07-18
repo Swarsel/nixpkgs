@@ -5,8 +5,8 @@
   google-api-core,
   google-cloud-testutils,
   grpc-google-iam-v1,
-  grpcio-status,
   grpcio,
+  grpcio-status,
   libcst,
   opentelemetry-api,
   opentelemetry-sdk,
@@ -20,13 +20,23 @@
 buildPythonPackage rec {
   pname = "google-cloud-pubsub";
   version = "2.39.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_pubsub";
     inherit version;
     hash = "sha256-7tZeJfV/lb8+AtltfuFxaIsjkiRx+fIbWpHtkOEoLA8=";
+    pname = "google_cloud_pubsub";
   };
+
+  nativeCheckInputs = [
+    google-cloud-testutils
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
+  preCheck = ''
+    # prevent google directory from shadowing google imports
+    rm -r google
+  '';
 
   build-system = [ setuptools ];
 
@@ -43,29 +53,18 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  pythonRelaxDeps = [ "protobuf" ];
-
-  optional-dependencies = {
-    libcst = [ libcst ];
-  };
-
-  nativeCheckInputs = [
-    google-cloud-testutils
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
-  preCheck = ''
-    # prevent google directory from shadowing google imports
-    rm -r google
-  '';
-
   disabledTestPaths = [
     # Tests in pubsub_v1 attempt to contact pubsub.googleapis.com
     "tests/unit/pubsub_v1"
   ];
 
+  optional-dependencies = {
+    libcst = [ libcst ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "google.cloud.pubsub" ];
+  pythonRelaxDeps = [ "protobuf" ];
 
   meta = {
     description = "Google Cloud Pub/Sub API client library";

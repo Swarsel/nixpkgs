@@ -2,38 +2,38 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost187,
+  calf,
+  dbus,
+  desktop-file-utils,
+  fftwFloat,
+  glib,
+  glibmm,
+  gst_all_1,
+  gtk3,
+  gtkmm3,
+  itstool,
+  libbs2b,
+  libebur128,
+  libsamplerate,
+  libsndfile,
+  libxml2,
+  lilv,
+  lsp-plugins,
+  lv2,
   meson,
   ninja,
   pkg-config,
-  itstool,
-  python3,
-  libxml2,
-  desktop-file-utils,
-  wrapGAppsHook3,
-  gst_all_1,
   pulseaudio,
-  gtk3,
-  glib,
-  glibmm,
-  gtkmm3,
-  lilv,
-  lv2,
+  python3,
+  rnnoise,
+  rubberband,
   serd,
   sord,
   sratom,
-  libbs2b,
-  libsamplerate,
-  libsndfile,
-  libebur128,
-  rnnoise,
-  boost187,
-  dbus,
-  fftwFloat,
-  calf,
-  zita-convolver,
+  wrapGAppsHook3,
   zam-plugins,
-  rubberband,
-  lsp-plugins,
+  zita-convolver,
 }:
 
 let
@@ -56,6 +56,11 @@ stdenv.mkDerivation {
     rev = "fbe0a724c1405cee624802f381476cf003dfcfa";
     hash = "sha256-tyVUWc8w08WUnJRTjJVTIiG/YBWTETNYG+4amwEYezY=";
   };
+
+  postPatch = ''
+    chmod +x meson_post_install.py
+    patchShebangs meson_post_install.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -94,11 +99,6 @@ stdenv.mkDerivation {
     zita-convolver
   ];
 
-  postPatch = ''
-    chmod +x meson_post_install.py
-    patchShebangs meson_post_install.py
-  '';
-
   preFixup = ''
     gappsWrapperArgs+=(
       --set LV2_PATH "${lib.makeSearchPath "lib/lv2" lv2Plugins}"
@@ -108,10 +108,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Limiter, compressor, reverberation, equalizer and auto volume effects for Pulseaudio applications";
-    mainProgram = "pulseeffects";
     homepage = "https://github.com/wwmm/pulseeffects";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "pulseeffects";
   };
 }

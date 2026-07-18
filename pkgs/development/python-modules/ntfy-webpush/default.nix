@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pywebpush,
+  buildPythonPackage,
   py-vapid,
+  pywebpush,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ntfy-webpush";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dschep";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
       --replace-fail "'ntfy', " ""
   '';
 
+  # no tests, just a script
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,8 +33,7 @@ buildPythonPackage rec {
     py-vapid
   ];
 
-  # no tests, just a script
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Cloudbell webpush notification support for ntfy";

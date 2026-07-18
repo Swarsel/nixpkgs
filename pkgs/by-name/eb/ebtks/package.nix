@@ -19,14 +19,13 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ libminc ];
-
   cmakeFlags = [ "-DLIBMINC_DIR=${libminc}/lib/cmake" ];
 
   meta = {
-    homepage = "https://github.com/BIC-MNI/EBTKS";
     description = "Library for working with MINC files";
+    homepage = "https://github.com/BIC-MNI/EBTKS";
+    license = lib.licenses.free;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.free;
   };
 }

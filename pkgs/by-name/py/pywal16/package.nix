@@ -1,13 +1,11 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  colorz,
+  imagemagick,
   installShellFiles,
   nix-update-script,
-
-  imagemagick,
-  colorz,
-
+  python3,
   withColorthief ? false,
   withColorz ? false,
   withFastColorthief ? false,
@@ -18,7 +16,6 @@
 python3.pkgs.buildPythonApplication rec {
   pname = "pywal16";
   version = "3.8.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eylles";
@@ -27,9 +24,22 @@ python3.pkgs.buildPythonApplication rec {
     hash = "sha256-2KlVeOrF/nfRZk12gthDJ08xNvVbP5em3eXPMudo1Vs=";
   };
 
-  build-system = [ python3.pkgs.setuptools ];
-
   nativeBuildInputs = [ installShellFiles ];
+
+  nativeCheckInputs = [
+    python3.pkgs.pytestCheckHook
+    imagemagick
+  ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  postInstall = ''
+    installManPage data/man/man1/wal.1
+  '';
+
+  build-system = [ python3.pkgs.setuptools ];
 
   dependencies =
     lib.optionals withColorthief optional-dependencies.colorthief
@@ -38,31 +48,11 @@ python3.pkgs.buildPythonApplication rec {
     ++ lib.optionals withHaishoku optional-dependencies.haishoku
     ++ lib.optionals withModernColorthief optional-dependencies.modern_colorthief;
 
-  nativeCheckInputs = [
-    python3.pkgs.pytestCheckHook
-    imagemagick
-  ];
-
   makeWrapperArgs = [
     "--prefix PATH : ${lib.makeBinPath ([ imagemagick ] ++ lib.optional withColorz colorz)}"
   ];
 
-  postInstall = ''
-    installManPage data/man/man1/wal.1
-  '';
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
-  pythonImportsCheck = [ "pywal" ];
-
   optional-dependencies = with python3.pkgs; {
-    colorthief = [ colorthief ];
-    colorz = [ colorz ];
-    fast-colorthief = [ fast-colorthief ];
-    haishoku = [ haishoku ];
-    modern_colorthief = [ modern-colorthief ];
     all = [
       colorthief
       colorz
@@ -70,8 +60,16 @@ python3.pkgs.buildPythonApplication rec {
       haishoku
       modern-colorthief
     ];
+
+    colorthief = [ colorthief ];
+    colorz = [ colorz ];
+    fast-colorthief = [ fast-colorthief ];
+    haishoku = [ haishoku ];
+    modern_colorthief = [ modern-colorthief ];
   };
 
+  pyproject = true;
+  pythonImportsCheck = [ "pywal" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

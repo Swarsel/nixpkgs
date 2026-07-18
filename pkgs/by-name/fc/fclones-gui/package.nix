@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
   gdk-pixbuf,
   gtk4,
   libadwaita,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ad7wyoCjSQ8i6c+4IorImqAY2Q6pwBtI2JkkbkGa46U=";
   };
 
-  cargoHash = "sha256-01HNWhHfbun+Er39eN5tEmqXMGDsBQrZtVTA9R7kifo=";
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook4
@@ -33,6 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gtk4
     libadwaita
   ];
+
+  cargoHash = "sha256-01HNWhHfbun+Er39eN5tEmqXMGDsBQrZtVTA9R7kifo=";
 
   postInstall = ''
     substituteInPlace snap/gui/fclones-gui.desktop \
@@ -45,10 +45,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Interactive duplicate file remover";
-    mainProgram = "fclones-gui";
     homepage = "https://github.com/pkolaczk/fclones-gui";
     changelog = "https://github.com/pkolaczk/fclones-gui/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "fclones-gui";
   };
 })

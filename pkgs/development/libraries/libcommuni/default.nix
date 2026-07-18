@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  qmake,
   qtbase,
   qtdeclarative,
-  qmake,
   which,
 }:
 
@@ -19,18 +19,16 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-9eYJpmjW1J48RD6wVJOHmsAgTbauNeeCrXe076ufq1I=";
   };
 
-  buildInputs = [
-    qtbase
-    qtdeclarative
-  ];
   nativeBuildInputs = [
     qmake
     which
   ];
 
-  enableParallelBuilding = true;
+  buildInputs = [
+    qtbase
+    qtdeclarative
+  ];
 
-  dontUseQmakeConfigure = true;
   configureFlags = [
     "-config"
     "release"
@@ -41,8 +39,6 @@ stdenv.mkDerivation rec {
     "qt_framework"
   ];
 
-  dontWrapQtApps = true;
-
   preConfigure = ''
     sed -i -e 's|/bin/pwd|pwd|g' configure
   '';
@@ -51,10 +47,12 @@ stdenv.mkDerivation rec {
   # before the frameworks are installed.
   doCheck = false;
   doInstallCheck = true;
-  installCheckTarget = "check";
-
   # Hack to avoid TMPDIR in RPATHs.
   preFixup = "rm -rf lib";
+  dontUseQmakeConfigure = true;
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+  installCheckTarget = "check";
 
   meta = {
     description = "Cross-platform IRC framework written with Qt";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -15,12 +15,12 @@ buildNpmPackage rec {
     hash = "sha256-yOqA2Xo4c7u0g6RQYt9joQk8mI9KE0xTAnLjln9atmg=";
   };
 
-  npmDepsHash = "sha256-tbcNRQBbJjN1N5ENxCvPQbfteyxTbPpi35dYmeUc4A4=";
-
   postPatch = ''
     # Upstream doesn't provide any lock file so we provide our own:
     cp ${./package-lock.json} package-lock.json
   '';
+
+  npmDepsHash = "sha256-tbcNRQBbJjN1N5ENxCvPQbfteyxTbPpi35dYmeUc4A4=";
 
   preInstall = ''
     # `npmInstallHook` requires a `node_modules/` folder but `npm
@@ -29,8 +29,8 @@ buildNpmPackage rec {
     mkdir node_modules/
   '';
 
-  forceEmptyCache = true;
   dontNpmBuild = true;
+  forceEmptyCache = true;
 
   meta = {
     description = "Copilot Node.js server";

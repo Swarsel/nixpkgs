@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   paho-mqtt,
   poetry-core,
   psutil,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "notus-scanner";
   version = "22.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "greenbone";
@@ -21,14 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-JKDnqgEBzEIOI3WIh+SOycACFaYZoZHy7tPFirltDiM=";
   };
-
-  pythonRelaxDeps = [
-    "packaging"
-    "psutil"
-    "python-gnupg"
-  ];
-
-  build-system = [ poetry-core ];
 
   propagatedBuildInputs = [
     paho-mqtt
@@ -38,8 +29,15 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "notus.scanner" ];
+
+  pythonRelaxDeps = [
+    "packaging"
+    "psutil"
+    "python-gnupg"
+  ];
 
   meta = {
     description = "Helper to create results from local security checks";

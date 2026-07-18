@@ -25,31 +25,15 @@ let
   ini = pkgs.formats.ini { };
 in
 {
-  meta.maintainers = with lib.maintainers; [ colinsane ];
-
   options = {
     services.buffyboard = with lib; {
       enable = mkEnableOption "buffyboard framebuffer keyboard (on-screen keyboard)";
       package = mkPackageOption pkgs "buffybox" { };
 
-      extraFlags = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = ''
-          Extra CLI arguments to pass to buffyboard.
-        '';
-        example = [
-          "--geometry=1920x1080@640,0"
-          "--dpi=192"
-          "--rotate=2"
-          "--verbose"
-        ];
-      };
-
       configFile = mkOption {
-        type = lib.types.path;
         default = ini.generate "buffyboard.conf" (lib.filterAttrsRecursive (_: v: v != null) cfg.settings);
         defaultText = lib.literalExpression ''ini.generate "buffyboard.conf" cfg.settings'';
+
         description = ''
           Path to an INI format configuration file to provide Buffyboard.
           By default, this is generated from whatever you've set in `settings`.
@@ -57,79 +41,93 @@ in
 
           For an example config file see [here](https://gitlab.postmarketos.org/postmarketOS/buffybox/-/blob/master/buffyboard/buffyboard.conf)
         '';
+
+        type = lib.types.path;
+      };
+
+      extraFlags = mkOption {
+        default = [ ];
+
+        description = ''
+          Extra CLI arguments to pass to buffyboard.
+        '';
+
+        example = [
+          "--geometry=1920x1080@640,0"
+          "--dpi=192"
+          "--rotate=2"
+          "--verbose"
+        ];
+
+        type = types.listOf types.str;
       };
 
       settings = mkOption {
+        default = { };
+
         description = ''
           Settings to include in /etc/buffyboard.conf.
           Every option here is strictly optional:
           Buffyboard will use its own baked-in defaults for those options left unset.
         '';
+
         type = types.submodule {
-          freeformType = ini.type;
+          options.input.pointer = mkOption {
+            default = null;
+
+            description = ''
+              Enable or disable the use of a hardware mouse or other pointing device.
+            '';
+
+            type = types.nullOr types.bool;
+          };
+
+          options.input.touchscreen = mkOption {
+            default = null;
+
+            description = ''
+              Enable or disable the use of the touchscreen.
+            '';
+
+            type = types.nullOr types.bool;
+          };
 
           options.keyboard.haptic_feedback = mkOption {
-            type = types.nullOr types.bool;
             default = null;
+
             description = ''
               Enable or disable vibrations when pressing keys.
             '';
+
+            type = types.nullOr types.bool;
           };
 
           options.keyboard.sticky_shift = mkOption {
-            type = types.nullOr types.bool;
             default = null;
+
             description = ''
               Changes shift key behavior. When true, the keyboard remains in uppercase mode until
               the shift key is pressed again (sticky). When false, the keyboard switches back to
               lowercase mode and the shift key deactivates after a non-modifier key is pressed.
             '';
+
+            type = types.nullOr types.bool;
           };
 
-          options.input.pointer = mkOption {
-            type = types.nullOr types.bool;
-            default = null;
-            description = ''
-              Enable or disable the use of a hardware mouse or other pointing device.
-            '';
-          };
-          options.input.touchscreen = mkOption {
-            type = types.nullOr types.bool;
-            default = null;
-            description = ''
-              Enable or disable the use of the touchscreen.
-            '';
-          };
-
-          options.theme.default = mkOption {
-            type = types.either types.str (
-              types.enum [
-                null
-                "adwaita-dark"
-                "breezy-dark"
-                "breezy-light"
-                "nord-dark"
-                "nord-light"
-                "pmos-dark"
-                "pmos-light"
-              ]
-            );
-            default = null;
-            description = ''
-              Selects the default theme on boot. Can be changed at runtime to the alternative theme.
-            '';
-          };
           options.quirks.fbdev_force_refresh = mkOption {
-            type = types.nullOr types.bool;
             default = null;
+
             description = ''
               If true and using the framebuffer backend, this triggers a display refresh after every draw operation.
               This has a negative performance impact.
             '';
-          };
-          options.quirks.ignore_unused_terminals = mkOption {
+
             type = types.nullOr types.bool;
+          };
+
+          options.quirks.ignore_unused_terminals = mkOption {
             default = null;
+
             description = ''
               If true, buffyboard won't automatically update the layout of a new terminal and
               draw the keyboard, if the terminal is not opened by any process. In this case
@@ -142,15 +140,40 @@ in
               The race is resolved by enabling this option and installing a drop-in file
               for getty@.service that sends SIGUSR1 to buffyboard.
             '';
+
+            type = types.nullOr types.bool;
           };
+
+          options.theme.default = mkOption {
+            default = null;
+
+            description = ''
+              Selects the default theme on boot. Can be changed at runtime to the alternative theme.
+            '';
+
+            type = types.either types.str (
+              types.enum [
+                null
+                "adwaita-dark"
+                "breezy-dark"
+                "breezy-light"
+                "nord-dark"
+                "nord-light"
+                "pmos-dark"
+                "pmos-light"
+              ]
+            );
+          };
+
+          freeformType = ini.type;
         };
-        default = { };
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.packages = [ cfg.package ];
+
     systemd.services.buffyboard = {
       # upstream provides the service (including systemd hardening): we just configure it to start by default
       # and override ExecStart so as to optionally pass extra arguments
@@ -165,7 +188,10 @@ in
           ++ cfg.extraFlags
         ))
       ];
+
       wantedBy = [ "getty.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ colinsane ];
 }

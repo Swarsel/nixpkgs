@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
   libarchive,
   libzip,
   pkg-config,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,8 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "vampirefrog";
     repo = "vgm2x";
     rev = "ae37e3a8a2d563733c89e00597a18b5deac80b4f";
-    fetchSubmodules = true;
     hash = "sha256-wRwfRlABy5Ojyjohs68Uqvq0otMbvBCexLpGPmx6sds=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -27,9 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -47,6 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     updateScript = unstableGitUpdater { };
   };
@@ -55,8 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "VGM file extraction tools";
     homepage = "https://github.com/vampirefrog/vgm2x";
     license = lib.licenses.gpl3Only;
-    mainProgram = "vgm2x";
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.all;
+    mainProgram = "vgm2x";
   };
 })

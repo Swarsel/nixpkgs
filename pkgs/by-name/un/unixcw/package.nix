@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  libpulseaudio,
   alsa-lib,
+  autoreconfHook,
+  libpulseaudio,
+  ncurses,
   pkg-config,
   qt5,
-  ncurses,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Sound characters as Morse code on the soundcard or console speaker";
+
     longDescription = ''
       unixcw is a project providing libcw library and a set of programs
       using the library: cw, cwgen, cwcp and xcwcp.
@@ -65,9 +66,10 @@ stdenv.mkDerivation (finalAttrs: {
       These change the parameters used when sounding the Morse code.
       cw reports any errors in  embedded  commands
     '';
+
     homepage = "https://unixcw.sourceforge.net";
-    maintainers = [ lib.maintainers.mafo ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.mafo ];
     platforms = lib.platforms.linux;
   };
 })

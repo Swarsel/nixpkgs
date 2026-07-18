@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   backports-strenum,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   pythonOlder,
   setuptools,
@@ -11,9 +11,6 @@
 buildPythonPackage rec {
   pname = "archinfo";
   version = "9.2.154";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "angr";
@@ -22,10 +19,10 @@ buildPythonPackage rec {
     hash = "sha256-Vks7Rjd8x2zeHnJPs0laH56S4b8pnR1cK82SpK+XOgE=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "archinfo" ];
 
   meta = {

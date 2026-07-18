@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
-  libsass,
-  nodejs,
-  pnpm_11,
-  fetchPnpmDeps,
-  pnpmConfigHook,
   fetchFromGitHub,
+  fetchPnpmDeps,
+  libsass,
   nixosTests,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
+  stdenvNoCC,
   vips,
 }:
 
@@ -24,8 +24,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     owner = "LemmyNet";
     repo = "lemmy-ui";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = pinData.uiHash;
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -38,14 +38,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     libsass
     vips
   ];
-
-  extraBuildInputs = [ libsass ];
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = pinData.uiPNPMDepsHash;
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -76,21 +68,30 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   distPhase = "true";
+  extraBuildInputs = [ libsass ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = pinData.uiPNPMDepsHash;
+    pnpm = pnpm_11;
+  };
 
   passthru = {
-    updateScript = ./update.py;
     tests.lemmy-ui = nixosTests.lemmy;
+    updateScript = ./update.py;
   };
 
   meta = {
+    inherit (nodejs.meta) platforms;
     description = "Building a federated alternative to reddit in rust";
     homepage = "https://join-lemmy.org/";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       happysalada
       billewanick
       georgyo
     ];
-    inherit (nodejs.meta) platforms;
   };
 })

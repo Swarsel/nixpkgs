@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  foomatic-filters,
   bc,
+  foomatic-filters,
   ghostscript,
   systemd,
+  time,
   udevCheckHook,
   vim,
-  time,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,18 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "http://www.loegria.net/mirrors/foo2zjs/foo2zjs-${finalAttrs.version}.tar.gz";
     sha256 = "14x3wizvncdy0xgvmcx541qanwb7bg76abygqy17bxycn1zh5r1x";
   };
-
-  nativeBuildInputs = [
-    bc
-    foomatic-filters
-    ghostscript
-    vim
-    udevCheckHook
-  ];
-
-  buildInputs = [
-    systemd
-  ];
 
   patches = [
     ./no-hardcode-fw.diff
@@ -43,6 +31,30 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix AirPrint color printing for Dell 1250c
     # See https://github.com/OpenPrinting/cups/issues/272
     ./dell1250c-color-fix.patch
+  ];
+
+  postPatch = ''
+    touch all-test
+    sed -e "/BASENAME=/iPATH=$out/bin:$PATH" -i *-wrapper *-wrapper.in
+    sed -e "s@PREFIX=/usr@PREFIX=$out@" -i *-wrapper{,.in}
+    sed -e "s@/usr/share@$out/share@" -i hplj10xx_gui.tcl
+    sed -e "s@\[.*-x.*/usr/bin/logger.*\]@type logger >/dev/null 2>\&1@" -i *wrapper{,.in}
+    sed -e '/install-usermap/d' -i Makefile
+    sed -e "s@/etc/hotplug/usb@$out&@" -i *rules*
+    sed -e "s@/usr@$out@g" -i hplj1020.desktop
+    sed -e "/PRINTERID=/s@=.*@=$out/bin/usb_printerid@" -i hplj1000
+  '';
+
+  nativeBuildInputs = [
+    bc
+    foomatic-filters
+    ghostscript
+    vim
+    udevCheckHook
+  ];
+
+  buildInputs = [
+    systemd
   ];
 
   makeFlags = [
@@ -58,23 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
     "MODEL=$(out)/share/cups/model"
   ];
 
-  installFlags = [ "install-hotplug" ];
-
-  postPatch = ''
-    touch all-test
-    sed -e "/BASENAME=/iPATH=$out/bin:$PATH" -i *-wrapper *-wrapper.in
-    sed -e "s@PREFIX=/usr@PREFIX=$out@" -i *-wrapper{,.in}
-    sed -e "s@/usr/share@$out/share@" -i hplj10xx_gui.tcl
-    sed -e "s@\[.*-x.*/usr/bin/logger.*\]@type logger >/dev/null 2>\&1@" -i *wrapper{,.in}
-    sed -e '/install-usermap/d' -i Makefile
-    sed -e "s@/etc/hotplug/usb@$out&@" -i *rules*
-    sed -e "s@/usr@$out@g" -i hplj1020.desktop
-    sed -e "/PRINTERID=/s@=.*@=$out/bin/usb_printerid@" -i hplj1000
-  '';
-
-  nativeCheckInputs = [ time ];
   doCheck = false; # fails to find its own binary. Also says "Tests will pass only if you are using ghostscript-8.71-16.fc14".
-  doInstallCheck = true;
+  nativeCheckInputs = [ time ];
 
   preInstall = ''
     mkdir -pv $out/{etc/udev/rules.d,lib/udev/rules.d,etc/hotplug/usb}
@@ -86,12 +83,17 @@ stdenv.mkDerivation (finalAttrs: {
     cp -v getweb arm2hpdl "$out/bin"
   '';
 
+  doInstallCheck = true;
+  installFlags = [ "install-hotplug" ];
+
   meta = {
     description = "ZjStream printer drivers";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
   };
 })

@@ -8,8 +8,6 @@
 buildPythonPackage rec {
   pname = "hsaudiotag3k";
   version = "1.1.3.post1";
-  format = "setuptools";
-  disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +16,8 @@ buildPythonPackage rec {
 
   # no tests
   doCheck = false;
+  disabled = !isPy3k;
+  format = "setuptools";
 
   meta = {
     description = "Pure Python library that lets one to read metadata from media files";

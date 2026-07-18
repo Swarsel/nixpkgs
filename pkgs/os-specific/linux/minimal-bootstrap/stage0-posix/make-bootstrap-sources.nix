@@ -13,9 +13,9 @@
 
 {
   lib,
-  hostPlatform,
   fetchFromGitHub,
   fetchpatch,
+  hostPlatform,
 }:
 
 let
@@ -24,10 +24,9 @@ in
 
 fetchFromGitHub {
   inherit (expected) name rev;
-  owner = "oriansj";
-  repo = "stage0-posix";
-  sha256 = expected.outputHash;
   fetchSubmodules = true;
+  owner = "oriansj";
+
   postFetch = ''
     # Seed binaries will be fetched separately
     echo "Removing seed binaries"
@@ -42,11 +41,14 @@ fetchFromGitHub {
       $out/mescc-tools-extra/M2libc
   '';
 
+  repo = "stage0-posix";
+  sha256 = expected.outputHash;
+
   meta = {
     description = "Packaged sources for the first bootstrapping stage";
     homepage = "https://github.com/oriansj/stage0-posix";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.minimal-bootstrap ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.minimal-bootstrap ];
   };
 }

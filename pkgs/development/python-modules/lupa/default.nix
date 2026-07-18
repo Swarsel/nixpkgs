@@ -1,14 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  srcOnly,
-  runCommand,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-
   # devendor
   lua5_1,
   lua5_2,
@@ -17,20 +12,22 @@
   lua5_5,
   luajit_2_0,
   luajit_2_1,
+  runCommand,
+  setuptools,
+  srcOnly,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lupa";
   version = "2.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scoder";
     repo = "lupa";
     tag = "lupa-${finalAttrs.version}";
+    hash = "sha256-XLBUQ1TrzWWST9RJdMTnpsceldDNzidnL82bixLhSRA=";
     # we fetch the vendored lua sources for gracefull de-vendor degredation when a new lua is added
     fetchSubmodules = true;
-    hash = "sha256-XLBUQ1TrzWWST9RJdMTnpsceldDNzidnL82bixLhSRA=";
   };
 
   patches = [
@@ -72,6 +69,7 @@ buildPythonPackage (finalAttrs: {
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "lupa" ];
 
   # this helps us discover new lua versions when bumping, without blocking mass python-updates

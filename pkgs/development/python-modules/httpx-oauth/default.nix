@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   fastapi,
-  fetchFromGitHub,
-  hatchling,
   hatch-regex-commit,
+  hatchling,
   httpx,
   pytest-asyncio,
   pytest-cov-stub,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "httpx-oauth";
   version = "0.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frankie567";
@@ -24,13 +23,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-I6ffcbmnNjJUGuDctFQo5m1HE6N60wErSJUDcXL9TRw=";
   };
-
-  build-system = [
-    hatchling
-    hatch-regex-commit
-  ];
-
-  dependencies = [ httpx ];
 
   nativeCheckInputs = [
     fastapi
@@ -41,6 +33,13 @@ buildPythonPackage rec {
     respx
   ];
 
+  build-system = [
+    hatchling
+    hatch-regex-commit
+  ];
+
+  dependencies = [ httpx ];
+  pyproject = true;
   pythonImportsCheck = [ "httpx_oauth" ];
 
   meta = {

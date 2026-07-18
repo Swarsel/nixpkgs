@@ -1,11 +1,11 @@
 {
   lib,
-  curl,
+  stdenv,
   fetchFromGitHub,
+  curl,
   jq,
   makeBinaryWrapper,
   please-cli,
-  stdenv,
   testers,
 }:
 
@@ -36,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru.tests = testers.testVersion {
-    package = please-cli;
     version = "v${finalAttrs.version}";
+    package = please-cli;
   };
 
   meta = {
@@ -45,7 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/TNG/please-cli";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ _8-bit-fox ];
-    mainProgram = "please";
     platforms = lib.platforms.all;
+    mainProgram = "please";
   };
 })

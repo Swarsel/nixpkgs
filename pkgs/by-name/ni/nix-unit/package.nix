@@ -1,6 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   clang-tools,
   cmake,
@@ -11,7 +12,6 @@
   nixVersions,
   nlohmann_json,
   pkg-config,
-  fetchFromGitHub,
 }:
 let
   # We pin the nix version to a known working one here as upgrades can likely break the build.
@@ -30,16 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-eG+ETC+lvHDLhlKgQB6/lGfpqr56Lt3+j1pHOeb4tK4=";
   };
 
-  buildInputs = [
-    nixComponents.nix-main
-    nixComponents.nix-store
-    nixComponents.nix-expr
-    nixComponents.nix-cmd
-    nixComponents.nix-flake
-    nlohmann_json
-    boost
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     meson
@@ -50,6 +40,16 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.cc.isClang clang-tools;
 
+  buildInputs = [
+    nixComponents.nix-main
+    nixComponents.nix-store
+    nixComponents.nix-expr
+    nixComponents.nix-cmd
+    nixComponents.nix-flake
+    nlohmann_json
+    boost
+  ];
+
   postInstall = ''
     wrapProgram "$out/bin/nix-unit" --prefix PATH : ${difftastic}/bin
   '';
@@ -58,10 +58,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Nix unit test runner";
     homepage = "https://github.com/nix-community/nix-unit";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       mic92
       adisbladis
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "nix-unit";
   };

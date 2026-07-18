@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   setuptools,
 }:
@@ -10,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyring-buffer";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rhasspy";
@@ -20,7 +18,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyring_buffer" ];
 
   meta = {

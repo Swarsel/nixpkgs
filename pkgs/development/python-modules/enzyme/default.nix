@@ -1,17 +1,13 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "enzyme";
   version = "0.5.2";
-  pyproject = true;
-
-  # Tests rely on files obtained over the network
-  doCheck = false;
 
   src = fetchPypi {
     inherit pname version;
@@ -19,10 +15,13 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
+  # Tests rely on files obtained over the network
+  doCheck = false;
+  pyproject = true;
 
   meta = {
+    description = "Python video metadata parser";
     homepage = "https://github.com/Diaoul/enzyme";
     license = lib.licenses.mit;
-    description = "Python video metadata parser";
   };
 }

@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "das";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "snovvcrash";
@@ -17,12 +16,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-WZmWpcBqxsNH96nVWwoepFhsvdxZpYKmAjNd7ghIJMA=";
   };
 
-  pythonRelaxDeps = [
-    "dash"
-    "defusedxml"
-    "netaddr"
-    "networkx"
-    "plotly"
+  nativeCheckInputs = [
+    versionCheckHook
   ];
 
   build-system = with python3Packages; [ poetry-core ];
@@ -40,10 +35,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tinydb
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "das" ];
 
-  nativeCheckInputs = [
-    versionCheckHook
+  pythonRelaxDeps = [
+    "dash"
+    "defusedxml"
+    "netaddr"
+    "networkx"
+    "plotly"
   ];
 
   meta = {

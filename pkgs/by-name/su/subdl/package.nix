@@ -23,11 +23,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/alexanderwink/subdl";
     description = "Command-line tool to download subtitles from opensubtitles.org";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/alexanderwink/subdl";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.exfalso ];
+    platforms = lib.platforms.all;
     mainProgram = "subdl";
   };
 }

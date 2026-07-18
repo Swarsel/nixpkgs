@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,21 +16,23 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-A6zXrOPdxLepi7XPn67YsY673iFOAgJqCEynn4SYco8=";
-  npmFlags = [ "--legacy-peer-deps" ];
-
-  installPhase = ''
-    cp -R out $out
-  '';
 
   env = {
     CYPRESS_INSTALL_BINARY = 0;
     NEXT_PUBLIC_DASHBOARD_VERSION = version;
   };
 
+  installPhase = ''
+    cp -R out $out
+  '';
+
+  npmFlags = [ "--legacy-peer-deps" ];
+
   meta = {
     description = "NetBird Management Service Web UI Panel";
     homepage = "https://github.com/netbirdio/dashboard";
     license = lib.licenses.bsd3;
+
     maintainers = [
     ];
   };

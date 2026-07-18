@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  readline,
   ncurses,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://swapoff.org/devtodo1.html";
     description = "Hierarchical command-line task manager";
+    homepage = "https://swapoff.org/devtodo1.html";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.woffs ];
     platforms = lib.platforms.linux;

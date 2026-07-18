@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "altcha";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "altcha-org";
@@ -18,11 +17,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7KepW5PAl2prWdylBqBM/GDvsLGW+6le/itUiMBvFFU=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "altcha" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "altcha" ];
 
   meta = {
     description = "Lightweight Python library for creating and verifying ALTCHA challenges";

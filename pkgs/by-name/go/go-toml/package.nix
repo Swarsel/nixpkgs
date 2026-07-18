@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 let
   version = "2.3.1";
 in
 buildGoModule {
-  pname = "go-toml";
   inherit version;
+  pname = "go-toml";
 
   src = fetchFromGitHub {
     owner = "pelletier";
@@ -35,7 +35,7 @@ buildGoModule {
     description = "Go library for the TOML language";
     homepage = "https://github.com/pelletier/go-toml";
     changelog = "https://github.com/pelletier/go-toml/releases/tag/v${version}";
-    maintainers = [ lib.maintainers.isabelroses ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.isabelroses ];
   };
 }

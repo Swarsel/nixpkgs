@@ -1,18 +1,18 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   bintools,
   buildPackages,
-  callPackage,
   cacert,
+  callPackage,
   curlMinimal,
   dart-bin,
-  debug ? false,
-  fetchurl,
-  gn,
   gitMinimal,
   gitSetupHook,
+  gn,
   icu,
   jq,
-  lib,
   nix-update,
   pax-utils,
   pkg-config,
@@ -20,11 +20,11 @@
   ripgrep,
   runCommand,
   samurai,
-  stdenv,
   versionCheckHook,
   writeShellScript,
   writeText,
   zlib,
+  debug ? false,
 }:
 
 let
@@ -56,8 +56,17 @@ let
   src =
     runCommand "dart-source-deps"
       {
-        pname = "dart-source-deps";
         inherit version;
+
+        env = {
+          CIPD_HTTP_USER_AGENT = "standard-nix-build";
+          DEPOT_TOOLS_COLLECT_METRICS = "0";
+          DEPOT_TOOLS_UPDATE = "0";
+          GIT_SSL_CAINFO = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+          NIX_SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+          PYTHONDONTWRITEBYTECODE = "1";
+          SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+        };
 
         nativeBuildInputs = [
           cacert
@@ -68,19 +77,10 @@ let
           tools.cipd
         ];
 
-        env = {
-          NIX_SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-          GIT_SSL_CAINFO = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-          SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-          DEPOT_TOOLS_UPDATE = "0";
-          DEPOT_TOOLS_COLLECT_METRICS = "0";
-          PYTHONDONTWRITEBYTECODE = "1";
-          CIPD_HTTP_USER_AGENT = "standard-nix-build";
-        };
-
+        outputHash = "sha256-y2F+wB0M5dq6koxGpCs9BExGU7p8tFOIiRqfdf8ip+8=";
         outputHashAlgo = "sha256";
         outputHashMode = "recursive";
-        outputHash = "sha256-y2F+wB0M5dq6koxGpCs9BExGU7p8tFOIiRqfdf8ip+8=";
+        pname = "dart-source-deps";
       }
       ''
         mkdir source
@@ -129,19 +129,6 @@ in
 dart-bin.overrideAttrs (oldAttrs: {
   inherit version src;
 
-  nativeBuildInputs = [
-    gitMinimal
-    gitSetupHook
-    python312
-    ripgrep
-    pkg-config
-  ];
-
-  buildInputs = lib.optionals (stdenv.hostPlatform == stdenv.buildPlatform) [
-    icu
-    zlib
-  ];
-
   patches = [
     ./gcc13.patch
     ./zlib-not-found.patch
@@ -158,8 +145,8 @@ dart-bin.overrideAttrs (oldAttrs: {
     sed --in-place 's/ldflags = pkgresult\[4\]/ldflags = []/' build/config/linux/pkg_config.gni
     cp ${
       fetchurl {
-        url = "https://raw.githubusercontent.com/chromium/chromium/631a813125b886a52274653144019fd1681a0e97/build/config/linux/pkg-config.py";
         hash = "sha256-9coRpgCewlkFXSGrMVkudaZUll0IFc9jDRBP+2PloOI=";
+        url = "https://raw.githubusercontent.com/chromium/chromium/631a813125b886a52274653144019fd1681a0e97/build/config/linux/pkg-config.py";
       }
     } build/config/linux/pkg-config.py
   ''
@@ -204,6 +191,19 @@ dart-bin.overrideAttrs (oldAttrs: {
     git add .
     git commit --message="stub" --quiet
   '';
+
+  nativeBuildInputs = [
+    gitMinimal
+    gitSetupHook
+    python312
+    ripgrep
+    pkg-config
+  ];
+
+  buildInputs = lib.optionals (stdenv.hostPlatform == stdenv.buildPlatform) [
+    icu
+    zlib
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -254,10 +254,11 @@ dart-bin.overrideAttrs (oldAttrs: {
   };
 
   meta = oldAttrs.meta // {
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
   };
 })

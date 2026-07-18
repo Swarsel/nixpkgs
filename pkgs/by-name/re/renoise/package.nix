@@ -1,9 +1,8 @@
 {
   lib,
   stdenv,
-  writeScript,
-  alsa-lib,
   fetchurl,
+  alsa-lib,
   libjack2,
   libx11,
   libxcursor,
@@ -13,6 +12,7 @@
   libxtst,
   mpg123,
   pipewire,
+  writeScript,
   releasePath ? null,
 }:
 
@@ -23,13 +23,14 @@
 # use of functions like requireFile as the hash will be different for every user.
 let
   platforms = {
-    x86_64-linux = {
-      archSuffix = "x86_64";
-      hash = "sha256-RfOhcllmwX3Cy6ywIYjIC+kUX6rXkd+PM9wKj+fCuts=";
-    };
     aarch64-linux = {
       archSuffix = "arm64";
       hash = "sha256-1bo7/srdQ5M5mzXpL76Bkt1Gt9EhbW8ktLLPvOcFu5U=";
+    };
+
+    x86_64-linux = {
+      archSuffix = "x86_64";
+      hash = "sha256-RfOhcllmwX3Cy6ywIYjIC+kUX6rXkd+PM9wKj+fCuts=";
     };
   };
 
@@ -47,11 +48,12 @@ stdenv.mkDerivation rec {
         urlVersion = lib.replaceStrings [ "." ] [ "_" ] version;
       in
       fetchurl {
+        hash = platform.hash;
+
         urls = [
           "https://files.renoise.com/demo/Renoise_${urlVersion}_Demo_Linux_${platform.archSuffix}.tar.gz"
           "https://files.renoise.com/demo/archive/Renoise_${urlVersion}_Demo_Linux_${platform.archSuffix}.tar.gz"
         ];
-        hash = platform.hash;
       };
 
   buildInputs = [
@@ -134,8 +136,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Modern tracker-based DAW";
     homepage = "https://www.renoise.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ uakci ];
     platforms = lib.attrNames platforms;
     mainProgram = "renoise";

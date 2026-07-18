@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  libtiff,
   libjpeg,
+  libtiff,
   zlib,
 }:
 

@@ -1,14 +1,14 @@
 {
   lib,
-  yarn-berry,
-  yarn,
-  replaceVars,
+  fetchpatch,
+  generateSplicesForMkScope,
   libzip,
+  makeScopeWithSplicing',
+  replaceVars,
+  yarn,
+  yarn-berry,
   zlib,
   zlib-ng,
-  makeScopeWithSplicing',
-  generateSplicesForMkScope,
-  fetchpatch,
 }:
 
 let
@@ -34,6 +34,7 @@ let
             ];
           });
     };
+
     "4" = final: {
       berryCacheVersion = "10";
 
@@ -54,9 +55,9 @@ let
                 # needs to be an exact match across versions, and this commit changes the
                 # exact output. This is ridiculous, but such is life.
                 (fetchpatch {
-                  url = "https://github.com/zlib-ng/zlib-ng/commit/be819413be8a284b1827437006c0859644d0c367.patch";
-                  revert = true;
                   hash = "sha256-rwRcNKpA2dMWkC6WRATDOCYCDDqqPvFJkQ6DLDohQd8=";
+                  revert = true;
+                  url = "https://github.com/zlib-ng/zlib-ng/commit/be819413be8a284b1827437006c0859644d0c367.patch";
                 })
               ];
             })).override
@@ -79,6 +80,7 @@ in
 
 makeScopeWithSplicing' {
   inherit otherSplices;
+
   f =
     final:
     let
@@ -91,14 +93,14 @@ makeScopeWithSplicing' {
     (
       {
         inherit yarn-berry berryVersion;
+        fetchYarnBerryDeps = final.callPackage ./fetch-yarn-berry-deps.nix { };
+        yarn-berry-fetcher = final.callPackage ./yarn-berry-fetcher.nix { };
 
         yarn-berry-offline = final.yarn-berry.overrideAttrs (old: {
           pname = old.pname + "-offline";
           patches = (old.patches or [ ]) ++ final.berryOfflinePatches;
         });
 
-        yarn-berry-fetcher = final.callPackage ./yarn-berry-fetcher.nix { };
-        fetchYarnBerryDeps = final.callPackage ./fetch-yarn-berry-deps.nix { };
         yarnBerryConfigHook = final.callPackage ./yarn-berry-config-hook.nix { };
       }
       // variantOverlay

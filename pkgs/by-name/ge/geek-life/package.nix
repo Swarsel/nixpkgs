@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,10 +22,10 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/ajaxray/geek-life";
     description = "Todo List / Task Manager for Geeks in command line";
-    maintainers = with lib.maintainers; [ noisersup ];
+    homepage = "https://github.com/ajaxray/geek-life";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ noisersup ];
     mainProgram = "geek-life";
   };
 })

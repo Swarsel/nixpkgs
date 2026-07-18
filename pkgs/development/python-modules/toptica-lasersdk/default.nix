@@ -2,24 +2,21 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   ifaddr,
   pyserial,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "toptica-lasersdk";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "toptica_lasersdk";
     inherit (finalAttrs) version;
     hash = "sha256-VzgQCqfZP9JoFmotG0jPJpHMxLY+unNZqzxQGhtlYC4=";
+    pname = "toptica_lasersdk";
   };
 
   build-system = [
@@ -30,6 +27,8 @@ buildPythonPackage (finalAttrs: {
     ifaddr
     pyserial
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "toptica.lasersdk.dlcpro.v2_2_0"

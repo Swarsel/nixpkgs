@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
   dnspython,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   httpx,
@@ -23,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dnsight";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dnsight";
@@ -32,10 +31,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-TirYLziPa1xRm7D54Unl5oVjsnsv6Gl0LRVUXzd9o/E=";
   };
 
-  pythonRelaxDeps = [
-    "cryptography"
-    "typer"
+  nativeCheckInputs = [
+    hypothesis
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
   ];
+
+  preCheck = lib.optionalString stdenv.hostPlatform.isLinux ''
+    echo "nameserver 127.0.0.1" > resolv.conf
+    export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/resolv.conf=$(realpath resolv.conf)
+    export LD_PRELOAD=${libredirect}/lib/libredirect.so
+  '';
+
+  postCheck = ''
+    unset NIX_REDIRECTS LD_PRELOAD
+  '';
 
   build-system = [
     hatch-vcs
@@ -52,25 +63,6 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
-  nativeCheckInputs = [
-    hypothesis
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "dnsight" ];
-
-  preCheck = lib.optionalString stdenv.hostPlatform.isLinux ''
-    echo "nameserver 127.0.0.1" > resolv.conf
-    export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/resolv.conf=$(realpath resolv.conf)
-    export LD_PRELOAD=${libredirect}/lib/libredirect.so
-  '';
-
-  postCheck = ''
-    unset NIX_REDIRECTS LD_PRELOAD
-  '';
-
   disabledTests = [
     # AssertionError
     "test_audit_explicit_domains_honour_global_config_path"
@@ -83,6 +75,14 @@ buildPythonPackage (finalAttrs: {
     "test_run_check_sync_dmarc"
     "test_run_check_sync_programmatic_config_no_file"
     "test_run_check_sync_yaml_plus_overlay_merge"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dnsight" ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+    "typer"
   ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  nix,
-  jq,
   fetchFromGitHub,
+  jq,
   makeWrapper,
+  nix,
   nix-update-script,
 }:
 
@@ -32,12 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   installFlags = [ "PREFIX=${placeholder "out"}" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    description = "Spawns lightweight nixos vms in a shell";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Spawns lightweight nixos vms in a shell";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mic92 ];
     platforms = lib.platforms.unix;

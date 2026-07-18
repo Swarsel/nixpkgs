@@ -1,22 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
+  buildPythonPackage,
+  # huggingface
+  datasets,
   # dependencies
   dvc,
   dvc-render,
   dvc-studio-client,
+  # fastai
+  fastai,
   funcy,
   gto,
-  psutil,
-  pynvml,
-  ruamel-yaml,
-  scmrepo,
-
   # optional-dependencies
   # all
   jsonargparse,
@@ -28,21 +23,22 @@
   optuna,
   pandas,
   pillow,
+  psutil,
+  pynvml,
+  ruamel-yaml,
   scikit-learn,
+  scmrepo,
+  # build-system
+  setuptools-scm,
   tensorflow,
   torch,
   transformers,
   xgboost,
-  # huggingface
-  datasets,
-  # fastai
-  fastai,
 }:
 
 buildPythonPackage rec {
   pname = "dvclive";
   version = "3.49.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -51,6 +47,8 @@ buildPythonPackage rec {
     hash = "sha256-jjYglvXPtwPJEp2Qo309QeRLYooUmsDhO1Dc1S3OjQg=";
   };
 
+  # Circular dependency with dvc
+  doCheck = false;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -83,41 +81,47 @@ buildPythonPackage rec {
       xgboost
     ]
     ++ jsonargparse.optional-dependencies.signatures;
-    image = [
-      numpy
-      pillow
-    ];
-    sklearn = [ scikit-learn ];
-    plots = [
-      pandas
-      scikit-learn
-      numpy
-    ];
-    markdown = [ matplotlib ];
-    mmcv = [ mmcv ];
-    tf = [ tensorflow ];
-    xgb = [ xgboost ];
-    lgbm = [ lightgbm ];
-    huggingface = [
-      datasets
-      transformers
-    ];
+
     # catalyst = [
     #   catalyst
     # ];
     fastai = [ fastai ];
+
+    huggingface = [
+      datasets
+      transformers
+    ];
+
+    image = [
+      numpy
+      pillow
+    ];
+
+    lgbm = [ lightgbm ];
+
     lightning = [
       lightning
       torch
       jsonargparse
     ]
     ++ jsonargparse.optional-dependencies.signatures;
+
+    markdown = [ matplotlib ];
+    mmcv = [ mmcv ];
     optuna = [ optuna ];
+
+    plots = [
+      pandas
+      scikit-learn
+      numpy
+    ];
+
+    sklearn = [ scikit-learn ];
+    tf = [ tensorflow ];
+    xgb = [ xgboost ];
   };
 
-  # Circular dependency with dvc
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dvclive" ];
 
   meta = {

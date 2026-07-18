@@ -1,8 +1,8 @@
 {
   lib,
-  nodejs_22,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  nodejs_22,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -20,17 +20,15 @@ buildNpmPackage (finalAttrs: {
     cp ${./package-lock.json} package-lock.json
   '';
 
-  sourceRoot = "source/packages/browser-sync";
-
-  nodejs = nodejs_22;
-
   npmDepsHash = "sha256-32IgL7kXCW1KwQhrb402Rqse5+ggo9K/fhxcp8pbwRc=";
+  nodejs = nodejs_22;
+  sourceRoot = "source/packages/browser-sync";
 
   meta = {
     description = "Keep multiple browsers & devices in sync when building websites";
     homepage = "https://github.com/BrowserSync/browser-sync";
-    maintainers = with lib.maintainers; [ wrvsrx ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ wrvsrx ];
     mainProgram = "browser-sync";
   };
 })

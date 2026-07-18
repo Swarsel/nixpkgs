@@ -22,9 +22,9 @@ in
     services.xfs = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether to enable the X Font Server.";
+        type = types.bool;
       };
 
     };
@@ -40,11 +40,11 @@ in
     };
 
     systemd.services.xfs = {
-      description = "X Font Server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "X Font Server";
       path = [ pkgs.xfs ];
       script = "xfs -config ${configFile}";
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

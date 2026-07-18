@@ -1,5 +1,7 @@
 {
-  mkDerivation,
+  lib,
+  HTTP,
+  SHA,
   ansi-terminal,
   ansi-wl-pprint,
   base,
@@ -14,19 +16,17 @@
   filepath,
   ghc-prim,
   haskeline,
-  HTTP,
   http-client,
   http-client-tls,
   http-types,
   language-glsl,
-  lib,
+  mkDerivation,
   mtl,
   network,
   parsec,
   process,
   raw-strings-qq,
   scientific,
-  SHA,
   snap-core,
   snap-server,
   template-haskell,
@@ -39,14 +39,16 @@
 mkDerivation {
   pname = "elm";
   version = "0.19.1";
+
   src = fetchgit {
     url = "https://github.com/elm/compiler";
-    sha256 = "1h9jhwlv1pqqna5s09vd72arwhhjn0dlhv0w9xx5771x0xryxxg8";
     rev = "2f6dd29258e880dbb7effd57a829a0470d8da48b";
+    sha256 = "1h9jhwlv1pqqna5s09vd72arwhhjn0dlhv0w9xx5771x0xryxxg8";
     fetchSubmodules = true;
   };
-  isLibrary = false;
-  isExecutable = true;
+
+  description = "The `elm` command line interface";
+
   executableHaskellDepends = [
     ansi-terminal
     ansi-wl-pprint
@@ -82,8 +84,10 @@ mkDerivation {
     vector
     zip-archive
   ];
+
   homepage = "https://elm-lang.org";
-  description = "The `elm` command line interface";
+  isExecutable = true;
+  isLibrary = false;
   license = lib.licenses.bsd3;
   mainProgram = "elm";
 }

@@ -1,30 +1,11 @@
 {
   lib,
-  vimUtils,
+  pkgs,
   vim-full,
   vimPlugins,
-
-  pkgs,
+  vimUtils,
 }:
 lib.recurseIntoAttrs {
-  vim_empty_config = vimUtils.vimrcFile {
-    beforePlugins = "";
-    customRC = "";
-  };
-
-  ### vim tests
-  ##################
-
-  test_vim_with_vim_nix_using_plug = vim-full.customize {
-    name = "vim-with-vim-addon-nix-using-plug";
-    vimrcConfig.plug.plugins = with vimPlugins; [ vim-nix ];
-  };
-
-  test_vim_with_vim_nix = vim-full.customize {
-    name = "vim-with-vim-addon-nix";
-    vimrcConfig.packages.myVimPackage.start = with vimPlugins; [ vim-nix ];
-  };
-
   # test that all vimPlugins have `passthru.vimPlugin = true`
   test-all-plugins-have-vimPlugin-true =
     let
@@ -53,4 +34,21 @@ lib.recurseIntoAttrs {
       ) == [ ];
     # testing is done during evaluation above so this derivation is irrelevant
     vim-full;
+
+  test_vim_with_vim_nix = vim-full.customize {
+    name = "vim-with-vim-addon-nix";
+    vimrcConfig.packages.myVimPackage.start = with vimPlugins; [ vim-nix ];
+  };
+
+  ### vim tests
+  ##################
+  test_vim_with_vim_nix_using_plug = vim-full.customize {
+    name = "vim-with-vim-addon-nix-using-plug";
+    vimrcConfig.plug.plugins = with vimPlugins; [ vim-nix ];
+  };
+
+  vim_empty_config = vimUtils.vimrcFile {
+    beforePlugins = "";
+    customRC = "";
+  };
 }

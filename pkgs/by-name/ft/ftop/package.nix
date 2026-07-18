@@ -14,23 +14,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "3a705f4f291384344cd32c3dd5f5f6a7cd7cea7624c83cb7e923966dbcd47f82";
   };
 
-  buildInputs = [ ncurses ];
-
   patches = [
     ./ftop-fix_buffer_overflow.patch
     ./ftop-fix_printf_format.patch
   ];
-  patchFlags = [ "-p0" ];
 
   postPatch = ''
     substituteInPlace configure --replace "curses" "ncurses"
   '';
 
+  buildInputs = [ ncurses ];
+  patchFlags = [ "-p0" ];
+
   meta = {
     description = "Show progress of open files and file systems";
-    mainProgram = "ftop";
-    homepage = "https://code.google.com/archive/p/ftop/";
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       ftop is to files what top is to processes. The progress of all open files
       and file systems can be monitored. If run as a regular user, the set of
@@ -38,6 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
       generally all that is of interest to the user).
       As with top, the items are displayed in order from most to least active.
     '';
+
+    homepage = "https://code.google.com/archive/p/ftop/";
+    license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "ftop";
   };
 })

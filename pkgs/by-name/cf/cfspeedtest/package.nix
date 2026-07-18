@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,16 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-xwiWYTqs1ZQg7CQYg2IqskMV5HMrFqNstobDkh17GyU=";
   };
 
-  cargoHash = "sha256-CBNShvjczlegOOrdULpPZ5GPdaWWqP3yhQFc9spaNlg=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd cfspeedtest \
-      --bash <($out/bin/cfspeedtest --generate-completion bash) \
-      --fish <($out/bin/cfspeedtest --generate-completion fish) \
-      --zsh <($out/bin/cfspeedtest --generate-completion zsh)
-  '';
+  cargoHash = "sha256-CBNShvjczlegOOrdULpPZ5GPdaWWqP3yhQFc9spaNlg=";
 
   # require internet access
   checkFlags = map (t: "--skip=${t}") [
@@ -41,15 +33,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "speedtest::tests::test_upload_retryable_failure_parses_retry_after_without_drain_skew"
   ];
 
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd cfspeedtest \
+      --bash <($out/bin/cfspeedtest --generate-completion bash) \
+      --fish <($out/bin/cfspeedtest --generate-completion fish) \
+      --zsh <($out/bin/cfspeedtest --generate-completion zsh)
+  '';
+
   meta = {
     description = "Unofficial CLI for speed.cloudflare.com";
     homepage = "https://github.com/code-inflation/cfspeedtest";
     changelog = "https://github.com/code-inflation/cfspeedtest/releases/tag/${finalAttrs.src.tag}";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       colemickens
       stepbrobd
     ];
+
     mainProgram = "cfspeedtest";
   };
 })

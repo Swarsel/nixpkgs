@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unittestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "geojson";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -18,16 +17,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Gz+hiv0CxitE+upLsiln+H8TtWezpUDaPH80UM7VHTA=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ];
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "geojson" ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
   meta = {
+    description = "Python bindings and utilities for GeoJSON";
     homepage = "https://github.com/jazzband/geojson";
     changelog = "https://github.com/jazzband/geojson/blob/${finalAttrs.src.tag}/CHANGELOG.rst";
-    description = "Python bindings and utilities for GeoJSON";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     teams = [ lib.teams.geospatial ];

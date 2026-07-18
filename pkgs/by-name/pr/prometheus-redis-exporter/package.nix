@@ -1,9 +1,8 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
-
   # Test dependencies
   redisTestHook,
 }:
@@ -21,21 +20,9 @@ buildGoModule rec {
 
   vendorHash = "sha256-muGgriK1DDkKk4DOWf7m+W6/qquwYwqgTOzyNGbjV+U=";
 
-  ldflags = [
-    "-X main.BuildVersion=${version}"
-    "-X main.BuildCommitSha=unknown"
-    "-X main.BuildDate=unknown"
-  ];
-
   nativeCheckInputs = [
     redisTestHook
   ];
-
-  preCheck = ''
-    export TEST_REDIS_URI="redis://localhost:6379"
-  '';
-
-  __darwinAllowLocalNetworking = true;
 
   checkFlags =
     let
@@ -53,17 +40,31 @@ buildGoModule rec {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  preCheck = ''
+    export TEST_REDIS_URI="redis://localhost:6379"
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-X main.BuildVersion=${version}"
+    "-X main.BuildCommitSha=unknown"
+    "-X main.BuildDate=unknown"
+  ];
+
   passthru.tests = { inherit (nixosTests.prometheus-exporters) redis; };
 
   meta = {
     description = "Prometheus exporter for Redis metrics";
-    mainProgram = "redis_exporter";
     homepage = "https://github.com/oliver006/redis_exporter";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       eskytthe
       srhb
       ma27
     ];
+
+    mainProgram = "redis_exporter";
   };
 }

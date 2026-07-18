@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -27,9 +27,9 @@ buildGoModule rec {
 
   meta = {
     description = "Relay server for exporting metrics from collectd to Prometheus";
-    mainProgram = "collectd_exporter";
     homepage = "https://github.com/prometheus/collectd_exporter";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ benley ];
+    mainProgram = "collectd_exporter";
   };
 }

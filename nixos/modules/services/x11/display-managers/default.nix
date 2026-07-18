@@ -10,8 +10,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 
@@ -140,70 +140,41 @@ let
 in
 
 {
+  imports = [
+    (lib.mkRemovedOptionModule
+      [ "services" "xserver" "displayManager" "desktopManagerHandlesLidAndPower" ]
+      "The option is no longer necessary because all display managers have already delegated lid management to systemd."
+    )
+    (lib.mkRenamedOptionModule
+      [ "services" "xserver" "displayManager" "job" "logsXsession" ]
+      [ "services" "displayManager" "logToFile" ]
+    )
+    (lib.mkRenamedOptionModule
+      [ "services" "xserver" "displayManager" "logToJournal" ]
+      [ "services" "displayManager" "logToJournal" ]
+    )
+    (lib.mkRenamedOptionModule
+      [ "services" "xserver" "displayManager" "extraSessionFilesPackages" ]
+      [ "services" "displayManager" "sessionPackages" ]
+    )
+  ];
+
   options = {
 
     services.xserver.displayManager = {
 
-      xauthBin = mkOption {
-        internal = true;
-        default = "${pkgs.xauth}/bin/xauth";
-        defaultText = literalExpression ''"''${pkgs.xauth}/bin/xauth"'';
-        description = "Path to the {command}`xauth` program used by display managers.";
-      };
-
-      xserverBin = mkOption {
-        type = types.path;
-        description = "Path to the X server used by display managers.";
-      };
-
-      xserverArgs = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        example = [
-          "-ac"
-          "-logverbose"
-          "-verbose"
-          "-nolisten tcp"
-        ];
-        description = "List of arguments for the X server.";
-      };
-
-      setupCommands = mkOption {
-        type = types.lines;
-        default = "";
+      importedVariables = mkOption {
         description = ''
-          Shell commands executed just after the X server has started.
+          Environment variables to import into the systemd user environment.
+        '';
 
-          This option is only effective for display managers for which this feature
-          is supported; currently these are LightDM, GDM and SDDM.
-        '';
-      };
-
-      sessionCommands = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          xmessage "Hello World!" &
-        '';
-        description = ''
-          Shell commands executed just before the window or desktop manager is
-          started. These commands are not currently sourced for Wayland sessions.
-        '';
+        type = types.listOf (types.strMatching "[a-zA-Z_][a-zA-Z0-9_]*");
+        visible = false;
       };
 
       session = mkOption {
         default = [ ];
-        type = types.listOf types.attrs;
-        example = literalExpression ''
-          [ { manage = "desktop";
-              name = "xterm";
-              start = '''
-                ''${pkgs.xterm}/bin/xterm -ls &
-                waitPID=$!
-              ''';
-            }
-          ]
-        '';
+
         description = ''
           List of sessions supported with the command used to start each
           session.  Each session script can set the
@@ -218,14 +189,73 @@ in
           inside the display manager with the desktop manager name
           followed by the window manager name.
         '';
+
+        example = literalExpression ''
+          [ { manage = "desktop";
+              name = "xterm";
+              start = '''
+                ''${pkgs.xterm}/bin/xterm -ls &
+                waitPID=$!
+              ''';
+            }
+          ]
+        '';
+
+        type = types.listOf types.attrs;
       };
 
-      importedVariables = mkOption {
-        type = types.listOf (types.strMatching "[a-zA-Z_][a-zA-Z0-9_]*");
-        visible = false;
+      sessionCommands = mkOption {
+        default = "";
+
         description = ''
-          Environment variables to import into the systemd user environment.
+          Shell commands executed just before the window or desktop manager is
+          started. These commands are not currently sourced for Wayland sessions.
         '';
+
+        example = ''
+          xmessage "Hello World!" &
+        '';
+
+        type = types.lines;
+      };
+
+      setupCommands = mkOption {
+        default = "";
+
+        description = ''
+          Shell commands executed just after the X server has started.
+
+          This option is only effective for display managers for which this feature
+          is supported; currently these are LightDM, GDM and SDDM.
+        '';
+
+        type = types.lines;
+      };
+
+      xauthBin = mkOption {
+        default = "${pkgs.xauth}/bin/xauth";
+        defaultText = literalExpression ''"''${pkgs.xauth}/bin/xauth"'';
+        description = "Path to the {command}`xauth` program used by display managers.";
+        internal = true;
+      };
+
+      xserverArgs = mkOption {
+        default = [ ];
+        description = "List of arguments for the X server.";
+
+        example = [
+          "-ac"
+          "-logverbose"
+          "-verbose"
+          "-nolisten tcp"
+        ];
+
+        type = types.listOf types.str;
+      };
+
+      xserverBin = mkOption {
+        description = "Path to the X server used by display managers.";
+        type = types.path;
       };
 
     };
@@ -234,25 +264,6 @@ in
 
   config = {
     services.displayManager.sessionData.wrapper = xsessionWrapper;
-
-    services.xserver.displayManager.xserverBin = "${pkgs.xorg-server.out}/bin/X";
-
-    services.xserver.displayManager.importedVariables = [
-      # This is required by user units using the session bus.
-      "DBUS_SESSION_BUS_ADDRESS"
-      # These are needed by the ssh-agent unit.
-      "DISPLAY"
-      "XAUTHORITY"
-      # This is required to specify session within user units (e.g. loginctl lock-session).
-      "XDG_SESSION_ID"
-    ];
-
-    systemd.user.targets.nixos-fake-graphical-session = {
-      unitConfig = {
-        Description = "Fake graphical-session target for non-systemd-aware sessions";
-        BindsTo = "graphical-session.target";
-      };
-    };
 
     # Create desktop files and scripts for starting sessions for WMs/DMs
     # that do not have upstream session files (those defined using services.{display,desktop,window}Manager.session options).
@@ -307,8 +318,9 @@ in
             in
             lib.optional (dm.name != "none" || wm.name != "none") (
               pkgs.writeTextFile {
-                name = "${sessionName}-xsession";
                 destination = "/share/xsessions/${sessionName}.desktop";
+                name = "${sessionName}-xsession";
+
                 # Desktop Entry Specification:
                 # - https://standards.freedesktop.org/desktop-entry-spec/latest/
                 # - https://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
@@ -332,25 +344,25 @@ in
             wm = wms;
           }
       );
-  };
 
-  imports = [
-    (lib.mkRemovedOptionModule
-      [ "services" "xserver" "displayManager" "desktopManagerHandlesLidAndPower" ]
-      "The option is no longer necessary because all display managers have already delegated lid management to systemd."
-    )
-    (lib.mkRenamedOptionModule
-      [ "services" "xserver" "displayManager" "job" "logsXsession" ]
-      [ "services" "displayManager" "logToFile" ]
-    )
-    (lib.mkRenamedOptionModule
-      [ "services" "xserver" "displayManager" "logToJournal" ]
-      [ "services" "displayManager" "logToJournal" ]
-    )
-    (lib.mkRenamedOptionModule
-      [ "services" "xserver" "displayManager" "extraSessionFilesPackages" ]
-      [ "services" "displayManager" "sessionPackages" ]
-    )
-  ];
+    services.xserver.displayManager.importedVariables = [
+      # This is required by user units using the session bus.
+      "DBUS_SESSION_BUS_ADDRESS"
+      # These are needed by the ssh-agent unit.
+      "DISPLAY"
+      "XAUTHORITY"
+      # This is required to specify session within user units (e.g. loginctl lock-session).
+      "XDG_SESSION_ID"
+    ];
+
+    services.xserver.displayManager.xserverBin = "${pkgs.xorg-server.out}/bin/X";
+
+    systemd.user.targets.nixos-fake-graphical-session = {
+      unitConfig = {
+        BindsTo = "graphical-session.target";
+        Description = "Fake graphical-session target for non-systemd-aware sessions";
+      };
+    };
+  };
 
 }

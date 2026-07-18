@@ -1,26 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
-  makeWrapper,
-  libbsd,
-  numactl,
-  libbpf,
-  zlib,
+  doxygen,
   elfutils,
   intel-ipsec-mb,
   jansson,
-  openssl,
+  libbpf,
+  libbsd,
   libpcap,
-  rdma-core,
-  doxygen,
-  python3,
+  makeWrapper,
+  meson,
+  ninja,
+  numactl,
+  openssl,
   pciutils,
-  withExamples ? [ ],
-  shared ? false,
+  pkg-config,
+  python3,
+  rdma-core,
+  zlib,
   machine ? (
     if stdenv.hostPlatform.isx86_64 then
       "nehalem"
@@ -29,6 +27,8 @@
     else
       null
   ),
+  shared ? false,
+  withExamples ? [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,7 +40,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hJiSArvg+67rYvj9xj9pGICsC2bNDcZMFnhDxZ2ynSw=";
   };
 
-  __structuredAttrs = true;
+  outputs = [
+    "out"
+    "doc"
+  ]
+  ++ lib.optional (withExamples != [ ]) "examples";
+
+  postPatch = ''
+    patchShebangs config/arm buildtools
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -53,6 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     python3.pkgs.sphinx
     python3.pkgs.pyelftools
   ];
+
   buildInputs = [
     jansson
     libbpf
@@ -74,10 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Requested by pkg-config.
     libbsd
   ];
-
-  postPatch = ''
-    patchShebangs config/arm buildtools
-  '';
 
   mesonFlags = [
     (lib.mesonBool "tests" false)
@@ -103,25 +109,24 @@ stdenv.mkDerivation (finalAttrs: {
     find examples -type f -executable -exec install {} $examples/bin \;
   '';
 
-  outputs = [
-    "out"
-    "doc"
-  ]
-  ++ lib.optional (withExamples != [ ]) "examples";
+  __structuredAttrs = true;
 
   meta = {
     description = "Set of libraries and drivers for fast packet processing";
     homepage = "http://dpdk.org/";
+
     license = with lib.licenses; [
       lgpl21
       gpl2Only
       bsd2
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       mic92
       stepbrobd
       zhaofengli
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

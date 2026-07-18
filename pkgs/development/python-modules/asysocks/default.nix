@@ -11,13 +11,14 @@
 buildPythonPackage rec {
   pname = "asysocks";
   version = "0.2.18";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-zGGW6CyK3Is84jId3fY1UAx2AxbaS3zKMhtTLLs9/fU=";
   };
 
+  # Upstream hasn't release the tests yet
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     h11
   ];
 
-  # Upstream hasn't release the tests yet
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "asysocks" ];
 
   meta = {

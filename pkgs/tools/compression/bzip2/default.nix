@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  enableStatic ? with stdenv.hostPlatform; isStatic || isCygwin,
-  enableShared ? true,
   autoreconfHook,
   testers,
+  enableShared ? true,
+  enableStatic ? with stdenv.hostPlatform; isStatic || isCygwin,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -27,7 +27,12 @@ stdenv.mkDerivation (
       sha256 = "sha256-q1oDF27hBtPw+pDjgdpHjdrkBZGBU8yiSOaCzQxKImk=";
     };
 
-    patchFlags = [ "-p0" ];
+    outputs = [
+      "bin"
+      "dev"
+      "out"
+      "man"
+    ];
 
     patches = [
       # https://sourceware.org/cgit/bzip2/patch/?id=35d122a3df8b0cc4082a4d89fdc6ee99f375fe67
@@ -35,6 +40,7 @@ stdenv.mkDerivation (
 
       ./patches/bzip2-1.0.6.2-autoconfiscated.patch
     ];
+
     # Fix up hardcoded version from the above patch, e.g. seen in bzip2.pc or libbz2.so.1.0.N
     postPatch = ''
       patch <<-EOF
@@ -52,26 +58,18 @@ stdenv.mkDerivation (
     strictDeps = true;
     nativeBuildInputs = [ autoreconfHook ];
 
-    outputs = [
-      "bin"
-      "dev"
-      "out"
-      "man"
-    ];
-
     configureFlags = lib.concatLists [
       (lib.optional enableStatic "--enable-static")
       (lib.optional (!enableShared) "--disable-shared")
     ];
 
-    dontDisableStatic = enableStatic;
-
-    enableParallelBuilding = true;
-
     postInstall = ''
       ln -s $out/lib/libbz2.so.1.0.* $out/lib/libbz2.so.1.0
     '';
 
+    dontDisableStatic = enableStatic;
+    enableParallelBuilding = true;
+    patchFlags = [ "-p0" ];
     passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
     meta = {
@@ -79,9 +77,9 @@ stdenv.mkDerivation (
       homepage = "https://www.sourceware.org/bzip2";
       changelog = "https://sourceware.org/git/?p=bzip2.git;a=blob;f=CHANGES;hb=HEAD";
       license = lib.licenses.bzip2;
-      pkgConfigModules = [ "bzip2" ];
-      platforms = lib.platforms.all;
       maintainers = with lib.maintainers; [ mic92 ];
+      platforms = lib.platforms.all;
+      pkgConfigModules = [ "bzip2" ];
     };
   }
 )

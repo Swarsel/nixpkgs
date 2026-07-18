@@ -1,18 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "blackout";
   version = "2014-07-29";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "theleagueof";
@@ -21,10 +16,16 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-UmJVmtuPQYW/w+mdnJw9Ql4R1xf/07l+/Ky1wX9WKqw=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
     description = "Bad-ass, unholy-mother-shut-your-mouth stencil sans-serif";
+
     longDescription = ''
       Eats holes for breakfast lunch and dinner. Inspired by filling in
       sans-serif newspaper headlines. Continually updated with coffee and
@@ -33,6 +34,7 @@ stdenvNoCC.mkDerivation {
       Comes in three styles: Midnight (solid), 2AM (reversed), & Sunrise
       (stroked).
     '';
+
     homepage = "https://www.theleagueofmoveabletype.com/blackout";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ minijackson ];

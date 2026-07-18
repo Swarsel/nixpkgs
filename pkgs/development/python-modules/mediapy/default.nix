@@ -1,22 +1,21 @@
 {
   lib,
+  fetchFromGitHub,
+  absl-py,
   bash,
   buildPythonPackage,
-  fetchFromGitHub,
+  ffmpeg-headless,
   flit-core,
   ipython,
   matplotlib,
   numpy,
   pillow,
-  absl-py,
-  ffmpeg-headless,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mediapy";
   version = "1.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "google";
@@ -30,6 +29,12 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "/bin/bash" "${lib.getExe bash}"
   '';
 
+  nativeCheckInputs = [
+    absl-py
+    ffmpeg-headless
+    pytestCheckHook
+  ];
+
   build-system = [ flit-core ];
 
   dependencies = [
@@ -39,17 +44,12 @@ buildPythonPackage (finalAttrs: {
     pillow
   ];
 
-  nativeCheckInputs = [
-    absl-py
-    ffmpeg-headless
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # AssertionError: np.float64(148.75258355982479) not less than 51.2
     "test_video_read_write_10bit"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mediapy" ];
 
   meta = {

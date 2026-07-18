@@ -1,41 +1,37 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
-  # build-system
-  setuptools,
-
   # dependencies
   addict,
-  distutils,
-  matplotlib,
-  numpy,
-  opencv4,
-  pyyaml,
-  rich,
-  termcolor,
-  yapf,
-
   # tests
   bitsandbytes,
+  buildPythonPackage,
+  distutils,
   dvclive,
+  fetchpatch,
   lion-pytorch,
   lmdb,
+  matplotlib,
   mlflow,
+  numpy,
+  opencv4,
   parameterized,
   pytestCheckHook,
+  pyyaml,
+  rich,
+  # build-system
+  setuptools,
+  termcolor,
   torchvision,
   transformers,
   writableTmpDirAsHomeHook,
+  yapf,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mmengine";
   version = "0.10.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "open-mmlab";
@@ -48,9 +44,9 @@ buildPythonPackage (finalAttrs: {
     # Explicitly disable weights_only in torch.load calls
     # https://github.com/open-mmlab/mmengine/pull/1650
     (fetchpatch {
+      hash = "sha256-SLr030IdYD9wM/jPJuZd+Dr1jjFx/5/YkJj/IwhnNQg=";
       name = "torch-2.6.0-compat.patch";
       url = "https://github.com/open-mmlab/mmengine/pull/1650/commits/c21b8431b2c625560a3866c65328cff0380ba1f8.patch";
-      hash = "sha256-SLr030IdYD9wM/jPJuZd+Dr1jjFx/5/YkJj/IwhnNQg=";
     })
   ];
 
@@ -70,22 +66,6 @@ buildPythonPackage (finalAttrs: {
       substituteInPlace tests/test_config/test_lazy.py \
         --replace-fail "import numpy.compat" ""
     '';
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    addict
-    distutils
-    matplotlib
-    numpy
-    opencv4
-    pyyaml
-    rich
-    termcolor
-    yapf
-  ];
-
-  pythonImportsCheck = [ "mmengine" ];
 
   nativeCheckInputs = [
     bitsandbytes
@@ -107,6 +87,20 @@ buildPythonPackage (finalAttrs: {
     ''
       export MKL_NUM_THREADS=1
     '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    addict
+    distutils
+    matplotlib
+    numpy
+    opencv4
+    pyyaml
+    rich
+    termcolor
+    yapf
+  ];
 
   disabledTestPaths = [
     # MlflowVisBackend uses the deprecated mlflow filesystem store, which is
@@ -207,6 +201,9 @@ buildPythonPackage (finalAttrs: {
     # Crashes in pytestCheckHook due to MPS incompatibility in torch
     "test_with_runner"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mmengine" ];
 
   meta = {
     description = "Library for training deep learning models based on PyTorch";

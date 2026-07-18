@@ -34,31 +34,33 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hmnBG96qQXvTulPnUYyliqidfKC+Wvky+d7xzYrCdTw=";
   };
 
-  preConfigure = ''
-    makeFlagsArray+=(${systemFlags})
-  '';
+  outputs = [
+    "out"
+    "man"
+  ];
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "PREFIX=${placeholder "out"}"
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  preConfigure = ''
+    makeFlagsArray+=(${systemFlags})
+  '';
 
   meta = {
-    homepage = "https://oldmanprogrammer.net/source.php?dir=projects/tree";
     description = "Command to produce a depth indented directory listing";
-    license = lib.licenses.gpl2Plus;
+
     longDescription = ''
       Tree is a recursive directory listing command that produces a
       depth indented listing of files, which is colorized ala dircolors if
       the LS_COLORS environment variable is set and output is to tty.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://oldmanprogrammer.net/source.php?dir=projects/tree";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.all;
     mainProgram = "tree";
   };
 })

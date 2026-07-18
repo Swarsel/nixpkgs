@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  hypothesis,
+  levenshtein,
+  mock,
+  pytestCheckHook,
+  pythonAtLeast,
   setuptools,
   six,
-  hypothesis,
-  mock,
-  levenshtein,
-  pytestCheckHook,
   termcolor,
-  pythonAtLeast,
 }:
 
 buildPythonPackage rec {
   pname = "fire";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "google";
@@ -24,13 +23,6 @@ buildPythonPackage rec {
     hash = "sha256-TZLL7pzX8xPtB/9k3l5395eHrNojmqTH7PfB1kf99Io=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    six
-    termcolor
-  ];
-
   nativeCheckInputs = [
     hypothesis
     mock
@@ -38,15 +30,24 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    six
+    termcolor
+  ];
+
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
     # RuntimeError: There is no current event loop in thread 'MainThread'
     "testFireAsyncio"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fire" ];
 
   meta = {
     description = "Library for automatically generating command line interfaces";
+
     longDescription = ''
       Python Fire is a library for automatically generating command line
       interfaces (CLIs) from absolutely any Python object.
@@ -65,6 +66,7 @@ buildPythonPackage rec {
         REPL with the modules and variables you'll need already imported
         and created.
     '';
+
     homepage = "https://github.com/google/python-fire";
     changelog = "https://github.com/google/python-fire/releases/tag/v${version}";
     license = lib.licenses.asl20;

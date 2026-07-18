@@ -1,9 +1,9 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
   bison,
   flex,
+  gccStdenv,
 }:
 
 let
@@ -24,8 +24,6 @@ gccStdenv.mkDerivation {
     sha256 = "11cyn3kcff4r79rsw2s0xm6rdb8bi0kpkazv2b48jhcms7xw75qp";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [
     bison
     flex
@@ -34,18 +32,23 @@ gccStdenv.mkDerivation {
   buildPhase = ''
     make RM="rm -f" proparser.c ${extraTools} opt
   '';
+
   installPhase = ''
     mkdir -p $out/bin
     install -m0755 SPASS ${extraTools} $out/bin/
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Automated theorem prover for first-order logic";
+    license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.unix;
-    license = lib.licenses.bsd2;
     downloadPage = "http://www.spass-prover.org/download/index.html";
   };
 }

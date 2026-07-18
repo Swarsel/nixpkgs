@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jinja2,
   riscv-config,
   riscv-isac,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "riscof";
   version = "1.25.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "riscv-software-src";
@@ -38,17 +37,17 @@ buildPythonPackage rec {
     jinja2
   ];
 
-  pythonImportsCheck = [ "riscof" ];
-
   # No unitests available
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "riscof" ];
 
   meta = {
     description = "RISC-V Architectural Test Framework";
-    mainProgram = "riscof";
     homepage = "https://github.com/riscv-software-src/riscof";
     changelog = "https://github.com/riscv-software-src/riscof/blob/${version}/CHANGELOG.md";
-    maintainers = [ ];
     license = lib.licenses.bsd3;
+    maintainers = [ ];
+    mainProgram = "riscof";
   };
 }

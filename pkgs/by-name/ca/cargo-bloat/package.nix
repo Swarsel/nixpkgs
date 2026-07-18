@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,11 +21,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Tool and Cargo subcommand that helps you find out what takes most of the space in your executable";
     homepage = "https://github.com/RazrFalcon/cargo-bloat";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       xrelkd
       matthiasbeyer
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "cargo-bloat";
   };
 })

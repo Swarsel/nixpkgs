@@ -8,9 +8,9 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit (libsepol) se_url;
   pname = "checkpolicy";
   version = "3.11";
-  inherit (libsepol) se_url;
 
   src = fetchurl {
     url = "${finalAttrs.se_url}/${finalAttrs.version}/checkpolicy-${finalAttrs.version}.tar.gz";
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     bison
     flex
   ];
+
   buildInputs = [ libsepol ];
 
   makeFlags = [

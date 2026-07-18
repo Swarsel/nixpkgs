@@ -9,7 +9,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ssh-mitm";
   version = "5.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ssh-mitm";
@@ -18,14 +17,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-FmxVhYkPRZwS+zFwuId9nRGN832LRkgCNgDYb8Pg01U=";
   };
 
-  pythonRelaxDeps = [ "paramiko" ];
+  nativeBuildInputs = [ installShellFiles ];
+  # fix for darwin users
+  # Module has no tests
+  doCheck = false;
+
+  # Install man page
+  postInstall = ''
+    installManPage man1/*
+  '';
 
   build-system = with python3.pkgs; [
     hatchling
     hatch-requirements-txt
   ];
-
-  nativeBuildInputs = [ installShellFiles ];
 
   dependencies =
     with python3.pkgs;
@@ -45,17 +50,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       wrapt
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [ setuptools ];
-  # fix for darwin users
 
-  # Module has no tests
-  doCheck = false;
-
-  # Install man page
-  postInstall = ''
-    installManPage man1/*
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "sshmitm" ];
+  pythonRelaxDeps = [ "paramiko" ];
 
   meta = {
     description = "Tool for SSH security audits";

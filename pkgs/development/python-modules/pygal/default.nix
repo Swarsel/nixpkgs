@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   stdenv,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  cairosvg,
+  fetchPypi,
   # dependencies
   importlib-metadata,
-
   # optional-dependencies
   lxml,
-  cairosvg,
-
   # tests
   pyquery,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pygal";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -33,15 +28,6 @@ buildPythonPackage rec {
     substituteInPlace setup.py \
       --replace-fail pytest-runner ""
   '';
-
-  build-system = [ setuptools ];
-
-  dependencies = [ importlib-metadata ];
-
-  optional-dependencies = {
-    lxml = [ lxml ];
-    png = [ cairosvg ];
-  };
 
   nativeCheckInputs = [
     pyquery
@@ -54,21 +40,30 @@ buildPythonPackage rec {
     export LANG=en_US.UTF-8
   '';
 
-  # Cairo tries to load system fonts by default.
-  # It's surfaced as a Cairo "out of memory" error in tests.
-  __impureHostDeps = [ "/System/Library/Fonts" ];
-
   postCheck = ''
     export LANG=${if stdenv.hostPlatform.isDarwin then "en_US.UTF-8" else "C.UTF-8"}
   '';
+
+  # Cairo tries to load system fonts by default.
+  # It's surfaced as a Cairo "out of memory" error in tests.
+  __impureHostDeps = [ "/System/Library/Fonts" ];
+  build-system = [ setuptools ];
+  dependencies = [ importlib-metadata ];
+
+  optional-dependencies = {
+    lxml = [ lxml ];
+    png = [ cairosvg ];
+  };
+
+  pyproject = true;
 
   meta = {
     description = "Module for dynamic SVG charting";
     homepage = "http://www.pygal.org";
     changelog = "https://github.com/Kozea/pygal/blob/${version}/docs/changelog.rst";
-    downloadPage = "https://github.com/Kozea/pygal";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
     mainProgram = "pygal_gen.py";
+    downloadPage = "https://github.com/Kozea/pygal";
   };
 }

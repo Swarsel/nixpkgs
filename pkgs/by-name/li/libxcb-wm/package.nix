@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libxcb,
-  xorgproto,
   m4,
-  writeScript,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxcb-wm";
   version = "0.4.2";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://xorg/individual/xcb/xcb-util-wm-${finalAttrs.version}.tar.xz";
     hash = "sha256-YsNOIdBiZGh/rqftv2NjLJ8E1V5yEUqkpXu5Xk+Iigs=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   strictDeps = true;
 
@@ -38,6 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   propagatedBuildInputs = [ libxcb ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -46,7 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -54,10 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxcb-wm";
     license = lib.licenses.x11;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "xcb-ewmh"
       "xcb-icccm"
     ];
-    platforms = lib.platforms.unix;
   };
 })

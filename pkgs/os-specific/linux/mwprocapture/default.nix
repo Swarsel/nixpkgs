@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  kernel,
   alsa-lib,
+  kernel,
 }:
 
 let
@@ -18,7 +18,6 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "mwprocapture";
-  subVersion = "1.3.4418";
   version = "${subVersion}-${kernel.version}";
 
   src = fetchurl {
@@ -28,21 +27,16 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
-  preConfigure = ''
-    cd ./src
-    export INSTALL_MOD_PATH="$out"
-  '';
-
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
-
   makeFlags = [
     "KERNELDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-fallthrough";
+
+  preConfigure = ''
+    cd ./src
+    export INSTALL_MOD_PATH="$out"
+  '';
 
   postInstall = ''
     cd ../
@@ -65,9 +59,16 @@ stdenv.mkDerivation rec {
       "$out"/bin/mwcap-info
   '';
 
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
+
+  subVersion = "1.3.4418";
+
   meta = {
-    homepage = "https://www.magewell.com/";
     description = "Linux driver for the Magewell Pro Capture family";
+    homepage = "https://www.magewell.com/";
     license = lib.licenses.unfreeRedistributable;
     maintainers = with lib.maintainers; [ flexiondotorg ];
     platforms = lib.platforms.linux;

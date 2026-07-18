@@ -26,21 +26,25 @@ in
 {
   options = {
     environment.ldso = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         The executable to link into the normal FHS location of the ELF loader.
       '';
+
+      type = types.nullOr types.path;
     };
 
     environment.ldso32 = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         The executable to link into the normal FHS location of the 32-bit ELF loader.
 
         This currently only works on x86_64 architectures.
       '';
+
+      type = types.nullOr types.path;
     };
   };
 

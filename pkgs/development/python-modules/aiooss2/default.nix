@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   oss2,
   pytest-asyncio,
   pytest-mock,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aiooss2";
   version = "0.2.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "karajan1001";
@@ -24,9 +23,11 @@ buildPythonPackage rec {
     hash = "sha256-6tkJG6Jjvo2OaN9cRbs/7ApcrKiZ5tGSPUfugAx7iJU=";
   };
 
-  pythonRelaxDeps = [
-    "aiohttp"
-    "oss2"
+  nativeCheckInputs = [
+    pytest-mock
+    pytest-asyncio
+    pytestCheckHook
+    requests
   ];
 
   build-system = [
@@ -39,21 +40,20 @@ buildPythonPackage rec {
     oss2
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytest-asyncio
-    pytestCheckHook
-    requests
-  ];
-
-  pythonImportsCheck = [ "aiooss2" ];
-
   disabledTestPaths = [
     # Tests require network access
     "tests/func/test_bucket.py"
     "tests/func/test_object.py"
     "tests/func/test_resumable.py"
     "tests/unit/test_adapter.py"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aiooss2" ];
+
+  pythonRelaxDeps = [
+    "aiohttp"
+    "oss2"
   ];
 
   meta = {

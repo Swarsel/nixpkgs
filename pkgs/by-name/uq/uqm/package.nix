@@ -1,23 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchFromGitHub,
-  pkg-config,
-  libGLU,
-  libGL,
   SDL2,
+  libGL,
+  libGLU,
+  libmikmod,
+  libogg,
   libpng,
   libvorbis,
-  libogg,
-  libmikmod,
-
-  use3DOVideos ? false,
-  requireFile ? null,
-  writeText ? null,
+  pkg-config,
   haskellPackages ? null,
-
+  requireFile ? null,
+  use3DOVideos ? false,
   useRemixPacks ? false,
+  writeText ? null,
 }:
 
 assert use3DOVideos -> requireFile != null && writeText != null && haskellPackages != null;
@@ -39,9 +37,9 @@ let
       (
         num: sha256:
         fetchurl rec {
+          inherit sha256;
           name = "uqm-remix-disc${toString num}.uqm";
           url = "mirror://sourceforge/sc2/${name}";
-          inherit sha256;
         }
       )
       [
@@ -61,22 +59,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "JPL325z3+vU7lfniWA5vWWIFqY7QwzXP6DTGR4WtT1o=";
   };
 
-  content = fetchurl {
-    url = "mirror://sourceforge/sc2/uqm-${finalAttrs.version}-content.uqm";
-    sha256 = "d9dawl5vt1WjPEujs4p7e8Qfy8AolokbDMmskhS3Lu8=";
-  };
-
-  voice = fetchurl {
-    url = "mirror://sourceforge/sc2/uqm-${finalAttrs.version}-voice.uqm";
-    sha256 = "ntv1HXfYtTM5nF86+1STFKghDXqrccosUbTySDIzekU=";
-  };
-
-  music = fetchurl {
-    url = "mirror://sourceforge/sc2/uqm-${finalAttrs.version}-3domusic.uqm";
-    sha256 = "RM087H6VabQRettNd/FSKJCXJWYmc5GuCWMUhdIx2Lk=";
-  };
+  postPatch = ''
+    # Using _STRINGS_H as include guard conflicts with glibc.
+    sed -i -e '/^#/s/_STRINGS_H/_UQM_STRINGS_H/g' src/uqm/comm/*/strings.h
+    # See https://github.com/NixOS/nixpkgs/pull/93560
+    sed -i -e 's,/tmp/,$TMPDIR/,' build/unix/config_functions
+  '';
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     SDL2
     libpng
@@ -86,6 +77,39 @@ stdenv.mkDerivation (finalAttrs: {
     libGLU
     libGL
   ];
+
+  buildPhase = ''
+    ./build.sh uqm
+  '';
+
+  installPhase = ''
+    ./build.sh uqm install
+    sed -i $out/bin/uqm -e "s%/usr/local/games/%$out%g"
+  '';
+
+  # uqm has a 'unique' build system with a root script incidentally called
+  # 'build.sh'.
+  configurePhase = ''
+    runHook preConfigure
+
+    echo "INPUT_install_prefix_VALUE='$out'" >> config.state
+    echo "INPUT_install_bindir_VALUE='$out/bin'" >> config.state
+    echo "INPUT_install_libdir_VALUE='$out/lib'" >> config.state
+    echo "INPUT_install_sharedir_VALUE='$out/share'" >> config.state
+    PREFIX=$out ./build.sh uqm config
+
+    runHook postConfigure
+  '';
+
+  content = fetchurl {
+    sha256 = "d9dawl5vt1WjPEujs4p7e8Qfy8AolokbDMmskhS3Lu8=";
+    url = "mirror://sourceforge/sc2/uqm-${finalAttrs.version}-content.uqm";
+  };
+
+  music = fetchurl {
+    sha256 = "RM087H6VabQRettNd/FSKJCXJWYmc5GuCWMUhdIx2Lk=";
+    url = "mirror://sourceforge/sc2/uqm-${finalAttrs.version}-3domusic.uqm";
+  };
 
   postUnpack = ''
     mkdir -p uqm-${finalAttrs.version}/content/packages
@@ -103,39 +127,14 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s "${videos}" "uqm-${finalAttrs.version}/content/addons/3dovideo"
   '';
 
-  postPatch = ''
-    # Using _STRINGS_H as include guard conflicts with glibc.
-    sed -i -e '/^#/s/_STRINGS_H/_UQM_STRINGS_H/g' src/uqm/comm/*/strings.h
-    # See https://github.com/NixOS/nixpkgs/pull/93560
-    sed -i -e 's,/tmp/,$TMPDIR/,' build/unix/config_functions
-  '';
-
-  # uqm has a 'unique' build system with a root script incidentally called
-  # 'build.sh'.
-  configurePhase = ''
-    runHook preConfigure
-
-    echo "INPUT_install_prefix_VALUE='$out'" >> config.state
-    echo "INPUT_install_bindir_VALUE='$out/bin'" >> config.state
-    echo "INPUT_install_libdir_VALUE='$out/lib'" >> config.state
-    echo "INPUT_install_sharedir_VALUE='$out/share'" >> config.state
-    PREFIX=$out ./build.sh uqm config
-
-    runHook postConfigure
-  '';
-
-  buildPhase = ''
-    ./build.sh uqm
-  '';
-
-  installPhase = ''
-    ./build.sh uqm install
-    sed -i $out/bin/uqm -e "s%/usr/local/games/%$out%g"
-  '';
+  voice = fetchurl {
+    sha256 = "ntv1HXfYtTM5nF86+1STFKghDXqrccosUbTySDIzekU=";
+    url = "mirror://sourceforge/sc2/uqm-${finalAttrs.version}-voice.uqm";
+  };
 
   meta = {
     description = "Remake of Star Control II";
-    mainProgram = "uqm";
+
     longDescription = ''
       The goals for the The Ur-Quan Masters project are:
         - to bring Star Control II to modern platforms, thereby making a lot of
@@ -144,12 +143,16 @@ stdenv.mkDerivation (finalAttrs: {
         - to adapt the code so that people can more easily make their own
           spin-offs, thereby making zillions more people happy!
     '';
+
     homepage = "https://sc2.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       jcumming
       aszlig
     ];
+
     platforms = with lib.platforms; linux;
+    mainProgram = "uqm";
   };
 })

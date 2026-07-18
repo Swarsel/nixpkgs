@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  runCommandLocal,
   buildEnv,
-  writeText,
-  writeShellScriptBin,
   pkgs,
   pkgsHostTarget,
+  runCommandLocal,
+  writeShellScriptBin,
+  writeText,
 }:
 
 {
-  profile ? "",
-  targetPkgs ? pkgs: [ ],
-  multiPkgs ? pkgs: [ ],
-  multiArch ? false, # Whether to include 32bit packages
-  includeClosures ? false, # Whether to include closures of all packages
-  nativeBuildInputs ? [ ],
   extraBuildCommands ? "",
   extraBuildCommandsMulti ? "",
   extraOutputsToInstall ? [ ],
+  includeClosures ? false, # Whether to include closures of all packages
+  multiArch ? false, # Whether to include 32bit packages
+  multiPkgs ? pkgs: [ ],
+  nativeBuildInputs ? [ ],
+  profile ? "",
+  targetPkgs ? pkgs: [ ],
   ... # for name, or pname+version
 }@args:
 
@@ -97,8 +97,9 @@ let
   '';
 
   etcProfile = pkgs.writeTextFile {
-    name = "${name}-fhsenv-profile";
     destination = "/etc/profile";
+    name = "${name}-fhsenv-profile";
+
     text = ''
       export PS1='${name}-fhsenv:\u@\h:\w\$ '
       export LOCALE_ARCHIVE="''${LOCALE_ARCHIVE:-/usr/lib/locale/locale-archive}"
@@ -210,24 +211,25 @@ let
   allPaths = paths ++ paths32;
 
   rootfs-builder = pkgs.buildPackages.rustPlatform.buildRustPackage {
-    name = "fhs-rootfs-bulder";
     src = ./rootfs-builder;
     cargoLock.lockFile = ./rootfs-builder/Cargo.lock;
     doCheck = false;
+    name = "fhs-rootfs-bulder";
   };
 
   rootfs =
     pkgs.runCommand "${name}-fhsenv-rootfs"
       {
-        __structuredAttrs = true;
-        exportReferencesGraph.graph = lib.concatMap (p: p.paths) allPaths;
         inherit
           paths
           paths32
           isMultiBuild
           includeClosures
           ;
+
         nativeBuildInputs = [ pkgs.jq ];
+        __structuredAttrs = true;
+        exportReferencesGraph.graph = lib.concatMap (p: p.paths) allPaths;
       }
       ''
         ${rootfs-builder}/bin/rootfs-builder

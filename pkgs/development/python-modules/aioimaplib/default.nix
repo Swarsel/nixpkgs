@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   imaplib2,
   mock,
   poetry-core,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aioimaplib";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iroco-co";
@@ -33,8 +32,6 @@ buildPythonPackage rec {
     sed -i "/crypto.X509Extension/,+1d" tests/ssl_cert.py
   '';
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     imaplib2
     mock
@@ -43,6 +40,9 @@ buildPythonPackage rec {
     pytestCheckHook
     pytz
   ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
 
   disabledTests = [
     # TimeoutError
@@ -54,8 +54,7 @@ buildPythonPackage rec {
     "test_idle_loop"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "aioimaplib" ];
 
   meta = {

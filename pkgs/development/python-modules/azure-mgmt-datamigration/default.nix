@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-datamigration";
   version = "10.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_datamigration";
     inherit version;
     hash = "sha256-wo748WK5RaTLUAZASjA3QcJG8DMSSeYB0V6h/c6VxUo=";
+    pname = "azure_mgmt_datamigration";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,10 +30,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonNamespaces = [ "azure.mgmt" ];
-
-  # has no tests
-  doCheck = false;
 
   meta = {
     description = "This is the Microsoft Azure Data Migration Client Library";

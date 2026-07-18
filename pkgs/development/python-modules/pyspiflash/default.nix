@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyftdi,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyspiflash";
   version = "0.6.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eblot";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-NXYXvGSRhsTHu10pDYaZF84+d4QyPKECpuKpmgFstg0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyftdi ];
-
   # tests are not shipped with the PyPI source
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pyftdi ];
+  pyproject = true;
   pythonImportsCheck = [ "spiflash" ];
 
   meta = {

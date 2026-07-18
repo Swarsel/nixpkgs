@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   apple-sdk_26,
   autoPatchelfHook,
@@ -10,7 +13,6 @@
   embree,
   enet,
   exportTemplatesHash,
-  fetchFromGitHub,
   fetchpatch,
   fontconfig,
   freetype,
@@ -22,9 +24,8 @@
   hash,
   icu,
   installShellFiles,
-  lib,
-  libdecor,
   libGL,
+  libdecor,
   libjpeg_turbo,
   libpulseaudio,
   libtheora,
@@ -52,7 +53,6 @@
   scons,
   sdl3,
   speechd-minimal,
-  stdenv,
   stdenvNoCC,
   strip-nondeterminism,
   testers,
@@ -63,13 +63,16 @@
   vulkan-loader,
   wayland,
   wayland-scanner,
+  wslay,
+  zip,
+  zstd,
+  nugetDeps ? null,
   withAlsa ? stdenv.hostPlatform.isLinux,
+  # only linux supports builtin_ flags properly
+  withBuiltins ? !stdenv.hostPlatform.isLinux,
   withDbus ? true,
   withFontconfig ? true,
   withMono ? false,
-  nugetDeps ? null,
-  # only linux supports builtin_ flags properly
-  withBuiltins ? !stdenv.hostPlatform.isLinux,
   withPlatform ? if stdenv.hostPlatform.isDarwin then "macos" else "linuxbsd",
   withPrecision ? "single",
   withPulseaudio ? true,
@@ -80,9 +83,6 @@
   # https://github.com/godotengine/godot/pull/73504
   withWayland ? stdenv.hostPlatform.isLinux,
   withX11 ? stdenv.hostPlatform.isLinux,
-  wslay,
-  zip,
-  zstd,
 }:
 assert lib.asserts.assertOneOf "withPrecision" withPrecision [
   "single"
@@ -101,13 +101,13 @@ let
   dottedVersion = lib.replaceStrings [ "-" ] [ "." ] version + lib.optionalString withMono ".mono";
 
   harfbuzz-raster = harfbuzz.override {
-    withRaster = lib.versionAtLeast version "4.7";
     withCairo = lib.versionAtLeast version "4.7";
+    withRaster = lib.versionAtLeast version "4.7";
   };
 
   harfbuzz-icu = harfbuzz-raster.override {
-    withIcu = true;
     harfbuzz = harfbuzz-raster;
+    withIcu = true;
   };
 
   mkTarget =
@@ -130,8 +130,8 @@ let
         pkg: dotnet-sdk:
         {
           version = testers.testVersion {
-            package = pkg;
             version = dottedVersion;
+            package = pkg;
           };
         }
         // lib.optionalAttrs editor (
@@ -252,11 +252,8 @@ let
               inherit (pkg) export-template;
 
               export = stdenvNoCC.mkDerivation {
-                name = "${final.export-template.name}-export";
-
-                nativeBuildInputs = [ pkg ] ++ lib.optional (dotnet-sdk != null) dotnet-sdk;
-
                 src = project-src;
+                nativeBuildInputs = [ pkg ] ++ lib.optional (dotnet-sdk != null) dotnet-sdk;
 
                 buildPhase = ''
                   runHook preBuild
@@ -281,6 +278,8 @@ let
 
                   runHook postInstall
                 '';
+
+                name = "${final.export-template.name}-export";
               };
 
               run = runCommand "${final.export.name}-runs" { passthru = { inherit (final) export; }; } (
@@ -313,20 +312,12 @@ let
 
           in
           {
-            export-runs = export-tests.run;
-
             export-bin-runs =
               (export-tests.extend (
                 final: prev: {
-                  export-template = pkg.export-templates-bin;
-
                   export = prev.export.overrideAttrs (prev: {
                     nativeBuildInputs =
                       prev.nativeBuildInputs or [ ] ++ lib.optional stdenv.hostPlatform.isElf autoPatchelfHook;
-
-                    # stripping dlls results in:
-                    # Failed to load System.Private.CoreLib.dll (error code 0x8007000B)
-                    stripExclude = lib.optional withMono [ "*.dll" ];
 
                     runtimeDependencies =
                       prev.runtimeDependencies or [ ]
@@ -343,23 +334,29 @@ let
                         alsa-lib
                         udev
                       ];
+
+                    # stripping dlls results in:
+                    # Failed to load System.Private.CoreLib.dll (error code 0x8007000B)
+                    stripExclude = lib.optional withMono [ "*.dll" ];
                   });
+
+                  export-template = pkg.export-templates-bin;
                 }
               )).run;
+
+            export-runs = export-tests.run;
           }
         );
 
       attrs = finalAttrs: {
-        __structuredAttrs = true;
-
-        pname = "godot${suffix}";
         inherit version;
+        pname = "godot${suffix}";
 
         src = fetchFromGitHub {
+          inherit hash;
           owner = "godotengine";
           repo = "godot";
           tag = version;
-          inherit hash;
           # Required for the commit hash to be included in the version number.
           #
           # `methods.py` reads the commit hash from `.git/HEAD` and manually follows
@@ -368,6 +365,7 @@ let
           # See also 'hash' in
           # https://docs.godotengine.org/en/stable/classes/class_engine.html#class-engine-method-get-version-info
           leaveDotGit = true;
+
           # Only keep HEAD, because leaveDotGit is non-deterministic:
           # https://github.com/NixOS/nixpkgs/issues/8567
           postFetch = ''
@@ -382,111 +380,6 @@ let
           "out"
         ]
         ++ lib.optional editor "man";
-        separateDebugInfo = true;
-
-        env = {
-          # Set the build name which is part of the version. In official downloads, this
-          # is set to 'official'. When not specified explicitly, it is set to
-          # 'custom_build'. Other platforms packaging Godot (Gentoo, Arch, Flatpack
-          # etc.) usually set this to their name as well.
-          #
-          # See also 'methods.py' in the Godot repo and 'build' in
-          # https://docs.godotengine.org/en/stable/classes/class_engine.html#class-engine-method-get-version-info
-          BUILD_NAME = "nixpkgs";
-        }
-        // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-          NIX_CFLAGS_COMPILE = toString [
-            "-I${lib.getDev harfbuzz-icu}/include/harfbuzz"
-            "-I${lib.getDev recastnavigation}/include/recastnavigation"
-          ];
-          # TODO: Remove when NixOS/nixpkgs#536365 reaches master.
-          NIX_CFLAGS_LINK = "--ld-path=${lib.getExe' llvmPackages.lld "ld64.lld"}";
-        };
-
-        preConfigure = lib.optionalString (editor && withMono) ''
-          # TODO: avoid pulling in dependencies of windows-only project
-          dotnet sln modules/mono/editor/GodotTools/GodotTools.sln \
-            remove modules/mono/editor/GodotTools/GodotTools.OpenVisualStudio/GodotTools.OpenVisualStudio.csproj
-
-          dotnet restore modules/mono/glue/GodotSharp/GodotSharp.sln
-          dotnet restore modules/mono/editor/GodotTools/GodotTools.sln
-          dotnet restore modules/mono/editor/Godot.NET.Sdk/Godot.NET.Sdk.sln
-        '';
-
-        # Godot 4.7 with system HarfBuzz needs explicit raster linkage, but should be resolved with 4.7.1.
-        # See https://github.com/godotengine/godot/pull/120568
-        preBuild =
-          lib.optionalString (!withBuiltins && lib.versionAtLeast version "4.7") ''
-            export NIX_LDFLAGS="$NIX_LDFLAGS -lharfbuzz-raster"
-          ''
-          # darwin needs $HOME/.cache/clang/ModuleCache.
-          + lib.optionalString stdenv.hostPlatform.isDarwin ''
-            export HOME=$(mktemp -d)
-          '';
-
-        # From: https://github.com/godotengine/godot/blob/4.2.2-stable/SConstruct
-        sconsFlags = mkSconsFlagsFromAttrSet (
-          {
-            # Options from 'SConstruct'
-            precision = withPrecision; # Floating-point precision level
-            production = true; # Set defaults to build Godot for use in production
-            platform = withPlatform;
-            inherit target;
-            debug_symbols = true;
-
-            # Options from 'platform/linuxbsd/detect.py'
-            alsa = withAlsa;
-            dbus = withDbus; # Use D-Bus to handle screensaver and portal desktop settings
-            fontconfig = withFontconfig; # Use fontconfig for system fonts support
-            pulseaudio = withPulseaudio; # Use PulseAudio
-            speechd = withSpeechd; # Use Speech Dispatcher for Text-to-Speech support
-            touch = withTouch; # Enable touch events
-            udev = withUdev; # Use udev for gamepad connection callbacks
-            wayland = withWayland; # Compile with Wayland support
-            x11 = withX11; # Compile with X11 support
-
-            module_mono_enabled = withMono;
-
-            # aliasing bugs exist with hardening+LTO
-            # https://github.com/godotengine/godot/pull/104501
-            ccflags = "-fno-strict-aliasing";
-            # on darwin: ld: unknown option: --build-id
-            linkflags = lib.optionalString (!stdenv.hostPlatform.isDarwin) "-Wl,--build-id";
-
-            # libraries that aren't available in nixpkgs
-            builtin_msdfgen = true;
-            builtin_rvo2_2d = true;
-            builtin_rvo2_3d = true;
-            builtin_xatlas = true;
-
-            # using system clipper2 is currently not implemented
-            builtin_clipper2 = true;
-
-            use_sowrap = false;
-          }
-          // lib.optionalAttrs (lib.versionOlder version "4.4") {
-            # libraries that aren't available in nixpkgs
-            builtin_squish = true;
-
-            # broken with system packages
-            builtin_miniupnpc = true;
-          }
-          // lib.optionalAttrs (lib.versionAtLeast version "4.5") {
-            redirect_build_objects = false; # Avoid copying build objects to output
-          }
-          # see postBuild
-          // lib.optionalAttrs (stdenv.hostPlatform.isDarwin && !(editor && withMono)) {
-            generate_bundle = "yes";
-          }
-        );
-
-        enableParallelBuilding = true;
-
-        strictDeps = true;
-
-        propagatedSandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
-          (allow file-read* (subpath "/System/Library/CoreServices/SystemAppearance.bundle"))
-        '';
 
         patches =
           lib.optionals (lib.versionOlder version "4.6") [
@@ -494,14 +387,14 @@ let
           ]
           ++ lib.optionals (lib.versionOlder version "4.4") [
             (fetchpatch {
+              hash = "sha256-hgAtAtCghF5InyGLdE9M+9PjPS1BWXWGKgIAyeuqkoU=";
               name = "wayland-header-fix.patch";
               url = "https://github.com/godotengine/godot/commit/6ce71f0fb0a091cffb6adb4af8ab3f716ad8930b.patch";
-              hash = "sha256-hgAtAtCghF5InyGLdE9M+9PjPS1BWXWGKgIAyeuqkoU=";
             })
             (fetchpatch {
+              hash = "sha256-PcHEMXd0v2c3j6Eitxt5uWi6cD+OmsBAn3TNMNRNPog=";
               name = "thorvg-header-fix.patch";
               url = "https://github.com/godotengine/godot/commit/1823460787a6c1bb8e4eaf21ac2a3f90d24d5ee0.patch";
-              hash = "sha256-PcHEMXd0v2c3j6Eitxt5uWi6cD+OmsBAn3TNMNRNPog=";
             })
             # Fix a crash in the mono test project build. It no longer seems to
             # happen in 4.4, but an existing fix couldn't be identified.
@@ -567,10 +460,32 @@ let
           ''
         );
 
-        depsBuildBuild = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-          buildPackages.stdenv.cc
+        strictDeps = true;
+
+        nativeBuildInputs = [
+          gettext
+          installShellFiles
+          perl
           pkg-config
-        ];
+          scons
+        ]
+        ++ lib.optionals withWayland [ wayland-scanner ]
+        ++ lib.optionals (editor && withMono) [
+          makeWrapper
+          dotnet-sdk
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isDarwin (
+          [
+            darwin.sigtool
+            # TODO: Remove when NixOS/nixpkgs#536365 reaches master.
+            llvmPackages.lld
+          ]
+          ++ lib.optionals (!editor) [
+            strip-nondeterminism
+            unzip
+            zip
+          ]
+        );
 
         buildInputs =
           lib.optionals (!withBuiltins) (
@@ -631,30 +546,46 @@ let
             moltenvk
           ];
 
-        nativeBuildInputs = [
-          gettext
-          installShellFiles
-          perl
-          pkg-config
-          scons
-        ]
-        ++ lib.optionals withWayland [ wayland-scanner ]
-        ++ lib.optionals (editor && withMono) [
-          makeWrapper
-          dotnet-sdk
-        ]
-        ++ lib.optionals stdenv.hostPlatform.isDarwin (
-          [
-            darwin.sigtool
-            # TODO: Remove when NixOS/nixpkgs#536365 reaches master.
-            llvmPackages.lld
-          ]
-          ++ lib.optionals (!editor) [
-            strip-nondeterminism
-            unzip
-            zip
-          ]
-        );
+        env = {
+          # Set the build name which is part of the version. In official downloads, this
+          # is set to 'official'. When not specified explicitly, it is set to
+          # 'custom_build'. Other platforms packaging Godot (Gentoo, Arch, Flatpack
+          # etc.) usually set this to their name as well.
+          #
+          # See also 'methods.py' in the Godot repo and 'build' in
+          # https://docs.godotengine.org/en/stable/classes/class_engine.html#class-engine-method-get-version-info
+          BUILD_NAME = "nixpkgs";
+        }
+        // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+          NIX_CFLAGS_COMPILE = toString [
+            "-I${lib.getDev harfbuzz-icu}/include/harfbuzz"
+            "-I${lib.getDev recastnavigation}/include/recastnavigation"
+          ];
+
+          # TODO: Remove when NixOS/nixpkgs#536365 reaches master.
+          NIX_CFLAGS_LINK = "--ld-path=${lib.getExe' llvmPackages.lld "ld64.lld"}";
+        };
+
+        preConfigure = lib.optionalString (editor && withMono) ''
+          # TODO: avoid pulling in dependencies of windows-only project
+          dotnet sln modules/mono/editor/GodotTools/GodotTools.sln \
+            remove modules/mono/editor/GodotTools/GodotTools.OpenVisualStudio/GodotTools.OpenVisualStudio.csproj
+
+          dotnet restore modules/mono/glue/GodotSharp/GodotSharp.sln
+          dotnet restore modules/mono/editor/GodotTools/GodotTools.sln
+          dotnet restore modules/mono/editor/Godot.NET.Sdk/Godot.NET.Sdk.sln
+        '';
+
+        # Godot 4.7 with system HarfBuzz needs explicit raster linkage, but should be resolved with 4.7.1.
+        # See https://github.com/godotengine/godot/pull/120568
+        preBuild =
+          lib.optionalString (!withBuiltins && lib.versionAtLeast version "4.7") ''
+            export NIX_LDFLAGS="$NIX_LDFLAGS -lharfbuzz-raster"
+          ''
+          # darwin needs $HOME/.cache/clang/ModuleCache.
+          + lib.optionalString stdenv.hostPlatform.isDarwin ''
+            export HOME=$(mktemp -d)
+          '';
 
         postBuild = lib.optionalString (editor && withMono) (
           ''
@@ -757,8 +688,78 @@ let
           runHook postInstall
         '';
 
+        __structuredAttrs = true;
+
+        depsBuildBuild = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+          buildPackages.stdenv.cc
+          pkg-config
+        ];
+
+        enableParallelBuilding = true;
+
+        propagatedSandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
+          (allow file-read* (subpath "/System/Library/CoreServices/SystemAppearance.bundle"))
+        '';
+
+        requiredSystemFeatures = [
+          # fixes: No space left on device
+          "big-parallel"
+        ];
+
+        # From: https://github.com/godotengine/godot/blob/4.2.2-stable/SConstruct
+        sconsFlags = mkSconsFlagsFromAttrSet (
+          {
+            inherit target;
+            # Options from 'platform/linuxbsd/detect.py'
+            alsa = withAlsa;
+            # using system clipper2 is currently not implemented
+            builtin_clipper2 = true;
+            # libraries that aren't available in nixpkgs
+            builtin_msdfgen = true;
+            builtin_rvo2_2d = true;
+            builtin_rvo2_3d = true;
+            builtin_xatlas = true;
+            # aliasing bugs exist with hardening+LTO
+            # https://github.com/godotengine/godot/pull/104501
+            ccflags = "-fno-strict-aliasing";
+            dbus = withDbus; # Use D-Bus to handle screensaver and portal desktop settings
+            debug_symbols = true;
+            fontconfig = withFontconfig; # Use fontconfig for system fonts support
+            # on darwin: ld: unknown option: --build-id
+            linkflags = lib.optionalString (!stdenv.hostPlatform.isDarwin) "-Wl,--build-id";
+            module_mono_enabled = withMono;
+            platform = withPlatform;
+            # Options from 'SConstruct'
+            precision = withPrecision; # Floating-point precision level
+            production = true; # Set defaults to build Godot for use in production
+            pulseaudio = withPulseaudio; # Use PulseAudio
+            speechd = withSpeechd; # Use Speech Dispatcher for Text-to-Speech support
+            touch = withTouch; # Enable touch events
+            udev = withUdev; # Use udev for gamepad connection callbacks
+            use_sowrap = false;
+            wayland = withWayland; # Compile with Wayland support
+            x11 = withX11; # Compile with X11 support
+          }
+          // lib.optionalAttrs (lib.versionOlder version "4.4") {
+            # broken with system packages
+            builtin_miniupnpc = true;
+            # libraries that aren't available in nixpkgs
+            builtin_squish = true;
+          }
+          // lib.optionalAttrs (lib.versionAtLeast version "4.5") {
+            redirect_build_objects = false; # Avoid copying build objects to output
+          }
+          # see postBuild
+          // lib.optionalAttrs (stdenv.hostPlatform.isDarwin && !(editor && withMono)) {
+            generate_bundle = "yes";
+          }
+        );
+
+        separateDebugInfo = true;
+
         passthru = {
           inherit updateScript;
+
           tests =
             mkTests finalAttrs.finalPackage dotnet-sdk
             // lib.optionalAttrs (editor && withMono) {
@@ -767,6 +768,7 @@ let
         }
         // lib.optionalAttrs editor {
           export-template = mkTarget "template_release";
+
           export-templates-bin = (
             callPackage ./export-templates-bin.nix {
               inherit version withMono;
@@ -776,16 +778,17 @@ let
           );
         };
 
-        requiredSystemFeatures = [
-          # fixes: No space left on device
-          "big-parallel"
-        ];
-
         meta = {
-          changelog = "https://github.com/godotengine/godot/releases/tag/${version}";
           description = "Free and Open Source 2D and 3D game engine";
           homepage = "https://godotengine.org";
+          changelog = "https://github.com/godotengine/godot/releases/tag/${version}";
           license = lib.licenses.mit;
+
+          maintainers = with lib.maintainers; [
+            corngood
+            shiryel
+          ];
+
           platforms = [
             "x86_64-linux"
             "aarch64-linux"
@@ -795,10 +798,7 @@ let
           ++ lib.optionals (lib.versionAtLeast version "4.5") [
             "aarch64-darwin"
           ];
-          maintainers = with lib.maintainers; [
-            corngood
-            shiryel
-          ];
+
           mainProgram = "godot${suffix}";
         };
       };
@@ -807,11 +807,13 @@ let
         if (editor && withMono) then
           dotnetCorePackages.addNuGetDeps {
             inherit nugetDeps;
+
             overrideFetchAttrs = old: rec {
-              runtimeIds = map (system: dotnetCorePackages.systemToDotnetRid system) old.meta.platforms;
               buildInputs =
                 old.buildInputs
                 ++ lib.concatLists (lib.attrValues (lib.getAttrs runtimeIds dotnet-sdk.targetPackages));
+
+              runtimeIds = map (system: dotnetCorePackages.systemToDotnetRid system) old.meta.platforms;
             };
           } attrs
         else
@@ -821,18 +823,11 @@ let
       wrapper =
         if (editor && withMono) then
           stdenv.mkDerivation (finalAttrs: {
-            __structuredAttrs = true;
-
-            pname = finalAttrs.unwrapped.pname + "-wrapper";
             inherit (finalAttrs.unwrapped) version outputs meta;
             inherit unwrapped dotnet-sdk;
-
-            dontUnpack = true;
-            dontConfigure = true;
-            dontBuild = true;
-
-            nativeBuildInputs = [ makeWrapper ];
+            pname = finalAttrs.unwrapped.pname + "-wrapper";
             strictDeps = true;
+            nativeBuildInputs = [ makeWrapper ];
 
             installPhase = ''
               runHook preInstall
@@ -862,12 +857,18 @@ let
               [[ -e "''$${output}" ]] || ln -s "${unwrapped.${output}}" "''$${output}"
             '') finalAttrs.unwrapped.outputs;
 
+            __structuredAttrs = true;
+            dontBuild = true;
+            dontConfigure = true;
+            dontUnpack = true;
+
             passthru = unwrapped.passthru // {
               tests = mkTests finalAttrs.finalPackage null // {
-                unwrapped = lib.recurseIntoAttrs unwrapped.tests;
                 sdk-override = lib.recurseIntoAttrs (
                   mkTests (finalAttrs.finalPackage.overrideAttrs { dotnet-sdk = dotnet-sdk_alt; }) null
                 );
+
+                unwrapped = lib.recurseIntoAttrs unwrapped.tests;
               };
             };
           })

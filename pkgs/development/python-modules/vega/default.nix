@@ -1,8 +1,8 @@
 {
   lib,
+  altair,
   buildPythonPackage,
   fetchPypi,
-  altair,
   ipytablewidgets,
   ipywidgets,
   jupyter,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "vega";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,19 +26,12 @@ buildPythonPackage rec {
     poetry-core
   ];
 
-  pythonRelaxDeps = [ "pandas" ];
-
   propagatedBuildInputs = [
     ipytablewidgets
     jupyter
     jupyter-core
     pandas
   ];
-
-  optional-dependencies = {
-    widget = [ ipywidgets ];
-    jupyterlab = [ jupyterlab ];
-  };
 
   nativeCheckInputs = [
     altair
@@ -51,16 +43,25 @@ buildPythonPackage rec {
     "vega/tests/test_entrypoint.py"
   ];
 
+  optional-dependencies = {
+    jupyterlab = [ jupyterlab ];
+    widget = [ ipywidgets ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "vega" ];
+  pythonRelaxDeps = [ "pandas" ];
 
   meta = {
     description = "IPython/Jupyter widget for Vega and Vega-Lite";
+
     longDescription = ''
       To use this you have to enter a nix-shell with vega. Then run:
 
       jupyter nbextension install --user --py vega
       jupyter nbextension enable --user vega
     '';
+
     homepage = "https://github.com/vega/ipyvega";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ teh ];

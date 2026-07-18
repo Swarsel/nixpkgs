@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  curl,
+  patchelf,
+  perl,
   swi-prolog,
   tcsh,
-  perl,
-  patchelf,
-  curl,
 }:
 
 stdenv.mkDerivation rec {
@@ -14,17 +14,19 @@ stdenv.mkDerivation rec {
   version = "9.1.0";
 
   src = fetchurl {
+    hash = "sha256-KylCpKEdjvXTzYU2MOi0FDrr4e6je2YB366+dxy3Xmo=";
+
     urls = [
       "https://tptp.org/TPTP/Distribution/TPTP-v${version}.tgz"
       "https://tptp.org/TPTP/Archive/TPTP-v${version}.tgz"
     ];
-    hash = "sha256-KylCpKEdjvXTzYU2MOi0FDrr4e6je2YB366+dxy3Xmo=";
   };
 
   nativeBuildInputs = [
     patchelf
     swi-prolog
   ];
+
   buildInputs = [
     tcsh
     swi-prolog
@@ -54,16 +56,18 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Thousands of problems for theorem provers and tools";
+    homepage = "https://tptp.org/TPTP/";
+    license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
+    platforms = lib.platforms.all;
     # 6.3 GiB of data. Installation is unpacking and editing a few files.
     # No sense in letting Hydra build it.
     # Also, it is unclear what is covered by "verbatim" - we will edit configs
     hydraPlatforms = [ ];
-    platforms = lib.platforms.all;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfreeRedistributable;
-    homepage = "https://tptp.org/TPTP/";
   };
 }

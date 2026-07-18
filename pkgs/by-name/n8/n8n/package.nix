@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
-  nixosTests,
+  stdenv,
   fetchFromGitHub,
-  nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  python3,
-  node-gyp,
   cctools,
-  xcbuild,
+  dart-sass,
+  fetchPnpmDeps,
   libkrb5,
   libmongocrypt,
   libpq,
-  dart-sass,
   makeWrapper,
+  nixosTests,
+  node-gyp,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  python3,
+  xcbuild,
 }:
 let
   python = python3.withPackages (
@@ -33,13 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "n8n";
     tag = "n8n@${finalAttrs.version}";
     hash = "sha256-xll2dZon+WyJUXaCoel0htwgOGUqzpZvef/tDLTomZQ=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-SjmKXjxIuRY1uFbFLTMlXd0WW+3cVfu4TU+NoZtEYSo=";
   };
 
   nativeBuildInputs = [
@@ -119,32 +112,43 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontPatchELF = true;
+  dontRewriteSymlinks = true;
+  # this package has ~80000 files, these take too long and seem to be unnecessary
+  dontStrip = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-SjmKXjxIuRY1uFbFLTMlXd0WW+3cVfu4TU+NoZtEYSo=";
+    pnpm = pnpm_10;
+  };
+
   passthru = {
     tests = nixosTests.n8n;
     updateScript = ./update.sh;
   };
 
-  # this package has ~80000 files, these take too long and seem to be unnecessary
-  dontStrip = true;
-  dontPatchELF = true;
-  dontRewriteSymlinks = true;
-
   meta = {
     description = "Free and source-available fair-code licensed workflow automation tool";
+
     longDescription = ''
       Free and source-available fair-code licensed workflow automation tool.
       Easily automate tasks across different services.
     '';
+
     homepage = "https://n8n.io";
     changelog = "https://github.com/n8n-io/n8n/releases/tag/n8n@${finalAttrs.version}";
+    license = lib.licenses.sustainableUse;
+
     maintainers = with lib.maintainers; [
       gepbird
       AdrienLemaire
       sweenu
       wrbbz
     ];
-    license = lib.licenses.sustainableUse;
-    mainProgram = "n8n";
+
     platforms = lib.platforms.unix;
+    mainProgram = "n8n";
   };
 })

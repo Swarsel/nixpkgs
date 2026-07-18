@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   aws-c-common,
+  cmake,
   nix,
 }:
 
@@ -20,7 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ aws-c-common ];
 
   cmakeFlags = [
@@ -35,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "HW accelerated CRC32c and CRC32";
     homepage = "https://github.com/awslabs/aws-checksums";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

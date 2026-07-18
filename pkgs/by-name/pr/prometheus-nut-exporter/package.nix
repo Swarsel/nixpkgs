@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -19,9 +19,9 @@ buildGoModule rec {
 
   meta = {
     description = "Prometheus exporter for Network UPS Tools";
-    mainProgram = "nut_exporter";
     homepage = "https://github.com/DRuggeri/nut_exporter";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jhh ];
+    mainProgram = "nut_exporter";
   };
 }

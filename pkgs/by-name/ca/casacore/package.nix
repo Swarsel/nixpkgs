@@ -2,39 +2,42 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  gfortran,
-  flex,
+  adios2,
   bison,
   blas,
-  lapack,
   cfitsio,
-  wcslib,
+  cmake,
   fftw,
   fftwFloat,
-  readline,
+  flex,
+  gfortran,
   gsl,
-  mpi,
-  adios2,
   hdf5,
+  lapack,
   llvmPackages,
-  mpiSupport ? false,
+  mpi,
+  readline,
+  wcslib,
   adios2Support ? false,
   hdf5Support ? false,
+  mpiSupport ? false,
 }:
 let
   casacorePackages = {
     adios2 = adios2.override {
       inherit mpi mpiSupport;
     };
+
     fftw = fftw.override {
       inherit mpi;
       enableMpi = mpiSupport;
     };
+
     fftwFloat = fftwFloat.override {
       inherit mpi;
       enableMpi = mpiSupport;
     };
+
     hdf5 = hdf5.override {
       inherit mpi mpiSupport;
       cppSupport = !mpiSupport;
@@ -52,6 +55,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NOxuHMCuHGk9XuWXMwQTN6kOFDI0QuHMgfNRDdlPw44=";
   };
 
+  patches = [
+    # Fix the generated .pc file: set Requires from a variable instead of
+    # leaving it empty, and remove hardcoded absolute cmake build paths from
+    # Cflags (which would embed /nix/store paths from the build environment).
+    ./casacore-pkgconfig.patch
+  ];
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -61,14 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
     bison
   ]
   ++ lib.optional mpiSupport mpi;
-
-  propagatedBuildInputs = [
-    wcslib
-    cfitsio
-  ]
-  ++ lib.optional hdf5Support casacorePackages.hdf5
-  ++ lib.optional mpiSupport mpi
-  ++ lib.optional adios2Support casacorePackages.adios2;
 
   buildInputs = [
     blas
@@ -82,14 +84,13 @@ stdenv.mkDerivation (finalAttrs: {
     llvmPackages.openmp
   ];
 
-  patches = [
-    # Fix the generated .pc file: set Requires from a variable instead of
-    # leaving it empty, and remove hardcoded absolute cmake build paths from
-    # Cflags (which would embed /nix/store paths from the build environment).
-    ./casacore-pkgconfig.patch
-  ];
-
-  enableParallelBuilding = true;
+  propagatedBuildInputs = [
+    wcslib
+    cfitsio
+  ]
+  ++ lib.optional hdf5Support casacorePackages.hdf5
+  ++ lib.optional mpiSupport mpi
+  ++ lib.optional adios2Support casacorePackages.adios2;
 
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_SHARED" (!stdenv.hostPlatform.isStatic))
@@ -107,12 +108,14 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_Fortran_FLAGS" "-fallow-argument-mismatch")
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
+    description = "Suite of C++ libraries for radio astronomy data processing";
     homepage = "https://casacore.github.io/casacore/";
     changelog = "https://github.com/casacore/casacore/blob/master/CHANGES.md";
-    description = "Suite of C++ libraries for radio astronomy data processing";
-    maintainers = with lib.maintainers; [ kiranshila ];
     license = lib.licenses.lgpl2Only;
+    maintainers = with lib.maintainers; [ kiranshila ];
     platforms = lib.platforms.all;
   };
 })

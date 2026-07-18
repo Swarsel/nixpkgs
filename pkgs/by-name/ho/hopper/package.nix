@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  libsForQt5,
   gnustep-libobjc,
   libbsd,
   libffi_3_3,
+  libsForQt5,
   libxml2,
   ncurses6,
 }:
@@ -14,20 +14,18 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "hopper";
   version = "5.19.4";
-  rev = "v4";
 
   src = fetchurl {
     url = "https://www.hopperapp.com/downloader/public/Hopper-${finalAttrs.rev}-${finalAttrs.version}-Linux-demo.pkg.tar.xz";
+    hash = "sha256-NYnMJK9F3YxspjriyiLM+vV1HpEunGvznOesQ/FpTl4=";
+
     curlOptsList = [
       "--user-agent"
       "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
       "--referer"
       "https://www.hopperapp.com"
     ];
-    hash = "sha256-NYnMJK9F3YxspjriyiLM+vV1HpEunGvznOesQ/FpTl4=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -68,9 +66,12 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s "${lib.getLib libxml2}/lib/libxml2.so" "$out/lib/libxml2.so.2"
   '';
 
+  rev = "v4";
+  sourceRoot = ".";
+
   meta = {
-    homepage = "https://www.hopperapp.com/index.html";
     description = "MacOS and Linux Disassembler";
+    homepage = "https://www.hopperapp.com/index.html";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ Enteee ];
     platforms = lib.platforms.linux;

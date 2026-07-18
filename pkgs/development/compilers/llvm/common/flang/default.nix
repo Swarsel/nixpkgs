@@ -1,27 +1,27 @@
 {
   lib,
+  stdenv,
+  buildLlvmPackages,
+  clang,
+  cmake,
+  libclang,
+  libffi,
+  libllvm,
+  libxml2,
   llvm_meta,
+  mlir,
   monorepoSrc,
+  ninja,
+  python3,
   release_version,
   runCommand,
-  cmake,
-  libxml2,
-  libllvm,
-  ninja,
-  libffi,
-  libclang,
-  stdenv,
-  clang,
-  mlir,
   version,
-  python3,
-  buildLlvmPackages,
   devExtraCmakeFlags ? [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "flang";
   inherit version;
+  pname = "flang";
 
   src =
     runCommand "${finalAttrs.pname}-src-${finalAttrs.version}"
@@ -40,18 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
         chmod -R +w $out/llvm
       '';
 
+  outputs = [ "out" ];
   patches = [ ];
-  patchFlags = [ "-p1" ];
 
-  sourceRoot = "${finalAttrs.src.name}/flang";
-
-  buildInputs = [
-    libffi
-    libxml2
-    libllvm
-    libclang
-    mlir
-  ];
   nativeBuildInputs = [
     cmake
     clang
@@ -60,11 +51,15 @@ stdenv.mkDerivation (finalAttrs: {
     libllvm.dev
     mlir.dev
   ];
-  preConfigure = ''
-    ls -l ${libllvm.dev}/lib/cmake/llvm/LLVMConfig.cmake
-    ls -l ${libclang.dev}/lib/cmake/clang/ClangConfig.cmake
-    ls -l ${mlir.dev}/lib/cmake/mlir/MLIRConfig.cmake
-  '';
+
+  buildInputs = [
+    libffi
+    libxml2
+    libllvm
+    libclang
+    mlir
+  ];
+
   cmakeFlags = [
     (lib.cmakeFeature "LLVM_DIR" "${libllvm.dev}/lib/cmake/llvm")
     (lib.cmakeFeature "LLVM_TOOLS_BINARY_DIR" "${buildLlvmPackages.tblgen}/bin/")
@@ -80,32 +75,41 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ devExtraCmakeFlags;
 
-  passthru = {
-    # Used by cc-wrapper to determine whether or not the default setup hook is enabled.
-    langC = false;
-    langCC = false;
-    langFortran = true;
-    isClang = true;
-    isFlang = true;
+  preConfigure = ''
+    ls -l ${libllvm.dev}/lib/cmake/llvm/LLVMConfig.cmake
+    ls -l ${libclang.dev}/lib/cmake/clang/ClangConfig.cmake
+    ls -l ${mlir.dev}/lib/cmake/mlir/MLIRConfig.cmake
+  '';
 
-    hardeningUnsupportedFlags = [
-      "zerocallusedregs"
-      "stackprotector"
-      "stackclashprotection"
-    ];
-  };
+  patchFlags = [ "-p1" ];
 
   postUnpack = ''
     chmod -R u+w -- $sourceRoot/..
   '';
 
-  outputs = [ "out" ];
   requiredSystemFeatures = [ "big-parallel" ];
+  sourceRoot = "${finalAttrs.src.name}/flang";
+
+  passthru = {
+    hardeningUnsupportedFlags = [
+      "zerocallusedregs"
+      "stackprotector"
+      "stackclashprotection"
+    ];
+
+    isClang = true;
+    isFlang = true;
+    # Used by cc-wrapper to determine whether or not the default setup hook is enabled.
+    langC = false;
+    langCC = false;
+    langFortran = true;
+  };
+
   meta = llvm_meta // {
-    homepage = "https://flang.llvm.org/";
     description = "LLVM-based Fortran frontend";
+    homepage = "https://flang.llvm.org/";
     license = lib.licenses.ncsa;
-    mainProgram = "flang";
     maintainers = with lib.maintainers; [ acture ];
+    mainProgram = "flang";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzrip,
 }:
 
@@ -14,14 +14,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-JmsRvUak9FBjDw8wNA2R3lEt52/UpElleziQqa5Pm4w=";
   };
 
-  unpackPhase = ''
-    runHook preUnpack
-
-    ${lib.getExe unzrip} -O SHIFT_JIS "$src"
-
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -31,14 +23,24 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    ${lib.getExe unzrip} -O SHIFT_JIS "$src"
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Free gothic style font by Fontna";
     homepage = "http://www.fontna.com/blog/379/";
+
     license = with lib.licenses; [
       ipa
       mplus
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [ h7x4 ];
+    platforms = lib.platforms.all;
   };
 }

@@ -1,34 +1,34 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  bison,
+  flex,
+  gettext,
+  gi-docgen,
+  glib,
+  gnome,
+  gobject-introspection,
   meson,
   ninja,
   pkg-config,
-  gi-docgen,
-  glib,
-  gobject-introspection,
-  flex,
-  bison,
   vala,
-  gettext,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "template-glib";
   version = "3.40.0";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/template-glib/${lib.versions.majorMinor finalAttrs.version}/template-glib-${finalAttrs.version}.tar.xz";
+    hash = "sha256-5TPsL2wkzG32asVayCT63RtKX0M6EcvzprJYFcDPz9U=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/template-glib/${lib.versions.majorMinor finalAttrs.version}/template-glib-${finalAttrs.version}.tar.xz";
-    hash = "sha256-5TPsL2wkzG32asVayCT63RtKX0M6EcvzprJYFcDPz9U=";
-  };
 
   nativeBuildInputs = [
     meson
@@ -69,7 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Library for template expansion which supports calling into GObject Introspection from templates";
     homepage = "https://gitlab.gnome.org/GNOME/template-glib";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

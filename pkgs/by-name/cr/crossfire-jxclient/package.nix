@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchgit,
-  makeWrapper,
+  ffmpeg,
   gradle,
   jre,
-  ffmpeg,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,27 +21,12 @@ stdenv.mkDerivation rec {
     fetchSubmodules = false;
   };
 
-  sounds = fetchgit {
-    url = "https://git.code.sf.net/p/crossfire/crossfire-sounds";
-    rev = "b53f436e1d1cca098c641f34c46f15c828ea9c8f";
-    hash = "sha256-zA+SaQAaNxNroHESCSonDiUsCuCzjZp+WZNzvsJHNXY=";
-  };
-
   nativeBuildInputs = [
     jre
     gradle
     makeWrapper
     ffmpeg
   ];
-
-  patchPhase = ''
-    runHook prePatch
-
-    rm -rf sounds
-    ln -s ${sounds} sounds
-
-    runHook postPatch
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -63,11 +48,26 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  patchPhase = ''
+    runHook prePatch
+
+    rm -rf sounds
+    ln -s ${sounds} sounds
+
+    runHook postPatch
+  '';
+
+  sounds = fetchgit {
+    hash = "sha256-zA+SaQAaNxNroHESCSonDiUsCuCzjZp+WZNzvsJHNXY=";
+    rev = "b53f436e1d1cca098c641f34c46f15c828ea9c8f";
+    url = "https://git.code.sf.net/p/crossfire/crossfire-sounds";
+  };
+
   meta = {
     description = "Java-based fullscreen client for the Crossfire free MMORPG";
     homepage = "http://crossfire.real-time.com/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -20,10 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-SuCLJE0uSUGCzF4OXL4I9go0rw5GMvCBHxnRpIKTqi0=";
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   checkFlags = [
     "--skip=app::tests::test_temp_file_rename_triggers_reload_directory_mode"
     "--skip=app::tests::test_temp_file_rename_triggers_reload_single_file_mode"
@@ -33,6 +29,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_file_modification_updates_via_websocket"
   ];
 
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -40,10 +38,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/jfernandez/mdserve";
     changelog = "https://github.com/jfernandez/mdserve/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       vinnymeller
       matthiasbeyer
     ];
+
     mainProgram = "mdserve";
   };
 })

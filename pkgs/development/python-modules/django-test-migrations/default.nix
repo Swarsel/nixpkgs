@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   poetry-core,
-
-  # dependencies
-  typing-extensions,
-
   # tests
   pytest-cov-stub,
   pytest-django,
   pytest-mock,
   pytest-randomly,
   pytestCheckHook,
+  # dependencies
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-test-migrations";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wemake-services";
@@ -28,18 +24,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-mYDGGfkLo+GMgItCje46KtXdPsedawRKXLbRnD+CC+8=";
   };
-
-  build-system = [
-    poetry-core
-  ];
-
-  dependencies = [
-    typing-extensions
-  ];
-
-  preCheck = ''
-    export DJANGO_DATABASE_NAME=test_db
-  '';
 
   nativeCheckInputs = [
     pytest-cov-stub
@@ -49,11 +33,25 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  preCheck = ''
+    export DJANGO_DATABASE_NAME=test_db
+  '';
+
+  build-system = [
+    poetry-core
+  ];
+
+  dependencies = [
+    typing-extensions
+  ];
+
   disabledTests = [
     # nested pytest calls complain about import file mismatch (out vs source)
     "test_call_pytest_setup_plan"
     "test_pytest_markers"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "django_test_migrations"

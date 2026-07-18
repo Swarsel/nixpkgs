@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -26,11 +26,13 @@ rustPlatform.buildRustPackage {
     description = "Workspaces client for Stardust";
     homepage = "https://stardustxr.org";
     license = lib.licenses.mit;
-    mainProgram = "magnetar";
+
     maintainers = with lib.maintainers; [
       pandapip1
       technobaboo
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "magnetar";
   };
 }

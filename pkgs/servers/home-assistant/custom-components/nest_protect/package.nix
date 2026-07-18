@@ -4,8 +4,6 @@
   buildHomeAssistantComponent,
 }:
 buildHomeAssistantComponent rec {
-  owner = "iMicknl";
-  domain = "nest_protect";
   version = "0.4.4";
 
   src = fetchFromGitHub {
@@ -17,12 +15,14 @@ buildHomeAssistantComponent rec {
 
   # AttributeError: 'async_generator' object has no attribute 'data'
   doCheck = false;
+  domain = "nest_protect";
+  owner = "iMicknl";
 
   meta = {
-    changelog = "https://github.com/iMicknl/ha-nest-protect/releases/tag/v${version}";
     description = "Nest Protect integration for Home Assistant";
     homepage = "https://github.com/iMicknl/ha-nest-protect";
-    maintainers = with lib.maintainers; [ jamiemagee ];
+    changelog = "https://github.com/iMicknl/ha-nest-protect/releases/tag/v${version}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ jamiemagee ];
   };
 }

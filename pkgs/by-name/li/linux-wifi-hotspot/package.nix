@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  which,
-  pkg-config,
-  glib,
-  gtk3,
-  iw,
-  makeWrapper,
-  qrencode,
-  hostapd,
-  getopt,
-  dnsmasq,
-  iproute2,
-  flock,
-  iptables,
-  gawk,
   coreutils,
+  dnsmasq,
+  fetchpatch,
+  flock,
+  gawk,
+  getopt,
+  glib,
   gnugrep,
   gnused,
+  gtk3,
+  hostapd,
+  iproute2,
+  iptables,
+  iw,
   kmod,
+  makeWrapper,
   networkmanager,
+  pkg-config,
   procps,
+  qrencode,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,25 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+WHYWQ4EyAt+Kq0LHEgC7Kk5HpIqThz6W3PIdW8Wojk=";
   };
 
-  nativeBuildInputs = [
-    which
-    pkg-config
-    makeWrapper
-    qrencode
-    hostapd
-  ];
-
-  buildInputs = [
-    glib
-    gtk3
-  ];
-
   outputs = [ "out" ];
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/lakinduakash/linux-wifi-hotspot/commit/a3fce4b3ee9371eeb7b300fa7e9f291d93986db3.patch";
       hash = "sha256-4xQ3iRUlkNpoxHXABhMIgsoDY9nENN/9FtHD3UMyAhc=";
+      url = "https://github.com/lakinduakash/linux-wifi-hotspot/commit/a3fce4b3ee9371eeb7b300fa7e9f291d93986db3.patch";
     })
   ];
 
@@ -68,6 +55,19 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace ./src/scripts/policies/polkit.policy \
       --replace "/usr" "$out"
   '';
+
+  nativeBuildInputs = [
+    which
+    pkg-config
+    makeWrapper
+    qrencode
+    hostapd
+  ];
+
+  buildInputs = [
+    glib
+    gtk3
+  ];
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
@@ -106,10 +106,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Feature-rich wifi hotspot creator for Linux which provides both GUI and command-line interface";
     homepage = "https://github.com/lakinduakash/linux-wifi-hotspot";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       johnrtitor
       onny
     ];
+
     platforms = lib.platforms.unix;
   };
 

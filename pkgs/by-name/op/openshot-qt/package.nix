@@ -4,22 +4,23 @@
   doxygen,
   gtk3,
   libopenshot,
-  wrapGAppsHook3,
   python3Packages,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "openshot-qt";
   version = "3.5.1-unstable-2026-04-22";
+
   src = fetchFromGitHub {
     owner = "OpenShot";
     repo = "openshot-qt";
     rev = "930ff919762570eaf35a879574da8f8da9f196be";
     hash = "sha256-o0BPEzkEAyoZkPkiR9G8i2nANgDFI4wjD5b9hGOqB0c=";
   };
-  format = "setuptools";
 
   outputs = [ "out" ]; # "lib" can't be split
+  strictDeps = true;
 
   nativeBuildInputs = [
     doxygen
@@ -39,12 +40,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyside6
   ];
 
-  strictDeps = true;
-
   doCheck = false;
-
-  dontWrapGApps = true;
-  dontWrapQtApps = true;
 
   # https://github.com/OpenShot/openshot-qt/blob/930ff919762570eaf35a879574da8f8da9f196be/src/launch.py#L86
   # imports qt_api.py from its own site-packages directory
@@ -53,14 +49,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --prefix PYTHONPATH : "$out/${python3Packages.python.sitePackages}/openshot_qt"
   '';
 
+  dontWrapGApps = true;
+  dontWrapQtApps = true;
+  format = "setuptools";
+
   passthru = {
     inherit libopenshot;
     inherit (libopenshot) libopenshot-audio;
   };
 
   meta = {
-    homepage = "http://openshot.org/";
     description = "Free, open-source video editor";
+
     longDescription = ''
       OpenShot Video Editor is a free, open-source video editor for Linux.
       OpenShot can take your videos, photos, and music files and help you create
@@ -68,9 +68,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
       and effects, and then export your film to DVD, YouTube, Vimeo, Xbox 360,
       and many other common formats.
     '';
+
+    homepage = "http://openshot.org/";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "openshot-qt";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "openshot-qt";
   };
 })

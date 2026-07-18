@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "vultr";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spry-group";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-ByPtIU6Yro28nH2cIzxqgZR0VwpggCsOAXVDBhssjAI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Tests disabled. They fail because they try to access the network
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "vultr" ];
 
   meta = {

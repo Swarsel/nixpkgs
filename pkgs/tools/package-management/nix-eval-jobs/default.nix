@@ -1,14 +1,14 @@
 {
   lib,
-  boost,
+  stdenv,
   fetchFromGitHub,
+  boost,
+  curl,
   meson,
   ninja,
-  curl,
+  nixComponents,
   nlohmann_json,
   pkg-config,
-  stdenv,
-  nixComponents,
 }:
 stdenv.mkDerivation rec {
   pname = "nix-eval-jobs";
@@ -21,6 +21,17 @@ stdenv.mkDerivation rec {
     hash = "sha256-YaVQAgBxWbUBFHXLBLzdUyVvuA/DDw80SEnn9iq0Veo=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+  ];
+
   buildInputs = [
     boost
     curl
@@ -31,17 +42,6 @@ stdenv.mkDerivation rec {
     nixComponents.nix-flake
     nixComponents.nix-main
     nixComponents.nix-cmd
-  ];
-
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-  ];
-
-  outputs = [
-    "out"
-    "dev"
   ];
 
   # Since this package is intimately tied to a specific Nix release, we
@@ -57,10 +57,12 @@ stdenv.mkDerivation rec {
     description = "Hydra's builtin hydra-eval-jobs as a standalone";
     homepage = "https://github.com/NixOS/nix-eval-jobs";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       adisbladis
       mic92
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "nix-eval-jobs";
   };

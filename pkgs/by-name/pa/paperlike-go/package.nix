@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,7 +16,6 @@ buildGoModule {
   };
 
   vendorHash = "sha256-OfTeJd3VS/WoUpyPY7XfQZWLrvS+vqPPgeL2Hd0HtgI=";
-
   subPackages = [ "cmd/paperlike-cli" ];
 
   meta = {

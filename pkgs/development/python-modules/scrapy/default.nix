@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   botocore,
   buildPythonPackage,
   cryptography,
   cssselect,
   defusedxml,
-  fetchFromGitHub,
   glibcLocales,
   hatchling,
   httpx,
@@ -42,7 +42,6 @@
 buildPythonPackage rec {
   pname = "scrapy";
   version = "2.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scrapy";
@@ -51,17 +50,40 @@ buildPythonPackage rec {
     hash = "sha256-4FAZJZc8qsMn93XPNYnnbqecA29DWwh5VNNlCsnib7A=";
   };
 
-  pythonRelaxDeps = [
-    "defusedxml"
-  ];
-
-  build-system = [
-    hatchling
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     setuptools
+  ];
+
+  env.LC_ALL = "en_US.UTF-8";
+
+  nativeCheckInputs = [
+    botocore
+    glibcLocales
+    httpx
+    jmespath
+    pexpect
+    pytest-asyncio
+    pytest-twisted
+    pytest-xdist
+    pyftpdlib
+    pytestCheckHook
+    sybil
+    testfixtures
+    uvloop
+  ];
+
+  postInstall = ''
+    installManPage extras/scrapy.1
+    installShellCompletion --cmd scrapy \
+      --zsh extras/scrapy_zsh_completion \
+      --bash extras/scrapy_bash_completion
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    hatchling
   ];
 
   dependencies = [
@@ -82,29 +104,6 @@ buildPythonPackage rec {
     twisted
     w3lib
     zope-interface
-  ];
-
-  nativeCheckInputs = [
-    botocore
-    glibcLocales
-    httpx
-    jmespath
-    pexpect
-    pytest-asyncio
-    pytest-twisted
-    pytest-xdist
-    pyftpdlib
-    pytestCheckHook
-    sybil
-    testfixtures
-    uvloop
-  ];
-
-  env.LC_ALL = "en_US.UTF-8";
-
-  pytestFlags = [
-    # DeprecationWarning: There is no current event loop
-    "-Wignore::DeprecationWarning"
   ];
 
   disabledTestPaths = [
@@ -169,28 +168,32 @@ buildPythonPackage rec {
     "test_non_pickable_object"
   ];
 
-  postInstall = ''
-    installManPage extras/scrapy.1
-    installShellCompletion --cmd scrapy \
-      --zsh extras/scrapy_zsh_completion \
-      --bash extras/scrapy_bash_completion
-  '';
+  pyproject = true;
+
+  pytestFlags = [
+    # DeprecationWarning: There is no current event loop
+    "-Wignore::DeprecationWarning"
+  ];
 
   pythonImportsCheck = [ "scrapy" ];
 
-  __darwinAllowLocalNetworking = true;
+  pythonRelaxDeps = [
+    "defusedxml"
+  ];
 
   meta = {
     description = "High-level web crawling and web scraping framework";
-    mainProgram = "scrapy";
+
     longDescription = ''
       Scrapy is a fast high-level web crawling and web scraping framework, used to crawl
       websites and extract structured data from their pages. It can be used for a wide
       range of purposes, from data mining to monitoring and automated testing.
     '';
+
     homepage = "https://scrapy.org/";
     changelog = "https://github.com/scrapy/scrapy/raw/${src.tag}/docs/news.rst";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ vinnymeller ];
+    mainProgram = "scrapy";
   };
 }

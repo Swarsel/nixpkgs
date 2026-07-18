@@ -15,12 +15,7 @@ name: emulator:
 
 stdenv.mkDerivation {
   inherit name;
-
   src = ./binfmt-p-wrapper.c;
-
-  dontUnpack = true;
-  dontInstall = true;
-
   buildInputs = [ stdenv.cc.libc.static or null ];
 
   buildPhase = ''
@@ -34,4 +29,7 @@ stdenv.mkDerivation {
 
     runHook postBuild
   '';
+
+  dontInstall = true;
+  dontUnpack = true;
 }

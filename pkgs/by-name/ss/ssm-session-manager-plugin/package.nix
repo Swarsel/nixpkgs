@@ -41,24 +41,21 @@ buildGoModule (finalAttrs: {
     rm -rf vendor
   '';
 
-  proxyVendor = true;
   vendorHash = "sha256-pQAet0dYsLeXwpbCHSbqiIWXQ0mM2X/cKHqkx0BuwLY=";
-
-  subPackages = [ "src/sessionmanagerplugin-main" ];
 
   preBuild = ''
     echo -n ${lib.escapeShellArg finalAttrs.version} > VERSION
     go run src/version/versiongenerator/version-gen.go
   '';
 
-  doCheck = true;
-  checkFlags = [ "-skip=TestSetSessionHandlers" ];
-
   # The AWS CLI is expecting the binary name to be 'session-manager-plugin' and
   # since the outfile is different the following workaround is renaming the binary.
   postBuild = ''
     mv $GOPATH/bin/sessionmanagerplugin-main $GOPATH/bin/${finalAttrs.meta.mainProgram}
   '';
+
+  doCheck = true;
+  checkFlags = [ "-skip=TestSetSessionHandlers" ];
 
   preCheck = ''
     if ! [[ $($GOPATH/bin/${finalAttrs.meta.mainProgram} --version) = ${lib.escapeShellArg finalAttrs.version} ]]; then
@@ -67,15 +64,20 @@ buildGoModule (finalAttrs: {
     fi
   '';
 
+  proxyVendor = true;
+  subPackages = [ "src/sessionmanagerplugin-main" ];
+
   meta = {
-    homepage = "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html";
     description = "Amazon SSM Session Manager Plugin";
-    mainProgram = "session-manager-plugin";
+    homepage = "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       amarshall
       mbaillie
       ryan4yin
     ];
+
+    mainProgram = "session-manager-plugin";
   };
 })

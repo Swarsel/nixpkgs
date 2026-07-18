@@ -2,15 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   coin-utils,
-  zlib,
   osi,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.17.10";
   pname = "clp";
+  version = "1.17.10";
+
   src = fetchFromGitHub {
     owner = "coin-or";
     repo = "Clp";
@@ -29,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    license = lib.licenses.epl20;
-    homepage = "https://github.com/coin-or/Clp";
     description = "Open-source linear programming solver written in C++";
-    mainProgram = "clp";
-    platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    homepage = "https://github.com/coin-or/Clp";
+    license = lib.licenses.epl20;
     maintainers = [ lib.maintainers.vbgl ];
+    platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    mainProgram = "clp";
   };
 })

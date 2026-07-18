@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
-  encutils,
-  more-itertools,
+  buildPythonPackage,
   cssselect,
+  encutils,
   jaraco-test,
   lxml,
   mock,
+  more-itertools,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "cssutils";
   version = "2.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -29,13 +28,6 @@ buildPythonPackage rec {
       --replace-fail '"coherent.licensed",' ""
   '';
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    encutils
-    more-itertools
-  ];
-
   nativeCheckInputs = [
     cssselect
     jaraco-test
@@ -44,11 +36,19 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    encutils
+    more-itertools
+  ];
+
   disabledTests = [
     # access network
     "website.logging"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cssutils" ];
 
   meta = {

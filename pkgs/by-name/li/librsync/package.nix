@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bzip2,
   cmake,
   perl,
-  zlib,
-  bzip2,
   popt,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,14 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-fiOby8tOhv0KJ+ZwAWfh/ynqHlYC9kNqKfxNl3IhzR8=";
   };
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    perl
-    zlib
-    bzip2
-    popt
-  ];
-
   outputs = [
     "out"
     "dev"
@@ -37,12 +29,21 @@ stdenv.mkDerivation (finalAttrs: {
   # instead of lib
   ++ (if stdenv.hostPlatform.isDarwin then [ "bin" ] else [ "lib" ]);
 
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    perl
+    zlib
+    bzip2
+    popt
+  ];
+
   meta = {
     description = "Implementation of the rsync remote-delta algorithm";
     homepage = "https://librsync.sourceforge.net/";
     changelog = "https://github.com/librsync/librsync/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "rdiff";
     platforms = lib.platforms.unix;
+    mainProgram = "rdiff";
   };
 })

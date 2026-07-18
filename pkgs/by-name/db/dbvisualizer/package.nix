@@ -1,11 +1,11 @@
 {
   lib,
-  copyDesktopItems,
+  stdenv,
   fetchurl,
+  copyDesktopItems,
   makeDesktopItem,
   makeWrapper,
   openjdk25,
-  stdenv,
 }:
 
 # nixpkgs-update: no auto update
@@ -37,22 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = pname;
-      desktopName = "DB Visualizer";
-      tryExec = "dbvis";
-      exec = "dbvis";
-      icon = "dbvisualizer";
-      categories = [ "Development" ];
-      terminal = false;
-      keywords = [
-        "Database"
-        "SQL"
-      ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -69,12 +53,30 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      desktopName = "DB Visualizer";
+      exec = "dbvis";
+      icon = "dbvisualizer";
+
+      keywords = [
+        "Database"
+        "SQL"
+      ];
+
+      name = pname;
+      terminal = false;
+      tryExec = "dbvis";
+    })
+  ];
+
   meta = {
     description = "Universal database tool";
     homepage = "https://www.dbvis.com/";
-    maintainers = with lib.maintainers; [ boldikoller ];
     license = lib.licenses.unfree;
-    mainProgram = "dbvis";
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ boldikoller ];
+    mainProgram = "dbvis";
   };
 })

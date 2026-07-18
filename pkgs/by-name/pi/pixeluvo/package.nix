@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
-  makeWrapper,
+  dpkg,
   gtk3-x11,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation rec {
@@ -28,11 +28,6 @@ stdenv.mkDerivation rec {
     stdenv.cc.cc
   ];
 
-  libPath = lib.makeLibraryPath buildInputs;
-
-  dontBuild = true;
-  dontConfigure = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -49,13 +44,17 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  libPath = lib.makeLibraryPath buildInputs;
+
   meta = {
     description = "Beautifully Designed Image and Photo Editor for Windows and Linux";
     homepage = "http://www.pixeluvo.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "pixeluvo";
   };
 }

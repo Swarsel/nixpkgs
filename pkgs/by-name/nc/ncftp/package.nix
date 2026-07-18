@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
   coreutils,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ ncurses ];
 
-  enableParallelBuilding = true;
+  configureFlags = [
+    "--enable-ssp"
+    "--mandir=$(out)/share/man/"
+  ];
 
   env = {
     NIX_CFLAGS_COMPILE = toString [
@@ -48,17 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r doc $out/share/doc/ncftp
   '';
 
-  configureFlags = [
-    "--enable-ssp"
-    "--mandir=$(out)/share/man/"
-  ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Command line FTP (File Transfer Protocol) client";
     homepage = "https://www.ncftp.com/ncftp/";
+    license = lib.licenses.clArtistic;
     maintainers = with lib.maintainers; [ bjornfor ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.clArtistic;
     mainProgram = "ncftp";
   };
 })

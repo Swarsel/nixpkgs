@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   elementary-gtk-theme,
   elementary-icon-theme,
   granite7,
   gtk4,
   libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -55,11 +55,11 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://github.com/elementary/calculator";
     description = "Calculator app designed for elementary OS";
+    homepage = "https://github.com/elementary/calculator";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.calculator";
+    teams = [ lib.teams.pantheon ];
   };
 }

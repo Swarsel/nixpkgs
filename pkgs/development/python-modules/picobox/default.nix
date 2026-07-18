@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
-  hatchling,
   hatch-vcs,
+  hatchling,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "picobox";
   version = "4.0.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ikalnytskyi";
@@ -31,6 +29,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "picobox" ];
 
   meta = {

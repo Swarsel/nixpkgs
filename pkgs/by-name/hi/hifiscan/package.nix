@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 let
   pname = "hifiscan";
@@ -9,8 +9,13 @@ let
   hash = "sha256-8eystqjNdDP2X9beogRcsa+Wqu50uMHZv59jdc5GjUc=";
 in
 python3Packages.buildPythonApplication {
-  format = "setuptools";
   inherit pname version;
+
+  src = fetchPypi {
+    inherit pname version hash;
+  };
+
+  format = "setuptools";
 
   pythonPath = with python3Packages; [
     eventkit
@@ -21,13 +26,9 @@ python3Packages.buildPythonApplication {
     pyqtgraph
   ];
 
-  src = fetchPypi {
-    inherit pname version hash;
-  };
-
   meta = {
-    homepage = "https://github.com/erdewit/HiFiScan";
     description = "Optimize the audio quality of your loudspeakers";
+    homepage = "https://github.com/erdewit/HiFiScan";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ cab404 ];
     mainProgram = "hifiscan";

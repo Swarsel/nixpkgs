@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
-  rocksdb,
-  testers,
+  pkg-config,
   protobuf,
+  rocksdb,
+  rustPlatform,
+  testers,
   backend ? "rocksdb",
 }:
 let
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = if hasRocksDB then "surrealdb" else "surrealdb-surrealkv";
   version = "2.6.1";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "surrealdb";
     repo = "surrealdb";
@@ -29,15 +27,42 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Dd6tabpSTh7IN9PLE4Zt/s1G7mNUwYfy+nEZpPTy8a8=";
   };
 
-  cargoHash = "sha256-lebSQPGnxW+3a7vWw3R7QYtHx04/DsRK/n8c/UT3FZo=";
-
   # Upstream hard-codes `aarch64-linux-gnu-gcc` in `.cargo/config.toml`.
   # Remove it so Cargo uses nixpkgs' wrapped C toolchain instead.
   postPatch = ''
     rm .cargo/config.toml
   '';
 
-  buildNoDefaultFeatures = true;
+  nativeBuildInputs = [
+    pkg-config
+    rustPlatform.bindgenHook
+  ];
+
+  buildInputs = [
+    openssl
+  ];
+
+  cargoHash = "sha256-lebSQPGnxW+3a7vWw3R7QYtHx04/DsRK/n8c/UT3FZo=";
+
+  env = {
+    PROTOC = "${protobuf}/bin/protoc";
+    PROTOC_INCLUDE = "${protobuf}/include";
+  }
+  // lib.optionalAttrs hasRocksDB {
+    ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
+    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
+  };
+
+  doCheck = false;
+
+  checkFlags = [
+    # requires docker
+    "--skip=database_upgrade"
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
   buildFeatures = [
     "allocator"
     "allocation-tracking"
@@ -52,36 +77,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optional hasRocksDB "storage-rocksdb";
 
-  env = {
-    PROTOC = "${protobuf}/bin/protoc";
-    PROTOC_INCLUDE = "${protobuf}/include";
-  }
-  // lib.optionalAttrs hasRocksDB {
-    ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
-    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
-  };
-
-  nativeBuildInputs = [
-    pkg-config
-    rustPlatform.bindgenHook
-  ];
-
-  buildInputs = [
-    openssl
-  ];
-
-  doCheck = false;
-
-  checkFlags = [
-    # requires docker
-    "--skip=database_upgrade"
-  ];
-
-  __darwinAllowLocalNetworking = true;
+  buildNoDefaultFeatures = true;
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "surreal version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
@@ -90,13 +90,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
         "Scalable, distributed, collaborative, document-graph database, for the realtime web"
       else
         "SurrealDB with the SurrealKV storage backend";
+
     homepage = "https://surrealdb.com/";
-    mainProgram = "surreal";
     license = lib.licenses.bsl11;
+
     maintainers = with lib.maintainers; [
       sikmir
       happysalada
       siriobalmelli
     ];
+
+    mainProgram = "surreal";
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  libcosmicAppHook,
-  pkg-config,
-  just,
-  glib,
   flatpak,
-  openssl,
+  glib,
+  just,
+  libcosmicAppHook,
   nix-update-script,
   nixosTests,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,13 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-DqkYwbEph6GJM9Gok/XaiIFyWnv0+W+geviyzrXmQ8I=";
   };
 
-  cargoHash = "sha256-IuMCYUZWtzvGyLMNb+Kwoj6M9fKaEYFMfcfYYVggVYw=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  env.VERGEN_GIT_SHA = finalAttrs.src.tag;
-
   nativeBuildInputs = [
     just
     pkg-config
@@ -44,6 +37,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-IuMCYUZWtzvGyLMNb+Kwoj6M9fKaEYFMfcfYYVggVYw=";
+  env.VERGEN_GIT_SHA = finalAttrs.src.tag;
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -55,6 +51,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "cargo-target-dir"
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -75,10 +73,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-store";
     description = "App Store for the COSMIC Desktop Environment";
+    homepage = "https://github.com/pop-os/cosmic-store";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.cosmic ];
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  symlinkJoin,
-  makeWrapper,
   anki,
   anki-utils,
+  makeWrapper,
+  symlinkJoin,
   writeTextDir,
   ankiAddons ? [ ],
 }:
@@ -53,6 +53,7 @@ let
     (anki-utils.buildAnkiAddon {
       pname = "nixos";
       version = "1.0";
+
       src = writeTextDir "__init__.py" ''
         import aqt
         from aqt.qt import QMessageBox
@@ -83,6 +84,7 @@ let
         aqt.gui_hooks.addons_dialog_will_show.append(addons_dialog_will_show)
         aqt.mw.addonManager.writeConfig = addon_tried_to_write_config
       '';
+
       meta.maintainers = with lib.maintainers; [ junestepp ];
     })
   ];
@@ -90,14 +92,14 @@ in
 symlinkJoin {
   inherit (anki) version;
   pname = "${anki.pname}-with-addons";
-
-  paths = [ anki ];
-
   nativeBuildInputs = [ makeWrapper ];
+
   postBuild = ''
     wrapProgram $out/bin/anki \
       --set ANKI_ADDONS "${anki-utils.buildAnkiAddonsDir (ankiAddons ++ defaultAddons)}"
   '';
+
+  paths = [ anki ];
 
   meta = removeAttrs anki.meta [
     "name"

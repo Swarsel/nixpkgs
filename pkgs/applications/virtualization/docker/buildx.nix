@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -15,16 +15,8 @@ buildGoModule rec {
     hash = "sha256-Q4f7tejn0LO4eiEq+ske53WJ1oe5JxtCVZA2Im+7dv8=";
   };
 
-  doCheck = false;
-
   vendorHash = null;
-
-  ldflags = [
-    "-w"
-    "-s"
-    "-X github.com/docker/buildx/version.Package=github.com/docker/buildx"
-    "-X github.com/docker/buildx/version.Version=v${version}"
-  ];
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -35,14 +27,23 @@ buildGoModule rec {
     runHook postInstall
   '';
 
+  ldflags = [
+    "-w"
+    "-s"
+    "-X github.com/docker/buildx/version.Package=github.com/docker/buildx"
+    "-X github.com/docker/buildx/version.Version=v${version}"
+  ];
+
   meta = {
     description = "Docker CLI plugin for extended build capabilities with BuildKit";
-    mainProgram = "docker-buildx";
     homepage = "https://github.com/docker/buildx";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ivan-babrou
       developer-guy
     ];
+
+    mainProgram = "docker-buildx";
   };
 }

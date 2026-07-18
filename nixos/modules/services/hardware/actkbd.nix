@@ -11,10 +11,10 @@ let
   configFile = pkgs.writeText "actkbd.conf" ''
     ${lib.concatMapStringsSep "\n" (
       {
-        keys,
-        events,
         attributes,
         command,
+        events,
+        keys,
         ...
       }:
       "${
@@ -29,12 +29,22 @@ let
     {
       options = {
 
-        keys = lib.mkOption {
-          type = lib.types.listOf lib.types.int;
-          description = "List of keycodes to match.";
+        attributes = lib.mkOption {
+          default = [ "exec" ];
+          description = "List of attributes.";
+          type = lib.types.listOf lib.types.str;
+        };
+
+        command = lib.mkOption {
+          default = "";
+          description = "What to run.";
+          type = lib.types.str;
         };
 
         events = lib.mkOption {
+          default = [ "key" ];
+          description = "List of events to match.";
+
           type = lib.types.listOf (
             lib.types.enum [
               "key"
@@ -42,20 +52,11 @@ let
               "rel"
             ]
           );
-          default = [ "key" ];
-          description = "List of events to match.";
         };
 
-        attributes = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          default = [ "exec" ];
-          description = "List of attributes.";
-        };
-
-        command = lib.mkOption {
-          type = lib.types.str;
-          default = "";
-          description = "What to run.";
+        keys = lib.mkOption {
+          description = "List of keycodes to match.";
+          type = lib.types.listOf lib.types.int;
         };
 
       };
@@ -72,8 +73,8 @@ in
     services.actkbd = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable the {command}`actkbd` key mapping daemon.
 
@@ -86,15 +87,13 @@ in
           This allows binding keys globally without the need for e.g.
           X11.
         '';
+
+        type = lib.types.bool;
       };
 
       bindings = lib.mkOption {
-        type = lib.types.listOf (lib.types.submodule bindingCfg);
         default = [ ];
-        example = lib.literalExpression ''
-          [ { keys = [ 113 ]; events = [ "key" ]; command = "''${pkgs.alsa-utils}/bin/amixer -q set Master toggle"; }
-          ]
-        '';
+
         description = ''
           Key bindings for {command}`actkbd`.
 
@@ -102,14 +101,23 @@ in
 
           The example shows a piece of what {option}`sound.mediaKeys.enable` does when enabled.
         '';
+
+        example = lib.literalExpression ''
+          [ { keys = [ 113 ]; events = [ "key" ]; command = "''${pkgs.alsa-utils}/bin/amixer -q set Master toggle"; }
+          ]
+        '';
+
+        type = lib.types.listOf (lib.types.submodule bindingCfg);
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Literal contents to append to the end of actkbd configuration file.
         '';
+
+        type = lib.types.lines;
       };
 
     };
@@ -120,10 +128,14 @@ in
 
   config = lib.mkIf cfg.enable {
 
+    # For testing
+    environment.systemPackages = [ pkgs.actkbd ];
+
     services.udev.packages = lib.singleton (
       pkgs.writeTextFile {
-        name = "actkbd-udev-rules";
         destination = "/etc/udev/rules.d/61-actkbd.rules";
+        name = "actkbd-udev-rules";
+
         text = ''
           ACTION=="add", SUBSYSTEM=="input", KERNEL=="event[0-9]*", ENV{ID_INPUT_KEY}=="1", TAG+="systemd", ENV{SYSTEMD_WANTS}+="actkbd@$env{DEVNAME}.service"
         '';
@@ -133,18 +145,17 @@ in
     systemd.services."actkbd@" = {
       enable = true;
       restartIfChanged = true;
-      unitConfig = {
-        Description = "actkbd on %I";
-        ConditionPathExists = "%I";
-      };
+
       serviceConfig = {
-        Type = "forking";
         ExecStart = "${pkgs.actkbd}/bin/actkbd -D -c ${configFile} -d %I";
+        Type = "forking";
+      };
+
+      unitConfig = {
+        ConditionPathExists = "%I";
+        Description = "actkbd on %I";
       };
     };
-
-    # For testing
-    environment.systemPackages = [ pkgs.actkbd ];
 
   };
 

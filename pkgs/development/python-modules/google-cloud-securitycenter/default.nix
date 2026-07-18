@@ -14,19 +14,19 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-securitycenter";
   version = "1.45.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_securitycenter";
     inherit (finalAttrs) version;
     hash = "sha256-LG1O/I8MKL/39zrY0ODXFJz3XJ+MXQfHq8m3VVSWqyM=";
+    pname = "google_cloud_securitycenter";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     grpc-google-iam-v1
@@ -36,16 +36,17 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.securitycenter"
     "google.cloud.securitycenter_v1"
     "google.cloud.securitycenter_v1beta1"
     "google.cloud.securitycenter_v1p1beta1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

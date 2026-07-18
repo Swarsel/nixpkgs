@@ -12,7 +12,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.unix-ag.uni-kl.de/~conrad/krypto/pkcrack/pkcrack-${finalAttrs.version}.tar.gz";
     hash = "sha256-j0n6OHlio3oUyavVSQFnIaY0JREFv0uDfMcvC61BPTg=";
   };
-  sourceRoot = "pkcrack-${finalAttrs.version}/src";
 
   postPatch = ''
     # malloc.h is not needed because stdlib.h is already included.
@@ -22,7 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -39,14 +37,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+  sourceRoot = "pkcrack-${finalAttrs.version}/src";
+
   meta = {
     description = "Breaking PkZip-encryption";
     homepage = "https://www.unix-ag.uni-kl.de/~conrad/krypto/pkcrack.html";
+
     license = {
+      free = false;
       fullName = "PkCrack Non Commercial License";
       url = "https://www.unix-ag.uni-kl.de/~conrad/krypto/pkcrack/pkcrack-readme.html";
-      free = false;
     };
+
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.all;
     mainProgram = "pkcrack";

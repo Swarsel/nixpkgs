@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hyperopt,
   mock,
   numpy,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "gradient-utils";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Paperspace";
@@ -22,6 +21,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-swnl0phdOsBSP8AX/OySI/aYI9z60Ss3SsJox/mb9KY=";
   };
+
+  postPatch = ''
+    # https://github.com/Paperspace/gradient-utils/issues/68
+    # https://github.com/Paperspace/gradient-utils/issues/72
+    substituteInPlace pyproject.toml \
+      --replace 'wheel = "^0.35.1"' 'wheel = "*"' \
+      --replace 'prometheus-client = ">=0.8,<0.10"' 'prometheus-client = "*"' \
+      --replace 'pymongo = "^3.11.0"' 'pymongo = ">=3.11.0"'
+  '';
 
   nativeBuildInputs = [ poetry-core ];
 
@@ -37,15 +45,6 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  postPatch = ''
-    # https://github.com/Paperspace/gradient-utils/issues/68
-    # https://github.com/Paperspace/gradient-utils/issues/72
-    substituteInPlace pyproject.toml \
-      --replace 'wheel = "^0.35.1"' 'wheel = "*"' \
-      --replace 'prometheus-client = ">=0.8,<0.10"' 'prometheus-client = "*"' \
-      --replace 'pymongo = "^3.11.0"' 'pymongo = ">=3.11.0"'
-  '';
-
   preCheck = ''
     export HOSTNAME=myhost-experimentId
   '';
@@ -55,6 +54,7 @@ buildPythonPackage rec {
     "tests/integration/test_metrics.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gradient_utils" ];
 
   meta = {

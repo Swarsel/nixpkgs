@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,8 +15,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-H8HkhQcRt6C+lxoMVLzRfhv60Mq8TAf83ctOBRbx4p0=";
   };
 
-  proxyVendor = true;
   vendorHash = "sha256-H6ZMop3tXwpzvjoLWAaovP8UHSYLLFxvSz2jhz8tj/g=";
+  env.CGO_ENABLED = 0;
+  ldflags = [ "-s" ];
+  proxyVendor = true;
 
   subPackages = [
     "cmd/oss-rebuild"
@@ -26,12 +28,9 @@ buildGoModule (finalAttrs: {
     # There are other tools in available, but without documentation.
   ];
 
-  ldflags = [ "-s" ];
-
-  env.CGO_ENABLED = 0;
-
   meta = {
     description = "Securing open-source package ecosystems by originating, validating, and augmenting build attestations";
+
     longDescription = ''
       OSS Rebuild aims to apply reproducible build concepts at low-cost and high-scale for open-source package ecosystems.
 
@@ -54,6 +53,7 @@ buildGoModule (finalAttrs: {
       package manager clients to reflect the state of a registry at a given point in time (especially useful for reproducing
       prior builds).
     '';
+
     homepage = "https://github.com/google/oss-rebuild";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ katexochen ];

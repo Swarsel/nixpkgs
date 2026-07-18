@@ -4,23 +4,23 @@
   fetchFromGitLab,
   autoreconfHook,
   bison,
-  pkg-config,
-  util-macros,
   libx11,
   libxkbfile,
   nix-update-script,
+  pkg-config,
+  util-macros,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xkbevd";
   version = "1.1.6";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "app";
     repo = "xkbevd";
     tag = "xkbevd-${finalAttrs.version}";
     hash = "sha256-n/detXvtRvysc5pjFc0Q27yLC2QsNUBo9AIXYkUG4PQ=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
@@ -42,6 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "XKB event daemon";
+
     longDescription = ''
       The xkbevd event daemon listens for specified XKB events and executes requested commands if
       they occur. The configuration file consists of a list of event specification/action pairs
@@ -49,10 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
       This command is very raw and is therefore only partially implemented; it is a rough prototype
       for developers, not a general purpose tool for end users.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xkbevd";
     license = lib.licenses.hpnd;
-    mainProgram = "xkbevd";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xkbevd";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   callPackage,
   cctools,
-  fetchFromGitHub,
   fixDarwinDylibNames,
   gitMinimal,
   ncurses,
@@ -11,7 +11,6 @@
   runCommand,
   xcbuild,
   zig_0_15,
-
   optimize ? "ReleaseFast",
   simd ? true,
 }:
@@ -26,24 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-dZFc+8az7BUIs8+v45XqNnY5G6oXEwVfVVHZQuATSGQ=";
   };
 
-  # Zig's build runner computes relative paths from `cwd` to the build directory.
-  # The logic is purely lexical, so if the `cwd` is a symlink that resolves to a
-  # different depth during `chdir`, the computed path becomes incorrect.
-  # See: https://codeberg.org/ziglang/zig/issues/32121
-  # Workaround: override `linkFarm` with a copy-farm so deps are real directories.
-  deps = callPackage ./deps.nix {
-    name = "${finalAttrs.pname}-cache-${finalAttrs.version}";
-    linkFarm =
-      name: entries:
-      runCommand name { } ''
-        mkdir -p $out
-        ${lib.concatMapStringsSep "\n" (e: ''
-          cp -rL ${e.path} $out/${e.name}
-        '') entries}
-      '';
-  };
+  outputs = [
+    "out"
+    "dev"
+  ];
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -59,6 +45,37 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ ];
+  doCheck = false;
+
+  postInstall = ''
+    mkdir -p "$dev/lib"
+    mv "$out/lib/libghostty-vt.a" "$dev/lib/"
+  '';
+
+  postFixup = ''
+    substituteInPlace "$dev/share/pkgconfig/libghostty-vt-static.pc" \
+      --replace-fail "$out" "$dev"
+  '';
+
+  __structuredAttrs = true;
+
+  # Zig's build runner computes relative paths from `cwd` to the build directory.
+  # The logic is purely lexical, so if the `cwd` is a symlink that resolves to a
+  # different depth during `chdir`, the computed path becomes incorrect.
+  # See: https://codeberg.org/ziglang/zig/issues/32121
+  # Workaround: override `linkFarm` with a copy-farm so deps are real directories.
+  deps = callPackage ./deps.nix {
+    linkFarm =
+      name: entries:
+      runCommand name { } ''
+        mkdir -p $out
+        ${lib.concatMapStringsSep "\n" (e: ''
+          cp -rL ${e.path} $out/${e.name}
+        '') entries}
+      '';
+
+    name = "${finalAttrs.pname}-cache-${finalAttrs.version}";
+  };
 
   dontSetZigDefaultFlags = true;
 
@@ -76,32 +93,16 @@ stdenv.mkDerivation (finalAttrs: {
     "-Demit-xcframework=false"
   ];
 
-  doCheck = false;
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  postInstall = ''
-    mkdir -p "$dev/lib"
-    mv "$out/lib/libghostty-vt.a" "$dev/lib/"
-  '';
-
-  postFixup = ''
-    substituteInPlace "$dev/share/pkgconfig/libghostty-vt-static.pc" \
-      --replace-fail "$out" "$dev"
-  '';
-
   meta = {
     description = "Ghostty's VT (terminal sequence) parsing library";
     homepage = "https://ghostty.org/";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ domenkozar ];
+    platforms = zig_0_15.meta.platforms;
+
     pkgConfigModules = [
       "libghostty-vt"
       "libghostty-vt-static"
     ];
-    maintainers = with lib.maintainers; [ domenkozar ];
-    platforms = zig_0_15.meta.platforms;
   };
 })

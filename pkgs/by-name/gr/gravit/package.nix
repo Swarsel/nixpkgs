@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   SDL,
-  SDL_ttf,
   SDL_image,
-  libsm,
-  libice,
-  libGLU,
-  libGL,
-  libpng,
-  lua5,
+  SDL_ttf,
   autoconf,
   automake,
+  fetchpatch,
+  libGL,
+  libGLU,
+  libice,
+  libpng,
+  libsm,
+  lua5,
   mesa,
 }:
 
@@ -32,10 +32,15 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull fix pending upstream inclusion for -fno-common toolchains:
     #   https://github.com/gak/gravit/pull/100
     (fetchpatch {
+      hash = "sha256-k1aMIg7idMt53o6dFgIKJflOMp0Jp5NwgWEijcIwXrQ=";
       name = "fno-common.patch";
       url = "https://github.com/gak/gravit/commit/0f848834889212f16201fd404d2d5b9bb5b47d23.patch";
-      hash = "sha256-k1aMIg7idMt53o6dFgIKJflOMp0Jp5NwgWEijcIwXrQ=";
     })
+  ];
+
+  nativeBuildInputs = [
+    autoconf
+    automake
   ];
 
   buildInputs = [
@@ -50,9 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
     libice
   ];
 
-  nativeBuildInputs = [
-    autoconf
-    automake
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-DSDL_INCLUDE_GLU_H"
   ];
 
   preConfigure = ''
@@ -64,16 +68,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-DSDL_INCLUDE_GLU_H"
-  ];
-
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
-    homepage = "https://github.com/gak/gravit";
+    inherit (mesa.meta) platforms;
     description = "Beautiful OpenGL-based gravity simulator";
-    mainProgram = "gravit";
-    license = lib.licenses.gpl2Plus;
 
     longDescription = ''
       Gravit is a gravity simulator which runs under Linux, Windows and
@@ -85,7 +82,10 @@ stdenv.mkDerivation (finalAttrs: {
       view in 3D and zoom in and out.
     '';
 
-    inherit (mesa.meta) platforms;
+    homepage = "https://github.com/gak/gravit";
+    license = lib.licenses.gpl2Plus;
+    mainProgram = "gravit";
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     hydraPlatforms = lib.platforms.linux; # darwin times out
   };
 })

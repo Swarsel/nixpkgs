@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  asciidoc,
   fetchFromGitHub,
+  asciidoc,
   gitMinimal,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
   which,
 }:
 
@@ -47,12 +47,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/tummychow/git-absorb";
     description = "git commit --fixup, but automatic";
+    homepage = "https://github.com/tummychow/git-absorb";
     license = [ lib.licenses.bsd3 ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
     mainProgram = "git-absorb";
   };
 })

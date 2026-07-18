@@ -1,10 +1,10 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  qcheck,
-  ppxlib,
+  buildDunePackage,
   ppx_deriving,
+  ppxlib,
+  qcheck,
 }:
 
 let
@@ -12,25 +12,25 @@ let
     if lib.versionAtLeast ppxlib.version "0.36" then
       {
         version = "0.9";
-        tag = "v0.91";
         hash = "sha256-ToF+bRbiq1P5YaGOKiW//onJDhxaxmnaz9/JbJ82OWM=";
+        tag = "v0.91";
       }
     else
       {
         version = "0.6";
-        tag = "v0.24";
         hash = "sha256-iuFlmSeUhumeWhqHlaNqDjReRf8c4e76hhT27DK3+/g=";
+        tag = "v0.24";
       };
 in
 
 buildDunePackage {
-  pname = "ppx_deriving_qcheck";
   inherit (param) version;
+  pname = "ppx_deriving_qcheck";
 
   src = fetchFromGitHub {
+    inherit (param) tag hash;
     owner = "c-cube";
     repo = "qcheck";
-    inherit (param) tag hash;
   };
 
   propagatedBuildInputs = [

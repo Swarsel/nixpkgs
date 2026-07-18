@@ -1,9 +1,9 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
   humanize,
-  lib,
   mutagen,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "podcats";
   version = "0.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jkbrzt";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-1Jg9bR/3qMim3q5qVwUVbxeLNaXaCU6SplBUaRXeLpo=";
   };
 
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,14 +28,14 @@ buildPythonPackage (finalAttrs: {
     mutagen
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "podcats" ];
-  doCheck = false;
 
   meta = {
     description = "Generates RSS feeds for podcast episodes from local audio files";
-    mainProgram = "podcats";
     homepage = "https://github.com/jkbrzt/podcats";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ drawbu ];
+    mainProgram = "podcats";
   };
 })

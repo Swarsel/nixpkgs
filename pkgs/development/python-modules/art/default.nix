@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "art";
   version = "6.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sepandhaghighi";
@@ -16,10 +15,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ub+hvxYRZznql/GZjA6QXrdHUbM+QCVEYiQfQ6IOJKE=";
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "art" ];
 
   # TypeError: art() missing 1 required positional argument: 'artname'
   checkPhase = ''
@@ -32,12 +27,16 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "art" ];
+
   meta = {
     description = "ASCII art library for Python";
-    mainProgram = "art";
     homepage = "https://github.com/sepandhaghighi/art";
     changelog = "https://github.com/sepandhaghighi/art/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "art";
   };
 }

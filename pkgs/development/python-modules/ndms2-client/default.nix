@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   pythonAtLeast,
   setuptools,
   standard-telnetlib,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "ndms2-client";
   version = "0.1.3";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "foxel";
@@ -21,12 +19,10 @@ buildPythonPackage rec {
     hash = "sha256-A19olC1rTHTy0xyeSP45fqvv9GUynQSrMgXBgW8ySOs=";
   };
 
-  dependencies = lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
-
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  dependencies = lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
+  pyproject = true;
   pythonImportsCheck = [ "ndms2_client" ];
 
   meta = {

@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   makeBinaryWrapper,
-  versionCheckHook,
   nixosTests,
   openssh,
-  rclone,
   python3,
+  rclone,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -28,28 +28,17 @@ buildGoModule (finalAttrs: {
     ./0001-Skip-testing-restore-with-permission-failure.patch
   ];
 
-  vendorHash = "sha256-6r97M0XHuddbpSZ9yTtfIPUDkHkHP2PIDLWQTf/294E=";
-
-  subPackages = [ "cmd/restic" ];
+  postPatch = ''
+    rm cmd/restic/cmd_mount_integration_test.go
+  '';
 
   nativeBuildInputs = [
     installShellFiles
     makeBinaryWrapper
   ];
 
+  vendorHash = "sha256-6r97M0XHuddbpSZ9yTtfIPUDkHkHP2PIDLWQTf/294E=";
   nativeCheckInputs = [ python3 ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
-
-  passthru.tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
-    restic = nixosTests.restic;
-  };
-
-  postPatch = ''
-    rm cmd/restic/cmd_mount_integration_test.go
-  '';
 
   postInstall = ''
     wrapProgram $out/bin/restic \
@@ -70,18 +59,29 @@ buildGoModule (finalAttrs: {
     installManPage *.1
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  subPackages = [ "cmd/restic" ];
+  versionCheckProgramArg = "version";
+
+  passthru.tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
+    restic = nixosTests.restic;
+  };
+
   meta = {
+    description = "Backup program that is fast, efficient and secure";
     homepage = "https://restic.net";
     changelog = "https://github.com/restic/restic/blob/${finalAttrs.src.rev}/CHANGELOG.md";
-    description = "Backup program that is fast, efficient and secure";
-    platforms = with lib.platforms; linux ++ darwin;
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       mbrgm
       djds
       dotlambda
       ryan4yin
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "restic";
   };
 })

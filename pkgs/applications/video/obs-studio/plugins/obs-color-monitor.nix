@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   obs-studio,
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     obs-studio
     qtbase
@@ -37,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Color Monitor plugin for OBS Studio";
     homepage = "https://github.com/norihiro/obs-color-monitor";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ hlad ];
+    platforms = lib.platforms.linux;
   };
 })

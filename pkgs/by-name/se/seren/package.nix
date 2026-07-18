@@ -3,15 +3,20 @@
   stdenv,
   fetchurl,
   alsa-lib,
-  libopus,
-  libogg,
   gmp,
+  libogg,
+  libopus,
   ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "seren";
   version = "0.0.21";
+
+  src = fetchurl {
+    url = "http://holdenc.altervista.org/seren/downloads/seren-${finalAttrs.version}.tar.gz";
+    sha256 = "sha256-adI365McrJkvTexvnWjMzpHcJkLY3S/uWfE8u4yuqho=";
+  };
 
   buildInputs = [
     alsa-lib
@@ -21,14 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  src = fetchurl {
-    url = "http://holdenc.altervista.org/seren/downloads/seren-${finalAttrs.version}.tar.gz";
-    sha256 = "sha256-adI365McrJkvTexvnWjMzpHcJkLY3S/uWfE8u4yuqho=";
-  };
-
   meta = {
     description = "Simple ncurses VoIP program based on the Opus codec";
-    mainProgram = "seren";
+
     longDescription = ''
       Seren is a simple VoIP program based on the Opus codec
       that allows you to create a voice conference from the terminal, with up to 10
@@ -36,12 +36,16 @@ stdenv.mkDerivation (finalAttrs: {
       people to contact lists. All you need to join an existing conference is the
       host name or IP address of one of the participants.
     '';
+
     homepage = "http://holdenc.altervista.org/seren/";
     changelog = "http://holdenc.altervista.org/seren/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       matthewcroughan
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "seren";
   };
 })

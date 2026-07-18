@@ -1,18 +1,17 @@
 {
   lib,
-  runCommand,
   R,
-  radian,
   makeBinaryWrapper,
-  recommendedPackages,
   packages,
+  radian,
+  recommendedPackages,
+  runCommand,
   wrapR ? false,
 }:
 
 runCommand (radian.name + "-wrapper")
   {
-    preferLocalBuild = true;
-    allowSubstitutes = false;
+    nativeBuildInputs = [ makeBinaryWrapper ];
 
     buildInputs = [
       R
@@ -21,8 +20,8 @@ runCommand (radian.name + "-wrapper")
     ++ recommendedPackages
     ++ packages;
 
-    nativeBuildInputs = [ makeBinaryWrapper ];
-
+    allowSubstitutes = false;
+    preferLocalBuild = true;
     passthru = { inherit recommendedPackages; };
 
     meta = radian.meta // {

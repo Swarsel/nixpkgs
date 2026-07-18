@@ -1,20 +1,20 @@
 {
-  gccStdenv,
   lib,
-  pkgs,
-  git,
-  openssl,
   autoconf,
   coreutils,
+  gambit-support,
+  gccStdenv,
+  git,
+  git-version,
+  openssl,
+  pkgs,
   src,
   version,
-  git-version,
-  stampYmd ? 0,
-  stampHms ? 0,
-  gambit-support,
-  optimizationSetting ? "-O1",
   gambit-params ? pkgs.gambit-support.stable-params,
+  optimizationSetting ? "-O1",
   rev ? git-version,
+  stampHms ? 0,
+  stampYmd ? 0,
 }:
 
 # Note that according to a benchmark run by Marc Feeley on May 2018,
@@ -36,22 +36,8 @@
 
 gccStdenv.mkDerivation rec {
 
-  pname = "gambit";
   inherit src version git-version;
-  bootstrap = gambit-support.gambit-bootstrap;
-
-  passthru = {
-    inherit
-      src
-      version
-      git-version
-      rev
-      stampYmd
-      stampHms
-      optimizationSetting
-      openssl
-      ;
-  };
+  pname = "gambit";
 
   nativeBuildInputs = [
     git
@@ -66,7 +52,6 @@ gccStdenv.mkDerivation rec {
   # TODO: patch gambit's source so it has the full path to sed, grep, fgrep? Is there more?
   # Or wrap relevant programs to add a suitable PATH ?
   #runtimeDeps = [ gnused gnugrep ];
-
   configureFlags = [
     "--enable-targets=${gambit-params.targets}"
     "--enable-single-host"
@@ -104,6 +89,36 @@ gccStdenv.mkDerivation rec {
   # Do not enable poll on darwin due to https://github.com/gambit/gambit/issues/498
   ++ lib.optional (!gccStdenv.hostPlatform.isDarwin) "--enable-poll";
 
+  buildPhase = ''
+    # The MAKEFLAGS setting is a workaround for https://github.com/gambit/gambit/issues/833
+    export MAKEFLAGS="--output-sync=recurse"
+    echo "Make bootstrap compiler, from release bootstrap"
+    mkdir -p boot
+    cp -rp ${bootstrap}/gambit/. boot/.
+    chmod -R u+w boot
+    cd boot
+    cp ../gsc/makefile.in ../gsc/*.scm gsc/
+    echo > include/stamp.h # No stamp needed for the bootstrap compiler
+    ./configure
+    for i in lib gsi gsc ; do (cd $i ; make -j$NIX_BUILD_CORES) ; done
+    cd ..
+    cp boot/gsc/gsc gsc-boot
+
+    echo "Now use the bootstrap compiler to build the real thing!"
+    make -j$NIX_BUILD_CORES from-scratch
+    ${lib.optionalString gambit-params.modules "make -j$NIX_BUILD_CORES modules"}
+  '';
+
+  doCheck = true;
+
+  postInstall = ''
+    mkdir $out/bin
+    cd $out/bin
+    ln -s ../gambit/bin/* .
+  '';
+
+  bootstrap = gambit-support.gambit-bootstrap;
+
   configurePhase = ''
     export CC=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}gcc \
            CXX=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}g++ \
@@ -129,34 +144,20 @@ gccStdenv.mkDerivation rec {
     ./config.status
   '';
 
-  buildPhase = ''
-    # The MAKEFLAGS setting is a workaround for https://github.com/gambit/gambit/issues/833
-    export MAKEFLAGS="--output-sync=recurse"
-    echo "Make bootstrap compiler, from release bootstrap"
-    mkdir -p boot
-    cp -rp ${bootstrap}/gambit/. boot/.
-    chmod -R u+w boot
-    cd boot
-    cp ../gsc/makefile.in ../gsc/*.scm gsc/
-    echo > include/stamp.h # No stamp needed for the bootstrap compiler
-    ./configure
-    for i in lib gsi gsc ; do (cd $i ; make -j$NIX_BUILD_CORES) ; done
-    cd ..
-    cp boot/gsc/gsc gsc-boot
-
-    echo "Now use the bootstrap compiler to build the real thing!"
-    make -j$NIX_BUILD_CORES from-scratch
-    ${lib.optionalString gambit-params.modules "make -j$NIX_BUILD_CORES modules"}
-  '';
-
-  postInstall = ''
-    mkdir $out/bin
-    cd $out/bin
-    ln -s ../gambit/bin/* .
-  '';
-
-  doCheck = true;
   dontStrip = true;
+
+  passthru = {
+    inherit
+      src
+      version
+      git-version
+      rev
+      stampYmd
+      stampHms
+      optimizationSetting
+      openssl
+      ;
+  };
 
   meta = gambit-support.meta;
 }

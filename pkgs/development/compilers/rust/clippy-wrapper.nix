@@ -1,18 +1,17 @@
 {
   lib,
-  runCommand,
   clippy-unwrapped,
-  rustc-unwrapped,
   makeWrapper,
+  runCommand,
+  rustc-unwrapped,
 }:
 
 runCommand "${clippy-unwrapped.pname}-wrapper-${clippy-unwrapped.version}"
   {
-    preferLocalBuild = true;
-    strictDeps = true;
     inherit (clippy-unwrapped) outputs;
-
+    strictDeps = true;
     nativeBuildInputs = [ makeWrapper ];
+    preferLocalBuild = true;
 
     meta = clippy-unwrapped.meta // {
       description = "${clippy-unwrapped.meta.description} (wrapper script)";

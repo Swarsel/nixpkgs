@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   gtest,
@@ -19,6 +19,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     gtest
     tinycmmc
@@ -33,8 +34,8 @@ stdenv.mkDerivation {
   meta = {
     description = "Collection of string utilities";
     homepage = "https://github.com/Grumbel/strutcpp";
+    license = lib.licenses.free;
     maintainers = [ lib.maintainers.SchweGELBin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.free;
   };
 }

@@ -5,15 +5,6 @@
 
 {
   definition = {
-    displayName = "Ark R Kernel";
-    argv = [
-      "${ark}/bin/ark"
-      "--connection_file"
-      "{connection_file}"
-      "--session-mode"
-      "notebook"
-    ];
-    language = "R";
     # Ark logs at INFO to stderr by default, which includes Jupyter messages.
     # The notebook forwards this to the cell output, so quiet it to warnings.
     #
@@ -25,6 +16,17 @@
     env = {
       RUST_LOG = "ark=warn,ark::console::console_comm=error";
     };
+
+    argv = [
+      "${ark}/bin/ark"
+      "--connection_file"
+      "{connection_file}"
+      "--session-mode"
+      "notebook"
+    ];
+
+    displayName = "Ark R Kernel";
+    language = "R";
     logo32 = null;
     logo64 = null;
   };

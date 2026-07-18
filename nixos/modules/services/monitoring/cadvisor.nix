@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -13,46 +13,52 @@ in
     services.cadvisor = {
       enable = lib.mkEnableOption "Cadvisor service";
 
+      extraOptions = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Additional cadvisor options.
+
+          See <https://github.com/google/cadvisor/blob/master/docs/runtime_options.md> for available options.
+        '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
       listenAddress = lib.mkOption {
         default = "127.0.0.1";
-        type = lib.types.str;
         description = "Cadvisor listening host";
+        type = lib.types.str;
       };
 
       port = lib.mkOption {
         default = 8080;
-        type = lib.types.port;
         description = "Cadvisor listening port";
+        type = lib.types.port;
       };
 
       storageDriver = lib.mkOption {
         default = null;
-        type = lib.types.nullOr lib.types.str;
-        example = "influxdb";
         description = "Cadvisor storage driver.";
-      };
-
-      storageDriverHost = lib.mkOption {
-        default = "localhost:8086";
-        type = lib.types.str;
-        description = "Cadvisor storage driver host.";
+        example = "influxdb";
+        type = lib.types.nullOr lib.types.str;
       };
 
       storageDriverDb = lib.mkOption {
         default = "root";
-        type = lib.types.str;
         description = "Cadvisord storage driver database name.";
+        type = lib.types.str;
       };
 
-      storageDriverUser = lib.mkOption {
-        default = "root";
+      storageDriverHost = lib.mkOption {
+        default = "localhost:8086";
+        description = "Cadvisor storage driver host.";
         type = lib.types.str;
-        description = "Cadvisor storage driver username.";
       };
 
       storageDriverPassword = lib.mkOption {
         default = "root";
-        type = lib.types.str;
+
         description = ''
           Cadvisor storage driver password.
 
@@ -61,10 +67,11 @@ in
           since that gives you control over the security of the password.
           {option}`storageDriverPasswordFile` also takes precedence over {option}`storageDriverPassword`.
         '';
+
+        type = lib.types.str;
       };
 
       storageDriverPasswordFile = lib.mkOption {
-        type = lib.types.str;
         description = ''
           File that contains the cadvisor storage driver password.
 
@@ -76,22 +83,20 @@ in
           It's recommended to override this with a path not in the Nix store.
           Tip: use [nixops key management](https://nixos.org/nixops/manual/#idm140737318306400)
         '';
+
+        type = lib.types.str;
       };
 
       storageDriverSecure = lib.mkOption {
         default = false;
-        type = lib.types.bool;
         description = "Cadvisor storage driver, enable secure communication.";
+        type = lib.types.bool;
       };
 
-      extraOptions = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = ''
-          Additional cadvisor options.
-
-          See <https://github.com/google/cadvisor/blob/master/docs/runtime_options.md> for available options.
-        '';
+      storageDriverUser = lib.mkOption {
+        default = "root";
+        description = "Cadvisor storage driver username.";
+        type = lib.types.str;
       };
     };
   };
@@ -112,7 +117,6 @@ in
 
     (lib.mkIf cfg.enable {
       systemd.services.cadvisor = {
-        wantedBy = [ "multi-user.target" ];
         after = [
           "network.target"
           "docker.service"
@@ -144,6 +148,7 @@ in
         '';
 
         serviceConfig.TimeoutStartSec = 300;
+        wantedBy = [ "multi-user.target" ];
       };
     })
   ];

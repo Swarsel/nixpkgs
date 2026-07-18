@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  gettext,
-  gobject-introspection,
   evince,
+  gdk-pixbuf,
+  gettext,
+  gjs,
   glib,
   gnome,
-  gtksourceview4,
-  gjs,
-  libsoup_3,
-  webkitgtk_4_1,
-  icu,
-  wrapGAppsHook3,
+  gobject-introspection,
   gst_all_1,
-  gdk-pixbuf,
-  librsvg,
   gtk3,
+  gtksourceview4,
   harfbuzz,
-  ninja,
+  icu,
   libepoxy,
+  librsvg,
+  libsoup_3,
+  meson,
+  ninja,
+  pkg-config,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -78,12 +78,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Quick previewer for Nautilus";
     homepage = "https://gitlab.gnome.org/GNOME/sushi";
     changelog = "https://gitlab.gnome.org/GNOME/sushi/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Quick previewer for Nautilus";
-    mainProgram = "sushi";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "sushi";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,33 +1,32 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  nixosTests,
   nextcloud32Packages,
   nextcloud33Packages,
   nextcloud34Packages,
+  nixosTests,
+  stdenvNoCC,
 }:
 
 let
   generic =
     {
-      version,
       hash,
+      packages,
+      version,
       eol ? false,
       extraVulnerabilities ? [ ],
-      packages,
     }:
     stdenvNoCC.mkDerivation rec {
-      pname = "nextcloud";
       inherit version;
-
-      __structuredAttrs = true;
-      strictDeps = true;
+      pname = "nextcloud";
 
       src = fetchurl {
-        url = "https://download.nextcloud.com/server/releases/nextcloud-${version}.tar.bz2";
         inherit hash;
+        url = "https://download.nextcloud.com/server/releases/nextcloud-${version}.tar.bz2";
       };
+
+      strictDeps = true;
 
       installPhase = ''
         runHook preInstall
@@ -36,22 +35,27 @@ let
         runHook postInstall
       '';
 
+      __structuredAttrs = true;
+
       passthru = {
+        inherit packages;
+
         tests = lib.filterAttrs (
           key: _: (lib.hasSuffix (lib.versions.major version) key)
         ) nixosTests.nextcloud;
-        inherit packages;
       };
 
       meta = {
-        changelog = "https://nextcloud.com/changelog/#${lib.replaceStrings [ "." ] [ "-" ] version}";
         description = "Sharing solution for files, calendars, contacts and more";
         homepage = "https://nextcloud.com";
-        teams = [ lib.teams.nextcloud ];
+        changelog = "https://nextcloud.com/changelog/#${lib.replaceStrings [ "." ] [ "-" ] version}";
         license = lib.licenses.agpl3Plus;
         platforms = lib.platforms.linux;
+
         knownVulnerabilities =
           extraVulnerabilities ++ (lib.optional eol "Nextcloud version ${version} is EOL");
+
+        teams = [ lib.teams.nextcloud ];
       };
     };
 in

@@ -5,7 +5,6 @@
   which,
 }:
 mkLibretroCore {
-  core = "hatari";
   version = "0-unstable-2026-06-10";
 
   src = fetchFromGitHub {
@@ -15,10 +14,11 @@ mkLibretroCore {
     hash = "sha256-UJyfIt5+anXaqqMmL9JNTBvXu5bmyMYloYc8fWxx2m0=";
   };
 
-  extraNativeBuildInputs = [ which ];
-  dontConfigure = true;
   # zlib is already included in mkLibretroCore as buildInputs
   makeFlags = [ "EXTERNAL_ZLIB=1" ];
+  core = "hatari";
+  dontConfigure = true;
+  extraNativeBuildInputs = [ which ];
 
   meta = {
     description = "Port of Hatari to libretro";

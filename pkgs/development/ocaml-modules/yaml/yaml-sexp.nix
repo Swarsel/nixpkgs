@@ -1,15 +1,14 @@
 {
   buildDunePackage,
-  yaml,
+  junit_alcotest,
   ppx_sexp_conv,
   sexplib,
-  junit_alcotest,
+  yaml,
 }:
 
 buildDunePackage {
-  pname = "yaml-sexp";
-
   inherit (yaml) version src;
+  pname = "yaml-sexp";
 
   propagatedBuildInputs = [
     yaml

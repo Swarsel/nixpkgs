@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   forbiddenfruit,
-  pytestCheckHook,
+  hatchling,
   pytest-asyncio,
+  pytestCheckHook,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "blockbuster";
   version = "1.5.25";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cbornet";
@@ -21,23 +20,22 @@ buildPythonPackage rec {
     hash = "sha256-1+Q1IdJXqLAy7kIcVU38TC3dtMeWAn7YOLyGrjCkxD0=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ forbiddenfruit ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
     requests
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
+  dependencies = [ forbiddenfruit ];
+
   disabledTests = [
     # network access
     "test_ssl_socket"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "blockbuster" ];
 
   meta = {

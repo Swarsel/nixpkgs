@@ -1,26 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   pydantic,
+  # tests
+  pytestCheckHook,
   python-dateutil,
   typing-extensions,
   urllib3,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lance-namespace-urllib3-client";
   version = "0.8.6";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "lancedb";
@@ -29,7 +24,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-QYzVsarjTg2arNNuCFbVgtA7rfLTm6AJD3liNr3QuSU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python/lance_namespace_urllib3_client";
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -42,11 +41,9 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "lance_namespace_urllib3_client" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  sourceRoot = "${finalAttrs.src.name}/python/lance_namespace_urllib3_client";
 
   meta = {
     description = "Lance namespace OpenAPI specification";

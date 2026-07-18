@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  libmtsupport,
-  libfacet,
   libbtree,
+  libfacet,
+  libmtsupport,
   multitrandata,
 }:
 
@@ -36,8 +36,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://multitran.sourceforge.net/";
     description = "Multitran lib: main engine to query translations";
+    homepage = "https://multitran.sourceforge.net/";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
   };

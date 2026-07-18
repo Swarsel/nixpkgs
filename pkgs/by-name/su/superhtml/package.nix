@@ -1,8 +1,8 @@
 {
   lib,
-  callPackage,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  callPackage,
   zig_0_15,
 }:
 let
@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "HTML Language Server and Templating Language Library";
     homepage = "https://github.com/kristoff-it/superhtml";
     license = lib.licenses.mit;
-    mainProgram = "superhtml";
     maintainers = with lib.maintainers; [ petertriho ];
     platforms = lib.platforms.unix;
+    mainProgram = "superhtml";
   };
 })

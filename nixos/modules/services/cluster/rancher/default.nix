@@ -9,13 +9,12 @@ let
     {
       # name used in paths/bin names/etc, e.g. k3s
       name,
-      # systemd service name
-      serviceName ? name,
       # extra flags to pass to the binary before user-defined extraFlags
       extraBinFlags ? [ ],
       # generate manifests as JSON rather than YAML, see rke2.nix
       jsonManifests ? false,
-
+      # systemd service name
+      serviceName ? name,
       # which port on the local node hosts content placed in ${staticContentChartDir} on /static/
       # if null, it's assumed the content can be accessed via https://%{KUBERNETES_API}%/static/
       staticContentPort ? null,
@@ -46,8 +45,8 @@ let
           if builtins.isList manifests then
             {
               apiVersion = "v1";
-              kind = "List";
               items = manifests;
+              kind = "List";
             }
           else
             manifests
@@ -107,6 +106,7 @@ let
           {
             inherit (lib.fetchers.normalizeHash { } { inherit hash; }) outputHash outputHashAlgo;
             impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+
             nativeBuildInputs = with pkgs; [
               kubernetes-helm
               cacert
@@ -145,32 +145,37 @@ let
         lib.recursiveUpdate {
           apiVersion = "helm.cattle.io/v1";
           kind = "HelmChart";
+
           metadata = {
             inherit name;
             namespace = "kube-system";
           };
+
           spec = {
             inherit valuesContent;
             inherit (value) targetNamespace createNamespace;
+            bootstrap = staticContentPort != null; # needed for host network access
+
             chart =
               if staticContentPort == null then
                 "https://%{KUBERNETES_API}%/static/charts/${name}.tgz"
               else
                 "https://localhost:${toString staticContentPort}/static/charts/${name}.tgz";
-            bootstrap = staticContentPort != null; # needed for host network access
           };
         } value.extraFieldDefinitions;
 
       # Generate a HelmChart custom resource together with extraDeploy manifests.
       mkAutoDeployChartManifest = name: value: {
-        # target is the final name of the link created for the manifest file
-        target = mkManifestTarget name;
         inherit (value) enable package;
+
         # source is a store path containing the complete manifest file
         source = mkManifestSource "auto-deploy-chart-${name}" (
           lib.singleton (mkHelmChartCR name value)
           ++ map (x: fromYaml (mkExtraDeployManifest x)) value.extraDeploy
         );
+
+        # target is the final name of the link created for the manifest file
+        target = mkManifestTarget name;
       };
 
       autoDeployChartsModule = lib.types.submodule (
@@ -178,9 +183,8 @@ let
         {
           options = {
             enable = lib.mkOption {
-              type = lib.types.bool;
               default = true;
-              example = false;
+
               description = ''
                 Whether to enable the installation of this Helm chart. Note that setting
                 this option to `false` will not uninstall the chart from the cluster, if
@@ -188,95 +192,32 @@ let
                 files to delete/disable Helm charts, as mentioned in the
                 [docs](https://docs.k3s.io/installation/packaged-components#disabling-manifests).
               '';
-            };
 
-            repo = lib.mkOption {
-              type = lib.types.nonEmptyStr;
-              example = "https://kubernetes.github.io/ingress-nginx";
-              description = ''
-                The repo of the Helm chart. Only has an effect if `package` is not set.
-                The Helm chart is fetched during build time and placed as a `.tgz` archive on the
-                filesystem.
-              '';
-            };
-
-            name = lib.mkOption {
-              type = lib.types.nonEmptyStr;
-              example = "ingress-nginx";
-              description = ''
-                The name of the Helm chart. Only has an effect if `package` is not set.
-                The Helm chart is fetched during build time and placed as a `.tgz` archive on the
-                filesystem.
-              '';
-            };
-
-            version = lib.mkOption {
-              type = lib.types.nonEmptyStr;
-              example = "4.7.0";
-              description = ''
-                The version of the Helm chart. Only has an effect if `package` is not set.
-                The Helm chart is fetched during build time and placed as a `.tgz` archive on the
-                filesystem.
-              '';
-            };
-
-            hash = lib.mkOption {
-              type = lib.types.str;
-              example = "sha256-ej+vpPNdiOoXsaj1jyRpWLisJgWo8EqX+Z5VbpSjsPA=";
-              default = "";
-              description = ''
-                The hash of the packaged Helm chart. Only has an effect if `package` is not set.
-                The Helm chart is fetched during build time and placed as a `.tgz` archive on the
-                filesystem.
-              '';
+              example = false;
+              type = lib.types.bool;
             };
 
             package = lib.mkOption {
-              type = with lib.types; either path package;
-              example = lib.literalExpression "../my-helm-chart.tgz";
               description = ''
                 The packaged Helm chart. Overwrites the options `repo`, `name`, `version`
                 and `hash` in case of conflicts.
               '';
-            };
 
-            targetNamespace = lib.mkOption {
-              type = lib.types.nonEmptyStr;
-              default = "default";
-              example = "kube-system";
-              description = "The namespace in which the Helm chart gets installed.";
+              example = lib.literalExpression "../my-helm-chart.tgz";
+              type = with lib.types; either path package;
             };
 
             createNamespace = lib.mkOption {
-              type = lib.types.bool;
               default = false;
-              example = true;
               description = "Whether to create the target namespace if not present.";
-            };
-
-            values = lib.mkOption {
-              type = with lib.types; either path attrs;
-              default = { };
-              example = {
-                replicaCount = 3;
-                hostName = "my-host";
-                server = {
-                  name = "nginx";
-                  port = 80;
-                };
-              };
-              description = ''
-                Override default chart values via Nix expressions. This is equivalent to setting
-                values in a `values.yaml` file.
-
-                **WARNING**: The values (including secrets!) specified here are exposed unencrypted
-                in the world-readable nix store.
-              '';
+              example = true;
+              type = lib.types.bool;
             };
 
             extraDeploy = lib.mkOption {
-              type = with lib.types; listOf (either path attrs);
               default = [ ];
+              description = "List of extra Kubernetes manifests to deploy with this Helm chart.";
+
               example = lib.literalExpression ''
                 [
                   ../manifests/my-extra-deployment.yaml
@@ -302,26 +243,106 @@ let
                   }
                 ];
               '';
-              description = "List of extra Kubernetes manifests to deploy with this Helm chart.";
+
+              type = with lib.types; listOf (either path attrs);
             };
 
             extraFieldDefinitions = lib.mkOption {
               inherit (manifestFormat) type;
               default = { };
-              example = {
-                spec = {
-                  bootstrap = true;
-                  helmVersion = "v2";
-                  backOffLimit = 3;
-                  jobImage = "custom-helm-controller:v0.0.1";
-                };
-              };
+
               description = ''
                 Extra HelmChart field definitions that are merged with the rest of the HelmChart
                 custom resource. This can be used to set advanced fields or to overwrite
                 generated fields. See <https://docs.${name}.io/helm#helmchart-field-definitions>
                 for possible fields.
               '';
+
+              example = {
+                spec = {
+                  backOffLimit = 3;
+                  bootstrap = true;
+                  helmVersion = "v2";
+                  jobImage = "custom-helm-controller:v0.0.1";
+                };
+              };
+            };
+
+            hash = lib.mkOption {
+              default = "";
+
+              description = ''
+                The hash of the packaged Helm chart. Only has an effect if `package` is not set.
+                The Helm chart is fetched during build time and placed as a `.tgz` archive on the
+                filesystem.
+              '';
+
+              example = "sha256-ej+vpPNdiOoXsaj1jyRpWLisJgWo8EqX+Z5VbpSjsPA=";
+              type = lib.types.str;
+            };
+
+            name = lib.mkOption {
+              description = ''
+                The name of the Helm chart. Only has an effect if `package` is not set.
+                The Helm chart is fetched during build time and placed as a `.tgz` archive on the
+                filesystem.
+              '';
+
+              example = "ingress-nginx";
+              type = lib.types.nonEmptyStr;
+            };
+
+            repo = lib.mkOption {
+              description = ''
+                The repo of the Helm chart. Only has an effect if `package` is not set.
+                The Helm chart is fetched during build time and placed as a `.tgz` archive on the
+                filesystem.
+              '';
+
+              example = "https://kubernetes.github.io/ingress-nginx";
+              type = lib.types.nonEmptyStr;
+            };
+
+            targetNamespace = lib.mkOption {
+              default = "default";
+              description = "The namespace in which the Helm chart gets installed.";
+              example = "kube-system";
+              type = lib.types.nonEmptyStr;
+            };
+
+            values = lib.mkOption {
+              default = { };
+
+              description = ''
+                Override default chart values via Nix expressions. This is equivalent to setting
+                values in a `values.yaml` file.
+
+                **WARNING**: The values (including secrets!) specified here are exposed unencrypted
+                in the world-readable nix store.
+              '';
+
+              example = {
+                hostName = "my-host";
+                replicaCount = 3;
+
+                server = {
+                  name = "nginx";
+                  port = 80;
+                };
+              };
+
+              type = with lib.types; either path attrs;
+            };
+
+            version = lib.mkOption {
+              description = ''
+                The version of the Helm chart. Only has an effect if `package` is not set.
+                The Helm chart is fetched during build time and placed as a `.tgz` archive on the
+                filesystem.
+              '';
+
+              example = "4.7.0";
+              type = lib.types.nonEmptyStr;
             };
           };
 
@@ -338,50 +359,53 @@ let
 
       manifestModule = lib.types.submodule (
         {
-          name,
           config,
           options,
+          name,
           ...
         }:
         {
           options = {
             enable = lib.mkOption {
-              type = lib.types.bool;
               default = true;
               description = "Whether this manifest file should be generated.";
-            };
-
-            target = lib.mkOption {
-              type = lib.types.nonEmptyStr;
-              example = "manifest.yaml";
-              description = ''
-                Name of the symlink (relative to {file}`${manifestDir}`).
-                Defaults to the attribute name.
-              '';
+              type = lib.types.bool;
             };
 
             content = lib.mkOption {
-              type = with lib.types; nullOr (either attrs (listOf attrs));
               default = null;
+
               description = ''
                 Content of the manifest file. A single attribute set will
                 generate a single document YAML file. A list of attribute sets
                 will generate multiple documents separated by `---` in a single
                 YAML file.
               '';
+
+              type = with lib.types; nullOr (either attrs (listOf attrs));
             };
 
             source = lib.mkOption {
-              type = lib.types.path;
-              example = lib.literalExpression "./manifests/app.yaml";
               description = ''
                 Path of the source `.yaml` file.
               '';
+
+              example = lib.literalExpression "./manifests/app.yaml";
+              type = lib.types.path;
+            };
+
+            target = lib.mkOption {
+              description = ''
+                Name of the symlink (relative to {file}`${manifestDir}`).
+                Defaults to the attribute name.
+              '';
+
+              example = "manifest.yaml";
+              type = lib.types.nonEmptyStr;
             };
           };
 
           config = {
-            target = lib.mkDefault (mkManifestTarget name);
             source = lib.mkIf (config.content != null) (
               let
                 name' = "${name}-manifest-" + baseNameOf name;
@@ -389,62 +413,21 @@ let
               in
               lib.mkDerivedConfig options.content mkSource
             );
+
+            target = lib.mkDefault (mkManifestTarget name);
           };
         }
       );
     in
     {
-      paths = {
-        inherit
-          manifestDir
-          imageDir
-          containerdConfigTemplateFile
-          staticContentChartDir
-          ;
-      };
-
       # interface
-
       options = {
         enable = lib.mkEnableOption name;
-
         package = lib.mkPackageOption pkgs name { };
 
-        role = lib.mkOption {
-          description = "Whether ${name} should run as a server or agent.";
-          default = "server";
-          type = lib.types.enum [
-            "server"
-            "agent"
-          ];
-        };
-
-        serverAddr = lib.mkOption {
-          type = lib.types.str;
-          description = "The ${name} server to connect to, used to join a cluster.";
-          example = "https://10.0.0.10:6443";
-          default = "";
-        };
-
-        token = lib.mkOption {
-          type = lib.types.str;
-          description = ''
-            The ${name} token to use when connecting to a server.
-
-            **WARNING**: This option will expose your token unencrypted in the world-readable nix store.
-            If this is undesired use the tokenFile option instead.
-          '';
-          default = "";
-        };
-
-        tokenFile = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
-          description = "File path containing the ${name} token to use when connecting to a server.";
-          default = null;
-        };
-
         agentToken = lib.mkOption {
-          type = lib.types.str;
+          default = "";
+
           description = ''
             The ${name} token agents can use to connect to the server.
             This option only makes sense on server nodes (`role = server`).
@@ -452,87 +435,274 @@ let
             **WARNING**: This option will expose your token unencrypted in the world-readable nix store.
             If this is undesired use the tokenFile option instead.
           '';
-          default = "";
+
+          type = lib.types.str;
         };
 
         agentTokenFile = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
+          default = null;
+
           description = ''
             File path containing the ${name} token agents can use to connect to the server.
             This option only makes sense on server nodes (`role = server`).
           '';
+
+          type = lib.types.nullOr lib.types.path;
+        };
+
+        autoDeployCharts = lib.mkOption {
+          apply = lib.mapAttrs mkAutoDeployChartManifest;
+          default = { };
+
+          description = ''
+            Auto deploying Helm charts that are installed by the ${name} Helm controller. Avoid using
+            attribute names that are also used in the [](#opt-services.${name}.manifests) and
+            [](#opt-services.${name}.charts) options. Manifests with the same name will override
+            auto deploying charts with the same name.
+            This option only makes sense on server nodes (`role = server`). See the
+            [${name} Helm documentation](https://docs.${name}.io/helm) for further information.
+
+            **WARNING**: If you have multiple server nodes, and set this option on more than one server,
+            it is your responsibility to ensure that files stay in sync across those nodes. AddOn content is
+            not synced between nodes, and ${name} cannot guarantee correct behavior if different servers attempt
+            to deploy conflicting manifests.
+          '';
+
+          example = lib.literalExpression ''
+            {
+              harbor = {
+                name = "harbor";
+                repo = "https://helm.goharbor.io";
+                version = "1.14.0";
+                hash = "sha256-fMP7q1MIbvzPGS9My91vbQ1d3OJMjwc+o8YE/BXZaYU=";
+                values = {
+                  existingSecretAdminPassword = "harbor-admin";
+                  expose = {
+                    tls = {
+                      enabled = true;
+                      certSource = "secret";
+                      secret.secretName = "my-tls-secret";
+                    };
+                    ingress = {
+                      hosts.core = "example.com";
+                      className = "nginx";
+                    };
+                  };
+                };
+              };
+              nginx = {
+                repo = "oci://registry-1.docker.io/bitnamicharts/nginx";
+                version = "20.0.0";
+                hash = "sha256-sy+tzB+i9jIl/tqOMzzuhVhTU4EZVsoSBtPznxF/36c=";
+              };
+              custom-chart = {
+                package = ../charts/my-chart.tgz;
+                values = ../values/my-values.yaml;
+                extraFieldDefinitions = {
+                  spec.timeout = "60s";
+                };
+              };
+            }
+          '';
+
+          type = lib.types.attrsOf autoDeployChartsModule;
+        };
+
+        charts = lib.mkOption {
+          default = { };
+
+          description = ''
+            Packaged Helm charts that are linked to {file}`${staticContentChartDir}` before ${name} starts.
+            The attribute name will be used as the link target (relative to {file}`${staticContentChartDir}`).
+            The specified charts will only be placed on the file system and made available via ${
+              if staticContentPort == null then
+                "the Kubernetes APIServer from within the cluster"
+              else
+                "port ${toString staticContentPort} on server nodes"
+            }. See the [](#opt-services.${name}.autoDeployCharts) option and the
+            [${name} Helm controller docs](https://docs.${name}.io/helm#using-the-helm-controller)
+            to deploy Helm charts. This option only makes sense on server nodes (`role = server`).
+          '';
+
+          example = lib.literalExpression ''
+            nginx = ../charts/my-nginx-chart.tgz;
+            redis = ../charts/my-redis-chart.tgz;
+          '';
+
+          type = with lib.types; attrsOf (either path package);
+        };
+
+        configPath = lib.mkOption {
           default = null;
+          description = "File path containing the ${name} YAML config. This is useful when the config is generated (for example on boot).";
+          type = lib.types.nullOr lib.types.path;
+        };
+
+        containerdConfigTemplate = lib.mkOption {
+          default = null;
+
+          description = ''
+            Config template for containerd, to be placed at
+            `/var/lib/rancher/${name}/agent/etc/containerd/config.toml.tmpl`.
+            See the docs on [configuring containerd](https://docs.${name}.io/advanced#configuring-containerd).
+          '';
+
+          example = lib.literalExpression ''
+            # Base config
+            {{ template "base" . }}
+
+            # Add a custom runtime
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."custom"]
+              runtime_type = "io.containerd.runc.v2"
+            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."custom".options]
+              BinaryName = "/path/to/custom-container-runtime"
+          '';
+
+          type = lib.types.nullOr lib.types.str;
+        };
+
+        disable = lib.mkOption {
+          default = [ ];
+          description = "Disable default components via the `--disable` flag.";
+          type = lib.types.listOf lib.types.str;
+        };
+
+        environmentFile = lib.mkOption {
+          default = null;
+
+          description = ''
+            File path containing environment variables for configuring the ${name} service in the format of an EnvironmentFile. See {manpage}`systemd.exec(5)`.
+          '';
+
+          type = lib.types.nullOr lib.types.path;
         };
 
         extraFlags = lib.mkOption {
-          description = "Extra flags to pass to the ${name} command.";
-          type = with lib.types; either str (listOf str);
           default = [ ];
+          description = "Extra flags to pass to the ${name} command.";
+
           example = [
             "--etcd-expose-metrics"
             "--cluster-cidr 10.24.0.0/16"
           ];
+
+          type = with lib.types; either str (listOf str);
         };
 
-        environmentFile = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
+        extraKubeProxyConfig = lib.mkOption {
+          default = { };
+
           description = ''
-            File path containing environment variables for configuring the ${name} service in the format of an EnvironmentFile. See {manpage}`systemd.exec(5)`.
+            Extra configuration to add to the kube-proxy's configuration file. The subset of the kube-proxy's
+            configuration that can be configured via a file is defined by the
+            [KubeProxyConfiguration](https://kubernetes.io/docs/reference/config-api/kube-proxy-config.v1alpha1/)
+            struct. Note that the kubeconfig param will be overriden by `clientConnection.kubeconfig`, so you must
+            set the `clientConnection.kubeconfig` option if you want to use `extraKubeProxyConfig`.
           '';
-          default = null;
+
+          example = {
+            clientConnection.kubeconfig = "/var/lib/rancher/${name}/agent/kubeproxy.kubeconfig";
+            mode = "nftables";
+          };
+
+          type = with lib.types; attrsOf anything;
         };
 
-        configPath = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
-          default = null;
-          description = "File path containing the ${name} YAML config. This is useful when the config is generated (for example on boot).";
+        extraKubeletConfig = lib.mkOption {
+          default = { };
+
+          description = ''
+            Extra configuration to add to the kubelet's configuration file. The subset of the kubelet's
+            configuration that can be configured via a file is defined by the
+            [KubeletConfiguration](https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1/)
+            struct. See the
+            [documentation](https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/)
+            for further information.
+          '';
+
+          example = {
+            containerLogMaxSize = "5Mi";
+            memoryThrottlingFactor = 0.69;
+            podsPerCore = 3;
+          };
+
+          type = with lib.types; attrsOf anything;
         };
 
-        disable = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          description = "Disable default components via the `--disable` flag.";
+        gracefulNodeShutdown = {
+          enable = lib.mkEnableOption ''
+            graceful node shutdowns where the kubelet attempts to detect
+            node system shutdown and terminates pods running on the node. See the
+            [documentation](https://kubernetes.io/docs/concepts/cluster-administration/node-shutdown/#graceful-node-shutdown)
+            for further information.
+          '';
+
+          shutdownGracePeriod = lib.mkOption {
+            default = "30s";
+
+            description = ''
+              Specifies the total duration that the node should delay the shutdown by. This is the total
+              grace period for pod termination for both regular and critical pods.
+            '';
+
+            example = "1m30s";
+            type = lib.types.nonEmptyStr;
+          };
+
+          shutdownGracePeriodCriticalPods = lib.mkOption {
+            default = "10s";
+
+            description = ''
+              Specifies the duration used to terminate critical pods during a node shutdown. This should be
+              less than `shutdownGracePeriod`.
+            '';
+
+            example = "15s";
+            type = lib.types.nonEmptyStr;
+          };
+        };
+
+        images = lib.mkOption {
           default = [ ];
-        };
 
-        nodeName = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          description = "Node name.";
-          default = null;
-        };
+          description = ''
+            List of derivations that provide container images.
+            All images are linked to {file}`${imageDir}` before ${name} starts and are consequently imported
+            by the ${name} agent. This option only makes sense on nodes with an enabled agent.
+          '';
 
-        nodeLabel = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          description = "Registering and starting kubelet with set of labels.";
-          default = [ ];
-        };
+          example = lib.literalExpression ''
+            [
+              (pkgs.dockerTools.pullImage {
+                imageName = "docker.io/bitnami/keycloak";
+                imageDigest = "sha256:714dfadc66a8e3adea6609bda350345bd3711657b7ef3cf2e8015b526bac2d6b";
+                hash = "sha256-IM2BLZ0EdKIZcRWOtuFY9TogZJXCpKtPZnMnPsGlq0Y=";
+                finalImageTag = "21.1.2-debian-11-r0";
+              })
+            ]
+          '';
 
-        nodeTaint = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          description = "Registering kubelet with set of taints.";
-          default = [ ];
-        };
-
-        nodeIP = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          description = "IPv4/IPv6 addresses to advertise for node.";
-          default = null;
-        };
-
-        nodeExternalIP = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          description = "IPv4/IPv6 external addresses to advertise for node.";
-          default = null;
-        };
-
-        selinux = lib.mkOption {
-          type = lib.types.bool;
-          description = "Enable SELinux in containerd.";
-          default = false;
+          type = with lib.types; listOf package;
         };
 
         manifests = lib.mkOption {
-          type = lib.types.attrsOf manifestModule;
           default = { };
+
+          description = ''
+            Auto-deploying manifests that are linked to {file}`${manifestDir}` before ${name} starts.
+            Note that deleting manifest files will not remove or otherwise modify the resources
+            it created. Please use the the `--disable` flag or `.skip` files to delete/disable AddOns,
+            as mentioned in the [docs](https://docs.k3s.io/installation/packaged-components#disabling-manifests).
+            This option only makes sense on server nodes (`role = server`).
+            Read the [auto-deploying manifests docs](https://docs.k3s.io/installation/packaged-components#auto-deploying-manifests-addons)
+            for further information.
+
+            **WARNING**: If you have multiple server nodes, and set this option on more than one server,
+            it is your responsibility to ensure that files stay in sync across those nodes. AddOn content is
+            not synced between nodes, and ${name} cannot guarantee correct behavior if different servers attempt
+            to deploy conflicting manifests.
+          '';
+
           example = lib.literalExpression ''
             {
               deployment.source = ../manifests/deployment.yaml;
@@ -609,205 +779,211 @@ let
               ];
             };
           '';
-          description = ''
-            Auto-deploying manifests that are linked to {file}`${manifestDir}` before ${name} starts.
-            Note that deleting manifest files will not remove or otherwise modify the resources
-            it created. Please use the the `--disable` flag or `.skip` files to delete/disable AddOns,
-            as mentioned in the [docs](https://docs.k3s.io/installation/packaged-components#disabling-manifests).
-            This option only makes sense on server nodes (`role = server`).
-            Read the [auto-deploying manifests docs](https://docs.k3s.io/installation/packaged-components#auto-deploying-manifests-addons)
-            for further information.
 
-            **WARNING**: If you have multiple server nodes, and set this option on more than one server,
-            it is your responsibility to ensure that files stay in sync across those nodes. AddOn content is
-            not synced between nodes, and ${name} cannot guarantee correct behavior if different servers attempt
-            to deploy conflicting manifests.
-          '';
+          type = lib.types.attrsOf manifestModule;
         };
 
-        containerdConfigTemplate = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
+        nodeExternalIP = lib.mkOption {
           default = null;
-          example = lib.literalExpression ''
-            # Base config
-            {{ template "base" . }}
-
-            # Add a custom runtime
-            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."custom"]
-              runtime_type = "io.containerd.runc.v2"
-            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes."custom".options]
-              BinaryName = "/path/to/custom-container-runtime"
-          '';
-          description = ''
-            Config template for containerd, to be placed at
-            `/var/lib/rancher/${name}/agent/etc/containerd/config.toml.tmpl`.
-            See the docs on [configuring containerd](https://docs.${name}.io/advanced#configuring-containerd).
-          '';
+          description = "IPv4/IPv6 external addresses to advertise for node.";
+          type = lib.types.nullOr lib.types.str;
         };
 
-        images = lib.mkOption {
-          type = with lib.types; listOf package;
+        nodeIP = lib.mkOption {
+          default = null;
+          description = "IPv4/IPv6 addresses to advertise for node.";
+          type = lib.types.nullOr lib.types.str;
+        };
+
+        nodeLabel = lib.mkOption {
           default = [ ];
-          example = lib.literalExpression ''
-            [
-              (pkgs.dockerTools.pullImage {
-                imageName = "docker.io/bitnami/keycloak";
-                imageDigest = "sha256:714dfadc66a8e3adea6609bda350345bd3711657b7ef3cf2e8015b526bac2d6b";
-                hash = "sha256-IM2BLZ0EdKIZcRWOtuFY9TogZJXCpKtPZnMnPsGlq0Y=";
-                finalImageTag = "21.1.2-debian-11-r0";
-              })
-            ]
-          '';
-          description = ''
-            List of derivations that provide container images.
-            All images are linked to {file}`${imageDir}` before ${name} starts and are consequently imported
-            by the ${name} agent. This option only makes sense on nodes with an enabled agent.
-          '';
+          description = "Registering and starting kubelet with set of labels.";
+          type = lib.types.listOf lib.types.str;
         };
 
-        gracefulNodeShutdown = {
-          enable = lib.mkEnableOption ''
-            graceful node shutdowns where the kubelet attempts to detect
-            node system shutdown and terminates pods running on the node. See the
-            [documentation](https://kubernetes.io/docs/concepts/cluster-administration/node-shutdown/#graceful-node-shutdown)
-            for further information.
-          '';
-
-          shutdownGracePeriod = lib.mkOption {
-            type = lib.types.nonEmptyStr;
-            default = "30s";
-            example = "1m30s";
-            description = ''
-              Specifies the total duration that the node should delay the shutdown by. This is the total
-              grace period for pod termination for both regular and critical pods.
-            '';
-          };
-
-          shutdownGracePeriodCriticalPods = lib.mkOption {
-            type = lib.types.nonEmptyStr;
-            default = "10s";
-            example = "15s";
-            description = ''
-              Specifies the duration used to terminate critical pods during a node shutdown. This should be
-              less than `shutdownGracePeriod`.
-            '';
-          };
+        nodeName = lib.mkOption {
+          default = null;
+          description = "Node name.";
+          type = lib.types.nullOr lib.types.str;
         };
 
-        extraKubeletConfig = lib.mkOption {
-          type = with lib.types; attrsOf anything;
-          default = { };
-          example = {
-            podsPerCore = 3;
-            memoryThrottlingFactor = 0.69;
-            containerLogMaxSize = "5Mi";
-          };
-          description = ''
-            Extra configuration to add to the kubelet's configuration file. The subset of the kubelet's
-            configuration that can be configured via a file is defined by the
-            [KubeletConfiguration](https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1/)
-            struct. See the
-            [documentation](https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/)
-            for further information.
-          '';
+        nodeTaint = lib.mkOption {
+          default = [ ];
+          description = "Registering kubelet with set of taints.";
+          type = lib.types.listOf lib.types.str;
         };
 
-        extraKubeProxyConfig = lib.mkOption {
-          type = with lib.types; attrsOf anything;
-          default = { };
-          example = {
-            mode = "nftables";
-            clientConnection.kubeconfig = "/var/lib/rancher/${name}/agent/kubeproxy.kubeconfig";
-          };
-          description = ''
-            Extra configuration to add to the kube-proxy's configuration file. The subset of the kube-proxy's
-            configuration that can be configured via a file is defined by the
-            [KubeProxyConfiguration](https://kubernetes.io/docs/reference/config-api/kube-proxy-config.v1alpha1/)
-            struct. Note that the kubeconfig param will be overriden by `clientConnection.kubeconfig`, so you must
-            set the `clientConnection.kubeconfig` option if you want to use `extraKubeProxyConfig`.
-          '';
+        role = lib.mkOption {
+          default = "server";
+          description = "Whether ${name} should run as a server or agent.";
+
+          type = lib.types.enum [
+            "server"
+            "agent"
+          ];
         };
 
-        autoDeployCharts = lib.mkOption {
-          type = lib.types.attrsOf autoDeployChartsModule;
-          apply = lib.mapAttrs mkAutoDeployChartManifest;
-          default = { };
-          example = lib.literalExpression ''
-            {
-              harbor = {
-                name = "harbor";
-                repo = "https://helm.goharbor.io";
-                version = "1.14.0";
-                hash = "sha256-fMP7q1MIbvzPGS9My91vbQ1d3OJMjwc+o8YE/BXZaYU=";
-                values = {
-                  existingSecretAdminPassword = "harbor-admin";
-                  expose = {
-                    tls = {
-                      enabled = true;
-                      certSource = "secret";
-                      secret.secretName = "my-tls-secret";
-                    };
-                    ingress = {
-                      hosts.core = "example.com";
-                      className = "nginx";
-                    };
-                  };
-                };
-              };
-              nginx = {
-                repo = "oci://registry-1.docker.io/bitnamicharts/nginx";
-                version = "20.0.0";
-                hash = "sha256-sy+tzB+i9jIl/tqOMzzuhVhTU4EZVsoSBtPznxF/36c=";
-              };
-              custom-chart = {
-                package = ../charts/my-chart.tgz;
-                values = ../values/my-values.yaml;
-                extraFieldDefinitions = {
-                  spec.timeout = "60s";
-                };
-              };
-            }
-          '';
-          description = ''
-            Auto deploying Helm charts that are installed by the ${name} Helm controller. Avoid using
-            attribute names that are also used in the [](#opt-services.${name}.manifests) and
-            [](#opt-services.${name}.charts) options. Manifests with the same name will override
-            auto deploying charts with the same name.
-            This option only makes sense on server nodes (`role = server`). See the
-            [${name} Helm documentation](https://docs.${name}.io/helm) for further information.
-
-            **WARNING**: If you have multiple server nodes, and set this option on more than one server,
-            it is your responsibility to ensure that files stay in sync across those nodes. AddOn content is
-            not synced between nodes, and ${name} cannot guarantee correct behavior if different servers attempt
-            to deploy conflicting manifests.
-          '';
+        selinux = lib.mkOption {
+          default = false;
+          description = "Enable SELinux in containerd.";
+          type = lib.types.bool;
         };
 
-        charts = lib.mkOption {
-          type = with lib.types; attrsOf (either path package);
-          default = { };
-          example = lib.literalExpression ''
-            nginx = ../charts/my-nginx-chart.tgz;
-            redis = ../charts/my-redis-chart.tgz;
-          '';
+        serverAddr = lib.mkOption {
+          default = "";
+          description = "The ${name} server to connect to, used to join a cluster.";
+          example = "https://10.0.0.10:6443";
+          type = lib.types.str;
+        };
+
+        token = lib.mkOption {
+          default = "";
+
           description = ''
-            Packaged Helm charts that are linked to {file}`${staticContentChartDir}` before ${name} starts.
-            The attribute name will be used as the link target (relative to {file}`${staticContentChartDir}`).
-            The specified charts will only be placed on the file system and made available via ${
-              if staticContentPort == null then
-                "the Kubernetes APIServer from within the cluster"
-              else
-                "port ${toString staticContentPort} on server nodes"
-            }. See the [](#opt-services.${name}.autoDeployCharts) option and the
-            [${name} Helm controller docs](https://docs.${name}.io/helm#using-the-helm-controller)
-            to deploy Helm charts. This option only makes sense on server nodes (`role = server`).
+            The ${name} token to use when connecting to a server.
+
+            **WARNING**: This option will expose your token unencrypted in the world-readable nix store.
+            If this is undesired use the tokenFile option instead.
           '';
+
+          type = lib.types.str;
+        };
+
+        tokenFile = lib.mkOption {
+          default = null;
+          description = "File path containing the ${name} token to use when connecting to a server.";
+          type = lib.types.nullOr lib.types.path;
         };
       };
 
       # implementation
-
       config = {
+        environment.systemPackages = [ config.services.${name}.package ];
+
+        systemd.services.${serviceName} =
+          let
+            kubeletParams =
+              (lib.optionalAttrs (cfg.gracefulNodeShutdown.enable) {
+                inherit (cfg.gracefulNodeShutdown) shutdownGracePeriod shutdownGracePeriodCriticalPods;
+              })
+              // cfg.extraKubeletConfig;
+            kubeletConfig = manifestFormat.generate "${name}-kubelet-config" (
+              {
+                apiVersion = "kubelet.config.k8s.io/v1beta1";
+                kind = "KubeletConfiguration";
+              }
+              // kubeletParams
+            );
+
+            kubeProxyConfig = manifestFormat.generate "${name}-kubeProxy-config" (
+              {
+                apiVersion = "kubeproxy.config.k8s.io/v1alpha1";
+                kind = "KubeProxyConfiguration";
+              }
+              // cfg.extraKubeProxyConfig
+            );
+          in
+          {
+            after = [
+              "firewall.service"
+              "network-online.target"
+            ];
+
+            description = "${name} service";
+            path = lib.optional config.boot.zfs.enabled config.boot.zfs.package;
+
+            serviceConfig = {
+              Delegate = "yes";
+              EnvironmentFile = cfg.environmentFile;
+
+              ExecStart = lib.concatStringsSep " \\\n " (
+                [ "${cfg.package}/bin/${name} ${cfg.role}" ]
+                ++ (lib.optional (cfg.serverAddr != "") "--server ${cfg.serverAddr}")
+                ++ (lib.optional (cfg.token != "") "--token ${cfg.token}")
+                ++ (lib.optional (cfg.tokenFile != null) "--token-file ${cfg.tokenFile}")
+                ++ (lib.optional (cfg.agentToken != "") "--agent-token ${cfg.agentToken}")
+                ++ (lib.optional (cfg.agentTokenFile != null) "--agent-token-file ${cfg.agentTokenFile}")
+                ++ (lib.optional (cfg.configPath != null) "--config ${cfg.configPath}")
+                ++ (map (d: "--disable=${d}") cfg.disable)
+                ++ (lib.optional (cfg.nodeName != null) "--node-name=${cfg.nodeName}")
+                ++ (lib.optionals (cfg.nodeLabel != [ ]) (map (l: "--node-label=${l}") cfg.nodeLabel))
+                ++ (lib.optionals (cfg.nodeTaint != [ ]) (map (t: "--node-taint=${t}") cfg.nodeTaint))
+                ++ (lib.optional (cfg.nodeIP != null) "--node-ip=${cfg.nodeIP}")
+                ++ (lib.optional (cfg.nodeExternalIP != null) "--node-external-ip=${cfg.nodeExternalIP}")
+                ++ (lib.optional cfg.selinux "--selinux")
+                ++ (lib.optional (kubeletParams != { }) "--kubelet-arg=config=${kubeletConfig}")
+                ++ (lib.optional (cfg.extraKubeProxyConfig != { }) "--kube-proxy-arg=config=${kubeProxyConfig}")
+                ++ extraBinFlags
+                ++ (lib.flatten cfg.extraFlags)
+              );
+
+              KillMode = "process";
+              LimitCORE = "infinity";
+              LimitNOFILE = 1048576;
+              LimitNPROC = "infinity";
+              Restart = "always";
+              RestartSec = "5s";
+              TasksMax = "infinity";
+              TimeoutStartSec = 0;
+              # See: https://github.com/rancher/k3s/blob/dddbd16305284ae4bd14c0aade892412310d7edc/install.sh#L197
+              Type = if cfg.role == "agent" then "exec" else "notify";
+            };
+
+            wantedBy = [ "multi-user.target" ];
+
+            wants = [
+              "firewall.service"
+              "network-online.target"
+            ];
+          };
+
+        # Use systemd-tmpfiles to activate content
+        systemd.tmpfiles.settings."10-${name}" =
+          let
+            # Merge manifest with manifests generated from auto deploying charts, keep only enabled manifests
+            enabledManifests = lib.filterAttrs (_: v: v.enable) (cfg.autoDeployCharts // cfg.manifests);
+            # Make a systemd-tmpfiles rule for a manifest
+            mkManifestRule = manifest: {
+              name = "${manifestDir}/${manifest.target}";
+
+              value = {
+                "L+".argument = "${manifest.source}";
+              };
+            };
+            # Make a systemd-tmpfiles rule for a container image
+            mkImageRule = image: {
+              name = "${imageDir}/${image.name}";
+
+              value = {
+                "L+".argument = "${image}";
+              };
+            };
+            # Merge charts with charts contained in enabled auto deploying charts
+            helmCharts =
+              (lib.concatMapAttrs (n: v: { ${n} = v.package; }) (
+                lib.filterAttrs (_: v: v.enable) cfg.autoDeployCharts
+              ))
+              // cfg.charts;
+            # Ensure that all chart targets have a .tgz suffix
+            mkChartTarget = name: if (lib.hasSuffix ".tgz" name) then name else name + ".tgz";
+            # Make a systemd-tmpfiles rule for a chart
+            mkChartRule = target: source: {
+              name = "${staticContentChartDir}/${mkChartTarget target}";
+
+              value = {
+                "L+".argument = "${source}";
+              };
+            };
+          in
+          (lib.mapAttrs' (_: v: mkManifestRule v) enabledManifests)
+          // (builtins.listToAttrs (map mkImageRule cfg.images))
+          // (lib.optionalAttrs (cfg.containerdConfigTemplate != null) {
+            ${containerdConfigTemplateFile} = {
+              "L+".argument = "${pkgs.writeText "config.toml.tmpl" cfg.containerdConfigTemplate}";
+            };
+          })
+          // (lib.mapAttrs' mkChartRule helmCharts);
+
         warnings =
           (lib.optional (cfg.role != "server" && cfg.manifests != { })
             "${name}: Auto deploying manifests are only installed on server nodes (role == server), they will be ignored by this node."
@@ -834,123 +1010,15 @@ let
           ++ (lib.optional (
             cfg.role == "agent" && (cfg.agentTokenFile != null || cfg.agentToken != "")
           ) "${name}: agentToken and agentTokenFile should not be set if role is 'agent'");
+      };
 
-        environment.systemPackages = [ config.services.${name}.package ];
-
-        # Use systemd-tmpfiles to activate content
-        systemd.tmpfiles.settings."10-${name}" =
-          let
-            # Merge manifest with manifests generated from auto deploying charts, keep only enabled manifests
-            enabledManifests = lib.filterAttrs (_: v: v.enable) (cfg.autoDeployCharts // cfg.manifests);
-            # Make a systemd-tmpfiles rule for a manifest
-            mkManifestRule = manifest: {
-              name = "${manifestDir}/${manifest.target}";
-              value = {
-                "L+".argument = "${manifest.source}";
-              };
-            };
-            # Make a systemd-tmpfiles rule for a container image
-            mkImageRule = image: {
-              name = "${imageDir}/${image.name}";
-              value = {
-                "L+".argument = "${image}";
-              };
-            };
-            # Merge charts with charts contained in enabled auto deploying charts
-            helmCharts =
-              (lib.concatMapAttrs (n: v: { ${n} = v.package; }) (
-                lib.filterAttrs (_: v: v.enable) cfg.autoDeployCharts
-              ))
-              // cfg.charts;
-            # Ensure that all chart targets have a .tgz suffix
-            mkChartTarget = name: if (lib.hasSuffix ".tgz" name) then name else name + ".tgz";
-            # Make a systemd-tmpfiles rule for a chart
-            mkChartRule = target: source: {
-              name = "${staticContentChartDir}/${mkChartTarget target}";
-              value = {
-                "L+".argument = "${source}";
-              };
-            };
-          in
-          (lib.mapAttrs' (_: v: mkManifestRule v) enabledManifests)
-          // (builtins.listToAttrs (map mkImageRule cfg.images))
-          // (lib.optionalAttrs (cfg.containerdConfigTemplate != null) {
-            ${containerdConfigTemplateFile} = {
-              "L+".argument = "${pkgs.writeText "config.toml.tmpl" cfg.containerdConfigTemplate}";
-            };
-          })
-          // (lib.mapAttrs' mkChartRule helmCharts);
-
-        systemd.services.${serviceName} =
-          let
-            kubeletParams =
-              (lib.optionalAttrs (cfg.gracefulNodeShutdown.enable) {
-                inherit (cfg.gracefulNodeShutdown) shutdownGracePeriod shutdownGracePeriodCriticalPods;
-              })
-              // cfg.extraKubeletConfig;
-            kubeletConfig = manifestFormat.generate "${name}-kubelet-config" (
-              {
-                apiVersion = "kubelet.config.k8s.io/v1beta1";
-                kind = "KubeletConfiguration";
-              }
-              // kubeletParams
-            );
-
-            kubeProxyConfig = manifestFormat.generate "${name}-kubeProxy-config" (
-              {
-                apiVersion = "kubeproxy.config.k8s.io/v1alpha1";
-                kind = "KubeProxyConfiguration";
-              }
-              // cfg.extraKubeProxyConfig
-            );
-          in
-          {
-            description = "${name} service";
-            after = [
-              "firewall.service"
-              "network-online.target"
-            ];
-            wants = [
-              "firewall.service"
-              "network-online.target"
-            ];
-            wantedBy = [ "multi-user.target" ];
-            path = lib.optional config.boot.zfs.enabled config.boot.zfs.package;
-            serviceConfig = {
-              # See: https://github.com/rancher/k3s/blob/dddbd16305284ae4bd14c0aade892412310d7edc/install.sh#L197
-              Type = if cfg.role == "agent" then "exec" else "notify";
-              KillMode = "process";
-              Delegate = "yes";
-              Restart = "always";
-              RestartSec = "5s";
-              LimitNOFILE = 1048576;
-              LimitNPROC = "infinity";
-              LimitCORE = "infinity";
-              TasksMax = "infinity";
-              TimeoutStartSec = 0;
-              EnvironmentFile = cfg.environmentFile;
-              ExecStart = lib.concatStringsSep " \\\n " (
-                [ "${cfg.package}/bin/${name} ${cfg.role}" ]
-                ++ (lib.optional (cfg.serverAddr != "") "--server ${cfg.serverAddr}")
-                ++ (lib.optional (cfg.token != "") "--token ${cfg.token}")
-                ++ (lib.optional (cfg.tokenFile != null) "--token-file ${cfg.tokenFile}")
-                ++ (lib.optional (cfg.agentToken != "") "--agent-token ${cfg.agentToken}")
-                ++ (lib.optional (cfg.agentTokenFile != null) "--agent-token-file ${cfg.agentTokenFile}")
-                ++ (lib.optional (cfg.configPath != null) "--config ${cfg.configPath}")
-                ++ (map (d: "--disable=${d}") cfg.disable)
-                ++ (lib.optional (cfg.nodeName != null) "--node-name=${cfg.nodeName}")
-                ++ (lib.optionals (cfg.nodeLabel != [ ]) (map (l: "--node-label=${l}") cfg.nodeLabel))
-                ++ (lib.optionals (cfg.nodeTaint != [ ]) (map (t: "--node-taint=${t}") cfg.nodeTaint))
-                ++ (lib.optional (cfg.nodeIP != null) "--node-ip=${cfg.nodeIP}")
-                ++ (lib.optional (cfg.nodeExternalIP != null) "--node-external-ip=${cfg.nodeExternalIP}")
-                ++ (lib.optional cfg.selinux "--selinux")
-                ++ (lib.optional (kubeletParams != { }) "--kubelet-arg=config=${kubeletConfig}")
-                ++ (lib.optional (cfg.extraKubeProxyConfig != { }) "--kube-proxy-arg=config=${kubeProxyConfig}")
-                ++ extraBinFlags
-                ++ (lib.flatten cfg.extraFlags)
-              );
-            };
-          };
+      paths = {
+        inherit
+          manifestDir
+          imageDir
+          containerdConfigTemplateFile
+          staticContentChartDir
+          ;
       };
     };
 in
@@ -969,6 +1037,6 @@ in
       (import ./rke2.nix args)
     ];
 
-  meta.teams = [ lib.teams.k3s ];
   meta.maintainers = pkgs.rke2.meta.maintainers;
+  meta.teams = [ lib.teams.k3s ];
 }

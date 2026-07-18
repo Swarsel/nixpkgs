@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   stdenvNoCC,
 }:
 
@@ -40,11 +40,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/bb010g/betterdiscordctl";
     description = "Utility for managing BetterDiscord on Linux";
+    homepage = "https://github.com/bb010g/betterdiscordctl";
     license = lib.licenses.mit;
-    mainProgram = "betterdiscordctl";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "betterdiscordctl";
   };
 })

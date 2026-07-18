@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  scons,
-  rubberband,
   boost,
   libjack2,
   liblo,
   libsamplerate,
   libsndfile,
+  pkg-config,
+  rubberband,
+  scons,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     scons
   ];
+
   buildInputs = [
     rubberband
     libsamplerate
@@ -44,8 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
   prefixKey = "PREFIX=";
 
   meta = {
-    homepage = "https://das.nasophon.de/klick/";
     description = "Advanced command-line metronome for JACK";
+    homepage = "https://das.nasophon.de/klick/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     mainProgram = "klick";

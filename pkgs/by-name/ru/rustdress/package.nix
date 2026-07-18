@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   cmake,
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,15 +18,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-vADuzT1q6nzNMtSykhmfaX6SMkWxQHHpKD/NrfWsCgI=";
   };
 
-  cargoHash = "sha256-LyWVuy/b1oaeBL2s1VUXHJefcgg13JqqEh24WSdk5nI=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-LyWVuy/b1oaeBL2s1VUXHJefcgg13JqqEh24WSdk5nI=";
 
   meta = {
     description = "Self-hosted Lightning Address Server";

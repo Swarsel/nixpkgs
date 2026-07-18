@@ -2,33 +2,33 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  autoconf,
-  automake,
-  gnum4,
-  pkg-config,
-  bison,
-  python3,
-  which,
-  boost,
-  curl,
-  ftgl,
-  freetype,
-  glew,
   SDL,
-  SDL_image,
-  SDL_mixer,
   SDL2,
   SDL2_image,
   SDL2_mixer,
+  SDL_image,
+  SDL_mixer,
+  autoconf,
+  automake,
+  bison,
+  boost,
+  curl,
+  freetype,
+  ftgl,
+  glew,
+  gnugrep,
+  gnum4,
   libGL,
   libGLU,
   libpng,
   libx11,
   libxml2,
-  protobuf,
-  xvfb-run,
-  gnugrep,
   nixosTests,
+  pkg-config,
+  protobuf,
+  python3,
+  which,
+  xvfb-run,
   dedicatedServer ? false,
   ...
 }:
@@ -42,9 +42,9 @@ let
       fetchArmagetron =
         rev: hash:
         fetchFromGitLab {
+          inherit rev hash;
           owner = "armagetronad";
           repo = "armagetronad";
-          inherit rev hash;
         };
     in
     {
@@ -58,6 +58,28 @@ let
         dedicatedServer: {
           inherit version;
           src = fetchArmagetron rev hash;
+
+          extraBuildInputs = lib.optionals (!dedicatedServer) [
+            libGL
+            libGLU
+            libx11
+            libpng
+            SDL
+            SDL_image
+            SDL_mixer
+          ];
+        };
+
+      # https://gitlab.com/armagetronad/armagetronad/-/commits/hack-0.2.8-sty+ct+ap/?ref_type=heads
+      "${latestVersionMajor}-sty+ct+ap" =
+        let
+          rev = "b74df624eae13e919b4b04f9b18043bce9d04431";
+          hash = "sha256-tjEcgyYxaGgHiIH8y9xYM7HEpgZa7DEWIVqK8r0dmaY=";
+        in
+        dedicatedServer: {
+          version = "${latestVersionMajor}-sty+ct+ap-${lib.substring 0 8 rev}";
+          src = fetchArmagetron rev hash;
+
           extraBuildInputs = lib.optionals (!dedicatedServer) [
             libGL
             libGLU
@@ -78,6 +100,7 @@ let
         dedicatedServer: {
           version = "${unstableVersionMajor}-${lib.substring 0 8 rev}";
           src = fetchArmagetron rev hash;
+
           extraBuildInputs = [
             protobuf
             boost
@@ -93,27 +116,8 @@ let
             SDL2_image
             SDL2_mixer
           ];
-          extraNativeBuildInputs = [ bison ];
-        };
 
-      # https://gitlab.com/armagetronad/armagetronad/-/commits/hack-0.2.8-sty+ct+ap/?ref_type=heads
-      "${latestVersionMajor}-sty+ct+ap" =
-        let
-          rev = "b74df624eae13e919b4b04f9b18043bce9d04431";
-          hash = "sha256-tjEcgyYxaGgHiIH8y9xYM7HEpgZa7DEWIVqK8r0dmaY=";
-        in
-        dedicatedServer: {
-          version = "${latestVersionMajor}-sty+ct+ap-${lib.substring 0 8 rev}";
-          src = fetchArmagetron rev hash;
-          extraBuildInputs = lib.optionals (!dedicatedServer) [
-            libGL
-            libGLU
-            libx11
-            libpng
-            SDL
-            SDL_image
-            SDL_mixer
-          ];
+          extraNativeBuildInputs = [ bison ];
         };
     };
 
@@ -143,25 +147,25 @@ let
         (minorVersionPart splitVersion "." 2) + (minorVersionPart versionParts "-" 1) + "-nixpkgs";
     in
     stdenv.mkDerivation {
-      pname = mainProgram;
       inherit (resolvedParams) version src;
-
+      pname = mainProgram;
       postPatch = resolvedParams.postPatch or "";
 
-      # Build works fine; install has a race.
-      enableParallelBuilding = true;
-      enableParallelInstalling = false;
+      nativeBuildInputs = [
+        autoconf
+        automake
+        gnum4
+        pkg-config
+        which
+        python3
+      ]
+      ++ (resolvedParams.extraNativeBuildInputs or [ ]);
 
-      preConfigure = ''
-        patchShebangs .
-
-        # Create the version.
-        echo "${majorVersion}" > major_version
-        echo "${minorVersion}" > minor_version
-
-        echo "Bootstrapping version: $(<major_version)$(<minor_version)" >&2
-        ./bootstrap.sh
-      '';
+      buildInputs = [
+        (libxml2.override { enableHttp = true; })
+        curl
+      ]
+      ++ (resolvedParams.extraBuildInputs or [ ]);
 
       configureFlags = [
         "--enable-automakedefaults"
@@ -176,27 +180,16 @@ let
       ++ lib.optional dedicatedServer "--enable-dedicated"
       ++ lib.optional (!dedicatedServer) "--enable-music";
 
-      buildInputs = [
-        (libxml2.override { enableHttp = true; })
-        curl
-      ]
-      ++ (resolvedParams.extraBuildInputs or [ ]);
+      preConfigure = ''
+        patchShebangs .
 
-      nativeBuildInputs = [
-        autoconf
-        automake
-        gnum4
-        pkg-config
-        which
-        python3
-      ]
-      ++ (resolvedParams.extraNativeBuildInputs or [ ]);
+        # Create the version.
+        echo "${majorVersion}" > major_version
+        echo "${minorVersion}" > minor_version
 
-      nativeInstallCheckInputs = [
-        gnugrep
-      ]
-      ++ lib.optional (!dedicatedServer) xvfb-run
-      ++ (resolvedParams.extraNativeInstallCheckInputs or [ ]);
+        echo "Bootstrapping version: $(<major_version)$(<minor_version)" >&2
+        ./bootstrap.sh
+      '';
 
       postInstall = lib.optionalString (!dedicatedServer) ''
         mkdir -p $out/share/{applications,icons/hicolor}
@@ -205,6 +198,12 @@ let
       '';
 
       doInstallCheck = true;
+
+      nativeInstallCheckInputs = [
+        gnugrep
+      ]
+      ++ lib.optional (!dedicatedServer) xvfb-run
+      ++ (resolvedParams.extraNativeInstallCheckInputs or [ ]);
 
       installCheckPhase = ''
         export XDG_RUNTIME_DIR=/tmp
@@ -232,6 +231,10 @@ let
         fi
       '';
 
+      # Build works fine; install has a race.
+      enableParallelBuilding = true;
+      enableParallelInstalling = false;
+
       passthru =
         if dedicatedServer then
           {
@@ -257,10 +260,10 @@ let
 
       meta = {
         inherit mainProgram;
-        homepage = "https://www.armagetronad.org";
         description = "Multiplayer networked arcade racing game in 3D similar to Tron";
-        maintainers = with lib.maintainers; [ numinit ];
+        homepage = "https://www.armagetronad.org";
         license = lib.licenses.gpl2Plus;
+        maintainers = with lib.maintainers; [ numinit ];
         platforms = lib.platforms.linux;
       };
     };

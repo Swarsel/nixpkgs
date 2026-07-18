@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,6 +19,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-5hMDkGvbm6x34HrhyNs2ycgNm9nW6nOIKJtKLMura0g=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   ldflags = [
     "-s"
@@ -26,13 +32,7 @@ buildGoModule (finalAttrs: {
     "-X=github.com/sacloud/usacloud/pkg/version.Revision=${finalAttrs.src.rev}"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
   versionCheckKeepEnvironment = [ "HOME" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

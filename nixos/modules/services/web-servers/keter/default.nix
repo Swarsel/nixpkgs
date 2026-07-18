@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -9,10 +9,6 @@ let
   yaml = pkgs.formats.yaml { };
 in
 {
-  meta = {
-    maintainers = with lib.maintainers; [ jappie ];
-  };
-
   imports = [
     (lib.mkRenamedOptionModule [ "services" "keter" "keterRoot" ] [ "services" "keter" "root" ])
     (lib.mkRenamedOptionModule [ "services" "keter" "keterPackage" ] [ "services" "keter" "package" ])
@@ -25,23 +21,57 @@ in
       Keep an old app running and swap the ports when the new one is booted
     '';
 
-    root = lib.mkOption {
-      type = lib.types.str;
-      default = "/var/lib/keter";
-      description = "Mutable state folder for keter";
-    };
-
     package = lib.mkPackageOption pkgs [ "haskellPackages" "keter" ] { };
 
+    bundle = {
+      appName = lib.mkOption {
+        default = "myapp";
+        description = "The name keter assigns to this bundle";
+        type = lib.types.str;
+      };
+
+      domain = lib.mkOption {
+        default = "example.com";
+        description = "The domain keter will bind to";
+        type = lib.types.str;
+      };
+
+      executable = lib.mkOption {
+        description = "The executable to be run";
+        type = lib.types.path;
+      };
+
+      publicScript = lib.mkOption {
+        default = "";
+
+        description = ''
+          Allows loading of public environment variables,
+          these are emitted to the log so it shouldn't contain secrets.
+        '';
+
+        example = "ADMIN_EMAIL=hi@example.com";
+        type = lib.types.str;
+      };
+
+      secretScript = lib.mkOption {
+        default = "";
+        description = "Allows loading of private environment variables";
+        example = "MY_AWS_KEY=$(cat /run/keys/AWS_ACCESS_KEY_ID)";
+        type = lib.types.str;
+      };
+    };
+
     globalKeterConfig = lib.mkOption {
+      description = "Global config for keter, see <https://github.com/snoyberg/keter/blob/master/etc/keter-config.yaml> for reference";
+
       type = lib.types.submodule {
-        freeformType = yaml.type;
         options = {
           ip-from-header = lib.mkOption {
             default = true;
-            type = lib.types.bool;
             description = "You want that ip-from-header in the nginx setup case. It allows nginx setting the original ip address rather then it being localhost (due to reverse proxying)";
+            type = lib.types.bool;
           };
+
           listeners = lib.mkOption {
             default = [
               {
@@ -49,20 +79,7 @@ in
                 port = 6981;
               }
             ];
-            type = lib.types.listOf (
-              lib.types.submodule {
-                options = {
-                  host = lib.mkOption {
-                    type = lib.types.str;
-                    description = "host";
-                  };
-                  port = lib.mkOption {
-                    type = lib.types.port;
-                    description = "port";
-                  };
-                };
-              }
-            );
+
             description = ''
               You want that ip-from-header in
               the nginx setup case.
@@ -70,56 +87,46 @@ in
               then it being localhost (due to reverse proxying).
               However if you configure keter to accept connections
               directly you may want to set this to false.'';
+
+            type = lib.types.listOf (
+              lib.types.submodule {
+                options = {
+                  host = lib.mkOption {
+                    description = "host";
+                    type = lib.types.str;
+                  };
+
+                  port = lib.mkOption {
+                    description = "port";
+                    type = lib.types.port;
+                  };
+                };
+              }
+            );
           };
+
           rotate-logs = lib.mkOption {
             default = false;
-            type = lib.types.bool;
+
             description = ''
               emits keter logs and it's applications to stderr.
               which allows journald to capture them.
               Set to true to let keter put the logs in files
               (useful on non systemd systems, this is the old approach
               where keter handled log management)'';
+
+            type = lib.types.bool;
           };
         };
+
+        freeformType = yaml.type;
       };
-      description = "Global config for keter, see <https://github.com/snoyberg/keter/blob/master/etc/keter-config.yaml> for reference";
     };
 
-    bundle = {
-      appName = lib.mkOption {
-        type = lib.types.str;
-        default = "myapp";
-        description = "The name keter assigns to this bundle";
-      };
-
-      executable = lib.mkOption {
-        type = lib.types.path;
-        description = "The executable to be run";
-      };
-
-      domain = lib.mkOption {
-        type = lib.types.str;
-        default = "example.com";
-        description = "The domain keter will bind to";
-      };
-
-      publicScript = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        description = ''
-          Allows loading of public environment variables,
-          these are emitted to the log so it shouldn't contain secrets.
-        '';
-        example = "ADMIN_EMAIL=hi@example.com";
-      };
-
-      secretScript = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        description = "Allows loading of private environment variables";
-        example = "MY_AWS_KEY=$(cat /run/keys/AWS_ACCESS_KEY_ID)";
-      };
+    root = lib.mkOption {
+      default = "/var/lib/keter";
+      description = "Mutable state folder for keter";
+      type = lib.types.str;
     };
 
   };
@@ -137,8 +144,8 @@ in
       bundle = pkgs.callPackage ./bundle.nix (
         cfg.bundle
         // {
-          keterExecutable = executable;
           keterDomain = cfg.bundle.domain;
+          keterExecutable = executable;
         }
       );
 
@@ -158,26 +165,28 @@ in
     in
     {
       systemd.services.keter = {
+        after = [
+          "network.target"
+          "local-fs.target"
+          "postgresql.target"
+        ];
+
         description = "keter app loader";
+
         script = ''
           set -xe
           mkdir -p ${incoming}
           ${lib.getExe cfg.package} ${globalKeterConfigFile};
         '';
-        wantedBy = [
-          "multi-user.target"
-          "nginx.service"
-        ];
 
         serviceConfig = {
           Restart = "always";
           RestartSec = "10s";
         };
 
-        after = [
-          "network.target"
-          "local-fs.target"
-          "postgresql.target"
+        wantedBy = [
+          "multi-user.target"
+          "nginx.service"
         ];
       };
 
@@ -186,20 +195,27 @@ in
       # Because the bundle content contains the nix path to the executable,
       # we inherit nix based cache busting.
       systemd.services.load-keter-bundle = {
-        description = "load keter bundle into incoming folder";
         after = [ "keter.service" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "load keter bundle into incoming folder";
+
+        path = [
+          executable
+          cfg.bundle.executable
+        ]; # this is a hack to get the executable copied over to the machine.
+
         # we can't override keter bundles because it'll stop the previous app
         # https://github.com/snoyberg/keter#deploying
         script = ''
           set -xe
           cp ${bundle}/bundle.tar.gz.keter ${incoming}/${cfg.bundle.appName}.keter
         '';
-        path = [
-          executable
-          cfg.bundle.executable
-        ]; # this is a hack to get the executable copied over to the machine.
+
+        wantedBy = [ "multi-user.target" ];
       };
     }
   );
+
+  meta = {
+    maintainers = with lib.maintainers; [ jappie ];
+  };
 }

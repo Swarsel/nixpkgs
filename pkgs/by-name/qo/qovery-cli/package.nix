@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   versionCheckHook,
   writableTmpDirAsHomeHook,
@@ -19,13 +19,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-GjfgdW5A2afQ46GfT3wjj+foxQEXsmI83NBaxU19uig=";
   };
 
-  vendorHash = "sha256-fZqzHJa5VFC1z5ZaHCXNyIKbwLjb3pSEb9FHs4YhWZg=";
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [ "-X github.com/qovery/qovery-cli/utils.Version=v${finalAttrs.version}" ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-fZqzHJa5VFC1z5ZaHCXNyIKbwLjb3pSEb9FHs4YhWZg=";
+  env.CGO_ENABLED = 0;
+  # need network
+  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd qovery-cli \
@@ -34,9 +32,6 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/qovery-cli completion zsh)
   '';
 
-  # need network
-  doCheck = false;
-
   doInstallCheck = true;
 
   nativeInstallCheckInputs = [
@@ -44,8 +39,8 @@ buildGoModule (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
+  ldflags = [ "-X github.com/qovery/qovery-cli/utils.Version=v${finalAttrs.version}" ];
   versionCheckKeepEnvironment = [ "HOME" ];
-
   versionCheckProgramArg = "version";
 
   meta = {

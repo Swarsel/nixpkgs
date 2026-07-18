@@ -1,18 +1,18 @@
 {
-  libopus,
-  opusfile,
-  libopusenc,
-  libogg,
-  libctb,
-  gsmlib,
-  lua,
   curl,
   ffmpeg,
-  libmysqlclient,
-  libpq,
-  spandsp3,
-  sofia_sip,
+  gsmlib,
+  libctb,
   libks,
+  libmysqlclient,
+  libogg,
+  libopus,
+  libopusenc,
+  libpq,
+  lua,
+  opusfile,
+  sofia_sip,
+  spandsp3,
 }:
 
 let
@@ -131,10 +131,12 @@ in
   endpoints = {
     alsa = mk "endpoints/mod_alsa" [ ];
     dingaling = mk "endpoints/mod_dingaling" [ ];
+
     gsmopen = mk "endpoints/mod_gsmopen" [
       gsmlib
       libctb
     ];
+
     h323 = mk "endpoints/mod_h323" [ ];
     khomp = mk "endpoints/mod_khomp" [ ];
     loopback = mk "endpoints/mod_loopback" [ ];
@@ -156,28 +158,30 @@ in
     erlang_event = mk "event_handlers/mod_erlang_event" [ ];
     event_multicast = mk "event_handlers/mod_event_multicast" [ ];
     event_socket = mk "event_handlers/mod_event_socket" [ ];
+    event_zmq = mk "event_handlers/mod_event_zmq" [ ];
     fail2ban = mk "event_handlers/mod_fail2ban" [ ];
     format_cdr = mk "event_handlers/mod_format_cdr" [ ];
     json_cdr = mk "event_handlers/mod_json_cdr" [ ];
-    radius_cdr = mk "event_handlers/mod_radius_cdr" [ ];
-    odbc_cdr = mk "event_handlers/mod_odbc_cdr" [ ];
     kazoo = mk "event_handlers/mod_kazoo" [ ];
+    odbc_cdr = mk "event_handlers/mod_odbc_cdr" [ ];
+    radius_cdr = mk "event_handlers/mod_radius_cdr" [ ];
     rayo = mk "event_handlers/mod_rayo" [ ];
     smpp = mk "event_handlers/mod_smpp" [ ];
     snmp = mk "event_handlers/mod_snmp" [ ];
-    event_zmq = mk "event_handlers/mod_event_zmq" [ ];
   };
 
   formats = {
     imagick = mk "formats/mod_imagick" [ ];
     local_stream = mk "formats/mod_local_stream" [ ];
     native_file = mk "formats/mod_native_file" [ ];
+
     opusfile = mk "formats/mod_opusfile" [
       libopus
       opusfile
       libopusenc
       libogg
     ];
+
     png = mk "formats/mod_png" [ ];
     portaudio_stream = mk "formats/mod_portaudio_stream" [ ];
     shell_stream = mk "formats/mod_shell_stream" [ ];
@@ -188,6 +192,8 @@ in
     vlc = mk "formats/mod_vlc" [ ];
     webm = mk "formats/mod_webm" [ ];
   };
+
+  freetdm = mk "../../libs/freetdm/mod_freetdm" [ ];
 
   languages = {
     basic = mk "languages/mod_basic" [ ];
@@ -204,8 +210,8 @@ in
     console = mk "loggers/mod_console" [ ];
     graylog2 = mk "loggers/mod_graylog2" [ ];
     logfile = mk "loggers/mod_logfile" [ ];
-    syslog = mk "loggers/mod_syslog" [ ];
     raven = mk "loggers/mod_raven" [ ];
+    syslog = mk "loggers/mod_syslog" [ ];
   };
 
   say = {
@@ -238,13 +244,10 @@ in
     cdr = mk "xml_int/mod_xml_cdr" [ ];
     curl = mk "xml_int/mod_xml_curl" [ curl ];
     ldap = mk "xml_int/mod_xml_ldap" [ ];
+    # experimental
+    odbc = mk "../../contrib/mod/xml_int/mod_xml_odbc" [ ];
     radius = mk "xml_int/mod_xml_radius" [ ];
     rpc = mk "xml_int/mod_xml_rpc" [ ];
     scgi = mk "xml_int/mod_xml_scgi" [ ];
-
-    # experimental
-    odbc = mk "../../contrib/mod/xml_int/mod_xml_odbc" [ ];
   };
-
-  freetdm = mk "../../libs/freetdm/mod_freetdm" [ ];
 }

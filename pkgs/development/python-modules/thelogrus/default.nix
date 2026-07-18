@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dateutils,
-  fetchFromGitHub,
   poetry-core,
   pyaml,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "thelogrus";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "unixorn";
@@ -23,8 +22,6 @@ buildPythonPackage rec {
     poetry-core
   ];
 
-  pythonRelaxDeps = [ "pyaml" ];
-
   propagatedBuildInputs = [
     dateutils
     pyaml
@@ -32,15 +29,16 @@ buildPythonPackage rec {
 
   # Module has no unit tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "thelogrus" ];
+  pythonRelaxDeps = [ "pyaml" ];
 
   meta = {
     description = "Python 3 version of logrus";
-    mainProgram = "human-time";
     homepage = "https://github.com/unixorn/thelogrus";
     changelog = "https://github.com/unixorn/thelogrus/blob/${version}/ChangeLog.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "human-time";
   };
 }

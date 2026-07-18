@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,13 +18,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-UrsvUMdLWGX2QRFLxBLvMW1B5vZdcWI/lpyKiNAtA2o=";
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru.updateScript = nix-update-script { };
 

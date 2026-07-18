@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "strict-rfc3339";
   version = "0.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,11 +14,12 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
+  format = "setuptools";
 
   meta = {
+    description = "Strict, simple, lightweight RFC3339 functions";
     homepage = "https://github.com/danielrichman/strict-rfc3339";
     license = lib.licenses.gpl3;
-    description = "Strict, simple, lightweight RFC3339 functions";
     maintainers = with lib.maintainers; [ vanschelven ];
   };
 }

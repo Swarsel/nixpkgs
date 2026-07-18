@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  makeWrapper,
-  gmp,
   gcc,
+  gmp,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,28 +23,29 @@ stdenv.mkDerivation rec {
     # "Array sys_siglist[] never was part of the public interface. Replace it with calls to psiginfo()."
     (fetchpatch {
       name = "sys_siglist.patch";
-      url = "https://github.com/jcbeaudoin/MKCL/commit/0777dd08254c88676f4f101117b10786b22111d6.patch";
       sha256 = "1dnr1jzha77nrxs22mclrcqyqvxxn6q1sfn35qjs77fi3jcinjsc";
+      url = "https://github.com/jcbeaudoin/MKCL/commit/0777dd08254c88676f4f101117b10786b22111d6.patch";
     })
 
     # Pull upstream fix for -fno-common toolchins like gcc-10
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://gitlab.common-lisp.net/mkcl/mkcl/-/commit/ef1981dbf4ceb1793cd6434e66e97b3db48b4ea0.patch";
       sha256 = "00y6qanwvgb1r4haaqmvz7lbqa51l4wcnns1rwlfgvcvkpjc3dif";
+      url = "https://gitlab.common-lisp.net/mkcl/mkcl/-/commit/ef1981dbf4ceb1793cd6434e66e97b3db48b4ea0.patch";
     })
   ];
 
   nativeBuildInputs = [ makeWrapper ];
-
   propagatedBuildInputs = [ gmp ];
-
-  hardeningDisable = [ "format" ];
 
   configureFlags = [
     "GMP_CFLAGS=-I${lib.getDev gmp}/include"
     "GMP_LDFLAGS=-L${gmp.out}/lib"
   ];
+
+  env = {
+    NIX_CFLAGS_COMPILE = "-std=gnu17";
+  };
 
   # tinycc configure flags copied from the tinycc derivation.
   postConfigure = ''
@@ -58,23 +59,20 @@ stdenv.mkDerivation rec {
     )
   '';
 
-  env = {
-    NIX_CFLAGS_COMPILE = "-std=gnu17";
-  };
-
   postInstall = ''
     wrapProgram $out/bin/mkcl --prefix PATH : "${gcc}/bin" --set-default LANG "C.UTF-8"
   '';
 
   enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
 
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "ANSI Common Lisp Implementation";
     homepage = "https://common-lisp.net/project/mkcl/";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "mkcl";
-    teams = [ lib.teams.lisp ];
     platforms = lib.platforms.linux;
+    mainProgram = "mkcl";
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
+    teams = [ lib.teams.lisp ];
   };
 }

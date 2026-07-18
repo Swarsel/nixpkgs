@@ -3,16 +3,16 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   haskellPackages,
+  makeWrapper,
   extraPackages ? (s: [ ]),
 }:
 let
   yiEnv = haskellPackages.ghcWithPackages (self: [ self.yi ] ++ extraPackages self);
 in
 stdenv.mkDerivation {
+  inherit (haskellPackages.yi) meta version;
   pname = "yi-custom";
-  dontUnpack = true;
   nativeBuildInputs = [ makeWrapper ];
 
   buildCommand = ''
@@ -21,8 +21,7 @@ stdenv.mkDerivation {
       --set NIX_GHC ${yiEnv}/bin/ghc
   '';
 
+  dontUnpack = true;
   # For hacking purposes
   passthru.env = yiEnv;
-
-  inherit (haskellPackages.yi) meta version;
 }

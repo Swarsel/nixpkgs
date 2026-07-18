@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "pyhomepilot";
   version = "0.0.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "nico0302";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyhomepilot" ];
 
   meta = {

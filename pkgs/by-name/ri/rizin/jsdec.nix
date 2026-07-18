@@ -3,20 +3,20 @@
   stdenv,
   fetchFromGitHub,
   meson,
-  pkg-config,
   ninja,
-  rizin,
   openssl,
+  pkg-config,
+  rizin,
 }:
 
 let
   version = "0.8.0";
 
   libquickjs = fetchFromGitHub {
+    hash = "sha256-o0Cpy+20EqNdNENaYlasJcKIGU7W4RYBcTMsQwFTUNc=";
     owner = "quickjs-ng";
     repo = "quickjs";
     tag = "v${version}";
-    hash = "sha256-o0Cpy+20EqNdNENaYlasJcKIGU7W4RYBcTMsQwFTUNc=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -30,10 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Xc8FMKSGdjrp288u49R6YC0xiynwHeoZe2P/UqnfsFU=";
   };
 
-  postUnpack = ''
-    cp -r --no-preserve=mode ${libquickjs} $sourceRoot/subprojects/libquickjs
-  '';
-
   postPatch = ''
     cp subprojects/packagefiles/libquickjs/* subprojects/libquickjs
   '';
@@ -43,20 +39,27 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
   ];
+
   buildInputs = [
     openssl
     rizin
   ];
 
+  postUnpack = ''
+    cp -r --no-preserve=mode ${libquickjs} $sourceRoot/subprojects/libquickjs
+  '';
+
   meta = {
     description = "Simple decompiler for Rizin";
     homepage = finalAttrs.src.meta.homepage;
     changelog = "${finalAttrs.src.meta.homepage}/releases/tag/${finalAttrs.src.rev}";
+
     license = with lib.licenses; [
       asl20
       bsd3
       mit
     ];
+
     maintainers = with lib.maintainers; [ chayleaf ];
   };
 })

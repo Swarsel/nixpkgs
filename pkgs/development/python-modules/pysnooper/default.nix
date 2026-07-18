@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysnooper";
   version = "1.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cool-RR";
@@ -19,15 +18,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-+Cjqi0xkWO4QVAZymmcper4dal9pNWbpPgPY4UzbXfA=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # timing-sensitive and often breaks on Darwin
     "test_relative_time"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pysnooper" ];
 
   meta = {

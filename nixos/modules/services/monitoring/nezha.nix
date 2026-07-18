@@ -13,14 +13,56 @@ let
   configFile = settingsFormat.generate "config.json" cfg.settings;
 in
 {
-  meta.maintainers = with lib.maintainers; [ moraxyc ];
   options = {
     services.nezha = {
       enable = lib.mkEnableOption "Nezha Monitoring";
-
       package = lib.mkPackageOption pkgs "nezha" { };
 
+      agentSecretFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          Path to the file containing the secret used by agents to connect.
+        '';
+
+        type = lib.types.path;
+      };
+
       debug = lib.mkEnableOption "verbose log";
+
+      extraThemes = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          A list of additional themes.
+        '';
+
+        example = lib.literalExpression "[ pkgs.nezha-theme-nazhua ]";
+        type = lib.types.listOf lib.types.package;
+      };
+
+      jwtSecretFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          Path to the file containing the secret to sign web requests using JSON Web Tokens.
+        '';
+
+        type = lib.types.path;
+      };
+
+      mutableConfig = lib.mkOption {
+        default = true;
+
+        description = ''
+          Whether the config.yaml is writable by Nezha.
+
+          If this option is disabled, changes on the web interface won't
+          be possible. If an config.yaml is present, it will be overwritten.
+        '';
+
+        type = lib.types.bool;
+      };
 
       settings = lib.mkOption {
         description = ''
@@ -28,63 +70,33 @@ in
           Check the [guide](https://nezha.wiki/en_US/guide/dashboard.html)
           for possible options.
         '';
-        type = lib.types.submodule {
-          freeformType = settingsFormat.type;
 
+        type = lib.types.submodule {
           options = {
             listenhost = lib.mkOption {
-              type = lib.types.str;
               default = "127.0.0.1";
+
               description = ''
                 Host on which the nezha web interface and grpc should listen.
               '';
+
+              type = lib.types.str;
             };
+
             listenport = lib.mkOption {
-              type = lib.types.port;
               default = 8008;
+
               description = ''
                 Port on which the nezha web interface and grpc should listen.
               '';
+
+              type = lib.types.port;
             };
 
           };
+
+          freeformType = settingsFormat.type;
         };
-      };
-
-      mutableConfig = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether the config.yaml is writable by Nezha.
-
-          If this option is disabled, changes on the web interface won't
-          be possible. If an config.yaml is present, it will be overwritten.
-        '';
-      };
-
-      jwtSecretFile = lib.mkOption {
-        type = lib.types.path;
-        default = null;
-        description = ''
-          Path to the file containing the secret to sign web requests using JSON Web Tokens.
-        '';
-      };
-
-      agentSecretFile = lib.mkOption {
-        type = lib.types.path;
-        default = null;
-        description = ''
-          Path to the file containing the secret used by agents to connect.
-        '';
-      };
-
-      extraThemes = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        example = lib.literalExpression "[ pkgs.nezha-theme-nazhua ]";
-        description = ''
-          A list of additional themes.
-        '';
       };
     };
   };
@@ -93,67 +105,8 @@ in
     services.nezha.settings.debug = cfg.debug;
 
     systemd.services.nezha = {
-      serviceConfig = {
-        Restart = "on-failure";
-        StateDirectory = "nezha";
-        RuntimeDirectory = "nezha";
-        ConfigurationDirectory = "nezha";
-        WorkingDirectory = "/var/lib/nezha";
-        ReadWritePaths = [
-          "/var/lib/nezha"
-          "/etc/nezha"
-        ];
-
-        LoadCredential = [
-          "jwt-secret:${cfg.jwtSecretFile}"
-          "agent-secret:${cfg.agentSecretFile}"
-        ];
-
-        # Hardening
-        ProcSubset = "pid";
-        DynamicUser = true;
-        RemoveIPC = true;
-        LockPersonality = true;
-        ProtectClock = true;
-        MemoryDenyWriteExecute = true;
-        PrivateUsers = cfg.settings.listenport >= 1024; # incompatible with CAP_NET_BIND_SERVICE
-        ProtectHostname = true;
-        RestrictSUIDSGID = true;
-        CapabilityBoundingSet = lib.optionalString (cfg.settings.listenport < 1024) "CAP_NET_BIND_SERVICE";
-        AmbientCapabilities = lib.optionalString (cfg.settings.listenport < 1024) "CAP_NET_BIND_SERVICE";
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        ProtectControlGroups = true;
-        ProtectHome = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectProc = "invisible";
-        ProtectSystem = "strict";
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        SystemCallArchitectures = "native";
-        UMask = "0066";
-        SystemCallFilter = [
-          "@system-service"
-          "~@privileged"
-        ]
-        ++ lib.optional (cfg.settings ? tsdb) "mincore";
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-        ];
-        PrivateDevices = "yes";
-
-        ExecStart =
-          let
-            package = cfg.package.override { withThemes = cfg.extraThemes; };
-          in
-          ''${lib.getExe package} -c "''${CONFIGURATION_DIRECTORY}"/config.yaml -db "''${STATE_DIRECTORY}"/sqlite.db'';
-      };
       enableStrictShellChecks = true;
-      startLimitIntervalSec = 10;
-      startLimitBurst = 3;
+
       preStart = ''
         cp "${configFile}" "''${RUNTIME_DIRECTORY}"/new
         ${lib.getExe pkgs.jq} \
@@ -173,7 +126,77 @@ in
         ''}
         mv "''${RUNTIME_DIRECTORY}"/new  "''${CONFIGURATION_DIRECTORY}"/config.yaml
       '';
+
+      serviceConfig = {
+        AmbientCapabilities = lib.optionalString (cfg.settings.listenport < 1024) "CAP_NET_BIND_SERVICE";
+        CapabilityBoundingSet = lib.optionalString (cfg.settings.listenport < 1024) "CAP_NET_BIND_SERVICE";
+        ConfigurationDirectory = "nezha";
+        DynamicUser = true;
+
+        ExecStart =
+          let
+            package = cfg.package.override { withThemes = cfg.extraThemes; };
+          in
+          ''${lib.getExe package} -c "''${CONFIGURATION_DIRECTORY}"/config.yaml -db "''${STATE_DIRECTORY}"/sqlite.db'';
+
+        LoadCredential = [
+          "jwt-secret:${cfg.jwtSecretFile}"
+          "agent-secret:${cfg.agentSecretFile}"
+        ];
+
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateDevices = "yes";
+        PrivateTmp = true;
+        PrivateUsers = cfg.settings.listenport >= 1024; # incompatible with CAP_NET_BIND_SERVICE
+        # Hardening
+        ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+
+        ReadWritePaths = [
+          "/var/lib/nezha"
+          "/etc/nezha"
+        ];
+
+        RemoveIPC = true;
+        Restart = "on-failure";
+
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RuntimeDirectory = "nezha";
+        StateDirectory = "nezha";
+        SystemCallArchitectures = "native";
+
+        SystemCallFilter = [
+          "@system-service"
+          "~@privileged"
+        ]
+        ++ lib.optional (cfg.settings ? tsdb) "mincore";
+
+        UMask = "0066";
+        WorkingDirectory = "/var/lib/nezha";
+      };
+
+      startLimitBurst = 3;
+      startLimitIntervalSec = 10;
       wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ moraxyc ];
 }

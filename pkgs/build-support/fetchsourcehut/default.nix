@@ -1,9 +1,9 @@
 {
   lib,
-  repoRevToNameMaybe,
   fetchgit,
   fetchhg,
   fetchzip,
+  repoRevToNameMaybe,
 }:
 
 let
@@ -18,12 +18,12 @@ makeOverridable (
   {
     owner,
     repo,
+    domain ? "sr.ht",
+    fetchSubmodules ? false,
+    name ? repoRevToNameMaybe repo (lib.revOrTag rev tag) "sourcehut",
     rev ? null,
     tag ? null,
-    name ? repoRevToNameMaybe repo (lib.revOrTag rev tag) "sourcehut",
-    domain ? "sr.ht",
     vc ? "git",
-    fetchSubmodules ? false,
     ... # For hash agility
   }@args:
 
@@ -63,28 +63,35 @@ makeOverridable (
     fetcher = if fetchSubmodules then vc else "zip";
     cases = {
       git = {
-        fetch = fetchgit;
         arguments = vcArgs // {
           fetchSubmodules = true;
         };
+
+        fetch = fetchgit;
       };
+
       hg = {
-        fetch = fetchhg;
         arguments = vcArgs // {
           fetchSubrepos = true;
         };
+
+        fetch = fetchhg;
       };
+
       zip = {
-        fetch = fetchzip;
         arguments = baseArgs // {
-          url = "${baseUrl}/archive/${rev'}.tar.gz";
           postFetch = optionalString (vc == "hg") ''
             rm -f "$out/.hg_archival.txt"
           ''; # impure file; see #12002
+
+          url = "${baseUrl}/archive/${rev'}.tar.gz";
+
           passthru = (args.passthru or { }) // {
             gitRepoUrl = urlFor "git";
           };
         };
+
+        fetch = fetchzip;
       };
     };
   in

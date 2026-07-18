@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   csdr,
 }:
 
 buildPythonPackage rec {
   pname = "pycsdr";
   version = "0.18.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jketterl";
@@ -18,14 +17,14 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ csdr ];
-
   # has no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "pycsdr" ];
 
   meta = {
-    homepage = "https://github.com/jketterl/pycsdr";
     description = "Bindings for the csdr library";
+    homepage = "https://github.com/jketterl/pycsdr";
     license = lib.licenses.gpl3Only;
   };
 }

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  libtool,
-  autoreconfHook,
-  pkg-config,
   autoconf-archive,
-  libxml2,
-  icu,
-  zlib,
+  autoreconfHook,
   bzip2,
-  libtar,
   frog,
+  gitUpdater,
+  icu,
+  libtar,
+  libtool,
+  libxml2,
+  pkg-config,
   timblserver,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,7 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests = {
       /**
         Reverse dependencies. Does not respect overrides.
@@ -54,14 +53,16 @@ stdenv.mkDerivation (finalAttrs: {
         inherit frog timblserver;
       };
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "This module contains useful functions for general use in the TiCC software stack and beyond";
     homepage = "https://github.com/LanguageMachines/ticcutils";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ roberth ];
+    platforms = lib.platforms.all;
   };
 
 })

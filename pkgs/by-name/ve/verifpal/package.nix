@@ -18,10 +18,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-BvaCEqxdY16oHb2jHsqu6mL4ZNtIhY4S+OnrqQ80Yhc=";
 
   meta = {
-    homepage = "https://verifpal.com/";
     description = "Cryptographic protocol analysis for students and engineers";
-    mainProgram = "verifpal";
-    maintainers = with lib.maintainers; [ zimbatm ];
+    homepage = "https://verifpal.com/";
     license = with lib.licenses; [ gpl3 ];
+    maintainers = with lib.maintainers; [ zimbatm ];
+    mainProgram = "verifpal";
   };
 })

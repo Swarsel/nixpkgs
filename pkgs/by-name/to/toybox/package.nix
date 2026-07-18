@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  which,
   buildPackages,
-  libxcrypt,
   libiconv,
-  enableStatic ? stdenv.hostPlatform.isStatic,
+  libxcrypt,
+  which,
   enableMinimal ? false,
+  enableStatic ? stdenv.hostPlatform.isStatic,
   extraConfig ? "",
 }:
 
@@ -16,6 +16,7 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit extraConfig;
   pname = "toybox";
   version = "0.8.13";
 
@@ -26,9 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-b5sigIxyg4T4wVc5z8Das+RdEXmNBPFsXpWwXxU/ERE=";
   };
 
-  depsBuildBuild = optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
-    buildPackages.stdenv.cc
-  ];
+  postPatch = "patchShebangs .";
+
   buildInputs = [
     libxcrypt
   ]
@@ -40,9 +40,22 @@ stdenv.mkDerivation (finalAttrs: {
     stdenv.cc.libc.static
   ];
 
-  postPatch = "patchShebangs .";
+  makeFlags = [
+    "PREFIX=$(out)/bin"
+    "CC=${stdenv.cc.targetPrefix}cc"
+  ]
+  ++ optionals (enableStatic && !stdenv.hostPlatform.isDarwin) [
+    "LDFLAGS=--static"
+  ];
 
-  inherit extraConfig;
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
+  # tests currently (as of 0.8.0) get stuck in an infinite loop...
+  # ...this is fixed in latest git, so doCheck can likely be enabled for next release
+  # see https://github.com/landley/toybox/commit/b928ec480cd73fd83511c0f5ca786d1b9f3167c3
+  #doCheck = true;
+  nativeCheckInputs = [ which ]; # used for tests with checkFlags = [ "DEBUG=true" ];
+  __structuredAttrs = true;
+  checkTarget = "tests";
 
   configurePhase = ''
     make ${
@@ -63,38 +76,23 @@ stdenv.mkDerivation (finalAttrs: {
     make oldconfig
   '';
 
+  depsBuildBuild = optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    buildPackages.stdenv.cc
+  ];
+
   hardeningDisable = lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isStatic) [
     # breaks string.h header in musl
     "fortify"
   ];
 
-  makeFlags = [
-    "PREFIX=$(out)/bin"
-    "CC=${stdenv.cc.targetPrefix}cc"
-  ]
-  ++ optionals (enableStatic && !stdenv.hostPlatform.isDarwin) [
-    "LDFLAGS=--static"
-  ];
-
   installTargets = [ "install_flat" ];
-
-  # tests currently (as of 0.8.0) get stuck in an infinite loop...
-  # ...this is fixed in latest git, so doCheck can likely be enabled for next release
-  # see https://github.com/landley/toybox/commit/b928ec480cd73fd83511c0f5ca786d1b9f3167c3
-  #doCheck = true;
-  nativeCheckInputs = [ which ]; # used for tests with checkFlags = [ "DEBUG=true" ];
-  checkTarget = "tests";
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
-
-  __structuredAttrs = true;
 
   meta = {
     description = "Lightweight implementation of some Unix command line utilities";
     homepage = "https://landley.net/toybox/";
     license = lib.licenses.bsd0;
-    platforms = with lib.platforms; linux ++ darwin ++ freebsd;
     maintainers = with lib.maintainers; [ hhm ];
+    platforms = with lib.platforms; linux ++ darwin ++ freebsd;
     priority = 10;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,13 +16,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-aKOjU6LhixVpMW2JUkI++jjd4eQbv3w4apBjLbfqpvw=";
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  doCheck = false;
 
   meta = {
     description = "SCIP (SCIP Code Intelligence Protocol) indexer for Golang";

@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  pkgsHostHost,
-  pkgsBuildBuild,
-  file,
-  curl,
-  pkg-config,
-  python3,
-  openssl,
+  cargo-auditable,
   cmake,
-  zlib,
+  curl,
+  file,
   installShellFiles,
   makeWrapper,
+  openssl,
+  pkg-config,
+  pkgsBuildBuild,
+  pkgsHostHost,
+  python3,
   rustPlatform,
   rustc,
+  zlib,
   auditable ? !cargo-auditable.meta.broken,
-  cargo-auditable,
 }:
 
 rustPlatform.buildRustPackage.override
@@ -23,22 +23,9 @@ rustPlatform.buildRustPackage.override
     cargo-auditable = cargo-auditable.bootstrap;
   }
   {
-    pname = "cargo";
     inherit (rustc.unwrapped) version src;
-
-    # the rust source tarball already has all the dependencies vendored, no need to fetch them again
-    cargoVendorDir = "vendor";
-    buildAndTestSubdir = "src/tools/cargo";
-
     inherit auditable;
-
-    passthru = {
-      rustc = rustc;
-      inherit (rustc.unwrapped) tests;
-    };
-
-    # changes hash of vendor directory otherwise
-    dontUpdateAutotoolsGnuConfigScripts = true;
+    pname = "cargo";
 
     nativeBuildInputs = [
       pkg-config
@@ -48,6 +35,7 @@ rustPlatform.buildRustPackage.override
       (lib.getDev pkgsHostHost.curl)
       zlib
     ];
+
     buildInputs = [
       file
       curl
@@ -69,6 +57,15 @@ rustPlatform.buildRustPackage.override
       # Upstream defaults to lld on x86_64-unknown-linux-gnu, we want to use our linker
       RUSTFLAGS = "-Clinker-features=-lld -Clink-self-contained=-linker";
     };
+
+    # Disable check phase as there are failures (4 tests fail)
+    doCheck = false;
+
+    checkPhase = ''
+      # Disable cross compilation tests
+      export CFG_DISABLE_CROSS_TESTS=1
+      cargo test
+    '';
 
     postInstall = ''
       wrapProgram "$out/bin/cargo" --suffix PATH : "${rustc}/bin"
@@ -93,33 +90,38 @@ rustPlatform.buildRustPackage.override
         ''
     );
 
-    checkPhase = ''
-      # Disable cross compilation tests
-      export CFG_DISABLE_CROSS_TESTS=1
-      cargo test
-    '';
-
-    # Disable check phase as there are failures (4 tests fail)
-    doCheck = false;
-
     doInstallCheck = !stdenv.hostPlatform.isStatic && stdenv.hostPlatform.isElf;
+
     installCheckPhase = ''
       runHook preInstallCheck
       ${stdenv.cc.targetPrefix}readelf -a $out/bin/.cargo-wrapped | grep -F 'Shared library: [libcurl.so'
       runHook postInstallCheck
     '';
 
+    buildAndTestSubdir = "src/tools/cargo";
+    # the rust source tarball already has all the dependencies vendored, no need to fetch them again
+    cargoVendorDir = "vendor";
+    # changes hash of vendor directory otherwise
+    dontUpdateAutotoolsGnuConfigScripts = true;
+
+    passthru = {
+      inherit (rustc.unwrapped) tests;
+      rustc = rustc;
+    };
+
     meta = {
-      homepage = "https://crates.io";
       description = "Downloads your Rust project's dependencies and builds your project";
-      mainProgram = "cargo";
-      teams = [ lib.teams.rust ];
+      homepage = "https://crates.io";
+
       license = [
         lib.licenses.mit
         lib.licenses.asl20
       ];
+
       platforms = lib.platforms.unix;
+      mainProgram = "cargo";
       # https://github.com/alexcrichton/nghttp2-rs/issues/2
       broken = stdenv.hostPlatform.isx86 && stdenv.buildPlatform != stdenv.hostPlatform;
+      teams = [ lib.teams.rust ];
     };
   }

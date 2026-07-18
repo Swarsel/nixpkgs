@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  regex,
+  buildPythonPackage,
   csvw,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-mock,
+  pytestCheckHook,
+  regex,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "segments";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cldf";
@@ -35,12 +34,14 @@ buildPythonPackage rec {
     pytest-mock
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/cldf/segments/blob/${src.rev}/CHANGES.md";
     description = "Unicode Standard tokenization routines and orthography profile segmentation";
-    mainProgram = "segments";
     homepage = "https://github.com/cldf/segments";
+    changelog = "https://github.com/cldf/segments/blob/${src.rev}/CHANGES.md";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "segments";
   };
 }

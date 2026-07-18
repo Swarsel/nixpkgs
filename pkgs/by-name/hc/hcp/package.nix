@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
+  buildGoModule,
   hcp,
+  nix-update-script,
 }:
 
 buildGoModule rec {
@@ -29,10 +29,12 @@ buildGoModule rec {
     description = "HashiCorp Cloud Platform CLI";
     homepage = "https://github.com/hashicorp/hcp";
     changelog = "https://github.com/hashicorp/hcp/releases/tag/v${version}";
-    mainProgram = "hcp";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       dbreyfogle
     ];
+
+    mainProgram = "hcp";
   };
 }

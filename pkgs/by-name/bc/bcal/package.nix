@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  readline,
   bc,
   python3Packages,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,9 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ readline ];
-
-  installFlags = [ "PREFIX=$(out)" ];
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -30,13 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enabledTestPaths = [ "test.py" ];
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Storage conversion and expression calculator";
-    mainProgram = "bcal";
     homepage = "https://github.com/jarun/bcal";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "bcal";
   };
 })

@@ -1,20 +1,13 @@
 {
-  mkDerivation,
   compatIfNeeded,
+  libarchive,
   libelf,
   libelftc,
-  libarchive,
   libpe,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "usr.bin/elfcopy";
-  extraPaths = [
-    "contrib/elftoolchain"
-    "sys/sys/elf_common.h"
-    "sys/sys/elf32.h"
-  ];
-
   buildInputs = compatIfNeeded ++ [
     libelf
     libelftc
@@ -24,4 +17,12 @@ mkDerivation {
 
   # since we built libpe and co separate they are not internal and thus not pie...?
   MK_PIE = "no";
+
+  extraPaths = [
+    "contrib/elftoolchain"
+    "sys/sys/elf_common.h"
+    "sys/sys/elf32.h"
+  ];
+
+  path = "usr.bin/elfcopy";
 }

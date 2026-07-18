@@ -1,12 +1,12 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  gettext,
-  npth,
-  libgpg-error,
+  fetchurl,
   buildPackages,
+  gettext,
   gitUpdater,
+  libgpg-error,
+  npth,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,9 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "info"
   ];
-  outputBin = "dev"; # libassuan-config
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   buildInputs = [
     npth
     gettext
@@ -43,25 +41,30 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's,#include <gpg-error.h>,#include "${libgpg-error.dev}/include/gpg-error.h",g' $dev/include/assuan.h
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  outputBin = "dev"; # libassuan-config
+
   passthru.updateScript = gitUpdater {
-    url = "https://dev.gnupg.org/source/libassuan.git";
-    rev-prefix = "libassuan-";
     ignoredVersions = ".*-base";
+    rev-prefix = "libassuan-";
+    url = "https://dev.gnupg.org/source/libassuan.git";
   };
 
   meta = {
     description = "IPC library used by GnuPG and related software";
-    mainProgram = "libassuan-config";
+
     longDescription = ''
       Libassuan is a small library implementing the so-called Assuan
       protocol.  This protocol is used for IPC between most newer
       GnuPG components.  Both, server and client side functions are
       provided.
     '';
+
     homepage = "https://gnupg.org/software/libassuan/";
     changelog = "https://dev.gnupg.org/source/libassuan/browse/master/NEWS;libassuan-${finalAttrs.version}";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "libassuan-config";
   };
 })

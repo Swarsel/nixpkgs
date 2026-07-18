@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
-  ncurses,
+  fetchpatch,
   libconfuse,
   libnl,
+  ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,9 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
   # https://github.com/tgraf/bmon/issues/89
   patches = [
     (fetchpatch {
-      url = "https://github.com/macports/macports-ports/raw/6d1dd5e9c8fae608bd22f3ede21e576f29c6358c/net/bmon/files/patch-fix__unused.diff";
       extraPrefix = "";
       sha256 = "sha256-UYIiJZzipsx9a0xabrKfyj8TWNW7IM77oXnVnSPkQkc=";
+      url = "https://github.com/macports/macports-ports/raw/6d1dd5e9c8fae608bd22f3ede21e576f29c6358c/net/bmon/files/patch-fix__unused.diff";
     })
   ];
 
@@ -54,11 +54,13 @@ stdenv.mkDerivation (finalAttrs: {
     #  - https://github.com/tgraf/bmon/blob/master/LICENSE.BSD
     #  - https://github.com/tgraf/bmon/blob/master/LICENSE.MIT
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       bjornfor
       pSub
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "bmon";
   };
 })

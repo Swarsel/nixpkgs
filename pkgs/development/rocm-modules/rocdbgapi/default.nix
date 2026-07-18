@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
   cmake,
+  doxygen,
+  graphviz,
+  hwdata,
   rocm-cmake,
   rocm-comgr,
   rocm-runtime,
-  hwdata,
+  rocmUpdateScript,
   texliveSmall,
-  doxygen,
-  graphviz,
   writableTmpDirAsHomeHook,
   buildDocs ? true,
 }:
@@ -49,21 +49,19 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "rocdbgapi";
   version = "7.2.3";
 
-  outputs = [
-    "out"
-  ]
-  ++ lib.optionals buildDocs [
-    "doc"
-  ];
-
-  buildFlags = lib.optionals buildDocs [ "doc" ];
-
   src = fetchFromGitHub {
     owner = "ROCm";
     repo = "ROCdbgapi";
     rev = "rocm-${finalAttrs.version}";
     hash = "sha256-KqvhwfIv8pbr8WbnfAKl71fg5yxbwYcpzZcGU9Htdkc=";
   };
+
+  outputs = [
+    "out"
+  ]
+  ++ lib.optionals buildDocs [
+    "doc"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -91,6 +89,8 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_INSTALL_INCLUDEDIR=include"
   ];
 
+  buildFlags = lib.optionals buildDocs [ "doc" ];
+
   postInstall = lib.optionalString buildDocs ''
     mkdir -p $doc/share/doc/amd-dbgapi/
     mv $out/share/html/amd-dbgapi $doc/share/doc/amd-dbgapi/html
@@ -103,7 +103,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Debugger support for control of execution and inspection state of AMD's GPU architectures";
     homepage = "https://github.com/ROCm/ROCdbgapi";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

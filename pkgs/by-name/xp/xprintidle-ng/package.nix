@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
-  libxscrnsaver,
-  libxext,
-  gnulib,
   autoconf,
   automake,
-  libtool,
   gettext,
-  pkg-config,
   git,
-  perl,
-  texinfo,
+  gnulib,
   help2man,
+  libtool,
+  libx11,
+  libxext,
+  libxscrnsaver,
+  perl,
+  pkg-config,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,6 +50,12 @@ stdenv.mkDerivation (finalAttrs: {
     texinfo
   ];
 
+  buildInputs = [
+    libx11
+    libxscrnsaver
+    libxext
+  ];
+
   configurePhase = ''
     runHook preConfigure
 
@@ -58,12 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postConfigure
   '';
-
-  buildInputs = [
-    libx11
-    libxscrnsaver
-    libxext
-  ];
 
   meta = {
     inherit (finalAttrs) version;

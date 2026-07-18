@@ -16,14 +16,16 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [ "prefix=$(out)" ];
 
   meta = {
-    homepage = "https://tass64.sourceforge.net/";
     description = "Multi pass optimizing macro assembler for the 65xx series of processors";
+    homepage = "https://tass64.sourceforge.net/";
+
     license = [
       lib.licenses.gpl2Plus
       lib.licenses.lgpl2Only
       lib.licenses.lgpl21Only
       lib.licenses.mit
     ];
+
     maintainers = [ lib.maintainers.matthewcroughan ];
     platforms = lib.platforms.linux;
   };

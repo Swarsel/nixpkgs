@@ -8,20 +8,18 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-serializinghtml";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sphinxcontrib_serializinghtml";
     inherit version;
     hash = "sha256-6dkSgn+HLAKQF6U/DvIYCzJ8P3/SPIcin3qOi3ADHU0=";
+    pname = "sphinxcontrib_serializinghtml";
   };
 
   nativeBuildInputs = [ flit-core ];
-
+  doCheck = false;
   # Check is disabled due to circular dependency of sphinx
   dontCheckRuntimeDeps = true;
-  doCheck = false;
-
+  pyproject = true;
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

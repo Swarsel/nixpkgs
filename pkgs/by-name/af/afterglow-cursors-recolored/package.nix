@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  themeVariants ? [ ],
+  stdenvNoCC,
   catppuccinColorVariants ? [ ],
   draculaColorVariants ? [ ],
   gruvboxColorVariants ? [ ],
   originalColorVariants ? [ ],
+  themeVariants ? [ ],
 }:
 
 let
@@ -36,6 +36,7 @@ let
       "Teal"
       "Yellow"
     ];
+
     Dracula = [
       "Cyan"
       "Green"
@@ -46,6 +47,7 @@ let
       "Teddy"
       "Yellow"
     ];
+
     Gruvbox = [
       "Aqua"
       "Black"
@@ -57,6 +59,7 @@ let
       "Purple"
       "White"
     ];
+
     Original = [
       "Blue"
       "Purple"
@@ -136,8 +139,8 @@ lib.checkListOfEnum "${pname}: theme variants" availableThemeVariants themeVaria
     meta = {
       description = "Recoloring of the Afterglow Cursors x-cursor theme";
       homepage = "https://github.com/TeddyBearKilla/Afterglow-Cursors-Recolored";
+      license = lib.licenses.gpl3Plus;
       maintainers = [ ];
       platforms = lib.platforms.all;
-      license = lib.licenses.gpl3Plus;
     };
   }

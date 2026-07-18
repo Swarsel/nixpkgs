@@ -1,16 +1,16 @@
 {
-  stdenvNoCC,
   lib,
   fetchzip,
   nixosTests,
+  stdenvNoCC,
 }:
 
 let
   version = "1.7.53.2";
 in
 stdenvNoCC.mkDerivation {
-  pname = "grav";
   inherit version;
+  pname = "grav";
 
   src = fetchzip {
     url = "https://github.com/getgrav/grav/releases/download/${version}/grav-admin-v${version}.zip";
@@ -37,7 +37,7 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Fast, simple, and flexible, file-based web platform";
     homepage = "https://getgrav.com";
-    maintainers = with lib.maintainers; [ rycee ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ rycee ];
   };
 }

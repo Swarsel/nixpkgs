@@ -1,27 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-
   # optional dependencies
   azure-storage-blob,
   boto3,
+  buildPythonPackage,
   dulwich,
   google-cloud-storage,
-  pymongo,
-  redis,
-
   # testing
   mock,
+  pymongo,
   pytestCheckHook,
+  redis,
+  setuptools,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "simplekv";
   version = "0.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mbr";
@@ -30,8 +27,6 @@ buildPythonPackage rec {
     hash = "sha256-seUGDj2q84+AjDFM1pxMLlHbe9uBgEhmqA96UHjnCmo=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     mock
     pytestCheckHook
@@ -39,7 +34,7 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.git;
 
-  pythonImportsCheck = [ "simplekv" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Issue with fixture
@@ -49,10 +44,10 @@ buildPythonPackage rec {
   optional-dependencies = {
     amazon = [ boto3 ];
     azure = [ azure-storage-blob ];
-    google = [ google-cloud-storage ];
-    redis = [ redis ];
-    mongodb = [ pymongo ];
     git = [ dulwich ];
+    google = [ google-cloud-storage ];
+    mongodb = [ pymongo ];
+    redis = [ redis ];
     /*
       Additional potential dependencies not exposed here:
         sqlalchemy: Our version is too new for simplekv
@@ -60,11 +55,15 @@ buildPythonPackage rec {
     */
   };
 
+  pyproject = true;
+  pythonImportsCheck = [ "simplekv" ];
+
   meta = {
     description = "Simple key-value store for binary data";
     homepage = "https://github.com/mbr/simplekv";
     changelog = "https://github.com/mbr/simplekv/releases/tag/${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
       bbenne10

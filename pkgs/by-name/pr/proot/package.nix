@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  talloc,
-  pkg-config,
-  ncurses,
-  docutils,
-  swig,
-  python3,
   coreutils,
+  docutils,
+  ncurses,
+  pkg-config,
+  python3,
+  swig,
+  talloc,
   enablePython ? true,
 }:
 
@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "5.4.0";
 
   src = fetchFromGitHub {
-    repo = "proot";
     owner = "proot-me";
+    repo = "proot";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-Z9Y7ccWp5KEVuo9xfHcgo58XqYVdFo7ck1jH7cnT2KA=";
   };
@@ -30,18 +30,17 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i /CROSS_COMPILE/d src/GNUmakefile
   '';
 
-  buildInputs = [
-    ncurses
-    talloc
-  ]
-  ++ lib.optional enablePython python3;
   nativeBuildInputs = [
     pkg-config
     docutils
   ]
   ++ lib.optional enablePython swig;
 
-  enableParallelBuilding = true;
+  buildInputs = [
+    ncurses
+    talloc
+  ]
+  ++ lib.optional enablePython python3;
 
   makeFlags = [ "--directory=src" ];
 
@@ -49,25 +48,28 @@ stdenv.mkDerivation (finalAttrs: {
     make --directory=doc proot/man.1
   '';
 
-  installFlags = [ "PREFIX=${placeholder "out"}" ];
+  # proot provides tests with `make -C test` however they do not run in the sandbox
+  doCheck = false;
 
   postInstall = ''
     install -Dm644 doc/proot/man.1 $out/share/man/man1/proot.1
   '';
 
-  # proot provides tests with `make -C test` however they do not run in the sandbox
-  doCheck = false;
+  enableParallelBuilding = true;
+  installFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
-    homepage = "https://proot-me.github.io";
     description = "User-space implementation of chroot, mount --bind and binfmt_misc";
-    platforms = lib.platforms.linux;
+    homepage = "https://proot-me.github.io";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       ianwookim
       makefu
       veprbl
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "proot";
   };
 })

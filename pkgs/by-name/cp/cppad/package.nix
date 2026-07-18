@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C++ Algorithmic Differentiation Package";
     homepage = "https://github.com/coin-or/CppAD";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       athas
     ];

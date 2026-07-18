@@ -1,28 +1,22 @@
 {
   lib,
-  setproctitle,
-  uvloop,
   aiovban,
   buildPythonPackage,
   pyaudio,
+  setproctitle,
   setuptools,
+  uvloop,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "aiovban-pyaudio";
   inherit (aiovban) version pyproject src;
-
-  sourceRoot = "${aiovban.src.name}/aiovban_pyaudio";
-
+  pname = "aiovban-pyaudio";
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
     aiovban
     pyaudio
-  ];
-
-  pythonImportsCheck = [
-    "aiovban_pyaudio"
   ];
 
   optional-dependencies = {
@@ -32,13 +26,17 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  __structuredAttrs = true;
+  pythonImportsCheck = [
+    "aiovban_pyaudio"
+  ];
+
+  sourceRoot = "${aiovban.src.name}/aiovban_pyaudio";
 
   meta = {
-    changelog = "https://github.com/wmbest2/aiovban/releases/tag/${finalAttrs.src.tag}";
+    inherit (aiovban.meta) maintainers;
     description = "PyAudio wrapper for aiovban";
     homepage = "https://github.com/wmbest2/aiovban/tree/main/aiovban_pyaudio";
+    changelog = "https://github.com/wmbest2/aiovban/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    inherit (aiovban.meta) maintainers;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "sockio";
   version = "0.15.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "tiagocoutinho";
@@ -24,15 +23,18 @@ buildPythonPackage rec {
       --replace "--durations=2 --verbose" ""
   '';
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "sockio" ];
+  __darwinAllowLocalNetworking = true;
+
+  disabledTestPaths = [
+    # We don't care about Python 2.x
+    "tests/test_py2.py"
+  ];
 
   disabledTests = [
     # Tests require network access
@@ -64,10 +66,8 @@ buildPythonPackage rec {
     "test_root_socket_for_url"
   ];
 
-  disabledTestPaths = [
-    # We don't care about Python 2.x
-    "tests/test_py2.py"
-  ];
+  format = "setuptools";
+  pythonImportsCheck = [ "sockio" ];
 
   meta = {
     description = "Implementation of the Modbus protocol";

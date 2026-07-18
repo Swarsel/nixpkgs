@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  nixVersions,
-  nixosTests,
-  boost,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
+  boost,
   installShellFiles,
   nix-update-script,
+  nixVersions,
+  nixosTests,
+  pkg-config,
+  rustPlatform,
   crates ? [ "attic-client" ],
 }:
 
@@ -36,8 +36,6 @@ rustPlatform.buildRustPackage {
   ];
 
   buildInputs = lib.optional needNixInclude nix ++ [ boost ];
-
-  cargoBuildFlags = lib.concatMapStrings (c: "-p ${c} ") crates;
   cargoHash = "sha256-UGgM78QEWJ2QgbQhxEI+yLYXH6T4ey+1oenPTMlJ3GU=";
 
   env = {
@@ -58,9 +56,10 @@ rustPlatform.buildRustPackage {
     fi
   '';
 
+  cargoBuildFlags = lib.concatMapStrings (c: "-p ${c} ") crates;
+
   passthru = {
     tests = { inherit (nixosTests) atticd; };
-
     updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
   };
 
@@ -68,11 +67,13 @@ rustPlatform.buildRustPackage {
     description = "Multi-tenant Nix Binary Cache";
     homepage = "https://github.com/zhaofengli/attic";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       zhaofengli
       aciceri
       defelo
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "attic";
   };

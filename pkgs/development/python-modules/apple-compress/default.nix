@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
-  lib,
   loguru,
   poetry-core,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "apple-compress";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "m1stadev";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-uM5HFkhvzAIfdAglPUvJfckngjUPSZqydyVcPcdtyfs=";
   };
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -26,18 +27,16 @@ buildPythonPackage rec {
     loguru
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "apple_compress" ];
 
-  # upstream has no tests
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/m1stadev/apple-compress/releases/tag/${src.tag}";
     description = "Python bindings for Apple's libcompression";
     homepage = "https://github.com/m1stadev/apple-compress";
+    changelog = "https://github.com/m1stadev/apple-compress/releases/tag/${src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "acompress";
     maintainers = [ lib.maintainers.dotlambda ];
     platforms = lib.platforms.darwin;
+    mainProgram = "acompress";
   };
 }

@@ -1,17 +1,17 @@
 {
   lib,
-  go,
+  fetchFromGitHub,
   buildGoModule,
   callPackage,
-  fetchFromGitHub,
-  installShellFiles,
-  nixosTests,
-  versionCheckHook,
   common-updater-scripts,
   curlMinimal,
   elm2nix,
+  go,
+  installShellFiles,
   nix-update,
   nixfmt,
+  nixosTests,
+  versionCheckHook,
   writeShellApplication,
 }:
 
@@ -32,11 +32,21 @@ buildGoModule (finalAttrs: {
   postPatch = ''
     cp -r ${elmUi}/. ui/app/dist
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-t5jQtccln3dfcHlnEOnLQHfjzfU9kY9Y7q+r4AigvBE=";
 
-  subPackages = [
-    "cmd/alertmanager"
-    "cmd/amtool"
+  postInstall = ''
+    $out/bin/amtool --completion-script-bash > amtool.bash
+    installShellCompletion amtool.bash
+    $out/bin/amtool --completion-script-zsh > amtool.zsh
+    installShellCompletion amtool.zsh
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
   ];
 
   ldflags =
@@ -52,20 +62,18 @@ buildGoModule (finalAttrs: {
       "-X ${t}.GoVersion=${lib.getVersion go}"
     ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = ''
-    $out/bin/amtool --completion-script-bash > amtool.bash
-    installShellCompletion amtool.bash
-    $out/bin/amtool --completion-script-zsh > amtool.zsh
-    installShellCompletion amtool.zsh
-  '';
+  subPackages = [
+    "cmd/alertmanager"
+    "cmd/amtool"
+  ];
 
   passthru = {
     inherit elmUi;
     tests = { inherit (nixosTests.prometheus) alertmanager; };
+
     updateScript = lib.getExe (writeShellApplication {
       name = "alertmanager-update";
+
       runtimeInputs = [
         curlMinimal
         common-updater-scripts
@@ -73,6 +81,7 @@ buildGoModule (finalAttrs: {
         nix-update
         nixfmt
       ];
+
       text = ''
         TAG=$(list-git-tags --url="https://github.com/${finalAttrs.src.owner}/${finalAttrs.src.repo}" | sort -V | tail -n1)
 
@@ -90,22 +99,19 @@ buildGoModule (finalAttrs: {
     });
   };
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   meta = {
     description = "Alert dispatcher for the Prometheus monitoring system";
     homepage = "https://github.com/prometheus/alertmanager";
     changelog = "https://github.com/prometheus/alertmanager/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "alertmanager";
+
     maintainers = with lib.maintainers; [
       benley
       fpletz
       globin
       Frostman
     ];
+
+    mainProgram = "alertmanager";
   };
 })

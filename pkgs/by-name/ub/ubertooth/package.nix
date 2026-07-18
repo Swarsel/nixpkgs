@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  bluez,
   cmake,
-  pkg-config,
   libbtbb,
   libpcap,
   libusb1,
-  bluez,
+  pkg-config,
   udevGroup ? "ubertooth",
 }:
 
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "11r5ag2l5xn4pr7ycicm30w9c3ldn9yiqj1sqnjc79csxl2vrcfw";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/host";
-
   patches = [
     # https://github.com/greatscottgadgets/ubertooth/pull/546
     ./fix-cmake4-build.patch
@@ -33,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     libbtbb
     libpcap
@@ -47,6 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doInstallCheck = true;
+  sourceRoot = "${finalAttrs.src.name}/host";
 
   meta = {
     description = "Open source wireless development platform suitable for Bluetooth experimentation";

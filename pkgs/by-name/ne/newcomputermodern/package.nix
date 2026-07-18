@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchgit,
   fontforge,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,8 +17,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ fontforge ];
-
-  dontConfigure = true;
 
   buildPhase = ''
     runHook preBuild
@@ -37,6 +35,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {

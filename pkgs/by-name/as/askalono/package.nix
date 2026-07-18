@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -9,9 +9,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.5.0";
 
   src = fetchCrate {
-    pname = "askalono-cli";
     inherit (finalAttrs) version;
     hash = "sha256-LwyUaU4m9fk+mG8FBfkbj9nBvd8KokwlV7cE7EBwk0Q=";
+    pname = "askalono-cli";
   };
 
   cargoHash = "sha256-ug79p75Oa5lsd9COWO2aIx3jN7de1QZggMFiOPAN5kQ=";

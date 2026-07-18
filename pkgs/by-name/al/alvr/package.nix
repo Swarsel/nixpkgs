@@ -1,26 +1,17 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  fetchpatch,
-  replaceVars,
-  nix-update-script,
-  callPackage,
-  pkg-config,
-  autoAddDriverRunpath,
   alsa-lib,
   android-tools,
+  autoAddDriverRunpath,
   brotli,
   bzip2,
+  callPackage,
   celt,
-  ffmpeg-alvr ? callPackage ./ffmpeg.nix { },
+  fetchpatch,
   gmp,
   jack2,
   lame,
-  libx11,
-  libxi,
-  libxrandr,
-  libxcursor,
   libdrm,
   libglvnd,
   libogg,
@@ -29,33 +20,39 @@
   libunwind,
   libva,
   libvdpau,
+  libx11,
+  libxcursor,
+  libxi,
   libxkbcommon,
+  libxrandr,
+  nix-update-script,
   openapv,
   openssl,
   openvr,
   pipewire,
+  pkg-config,
+  replaceVars,
   rust-cbindgen,
+  rustPlatform,
   soxr,
   vulkan-headers,
   vulkan-loader,
   wayland,
   x264,
   xvidcore,
+  ffmpeg-alvr ? callPackage ./ffmpeg.nix { },
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "alvr";
-
   version = "20.14.1";
 
   src = fetchFromGitHub {
     owner = "alvr-org";
     repo = "ALVR";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true; # TODO devendor openvr
     hash = "sha256-9fckUhUPAbcmbqOdUO8RlwuK8/nf1fc7XQBrAu5YaR4=";
+    fetchSubmodules = true; # TODO devendor openvr
   };
-
-  cargoHash = "sha256-OTCMWrlwnfpUhm6ssOE133e/3DaQFnOU+NunN2c1N+g=";
 
   patches = [
     (replaceVars ./fix-finding-libs.patch {
@@ -63,33 +60,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
       x264 = lib.getDev x264;
     })
     (fetchpatch {
-      url = "https://github.com/alvr-org/ALVR/commit/12a238b9ac9d63438163ff82cbd689733558a1e4.patch";
       hash = "sha256-yvIGjopXIwGXajs5/RlAo+eqfVNnXlomKy/VO/dL+gc=";
+      url = "https://github.com/alvr-org/ALVR/commit/12a238b9ac9d63438163ff82cbd689733558a1e4.patch";
     })
-  ];
-
-  env = {
-    NIX_CFLAGS_COMPILE = toString [
-      "-lbrotlicommon"
-      "-lbrotlidec"
-      "-lcrypto"
-      "-lpng"
-      "-lssl"
-    ];
-    RUSTFLAGS = toString (
-      map (a: "-C link-arg=${a}") [
-        "-Wl,--push-state,--no-as-needed"
-        "-lEGL"
-        "-lwayland-client"
-        "-lxkbcommon"
-        "-Wl,--pop-state"
-      ]
-    );
-  };
-
-  cargoBuildFlags = [
-    "--exclude=alvr_xtask"
-    "--workspace"
   ];
 
   nativeBuildInputs = [
@@ -134,6 +107,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xvidcore
   ];
 
+  cargoHash = "sha256-OTCMWrlwnfpUhm6ssOE133e/3DaQFnOU+NunN2c1N+g=";
+
+  env = {
+    NIX_CFLAGS_COMPILE = toString [
+      "-lbrotlicommon"
+      "-lbrotlidec"
+      "-lcrypto"
+      "-lpng"
+      "-lssl"
+    ];
+
+    RUSTFLAGS = toString (
+      map (a: "-C link-arg=${a}") [
+        "-Wl,--push-state,--no-as-needed"
+        "-lEGL"
+        "-lwayland-client"
+        "-lxkbcommon"
+        "-Wl,--pop-state"
+      ]
+    );
+  };
+
   postBuild = ''
     # Build SteamVR driver ("streamer")
     cargo xtask build-streamer --release
@@ -151,6 +146,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ln -s $out/lib $out/lib64
   '';
 
+  cargoBuildFlags = [
+    "--exclude=alvr_xtask"
+    "--workspace"
+  ];
+
   passthru = {
     inherit ffmpeg-alvr;
     updateScript = nix-update-script { };
@@ -161,12 +161,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/alvr-org/ALVR/";
     changelog = "https://github.com/alvr-org/ALVR/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "alvr_dashboard";
+
     maintainers = with lib.maintainers; [
       luNeder
       jopejoe1
       eyjhb
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "alvr_dashboard";
   };
 })

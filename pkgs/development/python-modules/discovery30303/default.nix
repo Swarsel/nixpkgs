@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "discovery30303";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -28,8 +27,8 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pytestFlags = [ "--asyncio-mode=auto" ];
-
   pythonImportsCheck = [ "discovery30303" ];
 
   meta = {

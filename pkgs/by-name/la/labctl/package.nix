@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,14 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   vendorHash = "sha256-Ycr/IZckIFysS9Goes58hhgh96UMRHjYWfWlQU23mXk=";
-
-  ldflags = [
-    "-X=github.com/labctl/labctl/app.version=${finalAttrs.version}"
-    "-X=github.com/labctl/labctl/app.commit=${finalAttrs.src.rev}"
-    "-X=github.com/labctl/labctl/app.date=1970-01-01T00:00:00Z"
-  ];
 
   postInstall = ''
     local INSTALL="$out/bin/labctl"
@@ -32,6 +25,12 @@ buildGoModule (finalAttrs: {
       --bash <(echo "complete -C $INSTALL labctl") \
       --zsh <(echo "complete -o nospace -C $INSTALL labctl")
   '';
+
+  ldflags = [
+    "-X=github.com/labctl/labctl/app.version=${finalAttrs.version}"
+    "-X=github.com/labctl/labctl/app.commit=${finalAttrs.src.rev}"
+    "-X=github.com/labctl/labctl/app.date=1970-01-01T00:00:00Z"
+  ];
 
   meta = {
     description = "Collection of helper tools for network engineers, while configuring and experimenting with their own network labs";

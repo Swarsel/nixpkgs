@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   kwindowsystem,
   layer-shell-qt,
   liblxqt,
@@ -13,7 +14,6 @@
   qttools,
   qtwayland,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -47,8 +47,8 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-notificationd";
     description = "LXQt notification daemon";
+    homepage = "https://github.com/lxqt/lxqt-notificationd";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxqt ];

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-E1SKaHBWw6I8OycH+XiGvdzjYP9YHnTUCUeRC5J8+bw=";
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -24,14 +25,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-HJ5GdCMVeO3Ve1U9j/GKmwN5VqPmeabQL9MhaSFPsSI=";
-
   env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
 
   preBuild = ''
     ldflags+=" -X main.commit=$(cat COMMIT)"
@@ -42,20 +36,28 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  versionCheckKeepEnvironment = [ "HOME" ];
   versionCheckProgram = "${placeholder "out"}/bin/openhue";
   versionCheckProgramArg = "version";
-  versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
-    changelog = "https://github.com/openhue/openhue-cli/releases/tag/${finalAttrs.version}";
     description = "CLI for interacting with Philips Hue smart lighting systems";
     homepage = "https://github.com/openhue/openhue-cli";
-    mainProgram = "openhue";
-    maintainers = with lib.maintainers; [ madeddie ];
+    changelog = "https://github.com/openhue/openhue-cli/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ madeddie ];
+    mainProgram = "openhue";
   };
 })

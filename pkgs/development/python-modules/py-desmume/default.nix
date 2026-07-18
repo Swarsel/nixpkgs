@@ -1,8 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
+  SDL2,
   alsa-lib,
   buildPythonPackage,
-  fetchFromGitHub,
   gitpython,
   libpcap,
   meson,
@@ -11,14 +12,12 @@
   pillow,
   pkg-config,
   pygobject3,
-  SDL2,
   soundtouch,
 }:
 
 buildPythonPackage rec {
   pname = "py-desmume";
   version = "0.0.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "SkyTemple";
@@ -48,10 +47,9 @@ buildPythonPackage rec {
     pygobject3
   ];
 
-  hardeningDisable = [ "format" ];
-
   doCheck = false; # there are no tests
-
+  format = "setuptools";
+  hardeningDisable = [ "format" ];
   pythonImportsCheck = [ "desmume" ];
 
   meta = {

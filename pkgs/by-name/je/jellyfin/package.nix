@@ -1,16 +1,16 @@
 {
   lib,
   fetchFromGitHub,
-  nixosTests,
-  dotnetCorePackages,
   buildDotnetModule,
-  jellyfin-ffmpeg,
+  dotnetCorePackages,
   fontconfig,
   freetype,
+  jellyfin-ffmpeg,
   jellyfin-web,
+  jq,
+  nixosTests,
   sqlite,
   versionCheckHook,
-  jq,
 }:
 
 buildDotnetModule (finalAttrs: {
@@ -29,24 +29,10 @@ buildDotnetModule (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ sqlite ];
+  doInstallCheck = true;
 
-  projectFile = "Jellyfin.Server/Jellyfin.Server.csproj";
-  executables = [ "jellyfin" ];
-  nugetDeps = ./nuget-deps.json;
-  runtimeDeps = [
-    jellyfin-ffmpeg
-    fontconfig
-    freetype
-  ];
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_9_0;
-  dotnetBuildFlags = [ "--no-self-contained" ];
-
-  makeWrapperArgs = [
-    "--add-flags"
-    "--ffmpeg=${jellyfin-ffmpeg}/bin/ffmpeg"
-    "--add-flags"
-    "--webdir=${jellyfin-web}/share/jellyfin-web"
+  nativeInstallCheckInputs = [
+    versionCheckHook
   ];
 
   # Impurity with time. Injects the build date into this file
@@ -60,10 +46,26 @@ buildDotnetModule (finalAttrs: {
     mv "jellyfin.staticwebassets.endpoints.json.new" "$out/lib/jellyfin/jellyfin.staticwebassets.endpoints.json"
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
+  dotnet-runtime = dotnetCorePackages.aspnetcore_9_0;
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
+  dotnetBuildFlags = [ "--no-self-contained" ];
+  executables = [ "jellyfin" ];
+
+  makeWrapperArgs = [
+    "--add-flags"
+    "--ffmpeg=${jellyfin-ffmpeg}/bin/ffmpeg"
+    "--add-flags"
+    "--webdir=${jellyfin-web}/share/jellyfin-web"
   ];
-  doInstallCheck = true;
+
+  nugetDeps = ./nuget-deps.json;
+  projectFile = "Jellyfin.Server/Jellyfin.Server.csproj";
+
+  runtimeDeps = [
+    jellyfin-ffmpeg
+    fontconfig
+    freetype
+  ];
 
   passthru.tests = {
     smoke-test = nixosTests.jellyfin;
@@ -76,13 +78,15 @@ buildDotnetModule (finalAttrs: {
     homepage = "https://jellyfin.org/";
     # https://github.com/jellyfin/jellyfin/issues/610#issuecomment-537625510
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       nyanloutre
       minijackson
       purcell
       jojosch
     ];
-    mainProgram = "jellyfin";
+
     platforms = finalAttrs.dotnet-runtime.meta.platforms;
+    mainProgram = "jellyfin";
   };
 })

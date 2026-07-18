@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bison,
   cmake,
   curl,
   doxygen,
-  fetchFromGitHub,
   git,
   glib,
   gnutls,
@@ -85,7 +85,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/greenbone/openvas-scanner/blob/${finalAttrs.src.rev}/changelog.toml";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "openvas-scanner";
     platforms = lib.platforms.all;
+    mainProgram = "openvas-scanner";
   };
 })

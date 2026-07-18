@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ config, lib, ... }:
 let
   inherit (config.hardware.facter) report;
   cfg = config.hardware.facter.detected.networking.intel;
@@ -9,8 +9,8 @@ in
 
       default = lib.any (
         {
-          vendor ? { },
           device ? { },
+          vendor ? { },
           ...
         }:
         # vendor (0x8086) Intel Corp.
@@ -27,12 +27,13 @@ in
 
       defaultText = "hardware dependent";
     };
+
     _3945ABG.enable = mkEnableOption "the Facter Intel 3945ABG module" // {
 
       default = lib.any (
         {
-          vendor ? { },
           device ? { },
+          vendor ? { },
           ...
         }:
         # vendor (0x8086) Intel Corp.
@@ -50,8 +51,8 @@ in
   };
 
   config = lib.mkIf config.hardware.facter.enable {
-    networking.enableIntel2200BGFirmware = lib.mkIf cfg._2200BG.enable (lib.mkDefault true);
     hardware.enableRedistributableFirmware = lib.mkIf cfg._3945ABG.enable (lib.mkDefault true);
+    networking.enableIntel2200BGFirmware = lib.mkIf cfg._2200BG.enable (lib.mkDefault true);
   };
 
 }

@@ -1,60 +1,52 @@
 {
-  config,
-  callPackages,
-  stdenv,
   lib,
-  addDriverRunpath,
+  stdenv,
   fetchFromGitHub,
+  addDriverRunpath,
+  buildGoModule,
+  callPackages,
+  clblast,
+  cmake,
+  config,
+  cudaPackages,
+  curl,
+  espeak-ng,
+  # needed for audio-to-text
+  ffmpeg,
+  fmt,
+  grpc,
+  llama-cpp,
+  makeWrapper,
+  ncurses,
+  ocl-icd,
+  onnxruntime,
+  openblas,
+  opencl-headers,
+  opencv,
+  openssl,
+  piper-tts,
+  pkg-config,
   protobuf,
   protoc-gen-go,
   protoc-gen-go-grpc,
-  grpc,
-  openssl,
-  llama-cpp,
-  # needed for audio-to-text
-  ffmpeg,
-  cmake,
-  pkg-config,
-  buildGoModule,
-  makeWrapper,
-  ncurses,
-  which,
-  opencv,
-  curl,
-
-  enable_upx ? true,
+  sonic,
+  spdlog,
   upx,
-
+  which,
   # apply feature parameter names according to
   # https://github.com/NixOS/rfcs/pull/169
-
   # CPU extensions
   enable_avx ? stdenv.hostPlatform.isx86_64,
   enable_avx2 ? stdenv.hostPlatform.isx86_64,
   enable_avx512 ? stdenv.hostPlatform.avx512Support,
   enable_f16c ? stdenv.hostPlatform.isx86_64,
   enable_fma ? stdenv.hostPlatform.isx86_64,
-
-  with_openblas ? false,
-  openblas,
-
-  with_cublas ? config.cudaSupport,
-  cudaPackages,
-
+  enable_upx ? true,
   with_clblas ? false,
-  clblast,
-  ocl-icd,
-  opencl-headers,
-
-  with_vulkan ? false,
-
+  with_cublas ? config.cudaSupport,
+  with_openblas ? false,
   with_tts ? true,
-  onnxruntime,
-  sonic,
-  spdlog,
-  fmt,
-  espeak-ng,
-  piper-tts,
+  with_vulkan ? false,
 }:
 let
   BUILD_TYPE =
@@ -84,7 +76,6 @@ let
 
   llama-cpp-rpc =
     (llama-cpp-grpc.overrideAttrs (prev: {
-      name = "llama-cpp-rpc";
       cmakeFlags = prev.cmakeFlags ++ [
         (lib.cmakeBool "GGML_AVX" false)
         (lib.cmakeBool "GGML_AVX2" false)
@@ -92,11 +83,13 @@ let
         (lib.cmakeBool "GGML_FMA" false)
         (lib.cmakeBool "GGML_F16C" false)
       ];
+
+      name = "llama-cpp-rpc";
     })).override
       {
+        blasSupport = false;
         cudaSupport = false;
         openclSupport = false;
-        blasSupport = false;
         rpcSupport = true;
         vulkanSupport = false;
       };
@@ -104,7 +97,6 @@ let
   llama-cpp-grpc =
     (llama-cpp.overrideAttrs (
       final: prev: {
-        name = "llama-cpp-grpc";
         src = fetchFromGitHub {
           owner = "ggerganov";
           repo = "llama.cpp";
@@ -112,6 +104,7 @@ let
           hash = "sha256-b9B5I3EbBFrkWc6RLXMWcCRKayyWjlGuQrogUcrISrc=";
           fetchSubmodules = true;
         };
+
         postPatch = ''
           cd examples
           cp -r --no-preserve=mode ${src}/backend/cpp/llama grpc-server
@@ -124,6 +117,14 @@ let
             -e '$a\install(TARGETS ''${TARGET} RUNTIME)'
           cd ..
         '';
+
+        buildInputs = prev.buildInputs ++ [
+          protobuf # provides also abseil_cpp as propagated build input
+          grpc
+          openssl
+          curl
+        ];
+
         cmakeFlags = prev.cmakeFlags ++ [
           (lib.cmakeBool "BUILD_SHARED_LIBS" false)
           (lib.cmakeBool "GGML_AVX" enable_avx)
@@ -132,28 +133,23 @@ let
           (lib.cmakeBool "GGML_FMA" enable_fma)
           (lib.cmakeBool "GGML_F16C" enable_f16c)
         ];
-        buildInputs = prev.buildInputs ++ [
-          protobuf # provides also abseil_cpp as propagated build input
-          grpc
-          openssl
-          curl
-        ];
+
+        name = "llama-cpp-grpc";
       }
     )).override
       {
-        cudaSupport = with_cublas;
-        rocmSupport = false;
-        openclSupport = with_clblas;
         blasSupport = with_openblas;
+        cudaSupport = with_cublas;
+        openclSupport = with_clblas;
+        rocmSupport = false;
         vulkanSupport = with_vulkan;
       };
 
   espeak-ng' = espeak-ng.overrideAttrs (self: {
-    name = "espeak-ng'";
     inherit (go-piper) src;
-    sourceRoot = "${go-piper.src.name}/espeak";
     patches = [ ];
     nativeBuildInputs = [ cmake ];
+
     cmakeFlags = (self.cmakeFlags or [ ]) ++ [
       (lib.cmakeBool "BUILD_SHARED_LIBS" true)
       (lib.cmakeBool "USE_ASYNC" false)
@@ -164,34 +160,40 @@ let
       (lib.cmakeBool "USE_LIBSONIC" false)
       (lib.cmakeBool "CMAKE_POSITION_INDEPENDENT_CODE" true)
     ];
+
     preConfigure = null;
     postInstall = null;
+    name = "espeak-ng'";
+    sourceRoot = "${go-piper.src.name}/espeak";
   });
 
   piper-phonemize = stdenv.mkDerivation {
-    name = "piper-phonemize";
     inherit (go-piper) src;
-    sourceRoot = "${go-piper.src.name}/piper-phonemize";
-    buildInputs = [
-      espeak-ng'
-      onnxruntime
-    ];
+
     nativeBuildInputs = [
       cmake
       pkg-config
     ];
+
+    buildInputs = [
+      espeak-ng'
+      onnxruntime
+    ];
+
     cmakeFlags = [
       (lib.cmakeFeature "ONNXRUNTIME_DIR" "${onnxruntime.dev}")
       (lib.cmakeFeature "ESPEAK_NG_DIR" "${espeak-ng'}")
     ];
+
+    name = "piper-phonemize";
+    sourceRoot = "${go-piper.src.name}/piper-phonemize";
     passthru.espeak-ng = espeak-ng';
   };
 
   piper-tts' = piper-tts.overrideAttrs (self: {
-    name = "piper-tts'";
     inherit (go-piper) src;
-    sourceRoot = "${go-piper.src.name}/piper";
     installPhase = null;
+
     postInstall = ''
       cp CMakeFiles/piper.dir/src/cpp/piper.cpp.o $out/piper.o
       cd $out
@@ -200,10 +202,12 @@ let
       mv piper piper_phonemize bin/
       rm -rf cmake pkgconfig espeak-ng-data *.ort
     '';
+
+    name = "piper-tts'";
+    sourceRoot = "${go-piper.src.name}/piper";
   });
 
   go-piper = stdenv.mkDerivation {
-    name = "go-piper";
     src = fetchFromGitHub {
       owner = "mudler";
       repo = "go-piper";
@@ -211,14 +215,12 @@ let
       hash = "sha256-Yv9LQkWwGpYdOS0FvtP0vZ0tRyBAx27sdmziBR4U4n8=";
       fetchSubmodules = true;
     };
-    postUnpack = ''
-      cp -r --no-preserve=mode ${piper-tts'}/* source
-    '';
+
     postPatch = ''
       sed -i Makefile \
         -e '/CXXFLAGS *= / s;$; -DSPDLOG_FMT_EXTERNAL=1;'
     '';
-    buildFlags = [ "libpiper_binding.a" ];
+
     buildInputs = [
       piper-tts'
       espeak-ng'
@@ -228,17 +230,25 @@ let
       spdlog
       onnxruntime
     ];
+
+    buildFlags = [ "libpiper_binding.a" ];
+
     installPhase = ''
       cp -r --no-preserve=mode $src $out
       mkdir -p $out/piper-phonemize/pi
       cp -r --no-preserve=mode ${piper-phonemize}/share $out/piper-phonemize/pi
       cp *.a $out
     '';
+
+    name = "go-piper";
+
+    postUnpack = ''
+      cp -r --no-preserve=mode ${piper-tts'}/* source
+    '';
   };
 
   # try to merge with openai-whisper-cpp in future
   whisper-cpp = effectiveStdenv.mkDerivation {
-    name = "whisper-cpp";
     src = fetchFromGitHub {
       owner = "ggerganov";
       repo = "whisper.cpp";
@@ -277,13 +287,15 @@ let
       (lib.cmakeBool "WHISPER_NO_F16C" (!enable_f16c))
       (lib.cmakeBool "BUILD_SHARED_LIBS" false)
     ];
+
     postInstall = ''
       install -Dt $out/bin bin/*
     '';
+
+    name = "whisper-cpp";
   };
 
   bark = stdenv.mkDerivation {
-    name = "bark";
     src = fetchFromGitHub {
       owner = "PABannier";
       repo = "bark.cpp";
@@ -291,6 +303,9 @@ let
       hash = "sha256-wOcggRWe8lsUzEj/wqOAUlJVypgNFmit5ISs9fbwoCE=";
       fetchSubmodules = true;
     };
+
+    nativeBuildInputs = [ cmake ];
+
     installPhase = ''
       mkdir -p $out/build
       cp -ra $src/* $out
@@ -298,11 +313,11 @@ let
         | tar cf - --null --files-from - \
         | tar xf - -C $out/build
     '';
-    nativeBuildInputs = [ cmake ];
+
+    name = "bark";
   };
 
   stable-diffusion = stdenv.mkDerivation {
-    name = "stable-diffusion";
     src = fetchFromGitHub {
       owner = "richiejp";
       repo = "stable-diffusion.cpp";
@@ -310,6 +325,14 @@ let
       hash = "sha256-z56jafOdibpX+XhRsrc7ieGbeug4bf737/UobqkpBV0=";
       fetchSubmodules = true;
     };
+
+    nativeBuildInputs = [ cmake ];
+    buildInputs = [ opencv ];
+
+    cmakeFlags = [
+      (lib.cmakeFeature "GGML_BUILD_NUMBER" "1")
+    ];
+
     installPhase = ''
       mkdir -p $out/build
       cp -ra $src/* $out
@@ -317,11 +340,8 @@ let
         | tar cf - --null --files-from - \
         | tar xf - -C $out/build
     '';
-    cmakeFlags = [
-      (lib.cmakeFeature "GGML_BUILD_NUMBER" "1")
-    ];
-    nativeBuildInputs = [ cmake ];
-    buildInputs = [ opencv ];
+
+    name = "stable-diffusion";
   };
 
   GO_TAGS = lib.optional with_tts "tts";
@@ -359,10 +379,6 @@ let
   self = buildGoModule.override { stdenv = effectiveStdenv; } {
     inherit pname version src;
 
-    vendorHash = "sha256-1OY/y1AeL0K+vOU4Jk/cj7rToVLC9EkkNhgifB+icDM=";
-
-    env.NIX_CFLAGS_COMPILE = " -isystem ${opencv}/include/opencv4";
-
     postPatch = ''
       # TODO: add silero-vad
       sed -i Makefile \
@@ -379,6 +395,46 @@ let
       sed -i Makefile \
         -e '/^CGO_LDFLAGS_WHISPER?=/ s;$;-L${libcufft}/lib -L${cuda_cudart}/lib;'
     '';
+
+    nativeBuildInputs = [
+      protobuf
+      protoc-gen-go
+      protoc-gen-go-grpc
+      makeWrapper
+      ncurses # tput
+      which
+    ]
+    ++ lib.optional enable_upx upx
+    ++ lib.optionals with_cublas [ cuda_nvcc ];
+
+    buildInputs =
+      [ ]
+      ++ lib.optionals with_cublas [
+        cuda_cudart
+        libcublas
+        libcufft
+      ]
+      ++ lib.optionals with_clblas [
+        clblast
+        ocl-icd
+        opencl-headers
+      ]
+      ++ lib.optionals with_openblas [ openblas.dev ]
+      ++ lib.optionals with_tts go-piper.buildInputs;
+
+    vendorHash = "sha256-1OY/y1AeL0K+vOU4Jk/cj7rToVLC9EkkNhgifB+icDM=";
+
+    makeFlags = [
+      "VERSION=v${version}"
+      "BUILD_TYPE=${BUILD_TYPE}"
+    ]
+    ++ lib.optional with_cublas "CUDA_LIBPATH=${cuda_cudart}/lib"
+    ++ lib.optional with_tts "PIPER_CGO_CXXFLAGS=-DSPDLOG_FMT_EXTERNAL=1";
+
+    # should be passed as makeFlags, but build system failes with strings
+    # containing spaces
+    env.GO_TAGS = builtins.concatStringsSep " " GO_TAGS;
+    env.NIX_CFLAGS_COMPILE = " -isystem ${opencv}/include/opencv4";
 
     postConfigure = prepare-sources + ''
       shopt -s extglob
@@ -397,52 +453,6 @@ let
       touch backend-assets/grpc/* backend-assets/util/*
       find sources -name "lib*.a" -exec touch {} +
     '';
-
-    buildInputs =
-      [ ]
-      ++ lib.optionals with_cublas [
-        cuda_cudart
-        libcublas
-        libcufft
-      ]
-      ++ lib.optionals with_clblas [
-        clblast
-        ocl-icd
-        opencl-headers
-      ]
-      ++ lib.optionals with_openblas [ openblas.dev ]
-      ++ lib.optionals with_tts go-piper.buildInputs;
-
-    nativeBuildInputs = [
-      protobuf
-      protoc-gen-go
-      protoc-gen-go-grpc
-      makeWrapper
-      ncurses # tput
-      which
-    ]
-    ++ lib.optional enable_upx upx
-    ++ lib.optionals with_cublas [ cuda_nvcc ];
-
-    enableParallelBuilding = false;
-
-    modBuildPhase = prepare-sources + ''
-      make protogen-go
-      go mod tidy -v
-    '';
-
-    proxyVendor = true;
-
-    # should be passed as makeFlags, but build system failes with strings
-    # containing spaces
-    env.GO_TAGS = builtins.concatStringsSep " " GO_TAGS;
-
-    makeFlags = [
-      "VERSION=v${version}"
-      "BUILD_TYPE=${BUILD_TYPE}"
-    ]
-    ++ lib.optional with_cublas "CUDA_LIBPATH=${cuda_cudart}/lib"
-    ++ lib.optional with_tts "PIPER_CGO_CXXFLAGS=-DSPDLOG_FMT_EXTERNAL=1";
 
     buildPhase = ''
       runHook preBuild
@@ -501,6 +511,27 @@ let
         --prefix PATH : "${ffmpeg}/bin"
       '';
 
+    enableParallelBuilding = false;
+
+    modBuildPhase = prepare-sources + ''
+      make protogen-go
+      go mod tidy -v
+    '';
+
+    proxyVendor = true;
+
+    passthru.features = {
+      inherit
+        with_cublas
+        with_openblas
+        with_vulkan
+        with_tts
+        with_clblas
+        ;
+    };
+
+    passthru.lib = callPackages ./lib.nix { };
+
     passthru.local-packages = {
       inherit
         go-piper
@@ -515,29 +546,20 @@ let
         ;
     };
 
-    passthru.features = {
-      inherit
-        with_cublas
-        with_openblas
-        with_vulkan
-        with_tts
-        with_clblas
-        ;
-    };
-
     passthru.tests = callPackages ./tests.nix { inherit self; };
-    passthru.lib = callPackages ./lib.nix { };
 
     meta = {
       description = "OpenAI alternative to run local LLMs, image and audio generation";
-      mainProgram = "local-ai";
       homepage = "https://localai.io";
       license = lib.licenses.mit;
+
       maintainers = with lib.maintainers; [
         onny
         ck3d
       ];
+
       platforms = lib.platforms.linux;
+      mainProgram = "local-ai";
       # Doesn't build with >buildGo123Module.
       # 'cp: cannot stat 'bin/rpc-server': No such file or directory'
       broken = true;

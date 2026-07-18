@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
+  SDL2,
   bzip2,
+  cmake,
   feather-tk,
   ffmpeg_7,
   freetype,
@@ -12,8 +12,8 @@
   imath,
   libGL,
   libjpeg,
-  libtiff,
   libpng,
+  libtiff,
   lunasvg,
   minizip-ng,
   nativefiledialog-extended,
@@ -22,8 +22,8 @@
   openexr_2,
   openssl,
   opentimelineio,
+  pkg-config,
   plutovg,
-  SDL2,
   tlrender,
   xz,
   zlib,
@@ -86,9 +86,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Professional review software for VFX, animation, and film production";
     homepage = "https://darbyjohnston.github.io/DJV/";
-    platforms = with lib.platforms; linux ++ darwin;
-    maintainers = with lib.maintainers; [ blitz ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ blitz ];
+    platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "djv";
   };
 })

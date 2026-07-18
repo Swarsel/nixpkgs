@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
-  zlib,
+  boost-build,
   boost186,
-  openssl,
-  python311,
   libiconv,
   ncurses,
-  boost-build,
+  openssl,
+  pkg-config,
+  python311,
+  zlib,
 }:
 
 let
@@ -19,12 +19,12 @@ let
   # Make sure we override python, so the correct version is chosen
   # for the bindings, if overridden
   boostPython = boost186.override (_: {
+    enableMultiThreaded = true;
     enablePython = true;
-    python = python311;
-    enableStatic = true;
     enableShared = false;
     enableSingleThreaded = false;
-    enableMultiThreaded = true;
+    enableStatic = true;
+    python = python311;
     # So that libraries will be named like 'libboost_system.a' instead
     # of 'libboost_system-x64.a'.
     taggedLayout = false;
@@ -36,8 +36,8 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "libtorrent-rasterbar";
   inherit version;
+  pname = "libtorrent-rasterbar";
 
   src = fetchFromGitHub {
     owner = "arvidn";
@@ -46,7 +46,11 @@ stdenv.mkDerivation {
     hash = "sha256-HkpaOCBL+0Kc7M9DmnW2dUGC+b60a7n5n3i1SyRfkb4=";
   };
 
-  enableParallelBuilding = true;
+  outputs = [
+    "out"
+    "dev"
+    "python"
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -64,10 +68,12 @@ stdenv.mkDerivation {
     ncurses
   ];
 
-  preAutoreconf = ''
-    mkdir -p build-aux
-    cp m4/config.rpath build-aux
-  '';
+  configureFlags = [
+    "--enable-python-binding"
+    "--with-libiconv=yes"
+    "--with-boost=${boostPython.dev}"
+    "--with-boost-libdir=${boostPython.out}/lib"
+  ];
 
   preConfigure = ''
     configureFlagsArray+=('PYTHON_INSTALL_PARAMS=--prefix=$(DESTDIR)$(prefix) --single-version-externally-managed --record=installed-files.txt')
@@ -78,25 +84,19 @@ stdenv.mkDerivation {
     moveToOutput "lib/${python311.libPrefix}" "$python"
   '';
 
-  outputs = [
-    "out"
-    "dev"
-    "python"
-  ];
+  enableParallelBuilding = true;
 
-  configureFlags = [
-    "--enable-python-binding"
-    "--with-libiconv=yes"
-    "--with-boost=${boostPython.dev}"
-    "--with-boost-libdir=${boostPython.out}/lib"
-  ];
+  preAutoreconf = ''
+    mkdir -p build-aux
+    cp m4/config.rpath build-aux
+  '';
 
   meta = {
-    homepage = "https://libtorrent.org/";
     description = "C++ BitTorrent implementation focusing on efficiency and scalability";
+    homepage = "https://libtorrent.org/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
-    broken = stdenv.hostPlatform.isDarwin;
     platforms = lib.platforms.unix;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

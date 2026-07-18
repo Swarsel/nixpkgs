@@ -1,21 +1,21 @@
 {
   lib,
-  stdenvNoCC,
-  requireFile,
-  copyDesktopItems,
-  makeDesktopItem,
-  wrapGAppsHook3,
   asar,
+  copyDesktopItems,
   dpkg,
   electron,
+  makeDesktopItem,
+  requireFile,
+  stdenvNoCC,
+  wrapGAppsHook3,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "silverfort-client";
   version = "3.8.0";
 
   src = requireFile rec {
-    name = "${finalAttrs.pname}_${finalAttrs.version}_amd64.deb";
     hash = "sha256-L2AZ3XXAE91cfRg3tnPhiQfv3TiuI19dD+kuDPlClSc=";
+
     message = ''
       Due to the commercial license of Silverfort, Nix is unable to download
       Silverfort automatically. Please download ${name} manually and add it
@@ -23,43 +23,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       It is recommended to add this file to the garbage collector root
       to prevent grabage collection.
     '';
+
+    name = "${finalAttrs.pname}_${finalAttrs.version}_amd64.deb";
   };
-
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    asar
-    copyDesktopItems
-    dpkg
-    wrapGAppsHook3
-  ];
-
-  # Prevent double wrapping
-  dontWrapGApps = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "silverfort-client";
-      desktopName = "Silverfort Client";
-      genericName = "Multi-factor authentication client";
-      comment = "Silverfort Desktop Messaging Client";
-      icon = "silverfort-client";
-      exec = "silverfort-client";
-      categories = [
-        "Utility"
-        "Security"
-      ];
-      keywords = [
-        "2fa"
-        "authentication"
-        "factor"
-        "mfa"
-        "multi"
-      ];
-      startupWMClass = "Silverfort Client";
-      terminal = false;
-    })
-  ];
 
   postPatch = ''
     asar extract "opt/Silverfort Client/resources/app.asar" $TMP/work
@@ -71,6 +37,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     substituteInPlace $TMP/work/build/electron/main.js --replace-fail \
       'try{await fsPromises.unlink(t,{force:!0})}catch(e){log.error(`failed to delete env file (''${t})`,e.toString())}' ""
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    asar
+    copyDesktopItems
+    dpkg
+    wrapGAppsHook3
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -94,6 +69,36 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --set-default ELECTRON_IS_DEV 0 \
       "''${gappsWrapperArgs[@]}"
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "Security"
+      ];
+
+      comment = "Silverfort Desktop Messaging Client";
+      desktopName = "Silverfort Client";
+      exec = "silverfort-client";
+      genericName = "Multi-factor authentication client";
+      icon = "silverfort-client";
+
+      keywords = [
+        "2fa"
+        "authentication"
+        "factor"
+        "mfa"
+        "multi"
+      ];
+
+      name = "silverfort-client";
+      startupWMClass = "Silverfort Client";
+      terminal = false;
+    })
+  ];
+
+  # Prevent double wrapping
+  dontWrapGApps = true;
 
   meta = {
     description = "Silverfort multi-factor authentication client";

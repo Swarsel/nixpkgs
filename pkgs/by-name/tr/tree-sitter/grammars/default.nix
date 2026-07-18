@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchFromGitLab,
+  fetchFromCodeberg,
   fetchFromSourcehut,
   fetchpatch,
-  fetchFromCodeberg,
   nix-update-script,
-  stdenv,
 }:
 
 let
@@ -27,9 +27,9 @@ let
       ref = lib.elemAt parts 5;
     in
     {
-      type = lib.elemAt parts 0;
       owner = lib.elemAt parts 1;
       repo = lib.elemAt parts 2;
+      type = lib.elemAt parts 0;
     }
     // lib.optionalAttrs (ref != null) { inherit ref; };
 
@@ -76,10 +76,10 @@ lib.mapAttrs' (
       src =
         let
           fetch = lib.getAttr source.type {
+            codeberg = fetchFromCodeberg;
             github = fetchFromGitHub;
             gitlab = fetchFromGitLab;
             sourcehut = fetchFromSourcehut;
-            codeberg = fetchFromCodeberg;
             # NOTE: include other types here as required
           };
           rev =
@@ -94,6 +94,7 @@ lib.mapAttrs' (
             owner
             repo
             ;
+
           inherit rev;
           inherit (attrs) hash;
         };

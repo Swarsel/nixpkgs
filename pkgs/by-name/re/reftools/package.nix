@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,9 +16,7 @@ buildGoModule {
   };
 
   vendorHash = null;
-
   doCheck = false;
-
   excludedPackages = "cmd/fillswitch/test-fixtures";
 
   meta = {

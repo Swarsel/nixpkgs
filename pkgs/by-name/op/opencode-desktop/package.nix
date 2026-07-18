@@ -1,18 +1,17 @@
 {
+  lib,
+  stdenv,
   autoPatchelfHook,
   bun,
   copyDesktopItems,
   electron_41,
-  lib,
   makeBinaryWrapper,
   makeDesktopItem,
   models-dev,
   nodejs,
   opencode,
-  stdenv,
   stdenvNoCC,
   writableTmpDirAsHomeHook,
-
   commandLineArgs ? "",
 }:
 
@@ -20,13 +19,28 @@ let
   electron = electron_41;
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "opencode-desktop";
   inherit (opencode)
     version
     src
     node_modules
     patches
     ;
+
+  pname = "opencode-desktop";
+
+  postPatch = ''
+    # The auto-updater would try to download and run an upstream binary that
+    # isn't patched for Nix. Disable it at source.
+    substituteInPlace packages/desktop/src/main/constants.ts \
+      --replace-fail 'app.isPackaged && CHANNEL !== "dev"' 'false'
+
+    # Relax Bun version check to be a warning instead of an error
+    substituteInPlace packages/script/src/index.ts \
+      --replace-fail 'throw new Error(`This script requires bun@''${expectedBunVersionRange}' \
+                     'console.warn(`Warning: This script requires bun@''${expectedBunVersionRange}'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     bun
@@ -43,40 +57,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     (lib.getLib stdenv.cc.cc)
   ];
 
-  # The musl prebuilts ship libc.musl-*.so.1 SONAMEs that autoPatchelfHook can't
-  # resolve on glibc systems. They aren't loaded at runtime on the host libc anyway.
-  autoPatchelfIgnoreMissingDeps = [ "libc.musl-*.so.*" ];
-
-  strictDeps = true;
-
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-    OPENCODE_CHANNEL = "prod";
     MODELS_DEV_API_JSON = "${models-dev}/dist/_api.json";
+    OPENCODE_CHANNEL = "prod";
     OPENCODE_DISABLE_MODELS_FETCH = true;
   };
-
-  postPatch = ''
-    # The auto-updater would try to download and run an upstream binary that
-    # isn't patched for Nix. Disable it at source.
-    substituteInPlace packages/desktop/src/main/constants.ts \
-      --replace-fail 'app.isPackaged && CHANNEL !== "dev"' 'false'
-
-    # Relax Bun version check to be a warning instead of an error
-    substituteInPlace packages/script/src/index.ts \
-      --replace-fail 'throw new Error(`This script requires bun@''${expectedBunVersionRange}' \
-                     'console.warn(`Warning: This script requires bun@''${expectedBunVersionRange}'
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-
-    cp -R ${finalAttrs.node_modules}/. .
-    patchShebangs node_modules
-    patchShebangs packages/*/node_modules
-
-    runHook postConfigure
-  '';
 
   preBuild = lib.optionalString stdenvNoCC.hostPlatform.isDarwin ''
     # Patch electron-builder to skip code signing on macOS.
@@ -123,16 +109,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  desktopItems = lib.optional stdenvNoCC.hostPlatform.isLinux (makeDesktopItem {
-    name = "ai.opencode.desktop";
-    desktopName = "OpenCode";
-    exec = "opencode-desktop %U";
-    icon = "opencode-desktop";
-    startupWMClass = "ai.opencode.desktop";
-    categories = [ "Development" ];
-    mimeTypes = [ "x-scheme-handler/opencode" ];
-  });
-
   installPhase =
     let
       appDir = if stdenvNoCC.hostPlatform.isAarch64 then "linux-arm64-unpacked" else "linux-unpacked";
@@ -175,12 +151,36 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       ''
     ];
 
+  # The musl prebuilts ship libc.musl-*.so.1 SONAMEs that autoPatchelfHook can't
+  # resolve on glibc systems. They aren't loaded at runtime on the host libc anyway.
+  autoPatchelfIgnoreMissingDeps = [ "libc.musl-*.so.*" ];
+
+  configurePhase = ''
+    runHook preConfigure
+
+    cp -R ${finalAttrs.node_modules}/. .
+    patchShebangs node_modules
+    patchShebangs packages/*/node_modules
+
+    runHook postConfigure
+  '';
+
+  desktopItems = lib.optional stdenvNoCC.hostPlatform.isLinux (makeDesktopItem {
+    categories = [ "Development" ];
+    desktopName = "OpenCode";
+    exec = "opencode-desktop %U";
+    icon = "opencode-desktop";
+    mimeTypes = [ "x-scheme-handler/opencode" ];
+    name = "ai.opencode.desktop";
+    startupWMClass = "ai.opencode.desktop";
+  });
+
   meta = {
+    inherit (opencode.meta) changelog platforms;
     description = "AI coding agent desktop client";
     homepage = "https://opencode.ai";
-    inherit (opencode.meta) changelog platforms;
     license = lib.licenses.mit;
-    mainProgram = "opencode-desktop";
     maintainers = with lib.maintainers; [ xiaoxiangmoe ];
+    mainProgram = "opencode-desktop";
   };
 })

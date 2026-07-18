@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -16,8 +16,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-f4CtXKsZPc/gZMVD+MJrHMrMw7TTFUndhUT4YLpfORU=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/plymouth/themes/proxzima
@@ -27,13 +25,14 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Techno Plymouth theme with crazy animation";
     homepage = "https://github.com/PROxZIMA/proxzima-plymouth";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ johnrtitor ];
+    platforms = lib.platforms.linux;
   };
 }

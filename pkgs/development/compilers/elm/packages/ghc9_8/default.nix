@@ -1,4 +1,4 @@
-{ pkgs, lib }:
+{ lib, pkgs }:
 
 self:
 pkgs.haskell.packages.ghc98.override {
@@ -22,6 +22,7 @@ pkgs.haskell.packages.ghc98.override {
             '';
 
             homepage = "https://github.com/avh4/elm-format";
+
             maintainers = with lib.maintainers; [
               avh4
               turbomack
@@ -33,11 +34,10 @@ pkgs.haskell.packages.ghc98.override {
     elmPkgs
     // {
       inherit elmPkgs;
-
       # Needed for elm-format
       avh4-lib = self.callPackage ./elm-format/avh4-lib.nix { };
       elm-format-lib = self.callPackage ./elm-format/elm-format-lib.nix { };
-      elm-format-test-lib = self.callPackage ./elm-format/elm-format-test-lib.nix { };
       elm-format-markdown = self.callPackage ./elm-format/elm-format-markdown.nix { };
+      elm-format-test-lib = self.callPackage ./elm-format/elm-format-test-lib.nix { };
     };
 }

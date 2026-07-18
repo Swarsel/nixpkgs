@@ -17,18 +17,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1syyf7dcm8fbyw31cpgmacg80h7pg036dayaaf0svvdsk0hqlsch";
   };
 
-  patchPhase = "sed -i s#/usr##g Makefile";
-
   buildInputs = [
     git
     ronn
   ];
 
   installFlags = [ "DESTDIR=$(out)" ];
+  patchPhase = "sed -i s#/usr##g Makefile";
 
   meta = {
-    homepage = "https://github.com/schlomo/automirror";
     description = "Automatic Display Mirror";
+    homepage = "https://github.com/schlomo/automirror";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.all;
     mainProgram = "automirror";

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
+  fetchpatch,
   libpcap,
   mbedtls,
 }:
@@ -22,20 +22,16 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # See: <https://github.com/virtualsquare/vde-2/issues/69>
     (fetchpatch {
+      hash = "sha256-cq3yrA3w/K6J+RtwYX9AcG/nfctlAkc3aYJZpJxJXTQ=";
       name = "vde2-backport-mbedtls-support.patch";
       url = "https://github.com/virtualsquare/vde-2/commit/e3f701978a0a20e56cd9829353d110d4ddcedd90.patch";
-      hash = "sha256-cq3yrA3w/K6J+RtwYX9AcG/nfctlAkc3aYJZpJxJXTQ=";
     })
 
     (fetchpatch {
-      url = "https://git.alpinelinux.org/aports/plain/main/vde2/musl-build-fix.patch?id=ddee2f86a48e087867d4a2c12849b2e3baccc238";
       sha256 = "0b5382v541bkxhqylilcy34bh83ag96g71f39m070jzvi84kx8af";
+      url = "https://git.alpinelinux.org/aports/plain/main/vde2/musl-build-fix.patch?id=ddee2f86a48e087867d4a2c12849b2e3baccc238";
     })
   ];
-
-  # Fix build with gcc15
-  # https://github.com/virtualsquare/vde-2/commit/fedcb99c5f44c397f459ed0951a8fba4f4effb73
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   nativeBuildInputs = [ autoreconfHook ];
 
@@ -48,10 +44,14 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-crypt=mbedtls"
   ];
 
+  # Fix build with gcc15
+  # https://github.com/virtualsquare/vde-2/commit/fedcb99c5f44c397f459ed0951a8fba4f4effb73
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+
   meta = {
-    homepage = "https://github.com/virtualsquare/vde-2";
     description = "Virtual Distributed Ethernet, an Ethernet compliant virtual network";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/virtualsquare/vde-2";
+
     license = [
       # Effectively `lib.licenses.gpl2Only`, but file headers differ.
       lib.licenses.gpl2Plus
@@ -59,5 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
       # libvdeplug and code copied from glibc.
       lib.licenses.lgpl21Plus
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

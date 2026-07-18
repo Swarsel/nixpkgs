@@ -1,13 +1,13 @@
 {
   lib,
   fetchFromGitLab,
-  rustPlatform,
-  pkg-config,
-  gtk3-x11,
   atk,
-  glib,
-  librsvg,
   gdk-pixbuf,
+  glib,
+  gtk3-x11,
+  librsvg,
+  pkg-config,
+  rustPlatform,
   wrapGAppsHook3,
 }:
 
@@ -19,11 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "categulario";
     repo = "pizarra-gtk";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-vnjhveX3EVIfJLiHWhlvhoPcRx1a8Nnjj7hIaPgU3Zw=";
+    fetchSubmodules = true;
   };
-
-  cargoHash = "sha256-b1sMO5BF3js1WxUM80kowyb+6bpXiUKoTgg0QtKaXJY=";
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -38,6 +36,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     librsvg
   ];
 
+  cargoHash = "sha256-b1sMO5BF3js1WxUM80kowyb+6bpXiUKoTgg0QtKaXJY=";
+
   postInstall = ''
     install -Dm444 res/icons/tk.categulario.pizarra.svg $out/share/icons/hicolor/scalable/apps/pizarra.svg
     install -Dm444 res/pizarra.desktop -t $out/share/applications
@@ -49,7 +49,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Simple blackboard written in GTK";
-    mainProgram = "pizarra";
+
     longDescription = ''
       A simple endless blackboard.
       Contains various features, such as:
@@ -60,8 +60,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
       - Text
       - Grids
     '';
+
     homepage = "https://pizarra.categulario.xyz/en/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    mainProgram = "pizarra";
   };
 })

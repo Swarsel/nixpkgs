@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
+  gettext,
   gmp,
   gwenhywfar,
   libtool,
   libxml2,
   libxslt,
   pkg-config,
-  gettext,
   xmlsec,
   zlib,
 }:
@@ -17,12 +17,12 @@ let
   inherit ((import ./sources.nix).aqbanking) hash releaseId version;
 in
 stdenv.mkDerivation rec {
-  pname = "aqbanking";
   inherit version;
+  pname = "aqbanking";
 
   src = fetchurl {
-    url = "https://www.aquamaniac.de/rdm/attachments/download/${releaseId}/aqbanking-${version}.tar.gz";
     inherit hash;
+    url = "https://www.aquamaniac.de/rdm/attachments/download/${releaseId}/aqbanking-${version}.tar.gz";
   };
 
   # Set the include dir explicitly, this fixes a build error when building
@@ -35,6 +35,11 @@ stdenv.mkDerivation rec {
     }' configure
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    gettext
+  ];
+
   buildInputs = [
     gmp
     gwenhywfar
@@ -45,17 +50,12 @@ stdenv.mkDerivation rec {
     zlib
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    gettext
-  ];
-
   meta = {
     description = "Interface to banking tasks, file formats and country information";
     homepage = "https://www.aquamaniac.de/rdm/";
-    hydraPlatforms = [ ];
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    hydraPlatforms = [ ];
   };
 }

@@ -13,23 +13,27 @@ in
     ./disk-size-option.nix
     ../image/file-options.nix
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2411;
       from = [
         "virtualbox"
         "baseImageSize"
       ];
+
+      sinceRelease = 2411;
+
       to = [
         "virtualisation"
         "diskSize"
       ];
     })
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2505;
       from = [
         "virtualisation"
         "virtualbox"
         "vmFileName"
       ];
+
+      sinceRelease = 2505;
+
       to = [
         "image"
         "fileName"
@@ -40,54 +44,31 @@ in
   options = {
     virtualbox = {
       baseImageFreeSpace = lib.mkOption {
-        type = lib.types.int;
         default = 30 * 1024;
+
         description = ''
           Free space in the VirtualBox base image in MiB.
         '';
-      };
-      memorySize = lib.mkOption {
-        type = lib.types.int;
-        default = 1536;
-        description = ''
-          The amount of RAM the VirtualBox appliance can use in MiB.
-        '';
-      };
-      vmDerivationName = lib.mkOption {
-        type = lib.types.str;
-        default = "nixos-ova-${config.system.nixos.label}-${pkgs.stdenv.hostPlatform.system}";
-        description = ''
-          The name of the derivation for the VirtualBox appliance.
-        '';
-      };
-      vmName = lib.mkOption {
-        type = lib.types.str;
-        default = "${config.system.nixos.distroName} ${config.system.nixos.label} (${pkgs.stdenv.hostPlatform.system})";
-        description = ''
-          The name of the VirtualBox appliance.
-        '';
-      };
-      params = lib.mkOption {
-        type =
-          with lib.types;
-          attrsOf (oneOf [
-            str
-            int
-            bool
-            (listOf str)
-          ]);
-        example = {
-          audio = "alsa";
-          rtcuseutc = "on";
-          usb = "off";
-        };
-        description = ''
-          Parameters passed to the Virtualbox appliance.
 
-          Run `VBoxManage modifyvm --help` to see more options.
-        '';
+        type = lib.types.int;
       };
+
       exportParams = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Parameters passed to the Virtualbox export command.
+
+          Run `VBoxManage export --help` to see more options.
+        '';
+
+        example = [
+          "--vsys"
+          "0"
+          "--vendor"
+          "ACME Inc."
+        ];
+
         type =
           with lib.types;
           listOf (oneOf [
@@ -96,53 +77,85 @@ in
             bool
             (listOf str)
           ]);
-        example = [
-          "--vsys"
-          "0"
-          "--vendor"
-          "ACME Inc."
-        ];
-        default = [ ];
-        description = ''
-          Parameters passed to the Virtualbox export command.
-
-          Run `VBoxManage export --help` to see more options.
-        '';
       };
+
       extraDisk = lib.mkOption {
+        default = null;
+
         description = ''
           Optional extra disk/hdd configuration.
           The disk will be an 'ext4' partition on a separate file.
         '';
-        default = null;
+
         example = {
           label = "storage";
           mountPoint = "/home/demo/storage";
           size = 100 * 1024;
         };
+
         type = lib.types.nullOr (
           lib.types.submodule {
             options = {
-              size = lib.mkOption {
-                type = lib.types.int;
-                description = "Size in MiB";
-              };
               label = lib.mkOption {
-                type = lib.types.str;
                 default = "vm-extra-storage";
                 description = "Label for the disk partition";
-              };
-              mountPoint = lib.mkOption {
                 type = lib.types.str;
+              };
+
+              mountPoint = lib.mkOption {
                 description = "Path where to mount this disk.";
+                type = lib.types.str;
+              };
+
+              size = lib.mkOption {
+                description = "Size in MiB";
+                type = lib.types.int;
               };
             };
           }
         );
       };
+
+      memorySize = lib.mkOption {
+        default = 1536;
+
+        description = ''
+          The amount of RAM the VirtualBox appliance can use in MiB.
+        '';
+
+        type = lib.types.int;
+      };
+
+      params = lib.mkOption {
+        description = ''
+          Parameters passed to the Virtualbox appliance.
+
+          Run `VBoxManage modifyvm --help` to see more options.
+        '';
+
+        example = {
+          audio = "alsa";
+          rtcuseutc = "on";
+          usb = "off";
+        };
+
+        type =
+          with lib.types;
+          attrsOf (oneOf [
+            str
+            int
+            bool
+            (listOf str)
+          ]);
+      };
+
       postExportCommands = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
+        description = ''
+          Extra commands to run after exporting the OVA to `$fn`.
+        '';
+
         example = ''
           ${pkgs.cot}/bin/cot edit-hardware "$fn" \
             -v vmx-14 \
@@ -153,11 +166,34 @@ in
             --network-descriptions 'Nic description' \
             --scsi-subtypes VirtualSCSI
         '';
-        description = ''
-          Extra commands to run after exporting the OVA to `$fn`.
-        '';
+
+        type = lib.types.lines;
       };
+
       storageController = lib.mkOption {
+        default = {
+          add = "sata";
+          bootable = "on";
+          hostiocache = "on";
+          name = "SATA";
+          portcount = 4;
+        };
+
+        description = ''
+          Parameters passed to the VirtualBox appliance. Must have at least
+          `name`.
+
+          Run `VBoxManage storagectl --help` to see more options.
+        '';
+
+        example = {
+          add = "scsi";
+          bootable = "on";
+          hostiocache = "on";
+          name = "SCSI";
+          portcount = 16;
+        };
+
         type =
           with lib.types;
           attrsOf (oneOf [
@@ -166,64 +202,67 @@ in
             bool
             (listOf str)
           ]);
-        example = {
-          name = "SCSI";
-          add = "scsi";
-          portcount = 16;
-          bootable = "on";
-          hostiocache = "on";
-        };
-        default = {
-          name = "SATA";
-          add = "sata";
-          portcount = 4;
-          bootable = "on";
-          hostiocache = "on";
-        };
-        description = ''
-          Parameters passed to the VirtualBox appliance. Must have at least
-          `name`.
+      };
 
-          Run `VBoxManage storagectl --help` to see more options.
+      vmDerivationName = lib.mkOption {
+        default = "nixos-ova-${config.system.nixos.label}-${pkgs.stdenv.hostPlatform.system}";
+
+        description = ''
+          The name of the derivation for the VirtualBox appliance.
         '';
+
+        type = lib.types.str;
+      };
+
+      vmName = lib.mkOption {
+        default = "${config.system.nixos.distroName} ${config.system.nixos.label} (${pkgs.stdenv.hostPlatform.system})";
+
+        description = ''
+          The name of the VirtualBox appliance.
+        '';
+
+        type = lib.types.str;
       };
     };
   };
 
   config = {
-    # Use a priority just below mkOptionDefault (1500) instead of lib.mkDefault
-    # to avoid breaking existing configs using that.
-    virtualisation.diskSize = lib.mkOverride 1490 (50 * 1024);
+    boot.growPartition = true;
+    boot.loader.grub.device = "/dev/sda";
 
-    virtualbox.params = lib.mkMerge [
-      (lib.mapAttrs (name: lib.mkDefault) {
-        acpi = "on";
-        vram = 32;
-        nictype1 = "virtio";
-        nic1 = "nat";
-        audiocontroller = "ac97";
-        audio = "alsa";
-        audioout = "on";
-        graphicscontroller = "vmsvga";
-        rtcuseutc = "on";
-        usb = "on";
-        usbehci = "on";
-        mouse = "usbtablet";
-      })
-      (lib.mkIf (pkgs.stdenv.hostPlatform.system == "i686-linux") { pae = "on"; })
+    fileSystems = {
+      "/" = {
+        autoResize = true;
+        device = "/dev/disk/by-label/nixos";
+        fsType = "ext4";
+      };
+    }
+    // (lib.optionalAttrs (cfg.extraDisk != null) {
+      ${cfg.extraDisk.mountPoint} = {
+        autoResize = true;
+        device = "/dev/disk/by-label/" + cfg.extraDisk.label;
+        fsType = "ext4";
+      };
+    });
+
+    image.extension = "ova";
+
+    swapDevices = [
+      {
+        device = "/var/swap";
+        size = 2048;
+      }
     ];
 
-    system.nixos.tags = [ "virtualbox" ];
-    image.extension = "ova";
     system.build.image = lib.mkDefault config.system.build.virtualBoxOVA;
-    system.build.virtualBoxOVA = import ../../lib/make-disk-image.nix {
-      name = cfg.vmDerivationName;
-      baseName = config.image.baseName;
 
+    system.build.virtualBoxOVA = import ../../lib/make-disk-image.nix {
       inherit pkgs lib config;
-      partitionTableType = "legacy";
       inherit (config.virtualisation) diskSize;
       additionalSpace = "${toString cfg.baseImageFreeSpace}M";
+      baseName = config.image.baseName;
+      name = cfg.vmDerivationName;
+      partitionTableType = "legacy";
 
       postVM = ''
         export HOME=$PWD
@@ -274,31 +313,29 @@ in
       '';
     };
 
-    fileSystems = {
-      "/" = {
-        device = "/dev/disk/by-label/nixos";
-        autoResize = true;
-        fsType = "ext4";
-      };
-    }
-    // (lib.optionalAttrs (cfg.extraDisk != null) {
-      ${cfg.extraDisk.mountPoint} = {
-        device = "/dev/disk/by-label/" + cfg.extraDisk.label;
-        autoResize = true;
-        fsType = "ext4";
-      };
-    });
+    system.nixos.tags = [ "virtualbox" ];
 
-    boot.growPartition = true;
-    boot.loader.grub.device = "/dev/sda";
-
-    swapDevices = [
-      {
-        device = "/var/swap";
-        size = 2048;
-      }
+    virtualbox.params = lib.mkMerge [
+      (lib.mapAttrs (name: lib.mkDefault) {
+        acpi = "on";
+        audio = "alsa";
+        audiocontroller = "ac97";
+        audioout = "on";
+        graphicscontroller = "vmsvga";
+        mouse = "usbtablet";
+        nic1 = "nat";
+        nictype1 = "virtio";
+        rtcuseutc = "on";
+        usb = "on";
+        usbehci = "on";
+        vram = 32;
+      })
+      (lib.mkIf (pkgs.stdenv.hostPlatform.system == "i686-linux") { pae = "on"; })
     ];
 
+    # Use a priority just below mkOptionDefault (1500) instead of lib.mkDefault
+    # to avoid breaking existing configs using that.
+    virtualisation.diskSize = lib.mkOverride 1490 (50 * 1024);
     virtualisation.virtualbox.guest.enable = true;
 
   };

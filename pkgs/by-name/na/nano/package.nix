@@ -3,29 +3,29 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
+  callPackage,
+  common-updater-scripts,
+  coreutils,
+  gitMinimal,
+  gnused,
   ncurses,
+  nix,
   texinfo,
   writeScript,
-  common-updater-scripts,
-  gitMinimal,
-  nix,
-  coreutils,
-  gnused,
-  callPackage,
-  file ? null,
-  gettext ? null,
   enableNls ? true,
   enableTiny ? false,
+  file ? null,
+  gettext ? null,
 }:
 
 assert enableNls -> (gettext != null);
 
 let
   nixSyntaxHighlight = fetchFromGitHub {
+    hash = "sha256-S9p/g8DZhZ1cZdyFI6eaOxxGAbz+dloFEWdamAHo120=";
     owner = "seitz";
     repo = "nanonix";
     rev = "5c30e1de6d664d609ff3828a8877fba3e06ca336";
-    hash = "sha256-S9p/g8DZhZ1cZdyFI6eaOxxGAbz+dloFEWdamAHo120=";
   };
 
 in
@@ -38,15 +38,16 @@ stdenv.mkDerivation rec {
     hash = "sha256-X0d2QnTLdTI0nOCqIOwQ8ejoUabp+j62aBLEPRltsEI=";
   };
 
-  nativeBuildInputs = [ texinfo ] ++ lib.optional enableNls gettext;
-  buildInputs = [ ncurses ] ++ lib.optional (!enableTiny) file;
-
   outputs = [
     "out"
     "doc"
     "info"
     "man"
   ];
+
+  strictDeps = true;
+  nativeBuildInputs = [ texinfo ] ++ lib.optional enableNls gettext;
+  buildInputs = [ ncurses ] ++ lib.optional (!enableTiny) file;
 
   configureFlags = [
     "--sysconfdir=/etc"
@@ -65,12 +66,10 @@ stdenv.mkDerivation rec {
         cp ${nixSyntaxHighlight}/nix.nanorc $out/share/nano/
       '';
 
+  enableParallelBuilding = true;
   # https://hydra.nixos.org/build/300187289/nixlog/1
   # openat-die.c:57:10: error: format string is not a string literal (potentially insecure) [-Werror,-Wformat-security]
   hardeningDisable = [ "format" ];
-
-  enableParallelBuilding = true;
-  strictDeps = true;
 
   passthru = {
     tests = {
@@ -102,12 +101,14 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://www.nano-editor.org/";
     description = "Small, user-friendly console text editor";
+    homepage = "https://www.nano-editor.org/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       sigmasquadron
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "nano";
   };

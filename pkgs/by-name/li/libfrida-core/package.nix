@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  writeShellScript,
+  common-updater-scripts,
   curl,
   jq,
-  common-updater-scripts,
+  stdenvNoCC,
+  writeShellScript,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "libfrida-core";
@@ -14,7 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   src =
     finalAttrs.passthru.sources.${stdenvNoCC.hostPlatform.system}
       or (throw "Unsupported system: ${stdenvNoCC.hostPlatform.system}");
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -25,21 +24,26 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   passthru = {
     sources = {
-      x86_64-linux = fetchurl {
-        url = "https://github.com/frida/frida/releases/download/${finalAttrs.version}/frida-core-devkit-${finalAttrs.version}-linux-x86_64.tar.xz";
-        hash = "sha256-VzPu6AYN8LVQULJBb4Ug7GrenyklksORpcZoj9Sg354=";
-      };
-      aarch64-linux = fetchurl {
-        url = "https://github.com/frida/frida/releases/download/${finalAttrs.version}/frida-core-devkit-${finalAttrs.version}-linux-arm64.tar.xz";
-        hash = "sha256-ryGe+T9GP3CitQMZHwco0d5tNoyXQ9TUwRG2D5E+Hp0=";
-      };
       aarch64-darwin = fetchurl {
-        url = "https://github.com/frida/frida/releases/download/${finalAttrs.version}/frida-core-devkit-${finalAttrs.version}-macos-arm64.tar.xz";
         hash = "sha256-CmOkZ+/w/Vh6V5lJ8jzXU5ZLi0FWXXXIFgPLdb+nu88=";
+        url = "https://github.com/frida/frida/releases/download/${finalAttrs.version}/frida-core-devkit-${finalAttrs.version}-macos-arm64.tar.xz";
+      };
+
+      aarch64-linux = fetchurl {
+        hash = "sha256-ryGe+T9GP3CitQMZHwco0d5tNoyXQ9TUwRG2D5E+Hp0=";
+        url = "https://github.com/frida/frida/releases/download/${finalAttrs.version}/frida-core-devkit-${finalAttrs.version}-linux-arm64.tar.xz";
+      };
+
+      x86_64-linux = fetchurl {
+        hash = "sha256-VzPu6AYN8LVQULJBb4Ug7GrenyklksORpcZoj9Sg354=";
+        url = "https://github.com/frida/frida/releases/download/${finalAttrs.version}/frida-core-devkit-${finalAttrs.version}-linux-x86_64.tar.xz";
       };
     };
+
     updateScript = writeShellScript "update-libfrida-core" ''
       set -o errexit
       export PATH="${
@@ -65,8 +69,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://frida.re/";
     changelog = "https://frida.re/news/";
     license = lib.licenses.wxWindowsException31;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ nilathedragon ];
     platforms = builtins.attrNames finalAttrs.passthru.sources;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   ddt,
-  fetchFromGitHub,
   jsonschema,
   keystoneauth1,
   openstackdocstheme,
@@ -11,8 +11,8 @@
   oslo-log,
   oslo-utils,
   pbr,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools,
   sphinxHook,
   stestr,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "python-zaqarclient";
   version = "4.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -31,30 +30,12 @@ buildPythonPackage rec {
     hash = "sha256-bxB6f3HgTPeMkMYg+yEzkgHBkXPb6UMuKBo9XC74O/U=";
   };
 
-  env.PBR_VERSION = version;
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
   nativeBuildInputs = [
     openstackdocstheme
     sphinxHook
   ];
 
-  sphinxBuilders = [ "man" ];
-
-  dependencies = [
-    jsonschema
-    keystoneauth1
-    osc-lib
-    oslo-i18n
-    oslo-log
-    oslo-utils
-    requests
-    stevedore
-  ];
+  env.PBR_VERSION = version;
 
   nativeCheckInputs = [
     ddt
@@ -68,11 +49,29 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  dependencies = [
+    jsonschema
+    keystoneauth1
+    osc-lib
+    oslo-i18n
+    oslo-log
+    oslo-utils
+    requests
+    stevedore
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "zaqarclient" ];
+  sphinxBuilders = [ "man" ];
 
   meta = {
-    homepage = "https://github.com/openstack/python-zaqarclient";
     description = "Client library for OpenStack Zaqar API";
+    homepage = "https://github.com/openstack/python-zaqarclient";
     license = lib.licenses.asl20;
     teams = [ lib.teams.openstack ];
   };

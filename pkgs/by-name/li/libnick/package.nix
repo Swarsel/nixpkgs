@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  pkg-config,
-  validatePkgConfig,
-  openssl,
-  sqlcipher,
   boost,
+  cmake,
   curl,
   glib,
   libcpr,
-  libsecret,
   libmaddy-markdown,
-  testers,
+  libsecret,
+  ninja,
   nix-update-script,
+  openssl,
+  pkg-config,
+  sqlcipher,
+  testers,
+  validatePkgConfig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,14 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-nxh9WyIP86rnkUgFRMEbO2jw6dtfPR4mcHeGplmL6mc=";
   };
+
+  postPatch = ''
+    substituteInPlace cmake/libnick.pc.in \
+    --replace-fail 'libdir=''${exec_prefix}/@CMAKE_INSTALL_LIBDIR@' \
+                   'libdir=@CMAKE_INSTALL_FULL_LIBDIR@' \
+    --replace-fail 'includedir=''${prefix}/@CMAKE_INSTALL_INCLUDEDIR@' \
+                   'includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -58,14 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
     (lib.cmakeFeature "USE_LIBSECRET" "true")
   ];
-
-  postPatch = ''
-    substituteInPlace cmake/libnick.pc.in \
-    --replace-fail 'libdir=''${exec_prefix}/@CMAKE_INSTALL_LIBDIR@' \
-                   'libdir=@CMAKE_INSTALL_FULL_LIBDIR@' \
-    --replace-fail 'includedir=''${prefix}/@CMAKE_INSTALL_INCLUDEDIR@' \
-                   'includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@'
-  '';
 
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };

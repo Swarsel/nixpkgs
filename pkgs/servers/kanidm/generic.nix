@@ -1,29 +1,29 @@
 {
-  version,
-  hash,
   cargoHash,
-  unsupported ? false,
+  hash,
+  version,
   eolDate ? null,
   patches ? [ ],
+  unsupported ? false,
 }:
 
 {
-  stdenv,
   lib,
-  formats,
-  nixosTests,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
-  nix-update-script,
-  pkg-config,
-  udev,
-  openssl,
-  sqlite,
-  pam,
   bashInteractive,
-  rust-jemalloc-sys,
+  formats,
+  installShellFiles,
   kanidmWithSecretProvisioning,
+  nix-update-script,
+  nixosTests,
+  openssl,
+  pam,
+  pkg-config,
+  rust-jemalloc-sys,
+  rustPlatform,
+  sqlite,
+  udev,
   # If this is enabled, kanidm will be built with two patches allowing both
   # oauth2 basic secrets and admin credentials to be provisioned.
   # This is NOT officially supported (and will likely never be),
@@ -47,21 +47,15 @@ let
   '';
 in
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "kanidm" + (lib.optionalString enableSecretProvisioning "-with-secret-provisioning");
   inherit version cargoHash;
-
-  cargoDepsName = "kanidm";
+  pname = "kanidm" + (lib.optionalString enableSecretProvisioning "-with-secret-provisioning");
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "kanidm";
     repo = "kanidm";
     tag = "v${finalAttrs.version}";
-    inherit hash;
   };
-
-  __structuredAttrs = true;
-
-  env.KANIDM_BUILD_PROFILE = "release_nixpkgs_${arch}";
 
   patches =
     patches
@@ -118,24 +112,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  # The UI needs to be in place before the tests are run.
-  postBuild = ''
-    mkdir -p $out/ui
-    cp -r server/core/static $out/ui/hpkg
-  '';
-
+  env.KANIDM_BUILD_PROFILE = "release_nixpkgs_${arch}";
   # Upstream runs with the Rust equivalent of -Werror,
   # which breaks when we upgrade to new Rust before them.
   # Just allow warnings. It's fine, really.
   env.RUSTFLAGS = "--cap-lints warn";
 
-  # Not sure what pathological case it hits when compiling tests with LTO,
-  # but disabling it takes the total `cargo check` time from 40 minutes to
-  # around 5 on a 16-core machine.
-  cargoTestFlags = [
-    "--config"
-    ''profile.release.lto="off"''
-  ];
+  # The UI needs to be in place before the tests are run.
+  postBuild = ''
+    mkdir -p $out/ui
+    cp -r server/core/static $out/ui/hpkg
+  '';
 
   # A bunch of the tests break due to the sandboxing.
   doCheck = false;
@@ -152,11 +139,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
     mv $out/lib/libpam_kanidm.so $out/lib/pam_kanidm.so
   '';
 
+  __structuredAttrs = true;
+  cargoDepsName = "kanidm";
+
+  # Not sure what pathological case it hits when compiling tests with LTO,
+  # but disabling it takes the total `cargo check` time from 40 minutes to
+  # around 5 on a 16-core machine.
+  cargoTestFlags = [
+    "--config"
+    ''profile.release.lto="off"''
+  ];
+
+  # can take over 4 hours on 2 cores and needs 16GB+ RAM
+  requiredSystemFeatures = [ "big-parallel" ];
+
   passthru = {
+    inherit enableSecretProvisioning;
+
+    eolMessage = lib.optionalString (eolDate != null) ''
+      kanidm ${lib.versions.majorMinor finalAttrs.version} is deprecated and will reach end-of-life on ${eolDate}
+
+      ${upgradeNote}
+    '';
+
     tests = {
       kanidm = nixosTests.kanidm.extend {
         modules = [ { _module.args.kanidmPackage = finalAttrs.finalPackage; } ];
       };
+
       kanidm-provisioning = nixosTests.kanidm-provisioning.extend {
         modules = [ { _module.args.kanidmPackage = finalAttrs.finalPackage.withSecretProvisioning; } ];
       };
@@ -171,31 +181,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ];
     });
 
-    inherit enableSecretProvisioning;
     # Unfortunately there is no such thing as finalAttrs.finalPackage.override,
     # so we have to resort to this.
     withSecretProvisioning = kanidmWithSecretProvisioning;
-
-    eolMessage = lib.optionalString (eolDate != null) ''
-      kanidm ${lib.versions.majorMinor finalAttrs.version} is deprecated and will reach end-of-life on ${eolDate}
-
-      ${upgradeNote}
-    '';
   };
 
-  # can take over 4 hours on 2 cores and needs 16GB+ RAM
-  requiredSystemFeatures = [ "big-parallel" ];
-
   meta = {
-    changelog = "https://github.com/kanidm/kanidm/releases/tag/v${finalAttrs.version}";
     description = "Simple, secure and fast identity management platform";
     homepage = "https://github.com/kanidm/kanidm";
+    changelog = "https://github.com/kanidm/kanidm/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       adamcstephens
       Flakebi
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     knownVulnerabilities = lib.optionals unsupported [
       ''
         kanidm ${lib.versions.majorMinor finalAttrs.version} has reached end-of-life.

@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
   numpy,
-  scipy,
-  scikit-learn,
   pytestCheckHook,
+  scikit-learn,
+  scipy,
   setuptools,
 }:
 
@@ -14,7 +14,6 @@ let
   self = buildPythonPackage rec {
     pname = "opentsne";
     version = "1.0.4";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "pavlin-policar";
@@ -22,6 +21,8 @@ let
       tag = "v${version}";
       hash = "sha256-cGnhdGpDiBlTeeveCtnveslDytpNO8vtYkxQQ7FhsuA=";
     };
+
+    doCheck = false;
 
     build-system = [
       cython
@@ -35,25 +36,23 @@ let
       scikit-learn
     ];
 
+    pyproject = true;
     pythonImportsCheck = [ "openTSNE" ];
-
-    doCheck = false;
 
     passthru = {
       tests.pytest = self.overridePythonAttrs (old: {
         pname = "${old.pname}-tests";
-        pyproject = false;
-
         postPatch = "rm openTSNE -rf";
-
-        doBuild = false;
-        doInstall = false;
-
         doCheck = true;
+
         nativeCheckInputs = [
           pytestCheckHook
           self
         ];
+
+        doBuild = false;
+        doInstall = false;
+        pyproject = false;
       });
     };
 

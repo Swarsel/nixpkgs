@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   callPackage,
   installShellFiles,
-  writableTmpDirAsHomeHook,
   nix-update-script,
-  testers,
+  rustPlatform,
   targetPackages,
+  testers,
+  writableTmpDirAsHomeHook,
   extraPackages ? null,
 }:
 
@@ -19,10 +19,7 @@ assert
 let
   television = rustPlatform.buildRustPackage (finalAttrs: {
     pname = "television";
-
     version = "0.15.9";
-
-    __structuredAttrs = true;
 
     src = fetchFromGitHub {
       owner = "alexpasmantier";
@@ -31,13 +28,12 @@ let
       hash = "sha256-JrQUFlhAAaB+VGP184I44hSsIyfCaTMNXxyPp0E5GM0=";
     };
 
-    cargoHash = "sha256-eD+NQYY9QnCBZ+SiOCQbcLZ2p3uX0u/nEnft2f6NfU0=";
-
     nativeBuildInputs = [
       installShellFiles
       writableTmpDirAsHomeHook
     ];
 
+    cargoHash = "sha256-eD+NQYY9QnCBZ+SiOCQbcLZ2p3uX0u/nEnft2f6NfU0=";
     # TODO(@getchoo): Investigate selectively disabling some tests, or fixing them
     # https://github.com/NixOS/nixpkgs/pull/423662#issuecomment-3156362941
     doCheck = false;
@@ -66,48 +62,55 @@ let
       "$out/bin/tv" init nu > $out/share/television/completion.nu
     '';
 
+    __structuredAttrs = true;
+
     passthru = {
+      tests = {
+        version = testers.testVersion {
+          command = "XDG_DATA_HOME=$TMPDIR tv --version";
+          package = finalAttrs.finalPackage;
+        };
+
+        wrapper = testers.testVersion {
+          command = "XDG_DATA_HOME=$TMPDIR tv --version";
+
+          package = finalAttrs.finalPackage.withPackages (pkgs: [
+            pkgs.fd
+            pkgs.git
+          ]);
+        };
+      };
+
       updateScript = nix-update-script { };
 
       withPackages =
         f:
         callPackage ./wrapper.nix {
-          television = finalAttrs.finalPackage;
           extraPackages = f targetPackages;
+          television = finalAttrs.finalPackage;
         };
-
-      tests = {
-        version = testers.testVersion {
-          package = finalAttrs.finalPackage;
-          command = "XDG_DATA_HOME=$TMPDIR tv --version";
-        };
-        wrapper = testers.testVersion {
-          package = finalAttrs.finalPackage.withPackages (pkgs: [
-            pkgs.fd
-            pkgs.git
-          ]);
-
-          command = "XDG_DATA_HOME=$TMPDIR tv --version";
-        };
-      };
     };
 
     meta = {
       description = "Blazingly fast general purpose fuzzy finder TUI";
+
       longDescription = ''
         Television is a fast and versatile fuzzy finder TUI.
         It lets you quickly search through any kind of data source (files, git
         repositories, environment variables, docker images, you name it) using a
         fuzzy matching algorithm and is designed to be easily extensible.
       '';
+
       homepage = "https://github.com/alexpasmantier/television";
       changelog = "https://github.com/alexpasmantier/television/releases/tag/${finalAttrs.version}";
       license = lib.licenses.mit;
-      mainProgram = "tv";
+
       maintainers = with lib.maintainers; [
         louis-thevenet
         getchoo
       ];
+
+      mainProgram = "tv";
     };
   });
 in

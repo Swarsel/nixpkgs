@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -33,6 +33,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Actively maintained simplified Chinese dictionary with full and double pinyin support";
+
     longDescription = ''
       Rime-Ice (雾凇拼音) provides a comprehensive, ready-to-use configuration.
       It includes full Pinyin and popular Double Pinyin layouts,
@@ -48,9 +49,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         __include: rime_ice_suggestion:/
       ```
     '';
+
     homepage = "https://github.com/iDvel/rime-ice";
     changelog = "https://github.com/iDvel/rime-ice/blob/main/others/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       xddxdd
       moraxyc

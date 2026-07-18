@@ -20,16 +20,16 @@ import ../../../../nixos/tests/make-test-python.nix (
     name = "usbrelayd";
 
     nodes.machine = {
-      virtualisation.qemu.options = [
-        "-device qemu-xhci"
-        "-device usb-host,vendorid=0x16c0,productid=0x05df"
+      documentation.nixos.enable = false; # building nixos manual takes long time
+
+      environment.systemPackages = [
+        pkgs.usbrelay
+        pkgs.mosquitto
       ];
-      services.usbrelayd.enable = true;
-      systemd.services.usbrelayd = {
-        after = [ "mosquitto.service" ];
-      };
+
       services.mosquitto = {
         enable = true;
+
         listeners = [
           {
             acl = [ "pattern readwrite #" ];
@@ -38,11 +38,17 @@ import ../../../../nixos/tests/make-test-python.nix (
           }
         ];
       };
-      environment.systemPackages = [
-        pkgs.usbrelay
-        pkgs.mosquitto
+
+      services.usbrelayd.enable = true;
+
+      systemd.services.usbrelayd = {
+        after = [ "mosquitto.service" ];
+      };
+
+      virtualisation.qemu.options = [
+        "-device qemu-xhci"
+        "-device usb-host,vendorid=0x16c0,productid=0x05df"
       ];
-      documentation.nixos.enable = false; # building nixos manual takes long time
     };
 
     testScript = /* py */ ''

@@ -1,16 +1,16 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 let
   python' = python3.override {
-    self = python';
     packageOverrides = final: prev: {
       # tvdb_api v3.1.0 has a hard requirement on requests-cache < 0.6
       requests-cache = prev.requests-cache.overridePythonAttrs (oldAttrs: rec {
         version = "0.5.2";
+
         src = fetchPypi {
           inherit (oldAttrs) pname;
           inherit version;
@@ -26,6 +26,8 @@ let
         doCheck = false;
       });
     };
+
+    self = python';
   };
 
   pypkgs = python'.pkgs;
@@ -34,20 +36,17 @@ in
 pypkgs.buildPythonApplication rec {
   pname = "tvnamer";
   version = "3.0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "dc2ea8188df6ac56439343630466b874c57756dd0b2538dd8e7905048f425f04";
   };
 
-  build-system = with pypkgs; [ setuptools ];
-
-  dependencies = with pypkgs; [ tvdb-api ];
-
   # no tests from pypi
   doCheck = false;
-
+  build-system = with pypkgs; [ setuptools ];
+  dependencies = with pypkgs; [ tvdb-api ];
+  pyproject = true;
   pythonImportsCheck = [ "tvnamer" ];
 
   meta = {

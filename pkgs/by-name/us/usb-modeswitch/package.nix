@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  makeWrapper,
+  bash,
+  coreutils,
   libusb1,
+  makeWrapper,
+  pkg-config,
   tcl,
   util-linux,
-  coreutils,
-  bash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,16 @@ stdenv.mkDerivation (finalAttrs: {
       Makefile
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ];
+
+  buildInputs = [
+    libusb1
+    tcl
+  ];
+
   makeFlags = [
     "PREFIX=$(out)"
     "ETCDIR=/etc"
@@ -53,22 +63,14 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
-  buildInputs = [
-    libusb1
-    tcl
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-  ];
-
   meta = {
     description = "Mode switching tool for controlling 'multi-mode' USB devices";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       peterhoeg
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "usb_modeswitch";
   };

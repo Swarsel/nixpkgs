@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,16 +16,17 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   subPackages = [ "." ];
 
   meta = {
     description = "Command code search tool";
     homepage = "https://github.com/boyter/cs";
+
     license = with lib.licenses; [
       mit
       unlicense
     ];
+
     maintainers = with lib.maintainers; [ viraptor ];
     mainProgram = "cs";
   };

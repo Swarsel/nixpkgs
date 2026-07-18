@@ -1,25 +1,25 @@
 {
-  stdenv,
   lib,
-  makeWrapper,
+  stdenv,
   fetchFromGitHub,
-  ocaml,
-  pkg-config,
-  mupdf,
-  libx11,
-  jbig2dec,
-  openjpeg,
-  libjpeg,
-  lcms2,
-  harfbuzz,
-  libGLU,
-  libGL,
-  gumbo,
   freetype,
-  zlib,
-  xclip,
+  gumbo,
+  harfbuzz,
   inotify-tools,
+  jbig2dec,
+  lcms2,
+  libGL,
+  libGLU,
+  libjpeg,
+  libx11,
+  makeWrapper,
+  mupdf,
+  ocaml,
+  openjpeg,
+  pkg-config,
   procps,
+  xclip,
+  zlib,
 }:
 
 assert lib.versionAtLeast (lib.getVersion ocaml) "4.07";
@@ -51,6 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     ocaml
     pkg-config
   ];
+
   buildInputs = [
     mupdf
     libx11
@@ -67,8 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     libGLU
     libGL
   ];
-
-  dontStrip = true;
 
   buildPhase = ''
     bash ./build.bash build
@@ -90,14 +89,18 @@ stdenv.mkDerivation (finalAttrs: {
         --prefix PATH ":" "${procps}/bin"
   '';
 
+  dontStrip = true;
+
   meta = {
-    homepage = "https://github.com/criticic/llpp";
     description = "MuPDF based PDF pager written in OCaml";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    maintainers = with lib.maintainers; [ pSub ];
+    homepage = "https://github.com/criticic/llpp";
+
     license = [
       lib.licenses.publicDomain
       lib.licenses.bsd3
     ];
+
+    maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

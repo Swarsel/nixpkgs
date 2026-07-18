@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchYarnDeps,
   fetchFromGitHub,
-  yarnConfigHook,
-  npmHooks,
-  nodejs,
+  fetchYarnDeps,
   nix-update-script,
+  nodejs,
+  npmHooks,
+  yarnConfigHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "dotenv-cli";
@@ -19,16 +19,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-oPgi2l6YNt7WyaOzr7EkjgXOitpw9PY7tmN86bUM88Q=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-I/DzRBETcusE4YS3nC47I1igsVzophNXoVtcD+upZPc=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     npmHooks.npmInstallHook
     nodejs
   ];
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-I/DzRBETcusE4YS3nC47I1igsVzophNXoVtcD+upZPc=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/entropitor/dotenv-cli";
     changelog = "https://github.com/entropitor/dotenv-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "dotenv";
     maintainers = [ ];
+    mainProgram = "dotenv";
   };
 })

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL,
+  callPackage,
+  catch2_3,
+  cmake,
   kdePackages,
   libsForQt5,
-  cmake,
-  SDL,
-  python3,
-  catch2_3,
-  callPackage,
   nixosTests,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,15 +43,15 @@ stdenv.mkDerivation (finalAttrs: {
     SDL
   ];
 
-  checkInputs = [
-    catch2_3
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "USE_SYSTEM_CATCH2" true)
   ];
 
   doCheck = true;
+
+  checkInputs = [
+    catch2_3
+  ];
 
   passthru.tests = {
     export-square-wave = callPackage ./test-export-square-wave { };
@@ -59,11 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/agateau/sfxr-qt";
     description = "Sound effect generator, QtQuick port of sfxr";
-    mainProgram = "sfxr-qt";
+    homepage = "https://github.com/agateau/sfxr-qt";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.linux;
+    mainProgram = "sfxr-qt";
   };
 })

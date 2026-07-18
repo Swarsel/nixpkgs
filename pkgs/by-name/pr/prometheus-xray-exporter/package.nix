@@ -1,11 +1,10 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
-  __structuredAttrs = true;
   pname = "prometheus-xray-exporter";
   version = "1.0.0";
 
@@ -17,12 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-yRxy44SnEFa7yOJyiOgFTk+Z4s5HOJ4cMjcf8VTTfQk=";
+  __structuredAttrs = true;
 
   meta = {
     description = "Prometheus exporter for Xray-core metrics";
-    mainProgram = "xray-exporter";
     homepage = "https://github.com/podocarp/xray-exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ podocarp ];
+    mainProgram = "xray-exporter";
   };
 })

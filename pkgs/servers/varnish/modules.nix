@@ -3,28 +3,33 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  varnish,
   docutils,
+  pkg-config,
   removeReferencesTo,
+  varnish,
 }:
 let
   common =
     {
-      version,
       hash,
+      version,
       extraNativeBuildInputs ? [ ],
     }:
     stdenv.mkDerivation rec {
-      pname = "${varnish.name}-modules";
       inherit version;
+      pname = "${varnish.name}-modules";
 
       src = fetchFromGitHub {
+        inherit hash;
         owner = "varnish";
         repo = "varnish-modules";
         tag = version;
-        inherit hash;
       };
+
+      postPatch = ''
+        substituteInPlace bootstrap   --replace "''${dataroot}/aclocal"                  "${varnish.dev}/share/aclocal"
+        substituteInPlace Makefile.am --replace "''${LIBVARNISHAPI_DATAROOTDIR}/aclocal" "${varnish.dev}/share/aclocal"
+      '';
 
       nativeBuildInputs = [
         autoreconfHook
@@ -35,18 +40,12 @@ let
       ];
 
       buildInputs = [ varnish ];
-
-      postPatch = ''
-        substituteInPlace bootstrap   --replace "''${dataroot}/aclocal"                  "${varnish.dev}/share/aclocal"
-        substituteInPlace Makefile.am --replace "''${LIBVARNISHAPI_DATAROOTDIR}/aclocal" "${varnish.dev}/share/aclocal"
-      '';
-
       postInstall = "find $out -type f -exec remove-references-to -t ${varnish.dev} '{}' +"; # varnish.dev captured only as __FILE__ in assert messages
 
       meta = {
+        inherit (varnish.meta) license platforms;
         description = "Collection of Varnish Cache modules (vmods) by Varnish Software";
         homepage = "https://github.com/varnish/varnish-modules";
-        inherit (varnish.meta) license platforms;
       };
     };
 in

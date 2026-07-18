@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit,
   pytest,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pytest-raisin";
   version = "0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wimglenn";
@@ -19,11 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit ];
-
   propagatedBuildInputs = [ pytest ];
-
   # tests cause circular pytest-raisin already registered with pytest error
   doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Plugin enabling the use of exception instances with pytest.raises context";

@@ -1,9 +1,12 @@
 {
   lib,
   fetchFromGitHub,
+  coreutils,
+  file,
+  gnugrep,
+  gnused,
   installShellFiles,
   makeWrapper,
-  zenity,
   ncurses,
   networkmanager,
   patsh,
@@ -12,19 +15,11 @@
   stdenvNoCC,
   xdg-utils,
   zbar,
-  coreutils,
-  gnused,
-  gnugrep,
-  file,
+  zenity,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "wifi-qr";
   version = "0.4";
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "kokoye2007";
@@ -32,6 +27,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-tE+9bFDgiFS1Jj+AAwTMKjMh5wS5/gkRSQaCBR/riYQ=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  postPatch = ''
+    substituteInPlace wifi-qr.desktop \
+      --replace-fail "Icon=wifi-qr.svg" "Icon=wifi-qr"
+    substituteInPlace wifi-qr \
+      --replace-fail "/usr/share/doc/wifi-qr/copyright" "$out/share/doc/wifi-qr/copyright"
+  '';
+
+  nativeBuildInputs = [
+    installShellFiles
+    makeWrapper
+    patsh
+  ];
 
   buildInputs = [
     zenity
@@ -49,23 +62,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     file
   ];
 
-  nativeBuildInputs = [
-    installShellFiles
-    makeWrapper
-    patsh
-  ];
-
-  dontBuild = true;
-
-  dontConfigure = true;
-
-  postPatch = ''
-    substituteInPlace wifi-qr.desktop \
-      --replace-fail "Icon=wifi-qr.svg" "Icon=wifi-qr"
-    substituteInPlace wifi-qr \
-      --replace-fail "/usr/share/doc/wifi-qr/copyright" "$out/share/doc/wifi-qr/copyright"
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -79,6 +75,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   fixupPhase = ''
     runHook preFixup
@@ -94,7 +93,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/kokoye2007/wifi-qr";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ ambroisie ];
-    mainProgram = "wifi-qr";
     platforms = lib.platforms.linux;
+    mainProgram = "wifi-qr";
   };
 })

@@ -1,17 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  nix-update-script,
   makeWrapper,
+  nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "kibi";
   version = "0.3.3";
-
-  cargoHash = "sha256-lBBIEceZgxwoM2DoD+iFtlNdnO5LkvIf2/8CB2uPH3Y=";
 
   src = fetchFromGitHub {
     owner = "ilai-deutel";
@@ -21,8 +19,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  passthru.updateScript = nix-update-script { };
+  cargoHash = "sha256-lBBIEceZgxwoM2DoD+iFtlNdnO5LkvIf2/8CB2uPH3Y=";
 
   postInstall = ''
     install -Dm644 syntax.d/* -t $out/share/kibi/syntax.d
@@ -31,22 +28,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wrapProgram $out/bin/kibi --prefix XDG_DATA_DIRS : "$out/share"
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Text editor in ≤1024 lines of code, written in Rust";
     homepage = "https://github.com/ilai-deutel/kibi";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       robertodr
       ilai-deutel
     ];
+
     mainProgram = "kibi";
   };
 })

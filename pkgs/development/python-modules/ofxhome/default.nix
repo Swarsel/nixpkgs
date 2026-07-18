@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
-  version = "0.3.3";
   pname = "ofxhome";
-  pyproject = true;
+  version = "0.3.3";
 
   src = fetchFromGitHub {
     owner = "captin411";
@@ -18,9 +17,8 @@ buildPythonPackage rec {
     hash = "sha256-i16bE9iuafhAKco2jYfg5T5QCWFHdnYVztf1z2XbO9g=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   # These are helper functions that should not be called as tests
   disabledTests = [
@@ -28,9 +26,11 @@ buildPythonPackage rec {
     "testfile"
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/captin411/ofxhome";
     description = "ofxhome.com financial institution lookup REST client";
+    homepage = "https://github.com/captin411/ofxhome";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

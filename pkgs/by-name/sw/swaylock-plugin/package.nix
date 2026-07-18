@@ -1,8 +1,9 @@
 {
-  cairo,
-  fetchFromGitHub,
-  gdk-pixbuf,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cairo,
+  gdk-pixbuf,
   libxcrypt,
   libxkbcommon,
   makeWrapper,
@@ -12,7 +13,6 @@
   pam,
   pkg-config,
   scdoc,
-  stdenv,
   swaybg,
   systemd,
   versionCheckHook,
@@ -24,6 +24,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "swaylock-plugin";
   version = "1.8.6";
+
   src = fetchFromGitHub {
     owner = "mstoeckl";
     repo = "swaylock-plugin";
@@ -32,10 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+
   nativeBuildInputs = [
     makeWrapper
     meson
@@ -44,6 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     scdoc
     wayland-scanner
   ];
+
   buildInputs = [
     cairo
     libxcrypt
@@ -55,16 +54,22 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-protocols
   ];
 
-  postInstall = ''
-    wrapProgram $out/bin/swaylock-plugin \
-      --prefix PATH : "${lib.makeBinPath [ swaybg ]}"
-  '';
-
   mesonFlags = [
     "-Dpam=enabled"
     "-Dgdk-pixbuf=enabled"
     "-Dman-pages=enabled"
   ];
+
+  postInstall = ''
+    wrapProgram $out/bin/swaylock-plugin \
+      --prefix PATH : "${lib.makeBinPath [ swaybg ]}"
+  '';
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  depsBuildBuild = [ pkg-config ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -72,6 +77,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Screen locker for Wayland, forked from swaylock";
+
     longDescription = ''
       swaylock-pulgins is a fork of swaylock, a screen locking utility for Wayland compositors.
       On top of the usual swaylock features, it allow you to use a
@@ -79,13 +85,16 @@ stdenv.mkDerivation (finalAttrs: {
 
       Important note: You need to set "security.pam.services.swaylock-plugin = {};" manually.
     '';
+
     homepage = "https://github.com/mstoeckl/swaylock-plugin";
-    mainProgram = "swaylock-plugin";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       picnoir
       matthiasbeyer
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "swaylock-plugin";
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  termcolor,
   colorama,
+  fetchPypi,
   setuptools,
+  termcolor,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "veryprettytable";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -24,6 +23,7 @@ buildPythonPackage (finalAttrs: {
     colorama
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "veryprettytable" ];
 
   meta = {

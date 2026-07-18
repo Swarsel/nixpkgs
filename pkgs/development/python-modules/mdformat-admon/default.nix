@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   mdformat,
   mdit-py-plugins,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "mdformat-admon";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KyleKing";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Mdformat plugin for admonitions";

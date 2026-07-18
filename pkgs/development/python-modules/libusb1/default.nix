@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-  setuptools,
+  buildPythonPackage,
   libusb1,
   pytestCheckHook,
+  replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "libusb1";
   version = "3.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vpelletier";
@@ -27,18 +26,17 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ setuptools ];
-
   buildInputs = [ libusb1 ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   enabledTestPaths = [ "usb1/testUSB1.py" ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/vpelletier/python-libusb1";
     description = "Python ctype-based wrapper around libusb1";
+    homepage = "https://github.com/vpelletier/python-libusb1";
     license = lib.licenses.lgpl2Plus;
+
     maintainers = with lib.maintainers; [
       prusnak
       rnhmjoj

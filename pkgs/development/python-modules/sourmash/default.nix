@@ -1,24 +1,24 @@
 {
   lib,
-  fetchPypi,
-  buildPythonPackage,
-  pythonAtLeast,
   stdenv,
-  rustPlatform,
-  rocksdb_9_10,
   bitstring,
+  buildPythonPackage,
   cachetools,
   cffi,
   deprecation,
+  fetchPypi,
+  hypothesis,
   iconv,
   matplotlib,
   numpy,
+  pytest-xdist,
+  pytestCheckHook,
+  pythonAtLeast,
+  pyyaml,
+  rocksdb_9_10,
+  rustPlatform,
   scipy,
   screed,
-  hypothesis,
-  pytest-xdist,
-  pyyaml,
-  pytestCheckHook,
 }:
 let
   rocksdb = rocksdb_9_10;
@@ -26,16 +26,10 @@ in
 buildPythonPackage rec {
   pname = "sourmash";
   version = "4.9.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-KIidEQQeOYgxh1x9F6Nn4+WTewldAGdS5Fx/IwL0Ym0=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-/tVuR31T38/xx1+jglSGECAT1GmQEddQp9o6zAqlPyY=";
   };
 
   nativeBuildInputs = with rustPlatform; [
@@ -45,11 +39,6 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ iconv ];
-
-  env = {
-    ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
-    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
-  };
 
   propagatedBuildInputs = [
     bitstring
@@ -62,13 +51,22 @@ buildPythonPackage rec {
     screed
   ];
 
-  pythonImportsCheck = [ "sourmash" ];
+  env = {
+    ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
+    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
+  };
+
   nativeCheckInputs = [
     hypothesis
     pytest-xdist
     pytestCheckHook
     pyyaml
   ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-/tVuR31T38/xx1+jglSGECAT1GmQEddQp9o6zAqlPyY=";
+  };
 
   # TODO(luizirber): Working on fixing these upstream
   disabledTests = [
@@ -87,12 +85,15 @@ buildPythonPackage rec {
     "create_dataset_picklist"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "sourmash" ];
+
   meta = {
     description = "Quickly search, compare, and analyze genomic and metagenomic data sets";
-    mainProgram = "sourmash";
     homepage = "https://sourmash.bio";
     changelog = "https://github.com/sourmash-bio/sourmash/releases/tag/v${version}";
-    maintainers = with lib.maintainers; [ luizirber ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ luizirber ];
+    mainProgram = "sourmash";
   };
 }

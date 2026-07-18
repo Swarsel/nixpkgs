@@ -1,26 +1,26 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoPatchelfHook,
   common-updater-scripts,
   copyDesktopItems,
   curl,
   dpkg,
   e2fsprogs,
-  fetchurl,
   gnutls,
   gtk3,
   jq,
-  lib,
   libGLU,
   libpsl,
-  qt5,
   libredirect,
   libx11,
   lz4,
   makeDesktopItem,
   makeWrapper,
   nghttp2,
+  qt5,
   shared-mime-info,
-  stdenv,
   writeShellApplication,
   xkeyboard-config,
 }:
@@ -32,6 +32,7 @@ let
 in
 stdenv.mkDerivation {
   inherit pname version;
+
   src = fetchurl {
     url = "https://downcdn.raise3d.com/ideamaker/release/${semver}/ideaMaker_${version}-ubuntu_amd64.deb";
     hash = "sha256-kXcgVuuPTMWoOCrEztiedJrZrTbFx1xHyzzh4y2b0UA=";
@@ -44,8 +45,6 @@ stdenv.mkDerivation {
     makeWrapper
     shared-mime-info
   ];
-
-  dontWrapQtApps = true;
 
   buildInputs = [
     libGLU
@@ -100,11 +99,6 @@ stdenv.mkDerivation {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "ideamaker";
-      exec = "ideamaker";
-      icon = "ideamaker";
-      desktopName = "Ideamaker";
-      comment = "ideaMaker - www.raise3d.com";
       categories = [
         "Qt"
         "Utility"
@@ -112,7 +106,13 @@ stdenv.mkDerivation {
         "Viewer"
         "Engineering"
       ];
+
+      comment = "ideaMaker - www.raise3d.com";
+      desktopName = "Ideamaker";
+      exec = "ideamaker";
       genericName = description;
+      icon = "ideamaker";
+
       mimeTypes = [
         "application/x-ideamaker"
         "model/3mf"
@@ -120,6 +120,8 @@ stdenv.mkDerivation {
         "model/stl"
         "text/x.gcode"
       ];
+
+      name = "ideamaker";
       noDisplay = false;
       startupNotify = true;
       terminal = false;
@@ -127,13 +129,17 @@ stdenv.mkDerivation {
     })
   ];
 
+  dontWrapQtApps = true;
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "ideamaker-update-script";
+
     runtimeInputs = [
       curl
       common-updater-scripts
       jq
     ];
+
     text = ''
       update-source-version ideamaker "$(
         curl 'https://api.raise3d.com/ideamakerio-v1.1/hq/ofpVersionControl/find' -X 'POST' \
@@ -145,12 +151,12 @@ stdenv.mkDerivation {
 
   meta = {
     inherit description;
-    changelog = "https://www.raise3d.com/download/ideamaker-release-notes/";
     homepage = "https://www.raise3d.com/ideamaker/";
+    changelog = "https://www.raise3d.com/download/ideamaker-release-notes/";
     license = lib.licenses.unfree;
-    mainProgram = "ideamaker";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ cjshearer ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "ideamaker";
   };
 }

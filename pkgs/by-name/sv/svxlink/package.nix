@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  cmake,
-  pkg-config,
   fetchFromGitHub,
   alsa-lib,
-  speex,
-  libopus,
+  cmake,
   curl,
+  doxygen,
+  groff,
   gsm,
+  jsoncpp,
   libgcrypt,
   libgpiod_1,
+  libopus,
   libsigcxx,
+  pkg-config,
   popt,
   qt5,
   rtl-sdr,
+  speex,
   tcl,
-  doxygen,
-  groff,
-  jsoncpp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,21 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-OyAR/6heGX6J53p6x+ZPXY6nzSv22umMTg0ISlWcjp8=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
-  cmakeFlags = [
-    (lib.cmakeBool "DO_INSTALL_CHOWN" false)
-    (lib.cmakeFeature "RTLSDR_LIBRARIES" "${lib.getLib rtl-sdr}/lib/librtlsdr.so")
-    (lib.cmakeFeature "RTLSDR_INCLUDE_DIRS" "${lib.getInclude rtl-sdr}/include")
-  ];
-
   postPatch = ''
     # match jsoncpp's c++17 ABI (string_view overloads); upstream pins c++11
     substituteInPlace cmake/Modules/FindSIGC2.cmake \
       --replace-fail '"--std=c++11"' '"--std=c++17"'
   '';
-
-  dontWrapQtApps = true;
 
   nativeBuildInputs = [
     cmake
@@ -73,16 +63,27 @@ stdenv.mkDerivation (finalAttrs: {
     tcl
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "DO_INSTALL_CHOWN" false)
+    (lib.cmakeFeature "RTLSDR_LIBRARIES" "${lib.getLib rtl-sdr}/lib/librtlsdr.so")
+    (lib.cmakeFeature "RTLSDR_INCLUDE_DIRS" "${lib.getInclude rtl-sdr}/include")
+  ];
+
   postInstall = ''
     wrapQtApp $out/bin/qtel
   '';
 
+  dontWrapQtApps = true;
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Advanced repeater controller and EchoLink software";
+
     longDescription = ''
       Advanced repeater controller and EchoLink software for Linux including a
       GUI, Qtel - The Qt EchoLink client
     '';
+
     homepage = "https://www.svxlink.org/";
     license = with lib.licenses; [ gpl2Plus ];
     maintainers = with lib.maintainers; [ zaninime ];

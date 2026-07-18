@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -16,25 +16,26 @@ buildGoModule (finalAttrs: {
     hash = "sha256-bMDDji5daBmjSeGxeS4PZfmTg+b8OVHsP8+m3jtpQJc=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/cmd/jv";
-  env.GOWORK = "off";
-  passthru.updateScript = nix-update-script {
-    extraArgs = [ "--version-regex=cmd/jv/v([\\d\\.]+)" ];
-  };
-
   vendorHash = "sha256-s7kEdA4yuExuzwN3hHgeZmtkES3Zw1SALoEHSNtdAww=";
+  env.GOWORK = "off";
 
   ldflags = [
     "-s"
     "-w"
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/cmd/jv";
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--version-regex=cmd/jv/v([\\d\\.]+)" ];
+  };
+
   meta = {
     description = "JSON schema compilation and validation";
     homepage = "https://github.com/santhosh-tekuri/jsonschema";
     changelog = "https://github.com/santhosh-tekuri/jsonschema/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "jv";
     maintainers = with lib.maintainers; [ ibizaman ];
+    mainProgram = "jv";
   };
 })

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  readline,
   bison,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,30 +20,33 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     bison
   ];
-  buildInputs = [ readline ];
 
+  buildInputs = [ readline ];
   configureFlags = [ "--with-readline" ];
+
+  passthru = {
+    shellPath = "/bin/es";
+  };
 
   meta = {
     description = "Extensible shell with higher order functions";
-    mainProgram = "es";
+
     longDescription = ''
       Es is an extensible shell. The language was derived
       from the Plan 9 shell, rc, and was influenced by
       functional programming languages, such as Scheme,
       and the Tcl embeddable programming language.
     '';
+
     homepage = "http://wryun.github.io/es-shell/";
     license = lib.licenses.publicDomain;
     maintainers = [ ];
     platforms = lib.platforms.all;
-  };
-
-  passthru = {
-    shellPath = "/bin/es";
+    mainProgram = "es";
   };
 })

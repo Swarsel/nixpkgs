@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -26,7 +26,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   dontBuild = true;
   dontFixup = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -34,8 +33,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://there.pm";
     changelog = "https://github.com/dena-sohrabi/There/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ myzel394 ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

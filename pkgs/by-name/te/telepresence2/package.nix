@@ -1,14 +1,14 @@
 {
   lib,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   buildGoModule,
   fuse,
-  runCommand,
-  jq,
-  gnused,
   gawk,
   gnugrep,
+  gnused,
+  jq,
+  runCommand,
 }:
 
 let
@@ -24,9 +24,8 @@ let
       hash = "sha256-ojue7mNu5pujM9Nnc/7bL7kWzQSwa8lnnUSWS2rWuHM=";
     };
 
-    vendorHash = "sha256-C1E/ai82FTjWZmDXEeKN9GxCh+KtzIKPtx5BAWIuQr4=";
-
     buildInputs = [ fuse ];
+    vendorHash = "sha256-C1E/ai82FTjWZmDXEeKN9GxCh+KtzIKPtx5BAWIuQr4=";
 
     ldflags = [
       "-s"
@@ -38,8 +37,8 @@ let
 
   k8sVersion = "v1.34.2";
   k8sDefsJson = fetchurl {
-    url = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/${k8sVersion}-standalone/_definitions.json";
     hash = "sha256-IMEXD8MeTgAhBn6dnElp7uKtVLv4UcuDI51pQ4o953Q=";
+    url = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/${k8sVersion}-standalone/_definitions.json";
   };
 in
 buildGoModule rec {
@@ -53,13 +52,20 @@ buildGoModule rec {
     hash = "sha256-cN3zuS4OEllGP6e0PqntLbE5OaVgmH7ccOfLq+WC6Wk=";
   };
 
+  nativeBuildInputs = [
+    jq
+  ];
+
   propagatedBuildInputs = [
     fuseftp
   ];
 
-  nativeBuildInputs = [
-    jq
-  ];
+  vendorHash = "sha256-wOadx4iUgh56FLB6BDSZdAUPV+G7Ld8K+CDGYnUsDG0=";
+
+  preConfigure = ''
+    HELM_VERSION=$(go mod edit -json | jq -r '.Require[] | select(.Path == "helm.sh/helm/v3") | .Version')
+    ldflags="$ldflags -X github.com/telepresenceio/telepresence/v2/pkg/version.HelmVersion=$HELM_VERSION"
+  '';
 
   # telepresence depends on fuseftp existing as a built binary, as it gets embedded
   # CGO gets disabled to match their build process as that is how it's done upstream
@@ -72,8 +78,6 @@ buildGoModule rec {
     export CGO_ENABLED=0
   '';
 
-  vendorHash = "sha256-wOadx4iUgh56FLB6BDSZdAUPV+G7Ld8K+CDGYnUsDG0=";
-
   # ldflags copied from Makefile
   # ref: https://github.com/telepresenceio/telepresence/blob/7a2b9f553fb51ef252df957916c7b831bd65c1ce/build-aux/main.mk#L250-L251
   ldflags = [
@@ -82,14 +86,32 @@ buildGoModule rec {
     "-X=github.com/telepresenceio/telepresence/v2/pkg/version.Version=${src.rev}"
   ];
 
-  preConfigure = ''
-    HELM_VERSION=$(go mod edit -json | jq -r '.Require[] | select(.Path == "helm.sh/helm/v3") | .Version')
-    ldflags="$ldflags -X github.com/telepresenceio/telepresence/v2/pkg/version.HelmVersion=$HELM_VERSION"
-  '';
-
   subPackages = [ "cmd/telepresence" ];
 
   passthru.tests = {
+    fuseftp-version-matches =
+      runCommand "telepresence2-fuseftp-version-test"
+        {
+          nativeBuildInputs = [
+            gnugrep
+            gawk
+          ];
+        }
+        ''
+          actual_version=$(grep 'github.com/telepresenceio/go-fuseftp/rpc' ${src}/go.mod | awk '{print $2}')
+          expected_version="v${fuseftpVersion}"
+
+          if [ "$actual_version" != "$expected_version" ]; then
+            echo "FAIL: fuseftp version mismatch in telepresence2" >&2
+            echo "  Hardcoded in Nix: $expected_version" >&2
+            echo "  Found in go.mod:  $actual_version" >&2
+            echo "  Update fuseftpVersion variable & hash in telepresence2 package" >&2
+            exit 1
+          fi
+
+          echo "PASS: fuseftp version $actual_version matches" | tee $out
+        '';
+
     k8s-version-matches =
       runCommand "telepresence2-k8s-version-test"
         {
@@ -114,40 +136,20 @@ buildGoModule rec {
 
           echo "PASS: k8s version $actual_version matches" | tee $out
         '';
-    fuseftp-version-matches =
-      runCommand "telepresence2-fuseftp-version-test"
-        {
-          nativeBuildInputs = [
-            gnugrep
-            gawk
-          ];
-        }
-        ''
-          actual_version=$(grep 'github.com/telepresenceio/go-fuseftp/rpc' ${src}/go.mod | awk '{print $2}')
-          expected_version="v${fuseftpVersion}"
-
-          if [ "$actual_version" != "$expected_version" ]; then
-            echo "FAIL: fuseftp version mismatch in telepresence2" >&2
-            echo "  Hardcoded in Nix: $expected_version" >&2
-            echo "  Found in go.mod:  $actual_version" >&2
-            echo "  Update fuseftpVersion variable & hash in telepresence2 package" >&2
-            exit 1
-          fi
-
-          echo "PASS: fuseftp version $actual_version matches" | tee $out
-        '';
   };
 
   meta = {
     description = "Local development against a remote Kubernetes or OpenShift cluster";
     homepage = "https://telepresence.io";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mausch
       vilsol
       wrbbz
       thesn
     ];
+
     mainProgram = "telepresence";
   };
 }

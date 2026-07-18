@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   bash,
-  fetchHex,
   buildRebar3,
   config,
   coreutils,
   erlang,
-  fetchFromGitHub,
-  lib,
+  fetchHex,
   makeWrapper,
 }:
 
@@ -27,14 +27,15 @@ let
   maxAssert = versionAtLeast maximumOTPVersion mainVersion;
 
   proper = buildRebar3 rec {
-    name = "proper";
     version = "1.4.0";
 
     src = fetchHex {
-      pkg = name;
       inherit version;
       sha256 = "sha256-GChYQhhb0z772pfRNKXLWgiEOE2zYRn+4OPPpIhWjLs=";
+      pkg = name;
     };
+
+    name = "proper";
   };
 
 in
@@ -46,14 +47,13 @@ else
     LFE ${version} is supported on OTP <=${maximumOTPVersion}, not ${mainVersion}.
   '';
   buildRebar3 {
-    name = "lfe";
     inherit version;
 
     src = fetchFromGitHub {
+      inherit hash;
       owner = "lfe";
       repo = "lfe";
       tag = "v${version}";
-      inherit hash;
     };
 
     patches = [
@@ -66,7 +66,7 @@ else
       erlang
     ];
 
-    beamDeps = [ proper ];
+    doCheck = true;
 
     # override buildRebar3's install to let the builder use make install
     installPhase = ''
@@ -75,10 +75,8 @@ else
       runHook postInstall
     '';
 
-    doCheck = true;
-    checkTarget = "travis";
-
     doInstallCheck = true;
+
     installCheckPhase = ''
       runHook preInstallCheck
       test -e $out/bin/lfe
@@ -101,8 +99,13 @@ else
       done
     '';
 
+    beamDeps = [ proper ];
+    checkTarget = "travis";
+    name = "lfe";
+
     meta = {
       description = "Best of Erlang and of Lisp; at the same time";
+
       longDescription = ''
         LFE, Lisp Flavoured Erlang, is a lisp syntax front-end to the Erlang
         compiler. Code produced with it is compatible with "normal" Erlang
@@ -110,11 +113,10 @@ else
       '';
 
       homepage = "https://lfe.io";
-      downloadPage = "https://github.com/lfe/lfe/releases";
       changelog = "https://github.com/lfe/lfe/releases/tag/v${version}";
-
       license = lib.licenses.asl20;
-      teams = [ lib.teams.beam ];
       platforms = lib.platforms.unix;
+      downloadPage = "https://github.com/lfe/lfe/releases";
+      teams = [ lib.teams.beam ];
     };
   }

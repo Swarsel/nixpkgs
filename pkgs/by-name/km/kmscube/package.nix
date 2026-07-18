@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  gst_all_1,
+  libGL,
+  libdrm,
+  libgbm,
+  libx11,
   meson,
   ninja,
-  libdrm,
-  libx11,
-  libGL,
-  libgbm,
   pkg-config,
-  gst_all_1,
 }:
 
 stdenv.mkDerivation {
@@ -17,11 +17,11 @@ stdenv.mkDerivation {
   version = "unstable-2023-09-25";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "mesa";
     repo = "kmscube";
     rev = "96d63eb59e34c647cda1cbb489265f8c536ae055";
     hash = "sha256-kpnn4JBNvwatrcCF/RGk/fQ7qiKD26iLBr9ovDmAKBo=";
+    domain = "gitlab.freedesktop.org";
   };
 
   nativeBuildInputs = [
@@ -29,6 +29,7 @@ stdenv.mkDerivation {
     pkg-config
     ninja
   ];
+
   buildInputs = [
     libdrm
     libx11

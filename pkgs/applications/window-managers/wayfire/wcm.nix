@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
-  wayfire,
-  wf-shell,
-  wayland-scanner,
-  wayland-protocols,
   gtk3,
   gtkmm3,
   libevdev,
-  libxml2,
   libxkbcommon,
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  wayfire,
+  wayland-protocols,
+  wayland-scanner,
+  wf-shell,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "WayfireWM";
     repo = "wcm";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-O4BYwb+GOMZIn3I2B/WMJ5tUZlaegvwBuyNK9l/gxvQ=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -49,14 +49,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/WayfireWM/wcm";
     description = "Wayfire Config Manager";
+    homepage = "https://github.com/WayfireWM/wcm";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       teatwig
       wucke13
       wineee
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "wcm";
   };

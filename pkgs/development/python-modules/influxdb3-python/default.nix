@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
+  pandas,
+  polars,
   pyarrow,
   python-dateutil,
   reactivex,
   setuptools,
-  pandas,
-  polars,
   urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "influxdb3-python";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "InfluxCommunity";
@@ -43,13 +42,16 @@ buildPythonPackage (finalAttrs: {
   ];
 
   optional-dependencies = {
-    pandas = [ pandas ];
-    polars = [ polars ];
     dataframe = [
       pandas
       polars
     ];
+
+    pandas = [ pandas ];
+    polars = [ polars ];
   };
+
+  pyproject = true;
 
   # Missing ORC support
   # https://github.com/NixOS/nixpkgs/issues/212863
@@ -60,7 +62,6 @@ buildPythonPackage (finalAttrs: {
   # pythonImportsCheck = [
   #   "influxdb_client_3"
   # ];
-
   meta = {
     description = "Python module that provides a simple and convenient way to interact with InfluxDB 3.0";
     homepage = "https://github.com/InfluxCommunity/influxdb3-python";

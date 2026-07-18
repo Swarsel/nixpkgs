@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   libspatialindex,
   numpy,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "rtree";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Toblerity";
@@ -39,6 +38,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rtree" ];
 
   meta = {

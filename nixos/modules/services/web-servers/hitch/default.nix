@@ -29,59 +29,62 @@ with lib;
       enable = mkEnableOption "Hitch Server";
 
       backend = mkOption {
-        type = types.str;
         description = ''
           The host and port Hitch connects to when receiving
           a connection in the form [HOST]:PORT
         '';
+
+        type = types.str;
       };
 
       ciphers = mkOption {
-        type = types.str;
         default = "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
         description = "The list of ciphers to use";
+        type = types.str;
+      };
+
+      extraConfig = mkOption {
+        default = "";
+        description = "Additional configuration lines";
+        type = types.lines;
       };
 
       frontend = mkOption {
-        type = types.either types.str (types.listOf types.str);
+        apply = toList;
         default = "[127.0.0.1]:443";
+
         description = ''
           The port and interface of the listen endpoint in the
           form [HOST]:PORT[+CERT].
         '';
-        apply = toList;
+
+        type = types.either types.str (types.listOf types.str);
       };
 
-      pem-files = mkOption {
-        type = types.listOf types.path;
-        default = [ ];
-        description = "PEM files to use";
+      group = mkOption {
+        default = "hitch";
+        description = "The group to run as";
+        type = types.str;
       };
 
       ocsp-stapling = {
         enabled = mkOption {
-          type = types.bool;
           default = true;
           description = "Whether to enable OCSP Stapling";
+          type = types.bool;
         };
       };
 
+      pem-files = mkOption {
+        default = [ ];
+        description = "PEM files to use";
+        type = types.listOf types.path;
+      };
+
       user = mkOption {
-        type = types.str;
         default = "hitch";
         description = "The user to run as";
-      };
-
-      group = mkOption {
         type = types.str;
-        default = "hitch";
-        description = "The group to run as";
-      };
-
-      extraConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = "Additional configuration lines";
       };
     };
 
@@ -89,10 +92,12 @@ with lib;
 
   config = mkIf cfg.enable {
 
+    environment.systemPackages = [ pkgs.hitch ];
+
     systemd.services.hitch = {
-      description = "Hitch";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Hitch";
+
       preStart = ''
         ${pkgs.hitch}/sbin/hitch -t --config ${hitchConfig}
       ''
@@ -100,22 +105,24 @@ with lib;
         mkdir -p ${ocspDir}
         chown -R hitch:hitch ${ocspDir}
       '');
+
       serviceConfig = {
-        Type = "forking";
-        ExecStart = "${pkgs.hitch}/sbin/hitch --daemon --config ${hitchConfig}";
         ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+        ExecStart = "${pkgs.hitch}/sbin/hitch --daemon --config ${hitchConfig}";
+        LimitNOFILE = 131072;
         Restart = "always";
         RestartSec = "5s";
-        LimitNOFILE = 131072;
+        Type = "forking";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    environment.systemPackages = [ pkgs.hitch ];
+    users.groups.hitch = { };
 
     users.users.hitch = {
       group = "hitch";
       isSystemUser = true;
     };
-    users.groups.hitch = { };
   };
 }

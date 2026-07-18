@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -23,50 +23,60 @@ in
     services.yandex-disk = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable Yandex-disk client. See <https://disk.yandex.ru/>
         '';
-      };
 
-      username = lib.mkOption {
-        default = "";
-        type = lib.types.str;
-        description = ''
-          Your yandex.com login name.
-        '';
-      };
-
-      password = lib.mkOption {
-        default = "";
-        type = lib.types.str;
-        description = ''
-          Your yandex.com password. Warning: it will be world-readable in /nix/store.
-        '';
-      };
-
-      user = lib.mkOption {
-        default = null;
-        type = lib.types.nullOr lib.types.str;
-        description = ''
-          The user the yandex-disk daemon should run as.
-        '';
+        type = lib.types.bool;
       };
 
       directory = lib.mkOption {
-        type = lib.types.path;
         default = "/home/Yandex.Disk";
         description = "The directory to use for Yandex.Disk storage";
+        type = lib.types.path;
       };
 
       excludes = lib.mkOption {
         default = "";
-        type = lib.types.commas;
-        example = "data,backup";
+
         description = ''
           Comma-separated list of directories which are excluded from synchronization.
         '';
+
+        example = "data,backup";
+        type = lib.types.commas;
+      };
+
+      password = lib.mkOption {
+        default = "";
+
+        description = ''
+          Your yandex.com password. Warning: it will be world-readable in /nix/store.
+        '';
+
+        type = lib.types.str;
+      };
+
+      user = lib.mkOption {
+        default = null;
+
+        description = ''
+          The user the yandex-disk daemon should run as.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      username = lib.mkOption {
+        default = "";
+
+        description = ''
+          Your yandex.com login name.
+        '';
+
+        type = lib.types.str;
       };
 
     };
@@ -77,24 +87,9 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    users.users = lib.mkIf (cfg.user == null) [
-      {
-        name = u;
-        uid = config.ids.uids.yandexdisk;
-        group = "nogroup";
-        home = dir;
-      }
-    ];
-
     systemd.services.yandex-disk = {
-      description = "Yandex-disk server";
-
       after = [ "network.target" ];
-
-      wantedBy = [ "multi-user.target" ];
-
-      # FIXME: have to specify ${directory} here as well
-      unitConfig.RequiresMountsFor = dir;
+      description = "Yandex-disk server";
 
       script = ''
         mkdir -p -m 700 ${dir}
@@ -112,7 +107,20 @@ in
           -c '${pkgs.yandex-disk}/bin/yandex-disk start --no-daemon -a ${dir}/token -d ${cfg.directory} --exclude-dirs=${cfg.excludes}'
       '';
 
+      # FIXME: have to specify ${directory} here as well
+      unitConfig.RequiresMountsFor = dir;
+      wantedBy = [ "multi-user.target" ];
+
     };
+
+    users.users = lib.mkIf (cfg.user == null) [
+      {
+        group = "nogroup";
+        home = dir;
+        name = u;
+        uid = config.ids.uids.yandexdisk;
+      }
+    ];
   };
 
 }

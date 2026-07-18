@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gettext,
-  texinfo,
-  xfsprogs,
   e2fsprogs,
+  gettext,
   libcap,
   ntfs3g,
+  texinfo,
+  xfsprogs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-zWjMCWQNPPly8xJ7jQraGHi4OLuNrnpNVQC2CRyHUlw=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gettext
@@ -35,14 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
     xfsprogs
   ];
 
-  strictDeps = true;
-
   meta = {
     description = "Program which will securely wipe the free space";
     homepage = "https://wipefreespace.sourceforge.io";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ kyehn ];
+    platforms = lib.platforms.linux;
     mainProgram = "wipefreespace";
   };
 })

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  perl,
-  openssh,
   kmod,
   makeWrapper,
+  openssh,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,11 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/turistu/usbip-ssh";
     description = "Import usb devices from another linux machine with ssh's connection forwarding mechanism";
+    homepage = "https://github.com/turistu/usbip-ssh";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ kagehisa ];
-    mainProgram = "usbip-ssh";
     platforms = lib.platforms.linux;
+    mainProgram = "usbip-ssh";
   };
 })

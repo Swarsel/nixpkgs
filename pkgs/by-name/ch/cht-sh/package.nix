@@ -2,19 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  makeWrapper,
   curl,
+  makeWrapper,
   ncurses,
   rlwrap,
+  unstableGitUpdater,
   xsel,
 }:
 
 stdenv.mkDerivation {
   pname = "cht.sh";
   version = "0-unstable-2025-12-23";
-
-  nativeBuildInputs = [ makeWrapper ];
 
   src = fetchFromGitHub {
     owner = "chubin";
@@ -25,6 +23,7 @@ stdenv.mkDerivation {
 
   # Fix ".cht.sh-wrapped" in the help message
   postPatch = "substituteInPlace share/cht.sh.txt --replace '\${0##*/}' cht.sh";
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     install -m755 -D share/cht.sh.txt "$out/bin/cht.sh"
@@ -51,12 +50,14 @@ stdenv.mkDerivation {
 
   meta = {
     description = "CLI client for cheat.sh, a community driven cheat sheet";
+    homepage = "https://github.com/chubin/cheat.sh";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fgaz
       evanjs
     ];
-    homepage = "https://github.com/chubin/cheat.sh";
+
     mainProgram = "cht.sh";
   };
 }

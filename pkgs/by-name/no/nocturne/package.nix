@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  blueprint-compiler,
-  wrapGAppsHook4,
-  gettext,
-  desktop-file-utils,
   appstream,
+  blueprint-compiler,
+  desktop-file-utils,
+  gettext,
   glib,
   glib-networking,
-  pkg-config,
-  gtk4,
-  python3,
-  python3Packages,
-  libadwaita,
-  gobject-introspection,
-  libsecret,
-  gst_all_1,
-  xdg-user-dirs,
   gnome,
-  librsvg,
-  webp-pixbuf-loader,
+  gobject-introspection,
+  gst_all_1,
+  gtk4,
+  libadwaita,
   libavif,
   libheif,
+  librsvg,
+  libsecret,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  python3Packages,
+  webp-pixbuf-loader,
+  wrapGAppsHook4,
+  xdg-user-dirs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,11 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-uXsl438K0Ew0fdrKtGf28VkHQ76loDWKLJkounzqhEQ=";
   };
 
-  __structuredAttrs = true;
-
-  dontUseCmakeConfigure = true;
-
+  # avoid installing Navidrome at runtime if not available, incompatible with the nix store
+  patches = [ ./disable-navidrome-setup.patch ];
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -70,17 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
     gst_all_1.gst-plugins-bad
   ];
 
-  pythonDependencies = [
-    python3Packages.pygobject3
-    python3Packages.tinytag
-    python3Packages.requests
-    python3Packages.syncedlyrics
-    python3Packages.pycairo
-    python3Packages.colorthief
-    python3Packages.mpris-server
-    python3Packages.pillow
-  ];
-
   preInstall = ''
     export GDK_PIXBUF_MODULE_FILE="${
       gnome._gdkPixbufCacheBuilder_DO_NOT_USE {
@@ -101,8 +89,19 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  # avoid installing Navidrome at runtime if not available, incompatible with the nix store
-  patches = [ ./disable-navidrome-setup.patch ];
+  __structuredAttrs = true;
+  dontUseCmakeConfigure = true;
+
+  pythonDependencies = [
+    python3Packages.pygobject3
+    python3Packages.tinytag
+    python3Packages.requests
+    python3Packages.syncedlyrics
+    python3Packages.pycairo
+    python3Packages.colorthief
+    python3Packages.mpris-server
+    python3Packages.pillow
+  ];
 
   meta = {
     description = "Adwaita music player for OpenSubsonic servers like Navidrome";
@@ -110,7 +109,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/Jeffser/Nocturne/releases";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pbsds ];
-    mainProgram = "nocturne";
     platforms = lib.platforms.linux;
+    mainProgram = "nocturne";
   };
 })

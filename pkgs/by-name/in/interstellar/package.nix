@@ -1,17 +1,17 @@
 {
   lib,
-  flutter341,
-  fetchFromGitHub,
   fetchurl,
-  imagemagick,
+  fetchFromGitHub,
+  _experimental-update-script-combinators,
   alsa-lib,
+  dart,
+  flutter341,
+  imagemagick,
   libass,
   mpv-unwrapped,
+  nix-update-script,
   runCommand,
   yq-go,
-  _experimental-update-script-combinators,
-  nix-update-script,
-  dart,
 }:
 
 flutter341.buildFlutterApplication (finalAttrs: {
@@ -25,24 +25,20 @@ flutter341.buildFlutterApplication (finalAttrs: {
     hash = "sha256-76YMlcB0Go4EYFb4z7UEOUF+UkVsjxg04Ak06sIpkeQ=";
   };
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  gitHashes = lib.importJSON ./git-hashes.json;
-
   patches = [ ./emoji_builder.patch ];
 
   postPatch = ''
     substituteInPlace lib/src/widgets/emoji_picker/emoji_builder.dart \
         --replace-fail "@compact.raw.json@" "${
           fetchurl {
-            url = "https://raw.githubusercontent.com/milesj/emojibase/a5fc630a91ca42cddf3f4a66492965600fd3bce8/packages/data/en/compact.raw.json";
             hash = "sha256-OivCYjiBEooRx3zni9jAr3lR0rzpoa3HX2l/a0UwDpE=";
+            url = "https://raw.githubusercontent.com/milesj/emojibase/a5fc630a91ca42cddf3f4a66492965600fd3bce8/packages/data/en/compact.raw.json";
           }
         }" \
         --replace-fail "@messages.raw.json@" "${
           fetchurl {
-            url = "https://raw.githubusercontent.com/milesj/emojibase/a5fc630a91ca42cddf3f4a66492965600fd3bce8/packages/data/en/messages.raw.json";
             hash = "sha256-ZQWXZJ5jXxDNQHaOAsxApAt6oanvaEwZ6VXbDA0YeMs=";
+            url = "https://raw.githubusercontent.com/milesj/emojibase/a5fc630a91ca42cddf3f4a66492965600fd3bce8/packages/data/en/messages.raw.json";
           }
         }"
     substituteInPlace lib/src/controller/database/database.dart \
@@ -75,6 +71,9 @@ flutter341.buildFlutterApplication (finalAttrs: {
     --prefix LD_LIBRARY_PATH : $out/app/${finalAttrs.pname}/lib
   '';
 
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   passthru = {
     pubspecSource =
       runCommand "pubspec.lock.json"
@@ -85,6 +84,7 @@ flutter341.buildFlutterApplication (finalAttrs: {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (
@@ -101,6 +101,7 @@ flutter341.buildFlutterApplication (finalAttrs: {
           "--output"
           ./git-hashes.json
         ];
+
         supportedFeatures = [ ];
       }
     ];
@@ -110,8 +111,8 @@ flutter341.buildFlutterApplication (finalAttrs: {
     description = "App for Mbin/Lemmy/PieFed, connecting you to the fediverse";
     homepage = "https://interstellar.jwr.one";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "interstellar";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ JollyDevelopment ];
+    platforms = lib.platforms.linux;
+    mainProgram = "interstellar";
   };
 })

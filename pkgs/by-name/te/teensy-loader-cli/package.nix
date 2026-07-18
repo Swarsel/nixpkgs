@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   go-md2man,
   installShellFiles,
@@ -40,9 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Firmware uploader for the Teensy microcontroller boards";
-    mainProgram = "teensy-loader-cli";
     homepage = "https://www.pjrc.com/teensy/";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.unix;
+    mainProgram = "teensy-loader-cli";
   };
 })

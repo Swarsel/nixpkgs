@@ -1,16 +1,16 @@
 {
-  name-prefix ? "temurin",
-  brand-name ? "Eclipse Temurin",
   sourcePerArch,
+  brand-name ? "Eclipse Temurin",
   knownVulnerabilities ? [ ],
+  name-prefix ? "temurin",
 }:
 
 {
-  swingSupport ? true, # not used for now
   lib,
   stdenv,
   fetchurl,
   setJavaClassPath,
+  swingSupport ? true, # not used for now
 }:
 
 let
@@ -25,6 +25,7 @@ let
         "${name-prefix}-bin"
       else
         "${name-prefix}-${sourcePerArch.packageType}-bin";
+
     version = sourcePerArch.${cpuName}.version or (throw "unsupported CPU ${cpuName}");
 
     src = fetchurl {
@@ -33,9 +34,6 @@ let
         sha256
         ;
     };
-
-    # See: https://github.com/NixOS/patchelf/issues/10
-    dontStrip = 1;
 
     installPhase = ''
       cd ..
@@ -66,28 +64,34 @@ let
       EOF
     '';
 
+    # See: https://github.com/NixOS/patchelf/issues/10
+    dontStrip = 1;
+
     # FIXME: use multiple outputs or return actual JRE package
     passthru = {
-      jre = finalAttrs.finalPackage;
-      home = finalAttrs.finalPackage;
       bundle = "${finalAttrs.finalPackage}/Library/Java/JavaVirtualMachines/${name-prefix}-${lib.versions.major finalAttrs.version}.jdk";
+      home = finalAttrs.finalPackage;
+      jre = finalAttrs.finalPackage;
     };
 
     meta = {
+      inherit knownVulnerabilities;
+      description = "${brand-name}, prebuilt OpenJDK binary";
+
       license = with lib.licenses; [
         gpl2
         classpathException20
       ];
+
       sourceProvenance = with lib.sourceTypes; [
         binaryNativeCode
         binaryBytecode
       ];
-      description = "${brand-name}, prebuilt OpenJDK binary";
-      platforms = map (arch: arch + "-darwin") providedCpuTypes; # some inherit jre.meta.platforms
+
       maintainers = with lib.maintainers; [ taku0 ];
-      teams = [ lib.teams.java ];
-      inherit knownVulnerabilities;
+      platforms = map (arch: arch + "-darwin") providedCpuTypes; # some inherit jre.meta.platforms
       mainProgram = "java";
+      teams = [ lib.teams.java ];
     };
   });
 in

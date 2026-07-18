@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libsodium,
-  ncurses,
   curl,
-  libtoxcore,
-  openal,
-  libvpx,
   freealut,
-  libconfig,
-  pkg-config,
-  libopus,
-  qrencode,
   gdk-pixbuf,
+  libconfig,
   libnotify,
+  libopus,
+  libsodium,
+  libtoxcore,
+  libvpx,
+  ncurses,
+  openal,
+  pkg-config,
+  qrencode,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-HNZKQPNwKLvtT/0EJlDaJnGI04gpJqXHKjd/85H3zH8=";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
-  installFlags = [ "PREFIX=$(out)" ];
+  nativeBuildInputs = [
+    pkg-config
+    libconfig
+  ];
 
   buildInputs = [
     libtoxcore
@@ -46,16 +48,15 @@ stdenv.mkDerivation (finalAttrs: {
     freealut
     qrencode
   ];
-  nativeBuildInputs = [
-    pkg-config
-    libconfig
-  ];
+
+  makeFlags = [ "PREFIX=$(out)" ];
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = finalAttrs.src.meta // {
     description = "Reference CLI for Tox";
-    mainProgram = "toxic";
     homepage = "https://github.com/TokTok/toxic";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.linux;
+    mainProgram = "toxic";
   };
 })

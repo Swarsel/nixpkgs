@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Temporary edit external crates that your project depends on";
-    mainProgram = "rhack";
     homepage = "https://github.com/nakabonne/rhack";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "rhack";
   };
 })

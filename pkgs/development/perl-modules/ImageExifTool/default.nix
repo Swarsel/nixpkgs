@@ -1,13 +1,13 @@
 {
-  buildPerlPackage,
-  fetchFromGitHub,
-  gitUpdater,
   lib,
-  versionCheckHook,
+  fetchFromGitHub,
   ArchiveZip,
   CompressRawLzma,
   IOCompress,
   IOCompressBrotli,
+  buildPerlPackage,
+  gitUpdater,
+  versionCheckHook,
 }:
 
 buildPerlPackage rec {
@@ -42,6 +42,7 @@ buildPerlPackage rec {
 
   meta = {
     description = "Tool to read, write and edit EXIF meta information";
+
     longDescription = ''
       ExifTool is a platform-independent Perl library plus a command-line
       application for reading, writing and editing meta information in a wide
@@ -53,15 +54,19 @@ buildPerlPackage rec {
       Nintendo, Olympus/Epson, Panasonic/Leica, Pentax/Asahi, Phase One,
       Reconyx, Ricoh, Samsung, Sanyo, Sigma/Foveon and Sony.
     '';
+
     homepage = "https://exiftool.org/";
     changelog = "https://exiftool.org/history.html";
+
     license = with lib.licenses; [
       gpl1Plus # or
       artistic2
     ];
+
     maintainers = with lib.maintainers; [
       anthonyroussel
     ];
+
     mainProgram = "exiftool";
   };
 }

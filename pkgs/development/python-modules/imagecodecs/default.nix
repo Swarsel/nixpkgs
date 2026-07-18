@@ -1,40 +1,35 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  numpy,
-  setuptools,
-
-  # nativeBuildInputs
-  pkgs,
-  lcms2,
-  openjpeg,
-
   # buildInputs
   jxrlib,
+  lcms2,
   lerc,
   libdeflate,
   libjpeg,
   libpng,
   libtiff,
   libwebp,
-  xz,
-  zlib,
-
+  numpy,
+  openjpeg,
+  # nativeBuildInputs
+  pkgs,
   # tests
   pytestCheckHook,
+  setuptools,
+  xz,
+  zlib,
 }:
 
 let
   version = "2026.6.26";
 in
 buildPythonPackage rec {
-  pname = "imagecodecs";
   inherit version;
-  pyproject = true;
+  pname = "imagecodecs";
 
   src = fetchFromGitHub {
     owner = "cgohlke";
@@ -42,12 +37,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-0o4zSf1iCzxph9tQ+b2nShaRWeCBuszf/r85Zg1BGTY=";
   };
-
-  build-system = [
-    cython
-    numpy
-    setuptools
-  ];
 
   nativeBuildInputs = [
     pkgs.lz4.dev # lz4 was hidden by python3Packages.lz4
@@ -71,6 +60,16 @@ buildPythonPackage rec {
     pkgs.zstd
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  build-system = [
+    cython
+    numpy
+    setuptools
+  ];
+
   dependencies = [
     numpy
   ];
@@ -81,9 +80,7 @@ buildPythonPackage rec {
       --replace-fail "/usr/include/jxrlib" "${jxrlib}/include/jxrlib"
   '';
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "imagecodecs"

@@ -6,20 +6,19 @@
 
 let
   python3' = python3.override {
-    self = python3;
     packageOverrides = (
       final: prev: {
         cbor2 = prev.cbor2WithoutCExtensions;
       }
     );
+
+    self = python3;
   };
 in
 
 python3'.pkgs.buildPythonApplication rec {
   pname = "opshin";
   version = "0.24.3";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OpShin";
@@ -38,6 +37,8 @@ python3'.pkgs.buildPythonApplication rec {
     astunparse
     ordered-set
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Simple pythonic programming language for Smart Contracts on Cardano";

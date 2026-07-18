@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  makeWrapper,
-  pkg-config,
   SDL2,
-  libx11,
+  cmake,
   dbus,
   libdecor,
   libnotify,
-  zenity,
+  libx11,
+  makeWrapper,
   nix-update-script,
+  pkg-config,
+  zenity,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "ed9b6f994b050e8890cb73e7d2997723fdd0ca2c";
     hash = "sha256-pwI6hHae3yJpUx3v4yVLUW2t4LKQcWqiMPM9Q9NjY3Q=";
   };
+
+  # cmake 4 compatibility
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail "cmake_minimum_required(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -40,11 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     libdecor
   ];
-
-  # cmake 4 compatibility
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail "cmake_minimum_required(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -70,8 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Control the dualsense's triggers on Linux (and Windows) with a gui and C++ api";
     homepage = "https://github.com/Etaash-mathamsetty/trigger-control";
     license = lib.licenses.mit;
-    mainProgram = "trigger-control";
     maintainers = with lib.maintainers; [ azuwis ];
     platforms = lib.platforms.all;
+    mainProgram = "trigger-control";
   };
 })

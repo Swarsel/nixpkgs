@@ -1,27 +1,13 @@
 {
   buildEnv,
-  snis-unwrapped,
-  snis-assets,
   makeWrapper,
+  snis-assets,
+  snis-unwrapped,
 }:
 buildEnv {
-  pname = "snis";
   inherit (snis-unwrapped) version;
-
+  pname = "snis";
   nativeBuildInputs = [ makeWrapper ];
-
-  paths = [
-    snis-unwrapped
-    snis-assets
-  ];
-
-  # Basic assets are also distributed in the main repo
-  ignoreCollisions = true;
-
-  pathsToLink = [
-    "/"
-    "/bin"
-  ];
 
   postBuild = ''
     for i in $out/bin/*; do
@@ -29,6 +15,19 @@ buildEnv {
         --set SNIS_ASSET_DIR "$out/share/snis"
     done
   '';
+
+  # Basic assets are also distributed in the main repo
+  ignoreCollisions = true;
+
+  paths = [
+    snis-unwrapped
+    snis-assets
+  ];
+
+  pathsToLink = [
+    "/"
+    "/bin"
+  ];
 
   meta = snis-unwrapped.meta // {
     hydraPlatforms = [ ];

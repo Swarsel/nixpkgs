@@ -8,9 +8,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "webrtcvad";
   version = "2.0.10";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -23,11 +20,11 @@ buildPythonPackage (finalAttrs: {
     ./no-pkg-resources.patch
   ];
 
-  build-system = [ setuptools ];
-
   # required WAV files for testing are not included in the tarball
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "webrtcvad" ];
 
   meta = {

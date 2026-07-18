@@ -1,31 +1,31 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  desktop-file-utils,
+  docbook-xsl-nons,
+  gettext,
+  glib,
+  gnome,
+  gsettings-desktop-schemas,
+  gtk3,
+  gtk4,
+  itstool,
+  libhandy,
+  libuuid,
+  libxml2,
+  libxslt,
   meson,
+  nautilus,
   ninja,
+  nixosTests,
+  pcre2,
   pkg-config,
   python3,
-  libxml2,
-  gnome,
-  nautilus,
-  glib,
-  gtk4,
-  gtk3,
-  libhandy,
-  gsettings-desktop-schemas,
-  vte,
-  gettext,
-  which,
-  libuuid,
   vala,
-  desktop-file-utils,
-  itstool,
+  vte,
+  which,
   wrapGAppsHook3,
-  pcre2,
-  libxslt,
-  docbook-xsl-nons,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,14 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/gnome-terminal/${lib.versions.majorMinor finalAttrs.version}/gnome-terminal-${finalAttrs.version}.tar.xz";
     hash = "sha256-uNrz8IVFFyxNKIVzP3IDYasDSepmm5kkXu1K0W7T3ig=";
   };
+
+  postPatch = ''
+    patchShebangs \
+      data/icons/meson_updateiconcache.py \
+      data/meson_desktopfile.py \
+      data/meson_metainfofile.py \
+      src/meson_compileschemas.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -66,31 +74,23 @@ stdenv.mkDerivation (finalAttrs: {
     pcre2
   ];
 
-  postPatch = ''
-    patchShebangs \
-      data/icons/meson_updateiconcache.py \
-      data/meson_desktopfile.py \
-      data/meson_metainfofile.py \
-      src/meson_compileschemas.py
-  '';
-
   passthru = {
+    tests = {
+      test = nixosTests.terminal-emulators.gnome-terminal;
+    };
+
     updateScript = gnome.updateScript {
       packageName = "gnome-terminal";
       versionPolicy = "odd-unstable";
-    };
-
-    tests = {
-      test = nixosTests.terminal-emulators.gnome-terminal;
     };
   };
 
   meta = {
     description = "GNOME Terminal Emulator";
-    mainProgram = "gnome-terminal";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-terminal";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.linux;
+    mainProgram = "gnome-terminal";
     teams = [ lib.teams.gnome ];
   };
 })

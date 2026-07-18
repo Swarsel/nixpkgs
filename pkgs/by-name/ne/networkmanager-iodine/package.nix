@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  replaceVars,
   autoreconfHook,
-  iodine,
-  intltool,
-  pkg-config,
-  networkmanager,
-  libsecret,
-  gtk3,
-  withGnome ? true,
-  unstableGitUpdater,
-  libnma,
   glib,
+  gtk3,
+  intltool,
+  iodine,
+  libnma,
+  libsecret,
+  networkmanager,
+  pkg-config,
+  replaceVars,
+  unstableGitUpdater,
+  withGnome ? true,
 }:
 
 stdenv.mkDerivation {
@@ -21,11 +21,11 @@ stdenv.mkDerivation {
   version = "1.2.0-unstable-2025-12-22";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "network-manager-iodine";
     rev = "c329a1fc2be59a6094ef7f7b1fe5fd92f73947a4";
     sha256 = "mE7Hzvh3mZKwcVPeVlB8jWcTRp3sDLe0zr0l6kaUEo8=";
+    domain = "gitlab.gnome.org";
   };
 
   patches = [
@@ -63,17 +63,17 @@ stdenv.mkDerivation {
   '';
 
   passthru = {
+    networkManagerPlugin = "VPN/nm-iodine-service.name";
+
     updateScript = unstableGitUpdater {
       tagPrefix = "v";
     };
-
-    networkManagerPlugin = "VPN/nm-iodine-service.name";
   };
 
   meta = {
+    inherit (networkmanager.meta) maintainers teams platforms;
     description = "NetworkManager's iodine plugin";
     homepage = "https://gitlab.gnome.org/GNOME/network-manager-iodine";
-    inherit (networkmanager.meta) maintainers teams platforms;
     license = lib.licenses.gpl2Plus;
   };
 }

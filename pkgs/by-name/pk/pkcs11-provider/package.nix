@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
-  nss,
-  p11-kit,
-  opensc,
-  softhsm,
-  kryoptic,
-  gnutls,
   expect,
-  which,
+  gnutls,
+  kryoptic,
   meson,
   ninja,
-  pkg-config,
-  valgrind,
-  python3,
   nix-update-script,
+  nss,
+  opensc,
+  openssl,
+  p11-kit,
+  pkg-config,
+  python3,
+  softhsm,
+  valgrind,
+  which,
 }:
 
 let
@@ -30,21 +30,35 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "openssl-projects";
     repo = "pkcs11-provider";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-rymH/0otZ553lKqfdTRR5ttNsom9A3ObNNxptqB/eno=";
+    fetchSubmodules = true;
   };
 
-  buildInputs = [
-    openssl
-    nss
-    p11-kit
-  ];
+  # Need to search $KRYOPTIC for the path to the actual Kryoptic library.
+  postPatch = ''
+    patchShebangs --build .
+    substituteInPlace tests/kryoptic-init.sh \
+      --replace-fail /usr/local/lib/kryoptic "\\''${KRYOPTIC}"
+  '';
+
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
     which
   ];
+
+  buildInputs = [
+    openssl
+    nss
+    p11-kit
+  ];
+
+  env = {
+    KRYOPTIC = "${lib.getLib kryoptic}/lib";
+  };
+
+  doCheck = true;
 
   nativeCheckInputs = [
     p11-kit.bin
@@ -67,17 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
     softhsm
   ];
 
-  env = {
-    KRYOPTIC = "${lib.getLib kryoptic}/lib";
-  };
-
-  # Need to search $KRYOPTIC for the path to the actual Kryoptic library.
-  postPatch = ''
-    patchShebangs --build .
-    substituteInPlace tests/kryoptic-init.sh \
-      --replace-fail /usr/local/lib/kryoptic "\\''${KRYOPTIC}"
-  '';
-
   preInstall = ''
     # Meson tries to install to `$out/$out` and `$out/''${openssl.out}`; so join them.
     mkdir -p "$out"
@@ -88,15 +91,11 @@ stdenv.mkDerivation (finalAttrs: {
     export DESTDIR="$(realpath .install)"
   '';
 
-  enableParallelBuilding = true;
-
-  # Frequently fails due to a race condition.
-  enableParallelInstalling = false;
-
   # Tests bind to localhost.
   __darwinAllowLocalNetworking = true;
-
-  doCheck = true;
+  enableParallelBuilding = true;
+  # Frequently fails due to a race condition.
+  enableParallelInstalling = false;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -106,10 +105,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/latchset/pkcs11-provider";
     description = "OpenSSL 3.x provider to access hardware or software tokens using the PKCS#11 Cryptographic Token Interface";
-    maintainers = with lib.maintainers; [ numinit ];
+    homepage = "https://github.com/latchset/pkcs11-provider";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ numinit ];
     platforms = lib.platforms.unix;
   };
 })

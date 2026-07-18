@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchsvn,
   autoreconfHook,
+  fetchsvn,
 }:
 
 stdenv.mkDerivation rec {
@@ -15,11 +15,6 @@ stdenv.mkDerivation rec {
     sha256 = "0jmbkrmscbl64j71qffcc39x005jrmphx8kirs1g2ws44wil39hf";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-
-  # don't use $T(E)MP which is set to the build directory
-  configureFlags = [ "--enable-tmpdir=/tmp" ];
-
   patches = [
     # Library defines an `__unused__` which is a reserved name, and may
     # conflict with the standard library definition. One such conflict is with
@@ -27,9 +22,13 @@ stdenv.mkDerivation rec {
     ./unused-collision.patch
   ];
 
+  nativeBuildInputs = [ autoreconfHook ];
+  # don't use $T(E)MP which is set to the build directory
+  configureFlags = [ "--enable-tmpdir=/tmp" ];
+
   meta = {
     description = "Tool for fast source code browsing (exuberant ctags)";
-    mainProgram = "ctags";
+
     longDescription = ''
       Ctags generates an index (or tag) file of language objects found
       in source files that allows these items to be quickly and easily
@@ -38,10 +37,11 @@ stdenv.mkDerivation rec {
       alternatively, the index entry created for that object).  Many
       programming languages are supported.
     '';
+
     homepage = "https://ctags.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
-
+    mainProgram = "ctags";
     # So that Exuberant ctags is preferred over emacs's ctags
     priority = 1;
   };

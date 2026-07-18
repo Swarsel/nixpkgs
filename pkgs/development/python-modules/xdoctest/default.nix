@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   wheel,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "xdoctest";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Erotemic";
@@ -31,6 +30,7 @@ buildPythonPackage rec {
     export PATH=$out/bin:$PATH
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "xdoctest" ];
 
   meta = {

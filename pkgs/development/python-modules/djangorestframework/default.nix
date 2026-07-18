@@ -1,34 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  django,
-
+  buildPythonPackage,
   # optional-dependencies
   coreapi,
   coreschema,
+  # dependencies
+  django,
   django-guardian,
   inflection,
   psycopg2,
   pygments,
-  pyyaml,
-
+  pytest-django,
   # tests
   pytestCheckHook,
-  pytest-django,
+  pythonOlder,
   pytz,
+  pyyaml,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "djangorestframework";
   version = "3.17.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "encode";
@@ -37,10 +32,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-hDAtICtVFeEXRgR5Shb0IdVlLkpf/TBDWw+2cOLJTfw=";
   };
 
+  nativeCheckInputs = [
+    pytest-django
+    pytestCheckHook
+    pytz
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.complete;
+
   build-system = [ setuptools ];
 
   dependencies = [
     django
+  ];
+
+  disabledTests = [
+    # https://github.com/encode/django-rest-framework/issues/9422
+    "test_urlpatterns"
   ];
 
   optional-dependencies = {
@@ -55,24 +62,13 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-django
-    pytestCheckHook
-    pytz
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.complete;
-
-  disabledTests = [
-    # https://github.com/encode/django-rest-framework/issues/9422
-    "test_urlpatterns"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "rest_framework" ];
 
   meta = {
-    changelog = "https://github.com/encode/django-rest-framework/releases/tag/${finalAttrs.src.tag}";
     description = "Web APIs for Django, made easy";
     homepage = "https://www.django-rest-framework.org/";
+    changelog = "https://github.com/encode/django-rest-framework/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd2;
   };
 })

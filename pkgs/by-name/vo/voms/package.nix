@@ -5,12 +5,12 @@
   # Native build inputs
   autoreconfHook,
   bison,
-  flex,
-  pkg-config,
   # Build inputs
   expat,
+  flex,
   gsoap,
   openssl,
+  pkg-config,
   zlib,
   # Configuration overridable with .override
   # If not null, the builder will
@@ -30,9 +30,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-odwaIGaiJEnxNeysScYknOTimpvvx1vhuHf82VGPoVg=";
   };
 
-  passthru = {
-    inherit externalEtc;
-  };
+  outputs = [
+    "bin"
+    "out"
+    "dev"
+    "man"
+  ]
+  # `etc` output for default configurations that can optionally be
+  # installed to /etc (system-wide) or profile-path>/etc.
+  ++ lib.optional (externalEtc != null) "etc";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -48,18 +54,14 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  outputs = [
-    "bin"
-    "out"
-    "dev"
-    "man"
-  ]
-  # `etc` output for default configurations that can optionally be
-  # installed to /etc (system-wide) or profile-path>/etc.
-  ++ lib.optional (externalEtc != null) "etc";
+  configureFlags = [
+    "--with-gsoap-wsdl2h=${gsoap}/bin/wsdl2h"
+    "--sysconfdir=${placeholder "out"}/etc"
+  ];
 
-  preAutoreconf = ''
-    mkdir -p aux src/autogen
+  postFixup = lib.optionalString (externalEtc != null) ''
+    moveToOutput etc "$etc"
+    ln -s ${lib.escapeShellArg externalEtc} "$out/etc"
   '';
 
   postAutoreconf = ''
@@ -73,25 +75,25 @@ stdenv.mkDerivation (finalAttrs: {
     export GSOAP_SSL_PP_LIBS="$(pkg-config --libs gsoapssl++ zlib)"
   '';
 
-  configureFlags = [
-    "--with-gsoap-wsdl2h=${gsoap}/bin/wsdl2h"
-    "--sysconfdir=${placeholder "out"}/etc"
-  ];
-
-  postFixup = lib.optionalString (externalEtc != null) ''
-    moveToOutput etc "$etc"
-    ln -s ${lib.escapeShellArg externalEtc} "$out/etc"
+  preAutoreconf = ''
+    mkdir -p aux src/autogen
   '';
+
+  passthru = {
+    inherit externalEtc;
+  };
 
   meta = {
     description = "C/C++ VOMS server, client and APIs v2.x";
     homepage = "https://italiangrid.github.io/voms/";
     changelog = "https://github.com/italiangrid/voms/blob/master/ChangeLog";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       ShamrockLee
       veprbl
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

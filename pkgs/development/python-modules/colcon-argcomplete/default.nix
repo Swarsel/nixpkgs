@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  colcon,
-  setuptools,
   argcomplete,
-  pytestCheckHook,
+  buildPythonPackage,
+  colcon,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "colcon-argcomplete";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -20,6 +19,11 @@ buildPythonPackage rec {
     hash = "sha256-A6ia9OVZa+DwChVwCmkjvDtUloiFQyqtmhlaApbD7iI=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,15 +31,12 @@ buildPythonPackage rec {
     argcomplete
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
   disabledTestPaths = [
     "test/test_flake8.py"
     "test/test_spell_check.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "colcon_argcomplete"

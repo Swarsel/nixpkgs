@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dask,
-  fetchFromGitHub,
   matplotlib,
   pint,
   pooch,
@@ -10,8 +10,8 @@
   regex,
   rich,
   scipy,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   shapely,
   xarray,
 }:
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cf-xarray";
   version = "0.11.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xarray-contrib";
@@ -28,6 +27,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-njwK8wJH0YKzA7Lq8J0gBvAzNJa24XncF7IB9Dy6Lys=";
   };
 
+  nativeCheckInputs = [
+    dask
+    pytestCheckHook
+    scipy
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
+
   build-system = [
     setuptools
     setuptools-scm
@@ -35,6 +41,13 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ xarray ];
+
+  disabledTestPaths = [
+    # Tests require network access
+    "cf_xarray/tests/test_accessor.py"
+    "cf_xarray/tests/test_groupers.py"
+    "cf_xarray/tests/test_helpers.py"
+  ];
 
   optional-dependencies = {
     all = [
@@ -47,21 +60,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    dask
-    pytestCheckHook
-    scipy
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "cf_xarray" ];
-
-  disabledTestPaths = [
-    # Tests require network access
-    "cf_xarray/tests/test_accessor.py"
-    "cf_xarray/tests/test_groupers.py"
-    "cf_xarray/tests/test_helpers.py"
-  ];
 
   meta = {
     description = "Accessor for xarray objects that interprets CF attributes";

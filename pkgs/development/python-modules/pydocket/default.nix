@@ -1,16 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatch-vcs,
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   burner-redis,
   cloudpickle,
   cronsim,
+  # build-system
+  hatch-vcs,
+  hatchling,
   opentelemetry-api,
   opentelemetry-sdk,
   prometheus-client,
@@ -26,8 +24,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pydocket";
   version = "0.22.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "chrisguidry";
@@ -35,6 +31,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-WbOXUB6nYeD248K3pE5s1NIf+73dZcuqchQ/Nfw9AbA=";
   };
+
+  # All tests require internet access
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     hatch-vcs
@@ -64,10 +64,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "docket" ];
-
-  # All tests require internet access
-  doCheck = false;
 
   meta = {
     description = "Distributed background task system for Python";

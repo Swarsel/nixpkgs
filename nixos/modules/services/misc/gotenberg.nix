@@ -51,140 +51,178 @@ in
   options = {
     services.gotenberg = {
       enable = mkEnableOption "Gotenberg, a stateless API for PDF files";
-
       # Users can override only gotenberg, libreoffice and chromium if they want to (eg. ungoogled-chromium, different LO version, etc)
       # Don't allow setting the qpdf, pdftk, or unoconv paths, as those are very stable
       # and there's only one version of each.
       package = mkPackageOption pkgs "gotenberg" { };
 
-      port = mkOption {
-        type = types.port;
-        default = 3000;
-        description = "Port on which the API should listen.";
-      };
-
       bindIP = mkOption {
-        type = types.nullOr types.str;
         default = "127.0.0.1";
         description = "Port the API listener should bind to. Set to 0.0.0.0 to listen on all available IPs.";
-      };
-
-      timeout = mkOption {
         type = types.nullOr types.str;
-        default = "30s";
-        description = "Timeout for API requests.";
       };
 
-      rootPath = mkOption {
-        type = types.str;
-        default = "/";
-        description = "Root path for the Gotenberg API.";
+      bodyLimit = mkOption {
+        default = null;
+        description = "Sets the max limit for `multipart/form-data` requests. Accepts values like '5M', '20G', etc.";
+        type = types.nullOr types.str;
+      };
+
+      chromium = {
+        package = mkPackageOption pkgs "chromium" { };
+
+        autoStart = mkOption {
+          default = false;
+          description = "Automatically start Chromium when Gotenberg starts. If false, Chromium will start on the first conversion request that uses it.";
+          type = types.bool;
+        };
+
+        disableJavascript = mkOption {
+          default = false;
+          description = "Disable Javascript execution.";
+          type = types.bool;
+        };
+
+        disableRoutes = mkOption {
+          default = false;
+          description = "Disable all routes allowing Chromium-based conversion.";
+          type = types.bool;
+        };
+
+        maxQueueSize = mkOption {
+          default = 0;
+          description = "Maximum queue size for chromium-based conversions. Setting to 0 disables the limit.";
+          type = types.ints.unsigned;
+        };
+      };
+
+      downloadFrom = {
+        allowList = mkOption {
+          default = ".*";
+          description = "Allow these URLs to be used in the `downloadFrom` API field. Accepts a regular expression.";
+          type = types.nullOr types.str;
+        };
+
+        denyList = mkOption {
+          default = null;
+          description = "Deny accepting URLs from these domains in the `downloadFrom` API field. Accepts a regular expression.";
+          type = types.nullOr types.str;
+        };
+
+        disable = mkOption {
+          default = false;
+          description = "Whether to disable the ability to download files for conversion from outside sources.";
+          type = types.bool;
+        };
+
+        maxRetries = mkOption {
+          default = 4;
+          description = "The maximum amount of times to retry downloading a file specified with `downloadFrom`.";
+          type = types.ints.unsigned;
+        };
       };
 
       enableBasicAuth = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           HTTP Basic Authentication.
 
           If you set this, be sure to set `GOTENBERG_API_BASIC_AUTH_USERNAME`and `GOTENBERG_API_BASIC_AUTH_PASSWORD`
           in your `services.gotenberg.environmentFile` file.
         '';
+
+        type = types.bool;
       };
 
-      bodyLimit = mkOption {
-        type = types.nullOr types.str;
+      environmentFile = mkOption {
         default = null;
-        description = "Sets the max limit for `multipart/form-data` requests. Accepts values like '5M', '20G', etc.";
+        description = "Environment file to load extra environment variables from.";
+        type = types.nullOr types.path;
+      };
+
+      extraArgs = mkOption {
+        default = [ ];
+        description = "Any extra command-line flags to pass to the Gotenberg service.";
+        type = types.listOf types.str;
       };
 
       extraFontPackages = mkOption {
-        type = types.listOf types.package;
         default = [ ];
         description = "Extra fonts to make available.";
-      };
-
-      chromium = {
-        package = mkPackageOption pkgs "chromium" { };
-
-        maxQueueSize = mkOption {
-          type = types.ints.unsigned;
-          default = 0;
-          description = "Maximum queue size for chromium-based conversions. Setting to 0 disables the limit.";
-        };
-
-        autoStart = mkOption {
-          type = types.bool;
-          default = false;
-          description = "Automatically start Chromium when Gotenberg starts. If false, Chromium will start on the first conversion request that uses it.";
-        };
-
-        disableJavascript = mkOption {
-          type = types.bool;
-          default = false;
-          description = "Disable Javascript execution.";
-        };
-
-        disableRoutes = mkOption {
-          type = types.bool;
-          default = false;
-          description = "Disable all routes allowing Chromium-based conversion.";
-        };
-      };
-
-      downloadFrom = {
-        allowList = mkOption {
-          type = types.nullOr types.str;
-          default = ".*";
-          description = "Allow these URLs to be used in the `downloadFrom` API field. Accepts a regular expression.";
-        };
-        denyList = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "Deny accepting URLs from these domains in the `downloadFrom` API field. Accepts a regular expression.";
-        };
-        maxRetries = mkOption {
-          type = types.ints.unsigned;
-          default = 4;
-          description = "The maximum amount of times to retry downloading a file specified with `downloadFrom`.";
-        };
-        disable = mkOption {
-          type = types.bool;
-          default = false;
-          description = "Whether to disable the ability to download files for conversion from outside sources.";
-        };
+        type = types.listOf types.package;
       };
 
       libreoffice = {
         package = mkPackageOption pkgs "libreoffice" { };
 
-        restartAfter = mkOption {
-          type = types.ints.unsigned;
-          default = 10;
-          description = "Restart LibreOffice after this many conversions. Setting to 0 disables this feature.";
-        };
-
-        maxQueueSize = mkOption {
-          type = types.ints.unsigned;
-          default = 0;
-          description = "Maximum queue size for LibreOffice-based conversions. Setting to 0 disables the limit.";
-        };
-
         autoStart = mkOption {
-          type = types.bool;
           default = false;
           description = "Automatically start LibreOffice when Gotenberg starts. If false, LibreOffice will start on the first conversion request that uses it.";
+          type = types.bool;
         };
 
         disableRoutes = mkOption {
-          type = types.bool;
           default = false;
           description = "Disable all routes allowing LibreOffice-based conversion.";
+          type = types.bool;
+        };
+
+        maxQueueSize = mkOption {
+          default = 0;
+          description = "Maximum queue size for LibreOffice-based conversions. Setting to 0 disables the limit.";
+          type = types.ints.unsigned;
+        };
+
+        restartAfter = mkOption {
+          default = 10;
+          description = "Restart LibreOffice after this many conversions. Setting to 0 disables this feature.";
+          type = types.ints.unsigned;
         };
       };
 
+      logLevel = mkOption {
+        default = "info";
+        description = "The logging level for Gotenberg.";
+
+        type = types.enum [
+          "error"
+          "warn"
+          "info"
+          "debug"
+        ];
+      };
+
       pdfEngines = {
+        convert = mkOption {
+          default = [
+            "libreoffice-pdfengine"
+          ];
+
+          description = "PDF Engines to use for converting files.";
+
+          type = types.listOf (
+            types.enum [
+              "libreoffice-pdfengine"
+            ]
+          );
+        };
+
+        disableRoutes = mkOption {
+          default = false;
+          description = "Disable routes related to PDF engines.";
+          type = types.bool;
+        };
+
         merge = mkOption {
+          default = [
+            "qpdf"
+            "pdfcpu"
+            "pdftk"
+          ];
+
+          description = "PDF Engines to use for merging files.";
+
           type = types.listOf (
             types.enum [
               "qpdf"
@@ -192,75 +230,53 @@ in
               "pdftk"
             ]
           );
-          default = [
-            "qpdf"
-            "pdfcpu"
-            "pdftk"
-          ];
-          description = "PDF Engines to use for merging files.";
         };
-        convert = mkOption {
-          type = types.listOf (
-            types.enum [
-              "libreoffice-pdfengine"
-            ]
-          );
-          default = [
-            "libreoffice-pdfengine"
-          ];
-          description = "PDF Engines to use for converting files.";
-        };
+
         readMetadata = mkOption {
-          type = types.listOf (
-            types.enum [
-              "exiftool"
-            ]
-          );
           default = [
             "exiftool"
           ];
+
           description = "PDF Engines to use for reading metadata from files.";
-        };
-        writeMetadata = mkOption {
+
           type = types.listOf (
             types.enum [
               "exiftool"
             ]
           );
+        };
+
+        writeMetadata = mkOption {
           default = [
             "exiftool"
           ];
+
           description = "PDF Engines to use for writing metadata to files.";
+
+          type = types.listOf (
+            types.enum [
+              "exiftool"
+            ]
+          );
         };
-
-        disableRoutes = mkOption {
-          type = types.bool;
-          default = false;
-          description = "Disable routes related to PDF engines.";
-        };
       };
 
-      logLevel = mkOption {
-        type = types.enum [
-          "error"
-          "warn"
-          "info"
-          "debug"
-        ];
-        default = "info";
-        description = "The logging level for Gotenberg.";
+      port = mkOption {
+        default = 3000;
+        description = "Port on which the API should listen.";
+        type = types.port;
       };
 
-      environmentFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "Environment file to load extra environment variables from.";
+      rootPath = mkOption {
+        default = "/";
+        description = "Root path for the Gotenberg API.";
+        type = types.str;
       };
 
-      extraArgs = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = "Any extra command-line flags to pass to the Gotenberg service.";
+      timeout = mkOption {
+        default = "30s";
+        description = "Timeout for API requests.";
+        type = types.nullOr types.str;
       };
     };
   };
@@ -269,6 +285,7 @@ in
     assertions = [
       {
         assertion = cfg.enableBasicAuth -> cfg.environmentFile != null;
+
         message = ''
           When enabling HTTP Basic Authentication with `services.gotenberg.enableBasicAuth`,
           you must provide an environment file via `services.gotenberg.environmentFile` with the appropriate environment variables set in it.
@@ -278,6 +295,7 @@ in
       }
       {
         assertion = !(lib.isList cfg.pdfEngines);
+
         message = ''
           Setting `services.gotenberg.pdfEngines` to a list is now deprecated.
           Use the new `pdfEngines.mergeEngines`, `pdfEngines.convertEngines`, `pdfEngines.readMetadataEngines`, and `pdfEngines.writeMetadataEngines` settings instead.
@@ -288,36 +306,33 @@ in
     ];
 
     systemd.services.gotenberg = {
-      description = "Gotenberg API server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      path = [ cfg.package ];
+      description = "Gotenberg API server";
+
       environment = {
-        LIBREOFFICE_BIN_PATH = "${cfg.libreoffice.package}/lib/libreoffice/program/soffice.bin";
         CHROMIUM_BIN_PATH = lib.getExe cfg.chromium.package;
+
         FONTCONFIG_FILE = pkgs.makeFontsConf {
           fontDirectories = [ pkgs.liberation_ttf_v2 ] ++ cfg.extraFontPackages;
         };
+
         # Needed for LibreOffice to work correctly.
         # https://github.com/NixOS/nixpkgs/issues/349123#issuecomment-2418330936
         HOME = "/run/gotenberg";
+        LIBREOFFICE_BIN_PATH = "${cfg.libreoffice.package}/lib/libreoffice/program/soffice.bin";
       };
+
+      path = [ cfg.package ];
+
       serviceConfig = {
-        Type = "simple";
         # NOTE: disable to debug chromium crashes or otherwise no coredump is created and forbidden syscalls are not being logged
         DynamicUser = true;
         ExecStart = "${lib.getExe cfg.package} ${lib.escapeShellArgs args}";
-
-        # Needed for LibreOffice to work correctly.
-        # See above issue comment.
-        WorkingDirectory = "/run/gotenberg";
-        RuntimeDirectory = "gotenberg";
-
+        LockPersonality = true;
         # Hardening options
         PrivateDevices = true;
         PrivateIPC = true;
         PrivateUsers = true;
-
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -333,10 +348,11 @@ in
           "AF_INET6"
           "AF_NETLINK"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
-
-        LockPersonality = true;
+        RuntimeDirectory = "gotenberg";
+        SystemCallArchitectures = "native";
 
         SystemCallFilter = [
           "@sandbox"
@@ -345,11 +361,16 @@ in
           "@pkey" # required by chromium or it crashes
           "mincore"
         ];
-        SystemCallArchitectures = "native";
 
+        Type = "simple";
         UMask = 77;
+        # Needed for LibreOffice to work correctly.
+        # See above issue comment.
+        WorkingDirectory = "/run/gotenberg";
       }
       // optionalAttrs (cfg.environmentFile != null) { EnvironmentFile = cfg.environmentFile; };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

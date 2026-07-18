@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,8 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-B2TvCIBqgdTpQApmQkO2COIarqmgF9mhZ0HG5aFgVhY=";
 
-  modRoot = "./cmd/chroma";
-
   # substitute version info as done in goreleaser builds
   ldflags = [
     "-X=main.version=${finalAttrs.version}"
@@ -26,9 +24,11 @@ buildGoModule (finalAttrs: {
     "-X=main.date=1970-01-01T00:00:00Z"
   ];
 
+  modRoot = "./cmd/chroma";
+
   meta = {
-    homepage = "https://github.com/alecthomas/chroma";
     description = "General purpose syntax highlighter in pure Go";
+    homepage = "https://github.com/alecthomas/chroma";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ miniharinn ];
     mainProgram = "chroma";

@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  cmake-lint,
   python3Packages,
   testers,
-  cmake-lint,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cmake-lint";
   version = "1.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cmake-lint";
@@ -18,14 +17,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-/OuWwerBlJynEibaYo+jkLpHt4x9GZrqMRJNxgrDBlM=";
   };
 
-  build-system = [ python3Packages.setuptools ];
-
-  pythonImportsCheck = [ "cmakelint" ];
-
   nativeCheckInputs = [
     python3Packages.pytestCheckHook
     python3Packages.pytest-cov-stub
   ];
+
+  build-system = [ python3Packages.setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "cmakelint" ];
 
   passthru.tests = {
     version = testers.testVersion { package = cmake-lint; };

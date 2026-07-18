@@ -7,13 +7,13 @@
 buildPythonPackage rec {
   pname = "simple-rlp";
   version = "0.1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-LfHSt2nwoBd9JiMauL4W5l41RrF7sKmkkO/TUXwIKHY=";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "rlp" ];
 
   meta = {

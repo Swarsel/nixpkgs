@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   bzip2,
   xz,
   zlib,
@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "jkbonfield";
     repo = "io_lib";
     tag = "io_lib-" + builtins.replaceStrings [ "." ] [ "-" ] finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-X96gFrefH2NAp4+fvVLXHP9FbF04gQOWLm/tAFJPgR8=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -26,12 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
     ./libstaden-install-config-header.patch
   ];
 
+  nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     bzip2
     xz
     zlib
   ];
-  nativeBuildInputs = [ autoreconfHook ];
 
   # autoreconfHook does not descend into htscodecs folder
   preAutoreconf = ''
@@ -43,13 +44,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "C library for reading/writing various DNA sequence formats";
     homepage = "https://staden.sourceforge.net";
-    downloadPage = "https://github.com/jkbonfield/io_lib/releases";
     changelog = "https://github.com/jkbonfield/io_lib/blob/${finalAttrs.src.rev}/CHANGES";
+
     license = with lib.licenses; [
       bsd3
       free
     ];
-    platforms = lib.platforms.all;
+
     maintainers = [ lib.maintainers.kupac ];
+    platforms = lib.platforms.all;
+    downloadPage = "https://github.com/jkbonfield/io_lib/releases";
   };
 })

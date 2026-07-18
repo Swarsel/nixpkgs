@@ -1,19 +1,19 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
+  buildPlatform,
   coreutils,
+  diffutils,
+  gawk,
+  gnugrep,
   gnumake,
   gnupatch,
   gnused,
-  gnugrep,
-  gawk,
-  diffutils,
   gnutar,
-  xz,
+  hostPlatform,
   tinycc,
+  xz,
 }:
 
 let

@@ -1,6 +1,6 @@
 {
-  fetchzip,
   lib,
+  fetchzip,
 }:
 let
   /*
@@ -11,19 +11,20 @@ let
   version = "41.5.0";
 in
 (fetchzip {
-  url = "https://github.com/castlabs/electron-releases/releases/download/v${version}+wvcus/electron-v${version}+wvcus-linux-x64.zip";
   hash = "sha256-LjM80c48AzEwoU8h07qUELTV5jjQeApanaoPZ/szdag=";
   stripRoot = false;
+  url = "https://github.com/castlabs/electron-releases/releases/download/v${version}+wvcus/electron-v${version}+wvcus-linux-x64.zip";
 
 }).overrideAttrs
   (
     final: _: {
-      name = "castlabs-electron-${version}";
       inherit version;
       pname = "castlabs-electron";
+      name = "castlabs-electron-${version}";
+
       passthru = {
-        dist = final.finalPackage.outPath;
         src = final.finalPackage;
+        dist = final.finalPackage.outPath;
       };
 
       meta = {

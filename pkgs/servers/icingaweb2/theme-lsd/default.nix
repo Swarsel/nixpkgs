@@ -24,7 +24,7 @@ stdenv.mkDerivation rec {
     description = "Psychadelic theme for IcingaWeb 2";
     homepage = "https://github.com/Mikesch-mp/icingaweb2-theme-lsd";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ das_j ];
+    platforms = lib.platforms.all;
   };
 }

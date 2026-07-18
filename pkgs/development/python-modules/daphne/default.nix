@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   asgiref,
   autobahn,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   hypothesis,
   pytest-asyncio,
   pytestCheckHook,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "daphne";
   version = "4.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django";
@@ -24,6 +23,16 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-i0BwZCpMZW6WXK94FSvlEheXHUzXviCBEew6AbkLkpk=";
   };
+
+  # Most tests fail on darwin
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    django
+    hypothesis
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,16 +43,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ twisted.optional-dependencies.tls;
 
-  nativeCheckInputs = [
-    django
-    hypothesis
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  # Most tests fail on darwin
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
+  pyproject = true;
   pythonImportsCheck = [ "daphne" ];
 
   meta = {

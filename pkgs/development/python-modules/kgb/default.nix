@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "kgb";
   version = "7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "beanbaginc";
@@ -18,11 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-hNJXoUIyrCB9PCWLCmN81F6pBRwZApDR6JWA0adyklw=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "kgb" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "kgb" ];
 
   meta = {
     description = "Python function spy support for unit tests";

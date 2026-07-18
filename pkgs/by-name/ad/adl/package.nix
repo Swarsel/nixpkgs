@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
   animdl,
   frece,
   fzf,
+  makeWrapper,
   mpv,
   perl,
+  stdenvNoCC,
   trackma,
   ueberzug,
 }:
@@ -35,8 +35,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ueberzug
   ];
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/bin
     cp $src/adl $out/bin
@@ -44,12 +42,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath finalAttrs.buildInputs}
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/RaitaroH/adl";
     description = "Popcorn anime scraper/downloader + trackma wrapper";
+    homepage = "https://github.com/RaitaroH/adl";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ weathercold ];
+    platforms = lib.platforms.linux;
     mainProgram = "adl";
   };
 })

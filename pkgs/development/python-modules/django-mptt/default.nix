@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   django,
   django-js-asset,
+  hatchling,
   model-bakery,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "django-mptt";
   version = "0.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-mptt";
@@ -21,15 +20,6 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-UJQwjOde0DkG/Pa/pd2htnp4KEn5KwYAo8GP5A7/h+I=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    django
-    django-js-asset
-  ];
-
-  pythonImportsCheck = [ "mptt" ];
 
   nativeCheckInputs = [
     model-bakery
@@ -42,10 +32,20 @@ buildPythonPackage rec {
     export PYTHONPATH=$(pwd)/tests:$PYTHONPATH
   '';
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    django
+    django-js-asset
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mptt" ];
+
   meta = {
     description = "Utilities for implementing a modified pre-order traversal tree in Django";
     homepage = "https://github.com/django-mptt/django-mptt";
-    maintainers = with lib.maintainers; [ hexa ];
     license = with lib.licenses; [ mit ];
+    maintainers = with lib.maintainers; [ hexa ];
   };
 }

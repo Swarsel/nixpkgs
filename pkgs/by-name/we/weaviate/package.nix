@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -18,7 +18,9 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-MxCR1Owy0tOYU2GGHbxI9STfT5ZitsZGbI0ttYuFeAQ=";
 
-  subPackages = [ "cmd/weaviate-server" ];
+  postInstall = ''
+    ln -s $out/bin/weaviate-server $out/bin/weaviate
+  '';
 
   ldflags = [
     "-w"
@@ -26,10 +28,7 @@ buildGoModule (finalAttrs: {
     "-static"
   ];
 
-  postInstall = ''
-    ln -s $out/bin/weaviate-server $out/bin/weaviate
-  '';
-
+  subPackages = [ "cmd/weaviate-server" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

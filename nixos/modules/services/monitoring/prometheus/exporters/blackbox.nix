@@ -37,8 +37,8 @@ let
     file:
     pkgs.runCommand "checked-blackbox-exporter.conf"
       {
-        preferLocalBuild = true;
         nativeBuildInputs = [ pkgs.buildPackages.prometheus-blackbox-exporter ];
+        preferLocalBuild = true;
       }
       ''
         ln -s ${coerceConfigFile file} $out
@@ -46,24 +46,29 @@ let
       '';
 in
 {
-  port = 9115;
   extraOpts = {
     configFile = mkOption {
-      type = types.path;
       description = ''
         Path to configuration file.
       '';
+
+      type = types.path;
     };
+
     enableConfigCheck = mkOption {
-      type = types.bool;
       default = true;
+
       description = ''
         Whether to run a correctness check for the configuration file. This depends
         on the configuration file residing in the nix-store. Paths passed as string will
         be copied to the store.
       '';
+
+      type = types.bool;
     };
   };
+
+  port = 9115;
 
   serviceOpts =
     let
@@ -73,13 +78,14 @@ in
     {
       serviceConfig = {
         AmbientCapabilities = [ "CAP_NET_RAW" ]; # for ping probes
+        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
         ExecStart = ''
           ${pkgs.prometheus-blackbox-exporter}/bin/blackbox_exporter \
             --web.listen-address ${cfg.listenAddress}:${toString cfg.port} \
             --config.file ${escapeShellArg adjustedConfigFile} \
             ${concatStringsSep " \\\n  " cfg.extraFlags}
         '';
-        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
       };
     };
 }

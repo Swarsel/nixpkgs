@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "attrdict";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,13 +26,11 @@ buildPythonPackage rec {
       --replace-fail "from collections" "from collections.abc"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
   # Tests are not shipped and source is not tagged
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
   pythonImportsCheck = [ "attrdict" ];
 
   meta = {

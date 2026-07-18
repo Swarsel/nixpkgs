@@ -1,61 +1,35 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   click,
+  docker-compose,
+  # passthru
+  gitUpdater,
+  # build-system
+  hatchling,
   httpx,
+  langgraph,
   langgraph-runtime-inmem,
   langgraph-sdk,
-  langgraph,
   pathspec,
-  python-dotenv,
-
   # testing
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
-  docker-compose,
-
-  # passthru
-  gitUpdater,
+  python-dotenv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langgraph-cli";
   version = "0.4.30";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
     repo = "langgraph";
     tag = "cli==${finalAttrs.version}";
     hash = "sha256-wemTtMT8UbpEsGzf0fMnXdhJv0oTrG/TqEu6HhFN6nc=";
-  };
-
-  sourceRoot = "${finalAttrs.src.name}/libs/cli";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    click
-    httpx
-    langgraph-sdk
-    pathspec
-    python-dotenv
-  ];
-
-  optional-dependencies = {
-    "inmem" = [
-      langgraph
-      langgraph-runtime-inmem
-      python-dotenv
-    ];
   };
 
   nativeCheckInputs = [
@@ -66,9 +40,16 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  enabledTestPaths = [ "tests/unit_tests" ];
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
 
-  pythonImportsCheck = [ "langgraph_cli" ];
+  dependencies = [
+    click
+    httpx
+    langgraph-sdk
+    pathspec
+    python-dotenv
+  ];
 
   disabledTests = [
     # Flaky tests that generate a Docker configuration then compare to exact text
@@ -88,12 +69,27 @@ buildPythonPackage (finalAttrs: {
     "test_build_command_shows_wolfi_warning"
   ];
 
+  enabledTestPaths = [ "tests/unit_tests" ];
+
+  optional-dependencies = {
+    "inmem" = [
+      langgraph
+      langgraph-runtime-inmem
+      python-dotenv
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "langgraph_cli" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/cli";
+
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "cli==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "cli==";
     };
   };
 
@@ -101,8 +97,8 @@ buildPythonPackage (finalAttrs: {
     description = "Official CLI for LangGraph API";
     homepage = "https://github.com/langchain-ai/langgraph/tree/main/libs/cli";
     changelog = "https://github.com/langchain-ai/langgraph/releases/tag/${finalAttrs.src.tag}";
-    mainProgram = "langgraph";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sarahec ];
+    mainProgram = "langgraph";
   };
 })

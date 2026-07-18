@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycryptodome,
-  requests,
-  setuptools,
-  websocket-client,
   # dependencies for tests
   pytest-cov-stub,
-  sure,
-  responses,
   pytestCheckHook,
+  requests,
+  responses,
+  setuptools,
+  sure,
+  websocket-client,
 }:
 
 buildPythonPackage rec {
   pname = "binance-connector";
   version = "3.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "binance";
@@ -24,6 +23,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-8O73+fli0HNbvGBcyg79ZGOTQvL0TF5SCfogI6btlrA=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    sure
+    responses
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -33,16 +39,10 @@ buildPythonPackage rec {
     websocket-client
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    sure
-    responses
-    pytestCheckHook
-  ];
-
   # pytestCheckHook attempts to run examples directory, which requires
   # network access
   disabledTestPaths = [ "examples/" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "binance.spot"

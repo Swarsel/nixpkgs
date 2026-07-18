@@ -37,18 +37,18 @@ in
   options = {
     services.glpiAgent = {
       enable = lib.mkEnableOption "GLPI Agent";
-
       package = lib.mkPackageOption pkgs "glpi-agent" { };
 
       settings = lib.mkOption {
-        type = settingsType;
         default = { };
+
         description = ''
           GLPI Agent configuration options.
           See <https://glpi-agent.readthedocs.io/en/latest/configuration.html> for all available options.
 
           The 'server' option is mandatory and must point to your GLPI server.
         '';
+
         example = lib.literalExpression ''
           {
             server = [ "https://glpi.example.com/inventory" ];
@@ -59,12 +59,14 @@ in
             "no-category" = [ "printer" "software" ];
           }
         '';
+
+        type = settingsType;
       };
 
       stateDir = lib.mkOption {
-        type = lib.types.str;
         default = "/var/lib/glpi-agent";
         description = "Directory where GLPI Agent stores its state.";
+        type = lib.types.str;
       };
     };
   };
@@ -78,11 +80,14 @@ in
     ];
 
     systemd.services.glpi-agent = {
-      description = "GLPI Agent";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "GLPI Agent";
 
       serviceConfig = {
+        AmbientCapabilities = [ "CAP_SYS_ADMIN" ];
+        CapabilityBoundingSet = [ "CAP_SYS_ADMIN" ];
+        DynamicUser = true;
+
         ExecStart = lib.escapeShellArgs [
           "${lib.getExe cfg.package}"
           "--conf-file"
@@ -93,16 +98,12 @@ in
           "--no-fork"
         ];
 
-        DynamicUser = true;
-        StateDirectory = "glpi-agent";
-        CapabilityBoundingSet = [ "CAP_SYS_ADMIN" ];
-        AmbientCapabilities = [ "CAP_SYS_ADMIN" ];
-
         LimitCORE = 0;
         LimitNOFILE = 65535;
         LockPersonality = true;
         MemorySwapMax = 0;
         MemoryZSwapMax = 0;
+        NoNewPrivileges = true;
         PrivateTmp = true;
         ProcSubset = "pid";
         ProtectClock = true;
@@ -116,23 +117,29 @@ in
         ProtectSystem = "strict";
         Restart = "on-failure";
         RestartSec = "10s";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
           "AF_NETLINK"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        StateDirectory = "glpi-agent";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "@resources"
           "~@privileged"
         ];
-        NoNewPrivileges = true;
+
         UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

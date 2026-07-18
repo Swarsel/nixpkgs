@@ -1,30 +1,30 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  makeWrapper,
-  curly,
-  fmt,
+  alcotest,
+  astring,
   bos,
+  buildDunePackage,
+  bzip2,
   cmdliner,
+  coreutils,
+  curly,
+  findlib,
+  fmt,
+  fpath,
+  gitMinimal,
+  gnutar,
+  logs,
+  makeWrapper,
+  mercurial,
+  odoc,
+  opam,
+  opam-core,
+  opam-format,
+  opam-state,
   re,
   rresult,
-  logs,
-  fpath,
-  odoc,
-  opam-format,
-  opam-core,
-  opam-state,
   yojson,
-  astring,
-  opam,
-  gitMinimal,
-  findlib,
-  mercurial,
-  bzip2,
-  gnutar,
-  coreutils,
-  alcotest,
 }:
 
 # don't include dune as runtime dep, so user can
@@ -49,7 +49,14 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-A0es0mk6aEMdKvweVfffkaezfgIi1DWAr3dLmNwGOTo=";
   };
 
+  postPatch = ''
+    # remove check for curl in PATH, since curly is patched
+    # to have a fixed path to the binary in nix store
+    sed -i '/must_exist (Cmd\.v "curl"/d' lib/github.ml
+  '';
+
   nativeBuildInputs = [ makeWrapper ] ++ runtimeInputs;
+
   buildInputs = [
     curly
     fmt
@@ -66,18 +73,15 @@ buildDunePackage (finalAttrs: {
     astring
     fpath
   ];
+
+  doCheck = true;
+
   nativeCheckInputs = [
     odoc
     gitMinimal
   ];
-  checkInputs = [ alcotest ] ++ runtimeInputs;
-  doCheck = true;
 
-  postPatch = ''
-    # remove check for curl in PATH, since curly is patched
-    # to have a fixed path to the binary in nix store
-    sed -i '/must_exist (Cmd\.v "curl"/d' lib/github.ml
-  '';
+  checkInputs = [ alcotest ] ++ runtimeInputs;
 
   preCheck = ''
     export HOME=$TMPDIR
@@ -96,10 +100,10 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Release dune packages in opam";
-    mainProgram = "dune-release";
     homepage = "https://github.com/ocamllabs/dune-release";
     changelog = "https://github.com/tarides/dune-release/blob/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ sternenseemann ];
+    mainProgram = "dune-release";
   };
 })

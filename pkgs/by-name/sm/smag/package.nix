@@ -19,14 +19,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Easily create graphs from cli commands and view them in the terminal";
+
     longDescription = ''
       Easily create graphs from cli commands and view them in the terminal.
       Like the watch command but with a graph of the output.
     '';
+
     homepage = "https://github.com/aantn/smag";
-    license = lib.licenses.mit;
     changelog = "https://github.com/aantn/smag/releases/tag/v${finalAttrs.version}";
-    mainProgram = "smag";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zebreus ];
+    mainProgram = "smag";
   };
 })

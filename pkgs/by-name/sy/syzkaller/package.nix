@@ -7,9 +7,9 @@
 }:
 let
   cpus = {
-    "x86_64" = "amd64";
-    "i686" = "386";
     "aarch64" = "arm64";
+    "i686" = "386";
+    "x86_64" = "amd64";
   };
   targetSystem = lib.systems.parse.mkSystemFromString stdenv.targetPlatform.system;
   targetOS = targetSystem.kernel.name;
@@ -27,11 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hXYyomTPR7T2zJi49xylQdEXALYV6IbNXdHZo/JHqz8=";
   };
 
-  nativeBuildInputs = [
-    go
-    ncurses
-  ];
-
   postPatch =
     let
       commitDate = lib.concatStringsSep "" (
@@ -47,6 +42,17 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail './bin' "$out/bin"
     '';
 
+  nativeBuildInputs = [
+    go
+    ncurses
+  ];
+
+  makeFlags = [
+    "TARGETOS=${targetOS}"
+    "TARGETVMARCH=${targetVMArch}"
+    "TARGETARCH=${targetArch}"
+  ];
+
   configurePhase = ''
     runHook preConfigure
 
@@ -57,12 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postConfigure
   '';
-
-  makeFlags = [
-    "TARGETOS=${targetOS}"
-    "TARGETVMARCH=${targetVMArch}"
-    "TARGETARCH=${targetArch}"
-  ];
 
   dontInstall = true;
 

@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  openssl,
-  zlib,
-  zstd,
-  pkg-config,
-  python3,
+  curlMinimal,
+  libgit2,
   libx11,
   nghttp2,
-  libgit2,
-  withDefaultFeatures ? true,
-  additionalFeatures ? (p: p),
   nix-update-script,
-  curlMinimal,
+  openssl,
+  pkg-config,
+  python3,
+  rustPlatform,
   versionCheckHook,
   writableTmpDirAsHomeHook,
+  zlib,
+  zstd,
+  additionalFeatures ? (p: p),
+  withDefaultFeatures ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -32,8 +32,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-vLWfaci1lAPUXZJU2bfUvVNnMqFr6cMyX+R0aDWvRss=";
   };
-
-  cargoHash = "sha256-3+H1VuqdLxjcPTzkrpNiBmHbWG8g4rr3WuFFQhyyMtI=";
 
   nativeBuildInputs = [
     pkg-config
@@ -51,8 +49,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libgit2
   ];
 
-  buildNoDefaultFeatures = !withDefaultFeatures;
-  buildFeatures = additionalFeatures [ ];
+  cargoHash = "sha256-3+H1VuqdLxjcPTzkrpNiBmHbWG8g4rr3WuFFQhyyMtI=";
+
+  nativeCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  checkInputs =
+    lib.optionals stdenv.hostPlatform.isDarwin [ curlMinimal ]
+    ++ lib.optionals stdenv.hostPlatform.isLinux [ openssl ];
 
   preCheck = ''
     export NU_TEST_LOCALE_OVERRIDE="en_US.UTF-8"
@@ -91,13 +97,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       runHook postCheck
     '';
 
-  nativeCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
-  checkInputs =
-    lib.optionals stdenv.hostPlatform.isDarwin [ curlMinimal ]
-    ++ lib.optionals stdenv.hostPlatform.isLinux [ openssl ];
+  buildFeatures = additionalFeatures [ ];
+  buildNoDefaultFeatures = !withDefaultFeatures;
 
   passthru = {
     shellPath = "/bin/nu";
@@ -108,11 +109,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Modern shell written in Rust";
     homepage = "https://www.nushell.sh/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       johntitor
       joaquintrinanes
       ryan4yin
     ];
+
     mainProgram = "nu";
   };
 })

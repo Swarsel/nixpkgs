@@ -1,10 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  unzip,
-
+  fetchFromGitHub,
   SDL2,
   cmake,
   curl,
@@ -30,23 +28,20 @@
   openssl,
   pkg-config,
   speexdsp,
+  unzip,
   versionCheckHook,
   zlib,
   zstd,
-
-  withDiscordRpc ? false,
-  verifyAssets ? true,
   # Paths to RCT1 and RCT2 installs can be specified to have them added as a wrapped argument
   rct1Path ? null,
   rct2Path ? null,
+  verifyAssets ? true,
+  withDiscordRpc ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "openrct2";
   version = "0.5.3";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "OpenRCT2";
@@ -55,33 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-my7fPBD5N0bO1yPaxwHUFqw6TvayQs10kcAX/NqPpIg=";
   };
 
-  passthru = {
-    updateScript = ./update.sh;
-
-    objects-version = "1.7.10";
-    openmusic-version = "1.6.1";
-    opensfx-version = "1.0.6";
-    title-sequences-version = "0.4.26";
-
-    assets = {
-      objects = fetchurl {
-        url = "https://github.com/OpenRCT2/objects/releases/download/v${finalAttrs.passthru.objects-version}/objects.zip";
-        hash = "sha256-9IO+Jm3CIHe6hRe78y/+OIw1Q7LuWF4K+9QQLbRSgCE=";
-      };
-      openmusic = fetchurl {
-        url = "https://github.com/OpenRCT2/OpenMusic/releases/download/v${finalAttrs.passthru.openmusic-version}/openmusic.zip";
-        hash = "sha256-mUs1DTsYDuHLlhn+J/frrjoaUjKEDEvUeonzP6id4aE=";
-      };
-      opensfx = fetchurl {
-        url = "https://github.com/OpenRCT2/OpenSoundEffects/releases/download/v${finalAttrs.passthru.opensfx-version}/opensound.zip";
-        hash = "sha256-BrkPPhnCFnUt9EHVUbJqnj4bp3Vb3SECUEtzv5k2CL4=";
-      };
-      title-sequences = fetchurl {
-        url = "https://github.com/OpenRCT2/title-sequences/releases/download/v${finalAttrs.passthru.title-sequences-version}/title-sequences.zip";
-        hash = "sha256-2ruXh7FXY0L8pN2fZLP4z6BKfmzpwruWEPR7dikFyFg=";
-      };
-    };
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -126,14 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "DISABLE_DISCORD_RPC" (!withDiscordRpc))
   ];
 
-  postUnpack = ''
-    mkdir -p $sourceRoot/data/{object,sequence}
-    unzip -o ${finalAttrs.passthru.assets.objects} -d $sourceRoot/data/object
-    unzip -o ${finalAttrs.passthru.assets.openmusic} -d $sourceRoot/data
-    unzip -o ${finalAttrs.passthru.assets.opensfx} -d $sourceRoot/data
-    unzip -o ${finalAttrs.passthru.assets.title-sequences} -d $sourceRoot/data/sequence
-  '';
-
   preConfigure =
     # Verify that the correct version of each third party repository is used.
     lib.optionalString verifyAssets (
@@ -145,16 +106,56 @@ stdenv.mkDerivation (finalAttrs: {
       )
     );
 
-  doInstallCheck = true;
-
   postInstall = ''
     wrapProgram $out/bin/openrct2 \
       ${lib.optionalString (rct1Path != null) "--add-flags '--rct1-data-path=\"${rct1Path}\"'"} \
       ${lib.optionalString (rct2Path != null) "--add-flags '--rct2-data-path=\"${rct2Path}\"'"}
   '';
 
+  doInstallCheck = true;
+  __structuredAttrs = true;
+
+  postUnpack = ''
+    mkdir -p $sourceRoot/data/{object,sequence}
+    unzip -o ${finalAttrs.passthru.assets.objects} -d $sourceRoot/data/object
+    unzip -o ${finalAttrs.passthru.assets.openmusic} -d $sourceRoot/data
+    unzip -o ${finalAttrs.passthru.assets.opensfx} -d $sourceRoot/data
+    unzip -o ${finalAttrs.passthru.assets.title-sequences} -d $sourceRoot/data/sequence
+  '';
+
+  passthru = {
+    assets = {
+      objects = fetchurl {
+        hash = "sha256-9IO+Jm3CIHe6hRe78y/+OIw1Q7LuWF4K+9QQLbRSgCE=";
+        url = "https://github.com/OpenRCT2/objects/releases/download/v${finalAttrs.passthru.objects-version}/objects.zip";
+      };
+
+      openmusic = fetchurl {
+        hash = "sha256-mUs1DTsYDuHLlhn+J/frrjoaUjKEDEvUeonzP6id4aE=";
+        url = "https://github.com/OpenRCT2/OpenMusic/releases/download/v${finalAttrs.passthru.openmusic-version}/openmusic.zip";
+      };
+
+      opensfx = fetchurl {
+        hash = "sha256-BrkPPhnCFnUt9EHVUbJqnj4bp3Vb3SECUEtzv5k2CL4=";
+        url = "https://github.com/OpenRCT2/OpenSoundEffects/releases/download/v${finalAttrs.passthru.opensfx-version}/opensound.zip";
+      };
+
+      title-sequences = fetchurl {
+        hash = "sha256-2ruXh7FXY0L8pN2fZLP4z6BKfmzpwruWEPR7dikFyFg=";
+        url = "https://github.com/OpenRCT2/title-sequences/releases/download/v${finalAttrs.passthru.title-sequences-version}/title-sequences.zip";
+      };
+    };
+
+    objects-version = "1.7.10";
+    openmusic-version = "1.6.1";
+    opensfx-version = "1.0.6";
+    title-sequences-version = "0.4.26";
+    updateScript = ./update.sh;
+  };
+
   meta = {
     description = "Open source re-implementation of RollerCoaster Tycoon 2";
+
     longDescription = ''
       OpenRCT2 is an open source re-implementation of RollerCoaster Tycoon 2, a
       construction and management simulation video game that simulates amusement
@@ -174,16 +175,19 @@ stdenv.mkDerivation (finalAttrs: {
       RCT2 data on first launch. For RCT1, you will then need to go to
       the game settings and specify the path to the data directory.
     '';
+
     homepage = "https://openrct2.io";
     changelog = "https://github.com/OpenRCT2/OpenRCT2/releases/tag/v${finalAttrs.version}";
-    downloadPage = "https://github.com/OpenRCT2/OpenRCT2/releases";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       keenanweaver
       kylerisse
     ];
-    mainProgram = "openrct2";
+
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+    mainProgram = "openrct2";
+    downloadPage = "https://github.com/OpenRCT2/OpenRCT2/releases";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cyclopts,
   matplotlib,
   numpy,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pyvista";
   version = "0.48.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyvista";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     hash = "sha256-VF84EMS/FnLl0y1LpWaYosyG0qEWI/QghZQq32ktlLg=";
   };
 
+  # Fatal Python error: Aborted
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,9 +39,7 @@ buildPythonPackage rec {
     vtk
   ];
 
-  # Fatal Python error: Aborted
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyvista" ];
 
   meta = {

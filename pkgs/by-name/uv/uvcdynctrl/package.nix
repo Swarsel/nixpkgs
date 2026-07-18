@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libxml2,
+  pkg-config,
   udevCheckHook,
 }:
 
 stdenv.mkDerivation {
-  version = "0.3.0";
   pname = "uvcdynctrl";
+  version = "0.3.0";
 
   src = fetchFromGitHub {
     owner = "cshorler";
@@ -19,12 +19,23 @@ stdenv.mkDerivation {
     sha256 = "0s15xxgdx8lnka7vi8llbf6b0j4rhbjl6yp0qxaihysf890xj73s";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
+    substituteInPlace libwebcam/CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
+    substituteInPlace uvcdynctrl/CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
     udevCheckHook
   ];
+
   buildInputs = [ libxml2 ];
+  doInstallCheck = true;
 
   prePatch = ''
     local fixup_list=(
@@ -38,17 +49,6 @@ stdenv.mkDerivation {
         --replace "/lib/udev" "$out/lib/udev"
     done
   '';
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
-    substituteInPlace libwebcam/CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
-    substituteInPlace uvcdynctrl/CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
-  doInstallCheck = true;
 
   meta = {
     description = "Simple interface for devices supported by the linux UVC driver";

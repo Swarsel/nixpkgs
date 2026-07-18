@@ -18,17 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-j6Y0L6tr7BSoC1RWPE0vzUrIND7CBg3RuGoHzuvJHXI=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-r8vmbZ4oyplqIU6R/6hhcyjoR3E/mOFrB69TrfPYxRI=";
 
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/reteps/dockerfmt/cmd.Version=${finalAttrs.version}"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd dockerfmt \
       --bash <($out/bin/dockerfmt completion bash) \
@@ -38,6 +30,14 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/reteps/dockerfmt/cmd.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ];
   versionCheckProgramArg = "version";
 
   meta = {

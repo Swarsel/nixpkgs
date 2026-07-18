@@ -11,43 +11,17 @@ in
 {
   options.services.microbin = {
     enable = lib.mkEnableOption "MicroBin is a super tiny, feature rich, configurable paste bin web application";
-
     package = lib.mkPackageOption pkgs "microbin" { };
 
-    settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType =
-          with lib.types;
-          attrsOf (oneOf [
-            bool
-            int
-            str
-          ]);
-      };
-      default = { };
-      example = {
-        MICROBIN_PORT = 8080;
-        MICROBIN_HIDE_LOGO = false;
-      };
-      description = ''
-        Additional configuration for MicroBin, see
-        <https://microbin.eu/docs/installation-and-configuration/configuration/>
-        for supported values.
-
-        For secrets use passwordFile option instead.
-      '';
-    };
-
     dataDir = lib.mkOption {
-      type = lib.types.str;
       default = "/var/lib/microbin";
       description = "Default data folder for MicroBin.";
+      type = lib.types.str;
     };
 
     passwordFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
-      example = "/run/secrets/microbin.env";
+
       description = ''
         Path to file containing environment variables.
         Useful for passing down secrets.
@@ -58,6 +32,36 @@ in
          - MICROBIN_ADMIN_PASSWORD
          - MICROBIN_UPLOADER_PASSWORD
       '';
+
+      example = "/run/secrets/microbin.env";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Additional configuration for MicroBin, see
+        <https://microbin.eu/docs/installation-and-configuration/configuration/>
+        for supported values.
+
+        For secrets use passwordFile option instead.
+      '';
+
+      example = {
+        MICROBIN_HIDE_LOGO = false;
+        MICROBIN_PORT = 8080;
+      };
+
+      type = lib.types.submodule {
+        freeformType =
+          with lib.types;
+          attrsOf (oneOf [
+            bool
+            int
+            str
+          ]);
+      };
     };
   };
 
@@ -71,10 +75,11 @@ in
 
     systemd.services.microbin = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       environment = lib.mapAttrs (
         _: v: if lib.isBool v then lib.boolToString v else toString v
       ) cfg.settings;
+
       serviceConfig = {
         DevicePolicy = "closed";
         DynamicUser = true;
@@ -92,10 +97,12 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ReadWritePaths = cfg.dataDir;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         StateDirectory = "microbin";
@@ -103,6 +110,8 @@ in
         SystemCallFilter = [ "@system-service" ];
         WorkingDirectory = cfg.dataDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libpng,
+  pkg-config,
   zlib,
 }:
 
@@ -20,19 +20,20 @@ stdenv.mkDerivation (finalAttrs: {
     ./missing-includes.patch
   ];
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-Wno-error=incompatible-pointer-types"
-  ];
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libpng
     zlib
   ];
 
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-Wno-error=incompatible-pointer-types"
+  ];
+
   meta = {
-    homepage = "https://pngnq.sourceforge.net/";
     description = "PNG quantizer";
+    homepage = "https://pngnq.sourceforge.net/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.linux;

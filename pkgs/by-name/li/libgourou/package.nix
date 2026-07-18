@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
+  curl,
   fetchFromGitea,
+  installShellFiles,
+  libzip,
+  openssl,
   pugixml,
   updfparser,
-  curl,
-  openssl,
-  libzip,
-  installShellFiles,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,23 +15,19 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.8.9";
 
   src = fetchFromGitea {
-    domain = "forge.soutade.fr";
     owner = "soutade";
     repo = "libgourou";
     tag = "v${finalAttrs.version}";
     hash = "sha256-KwDpyWtEsXacCcCbj0QlNucOy/S62NiPocf+G7YINwU=";
+    domain = "forge.soutade.fr";
   };
 
   postPatch = ''
     patchShebangs scripts/setup.sh
   '';
 
-  postConfigure = ''
-    mkdir lib
-    ln -s ${updfparser}/lib lib/updfparser
-  '';
-
   nativeBuildInputs = [ installShellFiles ];
+
   buildInputs = [
     pugixml
     updfparser
@@ -44,6 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
     "BUILD_STATIC=1"
     "BUILD_SHARED=1"
   ];
+
+  postConfigure = ''
+    mkdir lib
+    ln -s ${updfparser}/lib lib/updfparser
+  '';
 
   installPhase = ''
     runHook preInstall

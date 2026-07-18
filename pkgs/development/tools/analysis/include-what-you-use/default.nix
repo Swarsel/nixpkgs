@@ -28,13 +28,12 @@ stdenv.mkDerivation rec {
     llvm
     python3
   ];
+
   buildInputs = with llvmPackages; [
     libclang
     clang-unwrapped
     python3
   ];
-
-  clang = llvmPackages.clang;
 
   cmakeFlags = [ "-DCMAKE_PREFIX_PATH=${llvmPackages.llvm.dev}" ];
 
@@ -51,8 +50,11 @@ stdenv.mkDerivation rec {
     patchShebangs $out/bin/include-what-you-use
   '';
 
+  clang = llvmPackages.clang;
+
   meta = {
     description = "Analyze #includes in C/C++ source files with clang";
+
     longDescription = ''
       For every symbol (type, function variable, or macro) that you use in
       foo.cc, either foo.cc or foo.h should #include a .h file that exports the
@@ -61,11 +63,14 @@ stdenv.mkDerivation rec {
       actually needed for this file (for both .cc and .h files), and by
       replacing #includes with forward-declares when possible.
     '';
+
     homepage = "https://include-what-you-use.org";
     license = lib.licenses.bsd3;
+
     maintainers = [
       lib.maintainers.ja1den
     ];
+
     platforms = lib.platforms.unix;
   };
 }

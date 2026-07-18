@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
-  llm-tools-sqlite,
   llm-echo,
+  llm-tools-sqlite,
   pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-tools-sqlite";
   version = "0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -22,18 +21,16 @@ buildPythonPackage rec {
     hash = "sha256-VAmK4cXzZWTWCU92TwMdhNJPvYPZ88t5BZe8vo60SZY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ llm ];
-
   nativeCheckInputs = [
     llm-echo
     pytestCheckHook
     writableTmpDirAsHomeHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ llm ];
+  pyproject = true;
   pythonImportsCheck = [ "llm_tools_sqlite" ];
-
   passthru.tests = llm.mkPluginTest llm-tools-sqlite;
 
   meta = {

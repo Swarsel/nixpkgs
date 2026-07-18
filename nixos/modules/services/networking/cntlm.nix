@@ -38,34 +38,61 @@ in
 
     enable = lib.mkEnableOption "cntlm, which starts a local proxy";
 
-    username = lib.mkOption {
-      type = lib.types.str;
-      description = ''
-        Proxy account name, without the possibility to include domain name ('at' sign is interpreted literally).
-      '';
+    configText = lib.mkOption {
+      default = "";
+      description = "Verbatim contents of {file}`cntlm.conf`.";
+      type = lib.types.lines;
     };
 
     domain = lib.mkOption {
-      type = lib.types.str;
       description = "Proxy account domain/workgroup name.";
+      type = lib.types.str;
+    };
+
+    extraConfig = lib.mkOption {
+      default = "";
+      description = "Additional config appended to the end of the generated {file}`cntlm.conf`.";
+      type = lib.types.lines;
+    };
+
+    netbios_hostname = lib.mkOption {
+      default = "";
+
+      description = ''
+        The hostname of your machine.
+      '';
+
+      type = lib.types.str;
+    };
+
+    noproxy = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        A list of domains where the proxy is skipped.
+      '';
+
+      example = [
+        "*.example.com"
+        "example.com"
+      ];
+
+      type = lib.types.listOf lib.types.str;
     };
 
     password = lib.mkOption {
       default = "/etc/cntlm.password";
-      type = lib.types.str;
       description = "Proxy account password. Note: use chmod 0600 on /etc/cntlm.password for security.";
+      type = lib.types.str;
     };
 
-    netbios_hostname = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = ''
-        The hostname of your machine.
-      '';
+    port = lib.mkOption {
+      default = [ 3128 ];
+      description = "Specifies on which ports the cntlm daemon listens.";
+      type = lib.types.listOf lib.types.port;
     };
 
     proxy = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       description = ''
         A list of NTLM/NTLMv2 authenticating HTTP proxies.
 
@@ -73,37 +100,17 @@ in
         number  of  proxies.  Should  one proxy fail, cntlm automatically moves on to the next one. The connect request fails only if the whole
         list of proxies is scanned and (for each request) and found to be invalid. Command-line takes precedence over the configuration file.
       '';
+
       example = [ "proxy.example.com:81" ];
-    };
-
-    noproxy = lib.mkOption {
-      description = ''
-        A list of domains where the proxy is skipped.
-      '';
-      default = [ ];
       type = lib.types.listOf lib.types.str;
-      example = [
-        "*.example.com"
-        "example.com"
-      ];
     };
 
-    port = lib.mkOption {
-      default = [ 3128 ];
-      type = lib.types.listOf lib.types.port;
-      description = "Specifies on which ports the cntlm daemon listens.";
-    };
+    username = lib.mkOption {
+      description = ''
+        Proxy account name, without the possibility to include domain name ('at' sign is interpreted literally).
+      '';
 
-    extraConfig = lib.mkOption {
-      type = lib.types.lines;
-      default = "";
-      description = "Additional config appended to the end of the generated {file}`cntlm.conf`.";
-    };
-
-    configText = lib.mkOption {
-      type = lib.types.lines;
-      default = "";
-      description = "Verbatim contents of {file}`cntlm.conf`.";
+      type = lib.types.str;
     };
 
   };
@@ -112,21 +119,24 @@ in
 
   config = lib.mkIf cfg.enable {
     systemd.services.cntlm = {
-      description = "CNTLM is an NTLM / NTLM Session Response / NTLMv2 authenticating HTTP proxy";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "CNTLM is an NTLM / NTLM Session Response / NTLMv2 authenticating HTTP proxy";
+
       serviceConfig = {
-        User = "cntlm";
         ExecStart = ''
           ${pkgs.cntlm}/bin/cntlm -U cntlm -c ${configFile} -v -f
         '';
+
+        User = "cntlm";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.users.cntlm = {
-      name = "cntlm";
       description = "cntlm system-wide daemon";
       isSystemUser = true;
+      name = "cntlm";
     };
   };
 }

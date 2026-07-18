@@ -1,21 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docutils,
-  fetchFromGitHub,
-  setuptools,
   geographiclib,
   pytest7CheckHook,
   pythonAtLeast,
   pytz,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "geopy";
   version = "2.4.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "geopy";
@@ -24,32 +21,30 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-mlOXDEtYry1IUAZWrP2FuY/CGliUnCPYLULnLNN0n4Y=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ geographiclib ];
-
   nativeCheckInputs = [
     docutils
     pytest7CheckHook
     pytz
   ];
 
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ geographiclib ];
+  disabledTestPaths = lib.optionals (pythonAtLeast "3.12") [ "test/test_init.py" ];
+
   disabledTests = [
     # ignore --skip-tests-requiring-internet flag
     "test_user_agent_default"
   ];
 
-  disabledTestPaths = lib.optionals (pythonAtLeast "3.12") [ "test/test_init.py" ];
-
+  pyproject = true;
   pytestFlags = [ "--skip-tests-requiring-internet" ];
-
   pythonImportsCheck = [ "geopy" ];
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    homepage = "https://github.com/geopy/geopy";
     description = "Python Geocoding Toolbox";
+    homepage = "https://github.com/geopy/geopy";
     changelog = "https://github.com/geopy/geopy/releases/tag/${finalAttrs.version}";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];

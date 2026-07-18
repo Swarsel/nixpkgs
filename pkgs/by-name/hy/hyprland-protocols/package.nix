@@ -1,7 +1,7 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
+  gcc15Stdenv,
   meson,
   ninja,
 }:
@@ -22,10 +22,10 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/hyprwm/hyprland-protocols";
     description = "Wayland protocol extensions for Hyprland";
+    homepage = "https://github.com/hyprwm/hyprland-protocols";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.hyprland ];
   };
 })

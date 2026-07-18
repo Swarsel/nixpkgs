@@ -1,15 +1,14 @@
 {
-  buildDunePackage,
-  dns,
-  digestif,
-  base64,
   alcotest,
+  base64,
+  buildDunePackage,
+  digestif,
+  dns,
 }:
 
 buildDunePackage {
-  pname = "dns-tsig";
-
   inherit (dns) version src;
+  pname = "dns-tsig";
 
   propagatedBuildInputs = [
     digestif
@@ -18,6 +17,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
   ];

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   lxml,
   python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "defusedxml";
   version = "0.8.0rc2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tiran";
@@ -18,8 +17,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-X88A5V9uXP3wJQ+olK6pZJT66LP2uCXLK8goa5bPARA=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [ lxml ];
 
@@ -29,12 +26,14 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "defusedxml" ];
 
   meta = {
-    changelog = "https://github.com/tiran/defusedxml/blob/v${version}/CHANGES.txt";
     description = "Python module to defuse XML issues";
     homepage = "https://github.com/tiran/defusedxml";
+    changelog = "https://github.com/tiran/defusedxml/blob/v${version}/CHANGES.txt";
     license = lib.licenses.psfl;
     maintainers = with lib.maintainers; [ fab ];
   };

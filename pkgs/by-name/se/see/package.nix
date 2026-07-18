@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "see";
   version = "0-unstable-2023-03-19";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Textualize";
@@ -25,6 +24,8 @@ python3.pkgs.buildPythonApplication {
     colorama
     toml
   ];
+
+  pyproject = true;
 
   meta = {
     description = "CLI tool to open files in the terminal";

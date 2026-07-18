@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   typing-extensions,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "sensai-utils";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "opcode81";
@@ -19,13 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-E/9pCkSvKeGW1wlO6+YD0glbPrt4aJ7NZ0Kss2VbGdE=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
-  pythonImportsCheck = [ "sensai.util" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
+  pythonImportsCheck = [ "sensai.util" ];
 
   meta = {
     description = "Utilities from sensAI, the Python library for sensible AI";

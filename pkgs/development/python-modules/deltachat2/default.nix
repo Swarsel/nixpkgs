@@ -3,14 +3,13 @@
   fetchFromGitHub,
   buildPythonPackage,
   deltachat-rpc-server,
-  setuptools-scm,
   replaceVars,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "deltachat2";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adbenitez";
@@ -29,13 +28,14 @@ buildPythonPackage rec {
     setuptools-scm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "deltachat2" ];
 
   meta = {
+    inherit (deltachat-rpc-server.meta) maintainers;
     description = "Client library for Delta Chat core JSON-RPC interface";
     homepage = "https://github.com/adbenitez/deltachat2";
     license = lib.licenses.mpl20;
     mainProgram = "deltachat2";
-    inherit (deltachat-rpc-server.meta) maintainers;
   };
 }

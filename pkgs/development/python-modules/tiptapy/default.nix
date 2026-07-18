@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   jinja2,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "tiptapy";
   # github repository does not have version tags
   version = "0.20.0-unstable-2024-06-14";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stckme";
@@ -21,15 +19,16 @@ buildPythonPackage {
     hash = "sha256-y43/901tznZ9N9A4wH3z8FW0mHzNrA8pC+0d1CxdqJM=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
   dependencies = [ jinja2 ];
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tiptapy" ];
 
   meta = {
@@ -37,6 +36,7 @@ buildPythonPackage {
     homepage = "https://github.com/stckme/tiptapy";
     changelog = "https://github.com/stckme/tiptapy/blob/master/CHANGELOG.rst";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       DutchGerman
       friedow

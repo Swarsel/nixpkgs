@@ -25,10 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/ovh/ovh-ttyrec/";
     description = "Terminal interaction recorder and player";
+    homepage = "https://github.com/ovh/ovh-ttyrec/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ zimbatm ];
+    platforms = lib.platforms.all;
   };
 })

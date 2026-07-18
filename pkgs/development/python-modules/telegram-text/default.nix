@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "telegram-text";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SKY-ALIN";
@@ -19,15 +18,15 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Python markup module for Telegram messenger";
-    downloadPage = "https://github.com/SKY-ALIN/telegram-text";
     homepage = "https://telegram-text.alinsky.tech/";
     changelog = "https://github.com/SKY-ALIN/telegram-text/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sikmir ];
+    downloadPage = "https://github.com/SKY-ALIN/telegram-text";
   };
 }

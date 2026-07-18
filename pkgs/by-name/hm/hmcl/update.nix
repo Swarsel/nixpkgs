@@ -1,14 +1,15 @@
 {
-  writeShellApplication,
+  common-updater-scripts,
+  curl,
+  jq,
   nix,
   nix-update,
-  curl,
-  common-updater-scripts,
-  jq,
+  writeShellApplication,
 }:
 
 writeShellApplication {
   name = "update-hmcl";
+
   runtimeInputs = [
     curl
     jq

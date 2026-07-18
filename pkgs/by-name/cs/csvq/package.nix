@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  testers,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   csvq,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,16 +20,16 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-byBYp+iNnnsAXR+T3XmdwaeeBG8oB1EgNkDabzgUC98=";
 
   passthru.tests.version = testers.testVersion {
-    package = csvq;
     version = "csvq version ${finalAttrs.version}";
+    package = csvq;
   };
 
   meta = {
     description = "SQL-like query language for CSV";
-    mainProgram = "csvq";
     homepage = "https://mithrandie.github.io/csvq/";
     changelog = "https://github.com/mithrandie/csvq/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomodachi94 ];
+    mainProgram = "csvq";
   };
 })

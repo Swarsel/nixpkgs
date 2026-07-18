@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   unstableGitUpdater,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule {
   };
 
   vendorHash = "sha256-VlJ2OuHOTqIJeGUm2NbBiz33i8QTxaZnnm0JkVGkw1U=";
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

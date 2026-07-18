@@ -1,13 +1,14 @@
 {
   lib,
-  mkDerivation,
   libjail,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/jexec";
   buildInputs = [
     libjail
   ];
+
+  path = "usr.sbin/jexec";
   meta.mainProgram = "jexec";
   meta.platforms = lib.platforms.freebsd;
 }

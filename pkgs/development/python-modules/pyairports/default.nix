@@ -8,17 +8,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyairports";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-PWCnJ/zk2oG5xjk+qK4LM9Z7N+zjRN/8hj90njrWK80=";
   };
 
-  build-system = [ setuptools ];
-
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyairports" ];
 
   meta = {

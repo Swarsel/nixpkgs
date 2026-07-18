@@ -17,7 +17,9 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "06kg057vwkvafnk69m9rar4wih3vq4h36wbzwbfc2kndsnn47lfl";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src-qt5";
+  postPatch = ''
+    substituteInPlace qsudo.pro --replace /usr/bin $out/bin
+  '';
 
   nativeBuildInputs = [
     libsForQt5.qmake
@@ -29,16 +31,14 @@ stdenv.mkDerivation (finalAttrs: {
     sudo
   ];
 
-  postPatch = ''
-    substituteInPlace qsudo.pro --replace /usr/bin $out/bin
-  '';
+  sourceRoot = "${finalAttrs.src.name}/src-qt5";
 
   meta = {
     description = "Graphical sudo utility from Project Trident";
-    mainProgram = "qsudo";
     homepage = "https://github.com/project-trident/qsudo";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "qsudo";
   };
 })

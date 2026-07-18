@@ -1,26 +1,23 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
-  wrapGAppsHook4,
-  pkg-config,
-  meson,
-  ninja,
   appstream-glib,
   desktop-file-utils,
   gobject-introspection,
   libadwaita,
-  libportal-gtk4,
   libnotify,
+  libportal-gtk4,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3,
+  wrapGAppsHook4,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "coulr";
   version = "2.2.0";
-
-  pyproject = false;
-  dontWrapGApps = true;
 
   src = fetchFromGitHub {
     owner = "Huluti";
@@ -28,6 +25,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-ATKD2PmNz8QRIqGHEuNNe8ZGjcvAU8qpqQtXWR2JBSA=";
   };
+
+  postPatch = ''
+    patchShebangs build-aux/meson/postinstall.py
+    substituteInPlace build-aux/meson/postinstall.py \
+      --replace-fail gtk-update-icon-cache gtk4-update-icon-cache
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -45,18 +48,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     libnotify
   ];
 
-  dependencies = [ python3.pkgs.pygobject3 ];
-
-  postPatch = ''
-    patchShebangs build-aux/meson/postinstall.py
-    substituteInPlace build-aux/meson/postinstall.py \
-      --replace-fail gtk-update-icon-cache gtk4-update-icon-cache
-  '';
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dependencies = [ python3.pkgs.pygobject3 ];
+  dontWrapGApps = true;
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -65,7 +63,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/Huluti/Coulr/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jaredmontoya ];
-    mainProgram = "coulr";
     platforms = lib.platforms.linux;
+    mainProgram = "coulr";
   };
 })

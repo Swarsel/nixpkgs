@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   multidict,
   pytest-aiohttp,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "aiohttp-sse-client2";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "compat-fork";
@@ -28,6 +27,14 @@ buildPythonPackage rec {
       --replace-fail "pytest-runner" ""
   '';
 
+  # tests access the internet
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,20 +44,13 @@ buildPythonPackage rec {
     yarl
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiohttp_sse_client2" ];
 
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytestCheckHook
-  ];
-
-  # tests access the internet
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/compat-fork/aiohttp-sse-client/blob/${src.rev}/README.rst#fork-changelog";
     description = "Server-Sent Event python client library based on aiohttp";
     homepage = "https://github.com/compat-fork/aiohttp-sse-client";
+    changelog = "https://github.com/compat-fork/aiohttp-sse-client/blob/${src.rev}/README.rst#fork-changelog";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

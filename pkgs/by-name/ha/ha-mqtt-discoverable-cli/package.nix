@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ha-mqtt-discoverable-cli";
   version = "0.25.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "unixorn";
@@ -16,8 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-NCCpx5+EL2JEWzN6M+a9c643PObQzfEuTHKvkljBmjU=";
   };
 
-  pythonRelaxDeps = [ "ha-mqtt-discoverable" ];
-
+  # Project has no real tests
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -25,10 +24,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ha-mqtt-discoverable
   ];
 
-  # Project has no real tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ha_mqtt_discoverable_cli" ];
+  pythonRelaxDeps = [ "ha-mqtt-discoverable" ];
 
   meta = {
     description = "CLI for creating Home Assistant compatible MQTT entities that will be automatically discovered";

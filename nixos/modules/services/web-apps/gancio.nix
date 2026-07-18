@@ -25,141 +25,169 @@ in
 {
   options.services.gancio = {
     enable = mkEnableOption "Gancio, a shared agenda for local communities";
-
     package = mkPackageOption pkgs "gancio" { };
 
+    nginx = mkOption {
+      default = { };
+      description = "Extra configuration for the nginx virtual host of gancio.";
+
+      example = {
+        enableACME = false;
+        forceSSL = false;
+      };
+
+      type = types.submodule (
+        lib.recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) {
+          options.enableACME.default = true;
+          # enable encryption by default,
+          # as sensitive login credentials should not be transmitted in clear text.
+          options.forceSSL.default = true;
+        }
+      );
+    };
+
     plugins = mkOption {
-      type = with types; listOf package;
       default = [ ];
-      example = literalExpression "[ pkgs.gancioPlugins.telegram-bridge ]";
+
       description = ''
         Paths of gancio plugins to activate (linked under $WorkingDirectory/plugins/).
       '';
-    };
 
-    user = mkOption {
-      type = types.str;
-      description = "The user (and PostgreSQL database name) used to run the gancio server";
-      default = "gancio";
+      example = literalExpression "[ pkgs.gancioPlugins.telegram-bridge ]";
+      type = with types; listOf package;
     };
 
     settings = mkOption {
+      description = ''
+        Configuration for Gancio, see <https://gancio.org/install/config> for supported values.
+      '';
+
       type = types.submodule {
-        freeformType = settingsFormat.type;
         options = {
-          hostname = mkOption {
-            type = types.str;
-            description = "The domain name under which the server is reachable.";
-          };
           baseurl = mkOption {
-            type = types.str;
             default = "http${
               lib.optionalString config.services.nginx.virtualHosts."${cfg.settings.hostname}".enableACME "s"
             }://${cfg.settings.hostname}";
+
             defaultText = lib.literalExpression ''"https://''${config.services.gancio.settings.hostname}"'';
-            example = "https://demo.gancio.org/gancio";
             description = "The full URL under which the server is reachable.";
+            example = "https://demo.gancio.org/gancio";
+            type = types.str;
           };
-          server = {
-            socket = mkOption {
-              type = types.path;
-              readOnly = true;
-              default = "/run/gancio/socket";
-              description = ''
-                The unix socket for the gancio server to listen on.
-              '';
-            };
-          };
+
           db = {
+            database = mkOption {
+              default = if cfg.settings.db.dialect == "postgres" then cfg.user else null;
+              defaultText = ''if config.services.gancio.settings.db.dialect == "postgres" then cfg.user else null'';
+
+              description = ''
+                Name of the PostgreSQL database
+              '';
+
+              readOnly = true;
+              type = types.nullOr types.str;
+            };
+
             dialect = mkOption {
+              default = "sqlite";
+
+              description = ''
+                The database dialect to use
+              '';
+
               type = types.enum [
                 "sqlite"
                 "postgres"
               ];
-              default = "sqlite";
-              description = ''
-                The database dialect to use
-              '';
             };
-            storage = mkOption {
-              description = ''
-                Location for the SQLite database.
-              '';
-              readOnly = true;
-              type = types.nullOr types.str;
-              default = if cfg.settings.db.dialect == "sqlite" then "/var/lib/gancio/db.sqlite" else null;
-              defaultText = ''if config.services.gancio.settings.db.dialect == "sqlite" then "/var/lib/gancio/db.sqlite" else null'';
-            };
+
             host = mkOption {
+              default = if cfg.settings.db.dialect == "postgres" then "/run/postgresql" else null;
+              defaultText = ''if config.services.gancio.settings.db.dialect == "postgres" then "/run/postgresql" else null'';
+
               description = ''
                 Connection string for the PostgreSQL database
               '';
+
               readOnly = true;
               type = types.nullOr types.str;
-              default = if cfg.settings.db.dialect == "postgres" then "/run/postgresql" else null;
-              defaultText = ''if config.services.gancio.settings.db.dialect == "postgres" then "/run/postgresql" else null'';
             };
-            database = mkOption {
+
+            storage = mkOption {
+              default = if cfg.settings.db.dialect == "sqlite" then "/var/lib/gancio/db.sqlite" else null;
+              defaultText = ''if config.services.gancio.settings.db.dialect == "sqlite" then "/var/lib/gancio/db.sqlite" else null'';
+
               description = ''
-                Name of the PostgreSQL database
+                Location for the SQLite database.
               '';
+
               readOnly = true;
               type = types.nullOr types.str;
-              default = if cfg.settings.db.dialect == "postgres" then cfg.user else null;
-              defaultText = ''if config.services.gancio.settings.db.dialect == "postgres" then cfg.user else null'';
             };
           };
+
+          hostname = mkOption {
+            description = "The domain name under which the server is reachable.";
+            type = types.str;
+          };
+
           log_level = mkOption {
+            default = "info";
             description = "Gancio log level.";
+
             type = types.enum [
               "debug"
               "info"
               "warning"
               "error"
             ];
-            default = "info";
           };
+
           # FIXME upstream proper journald logging
           log_path = mkOption {
+            default = "/var/log/gancio";
             description = "Directory Gancio logs into";
             readOnly = true;
             type = types.str;
-            default = "/var/log/gancio";
+          };
+
+          server = {
+            socket = mkOption {
+              default = "/run/gancio/socket";
+
+              description = ''
+                The unix socket for the gancio server to listen on.
+              '';
+
+              readOnly = true;
+              type = types.path;
+            };
           };
         };
+
+        freeformType = settingsFormat.type;
       };
-      description = ''
-        Configuration for Gancio, see <https://gancio.org/install/config> for supported values.
-      '';
+    };
+
+    user = mkOption {
+      default = "gancio";
+      description = "The user (and PostgreSQL database name) used to run the gancio server";
+      type = types.str;
     };
 
     userLocale = mkOption {
-      type = with types; attrsOf (attrsOf (attrsOf str));
       default = { };
-      example = {
-        en.register.description = "My new registration page description";
-      };
+
       description = ''
         Override default locales within gancio.
         See [default languages and locales](https://framagit.org/les/gancio/tree/master/locales).
       '';
-    };
 
-    nginx = mkOption {
-      type = types.submodule (
-        lib.recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) {
-          # enable encryption by default,
-          # as sensitive login credentials should not be transmitted in clear text.
-          options.forceSSL.default = true;
-          options.enableACME.default = true;
-        }
-      );
-      default = { };
       example = {
-        enableACME = false;
-        forceSSL = false;
+        en.register.description = "My new registration page description";
       };
-      description = "Extra configuration for the nginx virtual host of gancio.";
+
+      type = with types; attrsOf (attrsOf (attrsOf str));
     };
   };
 
@@ -179,39 +207,52 @@ in
       '')
     ];
 
-    users.users.gancio = lib.mkIf (cfg.user == "gancio") {
-      isSystemUser = true;
-      group = cfg.user;
-      home = "/var/lib/gancio";
-    };
-    users.groups.gancio = lib.mkIf (cfg.user == "gancio") { };
+    services.nginx = {
+      enable = true;
 
-    systemd.tmpfiles.settings."10-gancio" =
-      let
-        rules = {
-          mode = "0755";
-          user = cfg.user;
-          group = config.users.users.${cfg.user}.group;
-        };
-      in
-      {
-        "/var/lib/gancio/user_locale".d = rules;
-        "/var/lib/gancio/plugins".d = rules;
-      };
+      virtualHosts."${cfg.settings.hostname}" = mkMerge [
+        cfg.nginx
+        {
+          locations = {
+            "/" = {
+              index = "index.html";
+              tryFiles = "$uri $uri @proxy";
+            };
+
+            "@proxy" = {
+              proxyPass = "http://unix:${cfg.settings.server.socket}";
+              proxyWebsockets = true;
+              recommendedProxySettings = true;
+            };
+          };
+        }
+      ];
+    };
+
+    services.postgresql = mkIf (cfg.settings.db.dialect == "postgres") {
+      enable = true;
+      ensureDatabases = [ cfg.user ];
+
+      ensureUsers = [
+        {
+          ensureDBOwnership = true;
+          name = cfg.user;
+        }
+      ];
+    };
 
     systemd.services.gancio =
       let
         configFile = settingsFormat.generate "gancio-config.json" cfg.settings;
       in
       {
-        description = "Gancio server";
-        documentation = [ "https://gancio.org/" ];
-
-        wantedBy = [ "multi-user.target" ];
         after = [
           "network.target"
         ]
         ++ optional (cfg.settings.db.dialect == "postgres") "postgresql.target";
+
+        description = "Gancio server";
+        documentation = [ "https://gancio.org/" ];
 
         environment = {
           NODE_ENV = "production";
@@ -238,64 +279,57 @@ in
         '';
 
         serviceConfig = {
+          CapabilityBoundingSet = "";
           ExecStart = "${getExe cfg.package} start ${configFile}";
+          LockPersonality = true;
+          LogsDirectory = "gancio";
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "invisible";
+          RestrictNamespaces = true;
+          # hardening
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          RuntimeDirectory = "gancio";
+          StateDirectory = "gancio";
+          SystemCallArchitectures = "native";
           # set umask so that nginx can write to the server socket
           # FIXME: upstream socket permission configuration in Nuxt
           UMask = "0002";
-          RuntimeDirectory = "gancio";
-          StateDirectory = "gancio";
-          WorkingDirectory = "/var/lib/gancio";
-          LogsDirectory = "gancio";
           User = cfg.user;
-          # hardening
-          RestrictRealtime = true;
-          RestrictNamespaces = true;
-          LockPersonality = true;
-          ProtectKernelModules = true;
-          ProtectKernelTunables = true;
-          ProtectKernelLogs = true;
-          ProtectControlGroups = true;
-          ProtectClock = true;
-          RestrictSUIDSGID = true;
-          SystemCallArchitectures = "native";
-          CapabilityBoundingSet = "";
-          ProtectProc = "invisible";
+          WorkingDirectory = "/var/lib/gancio";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
-    services.postgresql = mkIf (cfg.settings.db.dialect == "postgres") {
-      enable = true;
-      ensureDatabases = [ cfg.user ];
-      ensureUsers = [
-        {
-          name = cfg.user;
-          ensureDBOwnership = true;
-        }
-      ];
-    };
+    systemd.tmpfiles.settings."10-gancio" =
+      let
+        rules = {
+          group = config.users.users.${cfg.user}.group;
+          mode = "0755";
+          user = cfg.user;
+        };
+      in
+      {
+        "/var/lib/gancio/plugins".d = rules;
+        "/var/lib/gancio/user_locale".d = rules;
+      };
 
-    services.nginx = {
-      enable = true;
-      virtualHosts."${cfg.settings.hostname}" = mkMerge [
-        cfg.nginx
-        {
-          locations = {
-            "/" = {
-              index = "index.html";
-              tryFiles = "$uri $uri @proxy";
-            };
-            "@proxy" = {
-              proxyWebsockets = true;
-              proxyPass = "http://unix:${cfg.settings.server.socket}";
-              recommendedProxySettings = true;
-            };
-          };
-        }
-      ];
-    };
+    users.groups.gancio = lib.mkIf (cfg.user == "gancio") { };
+
     # for nginx to access gancio socket
     users.users."${config.services.nginx.user}" = lib.mkIf (config.services.nginx.enable) {
       extraGroups = [ config.users.users.${cfg.user}.group ];
+    };
+
+    users.users.gancio = lib.mkIf (cfg.user == "gancio") {
+      group = cfg.user;
+      home = "/var/lib/gancio";
+      isSystemUser = true;
     };
   };
 }

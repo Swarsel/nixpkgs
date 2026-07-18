@@ -1,32 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  requests,
+  buildPythonPackage,
+  cryptography,
+  defusedxml,
+  freezegun,
+  mako,
   pycryptodomex,
   pydantic-settings,
   pyjwkest,
-  mako,
-  cryptography,
-  defusedxml,
-
   # tests
   pytestCheckHook,
-  freezegun,
+  # dependencies
+  requests,
   responses,
+  # build-system
+  setuptools,
   testfixtures,
 }:
 
 buildPythonPackage rec {
   pname = "oic";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CZ-NIC";
@@ -34,6 +30,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-7qEK1HWLEGCKu+gDAfbyT1a+sM9fVOfjtkqZ33GWv6U=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    freezegun
+    responses
+    testfixtures
+  ];
 
   build-system = [
     setuptools
@@ -49,13 +52,7 @@ buildPythonPackage rec {
     defusedxml
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    freezegun
-    responses
-    testfixtures
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "oic" ];
 
   meta = {

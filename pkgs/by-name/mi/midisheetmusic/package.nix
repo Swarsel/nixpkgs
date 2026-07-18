@@ -2,18 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  mono,
-  mkNugetDeps,
-  makeWrapper,
-  makeFontsConf,
-  gtk2,
   cups,
+  gtk2,
+  makeFontsConf,
+  makeWrapper,
+  mkNugetDeps,
+  mono,
   timidity,
 }:
 
 let
   deps = mkNugetDeps {
     name = "midisheetmusic-deps";
+
     nugetDeps =
       { fetchNuGet }:
       [
@@ -33,8 +34,8 @@ let
   version = "2.6";
 in
 stdenv.mkDerivation {
-  pname = "midisheetmusic";
   inherit version;
+  pname = "midisheetmusic";
 
   src = fetchurl {
     url = "mirror://sourceforge/midisheetmusic/MidiSheetMusic-${version}-linux-src.tar.gz";
@@ -45,6 +46,9 @@ stdenv.mkDerivation {
     mono
     makeWrapper
   ];
+
+  # This fixes tests that fail because of missing fonts
+  env.FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
 
   buildPhase = ''
     for i in Classes/MidiPlayer.cs Classes/MidiSheetMusic.cs
@@ -73,9 +77,6 @@ stdenv.mkDerivation {
       --where "test != 'MidiFileTest.TestChangeSoundTrack' && test != 'MidiFileTest.TestChangeSoundPerChannelTracks'"
   '';
 
-  # This fixes tests that fail because of missing fonts
-  env.FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
-
   installPhase = ''
     mkdir -p $out/share/applications $out/bin
 
@@ -96,10 +97,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Convert MIDI Files to Piano Sheet Music for two hands";
-    mainProgram = "midisheetmusic.mono.exe";
     homepage = "http://midisheetmusic.com";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.mdarocha ];
     platforms = lib.platforms.linux;
+    mainProgram = "midisheetmusic.mono.exe";
   };
 }

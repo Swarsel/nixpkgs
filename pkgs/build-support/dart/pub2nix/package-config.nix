@@ -1,24 +1,22 @@
 {
   lib,
-  runCommand,
   jq,
+  runCommand,
   yq,
 }:
 
 {
-  pname ? null,
-
   # A list of dependency package names.
   dependencies,
-
   # An attribute set of package names to sources.
   dependencySources,
+  pname ? null,
 }:
 
 let
   packages = lib.genAttrs dependencies (dependency: rec {
-    src = dependencySources.${dependency};
     inherit (src) packageRoot;
+    src = dependencySources.${dependency};
   });
 in
 (runCommand "${lib.optionalString (pname != null) "${pname}-"}package-config.json" {

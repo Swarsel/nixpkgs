@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,8 +24,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/rogerwelin/cassowary";
     description = "Modern cross-platform HTTP load-testing tool written in Go";
+    homepage = "https://github.com/rogerwelin/cassowary";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hugoreeves ];
     mainProgram = "cassowary";

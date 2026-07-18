@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  testers,
   nixel,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,10 +18,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-X/O1Lg1llyRz+d5MC1xO4qKU1+mDIlZhgj6qQ9kLH4k=";
-
   # Package requires a non reproducible submodule
   # https://github.com/kamadorueda/nixel/blob/2873bd84bf4fc540d0ae8af062e109cc9ad40454/.gitmodules#L7
   doCheck = false;
+
   #
   # Let's test it runs
   passthru.tests = {
@@ -30,9 +30,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Lexer, Parser, Abstract Syntax Tree and Concrete Syntax Tree for the Nix Expressions Language";
-    mainProgram = "nixel";
     homepage = "https://github.com/kamadorueda/nixel";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ kamadorueda ];
+    mainProgram = "nixel";
   };
 })

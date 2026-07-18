@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZSi00WmC6il4+aSohqFKrKjtp6xFXYE7IIRGVwFmHWw=";
   };
 
-  buildInputs = [ libxcrypt ];
-
   patches = [ ./stdlib.patch ];
 
   postPatch = ''
@@ -24,17 +22,16 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "gl_cv_func_memchr_works=\"guessing no\"" "gl_cv_func_memchr_works=yes"
   '';
 
+  buildInputs = [ libxcrypt ];
   configureFlags = [ "--sysconfdir=/etc" ];
-
-  hardeningDisable = [ "format" ];
-
   doCheck = true;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Program invocation and execution supervisor";
+
     longDescription = ''
       The name Pies (pronounced "p-yes") stands for Program Invocation and
       Execution Supervisor.  This utility starts and controls execution of
@@ -55,10 +52,11 @@ stdenv.mkDerivation (finalAttrs: {
       Jabberd or MeTA1 (and it offers much more control over them than the
       native utilities).  Finally, it can replace the inetd utility!
     '';
+
     homepage = "https://www.gnu.org/software/pies/";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
     platforms = lib.platforms.gnu ++ lib.platforms.linux;
     broken = stdenv.hostPlatform.system == "aarch64-linux";
-    maintainers = [ ];
   };
 })

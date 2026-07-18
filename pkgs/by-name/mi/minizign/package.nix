@@ -24,11 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    inherit (zig.meta) platforms;
     description = "Minisign reimplemented in Zig";
     homepage = "https://github.com/jedisct1/zig-minisign";
     license = lib.licenses.isc;
     maintainers = [ ];
     mainProgram = "minizign";
-    inherit (zig.meta) platforms;
   };
 })

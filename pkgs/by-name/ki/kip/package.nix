@@ -16,6 +16,7 @@
   libev,
   libkrb5,
   libressl,
+  nix-update-script,
   openssl,
   pkg-config,
   python3,
@@ -23,7 +24,6 @@
   quickder,
   quickmem,
   unbound,
-  nix-update-script,
 }:
 let
   python-with-packages = python3.withPackages (
@@ -48,7 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     bison
@@ -87,6 +86,7 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs test
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

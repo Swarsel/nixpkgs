@@ -1,18 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "mona-sans";
   version = "2.0.27";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "github";
@@ -21,13 +16,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-P5Dy38iS0Cly+Rcjg3EQSZozvdfsXwa6yz+IdgrSq4M=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
     description = "Variable font from GitHub";
-    homepage = "https://github.com/mona-sans";
-    changelog = "https://github.com/github/mona-sans/releases/tag/v${finalAttrs.version}";
-    license = lib.licenses.ofl;
+
     longDescription = ''
       A strong and versatile typeface, designed together with Degarism and
       inspired by industrial-era grotesques. Mona Sans works well across
@@ -39,6 +37,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       by all major browsers, allowing for performance benefits and granular
       design control of the typeface's weight, width, and slant.
     '';
+
+    homepage = "https://github.com/mona-sans";
+    changelog = "https://github.com/github/mona-sans/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ miniharinn ];
     platforms = lib.platforms.all;
   };

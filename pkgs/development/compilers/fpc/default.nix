@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  gawk,
-  fetchpatch,
-  undmg,
   cpio,
-  xar,
+  fetchpatch,
+  gawk,
   libiconv,
+  undmg,
+  xar,
 }:
 
 let
@@ -24,31 +24,24 @@ let
 in
 
 stdenv.mkDerivation rec {
-  version = "3.2.2";
   pname = "fpc";
+  version = "3.2.2";
 
   src = fetchurl {
     url = "mirror://sourceforge/freepascal/fpcbuild-${version}.tar.gz";
     sha256 = "85ef993043bb83f999e2212f1bca766eb71f6f973d362e2290475dbaaf50161f";
   };
 
-  buildInputs = [
-    startFPC
-    gawk
-  ];
-
-  glibc = stdenv.cc.libc.out;
-
   # Patch paths for linux systems. Other platforms will need their own patches.
   patches = [
     ./mark-paths.patch # mark paths for later substitution in postPatch
   ]
   ++ lib.optional stdenv.hostPlatform.isAarch64 (fetchpatch {
-    # backport upstream patch for aarch64 glibc 2.34
-    url = "https://gitlab.com/freepascal.org/fpc/source/-/commit/a20a7e3497bccf3415bf47ccc55f133eb9d6d6a0.patch";
+    extraPrefix = "fpcsrc/";
     hash = "sha256-xKTBwuOxOwX9KCazQbBNLhMXCqkuJgIFvlXewHY63GM=";
     stripLen = 1;
-    extraPrefix = "fpcsrc/";
+    # backport upstream patch for aarch64 glibc 2.34
+    url = "https://gitlab.com/freepascal.org/fpc/source/-/commit/a20a7e3497bccf3415bf47ccc55f133eb9d6d6a0.patch";
   });
 
   postPatch = ''
@@ -71,16 +64,19 @@ stdenv.mkDerivation rec {
       --replace "-no_uuid" ""
   '';
 
-  preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    NIX_LDFLAGS="-syslibroot $SDKROOT -L${lib.getLib libiconv}/lib"
-  '';
+  buildInputs = [
+    startFPC
+    gawk
+  ];
 
   makeFlags = [
     "NOGDB=1"
     "FPC=${startFPC}/bin/fpc"
   ];
 
-  installFlags = [ "INSTALL_PREFIX=\${out}" ];
+  preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    NIX_LDFLAGS="-syslibroot $SDKROOT -L${lib.getLib libiconv}/lib"
+  '';
 
   postInstall = ''
     for i in $out/lib/fpc/*/ppc*; do
@@ -95,6 +91,9 @@ stdenv.mkDerivation rec {
     $out/lib/fpc/*/samplecfg $out/lib/fpc/${version} $out/etc
   '';
 
+  glibc = stdenv.cc.libc.out;
+  installFlags = [ "INSTALL_PREFIX=\${out}" ];
+
   passthru = {
     bootstrap = startFPC;
   };
@@ -102,11 +101,13 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Free Pascal Compiler from a source distribution";
     homepage = "https://www.freepascal.org";
-    maintainers = [ lib.maintainers.raskin ];
+
     license = with lib.licenses; [
       gpl2
       lgpl2
     ];
+
+    maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
     # See:
     # * <https://gitlab.com/freepascal.org/fpc/source/-/issues/41045>

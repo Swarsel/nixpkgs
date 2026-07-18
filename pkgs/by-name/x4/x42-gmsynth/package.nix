@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   glib,
   lv2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glib
     lv2
@@ -31,11 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "Chris Colins' General User soundfont player LV2 plugin";
     homepage = "https://x42-plugins.com/x42/x42-gmsynth";
-    maintainers = [ ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

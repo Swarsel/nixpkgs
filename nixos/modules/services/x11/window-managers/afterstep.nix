@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.afterstep ];
+
     services.xserver.windowManager.session = singleton {
       name = "afterstep";
+
       start = ''
         ${pkgs.afterstep}/bin/afterstep &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.afterstep ];
   };
 }

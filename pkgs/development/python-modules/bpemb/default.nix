@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
-
+  buildPythonPackage,
   gensim,
   numpy,
   requests,
   sentencepiece,
+  setuptools,
   tqdm,
 }:
 
 buildPythonPackage {
   pname = "bpemb";
   version = "0.3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bheinzerling";
@@ -24,6 +21,8 @@ buildPythonPackage {
     hash = "sha256-nVaMXb5TBhO/vWE8AYAA3P9dSPI8O+rmzFvbEj8VEkE=";
   };
 
+  # need network connection for tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +33,7 @@ buildPythonPackage {
     tqdm
   ];
 
-  # need network connection for tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "bpemb" ];
 
   meta = {

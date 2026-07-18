@@ -1,27 +1,24 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   click,
+  # tests
+  mock,
   prettytable,
   prompt-toolkit,
   pygments,
+  pytestCheckHook,
   requests,
   rich,
-  urllib3,
-
-  # tests
-  mock,
-  pytestCheckHook,
+  # build-system
+  setuptools,
   sphinx,
   testtools,
   tkinter,
+  urllib3,
   writableTmpDirAsHomeHook,
   zeep,
 }:
@@ -29,7 +26,6 @@
 buildPythonPackage rec {
   pname = "softlayer";
   version = "6.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "softlayer";
@@ -37,22 +33,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-mlC4o39Ol1ALguc9KGpxB0M0vhWz4LG2uwhW8CBrVgg=";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "rich" ];
-
-  dependencies = [
-    click
-    prettytable
-    prompt-toolkit
-    pygments
-    requests
-    rich
-    urllib3
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     mock
@@ -62,6 +42,19 @@ buildPythonPackage rec {
     tkinter
     writableTmpDirAsHomeHook
     zeep
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    click
+    prettytable
+    prompt-toolkit
+    pygments
+    requests
+    rich
+    urllib3
   ];
 
   disabledTestPaths = [
@@ -77,7 +70,9 @@ buildPythonPackage rec {
     "tests/transports/soap_tests.py.unstable"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "SoftLayer" ];
+  pythonRelaxDeps = [ "rich" ];
 
   meta = {
     description = "Python libraries that assist in calling the SoftLayer API";

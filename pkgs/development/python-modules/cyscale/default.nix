@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  more-itertools,
   base58,
+  buildPythonPackage,
+  more-itertools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cyscale";
   version = "0.5.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "latent-to";
@@ -22,6 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/Jhg7n28rjiNyuthX9cCbOtpyfPp0xgBaUpiZ1pBxRA=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  # remove source package so tests import the installed Cython extensions, not the .pyx sources
+  preCheck = ''
+    rm -rf scalecodec
+  '';
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,17 +34,10 @@ buildPythonPackage (finalAttrs: {
     base58
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # test_valid_type_registry_presets walks ../scalecodec/type_registry relative
   # to the test file, which no longer exists after removing the source package dir
   disabledTests = [ "test_valid_type_registry_presets" ];
-
-  # remove source package so tests import the installed Cython extensions, not the .pyx sources
-  preCheck = ''
-    rm -rf scalecodec
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "scalecodec" ];
 
   meta = {

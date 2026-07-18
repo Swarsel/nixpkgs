@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  glibcLocales,
-  mono,
-  unzip,
   dotnetCorePackages,
+  glibcLocales,
+  makeWrapper,
+  mono,
   roslyn,
+  unzip,
 }:
 
 let
@@ -15,8 +15,8 @@ let
   dotnet-sdk = dotnetCorePackages.sdk_8_0-source;
 
   xplat = fetchurl {
-    url = "https://github.com/mono/msbuild/releases/download/v16.9.0/mono_msbuild_6.12.0.137.zip";
     sha256 = "1wnzbdpk4s9bmawlh359ak2b8zi0sgx1qvcjnvfncr1wsck53v7q";
+    url = "https://github.com/mono/msbuild/releases/download/v16.9.0/mono_msbuild_6.12.0.137.zip";
   };
 
   inherit (stdenv.hostPlatform.extensions) sharedLibrary;
@@ -27,6 +27,7 @@ let
       finalAttrs:
       dotnetCorePackages.addNuGetDeps {
         nugetDeps = ./deps.json;
+
         overrideFetchAttrs = a: {
           dontBuild = false;
         };
@@ -44,6 +45,19 @@ mkPackage rec {
     sha256 = "05ghqqkdj4s3d0xkp7mkdzjig5zj3k6ajx71j0g2wv6rdbvg6899";
   };
 
+  postPatch = ''
+    # not patchShebangs, there is /bin/bash in the body of the script as well
+    substituteInPlace ./eng/cibuild_bootstrapped_msbuild.sh --replace /bin/bash ${stdenv.shell}
+
+    patchShebangs eng/*.sh mono/build/*.sh
+
+    sed -i -e "/<\/projectImportSearchPaths>/a <property name=\"MSBuildExtensionsPath\" value=\"$out/lib/mono/xbuild\"/>" \
+      src/MSBuild/app.config
+
+    # license check is case sensitive
+    mv LICENSE license.bak && mv license.bak license
+  '';
+
   nativeBuildInputs = [
     dotnet-sdk
     mono
@@ -60,21 +74,6 @@ mkPackage rec {
     # bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
     LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive";
   };
-
-  postPatch = ''
-    # not patchShebangs, there is /bin/bash in the body of the script as well
-    substituteInPlace ./eng/cibuild_bootstrapped_msbuild.sh --replace /bin/bash ${stdenv.shell}
-
-    patchShebangs eng/*.sh mono/build/*.sh
-
-    sed -i -e "/<\/projectImportSearchPaths>/a <property name=\"MSBuildExtensionsPath\" value=\"$out/lib/mono/xbuild\"/>" \
-      src/MSBuild/app.config
-
-    # license check is case sensitive
-    mv LICENSE license.bak && mv license.bak license
-  '';
-
-  linkNugetPackages = true;
 
   buildPhase = ''
     mkdir -p artifacts
@@ -150,16 +149,20 @@ mkPackage rec {
         ${mono}/bin/mono Helloworld.exe | grep "Hello, world!"
   '';
 
+  linkNugetPackages = true;
+
   meta = {
     description = "Mono version of Microsoft Build Engine, the build platform for .NET, and Visual Studio";
-    mainProgram = "msbuild";
     homepage = "https://github.com/mono/msbuild";
+    license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode # dependencies
     ];
-    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [ jdanek ];
     platforms = lib.platforms.unix;
+    mainProgram = "msbuild";
   };
 }

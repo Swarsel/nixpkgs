@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DCxrSTUO+e350zI10D8vpIswxqdfAyQfnY4iz17pfuc=";
   };
 
-  dontConfigure = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -29,12 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Utility to uncompress ECM files to BIN CD format";
     homepage = "https://github.com/alucryd/ecm-tools";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "bin2ecm";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "bin2ecm";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   gitUpdater,
-  stdenv,
-  testers,
   nasm,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,10 +18,28 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SUY3arrVsFecMcbpmQP0+4rtcSRfQc6pzxZDcEuMWPU=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
   postPatch = ''
     substituteInPlace ./version.sh \
       --replace-fail "date" 'date -ud "@$SOURCE_DATE_EPOCH"'
   '';
+
+  nativeBuildInputs = [
+    nasm
+  ];
+
+  configureFlags = [
+    "--cross-prefix=${stdenv.cc.targetPrefix}"
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isStatic) [
+    (lib.enableFeature true "shared")
+    "--system-libdavs2"
+  ];
 
   preConfigure = ''
     # Generate version.h
@@ -35,36 +53,18 @@ stdenv.mkDerivation (finalAttrs: {
     export AS=${if stdenv.hostPlatform.isx86 then "nasm" else ""}
   '';
 
-  configureFlags = [
-    "--cross-prefix=${stdenv.cc.targetPrefix}"
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isStatic) [
-    (lib.enableFeature true "shared")
-    "--system-libdavs2"
-  ];
-
-  nativeBuildInputs = [
-    nasm
-  ];
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
   passthru = {
-    updateScript = gitUpdater { };
     tests.pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
+    updateScript = gitUpdater { };
   };
 
   meta = {
-    homepage = "https://github.com/pkuvcl/davs2";
     description = "Open-source decoder of AVS2-P2/IEEE1857.4 video coding standard";
+    homepage = "https://github.com/pkuvcl/davs2";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "davs2";
-    pkgConfigModules = [ "davs2" ];
     maintainers = with lib.maintainers; [ jopejoe1 ];
     platforms = lib.platforms.all;
+    mainProgram = "davs2";
+    pkgConfigModules = [ "davs2" ];
   };
 })

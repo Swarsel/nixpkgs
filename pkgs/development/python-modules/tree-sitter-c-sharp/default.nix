@@ -2,18 +2,17 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  rustPlatform,
   cargo,
+  pytestCheckHook,
+  rustPlatform,
   rustc,
   setuptools,
   tree-sitter,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "tree-sitter-c-sharp";
   version = "0.23.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tree-sitter";
@@ -22,10 +21,10 @@ buildPythonPackage rec {
     hash = "sha256-N5AAlwQFGGi47cj0m7Te08bA486gwY6NBOx4Qcy4lpo=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    hash = "sha256-fPjCguwWE+beoOiLR2EyMtogiv1JRXI8NP4vCuvGHss=";
-  };
+  nativeCheckInputs = [
+    pytestCheckHook
+    tree-sitter
+  ];
 
   build-system = [
     cargo
@@ -34,18 +33,19 @@ buildPythonPackage rec {
     setuptools
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-fPjCguwWE+beoOiLR2EyMtogiv1JRXI8NP4vCuvGHss=";
+  };
+
   optional-dependencies = {
     core = [
       tree-sitter
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "tree_sitter_c_sharp" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    tree-sitter
-  ];
 
   meta = {
     description = "C# Grammar for tree-sitter";

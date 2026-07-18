@@ -1,19 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  wrapGAppsHook3,
   glibcLocales,
   gobject-introspection,
   gtk3,
-  libsoup_3,
   libsecret,
+  libsoup_3,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gtimelog";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gtimelog";
@@ -22,23 +21,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-NlKAgAnZWodXF4eybcNOSxexjhegRgQEWoAPd+KWzsw=";
   };
 
-  build-system = with python3Packages; [
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     wrapGAppsHook3
     gobject-introspection
   ];
+
   buildInputs = [
     glibcLocales
     gtk3
     libsoup_3
     libsecret
   ];
+
   propagatedBuildInputs = with python3Packages; [
     pygobject3
   ];
+
   checkInputs = with python3Packages; [
     freezegun
   ];
@@ -48,24 +46,28 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ./runtests
   '';
 
-  pythonImportsCheck = [ "gtimelog" ];
-
-  dontWrapGApps = true;
-
-  # Arguments to be passed to `makeWrapper`, only used by buildPython*
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
   postInstall = ''
     install -Dm644 gtimelog.desktop $out/share/applications/gtimelog.desktop
     install -Dm644 src/gtimelog/gtimelog.png $out/share/icons/hicolor/48x48/apps/gtimelog.png
     install -Dm644 src/gtimelog/gtimelog-large.png $out/share/icons/hicolor/256x256/apps/gtimelog.png
   '';
 
+  # Arguments to be passed to `makeWrapper`, only used by buildPython*
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  build-system = with python3Packages; [
+    setuptools-scm
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
+  pythonImportsCheck = [ "gtimelog" ];
+
   meta = {
     description = "Time tracking app";
-    mainProgram = "gtimelog";
+
     longDescription = ''
       GTimeLog is a small time tracking application for GNOME.
       It's main goal is to be as unintrusive as possible.
@@ -74,8 +76,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
       installed, the following NixOS options should be set:
       - programs.dconf.enable = true;
     '';
+
     homepage = "https://gtimelog.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
+    mainProgram = "gtimelog";
   };
 })

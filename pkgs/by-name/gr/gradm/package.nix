@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ pam ];
 
-  enableParallelBuilding = true;
-
   makeFlags = [
     "DESTDIR=${placeholder "out"}"
     "LEX=${flex}/bin/flex"
@@ -49,17 +47,19 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p "$out/etc/udev/rules.d"
   '';
 
-  doInstallCheck = true;
-
   postInstall = "rmdir $out/dev";
+  doInstallCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "grsecurity RBAC administration and policy analysis utility";
     homepage = "https://grsecurity.net";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -36,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/drobilla/zix";
     changelog = "https://gitlab.com/drobilla/zix/-/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

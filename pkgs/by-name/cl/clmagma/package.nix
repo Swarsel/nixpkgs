@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  gfortran,
-  opencl-headers,
   clblas,
-  ocl-icd,
-  mkl,
+  gfortran,
   intel-ocl,
+  mkl,
+  ocl-icd,
+  opencl-headers,
 }:
 
 let
@@ -43,6 +43,7 @@ in
 stdenv.mkDerivation rec {
   pname = "clmagma";
   version = "1.3.0";
+
   src = fetchurl {
     url = "https://icl.cs.utk.edu/projectsfiles/magma/cl/clmagma-${version}.tar.gz";
     sha256 = "1n27ny0xhwirw2ydn46pfcwy53gzia9zbam4irx44fd4d7f9ydv7";
@@ -58,15 +59,12 @@ stdenv.mkDerivation rec {
     intel-ocl
   ];
 
-  enableParallelBuilding = true;
-
   env = {
     MKLROOT = mkl;
-    clBLAS = clblas;
-
     # Otherwise build looks for it in /run/opengl-driver/etc/OpenCL/vendors,
     # which is not available.
     OPENCL_VENDOR_PATH = "${intel-ocl}/etc/OpenCL/vendors";
+    clBLAS = clblas;
   };
 
   preBuild = ''
@@ -76,11 +74,13 @@ stdenv.mkDerivation rec {
     cp ${incfile} make.inc
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Matrix Algebra on GPU and Multicore Architectures, OpenCL port";
-    license = lib.licenses.bsd3;
     homepage = "https://icl.cs.utk.edu/magma/index.html";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ volhovm ];
+    platforms = lib.platforms.linux;
   };
 }

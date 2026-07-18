@@ -23,10 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Iconv based simplified-traditional chinese conversion tool";
-    mainProgram = "cconv";
     homepage = "https://github.com/xiaoyjy/cconv";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.redfish64 ];
+    platforms = lib.platforms.all;
+    mainProgram = "cconv";
   };
 })

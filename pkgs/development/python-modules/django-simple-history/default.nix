@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   hatch-fancy-pypi-readme,
-  hatchling,
   hatch-vcs,
+  hatchling,
   python,
 }:
 
 buildPythonPackage rec {
   pname = "django-simple-history";
   version = "3.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -21,6 +20,12 @@ buildPythonPackage rec {
     hash = "sha256-pTWorV++YSr/oIdcShrJTBUFfn5ekJ29rNn6ltDhN5Q=";
   };
 
+  checkPhase = ''
+    runHook preCheck
+    ${python.interpreter} runtests.py
+    runHook postCheck
+  '';
+
   build-system = [
     hatch-fancy-pypi-readme
     hatchling
@@ -28,13 +33,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ django ];
-
-  checkPhase = ''
-    runHook preCheck
-    ${python.interpreter} runtests.py
-    runHook postCheck
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "simple_history" ];
 
   meta = {

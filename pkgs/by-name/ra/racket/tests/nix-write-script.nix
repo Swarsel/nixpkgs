@@ -1,4 +1,4 @@
-{ runCommandLocal, racket }:
+{ racket, runCommandLocal }:
 
 let
   script = racket.writeScript "racket-test-nix-write-script-the-script" { } ''

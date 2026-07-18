@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
-  writableTmpDirAsHomeHook,
+  buildGoModule,
   gopass,
+  makeWrapper,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,14 +19,23 @@ buildGoModule (finalAttrs: {
     hash = "sha256-IEur3Sw2zRYJxlwAhgpb2OnBt+FcC+OdeT7M/LzJwoY=";
   };
 
-  vendorHash = "sha256-mtJIm7dH3jP7p0R0KxN0Yf7mi9rkJ73u8biy2Ygvk3k=";
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [
     makeWrapper
     writableTmpDirAsHomeHook
   ];
+
+  vendorHash = "sha256-mtJIm7dH3jP7p0R0KxN0Yf7mi9rkJ73u8biy2Ygvk3k=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    gopass
+  ];
+
+  postFixup = ''
+    wrapProgram $out/bin/git-credential-gopass \
+      --prefix PATH : "${gopass.wrapperPath}"
+  '';
 
   ldflags = [
     "-s"
@@ -35,20 +44,12 @@ buildGoModule (finalAttrs: {
     "-X main.commit=${finalAttrs.src.rev}"
   ];
 
-  postFixup = ''
-    wrapProgram $out/bin/git-credential-gopass \
-      --prefix PATH : "${gopass.wrapperPath}"
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    gopass
-  ];
-  versionCheckKeepEnvironment = [ "HOME" ];
   preVersionCheck = ''
     gopass setup --name "user" --email "user@localhost"
   '';
+
+  subPackages = [ "." ];
+  versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
     description = "Manage git credentials using gopass";

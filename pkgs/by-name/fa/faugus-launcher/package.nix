@@ -1,9 +1,9 @@
 {
+  lib,
   fetchFromGitHub,
   gobject-introspection,
   icoextract,
   imagemagick,
-  lib,
   libayatana-appindicator,
   libcanberra-gtk3,
   lsfg-vk,
@@ -20,7 +20,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "faugus-launcher";
   version = "1.22.8";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Faugus";
@@ -28,26 +27,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-2FsuD40u5O7VwbziTqhsfVyceyfmSRvdmsizfBy/Xys=";
   };
-
-  nativeBuildInputs = [
-    gobject-introspection
-    meson
-    ninja
-    wrapGAppsHook3
-  ];
-
-  buildInputs = [
-    libayatana-appindicator
-  ];
-
-  dependencies = with python3Packages; [
-    pillow
-    psutil
-    pygame
-    pygobject3
-    requests
-    vdf
-  ];
 
   postPatch = ''
     substituteInPlace faugus-launcher \
@@ -59,7 +38,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "/usr/lib/liblsfg-vk.so" "${lsfg-vk}/lib/liblsfg-vk.so"
   '';
 
-  dontWrapGApps = true;
+  nativeBuildInputs = [
+    gobject-introspection
+    meson
+    ninja
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [
+    libayatana-appindicator
+  ];
 
   preFixup = ''
     makeWrapperArgs+=(
@@ -79,6 +67,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapProgram $out/bin/faugus-launcher ''${makeWrapperArgs[@]}
   '';
 
+  dependencies = with python3Packages; [
+    pillow
+    psutil
+    pygame
+    pygobject3
+    requests
+    vdf
+  ];
+
+  dontWrapGApps = true;
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -87,7 +86,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/Faugus/faugus-launcher/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ RoGreat ];
-    mainProgram = "faugus-launcher";
     platforms = lib.platforms.linux;
+    mainProgram = "faugus-launcher";
   };
 })

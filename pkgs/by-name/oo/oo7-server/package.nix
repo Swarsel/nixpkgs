@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   cargo,
   meson,
   ninja,
@@ -7,16 +8,12 @@
   pkg-config,
   rustPlatform,
   rustc,
-  stdenv,
   systemdLibs,
   useWrappedDaemon ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "oo7-server";
   inherit (oo7) version src cargoDeps;
-
-  sourceRoot = "${finalAttrs.src.name}/server";
-  cargoRoot = "../";
+  pname = "oo7-server";
 
   nativeBuildInputs = [
     pkg-config
@@ -36,6 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "$out/libexec/oo7-daemon" "/run/wrappers/bin/oo7-daemon"
   '';
 
+  cargoRoot = "../";
+  sourceRoot = "${finalAttrs.src.name}/server";
+
   meta = {
     inherit (oo7.meta)
       homepage
@@ -44,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
       maintainers
       platforms
       ;
+
     description = "${oo7.meta.description} (Daemon)";
   };
 })

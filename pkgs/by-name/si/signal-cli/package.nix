@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  gradle_9,
-  openjdk25_headless,
-  libmatthew_java,
+  callPackage,
+  curl,
   dbus,
   dbus_java,
-  callPackage,
-  versionCheckHook,
-  signal-cli,
-  writeShellApplication,
-  curl,
+  gradle_9,
+  libmatthew_java,
+  makeWrapper,
   nix-update,
+  openjdk25_headless,
+  signal-cli,
+  versionCheckHook,
+  writeShellApplication,
 }:
 
 let
@@ -41,25 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     dbus
     dbus_java
   ];
-
-  mitmCache = gradle.fetchDeps {
-    pkg = signal-cli;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  # Use the JDK for building
-  gradleFlags = [
-    "-Dfile.encoding=utf-8"
-    "-Dorg.gradle.java.home=${openjdk25_headless}"
-  ];
-
-  gradleBuildTask = "installDist";
-
-  preGradleUpdate = ''
-    gradle assemble
-  '';
 
   # Tests require network access and a running signal server
   doCheck = false;
@@ -93,38 +74,60 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  gradleBuildTask = "installDist";
+
+  # Use the JDK for building
+  gradleFlags = [
+    "-Dfile.encoding=utf-8"
+    "-Dorg.gradle.java.home=${openjdk25_headless}"
+  ];
+
+  mitmCache = gradle.fetchDeps {
+    data = ./deps.json;
+    pkg = signal-cli;
+  };
+
+  preGradleUpdate = ''
+    gradle assemble
+  '';
 
   passthru = {
+    libsignal-jni = libsignal-jni;
+
     updateScript = lib.getExe (writeShellApplication {
       name = "signal-cli-update";
+
       runtimeInputs = [
         curl
         nix-update
       ];
+
       text = ''
         nix-update signal-cli
         nix-update signal-cli.passthru.libsignal-jni --version "$(curl --silent --location https://github.com/AsamK/signal-cli/raw/v"$(nix-instantiate --raw --eval -A signal-cli.version)"/libsignal-version)"
       '';
     });
-    libsignal-jni = libsignal-jni;
   };
 
   meta = {
-    homepage = "https://github.com/AsamK/signal-cli";
     description = "Command-line and dbus interface for communicating with the Signal messaging service";
-    mainProgram = "signal-cli";
+    homepage = "https://github.com/AsamK/signal-cli";
     changelog = "https://github.com/AsamK/signal-cli/blob/v${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.gpl3;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
-    license = lib.licenses.gpl3;
+
     maintainers = [
       lib.maintainers.klea
       lib.maintainers.akosseres
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "signal-cli";
   };
 })

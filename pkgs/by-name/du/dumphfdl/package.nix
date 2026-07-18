@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  versionCheckHook,
   cmake,
-  pkg-config,
-  libconfig,
-  liquid-dsp,
   fftwSinglePrec,
   glib,
-  soapysdr-with-plugins,
-  sqlite,
-  zeromq,
   gperftools,
   libacars,
+  libconfig,
+  liquid-dsp,
+  nix-update-script,
+  pkg-config,
+  soapysdr-with-plugins,
+  sqlite,
+  versionCheckHook,
+  zeromq,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kbUCHddhkM3Cj39ac5GQM3hCihRERnzWdELtnHjaIgg=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
   buildInputs = [
     fftwSinglePrec
     liquid-dsp
@@ -40,29 +45,25 @@ stdenv.mkDerivation (finalAttrs: {
     libacars
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/szpajder/dumphfdl";
-    changelog = "https://github.com/szpajder/dumphfdl/releases/tag/v${finalAttrs.version}";
     description = "Decoder for Multichannel HFDL aircraft communication";
+
     longDescription = ''
       HFDL (High Frequency Data Link) is a protocol used for radio communications
       between aircraft and ground stations. It is used to carry ACARS and AOC messages as well as
       CPDLC (Controller-Pilot Data Link Communications) and ADS-C.
     '';
+
+    homepage = "https://github.com/szpajder/dumphfdl";
+    changelog = "https://github.com/szpajder/dumphfdl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "dumphfdl";
     maintainers = [ lib.maintainers.mafo ];
     platforms = with lib.platforms; linux ++ darwin;
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "dumphfdl";
   };
 })

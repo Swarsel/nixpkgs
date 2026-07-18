@@ -1,20 +1,20 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installFonts,
+  stdenvNoCC,
   unzip,
 }:
 
 let
   makeSuperOTC =
     {
-      family,
       description,
-      rev,
+      family,
       hash,
-      zip ? "",
+      rev,
       prefix ? "",
+      zip ? "",
     }:
     let
       Family = lib.toUpper (lib.substring 0 1 family) + lib.substring 1 (lib.stringLength family) family;
@@ -23,15 +23,14 @@ let
       pname = "source-han-${family}";
       version = lib.removeSuffix "R" rev;
 
-      __structuredAttrs = true;
-      strictDeps = true;
-
       src = fetchurl {
-        url = "https://github.com/adobe-fonts/source-han-${family}/releases/download/${rev}/${prefix}SourceHan${Family}.ttc${zip}";
         inherit hash;
+        url = "https://github.com/adobe-fonts/source-han-${family}/releases/download/${rev}/${prefix}SourceHan${Family}.ttc${zip}";
       };
 
+      strictDeps = true;
       nativeBuildInputs = [ installFonts ] ++ lib.optionals (zip == ".zip") [ unzip ];
+      __structuredAttrs = true;
 
       unpackPhase =
         lib.optionalString (zip == "") ''
@@ -45,6 +44,7 @@ let
         description = "Open source Pan-CJK ${description} typeface";
         homepage = "https://github.com/adobe-fonts/source-han-${family}";
         license = lib.licenses.ofl;
+
         maintainers = with lib.maintainers; [
           taku0
           emily
@@ -55,25 +55,26 @@ let
   makeVariable =
     {
       family,
-      version,
-      hash,
       format,
+      hash,
+      version,
     }:
     let
       Family = lib.toUpper (lib.substring 0 1 family) + lib.substring 1 (lib.stringLength family) family;
     in
     fetchurl {
-      pname = "source-han-${family}-vf-${format}";
       inherit version hash;
-      url = "https://raw.githubusercontent.com/adobe-fonts/source-han-${family}/${version}R/Variable/OTC/SourceHan${Family}-VF.${format}.ttc";
-      recursiveHash = true;
+      pname = "source-han-${family}-vf-${format}";
       downloadToTemp = true;
       postFetch = "install -Dm444 $downloadedFile $out/share/fonts/variable/SourceHan${Family}-VF.${format}.ttc";
+      recursiveHash = true;
+      url = "https://raw.githubusercontent.com/adobe-fonts/source-han-${family}/${version}R/Variable/OTC/SourceHan${Family}-VF.${format}.ttc";
 
       meta = {
         description = "Open source Pan-CJK ${Family} typeface";
         homepage = "https://github.com/adobe-fonts/source-han-${family}";
         license = lib.licenses.ofl;
+
         maintainers = with lib.maintainers; [
           taku0
           emily
@@ -82,56 +83,56 @@ let
     };
 in
 {
-  source-han-sans = makeSuperOTC {
-    family = "sans";
-    description = "sans-serif";
-    rev = "2.005R";
-    hash = "sha256-oCTPF1lJSEfNR6rkN5vLPcUwAXxwnz9QPuDtkY3ZKVI=";
-    zip = ".zip";
-    prefix = "01_";
-  };
-
-  source-han-serif = makeSuperOTC {
-    family = "serif";
-    description = "serif";
-    rev = "2.003R";
-    hash = "sha256-buaJq1eJSuNa9gSnPpXDcr2gMGYQ/6F5pHCOjNR6eV8=";
-    zip = ".zip";
-    prefix = "01_";
-  };
-
   source-han-mono = makeSuperOTC {
-    family = "mono";
     description = "monospaced";
-    rev = "1.002";
+    family = "mono";
     hash = "sha256-DBkkSN6QhI8R64M2h2iDqaNtxluJZeSJYAz8x6ZzWME=";
+    rev = "1.002";
+  };
+
+  source-han-sans = makeSuperOTC {
+    description = "sans-serif";
+    family = "sans";
+    hash = "sha256-oCTPF1lJSEfNR6rkN5vLPcUwAXxwnz9QPuDtkY3ZKVI=";
+    prefix = "01_";
+    rev = "2.005R";
+    zip = ".zip";
   };
 
   source-han-sans-vf-otf = makeVariable {
-    family = "sans";
     version = "2.005";
-    hash = "sha256-7/THncqTE6IpPezcX14eYRRC8WR/xPv0XjfOPEfF8aU=";
+    family = "sans";
     format = "otf";
+    hash = "sha256-7/THncqTE6IpPezcX14eYRRC8WR/xPv0XjfOPEfF8aU=";
   };
 
   source-han-sans-vf-ttf = makeVariable {
-    family = "sans";
     version = "2.005";
-    hash = "sha256-CL5kjZzCiNvdcwiFflTlarINpeYxvuqZH+4ayiIQdD8=";
+    family = "sans";
     format = "ttf";
+    hash = "sha256-CL5kjZzCiNvdcwiFflTlarINpeYxvuqZH+4ayiIQdD8=";
+  };
+
+  source-han-serif = makeSuperOTC {
+    description = "serif";
+    family = "serif";
+    hash = "sha256-buaJq1eJSuNa9gSnPpXDcr2gMGYQ/6F5pHCOjNR6eV8=";
+    prefix = "01_";
+    rev = "2.003R";
+    zip = ".zip";
   };
 
   source-han-serif-vf-otf = makeVariable {
-    family = "serif";
     version = "2.003";
-    hash = "sha256-a6295Ukha9QY5ByMr2FUy13j5gZ1itnezvfJWmJjqt0=";
+    family = "serif";
     format = "otf";
+    hash = "sha256-a6295Ukha9QY5ByMr2FUy13j5gZ1itnezvfJWmJjqt0=";
   };
 
   source-han-serif-vf-ttf = makeVariable {
-    family = "serif";
     version = "2.003";
-    hash = "sha256-F+FUQunfyAEBVV10lZxC3dzGTWhHgHzpTO8CjC3n4WY=";
+    family = "serif";
     format = "ttf";
+    hash = "sha256-F+FUQunfyAEBVV10lZxC3dzGTWhHgHzpTO8CjC3n4WY=";
   };
 }

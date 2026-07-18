@@ -1,32 +1,32 @@
 {
   lib,
+  advancecomp,
   bundlerApp,
   bundlerUpdateScript,
-  makeWrapper,
-  withPngcrush ? true,
-  pngcrush,
-  withPngout ? false,
-  pngout, # disabled by default because it's unfree
-  withAdvpng ? true,
-  advancecomp,
-  withOptipng ? true,
-  optipng,
-  withPngquant ? true,
-  pngquant,
-  withOxipng ? true,
-  oxipng,
-  withJhead ? true,
-  jhead,
-  withJpegoptim ? true,
-  jpegoptim,
-  withJpegrecompress ? true,
-  jpeg-archive,
-  withJpegtran ? true,
-  libjpeg,
-  withGifsicle ? true,
   gifsicle,
-  withSvgo ? true,
+  jhead,
+  jpeg-archive,
+  jpegoptim,
+  libjpeg,
+  makeWrapper,
+  optipng,
+  oxipng,
+  pngcrush,
+  pngout, # disabled by default because it's unfree
+  pngquant,
   svgo,
+  withAdvpng ? true,
+  withGifsicle ? true,
+  withJhead ? true,
+  withJpegoptim ? true,
+  withJpegrecompress ? true,
+  withJpegtran ? true,
+  withOptipng ? true,
+  withOxipng ? true,
+  withPngcrush ? true,
+  withPngout ? false,
+  withPngquant ? true,
+  withSvgo ? true,
 }:
 
 let
@@ -61,10 +61,6 @@ in
 
 bundlerApp {
   pname = "image_optim";
-  gemdir = ./.;
-
-  exes = [ "image_optim" ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -73,21 +69,27 @@ bundlerApp {
       --add-flags "${lib.concatStringsSep " " disabledWorkersFlags}"
   '';
 
+  exes = [ "image_optim" ];
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "image_optim";
 
   meta = {
     description = "Optimize images using multiple utilities";
+
     longDescription = ''
       Command line tool and ruby interface to optimize (lossless compress,
       optionally lossy) jpeg, png, gif and svg images using external utilities
       (advpng, gifsicle, jhead, jpeg-recompress, jpegoptim, jpegrescan,
       jpegtran, optipng, oxipng, pngcrush, pngout, pngquant, svgo)
     '';
+
     homepage = "https://github.com/toy/image_optim";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nicknovitski
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "image_optim";
   };

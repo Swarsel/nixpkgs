@@ -1,35 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  setuptools,
-  setuptools-scm,
-
-  # nativeBuildInputs
-  gitMinimal,
-
+  buildPythonPackage,
   # dependencies
   cramjam,
+  # build-system
+  cython,
   fsspec,
+  # nativeBuildInputs
+  gitMinimal,
   numpy,
   packaging,
   pandas,
-
-  # optional-dependencies
-  python-lzo,
-
   # tests
   pytestCheckHook,
   python,
+  # optional-dependencies
+  python-lzo,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "fastparquet";
   version = "2026.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dask";
@@ -38,36 +32,11 @@ buildPythonPackage rec {
     hash = "sha256-thvoMXXiGtHGcJ0/IrGujjhVAvSmTMGmrlDHjG8R7PQ=";
   };
 
-  build-system = [
-    cython
-    setuptools
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     gitMinimal
   ];
 
-  dependencies = [
-    cramjam
-    fsspec
-    numpy
-    packaging
-    pandas
-  ];
-
-  optional-dependencies = {
-    lzo = [ python-lzo ];
-  };
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  disabledTests = [
-    # DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated,
-    # and will raise an error in the future. This includes implicit conversion of bare
-    # integers (e.g. `+ 1`).Please use a specific unit instead.
-    "test_import_without_warning"
-  ];
 
   # Workaround https://github.com/NixOS/nixpkgs/issues/123561
   preCheck = ''
@@ -81,6 +50,32 @@ buildPythonPackage rec {
     rm "$fastparquet_test"
   '';
 
+  build-system = [
+    cython
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    cramjam
+    fsspec
+    numpy
+    packaging
+    pandas
+  ];
+
+  disabledTests = [
+    # DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated,
+    # and will raise an error in the future. This includes implicit conversion of bare
+    # integers (e.g. `+ 1`).Please use a specific unit instead.
+    "test_import_without_warning"
+  ];
+
+  optional-dependencies = {
+    lzo = [ python-lzo ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "fastparquet" ];
 
   meta = {

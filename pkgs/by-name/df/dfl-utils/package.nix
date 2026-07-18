@@ -18,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-XiOLVx9X2i+IWORde05P2cFulQRU/EQErbyr5fgZDY4=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -28,11 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   dontWrapQtApps = true;
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   meta = {
     description = "Some utilities for DFL";

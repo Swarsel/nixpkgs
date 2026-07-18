@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   gitMinimal,
+  rustPlatform,
 }:
 let
   target = stdenv.hostPlatform.rust.cargoShortTarget;
@@ -20,8 +20,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-nZ2gchifWSmDlVJIsPcvrnUxzhyXYoA1kE9f2pZDJzs=";
-
   nativeCheckInputs = [ gitMinimal ];
+
   postCheck = ''
     patchShebangs --build tests
     BENDER="target/${target}/$cargoBuildType/bender" tests/run_all.sh
@@ -31,12 +31,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Dependency management tool for hardware projects";
     homepage = "https://github.com/pulp-platform/bender";
     changelog = "https://github.com/pulp-platform/bender/releases/tag/${finalAttrs.src.rev}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ Liamolucko ];
-    mainProgram = "bender";
     platforms = lib.platforms.all;
+    mainProgram = "bender";
   };
 })

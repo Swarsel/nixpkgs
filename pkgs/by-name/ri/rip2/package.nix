@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  versionCheckHook,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  installShellFiles,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,17 +19,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-cqc9oZSs0JEMEJfHTHBAgN5Y5/zLPInPeQcOthj+EzQ=";
   };
 
-  cargoHash = "sha256-2rlxuxiyPiThOEhwaV3VUGBwKHnPTGKbQ6PPTaP9Rps=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-2rlxuxiyPiThOEhwaV3VUGBwKHnPTGKbQ6PPTaP9Rps=";
   # TODO: Unsure why this test fails, but not a major issue so
   #       skipping for now.
   checkFlags = [ "--skip=test_filetypes::file_type_3___fifo__" ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/rip";
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd rip \
       --bash <($out/bin/rip completions bash) \
@@ -37,16 +32,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/rip completions zsh)
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgram = "${placeholder "out"}/bin/rip";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Safe and ergonomic alternative to rm";
     homepage = "https://github.com/MilesCranmer/rip2";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       milescranmer
       matthiasbeyer
     ];
+
     mainProgram = "rip";
   };
 })

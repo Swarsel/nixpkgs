@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.09";
   pname = "epstool";
+  version = "3.09";
 
   src = fetchurl {
     url = "http://ftp.de.debian.org/debian/pool/main/e/epstool/epstool_${finalAttrs.version}.orig.tar.xz";

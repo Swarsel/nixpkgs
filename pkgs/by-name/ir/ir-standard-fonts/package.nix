@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -24,11 +24,11 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/morealaz/ir-standard-fonts";
     description = "Iran Supreme Council of Information and Communication Technology (SCICT) standard Persian fonts series";
+    homepage = "https://github.com/morealaz/ir-standard-fonts";
     # License information is unavailable.
     license = lib.licenses.unfree;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

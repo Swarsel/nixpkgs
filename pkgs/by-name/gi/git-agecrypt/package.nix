@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  libgit2,
   git,
+  libgit2,
   pkg-config,
+  rustPlatform,
   zlib,
 }:
 
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-cmnBW/691mmLHq8tWpD3+zwCf7Wph5fcVdSxQGxqd1k=";
   };
 
-  cargoHash = "sha256-71puTOjuV3egkip8pbiYbKxfhoZYtnirp4NrgiXR13I=";
-
   nativeBuildInputs = [
     pkg-config
     git
@@ -30,6 +28,8 @@ rustPlatform.buildRustPackage {
     libgit2
     zlib
   ];
+
+  cargoHash = "sha256-71puTOjuV3egkip8pbiYbKxfhoZYtnirp4NrgiXR13I=";
 
   meta = {
     description = "Alternative to git-crypt using age instead of GPG";

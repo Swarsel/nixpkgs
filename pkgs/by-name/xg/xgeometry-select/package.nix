@@ -14,8 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0s7kirgh5iz91m3qy8xiq0j4gljy8zrcnylf4szl5h0lrsaqj7ya";
   };
 
-  dontUnpack = true;
-
   buildInputs = [ libx11 ];
 
   buildPhase = ''
@@ -26,6 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out/bin
     mv -v xgeometry-select $out/bin
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Select a region with mouse and prints geometry information (x/y/w/h)";

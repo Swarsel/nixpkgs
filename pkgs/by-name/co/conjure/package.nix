@@ -1,22 +1,20 @@
 {
-  fetchFromGitHub,
-  gobject-introspection,
   lib,
+  fetchFromGitHub,
+  appstream-glib,
+  desktop-file-utils,
+  gobject-introspection,
+  gtk4,
   libadwaita,
-  python3Packages,
-  wrapGAppsHook4,
   meson,
   ninja,
-  desktop-file-utils,
   pkg-config,
-  appstream-glib,
-  gtk4,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "conjure";
   version = "0.1.2";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "nate-xyz";
@@ -50,15 +48,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pytest
   ];
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+  pyproject = false;
+
   meta = {
     description = "Magically transform your images";
-    mainProgram = "conjure";
+
     longDescription = ''
       Resize, crop, rotate, flip images, apply various filters and effects,
       adjust levels and brightness, and much more. An intuitive tool for designers,
@@ -66,8 +65,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
       Built on top of the popular image processing library, ImageMagick with python
       bindings from Wand.
     '';
+
     homepage = "https://github.com/nate-xyz/conjure";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ sund3RRR ];
+    mainProgram = "conjure";
   };
 })

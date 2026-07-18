@@ -1,11 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   poetry-core,
-
   # tests
   pytestCheckHook,
 }:
@@ -13,7 +11,6 @@
 buildPythonPackage rec {
   pname = "country-list";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bulv1ne";
@@ -23,17 +20,19 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
-  build-system = [
-    poetry-core
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
+  ];
+
+  build-system = [
+    poetry-core
   ];
 
   enabledTestPaths = [
     "tests.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "country_list"

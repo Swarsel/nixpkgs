@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   callPackage,
 }:
@@ -9,23 +9,26 @@ let
   pname = "upscayl";
   version = "2.15.0";
   srcs = {
-    x86_64-linux = fetchurl {
-      url = "https://github.com/upscayl/upscayl/releases/download/v${version}/upscayl-${version}-linux.AppImage";
-      hash = "sha256-ZFlFfliby5nneepELc5gi6zaM5FrcBmohit8YlKqgik=";
-    };
     aarch64-darwin = fetchurl {
-      url = "https://github.com/upscayl/upscayl/releases/download/v${version}/upscayl-${version}-mac.zip";
       hash = "sha256-gXqeRaNW0g7ZVkCSbxps9SqPMuVSzLTCGL5F3Om/iwo=";
+      url = "https://github.com/upscayl/upscayl/releases/download/v${version}/upscayl-${version}-mac.zip";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-ZFlFfliby5nneepELc5gi6zaM5FrcBmohit8YlKqgik=";
+      url = "https://github.com/upscayl/upscayl/releases/download/v${version}/upscayl-${version}-linux.AppImage";
     };
   };
   meta = {
     description = "Free and Open Source AI Image Upscaler";
     homepage = "https://upscayl.github.io/";
+    license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       icy-thought
       matteopacini
     ];
-    license = lib.licenses.agpl3Plus;
+
     platforms = [ "x86_64-linux" ] ++ lib.platforms.darwin;
     mainProgram = "upscayl";
   };
@@ -37,6 +40,7 @@ if stdenv.hostPlatform.isDarwin then
       version
       meta
       ;
+
     src = srcs.${stdenv.hostPlatform.system};
   }
 else
@@ -46,5 +50,6 @@ else
       version
       meta
       ;
+
     src = srcs.${stdenv.hostPlatform.system};
   }

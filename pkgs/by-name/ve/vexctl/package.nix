@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   versionCheckHook,
 }:
@@ -19,6 +19,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -28,16 +29,8 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  vendorHash = "sha256-G0w5auYmSED6ktTDayfOSu/9QQLTuFCkjW/f9ekn/Hw=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
-    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
-  ];
+  vendorHash = "sha256-G0w5auYmSED6ktTDayfOSu/9QQLTuFCkjW/f9ekn/Hw=";
 
   # ldflags based on metadata from git and source
   preBuild = ''
@@ -53,16 +46,22 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X sigs.k8s.io/release-utils/version.gitVersion=v${finalAttrs.version}"
+    "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
+  ];
 
   versionCheckProgramArg = "version";
 
   meta = {
-    homepage = "https://github.com/openvex/vexctl";
     description = "Tool to create, transform and attest VEX metadata";
-    mainProgram = "vexctl";
+    homepage = "https://github.com/openvex/vexctl";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jk ];
+    mainProgram = "vexctl";
   };
 })

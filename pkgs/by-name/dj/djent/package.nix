@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ mpfr ];
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   preBuild = ''
     sed -i s/gcc/${stdenv.cc.targetPrefix}gcc/g Makefile
@@ -24,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   + lib.optionalString (!stdenv.hostPlatform.isx86_64) ''
     sed -i s/-m64//g Makefile
   '';
-
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   installPhase = ''
     runHook preInstall
@@ -36,17 +35,20 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.deadhat.com/";
     description = ''
       Reimplementation of the Fourmilab/John Walker random number test program
       ent with several improvements
     '';
-    mainProgram = "djent";
+
+    homepage = "http://www.deadhat.com/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       orichter
       thillux
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "djent";
   };
 })

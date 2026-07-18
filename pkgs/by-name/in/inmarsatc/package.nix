@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   nix-update-script,
 }:
 stdenv.mkDerivation {
@@ -16,10 +16,9 @@ stdenv.mkDerivation {
     hash = "sha256-UCmdHR9bSr1x4G0OP7n+o6pdS1thTl9hzH7YMykSiGw=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
+  __structuredAttrs = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  coreutils,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
+  buildPythonPackage,
   certifi,
-  python-dateutil,
-  pyyaml,
-  six,
-  urllib3,
-
+  coreutils,
   # tests
   pytestCheckHook,
+  python-dateutil,
+  pyyaml,
+  # build-system
+  setuptools,
+  six,
+  urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "kubernetes-asyncio";
   version = "33.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tomplus";
@@ -35,6 +31,12 @@ buildPythonPackage rec {
     substituteInPlace kubernetes_asyncio/config/google_auth_test.py \
       --replace-fail "/bin/echo" "${lib.getExe' coreutils "echo"}"
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -49,15 +51,11 @@ buildPythonPackage rec {
     urllib3
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "kubernetes_asyncio"
   ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Python asynchronous client library for Kubernetes http://kubernetes.io";

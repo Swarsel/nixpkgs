@@ -1,13 +1,13 @@
 {
   lib,
-  buildPythonPackage,
-  isPyPy,
-  distlib,
   fetchFromGitHub,
+  buildPythonPackage,
+  distlib,
   filelock,
   flaky,
   hatch-vcs,
   hatchling,
+  isPyPy,
   platformdirs,
   pytest-freezer,
   pytest-mock,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "virtualenv";
   version = "21.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pypa";
@@ -27,6 +26,14 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-3Ed2h5zzjpm+D1fQW2urWYcO/6sFGuZtueQxUnIu3MY=";
   };
+
+  nativeCheckInputs = [
+    flaky
+    pytest-mock
+    pytestCheckHook
+  ]
+  ++ lib.optionals isPyPy [ pytest-freezer ]
+  ++ lib.optionals (!isPyPy) [ time-machine ];
 
   build-system = [
     hatch-vcs
@@ -39,14 +46,6 @@ buildPythonPackage rec {
     platformdirs
     python-discovery
   ];
-
-  nativeCheckInputs = [
-    flaky
-    pytest-mock
-    pytestCheckHook
-  ]
-  ++ lib.optionals isPyPy [ pytest-freezer ]
-  ++ lib.optionals (!isPyPy) [ time-machine ];
 
   disabledTestPaths = [
     # Ignore tests which require network access
@@ -69,14 +68,15 @@ buildPythonPackage rec {
     "test_fallback_existent_system_executable"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "virtualenv" ];
 
   meta = {
     description = "Tool to create isolated Python environments";
-    mainProgram = "virtualenv";
     homepage = "http://www.virtualenv.org";
     changelog = "https://github.com/pypa/virtualenv/blob/${version}/docs/changelog.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "virtualenv";
   };
 }

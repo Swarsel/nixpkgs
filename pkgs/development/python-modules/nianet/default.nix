@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   niapy,
   numpy,
-  scikit-learn,
-  torch,
-
+  # build-system
+  poetry-core,
   # tests
   pytestCheckHook,
   pyyaml,
+  scikit-learn,
   tomli,
+  torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nianet";
   version = "1.1.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "SasoPavlic";
@@ -31,14 +26,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-FZipl6Z9AfiL6WH0kvUn8bVxt8JLdDVlmTSqnyxe0nY=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyyaml
+    tomli
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     poetry-core
   ];
 
-  pythonRelaxDeps = [
-    "numpy"
-    "torch"
-  ];
   dependencies = [
     niapy
     numpy
@@ -46,13 +45,13 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyyaml
-    tomli
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nianet" ];
+
+  pythonRelaxDeps = [
+    "numpy"
+    "torch"
+  ];
 
   meta = {
     description = "Designing and constructing neural network topologies using nature-inspired algorithms";

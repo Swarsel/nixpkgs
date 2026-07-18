@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   gitUpdater,
   nixosTests,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -21,11 +21,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = gitUpdater {
-      url = "https://gerrit.googlesource.com/gerrit";
-      rev-prefix = "v";
-      allowedVersions = "^[0-9\\.]+$";
-    };
     # A list of plugins that are part of the gerrit.war file.
     # Use `java -jar gerrit.war ls | grep plugins/` to generate that list.
     plugins = [
@@ -41,22 +36,31 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       "singleusergroup"
       "webhooks"
     ];
+
     tests = {
       inherit (nixosTests) gerrit;
+    };
+
+    updateScript = gitUpdater {
+      allowedVersions = "^[0-9\\.]+$";
+      rev-prefix = "v";
+      url = "https://gerrit.googlesource.com/gerrit";
     };
   };
 
   meta = {
-    homepage = "https://www.gerritcodereview.com/index.md";
-    license = lib.licenses.asl20;
     description = "Web based code review and repository management for the git version control system";
+    homepage = "https://www.gerritcodereview.com/index.md";
     changelog = "https://www.gerritcodereview.com/${lib.versions.majorMinor finalAttrs.version}.html";
+    license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       flokli
       zimbatm
       felixsinger
     ];
+
     platforms = lib.platforms.unix;
   };
 })

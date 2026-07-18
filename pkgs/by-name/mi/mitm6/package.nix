@@ -7,13 +7,14 @@
 python3.pkgs.buildPythonApplication rec {
   pname = "mitm6";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-g+eFcJdgP7CQ6ntN17guJa4LdkGIb91mr/NKRPIukP8=";
   };
 
+  # No tests exist for mitm6.
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -23,9 +24,7 @@ python3.pkgs.buildPythonApplication rec {
     twisted
   ];
 
-  # No tests exist for mitm6.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "mitm6" ];
 
   meta = {

@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  rustPlatform,
+  fetchFromGitHub,
+  boringssl,
+  clang,
+  cmake,
   fetchNpmDeps,
+  gitMinimal,
+  nodejs,
   npmHooks,
   protobuf,
-  clang,
-  gitMinimal,
-  cmake,
-  boringssl,
-  fetchFromGitHub,
   python3,
-  nodejs,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "libsignal-node";
@@ -24,38 +24,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-stxakRw9CJQetkBcF2BfQh1EvEGurccP5/QLNLyEJz0=";
   };
 
-  cargoHash = "sha256-bbOsE6vcFQpplzXAupcvp2oEoIFT3nk8Ug9QWbCe2yc=";
-
-  npmRoot = "node";
-  npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-npm-deps";
-    inherit (finalAttrs) version src;
-    sourceRoot = "${finalAttrs.src.name}/${finalAttrs.npmRoot}";
-    hash = "sha256-lCLM0qI11Ce9w2NNgXHalxa8Ks628nvTjZhy26PvNbM=";
-  };
-
-  nativeBuildInputs = [
-    python3
-    protobuf
-    nodejs
-    clang
-    gitMinimal
-    cmake
-    npmHooks.npmConfigHook
-    rustPlatform.bindgenHook
-  ];
-
-  env = {
-    BORING_BSSL_INCLUDE_PATH = "${boringssl.dev}/include";
-    BORING_BSSL_PATH = boringssl;
-    NIX_LDFLAGS = if stdenv.hostPlatform.isDarwin then "-lc++" else "-lstdc++";
-  };
-
   patches = [
     # This is used to strip absolute paths of dependencies to avoid leaking info about build machine. Nix builders
     # already solve this problem by chrooting os this is not needed.
     ./dont-strip-absolute-paths.patch
   ];
+
   postPatch = ''
     substituteInPlace node/build_node_bridge.py \
       --replace-fail "'prebuilds'" "'$out/lib'" \
@@ -68,6 +42,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail "cargo:rustc-link-lib=static=ssl" "cargo:rustc-link-lib=dylib=ssl"
   '';
 
+  nativeBuildInputs = [
+    python3
+    protobuf
+    nodejs
+    clang
+    gitMinimal
+    cmake
+    npmHooks.npmConfigHook
+    rustPlatform.bindgenHook
+  ];
+
+  cargoHash = "sha256-bbOsE6vcFQpplzXAupcvp2oEoIFT3nk8Ug9QWbCe2yc=";
+
+  env = {
+    BORING_BSSL_INCLUDE_PATH = "${boringssl.dev}/include";
+    BORING_BSSL_PATH = boringssl;
+    NIX_LDFLAGS = if stdenv.hostPlatform.isDarwin then "-lc++" else "-lstdc++";
+  };
+
   buildPhase = ''
     runHook preBuild
 
@@ -79,4 +72,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   dontCargoInstall = true;
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) version src;
+    hash = "sha256-lCLM0qI11Ce9w2NNgXHalxa8Ks628nvTjZhy26PvNbM=";
+    name = "${finalAttrs.pname}-npm-deps";
+    sourceRoot = "${finalAttrs.src.name}/${finalAttrs.npmRoot}";
+  };
+
+  npmRoot = "node";
 })

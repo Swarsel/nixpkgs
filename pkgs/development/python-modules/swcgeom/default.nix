@@ -1,35 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  beautifulsoup4,
+  buildPythonPackage,
+  certifi,
+  chardet,
   cython,
-  numpy,
-  setuptools,
-  wheel,
   imagecodecs,
+  lmdb,
   matplotlib,
+  numpy,
   pandas,
   pynrrd,
+  pytestCheckHook,
+  requests,
   scipy,
   sdflit,
   seaborn,
+  setuptools,
   tifffile,
   tqdm,
   typing-extensions,
-  beautifulsoup4,
-  certifi,
-  chardet,
-  lmdb,
-  requests,
   urllib3,
-  pytestCheckHook,
+  wheel,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "swcgeom";
   version = "0.21.6";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "yzx9";
@@ -37,6 +35,17 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Q9YvHHUAYGX3m9jJ+ogTYRrdPaCdrcNY2cNlKK7ThX4=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    # make sure import the built version, not the source one
+    rm -r swcgeom
+  '';
+
+  __structuredAttrs = true;
 
   build-system = [
     cython
@@ -70,18 +79,11 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "swcgeom"
   ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    # make sure import the built version, not the source one
-    rm -r swcgeom
-  '';
 
   meta = {
     description = "Neuron geometry library for swc format";

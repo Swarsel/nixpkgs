@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchgit,
-  zlib,
-  gnutlsSupport ? false,
   gnutls,
   nettle,
-  opensslSupport ? true,
   openssl,
+  zlib,
+  gnutlsSupport ? false,
+  opensslSupport ? true,
 }:
 
 assert (gnutlsSupport || opensslSupport);
@@ -23,17 +23,10 @@ stdenv.mkDerivation {
     hash = "sha256-rwMA9eougKnkpG+fe6vZIwOBt2CC1d9qI9a079EbE5o=";
   };
 
-  preBuild = ''
-    makeFlagsArray+=(CC="$CC")
-  '';
-
-  makeFlags = [
-    "prefix=$(out)"
-    "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
-  ]
-  ++ lib.optional gnutlsSupport "CRYPTO=GNUTLS"
-  ++ lib.optional opensslSupport "CRYPTO=OPENSSL"
-  ++ lib.optional stdenv.hostPlatform.isDarwin "SYS=darwin";
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   propagatedBuildInputs = [
     zlib
@@ -44,10 +37,17 @@ stdenv.mkDerivation {
   ]
   ++ lib.optional opensslSupport openssl;
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  makeFlags = [
+    "prefix=$(out)"
+    "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
+  ]
+  ++ lib.optional gnutlsSupport "CRYPTO=GNUTLS"
+  ++ lib.optional opensslSupport "CRYPTO=OPENSSL"
+  ++ lib.optional stdenv.hostPlatform.isDarwin "SYS=darwin";
+
+  preBuild = ''
+    makeFlagsArray+=(CC="$CC")
+  '';
 
   separateDebugInfo = true;
 
@@ -55,7 +55,7 @@ stdenv.mkDerivation {
     description = "Toolkit for RTMP streams";
     homepage = "https://rtmpdump.mplayerhq.hu/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

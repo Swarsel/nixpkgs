@@ -15,13 +15,14 @@
 buildPythonPackage rec {
   pname = "pypykatz";
   version = "0.6.13";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-+T1E/Dk4OcXa8vBhspuB/8V23TORsXXetZpylW25SJM=";
   };
 
+  # Project doesn't have tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +35,7 @@ buildPythonPackage rec {
     minidump
   ];
 
-  # Project doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pypykatz" ];
 
   meta = {

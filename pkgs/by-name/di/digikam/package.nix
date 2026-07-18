@@ -1,63 +1,58 @@
 {
-  stdenv,
-  config,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchgit,
-  gitUpdater,
-
-  cmake,
-  pkg-config,
-  ninja,
-  flex,
   bison,
-  wrapGAppsHook3,
-
-  exiftool,
-  opencv,
-  libtiff,
-  libpng,
-  libjpeg,
-  libheif,
-  libjxl,
   boost,
-  lcms2,
-  expat,
-  exiv2,
-  libxml2,
-  libxslt,
-  jasper,
-  eigen,
-  lensfun,
-  liblqr1,
-  libgphoto2,
-  libusb1,
-  imagemagick,
-  x265,
-  libGLX,
-  libGLU,
+  cmake,
+  config,
   cudaPackages,
-  enableCuda ? config.cudaSupport,
-
-  kdePackages,
-
-  # For `digitaglinktree`
-  perl,
-  sqlite,
-
-  runtimeShell,
+  eigen,
   # For panorama and focus stacking
   enblend-enfuse,
-  hugin,
+  exiftool,
+  exiv2,
+  expat,
+  fetchgit,
+  flex,
+  gitUpdater,
   gnumake,
+  hugin,
+  imagemagick,
+  jasper,
+  kdePackages,
+  lcms2,
+  lensfun,
+  libGLU,
+  libGLX,
+  libgphoto2,
+  libheif,
+  libjpeg,
+  libjxl,
+  liblqr1,
+  libpng,
+  libtiff,
+  libusb1,
+  libxml2,
+  libxslt,
+  ninja,
+  opencv,
+  # For `digitaglinktree`
+  perl,
+  pkg-config,
+  runtimeShell,
+  sqlite,
+  wrapGAppsHook3,
+  x265,
+  enableCuda ? config.cudaSupport,
 }:
 
 let
   testData = fetchgit {
-    url = "https://invent.kde.org/graphics/digikam-test-data.git";
-    rev = "d02dd20b23cc279792325a0f03d21688547a7a59";
     fetchLFS = true;
     hash = "sha256-SvsmcniDRorwu9x9OLtHD9ftgquyoE5Kl8qDgqi1XdQ=";
+    rev = "d02dd20b23cc279792325a0f03d21688547a7a59";
+    url = "https://invent.kde.org/graphics/digikam-test-data.git";
   };
 in
 
@@ -66,16 +61,23 @@ stdenv.mkDerivation (finalAttrs: {
   version = "9.1.0";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "graphics";
     repo = "digikam";
     tag = "v${finalAttrs.version}";
     hash = "sha256-rrAqHSG7AsyG8DM0zYfyuGyu6jI/ZDmSYco91nhdmhQ=";
+    domain = "invent.kde.org";
   };
 
   patches = [
     ./disable-tests-download.patch
   ];
+
+  postPatch = ''
+    substituteInPlace \
+      core/dplugins/bqm/custom/userscript/userscript.cpp \
+      core/utilities/import/backend/cameracontroller.cpp \
+      --replace-fail '"/bin/bash"' ${lib.escapeShellArg "\"${runtimeShell}\""}
+  '';
 
   strictDeps = true;
 
@@ -96,7 +98,6 @@ stdenv.mkDerivation (finalAttrs: {
   #
   # We list non‐Qt dependencies first to override Qt’s propagated
   # build inputs.
-
   buildInputs = [
     opencv.cxxdev
     libtiff
@@ -154,19 +155,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Qt 6.
   ];
 
-  checkInputs = [ kdePackages.qtdeclarative ];
-
-  postConfigure = lib.optionalString finalAttrs.finalPackage.doCheck ''
-    ln -s ${testData} $cmakeDir/test-data
-  '';
-
-  postPatch = ''
-    substituteInPlace \
-      core/dplugins/bqm/custom/userscript/userscript.cpp \
-      core/utilities/import/backend/cameracontroller.cpp \
-      --replace-fail '"/bin/bash"' ${lib.escapeShellArg "\"${runtimeShell}\""}
-  '';
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_WITH_QT6" true)
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
@@ -177,11 +165,14 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.optionals enableCuda "-DCUDA_TOOLKIT_ROOT_DIR=${cudaPackages.cudatoolkit}")
   ];
 
+  postConfigure = lib.optionalString finalAttrs.finalPackage.doCheck ''
+    ln -s ${testData} $cmakeDir/test-data
+  '';
+
   # Tests segfault for some reason…
   # TODO: Get them working.
   doCheck = false;
-
-  dontWrapGApps = true;
+  checkInputs = [ kdePackages.qtdeclarative ];
 
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
@@ -199,6 +190,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "/usr/bin/sqlite3" "${lib.getExe sqlite}"
   '';
 
+  dontWrapGApps = true;
   # over 3h in a normal build slot (2 cores
   requiredSystemFeatures = [ "big-parallel" ];
 
@@ -210,8 +202,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Photo management application";
     homepage = "https://www.digikam.org/";
     changelog = "${finalAttrs.src.meta.homepage}-/blob/master/project/NEWS.${finalAttrs.version}";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
     license = lib.licenses.gpl2Plus;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = with lib.maintainers; [ philipdb ];
     platforms = lib.platforms.linux;
     mainProgram = "digikam";

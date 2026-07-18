@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "generic";
   version = "1.1.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ poetry-core ];
-
   dependencies = [ exceptiongroup ];
-
+  pyproject = true;
   pythonImportsCheck = [ "generic" ];
 
   meta = {

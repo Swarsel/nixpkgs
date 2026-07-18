@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
-  uv-build,
   oracledb,
   pytest-mypy-plugins,
   pytest-xdist,
   pytestCheckHook,
   redis,
   typing-extensions,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "django-stubs-ext";
   version = "5.2.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "typeddjango";
@@ -32,6 +31,12 @@ buildPythonPackage rec {
       --replace-fail "uv_build>=0.9.9,<0.10.0" uv_build
   '';
 
+  nativeCheckInputs = [
+    pytest-mypy-plugins
+    pytest-xdist
+    pytestCheckHook
+  ];
+
   build-system = [ uv-build ];
 
   dependencies = [
@@ -39,24 +44,18 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  optional-dependencies = {
-    redis = [ redis ];
-    oracle = [ oracledb ];
-  };
-
-  nativeCheckInputs = [
-    pytest-mypy-plugins
-    pytest-xdist
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # error: Skipping analyzing "django.db": module is installed, but missing library stubs or py.typed marker  [import-untyped] (diff)
     "tests/typecheck"
   ];
 
-  # Tests are not shipped with PyPI
+  optional-dependencies = {
+    oracle = [ oracledb ];
+    redis = [ redis ];
+  };
 
+  pyproject = true;
+  # Tests are not shipped with PyPI
   pythonImportsCheck = [ "django_stubs_ext" ];
 
   meta = {

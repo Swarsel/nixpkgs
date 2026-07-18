@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  replaceVars,
-  openvpn,
-  gettext,
-  libxml2,
-  pkg-config,
   file,
-  networkmanager,
-  libsecret,
+  gettext,
   glib,
+  gnome,
   gtk3,
   gtk4,
-  withGnome ? true,
-  gnome,
   kmod,
   libnma,
   libnma-gtk4,
+  libsecret,
+  libxml2,
+  networkmanager,
+  openvpn,
+  pkg-config,
+  replaceVars,
+  withGnome ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
       inherit kmod openvpn;
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gettext
@@ -62,22 +64,21 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-absolute-paths"
   ];
 
-  strictDeps = true;
-
   passthru = {
+    networkManagerPlugin = "VPN/nm-openvpn-service.name";
+
     updateScript = gnome.updateScript {
-      packageName = "NetworkManager-openvpn";
       attrPath = "networkmanager-openvpn";
+      packageName = "NetworkManager-openvpn";
       versionPolicy = "odd-unstable";
     };
-    networkManagerPlugin = "VPN/nm-openvpn-service.name";
   };
 
   meta = {
+    inherit (networkmanager.meta) maintainers teams platforms;
     description = "NetworkManager's OpenVPN plugin";
     homepage = "https://gitlab.gnome.org/GNOME/NetworkManager-openvpn";
     changelog = "https://gitlab.gnome.org/GNOME/NetworkManager-openvpn/-/blob/main/NEWS";
-    inherit (networkmanager.meta) maintainers teams platforms;
     license = lib.licenses.gpl2Plus;
   };
 })

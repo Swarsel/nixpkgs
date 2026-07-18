@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
+  fetchpatch,
   imlib2,
-  libxext,
   libx11,
+  libxext,
   ncurses,
   pkg-config,
   zlib,
@@ -24,11 +24,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-N0Lfi0d4kjxirEbIjdeearYWvStkKMyV6lgeyNKXcVw=";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+    "man"
+  ];
+
   patches = [
     (fetchpatch {
+      hash = "sha256-AdpiE5Gw/CVET//7TTYZCb0glW5HY+T8xZkYs1XCBvY=";
       name = "CVE-2026-42046.patch";
       url = "https://github.com/cacalabs/libcaca/commit/fb77acff9ba6bb01d53940da34fb10f20b156a23.patch";
-      hash = "sha256-AdpiE5Gw/CVET//7TTYZCb0glW5HY+T8xZkYs1XCBvY=";
     })
   ];
 
@@ -45,13 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals x11Support [
     libx11
     libxext
-  ];
-
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-    "man"
   ];
 
   configureFlags = [
@@ -71,8 +71,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://caca.zoy.org/wiki/libcaca";
     description = "Graphics library that outputs text instead of pixels";
+
     longDescription = ''
       libcaca is a graphics library that outputs text instead of pixels, so that
       it can work on older video cards or text terminals. It is not unlike the
@@ -89,6 +89,8 @@ stdenv.mkDerivation (finalAttrs: {
 
       Libcaca was written by Sam Hocevar and Jean-Yves Lamoureux.
     '';
+
+    homepage = "http://caca.zoy.org/wiki/libcaca";
     license = lib.licenses.wtfpl;
     maintainers = [ ];
     platforms = lib.platforms.unix;

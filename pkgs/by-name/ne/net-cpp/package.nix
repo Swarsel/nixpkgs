@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  makeFontsConf,
-  testers,
   boost,
   cmake,
   curl,
   doxygen,
+  gitUpdater,
   graphviz,
   gtest,
   jsoncpp,
   lomiri,
+  makeFontsConf,
   pkg-config,
   process-cpp,
   properties-cpp,
   python3,
+  testers,
   validatePkgConfig,
   writableTmpDirAsHomeHook,
 }:
@@ -60,6 +60,13 @@ stdenv.mkDerivation (finalAttrs: {
     curl
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "ENABLE_WERROR" true)
+  ];
+
+  env.FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     pkg-config
     pythonEnv
@@ -73,14 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     properties-cpp
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "ENABLE_WERROR" true)
-  ];
-
-  env.FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   # Tests start HTTP server in separate process with fixed URL, parallelism breaks things
   enableParallelChecking = false;
 
@@ -89,6 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
     updateScript = gitUpdater { };
   };
 
@@ -97,10 +97,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/lib-cpp/net-cpp";
     changelog = "https://gitlab.com/ubports/development/core/lib-cpp/net-cpp/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "net-cpp"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

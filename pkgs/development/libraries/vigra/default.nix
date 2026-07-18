@@ -7,14 +7,14 @@
   fftw,
   fftwSinglePrec,
   hdf5,
+  jq,
   libjpeg,
   libpng,
   libtiff,
+  nix-update,
   openexr,
   python3,
   writeShellScript,
-  jq,
-  nix-update,
 }:
 
 let
@@ -31,7 +31,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-pknZHHIIhjfOxdp+qCOOGvo0W5ByTHXRiIQzzN7Z6M4=";
   };
 
+  postPatch = ''
+    chmod +x config/run_test.sh.in
+    patchShebangs --build config/run_test.sh.in
+  '';
+
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     boost
     fftw
@@ -43,11 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     openexr
     python
   ];
-
-  postPatch = ''
-    chmod +x config/run_test.sh.in
-    patchShebangs --build config/run_test.sh.in
-  '';
 
   cmakeFlags = [
     "-DWITH_OPENEXR=1"
@@ -66,6 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
         doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
       });
     };
+
     updateScript = writeShellScript "update-vigra" ''
       latestVersion=$(curl ''${GITHUB_TOKEN:+-u ":$GITHUB_TOKEN"} --fail --silent https://api.github.com/repos/ukoethe/vigra/releases/latest | ${lib.getExe jq} --raw-output .tag_name | sed -E 's/Version-([0-9]+)-([0-9]+)-([0-9]+)/\1.\2.\3/')
       ${lib.getExe nix-update} vigra --version $latestVersion
@@ -74,13 +76,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Novel computer vision C++ library with customizable algorithms and data structures";
-    mainProgram = "vigra-config";
     homepage = "https://hci.iwr.uni-heidelberg.de/vigra";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ShamrockLee
       kyehn
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "vigra-config";
   };
 })

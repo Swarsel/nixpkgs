@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
+  catch2_3,
   cmake,
-  pkg-config,
+  exiv2,
+  gtk3,
   ninja,
   opencv,
-  SDL2,
-  gtk3,
-  catch2_3,
+  pkg-config,
   spdlog,
-  exiv2,
   wrapGAppsHook3,
 }:
 
@@ -41,24 +41,24 @@ stdenv.mkDerivation (finalAttrs: {
     exiv2
   ];
 
-  checkInputs = [
-    catch2_3
-  ];
-
-  doCheck = true;
-
   cmakeFlags = [
     "-DBUILD_TESTING=ON"
     "-DXPANO_INSTALL_DESKTOP_FILES=ON"
   ];
 
+  doCheck = true;
+
+  checkInputs = [
+    catch2_3
+  ];
+
   meta = {
     description = "Panorama stitching tool";
-    mainProgram = "Xpano";
     homepage = "https://krupkat.github.io/xpano/";
     changelog = "https://github.com/krupkat/xpano/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ krupkat ];
     platforms = lib.platforms.linux;
+    mainProgram = "Xpano";
   };
 })

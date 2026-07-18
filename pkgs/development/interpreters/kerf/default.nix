@@ -2,11 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libedit,
-  zlib,
-  ncurses,
   expect,
-
+  libedit,
+  ncurses,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,15 +19,11 @@ stdenv.mkDerivation rec {
     hash = "sha256-0sU2zOk5I69lQyrn1g0qsae7S/IBT6eA/911qp0GNkk=";
   };
 
-  sourceRoot = "${src.name}/src";
   buildInputs = [
     libedit
     zlib
     ncurses
   ];
-
-  nativeCheckInputs = [ expect ];
-  doCheck = true;
 
   makeFlags = [
     "kerf"
@@ -47,11 +42,8 @@ stdenv.mkDerivation rec {
     ++ lib.optionals stdenv.hostPlatform.isDarwin [ "-fcommon" ]
   );
 
-  patchPhase = ''
-    substituteInPlace ./Makefile \
-      --replace 'CPUS ?=' 'CPUS = $(NIX_BUILD_CORES) #' \
-      --replace 'termcap' 'ncurses'
-  '';
+  doCheck = true;
+  nativeCheckInputs = [ expect ];
 
   # the kerf executable uses ncurses to create a fancy terminal for input and
   # reads terminal keystrokes directly, so it doesn't read from stdin as
@@ -81,20 +73,29 @@ stdenv.mkDerivation rec {
 
   installPhase = "install -D kerf $out/bin/kerf";
 
+  patchPhase = ''
+    substituteInPlace ./Makefile \
+      --replace 'CPUS ?=' 'CPUS = $(NIX_BUILD_CORES) #' \
+      --replace 'termcap' 'ncurses'
+  '';
+
+  sourceRoot = "${src.name}/src";
+
   meta = {
     description = "Columnar tick database and time-series language";
-    mainProgram = "kerf";
+
     longDescription = ''
       Kerf is a columnar tick database and small programming
       language that is a superset of JSON and SQL. It can be
       used for local analytics, timeseries, logfile processing,
       and more.
     '';
-    license = with lib.licenses; [ bsd2 ];
-    homepage = "https://github.com/kevinlawler/kerf1";
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ thoughtpolice ];
 
+    homepage = "https://github.com/kevinlawler/kerf1";
+    license = with lib.licenses; [ bsd2 ];
+    maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.unix;
+    mainProgram = "kerf";
     # aarch64-linux seems hopeless, with over 2,000 warnings
     # generated?
     broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);

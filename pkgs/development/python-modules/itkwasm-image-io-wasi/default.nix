@@ -12,30 +12,29 @@
 buildPythonPackage (finalAttrs: {
   pname = "itkwasm-image-io-wasi";
   version = "1.6.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "itkwasm_image_io_wasi";
     inherit (finalAttrs) version;
     hash = "sha256-g3w/OPU9N1GxJkW9kKrOvGtVPRVb6zTy5n2nB5WU7+Q=";
+    pname = "itkwasm_image_io_wasi";
   };
+
+  nativeBuildInputs = [ writableTmpDirAsHomeHook ];
+  # No tests available
+  doCheck = false;
 
   build-system = [
     hatch-vcs
     hatchling
   ];
 
-  nativeBuildInputs = [ writableTmpDirAsHomeHook ];
-
   dependencies = [
     importlib-resources
     itkwasm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "itkwasm_image_io_wasi" ];
-
-  # No tests available
-  doCheck = false;
 
   meta = {
     description = "Input and output for scientific and medical image file formats";

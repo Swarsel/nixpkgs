@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  m4,
   installShellFiles,
+  m4,
   util-linuxMinimal,
 }:
 
@@ -15,11 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "davmac314";
     repo = "dinit";
     rev = "v${finalAttrs.version}";
+    hash = "sha256-LerUex/P8UYFWG0TK8LAFPlFBNIVIH2cZfBxe6AD7Sc=";
+
     # fix for case-insensitive filesystems
     postFetch = ''
       [ -f "$out/BUILD" ] && rm "$out/BUILD"
     '';
-    hash = "sha256-LerUex/P8UYFWG0TK8LAFPlFBNIVIH2cZfBxe6AD7Sc=";
   };
 
   postPatch = ''
@@ -49,10 +50,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Service manager / supervision system, which can (on Linux) also function as a system manager and init";
     homepage = "https://davmac.org/projects/dinit";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       aanderse
       lillecarl
     ];
+
     platforms = lib.platforms.unix;
   };
 })

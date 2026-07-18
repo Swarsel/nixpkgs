@@ -1,36 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  # tests
+  flax,
   # dependencies
   gym,
   gymnasium,
-  packaging,
-  tensorboard,
-  torch,
-  tqdm,
-  wandb,
-
-  # tests
-  flax,
   hypothesis,
   jax,
   optax,
+  packaging,
   pettingzoo,
   pygame,
   pymunk,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  tensorboard,
+  torch,
+  tqdm,
+  wandb,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "skrl";
   version = "1.4.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Toni-SM";
@@ -56,6 +51,18 @@ buildPythonPackage (finalAttrs: {
         "jnp.clip(actions, min=self._d_clip_actions_min, max=self._d_clip_actions_max)"
   '';
 
+  nativeCheckInputs = [
+    flax
+    hypothesis
+    jax
+    optax
+    pettingzoo
+    pygame
+    pymunk
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -68,19 +75,6 @@ buildPythonPackage (finalAttrs: {
     wandb
   ];
 
-  pythonImportsCheck = [ "skrl" ];
-
-  nativeCheckInputs = [
-    flax
-    hypothesis
-    jax
-    optax
-    pettingzoo
-    pygame
-    pymunk
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # TypeError: The array passed to from_dlpack must have __dlpack__ and __dlpack_device__ methods
     "test_env"
@@ -90,12 +84,15 @@ buildPythonPackage (finalAttrs: {
     "test_key"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "skrl" ];
+
   meta = {
     description = "Reinforcement learning library using PyTorch focusing on readability and simplicity";
     homepage = "https://skrl.readthedocs.io";
-    downloadPage = "https://github.com/Toni-SM/skrl";
     changelog = "https://github.com/Toni-SM/skrl/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bcdarwin ];
+    downloadPage = "https://github.com/Toni-SM/skrl";
   };
 })

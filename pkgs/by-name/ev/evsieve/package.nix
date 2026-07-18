@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   libevdev,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,18 +16,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-UV5m8DmFtkCU/DoBJNBCdvhU/jYtU5+WnnhKwxZNl9g=";
   };
 
-  cargoHash = "sha256-rOqjB/ZakXhuKgN3auEOGzV+9bDX30TTZWD8nt3b+pE=";
-
   buildInputs = [ libevdev ];
-
+  cargoHash = "sha256-rOqjB/ZakXhuKgN3auEOGzV+9bDX30TTZWD8nt3b+pE=";
   doCheck = false; # unit tests create uinput devices
 
   meta = {
     description = "Utility for mapping events from Linux event devices";
-    mainProgram = "evsieve";
     homepage = "https://github.com/KarsMulder/evsieve";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ tsowell ];
     platforms = lib.platforms.linux;
+    mainProgram = "evsieve";
   };
 })

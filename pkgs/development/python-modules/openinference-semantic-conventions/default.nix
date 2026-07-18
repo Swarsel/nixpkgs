@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   nix-update-script,
   pytest-asyncio,
@@ -11,9 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "openinference-semantic-conventions";
   version = "0.1.30";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Arize-ai";
@@ -22,17 +19,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MkgajZknHOw4/qra6uZ99rtpiylpHhOj8tDfLGUSU74=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python/${finalAttrs.pname}";
-
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "openinference.semconv" ];
-
+  sourceRoot = "${finalAttrs.src.name}/python/${finalAttrs.pname}";
   passthru.updateScript = nix-update-script { };
 
   meta = {

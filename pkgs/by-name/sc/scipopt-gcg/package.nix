@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  scipopt-scip,
-  cliquer,
-  gsl,
-  gmp,
   bliss,
+  cliquer,
+  cmake,
+  gmp,
+  gsl,
   nauty,
+  scipopt-scip,
 }:
 
 stdenv.mkDerivation rec {
@@ -49,14 +49,15 @@ stdenv.mkDerivation rec {
       "-DSCIPOptSuite_SOURCE_DIR=$out"
     )
   '';
+
   doCheck = true;
 
   meta = {
-    maintainers = with lib.maintainers; [ pmeinhold ];
-    changelog = "https://gcg.or.rwth-aachen.de/doc-3.5.0/RN${lib.versions.major version}${lib.versions.minor version}.html";
     description = "Branch-and-Price & Column Generation for Everyone";
-    license = lib.licenses.lgpl3Plus;
     homepage = "https://gcg.zib.de";
+    changelog = "https://gcg.or.rwth-aachen.de/doc-3.5.0/RN${lib.versions.major version}${lib.versions.minor version}.html";
+    license = lib.licenses.lgpl3Plus;
+    maintainers = with lib.maintainers; [ pmeinhold ];
     mainProgram = "gcg";
   };
 }

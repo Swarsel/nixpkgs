@@ -26,8 +26,8 @@ buildGoModule {
 
   meta = {
     description = "Full-featured Gemini server";
-    mainProgram = "molly-brown";
     homepage = "https://tildegit.org/solderpunk/molly-brown";
     license = lib.licenses.bsd2;
+    mainProgram = "molly-brown";
   };
 }

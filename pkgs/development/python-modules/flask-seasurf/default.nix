@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   flask,
   mock,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "flask-seasurf";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "maxcountryman";
@@ -20,15 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-ajQiDizNaF0em9CVeaHEuJEeSaYraJh9YgvhvBPTIsk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ flask ];
-
   nativeCheckInputs = [
     pytestCheckHook
     mock
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ flask ];
+  pyproject = true;
   pythonImportsCheck = [ "flask_seasurf" ];
 
   meta = {

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cryptography,
-  pytestCheckHook,
-  sphinxHook,
-  sphinx-rtd-theme,
-  zope-interface,
   oauthlib,
+  pytestCheckHook,
+  setuptools,
+  sphinx-rtd-theme,
+  sphinxHook,
+  zope-interface,
 }:
 
 buildPythonPackage rec {
   pname = "pyjwt";
   version = "2.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jpadilla";
@@ -28,23 +27,22 @@ buildPythonPackage rec {
     "doc"
   ];
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     sphinxHook
     sphinx-rtd-theme
     zope-interface
   ];
 
-  optional-dependencies.crypto = [ cryptography ];
-
   nativeCheckInputs = [ pytestCheckHook ] ++ (lib.concatAttrValues optional-dependencies);
+  build-system = [ setuptools ];
 
   disabledTests = [
     # requires internet connection
     "test_get_jwt_set_sslcontext_default"
   ];
 
+  optional-dependencies.crypto = [ cryptography ];
+  pyproject = true;
   pythonImportsCheck = [ "jwt" ];
 
   passthru.tests = {
@@ -52,9 +50,9 @@ buildPythonPackage rec {
   };
 
   meta = {
-    changelog = "https://github.com/jpadilla/pyjwt/blob/${version}/CHANGELOG.rst";
     description = "JSON Web Token implementation in Python";
     homepage = "https://github.com/jpadilla/pyjwt";
+    changelog = "https://github.com/jpadilla/pyjwt/blob/${version}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ prikhi ];
   };

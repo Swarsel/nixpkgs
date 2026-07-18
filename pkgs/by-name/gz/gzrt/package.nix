@@ -24,11 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/arenn/gzrt";
     description = "Gzip Recovery Toolkit";
-    maintainers = [ ];
-    mainProgram = "gzrecover";
+    homepage = "https://github.com/arenn/gzrt";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "gzrecover";
   };
 })

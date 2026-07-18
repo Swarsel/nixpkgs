@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,21 +21,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vOEz2KGJLCiiX+Or9y0JE9UF7sYbwaSCVm5iBv4jIdI=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-9iGfwMyy+cmIp7A5qOderuyL/0wrJ/zCTFPyLL/w3qE=";
-  };
-
-  env = {
-    PUPPETEER_SKIP_DOWNLOAD = true;
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
     yarnInstallHook
     nodejs
   ];
+
+  env = {
+    PUPPETEER_SKIP_DOWNLOAD = true;
+  };
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-9iGfwMyy+cmIp7A5qOderuyL/0wrJ/zCTFPyLL/w3qE=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 

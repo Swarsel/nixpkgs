@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  undmg,
   appimageTools,
   makeWrapper,
+  undmg,
 }:
 
 let
@@ -16,8 +16,8 @@ let
     fetchurl
       {
         x86_64-linux = {
-          url = "https://github.com/ransome1/sleek/releases/download/v${version}/sleek-2.0.14.AppImage";
           hash = "sha256-d2fLsCI7peuNBtjgHs1qumgPAF9eJeBYiIIffoSv9Jk=";
+          url = "https://github.com/ransome1/sleek/releases/download/v${version}/sleek-2.0.14.AppImage";
         };
       }
       .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.system}");
@@ -27,10 +27,12 @@ let
     homepage = "https://github.com/ransome1/sleek";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ByteSudoer ];
-    mainProgram = "sleek-todo";
+
     platforms = [
       "x86_64-linux"
     ];
+
+    mainProgram = "sleek-todo";
   };
   appimageContents = appimageTools.extract { inherit pname version src; };
 in
@@ -43,7 +45,6 @@ if stdenv.hostPlatform.isDarwin then
       meta
       ;
 
-    sourceRoot = ".";
     nativeBuildInputs = [ undmg ];
 
     installPhase = ''
@@ -52,6 +53,8 @@ if stdenv.hostPlatform.isDarwin then
       cp -r *.app $out/Applications/
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   }
 else
   appimageTools.wrapType2 {
@@ -61,7 +64,9 @@ else
       src
       meta
       ;
+
     nativeBuildInputs = [ makeWrapper ];
+
     extraInstallCommands = ''
       wrapProgram $out/bin/sleek-todo \
         --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations}}"

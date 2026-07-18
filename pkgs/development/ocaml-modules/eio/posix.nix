@@ -1,16 +1,15 @@
 {
-  buildDunePackage,
   lib,
   stdenv,
+  buildDunePackage,
   dune-configurator,
   eio,
   fmt,
-  logs,
   iomux,
+  logs,
 }:
 
 buildDunePackage {
-  pname = "eio_posix";
   inherit (eio)
     meta
     src
@@ -18,13 +17,7 @@ buildDunePackage {
     version
     ;
 
-  minimalOCamlVersion = "5.0";
-
-  dontStrip = true;
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
-  };
+  pname = "eio_posix";
 
   buildInputs = [
     dune-configurator
@@ -36,4 +29,11 @@ buildDunePackage {
     logs
     iomux
   ];
+
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
+  };
+
+  dontStrip = true;
+  minimalOCamlVersion = "5.0";
 }

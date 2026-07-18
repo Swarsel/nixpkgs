@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  replaceVars,
-  autoreconfHook,
-  pkg-config,
   fetchurl,
-  python3,
+  autoreconfHook,
   dropbox,
-  gtk4,
-  nautilus,
   gdk-pixbuf,
   gobject-introspection,
+  gtk4,
+  nautilus,
+  pkg-config,
+  python3,
+  replaceVars,
 }:
 
 let
@@ -18,20 +18,18 @@ let
   dropboxd = "${dropbox}/bin/dropbox";
 in
 stdenv.mkDerivation {
-  pname = "dropbox-cli";
   inherit version;
-
-  outputs = [
-    "out"
-    "nautilusExtension"
-  ];
+  pname = "dropbox-cli";
 
   src = fetchurl {
     url = "https://linux.dropbox.com/packages/nautilus-dropbox-${version}.tar.bz2";
     hash = "sha256-pqCYzxaqR0f0CBaseT1Z436K47cIDQswYR1sK4Zj8sE=";
   };
 
-  strictDeps = true;
+  outputs = [
+    "out"
+    "nautilusExtension"
+  ];
 
   patches = [
     (replaceVars ./fix-cli-paths.patch {
@@ -40,6 +38,8 @@ stdenv.mkDerivation {
       DESKTOP_FILE_DIR = null;
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -71,12 +71,12 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://www.dropbox.com";
     description = "Command line client for the dropbox daemon";
+    homepage = "https://www.dropbox.com";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "dropbox";
     maintainers = [ ];
     # NOTE: Dropbox itself only works on linux, so this is ok.
     platforms = lib.platforms.linux;
+    mainProgram = "dropbox";
   };
 }

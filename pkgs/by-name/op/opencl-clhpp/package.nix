@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  khronos-ocl-icd-loader,
+  opencl-headers,
   python3,
   ruby,
-  opencl-headers,
-  khronos-ocl-icd-loader,
   testers,
 }:
 
@@ -18,9 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "KhronosGroup";
     repo = "OpenCL-CLHPP";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     sha256 = "sha256-VrI6cufrIXUizV2exKnQ5B1zjKzWsX5imp3ON39BkSw=";
+    fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -29,21 +31,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ opencl-headers ];
 
-  strictDeps = true;
-
-  doCheck = true;
-  checkInputs = [ khronos-ocl-icd-loader ];
-  nativeCheckInputs = [ ruby ];
-
   cmakeFlags = [
     (lib.cmakeBool "OPENCL_CLHPP_BUILD_TESTING" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "BUILD_EXAMPLES" finalAttrs.finalPackage.doCheck)
   ];
 
+  doCheck = true;
+  nativeCheckInputs = [ ruby ];
+  checkInputs = [ khronos-ocl-icd-loader ];
+
   passthru.tests = {
     pkg-config = testers.hasPkgConfigModules {
-      package = finalAttrs.finalPackage;
       moduleNames = [ "OpenCL-CLHPP" ];
+      package = finalAttrs.finalPackage;
       # Package version does not match the pkg-config module version.
     };
   };

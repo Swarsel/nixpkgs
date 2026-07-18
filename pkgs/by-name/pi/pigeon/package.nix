@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,18 +16,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-vaCgvj/n8MuktaZ2+tQVlQW0LrptQkEQK2qM+YwXXhg=";
-
+  doCheck = false;
   proxyVendor = true;
-
   subPackages = [ "." ];
 
-  doCheck = false;
-
   meta = {
-    homepage = "https://github.com/mna/pigeon";
     description = "PEG parser generator for Go";
-    mainProgram = "pigeon";
-    maintainers = with lib.maintainers; [ zimbatm ];
+    homepage = "https://github.com/mna/pigeon";
     license = with lib.licenses; [ bsd3 ];
+    maintainers = with lib.maintainers; [ zimbatm ];
+    mainProgram = "pigeon";
   };
 })

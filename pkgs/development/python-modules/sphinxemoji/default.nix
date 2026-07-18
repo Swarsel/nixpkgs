@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   sphinx,
   sphinxHook,
@@ -10,12 +10,6 @@
 buildPythonPackage rec {
   pname = "sphinxemoji";
   version = "0.3.2";
-  pyproject = true;
-
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   src = fetchFromGitHub {
     owner = "sphinx-contrib";
@@ -23,6 +17,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-2/2fOIxjF4vs90uqZyzfidrh+P/MHa+LTf1RsQYmgZ0=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   nativeBuildInputs = [
     setuptools
@@ -35,6 +34,7 @@ buildPythonPackage rec {
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sphinxemoji" ];
 
   meta = {

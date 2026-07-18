@@ -1,19 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  unittestCheckHook,
-
+  buildPythonPackage,
   hatchling,
-
   khanaa,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "wunsen";
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cakimpei";
@@ -22,18 +18,16 @@ buildPythonPackage rec {
     hash = "sha256-lMEhtcWG+S3vAz+Y/qDxhaZslsO0pbs5xUn5QgZNs2U=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ khanaa ];
-
   nativeCheckInputs = [ unittestCheckHook ];
+  build-system = [ hatchling ];
+  dependencies = [ khanaa ];
+  pyproject = true;
+  pythonImportsCheck = [ "wunsen" ];
 
   unittestFlagsArray = [
     "-s"
     "tests"
   ];
-
-  pythonImportsCheck = [ "wunsen" ];
 
   meta = {
     description = "Transliterate/transcribe other languages into Thai Topics";

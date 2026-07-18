@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  wrapGAppsHook4,
   gdk-pixbuf,
   gettext,
+  glib,
   gobject-introspection,
   gtk4,
-  glib,
-  python3Packages,
   libadwaita,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 let
 
@@ -17,7 +17,7 @@ let
 in
 python3Packages.buildPythonApplication {
   inherit pname version;
-  pyproject = true;
+
   src = fetchFromGitHub {
     owner = "nicotine-plus";
     repo = "nicotine-plus";
@@ -38,33 +38,40 @@ python3Packages.buildPythonApplication {
     libadwaita
   ];
 
-  dependencies = [
-    python3Packages.pygobject3
-  ];
-
-  build-system = [
-    python3Packages.setuptools
-  ];
+  doCheck = false;
 
   postInstall = ''
     ln -s $out/bin/nicotine $out/bin/nicotine-plus
   '';
 
+  build-system = [
+    python3Packages.setuptools
+  ];
+
+  dependencies = [
+    python3Packages.pygobject3
+  ];
+
   dontWrapGAppsHook = true;
+
   makeWrapperArgs = [
     "\${gappsWrapperArgs[@]}"
   ];
 
-  doCheck = false;
+  pyproject = true;
+
   meta = {
     description = "Graphical client for the SoulSeek peer-to-peer system";
+
     longDescription = ''
       Nicotine+ aims to be a pleasant, free and open source (FOSS) alternative
       to the official Soulseek client, providing additional functionality while
       keeping current with the Soulseek protocol.
     '';
+
     homepage = "https://www.nicotine-plus.org";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       klntsky
       amadaluzia

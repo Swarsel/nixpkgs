@@ -1,23 +1,23 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   dbus,
   eudev,
-  fetchFromGitHub,
   installShellFiles,
   libdisplay-info,
+  libgbm,
   libglvnd,
   libinput,
   libxkbcommon,
-  libgbm,
-  versionCheckHook,
   nix-update-script,
   pango,
   pipewire,
   pkg-config,
   rustPlatform,
   seatd,
-  stdenv,
   systemd,
+  versionCheckHook,
   wayland,
   withDbus ? true,
   withDinit ? false,
@@ -47,8 +47,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail 'niri' "$out/bin/niri"
   '';
 
-  cargoHash = "sha256-gfnalA3qI3a9h3PvsxgQLCrzapfjLLkxhTMJpwRh+ro=";
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -72,12 +70,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optional withSystemd systemd # Includes libudev
   ++ lib.optional (!withSystemd) eudev; # Use an alternative libudev implementation when building w/o systemd
 
-  buildFeatures =
-    lib.optional withDbus "dbus"
-    ++ lib.optional withDinit "dinit"
-    ++ lib.optional withScreencastSupport "xdp-gnome-screencast"
-    ++ lib.optional withSystemd "systemd";
-  buildNoDefaultFeatures = true;
+  cargoHash = "sha256-gfnalA3qI3a9h3PvsxgQLCrzapfjLLkxhTMJpwRh+ro=";
+
+  env = {
+    # Upstream recommends setting the commit hash manually when in a
+    # build environment where the Git repository is unavailable.
+    # See https://github.com/niri-wm/niri/wiki/Packaging-niri#version-string
+    NIRI_BUILD_COMMIT = "Nixpkgs";
+
+    # Force linking with libEGL and libwayland-client
+    # so they can be discovered by `dlopen()`
+    RUSTFLAGS = toString (
+      map (arg: "-C link-arg=" + arg) [
+        "-Wl,--push-state,--no-as-needed"
+        "-lEGL"
+        "-lwayland-client"
+        "-Wl,--pop-state"
+      ]
+    );
+  };
+
+  checkFlags = [ "--skip=::egl" ];
 
   postInstall = ''
     install -Dm0644 README.md resources/default-config.kdl -t $doc/share/doc/niri
@@ -105,27 +118,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/niri completions zsh)
   '';
 
-  env = {
-    # Force linking with libEGL and libwayland-client
-    # so they can be discovered by `dlopen()`
-    RUSTFLAGS = toString (
-      map (arg: "-C link-arg=" + arg) [
-        "-Wl,--push-state,--no-as-needed"
-        "-lEGL"
-        "-lwayland-client"
-        "-Wl,--pop-state"
-      ]
-    );
-
-    # Upstream recommends setting the commit hash manually when in a
-    # build environment where the Git repository is unavailable.
-    # See https://github.com/niri-wm/niri/wiki/Packaging-niri#version-string
-    NIRI_BUILD_COMMIT = "Nixpkgs";
-  };
-
-  checkFlags = [ "--skip=::egl" ];
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  buildFeatures =
+    lib.optional withDbus "dbus"
+    ++ lib.optional withDinit "dinit"
+    ++ lib.optional withScreencastSupport "xdp-gnome-screencast"
+    ++ lib.optional withSystemd "systemd";
+
+  buildNoDefaultFeatures = true;
 
   passthru = {
     providedSessions = [ "niri" ];
@@ -137,12 +139,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/niri-wm/niri";
     changelog = "https://github.com/niri-wm/niri/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       sodiboo
       getchoo
       zimward
     ];
-    mainProgram = "niri";
+
     platforms = lib.platforms.linux;
+    mainProgram = "niri";
   };
 })

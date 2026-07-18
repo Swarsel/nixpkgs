@@ -7,31 +7,31 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "zsh-history-to-fish";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-expPuffZttyXNRreplPC5Ee/jfWAyOnmjTIMXONtrnw=";
   };
 
+  patches = [
+    # Patch from currently-unmerged PR, fixing runtime error.
+    # Should be removed when PR is merged or error is otherwise fixed.
+    # Check https://github.com/rsalmei/zsh-history-to-fish/pull/15 if you're in the future
+    ./fix-runtime-error.patch
+  ];
+
+  # upstream has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
     click
   ];
 
-  # upstream has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "zsh_history_to_fish"
-  ];
-
-  patches = [
-    # Patch from currently-unmerged PR, fixing runtime error.
-    # Should be removed when PR is merged or error is otherwise fixed.
-    # Check https://github.com/rsalmei/zsh-history-to-fish/pull/15 if you're in the future
-    ./fix-runtime-error.patch
   ];
 
   meta = {

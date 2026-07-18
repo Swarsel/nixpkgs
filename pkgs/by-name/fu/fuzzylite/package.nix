@@ -4,8 +4,8 @@
   fetchFromGitHub,
   cmake,
   ninja,
-  useFloat ? false,
   unstableGitUpdater,
+  useFloat ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,11 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fuzzy logic control library in C++";
-    mainProgram = "fuzzylite";
     homepage = "https://fuzzylite.com";
     changelog = "https://github.com/fuzzylite/fuzzylite/${finalAttrs.src.rev}/release/CHANGELOG";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ azahi ];
     platforms = lib.platforms.all;
+    mainProgram = "fuzzylite";
   };
 })

@@ -1,12 +1,11 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  autoPatchelfHook,
   alsa-lib,
-  gtk3,
-  zlib,
+  autoPatchelfHook,
   dbus,
+  fetchzip,
+  gtk3,
   hidapi,
   libGL,
   libxcursor,
@@ -17,11 +16,12 @@
   libxrandr,
   libxscrnsaver,
   libxxf86vm,
+  makeDesktopItem,
+  nix-update-script,
   udev,
   vulkan-loader,
   wayland, # (not used by default, enable with SDL_VIDEODRIVER=wayland - doesn't support HiDPI)
-  makeDesktopItem,
-  nix-update-script,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://github.com/YARC-Official/YARG/releases/download/v${finalAttrs.version}/YARG_v${finalAttrs.version}-Linux-x86_64.zip";
-    stripRoot = false;
     hash = "sha256-xIWiQe0GSt6S9j2Xte/p+FHuO07Tv69zxS+OdNEI1sI=";
+    stripRoot = false;
   };
 
   nativeBuildInputs = [ autoPatchelfHook ];
@@ -59,15 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-loader
     wayland
   ];
-
-  desktopItem = makeDesktopItem {
-    name = "yarg";
-    desktopName = "YARG";
-    comment = finalAttrs.meta.description;
-    icon = "yarg";
-    exec = "yarg";
-    categories = [ "Game" ];
-  };
 
   installPhase = ''
     runHook preInstall
@@ -114,6 +105,15 @@ stdenv.mkDerivation (finalAttrs: {
       "$out/libexec/yarg/UnityPlayer.so"
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [ "Game" ];
+    comment = finalAttrs.meta.description;
+    desktopName = "YARG";
+    exec = "yarg";
+    icon = "yarg";
+    name = "yarg";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -121,9 +121,9 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://yarg.in";
     changelog = "https://github.com/YARC-Official/YARG/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl3Plus;
-    maintainers = with lib.maintainers; [ kira-bruneau ];
-    mainProgram = "yarg";
-    platforms = [ "x86_64-linux" ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ kira-bruneau ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "yarg";
   };
 })

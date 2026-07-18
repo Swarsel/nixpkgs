@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   html-text,
   jstyleson,
   lxml,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "extruct";
   version = "0.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scrapinghub";
@@ -45,20 +44,21 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "extruct" ];
-
   disabledTests = [
     # AssertionError: Lists differ
     "test_microformat"
     "test_umicroformat"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "extruct" ];
+
   meta = {
     description = "Extract embedded metadata from HTML markup";
-    mainProgram = "extruct";
     homepage = "https://github.com/scrapinghub/extruct";
     changelog = "https://github.com/scrapinghub/extruct/blob/v${finalAttrs.version}/HISTORY.rst";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ ambroisie ];
+    mainProgram = "extruct";
   };
 })

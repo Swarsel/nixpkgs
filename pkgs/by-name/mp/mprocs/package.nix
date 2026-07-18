@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mprocs";
   version = "0.9.6";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pvolok";
@@ -19,11 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-Qp0o7ruXUZBCi7Abrj8V5MAY/qzo5Uf7pwIcFGwCfnw=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
 
   passthru = {
     updateScript = nix-update-script { };

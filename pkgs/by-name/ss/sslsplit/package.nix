@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  openssl,
   libevent,
-  libpcap,
   libnet,
+  libpcap,
+  openssl,
   zlib,
 }:
 
@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-sEwP7f2PSqXdMqLub9zrfQgH8I4oe9klVPzNpJjrPJ8=";
       name = "fix-openssl-3-build.patch";
       url = "https://github.com/droe/sslsplit/commit/e17de8454a65d2b9ba432856971405dfcf1e7522.patch";
-      hash = "sha256-sEwP7f2PSqXdMqLub9zrfQgH8I4oe9klVPzNpJjrPJ8=";
     })
   ];
 
@@ -48,14 +48,16 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Transparent SSL/TLS interception";
     homepage = "https://www.roe.ch/SSLsplit";
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ contrun ];
+
     license = with lib.licenses; [
       bsd2
       mit
       unlicense
       free
     ];
+
+    maintainers = with lib.maintainers; [ contrun ];
+    platforms = lib.platforms.all;
     mainProgram = "sslsplit";
   };
 })

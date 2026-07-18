@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  makeBinaryWrapper,
   copyDesktopItems,
+  jdk8,
+  makeBinaryWrapper,
   makeDesktopItem,
   unzip,
-  jdk8,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,17 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/dirbuster/DirBuster%20(jar%20%2B%20lists)/${finalAttrs.version}/DirBuster-${finalAttrs.version}.tar.bz2";
     hash = "sha256-UoEt1NkaLsKux3lr+AB+TZCCshQs2hIo63igT39V68E=";
   };
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "dirbuster";
-      desktopName = "OWASP DirBuster";
-      exec = "dirbuster";
-      icon = "dirbuster";
-      comment = "Web Application Brute Forcing";
-      categories = [ "Network" ];
-    })
-  ];
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -61,13 +50,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Network" ];
+      comment = "Web Application Brute Forcing";
+      desktopName = "OWASP DirBuster";
+      exec = "dirbuster";
+      icon = "dirbuster";
+      name = "dirbuster";
+    })
+  ];
+
   meta = {
     description = "Brute force directories and files names on web/application servers";
     homepage = "https://wiki.owasp.org/index.php/Category:OWASP_DirBuster_Project";
     license = lib.licenses.lgpl21Only;
-    mainProgram = "dirbuster";
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.all;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    mainProgram = "dirbuster";
   };
 })

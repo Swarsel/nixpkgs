@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  bash,
   git,
   gperf,
-  pcre,
-  unbound,
   libev,
-  tokyocabinet,
-  pkg-config,
-  bash,
   libsrs2,
+  pcre,
+  pkg-config,
+  tokyocabinet,
+  unbound,
 }:
 
 let
@@ -35,14 +35,21 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "pfixtools";
   inherit version;
-
+  pname = "pfixtools";
   src = pfixtoolsSrc;
-
   patches = [ ./0001-Fix-build-with-unbound-1.6.1.patch ];
 
+  postPatch = ''
+    substituteInPlace postlicyd/policy_tokens.sh \
+                      --replace /bin/bash ${bash}/bin/bash;
+
+    substituteInPlace postlicyd/*_tokens.sh \
+      --replace "unsigned int" "size_t"
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     git
     gperf
@@ -54,31 +61,23 @@ stdenv.mkDerivation {
     libsrs2
   ];
 
-  postUnpack = ''
-    cp -Rp ${libCommonSrc}/* ${srcRoot}/common;
-    chmod -R +w ${srcRoot}/common;
-  '';
-
-  postPatch = ''
-    substituteInPlace postlicyd/policy_tokens.sh \
-                      --replace /bin/bash ${bash}/bin/bash;
-
-    substituteInPlace postlicyd/*_tokens.sh \
-      --replace "unsigned int" "size_t"
-  '';
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=unused-result -Wno-error=nonnull-compare -Wno-error=format-truncation";
-
   makeFlags = [
     "DESTDIR=$(out)"
     "prefix="
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=unused-result -Wno-error=nonnull-compare -Wno-error=format-truncation";
+
+  postUnpack = ''
+    cp -Rp ${libCommonSrc}/* ${srcRoot}/common;
+    chmod -R +w ${srcRoot}/common;
+  '';
+
   meta = {
     description = "Collection of postfix-related tools";
-    license = with lib.licenses; [ bsd3 ];
     homepage = "https://github.com/Fruneau/pfixtools";
-    platforms = lib.platforms.linux;
+    license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ jerith666 ];
+    platforms = lib.platforms.linux;
   };
 }

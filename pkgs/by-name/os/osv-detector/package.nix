@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   osv-detector,
   testers,
 }:
@@ -18,12 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Rrosye8foVntoFDvDmyNuXgnEgjzcOXenOKBMZVCRio=";
-
-  ldflags = [
-    "-w"
-    "-s"
-    "-X main.version=${finalAttrs.version}"
-  ];
 
   checkFlags =
     let
@@ -44,18 +38,24 @@ buildGoModule (finalAttrs: {
       "${builtins.concatStringsSep "|" skippedTests}"
     ];
 
+  ldflags = [
+    "-w"
+    "-s"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = osv-detector;
-    command = "osv-detector -version";
     version = "osv-detector ${finalAttrs.version} (unknown, commit none)";
+    command = "osv-detector -version";
+    package = osv-detector;
   };
 
   meta = {
     description = "Auditing tool for detecting vulnerabilities";
-    mainProgram = "osv-detector";
     homepage = "https://github.com/G-Rath/osv-detector";
     changelog = "https://github.com/G-Rath/osv-detector/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "osv-detector";
   };
 })

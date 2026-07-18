@@ -9,63 +9,20 @@ let
   cfg = config.services.lubelogger;
 in
 {
-  meta.maintainers = with lib.maintainers; [
-    bct
-    lyndeno
-  ];
-
   options = {
     services.lubelogger = {
       enable = lib.mkEnableOption "LubeLogger, a self-hosted, open-source, web-based vehicle maintenance and fuel milage tracker";
-
       package = lib.mkPackageOption pkgs "lubelogger" { };
 
       dataDir = lib.mkOption {
+        default = "lubelogger";
         description = "Path to LubeLogger config and metadata inside of `/var/lib/`.";
-        default = "lubelogger";
         type = lib.types.str;
-      };
-
-      port = lib.mkOption {
-        description = "The TCP port LubeLogger will listen on.";
-        default = 5000;
-        type = lib.types.port;
-      };
-
-      user = lib.mkOption {
-        description = "User account under which LubeLogger runs.";
-        default = "lubelogger";
-        type = lib.types.str;
-      };
-
-      group = lib.mkOption {
-        description = "Group under which LubeLogger runs.";
-        default = "lubelogger";
-        type = lib.types.str;
-      };
-
-      openFirewall = lib.mkOption {
-        description = "Open ports in the firewall for the LubeLogger web interface.";
-        default = false;
-        type = lib.types.bool;
-      };
-
-      settings = lib.mkOption {
-        type = with lib.types; attrsOf str;
-        default = { };
-        example = {
-          LUBELOGGER_ALLOWED_FILE_EXTENSIONS = "";
-          LUBELOGGER_LOGO_URL = "";
-        };
-        description = ''
-          Additional configuration for LubeLogger, see <https://docs.lubelogger.com/Environment%20Variables> for supported values.
-        '';
       };
 
       environmentFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
-        example = "/run/secrets/lubelogger";
+
         description = ''
           Path to a file containing extra LubeLogger config options in the systemd `EnvironmentFile` format.
           Refer to the [documentation] for supported options.
@@ -79,16 +36,58 @@ in
           MailConfig__Password=<pass>
           ```
         '';
+
+        example = "/run/secrets/lubelogger";
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      group = lib.mkOption {
+        default = "lubelogger";
+        description = "Group under which LubeLogger runs.";
+        type = lib.types.str;
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+        description = "Open ports in the firewall for the LubeLogger web interface.";
+        type = lib.types.bool;
+      };
+
+      port = lib.mkOption {
+        default = 5000;
+        description = "The TCP port LubeLogger will listen on.";
+        type = lib.types.port;
+      };
+
+      settings = lib.mkOption {
+        default = { };
+
+        description = ''
+          Additional configuration for LubeLogger, see <https://docs.lubelogger.com/Environment%20Variables> for supported values.
+        '';
+
+        example = {
+          LUBELOGGER_ALLOWED_FILE_EXTENSIONS = "";
+          LUBELOGGER_LOGO_URL = "";
+        };
+
+        type = with lib.types; attrsOf str;
+      };
+
+      user = lib.mkOption {
+        default = "lubelogger";
+        description = "User account under which LubeLogger runs.";
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.services.lubelogger = {
-      description = "LubeLogger";
+    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.port ]; };
 
+    systemd.services.lubelogger = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "LubeLogger";
 
       environment = {
         Kestrel__Endpoints__Http__Url = "http://localhost:${toString cfg.port}";
@@ -96,39 +95,45 @@ in
       // cfg.settings;
 
       serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-        StateDirectory = cfg.dataDir;
-        WorkingDirectory = "/var/lib/${cfg.dataDir}";
-        ExecStart = lib.getExe cfg.package;
-        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
-        Restart = "on-failure";
-
         CapabilityBoundingSet = [ "" ];
         DeviceAllow = [ "" ];
+        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
+        ExecStart = lib.getExe cfg.package;
+        Group = cfg.group;
         PrivateDevices = true;
         PrivateTmp = true;
         ProtectHome = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
-        RestrictNamespaces = true;
-      };
-    };
 
-    users.users = lib.mkIf (cfg.user == "lubelogger") {
-      lubelogger = {
-        isSystemUser = true;
-        group = cfg.group;
-        home = "/var/lib/${cfg.dataDir}";
+        RestrictNamespaces = true;
+        StateDirectory = cfg.dataDir;
+        Type = "simple";
+        User = cfg.user;
+        WorkingDirectory = "/var/lib/${cfg.dataDir}";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups = lib.mkIf (cfg.group == "lubelogger") { lubelogger = { }; };
 
-    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.port ]; };
+    users.users = lib.mkIf (cfg.user == "lubelogger") {
+      lubelogger = {
+        group = cfg.group;
+        home = "/var/lib/${cfg.dataDir}";
+        isSystemUser = true;
+      };
+    };
   };
+
+  meta.maintainers = with lib.maintainers; [
+    bct
+    lyndeno
+  ];
 }

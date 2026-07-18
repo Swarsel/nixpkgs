@@ -1,23 +1,26 @@
 {
   lib,
   buildPythonPackage,
+  duckdb,
   fetchPypi,
   hatchling,
   psycopg,
-  duckdb,
   pythonAtLeast,
 }:
 
 buildPythonPackage rec {
   pname = "harlequin-postgres";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "harlequin_postgres";
     inherit version;
     hash = "sha256-Jdy3PpfN+xfDvP3DFGQYqY/xHOaPalH7GyUyLqydUiM=";
+    pname = "harlequin_postgres";
   };
+
+  # To prevent circular dependency
+  # as harlequin-postgres requires harlequin which requires harlequin-postgres
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -29,9 +32,8 @@ buildPythonPackage rec {
   ]
   ++ lib.optional (pythonAtLeast "3.14") duckdb;
 
-  # To prevent circular dependency
-  # as harlequin-postgres requires harlequin which requires harlequin-postgres
-  doCheck = false;
+  pyproject = true;
+
   pythonRemoveDeps = [
     "harlequin"
   ];

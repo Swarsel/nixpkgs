@@ -2,8 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   fetchDebianPatch,
+  fetchpatch,
+  gmp,
   libmysqlclient,
   # Excerpt from glpk's INSTALL file:
   # This feature allows the exact simplex solver to use the GNU MP
@@ -11,30 +12,18 @@
   # GLPK bignum module, which provides the same functionality as GNU MP,
   # however, it is much less efficient.
   withGmp ? true,
-  gmp,
 }:
 
 assert withGmp -> gmp != null;
 
 stdenv.mkDerivation rec {
-  version = "5.0";
   pname = "glpk";
+  version = "5.0";
 
   src = fetchurl {
     url = "mirror://gnu/glpk/glpk-${version}.tar.gz";
     sha256 = "sha256-ShAT7rtQ9yj8YBvdgzsLKHAzPDs+WoFu66kh2VvsbxU=";
   };
-
-  buildInputs = [
-    libmysqlclient
-  ]
-  ++ lib.optionals withGmp [
-    gmp
-  ];
-
-  configureFlags = lib.optionals withGmp [
-    "--with-gmp"
-  ];
 
   patches = [
     # GLPK makes it possible to customize its message printing behaviour. Sage
@@ -49,16 +38,16 @@ stdenv.mkDerivation rec {
     # https://trac.sagemath.org/ticket/20710#comment:18
     (fetchpatch {
       name = "error_recovery.patch";
-      url = "https://raw.githubusercontent.com/sagemath/sage/d3c1f607e32f964bf0cab877a63767c86fd00266/build/pkgs/glpk/patches/error_recovery.patch";
       sha256 = "sha256-2hNtUEoGTFt3JgUvLH3tPWnz+DZcXNhjXzS+/V89toA=";
+      url = "https://raw.githubusercontent.com/sagemath/sage/d3c1f607e32f964bf0cab877a63767c86fd00266/build/pkgs/glpk/patches/error_recovery.patch";
     })
 
     # Fix build with gcc15
     (fetchDebianPatch {
       inherit pname version;
       debianRevision = "2";
-      patch = "gcc-15.patch";
       hash = "sha256-wuWPYqJKIKJAJaeJXW7lhvapu8Fd3zHjLAv7Ve7q8Qw=";
+      patch = "gcc-15.patch";
     })
   ];
 
@@ -68,6 +57,17 @@ stdenv.mkDerivation rec {
       substituteInPlace configure \
         --replace '-I/usr/include/mysql' '$(mysql_config --include)'
     '';
+
+  buildInputs = [
+    libmysqlclient
+  ]
+  ++ lib.optionals withGmp [
+    gmp
+  ];
+
+  configureFlags = lib.optionals withGmp [
+    "--with-gmp"
+  ];
 
   doCheck = true;
 
@@ -83,9 +83,8 @@ stdenv.mkDerivation rec {
 
     homepage = "https://www.gnu.org/software/glpk/";
     license = lib.licenses.gpl3Plus;
-
-    teams = [ lib.teams.sage ];
-    mainProgram = "glpsol";
     platforms = lib.platforms.all;
+    mainProgram = "glpsol";
+    teams = [ lib.teams.sage ];
   };
 }

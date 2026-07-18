@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gnutls,
-  libedit,
   libcap,
+  libedit,
   libseccomp,
-  pps-tools,
   nixosTests,
+  pkg-config,
+  pps-tools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,19 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "man"
   ];
+
+  patches = [
+    # Cleanup the installation script
+    ./makefile.patch
+  ];
+
+  postPatch = ''
+    patchShebangs test
+
+    # nts_ke_session unit test fails, so drop it.
+    # TODO: try again when updating?
+    rm test/unit/nts_ke_session.c
+  '';
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -44,21 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux "--enable-scfilter";
 
-  patches = [
-    # Cleanup the installation script
-    ./makefile.patch
-  ];
-
-  postPatch = ''
-    patchShebangs test
-
-    # nts_ke_session unit test fails, so drop it.
-    # TODO: try again when updating?
-    rm test/unit/nts_ke_session.c
-  '';
-
-  enableParallelBuilding = true;
   doCheck = true;
+  enableParallelBuilding = true;
 
   passthru.tests = {
     inherit (nixosTests) chrony chrony-ptp;
@@ -66,22 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Sets your computer's clock from time servers on the Net";
-    homepage = "https://chrony-project.org/";
-    license = lib.licenses.gpl2Only;
-    platforms =
-      with lib.platforms;
-      builtins.concatLists [
-        linux
-        freebsd
-        netbsd
-        darwin
-        illumos
-      ];
-    broken = stdenv.isDarwin;
-    maintainers = with lib.maintainers; [
-      thoughtpolice
-      vifino
-    ];
 
     longDescription = ''
       Chronyd is a daemon which runs in background on the system. It obtains
@@ -97,5 +81,25 @@ stdenv.mkDerivation (finalAttrs: {
       on the same computer as the Chronyd instance it is controlling or a
       different computer.
     '';
+
+    homepage = "https://chrony-project.org/";
+    license = lib.licenses.gpl2Only;
+
+    maintainers = with lib.maintainers; [
+      thoughtpolice
+      vifino
+    ];
+
+    platforms =
+      with lib.platforms;
+      builtins.concatLists [
+        linux
+        freebsd
+        netbsd
+        darwin
+        illumos
+      ];
+
+    broken = stdenv.isDarwin;
   };
 })

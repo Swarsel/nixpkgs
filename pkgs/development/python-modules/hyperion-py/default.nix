@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-aiohttp,
   pytest-asyncio_0,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "hyperion-py";
   version = "0.7.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dermotduffy";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-14taFSrtmgTBiie0eY2fSRkZndJSZ4GJNRx3MonrTzs=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
 
   nativeCheckInputs = [
     pytest-asyncio_0
@@ -35,6 +30,9 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "hyperion" ];
 
   meta = {

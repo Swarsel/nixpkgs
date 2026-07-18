@@ -1,10 +1,10 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
-  jq,
   lib,
-  nixosTests,
+  fetchFromGitHub,
+  buildNpmPackage,
+  jq,
   nix-update-script,
+  nixosTests,
 }:
 
 buildNpmPackage rec {
@@ -18,8 +18,6 @@ buildNpmPackage rec {
     hash = "sha256-OVIlooa1JlkSfX1VC5J9GFxrMGsEmDFZ9BTOXUAClNQ=";
   };
 
-  npmDepsHash = "sha256-3dsnxLSa5Rz+AjL+c2olyXYyALupgjJp58puagZ4NHg=";
-
   postPatch =
     let
       packageDir = "packages/node_modules/node-red";
@@ -29,24 +27,28 @@ buildNpmPackage rec {
       mv package.json.tmp package.json
     '';
 
+  npmDepsHash = "sha256-3dsnxLSa5Rz+AjL+c2olyXYyALupgjJp58puagZ4NHg=";
   makeCacheWritable = true;
 
   passthru = {
     tests = {
       inherit (nixosTests) node-red;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/node-red/node-red/blob/${src.tag}/CHANGELOG.md";
     description = "Low-code programming for event-driven applications";
     homepage = "https://nodered.org/";
+    changelog = "https://github.com/node-red/node-red/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "node-red";
+
     maintainers = with lib.maintainers; [
       adamcstephens
       matthewcroughan
     ];
+
+    mainProgram = "node-red";
   };
 }

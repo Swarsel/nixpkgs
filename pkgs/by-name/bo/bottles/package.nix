@@ -1,9 +1,9 @@
 {
+  bottles-unwrapped,
   buildFHSEnv,
   symlinkJoin,
-  bottles-unwrapped,
-  extraPkgs ? pkgs: [ ],
   extraLibraries ? pkgs: [ ],
+  extraPkgs ? pkgs: [ ],
   removeWarningPopup ? false,
 }:
 
@@ -12,17 +12,6 @@ let
     inherit (bottles-unwrapped) version;
     # Many WINE games need 32bit
     multiArch = true;
-
-    targetPkgs =
-      pkgs:
-      with pkgs;
-      [
-        (bottles-unwrapped.override { inherit removeWarningPopup; })
-        # This only allows to enable the toggle, vkBasalt won't work if not installed with environment.systemPackages (or nix-env)
-        # See https://github.com/bottlesdevs/Bottles/issues/2401
-        vkbasalt
-      ]
-      ++ extraPkgs pkgs;
 
     multiPkgs =
       let
@@ -113,10 +102,29 @@ let
       ++ gstreamerDeps pkgs
       ++ extraLibraries pkgs
       ++ waylandDeps pkgs;
+
+    targetPkgs =
+      pkgs:
+      with pkgs;
+      [
+        (bottles-unwrapped.override { inherit removeWarningPopup; })
+        # This only allows to enable the toggle, vkBasalt won't work if not installed with environment.systemPackages (or nix-env)
+        # See https://github.com/bottlesdevs/Bottles/issues/2401
+        vkbasalt
+      ]
+      ++ extraPkgs pkgs;
   };
 in
 symlinkJoin {
+  inherit (bottles-unwrapped) meta version;
   pname = "bottles";
+
+  postBuild = ''
+    mkdir -p $out/share
+    ln -s ${bottles-unwrapped}/share/applications $out/share
+    ln -s ${bottles-unwrapped}/share/icons $out/share
+  '';
+
   paths = [
     (buildFHSEnv (
       fhsEnv
@@ -133,11 +141,4 @@ symlinkJoin {
       }
     ))
   ];
-  postBuild = ''
-    mkdir -p $out/share
-    ln -s ${bottles-unwrapped}/share/applications $out/share
-    ln -s ${bottles-unwrapped}/share/icons $out/share
-  '';
-
-  inherit (bottles-unwrapped) meta version;
 }

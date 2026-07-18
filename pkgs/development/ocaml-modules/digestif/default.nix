@@ -1,11 +1,11 @@
 {
   lib,
-  ocaml,
   fetchurl,
-  buildDunePackage,
-  eqaf,
   alcotest,
+  buildDunePackage,
   crowbar,
+  eqaf,
+  ocaml,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -18,12 +18,12 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ eqaf ];
+  doCheck = true;
 
   checkInputs = [
     alcotest
     crowbar
   ];
-  doCheck = true;
 
   meta = {
     description = "Simple hash algorithms in OCaml";

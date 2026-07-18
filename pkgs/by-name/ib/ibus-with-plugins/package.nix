@@ -1,31 +1,16 @@
 {
   lib,
   buildEnv,
-  makeWrapper,
   dconf,
   hicolor-icon-theme,
   ibus,
   librsvg,
+  makeWrapper,
   plugins ? [ ],
 }:
 
 buildEnv {
-  name = "ibus-with-plugins-" + lib.getVersion ibus;
-
-  paths = [ ibus ] ++ plugins;
-
-  pathsToLink = [
-    "/bin"
-    "/etc"
-    "/lib"
-    "/libexec"
-    "/share"
-    # Need to link contents so that the directories are writeable.
-    "/lib/systemd"
-    "/share/dbus-1/services"
-    "/share/systemd/user"
-    "/share/systemd/user/gnome-session.target.wants"
-  ];
+  inherit (ibus) meta;
 
   nativeBuildInputs = [
     makeWrapper
@@ -112,5 +97,19 @@ buildEnv {
     done
   '';
 
-  inherit (ibus) meta;
+  name = "ibus-with-plugins-" + lib.getVersion ibus;
+  paths = [ ibus ] ++ plugins;
+
+  pathsToLink = [
+    "/bin"
+    "/etc"
+    "/lib"
+    "/libexec"
+    "/share"
+    # Need to link contents so that the directories are writeable.
+    "/lib/systemd"
+    "/share/dbus-1/services"
+    "/share/systemd/user"
+    "/share/systemd/user/gnome-session.target.wants"
+  ];
 }

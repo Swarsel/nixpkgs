@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   versionCheckHook,
 }:
@@ -10,8 +10,6 @@
 buildGoModule (finalAttrs: {
   pname = "starboard";
   version = "0.15.38";
-
-  __darwinAllowLocalNetworking = true; # for tests
 
   src = fetchFromGitHub {
     owner = "aquasecurity";
@@ -21,6 +19,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -29,17 +28,9 @@ buildGoModule (finalAttrs: {
       find "$out" -name .git -print0 | xargs -0 rm -rf
     '';
   };
-  vendorHash = "sha256-UpPhTP+JObPJJMpMKPDriRgA5DETkMUlsobPACOfeho=";
 
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "cmd/starboard" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=v${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-UpPhTP+JObPJJMpMKPDriRgA5DETkMUlsobPACOfeho=";
 
   # ldflags based on metadata from git and source
   preBuild = ''
@@ -70,15 +61,22 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/starboard completion zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true; # for tests
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/starboard" ];
   versionCheckProgramArg = "version";
 
   meta = {
-    homepage = "https://github.com/aquasecurity/starboard";
-    changelog = "https://github.com/aquasecurity/starboard/releases/tag/v${finalAttrs.version}";
     description = "Kubernetes-native security tool kit";
-    mainProgram = "starboard";
+
     longDescription = ''
       Starboard integrates security tools into the Kubernetes environment, so
       that users can find and view the risks that relate to different resources
@@ -88,7 +86,11 @@ buildGoModule (finalAttrs: {
       plug-in that make security reports available through familiar Kubernetes
       tools.
     '';
+
+    homepage = "https://github.com/aquasecurity/starboard";
+    changelog = "https://github.com/aquasecurity/starboard/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jk ];
+    mainProgram = "starboard";
   };
 })

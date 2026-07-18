@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rapidjson,
+  buildPythonPackage,
   pytestCheckHook,
   pytz,
-  setuptools,
+  rapidjson,
   replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage rec {
-  version = "1.23";
   pname = "python-rapidjson";
-  pyproject = true;
+  version = "1.23";
 
   src = fetchFromGitHub {
     owner = "python-rapidjson";
@@ -27,19 +26,19 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytz
   ];
 
+  build-system = [ setuptools ];
   disabledTestPaths = [ "benchmarks" ];
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/python-rapidjson/python-rapidjson/blob/${src.tag}/CHANGES.rst";
-    homepage = "https://github.com/python-rapidjson/python-rapidjson";
     description = "Python wrapper around rapidjson";
+    homepage = "https://github.com/python-rapidjson/python-rapidjson";
+    changelog = "https://github.com/python-rapidjson/python-rapidjson/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

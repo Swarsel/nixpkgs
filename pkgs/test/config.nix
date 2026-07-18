@@ -17,10 +17,11 @@ lib.recurseIntoAttrs {
   allowPkgsInPermittedInsecurePackages =
     let
       pkgs' = import ../.. {
-        system = pkgs.stdenv.hostPlatform.system;
         config = config // {
           permittedInsecurePackages = builtins.seq pkgs'.glibc.version [ ];
         };
+
+        system = pkgs.stdenv.hostPlatform.system;
       };
 
     in

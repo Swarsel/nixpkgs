@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  cmake,
+  coreutils,
+  cyrus_sasl,
+  darwin,
+  git,
   installShellFiles,
-  rustPlatform,
-  pkg-config,
+  libiconv,
+  nix-update-script,
+  nixosTests,
+  oniguruma,
   openssl,
+  perl,
+  pkg-config,
   protobuf,
   rdkafka,
-  oniguruma,
-  zstd,
   rust-jemalloc-sys,
   rust-jemalloc-sys-unprefixed,
-  libiconv,
-  coreutils,
+  rustPlatform,
   tzdata,
-  cmake,
-  cyrus_sasl,
-  perl,
-  git,
-  nixosTests,
-  nix-update-script,
-  darwin,
   versionCheckHook,
   zlib,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -37,8 +37,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-x4yfC/qAMRM7X19usonsp8GSJHwIsn0zoX0owLn2EXs=";
   };
 
-  cargoHash = "sha256-H26tUF+i/79t7W2BVjh2bVRCGZK8rgazHzlTF4L2jyA=";
-
   nativeBuildInputs = [
     pkg-config
     cmake
@@ -49,6 +47,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   # Provides the mig command used by the build scripts
   ++ lib.optional stdenv.hostPlatform.isDarwin darwin.bootstrap_cmds;
+
   buildInputs = [
     cyrus_sasl
     oniguruma
@@ -65,29 +64,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-H26tUF+i/79t7W2BVjh2bVRCGZK8rgazHzlTF4L2jyA=";
+
   env = {
+    # needed to dynamically link rdkafka
+    CARGO_FEATURE_DYNAMIC_LINKING = 1;
+    CARGO_PROFILE_RELEASE_CODEGEN_UNITS = "1";
+    CARGO_PROFILE_RELEASE_LTO = "fat";
     # Fix build with gcc 15
     # https://github.com/vectordotdev/vector/issues/22888
     NIX_CFLAGS_COMPILE = "-std=gnu17";
-
-    # Without this, we get SIGSEGV failure
-    RUST_MIN_STACK = 33554432;
-
     # needed for internal protobuf c wrapper library
     PROTOC = "${protobuf}/bin/protoc";
     RUSTONIG_SYSTEM_LIBONIG = true;
-
+    # Without this, we get SIGSEGV failure
+    RUST_MIN_STACK = 33554432;
     TZDIR = "${tzdata}/share/zoneinfo";
-
-    # needed to dynamically link rdkafka
-    CARGO_FEATURE_DYNAMIC_LINKING = 1;
-
-    CARGO_PROFILE_RELEASE_LTO = "fat";
-    CARGO_PROFILE_RELEASE_CODEGEN_UNITS = "1";
   };
 
   doCheck = true;
-  checkType = "debug";
 
   checkFlags = [
     # Tries to make a network access
@@ -146,10 +141,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  checkType = "debug";
 
   passthru = {
     tests = nixosTests.vector;
@@ -161,11 +159,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/vectordotdev/vector";
     changelog = "https://github.com/vectordotdev/vector/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       adamcstephens
       thoughtpolice
       happysalada
     ];
+
     platforms = with lib.platforms; all;
     mainProgram = "vector";
   };

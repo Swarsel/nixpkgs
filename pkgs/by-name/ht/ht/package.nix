@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   ncurses,
 }:
@@ -14,29 +14,27 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0w2xnw3z9ws9qrdpb80q55h6ynhh3aziixcfn45x91bzrbifix9i";
   };
 
+  patches = [ ./gcc7.patch ];
+
   buildInputs = [
     ncurses
   ];
-
-  hardeningDisable = [ "format" ];
-
-  patches = [ ./gcc7.patch ];
-
-  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-narrowing" ];
 
   configureFlags = [
     # Fails to build on -std=gnu23.
     "CFLAGS=-std=gnu17"
   ];
 
+  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-narrowing" ];
   enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "File editor/viewer/analyzer for executables";
     homepage = "https://hte.sourceforge.net";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "ht";
   };
 })

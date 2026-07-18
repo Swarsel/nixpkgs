@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   gitUpdater,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "precisely";
   version = "0.1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mwilliamson";
@@ -19,13 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-jvvRreSGpRgDk1bbqC8Z/UEfvxwKilfc/sm7nxdJU6k=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "precisely" ];
-
   # Tests are outdated and based on Nose, which is not supported anymore.
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "precisely" ];
   passthru.updateScript = gitUpdater { };
 
   meta = {

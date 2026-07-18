@@ -14,10 +14,14 @@ let
 in
 {
   options.services.mighttpd2 = {
-    enable = mkEnableOption "Mighttpd2 web server";
-
     config = mkOption {
       default = "";
+
+      description = ''
+        Verbatim config file to use
+        (see <https://kazu-yamamoto.github.io/mighttpd2/config.html>)
+      '';
+
       example = ''
         # Example configuration for Mighttpd 2
         Port: 80
@@ -45,15 +49,31 @@ in
         Tls_Key_File: privkey.pem # should change this with an absolute path
         Service: 0 # 0 is HTTP only, 1 is HTTPS only, 2 is both
       '';
+
       type = types.lines;
+    };
+
+    enable = mkEnableOption "Mighttpd2 web server";
+
+    cores = mkOption {
+      default = null;
+
       description = ''
-        Verbatim config file to use
-        (see <https://kazu-yamamoto.github.io/mighttpd2/config.html>)
+        How many cores to use.
+        If null it will be determined automatically
       '';
+
+      type = types.nullOr types.int;
     };
 
     routing = mkOption {
       default = "";
+
+      description = ''
+        Verbatim routing file to use
+        (see <https://kazu-yamamoto.github.io/mighttpd2/config.html>)
+      '';
+
       example = ''
         # Example routing for Mighttpd 2
 
@@ -79,20 +99,8 @@ in
 
         /                -> /export/www/
       '';
-      type = types.lines;
-      description = ''
-        Verbatim routing file to use
-        (see <https://kazu-yamamoto.github.io/mighttpd2/config.html>)
-      '';
-    };
 
-    cores = mkOption {
-      default = null;
-      type = types.nullOr types.int;
-      description = ''
-        How many cores to use.
-        If null it will be determined automatically
-      '';
+      type = types.lines;
     };
 
   };
@@ -104,34 +112,39 @@ in
         message = "You need at least one rule in mighttpd2.routing";
       }
     ];
+
     systemd.services.mighttpd2 = {
-      description = "Mighttpd2 web server";
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Mighttpd2 web server";
+
       serviceConfig = {
+        AmbientCapabilities = "cap_net_bind_service";
+        CapabilityBoundingSet = "cap_net_bind_service";
+
         ExecStart = ''
           ${pkgs.haskellPackages.mighttpd2}/bin/mighty \
             ${configFile} \
             ${routingFile} \
             +RTS -N${optionalString (cfg.cores != null) "${cfg.cores}"}
         '';
-        Type = "simple";
-        User = "mighttpd2";
+
         Group = "mighttpd2";
         Restart = "on-failure";
-        AmbientCapabilities = "cap_net_bind_service";
-        CapabilityBoundingSet = "cap_net_bind_service";
+        Type = "simple";
+        User = "mighttpd2";
       };
-    };
 
-    users.users.mighttpd2 = {
-      group = "mighttpd2";
-      uid = config.ids.uids.mighttpd2;
-      isSystemUser = true;
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
     users.groups.mighttpd2.gid = config.ids.gids.mighttpd2;
+
+    users.users.mighttpd2 = {
+      group = "mighttpd2";
+      isSystemUser = true;
+      uid = config.ids.uids.mighttpd2;
+    };
   };
 
   meta.maintainers = with lib.maintainers; [ fgaz ];

@@ -1,8 +1,8 @@
 {
   config,
-  options,
   lib,
   pkgs,
+  options,
   ...
 }:
 let
@@ -159,105 +159,56 @@ in
 
   options.services.neo4j = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable Neo4j Community Edition.
       '';
-    };
 
-    constrainLoadCsv = lib.mkOption {
       type = lib.types.bool;
-      default = true;
-      description = ''
-        Sets the root directory for file URLs used with the Cypher
-        `LOAD CSV` clause to be that defined by
-        {option}`directories.imports`. It restricts
-        access to only those files within that directory and its
-        subdirectories.
-
-        Setting this option to `false` introduces
-        possible security problems.
-      '';
-    };
-
-    defaultListenAddress = lib.mkOption {
-      type = lib.types.str;
-      default = "127.0.0.1";
-      description = ''
-        Default network interface to listen for incoming connections. To
-        listen for connections on all interfaces, use "0.0.0.0".
-
-        Specifies the default IP address and address part of connector
-        specific {option}`listenAddress` options. To bind specific
-        connectors to a specific network interfaces, specify the entire
-        {option}`listenAddress` option for that connector.
-      '';
-    };
-
-    extraServerConfig = lib.mkOption {
-      type = lib.types.lines;
-      default = "";
-      description = ''
-        Extra configuration for Neo4j Community server. Refer to the
-        [complete reference](https://neo4j.com/docs/operations-manual/current/reference/configuration-settings/)
-        of Neo4j configuration settings.
-      '';
     };
 
     package = lib.mkPackageOption pkgs "neo4j" { };
 
-    readOnly = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Only allow read operations from this Neo4j instance.
-      '';
-    };
-
-    workerCount = lib.mkOption {
-      type = lib.types.ints.between 0 44738;
-      default = 0;
-      description = ''
-        Number of Neo4j worker threads, where the default of
-        `0` indicates a worker count equal to the number of
-        available processors.
-      '';
-    };
-
     bolt = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Enable the BOLT connector for Neo4j. Setting this option to
           `false` will stop Neo4j from listening for incoming
           connections on the BOLT port (7687 by default).
         '';
-      };
 
-      listenAddress = lib.mkOption {
-        type = lib.types.str;
-        default = ":7687";
-        description = ''
-          Neo4j listen address for BOLT traffic. The listen address is
-          expressed in the format `<ip-address>:<port-number>`.
-        '';
+        type = lib.types.bool;
       };
 
       advertisedAddress = lib.mkOption {
-        type = lib.types.str;
         default = cfg.bolt.listenAddress;
         defaultText = lib.literalExpression "config.${opt.bolt.listenAddress}";
+
         description = ''
           Neo4j advertised address for BOLT traffic. The advertised address is
           expressed in the format `<ip-address>:<port-number>`.
         '';
+
+        type = lib.types.str;
+      };
+
+      listenAddress = lib.mkOption {
+        default = ":7687";
+
+        description = ''
+          Neo4j listen address for BOLT traffic. The listen address is
+          expressed in the format `<ip-address>:<port-number>`.
+        '';
+
+        type = lib.types.str;
       };
 
       sslPolicy = lib.mkOption {
-        type = lib.types.str;
         default = "legacy";
+
         description = ''
           Neo4j SSL policy for BOLT traffic.
 
@@ -271,26 +222,81 @@ in
           SSL/TLS for the legacy policy to actually be utilized. See
           {option}`bolt.tlsLevel`.
         '';
+
+        type = lib.types.str;
       };
 
       tlsLevel = lib.mkOption {
+        default = "OPTIONAL";
+
+        description = ''
+          SSL/TSL requirement level for BOLT traffic.
+        '';
+
         type = lib.types.enum [
           "REQUIRED"
           "OPTIONAL"
           "DISABLED"
         ];
-        default = "OPTIONAL";
-        description = ''
-          SSL/TSL requirement level for BOLT traffic.
-        '';
       };
     };
 
+    constrainLoadCsv = lib.mkOption {
+      default = true;
+
+      description = ''
+        Sets the root directory for file URLs used with the Cypher
+        `LOAD CSV` clause to be that defined by
+        {option}`directories.imports`. It restricts
+        access to only those files within that directory and its
+        subdirectories.
+
+        Setting this option to `false` introduces
+        possible security problems.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    defaultListenAddress = lib.mkOption {
+      default = "127.0.0.1";
+
+      description = ''
+        Default network interface to listen for incoming connections. To
+        listen for connections on all interfaces, use "0.0.0.0".
+
+        Specifies the default IP address and address part of connector
+        specific {option}`listenAddress` options. To bind specific
+        connectors to a specific network interfaces, specify the entire
+        {option}`listenAddress` option for that connector.
+      '';
+
+      type = lib.types.str;
+    };
+
     directories = {
-      certificates = lib.mkOption {
+      imports = lib.mkOption {
+        default = "${cfg.directories.home}/import";
+        defaultText = lib.literalExpression ''"''${config.${opt.directories.home}}/import"'';
+
+        description = ''
+          The root directory for file URLs used with the Cypher
+          `LOAD CSV` clause. Only meaningful when
+          {option}`constrainLoadCvs` is set to
+          `true`.
+
+          When setting this directory to something other than its default,
+          ensure the directory's existence, and that read permission is
+          given to the Neo4j daemon user `neo4j`.
+        '';
+
         type = lib.types.path;
+      };
+
+      certificates = lib.mkOption {
         default = "${cfg.directories.home}/certificates";
         defaultText = lib.literalExpression ''"''${config.${opt.directories.home}}/certificates"'';
+
         description = ''
           Directory for storing certificates to be used by Neo4j for
           TLS connections.
@@ -308,12 +314,14 @@ in
           of the certificate file and the private key. Ensure the correct
           permissions are set on these directories and files.
         '';
+
+        type = lib.types.path;
       };
 
       data = lib.mkOption {
-        type = lib.types.path;
         default = "${cfg.directories.home}/data";
         defaultText = lib.literalExpression ''"''${config.${opt.directories.home}}/data"'';
+
         description = ''
           Path of the data directory. You must not configure more than one
           Neo4j installation to use the same data directory.
@@ -322,39 +330,27 @@ in
           ensure the directory's existence, and that read/write permissions are
           given to the Neo4j daemon user `neo4j`.
         '';
+
+        type = lib.types.path;
       };
 
       home = lib.mkOption {
-        type = lib.types.path;
         default = "/var/lib/neo4j";
+
         description = ''
           Path of the Neo4j home directory. Other default directories are
           subdirectories of this path. This directory will be created if
           non-existent, and its ownership will be {command}`chown` to
           the Neo4j daemon user `neo4j`.
         '';
-      };
 
-      imports = lib.mkOption {
         type = lib.types.path;
-        default = "${cfg.directories.home}/import";
-        defaultText = lib.literalExpression ''"''${config.${opt.directories.home}}/import"'';
-        description = ''
-          The root directory for file URLs used with the Cypher
-          `LOAD CSV` clause. Only meaningful when
-          {option}`constrainLoadCvs` is set to
-          `true`.
-
-          When setting this directory to something other than its default,
-          ensure the directory's existence, and that read permission is
-          given to the Neo4j daemon user `neo4j`.
-        '';
       };
 
       plugins = lib.mkOption {
-        type = lib.types.path;
         default = "${cfg.directories.home}/plugins";
         defaultText = lib.literalExpression ''"''${config.${opt.directories.home}}/plugins"'';
+
         description = ''
           Path of the database plugin directory. Compiled Java JAR files that
           contain database procedures will be loaded if they are placed in
@@ -364,73 +360,99 @@ in
           ensure the directory's existence, and that read permission is
           given to the Neo4j daemon user `neo4j`.
         '';
+
+        type = lib.types.path;
       };
+    };
+
+    extraServerConfig = lib.mkOption {
+      default = "";
+
+      description = ''
+        Extra configuration for Neo4j Community server. Refer to the
+        [complete reference](https://neo4j.com/docs/operations-manual/current/reference/configuration-settings/)
+        of Neo4j configuration settings.
+      '';
+
+      type = lib.types.lines;
     };
 
     http = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Enable the HTTP connector for Neo4j. Setting this option to
           `false` will stop Neo4j from listening for incoming
           connections on the HTTPS port (7474 by default).
         '';
-      };
 
-      listenAddress = lib.mkOption {
-        type = lib.types.str;
-        default = ":7474";
-        description = ''
-          Neo4j listen address for HTTP traffic. The listen address is
-          expressed in the format `<ip-address>:<port-number>`.
-        '';
+        type = lib.types.bool;
       };
 
       advertisedAddress = lib.mkOption {
-        type = lib.types.str;
         default = cfg.http.listenAddress;
         defaultText = lib.literalExpression "config.${opt.http.listenAddress}";
+
         description = ''
           Neo4j advertised address for HTTP traffic. The advertised address is
           expressed in the format `<ip-address>:<port-number>`.
         '';
+
+        type = lib.types.str;
+      };
+
+      listenAddress = lib.mkOption {
+        default = ":7474";
+
+        description = ''
+          Neo4j listen address for HTTP traffic. The listen address is
+          expressed in the format `<ip-address>:<port-number>`.
+        '';
+
+        type = lib.types.str;
       };
     };
 
     https = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Enable the HTTPS connector for Neo4j. Setting this option to
           `false` will stop Neo4j from listening for incoming
           connections on the HTTPS port (7473 by default).
         '';
-      };
 
-      listenAddress = lib.mkOption {
-        type = lib.types.str;
-        default = ":7473";
-        description = ''
-          Neo4j listen address for HTTPS traffic. The listen address is
-          expressed in the format `<ip-address>:<port-number>`.
-        '';
+        type = lib.types.bool;
       };
 
       advertisedAddress = lib.mkOption {
-        type = lib.types.str;
         default = cfg.https.listenAddress;
         defaultText = lib.literalExpression "config.${opt.https.listenAddress}";
+
         description = ''
           Neo4j advertised address for HTTPS traffic. The advertised address is
           expressed in the format `<ip-address>:<port-number>`.
         '';
+
+        type = lib.types.str;
+      };
+
+      listenAddress = lib.mkOption {
+        default = ":7473";
+
+        description = ''
+          Neo4j listen address for HTTPS traffic. The listen address is
+          expressed in the format `<ip-address>:<port-number>`.
+        '';
+
+        type = lib.types.str;
       };
 
       sslPolicy = lib.mkOption {
-        type = lib.types.str;
         default = "legacy";
+
         description = ''
           Neo4j SSL policy for HTTPS traffic.
 
@@ -440,36 +462,61 @@ in
           associated files (by default: {file}`neo4j.key` and
           {file}`neo4j.cert`). Its use will be deprecated.
         '';
+
+        type = lib.types.str;
       };
+    };
+
+    readOnly = lib.mkOption {
+      default = false;
+
+      description = ''
+        Only allow read operations from this Neo4j instance.
+      '';
+
+      type = lib.types.bool;
     };
 
     shell = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Enable a remote shell server which Neo4j Shell clients can log in to.
           Only applicable to {command}`neo4j-shell`.
         '';
+
+        type = lib.types.bool;
       };
     };
 
     ssl.policies = lib.mkOption {
+      default = { };
+
+      description = ''
+        Defines the SSL policies for use with Neo4j connectors. Each attribute
+        of this set defines a policy, with the attribute name defining the name
+        of the policy and its namespace. Refer to the operations manual section
+        on Neo4j's
+        [SSL Framework](https://neo4j.com/docs/operations-manual/current/security/ssl-framework/)
+        for further details.
+      '';
+
       type =
         with lib.types;
         attrsOf (
           submodule (
             {
-              name,
               config,
               options,
+              name,
               ...
             }:
             {
               options = {
                 allowKeyGeneration = lib.mkOption {
-                  type = lib.types.bool;
                   default = false;
+
                   description = ''
                     Allows the generation of a private key and associated self-signed
                     certificate. Only performed when both objects cannot be found for
@@ -483,12 +530,14 @@ in
                     Keys should in general be generated and distributed offline by a
                     trusted certificate authority and not by utilizing this mode.
                   '';
+
+                  type = lib.types.bool;
                 };
 
                 baseDirectory = lib.mkOption {
-                  type = lib.types.path;
                   default = "${cfg.directories.certificates}/${name}";
                   defaultText = lib.literalExpression ''"''${config.${opt.directories.certificates}}/''${name}"'';
+
                   description = ''
                     The mandatory base directory for cryptographic objects of this
                     policy. This path is only automatically generated when this
@@ -501,42 +550,63 @@ in
                     {option}`privateKey` and {option}`publicCertificate`
                     policy options.
                   '';
+
+                  type = lib.types.path;
                 };
 
                 ciphers = lib.mkOption {
-                  type = lib.types.nullOr (lib.types.listOf lib.types.str);
                   default = null;
+
                   description = ''
                     Restrict the allowed ciphers of this policy to those defined
                     here. The default ciphers are those of the JVM platform.
                   '';
+
+                  type = lib.types.nullOr (lib.types.listOf lib.types.str);
                 };
 
                 clientAuth = lib.mkOption {
+                  default = "REQUIRE";
+
+                  description = ''
+                    The client authentication stance for this policy.
+                  '';
+
                   type = lib.types.enum [
                     "NONE"
                     "OPTIONAL"
                     "REQUIRE"
                   ];
-                  default = "REQUIRE";
+                };
+
+                directoriesToCreate = lib.mkOption {
                   description = ''
-                    The client authentication stance for this policy.
+                    Directories of this policy that will be created automatically
+                    when the certificates directory is left at its default value.
+                    This includes all options of type path that are left at their
+                    default value.
                   '';
+
+                  internal = true;
+                  readOnly = true;
+                  type = lib.types.listOf lib.types.path;
                 };
 
                 privateKey = lib.mkOption {
-                  type = lib.types.str;
                   default = "private.key";
+
                   description = ''
                     The name of private PKCS #8 key file for this policy to be found
                     in the {option}`baseDirectory`, or the absolute path to
                     the key file. It is mandatory that a key can be found or generated.
                   '';
+
+                  type = lib.types.str;
                 };
 
                 publicCertificate = lib.mkOption {
-                  type = lib.types.str;
                   default = "public.crt";
+
                   description = ''
                     The name of public X.509 certificate (chain) file in PEM format
                     for this policy to be found in the {option}`baseDirectory`,
@@ -547,12 +617,14 @@ in
                     directory holding trusted certificates as defined by the
                     {option}`trustedDir` option.
                   '';
+
+                  type = lib.types.str;
                 };
 
                 revokedDir = lib.mkOption {
-                  type = lib.types.path;
                   default = "${config.baseDirectory}/revoked";
                   defaultText = lib.literalExpression ''"''${config.${options.baseDirectory}}/revoked"'';
+
                   description = ''
                     Path to directory of CRLs (Certificate Revocation Lists) in
                     PEM format. Must be an absolute path. The existence of this
@@ -563,32 +635,38 @@ in
                     their default. Ensure read/write permissions are given to the
                     Neo4j daemon user `neo4j`.
                   '';
+
+                  type = lib.types.path;
                 };
 
                 tlsVersions = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
                   default = [ "TLSv1.2" ];
+
                   description = ''
                     Restrict the TLS protocol versions of this policy to those
                     defined here.
                   '';
+
+                  type = lib.types.listOf lib.types.str;
                 };
 
                 trustAll = lib.mkOption {
-                  type = lib.types.bool;
                   default = false;
+
                   description = ''
                     Makes this policy trust all remote parties. Enabling this is not
                     recommended and the policy's trusted directory will be ignored.
                     Use of this mode is discouraged. It would offer encryption but
                     no security.
                   '';
+
+                  type = lib.types.bool;
                 };
 
                 trustedDir = lib.mkOption {
-                  type = lib.types.path;
                   default = "${config.baseDirectory}/trusted";
                   defaultText = lib.literalExpression ''"''${config.${options.baseDirectory}}/trusted"'';
+
                   description = ''
                     Path to directory of X.509 certificates in PEM format for
                     trusted parties. Must be an absolute path. The existence of this
@@ -603,18 +681,8 @@ in
                     {option}`publicCertificate` is required to be duplicated
                     to this directory.
                   '';
-                };
 
-                directoriesToCreate = lib.mkOption {
-                  type = lib.types.listOf lib.types.path;
-                  internal = true;
-                  readOnly = true;
-                  description = ''
-                    Directories of this policy that will be created automatically
-                    when the certificates directory is left at its default value.
-                    This includes all options of type path that are left at their
-                    default value.
-                  '';
+                  type = lib.types.path;
                 };
               };
 
@@ -624,15 +692,18 @@ in
             }
           )
         );
-      default = { };
+    };
+
+    workerCount = lib.mkOption {
+      default = 0;
+
       description = ''
-        Defines the SSL policies for use with Neo4j connectors. Each attribute
-        of this set defines a policy, with the attribute name defining the name
-        of the policy and its namespace. Refer to the operations manual section
-        on Neo4j's
-        [SSL Framework](https://neo4j.com/docs/operations-manual/current/security/ssl-framework/)
-        for further details.
+        Number of Neo4j worker threads, where the default of
+        `0` indicates a worker count equal to the number of
+        available processors.
       '';
+
+      type = lib.types.ints.between 0 44738;
     };
   };
 
@@ -669,19 +740,15 @@ in
         }
       ];
 
+      environment.systemPackages = [ cfg.package ];
+
       systemd.services.neo4j = {
-        description = "Neo4j Daemon";
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
+        description = "Neo4j Daemon";
+
         environment = {
-          NEO4J_HOME = "${cfg.directories.home}";
           NEO4J_CONF = "${cfg.directories.home}/conf";
-        };
-        serviceConfig = {
-          ExecStart = "${cfg.package}/bin/neo4j console";
-          User = "neo4j";
-          PermissionsStartOnly = true;
-          LimitNOFILE = 40000;
+          NEO4J_HOME = "${cfg.directories.home}";
         };
 
         preStart = ''
@@ -700,17 +767,25 @@ in
           # Ensure neo4j user ownership
           chown -R neo4j ${cfg.directories.home}
         '';
+
+        serviceConfig = {
+          ExecStart = "${cfg.package}/bin/neo4j console";
+          LimitNOFILE = 40000;
+          PermissionsStartOnly = true;
+          User = "neo4j";
+        };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
-      environment.systemPackages = [ cfg.package ];
+      users.groups.neo4j = { };
 
       users.users.neo4j = {
-        isSystemUser = true;
-        group = "neo4j";
         description = "Neo4j daemon user";
+        group = "neo4j";
         home = cfg.directories.home;
+        isSystemUser = true;
       };
-      users.groups.neo4j = { };
     };
 
   meta = {

@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "requests-hawk";
   version = "1.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     mohawk
     requests
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Hawk authentication strategy for the requests python library";

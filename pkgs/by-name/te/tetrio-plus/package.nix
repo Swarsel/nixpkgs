@@ -2,14 +2,13 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  asar,
   fetchYarnDeps,
-  yarn,
   fixup-yarn-lock,
   nodejs,
-  asar,
-
-  tpsecore,
   tetrio-desktop,
+  tpsecore,
+  yarn,
 }:
 
 let
@@ -17,21 +16,21 @@ let
   tag = "electron-v${version}-tetrio-v${tetrio-desktop.version}";
 
   src = fetchFromGitLab {
+    inherit tag;
     owner = "UniQMG";
     repo = "tetrio-plus";
-    inherit tag;
     hash = "sha256-AEn1TrC0hUVRgfL2QZ5TMN8pTOm36zpHr2b/LqQp5RY=";
   };
 
   offlineCache = fetchYarnDeps {
-    yarnLock = "${src}/resources/desktop-ci/yarn.lock";
     hash = "sha256-LfUC2bkUX+sFq3vMMOC1YVYbpDxUSnLO9GiKdoQBdAw=";
+    yarnLock = "${src}/resources/desktop-ci/yarn.lock";
   };
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "tetrio-plus";
   inherit version src;
+  pname = "tetrio-plus";
 
   nativeBuildInputs = [
     yarn
@@ -92,20 +91,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Modified TETR.IO desktop app.asar with many customization tools";
+
     longDescription = ''
       To use this, `override` the `withTetrioPlus` attribute of `tetrio-desktop`.
     '';
+
     homepage = "https://gitlab.com/UniQMG/tetrio-plus";
-    downloadPage = "https://gitlab.com/UniQMG/tetrio-plus/-/releases";
     changelog = "https://gitlab.com/UniQMG/tetrio-plus/-/releases/${tag}";
+
     license = [
       lib.licenses.mit
       # while tetrio-plus is itself mit, the result of this derivation
       # is a modified version of tetrio-desktop, which is unfree.
       lib.licenses.unfree
     ];
+
     maintainers = with lib.maintainers; [ huantian ];
     platforms = lib.platforms.linux;
     broken = true; # not yet updated for tetrio-desktop v10
+    downloadPage = "https://gitlab.com/UniQMG/tetrio-plus/-/releases";
   };
 })

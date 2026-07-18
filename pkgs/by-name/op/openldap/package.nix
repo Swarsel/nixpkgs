@@ -2,22 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-
   # dependencies
   cyrus_sasl,
   groff,
   libsodium,
   libtool,
+  libxcrypt,
+  # passthru
+  nixosTests,
   openssl,
   systemdMinimal,
-  libxcrypt,
-
   # options
   withModules ? !stdenv.hostPlatform.isStatic,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
-
-  # passthru
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,14 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1pO0lRekLvuFoaNkoxCu0WpT1CjRtGwNMe8/unj8tlY=";
   };
 
-  patches = [
-    (fetchurl {
-      name = "test069-sleep.patch";
-      url = "https://bugs.openldap.org/attachment.cgi?id=1051";
-      hash = "sha256-9LcFTswMQojrwHD+PRvlnSrwrISCFcboHypBwoDIZc0=";
-    })
-  ];
-
   # TODO: separate "out" and "bin"
   outputs = [
     "out"
@@ -45,9 +34,13 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  enableParallelBuilding = true;
+  patches = [
+    (fetchurl {
+      hash = "sha256-9LcFTswMQojrwHD+PRvlnSrwrISCFcboHypBwoDIZc0=";
+      name = "test069-sleep.patch";
+      url = "https://bugs.openldap.org/attachment.cgi?id=1051";
+    })
+  ];
 
   nativeBuildInputs = [
     groff
@@ -70,10 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemdMinimal
   ];
 
-  preConfigure = lib.optionalString (lib.versionAtLeast stdenv.hostPlatform.darwinMinVersion "11") ''
-    MACOSX_DEPLOYMENT_TARGET=10.16
-  '';
-
   configureFlags = [
     "--enable-crypt"
     "--enable-overlays"
@@ -87,8 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isFreeBSD "--with-pic";
 
-  env.NIX_CFLAGS_COMPILE = toString [ "-DLDAPI_SOCK=\"/run/openldap/ldapi\"" ];
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "STRIP=" # Disable install stripping as it breaks cross-compiling. We strip binaries anyway in fixupPhase.
@@ -101,18 +88,19 @@ stdenv.mkDerivation (finalAttrs: {
     "mandir=${placeholder "out"}/share/man"
   ];
 
-  extraContribModules = [
-    # https://git.openldap.org/openldap/openldap/-/tree/master/contrib/slapd-modules
-    "passwd/sha2"
-    "passwd/pbkdf2"
-    "passwd/totp"
-  ];
+  env.NIX_CFLAGS_COMPILE = toString [ "-DLDAPI_SOCK=\"/run/openldap/ldapi\"" ];
+
+  preConfigure = lib.optionalString (lib.versionAtLeast stdenv.hostPlatform.darwinMinVersion "11") ''
+    MACOSX_DEPLOYMENT_TARGET=10.16
+  '';
 
   postBuild = ''
     for module in ''${extraContribModules[@]}; do
       make ''${makeFlags[@]} CC=$CC -C contrib/slapd-modules/$module
     done
   '';
+
+  doCheck = true;
 
   preCheck = ''
     substituteInPlace tests/scripts/all \
@@ -136,12 +124,27 @@ stdenv.mkDerivation (finalAttrs: {
     rm -f tests/scripts/test*-sync*
   '';
 
-  doCheck = true;
+  postInstall = lib.optionalString withModules ''
+    for module in ''${extraContribModules[@]}; do
+      make ''${installFlags[@]} install -C contrib/slapd-modules/$module
+    done
+    chmod +x "$out"/lib/*.{so,dylib}
+  '';
 
   # The directory is empty and serve no purpose.
   preFixup = ''
     rm -r $out/var
   '';
+
+  __darwinAllowLocalNetworking = true;
+  enableParallelBuilding = true;
+
+  extraContribModules = [
+    # https://git.openldap.org/openldap/openldap/-/tree/master/contrib/slapd-modules
+    "passwd/sha2"
+    "passwd/pbkdf2"
+    "passwd/totp"
+  ];
 
   installFlags = [
     "prefix=${placeholder "out"}"
@@ -150,27 +153,22 @@ stdenv.mkDerivation (finalAttrs: {
     "INSTALL=install"
   ];
 
-  postInstall = lib.optionalString withModules ''
-    for module in ''${extraContribModules[@]}; do
-      make ''${installFlags[@]} install -C contrib/slapd-modules/$module
-    done
-    chmod +x "$out"/lib/*.{so,dylib}
-  '';
-
   passthru.tests = {
     inherit (nixosTests) openldap;
     kerberosWithLdap = nixosTests.kerberos.ldap;
   };
 
   meta = {
-    homepage = "https://www.openldap.org/";
     description = "Open source implementation of the Lightweight Directory Access Protocol";
+    homepage = "https://www.openldap.org/";
     license = lib.licenses.openldap;
+
     maintainers = with lib.maintainers; [
       conni2461
       das_j
       helsinki-Jo
     ];
+
     platforms = lib.platforms.unix;
   };
 })

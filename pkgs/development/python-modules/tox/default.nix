@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  packaging,
-  pluggy,
-  virtualenv,
-  filelock,
-  hatchling,
-  hatch-vcs,
-  platformdirs,
-  pyproject-api,
-  colorama,
-  chardet,
+  buildPythonPackage,
   cachetools,
+  chardet,
+  colorama,
+  filelock,
+  hatch-vcs,
+  hatchling,
+  packaging,
+  platformdirs,
+  pluggy,
+  pyproject-api,
   testers,
   tox,
+  virtualenv,
 }:
 
 buildPythonPackage rec {
   pname = "tox";
   version = "4.34.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tox-dev";
@@ -28,6 +27,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-pfftPTY7n47tCQFGCZRwsq0vCWZUeukFZO99gj5mTeo=";
   };
+
+  doCheck = false; # infinite recursion via devpi-client
 
   build-system = [
     hatchling
@@ -46,18 +47,18 @@ buildPythonPackage rec {
     virtualenv
   ];
 
-  doCheck = false; # infinite recursion via devpi-client
+  pyproject = true;
 
   passthru.tests = {
     version = testers.testVersion { package = tox; };
   };
 
   meta = {
-    changelog = "https://github.com/tox-dev/tox/releases/tag/${src.tag}";
     description = "Generic virtualenv management and test command line tool";
-    mainProgram = "tox";
     homepage = "https://github.com/tox-dev/tox";
+    changelog = "https://github.com/tox-dev/tox/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "tox";
   };
 }

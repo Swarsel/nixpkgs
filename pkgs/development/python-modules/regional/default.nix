@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  numpy,
-  scipy,
+  buildPythonPackage,
   matplotlib,
+  numpy,
   pytestCheckHook,
+  scipy,
 }:
 
 buildPythonPackage {
   pname = "regional";
   version = "1.1.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "freeman-lab";
@@ -28,13 +27,14 @@ buildPythonPackage {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  pythonImportsCheck = [ "regional" ];
-
   disabledTests = [
     "test_dilate"
     "test_outline"
     "test_mask"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "regional" ];
 
   meta = {
     description = "Simple manipualtion and display of spatial regions";

@@ -1,13 +1,12 @@
 {
-  python3Packages,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "systemd-wait";
   version = "0.1+2018-10-05";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Stebalien";
@@ -23,12 +22,14 @@ python3Packages.buildPythonApplication {
     pygobject3
   ];
 
+  pyproject = true;
+
   meta = {
+    description = "Wait for a systemd unit to enter a specific state";
     homepage = "https://github.com/Stebalien/systemd-wait";
     license = lib.licenses.gpl3;
-    description = "Wait for a systemd unit to enter a specific state";
-    mainProgram = "systemd-wait";
     maintainers = [ lib.maintainers.benley ];
     platforms = lib.platforms.linux;
+    mainProgram = "systemd-wait";
   };
 }

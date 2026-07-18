@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   falcon,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "falcon-cors";
   version = "1.1.7";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "lwcolton";
@@ -18,14 +17,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jlEWP7gXbWfdY4coEIM6NWuBf4LOGbUAFMNvqip/FcA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ falcon ];
-
   # Test fail with falcon >= 4
   # https://github.com/lwcolton/falcon-cors/issues/25
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ falcon ];
+  format = "setuptools";
   pythonImportsCheck = [ "falcon_cors" ];
 
   meta = {

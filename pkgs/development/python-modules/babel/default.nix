@@ -2,30 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  isPyPy,
-
-  # build-system
-  setuptools,
-
   # tests
   freezegun,
   glibcLocales,
+  isPyPy,
   pytestCheckHook,
   pytz,
+  # build-system
+  setuptools,
   tzdata,
 }:
 
 buildPythonPackage rec {
   pname = "babel";
   version = "2.18.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-uAuZoUvQhfys+hXJFl9lH7s0BuZsxgOr8RxXUJN8mS0=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     freezegun
@@ -36,12 +31,15 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals isPyPy [ tzdata ];
 
+  build-system = [ setuptools ];
+
   disabledTests = [
     # fails on days switching from and to daylight saving time in EST
     # https://github.com/python-babel/babel/issues/988
     "test_format_time"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "babel" ];
 
   meta = {

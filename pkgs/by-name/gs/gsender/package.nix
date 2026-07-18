@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 
 let
@@ -30,12 +30,12 @@ appimageTools.wrapType2 rec {
   meta = {
     description = "G-code sender for grbl and grblHAL-based CNCs";
     homepage = "https://sienci.com/gsender/";
-    downloadPage = "https://resources.sienci.com/view/gs-installation/";
     changelog = "https://github.com/Sienci-Labs/gsender/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ FlorisMenninga ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "gsender";
+    downloadPage = "https://resources.sienci.com/view/gs-installation/";
   };
 }

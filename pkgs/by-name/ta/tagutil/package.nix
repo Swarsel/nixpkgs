@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
-  libyaml,
   jansson,
   libvorbis,
+  libyaml,
+  pkg-config,
   taglib,
   zlib,
 }:
@@ -22,7 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-sKnBS9kXhJ2atN6A3qcX9A+0A7WfNkOe+nKSblL3i0o=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace "-o aslr" ""
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -37,10 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace "-o aslr" ""
-  '';
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Scriptable music files tags tool and editor";

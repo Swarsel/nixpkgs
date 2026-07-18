@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   addBinToPathHook,
-  curl-impersonate,
-  cffi,
+  buildPythonPackage,
   certifi,
+  cffi,
   charset-normalizer,
   cryptography,
+  curl-impersonate,
   fastapi,
   httpx,
   litestar,
@@ -18,6 +17,7 @@
   pytestCheckHook,
   python-multipart,
   rich,
+  setuptools,
   trustme,
   uvicorn,
   websockets,
@@ -26,7 +26,6 @@
 buildPythonPackage rec {
   pname = "curl-cffi";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lexiforest";
@@ -36,21 +35,7 @@ buildPythonPackage rec {
   };
 
   patches = [ ./use-system-libs.patch ];
-
   buildInputs = [ curl-impersonate ];
-
-  build-system = [
-    cffi
-    setuptools
-  ];
-
-  dependencies = [
-    cffi
-    certifi
-    rich
-  ];
-
-  pythonImportsCheck = [ "curl_cffi" ];
 
   nativeCheckInputs = [
     addBinToPathHook
@@ -75,8 +60,17 @@ buildPythonPackage rec {
     rm -r curl_cffi
   '';
 
-  enabledTestPaths = [
-    "tests/unittest"
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    cffi
+    setuptools
+  ];
+
+  dependencies = [
+    cffi
+    certifi
+    rich
   ];
 
   disabledTestPaths = [
@@ -107,13 +101,19 @@ buildPythonPackage rec {
     "test_without_impersonate"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  enabledTestPaths = [
+    "tests/unittest"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "curl_cffi" ];
 
   meta = {
-    changelog = "https://github.com/lexiforest/curl_cffi/releases/tag/${src.tag}";
     description = "Python binding for curl-impersonate via cffi";
     homepage = "https://curl-cffi.readthedocs.io";
+    changelog = "https://github.com/lexiforest/curl_cffi/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       chuangzhu
       sarahec

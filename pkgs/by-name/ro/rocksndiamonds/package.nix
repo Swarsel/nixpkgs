@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
-  copyDesktopItems,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_net,
+  copyDesktopItems,
+  makeDesktopItem,
   zlib,
 }:
 
@@ -20,27 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-S6sjyykHdefJt6vXMw0TIqL0O0BOT8OhcqNCglBpsDM=";
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "rocksndiamonds";
-      exec = finalAttrs.meta.mainProgram;
-      icon = "rocksndiamonds";
-      comment = finalAttrs.meta.description;
-      desktopName = "Rocks'n'Diamonds";
-      genericName = "Tile-based puzzle";
-      categories = [
-        "Game"
-        "LogicGame"
-      ];
-    })
-  ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
     SDL2 # sdl2-config
     copyDesktopItems
   ];
+
   buildInputs = [
     SDL2
     SDL2_image
@@ -66,16 +52,32 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "LogicGame"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Rocks'n'Diamonds";
+      exec = finalAttrs.meta.mainProgram;
+      genericName = "Tile-based puzzle";
+      icon = "rocksndiamonds";
+      name = "rocksndiamonds";
+    })
+  ];
+
   # flaky with parallel building
   # ranlib: game_bd.a: error reading bd_caveengine.o: file truncated
   enableParallelBuilding = false;
 
   meta = {
     description = "Scrolling tile-based arcade style puzzle game";
-    mainProgram = "rocksndiamonds";
     homepage = "https://www.artsoft.org/rocksndiamonds/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "rocksndiamonds";
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   stdenv,
-  fetchYarnDeps,
-  yarnConfigHook,
   fetchFromGitHub,
-  typescript,
-  jq,
+  buildNpmPackage,
+  fetchYarnDeps,
   fetchpatch,
+  jq,
+  typescript,
+  yarnConfigHook,
 }:
 let
   # Instead of the build script that spectral-language-server provides (ref: https://github.com/luizcorreia/spectral-language-server/blob/master/script/vscode-spectral-build.sh), we build vscode-spectral manually.
@@ -23,21 +23,16 @@ let
       hash = "sha256-TWy+bC6qhTKDY874ORTBbvCIH8ycpmBiU8GLYxBIiAs=";
     };
 
-    offlineCache = fetchYarnDeps {
-      yarnLock = finalAttrs.src + "/yarn.lock";
-      hash = "sha256-am27A9VyFoXuOlgG9mnvNqV3Q7Bi7GJzDqqVFGDVWIA=";
-    };
+    postPatch = ''
+      cp server/tsconfig.json server/tsconfig.json.bak
+      jq '.compilerOptions += {"module": "NodeNext", "moduleResolution": "NodeNext"}' server/tsconfig.json.bak > server/tsconfig.json
+    '';
 
     nativeBuildInputs = [
       typescript
       jq
       yarnConfigHook
     ];
-
-    postPatch = ''
-      cp server/tsconfig.json server/tsconfig.json.bak
-      jq '.compilerOptions += {"module": "NodeNext", "moduleResolution": "NodeNext"}' server/tsconfig.json.bak > server/tsconfig.json
-    '';
 
     buildPhase = ''
       runHook preBuild
@@ -55,9 +50,14 @@ let
       runHook postInstall
     '';
 
+    offlineCache = fetchYarnDeps {
+      hash = "sha256-am27A9VyFoXuOlgG9mnvNqV3Q7Bi7GJzDqqVFGDVWIA=";
+      yarnLock = finalAttrs.src + "/yarn.lock";
+    };
+
     meta = {
-      homepage = "https://github.com/stoplightio/vscode-spectral";
       description = "VS Code extension bringing the awesome Spectral JSON/YAML linter with OpenAPI/AsyncAPI support";
+      homepage = "https://github.com/stoplightio/vscode-spectral";
       license = lib.licenses.asl20;
     };
   });
@@ -73,20 +73,16 @@ buildNpmPackage {
     hash = "sha256-VD2aAzlCnJ6mxPUSbNRfMOlslM8kLPqrAI2ah6sX9cU=";
   };
 
-  npmDepsHash = "sha256-ixAXy/rRkyWL3jdAkrXJh1qhWcKIkr5nH/Bhu2JV6k8=";
-
   patches = [
     # https://github.com/luizcorreia/spectral-language-server/pull/15
     (fetchpatch {
+      hash = "sha256-+mN93xP4HCll4dTcnh2W/m9k3XovvgnB6AOmuJpZUZ0=";
       name = "fix-package-lock.patch";
       url = "https://github.com/luizcorreia/spectral-language-server/commit/909704850dd10e7b328fc7d15f8b07cdef88899d.patch";
-      hash = "sha256-+mN93xP4HCll4dTcnh2W/m9k3XovvgnB6AOmuJpZUZ0=";
     })
   ];
 
-  dontNpmBuild = true;
-
-  npmFlags = [ "--ignore-scripts" ];
+  npmDepsHash = "sha256-ixAXy/rRkyWL3jdAkrXJh1qhWcKIkr5nH/Bhu2JV6k8=";
 
   installPhase = ''
     runHook preInstall
@@ -99,11 +95,14 @@ buildNpmPackage {
     runHook postInstall
   '';
 
+  dontNpmBuild = true;
+  npmFlags = [ "--ignore-scripts" ];
+
   meta = {
-    homepage = "https://github.com/luizcorreia/spectral-language-server";
     description = "Awesome Spectral JSON/YAML linter with OpenAPI/AsyncAPI support";
-    maintainers = [ ];
+    homepage = "https://github.com/luizcorreia/spectral-language-server";
     license = lib.licenses.mit;
+    maintainers = [ ];
     mainProgram = "spectral-language-server";
   };
 }

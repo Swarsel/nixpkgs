@@ -1,25 +1,25 @@
 {
-  fetchpatch,
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  fetchpatch,
+  freealut,
   libGLU,
   libglut,
-  libx11,
-  plib,
-  openal,
-  freealut,
-  libxrandr,
-  xorgproto,
-  libxext,
-  libsm,
   libice,
-  libxi,
-  libxt,
-  libxrender,
-  libxxf86vm,
-  libvorbis,
   libpng,
+  libsm,
+  libvorbis,
+  libx11,
+  libxext,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxt,
+  libxxf86vm,
+  openal,
+  plib,
+  xorgproto,
   zlib,
 }:
 
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://salsa.debian.org/games-team/torcs/raw/fb0711c171b38c4648dc7c048249ec20f79eb8e2/debian/patches/format-argument.patch";
       sha256 = "04advcx88yh23ww767iysydzhp370x7cqp2wf9hk2y1qvw7mxsja";
+      url = "https://salsa.debian.org/games-team/torcs/raw/fb0711c171b38c4648dc7c048249ec20f79eb8e2/debian/patches/format-argument.patch";
     })
   ];
 

@@ -1,22 +1,19 @@
 {
   lib,
   fetchurl,
-  fetchpatch,
   buildPythonPackage,
-  python,
+  fetchpatch,
   isPyPy,
+  python,
   pythonAtLeast,
   pythonOlder,
-  sip-module ? "sip",
   setuptools,
+  sip-module ? "sip",
 }:
 
 buildPythonPackage rec {
   pname = sip-module;
   version = "4.19.25";
-  pyproject = false;
-
-  disabled = isPyPy;
 
   src = fetchurl {
     url = "https://www.riverbankcomputing.com/static/Downloads/sip/${version}/sip-${version}.tar.gz";
@@ -26,8 +23,8 @@ buildPythonPackage rec {
   patches = lib.optionals (pythonAtLeast "3.11") [
     (fetchpatch {
       name = "sip-4-python3-11.patch";
-      url = "https://aur.archlinux.org/cgit/aur.git/plain/python3-11.patch?h=sip4&id=67b5907227e68845cdfafcf050fedb89ed653585";
       sha256 = "sha256-cmuz2y5+T8EM/h03G2oboSnnOwrUjVKt2TUQaC9YAdE=";
+      url = "https://aur.archlinux.org/cgit/aur.git/plain/python3-11.patch?h=sip4&id=67b5907227e68845cdfafcf050fedb89ed653585";
     })
   ];
 
@@ -44,7 +41,9 @@ buildPythonPackage rec {
       -b $out/bin -e $out/include
   '';
 
+  disabled = isPyPy;
   enableParallelBuilding = true;
+  pyproject = false;
 
   pythonImportsCheck = [
     # https://www.riverbankcomputing.com/pipermail/pyqt/2023-January/045094.html
@@ -59,11 +58,13 @@ buildPythonPackage rec {
 
   meta = {
     description = "Creates C++ bindings for Python modules";
-    mainProgram = "sip";
     homepage = "https://riverbankcomputing.com/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = [
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "sip";
   };
 }

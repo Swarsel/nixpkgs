@@ -1,15 +1,12 @@
 {
   lib,
-  mkDerivation,
   libcMinimal,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libresolv";
-
-  libcMinimal = true;
-
   extraPaths = [ libcMinimal.path ];
-
+  libcMinimal = true;
+  path = "lib/libresolv";
   meta.platforms = lib.platforms.netbsd;
 }

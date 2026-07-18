@@ -1,22 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  cffi,
-  libiconv,
-  buildPythonPackage,
   appdirs,
-  pyyaml,
+  buildPythonPackage,
+  cffi,
   hypothesis,
   jinja2,
+  libiconv,
   pytestCheckHook,
+  pyyaml,
+  rustPlatform,
   unzip,
 }:
 
 buildPythonPackage rec {
   pname = "cmsis-pack-manager";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyocd";
@@ -25,23 +24,20 @@ buildPythonPackage rec {
     hash = "sha256-kb0VSg89qglL6Q5kx1nEN1OW1GYoccBTITtPw2/dXTY=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    hash = "sha256-yRNSFlEwFhfkSNjbFHipVZvJZ40pKbI9HhLtciws7nc=";
-  };
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
   ];
-  propagatedNativeBuildInputs = [ cffi ];
+
   buildInputs = [
     libiconv
   ];
+
   propagatedBuildInputs = [
     appdirs
     pyyaml
   ];
+
   nativeCheckInputs = [
     hypothesis
     jinja2
@@ -55,6 +51,11 @@ buildPythonPackage rec {
     rm -r cmsis_pack_manager
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-yRNSFlEwFhfkSNjbFHipVZvJZ40pKbI9HhLtciws7nc=";
+  };
+
   disabledTests = [
     # All require DNS.
     "test_pull_pdscs"
@@ -63,10 +64,14 @@ buildPythonPackage rec {
     "test_dump_parts_cli"
   ];
 
+  propagatedNativeBuildInputs = [ cffi ];
+  pyproject = true;
+
   meta = {
     description = "Rust and Python module for handling CMSIS Pack files";
     homepage = "https://github.com/pyocd/cmsis-pack-manager";
     license = lib.licenses.asl20;
+
     maintainers = [
     ];
   };

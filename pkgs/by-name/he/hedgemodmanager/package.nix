@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  fetchFromGitHub,
   nix-update-script,
 }:
 
@@ -17,12 +17,6 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-1uwcpeyOxwKI0fyAmchYEMqStF52wXkCZej+ZQ+aFeY=";
   };
 
-  projectFile = "Source/HedgeModManager.UI/HedgeModManager.UI.csproj";
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
   postPatch = ''
     substituteInPlace flatpak/hedgemodmanager.desktop --replace-fail "/app/bin/HedgeModManager.UI" "HedgeModManager.UI"
   '';
@@ -34,6 +28,11 @@ buildDotnetModule (finalAttrs: {
     install -Dm644 flatpak/hedgemodmanager.desktop $out/share/applications/io.github.hedge_dev.hedgemodmanager.desktop
   '';
 
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  nugetDeps = ./deps.json;
+  projectFile = "Source/HedgeModManager.UI/HedgeModManager.UI.csproj";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version"
@@ -42,12 +41,12 @@ buildDotnetModule (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "HedgeModManager.UI";
     description = "Mod manager for Hedgehog Engine games";
     homepage = "https://github.com/hedge-dev/HedgeModManager";
     changelog = "https://github.com/hedge-dev/HedgeModManager/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "HedgeModManager.UI";
   };
 })

@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  libgit2,
-  openssl,
   stdenv,
+  fetchFromGitHub,
   curl,
   git,
+  libgit2,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5fe+iIPZAKi8aQW2PfanO7U2d70Oc3KvL/RZTV9/ZU8=";
   };
 
-  cargoHash = "sha256-abTQuKpVcjorr6RQ1t9sAzqvS39XT6lg4fALAqO68YI=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -36,27 +34,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
     curl
   ];
 
+  cargoHash = "sha256-abTQuKpVcjorr6RQ1t9sAzqvS39XT6lg4fALAqO68YI=";
+
   nativeCheckInputs = [
     git
   ];
 
   # disable vendored-libgit2 and vendored-openssl
   buildNoDefaultFeatures = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = ''Cargo subcommand "release": everything about releasing a rust crate'';
-    mainProgram = "cargo-release";
     homepage = "https://github.com/crate-ci/cargo-release";
     changelog = "https://github.com/crate-ci/cargo-release/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       gerschtli
       progrm_jarvis
     ];
+
+    mainProgram = "cargo-release";
   };
 })

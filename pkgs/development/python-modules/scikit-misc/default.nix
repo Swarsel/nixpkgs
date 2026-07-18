@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
   gfortran,
   git,
   meson-python,
-  pkg-config,
   numpy,
-  setuptools,
+  pkg-config,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "scikit-misc";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "has2k1";
@@ -43,6 +42,13 @@ buildPythonPackage rec {
     pkg-config
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  # can not run tests from source directory
+  preCheck = ''
+    cd "$(mktemp -d)"
+  '';
+
   build-system = [
     cython
     meson-python
@@ -51,13 +57,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ numpy ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # can not run tests from source directory
-  preCheck = ''
-    cd "$(mktemp -d)"
-  '';
+  pyproject = true;
 
   pytestFlags = [
     "--pyargs"

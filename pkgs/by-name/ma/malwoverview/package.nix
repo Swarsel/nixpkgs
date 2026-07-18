@@ -7,9 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "malwoverview";
   version = "8.0.5";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "alexandreborges";
@@ -17,6 +14,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-BIuz7QitSM7xOSwiIsitIdYXaBoENhzrOLVfyVcoy3M=";
   };
+
+  # Project has no tests
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = with python3Packages; [
     setuptools
@@ -39,8 +40,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     textual
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "malwoverview"

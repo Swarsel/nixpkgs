@@ -1,19 +1,19 @@
 {
-  config,
   lib,
   stdenv,
+  fetchFromGitHub,
   alsa-lib,
   autoPatchelfHook,
   chafa,
+  config,
   curl,
   faad2,
-  fetchFromGitHub,
   fftwFloat,
   gdk-pixbuf,
   glib,
+  libjack2,
   libogg,
   libopus,
-  libjack2,
   libpulseaudio,
   libvorbis,
   nix-update-script,
@@ -21,7 +21,6 @@
   pkg-config,
   taglib,
   versionCheckHook,
-
   withALSA ? stdenv.hostPlatform.isLinux,
   withJACK ? false,
   withPulseaudio ? config.pulseaudio or stdenv.hostPlatform.isLinux,
@@ -70,6 +69,18 @@ stdenv.mkDerivation (finalAttrs: {
     libogg
   ];
 
+  makeFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+
+  installFlags = [
+    "MAN_DIR=${placeholder "out"}/share/man"
+  ];
+
   runtimeDependencies =
     lib.optionals withPulseaudio [
       libpulseaudio
@@ -81,20 +92,6 @@ stdenv.mkDerivation (finalAttrs: {
       libjack2
     ];
 
-  enableParallelBuilding = true;
-
-  makeFlags = [
-    "PREFIX=${placeholder "out"}"
-  ];
-
-  installFlags = [
-    "MAN_DIR=${placeholder "out"}/share/man"
-  ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -102,12 +99,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Command-line music player for Linux";
     homepage = "https://github.com/ravachol/kew";
-    platforms = lib.platforms.unix;
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       demine
       matteopacini
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "kew";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,21 +9,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "mergedict";
   version = "1.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-4ZkrNqVCKQFPvLx6nIwo0fSuEx6h2NNFyTlz+fDcb9w=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mergedict" ];
 
   meta = {

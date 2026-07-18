@@ -1,18 +1,16 @@
 # Build one of the packages that comes with idris
 # pname: The pname of the package
 # deps: The dependencies of the package
-{ idris, build-idris-package }:
+{ build-idris-package, idris }:
 pname: deps:
 build-idris-package {
 
   inherit pname;
   inherit (idris) version;
   inherit (idris) src;
-
-  noPrelude = true;
-  noBase = true;
-
   idrisDeps = deps;
+  noBase = true;
+  noPrelude = true;
 
   postUnpack = ''
     sourceRoot=$sourceRoot/libs/${pname}

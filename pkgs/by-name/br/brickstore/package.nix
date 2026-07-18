@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  gst_all_1,
+  libglvnd,
+  ninja,
+  onetbb,
+  pkg-config,
   qt6,
   qt6Packages,
-  fetchFromGitHub,
-  gst_all_1,
-  cmake,
-  libglvnd,
-  onetbb,
-  ninja,
-  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "brickstore";
@@ -22,6 +22,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-UIVzvzsterKkL8/JPx5S0wly6mLxflAqX0gMFX3rOes=";
     fetchSubmodules = true;
   };
+
+  # Use nix-provided qcoro instead of fetching from GitHub
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail 'include(BuildQCoro)' \
+        'find_package(QCoro6 CONFIG REQUIRED COMPONENTS Core Network Qml)'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -42,13 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     onetbb
   ];
 
-  # Use nix-provided qcoro instead of fetching from GitHub
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail 'include(BuildQCoro)' \
-        'find_package(QCoro6 CONFIG REQUIRED COMPONENTS Core Network Qml)'
-  '';
-
   qtWrapperArgs = [
     ''
       --prefix GST_PLUGIN_SYSTEM_PATH_1_0 : ${
@@ -65,17 +65,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/rgriebl/brickstore/blob/main/CHANGELOG.md";
     description = "BrickLink offline management tool";
-    homepage = "https://www.brickstore.dev/";
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       BrickStore is a BrickLink offline management tool.
       It is multi-platform (Windows, macOS and Linux as well as iOS and Android),
       multilingual (currently English, German, Spanish, Swedish and French), fast and stable.
     '';
+
+    homepage = "https://www.brickstore.dev/";
+    changelog = "https://github.com/rgriebl/brickstore/blob/main/CHANGELOG.md";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ legojames ];
-    mainProgram = "brickstore";
     platforms = lib.platforms.linux;
+    mainProgram = "brickstore";
   };
 })

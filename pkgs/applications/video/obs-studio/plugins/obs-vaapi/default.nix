@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   gst_all_1,
-  pciutils,
-  pkg-config,
   meson,
   ninja,
   obs-studio,
+  pciutils,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,12 +26,19 @@ stdenv.mkDerivation rec {
     meson
     ninja
   ];
+
   buildInputs = with gst_all_1; [
     gstreamer
     gst-plugins-base
     obs-studio
     pciutils
   ];
+
+  # Fix output directory
+  postInstall = ''
+    mkdir $out/lib/obs-plugins
+    mv $out/lib/obs-vaapi.so $out/lib/obs-plugins/
+  '';
 
   # - We need "getLib" instead of default derivation, otherwise it brings gstreamer-bin;
   # - without gst-plugins-base it won't even show proper errors in logs;
@@ -49,21 +56,16 @@ stdenv.mkDerivation rec {
       gst-plugins-bad
     ];
 
-  # Fix output directory
-  postInstall = ''
-    mkdir $out/lib/obs-plugins
-    mv $out/lib/obs-vaapi.so $out/lib/obs-plugins/
-  '';
-
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "OBS Studio VAAPI support via GStreamer";
     homepage = "https://github.com/fzwoch/obs-vaapi";
     changelog = "https://github.com/fzwoch/obs-vaapi/releases/tag/${version}";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       ahuzik
       pedrohlc
     ];
-    license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
   };
 }

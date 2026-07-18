@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
-  pnpm_10,
+  nix-update-script,
   nodejs,
   pnpmConfigHook,
-  nix-update-script,
+  pnpm_10,
   testers,
 }:
 let
@@ -21,13 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "skills";
     tag = "v${finalAttrs.version}";
     hash = "sha256-gL8uNkS3gsRGXIunIsYLYykLYs2c1gO9PFVTE69nWKU=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    fetcherVersion = 3;
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    hash = "sha256-wntHp5UT21wD1myxj8EQafQis5QMuQ9U2PKiKg2jalw=";
   };
 
   nativeBuildInputs = [
@@ -65,15 +58,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.updateScript = nix-update-script { };
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-wntHp5UT21wD1myxj8EQafQis5QMuQ9U2PKiKg2jalw=";
+  };
+
   passthru.tests.version = testers.testVersion {
     package = finalAttrs.finalPackage;
   };
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
-    changelog = "https://github.com/vercel-labs/skills/releases/tag/v${finalAttrs.version}";
     description = "The open agent skills tool";
     homepage = "https://github.com/vercel-labs/skills";
+    changelog = "https://github.com/vercel-labs/skills/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aaronjheng ];
     mainProgram = "skills";

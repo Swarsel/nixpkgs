@@ -1,12 +1,11 @@
 {
   lib,
-  buildNimPackage,
   fetchFromGitHub,
-  nim,
-  openssl,
+  buildNimPackage,
   makeWrapper,
-
+  nim,
   nix-update-script,
+  openssl,
 }:
 
 buildNimPackage (
@@ -24,9 +23,6 @@ buildNimPackage (
 
     nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ openssl ];
-
-    nimFlags = [ "--define:git_revision_override=${final.src.rev}" ];
-
     doCheck = false; # it works on their machine
 
     postInstall = ''
@@ -34,6 +30,7 @@ buildNimPackage (
         --suffix PATH : ${lib.makeBinPath [ nim ]}
     '';
 
+    nimFlags = [ "--define:git_revision_override=${final.src.rev}" ];
     passthru.updateScript = nix-update-script { };
 
     meta = {

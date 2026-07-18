@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
+  buildPythonPackage,
   netifaces,
   pytest-aio,
   pytest-asyncio,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "python-izone";
   version = "1.2.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Swamp-Ig";
@@ -27,12 +26,7 @@ buildPythonPackage rec {
       --replace-fail '"setuptools_scm_git_archive",' ""
   '';
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    aiohttp
-    netifaces
-  ];
+  doCheck = false; # most tests access network
 
   nativeCheckInputs = [
     pytest-aio
@@ -40,8 +34,14 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  doCheck = false; # most tests access network
+  build-system = [ setuptools-scm ];
 
+  dependencies = [
+    aiohttp
+    netifaces
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pizone" ];
 
   meta = {

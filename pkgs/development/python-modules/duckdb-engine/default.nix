@@ -1,50 +1,35 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   duckdb,
-  sqlalchemy,
-
   # testing
   fsspec,
   hypothesis,
   pandas,
+  # build-system
+  poetry-core,
   pyarrow,
   pytest-remotedata,
   pytestCheckHook,
   pythonAtLeast,
   pythonOlder,
   snapshottest,
+  sqlalchemy,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "duckdb-engine";
   version = "0.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "duckdb_engine";
     owner = "Mause";
+    repo = "duckdb_engine";
     tag = "v${version}";
     hash = "sha256-AhYCiIhi7jMWKIdDwZZ8MgfDg3F02/jooGLOp6E+E5g=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    duckdb
-    sqlalchemy
-  ];
-
-  preCheck = ''
-    export HOME="$(mktemp -d)"
-  '';
 
   nativeCheckInputs = [ pytestCheckHook ];
 
@@ -62,13 +47,24 @@ buildPythonPackage rec {
     snapshottest
   ];
 
-  disabledTestPaths = lib.optionals (pythonAtLeast "3.12") [
-    # requires snapshottest
-    "duckdb_engine/tests/test_datatypes.py"
+  preCheck = ''
+    export HOME="$(mktemp -d)"
+  '';
+
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    duckdb
+    sqlalchemy
   ];
 
   disabledTestMarks = [
     "remote_data"
+  ];
+
+  disabledTestPaths = lib.optionals (pythonAtLeast "3.12") [
+    # requires snapshottest
+    "duckdb_engine/tests/test_datatypes.py"
   ];
 
   disabledTests = [
@@ -91,6 +87,7 @@ buildPythonPackage rec {
     "test_fetch_arrow"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "duckdb_engine" ];
 
   meta = {

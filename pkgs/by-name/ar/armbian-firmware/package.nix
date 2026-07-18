@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "armbian-firmware";
@@ -31,7 +31,7 @@ stdenvNoCC.mkDerivation {
     description = "Firmware from Armbian";
     homepage = "https://github.com/armbian/firmware";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ zaldnoay ];
+    platforms = lib.platforms.all;
   };
 }

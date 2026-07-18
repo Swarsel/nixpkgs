@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,9 +14,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "Common Gateway Interface for Octave";
     homepage = "https://gnu-octave.github.io/packages/cgi/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Common Gateway Interface for Octave";
   };
 }

@@ -1,35 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pdm-backend,
-
+  # tests
+  braceexpand,
+  buildPythonPackage,
   # dependencies
   ftfy,
   huggingface-hub,
+  pandas,
+  # build-system
+  pdm-backend,
   protobuf,
+  pytestCheckHook,
   regex,
+  requests,
   safetensors,
   sentencepiece,
   timm,
   torch,
   torchvision,
   tqdm,
-
-  # tests
-  braceexpand,
-  pandas,
-  pytestCheckHook,
-  requests,
   transformers,
   webdataset,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "open-clip-torch";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mlfoundations";
@@ -37,6 +33,15 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rJT0LCIS0uChBUdZ6WTQv0npZ0Ae8veIXMgr6JTgUj4=";
   };
+
+  nativeCheckInputs = [
+    braceexpand
+    pandas
+    pytestCheckHook
+    requests
+    transformers
+    webdataset
+  ];
 
   build-system = [ pdm-backend ];
 
@@ -52,17 +57,6 @@ buildPythonPackage (finalAttrs: {
     torchvision
     tqdm
   ];
-
-  nativeCheckInputs = [
-    braceexpand
-    pandas
-    pytestCheckHook
-    requests
-    transformers
-    webdataset
-  ];
-
-  pythonImportsCheck = [ "open_clip" ];
 
   disabledTestPaths = [
     # -> On Darwin:
@@ -86,6 +80,9 @@ buildPythonPackage (finalAttrs: {
     # hangs forever
     "test_training"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "open_clip" ];
 
   meta = {
     description = "Open source implementation of CLIP";

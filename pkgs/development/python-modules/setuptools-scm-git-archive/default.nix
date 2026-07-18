@@ -2,20 +2,19 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "setuptools-scm-git-archive";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "setuptools_scm_git_archive";
     hash = "sha256-xBi8d7OXTTrGXyaPBY8j4B3F+ZHyIzEosOFqad4iewk=";
+    pname = "setuptools_scm_git_archive";
   };
 
   nativeBuildInputs = [
@@ -24,9 +23,8 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "tests.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "setuptools_scm_git_archive" ];
 
   meta = {

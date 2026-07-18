@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  glib,
-  gtk3,
-  webkitgtk_4_1,
   bun,
   cargo-tauri,
-  writableTmpDirAsHomeHook,
+  glib,
+  gtk3,
   nodejs,
+  pkg-config,
+  rustPlatform,
+  webkitgtk_4_1,
   wrapGAppsHook4,
+  writableTmpDirAsHomeHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "balatro-mod-manager";
@@ -24,51 +24,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-cazd6Cns87cjwBORQIsAD5rBes7eTGCAz7bytZO+TsQ=";
   };
 
-  nodeModules = stdenv.mkDerivation {
-    pname = "${finalAttrs.pname}-node_modules";
-    inherit (finalAttrs) version src;
-
-    nativeBuildInputs = [
-      bun
-      writableTmpDirAsHomeHook
-    ];
-
-    dontConfigure = true;
-
-    buildPhase = ''
-      runHook preBuild
-      bun install --frozen-lockfile --allow-scripts --no-progress
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out
-      cp -r node_modules $out/node_modules
-      runHook postInstall
-    '';
-
-    outputHashMode = "recursive";
-    outputHashAlgo = "sha256";
-    outputHash =
-      {
-        x86_64-linux = "sha256-SQCF05uuJg16Il7SvCXlzkm64wJyPfNzVqfgDj7YldI=";
-        aarch64-linux = "sha256-YobKPWe+0StlyJkYEeUmNzYAinGwR042HWpdwWOCt6Q=";
-      }
-      .${stdenv.hostPlatform.system} or (throw "Unsupported system ${stdenv.hostPlatform.system}");
-  };
-
-  cargoHash = "sha256-m27OdD+hpj1fGiTbe9VmdY+2EFBZKJ3o/4WMdpCpRSw=";
-
-  dontUseCargoParallelTests = true;
-  checkFlags = [
-    # skip tests that depend on networking
-    "--skip paging_stops_when_cursor_is_none"
-    "--skip apply_changed_updates_and_deletes"
-    # skip tests that looks for CA certificates
-    "--skip test_is_installed_with_no_dir"
-    "--skip test_mod_installer_new"
-  ];
+  postPatch = ''
+    cp -r ${finalAttrs.nodeModules}/node_modules .
+    chmod -R +w node_modules
+    patchShebangs --build node_modules
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -84,11 +44,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  postPatch = ''
-    cp -r ${finalAttrs.nodeModules}/node_modules .
-    chmod -R +w node_modules
-    patchShebangs --build node_modules
-  '';
+  cargoHash = "sha256-m27OdD+hpj1fGiTbe9VmdY+2EFBZKJ3o/4WMdpCpRSw=";
+
+  checkFlags = [
+    # skip tests that depend on networking
+    "--skip paging_stops_when_cursor_is_none"
+    "--skip apply_changed_updates_and_deletes"
+    # skip tests that looks for CA certificates
+    "--skip test_is_installed_with_no_dir"
+    "--skip test_mod_installer_new"
+  ];
 
   postInstall = ''
     for size in 32 128 512; do
@@ -96,15 +61,54 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
   '';
 
+  dontUseCargoParallelTests = true;
+
+  nodeModules = stdenv.mkDerivation {
+    inherit (finalAttrs) version src;
+    pname = "${finalAttrs.pname}-node_modules";
+
+    nativeBuildInputs = [
+      bun
+      writableTmpDirAsHomeHook
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+      bun install --frozen-lockfile --allow-scripts --no-progress
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out
+      cp -r node_modules $out/node_modules
+      runHook postInstall
+    '';
+
+    dontConfigure = true;
+
+    outputHash =
+      {
+        aarch64-linux = "sha256-YobKPWe+0StlyJkYEeUmNzYAinGwR042HWpdwWOCt6Q=";
+        x86_64-linux = "sha256-SQCF05uuJg16Il7SvCXlzkm64wJyPfNzVqfgDj7YldI=";
+      }
+      .${stdenv.hostPlatform.system} or (throw "Unsupported system ${stdenv.hostPlatform.system}");
+
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
   meta = {
     description = "A mod manager for the game Balatro";
     homepage = "https://balatro-mod-manager.dasguney.com/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.intersectLists lib.platforms.linux (lib.platforms.x86_64 ++ lib.platforms.aarch64);
+
     maintainers = with lib.maintainers; [
       mhdask
       ryand56
     ];
+
+    platforms = lib.intersectLists lib.platforms.linux (lib.platforms.x86_64 ++ lib.platforms.aarch64);
     mainProgram = "BMM";
   };
 })

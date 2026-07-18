@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   callPackage,
   reaction,
+  rustPlatform,
 }:
 {
   # NOTE: plugins are binaries, so no special integration with the derivation is required
@@ -11,23 +11,24 @@
     name: extra:
     rustPlatform.buildRustPackage (
       {
-        pname = name;
         inherit (reaction)
           version
           src
           patches
           cargoHash
           ;
+
+        pname = name;
         buildAndTestSubdir = "plugins/${name}";
 
         meta = {
-          changelog = "https://framagit.org/ppom/reaction/-/releases/v${reaction.version}";
           description = "Official reaction plugin ${name}";
           homepage = "https://framagit.org/ppom/reaction";
+          changelog = "https://framagit.org/ppom/reaction/-/releases/v${reaction.version}";
           license = lib.licenses.agpl3Plus;
-          mainProgram = name;
           maintainers = with lib.maintainers; [ ppom ];
           platforms = lib.platforms.unix;
+          mainProgram = name;
           teams = [ lib.teams.ngi ];
         };
       }

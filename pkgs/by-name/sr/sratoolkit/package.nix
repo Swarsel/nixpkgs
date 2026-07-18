@@ -1,20 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  python3,
   bison,
+  cmake,
   flex,
   libxml2,
-  openjdk,
-  ncbi-vdb,
   mbedtls,
+  ncbi-vdb,
+  openjdk,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "sratoolkit";
-
   # NOTE: When updating make sure to update ncbi-vdb as well for versions to match
   version = "3.4.1";
 
@@ -25,17 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JMdJ8F4n9WgdP2oj8MN1+QlxCSmqFzsjAovx/+RyVjk=";
   };
 
-  cmakeFlags = [
-    "-DVDB_INCDIR=${ncbi-vdb}/include"
-    "-DVDB_LIBDIR=${ncbi-vdb}/lib"
-  ];
-
-  buildInputs = [
-    ncbi-vdb
-    libxml2
-    mbedtls
-  ];
-
   nativeBuildInputs = [
     cmake
     python3
@@ -44,13 +32,26 @@ stdenv.mkDerivation (finalAttrs: {
     openjdk
   ];
 
+  buildInputs = [
+    ncbi-vdb
+    libxml2
+    mbedtls
+  ];
+
+  cmakeFlags = [
+    "-DVDB_INCDIR=${ncbi-vdb}/include"
+    "-DVDB_LIBDIR=${ncbi-vdb}/lib"
+  ];
+
   meta = {
-    homepage = "https://github.com/ncbi/sra-tools";
     description = "Collection of tools and libraries for using data in the INSDC Sequence Read Archives";
+    homepage = "https://github.com/ncbi/sra-tools";
     license = lib.licenses.ncbiPd;
+
     maintainers = with lib.maintainers; [
       t4ccer
     ];
+
     platforms = lib.platforms.unix;
   };
 })

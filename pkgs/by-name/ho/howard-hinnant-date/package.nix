@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  tzdata,
   fetchpatch,
   replaceVars,
+  tzdata,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,13 +19,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qfrmH3NRyrDVmHRmmWzM5Zz37E7RFXJqaV1Rq2E59qs=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Add pkg-config file
     # https://github.com/HowardHinnant/date/pull/538
     (fetchpatch {
       name = "output-date-pc-for-pkg-config.patch";
-      url = "https://git.alpinelinux.org/aports/plain/community/date/538-output-date-pc-for-pkg-config.patch?id=11f6b4d4206b0648182e7b41cd57dcc9ccea0728";
       sha256 = "1ma0586jsd89jgwbmd2qlvlc8pshs1pc4zk5drgxi3qvp8ai1154";
+      url = "https://git.alpinelinux.org/aports/plain/community/date/538-output-date-pc-for-pkg-config.patch?id=11f6b4d4206b0648182e7b41cd57dcc9ccea0728";
     })
     # Without this patch, this library will drop a `tzdata` directory into
     # `~/Downloads` if it cannot find `/usr/share/zoneinfo`. Make the path it
@@ -52,11 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DUSE_SYSTEM_TZ_DB=true"
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   # fixes "cycle detected in build"
   postInstall = lib.optionalString stdenv.hostPlatform.isWindows ''
     mkdir $dev/lib
@@ -64,10 +64,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    license = lib.licenses.mit;
     description = "Date and time library based on the C++11/14/17 <chrono> header";
     homepage = "https://github.com/HowardHinnant/date";
-    platforms = with lib.platforms; unix ++ windows;
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ r-burns ];
+    platforms = with lib.platforms; unix ++ windows;
   };
 })

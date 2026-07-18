@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   autoPatchelfHook,
   fetchgit,
-  lib,
   libfprint-tod,
   openssl,
   patchelfUnstable,
-  stdenv,
 }:
 
 # Based on ideas from (using a wrapper library to redirect fopen() calls to firmware files):
@@ -17,9 +17,9 @@ let
 
   src = fetchgit {
     url = "git://git.launchpad.net/~oem-solutions-engineers/libfprint-2-tod1-broadcom/";
-    branchName = "ubuntu/latest";
     rev = "4372071d7296f40050b67e62ab256db71bd9ea30";
     hash = "sha256-zJiRos0SrU1FxX8SfEnIv0cVy3snkRuTWaLy+MywF+Q=";
+    branchName = "ubuntu/latest";
   };
 
   wrapperLibName = "wrapper-lib.so";
@@ -27,13 +27,13 @@ let
 
   # wraps `fopen()` for finding firmware files
   wrapperLib = stdenv.mkDerivation {
-    pname = "${pname}-wrapper-lib";
     inherit version;
+    pname = "${pname}-wrapper-lib";
 
     src = builtins.path {
+      filter = path: type: baseNameOf path == wrapperLibSource;
       name = "${pname}-wrapper-lib-source";
       path = ./.;
-      filter = path: type: baseNameOf path == wrapperLibSource;
     };
 
     postPatch = ''
@@ -52,15 +52,15 @@ in
 stdenv.mkDerivation {
   inherit src pname version;
 
+  nativeBuildInputs = [
+    autoPatchelfHook
+    patchelfUnstable # have to use patchelfUnstable to support --rename-dynamic-symbols
+  ];
+
   buildInputs = [
     libfprint-tod
     openssl
     wrapperLib
-  ];
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    patchelfUnstable # have to use patchelfUnstable to support --rename-dynamic-symbols
   ];
 
   installPhase = ''
@@ -84,11 +84,13 @@ stdenv.mkDerivation {
     description = "Broadcom driver module for libfprint-2-tod Touch OEM Driver for Dell ControlVault v3";
     homepage = "https://git.launchpad.net/~oem-solutions-engineers/libfprint-2-tod1-broadcom/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       aionescu
       pitkling
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

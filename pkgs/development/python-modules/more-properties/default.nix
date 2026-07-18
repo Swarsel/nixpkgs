@@ -1,20 +1,15 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  pythonAtLeast,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "more-properties";
   version = "1.1.1";
-  pyproject = true;
-
-  # All tests are failing with:
-  # AssertionError: None != 'The type of the None singleton.'
-  disabled = pythonAtLeast "3.13";
 
   src = fetchFromGitHub {
     owner = "madman-bob";
@@ -29,18 +24,22 @@ buildPythonPackage rec {
       --replace-fail "project_root = Path(__file__).parents[1]" "project_root = Path(__file__).parents[0]"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
+
+  # All tests are failing with:
+  # AssertionError: None != 'The type of the None singleton.'
+  disabled = pythonAtLeast "3.13";
+  pyproject = true;
+  pythonImportsCheck = [ "more_properties" ];
 
   pythonRemoveDeps = [
     # dataclasses is included in Python since 3.7
     "dataclasses"
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "more_properties" ];
 
   meta = {
     description = "Collection of property variants";

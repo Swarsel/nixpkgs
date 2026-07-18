@@ -16,100 +16,27 @@ in
 {
   options.services.librechat = {
     enable = lib.mkEnableOption "the LibreChat server";
-
     package = lib.mkPackageOption pkgs "librechat" { };
 
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Whether to open the port in the firewall.
-      '';
-    };
-
-    dataDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/librechat";
-      example = "/persist/librechat";
-      description = "Absolute path for where the LibreChat server will use as its data directory to store logs, user uploads, and generated images.";
-    };
-
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "librechat";
-      example = "alice";
-      description = "The user to run the service as.";
-    };
-
-    group = lib.mkOption {
-      type = lib.types.str;
-      default = "librechat";
-      example = "users";
-      description = "The group to run the service as.";
-    };
-
     credentials = lib.mkOption {
-      type = lib.types.attrsOf lib.types.path;
       default = { };
-      example = {
-        CREDS_KEY = "/run/secrets/creds_key";
-      };
+
       description = ''
         Environment variables which are loaded from the contents of files at a file paths, mainly used for secrets.
         See [LibreChat environment variables](https://www.librechat.ai/docs/configuration/dotenv).
         Alternatively you can use `services.librechat.credentialsFile` to define all the variables in a single file.
       '';
-    };
 
-    env = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType =
-          with lib.types;
-          attrsOf (oneOf [
-            str
-            path
-            (coercedTo int toString str)
-            (coercedTo float toString str)
-            (coercedTo port toString str)
-            (coercedTo bool (x: if x then "true" else "false") str)
-          ]);
-        options = {
-          CONFIG_PATH = lib.mkOption {
-            default = configFile;
-            internal = true;
-            readOnly = true;
-          };
-          PORT = lib.mkOption {
-            type = with lib.types; coercedTo port toString str;
-            default = 3080;
-            example = 2309;
-            description = "The value that will be passed to the PORT environment variable, telling LibreChat what to listen on.";
-          };
-          LIBRECHAT_LOG_DIR = lib.mkOption {
-            type = lib.types.str;
-            default = "${cfg.dataDir}/logs";
-            defaultText = lib.literalExpression "/var/lib/librechat/logs";
-            description = ''
-              Logs will be saved into this directory.
-              By default it is relative to `services.librechat.dataDir`.
-            '';
-          };
-        };
-      };
       example = {
-        ALLOW_REGISTRATION = true;
-        HOST = "0.0.0.0";
-        PORT = 2309;
-        CONSOLE_JSON_STRING_LENGTH = 255;
+        CREDS_KEY = "/run/secrets/creds_key";
       };
-      description = ''
-        Environment variables that will be set for the service.
-        See [LibreChat environment variables](https://www.librechat.ai/docs/configuration/dotenv).
-      '';
+
+      type = lib.types.attrsOf lib.types.path;
     };
 
     credentialsFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
+      default = "/dev/null";
+
       description = ''
         Path to a file that contains environment variables.
         See [LibreChat environment variables](https://www.librechat.ai/docs/configuration/dotenv).
@@ -121,71 +48,169 @@ in
 
         Alternatively you can use `services.librechat.credentials` to define the value of each variable in a separate file.
       '';
-      default = "/dev/null";
+
       example = "/run/secrets/librechat";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    dataDir = lib.mkOption {
+      default = "/var/lib/librechat";
+      description = "Absolute path for where the LibreChat server will use as its data directory to store logs, user uploads, and generated images.";
+      example = "/persist/librechat";
+      type = lib.types.path;
+    };
+
+    enableLocalDB = lib.mkEnableOption "a local mongodb instance";
+
+    env = lib.mkOption {
+      description = ''
+        Environment variables that will be set for the service.
+        See [LibreChat environment variables](https://www.librechat.ai/docs/configuration/dotenv).
+      '';
+
+      example = {
+        ALLOW_REGISTRATION = true;
+        CONSOLE_JSON_STRING_LENGTH = 255;
+        HOST = "0.0.0.0";
+        PORT = 2309;
+      };
+
+      type = lib.types.submodule {
+        options = {
+          CONFIG_PATH = lib.mkOption {
+            default = configFile;
+            internal = true;
+            readOnly = true;
+          };
+
+          LIBRECHAT_LOG_DIR = lib.mkOption {
+            default = "${cfg.dataDir}/logs";
+            defaultText = lib.literalExpression "/var/lib/librechat/logs";
+
+            description = ''
+              Logs will be saved into this directory.
+              By default it is relative to `services.librechat.dataDir`.
+            '';
+
+            type = lib.types.str;
+          };
+
+          PORT = lib.mkOption {
+            default = 3080;
+            description = "The value that will be passed to the PORT environment variable, telling LibreChat what to listen on.";
+            example = 2309;
+            type = with lib.types; coercedTo port toString str;
+          };
+        };
+
+        freeformType =
+          with lib.types;
+          attrsOf (oneOf [
+            str
+            path
+            (coercedTo int toString str)
+            (coercedTo float toString str)
+            (coercedTo port toString str)
+            (coercedTo bool (x: if x then "true" else "false") str)
+          ]);
+      };
+    };
+
+    group = lib.mkOption {
+      default = "librechat";
+      description = "The group to run the service as.";
+      example = "users";
+      type = lib.types.str;
+    };
+
+    meilisearch = lib.mkOption {
+      default = { };
+
+      description = ''
+        See [LibreChat search feature](https://www.librechat.ai/docs/features/search).
+      '';
+
+      type = lib.types.submodule {
+        options = {
+          enable = lib.mkOption {
+            default = false;
+
+            description = ''
+              Whether to enable and configure Meilisearch locally for Librechat.
+              You will manually need to set `services.meilisearch.masterKeyFile`.
+            '';
+
+            example = true;
+            type = lib.types.bool;
+          };
+        };
+      };
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to open the port in the firewall.
+      '';
+
+      type = lib.types.bool;
     };
 
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = format.type;
-      };
       default = {
         version = "1.2.1";
       };
+
+      description = ''
+        A free-form attribute set that will be written to librechat.yaml.
+        See the [LibreChat configuration options](https://www.librechat.ai/docs/configuration/librechat_yaml).
+        You can use environment variables by wrapping them in $\{}. Take care to escape the \$ character.
+      '';
+
       example = {
-        version = "1.2.1";
         cache = true;
+
+        endpoints = {
+          custom = [
+            {
+              apiKey = "\${OPENROUTER_KEY}";
+              baseURL = "https://openrouter.ai/api/v1";
+              dropParams = [ "stop" ];
+              modelDisplayLabel = "OpenRouter";
+
+              models = {
+                default = [ "meta-llama/llama-3-70b-instruct" ];
+                fetch = true;
+              };
+
+              name = "OpenRouter";
+              titleConvo = true;
+              titleModule = "meta-llama/llama-3-70b-instruct";
+            }
+          ];
+        };
+
         interface = {
           privacyPolicy = {
             externalUrl = "https://librechat.ai/privacy-policy";
             openNewTab = true;
           };
         };
-        endpoints = {
-          custom = [
-            {
-              name = "OpenRouter";
-              apiKey = "\${OPENROUTER_KEY}";
-              baseURL = "https://openrouter.ai/api/v1";
-              models = {
-                default = [ "meta-llama/llama-3-70b-instruct" ];
-                fetch = true;
-              };
-              titleConvo = true;
-              titleModule = "meta-llama/llama-3-70b-instruct";
-              dropParams = [ "stop" ];
-              modelDisplayLabel = "OpenRouter";
-            }
-          ];
-        };
+
+        version = "1.2.1";
       };
-      description = ''
-        A free-form attribute set that will be written to librechat.yaml.
-        See the [LibreChat configuration options](https://www.librechat.ai/docs/configuration/librechat_yaml).
-        You can use environment variables by wrapping them in $\{}. Take care to escape the \$ character.
-      '';
+
+      type = lib.types.submodule {
+        freeformType = format.type;
+      };
     };
 
-    enableLocalDB = lib.mkEnableOption "a local mongodb instance";
-
-    meilisearch = lib.mkOption {
-      type = lib.types.submodule {
-        options = {
-          enable = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            example = true;
-            description = ''
-              Whether to enable and configure Meilisearch locally for Librechat.
-              You will manually need to set `services.meilisearch.masterKeyFile`.
-            '';
-          };
-        };
-      };
-      default = { };
-      description = ''
-        See [LibreChat search feature](https://www.librechat.ai/docs/features/search).
-      '';
+    user = lib.mkOption {
+      default = "librechat";
+      description = "The user to run the service as.";
+      example = "alice";
+      type = lib.types.str;
     };
   };
 
@@ -204,6 +229,7 @@ in
             && (cfg.env ? JWT_SECRET || cfg.credentials ? JWT_SECRET)
             && (cfg.env ? JWT_REFRESH_SECRET || cfg.credentials ? JWT_REFRESH_SECRET)
           );
+
         message = ''
           CREDS_KEY, CREDS_IV, JWT_SECRET, and JWT_REFRESH_SECRET must be defined in `services.librechat.credentials` and point to locations of files on the host or in a file that `services.credentialsFile` is pointing to.
           Alternatively it can be defined in `services.librechat.env` with literal values but they will be saved within the world-readable nix store.;
@@ -212,6 +238,7 @@ in
       }
       {
         assertion = cfg.meilisearch.enable -> meiliCfg.masterKeyFile != null;
+
         message = ''
           LibreChat's Meilisearch integration requires `services.meilisearch.masterKeyFile` to be set.
         '';
@@ -219,45 +246,40 @@ in
     ];
 
     networking.firewall.allowedTCPPorts = lib.optional cfg.openFirewall cfg.port;
-
-    systemd.tmpfiles.settings."10-librechat"."${cfg.dataDir}".d = {
-      mode = "0755";
-      inherit (cfg) user group;
-    };
+    services.librechat.credentials.MEILI_MASTER_KEY = lib.mkIf cfg.meilisearch.enable meiliCfg.masterKeyFile;
+    services.librechat.env.MEILI_HOST = lib.mkIf cfg.meilisearch.enable "http://${meiliCfg.settings.http_addr}";
+    services.librechat.env.MONGO_URI = lib.mkIf cfg.enableLocalDB "mongodb://localhost:27017";
+    services.librechat.env.SEARCH = lib.mkIf cfg.meilisearch.enable true;
+    services.meilisearch.enable = lib.mkIf cfg.meilisearch.enable true;
+    services.mongodb.enable = lib.mkIf cfg.enableLocalDB true;
 
     systemd.services.librechat = {
-      wantedBy = [ "multi-user.target" ];
       after = [
         "tmpfiles.target"
       ]
       ++ lib.optional cfg.meilisearch.enable "meilisearch.service";
-      wants = lib.optional cfg.meilisearch.enable "meilisearch.service";
+
       description = "Open-source app for all your AI conversations, fully customizable and compatible with any AI provider";
       environment = cfg.env;
+
       script = # sh
         ''
           ${exportAllCredentials cfg.credentials}
           cd ${cfg.dataDir}
           ${lib.getExe cfg.package}
         '';
-      serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-        StateDirectory = baseNameOf cfg.dataDir;
-        WorkingDirectory = cfg.dataDir;
-        LoadCredential = getLoadCredentialList;
-        EnvironmentFile = cfg.credentialsFile;
-        Restart = "on-failure";
-        RestartSec = 10;
 
+      serviceConfig = {
         # Hardening
         CapabilityBoundingSet = "";
+        EnvironmentFile = cfg.credentialsFile;
+        Group = cfg.group;
+        LoadCredential = getLoadCredentialList;
         NoNewPrivileges = true;
-        PrivateUsers = true;
-        PrivateTmp = true;
         PrivateDevices = true;
         PrivateMounts = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -265,34 +287,42 @@ in
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        Restart = "on-failure";
+        RestartSec = 10;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = baseNameOf cfg.dataDir;
+        Type = "simple";
         UMask = "0077";
+        User = cfg.user;
+        WorkingDirectory = cfg.dataDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = lib.optional cfg.meilisearch.enable "meilisearch.service";
     };
 
-    users.users.librechat = lib.mkIf (cfg.user == "librechat") {
-      name = "librechat";
-      isSystemUser = true;
-      group = "librechat";
-      description = "LibreChat server user";
+    systemd.tmpfiles.settings."10-librechat"."${cfg.dataDir}".d = {
+      inherit (cfg) user group;
+      mode = "0755";
     };
 
     users.groups.librechat = lib.mkIf (cfg.user == "librechat") { };
 
-    services.librechat.env.MONGO_URI = lib.mkIf cfg.enableLocalDB "mongodb://localhost:27017";
-    services.mongodb.enable = lib.mkIf cfg.enableLocalDB true;
-
-    services.meilisearch.enable = lib.mkIf cfg.meilisearch.enable true;
-    services.librechat.env.SEARCH = lib.mkIf cfg.meilisearch.enable true;
-    services.librechat.env.MEILI_HOST = lib.mkIf cfg.meilisearch.enable "http://${meiliCfg.settings.http_addr}";
-    services.librechat.credentials.MEILI_MASTER_KEY = lib.mkIf cfg.meilisearch.enable meiliCfg.masterKeyFile;
+    users.users.librechat = lib.mkIf (cfg.user == "librechat") {
+      description = "LibreChat server user";
+      group = "librechat";
+      isSystemUser = true;
+      name = "librechat";
+    };
   };
 
   meta.maintainers = with lib.maintainers; [

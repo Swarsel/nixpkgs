@@ -1,8 +1,8 @@
 {
   lib,
-  runCommand,
   glibc,
   glibc32,
+  runCommand,
 }:
 
 let
@@ -18,6 +18,7 @@ runCommand "${nameVersion.name}-multi-${nameVersion.version}"
       "dev"
       "static"
     ];
+
     passthru = {
       libgcc = lib.lists.filter (x: x != null) [
         (glibc64.libgcc or null)

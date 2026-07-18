@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,16 +18,16 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-scsAVeFhZFWNuzVTnVAyaMCJdm37FiqEn3Mf92oEx8U=";
 
+  postFixup = ''
+    mv $out/bin/cmd $out/bin/trivy-to-vuls
+  '';
+
   ldflags = [
     "-s"
     "-w"
     "-X=github.com/future-architect/vuls/config.Version=${finalAttrs.version}"
     "-X=github.com/future-architect/vuls/config.Revision=${finalAttrs.src.rev}-1970-01-01T00:00:00Z"
   ];
-
-  postFixup = ''
-    mv $out/bin/cmd $out/bin/trivy-to-vuls
-  '';
 
   meta = {
     description = "Agent-less vulnerability scanner";

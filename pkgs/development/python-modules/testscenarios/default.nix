@@ -2,22 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
   # build-system
   pbr,
-  setuptools,
-
-  # dependencies
-  testtools,
-
   # tests
   python,
+  setuptools,
+  # dependencies
+  testtools,
 }:
 
 buildPythonPackage rec {
   pname = "testscenarios";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -49,6 +45,8 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  pyproject = true;
 
   meta = {
     description = "Pyunit extension for dependency injection";

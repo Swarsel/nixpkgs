@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitiles,
-  makeWrapper,
-  python3,
   git,
   gnupg,
   less,
+  makeWrapper,
   openssh,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,14 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
   # Fix 'NameError: name 'ssl' is not defined'
   patches = [ ./import-ssl-module.patch ];
 
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ python3 ];
-
   postPatch = ''
     substituteInPlace repo --replace \
       'urllib.request.urlopen(url)' \
       'urllib.request.urlopen(url, context=ssl.create_default_context())'
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ python3 ];
 
   installPhase = ''
     runHook preInstall
@@ -60,18 +60,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Android's repo management tool";
+
     longDescription = ''
       Repo is a Python script based on Git that helps manage many Git
       repositories, does the uploads to revision control systems, and automates
       parts of the development workflow. Repo is not meant to replace Git, only
       to make it easier to work with Git.
     '';
+
     homepage = "https://android.googlesource.com/tools/repo";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       otavio
       ungeskriptet
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "repo";
   };

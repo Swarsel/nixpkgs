@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pyyaml,
-  pytestCheckHook,
+  buildPythonPackage,
   mock,
+  pytestCheckHook,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "helper";
   version = "2.5.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "gmr";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     pytestCheckHook
     mock
   ];
+
+  format = "setuptools";
 
   pythonImportsCheck = [
     "helper"

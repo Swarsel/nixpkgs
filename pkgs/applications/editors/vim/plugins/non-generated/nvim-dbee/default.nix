@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
   arrow-cpp,
+  buildGoModule,
   duckdb,
   nix-update-script,
-  stdenv,
   vimPlugins,
   vimUtils,
 }:
@@ -18,27 +18,25 @@ let
     hash = "sha256-AOime4vG0NFcUvsd9Iw5SxR7WaeCsoCRU6h5+vSkt4M=";
   };
   dbee-bin = buildGoModule {
-    pname = "dbee-bin";
     inherit version;
-
     inherit src;
-    sourceRoot = "${src.name}/dbee";
+    pname = "dbee-bin";
 
-    vendorHash = "sha256-U/3WZJ/+Bm0ghjeNUILsnlZnjIwk3ySaX3Rd4L9Z62A=";
     buildInputs = [
       arrow-cpp
       duckdb
     ];
 
+    vendorHash = "sha256-U/3WZJ/+Bm0ghjeNUILsnlZnjIwk3ySaX3Rd4L9Z62A=";
     # Tests attempt to access `/etc/protocols` which is forbidden in the sandbox
     doCheck = !stdenv.hostPlatform.isDarwin;
-
+    sourceRoot = "${src.name}/dbee";
     meta.mainProgram = "dbee";
   };
 in
 vimUtils.buildVimPlugin {
-  pname = "nvim-dbee";
   inherit version src;
+  pname = "nvim-dbee";
 
   postPatch = ''
     substituteInPlace lua/dbee/install/init.lua \
@@ -50,16 +48,16 @@ vimUtils.buildVimPlugin {
     ln -s ${lib.getExe dbee-bin} $target/bin/dbee
   '';
 
+  dependencies = [ vimPlugins.nui-nvim ];
+
   passthru = {
+    # needed for the update script
+    inherit dbee-bin;
+
     updateScript = nix-update-script {
       attrPath = "vimPlugins.nvim-dbee.dbee-bin";
     };
-
-    # needed for the update script
-    inherit dbee-bin;
   };
-
-  dependencies = [ vimPlugins.nui-nvim ];
 
   meta = {
     description = "Interactive database client for neovim";

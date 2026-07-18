@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-TPzmopH9RBM/BBrEL9/NWO3qjVa6SSWCp34tHxjLtBI=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
   cargoHash = "sha256-ZfNVpepTm6/JgJJB+qDVI2gVz36PRBpUL8/ba20xQhk=";
+
+  env = {
+    OPENSSL_NO_VENDOR = 1;
+  };
 
   checkFlags = [
     # direct writing /tmp
@@ -26,18 +32,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=operations::update::test::test_update_repos"
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ openssl ];
-
-  env = {
-    OPENSSL_NO_VENDOR = 1;
-  };
-
   meta = {
     description = "Theme manager for LeftWM";
     homepage = "https://github.com/leftwm/leftwm-theme";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ denperidge ];
+    platforms = lib.platforms.linux;
   };
 })

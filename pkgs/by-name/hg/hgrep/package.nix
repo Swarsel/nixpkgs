@@ -1,17 +1,17 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 let
   version = "0.3.9";
 in
 rustPlatform.buildRustPackage {
-  pname = "hgrep";
   inherit version;
+  pname = "hgrep";
 
   src = fetchFromGitHub {
     owner = "rhysd";
@@ -21,11 +21,11 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-TP+PClv7FX3kRBwJ0RAKbKoTKpi7hTZgw/Z/ktFKbwQ=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

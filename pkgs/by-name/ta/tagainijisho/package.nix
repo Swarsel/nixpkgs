@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchzip,
   cmake,
-  sqlite,
+  fetchzip,
   qt5,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     qt5.qtbase
     sqlite
@@ -37,15 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free, open-source Japanese dictionary and kanji lookup tool";
-    mainProgram = "tagainijisho";
     homepage = "https://www.tagaini.net/";
+
     license = with lib.licenses; [
       # program
       gpl3Plus
       # data
       cc-by-sa-30
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ vbgl ];
+    platforms = lib.platforms.linux;
+    mainProgram = "tagainijisho";
   };
 })

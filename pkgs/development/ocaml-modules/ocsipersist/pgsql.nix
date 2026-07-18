@@ -1,14 +1,14 @@
 {
   buildDunePackage,
-  ocsipersist,
   logs,
+  ocsipersist,
   pgocaml,
   xml-light,
 }:
 
 buildDunePackage {
-  pname = "ocsipersist-pgsql";
   inherit (ocsipersist) version src;
+  pname = "ocsipersist-pgsql";
 
   propagatedBuildInputs = [
     logs

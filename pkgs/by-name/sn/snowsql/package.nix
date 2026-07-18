@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  rpmextract,
-  patchelf,
+  libxcrypt-legacy,
   makeWrapper,
   openssl,
-  libxcrypt-legacy,
+  patchelf,
+  rpmextract,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,11 +21,6 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     rpmextract
     makeWrapper
-  ];
-
-  libPath = lib.makeLibraryPath [
-    openssl
-    libxcrypt-legacy
   ];
 
   buildCommand = ''
@@ -44,11 +39,16 @@ stdenv.mkDerivation rec {
       --set LD_LIBRARY_PATH "${libPath}":"${placeholder "out"}"/lib64/snowflake/snowsql
   '';
 
+  libPath = lib.makeLibraryPath [
+    openssl
+    libxcrypt-legacy
+  ];
+
   meta = {
     description = "Command line client for the Snowflake database";
     homepage = "https://www.snowflake.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ andehen ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "snowsql";

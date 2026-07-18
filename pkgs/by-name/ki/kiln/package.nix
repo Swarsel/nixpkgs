@@ -2,8 +2,8 @@
   lib,
   buildGoModule,
   fetchFromSourcehut,
-  scdoc,
   installShellFiles,
+  scdoc,
 }:
 
 buildGoModule (finalAttrs: {

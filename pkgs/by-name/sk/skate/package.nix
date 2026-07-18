@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,7 +15,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Ihzcto41ltV5LQjLP9AF5XGl5b6QDbgZ/q4BMzfrDC8=";
   };
 
-  proxyVendor = true;
   vendorHash = "sha256-H0j0za/+pNEYQAfTvLcECU7jt+2HJMJRcK+n/GbLNO0=";
 
   ldflags = [
@@ -23,6 +22,8 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X=main.Version=${finalAttrs.version}"
   ];
+
+  proxyVendor = true;
 
   meta = {
     description = "Personal multi-machine syncable key value store";

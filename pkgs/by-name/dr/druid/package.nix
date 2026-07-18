@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   mysql_jdbc,
+  nixosTests,
   extensions ? { },
   libJars ? [ ],
-  nixosTests,
   mysqlSupport ? true,
 }:
 let
@@ -26,6 +26,16 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://apache/druid/${finalAttrs.version}/apache-druid-${finalAttrs.version}-bin.tar.gz";
     hash = "sha256-5KYbGtpq7bp3sSqYGaA+RS4WfZYF/XHBKvilkHS5tJA=";
   };
+
+  installPhase = ''
+    runHook preInstall
+    mkdir $out
+    mv * $out
+    ${optionalString mysqlSupport "ln -s ${mysql_jdbc}/share/java/mysql-connector-j.jar $out/extensions/mysql-metadata-storage"}
+    ${finalAttrs.loadExtensions}
+    ${finalAttrs.loadJars}
+    runHook postInstall
+  '';
 
   dontBuild = true;
 
@@ -52,16 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
   );
 
   loadJars = concatStringsSep "\n" (forEach libJars (jar: "cp ${jar} $out/lib/"));
-
-  installPhase = ''
-    runHook preInstall
-    mkdir $out
-    mv * $out
-    ${optionalString mysqlSupport "ln -s ${mysql_jdbc}/share/java/mysql-connector-j.jar $out/extensions/mysql-metadata-storage"}
-    ${finalAttrs.loadExtensions}
-    ${finalAttrs.loadJars}
-    runHook postInstall
-  '';
 
   passthru = {
     tests = nixosTests.druid.default.passthru.override { druidPackage = finalAttrs.finalPackage; };

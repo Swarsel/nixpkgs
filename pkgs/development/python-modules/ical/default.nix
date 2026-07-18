@@ -1,22 +1,21 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   emoji,
-  fetchFromGitHub,
   freezegun,
-  tzdata,
   pydantic,
   pytest-benchmark,
   pytestCheckHook,
   python-dateutil,
   setuptools,
   syrupy,
+  tzdata,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ical";
   version = "13.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "allenporter";
@@ -24,14 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-tyPD0z2wWND6b6TKe/uXH2N5HcaJifhV4gQS9GEAQxs=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    python-dateutil
-    tzdata
-    pydantic
-  ];
 
   nativeCheckInputs = [
     emoji
@@ -41,8 +32,16 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
-  pytestFlags = [ "--benchmark-disable" ];
+  build-system = [ setuptools ];
 
+  dependencies = [
+    python-dateutil
+    tzdata
+    pydantic
+  ];
+
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
   pythonImportsCheck = [ "ical" ];
 
   meta = {

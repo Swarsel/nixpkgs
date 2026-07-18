@@ -1,24 +1,23 @@
 {
   lib,
-  version,
-  hash,
   stdenv,
   fetchurl,
+  hash,
   nixosTests,
+  version,
   writeScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "wordpress";
   inherit version;
-
-  __structuredAttrs = true;
-  strictDeps = true;
+  pname = "wordpress";
 
   src = fetchurl {
-    url = "https://wordpress.org/wordpress-${finalAttrs.version}.tar.gz";
     inherit hash;
+    url = "https://wordpress.org/wordpress-${finalAttrs.version}.tar.gz";
   };
+
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -38,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   passthru.tests = {
     inherit (nixosTests) wordpress;
   };
@@ -51,13 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://wordpress.org";
     description = "Open source software you can use to create a beautiful website, blog, or app";
+    homepage = "https://wordpress.org";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       bartoostveen
       basvandijk
     ];
+
     platforms = lib.platforms.all;
   };
 })

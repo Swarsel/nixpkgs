@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   bitvector-for-humans,
   buildPythonPackage,
   busylight-core,
   fastapi,
-  fetchFromGitHub,
   hatchling,
   hidapi,
   httpx,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "busylight-for-humans";
   version = "0.48.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JnyJny";
@@ -29,6 +28,19 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-5sQXW55P/iWhDWY6bGzN8IrWCJyrSvu2ObtIOolo2X0=";
   };
+
+  nativeCheckInputs = [
+    httpx
+    pytestCheckHook
+    pytest-mock
+    udevCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
+
+  postInstall = ''
+    mkdir -p $out/lib/udev/rules.d
+    $out/bin/busylight udev-rules -o $out/lib/udev/rules.d/99-busylight.rules
+  '';
 
   build-system = [ hatchling ];
 
@@ -42,40 +54,31 @@ buildPythonPackage (finalAttrs: {
     webcolors
   ];
 
+  disabledTestPaths = [ "tests/test_pydantic_models.py" ];
+
   optional-dependencies = {
     web = [ fastapi ];
+
     webapi = [
       fastapi
       uvicorn
     ];
   };
 
-  nativeCheckInputs = [
-    httpx
-    pytestCheckHook
-    pytest-mock
-    udevCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
-  disabledTestPaths = [ "tests/test_pydantic_models.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "busylight" ];
-
-  postInstall = ''
-    mkdir -p $out/lib/udev/rules.d
-    $out/bin/busylight udev-rules -o $out/lib/udev/rules.d/99-busylight.rules
-  '';
 
   meta = {
     description = "Control USB connected presence lights from multiple vendors via the command-line or web API";
     homepage = "https://github.com/JnyJny/busylight";
     changelog = "https://github.com/JnyJny/busylight/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
     ];
+
     mainProgram = "busylight";
   };
 })

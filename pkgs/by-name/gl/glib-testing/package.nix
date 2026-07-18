@@ -2,20 +2,28 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  meson,
-  ninja,
-  pkg-config,
   coreutils,
-  gtk-doc,
   docbook-xsl-nons,
   docbook_xml_dtd_43,
   glib,
+  gtk-doc,
+  meson,
+  ninja,
   nixosTests,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "glib-testing";
   version = "0.2.0";
+
+  src = fetchFromGitLab {
+    owner = "pwithnall";
+    repo = "libglib-testing";
+    rev = finalAttrs.version;
+    hash = "sha256-OgKWC4plX4oiIakd/8bHtyiuZijV58URILXUHQqFMW8=";
+    domain = "gitlab.gnome.org";
+  };
 
   outputs = [
     "out"
@@ -24,18 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
     "installedTests"
   ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    owner = "pwithnall";
-    repo = "libglib-testing";
-    rev = finalAttrs.version;
-    hash = "sha256-OgKWC4plX4oiIakd/8bHtyiuZijV58URILXUHQqFMW8=";
-  };
-
   patches = [
     # allow installing installed tests to a separate output
     ./installed-tests-path.patch
   ];
+
+  postPatch = ''
+    # Note: Does not appear to be needed by anything.
+    substituteInPlace libglib-testing/dbus-queue.c \
+      --replace-fail 'Exec=/bin/true' 'Exec=${coreutils}/bin/true'
+  '';
 
   nativeBuildInputs = [
     meson
@@ -54,12 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dinstalled_tests=true"
     "-Dinstalled_test_prefix=${placeholder "installedTests"}"
   ];
-
-  postPatch = ''
-    # Note: Does not appear to be needed by anything.
-    substituteInPlace libglib-testing/dbus-queue.c \
-      --replace-fail 'Exec=/bin/true' 'Exec=${coreutils}/bin/true'
-  '';
 
   passthru = {
     tests = {

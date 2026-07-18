@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
+  fetchgit,
   sdcc,
 }:
 
@@ -16,12 +16,12 @@ stdenv.mkDerivation {
     hash = "sha256-xveVcwAwtqKGD3/UvnBz5ASvTyg/6jAlTedZElhV2HE=";
   };
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     autoreconfHook
     sdcc
   ];
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Firmware for FX2 logic analyzers";
@@ -35,10 +35,12 @@ stdenv.mkDerivation {
     ];
 
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       panicgh
       vifino
     ];
+
+    platforms = lib.platforms.all;
   };
 }

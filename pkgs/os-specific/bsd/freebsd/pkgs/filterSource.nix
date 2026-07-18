@@ -2,13 +2,13 @@
   lib,
   pkgsBuildBuild,
   runCommand,
-  writeText,
   source,
+  writeText,
 }:
 
 {
-  pname,
   path,
+  pname,
   extraPaths ? [ ],
 }:
 
@@ -23,10 +23,10 @@ runCommand "${pname}-filtered-src"
     nativeBuildInputs = [
       (
         (pkgsBuildBuild.rsync.override {
-          enableZstd = false;
-          enableXXHash = false;
-          enableOpenSSL = false;
           enableLZ4 = false;
+          enableOpenSSL = false;
+          enableXXHash = false;
+          enableZstd = false;
         }).overrideAttrs
         {
           doCheck = false;

@@ -1,19 +1,19 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  gcc,
-  musl,
   binutils,
-  gnumake,
-  gnused,
-  gnugrep,
-  gawk,
+  buildPlatform,
   diffutils,
   findutils,
+  gawk,
+  gcc,
+  gnugrep,
+  gnumake,
+  gnused,
   gnutar,
+  hostPlatform,
+  musl,
   xz,
 }:
 let
@@ -54,8 +54,8 @@ bash.runCommand "${pname}-${version}"
       description = "GNU Patch, a program to apply differences to files";
       homepage = "https://www.gnu.org/software/patch";
       license = lib.licenses.gpl3Plus;
-      mainProgram = "patch";
       platforms = lib.platforms.unix;
+      mainProgram = "patch";
       teams = [ lib.teams.minimal-bootstrap ];
     };
   }

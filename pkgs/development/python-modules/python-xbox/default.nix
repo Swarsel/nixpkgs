@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   freezegun,
   hatch-regex-commit,
   hatchling,
   httpx,
-  lib,
   ms-cv,
   platformdirs,
   pydantic,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "python-xbox";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tr4nt0r";
@@ -27,13 +26,16 @@ buildPythonPackage rec {
     hash = "sha256-5sYN7w/cemZPMt8awsoaUPo845oXiiUsIfl8GG85Umw=";
   };
 
+  nativeCheckInputs = [
+    freezegun
+    pytest-asyncio
+    pytestCheckHook
+    respx
+  ];
+
   build-system = [
     hatch-regex-commit
     hatchling
-  ];
-
-  pythonRelaxDeps = [
-    "pydantic"
   ];
 
   dependencies = [
@@ -49,19 +51,17 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "pythonxbox" ];
 
-  nativeCheckInputs = [
-    freezegun
-    pytest-asyncio
-    pytestCheckHook
-    respx
+  pythonRelaxDeps = [
+    "pydantic"
   ];
 
   meta = {
-    changelog = "https://github.com/tr4nt0r/python-xbox/releases/tag/${src.tag}";
     description = ":ibrary to authenticate with Xbox Network and use their API";
     homepage = "https://github.com/tr4nt0r/python-xbox";
+    changelog = "https://github.com/tr4nt0r/python-xbox/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dotlambda ];
   };

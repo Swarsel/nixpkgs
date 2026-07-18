@@ -1,15 +1,16 @@
 {
   mkKdeDerivation,
   pkg-config,
-  qtlocation,
   plasma-nm,
+  qtlocation,
 }:
 mkKdeDerivation {
   pname = "plasma-setup";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtlocation
     plasma-nm
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 }

@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   ncurses6,
   openssl,
-  sqlite,
   perl,
+  pkg-config,
+  rustPlatform,
+  sqlite,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-O5lC1eeiwXeX3aF8kLl65jl0Jq0dIswQiFuROWVFeYc=";
   };
 
-  cargoHash = "sha256-qCYx3RPp22YBFRwEoTttppDmyeg9J0I1QD5aK/OY7l8=";
-
   nativeBuildInputs = [
     pkg-config
     perl
@@ -32,6 +30,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     sqlite
   ];
+
+  cargoHash = "sha256-qCYx3RPp22YBFRwEoTttppDmyeg9J0I1QD5aK/OY7l8=";
 
   meta = {
     description = "Gopher and gemini client for the modern internet";

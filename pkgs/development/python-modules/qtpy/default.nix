@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "qtpy";
   version = "2.4.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,8 +22,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ packaging ];
-
   doCheck = false; # ModuleNotFoundError: No module named 'PyQt5.QtConnectivity'
+
   nativeCheckInputs = [
     pyside2
     (pyqt5.override {
@@ -41,10 +40,12 @@ buildPythonPackage rec {
     "qtpy/tests/test_uic.py"
   ];
 
+  format = "setuptools";
+
   meta = {
     description = "Abstraction layer for PyQt5/PyQt6/PySide2/PySide6";
-    mainProgram = "qtpy";
     homepage = "https://github.com/spyder-ide/qtpy";
     license = lib.licenses.mit;
+    mainProgram = "qtpy";
   };
 }

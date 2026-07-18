@@ -3,28 +3,28 @@
   stdenv,
   fetchFromGitHub,
   buildGoModule,
-  makeWrapper,
   cacert,
-  moreutils,
-  jq,
-  git,
-  rsync,
-  pkg-config,
-  runCommand,
-  python3,
+  cctools,
   esbuild,
-  nodejs_22,
-  node-gyp,
-  libsecret,
+  git,
+  jq,
   libkrb5,
+  libsecret,
   libx11,
   libxkbfile,
-  ripgrep,
-  cctools,
-  xcbuild,
-  quilt,
+  makeWrapper,
+  moreutils,
   nixosTests,
+  node-gyp,
+  nodejs_22,
+  pkg-config,
   prefetch-npm-deps,
+  python3,
+  quilt,
+  ripgrep,
+  rsync,
+  runCommand,
+  xcbuild,
 }:
 
 let
@@ -39,12 +39,14 @@ let
         args
         // rec {
           version = "0.27.2";
+
           src = fetchFromGitHub {
             owner = "evanw";
             repo = "esbuild";
             rev = "v${version}";
             hash = "sha256-JbJB3F1NQlmA5d0rdsLm4RVD24OPdV4QXpxW8VWbESA=";
           };
+
           vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
         }
       );
@@ -60,9 +62,9 @@ let
 
   vscodeTarget =
     {
-      x86_64-linux = "linux-x64";
-      aarch64-linux = "linux-arm64";
       aarch64-darwin = "darwin-arm64";
+      aarch64-linux = "linux-arm64";
+      x86_64-linux = "linux-x64";
     }
     .${system};
 
@@ -92,38 +94,33 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "coder";
     repo = "code-server";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-Hoi5QABYwRySGB9DNyEI6qMFYXCka3rfsE5j0Ww7Ax8=";
+    fetchSubmodules = true;
   };
 
-  nodeModules =
-    runCommand "code-server-node-modules"
-      {
-        inherit (finalAttrs) src;
-        nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [
-          prefetch-npm-deps
-        ];
-        outputHashMode = "recursive";
-        outputHashAlgo = "sha256";
-        outputHash = "sha256-nsKsbSuIMvqKT9XVPIsEN6EgvnDvB7rAuUYZDLBBO4A=";
-        env = {
-          FORCE_EMPTY_CACHE = true;
-          FORCE_GIT_DEPS = true;
-          npm_config_progress = false;
-          npm_config_cafile = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-        };
-      }
-      ''
-        runPhase unpackPhase
-        export HOME=$TMPDIR/home
-        mkdir $out
-        for p in $(find -name package-lock.json)
-        do (
-          echo "Prefetching $p"
-          prefetch-npm-deps "$p" "$out/$(dirname $p)"
-        )
-        done
-      '';
+  patches = [
+    # Remove all git calls from the VS Code build script except `git rev-parse
+    # HEAD` which is replaced in postPatch with the commit.
+    ./build-vscode-nogit.patch
+  ];
+
+  postPatch = ''
+    export HOME=$PWD
+
+    patchShebangs ./ci
+
+    # inject git commit
+    substituteInPlace ./ci/build/build-vscode.sh \
+      --replace-fail '$(git rev-parse HEAD)' "${commit}"
+    substituteInPlace ./ci/build/build-release.sh \
+      --replace-fail '$(git rev-parse HEAD)' "${commit}"
+
+    substituteInPlace ./lib/vscode/build/npm/postinstall.ts \
+      --replace-fail "child_process.execSync('git config pull.rebase merges');" \
+        "try { child_process.execSync('git config pull.rebase merges'); } catch {}" \
+      --replace-fail "child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');" \
+        "try { child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs'); } catch {}"
+  '';
 
   nativeBuildInputs = [
     nodejs
@@ -151,41 +148,17 @@ stdenv.mkDerivation (finalAttrs: {
     xcbuild
   ];
 
-  patches = [
-    # Remove all git calls from the VS Code build script except `git rev-parse
-    # HEAD` which is replaced in postPatch with the commit.
-    ./build-vscode-nogit.patch
-  ];
-
-  postPatch = ''
-    export HOME=$PWD
-
-    patchShebangs ./ci
-
-    # inject git commit
-    substituteInPlace ./ci/build/build-vscode.sh \
-      --replace-fail '$(git rev-parse HEAD)' "${commit}"
-    substituteInPlace ./ci/build/build-release.sh \
-      --replace-fail '$(git rev-parse HEAD)' "${commit}"
-
-    substituteInPlace ./lib/vscode/build/npm/postinstall.ts \
-      --replace-fail "child_process.execSync('git config pull.rebase merges');" \
-        "try { child_process.execSync('git config pull.rebase merges'); } catch {}" \
-      --replace-fail "child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs');" \
-        "try { child_process.execSync('git config blame.ignoreRevsFile .git-blame-ignore-revs'); } catch {}"
-  '';
-
   env = {
-    NODE_OPTIONS = "--openssl-legacy-provider --max-old-space-size=4096";
-    NODE_ENV = "development";
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     NIX_NODEJS_BUILDNPMPACKAGE = "1";
-    npm_config_nodedir = nodejs;
+    NODE_ENV = "development";
+    NODE_OPTIONS = "--openssl-legacy-provider --max-old-space-size=4096";
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
+    forceGitDeps = true;
     npm_config_node_gyp = "${node-gyp}/lib/node_modules/node-gyp/bin/node-gyp.js";
+    npm_config_nodedir = nodejs;
     npm_config_offline = true;
     npm_config_progress = false;
-    forceGitDeps = true;
   };
 
   preConfigure = ''
@@ -193,32 +166,6 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $HOME
     cp -R $nodeModules $TMPDIR/cache
     chmod -R +w $TMPDIR/cache
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-
-    for p in $(find -name package-lock.json -exec dirname {} \;)
-    do (
-      echo "Setting up $p/node_modules"
-      cd $p
-      if [ -e node_modules ]
-      then
-        echo >&2 "File exists $p/node_modules"
-        exit 0
-      fi
-      npm_config_cache=$TMPDIR/cache/$p npm ci --ignore-scripts
-      patchShebangs node_modules
-    )
-    done
-
-    # set nodedir to prevent node-gyp from downloading headers
-    # taken from https://nixos.org/manual/nixpkgs/stable/#javascript-tool-specific
-    mkdir -p $HOME/.node-gyp/${nodejs.version}
-    echo 11 > $HOME/.node-gyp/${nodejs.version}/installVersion
-    ln -sfv ${nodejs}/include $HOME/.node-gyp/${nodejs.version}
-
-    runHook postConfigure
   '';
 
   buildPhase = ''
@@ -327,35 +274,100 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    for p in $(find -name package-lock.json -exec dirname {} \;)
+    do (
+      echo "Setting up $p/node_modules"
+      cd $p
+      if [ -e node_modules ]
+      then
+        echo >&2 "File exists $p/node_modules"
+        exit 0
+      fi
+      npm_config_cache=$TMPDIR/cache/$p npm ci --ignore-scripts
+      patchShebangs node_modules
+    )
+    done
+
+    # set nodedir to prevent node-gyp from downloading headers
+    # taken from https://nixos.org/manual/nixpkgs/stable/#javascript-tool-specific
+    mkdir -p $HOME/.node-gyp/${nodejs.version}
+    echo 11 > $HOME/.node-gyp/${nodejs.version}/installVersion
+    ln -sfv ${nodejs}/include $HOME/.node-gyp/${nodejs.version}
+
+    runHook postConfigure
+  '';
+
+  nodeModules =
+    runCommand "code-server-node-modules"
+      {
+        inherit (finalAttrs) src;
+
+        nativeBuildInputs = finalAttrs.nativeBuildInputs ++ [
+          prefetch-npm-deps
+        ];
+
+        env = {
+          FORCE_EMPTY_CACHE = true;
+          FORCE_GIT_DEPS = true;
+          npm_config_cafile = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+          npm_config_progress = false;
+        };
+
+        outputHash = "sha256-nsKsbSuIMvqKT9XVPIsEN6EgvnDvB7rAuUYZDLBBO4A=";
+        outputHashAlgo = "sha256";
+        outputHashMode = "recursive";
+      }
+      ''
+        runPhase unpackPhase
+        export HOME=$TMPDIR/home
+        mkdir $out
+        for p in $(find -name package-lock.json)
+        do (
+          echo "Prefetching $p"
+          prefetch-npm-deps "$p" "$out/$(dirname $p)"
+        )
+        done
+      '';
+
   passthru = {
-    prefetchNodeModules = lib.overrideDerivation finalAttrs.nodeModules (d: {
-      outputHash = lib.fakeSha256;
-    });
-    tests = {
-      inherit (nixosTests) code-server;
-    };
     # vscode-with-extensions compatibility
     executableName = "code-server";
     longName = "Visual Studio Code Server";
+
+    prefetchNodeModules = lib.overrideDerivation finalAttrs.nodeModules (d: {
+      outputHash = lib.fakeSha256;
+    });
+
+    tests = {
+      inherit (nixosTests) code-server;
+    };
   };
 
   meta = {
-    changelog = "https://github.com/coder/code-server/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Run VS Code on a remote server";
+
     longDescription = ''
       code-server is VS Code running on a remote server, accessible through the
       browser.
     '';
+
     homepage = "https://github.com/coder/code-server";
+    changelog = "https://github.com/coder/code-server/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       henkery
       code-asher
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "code-server";
   };
 })

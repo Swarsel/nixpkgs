@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   bashInteractive,
   dbus,
   docbook2x,
@@ -12,12 +11,11 @@
   libselinux,
   meson,
   ninja,
+  nix-update-script,
   nixosTests,
   openssl,
   pkg-config,
   systemd,
-
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-eB68l7SmVxJViGmVlVtEXVD+cRtr4WqOrA8b9ImQ89g=";
   };
+
+  patches = [
+    # fix docbook2man version detection
+    ./docbook-hack.patch
+
+    # Fix hardcoded path of lxc-user-nic
+    # This is needed to use unprivileged containers
+    ./user-nic.diff
+  ];
 
   nativeBuildInputs = [
     docbook2x
@@ -50,15 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  patches = [
-    # fix docbook2man version detection
-    ./docbook-hack.patch
-
-    # Fix hardcoded path of lxc-user-nic
-    # This is needed to use unprivileged containers
-    ./user-nic.diff
-  ];
-
   mesonFlags = [
     "-Dinstall-init-files=true"
     "-Dinstall-state-dirs=false"
@@ -69,6 +67,8 @@ stdenv.mkDerivation (finalAttrs: {
     "-Ddistrosysconfdir=${placeholder "out"}/etc/lxc"
     "-Dsystemd-unitdir=${placeholder "out"}/lib/systemd/system"
   ];
+
+  doCheck = true;
 
   # /run/current-system/sw/share
   postInstall = ''
@@ -86,8 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  doCheck = true;
-
   passthru = {
     tests = {
       incus-lts = nixosTests.incus-lts.container;
@@ -98,10 +96,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://linuxcontainers.org/lxc/";
-    changelog = "https://github.com/lxc/lxc/releases/tag/v${finalAttrs.version}";
     description = "Userspace tools for Linux Containers, a lightweight virtualization system";
-    license = lib.licenses.gpl2;
 
     longDescription = ''
       LXC containers are often considered as something in the middle between a chroot and a
@@ -109,6 +104,9 @@ stdenv.mkDerivation (finalAttrs: {
       possible to a standard Linux installation but without the need for a separate kernel.
     '';
 
+    homepage = "https://linuxcontainers.org/lxc/";
+    changelog = "https://github.com/lxc/lxc/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxc ];
   };

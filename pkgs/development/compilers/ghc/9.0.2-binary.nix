@@ -2,19 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
+  coreutils,
   gcc,
+  gmp,
+  libffi,
+  libiconv,
+  llvmPackages,
   ncurses5,
   ncurses6,
-  gmp,
-  libiconv,
   numactl,
-  libffi,
-  llvmPackages,
+  perl,
   replaceVarsWith,
-  coreutils,
   targetPackages,
-
   # minimal = true; will remove files that aren't strictly necessary for
   # regular builds and GHC bootstrapping.
   # This is "useful" for staying within hydra's output limits for at least the
@@ -51,115 +50,129 @@ let
     # Binary distributions for the default libc (e.g. glibc, or libSystem on Darwin)
     # nixpkgs uses for the respective system.
     defaultLibc = {
-      i686-linux = {
+      aarch64-darwin = {
+        src = {
+          url = "${downloadsUrl}/${version}/ghc-${version}-aarch64-apple-darwin.tar.xz";
+          sha256 = "b1fcab17fe48326d2ff302d70c12bc4cf4d570dfbbce68ab57c719cfec882b05";
+        };
+
+        archSpecificLibraries = [
+          {
+            fileToCheckFor = null;
+            nixPackage = gmp;
+          }
+          {
+            fileToCheckFor = null;
+            nixPackage = ncurses6;
+          }
+          {
+            fileToCheckFor = null;
+            nixPackage = libiconv;
+          }
+        ];
+
+        exePathForLibraryCheck = null; # we don't have a library check for darwin yet
+        isHadrian = true;
         variantSuffix = "";
+      };
+
+      aarch64-linux = {
+        src = {
+          url = "${downloadsUrl}/${version}/ghc-${version}-aarch64-deb10-linux.tar.xz";
+          sha256 = "cb016344c70a872738a24af60bd15d3b18749087b9905c1b3f1b1549dc01f46d";
+        };
+
+        archSpecificLibraries = [
+          {
+            fileToCheckFor = null;
+            nixPackage = gmp;
+          }
+          {
+            fileToCheckFor = "libtinfo.so.6";
+            nixPackage = ncurses6;
+          }
+          {
+            fileToCheckFor = null;
+            nixPackage = numactl;
+          }
+        ];
+
+        exePathForLibraryCheck = "ghc/stage2/build/tmp/ghc-stage2";
+        variantSuffix = "";
+      };
+
+      i686-linux = {
         src = {
           url = "${downloadsUrl}/${version}/ghc-${version}-i386-deb9-linux.tar.xz";
           sha256 = "fdeb9f8928fbe994064778a8e1e85bb1a58a6cd3dd7b724fcc2a1dcfda6cad47";
         };
-        exePathForLibraryCheck = "ghc/stage2/build/tmp/ghc-stage2";
+
         archSpecificLibraries = [
           {
-            nixPackage = gmp;
             fileToCheckFor = null;
+            nixPackage = gmp;
           }
           # The i686-linux bindist provided by GHC HQ is currently built on Debian 9,
           # which link it against `libtinfo.so.5` (ncurses 5).
           # Other bindists are linked `libtinfo.so.6` (ncurses 6).
           {
-            nixPackage = ncurses5;
             fileToCheckFor = "libtinfo.so.5";
+            nixPackage = ncurses5;
           }
         ];
-      };
-      x86_64-linux = {
+
+        exePathForLibraryCheck = "ghc/stage2/build/tmp/ghc-stage2";
         variantSuffix = "";
+      };
+
+      x86_64-linux = {
         src = {
           url = "${downloadsUrl}/${version}/ghc-${version}-x86_64-deb10-linux.tar.xz";
           sha256 = "5d0b9414b10cfb918453bcd01c5ea7a1824fe95948b08498d6780f20ba247afc";
         };
-        exePathForLibraryCheck = "ghc/stage2/build/tmp/ghc-stage2";
+
         archSpecificLibraries = [
           {
-            nixPackage = gmp;
             fileToCheckFor = null;
+            nixPackage = gmp;
           }
           {
-            nixPackage = ncurses6;
             fileToCheckFor = "libtinfo.so.6";
+            nixPackage = ncurses6;
           }
           {
-            nixPackage = numactl;
             fileToCheckFor = null;
+            nixPackage = numactl;
           }
         ];
-      };
-      aarch64-linux = {
-        variantSuffix = "";
-        src = {
-          url = "${downloadsUrl}/${version}/ghc-${version}-aarch64-deb10-linux.tar.xz";
-          sha256 = "cb016344c70a872738a24af60bd15d3b18749087b9905c1b3f1b1549dc01f46d";
-        };
+
         exePathForLibraryCheck = "ghc/stage2/build/tmp/ghc-stage2";
-        archSpecificLibraries = [
-          {
-            nixPackage = gmp;
-            fileToCheckFor = null;
-          }
-          {
-            nixPackage = ncurses6;
-            fileToCheckFor = "libtinfo.so.6";
-          }
-          {
-            nixPackage = numactl;
-            fileToCheckFor = null;
-          }
-        ];
-      };
-      aarch64-darwin = {
         variantSuffix = "";
-        src = {
-          url = "${downloadsUrl}/${version}/ghc-${version}-aarch64-apple-darwin.tar.xz";
-          sha256 = "b1fcab17fe48326d2ff302d70c12bc4cf4d570dfbbce68ab57c719cfec882b05";
-        };
-        exePathForLibraryCheck = null; # we don't have a library check for darwin yet
-        archSpecificLibraries = [
-          {
-            nixPackage = gmp;
-            fileToCheckFor = null;
-          }
-          {
-            nixPackage = ncurses6;
-            fileToCheckFor = null;
-          }
-          {
-            nixPackage = libiconv;
-            fileToCheckFor = null;
-          }
-        ];
-        isHadrian = true;
       };
     };
+
     # Binary distributions for the musl libc for the respective system.
     musl = {
       x86_64-linux = {
-        variantSuffix = "-musl";
         src = {
           url = "${downloadsUrl}/${version}/ghc-${version}-x86_64-alpine3.12-linux-gmp.tar.xz";
           sha256 = "5bb1e7192c2b9fcff68930dbdc65509d345138e9a43c5d447056a68decc05ec8";
         };
-        exePathForLibraryCheck = "bin/ghc";
+
         archSpecificLibraries = [
           {
-            nixPackage = gmp;
             fileToCheckFor = null;
+            nixPackage = gmp;
           }
           {
-            nixPackage = ncurses6;
             fileToCheckFor = "libncursesw.so.6";
+            nixPackage = ncurses6;
           }
         ];
+
+        exePathForLibraryCheck = "bin/ghc";
         isHadrian = true;
+        variantSuffix = "-musl";
       };
     };
   };
@@ -194,13 +207,16 @@ let
   ++ lib.optionals useLLVM [
     # Allow the use of newer LLVM versions; see the script for details.
     (replaceVarsWith {
-      name = "subopt";
       src = ./subopt.bash;
-      dir = "bin";
-      isExecutable = true;
+
       preBuild = ''
         name=opt
       '';
+
+      dir = "bin";
+      isExecutable = true;
+      name = "subopt";
+
       replacements = {
         inherit (stdenv) shell;
         opt = lib.getExe' llvmPackages.llvm "opt";
@@ -218,16 +234,152 @@ in
 stdenv.mkDerivation {
   inherit version;
   pname = "ghc-binary${binDistUsed.variantSuffix}";
-
   src = fetchurl binDistUsed.src;
-
   nativeBuildInputs = [ perl ];
 
+  configureFlags = [
+    "--with-gmp-includes=${lib.getDev gmpUsed}/include"
+    # Note `--with-gmp-libraries` does nothing for GHC bindists:
+    # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/6124
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin "--with-gcc=${./gcc-clang-wrapper.sh}"
+  # From: https://github.com/NixOS/nixpkgs/pull/43369/commits
+  ++ lib.optional stdenv.hostPlatform.isMusl "--disable-ld-override";
+
+  # GHC tries to remove xattrs when installing to work around Gatekeeper
+  # (see https://gitlab.haskell.org/ghc/ghc/-/issues/17418). This step normally
+  # succeeds in nixpkgs because xattrs are not allowed in the store, but it
+  # can fail when a file has the `com.apple.provenance` xattr, and it can’t be
+  # modified (such as target of the symlink to `libiconv.dylib`).
+  # The `com.apple.provenance` xattr is a new feature of macOS as of macOS 13.
+  # See: https://eclecticlight.co/2023/03/13/ventura-has-changed-app-quarantine-with-a-new-xattr/
+  makeFlags = lib.optionals stdenv.buildPlatform.isDarwin [ "XATTR=/does-not-exist" ];
   # Set LD_LIBRARY_PATH or equivalent so that the programs running as part
   # of the bindist installer can find the libraries they expect.
   # Cannot patchelf beforehand due to relative RPATHs that anticipate
   # the final install location.
   env.${libEnvVar} = libPath;
+  # fix for `configure: error: Your linker is affected by binutils #16177`
+  preConfigure = lib.optionalString stdenv.targetPlatform.isAarch32 "LD=ld.gold";
+
+  # Patch scripts to include runtime dependencies in $PATH.
+  postInstall = ''
+    for i in "$out/bin/"*; do
+      test ! -h "$i" || continue
+      isScript "$i" || continue
+      sed -i -e '2i export PATH="${lib.makeBinPath runtimeDeps}:$PATH"' "$i"
+    done
+  ''
+  # On Darwin, GHC doesn't install a bundled libffi.so, but instead uses the
+  # system one (see postUnpack). Due to a bug in Hadrian, the (bundled) libffi
+  # headers are installed anyways. This problem has been fixed in GHC 9.2:
+  # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/8189. While the system
+  # header should shadow the GHC installed ones, remove them to be safe.
+  + lib.optionalString (stdenv.hostPlatform.isDarwin && binDistUsed.isHadrian or false) ''
+    echo Deleting redundant libffi headers:
+    find "$out" '(' -name ffi.h -or -name ffitarget.h ')' -print -delete
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    # Sanity check, can ghc create executables?
+    cd $TMP
+    mkdir test-ghc; cd test-ghc
+    cat > main.hs << EOF
+      {-# LANGUAGE TemplateHaskell #-}
+      module Main where
+      main = putStrLn \$([|"yes"|])
+    EOF
+    env -i $out/bin/ghc --make main.hs || exit 1
+    echo compilation ok
+    [ $(./main) == "yes" ]
+  '';
+
+  # On Linux, use patchelf to modify the executables so that they can
+  # find editline/gmp.
+  postFixup =
+    lib.optionalString (stdenv.hostPlatform.isLinux && !(binDistUsed.isStatic or false)) (
+      if stdenv.hostPlatform.isAarch64 then
+        # Keep rpath as small as possible on aarch64 for patchelf#244.  All Elfs
+        # are 2 directories deep from $out/lib, so pooling symlinks there makes
+        # a short rpath.
+        ''
+          (cd $out/lib; ln -s ${ncurses6.out}/lib/libtinfo.so.6)
+          (cd $out/lib; ln -s ${lib.getLib gmpUsed}/lib/libgmp.so.10)
+          (cd $out/lib; ln -s ${numactl.out}/lib/libnuma.so.1)
+          for p in $(find "$out/lib" -type f -name "*\.so*"); do
+            (cd $out/lib; ln -s $p)
+          done
+
+          for p in $(find "$out/lib" -type f -executable); do
+            if isELF "$p"; then
+              echo "Patchelfing $p"
+              patchelf --set-rpath "\$ORIGIN:\$ORIGIN/../.." $p
+            fi
+          done
+        ''
+      else
+        ''
+          for p in $(find "$out" -type f -executable); do
+            if isELF "$p"; then
+              echo "Patchelfing $p"
+              patchelf --set-rpath "${libPath}:$(patchelf --print-rpath $p)" $p
+            fi
+          done
+        ''
+    )
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      # not enough room in the object files for the full path to libiconv :(
+      for exe in $(find "$out" -type f -executable); do
+        isScript $exe && continue
+        ln -fs ${libiconv}/lib/libiconv.dylib $(dirname $exe)/libiconv.dylib
+        install_name_tool -change /usr/lib/libiconv.2.dylib @executable_path/libiconv.dylib $exe
+      done
+
+      for file in $(find "$out" -name setup-config); do
+        substituteInPlace $file --replace /usr/bin/ranlib "$(type -P ranlib)"
+      done
+    ''
+    + lib.optionalString minimal ''
+      # Remove profiling files
+      find $out -type f -name '*.p_o' -delete
+      find $out -type f -name '*.p_hi' -delete
+      find $out -type f -name '*_p.a' -delete
+      # `-f` because e.g. musl bindist does not have this file.
+      rm -f $out/lib/ghc-*/bin/ghc-iserv-prof
+      # Hydra will redistribute this derivation, so we have to keep the docs for
+      # legal reasons (retaining the legal notices etc)
+      # As a last resort we could unpack the docs separately and symlink them in.
+      # They're in $out/share/{doc,man}.
+    ''
+    # Recache package db which needs to happen for Hadrian bindists
+    # where we modify the package db before installing
+    + ''
+      shopt -s nullglob
+      package_db=("$out"/lib/ghc-*/lib/package.conf.d "$out"/lib/ghc-*/package.conf.d)
+      "$out/bin/ghc-pkg" --package-db="$package_db" recache
+    '';
+
+  configurePlatforms = [ ];
+  # No building is necessary, but calling make without flags ironically
+  # calls install-strip ...
+  dontBuild = true;
+  # Apparently necessary for the ghc Alpine (musl) bindist:
+  # When we strip, and then run the
+  #     patchelf --set-rpath "${libPath}:$(patchelf --print-rpath $p)" $p
+  # below, running ghc (e.g. during `installCheckPhase)` gives some apparently
+  # corrupted rpath or whatever makes the loader work on nonsensical strings:
+  #     running install tests
+  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: : symbol not found
+  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: ir6zf6c9f86pfx8sr30n2vjy-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/../lib/x86_64-linux-ghc-8.10.5/libHSexceptions-0.10.4-ghc8.10.5.so: symbol not found
+  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: y/lib/ghc-8.10.5/bin/../lib/x86_64-linux-ghc-8.10.5/libHStemplate-haskell-2.16.0.0-ghc8.10.5.so: symbol not found
+  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: 8.10.5/libHStemplate-haskell-2.16.0.0-ghc8.10.5.so: symbol not found
+  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: �: symbol not found
+  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: �?: symbol not found
+  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: 64-linux-ghc-8.10.5/libHSexceptions-0.10.4-ghc8.10.5.so: symbol not found
+  # This is extremely bogus and should be investigated.
+  dontStrip = if stdenv.hostPlatform.isMusl then true else false; # `if` for explicitness
 
   postUnpack =
     # Verify our assumptions of which `libtinfo.so` (ncurses) version is used,
@@ -326,154 +478,12 @@ stdenv.mkDerivation {
             --interpreter ${stdenv.cc.bintools.dynamicLinker} {} \;
       '';
 
-  # fix for `configure: error: Your linker is affected by binutils #16177`
-  preConfigure = lib.optionalString stdenv.targetPlatform.isAarch32 "LD=ld.gold";
-
-  configurePlatforms = [ ];
-  configureFlags = [
-    "--with-gmp-includes=${lib.getDev gmpUsed}/include"
-    # Note `--with-gmp-libraries` does nothing for GHC bindists:
-    # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/6124
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin "--with-gcc=${./gcc-clang-wrapper.sh}"
-  # From: https://github.com/NixOS/nixpkgs/pull/43369/commits
-  ++ lib.optional stdenv.hostPlatform.isMusl "--disable-ld-override";
-
-  # No building is necessary, but calling make without flags ironically
-  # calls install-strip ...
-  dontBuild = true;
-
-  # GHC tries to remove xattrs when installing to work around Gatekeeper
-  # (see https://gitlab.haskell.org/ghc/ghc/-/issues/17418). This step normally
-  # succeeds in nixpkgs because xattrs are not allowed in the store, but it
-  # can fail when a file has the `com.apple.provenance` xattr, and it can’t be
-  # modified (such as target of the symlink to `libiconv.dylib`).
-  # The `com.apple.provenance` xattr is a new feature of macOS as of macOS 13.
-  # See: https://eclecticlight.co/2023/03/13/ventura-has-changed-app-quarantine-with-a-new-xattr/
-  makeFlags = lib.optionals stdenv.buildPlatform.isDarwin [ "XATTR=/does-not-exist" ];
-
-  # Patch scripts to include runtime dependencies in $PATH.
-  postInstall = ''
-    for i in "$out/bin/"*; do
-      test ! -h "$i" || continue
-      isScript "$i" || continue
-      sed -i -e '2i export PATH="${lib.makeBinPath runtimeDeps}:$PATH"' "$i"
-    done
-  ''
-  # On Darwin, GHC doesn't install a bundled libffi.so, but instead uses the
-  # system one (see postUnpack). Due to a bug in Hadrian, the (bundled) libffi
-  # headers are installed anyways. This problem has been fixed in GHC 9.2:
-  # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/8189. While the system
-  # header should shadow the GHC installed ones, remove them to be safe.
-  + lib.optionalString (stdenv.hostPlatform.isDarwin && binDistUsed.isHadrian or false) ''
-    echo Deleting redundant libffi headers:
-    find "$out" '(' -name ffi.h -or -name ffitarget.h ')' -print -delete
-  '';
-
-  # Apparently necessary for the ghc Alpine (musl) bindist:
-  # When we strip, and then run the
-  #     patchelf --set-rpath "${libPath}:$(patchelf --print-rpath $p)" $p
-  # below, running ghc (e.g. during `installCheckPhase)` gives some apparently
-  # corrupted rpath or whatever makes the loader work on nonsensical strings:
-  #     running install tests
-  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: : symbol not found
-  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: ir6zf6c9f86pfx8sr30n2vjy-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/../lib/x86_64-linux-ghc-8.10.5/libHSexceptions-0.10.4-ghc8.10.5.so: symbol not found
-  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: y/lib/ghc-8.10.5/bin/../lib/x86_64-linux-ghc-8.10.5/libHStemplate-haskell-2.16.0.0-ghc8.10.5.so: symbol not found
-  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: 8.10.5/libHStemplate-haskell-2.16.0.0-ghc8.10.5.so: symbol not found
-  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: �: symbol not found
-  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: �?: symbol not found
-  #     Error relocating /nix/store/...-ghc-8.10.2-binary/lib/ghc-8.10.5/bin/ghc: 64-linux-ghc-8.10.5/libHSexceptions-0.10.4-ghc8.10.5.so: symbol not found
-  # This is extremely bogus and should be investigated.
-  dontStrip = if stdenv.hostPlatform.isMusl then true else false; # `if` for explicitness
-
-  # On Linux, use patchelf to modify the executables so that they can
-  # find editline/gmp.
-  postFixup =
-    lib.optionalString (stdenv.hostPlatform.isLinux && !(binDistUsed.isStatic or false)) (
-      if stdenv.hostPlatform.isAarch64 then
-        # Keep rpath as small as possible on aarch64 for patchelf#244.  All Elfs
-        # are 2 directories deep from $out/lib, so pooling symlinks there makes
-        # a short rpath.
-        ''
-          (cd $out/lib; ln -s ${ncurses6.out}/lib/libtinfo.so.6)
-          (cd $out/lib; ln -s ${lib.getLib gmpUsed}/lib/libgmp.so.10)
-          (cd $out/lib; ln -s ${numactl.out}/lib/libnuma.so.1)
-          for p in $(find "$out/lib" -type f -name "*\.so*"); do
-            (cd $out/lib; ln -s $p)
-          done
-
-          for p in $(find "$out/lib" -type f -executable); do
-            if isELF "$p"; then
-              echo "Patchelfing $p"
-              patchelf --set-rpath "\$ORIGIN:\$ORIGIN/../.." $p
-            fi
-          done
-        ''
-      else
-        ''
-          for p in $(find "$out" -type f -executable); do
-            if isELF "$p"; then
-              echo "Patchelfing $p"
-              patchelf --set-rpath "${libPath}:$(patchelf --print-rpath $p)" $p
-            fi
-          done
-        ''
-    )
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      # not enough room in the object files for the full path to libiconv :(
-      for exe in $(find "$out" -type f -executable); do
-        isScript $exe && continue
-        ln -fs ${libiconv}/lib/libiconv.dylib $(dirname $exe)/libiconv.dylib
-        install_name_tool -change /usr/lib/libiconv.2.dylib @executable_path/libiconv.dylib $exe
-      done
-
-      for file in $(find "$out" -name setup-config); do
-        substituteInPlace $file --replace /usr/bin/ranlib "$(type -P ranlib)"
-      done
-    ''
-    + lib.optionalString minimal ''
-      # Remove profiling files
-      find $out -type f -name '*.p_o' -delete
-      find $out -type f -name '*.p_hi' -delete
-      find $out -type f -name '*_p.a' -delete
-      # `-f` because e.g. musl bindist does not have this file.
-      rm -f $out/lib/ghc-*/bin/ghc-iserv-prof
-      # Hydra will redistribute this derivation, so we have to keep the docs for
-      # legal reasons (retaining the legal notices etc)
-      # As a last resort we could unpack the docs separately and symlink them in.
-      # They're in $out/share/{doc,man}.
-    ''
-    # Recache package db which needs to happen for Hadrian bindists
-    # where we modify the package db before installing
-    + ''
-      shopt -s nullglob
-      package_db=("$out"/lib/ghc-*/lib/package.conf.d "$out"/lib/ghc-*/package.conf.d)
-      "$out/bin/ghc-pkg" --package-db="$package_db" recache
-    '';
-
-  doInstallCheck = true;
-  installCheckPhase = ''
-    # Sanity check, can ghc create executables?
-    cd $TMP
-    mkdir test-ghc; cd test-ghc
-    cat > main.hs << EOF
-      {-# LANGUAGE TemplateHaskell #-}
-      module Main where
-      main = putStrLn \$([|"yes"|])
-    EOF
-    env -i $out/bin/ghc --make main.hs || exit 1
-    echo compilation ok
-    [ $(./main) == "yes" ]
-  '';
-
   passthru = {
-    targetPrefix = "";
-    enableShared = true;
-
     inherit llvmPackages;
-
+    enableShared = true;
     # Our Cabal compiler name
     haskellCompilerName = "ghc-${version}";
+    targetPrefix = "";
   }
   # We duplicate binDistUsed here since we have a sensible default even if no bindist is available,
   # this makes sure that getting the `meta` attribute doesn't throw even on unsupported platforms.
@@ -487,9 +497,10 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "http://haskell.org/ghc";
     description = "Glasgow Haskell Compiler";
+    homepage = "http://haskell.org/ghc";
     license = lib.licenses.bsd3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     # HACK: since we can't encode the libc / abi in platforms, we need
     # to make the platform list dependent on the evaluation platform
     # in order to avoid eval errors with musl which supports less
@@ -501,6 +512,5 @@ stdenv.mkDerivation {
     # `pkgsMusl`.
     platforms = builtins.attrNames ghcBinDists.${distSetName};
     teams = [ lib.teams.haskell ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

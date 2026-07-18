@@ -1,8 +1,8 @@
 {
   lib,
+  sdkVersion,
   stdenvNoCC,
   xcodePlatform,
-  sdkVersion,
 }:
 
 let
@@ -10,11 +10,13 @@ let
 
   Info = rec {
     CFBundleIdentifier = "com.apple.platform.${Name}";
+
     DefaultProperties = {
       COMPRESS_PNG_FILES = "NO";
       DEPLOYMENT_TARGET_SETTING_NAME = stdenvNoCC.hostPlatform.darwinMinVersionVariable;
       STRIP_PNG_TEXT = "NO";
     };
+
     Description = if stdenvNoCC.hostPlatform.isMacOS then "macOS" else "iOS";
     FamilyIdentifier = lib.toLower xcodePlatform;
     FamilyName = Description;
@@ -32,51 +34,59 @@ let
   # is removed because Nixpkgs only supports aarch64-darwin.
   Architectures = [
     {
-      Identifier = "Standard";
-      Type = "Architecture";
-      Name = "Standard Architectures (Apple Silicon)";
-      RealArchitectures = [
-        "arm64"
-      ];
       ArchitectureSetting = "ARCHS_STANDARD";
-    }
-    {
-      Identifier = "Universal";
-      Type = "Architecture";
-      Name = "Universal (Apple Silicon)";
+      Identifier = "Standard";
+      Name = "Standard Architectures (Apple Silicon)";
+
       RealArchitectures = [
         "arm64"
       ];
+
+      Type = "Architecture";
+    }
+    {
       ArchitectureSetting = "ARCHS_STANDARD_32_64_BIT";
-    }
-    {
-      Identifier = "Native";
-      Type = "Architecture";
-      Name = "Native Architecture of Build Machine";
-      ArchitectureSetting = "NATIVE_ARCH_ACTUAL";
-    }
-    {
-      Identifier = "Standard64bit";
-      Type = "Architecture";
-      Name = "Apple Silicon";
+      Identifier = "Universal";
+      Name = "Universal (Apple Silicon)";
+
       RealArchitectures = [
         "arm64"
       ];
+
+      Type = "Architecture";
+    }
+    {
+      ArchitectureSetting = "NATIVE_ARCH_ACTUAL";
+      Identifier = "Native";
+      Name = "Native Architecture of Build Machine";
+      Type = "Architecture";
+    }
+    {
       ArchitectureSetting = "ARCHS_STANDARD_64_BIT";
+      Identifier = "Standard64bit";
+      Name = "Apple Silicon";
+
+      RealArchitectures = [
+        "arm64"
+      ];
+
+      Type = "Architecture";
     }
     {
       Identifier = stdenvNoCC.hostPlatform.darwinArch;
-      Type = "Architecture";
       Name = "Apple Silicon";
+      Type = "Architecture";
     }
     {
+      ArchitectureSetting = "ARCHS_STANDARD_INCLUDING_64_BIT";
       Identifier = "Standard_Including_64_bit";
-      Type = "Architecture";
       Name = "Standard Architectures (including 64-bit)";
+
       RealArchitectures = [
         "arm64"
       ];
-      ArchitectureSetting = "ARCHS_STANDARD_INCLUDING_64_BIT";
+
+      Type = "Architecture";
     }
   ];
 
@@ -84,107 +94,126 @@ let
   # bare minimum needed.
   PackageTypes = [
     {
-      Identifier = "com.apple.package-type.mach-o-executable";
-      Type = "PackageType";
-      Name = "Mach-O Executable";
       DefaultBuildSettings = {
         EXECUTABLE_NAME = "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)";
         EXECUTABLE_PATH = "$(EXECUTABLE_NAME)";
       };
+
+      Identifier = "com.apple.package-type.mach-o-executable";
+      Name = "Mach-O Executable";
+
       ProductReference = {
         FileType = "compiled.mach-o.executable";
         Name = "$(EXECUTABLE_NAME)";
       };
+
+      Type = "PackageType";
     }
     {
-      Identifier = "com.apple.package-type.mach-o-objfile";
-      Type = "PackageType";
-      Name = "Mach-O Object File";
       DefaultBuildSettings = {
         EXECUTABLE_NAME = "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)";
         EXECUTABLE_PATH = "$(EXECUTABLE_NAME)";
       };
+
+      Identifier = "com.apple.package-type.mach-o-objfile";
+      Name = "Mach-O Object File";
+
       ProductReference = {
         FileType = "compiled.mach-o.objfile";
         Name = "$(EXECUTABLE_NAME)";
       };
+
+      Type = "PackageType";
     }
     {
-      Identifier = "com.apple.package-type.mach-o-dylib";
-      Type = "PackageType";
-      Name = "Mach-O Dynamic Library";
       DefaultBuildSettings = {
         EXECUTABLE_NAME = "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)";
         EXECUTABLE_PATH = "$(EXECUTABLE_NAME)";
       };
+
+      Identifier = "com.apple.package-type.mach-o-dylib";
+      Name = "Mach-O Dynamic Library";
+
       ProductReference = {
         FileType = "compiled.mach-o.dylib";
         Name = "$(EXECUTABLE_NAME)";
       };
+
+      Type = "PackageType";
     }
     {
-      Identifier = "com.apple.package-type.static-library";
-      Type = "PackageType";
-      Name = "Mach-O Static Library";
       DefaultBuildSettings = {
-        EXECUTABLE_PREFIX = "lib";
-        EXECUTABLE_SUFFIX = ".a";
         EXECUTABLE_NAME = "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)";
         EXECUTABLE_PATH = "$(EXECUTABLE_NAME)";
+        EXECUTABLE_PREFIX = "lib";
+        EXECUTABLE_SUFFIX = ".a";
       };
+
+      Identifier = "com.apple.package-type.static-library";
+      Name = "Mach-O Static Library";
+
       ProductReference = {
         FileType = "archive.ar";
-        Name = "$(EXECUTABLE_NAME)";
         IsLaunchable = "NO";
+        Name = "$(EXECUTABLE_NAME)";
       };
+
+      Type = "PackageType";
     }
     {
-      Identifier = "com.apple.package-type.wrapper";
-      Type = "PackageType";
-      Name = "Wrapper";
       DefaultBuildSettings = {
-        WRAPPER_SUFFIX = ".bundle";
-        WRAPPER_NAME = "$(WRAPPER_PREFIX)$(PRODUCT_NAME)$(WRAPPER_SUFFIX)";
         CONTENTS_FOLDER_PATH = "$(WRAPPER_NAME)/Contents";
-        EXECUTABLE_NAME = "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)";
+        DOCUMENTATION_FOLDER_PATH = "$(LOCALIZED_RESOURCES_FOLDER_PATH)/Documentation";
+        EXECUTABLES_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Executables";
         EXECUTABLE_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/MacOS";
+        EXECUTABLE_NAME = "$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)";
         EXECUTABLE_PATH = "$(EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+        FRAMEWORKS_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Frameworks";
         INFOPLIST_PATH = "$(CONTENTS_FOLDER_PATH)/Info.plist";
         INFOSTRINGS_PATH = "$(LOCALIZED_RESOURCES_FOLDER_PATH)/InfoPlist.strings";
-        PKGINFO_PATH = "$(CONTENTS_FOLDER_PATH)/PkgInfo";
+        LOCALIZED_RESOURCES_FOLDER_PATH = "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/$(DEVELOPMENT_LANGUAGE).lproj";
         PBDEVELOPMENTPLIST_PATH = "$(CONTENTS_FOLDER_PATH)/pbdevelopment.plist";
-        VERSIONPLIST_PATH = "$(CONTENTS_FOLDER_PATH)/version.plist";
-        PUBLIC_HEADERS_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Headers";
+        PKGINFO_PATH = "$(CONTENTS_FOLDER_PATH)/PkgInfo";
+        PLUGINS_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/PlugIns";
         PRIVATE_HEADERS_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/PrivateHeaders";
-        EXECUTABLES_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Executables";
-        FRAMEWORKS_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Frameworks";
+        PUBLIC_HEADERS_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Headers";
+        SCRIPTS_FOLDER_PATH = "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Scripts";
         SHARED_FRAMEWORKS_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/SharedFrameworks";
         SHARED_SUPPORT_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/SharedSupport";
         UNLOCALIZED_RESOURCES_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/Resources";
-        LOCALIZED_RESOURCES_FOLDER_PATH = "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/$(DEVELOPMENT_LANGUAGE).lproj";
-        DOCUMENTATION_FOLDER_PATH = "$(LOCALIZED_RESOURCES_FOLDER_PATH)/Documentation";
-        PLUGINS_FOLDER_PATH = "$(CONTENTS_FOLDER_PATH)/PlugIns";
-        SCRIPTS_FOLDER_PATH = "$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Scripts";
+        VERSIONPLIST_PATH = "$(CONTENTS_FOLDER_PATH)/version.plist";
+        WRAPPER_NAME = "$(WRAPPER_PREFIX)$(PRODUCT_NAME)$(WRAPPER_SUFFIX)";
+        WRAPPER_SUFFIX = ".bundle";
       };
+
+      Identifier = "com.apple.package-type.wrapper";
+      Name = "Wrapper";
+
       ProductReference = {
         FileType = "wrapper.cfbundle";
-        Name = "$(WRAPPER_NAME)";
         IsLaunchable = "NO";
+        Name = "$(WRAPPER_NAME)";
       };
+
+      Type = "PackageType";
     }
     {
-      Identifier = "com.apple.package-type.wrapper.application";
-      Type = "PackageType";
       BasedOn = "com.apple.package-type.wrapper";
-      Name = "Application Wrapper";
+
       DefaultBuildSettings = {
         GENERATE_PKGINFO_FILE = "YES";
       };
+
+      Identifier = "com.apple.package-type.wrapper.application";
+      Name = "Application Wrapper";
+
       ProductReference = {
         FileType = "wrapper.application";
-        Name = "$(WRAPPER_NAME)";
         IsLaunchable = "YES";
+        Name = "$(WRAPPER_NAME)";
       };
+
+      Type = "PackageType";
     }
   ];
 
@@ -194,111 +223,117 @@ let
   ProductTypes = [
     {
       Identifier = "com.apple.product-type.tool";
-      Type = "ProductType";
       Name = "Command-line Tool";
       PackageTypes = [ "com.apple.package-type.mach-o-executable" ];
+      Type = "ProductType";
     }
     {
       Identifier = "com.apple.product-type.objfile";
-      Type = "ProductType";
       Name = "Object File";
       PackageTypes = [ "com.apple.package-type.mach-o-objfile" ];
+      Type = "ProductType";
     }
     {
-      Identifier = "com.apple.product-type.library.dynamic";
-      Type = "ProductType";
-      Name = "Dynamic Library";
-      PackageTypes = [ "com.apple.package-type.mach-o-dylib" ];
       DefaultBuildProperties = {
-        FULL_PRODUCT_NAME = "$(EXECUTABLE_NAME)";
-        MACH_O_TYPE = "mh_dylib";
-        REZ_EXECUTABLE = "YES";
-        EXECUTABLE_SUFFIX = ".$(EXECUTABLE_EXTENSION)";
-        EXECUTABLE_EXTENSION = "dylib";
-        DYLIB_COMPATIBILITY_VERSION = "1";
-        DYLIB_CURRENT_VERSION = "1";
-        FRAMEWORK_FLAG_PREFIX = "-framework";
-        LIBRARY_FLAG_PREFIX = "-l";
-        LIBRARY_FLAG_NOSPACE = "YES";
-        STRIP_STYLE = "debugging";
-        GCC_INLINES_ARE_PRIVATE_EXTERN = "YES";
         CODE_SIGNING_ALLOWED = "YES";
         CODE_SIGNING_REQUIRED = "NO";
+        DYLIB_COMPATIBILITY_VERSION = "1";
+        DYLIB_CURRENT_VERSION = "1";
+        EXECUTABLE_EXTENSION = "dylib";
+        EXECUTABLE_SUFFIX = ".$(EXECUTABLE_EXTENSION)";
+        FRAMEWORK_FLAG_PREFIX = "-framework";
+        FULL_PRODUCT_NAME = "$(EXECUTABLE_NAME)";
+        GCC_INLINES_ARE_PRIVATE_EXTERN = "YES";
+        LIBRARY_FLAG_NOSPACE = "YES";
+        LIBRARY_FLAG_PREFIX = "-l";
+        MACH_O_TYPE = "mh_dylib";
+        REZ_EXECUTABLE = "YES";
+        STRIP_STYLE = "debugging";
       };
+
+      Identifier = "com.apple.product-type.library.dynamic";
+      Name = "Dynamic Library";
+      PackageTypes = [ "com.apple.package-type.mach-o-dylib" ];
+      Type = "ProductType";
     }
     {
-      Identifier = "com.apple.product-type.library.static";
-      Type = "ProductType";
-      Name = "Static Library";
-      PackageTypes = [ "com.apple.package-type.static-library" ];
       DefaultBuildProperties = {
-        FULL_PRODUCT_NAME = "$(EXECUTABLE_NAME)";
-        MACH_O_TYPE = "staticlib";
-        REZ_EXECUTABLE = "YES";
+        CLANG_ENABLE_MODULE_DEBUGGING = "NO";
+        EXECUTABLE_EXTENSION = "a";
         EXECUTABLE_PREFIX = "lib";
         EXECUTABLE_SUFFIX = ".$(EXECUTABLE_EXTENSION)";
-        EXECUTABLE_EXTENSION = "a";
         FRAMEWORK_FLAG_PREFIX = "-framework";
-        LIBRARY_FLAG_PREFIX = "-l";
+        FULL_PRODUCT_NAME = "$(EXECUTABLE_NAME)";
         LIBRARY_FLAG_NOSPACE = "YES";
-        STRIP_STYLE = "debugging";
+        LIBRARY_FLAG_PREFIX = "-l";
+        MACH_O_TYPE = "staticlib";
+        REZ_EXECUTABLE = "YES";
         SEPARATE_STRIP = "YES";
-        CLANG_ENABLE_MODULE_DEBUGGING = "NO";
+        STRIP_STYLE = "debugging";
       };
+
+      Identifier = "com.apple.product-type.library.static";
+      Name = "Static Library";
+      PackageTypes = [ "com.apple.package-type.static-library" ];
+      Type = "ProductType";
     }
     {
-      Type = "ProductType";
-      Identifier = "com.apple.product-type.bundle";
-      Name = "Bundle";
       DefaultBuildProperties = {
+        FRAMEWORK_FLAG_PREFIX = "-framework";
         FULL_PRODUCT_NAME = "$(WRAPPER_NAME)";
+        LIBRARY_FLAG_NOSPACE = "YES";
+        LIBRARY_FLAG_PREFIX = "-l";
         MACH_O_TYPE = "mh_bundle";
-        WRAPPER_PREFIX = "";
-        WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
+        STRIP_STYLE = "non-global";
         WRAPPER_EXTENSION = "bundle";
         WRAPPER_NAME = "$(WRAPPER_PREFIX)$(PRODUCT_NAME)$(WRAPPER_SUFFIX)";
-        FRAMEWORK_FLAG_PREFIX = "-framework";
-        LIBRARY_FLAG_PREFIX = "-l";
-        LIBRARY_FLAG_NOSPACE = "YES";
-        STRIP_STYLE = "non-global";
+        WRAPPER_PREFIX = "";
+        WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
       };
-      PackageTypes = [ "com.apple.package-type.wrapper" ];
-      IsWrapper = "YES";
+
       HasInfoPlist = "YES";
       HasInfoPlistStrings = "YES";
+      Identifier = "com.apple.product-type.bundle";
+      IsWrapper = "YES";
+      Name = "Bundle";
+      PackageTypes = [ "com.apple.package-type.wrapper" ];
+      Type = "ProductType";
     }
     {
-      Identifier = "com.apple.product-type.application";
-      Type = "ProductType";
       BasedOn = "com.apple.product-type.bundle";
-      Name = "Application";
+
       DefaultBuildProperties = {
         MACH_O_TYPE = "mh_execute";
-        WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
         WRAPPER_EXTENSION = "app";
+        WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
       };
+
+      Identifier = "com.apple.product-type.application";
+      Name = "Application";
       PackageTypes = [ "com.apple.package-type.wrapper.application" ];
+      Type = "ProductType";
     }
     {
-      Type = "ProductType";
-      Identifier = "com.apple.product-type.framework";
-      Name = "Bundle";
       DefaultBuildProperties = {
+        FRAMEWORK_FLAG_PREFIX = "-framework";
         FULL_PRODUCT_NAME = "$(WRAPPER_NAME)";
+        LIBRARY_FLAG_NOSPACE = "YES";
+        LIBRARY_FLAG_PREFIX = "-l";
         MACH_O_TYPE = "mh_bundle";
-        WRAPPER_PREFIX = "";
-        WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
+        STRIP_STYLE = "non-global";
         WRAPPER_EXTENSION = "bundle";
         WRAPPER_NAME = "$(WRAPPER_PREFIX)$(PRODUCT_NAME)$(WRAPPER_SUFFIX)";
-        FRAMEWORK_FLAG_PREFIX = "-framework";
-        LIBRARY_FLAG_PREFIX = "-l";
-        LIBRARY_FLAG_NOSPACE = "YES";
-        STRIP_STYLE = "non-global";
+        WRAPPER_PREFIX = "";
+        WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
       };
-      PackageTypes = [ "com.apple.package-type.wrapper" ];
-      IsWrapper = "YES";
+
       HasInfoPlist = "YES";
       HasInfoPlistStrings = "YES";
+      Identifier = "com.apple.product-type.framework";
+      IsWrapper = "YES";
+      Name = "Bundle";
+      PackageTypes = [ "com.apple.package-type.wrapper" ];
+      Type = "ProductType";
     }
   ];
 
@@ -307,17 +342,21 @@ let
   };
 in
 {
-  "Info.plist" = builtins.toFile "Info.plist" (toPlist { escape = true; } Info);
-  "ToolchainInfo.plist" = builtins.toFile "ToolchainInfo.plist" (
-    toPlist { escape = true; } ToolchainInfo
-  );
   "Architectures.xcspec" = builtins.toFile "Architectures.xcspec" (
     toPlist { escape = true; } Architectures
   );
+
+  "Info.plist" = builtins.toFile "Info.plist" (toPlist { escape = true; } Info);
+
   "PackageTypes.xcspec" = builtins.toFile "PackageTypes.xcspec" (
     toPlist { escape = true; } PackageTypes
   );
+
   "ProductTypes.xcspec" = builtins.toFile "ProductTypes.xcspec" (
     toPlist { escape = true; } ProductTypes
+  );
+
+  "ToolchainInfo.plist" = builtins.toFile "ToolchainInfo.plist" (
+    toPlist { escape = true; } ToolchainInfo
   );
 }

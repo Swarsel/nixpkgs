@@ -1,18 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  ffmpeg,
-  which,
-  rustc,
-  wasm-bindgen-cli_0_2_105,
-  trunk,
   binaryen,
   dart-sass,
-  nixosTests,
+  ffmpeg,
   nix-update-script,
+  nixosTests,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  trunk,
+  wasm-bindgen-cli_0_2_105,
+  which,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -37,16 +37,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dart-sass
   ];
 
-  # Needed to get openssl-sys to use pkg-config.
-  env = {
-    OPENSSL_NO_VENDOR = 1;
-    OPENSSL_LIB_DIR = "${lib.getLib openssl}/lib";
-    OPENSSL_DIR = "${lib.getDev openssl}";
-  };
-
   cargoHash = "sha256-bDQ4pDDTINTgotTen1/SxOZBmkUmbmmwmR4/nSoSf/A=";
 
-  cargoBuildFlags = "--package tuliprox";
+  # Needed to get openssl-sys to use pkg-config.
+  env = {
+    OPENSSL_DIR = "${lib.getDev openssl}";
+    OPENSSL_LIB_DIR = "${lib.getLib openssl}/lib";
+    OPENSSL_NO_VENDOR = 1;
+  };
 
   postBuild = ''
     patchShebangs ./bin/build_resources.sh
@@ -71,6 +69,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cp -rf resources/*.ts $out/resources
   '';
 
+  cargoBuildFlags = "--package tuliprox";
+
   passthru = {
     tests = { inherit (nixosTests) tuliprox; };
     updateScript = nix-update-script { };
@@ -80,8 +80,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Flexible IPTV playlist processor & proxy in Rust";
     homepage = "https://github.com/euzu/tuliprox";
     changelog = "https://github.com/euzu/tuliprox/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    mainProgram = "tuliprox";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ nyanloutre ];
+    mainProgram = "tuliprox";
   };
 })

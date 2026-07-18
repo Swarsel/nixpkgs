@@ -1,11 +1,10 @@
 {
-  buildGoModule,
+  lib,
   fetchFromGitHub,
+  buildGoModule,
+  makeWrapper,
   nix-update-script,
   versionCheckHook,
-
-  lib,
-  makeWrapper,
   xdg-utils,
 }:
 
@@ -20,23 +19,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-/5JP6laC+k+O8GWSl1eo0slqzYzYB86UF3irDX6Z0iQ=";
   };
 
-  vendorHash = "sha256-L96zj/AEUze/SfuFeK+I1+w2zXcxr5BSW3wGQFbTbJU=";
-
   nativeBuildInputs = [ makeWrapper ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/fwdcloudsec/granted/internal/build.Version=v${finalAttrs.version}"
-    "-X github.com/fwdcloudsec/granted/internal/build.Commit=${finalAttrs.src.rev}"
-    "-X github.com/fwdcloudsec/granted/internal/build.Date=1970-01-01-00:00:01"
-    "-X github.com/fwdcloudsec/granted/internal/build.BuiltBy=Nix"
-    "-X github.com/fwdcloudsec/granted/internal/build.ConfigFolderName=.granted"
-  ];
-
-  subPackages = [
-    "cmd/granted"
-  ];
+  vendorHash = "sha256-L96zj/AEUze/SfuFeK+I1+w2zXcxr5BSW3wGQFbTbJU=";
 
   postInstall =
     let
@@ -80,8 +64,22 @@ buildGoModule (finalAttrs: {
         --replace-fail "#!/bin/fish" "#!/usr/bin/env fish"
     '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/fwdcloudsec/granted/internal/build.Version=v${finalAttrs.version}"
+    "-X github.com/fwdcloudsec/granted/internal/build.Commit=${finalAttrs.src.rev}"
+    "-X github.com/fwdcloudsec/granted/internal/build.Date=1970-01-01-00:00:01"
+    "-X github.com/fwdcloudsec/granted/internal/build.BuiltBy=Nix"
+    "-X github.com/fwdcloudsec/granted/internal/build.ConfigFolderName=.granted"
+  ];
+
+  subPackages = [
+    "cmd/granted"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -90,6 +88,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/fwdcloudsec/granted";
     changelog = "https://github.com/fwdcloudsec/granted/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jlbribeiro
     ];

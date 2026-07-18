@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   bison,
+  cmake,
   flex,
 }:
 
@@ -18,12 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZMUUa8CmpFNparPsM/P2yvRto9E85EdTxpID5sKQbNI=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    bison
-    flex
-  ];
-
   # Fix the build with CMake 4.
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -32,15 +26,23 @@ stdenv.mkDerivation (finalAttrs: {
         'CMAKE_MINIMUM_REQUIRED(VERSION 3.10 FATAL_ERROR)'
   '';
 
+  nativeBuildInputs = [
+    cmake
+    bison
+    flex
+  ];
+
   doCheck = true;
 
   meta = {
     description = "CUE Sheet Parser Library";
+
     longDescription = ''
       libcue is intended to parse a so called cue sheet from a char string or
       a file pointer. For handling of the parsed data a convenient API is
       available.
     '';
+
     homepage = "https://github.com/lipnitsk/libcue";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.unix;

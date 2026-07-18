@@ -15,23 +15,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-a/KGCU0bZ1gqB8EH7f8SN6qTuYZMakXdqddtTKNVDPs=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "BLAKE3 cryptographic hash function";
-    mainProgram = "b3sum";
     homepage = "https://github.com/BLAKE3-team/BLAKE3/";
-    maintainers = with lib.maintainers; [
-      fpletz
-    ];
+    changelog = "https://github.com/BLAKE3-team/BLAKE3/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       cc0
       asl20
     ];
-    changelog = "https://github.com/BLAKE3-team/BLAKE3/releases/tag/${finalAttrs.version}";
+
+    maintainers = with lib.maintainers; [
+      fpletz
+    ];
+
+    mainProgram = "b3sum";
   };
 })

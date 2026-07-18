@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  yarn-berry_4,
-  nodejs,
-  pkg-config,
-  node-gyp,
-  python3Packages,
-  electron_42,
-  vips,
-  xvfb-run,
   copyDesktopItems,
+  electron_42,
   makeDesktopItem,
   makeWrapper,
   nix-update-script,
+  node-gyp,
+  nodejs,
+  pkg-config,
+  python3Packages,
+  vips,
+  xvfb-run,
+  yarn-berry_4,
 }:
 let
   yarn-berry = yarn-berry_4;
@@ -36,14 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./yarn-4.14-support.patch
   ];
 
-  # This might need to be updated between releases.
-  # See https://nixos.org/manual/nixpkgs/stable/#javascript-yarnBerry-missing-hashes
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-XYfC5K7oXVjxP6Ndlc3qYb47Zh3GnwPx7c4+vBiA2AI=";
-  };
+  postPatch = ''
+    # Avoid downloading a changing file during the `rollup` build
+    substituteInPlace rollup.config.mjs \
+      --replace-fail 'downloadSupportedVersions(),' ""
+  '';
 
   nativeBuildInputs = [
     yarn-berry.yarnBerryConfigHook
@@ -63,17 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
     vips
   ];
 
-  postPatch = ''
-    # Avoid downloading a changing file during the `rollup` build
-    substituteInPlace rollup.config.mjs \
-      --replace-fail 'downloadSupportedVersions(),' ""
-  '';
-
   env = {
-    PUPPETEER_SKIP_DOWNLOAD = "1";
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     ELECTRON_OVERRIDE_DIST_PATH = electron.dist;
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     NODE_ENV = "production";
+    PUPPETEER_SKIP_DOWNLOAD = "1";
   };
 
   buildPhase = ''
@@ -100,27 +91,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   checkPhase = "yarn test";
 
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      categories = [
-        "GNOME"
-        "GTK"
-        "Network"
-        "InstantMessaging"
-      ];
-      name = "rocketchat-desktop";
-      desktopName = "Rocket.Chat";
-      genericName = "Rocket.Chat";
-      comment = "Official Desktop Client for Rocket.Chat";
-      icon = "rocketchat-desktop";
-      exec = "rocketchat-desktop";
-      terminal = false;
-      startupWMClass = "Rocket.Chat";
-      mimeTypes = [ "x-scheme-handler/rocketchat" ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -141,15 +111,46 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "GNOME"
+        "GTK"
+        "Network"
+        "InstantMessaging"
+      ];
+
+      comment = "Official Desktop Client for Rocket.Chat";
+      desktopName = "Rocket.Chat";
+      exec = "rocketchat-desktop";
+      genericName = "Rocket.Chat";
+      icon = "rocketchat-desktop";
+      mimeTypes = [ "x-scheme-handler/rocketchat" ];
+      name = "rocketchat-desktop";
+      startupWMClass = "Rocket.Chat";
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
+  # This might need to be updated between releases.
+  # See https://nixos.org/manual/nixpkgs/stable/#javascript-yarnBerry-missing-hashes
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-XYfC5K7oXVjxP6Ndlc3qYb47Zh3GnwPx7c4+vBiA2AI=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Official Desktop client for Rocket.Chat";
-    mainProgram = "rocketchat-desktop";
     homepage = "https://github.com/RocketChat/Rocket.Chat.Electron";
     changelog = "https://github.com/RocketChat/Rocket.Chat.Electron/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mynacol ];
     platforms = lib.platforms.linux;
+    mainProgram = "rocketchat-desktop";
   };
 })

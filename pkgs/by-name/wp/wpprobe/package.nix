@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -24,17 +24,17 @@ buildGoModule (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/Chocapikk/wpprobe/internal/version.Version=v${finalAttrs.version}"
+  checkFlags = [
+    # Tests require network access
+    "-skip=TestUpdateWordfence|TestAPI_Scan|TestAPI_ScanWithContext|TestAPI_ScanWithProgress|TestAPI_UpdateDatabases"
   ];
 
   doInstallCheck = true;
 
-  checkFlags = [
-    # Tests require network access
-    "-skip=TestUpdateWordfence|TestAPI_Scan|TestAPI_ScanWithContext|TestAPI_ScanWithProgress|TestAPI_UpdateDatabases"
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/Chocapikk/wpprobe/internal/version.Version=v${finalAttrs.version}"
   ];
 
   meta = {

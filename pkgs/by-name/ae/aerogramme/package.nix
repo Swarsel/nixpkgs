@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchgit,
   nix-update-script,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,14 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ER+P/XGqNzTLwDLK5EBZq/Dl29ZZKl2FdxDb+oLEJ8Y=";
   };
 
-  cargoPatches = [
-    ./0001-update-time-rs.patch
-  ];
-
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
   cargoHash = "sha256-GPj8qhfKgfAadQD9DJafN4ec8L6oY62PS/w/ljkPHpw=";
-
-  # disable network tests as Nix sandbox breaks them
-  doCheck = false;
 
   env = {
     # get openssl-sys to use pkg-config
@@ -32,8 +27,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     RUSTC_BOOTSTRAP = true;
   };
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ openssl ];
+  # disable network tests as Nix sandbox breaks them
+  doCheck = false;
+
+  cargoPatches = [
+    ./0001-update-time-rs.patch
+  ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -42,8 +41,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://aerogramme.deuxfleurs.fr/";
     license = lib.licenses.eupl12;
     maintainers = with lib.maintainers; [ supinie ];
-    teams = with lib.teams; [ ngi ];
-    mainProgram = "aerogramme";
     platforms = lib.platforms.linux;
+    mainProgram = "aerogramme";
+    teams = with lib.teams; [ ngi ];
   };
 })

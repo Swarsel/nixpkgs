@@ -1,23 +1,35 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  SDL2,
   boost,
   catch2_3,
   cmake,
-  cryptopp,
   cpp-jwt,
+  cryptopp,
+  cubeb,
+  darwinMinVersionHook,
   doxygen,
   dynarmic,
   enet,
-  fetchFromGitHub,
-  fmt,
+  fetchpatch,
   ffmpeg_6-headless,
+  fmt,
+  gamemode,
   glslang,
+  gsettings-desktop-schemas,
+  gtk3,
   httplib,
   inih,
-  lib,
   libGL,
   libunwind,
   libusb1,
+  libx11,
+  libxcb,
+  libxext,
   moltenvk,
+  nix-update-script,
   nlohmann_json,
   oaknut,
   openal,
@@ -26,30 +38,18 @@
   pkg-config,
   portaudio,
   python3,
+  qt6,
+  rapidjson,
   robin-map,
-  SDL2,
   soundtouch,
-  stdenv,
   vulkan-headers,
   vulkan-memory-allocator,
   xbyak,
-  libxext,
-  libx11,
-  libxcb,
-  enableQtTranslations ? true,
-  qt6,
-  gtk3,
-  gsettings-desktop-schemas,
   enableCubeb ? true,
-  cubeb,
-  useDiscordRichPresence ? true,
-  rapidjson,
-  enableSSE42 ? true, # Disable if your hardware doesn't support SSE 4.2 (mainly CPUs before 2011)
-  gamemode,
   enableGamemode ? lib.meta.availableOn stdenv.hostPlatform gamemode,
-  nix-update-script,
-  darwinMinVersionHook,
-  fetchpatch,
+  enableQtTranslations ? true,
+  enableSSE42 ? true, # Disable if your hardware doesn't support SSE 4.2 (mainly CPUs before 2011)
+  useDiscordRichPresence ? true,
 }:
 let
   inherit (lib)
@@ -67,6 +67,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "azahar-emu";
     repo = "azahar";
     tag = finalAttrs.version;
+    hash = "sha256-jn5Ib5jM/6zHuCjWoMkTvs0nR29mAbTlvID5aYZLw5o=";
+
     postCheckout = ''
       git -C "$out/externals" submodule update --init \
         teakra zstd discord-rpc spirv-headers spirv-tools sirit xxHash \
@@ -74,10 +76,21 @@ stdenv.mkDerivation (finalAttrs: {
       echo "${finalAttrs.version}" > "$out/GIT-TAG"
       git -C "$out" rev-parse HEAD > "$out/GIT-COMMIT"
     '';
-    hash = "sha256-jn5Ib5jM/6zHuCjWoMkTvs0nR29mAbTlvID5aYZLw5o=";
   };
 
+  postPatch = ''
+    # We already know the submodules are present
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "check_submodules_present()" ""
+  ''
+  # Add gamemode
+  + optionalString enableGamemode ''
+    substituteInPlace externals/gamemode/include/gamemode_client.h \
+      --replace-fail "libgamemode.so.0" "${getLib gamemode}/lib/libgamemode.so.0"
+  '';
+
   strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     doxygen
@@ -138,17 +151,6 @@ stdenv.mkDerivation (finalAttrs: {
     (darwinMinVersionHook "13.4")
   ];
 
-  postPatch = ''
-    # We already know the submodules are present
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "check_submodules_present()" ""
-  ''
-  # Add gamemode
-  + optionalString enableGamemode ''
-    substituteInPlace externals/gamemode/include/gamemode_client.h \
-      --replace-fail "libgamemode.so.0" "${getLib gamemode}/lib/libgamemode.so.0"
-  '';
-
   cmakeFlags = [
     (cmakeBool "USE_SYSTEM_LIBS" true)
     (cmakeBool "DISABLE_SYSTEM_LODEPNG" true)
@@ -189,7 +191,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/azahar-emu/azahar";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ marcin-serwin ];
-    mainProgram = "azahar";
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "azahar";
   };
 })

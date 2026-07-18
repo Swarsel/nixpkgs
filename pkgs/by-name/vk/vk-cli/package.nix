@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   curl,
-  p7zip,
   glibc,
   ncurses,
   openssl,
+  p7zip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,11 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  unpackPhase = ''
-    mkdir -p $TMP/
-    7z x $src -o$TMP/
-  '';
-
   installPhase = ''
     mkdir -p $out/bin/
     mv $TMP/vk-${finalAttrs.version}-64-bin vk-cli
@@ -50,13 +45,18 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
+  unpackPhase = ''
+    mkdir -p $TMP/
+    7z x $src -o$TMP/
+  '';
+
   meta = {
     description = "Console (ncurses) client for vk.com written in D";
-    mainProgram = "vk-cli";
     homepage = "https://github.com/vk-cli/vk";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "vk-cli";
   };
 })

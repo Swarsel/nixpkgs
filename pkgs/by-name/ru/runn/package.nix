@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,8 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-zxyss9Dd4iBnXhZhFlI2k4WK8N0bQb6heskAST2uP28=";
-
-  subPackages = [ "cmd/runn" ];
+  # Tests require external services (PostgreSQL, MySQL, Chrome, gRPC)
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -26,9 +26,7 @@ buildGoModule (finalAttrs: {
     "-X github.com/k1LoW/runn/version.Version=${finalAttrs.version}"
   ];
 
-  # Tests require external services (PostgreSQL, MySQL, Chrome, gRPC)
-  doCheck = false;
-
+  subPackages = [ "cmd/runn" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

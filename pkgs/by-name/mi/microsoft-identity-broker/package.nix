@@ -1,27 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
-  autoPatchelfHook,
-  nixosTests,
-  dbus,
-  util-linux,
-  curl,
-  openssl,
-  libx11,
-  webkitgtk_4_1,
-  gtk3,
-  zlib,
-  pango,
-  harfbuzz,
   atk,
+  autoPatchelfHook,
   cairo,
+  curl,
+  dbus,
+  dpkg,
   gdk-pixbuf,
-  libsoup_3,
   glib,
+  gtk3,
+  harfbuzz,
   libsecret,
+  libsoup_3,
+  libx11,
+  nixosTests,
+  openssl,
   p11-kit,
+  pango,
+  util-linux,
+  webkitgtk_4_1,
+  zlib,
 }:
 stdenv.mkDerivation rec {
   pname = "microsoft-identity-broker";
@@ -81,8 +81,8 @@ stdenv.mkDerivation rec {
   '';
 
   passthru = {
-    updateScript = ./update.sh;
     tests = { inherit (nixosTests) intune; };
+    updateScript = ./update.sh;
   };
 
   meta = {
@@ -90,7 +90,7 @@ stdenv.mkDerivation rec {
     homepage = "https://www.microsoft.com/";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ rhysmdnz ];
+    platforms = [ "x86_64-linux" ];
   };
 }

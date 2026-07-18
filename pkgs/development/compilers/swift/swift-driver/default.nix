@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
+  Foundation,
+  XCTest,
   callPackage,
+  clang,
   fetchpatch,
+  ncurses,
+  replaceVars,
+  sqlite,
   swift,
   swiftpm,
   swiftpm2nix,
-  Foundation,
-  XCTest,
-  sqlite,
-  ncurses,
-  clang,
-  replaceVars,
 }:
 let
   sources = callPackage ../sources.nix { };
@@ -24,21 +24,9 @@ let
   ncursesInput = if stdenv.hostPlatform.isDarwin then ncurses.out else ncurses;
 in
 stdenv.mkDerivation {
-  pname = "swift-driver";
-
   inherit (sources) version;
+  pname = "swift-driver";
   src = sources.swift-driver;
-
-  nativeBuildInputs = [
-    swift
-    swiftpm
-  ];
-  buildInputs = [
-    Foundation
-    XCTest
-    sqlite
-    ncursesInput
-  ];
 
   patches = [
     ./patches/disable-catalyst.patch
@@ -48,8 +36,8 @@ stdenv.mkDerivation {
     # TODO: Replace with branch patch once merged:
     # https://github.com/apple/swift-driver/pull/1197
     (fetchpatch {
-      url = "https://github.com/apple/swift-driver/commit/d3ef9cdf4871a58eddec7ff0e28fe611130da3f9.patch";
       hash = "sha256-eVBaKN6uzj48ZnHtwGV0k5ChKjak1tDCyE+wTdyGq2c=";
+      url = "https://github.com/apple/swift-driver/commit/d3ef9cdf4871a58eddec7ff0e28fe611130da3f9.patch";
     })
     # Prevent a warning about SDK directories we don't have.
     (replaceVars ./patches/prevent-sdk-dirs-warnings.patch {
@@ -57,12 +45,21 @@ stdenv.mkDerivation {
     })
   ];
 
-  configurePhase = generated.configure;
+  nativeBuildInputs = [
+    swift
+    swiftpm
+  ];
+
+  buildInputs = [
+    Foundation
+    XCTest
+    sqlite
+    ncursesInput
+  ];
 
   # TODO: Tests depend on indexstore-db being provided by an existing Swift
   # toolchain. (ie. looks for `../lib/libIndexStore.so` relative to swiftc.
   #doCheck = true;
-
   # TODO: Darwin-specific installation includes more, but not sure why.
   installPhase = ''
     binPath="$(swiftpmBinPath)"
@@ -72,11 +69,13 @@ stdenv.mkDerivation {
     done
   '';
 
+  configurePhase = generated.configure;
+
   meta = {
     description = "Swift compiler driver";
     homepage = "https://github.com/apple/swift-driver";
-    platforms = with lib.platforms; linux ++ darwin;
     license = lib.licenses.asl20;
+    platforms = with lib.platforms; linux ++ darwin;
     teams = [ lib.teams.swift ];
   };
 }

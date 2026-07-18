@@ -1,33 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # Build system
-  setuptools,
-
-  # Dependencies
-  pyyaml,
-
-  # Test dependencies
-  pytestCheckHook,
-
-  sanic-testing,
   attrs,
+  buildPythonPackage,
   coverage,
+  jinja2,
   msgspec,
   pydantic,
   pytest,
-  pytest-cov-stub,
   pytest-asyncio,
+  pytest-cov-stub,
+  # Test dependencies
+  pytestCheckHook,
+  # Dependencies
+  pyyaml,
+  sanic-testing,
+  # Build system
+  setuptools,
   tox,
-  jinja2,
 }:
 
 buildPythonPackage rec {
   pname = "sanic-ext";
   version = "25.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sanic-org";
@@ -35,12 +30,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-h1yN5VYFPFUZoeZeJ6+CfGE3m/5zz+/G3BbetDKtZAo=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    pyyaml
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -57,12 +46,19 @@ buildPythonPackage rec {
     jinja2
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    pyyaml
+  ];
+
   disabledTests = [
     "test_models[FooPydanticDataclass]" # KeyError: 'paths'
     "test_pydantic_base_model[AlertResponsePydanticBaseModel-True]" # AssertionError: assert 'AlertPydanticBaseModel' in {'AlertResponsePydanticBaseModel': ... }
     "test_pydantic_base_model[AlertResponsePydanticDataclass-True]" # AssertionError: assert 'AlertPydanticDataclass' in {'AlertResponsePydanticDataclass': ... }
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sanic_ext" ];
 
   meta = {

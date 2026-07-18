@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libpng,
-  libjpeg,
   giflib,
+  libjpeg,
+  libpng,
   perl,
   pkg-config,
 }:
@@ -17,19 +17,20 @@ stdenv.mkDerivation {
     owner = "schani";
     repo = "metapixel";
     rev = "98ee9daa093b6c334941242e63f90b1c2876eb4f";
-    fetchSubmodules = true;
     sha256 = "0r7n3a6bvcxkbpda4mwmrpicii09iql5z69nkjqygkwxw7ny3309";
+    fetchSubmodules = true;
   };
 
-  makeFlags = [ "metapixel" ];
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libpng
     libjpeg
     giflib
     perl
   ];
+
+  makeFlags = [ "metapixel" ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -39,8 +40,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/schani/metapixel";
     description = "Tool for generating photomosaics";
+    homepage = "https://github.com/schani/metapixel";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

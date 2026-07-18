@@ -1,15 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "wayback-machine-archiver";
   version = "3.6.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "agude";
@@ -18,6 +15,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-YIVrz+TUx2SFIDOCR/P+2R3jpXN1K+SM2xyiVL2Hjfo=";
   };
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    requests-mock
+  ];
+
+  __structuredAttrs = true;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -25,11 +28,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python-dotenv
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wayback_machine_archiver" ];
 
   meta = {

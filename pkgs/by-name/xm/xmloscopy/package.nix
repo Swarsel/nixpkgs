@@ -1,39 +1,22 @@
 {
-  stdenv,
   lib,
-  makeWrapper,
-  dev_only_shellcheck ? null,
+  stdenv,
   fetchFromGitHub,
-
-  fzf,
   coreutils,
-  libxml2,
-  libxslt,
-  jing-trang,
+  docbook5,
   findutils,
+  fzf,
   gnugrep,
   gnused,
-  docbook5,
+  jing-trang,
+  libxml2,
+  libxslt,
+  makeWrapper,
+  dev_only_shellcheck ? null,
 }:
 stdenv.mkDerivation rec {
   pname = "xmloscopy";
   version = "0.1.3";
-
-  nativeBuildInputs = [
-    makeWrapper
-    dev_only_shellcheck
-  ];
-
-  spath = lib.makeBinPath [
-    fzf
-    coreutils
-    libxml2
-    libxslt
-    jing-trang
-    findutils
-    gnugrep
-    gnused
-  ];
 
   src = fetchFromGitHub {
     owner = "grahamc";
@@ -41,6 +24,11 @@ stdenv.mkDerivation rec {
     rev = "v${version}";
     sha256 = "06y5bckrmnq7b5ny2hfvlmdws910jw3xbw5nzy3bcpqsccqnjxrc";
   };
+
+  nativeBuildInputs = [
+    makeWrapper
+    dev_only_shellcheck
+  ];
 
   installPhase = ''
     sed -i "s/hard to say/v${version}/" ./xmloscopy
@@ -54,11 +42,22 @@ stdenv.mkDerivation rec {
       --set PATH "${spath}"
   '';
 
+  spath = lib.makeBinPath [
+    fzf
+    coreutils
+    libxml2
+    libxslt
+    jing-trang
+    findutils
+    gnugrep
+    gnused
+  ];
+
   meta = {
     description = "XML debugger";
-    mainProgram = "xmloscopy";
     homepage = "https://github.com/grahamc/xmloscopy";
     license = lib.licenses.mit;
     platforms = lib.platforms.all;
+    mainProgram = "xmloscopy";
   };
 }

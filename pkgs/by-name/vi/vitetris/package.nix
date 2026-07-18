@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,20 +15,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Rbfa2hD67RGmInfWwYD4SthL8lm5bGSBi3oudV5hAao=";
   };
 
-  hardeningDisable = [ "format" ];
-
   makeFlags = [
     "INSTALL=install"
     "CPPFLAGS=-Wno-implicit-int"
   ];
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Terminal-based Tetris clone by Victor Nilsson";
-    homepage = "http://www.victornils.net/tetris/";
-    license = lib.licenses.bsd2;
-    maintainers = with lib.maintainers; [ siers ];
-    mainProgram = "tetris";
-    platforms = lib.platforms.unix;
 
     longDescription = ''
       vitetris is a terminal-based Tetris clone by Victor Nilsson. Gameplay is much
@@ -37,5 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
       Features include: configurable keys, highscore table, two-player mode with
       garbage, network play, joystick (gamepad) support on Linux or with Allegro.
     '';
+
+    homepage = "http://www.victornils.net/tetris/";
+    license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ siers ];
+    platforms = lib.platforms.unix;
+    mainProgram = "tetris";
   };
 })

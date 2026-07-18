@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docutils,
-  fetchFromGitHub,
   packaging,
   pdm-backend,
   platformdirs,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "pytoolconfig";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bagel897";
@@ -32,8 +31,6 @@ buildPythonPackage rec {
     "doc"
   ];
 
-  env.PDM_PEP517_SCM_VERSION = version;
-
   nativeBuildInputs = [
     pdm-backend
 
@@ -46,28 +43,32 @@ buildPythonPackage rec {
   ++ optional-dependencies.doc;
 
   propagatedBuildInputs = [ packaging ];
-
-  optional-dependencies = {
-    validation = [ pydantic ];
-    global = [ platformdirs ];
-    doc = [
-      sphinx
-      tabulate
-    ];
-  };
-
-  pythonImportsCheck = [ "pytoolconfig" ];
+  env.PDM_PEP517_SCM_VERSION = version;
 
   nativeCheckInputs = [
     pytestCheckHook
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  optional-dependencies = {
+    doc = [
+      sphinx
+      tabulate
+    ];
+
+    global = [ platformdirs ];
+    validation = [ pydantic ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pytoolconfig" ];
+
   meta = {
     description = "Python tool configuration";
     homepage = "https://github.com/bagel897/pytoolconfig";
     changelog = "https://github.com/bagel897/pytoolconfig/releases/tag/v${version}";
     license = lib.licenses.lgpl3Plus;
+
     maintainers = with lib.maintainers; [
       fab
       hexa

@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  libgcrypt,
-  pkg-config,
   curlWithGnuTls,
+  fetchgit,
   gnunet,
   jansson,
+  libgcrypt,
   libmicrohttpd,
   libpq,
   libsodium,
   libtool,
+  pkg-config,
+  runtimeShell,
   taler-exchange,
   taler-merchant,
-  runtimeShell,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,7 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://git-www.taler.net/sync.git";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ wegank ];
-    teams = with lib.teams; [ ngi ];
     platforms = lib.platforms.linux;
+    teams = with lib.teams; [ ngi ];
   };
 })

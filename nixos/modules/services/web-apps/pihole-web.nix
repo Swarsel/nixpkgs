@@ -11,62 +11,44 @@ in
 {
   options.services.pihole-web = {
     enable = lib.mkEnableOption "Pi-hole dashboard";
-
     package = lib.mkPackageOption pkgs "pihole-web" { };
 
     hostName = lib.mkOption {
-      type = lib.types.str;
-      description = "Domain name for the website.";
       default = "pi.hole";
+      description = "Domain name for the website.";
+      type = lib.types.str;
     };
 
     ports =
       let
         portType = lib.types.submodule {
           options = {
-            port = lib.mkOption {
-              type = lib.types.port;
-              description = "Port to bind";
-            };
             optional = lib.mkOption {
-              type = lib.types.bool;
               default = false;
               description = "Skip the port if it cannot be bound";
-            };
-            redirectSSL = lib.mkOption {
               type = lib.types.bool;
+            };
+
+            port = lib.mkOption {
+              description = "Port to bind";
+              type = lib.types.port;
+            };
+
+            redirectSSL = lib.mkOption {
               default = false;
               description = "Redirect from this port to the first configured SSL port";
-            };
-            ssl = lib.mkOption {
               type = lib.types.bool;
+            };
+
+            ssl = lib.mkOption {
               default = false;
               description = "Serve SSL on the port";
+              type = lib.types.bool;
             };
           };
         };
       in
       lib.mkOption {
-        type = lib.types.listOf (
-          lib.types.oneOf [
-            lib.types.port
-            lib.types.str
-            portType
-          ]
-        );
-        description = ''
-          Port(s) for the webserver to serve on.
-
-          If provided as a string, optionally append suffixes to control behaviour:
-
-          - `o`: to make the port is optional - failure to bind will not be an error.
-          - `s`: for the port to be used for SSL.
-          - `r`: for a non-SSL port to redirect to the first available SSL port.
-        '';
-        example = [
-          "80r"
-          "443s"
-        ];
         apply =
           values:
           let
@@ -85,6 +67,29 @@ in
                 value;
           in
           lib.strings.concatStringsSep "," (map convert values);
+
+        description = ''
+          Port(s) for the webserver to serve on.
+
+          If provided as a string, optionally append suffixes to control behaviour:
+
+          - `o`: to make the port is optional - failure to bind will not be an error.
+          - `s`: for the port to be used for SSL.
+          - `r`: for a non-SSL port to redirect to the first available SSL port.
+        '';
+
+        example = [
+          "80r"
+          "443s"
+        ];
+
+        type = lib.types.listOf (
+          lib.types.oneOf [
+            lib.types.port
+            lib.types.str
+            portType
+          ]
+        );
       };
   };
 
@@ -93,9 +98,9 @@ in
 
     services.pihole-ftl.settings.webserver = {
       domain = cfg.hostName;
-      port = cfg.ports;
-      paths.webroot = "${cfg.package}/share/";
       paths.webhome = "/";
+      paths.webroot = "${cfg.package}/share/";
+      port = cfg.ports;
     };
   };
 

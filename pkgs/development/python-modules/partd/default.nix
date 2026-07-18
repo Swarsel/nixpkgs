@@ -1,30 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  versioneer,
-
-  # dependencies
-  locket,
-  toolz,
-
   # optional-dependencies
   blosc2,
+  buildPythonPackage,
+  # dependencies
+  locket,
   numpy,
   pandas,
-  pyzmq,
-
   # tests
   pytestCheckHook,
+  pyzmq,
+  # build-system
+  setuptools,
+  toolz,
+  versioneer,
 }:
 
 buildPythonPackage rec {
   pname = "partd";
   version = "1.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dask";
@@ -43,6 +38,8 @@ buildPythonPackage rec {
     toolz
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   optional-dependencies = {
     complete = [
       blosc2
@@ -52,11 +49,11 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Appendable key-value storage";
-    license = with lib.licenses; [ bsd3 ];
     homepage = "https://github.com/dask/partd/";
+    license = with lib.licenses; [ bsd3 ];
   };
 }

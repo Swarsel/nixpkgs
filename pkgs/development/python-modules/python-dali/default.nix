@@ -1,20 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  fetchpatch,
   buildPythonPackage,
-  setuptools,
-  pyusb,
+  fetchpatch,
   pymodbus,
   pyserial-asyncio,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
+  pyusb,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-dali";
   version = "0.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sde1000";
@@ -26,20 +25,10 @@ buildPythonPackage rec {
   patches = [
     # pymodbus 3.x support
     (fetchpatch {
-      url = "https://github.com/sde1000/python-dali/commit/fe85b8fd9a746d16a03de8fd8c643ef4254d1ccd.patch";
       hash = "sha256-bcfr948g7M6m3AQVArcYw9a22jA5eMim+J58iKci55s=";
+      url = "https://github.com/sde1000/python-dali/commit/fe85b8fd9a746d16a03de8fd8c643ef4254d1ccd.patch";
     })
   ];
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    driver-unipi = [
-      pyusb
-      pymodbus
-    ];
-    driver-serial = [ pyserial-asyncio ];
-  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -47,6 +36,18 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [ setuptools ];
+
+  optional-dependencies = {
+    driver-serial = [ pyserial-asyncio ];
+
+    driver-unipi = [
+      pyusb
+      pymodbus
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "dali" ];
 
   meta = {

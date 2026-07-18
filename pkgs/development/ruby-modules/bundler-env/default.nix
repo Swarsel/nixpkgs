@@ -1,30 +1,30 @@
 {
-  ruby,
   lib,
-  callPackage,
-  defaultGemConfig,
   buildEnv,
-  runCommand,
   buildPackages,
   bundler,
+  callPackage,
+  defaultGemConfig,
+  ruby,
+  runCommand,
 }@defs:
 
 {
-  name ? null,
-  pname ? null,
+  copyGemFiles ? false, # Copy gem files instead of symlinking
+  document ? [ ],
+  gemConfig ? defaultGemConfig,
   gemdir ? null,
   gemfile ? null,
-  lockfile ? null,
   gemset ? null,
   groups ? [ "default" ],
-  ruby ? defs.ruby,
-  copyGemFiles ? false, # Copy gem files instead of symlinking
-  gemConfig ? defaultGemConfig,
-  postBuild ? null,
-  document ? [ ],
-  meta ? { },
   ignoreCollisions ? false,
+  lockfile ? null,
+  meta ? { },
+  name ? null,
   passthru ? { },
+  pname ? null,
+  postBuild ? null,
+  ruby ? defs.ruby,
   ...
 }@args:
 
@@ -68,11 +68,7 @@ else
   let
     bundlerEnvArgs = {
       inherit ignoreCollisions;
-
       inherit (basicEnv) pname version;
-
-      paths = envPaths;
-      pathsToLink = [ "/lib" ];
 
       postBuild =
         genStubsScript {
@@ -83,15 +79,15 @@ else
             bundler
             groups
             ;
-          confFiles = basicEnv.confFiles;
+
           binPaths = [ basicEnv.gems.${pname} ];
+          confFiles = basicEnv.confFiles;
         }
         + lib.optionalString (postBuild != null) postBuild;
 
-      meta = {
-        platforms = ruby.meta.platforms;
-      }
-      // meta;
+      paths = envPaths;
+      pathsToLink = [ "/lib" ];
+
       passthru =
         basicEnv.passthru
         // {
@@ -99,6 +95,11 @@ else
           inherit (basicEnv) env;
         }
         // passthru;
+
+      meta = {
+        platforms = ruby.meta.platforms;
+      }
+      // meta;
     };
   in
   if copyGemFiles then

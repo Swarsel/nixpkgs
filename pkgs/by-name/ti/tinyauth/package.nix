@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  stdenvNoCC,
+  buildGoModule,
   bun,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  stdenvNoCC,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,44 +20,19 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-XP+kVfcDKWAvBdrvGjiTdWh7jNe6qiDsgVjPrFFPoDU=";
-
-  subPackages = [ "cmd/tinyauth" ];
-
   env.CGO_ENABLED = 0;
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/steveiliop56/tinyauth/internal/config.Version=v${finalAttrs.version}"
-    "-X github.com/steveiliop56/tinyauth/internal/config.CommitHash=${finalAttrs.src.rev}"
-  ];
 
   preBuild = ''
     cp -r ${finalAttrs.frontend}/dist internal/assets/dist
   '';
 
   frontend = stdenvNoCC.mkDerivation {
-    pname = "tinyauth-frontend";
     inherit (finalAttrs) version src;
-    sourceRoot = "${finalAttrs.src.name}/frontend";
-
-    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-      "GIT_PROXY_COMMAND"
-      "SOCKS_SERVER"
-    ];
+    pname = "tinyauth-frontend";
 
     nativeBuildInputs = [
       bun
     ];
-
-    configurePhase = ''
-      runHook preConfigure
-
-      bun install --no-progress --frozen-lockfile
-      substituteInPlace node_modules/.bin/{tsc,vite} \
-        --replace-fail "/usr/bin/env node" "${lib.getExe bun}"
-
-      runHook postConfigure
-    '';
 
     buildPhase = ''
       runHook preBuild
@@ -76,14 +51,40 @@ buildGoModule (finalAttrs: {
       runHook postInstall
     '';
 
-    outputHashMode = "recursive";
+    configurePhase = ''
+      runHook preConfigure
+
+      bun install --no-progress --frozen-lockfile
+      substituteInPlace node_modules/.bin/{tsc,vite} \
+        --replace-fail "/usr/bin/env node" "${lib.getExe bun}"
+
+      runHook postConfigure
+    '';
+
+    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
+      "GIT_PROXY_COMMAND"
+      "SOCKS_SERVER"
+    ];
+
     outputHash = "sha256-FRACDa1akm+JnYIRwNXRcomzDIMCIAlJDbjMyS77sNA=";
+    outputHashMode = "recursive";
+    sourceRoot = "${finalAttrs.src.name}/frontend";
   };
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/steveiliop56/tinyauth/internal/config.Version=v${finalAttrs.version}"
+    "-X github.com/steveiliop56/tinyauth/internal/config.CommitHash=${finalAttrs.src.rev}"
+  ];
+
+  subPackages = [ "cmd/tinyauth" ];
 
   passthru = {
     tests = {
       inherit (nixosTests) tinyauth;
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -97,10 +98,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://tinyauth.app";
     changelog = "https://github.com/steveiliop56/tinyauth/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "tinyauth";
+
     maintainers = with lib.maintainers; [
       shaunren
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "tinyauth";
   };
 })

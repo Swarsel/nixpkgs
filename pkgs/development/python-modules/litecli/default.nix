@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  cli-helpers,
+  click,
+  configobj,
+  prompt-toolkit,
+  pygments,
   setuptools,
   setuptools-scm,
-  click,
-  pygments,
-  prompt-toolkit,
   sqlparse,
-  configobj,
-  cli-helpers,
 }:
 
 buildPythonPackage rec {
   pname = "litecli";
   version = "1.17.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dbcli";
@@ -23,6 +22,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-YSPNtDL5rNgRh5lJBKfL1jjWemlmf3eesBMSLyJVRLY=";
   };
+
+  doCheck = true;
 
   build-system = [
     setuptools
@@ -38,7 +39,7 @@ buildPythonPackage rec {
     cli-helpers
   ];
 
-  doCheck = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "litecli"

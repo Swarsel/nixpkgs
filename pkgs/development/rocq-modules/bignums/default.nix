@@ -7,9 +7,10 @@
 }:
 
 mkRocqDerivation {
-  pname = "bignums";
-  owner = "rocq-community";
   inherit version;
+  pname = "bignums";
+  propagatedBuildInputs = [ stdlib ];
+
   defaultVersion =
     let
       case = case: out: { inherit case out; };
@@ -19,14 +20,12 @@ mkRocqDerivation {
       (case (range "9.0" "9.2") "9.0.0+rocq${rocq-core.rocq-version}")
     ] null;
 
+  mlPlugin = true;
+  owner = "rocq-community";
   release."9.0.0+rocq9.0".sha256 = "sha256-ctnwpyNVhryEUA5YEsAImrcJsNMhtBgDSOz+z5Z4R78=";
   release."9.0.0+rocq9.1".sha256 = "sha256-MSjlfJs3JOakuShOj+isNlus0bKlZ+rkvzRoKZQK5RQ=";
   release."9.0.0+rocq9.2".sha256 = "sha256-XQIx3MjmPgRsFMJiD1DR+FWkmO4J86tQ5fDuPHcjf+A=";
   releaseRev = v: "v${v}";
-
-  mlPlugin = true;
-
-  propagatedBuildInputs = [ stdlib ];
 
   meta = {
     license = lib.licenses.lgpl2;

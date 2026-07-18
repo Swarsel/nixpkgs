@@ -16,7 +16,6 @@ let
         {
           # Make sure imports from specialArgs are respected
           imports = [ someArg.myModule ];
-
           # TODO test this
           meta.doc = ./test-dummy.chapter.xml;
         }
@@ -24,23 +23,27 @@ let
 
       {
         _module.args = {
+          inherit modules;
+
           baseModules = [
             ../documentation.nix
             ../version.nix
           ];
+
           extraModules = [ ];
-          inherit modules;
         };
+
         documentation.nixos.includeAllModules = true;
       }
     ];
+
     specialArgs.someArg.myModule =
       { lib, ... }:
       {
         options.foobar = lib.mkOption {
-          type = lib.types.str;
-          description = "The foobar option was added via specialArgs";
           default = "qux";
+          description = "The foobar option was added via specialArgs";
+          type = lib.types.str;
         };
       };
   };

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ffmpeg,
-  libjpeg_turbo,
-  gtk3,
   alsa-lib,
-  speex,
-  libusbmuxd,
+  ffmpeg,
+  gtk3,
   libappindicator-gtk3,
+  libjpeg_turbo,
+  libusbmuxd,
   pkg-config,
+  speex,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-22lRmtXumjR/83Fg1edBisM1GjNZvNUvPs1Yg7Na1xw=";
   };
+
+  postPatch = ''
+    substituteInPlace src/droidcam.c \
+      --replace "/opt/droidcam-icon.png" "$out/share/icons/hicolor/96x96/apps/droidcam.png"
+    substituteInPlace droidcam.desktop \
+      --replace "/opt/droidcam-icon.png" "droidcam" \
+      --replace "/usr/local/bin/droidcam" "droidcam"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -36,14 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     libusbmuxd
     libappindicator-gtk3
   ];
-
-  postPatch = ''
-    substituteInPlace src/droidcam.c \
-      --replace "/opt/droidcam-icon.png" "$out/share/icons/hicolor/96x96/apps/droidcam.png"
-    substituteInPlace droidcam.desktop \
-      --replace "/opt/droidcam-icon.png" "droidcam" \
-      --replace "/usr/local/bin/droidcam" "droidcam"
-  '';
 
   preBuild = ''
     makeFlagsArray+=("JPEG=$(pkg-config --libs --cflags libturbojpeg)")

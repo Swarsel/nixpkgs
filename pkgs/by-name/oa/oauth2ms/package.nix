@@ -33,11 +33,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/harishkrupo/oauth2ms";
     description = "XOAUTH2 compatible Office365 token fetcher";
-    mainProgram = "oauth2ms";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/harishkrupo/oauth2ms";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ wentasah ];
+    platforms = lib.platforms.all;
+    mainProgram = "oauth2ms";
   };
 }

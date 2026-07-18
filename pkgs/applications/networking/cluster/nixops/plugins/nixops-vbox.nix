@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unstableGitUpdater,
-  poetry-core,
+  buildPythonPackage,
   nixops,
+  poetry-core,
+  unstableGitUpdater,
 }:
 
 buildPythonPackage {
   pname = "nixops-vbox";
   version = "1.0.0-unstable-2023-08-10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nix-community";
@@ -33,6 +32,7 @@ buildPythonPackage {
     nixops
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nixopsvbox" ];
 
   passthru.updateScript = unstableGitUpdater {

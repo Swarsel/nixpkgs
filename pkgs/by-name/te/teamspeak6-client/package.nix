@@ -1,37 +1,37 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  autoPatchelfHook,
-  copyDesktopItems,
-  makeDesktopItem,
-  makeWrapper,
   alsa-lib,
   at-spi2-atk,
   atk,
+  autoPatchelfHook,
   cairo,
+  copyDesktopItems,
   cups,
   dbus,
   gcc-unwrapped,
   gdk-pixbuf,
   glib,
   gtk3,
+  libGL,
   libdrm,
+  libgbm,
   libnotify,
   libpulseaudio,
-  libxkbcommon,
-  libgbm,
   libvdpau,
+  libx11,
+  libxdamage,
+  libxfixes,
+  libxkbcommon,
+  libxscrnsaver,
+  libxshmfence,
+  libxtst,
+  makeDesktopItem,
+  makeWrapper,
   nss,
   pipewire,
+  stdenvNoCC,
   udev,
-  libGL,
-  libxtst,
-  libxscrnsaver,
-  libxfixes,
-  libxdamage,
-  libx11,
-  libxshmfence,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -43,7 +43,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-7f0VQQLa4Gg7qgXMVfoPYPazPRA9uYeX251j3mHaSLo=";
   };
 
-  sourceRoot = ".";
+  nativeBuildInputs = [
+    autoPatchelfHook
+    copyDesktopItems
+    makeWrapper
+  ];
 
   propagatedBuildInputs = [
     alsa-lib
@@ -72,32 +76,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     libxtst
   ];
 
-  nativeBuildInputs = [
-    autoPatchelfHook
-    copyDesktopItems
-    makeWrapper
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "TeamSpeak";
-      exec = "TeamSpeak";
-      icon = "teamspeak6-client";
-      desktopName = "TeamSpeak";
-      comment = "TeamSpeak Voice Communication Client";
-      categories = [
-        "Audio"
-        "AudioVideo"
-        "Chat"
-        "Network"
-      ];
-      startupWMClass = "teamspeak-client";
-    })
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -121,18 +99,41 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "AudioVideo"
+        "Chat"
+        "Network"
+      ];
+
+      comment = "TeamSpeak Voice Communication Client";
+      desktopName = "TeamSpeak";
+      exec = "TeamSpeak";
+      icon = "teamspeak6-client";
+      name = "TeamSpeak";
+      startupWMClass = "teamspeak-client";
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "TeamSpeak voice communication tool (beta version)";
     homepage = "https://teamspeak.com/";
     license = lib.licenses.teamspeak;
-    mainProgram = "TeamSpeak";
+
     maintainers = with lib.maintainers; [
       drafolin
       gepbird
       jojosch
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "TeamSpeak";
   };
 })

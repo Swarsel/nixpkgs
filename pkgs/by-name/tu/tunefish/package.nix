@@ -2,8 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  python3,
   alsa-lib,
   curl,
   freetype,
@@ -13,6 +11,8 @@
   libxext,
   libxinerama,
   libxrandr,
+  pkg-config,
+  python3,
   writableTmpDirAsHomeHook,
 }:
 
@@ -27,6 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZH2VD0IydEFdbB3Ht5D6/lbcWLQHBuu9GyasVP7VefI=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    patchShebangs src/tunefish4/generate-lv2-ttl.py
+  '';
 
   strictDeps = true;
 
@@ -54,10 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     "CONFIG=Release"
   ];
 
-  postPatch = ''
-    patchShebangs src/tunefish4/generate-lv2-ttl.py
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -75,8 +75,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://tunefish-synth.com/";
     description = "Virtual analog synthesizer LV2 plugin";
+    homepage = "https://tunefish-synth.com/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];

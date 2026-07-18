@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   installPhase = ''
@@ -37,15 +36,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Zelda 64 rom decompressor";
     homepage = "https://github.com/z64tools/z64decompress";
+
     license = with lib.licenses; [
       gpl3Only
 
       # Reverse engineering
       unfree
     ];
+
     maintainers = with lib.maintainers; [ qubitnano ];
-    mainProgram = "z64decompress";
     platforms = lib.platforms.linux;
+    mainProgram = "z64decompress";
     hydraPlatforms = [ ];
   };
 })

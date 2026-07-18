@@ -64,46 +64,48 @@ in
 
       enable = lib.mkEnableOption "Icecast server";
 
-      hostname = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        description = "DNS name or IP address that will be used for the stream directory lookups or possibly the playlist generation if a Host header is not provided.";
-        default = config.networking.domain;
-        defaultText = lib.literalExpression "config.networking.domain";
-      };
-
       admin = {
-        user = lib.mkOption {
-          type = lib.types.str;
-          description = "Username used for all administration functions.";
-          default = "admin";
-        };
-
         password = lib.mkOption {
-          type = lib.types.str;
           description = "Password used for all administration functions.";
-        };
-      };
-
-      listen = {
-        port = lib.mkOption {
-          type = lib.types.port;
-          description = "TCP port that will be used to accept client connections.";
-          default = 8000;
-        };
-
-        address = lib.mkOption {
           type = lib.types.str;
-          description = "Address Icecast will listen on.";
-          default = "::";
+        };
+
+        user = lib.mkOption {
+          default = "admin";
+          description = "Username used for all administration functions.";
+          type = lib.types.str;
         };
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Extra configuration added to {file}`icecast.xml` inside the `<icecast>` element.
         '';
+
+        type = lib.types.lines;
+      };
+
+      hostname = lib.mkOption {
+        default = config.networking.domain;
+        defaultText = lib.literalExpression "config.networking.domain";
+        description = "DNS name or IP address that will be used for the stream directory lookups or possibly the playlist generation if a Host header is not provided.";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      listen = {
+        address = lib.mkOption {
+          default = "::";
+          description = "Address Icecast will listen on.";
+          type = lib.types.str;
+        };
+
+        port = lib.mkOption {
+          default = 8000;
+          description = "TCP port that will be used to accept client connections.";
+          type = lib.types.port;
+        };
       };
 
     };
@@ -117,23 +119,27 @@ in
     systemd.services.icecast = {
       after = [ "network.target" ];
       description = "Icecast Network Audio Streaming Server";
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
-        Type = "simple";
         DynamicUser = true;
-        ExecStart = toString [
-          (lib.getExe pkgs.icecast)
-          "-c"
-          configFile
-        ];
+
         ExecReload = toString [
           (lib.getExe' pkgs.coreutils "kill")
           "-HUP"
           "$MAINPID"
         ];
+
+        ExecStart = toString [
+          (lib.getExe pkgs.icecast)
+          "-c"
+          configFile
+        ];
+
         LogsDirectory = "icecast";
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

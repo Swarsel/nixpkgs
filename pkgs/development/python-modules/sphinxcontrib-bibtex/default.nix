@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch2,
-  setuptools,
+  buildPythonPackage,
   docutils,
+  fetchpatch2,
   oset,
   pybtex,
   pybtex-docutils,
+  pytestCheckHook,
+  setuptools,
   sphinx,
   sphinx-autoapi,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-bibtex";
   version = "2.6.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mcmtroffaes";
@@ -27,10 +26,15 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-Ia/ng3yUfhLueEB/n+CW51w/UWfzRhrv/5//Mq2OJ0M=";
       name = "fix-tests-docutils-0.22.diff";
       url = "https://github.com/mcmtroffaes/sphinxcontrib-bibtex/commit/20781600dad48fdfee91353c821597690bfe5f54.diff?full_index=1";
-      hash = "sha256-Ia/ng3yUfhLueEB/n+CW51w/UWfzRhrv/5//Mq2OJ0M=";
     })
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    sphinx-autoapi
   ];
 
   build-system = [ setuptools ];
@@ -43,13 +47,8 @@ buildPythonPackage rec {
     sphinx
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    sphinx-autoapi
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinxcontrib.bibtex" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

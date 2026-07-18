@@ -1,10 +1,10 @@
 {
   lib,
-  mkKdeDerivation,
-  replaceVars,
-  pkg-config,
   gocryptfs,
   lsof,
+  mkKdeDerivation,
+  pkg-config,
+  replaceVars,
 }:
 mkKdeDerivation {
   pname = "plasma-vault";

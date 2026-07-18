@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "paragraphs";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ShayHill";
@@ -19,12 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-u5/oNOCLdvfQVEIEpraeNLjTUoh3eJQ6qSExnkzTmNw=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "paragraphs"

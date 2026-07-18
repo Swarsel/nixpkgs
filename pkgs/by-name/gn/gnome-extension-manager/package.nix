@@ -2,25 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   appstream,
   appstream-glib,
+  blueprint-compiler,
   desktop-file-utils,
   gettext,
   glib,
   gobject-introspection,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
-
-  blueprint-compiler,
   gtk4,
   json-glib,
   libadwaita,
   libbacktrace,
   libsoup_3,
   libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -66,8 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Desktop app for managing GNOME shell extensions";
     homepage = "https://github.com/mjakeman/extension-manager";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "extension-manager";
-    maintainers = [ ];
   };
 })

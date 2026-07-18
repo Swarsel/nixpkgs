@@ -1,16 +1,15 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
+  pyface,
   setuptools,
   traits,
-  pyface,
 }:
 
 buildPythonPackage rec {
   pname = "traitsui";
   version = "8.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,7 +25,7 @@ buildPythonPackage rec {
 
   # Needs X server
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "traitsui" ];
 
   meta = {

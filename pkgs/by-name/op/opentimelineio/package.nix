@@ -22,12 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
   ];
 
-  propagatedBuildInputs = [
-    imath
-  ];
-
   buildInputs = [
     rapidjson
+  ];
+
+  propagatedBuildInputs = [
+    imath
   ];
 
   cmakeFlags = [

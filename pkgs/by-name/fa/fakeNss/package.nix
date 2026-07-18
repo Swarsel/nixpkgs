@@ -4,14 +4,15 @@
 # /bin/sh is fine to not exist, and provided by another shim.
 {
   lib,
+  runCommand,
   symlinkJoin,
   writeTextDir,
-  runCommand,
-  extraPasswdLines ? [ ],
   extraGroupLines ? [ ],
+  extraPasswdLines ? [ ],
 }:
 symlinkJoin {
   name = "fake-nss";
+
   paths = [
     (writeTextDir "etc/passwd" ''
       root:x:0:0:root user:/var/empty:/bin/sh

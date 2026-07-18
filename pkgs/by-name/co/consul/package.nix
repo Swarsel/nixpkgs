@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nixosTests,
+  buildGoModule,
   nix-update-script,
+  nixosTests,
 }:
 
 buildGoModule rec {
@@ -25,21 +25,20 @@ buildGoModule rec {
     hash = "sha256-lcb2Dbr5rpNbtstEk7kQxEYHdN3/FQEHFH+NIa6czDU=";
   };
 
-  # This corresponds to paths with package main - normally unneeded but consul
-  # has a split module structure in one repo
-  subPackages = [
-    "."
-    "connect/certgen"
-  ];
-
   vendorHash = "sha256-tFa8UKeaAQR4q+WpRl/u5P+TpjdBh9Gf6bVQcwzP5QQ=";
-
   doCheck = false;
 
   ldflags = [
     "-X github.com/hashicorp/consul/version.GitDescribe=v${version}"
     "-X github.com/hashicorp/consul/version.Version=${version}"
     "-X github.com/hashicorp/consul/version.VersionPrerelease="
+  ];
+
+  # This corresponds to paths with package main - normally unneeded but consul
+  # has a split module structure in one repo
+  subPackages = [
+    "."
+    "connect/certgen"
   ];
 
   passthru = {
@@ -52,15 +51,17 @@ buildGoModule rec {
 
   meta = {
     description = "Tool for service discovery, monitoring and configuration";
-    changelog = "https://github.com/hashicorp/consul/releases/tag/v${version}";
     homepage = "https://www.consul.io/";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    changelog = "https://github.com/hashicorp/consul/releases/tag/v${version}";
     license = lib.licenses.bsl11;
+
     maintainers = with lib.maintainers; [
       vdemeester
       nh2
       techknowlogick
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "consul";
   };
 }

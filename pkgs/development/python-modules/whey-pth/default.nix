@@ -1,17 +1,16 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  setuptools,
+  fetchFromGitHub,
+  buildPythonPackage,
   dom-toml,
-  whey,
   pytestCheckHook,
+  setuptools,
+  whey,
 }:
 
 buildPythonPackage rec {
   pname = "whey-pth";
   version = "0.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "repo-helper";
@@ -25,6 +24,13 @@ buildPythonPackage rec {
       --replace-fail 'setuptools!=61.*,<=67.1.0,>=40.6.0' setuptools
   '';
 
+  # missing dependency coincidence
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,14 +38,8 @@ buildPythonPackage rec {
     whey
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "whey_pth" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  # missing dependency coincidence
-  doCheck = false;
 
   meta = {
     description = "Extension to whey to support .pth files";

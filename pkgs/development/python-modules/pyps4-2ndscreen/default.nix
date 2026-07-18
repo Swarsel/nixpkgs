@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  setuptools,
   aiohttp,
+  asynctest,
+  buildPythonPackage,
   click,
   construct,
+  fetchpatch,
   pycryptodomex,
-  pytestCheckHook,
   pytest-asyncio,
-  asynctest,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyps4-2ndscreen";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ktnrg45";
@@ -28,19 +27,10 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/ktnrg45/pyps4-2ndscreen/pull/61
     (fetchpatch {
+      hash = "sha256-igLa+DUvQWUZtrHiq9UXTSG2h7cktElaXbTsxYPEeLM=";
       name = "replace-async-timeout-with-asyncio.timeout.patch";
       url = "https://github.com/ktnrg45/pyps4-2ndscreen/commit/c3c89f9cce09d91e2b325474d28d7f1b3ccdf0f4.patch";
-      hash = "sha256-igLa+DUvQWUZtrHiq9UXTSG2h7cktElaXbTsxYPEeLM=";
     })
-  ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    click
-    construct
-    pycryptodomex
   ];
 
   # All require asynctest, which is unsupported on 3.11+
@@ -52,6 +42,16 @@ buildPythonPackage rec {
     asynctest
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    click
+    construct
+    pycryptodomex
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pyps4_2ndscreen" ];
 
   meta = {

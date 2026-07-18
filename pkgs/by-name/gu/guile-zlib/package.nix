@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  fetchFromGitea,
+  stdenv,
   autoreconfHook,
-  pkg-config,
+  fetchFromGitea,
   guile,
+  pkg-config,
   texinfo,
   zlib,
 }:
@@ -14,11 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.2.2";
 
   src = fetchFromGitea {
-    domain = "notabug.org";
     owner = "guile-zlib";
     repo = "guile-zlib";
     rev = "v${finalAttrs.version}";
     hash = "sha256-aaZhwHimQq408DNtHy442kh/EYdRdxP0Z1tQGDKmkmc=";
+    domain = "notabug.org";
   };
 
   patches = [
@@ -27,16 +27,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     guile
     pkg-config
     texinfo
   ];
+
   buildInputs = [ guile ];
   propagatedBuildInputs = [ zlib ];
   makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
-
   doCheck = true;
 
   meta = {

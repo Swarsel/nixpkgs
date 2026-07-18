@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ROffm1SGYnhUcp46nzQ951eaeQdO1pb+f8AInm0eSq0=";
-
   # tests require internet access
   doCheck = false;
 
@@ -28,13 +27,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Simplified way of working with Helm";
-    mainProgram = "helm-dashboard";
+
     longDescription = ''
       Helm Dashboard is an open-source project which offers a UI-driven way to view the installed Helm charts,
       see their revision history and corresponding k8s resources.
     '';
+
     homepage = "https://github.com/komodorio/helm-dashboard/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ qjoly ];
+    mainProgram = "helm-dashboard";
   };
 })

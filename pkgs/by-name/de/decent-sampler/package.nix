@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchurl,
-  makeDesktopItem,
-  autoPatchelfHook,
-  copyDesktopItems,
-  buildFHSEnv,
   alsa-lib,
   alsa-plugins,
-  freetype,
-  nghttp2,
-  libx11,
+  autoPatchelfHook,
+  buildFHSEnv,
+  copyDesktopItems,
   expat,
+  fetchzip,
+  freetype,
+  libx11,
+  makeDesktopItem,
+  nghttp2,
 }:
 
 let
@@ -20,8 +20,8 @@ let
   version = "1.18.1";
 
   icon = fetchurl {
-    url = "https://www.decentsamples.com/wp-content/uploads/2018/09/cropped-Favicon_512x512.png";
     hash = "sha256-EXjaHrlXY0HU2EGTrActNbltIiqTLfdkFgP7FXoLzrM=";
+    url = "https://www.decentsamples.com/wp-content/uploads/2018/09/cropped-Favicon_512x512.png";
   };
 
   decent-sampler = stdenv.mkDerivation {
@@ -43,21 +43,6 @@ let
       expat
     ];
 
-    desktopItems = [
-      (makeDesktopItem {
-        type = "Application";
-        name = "decent-sampler";
-        desktopName = "Decent Sampler";
-        comment = "DecentSampler player";
-        icon = "decent-sampler";
-        exec = "decent-sampler";
-        categories = [
-          "Audio"
-          "AudioVideo"
-        ];
-      })
-    ];
-
     installPhase = ''
       runHook preInstall
 
@@ -68,12 +53,35 @@ let
 
       runHook postInstall
     '';
+
+    desktopItems = [
+      (makeDesktopItem {
+        categories = [
+          "Audio"
+          "AudioVideo"
+        ];
+
+        comment = "DecentSampler player";
+        desktopName = "Decent Sampler";
+        exec = "decent-sampler";
+        icon = "decent-sampler";
+        name = "decent-sampler";
+        type = "Application";
+      })
+    ];
   };
 
 in
 
 buildFHSEnv {
   inherit (decent-sampler) pname version;
+
+  extraInstallCommands = ''
+    cp -r ${decent-sampler}/lib $out/lib
+    cp -r ${decent-sampler}/share $out/share
+  '';
+
+  runScript = "decent-sampler";
 
   targetPkgs = pkgs: [
     alsa-plugins
@@ -83,30 +91,27 @@ buildFHSEnv {
     libx11
   ];
 
-  runScript = "decent-sampler";
-
-  extraInstallCommands = ''
-    cp -r ${decent-sampler}/lib $out/lib
-    cp -r ${decent-sampler}/share $out/share
-  '';
-
   meta = {
     description = "Audio sample player";
+
     longDescription = ''
       Decent Sampler is an audio sample player.
       Allowing you to play sample libraries in the DecentSampler format
       (files with extensions: dspreset and dslibrary).
     '';
-    mainProgram = "decent-sampler";
+
     homepage = "https://www.decentsamples.com/product/decent-sampler-plugin/";
     # It claims to be free but we currently cannot find any license
     # that it is released under.
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       adam248
       kaptcha0
     ];
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "decent-sampler";
   };
 }

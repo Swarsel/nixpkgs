@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  makeDesktopItem,
   fetchurl,
-  jdk25,
   jdk11,
+  jdk25,
   jdk8,
+  makeDesktopItem,
+  makeWrapper,
   writeScript,
 }:
 
 let
   generic =
     {
-      version,
       hash,
-      platform ? "",
       jdk,
+      version,
+      platform ? "",
       updateScript ? null,
       ...
     }@attrs:
@@ -28,10 +28,12 @@ let
           "WebDevelopment"
           "Java"
         ];
+
         desktopName = "Charles";
         exec = "charles %F";
         genericName = "Web Debugging Proxy";
         icon = "charles-proxy" + lib.optionalString (lib.versionAtLeast version "5.0") "5";
+
         mimeTypes = [
           "application/x-charles-savedsession"
           "application/x-charles-savedsession+xml"
@@ -40,22 +42,24 @@ let
           "application/vnd.tcpdump.pcap"
           "application/x-charles-trace"
         ];
+
         name = "Charles";
         startupNotify = true;
       };
 
     in
     stdenv.mkDerivation {
-      pname = "charles";
       inherit version;
+      pname = "charles";
 
       src = fetchurl {
+        inherit hash;
         url = "https://www.charlesproxy.com/assets/release/${version}/charles-proxy-${version}${platform}.tar.gz";
+
         curlOptsList = [
           "--user-agent"
           "Mozilla/5.0"
         ]; # HTTP 104 otherwise
-        inherit hash;
       };
 
       nativeBuildInputs = [ makeWrapper ];
@@ -95,29 +99,50 @@ let
         runHook postInstall
       '';
 
+      passthru.updateScript = updateScript;
+
       meta = {
         description = "Web Debugging Proxy";
         homepage = "https://www.charlesproxy.com/";
+        license = lib.licenses.unfree;
+        sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
         maintainers = with lib.maintainers; [
           kalbasit
           kashw2
           Misaka13514
         ];
-        sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-        license = lib.licenses.unfree;
+
         platforms = lib.platforms.unix;
       };
-      passthru.updateScript = updateScript;
     };
 
 in
 {
+  charles3 = (
+    generic {
+      version = "3.12.3";
+      hash = "sha256-Wotxzf6kutYv1F6q71eJVojVJsATJ81war/w4K1A848=";
+      jdk = jdk8.jre;
+      mainProgram = "charles";
+    }
+  );
+
+  charles4 = (
+    generic {
+      version = "4.6.8";
+      hash = "sha256-AaS+zmQTWsGoLEhyGHA/UojmctE7IV0N9fnygNhEPls=";
+      jdk = jdk11;
+      platform = "_amd64";
+    }
+  );
+
   charles5 = (
     generic {
       version = "5.1";
       hash = "sha256-gExmuh1A21QGkfcmcwPPgk51Ag7Ced9kPTHha2ofbKg=";
-      platform = "_x86_64";
       jdk = jdk25;
+      platform = "_x86_64";
 
       updateScript = writeScript "update-charles" ''
         #!/usr/bin/env nix-shell
@@ -129,22 +154,6 @@ in
 
         update-source-version charles5 "$version"
       '';
-    }
-  );
-  charles4 = (
-    generic {
-      version = "4.6.8";
-      hash = "sha256-AaS+zmQTWsGoLEhyGHA/UojmctE7IV0N9fnygNhEPls=";
-      platform = "_amd64";
-      jdk = jdk11;
-    }
-  );
-  charles3 = (
-    generic {
-      version = "3.12.3";
-      hash = "sha256-Wotxzf6kutYv1F6q71eJVojVJsATJ81war/w4K1A848=";
-      jdk = jdk8.jre;
-      mainProgram = "charles";
     }
   );
 }

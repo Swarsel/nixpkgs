@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 buildGoModule (finalAttrs: {
   pname = "netfetch";
@@ -16,19 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-N3wKpWdG92cXH0TwAkcsld9TRrfPRkbw0uZY/X4d+xk=";
   };
 
-  vendorHash = "sha256-/Em3hx5tiQjThLBPJDHGsqxUV3eXeymJ5pY9c601OW0=";
-
-  proxyVendor = true;
-
-  subPackages = [ "backend" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/deggja/netfetch/backend/cmd.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-/Em3hx5tiQjThLBPJDHGsqxUV3eXeymJ5pY9c601OW0=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     mv $out/bin/backend $out/bin/$pname
@@ -38,11 +27,20 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/$pname completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/deggja/netfetch/backend/cmd.Version=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "backend" ];
+
   meta = {
-    homepage = "https://github.com/deggja/netfetch";
     description = "Kubernetes tool for scanning clusters for network policies and identifying unprotected workloads";
+    homepage = "https://github.com/deggja/netfetch";
     license = lib.licenses.mit;
-    mainProgram = "netfetch";
     maintainers = with lib.maintainers; [ banh-canh ];
+    mainProgram = "netfetch";
   };
 })

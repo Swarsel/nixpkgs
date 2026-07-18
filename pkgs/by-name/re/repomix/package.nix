@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,10 +18,6 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-3AP+mMFipVUfO7vLY7ZjaJ8FG4uwpxC2+jYtaHz49YI=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   doCheck = true;
 
   checkPhase = ''
@@ -30,6 +26,8 @@ buildNpmPackage rec {
     runHook postCheck
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -37,10 +35,12 @@ buildNpmPackage rec {
     homepage = "https://github.com/yamadashy/repomix";
     changelog = "https://github.com/yamadashy/repomix/releases/tag/v${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       boralg
       yamadashy
     ];
+
     mainProgram = "repomix";
   };
 }

@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sipvicious";
   version = "0.3.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EnableSecurity";
@@ -16,6 +15,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qUdK8IbLnuQU3hv6+x3R84y83Ts8lNIGsOANFgkReE0=";
   };
+
+  # Project has no tests
+  doCheck = false;
+
+  postInstall = ''
+    installManPage man1/*.1
+  '';
 
   build-system = [
     installShellFiles
@@ -28,12 +34,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     scapy
   ];
 
-  postInstall = ''
-    installManPage man1/*.1
-  '';
-
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "sipvicious"

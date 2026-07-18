@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   ninja,
@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Header-only library that allows one to dynamically assemble code in-memory at runtime";
     homepage = "https://github.com/eden-emulator/oaknut";
-    maintainers = with lib.maintainers; [ marcin-serwin ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ marcin-serwin ];
     platforms = lib.platforms.all;
   };
 })

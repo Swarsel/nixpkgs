@@ -1,32 +1,34 @@
 {
   lib,
   stdenv,
-  electron,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  electron,
   fetchpatch,
 }:
 
 buildNpmPackage {
   pname = "webtorrent-desktop";
   version = "0.25-pre-ac7f16";
+
   src = fetchFromGitHub {
     owner = "webtorrent";
     repo = "webtorrent-desktop";
     rev = "ac7f16e71c96c5ad670bfcb8728df5af78ae21a1";
     sha256 = "sha256-UEN5NhLVSQEO8rsiTW1hJPjNFL9KobW/Bho98FzKaf4=";
   };
+
   patches = [
     # startup fix
     (fetchpatch {
+      hash = "sha256-hBJGLNNjcGRhYOFlLm/RL0po+70tEeJtR6Y/CfacPAI=";
       name = "2389.patch"; # https://github.com/webtorrent/webtorrent-desktop/pull/2389
       url = "https://github.com/webtorrent/webtorrent-desktop/commit/407046d150ed7ff876a5e1978f68630e9c8f0074.patch";
-      hash = "sha256-hBJGLNNjcGRhYOFlLm/RL0po+70tEeJtR6Y/CfacPAI=";
     })
   ];
+
   npmDepsHash = "sha256-otAes6GkqoAVvfeWhWgyY4IVZIZxw3WtkrVdEWIk1Lk=";
-  makeCacheWritable = true;
-  npmRebuildFlags = [ "--ignore-scripts" ];
+
   installPhase = ''
     ## Rebuild node_modules for production
     ## after babel compile has finished
@@ -54,6 +56,9 @@ buildNpmPackage {
       < static/linux/share/applications/webtorrent-desktop.desktop \
       > $out/share/applications/webtorrent-desktop.desktop
   '';
+
+  makeCacheWritable = true;
+  npmRebuildFlags = [ "--ignore-scripts" ];
 
   meta = {
     description = "Streaming torrent app for Mac, Windows, and Linux";

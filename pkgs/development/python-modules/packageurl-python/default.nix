@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pydantic,
   pytestCheckHook,
   setuptools,
@@ -10,23 +10,22 @@
 buildPythonPackage (finalAttrs: {
   pname = "packageurl-python";
   version = "0.17.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "package-url";
     repo = "packageurl-python";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-jH4zJN3XGPFBnto26pcvADXogpooj3dqpqkWnKXgICY=";
+    fetchSubmodules = true;
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     pydantic
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "packageurl" ];
 
   meta = {

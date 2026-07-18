@@ -1,20 +1,19 @@
 {
   lib,
   fetchFromGitHub,
+  gitMinimal,
   glib,
   gobject-introspection,
-  wrapGAppsHook4,
-  gitMinimal,
   gtksourceview5,
   libadwaita,
-  python3Packages,
   nix-update-script,
+  python3Packages,
+  wrapGAppsHook4,
   writableTmpDirAsHomeHook,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gaphor";
   version = "3.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gaphor";
@@ -22,13 +21,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-oSPdWQcdt00SSdvlnAtPrsACBCiA4NlCE9Fwt4G9bjk=";
   };
-
-  pythonRelaxDeps = [
-    "pydot"
-    "pygobject"
-    "dulwich"
-    "jedi"
-  ];
 
   nativeBuildInputs = [
     glib
@@ -41,24 +33,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libadwaita
   ];
 
-  build-system = [ python3Packages.poetry-core ];
-
-  dependencies = with python3Packages; [
-    babel
-    better-exceptions
-    defusedxml
-    dulwich
-    gaphas
-    generic
-    jedi
-    pillow
-    pycairo
-    pydot
-    pygobject3
-    tinycss2
-    ipython
-    sphinx
-  ];
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    gitMinimal
+  ]
+  ++ (with python3Packages; [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-archon
+    hypothesis
+    xdoctest
+    markdown-it-py
+  ]);
 
   postInstall = ''
     install -Dm644 data/org.gaphor.Gaphor.appdata.xml -t $out/share/metainfo/
@@ -82,24 +68,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
                       --replace-fail "Exec=/usr/bin/gaphor" "Exec=$out/bin/gaphor"
   '';
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    gitMinimal
-  ]
-  ++ (with python3Packages; [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-archon
-    hypothesis
-    xdoctest
-    markdown-it-py
-  ]);
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
 
-  disabledTests = [
-    # Segfault due to gtk initialization failure?
-    "page"
-    "editor"
-    "drop"
+  build-system = [ python3Packages.poetry-core ];
+
+  dependencies = with python3Packages; [
+    babel
+    better-exceptions
+    defusedxml
+    dulwich
+    gaphas
+    generic
+    jedi
+    pillow
+    pycairo
+    pydot
+    pygobject3
+    tinycss2
+    ipython
+    sphinx
   ];
 
   disabledTestPaths = [
@@ -111,12 +100,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "tests/*"
   ];
 
+  disabledTests = [
+    # Segfault due to gtk initialization failure?
+    "page"
+    "editor"
+    "drop"
+  ];
+
   # Prevent double wrapping
   dontWrapGApps = true;
+  pyproject = true;
 
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pythonRelaxDeps = [
+    "pydot"
+    "pygobject"
+    "dulwich"
+    "jedi"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -124,6 +124,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "UML and SysML modeling tool";
+
     longDescription = ''
       Gaphor is a UML, SysML, RAAML, and C4 modeling application. It
       is designed to be easy to use, while still being powerful.
@@ -135,12 +136,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
       Gaphor provides four modeling languages: UML, SysML, RAAML and C4 and
       makes them accessible to beginners.
     '';
+
     homepage = "https://gaphor.org/";
     changelog = "https://github.com/gaphor/gaphor/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
-    teams = [ lib.teams.gnome-circle ];
-    mainProgram = "gaphor";
     platforms = lib.platforms.linux;
+    mainProgram = "gaphor";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

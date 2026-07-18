@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   buildGoModule,
-  makeBinaryWrapper,
-  installShellFiles,
   delta,
+  installShellFiles,
+  makeBinaryWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,17 +19,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-6VtAQzZNLQrf8QYVXxLUgb3F6xguFDbwaE9kahPhbSE=";
   };
 
-  vendorHash = "sha256-gmmckzR0D1oFuTG5TAb6gLMoNbcZl9EsjbFjhPfJqnQ=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [
     makeBinaryWrapper
     installShellFiles
   ];
+
+  vendorHash = "sha256-gmmckzR0D1oFuTG5TAb6gLMoNbcZl9EsjbFjhPfJqnQ=";
+
   postInstall = ''
     wrapProgram $out/bin/diffnav \
       --prefix PATH : ${lib.makeBinPath [ delta ]}
@@ -41,14 +37,21 @@ buildGoModule (finalAttrs: {
      --zsh <($out/bin/diffnav completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
-    changelog = "https://github.com/dlvhdr/diffnav/releases/tag/${finalAttrs.src.rev}";
     description = "Git diff pager based on delta but with a file tree, à la GitHub";
     homepage = "https://github.com/dlvhdr/diffnav";
+    changelog = "https://github.com/dlvhdr/diffnav/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
     mainProgram = "diffnav";
   };
 })

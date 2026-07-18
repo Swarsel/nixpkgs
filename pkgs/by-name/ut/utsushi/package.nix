@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  writeScriptBin,
-  fetchpatch,
   fetchFromGitLab,
-  autoreconfHook,
-  pkg-config,
   autoconf-archive,
-  libxslt,
+  autoreconfHook,
   boost,
+  fetchpatch,
   gtkmm2,
   imagemagick,
+  libusb1,
+  libxslt,
+  pkg-config,
   sane-backends,
   tesseract4,
   udev,
-  libusb1,
-  withNetworkScan ? false,
   utsushi-networkscan,
+  writeScriptBin,
+  withNetworkScan ? false,
 }:
 
 let
@@ -41,24 +41,39 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/media-gfx/iscan/files/iscan-3.63.0-autoconf-2.70.patch?id=4fe8a9e6c60f9163cadad830ba4935c069c67b10";
       sha256 = "sha256-2V4cextjcEQrywe4tvvD5KaVYdXnwdNhTiY/aSNx3mM=";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/media-gfx/iscan/files/iscan-3.63.0-autoconf-2.70.patch?id=4fe8a9e6c60f9163cadad830ba4935c069c67b10";
     })
     (fetchpatch {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/media-gfx/iscan/files/iscan-3.61.0-imagemagick-7.patch?id=985c92af4730d864e86fa87746185b0246e9db93";
       sha256 = "sha256-dfdVMp3ZfclYeRxYjMIvl+ZdlLn9S+IwQ+OmlHW8318=";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/media-gfx/iscan/files/iscan-3.61.0-imagemagick-7.patch?id=985c92af4730d864e86fa87746185b0246e9db93";
     })
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/archlinux/svntogit-community/b3046e0e78b95440f135fcadb19a9eb531729a58/trunk/boost-1.74.patch";
       sha256 = "sha256-W8R1l7ZPcsfiIy1QBJvh0M8du0w1cnTg3PyAz65v4rE=";
+      url = "https://raw.githubusercontent.com/archlinux/svntogit-community/b3046e0e78b95440f135fcadb19a9eb531729a58/trunk/boost-1.74.patch";
     })
     (fetchpatch {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/media-gfx/iscan/files/iscan-3.65.0-sane-backends-1.1.patch?id=dec60bb6900d6ebdaaa6aa1dcb845b30b739f9b5";
       sha256 = "sha256-AmMZ+/lrUMR7IU+S8MEn0Ji5pqOiD6izFJBsJ0tCCCw=";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/media-gfx/iscan/files/iscan-3.65.0-sane-backends-1.1.patch?id=dec60bb6900d6ebdaaa6aa1dcb845b30b739f9b5";
     })
     # original source: https://aur.archlinux.org/cgit/aur.git/plain/remove-boost-system.patch?h=imagescan&id=78b5d1fac2599ca7ef7d6e2c2a632e2ee70ed5c0
     ./remove-boost.system.patch
   ];
+
+  postPatch = ''
+    # create fake udev and sane config
+    mkdir -p $out/etc/{sane.d,udev/rules.d}
+    touch $out/etc/sane.d/dll.conf
+
+    # absolute paths to convert & tesseract
+    sed -i '/\[AC_DEFINE(\[HAVE_IMAGE_MAGICK\], \[1\])/a \ MAGICK_CONVERT="${imagemagick}/bin/convert"' configure.ac
+    substituteInPlace filters/magick.cpp \
+      --replace 'convert ' '${imagemagick}/bin/convert '
+    substituteInPlace filters/reorient.cpp \
+      --replace '"tesseract' '"${tesseract4}/bin/tesseract'
+    substituteInPlace filters/get-text-orientation \
+      --replace '=tesseract' '=${tesseract4}/bin/tesseract'
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -77,27 +92,6 @@ stdenv.mkDerivation (finalAttrs: {
     libusb1.dev
   ];
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-Wno-error=deprecated-declarations"
-    "-Wno-error=parentheses"
-    "-Wno-error=unused-variable"
-  ];
-
-  postPatch = ''
-    # create fake udev and sane config
-    mkdir -p $out/etc/{sane.d,udev/rules.d}
-    touch $out/etc/sane.d/dll.conf
-
-    # absolute paths to convert & tesseract
-    sed -i '/\[AC_DEFINE(\[HAVE_IMAGE_MAGICK\], \[1\])/a \ MAGICK_CONVERT="${imagemagick}/bin/convert"' configure.ac
-    substituteInPlace filters/magick.cpp \
-      --replace 'convert ' '${imagemagick}/bin/convert '
-    substituteInPlace filters/reorient.cpp \
-      --replace '"tesseract' '"${tesseract4}/bin/tesseract'
-    substituteInPlace filters/get-text-orientation \
-      --replace '=tesseract' '=${tesseract4}/bin/tesseract'
-  '';
-
   configureFlags = [
     "--with-boost-libdir=${boost}/lib"
     "--with-sane-confdir=${placeholder "out"}/etc/sane.d"
@@ -110,19 +104,23 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-tiff"
   ];
 
-  installFlags = [ "SANE_BACKENDDIR=${placeholder "out"}/lib/sane" ];
-
-  enableParallelBuilding = true;
-
-  doInstallCheck = true;
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-Wno-error=deprecated-declarations"
+    "-Wno-error=parentheses"
+    "-Wno-error=unused-variable"
+  ];
 
   postInstall = lib.optionalString withNetworkScan ''
     ln -s ${utsushi-networkscan}/libexec/utsushi/networkscan $out/libexec/utsushi
   '';
 
+  doInstallCheck = true;
+  enableParallelBuilding = true;
+  installFlags = [ "SANE_BACKENDDIR=${placeholder "out"}/lib/sane" ];
+
   meta = {
     description = "SANE utsushi backend for some Epson scanners";
-    mainProgram = "utsushi";
+
     longDescription = ''
       ImageScanV3 (aka utsushi) scanner driver. Non-free plugins are not
       included, so no network support. To use the SANE backend, in
@@ -188,12 +186,16 @@ stdenv.mkDerivation (finalAttrs: {
       Series, XP-8500 Series, XP-8600 Series, XP-900 Series, XP-960 Series,
       XP-970 Series
     '';
+
     homepage = "https://gitlab.com/utsushi/imagescan";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       wucke13
       maxwilson
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "utsushi";
   };
 })

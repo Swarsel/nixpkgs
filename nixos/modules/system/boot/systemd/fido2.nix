@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -23,6 +23,7 @@ in
         cp ${cfg.package}/lib/udev/rules.d/60-fido-id.rules $out/lib/udev/rules.d/60-fido-id.rules
       '')
     ];
+
     boot.initrd.systemd.storePaths = [
       "${cfg.package}/lib/udev/fido_id"
       "${cfg.package}/lib/cryptsetup/libcryptsetup-token-systemd-fido2.so"

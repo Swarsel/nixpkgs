@@ -9,6 +9,7 @@ let
 
   alertaConf = pkgs.writeTextFile {
     name = "alertad.conf";
+
     text = ''
       DATABASE_URL = '${cfg.databaseUrl}'
       DATABASE_NAME = '${cfg.databaseName}'
@@ -25,93 +26,97 @@ in
   options.services.alerta = {
     enable = lib.mkEnableOption "alerta";
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 5000;
-      description = "Port of Alerta";
+    authenticationRequired = lib.mkOption {
+      default = false;
+      description = "Whether users must authenticate when using the web UI or command-line tool";
+      type = lib.types.bool;
     };
 
     bind = lib.mkOption {
-      type = lib.types.str;
       default = "0.0.0.0";
       description = "Address to bind to. The default is to bind to all addresses";
-    };
-
-    logDir = lib.mkOption {
-      type = lib.types.path;
-      description = "Location where the logfiles are stored";
-      default = "/var/log/alerta";
-    };
-
-    databaseUrl = lib.mkOption {
       type = lib.types.str;
-      description = "URL of the MongoDB or PostgreSQL database to connect to";
-      default = "mongodb://localhost";
-    };
-
-    databaseName = lib.mkOption {
-      type = lib.types.str;
-      description = "Name of the database instance to connect to";
-      default = "monitoring";
     };
 
     corsOrigins = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      description = "List of URLs that can access the API for Cross-Origin Resource Sharing (CORS)";
       default = [
         "http://localhost"
         "http://localhost:5000"
       ];
+
+      description = "List of URLs that can access the API for Cross-Origin Resource Sharing (CORS)";
+      type = lib.types.listOf lib.types.str;
     };
 
-    authenticationRequired = lib.mkOption {
-      type = lib.types.bool;
-      description = "Whether users must authenticate when using the web UI or command-line tool";
-      default = false;
+    databaseName = lib.mkOption {
+      default = "monitoring";
+      description = "Name of the database instance to connect to";
+      type = lib.types.str;
     };
 
-    signupEnabled = lib.mkOption {
-      type = lib.types.bool;
-      description = "Whether to prevent sign-up of new users via the web UI";
-      default = true;
+    databaseUrl = lib.mkOption {
+      default = "mongodb://localhost";
+      description = "URL of the MongoDB or PostgreSQL database to connect to";
+      type = lib.types.str;
     };
 
     extraConfig = lib.mkOption {
-      description = "These lines go into alertad.conf verbatim.";
       default = "";
+      description = "These lines go into alertad.conf verbatim.";
       type = lib.types.lines;
+    };
+
+    logDir = lib.mkOption {
+      default = "/var/log/alerta";
+      description = "Location where the logfiles are stored";
+      type = lib.types.path;
+    };
+
+    port = lib.mkOption {
+      default = 5000;
+      description = "Port of Alerta";
+      type = lib.types.port;
+    };
+
+    signupEnabled = lib.mkOption {
+      default = true;
+      description = "Whether to prevent sign-up of new users via the web UI";
+      type = lib.types.bool;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.tmpfiles.settings."10-alerta".${cfg.logDir}.d = {
-      user = "alerta";
-      group = "alerta";
-    };
+    environment.systemPackages = [ pkgs.alerta ];
 
     systemd.services.alerta = {
-      description = "Alerta Monitoring System";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Alerta Monitoring System";
+
       environment = {
         ALERTA_SVR_CONF_FILE = alertaConf;
       };
+
       serviceConfig = {
         ExecStart = "${pkgs.alerta-server}/bin/alertad run --port ${toString cfg.port} --host ${cfg.bind}";
-        User = "alerta";
         Group = "alerta";
+        User = "alerta";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    environment.systemPackages = [ pkgs.alerta ];
-
-    users.users.alerta = {
-      uid = config.ids.uids.alerta;
-      description = "Alerta user";
+    systemd.tmpfiles.settings."10-alerta".${cfg.logDir}.d = {
+      group = "alerta";
+      user = "alerta";
     };
 
     users.groups.alerta = {
       gid = config.ids.gids.alerta;
+    };
+
+    users.users.alerta = {
+      description = "Alerta user";
+      uid = config.ids.uids.alerta;
     };
   };
 }

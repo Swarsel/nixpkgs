@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "ekey-bionyxpy";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "richardpolzer";
@@ -21,16 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-V4xYv+mjU4QO/+hOq3TH8b/X9PVP95i6apYkcqVDIWY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "ekey_bionyxpy" ];
 
   meta = {

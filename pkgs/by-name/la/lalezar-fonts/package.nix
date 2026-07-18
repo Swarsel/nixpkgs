@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -25,10 +25,10 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/BornaIz/Lalezar";
     description = "Multi-script display typeface for popular culture";
+    homepage = "https://github.com/BornaIz/Lalezar";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

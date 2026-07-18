@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-
   fetchFromGitHub,
-  git,
-  pkg-config,
   beamPackages,
-  nodejs,
   bun,
   deno,
-  versionCheckHook,
+  git,
   nix-update-script,
+  nodejs,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
@@ -26,12 +25,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-lW57+JvinIHWhXuKagDcrfNDOUurIC53TjAxqrHN11I=";
   };
 
-  cargoHash = "sha256-Wbmi/GyoflpDEnFC+1FicxqFJgOa8O2iUHwB7JcDuyU=";
-
   nativeBuildInputs = [
     pkg-config
     beamPackages.erlang
   ];
+
+  cargoHash = "sha256-Wbmi/GyoflpDEnFC+1FicxqFJgOa8O2iUHwB7JcDuyU=";
 
   nativeCheckInputs = [
     # used by several tests
@@ -73,19 +72,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Statically typed language for the Erlang VM";
-    mainProgram = "gleam";
     homepage = "https://gleam.run/";
     changelog = "https://github.com/gleam-lang/gleam/blob/v${finalAttrs.version}/changelog/v${lib.versions.majorMinor finalAttrs.version}.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       philtaken
       llakala
     ];
+
+    mainProgram = "gleam";
     teams = [ lib.teams.beam ];
   };
 })

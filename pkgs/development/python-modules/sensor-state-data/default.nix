@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sensor-state-data";
   version = "2.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-ONAM1WxKnzRCJsuJa+4zDaOXPkTj+zcTH54SgktpMR8=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "sensor_state_data" ];
 
   meta = {

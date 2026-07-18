@@ -1,13 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule rec {
   pname = "fast";
   version = "0.1.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "maaslalani";
@@ -17,13 +15,14 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-YSjJ8NOL97hXZLnfGYIjoKmARv+gWOsv+5qkl9konnA=";
+  __structuredAttrs = true;
 
   meta = {
-    homepage = "https://github.com/maaslalani/fast";
     description = "Internet speed test in your terminal";
+    homepage = "https://github.com/maaslalani/fast";
     license = lib.licenses.mit;
-    mainProgram = "fast";
     maintainers = with lib.maintainers; [ yarn ];
     platforms = lib.platforms.unix;
+    mainProgram = "fast";
   };
 }

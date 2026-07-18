@@ -2,27 +2,27 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   packaging,
   requests,
+  # build-system
+  setuptools,
+  setuptools-scm,
   urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "qbittorrent-api";
   version = "2026.7.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "qbittorrent_api";
     inherit version;
     hash = "sha256-nwpuM+5NuikNFV3jrVnBkd4C5NljnUJL8C7EoA7PMgU=";
+    pname = "qbittorrent_api";
   };
+
+  # Tests require internet access
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -35,9 +35,7 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  # Tests require internet access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "qbittorrentapi" ];
 
   meta = {

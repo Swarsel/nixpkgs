@@ -4,8 +4,8 @@
   fetchurl,
   hunspell,
   ncurses,
-  pkg-config,
   perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,18 +17,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0prh19wy1c74kmzkkavm9qslk99gz8h8wmjvwzjc6lf8v2az708y";
   };
 
-  buildInputs = [ hunspell ];
   nativeBuildInputs = [
     ncurses
     pkg-config
     perl
   ];
 
+  buildInputs = [ hunspell ];
+
   meta = {
-    homepage = "https://hunspell.sourceforge.net/";
-    description = "Thesaurus library from Hunspell project";
-    mainProgram = "th_gen_idx.pl";
-    license = lib.licenses.bsd3;
     inherit (hunspell.meta) platforms;
+    description = "Thesaurus library from Hunspell project";
+    homepage = "https://hunspell.sourceforge.net/";
+    license = lib.licenses.bsd3;
+    mainProgram = "th_gen_idx.pl";
   };
 })

@@ -1,28 +1,22 @@
 {
   lib,
   buildPythonPackage,
-  home-assistant-chip-wheels,
   coloredlogs,
   construct,
   cryptography,
   dacite,
   deprecation,
+  home-assistant-chip-wheels,
   ipdb,
   pyyaml,
   rich,
 }:
 
 buildPythonPackage rec {
-  pname = "home-assistant-chip-core";
   inherit (home-assistant-chip-wheels) version;
-  format = "wheel";
-
+  pname = "home-assistant-chip-core";
   src = home-assistant-chip-wheels;
-
-  # format=wheel needs src to be a wheel not a folder of wheels
-  preUnpack = ''
-    src=($src/home_assistant_chip_core*.whl)
-  '';
+  doCheck = false; # no tests
 
   dependencies = [
     coloredlogs
@@ -35,13 +29,12 @@ buildPythonPackage rec {
     deprecation
   ];
 
-  # only used for testing purposes, unsafe to use in production
-  pythonRemoveDeps = [ "ecdsa" ];
+  format = "wheel";
 
-  pythonNamespaces = [
-    "chip"
-    "chip.clusters"
-  ];
+  # format=wheel needs src to be a wheel not a folder of wheels
+  preUnpack = ''
+    src=($src/home_assistant_chip_core*.whl)
+  '';
 
   pythonImportsCheck = [
     "chip"
@@ -53,7 +46,13 @@ buildPythonPackage rec {
     "chip.storage"
   ];
 
-  doCheck = false; # no tests
+  pythonNamespaces = [
+    "chip"
+    "chip.clusters"
+  ];
+
+  # only used for testing purposes, unsafe to use in production
+  pythonRemoveDeps = [ "ecdsa" ];
 
   meta = {
     description = "Python-base APIs and tools for CHIP";

@@ -28,11 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Semi-random text typer";
-    mainProgram = "randtype";
     homepage = "https://benkibbey.wordpress.com/randtype/";
-    maintainers = with lib.maintainers; [ dandellion ];
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ dandellion ];
     platforms = lib.platforms.unix;
+    mainProgram = "randtype";
     broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/randtype.x86_64-darwin
   };
 })

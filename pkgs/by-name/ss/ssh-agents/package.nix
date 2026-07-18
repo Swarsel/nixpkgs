@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   stdenvNoCC,
 }:
 
@@ -19,6 +19,7 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Spawn and maintain multiple ssh-agents across terminals";
+
     longDescription = ''
       The SSH agent is usually spawned by running eval $(ssh-agent), however this
       spawns a new SSH agent at every invocation. This project provides an
@@ -36,6 +37,7 @@ stdenvNoCC.mkDerivation rec {
         given name is expected to be a folder under ~/.ssh/name containing the
         keys to include in the agent.
     '';
+
     homepage = "https://github.com/kalbasit/ssh-agents";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kalbasit ];

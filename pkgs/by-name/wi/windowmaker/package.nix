@@ -1,11 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromRepoOrCz,
   autoreconfHook,
   callPackage,
-  pkg-config,
+  fetchFromRepoOrCz,
+  giflib,
   imagemagick,
+  libexif,
+  libjpeg,
+  libpng,
+  libtiff,
+  libwebp,
   libx11,
   libxext,
   libxft,
@@ -14,13 +19,8 @@
   libxpm,
   libxrandr,
   libxres,
-  libexif,
-  libjpeg,
-  libpng,
-  libtiff,
-  giflib,
-  libwebp,
   pango,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -69,8 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "http://windowmaker.org/";
     description = "NeXTSTEP-like window manager";
+
     longDescription = ''
       Window Maker is an X11 window manager originally designed to provide
       integration support for the GNUstep Desktop Environment. In every way
@@ -79,10 +79,12 @@ stdenv.mkDerivation (finalAttrs: {
       use. It is also free software, with contributions being made by
       programmers from around the world.
     '';
+
+    homepage = "http://windowmaker.org/";
     changelog = "https://www.windowmaker.org/news/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "wmaker";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "wmaker";
   };
 })

@@ -1,18 +1,16 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  makeWrapper,
   bashInteractive,
   gh,
   jq,
+  makeWrapper,
   nix-update-script,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "gh-gonest";
   version = "0-unstable-2025-12-17";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "emmanuel-ferdman";
@@ -22,21 +20,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ bashInteractive ];
-
-  # runtimeInputs is not used by mkDerivation directly, but defining it means
-  # the packages on the path at runtime can be more easily inspected and
-  # overridden.
-  runtimeInputs = [
-    gh
-    jq
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -54,6 +39,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --suffix PATH : ${lib.makeBinPath finalAttrs.runtimeInputs}
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
+  # runtimeInputs is not used by mkDerivation directly, but defining it means
+  # the packages on the path at runtime can be more easily inspected and
+  # overridden.
+  runtimeInputs = [
+    gh
+    jq
+  ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version"
@@ -62,8 +59,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/emmanuel-ferdman/gh-gonest";
     description = "GitHub CLI extension for cleaning up ghost notifications";
+    homepage = "https://github.com/emmanuel-ferdman/gh-gonest";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.me-and ];
     mainProgram = "gh-gonest";

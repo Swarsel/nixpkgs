@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cliff,
-  fetchFromGitHub,
   keystoneauth1,
   openstackdocstheme,
   openstacksdk,
@@ -14,11 +14,11 @@
   osprofiler,
   pbr,
   pyyaml,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools,
-  sphinxcontrib-apidoc,
   sphinxHook,
+  sphinxcontrib-apidoc,
   stestr,
   stevedore,
   tempest,
@@ -27,7 +27,6 @@
 buildPythonPackage rec {
   pname = "python-mistralclient";
   version = "6.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -36,15 +35,28 @@ buildPythonPackage rec {
     hash = "sha256-FNfee7d8gTcsTdv7lxqDbniUiKQvUXHRSkAlNOCn/k4=";
   };
 
-  env.PBR_VERSION = version;
-
   nativeBuildInputs = [
     openstackdocstheme
     sphinxHook
     sphinxcontrib-apidoc
   ];
 
-  sphinxBuilders = [ "man" ];
+  env.PBR_VERSION = version;
+
+  nativeCheckInputs = [
+    openstacksdk
+    oslotest
+    osprofiler
+    requests-mock
+    stestr
+    tempest
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+    stestr run
+    runHook postCheck
+  '';
 
   build-system = [
     setuptools
@@ -64,22 +76,9 @@ buildPythonPackage rec {
     stevedore
   ];
 
-  nativeCheckInputs = [
-    openstacksdk
-    oslotest
-    osprofiler
-    requests-mock
-    stestr
-    tempest
-  ];
-
-  checkPhase = ''
-    runHook preCheck
-    stestr run
-    runHook postCheck
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "mistralclient" ];
+  sphinxBuilders = [ "man" ];
 
   meta = {
     description = "OpenStack Mistral Command-line Client";

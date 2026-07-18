@@ -1,12 +1,24 @@
 {
   lib,
-  mkDerivation,
   libctf,
   librtld-db,
+  mkDerivation,
   zlib,
 }:
 mkDerivation {
-  path = "lib/libproc";
+  outputs = [
+    "out"
+    "debug"
+  ];
+
+  buildInputs = [
+    libctf
+    librtld-db
+    zlib
+  ];
+
+  MK_TESTS = "no";
+
   extraPaths = [
     "sys/contrib/openzfs/include"
     "sys/contrib/openzfs/lib/libspl/include"
@@ -17,18 +29,6 @@ mkDerivation {
     "sys/cddl/compat/opensolaris"
   ];
 
-  buildInputs = [
-    libctf
-    librtld-db
-    zlib
-  ];
-
-  outputs = [
-    "out"
-    "debug"
-  ];
-
-  MK_TESTS = "no";
-
+  path = "lib/libproc";
   meta.platforms = lib.platforms.freebsd;
 }

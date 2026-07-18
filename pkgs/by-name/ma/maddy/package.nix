@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  pam,
+  buildGoModule,
   coreutils,
   installShellFiles,
-  scdoc,
   nixosTests,
+  pam,
+  scdoc,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,29 +21,14 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-Lt5uj7DCu6Tx47Xdzg+CjGN543LCj2x8ph+1wvD3GCQ=";
   };
 
-  vendorHash = "sha256-8dMS2kFlQ762u4Ifv1O1Capr8Jb7wsQuHSsJvHwa0j0=";
-
-  tags = [ "libpam" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/foxcpp/maddy.Version=${finalAttrs.version}"
-    "-X github.com/foxcpp/maddy.DefaultLibexecDirectory=/run/wrappers/bin"
-  ];
-
-  subPackages = [
-    "cmd/maddy"
-    "cmd/maddy-pam-helper"
-    "cmd/maddy-shadow-helper"
-  ];
-
-  buildInputs = [ pam ];
-
   nativeBuildInputs = [
     installShellFiles
     scdoc
   ];
+
+  buildInputs = [ pam ];
+  vendorHash = "sha256-8dMS2kFlQ762u4Ifv1O1Capr8Jb7wsQuHSsJvHwa0j0=";
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=strict-prototypes";
 
   postInstall = ''
     for f in docs/man/*.scd; do
@@ -68,8 +53,20 @@ buildGoModule (finalAttrs: {
       --replace-fail "/bin/kill" "${coreutils}/bin/kill"
   '';
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=strict-prototypes";
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/foxcpp/maddy.Version=${finalAttrs.version}"
+    "-X github.com/foxcpp/maddy.DefaultLibexecDirectory=/run/wrappers/bin"
+  ];
 
+  subPackages = [
+    "cmd/maddy"
+    "cmd/maddy-pam-helper"
+    "cmd/maddy-shadow-helper"
+  ];
+
+  tags = [ "libpam" ];
   passthru.tests.nixos = nixosTests.maddy;
 
   meta = {

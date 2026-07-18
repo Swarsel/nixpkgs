@@ -2,26 +2,19 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   numpy,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "py3langid";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-CodaAxpYqvnb2nu4KF/XXoAae9J2IW/6vgN5AdS0Sew=";
   };
-
-  nativeBuildInputs = [ setuptools ];
-
-  propagatedBuildInputs = [ numpy ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   # nixify path to the courlan binary in the test suite
   postPatch = ''
@@ -30,14 +23,18 @@ buildPythonPackage rec {
       'numpy >= 2.0.0' numpy
   '';
 
+  nativeBuildInputs = [ setuptools ];
+  propagatedBuildInputs = [ numpy ];
+  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "py3langid" ];
 
   meta = {
     description = "Fork of the language identification tool langid.py, featuring a modernized codebase and faster execution times";
-    mainProgram = "langid";
     homepage = "https://github.com/adbar/py3langid";
     changelog = "https://github.com/adbar/py3langid/blob/v${version}/HISTORY.rst";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jokatzke ];
+    mainProgram = "langid";
   };
 }

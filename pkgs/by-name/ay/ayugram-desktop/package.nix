@@ -9,8 +9,9 @@
 }:
 
 telegram-desktop.override {
-  pname = "ayugram-desktop";
   inherit withWebkit;
+  pname = "ayugram-desktop";
+
   unwrapped = telegram-desktop.unwrapped.overrideAttrs (
     finalAttrs: previousAttrs: {
       pname = "ayugram-desktop-unwrapped";
@@ -27,25 +28,29 @@ telegram-desktop.override {
       patches =
         (previousAttrs.patches or [ ])
         ++ (lib.optional stdenvNoCC.hostPlatform.isDarwin (fetchpatch2 {
-          url = "https://github.com/telegramdesktop/tdesktop/commit/923efd9e7ef8ff72d9b83973502e587682119e54.patch?full_index=1";
           hash = "sha256-XcmH9SSI3K2SsFjHDEMnKA6YOyWF1kRVJJAWP2/vdf8=";
+          url = "https://github.com/telegramdesktop/tdesktop/commit/923efd9e7ef8ff72d9b83973502e587682119e54.patch?full_index=1";
         }));
 
       passthru.updateScript = nix-update-script { };
 
       meta = previousAttrs.meta // {
-        mainProgram = "AyuGram";
         description = "Desktop Telegram client with good customization and Ghost mode";
+
         longDescription = ''
           The best that could be in the world of Telegram clients.
           AyuGram is a Telegram client with a very pleasant features.
         '';
+
         homepage = "https://github.com/AyuGram/AyuGramDesktop";
         changelog = "https://github.com/AyuGram/AyuGramDesktop/releases/tag/v${finalAttrs.version}";
+
         maintainers = with lib.maintainers; [
           kaeeraa
           s0me1newithhand7s
         ];
+
+        mainProgram = "AyuGram";
       };
     }
   );

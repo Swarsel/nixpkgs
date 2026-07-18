@@ -1,9 +1,9 @@
 {
   lib,
-  nix-update-script,
   fetchurl,
   appimageTools,
   makeBinaryWrapper,
+  nix-update-script,
 }:
 let
   pname = "lmath";
@@ -46,9 +46,9 @@ appimageTools.wrapType2 {
   meta = {
     description = "Simple notebook app with LaTeX capabilities";
     homepage = "https://lehtodigital.fi/lmath/";
-    mainProgram = "lmath";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ langsjo ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "lmath";
   };
 }

@@ -1,24 +1,24 @@
 {
   lib,
-  vscode-utils,
   jq,
   moreutils,
   terraform-ls,
   vscode-extension-update-script,
+  vscode-utils,
 }:
 
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "terraform";
-    publisher = "hashicorp";
-    version = "2.39.3";
-    hash = "sha256-oU3kAhIsuadjyBvi+gJ6h19A3KueQYCZWLIN0ZUhoOE=";
-  };
-
   postInstall = ''
     cd "$out/$installPrefix"
     ${lib.getExe jq} '.contributes.configuration[0].properties."terraform.languageServer.path".default = "${terraform-ls}/bin/terraform-ls"' package.json | ${lib.getExe' moreutils "sponge"} package.json
   '';
+
+  mktplcRef = {
+    version = "2.39.3";
+    hash = "sha256-oU3kAhIsuadjyBvi+gJ6h19A3KueQYCZWLIN0ZUhoOE=";
+    name = "terraform";
+    publisher = "hashicorp";
+  };
 
   passthru.updateScript = vscode-extension-update-script {
     extraArgs = [

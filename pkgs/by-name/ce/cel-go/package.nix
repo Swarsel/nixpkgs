@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 let
   cel-spec = buildGoModule (finalAttrs: {
@@ -35,23 +35,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-fiFkoYVKdSdYkSMQxmC1SvEEGsalBasCl9tzsGSYwmw=";
   };
 
-  modRoot = "repl";
-
-  vendorHash = "sha256-tMaDwKoE5tzbQD5b7EnpKqiT/CT9WDCKgoxQeyhIlXE=";
-
-  subPackages = [
-    "main"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   postPatch = ''
     substituteInPlace repl/go.mod \
       --replace-fail "../../cel-spec" "./cel-spec"
   '';
+
+  vendorHash = "sha256-tMaDwKoE5tzbQD5b7EnpKqiT/CT9WDCKgoxQeyhIlXE=";
 
   preBuild = ''
     mkdir cel-spec
@@ -62,17 +51,28 @@ buildGoModule (finalAttrs: {
     mv $out/bin/{main,cel-go}
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  modRoot = "repl";
+
+  subPackages = [
+    "main"
+  ];
+
   passthru = {
     inherit cel-spec;
     updateScript = ./update.sh;
   };
 
   meta = {
-    changelog = "https://github.com/cel-expr/cel-go/releases/tag/${finalAttrs.src.tag}";
     description = "Fast, portable, non-Turing complete expression evaluation with gradual typing";
     homepage = "https://github.com/cel-expr/cel-go";
+    changelog = "https://github.com/cel-expr/cel-go/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "cel-go";
     maintainers = with lib.maintainers; [ hythera ];
+    mainProgram = "cel-go";
   };
 })

@@ -1,36 +1,32 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pbr,
-  setuptools,
-  twine,
-
+  buildPythonPackage,
   # dependencies
   click,
   click-completion,
-  inquirer,
-  notify-py,
-  pendulum,
-  prettytable,
-  requests,
-  validate-email,
-
   # tests
   factory-boy,
+  inquirer,
+  notify-py,
+  # build-system
+  pbr,
+  pendulum,
+  prettytable,
   pytest-cov-stub,
   pytest-mock,
   pytestCheckHook,
+  requests,
+  setuptools,
+  twine,
+  validate-email,
   versionCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "toggl-cli";
   version = "4.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AuHau";
@@ -41,13 +37,19 @@ buildPythonPackage rec {
 
   env.PBR_VERSION = version;
 
+  nativeCheckInputs = [
+    factory-boy
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+    versionCheckHook
+  ];
+
   build-system = [
     pbr
     setuptools
     twine
   ];
-
-  pythonRelaxDeps = true;
 
   dependencies = [
     click
@@ -62,14 +64,10 @@ buildPythonPackage rec {
     validate-email
   ];
 
-  nativeCheckInputs = [
-    factory-boy
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-    versionCheckHook
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # PermissionError: [Errno 1] Operation not permitted: '/etc/localtime'
+    "tests/unit/cli/test_types.py"
   ];
-  versionCheckProgram = "${placeholder "out"}/bin/toggl";
 
   disabledTests = [
     "integration"
@@ -79,12 +77,10 @@ buildPythonPackage rec {
     "test_type_check"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # PermissionError: [Errno 1] Operation not permitted: '/etc/localtime'
-    "tests/unit/cli/test_types.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "toggl" ];
+  pythonRelaxDeps = true;
+  versionCheckProgram = "${placeholder "out"}/bin/toggl";
 
   meta = {
     description = "Command line tool and set of Python wrapper classes for interacting with toggl's API";

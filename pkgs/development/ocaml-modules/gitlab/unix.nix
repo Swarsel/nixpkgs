@@ -1,20 +1,18 @@
 {
+  alcotest,
   buildDunePackage,
-  gitlab,
   cmdliner,
   cohttp,
   cohttp-lwt-unix,
-  tls,
+  gitlab,
   lwt,
   stringext,
-  alcotest,
+  tls,
 }:
 
 buildDunePackage {
-  pname = "gitlab-unix";
   inherit (gitlab) version src;
-
-  minimalOCamlVersion = "4.08";
+  pname = "gitlab-unix";
 
   postPatch = ''
     substituteInPlace unix/dune --replace-fail "gitlab bytes" "gitlab"
@@ -33,9 +31,9 @@ buildDunePackage {
     lwt
   ];
 
-  checkInputs = [ alcotest ];
-
   doCheck = true;
+  checkInputs = [ alcotest ];
+  minimalOCamlVersion = "4.08";
 
   meta = gitlab.meta // {
     description = "Gitlab APIv4 Unix library";

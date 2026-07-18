@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libimobiledevice,
+  libplist,
   libusb1,
   libusbmuxd,
+  pkg-config,
   usbmuxd,
-  libplist,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "usbfluxd";
@@ -20,6 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-tfAy3e2UssPlRB/8uReLS5f8N/xUUzbjs8sKNlr40T0=";
   };
+
+  postPatch = ''
+    substituteInPlace configure.ac \
+      --replace-fail 'with_static_libplist=yes' 'with_static_libplist=no'
+    substituteInPlace usbfluxd/utils.h \
+      --replace-fail PLIST_FORMAT_BINARY //PLIST_FORMAT_BINARY \
+      --replace-fail PLIST_FORMAT_XML, NOT_PLIST_FORMAT_XML
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -34,19 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
     libplist
   ];
 
-  postPatch = ''
-    substituteInPlace configure.ac \
-      --replace-fail 'with_static_libplist=yes' 'with_static_libplist=no'
-    substituteInPlace usbfluxd/utils.h \
-      --replace-fail PLIST_FORMAT_BINARY //PLIST_FORMAT_BINARY \
-      --replace-fail PLIST_FORMAT_XML, NOT_PLIST_FORMAT_XML
-  '';
-
   meta = {
-    homepage = "https://github.com/corellium/usbfluxd";
     description = "Redirects the standard usbmuxd socket to allow connections to local and remote usbmuxd instances so remote devices appear connected locally";
+    homepage = "https://github.com/corellium/usbfluxd";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "usbfluxctl";
     maintainers = with lib.maintainers; [ x807x ];
+    mainProgram = "usbfluxctl";
   };
 })

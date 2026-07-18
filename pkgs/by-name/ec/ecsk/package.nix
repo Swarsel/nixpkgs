@@ -17,14 +17,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Eyqpc7GyG/7u/I4tStADQikxcbIatjeAJN9wUDgzdFY=";
-
   subPackages = [ "cmd/ecsk" ];
 
   meta = {
     description = "Interactively call Amazon ECS APIs, copy files between ECS and local, and view logs";
-    license = lib.licenses.mit;
-    mainProgram = "ecsk";
     homepage = "https://github.com/yukiarrr/ecsk";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ whtsht ];
+    mainProgram = "ecsk";
   };
 })

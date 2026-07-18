@@ -2,36 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  openssl,
   boost,
+  cmake,
   gmp,
-  withProcps ? false,
+  openssl,
+  pkg-config,
   procps,
+  withProcps ? false,
 }:
 
 stdenv.mkDerivation {
   pname = "libsnark";
   version = "20140603-unstable-2024-02-23";
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  buildInputs = [
-    openssl
-    boost
-    gmp
-  ]
-  ++ lib.optional withProcps procps;
-
-  cmakeFlags =
-    lib.optionals (!withProcps) [ "-DWITH_PROCPS=OFF" ]
-    ++ lib.optionals (stdenv.hostPlatform.isDarwin || !stdenv.hostPlatform.isx86) [
-      "-DWITH_SUPERCOP=OFF"
-    ]
-    ++ lib.optionals (!stdenv.hostPlatform.isx86) [ "-DCURVE=ALT_BN128" ];
 
   src = fetchFromGitHub {
     owner = "scipr-lab";
@@ -48,11 +30,30 @@ stdenv.mkDerivation {
       --replace-fail "cmake_minimum_required(VERSION 2.6.4)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [
+    openssl
+    boost
+    gmp
+  ]
+  ++ lib.optional withProcps procps;
+
+  cmakeFlags =
+    lib.optionals (!withProcps) [ "-DWITH_PROCPS=OFF" ]
+    ++ lib.optionals (stdenv.hostPlatform.isDarwin || !stdenv.hostPlatform.isx86) [
+      "-DWITH_SUPERCOP=OFF"
+    ]
+    ++ lib.optionals (!stdenv.hostPlatform.isx86) [ "-DCURVE=ALT_BN128" ];
+
   meta = {
-    broken = withProcps; # Despite procps having a valid pkg-config file, CMake doesn't seem to be able to find it.
     description = "C++ library for zkSNARKs";
     homepage = "https://github.com/scipr-lab/libsnark";
     license = lib.licenses.mit;
     platforms = lib.platforms.all;
+    broken = withProcps; # Despite procps having a valid pkg-config file, CMake doesn't seem to be able to find it.
   };
 }

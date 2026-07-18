@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
-  unittestCheckHook,
   fetchFromGitHub,
+  buildPythonPackage,
   lm_sensors,
+  unittestCheckHook,
 }:
 buildPythonPackage {
-  version = "2017-07-13";
-  format = "setuptools";
   pname = "pysensors";
+  version = "2017-07-13";
 
   # note that https://pypi.org/project/PySensors/ is a different project
   src = fetchFromGitHub {
@@ -19,12 +18,11 @@ buildPythonPackage {
   };
 
   buildInputs = [ lm_sensors ];
-
   # Tests are disable because they fail on `aarch64-linux`, probably
   # due to sandboxing
   doCheck = false;
-
   nativeCheckInputs = [ unittestCheckHook ];
+  format = "setuptools";
 
   unittestFlagsArray = [
     "-s"
@@ -32,10 +30,10 @@ buildPythonPackage {
   ];
 
   meta = {
-    maintainers = with lib.maintainers; [ guibou ];
     description = "Easy hardware health monitoring in Python for Linux systems";
     homepage = "https://bastienleonard.github.io/pysensors/";
     license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ guibou ];
     platforms = lib.platforms.linux;
   };
 }

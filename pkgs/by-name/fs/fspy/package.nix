@@ -1,7 +1,7 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
 }:
 let
   pname = "fspy";
@@ -18,11 +18,11 @@ appimageTools.wrapType2 {
 
   meta = {
     description = "Cross platform app for quick and easy still image camera matching";
-    license = lib.licenses.gpl3;
     homepage = "https://fspy.io/";
-    knownVulnerabilities = [ "Vendors Electron 2.0 (end-of-life)" ];
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ polygon ];
     platforms = lib.platforms.linux;
     mainProgram = "fspy";
+    knownVulnerabilities = [ "Vendors Electron 2.0 (end-of-life)" ];
   };
 }

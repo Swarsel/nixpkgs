@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  openobex,
   bluez,
   cmake,
+  openobex,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,15 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/openobex/obexftp-${finalAttrs.version}-Source.tar.gz";
     sha256 = "18w9r78z78ri5qc8fjym4nk1jfbrkyr789sq7rxrkshf1a7b83yl";
   };
-
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-  ];
-
-  buildInputs = [ bluez ];
-
-  propagatedBuildInputs = [ openobex ];
 
   postPatch = ''
     # cmake 4 compatibility, upstream is dead
@@ -38,15 +29,23 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '\$'{prefix}/'$'{CMAKE_INSTALL_INCLUDEDIR} '$'{CMAKE_INSTALL_FULL_INCLUDEDIR}
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+  ];
+
+  buildInputs = [ bluez ];
+  propagatedBuildInputs = [ openobex ];
+
   # There's no such thing like "bluetooth" library; possibly they meant "bluez" but it links correctly without this.
   postFixup = ''
     sed -i 's,^Requires: bluetooth,Requires:,' $out/lib/pkgconfig/obexftp.pc
   '';
 
   meta = {
-    homepage = "http://dev.zuckschwerdt.org/openobex/wiki/ObexFtp";
     description = "Library and tool to access files on OBEX-based devices (such as Bluetooth phones)";
-    platforms = lib.platforms.linux;
+    homepage = "http://dev.zuckschwerdt.org/openobex/wiki/ObexFtp";
     license = lib.licenses.lgpl2Plus;
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,18 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
-  nix-update-script,
+  buildGoModule,
   gitMinimal,
+  nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "git-ls";
   version = "7.1.2";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "llimllib";
@@ -21,9 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-g+LFQEud4nF+3hRaH8JcjQHx6Ol2LDRRP2HdQ2oLfls=";
   };
 
+  strictDeps = true;
   vendorHash = "sha256-Bk6IBG+BrqY4FNVIlbSSSnqqAeL+8SJUtRXuIp4e8f8=";
-
-  ldflags = [ "-s" ];
 
   nativeCheckInputs = [
     gitMinimal
@@ -31,7 +27,8 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
+  ldflags = [ "-s" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

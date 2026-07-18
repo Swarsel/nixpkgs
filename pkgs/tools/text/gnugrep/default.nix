@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  updateAutotoolsGnuConfigScriptsHook,
-  glibcLocales,
   fetchurl,
-  pcre2,
+  glibcLocales,
   libiconv,
+  pcre2,
   perl,
   runtimeShellPackage,
+  updateAutotoolsGnuConfigScriptsHook,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -20,13 +20,18 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "gnugrep";
   inherit version;
+  pname = "gnugrep";
 
   src = fetchurl {
     url = "mirror://gnu/grep/grep-${version}.tar.xz";
     hash = "sha256-JkmyfA6Q5jLq3NdXvgbG6aT0jZQd5R58D4P/dkCKB7k=";
   };
+
+  outputs = [
+    "out"
+    "info"
+  ]; # the man pages are rather small
 
   patches = [
     # Fixes test-float-h failure on ppc64 with C23
@@ -47,21 +52,23 @@ stdenv.mkDerivation {
     else
       null;
 
-  nativeCheckInputs = [
-    perl
-    glibcLocales
-  ];
-  outputs = [
-    "out"
-    "info"
-  ]; # the man pages are rather small
-
   nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
+
   buildInputs = [
     pcre2
     libiconv
   ]
   ++ lib.optional (!stdenv.hostPlatform.isWindows) runtimeShellPackage;
+
+  env = lib.optionalAttrs (stdenv.hostPlatform.isMinGW || stdenv.hostPlatform.isCygwin) {
+    NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
+  };
+
+  # On macOS, force use of mkdir -p, since Grep's fallback
+  # (./install-sh) is broken.
+  preConfigure = ''
+    export MKDIR_P="mkdir -p"
+  '';
 
   # cygwin: FAIL: multibyte-white-space
   # freebsd: FAIL mb-non-UTF8-performance
@@ -74,13 +81,10 @@ stdenv.mkDerivation {
     && !stdenv.buildPlatform.isRiscV64
     && !stdenv.hostPlatform.isAarch32;
 
-  # On macOS, force use of mkdir -p, since Grep's fallback
-  # (./install-sh) is broken.
-  preConfigure = ''
-    export MKDIR_P="mkdir -p"
-  '';
-
-  enableParallelBuilding = true;
+  nativeCheckInputs = [
+    perl
+    glibcLocales
+  ];
 
   # Fix reference to sh in bootstrap-tools, and invoke grep via
   # absolute path rather than looking at argv[0].
@@ -93,12 +97,13 @@ stdenv.mkDerivation {
     chmod +x $out/bin/egrep $out/bin/fgrep
   '';
 
-  env = lib.optionalAttrs (stdenv.hostPlatform.isMinGW || stdenv.hostPlatform.isCygwin) {
-    NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
+  enableParallelBuilding = true;
+
+  passthru = {
+    inherit pcre2;
   };
 
   meta = {
-    homepage = "https://www.gnu.org/software/grep/";
     description = "GNU implementation of the Unix grep command";
 
     longDescription = ''
@@ -107,21 +112,21 @@ stdenv.mkDerivation {
       prints the matching lines.
     '';
 
+    homepage = "https://www.gnu.org/software/grep/";
     license = lib.licenses.gpl3Plus;
 
     maintainers = [
       lib.maintainers.das_j
       lib.maintainers.m00wl
     ];
-    teams = [ lib.teams.security-review ];
+
     platforms = lib.platforms.all;
     mainProgram = "grep";
+
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "gnu" version // {
       product = "grep";
     };
-  };
 
-  passthru = {
-    inherit pcre2;
+    teams = [ lib.teams.security-review ];
   };
 }

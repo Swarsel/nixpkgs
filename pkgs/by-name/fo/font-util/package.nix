@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  testers,
-  gitUpdater,
   autoreconfHook,
+  gitUpdater,
+  testers,
   util-macros,
 }:
 
@@ -13,12 +13,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.4.2";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "font";
     repo = "util";
     tag = "font-util-${finalAttrs.version}";
     hash = "sha256-tB6A5ezfHwzhL3HsWPZjX3/d53Zkm4hBFbxOnTUgNZc=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   nativeBuildInputs = [
@@ -27,16 +27,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = gitUpdater {
-      rev-prefix = "font-util-";
-      ignoredVersions = "1_0_1";
-    };
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
+    updateScript = gitUpdater {
+      ignoredVersions = "1_0_1";
+      rev-prefix = "font-util-";
+    };
   };
 
   meta = {
     description = "X.Org font package creation/installation utilities";
     homepage = "https://gitlab.freedesktop.org/xorg/font/util";
+
     license = with lib.licenses; [
       mit
       bsd2
@@ -47,8 +49,9 @@ stdenv.mkDerivation (finalAttrs: {
       # or its an older version that the one on spdx
       unicodeTOU
     ];
+
     maintainers = [ ];
-    pkgConfigModules = [ "fontutil" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "fontutil" ];
   };
 })

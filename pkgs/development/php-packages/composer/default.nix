@@ -1,20 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  callPackage,
-  php,
-  makeBinaryWrapper,
   _7zz,
+  callPackage,
   curl,
   gitMinimal,
+  makeBinaryWrapper,
+  php,
   unzip,
-  xz,
   versionCheckHook,
+  xz,
 }:
 php.buildComposerProject2 (finalAttrs: {
   pname = "composer";
   version = "2.10.2";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "composer";
@@ -26,13 +25,6 @@ php.buildComposerProject2 (finalAttrs: {
   nativeBuildInputs = [
     makeBinaryWrapper
   ];
-
-  # Bootstrapping Composer (source) with Composer (PHAR distribution).
-  # Override the default `composer` attribute to prevent infinite recursion.
-  composer = callPackage ../../../build-support/php/pkgs/composer-phar.nix {
-    inherit (finalAttrs) version;
-    inherit (finalAttrs.passthru) pharHash;
-  };
 
   vendorHash = "sha256-0reKbGJEFJTQ2XnfsGij7nWICURLEHWJxjsYzanHpgs=";
 
@@ -51,6 +43,14 @@ php.buildComposerProject2 (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  # Bootstrapping Composer (source) with Composer (PHAR distribution).
+  # Override the default `composer` attribute to prevent infinite recursion.
+  composer = callPackage ../../../build-support/php/pkgs/composer-phar.nix {
+    inherit (finalAttrs) version;
+    inherit (finalAttrs.passthru) pharHash;
+  };
 
   # Hash used by ../../../build-support/php/pkgs/composer-phar.nix to
   # use together with the version from this package to keep the
@@ -59,9 +59,9 @@ php.buildComposerProject2 (finalAttrs: {
   passthru.pharHash = "sha256-XucSX4owo00kbO/cC8hbing7KPKuyWiZQRhRI1DSgCc=";
 
   meta = {
-    changelog = "https://github.com/composer/composer/releases/tag/${finalAttrs.version}";
     description = "Dependency Manager for PHP";
     homepage = "https://getcomposer.org/";
+    changelog = "https://github.com/composer/composer/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     mainProgram = "composer";
     teams = [ lib.teams.php ];

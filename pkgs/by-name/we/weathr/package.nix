@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,17 +25,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_weather_client_integration_realistic_weather_ranges"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Terminal weather app with ascii animation";
     homepage = "https://github.com/veirt/weathr";
     license = with lib.licenses; [ gpl3Plus ];
+
     maintainers = with lib.maintainers; [
       sudo-mac
       phanirithvij
     ];
+
     mainProgram = "weathr";
   };
 })

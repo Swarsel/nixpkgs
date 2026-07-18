@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  shellspec,
   busybox-sandbox-shell,
   ksh,
   mksh,
+  shellspec,
+  stdenvNoCC,
   yash,
   zsh,
 }:
@@ -22,7 +22,6 @@ stdenvNoCC.mkDerivation rec {
   };
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -50,7 +49,7 @@ stdenvNoCC.mkDerivation rec {
     description = "Elegant option/argument parser for shell scripts (full support for bash and all POSIX shells)";
     homepage = "https://github.com/ko1nksm/getoptions";
     license = lib.licenses.cc0;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ matrss ];
+    platforms = lib.platforms.all;
   };
 }

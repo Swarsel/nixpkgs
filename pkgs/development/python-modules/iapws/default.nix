@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "iapws";
   version = "1.5.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ scipy ];
+  format = "setuptools";
 
   meta = {
     description = "Python implementation of standard from IAPWS";

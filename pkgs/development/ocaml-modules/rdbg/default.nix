@@ -1,27 +1,16 @@
 {
   lib,
-  ocaml,
-  buildDunePackage,
   fetchurl,
-  num,
+  buildDunePackage,
   lutils,
+  num,
+  ocaml,
   ounit,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "rdbg";
   version = "1.199.0";
-
-  env =
-    # Fix build with gcc15
-    lib.optionalAttrs
-      (
-        lib.versionAtLeast ocaml.version "4.10" && lib.versionOlder ocaml.version "4.14"
-        || lib.versions.majorMinor ocaml.version == "5.0"
-      )
-      {
-        NIX_CFLAGS_COMPILE = "-std=gnu11";
-      };
 
   src = fetchurl {
     url = "https://www-verimag.imag.fr/DIST-TOOLS/SYNCHRONE/pool/rdbg.v${finalAttrs.version}.tgz";
@@ -37,9 +26,20 @@ buildDunePackage (finalAttrs: {
     lutils
   ];
 
+  env =
+    # Fix build with gcc15
+    lib.optionalAttrs
+      (
+        lib.versionAtLeast ocaml.version "4.10" && lib.versionOlder ocaml.version "4.14"
+        || lib.versions.majorMinor ocaml.version == "5.0"
+      )
+      {
+        NIX_CFLAGS_COMPILE = "-std=gnu11";
+      };
+
   meta = {
-    homepage = "https://gricad-gitlab.univ-grenoble-alpes.fr/verimag/synchrone/rdbg";
     description = "Programmable debugger that targets reactive programs for which a rdbg-plugin exists. Currently two plugins exist : one for Lustre, and one for Lutin (nb: both are synchronous programming languages)";
+    homepage = "https://gricad-gitlab.univ-grenoble-alpes.fr/verimag/synchrone/rdbg";
     license = lib.licenses.cecill21;
     maintainers = [ lib.maintainers.delta ];
   };

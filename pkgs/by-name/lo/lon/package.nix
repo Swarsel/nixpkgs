@@ -1,11 +1,11 @@
 {
-  rustPlatform,
   lib,
   fetchFromGitHub,
+  gitMinimal,
   makeBinaryWrapper,
   nix-prefetch-git,
-  gitMinimal,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,11 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-bxu83mbdfAeDZYOnjZQYyjTs5WgZS8o6Q2irlzgbYs0=";
   };
 
-  sourceRoot = "source/rust/lon";
-
-  cargoHash = "sha256-x+qxn0s64fPJpTG/d0PgzAdzMXegYdnsC1FFFuBpsaI=";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  cargoHash = "sha256-x+qxn0s64fPJpTG/d0PgzAdzMXegYdnsC1FFFuBpsaI=";
 
   postInstall = ''
     wrapProgram $out/bin/lon --prefix PATH : ${
@@ -34,6 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }
   '';
 
+  sourceRoot = "source/rust/lon";
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -42,11 +41,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Lock & update Nix dependencies";
     homepage = "https://github.com/nikstur/lon";
     changelog = "https://github.com/nikstur/lon/blob/${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ma27
       nikstur
     ];
-    license = lib.licenses.mit;
+
     mainProgram = "lon";
   };
 })

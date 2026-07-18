@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
-  pkgs,
-  nodejs,
   stdenv,
+  fetchFromGitHub,
+  callPackage,
+  nodejs,
+  pkgs,
   testers,
   yarn,
-  callPackage,
   berryVersion ? 4,
 }:
 
@@ -28,18 +28,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = if berryVersion == 4 then hash_4 else hash_3;
   };
 
-  buildInputs = [
-    nodejs
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     nodejs
     yarn
   ];
 
-  strictDeps = true;
-
-  dontConfigure = true;
+  buildInputs = [
+    nodejs
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -53,9 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru = {
-    updateScript = ./update.sh;
+  dontConfigure = true;
 
+  passthru = {
     tests =
       let
         packageTests =
@@ -81,19 +79,23 @@ stdenv.mkDerivation (finalAttrs: {
           package = finalAttrs.finalPackage;
         };
       };
+
+    updateScript = ./update.sh;
   }
   // (callPackage ./fetcher { yarn-berry = finalAttrs; });
 
   meta = {
+    description = "Fast, reliable, and secure dependency management";
     homepage = "https://yarnpkg.com/";
     changelog = "https://github.com/yarnpkg/berry/releases/tag/${finalAttrs.src.tag}";
-    description = "Fast, reliable, and secure dependency management";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       ryota-ka
       pyrox0
       DimitarNestorov
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "yarn";
   };

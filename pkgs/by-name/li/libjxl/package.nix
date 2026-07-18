@@ -1,27 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  asciidoc,
   brotli,
   cmake,
   ctestCheckHook,
+  doxygen,
+  gdk-pixbuf,
   giflib,
   gperftools,
+  graphviz,
   gtest,
+  lcms2,
   libhwy,
   libjpeg,
   libpng,
   libwebp,
-  gdk-pixbuf,
+  makeWrapper,
   openexr,
   pkg-config,
-  makeWrapper,
-  zlib,
-  asciidoc,
-  graphviz,
-  doxygen,
   python3,
-  lcms2,
+  zlib,
   enablePlugins ? true,
 }:
 
@@ -33,13 +33,6 @@ stdenv.mkDerivation rec {
   pname = "libjxl";
   version = "0.11.2";
 
-  outputs = [
-    "out"
-    "bin"
-    "dev"
-    "benchmark"
-  ];
-
   src = fetchFromGitHub {
     owner = "libjxl";
     repo = "libjxl";
@@ -48,6 +41,28 @@ stdenv.mkDerivation rec {
     # There are various submodules in `third_party/`.
     fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "bin"
+    "dev"
+    "benchmark"
+  ];
+
+  # the second substitution fix regex for a2x script
+  # https://github.com/libjxl/libjxl/pull/3842
+  postPatch = ''
+    # Make sure we do not accidentally build against some of the vendored dependencies
+    # If it asks you to "run deps.sh to fetch the build dependencies", then you are probably missing a JPEGXL_FORCE_SYSTEM_* flag
+    shopt -s extglob
+    rm -rf third_party/!(sjpeg)/
+    shopt -u extglob
+
+    substituteInPlace plugins/gdk-pixbuf/jxl.thumbnailer \
+      --replace '/usr/bin/gdk-pixbuf-thumbnailer' "$out/libexec/gdk-pixbuf-thumbnailer-jxl"
+    substituteInPlace CMakeLists.txt \
+      --replace 'sh$' 'sh( -e$|$)'
+  '';
 
   strictDeps = true;
 
@@ -61,23 +76,17 @@ stdenv.mkDerivation rec {
     python3
   ];
 
-  depsBuildBuild = [
-    graphviz
-  ];
-
   # Functionality not currently provided by this package
   # that the cmake build can apparently use:
   #     OpenGL/GLUT (for Examples -> comparison with sjpeg)
   #     viewer (see `cmakeFlags`)
   #     plugins like for GDK and GIMP (see `cmakeFlags`)
-
   # Vendored libraries:
   # `libjxl` currently vendors many libraries as git submodules that they
   # might patch often (e.g. test/gmock, see
   # https://github.com/NixOS/nixpkgs/pull/103160#discussion_r519487734).
   # When it has stabilised in the future, we may want to tell the build
   # to use use nixpkgs system libraries.
-
   # As of writing, libjxl does not point out all its dependencies
   # conclusively in its README or otherwise; they can best be determined
   # by checking the CMake output for "Could NOT find".
@@ -97,10 +106,6 @@ stdenv.mkDerivation rec {
   propagatedBuildInputs = [
     brotli
     libhwy
-  ];
-
-  nativeCheckInputs = [
-    ctestCheckHook
   ];
 
   cmakeFlags = [
@@ -137,20 +142,17 @@ stdenv.mkDerivation rec {
     "-DJPEGXL_FORCE_NEON=ON"
   ];
 
-  # the second substitution fix regex for a2x script
-  # https://github.com/libjxl/libjxl/pull/3842
-  postPatch = ''
-    # Make sure we do not accidentally build against some of the vendored dependencies
-    # If it asks you to "run deps.sh to fetch the build dependencies", then you are probably missing a JPEGXL_FORCE_SYSTEM_* flag
-    shopt -s extglob
-    rm -rf third_party/!(sjpeg)/
-    shopt -u extglob
+  env = lib.optionalAttrs stdenv.hostPlatform.isAarch32 {
+    CXXFLAGS = "-mfp16-format=ieee";
+  };
 
-    substituteInPlace plugins/gdk-pixbuf/jxl.thumbnailer \
-      --replace '/usr/bin/gdk-pixbuf-thumbnailer' "$out/libexec/gdk-pixbuf-thumbnailer-jxl"
-    substituteInPlace CMakeLists.txt \
-      --replace 'sh$' 'sh( -e$|$)'
-  '';
+  # FIXME x86_64-darwin:
+  # https://github.com/NixOS/nixpkgs/pull/204030#issuecomment-1352768690
+  doCheck = with stdenv; !(hostPlatform.isi686 || isDarwin && isx86_64);
+
+  nativeCheckInputs = [
+    ctestCheckHook
+  ];
 
   # Move `benchmark_xl` into a separate output to avoid a file collision
   # with the `benchmark_xl` binary provided by `jpegli`.
@@ -169,13 +171,16 @@ stdenv.mkDerivation rec {
       --set GDK_PIXBUF_MODULE_FILE "$out/${loadersPath}"
   '';
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isAarch32 {
-    CXXFLAGS = "-mfp16-format=ieee";
-  };
+  ctestFlags = lib.optionals stdenv.hostPlatform.isBigEndian [
+    # https://github.com/libjxl/libjxl/issues/3629
+    # These didn't seem to be accepted via disabledTests
+    "--exclude-regex"
+    ".*bitSqueeze.*"
+  ];
 
-  # FIXME x86_64-darwin:
-  # https://github.com/NixOS/nixpkgs/pull/204030#issuecomment-1352768690
-  doCheck = with stdenv; !(hostPlatform.isi686 || isDarwin && isx86_64);
+  depsBuildBuild = [
+    graphviz
+  ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isBigEndian [
     # https://github.com/libjxl/libjxl/issues/3629
@@ -194,16 +199,9 @@ stdenv.mkDerivation rec {
     "PassesTest.ProgressiveDownsample2DegradesCorrectly"
   ];
 
-  ctestFlags = lib.optionals stdenv.hostPlatform.isBigEndian [
-    # https://github.com/libjxl/libjxl/issues/3629
-    # These didn't seem to be accepted via disabledTests
-    "--exclude-regex"
-    ".*bitSqueeze.*"
-  ];
-
   meta = {
-    homepage = "https://github.com/libjxl/libjxl";
     description = "JPEG XL image format reference implementation";
+    homepage = "https://github.com/libjxl/libjxl";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ nh2 ];
     platforms = lib.platforms.all;

@@ -1,6 +1,6 @@
 {
-  fetchgit,
   lib,
+  fetchgit,
   rustPlatform,
 }:
 
@@ -15,16 +15,17 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-n3VxmR+bjFN/mEJ/SuDYQJWcndR7QFmcVJdZhSHDdmQ=";
-
   __structuredAttrs = true;
 
   meta = {
     description = "Prompts for a password and prints the pbkdf2 hash";
     homepage = "https://git.sr.ht/~laalsaas/pbkdf2-password-hash";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       felixsinger
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "pbkdf2-hash-password";
   };

@@ -1,22 +1,21 @@
 {
   lib,
-  bash,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  discordpy,
-  click,
+  bash,
   braceexpand,
+  buildPythonPackage,
+  click,
+  discordpy,
   import-expression,
-  tabulate,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
+  tabulate,
   typing-extensions,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "jishaku";
   version = "2.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Gorialis";
@@ -30,6 +29,11 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"/bin/bash"' '"${lib.getExe bash}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -41,10 +45,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "jishaku"
@@ -56,8 +57,8 @@ buildPythonPackage (finalAttrs: {
     description = "Debugging and testing cog for discord.py bots";
     homepage = "https://jishaku.readthedocs.io/en/latest";
     changelog = "https://github.com/Gorialis/jishaku/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "jishaku";
-    license = lib.licenses.mit;
   };
 })

@@ -18,14 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = lib.optional stdenv.hostPlatform.isFreeBSD evdev-proto;
 
   passthru.updateScript = gitUpdater {
-    url = "https://bitmath.org/git/mtdev.git";
     rev-prefix = "v";
+    url = "https://bitmath.org/git/mtdev.git";
   };
 
   meta = {
-    homepage = "https://bitmath.org/code/mtdev/";
     description = "Multitouch Protocol Translation Library";
-    mainProgram = "mtdev-test";
+
     longDescription = ''
       The mtdev is a stand-alone library which transforms all variants of
       kernel MT events to the slotted type B protocol. The events put into
@@ -33,7 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
       tracking, type A with contact tracking, or type B with contact tracking.
       See the kernel documentation for further details.
     '';
+
+    homepage = "https://bitmath.org/code/mtdev/";
     license = lib.licenses.mit;
     platforms = with lib.platforms; freebsd ++ linux;
+    mainProgram = "mtdev-test";
   };
 })

@@ -1,17 +1,15 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   js_of_ocaml,
-  lwt_ppx,
   lwt,
+  lwt_ppx,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "ocsipersist-lib";
   version = "2.1.0";
-
-  minimalOCamlVersion = "4.13";
 
   src = fetchFromGitHub {
     owner = "ocsigen";
@@ -21,15 +19,18 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ lwt_ppx ];
+
   propagatedBuildInputs = [
     js_of_ocaml
     lwt
   ];
 
+  minimalOCamlVersion = "4.13";
+
   meta = {
     description = "Persistent key/value storage (for Ocsigen) - support library";
+    homepage = "https://github.com/ocsigen/ocsipersist/";
     license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.vbgl ];
-    homepage = "https://github.com/ocsigen/ocsipersist/";
   };
 })

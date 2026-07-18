@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   meson,
   ninja,
+  pkg-config,
   writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -38,13 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "VESA CVT standard timing modeline generation library & utility";
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxcvt";
+
     license = with lib.licenses; [
       mit
       hpndSellVariant
     ];
-    mainProgram = "cvt";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
     badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
+    mainProgram = "cvt";
   };
 })

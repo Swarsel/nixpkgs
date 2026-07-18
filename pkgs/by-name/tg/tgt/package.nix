@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  libxslt,
-  libaio,
-  systemd,
-  perl,
-  docbook_xsl,
   coreutils,
+  docbook_xsl,
+  libaio,
+  libxslt,
   lsof,
   makeWrapper,
+  perl,
   sg3_utils,
+  systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,15 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=maybe-uninitialized"
   ];
 
-  hardeningDisable = lib.optionals stdenv.hostPlatform.isAarch64 [
-    # error: 'read' writing 1 byte into a region of size 0 overflows the destination
-    "fortify3"
-  ];
-
-  installFlags = [
-    "sysconfdir=${placeholder "out"}/etc"
-  ];
-
   preConfigure = ''
     sed -i 's|/usr/bin/||' doc/Makefile
     sed -i 's|/usr/include/libaio.h|${libaio}/include/libaio.h|' usr/Makefile
@@ -81,11 +72,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  hardeningDisable = lib.optionals stdenv.hostPlatform.isAarch64 [
+    # error: 'read' writing 1 byte into a region of size 0 overflows the destination
+    "fortify3"
+  ];
+
+  installFlags = [
+    "sysconfdir=${placeholder "out"}/etc"
+  ];
+
   meta = {
     description = "iSCSI Target daemon with RDMA support";
     homepage = "https://github.com/fujita/tgt";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ johnazoidberg ];
+    platforms = lib.platforms.linux;
   };
 })

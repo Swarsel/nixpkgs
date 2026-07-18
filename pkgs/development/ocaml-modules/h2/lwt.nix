@@ -1,14 +1,13 @@
 {
   buildDunePackage,
+  gluten-lwt,
   h2,
   lwt,
-  gluten-lwt,
 }:
 
 buildDunePackage {
-  pname = "h2-lwt";
-
   inherit (h2) src version;
+  pname = "h2-lwt";
 
   propagatedBuildInputs = [
     lwt

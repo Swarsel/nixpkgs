@@ -1,11 +1,11 @@
 {
   lib,
+  common-updater-scripts,
+  curl,
   fetchzip,
   stdenvNoCC,
   writeShellApplication,
-  curl,
   xmlstarlet,
-  common-updater-scripts,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -13,16 +13,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   version = "2.1.39";
 
   src = fetchzip {
-    extension = "zip";
-    name = "Last.fm.app";
     url = "https://cdn.last.fm/client/Mac/Last.fm-${finalAttrs.version}.zip";
     hash = "sha256-jxFh0HbY4g5xcvAI20b92dL1FRvRqPwBBa0Cv9k63+s=";
+    extension = "zip";
+    name = "Last.fm.app";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -33,13 +28,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "lastfm-update-script";
+
     runtimeInputs = [
       curl
       xmlstarlet
       common-updater-scripts
     ];
+
     text = ''
       url=$(curl --silent "https://cdn.last.fm/client/Mac/updates.xml")
       version=$(echo "$url" | xmlstarlet sel -t -v "substring-before(substring-after(//enclosure/@url, 'version='), '&')")
@@ -51,8 +52,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Music services manager";
     homepage = "https://www.last.fm/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ iivusly ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

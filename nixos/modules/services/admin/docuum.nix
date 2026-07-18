@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   utils,
   ...
 }:
@@ -22,32 +22,32 @@ in
   options.services.docuum = {
     enable = mkEnableOption "docuum daemon";
 
-    threshold = mkOption {
-      description = "Threshold for deletion in bytes, like `10 GB`, `10 GiB`, `10GB` or percentage-based thresholds like `50%`";
-      type = types.str;
-      default = "10 GB";
-      example = "50%";
-    };
-
-    minAge = mkOption {
-      description = "Sets the minimum age of images to be considered for deletion.";
-      type = types.nullOr types.str;
-      default = null;
-      example = "1d";
+    deletionChunkSize = mkOption {
+      default = 1;
+      description = "Removes specified quantity of images at a time.";
+      example = 10;
+      type = types.int;
     };
 
     keep = mkOption {
-      description = "Prevents deletion of images for which repository:tag matches the specified regex.";
-      type = types.listOf types.str;
       default = [ ];
+      description = "Prevents deletion of images for which repository:tag matches the specified regex.";
       example = [ "^my-image" ];
+      type = types.listOf types.str;
     };
 
-    deletionChunkSize = mkOption {
-      description = "Removes specified quantity of images at a time.";
-      type = types.int;
-      default = 1;
-      example = 10;
+    minAge = mkOption {
+      default = null;
+      description = "Sets the minimum age of images to be considered for deletion.";
+      example = "1d";
+      type = types.nullOr types.str;
+    };
+
+    threshold = mkOption {
+      default = "10 GB";
+      description = "Threshold for deletion in bytes, like `10 GB`, `10 GiB`, `10GB` or percentage-based thresholds like `50%`";
+      example = "50%";
+      type = types.str;
     };
   };
 
@@ -61,15 +61,13 @@ in
 
     systemd.services.docuum = {
       after = [ "docker.socket" ];
-      requires = [ "docker.socket" ];
-      wantedBy = [ "multi-user.target" ];
-      path = [ config.virtualisation.docker.package ];
       environment.HOME = "/var/lib/docuum";
+      path = [ config.virtualisation.docker.package ];
+      requires = [ "docker.socket" ];
 
       serviceConfig = {
         DynamicUser = true;
-        StateDirectory = "docuum";
-        SupplementaryGroups = [ "docker" ];
+
         ExecStart = utils.escapeSystemdExecArgs (
           [
             (getExe pkgs.docuum)
@@ -87,7 +85,12 @@ in
             cfg.minAge
           ])
         );
+
+        StateDirectory = "docuum";
+        SupplementaryGroups = [ "docker" ];
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

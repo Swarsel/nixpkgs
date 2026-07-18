@@ -4,9 +4,9 @@
   fetchurl,
   beamMinimalPackages,
   icu,
+  nixosTests,
   openssl,
   python3,
-  nixosTests,
 }:
 
 stdenv.mkDerivation rec {
@@ -37,8 +37,6 @@ stdenv.mkDerivation rec {
     (python3.withPackages (ps: with ps; [ requests ]))
   ];
 
-  dontAddPrefix = "True";
-
   configureFlags = [
     "--js-engine=quickjs"
     "--disable-spidermonkey"
@@ -61,6 +59,8 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontAddPrefix = "True";
+
   passthru.tests = {
     inherit (nixosTests) couchdb;
   };
@@ -69,7 +69,7 @@ stdenv.mkDerivation rec {
     description = "Database that uses JSON for documents, JavaScript for MapReduce queries, and regular HTTP for an API";
     homepage = "https://couchdb.apache.org";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

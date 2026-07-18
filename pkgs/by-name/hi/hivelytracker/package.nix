@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   SDL,
   SDL_image,
   SDL_ttf,
   gtk3,
+  pkg-config,
   wrapGAppsHook3,
 }:
 
@@ -50,9 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.hivelytracker.co.uk/";
-    downloadPage = "http://www.hivelytracker.co.uk/downl.php";
     description = "Chip music tracker based upon the AHX format";
+
     longDescription = ''
       Hively Tracker is a tracker program based upon the AHX format created in
       the mid '90s by Dexter and Pink of Abyss. The format was relatively
@@ -63,10 +62,13 @@ stdenv.mkDerivation (finalAttrs: {
       format, but it also improves on AHX in several ways and therefore has
       its own instrument and module formats.
     '';
+
+    homepage = "http://www.hivelytracker.co.uk/";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
     mainProgram = "hivelytracker";
-    maintainers = with lib.maintainers; [ fgaz ];
     broken = stdenv.hostPlatform.isDarwin; # TODO: try to use xcbuild
+    downloadPage = "http://www.hivelytracker.co.uk/downl.php";
   };
 })

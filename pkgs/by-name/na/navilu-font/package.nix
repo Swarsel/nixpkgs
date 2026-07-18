@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fontforge,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -17,12 +17,9 @@ stdenvNoCC.mkDerivation rec {
   };
 
   nativeBuildInputs = [ fontforge ];
-
-  dontConfigure = true;
-
   preBuild = "patchShebangs generate.pe";
-
   installPhase = "install -Dm444 -t $out/share/fonts/truetype/ Navilu.ttf";
+  dontConfigure = true;
 
   meta =
 

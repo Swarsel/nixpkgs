@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,8 +23,8 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "RabbitMQ wire tap and swiss army knife";
-    license = lib.licenses.gpl3Only;
     homepage = "https://github.com/jandelgado/rabtap";
+    license = lib.licenses.gpl3Only;
     maintainers = [ ];
   };
 })

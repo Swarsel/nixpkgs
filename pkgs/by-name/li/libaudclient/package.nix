@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  glib,
   dbus-glib,
+  glib,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glib
     dbus-glib

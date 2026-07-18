@@ -27,8 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fZ0WFgOTj8Gw8IT5O8DnuaNyZscKpg6B94m+l5UoZGc";
   };
 
-  setupHooks = ./kyua-check-hook.sh;
-
   postPatch = ''
     # Fix a linking error on Darwin. Embedding an archive in an archive isn’t portable.
     substituteInPlace cli/Makefile.am.inc \
@@ -74,18 +72,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  buildInputs = [
-    lutok
-    sqlite
-  ];
-
   nativeBuildInputs = [
     atf'
     autoreconfHook
     pkg-config
   ];
 
-  enableParallelBuilding = true;
+  buildInputs = [
+    lutok
+    sqlite
+  ];
 
   makeFlags = [
     # Kyua isn’t compatible with C++17, which is the default on current clang and GCC.
@@ -93,8 +89,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doInstallCheck = true;
-
-  installCheckInputs = [ atf' ];
   nativeInstallCheckInputs = [ sqlite ];
 
   installCheckPhase = ''
@@ -103,17 +97,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  passthru.updateScript = unstableGitUpdater { tagPrefix = "kyua-"; };
-
   __structuredAttrs = true;
+  enableParallelBuilding = true;
+  installCheckInputs = [ atf' ];
+  setupHooks = ./kyua-check-hook.sh;
+  passthru.updateScript = unstableGitUpdater { tagPrefix = "kyua-"; };
 
   meta = {
     description = "Testing framework for infrastructure software";
     homepage = "https://github.com/freebsd/kyua/";
     changelog = "https://github.com/freebsd/kyua/blob/master/NEWS.md";
     license = lib.licenses.bsd3;
-    mainProgram = "kyua";
     maintainers = with lib.maintainers; [ reckenrode ];
     platforms = lib.platforms.unix;
+    mainProgram = "kyua";
   };
 })

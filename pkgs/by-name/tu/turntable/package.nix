@@ -1,25 +1,24 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   desktop-file-utils,
-  libadwaita,
-  libsoup_3,
+  fetchFromCodeberg,
+  glib-networking,
+  glycin-loaders,
   json-glib,
-  libsecret,
+  libadwaita,
   libglycin,
   libglycin-gtk4,
   libportal,
   libportal-gtk4,
-  glib-networking,
-  glycin-loaders,
+  libsecret,
+  libsoup_3,
+  meson,
+  ninja,
   nix-update-script,
-
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
   # Per the upstream request. Key owned by Aleksana
   lastfmKey ? "b5027c5178ca2abfcc31bd04397c3c0e",
   lastfmSecret ? "8d375bdee925a2a35f241c04272bc862",
@@ -35,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-OXZjCkVf1XOh1joDE5SBKaQmblfu+zNr+EXaqWP7HhM=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -63,12 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "lastfm_secret" lastfmSecret)
   ];
 
-  strictDeps = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Scrobbles your music to multiple services with playback controls for MPRIS players";
+
     longDescription = ''
       Keep track of your listening habits by scrobbling them
       to last.fm, ListenBrainz, Libre.fm and Maloja at the
@@ -80,10 +80,11 @@ stdenv.mkDerivation (finalAttrs: {
       your scrobbling accounts. All MPRIS-enabled apps are
       supported.
     '';
+
     homepage = "https://turntable.geopjr.dev";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ aleksana ];
-    mainProgram = "dev.geopjr.Turntable";
     platforms = lib.platforms.linux;
+    mainProgram = "dev.geopjr.Turntable";
   };
 })

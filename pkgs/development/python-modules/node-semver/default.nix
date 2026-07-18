@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "node-semver";
   version = "0.9.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "podhmo";
@@ -18,13 +17,13 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "nodesemver" ];
 
   meta = {
-    changelog = "https://github.com/podhmo/python-node-semver/blob/${version}/CHANGES.txt";
     description = "Port of node-semver";
     homepage = "https://github.com/podhmo/python-semver";
+    changelog = "https://github.com/podhmo/python-node-semver/blob/${version}/CHANGES.txt";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

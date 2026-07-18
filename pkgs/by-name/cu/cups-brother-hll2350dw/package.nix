@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  coreutils,
+  dpkg,
+  file,
+  ghostscript,
+  gnugrep,
+  gnused,
   makeWrapper,
   perl,
-  gnused,
-  ghostscript,
-  file,
-  coreutils,
-  gnugrep,
   which,
 }:
 
@@ -35,19 +35,18 @@ stdenv.mkDerivation rec {
   pname = "cups-brother-hll2350dw";
   version = "4.0.0-1";
 
+  src = fetchurl {
+    url = "https://download.brother.com/welcome/dlf103566/hll2350dwpdrv-${version}.i386.deb";
+    sha256 = "0b7hhln105agc3rwpi7cjlx5nf4d2yk9iksahdv3725nnd06lg46";
+  };
+
   nativeBuildInputs = [
     dpkg
     makeWrapper
     autoPatchelfHook
   ];
+
   buildInputs = [ perl ];
-
-  dontUnpack = true;
-
-  src = fetchurl {
-    url = "https://download.brother.com/welcome/dlf103566/hll2350dwpdrv-${version}.i386.deb";
-    sha256 = "0b7hhln105agc3rwpi7cjlx5nf4d2yk9iksahdv3725nnd06lg46";
-  };
 
   installPhase = ''
     runHook preInstall
@@ -94,13 +93,15 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother HL-L2350DW printer driver";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ lib.maintainers.sternenseemann ];
     platforms = map (arch: "${arch}-linux") arches;
     downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=us_ot&lang=en&prod=hll2350dw_us_eu_as&os=128";
-    maintainers = [ lib.maintainers.sternenseemann ];
   };
 }

@@ -2,17 +2,16 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   numpy,
   pyparsing,
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "periodictable";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-periodictable";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-nI6hiLnqmVXT06pPkHCBEMTxZhfnZJqSImW3V9mJ4+8=";
   };
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     pyparsing
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "periodictable" ];
 
   meta = {

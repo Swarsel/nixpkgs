@@ -1,15 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "aqtinstall";
   version = "3.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "miurahr";
@@ -18,15 +16,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-CXG8GH1MSS2HhDA/SnqQP7mQG+/OfZ5P6JRG8ZIVlLs=";
   };
 
-  build-system = with python3Packages; [
-    setuptools
-    setuptools-scm
-  ];
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail '"bs4"' '"beautifulsoup4"'
   '';
+
+  # Tests require network access
+  doCheck = false;
+  __structuredAttrs = true;
+
+  build-system = with python3Packages; [
+    setuptools
+    setuptools-scm
+  ];
 
   dependencies = with python3Packages; [
     beautifulsoup4
@@ -39,9 +41,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     texttable
   ];
 
-  # Tests require network access
-  doCheck = false;
-
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

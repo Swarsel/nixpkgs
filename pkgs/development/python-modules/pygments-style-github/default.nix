@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "pygments-style-github";
   version = "0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-D8q9IxR9VMhiQPYhZ4xTyZin3vqg0naRHB8t7wpF9Kc=";
   };
 
+  propagatedBuildInputs = [ pygments ];
   # no tests exist on upstream repo
   doCheck = false;
-
-  propagatedBuildInputs = [ pygments ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pygments_style_github" ];
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   python3,
   rsync,
-  nix-update-script,
 }:
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ietf-cli";
   version = "1.29";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "paulehoffman";
@@ -16,6 +15,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-xpwUUyTq/8WOUjssNkXOvxBYPgL7pmVVPz6abKetVc8=";
   };
+
   buildInputs = [ rsync ];
 
   installPhase = ''
@@ -26,14 +26,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command-line interface for accessing IETF documents and other information";
-    mainProgram = "ietf";
     homepage = "https://github.com/paulehoffman/ietf-cli";
     license = lib.licenses.wtfpl;
     maintainers = with lib.maintainers; [ lilioid ];
     platforms = lib.lists.intersectLists python3.meta.platforms rsync.meta.platforms;
+    mainProgram = "ietf";
   };
 })

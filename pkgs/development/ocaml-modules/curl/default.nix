@@ -1,16 +1,16 @@
 {
-  buildDunePackage,
-  pkg-config,
-  dune-configurator,
-  fetchurl,
   lib,
+  fetchurl,
+  buildDunePackage,
   curl,
+  dune-configurator,
+  pkg-config,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "curl";
   version = "0.10.0";
-  minimalOCamlVersion = "4.11";
+
   src = fetchurl {
     url = "https://github.com/ygrek/ocurl/releases/download/${finalAttrs.version}/curl-${finalAttrs.version}.tbz";
     hash = "sha256-wU4hX9p/lCkqdY2a6Q97y8IVZMkZGQBkAR/M3PehKRQ=";
@@ -18,11 +18,13 @@ buildDunePackage (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     curl
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "4.11";
 
   meta = {
     description = "Bindings to libcurl";

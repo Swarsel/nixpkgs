@@ -18,13 +18,6 @@ stdenv.mkDerivation {
     hash = "sha256-iwESQgvt9gLQeDKVkf9KcztQmjdCLOE0+Q0FlfbbjEU=";
   };
 
-  preBuild = ''
-    mkdir -p $out/bin
-    mkdir -p $out/share/man
-
-    substituteInPlace src/Makefile --replace '/usr/local/src/mdk4' '$out'
-  '';
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -37,13 +30,20 @@ stdenv.mkDerivation {
     "SBINDIR=$(PREFIX)/bin"
   ];
 
+  preBuild = ''
+    mkdir -p $out/bin
+    mkdir -p $out/share/man
+
+    substituteInPlace src/Makefile --replace '/usr/local/src/mdk4' '$out'
+  '';
+
   enableParallelBuilding = true;
 
   meta = {
     description = "Tool that injects data into wireless networks";
     homepage = "https://github.com/aircrack-ng/mdk4";
-    maintainers = with lib.maintainers; [ moni ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ moni ];
     mainProgram = "mdk4";
   };
 }

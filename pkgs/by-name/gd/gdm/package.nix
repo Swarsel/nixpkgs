@@ -2,36 +2,36 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  replaceVars,
-  meson,
-  ninja,
-  pkg-config,
-  glib,
-  json-glib,
-  itstool,
   accountsservice,
-  libx11,
-  libxdmcp,
-  libxcb,
-  gnome,
-  systemd,
+  audit,
+  coreutils,
+  dbus,
   dconf,
+  fetchpatch,
+  glib,
+  gnome,
+  gobject-introspection,
   gtk3,
-  pam,
+  itstool,
+  json-glib,
+  keyutils,
   libgudev,
   libselinux,
-  keyutils,
-  audit,
-  gobject-introspection,
+  libx11,
+  libxcb,
+  libxdmcp,
+  meson,
+  ninja,
+  nixos-icons,
+  pam,
+  pkg-config,
   plymouth,
   polkit,
-  coreutils,
-  xorg-server,
-  dbus,
-  nixos-icons,
+  replaceVars,
   runCommand,
+  systemd,
   udevCheckHook,
+  xorg-server,
 }:
 
 let
@@ -46,54 +46,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gdm";
   version = "50.1";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/gdm/${lib.versions.major finalAttrs.version}/gdm-${finalAttrs.version}.tar.xz";
     hash = "sha256-dwFZNzUSGSQQ9BK10MRnjsFXPxrks5yB/nWGH+iJAXQ=";
   };
 
-  mesonFlags = [
-    "-Dgdm-xsession=true"
-    # TODO: Setup a default-path? https://gitlab.gnome.org/GNOME/gdm/-/blob/6fc40ac6aa37c8ad87c32f0b1a5d813d34bf7770/meson_options.txt#L6
-    "-Dinitial-vt=1"
-    "-Dsystemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
-    "-Dsystemduserunitdir=${placeholder "out"}/lib/systemd/user"
-    "--sysconfdir=/etc"
-    "--localstatedir=/var"
-    (lib.mesonOption "run-dir" "/run/gdm")
-  ];
-
-  nativeBuildInputs = [
-    dconf
-    glib # for glib-compile-schemas
-    itstool
-    meson
-    ninja
-    pkg-config
-    gobject-introspection
-    udevCheckHook
-  ];
-
-  buildInputs = [
-    accountsservice
-    audit
-    glib
-    json-glib
-    gtk3
-    keyutils
-    libx11
-    libxdmcp
-    libxcb
-    libgudev
-    libselinux
-    pam
-    plymouth
-    polkit
-    systemd
+  outputs = [
+    "out"
+    "dev"
   ];
 
   patches = [
@@ -101,9 +61,9 @@ stdenv.mkDerivation (finalAttrs: {
     # gdm-x-session[976]: dbus-run-session: failed to exec 'gnome-session': No such file or directory
     # https://gitlab.gnome.org/GNOME/gdm/-/merge_requests/92
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/gdm/-/commit/ccecd9c975d04da80db4cd547b67a1a94fa83292.patch";
       hash = "sha256-5hKS9wjjhuSAYwXct5vS0dPbmPRIINJoLC0Zm1naz6Q=";
       revert = true;
+      url = "https://gitlab.gnome.org/GNOME/gdm/-/commit/ccecd9c975d04da80db4cd547b67a1a94fa83292.patch";
     })
 
     # Change hardcoded paths to nix store paths.
@@ -113,6 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
         plymouth
         dbus
         ;
+
       xorgserver = xorg-server;
     })
 
@@ -145,7 +106,55 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'have_userdb = libsystemd_dep' 'have_userdb = false #'
   '';
 
-  doInstallCheck = true;
+  nativeBuildInputs = [
+    dconf
+    glib # for glib-compile-schemas
+    itstool
+    meson
+    ninja
+    pkg-config
+    gobject-introspection
+    udevCheckHook
+  ];
+
+  buildInputs = [
+    accountsservice
+    audit
+    glib
+    json-glib
+    gtk3
+    keyutils
+    libx11
+    libxdmcp
+    libxcb
+    libgudev
+    libselinux
+    pam
+    plymouth
+    polkit
+    systemd
+  ];
+
+  mesonFlags = [
+    "-Dgdm-xsession=true"
+    # TODO: Setup a default-path? https://gitlab.gnome.org/GNOME/gdm/-/blob/6fc40ac6aa37c8ad87c32f0b1a5d813d34bf7770/meson_options.txt#L6
+    "-Dinitial-vt=1"
+    "-Dsystemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
+    "-Dsystemduserunitdir=${placeholder "out"}/lib/systemd/user"
+    "--sysconfdir=/etc"
+    "--localstatedir=/var"
+    (lib.mesonOption "run-dir" "/run/gdm")
+  ];
+
+  env = {
+    # HACK: We want to install configuration files to $out/etc
+    # but GDM should read them from /etc on a NixOS system.
+    # With autotools, it was possible to override Make variables
+    # at install time but Meson does not support this
+    # so we need to convince it to install all files to a temporary
+    # location using DESTDIR and then move it to proper one in postInstall.
+    DESTDIR = "dest";
+  };
 
   preInstall = ''
     install -D ${override} "$DESTDIR/$out/share/glib-2.0/schemas/org.gnome.login-screen.gschema.override"
@@ -169,21 +178,10 @@ stdenv.mkDerivation (finalAttrs: {
     glib-compile-schemas "$out/share/glib-2.0/schemas"
   '';
 
-  env = {
-    # HACK: We want to install configuration files to $out/etc
-    # but GDM should read them from /etc on a NixOS system.
-    # With autotools, it was possible to override Make variables
-    # at install time but Meson does not support this
-    # so we need to convince it to install all files to a temporary
-    # location using DESTDIR and then move it to proper one in postInstall.
-    DESTDIR = "dest";
-  };
-
+  doInstallCheck = true;
   separateDebugInfo = true;
 
   passthru = {
-    updateScript = gnome.updateScript { packageName = "gdm"; };
-
     dconfDb = "${finalAttrs.finalPackage}/share/gdm/greeter-dconf-defaults";
     dconfProfile = "user-db:user\nfile-db:${finalAttrs.passthru.dconfDb}";
 
@@ -196,6 +194,8 @@ stdenv.mkDerivation (finalAttrs: {
         touch $out
       '';
     };
+
+    updateScript = gnome.updateScript { packageName = "gdm"; };
   };
 
   meta = {
@@ -203,7 +203,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/gdm";
     changelog = "https://gitlab.gnome.org/GNOME/gdm/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

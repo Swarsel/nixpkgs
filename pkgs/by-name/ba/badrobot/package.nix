@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,15 +16,9 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-U3b5Xw+GjnAEXteivztHdcAcXx7DYtgaUbW5oax0mIk=";
   };
-  vendorHash = "sha256-oYdkCEdrw1eE5tnKveeJM3upRy8hOVc24JNN1bLX+ec=";
 
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/controlplaneio/badrobot/cmd.version=v${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-oYdkCEdrw1eE5tnKveeJM3upRy8hOVc24JNN1bLX+ec=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd badrobot \
@@ -33,11 +27,15 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/badrobot completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/controlplaneio/badrobot/cmd.version=v${finalAttrs.version}"
+  ];
+
   meta = {
-    homepage = "https://github.com/controlplaneio/badrobot";
-    changelog = "https://github.com/controlplaneio/badrobot/releases/tag/v${finalAttrs.src.tag}";
     description = "Operator Security Audit Tool";
-    mainProgram = "badrobot";
+
     longDescription = ''
       Badrobot is a Kubernetes Operator audit tool. It statically analyses
       manifests for high risk configurations such as lack of security
@@ -46,9 +44,15 @@ buildGoModule (finalAttrs: {
       likelihood that a compromised Operator would be able to obtain full
       cluster permissions.
     '';
+
+    homepage = "https://github.com/controlplaneio/badrobot";
+    changelog = "https://github.com/controlplaneio/badrobot/releases/tag/v${finalAttrs.src.tag}";
     license = with lib.licenses; [ asl20 ];
+
     maintainers = with lib.maintainers; [
       jk
     ];
+
+    mainProgram = "badrobot";
   };
 })

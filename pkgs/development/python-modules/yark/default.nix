@@ -14,18 +14,11 @@
 buildPythonPackage rec {
   pname = "yark";
   version = "1.2.12";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-K66LC/HhajAMCWU7PPfxkoaK84kLlAccYAH5FXoc+yE=";
   };
-
-  pythonRelaxDeps = [
-    "flask"
-    "requests"
-    "yt-dlp"
-  ];
 
   nativeBuildInputs = [
     poetry-core
@@ -42,15 +35,21 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "yark" ];
+
+  pythonRelaxDeps = [
+    "flask"
+    "requests"
+    "yt-dlp"
+  ];
 
   meta = {
     description = "Module for YouTube archiving";
-    mainProgram = "yark";
     homepage = "https://github.com/Owez/yark";
     changelog = "https://github.com/Owez/yark/releases/tag/v${lib.versions.majorMinor version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "yark";
   };
 }

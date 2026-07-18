@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docopt,
-  fetchFromGitHub,
   pytz,
   requests,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "epion";
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "devenzo-com";
@@ -30,7 +29,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "epion" ];
 
   meta = {

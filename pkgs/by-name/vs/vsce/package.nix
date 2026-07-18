@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  pkg-config,
-  libsecret,
-  nodejs-slim,
+  buildNpmPackage,
   clang_20,
-  versionCheckHook,
+  libsecret,
   nix-update-script,
+  nodejs-slim,
+  pkg-config,
+  versionCheckHook,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -22,8 +22,6 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-DjPRSFXkw+MXDGjpWJGdp1bfptFdQEs5Djft2WyYK70=";
   };
 
-  npmDepsHash = "sha256-U5FTBunSvHDl1lCMNcTuPrVZw6YTbT3LCJfbc6E2Sys=";
-
   postPatch = ''
     substituteInPlace package.json --replace-fail '"version": "0.0.0"' '"version": "${finalAttrs.version}"'
   '';
@@ -35,11 +33,10 @@ buildNpmPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ clang_20 ]; # clang_21 breaks @vscode/vsce's optional dependency keytar
 
   buildInputs = [ libsecret ];
-
-  makeCacheWritable = true;
-
+  npmDepsHash = "sha256-U5FTBunSvHDl1lCMNcTuPrVZw6YTbT3LCJfbc6E2Sys=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  makeCacheWritable = true;
 
   passthru = {
     updateScript = nix-update-script {
@@ -51,12 +48,14 @@ buildNpmPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/microsoft/vscode-vsce";
     description = "Visual Studio Code Extension Manager";
+    homepage = "https://github.com/microsoft/vscode-vsce";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       xiaoxiangmoe
     ];
-    license = lib.licenses.mit;
+
     mainProgram = "vsce";
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  glib,
-  dconf,
-  pkg-config,
   dbus-glib,
-  telepathy-glib,
+  dconf,
+  glib,
   glib-networking,
-  python3,
   libxslt,
   makeWrapper,
+  pkg-config,
+  python3,
+  telepathy-glib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     python3
     makeWrapper
   ];
+
   buildInputs = [
     glib
     glib-networking

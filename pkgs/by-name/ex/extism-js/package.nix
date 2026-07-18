@@ -1,7 +1,7 @@
 {
+  lib,
   binaryen,
   extism-cli,
-  lib,
   pkg-config,
   pkgsCross,
   rustPlatform,
@@ -15,14 +15,14 @@ let
   inherit (pkgsCross.wasi32) extism-js-core;
 in
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "extism-js";
-
   inherit (extism-js-core)
     version
     src
     cargoDeps
     postPatch
     ;
+
+  pname = "extism-js";
 
   nativeBuildInputs = [
     pkg-config
@@ -33,25 +33,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
+  env.EXTISM_ENGINE_PATH = "${pkgsCross.wasi32.extism-js-core}/bin/js_pdk_core.wasm";
   # fs-set-times v0.20.3 uses #![feature]
   env.RUSTC_BOOTSTRAP = 1;
-
-  env.EXTISM_ENGINE_PATH = "${pkgsCross.wasi32.extism-js-core}/bin/js_pdk_core.wasm";
   env.ZSTD_SYS_USE_PKG_CONFIG = true;
-
-  cargoBuildFlags = [ "--package=js-pdk-cli" ];
-  cargoTestFlags = [ "--package=js-pdk-cli" ];
-
   doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  __structuredAttrs = true;
+  cargoBuildFlags = [ "--package=js-pdk-cli" ];
+  cargoTestFlags = [ "--package=js-pdk-cli" ];
+
   passthru = {
     tests.simple-js = testers.runCommand {
-      # Based on https://github.com/extism/js-pdk/tree/v1.6.0/examples/simple_js
-      name = "${finalAttrs.pname}-simple-js-test";
       nativeBuildInputs = [
         finalAttrs.finalPackage
 
@@ -59,6 +56,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
         extism-cli
         writableTmpDirAsHomeHook
       ];
+
+      # Based on https://github.com/extism/js-pdk/tree/v1.6.0/examples/simple_js
+      name = "${finalAttrs.pname}-simple-js-test";
+
       script = ''
         cat <<'EOF' > script.js
         function helloWorld() {
@@ -86,13 +87,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     };
   };
 
-  __structuredAttrs = true;
-
   meta = {
-    changelog = "https://github.com/extism/js-pdk/releases/tag/${finalAttrs.src.tag}";
-    description = "Write Extism plugins in JavaScript & TypeScript (CLI)";
-    mainProgram = "extism-js";
-    platforms = lib.platforms.unix;
     inherit (extism-js-core.meta) homepage license maintainers;
+    description = "Write Extism plugins in JavaScript & TypeScript (CLI)";
+    changelog = "https://github.com/extism/js-pdk/releases/tag/${finalAttrs.src.tag}";
+    platforms = lib.platforms.unix;
+    mainProgram = "extism-js";
   };
 })

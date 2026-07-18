@@ -1,17 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   dulwich,
+  fetchPypi,
   pbr,
-  sphinx,
   setuptools,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "openstackdocstheme";
   version = "3.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     patchShebangs bin/
   '';
 
+  # no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage rec {
     sphinx
   ];
 
-  # no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "openstackdocstheme" ];
 
   meta = {

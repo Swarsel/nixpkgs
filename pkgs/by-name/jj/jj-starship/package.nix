@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  libgit2,
-  zlib,
   apple-sdk,
+  libgit2,
   libiconv,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
+  zlib,
   withGit ? true,
 }:
 
@@ -23,10 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-NLds7i1ZmscicaNLmkZCWmc7A+367BXxGioRd4yYof8=";
   };
 
-  cargoHash = "sha256-i7x/y+BkKH+Xj1bU4RRe9fcteabB+4uAgJuW3x5/jv4=";
-
-  buildNoDefaultFeatures = !withGit;
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -40,13 +36,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
+  cargoHash = "sha256-i7x/y+BkKH+Xj1bU4RRe9fcteabB+4uAgJuW3x5/jv4=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  buildNoDefaultFeatures = !withGit;
 
   meta = {
-    changelog = "https://github.com/dmmulroy/jj-starship/releases/tag/${finalAttrs.src.tag}";
     description = "Unified Starship prompt module for Git and Jujutsu repositories that is optimized for latency";
     homepage = "https://github.com/dmmulroy/jj-starship";
+    changelog = "https://github.com/dmmulroy/jj-starship/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ drupol ];
     mainProgram = "jj-starship";

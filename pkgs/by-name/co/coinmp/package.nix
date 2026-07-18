@@ -17,10 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # backport build fixes for pkgsMusl.CoinMP
     (fetchpatch {
-      url = "https://github.com/coin-or/Cgl/commit/57d8c71cd50dc27a89eaeb4672499bca55f1fd72.patch";
       extraPrefix = "Cgl/";
-      stripLen = 1;
       hash = "sha256-NdwXpIL1w6kHVfhBFscTlpriQOfUXx860/4x7pK+698=";
+      stripLen = 1;
+      url = "https://github.com/coin-or/Cgl/commit/57d8c71cd50dc27a89eaeb4672499bca55f1fd72.patch";
     })
     # https://github.com/coin-or/Clp/commit/b637e1d633425ae21ec041bf7f9e06f56b741de0
     ./0001-change-more-reinterpret_cast-from-NULL-to-C-cast-see.patch
@@ -30,18 +30,17 @@ stdenv.mkDerivation (finalAttrs: {
     ./0001-use-static_cast-for-static-cast-fixes-319.patch
   ];
 
-  enableParallelBuilding = true;
-
   env = lib.optionalAttrs stdenv.cc.isClang {
     CXXFLAGS = "-std=c++14";
   };
 
+  enableParallelBuilding = true;
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://projects.coin-or.org/CoinMP/";
     description = "COIN-OR lightweight API for COIN-OR libraries CLP, CBC, and CGL";
-    platforms = lib.platforms.unix;
+    homepage = "https://projects.coin-or.org/CoinMP/";
     license = lib.licenses.epl10;
+    platforms = lib.platforms.unix;
   };
 })

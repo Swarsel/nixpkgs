@@ -1,19 +1,18 @@
 {
-  pname,
-  version,
-  src,
-  sourceDir,
-  yarnLock ? null,
-  hash,
-  extraFiles ? "",
-  meta,
-
-  fetchYarnDeps,
   lib,
+  fetchYarnDeps,
+  hash,
+  meta,
   nodejs_22,
+  pname,
+  sourceDir,
+  src,
   stdenvNoCC,
+  version,
   yarnBuildHook,
   yarnConfigHook,
+  extraFiles ? "",
+  yarnLock ? null,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,12 +22,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     src
     meta
     ;
-  sourceRoot = "${finalAttrs.src.name}/${sourceDir}";
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = if yarnLock != null then yarnLock else "${finalAttrs.src}/${sourceDir}/yarn.lock";
-    inherit hash;
-  };
 
   postPatch = lib.optionalString (yarnLock != null) ''
     cp ${yarnLock} ./yarn.lock
@@ -40,8 +33,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     yarnConfigHook
   ];
 
-  BUILD_VERSION = finalAttrs.version;
-
   installPhase = ''
     runHook preInstall
 
@@ -50,4 +41,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  BUILD_VERSION = finalAttrs.version;
+  sourceRoot = "${finalAttrs.src.name}/${sourceDir}";
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit hash;
+    yarnLock = if yarnLock != null then yarnLock else "${finalAttrs.src}/${sourceDir}/yarn.lock";
+  };
 })

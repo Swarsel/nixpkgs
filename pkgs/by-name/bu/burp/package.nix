@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
   acl,
+  autoreconfHook,
   librsync,
   ncurses,
   openssl,
-  zlib,
+  pkg-config,
   uthash,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

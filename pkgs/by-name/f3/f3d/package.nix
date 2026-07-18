@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  help2man,
-  gzip,
-  libxt,
-  openusd,
-  onetbb,
-  vtk,
-  autoPatchelfHook,
-  python3Packages,
-  opencascade-occt,
   assimp,
+  autoPatchelfHook,
+  cmake,
+  fetchpatch,
   fontconfig,
+  gzip,
+  help2man,
+  libxt,
+  onetbb,
+  opencascade-occt,
+  openusd,
+  python3Packages,
+  vtk,
   withManual ? !stdenv.hostPlatform.isDarwin,
   withPythonBinding ? false,
   withUsd ? openusd.meta.available,
@@ -24,8 +24,6 @@ stdenv.mkDerivation rec {
   pname = "f3d";
   version = "3.5.0";
 
-  outputs = [ "out" ] ++ lib.optionals withManual [ "man" ];
-
   src = fetchFromGitHub {
     owner = "f3d-app";
     repo = "f3d";
@@ -33,6 +31,8 @@ stdenv.mkDerivation rec {
     hash = "sha256-j8OSG3MNWAlCIZcjhWCMeskbcv+4pTn4ktRZXKYmBkc=";
     fetchLFS = true;
   };
+
+  outputs = [ "out" ] ++ lib.optionals withManual [ "man" ];
 
   nativeBuildInputs = [
     cmake
@@ -97,10 +97,12 @@ stdenv.mkDerivation rec {
     homepage = "https://f3d-app.github.io/f3d";
     changelog = "https://github.com/f3d-app/f3d/releases/tag/v${version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       bcdarwin
       pbsds
     ];
+
     platforms = with lib.platforms; unix;
     mainProgram = "f3d";
   };

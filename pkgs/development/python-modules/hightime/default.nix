@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hightime";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ni";
@@ -19,13 +18,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-5WEr2tOxQap+otV8DCdIi3MkfHol4TU4qZXf4u2EQhY=";
   };
 
-  build-system = [
-    poetry-core
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
+  ];
+
+  build-system = [
+    poetry-core
   ];
 
   # Test incompatible with datetime's integer type requirements
@@ -33,12 +32,13 @@ buildPythonPackage (finalAttrs: {
     "test_datetime_arg_wrong_value"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hightime" ];
 
   meta = {
-    changelog = "https://github.com/ni/hightime/releases/tag/v${finalAttrs.version}";
     description = "Hightime Python API";
     homepage = "https://github.com/ni/hightime";
+    changelog = "https://github.com/ni/hightime/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fsagbuya ];
   };

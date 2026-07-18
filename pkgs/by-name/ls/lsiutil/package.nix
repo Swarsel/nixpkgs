@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  kmod,
   coreutils,
+  kmod,
 }:
 
 stdenv.mkDerivation rec {
@@ -39,10 +39,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/exactassembly/meta-xa-stm/tree/master/recipes-support/lsiutil/files";
     description = "Configuration utility for MPT adapters (FC, SCSI, and SAS/SATA)";
+    homepage = "https://github.com/exactassembly/meta-xa-stm/tree/master/recipes-support/lsiutil/files";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Luflosi ];
+    platforms = lib.platforms.linux;
   };
 }

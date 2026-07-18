@@ -17,10 +17,13 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.notion ];
+
     services.xserver.windowManager = {
       session = [
         {
           name = "notion";
+
           start = ''
             ${pkgs.notion}/bin/notion &
             waitPID=$!
@@ -28,6 +31,5 @@ in
         }
       ];
     };
-    environment.systemPackages = [ pkgs.notion ];
   };
 }

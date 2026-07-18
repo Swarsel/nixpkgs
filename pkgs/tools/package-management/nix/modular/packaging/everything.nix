@@ -1,52 +1,36 @@
 {
   lib,
   stdenv,
-  lndir,
   buildEnv,
-
-  teams,
-
-  version,
-
-  nix-util,
-  nix-util-c,
-  nix-util-tests,
-
-  nix-store,
-  nix-store-c,
-  nix-store-tests,
-
-  nix-fetchers,
-  nix-fetchers-c,
-  nix-fetchers-tests,
-
+  lndir,
+  nix-cli,
+  nix-cmd,
   nix-expr,
   nix-expr-c,
   nix-expr-tests,
-
+  nix-external-api-docs,
+  nix-fetchers,
+  nix-fetchers-c,
+  nix-fetchers-tests,
   nix-flake,
   nix-flake-c,
   nix-flake-tests,
-
+  nix-functional-tests,
+  nix-internal-api-docs,
   nix-main,
   nix-main-c,
-
-  nix-cmd,
-
-  nix-cli,
-
-  nix-nswrapper ? null,
-
-  nix-functional-tests,
-
   nix-manual,
-  nix-internal-api-docs,
-  nix-external-api-docs,
-
   nix-perl-bindings,
-
+  nix-store,
+  nix-store-c,
+  nix-store-tests,
+  nix-util,
+  nix-util-c,
+  nix-util-tests,
+  teams,
   testers,
-
+  version,
+  nix-nswrapper ? null,
   patchedSrc ? null,
 }:
 
@@ -88,6 +72,7 @@ let
 
   devdoc = buildEnv {
     name = "nix-${nix-cli.version}-devdoc";
+
     paths = [
       nix-internal-api-docs
       nix-external-api-docs
@@ -116,14 +101,9 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  /**
-    Unpacking is handled in this package's constituent components
-  */
-  dontUnpack = true;
-  /**
-    Building is handled in this package's constituent components
-  */
-  dontBuild = true;
+  nativeBuildInputs = [
+    lndir
+  ];
 
   /**
     `doCheck` controles whether tests are added as build gate for the combined package.
@@ -131,13 +111,6 @@ stdenv.mkDerivation (finalAttrs: {
     integration tests that run in CI (the flake's `hydraJobs` and some of the `checks`).
   */
   doCheck = true;
-
-  /**
-    `fixupPhase` currently doesn't understand that a symlink output isn't writable.
-
-    We don't compile or link anything in this derivation, so fixups aren't needed.
-  */
-  dontFixup = true;
 
   checkInputs = [
     # Make sure the unit tests have passed
@@ -162,10 +135,6 @@ stdenv.mkDerivation (finalAttrs: {
         # TODO: Split out tests into a separate derivation?
         nix-perl-bindings
       ];
-
-  nativeBuildInputs = [
-    lndir
-  ];
 
   installPhase =
     let
@@ -193,11 +162,24 @@ stdenv.mkDerivation (finalAttrs: {
       lndir ${nix-nswrapper} $out
     '';
 
+  /**
+    Building is handled in this package's constituent components
+  */
+  dontBuild = true;
+  /**
+    `fixupPhase` currently doesn't understand that a symlink output isn't writable.
+
+    We don't compile or link anything in this derivation, so fixups aren't needed.
+  */
+  dontFixup = true;
+  /**
+    Unpacking is handled in this package's constituent components
+  */
+  dontUnpack = true;
+
   passthru = {
     inherit (nix-cli) version;
     inherit nix-cli;
-    src = patchedSrc;
-
     /**
       These are the libraries that are part of the Nix project. They are used
       by the Nix CLI and other tools.
@@ -216,13 +198,13 @@ stdenv.mkDerivation (finalAttrs: {
       ```
     */
     inherit libs;
-
     /**
       Developer documentation for `nix`, in `share/doc/nix/{internal,external}-api/`.
 
       This is not a proper output; see `outputs` for context.
     */
     inherit devdoc;
+    src = patchedSrc;
 
     /**
       Extra tests that test this package, but do not run as part of the build.
@@ -236,8 +218,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "nix";
-    description = "Nix package manager";
     inherit (nix-cli.meta)
       longDescription
       homepage
@@ -247,12 +227,15 @@ stdenv.mkDerivation (finalAttrs: {
       changelog
       ;
 
-    teams = teams;
+    description = "Nix package manager";
+    mainProgram = "nix";
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "nixos" version;
 
     outputsToInstall = [
       "out"
       "man"
     ];
+
     pkgConfigModules = [
       "nix-cmd"
       "nix-expr"
@@ -272,7 +255,8 @@ stdenv.mkDerivation (finalAttrs: {
       "nix-util"
       "nix-util-c"
     ];
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "nixos" version;
+
+    teams = teams;
   };
 
 })

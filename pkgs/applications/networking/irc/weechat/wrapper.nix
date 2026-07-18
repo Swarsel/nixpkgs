@@ -1,11 +1,11 @@
 {
   lib,
-  runCommand,
-  writeScriptBin,
   buildEnv,
-  python3Packages,
   perlPackages,
+  python3Packages,
+  runCommand,
   runtimeShell,
+  writeScriptBin,
 }:
 
 weechat:
@@ -13,7 +13,6 @@ weechat:
 let
   wrapper =
     {
-      installManPages ? true,
       configure ?
         { availablePlugins, ... }:
         {
@@ -21,6 +20,7 @@ let
           # build on Darwin, and there are no official PHP scripts.
           plugins = builtins.attrValues (removeAttrs availablePlugins [ "php" ]);
         },
+      installManPages ? true,
     }:
 
     let
@@ -30,26 +30,14 @@ let
           simplePlugin = name: { pluginFile = "${weechat.${name}}/lib/weechat/plugins/${name}.so"; };
         in
         rec {
-          python = (simplePlugin "python") // {
-            extraEnv = ''
-              export PATH="${python3Packages.python}/bin:$PATH"
-            '';
-            withPackages =
-              pkgsFun:
-              (
-                python
-                // {
-                  extraEnv = ''
-                    ${python.extraEnv}
-                    export PYTHONHOME="${python3Packages.python.withPackages pkgsFun}"
-                  '';
-                }
-              );
-          };
+          guile = simplePlugin "guile";
+          lua = simplePlugin "lua";
+
           perl = (simplePlugin "perl") // {
             extraEnv = ''
               export PATH="${perlInterpreter}/bin:$PATH"
             '';
+
             withPackages =
               pkgsFun:
               (
@@ -62,11 +50,29 @@ let
                 }
               );
           };
-          tcl = simplePlugin "tcl";
-          ruby = simplePlugin "ruby";
-          guile = simplePlugin "guile";
-          lua = simplePlugin "lua";
+
           php = simplePlugin "php";
+
+          python = (simplePlugin "python") // {
+            extraEnv = ''
+              export PATH="${python3Packages.python}/bin:$PATH"
+            '';
+
+            withPackages =
+              pkgsFun:
+              (
+                python
+                // {
+                  extraEnv = ''
+                    ${python.extraEnv}
+                    export PYTHONHOME="${python3Packages.python.withPackages pkgsFun}"
+                  '';
+                }
+              );
+          };
+
+          ruby = simplePlugin "ruby";
+          tcl = simplePlugin "tcl";
         };
 
       config = configure { inherit availablePlugins; };
@@ -102,17 +108,20 @@ let
         '')
         // {
           inherit (weechat) name man;
-          unwrapped = weechat;
+
           outputs = [
             "out"
             "man"
           ];
+
+          unwrapped = weechat;
         };
     in
     buildEnv {
-      pname = "weechat-bin-env";
       inherit (weechat) version;
+      pname = "weechat-bin-env";
       extraOutputsToInstall = lib.optionals installManPages [ "man" ];
+
       paths = [
         (mkWeechat "weechat")
         (mkWeechat "weechat-headless")
@@ -123,6 +132,7 @@ let
           ln -sf ${weechat}/share $out/share
         '')
       ];
+
       meta = removeAttrs weechat.meta [ "outputsToInstall" ];
     };
 

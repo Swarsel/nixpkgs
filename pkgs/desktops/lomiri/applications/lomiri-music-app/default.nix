@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   cmake,
   gettext,
+  gitUpdater,
   gst_all_1,
   libusermetrics,
   lomiri-content-hub,
   lomiri-thumbnailer,
   lomiri-ui-toolkit,
   mediascanner2,
+  nixosTests,
   qtbase,
   qtdeclarative,
   qtmultimedia,
@@ -68,8 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-bad
   ]);
 
-  dontWrapGApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "CLICK_MODE" false)
     (lib.cmakeBool "INSTALL_TESTS" false)
@@ -89,6 +87,8 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+
   passthru = {
     tests.vm = nixosTests.lomiri-music-app;
     updateScript = gitUpdater { rev-prefix = "v"; };
@@ -97,14 +97,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Default Music application for Ubuntu devices";
     homepage = "https://gitlab.com/ubports/development/apps/lomiri-music-app";
+
     changelog = "https://gitlab.com/ubports/development/apps/lomiri-music-app/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = with lib.licenses; [
       gpl3Only
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "lomiri-music-app";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

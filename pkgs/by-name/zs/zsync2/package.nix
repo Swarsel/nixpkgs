@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libgcrypt,
-  libcpr,
   libargs,
+  libcpr,
+  libgcrypt,
+  pkg-config,
   zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -51,10 +51,10 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Rewrite of the advanced file download/sync tool zsync";
     homepage = "https://github.com/AppImageCommunity/zsync2";
     license = lib.licenses.artistic2;
-    mainProgram = "zsync2";
     maintainers = with lib.maintainers; [ aleksana ];
     # macro only supports linux as of now
     # src/zsclient.cpp#L460
     platforms = lib.platforms.linux;
+    mainProgram = "zsync2";
   };
 })

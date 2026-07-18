@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   meson,
-  pkg-config,
   ninja,
+  pkg-config,
   qtbase,
   qtwayland,
   wayland,
@@ -21,6 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-rC4Gdhr8mkL2V3bMWprMRo75AIhk9OJsoWjlBUnILEA=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     meson
     pkg-config
@@ -35,16 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontWrapQtApps = true;
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   meta = {
-    homepage = "https://gitlab.com/desktop-frameworks/wayqt";
     description = "Qt-based library to handle Wayland and Wlroots protocols to be used with any Qt project";
+    homepage = "https://gitlab.com/desktop-frameworks/wayqt";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wineee ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.mit;
   };
 })

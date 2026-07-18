@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
+  openpyxl,
+  pyserial,
   pytestCheckHook,
   setuptools,
-  pyserial,
-  openpyxl,
 }:
 
 buildPythonPackage (finalAtrs: {
   pname = "pysunspec2";
   version = "1.3.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sunspec";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAtrs: {
     fetchSubmodules = true;
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,7 +28,7 @@ buildPythonPackage (finalAtrs: {
     pyserial
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pytestFlags = [
     # This test relies on old pymodbus 2 version

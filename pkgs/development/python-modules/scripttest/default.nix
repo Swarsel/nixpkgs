@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "scripttest";
   version = "2.0.post1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,14 +15,14 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ pytest ];
-
   # Tests are not included. See https://github.com/pypa/scripttest/issues/11
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Library for testing interactive command-line applications";
     homepage = "https://pypi.org/project/scripttest/";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

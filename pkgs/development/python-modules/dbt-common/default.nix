@@ -1,37 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  writeScript,
-
-  # build-system
-  hatchling,
-
+  agate,
+  buildPythonPackage,
+  colorama,
   # dependencies
   dbt-protos,
-  agate,
-  colorama,
   deepdiff,
+  # build-system
+  hatchling,
   isodate,
   jinja2,
   jsonschema,
   mashumaro,
   pathspec,
   protobuf,
+  pytest-mock,
+  pytest-xdist,
+  # tests
+  pytestCheckHook,
   python-dateutil,
   requests,
   typing-extensions,
-
-  # tests
-  pytestCheckHook,
-  pytest-mock,
-  pytest-xdist,
+  writeScript,
 }:
 
 buildPythonPackage rec {
   pname = "dbt-common";
   version = "1.37.3-unstable-2026-03-27";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dbt-labs";
@@ -40,15 +36,13 @@ buildPythonPackage rec {
     hash = "sha256-FcnCg05z9yalhAU1eueZ0x+YEuAfCeYSUlecoEQvS6k=";
   };
 
-  build-system = [ hatchling ];
-
-  pythonRelaxDeps = [
-    "agate"
-    # 0.6.x -> 0.7.2 doesn't seem too risky at a glance
-    # https://pypi.org/project/isodate/0.7.2/
-    "isodate"
-    "protobuf"
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-xdist
+    pytest-mock
   ];
+
+  build-system = [ hatchling ];
 
   dependencies = [
     dbt-protos
@@ -67,18 +61,21 @@ buildPythonPackage rec {
   ]
   ++ mashumaro.optional-dependencies.msgpack;
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-xdist
-    pytest-mock
-  ];
-
   disabledTests = [
     # flaky test: https://github.com/dbt-labs/dbt-common/issues/280
     "TestFindMatching"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dbt_common" ];
+
+  pythonRelaxDeps = [
+    "agate"
+    # 0.6.x -> 0.7.2 doesn't seem too risky at a glance
+    # https://pypi.org/project/isodate/0.7.2/
+    "isodate"
+    "protobuf"
+  ];
 
   passthru.updateScript = writeScript "update-dbt-common" ''
     #!/usr/bin/env nix-shell

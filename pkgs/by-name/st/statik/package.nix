@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,21 +16,21 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
+  # Tests are checking that the files embedded are preserving
+  # their meta data like dates etc, but it assumes to be in 2048
+  # which is not the case once entered the nix store
+  doCheck = false;
 
   # Avoid building example
   subPackages = [
     "."
     "fs"
   ];
-  # Tests are checking that the files embedded are preserving
-  # their meta data like dates etc, but it assumes to be in 2048
-  # which is not the case once entered the nix store
-  doCheck = false;
 
   meta = {
-    homepage = "https://github.com/rakyll/statik";
     description = "Embed files into a Go executable";
-    mainProgram = "statik";
+    homepage = "https://github.com/rakyll/statik";
     license = lib.licenses.asl20;
+    mainProgram = "statik";
   };
 })

@@ -1,14 +1,14 @@
 {
   lib,
-  curl,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  asciidoctor,
-  openssl,
   ansi2html,
+  asciidoctor,
+  curl,
   installShellFiles,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -31,14 +31,15 @@ rustPlatform.buildRustPackage rec {
     asciidoctor
     installShellFiles
   ];
+
   buildInputs = [
     curl
     openssl
   ];
 
   cargoHash = "sha256-8A0RLbFkh3fruZAbjJzipQvuFLchqIRovPcc6MSKdOc=";
-
   nativeCheckInputs = [ ansi2html ];
+
   # Skip tests that use the network and that include files.
   checkFlags = [
     "--skip=magic::tests::detect_mimetype_of_larger_than_magic_param_bytes_max_length"

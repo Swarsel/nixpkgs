@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   zope-testrunner,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "zope-deprecation";
   version = "6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -23,8 +22,6 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ zope-testrunner ];
 
   checkPhase = ''
@@ -35,13 +32,14 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "zope.deprecation" ];
-
   pythonNamespaces = [ "zope" ];
 
   meta = {
-    homepage = "https://github.com/zopefoundation/zope.deprecation";
     description = "Zope Deprecation Infrastructure";
+    homepage = "https://github.com/zopefoundation/zope.deprecation";
     changelog = "https://github.com/zopefoundation/zope.deprecation/blob/${version}/CHANGES.rst";
     license = lib.licenses.zpl21;
     maintainers = [ ];

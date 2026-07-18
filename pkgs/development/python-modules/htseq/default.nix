@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  swig,
+  buildPythonPackage,
   cython,
   matplotlib,
+  nix-update-script,
   numpy,
   pandas,
   pysam,
-  setuptools,
   pytestCheckHook,
-  nix-update-script,
+  setuptools,
+  swig,
 }:
 buildPythonPackage rec {
   pname = "htseq";
   version = "2.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "htseq";
@@ -25,6 +24,17 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ swig ];
+
+  nativeCheckInputs = [
+    pandas
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.htseq-qa;
+
+  preCheck = ''
+    rm -r src HTSeq
+    export PATH=$out/bin:$PATH
+  '';
 
   build-system = [
     cython
@@ -42,18 +52,8 @@ buildPythonPackage rec {
     htseq-qa = [ matplotlib ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "HTSeq" ];
-
-  nativeCheckInputs = [
-    pandas
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.htseq-qa;
-
-  preCheck = ''
-    rm -r src HTSeq
-    export PATH=$out/bin:$PATH
-  '';
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -63,9 +63,9 @@ buildPythonPackage rec {
   };
 
   meta = {
-    homepage = "https://htseq.readthedocs.io/";
     description = "Framework to work with high-throughput sequencing data";
-    maintainers = with lib.maintainers; [ unode ];
+    homepage = "https://htseq.readthedocs.io/";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ unode ];
   };
 }

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  intltool,
-  iconnamingutils,
   gtk2,
+  iconnamingutils,
+  intltool,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,17 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0fjh9qmmgj34zlgxb09231ld7khys562qxbpsjlaplq2j85p57im";
   };
 
-  depsBuildBuild = [
-    pkg-config
-  ];
-
   nativeBuildInputs = [
     intltool
     iconnamingutils
     gtk2
   ];
-
-  dontDropIconThemeCache = true;
 
   postInstall = lib.optionalString (!stdenv.hostPlatform.isMusl) ''
     # remove a tree of dirs with no files within
@@ -36,12 +30,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   allowedReferences = [ ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  dontDropIconThemeCache = true;
+
   meta = {
     description = "Collection of icons for the GNOME 2 desktop";
     homepage = "https://download.gnome.org/sources/gnome-icon-theme/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/gnome-icon-theme.x86_64-darwin
   };
 })

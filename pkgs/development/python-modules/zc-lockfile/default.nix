@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
   zope-testing,
 }:
 
 buildPythonPackage rec {
   pname = "zc-lockfile";
   version = "4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -24,17 +23,15 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "zc.lockfile" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     zope-testing
   ];
 
+  build-system = [ setuptools ];
   enabledTestPaths = [ "src/zc/lockfile/tests.py" ];
-
+  pyproject = true;
+  pythonImportsCheck = [ "zc.lockfile" ];
   pythonNamespaces = [ "zc" ];
 
   meta = {

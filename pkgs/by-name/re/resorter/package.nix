@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   rPackages,
   rWrapper,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tool to sort a list of items based on pairwise comparisons";
     homepage = "https://github.com/hiAndrewQuinn/resorter";
     license = with lib.licenses; [ cc0 ];
-    mainProgram = "resorter";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "resorter";
   };
 })

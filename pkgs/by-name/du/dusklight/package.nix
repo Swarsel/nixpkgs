@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchzip,
   abseil-cpp,
   alsa-lib,
   cmake,
   cxxopts,
   dbus,
+  fetchzip,
   fmt,
   freetype,
   libGL,
@@ -39,20 +39,21 @@
 
 let
   auroraSrc = fetchFromGitHub {
+    hash = "sha256-fiAe5DChCFeakI3pga/g0tXd27osnhQtMBQchuP2NwQ=";
     owner = "encounter";
     repo = "aurora";
     rev = "cb2c340d6cde6827387f14c31ce19e5f28a40e09";
-    hash = "sha256-fiAe5DChCFeakI3pga/g0tXd27osnhQtMBQchuP2NwQ=";
   };
   dawnSrc = fetchzip (
     {
-      x86_64-linux = {
-        url = "https://github.com/encounter/dawn-build/releases/download/v20260523.201736/dawn-linux-x86_64.tar.gz";
-        hash = "sha256-KkdlSeiaw2gbQa+phZOpgbequshxQaFITzFdiuGBZvc=";
-      };
       aarch64-linux = {
-        url = "https://github.com/encounter/dawn-build/releases/download/v20260523.201736/dawn-linux-aarch64.tar.gz";
         hash = "sha256-accDTIBzgByQ8Rk2a1dAm85s8hj9SYI7NoHkih0vvAg=";
+        url = "https://github.com/encounter/dawn-build/releases/download/v20260523.201736/dawn-linux-aarch64.tar.gz";
+      };
+
+      x86_64-linux = {
+        hash = "sha256-KkdlSeiaw2gbQa+phZOpgbequshxQaFITzFdiuGBZvc=";
+        url = "https://github.com/encounter/dawn-build/releases/download/v20260523.201736/dawn-linux-x86_64.tar.gz";
       };
     }
     .${stdenv.hostPlatform.system}
@@ -61,18 +62,18 @@ let
     }
   );
   imguiSrc = fetchFromGitHub {
+    hash = "sha256-mQOJ6jCN+7VopgZ61yzaCnt4R1QLrW7+47xxMhFRHLQ=";
     owner = "ocornut";
     repo = "imgui";
     tag = "v1.91.9b-docking";
-    hash = "sha256-mQOJ6jCN+7VopgZ61yzaCnt4R1QLrW7+47xxMhFRHLQ=";
   };
   sqliteSrc = fetchzip {
-    url = "https://sqlite.org/2026/sqlite-amalgamation-3510300.zip";
     hash = "sha256-pNMR8zxaaqfAzQ0AQBOXMct4usdjey1Q0Gnitg06UhM=";
+    url = "https://sqlite.org/2026/sqlite-amalgamation-3510300.zip";
   };
   rmluiSrc = fetchzip {
-    url = "https://github.com/mikke89/RmlUi/archive/f9b8c9e2935d5df2c7dff2c190d3968e99b0c3dc.tar.gz";
     hash = "sha256-g4O/JZUrrcseOz8o2QJRt+2CeuiLnVeuDJc906xvuIg=";
+    url = "https://github.com/mikke89/RmlUi/archive/f9b8c9e2935d5df2c7dff2c190d3968e99b0c3dc.tar.gz";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -87,7 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -126,15 +126,6 @@ stdenv.mkDerivation (finalAttrs: {
     xxhash
     zstd
   ];
-
-  postUnpack = ''
-    chmod -R u+w "$sourceRoot"
-    mkdir -p "$sourceRoot/extern/aurora"
-    cp -rT --no-preserve=mode "${auroraSrc}" "$sourceRoot/extern/aurora"
-    sed -i '/add_subdirectory(tests)/d' "$sourceRoot/extern/aurora/CMakeLists.txt"
-  '';
-
-  cmakeBuildType = "RelWithDebInfo";
 
   cmakeFlags = [
     (lib.cmakeFeature "DUSK_WC_DESCRIBE" "v${finalAttrs.version}")
@@ -192,13 +183,23 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
+  __structuredAttrs = true;
+  cmakeBuildType = "RelWithDebInfo";
+
+  postUnpack = ''
+    chmod -R u+w "$sourceRoot"
+    mkdir -p "$sourceRoot/extern/aurora"
+    cp -rT --no-preserve=mode "${auroraSrc}" "$sourceRoot/extern/aurora"
+    sed -i '/add_subdirectory(tests)/d' "$sourceRoot/extern/aurora/CMakeLists.txt"
+  '';
+
   meta = {
     description = "Reverse-engineered reimplementation of The Legend of Zelda: Twilight Princess";
     homepage = "https://github.com/TwilitRealm/dusklight";
     changelog = "https://github.com/TwilitRealm/dusklight/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.cc0;
-    mainProgram = "dusklight";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ liberodark ];
+    platforms = lib.platforms.linux;
+    mainProgram = "dusklight";
   };
 })

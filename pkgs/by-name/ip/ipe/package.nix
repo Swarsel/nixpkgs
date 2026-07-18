@@ -1,11 +1,10 @@
 {
   lib,
   stdenv,
-  makeDesktopItem,
   fetchFromGitHub,
-  pkg-config,
-  copyDesktopItems,
+  buildPackages,
   cairo,
+  copyDesktopItems,
   freetype,
   ghostscriptX,
   gsl,
@@ -13,13 +12,14 @@
   libpng,
   libspiro,
   lua5,
+  makeDesktopItem,
+  pkg-config,
+  qhull,
   qt6Packages,
   texliveSmall,
-  qhull,
   zlib,
-  withTeXLive ? true,
   withQVoronoi ? false,
-  buildPackages,
+  withTeXLive ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -73,45 +73,49 @@ stdenv.mkDerivation (finalAttrs: {
     "QHULL_CFLAGS=-I${qhull}/include/libqhull_r"
   ]);
 
-  qtWrapperArgs = lib.optionals withTeXLive [ "--prefix PATH : ${lib.makeBinPath [ texliveSmall ]}" ];
-
-  enableParallelBuilding = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "ipe";
-      desktopName = "Ipe";
-      genericName = "Drawing editor";
-      comment = "A drawing editor for creating figures in PDF format";
-      exec = "ipe";
-      icon = "ipe";
-      mimeTypes = [
-        "text/xml"
-        "application/pdf"
-      ];
-      categories = [
-        "Graphics"
-        "Qt"
-      ];
-      startupNotify = true;
-      startupWMClass = "ipe";
-    })
-  ];
-
   postInstall = ''
     mkdir -p $out/share/icons/hicolor/128x128/apps
     ln -s $out/share/ipe/${finalAttrs.version}/icons/icon_128x128.png $out/share/icons/hicolor/128x128/apps/ipe.png
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Graphics"
+        "Qt"
+      ];
+
+      comment = "A drawing editor for creating figures in PDF format";
+      desktopName = "Ipe";
+      exec = "ipe";
+      genericName = "Drawing editor";
+      icon = "ipe";
+
+      mimeTypes = [
+        "text/xml"
+        "application/pdf"
+      ];
+
+      name = "ipe";
+      startupNotify = true;
+      startupWMClass = "ipe";
+    })
+  ];
+
+  enableParallelBuilding = true;
+  qtWrapperArgs = lib.optionals withTeXLive [ "--prefix PATH : ${lib.makeBinPath [ texliveSmall ]}" ];
+
   meta = {
     description = "Editor for drawing figures";
-    homepage = "http://ipe.otfried.org"; # https not available
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       Ipe is an extensible drawing editor for creating figures in PDF and Postscript format.
       It supports making small figures for inclusion into LaTeX-documents
       as well as presentations in PDF.
     '';
+
+    homepage = "http://ipe.otfried.org"; # https not available
+    license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

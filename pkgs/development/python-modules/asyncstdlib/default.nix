@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
   typing-extensions,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "asyncstdlib";
   version = "3.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "maxfischer2781";
@@ -19,13 +18,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-zp6F+Otb1d8kqdLO99shBA7ny7Zjq027T2dtTGHTcqI=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [
     pytestCheckHook
     typing-extensions
   ];
 
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "asyncstdlib" ];
 
   meta = {

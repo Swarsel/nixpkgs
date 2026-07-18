@@ -1,8 +1,8 @@
 {
-  buildPecl,
   lib,
-  rabbitmq-c,
   fetchFromGitHub,
+  buildPecl,
+  rabbitmq-c,
 }:
 
 let
@@ -20,14 +20,13 @@ buildPecl {
   };
 
   buildInputs = [ rabbitmq-c ];
-
   env.AMQP_DIR = rabbitmq-c;
 
   meta = {
-    changelog = "https://github.com/php-amqp/php-amqp/releases/tag/v${version}";
     description = "PHP extension to communicate with any AMQP compliant server";
-    license = lib.licenses.php301;
     homepage = "https://github.com/php-amqp/php-amqp";
+    changelog = "https://github.com/php-amqp/php-amqp/releases/tag/v${version}";
+    license = lib.licenses.php301;
     teams = [ lib.teams.php ];
   };
 }

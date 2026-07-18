@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   pkg-config,
-  unzip,
   portaudio,
-  wxwidgets_3_2,
   sox,
+  unzip,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,15 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0x8s7vpb7rw5x37yjzy1f98m4f2csdg89libb74fm36gn8ly0hli";
   };
 
-  nativeBuildInputs = [
-    pkg-config
-    unzip
-  ];
-  buildInputs = [
-    portaudio
-    wxwidgets_3_2
-  ];
-
   # TODO:
   # Uhm, seems like espeakedit still wants espeak-data/ in $HOME, even thought
   # it should use $espeak/share/espeak-data. Have to contact upstream to get
@@ -35,7 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
   # Workaround:
   #  cp -r $(nix-build -A espeak)/share/espeak-data ~
   #  chmod +w ~/espeak-data
-
   patches = [
     ./gcc6.patch
     ./espeakedit-fix-makefile.patch
@@ -60,6 +50,16 @@ stdenv.mkDerivation (finalAttrs: {
     cp src/portaudio19.h src/portaudio.h
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    unzip
+  ];
+
+  buildInputs = [
+    portaudio
+    wxwidgets_3_2
+  ];
+
   buildPhase = ''
     runHook preBuild
     make -C src
@@ -74,9 +74,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Phoneme editor for espeak";
-    mainProgram = "espeakedit";
     homepage = "https://espeak.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "espeakedit";
   };
 })

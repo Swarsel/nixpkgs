@@ -1,8 +1,8 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
   llvmPackages,
 }:
 
@@ -27,9 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ llvmPackages.openmp ];
-
   # Tests fail on some Hydra builders, because they do not support SSE4.2.
   doCheck = false;
 
@@ -43,9 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/uxlfoundation/oneDNN/releases/tag/v${finalAttrs.version}";
     description = "oneAPI Deep Neural Network Library (oneDNN)";
     homepage = "http://uxlfoundation.github.io/oneDNN";
+    changelog = "https://github.com/uxlfoundation/oneDNN/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     platforms = lib.platforms.all;
   };

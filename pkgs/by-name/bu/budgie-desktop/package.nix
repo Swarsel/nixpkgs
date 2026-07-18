@@ -13,8 +13,8 @@
   gobject-introspection,
   gst_all_1,
   gtk-doc,
-  gtk3,
   gtk-layer-shell,
+  gtk3,
   ibus,
   intltool,
   libcanberra-gtk3,
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "BuddiesOfBudgie";
     repo = "budgie-desktop";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-Eaq7/LY65HpyPRfR57FWDPqkVqBbymlHHQHFUvxER20=";
+    fetchSubmodules = true;
   };
 
   outputs = [
@@ -72,6 +72,17 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./plugins.patch
   ];
+
+  postPatch = ''
+    substituteInPlace src/session/budgie-desktop.in \
+      --replace-fail "@bindir@/org.buddiesofbudgie.Services" "${lib.getExe budgie-desktop-services}" \
+      --replace-fail "@libexecdirroot@/xdg-desktop-portal" "${xdg-desktop-portal}/libexec/xdg-desktop-portal" \
+      --replace-fail "@gsd_libexecdir@/budgie-session-compositor-ready" "${budgie-session}/libexec/budgie-session-compositor-ready"
+
+    chmod +x src/bridges/labwc/labwc_bridge.py
+    substituteInPlace src/bridges/labwc/org.buddiesofbudgie.labwc-bridge.desktop.in \
+      --replace-fail "Exec=python3 @libexecdir@/labwc_bridge.py" "Exec=@libexecdir@/labwc_bridge.py"
+  '';
 
   nativeBuildInputs = [
     docbook-xsl-nons
@@ -121,17 +132,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dwith-runtime-dependencies=false"
   ];
 
-  postPatch = ''
-    substituteInPlace src/session/budgie-desktop.in \
-      --replace-fail "@bindir@/org.buddiesofbudgie.Services" "${lib.getExe budgie-desktop-services}" \
-      --replace-fail "@libexecdirroot@/xdg-desktop-portal" "${xdg-desktop-portal}/libexec/xdg-desktop-portal" \
-      --replace-fail "@gsd_libexecdir@/budgie-session-compositor-ready" "${budgie-session}/libexec/budgie-session-compositor-ready"
-
-    chmod +x src/bridges/labwc/labwc_bridge.py
-    substituteInPlace src/bridges/labwc/org.buddiesofbudgie.labwc-bridge.desktop.in \
-      --replace-fail "Exec=python3 @libexecdir@/labwc_bridge.py" "Exec=@libexecdir@/labwc_bridge.py"
-  '';
-
   passthru = {
     providedSessions = [ "budgie-desktop" ];
     tests.pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
@@ -142,17 +142,21 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Feature-rich, modern desktop designed to keep out the way of the user";
     homepage = "https://github.com/BuddiesOfBudgie/budgie-desktop";
     changelog = "https://github.com/BuddiesOfBudgie/budgie-desktop/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
       cc-by-sa-30
     ];
-    teams = [ lib.teams.budgie ];
+
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "budgie-3.0"
       "budgie-raven-plugin-3.0"
       "budgie-theme-1.0"
     ];
+
+    teams = [ lib.teams.budgie ];
   };
 })

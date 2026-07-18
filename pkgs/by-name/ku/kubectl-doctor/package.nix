@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
 }:
 
@@ -18,10 +18,10 @@ buildGoModule (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-NQd/WxUfYwBDowhnoUWaOV8k7msiOhff3Bjux+a9R9E=";
       # https://github.com/emirozer/kubectl-doctor/pull/21
       name = "go-1.19-client-go-0.25.patch";
       url = "https://github.com/emirozer/kubectl-doctor/commit/a987ef58063e305409034af280d688a11682dbb9.patch";
-      hash = "sha256-NQd/WxUfYwBDowhnoUWaOV8k7msiOhff3Bjux+a9R9E=";
     })
   ];
 
@@ -33,10 +33,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "kubectl cluster triage plugin for k8s";
-    mainProgram = "kubectl-doctor";
     homepage = "https://github.com/emirozer/kubectl-doctor";
     changelog = "https://github.com/emirozer/kubectl-doctor/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.zimbatm ];
+    mainProgram = "kubectl-doctor";
   };
 })

@@ -5,10 +5,9 @@
   buildNpmPackage,
   makeDesktopItem,
   makeWrapper,
-  unstableGitUpdater,
-
   nwjs,
   python3,
+  unstableGitUpdater,
 }:
 
 let
@@ -23,44 +22,39 @@ let
   };
 
   collection = fetchurl {
-    url = "https://github.com/FPGAwars/collection-default/archive/v0.4.1.zip";
     hash = "sha256-F2cAqkTPC7xfGnPQiS8lTrD4y34EkHFUEDPVaYzVVg8=";
+    url = "https://github.com/FPGAwars/collection-default/archive/v0.4.1.zip";
   };
 
   app = buildNpmPackage {
-    pname = "icestudio-app";
     inherit version src;
+    pname = "icestudio-app";
     npmDepsHash = "sha256-Dpnx23iq0fK191DXFgIfnbi+MLEp65H6eL81Icg4H4U=";
-    sourceRoot = "${src.name}/app";
-    dontNpmBuild = true;
+
     installPhase = ''
       cp -r . $out
     '';
+
+    dontNpmBuild = true;
+    sourceRoot = "${src.name}/app";
   };
 
   desktopItem = makeDesktopItem {
-    desktopName = "Icestudio";
+    categories = [ "Development" ];
     comment = "Visual editor for open FPGA boards";
-    name = "icestudio";
+    desktopName = "Icestudio";
     exec = "icestudio";
     icon = "icestudio";
+    name = "icestudio";
     terminal = false;
-    categories = [ "Development" ];
   };
 in
 buildNpmPackage rec {
-  pname = "icestudio";
   inherit version src;
+  pname = "icestudio";
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ python3 ];
   npmDepsHash = "sha256-QHd4d0BQXqAs/4WnnawCW/tJvSbWOz++RwomNG4XBuU=";
-  npmFlags = [
-    # Use the legacy dependency resolution, with less strict version
-    # requirements for transative dependencies
-    "--legacy-peer-deps"
-
-    # We want to avoid call the scripts/postInstall.sh until we copy the
-    # collection and app derivation we do that on installPhase
-    "--ignore-scripts"
-  ];
 
   buildPhase = ''
     runHook preBuild
@@ -102,26 +96,35 @@ buildNpmPackage rec {
 
     runHook postInstall
   '';
+
+  npmFlags = [
+    # Use the legacy dependency resolution, with less strict version
+    # requirements for transative dependencies
+    "--legacy-peer-deps"
+
+    # We want to avoid call the scripts/postInstall.sh until we copy the
+    # collection and app derivation we do that on installPhase
+    "--ignore-scripts"
+  ];
+
   passthru.updateScript = unstableGitUpdater {
     tagPrefix = "v";
   };
-
-  nativeBuildInputs = [ makeWrapper ];
-
-  buildInputs = [ python3 ];
 
   meta = {
     description = "Visual editor for open FPGA boards";
     homepage = "https://github.com/FPGAwars/icestudio/";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       kiike
       jleightcap
       rcoeurjoly
       amerino
     ];
-    teams = [ lib.teams.ngi ];
-    mainProgram = "icestudio";
+
     platforms = lib.platforms.linux;
+    mainProgram = "icestudio";
+    teams = [ lib.teams.ngi ];
   };
 }

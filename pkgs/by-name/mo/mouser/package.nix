@@ -2,20 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
   copyDesktopItems,
+  kdotool,
   makeDesktopItem,
   nix-update-script,
+  python3Packages,
   xdotool,
-  kdotool,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mouser";
   version = "3.6.0";
-  pyproject = false;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "TomBadash";
@@ -27,27 +24,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     copyDesktopItems
   ];
-
-  dependencies =
-    (with python3Packages; [
-      pyside6
-      hidapi
-      pillow
-    ])
-    ++ lib.optionals stdenv.hostPlatform.isLinux (
-      with python3Packages;
-      [
-        evdev
-      ]
-    )
-    ++ lib.optionals stdenv.hostPlatform.isDarwin (
-      with python3Packages;
-      [
-        pyobjc-core
-        pyobjc-framework-Cocoa
-        pyobjc-framework-Quartz
-      ]
-    );
 
   installPhase = ''
     runHook preInstall
@@ -108,32 +84,60 @@ python3Packages.buildPythonApplication (finalAttrs: {
     makeWrapper $out/bin/mouser $out/Applications/Mouser.app/Contents/MacOS/Mouser
   '';
 
+  __structuredAttrs = true;
+
+  dependencies =
+    (with python3Packages; [
+      pyside6
+      hidapi
+      pillow
+    ])
+    ++ lib.optionals stdenv.hostPlatform.isLinux (
+      with python3Packages;
+      [
+        evdev
+      ]
+    )
+    ++ lib.optionals stdenv.hostPlatform.isDarwin (
+      with python3Packages;
+      [
+        pyobjc-core
+        pyobjc-framework-Cocoa
+        pyobjc-framework-Quartz
+      ]
+    );
+
   desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
     (makeDesktopItem {
-      name = "mouser";
-      desktopName = "Mouser";
-      comment = "Logitech mouse remapper";
-      exec = "mouser";
-      icon = "mouser";
-      terminal = false;
       categories = [
         "Settings"
         "Utility"
       ];
+
+      comment = "Logitech mouse remapper";
+      desktopName = "Mouser";
+      exec = "mouser";
+      icon = "mouser";
+
       keywords = [
         "mouse"
         "logitech"
         "buttons"
         "remap"
       ];
+
+      name = "mouser";
       startupWMClass = "Mouser";
+      terminal = false;
     })
   ];
 
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Lightweight local alternative to Logitech Options+ for remapping HID++ mice";
+
     longDescription = ''
       Mouser is a fully-local, open-source alternative to Logitech Options+ for
       remapping Logitech HID++ mice (MX Master / MX Anywhere families and other
@@ -144,11 +148,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
       `69-mouser-logitech.rules` is loaded and the active local session can access
       `/dev/hidraw*`, `/dev/input/event*`, and `/dev/uinput` without root.
     '';
+
     homepage = "https://github.com/TomBadash/Mouser";
     changelog = "https://github.com/TomBadash/Mouser/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "mouser";
     maintainers = with lib.maintainers; [ imcvampire ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "mouser";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  openssl,
   fetchFromGitHub,
+  openssl,
 }:
 
 stdenv.mkDerivation {
@@ -18,11 +18,8 @@ stdenv.mkDerivation {
   };
 
   buildInputs = [ openssl ];
-
-  enableParallelBuilding = true;
-
   makeFlags = [ "prefix=$(out)" ];
-
+  enableParallelBuilding = true;
   installFlags = [ "prefix=$(out)" ];
 
   meta = {

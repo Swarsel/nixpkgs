@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
+  nix-update-script,
+  nodejs,
   yarnConfigHook,
   yarnInstallHook,
-  nodejs,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,23 +20,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6gEK1VjF25Kbe2drxbxUKDNJGqZ+OXgkulPkAkMR2+k=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-zq9ygsKDU4lIsNxc6ovW+IXVztQoEaJAekzBrwCK7ik=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnInstallHook
     nodejs
   ];
 
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-zq9ygsKDU4lIsNxc6ovW+IXVztQoEaJAekzBrwCK7ik=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/localtunnel/localtunnel/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "CLI for localtunnel";
     homepage = "https://localtunnel.me";
+    changelog = "https://github.com/localtunnel/localtunnel/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "lt";

@@ -1,17 +1,17 @@
 {
-  runCommand,
   fetchFromGitLab,
-  wrapFirefox,
   firefox-unwrapped,
+  runCommand,
+  wrapFirefox,
 }:
 
 let
   pkg = fetchFromGitLab {
     domain = "gitlab.postmarketos.org";
+    hash = "sha256-tISfxN/04spgtKStkkn+zlCtFU6GbtwuZubqpGN2olA=";
     owner = "postmarketOS";
     repo = "mobile-config-firefox";
     rev = "4.6.0";
-    hash = "sha256-tISfxN/04spgtKStkkn+zlCtFU6GbtwuZubqpGN2olA=";
   };
   mobileConfigDir = runCommand "mobile-config-firefox" { } ''
     mkdir -p $out/mobile-config-firefox/{common,userChrome,userContent}
@@ -41,12 +41,12 @@ let
   '';
 in
 wrapFirefox firefox-unwrapped {
+  extraPoliciesFiles = [
+    "${pkg}/src/policies.json"
+  ];
+
   extraPrefsFiles = [
     mobileConfigAutoconfig
     mobileConfigPrefs
-  ];
-
-  extraPoliciesFiles = [
-    "${pkg}/src/policies.json"
   ];
 }

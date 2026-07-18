@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   colorVariants ? [ ], # default: install all icons
 }:
 
@@ -63,11 +63,13 @@ lib.checkListOfEnum "${pname}: color variants" colorVariantList colorVariants
     meta = {
       description = "Material Black Colors icons";
       homepage = "https://github.com/rtlewis88/rtl88-Themes/tree/material-black-COLORS";
-      maintainers = [ ];
-      platforms = lib.platforms.all;
+
       license = with lib.licenses; [
         gpl3Plus
         mit
       ];
+
+      maintainers = [ ];
+      platforms = lib.platforms.all;
     };
   }

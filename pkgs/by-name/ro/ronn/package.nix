@@ -1,23 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   bundlerEnv,
   bundlerUpdateScript,
-  makeWrapper,
-  groff,
   callPackage,
+  groff,
+  makeWrapper,
 }:
 let
   rubyEnv = bundlerEnv {
-    name = "ronn-gems";
     gemdir = ./.;
+    name = "ronn-gems";
   };
 in
 stdenv.mkDerivation {
   pname = "ronn";
   version = rubyEnv.gems.ronn-ng.version;
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -33,19 +31,21 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  passthru.updateScript = bundlerUpdateScript "ronn";
-
+  dontUnpack = true;
   passthru.tests.reproducible-html-manpage = callPackage ./test-reproducible-html.nix { };
+  passthru.updateScript = bundlerUpdateScript "ronn";
 
   meta = {
     description = "Markdown-based tool for building manpages";
-    mainProgram = "ronn";
     homepage = "https://github.com/apjanke/ronn-ng";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       zimbatm
       nicknovitski
     ];
+
     platforms = rubyEnv.ruby.meta.platforms;
+    mainProgram = "ronn";
   };
 }

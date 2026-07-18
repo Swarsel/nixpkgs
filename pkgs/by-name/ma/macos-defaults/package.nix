@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "macos-defaults";
@@ -31,7 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/dsully/macos-defaults";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ josh ];
-    mainProgram = "macos-defaults";
     platforms = lib.platforms.darwin;
+    mainProgram = "macos-defaults";
   };
 })

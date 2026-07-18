@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -19,8 +19,8 @@ postgresqlBuildExtension (finalAttrs: {
   meta = {
     description = "Precise fractional arithmetic for PostgreSQL";
     homepage = "https://github.com/begriffs/pg_rational";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ netcrns ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.mit;
   };
 })

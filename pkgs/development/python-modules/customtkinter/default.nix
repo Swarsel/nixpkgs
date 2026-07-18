@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  tkinter,
+  buildPythonPackage,
   darkdetect,
   packaging,
+  setuptools,
+  tkinter,
   typing-extensions,
 }:
 let
@@ -14,7 +14,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "TomSchimansky";
@@ -22,6 +21,8 @@ buildPythonPackage {
     tag = "v${version}";
     hash = "sha256-1g2wdXbUv5xNnpflFLXvU39s16kmwvuegKWd91E3qm4=";
   };
+
+  patches = [ ./0001-Add-Missing-Cfg-Packages.patch ];
 
   build-system = [
     setuptools
@@ -34,14 +35,12 @@ buildPythonPackage {
     typing-extensions
   ];
 
-  patches = [ ./0001-Add-Missing-Cfg-Packages.patch ];
-
+  pyproject = true;
   pythonImportsCheck = [ "customtkinter" ];
 
   meta = {
     description = "Modern and customizable python UI-library based on Tkinter";
-    homepage = "https://github.com/TomSchimansky/CustomTkinter";
-    license = lib.licenses.mit;
+
     longDescription = ''
       CustomTkinter is a python UI-library based on Tkinter, which provides
       new, modern and fully customizable widgets. They are created and
@@ -53,6 +52,9 @@ buildPythonPackage {
       a consistent and modern look across all desktop platforms
       (Windows, macOS, Linux).
     '';
+
+    homepage = "https://github.com/TomSchimansky/CustomTkinter";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ _4evy ];
   };
 }

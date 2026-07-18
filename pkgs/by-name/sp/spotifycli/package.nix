@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,11 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-AJysKgk58R0LwcXO0UzpgYmflJlAIqvaiyMRP8R9xGE=";
   };
 
-  vendorHash = "sha256-MJtOJ4ZYSspumvPnK0ANL1wvWng9Na4+IlmBCoA80Hw=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-MJtOJ4ZYSspumvPnK0ANL1wvWng9Na4+IlmBCoA80Hw=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd spotifycli \

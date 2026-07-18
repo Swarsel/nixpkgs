@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pgpdump";
   version = "1.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # Disabling check because of: https://github.com/toofishes/python-pgpdump/issues/18
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python library for parsing PGP packets";

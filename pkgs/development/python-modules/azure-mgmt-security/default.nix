@@ -11,13 +11,14 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-security";
   version = "7.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-WRLu1+nTdY/cqNJuHcJrQZQ9xHAyCKEYQmbiwlLhrWY=";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,8 +27,7 @@ buildPythonPackage rec {
     isodate
   ];
 
-  # no tests included
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.common"

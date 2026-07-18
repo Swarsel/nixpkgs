@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  qt6Packages,
+  _7zz,
+  brotli,
   fpc,
   lazarus,
   libx11,
+  qt6Packages,
   runCommand,
-  _7zz,
-  brotli,
   upx,
+  writableTmpDirAsHomeHook,
   zpaq,
   zstd,
-  writableTmpDirAsHomeHook,
 }:
 
 let
@@ -32,7 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-PuY+68+7XxsWylS6skhNF40o+Qt26RwmVxVTLmGXIn0=";
   };
-  sourceRoot = "${finalAttrs.src.name}/peazip-sources";
 
   postPatch = ''
     # set it to use compression programs from $PATH
@@ -122,9 +121,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   dontWrapQtApps = true;
+  sourceRoot = "${finalAttrs.src.name}/peazip-sources";
 
   meta = {
     description = "File and archive manager";
+
     longDescription = ''
       Free Zip / Unzip software and Rar file extractor. File and archive manager.
 
@@ -132,13 +133,16 @@ stdenv.mkDerivation (finalAttrs: {
 
       Supports 7Z, 7-Zip sfx, ACE, ARJ, Brotli, BZ2, CAB, CHM, CPIO, DEB, GZ, ISO, JAR, LHA/LZH, NSIS, OOo, PEA, RAR, RPM, split, TAR, Z, ZIP, ZIPX, Zstandard.
     '';
-    license = lib.licenses.gpl3Only;
+
     homepage = "https://peazip.github.io";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       annaaurora
       ProxyVT
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "peazip";
   };
 })

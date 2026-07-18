@@ -1,19 +1,18 @@
 {
-  runCommand,
-  stdenv,
   lib,
-  pkgsBuildBuild,
+  stdenv,
   makeShellWrapper,
+  pkgsBuildBuild,
+  runCommand,
   rustc,
   ...
 }:
 
 runCommand "${stdenv.targetPlatform.config}-cargo-${lib.getVersion pkgsBuildBuild.cargo}"
   {
+    inherit (pkgsBuildBuild.cargo) meta;
     # Use depsBuildBuild or it tries to use target-runtimeShell
     depsBuildBuild = [ makeShellWrapper ];
-
-    inherit (pkgsBuildBuild.cargo) meta;
   }
   ''
     mkdir -p $out/bin

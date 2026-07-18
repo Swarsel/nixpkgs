@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitLab,
+  installShellFiles,
   nettle,
   nix-update-script,
-  installShellFiles,
+  pkg-config,
   rustPlatform,
   sqlite,
-  pkg-config,
   versionCheckHook,
 }:
 
@@ -21,10 +21,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-3PxUXMLRBqw9GO0+wRiwI7P6/RH9vuAkSN4OnSxV0SQ=";
   };
 
-  cargoHash = "sha256-iKC6vIT8fVFv/Yx3YJUSCHyTOZ7X860Ak0l/+7lrU9Y=";
-
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -37,9 +34,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
-  buildFeatures = [ "cli" ];
-
+  cargoHash = "sha256-iKC6vIT8fVFv/Yx3YJUSCHyTOZ7X860Ak0l/+7lrU9Y=";
   env.ASSET_OUT_DIR = "target";
+  doCheck = true;
 
   # Install manual pages
   postInstall = ''
@@ -51,11 +48,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # Also elv and powershell are generated there
   '';
 
-  doCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  buildFeatures = [ "cli" ];
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -63,10 +60,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://gitlab.com/sequoia-pgp/sequoia-sop";
     changelog = "https://gitlab.com/sequoia-pgp/sequoia-sop/-/blob/${finalAttrs.src.tag}/NEWS";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       doronbehar
       anish
     ];
+
     mainProgram = "sqop";
   };
 })

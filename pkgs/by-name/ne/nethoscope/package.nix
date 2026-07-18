@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   alsa-lib,
-  libpcap,
   expect,
+  libpcap,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,15 +19,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-v7GO+d4b0N3heN10+WSUJEpcShKmx4BPR1FyZoELWzc=";
   };
 
-  cargoHash = "sha256-Psu47S39/46ksv7YUU/Ppq3IB70tL2D5ZjaPdpOrrdM=";
-
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     alsa-lib
     libpcap
   ];
+
+  cargoHash = "sha256-Psu47S39/46ksv7YUU/Ppq3IB70tL2D5ZjaPdpOrrdM=";
 
   env.LD_LIBRARY_PATH = lib.makeLibraryPath [
     libpcap
@@ -35,6 +36,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     if [[ "$(${expect}/bin/unbuffer "$out/bin/${finalAttrs.meta.mainProgram}" --help 2> /dev/null | strings | grep ${finalAttrs.version} | tr -d '\n')" == " ${finalAttrs.version}" ]]; then
       echo '${finalAttrs.pname} smoke check passed'
@@ -46,10 +48,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Listen to your network traffic";
+
     longDescription = ''
       Employ your built-in wetware pattern recognition and
       signal processing facilities to understand your network traffic.
     '';
+
     homepage = "https://github.com/vvilhonen/nethoscope";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ _0x4A6F ];

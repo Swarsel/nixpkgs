@@ -2,26 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  openssl,
-  boost,
-  libevent,
   autoreconfHook,
+  boost,
   db4,
+  fetchpatch,
+  gmp,
+  hexdump,
+  libevent,
+  openssl,
   pkg-config,
   protobuf,
-  hexdump,
-  zeromq,
-  gmp,
-  withGui ? true,
   qt5,
+  zeromq,
+  withGui ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "vertcoin";
   version = "0.18.0";
-
-  name = finalAttrs.pname + toString (lib.optional (!withGui) "d") + "-" + finalAttrs.version;
 
   src = fetchFromGitHub {
     owner = "vertcoin-project";
@@ -29,6 +27,20 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "2bd6dba7a822400581d5a6014afd671fb7e61f36";
     sha256 = "ua9xXA+UQHGVpCZL0srX58DDUgpfNa+AAIKsxZbhvMk=";
   };
+
+  patches = [
+    # Fix build on gcc-13 due to missing <stdexcept> headers
+    (fetchpatch {
+      hash = "sha256-4nnE4W0Z5HzVaJ6tB8QmyohXmt6UHUGgDH+s9bQaxhg=";
+      name = "gcc-13-p1.patch";
+      url = "https://github.com/vertcoin-project/vertcoin-core/commit/398768769f85cc1b6ff212ed931646b59fa1acd6.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-4hcJIje3VAdEEpn2tetgvgZ8nVft+A64bfWLspQtbVw=";
+      name = "gcc-13-p2.patch";
+      url = "https://github.com/vertcoin-project/vertcoin-core/commit/af862661654966d5de614755ab9bd1b5913e0959.patch";
+    })
+  ];
 
   postPatch = ''
     # Dynamically patch missing standard library headers for modern GCC
@@ -50,20 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
       sed -i 's/AC_MSG_ERROR/AC_MSG_WARN/g' "$m4file"
     done
   '';
-
-  patches = [
-    # Fix build on gcc-13 due to missing <stdexcept> headers
-    (fetchpatch {
-      name = "gcc-13-p1.patch";
-      url = "https://github.com/vertcoin-project/vertcoin-core/commit/398768769f85cc1b6ff212ed931646b59fa1acd6.patch";
-      hash = "sha256-4nnE4W0Z5HzVaJ6tB8QmyohXmt6UHUGgDH+s9bQaxhg=";
-    })
-    (fetchpatch {
-      name = "gcc-13-p2.patch";
-      url = "https://github.com/vertcoin-project/vertcoin-core/commit/af862661654966d5de614755ab9bd1b5913e0959.patch";
-      hash = "sha256-4hcJIje3VAdEEpn2tetgvgZ8nVft+A64bfWLspQtbVw=";
-    })
-  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -88,10 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
     protobuf
   ];
 
-  enableParallelBuilding = true;
-
-  env.CXXFLAGS = "-Wno-error -std=c++17";
-
   configureFlags = [
     "--with-boost=${boost.dev}"
     "--with-boost-libdir=${boost.out}/lib"
@@ -110,6 +104,10 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-gui=qt5"
     "--with-qt-bindir=${qt5.qtbase.dev}/bin:${qt5.qttools.dev}/bin"
   ];
+
+  env.CXXFLAGS = "-Wno-error -std=c++17";
+  enableParallelBuilding = true;
+  name = finalAttrs.pname + toString (lib.optional (!withGui) "d") + "-" + finalAttrs.version;
 
   meta = {
     description = "Digital currency with mining decentralisation and ASIC resistance as a key focus";

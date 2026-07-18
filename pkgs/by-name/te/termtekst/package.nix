@@ -1,16 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   ncurses,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "termtekst";
   version = "1.0";
-  pyproject = true;
-
-  build-system = with python3Packages; [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "zevv";
@@ -18,6 +15,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-K3FPx63kg/Q1Npl8xhC9KIJgnDlLoH5P5cCoRFqRp74=";
   };
+
+  build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
     ncurses
@@ -31,9 +30,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "locale.setlocale" "#locale.setlocale"
   '';
 
+  pyproject = true;
+
   meta = {
     description = "Console NOS Teletekst viewer in Python";
-    mainProgram = "tt";
+
     longDescription = ''
       Small Python app using curses to display Dutch NOS Teletekst on
       the Linux console. The original Teletekst font includes 2x6
@@ -41,8 +42,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
       as a workaround the braille set is abused to approximate the
       graphics.
     '';
+
     homepage = "https://github.com/zevv/termtekst";
     license = lib.licenses.mit;
     platforms = lib.platforms.all;
+    mainProgram = "tt";
   };
 })

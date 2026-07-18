@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   flit-core,
 }:
 
 buildPythonPackage rec {
   pname = "laces";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tbrlpld";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   propagatedBuildInputs = [ django ];
-
+  pyproject = true;
   pythonImportsCheck = [ "laces" ];
 
   meta = {

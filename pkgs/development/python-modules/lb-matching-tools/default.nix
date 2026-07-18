@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
+  regex,
   setuptools,
   setuptools-scm,
-  regex,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "lb-matching-tools";
   version = "2024.01.30.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "metabrainz";
@@ -20,15 +19,15 @@ buildPythonPackage rec {
     hash = "sha256-RQ4X6DKigQsNxaAWXB1meATKP+ddMUgkoAIyX8iIisU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ regex ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "lb_matching_tools" ];
 
   meta = {

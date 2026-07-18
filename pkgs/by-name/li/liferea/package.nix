@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  intltool,
-  python3Packages,
-  wrapGAppsHook3,
+  gitUpdater,
   glib,
-  libxml2,
-  libxslt,
-  sqlite,
-  libsoup_3,
-  webkitgtk_4_1,
-  json-glib,
-  gst_all_1,
-  libnotify,
-  gtk3,
+  glib-networking,
+  gobject-introspection,
   gsettings-desktop-schemas,
+  gst_all_1,
+  gtk3,
+  intltool,
+  json-glib,
+  libnotify,
   libpeas2,
   libsecret,
-  gobject-introspection,
-  glib-networking,
-  gitUpdater,
+  libsoup_3,
+  libxml2,
+  libxslt,
+  pkg-config,
+  python3Packages,
+  sqlite,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -63,8 +63,6 @@ stdenv.mkDerivation rec {
     gst-plugins-bad
   ]);
 
-  enableParallelBuilding = true;
-
   postFixup = ''
     buildPythonPath ${python3Packages.pycairo}
     patchPythonScript $out/lib/liferea/plugins/trayicon.py
@@ -73,20 +71,15 @@ stdenv.mkDerivation rec {
     patchPythonScript $out/lib/liferea/plugins/download-manager.py
   '';
 
+  enableParallelBuilding = true;
+
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/lwindolf/${pname}";
     rev-prefix = "v";
+    url = "https://github.com/lwindolf/${pname}";
   };
 
   meta = {
     description = "GTK-based news feed aggregator";
-    homepage = "http://lzone.de/liferea/";
-    license = lib.licenses.gpl2Plus;
-    maintainers = with lib.maintainers; [
-      romildo
-      yayayayaka
-    ];
-    platforms = lib.platforms.linux;
 
     longDescription = ''
       Liferea (Linux Feed Reader) is an RSS/RDF feed reader.
@@ -94,5 +87,15 @@ stdenv.mkDerivation rec {
       It can be used to maintain a list of subscribed feeds,
       browse through their items, and show their contents.
     '';
+
+    homepage = "http://lzone.de/liferea/";
+    license = lib.licenses.gpl2Plus;
+
+    maintainers = with lib.maintainers; [
+      romildo
+      yayayayaka
+    ];
+
+    platforms = lib.platforms.linux;
   };
 }

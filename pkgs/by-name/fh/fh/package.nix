@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
-  gcc,
+  fetchFromGitHub,
   cacert,
+  gcc,
+  installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,22 +19,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-EUCV7/J9wJRroCGW5JqonFJIqcvJEBAwB7l3eWYxiSk=";
   };
 
-  cargoHash = "sha256-HOQqUNd0I85lAD6YVWT9baEj31JpjIgq9Ujfn4ys/3o=";
-
   nativeBuildInputs = [
     installShellFiles
     rustPlatform.bindgenHook
   ];
 
-  checkInputs = [ cacert ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     gcc.cc.lib
   ];
 
+  cargoHash = "sha256-HOQqUNd0I85lAD6YVWT9baEj31JpjIgq9Ujfn4ys/3o=";
+
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_CFLAGS_COMPILE = "-I${lib.getInclude stdenv.cc.libcxx}/include/c++/v1";
   };
+
+  checkInputs = [ cacert ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     for shell in bash fish zsh; do

@@ -4,7 +4,7 @@ let
   # Archive of "https://justine.lol/lambda/";
   justineLolArchive = "https://web.archive.org/web/20230614065521if_/https://justine.lol/lambda/";
 in
-{ fetchFromGitHub, fetchurl }:
+{ fetchurl, fetchFromGitHub }:
 {
   inherit blcVersion;
   inherit lambdaLispVersion;
@@ -16,36 +16,36 @@ in
     hash = "sha256-ml2xQ8s8sux+6GwTw8mID3PEOcH6hn8tyc/UI5tFaO0=";
   };
 
-  uniCSrc = fetchFromGitHub {
-    owner = "tromp";
-    repo = "tromp.github.io";
-    rev = "b4de12e566c1fb0fa3f3babe89bac885f4c966a4";
-    hash = "sha256-JmbqQp2kkkkkkkkSWQmG3uBxdgyIu4r2Ch8bBGyQ4H4=";
+  blcSrc = fetchurl {
+    hash = "sha256-qt7vDtn9WvDoBaLESCyyscA0u74914e8ZKhLiUAN52A=";
+    url = "${justineLolArchive}Blc.S?v=${blcVersion}";
   };
 
   # needed later
   clambSrc = fetchFromGitHub {
+    hash = "sha256-1lGg2NBoxAKDCSnnPn19r/hwBC5paAKUnlcsUv3dpNY=";
     owner = "irori";
     repo = "clamb";
     rev = "44c1208697f394e22857195be5ea73bfdd48ebd1";
-    hash = "sha256-1lGg2NBoxAKDCSnnPn19r/hwBC5paAKUnlcsUv3dpNY=";
+  };
+
+  flatSrc = fetchurl {
+    hash = "sha256-HxX+10rV86zPv+UtF+n72obtz3DosWLMIab+uskxIjA=";
+    url = "${justineLolArchive}flat.lds";
   };
 
   # needed later
   lazykSrc = fetchFromGitHub {
+    hash = "sha256-1lGg2NBoxAKDCSnnPn19r/hwBC5paAKUnlcsUv3dpNY=";
     owner = "irori";
     repo = "lazyk";
     rev = "5edb0b834d0af5f7413c484eb3795d47ec2e3894";
-    hash = "sha256-1lGg2NBoxAKDCSnnPn19r/hwBC5paAKUnlcsUv3dpNY=";
   };
 
-  blcSrc = fetchurl {
-    url = "${justineLolArchive}Blc.S?v=${blcVersion}";
-    hash = "sha256-qt7vDtn9WvDoBaLESCyyscA0u74914e8ZKhLiUAN52A=";
-  };
-
-  flatSrc = fetchurl {
-    url = "${justineLolArchive}flat.lds";
-    hash = "sha256-HxX+10rV86zPv+UtF+n72obtz3DosWLMIab+uskxIjA=";
+  uniCSrc = fetchFromGitHub {
+    hash = "sha256-JmbqQp2kkkkkkkkSWQmG3uBxdgyIu4r2Ch8bBGyQ4H4=";
+    owner = "tromp";
+    repo = "tromp.github.io";
+    rev = "b4de12e566c1fb0fa3f3babe89bac885f4c966a4";
   };
 }

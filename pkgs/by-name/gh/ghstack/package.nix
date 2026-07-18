@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ghstack";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ezyang";
@@ -32,16 +31,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ghstack.cli" ];
 
   meta = {
     description = "Submit stacked diffs to GitHub on the command line";
     homepage = "https://github.com/ezyang/ghstack";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       munksgaard
       shikanime
     ];
+
     mainProgram = "ghstack";
   };
 })

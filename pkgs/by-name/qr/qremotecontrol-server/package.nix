@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchgit,
-  qt5,
   libxtst,
+  qt5,
 }:
 
 stdenv.mkDerivation {
@@ -20,6 +20,11 @@ stdenv.mkDerivation {
     ./0001-fix-qt5-build-include-QDataStream.patch
   ];
 
+  postPatch = ''
+    substituteInPlace QRemoteControl-Server.pro \
+      --replace /usr $out
+  '';
+
   nativeBuildInputs = [
     qt5.qmake
     qt5.wrapQtAppsHook
@@ -30,18 +35,9 @@ stdenv.mkDerivation {
     libxtst
   ];
 
-  postPatch = ''
-    substituteInPlace QRemoteControl-Server.pro \
-      --replace /usr $out
-  '';
-
   meta = {
-    license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ fgaz ];
-    homepage = "https://sourceforge.net/projects/qrc/";
     description = "Remote control your desktop from your mobile";
-    mainProgram = "qremotecontrol-server";
+
     longDescription = ''
       With QRemoteControl installed on your desktop you can easily control
       your computer via WiFi from your mobile. By using the touch pad of your
@@ -54,6 +50,12 @@ stdenv.mkDerivation {
       keyboard, multimedia keys and buttons for starting applications. Even
       powering on the computer via Wake On Lan is supported.
     '';
+
+    homepage = "https://sourceforge.net/projects/qrc/";
+    license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ fgaz ];
+    platforms = lib.platforms.all;
+    mainProgram = "qremotecontrol-server";
     # never built on aarch64-darwin, x86_64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin;
   };

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   orjson,
+  pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
-  pytest-asyncio,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "steamloop";
   version = "1.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hvaclibs";
@@ -21,16 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7AxUEe57OpDi2ofbKWvdcFCoq7ARXtlKpiJQyQX891c=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ orjson ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
     pytest-asyncio
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ orjson ];
+  pyproject = true;
   pythonImportsCheck = [ "steamloop" ];
 
   meta = {

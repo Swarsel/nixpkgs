@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,12 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-N5wwNPjOL3U4bPSONGpjmOBU31Nt/sCVth+JH3xmz/g=";
 
   meta = {
-    changelog = "https://github.com/uutils/sed/releases/tag/${finalAttrs.version}";
     description = "Rewrite of sed in Rust";
     homepage = "https://github.com/uutils/sed";
+    changelog = "https://github.com/uutils/sed/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "sed";
     maintainers = with lib.maintainers; [ kyehn ];
     platforms = lib.platforms.unix;
+    mainProgram = "sed";
   };
 })

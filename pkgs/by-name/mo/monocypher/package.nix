@@ -13,18 +13,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jMm8NBpmJJAW25vXDpFC2NCu+ZRZc3RLGsBdvFXY7mY=";
   };
 
-  installFlags = [ "PREFIX=$(out)" ];
-
   doCheck = true;
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Boring crypto that simply works";
     homepage = "https://monocypher.org";
+
     license = with lib.licenses; [
       bsd2
       cc0
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.linux;
   };
 })

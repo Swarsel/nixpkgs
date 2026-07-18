@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   ds-store,
   importlib-resources,
   mac-alias,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dmgbuild";
   version = "1.6.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dmgbuild";
@@ -26,6 +25,10 @@ buildPythonPackage rec {
       --replace-fail "==" ">="
   '';
 
+  # require permissions to access TextEditor.app
+  # https://github.com/dmgbuild/dmgbuild/blob/refs/tags/v1.6.2/tests/examples/settings.py#L17
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
@@ -36,13 +39,11 @@ buildPythonPackage rec {
     mac-alias
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "dmgbuild"
   ];
-
-  # require permissions to access TextEditor.app
-  # https://github.com/dmgbuild/dmgbuild/blob/refs/tags/v1.6.2/tests/examples/settings.py#L17
-  doCheck = false;
 
   meta = {
     description = "MacOS command line utility to build disk images";
@@ -50,7 +51,7 @@ buildPythonPackage rec {
     changelog = "https://github.com/dmgbuild/dmgbuild/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ moraxyc ];
-    mainProgram = "dmgbuild";
     platforms = lib.platforms.darwin;
+    mainProgram = "dmgbuild";
   };
 }

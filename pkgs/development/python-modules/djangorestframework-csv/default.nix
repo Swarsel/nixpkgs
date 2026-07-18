@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   djangorestframework,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
   python,
 }:
 
 buildPythonPackage rec {
   pname = "djangorestframework-csv";
   version = "3.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mjumbewu";
@@ -20,11 +19,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-XtMkSucB7+foRpTaRfGF1Co0n3ONNGyzex6MXR4xM5c=";
   };
-
-  dependencies = [
-    django
-    djangorestframework
-  ];
 
   checkInputs = [
     pytestCheckHook
@@ -37,6 +31,12 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  dependencies = [
+    django
+    djangorestframework
+  ];
+
+  format = "setuptools";
   pythonImportsCheck = [ "rest_framework_csv" ];
 
   meta = {

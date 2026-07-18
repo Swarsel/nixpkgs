@@ -1,15 +1,14 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
+  buildKodiBinaryAddon,
   libretro,
   nestopia,
+  rel,
 }:
 
 buildKodiBinaryAddon rec {
   pname = "libretro-nestopia";
-  namespace = "game.libretro.nestopia";
   version = "1.52.0.41";
 
   src = fetchFromGitHub {
@@ -19,20 +18,23 @@ buildKodiBinaryAddon rec {
     sha256 = "sha256-DmBO+HcfIBcz7p16dND09iwXWeObtU/doo/mJ0IZGGg=";
   };
 
-  extraCMakeFlags = [
-    "-DNESTOPIA_LIB=${nestopia}/lib/retroarch/cores/nestopia_libretro.so"
-  ];
-
-  extraBuildInputs = [ nestopia ];
   propagatedBuildInputs = [
     libretro
   ];
 
+  extraBuildInputs = [ nestopia ];
+
+  extraCMakeFlags = [
+    "-DNESTOPIA_LIB=${nestopia}/lib/retroarch/cores/nestopia_libretro.so"
+  ];
+
+  namespace = "game.libretro.nestopia";
+
   meta = {
-    homepage = "https://github.com/kodi-game/game.libretro.nestopia";
     description = "Nintendo - NES / Famicom (Nestopia UE) GameClient for Kodi";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/kodi-game/game.libretro.nestopia";
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

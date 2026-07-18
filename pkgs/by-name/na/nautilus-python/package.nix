@@ -1,22 +1,27 @@
 {
-  stdenv,
   lib,
-  replaceVars,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  gtk-doc,
   docbook-xsl-nons,
   docbook_xml_dtd_412,
-  python3,
-  nautilus,
   gnome,
+  gtk-doc,
+  meson,
+  nautilus,
+  ninja,
+  pkg-config,
+  python3,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "nautilus-python";
   version = "4.1.0";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/nautilus-python/${lib.versions.majorMinor finalAttrs.version}/nautilus-python-${finalAttrs.version}.tar.xz";
+    hash = "sha256-/EpEi8yxoJtohlQJueKu0XHSii1ayA975E9fzKhO4ME=";
+  };
 
   outputs = [
     "out"
@@ -24,11 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/nautilus-python/${lib.versions.majorMinor finalAttrs.version}/nautilus-python-${finalAttrs.version}.tar.xz";
-    hash = "sha256-/EpEi8yxoJtohlQJueKu0XHSii1ayA975E9fzKhO4ME=";
-  };
 
   patches = [
     # Make PyGObject’s gi library available.
@@ -65,7 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Python bindings for the Nautilus Extension API";
     homepage = "https://gitlab.gnome.org/GNOME/nautilus-python";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

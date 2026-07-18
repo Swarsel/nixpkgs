@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "2.1.3";
   pname = "diffpdf";
+  version = "2.1.3";
 
   src = fetchurl {
     url = "http://www.qtrac.eu/${pname}-${version}.tar.gz";
@@ -17,8 +17,8 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/gentoo/gentoo/9b971631588ff46e7c2d501bc35cd0d9ce2d98e2/app-text/diffpdf/files/diffpdf-2.1.3-qt5.patch";
       sha256 = "0sax8gcqcmzf74hmdr3rarqs4nsxmml9qmh6pqyjmgl3lypxhafg";
+      url = "https://raw.githubusercontent.com/gentoo/gentoo/9b971631588ff46e7c2d501bc35cd0d9ce2d98e2/app-text/diffpdf/files/diffpdf-2.1.3-qt5.patch";
     })
     ./fix_path_poppler_qt5.patch
   ];
@@ -28,6 +28,7 @@ stdenv.mkDerivation rec {
     libsForQt5.qttools
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libsForQt5.qtbase
     libsForQt5.poppler
@@ -69,11 +70,11 @@ stdenv.mkDerivation rec {
       '';
 
   meta = {
-    homepage = "http://www.qtrac.eu/diffpdf.html";
     description = "Tool for diffing pdf files visually or textually";
-    mainProgram = "diffpdf";
+    homepage = "http://www.qtrac.eu/diffpdf.html";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; unix;
+    mainProgram = "diffpdf";
   };
 }

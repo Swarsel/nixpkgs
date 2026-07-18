@@ -1,11 +1,11 @@
 {
-  version,
   lib,
   stdenv,
-  pkgsCross,
-  testers,
   cloudflared,
+  pkgsCross,
   runCommand,
+  testers,
+  version,
   wine,
   wine64,
 }:
@@ -15,9 +15,10 @@ let
 in
 {
   version = testers.testVersion {
-    package = cloudflared;
     command = "cloudflared help";
+    package = cloudflared;
   };
+
   refuses-to-autoupdate =
     runCommand "cloudflared-${version}-refuses-to-autoupdate"
       {

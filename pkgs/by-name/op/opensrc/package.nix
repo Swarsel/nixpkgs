@@ -1,16 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "opensrc";
   version = "0.7.3";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "vercel-labs";
@@ -18,13 +16,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qRKbb2CA5omhFrxtKiEHEX4eH2ayvY8VZ/hH5Uckm8A=";
   };
-  sourceRoot = "${finalAttrs.src.name}/packages/opensrc/cli";
 
+  strictDeps = true;
   cargoHash = "sha256-ewGecSgnMkZTNyJuVWZ/195BTVv2L2QIZ7jRUtnD8jY=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
+  sourceRoot = "${finalAttrs.src.name}/packages/opensrc/cli";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -33,7 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/vercel-labs/opensrc/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ airrnot ];
-    mainProgram = "opensrc";
     platforms = lib.platforms.all;
+    mainProgram = "opensrc";
   };
 })

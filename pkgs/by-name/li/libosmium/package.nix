@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  protozero,
-  expat,
-  zlib,
-  bzip2,
   boost,
+  bzip2,
+  cmake,
+  expat,
   lz4,
+  protozero,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,11 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Fast and flexible C++ library for working with OpenStreetMap data";
     homepage = "https://osmcode.org/libosmium/";
-    license = lib.licenses.boost;
+
     changelog = [
       "https://github.com/osmcode/libosmium/releases/tag/v${finalAttrs.version}"
       "https://github.com/osmcode/libosmium/blob/v${finalAttrs.version}/CHANGELOG.md"
     ];
+
+    license = lib.licenses.boost;
     maintainers = with lib.maintainers; [ das-g ];
     teams = [ lib.teams.geospatial ];
   };

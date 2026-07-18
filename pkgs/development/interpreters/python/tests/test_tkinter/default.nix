@@ -1,7 +1,7 @@
 {
   interpreter,
-  writeText,
   runCommand,
+  writeText,
 }:
 
 let

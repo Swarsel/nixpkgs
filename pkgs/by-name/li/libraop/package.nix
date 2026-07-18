@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   openssl,
-  stdenv,
 }:
 
 let
@@ -24,8 +24,8 @@ stdenv.mkDerivation {
     # we try to closely match the commit used in the last music-assistant release from
     # https://github.com/music-assistant/server/tree/stable/music_assistant/providers/airplay/bin
     rev = "df3c055674c147eeaa9307b7d554b9d46ed6418a";
-    fetchSubmodules = true;
     hash = "sha256-zD1DggBQjbiD7B/u0hmogXj8NhrzYgVXMyzvHkaM4Hg=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -70,14 +70,16 @@ stdenv.mkDerivation {
   meta = {
     description = "RAOP player and library (AirPlay)";
     homepage = "https://github.com/music-assistant/libraop";
+
     # https://github.com/philippe44/libraop/issues/36
     license = with lib.licenses; [
       gpl2Only
       mit
     ];
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
-    mainProgram = "cliraop";
-    platforms = with lib.platforms; linux ++ darwin;
+
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "cliraop";
   };
 }

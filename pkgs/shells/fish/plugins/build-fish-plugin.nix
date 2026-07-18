@@ -1,38 +1,52 @@
 {
-  stdenv,
   lib,
-  writeScript,
+  stdenv,
   wrapFish,
   writableTmpDirAsHomeHook,
+  writeScript,
 }:
 lib.extendMkDerivation {
   constructDrv = stdenv.mkDerivation;
+
   excludeDrvArgNames = [
     "checkPlugins"
     "checkFunctionDirs"
   ];
+
   extendDrvArgs =
     finalAttrs:
     {
-      name ? "fishplugin-${finalAttrs.pname}-${finalAttrs.version}",
-      unpackPhase ? "",
-      configurePhase ? ":",
       buildPhase ? ":",
-
-      nativeCheckInputs ? [ ],
-      # plugin packages to add to the vendor paths of the test fish shell
-      checkPlugins ? [ ],
       # vendor directories to add to the function path of the test fish shell
       checkFunctionDirs ? [ ],
       # test script to be executed in a fish shell
       checkPhase ? "",
+      # plugin packages to add to the vendor paths of the test fish shell
+      checkPlugins ? [ ],
+      configurePhase ? ":",
       doCheck ? checkPhase != "",
-
+      name ? "fishplugin-${finalAttrs.pname}-${finalAttrs.version}",
+      nativeCheckInputs ? [ ],
+      unpackPhase ? "",
       ...
     }:
     {
       inherit name;
       inherit unpackPhase configurePhase buildPhase;
+      inherit doCheck;
+
+      nativeCheckInputs = [
+        writableTmpDirAsHomeHook
+        (wrapFish {
+          functionDirs = checkFunctionDirs;
+          pluginPkgs = checkPlugins;
+        })
+      ]
+      ++ nativeCheckInputs;
+
+      checkPhase = ''
+        fish "${writeScript "${finalAttrs.name}-test" checkPhase}"
+      '';
 
       installPhase = ''
         runHook preInstall
@@ -56,21 +70,6 @@ lib.extendMkDerivation {
         )
 
         runHook postInstall
-      '';
-
-      inherit doCheck;
-
-      nativeCheckInputs = [
-        writableTmpDirAsHomeHook
-        (wrapFish {
-          pluginPkgs = checkPlugins;
-          functionDirs = checkFunctionDirs;
-        })
-      ]
-      ++ nativeCheckInputs;
-
-      checkPhase = ''
-        fish "${writeScript "${finalAttrs.name}-test" checkPhase}"
       '';
     };
 }

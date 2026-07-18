@@ -1,15 +1,15 @@
 {
   lib,
-  SDL,
+  stdenv,
   fetchFromGitHub,
+  SDL,
   giflib,
-  libxpm,
   libjpeg,
   libpng,
   libtiff,
   libwebp,
+  libxpm,
   pkg-config,
-  stdenv,
   unstableGitUpdater,
 }:
 
@@ -24,15 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fGwSb3GYfzcrWn7F70xhNxBXygYdD2uuzFQudS1lCqU=";
   };
 
-  configureFlags = [
-    # Disable dynamic loading or else dlopen will fail because of no proper
-    # rpath
-    (lib.enableFeature false "jpg-shared")
-    (lib.enableFeature false "png-shared")
-    (lib.enableFeature false "tif-shared")
-    (lib.enableFeature false "webp-shared")
-    (lib.enableFeature (!stdenv.hostPlatform.isDarwin) "sdltest")
+  outputs = [
+    "out"
+    "dev"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     SDL
@@ -49,24 +46,27 @@ stdenv.mkDerivation (finalAttrs: {
     libwebp
   ];
 
-  outputs = [
-    "out"
-    "dev"
+  configureFlags = [
+    # Disable dynamic loading or else dlopen will fail because of no proper
+    # rpath
+    (lib.enableFeature false "jpg-shared")
+    (lib.enableFeature false "png-shared")
+    (lib.enableFeature false "tif-shared")
+    (lib.enableFeature false "webp-shared")
+    (lib.enableFeature (!stdenv.hostPlatform.isDarwin) "sdltest")
   ];
 
-  strictDeps = true;
-
   passthru.updateScript = unstableGitUpdater {
+    branch = "SDL-1.2";
     tagFormat = "release-1.*";
     tagPrefix = "release-";
-    branch = "SDL-1.2";
   };
 
   meta = {
-    homepage = "http://www.libsdl.org/projects/SDL_image/";
+    inherit (SDL.meta) platforms;
     description = "SDL image library";
+    homepage = "http://www.libsdl.org/projects/SDL_image/";
     license = lib.licenses.zlib;
     teams = [ lib.teams.sdl ];
-    inherit (SDL.meta) platforms;
   };
 })

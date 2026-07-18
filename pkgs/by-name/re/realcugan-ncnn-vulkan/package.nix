@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchFromGitHub,
   cmake,
-  vulkan-headers,
-  vulkan-loader,
+  fetchzip,
   glslang,
   libwebp,
   ncnn,
+  vulkan-headers,
+  vulkan-loader,
 }:
 stdenv.mkDerivation rec {
   pname = "realcugan-ncnn-vulkan";
@@ -20,25 +20,18 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-P3Y1B8m1+mpFinacwnvBE2vU150jj6Q12IS6QYNRZ6A=";
   };
-  sourceRoot = "${src.name}/src";
-
-  models = fetchzip {
-    url = "https://github.com/nihui/realcugan-ncnn-vulkan/releases/download/20220728/realcugan-ncnn-vulkan-20220728-ubuntu.zip";
-    sha256 = "sha256-71C6taL2Zr1exG5HEXOLy1j9ZMKgkMJjTgNi2hiA7xk=";
-  };
 
   patches = [
     ./cmakelists.patch
     ./models_path.patch
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "USE_SYSTEM_NCNN" true)
-    (lib.cmakeBool "USE_SYSTEM_WEBP" true)
-    (lib.cmakeFeature "GLSLANG_TARGET_DIR" "${glslang}/lib/cmake")
-  ];
+  postPatch = ''
+    substituteInPlace main.cpp --replace REPLACE_MODELS $out/share/models-se
+  '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     vulkan-headers
     vulkan-loader
@@ -47,9 +40,11 @@ stdenv.mkDerivation rec {
     ncnn
   ];
 
-  postPatch = ''
-    substituteInPlace main.cpp --replace REPLACE_MODELS $out/share/models-se
-  '';
+  cmakeFlags = [
+    (lib.cmakeBool "USE_SYSTEM_NCNN" true)
+    (lib.cmakeBool "USE_SYSTEM_WEBP" true)
+    (lib.cmakeFeature "GLSLANG_TARGET_DIR" "${glslang}/lib/cmake")
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -60,12 +55,19 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  models = fetchzip {
+    sha256 = "sha256-71C6taL2Zr1exG5HEXOLy1j9ZMKgkMJjTgNi2hiA7xk=";
+    url = "https://github.com/nihui/realcugan-ncnn-vulkan/releases/download/20220728/realcugan-ncnn-vulkan-20220728-ubuntu.zip";
+  };
+
+  sourceRoot = "${src.name}/src";
+
   meta = {
     description = "Real-cugan converter ncnn version, runs fast on intel / amd / nvidia / apple-silicon GPU with vulkan";
     homepage = "https://github.com/nihui/realcugan-ncnn-vulkan";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ iynaix ];
-    mainProgram = "realcugan-ncnn-vulkan";
     platforms = lib.platforms.all;
+    mainProgram = "realcugan-ncnn-vulkan";
   };
 }

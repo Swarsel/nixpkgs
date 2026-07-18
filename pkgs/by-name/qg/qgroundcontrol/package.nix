@@ -3,16 +3,40 @@
   stdenv,
   fetchFromGitHub,
   SDL2,
-  libsForQt5,
   gst_all_1,
-  wayland,
-  pkg-config,
+  libsForQt5,
   nix-update-script,
+  pkg-config,
+  wayland,
 }:
 
 stdenv.mkDerivation rec {
   pname = "qgroundcontrol";
   version = "4.4.5";
+
+  # TODO: package mavlink so we can build from a normal source tarball
+  src = fetchFromGitHub {
+    owner = "mavlink";
+    repo = "qgroundcontrol";
+    tag = "v${version}";
+    hash = "sha256-wjrfwE97J+UzBPIARQ6cPadN6xIdqR8i+ZKbtiDproM=";
+    fetchSubmodules = true;
+  };
+
+  patches = [
+    ./disable-bad-message.patch
+  ];
+
+  nativeBuildInputs = [
+    pkg-config
+  ]
+  ++ (with libsForQt5; [
+    qmake
+    qttools
+    wrapQtAppsHook
+  ]);
+
+  buildInputs = [ SDL2 ] ++ gstInputs ++ propagatedBuildInputs;
 
   propagatedBuildInputs = with libsForQt5; [
     qtbase
@@ -26,38 +50,10 @@ stdenv.mkDerivation rec {
     qtx11extras
   ];
 
-  gstInputs = with gst_all_1; [
-    gstreamer
-    gst-plugins-base
-    (gst-plugins-good.override { qt5Support = true; })
-    gst-plugins-bad
-    gst-libav
-    wayland
-  ];
-
-  buildInputs = [ SDL2 ] ++ gstInputs ++ propagatedBuildInputs;
-  nativeBuildInputs = [
-    pkg-config
-  ]
-  ++ (with libsForQt5; [
-    qmake
-    qttools
-    wrapQtAppsHook
-  ]);
-
   preConfigure = ''
     mkdir build
     cd build
   '';
-
-  qmakeFlags = [
-    "CONFIG+=StableBuild"
-    # Default install tries to copy Qt files into package
-    "CONFIG+=QGC_DISABLE_BUILD_SETUP"
-    # Tries to download x86_64-only prebuilt binaries
-    "DEFINES+=DISABLE_AIRMAP"
-    "../qgroundcontrol.pro"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -83,17 +79,22 @@ stdenv.mkDerivation rec {
     qtWrapperArgs+=(--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0")
   '';
 
-  # TODO: package mavlink so we can build from a normal source tarball
-  src = fetchFromGitHub {
-    owner = "mavlink";
-    repo = "qgroundcontrol";
-    tag = "v${version}";
-    hash = "sha256-wjrfwE97J+UzBPIARQ6cPadN6xIdqR8i+ZKbtiDproM=";
-    fetchSubmodules = true;
-  };
+  gstInputs = with gst_all_1; [
+    gstreamer
+    gst-plugins-base
+    (gst-plugins-good.override { qt5Support = true; })
+    gst-plugins-bad
+    gst-libav
+    wayland
+  ];
 
-  patches = [
-    ./disable-bad-message.patch
+  qmakeFlags = [
+    "CONFIG+=StableBuild"
+    # Default install tries to copy Qt files into package
+    "CONFIG+=QGC_DISABLE_BUILD_SETUP"
+    # Tries to download x86_64-only prebuilt binaries
+    "DEFINES+=DISABLE_AIRMAP"
+    "../qgroundcontrol.pro"
   ];
 
   passthru.updateScript = nix-update-script { };
@@ -103,11 +104,13 @@ stdenv.mkDerivation rec {
     homepage = "https://qgroundcontrol.com/";
     changelog = "https://github.com/mavlink/qgroundcontrol/blob/master/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       lopsided98
       pandapip1
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "QGroundControl";
   };
 }

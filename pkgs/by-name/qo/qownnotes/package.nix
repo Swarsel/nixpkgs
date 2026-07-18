@@ -2,23 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  qt6Packages,
-  cmake,
-  makeWrapper,
-  botan3,
-  libgit2,
-  pkg-config,
-  nixosTests,
-  installShellFiles,
-  xvfb-run,
-  versionCheckHook,
-  nix-update-script,
   aspell,
+  botan3,
+  cmake,
+  installShellFiles,
+  libgit2,
+  makeWrapper,
+  nix-update-script,
+  nixosTests,
+  pkg-config,
+  qt6Packages,
+  versionCheckHook,
+  xvfb-run,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "qownnotes";
-  appname = "QOwnNotes";
   version = "26.7.3";
 
   src = fetchurl {
@@ -81,30 +80,35 @@ stdenv.mkDerivation (finalAttrs: {
       mv $out/bin/${finalAttrs.pname}.bin $out/bin/${finalAttrs.pname}
     '';
 
-  # Tests QOwnNotes using the NixOS module by launching xterm:
-  passthru.tests.basic-nixos-module-functionality = nixosTests.qownnotes;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  appname = "QOwnNotes";
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
+  # Tests QOwnNotes using the NixOS module by launching xterm:
+  passthru.tests.basic-nixos-module-functionality = nixosTests.qownnotes;
+
   meta = {
     description = "Plain-text file notepad and todo-list manager with markdown support and Nextcloud/ownCloud integration";
     homepage = "https://www.qownnotes.org/";
     changelog = "https://www.qownnotes.org/changelog.html";
-    downloadPage = "https://github.com/pbek/QOwnNotes/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       pbek
       totoroot
       matthiasbeyer
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "qownnotes";
+    downloadPage = "https://github.com/pbek/QOwnNotes/releases/tag/v${finalAttrs.version}";
   };
 })

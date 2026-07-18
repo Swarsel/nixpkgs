@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   packaging,
   requests,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyzabbix";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lukecyca";
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # Tests require a running Zabbix instance
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyzabbix" ];
 
   meta = {

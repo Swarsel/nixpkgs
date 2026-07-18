@@ -1,20 +1,14 @@
 {
   lib,
-  buildPythonPackage,
-  setuptools,
-  python,
   antlr4,
+  buildPythonPackage,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
-  pname = "antlr4-python3-runtime";
   inherit (antlr4.runtime.cpp) version src;
-
-  pyproject = true;
-
-  sourceRoot = "${src.name}/runtime/Python3";
-
-  build-system = [ setuptools ];
+  pname = "antlr4-python3-runtime";
 
   postPatch = ''
     substituteInPlace tests/TestIntervalSet.py \
@@ -34,11 +28,15 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
+  sourceRoot = "${src.name}/runtime/Python3";
+
   meta = {
     description = "Runtime for ANTLR";
-    mainProgram = "pygrun";
     homepage = "https://www.antlr.org/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ sarahec ];
+    mainProgram = "pygrun";
   };
 }

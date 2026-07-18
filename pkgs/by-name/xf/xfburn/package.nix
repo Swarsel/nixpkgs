@@ -1,15 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   docbook_xsl,
+  gitUpdater,
   glib,
-  libxslt,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
-  xfce4-exo,
   gst_all_1,
   gtk3,
   libburn,
@@ -17,7 +12,12 @@
   libisofs,
   libxfce4ui,
   libxfce4util,
-  gitUpdater,
+  libxslt,
+  meson,
+  ninja,
+  pkg-config,
+  wrapGAppsHook3,
+  xfce4-exo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,11 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.8.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "xfburn";
     tag = "xfburn-${finalAttrs.version}";
     hash = "sha256-10MjUxy1Ul6CVLdEWFnjppgsI4fAUWqkT2azJBzp0/Q=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -63,8 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Disc burner and project creator for Xfce";
     homepage = "https://gitlab.xfce.org/apps/xfburn";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "xfburn";
     teams = [ lib.teams.xfce ];
-    platforms = lib.platforms.linux;
   };
 })

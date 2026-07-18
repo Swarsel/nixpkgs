@@ -1,15 +1,12 @@
 {
   lib,
-  gcc15Stdenv,
-  stdenvAdapters,
   fetchFromGitHub,
-  pkg-config,
-  makeWrapper,
-  cmake,
   aquamarine,
   binutils,
   cairo,
+  cmake,
   epoll-shim,
+  gcc15Stdenv,
   glaze,
   glslang,
   hyprcursor,
@@ -17,8 +14,8 @@
   hyprland-qtutils,
   hyprlang,
   hyprutils,
-  hyprwire,
   hyprwayland-scanner,
+  hyprwire,
   lcms2,
   libGL,
   libdrm,
@@ -26,25 +23,28 @@
   libgbm,
   libinput,
   libuuid,
+  libxcb,
+  libxcb-errors,
+  libxcb-wm,
+  libxcursor,
+  libxdmcp,
   libxkbcommon,
   lua5_5,
+  makeWrapper,
   muparser,
   pango,
   pciutils,
+  pkg-config,
   pkgconf,
   python3,
   re2,
+  stdenvAdapters,
   systemd,
   tomlplusplus,
   uwsm,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxcb-wm,
-  libxcb-errors,
-  libxdmcp,
-  libxcursor,
-  libxcb,
   xwayland,
   debug ? false,
   enableXWayland ? true,
@@ -88,10 +88,16 @@ customStdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "hyprwm";
     repo = "hyprland";
-    fetchSubmodules = true;
     tag = "v${finalAttrs.version}";
     hash = "sha256-IuT0HnOr/0rAw+GXr+OwWx89FjA4Og1FqP7vywEwRJM=";
+    fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "man"
+    "dev"
+  ];
 
   postPatch = ''
     # Fix hardcoded paths to /usr installation
@@ -108,23 +114,7 @@ customStdenv.mkDerivation (finalAttrs: {
       --replace-fail "TryExec=uwsm" "TryExec=${lib.getExe uwsm}"
   '';
 
-  # variables used by CMake, and shown in `hyprctl version`
-  env = {
-    GIT_BRANCH = info.branch;
-    # The amount of commits altogether. Not really worth getting that info from
-    # GitHub's API, so we set a dummy value.
-    GIT_COMMITS = "-1";
-    GIT_COMMIT_DATE = info.date;
-    GIT_DIRTY = "clean";
-    GIT_COMMIT_HASH = info.commit_hash;
-    GIT_COMMIT_MESSAGE = info.commit_message;
-    GIT_TAG = info.tag;
-  };
-
-  depsBuildBuild = [
-    # to find wayland-scanner when cross-compiling
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     hyprwayland-scanner
@@ -135,12 +125,6 @@ customStdenv.mkDerivation (finalAttrs: {
     wayland-scanner
     # for udis86
     python3
-  ];
-
-  outputs = [
-    "out"
-    "man"
-    "dev"
   ];
 
   buildInputs = concatLists [
@@ -182,19 +166,26 @@ customStdenv.mkDerivation (finalAttrs: {
     (optionals withSystemd [ systemd ])
   ];
 
-  cmakeBuildType = if debug then "Debug" else "RelWithDebInfo";
-
-  dontStrip = debug;
-  separateDebugInfo = !debug;
-  strictDeps = true;
-
   cmakeFlags = mapAttrsToList cmakeBool {
     "BUILT_WITH_NIX" = true;
-    "NO_XWAYLAND" = !enableXWayland;
-    "NO_SYSTEMD" = !withSystemd;
     "CMAKE_DISABLE_PRECOMPILE_HEADERS" = true;
+    "NO_SYSTEMD" = !withSystemd;
     "NO_UWSM" = !withSystemd;
+    "NO_XWAYLAND" = !enableXWayland;
     "TRACY_ENABLE" = false;
+  };
+
+  # variables used by CMake, and shown in `hyprctl version`
+  env = {
+    GIT_BRANCH = info.branch;
+    # The amount of commits altogether. Not really worth getting that info from
+    # GitHub's API, so we set a dummy value.
+    GIT_COMMITS = "-1";
+    GIT_COMMIT_DATE = info.date;
+    GIT_COMMIT_HASH = info.commit_hash;
+    GIT_COMMIT_MESSAGE = info.commit_message;
+    GIT_DIRTY = "clean";
+    GIT_TAG = info.tag;
   };
 
   postInstall = ''
@@ -211,18 +202,28 @@ customStdenv.mkDerivation (finalAttrs: {
     ''}
   '';
 
+  cmakeBuildType = if debug then "Debug" else "RelWithDebInfo";
+
+  depsBuildBuild = [
+    # to find wayland-scanner when cross-compiling
+    pkg-config
+  ];
+
+  dontStrip = debug;
+  separateDebugInfo = !debug;
+
   passthru = {
     providedSessions = [ "hyprland" ] ++ optionals withSystemd [ "hyprland-uwsm" ];
     updateScript = ./update.sh;
   };
 
   meta = {
+    description = "Dynamic tiling Wayland compositor that doesn't sacrifice on its looks";
     homepage = "https://github.com/hyprwm/Hyprland";
     changelog = "https://github.com/hyprwm/Hyprland/releases/tag/${finalAttrs.src.tag}";
-    description = "Dynamic tiling Wayland compositor that doesn't sacrifice on its looks";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
-    mainProgram = "Hyprland";
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+    mainProgram = "Hyprland";
+    teams = [ lib.teams.hyprland ];
   };
 })

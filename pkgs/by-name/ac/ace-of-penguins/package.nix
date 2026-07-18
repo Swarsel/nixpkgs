@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   copyDesktopItems,
+  libpng,
   libx11,
   libxpm,
-  libpng,
   makeDesktopItem,
   zlib,
 }:
@@ -45,11 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
   desktopItems =
     let
       generateItem = gameName: {
-        name = "ace-of-penguins-${gameName}";
-        exec = "${placeholder "out"}/bin/${gameName}";
         comment = "Ace of Penguins ${gameName} Card Game";
         desktopName = gameName;
+        exec = "${placeholder "out"}/bin/${gameName}";
         genericName = gameName;
+        name = "ace-of-penguins-${gameName}";
       };
     in
     map (x: makeDesktopItem (generateItem x)) [
@@ -69,8 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
     ];
 
   meta = {
-    homepage = "https://www.delorie.com/store/ace/";
     description = "Solitaire games in X11";
+
     longDescription = ''
       The Ace of Penguins is a set of Unix/X solitaire games based on the ones
       available for Windows(tm) but with a number of enhancements that my wife
@@ -80,6 +80,8 @@ stdenv.mkDerivation (finalAttrs: {
       minesweeper, pegged, solitaire, taipei (with editor!), and thornq (by
       Martin Thornquist).
     '';
+
+    homepage = "https://www.delorie.com/store/ace/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

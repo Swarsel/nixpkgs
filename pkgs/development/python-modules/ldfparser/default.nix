@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bitstruct,
   buildPythonPackage,
-  fetchFromGitHub,
   jinja2,
   jsonschema,
   lark,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "ldfparser";
   version = "0.26.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "c4deszes";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-SVl/O0/2k1Y4lta+3BFkddyBZfYO2vqh4Xx1ZXNwXN4=";
   };
+
+  nativeCheckInputs = [
+    jsonschema
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,17 +34,13 @@ buildPythonPackage rec {
     lark
   ];
 
-  nativeCheckInputs = [
-    jsonschema
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "ldfparser" ];
-
   disabledTestPaths = [
     # We don't care about benchmarks
     "tests/test_performance.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ldfparser" ];
 
   meta = {
     description = "LIN Description File parser written in Python";

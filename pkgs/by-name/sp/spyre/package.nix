@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
   pkg-config,
   yara,
@@ -22,18 +22,16 @@ buildGoModule (finalAttrs: {
     # The following two patches come from https://github.com/spyre-project/spyre/pull/75
     # and improve Darwin support.
     (fetchpatch {
+      hash = "sha256-oy8Y85IubJVQrt0kmGA1hidZapgCw2aB6F/gT7uQ6KA=";
       name = "syscall-to-x-sys-unix.patch";
       url = "https://github.com/spyre-project/spyre/commit/8f08daf030c847de453613eb2eb1befdb7300921.patch";
-      hash = "sha256-oy8Y85IubJVQrt0kmGA1hidZapgCw2aB6F/gT7uQ6KA=";
     })
     (fetchpatch {
+      hash = "sha256-BXLGOshyGnllbkvsbbmdnqvRHwycrjI52oGWBoXXgL0=";
       name = "darwin-skip-dir.patch";
       url = "https://github.com/spyre-project/spyre/commit/12dea550bc4f3275f8f406c19216ad140733a6af.patch";
-      hash = "sha256-BXLGOshyGnllbkvsbbmdnqvRHwycrjI52oGWBoXXgL0=";
     })
   ];
-
-  vendorHash = "sha256-aoeAnyFotKWWaRZQsgQPwwmhih/1zfL9eBV/2r1VPBM=";
 
   nativeBuildInputs = [
     pkg-config
@@ -43,11 +41,13 @@ buildGoModule (finalAttrs: {
     yara
   ];
 
+  vendorHash = "sha256-aoeAnyFotKWWaRZQsgQPwwmhih/1zfL9eBV/2r1VPBM=";
+
   meta = {
     description = "YARA-based IOC scanner";
-    mainProgram = "spyre";
     homepage = "https://github.com/spyre-project/spyre";
     license = with lib.licenses; [ lgpl3Plus ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "spyre";
   };
 })

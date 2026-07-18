@@ -1,23 +1,23 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  curl,
   common-updater-scripts,
-  writeShellApplication,
+  curl,
   gnugrep,
   installShellFiles,
+  stdenvNoCC,
+  writeShellApplication,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "tideways-cli";
   version = "1.2.20";
 
-  nativeBuildInputs = [ installShellFiles ];
-
   src =
     finalAttrs.passthru.sources.${stdenvNoCC.hostPlatform.system}
       or (throw "Unsupported platform for tideways-cli: ${stdenvNoCC.hostPlatform.system}");
+
+  nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
     runHook preInstall
@@ -36,28 +36,32 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   passthru = {
     sources = {
-      "x86_64-linux" = fetchurl {
-        url = "https://s3-eu-west-1.amazonaws.com/tideways/cli/${finalAttrs.version}/tideways-cli_linux_amd64-${finalAttrs.version}.tar.gz";
-        hash = "sha256-nhwWsD3EefHSC7YSVla4WFTDiTWZjTf7sUZjMNROXoQ=";
-      };
-      "aarch64-linux" = fetchurl {
-        url = "https://s3-eu-west-1.amazonaws.com/tideways/cli/${finalAttrs.version}/tideways-cli_linux_arm64-${finalAttrs.version}.tar.gz";
-        hash = "sha256-s74CnmEQ9RPki1af477tQFkrp6C9MwfehXTq2HPNAkk=";
-      };
       "aarch64-darwin" = fetchurl {
-        url = "https://s3-eu-west-1.amazonaws.com/tideways/cli/${finalAttrs.version}/tideways-cli_macos_arm64-${finalAttrs.version}.tar.gz";
         hash = "sha256-RTt5XKMJbYPea6pEPD72mITfUW41v584zrwT3rkEcQg=";
+        url = "https://s3-eu-west-1.amazonaws.com/tideways/cli/${finalAttrs.version}/tideways-cli_macos_arm64-${finalAttrs.version}.tar.gz";
+      };
+
+      "aarch64-linux" = fetchurl {
+        hash = "sha256-s74CnmEQ9RPki1af477tQFkrp6C9MwfehXTq2HPNAkk=";
+        url = "https://s3-eu-west-1.amazonaws.com/tideways/cli/${finalAttrs.version}/tideways-cli_linux_arm64-${finalAttrs.version}.tar.gz";
+      };
+
+      "x86_64-linux" = fetchurl {
+        hash = "sha256-nhwWsD3EefHSC7YSVla4WFTDiTWZjTf7sUZjMNROXoQ=";
+        url = "https://s3-eu-west-1.amazonaws.com/tideways/cli/${finalAttrs.version}/tideways-cli_linux_amd64-${finalAttrs.version}.tar.gz";
       };
     };
 
     updateScript = "${
       writeShellApplication {
         name = "update-tideways-cli";
+
         runtimeInputs = [
           curl
           gnugrep
           common-updater-scripts
         ];
+
         text = ''
           NEW_VERSION=$(curl --fail -L -s https://tideways.com/profiler/downloads | grep -E 'https://tideways.s3.amazonaws.com/cli/([0-9]+\.[0-9]+\.[0-9]+)/tideways-cli_linux_amd64-\1.tar.gz' | grep -oP 'cli/\K[0-9]+\.[0-9]+\.[0-9]+')
 
@@ -77,10 +81,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Tideways Profiler CLI";
     homepage = "https://tideways.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "tideways";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ shyim ];
     platforms = lib.attrNames finalAttrs.passthru.sources;
+    mainProgram = "tideways";
   };
 })

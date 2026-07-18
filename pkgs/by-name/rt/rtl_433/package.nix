@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libusb1,
+  pkg-config,
   rtl-sdr,
   soapysdr-with-plugins,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "25.12";
   pname = "rtl_433";
+  version = "25.12";
 
   src = fetchFromGitHub {
     owner = "merbanan";
@@ -37,10 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Decode traffic from devices that broadcast on 433.9 MHz, 868 MHz, 315 MHz, 345 MHz and 915 MHz";
     homepage = "https://github.com/merbanan/rtl_433";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       earldouglas
       markuskowa
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "rtl_433";
   };

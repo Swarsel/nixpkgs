@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   cmake,
   fontconfig,
   obs-studio,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -19,16 +19,17 @@ rustPlatform.buildRustPackage rec {
     sha256 = "sha256-4Ar4ChSl226BVFyAnqpWDLxsZF63bxl++sWD+6aENW8=";
   };
 
-  cargoHash = "sha256-e0FDa72vzRb5AMVmtkvAkiQ5GUXsq0LekqF+wDYDsr8=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     fontconfig
     obs-studio
   ];
+
+  cargoHash = "sha256-e0FDa72vzRb5AMVmtkvAkiQ5GUXsq0LekqF+wDYDsr8=";
 
   postInstall = ''
     mkdir $out/lib/obs-plugins/
@@ -36,13 +37,15 @@ rustPlatform.buildRustPackage rec {
   '';
 
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "OBS Studio plugin for adding LiveSplit One as a source";
     homepage = "https://github.com/LiveSplit/obs-livesplit-one";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ lib.maintainers.Bauke ];
-    inherit (obs-studio.meta) platforms;
   };
 }

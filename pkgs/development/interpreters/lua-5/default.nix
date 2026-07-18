@@ -1,9 +1,9 @@
 # similar to interpreters/python/default.nix
 {
-  stdenv,
   lib,
-  callPackage,
+  stdenv,
   fetchFromGitHub,
+  callPackage,
   makeBinaryWrapper,
 }:
 
@@ -14,15 +14,15 @@ let
   passthruFun =
     {
       executable,
-      luaversion,
-      packageOverrides,
       luaOnBuildForBuild,
       luaOnBuildForHost,
       luaOnBuildForTarget,
       luaOnHostForHost,
       luaOnTargetForTarget,
-      luaAttr ? null,
+      luaversion,
+      packageOverrides,
       self, # is luaOnHostForTarget
+      luaAttr ? null,
     }:
     let
       luaPackages =
@@ -33,10 +33,10 @@ let
           # - applies overrides from `packageOverrides`
           (
             {
-              lua,
-              overrides,
               callPackage,
+              lua,
               makeScopeWithSplicing',
+              overrides,
             }:
             let
               luaPackagesFun = callPackage ../../../top-level/lua-packages.nix {
@@ -72,24 +72,13 @@ let
             }
           )
           {
-            overrides = packageOverrides;
             lua = self;
+            overrides = packageOverrides;
           };
     in
     rec {
-      buildEnv = callPackage ./wrapper.nix {
-        lua = self;
-        makeWrapper = makeBinaryWrapper;
-        inherit (luaPackages) requiredLuaModules;
-      };
-      withPackages = import ./with-packages.nix { inherit buildEnv luaPackages; };
-      pkgs = luaPackages;
-      interpreter = "${self}/bin/${executable}";
       inherit executable luaversion;
-      luaOnBuild = luaOnBuildForHost.override {
-        inherit packageOverrides;
-        self = luaOnBuild;
-      };
+
       inherit
         luaOnBuildForBuild
         luaOnBuildForHost
@@ -98,107 +87,126 @@ let
         luaOnTargetForTarget
         ;
 
-      tests = callPackage ./tests {
+      inherit luaAttr;
+
+      buildEnv = callPackage ./wrapper.nix {
+        inherit (luaPackages) requiredLuaModules;
         lua = self;
-        inherit (luaPackages) wrapLua;
+        makeWrapper = makeBinaryWrapper;
       };
 
-      inherit luaAttr;
+      interpreter = "${self}/bin/${executable}";
+
+      luaOnBuild = luaOnBuildForHost.override {
+        inherit packageOverrides;
+        self = luaOnBuild;
+      };
+
+      pkgs = luaPackages;
+
+      tests = callPackage ./tests {
+        inherit (luaPackages) wrapLua;
+        lua = self;
+      };
+
+      withPackages = import ./with-packages.nix { inherit buildEnv luaPackages; };
     };
 
 in
 
 rec {
-  lua5_5 = callPackage ./interpreter.nix {
-    self = lua5_5;
-    version = "5.5.0";
-    hash = "sha256-V8zDK7vQBcq3W8xSREBSU1r2kXiduiuQFtXFBkDWiz0=";
-    makeWrapper = makeBinaryWrapper;
+  lua5_1 = callPackage ./interpreter.nix {
     inherit passthruFun;
+    version = "5.1.5";
 
-    patches = lib.optional stdenv.hostPlatform.isDarwin ./5.5.darwin.patch;
-  };
+    patches = (lib.optional stdenv.hostPlatform.isDarwin ./5.1.darwin.patch) ++ [
+      ./CVE-2014-5461.patch
+    ];
 
-  lua5_5_compat = lua5_5.override {
-    self = lua5_5_compat;
-    compat = true;
-  };
-
-  lua5_4 = callPackage ./interpreter.nix {
-    self = lua5_4;
-    version = "5.4.7";
-    hash = "sha256-n79eKO+GxphY9tPTTszDLpEcGii0Eg/z6EqqcM+/HjA=";
+    hash = "2640fc56a795f29d28ef15e13c34a47e223960b0240e8cb0a82d9b0738695333";
     makeWrapper = makeBinaryWrapper;
-    inherit passthruFun;
-
-    patches = lib.optional stdenv.hostPlatform.isDarwin ./5.4.darwin.patch;
-  };
-
-  lua5_4_compat = lua5_4.override {
-    self = lua5_4_compat;
-    compat = true;
-  };
-
-  lua5_3 = callPackage ./interpreter.nix {
-    self = lua5_3;
-    version = "5.3.6";
-    hash = "0q3d8qhd7p0b7a4mh9g7fxqksqfs6mr1nav74vq26qvkp2dxcpzw";
-    makeWrapper = makeBinaryWrapper;
-    inherit passthruFun;
-
-    patches = lib.optionals stdenv.hostPlatform.isDarwin [ ./5.2.darwin.patch ];
-  };
-
-  lua5_3_compat = lua5_3.override {
-    self = lua5_3_compat;
-    compat = true;
+    self = lua5_1;
   };
 
   lua5_2 = callPackage ./interpreter.nix {
-    self = lua5_2;
-    version = "5.2.4";
-    hash = "0jwznq0l8qg9wh5grwg07b5cy3lzngvl5m2nl1ikp6vqssmf9qmr";
-    makeWrapper = makeBinaryWrapper;
     inherit passthruFun;
+    version = "5.2.4";
+
     patches = [
       ./CVE-2022-28805.patch
     ]
     ++ lib.optional stdenv.hostPlatform.isDarwin ./5.2.darwin.patch;
+
+    hash = "0jwznq0l8qg9wh5grwg07b5cy3lzngvl5m2nl1ikp6vqssmf9qmr";
+    makeWrapper = makeBinaryWrapper;
+    self = lua5_2;
   };
 
   lua5_2_compat = lua5_2.override {
-    self = lua5_2_compat;
     compat = true;
+    self = lua5_2_compat;
   };
 
-  lua5_1 = callPackage ./interpreter.nix {
-    self = lua5_1;
-    version = "5.1.5";
-    hash = "2640fc56a795f29d28ef15e13c34a47e223960b0240e8cb0a82d9b0738695333";
-    makeWrapper = makeBinaryWrapper;
+  lua5_3 = callPackage ./interpreter.nix {
     inherit passthruFun;
-    patches = (lib.optional stdenv.hostPlatform.isDarwin ./5.1.darwin.patch) ++ [
-      ./CVE-2014-5461.patch
-    ];
+    version = "5.3.6";
+    patches = lib.optionals stdenv.hostPlatform.isDarwin [ ./5.2.darwin.patch ];
+    hash = "0q3d8qhd7p0b7a4mh9g7fxqksqfs6mr1nav74vq26qvkp2dxcpzw";
+    makeWrapper = makeBinaryWrapper;
+    self = lua5_3;
+  };
+
+  lua5_3_compat = lua5_3.override {
+    compat = true;
+    self = lua5_3_compat;
+  };
+
+  lua5_4 = callPackage ./interpreter.nix {
+    inherit passthruFun;
+    version = "5.4.7";
+    patches = lib.optional stdenv.hostPlatform.isDarwin ./5.4.darwin.patch;
+    hash = "sha256-n79eKO+GxphY9tPTTszDLpEcGii0Eg/z6EqqcM+/HjA=";
+    makeWrapper = makeBinaryWrapper;
+    self = lua5_4;
+  };
+
+  lua5_4_compat = lua5_4.override {
+    compat = true;
+    self = lua5_4_compat;
+  };
+
+  lua5_5 = callPackage ./interpreter.nix {
+    inherit passthruFun;
+    version = "5.5.0";
+    patches = lib.optional stdenv.hostPlatform.isDarwin ./5.5.darwin.patch;
+    hash = "sha256-V8zDK7vQBcq3W8xSREBSU1r2kXiduiuQFtXFBkDWiz0=";
+    makeWrapper = makeBinaryWrapper;
+    self = lua5_5;
+  };
+
+  lua5_5_compat = lua5_5.override {
+    compat = true;
+    self = lua5_5_compat;
   };
 
   luajit_2_0 = import ../luajit/2.0.nix {
-    self = luajit_2_0;
     inherit
       callPackage
       fetchFromGitHub
       lib
       passthruFun
       ;
+
+    self = luajit_2_0;
   };
 
   luajit_2_1 = import ../luajit/2.1.nix {
-    self = luajit_2_1;
     inherit callPackage fetchFromGitHub passthruFun;
+    self = luajit_2_1;
   };
 
   luajit_openresty = import ../luajit/openresty.nix {
-    self = luajit_openresty;
     inherit callPackage fetchFromGitHub passthruFun;
+    self = luajit_openresty;
   };
 }

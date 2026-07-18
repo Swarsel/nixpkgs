@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   doxygen,
-  fetchFromGitHub,
   jrl-cmakemodules,
-  lib,
   pinocchio,
   pkg-config,
   python3Packages,
   pythonSupport ? false,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.python
     python3Packages.pythonImportsCheckHook
   ];
+
   propagatedBuildInputs = [
     jrl-cmakemodules
   ]
@@ -59,7 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
   );
 
   doCheck = true;
-
   pythonImportsCheck = [ "ndcurves" ];
 
   meta = {

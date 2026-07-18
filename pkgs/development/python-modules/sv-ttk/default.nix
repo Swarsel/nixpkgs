@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "sv-ttk";
   version = "2.6.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "sv_ttk";
     hash = "sha256-R1idXiA5jPQE6DYvJPPtSPODDNCs4FbYM1T6Jdjk/kg=";
+    pname = "sv_ttk";
   };
 
+  propagatedBuildInputs = [ tkinter ];
   # No tests available
   doCheck = false;
-
-  propagatedBuildInputs = [ tkinter ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "sv_ttk" ];
 
   meta = {

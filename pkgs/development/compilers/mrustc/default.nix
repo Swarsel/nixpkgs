@@ -12,8 +12,8 @@ let
 in
 
 stdenv.mkDerivation rec {
-  pname = "mrustc";
   inherit version;
+  pname = "mrustc";
 
   # Always update minicargo.nix and bootstrap.nix in lockstep with this
   src = fetchFromGitHub {
@@ -32,7 +32,6 @@ stdenv.mkDerivation rec {
 
   strictDeps = true;
   buildInputs = [ zlib ];
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -41,20 +40,26 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
+    inherit (src.meta) homepage;
     description = "Mutabah's Rust Compiler";
-    mainProgram = "mrustc";
+
     longDescription = ''
       In-progress alternative rust compiler, written in C++.
       Capable of building a fully-working copy of rustc,
       but not yet suitable for everyday use.
     '';
-    inherit (src.meta) homepage;
+
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       progval
       r-burns
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "mrustc";
   };
 }

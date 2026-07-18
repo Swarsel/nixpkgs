@@ -1,13 +1,13 @@
-{ alephone, fetchurl }:
+{ fetchurl, alephone }:
 
 alephone.makeWrapper {
   pname = "pathways-into-darkness";
-  desktopName = "Pathways-Into-Darkness";
   version = "1.1.1";
+  desktopName = "Pathways-Into-Darkness";
 
   zip = fetchurl {
-    url = "http://simplici7y.com/version/file/1185/AOPID_v1.1.1.zip";
     hash = "sha256-j/x1Mp2snZAwttaffuaTU8II/zcrm4+4PrrYwpnsA3U=";
+    url = "http://simplici7y.com/version/file/1185/AOPID_v1.1.1.zip";
   };
 
   meta = {

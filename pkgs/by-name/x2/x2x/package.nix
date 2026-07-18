@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  libx11,
-  libxtst,
-  libxext,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  libx11,
+  libxext,
   libxi,
+  libxtst,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {

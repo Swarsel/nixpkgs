@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  cmake,
   fetchpatch,
   gitUpdater,
-  cmake,
   llvmPackages,
 }:
 
@@ -13,11 +13,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "18.0";
 
   src = fetchFromGitLab {
-    domain = "vcgit.hhi.fraunhofer.de";
     owner = "jvet";
     repo = "HM";
     tag = "HM-${finalAttrs.version}";
     hash = "sha256-zWBwrnCNKi2sIopdu2XQj/7IoTsJQzlcIFNNKM0glDQ=";
+    domain = "vcgit.hhi.fraunhofer.de";
   };
 
   postPatch = ''
@@ -25,9 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "-msse4.1" ""
   '';
 
-  cmakeFlags = [
-    (lib.cmakeBool "HIGH_BITDEPTH" true)
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -35,6 +33,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [
     llvmPackages.openmp
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "HIGH_BITDEPTH" true)
   ];
 
   env.NIX_CFLAGS_COMPILE = toString (
@@ -56,12 +58,10 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  strictDeps = true;
-
   passthru = {
     updateScript = gitUpdater {
-      rev-prefix = "HM-";
       ignoredVersions = "rc";
+      rev-prefix = "HM-";
     };
   };
 
@@ -69,7 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Reference software for HEVC";
     homepage = "https://vcgit.hhi.fraunhofer.de/jvet/HM";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    platforms = lib.platforms.all;
   };
 })

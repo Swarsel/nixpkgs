@@ -1,28 +1,28 @@
 {
-  config,
+  lib,
+  stdenv,
+  fetchFromGitLab,
   autoPatchelfHook,
   boost,
   bzip2,
   cereal,
   cmake,
+  config,
+  cudaPackages,
   eigen,
-  kdePackages,
-  fetchFromGitLab,
   fmt,
   freeglut,
   glew,
-  lib,
-  libepoxy,
+  kdePackages,
   libGL,
+  libepoxy,
+  libx11,
   lz4,
   magic-enum,
   nix-update-script,
+  onetbb,
   opencv,
   pkg-config,
-  stdenv,
-  onetbb,
-  libx11,
-  cudaPackages,
   enableCuda ? config.cudaSupport,
 }:
 
@@ -34,12 +34,12 @@ stdenv.mkDerivation {
   version = "0-unstable-2025-09-25";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "mateosss";
     repo = "basalt";
     rev = "5337898271f5c2ce523258e93e80fd870130be31";
     hash = "sha256-IoXZlXyOc5y9aSHBU3WCNhHi4L9xzHmbv6VMEvX2ZeE=";
     fetchSubmodules = true;
+    domain = "gitlab.freedesktop.org";
   };
 
   nativeBuildInputs = [
@@ -81,8 +81,8 @@ stdenv.mkDerivation {
     description = "Fork of Basalt improved for tracking XR devices with Monado";
     homepage = "https://gitlab.freedesktop.org/mateosss/basalt";
     license = lib.licenses.bsd3;
-    mainProgram = "basalt_vio";
     maintainers = [ lib.maintainers.locochoco ];
     platforms = lib.platforms.linux;
+    mainProgram = "basalt_vio";
   };
 }

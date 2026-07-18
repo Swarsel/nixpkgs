@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
-  nodejs-slim_24,
-  pnpm_10,
-  pnpmConfigHook,
-  jq,
   fetchFromGitHub,
   fetchPnpmDeps,
+  jq,
   makeWrapper,
   nix-update-script,
   nixosTests,
+  nodejs-slim_24,
+  pnpmConfigHook,
+  pnpm_10,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "turborepo-remote-cache";
@@ -22,21 +22,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-V56EEG5iO8lKXRfk5UUo5so58xCEZavYfT1Bj6QYfA8=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-dMil3ZlCVDOp7q0IxmDQgyBqqsvwidizy3z9b3Bq0hE=";
-  };
-
-  nativeBuildInputs = [
-    nodejs-slim_24
-    pnpmConfigHook
-    pnpm_10
-    jq
-    makeWrapper
-  ];
-
   postPatch = ''
     # Replace build script to skip linting
     jq '.scripts.build = "tsc -p ./tsconfig.json"' package.json > package.json.tmp
@@ -46,6 +31,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     jq 'del(.scripts.prepare)' package.json > package.json.tmp
     mv package.json.tmp package.json
   '';
+
+  nativeBuildInputs = [
+    nodejs-slim_24
+    pnpmConfigHook
+    pnpm_10
+    jq
+    makeWrapper
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -74,19 +67,28 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-dMil3ZlCVDOp7q0IxmDQgyBqqsvwidizy3z9b3Bq0hE=";
+    pnpm = pnpm_10;
+  };
+
   passthru = {
     tests = { inherit (nixosTests) turborepo-remote-cache; };
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/ducktors/turborepo-remote-cache";
     description = "This project is an open-source implementation of the Turborepo custom remote cache server.";
+    homepage = "https://github.com/ducktors/turborepo-remote-cache";
     license = lib.licenses.mit;
-    mainProgram = "turborepo-remote-cache";
+
     maintainers = with lib.maintainers; [
       humemm
       ibizaman
     ];
+
+    mainProgram = "turborepo-remote-cache";
   };
 })

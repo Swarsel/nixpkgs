@@ -1,27 +1,29 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nodejs,
+  buildNpmPackage,
   makeWrapper,
-  versionCheckHook,
   nix-update-script,
+  nodejs,
+  versionCheckHook,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "jdenticon-cli";
   version = "3.3.0";
+
   src = fetchFromGitHub {
     owner = "dmester";
     repo = "jdenticon";
     tag = finalAttrs.version;
     hash = "sha256-uOPNsfEreC7F+Y0WWmudZSPnGxqarna0JPOwQyK6LiQ=";
   };
-  npmDepsHash = "sha256-LXwvb088oHmA57EryfYtKi0L/9sB+yyUr/K/qGA1W9k=";
 
   nativeBuildInputs = [
     makeWrapper
     nodejs
   ];
+
+  npmDepsHash = "sha256-LXwvb088oHmA57EryfYtKi0L/9sB+yyUr/K/qGA1W9k=";
 
   installPhase = ''
     runHook preInstall
@@ -38,13 +40,12 @@ buildNpmPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/dmester/jdenticon/releases/tag/${finalAttrs.version}";
     description = "JavaScript library for generating highly recognizable identicons using HTML5 canvas or SVG.";
     homepage = "https://jdenticon.com/";
+    changelog = "https://github.com/dmester/jdenticon/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.gipphe ];
     mainProgram = "jdenticon";

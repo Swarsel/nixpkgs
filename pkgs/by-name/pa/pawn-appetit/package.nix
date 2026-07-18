@@ -1,25 +1,22 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  fetchPnpmDeps,
-
-  nodejs,
-  pnpm_10,
-  pnpmConfigHook,
   cargo-tauri,
-  jq,
-  moreutils,
-  pkg-config,
-  wrapGAppsHook3,
-  makeBinaryWrapper,
-
-  openssl,
-  webkitgtk_4_1,
+  fetchPnpmDeps,
   gst_all_1,
-
+  jq,
+  makeBinaryWrapper,
+  moreutils,
   nix-update-script,
+  nodejs,
+  openssl,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_10,
+  rustPlatform,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 let
@@ -36,26 +33,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-3kpExWdZh4Y0ZwBttpqE/nALyUJNWSEOy8HLcfauReY=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-c4ckvmzosWrB5eXG/xpOH8mYgNNMgqBZ9q8yU7Pjve4=";
-  };
-
   postPatch = ''
     jq '.plugins.updater.endpoints = [ ] | .bundle.createUpdaterArtifacts = false' src-tauri/tauri.conf.json | sponge src-tauri/tauri.conf.json
   '';
-
-  cargoRoot = "src-tauri";
-
-  cargoHash = "sha256-b+v16vF5Puyp23r32Y1HtOvkboA2R2HRs1ktyDBQd84=";
-
-  buildAndTestSubdir = finalAttrs.cargoRoot;
 
   nativeBuildInputs = [
     nodejs
@@ -80,11 +60,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gst_all_1.gst-plugins-bad
   ];
 
+  cargoHash = "sha256-b+v16vF5Puyp23r32Y1HtOvkboA2R2HRs1ktyDBQd84=";
   doCheck = false; # many scoring tests fail
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     makeWrapper "$out"/Applications/pawn-appetit.app/Contents/MacOS/pawn-appetit $out/bin/pawn-appetit
   '';
+
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-c4ckvmzosWrB5eXG/xpOH8mYgNNMgqBZ9q8yU7Pjve4=";
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -92,8 +88,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Ultimate Chess Toolkit (fork of en-croissant)";
     homepage = "https://github.com/Pawn-Appetit/pawn-appetit/";
     license = lib.licenses.gpl3Only;
-    mainProgram = "pawn-appetit";
     maintainers = with lib.maintainers; [ snu ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "pawn-appetit";
   };
 })

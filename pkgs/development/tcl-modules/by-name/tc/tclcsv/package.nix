@@ -1,7 +1,7 @@
 {
   lib,
-  mkTclDerivation,
   fetchzip,
+  mkTclDerivation,
 }:
 
 mkTclDerivation rec {
@@ -14,11 +14,11 @@ mkTclDerivation rec {
   };
 
   meta = {
-    changelog = "https://tclcsv.magicsplat.com/#_version_history";
     description = "Tcl extension for reading and writing CSV files";
-    downloadPage = "https://sourceforge.net/projects/tclcsv/files/";
     homepage = "https://tclcsv.magicsplat.com/";
+    changelog = "https://tclcsv.magicsplat.com/#_version_history";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fgaz ];
+    downloadPage = "https://sourceforge.net/projects/tclcsv/files/";
   };
 }

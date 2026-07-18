@@ -4,20 +4,20 @@
   fetchurl,
   fetchpatch,
   gettext,
-  meson,
-  ninja,
-  pkg-config,
+  gitUpdater,
   glib,
   gtk3,
   json_c,
-  libxml2,
   libsoup_3,
-  upower,
   libxfce4ui,
   libxfce4util,
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  upower,
   xfce4-panel,
   xfconf,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     # meson-build: Add missing HAVE_UPOWER_GLIB definition
     # https://gitlab.xfce.org/panel-plugins/xfce4-weather-plugin/-/merge_requests/37
     (fetchpatch {
-      url = "https://gitlab.xfce.org/panel-plugins/xfce4-weather-plugin/-/commit/1d8e5e5dbbc4d53e4b810f9b01a460197cd47b64.patch";
       hash = "sha256-g9AIp1iBcA3AxD1tpnv32PvxxulXYjFvQh3EqD1gmHg=";
+      url = "https://gitlab.xfce.org/panel-plugins/xfce4-weather-plugin/-/commit/1d8e5e5dbbc4d53e4b810f9b01a460197cd47b64.patch";
     })
   ];
 
@@ -62,13 +62,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.xfce.org/panel-plugins/xfce4-weather-plugin";
     rev-prefix = "xfce4-weather-plugin-";
+    url = "https://gitlab.xfce.org/panel-plugins/xfce4-weather-plugin";
   };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-weather-plugin";
     description = "Weather plugin for the Xfce desktop environment";
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-weather-plugin";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
     teams = [ lib.teams.xfce ];

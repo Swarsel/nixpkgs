@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  libtool,
   fuse3,
-  pkg-config,
+  libtool,
   lz4,
+  lzo,
+  pkg-config,
   xz,
   zlib,
-  lzo,
   zstd,
 }:
 
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     libtool
     pkg-config
   ];
+
   buildInputs = [
     lz4
     xz
@@ -42,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "FUSE filesystem to mount squashfs archives";
     homepage = "https://github.com/vasi/squashfuse";
+    license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.bsd2;
   };
 })

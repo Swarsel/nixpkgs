@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  gnupg,
   coreutils,
+  gnupg,
   writeScript,
 }:
 
 stdenv.mkDerivation {
-  pname = "gnupg1compat";
   inherit (gnupg) version outputs;
+  pname = "gnupg1compat";
 
   builder = writeScript "gnupg1compat-builder" (
     ''

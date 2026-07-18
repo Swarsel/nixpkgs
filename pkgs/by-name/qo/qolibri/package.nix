@@ -1,10 +1,10 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
   ninja,
   qt6Packages,
-  stdenv,
 }:
 stdenv.mkDerivation {
   pname = "qolibri";
@@ -33,10 +33,10 @@ stdenv.mkDerivation {
   cmakeFlags = [
     (lib.cmakeOptionType "filepath" "QOLIBRI_EB_SOURCE_DIR"
       "${fetchFromGitHub {
+        hash = "sha256-gZP+2P6fFADWht2c0hXmljVJQX8RpCq2mWP+KDi+GzE=";
         owner = "mvf";
         repo = "eb";
         rev = "58e1c3bb9847ed5d05863f478f21e7a8ca3d74c8";
-        hash = "sha256-gZP+2P6fFADWht2c0hXmljVJQX8RpCq2mWP+KDi+GzE=";
       }}"
     )
   ];
@@ -57,7 +57,7 @@ stdenv.mkDerivation {
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.azahi ];
     platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64; # Looks like a libcxx version mismatch problem.
     mainProgram = "qolibri";
+    broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64; # Looks like a libcxx version mismatch problem.
   };
 }

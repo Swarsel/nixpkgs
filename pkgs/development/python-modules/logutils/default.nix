@@ -5,15 +5,14 @@
   fetchPypi,
   pytestCheckHook,
   pythonAtLeast,
-  valkey,
   redis,
   setuptools,
+  valkey,
 }:
 
 buildPythonPackage rec {
   pname = "logutils";
   version = "0.3.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -34,11 +33,6 @@ buildPythonPackage rec {
     redis
   ];
 
-  disabledTests = [
-    # https://bitbucket.org/vinay.sajip/logutils/issues/4/035-pytest-test-suite-warnings-and-errors
-    "test_hashandlers"
-  ];
-
   disabledTestPaths = [
     # Disable redis tests on all systems for now
     "tests/test_redis.py"
@@ -51,6 +45,12 @@ buildPythonPackage rec {
     "tests/test_dictconfig.py"
   ];
 
+  disabledTests = [
+    # https://bitbucket.org/vinay.sajip/logutils/issues/4/035-pytest-test-suite-warnings-and-errors
+    "test_hashandlers"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "logutils" ];
 
   meta = {

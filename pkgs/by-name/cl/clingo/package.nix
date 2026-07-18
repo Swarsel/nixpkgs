@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  withPython ? false,
   python ? null,
+  withPython ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
 
+  propagatedBuildInputs = lib.optionals withPython (
+    with python.pkgs;
+    [
+      python
+      cffi
+    ]
+  );
+
   cmakeFlags =
     if withPython then
       [
@@ -29,24 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
     else
       [ "-DCLINGO_BUILD_WITH_PYTHON=OFF" ];
 
-  propagatedBuildInputs = lib.optionals withPython (
-    with python.pkgs;
-    [
-      python
-      cffi
-    ]
-  );
-
   pythonImportsCheck = [
     "clingo"
   ];
 
   meta = {
     description = "ASP system to ground and solve logic programs";
+    homepage = "https://potassco.org/";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
-    homepage = "https://potassco.org/";
     downloadPage = "https://github.com/potassco/clingo/releases/";
   };
 })

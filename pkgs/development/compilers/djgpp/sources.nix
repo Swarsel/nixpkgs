@@ -13,7 +13,7 @@ let
   djgppFtpMirror = "https://www.mirrorservice.org/sites/ftp.delorie.com/pub";
   gnuFtpMirror = "https://www.mirrorservice.org/sites/ftp.gnu.org/gnu";
 in
-{ fetchFromGitHub, fetchurl }:
+{ fetchurl, fetchFromGitHub }:
 {
   inherit gccVersion;
 
@@ -25,58 +25,58 @@ in
   };
 
   autoconf = fetchurl {
-    url = "${gnuFtpMirror}/autoconf/autoconf-${autoconfVersion}.tar.xz";
     hash = "sha256-ZOvOyfisWySHElqGp3YNJZGsnh09vVlIljP53mKldoQ=";
+    url = "${gnuFtpMirror}/autoconf/autoconf-${autoconfVersion}.tar.xz";
   };
 
   automake = fetchurl {
-    url = "${gnuFtpMirror}/Automake/automake-${automakeVersion}.tar.xz";
     hash = "sha256-r2ujkUIiBofFAPebSqLxgdmyTk+NjsSXzqS6JsZL7a8=";
+    url = "${gnuFtpMirror}/Automake/automake-${automakeVersion}.tar.xz";
   };
 
   binutils = fetchurl {
-    url = "${djgppFtpMirror}/djgpp/deleted/v2gnu/bnu${binutilsVersion}s.zip";
     hash = "sha256-DSFQyFvswmP5/qYXbesFmUJ9tqEFJpILb0mGclfpXX0=";
+    url = "${djgppFtpMirror}/djgpp/deleted/v2gnu/bnu${binutilsVersion}s.zip";
   };
 
   djcrossgcc = fetchurl {
-    url = "${djgppFtpMirror}/djgpp/rpms/djcross-gcc-${gccVersion}/djcross-gcc-${gccVersion}.tar.bz2";
     hash = "sha256-UL+wkeNv3LCQog0JigShIyBM7qJRqvN58Zitmti/BZM=";
+    url = "${djgppFtpMirror}/djgpp/rpms/djcross-gcc-${gccVersion}/djcross-gcc-${gccVersion}.tar.bz2";
   };
 
   djcrx = fetchurl {
-    url = "${djgppFtpMirror}/djgpp/current/v2/djcrx${djcrxVersion}.zip";
     hash = "sha256-IidO2NXuV898zxYfXhaE/RwBkgaHJKfTThveFoBBymA=";
+    url = "${djgppFtpMirror}/djgpp/current/v2/djcrx${djcrxVersion}.zip";
   };
 
   djdev = fetchurl {
-    url = "${djgppFtpMirror}/djgpp/current/v2/djdev${djdevVersion}.zip";
     hash = "sha256-RVfftsFh0yZoCuX6cfAJisSUJaGxG5CgILgxYutwXdo=";
+    url = "${djgppFtpMirror}/djgpp/current/v2/djdev${djdevVersion}.zip";
   };
 
   djlsr = fetchurl {
-    url = "${djgppFtpMirror}/djgpp/current/v2/djlsr${djlsrVersion}.zip";
     hash = "sha256-gGkLbkT/i8bGCB/KH0+uuhWRxEkLdu8OyLNYR7ql3uo=";
+    url = "${djgppFtpMirror}/djgpp/current/v2/djlsr${djlsrVersion}.zip";
   };
 
   gcc = fetchurl {
-    url = "${gnuFtpMirror}/gcc/gcc-${gccVersion}/gcc-${gccVersion}.tar.xz";
     hash = "sha256-5UnPnPNZSgDie2WJ1DItcOByDN0hPzm+tBgeBpJiMP8=";
+    url = "${gnuFtpMirror}/gcc/gcc-${gccVersion}/gcc-${gccVersion}.tar.xz";
   };
 
   gmp = fetchurl {
-    url = "${gnuFtpMirror}/gmp/gmp-${gmpVersion}.tar.xz";
     hash = "sha256-/UgpkSzd0S+EGBw0Ucx1K+IkZD6H+sSXtp7d2txJtPI=";
+    url = "${gnuFtpMirror}/gmp/gmp-${gmpVersion}.tar.xz";
   };
 
   mpc = fetchurl {
-    url = "${gnuFtpMirror}/mpc/mpc-${mpcVersion}.tar.gz";
     hash = "sha256-F1A9LDld/PEGtiLcFCaDwRmUMdCVNnxqrLpu7DA0BFk=";
+    url = "${gnuFtpMirror}/mpc/mpc-${mpcVersion}.tar.gz";
   };
 
   mpfr = fetchurl {
-    url = "${gnuFtpMirror}/mpfr/mpfr-${mpfrVersion}.tar.xz";
     hash = "sha256-DJij8XMv9spOppBVIHnanFl4ctMOluwoQU7iPJVVin8=";
+    url = "${gnuFtpMirror}/mpfr/mpfr-${mpfrVersion}.tar.xz";
   };
 
 }

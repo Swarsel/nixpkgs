@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   djangorestframework,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "drf-writable-nested";
   version = "0.7.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "beda-software";
@@ -29,6 +28,8 @@ buildPythonPackage (finalAttrs: {
     pytest-django
     pytestCheckHook
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Writable nested model serializer for Django REST Framework";

@@ -1,20 +1,20 @@
 {
   lib,
-  ocaml,
+  astring,
+  base,
   buildDunePackage,
-  lsp,
-  xdg,
-  re,
-  fiber,
-  makeWrapper,
+  camlp-streams,
   dot-merlin-reader,
-  spawn,
-  ocamlc-loc,
+  fiber,
+  lsp,
+  makeWrapper,
   merlin,
   merlin-lib,
-  astring,
-  camlp-streams,
-  base,
+  ocaml,
+  ocamlc-loc,
+  re,
+  spawn,
+  xdg,
 }:
 
 # Freeze ocaml-lsp-version at 1.17.0 for OCaml 5.0
@@ -54,8 +54,9 @@ let
 in
 
 buildDunePackage (finalAttrs: {
-  pname = "ocaml-lsp-server";
   inherit (lsp) version src preBuild;
+  pname = "ocaml-lsp-server";
+  nativeBuildInputs = [ makeWrapper ];
 
   buildInputs =
     lsp.buildInputs
@@ -75,8 +76,6 @@ buildDunePackage (finalAttrs: {
       merlin-lib
     ]
     ++ lib.optional (lib.versionAtLeast finalAttrs.version "1.18.0") base;
-
-  nativeBuildInputs = [ makeWrapper ];
 
   postInstall = ''
     wrapProgram $out/bin/ocamllsp --prefix PATH : ${dot-merlin-reader}/bin

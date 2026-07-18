@@ -2,29 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "lazr-uri";
   version = "1.0.8";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "lazr_uri";
     inherit version;
     hash = "sha256-DkWFTrImh5WN+4B2Vf9+CVsXZb5kniTMxYGTTQM307Q=";
+    pname = "lazr_uri";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ setuptools ];
-
-  pythonImportsCheck = [ "lazr.uri" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "lazr.uri" ];
   pythonNamespaces = [ "lazr" ];
 
   meta = {

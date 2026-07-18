@@ -1,29 +1,16 @@
 {
   lib,
-  newScope,
   stdenv,
-  llvmPackages,
   darwin,
+  llvmPackages,
+  newScope,
 }:
 
 let
   self = rec {
 
-    callPackage = newScope self;
-
     # Provided for backwards compatibility.
     inherit stdenv;
-
-    swift-unwrapped = callPackage ./compiler {
-      # TODO: Clean up on `staging`
-      inherit (llvmPackages) stdenv lld;
-      inherit (darwin) DarwinTools sigtool;
-    };
-
-    swiftNoSwiftDriver = callPackage ./wrapper {
-      swift = swift-unwrapped;
-      useSwiftDriver = false;
-    };
 
     Dispatch =
       if stdenv.hostPlatform.isDarwin then
@@ -51,10 +38,18 @@ let
       swift = swiftNoSwiftDriver;
     };
 
-    swiftpm = callPackage ./swiftpm {
+    callPackage = newScope self;
+
+    sourcekit-lsp = callPackage ./sourcekit-lsp {
       inherit (llvmPackages) stdenv;
-      inherit (darwin) DarwinTools;
-      swift = swiftNoSwiftDriver;
+    };
+
+    swift = callPackage ./wrapper {
+      swift = swift-unwrapped;
+    };
+
+    swift-docc = callPackage ./swift-docc {
+      inherit (llvmPackages) stdenv;
     };
 
     swift-driver = callPackage ./swift-driver {
@@ -62,20 +57,25 @@ let
       swift = swiftNoSwiftDriver;
     };
 
-    swift = callPackage ./wrapper {
-      swift = swift-unwrapped;
-    };
-
-    sourcekit-lsp = callPackage ./sourcekit-lsp {
-      inherit (llvmPackages) stdenv;
-    };
-
-    swift-docc = callPackage ./swift-docc {
-      inherit (llvmPackages) stdenv;
-    };
-
     swift-format = callPackage ./swift-format {
       inherit (llvmPackages) stdenv;
+    };
+
+    swift-unwrapped = callPackage ./compiler {
+      # TODO: Clean up on `staging`
+      inherit (llvmPackages) stdenv lld;
+      inherit (darwin) DarwinTools sigtool;
+    };
+
+    swiftNoSwiftDriver = callPackage ./wrapper {
+      swift = swift-unwrapped;
+      useSwiftDriver = false;
+    };
+
+    swiftpm = callPackage ./swiftpm {
+      inherit (llvmPackages) stdenv;
+      inherit (darwin) DarwinTools;
+      swift = swiftNoSwiftDriver;
     };
 
     swiftpm2nix = callPackage ./swiftpm2nix { };

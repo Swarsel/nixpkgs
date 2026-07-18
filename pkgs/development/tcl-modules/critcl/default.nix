@@ -22,7 +22,6 @@ mkTclDerivation rec {
     tcllib
   ];
 
-  dontBuild = true;
   doCheck = true;
 
   checkPhase = ''
@@ -37,12 +36,14 @@ mkTclDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Easily embed C code in Tcl";
     homepage = "https://andreas-kupries.github.io/critcl/";
     license = lib.licenses.tcltk;
-    mainProgram = "critcl";
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "critcl";
   };
 }

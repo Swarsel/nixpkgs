@@ -1,11 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   flatbuffers,
   numpy,
@@ -13,6 +9,8 @@
   onnxruntime,
   protobuf,
   requests,
+  # build-system
+  setuptools,
   six,
   tensorflow,
 }:
@@ -20,7 +18,6 @@
 buildPythonPackage rec {
   pname = "tf2onnx";
   version = "1.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "onnx";
@@ -34,12 +31,12 @@ buildPythonPackage rec {
       --replace-fail "'pytest-runner'" ""
   '';
 
+  # All tests fail at import with:
+  # AttributeError: `...` is not available with Keras 3.
+  doCheck = false;
+
   build-system = [
     setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "protobuf"
   ];
 
   dependencies = [
@@ -53,11 +50,12 @@ buildPythonPackage rec {
     tensorflow
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tf2onnx" ];
 
-  # All tests fail at import with:
-  # AttributeError: `...` is not available with Keras 3.
-  doCheck = false;
+  pythonRelaxDeps = [
+    "protobuf"
+  ];
 
   meta = {
     description = "Convert TensorFlow, Keras, Tensorflow.js and Tflite models to ONNX";
@@ -65,6 +63,7 @@ buildPythonPackage rec {
     changelog = "https://github.com/onnx/tensorflow-onnx/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ happysalada ];
+
     badPlatforms = [
       # Segmentation fault on darwin
       lib.systems.inspect.patterns.isDarwin

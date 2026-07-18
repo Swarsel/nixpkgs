@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   libidn,
   libkrb5,
   testers,
@@ -22,17 +22,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--with-gssapi-impl=mit" ];
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   preCheck = ''
     export LOCALDOMAIN="dummydomain"
   '';
-  doCheck = !stdenv.hostPlatform.isDarwin;
 
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "GNU SASL, Simple Authentication and Security Layer library";
-    mainProgram = "gsasl";
 
     longDescription = ''
       GNU SASL is a library that implements the IETF Simple
@@ -43,9 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://www.gnu.org/software/gsasl/";
     license = lib.licenses.gpl3Plus;
-
     maintainers = with lib.maintainers; [ shlevy ];
-    pkgConfigModules = [ "libgsasl" ];
     platforms = lib.platforms.all;
+    mainProgram = "gsasl";
+    pkgConfigModules = [ "libgsasl" ];
   };
 })

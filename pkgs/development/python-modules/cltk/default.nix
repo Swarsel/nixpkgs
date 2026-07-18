@@ -1,17 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   boltons,
+  buildPythonPackage,
+  colorama,
   gensim,
   gitpython,
   greek-accentuation,
   nltk,
+  # build-system
+  poetry-core,
+  # tests
+  pytestCheckHook,
+  python-dotenv,
   pyyaml,
   rapidfuzz,
   requests,
@@ -21,17 +23,11 @@
   stanza,
   torch,
   tqdm,
-  colorama,
-  python-dotenv,
-
-  # tests
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 buildPythonPackage rec {
   pname = "cltk";
   version = "2.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cltk";
@@ -40,11 +36,15 @@ buildPythonPackage rec {
     hash = "sha256-tAomXxI6XsIAxQzPiUsT5t1CHrFDPkwyWtVuHXQCz2A=";
   };
 
-  build-system = [ poetry-core ];
+  # Most of tests fail as they require local files to be present and also internet access
+  doCheck = false;
 
-  pythonRelaxDeps = [
-    "spacy"
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     boltons
@@ -65,13 +65,11 @@ buildPythonPackage rec {
     python-dotenv
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
+  pyproject = true;
 
-  # Most of tests fail as they require local files to be present and also internet access
-  doCheck = false;
+  pythonRelaxDeps = [
+    "spacy"
+  ];
 
   meta = {
     description = "Natural language processing (NLP) framework for pre-modern languages";

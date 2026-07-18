@@ -1,14 +1,12 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  openai,
+  buildHomeAssistantComponent,
   demoji,
+  openai,
 }:
 
 buildHomeAssistantComponent (finalAttrs: {
-  owner = "skye-harris";
-  domain = "local_openai";
   version = "1.8.1";
 
   src = fetchFromGitHub {
@@ -23,10 +21,13 @@ buildHomeAssistantComponent (finalAttrs: {
     demoji
   ];
 
+  domain = "local_openai";
+  owner = "skye-harris";
+
   meta = {
-    changelog = "https://github.com/skye-harris/hass_local_openai_llm/releases/tag/${finalAttrs.src.tag}";
     description = "Home Assistant LLM integration for local OpenAI-compatible services (llama.cpp, vLLM, etc.)";
     homepage = "https://github.com/skye-harris/hass_local_openai_llm";
+    changelog = "https://github.com/skye-harris/hass_local_openai_llm/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jpds ];
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 buildGoModule rec {
@@ -16,21 +16,8 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-Ug6/hpuHgJ2CAUX87/+Tt3cHm4AbJF9oznx61kTVKI4=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  modPostBuild = ''
-    patch -d vendor/github.com/docker/cli/ -p1 < ${./cli-system-plugin-dir-from-env.patch}
-  '';
-
-  ldflags = [
-    "-X github.com/docker/compose/v5/internal.Version=${version}"
-    "-s"
-    "-w"
-  ];
-
   doCheck = false;
-  doInstallCheck = true;
+
   installPhase = ''
     runHook preInstall
     install -D $GOPATH/bin/cmd $out/libexec/docker/cli-plugins/docker-compose
@@ -40,11 +27,24 @@ buildGoModule rec {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-X github.com/docker/compose/v5/internal.Version=${version}"
+    "-s"
+    "-w"
+  ];
+
+  modPostBuild = ''
+    patch -d vendor/github.com/docker/cli/ -p1 < ${./cli-system-plugin-dir-from-env.patch}
+  '';
+
   meta = {
     description = "Docker CLI plugin to define and run multi-container applications with Docker";
-    mainProgram = "docker-compose";
     homepage = "https://github.com/docker/compose";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ airone01 ];
+    mainProgram = "docker-compose";
   };
 }

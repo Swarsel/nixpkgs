@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   esprima,
-  fetchFromGitHub,
   pytestCheckHook,
   requests,
   requests-mock,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "quantum-gateway";
   version = "0.0.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "cisasteelersfan";
@@ -32,12 +31,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "quantum_gateway" ];
-
   disabledTests = [
     # Tests require network features
     "TestGateway3100"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "quantum_gateway" ];
 
   meta = {
     description = "Python library for interacting with Verizon Fios Quantum gateway devices";

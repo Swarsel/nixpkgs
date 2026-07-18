@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
   alsa-utils,
+  buildNpmPackage,
   copyDesktopItems,
   electron_41,
   libicns,
@@ -28,8 +28,6 @@ buildNpmPackage rec {
     hash = "sha256-30jt23bsJ1XE2gclRg06AM+mk1IrerNnkbWVDRfjqHo=";
   };
 
-  npmDepsHash = "sha256-pz2htdFmczmZJtcrpI/X0nUUF++x2vtcYZiTWjEYglo=";
-
   nativeBuildInputs = [
     makeWrapper
     versionCheckHook
@@ -37,11 +35,8 @@ buildNpmPackage rec {
   ++ lib.optionals (stdenv.hostPlatform.isLinux) [ copyDesktopItems ]
   ++ lib.optionals (stdenv.hostPlatform.isDarwin) [ libicns ];
 
-  doInstallCheck = stdenv.hostPlatform.isLinux;
-
+  npmDepsHash = "sha256-pz2htdFmczmZJtcrpI/X0nUUF++x2vtcYZiTWjEYglo=";
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  makeCacheWritable = true;
 
   buildPhase = ''
     runHook preBuild
@@ -113,30 +108,34 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  doInstallCheck = stdenv.hostPlatform.isLinux;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "teams-for-linux";
-      exec = "teams-for-linux %U";
-      icon = "teams-for-linux";
-      desktopName = "Microsoft Teams for Linux";
-      comment = meta.description;
       categories = [
         "Network"
         "InstantMessaging"
         "Chat"
       ];
+
+      comment = meta.description;
+      desktopName = "Microsoft Teams for Linux";
+      exec = "teams-for-linux %U";
+      icon = "teams-for-linux";
       mimeTypes = [ "x-scheme-handler/msteams" ];
+      name = "teams-for-linux";
     })
   ];
 
+  makeCacheWritable = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Unofficial Microsoft Teams client for Linux";
-    mainProgram = "teams-for-linux";
     homepage = "https://github.com/IsmaelMartinez/teams-for-linux";
     changelog = "https://github.com/IsmaelMartinez/teams-for-linux/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       muscaln
       qjoly
@@ -144,6 +143,8 @@ buildNpmPackage rec {
       khaneliman
       HarisDotParis
     ];
+
     platforms = with lib.platforms; darwin ++ linux;
+    mainProgram = "teams-for-linux";
   };
 }

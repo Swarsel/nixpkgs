@@ -1,19 +1,16 @@
 {
   lib,
-  pkgs,
   stdenv,
   buildPythonPackage,
   foma,
   icu,
+  pkgs,
   swig,
 }:
 
 buildPythonPackage rec {
-  pname = "hfst";
-  format = "setuptools";
   inherit (pkgs.hfst) version src;
-
-  sourceRoot = "${src.name}/python";
+  pname = "hfst";
 
   postPatch = ''
     # omorfi-python looks for 'hfst' Python package
@@ -27,12 +24,14 @@ buildPythonPackage rec {
     pkgs.hfst
   ];
 
-  setupPyBuildFlags = [ "--inplace" ];
-
   # Find foma in Darwin tests
   preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
     export DYLD_LIBRARY_PATH="${foma}/lib"
   '';
+
+  format = "setuptools";
+  setupPyBuildFlags = [ "--inplace" ];
+  sourceRoot = "${src.name}/python";
 
   meta = {
     description = "Python bindings for HFST";

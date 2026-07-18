@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   dpkg,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,9 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ dpkg ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     substituteInPlace usr/bin/bdf2psf --replace /usr/bin/perl "${perl}/bin/perl"
@@ -28,12 +25,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "BDF to PSF converter";
-    homepage = "https://packages.debian.org/sid/bdf2psf";
+
     longDescription = ''
       Font converter to generate console fonts from BDF source fonts
     '';
+
+    homepage = "https://packages.debian.org/sid/bdf2psf";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ rnhmjoj ];
     platforms = lib.platforms.all;

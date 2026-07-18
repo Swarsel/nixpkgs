@@ -1,7 +1,7 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   unstableGitUpdater,
 }:
 
@@ -17,11 +17,11 @@ buildLua {
   };
 
   scriptPath = "easycrop.lua";
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Manually crop videos during playback in mpv";
+
     longDescription = ''
       A simple mpv script for manually cropping videos with ease.
 
@@ -36,9 +36,10 @@ buildLua {
       If you wish to use a key other than "c" to crop, the keybind
       `easy_crop` can be changed.
     '';
+
     homepage = "https://github.com/aidanholm/mpv-easycrop";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ RossSmyth ];
+    platforms = lib.platforms.all;
   };
 }

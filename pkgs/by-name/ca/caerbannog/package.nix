@@ -1,24 +1,23 @@
 {
   lib,
+  atk,
   fetchFromSourcehut,
-  python3,
   glib,
   gobject-introspection,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
   gtk3,
-  atk,
   libhandy,
   libnotify,
+  meson,
+  ninja,
   pango,
+  pkg-config,
+  python3,
+  wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "caerbannog";
   version = "0.3";
-  pyproject = false;
 
   src = fetchFromSourcehut {
     owner = "~craftyguy";
@@ -51,12 +50,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
+  pyproject = false;
+
   meta = {
     description = "Mobile-friendly Gtk frontend for password-store";
-    mainProgram = "caerbannog";
     homepage = "https://sr.ht/~craftyguy/caerbannog/";
     changelog = "https://git.sr.ht/~craftyguy/caerbannog/refs/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "caerbannog";
   };
 })

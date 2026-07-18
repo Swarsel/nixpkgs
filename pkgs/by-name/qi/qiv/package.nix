@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromCodeberg,
-  pkg-config,
-  gtk3,
   file,
+  gtk3,
   lcms2,
   libexif,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     gtk3
     file

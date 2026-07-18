@@ -18,15 +18,16 @@ in
 
   config = lib.mkIf cfg.enable {
 
+    environment.systemPackages = [ metacity ];
+
     services.xserver.windowManager.session = lib.singleton {
       name = "metacity";
+
       start = ''
         ${metacity}/bin/metacity &
         waitPID=$!
       '';
     };
-
-    environment.systemPackages = [ metacity ];
 
   };
 

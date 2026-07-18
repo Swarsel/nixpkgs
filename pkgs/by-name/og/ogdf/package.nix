@@ -30,10 +30,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Open Graph Drawing Framework/Open Graph algorithms and Data structure Framework";
-    homepage = "http://www.ogdf.net";
-    license = lib.licenses.gpl2;
-    maintainers = [ lib.maintainers.ianwookim ];
-    platforms = lib.platforms.all;
+
     longDescription = ''
       OGDF stands both for Open Graph Drawing Framework (the original name) and
       Open Graph algorithms and Data structures Framework.
@@ -46,5 +43,10 @@ stdenv.mkDerivation {
       OGDF is developed and supported by Osnabrück University, TU Dortmund,
       University of Cologne, University of Konstanz, and TU Ilmenau.
     '';
+
+    homepage = "http://www.ogdf.net";
+    license = lib.licenses.gpl2;
+    maintainers = [ lib.maintainers.ianwookim ];
+    platforms = lib.platforms.all;
   };
 }

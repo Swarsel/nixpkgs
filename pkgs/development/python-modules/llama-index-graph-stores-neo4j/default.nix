@@ -10,16 +10,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "llama-index-graph-stores-neo4j";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_graph_stores_neo4j";
     inherit (finalAttrs) version;
     hash = "sha256-q+S7NIxlIAXR75cN7IUS2uZYLFDYO7r1nOLVMDHmYSA=";
+    pname = "llama_index_graph_stores_neo4j";
   };
 
-  pythonRelaxDeps = [ "neo4j" ];
-
+  # Tests are not shipped with PyPI package
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -27,10 +26,9 @@ buildPythonPackage (finalAttrs: {
     llama-index-core
   ];
 
-  # Tests are not shipped with PyPI package
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.graph_stores.neo4j" ];
+  pythonRelaxDeps = [ "neo4j" ];
 
   meta = {
     description = "LlamaIndex Graph Store Integration for Neo4j";

@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
 }:
@@ -18,21 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MaqBaR177gcgoqEpsER1+8oYZmiGeySfL/O9r6CxqCY=";
   };
 
-  vendorHash = "sha256-7fhcQptMyq8IuRaqx3Znc9QFLaV0t6HpM4eCtdimupA=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-7fhcQptMyq8IuRaqx3Znc9QFLaV0t6HpM4eCtdimupA=";
   env.CGO_ENABLED = 0;
-  subPackages = [ "." ];
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
-  preCheck = ''
-    export HOME="$TMPDIR"
-  '';
 
   checkFlags =
     let
@@ -49,6 +37,10 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "|^" skippedTests}" ];
 
+  preCheck = ''
+    export HOME="$TMPDIR"
+  '';
+
   postInstall = ''
     mv $out/bin/globalping-cli $out/bin/globalping
   ''
@@ -59,6 +51,13 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/globalping completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

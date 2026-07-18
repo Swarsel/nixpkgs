@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   libhighscore,
+  pkg-config,
   unstableGitUpdater,
 }:
 
@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "d4ced9599ac8ffcd006104783c5e7e7e6a1d5a29";
     hash = "sha256-F9YELVKl/6rBOHaec79kSZ+/6fewbFVBZW8HNGr8ts4=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/bsnes";
 
   nativeBuildInputs = [
     pkg-config
@@ -36,23 +34,26 @@ stdenv.mkDerivation (finalAttrs: {
     "platform=linux"
   ];
 
+  enableParallelBuilding = true;
+
   installFlags = [
     "libdir=${placeholder "out"}/lib"
   ];
 
-  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/bsnes";
 
   passthru.updateScript = unstableGitUpdater {
     url = finalAttrs.src.gitRepoUrl;
   };
 
   meta = {
+    inherit (libhighscore.meta) maintainers platforms;
     description = "Port of bsnes to Highscore";
     homepage = "https://github.com/highscore-emu/bsnes";
+
     license = with lib.licenses; [
       gpl2Plus
       mit
     ];
-    inherit (libhighscore.meta) maintainers platforms;
   };
 })

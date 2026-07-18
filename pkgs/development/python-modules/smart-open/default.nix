@@ -1,23 +1,23 @@
 {
   lib,
-  backports-zstd,
-  buildPythonPackage,
   fetchFromGitHub,
   awscli2,
   azure-common,
   azure-core,
   azure-storage-blob,
+  backports-zstd,
   boto3,
+  buildPythonPackage,
   google-cloud-storage,
-  requests,
   moto,
   numpy,
   paramiko,
+  pyopenssl,
   pytest-cov-stub,
   pytest-timeout,
   pytest-xdist,
   pytestCheckHook,
-  pyopenssl,
+  requests,
   responses,
   setuptools,
   setuptools-scm,
@@ -27,7 +27,6 @@
 buildPythonPackage rec {
   pname = "smart-open";
   version = "7.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RaRe-Technologies";
@@ -35,29 +34,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-MKQvvz75PBUZwQ9e/vR+XGdaT+pD2agZtdHOV0Gw9Kk=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ wrapt ];
-
-  optional-dependencies = {
-    s3 = [ boto3 ];
-    gcs = [ google-cloud-storage ];
-    azure = [
-      azure-storage-blob
-      azure-common
-      azure-core
-    ];
-    http = [ requests ];
-    webhdfs = [ requests ];
-    ssh = [ paramiko ];
-    zst = [ backports-zstd ];
-  };
-
-  pythonImportsCheck = [ "smart_open" ];
 
   nativeCheckInputs = [
     awscli2
@@ -73,7 +49,12 @@ buildPythonPackage rec {
   ++ moto.optional-dependencies.server
   ++ lib.concatAttrValues optional-dependencies;
 
-  enabledTestPaths = [ "tests" ];
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ wrapt ];
 
   disabledTests = [
     # https://github.com/RaRe-Technologies/smart_open/issues/784
@@ -83,10 +64,30 @@ buildPythonPackage rec {
     "test_seek_from_start"
   ];
 
+  enabledTestPaths = [ "tests" ];
+
+  optional-dependencies = {
+    azure = [
+      azure-storage-blob
+      azure-common
+      azure-core
+    ];
+
+    gcs = [ google-cloud-storage ];
+    http = [ requests ];
+    s3 = [ boto3 ];
+    ssh = [ paramiko ];
+    webhdfs = [ requests ];
+    zst = [ backports-zstd ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "smart_open" ];
+
   meta = {
-    changelog = "https://github.com/piskvorky/smart_open/releases/tag/${src.tag}";
     description = "Library for efficient streaming of very large file";
     homepage = "https://github.com/piskvorky/smart_open";
+    changelog = "https://github.com/piskvorky/smart_open/releases/tag/${src.tag}";
     license = lib.licenses.mit;
   };
 }

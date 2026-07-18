@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -33,12 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Lossless compressor for multichannel 8, 16 and 24 bits audio data, with the ability of password data protection";
     homepage = "https://sourceforge.net/projects/tta/";
+
     license = with lib.licenses; [
       gpl3Only
       lgpl3Only
     ];
+
+    maintainers = with lib.maintainers; [ natsukagami ];
     platforms = lib.platforms.unix;
     mainProgram = "ttaenc";
-    maintainers = with lib.maintainers; [ natsukagami ];
   };
 })

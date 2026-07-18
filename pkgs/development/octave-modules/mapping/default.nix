@@ -1,10 +1,10 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
-  io, # >= 2.2.7
-  geometry, # >= 4.0.0
+  buildOctavePackage,
   gdal,
+  geometry, # >= 4.0.0
+  io, # >= 2.2.7
 }:
 
 buildOctavePackage rec {
@@ -26,9 +26,9 @@ buildOctavePackage rec {
   ];
 
   meta = {
+    description = "Simple mapping and GIS .shp .dxf and raster file functions";
     homepage = "https://gnu-octave.github.io/packages/mapping/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Simple mapping and GIS .shp .dxf and raster file functions";
   };
 }

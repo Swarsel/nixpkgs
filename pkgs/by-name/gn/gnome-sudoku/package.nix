@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
-  vala,
-  pkg-config,
-  gobject-introspection,
-  gettext,
-  gtk4,
-  gnome,
   blueprint-compiler,
-  wrapGAppsHook4,
+  desktop-file-utils,
+  gettext,
+  gnome,
+  gobject-introspection,
+  gtk4,
+  itstool,
+  json-glib,
   libadwaita,
   libgee,
-  json-glib,
-  qqwing,
-  itstool,
   libxml2,
-  desktop-file-utils,
+  meson,
+  ninja,
+  pkg-config,
+  qqwing,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,12 +57,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Test your logic skills in this number grid puzzle";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-sudoku";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-sudoku/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Test your logic skills in this number grid puzzle";
-    mainProgram = "gnome-sudoku";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-sudoku";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,49 +1,49 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  makeDesktopItem,
-  copyDesktopItems,
-  srcOnly,
-  cmake,
-  pkg-config,
   alsa-lib,
-  libxrender,
-  libxrandr,
-  libxinerama,
-  libxext,
-  libxcursor,
-  libxcomposite,
-  libx11,
+  cmake,
+  copyDesktopItems,
   fontconfig,
   freetype,
-  libjack2,
-  juce,
-  libsoup_3,
-  libdeflate,
-  xz,
-  libwebp,
-  glib,
-  vcv-rack,
-  jansson,
   glew,
   glfw,
+  glib,
+  jansson,
+  jq,
+  juce,
   libarchive,
-  speexdsp,
+  libdeflate,
+  libjack2,
   libpulseaudio,
   libsamplerate,
+  libsoup_3,
+  libwebp,
+  libx11,
+  libxcomposite,
+  libxcursor,
+  libxext,
+  libxinerama,
+  libxrandr,
+  libxrender,
+  makeDesktopItem,
+  pkg-config,
   rtmidi,
+  speexdsp,
+  srcOnly,
+  vcv-rack,
+  xz,
   zstd,
-  jq,
   enableVCVRack ? false,
 }:
 let
   clapJuceExtensions = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-Lx88nyEFjPLA5yh8rrqBdyZIxe/j0FgIHoyKcbjuuI4=";
     owner = "free-audio";
     repo = "clap-juce-extensions";
     rev = "645ed2fd0949d36639e3d63333f26136df6df769";
-    hash = "sha256-Lx88nyEFjPLA5yh8rrqBdyZIxe/j0FgIHoyKcbjuuI4=";
-    fetchSubmodules = true;
   };
 
   vcvRackSdk = srcOnly vcv-rack;
@@ -62,18 +62,8 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "Airwin2rack";
-      desktopName = "Airwindows Consolidated";
-      comment = "Various Airwindows Plugins Consolidated (Standalone)";
-      exec = "Airwindows Consolidated";
-      categories = [
-        "Audio"
-        "AudioVideo"
-      ];
-    })
+  patches = [
+    ./juce-clap-juce-extensions-src-juce-cmakelists.patch
   ];
 
   strictDeps = true;
@@ -128,16 +118,15 @@ stdenv.mkDerivation {
     (lib.cmakeFeature "RACK_SDK_DIR" "${vcvRackSdk}")
   ];
 
-  cmakeBuildType = "Release";
-
-  patches = [
-    ./juce-clap-juce-extensions-src-juce-cmakelists.patch
+  env.NIX_LDFLAGS = toString [
+    "-lX11"
+    "-lXext"
+    "-lXcomposite"
+    "-lXcursor"
+    "-lXinerama"
+    "-lXrandr"
+    "-lXrender"
   ];
-
-  prePatch = ''
-    ln -s ${juce.src} src-juce/juce
-    ln -s ${clapJuceExtensions} src-juce/clap-juce-extensions
-  '';
 
   preConfigure = lib.optionalString enableVCVRack "export RACK_DIR=${vcvRackSdk}";
 
@@ -175,20 +164,32 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  env.NIX_LDFLAGS = toString [
-    "-lX11"
-    "-lXext"
-    "-lXcomposite"
-    "-lXcursor"
-    "-lXinerama"
-    "-lXrandr"
-    "-lXrender"
+  cmakeBuildType = "Release";
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "AudioVideo"
+      ];
+
+      comment = "Various Airwindows Plugins Consolidated (Standalone)";
+      desktopName = "Airwindows Consolidated";
+      exec = "Airwindows Consolidated";
+      name = "Airwin2rack";
+      type = "Application";
+    })
   ];
+
+  prePatch = ''
+    ln -s ${juce.src} src-juce/juce
+    ln -s ${clapJuceExtensions} src-juce/clap-juce-extensions
+  '';
 
   meta = {
     description = "JUCE Plugin Version of Airwindows Consolidated";
     homepage = "https://github.com/baconpaul/airwin2rack";
-    platforms = [ "x86_64-linux" ];
+
     license =
       with lib.licenses;
       [ mit ]
@@ -197,7 +198,9 @@ stdenv.mkDerivation {
         cc-by-nc-40
         unfreeRedistributable
       ];
-    mainProgram = "Airwindows Consolidated";
+
     maintainers = [ lib.maintainers.l1npengtul ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "Airwindows Consolidated";
   };
 }

@@ -18,20 +18,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "roadrecon";
   version = "2.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-wzr0J6tGhsZdjTDeIeSzCRTquiw4iZ8FxqFEl1fC2iU=";
   };
 
-  pythonRelaxDeps = [
-    "marshmallow"
-    "flask"
-  ];
-
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -47,10 +42,13 @@ buildPythonPackage (finalAttrs: {
     sqlalchemy
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "roadtools.roadrecon" ];
+
+  pythonRelaxDeps = [
+    "marshmallow"
+    "flask"
+  ];
 
   meta = {
     description = "Azure AD recon";

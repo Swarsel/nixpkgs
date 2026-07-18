@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   openssh,
   debugLevel ? 0,
@@ -18,7 +18,6 @@ stdenv.mkDerivation {
   };
 
   patches = [ ./scponly-fix-make.patch ];
-
   strictDeps = true;
 
   # chroot doesn't seem to work, so not enabling
@@ -37,9 +36,9 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Shell that only permits scp and sftp-server";
-    mainProgram = "scponly";
     homepage = "https://github.com/scponly/scponly";
     license = with lib.licenses; [ bsd2 ];
     maintainers = with lib.maintainers; [ wmertens ];
+    mainProgram = "scponly";
   };
 }

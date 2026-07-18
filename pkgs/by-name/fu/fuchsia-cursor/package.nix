@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   clickgen,
   python3,
-  themeVariants ? [ ],
-  sizeVariants ? [ ],
+  stdenvNoCC,
   platformVariants ? [ ],
+  sizeVariants ? [ ],
+  themeVariants ? [ ],
 }:
 
 let
@@ -72,8 +72,8 @@ lib.checkListOfEnum "${pname}: theme variants" [ "Fuchsia" "Fuchsia-Pop" "Fuchsi
     meta = {
       description = "First OpenSource port of FuchsiaOS's cursors for Linux and Windows";
       homepage = "https://github.com/ful1e5/fuchsia-cursor";
+      license = lib.licenses.gpl3Plus;
       maintainers = [ ];
       platforms = lib.platforms.all;
-      license = lib.licenses.gpl3Plus;
     };
   }

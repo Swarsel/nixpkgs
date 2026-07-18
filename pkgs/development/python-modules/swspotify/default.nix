@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dbus-python,
-  fetchFromGitHub,
   flask,
   flask-cors,
   poetry-core,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "swspotify";
   version = "1.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SwagLyrics";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-xGLvc154xnje45Akf7H1qqQRUc03gGVt8AhGlkcP3kY=";
   };
 
+  # Tests want to use Dbus
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -30,15 +31,13 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "SwSpotify" ];
+
   pythonRelaxDeps = [
     "flask-cors"
     "flask"
   ];
-
-  # Tests want to use Dbus
-  doCheck = false;
-
-  pythonImportsCheck = [ "SwSpotify" ];
 
   meta = {
     description = "Library to get the currently playing song and artist from Spotify";

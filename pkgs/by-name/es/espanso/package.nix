@@ -1,33 +1,33 @@
 {
   lib,
-  coreutils,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  kdePackages,
+  coreutils,
   dbus,
+  fetchpatch,
+  kdePackages,
+  libnotify,
+  libpng,
   libx11,
   libxcb,
   libxi,
-  libxtst,
-  libnotify,
   libxkbcommon,
-  libpng,
+  libxtst,
+  makeWrapper,
+  nix-update-script,
+  nixosTests,
   openssl,
-  xclip,
-  xdotool,
+  pkg-config,
+  rustPlatform,
   setxkbmap,
+  testers,
   wl-clipboard,
   wxwidgets_3_2,
-  makeWrapper,
+  xclip,
+  xdotool,
   securityWrapperPath ? null,
-  nix-update-script,
-  stdenv,
   waylandSupport ? false,
   x11Support ? stdenv.hostPlatform.isLinux,
-  testers,
-  nixosTests,
-  fetchpatch,
 }:
 # espanso does not support building with both X11 and Wayland support at the same time
 assert stdenv.hostPlatform.isLinux -> x11Support != waylandSupport;
@@ -44,28 +44,35 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-WvFV+WZxwaGCfMVEbfHrQZS0LtgJElmOtSXK9jEeaDk=";
   };
 
-  cargoHash = "sha256-E3z8NfKZiQsaYqDKXSIltETa4cSL0ShHnUMymjH5pas=";
+  patches = [
+    # remove when version > 2.3.0
+    (fetchpatch {
+      hash = "sha256-dhoqq0V8b8mGvZvPInHiHKGmGDDFO/SH5HqMY7EA134=";
+      name = "fix-welcome-screen-expansion.patch";
+      url = "https://github.com/espanso/espanso/commit/5d5fc84df695d628d1d9c3e7e3854c2991a64d64.patch";
+    })
+  ];
+
+  postPatch =
+    lib.optionalString stdenv.hostPlatform.isDarwin ''
+      substituteInPlace scripts/create_bundle.sh \
+        --replace-fail target/mac/ $out/Applications/ \
+        --replace-fail /bin/echo ${coreutils}/bin/echo
+      substituteInPlace espanso/src/path/macos.rs  espanso/src/path/linux.rs \
+        --replace-fail '"/usr/local/bin/espanso"' '"${placeholder "out"}/bin/espanso"'
+    ''
+    + lib.optionalString (securityWrapperPath != null) ''
+      substituteInPlace espanso/src/cli/daemon/mod.rs \
+        --replace-fail \
+          'std::env::current_exe().expect("unable to obtain espanso executable location");' \
+          'std::ffi::OsString::from("${securityWrapperPath}/espanso");'
+    '';
 
   nativeBuildInputs = [
     kdePackages.extra-cmake-modules
     pkg-config
     makeWrapper
     wxwidgets_3_2
-  ];
-
-  # Ref: https://github.com/espanso/espanso/blob/78df1b704fe2cc5ea26f88fdc443b6ae1df8a989/scripts/build_binary.rs#LL49C3-L62C4
-  buildNoDefaultFeatures = true;
-  buildFeatures = [
-    "modulo"
-  ]
-  ++ lib.optionals waylandSupport [
-    "wayland"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    "vendored-tls"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "native-tls"
   ];
 
   buildInputs = [
@@ -90,30 +97,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xdotool
   ];
 
-  patches = [
-    # remove when version > 2.3.0
-    (fetchpatch {
-      name = "fix-welcome-screen-expansion.patch";
-      url = "https://github.com/espanso/espanso/commit/5d5fc84df695d628d1d9c3e7e3854c2991a64d64.patch";
-      hash = "sha256-dhoqq0V8b8mGvZvPInHiHKGmGDDFO/SH5HqMY7EA134=";
-    })
-  ];
-
-  postPatch =
-    lib.optionalString stdenv.hostPlatform.isDarwin ''
-      substituteInPlace scripts/create_bundle.sh \
-        --replace-fail target/mac/ $out/Applications/ \
-        --replace-fail /bin/echo ${coreutils}/bin/echo
-      substituteInPlace espanso/src/path/macos.rs  espanso/src/path/linux.rs \
-        --replace-fail '"/usr/local/bin/espanso"' '"${placeholder "out"}/bin/espanso"'
-    ''
-    + lib.optionalString (securityWrapperPath != null) ''
-      substituteInPlace espanso/src/cli/daemon/mod.rs \
-        --replace-fail \
-          'std::env::current_exe().expect("unable to obtain espanso executable location");' \
-          'std::ffi::OsString::from("${securityWrapperPath}/espanso");'
-    '';
-
+  cargoHash = "sha256-E3z8NfKZiQsaYqDKXSIltETa4cSL0ShHnUMymjH5pas=";
   # Some tests require networking
   doCheck = false;
 
@@ -141,29 +125,51 @@ rustPlatform.buildRustPackage (finalAttrs: {
           }
       '';
 
+  buildFeatures = [
+    "modulo"
+  ]
+  ++ lib.optionals waylandSupport [
+    "wayland"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    "vendored-tls"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "native-tls"
+  ];
+
+  # Ref: https://github.com/espanso/espanso/blob/78df1b704fe2cc5ea26f88fdc443b6ae1df8a989/scripts/build_binary.rs#LL49C3-L62C4
+  buildNoDefaultFeatures = true;
+
   passthru = {
     inherit waylandSupport;
+
     tests = nixosTests.espanso // {
       version = testers.testVersion {
-        package = finalAttrs.finalPackage;
         inherit (finalAttrs) version;
+        package = finalAttrs.finalPackage;
       };
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Cross-platform Text Expander written in Rust";
-    mainProgram = "espanso";
+
+    longDescription = ''
+      Espanso detects when you type a keyword and replaces it while you're typing.
+    '';
+
     homepage = "https://espanso.org";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       kimat
       n8henrie
     ];
+
     platforms = lib.platforms.unix;
-    longDescription = ''
-      Espanso detects when you type a keyword and replaces it while you're typing.
-    '';
+    mainProgram = "espanso";
   };
 })

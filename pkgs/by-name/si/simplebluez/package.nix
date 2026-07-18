@@ -1,15 +1,14 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   dbus,
   fmt_9,
-  lib,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "simplebluez";
-
   version = "0.11.0";
 
   src = fetchFromGitHub {
@@ -24,10 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/simplebluez";
-
-  cmakeFlags = [ "-DLIBFMT_LOCAL_PATH=${fmt_9.src}" ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -37,13 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
     dbus
   ];
 
+  cmakeFlags = [ "-DLIBFMT_LOCAL_PATH=${fmt_9.src}" ];
+  sourceRoot = "${finalAttrs.src.name}/simplebluez";
+
   meta = {
     description = "C++ abstraction layer for BlueZ over DBus";
     homepage = "https://github.com/OpenBluetoothToolbox/SimpleBLE";
     # SimpleBLE (which SimpleBluez is part of) is under the Business Source License 1.1 (BUSL-1.1)
     # since version 0.9.0
     license = lib.licenses.bsl11;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ aciceri ];
+    platforms = lib.platforms.linux;
   };
 })

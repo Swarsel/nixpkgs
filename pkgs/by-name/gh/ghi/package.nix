@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bundlerEnv,
+  makeWrapper,
 }:
 let
   version = "1.2.1";
@@ -16,18 +16,16 @@ let
   };
 
   rubyEnv = bundlerEnv {
-    name = "ghi";
     gemfile = "${src}/Gemfile";
-    lockfile = "${src}/Gemfile.lock";
     gemset = ./gemset.nix;
+    lockfile = "${src}/Gemfile.lock";
+    name = "ghi";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "ghi";
   inherit version src;
-
+  pname = "ghi";
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ rubyEnv.wrappedRuby ];
 
   installPhase = ''
@@ -38,9 +36,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GitHub Issues on the command line";
-    mainProgram = "ghi";
     homepage = "https://github.com/drazisil/ghi";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sigmanificient ];
+    mainProgram = "ghi";
   };
 })

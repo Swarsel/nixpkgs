@@ -1,23 +1,20 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  nodejs_24,
-  makeShellWrapper,
-  makeBinaryWrapper,
-  electron,
+  buildNpmPackage,
   copyDesktopItems,
-  makeDesktopItem,
   desktopToDarwinBundle,
+  electron,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  makeShellWrapper,
+  nodejs_24,
 }:
 
 buildNpmPackage (finalAttrs: {
   pname = "thorium-reader";
   version = "3.4.0";
-  nodejs = nodejs_24;
-  npmDepsHash = "sha256-IwdU77fRJJ7Ch5rWop3lFpf14XHklFDa8w6YJCFtJRU=";
-  makeCacheWritable = true;
 
   src = fetchFromGitHub {
     owner = "edrlab";
@@ -33,17 +30,6 @@ buildNpmPackage (finalAttrs: {
   # copies relevant dependencies anyways.
   patches = [ ./remove-dist-npm-install.patch ];
 
-  postBuild = ''
-    # copy node modules manually
-    cp -r node_modules dist/node_modules
-
-    # remove unnecessary npm deps
-    pushd dist
-    npm prune --production --ignore-scripts --offline --no-audit --no-fund
-    popd
-  '';
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
   # makeBinaryWrapper is required on Darwin since MacOS is confuses itself
   # into thinking it needs Rosetta 2 if it encounters a non-MachO executable
   # in a .app bundle.
@@ -59,6 +45,19 @@ buildNpmPackage (finalAttrs: {
     makeBinaryWrapper
     desktopToDarwinBundle
   ];
+
+  npmDepsHash = "sha256-IwdU77fRJJ7Ch5rWop3lFpf14XHklFDa8w6YJCFtJRU=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+
+  postBuild = ''
+    # copy node modules manually
+    cp -r node_modules dist/node_modules
+
+    # remove unnecessary npm deps
+    pushd dist
+    npm prune --production --ignore-scripts --offline --no-audit --no-fund
+    popd
+  '';
 
   postInstall =
     let
@@ -80,13 +79,12 @@ buildNpmPackage (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "thorium-reader";
+      categories = [ "Office" ];
+      comment = "Desktop application to read ebooks";
       desktopName = "Thorium";
       exec = "thorium-reader %u";
-      terminal = false;
-      type = "Application";
       icon = "thorium-reader";
-      startupWMClass = "thorium-reader";
+
       mimeTypes = [
         "application/epub+zip"
         "application/daisy+zip"
@@ -98,19 +96,27 @@ buildNpmPackage (finalAttrs: {
         "x-scheme-handler/thorium"
         "x-scheme-handler/opds"
       ];
-      comment = "Desktop application to read ebooks";
-      categories = [ "Office" ];
+
+      name = "thorium-reader";
+      startupWMClass = "thorium-reader";
+      terminal = false;
+      type = "Application";
     })
   ];
+
+  makeCacheWritable = true;
+  nodejs = nodejs_24;
 
   meta = {
     description = "EPUB reader";
     homepage = "https://www.edrlab.org/software/thorium-reader/";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       YodaDaCoda
       agarmu
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "thorium-reader";
   };

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  versionCheckHook,
   libusb1,
+  versionCheckHook,
   zlib,
 }:
 
@@ -13,16 +13,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "https://sourceforge.net/projects/ucon64/files/ucon64/ucon64-${finalAttrs.version}/ucon64-${finalAttrs.version}-src.tar.gz/download";
-    name = "ucon64-${finalAttrs.version}-src.tar.gz";
     hash = "sha256-4QCtSjD2wZq96Y42HGoOysTkBHf1TPt1SYxczSH7Ohg=";
+    name = "ucon64-${finalAttrs.version}-src.tar.gz";
   };
 
   buildInputs = [
     zlib
     libusb1
   ];
-
-  sourceRoot = "ucon64-${finalAttrs.version}-src/src";
 
   # Disable parallel on ARM (sys/io.h is x86-only)
   configureFlags = lib.optionals (!stdenv.hostPlatform.isx86) [
@@ -41,11 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  sourceRoot = "ucon64-${finalAttrs.version}-src/src";
 
   meta = {
     description = "Tool to backup video game cartridges and perform various ROM operations";

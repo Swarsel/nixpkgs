@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pdm-backend,
   pydantic,
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pyaussiebb";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yaleman";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-GD04Bq+uJs2JuTjtnGh6QKD4uFXwmGcOMB1Hu9yBlkI=";
   };
 
+  # Tests require credentials and requests-testing
+  doCheck = false;
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  # Tests require credentials and requests-testing
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aussiebb" ];
 
   meta = {

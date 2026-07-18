@@ -1,24 +1,20 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-
-  rust-jemalloc-sys,
   buildPackages,
-  versionCheckHook,
-
+  installShellFiles,
+  nix-update-script,
   # passthru
   nixosTests,
-  nix-update-script,
+  rust-jemalloc-sys,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ruff";
   version = "0.15.20";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "astral-sh";
@@ -27,15 +23,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8PFMGKG15kWBpG4YXg37940WtSe/e5pQDqIe3iJRh5A=";
   };
 
-  cargoBuildFlags = [ "--package=ruff" ];
-
-  cargoHash = "sha256-Bf6nsUnNMYapP0YN0SBkTPoP1czmj35tPwN1awyKhUw=";
-
   nativeBuildInputs = [ installShellFiles ];
 
   buildInputs = [
     rust-jemalloc-sys
   ];
+
+  cargoHash = "sha256-Bf6nsUnNMYapP0YN0SBkTPoP1czmj35tPwN1awyKhUw=";
+  # tests do not appear to respect linker options on doctests
+  # Upstream issue: https://github.com/rust-lang/cargo/issues/14189
+  # This causes errors like "error: linker `cc` not found" on static builds
+  doCheck = !stdenv.hostPlatform.isStatic;
 
   postInstall = lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (
     let
@@ -49,13 +47,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ''
   );
 
-  # Run cargo tests
-  checkType = "debug";
+  doInstallCheck = true;
 
-  # tests do not appear to respect linker options on doctests
-  # Upstream issue: https://github.com/rust-lang/cargo/issues/14189
-  # This causes errors like "error: linker `cc` not found" on static builds
-  doCheck = !stdenv.hostPlatform.isStatic;
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  __structuredAttrs = true;
+  cargoBuildFlags = [ "--package=ruff" ];
 
   # Exclude tests from `ty`-related crates, run everything else.
   # Ordinarily we would run all the tests, but there is significant overlap with the `ty` package in nixpkgs,
@@ -74,15 +73,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--exclude=ty_wasm"
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+  # Run cargo tests
+  checkType = "debug";
 
   passthru = {
     tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
       nixos-test-driver-busybox = nixosTests.nixos-test-driver.busybox;
     };
+
     # Updating `ruff` needs to be done on staging due to NixOS tests. Disabling r-ryantm update bot:
     # nixpkgs-update: no auto update
     updateScript = nix-update-script { };
@@ -93,10 +91,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/astral-sh/ruff";
     changelog = "https://github.com/astral-sh/ruff/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "ruff";
+
     maintainers = with lib.maintainers; [
       bengsparks
       GaetanLepage
     ];
+
+    mainProgram = "ruff";
   };
 })

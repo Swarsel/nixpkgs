@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pretend";
   version = "1.0.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "alex";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pretend" ];
 
   meta = {

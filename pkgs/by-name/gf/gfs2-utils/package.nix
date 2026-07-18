@@ -4,11 +4,11 @@
   fetchurl,
   autoreconfHook,
   bison,
-  flex,
-  pkg-config,
   bzip2,
   check,
+  flex,
   ncurses,
+  pkg-config,
   udevCheckHook,
   util-linux,
   zlib,
@@ -37,6 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     udevCheckHook
   ];
+
   buildInputs = [
     bzip2
     ncurses
@@ -44,20 +45,21 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  nativeCheckInputs = [ check ];
   doCheck = true;
+  nativeCheckInputs = [ check ];
   doInstallCheck = true;
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://pagure.io/gfs2-utils";
     description = "Tools for creating, checking and working with gfs2 filesystems";
-    maintainers = with lib.maintainers; [ qyliss ];
+    homepage = "https://pagure.io/gfs2-utils";
+
     license = [
       lib.licenses.gpl2Plus
       lib.licenses.lgpl2Plus
     ];
+
+    maintainers = with lib.maintainers; [ qyliss ];
     platforms = lib.platforms.linux;
   };
 })

@@ -4,80 +4,59 @@
   alsa-lib,
   autoreconfHook,
   bluez-headers,
+  buildPackages,
   dbus,
   docutils,
   ell,
-  enableExperimental ? false,
   fetchpatch2,
+  gitUpdater,
   glib,
+  # Test gobject-introspection instead of pygobject because the latter
+  # causes an infinite recursion.
+  gobject-introspection,
   json_c,
   libical,
   pkg-config,
   python3Packages,
   readline,
   udev,
-  # Test gobject-introspection instead of pygobject because the latter
-  # causes an infinite recursion.
-  gobject-introspection,
-  buildPackages,
+  udevCheckHook,
+  enableExperimental ? false,
   installTests ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  gitUpdater,
-  udevCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "bluez";
   inherit (bluez-headers) version src;
-
-  patches = [
-    # https://github.com/bluez/bluez/issues/1896
-    # Remove the following 2 in the next release
-    (fetchpatch2 {
-      name = "fix-btctl-noninteractive-regression";
-      url = "https://git.kernel.org/pub/scm/bluetooth/bluez.git/patch/?id=b33e923b55e4d0e9d78a83cfcb541fd1f687ef54";
-      hash = "sha256-q7eN4ktw7DtdwMHHi7GU7fbvHAdMttKF1kDSWzZqa6A=";
-    })
-    (fetchpatch2 {
-      name = "fix-btctl-noninteractive-regression-2";
-      url = "https://git.kernel.org/pub/scm/bluetooth/bluez.git/patch/?id=21e13976f2e375d701b8b7032ba5c1b2e56c305f";
-      hash = "sha256-JrdmYiC+U0KeMP8oVg12Z8CvkMEKWBVgiiUACx0E7dY=";
-    })
-    (fetchpatch2 {
-      name = "support-libical-4.0.patch";
-      url = "https://git.kernel.org/pub/scm/bluetooth/bluez.git/patch/?id=e60d07255327db3fc4e3a28d7fcc792cd42c34d0";
-      hash = "sha256-1uw+5nTjh+t1/L++fRNIlQWblwDwTJifH0EvAn3dym8=";
-    })
-    ./lreadline.patch
-  ];
-
-  buildInputs = [
-    alsa-lib
-    dbus
-    ell
-    glib
-    json_c
-    libical
-    python3Packages.python
-    readline
-    udev
-  ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-    docutils
-    pkg-config
-    python3Packages.pygments
-    python3Packages.wrapPython
-    udevCheckHook
-  ];
+  pname = "bluez";
 
   outputs = [
     "out"
     "dev"
   ]
   ++ lib.optional installTests "test";
+
+  patches = [
+    # https://github.com/bluez/bluez/issues/1896
+    # Remove the following 2 in the next release
+    (fetchpatch2 {
+      hash = "sha256-q7eN4ktw7DtdwMHHi7GU7fbvHAdMttKF1kDSWzZqa6A=";
+      name = "fix-btctl-noninteractive-regression";
+      url = "https://git.kernel.org/pub/scm/bluetooth/bluez.git/patch/?id=b33e923b55e4d0e9d78a83cfcb541fd1f687ef54";
+    })
+    (fetchpatch2 {
+      hash = "sha256-JrdmYiC+U0KeMP8oVg12Z8CvkMEKWBVgiiUACx0E7dY=";
+      name = "fix-btctl-noninteractive-regression-2";
+      url = "https://git.kernel.org/pub/scm/bluetooth/bluez.git/patch/?id=21e13976f2e375d701b8b7032ba5c1b2e56c305f";
+    })
+    (fetchpatch2 {
+      hash = "sha256-1uw+5nTjh+t1/L++fRNIlQWblwDwTJifH0EvAn3dym8=";
+      name = "support-libical-4.0.patch";
+      url = "https://git.kernel.org/pub/scm/bluetooth/bluez.git/patch/?id=e60d07255327db3fc4e3a28d7fcc792cd42c34d0";
+    })
+    ./lreadline.patch
+  ];
 
   postPatch = ''
     substituteInPlace tools/hid2hci.rules \
@@ -104,6 +83,27 @@ stdenv.mkDerivation (finalAttrs: {
       skipTest test-mesh-crypto
       skipTest test-vcp
     '';
+
+  nativeBuildInputs = [
+    autoreconfHook
+    docutils
+    pkg-config
+    python3Packages.pygments
+    python3Packages.wrapPython
+    udevCheckHook
+  ];
+
+  buildInputs = [
+    alsa-lib
+    dbus
+    ell
+    glib
+    json_c
+    libical
+    python3Packages.python
+    readline
+    udev
+  ];
 
   configureFlags = [
     "--localstatedir=/var"
@@ -136,13 +136,7 @@ stdenv.mkDerivation (finalAttrs: {
     "rulesdir=${placeholder "out"}/lib/udev/rules.d"
   ];
 
-  # Work around `make install' trying to create /var/lib/bluetooth.
-  installFlags = [
-    "statedir=$(TMPDIR)/var/lib/bluetooth"
-  ];
-
   doCheck = stdenv.hostPlatform.isx86_64;
-  doInstallCheck = true;
 
   postInstall =
     let
@@ -189,14 +183,19 @@ stdenv.mkDerivation (finalAttrs: {
       wrapPythonProgramsIn $test/test "$test/test ${toString pythonPath}"
     '';
 
+  doInstallCheck = true;
   enableParallelBuilding = true;
+
+  # Work around `make install' trying to create /var/lib/bluetooth.
+  installFlags = [
+    "statedir=$(TMPDIR)/var/lib/bluetooth"
+  ];
 
   passthru.updateScript = gitUpdater {
     url = "https://git.kernel.org/pub/scm/bluetooth/bluez.git";
   };
 
   meta = {
-    mainProgram = "btinfo";
     inherit (bluez-headers.meta)
       changelog
       description
@@ -205,5 +204,7 @@ stdenv.mkDerivation (finalAttrs: {
       maintainers
       platforms
       ;
+
+    mainProgram = "btinfo";
   };
 })

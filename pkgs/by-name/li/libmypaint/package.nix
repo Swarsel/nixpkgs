@@ -2,24 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
+  gettext,
   glib,
   intltool,
   json_c,
   libtool,
   pkg-config,
   python3,
-  gettext,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libmypaint";
   version = "1.6.1";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "mypaint";
@@ -27,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "1ppgpmnhph9h8ayx9776f79a0bxbdszfw9c6bw7c3ffy2yk40178";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # glib gettext macros are broken/obsolete,
@@ -54,8 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     json_c
   ];
 
-  doCheck = true;
-
   # don't rely on rigid autotools versions, instead preload whatever is in $PATH in the build environment.
   # libmypaint 1.6.1 only officially supports autotools up to 1.16,
   # 2.0.0 alphas support up to autotools 1.17.
@@ -66,9 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./autogen.sh
   '';
 
+  doCheck = true;
+
   meta = {
-    homepage = "http://mypaint.org/";
     description = "Library for making brushstrokes which is used by MyPaint and other projects";
+    homepage = "http://mypaint.org/";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ jtojnar ];
     platforms = lib.platforms.unix;

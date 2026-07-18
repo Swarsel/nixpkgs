@@ -3,33 +3,33 @@
   stdenv,
   fetchurl,
   fetchFromGitLab,
+  adns,
   buildPackages,
-  pkg-config,
-  texinfo,
+  bzip2,
   gettext,
+  gnutls,
   libassuan,
   libgcrypt,
   libgpg-error,
   libiconv,
   libksba,
-  npth,
-  adns,
-  bzip2,
-  gnutls,
   libusb1,
+  nixosTests,
+  npth,
   openldap,
+  openssh,
+  pcsclite,
+  pinentry,
+  pkg-config,
   readline,
   sqlite,
-  zlib,
-  openssh,
-  enableMinimal ? false,
-  withPcsc ? !enableMinimal,
-  pcsclite,
-  guiSupport ? stdenv.hostPlatform.isDarwin,
-  pinentry,
-  withTpm2Tss ? !stdenv.hostPlatform.isDarwin && !enableMinimal,
+  texinfo,
   tpm2-tss,
-  nixosTests,
+  zlib,
+  enableMinimal ? false,
+  guiSupport ? stdenv.hostPlatform.isDarwin,
+  withPcsc ? !enableMinimal,
+  withTpm2Tss ? !stdenv.hostPlatform.isDarwin && !enableMinimal,
 }:
 
 assert guiSupport -> !enableMinimal;
@@ -43,52 +43,12 @@ stdenv.mkDerivation rec {
     hash = "sha256-3RerLpoE/XnTnYU/WZy8hSBi3bmrUqTd60F2/YswKWQ=";
   };
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-  nativeBuildInputs = [
-    # XXX: do not add autoreconfHook without very careful testing!
-    # Problems that were identified during the last attempt:
-    #  • Prints a warning about being a development version not
-    #    suitable for production use.
-    #  • Smartcards do not work, at least without pcscd.
-
-    pkg-config
-    texinfo
-    libgpg-error
+  outputs = [
+    "out"
+    "info"
+    "man"
+    "doc"
   ];
-  buildInputs = [
-    gettext
-    libassuan
-    libgcrypt
-    libgpg-error
-    libiconv
-    libksba
-    npth
-  ]
-  ++ lib.optionals (!enableMinimal) [
-    adns
-    bzip2
-    gnutls
-    libusb1
-    openldap
-    readline
-    sqlite
-    zlib
-  ]
-  ++ lib.optionals withTpm2Tss [ tpm2-tss ];
-
-  # FreePG (https://freepg.org) is a set of commonly-used patches for GnuPG that
-  # have not been merged upstream. It is used by Arch Linux, Debian, Fedora and
-  # NixOS, and is maintained by Andrew Gallagher.
-  #
-  # The main purpose of including these patches in Nixpkgs is to maintain
-  # compatibility with OpenPGP.
-  #
-  freepgPatches = fetchFromGitLab {
-    owner = "freepg";
-    repo = "gnupg";
-    tag = "source-2.4.9-freepg";
-    hash = "sha256-wF+iR0OgnU8VI90NlFOXtN5aCRC0YY/X7sPiDXjJm5M=";
-  };
 
   patches = [
     # Without this, scdaemon isn't linked to libusb, causing smartcards to not work correctly
@@ -148,7 +108,38 @@ stdenv.mkDerivation rec {
       sed -i 's,"libpcsclite\.so[^"]*","${lib.getLib pcsclite}/lib/libpcsclite.so",g' scd/scdaemon.c
     '';
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-implicit-function-declaration";
+  nativeBuildInputs = [
+    # XXX: do not add autoreconfHook without very careful testing!
+    # Problems that were identified during the last attempt:
+    #  • Prints a warning about being a development version not
+    #    suitable for production use.
+    #  • Smartcards do not work, at least without pcscd.
+
+    pkg-config
+    texinfo
+    libgpg-error
+  ];
+
+  buildInputs = [
+    gettext
+    libassuan
+    libgcrypt
+    libgpg-error
+    libiconv
+    libksba
+    npth
+  ]
+  ++ lib.optionals (!enableMinimal) [
+    adns
+    bzip2
+    gnutls
+    libusb1
+    openldap
+    readline
+    sqlite
+    zlib
+  ]
+  ++ lib.optionals withTpm2Tss [ tpm2-tss ];
 
   configureFlags = [
     "--sysconfdir=/etc"
@@ -166,11 +157,12 @@ stdenv.mkDerivation rec {
   ++ lib.optional withTpm2Tss "--with-tss=intel"
   ++ lib.optional stdenv.hostPlatform.isDarwin "--disable-ccid-driver";
 
-  outputs = [
-    "out"
-    "info"
-    "man"
-    "doc"
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-implicit-function-declaration";
+  doCheck = !enableMinimal;
+
+  nativeCheckInputs = [
+    # A test would be skipped without SSH
+    openssh
   ];
 
   postInstall =
@@ -194,21 +186,28 @@ stdenv.mkDerivation rec {
         done
       '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   enableParallelBuilding = true;
 
-  nativeCheckInputs = [
-    # A test would be skipped without SSH
-    openssh
-  ];
-  doCheck = !enableMinimal;
+  # FreePG (https://freepg.org) is a set of commonly-used patches for GnuPG that
+  # have not been merged upstream. It is used by Arch Linux, Debian, Fedora and
+  # NixOS, and is maintained by Andrew Gallagher.
+  #
+  # The main purpose of including these patches in Nixpkgs is to maintain
+  # compatibility with OpenPGP.
+  #
+  freepgPatches = fetchFromGitLab {
+    hash = "sha256-wF+iR0OgnU8VI90NlFOXtN5aCRC0YY/X7sPiDXjJm5M=";
+    owner = "freepg";
+    repo = "gnupg";
+    tag = "source-2.4.9-freepg";
+  };
 
   passthru.tests = nixosTests.gnupg;
 
   meta = {
-    homepage = "https://gnupg.org";
-    changelog = "https://git.gnupg.org/cgi-bin/gitweb.cgi?p=${pname}.git;a=blob;f=NEWS;hb=refs/tags/${pname}-${version}";
     description = "Modern release of the GNU Privacy Guard, a GPL OpenPGP implementation";
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       The GNU Privacy Guard is the GNU project's complete and free
       implementation of the OpenPGP standard as defined by RFC4880.  GnuPG
@@ -220,13 +219,19 @@ stdenv.mkDerivation rec {
       frontend applications and libraries are available.  Version 2 of GnuPG
       also provides support for S/MIME.
     '';
+
+    homepage = "https://gnupg.org";
+    changelog = "https://git.gnupg.org/cgi-bin/gitweb.cgi?p=${pname}.git;a=blob;f=NEWS;hb=refs/tags/${pname}-${version}";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       fpletz
       sgo
     ];
-    teams = [ lib.teams.security-review ];
+
     platforms = lib.platforms.all;
     mainProgram = "gpg";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "gnupg" version;
+    teams = [ lib.teams.security-review ];
   };
 }

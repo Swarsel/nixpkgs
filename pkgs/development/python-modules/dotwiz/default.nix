@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyheck,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "dotwiz";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rnag";
@@ -19,15 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-ABmkwpJ40JceNJieW5bhg0gqWNrR6Wxj84nLCjKU11A=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyheck ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "dotwiz" ];
-
+  build-system = [ setuptools ];
+  dependencies = [ pyheck ];
   disabledTestPaths = [ "benchmarks" ];
+  pyproject = true;
+  pythonImportsCheck = [ "dotwiz" ];
 
   meta = {
     description = "Dict subclass that supports dot access notation";

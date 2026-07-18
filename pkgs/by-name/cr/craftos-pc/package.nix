@@ -2,39 +2,39 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  callPackage,
-  patchelf,
-  unzip,
-  poco,
-  openssl,
   SDL2,
   SDL2_mixer,
-  ncurses,
+  callPackage,
   libpng,
-  pngpp,
   libwebp,
   libx11,
+  ncurses,
+  openssl,
+  patchelf,
+  pngpp,
+  poco,
+  unzip,
 }:
 
 let
   version = "2.8.3";
   craftos2-lua = fetchFromGitHub {
+    hash = "sha256-OCHN/ef83X4r5hZcPfFFvNJHjINCTiK+COf369/WPsA=";
     owner = "MCJack123";
     repo = "craftos2-lua";
     rev = "v${version}";
-    hash = "sha256-OCHN/ef83X4r5hZcPfFFvNJHjINCTiK+COf369/WPsA=";
   };
   craftos2-rom = fetchFromGitHub {
+    hash = "sha256-YidLt/JLwBMW0LMo5Q5PV6wGhF0J72FGX+iWYn6v0Z4=";
     owner = "McJack123";
     repo = "craftos2-rom";
     rev = "v${version}";
-    hash = "sha256-YidLt/JLwBMW0LMo5Q5PV6wGhF0J72FGX+iWYn6v0Z4=";
   };
 in
 
 stdenv.mkDerivation rec {
-  pname = "craftos-pc";
   inherit version;
+  pname = "craftos-pc";
 
   src = fetchFromGitHub {
     owner = "MCJack123";
@@ -43,12 +43,21 @@ stdenv.mkDerivation rec {
     hash = "sha256-DbxAsXxpsa42dF6DaLmgIa+Hs/PPqJ4dE97PoKxG2Ig=";
   };
 
+  patches = [
+    # fix includes of poco headers
+    # https://github.com/MCJack123/craftos2/issues/391
+    ./fix-poco-header-includes.patch
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     unzip
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     patchelf
   ];
+
   buildInputs = [
     poco
     openssl
@@ -62,7 +71,6 @@ stdenv.mkDerivation rec {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     libx11
   ];
-  strictDeps = true;
 
   preBuild = ''
     cp -R ${craftos2-lua}/* ./craftos2-lua/
@@ -75,14 +83,6 @@ stdenv.mkDerivation rec {
     make
     runHook postBuild
   '';
-
-  patches = [
-    # fix includes of poco headers
-    # https://github.com/MCJack123/craftos2/issues/391
-    ./fix-poco-header-includes.patch
-  ];
-
-  dontStrip = true;
 
   installPhase = ''
     mkdir -p $out/bin $out/lib $out/share/craftos $out/include
@@ -112,6 +112,8 @@ stdenv.mkDerivation rec {
     ''}
   '';
 
+  dontStrip = true;
+
   passthru.tests = {
     eval-hello-world = callPackage ./test-eval-hello-world { };
     eval-periphemu = callPackage ./test-eval-periphemu { };
@@ -120,16 +122,19 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Implementation of the CraftOS-PC API written in C++ using SDL";
     homepage = "https://www.craftos-pc.cc";
+
     license = with lib.licenses; [
       mit
       free
     ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       siraben
       tomodachi94
       viluon
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "craftos";
   };
 }

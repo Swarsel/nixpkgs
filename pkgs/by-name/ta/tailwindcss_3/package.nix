@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
   runCommand,
 }:
 let
@@ -31,14 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.4.17";
 
   src = fetchurl {
-    url = "https://github.com/tailwindlabs/tailwindcss/releases/download/v${finalAttrs.version}/tailwindcss-${plat}";
     inherit hash;
+    url = "https://github.com/tailwindlabs/tailwindcss/releases/download/v${finalAttrs.version}/tailwindcss-${plat}";
   };
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
@@ -48,9 +43,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontUnpack = true;
+
   passthru.tests.helptext = runCommand "tailwindcss-test-helptext" { } ''
     ${lib.getExe finalAttrs.finalPackage} --help > $out
   '';
+
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -59,7 +60,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.mit;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ lib.maintainers.adamcstephens ];
-    mainProgram = "tailwindcss";
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    mainProgram = "tailwindcss";
   };
 })

@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  pkg-config,
-  zlib,
+  stdenv,
   fetchurl,
   libsForQt5,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,13 @@ stdenv.mkDerivation (finalAttrs: {
     qttools
   ]);
 
+  installPhase = ''
+    runHook preInstall
+    install -Dm555 release/chessx -t "$out/bin"
+    install -Dm444 unix/chessx.desktop -t "$out/share/applications"
+    runHook postInstall
+  '';
+
   enableParallelBuilding = true;
 
   # Fails to start on Native Wayland.
@@ -44,16 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
     "xcb"
   ];
 
-  installPhase = ''
-    runHook preInstall
-    install -Dm555 release/chessx -t "$out/bin"
-    install -Dm444 unix/chessx.desktop -t "$out/share/applications"
-    runHook postInstall
-  '';
-
   meta = {
-    homepage = "https://chessx.sourceforge.io/";
     description = "Browse and analyse chess games";
+    homepage = "https://chessx.sourceforge.io/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ luispedro ];
     platforms = lib.platforms.linux;

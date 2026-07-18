@@ -2,20 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  # buildInputs
+  anttweakbar,
   # nativeBuildInputs
   cmake,
   copyDesktopItems,
-  makeWrapper,
-
-  # buildInputs
-  anttweakbar,
   eigen,
   glew,
   glm,
-  sfml_2,
-
   makeDesktopItem,
+  makeWrapper,
+  sfml_2,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "marble-marcher-ce";
@@ -51,8 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     sfml_2
   ];
 
-  installFlags = [ "DESTDIR=$(out)" ];
-
   postInstall = ''
     mkdir $out/bin
     mkdir -p $out/share/icons/
@@ -63,25 +58,29 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "marble-marcher-ce";
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "marble-marcher-ce";
       exec = "marble-marcher-ce";
       icon = "marble-marcher-ce";
-      desktopName = "marble-marcher-ce";
-      comment = finalAttrs.meta.description;
-      categories = [ "Game" ];
+      name = "marble-marcher-ce";
     })
   ];
 
+  installFlags = [ "DESTDIR=$(out)" ];
+
   meta = {
     description = "Community-developed version of the original Marble Marcher - a fractal physics game";
-    mainProgram = "marble-marcher-ce";
     homepage = "https://michaelmoroz.itch.io/mmce";
+
     license = with lib.licenses; [
       gpl2Plus # Code
       cc-by-30 # Assets
       ofl # Fonts
     ];
+
     maintainers = with lib.maintainers; [ rampoina ];
     platforms = lib.platforms.linux;
+    mainProgram = "marble-marcher-ce";
   };
 })

@@ -1,13 +1,13 @@
 {
-  depname,
-  version,
-  src,
-  sourceRoot,
-  stdenv,
   lib,
-  patches ? [ ],
-  extraPostPatch ? "",
+  stdenv,
+  depname,
+  sourceRoot,
+  src,
+  version,
   buildInputs ? [ ],
+  extraPostPatch ? "",
+  patches ? [ ],
 }:
 
 let
@@ -20,7 +20,6 @@ let
       throw "Don't know how to rebuild FamiStudio's vendored ${depname} for ${stdenv.hostPlatform.system}";
 in
 stdenv.mkDerivation {
-  pname = "famistudio-nativedep-${depname}";
   inherit
     version
     src
@@ -28,6 +27,8 @@ stdenv.mkDerivation {
     patches
     buildInputs
     ;
+
+  pname = "famistudio-nativedep-${depname}";
 
   postPatch =
     let
@@ -65,9 +66,6 @@ stdenv.mkDerivation {
     ''
     + extraPostPatch;
 
-  dontConfigure = true;
-  dontInstall = true; # rebuild script automatically installs
-
   buildPhase = ''
     runHook preBuild
 
@@ -81,4 +79,7 @@ stdenv.mkDerivation {
 
     runHook postBuild
   '';
+
+  dontConfigure = true;
+  dontInstall = true; # rebuild script automatically installs
 }

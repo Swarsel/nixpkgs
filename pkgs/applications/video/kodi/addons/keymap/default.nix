@@ -1,16 +1,15 @@
 {
   lib,
-  rel,
-  buildKodiAddon,
-  fetchzip,
   addonUpdateScript,
+  buildKodiAddon,
   defusedxml,
+  fetchzip,
   kodi-six,
+  rel,
 }:
 
 buildKodiAddon rec {
   pname = "keymap";
-  namespace = "script.keymap";
   version = "1.4.0";
 
   src = fetchzip {
@@ -23,6 +22,8 @@ buildKodiAddon rec {
     kodi-six
   ];
 
+  namespace = "script.keymap";
+
   passthru = {
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.keymap";
@@ -30,8 +31,8 @@ buildKodiAddon rec {
   };
 
   meta = {
-    homepage = "https://github.com/tamland/xbmc-keymap-editor";
     description = "GUI for configuring mappings for remotes, keyboard and other inputs supported by Kodi";
+    homepage = "https://github.com/tamland/xbmc-keymap-editor";
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.kodi ];
   };

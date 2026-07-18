@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   openssl,
   perl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Gh8SsSTZW7QlyyC3SWJ5pOK2x85/GT7+LPJn2Jeczpc=";
   };
 
-  cargoHash = "sha256-t4HpGqojIkw9OBUAYz4ZEaB7XyHQxkFB2HtlkGKbe2s=";
-
   nativeBuildInputs = [
     pkg-config
     perl
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-t4HpGqojIkw9OBUAYz4ZEaB7XyHQxkFB2HtlkGKbe2s=";
 
   meta = {
     description = "CLI tool that converts your codebase into a single LLM prompt with a source tree, prompt templating, and token counting";

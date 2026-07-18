@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromSourcehut,
-  rustPlatform,
-  pkg-config,
   libxkbcommon,
   makeWrapper,
+  pkg-config,
+  rustPlatform,
   slurp,
 }:
 
@@ -19,14 +19,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-j9HNqRJnGiy720uS0zC6Tt1WjF4b6+XqPEMTqTEOD6w=";
   };
 
-  cargoHash = "sha256-+PpNf79yz5e5Mr6HAqE9Wg/0S8JO4rWrMT7JtQYAWPs=";
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
   ];
 
   buildInputs = [ libxkbcommon ];
+  cargoHash = "sha256-+PpNf79yz5e5Mr6HAqE9Wg/0S8JO4rWrMT7JtQYAWPs=";
 
   preFixup = ''
     wrapProgram $out/bin/shotman \
@@ -37,10 +36,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Uncompromising screenshot GUI for Wayland compositors";
     homepage = "https://git.sr.ht/~whynothugo/shotman";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       zendo
       fpletz
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -10,14 +10,15 @@
 buildPythonPackage rec {
   pname = "crownstone-sse";
   version = "2.0.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "crownstone_sse";
     inherit version;
     hash = "sha256-RUqo68UAVGV+JmauKsGlp7dG8FzixHBDnr3eho/IQdY=";
+    pname = "crownstone_sse";
   };
 
+  # Tests are only providing coverage
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage rec {
     certifi
   ];
 
-  # Tests are only providing coverage
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "crownstone_sse" ];
 
   meta = {

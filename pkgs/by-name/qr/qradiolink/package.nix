@@ -1,27 +1,27 @@
 {
   lib,
-  fetchFromCodeberg,
-  libpulseaudio,
-  libconfig,
-  pkg-config,
-  # Needs a gnuradio built with qt gui support
-  gnuradio,
-  log4cpp,
-  thrift,
   # Not gnuradioPackages'
   codec2,
+  cppzmq,
+  fetchFromCodeberg,
   gmp,
+  # Needs a gnuradio built with qt gui support
+  gnuradio,
   gsm,
-  libopus,
-  libjpeg,
-  libsndfile,
+  libconfig,
   libftdi,
+  libjpeg,
+  libopus,
+  libpulseaudio,
+  libsndfile,
   limesuite,
-  soapysdr-with-plugins,
+  log4cpp,
+  pkg-config,
   protobuf,
+  soapysdr-with-plugins,
   speex,
   speexdsp,
-  cppzmq,
+  thrift,
   uhd,
 }:
 
@@ -36,20 +36,12 @@ gnuradio.pkgs.mkDerivation rec {
     hash = "sha256-pouOFi0w5QW3Wn6C5k+JB5wO+tX79rD+SshH+OitsDw=";
   };
 
-  preBuild = ''
-    cd src/ext
-    protoc --cpp_out=. Mumble.proto
-    protoc --cpp_out=. QRadioLink.proto
-    cd -
-  '';
-
-  installPhase = ''
-    runHook preInstall
-    install -Dm755 qradiolink -t $out/bin
-    install -Dm644 qradiolink.desktop -t $out/share/applications
-    install -Dm644 src/res/icon.png $out/share/icons/hicolor/64x64/apps/qradiolink.png
-    runHook postInstall
-  '';
+  nativeBuildInputs = [
+    pkg-config
+    protobuf
+    gnuradio.qt.qmake
+    gnuradio.qt.wrapQtAppsHook
+  ];
 
   buildInputs = [
     gnuradio.unwrapped.boost
@@ -84,24 +76,35 @@ gnuradio.pkgs.mkDerivation rec {
     thrift
     gnuradio.unwrapped.python.pkgs.thrift
   ];
-  nativeBuildInputs = [
-    pkg-config
-    protobuf
-    gnuradio.qt.qmake
-    gnuradio.qt.wrapQtAppsHook
-  ];
+
+  preBuild = ''
+    cd src/ext
+    protoc --cpp_out=. Mumble.proto
+    protoc --cpp_out=. QRadioLink.proto
+    cd -
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    install -Dm755 qradiolink -t $out/bin
+    install -Dm644 qradiolink.desktop -t $out/share/applications
+    install -Dm644 src/res/icon.png $out/share/icons/hicolor/64x64/apps/qradiolink.png
+    runHook postInstall
+  '';
 
   meta = {
     description = "SDR transceiver application for analog and digital modes";
-    mainProgram = "qradiolink";
     homepage = "http://qradiolink.org/";
+
     license = with lib.licenses; [
       bsd2
       gpl3Only
       lgpl3Only
       mit
     ];
+
     maintainers = with lib.maintainers; [ markuskowa ];
     platforms = lib.platforms.linux;
+    mainProgram = "qradiolink";
   };
 }

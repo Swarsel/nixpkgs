@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-rerunfailures,
+  pytestCheckHook,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "travispy";
   version = "0.3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "menegazzo";
@@ -26,25 +25,25 @@ buildPythonPackage rec {
       --replace-fail "[pytest]" "[tool:pytest]"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-rerunfailures
   ];
 
-  tests = [
-    "travispy/_tests/"
-  ];
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   # Skip tests that require network access
   disabledTests = [
     "test_not_authenticated"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "travispy" ];
+
+  tests = [
+    "travispy/_tests/"
+  ];
 
   meta = {
     description = "Python API for Travis CI";

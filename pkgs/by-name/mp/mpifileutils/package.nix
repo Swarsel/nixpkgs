@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  mpi,
   attr,
+  bzip2,
+  cmake,
   dtcmp,
   libarchive,
   libcircle,
-  bzip2,
+  mpi,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,10 +30,16 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     attr
     dtcmp
@@ -45,16 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ mpi ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
     description = "Suite of MPI-based tools to manage large datasets";
     homepage = "https://hpc.github.io/mpifileutils";
-    platforms = lib.platforms.linux;
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.linux;
   };
 })

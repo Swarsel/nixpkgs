@@ -39,6 +39,7 @@ in
             ${optionLine "XkbVariant" xcfg.xkb.variant}
           EndSection
         '';
+
       systemPackages = with pkgs; [
         nixos-icons # needed for gnome and pantheon about dialog, nixos-manual and maybe more
         xdg-utils
@@ -46,26 +47,23 @@ in
     };
 
     fonts.enableDefaultPackages = lib.mkDefault true;
-
     hardware.graphics.enable = lib.mkDefault true;
-
     programs.gnupg.agent.pinentryPackage = lib.mkOverride 1100 pkgs.pinentry-gnome3;
-
-    services.speechd.enable = lib.mkDefault true;
 
     services.pipewire = {
       enable = lib.mkDefault true;
-      pulse.enable = lib.mkDefault true;
       alsa.enable = lib.mkDefault true;
+      pulse.enable = lib.mkDefault true;
     };
 
+    services.speechd.enable = lib.mkDefault true;
     systemd.defaultUnit = lib.mkIf (xcfg.autorun || dmcfg.enable) "graphical.target";
 
     xdg = {
       autostart.enable = true;
+      icons.enable = true;
       menus.enable = true;
       mime.enable = true;
-      icons.enable = true;
     };
   };
 }

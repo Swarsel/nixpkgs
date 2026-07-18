@@ -1,26 +1,24 @@
 {
   lib,
   stdenv,
-  blueprint-compiler,
-  meson,
-  ninja,
   fetchFromGitHub,
-  python3Packages,
-  wrapGAppsHook4,
-  gobject-introspection,
-  pkg-config,
-  gtk4,
-  webkitgtk_6_0,
+  blueprint-compiler,
   glib,
+  gobject-introspection,
+  gtk4,
   libadwaita,
   libzim,
+  meson,
+  ninja,
+  pkg-config,
+  python3Packages,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "slobdict";
   version = "1.2.0";
-
-  pyproject = false; # built with meson
 
   src = fetchFromGitHub {
     owner = "MuntashirAkon";
@@ -28,6 +26,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-4u0VqaPDpyflWkN119IOVqKxpsskou3ou1dqpuRSaHI=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     blueprint-compiler
@@ -46,6 +46,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libzim
     webkitgtk_6_0
   ];
+
+  postBuild = ''
+    glib-compile-schemas --strict ../gnome-extension/slobdict@muntashir.dev/schemas
+  '';
+
+  postInstall = ''
+    chmod +x $out/bin/slobdict
+
+    mkdir -p $out/share/gnome-shell/extensions/slobdict@muntashir.dev
+    cp -r ../gnome-extension/slobdict@muntashir.dev/schemas $out/share/gnome-shell/extensions/slobdict@muntashir.dev
+    cp ../gnome-extension/slobdict@muntashir.dev/{extension.js,metadata.json} $out/share/gnome-shell/extensions/slobdict@muntashir.dev
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
 
   dependencies = with python3Packages; [
     pygobject3
@@ -75,24 +91,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   # Prevent double wrapping, let the Python wrapper use the args in preFixup.
   dontWrapGApps = true;
-
-  postBuild = ''
-    glib-compile-schemas --strict ../gnome-extension/slobdict@muntashir.dev/schemas
-  '';
-
-  postInstall = ''
-    chmod +x $out/bin/slobdict
-
-    mkdir -p $out/share/gnome-shell/extensions/slobdict@muntashir.dev
-    cp -r ../gnome-extension/slobdict@muntashir.dev/schemas $out/share/gnome-shell/extensions/slobdict@muntashir.dev
-    cp ../gnome-extension/slobdict@muntashir.dev/{extension.js,metadata.json} $out/share/gnome-shell/extensions/slobdict@muntashir.dev
-  '';
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
-  strictDeps = true;
+  pyproject = false; # built with meson
 
   passthru = {
     extensionPortalSlug = "slobdict";
@@ -100,11 +99,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/MuntashirAkon/SlobDict";
     description = "Modern, lightweight GTK 4 dictionary app";
-    mainProgram = "slobdict";
-    maintainers = with lib.maintainers; [ linsui ];
+    homepage = "https://github.com/MuntashirAkon/SlobDict";
     license = lib.licenses.agpl3Plus;
+    maintainers = with lib.maintainers; [ linsui ];
     platforms = lib.platforms.linux;
+    mainProgram = "slobdict";
   };
 })

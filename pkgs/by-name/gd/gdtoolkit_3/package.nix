@@ -1,18 +1,18 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   addBinToPathHook,
+  python3,
   writableTmpDirAsHomeHook,
 }:
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: {
       lark = super.lark.overridePythonAttrs (old: rec {
         # gdtoolkit needs exactly this lark version
         version = "0.8.0";
+
         src = fetchFromGitHub {
           owner = "lark-parser";
           repo = "lark";
@@ -22,12 +22,13 @@ let
         };
       });
     };
+
+    self = python;
   };
 in
 python.pkgs.buildPythonApplication rec {
   pname = "gdtoolkit3";
   version = "3.6.0";
-  pyproject = true;
 
   # If we try to get using fetchPypi it requires GeoIP (but the package dont has that dep!?)
   src = fetchFromGitHub {
@@ -40,17 +41,6 @@ python.pkgs.buildPythonApplication rec {
   # pkg_resources is deprecated and causes tests to fail
   patches = [
     ./0001-Get-version-with-importlib-instead-of-pkg_resource.patch
-  ];
-
-  build-system = with python.pkgs; [
-    setuptools
-  ];
-
-  dependencies = with python.pkgs; [
-    docopt
-    lark
-    pyyaml
-    radon
   ];
 
   doCheck = true;
@@ -66,6 +56,19 @@ python.pkgs.buildPythonApplication rec {
       writableTmpDirAsHomeHook
     ];
 
+  build-system = with python.pkgs; [
+    setuptools
+  ];
+
+  dependencies = with python.pkgs; [
+    docopt
+    lark
+    pyyaml
+    radon
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "gdtoolkit"
     "gdtoolkit.formatter"
@@ -77,6 +80,7 @@ python.pkgs.buildPythonApplication rec {
     description = "Independent set of tools for working with Godot's GDScript - parser, linter and formatter";
     homepage = "https://github.com/Scony/godot-gdscript-toolkit";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       shiryel
       tmarkus

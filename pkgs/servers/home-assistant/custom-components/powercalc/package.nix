@@ -1,22 +1,18 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-
-  # dependencies
-  numpy,
-
+  aioresponses,
+  buildHomeAssistantComponent,
   # tests
   home-assistant,
-  pytestCheckHook,
-  pytest-homeassistant-custom-component,
+  # dependencies
+  numpy,
   pytest-freezegun,
-  aioresponses,
+  pytest-homeassistant-custom-component,
+  pytestCheckHook,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "bramstroker";
-  domain = "powercalc";
   version = "1.21.2";
 
   src = fetchFromGitHub {
@@ -25,8 +21,6 @@ buildHomeAssistantComponent rec {
     tag = "v${version}";
     hash = "sha256-D8gFEhitQjryZLLcP2ZsXNqWLvPyayuoYGq5C0B2D5w=";
   };
-
-  dependencies = [ numpy ];
 
   nativeCheckInputs = [
     pytest-homeassistant-custom-component
@@ -41,16 +35,21 @@ buildHomeAssistantComponent rec {
     tests/setup.sh
   '';
 
+  dependencies = [ numpy ];
+
   disabledTests = [
     # test contacts api.powercalc.nl
     "test_exception_is_raised_on_github_resource_unavailable"
   ];
 
+  domain = "powercalc";
+  owner = "bramstroker";
+
   meta = {
-    changelog = "https://github.com/bramstroker/homeassistant-powercalc/releases/tag/${src.tag}";
     description = "Custom Home Assistant component for virtual power sensors";
     homepage = "https://github.com/bramstroker/homeassistant-powercalc";
-    maintainers = with lib.maintainers; [ CodedNil ];
+    changelog = "https://github.com/bramstroker/homeassistant-powercalc/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ CodedNil ];
   };
 }

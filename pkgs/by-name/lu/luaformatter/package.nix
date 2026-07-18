@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
   antlr4_9,
-  libargs,
   catch2,
   cmake,
+  libargs,
+  replaceVars,
   yaml-cpp,
 }:
 let
@@ -25,9 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (replaceVars ./fix-lib-paths.patch {
+      inherit libargs catch2;
       antlr4RuntimeCpp = antlr4.runtime.cpp.dev;
       yamlCpp = yaml-cpp;
-      inherit libargs catch2;
     })
   ];
 
@@ -42,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Code formatter for Lua";
     homepage = "https://github.com/Koihik/LuaFormatter";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "lua-format";
   };
 })

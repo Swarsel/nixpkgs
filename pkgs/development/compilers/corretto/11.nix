@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   gradle_8,
   jdk11,
-  lib,
-  stdenv,
   rsync,
   runCommand,
   testers,
@@ -18,15 +18,18 @@ let
       runCommand
       testers
       ;
-    jdk = jdk11;
-    gradle = gradle_8;
+
     version = "11.0.30.7.1";
+
     src = fetchFromGitHub {
       owner = "corretto";
       repo = "corretto-11";
       rev = version;
       hash = "sha256-SUdJlTYE+RRAZa8DhFW0EYW1kHmuNDG+hk+/3MXtx1w=";
     };
+
+    gradle = gradle_8;
+    jdk = jdk11;
   };
 in
 corretto.overrideAttrs (oldAttrs: {

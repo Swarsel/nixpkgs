@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -17,5 +17,6 @@ in
       source ${pkgs.blesh}/share/blesh/ble.sh
     '';
   };
+
   meta.maintainers = with lib.maintainers; [ laalsaas ];
 }

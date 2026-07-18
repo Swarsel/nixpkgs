@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,8 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-myt5JjEDnLfkYkB+yb/oaH4dgIOB9qFcqcEb6KO5vBk=";
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -41,10 +41,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Generate Go structs from multiple XML documents";
-    mainProgram = "goxmlstruct";
     homepage = "https://github.com/twpayne/go-xmlstruct";
     changelog = "https://github.com/twpayne/go-xmlstruct/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dvcorreia ];
+    mainProgram = "goxmlstruct";
   };
 })

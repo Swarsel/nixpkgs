@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmark-gfm,
-  xxd,
   libfastjson,
   libzip,
-  ninja,
   meson,
+  ninja,
   pkg-config,
+  xxd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,10 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Minimal Markdown Documentation";
-    mainProgram = "mmdoc";
     homepage = "https://github.com/ryantm/mmdoc";
     license = lib.licenses.cc0;
     maintainers = with lib.maintainers; [ ryantm ];
     platforms = lib.platforms.unix;
+    mainProgram = "mmdoc";
   };
 })

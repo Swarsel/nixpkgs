@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  testers,
+  fetchFromGitHub,
+  buildGoModule,
   faraday,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,14 +19,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-xlyZEcFphXAV+7iHmJBZiQWKKBDm1cpE2Eax2fWYd0Y=";
 
-  subPackages = [
-    "cmd/frcli"
-    "cmd/faraday"
-  ];
-
   ldflags = [
     "-s"
     "-w"
+  ];
+
+  subPackages = [
+    "cmd/frcli"
+    "cmd/faraday"
   ];
 
   passthru.tests.version = testers.testVersion {

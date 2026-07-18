@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
+  libmpdclient,
   meson,
   ninja,
-  libmpdclient,
+  pkg-config,
   yaml-cpp,
 }:
 
@@ -22,13 +22,13 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  dontUseCmakeConfigure = true;
   nativeBuildInputs = [
     cmake
     pkg-config
     meson
     ninja
   ];
+
   buildInputs = [
     libmpdclient
     yaml-cpp
@@ -40,12 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_LDFLAGS = "-framework CoreFoundation";
   };
 
+  dontUseCmakeConfigure = true;
+
   meta = {
-    homepage = "https://github.com/joshkunz/ashuffle";
     description = "Automatic library-wide shuffle for mpd";
+    homepage = "https://github.com/joshkunz/ashuffle";
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.mit;
     mainProgram = "ashuffle";
   };
 })

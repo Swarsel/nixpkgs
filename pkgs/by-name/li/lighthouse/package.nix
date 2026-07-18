@@ -1,28 +1,23 @@
 {
-  cmake,
-  fetchFromGitHub,
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
+  cmake,
   lighthouse,
   nix-update-script,
   openssl,
   pkg-config,
   protobuf,
-  rustPlatform,
   rust-jemalloc-sys,
+  rustPlatform,
   sqlite,
-  stdenv,
   testers,
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "lighthouse";
   version = "8.1.3";
-
-  # lighthouse/common/deposit_contract/build.rs, `TAG`
-  depositContractSpecVersion = "0.12.1";
-  # lighthouse/common/deposit_contract/build.rs, `UNSAFE_TAG`
-  testnetDepositContractSpecVersion = "0.9.2.1";
 
   src = fetchFromGitHub {
     owner = "sigp";
@@ -33,12 +28,6 @@ rustPlatform.buildRustPackage rec {
 
   patches = [
     ./use-system-sqlite.patch
-  ];
-
-  cargoHash = "sha256-T40R4LfdM5V2PAgkOWayId6xUm2FlGJrefqXgPTDzvM=";
-
-  buildFeatures = [
-    "gnosis"
   ];
 
   nativeBuildInputs = [
@@ -56,48 +45,15 @@ rustPlatform.buildRustPackage rec {
     openssl
   ];
 
-  depositContractSpec = fetchurl {
-    url = "https://raw.githubusercontent.com/ethereum/eth2.0-specs/v${depositContractSpecVersion}/deposit_contract/contracts/validator_registration.json";
-    hash = "sha256-ZslAe1wkmkg8Tua/AmmEfBmjqMVcGIiYHwi+WssEwa8=";
-  };
-
-  testnetDepositContractSpec = fetchurl {
-    url = "https://raw.githubusercontent.com/sigp/unsafe-eth2-deposit-contract/v${testnetDepositContractSpecVersion}/unsafe_validator_registration.json";
-    hash = "sha256-aeTeHRT3QtxBRSNMCITIWmx89vGtox2OzSff8vZ+RYY=";
-  };
+  cargoHash = "sha256-T40R4LfdM5V2PAgkOWayId6xUm2FlGJrefqXgPTDzvM=";
 
   env = {
-    LIGHTHOUSE_DEPOSIT_CONTRACT_SPEC_URL = "file://${depositContractSpec}";
-    LIGHTHOUSE_DEPOSIT_CONTRACT_TESTNET_URL = "file://${testnetDepositContractSpec}";
-
-    OPENSSL_NO_VENDOR = true;
-
     # This is needed by the unit tests.
     FORK_NAME = "capella";
+    LIGHTHOUSE_DEPOSIT_CONTRACT_SPEC_URL = "file://${depositContractSpec}";
+    LIGHTHOUSE_DEPOSIT_CONTRACT_TESTNET_URL = "file://${testnetDepositContractSpec}";
+    OPENSSL_NO_VENDOR = true;
   };
-
-  cargoBuildFlags = [
-    "--package"
-    "lighthouse"
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  checkFeatures = [ ];
-
-  # All of these tests require network access and/or docker
-  cargoTestFlags = [
-    "--workspace"
-    "--exclude=beacon_chain"
-    "--exclude=beacon_node"
-    "--exclude=http_api"
-    "--exclude=lighthouse"
-    "--exclude=lighthouse_network"
-    "--exclude=network"
-    "--exclude=slashing_protection"
-    "--exclude=watch"
-    "--exclude=web3signer_tests"
-  ];
 
   # All of these tests require network access
   checkFlags = [
@@ -326,26 +282,72 @@ rustPlatform.buildRustPackage rec {
     "--skip=subnet_service::tests::sync_committee_service::subscribe_and_unsubscribe"
   ];
 
-  passthru = {
-    tests.version = testers.testVersion {
-      package = lighthouse;
-      command = "lighthouse --version";
-      version = "v${lighthouse.version}";
-    };
-    updateScript = nix-update-script { };
+  __darwinAllowLocalNetworking = true;
+
+  buildFeatures = [
+    "gnosis"
+  ];
+
+  cargoBuildFlags = [
+    "--package"
+    "lighthouse"
+  ];
+
+  # All of these tests require network access and/or docker
+  cargoTestFlags = [
+    "--workspace"
+    "--exclude=beacon_chain"
+    "--exclude=beacon_node"
+    "--exclude=http_api"
+    "--exclude=lighthouse"
+    "--exclude=lighthouse_network"
+    "--exclude=network"
+    "--exclude=slashing_protection"
+    "--exclude=watch"
+    "--exclude=web3signer_tests"
+  ];
+
+  checkFeatures = [ ];
+
+  depositContractSpec = fetchurl {
+    hash = "sha256-ZslAe1wkmkg8Tua/AmmEfBmjqMVcGIiYHwi+WssEwa8=";
+    url = "https://raw.githubusercontent.com/ethereum/eth2.0-specs/v${depositContractSpecVersion}/deposit_contract/contracts/validator_registration.json";
   };
 
+  # lighthouse/common/deposit_contract/build.rs, `TAG`
+  depositContractSpecVersion = "0.12.1";
   enableParallelBuilding = true;
+
+  testnetDepositContractSpec = fetchurl {
+    hash = "sha256-aeTeHRT3QtxBRSNMCITIWmx89vGtox2OzSff8vZ+RYY=";
+    url = "https://raw.githubusercontent.com/sigp/unsafe-eth2-deposit-contract/v${testnetDepositContractSpecVersion}/unsafe_validator_registration.json";
+  };
+
+  # lighthouse/common/deposit_contract/build.rs, `UNSAFE_TAG`
+  testnetDepositContractSpecVersion = "0.9.2.1";
+
+  passthru = {
+    tests.version = testers.testVersion {
+      version = "v${lighthouse.version}";
+      command = "lighthouse --version";
+      package = lighthouse;
+    };
+
+    updateScript = nix-update-script { };
+  };
 
   meta = {
     description = "Ethereum consensus client in Rust";
     homepage = "https://lighthouse.sigmaprime.io/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       centromere
       pmw
     ];
+
     mainProgram = "lighthouse";
+
     # can't compile build script with host libraries
     broken =
       stdenv.hostPlatform.isDarwin || !lib.systems.equals stdenv.buildPlatform stdenv.hostPlatform;

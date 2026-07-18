@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,10 +17,10 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-sVC4xeQIcqAbKU4MOAtNicHcioYjdsleQwKWLstnjfk=";
-
-  subPackages = [
-    "cmd/matchbox"
-  ];
+  # Disable cgo to produce a static binary
+  env.CGO_ENABLED = 0;
+  # Don't run Go tests
+  doCheck = false;
 
   # Go linker flags (go tool link)
   # Omit symbol tables and debug info
@@ -28,11 +28,9 @@ buildGoModule (finalAttrs: {
     "-w -s -X github.com/poseidon/matchbox/matchbox/version.Version=${finalAttrs.version}"
   ];
 
-  # Disable cgo to produce a static binary
-  env.CGO_ENABLED = 0;
-
-  # Don't run Go tests
-  doCheck = false;
+  subPackages = [
+    "cmd/matchbox"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

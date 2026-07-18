@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyserial-asyncio-fast,
   pytest-asyncio,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyotgw";
   version = "2.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mvn23";
@@ -20,21 +19,21 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-0F+UBIPk+A9z0YJtLVlJAqzMre8GZAio720SCi2dorE=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyserial-asyncio-fast ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "pyotgw" ];
+  build-system = [ setuptools ];
+  dependencies = [ pyserial-asyncio-fast ];
 
   disabledTests = [
     # Tests require network access
     "connect_timeouterror"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyotgw" ];
 
   meta = {
     description = "Python module to interact the OpenTherm Gateway";

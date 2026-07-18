@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-o2CSQiU9fEoS3eRmwphtYGZTwn3mstRm2Tlvval83+U=";
   };
 
-  cargoHash = "sha256-MHSvrZXh9RLuiLEc4IHPvtIKjdRjFhtmumPs4EuJtz0=";
-
   buildInputs = [ sqlite ];
+  cargoHash = "sha256-MHSvrZXh9RLuiLEc4IHPvtIKjdRjFhtmumPs4EuJtz0=";
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";
@@ -27,13 +26,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo subcommand to generate a Dash/Zeal docset for your Rust packages";
-    mainProgram = "cargo-docset";
     homepage = "https://github.com/Robzz/cargo-docset";
     changelog = "https://github.com/Robzz/cargo-docset/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       colinsane
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-docset";
   };
 })

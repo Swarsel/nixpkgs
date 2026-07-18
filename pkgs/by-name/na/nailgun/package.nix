@@ -1,37 +1,35 @@
 {
   lib,
   stdenv,
-  stdenvNoCC,
-  fetchMavenArtifact,
   fetchFromGitHub,
+  fetchMavenArtifact,
   jre,
   makeWrapper,
+  stdenvNoCC,
   symlinkJoin,
 }:
 
 let
   version = "1.0.0";
   nailgun-server = fetchMavenArtifact {
-    groupId = "com.facebook";
-    artifactId = "nailgun-server";
     inherit version;
+    artifactId = "nailgun-server";
+    groupId = "com.facebook";
     sha256 = "1mk8pv0g2xg9m0gsb96plbh6mc24xrlyrmnqac5mlbl4637l4q95";
   };
 
   commonMeta = {
-    license = lib.licenses.asl20;
     homepage = "https://www.martiansoftware.com/nailgun/";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.asl20;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 
   server = stdenvNoCC.mkDerivation {
-    pname = "nailgun-server";
     inherit version;
-
+    pname = "nailgun-server";
     nativeBuildInputs = [ makeWrapper ];
 
-    dontUnpack = true;
     installPhase = ''
       runHook preInstall
 
@@ -41,6 +39,8 @@ let
       runHook postInstall
     '';
 
+    dontUnpack = true;
+
     meta = commonMeta // {
       description = "Server for running Java programs from the command line without incurring the JVM startup overhead";
       sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
@@ -48,8 +48,8 @@ let
   };
 
   client = stdenv.mkDerivation {
-    pname = "nailgun-client";
     inherit version;
+    pname = "nailgun-client";
 
     src = fetchFromGitHub {
       owner = "facebook";
@@ -66,8 +66,8 @@ let
   };
 in
 symlinkJoin rec {
-  pname = "nailgun";
   inherit client server version;
+  pname = "nailgun";
 
   paths = [
     client

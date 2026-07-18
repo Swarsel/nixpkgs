@@ -1,18 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-
   # dependencies
   numpy,
-  six,
-
   # tests
   pytestCheckHook,
+  setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
@@ -26,7 +23,11 @@ buildPythonPackage rec {
     hash = "sha256-gQiIIN0PeeM81ZHsognPFierf9ZXasq/JqxsYZmLAnU=";
   };
 
-  pyproject = true;
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    cd $out
+  '';
 
   build-system = [
     setuptools
@@ -38,19 +39,14 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = ''
-    cd $out
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "py_stringmatching" ];
 
   meta = {
-    broken = lib.versionAtLeast numpy.version "2";
     description = "Python string matching library including string tokenizers and string similarity measures";
     homepage = "https://github.com/anhaidgroup/py_stringmatching";
     changelog = "https://github.com/anhaidgroup/py_stringmatching/blob/v${version}/CHANGES.txt";
     license = lib.licenses.bsd3;
+    broken = lib.versionAtLeast numpy.version "2";
   };
 }

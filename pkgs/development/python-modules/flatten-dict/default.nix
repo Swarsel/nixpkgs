@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "flatten-dict";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ianlini";
@@ -18,10 +17,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-wzCuTnLOOeybhBPcyyPNPKWoJBHwaKkmARTzlg87wtU=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "flatten_dict" ];
 
   meta = {

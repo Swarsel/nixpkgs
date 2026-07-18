@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  gettext,
-  itstool,
   desktop-file-utils,
-  wrapGAppsHook3,
+  gettext,
   glib,
+  gnome,
+  gtk-frdp,
+  gtk-vnc,
   gtk3,
+  itstool,
   libhandy,
   libsecret,
   libxml2,
-  gtk-vnc,
-  gtk-frdp,
+  meson,
+  ninja,
+  pkg-config,
   spice-gtk,
   spice-protocol,
-  gnome,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -62,12 +62,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Remote desktop client for the GNOME desktop environment";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-connections";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-connections/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Remote desktop client for the GNOME desktop environment";
-    mainProgram = "gnome-connections";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-connections";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,13 +1,13 @@
 {
-  writeScript,
   lib,
-  curl,
-  runtimeShell,
-  jq,
   coreutils,
+  curl,
+  gnused,
+  jq,
   moreutils,
   nix,
-  gnused,
+  runtimeShell,
+  writeScript,
 }:
 
 writeScript "update-standardnotes" ''

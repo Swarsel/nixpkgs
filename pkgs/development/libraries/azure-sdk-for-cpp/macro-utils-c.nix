@@ -18,7 +18,6 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
@@ -26,10 +25,10 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/Azure/macro-utils-c";
     description = "C header file that contains a multitude of very useful C macros";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    homepage = "https://github.com/Azure/macro-utils-c";
     license = lib.licenses.mit;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ lib.maintainers.tobim ];
     platforms = lib.platforms.all;
   };

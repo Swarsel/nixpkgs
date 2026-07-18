@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 let
   version = "1.1.1";
 in
 rustPlatform.buildRustPackage {
-  pname = "kittysay";
   inherit version;
+  pname = "kittysay";
 
   src = fetchFromGitHub {
     owner = "uncenter";
@@ -18,17 +18,18 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-7bAPKZAiX/p5xvIbGBBf8O1rksnizIJfMkUwhkpouAA=";
-
   doCheck = false;
 
   meta = {
     description = "Cowsay, but with a cute kitty :3";
     homepage = "https://github.com/uncenter/kittysay";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       isabelroses
       uncenter
     ];
+
     mainProgram = "kittysay";
   };
 }

@@ -1,20 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
+  cliphist,
   gobject-introspection,
-  wrapGAppsHook3,
   gtk-layer-shell,
   gtk3,
-  wl-clipboard,
-  cliphist,
   nix-update-script,
+  python3Packages,
+  wl-clipboard,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "nwg-clipman";
   version = "0.2.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nwg-piotr";
@@ -23,25 +22,17 @@ python3Packages.buildPythonPackage rec {
     hash = "sha256-GVA842yCSSO2vDD51AObEQNhDVuRIdH1c6BF1tv2Q8E=";
   };
 
-  build-system = [ python3Packages.setuptools ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     gobject-introspection
     wrapGAppsHook3
   ];
 
-  dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
   buildInputs = [
     gtk-layer-shell
     gtk3
   ];
-
-  dependencies = with python3Packages; [ pygobject3 ];
 
   nativeCheckInputs = [
     wl-clipboard
@@ -53,10 +44,15 @@ python3Packages.buildPythonPackage rec {
     install -Dm644 nwg-clipman.svg -t $out/share/icons/hicolor/scalable/apps/
   '';
 
-  strictDeps = true;
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
 
+  build-system = [ python3Packages.setuptools ];
+  dependencies = with python3Packages; [ pygobject3 ];
+  dontWrapGApps = true;
+  pyproject = true;
   pythonImportsCheck = [ "nwg_clipman" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   atk,
   cairo,
-  dcompiler ? ldc,
+  fetchpatch2,
   gdk-pixbuf,
-  gst_all_1,
-  ldc,
-  librsvg,
   glib,
+  gst_all_1,
   gtk3,
   gtksourceview4,
+  ldc,
   libpeas,
+  librsvg,
   pango,
   pkg-config,
-  which,
   vte,
+  which,
+  dcompiler ? ldc,
 }:
 
 let
@@ -34,30 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-UpPoskHtnI4nUOKdLorK89grgUUPrCvO4zrAl9LfjHA=";
   };
 
-  nativeBuildInputs = [
-    dcompiler
-    pkg-config
-    which
-  ];
-  propagatedBuildInputs = [
-    atk
-    cairo
-    gdk-pixbuf
-    glib
-    gstreamer
-    gst-plugins-base
-    gtk3
-    gtksourceview4
-    libpeas
-    librsvg
-    pango
-    vte
-  ];
-
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/gtkd-developers/GtkD/commit/1e41b2da35c7dc2d18b118c632cb07137d048c2b.patch?full_index=1";
       hash = "sha256-8vQntjVrQH1+qHBBkB5PxcgLvucosEEPi43uqlnHe4g=";
+      url = "https://github.com/gtkd-developers/GtkD/commit/1e41b2da35c7dc2d18b118c632cb07137d048c2b.patch?full_index=1";
     })
   ];
 
@@ -146,6 +126,27 @@ stdenv.mkDerivation (finalAttrs: {
       --replace libvte-2.91.so.0 ${vte}/lib/libvte-2.91.so.0 \
       --replace libvte-2.91.0.dylib ${vte}/lib/libvte-2.91.0.dylib
   '';
+
+  nativeBuildInputs = [
+    dcompiler
+    pkg-config
+    which
+  ];
+
+  propagatedBuildInputs = [
+    atk
+    cairo
+    gdk-pixbuf
+    glib
+    gstreamer
+    gst-plugins-base
+    gtk3
+    gtksourceview4
+    libpeas
+    librsvg
+    pango
+    vte
+  ];
 
   makeFlags = [
     "prefix=${placeholder "out"}"

@@ -1,16 +1,16 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   gtk4,
   libadwaita,
   libportal,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
-  stdenv,
   vala,
   wrapGAppsHook4,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,9 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/cassidyjames/clairvoyant/releases/tag/${finalAttrs.version}";
     description = "Ask questions, get psychic answers";
     homepage = "https://github.com/cassidyjames/clairvoyant";
+    changelog = "https://github.com/cassidyjames/clairvoyant/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     mainProgram = "com.cassidyjames.clairvoyant";
     teams = [ lib.teams.gnome-circle ];

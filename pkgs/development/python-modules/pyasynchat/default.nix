@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pyasyncore,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyasynchat";
   version = "1.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonrob";
@@ -18,6 +17,10 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-KJmUou1llxUhDrMCOpJxqYNnPpJ0OoQv5VwYs/PJXbs=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  preCheck = null;
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -27,15 +30,11 @@ buildPythonPackage rec {
     pyasyncore
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = null;
+  pyproject = true;
 
   pythonImportsCheck = [
     "asynchat"
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Make asynchat available for Python 3.12 onwards";

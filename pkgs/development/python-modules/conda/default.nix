@@ -1,17 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   stdenv,
   fetchFromGitHub,
-  # build dependencies
-  hatchling,
-  hatch-vcs,
   # runtime dependencies
   archspec,
+  buildPythonPackage,
   conda-libmamba-solver,
   conda-package-handling,
   distro,
   frozendict,
+  hatch-vcs,
+  # build dependencies
+  hatchling,
   jsonpatch,
   packaging,
   platformdirs,
@@ -26,10 +26,8 @@
   defaultPkgPath ? "~/.conda/pkgs", # default path to store download conda packages
 }:
 buildPythonPackage rec {
-  __structuredAttrs = true;
   pname = "conda";
   version = "26.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     inherit pname version;
@@ -39,12 +37,13 @@ buildPythonPackage rec {
     hash = "sha256-hiH25EcybtyEuks496VgiP4TPwNKI3x1URfwuefJRls=";
   };
 
+  patches = [ ./0001-conda_exe.patch ];
+  __structuredAttrs = true;
+
   build-system = [
     hatchling
     hatch-vcs
   ];
-
-  pythonRelaxDeps = [ "ruamel-yaml" ];
 
   dependencies = [
     archspec
@@ -63,8 +62,6 @@ buildPythonPackage rec {
     truststore
   ];
 
-  patches = [ ./0001-conda_exe.patch ];
-
   makeWrapperArgs = [
     "--set"
     "CONDA_EXE"
@@ -79,8 +76,9 @@ buildPythonPackage rec {
     defaultPkgPath
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "conda" ];
-
+  pythonRelaxDeps = [ "ruamel-yaml" ];
   # menuinst is currently not packaged
   pythonRemoveDeps = lib.optionals (!stdenv.hostPlatform.isWindows) [ "menuinst" ];
 

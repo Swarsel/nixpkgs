@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "nmapthon2";
   version = "0.1.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "cblopez";
@@ -18,9 +17,8 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "tests/scanner_tests.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "nmapthon2" ];
 
   meta = {

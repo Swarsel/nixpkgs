@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "httptools";
   version = "0.7.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Tests are not included in pypi tarball
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "httptools" ];
 
   meta = {

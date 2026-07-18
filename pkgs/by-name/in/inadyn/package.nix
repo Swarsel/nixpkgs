@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   gnutls,
-  libite,
   libconfuse,
+  libite,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://troglobit.com/projects/inadyn/";
     description = "Free dynamic DNS client";
+    homepage = "https://troglobit.com/projects/inadyn/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

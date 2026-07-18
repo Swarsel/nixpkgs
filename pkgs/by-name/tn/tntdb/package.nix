@@ -4,11 +4,11 @@
   fetchFromGitHub,
   autoreconfHook,
   cxxtools,
-  libpq,
   libmysqlclient,
+  libpq,
+  openssl,
   sqlite,
   zlib,
-  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.tntnet.org/tntdb.html";
     description = "C++ library which makes accessing SQL databases easy and robust";
-    platforms = lib.platforms.linux;
+    homepage = "http://www.tntnet.org/tntdb.html";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.juliendehos ];
+    platforms = lib.platforms.linux;
   };
 })

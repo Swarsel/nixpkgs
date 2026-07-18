@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   cmake,
+  fetchpatch2,
   gfortran,
-  tk,
   hdf5,
-  libxmu,
   libGLU,
-  withTools ? false,
+  libxmu,
   testers,
+  tk,
+  withTools ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "cgns";
@@ -26,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fixes crash for test_particlef on LoongArch64
     (fetchpatch2 {
-      url = "https://github.com/CGNS/CGNS/commit/0ea14abf6da44f13ca8a01117ad7af8eb405394c.patch?full_index=1";
       hash = "sha256-dtwTD8YqRm0NCXTDPRHmaPLTU17ZLzOyVii1aoGYge0=";
+      url = "https://github.com/CGNS/CGNS/commit/0ea14abf6da44f13ca8a01117ad7af8eb405394c.patch?full_index=1";
     })
   ];
 
@@ -62,12 +62,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  enableParallelChecking = false;
-
   # Remove broken .desktop files
   postFixup = ''
     rm -f $out/bin/*.desktop
   '';
+
+  enableParallelChecking = false;
 
   passthru.tests.cmake-config = testers.hasCmakeConfigModules {
     moduleNames = [ "cgns" ];
@@ -77,10 +77,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "CFD General Notation System standard library";
     homepage = "https://cgns.github.io";
-    downloadPage = "https://github.com/cgns/cgns";
     changelog = "https://github.com/cgns/cgns/releases/tag/${finalAttrs.src.tag}";
     license = with lib.licenses; [ zlib ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/cgns/cgns";
   };
 })

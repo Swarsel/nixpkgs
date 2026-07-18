@@ -17,11 +17,11 @@
 
 {
   lib,
-  linkFarm,
-  writeShellApplication,
   fetchurl,
-  runCommand,
+  linkFarm,
   rnxcmp,
+  runCommand,
+  writeShellApplication,
 }:
 let
   # Download two small example files (<1M each)
@@ -29,22 +29,25 @@ let
   files = linkFarm "files" [
     rec {
       name = "${file-1-name}.crx.gz";
+
       path = fetchurl {
-        url = "https://igs.bkg.bund.de/root_ftp/EUREF/highrate/2026/002/b/${name}";
         hash = "sha256-HUpzgFfwCf0N/OyJjJEStrOPPecmC4cr66DPbMjNyzc=";
+        url = "https://igs.bkg.bund.de/root_ftp/EUREF/highrate/2026/002/b/${name}";
       };
     }
     rec {
       name = "ZARA00ESP_S_20260020115_15M_01S_MO.crx.gz";
+
       path = fetchurl {
-        url = "https://igs.bkg.bund.de/root_ftp/EUREF/highrate/2026/002/b/${name}";
         hash = "sha256-cnoYjcUwJMSvNB7f1HNCBi1hBKsuduOxrRw9S2Evopw=";
+        url = "https://igs.bkg.bund.de/root_ftp/EUREF/highrate/2026/002/b/${name}";
       };
     }
   ];
 
   assert-dir-not-empty-app = writeShellApplication {
     name = "assert-dir-not-empty";
+
     text = ''
       # From https://mywiki.wooledge.org/BashFAQ/004
       shopt -s nullglob dotglob

@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  gccStdenv,
-  clangStdenv,
-  buildPackages,
-  runCommandCC,
-  makeBinaryWrapper,
-  gcc,
-  wild-unwrapped,
   binutils-unwrapped-all-targets,
+  buildPackages,
   clang,
-  lld,
   clang-tools,
-  useWildLinker,
+  clangStdenv,
+  gcc,
+  gccStdenv,
   hello,
+  lld,
+  makeBinaryWrapper,
+  runCommandCC,
   taplo,
+  useWildLinker,
+  wild-unwrapped,
 }:
 let
   # These wrappers are REQUIRED for the Wild test suite to pass
@@ -26,11 +26,8 @@ let
   # which we want our wild target directory to be if passed.
   gccWrapper = stdenv.mkDerivation {
     inherit (gcc) name;
-    dontUnpack = true;
-    dontConfigure = true;
-    dontInstall = true;
-
     buildInputs = [ makeBinaryWrapper ];
+
     buildPhase = ''
       runHook preBuild
 
@@ -40,15 +37,15 @@ let
       runHook postBuild
     '';
 
+    dontConfigure = true;
+    dontInstall = true;
+    dontUnpack = true;
+
   };
 
   gppWrapper = stdenv.mkDerivation {
-    dontUnpack = true;
-    dontConfigure = true;
-    dontInstall = true;
-
-    name = "g++-wrapped";
     buildInputs = [ makeBinaryWrapper ];
+
     buildPhase = ''
       runHook preBuild
 
@@ -57,6 +54,11 @@ let
 
       runHook postBuild
     '';
+
+    dontConfigure = true;
+    dontInstall = true;
+    dontUnpack = true;
+    name = "g++-wrapped";
   };
 
   # Test helper that takes in a binary and checks that it runs
@@ -92,20 +94,31 @@ let
     '';
 in
 {
+  # Test the adapter works with a clang stdenv
+  adapter-llvm = helloTest "adapter-llvm" (
+    hello.override (_: {
+      stdenv = useWildLinker clangStdenv;
+    })
+  );
+
+  # Test that the adapter works with a gcc stdenv
+  adapterGcc = helloTest "adapter-gcc" (
+    hello.override (_: {
+      stdenv = useWildLinker gccStdenv;
+    })
+  );
+
   testWild = wild-unwrapped.overrideAttrs {
     pname = "wild-tests";
     doCheck = true;
-    doInstallCheck = false;
-    dontBuild = true;
-    buildType = "debug";
+
+    nativeCheckInputs = [
+      taplo
+    ];
 
     checkInputs = [
       stdenv.cc.libc.out
       stdenv.cc.libc.static
-    ];
-
-    nativeCheckInputs = [
-      taplo
     ];
 
     # https://github.com/davidlattimore/wild/discussions/832#discussioncomment-14482948
@@ -138,19 +151,8 @@ in
     '';
 
     installPhase = "touch $out";
+    doInstallCheck = false;
+    buildType = "debug";
+    dontBuild = true;
   };
-
-  # Test that the adapter works with a gcc stdenv
-  adapterGcc = helloTest "adapter-gcc" (
-    hello.override (_: {
-      stdenv = useWildLinker gccStdenv;
-    })
-  );
-
-  # Test the adapter works with a clang stdenv
-  adapter-llvm = helloTest "adapter-llvm" (
-    hello.override (_: {
-      stdenv = useWildLinker clangStdenv;
-    })
-  );
 }

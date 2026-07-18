@@ -1,8 +1,8 @@
 {
-  runCommand,
-  haskellPackages,
   lib,
   all-cabal-hashes,
+  haskellPackages,
+  runCommand,
 }:
 let
   # Checks if the version looks like a Haskell PVP version which is the format

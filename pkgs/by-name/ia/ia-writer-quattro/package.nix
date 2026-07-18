@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -10,12 +10,11 @@ stdenvNoCC.mkDerivation {
 
   src = fetchFromGitHub {
     owner = "iaolo";
-    rev = "f32c04c3058a75d7ce28919ce70fe8800817491b";
     repo = "iA-fonts";
+    rev = "f32c04c3058a75d7ce28919ce70fe8800817491b";
     hash = "sha256-2T165nFfCzO65/PIHauJA//S+zug5nUwPcg8NUEydfc=";
   };
 
-  dontConfigure = true;
   installPhase = ''
     runHook preInstall
 
@@ -26,11 +25,13 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "iA Writer Quattro Typeface";
     homepage = "https://github.com/iaolo/iA-Fonts";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.x0ba ];
+    platforms = lib.platforms.all;
   };
 }

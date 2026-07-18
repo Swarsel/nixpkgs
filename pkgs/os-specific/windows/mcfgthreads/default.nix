@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  writeScriptBin,
   fetchFromGitHub,
   meson,
   ninja,
+  writeScriptBin,
 }:
 let
   dllTool = writeScriptBin "dlltool" ''
@@ -22,14 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-KjZqFaTbPhdI87j11ugSu6Yoe+Rf473+AwopaIfNrKY=";
   };
 
-  postPatch = ''
-    sed -z "s/Rules for tests.*//;s/'cpp'/'c'/g" -i meson.build
-  '';
-
   outputs = [
     "out"
     "dev"
   ];
+
+  postPatch = ''
+    sed -z "s/Rules for tests.*//;s/'cpp'/'c'/g" -i meson.build
+  '';
 
   nativeBuildInputs = [
     dllTool
@@ -42,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/lhmouse/mcfgthread/wiki";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ wegank ];
-    teams = [ lib.teams.windows ];
     platforms = lib.platforms.windows;
+    teams = [ lib.teams.windows ];
   };
 })

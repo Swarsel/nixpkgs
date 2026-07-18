@@ -1,17 +1,17 @@
 {
   lib,
-  fetchFromGitHub,
-  rocmPackages,
-  python3,
-  cargo,
-  rustc,
-  cmake,
-  clang,
-  zlib,
-  libxml2,
-  libedit,
-  rustPlatform,
   stdenv,
+  fetchFromGitHub,
+  cargo,
+  clang,
+  cmake,
+  libedit,
+  libxml2,
+  python3,
+  rocmPackages,
+  rustPlatform,
+  rustc,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,6 +26,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
     fetchLFS = true;
   };
+
+  nativeBuildInputs = [
+    python3
+    cargo
+    rustc
+    cmake
+    clang
+  ];
 
   buildInputs = [
     rocmPackages.clr
@@ -43,19 +51,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libedit
   ];
 
-  nativeBuildInputs = [
-    python3
-    cargo
-    rustc
-    cmake
-    clang
-  ];
-
   cargoHash = "sha256-2YAlc8HW+aqfRzLSXw/I++DM4/JneE7UNmV6BVZb4VM=";
-
-  # Tests require a GPU and segfault in the sandbox
-  doCheck = false;
-
   # xtask doesn't support passing --target, but nix hooks expect the folder structure from when it's set
   env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.cargoShortTarget;
   # Future packagers:
@@ -75,6 +71,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postBuild
   '';
 
+  # Tests require a GPU and segfault in the sandbox
+  doCheck = false;
+
   preInstall = ''
     mkdir -p $out/lib/
     find target/release/ -maxdepth 1 -type l -name '*.so*' -exec \
@@ -86,6 +85,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/vosen/ZLUDA";
     changelog = "https://github.com/vosen/ZLUDA/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.errnoh
     ];

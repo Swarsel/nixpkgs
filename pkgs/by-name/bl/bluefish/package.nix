@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  wrapGAppsHook3,
-  pkg-config,
-  gtk3,
-  libxml2,
-  enchant,
-  gucharmap,
-  python3,
   adwaita-icon-theme,
+  enchant,
+  gtk3,
+  gucharmap,
+  libxml2,
+  pkg-config,
+  python3,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     adwaita-icon-theme
     gtk3

@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
+  bpftools,
+  buildPackages,
+  elfutils,
+  emacs-nox,
   fetchpatch,
   libbpf,
-  elfutils,
-  zlib,
   libpcap,
-  bpftools,
   llvmPackages,
-  pkg-config,
   m4,
-  emacs-nox,
-  wireshark-cli,
   nukeReferences,
+  pkg-config,
+  wireshark-cli,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xdp-tools";
@@ -27,17 +27,25 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-wLSLDgACl6a6gQLvRiRR9HQFRMrGWYZAa5CcdzECExE=";
   };
 
-  patches = [
-    (fetchpatch {
-      name = "musl.patch";
-      url = "https://github.com/xdp-project/xdp-tools/commit/2ff228be7926ba01e13c8d328828a270af2e7e0d.patch";
-      hash = "sha256-jYdcC36nL4P4IadwGfva8nqMerd/2HHw2RYhc+wR9nk=";
-    })
-  ];
-
   outputs = [
     "out"
     "lib"
+  ];
+
+  patches = [
+    (fetchpatch {
+      hash = "sha256-jYdcC36nL4P4IadwGfva8nqMerd/2HHw2RYhc+wR9nk=";
+      name = "musl.patch";
+      url = "https://github.com/xdp-project/xdp-tools/commit/2ff228be7926ba01e13c8d328828a270af2e7e0d.patch";
+    })
+  ];
+
+  nativeBuildInputs = [
+    bpftools
+    llvmPackages.llvm
+    pkg-config
+    m4
+    nukeReferences
   ];
 
   buildInputs = [
@@ -47,21 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  depsBuildBuild = [
-    emacs-nox # to generate man pages from .org
+  makeFlags = [
+    "PREFIX=$(out)"
+    "LIBDIR=$(lib)/lib"
   ];
-  nativeBuildInputs = [
-    bpftools
-    llvmPackages.llvm
-    pkg-config
-    m4
-    nukeReferences
-  ];
-  nativeCheckInputs = [
-    wireshark-cli # for tshark
-  ];
-
-  hardeningDisable = [ "zerocallusedregs" ];
 
   env = {
     # When building BPF, the default CC wrapper is interfering a bit too much.
@@ -69,21 +66,18 @@ stdenv.mkDerivation (finalAttrs: {
       "-fno-stack-protector"
       "-Wno-error=unused-command-line-argument"
     ];
+
     # When cross compiling, configure prefers the unwrapped clang unless told otherwise.
     CLANG = lib.getExe buildPackages.llvmPackages.clang;
-
-    PRODUCTION = 1;
     DYNAMIC_LIBXDP = 1;
-    FORCE_SYSTEM_LIBBPF = 1;
     FORCE_EMACS = 1;
+    FORCE_SYSTEM_LIBBPF = 1;
+    PRODUCTION = 1;
   };
 
-  makeFlags = [
-    "PREFIX=$(out)"
-    "LIBDIR=$(lib)/lib"
+  nativeCheckInputs = [
+    wireshark-cli # for tshark
   ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     # Note that even the static libxdp would refer to BPF_OBJECT_DIR ?=$(LIBDIR)/bpf
@@ -92,6 +86,13 @@ stdenv.mkDerivation (finalAttrs: {
     nuke-refs "$lib"/lib/bpf/*.o
   '';
 
+  depsBuildBuild = [
+    emacs-nox # to generate man pages from .org
+  ];
+
+  enableParallelBuilding = true;
+  hardeningDisable = [ "zerocallusedregs" ];
+
   stripDebugList = [
     "bin"
     "lib"
@@ -99,18 +100,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/xdp-project/xdp-tools";
     description = "Library and utilities for use with XDP";
+    homepage = "https://github.com/xdp-project/xdp-tools";
+
     license = with lib.licenses; [
       gpl2Only
       lgpl21
       bsd2
     ];
+
     maintainers = with lib.maintainers; [
       tirex
       vcunat
       vifino
     ];
+
     platforms = lib.platforms.linux;
   };
 })

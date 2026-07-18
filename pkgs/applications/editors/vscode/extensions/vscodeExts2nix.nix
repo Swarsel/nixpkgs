@@ -7,10 +7,10 @@
 
 ##User input
 {
-  vscode ? vscodeDefault,
-  extensionsToIgnore ? [ ],
   # will use those extensions to get sha256 if still exists when executed.
   extensions ? [ ],
+  extensionsToIgnore ? [ ],
+  vscode ? vscodeDefault,
 }:
 let
   mktplcExtRefToFetchArgs = import ./mktplcExtRefToFetchArgs.nix;
@@ -38,9 +38,9 @@ writeShellScriptBin "vscodeExts2nix" ''
       sha256=$(
         nix-prefetch-url "${
           (mktplcExtRefToFetchArgs {
-            publisher = ''"$publisher"'';
-            name = ''"$name"'';
             version = ''"$version"'';
+            name = ''"$name"'';
+            publisher = ''"$publisher"'';
           }).url
         }" 2> /dev/null
       )

@@ -1,30 +1,28 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  cmake,
-  darwin,
-  ninja,
-  pkg-config,
-  writableTmpDirAsHomeHook,
-
   # buildInputs
   alsa-lib,
+  clangStdenv,
+  # nativeBuildInputs
+  cmake,
   curl,
+  darwin,
   expat,
   fontconfig,
   freetype,
   libGL,
+  libepoxy,
+  libjack2,
   libxcursor,
   libxext,
   libxinerama,
-  libxrandr,
-  libepoxy,
-  libjack2,
   libxkbcommon,
+  libxrandr,
   lv2,
+  ninja,
+  pkg-config,
+  writableTmpDirAsHomeHook,
 }:
 
 clangStdenv.mkDerivation (finalAttrs: {
@@ -66,15 +64,17 @@ clangStdenv.mkDerivation (finalAttrs: {
     libxkbcommon
   ];
 
+  cmakeFlags = [
+    # see: https://github.com/ZL-Audio/ZlEqualizer#clone-and-build
+    (lib.cmakeFeature "KFR_ARCHS" (
+      if clangStdenv.hostPlatform.isAarch64 then "neon64" else "sse2;avx;avx2"
+    ))
+    (lib.cmakeBool "ZL_JUCE_COPY_PLUGIN" false)
+    # set the version for in the settings screen.
+    (lib.cmakeFeature "FOOBAR_VERSION" "${finalAttrs.version}")
+  ];
+
   env = lib.optionalAttrs clangStdenv.hostPlatform.isLinux {
-    # JUCE dlopen's these at runtime, crashes without them
-    NIX_LDFLAGS = toString [
-      "-lX11"
-      "-lXext"
-      "-lXcursor"
-      "-lXinerama"
-      "-lXrandr"
-    ];
     NIX_CFLAGS_COMPILE = toString [
       # juce, compiled in this build as part of a Git submodule, uses `-flto` as
       # a Link Time Optimization flag, and instructs the plugin compiled here to
@@ -85,17 +85,16 @@ clangStdenv.mkDerivation (finalAttrs: {
       # Git Submodule.
       "-ffat-lto-objects"
     ];
-  };
 
-  cmakeFlags = [
-    # see: https://github.com/ZL-Audio/ZlEqualizer#clone-and-build
-    (lib.cmakeFeature "KFR_ARCHS" (
-      if clangStdenv.hostPlatform.isAarch64 then "neon64" else "sse2;avx;avx2"
-    ))
-    (lib.cmakeBool "ZL_JUCE_COPY_PLUGIN" false)
-    # set the version for in the settings screen.
-    (lib.cmakeFeature "FOOBAR_VERSION" "${finalAttrs.version}")
-  ];
+    # JUCE dlopen's these at runtime, crashes without them
+    NIX_LDFLAGS = toString [
+      "-lX11"
+      "-lXext"
+      "-lXcursor"
+      "-lXinerama"
+      "-lXrandr"
+    ];
+  };
 
   installPhase = ''
     runHook preInstall
@@ -117,12 +116,14 @@ clangStdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://zl-audio.github.io/plugins/zlsplitter/";
     description = "Versatile splitter plugin for VST3, LV2 and standalone";
+    homepage = "https://zl-audio.github.io/plugins/zlsplitter/";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       magnetophon
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

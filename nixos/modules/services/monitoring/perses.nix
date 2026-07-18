@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   utils,
   ...
 }:
@@ -29,55 +29,67 @@ in
 {
   options.services.perses = {
     enable = mkEnableOption "perses";
-
     package = mkPackageOption pkgs "perses" { };
 
-    port = mkOption {
-      type = types.port;
-      default = 8080;
-      description = ''
-        Perses Web interface port.
-      '';
+    extraOptions = mkOption {
+      default = [ ];
+      description = "Additional options passed to perses daemon.";
+
+      example = [
+        "-web.telemetry-path=/metrics"
+      ];
+
+      type = types.listOf types.str;
     };
 
     listenAddress = mkOption {
-      type = types.str;
       default = "";
+
       description = ''
         Address to listen on. Empty string will listen on all interfaces.
       '';
+
+      type = types.str;
+    };
+
+    port = mkOption {
+      default = 8080;
+
+      description = ''
+        Perses Web interface port.
+      '';
+
+      type = types.port;
     };
 
     settings = mkOption {
-      type = types.submodule {
-        freeformType = settingsFormat.type;
-      };
+      default = { };
+
       description = ''
         Perses settings. See <https://perses.dev/perses/docs/configuration/configuration/> for available options.
         You can specify secret values in this configuration by setting `somevalue._secret = "/path/to/file"` instead of setting `somevalue` directly.
       '';
-      default = { };
-    };
 
-    extraOptions = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [
-        "-web.telemetry-path=/metrics"
-      ];
-      description = "Additional options passed to perses daemon.";
+      type = types.submodule {
+        freeformType = settingsFormat.type;
+      };
     };
   };
 
   config = mkIf cfg.enable {
-    systemd.services.perses = {
-      description = "Perses Daemon";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "networking.target" ];
+    environment.systemPackages = [ cfg.package ];
 
+    systemd.services.perses = {
+      after = [ "networking.target" ];
+      description = "Perses Daemon";
       preStart = secretsReplacement.script;
 
       serviceConfig = rec {
+        # Hardening
+        AmbientCapabilities = mkIf (cfg.port < 1024) [ "CAP_NET_BIND_SERVICE" ];
+        CapabilityBoundingSet = if (cfg.port < 1024) then [ "CAP_NET_BIND_SERVICE" ] else [ "" ];
+        DynamicUser = true;
+
         ExecStart = utils.escapeSystemdExecArgs (
           [
             (getExe cfg.package)
@@ -87,19 +99,7 @@ in
           ++ cfg.extraOptions
         );
 
-        User = "perses";
-        DynamicUser = true;
-        Restart = "on-failure";
-        RuntimeDirectory = "perses";
-        RuntimeDirectoryMode = "0755";
-        StateDirectory = "perses";
-        WorkingDirectory = "%S/${StateDirectory}";
-
         LoadCredential = secretsReplacement.credentials;
-
-        # Hardening
-        AmbientCapabilities = mkIf (cfg.port < 1024) [ "CAP_NET_BIND_SERVICE" ];
-        CapabilityBoundingSet = if (cfg.port < 1024) then [ "CAP_NET_BIND_SERVICE" ] else [ "" ];
         LockPersonality = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
@@ -114,18 +114,26 @@ in
         ProtectProc = "invisible";
         ProtectSystem = "full";
         RemoveIPC = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        RuntimeDirectory = "perses";
+        RuntimeDirectoryMode = "0755";
+        StateDirectory = "perses";
         SystemCallArchitectures = "native";
         UMask = "0027";
+        User = "perses";
+        WorkingDirectory = "%S/${StateDirectory}";
       };
-    };
 
-    environment.systemPackages = [ cfg.package ];
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 }

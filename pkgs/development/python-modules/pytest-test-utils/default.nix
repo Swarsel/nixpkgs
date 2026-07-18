@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytest,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
-  pytest,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-test-utils";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -20,15 +19,15 @@ buildPythonPackage rec {
     hash = "sha256-19oNAFff++7ntMdlnMXYc2w5I+EzGwWJh+rB1IjNZGk=";
   };
 
+  buildInputs = [ pytest ];
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  buildInputs = [ pytest ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_test_utils" ];
 
   meta = {

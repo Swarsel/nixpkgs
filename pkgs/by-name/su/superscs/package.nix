@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   blas,
   lapack,
-  lib,
-  fetchFromGitHub,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,7 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "PREFIX=$(out)" ];
-
   doCheck = true;
 
   meta = {

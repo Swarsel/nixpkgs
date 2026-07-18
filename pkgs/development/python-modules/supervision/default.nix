@@ -1,11 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   defusedxml,
   matplotlib,
@@ -16,14 +12,14 @@
   pyyaml,
   requests,
   scipy,
+  # build-system
+  setuptools,
   tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "supervision";
   version = "0.29.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "roboflow";
@@ -31,6 +27,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-rDRdoiOfE6n/ZHAxI09cdJbsHwHU8MY9eAVP0J6B2ZA=";
   };
+
+  # Tests require network access and GPU/model resources.
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -49,9 +49,7 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  # Tests require network access and GPU/model resources.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "supervision" ];
 
   meta = {

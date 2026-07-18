@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -19,9 +19,9 @@ buildNpmPackage rec {
 
   meta = {
     description = "JavaScript parser, mangler and compressor toolkit for ES6+";
-    mainProgram = "terser";
     homepage = "https://terser.org";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ talyz ];
+    mainProgram = "terser";
   };
 }

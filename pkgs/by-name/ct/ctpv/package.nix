@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  file,
-  openssl,
   atool,
   bat,
   chafa,
   delta,
   ffmpeg,
   ffmpegthumbnailer,
+  file,
   fontforge,
   glow,
   imagemagick,
   jq,
+  makeWrapper,
+  openssl,
   poppler-utils,
   ueberzug,
 }:
@@ -30,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-3BQi4m44hBmPkJBFNCg6d9YKRbDZwLxdzBb/NDWTQP4=";
   };
 
+  # Until https://github.com/NikitaIvanovV/ctpv/pull/90 is merged
+  patches = [ ./use-polite-flag.patch ];
   nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
@@ -59,14 +61,11 @@ stdenv.mkDerivation (finalAttrs: {
       }";
   '';
 
-  # Until https://github.com/NikitaIvanovV/ctpv/pull/90 is merged
-  patches = [ ./use-polite-flag.patch ];
-
   meta = {
     description = "File previewer for a terminal";
     homepage = "https://github.com/NikitaIvanovV/ctpv";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.wesleyjrz ];
+    platforms = lib.platforms.linux;
   };
 })

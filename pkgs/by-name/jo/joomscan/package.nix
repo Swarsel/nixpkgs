@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
   makeWrapper,
+  perl,
 }:
 
 let
@@ -41,9 +41,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Joomla Vulnerability Scanner";
     homepage = "https://wiki.owasp.org/index.php/Category:OWASP_Joomla_Vulnerability_Scanner_Project";
-    mainProgram = "joomscan.pl";
-    maintainers = with lib.maintainers; [ emilytrau ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.all;
+    mainProgram = "joomscan.pl";
   };
 }

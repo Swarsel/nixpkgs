@@ -1,13 +1,12 @@
 {
+  alcotest,
   buildDunePackage,
   qcheck-core,
-  alcotest,
 }:
 
 buildDunePackage {
-  pname = "qcheck-alcotest";
-
   inherit (qcheck-core) version src;
+  pname = "qcheck-alcotest";
 
   propagatedBuildInputs = [
     qcheck-core

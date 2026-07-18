@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  pkg-config,
   fetchFromGitHub,
   libusb1,
+  pkg-config,
 }:
 
 # IMPORTANT: You need permissions to access the stlink usb devices.
@@ -20,9 +20,8 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
-  buildInputs = [ libusb1 ];
   nativeBuildInputs = [ pkg-config ];
-
+  buildInputs = [ libusb1 ];
   env.NIX_CFLAGS_COMPILE = "-Wno-uninitialized";
 
   installPhase = ''
@@ -35,8 +34,8 @@ stdenv.mkDerivation {
     description = "libusb tool for flashing chinese ST-Link dongles";
     homepage = "https://github.com/jeanthom/stlink-tool";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.wucke13 ];
+    platforms = lib.platforms.unix;
     mainProgram = "stlink-tool";
   };
 }

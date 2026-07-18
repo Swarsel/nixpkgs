@@ -1,13 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-
   autoPatchelfHook,
-  wrapGAppsHook3,
-
   dbus-glib,
   gtk3,
+  stdenvNoCC,
+  wrapGAppsHook3,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -29,9 +27,6 @@ stdenvNoCC.mkDerivation rec {
     gtk3
   ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -42,13 +37,16 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "P2P file sharing system";
     homepage = "https://fopnu.com";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "fopnu";
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "fopnu";
   };
 }

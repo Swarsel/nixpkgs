@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  gitUpdater,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  gitUpdater,
   peakrdl-cli,
   poetry-core,
   py-markdown-table,
@@ -12,8 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "peakrdl-markdown";
   version = "1.0.3";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SystemRDL";
@@ -30,6 +28,7 @@ buildPythonPackage (finalAttrs: {
     systemrdl-compiler
   ];
 
+  pyproject = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

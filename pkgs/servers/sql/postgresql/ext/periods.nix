@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -19,8 +19,8 @@ postgresqlBuildExtension (finalAttrs: {
   meta = {
     description = "PostgreSQL extension implementing SQL standard functionality for PERIODs and SYSTEM VERSIONING";
     homepage = "https://github.com/xocolatl/periods";
+    license = lib.licenses.postgresql;
     maintainers = [ ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.postgresql;
   };
 })

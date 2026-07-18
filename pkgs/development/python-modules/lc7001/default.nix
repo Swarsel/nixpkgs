@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "lc7001";
   version = "1.0.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +22,9 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ cryptography ];
-
   # Project has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lc7001" ];
 
   meta = {

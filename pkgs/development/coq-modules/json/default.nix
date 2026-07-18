@@ -1,17 +1,21 @@
 {
   lib,
-  mkCoqDerivation,
-  coq,
-  parsec,
   MenhirLib,
+  coq,
+  mkCoqDerivation,
+  parsec,
   version ? null,
 }:
 
 (mkCoqDerivation {
-  pname = "json";
-  owner = "liyishuai";
-  repo = "coq-json";
   inherit version;
+  pname = "json";
+
+  propagatedBuildInputs = [
+    parsec
+    MenhirLib
+    coq.ocamlPackages.menhir
+  ];
 
   defaultVersion =
     let
@@ -22,18 +26,16 @@
       (case (range "8.14" "9.1") "0.2.0")
       (case (range "8.14" "8.20") "0.1.3")
     ] null;
+
+  owner = "liyishuai";
+
   release = {
-    "0.2.0".hash = "sha256-qDRTgWLUvu4x3/d3BDcqo2I4W5ZmLyRiwuY/Tm/FuKA=";
     "0.1.3".hash = "sha256-lElAzW4IuX+BB6ngDjlyKn0MytLRfbhQanB+Lct/WR0=";
+    "0.2.0".hash = "sha256-qDRTgWLUvu4x3/d3BDcqo2I4W5ZmLyRiwuY/Tm/FuKA=";
   };
+
   releaseRev = v: "v${v}";
-
-  propagatedBuildInputs = [
-    parsec
-    MenhirLib
-    coq.ocamlPackages.menhir
-  ];
-
+  repo = "coq-json";
   useDuneifVersion = v: lib.versions.isGe "0.2.0" v || v == "dev";
 
   meta = {

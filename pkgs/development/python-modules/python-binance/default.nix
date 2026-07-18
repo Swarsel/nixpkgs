@@ -1,25 +1,24 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   dateparser,
-  fetchFromGitHub,
   pycryptodome,
   pytest-asyncio,
   pytestCheckHook,
-  requests-mock,
   requests,
+  requests-mock,
+  setuptools,
   six,
   ujson,
-  setuptools,
   websockets,
 }:
 
 buildPythonPackage rec {
   pname = "python-binance";
   version = "1.0.34";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sammchardy";
@@ -27,6 +26,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-afgEr82emFIiJGNrjGoU8MdiNKhZdn5B/LutmohE48M=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [ setuptools ];
 
@@ -38,13 +44,6 @@ buildPythonPackage rec {
     six
     ujson
     websockets
-  ];
-
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-    requests-mock
   ];
 
   disabledTestPaths = [
@@ -83,6 +82,7 @@ buildPythonPackage rec {
     "tests/test_futures.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "binance" ];
 
   meta = {

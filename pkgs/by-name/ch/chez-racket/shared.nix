@@ -1,16 +1,16 @@
 args:
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  coreutils,
   cctools,
+  coreutils,
   darwin,
-  ncurses,
   libiconv,
   libx11,
-  zlib,
   lz4,
+  ncurses,
+  zlib,
 }:
 
 stdenv.mkDerivation (
@@ -26,10 +26,6 @@ stdenv.mkDerivation (
       fetchSubmodules = true;
     };
 
-    prePatch = ''
-      rm -rf zlib/*.c lz4/lib/*.c
-    '';
-
     postPatch = ''
       export ZLIB="$(find ${zlib.out}/lib -type f | sort | head -n1)"
       export LZ4="$(find ${lz4.lib}/lib -type f | sort | head -n1)"
@@ -39,6 +35,7 @@ stdenv.mkDerivation (
       cctools
       darwin.autoSignDarwinBinariesHook
     ];
+
     buildInputs = [
       libiconv
       libx11
@@ -47,9 +44,12 @@ stdenv.mkDerivation (
       zlib
     ];
 
+    env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-Wno-error=format-truncation";
     enableParallelBuilding = true;
 
-    env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-Wno-error=format-truncation";
+    prePatch = ''
+      rm -rf zlib/*.c lz4/lib/*.c
+    '';
 
     meta = {
       description = "Fork of Chez Scheme for Racket";

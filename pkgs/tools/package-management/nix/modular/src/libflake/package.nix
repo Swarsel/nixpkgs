@@ -1,23 +1,18 @@
 {
   lib,
   mkMesonLibrary,
-
-  nix-util,
-  nix-store,
-  nix-fetchers,
   nix-expr,
+  nix-fetchers,
+  nix-store,
+  nix-util,
   nlohmann_json,
-
   # Configuration Options
-
   version,
 }:
 
 mkMesonLibrary (finalAttrs: {
-  pname = "nix-flake";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-flake";
 
   propagatedBuildInputs = [
     nix-store
@@ -26,6 +21,8 @@ mkMesonLibrary (finalAttrs: {
     nix-expr
     nlohmann_json
   ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix ++ lib.platforms.windows;

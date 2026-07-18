@@ -22,31 +22,28 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Patch providing version info at compile time
     (fetchpatch {
-      url = "https://github.com/leetronics/infnoise/commit/04d52a975bf78d2aff2bb4c176c286715e1948ba.patch";
       sha256 = "sha256-vtPAR6gCyny9UP+U6/7X8CPEUuMDl7RIyICIwiaWyfc=";
+      url = "https://github.com/leetronics/infnoise/commit/04d52a975bf78d2aff2bb4c176c286715e1948ba.patch";
     })
   ];
 
-  env = {
-    GIT_COMMIT = finalAttrs.src.rev;
-    GIT_VERSION = finalAttrs.version;
-    GIT_DATE = "2023-02-14";
-  };
-
-  buildInputs = [ libftdi ];
+  postPatch = ''
+    cd software
+    substituteInPlace init_scripts/infnoise.service --replace "/usr/local" "$out"
+  '';
 
   nativeBuildInputs = [
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
-  makefile = "Makefile.linux";
+  buildInputs = [ libftdi ];
   makeFlags = [ "PREFIX=$(out)" ];
-  postPatch = ''
-    cd software
-    substituteInPlace init_scripts/infnoise.service --replace "/usr/local" "$out"
-  '';
+
+  env = {
+    GIT_COMMIT = finalAttrs.src.rev;
+    GIT_DATE = "2023-02-14";
+    GIT_VERSION = finalAttrs.version;
+  };
 
   postInstall = ''
     make -C tools
@@ -56,22 +53,29 @@ stdenv.mkDerivation (finalAttrs: {
       sh -c "install -Dm755 {} $out/bin/infnoise-\$(basename {})" \;
   '';
 
+  doInstallCheck = true;
+  makefile = "Makefile.linux";
+
   passthru = {
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
   };
 
   meta = {
-    homepage = "https://github.com/leetronics/infnoise";
     description = "Driver for the Infinite Noise TRNG";
+
     longDescription = ''
       The Infinite Noise TRNG is a USB key hardware true random number generator.
       It can either provide rng for userland applications, or provide rng for the OS entropy.
     '';
+
+    homepage = "https://github.com/leetronics/infnoise";
     license = lib.licenses.cc0;
+
     maintainers = with lib.maintainers; [
       StijnDW
       zhaofengli
     ];
+
     platforms = lib.platforms.linux;
   };
 })

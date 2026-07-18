@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  glib,
   intltool,
   pkg-config,
-  glib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,9 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Freedesktop.org desktop menus for LXDE";
     homepage = "https://lxde.org/";
     license = lib.licenses.gpl2;
-    description = "Freedesktop.org desktop menus for LXDE";
     platforms = lib.platforms.linux;
   };
 })

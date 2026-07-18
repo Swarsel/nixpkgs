@@ -1,19 +1,19 @@
 { copyparty }:
 (copyparty.override {
-  withHashedPasswords = false;
-  withCertgen = false;
-  withThumbnails = false;
-  withFastThumbnails = false;
-  withMediaProcessing = false;
+  longDescription = "Minimal variant, minimal dependencies and fewest features";
+  nameSuffix = "-min";
   withBasicAudioMetadata = false;
-  withZeroMQ = false;
+  withCertgen = false;
   withFTP = false;
   withFTPS = false;
-  withTFTP = false;
-  withSMB = false;
+  withFastThumbnails = false;
+  withHashedPasswords = false;
   withMagic = false;
-  nameSuffix = "-min";
-  longDescription = "Minimal variant, minimal dependencies and fewest features";
+  withMediaProcessing = false;
+  withSMB = false;
+  withTFTP = false;
+  withThumbnails = false;
+  withZeroMQ = false;
 }).overrideAttrs
   (old: {
     # don't try to update this package, just update `copyparty`

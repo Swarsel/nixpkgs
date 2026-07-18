@@ -1,14 +1,12 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   seq,
   stdlib-shims,
 }:
 
 buildDunePackage (finalAttrs: {
-  minimalOCamlVersion = "4.08";
-
   pname = "ounit2";
   version = "2.2.7";
 
@@ -23,10 +21,11 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://github.com/gildor478/ounit";
     description = "Unit test framework for OCaml";
+    homepage = "https://github.com/gildor478/ounit";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sternenseemann ];
   };

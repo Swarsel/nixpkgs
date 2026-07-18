@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   build,
+  buildPythonPackage,
   cython,
   findutils,
   pip,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   wheel,
 }:
 
 buildPythonPackage rec {
   pname = "extension-helpers";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astropy";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-coSgaPoz93CqJRb65xYs1sNOwoGhcxWGJF7Jc9N2W1I=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ setuptools ];
 
   nativeCheckInputs = [
     build
@@ -40,9 +32,12 @@ buildPythonPackage rec {
     wheel
   ];
 
-  pythonImportsCheck = [ "extension_helpers" ];
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
 
-  enabledTestPaths = [ "extension_helpers/tests" ];
+  dependencies = [ setuptools ];
 
   disabledTests = [
     # https://github.com/astropy/extension-helpers/issues/43
@@ -50,6 +45,10 @@ buildPythonPackage rec {
     # ValueError: Unrecognized abi version for limited API: invalid
     "test_limited_api_invalid_abi"
   ];
+
+  enabledTestPaths = [ "extension_helpers/tests" ];
+  pyproject = true;
+  pythonImportsCheck = [ "extension_helpers" ];
 
   meta = {
     description = "Helpers to assist with building Python packages with compiled C/Cython extensions";

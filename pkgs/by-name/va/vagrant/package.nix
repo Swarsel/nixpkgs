@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildRubyGem,
   bundlerEnv,
-  ruby_3_4,
   libarchive,
   libguestfs,
+  openssl,
   qemu,
+  ruby_3_4,
   writeText,
   withLibvirt ? stdenv.hostPlatform.isLinux,
-  openssl,
 }:
 let
   # NOTE: bumping the version and updating the hash is insufficient;
@@ -27,26 +27,9 @@ let
   ruby = ruby_3_4;
 
   deps = bundlerEnv rec {
-    pname = "vagrant";
     inherit version;
-
     inherit ruby;
-    gemdir = src;
-    gemfile = writeText "Gemfile" "";
-    lockfile = writeText "Gemfile.lock" "";
-    gemset = lib.recursiveUpdate (import ./gemset.nix) (
-      {
-        vagrant = {
-          source = {
-            type = "path";
-            path = src;
-          };
-          inherit version;
-          dontCheckForBrokenSymlinks = true;
-        };
-      }
-      // lib.optionalAttrs withLibvirt (import ./gemset_libvirt.nix)
-    );
+    pname = "vagrant";
 
     # This replaces the gem symlinks with directories, resolving this
     # error when running vagrant (I have no idea why):
@@ -60,20 +43,30 @@ let
         mv "$gem.new" "$gem"
       done
     '';
+
+    gemdir = src;
+    gemfile = writeText "Gemfile" "";
+
+    gemset = lib.recursiveUpdate (import ./gemset.nix) (
+      {
+        vagrant = {
+          inherit version;
+          dontCheckForBrokenSymlinks = true;
+
+          source = {
+            path = src;
+            type = "path";
+          };
+        };
+      }
+      // lib.optionalAttrs withLibvirt (import ./gemset_libvirt.nix)
+    );
+
+    lockfile = writeText "Gemfile.lock" "";
   };
 in
 buildRubyGem rec {
-  name = "${gemName}-${version}";
-  gemName = "vagrant";
   inherit ruby version src;
-
-  doInstallCheck = true;
-  dontBuild = false;
-
-  # Some reports indicate that some connection types, particularly
-  # WinRM, suffer from "Digest initialization failed" errors. Adding
-  # openssl as a build input resolves this runtime error.
-  buildInputs = [ openssl ];
 
   patches = [
     ./use-system-bundler-version.patch
@@ -85,6 +78,11 @@ buildRubyGem rec {
     substituteInPlace lib/vagrant/plugin/manager.rb --subst-var-by \
       system_plugin_dir "$out/vagrant-plugins"
   '';
+
+  # Some reports indicate that some connection types, particularly
+  # WinRM, suffer from "Digest initialization failed" errors. Adding
+  # openssl as a build input resolves this runtime error.
+  buildInputs = [ openssl ];
 
   # PATH additions:
   #   - libarchive: Make `bsdtar` available for extracting downloaded boxes
@@ -127,9 +125,15 @@ buildRubyGem rec {
         --subst-var-by vagrant_version ${version}
     '';
 
+  doInstallCheck = true;
+
   installCheckPhase = ''
     HOME="$(mktemp -d)" $out/bin/vagrant init --output - > /dev/null
   '';
+
+  dontBuild = false;
+  gemName = "vagrant";
+  name = "${gemName}-${version}";
 
   passthru = {
     inherit ruby deps;

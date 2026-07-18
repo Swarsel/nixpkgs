@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -18,11 +18,9 @@ buildPythonPackage {
     sha256 = "sha256-GEhg2iMsYMfalT7L9TCd1KHU6oa/wTl5m3mRC0zOH9Q=";
   };
 
-  pyproject = true;
-
   nativeBuildInputs = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pytestFlags = [
     # The pyproject.toml specifies the flag `--cov=timeslot`,
@@ -36,7 +34,7 @@ buildPythonPackage {
   meta = {
     description = "Data type for representing time slots with a start and end";
     homepage = "https://github.com/ErikBjare/timeslot";
-    maintainers = with lib.maintainers; [ huantian ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ huantian ];
   };
 }

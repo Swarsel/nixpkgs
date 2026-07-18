@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  perl,
-  pkg-config,
   curl,
+  gitMinimal,
   libiconv,
   openssl,
-  gitMinimal,
+  perl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,14 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-ezMpxYrJJ2zqEwCaDu2DFMwd6d/nfPVO6z2Lm4elIYE=";
   };
-
-  cargoHash = "sha256-CYvvwgDZ+yAr7kLGEVZLVx7+sZUc5vu85AT5xLJBSbQ=";
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-    git config --global user.name "Nixpkgs Test"
-    git config --global user.email "nobody@example.com"
-  '';
 
   nativeBuildInputs = [
     perl
@@ -43,20 +35,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
     curl
   ];
 
+  cargoHash = "sha256-CYvvwgDZ+yAr7kLGEVZLVx7+sZUc5vu85AT5xLJBSbQ=";
   nativeCheckInputs = [ gitMinimal ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+    git config --global user.name "Nixpkgs Test"
+    git config --global user.email "nobody@example.com"
+  '';
 
   meta = {
     description = "Cryptographically verifiable code review system for the cargo (Rust) package manager";
-    mainProgram = "cargo-crev";
     homepage = "https://github.com/crev-dev/cargo-crev";
+
     license = with lib.licenses; [
       asl20
       mit
       mpl20
     ];
+
     maintainers = with lib.maintainers; [
       b4dm4n
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-crev";
   };
 })

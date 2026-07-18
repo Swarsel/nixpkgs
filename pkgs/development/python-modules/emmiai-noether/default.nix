@@ -1,16 +1,11 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   aistore,
   boto3,
+  buildPythonPackage,
   einops,
   fsspec,
   h5py,
@@ -20,22 +15,22 @@
   numpy,
   pandas,
   psutil,
+  # tests
+  pytestCheckHook,
   pyvista,
   rtree,
+  # build-system
+  setuptools,
+  setuptools-scm,
   submitit,
   torch,
   trimesh,
   typer,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "emmiai-noether";
   version = "2026.4.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Emmi-AI";
@@ -44,15 +39,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ySQxI0n4mPKio7tlRkRRdSq/ieIigznur2CZhJfbyLs=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  pythonRelaxDeps = [
-    "numpy"
-    "torch"
-  ];
   dependencies = [
     aistore
     boto3
@@ -71,12 +69,6 @@ buildPythonPackage (finalAttrs: {
     torch
     trimesh
     typer
-  ];
-
-  pythonImportsCheck = [ "noether" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -111,7 +103,13 @@ buildPythonPackage (finalAttrs: {
     "test_real_time_accuracy"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "noether" ];
+
+  pythonRelaxDeps = [
+    "numpy"
+    "torch"
+  ];
 
   meta = {
     description = "Deep-Learning framework for Engineering AI";

@@ -44,16 +44,18 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Open-source artillery shooter";
-    mainProgram = "hase";
+
     longDescription = ''
       Hase is an open source gravity based artillery shooter. It is similar to
       Worms, Hedgewars or artillery, but the gravity force and direction
       depends on the mass nearby. It is optimized for mobile game consoles like
       the GP2X, Open Pandora or GCW Zero.
     '';
+
     homepage = "http://ziz.gp2x.de/hase/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ colinsane ];
     platforms = lib.platforms.linux;
+    mainProgram = "hase";
   };
 }

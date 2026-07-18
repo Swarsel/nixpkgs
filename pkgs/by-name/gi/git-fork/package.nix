@@ -2,19 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  undmg,
   nix-update-script,
+  undmg,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "git-fork";
   version = "2.57.1";
+
   src = fetchurl {
     url = "https://cdn.fork.dev/mac/Fork-${finalAttrs.version}.dmg";
     hash = "sha256-hIrR655lCKBDkZS6cF7BD+WMvX13T9180rpAfUYc8YA=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [ undmg ];
 
@@ -28,15 +27,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Git client";
     homepage = "https://git-fork.com";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ dudeofawesome ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     mainProgram = "fork";
   };
 })

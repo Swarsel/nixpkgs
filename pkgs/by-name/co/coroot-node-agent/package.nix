@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   systemdLibs,
 }:
 
@@ -16,10 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-qrIcbJcxVw6LgvpihFlDP3AYT0S5ILHJf+pko94t3/8=";
   };
 
-  vendorHash = "sha256-I7KxBM3cLF4zrZb6AQSCmg3cR1MrTPzTNHUHN9YP3P0=";
-
   buildInputs = [ systemdLibs ];
-
+  vendorHash = "sha256-I7KxBM3cLF4zrZb6AQSCmg3cR1MrTPzTNHUHN9YP3P0=";
   env.CGO_CFLAGS = "-I ${systemdLibs}/include";
 
   ldflags = [

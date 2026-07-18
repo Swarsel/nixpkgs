@@ -1,8 +1,8 @@
 {
-  autoreconfHook,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
 }:
 
 stdenv.mkDerivation {
@@ -18,17 +18,17 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ autoreconfHook ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     ln -sr $out/libexec $out/bin
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Uptime check plugin for Sensu/Nagios/others";
     homepage = "https://github.com/madrisan/nagios-plugins-uptime";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "check_uptime";
     maintainers = with lib.maintainers; [ peterhoeg ];
+    mainProgram = "check_uptime";
   };
 }

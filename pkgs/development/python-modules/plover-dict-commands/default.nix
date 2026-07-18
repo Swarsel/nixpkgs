@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  plover,
   setuptools,
   setuptools-scm,
-  plover,
 }:
 
 buildPythonPackage (finalAttrs: {
@@ -12,7 +12,6 @@ buildPythonPackage (finalAttrs: {
   # See https://pypi.org/project/plover-dict-commands/
   # and https://github.com/KoiOates/plover_dict_commands/issues/4
   version = "0.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KoiOates";
@@ -36,6 +35,8 @@ buildPythonPackage (finalAttrs: {
     plover
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "plover_dict_commands"
   ];
@@ -44,6 +45,7 @@ buildPythonPackage (finalAttrs: {
     description = "Plover plugin for enabling, disabling, and changing the priority of dictionaries";
     homepage = "https://github.com/KoiOates/plover_dict_commands";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       pandapip1
       ShamrockLee

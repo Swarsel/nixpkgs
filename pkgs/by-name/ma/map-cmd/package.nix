@@ -16,22 +16,20 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   makeFlags = [ "PREFIX=$(out)" ];
+  doCheck = true;
+  checkPhase = "./test/tests.sh";
 
   postInstall = ''
     mkdir -p "$out/share/doc/map"
     cp README* LICENSE "$out/share/doc/map"
   '';
 
-  doCheck = true;
-
-  checkPhase = "./test/tests.sh";
-
   meta = {
     description = "Map lines from stdin to commands";
-    mainProgram = "map";
     homepage = "https://github.com/soveran/map";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ pogobanane ];
     platforms = lib.platforms.unix;
+    mainProgram = "map";
   };
 })

@@ -1,29 +1,28 @@
 {
   lib,
   stdenv,
+  accountsservice,
+  appstream,
+  dbus,
+  desktop-file-utils,
+  flatpak,
+  glib,
+  glib-testing,
+  gobject-introspection,
+  gtk4,
+  itstool,
+  libadwaita,
+  malcontent,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
-  itstool,
-  wrapGAppsHook4,
-  glib,
-  accountsservice,
-  dbus,
-  flatpak,
-  malcontent,
-  gtk4,
-  libadwaita,
-  appstream,
-  desktop-file-utils,
   polkit,
-  glib-testing,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation {
-  pname = "malcontent-ui";
-
   inherit (malcontent) version src;
+  pname = "malcontent-ui";
 
   outputs = [
     "out"
@@ -74,10 +73,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "UI components for parental controls library";
-    mainProgram = "malcontent-control";
     homepage = "https://gitlab.freedesktop.org/pwithnall/malcontent";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ jtojnar ];
     platforms = lib.platforms.unix;
+    mainProgram = "malcontent-control";
   };
 }

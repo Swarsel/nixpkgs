@@ -1,4 +1,4 @@
-{ runCommand, doctoc }:
+{ doctoc, runCommand }:
 runCommand "doctoc-test-generates-valid-markdown.md" { nativeBuildInputs = [ doctoc ]; } ''
   cp ${./input.md} ./target.md && chmod +w ./target.md
   doctoc ./target.md

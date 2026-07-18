@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
   autoconf-archive,
-  makeWrapper,
-  which,
-  tpm2-tss,
-  glib,
-  dbus,
+  autoreconfHook,
   cmocka,
+  dbus,
+  glib,
+  makeWrapper,
+  pkg-config,
+  tpm2-tss,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,24 +32,17 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     which
   ];
+
   buildInputs = [
     tpm2-tss
     glib
     dbus
   ];
-  nativeCheckInputs = [ cmocka ];
-
-  enableParallelBuilding = true;
-
-  # Emulate the required behavior of ./bootstrap in the original
-  # package
-  preAutoreconf = ''
-    echo "${finalAttrs.version}" > VERSION
-  '';
 
   # Unit tests are currently broken as the check phase attempts to start a dbus daemon etc.
   #configureFlags = [ "--enable-unit" ];
   doCheck = false;
+  nativeCheckInputs = [ cmocka ];
 
   # Even though tpm2-tss is in the RUNPATH, starting from 2.3.0 abrmd
   # seems to require the path to the device TCTI (used for accessing
@@ -59,15 +52,25 @@ stdenv.mkDerivation (finalAttrs: {
       --suffix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ tpm2-tss ]}"
   '';
 
+  enableParallelBuilding = true;
+
+  # Emulate the required behavior of ./bootstrap in the original
+  # package
+  preAutoreconf = ''
+    echo "${finalAttrs.version}" > VERSION
+  '';
+
   meta = {
     description = "TPM2 resource manager, accessible via D-Bus";
-    mainProgram = "tpm2-abrmd";
     homepage = "https://github.com/tpm2-software/tpm2-tools";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       scottstephens
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "tpm2-abrmd";
   };
 })

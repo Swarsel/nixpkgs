@@ -1,6 +1,6 @@
 {
-  fetchCrate,
   lib,
+  fetchCrate,
   rustPlatform,
 }:
 

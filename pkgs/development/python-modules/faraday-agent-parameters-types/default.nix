@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   marshmallow,
   packaging,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "faraday-agent-parameters-types";
   version = "1.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "infobyte";
@@ -22,29 +21,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Oe/9/zKOoCLK3JHMacOhk2+d91MrhzkBTW3POoFm71M=";
   };
 
-  pythonRelaxDeps = [
-    "marshmallow"
-    "validators"
-  ];
-
   postPatch = ''
     substituteInPlace setup.py \
       --replace-warn '"pytest-runner",' ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
     marshmallow
     packaging
     validators
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [
-    "faraday_agent_parameters_types"
-    "faraday_agent_parameters_types.utils"
   ];
 
   disabledTests = [
@@ -54,6 +42,18 @@ buildPythonPackage (finalAttrs: {
     "test_deserialize"
     "test_invalid_data"
     "test_serialize"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "faraday_agent_parameters_types"
+    "faraday_agent_parameters_types.utils"
+  ];
+
+  pythonRelaxDeps = [
+    "marshmallow"
+    "validators"
   ];
 
   meta = {

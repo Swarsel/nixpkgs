@@ -1,16 +1,14 @@
 {
   buildDunePackage,
-  merlin,
   csexp,
+  merlin,
 }:
 
 buildDunePackage {
-  pname = "merlin-lib";
   inherit (merlin) version src;
-
-  minimalOCamlVersion = "4.14";
-
+  pname = "merlin-lib";
   propagatedBuildInputs = [ csexp ];
+  minimalOCamlVersion = "4.14";
 
   meta = merlin.meta // {
     description = "Merlin’s libraries";

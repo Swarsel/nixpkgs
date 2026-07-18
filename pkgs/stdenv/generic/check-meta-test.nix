@@ -41,15 +41,15 @@ let
     }:
     let
       testPkgs = import ../../.. {
-        system = pkgs.stdenv.hostPlatform.system;
         config = nixpkgsConfig;
+        system = pkgs.stdenv.hostPlatform.system;
       };
       checkMeta = testPkgs.callPackage ./check-meta.nix { };
       tryEval = expression: builtins.tryEval (builtins.deepSeq expression expression);
       actual = tryEval (
         checkMeta.assertValidity pkgs.stdenv.hostPlatform {
-          meta = pkg.meta;
           attrs = pkg;
+          meta = pkg.meta;
         }
       );
       toPretty = generators.toPretty { };
@@ -65,46 +65,19 @@ let
   runAssertions = assertions: lib.deepSeq assertions "";
 
   mkTests = mkUnfreePkg: {
-    allowOnlyFreePackagesByDefault = assertValidity {
-      nixpkgsConfig = { };
-      pkg = mkUnfreePkg "forbidden";
-      expected = false;
-    };
-
     allowAllUnfreePackages = assertValidity {
       nixpkgsConfig = {
         allowUnfree = true;
       };
+
       pkg = mkUnfreePkg "allowed";
     };
 
-    allowUnfreePackagesWithPredicate =
-      let
-        nixpkgsConfig = {
-          allowUnfreePredicate = pkg: lib.getName pkg == "allowed-by-predicate";
-        };
-      in
-      [
-        (assertValidity {
-          inherit nixpkgsConfig;
-          pkg = mkUnfreePkg "allowed-by-predicate";
-        })
-        (assertValidity {
-          inherit nixpkgsConfig;
-          pkg = mkUnfreePkg "allowed-by-nothing";
-          expected = false;
-        })
-      ];
-
-    allowUnfreeWithPackages = runAssertions [
-      (assertValidity {
-        nixpkgsConfig = {
-          allowUnfreePackages = [ "unfree" ];
-        };
-        pkg = mkUnfreePkg "unfree";
-        expected = true;
-      })
-    ];
+    allowOnlyFreePackagesByDefault = assertValidity {
+      expected = false;
+      nixpkgsConfig = { };
+      pkg = mkUnfreePkg "forbidden";
+    };
 
     allowUnfreePackagesOrPredicate =
       let
@@ -124,10 +97,40 @@ let
         })
         (assertValidity {
           inherit nixpkgsConfig;
-          pkg = mkUnfreePkg "forbidden";
           expected = false;
+          pkg = mkUnfreePkg "forbidden";
         })
       ];
+
+    allowUnfreePackagesWithPredicate =
+      let
+        nixpkgsConfig = {
+          allowUnfreePredicate = pkg: lib.getName pkg == "allowed-by-predicate";
+        };
+      in
+      [
+        (assertValidity {
+          inherit nixpkgsConfig;
+          pkg = mkUnfreePkg "allowed-by-predicate";
+        })
+        (assertValidity {
+          inherit nixpkgsConfig;
+          expected = false;
+          pkg = mkUnfreePkg "allowed-by-nothing";
+        })
+      ];
+
+    allowUnfreeWithPackages = runAssertions [
+      (assertValidity {
+        expected = true;
+
+        nixpkgsConfig = {
+          allowUnfreePackages = [ "unfree" ];
+        };
+
+        pkg = mkUnfreePkg "unfree";
+      })
+    ];
   };
 
   unfreeLicenses = [

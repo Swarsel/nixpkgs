@@ -11,16 +11,10 @@ let
 in
 
 {
-  meta = {
-    doc = ./flatpak.md;
-    maintainers = pkgs.flatpak.meta.maintainers;
-  };
-
   ###### interface
   options = {
     services.flatpak = {
       enable = lib.mkEnableOption "flatpak";
-
       package = lib.mkPackageOption pkgs "flatpak" { };
     };
   };
@@ -35,37 +29,36 @@ in
       }
     ];
 
-    environment.systemPackages = [
-      cfg.package
-      pkgs.fuse3
-    ];
-
-    programs.fuse.enable = true;
-
-    security.polkit.enable = true;
-
-    fonts.fontDir.enable = true;
-
-    services.dbus.packages = [ cfg.package ];
-
-    systemd.packages = [ cfg.package ];
-    systemd.tmpfiles.packages = [ cfg.package ];
-
     environment.profiles = [
       "$HOME/.local/share/flatpak/exports"
       "/var/lib/flatpak/exports"
     ];
 
+    environment.systemPackages = [
+      cfg.package
+      pkgs.fuse3
+    ];
+
+    fonts.fontDir.enable = true;
+    programs.fuse.enable = true;
+    security.polkit.enable = true;
+    services.dbus.packages = [ cfg.package ];
+    systemd.packages = [ cfg.package ];
+    systemd.tmpfiles.packages = [ cfg.package ];
+    users.groups.flatpak = { };
+
     # It has been possible since https://github.com/flatpak/flatpak/releases/tag/1.3.2
     # to build a SELinux policy module.
-
     # TODO: use sysusers.d
     users.users.flatpak = {
       description = "Flatpak system helper";
       group = "flatpak";
       isSystemUser = true;
     };
+  };
 
-    users.groups.flatpak = { };
+  meta = {
+    doc = ./flatpak.md;
+    maintainers = pkgs.flatpak.meta.maintainers;
   };
 }

@@ -35,12 +35,6 @@ ocamlPackages.buildDunePackage {
     runHook postBuild
   '';
 
-  installPhase = ''
-    runHook preInstall
-    dune install --prefix $out --libdir $OCAMLFIND_DESTDIR logtk libzipperposition zipperposition zipperposition-tools
-    runHook postInstall
-  '';
-
   doCheck = true;
 
   checkInputs = with ocamlPackages; [
@@ -55,12 +49,18 @@ ocamlPackages.buildDunePackage {
     runHook postCheck
   '';
 
+  installPhase = ''
+    runHook preInstall
+    dune install --prefix $out --libdir $OCAMLFIND_DESTDIR logtk libzipperposition zipperposition zipperposition-tools
+    runHook postInstall
+  '';
+
   meta = {
     description = "Superposition prover for full first order logic";
     homepage = "https://github.com/sneeuwballen/zipperposition";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.DieracDelta ];
-    mainProgram = "zipperposition";
     platforms = lib.platforms.all;
+    mainProgram = "zipperposition";
   };
 }

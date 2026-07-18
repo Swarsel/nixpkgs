@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
   pkg-config,
   qt5,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     qt5.qtbase
   ];

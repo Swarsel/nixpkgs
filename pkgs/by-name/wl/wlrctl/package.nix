@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromSourcehut,
+  libxkbcommon,
   meson,
+  ninja,
   pkg-config,
   scdoc,
-  ninja,
-  libxkbcommon,
   wayland,
   wayland-scanner,
 }:
@@ -23,9 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  depsBuildBuild = [
-    pkg-config
-  ];
+
   nativeBuildInputs = [
     meson
     pkg-config
@@ -33,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     wayland-scanner
   ];
+
   buildInputs = [
     libxkbcommon
     wayland
@@ -40,14 +39,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error=type-limits";
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   meta = {
     description = "Command line utility for miscellaneous wlroots Wayland extensions";
     homepage = "https://git.sr.ht/~brocellous/wlrctl";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       puffnfresh
       artturin
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "wlrctl";
   };

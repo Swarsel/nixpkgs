@@ -2,34 +2,34 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  runtimeShell,
+  aravis,
   catch2,
+  cmake,
   elfutils,
+  glib,
+  gobject-introspection,
+  graphviz,
+  gst_all_1,
   libselinux,
   libsepol,
   libunwind,
   libusb1,
   libuuid,
   libzip,
+  meson,
   orc,
   pcre,
-  zstd,
-  glib,
-  gobject-introspection,
-  gst_all_1,
+  pkg-config,
+  qt5,
+  runtimeShell,
+  sphinx,
   wrapGAppsHook3,
+  zstd,
+  withAravis ? true,
+  withAravisUsbVision ? withAravis,
   # needs pkg_resources
   withDoc ? false,
-  sphinx,
-  graphviz,
-  withAravis ? true,
-  aravis,
-  meson,
-  withAravisUsbVision ? withAravis,
   withGui ? true,
-  qt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -94,8 +94,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt5.qtbase
   ];
 
-  hardeningDisable = [ "format" ];
-
   cmakeFlags = [
     "-DTCAM_BUILD_GST_1_0=ON"
     "-DTCAM_BUILD_TOOLS=ON"
@@ -112,38 +110,36 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.10"
   ];
 
-  doCheck = true;
-
-  # gstreamer tests requires, besides gst-plugins-bad, plugins installed by this expression.
-  checkPhase = "ctest --force-new-ctest-process -E gstreamer";
-
   env = {
-    # wrapGAppsHook3: make sure we add ourselves to the introspection
-    # and gstreamer paths.
-    GI_TYPELIB_PATH = "${placeholder "out"}/lib/girepository-1.0";
-    GST_PLUGIN_SYSTEM_PATH_1_0 = "${placeholder "out"}/lib/gstreamer-1.0";
-
-    QT_PLUGIN_PATH = lib.optionalString withGui "${qt5.qtbase.bin}/${qt5.qtbase.qtPluginPrefix}";
-
     CXXFLAGS = toString [
       "-include"
       "cstdint"
     ];
+
+    # wrapGAppsHook3: make sure we add ourselves to the introspection
+    # and gstreamer paths.
+    GI_TYPELIB_PATH = "${placeholder "out"}/lib/girepository-1.0";
+    GST_PLUGIN_SYSTEM_PATH_1_0 = "${placeholder "out"}/lib/gstreamer-1.0";
+    QT_PLUGIN_PATH = lib.optionalString withGui "${qt5.qtbase.bin}/${qt5.qtbase.qtPluginPrefix}";
   };
 
-  dontWrapQtApps = true;
-
+  doCheck = true;
+  # gstreamer tests requires, besides gst-plugins-bad, plugins installed by this expression.
+  checkPhase = "ctest --force-new-ctest-process -E gstreamer";
   doInstallCheck = true;
 
   preFixup = ''
     gappsWrapperArgs+=("''${qtWrapperArgs[@]}")
   '';
 
+  dontWrapQtApps = true;
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Linux sources and UVC firmwares for The Imaging Source cameras";
     homepage = "https://github.com/TheImagingSource/tiscamera";
     license = with lib.licenses; [ asl20 ];
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ jraygauthier ];
+    platforms = lib.platforms.linux;
   };
 })

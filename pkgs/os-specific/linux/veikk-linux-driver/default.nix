@@ -18,9 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./fix-6.12-build.patch ];
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
-
   buildInputs = [ kernel ];
 
   makeFlags = kernelModuleMakeFlags ++ [
@@ -40,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Linux driver for VEIKK-brand digitizers";
     homepage = "https://github.com/jlam55555/veikk-linux-driver/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ nicbk ];
+    platforms = lib.platforms.linux;
     broken = kernel.kernelOlder "4.19";
   };
 })

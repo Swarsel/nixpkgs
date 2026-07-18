@@ -1,18 +1,19 @@
 {
-  mkKdeDerivation,
-  qttools,
   bison,
   flex,
   libimobiledevice,
+  mkKdeDerivation,
+  qttools,
 }:
 mkKdeDerivation {
   pname = "solid";
+  extraBuildInputs = [ libimobiledevice ];
 
   extraNativeBuildInputs = [
     qttools
     bison
     flex
   ];
-  extraBuildInputs = [ libimobiledevice ];
+
   meta.mainProgram = "solid-hardware6";
 }

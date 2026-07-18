@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
 }:
 
 buildPythonPackage rec {
   pname = "ecs-logging";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "elastic";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   # Circular dependency elastic-apm
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ecs_logging" ];
 
   meta = {

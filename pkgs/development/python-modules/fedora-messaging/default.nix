@@ -1,34 +1,30 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   blinker,
+  buildPythonPackage,
   click,
   crochet,
   jsonschema,
   pika,
+  # build-system
+  poetry-core,
   pyopenssl,
-  requests,
-  service-identity,
-  tomli,
-  twisted,
-
   # tests
   pytest-mock,
   pytest-twisted,
   pytestCheckHook,
+  requests,
+  service-identity,
+  tomli,
+  twisted,
 }:
 
 buildPythonPackage rec {
   pname = "fedora-messaging";
   version = "3.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fedora-infra";
@@ -37,6 +33,13 @@ buildPythonPackage rec {
     hash = "sha256-384pvF/MgOReA52bfifa4Fuo79b9zUe+AK7vfIkFSf8=";
   };
 
+  nativeCheckInputs = [
+    pytest-mock
+    pytest-twisted
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -52,16 +55,6 @@ buildPythonPackage rec {
     twisted
   ];
 
-  pythonImportsCheck = [ "fedora_messaging" ];
-
-  nativeCheckInputs = [
-    pytest-mock
-    pytest-twisted
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "tests/unit" ];
-
   disabledTests = [
     # Broken since click was updated to 8.2.1 in https://github.com/NixOS/nixpkgs/pull/448189
     # AssertionError
@@ -72,7 +65,9 @@ buildPythonPackage rec {
     "test_publish_rejected_message"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  enabledTestPaths = [ "tests/unit" ];
+  pyproject = true;
+  pythonImportsCheck = [ "fedora_messaging" ];
 
   meta = {
     description = "Library for sending AMQP messages with JSON schema in Fedora infrastructure";

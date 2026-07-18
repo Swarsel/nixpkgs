@@ -17,16 +17,15 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
-  installCheckPhase = "$out/bin/gpp --help";
   doInstallCheck = true;
+  installCheckPhase = "$out/bin/gpp --help";
 
   meta = {
     description = "General-purpose preprocessor with customizable syntax";
-    mainProgram = "gpp";
     homepage = "https://logological.org/gpp";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ nmattia ];
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "gpp";
   };
 }

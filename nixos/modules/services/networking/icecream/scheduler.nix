@@ -18,55 +18,63 @@ in
 
     services.icecream.scheduler = {
       enable = mkEnableOption "Icecream Scheduler";
+      package = mkPackageOption pkgs "icecream" { };
+
+      extraArgs = mkOption {
+        default = [ ];
+        description = "Additional command line parameters";
+        example = [ "-v" ];
+        type = types.listOf types.str;
+      };
 
       netName = mkOption {
-        type = types.nullOr types.str;
         default = null;
+
         description = ''
           Network name for the icecream scheduler.
 
           Uses the default ICECREAM if null.
         '';
-      };
 
-      port = mkOption {
-        type = types.port;
-        default = 8765;
-        description = ''
-          Server port to listen for icecream daemon requests.
-        '';
+        type = types.nullOr types.str;
       };
 
       openFirewall = mkOption {
-        type = types.bool;
         description = ''
           Whether to automatically open the daemon port in the firewall.
         '';
+
+        type = types.bool;
       };
 
       openTelnet = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to open the telnet TCP port on 8766.
         '';
+
+        type = types.bool;
       };
 
       persistentClientConnection = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to prevent clients from connecting to a better scheduler.
         '';
+
+        type = types.bool;
       };
 
-      package = mkPackageOption pkgs "icecream" { };
+      port = mkOption {
+        default = 8765;
 
-      extraArgs = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = "Additional command line parameters";
-        example = [ "-v" ];
+        description = ''
+          Server port to listen for icecream daemon requests.
+        '';
+
+        type = types.port;
       };
     };
   };
@@ -80,11 +88,12 @@ in
     ];
 
     systemd.services.icecc-scheduler = {
-      description = "Icecream scheduling server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Icecream scheduling server";
 
       serviceConfig = {
+        DynamicUser = true;
+
         ExecStart = escapeShellArgs (
           [
             "${getBin cfg.package}/bin/icecc-scheduler"
@@ -98,9 +107,9 @@ in
           ++ optional cfg.persistentClientConnection "-r"
           ++ cfg.extraArgs
         );
-
-        DynamicUser = true;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
   _7zz,
+  copyDesktopItems,
   jdk11,
+  makeDesktopItem,
+  makeWrapper,
 }:
 
 let
@@ -17,12 +17,14 @@ let
 
   meta = {
     description = "Java profiler for deep JVM analysis";
+
     longDescription = ''
       JProfiler bridges high-level analytics and low-level JVM data,
       delivering unmatched insights to solve your toughest performance
       problems, memory leaks, threading issues, and higher-level problems in
       technologies like JDBC, JPA, and more.
     '';
+
     homepage = "https://www.ej-technologies.com/products/jprofiler/overview.html";
     license = lib.licenses.unfree;
     maintainers = [ ];
@@ -34,6 +36,7 @@ let
         url = "https://download.ej-technologies.com/jprofiler/jprofiler_linux_${
           lib.replaceStrings [ "." ] [ "_" ] version
         }.tar.gz";
+
         hash = "sha256-S7e2WurDJ0ePzpMg0YK94Mn0eHfb8/jNmf0kYts2Y0M=";
       }
     else
@@ -41,18 +44,19 @@ let
         url = "https://download-gcdn.ej-technologies.com/jprofiler/jprofiler_macos_${
           lib.replaceStrings [ "." ] [ "_" ] version
         }.dmg";
+
         hash = "sha256-HPGh+dRfLuQprpgnu8oFboHUB1xvFqPblJcowqgZ5KA=";
       };
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
-      exec = pname;
-      icon = pname;
+      categories = [ "Development" ];
       comment = meta.description;
       desktopName = nameApp;
+      exec = pname;
       genericName = "Java Profiler Tool";
-      categories = [ "Development" ];
+      icon = pname;
+      name = pname;
     })
   ];
 
@@ -102,16 +106,6 @@ let
       _7zz
     ];
 
-    unpackPhase = ''
-      runHook preUnpack
-
-      7zz x $src -x!JProfiler/\[\]
-
-      runHook postUnpack
-    '';
-
-    sourceRoot = nameApp;
-
     installPhase = ''
       runHook preInstall
 
@@ -120,6 +114,16 @@ let
       makeWrapper $out/Applications/${nameApp}.app/Contents/MacOS/JavaApplicationStub $out/bin/${pname}
 
       runHook postInstall
+    '';
+
+    sourceRoot = nameApp;
+
+    unpackPhase = ''
+      runHook preUnpack
+
+      7zz x $src -x!JProfiler/\[\]
+
+      runHook postUnpack
     '';
 
     meta = meta // {

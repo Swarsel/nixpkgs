@@ -1,8 +1,8 @@
-{ melpaBuild, llvmPackages }:
+{ llvmPackages, melpaBuild }:
 
 melpaBuild {
-  pname = "llvm-mode";
   inherit (llvmPackages.llvm) src version;
+  pname = "llvm-mode";
 
   files = ''
     ("llvm/utils/emacs/*.el"

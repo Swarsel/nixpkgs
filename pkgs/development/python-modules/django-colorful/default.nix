@@ -1,28 +1,25 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
+  fetchPypi,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-colorful";
   version = "1.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-/SRvL7KX7QdNxDSZZtM6HILQMIt/sNbvbi52uQzv/7c=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ django ];
-
   # Tests aren't run
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "colorful" ];
 
   meta = {

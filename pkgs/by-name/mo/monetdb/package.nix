@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  python3,
   bison,
-  openssl,
-  readline,
   bzip2,
+  cmake,
   nixosTests,
+  openssl,
+  python3,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,22 +20,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-u/Jukp09g8i/zcUA0vFqmTMvX4XcNPs/gIRInvZSHj0=";
   };
 
-  nativeBuildInputs = [
-    bison
-    cmake
-    python3
-  ];
-  buildInputs = [
-    openssl
-    readline
-    bzip2
-  ];
-
   postPatch = ''
     substituteInPlace cmake/monetdb-packages.cmake --replace \
       'get_os_release_info(LINUX_DISTRO LINUX_DISTRO_VERSION)' \
       'set(LINUX_DISTRO "nixos")'
   '';
+
+  nativeBuildInputs = [
+    bison
+    cmake
+    python3
+  ];
+
+  buildInputs = [
+    openssl
+    readline
+    bzip2
+  ];
 
   postInstall = ''
     rm $out/bin/monetdb_mtest.sh \
@@ -54,7 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open source database system";
     homepage = "https://www.monetdb.org/";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.StillerHarpo ];
+    platforms = lib.platforms.unix;
   };
 })

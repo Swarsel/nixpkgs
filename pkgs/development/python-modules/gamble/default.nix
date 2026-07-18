@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   poetry-core,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "gamble";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jpetrucciani";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-vzaY5gJ0Ou2ArUJ0kuTWzTeLfiRDhUt/Hxpns9rFiDk=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "gamble" ];
 
   meta = {

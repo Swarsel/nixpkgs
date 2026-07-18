@@ -1,10 +1,10 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  protobuf,
   cython,
+  fetchPypi,
   grpcio,
+  protobuf,
   setuptools,
 }:
 
@@ -14,34 +14,29 @@
 buildPythonPackage rec {
   pname = "grpcio-tools";
   version = "1.81.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "grpcio_tools";
     inherit version;
     hash = "sha256-BzPXc+yoy0YfTyobecZMEj25ZhvkGwgYS4FJeyuZHMs=";
+    pname = "grpcio_tools";
   };
-
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail "Cython==3.1.1" Cython
-  '';
 
   outputs = [
     "out"
     "dev"
   ];
 
-  enableParallelBuilding = true;
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail "Cython==3.1.1" Cython
+  '';
+
+  # no tests in the package
+  doCheck = false;
 
   build-system = [
     cython
     setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-    "grpcio"
   ];
 
   dependencies = [
@@ -50,15 +45,19 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  # no tests in the package
-  doCheck = false;
-
+  enableParallelBuilding = true;
+  pyproject = true;
   pythonImportsCheck = [ "grpc_tools" ];
+
+  pythonRelaxDeps = [
+    "protobuf"
+    "grpcio"
+  ];
 
   meta = {
     description = "Protobuf code generator for gRPC";
-    license = lib.licenses.asl20;
     homepage = "https://grpc.io/grpc/python/";
+    license = lib.licenses.asl20;
     maintainers = [ ];
   };
 }

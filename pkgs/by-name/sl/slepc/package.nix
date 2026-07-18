@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  python3Packages,
   arpack,
-  petsc,
   mpiCheckPhaseHook,
+  petsc,
+  python3Packages,
   pythonSupport ? false,
-  withExamples ? false,
   withArpack ? stdenv.hostPlatform.isLinux,
+  withExamples ? false,
 }:
 let
   slepcPackages = petsc.petscPackages.overrideScope (
     final: prev: {
       inherit pythonSupport;
-      mpiSupport = true;
       arpack = final.callPackage arpack.override { useMpi = true; };
+      mpiSupport = true;
     }
   );
 in
@@ -47,14 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.cython
   ];
 
-  configureFlags =
-    lib.optionals withArpack [
-      "--with-arpack=1"
-    ]
-    ++ lib.optionals pythonSupport [
-      "--with-slepc4py=1"
-    ];
-
   buildInputs = [
     slepcPackages.mpi
   ]
@@ -66,11 +58,15 @@ stdenv.mkDerivation (finalAttrs: {
     petsc
   ];
 
-  enableParallelBuilding = true;
+  configureFlags =
+    lib.optionals withArpack [
+      "--with-arpack=1"
+    ]
+    ++ lib.optionals pythonSupport [
+      "--with-slepc4py=1"
+    ];
 
-  installTargets = [ (if withExamples then "install" else "install-lib") ];
-
-  __darwinAllowLocalNetworking = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     mpiCheckPhaseHook
@@ -80,9 +76,12 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.unittestCheckHook
   ];
 
-  doInstallCheck = true;
-
+  __darwinAllowLocalNetworking = true;
+  enableParallelBuilding = true;
   installCheckTarget = [ "check_install" ];
+  installTargets = [ (if withExamples then "install" else "install-lib") ];
+  pythonImportsCheck = [ "slepc4py" ];
+  setupHook = ./setup-hook.sh;
 
   unittestFlagsArray = [
     "-s"
@@ -90,19 +89,17 @@ stdenv.mkDerivation (finalAttrs: {
     "-v"
   ];
 
-  pythonImportsCheck = [ "slepc4py" ];
-
-  setupHook = ./setup-hook.sh;
-
   meta = {
     description = "Scalable Library for Eigenvalue Problem Computations";
     homepage = "https://slepc.upv.es";
     changelog = "https://gitlab.com/slepc/slepc/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       bsd2
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
     # Possible error running Fortran src/eps/tests/test7f with 1 MPI process
     broken = stdenv.hostPlatform.isDarwin && withArpack;
   };

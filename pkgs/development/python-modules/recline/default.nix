@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   argcomplete,
   buildPythonPackage,
-  fetchFromGitHub,
   pudb,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "recline";
   version = "2025.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "NetApp";
@@ -20,15 +19,14 @@ buildPythonPackage rec {
     sha256 = "sha256-xEH6fEq84nD3X6bPj1Yw36mjwHKlFKsVaMh4Iogzl18=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ argcomplete ];
-
   nativeCheckInputs = [
     pudb
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ argcomplete ];
+  pyproject = true;
   pythonImportsCheck = [ "recline" ];
 
   meta = {

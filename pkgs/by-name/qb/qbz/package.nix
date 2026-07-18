@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   alsa-lib,
   cargo-tauri,
   clang,
-  fetchFromGitHub,
   fetchNpmDeps,
   glib-networking,
-  lib,
   libappindicator,
   libappindicator-gtk3,
   libayatana-appindicator,
@@ -34,20 +34,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-G7wR5HV0qwlrCPmKTv68+EeDTTyCAvvmPr7GDhrwTaA=";
   };
 
-  cargoHash = "sha256-nF3hoKn6NA5uuRLgKit83Yxqrc0r+/IaI+xFjrw+oG8=";
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  tauriBuildFlags = [ "--no-sign" ];
-
-  npmDeps = fetchNpmDeps {
-    name = "qbz-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-RIR3erHN27fU9tTNQdUK0/5QDS9Dgd+O03PfqlYfRcM=";
-  };
-
-  env.LIBCLANG_PATH = "${lib.getLib llvmPackages.libclang}/lib";
-
   nativeBuildInputs = [
     cargo-tauri.hook
     clang
@@ -65,6 +51,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-nF3hoKn6NA5uuRLgKit83Yxqrc0r+/IaI+xFjrw+oG8=";
+  env.LIBCLANG_PATH = "${lib.getLib llvmPackages.libclang}/lib";
   doCheck = false;
 
   postInstall = ''
@@ -85,6 +73,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-RIR3erHN27fU9tTNQdUK0/5QDS9Dgd+O03PfqlYfRcM=";
+    name = "qbz-${finalAttrs.version}-npm-deps";
+  };
+
+  tauriBuildFlags = [ "--no-sign" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -92,10 +90,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://qbz.lol";
     changelog = "https://github.com/vicrodh/qbz/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       felixsinger
     ];
-    mainProgram = "qbz";
+
     platforms = lib.platforms.linux;
+    mainProgram = "qbz";
   };
 })

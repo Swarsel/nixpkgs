@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,33 +18,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-P+TtxV2kuHeBHr8GQeJ0VWPkjimfcAtBUFt0z79ML6A=";
 
-  __structuredAttrs = true;
-
   env = {
     VERGEN_BUILD_DATE = "2026-06-14"; # managed via the update script
     VERGEN_GIT_DESCRIBE = "Nixpkgs";
   };
 
   doInstallCheck = true;
-  versionCheckProgramArg = "-V";
-  versionCheckKeepEnvironment = [ "VIDDY_DATA" ];
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   preInstallCheck = ''
     export VIDDY_DATA="$PWD";
   '';
 
+  versionCheckKeepEnvironment = [ "VIDDY_DATA" ];
+  versionCheckProgramArg = "-V";
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/sachaos/viddy/releases/tag/${finalAttrs.src.rev}";
     description = "Modern `watch` command";
     homepage = "https://github.com/sachaos/viddy";
+    changelog = "https://github.com/sachaos/viddy/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "viddy";
+
     maintainers = with lib.maintainers; [
       j-hui
       phanirithvij
     ];
+
+    mainProgram = "viddy";
   };
 })

@@ -1,23 +1,23 @@
 {
-  config,
   lib,
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libxxf86vm,
-  libxrandr,
+  config,
+  cudaPackages,
+  glew,
+  libGL,
+  libGLU,
+  libx11,
+  libxcursor,
   libxi,
   libxinerama,
-  libxcursor,
-  libx11,
-  libGLU,
-  libGL,
-  glew,
+  libxrandr,
+  libxxf86vm,
   ocl-icd,
+  pkg-config,
   python3,
   cudaSupport ? config.cudaSupport,
-  cudaPackages,
   openclSupport ? !cudaSupport,
 }:
 
@@ -36,6 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
     "static"
+  ];
+
+  patches = [
+    # Prevent CMake from generating a redundant nested path like /nix/store/.../nix/store/...
+    ./cmake-config.patch
   ];
 
   nativeBuildInputs = [
@@ -67,9 +72,22 @@ stdenv.mkDerivation (finalAttrs: {
       cudaPackages.cuda_cudart
     ];
 
-  patches = [
-    # Prevent CMake from generating a redundant nested path like /nix/store/.../nix/store/...
-    ./cmake-config.patch
+  cmakeFlags = [
+    (lib.mapAttrsToList lib.cmakeBool {
+      NO_CUDA = !cudaSupport;
+      NO_DX = stdenv.hostPlatform.isWindows;
+      NO_EXAMPLES = true;
+      NO_METAL = !stdenv.hostPlatform.isDarwin;
+      NO_OPENCL = !openclSupport;
+      NO_REGRESSION = true;
+      NO_TUTORIALS = true;
+    })
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isUnix && !stdenv.hostPlatform.isDarwin) [
+    (lib.mapAttrsToList lib.cmakeFeature {
+      GLEW_INCLUDE_DIR = "${glew.dev}/include";
+      GLEW_LIBRARY = "${glew.dev}/lib";
+    })
   ];
 
   # It's important to set OSD_CUDA_NVCC_FLAGS,
@@ -80,24 +98,6 @@ stdenv.mkDerivation (finalAttrs: {
       -DOSD_CUDA_NVCC_FLAGS="${lib.concatStringsSep " " cudaPackages.flags.gencode}"
     )
   '';
-
-  cmakeFlags = [
-    (lib.mapAttrsToList lib.cmakeBool {
-      NO_TUTORIALS = true;
-      NO_REGRESSION = true;
-      NO_EXAMPLES = true;
-      NO_DX = stdenv.hostPlatform.isWindows;
-      NO_METAL = !stdenv.hostPlatform.isDarwin;
-      NO_OPENCL = !openclSupport;
-      NO_CUDA = !cudaSupport;
-    })
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isUnix && !stdenv.hostPlatform.isDarwin) [
-    (lib.mapAttrsToList lib.cmakeFeature {
-      GLEW_INCLUDE_DIR = "${glew.dev}/include";
-      GLEW_LIBRARY = "${glew.dev}/lib";
-    })
-  ];
 
   preBuild =
     let
@@ -127,9 +127,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Open-Source subdivision surface library";
     homepage = "http://graphics.pixar.com/opensubdiv";
-    broken = openclSupport && cudaSupport;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
-    maintainers = [ ];
     license = lib.licenses.asl20;
+    maintainers = [ ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
+    broken = openclSupport && cudaSupport;
   };
 })

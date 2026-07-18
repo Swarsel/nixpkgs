@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
-  nix-update-script,
   kind,
+  nix-update-script,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -14,9 +14,9 @@ buildGoModule (finalAttrs: {
   version = "0.31.0";
 
   src = fetchFromGitHub {
-    rev = "v${finalAttrs.version}";
     owner = "kubernetes-sigs";
     repo = "kind";
+    rev = "v${finalAttrs.version}";
     hash = "sha256-3icwtfwlSkYOEw9bzEhKJC7OtE1lnBjZSYp+cC/2XNc=";
   };
 
@@ -25,18 +25,9 @@ buildGoModule (finalAttrs: {
     ./kernel-module-path.patch
   ];
 
-  vendorHash = "sha256-tRpylYpEGF6XqtBl7ESYlXKEEAt+Jws4x4VlUVW8SNI=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "." ];
-
+  vendorHash = "sha256-tRpylYpEGF6XqtBl7ESYlXKEEAt+Jws4x4VlUVW8SNI=";
   env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd kind \
@@ -45,20 +36,30 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/kind completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [ "." ];
+
   passthru = {
     tests.version = testers.testVersion {
       package = kind;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Kubernetes IN Docker - local clusters for testing Kubernetes";
     homepage = "https://github.com/kubernetes-sigs/kind";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       rawkode
     ];
-    license = lib.licenses.asl20;
+
     mainProgram = "kind";
   };
 })

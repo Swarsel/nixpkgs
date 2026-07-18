@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-FobHV37gdez4GQf6MToYfd4cJufroygP+ge37eFtsmc=";
-
   cargoBuildFlags = [ "--workspace" ];
 
   passthru.updateScript = nix-update-script {
@@ -31,8 +30,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Rust implementation of tar";
     homepage = "https://github.com/uutils/tar";
     license = lib.licenses.mit;
-    mainProgram = "tarapp";
     maintainers = with lib.maintainers; [ kyehn ];
     platforms = lib.platforms.unix;
+    mainProgram = "tarapp";
   };
 })

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  hamlib_4,
-  libusb1,
+  boost,
   cmake,
   fftw,
   fftwFloat,
+  hamlib_4,
+  libusb1,
+  pkg-config,
   qt6,
-  boost,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -61,6 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Weak-signal keyboard messaging for amateur radio";
+
     longDescription = ''
       JS8Call is software using the JS8 Digital Mode providing weak signal
       keyboard to keyboard messaging to Amateur Radio Operators.
@@ -71,12 +72,15 @@ stdenv.mkDerivation (finalAttrs: {
       existing JS8Call versions while adding new capabilities and
       refinements.
     '';
+
     homepage = "https://js8call-improved.com/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       sarcasticadmin
       pdg137
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

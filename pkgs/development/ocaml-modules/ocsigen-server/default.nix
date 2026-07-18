@@ -1,32 +1,32 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  which,
-  ocaml,
-  lwt_react,
-  ssl,
-  lwt_ssl,
-  findlib,
   bigstringaf,
-  lwt,
-  cstruct,
-  mirage-crypto,
-  zarith,
-  mirage-crypto-ec,
-  ptime,
-  mirage-crypto-rng,
-  mtime,
+  buildDunePackage,
   ca-certs,
+  camlzip,
   cohttp,
   cohttp-lwt-unix,
-  re,
-  logs-syslog,
   cryptokit,
-  xml-light,
+  cstruct,
+  findlib,
   ipaddr,
-  camlzip,
+  logs-syslog,
+  lwt,
+  lwt_react,
+  lwt_ssl,
   makeWrapper,
+  mirage-crypto,
+  mirage-crypto-ec,
+  mirage-crypto-rng,
+  mtime,
+  ocaml,
+  ptime,
+  re,
+  ssl,
+  which,
+  xml-light,
+  zarith,
 }:
 
 let
@@ -52,8 +52,8 @@ let
 in
 
 buildDunePackage (finalAttrs: {
-  version = "7.0.0";
   pname = "ocsigenserver";
+  version = "7.0.0";
 
   src = fetchFromGitHub {
     owner = "ocsigen";
@@ -66,6 +66,7 @@ buildDunePackage (finalAttrs: {
     makeWrapper
     which
   ];
+
   buildInputs = [
     lwt_react
     camlzip
@@ -83,10 +84,6 @@ buildDunePackage (finalAttrs: {
     xml-light
   ];
 
-  dontAddPrefix = true;
-  dontAddStaticConfigureFlags = true;
-  configurePlatforms = [ ];
-
   postInstall = ''
     make install.files
   '';
@@ -97,14 +94,19 @@ buildDunePackage (finalAttrs: {
       --suffix CAML_LD_LIBRARY_PATH : "${caml_ld_library_path}"
   '';
 
+  configurePlatforms = [ ];
+  dontAddPrefix = true;
+  dontAddStaticConfigureFlags = true;
   dontPatchShebangs = true;
 
   meta = {
-    homepage = "http://ocsigen.org/ocsigenserver/";
     description = "Full featured Web server";
+
     longDescription = ''
       A full featured Web server. It implements most features of the HTTP protocol, and has a very powerful extension mechanism that make very easy to plug your own OCaml modules for generating pages.
     '';
+
+    homepage = "http://ocsigen.org/ocsigenserver/";
     license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.gal_bolle ];
   };

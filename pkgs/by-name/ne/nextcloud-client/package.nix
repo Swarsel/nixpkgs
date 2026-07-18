@@ -1,10 +1,9 @@
 {
   lib,
-  gitUpdater,
-  fetchFromGitHub,
-  qt6Packages,
   stdenv,
+  fetchFromGitHub,
   cmake,
+  gitUpdater,
   inotify-tools,
   kdePackages,
   kdsingleapplication,
@@ -12,23 +11,19 @@
   libp11,
   librsvg,
   libsecret,
+  libsysprof-capture,
   openssl,
   pcre2,
   pkg-config,
+  qt6Packages,
   sphinx,
   sqlite,
   xdg-utils,
-  libsysprof-capture,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "nextcloud-client";
   version = "33.0.7";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "nextcloud-releases";
@@ -36,6 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-hfATh24U9o2ZifB1UlLu893aENILb9a/j/IvIytIR5s=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./0001-When-creating-the-autostart-entry-do-not-use-an-abso.patch
@@ -81,28 +81,30 @@ stdenv.mkDerivation (finalAttrs: {
     libsysprof-capture
   ];
 
-  qtWrapperArgs = [
-    "--prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libsecret ]}"
-    # make xdg-open overridable at runtime
-    "--suffix PATH : ${lib.makeBinPath [ xdg-utils ]}"
-  ];
-
   cmakeFlags = [
     "-DBUILD_UPDATER=off"
     "-DCMAKE_INSTALL_LIBDIR=lib" # expected to be prefix-relative by build code setting RPATH
     "-DMIRALL_VERSION_SUFFIX=" # remove git suffix from version
   ];
 
+  qtWrapperArgs = [
+    "--prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libsecret ]}"
+    # make xdg-open overridable at runtime
+    "--suffix PATH : ${lib.makeBinPath [ xdg-utils ]}"
+  ];
+
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
-    changelog = "https://github.com/nextcloud/desktop/releases/tag/v${finalAttrs.version}";
     description = "Desktop sync client for Nextcloud";
     homepage = "https://nextcloud.com";
+    changelog = "https://github.com/nextcloud/desktop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       SuperSandro2000
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "nextcloud";
   };

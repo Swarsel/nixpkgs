@@ -6,7 +6,6 @@
 }:
 
 mpv.override {
-  mpv-unwrapped = mpv-unwrapped.override { vapoursynthSupport = true; };
   extraMakeWrapperArgs = [
     # Add paths to required libraries
     "--prefix"
@@ -14,4 +13,6 @@ mpv.override {
     ":"
     "/run/opengl-driver/lib:${lib.makeLibraryPath [ ocl-icd ]}"
   ];
+
+  mpv-unwrapped = mpv-unwrapped.override { vapoursynthSupport = true; };
 }

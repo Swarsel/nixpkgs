@@ -1,10 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bzip2,
   cmake,
   curl,
-  fetchFromGitHub,
   fmt,
-  lib,
   libarchive,
   libsolv,
   msgpack-c,
@@ -14,7 +15,6 @@
   reproc,
   simdjson,
   spdlog,
-  stdenv,
   tl-expected,
   yaml-cpp,
   zstd,
@@ -30,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-qvUo2OD+vh5oXF/ckz9vJyiQ9wpEbTrC+C4oYXOGFAU=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -59,16 +61,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   __structuredAttrs = true;
-  strictDeps = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/mamba-org/mamba/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Library for the fast Cross-Platform Package Manager";
     homepage = "https://github.com/mamba-org/mamba";
+    changelog = "https://github.com/mamba-org/mamba/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.ericthemagician ];
+    platforms = lib.platforms.all;
   };
 })

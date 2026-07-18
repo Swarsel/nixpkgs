@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  wrapGAppsHook4,
-  meson,
+  appstream,
   blueprint-compiler,
+  desktop-file-utils,
+  gettext,
   glib,
   gtk4,
   libadwaita,
-  gettext,
-  appstream,
-  desktop-file-utils,
-  pkg-config,
+  meson,
   ninja,
+  pkg-config,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     meson
@@ -45,6 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
     gtk4
     libadwaita
   ];
+
+  __structuredAttrs = true;
 
   meta = with lib; {
     description = "Fix theme and menu inconsistencies when using multiple desktop environments";

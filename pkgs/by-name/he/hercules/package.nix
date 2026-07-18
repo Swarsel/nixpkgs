@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  runCommand,
-  libtool,
-  cmake,
-  zlib,
   bzip2,
-  enableRexx ? stdenv.hostPlatform.isLinux,
+  cmake,
+  libtool,
   regina,
+  runCommand,
+  zlib,
+  enableRexx ? stdenv.hostPlatform.isLinux,
 }:
 let
   herculesCpu = if stdenv.hostPlatform.isx86 then "x86" else stdenv.hostPlatform.qemuArch;
@@ -28,7 +28,7 @@ let
           -e "s/CPUS=.*$/CPUS=$NIX_BUILD_CORES/"
       '';
 
-      dontUseCmakeConfigure = true;
+      nativeBuildInputs = [ cmake ];
 
       buildPhase = ''
         mkdir ../build $out
@@ -41,13 +41,13 @@ let
           --install "$out"
       '';
 
-      nativeBuildInputs = [ cmake ];
-
+      dontUseCmakeConfigure = true;
       enableParallelBuilding = true;
 
       meta = {
         description = "Hercules ${depName} library";
         license = lib.licenses.free; # Mixture of Public Domain, ICU (MIT compatible) and others
+
         maintainers = with lib.maintainers; [
           anna328p
           vifino
@@ -58,6 +58,7 @@ let
 
   crypto = mkExtPkg "crypto" (default: {
     version = "1.0.0";
+
     src = fetchFromGitHub {
       owner = "SDL-Hercules-390";
       repo = "crypto";
@@ -68,6 +69,7 @@ let
 
   decNumber = mkExtPkg "decNumber" (default: {
     version = "3.68.0";
+
     src = fetchFromGitHub {
       owner = "SDL-Hercules-390";
       repo = "decNumber";
@@ -78,6 +80,7 @@ let
 
   softFloat = mkExtPkg "SoftFloat" (default: {
     version = "3.5.0";
+
     src = fetchFromGitHub {
       owner = "SDL-Hercules-390";
       repo = "SoftFloat";
@@ -88,6 +91,7 @@ let
 
   telnet = mkExtPkg "telnet" (default: {
     version = "1.0.0";
+
     src = fetchFromGitHub {
       owner = "SDL-Hercules-390";
       repo = "telnet";
@@ -122,6 +126,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ libtool ];
+
   buildInputs = [
     (lib.getOutput "lib" libtool)
     zlib
@@ -144,15 +149,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://sdl-hercules-390.github.io/html/";
     description = "IBM mainframe emulator";
+
     longDescription = ''
       Hercules is an open source software implementation of the mainframe
       System/370 and ESA/390 architectures, in addition to the latest 64-bit
       z/Architecture. Hercules runs under Linux, Windows, Solaris, FreeBSD, and
       Mac OS X.
     '';
+
+    homepage = "https://sdl-hercules-390.github.io/html/";
     license = lib.licenses.qpl;
+
     maintainers = with lib.maintainers; [
       anna328p
       vifino

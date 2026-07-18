@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     ./backward-compat.patch
     (fetchpatch {
       name = "hostlist_t-signature.patch";
-      url = "https://github.com/stanford-rc/slurm-spank-stunnel/commit/84d04e4ccfe538a09c3f17a52dde616903b66db8.patch";
       sha256 = "sha256-RaUYqeNmFPvYci2yX8Bxps1nDjX/UAG+e3JbjbcwrO0=";
+      url = "https://github.com/stanford-rc/slurm-spank-stunnel/commit/84d04e4ccfe538a09c3f17a52dde616903b66db8.patch";
     })
   ];
 
@@ -45,10 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/stanford-rc/slurm-spank-stunnel";
     description = "Plugin for SLURM for SSH tunneling and port forwarding support";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/stanford-rc/slurm-spank-stunnel";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ markuskowa ];
+    platforms = lib.platforms.linux;
   };
 })

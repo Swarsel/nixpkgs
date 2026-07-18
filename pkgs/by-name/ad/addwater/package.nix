@@ -1,23 +1,21 @@
 {
+  lib,
+  fetchFromGitHub,
+  appstream,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
-  lib,
   libadwaita,
   libportal-gtk4,
   meson,
   ninja,
+  nix-update-script,
   python3Packages,
   wrapGAppsHook4,
-  appstream,
-  nix-update-script,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "addwater";
   version = "1.3";
-  # built with meson, not a python format
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "largestgithubuseronearth";
@@ -25,11 +23,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ynfBP3yFw4g8ebnKKyQDdmCB7APYVgvuedcu/x5lO9w=";
   };
-
-  buildInputs = [
-    libadwaita
-    libportal-gtk4
-  ];
 
   nativeBuildInputs = [
     blueprint-compiler
@@ -40,12 +33,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     appstream
   ];
 
+  buildInputs = [
+    libadwaita
+    libportal-gtk4
+  ];
+
   propagatedBuildInputs = with python3Packages; [
     packaging
     pygobject3
     requests
   ];
 
+  # built with meson, not a python format
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -53,7 +53,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/largestgithubuseronearth/addwater";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ thtrf ];
-    mainProgram = "addwater";
     platforms = lib.platforms.linux;
+    mainProgram = "addwater";
   };
 })

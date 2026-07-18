@@ -2,10 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   boehmgc,
   buildPackages,
-  coverageAnalysis ? null,
+  fetchpatch,
   gawk,
   gmp,
   libffi,
@@ -15,6 +14,7 @@
   pkg-config,
   pkgsBuildBuild,
   readline,
+  coverageAnalysis ? null,
 }:
 
 let
@@ -35,22 +35,29 @@ builder rec {
     "dev"
     "info"
   ];
-  setOutputFlags = false; # $dev gets into the library otherwise
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
+  patches = [
+    # Read the header of the patch to more info
+    ./eai_system.patch
   ]
-  ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) pkgsBuildBuild.guile_2_2;
+  ++ lib.optional (coverageAnalysis != null) ./gcov-file-name.patch
+  ++ lib.optional stdenv.hostPlatform.isDarwin (fetchpatch {
+    sha256 = "12wvwdna9j8795x59ldryv9d84c1j3qdk2iskw09306idfsis207";
+    url = "https://gitlab.gnome.org/GNOME/gtk-osx/raw/52898977f165777ad9ef169f7d4818f2d4c9b731/patches/guile-clocktime.patch";
+  });
+
   nativeBuildInputs = [
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     libffi
     libtool
     libunistring
     readline
   ];
+
   propagatedBuildInputs = [
     boehmgc
     gmp
@@ -62,32 +69,6 @@ builder rec {
     libtool
     libunistring
   ];
-
-  # According to Bernhard M. Wiedemann <bwiedemann suse de> on
-  # #reproducible-builds on irc.oftc.net, (2020-01-29): they had to
-  # build Guile without parallel builds to make it reproducible.
-  #
-  # re: https://issues.guix.gnu.org/issue/20272
-  # re: https://build.opensuse.org/request/show/732638
-  enableParallelBuilding = false;
-
-  patches = [
-    # Read the header of the patch to more info
-    ./eai_system.patch
-  ]
-  ++ lib.optional (coverageAnalysis != null) ./gcov-file-name.patch
-  ++ lib.optional stdenv.hostPlatform.isDarwin (fetchpatch {
-    url = "https://gitlab.gnome.org/GNOME/gtk-osx/raw/52898977f165777ad9ef169f7d4818f2d4c9b731/patches/guile-clocktime.patch";
-    sha256 = "12wvwdna9j8795x59ldryv9d84c1j3qdk2iskw09306idfsis207";
-  });
-
-  # Explicitly link against libgcc_s, to work around the infamous
-  # "libgcc_s.so.1 must be installed for pthread_cancel to work".
-
-  # don't have "libgcc_s.so.1" on clang
-  env = lib.optionalAttrs (stdenv.cc.isGNU && !stdenv.hostPlatform.isStatic) {
-    LDFLAGS = "-lgcc_s";
-  };
 
   configureFlags = [
     "--with-libreadline-prefix=${lib.getDev readline}"
@@ -106,6 +87,17 @@ builder rec {
     "--without-threads"
   ];
 
+  # Explicitly link against libgcc_s, to work around the infamous
+  # "libgcc_s.so.1 must be installed for pthread_cancel to work".
+  # don't have "libgcc_s.so.1" on clang
+  env = lib.optionalAttrs (stdenv.cc.isGNU && !stdenv.hostPlatform.isStatic) {
+    LDFLAGS = "-lgcc_s";
+  };
+
+  # make check doesn't work on darwin
+  # On Linuxes+Hydra the tests are flaky; feel free to investigate deeper.
+  doCheck = false;
+
   postInstall = ''
     wrapProgram $out/bin/guile-snarf --prefix PATH : "${gawk}/bin"
   ''
@@ -121,11 +113,21 @@ builder rec {
             "
   '';
 
-  # make check doesn't work on darwin
-  # On Linuxes+Hydra the tests are flaky; feel free to investigate deeper.
-  doCheck = false;
   doInstallCheck = doCheck;
 
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ]
+  ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) pkgsBuildBuild.guile_2_2;
+
+  # According to Bernhard M. Wiedemann <bwiedemann suse de> on
+  # #reproducible-builds on irc.oftc.net, (2020-01-29): they had to
+  # build Guile without parallel builds to make it reproducible.
+  #
+  # re: https://issues.guix.gnu.org/issue/20272
+  # re: https://build.opensuse.org/request/show/732638
+  enableParallelBuilding = false;
+  setOutputFlags = false; # $dev gets into the library otherwise
   setupHook = ./setup-hook-2.2.sh;
 
   passthru = rec {
@@ -135,8 +137,8 @@ builder rec {
   };
 
   meta = {
-    homepage = "https://www.gnu.org/software/guile/";
     description = "Embeddable Scheme implementation";
+
     longDescription = ''
       GNU Guile is an implementation of the Scheme programming language, with
       support for many SRFIs, packaged for use in a wide variety of
@@ -145,6 +147,8 @@ builder rec {
       system calls, networking support, multiple threads, dynamic linking, a
       foreign function call interface, and powerful string processing.
     '';
+
+    homepage = "https://www.gnu.org/software/guile/";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ ludo ];
     platforms = lib.platforms.all;

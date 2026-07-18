@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   gitMinimal,
   installShellFiles,
   makeWrapper,
   tmux,
-  writableTmpDirAsHomeHook,
   versionCheckHook,
-  stdenv,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,29 +22,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MfCYFbODWnfPxx+6sLlcMT6tqghgILHB13+ccYqVjBA=";
   };
 
-  vendorHash = "sha256-4K01Xf1EXl/NVX1loQ76l1bW8QglBAQdvlZSo7J4NPI=";
-
-  subPackages = [ "cmd/gwq" ];
-
-  __structuredAttrs = true;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/d-kuro/gwq/internal/cmd.version=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
 
+  vendorHash = "sha256-4K01Xf1EXl/NVX1loQ76l1bW8QglBAQdvlZSo7J4NPI=";
+
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
-  ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
   ];
 
   postInstall = ''
@@ -65,13 +51,27 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
 
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/d-kuro/gwq/internal/cmd.version=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/gwq" ];
+
   meta = {
     description = "Git worktree manager with fuzzy finder interface";
     homepage = "https://github.com/d-kuro/gwq";
     changelog = "https://github.com/d-kuro/gwq/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "gwq";
     maintainers = with lib.maintainers; [ ojii3 ];
     platforms = lib.platforms.unix;
+    mainProgram = "gwq";
   };
 })

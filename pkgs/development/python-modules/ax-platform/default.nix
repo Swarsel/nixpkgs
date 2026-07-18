@@ -1,32 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # dependencies
+  botorch,
+  buildPythonPackage,
+  graphviz,
+  ipywidgets,
+  # tests
+  jax,
+  jinja2,
+  markdown,
+  numpyro,
+  pandas,
+  plotly,
+  pyfakefs,
+  pyre-extensions,
+  pytestCheckHook,
+  scikit-learn,
+  scipy,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  botorch,
-  graphviz,
-  ipywidgets,
-  jinja2,
-  markdown,
-  pandas,
-  plotly,
-  pyre-extensions,
-  scikit-learn,
-  scipy,
-  sympy,
-
-  # tests
-  jax,
-  numpyro,
-  pyfakefs,
-  pytestCheckHook,
   sqlalchemy,
+  sympy,
   tabulate,
   tensorboard,
 }:
@@ -34,8 +31,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ax-platform";
   version = "1.3.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "facebook";
@@ -45,6 +40,18 @@ buildPythonPackage (finalAttrs: {
   };
 
   env.ALLOW_BOTORCH_LATEST = "1";
+
+  nativeCheckInputs = [
+    jax
+    numpyro
+    pyfakefs
+    pytestCheckHook
+    sqlalchemy
+    tabulate
+    tensorboard
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -65,16 +72,6 @@ buildPythonPackage (finalAttrs: {
     sympy
   ]
   ++ botorch.optional-dependencies.pymoo;
-
-  nativeCheckInputs = [
-    jax
-    numpyro
-    pyfakefs
-    pytestCheckHook
-    sqlalchemy
-    tabulate
-    tensorboard
-  ];
 
   disabledTestPaths = [
     "ax/benchmark"
@@ -137,6 +134,7 @@ buildPythonPackage (finalAttrs: {
     "test_gen_with_expanded_parameter_space"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ax" ];
 
   meta = {

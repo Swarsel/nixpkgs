@@ -1,10 +1,10 @@
 {
   lib,
-  buildDartApplication,
   fetchFromGitHub,
-  yq-go,
+  buildDartApplication,
   versionCheckHook,
   writableTmpDirAsHomeHook,
+  yq-go,
 }:
 buildDartApplication rec {
   pname = "serverpod_cli";
@@ -18,24 +18,7 @@ buildDartApplication rec {
     hash = "sha256-IYsTP1ruidXO/FNa72sU6n7w2hzZ181hSjR74HxBAFM=";
   };
 
-  sourceRoot = "${src.name}/tools/serverpod_cli";
-
-  dartEntryPoints = {
-    "bin/serverpod" = "bin/serverpod_cli.dart";
-  };
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
   nativeBuildInputs = [ yq-go ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  doInstallCheck = true;
-
-  versionCheckKeepEnvironment = "HOME";
 
   preBuild = ''
     # Set productionMode to true.
@@ -48,12 +31,25 @@ buildDartApplication rec {
     yq -i 'del(.dependency_overrides)' pubspec.yaml
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  dartEntryPoints = {
+    "bin/serverpod" = "bin/serverpod_cli.dart";
+  };
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  sourceRoot = "${src.name}/tools/serverpod_cli";
+  versionCheckKeepEnvironment = "HOME";
   passthru.updateScript = ./update.sh;
 
   meta = {
-    mainProgram = "serverpod";
-    homepage = "https://serverpod.dev";
     description = "Command line tools for Serverpod";
+
     longDescription = ''
       Serverpod is a next-generation app and web server,
       built for the Flutter community.
@@ -62,8 +58,11 @@ buildDartApplication rec {
       database with minimal effort. Serverpod is open-source,
       and you can host your server anywhere.
     '';
+
+    homepage = "https://serverpod.dev";
     changelog = "https://raw.githubusercontent.com/serverpod/serverpod/${version}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ KristijanZic ];
+    mainProgram = "serverpod";
   };
 }

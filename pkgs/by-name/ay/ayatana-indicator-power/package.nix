@@ -1,12 +1,11 @@
 {
-  stdenv,
   lib,
-  gitUpdater,
+  stdenv,
   fetchFromGitHub,
-  nixosTests,
   cmake,
   dbus,
   dbus-test-runner,
+  gitUpdater,
   glib,
   gtest,
   intltool,
@@ -14,6 +13,7 @@
   libnotify,
   librda,
   lomiri-qt6,
+  nixosTests,
   pkg-config,
   python3,
   systemd,
@@ -65,16 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     lomiri-sounds
   ]);
 
-  nativeCheckInputs = [
-    dbus
-    (python3.withPackages (ps: with ps; [ python-dbusmock ]))
-  ];
-
-  checkInputs = [
-    dbus-test-runner
-    gtest
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "ENABLE_LOMIRI_FEATURES" true)
@@ -86,6 +76,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
+  nativeCheckInputs = [
+    dbus
+    (python3.withPackages (ps: with ps; [ python-dbusmock ]))
+  ];
+
+  checkInputs = [
+    dbus-test-runner
+    gtest
+  ];
+
   passthru = {
     ayatana-indicators = {
       ayatana-indicator-power = [
@@ -93,19 +93,23 @@ stdenv.mkDerivation (finalAttrs: {
         "lomiri"
       ];
     };
+
     tests = {
-      startup = nixosTests.ayatana-indicators;
       lomiri = nixosTests.lomiri.desktop-ayatana-indicator-power;
+      startup = nixosTests.ayatana-indicators;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Ayatana Indicator showing power state";
+
     longDescription = ''
       This Ayatana Indicator displays current power management information and
       gives the user a way to access power management preferences.
     '';
+
     homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-power";
     changelog = "https://github.com/AyatanaIndicators/ayatana-indicator-power/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;

@@ -9,20 +9,19 @@
 buildPythonPackage rec {
   pname = "bitarray";
   version = "3.8.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Pq442v/XfJYhroDBaTLuo/s6SvFB+3zHJNStk+/5IQ0=";
   };
 
-  build-system = [ setuptools ];
-
   checkPhase = ''
     cd $out
     ${python.interpreter} -c 'import bitarray; bitarray.test()'
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "bitarray" ];
 
   meta = {

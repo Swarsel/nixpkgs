@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromSourcehut,
-  pkg-config,
-  openssl,
   gitUpdater,
+  openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  enableParallelBuilding = true;
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
-
   buildFlags = [ "tlsclient" ];
+  enableParallelBuilding = true;
   installFlags = [ "PREFIX=$(out)" ];
   installTargets = "tlsclient.install";
 
@@ -37,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://git.sr.ht/~moody/tlsclient";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ moody ];
-    mainProgram = "tlsclient";
     platforms = lib.platforms.all;
+    mainProgram = "tlsclient";
   };
 })

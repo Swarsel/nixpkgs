@@ -1,27 +1,27 @@
 {
   lib,
   stdenv,
-  nodejs_22,
-  makeDesktopItem,
-  copyDesktopItems,
-  makeWrapper,
   fetchFromGitHub,
-  yarn-berry_4,
-  python3,
-  pkg-config,
-  pango,
-  cairo,
-  pixman,
-  libsecret,
-  electron,
-  xcbuild,
   buildPackages,
+  cairo,
   callPackage,
-  libGL,
   clang_20,
-  jq,
+  copyDesktopItems,
+  electron,
   glib,
   gsettings-desktop-schemas,
+  jq,
+  libGL,
+  libsecret,
+  makeDesktopItem,
+  makeWrapper,
+  nodejs_22,
+  pango,
+  pixman,
+  pkg-config,
+  python3,
+  xcbuild,
+  yarn-berry_4,
 }:
 
 let
@@ -33,15 +33,15 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "joplin-desktop";
   inherit (releaseData) version;
-
-  passthru.updateScript = ./update.py;
+  pname = "joplin-desktop";
 
   src = fetchFromGitHub {
+    inherit (releaseData) hash;
     owner = "laurent22";
     repo = "joplin";
     tag = "v${finalAttrs.version}";
+
     postFetch = ''
       # there's a file with a weird name that causes a hash mismatch on darwin
       rm $out/packages/app-cli/tests/support/photo*
@@ -50,31 +50,14 @@ stdenv.mkDerivation (finalAttrs: {
       # https://github.com/laurent22/joplin/blob/dev/package.json#L103
       sed -i '/__metadata/{n;s/version: 8$/version: 9/;}' $out/yarn.lock
     '';
-    inherit (releaseData) hash;
   };
 
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs)
-      src
-      missingHashes
-      ;
-    hash = releaseData.deps_hash;
-  };
-
-  # allows overriding to disable building these plugins or add other ones
-  defaultPlugins = [
-    (callPackage ./joplin-plugin-backup.nix {
-      patches = [
-        (finalAttrs.src + "/packages/default-plugins/plugin-patches/io.github.jackgruber.backup.diff")
-      ];
-    })
-  ];
-
-  buildInputs = [
-    libGL
-  ];
+  postPatch = ''
+    # Don't automatically build everything
+    sed -i '/postinstall/d' package.json
+    # Don't install onenote-converter subpackage deps
+    sed -i '/onenote-converter/d' packages/{lib,app-desktop}/package.json
+  '';
 
   nativeBuildInputs = [
     nodejs
@@ -98,21 +81,17 @@ stdenv.mkDerivation (finalAttrs: {
     copyDesktopItems
   ];
 
+  buildInputs = [
+    libGL
+  ];
+
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
-
     # Disable scripts for now, so that yarnBerryConfigHook does not try to build anything
     # before we can patchShebangs additional paths (see buildPhase).
     # https://github.com/NixOS/nixpkgs/blob/3cd051861c41df675cee20153bfd7befee120a98/pkgs/by-name/ya/yarn-berry/fetcher/yarn-berry-config-hook.sh#L83
     YARN_ENABLE_SCRIPTS = 0;
   };
-
-  postPatch = ''
-    # Don't automatically build everything
-    sed -i '/postinstall/d' package.json
-    # Don't install onenote-converter subpackage deps
-    sed -i '/onenote-converter/d' packages/{lib,app-desktop}/package.json
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -218,22 +197,45 @@ stdenv.mkDerivation (finalAttrs: {
       chmod a+x $out/Applications/Joplin.app/Contents/Resources/build/7zip/7za
     '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "joplin";
-      desktopName = "Joplin";
-      exec = "joplin-desktop %U";
-      icon = "joplin";
-      comment = "Joplin for Desktop";
-      categories = [ "Office" ];
-      startupWMClass = "joplin-app-desktop";
-      mimeTypes = [ "x-scheme-handler/joplin" ];
+  # allows overriding to disable building these plugins or add other ones
+  defaultPlugins = [
+    (callPackage ./joplin-plugin-backup.nix {
+      patches = [
+        (finalAttrs.src + "/packages/default-plugins/plugin-patches/io.github.jackgruber.backup.diff")
+      ];
     })
   ];
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Office" ];
+      comment = "Joplin for Desktop";
+      desktopName = "Joplin";
+      exec = "joplin-desktop %U";
+      icon = "joplin";
+      mimeTypes = [ "x-scheme-handler/joplin" ];
+      name = "joplin";
+      startupWMClass = "joplin-app-desktop";
+    })
+  ];
+
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs)
+      src
+      missingHashes
+      ;
+
+    hash = releaseData.deps_hash;
+  };
+
+  passthru.updateScript = ./update.py;
+
   meta = {
+    inherit (electron.meta) platforms;
     description = "Open source note taking and to-do application with synchronisation capabilities";
-    mainProgram = "joplin-desktop";
+
     longDescription = ''
       Joplin is a free, open source note taking and to-do application, which can
       handle a large number of notes organised into notebooks. The notes are
@@ -241,11 +243,14 @@ stdenv.mkDerivation (finalAttrs: {
       applications directly or from your own text editor. The notes are in
       Markdown format.
     '';
+
     homepage = "https://joplinapp.org";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       fugi
     ];
-    inherit (electron.meta) platforms;
+
+    mainProgram = "joplin-desktop";
   };
 })

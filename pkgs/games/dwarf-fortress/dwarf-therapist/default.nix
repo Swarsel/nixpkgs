@@ -2,40 +2,37 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
+  dfVersions,
+  ninja,
   qtbase,
   qtdeclarative,
-  cmake,
-  ninja,
-  dfVersions,
-
+  hash ? dfVersions.therapist.git.outputHash,
+  maxDfVersion ? dfVersions.therapist.maxDfVersion,
   # see: https://github.com/Dwarf-Therapist/Dwarf-Therapist/releases
   version ? dfVersions.therapist.version,
-  maxDfVersion ? dfVersions.therapist.maxDfVersion,
-  hash ? dfVersions.therapist.git.outputHash,
 }:
 
 stdenv.mkDerivation rec {
+  inherit version;
   pname = "dwarf-therapist";
 
-  inherit version;
-
   src = fetchFromGitHub {
+    inherit hash;
     owner = "Dwarf-Therapist";
     repo = "Dwarf-Therapist";
     tag = "v${version}";
-    inherit hash;
   };
 
   nativeBuildInputs = [
     cmake
     ninja
   ];
+
   buildInputs = [
     qtbase
     qtdeclarative
   ];
-
-  enableParallelBuilding = true;
 
   cmakeFlags = [ "-GNinja" ];
 
@@ -49,20 +46,23 @@ stdenv.mkDerivation rec {
       null;
 
   dontWrapQtApps = true;
+  enableParallelBuilding = true;
 
   passthru = {
     inherit maxDfVersion;
   };
 
   meta = {
-    mainProgram = "dwarftherapist";
     description = "Tool to manage dwarves in a running game of Dwarf Fortress";
+    homepage = "https://github.com/Dwarf-Therapist/Dwarf-Therapist";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bendlas
       numinit
     ];
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.x86;
-    homepage = "https://github.com/Dwarf-Therapist/Dwarf-Therapist";
+    mainProgram = "dwarftherapist";
   };
 }

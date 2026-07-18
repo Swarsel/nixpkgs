@@ -1,20 +1,23 @@
 {
   lib,
-  makeSetupHook,
+  stdenv,
   auto-patchelf,
   bintools,
-  stdenv,
+  makeSetupHook,
 }:
 
 makeSetupHook {
-  name = "auto-patchelf-hook";
   propagatedBuildInputs = [
     auto-patchelf
     bintools
   ];
+
+  name = "auto-patchelf-hook";
+
   substitutions = {
     hostPlatform = stdenv.hostPlatform.config;
   };
+
   meta = {
     maintainers = with lib.maintainers; [ layus ];
   };

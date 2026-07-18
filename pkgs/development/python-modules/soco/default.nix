@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   appdirs,
   buildPythonPackage,
-  fetchFromGitHub,
   graphviz,
   ifaddr,
   lxml,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "soco";
   version = "0.31.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SoCo";
@@ -25,6 +24,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-YxIpTFGB82aBvRxfntou2dUZm7T0KSj7yhX3gcdAO7U=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    graphviz
+    mock
+    requests-mock
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,13 +42,7 @@ buildPythonPackage rec {
     xmltodict
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    graphviz
-    mock
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "soco" ];
 
   meta = {

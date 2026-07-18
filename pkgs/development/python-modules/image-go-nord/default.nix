@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ffmpeg-python,
   numpy,
   pillow,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "image-go-nord";
   version = "1.2.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Schrodinger-Hat";
@@ -28,6 +27,8 @@ buildPythonPackage rec {
     setuptoolsBuildHook
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   dependencies = [
     ffmpeg-python
     numpy
@@ -35,8 +36,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = false;
   pythonImportsCheck = [ "ImageGoNord" ];
 
   meta = {

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  packaging,
   poetry-core,
   pytestCheckHook,
-  packaging,
 }:
 
 buildPythonPackage rec {
   pname = "requirements-parser";
   version = "0.13.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "madpah";
@@ -19,14 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-Hti1r/OLYHue+c7/TDDRzBgKxJazobZG+aFxK2ok70g=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
     packaging
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "requirements" ];
 
   meta = {

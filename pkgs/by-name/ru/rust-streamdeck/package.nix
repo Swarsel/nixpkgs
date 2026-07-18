@@ -1,12 +1,12 @@
 {
-  rustPlatform,
+  lib,
   fetchFromGitHub,
   fetchpatch,
+  nix-update-script,
   pkg-config,
-  lib,
+  rustPlatform,
   udev,
   udevCheckHook,
-  nix-update-script,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,30 +20,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-9FuTnRQHKYJzMqhhgyTVq2R+drn4HAr3GDNjQgc3r+w=";
   };
 
-  cargoPatches = [
-    (fetchpatch {
-      name = "add_cargo_lock.patch";
-      url = "https://github.com/ryankurte/rust-streamdeck/commit/d8497c34898daebafca21885f464f241c29ff9d7.patch";
-      hash = "sha256-cwt4nvtuME//t9KpHgIXHCwLQgpybs2CqV2jO02umfE=";
-    })
-  ];
-
-  cargoHash = "sha256-OiXpG45jwWydbpRHnbIlECOaa75CzUOmdWxZ3WE5+hY=";
-
   nativeBuildInputs = [
     pkg-config
     udevCheckHook
   ];
-  buildInputs = [ udev ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
+  buildInputs = [ udev ];
+  cargoHash = "sha256-OiXpG45jwWydbpRHnbIlECOaa75CzUOmdWxZ3WE5+hY=";
 
   postInstall = ''
     install -Dm444 40-streamdeck.rules -t $out/lib/udev/rules.d/
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoPatches = [
+    (fetchpatch {
+      hash = "sha256-cwt4nvtuME//t9KpHgIXHCwLQgpybs2CqV2jO02umfE=";
+      name = "add_cargo_lock.patch";
+      url = "https://github.com/ryankurte/rust-streamdeck/commit/d8497c34898daebafca21885f464f241c29ff9d7.patch";
+    })
+  ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   passthru.updateScript = nix-update-script { };
 
   meta = {

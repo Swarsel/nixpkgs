@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  jj,
   nix-update-script,
+  runCommand,
   testers,
   writeText,
-  runCommand,
-  jj,
 }:
 buildGoModule (finalAttrs: {
   pname = "jj";
@@ -20,9 +20,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-39rA3jMGYhsh1nrGzI1vfHZzZDy4O6ooYWB8af654mM=";
-
-  subPackages = [ "cmd/jj" ];
-
   env.CGO_ENABLED = "0";
 
   ldflags = [
@@ -31,12 +28,13 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
+  subPackages = [ "cmd/jj" ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = with testers; {
       version = testVersion { package = jj; };
+
       examples = testEqualContents {
-        assertion = "examples from projects README.md work";
         actual = runCommand "actual" { nativeBuildInputs = [ jj ]; } ''
           {
             echo '{"name":{"first":"Tom","last":"Smith"}}' | jj name.last
@@ -46,6 +44,9 @@ buildGoModule (finalAttrs: {
             echo '{"age":46,"name":{"first":"Tom","last":"Smith"}}' | jj -D age
           } > $out
         '';
+
+        assertion = "examples from projects README.md work";
+
         expected = writeText "expected" ''
           Smith
           {"first":"Tom","last":"Smith"}
@@ -55,20 +56,24 @@ buildGoModule (finalAttrs: {
         '';
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "JSON Stream Editor (command line utility)";
+
     longDescription = ''
       JJ is a command line utility that provides a fast and simple way to retrieve
       or update values from JSON documents. It's powered by GJSON and SJSON under the hood.
       It's fast because it avoids parsing irrelevant sections of json, skipping over values
       that do not apply, and aborts as soon as the target value has been found or updated.
     '';
+
     homepage = "https://github.com/tidwall/jj";
     changelog = "https://github.com/tidwall/jj/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "jj";
     maintainers = with lib.maintainers; [ katexochen ];
+    mainProgram = "jj";
   };
 })

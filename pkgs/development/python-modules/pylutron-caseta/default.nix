@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   cryptography,
-  fetchFromGitHub,
   hatchling,
   orjson,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pylutron-caseta";
   version = "0.29.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gurumitts";
@@ -24,6 +23,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-YGdx/WQLM7Dglo4FSEr+QJDKTf7Dyn8V3qSFWNlEu00=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-timeout
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -40,14 +45,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-timeout
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pytestFlags = [ "--asyncio-mode=auto" ];
-
   pythonImportsCheck = [ "pylutron_caseta" ];
 
   meta = {

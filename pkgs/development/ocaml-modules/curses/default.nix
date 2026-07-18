@@ -1,17 +1,15 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  ncurses,
+  buildDunePackage,
   dune-configurator,
+  ncurses,
   pkg-config,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "curses";
   version = "1.0.11";
-
-  minimalOCamlVersion = "4.06";
 
   src = fetchFromGitHub {
     owner = "mbacarella";
@@ -22,14 +20,14 @@ buildDunePackage (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dune-configurator ];
-
   propagatedBuildInputs = [ ncurses ];
+  minimalOCamlVersion = "4.06";
 
   meta = {
     description = "OCaml Bindings to curses/ncurses";
     homepage = "https://github.com/mbacarella/curses";
-    license = lib.licenses.lgpl21Plus;
     changelog = "https://github.com/mbacarella/curses/raw/${finalAttrs.version}/CHANGES";
+    license = lib.licenses.lgpl21Plus;
     maintainers = [ lib.maintainers.vbgl ];
   };
 })

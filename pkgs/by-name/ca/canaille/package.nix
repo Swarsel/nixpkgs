@@ -1,11 +1,11 @@
 {
   lib,
-  python3,
   fetchFromGitLab,
   fetchpatch2,
-  openldap,
   nixosTests,
+  openldap,
   postgresql,
+  python3,
 }:
 
 let
@@ -14,7 +14,6 @@ in
 python.pkgs.buildPythonApplication rec {
   pname = "canaille";
   version = "0.2.7";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "yaal";
@@ -26,36 +25,15 @@ python.pkgs.buildPythonApplication rec {
   patches = [
     # Backport authlib 1.7 compatibility.
     (fetchpatch2 {
-      url = "https://gitlab.com/yaal/canaille/-/commit/b356baa82109a7fdf61a8258572d199ffd3c9604.diff";
       hash = "sha256-/U6S3h6qIl763ZsGpOm6CVk4NaY3A7mq3PkT193aLEs=";
+      url = "https://gitlab.com/yaal/canaille/-/commit/b356baa82109a7fdf61a8258572d199ffd3c9604.diff";
     })
     # Update OIDC tests for authlib 1.7 behavior.
     (fetchpatch2 {
-      url = "https://gitlab.com/yaal/canaille/-/commit/c1b6d103ebf374cd6a21d9af8376c910c2d0d5d9.diff";
       hash = "sha256-MjwkUb54ikt1+xUXBTOIBi9E+DmPdwYhw0W0c0prF/Q=";
       includes = [ "tests/oidc/*" ];
+      url = "https://gitlab.com/yaal/canaille/-/commit/c1b6d103ebf374cd6a21d9af8376c910c2d0d5d9.diff";
     })
-  ];
-
-  build-system = with python.pkgs; [
-    hatchling
-    babel
-    setuptools
-  ];
-
-  dependencies = with python.pkgs; [
-    blinker
-    click
-    dramatiq
-    dramatiq-eager-broker
-    flask
-    flask-caching
-    flask-dramatiq
-    flask-session
-    flask-wtf
-    httpx
-    pydantic-settings
-    wtforms
   ];
 
   nativeCheckInputs =
@@ -81,11 +59,6 @@ python.pkgs.buildPythonApplication rec {
     ]
     ++ (lib.concatLists (builtins.attrValues optional-dependencies));
 
-  postInstall = ''
-    mkdir -p $out/etc/schema
-    cp $out/${python.sitePackages}/canaille/backends/ldap/schemas/* $out/etc/schema/
-  '';
-
   preCheck = ''
     # Needed by tests to setup a mockup ldap server.
     export BIN="${openldap}/bin"
@@ -94,9 +67,31 @@ python.pkgs.buildPythonApplication rec {
     export SCHEMA="${openldap}/etc/schema"
   '';
 
-  # Cap xdist workers; concurrent slapd fixtures race the 10s bind window.
-  dontUsePytestXdist = true;
-  pytestFlags = [ "--numprocesses=4" ];
+  postInstall = ''
+    mkdir -p $out/etc/schema
+    cp $out/${python.sitePackages}/canaille/backends/ldap/schemas/* $out/etc/schema/
+  '';
+
+  build-system = with python.pkgs; [
+    hatchling
+    babel
+    setuptools
+  ];
+
+  dependencies = with python.pkgs; [
+    blinker
+    click
+    dramatiq
+    dramatiq-eager-broker
+    flask
+    flask-caching
+    flask-dramatiq
+    flask-session
+    flask-wtf
+    httpx
+    pydantic-settings
+    wtforms
+  ];
 
   disabledTests = [
     # Tries to use DNS resolution
@@ -108,7 +103,13 @@ python.pkgs.buildPythonApplication rec {
     "test_mail_with_unreachable_external_logo"
   ];
 
+  # Cap xdist workers; concurrent slapd fixtures race the 10s bind window.
+  dontUsePytestXdist = true;
+
   optional-dependencies = with python.pkgs; {
+    captcha = [ captcha ];
+    fido = [ webauthn ];
+
     front = [
       email-validator
       flask-babel
@@ -120,21 +121,23 @@ python.pkgs.buildPythonApplication rec {
       tomlkit
       zxcvbn-rs-py
     ];
-    oidc = [
-      authlib
-      joserfc
-    ];
-    scim = [
-      authlib
-      httpx
-      scim2-client
-      scim2-models
-    ];
+
     ldap = [
       ldappool
       python-ldap
     ];
-    sentry = [ sentry-sdk ];
+
+    oidc = [
+      authlib
+      joserfc
+    ];
+
+    otp = [
+      otpauth
+      pillow
+      qrcode
+    ];
+
     postgresql = [
       flask-alembic
       passlib
@@ -143,14 +146,19 @@ python.pkgs.buildPythonApplication rec {
       sqlalchemy-utils
     ]
     ++ sqlalchemy.optional-dependencies.postgresql_psycopg2binary;
-    otp = [
-      otpauth
-      pillow
-      qrcode
+
+    rabbitmq = [ dramatiq ] ++ dramatiq.optional-dependencies.rabbitmq;
+    redis = [ dramatiq ] ++ dramatiq.optional-dependencies.redis;
+
+    scim = [
+      authlib
+      httpx
+      scim2-client
+      scim2-models
     ];
-    fido = [ webauthn ];
-    sms = [ smpplib ];
-    captcha = [ captcha ];
+
+    sentry = [ sentry-sdk ];
+
     server = [
       asgiref
       hypercorn
@@ -158,12 +166,16 @@ python.pkgs.buildPythonApplication rec {
       pydanclick
       tomlkit
     ];
-    redis = [ dramatiq ] ++ dramatiq.optional-dependencies.redis;
-    rabbitmq = [ dramatiq ] ++ dramatiq.optional-dependencies.rabbitmq;
+
+    sms = [ smpplib ];
   };
+
+  pyproject = true;
+  pytestFlags = [ "--numprocesses=4" ];
 
   passthru = {
     inherit python;
+
     tests = {
       inherit (nixosTests) canaille;
     };
@@ -174,8 +186,8 @@ python.pkgs.buildPythonApplication rec {
     homepage = "https://canaille.readthedocs.io/en/latest/index.html";
     changelog = "https://gitlab.com/yaal/canaille/-/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ erictapen ];
+    platforms = lib.platforms.linux;
     mainProgram = "canaille";
   };
 

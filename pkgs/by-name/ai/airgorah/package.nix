@@ -1,15 +1,15 @@
 {
-  rustPlatform,
   lib,
   fetchFromGitHub,
-  pkg-config,
-  glib,
-  pango,
+  copyDesktopItems,
   gdk-pixbuf,
+  glib,
   graphene,
   gtk4,
-  copyDesktopItems,
   makeDesktopItem,
+  pango,
+  pkg-config,
+  rustPlatform,
   wrapGAppsHook4,
 }:
 
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-6TH+DRDtWajZjHNmFSKL4XJK+AuDNUbWKRPRryOpSGY=";
   };
-
-  cargoHash = "sha256-LiSaNyqsKBZ5nNP7mws1pjhVwTXNBF6e1wSUdG/qYog=";
 
   nativeBuildInputs = [
     pkg-config
@@ -40,25 +38,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gtk4
   ];
 
+  cargoHash = "sha256-LiSaNyqsKBZ5nNP7mws1pjhVwTXNBF6e1wSUdG/qYog=";
+
   postInstall = ''
     install -Dm644 icons/app_icon.png $out/share/icons/airgorah.png
   '';
 
   desktopItems = [
     (makeDesktopItem {
-      name = "airgorah";
-      comment = "A WiFi auditing software that can perform deauth attacks and passwords cracking";
-      desktopName = "airgorah";
-      exec = "pkexec airgorah";
-      icon = "airgorah";
       categories = [
         "Network"
         "Monitor"
         "Utility"
         "GTK"
       ];
-      type = "Application";
+
+      comment = "A WiFi auditing software that can perform deauth attacks and passwords cracking";
+      desktopName = "airgorah";
+      exec = "pkexec airgorah";
+      icon = "airgorah";
+      name = "airgorah";
       terminal = false;
+      type = "Application";
     })
   ];
 
@@ -67,8 +68,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/martin-olivier/airgorah";
     changelog = "https://github.com/martin-olivier/airgorah/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "airgorah";
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.linux;
+    mainProgram = "airgorah";
   };
 })

@@ -1,20 +1,19 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cargo,
-  fetchFromGitHub,
   frelatage,
   libiconv,
   pytestCheckHook,
-  rustc,
   rustPlatform,
+  rustc,
 }:
 
 buildPythonPackage rec {
   pname = "base2048";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ionite34";
@@ -22,8 +21,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-OXlfycJB1IrW2Zq0xPDGjjwCdRTWtX/ixPGWcd+YjAg=";
   };
-
-  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
 
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
@@ -37,13 +34,14 @@ buildPythonPackage rec {
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
+  nativeCheckInputs = [ pytestCheckHook ];
+  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
 
   optional-dependencies = {
     fuzz = [ frelatage ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "base2048" ];
 
   meta = {

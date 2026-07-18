@@ -32,11 +32,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/osm0sis/dhtbsign";
     description = "Tool to write the DHTB header for Samsung Spreadtrum devices";
+    homepage = "https://github.com/osm0sis/dhtbsign";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ ungeskriptet ];
-    teams = [ lib.teams.android ];
     mainProgram = "dhtbsign";
+    teams = [ lib.teams.android ];
   };
 }

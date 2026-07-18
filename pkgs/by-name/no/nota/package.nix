@@ -1,7 +1,7 @@
 {
-  haskellPackages,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  haskellPackages,
 }:
 
 haskellPackages.mkDerivation rec {
@@ -15,10 +15,10 @@ haskellPackages.mkDerivation rec {
     hash = "sha256-96T9uxUEV22/vn6aoInG1UPXbzlDHswOSkywkdwsMeY=";
   };
 
-  sourceRoot = "${src.name}/source";
-
-  isLibrary = false;
+  description = "Command line calculator";
+  homepage = "https://pouyakary.org/nota/";
   isExecutable = true;
+  isLibrary = false;
 
   libraryHaskellDepends = with haskellPackages; [
     base
@@ -36,9 +36,8 @@ haskellPackages.mkDerivation rec {
     time
   ];
 
-  description = "Command line calculator";
-  homepage = "https://pouyakary.org/nota/";
   license = lib.licenses.mpl20;
-  maintainers = [ ];
   mainProgram = "nota";
+  maintainers = [ ];
+  sourceRoot = "${src.name}/source";
 }

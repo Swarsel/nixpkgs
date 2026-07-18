@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
-  buildFHSEnv,
-  gtk3,
-  gdk-pixbuf,
-  cairo,
-  libjpeg_original,
-  glib,
-  pango,
-  libGLU,
-  libGL,
-  nvidia_cg_toolkit,
-  zlib,
-  openssl,
-  libuuid,
   alsa-lib,
-  udev,
-  libjack2,
+  buildFHSEnv,
+  cairo,
+  dpkg,
   freetype,
+  gdk-pixbuf,
+  glib,
+  gmp,
+  gtk3,
+  libGL,
+  libGLU,
+  libdrm,
+  libjack2,
+  libjpeg_original,
+  libpulseaudio,
+  libuuid,
   libva,
   libvdpau,
-  twolame,
-  gmp,
-  libdrm,
-  libpulseaudio,
+  makeWrapper,
+  nvidia_cg_toolkit,
+  openssl,
+  pango,
   sndio,
+  twolame,
+  udev,
+  zlib,
 }:
 let
   fullPath = lib.makeLibraryPath [
@@ -58,9 +58,8 @@ let
   ];
 
   lightworks = stdenv.mkDerivation rec {
-    version = "2025.2";
-    rev = "56356";
     pname = "lightworks";
+    version = "2025.2";
 
     src =
       if stdenv.hostPlatform.system == "x86_64-linux" then
@@ -106,29 +105,30 @@ let
     '';
 
     dontPatchELF = true;
+    rev = "56356";
   };
 
 in
 # Lightworks expects some files in /usr/share/lightworks
 buildFHSEnv {
   inherit (lightworks) pname version;
-
-  targetPkgs = pkgs: [ lightworks ];
-
   runScript = "lightworks";
+  targetPkgs = pkgs: [ lightworks ];
 
   meta = {
     description = "Professional Non-Linear Video Editor";
     homepage = "https://www.lwks.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    mainProgram = "lightworks";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       antonxy
       vojta001
       kashw2
       tombert
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "lightworks";
   };
 }

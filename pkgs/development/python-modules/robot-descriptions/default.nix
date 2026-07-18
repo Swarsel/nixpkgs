@@ -1,15 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   gitpython,
-  tqdm,
   # idyntree,
   mujoco,
   pinocchio,
   pybullet,
   pycollada,
+  tqdm,
   # robomeshcat,
   yourdfpy,
 }:
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "robot-descriptions";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "robot-descriptions";
@@ -25,6 +24,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-THLGQWZVeXwbanBIyYw8ymM+c/x5rXJxD7YWgn8GCWw=";
   };
+
+  # This package needs to download a lot of data at runtime
+  doCheck = false;
 
   build-system = [
     flit-core
@@ -47,12 +49,11 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "robot_descriptions"
   ];
-
-  # This package needs to download a lot of data at runtime
-  doCheck = false;
 
   meta = {
     description = "Access 125+ robot descriptions from the main Python robotics frameworks";

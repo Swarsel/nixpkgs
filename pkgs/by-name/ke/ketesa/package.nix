@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  nodejs,
   nix-update-script,
+  nodejs,
   writers,
+  yarnBuildHook,
+  yarnConfigHook,
   baseUrl ? null,
 }:
 
@@ -26,11 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-0YNCPOkWIzXMfs6Jptn+PBRHxuees6zVh7RpTXZKywQ=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-NJGAchoEVgIOjQyH9mNh7h4BZmq4HV2FjHOBhL88ZWw=";
-  };
-
   nativeBuildInputs = [
     nodejs
     yarnConfigHook
@@ -38,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    NODE_ENV = "production";
     KETESA_VERSION = finalAttrs.version;
+    NODE_ENV = "production";
   };
 
   installPhase = ''
@@ -50,15 +45,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   __darwinAllowLocalNetworking = true;
 
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-NJGAchoEVgIOjQyH9mNh7h4BZmq4HV2FjHOBhL88ZWw=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
   passthru = {
+    updateScript = nix-update-script { };
+
     # https://github.com/etkecc/ketesa/blob/main/docs/config.md
     withConfig =
       config:
       stdenv.mkDerivation {
         inherit (finalAttrs) version meta;
         pname = "ketesa-with-config";
-        dontUnpack = true;
-        configFile = writers.writeJSON "ketesa-config" config;
+
         installPhase = ''
           runHook preInstall
           cp -r ${finalAttrs.finalPackage} $out
@@ -66,9 +67,10 @@ stdenv.mkDerivation (finalAttrs: {
           cp $configFile $out/config.json
           runHook postInstall
         '';
-      };
 
-    updateScript = nix-update-script { };
+        configFile = writers.writeJSON "ketesa-config" config;
+        dontUnpack = true;
+      };
   };
 
   meta = {

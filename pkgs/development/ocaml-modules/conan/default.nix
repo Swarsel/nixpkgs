@@ -1,14 +1,14 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
-  ptime,
-  re,
-  uutf,
   alcotest,
+  buildDunePackage,
   crowbar,
   fmt,
+  ptime,
+  re,
   rresult,
+  uutf,
 }:
 
 buildDunePackage (finalAttrs: {

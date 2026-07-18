@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   appdirs,
   asn1crypto,
+  buildPythonPackage,
   cffi,
   cryptography,
+  fetchPypi,
   furl,
   idna,
   orderedmultidict,
@@ -16,18 +16,17 @@
   pycparser,
   pyparsing,
   pyscrypt,
+  pytest,
   python-dateutil,
   pytz,
   requests,
   six,
   vobject,
-  pytest,
 }:
 
 buildPythonPackage rec {
   pname = "etesync";
   version = "0.12.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -63,9 +62,11 @@ buildPythonPackage rec {
     pytest tests/test_crypto.py
   '';
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://www.etesync.com/";
     description = "Python API to interact with an EteSync server";
+    homepage = "https://www.etesync.com/";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ valodim ];
   };

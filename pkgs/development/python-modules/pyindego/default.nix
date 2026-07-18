@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
-  requests,
-  pytz,
-
+  buildPythonPackage,
   # tests
   mock,
   pytest-aiohttp,
   pytest-asyncio,
   pytestCheckHook,
+  pytz,
+  requests,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyindego";
   version = "3.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sander1988";
@@ -34,19 +30,19 @@ buildPythonPackage rec {
     sed -i "/addopts/d" pytest.ini
   '';
 
+  nativeCheckInputs = [
+    mock
+    pytest-aiohttp
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     aiohttp
     requests
     pytz
-  ];
-
-  nativeCheckInputs = [
-    mock
-    pytest-aiohttp
-    pytest-asyncio
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -56,6 +52,7 @@ buildPythonPackage rec {
     "test_update_battery"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyIndego" ];
 
   meta = {

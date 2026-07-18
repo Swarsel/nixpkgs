@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
+  alsa-lib,
   dbus,
   ffmpeg,
+  libxcb,
   oniguruma,
   openssl,
+  pkg-config,
+  rustPlatform,
   sqlite,
-  stdenv,
-  alsa-lib,
-  libxcb,
 }:
 rustPlatform.buildRustPackage rec {
   pname = "screen-pipe";
@@ -21,14 +21,6 @@ rustPlatform.buildRustPackage rec {
     repo = "screen-pipe";
     rev = "v${version}";
     hash = "sha256-rWKRCqWFuPO84C52mMrrS4euD6XdJU8kqZsAz28+vWE=";
-  };
-
-  cargoLock = {
-    lockFile = ./Cargo.lock;
-    outputHashes = {
-      "cpal-0.15.3" = "sha256-eKn3tS5QuqbMTwnRAEybvbPZOiKiid7ghGztAmrs9fw=";
-      "rusty-tesseract-1.1.10" = "sha256-XT74zGn+DetEBUujHm4Soe2iorQcIoUeZbscTv+64hw=";
-    };
   };
 
   postPatch = ''
@@ -52,21 +44,29 @@ rustPlatform.buildRustPackage rec {
     libxcb
   ];
 
-  buildFeatures = lib.optional stdenv.hostPlatform.isDarwin "metal";
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+
+    outputHashes = {
+      "cpal-0.15.3" = "sha256-eKn3tS5QuqbMTwnRAEybvbPZOiKiid7ghGztAmrs9fw=";
+      "rusty-tesseract-1.1.10" = "sha256-XT74zGn+DetEBUujHm4Soe2iorQcIoUeZbscTv+64hw=";
+    };
+  };
 
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;
   };
 
   doCheck = false; # Tests fail to build
+  buildFeatures = lib.optional stdenv.hostPlatform.isDarwin "metal";
 
   meta = {
-    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
-    broken = true;
     description = "Personalized AI powered by what you've seen, said, or heard";
     homepage = "https://github.com/louis030195/screen-pipe";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "screen-pipe";
+    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
+    broken = true;
   };
 }

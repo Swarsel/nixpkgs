@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-llama-server,
   pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-llama-server";
   version = "0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -21,17 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-jtFSfGu3JhNUfTsspY+OFLTMt9jQrh6R05sK9KBOKTE=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ llm ];
-
   nativeCheckInputs = [
     pytestCheckHook
     writableTmpDirAsHomeHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ llm ];
+  pyproject = true;
   pythonImportsCheck = [ "llm_llama_server" ];
-
   passthru.tests = llm.mkPluginTest llm-llama-server;
 
   meta = {

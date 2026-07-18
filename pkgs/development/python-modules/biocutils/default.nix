@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
+  numpy,
+  pandas,
   pytest-cov-stub,
+  pytestCheckHook,
+  scipy,
   setuptools,
   setuptools-scm,
-  scipy,
-  pandas,
-  numpy,
 }:
 
 buildPythonPackage rec {
   pname = "biocutils";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BiocPy";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-CKIAJsWw9zCjhIpZpgFgakvszjO+1lZS8535LMfEH2Y=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
@@ -37,6 +29,13 @@ buildPythonPackage rec {
     scipy
   ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ numpy ];
+  pyproject = true;
   pythonImportsCheck = [ "biocutils" ];
 
   meta = {

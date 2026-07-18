@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   parameterized,
   pytestCheckHook,
   setuptools-scm,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "moreorless";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thatch";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-uFcNjQLr/rO2hf2ujWWSsOVxfwgAeIxDZ0yskOfBSe4=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ click ];
-
   nativeCheckInputs = [
     parameterized
     pytestCheckHook
   ];
 
+  build-system = [ setuptools-scm ];
+  dependencies = [ click ];
+  pyproject = true;
   pythonImportsCheck = [ "moreorless" ];
 
   meta = {

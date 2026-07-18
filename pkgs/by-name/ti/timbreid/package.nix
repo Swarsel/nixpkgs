@@ -2,23 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  puredata,
   fftwSinglePrec,
+  puredata,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.7.0";
   pname = "timbreid";
+  version = "0.7.0";
 
   src = fetchurl {
     url = "http://williambrent.conflations.com/pd/timbreID-${finalAttrs.version}-src.zip";
     sha256 = "14k2xk5zrzrw1zprdbwx45hrlc7ck8vq4drpd3l455i5r8yk4y6b";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ unzip ];
+
   buildInputs = [
     puredata
     fftwSinglePrec
@@ -28,8 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     "tIDLib.o"
     "all"
   ];
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -46,6 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
     mv $out/share/doc/ $out/
     rm -rf $out/share/
   '';
+
+  enableParallelBuilding = true;
+  sourceRoot = ".";
 
   meta = {
     description = "Collection of audio feature analysis externals for puredata";

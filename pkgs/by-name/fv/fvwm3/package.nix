@@ -1,13 +1,18 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   asciidoctor,
   autoconf269,
   autoreconfHook,
   cairo,
-  fetchFromGitHub,
   fontconfig,
   freetype,
   fribidi,
+  libevent,
+  libintl,
+  libpng,
+  librsvg,
   libsm,
   libx11,
   libxcursor,
@@ -16,18 +21,13 @@
   libxinerama,
   libxpm,
   libxrandr,
-  libxt,
-  libevent,
-  libintl,
-  libpng,
-  librsvg,
   libxslt,
+  libxt,
   perl,
   pkg-config,
   python3Packages,
   readline,
   sharutils,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-y1buTWO1vHzloh2e4EK1dkD0uQa7lIFUbNMkEe5x6Vo=";
   };
+
+  strictDeps = true;
 
   # Build fails with autoconf 2.73
   nativeBuildInputs = [
@@ -75,10 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     sharutils
   ];
 
-  pythonPath = [
-    python3Packages.pyxdg
-  ];
-
   configureFlags = [
     (lib.enableFeature true "mandoc")
   ];
@@ -89,11 +87,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  strictDeps = true;
+  pythonPath = [
+    python3Packages.pyxdg
+  ];
 
   meta = {
-    homepage = "http://fvwm.org";
+    inherit (libx11.meta) platforms;
     description = "Multiple large virtual desktop window manager - Version 3";
+
     longDescription = ''
       Fvwm is a virtual window manager for the X windows system. It was
       originally a feeble fork of TWM by Robert Nation in 1993 (fvwm history),
@@ -114,9 +115,10 @@ stdenv.mkDerivation (finalAttrs: {
       suites their needs. The manual pages and the fvwm wiki can be used to help
       learn how to configure fvwm.
     '';
+
+    homepage = "http://fvwm.org";
     changelog = "https://github.com/fvwmorg/fvwm3/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
-    inherit (libx11.meta) platforms;
   };
 })

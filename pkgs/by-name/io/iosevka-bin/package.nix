@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   iosevka,
   unzip,
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "https://github.com/be5invis/Iosevka/releases/download/v${finalAttrs.version}/PkgTTC-${name}-${finalAttrs.version}.zip";
+
     sha256 =
       variantHashes.${name} or (throw ''
         No such variant "${variant}" for package iosevka-bin.
@@ -29,13 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ unzip ];
-
   dontInstall = true;
 
   unpackPhase = ''
     mkdir -p $out/share/fonts
     unzip -d $out/share/fonts/truetype $src
   '';
+
+  passthru.updateScript = ./update-bin.sh;
 
   meta = {
     inherit (iosevka.meta)
@@ -45,10 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
       license
       platforms
       ;
+
     maintainers = with lib.maintainers; [
       astratagem
     ];
   };
-
-  passthru.updateScript = ./update-bin.sh;
 })

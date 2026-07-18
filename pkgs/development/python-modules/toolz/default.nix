@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "toolz";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,16 +21,18 @@ buildPythonPackage rec {
       --replace-fail 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
+    description = "List processing tools and functional utilities";
     homepage = "https://github.com/pytoolz/toolz";
     changelog = "https://github.com/pytoolz/toolz/releases/tag/${version}";
-    description = "List processing tools and functional utilities";
     license = lib.licenses.bsd3;
   };
 }

@@ -13,11 +13,13 @@ in
 {
   options.hardware.nitrokey = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Enables udev rules for Nitrokey devices.
       '';
+
+      type = lib.types.bool;
     };
   };
 

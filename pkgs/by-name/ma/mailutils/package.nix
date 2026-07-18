@@ -2,32 +2,31 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
   dejagnu,
-  gettext,
-  gnum4,
-  pkg-config,
-  texinfo,
+  fetchpatch,
   fribidi,
   gdbm,
+  gettext,
+  gnum4,
   gnutls,
+  gsasl,
   gss,
   guile,
   libmysqlclient,
+  libxcrypt,
   mailcap,
+  mkpasswd,
+  ncurses,
   net-tools,
   pam,
-  readline,
-  ncurses,
+  pkg-config,
   python3,
-  gsasl,
+  readline,
   system-sendmail,
-  libxcrypt,
-  mkpasswd,
-
-  pythonSupport ? true,
+  texinfo,
   guileSupport ? true,
+  pythonSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,7 +38,32 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5Hwe3GmbjWZ1/bx32zqEroN/GOHyCU/inUi7WKl+9ek=";
   };
 
-  separateDebugInfo = true;
+  patches = [
+    ./fix-build-mb-len-max.patch
+    ./path-to-cat.patch
+    # Fix cross-compilation
+    # https://lists.gnu.org/archive/html/bug-mailutils/2020-11/msg00038.html
+    (fetchpatch {
+      hash = "sha256-2rhuopBANngq/PRCboIr+ewdawr8472cYwiLjtHCHz4=";
+      url = "https://lists.gnu.org/archive/html/bug-mailutils/2020-11/txtiNjqcNpqOk.txt";
+    })
+    # https://github.com/NixOS/nixpkgs/issues/223967
+    # https://lists.gnu.org/archive/html/bug-mailutils/2023-04/msg00000.html
+    ./don-t-use-descrypt-password-in-the-test-suite.patch
+    # Fix build with gcc15
+    # https://lists.gnu.org/archive/html/bug-mailutils/2025-06/msg00000.html
+    (fetchpatch {
+      hash = "sha256-RN62l5mYqtViEjXpAlQKWhFez1TPynRMj/1nvZkq5Gs=";
+      name = "mailutils-fix-sighandler-incompatible-pointer-types-gcc15.patch";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/mailutils/-/raw/87c3614083260f52dd1222e872a1836f0ff9abe1/fix-build.patch";
+    })
+    # Fix for non-portable assumptions causing test failures on musl
+    (fetchpatch {
+      hash = "sha256-kamIiQty+/PEB9gC4tPsEMzz1GMGuZAe+DXqjdTeg70=";
+      name = "portability.patch";
+      url = "https://cgit.git.savannah.gnu.org/cgit/mailutils.git/patch/?id=6e038f04d575731cf90a44cf0114e485a9827a26";
+    })
+  ];
 
   postPatch = ''
     sed -i -e '/chown root:mail/d' \
@@ -47,6 +71,8 @@ stdenv.mkDerivation (finalAttrs: {
       */Makefile{.in,.am}
     sed -i 's:/usr/lib/mysql:${libmysqlclient}/lib/mysql:' configure.ac
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -73,36 +99,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals pythonSupport [ python3 ]
   ++ lib.optionals guileSupport [ guile ];
 
-  patches = [
-    ./fix-build-mb-len-max.patch
-    ./path-to-cat.patch
-    # Fix cross-compilation
-    # https://lists.gnu.org/archive/html/bug-mailutils/2020-11/msg00038.html
-    (fetchpatch {
-      url = "https://lists.gnu.org/archive/html/bug-mailutils/2020-11/txtiNjqcNpqOk.txt";
-      hash = "sha256-2rhuopBANngq/PRCboIr+ewdawr8472cYwiLjtHCHz4=";
-    })
-    # https://github.com/NixOS/nixpkgs/issues/223967
-    # https://lists.gnu.org/archive/html/bug-mailutils/2023-04/msg00000.html
-    ./don-t-use-descrypt-password-in-the-test-suite.patch
-    # Fix build with gcc15
-    # https://lists.gnu.org/archive/html/bug-mailutils/2025-06/msg00000.html
-    (fetchpatch {
-      name = "mailutils-fix-sighandler-incompatible-pointer-types-gcc15.patch";
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/mailutils/-/raw/87c3614083260f52dd1222e872a1836f0ff9abe1/fix-build.patch";
-      hash = "sha256-RN62l5mYqtViEjXpAlQKWhFez1TPynRMj/1nvZkq5Gs=";
-    })
-    # Fix for non-portable assumptions causing test failures on musl
-    (fetchpatch {
-      name = "portability.patch";
-      url = "https://cgit.git.savannah.gnu.org/cgit/mailutils.git/patch/?id=6e038f04d575731cf90a44cf0114e485a9827a26";
-      hash = "sha256-kamIiQty+/PEB9gC4tPsEMzz1GMGuZAe+DXqjdTeg70=";
-    })
-  ];
-
-  enableParallelBuilding = true;
-  strictDeps = true;
-
   configureFlags = [
     "--sysconfdir=/etc"
     "--with-gssapi"
@@ -115,12 +111,15 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (!pythonSupport) "--without-python"
   ++ lib.optional (!guileSupport) "--without-guile";
 
+  doCheck = !stdenv.hostPlatform.isDarwin; # ERROR: All 46 tests were run, 46 failed unexpectedly.
+
   nativeCheckInputs = [
     dejagnu
     mkpasswd
   ];
 
-  doCheck = !stdenv.hostPlatform.isDarwin; # ERROR: All 46 tests were run, 46 failed unexpectedly.
+  enableParallelBuilding = true;
+  separateDebugInfo = true;
 
   meta = {
     description = "Rich and powerful protocol-independent mail framework";
@@ -144,16 +143,15 @@ stdenv.mkDerivation (finalAttrs: {
       and an implementation of MH message handling system.
     '';
 
+    homepage = "https://www.gnu.org/software/mailutils/";
+    changelog = "https://git.savannah.gnu.org/cgit/mailutils.git/tree/NEWS";
+
     license = with lib.licenses; [
       lgpl3Plus # libraries
       gpl3Plus # tools
     ];
 
     maintainers = [ ];
-
-    homepage = "https://www.gnu.org/software/mailutils/";
-    changelog = "https://git.savannah.gnu.org/cgit/mailutils.git/tree/NEWS";
-
     # Some of the dependencies fail to build on {cyg,dar}win.
     platforms = lib.platforms.gnu ++ lib.platforms.unix;
   };

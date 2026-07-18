@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libpcap,
 }:
 
@@ -16,9 +16,8 @@ buildGoModule rec {
     hash = "sha256-xtxhatxNK9bRnT1R/5BJkTcubO58sg5ssrziLYvw6mQ=";
   };
 
-  vendorHash = "sha256-1NfeFw8v6F00CZe8a3qdk/TrUBNi2wr9PvwIsZzkDSk=";
-
   buildInputs = [ libpcap ];
+  vendorHash = "sha256-1NfeFw8v6F00CZe8a3qdk/TrUBNi2wr9PvwIsZzkDSk=";
 
   meta = {
     description = "Tool to check packets for secrets";

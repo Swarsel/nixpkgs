@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  versionCheckHook,
   cmake,
-  pkg-config,
   glib,
-  soapysdr,
-  sdrplay,
-  sdrplaySupport ? false,
-  sqlite,
-  zeromq,
   libacars,
+  nix-update-script,
+  pkg-config,
+  sdrplay,
+  soapysdr,
+  sqlite,
+  versionCheckHook,
+  zeromq,
+  sdrplaySupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SSCPJ2D5JuMEEDG+8KYoequWCwRJcd6XwZAZSprShy8=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
   buildInputs = [
     glib
     soapysdr
@@ -35,22 +40,16 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals sdrplaySupport [ sdrplay ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/szpajder/dumpvdl2";
     description = "VDL Mode 2 message decoder and protocol analyzer";
+    homepage = "https://github.com/szpajder/dumpvdl2";
     license = lib.licenses.gpl3Plus;
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = [ lib.maintainers.mafo ];
+    platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "dumpvdl2";
   };
 })

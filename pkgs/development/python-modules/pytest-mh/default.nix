@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  hatch-vcs,
-  hatch-requirements-txt,
   ansible-pylibssh,
+  buildPythonPackage,
   colorama,
+  gitUpdater,
+  hatch-requirements-txt,
+  hatch-vcs,
+  hatchling,
   pytest,
   pyyaml,
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-mh";
   version = "1.0.29";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "next-actions";
@@ -23,6 +22,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-1QaqHDS+eU1O2aLWtdd6XWxErwqONAPngKe8FqYAmJY=";
   };
+
+  # Patch requirements.txt out of the package
+  postInstall = ''
+    rm -f $out/lib/python*/site-packages/requirements.txt
+  '';
 
   build-system = [
     hatchling
@@ -37,11 +41,7 @@ buildPythonPackage (finalAttrs: {
     pyyaml
   ];
 
-  # Patch requirements.txt out of the package
-  postInstall = ''
-    rm -f $out/lib/python*/site-packages/requirements.txt
-  '';
-
+  pyproject = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {

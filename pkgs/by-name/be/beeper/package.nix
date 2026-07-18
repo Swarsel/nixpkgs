@@ -2,11 +2,11 @@
   lib,
   fetchurl,
   appimageTools,
-  makeWrapper,
   asar,
-  writeShellApplication,
-  curl,
   common-updater-scripts,
+  curl,
+  makeWrapper,
+  writeShellApplication,
 }:
 let
   pname = "beeper";
@@ -41,10 +41,7 @@ let
 in
 appimageTools.wrapAppImage {
   inherit pname version;
-
   src = appimageContents;
-
-  extraPkgs = pkgs: [ pkgs.libsecret ];
 
   extraInstallCommands = ''
     install -Dm 644 ${appimageContents}/beepertexts.png $out/share/icons/hicolor/512x512/apps/beepertexts.png
@@ -58,13 +55,20 @@ appimageTools.wrapAppImage {
       --run 'exec >/dev/null' # as recommended in #486164
   '';
 
+  extraPkgs = pkgs: [ pkgs.libsecret ];
+
   passthru = {
+    # needed for nix-update
+    inherit src;
+
     updateScript = lib.getExe (writeShellApplication {
       name = "update-beeper";
+
       runtimeInputs = [
         curl
         common-updater-scripts
       ];
+
       text = ''
         set -o errexit
         latestLinux="$(curl --silent --output /dev/null --write-out "%{redirect_url}\n" https://api.beeper.com/desktop/download/linux/x64/stable/com.automattic.beeper.desktop)"
@@ -72,24 +76,25 @@ appimageTools.wrapAppImage {
         update-source-version beeper "$version"
       '';
     });
-
-    # needed for nix-update
-    inherit src;
   };
 
   meta = {
     description = "Universal chat app";
+
     longDescription = ''
       Beeper is a universal chat app. With Beeper, you can send
       and receive messages to friends, family and colleagues on
       many different chat networks.
     '';
+
     homepage = "https://beeper.com";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       jshcmpbll
       zh4ngx
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 }

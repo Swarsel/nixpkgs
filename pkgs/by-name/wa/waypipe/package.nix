@@ -1,45 +1,39 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
+  autoPatchelfHook,
+  cargo,
+  ffmpeg,
+  libgbm,
+  llvmPackages,
+  lz4,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
-  scdoc,
-  libgbm,
-  lz4,
-  zstd,
-  ffmpeg,
-  cargo,
+  rust-bindgen,
+  rustPlatform,
   rustc,
+  scdoc,
+  shaderc,
   vulkan-headers,
   vulkan-loader,
-  shaderc,
-  llvmPackages,
-  autoPatchelfHook,
   wayland-scanner,
-  rust-bindgen,
-  nix-update-script,
+  zstd,
 }:
 llvmPackages.stdenv.mkDerivation (finalAttrs: {
   pname = "waypipe";
   version = "0.11.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "mstoeckl";
     repo = "waypipe";
     tag = "v${finalAttrs.version}";
     hash = "sha256-Tbd/yY90yb2+/ODYVL3SudHaJCGJKatZ9FuGM2uAX+8=";
-  };
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-IUvXHLxrhc2Au57wsE53Q+NL1cZzFcaRG3HDV8s3xWw=";
+    domain = "gitlab.freedesktop.org";
   };
 
   strictDeps = true;
-  env.LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     meson
@@ -64,6 +58,15 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     vulkan-loader
   ];
 
+  env.LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-IUvXHLxrhc2Au57wsE53Q+NL1cZzFcaRG3HDV8s3xWw=";
+  };
+
+  depsBuildBuild = [ pkg-config ];
+
   runtimeDependencies = [
     libgbm
     ffmpeg.lib
@@ -74,16 +77,18 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Network proxy for Wayland clients (applications)";
+
     longDescription = ''
       waypipe is a proxy for Wayland clients. It forwards Wayland messages and
       serializes changes to shared memory buffers over a single socket. This
       makes application forwarding similar to ssh -X feasible.
     '';
+
     homepage = "https://mstoeckl.com/notes/gsoc/blog.html";
     changelog = "https://gitlab.freedesktop.org/mstoeckl/waypipe/-/releases#v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ mic92 ];
+    platforms = lib.platforms.linux;
     mainProgram = "waypipe";
   };
 })

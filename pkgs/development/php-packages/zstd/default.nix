@@ -1,9 +1,9 @@
 {
-  buildPecl,
   lib,
-  zstd,
-  pkg-config,
   fetchFromGitHub,
+  buildPecl,
+  pkg-config,
+  zstd,
 }:
 
 let
@@ -21,15 +21,13 @@ buildPecl {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ zstd ];
-
   configureFlags = [ "--with-libzstd" ];
 
   meta = {
     description = "Zstd Extension for PHP";
-    license = lib.licenses.mit;
     homepage = "https://github.com/kjdev/php-ext-zstd";
+    license = lib.licenses.mit;
     maintainers = [ ];
   };
 }

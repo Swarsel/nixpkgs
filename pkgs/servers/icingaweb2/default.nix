@@ -1,10 +1,10 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   makeWrapper,
-  php83,
   nixosTests,
+  php83,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -32,17 +32,21 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Webinterface for Icinga 2";
+
     longDescription = ''
       A lightweight and extensible web interface to keep an eye on your environment.
       Analyse problems and act on them.
     '';
+
     homepage = "https://www.icinga.com/products/icinga-web-2/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
     ];
-    mainProgram = "icingacli";
+
     platforms = lib.platforms.all;
+    mainProgram = "icingacli";
   };
 }

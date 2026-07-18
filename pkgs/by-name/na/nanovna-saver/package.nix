@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
+  python3,
   qt6,
   writeShellScriptBin,
 }:
@@ -19,7 +19,6 @@ in
 python3.pkgs.buildPythonApplication rec {
   pname = "nanovna-saver";
   version = "0.7.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "NanoVNA-Saver";
@@ -27,6 +26,12 @@ python3.pkgs.buildPythonApplication rec {
     tag = "v${version}";
     sha256 = "sha256-Asx4drb9W2NobdgOlbgdm1aAzB69hnIWvOM915F7sgA=";
   };
+
+  postPatch = ''
+    substituteInPlace src/tools/ui_compile.py \
+      --replace-fail "pyside6-uic" "${pyside-tools-uic}/bin/pyside6-uic" \
+      --replace-fail "pyside6-rcc" "${pyside-tools-rcc}/bin/pyside6-rcc"
+  '';
 
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
@@ -48,15 +53,6 @@ python3.pkgs.buildPythonApplication rec {
 
   doCheck = false;
 
-  dontWrapGApps = true;
-  dontWrapQtApps = true;
-
-  postPatch = ''
-    substituteInPlace src/tools/ui_compile.py \
-      --replace-fail "pyside6-uic" "${pyside-tools-uic}/bin/pyside6-uic" \
-      --replace-fail "pyside6-rcc" "${pyside-tools-rcc}/bin/pyside6-rcc"
-  '';
-
   preFixup = ''
     makeWrapperArgs+=(
       "''${gappsWrapperArgs[@]}"
@@ -64,19 +60,27 @@ python3.pkgs.buildPythonApplication rec {
     )
   '';
 
+  dontWrapGApps = true;
+  dontWrapQtApps = true;
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/NanoVNA-Saver/nanovna-saver";
     description = "Tool for reading, displaying and saving data from the NanoVNA";
-    mainProgram = "NanoVNASaver";
+
     longDescription = ''
       A multiplatform tool to save Touchstone files from the NanoVNA, sweep
       frequency spans in segments to gain more than 101 data points, and
       generally display and analyze the resulting data.
     '';
+
+    homepage = "https://github.com/NanoVNA-Saver/nanovna-saver";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       zaninime
       tmarkus
     ];
+
+    mainProgram = "NanoVNASaver";
   };
 }

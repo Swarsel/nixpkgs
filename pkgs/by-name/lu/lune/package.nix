@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   cmake,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage rec {
   pname = "lune";
@@ -17,12 +17,12 @@ rustPlatform.buildRustPackage rec {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-QSQ+SsvLa7f9EVGi6i/SlpL8yWXVP47zkw4beDy5UIQ=";
-
   # error: linker `aarch64-linux-gnu-gcc` not found
   postPatch = ''
     rm .cargo/config.toml
   '';
+
+  cargoHash = "sha256-QSQ+SsvLa7f9EVGi6i/SlpL8yWXVP47zkw4beDy5UIQ=";
 
   checkFlags = [
     # require internet access
@@ -46,10 +46,10 @@ rustPlatform.buildRustPackage rec {
 
   meta = {
     description = "Standalone Luau script runtime";
-    mainProgram = "lune";
     homepage = "https://github.com/lune-org/lune";
     changelog = "https://github.com/lune-org/lune/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ lammermann ];
+    mainProgram = "lune";
   };
 }

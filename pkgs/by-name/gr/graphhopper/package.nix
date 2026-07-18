@@ -1,13 +1,12 @@
 {
-  fetchFromGitHub,
-  fetchurl,
   lib,
   stdenv,
-  testers,
-
+  fetchurl,
+  fetchFromGitHub,
   jre,
   makeWrapper,
   maven,
+  testers,
   ...
 }:
 let
@@ -27,18 +26,15 @@ let
   # By default it installs nodejs and npm during the build,
   # But we patch that out so we much fetch it ourselves
   mapsBundle = fetchurl {
+    hash = version.hash.mapsBundle;
     name = "@graphhopper/graphhopper-maps-bundle-${version.mapsBundle}";
     url = "https://registry.npmjs.org/@graphhopper/graphhopper-maps-bundle/-/graphhopper-maps-bundle-${version.mapsBundle}.tgz";
-    hash = version.hash.mapsBundle;
   };
 
   # We cannot use `buildMavenPackage` as we need to load in the
   # mapsBundle before doing anything
   mvnDeps = stdenv.mkDerivation {
-    name = "graphhopper-dependencies";
-
     inherit src patches;
-
     buildInputs = [ maven ];
 
     buildPhase = ''
@@ -57,32 +53,21 @@ let
         -delete
     '';
 
-    outputHashMode = "recursive";
+    name = "graphhopper-dependencies";
     outputHash = version.hash.mvnDeps;
+    outputHashMode = "recursive";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "graphhopper";
-
   inherit src patches;
-
+  pname = "graphhopper";
   version = version.patch;
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
     maven
   ];
-
-  strictDeps = true;
-
-  configurePhase = ''
-    runHook preConfigure
-
-    mkdir -p ./web-bundle/target/
-    ln -s ${mapsBundle} ./web-bundle/target/graphhopper-graphhopper-maps-bundle-${version.mapsBundle}.tgz
-
-    runHook postConfigure
-  '';
 
   # Build and skip tests because downloading of
   # test deps seems to not work with the go-offline plugin
@@ -114,6 +99,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    mkdir -p ./web-bundle/target/
+    ln -s ${mapsBundle} ./web-bundle/target/graphhopper-graphhopper-maps-bundle-${version.mapsBundle}.tgz
+
+    runHook postConfigure
+  '';
+
   fixupPhase = ''
     runHook preFixup
 
@@ -127,28 +121,31 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postFixup
   '';
 
+  passthru = {
+    tests.version = testers.testVersion {
+      version = "graphhopper-web-${version.major}-SNAPSHOT.jar";
+      # `graphhopper --version` does not work as the source does not specify `Implementation-Version`
+      command = "graphhopper --help";
+      package = finalAttrs.finalPackage;
+    };
+
+    updateScript = ./update.nu;
+  };
+
   meta = {
     description = "Fast and memory-efficient routing engine for OpenStreetMap";
     homepage = "https://www.graphhopper.com/";
     changelog = "https://github.com/graphhopper/graphhopper/releases/tag/${version.patch}";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ baileylu ];
-    teams = [ lib.teams.geospatial ];
-    platforms = lib.platforms.all;
-    mainProgram = "graphhopper";
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
-  };
 
-  passthru = {
-    updateScript = ./update.nu;
-    tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      # `graphhopper --version` does not work as the source does not specify `Implementation-Version`
-      command = "graphhopper --help";
-      version = "graphhopper-web-${version.major}-SNAPSHOT.jar";
-    };
+    maintainers = with lib.maintainers; [ baileylu ];
+    platforms = lib.platforms.all;
+    mainProgram = "graphhopper";
+    teams = [ lib.teams.geospatial ];
   };
 })

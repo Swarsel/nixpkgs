@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libosmocore,
   libosmo-netif,
   libosmoabis,
+  libosmocore,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Osmocom Media Gateway (MGW). speaks RTP and E1 as well as MGCP";
-    mainProgram = "osmo-mgw";
     homepage = "https://osmocom.org/projects/osmo-mgw";
     license = lib.licenses.agpl3Plus;
     maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux;
+    mainProgram = "osmo-mgw";
   };
 })

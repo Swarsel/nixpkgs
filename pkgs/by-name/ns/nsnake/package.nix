@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   ncurses,
 }:
 
@@ -17,14 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ ncurses ];
-
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "ncurses based snake game for the terminal";
-    mainProgram = "nsnake";
     homepage = "https://github.com/alexdantas/nSnake";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ clerie ];
+    mainProgram = "nsnake";
   };
 })

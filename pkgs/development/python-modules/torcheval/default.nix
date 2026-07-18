@@ -1,11 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   setuptools,
-
   # dependencies
   typing-extensions,
 }:
@@ -18,7 +16,6 @@ in
 # upstream is missing the tag, so r-ryantm is attempting downgrades, e.g. #460611
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "meta-pytorch";
@@ -29,22 +26,19 @@ buildPythonPackage {
     hash = "sha256-aVr4qKKE+dpBcJEi1qZJBljFLUl8d7D306Dy8uOojJE=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
-  pythonImportsCheck = [ "torcheval" ];
-
   # Tests are very flaky and computationally intensive
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
+  pythonImportsCheck = [ "torcheval" ];
 
   meta = {
     description = "Rich collection of performant PyTorch model metrics and tools for PyTorch model evaluations";
     homepage = "https://pytorch.org/torcheval";
     changelog = "https://github.com/meta-pytorch/torcheval/releases/tag/${version}";
-
-    platforms = lib.platforms.unix;
     license = [ lib.licenses.bsd3 ];
     maintainers = [ lib.maintainers.bengsparks ];
+    platforms = lib.platforms.unix;
   };
 }

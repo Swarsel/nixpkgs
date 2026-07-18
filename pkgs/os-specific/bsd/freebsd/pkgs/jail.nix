@@ -1,20 +1,23 @@
 {
   lib,
-  mkDerivation,
-  flex,
   byacc,
+  flex,
   libjail,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/jail";
+  buildInputs = [
+    libjail
+  ];
+
+  MK_TESTS = "no";
+
   extraNativeBuildInputs = [
     flex
     byacc
   ];
-  buildInputs = [
-    libjail
-  ];
-  MK_TESTS = "no";
+
+  path = "usr.sbin/jail";
   meta.mainProgram = "jail";
   meta.platforms = lib.platforms.freebsd;
 }

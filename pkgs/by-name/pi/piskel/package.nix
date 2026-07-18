@@ -10,13 +10,13 @@
 
 let
   desktopItem = makeDesktopItem {
-    desktopName = "Piskel";
+    categories = [ "Graphics" ];
     comment = "Easy-to-use sprite editor";
-    name = "piskel";
+    desktopName = "Piskel";
     exec = "piskel";
     icon = "piskel";
+    name = "piskel";
     terminal = false;
-    categories = [ "Graphics" ];
   };
 in
 buildNpmPackage rec {
@@ -30,13 +30,13 @@ buildNpmPackage rec {
     rev = "a6b9c02daefceb10093f71e92d52d16920ccb16e";
     hash = "sha256-AorkV1mqZJ9coRMRCCdYIdAwhedrBRG8GR7Y0/zPPHo=";
   };
+
+  nativeBuildInputs = [ makeWrapper ];
   npmDepsHash = "sha256-tu0A5Xcz2V12pRF0LxHA48czkPR/0SslA3SEGdhdqMQ=";
 
   env = {
     "PUPPETEER_SKIP_DOWNLOAD" = "1";
   };
-
-  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -55,16 +55,18 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Easy-to-use sprite editor";
     homepage = "https://github.com/piskelapp/piskel";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       rsahwe
     ];
-    mainProgram = "piskel";
-    platforms = nwjs.meta.platforms;
-  };
 
-  __structuredAttrs = true;
+    platforms = nwjs.meta.platforms;
+    mainProgram = "piskel";
+  };
 }

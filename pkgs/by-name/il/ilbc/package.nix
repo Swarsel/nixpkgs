@@ -2,15 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  gawk,
   cmake,
+  gawk,
 }:
 
 stdenv.mkDerivation rec {
   pname = "ilbc-rfc3951";
   version = "0-unstable-2004-12-03";
-
-  script = ./extract-cfile.awk;
 
   src = fetchurl {
     url = "https://www.ietf.org/rfc/rfc3951.txt";
@@ -19,6 +17,13 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ cmake ];
 
+  # Fixes the build with CMake 4
+  cmakeFlags = [
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+  ];
+
+  script = ./extract-cfile.awk;
+
   unpackPhase = ''
     mkdir -v ${pname}
     cd ${pname}
@@ -26,13 +31,8 @@ stdenv.mkDerivation rec {
     cp -v ${./CMakeLists.txt} CMakeLists.txt
   '';
 
-  # Fixes the build with CMake 4
-  cmakeFlags = [
-    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
-  ];
-
   meta = {
-    platforms = lib.platforms.unix;
     license = lib.licenses.free;
+    platforms = lib.platforms.unix;
   };
 }

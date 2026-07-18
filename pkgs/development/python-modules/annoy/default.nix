@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # nativeBuildInputs
   h5py,
-
   # tests
   numpy,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "annoy";
   version = "1.17.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spotify";
@@ -31,8 +27,6 @@ buildPythonPackage rec {
       --replace-fail "'nose>=1.0'" ""
   '';
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ h5py ];
 
   nativeCheckInputs = [
@@ -44,11 +38,14 @@ buildPythonPackage rec {
     rm -rf annoy
   '';
 
+  build-system = [ setuptools ];
+
   disabledTestPaths = [
     # network access
     "test/accuracy_test.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "annoy" ];
 
   meta = {
@@ -57,6 +54,7 @@ buildPythonPackage rec {
     changelog = "https://github.com/spotify/annoy/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ timokau ];
+
     badPlatforms = [
       # Several tests fail with AssertionError
       lib.systems.inspect.patterns.isDarwin

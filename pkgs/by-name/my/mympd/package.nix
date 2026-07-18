@@ -3,17 +3,17 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libmpdclient,
-  openssl,
-  lua5_3,
-  libid3tag,
   flac,
-  pcre2,
   gzip,
-  perl,
   jq,
+  libid3tag,
+  libmpdclient,
+  lua5_3,
   nixosTests,
+  openssl,
+  pcre2,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Mx+UURIJUpIZlLq0FFuvOoUzMHhHryfNxRpNWgrpHTM=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     cmake
@@ -35,9 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     jq
     lua5_3 # luac is needed for cross builds
   ];
-  preConfigure = ''
-    env MYMPD_BUILDDIR=$PWD/build ./build.sh createassets
-  '';
+
   buildInputs = [
     libmpdclient
     openssl
@@ -53,23 +53,27 @@ stdenv.mkDerivation (finalAttrs: {
     # similarly here
     "-DCMAKE_INSTALL_LOCALSTATEDIR=/var/lib/mympd"
   ];
+
+  preConfigure = ''
+    env MYMPD_BUILDDIR=$PWD/build ./build.sh createassets
+  '';
+
+  # 5 tests out of 23 fail, probably due to the sandbox...
+  doCheck = false;
+
   hardeningDisable = [
     # causes redefinition of _FORTIFY_SOURCE
     "fortify3"
   ];
-  # 5 tests out of 23 fail, probably due to the sandbox...
-  doCheck = false;
-
-  strictDeps = true;
 
   passthru.tests = { inherit (nixosTests) mympd; };
 
   meta = {
-    homepage = "https://jcorporation.github.io/myMPD";
     description = "Standalone and mobile friendly web mpd client with a tiny footprint and advanced features";
+    homepage = "https://jcorporation.github.io/myMPD";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.doronbehar ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
     mainProgram = "mympd";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   bitbox02,
   buildPythonPackage,
   cbor,
   ecdsa,
-  fetchFromGitHub,
   hidapi,
   libusb1,
   mnemonic,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "hwi";
   version = "3.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bitcoin-core";
@@ -39,7 +38,7 @@ buildPythonPackage rec {
 
   # Tests require to clone quite a few firmwares
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "hwilib" ];
 
   meta = {

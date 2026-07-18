@@ -1,15 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  qt5,
-  readline,
-  tcl,
-  python3,
   copyDesktopItems,
   makeDesktopItem,
-
+  python3,
+  qt5,
+  readline,
   sqlitestudio-plugins,
+  tcl,
   includeOfficialPlugins ? lib.meta.availableOn stdenv.hostPlatform sqlitestudio-plugins,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -40,6 +39,27 @@ stdenv.mkDerivation (finalAttrs: {
     qt5.qtscript
   ];
 
+  postInstall = ''
+    install -Dm755 \
+      ./SQLiteStudio3/guiSQLiteStudio/img/sqlitestudio.svg \
+      $out/share/pixmaps/sqlitestudio.svg
+  '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      comment = "Database manager for SQLite";
+      desktopName = "SQLiteStudio";
+      exec = "sqlitestudio";
+      icon = "sqlitestudio";
+      name = "sqlitestudio";
+      startupNotify = false;
+      terminal = false;
+    })
+  ];
+
+  enableParallelBuilding = true;
+
   qmakeFlags = [
     "./SQLiteStudio3"
     "DEFINES+=NO_AUTO_UPDATES"
@@ -48,33 +68,12 @@ stdenv.mkDerivation (finalAttrs: {
     "DEFINES+=PLUGINS_DIR=${sqlitestudio-plugins}/lib/sqlitestudio"
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "sqlitestudio";
-      desktopName = "SQLiteStudio";
-      exec = "sqlitestudio";
-      icon = "sqlitestudio";
-      comment = "Database manager for SQLite";
-      terminal = false;
-      startupNotify = false;
-      categories = [ "Development" ];
-    })
-  ];
-
-  postInstall = ''
-    install -Dm755 \
-      ./SQLiteStudio3/guiSQLiteStudio/img/sqlitestudio.svg \
-      $out/share/pixmaps/sqlitestudio.svg
-  '';
-
-  enableParallelBuilding = true;
-
   meta = {
     description = "Free, open source, multi-platform SQLite database manager";
     homepage = "https://sqlitestudio.pl/";
     license = lib.licenses.gpl3Only;
-    mainProgram = "sqlitestudio";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ asterismono ];
+    platforms = lib.platforms.linux;
+    mainProgram = "sqlitestudio";
   };
 })

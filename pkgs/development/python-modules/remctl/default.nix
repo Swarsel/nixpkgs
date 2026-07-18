@@ -4,14 +4,14 @@
 }:
 
 buildPythonPackage {
-  format = "setuptools";
   inherit (remctl-c)
     meta
     pname
     src
     version
     ;
-  setSourceRoot = "sourceRoot=$(echo */python)";
 
   buildInputs = [ remctl-c ];
+  format = "setuptools";
+  setSourceRoot = "sourceRoot=$(echo */python)";
 }

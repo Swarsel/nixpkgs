@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "asyncsleepiq";
   version = "1.7.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,12 +16,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ aiohttp ];
-
   # upstream has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "asyncsleepiq" ];
 
   meta = {

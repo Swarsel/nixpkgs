@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   libsForQt5,
+  makeWrapper,
   xdg-utils,
 }:
 
@@ -23,10 +23,8 @@ stdenv.mkDerivation rec {
     makeWrapper
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [ libsForQt5.qtsvg ];
-
-  hardeningDisable = [ "format" ];
-
   # K&R-style declarations in vendored mimetex break under gcc 15's C23 default.
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
@@ -49,12 +47,14 @@ stdenv.mkDerivation rec {
       --suffix PATH : ${xdg-utils}/bin
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Smart manager for information collecting";
-    mainProgram = "mytetra";
     homepage = "https://webhamster.ru/site/page/index/articles/projectcode/138";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "mytetra";
   };
 }

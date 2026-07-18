@@ -2,15 +2,16 @@
   lib,
   stdenv,
   fetchFromSourcehut,
-  writeText,
   libinput,
   libx11,
   wayland,
+  writeText,
   conf ? null,
   patches ? [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit patches;
   pname = "lisgd";
   version = "0.4.0";
 
@@ -20,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-ljRZpBo4lW2cYZYxKKMrXanE0YaHSFwcdyECK0czdWY=";
   };
-
-  inherit patches;
 
   postPatch =
     let
@@ -44,10 +43,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Bind gestures via libinput touch events";
-    mainProgram = "lisgd";
     homepage = "https://git.sr.ht/~mil/lisgd";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ dotlambda ];
+    platforms = lib.platforms.linux;
+    mainProgram = "lisgd";
   };
 })

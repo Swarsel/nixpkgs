@@ -3,31 +3,30 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
+  bash,
+  bison,
   buildPackages,
   cairo,
+  # for passthru.tests
+  exiv2,
   expat,
   flex,
+  fltk,
   fontconfig,
   gd,
+  graphicsmagick,
   gts,
   libjpeg,
   libpng,
   libtool,
+  libxrender,
   makeWrapper,
   pango,
-  runCommand,
-  bash,
-  bison,
-  libxrender,
+  pkg-config,
   python3,
-  withXorg ? true,
+  runCommand,
   withQuartz ? false,
-
-  # for passthru.tests
-  exiv2,
-  fltk,
-  graphicsmagick,
+  withXorg ? true,
 }:
 
 let
@@ -48,6 +47,21 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-LkyiKl0ulS9ujEdVLfyeoc4CtjITd6CAc35IUtlHSfw=";
   };
+
+  # Invoke `dot -c` even while cross compiling else lib/graphviz/config6 will not load at runtime.
+  postPatch = ''
+    substituteInPlace cmd/dot/Makefile.am --replace-fail \
+      'if test "x$(DESTDIR)" = "x" -a "x$(build)" = "x$(host)"; then if test -x $(bindir)/dot$(EXEEXT); then if test -x /sbin/ldconfig; then /sbin/ldconfig 2>/dev/null; fi; cd $(bindir); ./dot$(EXEEXT) -c; else cd $(bindir); ./dot_static$(EXEEXT) -c; fi; fi' \
+      '${lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) ''
+        if test -x $(bindir)/dot$(EXEEXT); then \
+          cd $(bindir); ${stdenv.hostPlatform.emulator buildPackages} ./dot$(EXEEXT) -c; \
+        else \
+          cd $(bindir); ${stdenv.hostPlatform.emulator buildPackages} ./dot_static$(EXEEXT) -c; \
+        fi
+      ''}'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -70,8 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ optionals withXorg [ libxrender ];
 
-  hardeningDisable = [ "fortify" ];
-
   configureFlags = [
     "--with-ltdl-lib=${libtool.lib}/lib"
     "--with-ltdl-include=${libtool}/include"
@@ -79,31 +91,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ optional withQuartz "--with-quartz";
 
-  enableParallelBuilding = true;
-  strictDeps = true;
-
   env = optionalAttrs (withXorg && stdenv.hostPlatform.isDarwin) {
     CPPFLAGS = "-I${cairo.dev}/include/cairo";
   };
 
   doCheck = false; # fails with "Graphviz test suite requires ksh93" which is not in nixpkgs
-
-  preAutoreconf = ''
-    ./autogen.sh
-  '';
-
-  # Invoke `dot -c` even while cross compiling else lib/graphviz/config6 will not load at runtime.
-  postPatch = ''
-    substituteInPlace cmd/dot/Makefile.am --replace-fail \
-      'if test "x$(DESTDIR)" = "x" -a "x$(build)" = "x$(host)"; then if test -x $(bindir)/dot$(EXEEXT); then if test -x /sbin/ldconfig; then /sbin/ldconfig 2>/dev/null; fi; cd $(bindir); ./dot$(EXEEXT) -c; else cd $(bindir); ./dot_static$(EXEEXT) -c; fi; fi' \
-      '${lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) ''
-        if test -x $(bindir)/dot$(EXEEXT); then \
-          cd $(bindir); ${stdenv.hostPlatform.emulator buildPackages} ./dot$(EXEEXT) -c; \
-        else \
-          cd $(bindir); ${stdenv.hostPlatform.emulator buildPackages} ./dot_static$(EXEEXT) -c; \
-        fi
-      ''}'
-  '';
 
   postFixup = optionalString withXorg ''
     substituteInPlace $out/bin/vimdot \
@@ -114,6 +106,13 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/vimdot --prefix PATH : "$out/bin"
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "fortify" ];
+
+  preAutoreconf = ''
+    ./autogen.sh
+  '';
+
   passthru.tests = {
     inherit (python3.pkgs)
       graphviz
@@ -121,11 +120,13 @@ stdenv.mkDerivation (finalAttrs: {
       pygraphviz
       xdot
       ;
+
     inherit
       exiv2
       fltk
       graphicsmagick
       ;
+
     dot-can-load-plugins =
       runCommand "dot-can-load-plugins"
         {
@@ -137,14 +138,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Graph visualization tools";
     homepage = "https://graphviz.org";
     changelog = "https://gitlab.com/graphviz/graphviz/-/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    description = "Graph visualization tools";
     license = lib.licenses.epl10;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       bjornfor
       raskin
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

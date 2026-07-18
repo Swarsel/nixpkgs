@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   jdupes,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -32,7 +32,7 @@ stdenvNoCC.mkDerivation {
     description = "Fluent-design theme with blur effect and shadow";
     homepage = "https://github.com/Reverier-Xu/Fluent-fcitx5";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

@@ -1,10 +1,10 @@
 {
   lib,
-  python313Packages,
   fetchFromGitHub,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
+  makeDesktopItem,
+  makeWrapper,
+  python313Packages,
 }:
 python313Packages.buildPythonApplication (finalAttrs: {
   pname = "lufus";
@@ -17,6 +17,11 @@ python313Packages.buildPythonApplication (finalAttrs: {
     sha256 = "sha256-3i0CnhGvLTXutz8CQoH5q4PwZ23lAwnUo8H5TRJx+KE=";
   };
 
+  nativeBuildInputs = [
+    makeWrapper
+    copyDesktopItems
+  ];
+
   propagatedBuildInputs = with python313Packages; [
     psutil
     pyqt6
@@ -24,20 +29,6 @@ python313Packages.buildPythonApplication (finalAttrs: {
     requests
     platformdirs
   ];
-
-  pyproject = true;
-
-  build-system = with python313Packages; [
-    setuptools
-    wheel
-  ];
-
-  nativeBuildInputs = [
-    makeWrapper
-    copyDesktopItems
-  ];
-
-  __structuredAttrs = true;
 
   postInstall = ''
     makeWrapper ${python313Packages.python.interpreter} $out/bin/lufus \
@@ -49,19 +40,29 @@ python313Packages.buildPythonApplication (finalAttrs: {
     copyDesktopItems
   '';
 
+  __structuredAttrs = true;
+
+  build-system = with python313Packages; [
+    setuptools
+    wheel
+  ];
+
   desktopItems = [
     (makeDesktopItem {
-      name = "lufus";
-      desktopName = "Lufus";
-      comment = "A rufus clone written in py and designed to work with linux";
-      exec = "lufus";
-      icon = "lufus";
       categories = [
         "Utility"
         "System"
       ];
+
+      comment = "A rufus clone written in py and designed to work with linux";
+      desktopName = "Lufus";
+      exec = "lufus";
+      icon = "lufus";
+      name = "lufus";
     })
   ];
+
+  pyproject = true;
 
   meta = {
     description = "A rufus clone written in py and designed to work with linux";

@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   cmake,
   gettext,
+  gitUpdater,
   lomiri-ui-toolkit,
+  nixosTests,
   pkg-config,
   qqc2-suru-style,
   qtbase,
@@ -76,12 +76,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Powerful and easy to use calculator for Ubuntu Touch, with calculations history and formula validation";
     homepage = "https://gitlab.com/ubports/development/apps/lomiri-calculator-app";
+
     changelog = "https://gitlab.com/ubports/development/apps/lomiri-calculator-app/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
     mainProgram = "lomiri-calculator-app";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

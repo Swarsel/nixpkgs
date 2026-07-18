@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchzip,
-  kmod,
   kernel,
+  kmod,
 }:
 
 let
@@ -21,12 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
       uploadDate = builtins.elemAt version-split 1;
     in
     fetchzip {
-      stripRoot = false;
       url = "https://www.motor-comm.com/Public/Uploads/uploadfile/files/${uploadDate}/yt6801-linux-driver-${versionName}.zip";
       sha256 = "sha256-6HeU3bbTaKOCy3X+nMpC9/bBc+0c4Ip5TdG+LGUGTKk=";
+      stripRoot = false;
     };
-
-  nativeBuildInputs = kernel.moduleBuildDependencies ++ [ kmod ];
 
   patches =
     lib.optionals (lib.versionAtLeast kernel.version "6.15") [
@@ -43,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'modprobe $(KFILE)' ""
   '';
 
+  nativeBuildInputs = kernel.moduleBuildDependencies ++ [ kmod ];
+
   makeFlags = [
     "KERNELRELEASE=${kernel.modDirVersion}"
     "KSRC_BASE="
@@ -54,11 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.motor-comm.com/product/ethernet-control-chip";
     description = "YT6801 Gigabit PCIe Ethernet controller chip";
+    homepage = "https://www.motor-comm.com/product/ethernet-control-chip";
     license = lib.licenses.gpl2Plus;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ indexyz ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
   };
 })

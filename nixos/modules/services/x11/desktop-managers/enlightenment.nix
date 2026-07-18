@@ -24,10 +24,6 @@ let
 in
 
 {
-  meta = {
-    teams = [ teams.enlightenment ];
-  };
-
   imports = [
     (mkRenamedOptionModule
       [ "services" "xserver" "desktopManager" "e19" "enable" ]
@@ -37,21 +33,30 @@ in
 
   options = {
 
-    services.xserver.desktopManager.enlightenment.enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable the Enlightenment desktop environment.";
-    };
-
     environment.enlightenment.excludePackages = mkOption {
       default = [ ];
+      description = "Which packages Enlightenment should exclude from the default environment";
       example = literalExpression "[ pkgs.enlightenment.ephoto ]";
       type = types.listOf types.package;
-      description = "Which packages Enlightenment should exclude from the default environment";
+    };
+
+    services.xserver.desktopManager.enlightenment.enable = mkOption {
+      default = false;
+      description = "Enable the Enlightenment desktop environment.";
+      type = types.bool;
     };
   };
 
   config = mkIf cfg.enable {
+
+    environment.etc."X11/xkb".source = xcfg.xkb.dir;
+
+    environment.pathsToLink = [
+      "/etc/enlightenment"
+      "/share/enlightenment"
+      "/share/elementary"
+      "/share/locale"
+    ];
 
     environment.systemPackages = utils.removePackagesByName (with pkgs; [
       enlightenment.econnman
@@ -64,14 +69,37 @@ in
       xcursor-themes
     ]) config.environment.enlightenment.excludePackages;
 
-    environment.pathsToLink = [
-      "/etc/enlightenment"
-      "/share/enlightenment"
-      "/share/elementary"
-      "/share/locale"
-    ];
+    fonts.packages = [ pkgs.dejavu_fonts ];
 
+    # Wrappers for programs installed by enlightenment that should be setuid
+    security.wrappers = {
+      enlightenment_ckpasswd = {
+        group = "root";
+        owner = "root";
+        setuid = true;
+        source = "${pkgs.enlightenment.enlightenment}/lib/enlightenment/utils/enlightenment_ckpasswd";
+      };
+
+      enlightenment_sys = {
+        group = "root";
+        owner = "root";
+        setuid = true;
+        source = "${pkgs.enlightenment.enlightenment}/lib/enlightenment/utils/enlightenment_sys";
+      };
+
+      enlightenment_system = {
+        group = "root";
+        owner = "root";
+        setuid = true;
+        source = "${pkgs.enlightenment.enlightenment}/lib/enlightenment/utils/enlightenment_system";
+      };
+    };
+
+    services.dbus.packages = [ e.efl ];
     services.displayManager.sessionPackages = [ pkgs.enlightenment.enlightenment ];
+    services.libinput.enable = mkDefault true;
+    services.udisks2.enable = true;
+    services.upower.enable = config.powerManagement.enable;
 
     services.xserver.displayManager.sessionCommands = ''
       if test "$XDG_CURRENT_DESKTOP" = "Enlightenment"; then
@@ -85,41 +113,10 @@ in
       fi
     '';
 
-    # Wrappers for programs installed by enlightenment that should be setuid
-    security.wrappers = {
-      enlightenment_ckpasswd = {
-        setuid = true;
-        owner = "root";
-        group = "root";
-        source = "${pkgs.enlightenment.enlightenment}/lib/enlightenment/utils/enlightenment_ckpasswd";
-      };
-      enlightenment_sys = {
-        setuid = true;
-        owner = "root";
-        group = "root";
-        source = "${pkgs.enlightenment.enlightenment}/lib/enlightenment/utils/enlightenment_sys";
-      };
-      enlightenment_system = {
-        setuid = true;
-        owner = "root";
-        group = "root";
-        source = "${pkgs.enlightenment.enlightenment}/lib/enlightenment/utils/enlightenment_system";
-      };
-    };
-
-    environment.etc."X11/xkb".source = xcfg.xkb.dir;
-
-    fonts.packages = [ pkgs.dejavu_fonts ];
-
-    services.udisks2.enable = true;
-    services.upower.enable = config.powerManagement.enable;
-    services.libinput.enable = mkDefault true;
-
-    services.dbus.packages = [ e.efl ];
-
     systemd.user.services.efreet = {
       enable = true;
       description = "org.enlightenment.Efreet";
+
       serviceConfig = {
         ExecStart = "${e.efl}/bin/efreetd";
         StandardOutput = "null";
@@ -129,12 +126,17 @@ in
     systemd.user.services.ethumb = {
       enable = true;
       description = "org.enlightenment.Ethumb";
+
       serviceConfig = {
         ExecStart = "${e.efl}/bin/ethumbd";
         StandardOutput = "null";
       };
     };
 
+  };
+
+  meta = {
+    teams = [ teams.enlightenment ];
   };
 
 }

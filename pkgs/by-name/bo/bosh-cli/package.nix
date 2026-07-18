@@ -8,7 +8,6 @@
 
 buildGoModule (finalAttrs: {
   pname = "bosh-cli";
-
   version = "7.9.18";
 
   src = fetchFromGitHub {
@@ -17,22 +16,21 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-8bB1wOs4Ef6nR0d5Z6cmby6AiYSO90uBF6Hw6Q1UiWY=";
   };
-  vendorHash = null;
 
   postPatch = ''
     substituteInPlace cmd/version.go --replace '[DEV BUILD]' '${finalAttrs.version}'
   '';
 
   nativeBuildInputs = [ makeWrapper ];
-
-  subPackages = [ "." ];
-
+  vendorHash = null;
   doCheck = false;
 
   postInstall = ''
     mv $out/bin/bosh-cli $out/bin/bosh
     wrapProgram $out/bin/bosh --prefix PATH : '${lib.makeBinPath [ openssh ]}'
   '';
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Command line interface to CloudFoundry BOSH";

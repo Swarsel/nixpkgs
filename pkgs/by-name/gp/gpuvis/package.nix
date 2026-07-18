@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
+  SDL2,
   freetype,
   gtk3,
-  lib,
   meson,
   ninja,
   pkg-config,
-  SDL2,
-  stdenv,
   wrapGAppsHook3,
 }:
 
@@ -48,10 +48,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GPU Trace Visualizer";
-    mainProgram = "gpuvis";
     homepage = "https://github.com/mikesart/gpuvis";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ emantor ];
     platforms = lib.platforms.linux;
+    mainProgram = "gpuvis";
   };
 })

@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  config,
   ctestCheckHook,
   gtest,
   python3,
   spirv-headers,
   spirv-tools,
-  config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "glslang";
@@ -37,14 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     spirv-headers
   ];
 
-  nativeCheckInputs = [
-    ctestCheckHook
-  ];
-
-  checkInputs = [
-    gtest
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
     (lib.cmakeBool "BUILD_EXTERNAL" false)
@@ -53,6 +45,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  nativeCheckInputs = [
+    ctestCheckHook
+  ];
+
+  checkInputs = [
+    gtest
+  ];
+
+  postInstall = ''
+    # add a symlink for backwards compatibility
+    ln -s $bin/bin/glslang $bin/bin/glslangValidator
+  '';
 
   disabledTests =
     # CompileToAstTest.FromFile/array_frag looks for result of UB, expected output is LE
@@ -63,25 +68,19 @@ stdenv.mkDerivation (finalAttrs: {
       "glslang-gtests"
     ];
 
-  postInstall = ''
-    # add a symlink for backwards compatibility
-    ln -s $bin/bin/glslang $bin/bin/glslangValidator
-  '';
-
   passthru = lib.optionalAttrs config.allowAliases {
     # Added 2026-01-06, https://github.com/NixOS/nixpkgs/pull/477412
-    spirv-tools = throw "'glslang' no longer pins to specific 'spirv-tools'";
-
-    # Added 2026-01-06, https://github.com/NixOS/nixpkgs/pull/477412
     spirv-headers = throw "'glslang' no longer pins to specific 'spirv-headers'";
+    # Added 2026-01-06, https://github.com/NixOS/nixpkgs/pull/477412
+    spirv-tools = throw "'glslang' no longer pins to specific 'spirv-tools'";
   };
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
-    changelog = "https://github.com/KhronosGroup/glslang/blob/${finalAttrs.src.tag}/CHANGES.md";
     description = "Khronos reference front-end for GLSL and ESSL";
+    changelog = "https://github.com/KhronosGroup/glslang/blob/${finalAttrs.src.tag}/CHANGES.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.ralith ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -21,13 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix version check to work with nix build environment
     (fetchpatch2 {
+      hash = "sha256-9rh1bxpYMOKNumAthZBNluJbbH5HLI9PfM6hGzxGpjU=";
       name = "fix-version-check";
       url = "https://github.com/laishulu/macism/commit/928f6f55e9cdaaf39ae5fe7ce7f803d608c68565.patch?full_index=1";
-      hash = "sha256-9rh1bxpYMOKNumAthZBNluJbbH5HLI9PfM6hGzxGpjU=";
     })
   ];
-
-  dontConfigure = true;
 
   nativeBuildInputs = [
     swift
@@ -45,12 +43,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontConfigure = true;
+  versionCheckProgramArg = "--version";
 
   meta = {
     description = "Reliable CLI MacOS input source manager";
+
     longDescription = ''
       This tool manages macOS input sources from the command line, ideal for
       integration with vim and emacs(e.g. sis).
@@ -63,11 +63,14 @@ stdenv.mkDerivation (finalAttrs: {
       applications and then switch back, the input source is actually still the
       same as before.
     '';
+
     homepage = "https://github.com/laishulu/macism";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       yzx9
     ];
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.darwin;
     mainProgram = "macism";
   };

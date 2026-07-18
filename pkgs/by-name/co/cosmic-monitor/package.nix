@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   just,
   libcosmicAppHook,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,17 +21,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6Iz2CMcw131GrgSsSk2FgnwAnges1yMeEwblrusCc24=";
   };
 
-  cargoHash = "sha256-INILXUO4637bcq51OV+ENJG306kXOrKN8547/RRSG0k=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     just
     libcosmicAppHook
     rustPlatform.bindgenHook
   ];
 
+  cargoHash = "sha256-INILXUO4637bcq51OV+ENJG306kXOrKN8547/RRSG0k=";
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -43,6 +40,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "cargo-target-dir"
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -63,11 +62,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-monitor";
     description = "COSMIC System Monitor";
-    mainProgram = "cosmic-monitor";
+    homepage = "https://github.com/pop-os/cosmic-monitor";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-monitor";
+    teams = [ lib.teams.cosmic ];
   };
 })

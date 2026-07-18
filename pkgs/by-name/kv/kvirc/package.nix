@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
   gettext,
   libsForQt5,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -19,18 +19,18 @@ stdenv.mkDerivation {
     sha256 = "sha256-RT5UobpMt/vBLgWur1TkodS3dMyIWQkDPiBYCYx/FI4=";
   };
 
-  buildInputs = [
-    libsForQt5.qtbase
-    libsForQt5.qtmultimedia
-    libsForQt5.qtsvg
-    libsForQt5.qtx11extras
-  ];
-
   nativeBuildInputs = [
     pkg-config
     cmake
     gettext
     libsForQt5.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    libsForQt5.qtbase
+    libsForQt5.qtmultimedia
+    libsForQt5.qtsvg
+    libsForQt5.qtx11extras
   ];
 
   meta = {

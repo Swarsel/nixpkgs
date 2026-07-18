@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   wireguard-tools,
 }:
@@ -21,11 +21,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/FlyveHest/wg-friendly-peer-names";
     description = "Small shellscript that makes it possible to give peers a friendlier and more readable name in the `wg` peer list";
+    homepage = "https://github.com/FlyveHest/wg-friendly-peer-names";
     license = lib.licenses.mit;
-    platforms = wireguard-tools.meta.platforms;
     maintainers = with lib.maintainers; [ mkg20001 ];
+    platforms = wireguard-tools.meta.platforms;
     mainProgram = "wgg";
   };
 }

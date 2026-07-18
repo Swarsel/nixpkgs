@@ -1,18 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-
   # build time
   cmake,
-  pkg-config,
-
-  # dependencies
-  pcre2,
-  xxhash,
-
   # update script
   gitUpdater,
+  # dependencies
+  pcre2,
+  pkg-config,
+  xxhash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,14 +52,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "YANG data modelling language parser and toolkit";
+
     longDescription = ''
       libyang is a YANG data modelling language parser and toolkit written (and
       providing API) in C. The library is used e.g. in libnetconf2, Netopeer2,
       sysrepo or FRRouting projects.
     '';
+
     homepage = "https://github.com/CESNET/libyang";
     license = with lib.licenses; [ bsd3 ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ woffs ];
+    platforms = lib.platforms.unix;
   };
 })

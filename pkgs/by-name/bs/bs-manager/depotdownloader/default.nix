@@ -1,7 +1,7 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   dotnetCorePackages,
 }:
 
@@ -16,19 +16,21 @@ buildDotnetModule {
     hash = "sha256-qC9EakT1tu8NNwbmj7HmYgcIoEUlMRRHNGnKggVNDgk=";
   };
 
-  projectFile = "DepotDownloader.sln";
-  nugetDeps = ./deps.json;
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
   dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
+  nugetDeps = ./deps.json;
+  projectFile = "DepotDownloader.sln";
 
   meta = {
     description = "Fork of DepotDownloader to be used by BSManager";
     license = lib.licenses.gpl2Only;
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "DepotDownloader";
   };
 }

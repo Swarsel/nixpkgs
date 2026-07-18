@@ -1,16 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   botocore,
   bottle,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   httpx,
   jsonpickle,
   pymysql,
-  pytest-asyncio_0,
   pynamodb,
+  pytest-asyncio_0,
   pytestCheckHook,
   requests,
   setuptools,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "aws-xray-sdk";
   version = "2.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -63,6 +62,7 @@ buildPythonPackage rec {
     "tests/test_async_recorder.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aws_xray_sdk" ];
 
   meta = {

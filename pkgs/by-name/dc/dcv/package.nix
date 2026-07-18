@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,10 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-//pHi77wZjR3irLZTvyDVTPKe29pH/NiyEuBMkRj4nA=";
 
-  # Don't use the vendored dependencies as they are out of sync with go.mod
-  # Instead, let Go download dependencies through the module proxy
-  proxyVendor = true;
-
   # Build helper binaries for all architectures before the main build
   # These helpers are embedded in the binary and used for container filesystem operations
   preBuild = ''
@@ -32,6 +28,10 @@ buildGoModule (finalAttrs: {
     "-s"
     "-w"
   ];
+
+  # Don't use the vendored dependencies as they are out of sync with go.mod
+  # Instead, let Go download dependencies through the module proxy
+  proxyVendor = true;
 
   meta = {
     description = "TUI (Terminal User Interface) tool for monitoring Docker containers and Docker Compose applications";

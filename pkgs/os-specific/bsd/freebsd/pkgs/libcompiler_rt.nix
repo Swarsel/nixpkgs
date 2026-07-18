@@ -1,16 +1,11 @@
 {
-  stdenv,
   lib,
-  mkDerivation,
+  stdenv,
   include,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libcompiler_rt";
-  extraPaths = [
-    "contrib/llvm-project/compiler-rt"
-  ];
-
   buildInputs = [
     include
   ];
@@ -25,7 +20,12 @@ mkDerivation {
     mkdir i386
   '';
 
-  noLibc = true;
-
   alwaysKeepStatic = true;
+
+  extraPaths = [
+    "contrib/llvm-project/compiler-rt"
+  ];
+
+  noLibc = true;
+  path = "lib/libcompiler_rt";
 }

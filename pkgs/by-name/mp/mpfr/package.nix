@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   gmp,
-  writeScript,
   updateAutotoolsGnuConfigScriptsHook,
+  writeScript,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -13,15 +13,16 @@
 # files.
 
 stdenv.mkDerivation rec {
-  version = "4.2.2";
   pname = "mpfr";
+  version = "4.2.2";
 
   src = fetchurl {
+    hash = "sha256-tnugOD736KhWNzTi6InvXsPDuJigHQD6CmhprYHGzgE=";
+
     urls = [
       "https://www.mpfr.org/${pname}-${version}/${pname}-${version}.tar.xz"
       "mirror://gnu/mpfr/${pname}-${version}.tar.xz"
     ];
-    hash = "sha256-tnugOD736KhWNzTi6InvXsPDuJigHQD6CmhprYHGzgE=";
   };
 
   outputs = [
@@ -38,11 +39,6 @@ stdenv.mkDerivation rec {
   # mpfr.h requires gmp.h
   propagatedBuildInputs = [ gmp ];
 
-  hardeningDisable = [
-    # causes tests tset_ld & tsprintf to fail
-    "trivialautovarinit"
-  ];
-
   configureFlags =
     lib.optional stdenv.hostPlatform.isSunOS "--disable-thread-safe"
     ++ lib.optional stdenv.hostPlatform.is64bit "--with-pic"
@@ -54,8 +50,12 @@ stdenv.mkDerivation rec {
     ++ lib.optional stdenv.hostPlatform.isPE "LDFLAGS=-Wl,-no-undefined";
 
   doCheck = true; # not cross;
-
   enableParallelBuilding = true;
+
+  hardeningDisable = [
+    # causes tests tset_ld & tsprintf to fail
+    "trivialautovarinit"
+  ];
 
   passthru = {
     updateScript = writeScript "update-mpfr" ''
@@ -72,7 +72,6 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://www.mpfr.org/";
     description = "Library for multiple-precision floating-point arithmetic";
 
     longDescription = ''
@@ -87,8 +86,8 @@ stdenv.mkDerivation rec {
       floating-point arithmetic (53-bit mantissa).
     '';
 
+    homepage = "https://www.mpfr.org/";
     license = lib.licenses.lgpl2Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

@@ -17,15 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ ncurses ];
-
   installFlags = [ "prefix=$(out)" ];
 
   meta = {
     description = "Tool to monitor network traffic based on processes";
     homepage = "https://github.com/berghetti/netproc";
     license = lib.licenses.gpl3;
-    mainProgram = "netproc";
     maintainers = [ lib.maintainers.azuwis ];
     platforms = lib.platforms.linux;
+    mainProgram = "netproc";
   };
 })

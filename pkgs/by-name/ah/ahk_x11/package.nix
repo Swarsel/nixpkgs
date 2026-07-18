@@ -1,22 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  crystal,
   copyDesktopItems,
+  crystal,
+  gobject-introspection, # needed to build gi-crystal
   gtk3,
-  libxkbcommon,
-  libxinerama,
-  libxtst,
+  libnotify,
   libxext,
   libxi,
-  libnotify,
-  gobject-introspection, # needed to build gi-crystal
-  openbox,
-  xvfb-run,
-  xdotool,
+  libxinerama,
+  libxkbcommon,
+  libxtst,
   nix-update-script,
+  openbox,
   versionCheckHook,
-
+  xdotool,
+  xvfb-run,
   buildDevTarget ? false, # the dev version prints debug info
 }:
 
@@ -41,8 +40,20 @@ crystal.buildCrystalPackage {
   # With this patch, it prompts to use -h for help.
   patches = [ ./adjust.patch ];
 
-  shardsFile = ./shards.nix;
-  copyShardDeps = true;
+  nativeBuildInputs = [
+    copyDesktopItems
+    gobject-introspection
+  ];
+
+  buildInputs = [
+    gtk3
+    libxkbcommon
+    libxinerama
+    libxtst
+    libxext
+    libxi
+    libnotify
+  ];
 
   preBuild = ''
     mkdir bin
@@ -56,6 +67,17 @@ crystal.buildCrystalPackage {
     mv bin/ahk_x11.dev bin/ahk_x11
   '';
 
+  # The tests fail with AtSpi failure. This means it lacks assistive technologies:
+  # https://github.com/phil294/AHK_X11?tab=readme-ov-file#accessibility
+  # I don't know how to fix it for xvfb and openbox.
+  doCheck = false;
+
+  nativeCheckInputs = [
+    xvfb-run
+    openbox
+    xdotool
+  ];
+
   preInstall = ''
     mkdir -p $out/bin
   '';
@@ -67,36 +89,12 @@ crystal.buildCrystalPackage {
     install -Dm644 assets/ahk_x11-mime.xml $out/share/mime/packages/ahk_x11.xml
   '';
 
-  buildInputs = [
-    gtk3
-    libxkbcommon
-    libxinerama
-    libxtst
-    libxext
-    libxi
-    libnotify
-  ];
-  nativeBuildInputs = [
-    copyDesktopItems
-    gobject-introspection
-  ];
-  nativeCheckInputs = [
-    xvfb-run
-    openbox
-    xdotool
-  ];
-
-  buildTargets = if buildDevTarget then "bin/ahk_x11.dev" else "bin/ahk_x11";
-  checkTarget = "test-dev";
-
-  # The tests fail with AtSpi failure. This means it lacks assistive technologies:
-  # https://github.com/phil294/AHK_X11?tab=readme-ov-file#accessibility
-  # I don't know how to fix it for xvfb and openbox.
-  doCheck = false;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  buildTargets = if buildDevTarget then "bin/ahk_x11.dev" else "bin/ahk_x11";
+  checkTarget = "test-dev";
+  copyShardDeps = true;
+  shardsFile = ./shards.nix;
   passthru.updateScript = nix-update-script { };
 
   meta = {

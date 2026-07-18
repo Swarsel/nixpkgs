@@ -2,22 +2,21 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   matplotlib,
   numpy,
   opencv-python,
   pillow,
   scikit-learn,
+  setuptools,
   torch,
   torchvision,
-  ttach,
   tqdm,
+  ttach,
 }:
 
 buildPythonPackage rec {
   pname = "grad-cam";
   version = "1.5.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,9 +26,9 @@ buildPythonPackage rec {
   nativeBuildInputs = [
   ];
 
-  pythonRelaxDeps = [
-    "torchvision"
-  ];
+  # Let the user bring their own instance (as with torchmetrics)
+  buildInputs = [ torch ];
+  doCheck = false; # every nontrivial test tries to download a pretrained model
 
   build-system = [
     setuptools
@@ -46,10 +45,7 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  # Let the user bring their own instance (as with torchmetrics)
-  buildInputs = [ torch ];
-
-  doCheck = false; # every nontrivial test tries to download a pretrained model
+  pyproject = true;
 
   pythonImportsCheck = [
     "pytorch_grad_cam"
@@ -59,6 +55,10 @@ buildPythonPackage rec {
     "pytorch_grad_cam.utils"
     "pytorch_grad_cam.utils.image"
     "pytorch_grad_cam.utils.model_targets"
+  ];
+
+  pythonRelaxDeps = [
+    "torchvision"
   ];
 
   meta = {

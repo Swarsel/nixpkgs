@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
-  pkg-config,
   oniguruma,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-nWc3vcqYbJnjYLjKyZQBFR7tSaPaSu0+TvOIBAKKtnQ=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     oniguruma
   ];
+
+  cargoHash = "sha256-nWc3vcqYbJnjYLjKyZQBFR7tSaPaSu0+TvOIBAKKtnQ=";
 
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;

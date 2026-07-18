@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   ifaddr,
   jsonschema,
   pyee,
+  setuptools,
   tornado,
   zeroconf,
 }:
@@ -13,9 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "webthing";
   version = "0.15.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "WebThingsIO";
@@ -24,6 +21,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-z4GVycdq25QZxuzZPLg6nhj0MAD1bHrsqph4yHgmRhg=";
   };
 
+  # No tests are present
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +34,7 @@ buildPythonPackage (finalAttrs: {
     zeroconf
   ];
 
-  # No tests are present
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "webthing" ];
 
   meta = {

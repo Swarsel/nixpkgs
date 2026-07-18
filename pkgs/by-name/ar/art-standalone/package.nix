@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  bionic-translation,
-  python3,
-  which,
-  jdk17,
-  zip,
-  xz,
-  icu,
-  zlib,
-  libcap,
-  expat,
-  openssl,
-  libbsd,
-  lz4,
-  runtimeShell,
-  libpng,
-  makeWrapper,
   binutils,
+  bionic-translation,
+  expat,
+  icu,
+  jdk17,
+  libbsd,
+  libcap,
+  libpng,
+  lz4,
+  makeWrapper,
+  openssl,
+  python3,
+  runtimeShell,
+  which,
+  xz,
+  zip,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "art-standalone";
@@ -43,8 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace build/core/config.mk build/core/main.mk \
       --replace-fail "/bin/bash" "${runtimeShell}"
   '';
-
-  enableParallelBuilding = true;
 
   strictDeps = true;
 
@@ -81,12 +79,14 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ binutils ]}
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Art and dependencies with modifications to make it work on Linux";
     homepage = "https://gitlab.com/android_translation_layer/art_standalone";
     # No license specified yet
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ onny ];
+    platforms = [ "x86_64-linux" ];
   };
 })

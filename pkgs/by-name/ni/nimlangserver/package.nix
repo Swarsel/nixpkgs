@@ -1,16 +1,12 @@
 {
   lib,
-  buildNimPackage,
   fetchFromGitHub,
+  buildNimPackage,
 }:
 buildNimPackage (
   final: prev: rec {
     pname = "nimlangserver";
     version = "1.14.0";
-
-    # nix build ".#nimlangserver.src"
-    # nix run "github:daylinmorgan/nnl" -- result/nimble.lock -o:pkgs/by-name/ni/nimlangserver/lock.json --git,=,bearssl,zlib
-    lockFile = ./lock.json;
 
     src = fetchFromGitHub {
       owner = "nim-lang";
@@ -20,13 +16,16 @@ buildNimPackage (
     };
 
     doCheck = false;
+    # nix build ".#nimlangserver.src"
+    # nix run "github:daylinmorgan/nnl" -- result/nimble.lock -o:pkgs/by-name/ni/nimlangserver/lock.json --git,=,bearssl,zlib
+    lockFile = ./lock.json;
 
     meta = final.src.meta // {
       description = "Nim language server implementation (based on nimsuggest)";
       homepage = "https://github.com/nim-lang/langserver";
       license = lib.licenses.mit;
-      mainProgram = "nimlangserver";
       maintainers = with lib.maintainers; [ daylinmorgan ];
+      mainProgram = "nimlangserver";
     };
   }
 )

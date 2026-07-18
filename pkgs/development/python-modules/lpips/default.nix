@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   scipy,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "lpips";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "richzhang";
@@ -21,6 +20,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-dIQ9B/HV/2kUnXLXNxAZKHmv/Xv37kl2n6+8IfwIALE=";
   };
+
+  # Tests require network access to download pretrained models.
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -34,9 +36,7 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  # Tests require network access to download pretrained models.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lpips" ];
 
   meta = {

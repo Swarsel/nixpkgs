@@ -2,34 +2,34 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libGLU,
-  libGL,
-  libx11,
-  libxext,
-  libxfixes,
-  libxdamage,
-  libxcomposite,
-  libxi,
-  libxcb,
-  cogl,
-  pango,
   atk,
-  json-glib,
+  cogl,
+  gnome,
   gobject-introspection,
   gtk3,
-  gnome,
-  libinput,
+  json-glib,
+  libGL,
+  libGLU,
   libgudev,
+  libinput,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
   libxkbcommon,
+  pango,
+  pkg-config,
 }:
 
 let
   version = "1.26.4";
 in
 stdenv.mkDerivation {
-  pname = "clutter";
   inherit version;
+  pname = "clutter";
 
   src = fetchurl {
     url = "mirror://gnome/sources/clutter/${lib.versions.majorMinor version}/clutter-${version}.tar.xz";
@@ -41,11 +41,13 @@ stdenv.mkDerivation {
     "dev"
   ];
 
-  buildInputs = [ gtk3 ];
   nativeBuildInputs = [
     pkg-config
     gobject-introspection
   ];
+
+  buildInputs = [ gtk3 ];
+
   propagatedBuildInputs = [
     cogl
     pango
@@ -82,7 +84,6 @@ stdenv.mkDerivation {
   };
 
   #doCheck = true; # no tests possible without a display
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "clutter";
@@ -108,9 +109,8 @@ stdenv.mkDerivation {
       specific needs.
     '';
 
-    license = lib.licenses.lgpl2Plus;
     homepage = "http://www.clutter-project.org/";
-
+    license = lib.licenses.lgpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

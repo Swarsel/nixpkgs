@@ -1,22 +1,23 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cryptography,
-  types-pyopenssl,
+  fetchPypi,
   setuptools,
+  types-pyopenssl,
 }:
 
 buildPythonPackage rec {
   pname = "types-redis";
   version = "4.6.0.20241004";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-XxfSs/kJGrdThBU7+idmGf+hz2o42mDhDV5nScxbkC4=";
   };
 
+  # Module doesn't have tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -24,9 +25,7 @@ buildPythonPackage rec {
     types-pyopenssl
   ];
 
-  # Module doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "redis-stubs" ];
 
   meta = {

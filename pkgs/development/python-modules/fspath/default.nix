@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   six,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "fspath";
   version = "20230629";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "return42";
@@ -26,6 +25,7 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fspath" ];
 
   meta = {

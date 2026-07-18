@@ -1,6 +1,5 @@
 { buildRedist }:
 buildRedist {
-  redistName = "nvpl";
   pname = "nvpl_scalapack";
 
   outputs = [
@@ -9,6 +8,8 @@ buildRedist {
     "include"
     "lib"
   ];
+
+  redistName = "nvpl";
 
   meta = {
     description = "Provides an optimized implementation of ScaLAPACK for distributed-memory architectures";

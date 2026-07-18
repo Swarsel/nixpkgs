@@ -1,38 +1,38 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  cairo,
+  clutter-gtk,
+  docbook_xml_dtd_412,
+  docbook_xsl,
+  glib,
+  gnome,
+  gobject-introspection, # , libmemphis
+  gtk-doc,
+  gtk3,
+  libsoup_3,
   meson,
   ninja,
-  vala,
-  gtk-doc,
-  docbook_xsl,
-  docbook_xml_dtd_412,
   pkg-config,
-  glib,
-  gtk3,
-  cairo,
   sqlite,
-  gnome,
-  clutter-gtk,
-  libsoup_3,
-  gobject-introspection, # , libmemphis
+  vala,
 }:
 
 stdenv.mkDerivation rec {
   pname = "libchamplain";
   version = "0.12.21";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
+    sha256 = "qRXNFyoMUpRMVXn8tGg/ioeMVxv16SglS12v78cn5ac=";
+  };
+
   outputs = [
     "out"
     "dev"
   ]
   ++ lib.optionals (stdenv.buildPlatform == stdenv.hostPlatform) [ "devdoc" ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
-    sha256 = "qRXNFyoMUpRMVXn8tGg/ioeMVxv16SglS12v78cn5ac=";
-  };
 
   nativeBuildInputs = [
     meson
@@ -67,16 +67,13 @@ stdenv.mkDerivation rec {
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "libchamplain";
       attrPath = "libchamplain_libsoup3";
+      packageName = "libchamplain";
       versionPolicy = "odd-unstable";
     };
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/libchamplain";
-    license = lib.licenses.lgpl2Plus;
-
     description = "C library providing a ClutterActor to display maps";
 
     longDescription = ''
@@ -87,10 +84,13 @@ stdenv.mkDerivation rec {
        OpenCycleMap, OpenAerialMap, and Maps for free.
     '';
 
+    homepage = "https://gitlab.gnome.org/GNOME/libchamplain";
+    license = lib.licenses.lgpl2Plus;
+    platforms = lib.platforms.unix;
+
     teams = [
       lib.teams.gnome
       lib.teams.pantheon
     ];
-    platforms = lib.platforms.unix;
   };
 }

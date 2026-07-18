@@ -1,10 +1,10 @@
 {
   buildDunePackage,
-  happy-eyeballs,
-  duration,
   domain-name,
-  ipaddr,
+  duration,
   fmt,
+  happy-eyeballs,
+  ipaddr,
   logs,
   lwt,
   mirage-mtime,
@@ -13,11 +13,8 @@
 }:
 
 buildDunePackage {
-  pname = "happy-eyeballs-mirage";
-
   inherit (happy-eyeballs) src version;
-
-  minimalOCamlVersion = "4.08";
+  pname = "happy-eyeballs-mirage";
 
   buildInputs = [
     duration
@@ -36,6 +33,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "4.08";
 
   meta = happy-eyeballs.meta // {
     description = "Connecting to a remote host via IP version 4 or 6 using Mirage";

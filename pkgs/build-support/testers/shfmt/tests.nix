@@ -2,42 +2,47 @@
 lib.recurseIntoAttrs {
   # Positive tests
   indent2 = testers.shfmt {
-    name = "indent2";
-    indent = 2;
     src = ./src/indent2.sh;
-  };
-  indent2Bin = testers.shfmt {
-    name = "indent2Bin";
     indent = 2;
-    src = ./src;
+    name = "indent2";
   };
+
+  indent2Bin = testers.shfmt {
+    src = ./src;
+    indent = 2;
+    name = "indent2Bin";
+  };
+
+  indent2BinWith0 = testers.testBuildFailure' {
+    drv = testers.shfmt {
+      src = ./src;
+      indent = 0;
+      name = "indent2Bin";
+    };
+  };
+
+  indent2BinWith4 = testers.testBuildFailure' {
+    drv = testers.shfmt {
+      src = ./src;
+      indent = 4;
+      name = "indent2Bin";
+    };
+  };
+
   # Negative tests
   indent2With0 = testers.testBuildFailure' {
     drv = testers.shfmt {
-      name = "indent2";
-      indent = 0;
       src = ./src/indent2.sh;
-    };
-  };
-  indent2BinWith0 = testers.testBuildFailure' {
-    drv = testers.shfmt {
-      name = "indent2Bin";
       indent = 0;
-      src = ./src;
+      name = "indent2";
     };
   };
+
   indent2With4 = testers.testBuildFailure' {
     drv = testers.shfmt {
-      name = "indent2";
-      indent = 4;
       src = ./src/indent2.sh;
-    };
-  };
-  indent2BinWith4 = testers.testBuildFailure' {
-    drv = testers.shfmt {
-      name = "indent2Bin";
       indent = 4;
-      src = ./src;
+      name = "indent2";
     };
   };
 }

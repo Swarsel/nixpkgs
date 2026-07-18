@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   go,
   nix-update-script,
   nixosTests,
@@ -22,13 +22,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ukKoiA7UhqDdMvAWYL5BGf6+FSPSkcRR/Scj5o/MMKc=";
+  doCheck = true;
+  doInstallCheck = true;
 
-  subPackages = "cmd/thanos";
-
-  # Verify in sync with https://github.com/thanos-io/thanos/blob/main/.promu.yml
-  tags = [
-    "netgo"
-    "slicelabels"
+  nativeInstallCheckInputs = [
+    versionCheckHook
   ];
 
   ldflags =
@@ -44,22 +42,25 @@ buildGoModule (finalAttrs: {
       "-X ${t}.GoVersion=${lib.getVersion go}"
     ];
 
-  doCheck = true;
+  subPackages = "cmd/thanos";
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
+  # Verify in sync with https://github.com/thanos-io/thanos/blob/main/.promu.yml
+  tags = [
+    "netgo"
+    "slicelabels"
   ];
-  doInstallCheck = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       inherit (nixosTests) thanos;
+
       version = testers.testVersion {
         command = "thanos --version";
         package = thanos;
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -67,10 +68,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/thanos-io/thanos";
     changelog = "https://github.com/thanos-io/thanos/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "thanos";
+
     maintainers = with lib.maintainers; [
       basvandijk
       anthonyroussel
     ];
+
+    mainProgram = "thanos";
   };
 })

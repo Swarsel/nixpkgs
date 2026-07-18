@@ -33,36 +33,37 @@ stdenv.mkDerivation {
     libtirpc
   ];
 
-  preAutoreconf = ''
-    sed -i -e 's|\s*LIBCGUESS=.*|LIBCGUESS=${stdenv.cc.libc}/lib/libc.so.*|' configure.in
-    grep LIBCGUESS configure.in
-    sed -i 's|libevent.a|libevent.so|' configure.in
-  '';
+  configureFlags = [ "--with-libevent" ];
+
+  env = {
+    NIX_CFLAGS_COMPILE = toString [
+      "-I${libtirpc.dev}/include/tirpc"
+      "-Wno-error=incompatible-pointer-types"
+    ];
+
+    NIX_LDFLAGS = toString [
+      "-levent"
+      "-ltirpc"
+    ];
+  };
 
   preBuild = ''
     sed -i '/#define in_addr_t/ s:^://:' config.h
     sed -i 's|^_select(int|select(int|' trickle-overload.c
   '';
 
-  env = {
-    NIX_LDFLAGS = toString [
-      "-levent"
-      "-ltirpc"
-    ];
-    NIX_CFLAGS_COMPILE = toString [
-      "-I${libtirpc.dev}/include/tirpc"
-      "-Wno-error=incompatible-pointer-types"
-    ];
-  };
-
-  configureFlags = [ "--with-libevent" ];
-
   hardeningDisable = [ "format" ];
+
+  preAutoreconf = ''
+    sed -i -e 's|\s*LIBCGUESS=.*|LIBCGUESS=${stdenv.cc.libc}/lib/libc.so.*|' configure.in
+    grep LIBCGUESS configure.in
+    sed -i 's|libevent.a|libevent.so|' configure.in
+  '';
 
   meta = {
     description = "Lightweight userspace bandwidth shaper";
-    license = lib.licenses.bsd3;
     homepage = "https://monkey.org/~marius/pages/?page=trickle";
+    license = lib.licenses.bsd3;
     platforms = lib.platforms.linux;
     mainProgram = "trickle";
   };

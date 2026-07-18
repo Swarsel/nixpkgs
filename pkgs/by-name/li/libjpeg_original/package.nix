@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-i56qEyQmkOvQPhcoqx7fl6gaeO1ug2JNSTZV8xrJWrU=";
   };
 
-  configureFlags = lib.optional static "--enable-static --disable-shared";
-
   outputs = [
     "bin"
     "dev"
@@ -24,14 +22,15 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  configureFlags = lib.optional static "--enable-static --disable-shared";
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
-    homepage = "https://www.ijg.org/";
     description = "Library that implements the JPEG image file format";
-    maintainers = with lib.maintainers; [ sigmanificient ];
+    homepage = "https://www.ijg.org/";
     license = lib.licenses.free;
-    pkgConfigModules = [ "libjpeg" ];
+    maintainers = with lib.maintainers; [ sigmanificient ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "libjpeg" ];
   };
 })

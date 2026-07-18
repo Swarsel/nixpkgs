@@ -1,17 +1,17 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   fetchNpmDeps,
-  npmHooks,
+  gitMinimal,
+  nix-update-script,
   nodejs,
+  npmHooks,
   pkg-config,
   protobuf,
+  rustPlatform,
   sqlite,
-  writableTmpDirAsHomeHook,
-  gitMinimal,
   versionCheckHook,
-  nix-update-script,
+  writableTmpDirAsHomeHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "zeroclaw";
@@ -23,15 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mTH7DRaCHmYw3m9DguceP+nGGMYff7vsoIe3J0XNb/Q=";
   };
-
-  cargoHash = "sha256-6tLLt8cblYABOTli1LrrWbyTOJYGmmewHJgTxBAhJlE=";
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/web";
-    hash = "sha256-SKltlDJm39ZzVaEt1bbnoiXy+wlbq+fC3bO4mW5V15o=";
-  };
-  npmRoot = "web";
 
   postPatch = ''
     # build.rs runs `npm ci && npm run build` during compilation,
@@ -54,6 +45,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     sqlite
   ];
+
+  cargoHash = "sha256-6tLLt8cblYABOTli1LrrWbyTOJYGmmewHJgTxBAhJlE=";
 
   postBuild = ''
     cargo run --frozen --release --package xtask --bin web -- gen-api
@@ -89,6 +82,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-SKltlDJm39ZzVaEt1bbnoiXy+wlbq+fC3bO4mW5V15o=";
+    sourceRoot = "${finalAttrs.src.name}/web";
+  };
+
+  npmRoot = "web";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -96,10 +96,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/zeroclaw-labs/zeroclaw";
     changelog = "https://github.com/zeroclaw-labs/zeroclaw/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       drupol
       nixosclaw
     ];
+
     mainProgram = "zeroclaw";
   };
 })

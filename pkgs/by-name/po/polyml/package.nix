@@ -1,19 +1,16 @@
 {
   lib,
   stdenv,
-  pkgsHostTarget,
   fetchFromGitHub,
   autoreconfHook,
   gmp,
   libffi,
+  pkgsHostTarget,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "polyml";
   version = "5.9.2";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "polyml";
@@ -33,13 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace configure.ac --replace-fail stdc++ c++
   '';
 
+  strictDeps = true;
+  nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     libffi
     gmp
     pkgsHostTarget.stdenv.cc
   ];
-
-  nativeBuildInputs = [ autoreconfHook ];
 
   configureFlags = [
     "--enable-shared"
@@ -47,24 +45,28 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-gmp"
   ];
 
+  doCheck = true;
+
   preInstall = ''
     substituteInPlace polyc \
       --replace-fail "LINK=\"$CXX\"" "LINK=\"${lib.getExe' pkgsHostTarget.stdenv.cc "c++"}\""
   '';
 
-  doCheck = true;
+  __structuredAttrs = true;
 
   meta = {
     description = "Standard ML compiler and interpreter";
+
     longDescription = ''
       Poly/ML is a full implementation of Standard ML.
     '';
+
     homepage = "https://www.polyml.org/";
     license = lib.licenses.lgpl21;
+    maintainers = with lib.maintainers; [ sempiternal-aurora ];
     platforms = with lib.platforms; (linux ++ darwin);
     # Broken as make target `polyimport.o` requires running code
     # compiled by the cross-compiler
     broken = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
-    maintainers = with lib.maintainers; [ sempiternal-aurora ];
   };
 })

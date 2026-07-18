@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   buildPackages,
+  gitUpdater,
   ld64,
   llvm,
   meson,
   ninja,
   openssl,
   xar,
-  gitUpdater,
 }:
 
 let
@@ -20,24 +20,16 @@ let
 
   # First version with all the required files
   xnu = fetchFromGitHub {
+    hash = "sha256-uHmAOm6k9ZXWfyqHiDSpm+tZqUbERlr6rXSJ4xNACkM=";
     name = "xnu-src";
     owner = "apple-oss-distributions";
     repo = "xnu";
     rev = "xnu-7195.50.7.100.1";
-    hash = "sha256-uHmAOm6k9ZXWfyqHiDSpm+tZqUbERlr6rXSJ4xNACkM=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "${targetPrefix}cctools";
   version = "1010.6";
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
-    "gas"
-    "libtool"
-  ];
 
   src = fetchFromGitHub {
     owner = "apple-oss-distributions";
@@ -46,26 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JiKCP6U+xxR4mk4TXWv/mEo9Idg+QQqUYmB/EeRksCE=";
   };
 
-  xcodeHash = "sha256-5RBbGrz1UKV0wt2Uk7RIHdfgWH8sgw/jy7hfTVrtVuM=";
-
-  postUnpack = ''
-    unpackFile '${xnu}'
-
-    # Verify that the Xcode project has not changed unexpectedly.
-    hashType=$(echo $xcodeHash | cut -d- -f1)
-    expectedHash=$(echo $xcodeHash | cut -d- -f2)
-    hash=$(openssl "$hashType" -binary "$sourceRoot/cctools.xcodeproj/project.pbxproj" | base64)
-
-    if [ "$hash" != "$expectedHash" ]; then
-      echo 'error: hash mismatch in cctools.xcodeproj/project.pbxproj'
-      echo "        specified: $xcodeHash"
-      echo "           got:    $hashType-$hash"
-      echo
-      echo 'Upstream Xcode project has changed. Update `meson.build` with any changes, then update `xcodeHash`.'
-      echo 'Use `nix-hash --flat --sri --type sha256 cctools.xcodeproj/project.pbxproj` to regenerate it.'
-      exit 1
-    fi
-  '';
+  outputs = [
+    "out"
+    "dev"
+    "man"
+    "gas"
+    "libtool"
+  ];
 
   patches = [
     # Fix compile errors in redo_prebinding.c
@@ -125,8 +104,6 @@ stdenv.mkDerivation (finalAttrs: {
     llvm
   ];
 
-  mesonBuildType = "release";
-
   mesonFlags = [
     (lib.mesonOption "b_ndebug" "if-release")
   ]
@@ -151,6 +128,28 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   __structuredAttrs = true;
+  mesonBuildType = "release";
+
+  postUnpack = ''
+    unpackFile '${xnu}'
+
+    # Verify that the Xcode project has not changed unexpectedly.
+    hashType=$(echo $xcodeHash | cut -d- -f1)
+    expectedHash=$(echo $xcodeHash | cut -d- -f2)
+    hash=$(openssl "$hashType" -binary "$sourceRoot/cctools.xcodeproj/project.pbxproj" | base64)
+
+    if [ "$hash" != "$expectedHash" ]; then
+      echo 'error: hash mismatch in cctools.xcodeproj/project.pbxproj'
+      echo "        specified: $xcodeHash"
+      echo "           got:    $hashType-$hash"
+      echo
+      echo 'Upstream Xcode project has changed. Update `meson.build` with any changes, then update `xcodeHash`.'
+      echo 'Use `nix-hash --flat --sri --type sha256 cctools.xcodeproj/project.pbxproj` to regenerate it.'
+      exit 1
+    fi
+  '';
+
+  xcodeHash = "sha256-5RBbGrz1UKV0wt2Uk7RIHdfgWH8sgw/jy7hfTVrtVuM=";
 
   passthru = {
     inherit targetPrefix;
@@ -160,11 +159,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Classic linker for Darwin";
     homepage = "https://opensource.apple.com/releases/";
+
     license = with lib.licenses; [
       apple-psl20
       gpl2 # GNU as
     ];
-    teams = [ lib.teams.darwin ];
+
     platforms = lib.platforms.darwin;
+    teams = [ lib.teams.darwin ];
   };
 })

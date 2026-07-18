@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  replaceVars,
+  asn1crypto,
   buildPythonPackage,
+  cffi,
+  cryptography,
   fetchPypi,
   fetchpatch,
   fetchpatch2,
-  asn1crypto,
-  cffi,
-  cryptography,
-  pkgconfig, # see nativeBuildInputs
   pkg-config, # see nativeBuildInputs
+  pkgconfig, # see nativeBuildInputs
   pytestCheckHook,
   pyyaml,
+  replaceVars,
   setuptools-scm,
-  tpm2-tss,
-  tpm2-tools,
   swtpm,
+  tpm2-tools,
+  tpm2-tss,
 }:
 
 let
@@ -25,7 +25,6 @@ in
 buildPythonPackage rec {
   pname = "tpm2-pytss";
   version = "2.3.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -36,37 +35,37 @@ buildPythonPackage rec {
     # libtpms (underneath swtpm) bumped the TPM revision
     # https://github.com/tpm2-software/tpm2-pytss/pull/593
     (fetchpatch {
-      url = "https://github.com/tpm2-software/tpm2-pytss/pull/593.patch";
       hash = "sha256-CNJnSIvUQ0Yvy0o7GdVfFZ7kHJd2hBt5Zv1lqgOeoks=";
+      url = "https://github.com/tpm2-software/tpm2-pytss/pull/593.patch";
     })
     # support cryptography >= 45.0.0
     # https://github.com/tpm2-software/tpm2-pytss/pull/643
     (fetchpatch {
-      url = "https://github.com/tpm2-software/tpm2-pytss/commit/6ab4c74e6fb3da7cd38e97c1f8e92532312f8439.patch";
       hash = "sha256-01Qe4qpD2IINc5Z120iVdPitiLBwdr8KNBjLFnGgE7E=";
+      url = "https://github.com/tpm2-software/tpm2-pytss/commit/6ab4c74e6fb3da7cd38e97c1f8e92532312f8439.patch";
     })
     # support cryptography >= 47.0.0, which made __deepcopy__ an abstract
     # method on the private-key base classes
     # https://github.com/tpm2-software/tpm2-pytss/pull/689
     (fetchpatch {
-      url = "https://github.com/tpm2-software/tpm2-pytss/commit/5d15cad4bde28902a4becb8e2a8e915aba8abbd0.patch";
       hash = "sha256-b2zVD7KJGVzJ765HO8LFAe9MyQmjOTpERmEqUrIg3oM=";
+      url = "https://github.com/tpm2-software/tpm2-pytss/commit/5d15cad4bde28902a4becb8e2a8e915aba8abbd0.patch";
     })
     # Properly restore environment variables upon exit from
     # FAPIConfig context. Accepted into upstream, not yet released.
     (fetchpatch2 {
-      url = "https://github.com/tpm2-software/tpm2-pytss/commit/afdee627d0639eb05711a2191f2f76e460793da9.patch?full_index=1";
       hash = "sha256-Y6drcBg4gnbSvnCGw69b42Q/QfLI3u56BGRUEkpdB0M=";
+      url = "https://github.com/tpm2-software/tpm2-pytss/commit/afdee627d0639eb05711a2191f2f76e460793da9.patch?full_index=1";
     })
     # Fix build with gcc15 by using c99 for preprocessing
     # The first patch is needed to apply the second; it doesn't affect us
     (fetchpatch {
-      url = "https://github.com/tpm2-software/tpm2-pytss/commit/55d28b259f1a68f60c937ea8be7815685d32757f.patch";
       hash = "sha256-sGxUyQ2W2Jl9ROSt1w0E0dVTgFPAmYWlNgcpHcTVv90=";
+      url = "https://github.com/tpm2-software/tpm2-pytss/commit/55d28b259f1a68f60c937ea8be7815685d32757f.patch";
     })
     (fetchpatch {
-      url = "https://github.com/tpm2-software/tpm2-pytss/commit/61d00b4dcca131b3f03f674ceabf4260bdbd6a61.patch";
       hash = "sha256-0dwfyW0Fi5FkzYnaMOb2ua9O6eyCnMgJqT09tTT56vY=";
+      url = "https://github.com/tpm2-software/tpm2-pytss/commit/61d00b4dcca131b3f03f674ceabf4260bdbd6a61.patch";
     })
   ]
   ++ lib.optionals isCross [
@@ -82,12 +81,6 @@ buildPythonPackage rec {
       crossPrefix = stdenv.hostPlatform.config;
     })
   ];
-
-  # Hardening has to be disabled
-  # due to pycparsing handling it poorly.
-  # See https://github.com/NixOS/nixpkgs/issues/252023
-  # for more details.
-  hardeningDisable = [ "fortify" ];
 
   nativeBuildInputs = [
     cffi
@@ -115,13 +108,20 @@ buildPythonPackage rec {
     export TSS2_FAPICONF=${tpm2-tss.out}/etc/tpm2-tss/fapi-config-test.json
   '';
 
+  format = "setuptools";
+  # Hardening has to be disabled
+  # due to pycparsing handling it poorly.
+  # See https://github.com/NixOS/nixpkgs/issues/252023
+  # for more details.
+  hardeningDisable = [ "fortify" ];
   pythonImportsCheck = [ "tpm2_pytss" ];
 
   meta = {
+    description = "TPM2 TSS Python bindings for Enhanced System API (ESYS)";
     homepage = "https://github.com/tpm2-software/tpm2-pytss";
     changelog = "https://github.com/tpm2-software/tpm2-pytss/blob/${version}/CHANGELOG.md";
-    description = "TPM2 TSS Python bindings for Enhanced System API (ESYS)";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       baloo
       scottstephens

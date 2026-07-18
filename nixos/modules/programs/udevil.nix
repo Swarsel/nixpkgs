@@ -14,9 +14,9 @@ in
 
   config = lib.mkIf cfg.enable {
     security.wrappers.udevil = {
-      setuid = true;
-      owner = "root";
       group = "root";
+      owner = "root";
+      setuid = true;
       source = "${lib.getBin pkgs.udevil}/bin/udevil";
     };
   };

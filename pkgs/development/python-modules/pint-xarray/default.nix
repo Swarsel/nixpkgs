@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   numpy,
   pint,
+  pytestCheckHook,
+  setuptools,
+  setuptools-scm,
   toolz,
   xarray,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pint-xarray";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xarray-contrib";
@@ -22,6 +21,10 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-t2I17dyl/XoO7NBvEyz7TRZkG/uQKPDHUUCG+bQXdOo=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -35,9 +38,7 @@ buildPythonPackage (finalAttrs: {
     xarray
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pint_xarray"

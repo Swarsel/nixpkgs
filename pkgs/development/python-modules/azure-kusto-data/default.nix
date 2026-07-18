@@ -1,40 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
-  # dependencies
-  azure-core,
-  azure-identity,
-  ijson,
-  msal,
-  python-dateutil,
-  requests,
-
   # optional-dependencies
-
   # tests
   # aio:
   aiohttp,
-  asgiref,
-  # pandas:
-  pandas,
-
   # tests
   aioresponses,
+  asgiref,
+  # dependencies
+  azure-core,
+  azure-identity,
+  buildPythonPackage,
+  ijson,
+  msal,
+  # pandas:
+  pandas,
   pytest-asyncio,
   pytest-xdist,
   pytestCheckHook,
+  python-dateutil,
+  requests,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-kusto-data";
   version = "6.0.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -43,34 +36,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-iggsVxLmDbP6+oSPaIiujPLsZAWwm5VLZSl+HYm0DIQ=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/azure-kusto-data";
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.8.9,<0.9.0" uv_build
   '';
-
-  build-system = [ uv-build ];
-
-  pythonRelaxDeps = [
-    "ijson"
-  ];
-  dependencies = [
-    azure-core
-    azure-identity
-    ijson
-    msal
-    python-dateutil
-    requests
-  ];
-
-  optional-dependencies = {
-    aio = [
-      aiohttp
-      asgiref
-    ];
-    pandas = [ pandas ];
-  };
 
   nativeCheckInputs = [
     aioresponses
@@ -80,11 +49,16 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pythonImportsCheck = [ "azure.kusto.data" ];
+  __structuredAttrs = true;
+  build-system = [ uv-build ];
 
-  disabledTests = [
-    # AssertionError: Attributes of DataFrame.iloc[:, 1] (column name="rowguid") are different
-    "test_sanity_data_frame"
+  dependencies = [
+    azure-core
+    azure-identity
+    ijson
+    msal
+    python-dateutil
+    requests
   ];
 
   disabledTestPaths = [
@@ -96,6 +70,29 @@ buildPythonPackage (finalAttrs: {
     # AssertionError: assert <class 'pandas.Timestamp'> is <class 'pandas.api.typing.NaTType'>
     "tests/test_helpers.py"
   ];
+
+  disabledTests = [
+    # AssertionError: Attributes of DataFrame.iloc[:, 1] (column name="rowguid") are different
+    "test_sanity_data_frame"
+  ];
+
+  optional-dependencies = {
+    aio = [
+      aiohttp
+      asgiref
+    ];
+
+    pandas = [ pandas ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "azure.kusto.data" ];
+
+  pythonRelaxDeps = [
+    "ijson"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/azure-kusto-data";
 
   meta = {
     description = "Kusto Data Client";

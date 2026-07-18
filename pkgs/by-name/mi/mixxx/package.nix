@@ -12,10 +12,11 @@
   glibcLocales,
   gtest,
   hidapi,
+  kdePackages,
   lame,
-  libebur128,
-  libdjinterop,
   libGLU,
+  libdjinterop,
+  libebur128,
   libid3tag,
   libkeyfinder,
   libmad,
@@ -40,13 +41,12 @@
   serd,
   sord,
   soundtouch,
-  sratom,
   sqlite,
+  sratom,
   taglib,
   upower,
   vamp-plugin-sdk,
   wavpack,
-  kdePackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -122,8 +122,6 @@ stdenv.mkDerivation (finalAttrs: {
     wavpack
   ];
 
-  qtWrapperArgs = [ "--set LOCALE_ARCHIVE ${glibcLocales}/lib/locale/locale-archive" ];
-
   # mixxx installs udev rules to DATADIR instead of SYSCONFDIR
   # let's disable this and install udev rules manually via postInstall
   # see https://github.com/mixxxdj/mixxx/blob/2.3.5/CMakeLists.txt#L1381-L1392
@@ -143,16 +141,20 @@ stdenv.mkDerivation (finalAttrs: {
     cp "$rules" "$out/lib/udev/rules.d/69-mixxx-usb-uaccess.rules"
   '';
 
+  qtWrapperArgs = [ "--set LOCALE_ARCHIVE ${glibcLocales}/lib/locale/locale-archive" ];
+
   meta = {
-    homepage = "https://mixxx.org";
     description = "Digital DJ mixing software";
-    mainProgram = "mixxx";
+    homepage = "https://mixxx.org";
     changelog = "https://github.com/mixxxdj/mixxx/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       benley
       bfortz
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "mixxx";
   };
 })

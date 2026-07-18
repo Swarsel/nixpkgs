@@ -1,7 +1,7 @@
 {
-  build-idris-package,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  build-idris-package,
 }:
 build-idris-package {
   pname = "hezarfen";

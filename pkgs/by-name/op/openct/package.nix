@@ -4,11 +4,11 @@
   fetchFromGitHub,
   autoreconfHook,
   doxygen,
-  libxslt,
-  pkg-config,
-  pcsclite,
   libtool,
   libusb-compat-0_1,
+  libxslt,
+  pcsclite,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,17 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "DESTDIR" "out"
   '';
 
-  # unbreak build on GCC 14, remove when https://github.com/OpenSC/openct/pull/12
-  # (or equivalent) is merged and released
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
-  configureFlags = [
-    "--enable-api-doc"
-    "--enable-usb"
-    "--enable-pcsc"
-    "--localstatedir=/var"
-    "--sysconfdir=/etc"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -52,15 +42,25 @@ stdenv.mkDerivation (finalAttrs: {
     libusb-compat-0_1
   ];
 
-  strictDeps = true;
+  configureFlags = [
+    "--enable-api-doc"
+    "--enable-usb"
+    "--enable-pcsc"
+    "--localstatedir=/var"
+    "--sysconfdir=/etc"
+  ];
+
+  # unbreak build on GCC 14, remove when https://github.com/OpenSC/openct/pull/12
+  # (or equivalent) is merged and released
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   preInstall = ''
     mkdir -p $out/etc
   '';
 
   meta = {
-    homepage = "https://github.com/OpenSC/openct/";
     description = "Drivers for several smart card readers";
+    homepage = "https://github.com/OpenSC/openct/";
     license = lib.licenses.lgpl21;
     maintainers = [ ];
     platforms = lib.platforms.all;

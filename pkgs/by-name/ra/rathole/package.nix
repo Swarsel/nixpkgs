@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  nixosTests,
+  openssl,
+  pkg-config,
   rustPlatform,
   rustc,
-  pkg-config,
-  openssl,
-  nixosTests,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -33,33 +33,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rm build.rs
   '';
 
-  cargoHash = "sha256-IgPDe8kuWzJ6nF2DceUbN7fw0eGkoYhu1IGMdlSMFos=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     openssl
   ];
 
-  __darwinAllowLocalNetworking = true;
+  cargoHash = "sha256-IgPDe8kuWzJ6nF2DceUbN7fw0eGkoYhu1IGMdlSMFos=";
+
+  env = {
+    VERGEN_BUILD_SEMVER = finalAttrs.version;
+    VERGEN_BUILD_TIMESTAMP = "0";
+    VERGEN_CARGO_FEATURES = "";
+    VERGEN_CARGO_PROFILE = "release";
+    VERGEN_CARGO_TARGET_TRIPLE = "${stdenv.hostPlatform.rust.rustcTarget}";
+    VERGEN_GIT_BRANCH = "main";
+    VERGEN_GIT_COMMIT_TIMESTAMP = "0";
+    VERGEN_RUSTC_CHANNEL = "stable";
+    VERGEN_RUSTC_SEMVER = rustc.version;
+  };
 
   nativeCheckInputs = [ openssl ];
+
   preCheck = ''
     patchShebangs examples/tls/create_self_signed_cert.sh
     (cd examples/tls && chmod +x create_self_signed_cert.sh && ./create_self_signed_cert.sh)
   '';
 
-  env = {
-    VERGEN_BUILD_TIMESTAMP = "0";
-    VERGEN_BUILD_SEMVER = finalAttrs.version;
-    VERGEN_GIT_COMMIT_TIMESTAMP = "0";
-    VERGEN_GIT_BRANCH = "main";
-    VERGEN_RUSTC_SEMVER = rustc.version;
-    VERGEN_RUSTC_CHANNEL = "stable";
-    VERGEN_CARGO_PROFILE = "release";
-    VERGEN_CARGO_FEATURES = "";
-    VERGEN_CARGO_TARGET_TRIPLE = "${stdenv.hostPlatform.rust.rustcTarget}";
-  };
+  __darwinAllowLocalNetworking = true;
 
   passthru.tests = {
     inherit (nixosTests) rathole;
@@ -69,9 +70,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Reverse proxy for NAT traversal";
     homepage = "https://github.com/rathole-org/rathole";
     license = lib.licenses.asl20;
-    mainProgram = "rathole";
+
     maintainers = with lib.maintainers; [
       xokdvium
     ];
+
+    mainProgram = "rathole";
   };
 })

@@ -1,6 +1,6 @@
 {
-  mkKdeDerivation,
   lib,
+  mkKdeDerivation,
   replaceVars,
   smartmontools,
 }:

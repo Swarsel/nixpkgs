@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mako,
   parse,
   parse-type,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pytest-bdd";
   version = "7.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -23,9 +22,15 @@ buildPythonPackage rec {
     hash = "sha256-PC4VSsUU5qEFp/C/7OTgHINo8wmOo0w2d1Hpe0EnFzE=";
   };
 
-  build-system = [ poetry-core ];
-
   buildInputs = [ pytest ];
+  # requires an update for pytest 8.4 compat
+  nativeCheckInputs = [ pytest7CheckHook ];
+
+  preCheck = ''
+    export PATH=$PATH:$out/bin
+  '';
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     mako
@@ -34,13 +39,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # requires an update for pytest 8.4 compat
-  nativeCheckInputs = [ pytest7CheckHook ];
-
-  preCheck = ''
-    export PATH=$PATH:$out/bin
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_bdd" ];
 
   meta = {

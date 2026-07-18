@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
   eigen,
-  boost,
   libnabo,
   yaml-cpp,
 }:
@@ -40,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     eigen
     boost
@@ -58,7 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
     inherit (finalAttrs.src.meta) homepage;
     description = "\"Iterative Closest Point\" library for 2-D/3-D mapping in robotic";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ cryptix ];
+    platforms = lib.platforms.linux;
   };
 })

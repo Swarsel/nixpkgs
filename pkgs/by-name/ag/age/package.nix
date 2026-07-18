@@ -1,19 +1,19 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
+  age-plugin-1p,
   age-plugin-fido2-hmac,
   age-plugin-ledger,
   age-plugin-se,
   age-plugin-sss,
   age-plugin-tpm,
   age-plugin-yubikey,
-  age-plugin-1p,
+  buildGoModule,
+  installShellFiles,
   makeWrapper,
+  nix-update-script,
   runCommand,
   versionCheckHook,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -27,7 +27,21 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Qs/q3zQYV0PukABBPf/aU5V1oOhw95NG6K301VYJk8A=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-iVDkYXXR2pXlUVywPgVRNMORxOOEhAmzpSM0xqSQMSQ=";
+
+  # plugin test is flaky, see https://github.com/FiloSottile/age/issues/517
+  checkFlags = [
+    "-skip"
+    "TestScript/plugin"
+  ];
+
+  preInstall = ''
+    installManPage doc/*.1
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -35,21 +49,7 @@ buildGoModule (finalAttrs: {
     "-X main.Version=v${finalAttrs.version}"
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  preInstall = ''
-    installManPage doc/*.1
-  '';
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
-
-  # plugin test is flaky, see https://github.com/FiloSottile/age/issues/517
-  checkFlags = [
-    "-skip"
-    "TestScript/plugin"
-  ];
 
   # group age plugins together
   passthru.plugins = {
@@ -64,6 +64,8 @@ buildGoModule (finalAttrs: {
       ;
   };
 
+  passthru.updateScript = nix-update-script { };
+
   # convenience function for wrapping sops with plugins
   passthru.withPlugins =
     filter:
@@ -72,14 +74,12 @@ buildGoModule (finalAttrs: {
         --prefix PATH : "${lib.makeBinPath (filter finalAttrs.passthru.plugins)}"
     '';
 
-  passthru.updateScript = nix-update-script { };
-
   meta = {
-    changelog = "https://github.com/FiloSottile/age/releases/tag/v${finalAttrs.version}";
-    homepage = "https://age-encryption.org/";
     description = "Modern encryption tool with small explicit keys";
+    homepage = "https://age-encryption.org/";
+    changelog = "https://github.com/FiloSottile/age/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "age";
     maintainers = with lib.maintainers; [ tazjin ];
+    mainProgram = "age";
   };
 })

@@ -4,9 +4,9 @@
   fetchFromGitHub,
   bison,
   flex,
-  pcre2,
   libunistring,
   ncurses,
+  pcre2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  dontConfigure = true;
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   # Makefile references a system wide config file in '/usr/share'. Instead, we
   # move it within the store by default.
@@ -43,20 +43,20 @@ stdenv.mkDerivation (finalAttrs: {
                 "GLOBALCONF=${placeholder "out"}/share/boxes/boxes-config"
   '';
 
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-
   installPhase = ''
     install -Dm755 -t $out/bin out/boxes
     install -Dm644 -t $out/share/boxes boxes-config
     install -Dm644 -t $out/share/man/man1 doc/boxes.1
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Command line program which draws, removes, and repairs ASCII art boxes";
-    mainProgram = "boxes";
     homepage = "https://boxes.thomasjensen.com";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ waiting-for-dev ];
     platforms = lib.platforms.unix;
+    mainProgram = "boxes";
   };
 })

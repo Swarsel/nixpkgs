@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
   callPackage,
   fetchFromSourcehut,
-  lib,
   pandoc,
   pkg-config,
-  stdenv,
   wayland,
   wayland-protocols,
   wayland-scanner,
@@ -46,6 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Configurable layout generator for the River compositor";
+
     longDescription = ''
       A layout generator for **river**. Features include:
       - **configurable** layouts employing nested tiles (no juggling with coordinates),
@@ -59,11 +60,12 @@ stdenv.mkDerivation (finalAttrs: {
           - a monocle layout,
       - optional per-tag-per-output state.
     '';
-    changelog = "https://git.sr.ht/~midgard/river-ultitile/tree/v${finalAttrs.version}/item/CHANGELOG.md";
+
     homepage = "https://git.sr.ht/~midgard/river-ultitile";
+    changelog = "https://git.sr.ht/~midgard/river-ultitile/tree/v${finalAttrs.version}/item/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "river-ultitile";
     maintainers = with lib.maintainers; [ debling ];
     platforms = lib.platforms.linux;
+    mainProgram = "river-ultitile";
   };
 })

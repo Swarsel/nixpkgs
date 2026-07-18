@@ -1,24 +1,25 @@
 {
   lib,
   stdenv,
+  config,
   fetchzip,
-  pkg-config,
   fontconfig,
   freetype,
+  # update script dependencies
+  gitUpdater,
   libx11,
   libxft,
   ncurses,
-  writeText,
-  config,
-  conf ? config.st.conf or null,
-  patches ? config.st.patches or [ ],
-  extraLibs ? config.st.extraLibs or [ ],
   nixosTests,
-  # update script dependencies
-  gitUpdater,
+  pkg-config,
+  writeText,
+  conf ? config.st.conf or null,
+  extraLibs ? config.st.extraLibs or [ ],
+  patches ? config.st.patches or [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit patches;
   pname = "st";
   version = "0.9.3";
 
@@ -32,10 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     "terminfo"
   ];
 
-  inherit patches;
-
-  configFile = lib.optionalString (conf != null) (writeText "config.def.h" conf);
-
   postPatch =
     lib.optionalString (conf != null) "cp ${finalAttrs.configFile} config.def.h"
     + lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -44,21 +41,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  makeFlags = [
-    "PKG_CONFIG=${stdenv.cc.targetPrefix}pkg-config"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     ncurses
     fontconfig
     freetype
   ];
+
   buildInputs = [
     libx11
     libxft
   ]
   ++ extraLibs;
+
+  makeFlags = [
+    "PKG_CONFIG=${stdenv.cc.targetPrefix}pkg-config"
+  ];
 
   preInstall = ''
     export TERMINFO=$terminfo/share/terminfo
@@ -66,18 +64,20 @@ stdenv.mkDerivation (finalAttrs: {
     echo "$terminfo" >> $out/nix-support/propagated-user-env-packages
   '';
 
+  configFile = lib.optionalString (conf != null) (writeText "config.def.h" conf);
   installFlags = [ "PREFIX=$(out)" ];
 
   passthru = {
     tests.test = nixosTests.terminal-emulators.st;
+
     updateScript = gitUpdater {
       url = "git://git.suckless.org/st";
     };
   };
 
   meta = {
-    homepage = "https://st.suckless.org/";
     description = "Simple Terminal for X from Suckless.org Community";
+    homepage = "https://st.suckless.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ qusic ];
     platforms = lib.platforms.unix;

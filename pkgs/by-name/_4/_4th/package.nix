@@ -18,18 +18,16 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  dontConfigure = true;
-
-  preBuild = ''
-    cp sources/include${if stdenv.hostPlatform.is64bit then "64" else "32"}/* sources/
-    make -C sources clean
-  '';
-
   makeFlags = [
     "-C sources"
     "CC:=$(CC)"
     "AR:=$(AR)"
   ];
+
+  preBuild = ''
+    cp sources/include${if stdenv.hostPlatform.is64bit then "64" else "32"}/* sources/
+    make -C sources clean
+  '';
 
   preInstall = ''
     install -d ${placeholder "out"}/bin \
@@ -37,6 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
                ${placeholder "out"}/share/doc/4th \
                ${placeholder "man"}/share/man
   '';
+
+  dontConfigure = true;
 
   installFlags = [
     "BINARIES=${placeholder "out"}/bin"
@@ -46,12 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://thebeez.home.xs4all.nl/4tH/index.html";
     description = "Portable Forth compiler";
+    homepage = "https://thebeez.home.xs4all.nl/4tH/index.html";
     license = lib.licenses.lgpl3Plus;
-    mainProgram = "4th";
     maintainers = with lib.maintainers; [ chillcicada ];
     platforms = lib.platforms.unix;
+    mainProgram = "4th";
   };
 })
 # TODO: set Makefile according to platform

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  python3,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,30 +19,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-nNQ/d4FFAvI+UY+XeqExyhngq+k+j5Pkz94ch27aoVM=";
   };
 
-  cargoHash = "sha256-l8N6+xh0CbFKt4eEbSAvUJ5oHxhp5jf2YHLheYAegnU=";
-
-  cargoBuildFlags = [
-    "--all"
-  ];
-
-  # Needed to get openssl-sys to use pkgconfig.
-  env.OPENSSL_NO_VENDOR = 1;
-
   nativeBuildInputs = [
     python3
     pkg-config
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-l8N6+xh0CbFKt4eEbSAvUJ5oHxhp5jf2YHLheYAegnU=";
+  # Needed to get openssl-sys to use pkgconfig.
+  env.OPENSSL_NO_VENDOR = 1;
+
+  cargoBuildFlags = [
+    "--all"
+  ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Tool to compress some state in a Synapse instance's database";
     homepage = "https://github.com/matrix-org/rust-synapse-compress-state";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       hexa
       maralorn
     ];
+
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

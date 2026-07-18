@@ -1,21 +1,20 @@
 {
   lib,
-  fetchzip,
   fetchurl,
-  stdenvNoCC,
-  makeDesktopItem,
-  copyDesktopItems,
-  autoPatchelfHook,
   _7zz,
-
+  autoPatchelfHook,
+  copyDesktopItems,
+  fetchzip,
   glib,
+  gtk2,
+  gtk3,
   libGL,
   libGLU,
   libgcc,
-  gtk3,
-  gtk2,
-  libxxf86vm,
   libxtst,
+  libxxf86vm,
+  makeDesktopItem,
+  stdenvNoCC,
   temurin-jre-bin,
 }:
 
@@ -26,20 +25,28 @@ let
     description = "3D visualization program for structural models, volumetric data such as electron/nuclear densities, and crystal morphologies";
     homepage = "https://jp-minerals.org/vesta/";
     license = lib.licenses.unfree;
-    downloadPage = "https://jp-minerals.org/vesta/en/download.html";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ ulysseszhan ];
+
     platforms = [
       "x86_64-linux"
     ];
-    maintainers = with lib.maintainers; [ ulysseszhan ];
+
     mainProgram = "VESTA";
+    downloadPage = "https://jp-minerals.org/vesta/en/download.html";
   };
 
   linuxArgs = {
+    src = fetchzip {
+      url = "https://jp-minerals.org/vesta/archives/${version}/VESTA-gtk3.tar.bz2";
+      hash = "sha256-Dm4exMUgNZ6Sh8dVhsvLZGS38UXxe9t+9s3ttBQajGg=";
+    };
+
     nativeBuildInputs = [
       copyDesktopItems
       autoPatchelfHook
     ];
+
     buildInputs = [
       glib
       libGL
@@ -51,11 +58,6 @@ let
       libxxf86vm
       libxtst
     ];
-
-    src = fetchzip {
-      url = "https://jp-minerals.org/vesta/archives/${version}/VESTA-gtk3.tar.bz2";
-      hash = "sha256-Dm4exMUgNZ6Sh8dVhsvLZGS38UXxe9t+9s3ttBQajGg=";
-    };
 
     installPhase = ''
       runHook preInstall
@@ -75,27 +77,28 @@ let
 
     desktopItems = [
       (makeDesktopItem {
-        name = "vesta";
+        categories = [ "Science" ];
         comment = meta.description;
         desktopName = "VESTA";
-        genericName = "VESTA";
         exec = "VESTA %u";
+        genericName = "VESTA";
         icon = "VESTA";
-        categories = [ "Science" ];
         mimeTypes = [ "application/x-vesta" ];
+        name = "vesta";
       })
     ];
   };
 
   darwinArgs = {
-    nativeBuildInputs = [
-      _7zz # instead of undmg because of APFS
-    ];
     src = fetchurl {
       url = "https://jp-minerals.org/vesta/archives/${version}/VESTA.dmg";
       hash = "sha256-L8vj3MNwHo3m5wP1lByNjHZ4VTVOWSm0Aiw1ItosbSw=";
     };
-    sourceRoot = "VESTA/VESTA";
+
+    nativeBuildInputs = [
+      _7zz # instead of undmg because of APFS
+    ];
+
     installPhase = ''
       runHook preInstall
 
@@ -104,6 +107,8 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = "VESTA/VESTA";
   };
 in
 stdenvNoCC.mkDerivation (

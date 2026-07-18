@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aio-geojson-client,
   aiohttp,
   aiointercept,
   aioresponses,
-  mock,
   buildPythonPackage,
-  fetchFromGitHub,
+  mock,
   pytest-asyncio,
   pytest-xdist,
   pytestCheckHook,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aio-geojson-geonetnz-volcano";
   version = "2026.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -25,14 +24,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-BA8ejjzwonIYsLrBP3MGBfZ3bKoj2h/Qe4TcjL16FOA=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aio-geojson-client
-    aiohttp
-    pytz
-  ];
 
   nativeCheckInputs = [
     aiointercept
@@ -43,9 +34,17 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "aio_geojson_geonetnz_volcano" ];
-
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aio-geojson-client
+    aiohttp
+    pytz
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aio_geojson_geonetnz_volcano" ];
 
   meta = {
     description = "Python module for accessing the GeoNet NZ Volcanic GeoJSON feeds";

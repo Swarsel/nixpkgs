@@ -1,18 +1,18 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  makeWrapper,
-  glib,
-  openssl,
-  zlib,
-  ostree,
   stdenv,
-  util-linux,
-  skopeo,
+  fetchFromGitHub,
+  glib,
   gnutar,
   ima-evm-utils,
+  makeWrapper,
+  openssl,
+  ostree,
+  pkg-config,
+  rustPlatform,
+  skopeo,
+  util-linux,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -24,10 +24,6 @@ rustPlatform.buildRustPackage rec {
     repo = "ostree-rs-ext";
     rev = "ostree-ext-v${version}";
     hash = "sha256-kk/icUevzKMpAQ6IoruUxuKwTxXHlKLrr63Hch1w7po=";
-  };
-
-  cargoLock = {
-    lockFile = ./Cargo.lock;
   };
 
   postPatch = ''
@@ -45,6 +41,10 @@ rustPlatform.buildRustPackage rec {
     zlib
     ostree
   ];
+
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+  };
 
   checkFlags = [
     # these tests expects /var/tmp to be available
@@ -79,10 +79,12 @@ rustPlatform.buildRustPackage rec {
   meta = {
     description = "Rust library with higher level APIs on top of the core ostree API";
     homepage = "https://github.com/ostreedev/ostree-rs-ext";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ nickcao ];
     mainProgram = "ostree-ext-cli";
   };

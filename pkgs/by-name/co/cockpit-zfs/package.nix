@@ -1,15 +1,16 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   acl,
   bash,
   buildPackages,
   cockpit,
   coreutils,
-  fetchFromGitHub,
   getent,
   glibc,
   iproute2,
   jq,
-  lib,
   lsscsi,
   makeWrapper,
   mbuffer,
@@ -20,7 +21,6 @@
   samba,
   shadow,
   smartmontools,
-  stdenv,
   su,
   systemd,
   util-linux,
@@ -52,57 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "45Drives";
     repo = "cockpit-zfs";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-G24xNoKoBnlXxxyo9IJIoQW3PrktQxsx37/cX6QYfyE=";
-  };
-
-  missingHashes = ./missing-hashes.json;
-
-  # Use buildPackages for cross-compilation support
-  offlineCache = yarnBerryForBuild.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes;
-    hash = "sha256-nm3iHf9Rm5JFKzH0HAvglkQPFIV6Fl1e9WvNdqevTug=";
-  };
-
-  nativeBuildInputs = [
-    makeWrapper
-    nodejs_22
-    jq
-    yarnBerry
-    yarnBerryForBuild.yarnBerryConfigHook
-  ];
-
-  disallowedRequisites = [ finalAttrs.offlineCache ];
-
-  passthru.updateScript = nix-update-script { };
-
-  passthru.cockpitPath = [
-    acl
-    bash
-    coreutils
-    getent
-    glibc
-    iproute2
-    lsscsi
-    mbuffer
-    msmtp
-    nodejs_22
-    openssh
-    samba
-    shadow
-    smartmontools
-    su
-    systemd
-    util-linux
-    zfs
-    cockpit.passthru.python3Packages.pyudev
-    cockpit.passthru.python3Packages.py-libzfs
-  ];
-
-  env = {
-    # Disable post-install scripts that try to access network (electron, plantuml-pipe)
-    YARN_ENABLE_SCRIPTS = "0";
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+    fetchSubmodules = true;
   };
 
   postPatch =
@@ -138,6 +89,20 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "import dts from 'vite-plugin-dts'" ""
       sed -i '/dts({/,/})/d' ${houstonUiDir}/vite.config.ts
     '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    nodejs_22
+    jq
+    yarnBerry
+    yarnBerryForBuild.yarnBerryConfigHook
+  ];
+
+  env = {
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+    # Disable post-install scripts that try to access network (electron, plantuml-pipe)
+    YARN_ENABLE_SCRIPTS = "0";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -175,12 +140,46 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  disallowedRequisites = [ finalAttrs.offlineCache ];
+  missingHashes = ./missing-hashes.json;
+
+  # Use buildPackages for cross-compilation support
+  offlineCache = yarnBerryForBuild.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes;
+    hash = "sha256-nm3iHf9Rm5JFKzH0HAvglkQPFIV6Fl1e9WvNdqevTug=";
+  };
+
+  passthru.cockpitPath = [
+    acl
+    bash
+    coreutils
+    getent
+    glibc
+    iproute2
+    lsscsi
+    mbuffer
+    msmtp
+    nodejs_22
+    openssh
+    samba
+    shadow
+    smartmontools
+    su
+    systemd
+    util-linux
+    zfs
+    cockpit.passthru.python3Packages.pyudev
+    cockpit.passthru.python3Packages.py-libzfs
+  ];
+
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Cockpit plugin for ZFS management by 45Drives";
     homepage = "https://github.com/45Drives/cockpit-zfs";
     changelog = "https://github.com/45Drives/cockpit-zfs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.eymeric ];
+    platforms = lib.platforms.linux;
   };
 })

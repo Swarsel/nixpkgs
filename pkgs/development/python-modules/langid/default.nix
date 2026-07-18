@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  numpy,
   setuptools,
   wheel,
-  numpy,
 }:
 
 buildPythonPackage rec {
   pname = "langid";
   version = "1.1.6";
-  format = "setuptools";
 
   src = fetchPypi {
     # use PyPi as source, github repository does not contain tags or release branches
@@ -24,15 +23,15 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ numpy ];
-
   doCheck = false; # Package has no tests
+  format = "setuptools";
   pythonImportsCheck = [ "langid" ];
 
   meta = {
     description = "Langid.py is a standalone Language Identification (LangID) tool";
-    mainProgram = "langid";
     homepage = "https://pypi.org/project/langid/";
     license = lib.licenses.bsd2;
     maintainers = [ ];
+    mainProgram = "langid";
   };
 }

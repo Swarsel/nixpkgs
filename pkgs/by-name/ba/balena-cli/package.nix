@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  nodejs_24,
-  versionCheckHook,
+  buildNpmPackage,
   node-gyp,
+  nodejs_24,
   python3,
   udev,
+  versionCheckHook,
   xcbuild,
 }:
 
@@ -30,10 +30,6 @@ buildNpmPackage' rec {
     hash = "sha256-ipl8eK9DpMGd4kyr46QTMUqYfr5ghOY3u5WS1GXVeIw=";
   };
 
-  npmDepsHash = "sha256-HAOZlCRcPjX0u9GBLaYR03Jb+bvg679MqcGGHkQ2FPM=";
-
-  makeCacheWritable = true;
-
   nativeBuildInputs = [
     node-gyp'
     python3
@@ -46,9 +42,7 @@ buildNpmPackage' rec {
     udev
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+  npmDepsHash = "sha256-HAOZlCRcPjX0u9GBLaYR03Jb+bvg679MqcGGHkQ2FPM=";
   # Disabled on Darwin due to:
   #
   # https://github.com/NixOS/nix/issues/5748
@@ -56,22 +50,32 @@ buildNpmPackage' rec {
   # No matter whether $TMP and $HOME point to real writable directories, the
   # Darwin sandbox tries to use /var/empty and fails.
   doInstallCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  makeCacheWritable = true;
   versionCheckProgram = "${placeholder "out"}/bin/balena";
 
   meta = {
     description = "Command line interface for balenaCloud or openBalena";
+
     longDescription = ''
       The balena CLI is a Command Line Interface for balenaCloud or openBalena. It is a software
       tool available for Windows, macOS and Linux, used through a command prompt / terminal window.
       It can be used interactively or invoked in scripts. The balena CLI builds on the balena API
       and the balena SDK, and can also be directly imported in Node.js applications.
     '';
+
     homepage = "https://github.com/balena-io/balena-cli";
     changelog = "https://github.com/balena-io/balena-cli/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kalebpace
     ];
+
     mainProgram = "balena";
   };
 }

@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   httpx,
   pycryptodome,
   pytest-asyncio,
   pytestCheckHook,
   requests,
   requests-toolbelt,
+  setuptools,
   websockets,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lark-oapi";
   version = "1.6.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "larksuite";
@@ -23,6 +22,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-W4eFhB9+XdqA/fX26XwULjvSlflL0ar/FDXWFqXsP8g=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,15 +38,10 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "lark_oapi" ];
   # websockets 16.0 is compatible despite the <16 metadata constraint
   pythonRelaxDeps = [ "websockets" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "lark_oapi" ];
 
   meta = {
     description = "Larksuite development interface SDK";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,17 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-2SwjvITyo6z34MZ7gSbSQ1PeW0aO4MRi2DzYgqGcOvk=";
-
   ldflags = [ "-X main.version=${finalAttrs.version}" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Tool to backup repositories";
     homepage = "https://github.com/cooperspencer/gickup";
     changelog = "https://github.com/cooperspencer/gickup/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ adamcstephens ];
     mainProgram = "gickup";
-    license = lib.licenses.asl20;
   };
 })

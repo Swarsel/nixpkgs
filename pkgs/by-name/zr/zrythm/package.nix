@@ -1,8 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchzip,
   alsa-lib,
   appstream,
   bash-completion,
@@ -13,6 +12,7 @@
   curl,
   dbus,
   dconf,
+  fetchzip,
   fftw,
   fftwFloat,
   flex,
@@ -23,6 +23,7 @@
   guile,
   help2man,
   jq,
+  kdePackages,
   kissfft,
   libadwaita,
   libbacktrace,
@@ -41,7 +42,6 @@
   ninja,
   pcre2,
   pkg-config,
-  kdePackages,
   python3,
   rtaudio_6,
   rtmidi,
@@ -87,12 +87,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qI1UEIeIJdYQcOWMjJa55DaWjDIabx56dSwjhm64ROM=";
   };
 
-  passthru.updateScript = writeScript "update-zrythm" ''
-    #!/usr/bin/env nix-shell
-    #!nix-shell -i bash -p curl common-updater-scripts
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace-fail "'/usr/lib', '/usr/local/lib', '/opt/homebrew/lib'" "'${fftw}/lib'"
 
-    version="$(curl -s https://www.zrythm.org/releases/ | grep -o -m 1 'href="zrythm-[^"]*\.tar\.xz"' | head -1 | sed 's/href="zrythm-\(.*\)\.tar\.xz"/\1/')"
-    update-source-version zrythm "$version"
+    chmod +x scripts/meson-post-install.sh
+    patchShebangs ext/sh-manpage-completions/run.sh scripts/generic_guile_wrap.sh \
+      scripts/meson-post-install.sh tools/check_have_unlimited_memlock.sh
   '';
 
   nativeBuildInputs = [
@@ -158,11 +159,6 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  # Zrythm uses meson to build, but requires cmake for dependency detection.
-  dontUseCmakeConfigure = true;
-
-  dontWrapQtApps = true;
-
   mesonFlags = [
     "-Db_lto=false"
     "-Dcarla=enabled"
@@ -179,24 +175,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
+    GUILE_AUTO_COMPILE = 0;
+
     NIX_LDFLAGS = toString [
       "-lfftw3_threads"
       "-lfftw3f_threads"
     ];
-
-    GUILE_AUTO_COMPILE = 0;
   };
-
-  dontStrip = true;
-
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace-fail "'/usr/lib', '/usr/local/lib', '/opt/homebrew/lib'" "'${fftw}/lib'"
-
-    chmod +x scripts/meson-post-install.sh
-    patchShebangs ext/sh-manpage-completions/run.sh scripts/generic_guile_wrap.sh \
-      scripts/meson-post-install.sh tools/check_have_unlimited_memlock.sh
-  '';
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -205,17 +190,32 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  dontStrip = true;
+  # Zrythm uses meson to build, but requires cmake for dependency detection.
+  dontUseCmakeConfigure = true;
+  dontWrapQtApps = true;
+
+  passthru.updateScript = writeScript "update-zrythm" ''
+    #!/usr/bin/env nix-shell
+    #!nix-shell -i bash -p curl common-updater-scripts
+
+    version="$(curl -s https://www.zrythm.org/releases/ | grep -o -m 1 'href="zrythm-[^"]*\.tar\.xz"' | head -1 | sed 's/href="zrythm-\(.*\)\.tar\.xz"/\1/')"
+    update-source-version zrythm "$version"
+  '';
+
   meta = {
-    homepage = "https://www.zrythm.org";
     description = "Automated and intuitive digital audio workstation";
+    homepage = "https://www.zrythm.org";
+    license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       tshaynik
       magnetophon
       astavie
       PowerUser64
     ];
+
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin;
-    license = lib.licenses.agpl3Plus;
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
+  buildPythonPackage,
   pytestCheckHook,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "guntamatic";
   version = "1.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JensTimmerman";
@@ -19,12 +18,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-OQpbBdTxbKd2A9AWJOLmoKNmPx3ZXTWqLgwTndDWMuw=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "guntamatic" ];
 
   meta = {

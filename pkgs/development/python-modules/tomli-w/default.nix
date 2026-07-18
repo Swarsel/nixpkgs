@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
   tomli,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "tomli-w";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hukkin";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-Du37ySvAL9iwGec5wbWxwLTYm+kcDSOs5OJ5Sw7R87g=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [
     pytestCheckHook
     tomli
   ];
 
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "tomli_w" ];
 
   meta = {

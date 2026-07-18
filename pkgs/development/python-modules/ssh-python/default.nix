@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cython,
-  openssl,
-  zlib,
   libssh,
+  openssl,
+  setuptools,
+  zlib,
 }:
 
 buildPythonPackage rec {
   pname = "ssh-python";
   version = "1.2.0.post1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ParallelSSH";
@@ -20,8 +19,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-ix6UzyC/mFDVOvfJujwppijmsTrwNtuDAkmikrKKc2o=";
   };
-
-  build-system = [ setuptools ];
 
   nativeBuildInputs = [ cython ];
 
@@ -35,6 +32,8 @@ buildPythonPackage rec {
     SYSTEM_LIBSSH = true;
   };
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ssh" ];
 
   meta = {

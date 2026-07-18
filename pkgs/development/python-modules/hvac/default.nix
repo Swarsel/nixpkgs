@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  poetry-core,
   pyhcl,
   requests,
-  poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "hvac";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,7 +25,7 @@ buildPythonPackage rec {
 
   # Requires running a Vault server
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "hvac" ];
 
   meta = {

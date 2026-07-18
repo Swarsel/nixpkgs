@@ -1,21 +1,19 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nix-update-script,
-
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-
-  rustPlatform,
   cargo-tauri,
-  wrapGAppsHook4,
-  pkg-config,
+  fetchPnpmDeps,
   glib-networking,
-  webkitgtk_4_1,
+  nix-update-script,
+  nodejs,
   openssl,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_10,
+  rustPlatform,
+  stdenvNoCC,
+  webkitgtk_4_1,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,18 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "fedistar";
     tag = "v${finalAttrs.version}";
     hash = "sha256-MV2ItwIBzDEY2tKI8WrQj+rAzv6OTC2aZMiD46oLHFw=";
-  };
-
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = "src-tauri";
-
-  cargoHash = "sha256-Ac7u/u0kGlUwKF5/196Ss4+pUMyPhAbGqhlmtlYI2Us=";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-JaFXAYHoSMyNgHjeNWgJXJ8ZeU9wUi47N58L3QEd0FE=";
   };
 
   nativeBuildInputs = [
@@ -60,16 +46,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-Ac7u/u0kGlUwKF5/196Ss4+pUMyPhAbGqhlmtlYI2Us=";
   doCheck = false; # This version's tests do not pass
+  buildAndTestSubdir = "src-tauri";
+  cargoRoot = "src-tauri";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-JaFXAYHoSMyNgHjeNWgJXJ8ZeU9wUi47N58L3QEd0FE=";
+    pnpm = pnpm_10;
+  };
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
   meta = {
     description = "Multi-column Fediverse client application for desktop";
     homepage = "https://fedistar.net/";
-    mainProgram = "fedistar";
+    changelog = "https://github.com/h3poteto/fedistar/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ noodlez1232 ];
-    changelog = "https://github.com/h3poteto/fedistar/releases/tag/v${finalAttrs.version}";
+    mainProgram = "fedistar";
   };
 })

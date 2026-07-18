@@ -1,7 +1,7 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   dotnetCorePackages,
   jq,
 }:
@@ -28,25 +28,19 @@ buildDotnetModule rec {
     mv global.json.tmp global.json
   '';
 
+  nativeBuildInputs = [ jq ];
+  doCheck = true;
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0_4xx-bin;
+  dotnetTestFlags = "-p:UseAppHost=false";
+  nugetDeps = ./deps.json;
+
   projectFile = [
     "src/Bicep.Cli/Bicep.Cli.csproj"
     "src/Bicep.LangServer/Bicep.LangServer.csproj"
   ];
 
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0_4xx-bin;
-
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
-  nativeBuildInputs = [ jq ];
-
-  doCheck = true;
-
-  dotnetTestFlags = "-p:UseAppHost=false";
-
   testProjectFile = "src/Bicep.Cli.UnitTests/Bicep.Cli.UnitTests.csproj";
-
   passthru.updateScript = ./updater.sh;
 
   meta = {

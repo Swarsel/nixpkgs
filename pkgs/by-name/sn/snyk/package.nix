@@ -1,11 +1,11 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nodejs_24,
   npm-lockfile-fix,
-  testers,
   snyk,
+  testers,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -24,23 +24,21 @@ buildNpmPackage (finalAttrs: {
     '';
   };
 
-  npmDepsFetcherVersion = 3;
-
-  npmDepsHash = "sha256-6re7WgeeuiHSJJmr+3wWyHYEq+jcVy9FvkwwVwwdnBg=";
-
-  nodejs = nodejs_24;
-
   postPatch = ''
     substituteInPlace package.json \
       --replace-fail '"version": "1.0.0-monorepo"' '"version": "${finalAttrs.version}"'
   '';
+
+  npmDepsHash = "sha256-6re7WgeeuiHSJJmr+3wWyHYEq+jcVy9FvkwwVwwdnBg=";
 
   postInstall = ''
     # Remove dangling symlinks created during installation (remove -delete to just see the files, or -print '%l\n' to see the target
     find -L $out -type l -print -delete
   '';
 
+  nodejs = nodejs_24;
   npmBuildScript = "build:prod";
+  npmDepsFetcherVersion = 3;
 
   passthru.tests.version = testers.testVersion {
     package = snyk;

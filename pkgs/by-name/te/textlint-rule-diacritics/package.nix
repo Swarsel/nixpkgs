@@ -18,10 +18,8 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-bKA8aPVBYdzRPwCyFdEs3eWStJwswCZPVpsqGWwc42E=";
-
-  dontNpmBuild = true;
-
   dontCheckForBrokenSymlinks = true;
+  dontNpmBuild = true;
 
   passthru.tests = textlint.testPackages {
     rule = textlint-rule-diacritics;

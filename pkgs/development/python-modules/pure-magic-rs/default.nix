@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   rustPlatform,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pure-magic-rs";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "qjerome";
@@ -18,20 +17,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-cvCAiZSyB+9tNydfco9YGU5NA6Ja/SCsVeYJvuKitGo=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-wysI/3fxHJ+W6q36hFm7D0Jtimq5+tyLAb1KYUYQ6/U=";
-  };
-
-  buildAndTestSubdir = "python";
-
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  buildAndTestSubdir = "python";
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-wysI/3fxHJ+W6q36hFm7D0Jtimq5+tyLAb1KYUYQ6/U=";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pure_magic_rs" ];
 
   meta = {

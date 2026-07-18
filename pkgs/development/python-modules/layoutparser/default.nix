@@ -1,51 +1,54 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  effdet,
+  google-cloud-vision,
+  iopath,
   # build inputs
   numpy,
   opencv-python,
-  scipy,
   pandas,
-  pillow,
-  pyyaml,
-  iopath,
-  pdfplumber,
   pdf2image,
-  google-cloud-vision,
+  pdfplumber,
+  pillow,
   pytesseract,
-  torch,
-  torchvision,
-  effdet,
   # check inputs
   pytestCheckHook,
+  pyyaml,
+  scipy,
+  torch,
+  torchvision,
 }:
 let
   pname = "layoutparser";
   version = "0.3.4";
   optional-dependencies = {
-    ocr = [
-      google-cloud-vision
-      pytesseract
-    ];
-    gcv = [ google-cloud-vision ];
-    tesseract = [ pytesseract ];
-    layoutmodels = [
-      torch
-      torchvision
-      effdet
-    ];
     effdet = [
       torch
       torchvision
       effdet
     ];
+
+    gcv = [ google-cloud-vision ];
+
+    layoutmodels = [
+      torch
+      torchvision
+      effdet
+    ];
+
+    ocr = [
+      google-cloud-vision
+      pytesseract
+    ];
+
+    tesseract = [ pytesseract ];
     # paddledetection = [ paddlepaddle ]
   };
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Layout-Parser";
@@ -71,9 +74,13 @@ buildPythonPackage {
     pdf2image
   ];
 
-  pythonImportsCheck = [ "layoutparser" ];
-
   nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.ocr;
+
+  disabledTestPaths = [
+    "tests_deps/test_only_detectron2.py" # requires detectron2 not yet packaged
+    "tests_deps/test_only_effdet.py" # requires effdet (disable for now until effdet builds on darwin)
+    "tests_deps/test_only_paddledetection.py" # requires paddlepaddle not yet packaged
+  ];
 
   disabledTests = [
     "test_PaddleDetectionModel" # requires paddlepaddle not yet packaged
@@ -90,13 +97,9 @@ buildPythonPackage {
     "test_when_backends_are_not_loaded"
   ];
 
-  disabledTestPaths = [
-    "tests_deps/test_only_detectron2.py" # requires detectron2 not yet packaged
-    "tests_deps/test_only_effdet.py" # requires effdet (disable for now until effdet builds on darwin)
-    "tests_deps/test_only_paddledetection.py" # requires paddlepaddle not yet packaged
-  ];
-
+  format = "setuptools";
   optional-dependencies = optional-dependencies;
+  pythonImportsCheck = [ "layoutparser" ];
 
   meta = {
     description = "Unified toolkit for Deep Learning Based Document Image Analysis";

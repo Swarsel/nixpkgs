@@ -1,50 +1,45 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  pdm-backend,
-
   # dependencies
   aiohttp,
+  # tests
+  blockbuster,
+  buildPythonPackage,
   dataclasses-json,
+  duckdb,
+  duckdb-engine,
+  # passthru
+  gitUpdater,
+  httpx,
   httpx-sse,
   langchain-classic,
   langchain-core,
-  langsmith,
-  numpy,
-  pydantic-settings,
-  pyyaml,
-  requests,
-  sqlalchemy,
-  tenacity,
-
-  # tests
-  blockbuster,
-  duckdb,
-  duckdb-engine,
-  httpx,
   langchain-tests,
+  langsmith,
   lark,
+  numpy,
   pandas,
+  # build-system
+  pdm-backend,
+  pydantic-settings,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
+  pythonAtLeast,
+  pyyaml,
+  requests,
   requests-mock,
   responses,
+  sqlalchemy,
   syrupy,
+  tenacity,
   toml,
-
-  # passthru
-  gitUpdater,
 }:
 
 buildPythonPackage rec {
   pname = "langchain-community";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -52,32 +47,6 @@ buildPythonPackage rec {
     tag = "libs/community/v${version}";
     hash = "sha256-N92YDmej2shQQlktr0veFOKyGFWemFj0hdJIYu1rYSc=";
   };
-
-  sourceRoot = "${src.name}/libs/community";
-
-  build-system = [ pdm-backend ];
-
-  # Only needed for mixed python 3.12/3.13 builds
-  pythonRelaxDeps = [
-    "numpy"
-  ];
-
-  dependencies = [
-    aiohttp
-    dataclasses-json
-    httpx-sse
-    langchain-classic
-    langchain-core
-    langsmith
-    numpy
-    pydantic-settings
-    pyyaml
-    requests
-    sqlalchemy
-    tenacity
-  ];
-
-  pythonImportsCheck = [ "langchain_community" ];
 
   nativeCheckInputs = [
     blockbuster
@@ -96,11 +65,32 @@ buildPythonPackage rec {
     toml
   ];
 
-  enabledTestPaths = [
-    "tests/unit_tests"
+  __darwinAllowLocalNetworking = true;
+  build-system = [ pdm-backend ];
+
+  dependencies = [
+    aiohttp
+    dataclasses-json
+    httpx-sse
+    langchain-classic
+    langchain-core
+    langsmith
+    numpy
+    pydantic-settings
+    pyyaml
+    requests
+    sqlalchemy
+    tenacity
   ];
 
-  __darwinAllowLocalNetworking = true;
+  disabledTestPaths = [
+    # depends on Pydantic v1 notations, will not load
+    "tests/unit_tests/document_loaders/test_gitbook.py"
+    # pytest.PytestRemovedIn9Warning: Marks applied to fixtures have no effect
+    # https://docs.pytest.org/en/stable/deprecations.html#applying-a-mark-to-a-fixture-function
+    "tests/unit_tests/document_loaders/test_hugging_face.py"
+    "tests/unit_tests/indexes/test_sql_record_manager.py"
+  ];
 
   disabledTests = [
     # requires bs4, aka BeautifulSoup
@@ -118,18 +108,23 @@ buildPythonPackage rec {
     "test_no_dynamic__all__"
   ];
 
-  disabledTestPaths = [
-    # depends on Pydantic v1 notations, will not load
-    "tests/unit_tests/document_loaders/test_gitbook.py"
-    # pytest.PytestRemovedIn9Warning: Marks applied to fixtures have no effect
-    # https://docs.pytest.org/en/stable/deprecations.html#applying-a-mark-to-a-fixture-function
-    "tests/unit_tests/document_loaders/test_hugging_face.py"
-    "tests/unit_tests/indexes/test_sql_record_manager.py"
+  enabledTestPaths = [
+    "tests/unit_tests"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "langchain_community" ];
+
+  # Only needed for mixed python 3.12/3.13 builds
+  pythonRelaxDeps = [
+    "numpy"
+  ];
+
+  sourceRoot = "${src.name}/libs/community";
+
   passthru.updateScript = gitUpdater {
-    rev-prefix = "libs/community/v";
     ignoredVersions = "a|b|dev|rc";
+    rev-prefix = "libs/community/v";
   };
 
   meta = {
@@ -137,6 +132,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/langchain-ai/langchain-community";
     changelog = "https://github.com/langchain-ai/langchain-community/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       natsukium
       sarahec

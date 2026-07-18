@@ -1,23 +1,22 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  meson,
-  ninja,
   blueprint-compiler,
   desktop-file-utils,
-  pkg-config,
-  wrapGAppsHook4,
-  libsoup_3,
   glib-networking,
   libadwaita,
+  libsoup_3,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "aurea";
   version = "1.6.1";
-  pyproject = false; # uses meson
 
   src = fetchFromGitHub {
     owner = "CleoMenezesJr";
@@ -25,6 +24,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-XoLqtuh4ZIeKo8xb1ccaK+9K3uGuQfZt9Fb6NeUDCjE=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -46,24 +47,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pillow
   ];
 
-  strictDeps = true;
-
   dontWrapGApps = true;
-
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
 
   postInstallCheck = ''
     mesonCheckPhase
   '';
 
+  pyproject = false; # uses meson
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Flatpak metainfo banner previewer";
     homepage = "https://github.com/CleoMenezesJr/Aurea";
-    mainProgram = "aurea";
-    platforms = lib.platforms.linux;
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "aurea";
   };
 })

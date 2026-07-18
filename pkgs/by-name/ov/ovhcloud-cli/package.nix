@@ -1,7 +1,7 @@
 {
   lib,
-  buildGo126Module,
   fetchFromGitHub,
+  buildGo126Module,
   installShellFiles,
   testers,
 }:
@@ -17,9 +17,10 @@ buildGo126Module (finalAttrs: {
     hash = "sha256-t9opJiNvSWhaVVILkhvfXRh9fQKrrbzuJZDJ+vRNvEc=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-gN6XQj0bjkeJq9coB7jBliyurrt4L+detXkTDSTN5lo=";
-
   env.CGO_ENABLED = 0;
+  excludedPackages = [ "cmd/docgen" ];
 
   ldflags = [
     "-s"
@@ -27,21 +28,17 @@ buildGo126Module (finalAttrs: {
     "-X github.com/ovh/ovhcloud-cli/internal/version.Version=${finalAttrs.version}"
   ];
 
-  excludedPackages = [ "cmd/docgen" ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "ovhcloud version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
+    description = "Command Line Interface to manage your OVHcloud services";
     homepage = "https://github.com/ovh/ovhcloud-cli";
     changelog = "https://github.com/ovh/ovhcloud-cli/releases/tag/v${finalAttrs.version}";
-    description = "Command Line Interface to manage your OVHcloud services";
-    mainProgram = "ovhcloud";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.anthonyroussel ];
+    mainProgram = "ovhcloud";
   };
 })

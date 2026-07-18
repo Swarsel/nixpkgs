@@ -2,19 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  hatchling,
   hatch-jupyter-builder,
+  hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "jupyterlab-widgets";
   version = "3.0.16";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "jupyterlab_widgets";
     inherit version;
     hash = "sha256-Qj2gUHHVXPJ6nmAiFtNaOmWj5BzfnF07ZDuBTOOMGeA=";
+    pname = "jupyterlab_widgets";
   };
 
   # jupyterlab is required to build from source but we use the pre-build package
@@ -23,14 +22,15 @@ buildPythonPackage rec {
       --replace '"jupyterlab~=4.0"' ""
   '';
 
+  # has no tests
+  doCheck = false;
+
   build-system = [
     hatchling
     hatch-jupyter-builder
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "jupyterlab_widgets" ];
 
   meta = {

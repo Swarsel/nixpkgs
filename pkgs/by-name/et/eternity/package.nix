@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  cmake,
-  libGL,
+  fetchFromGitHub,
   SDL2,
   SDL2_mixer,
   SDL2_net,
-  fetchFromGitHub,
+  cmake,
+  libGL,
   makeWrapper,
   zlib,
 }:
@@ -14,6 +14,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "eternity-engine";
   version = "4.05.04";
+
   src = fetchFromGitHub {
     owner = "team-eternity";
     repo = "eternity";
@@ -63,11 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://doomworld.com/eternity";
     description = "New school Doom port by James Haley";
-    mainProgram = "eternity";
+    homepage = "https://doomworld.com/eternity";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ aware70 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "eternity";
   };
 })

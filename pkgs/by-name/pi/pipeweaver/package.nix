@@ -1,23 +1,20 @@
 {
   lib,
-  buildNpmPackage,
-  fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  pipewire,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
+  nix-update-script,
+  pipewire,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (
   finalAttrs:
   let
     web = buildNpmPackage {
-      pname = "${finalAttrs.pname}-web";
       inherit (finalAttrs) version src;
-
-      sourceRoot = "${finalAttrs.src.name}/web";
-
+      pname = "${finalAttrs.pname}-web";
       npmDepsHash = "sha256-ZX/3H/VdRdWC2j+mPA/0rZflDhslqTN1mqA9vvQRQG0=";
 
       installPhase = ''
@@ -25,13 +22,13 @@ rustPlatform.buildRustPackage (
         cp -r dist $out
         runHook postInstall
       '';
+
+      sourceRoot = "${finalAttrs.src.name}/web";
     };
   in
   {
     pname = "pipeweaver";
     version = "0.1.6";
-
-    __structuredAttrs = true;
 
     src = fetchFromGitHub {
       owner = "pipeweaver";
@@ -39,31 +36,6 @@ rustPlatform.buildRustPackage (
       tag = "v${finalAttrs.version}";
       hash = "sha256-wf3gxCLT5vOz+5+CpfmkX0stKoAOpQ6KIoW6xBNV1xk=";
     };
-
-    cargoHash = "sha256-Jv0fF6keg2NcUnCJhCId7rwPVZK1/Q9+otQNjp54RCI=";
-
-    nativeBuildInputs = [
-      pkg-config
-      rustPlatform.bindgenHook
-    ];
-
-    buildInputs = [
-      pipewire
-    ];
-
-    cargoBuildFlags = [
-      "--workspace"
-      "--exclude"
-      "pipeweaver-app"
-      "--all-features"
-    ];
-
-    cargoTestFlags = [
-      "--workspace"
-      "--exclude"
-      "pipeweaver-app"
-      "--all-features"
-    ];
 
     postPatch = ''
       # Prevent daemon/build.rs from running to prevent impure git and npm calls.
@@ -74,6 +46,16 @@ rustPlatform.buildRustPackage (
       cp -r ${web}/* daemon/web-content/
     '';
 
+    nativeBuildInputs = [
+      pkg-config
+      rustPlatform.bindgenHook
+    ];
+
+    buildInputs = [
+      pipewire
+    ];
+
+    cargoHash = "sha256-Jv0fF6keg2NcUnCJhCId7rwPVZK1/Q9+otQNjp54RCI=";
     # Provide GIT_HASH that build.rs would have set
     env.GIT_HASH = finalAttrs.src.tag;
 
@@ -104,8 +86,25 @@ rustPlatform.buildRustPackage (
       runHook postInstall
     '';
 
+    __structuredAttrs = true;
+
+    cargoBuildFlags = [
+      "--workspace"
+      "--exclude"
+      "pipeweaver-app"
+      "--all-features"
+    ];
+
+    cargoTestFlags = [
+      "--workspace"
+      "--exclude"
+      "pipeweaver-app"
+      "--all-features"
+    ];
+
     passthru = {
       inherit web;
+
       updateScript = nix-update-script {
         extraArgs = [
           "--subpackage"
@@ -118,9 +117,9 @@ rustPlatform.buildRustPackage (
       description = "Manage streaming audio on Linux through PipeWire with virtual channels, mixing, and routing";
       homepage = "https://github.com/pipeweaver/pipeweaver";
       license = lib.licenses.mit;
-      mainProgram = "pipeweaver-daemon";
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ saadndm ];
+      platforms = lib.platforms.linux;
+      mainProgram = "pipeweaver-daemon";
     };
   }
 )

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "token-bucket";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "falconry";
@@ -19,11 +18,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ZWmrLZ3CsotGAoVdbVTz7YNrBHfCKR5t94wrdVMM3P4=";
   };
 
-  build-system = [ setuptools ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   doCheck = !stdenv.hostPlatform.isDarwin;
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Token Bucket Implementation for Python Web Apps";

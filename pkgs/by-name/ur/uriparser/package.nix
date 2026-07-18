@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BM2Nf7iKlS336RG7f+ZKBm/+yru5wB9p2TVdY7kYgKg=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
@@ -25,22 +26,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   checkInputs = [ gtest ];
 
-  strictDeps = true;
-
   meta = {
-    changelog = "https://github.com/uriparser/uriparser/blob/uriparser-${finalAttrs.version}/ChangeLog";
     description = "Strictly RFC 3986 compliant URI parsing library";
+
     longDescription = ''
       uriparser is a strictly RFC 3986 compliant URI parsing and handling library written in C.
       API documentation is available on uriparser website.
     '';
+
     homepage = "https://uriparser.github.io/";
+    changelog = "https://github.com/uriparser/uriparser/blob/uriparser-${finalAttrs.version}/ChangeLog";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bosu ];
-    mainProgram = "uriparse";
     platforms = lib.platforms.unix;
+    mainProgram = "uriparse";
   };
 })

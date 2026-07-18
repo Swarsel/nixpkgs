@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  gettext,
-  makeWrapper,
-  bzip2,
-  curl,
-  libjpeg,
-  libxml2,
-  xz,
-  lua,
-  ode,
-  libGL,
-  libGLU,
-  libpng,
-  pkg-config,
   SDL2,
   SDL2_mixer,
   SDL2_net,
   SDL2_ttf,
-  sqlite,
+  bzip2,
+  cmake,
+  curl,
+  gettext,
+  libGL,
+  libGLU,
+  libjpeg,
+  libpng,
   libxdg_basedir,
+  libxml2,
+  lua,
+  makeWrapper,
+  ode,
+  pkg-config,
+  sqlite,
+  xz,
   zlib,
 }:
 
@@ -74,17 +74,21 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Challenging 2D motocross platform game, where physics play an important role";
-    mainProgram = "xmoto";
+
     longDescription = ''
       X-Moto is a challenging 2D motocross platform game, where physics plays an all important role in the gameplay.
       You need to control your bike to its limits, if you want to have a chance to finish the most difficult challenges.
     '';
+
     homepage = "https://xmoto.tuxfamily.org";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       pSub
     ];
+
     platforms = lib.platforms.all;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "xmoto";
   };
 }

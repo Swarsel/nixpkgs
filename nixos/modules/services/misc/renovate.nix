@@ -17,16 +17,17 @@ let
   generateValidatedConfig =
     name: value:
     pkgs.callPackage (
-      { runCommand, jq }:
+      { jq, runCommand }:
       runCommand name
         {
           nativeBuildInputs = [
             jq
             cfg.package
           ];
-          value = builtins.toJSON value;
+
           passAsFile = [ "value" ];
           preferLocalBuild = true;
+          value = builtins.toJSON value;
         }
         ''
           jq . "$valuePath"> $out
@@ -36,32 +37,39 @@ let
   generateConfig = if cfg.validateSettings then generateValidatedConfig else json.generate;
 in
 {
-  meta.maintainers = with lib.maintainers; [
-    marie
-    natsukium
-  ];
-
   options.services.renovate = {
     enable = mkEnableOption "renovate";
     package = mkPackageOption pkgs "renovate" { };
-    schedule = mkOption {
-      type = with types; nullOr str;
-      description = "How often to run renovate. See {manpage}`systemd.time(7)` for the format.";
-      example = "*:0/10";
-      default = null;
-    };
+
     credentials = mkOption {
-      type = with types; attrsOf path;
+      default = { };
+
       description = ''
         Allows configuring environment variable credentials for renovate, read from files.
         This should always be used for passing confidential data to renovate.
       '';
+
       example = {
         RENOVATE_TOKEN = "/etc/renovate/token";
       };
-      default = { };
+
+      type = with types; attrsOf path;
     };
+
     environment = mkOption {
+      default = { };
+
+      description = ''
+        Extra environment variables to export to the Renovate process
+        from the systemd unit configuration.
+
+        See <https://docs.renovatebot.com/config-overview> for available environment variables.
+      '';
+
+      example = {
+        LOG_LEVEL = "debug";
+      };
+
       type =
         with types;
         attrsOf (
@@ -71,79 +79,90 @@ in
             package
           ])
         );
-      description = ''
-        Extra environment variables to export to the Renovate process
-        from the systemd unit configuration.
+    };
 
-        See <https://docs.renovatebot.com/config-overview> for available environment variables.
-      '';
-      example = {
-        LOG_LEVEL = "debug";
-      };
-      default = { };
-    };
     runtimePackages = mkOption {
-      type = with types; listOf package;
-      description = "Packages available to renovate.";
       default = [ ];
+      description = "Packages available to renovate.";
+      type = with types; listOf package;
     };
-    validateSettings = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Whether to run renovate's config validator on the built configuration.";
+
+    schedule = mkOption {
+      default = null;
+      description = "How often to run renovate. See {manpage}`systemd.time(7)` for the format.";
+      example = "*:0/10";
+      type = with types; nullOr str;
     };
+
     settings = mkOption {
-      type = json.type;
       default = { };
-      example = {
-        platform = "gitea";
-        endpoint = "https://git.example.com";
-        gitAuthor = "Renovate <renovate@example.com>";
-      };
+
       description = ''
         Renovate's global configuration.
         If you want to pass secrets to renovate, please use {option}`services.renovate.credentials` for that.
 
         See <https://docs.renovatebot.com/config-overview> for available settings.
       '';
+
+      example = {
+        endpoint = "https://git.example.com";
+        gitAuthor = "Renovate <renovate@example.com>";
+        platform = "gitea";
+      };
+
+      type = json.type;
+    };
+
+    validateSettings = mkOption {
+      default = true;
+      description = "Whether to run renovate's config validator on the built configuration.";
+      type = types.bool;
     };
   };
 
   config = mkIf cfg.enable {
     services.renovate = {
-      settings = {
-        cacheDir = "/var/cache/renovate";
-        baseDir = "/var/lib/renovate";
-      };
       environment = {
-        RENOVATE_CONFIG_FILE = generateConfig "renovate-config.json" cfg.settings;
         HOME = "/var/lib/renovate";
+        RENOVATE_CONFIG_FILE = generateConfig "renovate-config.json" cfg.settings;
+      };
+
+      settings = {
+        baseDir = "/var/lib/renovate";
+        cacheDir = "/var/cache/renovate";
       };
     };
 
     systemd.services.renovate = {
+      inherit (cfg) environment;
+      after = [ "network.target" ];
       description = "Renovate dependency updater";
       documentation = [ "https://docs.renovatebot.com/" ];
-      after = [ "network.target" ];
-      startAt = lib.optional (cfg.schedule != null) cfg.schedule;
+
       path = [
         config.systemd.package
         pkgs.git
       ]
       ++ cfg.runtimePackages;
-      inherit (cfg) environment;
+
+      script = ''
+        ${lib.concatStringsSep "\n" (
+          map (name: ''
+            ${name}="$(systemd-creds cat 'SECRET-${name}')"
+            export ${name}
+          '') (lib.attrNames cfg.credentials)
+        )}
+        exec ${lib.escapeShellArg (lib.getExe cfg.package)}
+      '';
 
       serviceConfig = {
-        User = "renovate";
-        Group = "renovate";
-        DynamicUser = true;
-        LoadCredential = lib.mapAttrsToList (name: value: "SECRET-${name}:${value}") cfg.credentials;
         CacheDirectory = "renovate";
-        StateDirectory = "renovate";
-
         # Hardening
         CapabilityBoundingSet = [ "" ];
         DeviceAllow = [ "" ];
+        DynamicUser = true;
+        Group = "renovate";
+        LoadCredential = lib.mapAttrsToList (name: value: "SECRET-${name}:${value}") cfg.credentials;
         LockPersonality = true;
         PrivateDevices = true;
         PrivateUsers = true;
@@ -156,26 +175,27 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        StateDirectory = "renovate";
         SystemCallArchitectures = "native";
         UMask = "0077";
+        User = "renovate";
       };
 
-      script = ''
-        ${lib.concatStringsSep "\n" (
-          map (name: ''
-            ${name}="$(systemd-creds cat 'SECRET-${name}')"
-            export ${name}
-          '') (lib.attrNames cfg.credentials)
-        )}
-        exec ${lib.escapeShellArg (lib.getExe cfg.package)}
-      '';
+      startAt = lib.optional (cfg.schedule != null) cfg.schedule;
     };
   };
+
+  meta.maintainers = with lib.maintainers; [
+    marie
+    natsukium
+  ];
 }

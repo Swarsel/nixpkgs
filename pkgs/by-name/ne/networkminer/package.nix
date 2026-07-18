@@ -1,12 +1,12 @@
 {
   lib,
   buildDotnetModule,
-  fetchzip,
   dos2unix,
-  msbuild,
+  dotnetCorePackages,
+  fetchzip,
   gtk2,
   mono,
-  dotnetCorePackages,
+  msbuild,
 }:
 
 buildDotnetModule rec {
@@ -25,13 +25,6 @@ buildDotnetModule rec {
       hash = "sha256-BdjSsFSpt3U7IUurY1dmprzq8wNdPNZyXGKeIGETr7Q=";
     };
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-
-  nativeBuildInputs = [
-    dos2unix
-    msbuild
-  ];
-
   postPatch = ''
     # Not all files have UTF-8 BOM applied consistently
     find . -type f -exec dos2unix -m {} \+
@@ -44,7 +37,10 @@ buildDotnetModule rec {
     dos2unix -r NetworkMiner/NetworkMiner.desktop
   '';
 
-  nugetDeps = ./deps.json;
+  nativeBuildInputs = [
+    dos2unix
+    msbuild
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -75,6 +71,9 @@ buildDotnetModule rec {
 
     runHook postInstall
   '';
+
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  nugetDeps = ./deps.json;
 
   meta = {
     description = "Open Source Network Forensic Analysis Tool (NFAT)";

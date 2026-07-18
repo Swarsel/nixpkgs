@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
-  pydantic,
   aioresponses,
+  buildPythonPackage,
+  pydantic,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "py-unifi-access";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "imhotep";
@@ -23,13 +22,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-UxnW37JqUugdMix9MM5coHZvN9iTCmI53o7LfLL6t6M=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    pydantic
-  ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
@@ -37,6 +29,14 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    pydantic
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "unifi_access_api" ];
 
   meta = {

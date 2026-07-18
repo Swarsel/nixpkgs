@@ -1,10 +1,10 @@
 {
+  lib,
   fetchurl,
   coq,
-  mkCoqDerivation,
   mathcomp,
+  mkCoqDerivation,
   stdlib,
-  lib,
   version ? null,
 }:
 
@@ -20,8 +20,8 @@ let
       owner,
       repo,
       rev,
-      sha256 ? null,
       hash ? null,
+      sha256 ? null,
       ...
     }:
     let
@@ -29,10 +29,11 @@ let
     in
     if hash != null || sha256 != null then
       fetchurl {
+        hash = if hash != null then hash else sha256;
+
         url = "${prefix}releases/download/${rev}/${
           lib.concatStringsSep "-" (namePrefix ++ [ pname ])
         }-${rev}.tbz";
-        hash = if hash != null then hash else sha256;
       }
     else
       fetchTarball { url = "${prefix}archive/refs/heads/${rev}.tar.gz"; };
@@ -40,32 +41,24 @@ in
 
 mkCoqDerivation {
   inherit namePrefix pname fetcher;
-  owner = "jasmin-lang";
-  repo = "coqword";
-  useDune = true;
-
-  releaseRev = v: "v${v}";
-
-  release."3.4".hash = "sha256-AnyiM5B7JJZI5LR0vSi6baVIx9SibYRiho7UBg1uV5w=";
-  release."3.3".hash = "sha256-Zn9245fr0OhgaXjWlIO1QwSxrQYetj7qPHwZAXTdqNc=";
-  release."3.2".hash = "sha256-4HOFFQzKbHIq+ktjJaS5b2Qr8WL1eQ26YxF4vt1FdWM=";
-  release."3.1".hash = "sha256-qQHis6554sG7NpCpWhT2wvelnxsrbEPVNv3fpxwxHMU=";
-  release."3.0".hash = "sha256-xEgx5HHDOimOJbNMtIVf/KG3XBemOS9XwoCoW6btyJ4=";
-  release."2.4".hash = "sha256-OG99PfjhtKikxM9aBKRsej1gTo1O/llAdXdiiyjZf2Q=";
-  release."2.3".hash = "sha256-whU1yvFFuxpwQutW41B/WBg5DrVZJW/Do/GuHtzuI3U=";
-  release."2.2".hash = "sha256-8BB6SToCrMZTtU78t2K+aExuxk9O1lCqVQaa8wabSm8=";
-  release."2.1".hash = "sha256-895gZzwwX8hN9UUQRhcgRlphHANka9R0PRotfmSEelA=";
-  release."2.0".hash = "sha256-ySg3AviGGY5jXqqn1cP6lTw3aS5DhawXEwNUgj7pIjA=";
-
   inherit version;
+
+  propagatedBuildInputs = [
+    mathcomp.algebra
+    mathcomp.ssreflect
+    mathcomp.fingroup
+    stdlib
+  ];
+
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -77,16 +70,24 @@ mkCoqDerivation {
       ]
       null;
 
-  propagatedBuildInputs = [
-    mathcomp.algebra
-    mathcomp.ssreflect
-    mathcomp.fingroup
-    stdlib
-  ];
+  owner = "jasmin-lang";
+  release."2.0".hash = "sha256-ySg3AviGGY5jXqqn1cP6lTw3aS5DhawXEwNUgj7pIjA=";
+  release."2.1".hash = "sha256-895gZzwwX8hN9UUQRhcgRlphHANka9R0PRotfmSEelA=";
+  release."2.2".hash = "sha256-8BB6SToCrMZTtU78t2K+aExuxk9O1lCqVQaa8wabSm8=";
+  release."2.3".hash = "sha256-whU1yvFFuxpwQutW41B/WBg5DrVZJW/Do/GuHtzuI3U=";
+  release."2.4".hash = "sha256-OG99PfjhtKikxM9aBKRsej1gTo1O/llAdXdiiyjZf2Q=";
+  release."3.0".hash = "sha256-xEgx5HHDOimOJbNMtIVf/KG3XBemOS9XwoCoW6btyJ4=";
+  release."3.1".hash = "sha256-qQHis6554sG7NpCpWhT2wvelnxsrbEPVNv3fpxwxHMU=";
+  release."3.2".hash = "sha256-4HOFFQzKbHIq+ktjJaS5b2Qr8WL1eQ26YxF4vt1FdWM=";
+  release."3.3".hash = "sha256-Zn9245fr0OhgaXjWlIO1QwSxrQYetj7qPHwZAXTdqNc=";
+  release."3.4".hash = "sha256-AnyiM5B7JJZI5LR0vSi6baVIx9SibYRiho7UBg1uV5w=";
+  releaseRev = v: "v${v}";
+  repo = "coqword";
+  useDune = true;
 
   meta = {
     description = "Yet Another Coq Library on Machine Words";
-    maintainers = [ lib.maintainers.vbgl ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.vbgl ];
   };
 }

@@ -1,15 +1,15 @@
 {
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  stdenvNoCC,
-  clang,
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   _experimental-update-script-combinators,
+  buildGoModule,
+  clang,
+  fetchPnpmDeps,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  stdenvNoCC,
 }:
 let
   pnpm = pnpm_10;
@@ -17,6 +17,7 @@ in
 buildGoModule (finalAttrs: {
   pname = "daed";
   version = "1.27.0";
+
   src = fetchFromGitHub {
     owner = "daeuniverse";
     repo = "daed";
@@ -25,65 +26,8 @@ buildGoModule (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  sourceRoot = "${finalAttrs.src.name}/wing";
-
-  web = stdenvNoCC.mkDerivation {
-    inherit (finalAttrs) pname version src;
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs)
-        pname
-        version
-        src
-        ;
-      inherit pnpm;
-      fetcherVersion = 3;
-      hash = "sha256-2g/M+4XI1EM+c7W82qyfH8C7sX+Y0QACiSpn65Vei4g=";
-    };
-
-    nativeBuildInputs = [
-      nodejs
-      pnpmConfigHook
-      pnpm
-    ];
-
-    strictDeps = true;
-    __structuredAttrs = true;
-
-    buildPhase = ''
-      runHook preBuild
-
-      pnpm build
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out
-      cp -R apps/web/dist/* $out
-
-      runHook postInstall
-    '';
-  };
-
-  vendorHash = "sha256-l7jgMvrbpOY2+cvnc0e5cvSgKVm4GcWC+bPbff+PE80=";
-  proxyVendor = true;
-
   nativeBuildInputs = [ clang ];
-
-  hardeningDisable = [ "zerocallusedregs" ];
-
-  prePatch = ''
-    substituteInPlace Makefile \
-      --replace-fail /bin/bash /bin/sh
-
-    # ${finalAttrs.web} does not have write permission
-    mkdir dist
-    cp -r ${finalAttrs.web}/* dist
-    chmod -R 755 dist
-  '';
+  vendorHash = "sha256-l7jgMvrbpOY2+cvnc0e5cvSgKVm4GcWC+bPbff+PE80=";
 
   buildPhase = ''
     runHook preBuild
@@ -105,8 +49,66 @@ buildGoModule (finalAttrs: {
       --replace-fail /usr/bin $out/bin
   '';
 
+  hardeningDisable = [ "zerocallusedregs" ];
+
+  prePatch = ''
+    substituteInPlace Makefile \
+      --replace-fail /bin/bash /bin/sh
+
+    # ${finalAttrs.web} does not have write permission
+    mkdir dist
+    cp -r ${finalAttrs.web}/* dist
+    chmod -R 755 dist
+  '';
+
+  proxyVendor = true;
+  sourceRoot = "${finalAttrs.src.name}/wing";
+
+  web = stdenvNoCC.mkDerivation {
+    inherit (finalAttrs) pname version src;
+    strictDeps = true;
+
+    nativeBuildInputs = [
+      nodejs
+      pnpmConfigHook
+      pnpm
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      pnpm build
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out
+      cp -R apps/web/dist/* $out
+
+      runHook postInstall
+    '';
+
+    __structuredAttrs = true;
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs)
+        pname
+        version
+        src
+        ;
+
+      inherit pnpm;
+      fetcherVersion = 3;
+      hash = "sha256-2g/M+4XI1EM+c7W82qyfH8C7sX+Y0QACiSpn65Vei4g=";
+    };
+  };
+
   passthru = {
     inherit (finalAttrs) web;
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script {
         attrPath = "daed.web";
@@ -122,10 +124,12 @@ buildGoModule (finalAttrs: {
     description = "Modern dashboard with dae";
     homepage = "https://github.com/daeuniverse/daed";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       oluceps
       ccicnce113424
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "daed";
   };

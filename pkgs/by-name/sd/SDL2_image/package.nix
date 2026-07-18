@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   SDL2,
   autoreconfHook,
-  fetchurl,
   libjpeg,
   libpng,
   libtiff,
   libwebp,
   pkg-config,
-  stdenv,
   zlib,
   # Boolean flags
   enableSTB ? true,
@@ -29,6 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     SDL2
@@ -63,15 +65,13 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.enableFeature false "imageio")
   ];
 
-  strictDeps = true;
-
   enableParallelBuilding = true;
 
   meta = {
     description = "SDL image library";
     homepage = "https://github.com/libsdl-org/SDL_image";
     license = lib.licenses.zlib;
-    teams = [ lib.teams.sdl ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.sdl ];
   };
 })

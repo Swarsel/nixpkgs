@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  cmake,
-  pkg-config,
+  aspell,
   bzip2,
-  libx11,
-  libsForQt5,
+  cmake,
+  fetchpatch2,
+  gettext,
   libiconv,
-  pcre-cpp,
   libidn,
+  libsForQt5,
+  libx11,
   lua5,
   miniupnpc,
-  aspell,
-  gettext,
+  pcre-cpp,
   perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -31,16 +31,28 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/eiskaltdcpp/eiskaltdcpp/commit/5ab5e1137a46864b6ecd1ca302756da8b833f754.patch?full_index=1";
       hash = "sha256-GIdcIHKXNSbHxbiMGRPgfq2w/zNSfR/FhyyXayFWfg8=";
+      url = "https://github.com/eiskaltdcpp/eiskaltdcpp/commit/5ab5e1137a46864b6ecd1ca302756da8b833f754.patch?full_index=1";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 2.6.3)" "cmake_minimum_required (VERSION 3.10)"
+    substituteInPlace {dcpp,dht,extra,json}/CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 2.6)" "cmake_minimum_required (VERSION 3.10)"
+    substituteInPlace eiskaltdcpp-{cli,daemon}/CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required (VERSION 3.10)"
+    substituteInPlace eiskaltdcpp-qt/CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 2.8.11)" "cmake_minimum_required (VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
     pkg-config
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libsForQt5.qtbase
     libsForQt5.qttools
@@ -62,17 +74,6 @@ stdenv.mkDerivation rec {
     ))
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin libiconv;
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 2.6.3)" "cmake_minimum_required (VERSION 3.10)"
-    substituteInPlace {dcpp,dht,extra,json}/CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 2.6)" "cmake_minimum_required (VERSION 3.10)"
-    substituteInPlace eiskaltdcpp-{cli,daemon}/CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required (VERSION 3.10)"
-    substituteInPlace eiskaltdcpp-qt/CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 2.8.11)" "cmake_minimum_required (VERSION 3.10)"
-  '';
 
   cmakeFlags = [
     (lib.cmakeBool "DBUS_NOTIFY" true)

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
+  anthy,
   cmake,
+  fcitx5,
+  gettext,
   kdePackages,
   pkg-config,
-  fcitx5,
-  anthy,
-  gettext,
   zstd,
 }:
 
@@ -27,6 +27,7 @@ stdenv.mkDerivation rec {
     pkg-config
     zstd
   ];
+
   buildInputs = [
     fcitx5
     anthy

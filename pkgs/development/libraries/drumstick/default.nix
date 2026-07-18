@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
   cmake,
   docbook_xml_dtd_45,
   docbook_xsl,
   doxygen,
-  graphviz-nox,
-  pkg-config,
-  qttools,
-  wrapQtAppsHook,
-  alsa-lib,
   fluidsynth,
+  graphviz-nox,
   libpulseaudio,
+  pkg-config,
   qtbase,
   qtsvg,
+  qttools,
   qtwayland,
   sonivox,
+  wrapQtAppsHook,
   qt5compat ? null,
 }:
 
@@ -32,17 +32,17 @@ stdenv.mkDerivation rec {
     hash = "sha256-vPlhQ+i8gifI/UIXii7KhZQ+RYBdnE09FVCXQiJcQdU=";
   };
 
-  patches = [ ./drumstick-plugins.patch ];
-
-  postPatch = ''
-    substituteInPlace library/rt/backendmanager.cpp --subst-var out
-  '';
-
   outputs = [
     "out"
     "dev"
     "man"
   ];
+
+  patches = [ ./drumstick-plugins.patch ];
+
+  postPatch = ''
+    substituteInPlace library/rt/backendmanager.cpp --subst-var out
+  '';
 
   nativeBuildInputs = [
     cmake

@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  glib,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   geoclue2,
   geocode-glib_2,
+  glib,
   granite7,
   gtk4,
   libadwaita,
   libshumate,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,11 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/elementary/maps";
     description = "Map viewer designed for elementary OS";
+    homepage = "https://github.com/elementary/maps";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.maps";
+    teams = [ lib.teams.pantheon ];
   };
 })

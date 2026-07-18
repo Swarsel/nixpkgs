@@ -6,8 +6,8 @@
   perl,
   readline,
   rsh,
-  ssh,
   slurm,
+  ssh,
   slurmSupport ? false,
 }:
 
@@ -20,19 +20,19 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-pmEJXOUd1fsF45jPXQ4dYxVxI5WEQfbTUSvPGn0lxRc=";
   };
 
+  # Do not use git to derive a version.
+  postPatch = ''
+    sed -i 's/m4_esyscmd(\[git describe.*/[${version}])/' configure.ac
+  '';
+
+  nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     perl
     readline
     ssh
   ]
   ++ (lib.optional slurmSupport slurm);
-
-  nativeBuildInputs = [ autoreconfHook ];
-
-  # Do not use git to derive a version.
-  postPatch = ''
-    sed -i 's/m4_esyscmd(\[git describe.*/[${version}])/' configure.ac
-  '';
 
   preConfigure = ''
     configureFlagsArray=(
@@ -51,9 +51,7 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/chaos/pdsh";
     description = "High-performance, parallel remote shell utility";
-    license = lib.licenses.gpl2Plus;
 
     longDescription = ''
       Pdsh is a high-performance, parallel remote shell utility. It has
@@ -64,6 +62,8 @@ stdenv.mkDerivation rec {
       while timeouts occur on some connections.
     '';
 
+    homepage = "https://github.com/chaos/pdsh";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
   };
 }

@@ -17,9 +17,6 @@ let
 in
 stdenv.mkDerivation {
   inherit pname version src;
-
-  dontBuild = true;
-
   nativeBuildInputs = [ dpkg ];
 
   installPhase = ''
@@ -35,6 +32,8 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   passthru.tests = {
     single-node-smoke-test = nixosTests.jitsi-meet;
   };
@@ -43,13 +42,15 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Server side focus component used in Jitsi Meet conferences";
-    mainProgram = "jicofo";
+
     longDescription = ''
       JItsi COnference FOcus is a server side focus component used in Jitsi Meet conferences.
     '';
+
     homepage = "https://github.com/jitsi/jicofo";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.jitsi ];
     platforms = lib.platforms.linux;
+    mainProgram = "jicofo";
+    teams = [ lib.teams.jitsi ];
   };
 }

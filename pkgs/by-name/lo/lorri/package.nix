@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
+  nixosTests,
   pkgs,
   rustPackages,
-  fetchFromGitHub,
   rustPlatform,
   writers,
-  nixosTests,
 }:
 
 let
@@ -18,14 +18,15 @@ let
 
 in
 (rustPlatform.buildRustPackage rec {
-  pname = "lorri";
   inherit version;
+  inherit cargoHash;
+  pname = "lorri";
 
   src = fetchFromGitHub {
+    inherit sha256;
     owner = "nix-community";
     repo = "lorri";
     rev = version;
-    inherit sha256;
   };
 
   outputs = [
@@ -34,15 +35,14 @@ in
     "doc"
   ];
 
-  inherit cargoHash;
-  doCheck = false;
+  nativeBuildInputs = [ rustPackages.rustfmt ];
 
   env = {
     BUILD_REV_COUNT = src.revCount or 1;
     RUN_TIME_CLOSURE = pkgs.callPackage ./runtime.nix { };
   };
 
-  nativeBuildInputs = [ rustPackages.rustfmt ];
+  doCheck = false;
 
   # copy the docs to the $man and $doc outputs
   postInstall = ''
@@ -56,24 +56,27 @@ in
   '';
 
   passthru = {
+    tests = {
+      nixos = nixosTests.lorri;
+    };
+
     updater = writers.writeBash "copy-runtime-nix.sh" ''
       set -euo pipefail
       cp ${src}/nix/runtime.nix ${toString ./runtime.nix}
       cp ${src}/nix/runtime-closure.nix.template ${toString ./runtime-closure.nix.template}
     '';
-    tests = {
-      nixos = nixosTests.lorri;
-    };
   };
 
   meta = {
     description = "Your project's nix-env";
     homepage = "https://github.com/nix-community/lorri";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       Profpatsch
       nyarly
     ];
+
     mainProgram = "lorri";
   };
 })

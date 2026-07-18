@@ -2,8 +2,8 @@
 
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -14,10 +14,6 @@ let
 in
 
 {
-
-  meta = {
-    maintainers = with lib.maintainers; [ mkg20001 ];
-  };
 
   options = {
     programs.cfs-zen-tweaks.enable = lib.mkEnableOption "CFS Zen Tweaks";
@@ -33,5 +29,9 @@ in
       "hybrid-sleep.target"
       "suspend-then-hibernate.target"
     ];
+  };
+
+  meta = {
+    maintainers = with lib.maintainers; [ mkg20001 ];
   };
 }

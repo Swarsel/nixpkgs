@@ -1,12 +1,12 @@
 {
-  autoreconfHook,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
+  gtk-sharp-3_0,
   libappindicator,
   mono,
-  gtk-sharp-3_0,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation {

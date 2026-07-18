@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   SDL,
   SDL_image,
-  libgbm,
+  freetype,
+  ftgl,
   libGL,
+  libgbm,
+  libogg,
   libtheora,
   libvorbis,
-  libogg,
-  ftgl,
-  freetype,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     (lib.getDev SDL)
     SDL_image
@@ -38,8 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     freetype
   ];
 
-  # Fix SDL include problems
-  env.NIX_CFLAGS_COMPILE = "-I${lib.getDev SDL}/include/SDL -I${SDL_image}/include/SDL";
   # Fix linking errors
   makeFlags = [
     "ZAZ_LIBS+=-lSDL"
@@ -51,13 +50,16 @@ stdenv.mkDerivation (finalAttrs: {
     "ZAZ_LIBS+=-lvorbisfile"
   ];
 
+  # Fix SDL include problems
+  env.NIX_CFLAGS_COMPILE = "-I${lib.getDev SDL}/include/SDL -I${SDL_image}/include/SDL";
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Puzzle game about arranging balls in triplets, like Luxor, Zuma, or Puzzle Bobble";
     homepage = "https://zaz.sourceforge.net/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
     mainProgram = "zaz";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

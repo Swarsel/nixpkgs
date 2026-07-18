@@ -1,27 +1,27 @@
 {
-  stdenv,
-  cmake,
-  fetchFromGitHub,
-  freetype,
-  pkg-config,
-  SDL2,
-  libpng,
-  libjpeg,
-  zlib,
-  libogg,
-  libvorbis,
-  libarchive,
-  iconv,
-  openssl,
-  curl,
-  libcpr,
-  rapidjson,
-  libx11,
-  libGL,
-  writeShellScriptBin,
-  makeDesktopItem,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  SDL2,
+  cmake,
   copyDesktopItems,
+  curl,
+  freetype,
+  iconv,
+  libGL,
+  libarchive,
+  libcpr,
+  libjpeg,
+  libogg,
+  libpng,
+  libvorbis,
+  libx11,
+  makeDesktopItem,
+  openssl,
+  pkg-config,
+  rapidjson,
+  writeShellScriptBin,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "unnamed-sdvx-clone";
@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "Drewol";
     repo = "unnamed-sdvx-clone";
     rev = "2472fcc5c8b6b8bc7323dc61ea80b3b1899dd45f";
-    fetchSubmodules = true;
     hash = "sha256-Z0eU3xNzVmv2PwUvS2HoRe2TQzQ8seL0R/YAYCQWR28=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -64,6 +64,26 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_BUILD_TYPE=Release"
   ];
 
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/bin
+    substituteAll $wrapperScript/bin/usc-game-wrapped $out/bin/usc-game-wrapped
+    chmod +x $out/bin/usc-game-wrapped
+    mkdir $out/share
+    cp -r /build/source/bin $out
+    runHook postInstall
+  '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Unnamed SDVX Clone";
+      desktopName = "Unnamed SDVX Clone";
+      exec = "usc-game-wrapped";
+      name = "Unnamed SDVX Clone";
+    })
+  ];
+
   # Wrapper script because the things are hardcoded so we just
   # change the game directory via the built in option uhhhhh
   wrapperScript = writeShellScriptBin "usc-game-wrapped" ''
@@ -79,26 +99,6 @@ stdenv.mkDerivation (finalAttrs: {
     find $DATA_PATH -type f -exec chmod 644 {} +
 
     @out@/bin/usc-game -gamedir="$DATA_PATH"
-  '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Unnamed SDVX Clone";
-      exec = "usc-game-wrapped";
-      comment = "Unnamed SDVX Clone";
-      desktopName = "Unnamed SDVX Clone";
-      categories = [ "Game" ];
-    })
-  ];
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/bin
-    substituteAll $wrapperScript/bin/usc-game-wrapped $out/bin/usc-game-wrapped
-    chmod +x $out/bin/usc-game-wrapped
-    mkdir $out/share
-    cp -r /build/source/bin $out
-    runHook postInstall
   '';
 
   meta = {

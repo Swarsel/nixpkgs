@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   matplotlib,
   numpy,
   pendulum,
   pillow,
   poetry-core,
   pyquaternion,
+  pytestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "bbox";
   version = "0.9.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "varunagrawal";
@@ -24,12 +23,12 @@ buildPythonPackage {
     hash = "sha256-FrJ8FhlqwmnEB/QvPlkDfqZncNGPhwY9aagM9yv1LGs=";
   };
 
-  nativeBuildInputs = [ poetry-core ];
-
   postPatch = ''
     substituteInPlace bbox/metrics.py \
       --replace-warn round_ round
   '';
+
+  nativeBuildInputs = [ poetry-core ];
 
   propagatedBuildInputs = [
     pyquaternion
@@ -48,9 +47,9 @@ buildPythonPackage {
     "test_multi_jaccard_index_2d_performance"
   ];
 
-  pythonRelaxDeps = [ "numpy" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bbox" ];
+  pythonRelaxDeps = [ "numpy" ];
 
   meta = {
     description = "Python library for 2D/3D bounding boxes";

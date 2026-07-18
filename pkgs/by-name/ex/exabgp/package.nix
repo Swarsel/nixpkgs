@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   exabgp,
+  python3Packages,
   testers,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "exabgp";
   version = "5.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Exa-Networks";
@@ -25,14 +24,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
       '["ip", "-o", "address", "show", "dev", ifname]'
   '';
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
-  pythonImportsCheck = [
-    "exabgp"
-  ];
-
   nativeCheckInputs = with python3Packages; [
     hypothesis
     psutil
@@ -45,19 +36,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   __darwinAllowLocalNetworking = true;
 
-  pytestFlags = [ "--benchmark-disable" ];
-
-  enabledTests = [ "tests" ];
+  build-system = with python3Packages; [
+    setuptools
+  ];
 
   disabledTests = [
     # AssertionError: Server should receive connection
     "test_outgoing_connection_establishment"
   ];
 
+  enabledTests = [ "tests" ];
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
+
+  pythonImportsCheck = [
+    "exabgp"
+  ];
+
   passthru.tests = {
     version = testers.testVersion {
-      package = exabgp;
       command = "exabgp version";
+      package = exabgp;
     };
   };
 
@@ -66,10 +65,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/Exa-Networks/exabgp";
     changelog = "https://github.com/Exa-Networks/exabgp/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
-    mainProgram = "exabgp";
+
     maintainers = with lib.maintainers; [
       hexa
       raitobezarius
     ];
+
+    mainProgram = "exabgp";
   };
 })

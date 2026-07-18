@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "timing-asgi";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "steinnes";
@@ -29,10 +28,6 @@ buildPythonPackage rec {
       --replace-fail "poetry>=" "poetry-core>="
   '';
 
-  build-system = [ poetry-core ];
-
-  pythonImportsCheck = [ "timing_asgi" ];
-
   # Tests rely on asynctest which is not supported by python 3.11
   doCheck = false;
 
@@ -41,6 +36,10 @@ buildPythonPackage rec {
     # asynctest
     pytestCheckHook
   ];
+
+  build-system = [ poetry-core ];
+  pyproject = true;
+  pythonImportsCheck = [ "timing_asgi" ];
 
   meta = {
     description = "ASGI middleware to emit timing metrics with something like statsd";

@@ -3,23 +3,22 @@
   buildPythonPackage,
   fetchPypi,
   hatchling,
-  sphinx,
-  pre-commit,
   ipython,
   myst-parser,
-  sphinx-book-theme,
+  pre-commit,
   pytest,
+  sphinx,
+  sphinx-book-theme,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-remove-toctrees";
   version = "1.0.0.post1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sphinx_remove_toctrees";
     inherit version;
     hash = "sha256-SAjR7fFRwG7/bSw5Iux+vJ/Tqhdi3hsuFnSjf1rJzi0=";
+    pname = "sphinx_remove_toctrees";
   };
 
   build-system = [
@@ -34,11 +33,13 @@ buildPythonPackage rec {
     code_style = [
       pre-commit
     ];
+
     docs = [
       ipython
       myst-parser
       sphinx-book-theme
     ];
+
     tests = [
       ipython
       myst-parser
@@ -46,6 +47,8 @@ buildPythonPackage rec {
       sphinx-book-theme
     ];
   };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "sphinx_remove_toctrees"

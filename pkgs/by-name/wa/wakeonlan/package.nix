@@ -1,8 +1,8 @@
 {
   lib,
-  perlPackages,
   fetchFromGitHub,
   installShellFiles,
+  perlPackages,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -27,6 +27,7 @@ perlPackages.buildPerlPackage rec {
     perlPackages.TestPod
     perlPackages.TestPodCoverage
   ];
+
   # Linting and formatting checks are of no interest for us.
   preCheck = ''
     rm -f t/93_pod_spell.t

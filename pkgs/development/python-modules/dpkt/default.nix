@@ -1,13 +1,12 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "dpkt";
   version = "1.9.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "dpkt" ];
 
   meta = {

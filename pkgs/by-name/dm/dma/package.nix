@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   bison,
   flex,
@@ -17,6 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-rmgEWkV/ZmOcO1J1uTMMO5tJWq8DTyT7ANRjHyWUGNw=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail " -m 2755 -o root -g mail" "" \
+      --replace-fail " -m 4754 -o root -g mail" ""
+    substituteInPlace local.c \
+      --replace-fail "LIBEXEC_PATH" '"/run/wrappers/bin"'
+  '';
+
   nativeBuildInputs = [
     bison
     flex
@@ -25,14 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     openssl
   ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail " -m 2755 -o root -g mail" "" \
-      --replace-fail " -m 4754 -o root -g mail" ""
-    substituteInPlace local.c \
-      --replace-fail "LIBEXEC_PATH" '"/run/wrappers/bin"'
-  '';
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"

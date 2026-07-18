@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   deprecated,
-  fetchFromGitHub,
   hatchling,
   pytest-mock,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "headerparser";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jwodder";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-fn9Nlazte6r5JMmp9ynq0qmkLEoJGv8witgZlD7zJNM=";
   };
 
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     deprecated
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "headerparser" ];
 
   meta = {

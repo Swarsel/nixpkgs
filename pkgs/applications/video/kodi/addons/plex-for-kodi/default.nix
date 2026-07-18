@@ -1,17 +1,16 @@
 {
   lib,
-  addonDir,
-  buildKodiAddon,
   fetchFromGitHub,
+  addonDir,
   addonUpdateScript,
+  buildKodiAddon,
   kodi-six,
-  six,
   requests,
+  six,
 }:
 
 buildKodiAddon rec {
   pname = "plex";
-  namespace = "script.plex";
   version = "0.7.9-rev4";
 
   src = fetchFromGitHub {
@@ -32,19 +31,21 @@ buildKodiAddon rec {
     kodi-six
   ];
 
+  postInstall = ''
+    mv /build/source/addon.xml $out${addonDir}/${namespace}/
+  '';
+
+  namespace = "script.plex";
+
   passthru = {
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.plex";
     };
   };
 
-  postInstall = ''
-    mv /build/source/addon.xml $out${addonDir}/${namespace}/
-  '';
-
   meta = {
-    homepage = "https://www.plex.tv";
     description = "Unofficial Plex for Kodi add-on";
+    homepage = "https://www.plex.tv";
     license = lib.licenses.gpl2Only;
     maintainers = lib.teams.kodi.members;
   };

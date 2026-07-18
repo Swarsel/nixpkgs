@@ -20,7 +20,6 @@ in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "smoked-salmon";
   version = "0.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "smokin-salmon";
@@ -28,9 +27,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-kgBTdQTWzGmKWsHjtazaVvQoTulyF5WNFPEUuoanCo4=";
   };
-
-  # Upstream tends to use very narrow version constraints
-  pythonRelaxDeps = true;
 
   # `build-system` requirements are seemingly not covered by pythonRelaxDeps
   postPatch = ''
@@ -82,6 +78,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     (lib.makeBinPath finalAttrs.passthru.runtimeDeps)
   ];
 
+  pyproject = true;
+  # Upstream tends to use very narrow version constraints
+  pythonRelaxDeps = true;
+
   passthru = {
     inherit runtimeDeps;
   };
@@ -90,10 +90,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     description = "Toolkit for checking, editing and uploading music. Catered to Gazelle-based trackers";
     homepage = "https://github.com/smokin-salmon/smoked-salmon";
     license = with lib.licenses; [ asl20 ];
-    mainProgram = "salmon";
+
     maintainers = with lib.maintainers; [
       ambroisie
       undefined-landmark
     ];
+
+    mainProgram = "salmon";
   };
 })

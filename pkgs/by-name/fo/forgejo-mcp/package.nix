@@ -18,18 +18,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-QDJRbF4mZzBv1vxvo1ZQJaUJayRHj1jMgjaRfAmLMik=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
     "-X main.Version=${finalAttrs.version}"
   ];
-
-  __darwinAllowLocalNetworking = true;
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

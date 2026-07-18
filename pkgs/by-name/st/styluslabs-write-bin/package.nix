@@ -1,25 +1,26 @@
 {
-  stdenv,
   lib,
-  libsForQt5,
+  stdenv,
+  fetchurl,
   libglvnd,
+  libsForQt5,
   libx11,
   libxi,
-  fetchurl,
   makeDesktopItem,
 }:
 let
   desktopItem = makeDesktopItem {
-    name = "Write";
-    exec = "Write";
-    comment = "A word processor for handwriting";
-    icon = "write_stylus";
-    desktopName = "Write";
-    genericName = "Write";
     categories = [
       "Office"
       "Graphics"
     ];
+
+    comment = "A word processor for handwriting";
+    desktopName = "Write";
+    exec = "Write";
+    genericName = "Write";
+    icon = "write_stylus";
+    name = "Write";
   };
 in
 stdenv.mkDerivation rec {
@@ -30,10 +31,6 @@ stdenv.mkDerivation rec {
     url = "http://www.styluslabs.com/write/write${version}.tar.gz";
     sha256 = "0h1wf3af7jzp3f3l8mlnshi83d7a4v4y8nfqfai4lmskyicqlz7c";
   };
-
-  sourceRoot = ".";
-
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p $out/bin
@@ -47,6 +44,7 @@ stdenv.mkDerivation rec {
     mkdir -p $out/share/icons
     ln -s $out/Write/Write144x144.png $out/share/icons/write_stylus.png
   '';
+
   preFixup =
     let
       libPath = lib.makeLibraryPath [
@@ -65,16 +63,21 @@ stdenv.mkDerivation rec {
         $out/Write/Write
     '';
 
+  dontBuild = true;
+  sourceRoot = ".";
+
   meta = {
-    homepage = "http://www.styluslabs.com/";
     description = "Write is a word processor for handwriting";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.platforms.linux;
+    homepage = "http://www.styluslabs.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       oyren
       lukts30
       atemu
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

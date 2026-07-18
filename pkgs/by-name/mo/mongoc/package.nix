@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
+  cyrus_sasl,
+  icu,
   openssl,
+  pkg-config,
+  snappy,
   zlib,
   zstd,
-  icu,
-  cyrus_sasl,
-  snappy,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,8 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Official C client library for MongoDB";
     homepage = "http://mongoc.org";
     license = lib.licenses.asl20;
-    mainProgram = "mongoc-stat";
     maintainers = with lib.maintainers; [ archer-65 ];
     platforms = lib.platforms.all;
+    mainProgram = "mongoc-stat";
   };
 })

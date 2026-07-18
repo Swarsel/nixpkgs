@@ -3,7 +3,6 @@
   argparse-addons,
   bitstruct,
   buildPythonPackage,
-  python-can,
   crccheck,
   diskcache,
   fetchPypi,
@@ -11,6 +10,7 @@
   parameterized,
   pytest-freezegun,
   pytestCheckHook,
+  python-can,
   setuptools,
   setuptools-scm,
   textparser,
@@ -19,12 +19,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "cantools";
   version = "41.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-Y5ZbAorAKrG0yGeqIH7Zn5D1WziuEHq+KH19ZtVDXZ8=";
   };
+
+  nativeCheckInputs = [
+    parameterized
+    pytest-freezegun
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.plot;
 
   build-system = [
     setuptools
@@ -41,14 +47,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   optional-dependencies.plot = [ matplotlib ];
-
-  nativeCheckInputs = [
-    parameterized
-    pytest-freezegun
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.plot;
-
+  pyproject = true;
   pythonImportsCheck = [ "cantools" ];
 
   meta = {

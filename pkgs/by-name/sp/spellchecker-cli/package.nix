@@ -1,20 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "spellchecker-cli";
   version = "7.0.3";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tbroadley";
@@ -23,10 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4rKUxXsZKsRDhMV0HL39yQyVNI0negCg97KsI+77oI4=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-GWIjk8eV2yYwsAfe7IY2mjO/dk9mb4vXEOvp68y4eMk=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     yarnConfigHook
@@ -35,15 +29,21 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
   ];
 
+  __structuredAttrs = true;
   yarnBuildScript = "prepack";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-GWIjk8eV2yYwsAfe7IY2mjO/dk9mb4vXEOvp68y4eMk=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "A command-line tool for spellchecking files";
     homepage = "https://www.npmjs.com/package/spellchecker-cli";
-    mainProgram = "spellchecker";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ WiredMic ];
+    mainProgram = "spellchecker";
   };
 })

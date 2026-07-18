@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   buildEnv,
-  gnome-panel,
-  gnome-flashback,
-  lndir,
   glib,
+  gnome-flashback,
+  gnome-panel,
+  lndir,
   wrapGAppsHook3,
   panelModulePackages ? [ ],
 }:
@@ -25,8 +25,8 @@ let
   };
 in
 stdenv.mkDerivation {
-  pname = "${gnome-panel.pname}-with-modules";
   inherit (gnome-panel) version;
+  pname = "${gnome-panel.pname}-with-modules";
 
   nativeBuildInputs = [
     glib
@@ -35,15 +35,6 @@ stdenv.mkDerivation {
 
   buildInputs =
     selectedPanelModulePackages ++ lib.concatMap (x: x.buildInputs or [ ]) selectedPanelModulePackages;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-  # $output/lib/systemd/user is already a symlink
-  dontMoveSystemdUserUnits = true;
-
-  preferLocalBuild = true;
-  allowSubstitutes = false;
 
   installPhase = ''
     runHook preInstall
@@ -67,6 +58,14 @@ stdenv.mkDerivation {
       --set NIX_GNOME_PANEL_MODULESDIR "$out/lib/gnome-panel/modules"
     )
   '';
+
+  allowSubstitutes = false;
+  dontBuild = true;
+  dontConfigure = true;
+  # $output/lib/systemd/user is already a symlink
+  dontMoveSystemdUserUnits = true;
+  dontUnpack = true;
+  preferLocalBuild = true;
 
   meta = gnome-panel.meta // {
     outputsToInstall = [ "out" ];

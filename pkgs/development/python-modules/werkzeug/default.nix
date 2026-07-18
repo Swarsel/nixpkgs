@@ -2,45 +2,31 @@
   lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  flit-core,
-
-  # dependencies
-  markupsafe,
-
-  # optional-dependencies
-  watchdog,
-
   # tests
   cffi,
   cryptography,
   ephemeral-port-reserve,
-  pytest-timeout,
-  pytestCheckHook,
-
+  fetchPypi,
+  # build-system
+  flit-core,
+  # dependencies
+  markupsafe,
   # reverse dependencies
   moto,
+  pytest-timeout,
+  pytestCheckHook,
   sentry-sdk,
+  # optional-dependencies
+  watchdog,
 }:
 
 buildPythonPackage rec {
   pname = "werkzeug";
   version = "3.1.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-IQxr7eWkIKkTlWtHkaf01oQ6Q7b87k36CKZekwB9DSU=";
-  };
-
-  build-system = [ flit-core ];
-
-  dependencies = [ markupsafe ];
-
-  optional-dependencies = {
-    watchdog = [ watchdog ];
   };
 
   nativeCheckInputs = [
@@ -52,7 +38,19 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pythonImportsCheck = [ "werkzeug" ];
+  build-system = [ flit-core ];
+  dependencies = [ markupsafe ];
+
+  disabledTestMarks = [
+    # don't run tests that are marked with filterwarnings, they fail with
+    # warnings._OptionError: unknown warning category: 'pytest.PytestUnraisableExceptionWarning'
+    "filterwarnings"
+  ];
+
+  disabledTestPaths = [
+    # ConnectionRefusedError: [Errno 111] Connection refused
+    "tests/test_serving.py"
+  ];
 
   disabledTests = [
     # ConnectionRefusedError: [Errno 111] Connection refused
@@ -63,33 +61,33 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_get_machine_id" ];
 
-  disabledTestPaths = [
-    # ConnectionRefusedError: [Errno 111] Connection refused
-    "tests/test_serving.py"
-  ];
+  optional-dependencies = {
+    watchdog = [ watchdog ];
+  };
 
-  disabledTestMarks = [
-    # don't run tests that are marked with filterwarnings, they fail with
-    # warnings._OptionError: unknown warning category: 'pytest.PytestUnraisableExceptionWarning'
-    "filterwarnings"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "werkzeug" ];
 
   passthru.tests = {
     inherit moto sentry-sdk;
   };
 
   meta = {
-    changelog = "https://werkzeug.palletsprojects.com/en/stable/changes/#version-${
-      lib.replaceStrings [ "." ] [ "-" ] version
-    }";
-    homepage = "https://palletsprojects.com/p/werkzeug/";
     description = "Comprehensive WSGI web application library";
+
     longDescription = ''
       Werkzeug is a comprehensive WSGI web application library. It
       began as a simple collection of various utilities for WSGI
       applications and has become one of the most advanced WSGI
       utility libraries.
     '';
+
+    homepage = "https://palletsprojects.com/p/werkzeug/";
+
+    changelog = "https://werkzeug.palletsprojects.com/en/stable/changes/#version-${
+      lib.replaceStrings [ "." ] [ "-" ] version
+    }";
+
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

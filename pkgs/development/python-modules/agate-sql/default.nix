@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   agate,
+  buildPythonPackage,
+  geojson,
+  pytestCheckHook,
   setuptools,
   sqlalchemy,
-  pytestCheckHook,
-  geojson,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "agate-sql";
   version = "0.7.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wireservice";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-YPpvLMidW0RnNz1x6FK1QwhOIc9AhwnSm6vxUzbLLBM=";
   };
 
+  nativeCheckInputs = [
+    geojson
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,17 +32,13 @@ buildPythonPackage (finalAttrs: {
     sqlalchemy
   ];
 
-  nativeCheckInputs = [
-    geojson
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "agatesql" ];
-
   disabledTests = [
     # requires crate (sqlalchemy-cratedb)
     "test_to_sql_create_statement_with_dialects"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "agatesql" ];
 
   meta = {
     description = "Adds SQL read/write support to agate";

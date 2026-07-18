@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tstr";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ilotoki0804";
@@ -19,13 +18,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vQ+PNbcrBRSskQDRwD++135SEIzbYKHDcy87Qj2oMNg=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "tstr" ];
 
   meta = {

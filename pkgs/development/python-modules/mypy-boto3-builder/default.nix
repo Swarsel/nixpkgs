@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   botocore,
   buildPythonPackage,
-  fetchFromGitHub,
   jinja2,
   loguru,
   mdformat,
@@ -12,8 +12,8 @@
   pytest-mock,
   pytestCheckHook,
   questionary,
-  requests-mock,
   requests,
+  requests-mock,
   ruff,
   setuptools,
   versionCheckHook,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "mypy-boto3-builder";
   version = "8.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "youtype";
@@ -35,6 +34,13 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail 'version = "8.11.0"' 'version = "${version}"'
   '';
+
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+    requests-mock
+    versionCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -52,19 +58,13 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-    requests-mock
-    versionCheckHook
-  ];
-
-  pythonImportsCheck = [ "mypy_boto3_builder" ];
-
   disabledTests = [
     # Tests require network access
     "TestBotocoreChangelogChangelog"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mypy_boto3_builder" ];
 
   meta = {
     description = "Type annotations builder for boto3";

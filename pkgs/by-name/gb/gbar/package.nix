@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bluez,
+  cmake,
+  gtk-layer-shell,
+  gtk3,
+  libdbusmenu-gtk3,
+  libpulseaudio,
+  libsass,
   meson,
   ninja,
-  cmake,
   pkg-config,
-  libdbusmenu-gtk3,
-  gtk-layer-shell,
-  libsass,
+  wayland,
   wayland-protocols,
   wayland-scanner,
-  bluez,
-  gtk3,
-  libpulseaudio,
-  wayland,
 }:
 
 stdenv.mkDerivation {
@@ -53,7 +53,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/scorpion-26/gBar";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ocfox ];
-    mainProgram = "gBar";
     platforms = lib.platforms.linux;
+    mainProgram = "gBar";
   };
 }

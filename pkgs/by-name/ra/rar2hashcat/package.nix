@@ -19,12 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     ./darwin-support.patch
   ];
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=implicit-function-declaration -Wno-error=int-conversion";
-
   makeFlags = [
     "CC_LINUX=${stdenv.cc.targetPrefix}cc"
     "rar2hashcat"
   ];
+
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=implicit-function-declaration -Wno-error=int-conversion";
 
   installPhase = ''
     runHook preInstall
@@ -35,12 +35,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/hashstation/rar2hashcat/releases/tag/${finalAttrs.version}";
     description = "Processes input RAR files into a format suitable for use with hashcat";
     homepage = "https://github.com/hashstation/rar2hashcat";
+    changelog = "https://github.com/hashstation/rar2hashcat/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "rar2hashcat";
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.unix;
+    mainProgram = "rar2hashcat";
   };
 })

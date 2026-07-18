@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore rec {
-  core = "mrboom";
   version = "0-unstable-2026-03-31";
 
   src = fetchFromGitHub {
@@ -15,8 +14,9 @@ mkLibretroCore rec {
     fetchSubmodules = true;
   };
 
-  makefile = "Makefile";
   makeFlags = [ "GIT_VERSION=${builtins.substring 0 7 src.rev}" ];
+  core = "mrboom";
+  makefile = "Makefile";
 
   meta = {
     description = "Port of Mr.Boom to libretro";

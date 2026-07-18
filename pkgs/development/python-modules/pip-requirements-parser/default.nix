@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   packaging,
   pyparsing,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pip-requirements-parser";
   version = "32.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nexB";
@@ -30,7 +29,7 @@ buildPythonPackage (finalAttrs: {
     ./packaging-26.patch
   ];
 
-  dontConfigure = true;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -42,15 +41,15 @@ buildPythonPackage (finalAttrs: {
     pyparsing
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pip_requirements_parser" ];
-
   disabledTests = [
     "test_RequirementsFile_to_dict"
     "test_RequirementsFile_dumps_unparse"
     "test_legacy_version_is_deprecated"
   ];
+
+  dontConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "pip_requirements_parser" ];
 
   meta = {
     description = "Module to parse pip requirements";

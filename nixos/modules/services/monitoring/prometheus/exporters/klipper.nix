@@ -18,19 +18,23 @@ let
   moonraker = config.services.moonraker;
 in
 {
-  port = 9101;
   extraOpts = {
     package = lib.mkPackageOption pkgs "prometheus-klipper-exporter" { };
 
     moonrakerApiKey = mkOption {
-      type = types.str;
       default = "";
+
       description = ''
         API Key to authenticate with the Moonraker APIs.
         Only needed if the host running the exporter is not a trusted client to Moonraker.
       '';
+
+      type = types.str;
     };
   };
+
+  port = 9101;
+
   serviceOpts = mkMerge (
     [
       {

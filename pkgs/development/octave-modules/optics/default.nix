@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,9 +14,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "Functions covering various aspects of optics";
     homepage = "https://gnu-octave.github.io/packages/optics/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Functions covering various aspects of optics";
   };
 }

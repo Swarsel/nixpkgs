@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  python312,
   fetchFromGitHub,
+  python312,
 }:
 
 let
@@ -14,8 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "dmarc-metrics-exporter";
   version = "1.3.1";
 
-  pyproject = true;
-
   src = fetchFromGitHub {
     owner = "jgosmann";
     repo = "dmarc-metrics-exporter";
@@ -23,7 +21,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-Mp4gQi+cLAoVKVSmGbgruPYPVJV6vxwzVOnx+CZhxS8=";
   };
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = with python3.pkgs; [
+    aiohttp
+    pytest-asyncio
+    pytestCheckHook
+    requests
+  ];
 
   build-system = with python3.pkgs; [
     poetry-core
@@ -42,11 +45,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ]
     ++ uvicorn.optional-dependencies.standard;
 
-  nativeCheckInputs = with python3.pkgs; [
-    aiohttp
-    pytest-asyncio
-    pytestCheckHook
-    requests
+  disabledTestPaths = [
+    # require networking
+    "dmarc_metrics_exporter/tests/test_e2e.py"
+    "dmarc_metrics_exporter/tests/test_imap_client.py"
+    "dmarc_metrics_exporter/tests/test_imap_queue.py"
   ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -55,21 +58,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_prometheus_exporter"
   ];
 
-  disabledTestPaths = [
-    # require networking
-    "dmarc_metrics_exporter/tests/test_e2e.py"
-    "dmarc_metrics_exporter/tests/test_imap_client.py"
-    "dmarc_metrics_exporter/tests/test_imap_queue.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dmarc_metrics_exporter" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Export Prometheus metrics from DMARC reports";
-    mainProgram = "dmarc-metrics-exporter";
     homepage = "https://github.com/jgosmann/dmarc-metrics-exporter";
     changelog = "https://github.com/jgosmann/dmarc-metrics-exporter/blob/v${finalAttrs.version}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ma27 ];
+    mainProgram = "dmarc-metrics-exporter";
   };
 })

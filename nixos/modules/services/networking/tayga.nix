@@ -37,38 +37,39 @@ let
     {
       options = {
         address = mkOption {
-          type = types.str;
           description = "IPv${toString v} address.";
+          type = types.str;
         };
 
         prefixLength = mkOption {
-          type = types.ints.between 0 (if v == 4 then 32 else 128);
           description = ''
             Subnet mask of the interface, specified as the number of
             bits in the prefix ("${if v == 4 then "24" else "64"}").
           '';
+
+          type = types.ints.between 0 (if v == 4 then 32 else 128);
         };
       };
     };
 
   versionOpts = v: {
     options = {
-      router = {
-        address = mkOption {
-          type = types.str;
-          description = "The IPv${toString v} address of the router.";
-        };
-      };
-
       address = mkOption {
-        type = types.nullOr types.str;
         default = null;
         description = "The source IPv${toString v} address of the TAYGA server.";
+        type = types.nullOr types.str;
       };
 
       pool = mkOption {
-        type = with types; nullOr (submodule (addrOpts v));
         description = "The pool of IPv${toString v} addresses which are used for translation.";
+        type = with types; nullOr (submodule (addrOpts v));
+      };
+
+      router = {
+        address = mkOption {
+          description = "The IPv${toString v} address of the router.";
+          type = types.str;
+        };
       };
     };
   };
@@ -77,12 +78,17 @@ in
   options = {
     services.tayga = {
       enable = mkEnableOption "Tayga";
-
       package = mkPackageOption pkgs "tayga" { };
 
+      dataDir = mkOption {
+        default = "/var/lib/tayga";
+        description = "Directory for persistent data.";
+        type = types.path;
+      };
+
       ipv4 = mkOption {
-        type = types.submodule (versionOpts 4);
         description = "IPv4-specific configuration.";
+
         example = literalExpression ''
           {
             address = "192.0.2.0";
@@ -95,11 +101,13 @@ in
             };
           }
         '';
+
+        type = types.submodule (versionOpts 4);
       };
 
       ipv6 = mkOption {
-        type = types.submodule (versionOpts 6);
         description = "IPv6-specific configuration.";
+
         example = literalExpression ''
           {
             address = "2001:db8::1";
@@ -112,24 +120,25 @@ in
             };
           }
         '';
+
+        type = types.submodule (versionOpts 6);
       };
 
-      dataDir = mkOption {
-        type = types.path;
-        default = "/var/lib/tayga";
-        description = "Directory for persistent data.";
-      };
+      log = mkOption {
+        default = [ ];
+        description = "Packet errors to log (drop, reject, icmp, self)";
 
-      tunDevice = mkOption {
-        type = types.str;
-        default = "nat64";
-        description = "Name of the nat64 tun device.";
+        example = literalExpression ''
+          [ "drop" "reject" "icmp" "self" ]
+        '';
+
+        type = types.listOf types.str;
       };
 
       mappings = mkOption {
-        type = types.attrsOf types.str;
         default = { };
         description = "Static IPv4 -> IPv6 host mappings.";
+
         example = literalExpression ''
           {
             "192.168.5.42" = "2001:db8:1:4444::1";
@@ -137,21 +146,20 @@ in
             "192.168.255.2" = "2001:db8:1:569::143";
           }
         '';
+
+        type = types.attrsOf types.str;
       };
 
-      log = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = "Packet errors to log (drop, reject, icmp, self)";
-        example = literalExpression ''
-          [ "drop" "reject" "icmp" "self" ]
-        '';
+      tunDevice = mkOption {
+        default = "nat64";
+        description = "Name of the nat64 tun device.";
+        type = types.str;
       };
 
       wkpfStrict = mkOption {
-        type = types.bool;
         default = true;
         description = "Enable restrictions on the use of the well-known prefix (64:ff9b::/96) - prevents translation of non-global IPv4 ranges when using the well-known prefix. Must be enabled for RFC 6052 compatibility.";
+        type = types.bool;
       };
     };
   };
@@ -164,10 +172,9 @@ in
       }
     ];
 
+    environment.etc."tayga.conf".source = configFile;
+
     networking.interfaces."${cfg.tunDevice}" = {
-      virtual = true;
-      virtualType = "tun";
-      virtualOwner = null;
       ipv4 = {
         addresses = [
           {
@@ -175,10 +182,12 @@ in
             prefixLength = 32;
           }
         ];
+
         routes = [
           cfg.ipv4.pool
         ];
       };
+
       ipv6 = {
         addresses = [
           {
@@ -186,58 +195,64 @@ in
             prefixLength = 128;
           }
         ];
+
         routes = [
           cfg.ipv6.pool
         ];
       };
+
+      virtual = true;
+      virtualOwner = null;
+      virtualType = "tun";
     };
 
-    environment.etc."tayga.conf".source = configFile;
-
     systemd.services.tayga = {
-      description = "Stateless NAT64 implementation";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-
+      description = "Stateless NAT64 implementation";
       reloadTriggers = [ configFile ];
-      serviceConfig = {
-        ExecStart = "${cfg.package}/bin/tayga -d --nodetach --config /etc/tayga.conf";
-        ExecReload = "${pkgs.coreutils}/bin/kill -SIGHUP $MAINPID";
-        Restart = "always";
 
+      serviceConfig = {
+        CapabilityBoundingSet = "";
+        DynamicUser = true;
+        ExecReload = "${pkgs.coreutils}/bin/kill -SIGHUP $MAINPID";
+        ExecStart = "${cfg.package}/bin/tayga -d --nodetach --config /etc/tayga.conf";
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProtectControlGroups = true;
         # Hardening Score: 1.5
         ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = true;
+        Restart = "always";
+
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_NETLINK"
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        StateDirectory = "tayga";
+        SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@network-io"
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
-        ProtectKernelLogs = true;
-        CapabilityBoundingSet = "";
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-          "AF_NETLINK"
-        ];
-        StateDirectory = "tayga";
-        DynamicUser = true;
-        MemoryDenyWriteExecute = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-        ProtectHostname = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        RestrictNamespaces = true;
-        NoNewPrivileges = true;
-        ProtectControlGroups = true;
-        SystemCallArchitectures = "native";
-        PrivateTmp = true;
-        LockPersonality = true;
-        ProtectSystem = true;
-        PrivateUsers = true;
-        ProtectProc = "invisible";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

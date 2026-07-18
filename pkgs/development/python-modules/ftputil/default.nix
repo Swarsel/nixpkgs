@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ftputil";
   version = "5.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +28,7 @@ buildPythonPackage rec {
     "test_upload"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "ftputil" ];
 
   meta = {

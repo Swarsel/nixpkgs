@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "gcodepy";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rmeno12";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "gcodepy" ];
 
   meta = {

@@ -1,22 +1,23 @@
 {
-  stdenvNoCC,
   lib,
-  makeDesktopItem,
-  makeWrapper,
+  fetchFromGitHub,
+  cabextract,
   copyDesktopItems,
   coreutils,
   findutils,
-  zenity,
-  unzip,
-  cabextract,
   libnotify,
-  winetricks,
-  fetchFromGitHub,
+  makeDesktopItem,
+  makeWrapper,
   nix-update-script,
+  stdenvNoCC,
+  unzip,
+  winetricks,
+  zenity,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "lug-helper";
   version = "4.13";
+
   src = fetchFromGitHub {
     owner = "starcitizen-lug";
     repo = "lug-helper";
@@ -24,27 +25,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-+hhipbw6tZmjpX+eUFQqRl4WXV4t56yJDrx4HtJ8AXc=";
   };
 
-  buildInputs = [
-    coreutils
-    findutils
-    zenity
-  ];
-
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "lug-helper";
-      exec = "lug-helper";
-      icon = "lug-logo";
-      comment = "Star Citizen LUG Helper";
-      desktopName = "LUG Helper";
-      categories = [ "Utility" ];
-      mimeTypes = [ "application/x-lug-helper" ];
-    })
+  buildInputs = [
+    coreutils
+    findutils
+    zenity
   ];
 
   postInstall = ''
@@ -68,7 +57,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --prefix XDG_DATA_DIRS : "$out"
 
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = "Star Citizen LUG Helper";
+      desktopName = "LUG Helper";
+      exec = "lug-helper";
+      icon = "lug-logo";
+      mimeTypes = [ "application/x-lug-helper" ];
+      name = "lug-helper";
+    })
+  ];
+
   passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Script to manage and optimize Star Citizen on Linux";
     homepage = "https://github.com/starcitizen-lug/lug-helper";

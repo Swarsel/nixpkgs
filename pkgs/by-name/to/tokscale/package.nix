@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  sqlite,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sqlite,
   versionCheckHook,
 }:
 
@@ -13,16 +13,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "tokscale";
   version = "4.0.4";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "junhoyeo";
     repo = "tokscale";
     tag = "v${finalAttrs.version}";
     hash = "sha256-vFBIq7z0+bmMk2teDORrUVWrv7N3w1CsDrT2s85k6/U=";
   };
-
-  cargoHash = "sha256-iXHriY+Kyn5pSx3uwouH2rkMBXkJX6zH5/xiFeCMqbQ=";
 
   nativeBuildInputs = [
     pkg-config
@@ -32,6 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     sqlite
   ];
+
+  cargoHash = "sha256-iXHriY+Kyn5pSx3uwouH2rkMBXkJX6zH5/xiFeCMqbQ=";
 
   env = {
     OPENSSL_NO_VENDOR = true;
@@ -45,18 +43,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_pricing_command_with_provider"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI tool for tracking token usage from various agentic coding tools like Claude Code and OpenCode etc.";
-    downloadPage = "https://github.com/junhoyeo/tokscale";
     homepage = "https://tokscale.ai";
     changelog = "https://github.com/junhoyeo/tokscale/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kpbaks ];
     mainProgram = "tokscale";
+    downloadPage = "https://github.com/junhoyeo/tokscale";
   };
 })

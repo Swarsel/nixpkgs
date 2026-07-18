@@ -14,8 +14,8 @@ melpaBuild {
   };
 
   meta = {
-    homepage = "https://www.emacswiki.org/emacs/sv-kalender.el";
     description = "Swedish calendar for Emacs";
+    homepage = "https://www.emacswiki.org/emacs/sv-kalender.el";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.rycee ];
   };

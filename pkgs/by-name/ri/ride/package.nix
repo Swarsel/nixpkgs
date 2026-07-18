@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  replaceVars,
-  jq,
-  moreutils,
-  zip,
-  makeWrapper,
+  buildNpmPackage,
   copyDesktopItems,
-  makeDesktopItem,
   electron,
+  jq,
+  makeDesktopItem,
+  makeWrapper,
+  moreutils,
+  replaceVars,
+  zip,
 }:
 
 buildNpmPackage rec {
@@ -23,8 +23,6 @@ buildNpmPackage rec {
     tag = "v${version}";
     hash = "sha256-11wlKK0z3/KRKMKNrDvZLvK7vV0UzrMTaG0ei9n6VEk=";
   };
-
-  npmDepsHash = "sha256-6Os6aWkgbA6m4JCp3b6UeZ4NC8N+7pwCWkPBc4xXAHY=";
 
   patches = [
     # Fix info in the "about" page, enable asar, add option to build for the detected system
@@ -68,10 +66,8 @@ buildNpmPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ copyDesktopItems ];
 
+  npmDepsHash = "sha256-6Os6aWkgbA6m4JCp3b6UeZ4NC8N+7pwCWkPBc4xXAHY=";
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  # our patch adds the platform detecting build option
-  npmBuildFlags = "self";
 
   postConfigure = ''
     # electron files need to be writable on Darwin
@@ -121,29 +117,35 @@ buildNpmPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "ride";
-      exec = "ride";
-      icon = "ride";
-      desktopName = "RIDE";
       categories = [
         "Development"
         "IDE"
       ];
+
       comment = meta.description;
+      desktopName = "RIDE";
+      exec = "ride";
+      icon = "ride";
+      name = "ride";
       terminal = false;
     })
   ];
 
+  # our patch adds the platform detecting build option
+  npmBuildFlags = "self";
+
   meta = {
-    changelog = "https://github.com/Dyalog/ride/releases/tag/v${version}";
     description = "Remote IDE for Dyalog APL";
     homepage = "https://github.com/Dyalog/ride";
+    changelog = "https://github.com/Dyalog/ride/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "ride";
+
     maintainers = with lib.maintainers; [
       tomasajt
       markus1189
     ];
+
     platforms = electron.meta.platforms;
+    mainProgram = "ride";
   };
 }

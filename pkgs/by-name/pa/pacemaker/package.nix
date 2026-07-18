@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
   bash,
@@ -8,7 +9,6 @@
   corosync,
   dbus,
   docbook_xsl,
-  fetchFromGitHub,
   getopt,
   gettext,
   glib,
@@ -19,18 +19,17 @@
   libuuid,
   libxml2,
   libxslt,
+  nixosTests,
+  ocf-resource-agents,
   pam,
   pkg-config,
   python3,
-  nixosTests,
   versionCheckHook,
-
   # Pacemaker is compiled twice, once with forOCF = true to extract its
   # OCF definitions for use in the ocf-resource-agents derivation, then
   # again with forOCF = false, where the ocf-resource-agents is provided
   # as the OCF_ROOT.
   forOCF ? false,
-  ocf-resource-agents,
   withManpages ? !forOCF,
 }:
 
@@ -46,6 +45,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   outputs = [ "out" ] ++ lib.optionals withManpages [ "man" ];
+
+  # If we do this unconditionally the build will fail because it sees a valid MANPAGE_XSLT
+  # but required executables are not available.
+  postPatch = lib.optionalString withManpages ''
+    # Avoid the use of xmlcatalog to resolve stylesheet for manpages, but set the path directly
+    substituteInPlace configure.ac \
+      --replace-fail 'MANPAGE_XSLT=""' 'MANPAGE_XSLT="${docbook_xsl}/xml/xsl/docbook/manpages/docbook.xsl"' \
+      --replace-fail 'AS_IF([test x"''${XSLTPROC}" != x""],' 'AS_IF([false],'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoconf
@@ -78,20 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
     pam
   ];
 
-  strictDeps = true;
-
-  # If we do this unconditionally the build will fail because it sees a valid MANPAGE_XSLT
-  # but required executables are not available.
-  postPatch = lib.optionalString withManpages ''
-    # Avoid the use of xmlcatalog to resolve stylesheet for manpages, but set the path directly
-    substituteInPlace configure.ac \
-      --replace-fail 'MANPAGE_XSLT=""' 'MANPAGE_XSLT="${docbook_xsl}/xml/xsl/docbook/manpages/docbook.xsl"' \
-      --replace-fail 'AS_IF([test x"''${XSLTPROC}" != x""],' 'AS_IF([false],'
-  '';
-
-  preConfigure = ''
-    ./autogen.sh --prefix="$out"
-  '';
   configureFlags = [
     "--exec-prefix=${placeholder "out"}"
     "--sysconfdir=/etc"
@@ -104,8 +100,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (!forOCF) "--with-ocfdir=${ocf-resource-agents}/usr/lib/ocf";
 
-  installFlags = [ "DESTDIR=${placeholder "out"}" ];
-
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals stdenv.cc.isGNU [
       "-Wno-error=strict-prototypes"
@@ -113,7 +107,9 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  enableParallelBuilding = true;
+  preConfigure = ''
+    ./autogen.sh --prefix="$out"
+  '';
 
   # pacemaker's install linking requires a weirdly nested hierarchy
   postInstall =
@@ -128,6 +124,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+  installFlags = [ "DESTDIR=${placeholder "out"}" ];
   versionCheckProgram = [ "${placeholder "out"}/sbin/pacemakerd" ];
   versionCheckProgramArg = "--version";
 
@@ -136,13 +134,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://clusterlabs.org/pacemaker/";
     description = "Open source, high availability resource manager suitable for both small and large clusters";
+    homepage = "https://clusterlabs.org/pacemaker/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       ryantm
       astro
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

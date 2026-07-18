@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   paho-mqtt,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "adafruit-io";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adafruit";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-INi1ZJf9j8fP+DJrtQvXKWr7gjp8V7OQVOBuSMB1O/0=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,16 +32,15 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "Adafruit_IO" ];
-
   disabledTestPaths = [
     # Tests requires valid credentials
     "tests/test_client.py"
     "tests/test_errors.py"
     "tests/test_mqtt_client.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "Adafruit_IO" ];
 
   meta = {
     description = "Module for interacting with Adafruit IO";

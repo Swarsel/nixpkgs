@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  dontConfigure = true;
-
   preBuild = ''
     cp ${if stdenv.cc.isClang then "CLUnix.mak" else "GccUnix.mak"} Makefile
     substituteInPlace Makefile \
@@ -39,14 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
                     -t $doc/share/doc/jwasm/
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/Baron-von-Riedesel/JWasm/";
     description = "MASM-compatible x86 assembler";
+    homepage = "https://github.com/Baron-von-Riedesel/JWasm/";
     changelog = "https://github.com/Baron-von-Riedesel/JWasm/releases/tag/${finalAttrs.src.rev}";
-    mainProgram = "jwasm";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "jwasm";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

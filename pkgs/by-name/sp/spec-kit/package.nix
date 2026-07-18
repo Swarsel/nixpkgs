@@ -1,8 +1,8 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -15,8 +15,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ulAii6//DT9uqLxYk6qmX6dwWWjhuARbBmjH5u1YGGM=";
   };
-
-  pyproject = true;
 
   build-system = with python3Packages; [
     hatchling
@@ -33,6 +31,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
       truststore
     ]
     ++ httpx.optional-dependencies.socks;
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "specify_cli"

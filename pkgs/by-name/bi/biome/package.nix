@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  libgit2,
-  rust-jemalloc-sys,
-  zlib,
   gitMinimal,
+  libgit2,
   nix-update-script,
+  pkg-config,
+  rust-jemalloc-sys,
+  rustPlatform,
+  zlib,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "biome";
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-d8MhD749rkLWeCKDBxhw2aF3G09h8kug5w2Q40JSkt4=";
   };
 
-  cargoHash = "sha256-z1KgScoH9retj0qNd6eOTjejjQypfVkha0ae71Z6TSg=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -30,9 +28,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-z1KgScoH9retj0qNd6eOTjejjQypfVkha0ae71Z6TSg=";
+
+  env = {
+    BIOME_VERSION = finalAttrs.version;
+    INSTA_UPDATE = "no";
+    LIBGIT2_NO_VENDOR = 1;
+  };
+
   nativeCheckInputs = [ gitMinimal ];
 
+  preCheck = ''
+    # tests assume git repository
+    git init
+
+    # tests assume $BIOME_VERSION is unset
+    unset BIOME_VERSION
+  '';
+
+  postInstall = ''
+    # Installs biome schema aside with the package
+    install -Dm644 packages/@biomejs/biome/configuration_schema.json $out/share/schema.json
+  '';
+
   cargoBuildFlags = [ "-p=biome_cli" ];
+
   cargoTestFlags = finalAttrs.cargoBuildFlags ++ [
     "--"
     # fails due to cargo insta
@@ -53,25 +73,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=cases::help::start_help"
   ];
 
-  env = {
-    BIOME_VERSION = finalAttrs.version;
-    LIBGIT2_NO_VENDOR = 1;
-    INSTA_UPDATE = "no";
-  };
-
-  postInstall = ''
-    # Installs biome schema aside with the package
-    install -Dm644 packages/@biomejs/biome/configuration_schema.json $out/share/schema.json
-  '';
-
-  preCheck = ''
-    # tests assume git repository
-    git init
-
-    # tests assume $BIOME_VERSION is unset
-    unset BIOME_VERSION
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -79,12 +80,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://biomejs.dev/";
     changelog = "https://github.com/biomejs/biome/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       isabelroses
       wrbbz
       eveeifyeve # Schema
       SchahinRohani
     ];
+
     mainProgram = "biome";
   };
 })

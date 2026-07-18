@@ -1,24 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  rustPlatform,
-
+  buildPythonPackage,
+  hypothesis,
   # native darwin dependencies
   libiconv,
-
   # tests
   pytestCheckHook,
-  hypothesis,
+  # build-system
+  rustPlatform,
 }:
 
 buildPythonPackage rec {
   pname = "css-inline";
   version = "0.21.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Stranger6667";
@@ -35,17 +31,6 @@ buildPythonPackage rec {
     rm .cargo/config.toml
   '';
 
-  # call `cargo build --release` in bindings/python and copy the
-  # resulting lock file
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    postPatch = ''
-      cd bindings/python
-      ln -s ${./Cargo.lock} Cargo.lock
-    '';
-    hash = "sha256-Nj7DA20qCvSQ6EhC6GO+25TBqPeAf3SV/gmpRISgWtM=";
-  };
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
@@ -55,12 +40,23 @@ buildPythonPackage rec {
     libiconv
   ];
 
-  pythonImportsCheck = [ "css_inline" ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
+
+  # call `cargo build --release` in bindings/python and copy the
+  # resulting lock file
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+
+    postPatch = ''
+      cd bindings/python
+      ln -s ${./Cargo.lock} Cargo.lock
+    '';
+
+    hash = "sha256-Nj7DA20qCvSQ6EhC6GO+25TBqPeAf3SV/gmpRISgWtM=";
+  };
 
   disabledTests = [
     # fails to connect to local server
@@ -71,6 +67,9 @@ buildPythonPackage rec {
     # pyo3_runtime.PanicException: event loop thread panicked
     "test_invalid_href"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "css_inline" ];
 
   meta = {
     description = "Inline CSS into style attributes";

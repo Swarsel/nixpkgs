@@ -1,6 +1,11 @@
 {
+  lib,
   addDriverRunpath,
-  allowedPatternsPath ? callPackage ./closure.nix { inherit allowedPatterns; },
+  callPackage,
+  makeWrapper,
+  nix,
+  nixosTests,
+  python3Packages,
   allowedPatterns ? {
     # This config is just an example.
     # When the hook observes either of the following requiredSystemFeatures:
@@ -10,22 +15,19 @@
       "opengl"
       "cuda"
     ];
+
     # It exposes these paths in the sandbox:
     nvidia-gpu.paths = [
       addDriverRunpath.driverLink
       "/dev/dri"
       "/dev/nvidia*"
     ];
-    nvidia-gpu.unsafeFollowSymlinks = true;
+
     nvidia-gpu.safePrefixes = [ builtins.storeDir ];
+    nvidia-gpu.unsafeFollowSymlinks = true;
   },
-  callPackage,
+  allowedPatternsPath ? callPackage ./closure.nix { inherit allowedPatterns; },
   extraWrapperArgs ? [ ],
-  lib,
-  makeWrapper,
-  nix,
-  nixosTests,
-  python3Packages,
 }:
 
 let
@@ -36,7 +38,6 @@ in
 
 python3Packages.buildPythonApplication {
   inherit pname version;
-  pyproject = true;
 
   src = lib.sourceByRegex ./. [
     "^pyproject.toml$"
@@ -51,9 +52,6 @@ python3Packages.buildPythonApplication {
   checkInputs = [
     python3Packages.pytestCheckHook
   ];
-  pythonImportsCheck = [
-    "nix_required_mounts"
-  ];
 
   postFixup = ''
     wrapProgram $out/bin/${pname} \
@@ -62,18 +60,26 @@ python3Packages.buildPythonApplication {
       ${builtins.concatStringsSep " " extraWrapperArgs}
   '';
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "nix_required_mounts"
+  ];
+
   passthru = {
     inherit allowedPatterns;
+
     tests = {
       inherit (nixosTests) nix-required-mounts;
       eval-nvidia-gpu-preset = callPackage ./eval-test.nix { };
     };
   };
+
   meta = {
     inherit (attrs.project) description;
     homepage = attrs.project.urls.Homepage;
     license = lib.licenses.mit;
-    mainProgram = attrs.project.name;
     maintainers = with lib.maintainers; [ SomeoneSerge ];
+    mainProgram = attrs.project.name;
   };
 }

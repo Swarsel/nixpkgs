@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   poetry-core,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "asyncmy";
   version = "0.2.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "long2ice";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   # Not running tests as aiomysql is missing support for pymysql>=0.9.3
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "asyncmy" ];
 
   meta = {

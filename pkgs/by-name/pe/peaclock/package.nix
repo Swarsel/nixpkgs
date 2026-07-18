@@ -1,10 +1,10 @@
 {
   lib,
-  gccStdenv,
   fetchFromGitHub,
   cmake,
-  libpthread-stubs,
+  gccStdenv,
   icu,
+  libpthread-stubs,
 }:
 
 gccStdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ gccStdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libpthread-stubs
     icu
@@ -28,8 +29,8 @@ gccStdenv.mkDerivation (finalAttrs: {
     description = "Clock, timer, and stopwatch for the terminal";
     homepage = "https://octobanana.com/software/peaclock";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ djanatyn ];
+    platforms = lib.platforms.unix;
     mainProgram = "peaclock";
   };
 })

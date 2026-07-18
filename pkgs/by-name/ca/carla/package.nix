@@ -8,10 +8,10 @@
   jack2,
   liblo,
   libpulseaudio,
+  libsForQt5,
   libsndfile,
   pkg-config,
   python3Packages,
-  libsForQt5,
   which,
   gtk3 ? null,
   withFrontend ? true,
@@ -33,20 +33,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-21QaFCIjGjRTcJtf2nwC5RcVJF8JgcFPIbS8apvf9tw=";
   };
 
+  postPatch = ''
+    # --with-appname="$0" is evaluated with $0=.carla-wrapped instead of carla. Fix that.
+    for file in $(grep -rl -- '--with-appname="$0"'); do
+        filename="$(basename -- "$file")"
+        substituteInPlace "$file" --replace-fail '--with-appname="$0"' "--with-appname=\"$filename\""
+    done
+  '';
+
   nativeBuildInputs = [
     python3Packages.wrapPython
     pkg-config
     which
     libsForQt5.wrapQtAppsHook
   ];
-
-  pythonPath =
-    with python3Packages;
-    [
-      rdflib
-      pyliblo3
-    ]
-    ++ lib.optional withFrontend pyqt5;
 
   buildInputs = [
     file
@@ -62,19 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = finalAttrs.pythonPath;
 
-  enableParallelBuilding = true;
-
-  installFlags = [ "PREFIX=$(out)" ];
-
-  postPatch = ''
-    # --with-appname="$0" is evaluated with $0=.carla-wrapped instead of carla. Fix that.
-    for file in $(grep -rl -- '--with-appname="$0"'); do
-        filename="$(basename -- "$file")"
-        substituteInPlace "$file" --replace-fail '--with-appname="$0"' "--with-appname=\"$filename\""
-    done
-  '';
-
-  dontWrapQtApps = true;
   postFixup = ''
     # Also sets program_PYTHONPATH and program_PATH variables
     wrapPythonPrograms
@@ -98,15 +85,29 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+  installFlags = [ "PREFIX=$(out)" ];
+
+  pythonPath =
+    with python3Packages;
+    [
+      rdflib
+      pyliblo3
+    ]
+    ++ lib.optional withFrontend pyqt5;
+
   meta = {
-    homepage = "https://kx.studio/Applications:Carla";
     description = "Audio plugin host";
+
     longDescription = ''
       It currently supports LADSPA (including LRDF), DSSI, LV2, VST2/3
       and AU plugin formats, plus GIG, SF2 and SFZ file support.
       It uses JACK as the default and preferred audio driver but also
       supports native drivers like ALSA, DirectSound or CoreAudio.
     '';
+
+    homepage = "https://kx.studio/Applications:Carla";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ minijackson ];
     platforms = lib.platforms.linux;

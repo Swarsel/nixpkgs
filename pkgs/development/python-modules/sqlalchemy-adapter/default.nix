@@ -2,18 +2,14 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
   pycasbin,
-  sqlalchemy,
-  setuptools,
-
   pytestCheckHook,
+  setuptools,
+  sqlalchemy,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "sqlalchemy-adapter";
   version = "1.9.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "officialpycasbin";
@@ -21,6 +17,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FjxRSJ+3IIdtKkpZvkL/KzH7gn4IJjCTchABglfcyQ4=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -31,12 +33,10 @@ buildPythonPackage (finalAttrs: {
     sqlalchemy
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "sqlalchemy_adapter"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {

@@ -1,15 +1,15 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  rustPlatform,
-  pkg-config,
-  cmake,
-  openssl,
+  fetchFromGitHub,
   autoconf,
   automake,
-  unstableGitUpdater,
+  cmake,
+  openssl,
+  pkg-config,
+  rustPlatform,
   sqlite,
+  unstableGitUpdater,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "4c7152a3ce88ecfbac06f823abd4fd849e0c30d1";
     hash = "sha256-y+KpxiEzVAggFoPvTOy0IEmAo2V6mOpM0VzEScUOtsM=";
   };
-
-  cargoHash = "sha256-xRTl6Z6sn44yaEIFxG2vVKlbruDmOS2CdPZeVmWYOoA=";
 
   nativeBuildInputs = [
     pkg-config
@@ -38,12 +36,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-xRTl6Z6sn44yaEIFxG2vVKlbruDmOS2CdPZeVmWYOoA=";
+
   env = {
-    OPENSSL_NO_VENDOR = 1;
     NIX_CFLAGS_LINK = toString [
       "-L${lib.getLib openssl}/lib"
       "-L${lib.getLib sqlite}/lib"
     ];
+
+    OPENSSL_NO_VENDOR = 1;
   };
 
   passthru.updateScript = unstableGitUpdater { };
@@ -53,7 +54,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/haecker-felix/hebbot";
     changelog = "https://github.com/haecker-felix/hebbot/releases/tag/v2.1";
     license = with lib.licenses; [ agpl3Only ];
-    mainProgram = "hebbot";
     maintainers = with lib.maintainers; [ a-kenji ];
+    mainProgram = "hebbot";
   };
 })

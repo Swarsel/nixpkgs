@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchgit,
+  rustPlatform,
 }:
 let
   version = "0.1.0";
 in
 rustPlatform.buildRustPackage {
-  pname = "flake-du";
   inherit version;
+  pname = "flake-du";
 
   src = fetchgit {
     url = "https://github.com/kmein/flake-du";
@@ -17,13 +17,12 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-DYVT9jM9WcgoVSOnoUIWWR9EmNywR1f4xZOAzkbNkCk=";
-
   __structuredAttrs = true;
 
   meta = {
     description = "Tool for managing flake inputs with disk usage insights";
-    license = lib.licenses.mit;
     homepage = "https://github.com/kmein/flake-du";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.kmein ];
   };
 }

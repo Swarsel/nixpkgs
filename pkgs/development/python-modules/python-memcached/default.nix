@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   memcached,
   mock,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-memcached";
   version = "1.62";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "linsomniac";
@@ -37,7 +36,7 @@ buildPythonPackage rec {
   '';
 
   __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "memcache" ];
 
   meta = {

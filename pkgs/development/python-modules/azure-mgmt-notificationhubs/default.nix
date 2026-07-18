@@ -1,28 +1,28 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  msrest,
-  msrestazure,
   azure-common,
   azure-mgmt-core,
   azure-mgmt-nspkg,
+  buildPythonPackage,
+  fetchPypi,
+  msrest,
+  msrestazure,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-notificationhubs";
   version = "8.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
-    extension = "zip";
     hash = "sha256-Tdkk9HBJk+Pr8dQuK+HL4LDZCOaVhX+gjENprhHQ6zY=";
+    extension = "zip";
   };
 
+  # has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,9 +33,7 @@ buildPythonPackage (finalAttrs: {
     azure-mgmt-nspkg
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.notificationhubs" ];
 
   meta = {

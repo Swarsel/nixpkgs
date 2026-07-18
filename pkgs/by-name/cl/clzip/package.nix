@@ -14,11 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.nongnu.org/lzip/clzip.html";
     description = "C language version of lzip";
-    mainProgram = "clzip";
+    homepage = "https://www.nongnu.org/lzip/clzip.html";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "clzip";
   };
 })

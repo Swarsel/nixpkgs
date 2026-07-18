@@ -1,33 +1,31 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   cython,
+  fetchPypi,
   libjxl,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "jxlpy";
   version = "0.9.5";
 
-  pyproject = true;
-
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Kqdm8b3hgO0Q3zE68rSIM4Jd7upjG+SQywSseGwCFUI=";
   };
+
+  buildInputs = [ libjxl ];
+  # no tests
+  doCheck = false;
 
   build-system = [
     setuptools
     cython
   ];
 
-  buildInputs = [ libjxl ];
-
-  # no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "jxlpy" ];
 
   meta = {

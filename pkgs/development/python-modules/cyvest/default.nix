@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   logurich,
   pydantic,
   pytest-cov-stub,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cyvest";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PakitoSec";
@@ -30,7 +29,10 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.9.8,<0.10.0" "uv_build"
   '';
 
-  pythonRelaxDeps = [ "pydantic" ];
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ uv-build ];
 
@@ -48,12 +50,9 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cyvest" ];
+  pythonRelaxDeps = [ "pydantic" ];
 
   meta = {
     description = "Cybersecurity Investigation Model";

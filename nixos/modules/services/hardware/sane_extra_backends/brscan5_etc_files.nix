@@ -1,7 +1,7 @@
 {
-  stdenv,
   lib,
   brscan5,
+  stdenv,
   netDevices ? [ ],
 }:
 
@@ -49,14 +49,6 @@ in
 
 stdenv.mkDerivation {
 
-  name = "brscan5-etc-files";
-  version = "1.2.6-0";
-  src = "${brscan5}/opt/brother/scanner/brscan5";
-
-  nativeBuildInputs = [ brscan5 ];
-
-  dontConfigure = true;
-
   buildPhase = ''
     TARGET_DIR="$out/etc/opt/brother/scanner/brscan5"
     mkdir -p "$TARGET_DIR"
@@ -71,13 +63,18 @@ stdenv.mkDerivation {
     ${addAllNetDev netDevices}
   '';
 
+  dontConfigure = true;
   dontInstall = true;
+  name = "brscan5-etc-files";
+  nativeBuildInputs = [ brscan5 ];
+  src = "${brscan5}/opt/brother/scanner/brscan5";
+  version = "1.2.6-0";
 
   meta = {
     description = "Brother brscan5 sane backend driver etc files";
     homepage = "https://www.brother.com";
-    platforms = lib.platforms.linux;
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ mattchrist ];
+    platforms = lib.platforms.linux;
   };
 }

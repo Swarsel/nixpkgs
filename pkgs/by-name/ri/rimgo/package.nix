@@ -1,9 +1,9 @@
 {
   lib,
-  fetchFromCodeberg,
   buildGoModule,
-  tailwindcss_4,
+  fetchFromCodeberg,
   nix-update-script,
+  tailwindcss_4,
 }:
 buildGoModule (finalAttrs: {
   pname = "rimgo";
@@ -16,9 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZdGPZFhjn7jsqHcj8neOocpDweB5TeYXNPfrDw2m7uY=";
   };
 
-  vendorHash = "sha256-/aflGVI3M1dy6/5/CkQo1wPA59cb7m1XJcoF8nTm35Y=";
-
   nativeBuildInputs = [ tailwindcss_4 ];
+  vendorHash = "sha256-/aflGVI3M1dy6/5/CkQo1wPA59cb7m1XJcoF8nTm35Y=";
 
   preBuild = ''
     tailwindcss -i static/tailwind.css -o static/app.css -m
@@ -36,7 +35,7 @@ buildGoModule (finalAttrs: {
     description = "Alternative frontend for Imgur";
     homepage = "https://codeberg.org/rimgo/rimgo";
     license = lib.licenses.agpl3Only;
-    mainProgram = "rimgo";
     maintainers = with lib.maintainers; [ quantenzitrone ];
+    mainProgram = "rimgo";
   };
 })

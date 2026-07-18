@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  which,
-  libtool,
-  liblo,
-  libxml2,
-  libjack2,
-  libsndfile,
-  wxwidgets_3_2,
-  libsigcxx,
-  libsamplerate,
-  rubberband,
-  gettext,
-  ncurses,
   alsa-lib,
+  autoreconfHook,
   fftw,
+  gettext,
+  libjack2,
+  liblo,
+  libsamplerate,
+  libsigcxx,
+  libsndfile,
+  libtool,
+  libxml2,
+  ncurses,
+  pkg-config,
+  rubberband,
+  which,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,11 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-bPu/VWTJLSIMoJSEQb+/nqtTpkPtCNVuXA17XsnFSP0=";
   };
-
-  autoreconfPhase = ''
-    patchShebangs ./autogen.sh
-    ./autogen.sh
-  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -61,10 +56,16 @@ stdenv.mkDerivation (finalAttrs: {
   # see https://bugs.gentoo.org/925275
   env.CPPFLAGS = "-fpermissive";
 
+  autoreconfPhase = ''
+    patchShebangs ./autogen.sh
+    ./autogen.sh
+  '';
+
   enableParallelBuilding = true;
 
   meta = {
     description = "Live looping sampler capable of immediate loop recording, overdubbing, multiplying, reversing and more";
+
     longDescription = ''
       It allows for multiple simultaneous multi-channel loops limited only by your computer's available memory.
       The application is a standalone JACK client with an engine controllable via OSC and MIDI.
@@ -72,10 +73,11 @@ stdenv.mkDerivation (finalAttrs: {
       However, this kind of live performance looping tool is most effectively used via hardware (midi footpedals, etc)
       and the engine can be run standalone on a computer without a monitor.
     '';
+
     homepage = "https://sonosaurus.com/sooperlooper/";
-    downloadPage = "https://github.com/essej/sooperlooper";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ magnetophon ];
     platforms = lib.platforms.linux;
+    downloadPage = "https://github.com/essej/sooperlooper";
   };
 })

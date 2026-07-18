@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  libcdio-paranoia,
   cddiscid,
-  wget,
-  which,
-  vorbis-tools,
-  id3v2,
-  python3Packages,
-  lame,
   flac,
   glyr,
-  perlPackages,
+  id3v2,
+  lame,
+  libcdio-paranoia,
   makeWrapper,
+  perlPackages,
+  python3Packages,
+  vorbis-tools,
+  wget,
+  which,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "abcde";
@@ -24,25 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BGzQu6eN1LvcvPgv5iWGXGDfNaAFSC3hOmaZxaO4MSQ=";
   };
 
-  # FIXME: This package does not support `distmp3', `eject', etc.
-
-  configurePhase = ''
-    runHook preConfigure
-
-    sed -i "s|^[[:blank:]]*prefix *=.*$|prefix = $out|g ;
-            s|^[[:blank:]]*etcdir *=.*$|etcdir = $out/etc|g ;
-            s|^[[:blank:]]*INSTALL *=.*$|INSTALL = install -c|g" \
-      "Makefile";
-
-    echo 'CDPARANOIA=${lib.getExe libcdio-paranoia}' >>abcde.conf
-    echo CDROMREADERSYNTAX=cdparanoia >>abcde.conf
-
-    substituteInPlace "abcde" \
-      --replace-fail "/etc/abcde.conf" "$out/etc/abcde.conf"
-
-    runHook postConfigure
-  '';
-
   nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = with perlPackages; [
@@ -51,8 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     MusicBrainzDiscID
     IOSocketSSL
   ];
-
-  installFlags = [ "sysconfdir=$(out)/etc" ];
 
   postFixup = ''
     for cmd in abcde cddb-tool abcde-musicbrainz-tool; do
@@ -76,17 +55,39 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # FIXME: This package does not support `distmp3', `eject', etc.
+  configurePhase = ''
+    runHook preConfigure
+
+    sed -i "s|^[[:blank:]]*prefix *=.*$|prefix = $out|g ;
+            s|^[[:blank:]]*etcdir *=.*$|etcdir = $out/etc|g ;
+            s|^[[:blank:]]*INSTALL *=.*$|INSTALL = install -c|g" \
+      "Makefile";
+
+    echo 'CDPARANOIA=${lib.getExe libcdio-paranoia}' >>abcde.conf
+    echo CDROMREADERSYNTAX=cdparanoia >>abcde.conf
+
+    substituteInPlace "abcde" \
+      --replace-fail "/etc/abcde.conf" "$out/etc/abcde.conf"
+
+    runHook postConfigure
+  '';
+
+  installFlags = [ "sysconfdir=$(out)/etc" ];
+
   meta = {
-    homepage = "http://abcde.einval.com/wiki/";
-    license = lib.licenses.gpl2Plus;
-    maintainers = [ ];
     description = "Command-line audio CD ripper";
+
     longDescription = ''
       abcde is a front-end command-line utility (actually, a shell
       script) that grabs tracks off a CD, encodes them to
       Ogg/Vorbis, MP3, FLAC, Ogg/Speex and/or MPP/MP+ (Musepack)
       format, and tags them, all in one go.
     '';
+
+    homepage = "http://abcde.einval.com/wiki/";
+    license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
   };
 })

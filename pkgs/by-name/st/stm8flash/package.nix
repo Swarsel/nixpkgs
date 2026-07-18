@@ -17,30 +17,29 @@ stdenv.mkDerivation {
     sha256 = "sha256-fFoC2EKSmYyW2lqrdAh5A2WEtUMCenKse2ySJdNHu6w=";
   };
 
-  strictDeps = true;
-  enableParallelBuilding = true;
-
-  # NOTE: _FORTIFY_SOURCE requires compiling with optimization (-O)
-  env.NIX_CFLAGS_COMPILE = "-O";
-
-  makeFlags = [
-    "DESTDIR=${placeholder "out"}"
-  ];
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace 'pkg-config' '$(PKG_CONFIG)'
   '';
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ libusb1 ];
 
+  makeFlags = [
+    "DESTDIR=${placeholder "out"}"
+  ];
+
+  # NOTE: _FORTIFY_SOURCE requires compiling with optimization (-O)
+  env.NIX_CFLAGS_COMPILE = "-O";
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/vdudouyt/stm8flash";
     description = "Tool for flashing STM8 MCUs via ST-LINK (V1 and V2)";
-    mainProgram = "stm8flash";
-    maintainers = with lib.maintainers; [ pkharvey ];
+    homepage = "https://github.com/vdudouyt/stm8flash";
     license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ pkharvey ];
     platforms = lib.platforms.all;
+    mainProgram = "stm8flash";
   };
 }

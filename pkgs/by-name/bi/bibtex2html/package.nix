@@ -26,7 +26,7 @@ stdenv.mkDerivation {
     description = "Collection of tools for translating from BibTeX to HTML";
     homepage = "https://www.lri.fr/~filliatr/bibtex2html/";
     license = lib.licenses.gpl2Only;
-    platforms = ocaml.meta.platforms or [ ];
     maintainers = [ lib.maintainers.scolobb ];
+    platforms = ocaml.meta.platforms or [ ];
   };
 }

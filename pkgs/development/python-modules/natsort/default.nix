@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "natsort";
   version = "8.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -38,14 +37,15 @@ buildPythonPackage rec {
     "test_string_component_transform_factory"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "natsort" ];
 
   meta = {
     description = "Natural sorting for Python";
-    mainProgram = "natsort";
     homepage = "https://github.com/SethMMorton/natsort";
     changelog = "https://github.com/SethMMorton/natsort/blob/${version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "natsort";
   };
 }

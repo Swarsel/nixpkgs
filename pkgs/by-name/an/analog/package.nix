@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   bzip2,
   gd,
@@ -19,13 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NCturEibnpl6+paUZezksHzP33WtAzfIolvBLeEHXjY=";
   };
 
-  buildInputs = [
-    bzip2
-    gd
-    libjpeg
-    libpng
-  ];
-
   postPatch = ''
     sed -i src/anlghead.h \
       -e "s|#define DEFAULTCONFIGFILE .*|#define DEFAULTCONFIGFILE \"$out/etc/analog.cfg\"|g" \
@@ -35,6 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "LIBS = -lm" "LIBS = -lm -lpng -lgd -ljpeg -lz -lbz2" \
       --replace-fail "DEFS =" "DEFS = -DHAVE_GD -DHAVE_ZLIB -DHAVE_BZLIB"
   '';
+
+  buildInputs = [
+    bzip2
+    gd
+    libjpeg
+    libpng
+  ];
 
   installPhase = ''
     mkdir -p $out/bin $out/etc $out/share/doc/$pname $out/share/man/man1 $out/share/$pname
@@ -47,9 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "Powerful tool to generate web server statistics";
     homepage = "https://www.c-amie.co.uk/software/analog/";
     license = lib.licenses.gpl2Only;
-    description = "Powerful tool to generate web server statistics";
     platforms = lib.platforms.all;
     mainProgram = "analog";
   };

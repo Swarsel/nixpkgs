@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
   base58,
+  buildPythonPackage,
+  hypothesis,
+  morphys,
   py-multibase,
   py-multicodec,
-  morphys,
   py-multihash,
-  hypothesis,
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "py-cid";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ipld";
@@ -25,7 +24,11 @@ buildPythonPackage rec {
     hash = "sha256-ufApwZW+MJHPiiEG/E221KTlOqwNN8icb9fcn/cX1AQ=";
   };
 
-  pythonRelaxDeps = [ "base58" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    hypothesis
+  ];
 
   build-system = [ setuptools ];
 
@@ -37,13 +40,9 @@ buildPythonPackage rec {
     py-multihash
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    hypothesis
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cid" ];
+  pythonRelaxDeps = [ "base58" ];
 
   meta = {
     description = "Self-describing content-addressed identifiers for distributed systems implementation in Python";

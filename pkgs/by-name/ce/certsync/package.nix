@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "certsync";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zblurx";
@@ -16,8 +15,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-UNeO9Ldf6h6ykziKVCdAoBIzL5QedbRLFEwyeWDCtUU=";
   };
 
-  pythonRelaxDeps = [ "certipy-ad" ];
-
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -25,7 +22,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "certsync" ];
+  pythonRelaxDeps = [ "certipy-ad" ];
 
   meta = {
     description = "Dump NTDS with golden certificates and UnPAC the hash";

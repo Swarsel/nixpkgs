@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   django,
   djangorestframework-simplejwt,
+  poetry-core,
   social-auth-app-django,
 }:
 
 buildPythonPackage rec {
   pname = "djoser";
   version = "2.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sunscrapers";
@@ -28,16 +27,16 @@ buildPythonPackage rec {
     social-auth-app-django
   ];
 
+  pyproject = true;
   # djet isn't packaged yet
   # nativeCheckInputs = [ pytestCheckHook ];
-
   pythonImportsCheck = [ "djoser" ];
 
   meta = {
-    changelog = "https://github.com/sunscrapers/djoser/releases/tag/${src.tag}";
     description = "REST implementation of Django authentication system";
     homepage = "https://github.com/sunscrapers/djoser";
-    maintainers = with lib.maintainers; [ MostafaKhaled ];
+    changelog = "https://github.com/sunscrapers/djoser/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ MostafaKhaled ];
   };
 }

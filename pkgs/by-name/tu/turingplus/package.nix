@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
+  callPackage,
   bootstrap ? callPackage ./bootstrap.nix { },
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -15,11 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jiMbSuNg2o9fNCPNoLpyAdMCxgMVBiDjRhC0HgKwmqk=";
   };
-
-  nativeBuildInputs = [ bootstrap ];
-
-  # Using -std=gnu89 to prevent errors that occur with default args
-  env.NIX_CFLAGS_COMPILE = "-std=gnu89 -Wno-int-conversion";
 
   # Patch required to fix compilation errors when certain C input files are used with tpc
   patches = [ ./use-gnu89.patch ];
@@ -40,13 +35,16 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'cc ' '${stdenv.cc}/bin/cc '
   '';
 
+  nativeBuildInputs = [ bootstrap ];
+
   buildFlags = [
     "INCLUDE_DIR=${bootstrap}/include"
     "TPC=${bootstrap}/bin/tpc"
   ];
 
+  # Using -std=gnu89 to prevent errors that occur with default args
+  env.NIX_CFLAGS_COMPILE = "-std=gnu89 -Wno-int-conversion";
   checkFlags = [ "-C test" ];
-  checkTarget = "all";
 
   installPhase = ''
     runHook preInstall
@@ -59,16 +57,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  checkTarget = "all";
+
   meta = {
     description = "Extended version of the Turing programming language with concurrency and systems programming features";
-    mainProgram = "tpc";
-    platforms = [
-      "x86_64-linux"
-    ];
     homepage = "https://github.com/CordyJ/Open-TuringPlus";
-    downloadPage = "https://github.com/CordyJ/Open-TuringPlus/releases";
     changelog = "https://github.com/CordyJ/Open-TuringPlus/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ MysteryBlokHed ];
+
+    platforms = [
+      "x86_64-linux"
+    ];
+
+    mainProgram = "tpc";
+    downloadPage = "https://github.com/CordyJ/Open-TuringPlus/releases";
   };
 })

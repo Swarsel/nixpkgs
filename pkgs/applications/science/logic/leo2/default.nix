@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  camlp4,
+  eprover,
   fetchpatch,
   makeWrapper,
-  eprover,
   ocaml,
-  camlp4,
   perl,
   zlib,
 }:
@@ -20,6 +20,15 @@ stdenv.mkDerivation rec {
     sha256 = "sha256:1b2q7vsz6s9ighypsigqjm1mzjiq3xgnz5id5ssb4rh9zm190r82";
   };
 
+  patches = [
+    (fetchpatch {
+      extraPrefix = "lib/";
+      sha256 = "sha256:01ln7hi6nvvkqkhn9hciqizizz5qspvqffgksvgmzn9x7kdd9pnh";
+      stripLen = 1;
+      url = "https://github.com/niklasso/minisat/commit/7eb6015313561a2586032574788fcb133eeaa19f.patch";
+    })
+  ];
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -29,16 +38,10 @@ stdenv.mkDerivation rec {
     camlp4
     perl
   ];
-  buildInputs = [ zlib ];
 
-  patches = [
-    (fetchpatch {
-      url = "https://github.com/niklasso/minisat/commit/7eb6015313561a2586032574788fcb133eeaa19f.patch";
-      stripLen = 1;
-      extraPrefix = "lib/";
-      sha256 = "sha256:01ln7hi6nvvkqkhn9hciqizizz5qspvqffgksvgmzn9x7kdd9pnh";
-    })
-  ];
+  buildInputs = [ zlib ];
+  buildFlags = [ "opt" ];
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-reserved-user-defined-literal";
 
   preConfigure = ''
     cd src
@@ -46,10 +49,6 @@ stdenv.mkDerivation rec {
     substituteInPlace Makefile.pre \
       --replace '+camlp4' "${camlp4}/lib/ocaml/${ocaml.version}/site-lib/camlp4"
   '';
-
-  buildFlags = [ "opt" ];
-
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-reserved-user-defined-literal";
 
   preInstall = "mkdir -p $out/bin";
 
@@ -63,10 +62,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "High-performance typed higher order prover";
-    mainProgram = "leo";
+    homepage = "http://www.leoprover.org/";
+    license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.bsd3;
-    homepage = "http://www.leoprover.org/";
+    mainProgram = "leo";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -13,9 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-DnmguOAGyw9nv88ekJfbC04Qwbsw5tXEAaKeiCQR/LA=";
   };
 
-  outputHashMode = "recursive";
-  outputHash = "sha256-gGHowq7g7MZmnhrpqG+3wNLwQCtpiBB88euIKeQIpJ0=";
-
   installPhase = ''
     runHook preInstall
 
@@ -25,13 +22,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  outputHash = "sha256-gGHowq7g7MZmnhrpqG+3wNLwQCtpiBB88euIKeQIpJ0=";
+  outputHashMode = "recursive";
+
   meta = {
     description = "Aeolus synthesizer instrument definitions";
     homepage = "http://kokkinizita.linuxaudio.org/linuxaudio/aeolus/index.html";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       nico202
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

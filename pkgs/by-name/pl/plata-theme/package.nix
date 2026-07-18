@@ -3,32 +3,32 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
-  parallel,
-  sassc,
+  glib,
+  gtk-engine-murrine,
+  gtk3,
+  gtk_engines,
   inkscape,
   libxml2,
-  glib,
-  gtk_engines,
-  gtk-engine-murrine,
+  marco,
+  parallel,
+  pkg-config,
+  sassc,
+  zip,
+  accentColor ? null, # Secondary color for notifications and OSDs (Default: #7986CB = Indigo300)
   cinnamonSupport ? true,
+  destructionColor ? null, # Tertiary color for 'destructive' buttons (Default: #F44336 = Red500)
   gnomeFlashbackSupport ? true,
   gnomeShellSupport ? true,
-  openboxSupport ? true,
-  xfceSupport ? true,
-  mateSupport ? true,
-  gtk3,
-  marco,
   gtkNextSupport ? false,
+  mateSupport ? true,
+  openboxSupport ? true,
   plankSupport ? false,
-  steamSupport ? false,
-  telegramSupport ? false,
-  zip,
-  tweetdeckSupport ? false,
   selectionColor ? null, # Primary color for 'selected-items' (Default: #3F51B5 = Indigo500)
-  accentColor ? null, # Secondary color for notifications and OSDs (Default: #7986CB = Indigo300)
+  steamSupport ? false,
   suggestionColor ? null, # Secondary color for 'suggested' buttons (Default: #673AB7 = DPurple500)
-  destructionColor ? null, # Tertiary color for 'destructive' buttons (Default: #F44336 = Red500)
+  telegramSupport ? false,
+  tweetdeckSupport ? false,
+  xfceSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-08Xsnef7LU5NFiDC8Jdve9zqFJYbgKX+cl5mhtOmm8c=";
   };
+
+  postPatch = "patchShebangs .";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -58,12 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional telegramSupport zip;
 
   buildInputs = [ gtk_engines ];
-
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
-  postPatch = "patchShebangs .";
 
   configureFlags =
     let
@@ -96,14 +92,20 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   meta = {
     description = "GTK theme based on Material Design Refresh";
     homepage = "https://gitlab.com/tista500/plata-theme";
+
     license = with lib.licenses; [
       gpl2Plus
       cc-by-sa-40
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ tadfisher ];
+    platforms = lib.platforms.linux;
   };
 })

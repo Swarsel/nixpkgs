@@ -15,14 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-zP87spRpoEzMIO0LUY4+Q8Sntah2M52UNb/Z23/l0PE=";
   };
 
-  buildInputs = [ libpcap ];
-
   # Allow having different prefix for header files (default output
   # "out") and libraries ("lib" output)
   postPatch = ''
     substituteInPlace configure \
       --replace-fail 'ls ''${testdir}/$dir/libpcap' 'ls ${lib.getLib libpcap}/$dir/libpcap'
   '';
+
+  buildInputs = [ libpcap ];
 
   configureFlags = [
     "--disable-local-libopts"
@@ -37,10 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Suite of utilities for editing and replaying network traffic";
     homepage = "https://tcpreplay.appneta.com/";
+
     license = with lib.licenses; [
       bsdOriginalUC
       gpl3Only
     ];
+
     maintainers = with lib.maintainers; [ eleanor ];
     platforms = lib.platforms.unix;
   };

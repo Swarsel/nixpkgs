@@ -1,27 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  nixosTests,
   ayatana-indicator-messages,
   cmake,
   dbus,
   dbus-test-runner,
   evolution-data-server,
-  kdePackages,
+  gitUpdater,
   glib,
   gst_all_1,
   gtest,
   intltool,
+  kdePackages,
   libaccounts-glib,
   libayatana-common,
   libical,
-  mkcal,
   libnotify,
   libsForQt5,
   libuuid,
   lomiri,
+  mkcal,
+  nixosTests,
   pkg-config,
   properties-cpp,
   python3,
@@ -113,20 +113,6 @@ stdenv.mkDerivation (finalAttrs: {
       ]
   );
 
-  nativeCheckInputs = [
-    dbus
-    dbus-test-runner
-    (python3.withPackages (ps: with ps; [ python-dbusmock ]))
-    tzdata
-  ];
-
-  checkInputs = [
-    dbus-test-runner
-    gtest
-  ];
-
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
     (lib.cmakeBool "GSETTINGS_COMPILE" true)
@@ -153,7 +139,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  enableParallelChecking = false;
+  nativeCheckInputs = [
+    dbus
+    dbus-test-runner
+    (python3.withPackages (ps: with ps; [ python-dbusmock ]))
+    tzdata
+  ];
+
+  checkInputs = [
+    dbus-test-runner
+    gtest
+  ];
 
   preCheck = ''
     export XDG_DATA_DIRS=${
@@ -188,33 +184,41 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  dontWrapQtApps = true;
+  enableParallelChecking = false;
+
   passthru = {
     ayatana-indicators = {
       "${if enableLomiriFeatures then "lomiri" else "ayatana"}-indicator-datetime" = [
         (if enableLomiriFeatures then "lomiri" else "ayatana")
       ];
     };
+
     tests = {
       startup = nixosTests.ayatana-indicators;
     }
     // lib.optionalAttrs enableLomiriFeatures {
       lomiri = nixosTests.lomiri.desktop-ayatana-indicator-datetime;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Ayatana Indicator providing clock and calendar";
+
     longDescription = ''
       This Ayatana Indicator provides a combined calendar, clock, alarm and
       event management tool.
     '';
+
     homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-datetime";
     changelog = "https://github.com/AyatanaIndicators/ayatana-indicator-datetime/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
+
     teams = [
       lib.teams.lomiri
     ];
-    platforms = lib.platforms.linux;
   };
 })

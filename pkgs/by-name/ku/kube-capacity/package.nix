@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -9,9 +9,9 @@ buildGoModule (finalAttrs: {
   version = "0.8.0";
 
   src = fetchFromGitHub {
-    rev = "v${finalAttrs.version}";
     owner = "robscott";
     repo = "kube-capacity";
+    rev = "v${finalAttrs.version}";
     sha256 = "sha256-zAwCz4Qs1OF/CdSmy9p4X9hL9iNkAH/EeSU2GgekzV8=";
   };
 
@@ -19,10 +19,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Simple CLI that provides an overview of the resource requests, limits, and utilization in a Kubernetes cluster";
-    mainProgram = "kube-capacity";
     homepage = "https://github.com/robscott/kube-capacity";
     changelog = "https://github.com/robscott/kube-capacity/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "kube-capacity";
   };
 })

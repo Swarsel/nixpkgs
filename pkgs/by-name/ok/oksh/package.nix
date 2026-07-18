@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildPackages,
   ncurses,
@@ -17,26 +17,24 @@ stdenv.mkDerivation rec {
     hash = "sha256-7YgKRlu/5FGZivANa2z6RQp7qKFX44xFuqNV6nwbAXI=";
   };
 
-  strictDeps = true;
-
   postPatch = lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
     substituteInPlace configure --replace "./conftest" "echo"
   '';
 
+  strictDeps = true;
+  buildInputs = [ ncurses ];
   configureFlags = [ "--no-strip" ];
 
-  buildInputs = [ ncurses ];
+  passthru = {
+    shellPath = "/bin/oksh";
+  };
 
   meta = {
     description = "Portable OpenBSD ksh, based on the Public Domain Korn Shell (pdksh)";
-    mainProgram = "oksh";
     homepage = "https://github.com/ibara/oksh";
     license = lib.licenses.publicDomain;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.all;
-  };
-
-  passthru = {
-    shellPath = "/bin/oksh";
+    mainProgram = "oksh";
   };
 }

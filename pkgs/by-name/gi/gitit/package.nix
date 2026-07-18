@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  haskellPackages,
   haskell,
+  haskellPackages,
   # “Plugins” are a fancy way of saying gitit will invoke
   # GHC at *runtime*, which in turn makes it pull GHC
   # into its runtime closure. Only enable if you really need

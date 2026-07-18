@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 let
@@ -12,8 +12,8 @@ let
 in
 
 stdenv.mkDerivation rec {
-  pname = "flexibee";
   inherit version;
+  pname = "flexibee";
 
   src = fetchurl {
     url = "https://download.flexibee.eu/download/${majorVersion}/${version}/${pname}-${version}.tar.gz";
@@ -21,12 +21,6 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  prePatch = ''
-    substituteInPlace usr/sbin/flexibee-server \
-      --replace "/usr/share/flexibee" $out \
-      --replace "/var/run" "/run"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -36,6 +30,12 @@ stdenv.mkDerivation rec {
     wrapProgram $out/bin/flexibee --set JAVA_HOME "${jre}"
     wrapProgram $out/bin/flexibee-server --set JAVA_HOME "${jre}"
     runHook postInstall
+  '';
+
+  prePatch = ''
+    substituteInPlace usr/sbin/flexibee-server \
+      --replace "/usr/share/flexibee" $out \
+      --replace "/var/run" "/run"
   '';
 
   meta = {

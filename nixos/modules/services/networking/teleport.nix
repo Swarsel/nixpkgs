@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -20,9 +20,46 @@ in
         example = "teleport_11";
       };
 
+      diag = {
+        enable = mkEnableOption ''
+          endpoints for monitoring purposes.
+
+          See <https://goteleport.com/docs/setup/admin/troubleshooting/#troubleshooting/>
+        '';
+
+        addr = mkOption {
+          default = "127.0.0.1";
+          description = "Metrics and diagnostics address.";
+          type = str;
+        };
+
+        port = mkOption {
+          default = 3000;
+          description = "Metrics and diagnostics port.";
+          type = port;
+        };
+      };
+
+      insecure.enable = mkEnableOption ''
+        starting teleport in insecure mode.
+
+        This is dangerous!
+        Sensitive information will be logged to console and certificates will not be verified.
+        Proceed with caution!
+
+        Teleport starts with disabled certificate validation on Proxy Service, validation still occurs on Auth Service
+      '';
+
       settings = mkOption {
-        type = settingsYaml.type;
         default = { };
+
+        description = ''
+          Contents of the {file}`teleport.yaml` config file.
+          The `--config` arguments will only be passed if this set is not empty.
+
+          See <https://goteleport.com/docs/setup/reference/config/>.
+        '';
+
         example = literalExpression ''
           {
             teleport = {
@@ -42,42 +79,8 @@ in
             auth_service.enabled = false;
           }
         '';
-        description = ''
-          Contents of the {file}`teleport.yaml` config file.
-          The `--config` arguments will only be passed if this set is not empty.
 
-          See <https://goteleport.com/docs/setup/reference/config/>.
-        '';
-      };
-
-      insecure.enable = mkEnableOption ''
-        starting teleport in insecure mode.
-
-        This is dangerous!
-        Sensitive information will be logged to console and certificates will not be verified.
-        Proceed with caution!
-
-        Teleport starts with disabled certificate validation on Proxy Service, validation still occurs on Auth Service
-      '';
-
-      diag = {
-        enable = mkEnableOption ''
-          endpoints for monitoring purposes.
-
-          See <https://goteleport.com/docs/setup/admin/troubleshooting/#troubleshooting/>
-        '';
-
-        addr = mkOption {
-          type = str;
-          default = "127.0.0.1";
-          description = "Metrics and diagnostics address.";
-        };
-
-        port = mkOption {
-          type = port;
-          default = 3000;
-          description = "Metrics and diagnostics port.";
-        };
+        type = settingsYaml.type;
       };
     };
   };
@@ -86,14 +89,17 @@ in
     environment.systemPackages = [ cfg.package ];
 
     systemd.services.teleport = {
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+
       path = with pkgs; [
         getent
         shadow
         sudo
       ];
+
       serviceConfig = {
+        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
         ExecStart = ''
           ${cfg.package}/bin/teleport start \
             ${optionalString cfg.insecure.enable "--insecure"} \
@@ -102,13 +108,15 @@ in
               cfg.settings != { }
             ) "--config=${settingsYaml.generate "teleport.yaml" cfg.settings}"}
         '';
-        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
         LimitNOFILE = 65536;
         Restart = "always";
         RestartSec = "5s";
         RuntimeDirectory = "teleport";
         Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

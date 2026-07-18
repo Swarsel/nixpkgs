@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gradle_8,
-  jdk,
-  quark-engine,
-  makeBinaryWrapper,
-  librsvg,
-  makeDesktopItem,
   copyDesktopItems,
   desktopToDarwinBundle,
+  gradle_8,
+  jdk,
+  librsvg,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  quark-engine,
 }:
 let
   # "Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0."
@@ -40,17 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ desktopToDarwinBundle ];
 
-  # Otherwise, Gradle fails with `java.net.SocketException: Operation not permitted`
-  __darwinAllowLocalNetworking = true;
-
-  mitmCache = gradle.fetchDeps {
-    pname = "jadx";
-    data = ./deps.json;
-  };
-
   preBuild = "export JADX_VERSION=${finalAttrs.version}";
-
-  gradleBuildTask = "pack";
 
   installPhase = ''
     runHook preInstall
@@ -77,38 +67,54 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Otherwise, Gradle fails with `java.net.SocketException: Operation not permitted`
+  __darwinAllowLocalNetworking = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "jadx";
-      desktopName = "JADX";
-      exec = "jadx-gui";
-      icon = "jadx";
-      comment = finalAttrs.meta.description;
       categories = [
         "Development"
         "Utility"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "JADX";
+      exec = "jadx-gui";
+      icon = "jadx";
+      name = "jadx";
     })
   ];
 
+  gradleBuildTask = "pack";
+
+  mitmCache = gradle.fetchDeps {
+    pname = "jadx";
+    data = ./deps.json;
+  };
+
   meta = {
-    changelog = "https://github.com/skylot/jadx/releases/tag/v${finalAttrs.version}";
     description = "Dex to Java decompiler";
-    homepage = "https://github.com/skylot/jadx";
+
     longDescription = ''
       Command line and GUI tools for produce Java source code from Android Dex
       and Apk files.
     '';
+
+    homepage = "https://github.com/skylot/jadx";
+    changelog = "https://github.com/skylot/jadx/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
-    license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
-    mainProgram = "jadx-gui";
+
     maintainers = with lib.maintainers; [
       emilytrau
       Misaka13514
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "jadx-gui";
   };
 })

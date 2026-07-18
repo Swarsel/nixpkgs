@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  libtool,
-  pkg-config,
-  gettext,
-  mandoc,
   ed,
+  gettext,
+  libtool,
+  mandoc,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,15 +19,23 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1zrdjh7a6z4khhfw9zrp490afq306cpl5v8wqz2z55ys7k1n5ifl";
   };
 
+  nativeBuildInputs = [
+    pkg-config
+    libtool
+    gettext
+  ];
+
   buildInputs = [
     perl
     mandoc
     ed
   ];
-  nativeBuildInputs = [
-    pkg-config
-    libtool
-    gettext
+
+  configureFlags = [
+    "--with-libtool=${libtool}/bin/libtool"
+    "--enable-nls=yes"
+    "--with-gettext=${gettext}"
+    "--with-manpages=yes"
   ];
 
   prePatch = ''
@@ -58,15 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
         done
   '';
 
-  configureFlags = [
-    "--with-libtool=${libtool}/bin/libtool"
-    "--enable-nls=yes"
-    "--with-gettext=${gettext}"
-    "--with-manpages=yes"
-  ];
-
   meta = {
-    homepage = "http://bsdbuild.hypertriton.com";
     description = "Cross-platform build system";
 
     longDescription = ''
@@ -80,6 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
       directory, BSDBuild will produce the required Makefiles in place).
     '';
 
+    homepage = "http://bsdbuild.hypertriton.com";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.linux;
   };

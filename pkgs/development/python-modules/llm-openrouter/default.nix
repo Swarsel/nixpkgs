@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  httpx,
+  inline-snapshot,
   llm,
   llm-openrouter,
-  httpx,
   openai,
-  pytestCheckHook,
-  inline-snapshot,
   pytest-recording,
+  pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-openrouter";
   version = "0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -24,6 +23,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-xlSeFWlamt3my20gANdZellaUHuDmjFClsQwrv/bq18=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    inline-snapshot
+    pytest-recording
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     setuptools
@@ -35,15 +41,8 @@ buildPythonPackage rec {
     openai
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    inline-snapshot
-    pytest-recording
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_openrouter" ];
-
   passthru.tests = llm.mkPluginTest llm-openrouter;
 
   meta = {
@@ -51,6 +50,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/simonw/llm-openrouter";
     changelog = "https://github.com/simonw/llm-openrouter/releases/tag/${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       arcuru
       philiptaron

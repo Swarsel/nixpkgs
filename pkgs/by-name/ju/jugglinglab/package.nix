@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  maven,
   fetchFromGitHub,
-  makeWrapper,
-  wrapGAppsHook3,
   jre,
+  makeWrapper,
+  maven,
+  wrapGAppsHook3,
 }:
 
 let
   platformName =
     {
-      "x86_64-linux" = "linux-x86-64";
-      "aarch64-linux" = "linux-aarch64";
       "aarch64-darwin" = "darwin-aarch64";
+      "aarch64-linux" = "linux-aarch64";
+      "x86_64-linux" = "linux-x86-64";
     }
     .${stdenv.system} or null;
 in
@@ -40,17 +40,10 @@ maven.buildMavenPackage rec {
       --replace-fail "/opt/juggling-lab/lib/Juggling_Lab.png" "jugglinglab"
   '';
 
-  mvnHash = "sha256-1Uzo9nRw+YR/sd7CC9MTPe/lttkRX6BtmcsHaagP1Do=";
-
-  # fix jar timestamps for reproducibility
-  mvnParameters = "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z";
-
   nativeBuildInputs = [
     makeWrapper
     wrapGAppsHook3
   ];
-
-  dontWrapGApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -79,15 +72,22 @@ maven.buildMavenPackage rec {
         --add-flags "-jar $out/share/jugglinglab/JugglingLab.jar"
   '';
 
+  dontWrapGApps = true;
+  mvnHash = "sha256-1Uzo9nRw+YR/sd7CC9MTPe/lttkRX6BtmcsHaagP1Do=";
+  # fix jar timestamps for reproducibility
+  mvnParameters = "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z";
+
   meta = {
     description = "Program to visualize different juggling patterns";
     homepage = "https://jugglinglab.org/";
     license = lib.licenses.gpl2Only;
-    mainProgram = "jugglinglab";
+
     maintainers = with lib.maintainers; [
       wnklmnn
       tomasajt
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "jugglinglab";
   };
 }

@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  sane-backends,
   autoPatchelfHook,
-  lib,
   libsForQt5,
+  sane-backends,
 }:
 
 stdenv.mkDerivation rec {
@@ -52,8 +52,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Master PDF Editor - version 4, without watermark";
     homepage = "https://code-industry.net/free-pdf-editor/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = [ "x86_64-linux" ];
   };
 }

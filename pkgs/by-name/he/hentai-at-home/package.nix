@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
+  buildPackages,
   fetchzip,
   jdk_headless,
   makeWrapper,
-  buildPackages,
+  stdenvNoCC,
   javaOpts ? "-XX:+UseZGC",
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,10 +17,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     jdk_headless
     makeWrapper
   ];
+
+  makeFlags = [ "all" ];
 
   env = {
     LANG = "en_US.UTF-8";
@@ -28,9 +32,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   // lib.optionalAttrs (stdenvNoCC.buildPlatform.libc == "glibc") {
     LOCALE_ARCHIVE = "${buildPackages.glibcLocales}/lib/locale/locale-archive";
   };
-
-  makeFlags = [ "all" ];
-  enableParallelBuilding = false;
 
   installPhase = ''
     runHook preInstall
@@ -46,6 +47,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -56,14 +58,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  strictDeps = true;
+  enableParallelBuilding = false;
 
   meta = {
-    homepage = "https://ehwiki.org/wiki/Hentai@Home";
     description = "Open-source P2P gallery distribution system which reduces the load on the E-Hentai Galleries";
+    homepage = "https://ehwiki.org/wiki/Hentai@Home";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ terrorjack ];
-    mainProgram = "HentaiAtHome";
     platforms = jdk_headless.meta.platforms;
+    mainProgram = "HentaiAtHome";
   };
 })

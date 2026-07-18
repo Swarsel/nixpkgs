@@ -3,15 +3,15 @@
 # Since the webcam app dynamically loads native code, this package is for maintainers to test QR code scanning without having to spend bitcoin to execute a trade.
 # This package is exposed as an attribute of the bisq2 package; bisq2.webcam-app.
 {
-  stdenv,
   lib,
-  makeBinaryWrapper,
-  jdk,
-  writeShellScript,
-  unzip,
+  stdenv,
   bisq2,
-  socat,
+  jdk,
   libraryPath,
+  makeBinaryWrapper,
+  socat,
+  unzip,
+  writeShellScript,
 }:
 
 let
@@ -26,10 +26,8 @@ let
 in
 stdenv.mkDerivation rec {
   inherit version;
-
   pname = "bisq2-webcam-app";
   src = bisq2;
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -53,4 +51,6 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 }

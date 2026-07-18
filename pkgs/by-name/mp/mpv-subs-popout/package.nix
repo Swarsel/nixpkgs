@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
+  openssl,
+  pkg-config,
   rustPlatform,
   wrapGAppsHook3,
-  pkg-config,
-  openssl,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mpv-subs-popout";
@@ -17,13 +17,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ELxI1pn1o+SQNtCKbZ0NFffqhJwRJzoeLSQHli9ZYwM=";
   };
 
-  cargoHash = "sha256-n7e3VrnueU7Lsj/FwM0aC9ThTqUlq27SS3RKugduwEA=";
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [ openssl ];
+  cargoHash = "sha256-n7e3VrnueU7Lsj/FwM0aC9ThTqUlq27SS3RKugduwEA=";
 
   meta = {
     description = "Little application that makes it possible to display mpv's subs anywhere you want. With translation features";

@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  nixosTests,
   fetchFromGitHub,
-  fetchYarnDeps,
-  yarnConfigHook,
-  rustPlatform,
-  nodejs,
-  pdfium-binaries,
-  openssl,
+  cacert,
   dbus,
+  fetchYarnDeps,
   glib,
   gtk3,
-  webkitgtk_4_1,
-  cacert,
-  pkg-config,
   makeWrapper,
   nix-update-script,
+  nixosTests,
+  nodejs,
+  openssl,
+  pdfium-binaries,
+  pkg-config,
+  rustPlatform,
+  webkitgtk_4_1,
+  yarnConfigHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "stump";
@@ -29,14 +29,52 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-kstMk4HJopLHW22ynVZF0itWUixwiDkbsMUpYMvw1Ag=";
   };
 
-  frontend = stdenv.mkDerivation (_: {
-    pname = "stump-frontend";
-    inherit (finalAttrs) src version;
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ];
 
-    yarnOfflineCache = fetchYarnDeps {
-      yarnLock = finalAttrs.src + "/yarn.lock";
-      hash = "sha256-Zh0GmxzDZ9YkUVK9i4cT4NKm83Rgcdi1qGmvA8RdDUM=";
-    };
+  buildInputs = [
+    openssl
+    dbus
+    glib
+    gtk3
+    webkitgtk_4_1
+  ];
+
+  cargoHash = "sha256-ZFIoxlArbhD+kZfX8K1iWmIaFSPfk9DeO9mL9PUZCnI=";
+  env.GIT_REV = "v${finalAttrs.version}";
+
+  nativeCheckInputs = [
+    cacert
+  ];
+
+  preCheck = ''
+    export HOME=$TMP
+  '';
+
+  postInstall = ''
+    wrapProgram $out/bin/stump_server \
+      --set-default STUMP_CONFIG_DIR /var/lib/stump/config \
+      --set-default STUMP_CLIENT_DIR ${finalAttrs.frontend} \
+      --set-default STUMP_PORT 10001 \
+      --set-default STUMP_PROFILE release \
+      --set-default PDFIUM_PATH ${pdfium-binaries}/lib/libpdfium.so \
+      --set-default API_VERSION v1
+  '';
+
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "--package"
+    "stump_server"
+    "--bin"
+    "stump_server"
+  ];
+
+  frontend = stdenv.mkDerivation (_: {
+    inherit (finalAttrs) src version;
+    pname = "stump-frontend";
 
     nativeBuildInputs = [
       yarnConfigHook
@@ -56,54 +94,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installPhase = ''
       mv ./apps/web/dist $out
     '';
+
+    yarnOfflineCache = fetchYarnDeps {
+      hash = "sha256-Zh0GmxzDZ9YkUVK9i4cT4NKm83Rgcdi1qGmvA8RdDUM=";
+      yarnLock = finalAttrs.src + "/yarn.lock";
+    };
   });
-
-  __structuredAttrs = true;
-
-  cargoHash = "sha256-ZFIoxlArbhD+kZfX8K1iWmIaFSPfk9DeO9mL9PUZCnI=";
-
-  cargoBuildFlags = [
-    "--package"
-    "stump_server"
-    "--bin"
-    "stump_server"
-  ];
-
-  env.GIT_REV = "v${finalAttrs.version}";
-
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-  ];
-
-  nativeCheckInputs = [
-    cacert
-  ];
-
-  buildInputs = [
-    openssl
-    dbus
-    glib
-    gtk3
-    webkitgtk_4_1
-  ];
-
-  preCheck = ''
-    export HOME=$TMP
-  '';
-
-  postInstall = ''
-    wrapProgram $out/bin/stump_server \
-      --set-default STUMP_CONFIG_DIR /var/lib/stump/config \
-      --set-default STUMP_CLIENT_DIR ${finalAttrs.frontend} \
-      --set-default STUMP_PORT 10001 \
-      --set-default STUMP_PROFILE release \
-      --set-default PDFIUM_PATH ${pdfium-binaries}/lib/libpdfium.so \
-      --set-default API_VERSION v1
-  '';
 
   passthru = {
     tests = nixosTests.stump;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -113,8 +113,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://stumpapp.dev/";
     description = "A free and open source comics, manga and digital book server with OPDS support";
+    homepage = "https://stumpapp.dev/";
     license = lib.licenses.mit;
     platforms = [ "x86_64-linux" ];
     mainProgram = "stump_server";

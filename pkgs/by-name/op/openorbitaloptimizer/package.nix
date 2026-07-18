@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   armadillo,
-  libxc,
+  cmake,
   integratorxx,
+  libxc,
   nlohmann_json,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,17 +31,18 @@ stdenv.mkDerivation (finalAttrs: {
     libxc
   ];
 
+  doCheck = true;
+
   checkInputs = [
     integratorxx
     nlohmann_json
   ];
-  doCheck = true;
 
   meta = {
     description = "Common orbital optimisation algorithms for quantum chemistry";
-    license = [ lib.licenses.mpl20 ];
     homepage = "https://github.com/susilehtola/OpenOrbitalOptimizer";
-    platforms = lib.platforms.linux;
+    license = [ lib.licenses.mpl20 ];
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
   };
 })

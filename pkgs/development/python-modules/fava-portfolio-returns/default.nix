@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  buildPythonPackage,
   fava,
   hatch-vcs,
   hatchling,
@@ -23,17 +23,16 @@ let
   };
 
   frontend = buildNpmPackage (finalAttrs: {
-    pname = "${pname}-frontend";
     inherit version;
-
+    pname = "${pname}-frontend";
     src = "${src}/frontend";
-
-    npmDepsHash = "sha256-/9sCyhGUOZ/muwJNKABy7ouPJa5ieVXjIFCSWw9AyRo=";
 
     postPatch = ''
       substituteInPlace package.json \
         --replace-fail '"name": "fava-portfolio-returns",' '"name": "fava-portfolio-returns", "version": "${finalAttrs.version}",'
     '';
+
+    npmDepsHash = "sha256-/9sCyhGUOZ/muwJNKABy7ouPJa5ieVXjIFCSWw9AyRo=";
 
     installPhase = ''
       runHook preInstall
@@ -47,7 +46,11 @@ let
 in
 buildPythonPackage {
   inherit pname version src;
-  pyproject = true;
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preInstall = ''
+    cp ${frontend}/FavaPortfolioReturns.js src/fava_portfolio_returns/
+  '';
 
   build-system = [
     hatchling
@@ -62,19 +65,15 @@ buildPythonPackage {
     scipy
   ];
 
-  preInstall = ''
-    cp ${frontend}/FavaPortfolioReturns.js src/fava_portfolio_returns/
-  '';
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "fava_portfolio_returns" ];
+  pyproject = true;
 
   # Use importlib import mode to avoid `PYTHONPATH` issues related to `pytestCheckHook` ([1])
   # [1]: https://github.com/NixOS/nixpkgs/issues/255262
   pytestFlags = [
     "--import-mode=importlib"
   ];
+
+  pythonImportsCheck = [ "fava_portfolio_returns" ];
 
   passthru = {
     inherit frontend;

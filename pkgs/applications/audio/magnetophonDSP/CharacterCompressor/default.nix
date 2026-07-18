@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     faust2lv2
   ];
 
-  dontWrapQtApps = true;
-
   buildPhase = ''
     faust2jaqt -vec -time -t 99999 CharacterCompressor.dsp
     faust2jaqt -vec -time -t 99999 CharacterCompressorMono.dsp
@@ -39,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r CharacterCompressor.lv2/ $out/lib/lv2
     cp -r CharacterCompressorMono.lv2/ $out/lib/lv2
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "Compressor with character. For jack and lv2";

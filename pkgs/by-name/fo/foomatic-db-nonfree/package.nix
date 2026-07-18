@@ -20,12 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cRZH0CXg03FEqUJdxaNnPVXjf8+ct86PjhL59WQbw60=";
   };
 
-  nativeBuildInputs = [
-    autoconf
-    automake
-    perl
-  ];
-
   # sed-substitute indirection is more robust against
   # characters in paths that might need escaping
   postPatch = ''
@@ -35,6 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
       --subst-var PATH  \
       --subst-var-by DATA "${placeholder "out"}/share"
   '';
+
+  nativeBuildInputs = [
+    autoconf
+    automake
+    perl
+  ];
 
   preConfigure = ''
     mkdir -p "${placeholder "out"}/share/foomatic/db/source"
@@ -56,7 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # we might patch ppd file commands with `patchPpdFilesHook`,
   # but the only command "rastertophaser6100" isn't packaged yet
-
   # compress ppd files
   postFixup = ''
     echo 'compressing ppd files'
@@ -65,12 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/OpenPrinting/foomatic-db-nonfree/blob/${finalAttrs.src.rev}/ChangeLog";
     description = "OpenPrinting printer support database (unfree content)";
-    downloadPage = "https://www.openprinting.org/download/foomatic/";
-    homepage = "https://openprinting.github.io/projects/02-foomatic/";
-    license = lib.licenses.unfree;
-    maintainers = [ lib.maintainers.yarny ];
+
     # list printer manufacturers here so people
     # searching for ppd files can find this package
     longDescription = ''
@@ -88,5 +83,11 @@ stdenv.mkDerivation (finalAttrs: {
       about 130 PPD files, for printers from
       Dell, Genicom, Lexmark, Oce and Xerox.
     '';
+
+    homepage = "https://openprinting.github.io/projects/02-foomatic/";
+    changelog = "https://github.com/OpenPrinting/foomatic-db-nonfree/blob/${finalAttrs.src.rev}/ChangeLog";
+    license = lib.licenses.unfree;
+    maintainers = [ lib.maintainers.yarny ];
+    downloadPage = "https://www.openprinting.org/download/foomatic/";
   };
 })

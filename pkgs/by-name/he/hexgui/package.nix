@@ -1,10 +1,10 @@
 {
-  ant,
-  fetchFromGitHub,
-  jdk,
   lib,
-  makeWrapper,
   stdenv,
+  fetchFromGitHub,
+  ant,
+  jdk,
+  makeWrapper,
 }:
 stdenv.mkDerivation {
   pname = "hexgui";
@@ -22,6 +22,7 @@ stdenv.mkDerivation {
     jdk
     makeWrapper
   ];
+
   buildPhase = ''
     ant
   '';
@@ -34,9 +35,9 @@ stdenv.mkDerivation {
 
   meta = {
     description = "GUI for the board game Hex";
-    mainProgram = "hexgui";
     homepage = "https://github.com/selinger/hexgui";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.ursi ];
+    mainProgram = "hexgui";
   };
 }

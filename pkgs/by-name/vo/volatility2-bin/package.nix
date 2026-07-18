@@ -1,8 +1,8 @@
 {
-  stdenv,
-  fetchzip,
   lib,
+  stdenv,
   autoPatchelfHook,
+  fetchzip,
   libz,
 }:
 let
@@ -23,21 +23,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.6.1";
 
   src = fetchzip {
+    inherit hash;
     url = "https://github.com/volatilityfoundation/volatility/releases/download/${finalAttrs.version}/volatility_${lib.versions.majorMinor finalAttrs.version}_${suffix}.zip";
     stripRoot = true;
-    inherit hash;
   };
-
-  dontConfigure = true;
-  dontBuild = true;
-  dontStrip = true;
-
-  buildInputs = [
-    libz
-  ];
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     autoPatchelfHook
+  ];
+
+  buildInputs = [
+    libz
   ];
 
   installPhase = ''
@@ -52,16 +48,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontStrip = true;
+
   meta = {
-    homepage = "https://volatilityfoundation.org/";
-    mainProgram = "volatility2";
     description = "Advanced memory forensics framework";
+    homepage = "https://volatilityfoundation.org/";
+    changelog = "https://github.com/volatilityfoundation/volatility/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.gpl2Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ ivyfanchiang ];
+
     platforms = [
       "x86_64-linux"
     ];
-    maintainers = with lib.maintainers; [ ivyfanchiang ];
-    license = lib.licenses.gpl2Plus;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    changelog = "https://github.com/volatilityfoundation/volatility/releases/tag/${finalAttrs.version}";
+
+    mainProgram = "volatility2";
   };
 })

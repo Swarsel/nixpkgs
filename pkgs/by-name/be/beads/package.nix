@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   dolt,
-  fetchFromGitHub,
   gitMinimal,
-  nix-update-script,
   icu,
   installShellFiles,
   makeBinaryWrapper,
+  nix-update-script,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -24,32 +24,21 @@ buildGoModule (finalAttrs: {
     hash = "sha256-K3X67XgUl55mZS4r4V/KTbXPNqCV7fPHi8HnrDime+E=";
   };
 
-  vendorHash = "sha256-Rn1MnasYUOBbIgjFx0E6R2Zak6la1VajDkHqoiFpHtw=";
-
-  subPackages = [ "cmd/bd" ];
-
-  ldflags = [
-    "-s"
-    "-w"
+  nativeBuildInputs = [
+    installShellFiles
+    makeBinaryWrapper
   ];
 
   buildInputs = [
     icu
   ];
 
-  nativeBuildInputs = [
-    installShellFiles
-    makeBinaryWrapper
-  ];
+  vendorHash = "sha256-Rn1MnasYUOBbIgjFx0E6R2Zak6la1VajDkHqoiFpHtw=";
 
   nativeCheckInputs = [
     gitMinimal
     writableTmpDirAsHomeHook
   ];
-
-  # Workaround for: panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted
-  # ref: https://github.com/NixOS/nix/pull/1646
-  __darwinAllowLocalNetworking = true;
 
   checkFlags =
     let
@@ -79,23 +68,36 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/bd completion zsh)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
-  versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
+  # Workaround for: panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted
+  # ref: https://github.com/NixOS/nix/pull/1646
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [ "cmd/bd" ];
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Lightweight memory system for AI coding agents with graph-based issue tracking";
     homepage = "https://github.com/gastownhall/beads";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kedry
       imcvampire
     ];
+
     mainProgram = "bd";
   };
 })

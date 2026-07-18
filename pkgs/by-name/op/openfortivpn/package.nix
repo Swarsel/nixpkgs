@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  nix-update-script,
   openssl,
+  pkg-config,
   ppp,
   systemd,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  withPpp ? stdenv.hostPlatform.isLinux,
   versionCheckHook,
-  nix-update-script,
+  withPpp ? stdenv.hostPlatform.isLinux,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,12 +49,13 @@ stdenv.mkDerivation (finalAttrs: {
   # configure: error: cannot check for file existence when cross compiling
   ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) "--disable-proc";
 
-  enableParallelBuilding = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = nix-update-script { };

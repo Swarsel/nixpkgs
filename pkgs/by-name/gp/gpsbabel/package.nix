@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  pkg-config,
-  which,
-  libusb1,
-  shapelib,
-  zlib,
-  withGUI ? false,
-  withDoc ? false,
+  fetchFromGitHub,
   docbook_xml_dtd_45,
   docbook_xsl,
   expat,
   fop,
+  libsForQt5,
+  libusb1,
   libxml2,
   libxslt,
   perl,
-  libsForQt5,
+  pkg-config,
+  shapelib,
+  which,
+  zlib,
+  withDoc ? false,
+  withGUI ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-0w8LsO+HwqZF8SQmwd8bCKma9PCM0hAzXhzWR4DgAHs=";
   };
 
+  outputs = [ "out" ] ++ lib.optional withDoc "doc";
   patches = map fetchurl (import ./debian-patches.nix);
 
   postPatch = ''
@@ -46,8 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace xmldoc/gpsbabel_man.xml \
       --replace /usr/share/doc $doc/share/doc
   '';
-
-  outputs = [ "out" ] ++ lib.optional withDoc "doc";
 
   nativeBuildInputs = [
     pkg-config
@@ -74,24 +73,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withGUI libsForQt5.qtserialport;
 
-  nativeCheckInputs = [
-    libxml2
-    which
-  ];
-
-  preConfigure = lib.optionalString withGUI ''
-    lrelease gui/*.ts gui/coretool/*.ts
-  '';
-
-  qmakeFlags = [
-    "WITH_LIBUSB=pkgconfig"
-    "WITH_SHAPELIB=pkgconfig"
-    "WITH_ZLIB=pkgconfig"
-  ]
-  ++ lib.optionals withGUI [
-    "CONFIG+=disable-mappreview" # would require qt5 webengine
-  ];
-
   makeFlags =
     lib.optional withGUI "gui"
     ++ lib.optionals withDoc [
@@ -104,9 +85,16 @@ stdenv.mkDerivation (finalAttrs: {
   # extended precision fixes this problem.
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isi686 "-ffloat-store";
 
+  preConfigure = lib.optionalString withGUI ''
+    lrelease gui/*.ts gui/coretool/*.ts
+  '';
+
   doCheck = true;
 
-  dontWrapQtApps = true;
+  nativeCheckInputs = [
+    libxml2
+    which
+  ];
 
   installPhase = ''
     install -Dm755 gpsbabel -t $out/bin
@@ -143,8 +131,20 @@ stdenv.mkDerivation (finalAttrs: {
       ''
   );
 
+  dontWrapQtApps = true;
+
+  qmakeFlags = [
+    "WITH_LIBUSB=pkgconfig"
+    "WITH_SHAPELIB=pkgconfig"
+    "WITH_ZLIB=pkgconfig"
+  ]
+  ++ lib.optionals withGUI [
+    "CONFIG+=disable-mappreview" # would require qt5 webengine
+  ];
+
   meta = {
     description = "Convert, upload and download data from GPS and Map programs";
+
     longDescription = ''
       GPSBabel converts waypoints, tracks, and routes between popular
       GPS receivers and mapping programs.  It also has powerful
@@ -163,10 +163,11 @@ stdenv.mkDerivation (finalAttrs: {
       process data that may (or may not be) placed on a map, such as
       waypoints, tracks, and routes.
     '';
+
     homepage = "https://www.gpsbabel.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
     mainProgram = "gpsbabel";
   };
 })

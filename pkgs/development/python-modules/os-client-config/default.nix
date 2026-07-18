@@ -8,9 +8,9 @@
   oslotest,
   pbr,
   python-glanceclient,
+  python-subunit,
   setuptools,
   stestr,
-  python-subunit,
   testscenarios,
   testtools,
 }:
@@ -18,24 +18,12 @@
 buildPythonPackage rec {
   pname = "os-client-config";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "os_client_config";
     inherit version;
     hash = "sha256-4WomDy/VAK8U8Ve5t7fWkpLOg7D4pGHsaM5qikKWfL0=";
+    pname = "os_client_config";
   };
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
-  dependencies = [
-    openstacksdk
-    pbr
-    python-glanceclient
-  ];
 
   nativeCheckInputs = [
     fixtures
@@ -55,6 +43,18 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  dependencies = [
+    openstacksdk
+    pbr
+    python-glanceclient
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "os_client_config" ];
 
   meta = {

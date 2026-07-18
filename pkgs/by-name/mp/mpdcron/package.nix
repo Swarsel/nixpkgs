@@ -4,24 +4,24 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
+  autoreconfHook,
+  bundlerEnv,
+  bundlerUpdateScript,
+  curl,
   glib,
   libdaemon,
   libmpdclient,
-  curl,
-  sqlite,
-  bundlerEnv,
   libnotify,
+  libtool,
   pandoc,
-  autoreconfHook,
-  bundlerUpdateScript,
+  pkg-config,
+  sqlite,
 }:
 
 let
   gemEnv = bundlerEnv {
-    name = "mpdcron-bundle";
     gemdir = ./.;
+    name = "mpdcron-bundle";
   };
 in
 stdenv.mkDerivation {
@@ -39,6 +39,7 @@ stdenv.mkDerivation {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libtool
     glib
@@ -62,8 +63,10 @@ stdenv.mkDerivation {
     description = "Cron like daemon for mpd";
     homepage = "http://alip.github.io/mpdcron/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = [
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

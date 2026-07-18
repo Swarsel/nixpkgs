@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  lua,
   buildEnv,
+  lua,
   makeWrapper,
+  requiredLuaModules,
   extraLibs ? [ ],
   extraOutputsToInstall ? [ ],
-  postBuild ? "",
   ignoreCollisions ? false,
-  requiredLuaModules,
   makeWrapperArgs ? [ ],
+  postBuild ? "",
 }:
 
 # Create a lua executable that knows about additional packages.
@@ -19,11 +19,9 @@ let
       paths = [ lua ] ++ requiredLuaModules extraLibs;
     in
     buildEnv {
-      name = "${lua.name}-env";
-
       inherit paths;
       inherit ignoreCollisions;
-      extraOutputsToInstall = [ "out" ] ++ extraOutputsToInstall;
+      inherit (lua) meta;
 
       nativeBuildInputs = [
         makeWrapper
@@ -63,15 +61,13 @@ let
       ''
       + postBuild;
 
-      inherit (lua) meta;
+      extraOutputsToInstall = [ "out" ] ++ extraOutputsToInstall;
+      name = "${lua.name}-env";
 
       passthru = lua.passthru // {
-        interpreter = "${env}/bin/lua";
         inherit lua;
-        luaPath = lua.pkgs.luaLib.genLuaPathAbsStr env;
-        luaCpath = lua.pkgs.luaLib.genLuaCPathAbsStr env;
+
         env = stdenv.mkDerivation {
-          name = "interactive-${lua.name}-environment";
           nativeBuildInputs = [ env ];
 
           buildCommand = ''
@@ -80,7 +76,13 @@ let
             echo >&2 ""
             exit 1
           '';
+
+          name = "interactive-${lua.name}-environment";
         };
+
+        interpreter = "${env}/bin/lua";
+        luaCpath = lua.pkgs.luaLib.genLuaCPathAbsStr env;
+        luaPath = lua.pkgs.luaLib.genLuaPathAbsStr env;
       };
     };
 in

@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nodejs,
-  pnpm_11,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  makeWrapper,
   installShellFiles,
+  makeWrapper,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -20,13 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     repo = "OpenSpec";
     tag = "v${finalAttrs.version}";
     hash = "sha256-VZZ/ukjciXqiebwei2JizyOnxx0T3IeoowFWElKec4o=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-p44ctVCA3d1CXoq+zzhswVqhScF23ZhvpLUVVcrgQlM=";
   };
 
   nativeBuildInputs = [
@@ -69,6 +62,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --fish <($out/bin/openspec completion generate fish) \
       --zsh <($out/bin/openspec completion generate zsh)
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-p44ctVCA3d1CXoq+zzhswVqhScF23ZhvpLUVVcrgQlM=";
+    pnpm = pnpm_11;
+  };
 
   passthru.updateScript = nix-update-script { };
 

@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  alcotest,
   buildDunePackage,
   ocplib-endian,
-  alcotest,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -18,15 +18,13 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ ocplib-endian ];
-
-  checkInputs = [ alcotest ];
-
   doCheck = true;
+  checkInputs = [ alcotest ];
 
   meta = {
     description = "Fast MessagePack (http://msgpack.org) library";
-    license = lib.licenses.isc;
     homepage = "https://github.com/vbmithr/ocaml-msgpck";
+    license = lib.licenses.isc;
     maintainers = [ lib.maintainers.ulrikstrid ];
   };
 })

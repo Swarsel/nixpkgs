@@ -1,7 +1,7 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
   extras ? [
     "hjson"
     "json5"
@@ -14,7 +14,6 @@
 python3.pkgs.buildPythonApplication rec {
   pname = "jinja2-cli";
   version = "0.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mattrobenolt";
@@ -28,10 +27,6 @@ python3.pkgs.buildPythonApplication rec {
     python3.pkgs.wheel
   ];
 
-  nativeCheckInputs = [
-    python3.pkgs.pytestCheckHook
-  ];
-
   propagatedBuildInputs =
     with python3.pkgs;
     [
@@ -39,7 +34,9 @@ python3.pkgs.buildPythonApplication rec {
     ]
     ++ lib.flatten (lib.attrVals extras optional-dependencies);
 
-  pythonImportsCheck = [ "jinja2cli" ];
+  nativeCheckInputs = [
+    python3.pkgs.pytestCheckHook
+  ];
 
   optional-dependencies = with python3.pkgs; {
     hjson = [ hjson ];
@@ -48,6 +45,9 @@ python3.pkgs.buildPythonApplication rec {
     xml = [ xmltodict ];
     yaml = [ pyyaml ];
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "jinja2cli" ];
 
   meta = {
     description = "CLI for Jinja2";

@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromForgejo,
   installShellFiles,
-  lib,
   libnotify,
   pandoc,
   patchelf,
@@ -12,17 +12,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "hinoirisetr";
   version = "1.6.3";
 
-  __structuredAttrs = true;
-
   src = fetchFromForgejo {
-    domain = "git.vavakado.xyz";
     owner = "me";
     repo = "hinoirisetr";
     tag = "v${finalAttrs.version}";
     hash = "sha256-XgIeeVCnlntf2RopA6SMuFCgbqTlTEZv6V5ezjEHVKA=";
+    domain = "git.vavakado.xyz";
   };
-
-  cargoHash = "sha256-lydS9TWb+Y1PPC7C3Mn6KNVX1fsooAcDKJeKMnXWZY0=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -34,9 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libnotify
   ];
 
-  postFixup = ''
-    patchelf --add-rpath "${lib.getLib libnotify}/lib" $out/bin/hinoirisetr
-  '';
+  cargoHash = "sha256-lydS9TWb+Y1PPC7C3Mn6KNVX1fsooAcDKJeKMnXWZY0=";
 
   postBuild = ''
     pandoc manpages/hinoirisetr.1.md -s -t man -o hinoirisetr.1
@@ -46,15 +40,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage hinoirisetr.1
   '';
 
+  postFixup = ''
+    patchelf --add-rpath "${lib.getLib libnotify}/lib" $out/bin/hinoirisetr
+  '';
+
+  __structuredAttrs = true;
+
   meta = {
     description = "a lightweight daemon that automatically adjusts your screen's color temperature and gamma";
     homepage = "https://git.vavakado.xyz/me/hinoirisetr";
     changelog = "https://git.vavakado.xyz/me/hinoirisetr/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       vavakado
     ];
-    mainProgram = "hinoirisetr";
+
     platforms = lib.platforms.linux;
+    mainProgram = "hinoirisetr";
   };
 })

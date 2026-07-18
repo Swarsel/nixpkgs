@@ -48,44 +48,40 @@ let
     database =
       if cfg.database.type == "sqlite3" then
         {
-          type = "sqlite3";
-          filename = cfg.settings.database.filename or "writefreely.db";
           database = cfg.database.name;
+          filename = cfg.settings.database.filename or "writefreely.db";
+          type = "sqlite3";
         }
       else
         {
-          type = "mysql";
-          username = cfg.database.user;
-          password = "#dbpass#";
           database = cfg.database.name;
           host = cfg.database.host;
+          password = "#dbpass#";
           port = cfg.database.port;
           tls = cfg.database.tls;
+          type = "mysql";
+          username = cfg.database.user;
         };
-
-    server = cfg.settings.server or { } // {
-      bind = cfg.settings.server.bind or "localhost";
-      gopher_port = cfg.settings.server.gopher_port or 0;
-      autocert = !cfg.nginx.enable && cfg.acme.enable;
-      templates_parent_dir = cfg.settings.server.templates_parent_dir or cfg.package.src;
-      static_parent_dir = cfg.settings.server.static_parent_dir or assets;
-      pages_parent_dir = cfg.settings.server.pages_parent_dir or cfg.package.src;
-      keys_parent_dir = cfg.settings.server.keys_parent_dir or cfg.stateDir;
-    };
 
     email = cfg.settings.email or { } // {
       smtp_password = "#smtppass#";
+    };
+
+    server = cfg.settings.server or { } // {
+      autocert = !cfg.nginx.enable && cfg.acme.enable;
+      bind = cfg.settings.server.bind or "localhost";
+      gopher_port = cfg.settings.server.gopher_port or 0;
+      keys_parent_dir = cfg.settings.server.keys_parent_dir or cfg.stateDir;
+      pages_parent_dir = cfg.settings.server.pages_parent_dir or cfg.package.src;
+      static_parent_dir = cfg.settings.server.static_parent_dir or assets;
+      templates_parent_dir = cfg.settings.server.templates_parent_dir or cfg.package.src;
     };
   };
 
   configFile = format.generate "config.ini" settings;
 
   assets = pkgs.stdenvNoCC.mkDerivation {
-    pname = "writefreely-assets";
-
     inherit (cfg.package) version src;
-
-    nativeBuildInputs = with pkgs; [ lessc ];
 
     buildPhase = ''
       mkdir -p $out
@@ -102,6 +98,9 @@ let
       lessc $less_dir/icons.less $css_dir/icons.css
       lessc $less_dir/prose.less $css_dir/prose.css
     '';
+
+    nativeBuildInputs = with pkgs; [ lessc ];
+    pname = "writefreely-assets";
   };
 
   withConfigFile = text: ''
@@ -160,36 +159,140 @@ in
 {
   options.services.writefreely = {
     enable = lib.mkEnableOption "Writefreely, build a digital writing community";
-
     package = lib.mkPackageOption pkgs "writefreely" { };
 
-    stateDir = mkOption {
-      type = types.path;
-      default = "/var/lib/writefreely";
-      description = "The state directory where keys and data are stored.";
+    acme = {
+      enable = mkOption {
+        default = false;
+        description = "Whether or not to automatically fetch and configure SSL certs.";
+        type = types.bool;
+      };
     };
 
-    user = mkOption {
-      type = types.str;
-      default = "writefreely";
-      description = "User under which Writefreely is ran.";
+    admin = {
+      initialPasswordFile = mkOption {
+        default = pkgs.writeText "default-admin-pass" "nixos";
+        defaultText = "/nix/store/xxx-default-admin-pass";
+
+        description = ''
+          Path to a file containing the initial password for the admin user.
+          If not provided, the default password will be set to `nixos`.
+        '';
+
+        type = types.path;
+      };
+
+      name = mkOption {
+        default = null;
+        description = "The name of the first admin user.";
+        type = types.nullOr types.str;
+      };
+    };
+
+    database = {
+      createLocally = mkOption {
+        default = false;
+
+        description = ''
+          When {option}`services.writefreely.database.type` is set to
+          `"mysql"`, this option will enable the MySQL service locally.
+        '';
+
+        type = types.bool;
+      };
+
+      host = mkOption {
+        default = "localhost";
+        description = "The database host to connect to.";
+        type = types.str;
+      };
+
+      migrate = mkOption {
+        default = true;
+        description = "Whether or not to automatically run migrations on startup.";
+        type = types.bool;
+      };
+
+      name = mkOption {
+        default = "writefreely";
+        description = "The name of the database to store data in.";
+        type = types.str;
+      };
+
+      passwordFile = mkOption {
+        default = null;
+        description = "The file to load the database password from.";
+        type = types.nullOr types.path;
+      };
+
+      port = mkOption {
+        default = 3306;
+        description = "The port used when connecting to the database host.";
+        type = types.port;
+      };
+
+      tls = mkOption {
+        default = false;
+        description = "Whether or not TLS should be used for the database connection.";
+        type = types.bool;
+      };
+
+      type = mkOption {
+        default = "sqlite3";
+        description = "The database provider to use.";
+
+        type = types.enum [
+          "sqlite3"
+          "mysql"
+        ];
+      };
+
+      user = mkOption {
+        default = if cfg.database.type == "mysql" then "writefreely" else null;
+        defaultText = "writefreely";
+        description = "The database user to connect as.";
+        type = types.nullOr types.str;
+      };
+    };
+
+    email = {
+      smtpPasswordFile = mkOption {
+        default = null;
+        description = "The file to load the password for the smtp email server.";
+        type = types.nullOr types.path;
+      };
     };
 
     group = mkOption {
-      type = types.str;
       default = "writefreely";
       description = "Group under which Writefreely is ran.";
+      type = types.str;
     };
 
     host = mkOption {
-      type = types.str;
       default = "";
       description = "The public host name to serve.";
       example = "example.com";
+      type = types.str;
+    };
+
+    nginx = {
+      enable = mkOption {
+        default = false;
+        description = "Whether or not to enable and configure nginx as a proxy for WriteFreely.";
+        type = types.bool;
+      };
+
+      forceSSL = mkOption {
+        default = false;
+        description = "Whether or not to force the use of SSL.";
+        type = types.bool;
+      };
     };
 
     settings = mkOption {
       default = { };
+
       description = ''
         Writefreely configuration ({file}`config.ini`). Refer to
         <https://writefreely.org/docs/latest/admin/config>
@@ -197,138 +300,39 @@ in
       '';
 
       type = types.submodule {
-        freeformType = format.type;
-
         options = {
           app = {
             theme = mkOption {
-              type = types.str;
               default = "write";
               description = "The theme to apply.";
+              type = types.str;
             };
           };
 
           server = {
             port = mkOption {
-              type = types.port;
               default = if cfg.nginx.enable then 18080 else 80;
               defaultText = "80";
               description = "The port WriteFreely should listen on.";
+              type = types.port;
             };
           };
         };
+
+        freeformType = format.type;
       };
     };
 
-    database = {
-      type = mkOption {
-        type = types.enum [
-          "sqlite3"
-          "mysql"
-        ];
-        default = "sqlite3";
-        description = "The database provider to use.";
-      };
-
-      name = mkOption {
-        type = types.str;
-        default = "writefreely";
-        description = "The name of the database to store data in.";
-      };
-
-      user = mkOption {
-        type = types.nullOr types.str;
-        default = if cfg.database.type == "mysql" then "writefreely" else null;
-        defaultText = "writefreely";
-        description = "The database user to connect as.";
-      };
-
-      passwordFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "The file to load the database password from.";
-      };
-
-      host = mkOption {
-        type = types.str;
-        default = "localhost";
-        description = "The database host to connect to.";
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 3306;
-        description = "The port used when connecting to the database host.";
-      };
-
-      tls = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether or not TLS should be used for the database connection.";
-      };
-
-      migrate = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Whether or not to automatically run migrations on startup.";
-      };
-
-      createLocally = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          When {option}`services.writefreely.database.type` is set to
-          `"mysql"`, this option will enable the MySQL service locally.
-        '';
-      };
+    stateDir = mkOption {
+      default = "/var/lib/writefreely";
+      description = "The state directory where keys and data are stored.";
+      type = types.path;
     };
 
-    admin = {
-      name = mkOption {
-        type = types.nullOr types.str;
-        description = "The name of the first admin user.";
-        default = null;
-      };
-
-      initialPasswordFile = mkOption {
-        type = types.path;
-        description = ''
-          Path to a file containing the initial password for the admin user.
-          If not provided, the default password will be set to `nixos`.
-        '';
-        default = pkgs.writeText "default-admin-pass" "nixos";
-        defaultText = "/nix/store/xxx-default-admin-pass";
-      };
-    };
-
-    email = {
-      smtpPasswordFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "The file to load the password for the smtp email server.";
-      };
-    };
-
-    nginx = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether or not to enable and configure nginx as a proxy for WriteFreely.";
-      };
-
-      forceSSL = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether or not to force the use of SSL.";
-      };
-    };
-
-    acme = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether or not to automatically fetch and configure SSL certs.";
-      };
+    user = mkOption {
+      default = "writefreely";
+      description = "User under which Writefreely is ran.";
+      type = types.str;
     };
   };
 
@@ -348,21 +352,38 @@ in
       }
     ];
 
-    users = {
-      users = optionalAttrs (cfg.user == "writefreely") {
-        writefreely = {
-          group = cfg.group;
-          home = cfg.stateDir;
-          isSystemUser = true;
-        };
-      };
+    services.mysql = mkIf isMysqlLocal {
+      enable = true;
+      package = mkDefault pkgs.mariadb;
+      ensureDatabases = [ cfg.database.name ];
 
-      groups = optionalAttrs (cfg.group == "writefreely") { writefreely = { }; };
+      ensureUsers = [
+        {
+          ensurePermissions = {
+            "${cfg.database.name}.*" = "ALL PRIVILEGES";
+            # WriteFreely requires the use of passwords, so we need permissions
+            # to `ALTER` the user to add password support and also to reload
+            # permissions so they can be used.
+            "*.*" = "CREATE USER, RELOAD";
+          };
+
+          name = cfg.database.user;
+        }
+      ];
     };
 
-    systemd.tmpfiles.settings."10-writefreely".${cfg.stateDir}.d = {
-      inherit (cfg) user group;
-      mode = "0750";
+    services.nginx = lib.mkIf cfg.nginx.enable {
+      enable = true;
+      recommendedProxySettings = true;
+
+      virtualHosts."${cfg.host}" = {
+        enableACME = cfg.acme.enable;
+        forceSSL = cfg.nginx.forceSSL;
+
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:${toString settings.server.port}";
+        };
+      };
     };
 
     systemd.services.writefreely = {
@@ -372,20 +393,8 @@ in
       ++ optional isSqlite "writefreely-sqlite-init.service"
       ++ optional isMysql "writefreely-mysql-init.service"
       ++ optional isMysqlLocal "mysql.service";
-      wantedBy = [ "multi-user.target" ];
 
       path = [ openssl ];
-
-      serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-        WorkingDirectory = cfg.stateDir;
-        Restart = "always";
-        RestartSec = 20;
-        ExecStart = "${cfg.package}/bin/writefreely -c '${cfg.stateDir}/config.ini' serve";
-        AmbientCapabilities = optionalString (settings.server.port < 1024) "cap_net_bind_service";
-      };
 
       preStart = ''
         if ! test -d "${cfg.stateDir}/keys"; then
@@ -398,57 +407,23 @@ in
           ${cfg.package}/bin/writefreely -c '${cfg.stateDir}/config.ini' keys generate
         fi
       '';
-    };
-
-    systemd.services.writefreely-sqlite-init = mkIf isSqlite {
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
-        Type = "oneshot";
-        User = cfg.user;
+        AmbientCapabilities = optionalString (settings.server.port < 1024) "cap_net_bind_service";
+        ExecStart = "${cfg.package}/bin/writefreely -c '${cfg.stateDir}/config.ini' serve";
         Group = cfg.group;
+        Restart = "always";
+        RestartSec = 20;
+        Type = "simple";
+        User = cfg.user;
         WorkingDirectory = cfg.stateDir;
-        ReadOnlyPaths = optional (cfg.admin.initialPasswordFile != null) cfg.admin.initialPasswordFile;
       };
 
-      script =
-        let
-          migrateDatabase = optionalString cfg.database.migrate ''
-            ${cfg.package}/bin/writefreely -c '${cfg.stateDir}/config.ini' db migrate
-          '';
-
-          createAdmin = optionalString (cfg.admin.name != null) ''
-            if [[ $(query "SELECT COUNT(*) FROM users") == 0 ]]; then
-              admin_pass=$(head -n1 ${cfg.admin.initialPasswordFile})
-
-              ${cfg.package}/bin/writefreely -c '${cfg.stateDir}/config.ini' --create-admin ${cfg.admin.name}:$admin_pass
-            fi
-          '';
-        in
-        withSqlite ''
-          if ! test -f '${settings.database.filename}'; then
-            ${cfg.package}/bin/writefreely -c '${cfg.stateDir}/config.ini' db init
-          fi
-
-          ${migrateDatabase}
-
-          ${createAdmin}
-        '';
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.writefreely-mysql-init = mkIf isMysql {
-      wantedBy = [ "multi-user.target" ];
       after = optional isMysqlLocal "mysql.service";
-
-      serviceConfig = {
-        Type = "oneshot";
-        User = cfg.user;
-        Group = cfg.group;
-        WorkingDirectory = cfg.stateDir;
-        ReadOnlyPaths =
-          optional isMysqlLocal cfg.database.passwordFile
-          ++ optional (cfg.admin.initialPasswordFile != null) cfg.admin.initialPasswordFile;
-      };
 
       script =
         let
@@ -482,36 +457,71 @@ in
 
           ${createAdmin}
         '';
+
+      serviceConfig = {
+        Group = cfg.group;
+
+        ReadOnlyPaths =
+          optional isMysqlLocal cfg.database.passwordFile
+          ++ optional (cfg.admin.initialPasswordFile != null) cfg.admin.initialPasswordFile;
+
+        Type = "oneshot";
+        User = cfg.user;
+        WorkingDirectory = cfg.stateDir;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    services.mysql = mkIf isMysqlLocal {
-      enable = true;
-      package = mkDefault pkgs.mariadb;
-      ensureDatabases = [ cfg.database.name ];
-      ensureUsers = [
-        {
-          name = cfg.database.user;
-          ensurePermissions = {
-            "${cfg.database.name}.*" = "ALL PRIVILEGES";
-            # WriteFreely requires the use of passwords, so we need permissions
-            # to `ALTER` the user to add password support and also to reload
-            # permissions so they can be used.
-            "*.*" = "CREATE USER, RELOAD";
-          };
-        }
-      ];
+    systemd.services.writefreely-sqlite-init = mkIf isSqlite {
+      script =
+        let
+          migrateDatabase = optionalString cfg.database.migrate ''
+            ${cfg.package}/bin/writefreely -c '${cfg.stateDir}/config.ini' db migrate
+          '';
+
+          createAdmin = optionalString (cfg.admin.name != null) ''
+            if [[ $(query "SELECT COUNT(*) FROM users") == 0 ]]; then
+              admin_pass=$(head -n1 ${cfg.admin.initialPasswordFile})
+
+              ${cfg.package}/bin/writefreely -c '${cfg.stateDir}/config.ini' --create-admin ${cfg.admin.name}:$admin_pass
+            fi
+          '';
+        in
+        withSqlite ''
+          if ! test -f '${settings.database.filename}'; then
+            ${cfg.package}/bin/writefreely -c '${cfg.stateDir}/config.ini' db init
+          fi
+
+          ${migrateDatabase}
+
+          ${createAdmin}
+        '';
+
+      serviceConfig = {
+        Group = cfg.group;
+        ReadOnlyPaths = optional (cfg.admin.initialPasswordFile != null) cfg.admin.initialPasswordFile;
+        Type = "oneshot";
+        User = cfg.user;
+        WorkingDirectory = cfg.stateDir;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    services.nginx = lib.mkIf cfg.nginx.enable {
-      enable = true;
-      recommendedProxySettings = true;
+    systemd.tmpfiles.settings."10-writefreely".${cfg.stateDir}.d = {
+      inherit (cfg) user group;
+      mode = "0750";
+    };
 
-      virtualHosts."${cfg.host}" = {
-        enableACME = cfg.acme.enable;
-        forceSSL = cfg.nginx.forceSSL;
+    users = {
+      groups = optionalAttrs (cfg.group == "writefreely") { writefreely = { }; };
 
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:${toString settings.server.port}";
+      users = optionalAttrs (cfg.user == "writefreely") {
+        writefreely = {
+          group = cfg.group;
+          home = cfg.stateDir;
+          isSystemUser = true;
         };
       };
     };

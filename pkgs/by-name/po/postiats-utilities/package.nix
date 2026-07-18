@@ -9,6 +9,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "postiats-utilities";
   version = "2.1.1";
+
   src = fetchFromGitHub {
     owner = "Hibou57";
     repo = "PostiATS-Utilities";
@@ -16,23 +17,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-QeBbv5lwqL2ARjB+RGyBHeuibaxugffBLhC9lYs+5tE=";
   };
 
-  meta = {
-    homepage = "https://github.com/Hibou57/PostiATS-Utilities";
-    license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
-    maintainers = [ ];
-  };
-
-  buildInputs = [
-    python3
-    python3Packages.wrapPython
-  ];
-
   postPatch = ''
     for f in pats-* postiats/*.py; do
       sed -i "$f" -e "1 s,python3,python,"
     done
   '';
+
+  buildInputs = [
+    python3
+    python3Packages.wrapPython
+  ];
 
   installPhase = ''
     libdir="$out/${python3.sitePackages}"
@@ -44,4 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
 
     wrapPythonPrograms
   '';
+
+  meta = {
+    homepage = "https://github.com/Hibou57/PostiATS-Utilities";
+    license = lib.licenses.bsd2;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
+  };
 })

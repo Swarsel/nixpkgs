@@ -1,33 +1,33 @@
 {
-  useNixpkgsEngine ? false,
-  version,
+  lib,
+  stdenv,
+  callPackage,
+  channel,
+  dart,
+  darwin,
+  engineSwiftShaderHash,
+  engineSwiftShaderRev,
   engineVersion,
+  gitMinimal,
+  installShellFiles,
+  jq,
+  makeWrapper,
+  patches,
+  pubspecLock,
+  src,
+  version,
+  which,
+  writableTmpDirAsHomeHook,
+  artifactHashes ? null,
   engineHashes ? { },
-  engineUrl ? "https://github.com/flutter/flutter.git@${engineVersion}",
   enginePatches ? [ ],
   engineRuntimeModes ? [
     "release"
     "debug"
   ],
-  engineSwiftShaderHash,
-  engineSwiftShaderRev,
-  patches,
-  channel,
-  dart,
-  src,
-  pubspecLock,
-  artifactHashes ? null,
-  lib,
-  stdenv,
-  callPackage,
-  makeWrapper,
-  darwin,
-  gitMinimal,
-  which,
-  jq,
-  writableTmpDirAsHomeHook,
-  installShellFiles,
+  engineUrl ? "https://github.com/flutter/flutter.git@${engineVersion}",
   flutterTools ? null,
+  useNixpkgsEngine ? false,
 }@args:
 
 let
@@ -35,15 +35,15 @@ let
     if args.useNixpkgsEngine or false then
       callPackage ./engine/default.nix {
         inherit (args) dart;
+        version = engineVersion;
+        patches = enginePatches;
         dartSdkVersion = args.dart.version;
         flutterVersion = version;
-        swiftshaderRev = engineSwiftShaderRev;
-        swiftshaderHash = engineSwiftShaderHash;
-        version = engineVersion;
         hashes = engineHashes;
-        url = engineUrl;
-        patches = enginePatches;
         runtimeModes = engineRuntimeModes;
+        swiftshaderHash = engineSwiftShaderHash;
+        swiftshaderRev = engineSwiftShaderRev;
+        url = engineUrl;
       }
     else
       null;
@@ -59,13 +59,20 @@ let
         pubspecLock
         version
         ;
+
       flutterSrc = src;
       systemPlatform = stdenv.hostPlatform.system;
     });
 
   unwrapped = stdenv.mkDerivation {
-    name = "flutter-${version}-unwrapped";
     inherit src patches version;
+
+    postPatch = ''
+      patchShebangs --build ./bin/
+      patchShebangs packages/flutter_tools/bin
+    '';
+
+    strictDeps = true;
 
     nativeBuildInputs = [
       makeWrapper
@@ -75,19 +82,11 @@ let
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.DarwinTools ];
 
-    __structuredAttrs = true;
-    strictDeps = true;
-
     preConfigure = ''
       if [ "$(< bin/internal/engine.version)" != '${engineVersion}' ]; then
         echo 1>&2 "The given engine version (${engineVersion}) does not match the version required by the Flutter SDK ($(< bin/internal/engine.version))."
         exit 1
       fi
-    '';
-
-    postPatch = ''
-      patchShebangs --build ./bin/
-      patchShebangs packages/flutter_tools/bin
     '';
 
     buildPhase = ''
@@ -169,11 +168,13 @@ let
     '';
 
     doInstallCheck = true;
+
     nativeInstallCheckInputs = [
       which
       writableTmpDirAsHomeHook
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.DarwinTools ];
+
     installCheckPhase = ''
       runHook preInstallCheck
 
@@ -184,6 +185,9 @@ let
       runHook postInstallCheck
     '';
 
+    __structuredAttrs = true;
+    name = "flutter-${version}-unwrapped";
+
     passthru = {
       # TODO: rely on engine.version instead of engineVersion
       inherit
@@ -192,39 +196,48 @@ let
         artifactHashes
         channel
         ;
-      tools = flutterTools;
+
       # The derivation containing the original Flutter SDK files.
       # When other derivations wrap this one, any unmodified files
       # found here should be included as-is, for tooling compatibility.
       sdk = unwrapped;
+      tools = flutterTools;
     }
     // lib.optionalAttrs (engine != null) {
       inherit engine;
     };
 
     meta = {
-      # TODO: investigate why nixpkgs engine fails for versions >= 3.34
-      broken =
-        ((lib.versionOlder version "3.32") || lib.versionAtLeast version "3.34") && useNixpkgsEngine;
       description = "Makes it easy and fast to build beautiful apps for mobile and beyond";
+
       longDescription = ''
         Flutter is Google's SDK for crafting beautiful,
         fast user experiences for mobile, web, and desktop from a single codebase.
       '';
+
       homepage = "https://flutter.dev";
       license = lib.licenses.bsd3;
+
       sourceProvenance =
         with lib.sourceTypes;
         if useNixpkgsEngine then [ fromSource ] else [ binaryNativeCode ];
+
+      maintainers = with lib.maintainers; [
+        ericdallo
+      ];
+
       platforms = [
         "x86_64-linux"
         "aarch64-linux"
         "aarch64-darwin"
       ];
+
       mainProgram = "flutter";
-      maintainers = with lib.maintainers; [
-        ericdallo
-      ];
+
+      # TODO: investigate why nixpkgs engine fails for versions >= 3.34
+      broken =
+        ((lib.versionOlder version "3.32") || lib.versionAtLeast version "3.34") && useNixpkgsEngine;
+
       teams = [ lib.teams.flutter ];
     };
   };

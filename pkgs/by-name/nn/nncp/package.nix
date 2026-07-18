@@ -1,28 +1,29 @@
 {
-  cfgPath ? "/etc/nncp.hjson",
-  curl,
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
+  curl,
   genericUpdater,
   go,
   perl,
-  stdenv,
   writeShellScript,
+  cfgPath ? "/etc/nncp.hjson",
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "nncp";
   version = "8.13.0";
-  outputs = [
-    "out"
-    "doc"
-    "info"
-  ];
 
   src = fetchurl {
     url = "http://www.nncpgo.org/download/nncp-${finalAttrs.version}.tar.xz";
     hash = "sha256-jONoDpgAUZjYl14DF2CzqbM75tLWGETHmfd4yiM9BfQ=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+    "info"
+  ];
 
   nativeBuildInputs = [
     go
@@ -57,12 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    changelog = "http://www.nncpgo.org/News.html";
     description = "Secure UUCP-like store-and-forward exchanging";
-    downloadPage = "http://www.nncpgo.org/Tarballs.html";
-    homepage = "http://www.nncpgo.org/";
-    license = lib.licenses.gpl3Only;
+
     longDescription = ''
       This utilities are intended to help build up small size (dozens of
       nodes) ad-hoc friend-to-friend (F2F) statically routed darknet
@@ -78,9 +75,17 @@ stdenv.mkDerivation (finalAttrs: {
       support. But online TCP daemon with full-duplex resumable data
       transmission exists.
     '';
+
+    homepage = "http://www.nncpgo.org/";
+    changelog = "http://www.nncpgo.org/News.html";
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       woffs
     ];
+
     platforms = lib.platforms.all;
+    broken = stdenv.hostPlatform.isDarwin;
+    downloadPage = "http://www.nncpgo.org/Tarballs.html";
   };
 })

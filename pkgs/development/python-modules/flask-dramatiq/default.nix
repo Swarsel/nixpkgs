@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitLab,
   buildPythonPackage,
   dramatiq,
-  fetchFromGitLab,
-  flask-migrate,
   flask,
+  flask-migrate,
   periodiq,
   poetry-core,
   postgresql,
@@ -19,7 +19,6 @@
 buildPythonPackage {
   pname = "flask-dramatiq";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "bersace";
@@ -36,12 +35,6 @@ buildPythonPackage {
     patchShebangs --build ./example.py
   '';
 
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [ "dramatiq" ];
-
-  dependencies = [ dramatiq ];
-
   nativeCheckInputs = [
     flask
     flask-migrate
@@ -56,6 +49,14 @@ buildPythonPackage {
   ]
   ++ dramatiq.optional-dependencies.rabbitmq;
 
+  build-system = [ poetry-core ];
+  dependencies = [ dramatiq ];
+
+  disabledTests = [
+    "test_fast"
+    "test_other"
+  ];
+
   postgresqlTestSetupPost = ''
     substituteInPlace config.py \
       --replace 'SQLALCHEMY_DATABASE_URI = f"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}/{PGDATABASE}"' \
@@ -63,12 +64,9 @@ buildPythonPackage {
     python3 ./example.py db upgrade
   '';
 
-  disabledTests = [
-    "test_fast"
-    "test_other"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_dramatiq" ];
+  pythonRelaxDeps = [ "dramatiq" ];
 
   meta = {
     description = "Adds Dramatiq support to your Flask application";

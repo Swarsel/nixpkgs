@@ -15,20 +15,28 @@
 buildPythonPackage rec {
   pname = "pyutil";
   version = "3.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-8RHsCEieQ3/uHPkNai+sUBR2hDJAVrYy5DMlp6YRw6c=";
   };
 
-  prePatch = lib.optionalString isPyPy ''
-    grep -rl 'utf-8-with-signature-unix' ./ | xargs sed -i -e "s|utf-8-with-signature-unix|utf-8|g"
-  '';
-
   nativeBuildInputs = [
     setuptools
     versioneer
+  ];
+
+  nativeCheckInputs = [
+    mock
+    twisted
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  disabledTests = lib.optionals (pythonAtLeast "3.12") [
+    # https://github.com/tpltnt/pyutil/issues/10
+    "test_decimal"
+    "test_float"
   ];
 
   optional-dependencies = {
@@ -39,23 +47,16 @@ buildPythonPackage rec {
     # ];
   };
 
-  nativeCheckInputs = [
-    mock
-    twisted
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
+  prePatch = lib.optionalString isPyPy ''
+    grep -rl 'utf-8-with-signature-unix' ./ | xargs sed -i -e "s|utf-8-with-signature-unix|utf-8|g"
+  '';
 
+  pyproject = true;
   pythonImportsCheck = [ "pyutil" ];
-
-  disabledTests = lib.optionals (pythonAtLeast "3.12") [
-    # https://github.com/tpltnt/pyutil/issues/10
-    "test_decimal"
-    "test_float"
-  ];
 
   meta = {
     description = "Collection of mature utilities for Python programmers";
+
     longDescription = ''
       These are a few data structures, classes and functions which
       we've needed over many years of Python programming and which
@@ -65,6 +66,7 @@ buildPythonPackage rec {
       Python language or its standard library, thus showing that
       we're not alone in wanting tools like these.
     '';
+
     homepage = "https://github.com/tpltnt/pyutil";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ prusnak ];

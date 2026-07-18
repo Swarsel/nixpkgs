@@ -2,11 +2,10 @@
   lib,
   stdenv,
   cmake,
+  cudaSupport,
   libtorch-bin,
   linkFarm,
   symlinkJoin,
-
-  cudaSupport,
   cudaPackages ? { },
 }:
 let
@@ -14,6 +13,7 @@ let
 
   cudatoolkit_joined = symlinkJoin {
     name = "${cudatoolkit.name}-unsplit";
+
     paths = [
       cudatoolkit.out
       cudatoolkit.lib
@@ -35,24 +35,18 @@ stdenv.mkDerivation {
   version = libtorch-bin.version;
 
   src = lib.fileset.toSource {
-    root = ./.;
     fileset = lib.fileset.unions [
       ./CMakeLists.txt
       ./test.cpp
     ];
+
+    root = ./.;
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ libtorch-bin ] ++ lib.optionals cudaSupport [ cudnn ];
-
   cmakeFlags = lib.optionals cudaSupport [ "-DCUDA_TOOLKIT_ROOT_DIR=${cudatoolkit_joined}" ];
-
   doCheck = true;
-
-  installPhase = ''
-    touch $out
-  '';
 
   checkPhase =
     lib.optionalString cudaSupport ''
@@ -61,4 +55,8 @@ stdenv.mkDerivation {
     + ''
       ./test
     '';
+
+  installPhase = ''
+    touch $out
+  '';
 }

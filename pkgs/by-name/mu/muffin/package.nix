@@ -1,8 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  replaceVars,
   cairo,
   cinnamon-desktop,
   dbus,
@@ -31,6 +30,7 @@
   pipewire,
   pkg-config,
   python3,
+  replaceVars,
   udev,
   wayland,
   wayland-protocols,
@@ -45,12 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "muffin";
   version = "6.6.3";
 
-  outputs = [
-    "out"
-    "dev"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "linuxmint";
     repo = "muffin";
@@ -58,11 +52,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-PNL6PAZinds+kqCUCesJkTS+93juhm35sPE7RFUdxeU=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "man"
+  ];
+
   patches = [
     (replaceVars ./fix-paths.patch {
       inherit zenity;
     })
   ];
+
+  postPatch = ''
+    patchShebangs src/backends/native/gen-default-modes.py
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -115,16 +119,12 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dxwayland_path=${lib.getExe xwayland}"
   ];
 
-  postPatch = ''
-    patchShebangs src/backends/native/gen-default-modes.py
-  '';
-
   meta = {
-    homepage = "https://github.com/linuxmint/muffin";
     description = "Window management library for the Cinnamon desktop (libmuffin) and its sample WM binary (muffin)";
-    mainProgram = "muffin";
+    homepage = "https://github.com/linuxmint/muffin";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "muffin";
     teams = [ lib.teams.cinnamon ];
   };
 })

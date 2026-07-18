@@ -17,19 +17,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-PG9yfRzJKXVKAg8ubIvX2Rj4nLO3dki7shP+zAa7nxo=";
   };
 
-  installFlags = [ "DESTDIR=${placeholder "out"}" ];
-
   postInstall = ''
     mv $out/usr/local/* $out
     rm -rf $out/usr
   '';
 
+  installFlags = [ "DESTDIR=${placeholder "out"}" ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "dte -V";
+      package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -38,7 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.com/craigbarnes/dte/-/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ yiyu ];
-    mainProgram = "dte";
     platforms = lib.platforms.all;
+    mainProgram = "dte";
   };
 })

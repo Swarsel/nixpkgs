@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  libpcap,
   db,
   glib,
   libnet,
   libnids,
-  symlinkJoin,
+  libnl,
+  libnsl,
+  libpcap,
+  libtirpc,
   openssl,
   rpcsvc-proto,
-  libtirpc,
-  libnsl,
-  libnl,
+  symlinkJoin,
 }:
 
 let
@@ -24,24 +24,19 @@ let
   */
   staticdb = symlinkJoin {
     inherit (db) name;
+
+    postBuild = ''
+      rm $out/lib/*.so*
+    '';
+
     paths = with db.overrideAttrs { dontDisableStatic = true; }; [
       out
       dev
     ];
-    postBuild = ''
-      rm $out/lib/*.so*
-    '';
   };
   pcap = symlinkJoin {
     inherit (libpcap) name;
-    paths =
-      let
-        staticlibpcap = libpcap.overrideAttrs { dontDisableStatic = true; };
-      in
-      [
-        (lib.getInclude staticlibpcap)
-        (lib.getLib staticlibpcap)
-      ];
+
     postBuild = ''
       cp -rs $out/include/pcap $out/include/net
       # check the presence of the files that ./configure expects
@@ -52,24 +47,36 @@ let
         fi
       done
     '';
+
+    paths =
+      let
+        staticlibpcap = libpcap.overrideAttrs { dontDisableStatic = true; };
+      in
+      [
+        (lib.getInclude staticlibpcap)
+        (lib.getLib staticlibpcap)
+      ];
   };
   libnet' = libnet.overrideAttrs { dontDisableStatic = true; };
   net = symlinkJoin {
     inherit (libnet') name;
-    paths = [
-      (lib.getLib libnet')
-      (lib.getDev libnet')
-    ];
+
     postBuild = ''
       # prevent dynamic linking, now that we have a static library
       rm $out/lib/*.so*
     '';
+
+    paths = [
+      (lib.getLib libnet')
+      (lib.getDev libnet')
+    ];
   };
   nids = libnids.overrideAttrs {
     dontDisableStatic = true;
   };
   ssl = symlinkJoin {
     inherit (openssl) name;
+
     paths = with openssl.override { static = true; }; [
       out
       dev
@@ -79,23 +86,31 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "dsniff";
   version = "2.4b1";
+
   # upstream is so old that nearly every distribution packages the beta version.
   # Also, upstream only serves the latest version, so we use debian's sources.
   # this way we can benefit the numerous debian patches to be able to build
   # dsniff with recent libraries.
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "pkg-security-team";
     repo = "dsniff";
     tag = "debian/${finalAttrs.version}+debian-35";
     hash = "sha256-RVv9USAHTVYnGgKygIPgfXpfjCYigJvScuzc2+1Uzfw=";
+    domain = "salsa.debian.org";
     name = "dsniff.tar.gz";
   };
+
+  postPatch = ''
+    for patch in debian/patches/*.patch; do
+      patch < $patch
+    done;
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
     rpcsvc-proto
   ];
+
   buildInputs = [
     glib
     pcap
@@ -104,24 +119,6 @@ stdenv.mkDerivation (finalAttrs: {
     libnl
   ];
 
-  env = {
-    NIX_CFLAGS_LINK = toString [
-      "-lglib-2.0"
-      "-lpthread"
-      "-ltirpc"
-      "-lnl-3"
-      "-lnl-genl-3"
-    ];
-    NIX_CFLAGS_COMPILE = toString [
-      "-I${libtirpc.dev}/include/tirpc"
-      "-std=gnu17"
-    ];
-  };
-  postPatch = ''
-    for patch in debian/patches/*.patch; do
-      patch < $patch
-    done;
-  '';
   configureFlags = [
     "--with-db=${staticdb}"
     "--with-libpcap=${pcap}"
@@ -130,11 +127,28 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-openssl=${ssl}"
   ];
 
+  env = {
+    NIX_CFLAGS_COMPILE = toString [
+      "-I${libtirpc.dev}/include/tirpc"
+      "-std=gnu17"
+    ];
+
+    NIX_CFLAGS_LINK = toString [
+      "-lglib-2.0"
+      "-lpthread"
+      "-ltirpc"
+      "-lnl-3"
+      "-lnl-genl-3"
+    ];
+  };
+
   meta = {
     description = "Collection of tools for network auditing and penetration testing";
+
     longDescription = ''
       dsniff, filesnarf, mailsnarf, msgsnarf, urlsnarf, and webspy passively monitor a network for interesting data (passwords, e-mail, files, etc.). arpspoof, dnsspoof, and macof facilitate the interception of network traffic normally unavailable to an attacker (e.g, due to layer-2 switching). sshmitm and webmitm implement active monkey-in-the-middle attacks against redirected SSH and HTTPS sessions by exploiting weak bindings in ad-hoc PKI.
     '';
+
     homepage = "https://www.monkey.org/~dugsong/dsniff/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.symphorien ];

@@ -1,24 +1,24 @@
 {
-  cargo,
-  desktop-file-utils,
+  lib,
+  stdenv,
   fetchFromGitLab,
+  cargo,
+  clippy,
+  desktop-file-utils,
   gettext,
   glib,
   gtk4,
   gtksourceview5,
-  lib,
   libadwaita,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   poppler,
   rustPlatform,
   rustc,
-  stdenv,
   testers,
   wrapGAppsHook4,
-  clippy,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,16 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.10.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "citations";
     rev = finalAttrs.version;
     hash = "sha256-CnCXyKXB/wH6lt35370dh+lFhqdJLCJRGBs2WH+FCP0=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    src = finalAttrs.src;
-    hash = "sha256-xEJe752Qr1s2d/9nfTpwDP+zxZKwx0UuEUwIf4wzJW4=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -69,17 +64,21 @@ stdenv.mkDerivation (finalAttrs: {
   );
 
   doCheck = true;
-
   nativeCheckInputs = [ clippy ];
 
   preCheck = ''
     sed -i -e '/PATH=/d' ../src/meson.build
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    src = finalAttrs.src;
+    hash = "sha256-xEJe752Qr1s2d/9nfTpwDP+zxZKwx0UuEUwIf4wzJW4=";
+  };
+
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "citations --help";
+      package = finalAttrs.finalPackage;
     };
 
     updateScript = nix-update-script { };
@@ -91,8 +90,8 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.gnome.org/World/citations/-/releases/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ benediktbroich ];
-    teams = [ lib.teams.gnome-circle ];
     platforms = lib.platforms.unix;
     mainProgram = "citations";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

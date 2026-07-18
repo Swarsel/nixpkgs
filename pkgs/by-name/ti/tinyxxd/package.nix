@@ -11,15 +11,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.3.16";
 
   src = fetchFromGitHub {
-    repo = "tinyxxd";
     owner = "xyproto";
+    repo = "tinyxxd";
     rev = "v${finalAttrs.version}";
     hash = "sha256-SaxjQFQ//xxRCIx4FMx1exGGOGEKN/evgABTquL92WM=";
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
-  installFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
     installManPage tinyxxd.1
@@ -30,20 +28,24 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/man/man1/{tiny,}xxd.1.gz
   '';
 
+  installFlags = [ "PREFIX=$(out)" ];
+
   meta = {
-    homepage = "https://github.com/xyproto/tinyxxd";
     description = "Drop-in replacement and standalone version of the hex dump utility that comes with ViM";
+    homepage = "https://github.com/xyproto/tinyxxd";
+
     license = [
       lib.licenses.mit # or
       lib.licenses.gpl2Only
     ];
-    mainProgram = "tinyxxd";
+
     maintainers = with lib.maintainers; [
       emily
       philiptaron
     ];
-    platforms = lib.platforms.unix;
 
+    platforms = lib.platforms.unix;
+    mainProgram = "tinyxxd";
     # If the two `xxd` providers are present, choose this one.
     priority = (vim.xxd.meta.priority or lib.meta.defaultPriority) - 1;
   };

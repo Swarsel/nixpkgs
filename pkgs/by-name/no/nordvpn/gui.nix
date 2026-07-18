@@ -1,33 +1,27 @@
 {
+  lib,
+  copyDesktopItems,
   desktopItemArgs,
+  flutter,
+  libx11,
+  makeDesktopItem,
   meta,
   src,
   version,
-
-  copyDesktopItems,
-  flutter,
-  lib,
-  makeDesktopItem,
-  libx11,
 }:
 flutter.buildFlutterApplication {
-  pname = "nordvpn-gui";
   inherit src version;
-
-  sourceRoot = "${src.name}/gui";
-
-  buildInputs = [
-    libx11
-  ];
+  pname = "nordvpn-gui";
+  # finds X11 using pkg-config
+  patches = [ ./linux-cmake.patch ];
 
   nativeBuildInputs = [
     copyDesktopItems
   ];
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  # finds X11 using pkg-config
-  patches = [ ./linux-cmake.patch ];
+  buildInputs = [
+    libx11
+  ];
 
   desktopItems = [
     (makeDesktopItem (
@@ -40,6 +34,9 @@ flutter.buildFlutterApplication {
       }
     ))
   ];
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  sourceRoot = "${src.name}/gui";
 
   meta = meta // {
     description = "NordVPN graphical interface";

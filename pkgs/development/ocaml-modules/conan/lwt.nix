@@ -1,17 +1,17 @@
 {
+  alcotest,
+  bstr,
   buildDunePackage,
   conan,
-  lwt,
-  bstr,
-  alcotest,
   crowbar,
   fmt,
+  lwt,
   rresult,
 }:
 
 buildDunePackage {
-  pname = "conan-lwt";
   inherit (conan) version src meta;
+  pname = "conan-lwt";
 
   propagatedBuildInputs = [
     conan

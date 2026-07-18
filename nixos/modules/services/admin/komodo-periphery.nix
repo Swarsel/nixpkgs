@@ -11,18 +11,26 @@ let
   genFinalSettings =
     let
       baseSettings = {
-        port = cfg.port;
         bind_ip = cfg.bindIp;
-        root_directory = cfg.rootDirectory;
+        port = cfg.port;
         repo_dir = "${cfg.rootDirectory}/repos";
-        stack_dir = "${cfg.rootDirectory}/stacks";
+        root_directory = cfg.rootDirectory;
         ssl_enabled = cfg.ssl.enable;
+        stack_dir = "${cfg.rootDirectory}/stacks";
       }
       // lib.optionalAttrs cfg.ssl.enable {
-        ssl_key_file = cfg.ssl.keyFile;
         ssl_cert_file = cfg.ssl.certFile;
+        ssl_key_file = cfg.ssl.keyFile;
       }
       // {
+        allowed_ips = cfg.allowedIps;
+        container_stats_polling_rate = cfg.containerStatsPollingRate;
+        disable_container_exec = cfg.disableContainerExec;
+        disable_terminals = cfg.disableTerminals;
+        exclude_disk_mounts = cfg.excludeDiskMounts;
+        include_disk_mounts = cfg.includeDiskMounts;
+        legacy_compose_cli = cfg.legacyComposeCli;
+
         logging = {
           level = cfg.logging.level;
           stdio = cfg.logging.stdio;
@@ -30,15 +38,9 @@ let
         // lib.optionalAttrs (cfg.logging.otlpEndpoint != "") {
           otlp_endpoint = cfg.logging.otlpEndpoint;
         };
-        allowed_ips = cfg.allowedIps;
+
         passkeys = cfg.passkeys;
-        disable_terminals = cfg.disableTerminals;
-        disable_container_exec = cfg.disableContainerExec;
         stats_polling_rate = cfg.statsPollingRate;
-        container_stats_polling_rate = cfg.containerStatsPollingRate;
-        legacy_compose_cli = cfg.legacyComposeCli;
-        include_disk_mounts = cfg.includeDiskMounts;
-        exclude_disk_mounts = cfg.excludeDiskMounts;
       }
       // cfg.extraSettings;
     in
@@ -53,13 +55,30 @@ in
 {
   options.services.komodo-periphery = {
     enable = lib.mkEnableOption "Periphery, a multi-server Docker and Git deployment agent by Komodo";
-
     package = lib.mkPackageOption pkgs "komodo" { };
 
+    allowedIps = lib.mkOption {
+      default = [ ];
+      description = "IP addresses or subnets allowed to call the periphery API. Empty list allows all.";
+
+      example = [
+        "::ffff:12.34.56.78"
+        "10.0.10.0/24"
+      ];
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    bindIp = lib.mkOption {
+      default = "[::]";
+      description = "IP address to bind to.";
+      type = lib.types.str;
+    };
+
     configFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
       description = "Path to the periphery configuration file. If null, a configuration file will be generated from the module options.";
+
       example = lib.literalExpression ''
         pkgs.writeText "periphery.toml" '''
           port = 8120
@@ -69,48 +88,100 @@ in
           level = "info"
         '''
       '';
+
+      type = lib.types.nullOr lib.types.path;
     };
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 8120;
-      description = "Port for the Periphery agent to listen on.";
-    };
-
-    bindIp = lib.mkOption {
+    containerStatsPollingRate = lib.mkOption {
+      default = "30-sec";
+      description = "Container stats polling interval.";
+      example = "1-min";
       type = lib.types.str;
-      default = "[::]";
-      description = "IP address to bind to.";
     };
 
-    rootDirectory = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/komodo-periphery";
-      description = "Root directory for Komodo Periphery data.";
+    disableContainerExec = lib.mkOption {
+      default = false;
+      description = "Disable remote container shell access through Periphery.";
+      type = lib.types.bool;
     };
 
-    ssl = {
-      enable = lib.mkEnableOption "SSL/TLS support" // {
-        default = true;
+    disableTerminals = lib.mkOption {
+      default = false;
+      description = "Disable remote shell access through Periphery.";
+      type = lib.types.bool;
+    };
+
+    environment = lib.mkOption {
+      default = { };
+      description = "Environment variables to set for the service.";
+
+      example = {
+        DOCKER_HOST = "unix:///var/run/docker.sock";
+        RUST_LOG = "komodo=debug";
       };
 
-      keyFile = lib.mkOption {
-        type = lib.types.path;
-        default = "${cfg.rootDirectory}/ssl/key.pem";
-        defaultText = lib.literalExpression ''"''${config.services.komodo-periphery.rootDirectory}/ssl/key.pem"'';
-        description = "Path to SSL key file.";
+      type = lib.types.attrsOf lib.types.str;
+    };
+
+    environmentFile = lib.mkOption {
+      default = null;
+      description = "Environment file for additional configuration via environment variables.";
+      example = "/run/secrets/komodo-periphery.env";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    excludeDiskMounts = lib.mkOption {
+      default = [ ];
+      description = "Exclude these mount paths from disk reporting.";
+
+      example = [
+        "/tmp"
+        "/boot"
+      ];
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    extraSettings = lib.mkOption {
+      default = { };
+      description = "Extra settings to add to the generated TOML config.";
+
+      example = {
+        secrets.GITHUB_TOKEN = "ghp_xxxx";
       };
 
-      certFile = lib.mkOption {
-        type = lib.types.path;
-        default = "${cfg.rootDirectory}/ssl/cert.pem";
-        defaultText = lib.literalExpression ''"''${config.services.komodo-periphery.rootDirectory}/ssl/cert.pem"'';
-        description = "Path to SSL certificate file.";
-      };
+      type = settingsFormat.type;
+    };
+
+    group = lib.mkOption {
+      default = "komodo-periphery";
+      description = "Group under which the Periphery agent runs.";
+      type = lib.types.str;
+    };
+
+    includeDiskMounts = lib.mkOption {
+      default = [ ];
+      description = "Only include these mount paths in disk reporting.";
+
+      example = [
+        "/mnt/data"
+        "/mnt/backup"
+      ];
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    legacyComposeCli = lib.mkOption {
+      default = false;
+      description = "Use `docker-compose` instead of `docker compose`.";
+      type = lib.types.bool;
     };
 
     logging = {
       level = lib.mkOption {
+        default = "info";
+        description = "Logging verbosity level.";
+
         type = lib.types.enum [
           "off"
           "error"
@@ -119,195 +190,103 @@ in
           "debug"
           "trace"
         ];
-        default = "info";
-        description = "Logging verbosity level.";
+      };
+
+      otlpEndpoint = lib.mkOption {
+        default = "";
+        description = "OpenTelemetry OTLP endpoint for traces.";
+        example = "http://localhost:4317";
+        type = lib.types.str;
       };
 
       stdio = lib.mkOption {
+        default = "standard";
+        description = "Logging format for stdout/stderr.";
+
         type = lib.types.enum [
           "standard"
           "json"
           "none"
         ];
-        default = "standard";
-        description = "Logging format for stdout/stderr.";
       };
-
-      otlpEndpoint = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        description = "OpenTelemetry OTLP endpoint for traces.";
-        example = "http://localhost:4317";
-      };
-    };
-
-    allowedIps = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "IP addresses or subnets allowed to call the periphery API. Empty list allows all.";
-      example = [
-        "::ffff:12.34.56.78"
-        "10.0.10.0/24"
-      ];
     };
 
     passkeys = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
       description = ''
         Passkeys required to access the periphery API.
         WARNING: These will be stored in the Nix store in plain text!
       '';
+
       example = [ "your-secure-passkey" ];
+      type = lib.types.listOf lib.types.str;
     };
 
-    extraSettings = lib.mkOption {
-      type = settingsFormat.type;
-      default = { };
-      description = "Extra settings to add to the generated TOML config.";
-      example = {
-        secrets.GITHUB_TOKEN = "ghp_xxxx";
+    port = lib.mkOption {
+      default = 8120;
+      description = "Port for the Periphery agent to listen on.";
+      type = lib.types.port;
+    };
+
+    rootDirectory = lib.mkOption {
+      default = "/var/lib/komodo-periphery";
+      description = "Root directory for Komodo Periphery data.";
+      type = lib.types.path;
+    };
+
+    ssl = {
+      enable = lib.mkEnableOption "SSL/TLS support" // {
+        default = true;
       };
-    };
 
-    disableTerminals = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Disable remote shell access through Periphery.";
-    };
+      certFile = lib.mkOption {
+        default = "${cfg.rootDirectory}/ssl/cert.pem";
+        defaultText = lib.literalExpression ''"''${config.services.komodo-periphery.rootDirectory}/ssl/cert.pem"'';
+        description = "Path to SSL certificate file.";
+        type = lib.types.path;
+      };
 
-    disableContainerExec = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Disable remote container shell access through Periphery.";
+      keyFile = lib.mkOption {
+        default = "${cfg.rootDirectory}/ssl/key.pem";
+        defaultText = lib.literalExpression ''"''${config.services.komodo-periphery.rootDirectory}/ssl/key.pem"'';
+        description = "Path to SSL key file.";
+        type = lib.types.path;
+      };
     };
 
     statsPollingRate = lib.mkOption {
-      type = lib.types.str;
       default = "5-sec";
       description = "System stats polling interval.";
       example = "10-sec";
-    };
-
-    containerStatsPollingRate = lib.mkOption {
       type = lib.types.str;
-      default = "30-sec";
-      description = "Container stats polling interval.";
-      example = "1-min";
-    };
-
-    legacyComposeCli = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Use `docker-compose` instead of `docker compose`.";
-    };
-
-    includeDiskMounts = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "Only include these mount paths in disk reporting.";
-      example = [
-        "/mnt/data"
-        "/mnt/backup"
-      ];
-    };
-
-    excludeDiskMounts = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "Exclude these mount paths from disk reporting.";
-      example = [
-        "/tmp"
-        "/boot"
-      ];
     };
 
     user = lib.mkOption {
-      type = lib.types.str;
       default = "komodo-periphery";
       description = "User under which the Periphery agent runs.";
-    };
-
-    group = lib.mkOption {
       type = lib.types.str;
-      default = "komodo-periphery";
-      description = "Group under which the Periphery agent runs.";
-    };
-
-    environmentFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      description = "Environment file for additional configuration via environment variables.";
-      example = "/run/secrets/komodo-periphery.env";
-    };
-
-    environment = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
-      default = { };
-      description = "Environment variables to set for the service.";
-      example = {
-        RUST_LOG = "komodo=debug";
-        DOCKER_HOST = "unix:///var/run/docker.sock";
-      };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    virtualisation.docker.enable = true;
-
-    users.users.${cfg.user} = lib.mkIf (cfg.user == "komodo-periphery") {
-      isSystemUser = true;
-      group = cfg.group;
-      description = "Komodo Periphery service user";
-      home = cfg.rootDirectory;
-      extraGroups = [ "docker" ];
-    };
-
-    users.groups.${cfg.group} = lib.mkIf (cfg.group == "komodo-periphery") { };
-
-    systemd.tmpfiles.settings."10-komodo-periphery" = {
-      "${cfg.rootDirectory}".d = {
-        mode = "0755";
-        user = cfg.user;
-        group = cfg.group;
-      };
-      "${cfg.rootDirectory}/repos".d = {
-        mode = "0755";
-        user = cfg.user;
-        group = cfg.group;
-      };
-      "${cfg.rootDirectory}/stacks".d = {
-        mode = "0755";
-        user = cfg.user;
-        group = cfg.group;
-      };
-      "${cfg.rootDirectory}/ssl".d = {
-        mode = "0700";
-        user = cfg.user;
-        group = cfg.group;
-      };
-    };
-
     systemd.services.komodo-periphery = {
-      description = "Komodo Periphery - Multi-server Docker and Git deployment agent";
       after = [
         "network-online.target"
         "docker.service"
       ];
-      wants = [
-        "network-online.target"
-        "docker.service"
-      ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "Komodo Periphery - Multi-server Docker and Git deployment agent";
 
       serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-        SupplementaryGroups = [ "docker" ];
-        Restart = "on-failure";
-        RestartSec = "10s";
-        WorkingDirectory = cfg.rootDirectory;
+        Environment = lib.mapAttrsToList (name: value: "${name}=${value}") (
+          cfg.environment
+          // lib.optionalAttrs (!cfg.disableTerminals) {
+            PATH = "/run/current-system/sw/bin:/run/wrappers/bin";
+          }
+        );
+
+        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
 
         ExecStart = lib.escapeShellArgs [
           "${lib.getExe' cfg.package "periphery"}"
@@ -315,23 +294,66 @@ in
           (if cfg.configFile != null then cfg.configFile else configFile)
         ];
 
-        Environment = lib.mapAttrsToList (name: value: "${name}=${value}") (
-          cfg.environment
-          // lib.optionalAttrs (!cfg.disableTerminals) {
-            PATH = "/run/current-system/sw/bin:/run/wrappers/bin";
-          }
-        );
-        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
-
-        StateDirectory = "komodo-periphery";
-        StateDirectoryMode = "0755";
-
+        Group = cfg.group;
         NoNewPrivileges = true;
         PrivateTmp = true;
-        ProtectSystem = "full";
         ProtectHome = true;
+        ProtectSystem = "full";
+        Restart = "on-failure";
+        RestartSec = "10s";
+        StateDirectory = "komodo-periphery";
+        StateDirectoryMode = "0755";
+        SupplementaryGroups = [ "docker" ];
+        Type = "simple";
+        User = cfg.user;
+        WorkingDirectory = cfg.rootDirectory;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "network-online.target"
+        "docker.service"
+      ];
+    };
+
+    systemd.tmpfiles.settings."10-komodo-periphery" = {
+      "${cfg.rootDirectory}".d = {
+        group = cfg.group;
+        mode = "0755";
+        user = cfg.user;
+      };
+
+      "${cfg.rootDirectory}/repos".d = {
+        group = cfg.group;
+        mode = "0755";
+        user = cfg.user;
+      };
+
+      "${cfg.rootDirectory}/ssl".d = {
+        group = cfg.group;
+        mode = "0700";
+        user = cfg.user;
+      };
+
+      "${cfg.rootDirectory}/stacks".d = {
+        group = cfg.group;
+        mode = "0755";
+        user = cfg.user;
       };
     };
+
+    users.groups.${cfg.group} = lib.mkIf (cfg.group == "komodo-periphery") { };
+
+    users.users.${cfg.user} = lib.mkIf (cfg.user == "komodo-periphery") {
+      description = "Komodo Periphery service user";
+      extraGroups = [ "docker" ];
+      group = cfg.group;
+      home = cfg.rootDirectory;
+      isSystemUser = true;
+    };
+
+    virtualisation.docker.enable = true;
   };
 
   meta.maintainers = with lib.maintainers; [ channinghe ];

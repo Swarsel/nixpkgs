@@ -38,46 +38,21 @@ in
 
       enable = lib.mkEnableOption "GlusterFS Daemon";
 
-      logLevel = lib.mkOption {
-        type = lib.types.enum [
-          "DEBUG"
-          "INFO"
-          "WARNING"
-          "ERROR"
-          "CRITICAL"
-          "TRACE"
-          "NONE"
-        ];
-        description = "Log level used by the GlusterFS daemon";
-        default = "INFO";
-      };
-
-      useRpcbind = lib.mkOption {
-        type = lib.types.bool;
-        description = ''
-          Enable use of rpcbind. This is required for Gluster's NFS functionality.
-
-          You may want to turn it off to reduce the attack surface for DDoS reflection attacks.
-
-          See <https://davelozier.com/glusterfs-and-rpcbind-portmap-ddos-reflection-attacks/>
-          and <https://bugzilla.redhat.com/show_bug.cgi?id=1426842> for details.
-        '';
-        default = true;
-      };
-
       enableGlustereventsd = lib.mkOption {
-        type = lib.types.bool;
-        description = "Whether to enable the GlusterFS Events Daemon";
         default = true;
+        description = "Whether to enable the GlusterFS Events Daemon";
+        type = lib.types.bool;
+      };
+
+      extraFlags = lib.mkOption {
+        default = [ ];
+        description = "Extra flags passed to the GlusterFS daemon";
+        type = lib.types.listOf lib.types.str;
       };
 
       killMode = lib.mkOption {
-        type = lib.types.enum [
-          "control-group"
-          "process"
-          "mixed"
-          "none"
-        ];
+        default = "control-group";
+
         description = ''
           The systemd KillMode to use for glusterd.
 
@@ -90,11 +65,33 @@ in
           (for example, when you want to restart them manually at a later time),
           set this to 'process'.
         '';
-        default = "control-group";
+
+        type = lib.types.enum [
+          "control-group"
+          "process"
+          "mixed"
+          "none"
+        ];
+      };
+
+      logLevel = lib.mkOption {
+        default = "INFO";
+        description = "Log level used by the GlusterFS daemon";
+
+        type = lib.types.enum [
+          "DEBUG"
+          "INFO"
+          "WARNING"
+          "ERROR"
+          "CRITICAL"
+          "TRACE"
+          "NONE"
+        ];
       };
 
       stopKillTimeout = lib.mkOption {
-        type = lib.types.str;
+        default = "5s";
+
         description = ''
           The systemd TimeoutStopSec to use.
 
@@ -105,16 +102,13 @@ in
           The default is set low because GlusterFS (as of 3.10) is known to
           not tell its children (like gsyncd) to terminate at all.
         '';
-        default = "5s";
-      };
 
-      extraFlags = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        description = "Extra flags passed to the GlusterFS daemon";
-        default = [ ];
+        type = lib.types.str;
       };
 
       tlsSettings = lib.mkOption {
+        default = null;
+
         description = ''
           Make the server communicate via TLS.
           This means it will only connect to other gluster
@@ -125,27 +119,42 @@ in
 
           See also: <https://gluster.readthedocs.io/en/latest/Administrator%20Guide/SSL/>
         '';
-        default = null;
+
         type = lib.types.nullOr (
           lib.types.submodule {
             options = {
+              caCert = lib.mkOption {
+                description = "Path certificate authority used to sign the cluster certificates.";
+                type = lib.types.path;
+              };
+
               tlsKeyPath = lib.mkOption {
-                type = lib.types.str;
                 description = "Path to the private key used for TLS.";
+                type = lib.types.str;
               };
 
               tlsPem = lib.mkOption {
-                type = lib.types.path;
                 description = "Path to the certificate used for TLS.";
-              };
-
-              caCert = lib.mkOption {
                 type = lib.types.path;
-                description = "Path certificate authority used to sign the cluster certificates.";
               };
             };
           }
         );
+      };
+
+      useRpcbind = lib.mkOption {
+        default = true;
+
+        description = ''
+          Enable use of rpcbind. This is required for Gluster's NFS functionality.
+
+          You may want to turn it off to reduce the attack surface for DDoS reflection attacks.
+
+          See <https://davelozier.com/glusterfs-and-rpcbind-portmap-ddos-reflection-attacks/>
+          and <https://bugzilla.redhat.com/show_bug.cgi?id=1426842> for details.
+        '';
+
+        type = lib.types.bool;
       };
     };
   };
@@ -153,25 +162,19 @@ in
   ###### implementation
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.glusterfs ];
-
-    services.rpcbind.enable = cfg.useRpcbind;
-
     environment.etc = lib.mkIf (cfg.tlsSettings != null) {
-      "ssl/glusterfs.pem".source = cfg.tlsSettings.tlsPem;
-      "ssl/glusterfs.key".source = cfg.tlsSettings.tlsKeyPath;
       "ssl/glusterfs.ca".source = cfg.tlsSettings.caCert;
+      "ssl/glusterfs.key".source = cfg.tlsSettings.tlsKeyPath;
+      "ssl/glusterfs.pem".source = cfg.tlsSettings.tlsPem;
     };
+
+    environment.systemPackages = [ pkgs.glusterfs ];
+    services.rpcbind.enable = cfg.useRpcbind;
 
     systemd.services.glusterd = {
       inherit restartTriggers;
-
-      description = "GlusterFS, a clustered file-system server";
-
-      wantedBy = [ "multi-user.target" ];
-
-      requires = lib.optional cfg.useRpcbind "rpcbind.service";
       after = [ "network.target" ] ++ lib.optional cfg.useRpcbind "rpcbind.service";
+      description = "GlusterFS, a clustered file-system server";
 
       preStart = ''
         install -m 0755 -d /var/log/glusterfs
@@ -199,37 +202,38 @@ in
         ${rsync}/bin/rsync -a ${glusterfs}/var/lib/glusterd/groups/ /var/lib/glusterd/groups/
       '';
 
+      requires = lib.optional cfg.useRpcbind "rpcbind.service";
+
       serviceConfig = {
-        LimitNOFILE = 65536;
         ExecStart = "${glusterfs}/sbin/glusterd --no-daemon --log-level=${cfg.logLevel} ${toString cfg.extraFlags}";
         KillMode = cfg.killMode;
+        LimitNOFILE = 65536;
         TimeoutStopSec = cfg.stopKillTimeout;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.glustereventsd = lib.mkIf cfg.enableGlustereventsd {
       inherit restartTriggers;
-
-      description = "Gluster Events Notifier";
-
-      wantedBy = [ "multi-user.target" ];
-
       after = [ "network.target" ];
+      description = "Gluster Events Notifier";
+      # glustereventsd uses the `gluster` executable
+      path = [ glusterfs ];
 
       preStart = ''
         install -m 0755 -d /var/log/glusterfs
       '';
 
-      # glustereventsd uses the `gluster` executable
-      path = [ glusterfs ];
-
       serviceConfig = {
-        Type = "simple";
-        PIDFile = "/run/glustereventsd.pid";
-        ExecStart = "${glusterfs}/sbin/glustereventsd --pid-file /run/glustereventsd.pid";
         ExecReload = "/bin/kill -SIGUSR2 $MAINPID";
+        ExecStart = "${glusterfs}/sbin/glustereventsd --pid-file /run/glustereventsd.pid";
         KillMode = "control-group";
+        PIDFile = "/run/glustereventsd.pid";
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

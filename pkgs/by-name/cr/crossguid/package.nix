@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   libuuid,
   unstableGitUpdater,
 }:
@@ -23,9 +23,9 @@ stdenv.mkDerivation {
     # Fix the build against gcc-13:
     #   https://github.com/graeme-hill/crossguid/pull/67
     (fetchpatch {
+      hash = "sha256-0qKZUeuNfc3gt+aFeaTt+IexO391GCdjS+9PVJmBKV4=";
       name = "gcc-13.patch";
       url = "https://github.com/graeme-hill/crossguid/commit/1eb9bea38c320b2b588635cffceaaa2a8d434780.patch";
-      hash = "sha256-0qKZUeuNfc3gt+aFeaTt+IexO391GCdjS+9PVJmBKV4=";
     })
   ];
 
@@ -38,8 +38,8 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Lightweight cross platform C++ GUID/UUID library";
-    license = lib.licenses.mit;
     homepage = "https://github.com/graeme-hill/crossguid";
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

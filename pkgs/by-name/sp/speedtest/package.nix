@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   appstream-glib,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   glib,
   gobject-introspection,
   gtk4,
@@ -18,7 +18,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "speedtest";
   version = "1.4.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Ketok4321";
@@ -47,23 +46,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapGAppsHook4
   ];
 
+  buildInputs = [ libadwaita ];
+
   dependencies = [
     python3Packages.aiohttp
     python3Packages.pygobject3
   ];
 
-  buildInputs = [ libadwaita ];
-
   dontWrapGAppsHook = true;
-
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
+  pyproject = false;
 
   meta = {
     description = "Graphical librespeed client written using GTK4 + libadwaita";
     homepage = "https://github.com/Ketok4321/speedtest";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "speedtest";
     platforms = lib.platforms.linux;
+    mainProgram = "speedtest";
   };
 })

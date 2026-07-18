@@ -2,14 +2,14 @@
   lib,
   stdenv,
   audiofile,
-  libtiff,
-  buildPackages,
-  fetchpatch,
   autoconf,
   automake,
+  buildPackages,
+  fetchpatch,
   fftw,
   libpcap,
   libsndfile,
+  libtiff,
   libtool,
   libxml2,
   netpbm,
@@ -19,20 +19,25 @@
 }:
 
 {
-  version,
   src,
+  version,
   patches ? [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "spandsp";
   inherit version src;
+  pname = "spandsp";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # submitted upstream: https://github.com/freeswitch/spandsp/pull/47
     (fetchpatch {
-      url = "https://github.com/freeswitch/spandsp/commit/1f810894804d3fa61ab3fc2f3feb0599145a3436.patch";
       hash = "sha256-Cf8aaoriAvchh5cMb75yP2gsZbZaOLha/j5mq3xlkVA=";
+      url = "https://github.com/freeswitch/spandsp/commit/1f810894804d3fa61ab3fc2f3feb0599145a3436.patch";
     })
 
     # https://github.com/freeswitch/spandsp/pull/110
@@ -59,11 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'nobase_data_DATA' 'noinst_DATA'
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -74,12 +74,38 @@ stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   propagatedBuildInputs = [
     audiofile
     libtiff
   ];
+
+  configureFlags = [
+    (lib.strings.enableFeature finalAttrs.finalPackage.doCheck "tests")
+
+    # This flag is required to prevent linking error in the cross-compilation case.
+    # I think it's fair to assume that realloc(NULL, size) will return a valid memory
+    # block for most libc implementation, so let's just assume that and hope for the best.
+    "ac_cv_func_malloc_0_nonnull=yes"
+  ];
+
+  makeFlags = [
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "CC_FOR_BUILD=${buildPackages.stdenv.cc}/bin/cc"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    # Missing const conversion on some calls
+    "-Wno-error=incompatible-pointer-types"
+  ];
+
+  preConfigure = ''
+    ./autogen.sh
+  '';
+
+  doCheck =
+    stdenv.buildPlatform.canExecute stdenv.hostPlatform
+    # Compat with i.e. Clang improved by 0446f4e0c72553f3ea9b50c5333ece6ac980e58d, too big to apply
+    && stdenv.cc.isGNU;
 
   nativeCheckInputs = [
     libtiff
@@ -94,40 +120,45 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
-  preConfigure = ''
-    ./autogen.sh
+  checkPhase = ''
+    runHook preCheck
+
+    pushd tests
+
+    for test in *_tests; do
+      testArgs=()
+      case "$test" in
+        # Skipped tests
+        ${lib.strings.concatStringsSep "|" finalAttrs.disabledTests})
+          echo "Skipping $test"
+          continue
+          ;;
+
+        # Needs list of subtests to run
+        echo_tests)
+          testArgs+=(
+            sanity 2a 2b 2ca 3a 3ba 3bb 3c 4 5 6 7 8 9 10a 10b 10c 11 12 13 14 15
+          )
+          # Fallthough for running the test
+          ;;&
+
+        *)
+          echo "Running $test"
+          if ! ./"$test" "''${testArgs[@]}" >"$test".log 2>&1; then
+            echo "$test failed! Output:"
+            cat "$test".log
+            exit 1
+          fi
+          ;;
+      esac
+    done
+
+    popd
+
+    runHook postCheck
   '';
 
-  configureFlags = [
-    (lib.strings.enableFeature finalAttrs.finalPackage.doCheck "tests")
-
-    # This flag is required to prevent linking error in the cross-compilation case.
-    # I think it's fair to assume that realloc(NULL, size) will return a valid memory
-    # block for most libc implementation, so let's just assume that and hope for the best.
-    "ac_cv_func_malloc_0_nonnull=yes"
-  ];
-
-  # Issues with test asset generation under heavy parallelism
-  enableParallelBuilding = false;
-
-  makeFlags = [
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "CC_FOR_BUILD=${buildPackages.stdenv.cc}/bin/cc"
-  ];
-
-  env.NIX_CFLAGS_COMPILE = toString [
-    # Missing const conversion on some calls
-    "-Wno-error=incompatible-pointer-types"
-  ];
-
-  hardeningDisable = lib.optionals (lib.strings.versionOlder finalAttrs.version "3.0.0") [
-    "format"
-  ];
-
-  doCheck =
-    stdenv.buildPlatform.canExecute stdenv.hostPlatform
-    # Compat with i.e. Clang improved by 0446f4e0c72553f3ea9b50c5333ece6ac980e58d, too big to apply
-    && stdenv.cc.isGNU;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   disabledTests = [
     # Need proprietary recordings that aren't included
@@ -175,51 +206,20 @@ stdenv.mkDerivation (finalAttrs: {
     "v22bis_tests"
   ];
 
-  checkPhase = ''
-    runHook preCheck
+  # Issues with test asset generation under heavy parallelism
+  enableParallelBuilding = false;
 
-    pushd tests
-
-    for test in *_tests; do
-      testArgs=()
-      case "$test" in
-        # Skipped tests
-        ${lib.strings.concatStringsSep "|" finalAttrs.disabledTests})
-          echo "Skipping $test"
-          continue
-          ;;
-
-        # Needs list of subtests to run
-        echo_tests)
-          testArgs+=(
-            sanity 2a 2b 2ca 3a 3ba 3bb 3c 4 5 6 7 8 9 10a 10b 10c 11 12 13 14 15
-          )
-          # Fallthough for running the test
-          ;;&
-
-        *)
-          echo "Running $test"
-          if ! ./"$test" "''${testArgs[@]}" >"$test".log 2>&1; then
-            echo "$test failed! Output:"
-            cat "$test".log
-            exit 1
-          fi
-          ;;
-      esac
-    done
-
-    popd
-
-    runHook postCheck
-  '';
+  hardeningDisable = lib.optionals (lib.strings.versionOlder finalAttrs.version "3.0.0") [
+    "format"
+  ];
 
   meta = {
     description = "Portable and modular SIP User-Agent with audio and video support";
     homepage = "https://github.com/freeswitch/spandsp";
-    platforms = with lib.platforms; unix;
-    maintainers = with lib.maintainers; [ misuzu ];
-    teams = [ lib.teams.ngi ];
     license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ misuzu ];
+    platforms = with lib.platforms; unix;
     downloadPage = "http://www.soft-switch.org/downloads/spandsp/";
+    teams = [ lib.teams.ngi ];
   };
 })

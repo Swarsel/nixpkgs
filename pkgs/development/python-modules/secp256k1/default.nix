@@ -1,17 +1,16 @@
 {
   lib,
   buildPythonPackage,
+  cffi,
   fetchPypi,
   pkg-config,
   pytestCheckHook,
-  cffi,
   secp256k1,
 }:
 
 buildPythonPackage rec {
   pname = "secp256k1";
   version = "0.14.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -31,20 +30,20 @@ buildPythonPackage rec {
     secp256k1
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # Tests are not included in archive
-  doCheck = false;
-
   preConfigure = ''
     cp -r ${secp256k1.src} libsecp256k1
     export INCLUDE_DIR=${secp256k1}/include
     export LIB_DIR=${secp256k1}/lib
   '';
 
+  # Tests are not included in archive
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/ludbb/secp256k1-py";
     description = "Python FFI bindings for secp256k1";
+    homepage = "https://github.com/ludbb/secp256k1-py";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];
   };

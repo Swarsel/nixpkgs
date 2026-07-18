@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   versionCheckHook,
-  fetchFromGitHub,
 }:
 
 let
@@ -40,31 +40,32 @@ buildGoModule (finalAttrs: {
     hash = "sha256-rkkqLBH4P5DMrbfsZwVgBjnQG1/fHdjVL4mU6amYUxM=";
   };
 
-  __structuredAttrs = true;
-
   vendorHash = "sha256-DIdDDS8U4UR3ZPmwqrhsOfejUJ4UHmwcr4JCpjkwOzs=";
-
-  ldflags = [
-    "-X main.version=${finalAttrs.version}"
-  ];
 
   checkFlags = [
     "-skip=${lib.concatStringsSep "|" disabledTests}"
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  versionCheckProgramArg = "version";
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   versionCheckKeepEnvironment = [ "HOME" ];
-  doInstallCheck = true;
+  versionCheckProgramArg = "version";
 
   meta = {
-    homepage = "https://github.com/kkdai/youtube";
     description = "YouTube video download CLI";
-    mainProgram = "youtubedr";
+    homepage = "https://github.com/kkdai/youtube";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ligerothetiger ];
+    mainProgram = "youtubedr";
   };
 })

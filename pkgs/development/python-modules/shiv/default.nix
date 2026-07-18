@@ -1,18 +1,17 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   click,
+  fetchPypi,
   pip,
+  pytestCheckHook,
   setuptools,
   wheel,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "shiv";
   version = "1.0.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -25,8 +24,6 @@ buildPythonPackage rec {
     setuptools
     wheel
   ];
-
-  pythonImportsCheck = [ "shiv" ];
 
   nativeCheckInputs = [ pytestCheckHook ];
 
@@ -47,6 +44,9 @@ buildPythonPackage rec {
     "test_find_entry_point_two_points"
     "test_console_script_exists"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "shiv" ];
 
   meta = {
     description = "Command line utility for building fully self contained Python zipapps";

@@ -7,19 +7,17 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.4.0";
   pname = "exonerate";
+  version = "2.4.0";
 
   src = fetchurl {
     url = "https://ftp.ebi.ac.uk/pub/software/vertebrategenomics/exonerate/exonerate-${finalAttrs.version}.tar.gz";
     sha256 = "0hj0m9xygiqsdxvbg79wq579kbrx1mdrabi2bzqz2zn9qwfjcjgq";
   };
 
-  doCheck = true;
-
-  buildInputs = [ glib ];
-
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ glib ];
+  doCheck = true;
 
   meta = {
     description = "Generic tool for sequence alignment";

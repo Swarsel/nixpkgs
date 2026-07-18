@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "zimfw";
   version = "1.20.0";
+
   src = fetchFromGitHub {
     owner = "zimfw";
     repo = "zimfw";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-fwpmeFDQRsTnWSoa9N3C+G/LDBCmDtbl+ckcyndMr7c=";
     ## zim only needs this one file to be installed.
     sparseCheckout = [ "zimfw.zsh" ];
-    hash = "sha256-fwpmeFDQRsTnWSoa9N3C+G/LDBCmDtbl+ckcyndMr7c=";
   };
+
   strictDeps = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -27,6 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Zsh configuration framework with blazing speed and modular extensions";

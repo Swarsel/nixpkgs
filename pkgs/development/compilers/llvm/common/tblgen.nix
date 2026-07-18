@@ -1,19 +1,19 @@
 {
-  cmake,
-  devExtraCmakeFlags ? [ ],
   lib,
+  stdenv,
+  clangPatches,
+  cmake,
   llvm_meta,
-  monorepoSrc ? null,
   ninja,
-  patches ? [ ],
   python3,
-  updateAutotoolsGnuConfigScriptsHook,
   release_version,
   runCommand,
-  src ? null,
-  stdenv,
+  updateAutotoolsGnuConfigScriptsHook,
   version,
-  clangPatches,
+  devExtraCmakeFlags ? [ ],
+  monorepoSrc ? null,
+  patches ? [ ],
+  src ? null,
 }:
 
 let
@@ -68,11 +68,8 @@ let
 
   self = stdenv.mkDerivation (finalAttrs: {
     inherit pname version patches;
-
+    inherit targets;
     src = src';
-    sourceRoot = "${finalAttrs.src.name}/llvm";
-
-    __structuredAttrs = true;
 
     postPatch = ''
       (
@@ -108,14 +105,14 @@ let
     ]
     ++ devExtraCmakeFlags;
 
-    ninjaFlags = targets;
-
-    inherit targets;
-
     installPhase = ''
       mkdir -p $out/bin
       cp "''${targets[@]/#/bin/}" $out/bin
     '';
+
+    __structuredAttrs = true;
+    ninjaFlags = targets;
+    sourceRoot = "${finalAttrs.src.name}/llvm";
   });
 in
 self

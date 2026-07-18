@@ -1,13 +1,13 @@
 {
   lib,
-  maven,
   fetchFromGitHub,
-  makeWrapper,
-  jre,
-  jdk,
-  gettext,
-  makeDesktopItem,
   copyDesktopItems,
+  gettext,
+  jdk,
+  jre,
+  makeDesktopItem,
+  makeWrapper,
+  maven,
   nix-update-script,
 }:
 
@@ -22,16 +22,12 @@ maven.buildMavenPackage {
     hash = "sha256-pcHX6PdnD/jkLxAMSV/Ts8VVrK9xy2NWiMVVJ7jTrQc=";
   };
 
-  mvnHash = "sha256-L5Gru4b8lMiDWapzaK9VXoKqRkJnXc1uKUn5Vjmnrqc=";
-
   nativeBuildInputs = [
     makeWrapper
     gettext
     jdk
     copyDesktopItems
   ];
-
-  mvnParameters = "-DskipTests";
 
   installPhase = ''
     runHook preInstall
@@ -57,20 +53,23 @@ maven.buildMavenPackage {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "jchempaint";
-      desktopName = "JChemPaint";
-      exec = "jchempaint";
-      icon = "jchempaint";
       categories = [
         "Science"
         "Education"
         "Chemistry"
       ];
-      terminal = false;
+
+      desktopName = "JChemPaint";
+      exec = "jchempaint";
+      icon = "jchempaint";
+      name = "jchempaint";
       startupWMClass = "org-openscience-jchempaint-application-JChemPaint";
+      terminal = false;
     })
   ];
 
+  mvnHash = "sha256-L5Gru4b8lMiDWapzaK9VXoKqRkJnXc1uKUn5Vjmnrqc=";
+  mvnParameters = "-DskipTests";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -78,8 +77,8 @@ maven.buildMavenPackage {
     homepage = "https://jchempaint.github.io";
     changelog = "https://github.com/JChemPaint/jchempaint/releases/tag/nightly";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ZZBaron ];
+    platforms = lib.platforms.all;
     mainProgram = "jchempaint";
   };
 }

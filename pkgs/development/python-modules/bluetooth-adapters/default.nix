@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiooui,
   async-timeout,
   bleak,
   buildPythonPackage,
   dbus-fast,
-  fetchFromGitHub,
   mac-vendor-lookup,
   myst-parser,
   poetry-core,
@@ -22,7 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "bluetooth-adapters";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -36,14 +35,20 @@ buildPythonPackage (finalAttrs: {
     "doc"
   ];
 
-  build-system = [
-    poetry-core
-  ];
-
   nativeBuildInputs = [
     myst-parser
     sphinx-rtd-theme
     sphinxHook
+  ];
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  build-system = [
+    poetry-core
   ];
 
   dependencies = [
@@ -57,12 +62,7 @@ buildPythonPackage (finalAttrs: {
     usb-devices
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bluetooth_adapters" ];
 
   meta = {

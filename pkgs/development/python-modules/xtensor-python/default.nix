@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  toPythonModule,
   fetchFromGitHub,
   cmake,
   gtest,
-  xtensor,
-  pybind11,
   numpy,
+  pybind11,
+  toPythonModule,
+  xtensor,
 }:
 
 toPythonModule (
@@ -24,24 +24,25 @@ toPythonModule (
 
     nativeBuildInputs = [ cmake ];
     buildInputs = [ pybind11 ];
-    nativeCheckInputs = [ gtest ];
-    doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-    cmakeFlags = [
-      # Always build the tests, even if not running them, because testing whether
-      # they can be built is a test in itself.
-      (lib.cmakeBool "BUILD_TESTS" true)
-    ];
 
     propagatedBuildInputs = [
       xtensor
       numpy
     ];
 
+    cmakeFlags = [
+      # Always build the tests, even if not running them, because testing whether
+      # they can be built is a test in itself.
+      (lib.cmakeBool "BUILD_TESTS" true)
+    ];
+
+    doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+    nativeCheckInputs = [ gtest ];
     checkTarget = "xtest";
 
     meta = {
-      homepage = "https://github.com/xtensor-stack/xtensor-python";
       description = "Python bindings for the xtensor C++ multi-dimensional array library";
+      homepage = "https://github.com/xtensor-stack/xtensor-python";
       license = lib.licenses.bsd3;
     };
   })

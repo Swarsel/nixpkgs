@@ -1,14 +1,14 @@
 {
   buildDunePackage,
-  ocsipersist,
   logs,
   ocaml_sqlite3,
   ocsigen_server,
+  ocsipersist,
 }:
 
 buildDunePackage {
-  pname = "ocsipersist-sqlite";
   inherit (ocsipersist) version src;
+  pname = "ocsipersist-sqlite";
 
   propagatedBuildInputs = [
     logs

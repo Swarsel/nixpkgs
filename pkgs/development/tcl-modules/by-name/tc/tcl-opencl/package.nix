@@ -1,9 +1,9 @@
 {
   lib,
-  mkTclDerivation,
   fetchFromGitHub,
-  opencl-headers,
+  mkTclDerivation,
   ocl-icd,
+  opencl-headers,
   vectcl,
 }:
 
@@ -32,9 +32,9 @@ mkTclDerivation rec {
   ];
 
   meta = {
-    homepage = "https://github.com/ray2501/tcl-opencl";
     description = "Tcl extension for OpenCL";
-    maintainers = with lib.maintainers; [ fgaz ];
+    homepage = "https://github.com/ray2501/tcl-opencl";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ fgaz ];
   };
 }

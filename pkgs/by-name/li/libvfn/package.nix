@@ -4,17 +4,14 @@
   fetchFromGitHub,
   meson,
   ninja,
-  pkg-config,
-  perl,
   nix-update-script,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libvfn";
   version = "5.1.0";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "SamsungDS";
@@ -23,6 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CEVjJVeDEEJcJX2/6fwKGBHDsxgN+pL7fJWvQ+iCh3Y=";
   };
 
+  postPatch = ''
+    patchShebangs scripts/trace.pl scripts/ctags.sh scripts/sparse.py
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -30,20 +33,18 @@ stdenv.mkDerivation (finalAttrs: {
     perl
   ];
 
-  postPatch = ''
-    patchShebangs scripts/trace.pl scripts/ctags.sh scripts/sparse.py
-  '';
-
   mesonFlags = [
     (lib.mesonEnable "docs" false)
     (lib.mesonEnable "libnvme" false)
     (lib.mesonBool "profiling" false)
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Zero-dependency library for interacting with PCIe-based NVMe devices from user-space";
+
     longDescription = ''
       libvfn is a zero-dependency library for interacting with PCIe-based NVMe
       devices from user-space using the Linux kernel vfio-pci driver. The core
@@ -51,8 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
       verification and testing teams to interact with the NVMe device at the
       register and queue level.
     '';
+
     homepage = "https://github.com/SamsungDS/libvfn";
     license = lib.licenses.lgpl21Plus;
+
+    sourceProvenance = with lib.sourceTypes; [
+      fromSource
+      binaryNativeCode
+    ];
+
     maintainers = with lib.maintainers; [ joelgranados ];
 
     # Explicit list of tested platforms. The abstractions on other platforms
@@ -60,10 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-    ];
-    sourceProvenance = with lib.sourceTypes; [
-      fromSource
-      binaryNativeCode
     ];
   };
 })

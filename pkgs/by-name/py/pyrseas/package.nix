@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 let
   pgdbconn = python3Packages.buildPythonPackage rec {
     pname = "pgdbconn";
     version = "0.8.0";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "perseas";
@@ -17,21 +16,21 @@ let
       sha256 = "09r4idk5kmqi3yig7ip61r6js8blnmac5n4q32cdcbp1rcwzdn6z";
     };
 
-    build-system = with python3Packages; [ setuptools ];
-
     # The tests are impure (they try to access a PostgreSQL server)
     doCheck = false;
+    build-system = with python3Packages; [ setuptools ];
 
     dependencies = with python3Packages; [
       psycopg2
     ];
+
+    pyproject = true;
   };
 in
 
 python3Packages.buildPythonApplication rec {
   pname = "pyrseas";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "perseas";
@@ -40,6 +39,8 @@ python3Packages.buildPythonApplication rec {
     sha256 = "sha256-+MxnxvbLMxK1Ak+qKpKe3GHbzzC+XHO0eR7rl4ON9H4=";
   };
 
+  # The tests are impure (they try to access a PostgreSQL server)
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -48,9 +49,7 @@ python3Packages.buildPythonApplication rec {
     pgdbconn
   ];
 
-  # The tests are impure (they try to access a PostgreSQL server)
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyrseas" ];
 
   meta = {

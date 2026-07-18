@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
-  setuptools,
   responses,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-responses";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "getsentry";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-sn11MX5nab6dDhgZkV/cy4yGnOhB2MyrC+l/RGKEU/8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ responses ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ responses ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_responses" ];
 
   meta = {

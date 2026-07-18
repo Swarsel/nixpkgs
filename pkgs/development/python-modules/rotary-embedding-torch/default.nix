@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  wheel,
-
   # dependencies
   beartype,
+  buildPythonPackage,
   einops,
+  # build-system
+  setuptools,
   torch,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "rotary-embedding-torch";
   version = "0.8.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lucidrains";
@@ -36,9 +33,9 @@ buildPythonPackage rec {
     torch
   ];
 
-  pythonImportsCheck = [ "rotary_embedding_torch" ];
-
   doCheck = false; # no tests
+  pyproject = true;
+  pythonImportsCheck = [ "rotary_embedding_torch" ];
 
   meta = {
     description = "Implementation of Rotary Embeddings, from the Roformer paper, in Pytorch";

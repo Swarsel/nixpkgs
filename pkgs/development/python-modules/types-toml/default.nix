@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "types-toml";
   version = "0.10.8.20240310";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Module doesn't have tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "toml-stubs" ];
 
   meta = {

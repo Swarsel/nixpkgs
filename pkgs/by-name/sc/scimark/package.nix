@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     unzip
   ];
 
-  dontConfigure = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,13 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://math.nist.gov/scimark2/index.html";
     description = "Scientific and numerical computing benchmark (ANSI C version)";
-    downloadPage = "https://math.nist.gov/scimark2/download_c.html";
+    homepage = "https://math.nist.gov/scimark2/index.html";
     license = lib.licenses.publicDomain;
-    mainProgram = "scimark4";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "scimark4";
+    downloadPage = "https://math.nist.gov/scimark2/download_c.html";
   };
 })

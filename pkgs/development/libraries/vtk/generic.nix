@@ -1,99 +1,91 @@
 {
-  version,
   sourceSha256,
+  version,
   patches ? [ ],
 }:
 {
   lib,
-  newScope,
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-
-  # common dependencies
-  tk,
-  mpi,
-  python3Packages,
-  catalyst,
-  cli11,
+  adios2,
+  alembic,
   boost,
-  eigen,
-  verdict,
-  double-conversion,
-
-  # common data libraries
-  lz4,
-  xz,
-  zlib,
-  pugixml,
-  expat,
-  jsoncpp,
-  libxml2,
-  exprtk,
-  utf8cpp,
-  libarchive,
-  nlohmann_json,
-
-  # filters
-  openturns,
-  openslide,
-  onnxruntime,
-
+  c-blosc,
+  catalyst,
   # io modules
   cgns,
-  adios2,
-  liblas,
-  gdal,
-  pdal,
-  alembic,
-  imath,
-  openvdb,
-  c-blosc,
-  unixodbc,
-  libpq,
-  libmysqlclient,
+  cli11,
+  cmake,
+  double-conversion,
+  eigen,
+  expat,
+  exprtk,
   ffmpeg,
-  libjpeg,
-  libpng,
-  libtiff,
-  proj,
-  sqlite,
-  libogg,
-  libharu,
-  libtheora,
+  fontconfig,
+  freetype,
+  gdal,
+  gl2ps,
   hdf5,
+  imath,
+  jsoncpp,
+  libGL,
+  libarchive,
+  libharu,
+  libjpeg,
+  liblas,
+  libmysqlclient,
+  libogg,
+  libpng,
+  libpq,
+  libtheora,
+  libtiff,
+  libx11,
+  libxcursor,
+  libxfixes,
+  libxml2,
+  libxrender,
+  llvmPackages,
+  # common data libraries
+  lz4,
+  mpi,
   netcdf,
-  opencascade-occt,
-  openusd,
-
+  newScope,
+  nlohmann_json,
   # threading
   onetbb,
-  llvmPackages,
-
+  onnxruntime,
+  opencascade-occt,
+  openslide,
+  # filters
+  openturns,
+  openusd,
+  openvdb,
+  pdal,
+  pkg-config,
+  proj,
+  pugixml,
+  python3Packages,
+  qt6,
+  sqlite,
+  # passthru.tests
+  testers,
+  # common dependencies
+  tk,
+  unixodbc,
+  utf8cpp,
+  verdict,
   # rendering
   viskores,
-  freetype,
-  fontconfig,
-  libx11,
-  libxfixes,
-  libxrender,
-  libxcursor,
-  gl2ps,
-  libGL,
-  qt6,
-
-  # custom options
-  withQt6 ? false,
+  xz,
+  zlib,
   # To avoid conflicts between the propagated vtkPackages.hdf5
   # and the input hdf5 used by most downstream packages,
   # we set mpiSupport to false by default.
   mpiSupport ? false,
   pythonSupport ? false,
-
-  # passthru.tests
-  testers,
+  # custom options
+  withQt6 ? false,
 }:
 let
   vtkPackages = lib.makeScope newScope (self: {
@@ -104,26 +96,28 @@ let
       pythonSupport
       ;
 
+    adios2 = self.callPackage adios2.override { };
+    catalyst = self.callPackage catalyst.override { };
+    cgns = self.callPackage cgns.override { };
+    gdal = self.callPackage gdal.override { useMinimalFeatures = true; };
+
     hdf5 = hdf5.override {
       inherit mpi mpiSupport;
       cppSupport = !mpiSupport;
     };
+
     netcdf = self.callPackage netcdf.override { };
-    catalyst = self.callPackage catalyst.override { };
-    adios2 = self.callPackage adios2.override { };
-    cgns = self.callPackage cgns.override { };
-    viskores = self.callPackage viskores.override { };
-    gdal = self.callPackage gdal.override { useMinimalFeatures = true; };
-    pdal = self.callPackage pdal.override { };
     # vtk fail to configure with openusd with materialX support
     # see https://github.com/AcademySoftwareFoundation/MaterialX/pull/2752
     openusd = openusd.override { withMaterialX = false; };
+    pdal = self.callPackage pdal.override { };
+    viskores = self.callPackage viskores.override { };
   });
   vtkBool = feature: bool: lib.cmakeFeature feature "${if bool then "YES" else "NO"}";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "vtk";
   inherit version patches;
+  pname = "vtk";
 
   src = fetchurl {
     url = "https://www.vtk.org/files/release/${lib.versions.majorMinor finalAttrs.version}/VTK-${finalAttrs.version}.tar.gz";
@@ -223,6 +217,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals pythonSupport [
     (python3Packages.mkPythonMetaPackage {
       inherit (finalAttrs) pname version meta;
+
       dependencies =
         with python3Packages;
         [
@@ -286,10 +281,6 @@ stdenv.mkDerivation (finalAttrs: {
     (vtkBool "VTK_GROUP_ENABLE_MPI" mpiSupport)
   ];
 
-  pythonImportsCheck = [ "vtk" ];
-
-  dontWrapQtApps = true;
-
   postFixup =
     # Remove thirdparty find module that have been provided in nixpkgs.
     ''
@@ -301,33 +292,34 @@ stdenv.mkDerivation (finalAttrs: {
       patchelf --add-rpath ${lib.getLib libGL}/lib $out/lib/libvtkglad.so
     '';
 
+  dontWrapQtApps = true;
+  pythonImportsCheck = [ "vtk" ];
+  requiredSystemFeatures = [ "big-parallel" ];
+
   passthru = {
     inherit
       pythonSupport
       mpiSupport
       ;
 
+    tests = {
+      cmake-config = testers.hasCmakeConfigModules {
+        nativeBuildInputs = lib.optionals withQt6 [
+          qt6.qttools
+          qt6.wrapQtAppsHook
+        ];
+
+        moduleNames = [ "VTK" ];
+        package = finalAttrs.finalPackage;
+      };
+    };
+
     vtkPackages = vtkPackages.overrideScope (
       final: prev: {
         vtk = finalAttrs.finalPackage;
       }
     );
-
-    tests = {
-      cmake-config = testers.hasCmakeConfigModules {
-        moduleNames = [ "VTK" ];
-
-        package = finalAttrs.finalPackage;
-
-        nativeBuildInputs = lib.optionals withQt6 [
-          qt6.qttools
-          qt6.wrapQtAppsHook
-        ];
-      };
-    };
   };
-
-  requiredSystemFeatures = [ "big-parallel" ];
 
   meta = {
     description = "Open source libraries for 3D computer graphics, image processing and visualization";

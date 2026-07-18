@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "crcelk";
   version = "1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zeroSteiner";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-eJt0qcG0ejTQJyjOSi6Au2jH801KOMnk7f6cLbd7ADw=";
   };
 
-  build-system = [ setuptools ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "crcelk" ];
 
   meta = {

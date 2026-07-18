@@ -2,18 +2,17 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
+  hypothesis,
+  pytestCheckHook,
   requests,
+  setuptools,
   stups-cli-support,
   stups-zign,
-  pytestCheckHook,
-  hypothesis,
 }:
 
 buildPythonPackage rec {
   pname = "stups-pierone";
   version = "1.1.51";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zalando-stups";
@@ -22,9 +21,16 @@ buildPythonPackage rec {
     hash = "sha256-OypGYHfiFUfcUndylM2N2WfPnfXXJ4gvWypUbltYAYE=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    hypothesis
+  ];
 
-  pythonRelaxDeps = [ "stups-zign" ];
+  preCheck = ''
+    export HOME=$TEMPDIR
+  '';
+
+  build-system = [ setuptools ];
 
   dependencies = [
     requests
@@ -32,16 +38,9 @@ buildPythonPackage rec {
     stups-zign
   ];
 
-  preCheck = ''
-    export HOME=$TEMPDIR
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    hypothesis
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pierone" ];
+  pythonRelaxDeps = [ "stups-zign" ];
 
   meta = {
     description = "Convenient command line client for STUPS' Pier One Docker registry";

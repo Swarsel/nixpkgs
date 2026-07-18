@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   SDL2,
-  libGL,
   cmake,
+  libGL,
   makeBinaryWrapper,
 }:
 

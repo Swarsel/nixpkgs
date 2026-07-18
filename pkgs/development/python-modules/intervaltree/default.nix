@@ -3,20 +3,25 @@
   buildPythonPackage,
   fetchPypi,
   hatchling,
-  uv-dynamic-versioning,
   pytestCheckHook,
   sortedcontainers,
+  uv-dynamic-versioning,
 }:
 
 buildPythonPackage rec {
-  version = "3.2.1";
   pname = "intervaltree";
-  pyproject = true;
+  version = "3.2.1";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "sha256-8/fouut911ufem0zzz7BACWYSo5m4wFtU35SEwxzz+I=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    rm -rf build
+  '';
 
   build-system = [
     hatchling
@@ -24,12 +29,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ sortedcontainers ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = ''
-    rm -rf build
-  '';
+  pyproject = true;
 
   meta = {
     description = "Editable interval tree data structure for Python 2 and 3";

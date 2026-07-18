@@ -1,18 +1,16 @@
 {
-  mkDerivation,
   bsdSetupHook,
-  netbsdSetupHook,
-  makeMinimal,
-  install,
-  mandoc,
   byacc,
-  flex,
-  compatIfNeeded,
   cksum,
+  compatIfNeeded,
+  flex,
+  install,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
+  netbsdSetupHook,
 }:
 mkDerivation {
-  path = "usr.bin/config";
-  env.NIX_CFLAGS_COMPILE = toString [ "-DMAKE_BOOTSTRAP" ];
   nativeBuildInputs = [
     bsdSetupHook
     netbsdSetupHook
@@ -22,6 +20,9 @@ mkDerivation {
     byacc
     flex
   ];
+
   buildInputs = compatIfNeeded;
+  env.NIX_CFLAGS_COMPILE = toString [ "-DMAKE_BOOTSTRAP" ];
   extraPaths = [ cksum.path ];
+  path = "usr.bin/config";
 }

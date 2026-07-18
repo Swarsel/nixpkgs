@@ -1,7 +1,7 @@
 {
-  fetchzip,
   lib,
   stdenv,
+  fetchzip,
   nix-update-script,
 }:
 
@@ -9,9 +9,8 @@ let
   version = "3.3.39";
 in
 stdenv.mkDerivation {
-  pname = "flashspace";
-
   inherit version;
+  pname = "flashspace";
 
   src = fetchzip {
     url = "https://github.com/wojciech-kulik/FlashSpace/releases/download/v${version}/FlashSpace.app.zip";
@@ -27,15 +26,15 @@ stdenv.mkDerivation {
   '';
 
   doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
+
   meta = {
-    license = lib.licenses.mit;
+    description = "Blazingly fast virtual workspace manager for macOS";
     homepage = "https://github.com/wojciech-kulik/FlashSpace";
     changelog = "https://github.com/wojciech-kulik/FlashSpace/releases/tag/v${version}";
-    description = "Blazingly fast virtual workspace manager for macOS";
-    platforms = lib.platforms.darwin;
-    maintainers = [ lib.maintainers.marcusramberg ];
+    license = lib.licenses.mit;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = [ lib.maintainers.marcusramberg ];
+    platforms = lib.platforms.darwin;
   };
 }

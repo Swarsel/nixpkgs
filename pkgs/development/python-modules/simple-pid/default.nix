@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "simple-pid";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "m-lundberg";
@@ -19,18 +18,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DKi0ODnhoY/Pqzd6Zlvd1gMlFtzivigO0xThz35TBf8=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
-  pythonImportsCheck = [
-    "simple_pid"
-  ];
-
   doCheck = !stdenv.isDarwin;
 
   nativeCheckInputs = [
     pytestCheckHook
+  ];
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "simple_pid"
   ];
 
   meta = {

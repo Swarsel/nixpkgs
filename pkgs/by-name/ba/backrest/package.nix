@@ -1,22 +1,22 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  gzip,
-  fetchurl,
-  iana-etc,
   lib,
-  libredirect,
-  nodejs,
-  pnpm_11,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  restic,
   stdenv,
-  util-linux,
-  makeBinaryWrapper,
-  versionCheckHook,
-  nix-update-script,
+  fetchurl,
+  fetchFromGitHub,
   _experimental-update-script-combinators,
+  buildGoModule,
+  fetchPnpmDeps,
+  gzip,
+  iana-etc,
+  libredirect,
+  makeBinaryWrapper,
+  nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
+  restic,
+  util-linux,
+  versionCheckHook,
 }:
 let
   pnpm = pnpm_11;
@@ -30,6 +30,7 @@ let
     tag = "v${version}";
     hash = "sha256-RxjPjvnKy8UM1OXRklJF/HSZ6FMiHWYQBsZ6owMJMF0=";
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -46,24 +47,6 @@ let
   frontend = stdenv.mkDerivation (finalAttrs: {
     inherit version src;
     pname = "backrest-webui";
-    sourceRoot = "${finalAttrs.src.name}/webui";
-
-    __structuredAttrs = true;
-    strictDeps = true;
-
-    nativeBuildInputs = [
-      nodejs
-      pnpmConfigHook
-      pnpm
-    ];
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs) pname version src;
-      inherit pnpm;
-      sourceRoot = "${finalAttrs.src.name}/webui";
-      fetcherVersion = 4;
-      hash = "sha256-y6NYFPepibiTuvPMwyc5cN3TwAc2W7RtPbCmzWDozNQ=";
-    };
 
     postPatch = ''
       # Replace remote inlang plugins with local ones
@@ -74,6 +57,14 @@ let
         '') inlang-plugins
       )}
     '';
+
+    strictDeps = true;
+
+    nativeBuildInputs = [
+      nodejs
+      pnpmConfigHook
+      pnpm
+    ];
 
     buildPhase = ''
       runHook preBuild
@@ -87,6 +78,18 @@ let
       mv dist $out
       runHook postInstall
     '';
+
+    __structuredAttrs = true;
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname version src;
+      inherit pnpm;
+      fetcherVersion = 4;
+      hash = "sha256-y6NYFPepibiTuvPMwyc5cN3TwAc2W7RtPbCmzWDozNQ=";
+      sourceRoot = "${finalAttrs.src.name}/webui";
+    };
+
+    sourceRoot = "${finalAttrs.src.name}/webui";
   });
 in
 buildGoModule (finalAttrs: {
@@ -95,9 +98,6 @@ buildGoModule (finalAttrs: {
     src
     version
     ;
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   patches = [
     # https://github.com/garethgeorge/backrest/pull/1293
@@ -115,22 +115,14 @@ buildGoModule (finalAttrs: {
       internal/resticinstaller/resticinstaller.go
   '';
 
-  proxyVendor = true;
-  vendorHash = "sha256-yadRulgtcDPthWLeTydcMol/vwriflKvDu7zgoehZCM=";
-
-  subPackages = [ "cmd/backrest" ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     gzip
     makeBinaryWrapper
   ];
 
-  tags = [ "tray" ];
-
-  ldflags = [
-    "-s"
-    "-X main.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-yadRulgtcDPthWLeTydcMol/vwriflKvDu7zgoehZCM=";
 
   preBuild = ''
     ldflags+=" -X main.commit=$(cat COMMIT)"
@@ -140,6 +132,8 @@ buildGoModule (finalAttrs: {
 
     go generate -skip="npm" ./...
   '';
+
+  doCheck = true;
 
   nativeCheckInputs = [
     util-linux
@@ -170,8 +164,6 @@ buildGoModule (finalAttrs: {
     export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/services=${iana-etc}/etc/services
   '';
 
-  doCheck = true;
-
   postInstall = ''
     wrapProgram $out/bin/backrest \
       --set-default BACKREST_RESTIC_COMMAND "${lib.getExe restic}"
@@ -180,11 +172,22 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
-  versionCheckProgramArg = "-version";
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "cmd/backrest" ];
+  tags = [ "tray" ];
+  versionCheckProgramArg = "-version";
 
   passthru = {
     inherit frontend inlang-plugins;
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script {
         extraArgs = [
@@ -201,12 +204,14 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/garethgeorge/backrest";
     changelog = "https://github.com/garethgeorge/backrest/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       iedame
       alexandru0-dev
       phanirithvij
     ];
-    mainProgram = "backrest";
+
     platforms = lib.platforms.unix;
+    mainProgram = "backrest";
   };
 })

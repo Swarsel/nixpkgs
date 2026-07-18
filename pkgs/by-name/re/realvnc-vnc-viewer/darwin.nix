@@ -1,20 +1,19 @@
 {
-  stdenvNoCC,
   fetchurl,
-  undmg,
-  pname,
-  version,
   meta,
+  pname,
+  stdenvNoCC,
+  undmg,
+  version,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   inherit pname version meta;
 
   src = fetchurl rec {
-    name = "VNC-Viewer-${finalAttrs.version}-MacOSX-universal.dmg";
     url = "https://downloads.realvnc.com/download/file/viewer.files/${name}";
     hash = "sha256-nWS7XsAQFcp2uoXXzT+a542Q9vwloZEQHqf4eieKqUA=";
+    name = "VNC-Viewer-${finalAttrs.version}-MacOSX-universal.dmg";
   };
-  sourceRoot = ".";
 
   nativeBuildInputs = [ undmg ];
 
@@ -26,4 +25,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  sourceRoot = ".";
 })

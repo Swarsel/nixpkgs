@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   gettext,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
+  gitUpdater,
   glib,
   gtk3,
+  libnotify,
   libx11,
   libxext,
   libxfce4ui,
   libxfce4util,
-  xfce4-panel,
-  libnotify,
-  lm_sensors,
   linuxPackages,
+  lm_sensors,
+  meson,
+  ninja,
+  pkg-config,
+  wrapGAppsHook3,
+  xfce4-panel,
   nvidiaSupport ? lib.meta.availableOn stdenv.hostPlatform linuxPackages.nvidia_x11.settings.libXNVCtrl,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,16 +58,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.xfce.org/panel-plugins/xfce4-sensors-plugin";
     rev-prefix = "xfce4-sensors-plugin-";
+    url = "https://gitlab.xfce.org/panel-plugins/xfce4-sensors-plugin";
   };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-sensors-plugin";
     description = "Panel plug-in for different sensors using acpi, lm_sensors and hddtemp";
-    mainProgram = "xfce4-sensors";
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-sensors-plugin";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "xfce4-sensors";
     teams = [ lib.teams.xfce ];
   };
 })

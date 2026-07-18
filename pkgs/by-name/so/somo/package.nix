@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  versionCheckHook,
-  libredirect,
   iana-etc,
+  installShellFiles,
+  libredirect,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+NXB+iOuimd3nz8EqMNL0j2N15fZtURH40dwicytd88=";
   };
 
-  cargoHash = "sha256-TAIUgyq8NBx7gQdZeY0dTGEvkRveMdozBjINQeyJOss=";
-
   nativeBuildInputs = [
     installShellFiles
   ]
@@ -30,6 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # Avoids "couldn't find any valid shared libraries matching: ['libclang.dylib']" error on darwin in sandbox mode.
     rustPlatform.bindgenHook
   ];
+
+  cargoHash = "sha256-TAIUgyq8NBx7gQdZeY0dTGEvkRveMdozBjINQeyJOss=";
 
   nativeCheckInputs = [
     libredirect.hook
@@ -46,10 +46,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish <("$out/bin/somo" generate-completions fish)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -60,10 +61,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/theopfr/somo";
     changelog = "https://github.com/theopfr/somo/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "somo";
   };
 })

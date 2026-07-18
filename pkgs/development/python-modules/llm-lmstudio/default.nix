@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
+  buildPythonPackage,
   httpx,
   llm,
-  requests,
   pytest,
   pytest-asyncio,
   pytest-mock,
   pytest-vcr,
+  requests,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "llm-lmstudio";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "agustif";
@@ -44,6 +43,8 @@ buildPythonPackage rec {
       pytest-vcr
     ];
   };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "llm_lmstudio"

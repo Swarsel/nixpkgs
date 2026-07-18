@@ -16,18 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-A2qUzjXv50unFcoZp2nRVinkph+CoHyiU7AgOphDphM=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
   postPatch = ''
     sed -i '/OptimizeForArchitecture()/d' cmake/VcMacros.cmake
     sed -i '/AutodetectHostArchitecture()/d' print_target_architecture.cmake
   '';
 
+  nativeBuildInputs = [ cmake ];
+
   meta = {
     description = "Library for multiprecision complex arithmetic with exact rounding";
     homepage = "https://github.com/VcDevel/Vc";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

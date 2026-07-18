@@ -2,25 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   flask,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "flask-allowed-hosts";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "flask_allowed_hosts";
     hash = "sha256-LL0Vm33R0BYo8IKyjAzpvO7ls4EfcPx3cx3OU6OsE6s=";
+    pname = "flask_allowed_hosts";
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ flask ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_allowed_hosts" ];
 
   meta = {

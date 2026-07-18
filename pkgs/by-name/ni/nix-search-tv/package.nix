@@ -1,14 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "nix-search-tv";
   version = "2.2.8";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "3timeslazy";
@@ -18,14 +17,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-SSKDo4A8Nhvylghrw6d7CdHpZ7jObEr5V3r0Y9cH80Y=";
-
-  subPackages = [ "cmd/nix-search-tv" ];
-
   env.GOEXPERIMENT = "jsonv2";
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
   ];
+
+  subPackages = [ "cmd/nix-search-tv" ];
 
   passthru = {
     updateScript = nix-update-script { };

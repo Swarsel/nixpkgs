@@ -1,18 +1,19 @@
 {
   lib,
-  makeSetupHook,
   autoconf,
   automake,
   gettext,
   libtool,
+  makeSetupHook,
 }:
 makeSetupHook {
-  name = "autoreconf-hook";
   propagatedBuildInputs = [
     autoconf
     automake
     gettext
     libtool
   ];
+
+  name = "autoreconf-hook";
   meta.license = lib.licenses.mit;
 } ./autoreconf.sh

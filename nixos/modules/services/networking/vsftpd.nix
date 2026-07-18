@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 
@@ -30,11 +30,12 @@ let
     cfgText = "${vsftpdName}=${if getAttr nixosName cfg then "YES" else "NO"}";
 
     nixosOption = {
-      type = types.bool;
       name = nixosName;
+      type = types.bool;
+
       value = mkOption {
-        description = description;
         inherit default;
+        description = description;
         type = types.bool;
       };
     };
@@ -157,39 +158,70 @@ in
 
       enable = mkEnableOption "vsftpd";
 
-      userlist = mkOption {
-        default = [ ];
-        type = types.listOf types.str;
-        description = "See {option}`userlistFile`.";
+      anonymousUmask = mkOption {
+        default = "077";
+        description = "Anonymous write umask.";
+        example = "002";
+        type = types.str;
       };
 
-      userlistFile = mkOption {
-        type = types.path;
-        default = pkgs.writeText "userlist" (concatMapStrings (x: "${x}\n") cfg.userlist);
-        defaultText = literalExpression ''pkgs.writeText "userlist" (concatMapStrings (x: "''${x}\n") cfg.userlist)'';
+      anonymousUserHome = mkOption {
+        default = "/home/ftp/";
+
         description = ''
-          Newline separated list of names to be allowed/denied if {option}`userlistEnable`
-          is `true`. Meaning see {option}`userlistDeny`.
-
-          The default is a file containing the users from {option}`userlist`.
-
-          If explicitly set to null userlist_file will not be set in vsftpd's config file.
+          Directory to consider the HOME of the anonymous user.
         '';
+
+        type = types.path;
       };
 
       enableVirtualUsers = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to enable the `pam_userdb`-based
           virtual user system
         '';
+
+        type = types.bool;
+      };
+
+      extraConfig = mkOption {
+        default = "";
+        description = "Extra configuration to add at the bottom of the generated configuration file.";
+        example = "ftpd_banner=Hello";
+        type = types.lines;
+      };
+
+      localRoot = mkOption {
+        default = null;
+
+        description = ''
+          This option represents a directory which vsftpd will try to
+          change into after a local (i.e. non- anonymous) login.
+
+          Failure is silently ignored.
+        '';
+
+        example = "/var/www/$USER";
+        type = types.nullOr types.str;
+      };
+
+      rsaCertFile = mkOption {
+        default = null;
+        description = "RSA certificate file.";
+        type = types.nullOr types.path;
+      };
+
+      rsaKeyFile = mkOption {
+        default = null;
+        description = "RSA private key file.";
+        type = types.nullOr types.path;
       };
 
       userDbPath = mkOption {
-        type = types.nullOr types.str;
-        example = "/etc/vsftpd/userDb";
         default = null;
+
         description = ''
           Only applies if {option}`enableVirtualUsers` is true.
           Path pointing to the `pam_userdb` user
@@ -218,52 +250,31 @@ in
           provide though this option. This option shouldn't include
           this filetype suffix.
         '';
-      };
 
-      localRoot = mkOption {
+        example = "/etc/vsftpd/userDb";
         type = types.nullOr types.str;
-        default = null;
-        example = "/var/www/$USER";
-        description = ''
-          This option represents a directory which vsftpd will try to
-          change into after a local (i.e. non- anonymous) login.
-
-          Failure is silently ignored.
-        '';
       };
 
-      anonymousUserHome = mkOption {
+      userlist = mkOption {
+        default = [ ];
+        description = "See {option}`userlistFile`.";
+        type = types.listOf types.str;
+      };
+
+      userlistFile = mkOption {
+        default = pkgs.writeText "userlist" (concatMapStrings (x: "${x}\n") cfg.userlist);
+        defaultText = literalExpression ''pkgs.writeText "userlist" (concatMapStrings (x: "''${x}\n") cfg.userlist)'';
+
+        description = ''
+          Newline separated list of names to be allowed/denied if {option}`userlistEnable`
+          is `true`. Meaning see {option}`userlistDeny`.
+
+          The default is a file containing the users from {option}`userlist`.
+
+          If explicitly set to null userlist_file will not be set in vsftpd's config file.
+        '';
+
         type = types.path;
-        default = "/home/ftp/";
-        description = ''
-          Directory to consider the HOME of the anonymous user.
-        '';
-      };
-
-      rsaCertFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "RSA certificate file.";
-      };
-
-      rsaKeyFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "RSA private key file.";
-      };
-
-      anonymousUmask = mkOption {
-        type = types.str;
-        default = "077";
-        example = "002";
-        description = "Anonymous write umask.";
-      };
-
-      extraConfig = mkOption {
-        type = types.lines;
-        default = "";
-        example = "ftpd_banner=Hello";
-        description = "Extra configuration to add at the bottom of the generated configuration file.";
       };
 
     }
@@ -280,77 +291,81 @@ in
         assertion =
           (cfg.forceLocalLoginsSSL -> cfg.rsaCertFile != null)
           && (cfg.forceLocalDataSSL -> cfg.rsaCertFile != null);
+
         message = "vsftpd: If forceLocalLoginsSSL or forceLocalDataSSL is true then a rsaCertFile must be provided!";
       }
       {
         assertion =
           (cfg.enableVirtualUsers -> cfg.userDbPath != null) && (cfg.enableVirtualUsers -> cfg.localUsers);
+
         message = "vsftpd: If enableVirtualUsers is true, you need to setup both the userDbPath and localUsers options.";
       }
     ];
 
-    users.users = {
-      "vsftpd" = {
-        group = "vsftpd";
-        isSystemUser = true;
-        description = "VSFTPD user";
-        home =
-          if cfg.localRoot != null then
-            cfg.localRoot # <= Necessary for virtual users.
-          else
-            "/homeless-shelter";
-      };
-    }
-    // optionalAttrs cfg.anonymousUser {
-      "ftp" = {
-        name = "ftp";
-        uid = config.ids.uids.ftp;
-        group = "ftp";
-        description = "Anonymous FTP user";
-        home = cfg.anonymousUserHome;
-      };
-    };
+    security.pam.services.vsftpd = mkIf (cfg.enableVirtualUsers && cfg.userDbPath != null) {
+      rules =
+        let
+          rules = utils.pam.autoOrderRules [
+            {
+              control = "required";
+              modulePath = "${config.security.pam.package}/lib/security/pam_userdb.so";
+              name = "userdb";
+              settings.db = cfg.userDbPath;
+            }
+          ];
+        in
+        {
+          account = rules;
+          auth = rules;
+        };
 
-    users.groups.vsftpd = { };
-    users.groups.ftp.gid = config.ids.gids.ftp;
+      useDefaultRules = false;
+    };
 
     # If you really have to access root via FTP use mkOverride or userlistDeny
     # = false and whitelist root
     services.vsftpd.userlist = optional cfg.userlistDeny "root";
 
     systemd = {
+      services.vsftpd = {
+        description = "Vsftpd Server";
+        serviceConfig.ExecStart = "@${vsftpd}/sbin/vsftpd vsftpd ${configFile}";
+        serviceConfig.Restart = "always";
+        serviceConfig.Type = "forking";
+        wantedBy = [ "multi-user.target" ];
+      };
+
       tmpfiles.rules =
         optional cfg.anonymousUser
           #Type Path                       Mode User   Gr    Age Arg
           "d    '${toString cfg.anonymousUserHome}' 0555 'ftp'  'ftp' -   -";
-      services.vsftpd = {
-        description = "Vsftpd Server";
-
-        wantedBy = [ "multi-user.target" ];
-
-        serviceConfig.ExecStart = "@${vsftpd}/sbin/vsftpd vsftpd ${configFile}";
-        serviceConfig.Restart = "always";
-        serviceConfig.Type = "forking";
-      };
     };
 
-    security.pam.services.vsftpd = mkIf (cfg.enableVirtualUsers && cfg.userDbPath != null) {
-      useDefaultRules = false;
-      rules =
-        let
-          rules = utils.pam.autoOrderRules [
-            {
-              name = "userdb";
-              control = "required";
-              modulePath = "${config.security.pam.package}/lib/security/pam_userdb.so";
-              settings.db = cfg.userDbPath;
-            }
-          ];
-        in
-        {
-          auth = rules;
-          account = rules;
-        };
+    users.groups.ftp.gid = config.ids.gids.ftp;
+    users.groups.vsftpd = { };
+
+    users.users = {
+      "vsftpd" = {
+        description = "VSFTPD user";
+        group = "vsftpd";
+
+        home =
+          if cfg.localRoot != null then
+            cfg.localRoot # <= Necessary for virtual users.
+          else
+            "/homeless-shelter";
+
+        isSystemUser = true;
+      };
+    }
+    // optionalAttrs cfg.anonymousUser {
+      "ftp" = {
+        description = "Anonymous FTP user";
+        group = "ftp";
+        home = cfg.anonymousUserHome;
+        name = "ftp";
+        uid = config.ids.uids.ftp;
+      };
     };
   };
 }

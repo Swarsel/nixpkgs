@@ -1,63 +1,63 @@
 {
   lib,
-  config,
-  clangStdenv,
   fetchFromGitHub,
+  alsa-lib,
   autoreconfHook,
-  libtool,
-  intltool,
-  pkg-config,
-  jansson,
-  swift-corelibs-libdispatch,
-  gtk3,
-  gsettings-desktop-schemas,
-  wrapGAppsHook3,
-  # input plugins
-  vorbisSupport ? true,
-  libvorbis,
-  mp123Support ? true,
-  libmad,
-  flacSupport ? true,
-  flac,
-  wavSupport ? true,
-  libsndfile,
-  cdaSupport ? true,
-  libcdio,
-  libcddb,
-  aacSupport ? true,
-  faad2,
-  opusSupport ? true,
-  opusfile,
-  wavpackSupport ? false,
-  wavpack,
-  ffmpegSupport ? false,
-  ffmpeg,
-  apeSupport ? true,
-  yasm,
-  # misc plugins
-  zipSupport ? true,
-  libzip,
-  artworkSupport ? true,
-  imlib2,
-  hotkeysSupport ? true,
-  libx11,
-  osdSupport ? true,
+  clangStdenv,
+  config,
+  curl,
   dbus,
+  faad2,
+  ffmpeg,
+  flac,
+  gsettings-desktop-schemas,
+  gtk3,
+  imlib2,
+  intltool,
+  jansson,
+  libcddb,
+  libcdio,
+  libmad,
+  libpulseaudio,
+  libsamplerate,
+  libsndfile,
+  libtool,
+  libvorbis,
+  libx11,
+  libzip,
+  opusfile,
+  pipewire,
+  pkg-config,
+  swift-corelibs-libdispatch,
+  wavpack,
+  wrapGAppsHook3,
+  yasm,
+  zlib,
+  aacSupport ? true,
   # output plugins
   alsaSupport ? true,
-  alsa-lib,
-  pulseSupport ? config.pulseaudio or true,
-  libpulseaudio,
-  pipewireSupport ? true,
-  pipewire,
-  # effect plugins
-  resamplerSupport ? true,
-  libsamplerate,
+  apeSupport ? true,
+  artworkSupport ? true,
+  cdaSupport ? true,
+  ffmpegSupport ? false,
+  flacSupport ? true,
+  hotkeysSupport ? true,
+  mp123Support ? true,
+  opusSupport ? true,
+  osdSupport ? true,
   overloadSupport ? true,
-  zlib,
+  pipewireSupport ? true,
+  pulseSupport ? config.pulseaudio or true,
   # transports
   remoteSupport ? true,
-  curl,
+  # effect plugins
+  resamplerSupport ? true,
+  # input plugins
+  vorbisSupport ? true,
+  wavSupport ? true,
+  wavpackSupport ? false,
+  # misc plugins
+  zipSupport ? true,
 }:
 
 let
@@ -70,10 +70,18 @@ clangStdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "DeaDBeeF-Player";
     repo = "deadbeef";
-    fetchSubmodules = true;
     tag = finalAttrs.version;
     hash = "sha256-SAp6XAE3fKTR27xYrdkNHneYDGJW1+XJdX6eBI9+EY0=";
+    fetchSubmodules = true;
   };
+
+  nativeBuildInputs = [
+    autoreconfHook
+    intltool
+    libtool
+    pkg-config
+    wrapGAppsHook3
+  ];
 
   buildInputs = [
     jansson
@@ -143,26 +151,20 @@ clangStdenv.mkDerivation (finalAttrs: {
     curl
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    intltool
-    libtool
-    pkg-config
-    wrapGAppsHook3
-  ];
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Ultimate Music Player for GNU/Linux";
-    mainProgram = "deadbeef";
     homepage = "http://deadbeef.sourceforge.net/";
-    downloadPage = "https://github.com/DeaDBeeF-Player/deadbeef";
     license = lib.licenses.gpl2;
+    maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ ];
+
+    mainProgram = "deadbeef";
+    downloadPage = "https://github.com/DeaDBeeF-Player/deadbeef";
   };
 })

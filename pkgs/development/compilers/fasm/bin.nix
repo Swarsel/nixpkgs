@@ -1,10 +1,10 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  writeShellScript,
   curl,
   nix-update,
+  stdenvNoCC,
+  writeShellScript,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -46,13 +46,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "x86(-64) macro assembler to binary, MZ, PE, COFF, and ELF";
     homepage = "https://flatassembler.net/";
-    downloadPage = "https://flatassembler.net/download.php";
     license = lib.licenses.bsd2;
-    mainProgram = "fasm";
     maintainers = [ lib.maintainers.iamanaws ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "fasm";
+    downloadPage = "https://flatassembler.net/download.php";
   };
 })

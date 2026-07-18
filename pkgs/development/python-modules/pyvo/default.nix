@@ -1,11 +1,11 @@
 {
   lib,
+  astropy,
   buildPythonPackage,
   fetchPypi,
-  astropy,
   pillow,
-  pytestCheckHook,
   pytest-astropy,
+  pytestCheckHook,
   requests,
   requests-mock,
   setuptools,
@@ -15,12 +15,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyvo";
   version = "1.8.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-08xgqj00FtIsieRloE36n1IQhf3VIozOLP/S/uOp5wk=";
   };
+
+  nativeCheckInputs = [
+    pillow
+    pytestCheckHook
+    pytest-astropy
+    requests-mock
+  ];
 
   build-system = [
     setuptools
@@ -32,18 +38,12 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pillow
-    pytestCheckHook
-    pytest-astropy
-    requests-mock
-  ];
-
   disabledTestPaths = [
     # touches network
     "pyvo/dal/tests/test_datalink.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyvo" ];
 
   meta = {

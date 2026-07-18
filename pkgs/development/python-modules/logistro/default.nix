@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "logistro";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "geopozo";
@@ -28,15 +25,16 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'dynamic = ["version"]' 'version = "${finalAttrs.version}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "logistro" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Wrapper for logging";

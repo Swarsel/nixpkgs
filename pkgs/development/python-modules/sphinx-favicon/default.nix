@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  beautifulsoup4,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   sphinx,
-  pytestCheckHook,
-  beautifulsoup4,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-favicon";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tcmetzger";
@@ -19,14 +18,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-8zKG145BttlE8HYJ0H8O762TYC9KeIO8L9UfgNDs+i8=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    sphinx
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -36,11 +27,20 @@ buildPythonPackage rec {
     beautifulsoup4
   ];
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    sphinx
+  ];
+
   disabledTests = [
     # requires network to download favicons
     "test_list_of_three_icons_automated_values"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_favicon" ];
 
   meta = {

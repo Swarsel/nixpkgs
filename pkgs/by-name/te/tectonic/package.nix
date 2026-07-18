@@ -1,24 +1,16 @@
 {
   lib,
+  biber-for-tectonic,
+  callPackage,
+  makeBinaryWrapper,
   symlinkJoin,
   tectonic-unwrapped,
-  biber-for-tectonic,
-  makeBinaryWrapper,
-  callPackage,
 }:
 
 symlinkJoin {
   inherit (tectonic-unwrapped) version;
   pname = "${tectonic-unwrapped.pname}-wrapped";
-  paths = [ tectonic-unwrapped ];
-
   nativeBuildInputs = [ makeBinaryWrapper ];
-
-  passthru = {
-    unwrapped = tectonic-unwrapped;
-    biber = biber-for-tectonic;
-    tests = callPackage ./tests.nix { };
-  };
 
   # Replace the unwrapped tectonic with the one wrapping it with biber
   postBuild = ''
@@ -44,8 +36,17 @@ symlinkJoin {
     ln -s $out/bin/tectonic $out/bin/nextonic
   '';
 
+  paths = [ tectonic-unwrapped ];
+
+  passthru = {
+    biber = biber-for-tectonic;
+    tests = callPackage ./tests.nix { };
+    unwrapped = tectonic-unwrapped;
+  };
+
   meta = tectonic-unwrapped.meta // {
     description = "TeX/LaTeX engine, wrapped with a compatible biber";
+
     maintainers = with lib.maintainers; [
       doronbehar
       bryango

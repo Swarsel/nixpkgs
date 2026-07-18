@@ -2,28 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pyserial,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "modbus-tk";
   version = "1.1.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "modbus_tk";
     inherit version;
     hash = "sha256-d6cqOtnV0yodIRC8BCFmgMpX11IpEuDycem/XxtwGzY=";
+    pname = "modbus_tk";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ pyserial ];
 
   # Source no tagged anymore and PyPI doesn't ship tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pyserial ];
+  pyproject = true;
   pythonImportsCheck = [ "modbus_tk" ];
 
   meta = {

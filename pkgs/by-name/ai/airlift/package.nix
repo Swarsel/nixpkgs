@@ -1,16 +1,15 @@
 {
   lib,
-  python3,
-  fetchPypi,
-  kubernetes-helm,
-  kind,
   docker,
+  fetchPypi,
+  kind,
+  kubernetes-helm,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
 
   pname = "airlift";
-  pyproject = true;
   version = "0.4.0";
 
   src = fetchPypi {
@@ -21,10 +20,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   postPatch = ''
     sed -i '/argparse/d' pyproject.toml
   '';
-
-  pythonRelaxDeps = [
-    "hiyapyco"
-  ];
 
   nativeBuildInputs = [
     python3.pkgs.poetry-core
@@ -44,14 +39,22 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     dotmap
     requests
   ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "airlift"
   ];
+
+  pythonRelaxDeps = [
+    "hiyapyco"
+  ];
+
   meta = {
     description = "Flexible, configuration driven CLI for Apache Airflow local development";
     homepage = "https://github.com/jl178/airlift";
-    license = lib.licenses.mit;
     changelog = "https://github.com/jl178/airlift/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jl178 ];
     mainProgram = "airlift";
   };

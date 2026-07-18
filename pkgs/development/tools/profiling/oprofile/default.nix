@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  pkg-config,
+  buildPackages,
   libbfd,
+  libiberty_static,
+  linuxHeaders,
+  pkg-config,
   popt,
   zlib,
-  linuxHeaders,
-  libiberty_static,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libbfd
     zlib
@@ -48,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "System-wide profiler for Linux";
+
     longDescription = ''
       OProfile is a system-wide profiler for Linux systems, capable of
       profiling all running code at low overhead.  It consists of a
@@ -60,10 +62,10 @@ stdenv.mkDerivation (finalAttrs: {
       is profiled: hardware and software interrupt handlers, kernel
       modules, the kernel, shared libraries, and applications.
     '';
-    license = lib.licenses.gpl2;
-    homepage = "http://oprofile.sourceforge.net/";
 
-    platforms = lib.platforms.linux;
+    homepage = "http://oprofile.sourceforge.net/";
+    license = lib.licenses.gpl2;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

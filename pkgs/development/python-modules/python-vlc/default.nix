@@ -2,20 +2,19 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   libvlc,
   replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-vlc";
   version = "3.0.21203";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_vlc";
     inherit version;
     hash = "sha256-UtBUSydrEeWLbAt0jD4FGPlPdLG0zTKMg6WerKvq0ew=";
+    pname = "python_vlc";
   };
 
   patches = [
@@ -25,11 +24,10 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ setuptools ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "vlc" ];
 
   meta = {

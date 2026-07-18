@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-mEeuTyNjyuCdRlvJkMPVSplbNL9KXPgX+F1FNdKTvQU=";
-
   doCheck = false;
 
   ldflags = [
@@ -26,10 +25,10 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    license = lib.licenses.mit;
-    homepage = "https://github.com/mroth/bump";
     description = "CLI tool to draft a GitHub Release for the next semantic version";
-    mainProgram = "bump";
+    homepage = "https://github.com/mroth/bump";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ doronbehar ];
+    mainProgram = "bump";
   };
 })

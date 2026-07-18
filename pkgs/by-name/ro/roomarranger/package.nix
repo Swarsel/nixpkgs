@@ -1,36 +1,38 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoPatchelfHook,
   copyDesktopItems,
-  fetchurl,
   gtk3,
-  lib,
   makeDesktopItem,
   qt6,
-  stdenv,
 }:
 
 let
   version = "10.3.4";
 
   desktopItem = makeDesktopItem {
-    type = "Application";
-    exec = "roomarranger";
-    name = "roomarranger";
+    categories = [ "Graphics" ];
     desktopName = "Room Arranger";
+    exec = "roomarranger";
     genericName = "Design your room, office, apartment or house, plan gardens and more...";
     icon = "roomarranger-icon";
-    terminal = false;
-    categories = [ "Graphics" ];
+
     mimeTypes = [
       "application/com.roomarranger.project"
       "application/com.roomarranger.object"
     ];
+
+    name = "roomarranger";
+    terminal = false;
+    type = "Application";
   };
 in
 
 stdenv.mkDerivation {
-  pname = "roomarranger";
   inherit version;
+  pname = "roomarranger";
 
   src = fetchurl {
     url = "https://f000.backblazeb2.com/file/rooarr/rooarr${lib.versions.major version}${lib.versions.minor version}${lib.versions.patch version}-linux64.tar.gz";
@@ -77,20 +79,24 @@ stdenv.mkDerivation {
 
   meta = {
     description = "3D room planning software";
+
     longDescription = ''
       Room Arranger is a 3D room / apartment / floor planner with a simple user interface.
       Free for 30 days. Updates are free.
 
       Note: This package uses XCB (X11) for rendering. On Wayland compositors, it will run via XWayland.
     '';
+
     homepage = "https://www.roomarranger.com/";
     changelog = "https://www.roomarranger.com/whatsnew.txt";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ bellackn ];
-    mainProgram = "roomarranger";
+
     sourceProvenance = [
       lib.sourceTypes.binaryNativeCode
     ];
+
+    maintainers = with lib.maintainers; [ bellackn ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "roomarranger";
   };
 }

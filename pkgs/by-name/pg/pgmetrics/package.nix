@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-LphlFl56M8G3kncnj66u1CixgBTLvDBtWqXtUjHDY14=";
-
   doCheck = false;
 
   ldflags = [
@@ -26,8 +25,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://pgmetrics.io/";
     description = "Collect and display information and stats from a running PostgreSQL server";
+    homepage = "https://pgmetrics.io/";
     license = lib.licenses.asl20;
     maintainers = [ ];
     mainProgram = "pgmetrics";

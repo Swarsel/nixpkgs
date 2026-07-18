@@ -1,15 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "lean-lsp-mcp";
   version = "0.26.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "oOo0oOo";
@@ -18,6 +15,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-NWX+r6hz04WnSkERqVj57ruw47RhqOeEofYUaxuU/uM=";
   };
 
+  # Tests require a real Lean toolchain
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -27,15 +27,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     certifi
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "lean_lsp_mcp" ];
+
   pythonRelaxDeps = [
     "mcp"
     "leanclient"
   ];
-
-  # Tests require a real Lean toolchain
-  doCheck = false;
-
-  pythonImportsCheck = [ "lean_lsp_mcp" ];
 
   meta = {
     description = "MCP server for the Lean theorem prover via the Lean LSP";

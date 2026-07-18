@@ -1,33 +1,26 @@
 {
   lib,
   buildPythonPackage,
+  docutils,
   fetchPypi,
   hatchling,
   mmcif-pdbx,
   numpy,
-  propka,
-  requests,
-  docutils,
-  pytestCheckHook,
   pandas,
+  propka,
+  pytestCheckHook,
+  requests,
   testfixtures,
 }:
 
 buildPythonPackage rec {
   pname = "pdb2pqr";
   version = "3.7.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-BbXEZAIqOtEclZfG/H9wxWBhxGabFJelGVjakNlZFS8=";
   };
-
-  pythonRelaxDeps = [ "docutils" ];
-
-  build-system = [
-    hatchling
-  ];
 
   propagatedBuildInputs = [
     mmcif-pdbx
@@ -43,6 +36,10 @@ buildPythonPackage rec {
     testfixtures
   ];
 
+  build-system = [
+    hatchling
+  ];
+
   disabledTests = [
     # these tests have network access
     "test_short_pdb"
@@ -55,7 +52,9 @@ buildPythonPackage rec {
     "test_basic"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pdb2pqr" ];
+  pythonRelaxDeps = [ "docutils" ];
 
   meta = {
     description = "Software for determining titration states, adding missing atoms, and assigning charges/radii to biomolecules";

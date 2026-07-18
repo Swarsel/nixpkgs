@@ -1,24 +1,17 @@
 {
   lib,
-  tmux,
-  hexdump,
   fetchFromGitHub,
+  hexdump,
   installShellFiles,
   nix-update-script,
   runtimeShell,
   rustPlatform,
+  tmux,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "skim";
   version = "5.1.0";
-  __structuredAttrs = true;
-
-  outputs = [
-    "out"
-    "man"
-    "vim"
-  ];
 
   src = fetchFromGitHub {
     owner = "skim-rs";
@@ -27,18 +20,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-AB/73sU02/DHV/bnQXpBqmzmGy+roXyIWd4BnN6GWGw=";
   };
 
+  outputs = [
+    "out"
+    "man"
+    "vim"
+  ];
+
   postPatch = ''
     substituteInPlace plugin/skim.vim \
       --replace-fail "expand('<sfile>:h:h')" "'$out'"
   '';
 
-  cargoHash = "sha256-tPNAwaefZrwhH7AoQnAkQYQUfKOKWMehHHeoUf7i4yE=";
-
   nativeBuildInputs = [ installShellFiles ];
-  nativeCheckInputs = [
-    tmux
-    hexdump
-  ];
+  cargoHash = "sha256-tPNAwaefZrwhH7AoQnAkQYQUfKOKWMehHHeoUf7i4yE=";
 
   postBuild = ''
     cat <<SCRIPT > sk-share
@@ -47,6 +41,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # integration scripts are living.
     echo $out/share/skim
     SCRIPT
+  '';
+
+  nativeCheckInputs = [
+    tmux
+    hexdump
+  ];
+
+  checkPhase = ''
+    cargo nextest run --release --offline --lib --bins --examples --tests
   '';
 
   postInstall = ''
@@ -63,18 +66,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh shell/completion.zsh
   '';
 
-  useNextest = true;
-
-  checkPhase = ''
-    cargo nextest run --release --offline --lib --bins --examples --tests
-  '';
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  useNextest = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -85,11 +85,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/skim-rs/skim";
     changelog = "https://github.com/skim-rs/skim/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dywedir
       getchoo
       krovuxdev
     ];
+
     mainProgram = "sk";
   };
 })

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "cansina";
   version = "0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deibit";
@@ -24,6 +23,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     asciitree
     requests
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "cansina"

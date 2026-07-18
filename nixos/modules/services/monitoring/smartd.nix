@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -80,17 +80,17 @@ let
 
       options = {
 
-        device = lib.mkOption {
-          example = "/dev/sda";
-          type = lib.types.str;
-          description = "Location of the device.";
-        };
-
         options = lib.mkOption {
           default = "";
+          description = "Options that determine how smartd monitors the device.";
           example = "-d sat";
           type = lib.types.separatedString " ";
-          description = "Options that determine how smartd monitors the device.";
+        };
+
+        device = lib.mkOption {
+          description = "Location of the device.";
+          example = "/dev/sda";
+          type = lib.types.str;
         };
 
       };
@@ -110,7 +110,7 @@ in
 
       autodetect = lib.mkOption {
         default = true;
-        type = lib.types.bool;
+
         description = ''
           Whenever smartd should monitor all devices connected to the
           machine at the time it's being started (the default).
@@ -118,117 +118,26 @@ in
           Set to false to monitor the devices listed in
           {option}`services.smartd.devices` only.
         '';
-      };
 
-      extraOptions = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.str;
-        example = [
-          "-A /var/log/smartd/"
-          "--interval=3600"
-        ];
-        description = ''
-          Extra command-line options passed to the `smartd`
-          daemon on startup.
-
-          (See `man 8 smartd`.)
-        '';
-      };
-
-      notifications = {
-
-        mail = {
-          enable = lib.mkOption {
-            default = config.services.mail.sendmailSetuidWrapper != null;
-            defaultText = lib.literalExpression "config.services.mail.sendmailSetuidWrapper != null";
-            type = lib.types.bool;
-            description = "Whenever to send e-mail notifications.";
-          };
-
-          sender = lib.mkOption {
-            default = "root";
-            example = "example@domain.tld";
-            type = lib.types.str;
-            description = ''
-              Sender of the notification messages.
-              Acts as the value of `email` in the emails' `From: ...` field.
-            '';
-          };
-
-          recipient = lib.mkOption {
-            default = "root";
-            type = lib.types.str;
-            description = "Recipient of the notification messages.";
-          };
-
-          mailer = lib.mkOption {
-            default = "/run/wrappers/bin/sendmail";
-            type = lib.types.path;
-            description = ''
-              Sendmail-compatible binary to be used to send the messages.
-
-              You should probably enable
-              {option}`services.postfix` or some other MTA for
-              this to work.
-            '';
-          };
-        };
-
-        systembus-notify = {
-          enable = lib.mkOption {
-            default = false;
-            type = lib.types.bool;
-            description = ''
-              Whenever to send systembus-notify notifications.
-
-              WARNING: enabling this option (while convenient) should *not* be done on a
-              machine where you do not trust the other users as it allows any other
-              local user to DoS your session by spamming notifications.
-
-              To actually see the notifications in your GUI session, you need to have
-              `systembus-notify` running as your user, which this
-              option handles by enabling {option}`services.systembus-notify`.
-            '';
-          };
-        };
-
-        wall = {
-          enable = lib.mkOption {
-            default = true;
-            type = lib.types.bool;
-            description = "Whenever to send wall notifications to all users.";
-          };
-        };
-
-        x11 = {
-          enable = lib.mkOption {
-            default = config.services.xserver.enable;
-            defaultText = lib.literalExpression "config.services.xserver.enable";
-            type = lib.types.bool;
-            description = "Whenever to send X11 xmessage notifications.";
-          };
-
-          display = lib.mkOption {
-            default = ":${toString config.services.xserver.display}";
-            defaultText = lib.literalExpression ''":''${toString config.services.xserver.display}"'';
-            type = lib.types.str;
-            description = "DISPLAY to send X11 notifications to.";
-          };
-        };
-
-        test = lib.mkOption {
-          default = false;
-          type = lib.types.bool;
-          description = "Whenever to send a test notification on startup.";
-        };
-
+        type = lib.types.bool;
       };
 
       defaults = {
+        autodetected = lib.mkOption {
+          default = cfg.defaults.monitored;
+          defaultText = lib.literalExpression "config.${opt.defaults.monitored}";
+
+          description = ''
+            Like {option}`services.smartd.defaults.monitored`, but for the
+            autodetected devices.
+          '';
+
+          type = lib.types.separatedString " ";
+        };
+
         monitored = lib.mkOption {
           default = "-a";
-          type = lib.types.separatedString " ";
-          example = "-a -o on -s (S/../.././02|L/../../7/04)";
+
           description = ''
             Common default options for explicitly monitored (listed in
             {option}`services.smartd.devices`) devices.
@@ -240,30 +149,138 @@ in
             startup, and schedules short self-tests daily, and long
             self-tests weekly.
           '';
-        };
 
-        autodetected = lib.mkOption {
-          default = cfg.defaults.monitored;
-          defaultText = lib.literalExpression "config.${opt.defaults.monitored}";
+          example = "-a -o on -s (S/../.././02|L/../../7/04)";
           type = lib.types.separatedString " ";
-          description = ''
-            Like {option}`services.smartd.defaults.monitored`, but for the
-            autodetected devices.
-          '';
         };
       };
 
       devices = lib.mkOption {
         default = [ ];
+        description = "List of devices to monitor.";
+
         example = [
           { device = "/dev/sda"; }
           {
-            device = "/dev/sdb";
             options = "-d sat";
+            device = "/dev/sdb";
           }
         ];
+
         type = with lib.types; listOf (submodule smartdDeviceOpts);
-        description = "List of devices to monitor.";
+      };
+
+      extraOptions = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Extra command-line options passed to the `smartd`
+          daemon on startup.
+
+          (See `man 8 smartd`.)
+        '';
+
+        example = [
+          "-A /var/log/smartd/"
+          "--interval=3600"
+        ];
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      notifications = {
+
+        mail = {
+          enable = lib.mkOption {
+            default = config.services.mail.sendmailSetuidWrapper != null;
+            defaultText = lib.literalExpression "config.services.mail.sendmailSetuidWrapper != null";
+            description = "Whenever to send e-mail notifications.";
+            type = lib.types.bool;
+          };
+
+          mailer = lib.mkOption {
+            default = "/run/wrappers/bin/sendmail";
+
+            description = ''
+              Sendmail-compatible binary to be used to send the messages.
+
+              You should probably enable
+              {option}`services.postfix` or some other MTA for
+              this to work.
+            '';
+
+            type = lib.types.path;
+          };
+
+          recipient = lib.mkOption {
+            default = "root";
+            description = "Recipient of the notification messages.";
+            type = lib.types.str;
+          };
+
+          sender = lib.mkOption {
+            default = "root";
+
+            description = ''
+              Sender of the notification messages.
+              Acts as the value of `email` in the emails' `From: ...` field.
+            '';
+
+            example = "example@domain.tld";
+            type = lib.types.str;
+          };
+        };
+
+        systembus-notify = {
+          enable = lib.mkOption {
+            default = false;
+
+            description = ''
+              Whenever to send systembus-notify notifications.
+
+              WARNING: enabling this option (while convenient) should *not* be done on a
+              machine where you do not trust the other users as it allows any other
+              local user to DoS your session by spamming notifications.
+
+              To actually see the notifications in your GUI session, you need to have
+              `systembus-notify` running as your user, which this
+              option handles by enabling {option}`services.systembus-notify`.
+            '';
+
+            type = lib.types.bool;
+          };
+        };
+
+        test = lib.mkOption {
+          default = false;
+          description = "Whenever to send a test notification on startup.";
+          type = lib.types.bool;
+        };
+
+        wall = {
+          enable = lib.mkOption {
+            default = true;
+            description = "Whenever to send wall notifications to all users.";
+            type = lib.types.bool;
+          };
+        };
+
+        x11 = {
+          enable = lib.mkOption {
+            default = config.services.xserver.enable;
+            defaultText = lib.literalExpression "config.services.xserver.enable";
+            description = "Whenever to send X11 xmessage notifications.";
+            type = lib.types.bool;
+          };
+
+          display = lib.mkOption {
+            default = ":${toString config.services.xserver.display}";
+            defaultText = lib.literalExpression ''":''${toString config.services.xserver.display}"'';
+            description = "DISPLAY to send X11 notifications to.";
+            type = lib.types.str;
+          };
+        };
+
       };
 
     };
@@ -281,16 +298,18 @@ in
       }
     ];
 
+    services.systembus-notify.enable = lib.mkDefault ns.enable;
+
     systemd.services.smartd = {
       description = "S.M.A.R.T. Daemon";
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "notify";
-        ExecStart = "${pkgs.smartmontools}/sbin/smartd ${lib.concatStringsSep " " cfg.extraOptions} --no-fork --configfile=${smartdConf}";
-      };
-    };
 
-    services.systembus-notify.enable = lib.mkDefault ns.enable;
+      serviceConfig = {
+        ExecStart = "${pkgs.smartmontools}/sbin/smartd ${lib.concatStringsSep " " cfg.extraOptions} --no-fork --configfile=${smartdConf}";
+        Type = "notify";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
 
   };
 

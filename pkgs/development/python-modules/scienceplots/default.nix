@@ -2,27 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   matplotlib,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "SciencePlots";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-2NGX40EPh+va0LnCZeqrWWCU+wgtlxI+g19rwygAq1Q=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ matplotlib ];
-
-  pythonImportsCheck = [ "scienceplots" ];
-
   doCheck = false; # no tests
+  build-system = [ setuptools ];
+  dependencies = [ matplotlib ];
+  pyproject = true;
+  pythonImportsCheck = [ "scienceplots" ];
 
   meta = {
     description = "Matplotlib styles for scientific plotting";

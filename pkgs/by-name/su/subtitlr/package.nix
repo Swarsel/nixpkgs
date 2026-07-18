@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,16 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-PbeQzNkFj4eSg/zhk8bXij36DvJ9+g22kF5TqdX5O04=";
   };
 
-  vendorHash = "sha256-ZgJCk9vbbQ0dcYSdKm0Cbw2AmwjpMvGb5zJkgbD+xig=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-ZgJCk9vbbQ0dcYSdKm0Cbw2AmwjpMvGb5zJkgbD+xig=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd Subtitlr \
@@ -34,6 +29,11 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/Subtitlr completion fish) \
       --zsh <($out/bin/Subtitlr completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "This application, a subtitle generator for YouTube, utilizes OpenAI's Whisper API";

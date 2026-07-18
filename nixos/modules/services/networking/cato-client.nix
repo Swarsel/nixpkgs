@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -16,27 +16,35 @@ in
   };
 
   config = mkIf cfg.enable {
-    users = {
-      groups.cato-client = { };
-    };
-
     environment.systemPackages = [
       cfg.package
     ];
 
+    # set up Security wrapper Same as intended in deb post install
+    security.wrappers.cato-clientd = {
+      group = "cato-client";
+      owner = "root";
+      permissions = "u+rwx,g+rwx"; # 770
+      setgid = true;
+      source = "${cfg.package}/bin/cato-clientd";
+    };
+
+    security.wrappers.cato-sdp = {
+      group = "cato-client";
+      owner = "root";
+      permissions = "u+rwx,g+rx,a+rx"; # 755
+      setgid = true;
+      source = "${cfg.package}/bin/cato-sdp";
+    };
+
     systemd.services.cato-client = {
       enable = true;
-      description = "Cato Networks Linux client - connects tunnel to Cato cloud";
       after = [ "network.target" ];
+      description = "Cato Networks Linux client - connects tunnel to Cato cloud";
 
       serviceConfig = {
-        Type = "simple";
-        User = "root"; # Note: daemon runs as root, tools sticky to group
-        Group = "cato-client";
         ExecStart = "${cfg.package}/bin/cato-clientd systemd";
-        WorkingDirectory = "${cfg.package}";
-        Restart = "always";
-
+        Group = "cato-client";
         # Cato client seems to do the following:
         # - Look in each user's ~/.cato/ for configuration and keys
         # - Write to /var/log/cato-client.log
@@ -44,32 +52,22 @@ in
         # - Read and Write to /opt/cato/ for runtime settings
         # - Read /etc/systemd/resolved.conf (but fine if fails)
         # - Restart systemd-resolved (also fine if doesn't exist)
-
         NoNewPrivileges = true;
         PrivateTmp = true;
-        ProtectKernelTunables = true;
         ProtectControlGroups = true;
+        ProtectKernelTunables = true;
         ProtectSystem = true;
+        Restart = "always";
+        Type = "simple";
+        User = "root"; # Note: daemon runs as root, tools sticky to group
+        WorkingDirectory = "${cfg.package}";
       };
 
       wantedBy = [ "multi-user.target" ];
     };
 
-    # set up Security wrapper Same as intended in deb post install
-    security.wrappers.cato-clientd = {
-      source = "${cfg.package}/bin/cato-clientd";
-      owner = "root";
-      group = "cato-client";
-      permissions = "u+rwx,g+rwx"; # 770
-      setgid = true;
-    };
-
-    security.wrappers.cato-sdp = {
-      source = "${cfg.package}/bin/cato-sdp";
-      owner = "root";
-      group = "cato-client";
-      permissions = "u+rwx,g+rx,a+rx"; # 755
-      setgid = true;
+    users = {
+      groups.cato-client = { };
     };
   };
 }

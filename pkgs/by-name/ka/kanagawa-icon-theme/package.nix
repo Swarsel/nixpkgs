@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gtk3,
   hicolor-icon-theme,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "kanagawa-icon-theme";
@@ -24,8 +24,6 @@ stdenvNoCC.mkDerivation {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -37,6 +35,8 @@ stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontDropIconThemeCache = true;
 
   meta = {
     description = "Icon theme for the Kanagawa colour palette";

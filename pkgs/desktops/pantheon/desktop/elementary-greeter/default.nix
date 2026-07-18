@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  linkFarm,
-  replaceVars,
-  elementary-greeter,
-  pkg-config,
-  meson,
-  ninja,
-  vala,
+  dbus,
   desktop-file-utils,
-  gtk3,
-  granite,
-  libgee,
-  libhandy,
-  gala,
-  gnome-desktop,
-  gnome-settings-daemon,
-  mutter,
+  elementary-greeter,
+  elementary-gtk-theme,
   elementary-icon-theme,
   elementary-settings-daemon,
-  wingpanel-with-indicators,
-  elementary-gtk-theme,
-  nixos-artwork,
-  lightdm,
+  gala,
   gdk-pixbuf,
-  dbus,
+  gnome-desktop,
+  gnome-settings-daemon,
+  granite,
+  gtk3,
+  libgee,
+  libhandy,
+  lightdm,
+  linkFarm,
+  meson,
+  mutter,
+  ninja,
+  nix-update-script,
+  nixos-artwork,
+  pkg-config,
+  replaceVars,
+  vala,
   wayland-scanner,
+  wingpanel-with-indicators,
   wrapGAppsHook3,
 }:
 
@@ -51,8 +51,6 @@ stdenv.mkDerivation {
       default_wallpaper = "${nixos-artwork.wallpapers.simple-dark-gray.gnomeFilePath}";
     })
   ];
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -111,13 +109,15 @@ stdenv.mkDerivation {
       --replace-fail "Exec=io.elementary.greeter" "Exec=$out/bin/io.elementary.greeter"
   '';
 
+  depsBuildBuild = [ pkg-config ];
+
   passthru = {
     updateScript = nix-update-script { };
 
     xgreeters = linkFarm "pantheon-greeter-xgreeters" [
       {
-        path = "${elementary-greeter}/share/xgreeters/io.elementary.greeter.desktop";
         name = "io.elementary.greeter.desktop";
+        path = "${elementary-greeter}/share/xgreeters/io.elementary.greeter.desktop";
       }
     ];
   };
@@ -127,7 +127,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/elementary/greeter";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.greeter";
+    teams = [ lib.teams.pantheon ];
   };
 }

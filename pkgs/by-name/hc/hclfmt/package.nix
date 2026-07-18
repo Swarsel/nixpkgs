@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-5yGTuv19XyXsZcaHKXr/mYqKRufkJBaYMICFwMP/p3g=";
-
   # The code repository includes other tools which are not useful. Only build
   # hclfmt.
   subPackages = [ "cmd/hclfmt" ];
@@ -26,7 +25,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/hashicorp/hcl/tree/main/cmd/hclfmt";
     changelog = "https://github.com/hashicorp/hcl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
-    mainProgram = "hclfmt";
     maintainers = with lib.maintainers; [ zimbatm ];
+    mainProgram = "hclfmt";
   };
 })

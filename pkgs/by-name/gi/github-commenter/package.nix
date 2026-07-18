@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Command line utility for creating GitHub comments on Commits, Pull Request Reviews or Issues";
-    mainProgram = "github-commenter";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/cloudposse/github-commenter";
+    license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.mmahut ];
+    mainProgram = "github-commenter";
   };
 })

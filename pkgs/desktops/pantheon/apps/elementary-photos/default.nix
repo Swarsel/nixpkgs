@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
+  geocode-glib_2,
+  gexiv2,
+  granite,
+  gst_all_1,
   gtk3,
   libexif,
   libgee,
+  libgphoto2,
+  libgudev,
   libhandy,
   libportal-gtk3,
-  geocode-glib_2,
-  gexiv2,
-  libgphoto2,
-  granite,
-  gst_all_1,
-  libgudev,
   libraw,
-  sqlite,
   libwebp,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  sqlite,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -75,7 +75,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/photos";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.photos";
+    teams = [ lib.teams.pantheon ];
   };
 }

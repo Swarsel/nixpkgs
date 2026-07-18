@@ -1,16 +1,17 @@
 {
   mkKdeDerivation,
-  qtdeclarative,
   pkg-config,
+  qtdeclarative,
   systemd,
 }:
 mkKdeDerivation {
   pname = "kjournald";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtdeclarative
     systemd
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
   meta.mainProgram = "kjournaldbrowser";
 }

@@ -2,72 +2,72 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  replaceVars,
-  meson,
-  nasm,
-  ninja,
-  pkg-config,
-  python3,
-  gst-plugins-base,
-  orc,
-  bzip2,
-  gettext,
-  libGL,
-  libv4l,
-  libdv,
-  libavc1394,
-  libiec61883,
-  libvpx,
-  libdrm,
-  speex,
-  opencore-amr,
-  flac,
-  taglib,
-  libshout,
-  cairo,
-  gdk-pixbuf,
   aalib,
-  libcaca,
-  libsoup_3,
-  libpulseaudio,
-  libintl,
-  libxml2,
-  lame,
-  mpg123,
-  twolame,
-  gtkSupport ? false,
-  gtk3,
-  qt5Support ? false,
-  qt5,
-  qt6Support ? false,
-  qt6,
-  raspiCameraSupport ? false,
-  libraspberrypi,
-  enableJack ? true,
-  libjack2,
-  enableX11 ? stdenv.hostPlatform.isLinux,
-  libxtst,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  ncurses,
-  enableWayland ? stdenv.hostPlatform.isLinux,
-  wayland,
-  wayland-protocols,
-  libgudev,
-  wavpack,
-  glib,
-  openssl,
-  # Checks meson.is_cross_build(), so even canExecute isn't enough.
-  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
-  hotdoc,
-  gst-plugins-good,
-  directoryListingUpdater,
   apple-sdk_gstreamer,
+  bzip2,
+  cairo,
+  directoryListingUpdater,
+  fetchpatch,
+  flac,
+  gdk-pixbuf,
+  gettext,
+  glib,
+  gst-plugins-base,
+  gst-plugins-good,
+  gtk3,
+  hotdoc,
+  lame,
+  libGL,
+  libavc1394,
+  libcaca,
+  libdrm,
+  libdv,
+  libgudev,
+  libiec61883,
+  libintl,
+  libjack2,
+  libpulseaudio,
+  libraspberrypi,
+  libshout,
+  libsoup_3,
+  libv4l,
+  libvpx,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxml2,
+  libxtst,
   # TODO: Clean up on `staging`
   llvmPackages,
+  meson,
+  mpg123,
+  nasm,
+  ncurses,
+  ninja,
+  opencore-amr,
+  openssl,
+  orc,
+  pkg-config,
+  python3,
+  qt5,
+  qt6,
+  replaceVars,
+  speex,
+  taglib,
+  twolame,
+  wavpack,
+  wayland,
+  wayland-protocols,
+  # Checks meson.is_cross_build(), so even canExecute isn't enough.
+  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
+  enableJack ? true,
+  enableWayland ? stdenv.hostPlatform.isLinux,
+  enableX11 ? stdenv.hostPlatform.isLinux,
+  gtkSupport ? false,
+  qt5Support ? false,
+  qt6Support ? false,
+  raspiCameraSupport ? false,
 }:
 
 let
@@ -82,15 +82,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gst-plugins-good";
   version = "1.28.4";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-${finalAttrs.version}.tar.xz";
     hash = "sha256-yCXqc3xZzqDkoMQdojiARf9d0y0WIiCsk6eoLuSgTmE=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # dlopen libsoup_3 with an absolute path
@@ -99,12 +99,13 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
-  separateDebugInfo = true;
+  postPatch = ''
+    patchShebangs \
+      scripts/extract-release-date-from-doap-file.py \
+      ext/qt6/qsb-wrapper.py
+  '';
 
-  __structuredAttrs = true;
   strictDeps = true;
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     pkg-config
@@ -260,12 +261,6 @@ stdenv.mkDerivation (finalAttrs: {
       ]
   );
 
-  postPatch = ''
-    patchShebangs \
-      scripts/extract-release-date-from-doap-file.py \
-      ext/qt6/qsb-wrapper.py
-  '';
-
   env = {
     NIX_LDFLAGS =
       # linking error on Darwin
@@ -283,21 +278,26 @@ stdenv.mkDerivation (finalAttrs: {
   # fails 1 tests with "Unexpected critical/warning: g_object_set_is_valid_property: object class 'GstRtpStorage' has no property named ''"
   doCheck = false;
 
-  # must be explicitly set since 5590e365
-  dontWrapQtApps = true;
-
   preFixup = ''
     moveToOutput "lib/gstreamer-1.0/pkgconfig" "$dev"
   '';
+
+  __structuredAttrs = true;
+  depsBuildBuild = [ pkg-config ];
+  # must be explicitly set since 5590e365
+  dontWrapQtApps = true;
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
       gtk = gst-plugins-good.override {
         gtkSupport = true;
       };
+
       qt5 = gst-plugins-good.override {
         qt5Support = true;
       };
+
       qt6 = gst-plugins-good.override {
         qt6Support = true;
       };
@@ -313,14 +313,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GStreamer Good Plugins";
-    homepage = "https://gstreamer.freedesktop.org";
+
     longDescription = ''
       a set of plug-ins that we consider to have good quality code,
       correct functionality, our preferred license (LGPL for the plug-in
       code, LGPL or LGPL-compatible for the supporting library).
     '';
+
+    homepage = "https://gstreamer.freedesktop.org";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ tmarkus ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

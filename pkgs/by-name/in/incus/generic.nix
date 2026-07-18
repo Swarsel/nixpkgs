@@ -1,33 +1,33 @@
 {
   hash,
+  vendorHash,
+  version,
   lts ? false,
   nixUpdateExtraArgs ? [ ],
   patches ? [ ],
   rev ? null,
-  vendorHash,
-  version,
 }:
 
 {
-  callPackage,
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  fetchpatch2,
   acl,
+  buildGoModule,
   buildPackages,
+  callPackage,
   cowsql,
+  fetchpatch2,
   incus-ui-canonical,
+  installShellFiles,
   libcap,
   lxc,
+  nix-update-script,
+  nixosTests,
   pkg-config,
   sqlite,
   udev,
   udevCheckHook,
-  installShellFiles,
-  nix-update-script,
-  nixosTests,
 }:
 
 let
@@ -62,31 +62,29 @@ buildGoModule (finalAttrs: {
     version
     ;
 
+  src = fetchFromGitHub (
+    {
+      inherit hash;
+      owner = "lxc";
+      repo = "incus";
+    }
+    // (if (rev == null) then { tag = "v${version}"; } else { inherit rev; })
+  );
+
   outputs = [
     "out"
     "agent_loader"
     "doc"
   ];
 
-  src = fetchFromGitHub (
-    {
-      owner = "lxc";
-      repo = "incus";
-      inherit hash;
-    }
-    // (if (rev == null) then { tag = "v${version}"; } else { inherit rev; })
-  );
-
   patches = [ ./docs.patch ] ++ evaluatedPatches;
 
-  excludedPackages = [
-    # statically compile these
-    "cmd/incus-agent"
-    "cmd/incus-migrate"
-
-    # oidc test requires network
-    "test/mini-oidc"
-  ];
+  # add our lxc location to incus's acceptable rootFsPaths
+  # this is necessary for tmpfs/tmpfs-overlay to work
+  postPatch = ''
+    substituteInPlace internal/server/device/disk.go \
+      --replace-fail '"/opt/incus/lib/lxc/rootfs/"' '"${lxc}/lib/lxc/rootfs/"'
+  '';
 
   nativeBuildInputs = [
     installShellFiles
@@ -104,21 +102,8 @@ buildGoModule (finalAttrs: {
     udev.dev
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-  tags = [ "libsqlite3" ];
-
   # required for go-cowsql.
   env.CGO_LDFLAGS_ALLOW = "(-Wl,-wrap,pthread_create)|(-Wl,-z,now)";
-
-  # add our lxc location to incus's acceptable rootFsPaths
-  # this is necessary for tmpfs/tmpfs-overlay to work
-  postPatch = ''
-    substituteInPlace internal/server/device/disk.go \
-      --replace-fail '"/opt/incus/lib/lxc/rootfs/"' '"${lxc}/lib/lxc/rootfs/"'
-  '';
 
   postBuild = ''
     export HOME=$(mktemp -d)
@@ -162,8 +147,6 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  doInstallCheck = true;
-
   postInstall =
     lib.optionalString (stdenv.hostPlatform.canExecute stdenv.buildPlatform) ''
       installShellCompletion --cmd incus \
@@ -186,6 +169,24 @@ buildGoModule (finalAttrs: {
       cp -R doc/html $doc/
     '';
 
+  doInstallCheck = true;
+
+  excludedPackages = [
+    # statically compile these
+    "cmd/incus-agent"
+    "cmd/incus-migrate"
+
+    # oidc test requires network
+    "test/mini-oidc"
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  tags = [ "libsqlite3" ];
+
   passthru = {
     client = callPackage ./client.nix {
       inherit
@@ -194,11 +195,11 @@ buildGoModule (finalAttrs: {
         vendorHash
         version
         ;
+
       inherit (finalAttrs) meta src;
     };
 
     tests = if lts then nixosTests.incus-lts.all else nixosTests.incus.all;
-
     ui = lib.warnOnInstantiate "`incus.ui` renamed to `incus-ui-canonical`" incus-ui-canonical;
 
     updateScript = nix-update-script {
@@ -211,8 +212,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://linuxcontainers.org/incus";
     changelog = "https://github.com/lxc/incus/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.lxc ];
     platforms = lib.platforms.linux;
     mainProgram = "incus";
+    teams = [ lib.teams.lxc ];
   };
 })

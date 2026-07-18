@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
+  doxygen,
   gettext,
+  python3,
   vorbis-tools,
   xmlstarlet,
-  doxygen,
-  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     doxygen
     python3
   ];
+
   buildInputs = [ gettext ];
 
   # Build procedure requires the data folder
@@ -45,8 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://colobot.info/";
     description = "Game data for colobot";
+    homepage = "https://colobot.info/";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.linux;

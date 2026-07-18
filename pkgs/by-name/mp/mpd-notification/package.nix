@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  pkg-config,
   fetchFromGitHub,
+  discount,
+  ffmpeg,
   file,
   iniparser,
-  ffmpeg,
-  libnotify,
   libmpdclient,
-  discount,
+  libnotify,
+  pkg-config,
   systemd,
 }:
 
@@ -22,6 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-1xTIqJtTz7vfg34JvlwNe6kNZuPfd3KnAT0rI8ZYk2U=";
   };
+
+  postPatch = ''
+    substituteInPlace systemd/mpd-notification.service --replace /usr $out
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -49,18 +53,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  postPatch = ''
-    substituteInPlace systemd/mpd-notification.service --replace /usr $out
-  '';
-
   meta = {
     description = "Notifications for mpd";
     homepage = "https://github.com/eworm-de/mpd-notification";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       CaitlinDavitt
       matthiasbeyer
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "mpd-notification";
   };

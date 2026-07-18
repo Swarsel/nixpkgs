@@ -20,14 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ go-crx3 ];
 
-  unpackPhase = ''
-    unpackDir="src"
-    cp "$src" "$unpackDir".crx # go-crx3 doesn't like .crx3 extensions
-    crx3 unpack "$unpackDir".crx
-
-    cd "$unpackDir"
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -38,7 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.updateScript = ./update-x86_64.py;
+  unpackPhase = ''
+    unpackDir="src"
+    cp "$src" "$unpackDir".crx # go-crx3 doesn't like .crx3 extensions
+    crx3 unpack "$unpackDir".crx
 
+    cd "$unpackDir"
+  '';
+
+  passthru.updateScript = ./update-x86_64.py;
   meta = import ./meta.nix lib;
 })

@@ -8,17 +8,18 @@
 buildPythonPackage rec {
   pname = "py-deviceid";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "py_deviceid";
     inherit version;
     hash = "sha256-w+dXetojZm5/OeaTcN/ap2/p3nnAJjU3bWqgIpv6MOM=";
+    pname = "py_deviceid";
   };
 
   build-system = [
     setuptools
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "deviceid"

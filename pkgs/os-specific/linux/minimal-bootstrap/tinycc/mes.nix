@@ -18,8 +18,8 @@ let
   rev = "cb41cbfe717e4c00d7bb70035cda5ee5f0ff9341";
 
   tarball = fetchurl {
-    url = "https://repo.or.cz/tinycc.git/snapshot/${rev}.tar.gz";
     hash = "sha256-MRuqq3TKcfIahtUWdhAcYhqDiGPkAjS8UTMsDE+/jGU=";
+    url = "https://repo.or.cz/tinycc.git/snapshot/${rev}.tar.gz";
   };
   src =
     (kaem.runCommand "tinycc-${version}-source" { } ''
@@ -43,11 +43,13 @@ let
     description = "Small, fast, and embeddable C compiler and interpreter";
     homepage = "https://repo.or.cz/w/tinycc.git";
     license = lib.licenses.lgpl21Only;
-    teams = [ lib.teams.minimal-bootstrap ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    teams = [ lib.teams.minimal-bootstrap ];
   };
 
   config_h = builtins.toFile "config_tccdefs.h" ''
@@ -65,9 +67,9 @@ let
   '';
 
   tinycc-mes-boot = buildTinyccMes {
-    pname = "tinycc-mes-boot";
     inherit src version meta;
-    prev = tinycc-bootstrappable;
+    pname = "tinycc-mes-boot";
+
     buildOptions = [
       "-D HAVE_BITFIELD=1"
       "-D HAVE_FLOAT=1"
@@ -77,14 +79,7 @@ let
       "-I ${tccdefs}"
       "-D CONFIG_TCC_SEMLOCK=0"
     ];
-    libtccSources = [
-      "${src}/lib/libtcc1.c"
-      "${src}/lib/alloca.S"
-    ];
-    libtccObjects = [
-      "libtcc1.o"
-      "alloca.o"
-    ];
+
     libtccBuildOptions = [
       "-D HAVE_FLOAT=1"
       "-D HAVE_LONG_LONG=1"
@@ -92,12 +87,24 @@ let
       "-I ${tccdefs}"
       "-D CONFIG_TCC_SEMLOCK=0"
     ];
+
+    libtccObjects = [
+      "libtcc1.o"
+      "alloca.o"
+    ];
+
+    libtccSources = [
+      "${src}/lib/libtcc1.c"
+      "${src}/lib/alloca.S"
+    ];
+
+    prev = tinycc-bootstrappable;
   };
 in
 buildTinyccMes {
-  pname = "tinycc-mes";
   inherit src version meta;
-  prev = tinycc-mes-boot;
+  pname = "tinycc-mes";
+
   buildOptions = [
     "-std=c99"
     "-D HAVE_BITFIELD=1"
@@ -108,14 +115,7 @@ buildTinyccMes {
     "-I ${tccdefs}"
     "-D CONFIG_TCC_SEMLOCK=0"
   ];
-  libtccSources = [
-    "${src}/lib/libtcc1.c"
-    "${src}/lib/alloca.S"
-  ];
-  libtccObjects = [
-    "libtcc1.o"
-    "alloca.o"
-  ];
+
   libtccBuildOptions = [
     "-D HAVE_FLOAT=1"
     "-D HAVE_LONG_LONG=1"
@@ -123,4 +123,16 @@ buildTinyccMes {
     "-I ${tccdefs}"
     "-D CONFIG_TCC_SEMLOCK=0"
   ];
+
+  libtccObjects = [
+    "libtcc1.o"
+    "alloca.o"
+  ];
+
+  libtccSources = [
+    "${src}/lib/libtcc1.c"
+    "${src}/lib/alloca.S"
+  ];
+
+  prev = tinycc-mes-boot;
 }

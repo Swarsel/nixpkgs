@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bun,
   curl,
-  fetchFromGitHub,
   makeWrapper,
   writableTmpDirAsHomeHook,
 }:
@@ -12,9 +12,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "kulala-core";
   version = "0.28.1";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "mistweaverco";
     repo = "kulala-core";
@@ -22,56 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8NG9Qw7hJwiMb2iU8WbtEGVv1+Z3P0dQR3b1Nrwwn80=";
   };
 
-  node_modules = stdenv.mkDerivation {
-    pname = "${finalAttrs.pname}-node_modules";
-    inherit (finalAttrs) version src;
-
-    strictDeps = true;
-    __structuredAttrs = true;
-
-    nativeBuildInputs = [
-      bun
-      writableTmpDirAsHomeHook
-    ];
-
-    dontConfigure = true;
-
-    buildPhase = ''
-      runHook preBuild
-
-      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
-      bun install \
-        --cpu="*" \
-        --frozen-lockfile \
-        --ignore-scripts \
-        --no-progress \
-        --os="*"
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out
-      cp -R node_modules $out/
-
-      runHook postInstall
-    '';
-
-    dontFixup = true;
-
-    outputHash = "sha256-jvl3eJvweE7ZTcOaa9qTe9UwGzouK+6WUREkgRhYJfc=";
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     bun
     makeWrapper
   ];
-
-  dontConfigure = true;
 
   buildPhase = ''
     runHook preBuild
@@ -102,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -115,12 +69,56 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __structuredAttrs = true;
+  dontConfigure = true;
+
+  node_modules = stdenv.mkDerivation {
+    inherit (finalAttrs) version src;
+    pname = "${finalAttrs.pname}-node_modules";
+    strictDeps = true;
+
+    nativeBuildInputs = [
+      bun
+      writableTmpDirAsHomeHook
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
+      bun install \
+        --cpu="*" \
+        --frozen-lockfile \
+        --ignore-scripts \
+        --no-progress \
+        --os="*"
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out
+      cp -R node_modules $out/
+
+      runHook postInstall
+    '';
+
+    __structuredAttrs = true;
+    dontConfigure = true;
+    dontFixup = true;
+    outputHash = "sha256-jvl3eJvweE7ZTcOaa9qTe9UwGzouK+6WUREkgRhYJfc=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
   meta = {
     description = "HTTP client library powering the Kulala toolchain";
     homepage = "https://github.com/mistweaverco/kulala-core";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ khaneliman ];
-    mainProgram = "kulala-core";
     platforms = bun.meta.platforms;
+    mainProgram = "kulala-core";
   };
 })

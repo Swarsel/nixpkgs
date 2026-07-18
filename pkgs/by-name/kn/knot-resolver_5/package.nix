@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  # native deps.
-  runCommand,
-  pkg-config,
-  meson,
-  ninja,
-  makeWrapper,
-  # build+runtime deps.
-  knot-dns,
-  luajitPackages,
-  libuv,
-  gnutls,
-  lmdb,
-  jemalloc,
-  systemdMinimal,
-  libcap_ng,
-  dns-root-data,
-  nghttp2, # optionals, in principle
-  fstrm,
-  protobufc, # more optionals
+  cacert,
   # test-only deps.
   cmocka,
+  dns-root-data,
+  fetchpatch,
+  fstrm,
+  gnutls,
+  jemalloc,
+  # build+runtime deps.
+  knot-dns,
+  libcap_ng,
+  libuv,
+  lmdb,
+  luajitPackages,
+  makeWrapper,
+  meson,
+  nghttp2, # optionals, in principle
+  ninja,
+  pkg-config,
+  protobufc, # more optionals
+  # native deps.
+  runCommand,
+  systemdMinimal,
   which,
-  cacert,
   extraFeatures ? false, # catch-all if defaults aren't enough
 }:
 let
@@ -50,10 +50,10 @@ let
 
     patches = [
       (fetchpatch {
+        excludes = [ "daemon/ratelimiting.test/tests.inc.c" ];
+        hash = "sha256-u/YQ85Jb5OxV8G3HeVPQUw0cmA+TLIDPze9mreqJGL4=";
         # https://gitlab.nic.cz/knot/knot-resolver/-/merge_requests/1772
         url = "https://gitlab.nic.cz/knot/knot-resolver/-/commit/f4eaf8e69cc9839f68b613d0be10103e05c57fe9.patch";
-        hash = "sha256-u/YQ85Jb5OxV8G3HeVPQUw0cmA+TLIDPze9mreqJGL4=";
-        excludes = [ "daemon/ratelimiting.test/tests.inc.c" ];
       })
     ];
 
@@ -83,10 +83,6 @@ let
       echo 'os.exit(77)' > daemon/lua/trust_anchors.test/bootstrap.test.lua
       sed -E '/^[[:blank:]]*test_(dstaddr|headers),?$/d' -i \
         tests/config/doh2.test.lua modules/http/http_doh.test.lua
-    '';
-
-    preConfigure = ''
-      patchShebangs scripts/
     '';
 
     nativeBuildInputs = [
@@ -132,6 +128,10 @@ let
     #"-Dextra_tests=enabled" # not suitable as in-distro tests; many deps, too.
     ;
 
+    preConfigure = ''
+      patchShebangs scripts/
+    '';
+
     postInstall = ''
       rm "$out"/lib/libkres.a
       rm "$out"/lib/knot-resolver/upgrade-4-to-5.lua # not meaningful on NixOS
@@ -140,8 +140,8 @@ let
       rm -r "$out"/lib/sysusers.d/ # ATM more likely to harm than help
     '';
 
-    __darwinAllowLocalNetworking = true;
     doInstallCheck = with stdenv; hostPlatform == buildPlatform;
+
     nativeInstallCheckInputs = [
       cmocka
       which
@@ -150,18 +150,23 @@ let
       lua.basexx
       lua.http
     ];
+
     installCheckPhase = ''
       meson test --print-errorlogs --no-suite snowflake
     '';
+
+    __darwinAllowLocalNetworking = true;
 
     meta = {
       description = "Caching validating DNS resolver, from .cz domain registry";
       homepage = "https://knot-resolver.cz";
       license = lib.licenses.gpl3Plus;
-      platforms = lib.platforms.unix;
+
       maintainers = [
         lib.maintainers.vcunat # upstream developer
       ];
+
+      platforms = lib.platforms.unix;
       mainProgram = "kresd";
     };
   });
@@ -169,7 +174,9 @@ let
   wrapped-full =
     runCommand unwrapped.name
       {
+        inherit (unwrapped) version meta;
         nativeBuildInputs = [ makeWrapper ];
+
         buildInputs = with luajitPackages; [
           # For http module, prefill module, trust anchor bootstrap.
           # It brings lots of deps; some are useful elsewhere (e.g. cqueues).
@@ -177,9 +184,9 @@ let
           # used by policy.slice_randomize_psl()
           psl
         ];
-        preferLocalBuild = true;
+
         allowSubstitutes = false;
-        inherit (unwrapped) version meta;
+        preferLocalBuild = true;
       }
       (
         ''

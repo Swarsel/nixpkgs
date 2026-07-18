@@ -1,13 +1,13 @@
 {
-  buildDunePackage,
-  stdlib-shims,
-  ppx_yojson_conv_lib,
-  ocaml-syntax-shims,
-  yojson,
-  result,
-  fetchurl,
   lib,
+  fetchurl,
+  buildDunePackage,
   ocaml,
+  ocaml-syntax-shims,
+  ppx_yojson_conv_lib,
+  result,
+  stdlib-shims,
+  yojson,
   version ?
     if lib.versionAtLeast ocaml.version "5.5" then
       "1.27.0"
@@ -30,84 +30,96 @@
 let
   params =
     {
-      "1.27.0" = {
-        name = "lsp";
-        minimalOCamlVersion = "5.3";
-        sha256 = "sha256-BDrNaSP4pcuq2RVFI1cKsTlzuu72mOK1VTIT3WN5JxU=";
-      };
-      "1.26.0" = {
-        name = "lsp";
-        minimalOCamlVersion = "5.3";
-        sha256 = "sha256-tMgQ1mZKW/F1pvmUbIDIzCsY5GqYWTTBRQss4IDkaDI=";
-      };
-      "1.25.0" = {
-        name = "lsp";
-        minimalOCamlVersion = "5.3";
-        sha256 = "sha256-4xXSvvP4lwmtJXCEaSeZblT/ja/OJRGIgWq5fO8h8CA=";
-      };
-      "1.24.0" = {
-        name = "lsp";
-        minimalOCamlVersion = "5.3";
-        sha256 = "sha256-TVoaIVf2EvbALY+DjZferKX4GyOt08XOpcts7Ot7N1c=";
-      };
-      "1.23.1" = {
-        name = "lsp";
-        minimalOCamlVersion = "5.3";
-        sha256 = "sha256-x0fjlAJmOeogRGfoWd6T6o6ZWNv0T3gNyyoYl8VtdXE=";
-      };
-      "1.22.0" = {
-        name = "lsp";
-        minimalOCamlVersion = "5.2";
-        sha256 = "sha256-UZ3DV30V3CIQ3vpYBIGnQ1eRGNUGk7aRuxDLyCA/tYE=";
-      };
-      "1.21.0" = {
-        name = "lsp";
-        minimalOCamlVersion = "5.2";
-        sha256 = "sha256-Z4cDN/8j0NK6Q3dL+1io/eBJd+o32k0txQDtC1fO9xc=";
-      };
-      "1.18.0" = {
-        name = "lsp";
-        minimalOCamlVersion = "4.14";
-        sha256 = "sha256-tZ2kPM/S/9J3yeX2laDjnHLA144b8svy9iwae32nXwM=";
-      };
-      "1.17.0" = {
-        name = "lsp";
-        minimalOCamlVersion = "4.14";
-        sha256 = "sha256-j7i71xfu/SYItNg0WBBbZg4N46ETTcj8IWrmWdTRlgA=";
-      };
-      "1.14.2" = {
-        name = "lsp";
-        minimalOCamlVersion = "4.14";
-        sha256 = "sha256-1R+HYaGbPLGDs5DMN3jmnrZFMhMmPUHgF+s+yNzIVJQ=";
-      };
       "1.10.5" = {
-        name = "jsonrpc";
         minimalOCamlVersion = "4.13";
+        name = "jsonrpc";
         sha256 = "sha256-TeJS6t1ruWhWPvWNatrnSUWI6T17XKiosHLYizBDDcw=";
       };
-      "1.9.0" = {
-        name = "jsonrpc";
-        minimalOCamlVersion = "4.12";
-        sha256 = "sha256:1ac44n6g3rf84gvhcca545avgf9vpkwkkkm0s8ipshfhp4g4jikh";
+
+      "1.14.2" = {
+        minimalOCamlVersion = "4.14";
+        name = "lsp";
+        sha256 = "sha256-1R+HYaGbPLGDs5DMN3jmnrZFMhMmPUHgF+s+yNzIVJQ=";
       };
+
+      "1.17.0" = {
+        minimalOCamlVersion = "4.14";
+        name = "lsp";
+        sha256 = "sha256-j7i71xfu/SYItNg0WBBbZg4N46ETTcj8IWrmWdTRlgA=";
+      };
+
+      "1.18.0" = {
+        minimalOCamlVersion = "4.14";
+        name = "lsp";
+        sha256 = "sha256-tZ2kPM/S/9J3yeX2laDjnHLA144b8svy9iwae32nXwM=";
+      };
+
+      "1.21.0" = {
+        minimalOCamlVersion = "5.2";
+        name = "lsp";
+        sha256 = "sha256-Z4cDN/8j0NK6Q3dL+1io/eBJd+o32k0txQDtC1fO9xc=";
+      };
+
+      "1.22.0" = {
+        minimalOCamlVersion = "5.2";
+        name = "lsp";
+        sha256 = "sha256-UZ3DV30V3CIQ3vpYBIGnQ1eRGNUGk7aRuxDLyCA/tYE=";
+      };
+
+      "1.23.1" = {
+        minimalOCamlVersion = "5.3";
+        name = "lsp";
+        sha256 = "sha256-x0fjlAJmOeogRGfoWd6T6o6ZWNv0T3gNyyoYl8VtdXE=";
+      };
+
+      "1.24.0" = {
+        minimalOCamlVersion = "5.3";
+        name = "lsp";
+        sha256 = "sha256-TVoaIVf2EvbALY+DjZferKX4GyOt08XOpcts7Ot7N1c=";
+      };
+
+      "1.25.0" = {
+        minimalOCamlVersion = "5.3";
+        name = "lsp";
+        sha256 = "sha256-4xXSvvP4lwmtJXCEaSeZblT/ja/OJRGIgWq5fO8h8CA=";
+      };
+
+      "1.26.0" = {
+        minimalOCamlVersion = "5.3";
+        name = "lsp";
+        sha256 = "sha256-tMgQ1mZKW/F1pvmUbIDIzCsY5GqYWTTBRQss4IDkaDI=";
+      };
+
+      "1.27.0" = {
+        minimalOCamlVersion = "5.3";
+        name = "lsp";
+        sha256 = "sha256-BDrNaSP4pcuq2RVFI1cKsTlzuu72mOK1VTIT3WN5JxU=";
+      };
+
       "1.4.1" = {
-        name = "jsonrpc";
         minimalOCamlVersion = "4.06";
+        name = "jsonrpc";
         sha256 = "1ssyazc0yrdng98cypwa9m3nzfisdzpp7hqnx684rqj8f0g3gs6f";
+      };
+
+      "1.9.0" = {
+        minimalOCamlVersion = "4.12";
+        name = "jsonrpc";
+        sha256 = "sha256:1ac44n6g3rf84gvhcca545avgf9vpkwkkkm0s8ipshfhp4g4jikh";
       };
     }
     ."${version}";
 in
 
 buildDunePackage {
-  pname = "jsonrpc";
   inherit version;
-  src = fetchurl {
-    url = "https://github.com/ocaml/ocaml-lsp/releases/download/${version}/${params.name}-${version}.tbz";
-    inherit (params) sha256;
-  };
-
   inherit (params) minimalOCamlVersion;
+  pname = "jsonrpc";
+
+  src = fetchurl {
+    inherit (params) sha256;
+    url = "https://github.com/ocaml/ocaml-lsp/releases/download/${version}/${params.name}-${version}.tbz";
+  };
 
   buildInputs =
     if lib.versionAtLeast version "1.7.0" then
@@ -133,7 +145,7 @@ buildDunePackage {
   meta = {
     description = "Jsonrpc protocol implementation in OCaml";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

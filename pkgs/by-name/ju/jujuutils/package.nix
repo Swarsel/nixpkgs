@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ linuxHeaders ];
 
   meta = {
-    homepage = "https://github.com/cladisch/linux-firewire-utils";
     description = "Utilities around FireWire devices connected to a Linux computer";
+    homepage = "https://github.com/cladisch/linux-firewire-utils";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
   };

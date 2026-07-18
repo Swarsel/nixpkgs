@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-gEdtoJjCa0nVyi7T4zzv6xUDTQCYFi4ANFaqXGeqcsI=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
     "-X main.Version=${finalAttrs.version}"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   meta = {
     description = "Find the best Mullvad VPN server to connect to";

@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -17,42 +17,47 @@ let
 in
 {
   options.services.scx-loader = {
-    enable = lib.mkEnableOption "SCX Loader service, a daemon to run schedulers from userspace using dbus. This requires kernel version 6.12 and later.";
-
-    package = lib.mkPackageOption pkgs "scx-loader" { };
-
-    schedsPackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
-      default = [ pkgs.scx.rustscheds ];
-      defaultText = lib.literalExpression "[ pkgs.scx.rustscheds ]";
-      example = lib.literalExpression "[ pkgs.scx.full ]";
-      description = ''
-        `scx` package to use. Defaults to `scx.rustscheds`, which includes all currently by `scx_loader` supported schedulers.
-      '';
-    };
-
     config = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-
-        options = {
-          default_sched = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            example = "scx_bpfland";
-            description = ''
-              Default scheduler that will be started automatically when `scx_loader` starts.
-              If not set or set to an empty string, `scx_loader` will not start any scheduler by default.
-            '';
-          };
-        };
-      };
       default = { };
+
       description = ''
         Configuration for `scx_loader`.
 
         See <https://github.com/sched-ext/scx-loader/blob/main/crates/scx_loader/configuration.md> for the full list of options.
       '';
+
+      type = lib.types.submodule {
+        options = {
+          default_sched = lib.mkOption {
+            default = null;
+
+            description = ''
+              Default scheduler that will be started automatically when `scx_loader` starts.
+              If not set or set to an empty string, `scx_loader` will not start any scheduler by default.
+            '';
+
+            example = "scx_bpfland";
+            type = lib.types.nullOr lib.types.str;
+          };
+        };
+
+        freeformType = settingsFormat.type;
+      };
+    };
+
+    enable = lib.mkEnableOption "SCX Loader service, a daemon to run schedulers from userspace using dbus. This requires kernel version 6.12 and later.";
+    package = lib.mkPackageOption pkgs "scx-loader" { };
+
+    schedsPackages = lib.mkOption {
+      default = [ pkgs.scx.rustscheds ];
+      defaultText = lib.literalExpression "[ pkgs.scx.rustscheds ]";
+
+      description = ''
+        `scx` package to use. Defaults to `scx.rustscheds`, which includes all currently by `scx_loader` supported schedulers.
+      '';
+
+      example = lib.literalExpression "[ pkgs.scx.full ]";
+      type = lib.types.listOf lib.types.package;
     };
   };
 
@@ -69,6 +74,7 @@ in
       {
         assertion =
           cfg.config.default_sched == null || lib.elem cfg.config.default_sched ([ "" ] ++ schedulers);
+
         message = ''
           Invalid default scheduler: ${cfg.config.default_sched}. It must be one of: ${lib.concatStringsSep ", " schedulers}.
         '';
@@ -76,14 +82,13 @@ in
     ];
 
     environment = {
-      systemPackages = [ cfg.package ] ++ cfg.schedsPackages;
       etc."scx_loader.toml".source = configFile;
+      systemPackages = [ cfg.package ] ++ cfg.schedsPackages;
     };
 
-    systemd.packages = [ cfg.package ];
-    services.dbus.packages = [ cfg.package ];
-
     security.polkit.enable = true;
+    services.dbus.packages = [ cfg.package ];
+    systemd.packages = [ cfg.package ];
 
     systemd.services.scx_loader = {
       path = cfg.schedsPackages;

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   tcl,
   tk,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation {
@@ -18,21 +18,21 @@ stdenv.mkDerivation {
     hash = "sha256-IdHxkrXe+2I+aJpZ0bhimXq4xEXE9HDXrL5DtCs7MKk=";
   };
 
+  postPatch = ''
+    substituteInPlace tcl/xdeview --replace "exec uuwish" "exec $out/bin/uuwish"
+  '';
+
+  nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     tcl
     tk
   ];
 
-  nativeBuildInputs = [ autoreconfHook ];
-
   configureFlags = [
     "--enable-tk=${tk.dev}"
     "--enable-tcl=${tcl}"
   ];
-
-  postPatch = ''
-    substituteInPlace tcl/xdeview --replace "exec uuwish" "exec $out/bin/uuwish"
-  '';
 
   meta = {
     description = "Nice and Friendly Decoder";

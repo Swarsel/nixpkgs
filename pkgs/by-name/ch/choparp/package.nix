@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  libpcap,
   installShellFiles,
+  libpcap,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,11 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
   meta = {
-    homepage = "https://github.com/quinot/choparp";
     description = "Proxy ARP daemon";
+    homepage = "https://github.com/quinot/choparp";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.bsd3;
     mainProgram = "choparp";
   };
 })

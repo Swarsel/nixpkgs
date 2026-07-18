@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  jdk17,
   fetchFromGitHub,
+  gradle,
+  jdk17,
   jre_headless,
   makeWrapper,
-  gradle,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,14 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-  __darwinAllowLocalNetworking = true; # this is required for using mitm-cache on Darwin
-
-  gradleFlags = [ "-Dfile.encoding=utf-8" ];
-
   doCheck = true;
 
   installPhase = ''
@@ -48,16 +40,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true; # this is required for using mitm-cache on Darwin
+  gradleFlags = [ "-Dfile.encoding=utf-8" ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   meta = {
+    inherit (jre_headless.meta) platforms;
     description = "Program that reformats Kotlin source code to comply with the common community standard for Kotlin code conventions";
     homepage = "https://github.com/facebook/ktfmt";
     license = lib.licenses.asl20;
-    mainProgram = "ktfmt";
-    maintainers = with lib.maintainers; [ ghostbuster91 ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # mitm cache
     ];
-    inherit (jre_headless.meta) platforms;
+
+    maintainers = with lib.maintainers; [ ghostbuster91 ];
+    mainProgram = "ktfmt";
   };
 })

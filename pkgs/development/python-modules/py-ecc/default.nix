@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cached-property,
   eth-typing,
   eth-utils,
+  pydantic,
   pytestCheckHook,
   pythonAtLeast,
   setuptools,
-  pydantic,
 }:
 
 buildPythonPackage rec {
   pname = "py-ecc";
   version = "8.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -49,12 +48,13 @@ buildPythonPackage rec {
     "test_install_local_wheel"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "py_ecc" ];
 
   meta = {
-    changelog = "https://github.com/ethereum/py_ecc/blob/${src.rev}/CHANGELOG.rst";
     description = "ECC pairing and bn_128 and bls12_381 curve operations";
     homepage = "https://github.com/ethereum/py_ecc";
+    changelog = "https://github.com/ethereum/py_ecc/blob/${src.rev}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

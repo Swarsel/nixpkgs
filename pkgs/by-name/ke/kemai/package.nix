@@ -2,19 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  # nativeBuildInputs
+  cmake,
   # buildInputs
   libxscrnsaver,
   magic-enum,
+  # passthru
+  nix-update-script,
   qt6,
   range-v3,
   spdlog,
-
-  # nativeBuildInputs
-  cmake,
-
-  # passthru
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,6 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
         "#include <magic_enum/magic_enum.hpp>"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    qt6.wrapQtAppsHook
+  ];
+
   buildInputs = [
     libxscrnsaver
     magic-enum
@@ -52,11 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
   cmakeFlags = [
     (lib.cmakeBool "KEMAI_ENABLE_UPDATE_CHECK" false)
     (lib.cmakeBool "KEMAI_BUILD_LOCAL_DEPENDENCIES" false)
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    qt6.wrapQtAppsHook
   ];
 
   passthru = {

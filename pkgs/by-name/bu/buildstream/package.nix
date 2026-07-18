@@ -1,23 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  gitUpdater,
-
+  # tests
+  addBinToPathHook,
   # buildInputs
   buildbox,
   fuse3,
-  lzip,
-  patch,
-
+  gitMinimal,
+  gitUpdater,
   # nativeBuildInputs
   installShellFiles,
-
-  # tests
-  addBinToPathHook,
-  gitMinimal,
+  lzip,
+  patch,
+  python3Packages,
   versionCheckHook,
-
   # Optional features
   enableBuildstreamPlugins ? true,
 }:
@@ -25,7 +21,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "buildstream";
   version = "2.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "apache";
@@ -33,6 +28,36 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-eHZmimuwOo3ZHZw5QF94B6wkso1+QbZIcgpDgsw1hiM=";
   };
+
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
+  buildInputs = [
+    fuse3
+    lzip
+    patch
+  ];
+
+  nativeCheckInputs = [
+    addBinToPathHook
+    buildbox
+    gitMinimal
+    python3Packages.pexpect
+    python3Packages.pyftpdlib
+    python3Packages.pytest-datafiles
+    python3Packages.pytest-env
+    python3Packages.pytest-timeout
+    python3Packages.pytest-xdist
+    python3Packages.pytestCheckHook
+    versionCheckHook
+  ];
+
+  postInstall = ''
+    installShellCompletion --cmd bst \
+      --bash src/buildstream/data/bst \
+      --zsh src/buildstream/data/zsh/_bst
+  '';
 
   build-system = with python3Packages; [
     cython
@@ -62,30 +87,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.buildstream-plugins
   ];
 
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
-  buildInputs = [
-    fuse3
-    lzip
-    patch
-  ];
-
-  pythonImportsCheck = [ "buildstream" ];
-
-  nativeCheckInputs = [
-    addBinToPathHook
-    buildbox
-    gitMinimal
-    python3Packages.pexpect
-    python3Packages.pyftpdlib
-    python3Packages.pytest-datafiles
-    python3Packages.pytest-env
-    python3Packages.pytest-timeout
-    python3Packages.pytest-xdist
-    python3Packages.pytestCheckHook
-    versionCheckHook
+  disabledTestPaths = [
+    # FileNotFoundError: [Errno 2] No such file or directory: '/build/source/tmp/popen-gw1/test_report_when_cascache_exit0/buildbox-casd'
+    "tests/internals/cascache.py"
   ];
 
   disabledTests = [
@@ -106,17 +110,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_source_pull_partial_fallback_fetch"
   ];
 
-  disabledTestPaths = [
-    # FileNotFoundError: [Errno 2] No such file or directory: '/build/source/tmp/popen-gw1/test_report_when_cascache_exit0/buildbox-casd'
-    "tests/internals/cascache.py"
-  ];
-
-  postInstall = ''
-    installShellCompletion --cmd bst \
-      --bash src/buildstream/data/bst \
-      --zsh src/buildstream/data/zsh/_bst
-  '';
-
+  pyproject = true;
+  pythonImportsCheck = [ "buildstream" ];
   versionCheckProgram = "${placeholder "out"}/bin/bst";
 
   passthru.updateScript = gitUpdater {
@@ -125,11 +120,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Powerful software integration tool";
-    downloadPage = "https://buildstream.build/install.html";
     homepage = "https://buildstream.build";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ shymega ];
     platforms = lib.platforms.linux;
     mainProgram = "bst";
-    maintainers = with lib.maintainers; [ shymega ];
+    downloadPage = "https://buildstream.build/install.html";
   };
 })

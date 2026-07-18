@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  unasync,
+  aiohttp,
   boto3,
   botocore,
-  requests,
-  aiohttp,
-  pyquery,
+  buildPythonPackage,
   loguru,
+  pyquery,
+  requests,
+  setuptools,
+  unasync,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyhive-integration";
   version = "1.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Pyhass";
@@ -24,7 +23,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-8Lv41xgkwVpisdJpzhhBxdAG3VdKYazmbvl3V7lAjYA=";
   };
 
-  pythonRemoveDeps = [ "pre-commit" ];
+  postBuild = ''
+    # pyhiveapi accesses $HOME upon importing
+    export HOME=$TMPDIR
+  '';
+
+  # tests are not functional yet
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -40,15 +45,9 @@ buildPythonPackage (finalAttrs: {
     loguru
   ];
 
-  # tests are not functional yet
-  doCheck = false;
-
-  postBuild = ''
-    # pyhiveapi accesses $HOME upon importing
-    export HOME=$TMPDIR
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "pyhiveapi" ];
+  pythonRemoveDeps = [ "pre-commit" ];
 
   meta = {
     description = "Python library to interface with the Hive API";

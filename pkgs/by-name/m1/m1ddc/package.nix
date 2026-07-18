@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   writableTmpDirAsHomeHook,
 }:
 
@@ -21,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail kIOMainPortDefault kIOMasterPortDefault
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
-
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
 
   installPhase = ''
     runHook preInstall
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Control external displays using DDC/CI on Apple Silicon Macs";
     homepage = "https://github.com/waydabber/m1ddc";
     license = lib.licenses.mit;
-    mainProgram = "m1ddc";
     maintainers = [ lib.maintainers.amarshall ];
     platforms = [ "aarch64-darwin" ];
+    mainProgram = "m1ddc";
   };
 })

@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchurl,
-  libGLU,
-  libGL,
-  libx11,
-  xorgproto,
-  tcl,
-  libglut,
   freetype,
-  sfml_2,
-  libxi,
-  libxmu,
-  libxext,
-  libxt,
-  libsm,
-  libice,
-  libpng,
-  pkg-config,
   gettext,
   intltool,
+  libGL,
+  libGLU,
+  libglut,
+  libice,
+  libpng,
+  libsm,
+  libx11,
+  libxext,
+  libxi,
+  libxmu,
+  libxt,
+  pkg-config,
+  sfml_2,
+  tcl,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.8.4";
   pname = "extremetuxracer";
+  version = "0.8.4";
 
   src = fetchurl {
     url = "mirror://sourceforge/extremetuxracer/etr-${finalAttrs.version}.tar.xz";
@@ -35,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     intltool
   ];
+
   buildInputs = [
     libGLU
     libGL
@@ -62,13 +63,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "High speed arctic racing game based on Tux Racer";
+
     longDescription = ''
       ExtremeTuxRacer - Tux lies on his belly and accelerates down ice slopes.
     '';
-    license = lib.licenses.gpl2Plus;
+
     homepage = "https://sourceforge.net/projects/extremetuxracer/";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
-    mainProgram = "etr";
     platforms = with lib.platforms; linux;
+    mainProgram = "etr";
   };
 })

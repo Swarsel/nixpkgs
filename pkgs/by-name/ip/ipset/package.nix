@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libmnl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,12 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ libmnl ];
-
   configureFlags = [ "--with-kmod=no" ];
 
   meta = {
-    homepage = "https://ipset.netfilter.org/";
     description = "Administration tool for IP sets";
+    homepage = "https://ipset.netfilter.org/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     mainProgram = "ipset";

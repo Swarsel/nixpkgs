@@ -1,20 +1,18 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  versionCheckHook,
-  installShellFiles,
-
-  writeShellApplication,
+  common-updater-scripts,
   curl,
   gnugrep,
-  common-updater-scripts,
-
-  pname ? "acli-unwrapped",
-  src,
-  version,
+  installShellFiles,
   meta,
+  src,
+  stdenvNoCC,
   updateScript,
+  version,
+  versionCheckHook,
+  writeShellApplication,
+  pname ? "acli-unwrapped",
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   inherit
@@ -23,8 +21,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     version
     meta
     ;
-
-  dontBuild = true;
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -46,12 +42,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontBuild = true;
+  versionCheckProgramArg = "-v";
+
   passthru = {
     inherit updateScript;
   };
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-v";
-  doInstallCheck = true;
 
 })

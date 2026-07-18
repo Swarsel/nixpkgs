@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromSourcehut,
-  rustPlatform,
   installShellFiles,
-  scdoc,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  rustPlatform,
+  scdoc,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,17 +19,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-9JNOq9SV3sHDlVaPUnZRq/8WNPQ/iF3AdSvAoCEtg7k=";
   };
 
-  cargoHash = "sha256-p1COGfMjHNZeAWYdVzCo/mHM75Tt5klxtYWn8tAuH0g=";
-
-  passthru = {
-    tests.basic-functionality = nixosTests.stargazer;
-    updateScript = nix-update-script { };
-  };
-
   nativeBuildInputs = [
     installShellFiles
     scdoc
   ];
+
+  cargoHash = "sha256-p1COGfMjHNZeAWYdVzCo/mHM75Tt5klxtYWn8tAuH0g=";
 
   postInstall = ''
     scdoc < doc/stargazer.scd  > stargazer.1
@@ -39,12 +34,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion completions/stargazer.{bash,zsh,fish}
   '';
 
+  passthru = {
+    tests.basic-functionality = nixosTests.stargazer;
+    updateScript = nix-update-script { };
+  };
+
   meta = {
     description = "Fast and easy to use Gemini server";
-    mainProgram = "stargazer";
     homepage = "https://sr.ht/~zethra/stargazer/";
-    license = lib.licenses.agpl3Plus;
     changelog = "https://git.sr.ht/~zethra/stargazer/refs/${finalAttrs.version}";
+    license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ gaykitty ];
+    mainProgram = "stargazer";
   };
 })

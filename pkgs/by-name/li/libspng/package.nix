@@ -1,13 +1,13 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  zlib,
-  ninja,
-  meson,
-  pkg-config,
+  fetchFromGitHub,
   cmake,
   libpng,
+  meson,
+  ninja,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-BiRuPQEKVJYYgfUsglIuxrBoJBFiQ0ygQmAFrVvCz4Q=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   # disable two tests broken after libpng update
   # https://github.com/randy408/libspng/issues/276
   postPatch = ''
@@ -28,25 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
     mv tests/images/meson.build-patched tests/images/meson.build
   '';
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  mesonBuildType = "release";
-
-  mesonFlags = [
-    # this is required to enable testing
-    # https://github.com/randy408/libspng/blob/bc383951e9a6e04dbc0766f6737e873e0eedb40b/tests/README.md#testing
-    "-Ddev_build=true"
-  ];
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   strictDeps = true;
 
-  nativeCheckInputs = [
-    cmake
+  nativeBuildInputs = [
+    ninja
+    meson
+    pkg-config
   ];
 
   buildInputs = [
@@ -54,11 +46,19 @@ stdenv.mkDerivation (finalAttrs: {
     libpng
   ];
 
-  nativeBuildInputs = [
-    ninja
-    meson
-    pkg-config
+  mesonFlags = [
+    # this is required to enable testing
+    # https://github.com/randy408/libspng/blob/bc383951e9a6e04dbc0766f6737e873e0eedb40b/tests/README.md#testing
+    "-Ddev_build=true"
   ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  nativeCheckInputs = [
+    cmake
+  ];
+
+  mesonBuildType = "release";
 
   meta = {
     description = "Simple, modern libpng alternative";

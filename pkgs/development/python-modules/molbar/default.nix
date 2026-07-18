@@ -1,22 +1,22 @@
 {
-  buildPythonPackage,
   lib,
-  gfortran,
-  fetchgit,
+  ase,
+  buildPythonPackage,
   cmake,
-  ninja,
+  dscribe,
+  fetchgit,
+  gfortran,
+  joblib,
   networkx,
+  ninja,
+  numba,
   numpy,
   pandas,
+  pytestCheckHook,
+  pyyaml,
+  scikit-build,
   scipy,
   tqdm,
-  joblib,
-  numba,
-  ase,
-  scikit-build,
-  dscribe,
-  pyyaml,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
@@ -29,13 +29,12 @@ buildPythonPackage rec {
     hash = "sha256-wHvsj1/BJpfbSKEB7Fk8PkH6laN/VMKoluZo+4bprlo=";
   };
 
-  pyproject = true;
-
   nativeBuildInputs = [
     gfortran
   ];
 
-  pythonRelaxDeps = [ "networkx" ];
+  doCheck = false; # Doesn't find the fortran libs before installation
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     cmake
@@ -56,11 +55,9 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   dontUseCmakeConfigure = true;
-
-  doCheck = false; # Doesn't find the fortran libs before installation
+  pyproject = true;
+  pythonRelaxDeps = [ "networkx" ];
 
   meta = {
     description = "Unique molecular identifiers for molecular barcoding";

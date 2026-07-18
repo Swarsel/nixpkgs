@@ -6,9 +6,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.7.5";
-  format = "setuptools";
   pname = "pickleshare";
+  version = "0.7.5";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ path ];
-
   # No proper test suite
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Tiny 'shelve'-like database with concurrency support";

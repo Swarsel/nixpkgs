@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitMinimal,
   pytestCheckHook,
   ruamel-yaml,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pre-commit-hooks";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pre-commit";
@@ -21,18 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-pxtsnRryTguNGYbdiQ55UhuRyJTQvFfaqVOTcCz2jgk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ ruamel-yaml ];
+  # Note: this is not likely to ever work on Darwin
+  # https://github.com/pre-commit/pre-commit-hooks/pull/655
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     gitMinimal
     pytestCheckHook
   ];
-
-  # Note: this is not likely to ever work on Darwin
-  # https://github.com/pre-commit/pre-commit-hooks/pull/655
-  doCheck = !stdenv.hostPlatform.isDarwin;
 
   # the tests require a functional git installation which requires a valid HOME
   # directory.
@@ -44,6 +39,9 @@ buildPythonPackage rec {
     git init .
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ ruamel-yaml ];
+  pyproject = true;
   pythonImportsCheck = [ "pre_commit_hooks" ];
 
   meta = {

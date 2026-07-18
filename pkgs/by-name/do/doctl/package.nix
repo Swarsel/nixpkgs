@@ -1,21 +1,34 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   buildPackages,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "doctl";
   version = "1.160.1";
 
-  vendorHash = null;
+  src = fetchFromGitHub {
+    owner = "digitalocean";
+    repo = "doctl";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-M+DBJfUXymlzY9DJeyHl3SPaCIKCT2iN/I4rd3uyQbQ=";
+  };
 
+  nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
   doCheck = false;
 
-  subPackages = [ "cmd/doctl" ];
+  postInstall = ''
+    export HOME=$(mktemp -d) # attempts to write to /homeless-shelter
+    for shell in bash fish zsh; do
+      ${stdenv.hostPlatform.emulator buildPackages} $out/bin/doctl completion $shell > doctl.$shell
+      installShellCompletion doctl.$shell
+    done
+  '';
 
   ldflags =
     let
@@ -28,28 +41,13 @@ buildGoModule (finalAttrs: {
       "-X ${t}.Label=release"
     ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = ''
-    export HOME=$(mktemp -d) # attempts to write to /homeless-shelter
-    for shell in bash fish zsh; do
-      ${stdenv.hostPlatform.emulator buildPackages} $out/bin/doctl completion $shell > doctl.$shell
-      installShellCompletion doctl.$shell
-    done
-  '';
-
-  src = fetchFromGitHub {
-    owner = "digitalocean";
-    repo = "doctl";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-M+DBJfUXymlzY9DJeyHl3SPaCIKCT2iN/I4rd3uyQbQ=";
-  };
+  subPackages = [ "cmd/doctl" ];
 
   meta = {
     description = "Command line tool for DigitalOcean services";
-    mainProgram = "doctl";
     homepage = "https://github.com/digitalocean/doctl";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.siddharthist ];
+    mainProgram = "doctl";
   };
 })

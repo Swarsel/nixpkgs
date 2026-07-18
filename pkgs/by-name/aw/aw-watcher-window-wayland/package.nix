@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   openssl,
   pkg-config,
   rustPlatform,
@@ -18,10 +18,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-LJ+8snTq/l1Pstw686jxNSFaq3hXloWtODgh7+YsdwU=";
   };
 
-  cargoHash = "sha256-WWT8tOrHPf5x3bXsVPt32VKut4qK+K8gickBfEc0zmk=";
-
-  passthru.updateScript = unstableGitUpdater { };
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -31,12 +27,15 @@ rustPlatform.buildRustPackage {
     wayland
   ];
 
+  cargoHash = "sha256-WWT8tOrHPf5x3bXsVPt32VKut4qK+K8gickBfEc0zmk=";
+  passthru.updateScript = unstableGitUpdater { };
+
   meta = {
     description = "WIP window and afk watcher for some Wayland compositors";
     homepage = "https://github.com/ActivityWatch/aw-watcher-window-wayland";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ esau79p ];
-    mainProgram = "aw-watcher-window-wayland";
     platforms = lib.platforms.linux;
+    mainProgram = "aw-watcher-window-wayland";
   };
 }

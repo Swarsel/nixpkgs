@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pathspec,
   unittestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "trailrunner";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "omnilib";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   propagatedBuildInputs = [ pathspec ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "trailrunner" ];
 
   meta = {

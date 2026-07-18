@@ -2,24 +2,36 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
+  clr,
   cmake,
+  gtest,
+  openmp,
+  rocblas,
   rocm-cmake,
   rocm-smi,
-  clr,
-  openmp,
-  gtest,
-  rocblas,
-  buildTests ? false, # Will likely fail building because wavefront shifts are not supported for certain archs
-  buildExtendedTests ? false,
+  rocmUpdateScript,
   buildBenchmarks ? false,
+  buildExtendedTests ? false,
   buildSamples ? false,
+  buildTests ? false, # Will likely fail building because wavefront shifts are not supported for certain archs
   gpuTargets ? clr.localGpuTargets or [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "rocwmma";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-eoF8a7zknpgvDOSDzolOrdtszUJ5tC7Ur2sRShiQEO0=";
+
+    sparseCheckout = [
+      "projects/rocwmma"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -33,18 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals buildSamples [
     "sample"
   ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/rocwmma"
-      "shared"
-    ];
-    hash = "sha256-eoF8a7zknpgvDOSDzolOrdtszUJ5tC7Ur2sRShiQEO0=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocwmma";
 
   patches = lib.optionals (buildTests || buildBenchmarks) [
     ./0000-dont-fetch-googletest.patch
@@ -104,13 +104,14 @@ stdenv.mkDerivation (finalAttrs: {
       rm -rf $out/bin
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/rocwmma";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "Mixed precision matrix multiplication and accumulation";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/rocwmma";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

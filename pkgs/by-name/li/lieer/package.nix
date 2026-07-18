@@ -1,16 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "lieer";
   version = "1.6";
-  pyproject = true;
-
-  passthru.updateScript = nix-update-script { };
 
   src = fetchFromGitHub {
     owner = "gauteh";
@@ -18,6 +15,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-U3+Y634oGmvIrvcbSKrrJ8PzLRsMoN0Fd/+d9WE1Q7U=";
   };
+
+  # no tests
+  doCheck = false;
 
   build-system = with python3Packages; [
     setuptools
@@ -30,15 +30,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
-  # no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "lieer"
   ];
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Fast email-fetching and two-way tag synchronization between notmuch and GMail";
+
     longDescription = ''
       This program can pull email and labels (and changes to labels)
       from your GMail account and store them locally in a maildir with
@@ -46,12 +48,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
       tags in the notmuch database may be pushed back remotely to your
       GMail account.
     '';
+
     homepage = "https://lieer.gaute.vetsj.com/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       archer-65
       flokli
     ];
+
     mainProgram = "gmi";
   };
 })

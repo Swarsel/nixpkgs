@@ -17,9 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ puredata ];
-
-  hardeningDisable = [ "format" ];
-
   makeFlags = [ "prefix=$(out)" ];
 
   postInstall = ''
@@ -27,6 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     rm -rf $out/local/
     rm -rf $out/lib/
   '';
+
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Library of non-tilde externals for puredata, by Miller Puckette";

@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -28,7 +28,7 @@ stdenvNoCC.mkDerivation rec {
     description = "Joypad autoconfig files";
     homepage = "https://www.libretro.com/";
     license = lib.licenses.mit;
-    teams = [ lib.teams.libretro ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.libretro ];
   };
 }

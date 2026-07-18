@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
   cmake,
+  gitUpdater,
+  hello-x86_64,
   python3,
+  runCommand,
   withDynarec ? (
     stdenv.hostPlatform.isAarch64 || stdenv.hostPlatform.isRiscV64 || stdenv.hostPlatform.isLoongArch64
   ),
-  runCommand,
-  hello-x86_64,
 }:
 
 # Currently only supported on specific archs
@@ -69,6 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "LARCH64_DYNAREC" (withDynarec && stdenv.hostPlatform.isLoongArch64))
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   installPhase = ''
     runHook preInstall
 
@@ -76,8 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
@@ -94,25 +94,27 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = gitUpdater {
-      rev-prefix = "v";
-      allowedVersions = "\\.[02468]$";
-    };
     tests.hello = runCommand "box64-test-hello" { nativeBuildInputs = [ finalAttrs.finalPackage ]; } ''
       BOX64_LOG=1 box64 ${lib.getExe hello-x86_64} --version 2>&1 | tee $out
     '';
+
+    updateScript = gitUpdater {
+      allowedVersions = "\\.[02468]$";
+      rev-prefix = "v";
+    };
   };
 
   meta = {
-    homepage = "https://box86.org/";
     description = "Lets you run x86_64 Linux programs on non-x86_64 Linux systems";
+    homepage = "https://box86.org/";
     changelog = "https://github.com/ptitSeb/box64/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gador
       OPNA2608
     ];
-    mainProgram = "box64";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
@@ -121,5 +123,7 @@ stdenv.mkDerivation (finalAttrs: {
       "loongarch64-linux"
       "mips64el-linux"
     ];
+
+    mainProgram = "box64";
   };
 })

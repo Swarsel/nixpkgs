@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "python-rabbitair";
   version = "0.0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rabbit-air";
@@ -33,8 +32,6 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "rabbitair" ];
-
   disabledTests = [
     # Tests require network access
     "test_info"
@@ -46,6 +43,9 @@ buildPythonPackage rec {
     "test_state_a3"
     "test_zeroconf"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "rabbitair" ];
 
   meta = {
     description = "Module for the control of Rabbit Air air purifiers";

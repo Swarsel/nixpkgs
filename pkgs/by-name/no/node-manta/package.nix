@@ -1,10 +1,10 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   installShellFiles,
-  testers,
   node-manta,
+  testers,
 }:
 
 buildNpmPackage rec {
@@ -18,11 +18,8 @@ buildNpmPackage rec {
     hash = "sha256-Uj3fNzeERiO++sW2uyAbtfN/1Ed6uRVBBvCecncq/QY=";
   };
 
-  npmDepsHash = "sha256-Xk/K90K+X73ZTV6u2GJij8815GdBn6igXmpWLaCfKF4=";
-
-  dontBuild = true;
-
   nativeBuildInputs = [ installShellFiles ];
+  npmDepsHash = "sha256-Xk/K90K+X73ZTV6u2GJij8815GdBn6igXmpWLaCfKF4=";
 
   postInstall = ''
     ln -s ./lib/node_modules/manta/bin $out/bin
@@ -41,6 +38,8 @@ buildNpmPackage rec {
       sed -i '/Bash completion generated.*/d' $out/share/bash-completion/completions/$cmd.bash
     done
   '';
+
+  dontBuild = true;
 
   passthru = {
     tests.version = testers.testVersion {

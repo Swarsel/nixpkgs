@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   gnum4,
 }:
@@ -15,11 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-XVWvnUZkEqEh3UjPIU6DaZuYU9DvjfIMsWbLJ78jJWs=";
   };
 
-  nativeBuildInputs = [ gnum4 ];
-
   postPatch = ''
     substituteInPlace utils.mk --replace-fail "/usr/local" "$out"
   '';
+
+  nativeBuildInputs = [ gnum4 ];
 
   meta = {
     description = "Load the NVIDIA kernel module and create NVIDIA character device files";

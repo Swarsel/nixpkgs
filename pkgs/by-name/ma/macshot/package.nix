@@ -1,24 +1,21 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  undmg,
   nix-update-script,
+  stdenvNoCC,
+  undmg,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "macshot";
   version = "4.1.2";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchurl {
     url = "https://github.com/sw33tLie/macshot/releases/download/v${finalAttrs.version}/MacShot.dmg";
     hash = "sha256-5o8l6MvGs58zSPKaR4RQZ2UgWsqcQRaRUsd8cS62VVg=";
   };
 
-  sourceRoot = ".";
+  strictDeps = true;
 
   nativeBuildInputs = [
     undmg
@@ -36,6 +33,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -45,7 +44,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     license = lib.licenses.gpl3Only;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "macshot";
     platforms = lib.platforms.darwin;
+    mainProgram = "macshot";
   };
 })

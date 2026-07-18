@@ -1,18 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  fetchzip,
+  fetchFromGitHub,
+  alsa-lib,
   autoconf,
   automake,
   autoreconfHook,
-  dos2unix,
-  file,
-  perl,
-  pkg-config,
-  alsa-lib,
   coreutils,
+  dos2unix,
+  fetchzip,
+  file,
   freetype,
   glib,
   glibc,
@@ -21,9 +19,11 @@
   libpulseaudio,
   libtool,
   libuuid,
+  libx11,
   openssl,
   pango,
-  libx11,
+  perl,
+  pkg-config,
   squeakImageHash ? null,
   squeakSourcesHash ? null,
   squeakSourcesVersion ? null,
@@ -60,82 +60,25 @@ let
   squeakVmVersionRelease = elemAt squeakVmVersionSplit 2;
 
   squeakVmCommitHash = nullableOr args.squeakVmCommitHash or null (fetchurl {
-    url = "https://api.github.com/repos/OpenSmalltalk/opensmalltalk-vm/commits/${squeakVmVersionRelease}";
     curlOpts = "--header Accept:application/vnd.github.v3.sha";
+
     hash =
       nullableOr args.squeakVmCommitHashHash or null
         "sha256-quwmhpJlb2fp0fI9b03fBxSR44j1xmHPW20wkSqTOhQ=";
+
+    url = "https://api.github.com/repos/OpenSmalltalk/opensmalltalk-vm/commits/${squeakVmVersionRelease}";
   });
 in
 stdenv.mkDerivation {
   pname = "squeak";
   version = squeakVersion;
 
-  vmVersionRelease = squeakVmVersionRelease; # "202003021730"
-  vmHash = squeakVmCommitHash;
-
-  vmSrcUrl = "https://github.com/OpenSmalltalk/opensmalltalk-vm.git";
   src = fetchFromGitHub {
     owner = "OpenSmalltalk";
     repo = "opensmalltalk-vm";
     rev = squeakVmVersionRelease;
     hash = nullableOr args.squeakVmHash or null "sha256-rNJn5ya+7ggC21MpwSrl2ByJDjVycONKHADboH7dQLM=";
   };
-  imageSrc =
-    let
-      squeakImageName = "Squeak${squeakVersionBase}-${squeakImageVersion}-${toString bits}bit";
-    in
-    fetchzip {
-      url = "https://files.squeak.org/${squeakVersionBase}/${squeakImageName}/${squeakImageName}.zip";
-      name = "source";
-      stripRoot = false;
-      hash =
-        nullableOr args.squeakImageHash or null
-          "sha256-wDuRyc/DNqG1D4DzyBkUvrzFkBlXBtbpnANZlRV/Fas=";
-    };
-  sourcesSrc = fetchurl {
-    url = "https://files.squeak.org/sources_files/SqueakV${squeakSourcesVersion}.sources.gz";
-    hash =
-      nullableOr args.squeakSourcesHash or null
-        "sha256-ZViZ1VgI32LwLTEyw7utp8oaAK3UmCNJnHqsGm1IKYE=";
-  };
-
-  vmBuild = "linux64x64";
-
-  nativeBuildInputs = [
-    autoconf
-    automake
-    autoreconfHook
-    dos2unix
-    file
-    perl
-    pkg-config
-  ];
-  buildInputs = [
-    alsa-lib
-    coreutils
-    freetype
-    glib
-    glibc
-    gnugrep
-    libGL
-    libpulseaudio
-    libtool
-    libuuid
-    openssl
-    pango
-    libx11
-  ];
-
-  postUnpack = ''
-    for file in "$imageSrc"/*.{image,changes}; do
-      gzip -c "$file" > "$sourceRoot/''${file##"$imageSrc"/}.gz"
-    done
-  '';
-
-  prePatch = ''
-    dos2unix platforms/unix/plugins/*/{Makefile.inc,acinclude.m4}
-  '';
 
   patches = [
     ./squeak-configure-version.patch
@@ -170,6 +113,45 @@ stdenv.mkDerivation {
       --replace '/bin/rm ' '${coreutils}/bin/rm '
   '';
 
+  nativeBuildInputs = [
+    autoconf
+    automake
+    autoreconfHook
+    dos2unix
+    file
+    perl
+    pkg-config
+  ];
+
+  buildInputs = [
+    alsa-lib
+    coreutils
+    freetype
+    glib
+    glibc
+    gnugrep
+    libGL
+    libpulseaudio
+    libtool
+    libuuid
+    openssl
+    pango
+    libx11
+  ];
+
+  configureFlags = [
+    "--disable-dynamicopenssl"
+    "SQ_MAJOR=${squeakVersionMajor}"
+    "SQ_MINOR=${squeakVersionMinor}"
+    "SQ_UPDATE=${squeakImageVersion}"
+    "SQ_VERSION=${squeakVersion}-${toString bits}bit"
+    "SQ_SRC_VERSION=${squeakSourcesVersion}"
+    "VM_MAJOR=${squeakVmVersionMajor}"
+    "VM_MINOR=${squeakVmVersionMinor}"
+    "VM_RELEASE=${squeakVmVersionRelease}"
+    "VM_VERSION=${squeakVmVersion}"
+  ];
+
   # Workaround build failure on -fno-common toolchains:
   #   ld: vm/vm.a(cogit.o):spur64src/vm/cogitX64SysV.c:2552: multiple definition of
   #       `traceStores'; vm/vm.a(gcc3x-cointerp.o):spur64src/vm/cogit.h:140: first defined here
@@ -187,15 +169,6 @@ stdenv.mkDerivation {
       "-Wno-error=incompatible-function-pointer-types"
     ])
   );
-
-  preAutoreconf = ''
-    pushd ./platforms/unix/config > /dev/null
-    ./mkacinc > ./acplugins.m4
-  '';
-  postAutoreconf = ''
-    rm ./acplugins.m4
-    popd > /dev/null
-  '';
 
   preConfigure = ''
     if [ -z "''${dontFixLibtool:-}" ]; then
@@ -216,37 +189,74 @@ stdenv.mkDerivation {
       --replace 'make install' '# make install'
   '';
 
-  configureFlags = [
-    "--disable-dynamicopenssl"
-    "SQ_MAJOR=${squeakVersionMajor}"
-    "SQ_MINOR=${squeakVersionMinor}"
-    "SQ_UPDATE=${squeakImageVersion}"
-    "SQ_VERSION=${squeakVersion}-${toString bits}bit"
-    "SQ_SRC_VERSION=${squeakSourcesVersion}"
-    "VM_MAJOR=${squeakVmVersionMajor}"
-    "VM_MINOR=${squeakVmVersionMinor}"
-    "VM_RELEASE=${squeakVmVersionRelease}"
-    "VM_VERSION=${squeakVmVersion}"
-  ];
+  postInstall = ''
+    rm "$out/squeak"
+    cp --no-preserve mode "$sourcesSrc" "$out"/lib/squeak/SqueakV${lib.escapeShellArg squeakSourcesVersion}.sources
+  '';
+
   configureScript = "./mvm";
+
+  imageSrc =
+    let
+      squeakImageName = "Squeak${squeakVersionBase}-${squeakImageVersion}-${toString bits}bit";
+    in
+    fetchzip {
+      hash =
+        nullableOr args.squeakImageHash or null
+          "sha256-wDuRyc/DNqG1D4DzyBkUvrzFkBlXBtbpnANZlRV/Fas=";
+
+      name = "source";
+      stripRoot = false;
+      url = "https://files.squeak.org/${squeakVersionBase}/${squeakImageName}/${squeakImageName}.zip";
+    };
 
   installTargets = [
     "install"
     "install-image"
   ];
 
-  postInstall = ''
-    rm "$out/squeak"
-    cp --no-preserve mode "$sourcesSrc" "$out"/lib/squeak/SqueakV${lib.escapeShellArg squeakSourcesVersion}.sources
+  postAutoreconf = ''
+    rm ./acplugins.m4
+    popd > /dev/null
   '';
+
+  postUnpack = ''
+    for file in "$imageSrc"/*.{image,changes}; do
+      gzip -c "$file" > "$sourceRoot/''${file##"$imageSrc"/}.gz"
+    done
+  '';
+
+  preAutoreconf = ''
+    pushd ./platforms/unix/config > /dev/null
+    ./mkacinc > ./acplugins.m4
+  '';
+
+  prePatch = ''
+    dos2unix platforms/unix/plugins/*/{Makefile.inc,acinclude.m4}
+  '';
+
+  sourcesSrc = fetchurl {
+    hash =
+      nullableOr args.squeakSourcesHash or null
+        "sha256-ZViZ1VgI32LwLTEyw7utp8oaAK3UmCNJnHqsGm1IKYE=";
+
+    url = "https://files.squeak.org/sources_files/SqueakV${squeakSourcesVersion}.sources.gz";
+  };
+
+  vmBuild = "linux64x64";
+  vmHash = squeakVmCommitHash;
+  vmSrcUrl = "https://github.com/OpenSmalltalk/opensmalltalk-vm.git";
+  vmVersionRelease = squeakVmVersionRelease; # "202003021730"
 
   meta = {
     description = "Squeak virtual machine";
     homepage = "https://opensmalltalk.org/";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 }

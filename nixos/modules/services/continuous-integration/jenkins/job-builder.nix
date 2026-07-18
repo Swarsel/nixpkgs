@@ -27,52 +27,48 @@ in
         <https://jenkins-job-builder.readthedocs.io/>
       '';
 
-      accessUser = lib.mkOption {
-        default = "admin";
-        type = lib.types.str;
-        description = ''
-          User id in Jenkins used to reload config.
-        '';
-      };
-
       accessToken = lib.mkOption {
         default = "";
-        type = lib.types.str;
+
         description = ''
           User token in Jenkins used to reload config.
           WARNING: This token will be world readable in the Nix store. To keep
           it secret, use the {option}`accessTokenFile` option instead.
         '';
+
+        type = lib.types.str;
       };
 
       accessTokenFile = lib.mkOption {
         default = "${config.services.jenkins.home}/secrets/initialAdminPassword";
         defaultText = lib.literalExpression ''"''${config.services.jenkins.home}/secrets/initialAdminPassword"'';
-        type = lib.types.str;
-        example = "/run/keys/jenkins-job-builder-access-token";
+
         description = ''
           File containing the API token for the {option}`accessUser`
           user.
         '';
+
+        example = "/run/keys/jenkins-job-builder-access-token";
+        type = lib.types.str;
       };
 
-      yamlJobs = lib.mkOption {
-        default = "";
-        type = lib.types.lines;
-        example = ''
-          - job:
-              name: jenkins-job-test-1
-              builders:
-                - shell: echo 'Hello world!'
-        '';
+      accessUser = lib.mkOption {
+        default = "admin";
+
         description = ''
-          Job descriptions for Jenkins Job Builder in YAML format.
+          User id in Jenkins used to reload config.
         '';
+
+        type = lib.types.str;
       };
 
       jsonJobs = lib.mkOption {
         default = [ ];
-        type = lib.types.listOf lib.types.str;
+
+        description = ''
+          Job descriptions for Jenkins Job Builder in JSON format.
+        '';
+
         example = lib.literalExpression ''
           [
             '''
@@ -85,14 +81,20 @@ in
             '''
           ]
         '';
-        description = ''
-          Job descriptions for Jenkins Job Builder in JSON format.
-        '';
+
+        type = lib.types.listOf lib.types.str;
       };
 
       nixJobs = lib.mkOption {
         default = [ ];
-        type = lib.types.listOf lib.types.attrs;
+
+        description = ''
+          Job descriptions for Jenkins Job Builder in Nix format.
+
+          This is a trivial wrapper around jsonJobs, using builtins.toJSON
+          behind the scene.
+        '';
+
         example = lib.literalExpression ''
           [ { job =
               { name = "jenkins-job-test-3";
@@ -103,12 +105,25 @@ in
             }
           ]
         '';
-        description = ''
-          Job descriptions for Jenkins Job Builder in Nix format.
 
-          This is a trivial wrapper around jsonJobs, using builtins.toJSON
-          behind the scene.
+        type = lib.types.listOf lib.types.attrs;
+      };
+
+      yamlJobs = lib.mkOption {
+        default = "";
+
+        description = ''
+          Job descriptions for Jenkins Job Builder in YAML format.
         '';
+
+        example = ''
+          - job:
+              name: jenkins-job-test-1
+              builders:
+                - shell: echo 'Hello world!'
+        '';
+
+        type = lib.types.lines;
       };
     };
   };
@@ -122,6 +137,7 @@ in
             || (cfg.accessToken == "" && cfg.accessTokenFile != "")
           else
             true;
+
         message = ''
           One of accessToken and accessTokenFile options must be non-empty
           strings, but not both. Current values:
@@ -132,11 +148,10 @@ in
     ];
 
     systemd.services.jenkins-job-builder = {
-      description = "Jenkins Job Builder Service";
       # JJB can run either before or after jenkins. We chose after, so we can
       # always use curl to notify (running) jenkins to reload its config.
       after = [ "jenkins.service" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Jenkins Job Builder Service";
 
       path = with pkgs; [
         jenkins-job-builder
@@ -250,11 +265,14 @@ in
           done
         ''
         + (lib.optionalString (cfg.accessUser != "") reloadScript);
+
       serviceConfig = {
+        RuntimeDirectory = "jenkins-job-builder";
         Type = "oneshot";
         User = jenkinsCfg.user;
-        RuntimeDirectory = "jenkins-job-builder";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

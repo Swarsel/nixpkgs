@@ -1,18 +1,18 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
   gtk-engine-murrine,
   jdupes,
   sassc,
-  themeVariants ? [ ], # default: blue
+  stdenvNoCC,
   colorVariants ? [ ], # default: all
+  grubScreens ? [ ], # default: 1080p
   sizeVariants ? [ ], # default: standard
+  themeVariants ? [ ], # default: blue
   tweaks ? [ ],
   wallpapers ? false,
   withGrub ? false,
-  grubScreens ? [ ], # default: 1080p
 }:
 
 let
@@ -70,15 +70,6 @@ lib.checkListOfEnum "${pname}: theme variants"
       hash = "sha256-TOIpQTYg+1DX/Tq5BMygxbUC0NpzPWBGDtOnnT55c1w=";
     };
 
-    nativeBuildInputs = [
-      jdupes
-      sassc
-    ];
-
-    propagatedUserEnvPkgs = [
-      gtk-engine-murrine
-    ];
-
     postPatch = ''
       patchShebangs install.sh wallpaper/install-wallpapers.sh
 
@@ -86,6 +77,11 @@ lib.checkListOfEnum "${pname}: theme variants"
        --replace-fail /usr/share $out/share \
        --replace-fail '[[ "$UID" -eq "$ROOT_UID" ]]' true
     '';
+
+    nativeBuildInputs = [
+      jdupes
+      sassc
+    ];
 
     installPhase = ''
       runHook preInstall
@@ -116,13 +112,17 @@ lib.checkListOfEnum "${pname}: theme variants"
       runHook postInstall
     '';
 
+    propagatedUserEnvPkgs = [
+      gtk-engine-murrine
+    ];
+
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "Flat Gtk+ theme based on Elegant Design";
       homepage = "https://github.com/vinceliuice/Graphite-gtk-theme";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.unix;
       maintainers = [ lib.maintainers.romildo ];
+      platforms = lib.platforms.unix;
     };
   }

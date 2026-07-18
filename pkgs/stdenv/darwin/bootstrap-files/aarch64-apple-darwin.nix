@@ -12,13 +12,14 @@
 # - build time: Thu, 20 Feb 2025 12:38:34 +0000
 {
   bootstrapTools = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv/aarch64-apple-darwin/d8657587c0c1ce2191b4b489299c386b5b7148c6/bootstrap-tools.tar.xz";
     hash = "sha256-i+KwTIY6P3dKfNmE42BWC9+qUomoDxazO50uvrzNlpE=";
+    url = "http://tarballs.nixos.org/stdenv/aarch64-apple-darwin/d8657587c0c1ce2191b4b489299c386b5b7148c6/bootstrap-tools.tar.xz";
   };
+
   unpack = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv/aarch64-apple-darwin/d8657587c0c1ce2191b4b489299c386b5b7148c6/unpack.nar.xz";
     hash = "sha256-mzql+dmvqtn663HvzWZORA8f9d9RPShwPJNIk9VGEvU=";
     name = "unpack";
     unpack = true;
+    url = "http://tarballs.nixos.org/stdenv/aarch64-apple-darwin/d8657587c0c1ce2191b4b489299c386b5b7148c6/unpack.nar.xz";
   };
 }

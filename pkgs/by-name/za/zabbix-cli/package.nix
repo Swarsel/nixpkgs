@@ -10,7 +10,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "zabbix-cli";
   version = "3.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "unioslo";
@@ -18,6 +17,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-FbLKU8pjnKpVLE85zkxOmvc6rbhc3x6JdKiI7SdSn1w=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    freezegun
+    inline-snapshot
+    pytestCheckHook
+    pytest-httpserver
+  ];
+
+  # Otherwise tests will fail to create directory
+  # Permission denied: '/homeless-shelter'
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
 
   build-system = with python3Packages; [
     hatchling
@@ -42,19 +54,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ httpx.optional-dependencies.socks;
 
-  nativeCheckInputs = with python3Packages; [
-    freezegun
-    inline-snapshot
-    pytestCheckHook
-    pytest-httpserver
-  ];
-
-  # Otherwise tests will fail to create directory
-  # Permission denied: '/homeless-shelter'
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
   disabledTests = [
     # Disable failing test with Click >= v8.2.0
     "test_patch_get_click_type"
@@ -69,18 +68,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_is_headless_set_false"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "zabbix_cli" ];
 
   passthru.tests.version = testers.testVersion {
-    package = zabbix-cli;
     command = "HOME=$(mktemp -d) zabbix-cli --version";
+    package = zabbix-cli;
   };
 
   meta = {
     description = "Command-line interface for Zabbix";
     homepage = "https://github.com/unioslo/zabbix-cli";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "zabbix-cli";
     maintainers = [ lib.maintainers.anthonyroussel ];
+    mainProgram = "zabbix-cli";
   };
 })

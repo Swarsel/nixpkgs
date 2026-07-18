@@ -1,16 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  buildHomeAssistantComponent,
   aiofiles,
+  buildHomeAssistantComponent,
   casttube,
-  websocket-client,
   wakeonlan,
+  websocket-client,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "ollo69";
-  domain = "samsungtv_smart";
   version = "0.14.5";
 
   src = fetchFromGitHub {
@@ -27,11 +25,14 @@ buildHomeAssistantComponent rec {
     wakeonlan
   ];
 
+  domain = "samsungtv_smart";
+  owner = "ollo69";
+
   meta = {
-    changelog = "https://github.com/ollo69/ha-samsungtv-smart/releases/tag/v${version}";
     description = "Home Assistant Samsung TV Integration";
     homepage = "https://github.com/ollo69/ha-samsungtv-smart";
-    maintainers = with lib.maintainers; [ mindstorms6 ];
+    changelog = "https://github.com/ollo69/ha-samsungtv-smart/releases/tag/v${version}";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ mindstorms6 ];
   };
 }

@@ -1,16 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "thunderkittens";
   version = "0-unstable-2026-06-15";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "HazyResearch";
@@ -19,7 +16,7 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-GXrKCMKMDnQO7hNj4WZmmANSVJqEioIArwQWoE+/jVM=";
   };
 
-  dontBuild = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -30,6 +27,9 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
@@ -38,7 +38,7 @@ stdenvNoCC.mkDerivation {
     description = "Tile primitives for speedy CUDA deep learning kernels";
     homepage = "https://github.com/HazyResearch/ThunderKittens";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    platforms = lib.platforms.linux;
   };
 }

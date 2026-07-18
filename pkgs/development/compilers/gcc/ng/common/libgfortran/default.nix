@@ -1,22 +1,21 @@
 {
   lib,
   stdenv,
-  gfortran,
+  autoreconfHook269,
+  buildPackages,
   gcc_meta,
+  getVersionFile,
+  gfortran,
+  libbacktrace,
+  libgcc,
+  libiberty,
   release_version,
   version,
-  getVersionFile,
   monorepoSrc ? null,
-  autoreconfHook269,
-  libiberty,
-  buildPackages,
-  libgcc,
-  libbacktrace,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libgfortran";
   inherit version;
-
+  pname = "libgfortran";
   src = monorepoSrc;
 
   outputs = [
@@ -24,31 +23,31 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
+  patches = [
+    (getVersionFile "libgfortran/force-regular-dirs.patch")
+  ];
+
+  postPatch = ''
+    sourceRoot=$(readlink -e "./libgfortran")
+  '';
+
   strictDeps = true;
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [
     autoreconfHook269
     libiberty
     gfortran
   ];
 
-  patches = [
-    (getVersionFile "libgfortran/force-regular-dirs.patch")
+  configureFlags = [
+    "--disable-dependency-tracking"
+    "gcc_cv_target_thread_file=single"
+    # $CC cannot link binaries, let alone run then
+    "cross_compiling=true"
+    "--with-toolexeclibdir=${placeholder "dev"}/lib"
   ];
 
-  autoreconfFlags = "--install --force --verbose . libgfortran";
-
-  postUnpack = ''
-    mkdir -p ./build
-    buildRoot=$(readlink -e "./build")
-  '';
-
-  postPatch = ''
-    sourceRoot=$(readlink -e "./libgfortran")
-  '';
-
-  enableParallelBuilding = true;
+  makeFlags = [ "MULTIBUILDTOP:=../" ];
 
   preConfigure = ''
     cd "$buildRoot"
@@ -124,6 +123,28 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_COMPILE+=' -isystem ${stdenv.cc.cc}/lib/gcc/${stdenv.hostPlatform.config}/${version}/include-fixed'
   '';
 
+  # Set the variable back the way it was, see corresponding code in
+  # `preConfigure`.
+  postConfigure = lib.optionalString stdenv.hostPlatform.isMusl ''
+    NIX_CFLAGS_COMPILE=$NIX_CFLAGS_COMPILE_OLD
+  '';
+
+  doCheck = true;
+  autoreconfFlags = "--install --force --verbose . libgfortran";
+
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+
+  postUnpack = ''
+    mkdir -p ./build
+    buildRoot=$(readlink -e "./build")
+  '';
+
   topLevelConfigureFlags = [
     "--build=${stdenv.buildPlatform.config}"
     "--host=${stdenv.buildPlatform.config}"
@@ -154,29 +175,6 @@ stdenv.mkDerivation (finalAttrs: {
       # of GCC 11, libgcc only cares if the version is greater than 2.19,
       # which is quite ancient, so this little lie should be fine.
       "--with-glibc-version=${buildPackages.glibc.version}";
-
-  configurePlatforms = [
-    "build"
-    "host"
-  ];
-
-  configureFlags = [
-    "--disable-dependency-tracking"
-    "gcc_cv_target_thread_file=single"
-    # $CC cannot link binaries, let alone run then
-    "cross_compiling=true"
-    "--with-toolexeclibdir=${placeholder "dev"}/lib"
-  ];
-
-  # Set the variable back the way it was, see corresponding code in
-  # `preConfigure`.
-  postConfigure = lib.optionalString stdenv.hostPlatform.isMusl ''
-    NIX_CFLAGS_COMPILE=$NIX_CFLAGS_COMPILE_OLD
-  '';
-
-  makeFlags = [ "MULTIBUILDTOP:=../" ];
-
-  doCheck = true;
 
   passthru = {
     isGNU = true;

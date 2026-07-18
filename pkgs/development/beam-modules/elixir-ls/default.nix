@@ -1,9 +1,9 @@
 {
   lib,
-  elixir,
-  fetchFromGitHub,
-  makeWrapper,
   stdenv,
+  fetchFromGitHub,
+  elixir,
+  makeWrapper,
   nix-update-script,
 }:
 
@@ -30,9 +30,6 @@ stdenv.mkDerivation rec {
   # for substitution
   env.elixir = elixir;
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     cp -R . $out
     ln -s $out/VERSION $out/scripts/VERSION
@@ -50,22 +47,27 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  passthru.updateScript = nix-update-script { };
+
   meta = {
-    homepage = "https://github.com/elixir-lsp/elixir-ls";
-    changelog = "https://github.com/elixir-lsp/elixir-ls/releases/tag/v${version}";
     description = ''
       A frontend-independent IDE "smartness" server for Elixir.
       Implements the "Language Server Protocol" standard and provides debugger support via the "Debug Adapter Protocol"
     '';
+
     longDescription = ''
       The Elixir Language Server provides a server that runs in the background, providing IDEs, editors, and other tools with information about Elixir Mix projects.
       It adheres to the Language Server Protocol, a standard for frontend-independent IDE support.
       Debugger integration is accomplished through the similar VS Code Debug Protocol.
     '';
+
+    homepage = "https://github.com/elixir-lsp/elixir-ls";
+    changelog = "https://github.com/elixir-lsp/elixir-ls/releases/tag/v${version}";
     license = lib.licenses.asl20;
     platforms = lib.platforms.unix;
     mainProgram = "elixir-ls";
     teams = [ lib.teams.beam ];
   };
-  passthru.updateScript = nix-update-script { };
 }

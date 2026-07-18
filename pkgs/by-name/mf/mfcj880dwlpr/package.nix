@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  pkgsi686Linux,
-  dpkg,
-  makeWrapper,
+  a2ps,
   coreutils,
-  gnused,
-  gawk,
-  file,
   cups,
+  dpkg,
+  file,
+  gawk,
+  ghostscript,
+  gnused,
+  makeWrapper,
+  pkgsi686Linux,
+  runtimeShell,
   util-linux,
   xxd,
-  runtimeShell,
-  ghostscript,
-  a2ps,
 }:
 
 # Why:
@@ -45,23 +45,13 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     cups
     ghostscript
     dpkg
     a2ps
   ];
-
-  dontUnpack = true;
-
-  brprintconf_mfcj880dw_script = ''
-    #!${runtimeShell}
-    cd $(mktemp -d)
-    ln -s @out@/usr/bin/brprintconf_mfcj880dw_patched brprintconf_mfcj880dw_patched
-    ln -s @out@/opt/brother/Printers/mfcj880dw/inf/brmfcj880dwfunc brmfcj880dwfunc
-    ln -s @out@/opt/brother/Printers/mfcj880dw/inf/brmfcj880dwrc brmfcj880dwrc
-    ./brprintconf_mfcj880dw_patched "$@"
-  '';
 
   installPhase = ''
     dpkg-deb -x $src $out
@@ -117,13 +107,24 @@ stdenv.mkDerivation rec {
       }
   '';
 
+  brprintconf_mfcj880dw_script = ''
+    #!${runtimeShell}
+    cd $(mktemp -d)
+    ln -s @out@/usr/bin/brprintconf_mfcj880dw_patched brprintconf_mfcj880dw_patched
+    ln -s @out@/opt/brother/Printers/mfcj880dw/inf/brmfcj880dwfunc brmfcj880dwfunc
+    ln -s @out@/opt/brother/Printers/mfcj880dw/inf/brmfcj880dwrc brmfcj880dwrc
+    ./brprintconf_mfcj880dw_patched "$@"
+  '';
+
+  dontUnpack = true;
+
   meta = {
     description = "Brother MFC-J880DW LPR driver";
-    downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=mfcj880dw_us_eu_as&os=128";
     homepage = "http://www.brother.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = with lib.licenses; unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ _6543 ];
     platforms = with lib.platforms; linux;
+    downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=mfcj880dw_us_eu_as&os=128";
   };
 }

@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "quantile-python";
   version = "1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # package has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "quantile" ];
 
   meta = {

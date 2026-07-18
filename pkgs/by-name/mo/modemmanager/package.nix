@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  bash,
+  bash-completion,
+  buildPackages,
+  dbus,
   fetchpatch,
-  glib,
-  libgudev,
-  ppp,
   gettext,
-  pkg-config,
-  libxslt,
-  python3,
+  glib,
+  gobject-introspection,
+  libgudev,
   libmbim,
   libqmi,
-  bash-completion,
+  libxslt,
   meson,
   ninja,
-  vala,
-  dbus,
-  bash,
-  gobject-introspection,
+  pkg-config,
+  polkit,
+  ppp,
+  python3,
+  systemd,
   udevCheckHook,
-  buildPackages,
+  vala,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  polkit,
   withPolkit ? lib.meta.availableOn stdenv.hostPlatform polkit,
-  systemd,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
@@ -35,11 +35,11 @@ stdenv.mkDerivation rec {
   version = "1.24.2";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "mobile-broadband";
     repo = "ModemManager";
     rev = version;
     hash = "sha256-rBLOqpx7Y2BB6/xvhIw+rDEXsLtePhHLBvfpSuJzQik=";
+    domain = "gitlab.freedesktop.org";
   };
 
   patches = [
@@ -47,6 +47,11 @@ stdenv.mkDerivation rec {
     # But these are just placeholders so we do not need to install them at all.
     ./no-dummy-dirs-in-sysconfdir.patch
   ];
+
+  postPatch = ''
+    patchShebangs \
+      tools/test-modemmanager-service.py
+  '';
 
   strictDeps = true;
 
@@ -82,12 +87,6 @@ stdenv.mkDerivation rec {
     systemd
   ];
 
-  nativeInstallCheckInputs = [
-    python3
-    python3.pkgs.dbus-python
-    python3.pkgs.pygobject3
-  ];
-
   mesonFlags = [
     "-Dudevdir=${placeholder "out"}/lib/udev"
     "-Ddbus_policy_dir=${placeholder "out"}/share/dbus-1/system.d"
@@ -102,17 +101,19 @@ stdenv.mkDerivation rec {
     (lib.mesonOption "polkit" (if withPolkit then "strict" else "no"))
   ];
 
-  postPatch = ''
-    patchShebangs \
-      tools/test-modemmanager-service.py
-  '';
-
   # In Nixpkgs g-ir-scanner is patched to produce absolute paths, and
   # that interferes with ModemManager's tests, causing them to try to
   # load libraries from the install path, which doesn't usually exist
   # when `meson test' is run.  So to work around that, we run it as an
   # install check instead, when those paths will have been created.
   doInstallCheck = withIntrospection;
+
+  nativeInstallCheckInputs = [
+    python3
+    python3.pkgs.dbus-python
+    python3.pkgs.pygobject3
+  ];
+
   installCheckPhase = ''
     runHook preInstallCheck
     export G_TEST_DBUS_DAEMON="${dbus}/bin/dbus-daemon"
@@ -125,7 +126,7 @@ stdenv.mkDerivation rec {
     description = "WWAN modem manager, part of NetworkManager";
     homepage = "https://www.freedesktop.org/wiki/Software/ModemManager/";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.freedesktop ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.freedesktop ];
   };
 }

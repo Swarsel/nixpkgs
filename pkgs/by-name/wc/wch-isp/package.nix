@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromSourcehut,
-  pkg-config,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,24 +19,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ libusb1 ];
+  doInstallCheck = true;
 
   installFlags = [
     "DESTDIR=$(out)"
     "PREFIX="
   ];
+
   installTargets = [
     "install"
     "install-rules"
   ];
 
-  doInstallCheck = true;
-
   meta = {
     description = "Firmware programmer for WCH microcontrollers over USB";
-    mainProgram = "wch-isp";
-    license = lib.licenses.gpl2Only;
     homepage = "https://git.sr.ht/~jmaselbas/wch-isp";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ lesuisse ];
     platforms = lib.platforms.unix;
+    mainProgram = "wch-isp";
   };
 })

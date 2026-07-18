@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
-  textfsm,
+  buildPythonPackage,
   invoke,
+  poetry-core,
   pytestCheckHook,
   ruamel-yaml,
+  textfsm,
   toml,
   yamllint,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "ntc-templates";
   version = "8.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "networktocode";
@@ -23,12 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-J1Icf9UG5IMYBH90Mfxd+p+rk57z2OXQENnoRAaepN4=";
   };
 
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [ "textfsm" ];
-
-  dependencies = [ textfsm ];
-
   nativeCheckInputs = [
     invoke
     pytestCheckHook
@@ -36,6 +29,11 @@ buildPythonPackage rec {
     toml
     yamllint
   ];
+
+  build-system = [ poetry-core ];
+  dependencies = [ textfsm ];
+  pyproject = true;
+  pythonRelaxDeps = [ "textfsm" ];
 
   meta = {
     description = "TextFSM templates for parsing show commands of network devices";

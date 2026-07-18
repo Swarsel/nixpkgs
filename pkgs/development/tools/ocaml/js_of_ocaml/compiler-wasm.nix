@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   binaryen,
+  buildDunePackage,
   cmdliner,
   js_of_ocaml-compiler,
   menhir,
@@ -12,9 +12,8 @@
 }:
 
 buildDunePackage {
-  pname = "wasm_of_ocaml-compiler";
   inherit (js_of_ocaml-compiler) version src;
-  minimalOCamlVersion = "4.12";
+  pname = "wasm_of_ocaml-compiler";
 
   nativeBuildInputs = [
     binaryen
@@ -34,10 +33,11 @@ buildDunePackage {
   ];
 
   dontStrip = true;
+  minimalOCamlVersion = "4.12";
 
   meta = js_of_ocaml-compiler.meta // {
     description = "Compiler from OCaml bytecode to WebAssembly";
-    mainProgram = "wasm_of_ocaml";
     maintainers = [ lib.maintainers.stepbrobd ];
+    mainProgram = "wasm_of_ocaml";
   };
 }

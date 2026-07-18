@@ -1,18 +1,15 @@
 {
   lib,
   buildDunePackage,
+  containers,
   decoders,
   ezxmlm,
-  containers,
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "decoders-ezxmlm";
-
   # sub-package built separately from the same source
   inherit (decoders) src version;
-
-  minimalOCamlVersion = "4.03.0";
+  pname = "decoders-ezxmlm";
 
   propagatedBuildInputs = [
     decoders
@@ -20,9 +17,12 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     containers
   ];
+
+  minimalOCamlVersion = "4.03.0";
 
   meta = {
     description = "Ezxmlm backend for decoders";

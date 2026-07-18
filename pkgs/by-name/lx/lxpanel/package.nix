@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
   autoreconfHook,
-  pkg-config,
+  cairo,
+  curl,
+  gdk-pixbuf,
+  gdk-pixbuf-xlib,
   gettext,
-  m4,
-  intltool,
-  libxmlxx,
-  keybinder,
-  keybinder3,
   gtk2-x11,
   gtk3,
-  libx11,
+  intltool,
+  keybinder,
+  keybinder3,
   libfm,
   libwnck,
   libwnck2,
+  libx11,
+  libxmlxx,
   libxmu,
   libxpm,
-  cairo,
-  gdk-pixbuf,
-  gdk-pixbuf-xlib,
-  menu-cache,
   lxmenu-data,
+  m4,
+  menu-cache,
+  pkg-config,
   wirelesstools,
-  curl,
   supportAlsa ? false,
-  alsa-lib,
   withGtk3 ? true,
 }:
 
@@ -40,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-jpe5AfRkyTVKQ9biOJiWKv0OVqP8gRCzfhSLDjnrEPc=";
   };
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -72,6 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional supportAlsa alsa-lib;
 
   configureFlags = lib.optional withGtk3 "--enable-gtk3";
+  enableParallelBuilding = true;
 
   meta = {
     description = "Lightweight X11 desktop panel for LXDE";

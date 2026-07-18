@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bc,
   bluez,
+  makeWrapper,
   unstableGitUpdater,
 }:
 
@@ -44,11 +44,13 @@ stdenv.mkDerivation {
     description = "Rofi-based interface to connect to bluetooth devices and display status info";
     homepage = "https://github.com/nickclyde/rofi-bluetooth";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       MoritzBoehme
       iamanaws
     ];
-    mainProgram = "rofi-bluetooth";
+
     platforms = lib.platforms.linux;
+    mainProgram = "rofi-bluetooth";
   };
 }

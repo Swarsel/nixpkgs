@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
+  cryptsetup,
   fetchpatch,
   intltool,
   ntfs3g,
   util-linux,
-  cryptsetup,
-  mediaDir ? "/media/",
   lockDir ? "/var/lock/pmount",
+  mediaDir ? "/media/",
   whiteList ? "/etc/pmount.allow",
 }:
 
@@ -28,7 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     let
       # https://salsa.debian.org/debian/pmount/-/tree/debian/master/debian/patches
       fetchDebPatch =
-        { name, hash }:
+        { hash, name }:
         fetchpatch {
           inherit name hash;
           url = "https://salsa.debian.org/debian/pmount/-/raw/430e4634aa7a2e6a5a91852c5b0fd3698b186000/debian/patches/${name}";
@@ -36,36 +36,36 @@ stdenv.mkDerivation (finalAttrs: {
     in
     map fetchDebPatch [
       {
-        name = "02-fix-spelling-binary-errors.patch";
         hash = "sha256-ukGHDqsG3Eo/0bhv2GPwX0N6uZOI+3BowMY+l1wtd9o=";
+        name = "02-fix-spelling-binary-errors.patch";
       }
       {
-        name = "03-fix-spelling-manpage-error.patch";
         hash = "sha256-rsa3t165+yWBOnRV3SnOMmYSuNuydZtnOdydUzcjDaQ=";
+        name = "03-fix-spelling-manpage-error.patch";
       }
       {
-        name = "04-fix-implicit-function-declaration.patch";
         hash = "sha256-Le8gVIW72oZGymN7gM5uOGNEhrzOTirnilNedUkSpco=";
+        name = "04-fix-implicit-function-declaration.patch";
       }
       {
-        name = "05-exfat-support.patch";
         hash = "sha256-Yl9QuA8tMIej4nQIbYibcUVFJdgnVaN+34/xoJp5NbU=";
+        name = "05-exfat-support.patch";
       }
       {
-        name = "06-C99-implicit-function-declaration-fixes.patch";
         hash = "sha256-xFFfl9BkBqbUSAKaJwvKNgHyWbxUO5wKyEpwz3anwdM=";
+        name = "06-C99-implicit-function-declaration-fixes.patch";
       }
       {
-        name = "07-Add-probing-for-Btrfs.patch";
         hash = "sha256-9SKyLAVmZTGgsAi9aCxkw1OzWVcegoZy2DaupiS9kPA=";
+        name = "07-Add-probing-for-Btrfs.patch";
       }
       {
-        name = "08-Support-btlkOpen-alongside-of-luksOpen.patch";
         hash = "sha256-2PJky3lRUKkOB2Js86XN8gqmYMxpsUbLJ39XnrirCDw=";
+        name = "08-Support-btlkOpen-alongside-of-luksOpen.patch";
       }
       {
-        name = "09-Probe-for-f2fs.patch";
         hash = "sha256-VMnrSEaIPwEfbUi+Q88vQdSBQgq4+jJ19Bjc/ueemnw=";
+        name = "09-Probe-for-f2fs.patch";
       }
     ];
 
@@ -73,6 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
     intltool
     util-linux
   ];
+
   buildInputs = [ util-linux ];
 
   configureFlags = [
@@ -95,10 +96,10 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = false; # fails 1 out of 1 tests with "Error: could not open fstab-type file: No such file or directory"
 
   meta = {
-    homepage = "https://bazaar.launchpad.net/~fourmond/pmount/main/files";
     description = "Mount removable devices as normal user";
+    homepage = "https://bazaar.launchpad.net/~fourmond/pmount/main/files";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ratakor ];
+    platforms = lib.platforms.linux;
   };
 })

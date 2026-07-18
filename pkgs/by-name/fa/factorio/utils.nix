@@ -21,9 +21,6 @@ in
       modDrvs = unique (flatten (map recursiveDeps mods));
     in
     stdenv.mkDerivation {
-      name = "factorio-mod-directory";
-
-      preferLocalBuild = true;
       buildCommand = ''
         mkdir -p $out
         for modDrv in ${toString modDrvs}; do
@@ -34,14 +31,17 @@ in
       + (optionalString (modsDatFile != null) ''
         cp ${modsDatFile} $out/mod-settings.dat
       '');
+
+      name = "factorio-mod-directory";
+      preferLocalBuild = true;
     };
 
   modDrv =
-    { allRecommendedMods, allOptionalMods }:
+    { allOptionalMods, allRecommendedMods }:
     {
       src,
-      name ? null,
       deps ? [ ],
+      name ? null,
       optionalDeps ? [ ],
       recommendedDeps ? [ ],
     }:
@@ -49,15 +49,6 @@ in
 
       inherit src;
 
-      # Use the name of the zip, but endstrip ".zip" and possibly the querystring that gets left in by fetchurl
-      name = replaceStrings [ "_" ] [ "-" ] (
-        if name != null then name else removeSuffix ".zip" (head (splitString "?" src.name))
-      );
-
-      deps =
-        deps ++ optionals allOptionalMods optionalDeps ++ optionals allRecommendedMods recommendedDeps;
-
-      preferLocalBuild = true;
       buildCommand = ''
         mkdir -p $out
         srcBase=$(basename $src)
@@ -65,5 +56,15 @@ in
         srcBase=''${srcBase%\?*} # strip querystring leftover from fetchurl
         cp $src $out/$srcBase
       '';
+
+      deps =
+        deps ++ optionals allOptionalMods optionalDeps ++ optionals allRecommendedMods recommendedDeps;
+
+      # Use the name of the zip, but endstrip ".zip" and possibly the querystring that gets left in by fetchurl
+      name = replaceStrings [ "_" ] [ "-" ] (
+        if name != null then name else removeSuffix ".zip" (head (splitString "?" src.name))
+      );
+
+      preferLocalBuild = true;
     };
 }

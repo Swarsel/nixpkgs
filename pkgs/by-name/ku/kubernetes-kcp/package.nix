@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
   kubernetes-kcp,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,9 +18,18 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rZLav2JOKzG5vW/wyfk7EIkOawsYOmG32OHXxkyyb3Y=";
   };
+
+  # TODO: Check if this is necessary.
+  # __darwinAllowLocalNetworking = true;
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-IuQzGme+CZqqD1VMO+rumbbc+ziPQaVJCyJNhMdU3jE=";
 
-  subPackages = [ "cmd/kcp" ];
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    $out/bin/kcp completion bash > kcp.bash
+    $out/bin/kcp completion zsh > kcp.zsh
+    $out/bin/kcp completion fish > kcp.fish
+    installShellCompletion kcp.{bash,zsh,fish}
+  '';
 
   # TODO: The upstream has the additional version information pulled from go.mod
   # dependencies.
@@ -39,32 +48,25 @@ buildGoModule (finalAttrs: {
     "-X k8s.io/component-base/version.buildDate=unknown"
   ];
 
-  # TODO: Check if this is necessary.
-  # __darwinAllowLocalNetworking = true;
-
-  nativeBuildInputs = [ installShellFiles ];
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    $out/bin/kcp completion bash > kcp.bash
-    $out/bin/kcp completion zsh > kcp.zsh
-    $out/bin/kcp completion fish > kcp.fish
-    installShellCompletion kcp.{bash,zsh,fish}
-  '';
+  subPackages = [ "cmd/kcp" ];
 
   passthru.tests.version = testers.testVersion {
-    package = kubernetes-kcp;
-    command = "kcp --version";
     # NOTE: Once the go.mod version is pulled in, the version info here needs
     # to be also updated.
     version = "v${finalAttrs.version}";
+    command = "kcp --version";
+    package = kubernetes-kcp;
   };
 
   meta = {
-    homepage = "https://kcp.io";
     description = "Kubernetes-like control planes for form-factors and use-cases beyond Kubernetes and container workloads";
-    mainProgram = "kcp";
+    homepage = "https://kcp.io";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       rytswd
     ];
+
+    mainProgram = "kcp";
   };
 })

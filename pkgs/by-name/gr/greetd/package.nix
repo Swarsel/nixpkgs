@@ -1,11 +1,11 @@
 {
-  rustPlatform,
   lib,
   fetchFromSourcehut,
-  pam,
-  scdoc,
   installShellFiles,
   nix-update-script,
+  pam,
+  rustPlatform,
+  scdoc,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-jgvYnjt7j4uubpBxrYM3YiUfF1PWuHAN1kwnv6Y+bMg=";
   };
 
-  cargoHash = "sha256-JwTLZawY9+M09IDbMPoNUcNrnW1C2OVlEVn1n7ol6dY=";
-
   nativeBuildInputs = [
     scdoc
     installShellFiles
@@ -29,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     pam
   ];
+
+  cargoHash = "sha256-JwTLZawY9+M09IDbMPoNUcNrnW1C2OVlEVn1n7ol6dY=";
 
   postInstall = ''
     for f in man/*; do
@@ -42,15 +42,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Minimal and flexible login manager daemon";
+
     longDescription = ''
       greetd is a minimal and flexible login manager daemon
       that makes no assumptions about what you want to launch.
       Comes with agreety, a simple, text-based greeter.
     '';
+
     homepage = "https://sr.ht/~kennylevinsen/greetd/";
-    mainProgram = "greetd";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "greetd";
   };
 })

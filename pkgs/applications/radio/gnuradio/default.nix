@@ -2,44 +2,44 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  # Remove gcc and python references
-  removeReferencesTo,
-  pkg-config,
-  volk,
-  cppunit,
-  orc,
-  boost,
-  spdlog,
-  mpir,
-  doxygen,
-  python,
-  codec2,
-  gsm,
-  fftwFloat,
-  alsa-lib,
-  libjack2,
-  libiio,
-  libad9361,
-  uhd,
   SDL,
-  gsl,
-  soapysdr,
-  libsodium,
-  libsndfile,
-  libunwind,
-  thrift,
+  alsa-lib,
+  boost,
+  cairo,
+  cmake,
+  codec2,
+  cppunit,
   cppzmq,
-  # Needed only if qt-gui is disabled, from some reason
-  icu,
+  doxygen,
+  fetchpatch,
+  fftwFloat,
+  gobject-introspection,
+  gsl,
+  gsm,
   # GUI related
   gtk3,
-  pango,
-  gobject-introspection,
-  cairo,
-  qt5,
+  # Needed only if qt-gui is disabled, from some reason
+  icu,
+  libad9361,
+  libiio,
+  libjack2,
   libsForQt5,
+  libsndfile,
+  libsodium,
+  libunwind,
+  mpir,
+  orc,
+  pango,
+  pkg-config,
+  python,
+  qt5,
+  # Remove gcc and python references
+  removeReferencesTo,
+  soapysdr,
+  spdlog,
+  thrift,
+  uhd,
+  volk,
   # Features available to override, the list of them is in featuresInfo. They
   # are all turned on by default.
   features ? { },
@@ -59,6 +59,12 @@ let
         pkg-config
         orc
       ];
+
+      pythonNative = with python.pythonOnBuildForHost.pkgs; [
+        mako
+        six
+      ];
+
       runtime = [
         volk
         boost
@@ -68,61 +74,31 @@ let
       # when gr-qtgui is disabled, icu needs to be included, otherwise
       # building with boost 1.7x fails
       ++ lib.optionals (!(hasFeature "gr-qtgui")) [ icu ];
-      pythonNative = with python.pythonOnBuildForHost.pkgs; [
-        mako
-        six
-      ];
     };
+
+    common-precompiled-headers = {
+      cmakeEnableFlag = "COMMON_PCH";
+    };
+
     doxygen = {
-      native = [ doxygen ];
       cmakeEnableFlag = "DOXYGEN";
+      native = [ doxygen ];
     };
-    man-pages = {
-      cmakeEnableFlag = "MANPAGES";
-    };
-    python-support = {
-      pythonRuntime = [ python.pkgs.six ];
-      native = [
-        python
-      ];
-      cmakeEnableFlag = "PYTHON";
-    };
-    testing-support = {
-      native = [ cppunit ];
-      cmakeEnableFlag = "TESTING";
-    };
-    post-install = {
-      cmakeEnableFlag = "POSTINSTALL";
-    };
-    gnuradio-runtime = {
-      cmakeEnableFlag = "GNURADIO_RUNTIME";
-      pythonRuntime = [
-        python.pkgs.pybind11
-      ];
-    };
-    gr-ctrlport = {
-      runtime = [
-        libunwind
-        thrift
-      ];
-      pythonRuntime = [
-        python.pkgs.thrift
-        # For gr-perf-monitorx
-        python.pkgs.matplotlib
-        python.pkgs.networkx
-      ];
-      cmakeEnableFlag = "GR_CTRLPORT";
-    };
+
     gnuradio-companion = {
+      cmakeEnableFlag = "GRC";
+
+      native = [
+        python.pkgs.pytest
+      ];
+
       pythonRuntime = with python.pkgs; [
         pyyaml
         mako
         numpy
         pygobject3
       ];
-      native = [
-        python.pkgs.pytest
-      ];
+
       runtime = [
         gtk3
         pango
@@ -130,151 +106,236 @@ let
         cairo
         libsndfile
       ];
-      cmakeEnableFlag = "GRC";
     };
-    jsonyaml_blocks = {
+
+    gnuradio-runtime = {
+      cmakeEnableFlag = "GNURADIO_RUNTIME";
+
       pythonRuntime = [
-        python.pkgs.jsonschema
-      ];
-      cmakeEnableFlag = "JSONYAML_BLOCKS";
-    };
-    gr-blocks = {
-      cmakeEnableFlag = "GR_BLOCKS";
-      runtime = [
-        # Required to compile wavfile blocks.
-        libsndfile
+        python.pkgs.pybind11
       ];
     };
-    gr-fec = {
-      cmakeEnableFlag = "GR_FEC";
-    };
-    gr-fft = {
-      runtime = [ fftwFloat ];
-      cmakeEnableFlag = "GR_FFT";
-    };
-    gr-filter = {
-      runtime = [ fftwFloat ];
-      cmakeEnableFlag = "GR_FILTER";
-      pythonRuntime = with python.pkgs; [
-        scipy
-        pyqtgraph
-        pyqt5
-      ];
-    };
+
     gr-analog = {
       cmakeEnableFlag = "GR_ANALOG";
     };
-    gr-digital = {
-      cmakeEnableFlag = "GR_DIGITAL";
-    };
-    gr-dtv = {
-      cmakeEnableFlag = "GR_DTV";
-    };
+
     gr-audio = {
+      cmakeEnableFlag = "GR_AUDIO";
+
       runtime =
         [ ]
         ++ lib.optionals stdenv.hostPlatform.isLinux [
           alsa-lib
           libjack2
         ];
-      cmakeEnableFlag = "GR_AUDIO";
     };
+
+    gr-blocks = {
+      cmakeEnableFlag = "GR_BLOCKS";
+
+      runtime = [
+        # Required to compile wavfile blocks.
+        libsndfile
+      ];
+    };
+
+    gr-blocktool = {
+      cmakeEnableFlag = "GR_BLOCKTOOL";
+    };
+
     gr-channels = {
       cmakeEnableFlag = "GR_CHANNELS";
     };
-    gr-pdu = {
-      cmakeEnableFlag = "GR_PDU";
+
+    gr-ctrlport = {
+      cmakeEnableFlag = "GR_CTRLPORT";
+
+      pythonRuntime = [
+        python.pkgs.thrift
+        # For gr-perf-monitorx
+        python.pkgs.matplotlib
+        python.pkgs.networkx
+      ];
+
       runtime = [
-        libiio
-        libad9361
+        libunwind
+        thrift
       ];
     };
+
+    gr-digital = {
+      cmakeEnableFlag = "GR_DIGITAL";
+    };
+
+    gr-dtv = {
+      cmakeEnableFlag = "GR_DTV";
+    };
+
+    gr-fec = {
+      cmakeEnableFlag = "GR_FEC";
+    };
+
+    gr-fft = {
+      cmakeEnableFlag = "GR_FFT";
+      runtime = [ fftwFloat ];
+    };
+
+    gr-filter = {
+      cmakeEnableFlag = "GR_FILTER";
+
+      pythonRuntime = with python.pkgs; [
+        scipy
+        pyqtgraph
+        pyqt5
+      ];
+
+      runtime = [ fftwFloat ];
+    };
+
     gr-iio = {
       cmakeEnableFlag = "GR_IIO";
+
       runtime = [
         libiio
       ];
     };
-    common-precompiled-headers = {
-      cmakeEnableFlag = "COMMON_PCH";
-    };
-    gr-qtgui = {
-      runtime = [
-        qt5.qtbase
-        libsForQt5.qwt
-      ];
-      pythonRuntime = [ python.pkgs.pyqt5 ];
-      cmakeEnableFlag = "GR_QTGUI";
-    };
-    gr-trellis = {
-      cmakeEnableFlag = "GR_TRELLIS";
-    };
-    gr-uhd = {
-      runtime = [
-        uhd
-      ];
-      cmakeEnableFlag = "GR_UHD";
-    };
-    gr-uhd-rfnoc = {
-      runtime = [
-        uhd
-      ];
-      cmakeEnableFlag = "UHD_RFNOC";
-    };
-    gr-utils = {
-      cmakeEnableFlag = "GR_UTILS";
-      pythonRuntime = with python.pkgs; [
-        # For gr_plot
-        matplotlib
-      ];
-    };
+
     gr-modtool = {
+      cmakeEnableFlag = "GR_MODTOOL";
+
       pythonRuntime = with python.pkgs; [
         setuptools
         click
         click-plugins
         pygccxml
       ];
-      cmakeEnableFlag = "GR_MODTOOL";
     };
-    gr-blocktool = {
-      cmakeEnableFlag = "GR_BLOCKTOOL";
+
+    gr-network = {
+      cmakeEnableFlag = "GR_NETWORK";
     };
+
+    gr-pdu = {
+      cmakeEnableFlag = "GR_PDU";
+
+      runtime = [
+        libiio
+        libad9361
+      ];
+    };
+
+    gr-qtgui = {
+      cmakeEnableFlag = "GR_QTGUI";
+      pythonRuntime = [ python.pkgs.pyqt5 ];
+
+      runtime = [
+        qt5.qtbase
+        libsForQt5.qwt
+      ];
+    };
+
+    gr-soapy = {
+      cmakeEnableFlag = "GR_SOAPY";
+
+      runtime = [
+        soapysdr
+      ];
+    };
+
+    gr-trellis = {
+      cmakeEnableFlag = "GR_TRELLIS";
+    };
+
+    gr-uhd = {
+      cmakeEnableFlag = "GR_UHD";
+
+      runtime = [
+        uhd
+      ];
+    };
+
+    gr-uhd-rfnoc = {
+      cmakeEnableFlag = "UHD_RFNOC";
+
+      runtime = [
+        uhd
+      ];
+    };
+
+    gr-utils = {
+      cmakeEnableFlag = "GR_UTILS";
+
+      pythonRuntime = with python.pkgs; [
+        # For gr_plot
+        matplotlib
+      ];
+    };
+
     gr-video-sdl = {
-      runtime = [ SDL ];
       cmakeEnableFlag = "GR_VIDEO_SDL";
+      runtime = [ SDL ];
     };
+
     gr-vocoder = {
+      cmakeEnableFlag = "GR_VOCODER";
+
       runtime = [
         codec2
         gsm
       ];
-      cmakeEnableFlag = "GR_VOCODER";
     };
+
     gr-wavelet = {
       cmakeEnableFlag = "GR_WAVELET";
+
       runtime = [
         gsl
         libsodium
       ];
     };
+
     gr-zeromq = {
-      runtime = [ cppzmq ];
       cmakeEnableFlag = "GR_ZEROMQ";
+
       pythonRuntime = [
         # Will compile without this, but it is required by tests, and by some
         # gr blocks.
         python.pkgs.pyzmq
       ];
+
+      runtime = [ cppzmq ];
     };
-    gr-network = {
-      cmakeEnableFlag = "GR_NETWORK";
-    };
-    gr-soapy = {
-      cmakeEnableFlag = "GR_SOAPY";
-      runtime = [
-        soapysdr
+
+    jsonyaml_blocks = {
+      cmakeEnableFlag = "JSONYAML_BLOCKS";
+
+      pythonRuntime = [
+        python.pkgs.jsonschema
       ];
+    };
+
+    man-pages = {
+      cmakeEnableFlag = "MANPAGES";
+    };
+
+    post-install = {
+      cmakeEnableFlag = "POSTINSTALL";
+    };
+
+    python-support = {
+      cmakeEnableFlag = "PYTHON";
+
+      native = [
+        python
+      ];
+
+      pythonRuntime = [ python.pkgs.six ];
+    };
+
+    testing-support = {
+      cmakeEnableFlag = "TESTING";
+      native = [ cppunit ];
     };
   };
   shared = (
@@ -291,8 +352,9 @@ let
         overrideSrc
         fetchFromGitHub
         ;
-      qt = qt5;
+
       gtk = gtk3;
+      qt = qt5;
     }
   );
   inherit (shared.passthru) hasFeature; # function
@@ -307,6 +369,7 @@ stdenv.mkDerivation (
       # Will still evaluate correctly if not used here. It only helps nix-update
       # find the right file in which version is defined.
       inherit (shared) src;
+
       patches = [
         # Not accepted upstream, see https://github.com/gnuradio/gnuradio/pull/5227
         ./modtool-newmod-permissions.patch
@@ -315,24 +378,10 @@ stdenv.mkDerivation (
         # Boost.System, which has been a header-only library since 1.69, was
         # removed in 1.89.
         (fetchpatch {
-          url = "https://github.com/gnuradio/gnuradio/commit/d8814e0c3ef68372e5a1093603ef602e2119cd8a.patch";
           hash = "sha256-TQxqsce1AhSjdwaG2IP11QTeOgdJHN6cAAnznBl8eM8=";
+          url = "https://github.com/gnuradio/gnuradio/commit/d8814e0c3ef68372e5a1093603ef602e2119cd8a.patch";
         })
       ];
-      passthru = shared.passthru // {
-        # Deps that are potentially overridden and are used inside GR plugins - the same version must
-        inherit
-          uhd
-          boost
-          volk
-          libiio
-          libad9361
-          ;
-        # Used by many gnuradio modules, the same attribute is present in
-        # previous gnuradio versions where there it's log4cpp.
-        logLib = spdlog;
-        inherit (libsForQt5) qwt;
-      };
 
       postInstall =
         shared.postInstall
@@ -344,6 +393,22 @@ stdenv.mkDerivation (
           remove-references-to -t ${python} $(readlink -f $out/lib/libgnuradio-runtime${stdenv.hostPlatform.extensions.sharedLibrary})
           remove-references-to -t ${python.pkgs.pybind11} $out/lib/cmake/gnuradio/gnuradio-runtimeTargets.cmake
         '';
+
+      passthru = shared.passthru // {
+        # Deps that are potentially overridden and are used inside GR plugins - the same version must
+        inherit
+          uhd
+          boost
+          volk
+          libiio
+          libad9361
+          ;
+
+        inherit (libsForQt5) qwt;
+        # Used by many gnuradio modules, the same attribute is present in
+        # previous gnuradio versions where there it's log4cpp.
+        logLib = spdlog;
+      };
     }
   )
 )

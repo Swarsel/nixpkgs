@@ -5,9 +5,9 @@
   autoconf,
   cmake,
   hdf5,
+  nix-update-script,
   versionCheckHook,
   zlib,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,8 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.51.1";
 
   src = fetchFromGitHub {
-    repo = "kallisto";
     owner = "pachterlab";
+    repo = "kallisto";
     rev = "v${finalAttrs.version}";
     hash = "sha256-hfdeztEyHvuOnLS71oSv8sPqFe2UCX5KlANqrT/Gfx8=";
   };
@@ -42,17 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeFlags = [ "-DUSE_HDF5=ON" ];
-
-  enableParallelBuilding = false;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = false;
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Near-optimal quantification of transcripts from RNA-seq data";
+
     longDescription = ''
       kallisto is a program for quantifying abundances of transcripts
       from RNA sequencing data, or more generally of target sequences
@@ -61,10 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
       compatibility of reads with targets, without the need for
       alignment.
     '';
-    mainProgram = "kallisto";
+
     homepage = "https://pachterlab.github.io/kallisto";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.arcadio ];
+    platforms = lib.platforms.linux;
+    mainProgram = "kallisto";
   };
 })

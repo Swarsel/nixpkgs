@@ -4,21 +4,21 @@
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  pkg-config,
-  gettext,
-  gtk3,
   dbus-glib,
-  libxscrnsaver,
+  gettext,
+  gitUpdater,
+  gtk3,
   libnotify,
   libxml2,
+  libxscrnsaver,
   mate-common,
   mate-desktop,
   mate-menus,
   mate-panel,
   pam,
+  pkg-config,
   systemd,
   wrapGAppsHook3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,9 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--without-console-kit" ];
-
   makeFlags = [ "DBUS_SESSION_SERVICE_DIR=$(out)/etc" ];
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
@@ -68,10 +66,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Screen saver and locker for the MATE desktop";
     homepage = "https://mate-desktop.org";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
     ];
+
     platforms = lib.platforms.unix;
     teams = [ lib.teams.mate ];
   };

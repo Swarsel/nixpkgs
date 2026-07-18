@@ -3,20 +3,20 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  perl,
-  kdePackages,
-  libtoxcore,
-  libpthread-stubs,
-  libxdmcp,
-  libxscrnsaver,
   ffmpeg,
   filter-audio,
+  kdePackages,
   libexif,
-  libsodium,
   libopus,
+  libpthread-stubs,
+  libsodium,
+  libtoxcore,
   libvpx,
+  libxdmcp,
+  libxscrnsaver,
   openal,
+  perl,
+  pkg-config,
   qrencode,
   qt6,
   sqlcipher,
@@ -32,6 +32,14 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-5pH39NsJdt4+ldlbpkvA0n/X/LkEUEv4UL1K/W3BqmM=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    qt6.qttools
+    qt6.wrapQtAppsHook
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ perl ];
 
   buildInputs = [
     kdePackages.sonnet
@@ -52,29 +60,23 @@ stdenv.mkDerivation (finalAttrs: {
     sqlcipher
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    qt6.qttools
-    qt6.wrapQtAppsHook
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ perl ];
-
   cmakeFlags = [
     "-DGIT_DESCRIBE=v${finalAttrs.version}"
     "-DTIMESTAMP=1"
   ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Qt Tox client";
-    mainProgram = "qtox";
     homepage = "https://tox.chat";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       akaWolf
       peterhoeg
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "qtox";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

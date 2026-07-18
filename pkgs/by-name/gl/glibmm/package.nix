@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gnum4,
   glib,
-  libsigcxx,
   gnome,
+  gnum4,
+  libsigcxx,
   meson,
   ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     gnum4
     glib # for glib-compile-schemas
   ];
+
   propagatedBuildInputs = [
     glib
     libsigcxx
@@ -41,19 +42,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = gnome.updateScript {
+      freeze = true;
       packageName = "glibmm";
       versionPolicy = "odd-unstable";
-      freeze = true;
     };
   };
 
   meta = {
     description = "C++ interface to the GLib library";
-
     homepage = "https://gtkmm.org/";
-
     license = lib.licenses.lgpl2Plus;
-
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
   };

@@ -1,8 +1,9 @@
 {
-  curl,
-  fetchFromGitHub,
-  freetype,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  curl,
+  freetype,
   libGL,
   libjpeg,
   libogg,
@@ -11,7 +12,6 @@
   libxxf86vm,
   openal,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation rec {
@@ -46,8 +46,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    changelog = "https://github.com/alienarena/alienarena/releases/tag/${version}";
     description = "Free, stand-alone first-person shooter computer game";
+
     longDescription = ''
       Do you like old school deathmatch with modern features? How
       about rich, colorful, arcade-like atmospheres? How about retro
@@ -57,7 +57,9 @@ stdenv.mkDerivation rec {
       with a retro alien theme, while adding tons of original ideas to
       make the game quite unique.
     '';
+
     homepage = "https://alienarena.org";
+    changelog = "https://github.com/alienarena/alienarena/releases/tag/${version}";
     # Engine is under GPLv2, everything else is under
     license = lib.licenses.unfreeRedistributable;
     platforms = lib.platforms.linux;

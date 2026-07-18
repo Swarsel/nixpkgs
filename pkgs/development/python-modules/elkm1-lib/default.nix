@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pyserial-asyncio-fast,
   pytest-asyncio,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "elkm1-lib";
   version = "2.2.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gwww";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-LDzc/njgPGjc9uhNMHG4NOn9P2Sy3lFHgwV9oJJLl2o=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ pyserial-asyncio-fast ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ pyserial-asyncio-fast ];
+  pyproject = true;
   pythonImportsCheck = [ "elkm1_lib" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -11,17 +11,17 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "https://sources.debian.org/src/fonts-stix/1.1.1-4.1/STIXv${version}-word.zip";
-    stripRoot = false;
     hash = "sha256-M3STue+RPHi8JgZZupV0dVLZYKBiFutbBOlanuKkD08=";
+    stripRoot = false;
   };
 
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "http://www.stixfonts.org/";
     description = "Fonts for Scientific and Technical Information eXchange";
+    homepage = "http://www.stixfonts.org/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.rycee ];
+    platforms = lib.platforms.all;
   };
 }

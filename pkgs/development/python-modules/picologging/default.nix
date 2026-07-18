@@ -1,21 +1,20 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
-  scikit-build,
+  buildPythonPackage,
   cmake,
-  ninja,
-  python,
   flaky,
   hypothesis,
+  ninja,
+  pytestCheckHook,
+  python,
+  scikit-build,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "picologging";
   version = "0.9.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     # 0.9.4 only release on github
@@ -31,6 +30,12 @@ buildPythonPackage rec {
     ./pr-212.patch
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
   build-system = [
     setuptools
     cmake
@@ -38,26 +43,21 @@ buildPythonPackage rec {
     ninja
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  dontUseCmakeConfigure = true;
-  __darwinAllowLocalNetworking = true;
-
   dependencies = [
     flaky
     hypothesis
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "picologging" ];
 
   meta = {
-    homepage = "https://github.com/microsoft/picologging";
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ bot-wxt1221 ];
-    changelog = "https://github.com/microsoft/picologging/releases/tag/${version}";
     description = "Optimized logging library for Python";
+    homepage = "https://github.com/microsoft/picologging";
+    changelog = "https://github.com/microsoft/picologging/releases/tag/${version}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.unix;
   };
 }

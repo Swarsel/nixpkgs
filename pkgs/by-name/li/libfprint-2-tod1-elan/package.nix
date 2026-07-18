@@ -1,12 +1,12 @@
 {
-  stdenvNoCC,
   lib,
+  autoPatchelfHook,
   fetchzip,
+  glib,
+  gusb,
   libfprint-tod,
   openssl,
-  gusb,
-  glib,
-  autoPatchelfHook,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -16,6 +16,7 @@ stdenvNoCC.mkDerivation {
   src = fetchzip {
     url = "https://download.lenovo.com/pccbbs/mobiles/r1slf01w.zip";
     hash = "sha256-GD/BebPto1fFLgyvpiitt+ngwEtdsnKsvdFNeSmVDmw=";
+
     # .so is in a subzip
     postFetch = ''
       unpackFile $out/*
@@ -46,9 +47,9 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Elan(04f3:0c4b) driver module for libfprint-2-tod Touch OEM Driver";
     homepage = "https://support.lenovo.com/us/en/downloads/ds560939-elan-fingerprint-driver-for-ubuntu-2204-thinkpad-e14-gen-4-e15-gen-4";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ qdlmcfresh ];
+    platforms = [ "x86_64-linux" ];
   };
 }

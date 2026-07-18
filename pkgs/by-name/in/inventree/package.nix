@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  lib,
+  gettext,
+  gitMinimal,
   nodejs,
   python3,
   python3Packages,
-  gettext,
-  gitMinimal,
-  stdenv,
   yarnBuildHook,
   yarnConfigHook,
   yarnInstallHook,
@@ -20,6 +20,7 @@ let
     repo = "inventree";
     tag = "${version}";
     hash = "sha256-SxJc09zy7aKW+PVl4My3jzwsktkbsvNnyXMTMs/NzUA=";
+
     postCheckout = ''
       git -C $out rev-parse HEAD > $out/commit_hash.txt
       git -C $out show -s --format=%cd --date=short HEAD > $out/commit_date.txt
@@ -32,15 +33,9 @@ let
     in
     stdenv.mkDerivation (finalAttrs: {
 
-      pname = "inventree-frontend";
       inherit version;
-
+      pname = "inventree-frontend";
       src = frontendSource;
-
-      yarnOfflineCache = fetchYarnDeps {
-        yarnLock = finalAttrs.src + "/yarn.lock";
-        hash = "sha256-PIhmMIFHW+6jVZcS394yU9L5Zn+wkfrWmJH7lAbevbU=";
-      };
 
       nativeBuildInputs = [
         nodejs
@@ -69,12 +64,119 @@ let
 
         runHook postInstall
       '';
+
+      yarnOfflineCache = fetchYarnDeps {
+        hash = "sha256-PIhmMIFHW+6jVZcS394yU9L5Zn+wkfrWmJH7lAbevbU=";
+        yarnLock = finalAttrs.src + "/yarn.lock";
+      };
     });
 in
 python3Packages.buildPythonApplication rec {
-  pname = "inventree";
-  pyproject = true;
   inherit version src;
+  pname = "inventree";
+
+  nativeBuildInputs = [
+    gettext
+    gitMinimal
+  ];
+
+  env = {
+    DJANGO_SETTINGS_MODULE = "InvenTree.settings";
+  };
+
+  doCheck = true;
+
+  nativeCheckInputs = with python3Packages; [
+    django-test-migrations
+    pytest-django
+    pytest-env
+    invoke
+    coverage
+    pdfminer-six
+    tblib
+    pytest
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+
+    tmpDir=$(mktemp -d)
+    mkdir -p $tmpDir/media
+    mkdir -p $tmpDir/.cache/fontconfig
+    export HOME=$tmpDir
+    export INVENTREE_DEBUG=True
+    export INVENTREE_STATIC_ROOT=$out/lib/inventree/static
+    export INVENTREE_MEDIA_ROOT=$tmpDir/media
+    export INVENTREE_BACKUP_DIR=$tmpDir
+    export INVENTREE_DB_ENGINE=django.db.backends.sqlite3
+    export INVENTREE_DB_NAME=inventree.db
+    export INVENTREE_SITE_URL="http://localhost:8000"
+    # test_date
+    export INVENTREE_COMMIT_HASH=abcdef
+    export INVENTREE_COMMIT_DATE=1970-01-01
+
+    export INVENTREE_PLUGINS_ENABLED=true
+    export INVENTREE_PLUGIN_TESTING=true
+    export INVENTREE_PLUGIN_TESTING_SETUP=true
+
+    pushd src/backend/InvenTree &>/dev/null
+    ${python3.interpreter} ./manage.py check
+    ${python3.interpreter} ./manage.py migrate
+    ${python3.interpreter} ./manage.py compilemessages
+
+    ${python3.interpreter} ./manage.py test --parallel --failfast
+    popd &>/dev/null
+
+    runHook postCheck
+  '';
+
+  installPhase =
+    let
+      pythonPath = python3Packages.makePythonPath dependencies;
+    in
+    ''
+      runHook preInstall
+
+      # Don't need to bother with a non-maintained library from ages ago
+      substituteInPlace src/backend/InvenTree/InvenTree/settings.py --replace-fail "django_slowtests.testrunner.DiscoverSlowestTestsRunner" "django.test.runner.DiscoverRunner"
+
+      mkdir -p $out/lib/inventree/src/backend/InvenTree/web/
+      cp -r src $out/lib/inventree
+      ln -s ${frontend}/static $out/lib/inventree/src/backend/InvenTree/web
+
+      chmod +x $out/lib/inventree/src/backend/InvenTree/manage.py
+
+      INVENTREE_COMMIT_HASH=$(cat $src/commit_hash.txt)
+      INVENTREE_COMMIT_DATE=$(cat $src/commit_date.txt)
+
+      makeWrapper $out/lib/inventree/src/backend/InvenTree/manage.py $out/bin/inventree \
+        --prefix PYTHONPATH : "${pythonPath}:$out/lib/inventree/src/backend/InvenTree" \
+        --set INVENTREE_COMMIT_HASH $INVENTREE_COMMIT_HASH \
+        --set INVENTREE_COMMIT_DATE $INVENTREE_COMMIT_DATE
+
+      makeWrapper ${lib.getExe python3Packages.gunicorn} $out/bin/gunicorn \
+        --prefix PYTHONPATH : "${pythonPath}:$out/${python3.sitePackages}":"${pythonPath}:$out/lib/inventree/src/backend/InvenTree" \
+        --set INVENTREE_COMMIT_HASH $INVENTREE_COMMIT_HASH \
+        --set INVENTREE_COMMIT_DATE $INVENTREE_COMMIT_DATE
+
+      # Generate static assets
+      pushd $out/lib/inventree/src/backend/InvenTree &>/dev/null
+      export INVENTREE_STATIC_ROOT=$out/lib/inventree/static
+      export INVENTREE_MEDIA_ROOT=$(mktemp -d)
+      export INVENTREE_BACKUP_DIR=$(mktemp -d)
+      export INVENTREE_DB_ENGINE=django.db.backends.sqlite3
+      export INVENTREE_DB_NAME=inventree.db
+      export INVENTREE_SITE_URL="http://localhost:8000"
+      ${python3.interpreter} ./manage.py collectstatic --no-input
+
+      # Build translations
+      ${python3.interpreter} ./manage.py compilemessages
+      popd &>/dev/null
+
+      runHook postInstall
+    '';
+
+  build-system = [ python3Packages.setuptools ];
 
   dependencies =
     with python3Packages;
@@ -166,12 +268,6 @@ python3Packages.buildPythonApplication rec {
     ++ django-allauth.optional-dependencies.openid
     ++ django-allauth.optional-dependencies.mfa;
 
-  build-system = [ python3Packages.setuptools ];
-  nativeBuildInputs = [
-    gettext
-    gitMinimal
-  ];
-
   prePatch =
     let
       skippedCheckFunctions = [
@@ -207,99 +303,8 @@ python3Packages.buildPythonApplication rec {
       ${lib.concatStringsSep "\n" skippedFuncScripts}
     '';
 
-  installPhase =
-    let
-      pythonPath = python3Packages.makePythonPath dependencies;
-    in
-    ''
-      runHook preInstall
+  pyproject = true;
 
-      # Don't need to bother with a non-maintained library from ages ago
-      substituteInPlace src/backend/InvenTree/InvenTree/settings.py --replace-fail "django_slowtests.testrunner.DiscoverSlowestTestsRunner" "django.test.runner.DiscoverRunner"
-
-      mkdir -p $out/lib/inventree/src/backend/InvenTree/web/
-      cp -r src $out/lib/inventree
-      ln -s ${frontend}/static $out/lib/inventree/src/backend/InvenTree/web
-
-      chmod +x $out/lib/inventree/src/backend/InvenTree/manage.py
-
-      INVENTREE_COMMIT_HASH=$(cat $src/commit_hash.txt)
-      INVENTREE_COMMIT_DATE=$(cat $src/commit_date.txt)
-
-      makeWrapper $out/lib/inventree/src/backend/InvenTree/manage.py $out/bin/inventree \
-        --prefix PYTHONPATH : "${pythonPath}:$out/lib/inventree/src/backend/InvenTree" \
-        --set INVENTREE_COMMIT_HASH $INVENTREE_COMMIT_HASH \
-        --set INVENTREE_COMMIT_DATE $INVENTREE_COMMIT_DATE
-
-      makeWrapper ${lib.getExe python3Packages.gunicorn} $out/bin/gunicorn \
-        --prefix PYTHONPATH : "${pythonPath}:$out/${python3.sitePackages}":"${pythonPath}:$out/lib/inventree/src/backend/InvenTree" \
-        --set INVENTREE_COMMIT_HASH $INVENTREE_COMMIT_HASH \
-        --set INVENTREE_COMMIT_DATE $INVENTREE_COMMIT_DATE
-
-      # Generate static assets
-      pushd $out/lib/inventree/src/backend/InvenTree &>/dev/null
-      export INVENTREE_STATIC_ROOT=$out/lib/inventree/static
-      export INVENTREE_MEDIA_ROOT=$(mktemp -d)
-      export INVENTREE_BACKUP_DIR=$(mktemp -d)
-      export INVENTREE_DB_ENGINE=django.db.backends.sqlite3
-      export INVENTREE_DB_NAME=inventree.db
-      export INVENTREE_SITE_URL="http://localhost:8000"
-      ${python3.interpreter} ./manage.py collectstatic --no-input
-
-      # Build translations
-      ${python3.interpreter} ./manage.py compilemessages
-      popd &>/dev/null
-
-      runHook postInstall
-    '';
-  doCheck = true;
-  env = {
-    DJANGO_SETTINGS_MODULE = "InvenTree.settings";
-  };
-
-  checkPhase = ''
-    runHook preCheck
-
-    tmpDir=$(mktemp -d)
-    mkdir -p $tmpDir/media
-    mkdir -p $tmpDir/.cache/fontconfig
-    export HOME=$tmpDir
-    export INVENTREE_DEBUG=True
-    export INVENTREE_STATIC_ROOT=$out/lib/inventree/static
-    export INVENTREE_MEDIA_ROOT=$tmpDir/media
-    export INVENTREE_BACKUP_DIR=$tmpDir
-    export INVENTREE_DB_ENGINE=django.db.backends.sqlite3
-    export INVENTREE_DB_NAME=inventree.db
-    export INVENTREE_SITE_URL="http://localhost:8000"
-    # test_date
-    export INVENTREE_COMMIT_HASH=abcdef
-    export INVENTREE_COMMIT_DATE=1970-01-01
-
-    export INVENTREE_PLUGINS_ENABLED=true
-    export INVENTREE_PLUGIN_TESTING=true
-    export INVENTREE_PLUGIN_TESTING_SETUP=true
-
-    pushd src/backend/InvenTree &>/dev/null
-    ${python3.interpreter} ./manage.py check
-    ${python3.interpreter} ./manage.py migrate
-    ${python3.interpreter} ./manage.py compilemessages
-
-    ${python3.interpreter} ./manage.py test --parallel --failfast
-    popd &>/dev/null
-
-    runHook postCheck
-  '';
-
-  nativeCheckInputs = with python3Packages; [
-    django-test-migrations
-    pytest-django
-    pytest-env
-    invoke
-    coverage
-    pdfminer-six
-    tblib
-    pytest
-  ];
   passthru =
     let
       pythonPath = python3Packages.makePythonPath dependencies;
@@ -313,8 +318,8 @@ python3Packages.buildPythonApplication rec {
     homepage = "https://inventree.org/";
     changelog = "https://github.com/inventree/inventree/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ kurogeek ];
     platforms = lib.platforms.linux;
     mainProgram = "inventree";
-    maintainers = with lib.maintainers; [ kurogeek ];
   };
 }

@@ -2,24 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  meson,
-  ninja,
+  aml,
   cmake,
-  systemd,
+  ffmpeg,
   glib,
   gtk4,
   libdrm,
   libepoxy,
-  libxkbcommon,
   libvncserver,
+  libxkbcommon,
+  meson,
   neatvnc,
-  aml,
-  pixman,
-  zlib,
-  ffmpeg,
+  ninja,
   nix-update-script,
-
+  pixman,
+  pkg-config,
+  systemd,
+  zlib,
   withNeatVNC ? true,
 }:
 
@@ -34,6 +33,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DXWW1QXgHnfsnH6O3qnVZoioIn+UOePNy1ZPNzVK1ks=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    chmod +x meson_post_install.sh
+    patchShebangs meson_post_install.sh
+
+    # Comment out all commands, all systemd reloading
+    sed -i '1,2! s/^/# /' meson_post_install.sh
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -59,10 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     ffmpeg
   ];
 
-  passthru = {
-    updateScript = nix-update-script { };
-  };
-
   mesonFlags = [
     (lib.mesonOption "systemunitdir" "${placeholder "out"}/lib/systemd/system")
     (lib.mesonOption "sysusersdir" "${placeholder "out"}/lib/sysusers.d")
@@ -70,24 +75,21 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals withNeatVNC [ (lib.mesonOption "neatvnc" "true") ];
 
-  postPatch = ''
-    chmod +x meson_post_install.sh
-    patchShebangs meson_post_install.sh
-
-    # Comment out all commands, all systemd reloading
-    sed -i '1,2! s/^/# /' meson_post_install.sh
-  '';
-
-  strictDeps = true;
   __structuredAttrs = true;
 
+  passthru = {
+    updateScript = nix-update-script { };
+  };
+
   meta = {
-    homepage = "https://reframe.alynx.one/";
     description = "DRM/KMS based remote desktop for Linux that supports Wayland/NVIDIA/headless/login…";
+    homepage = "https://reframe.alynx.one/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       bitbloxhub
     ];
+
     platforms = lib.platforms.linux;
   };
 })

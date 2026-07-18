@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Generate method stubs for implementing an interface";
-    mainProgram = "impl";
     homepage = "https://github.com/josharian/impl";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kalbasit ];
+    mainProgram = "impl";
   };
 })

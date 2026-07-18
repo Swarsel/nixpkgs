@@ -11,19 +11,15 @@
 buildPythonPackage rec {
   pname = "aspell-python";
   version = "1.15";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "aspell-python-py3";
     inherit version;
-    extension = "tar.bz2";
     hash = "sha256-IEKRDmQY5fOH9bQk0dkUAy7UzpBOoZW4cNtVvLMcs40=";
+    extension = "tar.bz2";
+    pname = "aspell-python-py3";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ aspell ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
@@ -31,7 +27,7 @@ buildPythonPackage rec {
     export HOME=$(mktemp -d)
   '';
 
-  enabledTestPaths = [ "test/unittests.py" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # https://github.com/WojciechMula/aspell-python/issues/22
@@ -40,6 +36,8 @@ buildPythonPackage rec {
     "test_saveall"
   ];
 
+  enabledTestPaths = [ "test/unittests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "aspell" ];
 
   meta = {

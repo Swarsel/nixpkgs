@@ -1,23 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   etcd,
-  fetchFromGitHub,
   grpcio,
   hypothesis,
   mock,
   pifpaf,
   protobuf,
   pytestCheckHook,
+  setuptools,
   six,
   tenacity,
-  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "etcd3";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kragniz";
@@ -26,20 +25,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-YM72+fkCDYXl6DORJa/O0sqXqHDWQcFLv2ifQ9kEHBo=";
   };
 
-  build-system = [ setuptools ];
-
   env = {
     # make protobuf compatible with old versions
     # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
     PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
   };
-
-  dependencies = [
-    grpcio
-    protobuf
-    six
-    tenacity
-  ];
 
   # various failures and incompatible with newer hypothesis versions
   doCheck = false;
@@ -56,6 +46,16 @@ buildPythonPackage (finalAttrs: {
     pifpaf -e PYTHON run etcd --cluster
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    grpcio
+    protobuf
+    six
+    tenacity
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "etcd3" ];
 
   meta = {

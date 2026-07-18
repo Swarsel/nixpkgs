@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-advisor";
   version = "9.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     hash = "sha256-/ECLNzFf6EeBtRkST4yxuKwQsvQkHkOdDT4l/WyhjXs=";
+    extension = "zip";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +30,7 @@ buildPythonPackage rec {
     azure-mgmt-core
   ];
 
-  # Module has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "This is the Microsoft Azure Advisor Client Library";

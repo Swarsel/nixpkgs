@@ -19,26 +19,26 @@ let
     predStart: predEnd: f: list:
     let
       empty = {
-        result = [ ];
         active = [ ];
+        result = [ ];
       };
       op =
-        { result, active }:
+        { active, result }:
         x:
         if predStart x && predEnd x then
           {
-            result = result ++ active ++ f [ x ];
             active = [ ];
+            result = result ++ active ++ f [ x ];
           }
         else if predStart x then
           {
-            result = result ++ active;
             active = [ x ];
+            result = result ++ active;
           }
         else if predEnd x then
           {
-            result = result ++ f (active ++ [ x ]);
             active = [ ];
+            result = result ++ f (active ++ [ x ]);
           }
         else
           {

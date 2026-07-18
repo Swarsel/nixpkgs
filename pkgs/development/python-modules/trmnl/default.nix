@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   aiohttp,
+  aioresponses,
+  buildPythonPackage,
   mashumaro,
   orjson,
-  yarl,
-  aioresponses,
+  poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
   syrupy,
+  yarl,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "trmnl";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joostlek";
@@ -25,6 +24,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Gpyhp+d27/IxDOTFxcN9ltYbOJOg9scf17qVb/ArBw0=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [ poetry-core ];
 
@@ -35,14 +42,7 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "trmnl" ];
 
   meta = {

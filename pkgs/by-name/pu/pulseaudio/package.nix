@@ -2,70 +2,59 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  alsa-lib,
+  avahi,
+  bluez5,
+  check,
+  dbus,
+  dconf,
+  fetchpatch2,
+  fftwFloat,
+  glib,
+  gst_all_1,
+  libasyncns,
+  libcap,
+  libice,
+  libintl,
+  libjack2,
+  libsm,
   libsndfile,
   libtool,
-  makeWrapper,
-  perlPackages,
-  libxtst,
-  libxi,
   libx11,
-  libsm,
-  libice,
-  libcap,
-  alsa-lib,
-  glib,
-  dconf,
-  avahi,
-  libjack2,
-  libasyncns,
+  libxi,
+  libxtst,
   lirc,
-  dbus,
-  sbc,
-  bluez5,
-  udev,
-  udevCheckHook,
+  m4,
+  makeWrapper,
+  meson,
+  ninja,
+  nixosTests,
   openssl,
-  fftwFloat,
+  perlPackages,
+  pkg-config,
+  sbc,
   soxr,
   speexdsp,
   systemd,
+  udev,
+  udevCheckHook,
   webrtc-audio-processing_1,
-  gst_all_1,
-  check,
-  libintl,
-  meson,
-  ninja,
-  m4,
   wrapGAppsHook3,
-  fetchpatch2,
-  nixosTests,
-
-  x11Support ? false,
-
-  useSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-
+  advancedBluetoothCodecs ? false,
+  airtunesSupport ? false,
+  alsaSupport ? stdenv.hostPlatform.isLinux,
+  bluetoothSupport ? stdenv.hostPlatform.isLinux,
   # Whether to support the JACK sound system as a backend.
   jackaudioSupport ? false,
-
-  # Whether to build the OSS wrapper ("padsp").
-  ossWrapper ? true,
-
-  airtunesSupport ? false,
-
-  bluetoothSupport ? stdenv.hostPlatform.isLinux,
-  advancedBluetoothCodecs ? false,
-
-  remoteControlSupport ? false,
-
-  zeroconfSupport ? false,
-
-  alsaSupport ? stdenv.hostPlatform.isLinux,
-  udevSupport ? stdenv.hostPlatform.isLinux,
-
   # Whether to build only the library.
   libOnly ? false,
-
+  # Whether to build the OSS wrapper ("padsp").
+  ossWrapper ? true,
+  remoteControlSupport ? false,
+  udevSupport ? stdenv.hostPlatform.isLinux,
+  useSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
+  x11Support ? false,
+  zeroconfSupport ? false,
 }:
 
 stdenv.mkDerivation rec {
@@ -77,6 +66,11 @@ stdenv.mkDerivation rec {
     hash = "sha256-BTeU1mcaPjl9hJ5HioC4KmPLnYyilr01tzMXu1zrh7U=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Install sysconfdir files inside of the nix store,
     # but use a conventional runtime sysconfdir outside the store
@@ -85,14 +79,14 @@ stdenv.mkDerivation rec {
     # Fix crashes with some UCM devices
     # See https://gitlab.archlinux.org/archlinux/packaging/packages/pulseaudio/-/issues/4
     (fetchpatch2 {
+      hash = "sha256-WyEqCitrqic2n5nNHeVS10vvGy5IzwObPPXftZKy/A8=";
       name = "alsa-ucm-Check-UCM-verb-before-working-with-device-status.patch";
       url = "https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/commit/f5cacd94abcc47003bd88ad7ca1450de649ffb15.patch";
-      hash = "sha256-WyEqCitrqic2n5nNHeVS10vvGy5IzwObPPXftZKy/A8=";
     })
     (fetchpatch2 {
+      hash = "sha256-fMJ3EYq56sHx+zTrG6osvI/QgnhqLvWiifZxrRLMvns=";
       name = "alsa-ucm-Replace-port-device-UCM-context-assertion-with-an-error.patch";
       url = "https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/commit/ed3d4f0837f670e5e5afb1afa5bcfc8ff05d3407.patch";
-      hash = "sha256-fMJ3EYq56sHx+zTrG6osvI/QgnhqLvWiifZxrRLMvns=";
     })
   ];
 
@@ -100,11 +94,6 @@ stdenv.mkDerivation rec {
     # Fails in LXC containers where not all cores are enabled, where this setaffinity call will return EINVAL
     sed -i "/fail_unless(pthread_setaffinity_np/d" src/tests/once-test.c
   '';
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -119,8 +108,6 @@ stdenv.mkDerivation rec {
   ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ glib ]
   # gstreamer plugin discovery requires wrapping
   ++ lib.optional (bluetoothSupport && advancedBluetoothCodecs) wrapGAppsHook3;
-
-  propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libcap ];
 
   buildInputs = [
     libtool
@@ -175,12 +162,7 @@ stdenv.mkDerivation rec {
     ++ lib.optional zeroconfSupport avahi
   );
 
-  env =
-    lib.optionalAttrs (stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17")
-      {
-        # https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/3848
-        NIX_LDFLAGS = "--undefined-version";
-      };
+  propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libcap ];
 
   mesonFlags = [
     (lib.mesonEnable "alsa" (!libOnly && alsaSupport))
@@ -229,10 +211,15 @@ stdenv.mkDerivation rec {
     (lib.mesonEnable "oss-output" false)
   ];
 
+  env =
+    lib.optionalAttrs (stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17")
+      {
+        # https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/3848
+        NIX_LDFLAGS = "--undefined-version";
+      };
+
   # tests fail on Darwin because of timeouts
   doCheck = !stdenv.hostPlatform.isDarwin;
-
-  doInstallCheck = true;
 
   preCheck = ''
     export HOME=$(mktemp -d)
@@ -250,6 +237,8 @@ stdenv.mkDerivation rec {
 
       cp config.h $dev/include/pulse
     '';
+
+  doInstallCheck = true;
 
   preFixup =
     lib.optionalString (stdenv.hostPlatform.isLinux && (stdenv.hostPlatform == stdenv.buildPlatform)) ''
@@ -285,13 +274,6 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Sound server for POSIX and Win32 systems";
-    homepage = "http://www.pulseaudio.org/";
-    license = lib.licenses.lgpl2Plus;
-    maintainers = [ ];
-    platforms = lib.platforms.unix;
-
-    # https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/1089
-    badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
 
     longDescription = ''
       PulseAudio is a sound server for POSIX and Win32 systems.  A
@@ -302,5 +284,12 @@ stdenv.mkDerivation rec {
       sample format or channel count and mixing several sounds into
       one are easily achieved using a sound server.
     '';
+
+    homepage = "http://www.pulseaudio.org/";
+    license = lib.licenses.lgpl2Plus;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
+    # https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/1089
+    badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
   };
 }

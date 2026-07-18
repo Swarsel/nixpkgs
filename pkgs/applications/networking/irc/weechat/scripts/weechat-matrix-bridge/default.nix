@@ -1,16 +1,17 @@
 {
   lib,
   stdenv,
-  curl,
   fetchFromGitHub,
   cjson,
-  olm,
+  curl,
   luaffi,
+  olm,
 }:
 
 stdenv.mkDerivation {
   pname = "weechat-matrix-bridge";
   version = "unstable-2018-11-19";
+
   src = fetchFromGitHub {
     owner = "torhve";
     repo = "weechat-matrix-protocol-script";
@@ -20,13 +21,6 @@ stdenv.mkDerivation {
 
   patches = [
     ./library-path.patch
-  ];
-
-  buildInputs = [
-    curl
-    cjson
-    olm
-    luaffi
   ];
 
   postPatch = ''
@@ -39,7 +33,12 @@ stdenv.mkDerivation {
       --replace "__NIX_LIB_PATH__" "$out/lib/?.so"
   '';
 
-  passthru.scripts = [ "matrix.lua" ];
+  buildInputs = [
+    curl
+    cjson
+    olm
+    luaffi
+  ];
 
   installPhase = ''
     mkdir -p $out/{share,lib}
@@ -50,13 +49,14 @@ stdenv.mkDerivation {
     cp ${luaffi}/lib/lua/${luaffi.lua.luaversion}/ffi.so $out/lib/ffi.so
   '';
 
+  passthru.scripts = [ "matrix.lua" ];
+
   meta = {
     description = "WeeChat script in Lua that implements the matrix.org chat protocol";
     homepage = "https://github.com/torhve/weechat-matrix-protocol-script";
-    maintainers = [ ];
     license = lib.licenses.mit; # see https://github.com/torhve/weechat-matrix-protocol-script/blob/0052e7275ae149dc5241226391c9b1889ecc3c6b/matrix.lua#L53
+    maintainers = [ ];
     platforms = lib.platforms.unix;
-
     # As of 2019-06-30, all of the dependencies are available on macOS but the
     # package itself does not build.
     broken = stdenv.hostPlatform.isDarwin;

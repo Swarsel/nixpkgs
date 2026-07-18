@@ -1,11 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  buildPackages,
   docbook_xsl,
-  gettext,
-  xfce4-exo,
   gdk-pixbuf,
+  gettext,
+  gitUpdater,
+  gobject-introspection,
   gtk3,
   libexif,
   libgudev,
@@ -16,34 +18,42 @@
   libxslt,
   pcre2,
   pkg-config,
+  wrapGAppsHook3,
   xfce4-dev-tools,
+  xfce4-exo,
   xfce4-panel,
   xfconf,
-  wrapGAppsHook3,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  buildPackages,
-  gobject-introspection,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "thunar";
   version = "4.20.8";
 
+  src = fetchFromGitLab {
+    owner = "xfce";
+    repo = "thunar";
+    tag = "thunar-${finalAttrs.version}";
+    hash = "sha256-gcNo9HNBY5NGhJ8N8DBTXYb5gsNAXrItvWuo3XdSBRg=";
+    domain = "gitlab.xfce.org";
+  };
+
   outputs = [
     "out"
     "dev"
   ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
-    owner = "xfce";
-    repo = "thunar";
-    tag = "thunar-${finalAttrs.version}";
-    hash = "sha256-gcNo9HNBY5NGhJ8N8DBTXYb5gsNAXrItvWuo3XdSBRg=";
-  };
+  # the desktop file … is in an insecure location»
+  # which pops up when invoking desktop files that are
+  # symlinks to the /nix/store
+  #
+  # this error was added by this commit:
+  # https://github.com/xfce-mirror/thunar/commit/1ec8ff89ec5a3314fcd6a57f1475654ddecc9875
+  postPatch = ''
+    sed -i -e 's|thunar_dialogs_show_insecure_program (parent, _(".*"), file, exec)|1|' thunar/thunar-file.c
+  '';
 
   nativeBuildInputs = [
     docbook_xsl
@@ -77,18 +87,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-custom-thunarx-dirs-enabled"
   ];
 
-  enableParallelBuilding = true;
-
-  # the desktop file … is in an insecure location»
-  # which pops up when invoking desktop files that are
-  # symlinks to the /nix/store
-  #
-  # this error was added by this commit:
-  # https://github.com/xfce-mirror/thunar/commit/1ec8ff89ec5a3314fcd6a57f1475654ddecc9875
-  postPatch = ''
-    sed -i -e 's|thunar_dialogs_show_insecure_program (parent, _(".*"), file, exec)|1|' thunar/thunar-file.c
-  '';
-
   preFixup = ''
     gappsWrapperArgs+=(
       # https://github.com/NixOS/nixpkgs/issues/329688
@@ -96,17 +94,19 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  enableParallelBuilding = true;
+
   passthru.updateScript = gitUpdater {
-    rev-prefix = "thunar-";
     odd-unstable = true;
+    rev-prefix = "thunar-";
   };
 
   meta = {
     description = "Xfce file manager";
     homepage = "https://gitlab.xfce.org/xfce/thunar";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "thunar";
     platforms = lib.platforms.linux;
+    mainProgram = "thunar";
     teams = [ lib.teams.xfce ];
   };
 })

@@ -1,19 +1,14 @@
 {
+  lib,
   dhall,
   dhall-docs,
   haskell,
-  lib,
   lndir,
   runCommand,
   writeText,
 }:
 
 {
-  name,
-
-  # Expressions to add to the cache before interpreting the code
-  dependencies ? [ ],
-
   # A Dhall expression
   #
   # Carefully note that the following expression must be devoid of uncached HTTP
@@ -25,7 +20,19 @@
   # You can add a dependency to the cache using the preceding `dependencies`
   # option
   code,
-
+  name,
+  # Base URL prepended to paths copied to the clipboard
+  #
+  # This is used in conjunction with `documentationRoot`, and is unused if
+  # `documentationRoot` is `null`.
+  baseImportUrl ? null,
+  # Expressions to add to the cache before interpreting the code
+  dependencies ? [ ],
+  # Directory to generate documentation for (i.e. as the `--input` option to the
+  # `dhall-docs` command.)
+  #
+  # If `null`, then no documentation is generated.
+  documentationRoot ? null,
   # `buildDhallPackage` can include both a "source distribution" in
   # `source.dhall` and a "binary distribution" in `binary.dhall`:
   #
@@ -40,18 +47,6 @@
   # space within the Nix store, but if you set the following `source` option to
   # `true` then the package will also include `source.dhall`.
   source ? false,
-
-  # Directory to generate documentation for (i.e. as the `--input` option to the
-  # `dhall-docs` command.)
-  #
-  # If `null`, then no documentation is generated.
-  documentationRoot ? null,
-
-  # Base URL prepended to paths copied to the clipboard
-  #
-  # This is used in conjunction with `documentationRoot`, and is unused if
-  # `documentationRoot` is `null`.
-  baseImportUrl ? null,
 }:
 
 let
@@ -103,9 +98,7 @@ runCommand name { inherit dependencies; } ''
     XDG_DATA_HOME=$out/${data} ${dhall-docs}/bin/dhall-docs --output-link $out/docs ${
       lib.cli.toCommandLineShellGNU { } {
         base-import-url = baseImportUrl;
-
         input = documentationRoot;
-
         package-name = name;
       }
     }

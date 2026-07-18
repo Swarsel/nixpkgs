@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoPatchelfHook,
   python3,
@@ -20,6 +20,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "https://packages.gurobi.com/${lib.versions.majorMinor version}/gurobi${version}_${platform}.tar.gz";
+
     hash =
       {
         aarch64-linux = "sha256-PFCjHiCvbX+BXwx3ytBGEyC7XRzQYMHwPUWaW5tpx+4=";
@@ -28,7 +29,7 @@ stdenv.mkDerivation rec {
       .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
 
-  sourceRoot = "gurobi${builtins.replaceStrings [ "." ] [ "" ] version}/${platform}";
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -39,8 +40,6 @@ stdenv.mkDerivation rec {
       ps.gurobipy
     ]))
   ];
-
-  strictDeps = true;
 
   makeFlags = [ "--directory=src/build" ];
 
@@ -67,20 +66,24 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  sourceRoot = "gurobi${builtins.replaceStrings [ "." ] [ "" ] version}/${platform}";
   passthru.libSuffix = lib.replaceStrings [ "." ] [ "" ] (lib.versions.majorMinor version);
 
   meta = {
     description = "Optimization solver for mathematical programming";
     homepage = "https://www.gurobi.com";
+    license = lib.licenses.unfree;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.unfree;
+
+    maintainers = with lib.maintainers; [ wegank ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
-    maintainers = with lib.maintainers; [ wegank ];
   };
 }

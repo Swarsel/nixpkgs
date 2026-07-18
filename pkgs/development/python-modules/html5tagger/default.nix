@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "html5tagger";
   version = "1.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "sanic-org";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   # no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "html5tagger" ];
 
   meta = {

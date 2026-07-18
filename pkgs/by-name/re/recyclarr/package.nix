@@ -1,10 +1,10 @@
 {
   lib,
-  openssl,
-  git,
+  fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  fetchFromGitHub,
+  git,
+  openssl,
   testers,
 }:
 buildDotnetModule (finalAttrs: {
@@ -17,9 +17,6 @@ buildDotnetModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Uu6fBKODzKGYA6vSJPw0OV/+bi3y2F/SHfrdd5pdyzs=";
   };
-
-  projectFile = "Recyclarr.slnx";
-  nugetDeps = ./deps.json;
 
   postPatch = ''
     cat > src/Recyclarr.Core/GitVersionInformation.g.cs <<'EOF'
@@ -36,16 +33,16 @@ buildDotnetModule (finalAttrs: {
   '';
 
   doCheck = false;
+  dotnet-runtime = dotnetCorePackages.runtime_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
 
   dotnetBuildFlags = [
     "-p:DisableGitVersionTask=true"
     "/m:1"
   ];
 
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  dotnet-runtime = dotnetCorePackages.runtime_10_0;
-
   executables = [ "recyclarr" ];
+
   makeWrapperArgs = [
     "--prefix PATH : ${
       lib.makeBinPath [
@@ -55,9 +52,12 @@ buildDotnetModule (finalAttrs: {
     }"
   ];
 
+  nugetDeps = ./deps.json;
+  projectFile = "Recyclarr.slnx";
+
   passthru = {
-    updateScript = ./update.sh;
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
+    updateScript = ./update.sh;
   };
 
   meta = {
@@ -65,11 +65,13 @@ buildDotnetModule (finalAttrs: {
     homepage = "https://recyclarr.dev/";
     changelog = "https://github.com/recyclarr/recyclarr/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       josephst
       aldoborrero
     ];
+
     mainProgram = "recyclarr";
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-KNappojVBU1F9F3FqindXVDzOIy7IwYd7xVzbqQk6QE=";
-
   # Unit tests fail to start the emulator server in some environments (e.g. Hydra) for some reason.
   #
   # Disabling to avoid flakiness.
@@ -31,7 +30,7 @@ buildGoModule (finalAttrs: {
     description = "Google Cloud Storage emulator & testing library";
     homepage = "https://github.com/fsouza/fake-gcs-server";
     license = lib.licenses.bsd2;
-    mainProgram = "fake-gcs-server";
     maintainers = with lib.maintainers; [ jpetrucciani ];
+    mainProgram = "fake-gcs-server";
   };
 })

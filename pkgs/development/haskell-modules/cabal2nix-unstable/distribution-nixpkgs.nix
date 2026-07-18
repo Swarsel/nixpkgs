@@ -1,10 +1,10 @@
 # This file defines distribution-nixpkgs-unstable, used by maintainers/scripts/haskell/regenerate-hackage-packages.sh.
 {
-  mkDerivation,
+  lib,
+  Cabal,
   aeson,
   base,
   bytestring,
-  Cabal,
   containers,
   deepseq,
   directory,
@@ -12,19 +12,23 @@
   hspec,
   language-nix,
   lens,
-  lib,
+  mkDerivation,
   pretty,
   process,
 }:
 mkDerivation {
   pname = "distribution-nixpkgs";
   version = "1.7.1.1-unstable-2026-03-30";
+
   src = fetchzip {
     url = "https://github.com/NixOS/cabal2nix/archive/41239bcc0622a0975c6705a03a44dfeffeb56f23.tar.gz";
     sha256 = "01qj6cvaif0810v83r6izcj1bbfpcqqxw4wybq04qsq92sqybpw2";
   };
-  postUnpack = "sourceRoot+=/distribution-nixpkgs; echo source root reset to $sourceRoot";
+
+  description = "Types and functions to manipulate the Nixpkgs distribution";
   enableSeparateDataOutput = true;
+  homepage = "https://github.com/NixOS/cabal2nix/tree/master/distribution-nixpkgs#readme";
+
   libraryHaskellDepends = [
     aeson
     base
@@ -37,6 +41,10 @@ mkDerivation {
     pretty
     process
   ];
+
+  license = lib.licensesSpdx."BSD-3-Clause";
+  postUnpack = "sourceRoot+=/distribution-nixpkgs; echo source root reset to $sourceRoot";
+
   testHaskellDepends = [
     aeson
     base
@@ -47,7 +55,4 @@ mkDerivation {
     language-nix
     lens
   ];
-  homepage = "https://github.com/NixOS/cabal2nix/tree/master/distribution-nixpkgs#readme";
-  description = "Types and functions to manipulate the Nixpkgs distribution";
-  license = lib.licensesSpdx."BSD-3-Clause";
 }

@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   installShellFiles,
+  python3Packages,
   sg3_utils,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "sasutils";
   version = "0.6.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "stanford-rc";
@@ -19,16 +18,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   propagatedBuildInputs = [ sg3_utils ];
 
   postInstall = ''
     installManPage doc/man/man1/*.1
   '';
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/stanford-rc/sasutils";
     description = "Set of command-line tools to ease the administration of Serial Attached SCSI (SAS) fabrics";
+    homepage = "https://github.com/stanford-rc/sasutils";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ aij ];
   };

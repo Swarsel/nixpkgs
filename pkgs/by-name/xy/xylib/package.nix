@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   boost,
-  zlib,
   bzip2,
   wxwidgets_3_2,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,9 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Portable library for reading files that contain x-y data from powder diffraction, spectroscopy and other experimental methods";
-    license = lib.licenses.lgpl21;
     homepage = "https://xylib.sourceforge.net/";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.linux;
   };
 })

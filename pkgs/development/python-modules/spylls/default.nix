@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "spylls";
   version = "0.1.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,10 +21,10 @@ buildPythonPackage rec {
     --replace-fail "poetry>=" "poetry-core>="
   '';
 
-  build-system = [ poetry-core ];
-
   # no unit tests in source distribution...
   doCheck = false;
+  build-system = [ poetry-core ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "spylls.hunspell"

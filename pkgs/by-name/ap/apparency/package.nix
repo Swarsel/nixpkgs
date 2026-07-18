@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
   undmg,
 }:
 
@@ -21,8 +21,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ undmg ];
 
-  sourceRoot = "Apparency.app";
-
   installPhase = ''
     runHook preInstall
 
@@ -33,13 +31,15 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  sourceRoot = "Apparency.app";
+
   meta = {
     description = "Toolkit for analysing macOS applications";
     homepage = "https://www.mothersruin.com/software/Apparency/";
     license = lib.licenses.unfreeRedistributable;
-    maintainers = with lib.maintainers; [ andre4ik3 ];
-    mainProgram = "appy";
-    platforms = lib.platforms.darwin;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ andre4ik3 ];
+    platforms = lib.platforms.darwin;
+    mainProgram = "appy";
   };
 }

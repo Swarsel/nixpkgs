@@ -39,8 +39,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://git.sr.ht/~novakane/rivercarro";
+    inherit (zig.meta) platforms;
     description = "Layout generator for river Wayland compositor, fork of rivertile";
+
     longDescription = ''
       A slightly modified version of rivertile layout generator for river.
 
@@ -51,10 +52,11 @@ stdenv.mkDerivation (finalAttrs: {
       - Smart gaps, if there is only one view, gaps will be disable.
       - Limit the width of the usable area of the screen.
     '';
+
+    homepage = "https://git.sr.ht/~novakane/rivercarro";
     changelog = "https://git.sr.ht/~novakane/rivercarro/refs/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ kraem ];
-    inherit (zig.meta) platforms;
     mainProgram = "rivercarro";
   };
 })

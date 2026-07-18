@@ -1,16 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
   runCommand,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "jaq";
   version = "3.1.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "01mf02";
@@ -20,16 +19,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-9vLD5aYcnbdjQC+5FsTglLFYhbv/1lSqsfkD8oclwBs=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
 
   passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [ "--version-regex=^v(\\d+\\.\\d+\\.\\d+)$" ];
-    };
     tests.simple =
       runCommand "jaq-test"
         {
@@ -65,6 +63,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
           echo "All tests passed!"
           touch $out
         '';
+
+    updateScript = nix-update-script {
+      extraArgs = [ "--version-regex=^v(\\d+\\.\\d+\\.\\d+)$" ];
+    };
   };
 
   meta = {
@@ -72,10 +74,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/01mf02/jaq";
     changelog = "https://github.com/01mf02/jaq/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    teams = [ lib.teams.ngi ];
+
     maintainers = with lib.maintainers; [
       siraben
     ];
+
     mainProgram = "jaq";
+    teams = [ lib.teams.ngi ];
   };
 })

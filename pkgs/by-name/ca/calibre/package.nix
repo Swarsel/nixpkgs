@@ -29,8 +29,8 @@
   qt6,
   speechd-minimal,
   sqlite,
-  xdg-utils,
   wrapGAppsHook3,
+  xdg-utils,
   popplerSupport ? true,
   speechSupport ? true,
   unrarSupport ? false,
@@ -55,29 +55,17 @@ stdenv.mkDerivation (finalAttrs: {
     [
       #  allow for plugin update check, but no calibre version check
       (fetchpatch {
+        hash = "sha256-/Hz8DSL1VC/wwQPOssM54MInLidfo7kJoR69yi2wAP4=";
         name = "0001-only-plugin-update-${debian-tag}.patch";
         url = "https://github.com/debian-calibre/calibre/raw/refs/tags/debian/${debian-tag}/debian/patches/0001-only-plugin-update.patch";
-        hash = "sha256-/Hz8DSL1VC/wwQPOssM54MInLidfo7kJoR69yi2wAP4=";
       })
       (fetchpatch {
+        hash = "sha256-lKp/omNicSBiQUIK+6OOc8ysM6LImn5GxWhpXr4iX+U=";
         name = "0007-Hardening-Qt-code-${debian-tag}.patch";
         url = "https://github.com/debian-calibre/calibre/raw/refs/tags/debian/${debian-tag}/debian/patches/hardening/0007-Hardening-Qt-code.patch";
-        hash = "sha256-lKp/omNicSBiQUIK+6OOc8ysM6LImn5GxWhpXr4iX+U=";
       })
     ]
     ++ lib.optional (!unrarSupport) ./dont_build_unrar_plugin.patch;
-
-  prePatch = ''
-    sed -i "s@\[tool.sip.project\]@[tool.sip.project]\nsip-include-dirs = [\"${python3Packages.pyqt6}/${python3Packages.python.sitePackages}/PyQt6/bindings\"]@g" \
-      setup/build.py
-
-    # Remove unneeded files and libs
-    rm -rf src/odf resources/calibre-portable.*
-  '';
-
-  dontUseQmakeConfigure = true;
-  dontUseCmakeConfigure = true;
-  dontUseNinjaBuild = true;
 
   nativeBuildInputs = [
     cmake
@@ -165,11 +153,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
+    FC_INC_DIR = "${lib.getDev fontconfig}/include/fontconfig";
+    FC_LIB_DIR = "${lib.getLib fontconfig}/lib";
     HOME = "/tmp";
     MAGICK_INC = "${lib.getDev imagemagick}/include/ImageMagick";
     MAGICK_LIB = "${lib.getLib imagemagick}/lib";
-    FC_INC_DIR = "${lib.getDev fontconfig}/include/fontconfig";
-    FC_LIB_DIR = "${lib.getLib fontconfig}/lib";
     PODOFO_INC_DIR = "${lib.getDev podofo0}/include/podofo";
     PODOFO_LIB_DIR = "${lib.getLib podofo0}/lib";
     XDG_DATA_HOME = "${placeholder "out"}/share";
@@ -206,35 +194,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  # Wrap manually
-  dontWrapQtApps = true;
-  dontWrapGApps = true;
-
-  preFixup =
-    let
-      popplerArgs = "--prefix PATH : ${poppler-utils.out}/bin";
-    in
-    ''
-      for program in $out/bin/*; do
-        wrapProgram $program \
-          ''${qtWrapperArgs[@]} \
-          ''${gappsWrapperArgs[@]} \
-          --set QTWEBENGINE_CHROMIUM_FLAGS "--disable-gpu" \
-          --prefix PATH : ${
-            lib.makeBinPath [
-              libjpeg
-              libwebp
-              optipng
-            ]
-          } \
-          ${lib.optionalString popplerSupport popplerArgs}
-      done
-    '';
-
   doInstallCheck = true;
-  installCheckInputs = with python3Packages; [
-    psutil
-  ];
+
   installCheckPhase =
     let
       excludedTestNames = [
@@ -281,25 +242,69 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstallCheck
     '';
 
+  preFixup =
+    let
+      popplerArgs = "--prefix PATH : ${poppler-utils.out}/bin";
+    in
+    ''
+      for program in $out/bin/*; do
+        wrapProgram $program \
+          ''${qtWrapperArgs[@]} \
+          ''${gappsWrapperArgs[@]} \
+          --set QTWEBENGINE_CHROMIUM_FLAGS "--disable-gpu" \
+          --prefix PATH : ${
+            lib.makeBinPath [
+              libjpeg
+              libwebp
+              optipng
+            ]
+          } \
+          ${lib.optionalString popplerSupport popplerArgs}
+      done
+    '';
+
+  dontUseCmakeConfigure = true;
+  dontUseNinjaBuild = true;
+  dontUseQmakeConfigure = true;
+  dontWrapGApps = true;
+  # Wrap manually
+  dontWrapQtApps = true;
+
+  installCheckInputs = with python3Packages; [
+    psutil
+  ];
+
+  prePatch = ''
+    sed -i "s@\[tool.sip.project\]@[tool.sip.project]\nsip-include-dirs = [\"${python3Packages.pyqt6}/${python3Packages.python.sitePackages}/PyQt6/bindings\"]@g" \
+      setup/build.py
+
+    # Remove unneeded files and libs
+    rm -rf src/odf resources/calibre-portable.*
+  '';
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--url=https://github.com/kovidgoyal/calibre" ];
   };
 
   meta = {
-    homepage = "https://calibre-ebook.com";
     description = "Comprehensive e-book software";
+
     longDescription = ''
       calibre is a powerful and easy to use e-book manager. Users say it’s
       outstanding and a must-have. It’ll allow you to do nearly everything and
       it takes things a step beyond normal e-book software. It’s also completely
       free and open source and great for both casual users and computer experts.
     '';
+
+    homepage = "https://calibre-ebook.com";
     changelog = "https://github.com/kovidgoyal/calibre/releases/tag/v${finalAttrs.version}";
     license = if unrarSupport then lib.licenses.unfreeRedistributable else lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       pSub
       sempiternal-aurora
     ];
+
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin;
   };

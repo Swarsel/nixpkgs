@@ -23,8 +23,8 @@ stdenv.mkDerivation {
     description = "Read stdin and corrupt it with combining diacritics";
     homepage = "https://github.com/lunasorcery/zalgo";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ djanatyn ];
+    platforms = lib.platforms.unix;
     mainProgram = "zalgo";
   };
 }

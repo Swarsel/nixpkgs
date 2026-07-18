@@ -10,54 +10,65 @@
 let
   cfg = config.services.prometheus.exporters."exportarr-${type}";
   exportarrEnvironment = (lib.mapAttrs (_: toString) cfg.environment) // {
+    API_KEY_FILE = lib.mkIf (cfg.apiKeyFile != null) "%d/api-key";
     PORT = toString cfg.port;
     URL = cfg.url;
-    API_KEY_FILE = lib.mkIf (cfg.apiKeyFile != null) "%d/api-key";
   };
 in
 {
-  port = 9708;
   extraOpts = {
-    url = lib.mkOption {
-      type = lib.types.str;
-      default = "http://127.0.0.1";
-      description = ''
-        The full URL to Sonarr, Radarr, or Lidarr.
-      '';
-    };
+    package = lib.mkPackageOption pkgs "exportarr" { };
 
     apiKeyFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
+
       description = ''
         File containing the api-key.
       '';
+
+      type = lib.types.nullOr lib.types.path;
     };
 
-    package = lib.mkPackageOption pkgs "exportarr" { };
-
     environment = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
       default = { };
+
       description = ''
         See [the configuration guide](https://github.com/onedr0p/exportarr#configuration) for available options.
       '';
+
       example = {
         PROWLARR__BACKFILL = true;
       };
+
+      type = lib.types.attrsOf lib.types.str;
+    };
+
+    url = lib.mkOption {
+      default = "http://127.0.0.1";
+
+      description = ''
+        The full URL to Sonarr, Radarr, or Lidarr.
+      '';
+
+      type = lib.types.str;
     };
   };
+
+  port = 9708;
+
   serviceOpts = {
+    environment = exportarrEnvironment;
+
     serviceConfig = {
-      LoadCredential = lib.optionalString (cfg.apiKeyFile != null) "api-key:${cfg.apiKeyFile}";
       ExecStart = ''${cfg.package}/bin/exportarr ${type} "$@"'';
+      LoadCredential = lib.optionalString (cfg.apiKeyFile != null) "api-key:${cfg.apiKeyFile}";
       ProcSubset = "pid";
       ProtectProc = "invisible";
+
       SystemCallFilter = [
         "@system-service"
         "~@privileged"
       ];
     };
-    environment = exportarrEnvironment;
   };
 }

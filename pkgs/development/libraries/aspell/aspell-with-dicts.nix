@@ -8,8 +8,8 @@
 {
   aspell,
   aspellDicts,
-  makeWrapper,
   buildEnv,
+  makeWrapper,
 }:
 
 f:
@@ -20,9 +20,8 @@ let
 
 in
 buildEnv {
-  name = "aspell-env";
   nativeBuildInputs = [ makeWrapper ];
-  paths = [ aspell ] ++ dicts;
+
   postBuild = ''
     # Construct wrappers in /bin
     unlink "$out/bin"
@@ -35,4 +34,7 @@ buildEnv {
     done
     popd
   '';
+
+  name = "aspell-env";
+  paths = [ aspell ] ++ dicts;
 }

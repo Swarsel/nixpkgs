@@ -18,13 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
   postInstall = "rm $out/lib/ladspa/celllm_3890.*";
 
   meta = {
-    homepage = "https://sourceforge.net/projects/csa/";
     description = "Group of LADSPA Audio plugins for FM broadcast and more";
+
     longDescription = ''
       CSA means : Contrôle Signal Audio.
       It contains the following plugins:
       Emphazised Limiter, Cellular Leveler, Simple right/left amplifier. Blind Peak Meter.
     '';
+
+    homepage = "https://sourceforge.net/projects/csa/";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.unix;

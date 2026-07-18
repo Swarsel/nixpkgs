@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
   auditable-bootstrap,
+  installShellFiles,
+  rustPlatform,
 }:
 lib.extendMkDerivation {
   constructDrv = rustPlatform.buildRustPackage.override { cargo-auditable = auditable-bootstrap; };
@@ -12,23 +12,21 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      pname ? "cargo-auditable",
       auditable ? true,
-      hash ? "",
       cargoHash ? "",
+      hash ? "",
       passthru ? { },
+      pname ? "cargo-auditable",
       ...
     }:
     {
       inherit auditable pname;
 
-      __structuredAttrs = true;
-
       src = fetchFromGitHub {
+        inherit hash;
         owner = "rust-secure-code";
         repo = "cargo-auditable";
         tag = "v${finalAttrs.version}";
-        inherit hash;
       };
 
       nativeBuildInputs = [
@@ -61,20 +59,24 @@ lib.extendMkDerivation {
         installManPage cargo-auditable/cargo-auditable.1
       '';
 
+      __structuredAttrs = true;
+
       passthru = passthru // {
         bootstrap = auditable-bootstrap;
       };
 
       meta = {
         description = "Tool to make production Rust binaries auditable";
-        mainProgram = "cargo-auditable";
         homepage = "https://github.com/rust-secure-code/cargo-auditable";
         changelog = "https://github.com/rust-secure-code/cargo-auditable/blob/v${finalAttrs.version}/cargo-auditable/CHANGELOG.md";
+
         license = with lib.licenses; [
           mit # or
           asl20
         ];
+
         maintainers = with lib.maintainers; [ RossSmyth ];
+        mainProgram = "cargo-auditable";
         broken = stdenv.hostPlatform != stdenv.buildPlatform;
       };
     };

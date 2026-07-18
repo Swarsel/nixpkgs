@@ -1,26 +1,25 @@
 {
   lib,
   fetchFromGitHub,
-  cmake,
-  meson,
-  ninja,
-  wrapGAppsHook4,
   appstream,
   blueprint-compiler,
+  cmake,
   desktop-file-utils,
   gettext,
   glib,
   gtk4,
-  libadwaita,
   libGL,
+  libadwaita,
+  meson,
+  ninja,
   pkg-config,
   python3Packages,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cine";
   version = "1.7.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "diegopvlk";
@@ -31,7 +30,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   strictDeps = true;
-  dontWrapGApps = true;
 
   nativeBuildInputs = [
     meson
@@ -51,22 +49,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libadwaita
   ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+    makeWrapperArgs+=(--prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libGL ]})
+  '';
+
   dependencies = with python3Packages; [
     pygobject3
     mpv
   ];
 
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-    makeWrapperArgs+=(--prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libGL ]})
-  '';
+  dontWrapGApps = true;
+  pyproject = false;
 
   meta = {
     description = "Video Player for Linux";
     homepage = "https://github.com/diegopvlk/Cine";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pancaek ];
-    mainProgram = "cine";
     platforms = lib.platforms.linux;
+    mainProgram = "cine";
   };
 })

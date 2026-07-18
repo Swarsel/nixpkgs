@@ -18,6 +18,12 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-VQWXvZXfGHCfzz46aARyFXO/xlJ/7s39HFIfisEamXw=";
   };
 
+  propagatedBuildInputs = [
+    extlib
+    ocaml-sat-solvers
+    tcs-lib
+  ];
+
   # upstream missing `public_names` within `executables` stanza
   # adding this back to automatically install binaries
   patchPhase = ''
@@ -26,12 +32,6 @@ buildDunePackage (finalAttrs: {
     sed -i '/^ (names /{ p; s/names/public_names/ }' src/apps/tools/dune
     runHook postPatch
   '';
-
-  propagatedBuildInputs = [
-    extlib
-    ocaml-sat-solvers
-    tcs-lib
-  ];
 
   meta = {
     description = "Collection of tools for generating, manipulating and - most of all - solving parity games";

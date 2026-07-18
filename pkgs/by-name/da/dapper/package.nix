@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -14,6 +14,7 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-V+lHnOmIWjI1qmoJ7+pp+cGmJAtSeY+r2I9zykswQzM=";
   };
+
   vendorHash = null;
 
   patchPhase = ''
@@ -22,10 +23,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Docker build wrapper";
-    mainProgram = "dapper";
     homepage = "https://github.com/rancher-archives/dapper";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ kuznero ];
+    platforms = lib.platforms.linux;
+    mainProgram = "dapper";
   };
 })

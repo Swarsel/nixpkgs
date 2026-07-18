@@ -20,15 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
   postInstall = builtins.readFile ./postInstall.sh;
+  doInstallCheck = true;
 
   meta = {
     description = "Hard Drive Active Protection System Daemon";
-    mainProgram = "hdapsd";
     homepage = "https://github.com/linux-thinkpad/hdapsd";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "hdapsd";
   };
 })

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   config,
+  pkg-config,
   debug ? config.libnfc-nci.debug or false,
 }:
 
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     autoreconfHook
   ];
@@ -30,11 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals debug [
     "--enable-debug"
   ];
-  dontStrip = debug;
 
   postInstall = ''
     rm -rf $out/etc
   '';
+
+  dontStrip = debug;
 
   meta = {
     description = "Linux NFC stack for NCI based NXP NFC Controllers";

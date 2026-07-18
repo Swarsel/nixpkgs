@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -29,8 +29,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "DVB firmware from LibreELEC";
     homepage = "https://github.com/LibreELEC/dvb-firmware";
     license = lib.licenses.unfreeRedistributableFirmware;
+    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
     maintainers = with lib.maintainers; [ kittywitch ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
   };
 })

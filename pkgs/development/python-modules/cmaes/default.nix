@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   hypothesis,
   numpy,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cmaes";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CyberAgentAILab";
@@ -21,7 +20,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ numpy ];
 
   nativeCheckInputs = [
@@ -29,12 +27,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "cmaes" ];
-
   disabledTests = [
     # Disable time-sensitive test
     "test_cma_tell"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "cmaes" ];
 
   meta = {
     description = "Python library for CMA evolution strategy";

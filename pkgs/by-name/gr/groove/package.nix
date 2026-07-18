@@ -2,24 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  makeWrapper,
-  makeDesktopItem,
   icoutils,
   jre8,
+  makeDesktopItem,
+  makeWrapper,
+  unzip,
 }:
 
 let
   desktopItem = makeDesktopItem {
-    name = "groove-simulator";
-    exec = "groove-simulator";
-    icon = "groove";
-    desktopName = "GROOVE Simulator";
-    comment = "GRaphs for Object-Oriented VErification";
     categories = [
       "Science"
       "ComputerScience"
     ];
+
+    comment = "GRaphs for Object-Oriented VErification";
+    desktopName = "GROOVE Simulator";
+    exec = "groove-simulator";
+    icon = "groove";
+    name = "groove-simulator";
   };
 
 in
@@ -31,6 +32,7 @@ stdenv.mkDerivation rec {
     url = "mirror://sourceforge/groove/groove/${version}/groove-${
       builtins.replaceStrings [ "." ] [ "_" ] version
     }-bin.zip";
+
     sha256 = "sha256-JwoUlO6F2+8NtCnLC+xm5q0Jm8RIyU1rnuKGmjgJhFU=";
   };
 
@@ -39,8 +41,6 @@ stdenv.mkDerivation rec {
     makeWrapper
     icoutils
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p $out/share/groove
@@ -63,12 +63,14 @@ stdenv.mkDerivation rec {
     icotool -x -i 2 -o $out/share/icons/hicolor/16x16/apps/groove.png groove-green-g.ico
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "GRaphs for Object-Oriented VErification";
     homepage = "https://groove.cs.utwente.nl/";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

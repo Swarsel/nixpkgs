@@ -1,19 +1,19 @@
 {
-  cmake,
-  fetchFromGitHub,
-  freetype,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
+  freetype,
   libjpeg,
   libtiff,
   libxml2,
   opencv,
   openexr,
   pkg-config,
-  stdenv,
+  python3,
   swig,
   zlib,
   withPython ? true,
-  python3,
 }:
 
 stdenv.mkDerivation {
@@ -51,14 +51,16 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Free, open source raytracer";
-    downloadPage = "https://github.com/YafaRay/libYafaRay";
     homepage = "http://www.yafaray.org";
-    maintainers = [ ];
     license = lib.licenses.lgpl21;
+    maintainers = [ ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
+    downloadPage = "https://github.com/YafaRay/libYafaRay";
   };
 }
 

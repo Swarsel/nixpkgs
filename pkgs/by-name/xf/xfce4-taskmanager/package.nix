@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gettext,
+  gitUpdater,
+  glib,
+  gtk3,
+  libwnck,
+  libx11,
+  libxfce4ui,
+  libxfce4util,
+  libxmu,
   meson,
   ninja,
   pkg-config,
   wrapGAppsHook3,
-  glib,
-  gtk3,
-  libxfce4ui,
-  libxfce4util,
   xfconf,
-  libwnck,
-  libx11,
-  libxmu,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,11 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.6.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "xfce4-taskmanager";
     tag = "xfce4-taskmanager-${finalAttrs.version}";
     hash = "sha256-HQsZ7SmOX8Z5yuQUe+AvQFx+HVWNRRHEO7dE5DnfT/8=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -58,8 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Easy to use task manager for Xfce";
     homepage = "https://gitlab.xfce.org/apps/xfce4-taskmanager";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "xfce4-taskmanager";
     teams = [ lib.teams.xfce ];
-    platforms = lib.platforms.linux;
   };
 })

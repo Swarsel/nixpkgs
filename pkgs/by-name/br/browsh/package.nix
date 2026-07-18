@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
   fetchurl,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 let
@@ -12,18 +12,15 @@ let
   # literally an asset that is indifferent regardless of the platform, this
   # might be just enough.
   webext = fetchurl {
-    url = "https://github.com/browsh-org/browsh/releases/download/v${version}/browsh-${version}.xpi";
     hash = "sha256-wLctfGHDCgy3nMG/nc882qNjHOAp8VeOZcEWJD7QThY=";
+    url = "https://github.com/browsh-org/browsh/releases/download/v${version}/browsh-${version}.xpi";
   };
 
 in
 
 buildGoModule rec {
   inherit version;
-
   pname = "browsh";
-
-  sourceRoot = "${src.name}/interfacer";
 
   src = fetchFromGitHub {
     owner = "browsh-org";
@@ -40,16 +37,19 @@ buildGoModule rec {
 
   # Tests require network access
   doCheck = false;
+  sourceRoot = "${src.name}/interfacer";
 
   meta = {
     description = "Fully-modern text-based browser, rendering to TTY and browsers";
-    mainProgram = "browsh";
     homepage = "https://www.brow.sh/";
+    license = lib.licenses.lgpl21;
+
     maintainers = with lib.maintainers; [
       kalbasit
       siraben
     ];
-    license = lib.licenses.lgpl21;
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "browsh";
   };
 }

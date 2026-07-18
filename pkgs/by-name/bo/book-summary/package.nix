@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,8 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Book auto-summary for gitbook and mdBook";
-    mainProgram = "book-summary";
     homepage = "https://github.com/dvogt23/book-summary";
     license = lib.licenses.mit;
+    mainProgram = "book-summary";
   };
 })

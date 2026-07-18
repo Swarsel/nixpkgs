@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  pkg-config,
-  lv2,
-  gtkmm2,
   boost,
+  fetchzip,
+  gtkmm2,
+  lv2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,11 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "039bq7d7s2bhfcnlsfq0mqxr9a9iqwg5bwcpxfi24c6yl6krydsi";
   };
 
-  preConfigure = ''
-    sed -r 's,/bin/bash,${stdenv.shell},g' -i ./configure
-    sed -r 's,/sbin/ldconfig,ldconfig,g' -i ./Makefile.template
-  '';
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -30,9 +25,14 @@ stdenv.mkDerivation (finalAttrs: {
     boost
   ];
 
+  preConfigure = ''
+    sed -r 's,/bin/bash,${stdenv.shell},g' -i ./configure
+    sed -r 's,/sbin/ldconfig,ldconfig,g' -i ./Makefile.template
+  '';
+
   meta = {
-    homepage = "http://ll-plugins.nongnu.org/hacking.html";
     description = "Tools and libraries that may come in handy when writing LV2 plugins in C++";
+    homepage = "http://ll-plugins.nongnu.org/hacking.html";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.michalrus ];
     platforms = lib.platforms.linux;

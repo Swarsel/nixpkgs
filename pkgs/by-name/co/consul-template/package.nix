@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-IfOaJlcMNRWxC0XNZYU/5Lz3ILlMWSfzFXwLu3gLKOc=";
-
   # consul-template tests depend on vault and consul services running to
   # execute tests so we skip them here
   doCheck = false;
@@ -27,13 +26,15 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/hashicorp/consul-template/";
     description = "Generic template rendering and notifications with Consul";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    homepage = "https://github.com/hashicorp/consul-template/";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       cpcloud
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "consul-template";
   };
 })

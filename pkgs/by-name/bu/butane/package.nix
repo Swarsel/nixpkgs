@@ -16,27 +16,28 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   doCheck = false;
-
-  subPackages = [ "internal" ];
-
-  ldflags = [
-    "-X github.com/coreos/butane/internal/version.Raw=v${finalAttrs.version}"
-  ];
 
   postInstall = ''
     mv $out/bin/{internal,butane}
   '';
 
+  ldflags = [
+    "-X github.com/coreos/butane/internal/version.Raw=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "internal" ];
+
   meta = {
     description = "Translates human-readable Butane configs into machine-readable Ignition configs";
-    mainProgram = "butane";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/coreos/butane";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       elijahcaine
       ruuda
     ];
+
+    mainProgram = "butane";
   };
 })

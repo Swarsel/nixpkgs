@@ -1,16 +1,16 @@
 {
-  alsa-lib,
   lib,
   stdenv,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnetCorePackages,
-  dbus,
-  fontconfig,
-  portaudio,
-  libxi,
+  alsa-lib,
+  buildDotnetModule,
   copyDesktopItems,
+  dbus,
+  dotnetCorePackages,
+  fontconfig,
+  libxi,
   makeDesktopItem,
+  portaudio,
 }:
 
 buildDotnetModule rec {
@@ -25,47 +25,6 @@ buildDotnetModule rec {
   };
 
   nativeBuildInputs = [ copyDesktopItems ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "openutau";
-      desktopName = "OpenUtau";
-      startupWMClass = "openutau";
-      icon = "openutau";
-      genericName = "Utau";
-      comment = "Open source UTAU successor";
-      exec = "OpenUtau";
-      categories = [
-        "AudioVideo"
-        "Music"
-      ];
-    })
-  ];
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
-  # [...]/Microsoft.NET.Sdk.targets(157,5): error MSB4018: The "GenerateDepsFile" task failed unexpectedly. [[...]/OpenUtau.Core.csproj]
-  # [...]/Microsoft.NET.Sdk.targets(157,5): error MSB4018: System.IO.IOException: The process cannot access the file '[...]/OpenUtau.Core.deps.json' because it is being used by another process. [[...]/OpenUtau.Core.csproj]
-  enableParallelBuilding = false;
-
-  projectFile = "OpenUtau.sln";
-  nugetDeps = ./deps.json;
-
-  executables = [ "OpenUtau" ];
-
-  runtimeDeps = [
-    dbus
-    portaudio
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    alsa-lib
-    fontconfig
-    libxi
-  ];
-
-  dotnetInstallFlags = [ "-p:PublishReadyToRun=false" ];
-
   # socket cannot bind to localhost on darwin for tests
   doCheck = !stdenv.hostPlatform.isDarwin;
 
@@ -93,11 +52,50 @@ buildDotnetModule rec {
       ${shouldInstallDesktopItem}
     '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "AudioVideo"
+        "Music"
+      ];
+
+      comment = "Open source UTAU successor";
+      desktopName = "OpenUtau";
+      exec = "OpenUtau";
+      genericName = "Utau";
+      icon = "openutau";
+      name = "openutau";
+      startupWMClass = "openutau";
+    })
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  dotnetInstallFlags = [ "-p:PublishReadyToRun=false" ];
+  # [...]/Microsoft.NET.Sdk.targets(157,5): error MSB4018: The "GenerateDepsFile" task failed unexpectedly. [[...]/OpenUtau.Core.csproj]
+  # [...]/Microsoft.NET.Sdk.targets(157,5): error MSB4018: System.IO.IOException: The process cannot access the file '[...]/OpenUtau.Core.deps.json' because it is being used by another process. [[...]/OpenUtau.Core.csproj]
+  enableParallelBuilding = false;
+  executables = [ "OpenUtau" ];
+  nugetDeps = ./deps.json;
+  projectFile = "OpenUtau.sln";
+
+  runtimeDeps = [
+    dbus
+    portaudio
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    alsa-lib
+    fontconfig
+    libxi
+  ];
+
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Open source singing synthesis platform and UTAU successor";
     homepage = "http://www.openutau.com/";
+    license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       # deps
@@ -105,13 +103,15 @@ buildDotnetModule rec {
       # some deps and worldline resampler
       binaryNativeCode
     ];
-    license = lib.licenses.mit;
+
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "OpenUtau";
   };
 }

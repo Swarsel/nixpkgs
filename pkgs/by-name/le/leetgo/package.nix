@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,9 +17,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-FxXU1A9pnVMzD0fTo2QgZvZYC40UwHlJja69WCCXD0k=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-ODSzzEj7r8itbsEeXutLyXxGZ/7q7BZbGQ1kRN4RSfc=";
 
-  nativeBuildInputs = [ installShellFiles ];
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd leetgo \
+      --bash <($out/bin/leetgo completion bash) \
+      --fish <($out/bin/leetgo completion fish) \
+      --zsh <($out/bin/leetgo completion zsh)
+  '';
 
   ldflags = [
     "-s"
@@ -28,13 +34,6 @@ buildGoModule (finalAttrs: {
   ];
 
   subPackages = [ "." ];
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd leetgo \
-      --bash <($out/bin/leetgo completion bash) \
-      --fish <($out/bin/leetgo completion fish) \
-      --zsh <($out/bin/leetgo completion zsh)
-  '';
 
   meta = {
     description = "Command-line tool for LeetCode";

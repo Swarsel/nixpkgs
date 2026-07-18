@@ -18,25 +18,29 @@ in
 {
   options.services.strongswan-swanctl = {
     enable = mkEnableOption "strongswan-swanctl service";
-
     package = mkPackageOption pkgs "strongswan" { };
 
-    strongswan.extraConfig = mkOption {
-      type = types.str;
-      default = "";
-      description = ''
-        Contents of the {file}`strongswan.conf` file.
-      '';
-    };
-
-    swanctl = paramsToOptions swanctlParams;
     includes = mkOption {
-      type = types.listOf types.path;
       default = [ ];
+
       description = ''
         Extra configuration files to include in the swanctl configuration. This can be used to provide secret values from outside the nix store.
       '';
+
+      type = types.listOf types.path;
     };
+
+    strongswan.extraConfig = mkOption {
+      default = "";
+
+      description = ''
+        Contents of the {file}`strongswan.conf` file.
+      '';
+
+      type = types.str;
+    };
+
+    swanctl = paramsToOptions swanctlParams;
   };
 
   config = mkIf cfg.enable {
@@ -48,8 +52,36 @@ in
       }
     ];
 
-    environment.etc."swanctl/swanctl.conf".source = configFile;
     environment.etc."strongswan.conf".text = cfg.strongswan.extraConfig;
+    environment.etc."swanctl/swanctl.conf".source = configFile;
+
+    systemd.services.strongswan-swanctl = {
+      after = [ "network-online.target" ];
+      description = "strongSwan IPsec IKEv1/IKEv2 daemon using swanctl";
+
+      path = with pkgs; [
+        kmod
+        iproute2
+        iptables
+        util-linux
+      ];
+
+      restartTriggers = [
+        config.environment.etc."swanctl/swanctl.conf".source
+        config.environment.etc."strongswan.conf".source
+      ];
+
+      serviceConfig = {
+        ExecReload = "${cfg.package}/sbin/swanctl --reload";
+        ExecStart = "${cfg.package}/sbin/charon-systemd";
+        ExecStartPost = "${cfg.package}/sbin/swanctl --load-all --noprompt";
+        Restart = "on-abnormal";
+        Type = "notify";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
+    };
 
     # The swanctl command complains when the following directories don't exist:
     # See: https://wiki.strongswan.org/projects/strongswan/wiki/Swanctldirectory
@@ -68,29 +100,5 @@ in
       "d /etc/swanctl/pkcs8 -" # PKCS#8 encoded private keys of any type
       "d /etc/swanctl/pkcs12 -" # PKCS#12 containers
     ];
-
-    systemd.services.strongswan-swanctl = {
-      description = "strongSwan IPsec IKEv1/IKEv2 daemon using swanctl";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" ];
-      path = with pkgs; [
-        kmod
-        iproute2
-        iptables
-        util-linux
-      ];
-      restartTriggers = [
-        config.environment.etc."swanctl/swanctl.conf".source
-        config.environment.etc."strongswan.conf".source
-      ];
-      serviceConfig = {
-        ExecStart = "${cfg.package}/sbin/charon-systemd";
-        Type = "notify";
-        ExecStartPost = "${cfg.package}/sbin/swanctl --load-all --noprompt";
-        ExecReload = "${cfg.package}/sbin/swanctl --reload";
-        Restart = "on-abnormal";
-      };
-    };
   };
 }

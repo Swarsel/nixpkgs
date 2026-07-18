@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  pkg-config,
-  autoreconfHook,
-  gtk2,
-  alsa-lib,
   SDL,
-  jack2,
+  alsa-lib,
   audiofile,
-  goocanvas_1, # graphical envelope editing
-  libxml2,
-  libsndfile,
-  libpulseaudio,
+  autoreconfHook,
+  fetchzip,
   glib,
+  goocanvas_1, # graphical envelope editing
+  gtk2,
+  jack2,
+  libpulseaudio,
+  libsndfile,
+  libxml2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,17 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i -e '/seteuid/d' -e '/setegid/d' app/main.c
   '';
 
-  configureFlags = [
-    "--with-graphics-backend=gdk"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "--disable-alsa"
-  ];
-
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
-  enableParallelBuilding = true;
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -85,8 +74,19 @@ stdenv.mkDerivation (finalAttrs: {
     libpulseaudio # found by PKG_CHECK_MODULES
   ];
 
+  configureFlags = [
+    "--with-graphics-backend=gdk"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "--disable-alsa"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  enableParallelBuilding = true;
+
   meta = {
     description = "Music tracking tool similar in design to the DOS program FastTracker and the Amiga legend ProTracker";
+
     longDescription = ''
       SoundTracker is a pattern-oriented music editor (similar to the DOS
       program 'FastTracker'). Samples are lined up on tracks and patterns
@@ -94,11 +94,12 @@ stdenv.mkDerivation (finalAttrs: {
       MOD; the player code is the one from OpenCP. A basic sample recorder
       and editor is also included.
     '';
+
     homepage = "http://www.soundtracker.org/";
-    downloadPage = "https://sourceforge.net/projects/soundtracker/files/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    downloadPage = "https://sourceforge.net/projects/soundtracker/files/";
     hydraPlatforms = lib.platforms.linux; # sdl-config times out on darwin
   };
 })

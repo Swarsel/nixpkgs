@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchgit,
-  python3,
   perl,
+  python3,
 }:
 
 stdenv.mkDerivation {
@@ -44,7 +44,7 @@ stdenv.mkDerivation {
     homepage = "https://www.gnu.org/software/gnulib/";
     changelog = "https://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob;f=ChangeLog";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "gnulib-tool";
     platforms = lib.platforms.unix;
+    mainProgram = "gnulib-tool";
   };
 }

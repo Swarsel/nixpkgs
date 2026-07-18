@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  docbook_xsl,
-  libxslt,
-  docbook_xml_dtd_45,
   acl,
   attr,
+  autoreconfHook,
   boost,
   btrfs-progs,
   coreutils,
   dbus,
   diffutils,
+  docbook_xml_dtd_45,
+  docbook_xsl,
   e2fsprogs,
-  libxml2,
-  lvm2,
-  pam,
-  util-linux,
   json_c,
-  nixosTests,
+  libxml2,
+  libxslt,
+  lvm2,
   ncurses,
+  nixosTests,
+  pam,
+  pkg-config,
+  util-linux,
   zlib,
 }:
 
@@ -36,6 +36,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-oPIIEReHWkWSj4K/mi1VD3Ukaltquzqh8UVBPc4q+vw=";
   };
 
+  # Hard-coded root paths, hard-coded root paths everywhere...
+  postPatch = ''
+    for file in {client/installation-helper,client/systemd-helper,data,scripts,zypp-plugin,scripts/completion}/Makefile.am; do
+      substituteInPlace $file \
+        --replace-warn '$(DESTDIR)/usr' "$out" \
+        --replace-warn "DESTDIR" "out" \
+        --replace-warn "/usr" "$out"
+    done
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -45,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     libxslt
     docbook_xml_dtd_45
   ];
+
   buildInputs = [
     acl
     attr
@@ -62,23 +73,11 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  # Hard-coded root paths, hard-coded root paths everywhere...
-  postPatch = ''
-    for file in {client/installation-helper,client/systemd-helper,data,scripts,zypp-plugin,scripts/completion}/Makefile.am; do
-      substituteInPlace $file \
-        --replace-warn '$(DESTDIR)/usr' "$out" \
-        --replace-warn "DESTDIR" "out" \
-        --replace-warn "/usr" "$out"
-    done
-  '';
-
   configureFlags = [
     "--disable-ext4" # requires patched kernel & e2fsprogs
     "DIFFBIN=${diffutils}/bin/diff"
     "RMBIN=${coreutils}/bin/rm"
   ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     rm -r $out/etc/cron.*
@@ -92,14 +91,15 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = true;
   passthru.tests.snapper = nixosTests.snapper;
 
   meta = {
     description = "Tool for Linux filesystem snapshot management";
     homepage = "http://snapper.io";
     license = lib.licenses.gpl2Only;
-    mainProgram = "snapper";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "snapper";
   };
 })

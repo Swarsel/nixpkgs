@@ -1,8 +1,8 @@
 {
-  fetchurl,
   lib,
-  zlib,
   stdenv,
+  fetchurl,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Generate and validate records for the sorting benchmark";
+
     longDescription = ''
       The gensort program can be used to generate input records for the sort
       benchmarks presented on www.sortbenchmark.org.
@@ -36,10 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
       The valsort program can be used to validate the sort output file is
       correct.
     '';
+
     homepage = "https://www.ordinal.com/gensort.html";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ zimeg ];
-    mainProgram = "gensort";
     platforms = lib.platforms.linux;
+    mainProgram = "gensort";
   };
 })

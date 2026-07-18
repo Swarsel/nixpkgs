@@ -1,13 +1,13 @@
 {
-  mkDerivation,
   libcapsicum,
   libcasper,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/backlight";
-
   buildInputs = [
     libcapsicum
     libcasper
   ];
+
+  path = "usr.bin/backlight";
 }

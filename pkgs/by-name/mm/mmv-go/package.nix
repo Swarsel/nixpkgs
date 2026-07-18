@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,8 +24,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/itchyny/mmv";
     description = "Rename multiple files using your $EDITOR";
+    homepage = "https://github.com/itchyny/mmv";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "mmv";

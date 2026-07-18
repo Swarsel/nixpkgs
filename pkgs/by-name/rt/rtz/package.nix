@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   bzip2,
   openssl,
+  pkg-config,
+  rustPlatform,
   zstd,
 }:
 
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-V7N9NFIc/WWxLaahkjdS47Qj8sc3HRdKSkrBqi1ngA8=";
   };
 
-  cargoHash = "sha256-Lm81Qnu3ZQw43fCcQOR63EV1aYXuPyR9Gy+F6BCiwUw=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -31,6 +29,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
+  cargoHash = "sha256-Lm81Qnu3ZQw43fCcQOR63EV1aYXuPyR9Gy+F6BCiwUw=";
   buildFeatures = [ "web" ];
 
   meta = {

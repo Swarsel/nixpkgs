@@ -1,13 +1,12 @@
 {
   lib,
-  resholve,
   fetchurl,
-  gawk,
   bash,
   binutils,
   coreutils,
   file,
   findutils,
+  gawk,
   glibc,
   gnugrep,
   gnused,
@@ -15,6 +14,7 @@
   openssh,
   postgresql,
   ps,
+  resholve,
   util-linux,
   which,
 }:
@@ -32,10 +32,29 @@ resholve.mkDerivation (finalAttrs: {
     ./unix-privesc-check.patch # https://github.com/NixOS/nixpkgs/pull/287629#issuecomment-1944428796
   ];
 
+  installPhase = ''
+    runHook preInstall
+    install -Dm 755 unix-privesc-check $out/bin/unix-privesc-check
+    runHook postInstall
+  '';
+
   solutions = {
     unix-privesc-check = {
-      scripts = [ "bin/unix-privesc-check" ];
-      interpreter = "${bash}/bin/bash";
+      execer = [
+        "cannot:${glibc.bin}/bin/ldd"
+        "cannot:${postgresql}/bin/psql"
+        "cannot:${openssh}/bin/ssh-add"
+        "cannot:${util-linux.bin}/bin/swapon"
+      ];
+
+      fake = {
+        external = [
+          "lanscan" # lanscan exists only for HP-UX OS
+          "mount" # Getting same error described in https://github.com/abathur/resholve/issues/29
+          "passwd" # Getting same error described in https://github.com/abathur/resholve/issues/29
+        ];
+      };
+
       inputs = [
         gawk
         bash
@@ -53,34 +72,18 @@ resholve.mkDerivation (finalAttrs: {
         util-linux # for swapon command
         which
       ];
-      fake = {
-        external = [
-          "lanscan" # lanscan exists only for HP-UX OS
-          "mount" # Getting same error described in https://github.com/abathur/resholve/issues/29
-          "passwd" # Getting same error described in https://github.com/abathur/resholve/issues/29
-        ];
-      };
-      execer = [
-        "cannot:${glibc.bin}/bin/ldd"
-        "cannot:${postgresql}/bin/psql"
-        "cannot:${openssh}/bin/ssh-add"
-        "cannot:${util-linux.bin}/bin/swapon"
-      ];
+
+      interpreter = "${bash}/bin/bash";
+      scripts = [ "bin/unix-privesc-check" ];
     };
   };
 
-  installPhase = ''
-    runHook preInstall
-    install -Dm 755 unix-privesc-check $out/bin/unix-privesc-check
-    runHook postInstall
-  '';
-
   meta = {
     description = "Find misconfigurations that could allow local unprivilged users to escalate privileges to other users or to access local apps";
-    mainProgram = "unix-privesc-check";
     homepage = "https://pentestmonkey.net/tools/audit/unix-privesc-check";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "unix-privesc-check";
   };
 })

@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  gitUpdater,
+  jdk17,
+  jre,
+  libGL,
+  libxxf86vm,
   makeDesktopItem,
   makeWrapper,
   maven,
-  jdk17,
-  jre,
-  libxxf86vm,
-  gitUpdater,
-  libGL,
 }:
 
 maven.buildMavenPackage rec {
@@ -22,23 +22,6 @@ maven.buildMavenPackage rec {
     hash = "sha256-ckeZ/7rACyZ5j+zzC5hv1NaXTi9q/KvOzMPTDd1crHQ=";
   };
 
-  mvnJdk = jdk17;
-  mvnHash = "sha256-OI+m2xJZPnyPXM/HlAsaBJ/z/NCcRSP7+PW5CQOsPiY=";
-
-  desktop = makeDesktopItem {
-    name = "RuneLite";
-    type = "Application";
-    exec = "runelite";
-    icon = "runelite";
-    comment = "Open source Old School RuneScape client";
-    desktopName = "RuneLite";
-    genericName = "Oldschool Runescape";
-    categories = [ "Game" ];
-    startupWMClass = "net-runelite-client-RuneLite";
-  };
-
-  # tests require internet :(
-  mvnParameters = "-Dmaven.test.skip";
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -60,20 +43,39 @@ maven.buildMavenPackage rec {
       --add-flags "-jar $out/share/RuneLite.jar"
   '';
 
+  desktop = makeDesktopItem {
+    categories = [ "Game" ];
+    comment = "Open source Old School RuneScape client";
+    desktopName = "RuneLite";
+    exec = "runelite";
+    genericName = "Oldschool Runescape";
+    icon = "runelite";
+    name = "RuneLite";
+    startupWMClass = "net-runelite-client-RuneLite";
+    type = "Application";
+  };
+
+  mvnHash = "sha256-OI+m2xJZPnyPXM/HlAsaBJ/z/NCcRSP7+PW5CQOsPiY=";
+  mvnJdk = jdk17;
+  # tests require internet :(
+  mvnParameters = "-Dmaven.test.skip";
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Open source Old School RuneScape client";
     homepage = "https://runelite.net/";
+    license = lib.licenses.bsd2;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       kmeakin
       moody
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "runelite";
   };

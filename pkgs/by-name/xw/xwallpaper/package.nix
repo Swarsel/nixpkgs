@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
   installShellFiles,
-  pixman,
-  libxcb-util,
-  libxcb-image,
-  libseccomp,
   libjpeg,
   libpng,
+  libseccomp,
+  libxcb-image,
+  libxcb-util,
   libxpm,
+  pixman,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     installShellFiles
   ];
+
   buildInputs = [
     pixman
     libxcb-image
@@ -45,8 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/stoeckmann/xwallpaper";
     description = "Utility for setting wallpapers in X";
+    homepage = "https://github.com/stoeckmann/xwallpaper";
     license = lib.licenses.isc;
     maintainers = [ ];
     platforms = lib.platforms.linux;

@@ -8,16 +8,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "py3dns";
   version = "4.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-mGUugOzsFDxg948OazQWMcqadWDt2N3fyGTAKQJhijk=";
   };
 
-  build-system = [ flit-core ];
-
   doCheck = false;
+  build-system = [ flit-core ];
+  pyproject = true;
 
   meta = {
     description = "Python 3 DNS library";

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   httpx,
   rich,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyporscheconnectapi";
   version = "0.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CJNE";
@@ -26,6 +25,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"pytest-runner"' ""
   '';
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,9 +36,7 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyporscheconnectapi" ];
 
   meta = {

@@ -1,30 +1,30 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   copyDesktopItems,
-  makeDesktopItem,
+  curl,
+  expat,
+  fontconfig,
+  freetype,
+  libGL,
+  libjack2,
   libx11,
   libxcomposite,
   libxcursor,
+  libxdmcp,
+  libxext,
   libxinerama,
   libxrandr,
   libxtst,
-  libxdmcp,
-  libxext,
-  xvfb,
-  freetype,
-  fontconfig,
-  expat,
-  libGL,
-  libjack2,
-  curl,
+  makeDesktopItem,
   ninja,
-  writableTmpDirAsHomeHook,
   nix-update-script,
+  pkg-config,
+  writableTmpDirAsHomeHook,
+  xvfb,
   # Disable VST building by default, since it is unfree
   enableVST2 ? false,
 }:
@@ -32,8 +32,8 @@ let
   version = "1.1.5";
 in
 stdenv.mkDerivation {
-  pname = "socalabs-sn76489";
   inherit version;
+  pname = "socalabs-sn76489";
 
   src = fetchFromGitHub {
     owner = "FigBug";
@@ -41,6 +41,7 @@ stdenv.mkDerivation {
     tag = "v${version}";
     hash = "sha256-dQ697B0mhdIC0ltdY2EnErLNAGRKA6ARONX/kR3OLyI=";
     fetchSubmodules = true;
+
     preFetch = ''
       # can't clone using ssh
       export GIT_CONFIG_COUNT=1
@@ -49,20 +50,12 @@ stdenv.mkDerivation {
     '';
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "socalabs-sn76489";
-      desktopName = "Socalabs SN76489";
-      comment = "Socalabs Texas Instruments SN76489 Emulation Plugin";
-      icon = "SN76489";
-      exec = "SN76489";
-      categories = [
-        "Audio"
-        "AudioVideo"
-      ];
-    })
-  ];
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+    --replace-fail 'FORMATS Standalone VST VST3 AU LV2' 'FORMATS Standalone ${lib.optionalString enableVST2 "VST"} VST3 LV2'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
@@ -96,12 +89,16 @@ stdenv.mkDerivation {
     "--preset ninja-gcc"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-    --replace-fail 'FORMATS Standalone VST VST3 AU LV2' 'FORMATS Standalone ${lib.optionalString enableVST2 "VST"} VST3 LV2'
-  '';
-
-  strictDeps = true;
+  env.NIX_LDFLAGS = toString [
+    "-lX11"
+    "-lXext"
+    "-lXcomposite"
+    "-lXcursor"
+    "-lXinerama"
+    "-lXrandr"
+    "-lXtst"
+    "-lXdmcp"
+  ];
 
   preBuild = ''
     cd ../Builds/ninja-gcc
@@ -127,15 +124,20 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  env.NIX_LDFLAGS = toString [
-    "-lX11"
-    "-lXext"
-    "-lXcomposite"
-    "-lXcursor"
-    "-lXinerama"
-    "-lXrandr"
-    "-lXtst"
-    "-lXdmcp"
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "AudioVideo"
+      ];
+
+      comment = "Socalabs Texas Instruments SN76489 Emulation Plugin";
+      desktopName = "Socalabs SN76489";
+      exec = "SN76489";
+      icon = "SN76489";
+      name = "socalabs-sn76489";
+      type = "Application";
+    })
   ];
 
   passthru.updateScript = nix-update-script { };
@@ -143,9 +145,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Socalabs Texas Instruments SN76489 Emulation Plugin";
     homepage = "https://socalabs.com/synths/sn76489/";
-    mainProgram = "SN76489";
-    platforms = lib.platforms.linux;
     license = [ lib.licenses.lgpl21 ] ++ lib.optional enableVST2 lib.licenses.unfree;
     maintainers = [ lib.maintainers.l1npengtul ];
+    platforms = lib.platforms.linux;
+    mainProgram = "SN76489";
   };
 }

@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-xprocess";
   version = "1.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,7 +24,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
 
   propagatedBuildInputs = [
@@ -35,6 +33,7 @@ buildPythonPackage rec {
 
   # There's no tests in repo
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Pytest external process plugin";

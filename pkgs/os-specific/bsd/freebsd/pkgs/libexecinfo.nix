@@ -1,25 +1,18 @@
 {
-  mkDerivation,
-  include,
-  libelf,
-  libcMinimal,
-  libgcc,
   csu,
+  include,
+  libcMinimal,
+  libelf,
+  libgcc,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libexecinfo";
-  extraPaths = [
-    "contrib/libexecinfo"
-  ];
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
-
-  noLibc = true;
 
   buildInputs = [
     include
@@ -28,9 +21,16 @@ mkDerivation {
     libgcc
   ];
 
+  env.MK_TESTS = "no";
+
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
   '';
 
-  env.MK_TESTS = "no";
+  extraPaths = [
+    "contrib/libexecinfo"
+  ];
+
+  noLibc = true;
+  path = "lib/libexecinfo";
 }

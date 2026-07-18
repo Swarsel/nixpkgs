@@ -1,41 +1,35 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  chess,
   # dependencies
   gymnasium,
   numpy,
-
+  pillow,
+  pre-commit,
+  pybox2d,
   # optional-dependencies
   pygame-ce,
   pymunk,
-  chess,
-  rlcard,
-  shimmy,
-  pillow,
-  pybox2d,
-  scipy,
-  pre-commit,
   pynput,
   pytest,
   pytest-cov-stub,
   pytest-markdown-docs,
   pytest-xdist,
-
   # tests
   pytestCheckHook,
+  rlcard,
+  scipy,
+  # build-system
+  setuptools,
+  shimmy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pettingzoo";
   version = "1.26.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Farama-Foundation";
@@ -43,51 +37,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-WrfjkDnmir6bZvtMD7MVQKVoGvK+lutlOoNe9SNQ8jU=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    gymnasium
-    numpy
-  ];
-
-  optional-dependencies = {
-    atari = [
-      # multi-agent-ale-py
-      pygame-ce
-    ];
-    butterfly = [
-      pygame-ce
-      pymunk
-    ];
-    classic = [
-      chess
-      pygame-ce
-      rlcard
-      shimmy
-    ];
-    mpe = [ pygame-ce ];
-    other = [ pillow ];
-    sisl = [
-      pybox2d
-      pygame-ce
-      pymunk
-      scipy
-    ];
-    testing = [
-      # autorom
-      pre-commit
-      pynput
-      pytest
-      pytest-cov-stub
-      pytest-markdown-docs
-      pytest-xdist
-    ];
-  };
-
-  pythonImportsCheck = [ "pettingzoo" ];
 
   nativeCheckInputs = [
     chess
@@ -97,6 +46,17 @@ buildPythonPackage (finalAttrs: {
     pytest-xdist
     pytestCheckHook
     rlcard
+  ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    gymnasium
+    numpy
   ];
 
   disabledTestPaths = [
@@ -114,6 +74,48 @@ buildPythonPackage (finalAttrs: {
     # Crashes on darwin: `Fatal Python error: Aborted`
     "test_multi_episode_parallel_env_wrapper"
   ];
+
+  optional-dependencies = {
+    atari = [
+      # multi-agent-ale-py
+      pygame-ce
+    ];
+
+    butterfly = [
+      pygame-ce
+      pymunk
+    ];
+
+    classic = [
+      chess
+      pygame-ce
+      rlcard
+      shimmy
+    ];
+
+    mpe = [ pygame-ce ];
+    other = [ pillow ];
+
+    sisl = [
+      pybox2d
+      pygame-ce
+      pymunk
+      scipy
+    ];
+
+    testing = [
+      # autorom
+      pre-commit
+      pynput
+      pytest
+      pytest-cov-stub
+      pytest-markdown-docs
+      pytest-xdist
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pettingzoo" ];
 
   meta = {
     description = "API standard for multi-agent reinforcement learning environments, with popular reference environments and related utilities";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pysigma,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysigma-backend-sqlite";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SigmaHQ";
@@ -20,18 +19,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-+QiRfuLdhRo8wlQG3EM2wGD1VhlauuMrbrX8NDflguA=";
   };
 
-  pythonRelaxDeps = [ "pysigma" ];
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ pysigma ];
-
   nativeCheckInputs = [
     pytestCheckHook
     requests
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ pysigma ];
+  pyproject = true;
   pythonImportsCheck = [ "sigma.backends.sqlite" ];
+  pythonRelaxDeps = [ "pysigma" ];
 
   meta = {
     description = "Library to support sqlite for pySigma";

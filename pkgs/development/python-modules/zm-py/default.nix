@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
   requests,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "zm-py";
   version = "0.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rohankapoorcom";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "zoneminder" ];
 
   meta = {

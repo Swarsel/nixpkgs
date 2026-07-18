@@ -1,20 +1,31 @@
 {
+  libsForQt5,
+  libxcursor,
   mkKdeDerivation,
   qtbase,
   qtwayland,
-  libsForQt5,
-  libxcursor,
 }:
 mkKdeDerivation {
   pname = "plasma-integration";
-
-  # force it to check our custom import path too
-  patches = [ ./qml-path.patch ];
 
   outputs = [
     "out"
     "dev"
     "qt5"
+  ];
+
+  # force it to check our custom import path too
+  patches = [ ./qml-path.patch ];
+
+  # Move Qt5 plugin to Qt5 plugin path
+  postInstall = ''
+    mkdir -p $qt5/${libsForQt5.qtbase.qtPluginPrefix}/platformthemes
+    mv $out/${qtbase.qtPluginPrefix}/platformthemes/KDEPlasmaPlatformTheme5.so $qt5/${libsForQt5.qtbase.qtPluginPrefix}/platformthemes
+  '';
+
+  extraBuildInputs = [
+    qtwayland
+    libxcursor
   ];
 
   # We can't add qt5 stuff to dependencies or the hooks blow up,
@@ -60,15 +71,4 @@ mkKdeDerivation {
     "-DKF5WindowSystem_DIR=${libsForQt5.__internalKF5.kwindowsystem.dev}/lib/cmake/KF5WindowSystem"
     "-DKF5XmlGui_DIR=${libsForQt5.__internalKF5.kxmlgui.dev}/lib/cmake/KF5XmlGui"
   ];
-
-  extraBuildInputs = [
-    qtwayland
-    libxcursor
-  ];
-
-  # Move Qt5 plugin to Qt5 plugin path
-  postInstall = ''
-    mkdir -p $qt5/${libsForQt5.qtbase.qtPluginPrefix}/platformthemes
-    mv $out/${qtbase.qtPluginPrefix}/platformthemes/KDEPlasmaPlatformTheme5.so $qt5/${libsForQt5.qtbase.qtPluginPrefix}/platformthemes
-  '';
 }

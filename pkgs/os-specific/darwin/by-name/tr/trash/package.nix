@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "0.9.2";
   pname = "trash";
+  version = "0.9.2";
 
   src = fetchFromGitHub {
     owner = "ali-rantakari";
@@ -16,11 +16,11 @@ stdenv.mkDerivation rec {
     sha256 = "1d3rc03vgz32faj7qi18iiggxvxlqrj9lsk5jkpa9r1mcs5d89my";
   };
 
+  patches = [ ./trash.diff ];
+
   buildInputs = [
     perl
   ];
-
-  patches = [ ./trash.diff ];
 
   buildPhase = "make all docs";
 
@@ -32,10 +32,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/ali-rantakari/trash";
     description = "Small command-line program for OS X that moves files or
     folders to the trash.";
-    platforms = lib.platforms.darwin;
+
+    homepage = "https://github.com/ali-rantakari/trash";
     license = lib.licenses.mit;
+    platforms = lib.platforms.darwin;
   };
 }

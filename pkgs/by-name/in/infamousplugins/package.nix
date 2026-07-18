@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cairomm,
   cmake,
-  lv2,
+  fftwFloat,
   libpthread-stubs,
   libxdmcp,
   libxft,
+  lv2,
   ntk,
-  fftwFloat,
+  pkg-config,
   zita-resampler,
 }:
 
@@ -25,21 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-AhW4hLmCxz7yHMdxM6kOvtCXk1jEg/XtyPgt4yk1xqs=";
   };
 
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-  ];
-  buildInputs = [
-    cairomm
-    lv2
-    libpthread-stubs
-    libxdmcp
-    libxft
-    ntk
-    fftwFloat
-    zita-resampler
-  ];
-
   postPatch = ''
     substituteInPlace CMakeLists.txt --replace-fail \
       'cmake_minimum_required(VERSION 2.8)' \
@@ -51,9 +36,25 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+  ];
+
+  buildInputs = [
+    cairomm
+    lv2
+    libpthread-stubs
+    libxdmcp
+    libxft
+    ntk
+    fftwFloat
+    zita-resampler
+  ];
+
   meta = {
-    homepage = "https://ssj71.github.io/infamousPlugins";
     description = "Collection of open-source LV2 plugins";
+
     longDescription = ''
       These are audio plugins in the LV2 format, developed for linux. Most are suitable for live use.
       This collection contains:
@@ -67,6 +68,8 @@ stdenv.mkDerivation (finalAttrs: {
         * ewham - a whammy style pitchshifter
         * lushlife - a simulated double tracking plugin capable of everything from a thin beatle effect to thick lush choruses to weird outlandish effects
     '';
+
+    homepage = "https://ssj71.github.io/infamousPlugins";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

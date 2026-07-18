@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
   testers,
 }:
 
@@ -19,10 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Hm8BVIMxRlyiVptvuS8vk2eO3hHboj5CRefWcMEhzvs=";
   };
 
-  cargoHash = "sha256-ro0BVMbShxo/EsPBOCBOgYDsOkDnxpyTZlk2eAJ2IWA=";
-
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -31,13 +27,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  passthru.updateScript = nix-update-script { };
+  cargoHash = "sha256-ro0BVMbShxo/EsPBOCBOgYDsOkDnxpyTZlk2eAJ2IWA=";
+  __structuredAttrs = true;
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     # The version command triggers logging unconditionally, have to create a temp directory
     command = "HOME=$(mktemp -d) rfc_reader --version";
+    package = finalAttrs.finalPackage;
   };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "RFC viewer with TUI";

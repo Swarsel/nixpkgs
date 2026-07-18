@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   sqlite,
 }:
 let
@@ -25,22 +25,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-xz5Agsm+ATQXXgpPGN4EQ00i1t8qUlrviNHauVdCu4U=";
   };
 
+  buildInputs = [ sqlite ];
   cargoHash = "sha256-mCPJE9WW14NtahbMnDcE+0xXl5w25dzerPy3wv78l20=";
 
-  buildInputs = [ sqlite ];
-
-  firefoxManifest = builtins.toJSON (
-    manifest
-    // {
-      allowed_extensions = [ "bukubrow@samhh.com" ];
-    }
-  );
-  chromeManifest = builtins.toJSON (
-    manifest
-    // {
-      allowed_origins = [ "chrome-extension://ghniladkapjacfajiooekgkfopkjblpn/" ];
-    }
-  );
   postBuild = ''
     printf "%s" "$firefoxManifest" > firefox.json
     substituteInPlace firefox.json \
@@ -49,12 +36,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace chrome.json \
       --replace-fail "@out@" "$out"
   '';
+
   postInstall = ''
     install -Dm0644 firefox.json $out/lib/mozilla/native-messaging-hosts/com.samhh.bukubrow.json
     install -Dm0644 chrome.json $out/etc/chromium/native-messaging-hosts/com.samhh.bukubrow.json
   '';
 
   __structuredAttrs = true;
+
+  chromeManifest = builtins.toJSON (
+    manifest
+    // {
+      allowed_origins = [ "chrome-extension://ghniladkapjacfajiooekgkfopkjblpn/" ];
+    }
+  );
+
+  firefoxManifest = builtins.toJSON (
+    manifest
+    // {
+      allowed_extensions = [ "bukubrow@samhh.com" ];
+    }
+  );
 
   meta = {
     description = "WebExtension for Buku, a command-line bookmark manager";

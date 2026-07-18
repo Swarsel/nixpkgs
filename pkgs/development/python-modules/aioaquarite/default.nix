@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   google-auth,
   google-cloud-firestore,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aioaquarite";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fdebrus";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-pf/a0W1Ix/3Cd6dMUvHqb6DwT56PvtSf/GpicrL8y1A=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +29,7 @@ buildPythonPackage (finalAttrs: {
     google-cloud-firestore
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aioaquarite" ];
 
   meta = {

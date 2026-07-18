@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   nix-update-script,
-  testers,
   rotonda,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -39,10 +39,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

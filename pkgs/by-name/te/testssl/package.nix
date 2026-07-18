@@ -1,14 +1,14 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  lib,
-  dnsutils,
   coreutils,
-  openssl,
+  dnsutils,
+  makeWrapper,
   net-tools,
-  util-linux,
+  openssl,
   procps,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,7 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-hR+EhAkv7EXMhBu8wEF6yjpvMzLJZcjH+Jdji0EQkgY=";
   };
 
+  postPatch = ''
+    substituteInPlace testssl.sh                                               \
+      --replace TESTSSL_INSTALL_DIR:-\"\"   TESTSSL_INSTALL_DIR:-\"$out\"      \
+      --replace PROG_NAME=\"\$\(basename\ \"\$0\"\)\" PROG_NAME=\"testssl.sh\"
+  '';
+
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     coreutils # for printf
     dnsutils # for dig
@@ -31,12 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     procps # for ps
     util-linux # for hexdump
   ];
-
-  postPatch = ''
-    substituteInPlace testssl.sh                                               \
-      --replace TESTSSL_INSTALL_DIR:-\"\"   TESTSSL_INSTALL_DIR:-\"$out\"      \
-      --replace PROG_NAME=\"\$\(basename\ \"\$0\"\)\" PROG_NAME=\"testssl.sh\"
-  '';
 
   installPhase = ''
     install -D testssl.sh $out/bin/testssl.sh
@@ -47,10 +48,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "CLI tool to check a server's TLS/SSL capabilities";
+
     longDescription = ''
       CLI tool which checks a server's service on any port for the support of
       TLS/SSL ciphers, protocols as well as recent cryptographic flaws and more.
     '';
+
     homepage = "https://testssl.sh/";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];

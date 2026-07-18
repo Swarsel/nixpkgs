@@ -1,34 +1,33 @@
 {
-  stdenv,
   lib,
-  requireFile,
-  runCommand,
-  rcu,
-  testers,
+  stdenv,
   copyDesktopItems,
   coreutils,
   desktopToDarwinBundle,
   gnutar,
-  qt6,
   makeDesktopItem,
   net-tools,
   protobuf,
   python3Packages,
+  qt6,
+  rcu,
+  requireFile,
+  runCommand,
   system-config-printer,
+  testers,
   wget,
 }:
 python3Packages.buildPythonApplication rec {
   pname = "rcu";
   version = "5.1.0";
 
-  pyproject = false;
-
   src =
     let
       src-tarball = requireFile {
-        name = "rcu-${version}-source.tar.gz";
         hash = "sha256-s5cqUu2hJEHpLVUwTbNYLQCNXMjv0vFGzQb041+XEqA=";
+        name = "rcu-${version}-source.tar.gz";
         url = "https://www.davisr.me/projects/rcu/";
+
         meta = {
           # `requireFile` sets `lib.licenses.unfree` by default
           inherit (meta) license;
@@ -87,19 +86,6 @@ python3Packages.buildPythonApplication rec {
     pyside6
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "rcu";
-      desktopName = "reMarkable Connection Utility";
-      comment = "All-in-one offline/local management software for reMarkable e-paper tablets";
-      icon = "rcu";
-      exec = "rcu";
-    })
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
-
   # No tests
   doCheck = false;
 
@@ -137,9 +123,6 @@ python3Packages.buildPythonApplication rec {
     runHook postInstall
   '';
 
-  # Manually creating wrapper, hook struggles with lack of shebang & symlink
-  dontWrapPythonPrograms = true;
-
   preFixup = ''
     makeWrapperArgs+=(
       "''${qtWrapperArgs[@]}"
@@ -172,6 +155,22 @@ python3Packages.buildPythonApplication rec {
       --add-flags $out/share/rcu/main.py
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      comment = "All-in-one offline/local management software for reMarkable e-paper tablets";
+      desktopName = "reMarkable Connection Utility";
+      exec = "rcu";
+      icon = "rcu";
+      name = "rcu";
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+  # Manually creating wrapper, hook struggles with lack of shebang & symlink
+  dontWrapPythonPrograms = true;
+  pyproject = false;
+
   passthru = {
     tests.version = testers.testVersion {
       package = rcu;
@@ -182,13 +181,15 @@ python3Packages.buildPythonApplication rec {
   };
 
   meta = {
-    mainProgram = "rcu";
     description = "All-in-one offline/local management software for reMarkable e-paper tablets";
     homepage = "http://www.davisr.me/projects/rcu/";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       m0streng0
     ];
+
+    mainProgram = "rcu";
     hydraPlatforms = [ ]; # requireFile used as src
   };
 }

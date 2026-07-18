@@ -2,11 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
   gettext,
   glib,
   granite7,
@@ -15,9 +10,14 @@
   libgee,
   libgudev,
   libwacom,
-  switchboard,
-  libxi,
   libx11,
+  libxi,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  switchboard,
+  vala,
 }:
 
 stdenv.mkDerivation rec {

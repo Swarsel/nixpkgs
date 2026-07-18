@@ -1,17 +1,18 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
-  installShellFiles,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
   buildPackages,
+  installShellFiles,
+  nix-update-script,
+  rustPlatform,
   sudo,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "nh-unwrapped";
   version = "4.4.1";
+
   src = fetchFromGitHub {
     owner = "nix-community";
     repo = "nh";
@@ -21,21 +22,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   strictDeps = true;
 
-  cargoBuildFlags = [
-    "-p"
-    "nh"
-    "-p"
-    "xtask"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
+  cargoHash = "sha256-pGtYqdAszaHpQ8eoh15S8hB6kO6iqB7O1p+fZUbwxuU=";
+  env.NH_REV = finalAttrs.src.tag;
   # pkgs.sudo is not available on the Darwin platform, and thus breaks build
   # if added to nativeCheckInputs. We must manually disable the tests that
   # *require* it, because they will fail when sudo is missing.
   nativeCheckInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ sudo ];
+
   checkFlags = [
     # These do not work in Nix's sandbox
     "--skip"
@@ -69,8 +66,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "test_build_sudo_cmd_with_nix_config_spaces"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   postInstall =
     lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (
       let
@@ -100,18 +95,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
       rm $out/bin/xtask
     '';
 
-  cargoHash = "sha256-pGtYqdAszaHpQ8eoh15S8hB6kO6iqB7O1p+fZUbwxuU=";
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoBuildFlags = [
+    "-p"
+    "nh"
+    "-p"
+    "xtask"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
-  env.NH_REV = finalAttrs.src.tag;
-
   meta = {
-    changelog = "https://github.com/nix-community/nh/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Yet another nix cli helper";
     homepage = "https://github.com/nix-community/nh";
+    changelog = "https://github.com/nix-community/nh/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.eupl12;
-    mainProgram = "nh";
+
     maintainers = with lib.maintainers; [
       NotAShelf
       mdaniels5757
@@ -119,5 +119,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       midischwarz12
       faukah
     ];
+
+    mainProgram = "nh";
   };
 })

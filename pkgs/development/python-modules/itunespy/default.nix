@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  requests,
+  buildPythonPackage,
   pycountry,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "itunespy";
   version = "1.6.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "sleepyfran";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # This module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "itunespy" ];
 
   meta = {

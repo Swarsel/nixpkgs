@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Preprocessor for mdbook to add inline Table of Contents support";
-    mainProgram = "mdbook-toc";
     homepage = "https://github.com/badboy/mdbook-toc";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
+    mainProgram = "mdbook-toc";
   };
 })

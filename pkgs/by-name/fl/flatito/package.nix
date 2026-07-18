@@ -1,16 +1,16 @@
 {
   lib,
-  ruby,
   buildRubyGem,
   bundlerEnv,
   bundlerUpdateScript,
+  ruby,
 }:
 let
   deps = bundlerEnv rec {
     inherit ruby;
-    name = "flatito-${version}";
     version = "0.1.1";
     gemdir = ./.;
+
     gemset = lib.recursiveUpdate (import ./gemset.nix) {
       flatito.source = {
         remotes = [ "https://rubygems.org" ];
@@ -18,19 +18,18 @@ let
         type = "gem";
       };
     };
+
+    name = "flatito-${version}";
   };
 in
 
 buildRubyGem rec {
   inherit ruby;
-
-  gemName = "flatito";
   pname = gemName;
   version = "0.1.1";
-
-  source.sha256 = "sha256-n1qPiZoUwaD+dMuJKI8k3cR71dg6yIrIAj0ZsFbstQ8=";
   propagatedBuildInputs = [ deps ];
-
+  gemName = "flatito";
+  source.sha256 = "sha256-n1qPiZoUwaD+dMuJKI8k3cR71dg6yIrIAj0ZsFbstQ8=";
   passthru.updateScript = bundlerUpdateScript "${pname}";
 
   meta = {

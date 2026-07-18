@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
   python3,
-  boost,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,24 +18,26 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8oH9moMjQEWnQXKmKcqmXuXcYkEyvr4hwC1bC4l26mo=";
   };
 
-  strictDeps = true;
-  buildInputs = [ boost ];
-  nativeBuildInputs = [
-    python3
-    cmake
-  ];
-
   # musl does not have sys/unistd.h
   postPatch = ''
     substituteInPlace src/picosat/picosat.c --replace-fail '<sys/unistd.h>' '<unistd.h>'
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    python3
+    cmake
+  ];
+
+  buildInputs = [ boost ];
+
   meta = {
     description = "Advanced SAT Solver";
-    mainProgram = "cryptominisat5";
     homepage = "https://github.com/msoos/cryptominisat";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mic92 ];
     platforms = lib.platforms.unix;
+    mainProgram = "cryptominisat5";
   };
 })

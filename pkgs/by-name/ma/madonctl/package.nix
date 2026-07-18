@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
   madonctl,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,14 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-R/es9QVTBpLiCojB/THWDkgQcxexyX/iH9fF3Q2tq54=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = null;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd madonctl \
@@ -34,9 +28,14 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/madonctl completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = madonctl;
     command = "madonctl version";
+    package = madonctl;
   };
 
   meta = {

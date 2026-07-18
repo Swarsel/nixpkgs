@@ -8,19 +8,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-pyyaml";
   version = "6.0.12.20250915";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_pyyaml";
     inherit (finalAttrs) version;
     hash = "sha256-D4tUpSjDA/Dm9xZWh90z+vqByAf8rCP2MrY6piTO0dM=";
+    pname = "types_pyyaml";
   };
-
-  build-system = [ setuptools ];
 
   # Module doesn't have tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "yaml-stubs" ];
 
   meta = {

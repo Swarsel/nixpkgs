@@ -1,4 +1,4 @@
-{ roundcubePlugin, fetchzip }:
+{ fetchzip, roundcubePlugin }:
 
 roundcubePlugin rec {
   pname = "thunderbird_labels";

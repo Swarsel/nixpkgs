@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jinja2,
   jsonschema,
   napalm,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "netutils";
   version = "1.17.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "networktocode";
@@ -23,15 +22,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DHftRRqbuUa74ATfh8MHxINwNkpz9lo/drwOmeo0itE=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ jsonschema ];
-
-  optional-dependencies.optionals = [
-    jsonschema
-    napalm
-  ];
-
   nativeCheckInputs = [
     jinja2
     pytestCheckHook
@@ -39,7 +29,8 @@ buildPythonPackage (finalAttrs: {
     toml
   ];
 
-  pythonImportsCheck = [ "netutils" ];
+  build-system = [ poetry-core ];
+  dependencies = [ jsonschema ];
 
   disabledTests = [
     # Tests require network access
@@ -55,6 +46,14 @@ buildPythonPackage (finalAttrs: {
     "test_get_napalm_getters_napalm_installed_default"
     "test_encrypt_cisco_type5"
   ];
+
+  optional-dependencies.optionals = [
+    jsonschema
+    napalm
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "netutils" ];
 
   meta = {
     description = "Library that is a collection of objects for common network automation tasks";

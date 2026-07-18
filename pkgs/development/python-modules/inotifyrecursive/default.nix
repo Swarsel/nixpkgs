@@ -2,26 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   inotify-simple,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "inotifyrecursive";
   version = "0.3.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     sha256 = "sha256-osRQsxdpPkU4QW+Q6x14WFBtr+a4uIUDe9LdmuLa+h4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ inotify-simple ];
-
   # No tests included
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ inotify-simple ];
+  pyproject = true;
   pythonImportsCheck = [ "inotifyrecursive" ];
 
   meta = {

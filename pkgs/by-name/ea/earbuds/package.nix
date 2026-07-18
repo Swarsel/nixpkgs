@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  pkg-config,
   bluez,
   dbus,
+  installShellFiles,
   libpulseaudio,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "earbuds";
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-x0PXOWj77VgJDPY4j+1PRg0M7+vIYSk+6yfj8s0UKx8=";
   };
 
-  cargoHash = "sha256-N0/VtqulNRsuoiKcw1LMWTpYNLfX9IiU+hSDlm3ZP1Y=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -33,6 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libpulseaudio
   ];
 
+  cargoHash = "sha256-N0/VtqulNRsuoiKcw1LMWTpYNLfX9IiU+hSDlm3ZP1Y=";
   # package does not contain any tests
   doCheck = false;
 
@@ -49,7 +48,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/JojiiOfficial/LiveBudsCli/releases";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ griffi-gh ];
-    mainProgram = "earbuds";
     platforms = lib.platforms.linux;
+    mainProgram = "earbuds";
   };
 })

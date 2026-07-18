@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -32,14 +32,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Generate a collapsible arc diagram of your Cargo workspace as SVG";
     homepage = "https://github.com/seflue/cargo-arc";
     changelog = "https://github.com/seflue/cargo-arc/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       kpbaks
       matthiasbeyer
     ];
+
     mainProgram = "cargo-arc";
   };
 })

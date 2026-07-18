@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
 }:
 
@@ -29,11 +29,11 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/kha7iq/pingme/releases/tag/${finalAttrs.src.rev}";
     description = "Send messages or alerts to multiple messaging platforms & email";
     homepage = "https://pingme.lmno.pk";
+    changelog = "https://github.com/kha7iq/pingme/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "pingme";
     maintainers = with lib.maintainers; [ emilytrau ];
+    mainProgram = "pingme";
   };
 })

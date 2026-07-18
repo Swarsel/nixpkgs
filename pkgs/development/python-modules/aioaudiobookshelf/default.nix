@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   mashumaro,
   python-socketio,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aioaudiobookshelf";
   version = "0.1.24";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "music-assistant";
@@ -29,6 +28,8 @@ buildPythonPackage rec {
     mashumaro
     python-socketio
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "aioaudiobookshelf"

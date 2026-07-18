@@ -1,20 +1,21 @@
 {
-  hare,
   lib,
+  stdenv,
+  hare,
   makeSetupHook,
   makeWrapper,
   runCommand,
-  stdenv,
   writeShellApplication,
 }:
 let
   arch = stdenv.targetPlatform.uname.processor;
   harePropagationInputs = builtins.attrValues { inherit (hare) harec qbe; };
   hareWrappedScript = writeShellApplication {
+    excludeShellChecks = [ "SC2086" ];
     # `name` MUST be `hare`, since its role is to replace the hare binary.
     name = "hare";
     runtimeInputs = [ hare ];
-    excludeShellChecks = [ "SC2086" ];
+
     # ''${cmd:+"$cmd"} is used on the default case to keep the same behavior as
     # the hare binary: If "$cmd" is passed directly and it's empty, the hare
     # binary will treat it as an unrecognized command.
@@ -38,20 +39,22 @@ let
   '';
 in
 makeSetupHook {
-  name = "hare-hook";
   # The propagation of `qbe` and `harec` (harePropagationInputs) is needed for
   # build frameworks like `haredo`, which set the HAREC and QBE env vars to
   # `harec` and `qbe` respectively. We use the derivations from the `hare`
   # package to assure that there's no different behavior between the `hareHook`
   # and `hare` packages.
   propagatedBuildInputs = [ hareWrapper ] ++ harePropagationInputs;
+  name = "hare-hook";
+
   substitutions = {
-    hare_unconditional_flags = "-q -a${arch}";
     hare_stdlib = "${hare}/src/hare/stdlib";
+    hare_unconditional_flags = "-q -a${arch}";
   };
+
   meta = {
-    description = "Setup hook for the Hare compiler";
     inherit (hare.meta) badPlatforms platforms;
+    description = "Setup hook for the Hare compiler";
     license = lib.licenses.mit;
   };
 } ./setup-hook.sh

@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  jsonschema,
   # dependencies
   licomp,
-
   # tests
   pytestCheckHook,
-  jsonschema,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "licomp-osadl";
   version = "0.5.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "hesa";
@@ -26,6 +21,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-aWJG7HxYs/8/Km3EpY8/XewCILlgePoKsdJyL8CM6LI=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    jsonschema
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -35,10 +37,7 @@ buildPythonPackage (finalAttrs: {
     licomp
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    jsonschema
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "licomp_osadl"
@@ -48,10 +47,12 @@ buildPythonPackage (finalAttrs: {
     description = "Implementation of Licomp using OSADL's matrix";
     homepage = "https://github.com/hesa/licomp-osadl";
     changelog = "https://github.com/hesa/licomp-osadl/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       cc-by-40
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ eljamm ];
     teams = with lib.teams; [ ngi ];
   };

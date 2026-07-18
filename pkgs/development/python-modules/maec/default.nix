@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cybox,
   distutils,
-  fetchFromGitHub,
   lxml,
   mixbox,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "maec";
   version = "4.1.0.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MAECProject";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-I2Ov2AQiC9D8ivHqn7owcTsNS7Kw+CWVyijK3VO52Og=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     distutils
@@ -33,8 +34,7 @@ buildPythonPackage rec {
     mixbox
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "maec" ];
 
   meta = {

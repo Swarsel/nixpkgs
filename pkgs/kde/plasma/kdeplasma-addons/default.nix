@@ -1,20 +1,17 @@
 {
+  cargo,
+  corrosion,
+  hidapi,
   mkKdeDerivation,
-  sources,
+  pkg-config,
+  qtwebengine,
   rustPlatform,
   rustc,
-  cargo,
-  pkg-config,
-  corrosion,
-  qtwebengine,
-  hidapi,
+  sources,
 }:
 mkKdeDerivation rec {
-  pname = "kdeplasma-addons";
-
   inherit (sources.${pname}) version;
-
-  cargoRoot = "kdeds/kameleon/qmk/kameleon-qmk-helper";
+  pname = "kdeplasma-addons";
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit pname version cargoRoot;
@@ -22,16 +19,18 @@ mkKdeDerivation rec {
     hash = "sha256-2gtz9D05VloEKkQGF9/0fuMrFUtp2NpE/mcEd7D3Gkc=";
   };
 
-  extraNativeBuildInputs = [
-    rustPlatform.cargoSetupHook
-    rustc
-    cargo
-    pkg-config
-  ];
+  cargoRoot = "kdeds/kameleon/qmk/kameleon-qmk-helper";
 
   extraBuildInputs = [
     corrosion
     qtwebengine
     hidapi
+  ];
+
+  extraNativeBuildInputs = [
+    rustPlatform.cargoSetupHook
+    rustc
+    cargo
+    pkg-config
   ];
 }

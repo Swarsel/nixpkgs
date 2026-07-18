@@ -1,8 +1,8 @@
 {
   lib,
-  localSystem,
-  crossSystem,
   config,
+  crossSystem,
+  localSystem,
   overlays,
 }:
 
@@ -16,6 +16,7 @@ let
       crossSystem
       overlays
       ;
+
     # Remove config.replaceStdenv to ensure termination.
     config = removeAttrs config [ "replaceStdenv" ];
   };
@@ -27,6 +28,7 @@ bootStages
   # Additional stage, built using custom stdenv
   (vanillaPackages: {
     inherit config overlays;
+
     stdenv =
       assert vanillaPackages.stdenv.hostPlatform == localSystem;
       assert vanillaPackages.stdenv.targetPlatform == localSystem;

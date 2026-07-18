@@ -3,77 +3,66 @@
 {
   lib,
   stdenv,
-
-  # runPythonCommand
-  runCommand,
-  python3,
-
   # test-firmware
   fetchFromGitHub,
-  unstableGitUpdater,
-
-  # fwupd
-  fetchpatch2,
-  pkg-config,
-  pkgsBuildBuild,
-
-  # nativeBuildInputs
-  ensureNewerSourcesForZipFilesHook,
-  gettext,
-  gi-docgen,
-  gobject-introspection,
-  meson,
-  ninja,
-  shared-mime-info,
-  vala,
-  wrapGAppsNoGuiHook,
-  writableTmpDirAsHomeHook,
-  mesonEmulatorHook,
-
   # buildInputs
   bash-completion,
+  # preFixup
+  bubblewrap,
   curl,
+  efibootmgr,
   elfutils,
+  # nativeBuildInputs
+  ensureNewerSourcesForZipFilesHook,
+  # fwupd
+  fetchpatch2,
+  freefont_ttf,
   fwupd-efi,
+  gettext,
+  gi-docgen,
   gnutls,
+  gobject-introspection,
   gusb,
+  # mesonFlags
+  hwdata,
   libdrm,
   libgudev,
   libjcat,
   libmbim,
   libmnl,
   libqmi,
-  libuuid,
-  libxmlb,
-  libxml2,
-  modemmanager,
-  pango,
-  polkit,
-  readline,
-  sqlite,
-  tpm2-tss,
-  valgrind,
-  xz, # for liblzma
-
-  # mesonFlags
-  hwdata,
-
-  # env
-  makeFontsConf,
-  freefont_ttf,
-
   # preCheck
   libredirect,
-
-  # preFixup
-  bubblewrap,
-  efibootmgr,
-  tpm2-tools,
-
+  libuuid,
+  libxml2,
+  libxmlb,
+  # env
+  makeFontsConf,
+  meson,
+  mesonEmulatorHook,
+  modemmanager,
+  ninja,
+  nix-update-script,
   # passthru
   nixosTests,
-  nix-update-script,
-
+  pango,
+  pkg-config,
+  pkgsBuildBuild,
+  polkit,
+  python3,
+  readline,
+  # runPythonCommand
+  runCommand,
+  shared-mime-info,
+  sqlite,
+  tpm2-tools,
+  tpm2-tss,
+  unstableGitUpdater,
+  vala,
+  valgrind,
+  wrapGAppsNoGuiHook,
+  writableTmpDirAsHomeHook,
+  xz, # for liblzma
   enablePassim ? false,
 }:
 
@@ -85,8 +74,8 @@ let
 
     runCommand name
       {
-        nativeBuildInputs = [ python3 ];
         inherit buildCommandPython;
+        nativeBuildInputs = [ python3 ];
       }
       ''
         exec python3 -c "$buildCommandPython"
@@ -96,13 +85,15 @@ let
     let
       version = "0-unstable-2022-04-02";
       src = fetchFromGitHub {
-        name = "fwupd-test-firmware-${version}";
         owner = "fwupd";
         repo = "fwupd-test-firmware";
         rev = "39954e434d63e20e85870dd1074818f48a0c08b7";
         hash = "sha256-d4qG3fKyxkfN91AplRYqARFz+aRr+R37BpE450bPxi0=";
+        name = "fwupd-test-firmware-${version}";
+
         passthru = {
           inherit src version; # For update script
+
           updateScript = unstableGitUpdater {
             url = "${test-firmware.meta.homepage}.git";
           };
@@ -125,6 +116,13 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "fwupd";
   version = "2.1.6";
 
+  src = fetchFromGitHub {
+    owner = "fwupd";
+    repo = "fwupd";
+    tag = finalAttrs.version;
+    hash = "sha256-K8n1rPiLuHDybWPoAUQA7RY4J+Ga1fwNiaj48fHAh9A=";
+  };
+
   # libfwupd goes to lib
   # daemon, plug-ins and libfwupdplugin go to out
   # CLI programs go to out
@@ -137,13 +135,6 @@ stdenv.mkDerivation (finalAttrs: {
     "installedTests"
   ];
 
-  src = fetchFromGitHub {
-    owner = "fwupd";
-    repo = "fwupd";
-    tag = finalAttrs.version;
-    hash = "sha256-K8n1rPiLuHDybWPoAUQA7RY4J+Ga1fwNiaj48fHAh9A=";
-  };
-
   patches = [
     ./0001-Install-fwupdplugin-to-out.patch
     ./0002-Add-output-for-installed-tests.patch
@@ -153,8 +144,8 @@ stdenv.mkDerivation (finalAttrs: {
     # F_GET_SEALS also works on tmpfs files on recent kernels.
     # Remove when updating to 2.1.7.
     (fetchpatch2 {
-      url = "https://github.com/fwupd/fwupd/commit/c2ff6e0bf9e3fea5b8502ed12fdc9ab604a51518.patch";
       hash = "sha256-Y8YbECfUGqvpNTlKCLOXgRSIZYO+MsZYIMcMgIQfkIs=";
+      url = "https://github.com/fwupd/fwupd/commit/c2ff6e0bf9e3fea5b8502ed12fdc9ab604a51518.patch";
     })
   ];
 
@@ -173,11 +164,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config # for finding build-time dependencies
-    (pkgsBuildBuild.callPackage ./build-time-python.nix { })
-  ];
 
   nativeBuildInputs = [
     ensureNewerSourcesForZipFilesHook # required for firmware zipping
@@ -252,11 +238,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "passim" false)
   ];
 
-  # TODO: wrapGAppsHook3 wraps efi capsule even though it is not ELF
-  dontWrapGApps = true;
-
-  doCheck = true;
-
   # Environment variables
   env = {
     # Fontconfig error: Cannot load default config file
@@ -272,6 +253,8 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/NixOS/nixpkgs/pull/67625#issuecomment-525788428
     PKG_CONFIG_POLKIT_GOBJECT_1_ACTIONDIR = "/run/current-system/sw/share/polkit-1/actions";
   };
+
+  doCheck = true;
 
   nativeCheckInputs = [
     polkit
@@ -321,10 +304,21 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "etc/doc" "$devdoc"
   '';
 
+  depsBuildBuild = [
+    pkg-config # for finding build-time dependencies
+    (pkgsBuildBuild.callPackage ./build-time-python.nix { })
+  ];
+
+  # TODO: wrapGAppsHook3 wraps efi capsule even though it is not ELF
+  dontWrapGApps = true;
   separateDebugInfo = true;
 
   passthru = {
-    updateScript = nix-update-script { };
+    # For updating.
+    inherit test-firmware;
+    # For downstream consumers that need the fwupd-efi this was built with.
+    inherit fwupd-efi;
+
     filesInstalledToEtc = [
       "fwupd/fwupd.conf"
       "fwupd/remotes.d/lvfs-embargo.conf"
@@ -338,12 +332,6 @@ stdenv.mkDerivation (finalAttrs: {
       "pki/fwupd-metadata/LVFS-CA.pem"
       "grub.d/35_fwupd"
     ];
-
-    # For updating.
-    inherit test-firmware;
-
-    # For downstream consumers that need the fwupd-efi this was built with.
-    inherit fwupd-efi;
 
     tests =
       let
@@ -367,16 +355,20 @@ stdenv.mkDerivation (finalAttrs: {
           pathlib.Path(os.getenv('out')).touch()
         '';
       };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     homepage = "https://fwupd.org/";
     changelog = "https://github.com/fwupd/fwupd/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       rvdp
       johnazoidberg
     ];
-    license = lib.licenses.lgpl21Plus;
+
     platforms = lib.platforms.linux;
   };
 })

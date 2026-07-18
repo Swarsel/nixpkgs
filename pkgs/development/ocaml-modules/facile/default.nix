@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  fetchpatch,
   buildDunePackage,
+  fetchpatch,
   ocaml,
   stdlib-shims,
 }:
@@ -17,19 +17,18 @@ buildDunePackage (finalAttrs: {
   };
 
   patches = fetchpatch {
-    url = "https://patch-diff.githubusercontent.com/raw/Emmanuel-PLF/facile/pull/4.patch";
     excludes = [ "Makefile" ];
     hash = "sha256-syZO3lzuHxE2Y4yUaS+XgAQUFtLrENy2MwyWzPygfdg=";
+    url = "https://patch-diff.githubusercontent.com/raw/Emmanuel-PLF/facile/pull/4.patch";
   };
 
   propagatedBuildInputs = [ stdlib-shims ];
-
   doCheck = true;
 
   meta = {
+    description = "Functional Constraint Library";
     homepage = "http://opti.recherche.enac.fr/facile/";
     license = lib.licenses.lgpl21Plus;
-    description = "Functional Constraint Library";
     broken = lib.versionAtLeast ocaml.version "5.0";
   };
 })

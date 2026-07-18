@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   makeWrapper,
+  nix-update-script,
   nodejs,
 }:
 
@@ -11,15 +11,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "mail-tlsa-check-exporter";
   version = "0-unstable-2025-06-12";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "ietf-tools";
     repo = "mail-tlsa-check-exporter";
     rev = "9843bf85971fbe130e8cd32e6fcf0dfcee92e929";
     hash = "sha256-5c3epExz3tv6gRiIfpDyV1pkfcRVWjtNpl93LWsYKdk=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -37,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch=main" ];
   };
@@ -46,7 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/ietf-tools/mail-tlsa-check-exporter";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bartoostveen ];
-    mainProgram = "mail-tlsa-check-exporter";
     platforms = lib.platforms.all;
+    mainProgram = "mail-tlsa-check-exporter";
   };
 })

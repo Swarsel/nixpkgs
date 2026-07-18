@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  jq,
   glow,
+  jq,
+  makeWrapper,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -45,8 +45,8 @@ stdenvNoCC.mkDerivation {
     description = "Shell script which checks your $HOME for unwanted files and directories";
     homepage = "https://github.com/b3nj5m1n/xdg-ninja";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ arcuru ];
+    platforms = lib.platforms.all;
     mainProgram = "xdg-ninja";
   };
 }

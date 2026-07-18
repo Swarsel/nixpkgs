@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  fetchpatch,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  fetchpatch,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,18 +16,19 @@ buildGoModule (finalAttrs: {
     hash = "sha256-zd9ttx3U2XtXhsqe3sT8oCUeFmFg5k519TPntCFf+0s=";
   };
 
+  vendorHash = "sha256-AgVNfYLs1myhOjIgylcchWKbFwW9qSsYqzqRxRHvKQ0=";
   # tests fail outside of nix
   doCheck = false;
 
-  vendorHash = "sha256-AgVNfYLs1myhOjIgylcchWKbFwW9qSsYqzqRxRHvKQ0=";
-
   meta = {
     description = "Reconnaissance tool for GitHub code search";
+
     longDescription = ''
       GitHound pinpoints exposed API keys and other sensitive information
       across all of GitHub using pattern matching, commit history searching,
       and a unique result scoring system.
     '';
+
     homepage = "https://github.com/tillson/git-hound";
     changelog = "https://github.com/tillson/git-hound/releases/tag/v${finalAttrs.src.tag}";
     license = lib.licenses.mit;

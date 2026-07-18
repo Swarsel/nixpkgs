@@ -12,8 +12,8 @@
 }:
 
 buildDunePackage {
-  pname = "tls-miou-unix";
   inherit (tls) src version;
+  pname = "tls-miou-unix";
 
   propagatedBuildInputs = [
     miou
@@ -22,6 +22,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     crowbar
     hxd

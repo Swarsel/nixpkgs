@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   python,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "chevron";
   version = "0.14.0-unstable-2021-03-21";
-  pyproject = true;
 
   # No tests available in the PyPI tarball
   src = fetchFromGitHub {
@@ -19,19 +18,21 @@ buildPythonPackage {
     hash = "sha256-44cxkliJJ+IozmhS4ekbb+pCa7tcUuX9tRNYTK0mC+w=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   checkPhase = ''
     ${python.interpreter} test_spec.py
   '';
 
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/noahmorrison/chevron";
     description = "Python implementation of the mustache templating language";
-    mainProgram = "chevron";
+    homepage = "https://github.com/noahmorrison/chevron";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dhkl ];
+    mainProgram = "chevron";
   };
 }

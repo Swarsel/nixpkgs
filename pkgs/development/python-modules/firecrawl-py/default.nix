@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   httpx,
   nest-asyncio,
   pydantic,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "firecrawl-py";
   version = "2.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mendableai";
@@ -24,8 +23,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7dB3jdp5jkRiNx63C5sjs3t85fuz5vzurfvYY5jWQyU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/apps/python-sdk";
-
+  # No tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,10 +37,9 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
-  # No tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "firecrawl" ];
+  sourceRoot = "${finalAttrs.src.name}/apps/python-sdk";
 
   meta = {
     description = "Turn entire websites into LLM-ready markdown or structured data. Scrape, crawl and extract with a single API";

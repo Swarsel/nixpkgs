@@ -11,14 +11,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-monitor";
   version = "7.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_monitor";
     inherit version;
     hash = "sha256-t19TZEHUMPaf+HOhZG5fXbyzCAoQdopZ0K3AFUFiOBY=";
+    pname = "azure_mgmt_monitor";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +28,8 @@ buildPythonPackage rec {
     azure-mgmt-core
   ];
 
+  pyproject = true;
   pythonNamespaces = [ "azure.mgmt" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "This is the Microsoft Azure Monitor Client Library";

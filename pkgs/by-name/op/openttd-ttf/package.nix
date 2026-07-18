@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   python3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,6 +16,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-ZV74ZQ4Z4jw2tjG3kXj4Vo1J+W3BF0SJIFIae9DWLAc=";
   };
 
+  postPatch = ''
+    chmod a+x build.sh
+    # Test requires openttd source and an additional python module, doesn't seem worth it
+    substituteInPlace build.sh \
+      --replace-fail "python3 checkOpenTTDStrings.py ../openttd/src/lang" ""
+    patchShebangs --build build.sh
+  '';
+
   nativeBuildInputs = [
     (python3.withPackages (
       pp: with pp; [
@@ -25,14 +33,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       ]
     ))
   ];
-
-  postPatch = ''
-    chmod a+x build.sh
-    # Test requires openttd source and an additional python module, doesn't seem worth it
-    substituteInPlace build.sh \
-      --replace-fail "python3 checkOpenTTDStrings.py ../openttd/src/lang" ""
-    patchShebangs --build build.sh
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -47,11 +47,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "TrueType typefaces for text in a pixel art style, designed for use in OpenTTD";
     homepage = "https://github.com/zephyris/openttd-ttf";
     changelog = "https://github.com/zephyris/openttd-ttf/releases/tag/${finalAttrs.version}";
-    description = "TrueType typefaces for text in a pixel art style, designed for use in OpenTTD";
     license = [ lib.licenses.gpl2 ];
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.sfrijters ];
+    platforms = lib.platforms.all;
   };
 })

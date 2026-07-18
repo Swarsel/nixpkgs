@@ -1,16 +1,15 @@
 {
   buildDunePackage,
-  mirage-flow,
-  lwt,
-  logs,
   cstruct,
+  logs,
+  lwt,
+  mirage-flow,
   mirage-mtime,
 }:
 
 buildDunePackage {
-  pname = "mirage-flow-combinators";
-
   inherit (mirage-flow) version src;
+  pname = "mirage-flow-combinators";
 
   propagatedBuildInputs = [
     lwt

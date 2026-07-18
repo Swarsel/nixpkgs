@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   standard-aifc,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "standard-sndhdr";
   version = "3.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "youknowone";
@@ -19,7 +18,9 @@ buildPythonPackage rec {
     hash = "sha256-vhGFTd1yXL4Frqli5D1GwOatwByDjvcP8sxgkdu6Jqg=";
   };
 
-  sourceRoot = "${src.name}/sndhdr";
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -27,11 +28,9 @@ buildPythonPackage rec {
     standard-aifc
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sndhdr" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  sourceRoot = "${src.name}/sndhdr";
 
   meta = {
     description = "Standard library sndhdr redistribution";

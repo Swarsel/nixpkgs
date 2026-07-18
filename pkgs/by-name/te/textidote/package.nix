@@ -19,8 +19,8 @@ let
   # The Ant buildscript downloads dependencies and stores them alongside the source code in a non-standard way
   # https://github.com/sylvainhalle/AntRun
   populated-src = stdenv.mkDerivation {
-    pname = "textidote-populated-src";
     inherit version;
+    pname = "textidote-populated-src";
 
     src = fetchFromGitHub {
       owner = "sylvainhalle";
@@ -53,13 +53,12 @@ let
     '';
 
     dontFixup = true;
-    outputHashMode = "recursive";
     outputHash = "sha256-LrFClt8zN/ma42+Yoqwoy03TCuC3JfAeb02vehkljBo=";
+    outputHashMode = "recursive";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit pname version;
-
   src = populated-src;
 
   nativeBuildInputs = [
@@ -84,6 +83,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -107,18 +107,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       version = "TeXtidote v${finalAttrs.version}";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
-    homepage = "https://sylvainhalle.github.io/textidote/";
-    downloadPage = "https://github.com/sylvainhalle/textidote/releases";
+    inherit (jdk.meta) platforms;
     description = "Correction tool for LaTeX documents";
+    homepage = "https://sylvainhalle.github.io/textidote/";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ magneticflux- ];
     mainProgram = "textidote";
-    inherit (jdk.meta) platforms;
+    downloadPage = "https://github.com/sylvainhalle/textidote/releases";
   };
 })

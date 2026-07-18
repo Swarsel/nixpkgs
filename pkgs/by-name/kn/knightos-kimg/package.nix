@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  asciidoc,
   cmake,
   libxslt,
-  asciidoc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "040782k3rh2a5mhbfgr9gnbfis0wgxvi27vhfn7l35vrr12sw1l3";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.8.5)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -28,17 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   hardeningDisable = [ "format" ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.8.5)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
-    homepage = "https://knightos.org/";
     description = "Converts image formats supported by stb_image to the KnightOS image format";
-    mainProgram = "kimg";
+    homepage = "https://knightos.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.all;
+    mainProgram = "kimg";
   };
 })

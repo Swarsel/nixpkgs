@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitea,
-  nix-update-script,
-  testers,
   iwqr,
+  nix-update-script,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -12,20 +12,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.1.1";
 
   src = fetchFromGitea {
-    domain = "git.kroner.dev";
     owner = "kreny";
     repo = "iwqr";
     rev = "v${finalAttrs.version}";
     hash = "sha256-z9CjCJvi6MlZGghZKx13gGSKwUnECAf0cr9P2ABskh0=";
+    domain = "git.kroner.dev";
   };
 
   cargoHash = "sha256-wnthAp/oV6W7G/a5JXYwzni+qGzDiVefIjRamkJ5jQc=";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = iwqr;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

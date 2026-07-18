@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromSourcehut,
-  pkg-config,
   fuse3,
   libarchive,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,7 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QQeVr3kPLVX543PwM2jtMnVQgkEfiQd09hG9VQvqLng=";
   };
 
+  # Fix cross-compilation
+  postPatch = ''
+    substituteInPlace Makefile --replace-fail pkg-config "$PKG_CONFIG"
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     fuse3
     libarchive
@@ -31,20 +37,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontConfigure = true;
 
-  # Fix cross-compilation
-  postPatch = ''
-    substituteInPlace Makefile --replace-fail pkg-config "$PKG_CONFIG"
-  '';
-
   meta = {
     description = "Gateway between FUSE and libarchive: allows mounting of cpio, .tar.gz, .tar.bz2 archives";
     homepage = "https://git.sr.ht/~nabijaczleweli/archivemount-ng";
     changelog = "https://git.sr.ht/~nabijaczleweli/archivemount-ng/refs/${finalAttrs.version}";
-    mainProgram = "archivemount";
+
     license = [
       lib.licenses.lgpl2Plus
       lib.licenses.bsd0
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "archivemount";
   };
 })

@@ -29,16 +29,15 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
-  installFlags = [ "prefix=$(out)" ];
-
   enableParallelBuilding = true;
+  installFlags = [ "prefix=$(out)" ];
 
   meta = {
     description = "Touch calibrator for libinput";
-    mainProgram = "xlibinput_calibrator";
     homepage = "https://github.com/kreijack/xlibinput_calibrator";
     changelog = "https://github.com/kreijack/xlibinput_calibrator/blob/${finalAttrs.src.rev}/Changelog";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ atemu ];
+    mainProgram = "xlibinput_calibrator";
   };
 })

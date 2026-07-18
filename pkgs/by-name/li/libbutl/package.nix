@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchurl,
   # Dependency of build2, so we must break cycle for this
   build2-bootstrap,
   darwin,
-  fetchurl,
   libuuid,
   enableShared ? !stdenv.hostPlatform.isStatic,
   enableStatic ? !enableShared,
@@ -14,22 +14,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libbutl";
   version = "0.18.1";
 
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-  ];
-
   src = fetchurl {
     url = "https://pkg.cppget.org/1/alpha/build2/libbutl-${finalAttrs.version}.tar.gz";
     hash = "sha256-tQl7FRJh/CJ7A5MIlxlVv5aduPy/C0shcn9l+IB1oZU=";
   };
 
-  nativeBuildInputs = [
-    build2-bootstrap
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    darwin.DarwinTools
+  outputs = [
+    "out"
+    "dev"
+    "doc"
   ];
 
   patches = [
@@ -38,29 +31,38 @@ stdenv.mkDerivation (finalAttrs: {
     ./install-h-files.patch
   ];
 
-  strictDeps = true;
-
-  # Should be true for anything built with build2,
-  # but especially important when bootstrapping
-  disallowedReferences = [ build2-bootstrap ];
-
   postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
     substituteInPlace libbutl/uuid-linux.cxx \
       --replace '"libuuid.so' '"${lib.getLib libuuid}/lib/libuuid.so'
   '';
 
-  build2ConfigureFlags = [
-    "config.bin.lib=${build2-bootstrap.configSharedStatic enableShared enableStatic}"
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    build2-bootstrap
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    darwin.DarwinTools
   ];
 
   doCheck = true;
 
+  build2ConfigureFlags = [
+    "config.bin.lib=${build2-bootstrap.configSharedStatic enableShared enableStatic}"
+  ];
+
+  # Should be true for anything built with build2,
+  # but especially important when bootstrapping
+  disallowedReferences = [ build2-bootstrap ];
+
   meta = {
     description = "build2 utility library";
+
     longDescription = ''
       This library is a collection of utilities that are used throughout the
       build2 toolchain.
     '';
+
     homepage = "https://build2.org/";
     changelog = "https://git.build2.org/cgit/libbutl/log";
     license = lib.licenses.mit;

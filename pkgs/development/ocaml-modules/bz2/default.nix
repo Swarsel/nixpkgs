@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  ocaml,
-  findlib,
-  bzip2,
   autoreconfHook,
+  bzip2,
+  findlib,
+  ocaml,
 }:
 
 stdenv.mkDerivation rec {
@@ -19,10 +19,7 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-jBFEkLN2fbC3LxTu7C0iuhvNg64duuckBHWZoBxrV/U=";
   };
 
-  autoreconfFlags = [
-    "-I"
-    "."
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -34,16 +31,19 @@ stdenv.mkDerivation rec {
     bzip2
   ];
 
-  strictDeps = true;
-
   preInstall = "mkdir -p $OCAMLFIND_DESTDIR/stublibs";
+
+  autoreconfFlags = [
+    "-I"
+    "."
+  ];
 
   meta = {
     description = "OCaml bindings for the libbz2 (AKA, bzip2) (de)compression library";
     homepage = "https://gitlab.com/irill/camlbz2";
-    downloadPage = "https://gitlab.com/irill/camlbz2";
     license = lib.licenses.lgpl21;
-    broken = lib.versionOlder ocaml.version "4.02" || lib.versionAtLeast ocaml.version "5.0";
     maintainers = [ ];
+    broken = lib.versionOlder ocaml.version "4.02" || lib.versionAtLeast ocaml.version "5.0";
+    downloadPage = "https://gitlab.com/irill/camlbz2";
   };
 }

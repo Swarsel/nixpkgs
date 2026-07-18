@@ -1,22 +1,22 @@
 {
-  config,
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
   bash,
-  cmake,
-  opencv4,
-  gtest,
   blas,
+  cmake,
+  config,
+  fetchpatch,
   gomp,
+  gtest,
   llvmPackages,
+  opencv4,
   perl,
+  cudaPackages ? { },
   # mxnet cuda support is turned off, but dependencies like opencv can still be built with cudaSupport
   # and fail to compile without the cudatoolkit
   # mxnet cuda support will not be available, as mxnet requires version <=11
   cudaSupport ? config.cudaSupport,
-  cudaPackages ? { },
 }:
 
 # mxnet is not maintained, and other projects are migrating away from it.
@@ -26,29 +26,37 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "mxnet";
   version = "1.9.1";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchurl {
-    name = "apache-mxnet-src-${finalAttrs.version}-incubating.tar.gz";
     url = "mirror://apache/incubator/mxnet/${finalAttrs.version}/apache-mxnet-src-${finalAttrs.version}-incubating.tar.gz";
     hash = "sha256-EephMoF02MKblvNBl34D3rC/Sww3rOZY+T442euMkyI=";
+    name = "apache-mxnet-src-${finalAttrs.version}-incubating.tar.gz";
   };
 
   patches = [
     # Remove the following two patches when updating mxnet to 2.0.
     (fetchpatch {
+      hash = "sha256-uaMpM0F9HRtEBXz2ewB/dlbuKaY5/RineCPUE2T6CHU=";
       name = "1-auto-disable-sse-for-non-x86.patch";
       url = "https://github.com/apache/incubator-mxnet/commit/55e69871d4cadec51a8bbb6700131065388cb0b9.patch";
-      hash = "sha256-uaMpM0F9HRtEBXz2ewB/dlbuKaY5/RineCPUE2T6CHU=";
     })
     (fetchpatch {
-      name = "2-auto-disable-sse-for-non-x86.patch";
-      url = "https://github.com/apache/incubator-mxnet/commit/c1b96f562f55dfa024ac941d7b104f00e239ee0f.patch";
       excludes = [ "ci/docker/runtime_functions.sh" ];
       hash = "sha256-r1LbC8ueRooW5tTNakAlRSJ+9aR4WXXoEKx895DgOs4=";
+      name = "2-auto-disable-sse-for-non-x86.patch";
+      url = "https://github.com/apache/incubator-mxnet/commit/c1b96f562f55dfa024ac941d7b104f00e239ee0f.patch";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace 3rdparty/mkldnn/tests/CMakeLists.txt \
+      --replace "/bin/bash" "${bash}/bin/bash"
+
+    # Build against the system version of OpenMP.
+    # https://github.com/apache/incubator-mxnet/pull/12160
+    rm -rf 3rdparty/openmp
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -82,24 +90,17 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=uninitialized"
   ];
 
-  postPatch = ''
-    substituteInPlace 3rdparty/mkldnn/tests/CMakeLists.txt \
-      --replace "/bin/bash" "${bash}/bin/bash"
-
-    # Build against the system version of OpenMP.
-    # https://github.com/apache/incubator-mxnet/pull/12160
-    rm -rf 3rdparty/openmp
-  '';
-
   postInstall = ''
     rm "$out"/lib/*.a
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Lightweight, Portable, Flexible Distributed/Mobile Deep Learning with Dynamic, Mutation-aware Dataflow Dep Scheduler";
     homepage = "https://mxnet.incubator.apache.org/";
-    maintainers = [ ];
     license = lib.licenses.asl20;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
   };
 })

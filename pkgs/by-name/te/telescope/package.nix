@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
+  autoreconfHook,
   bison,
+  buildPackages,
   libevent,
   libgrapheme,
   libressl,
   ncurses,
-  autoreconfHook,
-  buildPackages,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gnome-themes-extra,
   gtk-engine-murrine,
   gtk3,
   sassc,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -28,26 +28,18 @@ stdenvNoCC.mkDerivation {
     ./gtk3-remove-border-spacing.patch
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
-  buildInputs = [
-    gnome-themes-extra
-  ];
+  postPatch = ''
+    patchShebangs themes/install.sh
+  '';
 
   nativeBuildInputs = [
     gtk3
     sassc
   ];
 
-  dontBuild = true;
-  dontFixup = true;
-  dontDropIconThemeCache = true;
-
-  postPatch = ''
-    patchShebangs themes/install.sh
-  '';
+  buildInputs = [
+    gnome-themes-extra
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -66,6 +58,14 @@ stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontDropIconThemeCache = true;
+  dontFixup = true;
+
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
 
   meta = {
     description = "Everforest colour palette for GTK";

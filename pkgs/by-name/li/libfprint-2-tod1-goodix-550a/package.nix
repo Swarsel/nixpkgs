@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchzip,
-  unzip,
   libfprint-tod,
+  unzip,
 }:
 
 stdenv.mkDerivation {
@@ -16,13 +16,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ unzip ];
-
-  unpackPhase = ''
-    unzip $src/libfprint-tod-goodix-550a-0.0.9.zip
-    cd libfprint-tod-goodix-550a-0.0.9
-    ar x libfprint-2-tod-goodix_amd64.deb
-    tar xf data.tar.xz
-  '';
 
   buildPhase = ''
     patchelf \
@@ -38,14 +31,21 @@ stdenv.mkDerivation {
     cp lib/udev/rules.d/60-libfprint-2-tod1-goodix.rules "$out/lib/udev/rules.d/"
   '';
 
+  unpackPhase = ''
+    unzip $src/libfprint-tod-goodix-550a-0.0.9.zip
+    cd libfprint-tod-goodix-550a-0.0.9
+    ar x libfprint-2-tod-goodix_amd64.deb
+    tar xf data.tar.xz
+  '';
+
   passthru.driverPath = "/lib/libfprint-2/tod-1";
 
   meta = {
     description = "Goodix 550a driver module for libfprint-2-tod Touch OEM Driver (from Lenovo)";
     homepage = "https://support.lenovo.com/us/en/downloads/ds560884-goodix-fingerprint-driver-for-linux-thinkpad-e14-gen-4-e15-gen-4";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ utkarshgupta137 ];
+    platforms = lib.platforms.linux;
   };
 }

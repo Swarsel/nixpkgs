@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
-  fetchCrate,
-  cmake,
-  installShellFiles,
-  pkg-config,
-  ronn,
   stdenv,
+  cmake,
   curl,
+  fetchCrate,
+  installShellFiles,
   libgit2,
   libssh2,
   openssl,
+  pkg-config,
+  ronn,
+  rustPlatform,
   zlib,
 }:
 
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     inherit (finalAttrs) pname version;
     hash = "sha256-YTUMC9jY3l21uW3W+M0qUQUqmgyC4FN0uM4IYH1kuC0=";
   };
-
-  cargoHash = "sha256-fpcN09e12Am7+UAa9OojyxShvK2QTKeWGm/vkUkk0UU=";
 
   nativeBuildInputs = [
     cmake
@@ -45,6 +43,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     curl
   ];
 
+  cargoHash = "sha256-fpcN09e12Am7+UAa9OojyxShvK2QTKeWGm/vkUkk0UU=";
+
+  env = {
+    LIBGIT2_NO_VENDOR = 1;
+  };
+
   postBuild = ''
     # Man pages contain non-ASCII, so explicitly set encoding to UTF-8.
     HOME=$TMPDIR \
@@ -56,15 +60,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage man/*.1
   '';
 
-  env = {
-    LIBGIT2_NO_VENDOR = 1;
-  };
-
   meta = {
     description = "Cargo subcommand for checking and applying updates to installed executables";
     homepage = "https://github.com/nabijaczleweli/cargo-update";
     changelog = "https://github.com/nabijaczleweli/cargo-update/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gerschtli
       johntitor

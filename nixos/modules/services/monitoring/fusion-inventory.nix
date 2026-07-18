@@ -27,19 +27,22 @@ in
 
       enable = lib.mkEnableOption "Fusion Inventory Agent";
 
-      servers = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        description = ''
-          The urls of the OCS/GLPI servers to connect to.
-        '';
-      };
-
       extraConfig = lib.mkOption {
         default = "";
-        type = lib.types.lines;
+
         description = ''
           Configuration that is injected verbatim into the configuration file.
         '';
+
+        type = lib.types.lines;
+      };
+
+      servers = lib.mkOption {
+        description = ''
+          The urls of the OCS/GLPI servers to connect to.
+        '';
+
+        type = lib.types.listOf lib.types.str;
       };
     };
   };
@@ -48,18 +51,19 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    users.users.fusion-inventory = {
-      description = "FusionInventory user";
-      isSystemUser = true;
-    };
-
     systemd.services.fusion-inventory = {
       description = "Fusion Inventory Agent";
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
         ExecStart = "${pkgs.fusioninventory-agent}/bin/fusioninventory-agent --conf-file=${configFile} --daemon --no-fork";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.users.fusion-inventory = {
+      description = "FusionInventory user";
+      isSystemUser = true;
     };
   };
 }

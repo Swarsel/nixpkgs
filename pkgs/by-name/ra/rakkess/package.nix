@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -14,6 +14,7 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-igovWWk8GfNmOS/NbZWfv9kox6QLNIbM09jdvA/lL3A=";
   };
+
   vendorHash = "sha256-lVxJ4wFBhHc8JVpkmqphLYPE9Z8Cr6o+aAHvC1naqyE=";
 
   ldflags = [
@@ -23,10 +24,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/corneliusweig/rakkess";
-    changelog = "https://github.com/corneliusweig/rakkess/releases/tag/v${finalAttrs.version}";
     description = "Review Access - kubectl plugin to show an access matrix for k8s server resources";
-    mainProgram = "rakkess";
+
     longDescription = ''
       Have you ever wondered what access rights you have on a provided
       kubernetes cluster? For single resources you can use
@@ -35,7 +34,11 @@ buildGoModule (finalAttrs: {
       the current user and all server resources, similar to
       `kubectl auth can-i --list`.
     '';
+
+    homepage = "https://github.com/corneliusweig/rakkess";
+    changelog = "https://github.com/corneliusweig/rakkess/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jk ];
+    mainProgram = "rakkess";
   };
 })

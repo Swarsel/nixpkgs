@@ -1,39 +1,33 @@
 {
   lib,
-  fetchFromGitHub,
-  buildPythonPackage,
   stdenv,
-
-  # build-system
-  cython,
-  setuptools,
-  sphinx,
-
+  fetchFromGitHub,
   # build-inputs
   blosc2,
+  buildPythonPackage,
   bzip2,
   c-blosc,
+  # build-system
+  cython,
   hdf5,
   lzo,
-  pkg-config,
-
   # dependencies
   numexpr,
   numpy,
   packaging, # uses packaging.version at runtime
+  pkg-config,
   py-cpuinfo,
-  typing-extensions,
-
   # Test inputs
   python,
+  setuptools,
+  sphinx,
+  typing-extensions,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tables";
   version = "3.11.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "PyTables";
@@ -43,11 +37,16 @@ buildPythonPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  build-system = [
-    cython
-    setuptools
-    sphinx
-  ];
+  postPatch = ''
+    # Force test suite to error when unittest runner fails
+    substituteInPlace tables/tests/test_suite.py \
+      --replace-fail "return 0" "assert result.wasSuccessful(); return 0" \
+      --replace-fail "return 1" "assert result.wasSuccessful(); return 1"
+    # Hard-code the blosc2 path to avoid issues with blosc2.c-blosc2
+    substituteInPlace tables/__init__.py \
+      --replace-fail "ctypes.CDLL(str(lib_path))" \
+      "ctypes.CDLL('"${lib.getLib c-blosc}/lib/libblosc${stdenv.hostPlatform.extensions.sharedLibrary}"')"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -62,34 +61,12 @@ buildPythonPackage (finalAttrs: {
     lzo
   ];
 
-  dependencies = [
-    blosc2
-    c-blosc
-    blosc2.c-blosc2
-    py-cpuinfo
-    numpy
-    numexpr
-    packaging # uses packaging.version at runtime
-    typing-extensions
-  ];
-
-  postPatch = ''
-    # Force test suite to error when unittest runner fails
-    substituteInPlace tables/tests/test_suite.py \
-      --replace-fail "return 0" "assert result.wasSuccessful(); return 0" \
-      --replace-fail "return 1" "assert result.wasSuccessful(); return 1"
-    # Hard-code the blosc2 path to avoid issues with blosc2.c-blosc2
-    substituteInPlace tables/__init__.py \
-      --replace-fail "ctypes.CDLL(str(lib_path))" \
-      "ctypes.CDLL('"${lib.getLib c-blosc}/lib/libblosc${stdenv.hostPlatform.extensions.sharedLibrary}"')"
-  '';
-
   env = {
+    BLOSC2_DIR = lib.getDev blosc2.c-blosc2;
+    BLOSC_DIR = lib.getDev c-blosc;
+    BZIP2_DIR = lib.getDev bzip2;
     HDF5_DIR = lib.getDev hdf5;
     LZO_DIR = lib.getDev lzo;
-    BZIP2_DIR = lib.getDev bzip2;
-    BLOSC_DIR = lib.getDev c-blosc;
-    BLOSC2_DIR = lib.getDev blosc2.c-blosc2;
   };
 
   nativeCheckInputs = [
@@ -109,6 +86,26 @@ buildPythonPackage (finalAttrs: {
     runHook postCheck
   '';
 
+  __structuredAttrs = true;
+
+  build-system = [
+    cython
+    setuptools
+    sphinx
+  ];
+
+  dependencies = [
+    blosc2
+    c-blosc
+    blosc2.c-blosc2
+    py-cpuinfo
+    numpy
+    numexpr
+    packaging # uses packaging.version at runtime
+    typing-extensions
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "tables" ];
 
   meta = {

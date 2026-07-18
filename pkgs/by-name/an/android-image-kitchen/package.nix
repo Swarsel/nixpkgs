@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   blobtools,
   dhtbsign,
   elftool,
   futility,
   loki-tool,
   lz4,
+  makeWrapper,
   mboot,
   mkbootimg-osm0sis,
   mkmtkhdr,
@@ -34,12 +34,12 @@ stdenv.mkDerivation {
     ./0002-Do-not-change-directory.patch
   ];
 
-  nativeBuildInputs = [ makeWrapper ];
-
   postPatch = ''
     substituteInPlace {cleanup,repackimg,unpackimg}.sh \
       --replace-fail "bin=\"\$aik/bin\";" "bin=$out/share"
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -87,7 +87,7 @@ stdenv.mkDerivation {
     # No license specified in the repository
     license = lib.licenses.free;
     maintainers = with lib.maintainers; [ ungeskriptet ];
-    teams = [ lib.teams.android ];
     mainProgram = "aik-unpackimg";
+    teams = [ lib.teams.android ];
   };
 }

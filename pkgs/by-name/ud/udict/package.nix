@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,18 +17,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-vcyzMw2tWil4MULEkf25S6kXzqMG6JXIx6GibxxspkY=";
   };
 
-  cargoHash = "sha256-KlWzcJtNBTLCDDH01vI1mn9H7LUqni5o/Q6PsNeI7HE=";
-
-  cargoPatches = [
-    ./0001-update-version-in-lock-file.patch
-  ];
-
   nativeBuildInputs = [
     pkg-config
   ];
 
   buildInputs = [
     openssl
+  ];
+
+  cargoHash = "sha256-KlWzcJtNBTLCDDH01vI1mn9H7LUqni5o/Q6PsNeI7HE=";
+
+  cargoPatches = [
+    ./0001-update-version-in-lock-file.patch
   ];
 
   meta = {

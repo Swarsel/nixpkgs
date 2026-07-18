@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
   nix-update-script,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,16 +19,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ openssl ];
 
-  enableParallelBuilding = true;
-
   installPhase = ''
     install -Dm755 bootgen $out/bin/bootgen
   '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Generate Boot Images for Xilinx Zynq and ZU+ SoCs";
+
     longDescription = ''
       Bootgen for Xilinx Zynq and ZU+ SoCs, without code related to generating
       obfuscated key and without code to support FPGA encryption and
@@ -37,13 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
 
       For more details about Bootgen, please refer to Xilinx UG1283.
     '';
+
     homepage = "https://github.com/Xilinx/bootgen";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = [
       lib.maintainers.flokli
       lib.maintainers.jmbaur
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "bootgen";
   };
 })

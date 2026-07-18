@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  callPackage,
   fetchPypi,
   fetchpatch,
-  callPackage,
-  nixosTests,
   gettext,
-  # tests fail and eventually lock up on 3.14
-  python313Packages,
   ghostscript_headless,
   imagemagickBig,
   jbig2enc,
-  optipng,
-  pngquant,
-  qpdf,
-  tesseract5,
-  poppler-utils,
   liberation_ttf,
-  symlinkJoin,
-  nltk-data,
   lndir,
   nix-update-script,
+  nixosTests,
+  nltk-data,
+  optipng,
+  pngquant,
+  poppler-utils,
+  # tests fail and eventually lock up on 3.14
+  python313Packages,
+  qpdf,
+  symlinkJoin,
+  tesseract5,
   extraPythonPackageOverrides ? (_final: _prev: { }),
 }:
 let
@@ -32,9 +32,9 @@ let
       version = "1.2.0";
 
       src = fetchPypi {
+        hash = "sha256-45+VkgEi1kKD/aXlWB2VogbnBPpChGv6RmL4aqDTMzs=";
         pname = "fido2";
         version = "1.2.0";
-        hash = "sha256-45+VkgEi1kKD/aXlWB2VogbnBPpChGv6RmL4aqDTMzs=";
       };
 
       pytestFlags = [ ];
@@ -62,6 +62,7 @@ let
 
   nltkDataDir = symlinkJoin {
     name = "paperless_ngx_nltk_data";
+
     paths = with nltk-data; [
       punkt-tab
       snowball-data
@@ -71,8 +72,6 @@ let
 in
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "paperless-ngx";
-  pyproject = true;
-
   version = "2.20.15";
 
   src = fetchFromGitHub {
@@ -85,9 +84,9 @@ pythonPackages.buildPythonApplication (finalAttrs: {
   patches = [
     # fix tests with latest filelock
     (fetchpatch {
-      url = "https://github.com/paperless-ngx/paperless-ngx/commit/5e1202a4168fbc8e36f816f36eb16dd7636e9d9c.diff";
-      includes = [ "src/*" ];
       hash = "sha256-ZDC+T4DyOBBV8SCw8xyeYGua1XOhiP7eoZthnSE/Fkk=";
+      includes = [ "src/*" ];
+      url = "https://github.com/paperless-ngx/paperless-ngx/commit/5e1202a4168fbc8e36f816f36eb16dd7636e9d9c.diff";
     })
   ];
 
@@ -101,29 +100,84 @@ pythonPackages.buildPythonApplication (finalAttrs: {
       --replace-fail '--maxprocesses=16' "--numprocesses=$NIX_BUILD_CORES"
   '';
 
-  build-system = [ pythonPackages.setuptools ];
-
   nativeBuildInputs = [
     gettext
     lndir
   ];
 
-  pythonRelaxDeps = [
-    "celery"
-    "django-allauth"
-    "django-auditlog"
-    "django-cachalot"
-    "drf-spectacular-sidecar"
-    "python-dotenv"
-    "gotenberg-client"
-    "redis"
-    "scikit-learn"
-    "tika-client"
-    # requested by maintainer
-    "imap-tools"
-    "ocrmypdf"
-    "filelock"
+  postBuild = ''
+    # Compile manually because `pythonRecompileBytecodeHook` only works
+    # for files in `python.sitePackages`
+    ${pythonPackages.python.pythonOnBuildForHost.interpreter} -OO -m compileall src
+
+    # Collect static files
+    ${pythonPackages.python.pythonOnBuildForHost.interpreter} src/manage.py collectstatic --clear --no-input
+
+    # Compile string translations using gettext
+    ${pythonPackages.python.pythonOnBuildForHost.interpreter} src/manage.py compilemessages
+  '';
+
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = with pythonPackages; [
+    daphne
+    factory-boy
+    imagehash
+    pytest-cov-stub
+    pytest-django
+    pytest-env
+    pytest-httpx
+    pytest-mock
+    pytest-rerunfailures
+    pytest-xdist
+    pytestCheckHook
   ];
+
+  preCheck = ''
+    # The tests require:
+    # - PATH with runtime binaries
+    # - A temporary HOME directory for gnupg
+    # - XDG_DATA_DIRS with test-specific fonts
+    export PATH="${path}:$PATH"
+    export HOME=$(mktemp -d)
+    export XDG_DATA_DIRS="${liberation_ttf}/share:$XDG_DATA_DIRS"
+    export PAPERLESS_NLTK_DIR=${finalAttrs.passthru.nltkDataDir}
+    # Limit threads per worker based on NIX_BUILD_CORES, capped at 256
+    # ocrmypdf has an internal limit of 256 jobs and will fail with more:
+    # https://github.com/ocrmypdf/OCRmyPDF/blob/66308c281306302fac3470f587814c3b212d0c40/src/ocrmypdf/cli.py#L234
+    export PAPERLESS_THREADS_PER_WORKER=$(( NIX_BUILD_CORES > 256 ? 256 : NIX_BUILD_CORES ))
+
+    # the generated pyc files conflict when running the tests
+    rm -r build/lib
+  '';
+
+  installPhase =
+    let
+      pythonPath = pythonPackages.makePythonPath finalAttrs.passthru.dependencies;
+    in
+    ''
+      runHook preInstall
+
+      mkdir -p $out/lib/paperless-ngx/static/frontend
+      cp -r {src,static,LICENSE} $out/lib/paperless-ngx
+      lndir -silent ${finalAttrs.passthru.frontend}/lib/paperless-ui/frontend $out/lib/paperless-ngx/static/frontend
+      chmod +x $out/lib/paperless-ngx/src/manage.py
+      makeWrapper $out/lib/paperless-ngx/src/manage.py $out/bin/paperless-ngx \
+        --prefix PYTHONPATH : "${pythonPath}" \
+        --prefix PATH : "${path}"
+      makeWrapper ${lib.getExe pythonPackages.celery} $out/bin/celery \
+        --prefix PYTHONPATH : "${pythonPath}:$out/lib/paperless-ngx/src" \
+        --prefix PATH : "${path}"
+
+      runHook postInstall
+    '';
+
+  postFixup = ''
+    # Remove tests with samples (~14M)
+    find $out/lib/paperless-ngx -type d -name tests -exec rm -rv {} +
+  '';
+
+  build-system = [ pythonPackages.setuptools ];
 
   dependencies =
     with pythonPackages;
@@ -189,83 +243,6 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     ++ django-allauth.optional-dependencies.socialaccount
     ++ redis.optional-dependencies.hiredis;
 
-  postBuild = ''
-    # Compile manually because `pythonRecompileBytecodeHook` only works
-    # for files in `python.sitePackages`
-    ${pythonPackages.python.pythonOnBuildForHost.interpreter} -OO -m compileall src
-
-    # Collect static files
-    ${pythonPackages.python.pythonOnBuildForHost.interpreter} src/manage.py collectstatic --clear --no-input
-
-    # Compile string translations using gettext
-    ${pythonPackages.python.pythonOnBuildForHost.interpreter} src/manage.py compilemessages
-  '';
-
-  installPhase =
-    let
-      pythonPath = pythonPackages.makePythonPath finalAttrs.passthru.dependencies;
-    in
-    ''
-      runHook preInstall
-
-      mkdir -p $out/lib/paperless-ngx/static/frontend
-      cp -r {src,static,LICENSE} $out/lib/paperless-ngx
-      lndir -silent ${finalAttrs.passthru.frontend}/lib/paperless-ui/frontend $out/lib/paperless-ngx/static/frontend
-      chmod +x $out/lib/paperless-ngx/src/manage.py
-      makeWrapper $out/lib/paperless-ngx/src/manage.py $out/bin/paperless-ngx \
-        --prefix PYTHONPATH : "${pythonPath}" \
-        --prefix PATH : "${path}"
-      makeWrapper ${lib.getExe pythonPackages.celery} $out/bin/celery \
-        --prefix PYTHONPATH : "${pythonPath}:$out/lib/paperless-ngx/src" \
-        --prefix PATH : "${path}"
-
-      runHook postInstall
-    '';
-
-  postFixup = ''
-    # Remove tests with samples (~14M)
-    find $out/lib/paperless-ngx -type d -name tests -exec rm -rv {} +
-  '';
-
-  nativeCheckInputs = with pythonPackages; [
-    daphne
-    factory-boy
-    imagehash
-    pytest-cov-stub
-    pytest-django
-    pytest-env
-    pytest-httpx
-    pytest-mock
-    pytest-rerunfailures
-    pytest-xdist
-    pytestCheckHook
-  ];
-
-  # manually managed in postPatch
-  dontUsePytestXdist = false;
-
-  enabledTestPaths = [
-    "src"
-  ];
-
-  preCheck = ''
-    # The tests require:
-    # - PATH with runtime binaries
-    # - A temporary HOME directory for gnupg
-    # - XDG_DATA_DIRS with test-specific fonts
-    export PATH="${path}:$PATH"
-    export HOME=$(mktemp -d)
-    export XDG_DATA_DIRS="${liberation_ttf}/share:$XDG_DATA_DIRS"
-    export PAPERLESS_NLTK_DIR=${finalAttrs.passthru.nltkDataDir}
-    # Limit threads per worker based on NIX_BUILD_CORES, capped at 256
-    # ocrmypdf has an internal limit of 256 jobs and will fail with more:
-    # https://github.com/ocrmypdf/OCRmyPDF/blob/66308c281306302fac3470f587814c3b212d0c40/src/ocrmypdf/cli.py#L234
-    export PAPERLESS_THREADS_PER_WORKER=$(( NIX_BUILD_CORES > 256 ? 256 : NIX_BUILD_CORES ))
-
-    # the generated pyc files conflict when running the tests
-    rm -r build/lib
-  '';
-
   disabledTests = [
     # FileNotFoundError(2, 'No such file or directory'): /build/tmp...
     "test_script_with_output"
@@ -285,20 +262,48 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     "testNormalOperation"
   ];
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  # manually managed in postPatch
+  dontUsePytestXdist = false;
+
+  enabledTestPaths = [
+    "src"
+  ];
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "celery"
+    "django-allauth"
+    "django-auditlog"
+    "django-cachalot"
+    "drf-spectacular-sidecar"
+    "python-dotenv"
+    "gotenberg-client"
+    "redis"
+    "scikit-learn"
+    "tika-client"
+    # requested by maintainer
+    "imap-tools"
+    "ocrmypdf"
+    "filelock"
+  ];
 
   passthru = {
-    frontend = callPackage ./frontend.nix {
-      inherit (finalAttrs) src version;
-      meta = removeAttrs finalAttrs.meta [ "mainProgram" ];
-    };
     inherit
       nltkDataDir
       path
       tesseract5
       ;
+
     inherit (pythonPackages) python;
+
+    frontend = callPackage ./frontend.nix {
+      inherit (finalAttrs) src version;
+      meta = removeAttrs finalAttrs.meta [ "mainProgram" ];
+    };
+
     tests = { inherit (nixosTests) paperless; };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -312,12 +317,14 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     homepage = "https://docs.paperless-ngx.com/";
     changelog = "https://github.com/paperless-ngx/paperless-ngx/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
-    mainProgram = "paperless-ngx";
+
     maintainers = with lib.maintainers; [
       leona
       SuperSandro2000
       erikarvstedt
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "paperless-ngx";
   };
 })

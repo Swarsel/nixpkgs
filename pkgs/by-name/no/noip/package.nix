@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchurl,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mscerts";
   version = "2026.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ralphje";
@@ -17,13 +16,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-fJ/+s0z3zIxHNfCxjDIuSlpQ6lBeT1xAVyveS0pjrR8=";
   };
 
-  build-system = [ setuptools ];
-
   # extras_require contains signify -> circular dependency
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "mscerts" ];
 
   meta = {

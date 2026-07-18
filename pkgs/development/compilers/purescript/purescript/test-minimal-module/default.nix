@@ -1,8 +1,8 @@
 {
   lib,
-  runCommand,
-  purescript,
   nodejs,
+  purescript,
+  runCommand,
 }:
 
 runCommand "purescript-test-minimal-module" { } ''

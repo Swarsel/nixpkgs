@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
+  SDL2_mixer,
+  SDL2_net,
   autoreconfHook,
   libpng,
   libsamplerate,
   pkg-config,
   python3,
-  SDL2,
-  SDL2_mixer,
-  SDL2_net,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,9 +23,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-wa4wxz70mxP41bNxWYD1EyxBGfyRoxEMPaoupvaK+XY=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   postPatch = ''
     patchShebangs --build man/{simplecpp,docgen}
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -42,22 +49,15 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2_net
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   enableParallelBuilding = true;
 
-  strictDeps = true;
-
   meta = {
+    description = "Doom source port that accurately reproduces the experience of Doom as it was played in the 1990s";
     homepage = "https://www.chocolate-doom.org";
     changelog = "https://github.com/chocolate-doom/chocolate-doom/releases/tag/chocolate-doom-${finalAttrs.version}";
-    description = "Doom source port that accurately reproduces the experience of Doom as it was played in the 1990s";
-    mainProgram = "chocolate-doom";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ Gliczy ];
+    platforms = lib.platforms.unix;
+    mainProgram = "chocolate-doom";
   };
 })

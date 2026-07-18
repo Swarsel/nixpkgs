@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   gettext,
+  makeWrapper,
   python3,
 }:
 
@@ -26,14 +26,8 @@ stdenv.mkDerivation {
       --replace "\$(shell which msgfmt)" "${gettext}/bin/msgfmt"
   '';
 
-  postInstall = ''
-    rm $out/bin/metamorphose2
-    makeWrapper ${python3.interpreter} $out/bin/metamorphose2 \
-      --prefix PYTHONPATH : $PYTHONPATH:$(toPythonPath "$out") \
-      --add-flags "-O $out/share/metamorphose2/metamorphose2.py -w=3"
-  '';
-
   nativeBuildInputs = [ makeWrapper ];
+
   propagatedBuildInputs = with python3.pkgs; [
     mutagen
     wxpython
@@ -42,6 +36,13 @@ stdenv.mkDerivation {
   ];
 
   makeFlags = [ "PREFIX=$(out)" ];
+
+  postInstall = ''
+    rm $out/bin/metamorphose2
+    makeWrapper ${python3.interpreter} $out/bin/metamorphose2 \
+      --prefix PYTHONPATH : $PYTHONPATH:$(toPythonPath "$out") \
+      --add-flags "-O $out/share/metamorphose2/metamorphose2.py -w=3"
+  '';
 
   meta = {
     description = "Graphical mass renaming program for files and folders";

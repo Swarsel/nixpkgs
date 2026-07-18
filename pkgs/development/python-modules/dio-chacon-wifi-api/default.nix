@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   aiohttp,
-
   # tests
   aioresponses,
+  buildPythonPackage,
+  # build-system
+  poetry-core,
   pytest-aiohttp,
   pytestCheckHook,
 }:
@@ -18,7 +15,6 @@
 buildPythonPackage rec {
   pname = "dio-chacon-wifi-api";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cnico";
@@ -27,16 +23,15 @@ buildPythonPackage rec {
     hash = "sha256-c91xCrlNpCutZZYO6y0pOaqPCF4exbr7xVxfsf5LI0Q=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-aiohttp
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "dio_chacon_wifi_api" ];
 
   meta = {

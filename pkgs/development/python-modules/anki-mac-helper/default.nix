@@ -1,20 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   stdenv,
   anki,
+  buildPythonPackage,
   hatchling,
   swift,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "anki-mac-helper";
   inherit (anki) version src;
-  pyproject = true;
-
-  sourceRoot = "${finalAttrs.src.name}/qt/mac";
-
-  build-system = [ hatchling ];
+  pname = "anki-mac-helper";
   nativeBuildInputs = [ swift ];
 
   # This is intended to emulate github:ankitects/anki/qt/mac/helper_build.py,
@@ -29,18 +24,23 @@ buildPythonPackage (finalAttrs: {
       -o anki_mac_helper/libankihelper.dylib
   '';
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "anki_mac_helper" ];
+  sourceRoot = "${finalAttrs.src.name}/qt/mac";
 
   meta = {
     description = "Small support library for Anki on Macs";
     homepage = "https://github.com/ankitects/anki";
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
-    platforms = lib.platforms.darwin;
     license = lib.licenses.agpl3Plus;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       euank
       junestepp
       oxij
     ];
+
+    platforms = lib.platforms.darwin;
   };
 })

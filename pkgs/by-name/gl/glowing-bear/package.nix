@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -9,9 +9,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.9.0";
 
   src = fetchFromGitHub {
-    rev = finalAttrs.version;
     owner = "glowing-bear";
     repo = "glowing-bear";
+    rev = finalAttrs.version;
     sha256 = "0lf0j72m6rwlgqssdxf0m9si99lah08lww7q7i08p5i5lpv6zh2s";
   };
 

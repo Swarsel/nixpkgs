@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "unimatrix";
   version = "0-unstable-2023-04-25";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "will8211";
@@ -24,8 +23,9 @@ python3Packages.buildPythonApplication {
     runHook postInstall
   '';
 
-  dontConfigure = true;
   dontBuild = true;
+  dontConfigure = true;
+  pyproject = false;
 
   meta = {
     description = ''Python script to simulate the display from "The Matrix" in terminal'';

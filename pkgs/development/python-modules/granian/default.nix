@@ -1,27 +1,26 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  cacert,
   buildPythonPackage,
-  uvloop,
+  cacert,
   click,
-  setproctitle,
-  watchfiles,
-  versionCheckHook,
-  pytestCheckHook,
-  pytest-asyncio,
-  python-dotenv,
-  websockets,
   httpx,
-  sniffio,
   nix-update-script,
+  pytest-asyncio,
+  pytestCheckHook,
+  python-dotenv,
+  rustPlatform,
+  setproctitle,
+  sniffio,
+  uvloop,
+  versionCheckHook,
+  watchfiles,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "granian";
   version = "2.7.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "emmett-framework";
@@ -38,27 +37,20 @@ buildPythonPackage rec {
     ./no-alloc.patch # with --unified=1 context
   ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-mnqtzZ2+xuxUezhsgw+gr6MmWbi4Z4j0bHndys6vHFw=";
-  };
-
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
   ];
 
-  dependencies = [
-    click
-  ];
-
-  optional-dependencies = {
-    dotenv = [ python-dotenv ];
-    pname = [ setproctitle ];
-    reload = [ watchfiles ];
-    # rloop = [ rloop ]; # not packaged
-    uvloop = [ uvloop ];
-  };
+  # needed for checks
+  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+  # This is a measure of last resort. Granian tests fully lock up
+  # on shutdown in >90% of cases, which makes the whole thing
+  # impossible to build without restarting it double digits
+  # numbers of times. The issue has not been fully identified,
+  # and upstream claims it does not exist.
+  # FIXME: root cause and fix this.
+  doCheck = false;
 
   nativeCheckInputs = [
     versionCheckHook
@@ -74,12 +66,16 @@ buildPythonPackage rec {
     rm -rf granian/
   '';
 
-  # needed for checks
-  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-
   __darwinAllowLocalNetworking = true;
 
-  enabledTestPaths = [ "tests/" ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-mnqtzZ2+xuxUezhsgw+gr6MmWbi4Z4j0bHndys6vHFw=";
+  };
+
+  dependencies = [
+    click
+  ];
 
   disabledTests = [
     # SSLCertVerificationError: certificate verify failed: certificate has expired
@@ -87,16 +83,18 @@ buildPythonPackage rec {
     "test_rsgi_ws_scope"
   ];
 
-  # This is a measure of last resort. Granian tests fully lock up
-  # on shutdown in >90% of cases, which makes the whole thing
-  # impossible to build without restarting it double digits
-  # numbers of times. The issue has not been fully identified,
-  # and upstream claims it does not exist.
-  # FIXME: root cause and fix this.
-  doCheck = false;
+  enabledTestPaths = [ "tests/" ];
 
+  optional-dependencies = {
+    pname = [ setproctitle ];
+    dotenv = [ python-dotenv ];
+    reload = [ watchfiles ];
+    # rloop = [ rloop ]; # not packaged
+    uvloop = [ uvloop ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "granian" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -104,11 +102,13 @@ buildPythonPackage rec {
     homepage = "https://github.com/emmett-framework/granian";
     changelog = "https://github.com/emmett-framework/granian/releases/tag/v${version}";
     license = lib.licenses.bsd3;
-    mainProgram = "granian";
+
     maintainers = with lib.maintainers; [
       lucastso10
       pbsds
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "granian";
   };
 }

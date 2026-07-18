@@ -12,20 +12,22 @@ in
   options = {
     programs.traceroute = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to configure a setcap wrapper for traceroute.
         '';
+
+        type = lib.types.bool;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     security.wrappers.traceroute = {
-      owner = "root";
-      group = "root";
       capabilities = "cap_net_raw+p";
+      group = "root";
+      owner = "root";
       source = lib.getExe pkgs.traceroute;
     };
   };

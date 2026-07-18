@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   impacket,
   netaddr,
   poetry-core,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "lsassy";
   version = "3.1.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Hackndo";
@@ -21,12 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-lPbZnoR6qWfVBSRAbTJsKpjBieidNsYgAXI3CXHEt1w=";
   };
 
-  pythonRelaxDeps = [
-    "impacket"
-    "netaddr"
-    "rich"
-  ];
-
+  # Tests require an active domain controller
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -36,10 +31,14 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
-  # Tests require an active domain controller
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lsassy" ];
+
+  pythonRelaxDeps = [
+    "impacket"
+    "netaddr"
+    "rich"
+  ];
 
   meta = {
     description = "Python module to extract data from Local Security Authority Subsystem Service (LSASS)";

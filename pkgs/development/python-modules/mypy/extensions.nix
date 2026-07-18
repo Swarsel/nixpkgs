@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "mypy-extensions";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python";
@@ -19,18 +18,17 @@ buildPythonPackage rec {
     hash = "sha256-HNAFsWX4tU9hfZkKxLNJn1J+H3uTesQflbRPlo3GQ4k=";
   };
 
-  dependencies = [ flit-core ];
-
   # make the testsuite run with pytest, so we can disable individual tests
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "tests/testextensions.py" ];
+  dependencies = [ flit-core ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
     # https://github.com/python/mypy_extensions/issues/65
     "test_py36_class_syntax_usage"
   ];
 
+  enabledTestPaths = [ "tests/testextensions.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "mypy_extensions" ];
 
   meta = {

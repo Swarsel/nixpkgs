@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  which,
-  zip,
-  libicns,
   botan3,
   capstone,
-  jansson,
-  libunistring,
-  wxwidgets_3_2,
-  lua53Packages,
-  perlPackages,
   gtk3,
+  jansson,
+  libicns,
+  libunistring,
+  lua53Packages,
   nix-update-script,
+  perlPackages,
+  pkg-config,
+  which,
   wrapGAppsHook3,
+  wxwidgets_3_2,
+  zip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -66,22 +66,25 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   enableParallelBuilding = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Reverse Engineers' Hex Editor";
+
     longDescription = ''
       A cross-platform (Windows, Linux, Mac) hex editor for reverse
       engineering, and everything else.
     '';
+
     homepage = "https://github.com/solemnwarning/rehex";
     changelog = "https://github.com/solemnwarning/rehex/raw/${finalAttrs.version}/CHANGES.txt";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       markus1189
       wegank
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "rehex";
   };

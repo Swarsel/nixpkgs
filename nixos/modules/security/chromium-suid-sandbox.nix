@@ -10,8 +10,8 @@ let
 in
 {
   options.security.chromiumSuidSandbox.enable = lib.mkOption {
-    type = lib.types.bool;
     default = false;
+
     description = ''
       Whether to install the Chromium SUID sandbox which is an executable that
       Chromium may use in order to achieve sandboxing.
@@ -22,14 +22,17 @@ in
       Also, if the URL chrome://sandbox tells you that "You are not adequately
       sandboxed!", turning this on might resolve the issue.
     '';
+
+    type = lib.types.bool;
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ sandbox ];
+
     security.wrappers.${sandbox.passthru.sandboxExecutableName} = {
-      setuid = true;
-      owner = "root";
       group = "root";
+      owner = "root";
+      setuid = true;
       source = "${sandbox}/bin/${sandbox.passthru.sandboxExecutableName}";
     };
   };

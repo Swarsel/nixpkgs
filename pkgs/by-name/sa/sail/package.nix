@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  protobuf,
-  pkg-config,
-  python3,
   nix-update-script,
+  pkg-config,
+  protobuf,
+  python3,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -20,17 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-DpkoC7uShuReOBN5tjvcCSH1LH/e+fj3gp47idsEGEg=";
   };
 
-  cargoHash = "sha256-byjxrJN+Q+Rn3pq/FWXxzheZyUs+aoTvfileahqinuA=";
-
-  cargoBuildFlags = [
-    "-p"
-    "sail-cli"
-  ];
-  cargoTestFlags = [
-    "-p"
-    "sail-cli"
-  ];
-
   nativeBuildInputs = [
     protobuf
     pkg-config
@@ -40,16 +29,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
     python3
   ];
 
+  cargoHash = "sha256-byjxrJN+Q+Rn3pq/FWXxzheZyUs+aoTvfileahqinuA=";
+
   env = {
-    PYO3_PYTHON = lib.getExe python3;
     PROTOC = lib.getExe protobuf;
+    PYO3_PYTHON = lib.getExe python3;
   };
 
   # Tests require a running server
   doCheck = false;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoBuildFlags = [
+    "-p"
+    "sail-cli"
+  ];
+
+  cargoTestFlags = [
+    "-p"
+    "sail-cli"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -58,7 +58,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/lakehq/sail";
     changelog = "https://github.com/lakehq/sail/blob/v${finalAttrs.version}/docs/reference/changelog/index.md";
     license = lib.licenses.asl20;
-    mainProgram = "sail";
     maintainers = [ lib.maintainers.davidlghellin ];
+    mainProgram = "sail";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,9 +23,9 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
+    description = "Kubernetes code generation";
     homepage = "https://github.com/kubernetes/code-generator";
     changelog = "https://github.com/kubernetes/code-generator/releases/tag/v${finalAttrs.version}";
-    description = "Kubernetes code generation";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

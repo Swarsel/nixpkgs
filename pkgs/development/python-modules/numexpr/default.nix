@@ -10,19 +10,11 @@
 buildPythonPackage rec {
   pname = "numexpr";
   version = "2.14.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-S+ALEIbHt6XDLjFVgSK3uAJD/gmFebFwln2oPzFStIs=";
   };
-
-  build-system = [
-    setuptools
-    numpy
-  ];
-
-  dependencies = [ numpy ];
 
   preBuild = ''
     # Remove existing site.cfg, use the one we built for numpy
@@ -39,6 +31,13 @@ buildPythonPackage rec {
     popd
   '';
 
+  build-system = [
+    setuptools
+    numpy
+  ];
+
+  dependencies = [ numpy ];
+
   disabledTests = [
     # fails on computers with more than 8 threads
     # https://github.com/pydata/numexpr/issues/479
@@ -46,6 +45,7 @@ buildPythonPackage rec {
     "test_omp_num_threads_empty_string"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "numexpr" ];
 
   meta = {

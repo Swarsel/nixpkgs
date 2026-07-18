@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
   cmake,
   llvm,
+  perl,
+  rocmUpdateScript,
   zlib,
   zstd,
-  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "rocm-${finalAttrs.version}";
     hash = "sha256-LC0lnYetV7RPVw92zew6za6bDH4zmnERXUM4MVaRVtc=";
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "\''${LLVM_TOOLS_BINARY_DIR}/clang" "${llvm.rocm-toolchain}/bin/clang"
+    chmod +x bin/*
+  '';
 
   strictDeps = true;
 
@@ -39,14 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.CXXFLAGS = "-I${lib.getInclude llvm.llvm}/include -I${lib.getInclude llvm.clang-unwrapped}/include";
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "\''${LLVM_TOOLS_BINARY_DIR}/clang" "${llvm.rocm-toolchain}/bin/clang"
-    chmod +x bin/*
-  '';
-
-  passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
-
   postInstall = ''
     rm $out/bin/hipify-perl
     chmod +x $out/bin/*
@@ -56,11 +54,13 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/{libexec/hipify,bin}/hipify-perl
   '';
 
+  passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
+
   meta = {
     description = "Convert CUDA to Portable C++ Code";
     homepage = "https://github.com/ROCm/HIPIFY";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

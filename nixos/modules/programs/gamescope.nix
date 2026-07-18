@@ -23,35 +23,43 @@ in
 {
   options.programs.gamescope = {
     enable = lib.mkEnableOption "gamescope, the SteamOS session compositing window manager";
-
     package = lib.mkPackageOption pkgs "gamescope" { };
 
-    enableWsi = lib.mkEnableOption "gamescope-wsi, the Vulkan WSI layer, alongside gamescope";
-
-    capSysNice = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Add cap_sys_nice capability to the GameScope
-        binary so that it may renice itself.
-      '';
-    };
-
     args = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
+      description = ''
+        Arguments passed to GameScope on startup.
+      '';
+
       example = [
         "--rt"
         "--prefer-vk-device 8086:9bc4"
       ];
-      description = ''
-        Arguments passed to GameScope on startup.
-      '';
+
+      type = lib.types.listOf lib.types.str;
     };
 
+    capSysNice = lib.mkOption {
+      default = false;
+
+      description = ''
+        Add cap_sys_nice capability to the GameScope
+        binary so that it may renice itself.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    enableWsi = lib.mkEnableOption "gamescope-wsi, the Vulkan WSI layer, alongside gamescope";
+
     env = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
       default = { };
+
+      description = ''
+        Default environment variables available to the GameScope process, overridable at runtime.
+      '';
+
       example = lib.literalExpression ''
         # for Prime render offload on Nvidia laptops.
         # Also requires `hardware.nvidia.prime.offload.enable`.
@@ -61,27 +69,26 @@ in
           __GLX_VENDOR_LIBRARY_NAME = "nvidia";
         }
       '';
-      description = ''
-        Default environment variables available to the GameScope process, overridable at runtime.
-      '';
+
+      type = lib.types.attrsOf lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    security.wrappers = lib.mkIf cfg.capSysNice {
-      gamescope = {
-        owner = "root";
-        group = "root";
-        source = "${gamescope}/bin/gamescope";
-        capabilities = "cap_sys_nice+pie";
-      };
-    };
-
     environment.systemPackages = lib.mkIf (!cfg.capSysNice) [ gamescope ];
 
     hardware.graphics = lib.optionalAttrs cfg.enableWsi {
       extraPackages = with pkgs; [ gamescope-wsi ];
       extraPackages32 = with pkgs; [ pkgsi686Linux.gamescope-wsi ];
+    };
+
+    security.wrappers = lib.mkIf cfg.capSysNice {
+      gamescope = {
+        capabilities = "cap_sys_nice+pie";
+        group = "root";
+        owner = "root";
+        source = "${gamescope}/bin/gamescope";
+      };
     };
   };
 

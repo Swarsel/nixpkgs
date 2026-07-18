@@ -20,9 +20,9 @@ in
     environment.systemPackages = [ pkgs.sniffnet ];
 
     security.wrappers.sniffnet = {
-      owner = "root";
-      group = "root";
       capabilities = "cap_net_raw,cap_net_admin=eip";
+      group = "root";
+      owner = "root";
       source = "${pkgs.sniffnet}/bin/sniffnet";
     };
   };

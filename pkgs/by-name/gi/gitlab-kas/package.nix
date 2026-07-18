@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitLab,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -18,7 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-SSxQH45CVg1v8PKkbU046bAZsZOOPN5U7Cm81n82uRA=";
-  subPackages = [ "./cmd/kas" ];
 
   ldflags =
     let
@@ -33,14 +32,18 @@ buildGoModule (finalAttrs: {
     versionCheckHook
   ];
 
+  subPackages = [ "./cmd/kas" ];
+
   meta = {
     description = "Kubernetes Agent (Gitlab side)";
-    mainProgram = "kas";
     homepage = "https://gitlab.com/gitlab-org/cluster-integration/gitlab-agent";
     changelog = "https://gitlab.com/gitlab-org/cluster-integration/gitlab-agent/-/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.leona
     ];
+
+    mainProgram = "kas";
   };
 })

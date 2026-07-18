@@ -1,10 +1,10 @@
 {
   lib,
-  fetchurl,
   stdenv,
-  zlib,
-  ncurses,
+  fetchurl,
   libiconv,
+  ncurses,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,15 +37,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Interactive ncurses browser for Fossil repositories";
+
     longDescription = ''
       An interactive ncurses browser for Fossil repositories.
 
       fnc uses libfossil to create a fossil ui experience in the terminal.
     '';
+
     homepage = "https://fnc.bsdbox.org";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ abbe ];
+    platforms = lib.platforms.all;
     mainProgram = "fnc";
   };
 })

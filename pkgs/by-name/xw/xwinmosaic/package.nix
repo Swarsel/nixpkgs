@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
   gtk2,
-  cmake,
-  pkg-config,
   libxdamage,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.4.2";
   pname = "xwinmosaic";
+  version = "0.4.2";
 
   src = fetchFromGitHub {
     owner = "soulthreads";
@@ -25,24 +25,25 @@ stdenv.mkDerivation (finalAttrs: {
     #  https://github.com/soulthreads/xwinmosaic/pull/33
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://github.com/soulthreads/xwinmosaic/commit/a193a3f30850327066e5a93b29316cba2735e10d.patch";
       sha256 = "0qpk802j5x6bsfvj6jqw1nz482jynwyk7yrrh4bsziwc53khm95q";
+      url = "https://github.com/soulthreads/xwinmosaic/commit/a193a3f30850327066e5a93b29316cba2735e10d.patch";
     })
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-  ];
-  buildInputs = [
-    gtk2
-    libxdamage
   ];
 
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required (VERSION 2.8)" "cmake_minimum_required(VERSION 3.10)"
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+  ];
+
+  buildInputs = [
+    gtk2
+    libxdamage
+  ];
 
   meta = {
     description = "X window switcher drawing a colourful grid";

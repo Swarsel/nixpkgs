@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  rustPlatform,
   protobuf,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,15 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-mZCYdz0AQhCBqbvcjXNp2bXSKf7tJ/01fz2W4wpjVX8=";
   };
 
-  cargoHash = "sha256-aF9bylDYeTZOldAK9rl+19xTv0y9AdxCjRfaVRNfR3E=";
-
-  buildAndTestSubdir = "tokio-console";
-
   nativeBuildInputs = [
     installShellFiles
     protobuf
   ];
 
+  cargoHash = "sha256-aF9bylDYeTZOldAK9rl+19xTv0y9AdxCjRfaVRNfR3E=";
   # uses currently unstable tokio features
   env.RUSTFLAGS = "--cfg tokio_unstable";
 
@@ -44,11 +41,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/tokio-console --log-dir $(mktemp -d) gen-completion zsh)
   '';
 
+  buildAndTestSubdir = "tokio-console";
+
   meta = {
     description = "Debugger for asynchronous Rust code";
     homepage = "https://github.com/tokio-rs/console";
-    mainProgram = "tokio-console";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ max-niederman ];
+    mainProgram = "tokio-console";
   };
 })

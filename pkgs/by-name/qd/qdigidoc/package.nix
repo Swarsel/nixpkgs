@@ -5,12 +5,12 @@
   cmake,
   flatbuffers,
   gettext,
-  pkg-config,
   libdigidocpp,
-  opensc,
   openldap,
+  opensc,
   openssl,
   pcsclite,
+  pkg-config,
   qt6,
 }:
 
@@ -69,13 +69,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt-based UI for signing and verifying DigiDoc documents";
-    mainProgram = "qdigidoc4";
     homepage = "https://www.id.ee/";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       flokli
       mmahut
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "qdigidoc4";
   };
 })

@@ -3,14 +3,13 @@
   fetchFromGitHub,
   buildPythonPackage,
   hatchling,
-  pyqt6,
   pycups,
+  pyqt6,
 }:
 
 buildPythonPackage rec {
   pname = "qpageview";
   version = "1.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frescobaldi";
@@ -19,6 +18,7 @@ buildPythonPackage rec {
     hash = "sha256-oXZr35ZD+cFEgRNojpiW14xceGC9taMNTFvXHmyyeFg=";
   };
 
+  doCheck = false; # no tests
   build-system = [ hatchling ];
 
   dependencies = [
@@ -26,8 +26,7 @@ buildPythonPackage rec {
     pycups
   ];
 
-  doCheck = false; # no tests
-
+  pyproject = true;
   pythonImportsCheck = [ "qpageview" ];
 
   meta = {

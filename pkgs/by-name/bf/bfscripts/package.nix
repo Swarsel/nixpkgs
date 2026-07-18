@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   git,
-  lib,
   python3,
   rpm,
-  stdenv,
 }:
 
 let
@@ -47,13 +47,13 @@ stdenv.mkDerivation {
     hash = "sha256-x+hpH6D5HTl39zD0vYj6wRFw881M4AcfM+ePcgXMst8=";
   };
 
-  buildInputs = [
-    python3
-  ];
-
   nativeBuildInputs = [
     git
     rpm
+  ];
+
+  buildInputs = [
+    python3
   ];
 
   installPhase = ''
@@ -64,10 +64,12 @@ stdenv.mkDerivation {
     description = "Collection of scripts used for BlueField SoC system management";
     homepage = "https://github.com/Mellanox/bfscripts";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       nikstur
       thillux
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

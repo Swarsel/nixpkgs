@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cargo,
-  fetchFromGitHub,
   hypothesis,
   pytestCheckHook,
-  rustc,
   rustPlatform,
+  rustc,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jh2";
   version = "5.0.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jawah";
@@ -22,10 +21,10 @@ buildPythonPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-BPTgGc/qH101ZBlqiqwBe5KXXpnpDGe5K6GLqG99GSI=";
-  };
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+  ];
 
   build-system = [
     cargo
@@ -34,11 +33,12 @@ buildPythonPackage (finalAttrs: {
     rustc
   ];
 
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-  ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-BPTgGc/qH101ZBlqiqwBe5KXXpnpDGe5K6GLqG99GSI=";
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "jh2" ];
 
   meta = {
@@ -46,6 +46,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/jawah/h2";
     changelog = "https://github.com/jawah/h2/blob/${finalAttrs.src.rev}/CHANGELOG.rst";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
       techknowlogick

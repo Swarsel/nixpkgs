@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 let
   version = "1.0.0";
 in
 buildGoModule {
-  pname = "vault-unseal";
   inherit version;
+  pname = "vault-unseal";
 
   src = fetchFromGitHub {
     owner = "lrstanley";
@@ -21,11 +21,11 @@ buildGoModule {
   vendorHash = "sha256-ma3xbnWH87b1X5fdOjigzsj5gEfhbjyTLoIDyp9eY80=";
 
   meta = {
-    changelog = "https://github.com/lrstanley/vault-unseal/releases/tag/v${version}";
     description = "Auto-unseal utility for Hashicorp Vault";
     homepage = "https://github.com/lrstanley/vault-unseal";
+    changelog = "https://github.com/lrstanley/vault-unseal/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "vault-unseal";
     maintainers = with lib.maintainers; [ mjm ];
+    mainProgram = "vault-unseal";
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,9 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Zw8RfwAR6dw4YUSdML1QJCXVj1s9ZNzr3LTb2vt2fjI=";
   };
 
-  vendorHash = "sha256-OaaIhXh9+iqMBnP4pHxuJMynXxvfY6iiv+Cd4Dq1I+I=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-OaaIhXh9+iqMBnP4pHxuJMynXxvfY6iiv+Cd4Dq1I+I=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd gotlsaflare \

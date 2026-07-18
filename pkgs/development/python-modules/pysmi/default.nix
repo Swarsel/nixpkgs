@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   jinja2,
   lark,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysmi";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lextudio";
@@ -22,6 +21,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ft8R73eUgb+pnr35ZVc2Br3BGHhUDHEcQ9k/K6tjYBk=";
   };
+
+  # Tests require pysnmp, which in turn requires pysmi => infinite recursion
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pysnmp
+    pytestCheckHook
+  ];
 
   build-system = [ flit-core ];
 
@@ -31,16 +38,8 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pysnmp
-    pytestCheckHook
-  ];
-
-  # Tests require pysnmp, which in turn requires pysmi => infinite recursion
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pysmi" ];
-
   passthru.tests.pytest = pysmi.overridePythonAttrs { doCheck = true; };
 
   meta = {

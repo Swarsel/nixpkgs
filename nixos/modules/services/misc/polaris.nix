@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -12,45 +12,51 @@ in
   options = {
     services.polaris = {
       enable = lib.mkEnableOption "Polaris Music Server";
-
       package = lib.mkPackageOption pkgs "polaris" { };
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "polaris";
-        description = "User account under which Polaris runs.";
-      };
-
-      group = lib.mkOption {
-        type = lib.types.str;
-        default = "polaris";
-        description = "Group under which Polaris is run.";
-      };
-
       extraGroups = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
         description = "Polaris' auxiliary groups.";
         example = lib.literalExpression ''["media" "music"]'';
+        type = lib.types.listOf lib.types.str;
+      };
+
+      group = lib.mkOption {
+        default = "polaris";
+        description = "Group under which Polaris is run.";
+        type = lib.types.str;
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+
+        description = ''
+          Open the configured port in the firewall.
+        '';
+
+        type = lib.types.bool;
       };
 
       port = lib.mkOption {
-        type = lib.types.port;
         default = 5050;
+
         description = ''
           The port which the Polaris REST api and web UI should listen to.
           Note: polaris is hardcoded to listen to the hostname "0.0.0.0".
         '';
+
+        type = lib.types.port;
       };
 
       settings = lib.mkOption {
-        type = settingsFormat.type;
         default = { };
+
         description = ''
           Contents for the TOML Polaris config, applied each start.
           Although poorly documented, an example may be found here:
           [test-config.toml](https://github.com/agersant/polaris/blob/374d0ca56fc0a466d797a4b252e2078607476797/test-data/config.toml)
         '';
+
         example = lib.literalExpression ''
           {
             settings.reindex_every_n_seconds = 7*24*60*60; # weekly, default is 1800
@@ -68,32 +74,37 @@ in
             ];
           }
         '';
+
+        type = settingsFormat.type;
       };
 
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Open the configured port in the firewall.
-        '';
+      user = lib.mkOption {
+        default = "polaris";
+        description = "User account under which Polaris runs.";
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
+    };
+
     systemd.services.polaris = {
-      description = "Polaris Music Server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Polaris Music Server";
 
       serviceConfig = rec {
-        Type = "notify";
-        User = cfg.user;
-        Group = cfg.group;
-        DynamicUser = true;
-        SupplementaryGroups = cfg.extraGroups;
-        StateDirectory = "polaris";
+        # Security options:
+        #NoNewPrivileges = true; # implied by DynamicUser
+        #RemoveIPC = true; # implied by DynamicUser
+        AmbientCapabilities = "";
         CacheDirectory = "polaris";
+        CapabilityBoundingSet = "";
+        DeviceAllow = "";
+        DynamicUser = true;
+
         ExecStart = lib.escapeShellArgs (
           [
             "${cfg.package}/bin/polaris"
@@ -110,42 +121,34 @@ in
             (settingsFormat.generate "polaris-config.toml" cfg.settings)
           ]
         );
-        Restart = "on-failure";
 
-        # Security options:
-
-        #NoNewPrivileges = true; # implied by DynamicUser
-        #RemoveIPC = true; # implied by DynamicUser
-
-        AmbientCapabilities = "";
-        CapabilityBoundingSet = "";
-
-        DeviceAllow = "";
-
+        Group = cfg.group;
         LockPersonality = true;
-
         #PrivateTmp = true; # implied by DynamicUser
         PrivateDevices = true;
         PrivateUsers = true;
-
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        Restart = "on-failure";
 
-        RestrictNamespaces = true;
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
-        RestrictRealtime = true;
-        #RestrictSUIDSGID = true; # implied by DynamicUser
 
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        StateDirectory = "polaris";
+        SupplementaryGroups = cfg.extraGroups;
+        #RestrictSUIDSGID = true; # implied by DynamicUser
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
           "~@cpu-emulation"
@@ -156,11 +159,12 @@ in
           "~@privileged"
           "~@setuid"
         ];
-      };
-    };
 
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
+        Type = "notify";
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

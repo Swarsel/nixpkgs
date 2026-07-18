@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,13 +19,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Touch-typing tutor";
-    mainProgram = "gotypist";
+
     longDescription = ''
       A simple touch-typing tutor that follows Steve Yegge's methodology of
       going in fast, slow, and medium cycles.
     '';
+
     homepage = "https://github.com/pb-/gotypist";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pb- ];
+    mainProgram = "gotypist";
   };
 })

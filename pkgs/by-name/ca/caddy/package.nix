@@ -1,22 +1,20 @@
 {
   lib,
-  buildGoModule,
-  callPackage,
-  fetchFromGitHub,
-  testers,
-  nixosTests,
-  caddy,
-  installShellFiles,
   stdenv,
-  writableTmpDirAsHomeHook,
+  fetchFromGitHub,
+  buildGoModule,
+  caddy,
+  callPackage,
+  installShellFiles,
+  nixosTests,
+  testers,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "caddy";
   version = "2.11.4";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "caddyserver";
@@ -26,26 +24,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-wzk8KRZfDCbbjRlBwkoKAoMjOhV4xF3yuXUueqtl1xM=";
   };
 
-  vendorHash = "sha256-2GwSM7EKN9GwN6kte7CekpXIJ0vzHhhsnrs3TC6vTW4=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/caddyserver/caddy/v2.CustomVersion=${finalAttrs.version}"
-  ];
-
-  # matches upstream since v2.8.0
-  tags = [
-    "nobadger"
-    "nomysql"
-    "nopgx"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-2GwSM7EKN9GwN6kte7CekpXIJ0vzHhhsnrs3TC6vTW4=";
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
-  __darwinAllowLocalNetworking = true;
 
   postInstall = ''
     install -Dm644 ${finalAttrs.passthru.dist}/init/caddy.service ${finalAttrs.passthru.dist}/init/caddy-api.service -t $out/lib/systemd/system
@@ -69,39 +50,59 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     writableTmpDirAsHomeHook
     versionCheckHook
   ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/caddyserver/caddy/v2.CustomVersion=${finalAttrs.version}"
+  ];
+
+  # matches upstream since v2.8.0
+  tags = [
+    "nobadger"
+    "nomysql"
+    "nopgx"
+  ];
+
   versionCheckKeepEnvironment = [ "HOME" ];
 
   passthru = {
-    withPlugins = callPackage ./plugins.nix { inherit caddy; };
-
     dist = fetchFromGitHub {
+      hash = "sha256-oRQfQH1GKjAjVMj+dZo1f1+HOaOdJIyEfod0iGLYcc8=";
       owner = "caddyserver";
       repo = "dist";
       tag = "v${finalAttrs.version}";
-      hash = "sha256-oRQfQH1GKjAjVMj+dZo1f1+HOaOdJIyEfod0iGLYcc8=";
     };
 
     tests = {
       inherit (nixosTests) caddy;
-      plugins = testers.runNixOSTest ./plugins.test.nix;
       acme-integration = nixosTests.acme.caddy;
+      plugins = testers.runNixOSTest ./plugins.test.nix;
     };
+
+    withPlugins = callPackage ./plugins.nix { inherit caddy; };
   };
 
   meta = {
-    homepage = "https://caddyserver.com";
     description = "Fast and extensible multi-platform HTTP/1-2-3 web server with automatic HTTPS";
+    homepage = "https://caddyserver.com";
     changelog = "https://github.com/caddyserver/caddy/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "caddy";
+
     maintainers = with lib.maintainers; [
       stepbrobd
       techknowlogick
       ryan4yin
     ];
+
+    mainProgram = "caddy";
   };
 })

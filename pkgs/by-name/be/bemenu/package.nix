@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cairo,
-  libxkbcommon,
-  pango,
   fribidi,
   harfbuzz,
+  libpthread-stubs,
+  libx11,
+  libxcb,
+  libxdmcp,
+  libxft,
+  libxinerama,
+  libxkbcommon,
+  makeWrapper,
+  ncurses,
+  pango,
   pkg-config,
   scdoc,
-  makeWrapper,
-  ncursesSupport ? true,
-  ncurses,
-  waylandSupport ? stdenv.hostPlatform.isLinux,
   wayland,
   wayland-protocols,
   wayland-scanner,
+  ncursesSupport ? true,
+  waylandSupport ? stdenv.hostPlatform.isLinux,
   x11Support ? stdenv.hostPlatform.isLinux,
-  libxinerama,
-  libxft,
-  libxdmcp,
-  libx11,
-  libpthread-stubs,
-  libxcb,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     scdoc
@@ -87,11 +88,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/Cloudef/bemenu";
     description = "Dynamic menu library and client program inspired by dmenu";
+    homepage = "https://github.com/Cloudef/bemenu";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ crertel ];
-    mainProgram = "bemenu";
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "bemenu";
   };
 })

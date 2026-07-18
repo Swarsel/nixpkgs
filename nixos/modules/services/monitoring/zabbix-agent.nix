@@ -51,24 +51,47 @@ in
 
     services.zabbixAgent = {
       enable = mkEnableOption "the Zabbix Agent";
-
       package = mkPackageOption pkgs [ "zabbix" "agent" ] { };
 
       extraPackages = mkOption {
-        type = types.listOf types.package;
         default = with pkgs; [ net-tools ];
         defaultText = literalExpression "with pkgs; [ net-tools ]";
-        example = literalExpression "with pkgs; [ net-tools mysql ]";
+
         description = ''
           Packages to be added to the Zabbix {env}`PATH`.
           Typically used to add executables for scripts, but can be anything.
         '';
+
+        example = literalExpression "with pkgs; [ net-tools mysql ]";
+        type = types.listOf types.package;
+      };
+
+      listen = {
+        ip = mkOption {
+          default = "0.0.0.0";
+
+          description = ''
+            List of comma delimited IP addresses that the agent should listen on.
+          '';
+
+          type = types.str;
+        };
+
+        port = mkOption {
+          default = 10050;
+
+          description = ''
+            Agent will listen on this port for connections from the server.
+          '';
+
+          type = types.port;
+        };
       };
 
       modules = mkOption {
-        type = types.attrsOf types.package;
-        description = "A set of modules to load.";
         default = { };
+        description = "A set of modules to load.";
+
         example = literalExpression ''
           {
             "dummy.so" = pkgs.stdenv.mkDerivation {
@@ -83,42 +106,42 @@ in
             };
           }
         '';
-      };
 
-      server = mkOption {
-        type = types.str;
-        description = ''
-          The IP address or hostname of the Zabbix server to connect to.
-        '';
-      };
-
-      listen = {
-        ip = mkOption {
-          type = types.str;
-          default = "0.0.0.0";
-          description = ''
-            List of comma delimited IP addresses that the agent should listen on.
-          '';
-        };
-
-        port = mkOption {
-          type = types.port;
-          default = 10050;
-          description = ''
-            Agent will listen on this port for connections from the server.
-          '';
-        };
+        type = types.attrsOf types.package;
       };
 
       openFirewall = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Open ports in the firewall for the Zabbix Agent.
         '';
+
+        type = types.bool;
+      };
+
+      server = mkOption {
+        description = ''
+          The IP address or hostname of the Zabbix server to connect to.
+        '';
+
+        type = types.str;
       };
 
       settings = mkOption {
+        default = { };
+
+        description = ''
+          Zabbix Agent configuration. Refer to
+          <https://www.zabbix.com/documentation/current/manual/appendix/config/zabbix_agentd>
+          for details on supported values.
+        '';
+
+        example = {
+          DebugLevel = 4;
+          Hostname = "example.org";
+        };
+
         type =
           with types;
           attrsOf (oneOf [
@@ -126,16 +149,6 @@ in
             str
             (listOf str)
           ]);
-        default = { };
-        description = ''
-          Zabbix Agent configuration. Refer to
-          <https://www.zabbix.com/documentation/current/manual/appendix/config/zabbix_agentd>
-          for details on supported values.
-        '';
-        example = {
-          Hostname = "example.org";
-          DebugLevel = 4;
-        };
       };
 
     };
@@ -146,11 +159,15 @@ in
 
   config = mkIf cfg.enable {
 
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.listen.port ];
+    };
+
     services.zabbixAgent.settings = mkMerge [
       {
+        ListenPort = cfg.listen.port;
         LogType = "console";
         Server = cfg.server;
-        ListenPort = cfg.listen.port;
       }
       (mkIf (cfg.modules != { }) {
         LoadModule = builtins.attrNames cfg.modules;
@@ -162,22 +179,8 @@ in
       (mkIf (cfg.listen.ip != "0.0.0.0") { ListenIP = cfg.listen.ip; })
     ];
 
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.listen.port ];
-    };
-
-    users.users.${user} = {
-      description = "Zabbix Agent daemon user";
-      inherit group;
-      isSystemUser = true;
-    };
-
-    users.groups.${group} = { };
-
     systemd.services.zabbix-agent = {
       description = "Zabbix Agent";
-
-      wantedBy = [ "multi-user.target" ];
 
       # https://www.zabbix.com/documentation/current/manual/config/items/userparameters
       # > User parameters are commands executed by Zabbix agent.
@@ -192,13 +195,22 @@ in
 
       serviceConfig = {
         ExecStart = "@${cfg.package}/sbin/zabbix_agentd zabbix_agentd -f --config ${configFile}";
-        Restart = "always";
-        RestartSec = 2;
-
-        User = user;
         Group = group;
         PrivateTmp = true;
+        Restart = "always";
+        RestartSec = 2;
+        User = user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.${group} = { };
+
+    users.users.${user} = {
+      inherit group;
+      description = "Zabbix Agent daemon user";
+      isSystemUser = true;
     };
 
   };

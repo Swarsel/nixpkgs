@@ -16,6 +16,8 @@ perlPackages.buildPerlPackage rec {
     hash = "sha256-67ttAXzu9pfeqjfhMfLMb9vWCXTrE+iUDCbamqswaLg=";
   };
 
+  outputs = [ "out" ];
+
   buildInputs = with perlPackages; [
     AlgorithmDiff
     AuthenSASL
@@ -28,9 +30,8 @@ perlPackages.buildPerlPackage rec {
     YAMLSyck
   ];
 
-  prePatch = ''
-    touch Makefile.PL
-  '';
+  # no make target 'test', not tests provided by source
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -38,20 +39,21 @@ perlPackages.buildPerlPackage rec {
     runHook postInstall
   '';
 
-  # no make target 'test', not tests provided by source
-  doCheck = false;
-
-  outputs = [ "out" ];
+  prePatch = ''
+    touch Makefile.PL
+  '';
 
   meta = {
-    homepage = "https://github.com/mahlonsmith/shelldap/";
     description = "Handy shell-like interface for browsing LDAP servers and editing their content";
+    homepage = "https://github.com/mahlonsmith/shelldap/";
     changelog = "https://github.com/mahlonsmith/shelldap/blob/v${version}/CHANGELOG";
     license = with lib.licenses; [ bsd3 ];
+
     maintainers = with lib.maintainers; [
       clerie
       tobiasBora
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "shelldap";
   };

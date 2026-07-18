@@ -25,21 +25,112 @@ let
     {
       options = {
 
-        listen = mkOption {
+        allowAll = mkOption {
+          default = false;
+
           description = ''
-            Address and port to listen on (can be HOST:PORT, unix:PATH).
+            If true, allow all clients, do not check client cert subject.
           '';
-          type = types.str;
+
+          type = types.bool;
         };
 
-        target = mkOption {
+        allowCN = mkOption {
+          default = [ ];
+
           description = ''
-            Address to forward connections to (can be HOST:PORT or unix:PATH).
+            Allow client if common name appears in the list.
           '';
-          type = types.str;
+
+          type = types.listOf types.str;
+        };
+
+        allowDNS = mkOption {
+          default = [ ];
+
+          description = ''
+            Allow client if DNS subject alternative name appears in the list.
+          '';
+
+          type = types.listOf types.str;
+        };
+
+        allowOU = mkOption {
+          default = [ ];
+
+          description = ''
+            Allow client if organizational unit name appears in the list.
+          '';
+
+          type = types.listOf types.str;
+        };
+
+        allowURI = mkOption {
+          default = [ ];
+
+          description = ''
+            Allow client if URI subject alternative name appears in the list.
+          '';
+
+          type = types.listOf types.str;
+        };
+
+        # Definitions to apply at the root of the NixOS configuration.
+        atRoot = mkOption {
+          internal = true;
+        };
+
+        cacert = mkOption {
+          description = ''
+            Path to CA bundle file (PEM/X509). Uses system trust store if `null`.
+          '';
+
+          type = types.nullOr types.str;
+        };
+
+        cert = mkOption {
+          default = null;
+
+          description = ''
+            Path to certificate (PEM with certificate chain).
+
+            Not required if `keystore` is set.
+          '';
+
+          type = types.nullOr types.str;
+        };
+
+        disableAuthentication = mkOption {
+          default = false;
+
+          description = ''
+            Disable client authentication, no client certificate will be required.
+          '';
+
+          type = types.bool;
+        };
+
+        extraArguments = mkOption {
+          default = "";
+          description = "Extra arguments to pass to `ghostunnel server`";
+          type = types.separatedString " ";
+        };
+
+        key = mkOption {
+          default = null;
+
+          description = ''
+            Path to certificate private key (PEM with private key).
+
+            Not required if `keystore` is set.
+          '';
+
+          type = types.nullOr types.str;
         };
 
         keystore = mkOption {
+          default = null;
+
           description = ''
             Path to keystore (combined PEM with cert/key, or PKCS12 keystore).
 
@@ -47,116 +138,51 @@ let
 
             Specify this or `cert` and `key`.
           '';
-          type = types.nullOr types.str;
-          default = null;
-        };
 
-        cert = mkOption {
-          description = ''
-            Path to certificate (PEM with certificate chain).
-
-            Not required if `keystore` is set.
-          '';
-          type = types.nullOr types.str;
-          default = null;
-        };
-
-        key = mkOption {
-          description = ''
-            Path to certificate private key (PEM with private key).
-
-            Not required if `keystore` is set.
-          '';
-          type = types.nullOr types.str;
-          default = null;
-        };
-
-        cacert = mkOption {
-          description = ''
-            Path to CA bundle file (PEM/X509). Uses system trust store if `null`.
-          '';
           type = types.nullOr types.str;
         };
 
-        disableAuthentication = mkOption {
+        listen = mkOption {
           description = ''
-            Disable client authentication, no client certificate will be required.
+            Address and port to listen on (can be HOST:PORT, unix:PATH).
           '';
-          type = types.bool;
-          default = false;
+
+          type = types.str;
         };
 
-        allowAll = mkOption {
+        target = mkOption {
           description = ''
-            If true, allow all clients, do not check client cert subject.
+            Address to forward connections to (can be HOST:PORT or unix:PATH).
           '';
-          type = types.bool;
-          default = false;
-        };
 
-        allowCN = mkOption {
-          description = ''
-            Allow client if common name appears in the list.
-          '';
-          type = types.listOf types.str;
-          default = [ ];
-        };
-
-        allowOU = mkOption {
-          description = ''
-            Allow client if organizational unit name appears in the list.
-          '';
-          type = types.listOf types.str;
-          default = [ ];
-        };
-
-        allowDNS = mkOption {
-          description = ''
-            Allow client if DNS subject alternative name appears in the list.
-          '';
-          type = types.listOf types.str;
-          default = [ ];
-        };
-
-        allowURI = mkOption {
-          description = ''
-            Allow client if URI subject alternative name appears in the list.
-          '';
-          type = types.listOf types.str;
-          default = [ ];
-        };
-
-        extraArguments = mkOption {
-          description = "Extra arguments to pass to `ghostunnel server`";
-          type = types.separatedString " ";
-          default = "";
+          type = types.str;
         };
 
         unsafeTarget = mkOption {
+          default = false;
+
           description = ''
             If set, does not limit target to localhost, 127.0.0.1, [::1], or UNIX sockets.
 
             This is meant to protect against accidental unencrypted traffic on
             untrusted networks.
           '';
-          type = types.bool;
-          default = false;
-        };
 
-        # Definitions to apply at the root of the NixOS configuration.
-        atRoot = mkOption {
-          internal = true;
+          type = types.bool;
         };
       };
-
-      # Clients should not be authenticated with the public root certificates
-      # (afaict, it doesn't make sense), so we only provide that default when
-      # client cert auth is disabled.
-      config.cacert = mkIf config.disableAuthentication (mkDefault null);
 
       config.atRoot = {
         assertions = [
           {
+            assertion =
+              config.disableAuthentication
+              || config.allowAll
+              || config.allowCN != [ ]
+              || config.allowOU != [ ]
+              || config.allowDNS != [ ]
+              || config.allowURI != [ ];
+
             message = ''
               services.ghostunnel.servers.${name}: At least one access control flag is required.
               Set at least one of:
@@ -167,30 +193,12 @@ let
                 - services.ghostunnel.servers.${name}.allowDNS
                 - services.ghostunnel.servers.${name}.allowURI
             '';
-            assertion =
-              config.disableAuthentication
-              || config.allowAll
-              || config.allowCN != [ ]
-              || config.allowOU != [ ]
-              || config.allowDNS != [ ]
-              || config.allowURI != [ ];
           }
         ];
 
         systemd.services."ghostunnel-server-${name}" = {
           after = [ "network.target" ];
-          wants = [ "network.target" ];
-          wantedBy = [ "multi-user.target" ];
-          serviceConfig = {
-            Restart = "always";
-            AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
-            DynamicUser = true;
-            LoadCredential =
-              optional (config.keystore != null) "keystore:${config.keystore}"
-              ++ optional (config.cert != null) "cert:${config.cert}"
-              ++ optional (config.key != null) "key:${config.key}"
-              ++ optional (config.cacert != null) "cacert:${config.cacert}";
-          };
+
           script = concatStringsSep " " (
             [
               "${mainCfg.package}/bin/ghostunnel"
@@ -216,8 +224,29 @@ let
             ++ optional config.unsafeTarget "--unsafe-target"
             ++ [ config.extraArguments ]
           );
+
+          serviceConfig = {
+            AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+            DynamicUser = true;
+
+            LoadCredential =
+              optional (config.keystore != null) "keystore:${config.keystore}"
+              ++ optional (config.cert != null) "cert:${config.cert}"
+              ++ optional (config.key != null) "key:${config.key}"
+              ++ optional (config.cacert != null) "cacert:${config.cacert}";
+
+            Restart = "always";
+          };
+
+          wantedBy = [ "multi-user.target" ];
+          wants = [ "network.target" ];
         };
       };
+
+      # Clients should not be authenticated with the public root certificates
+      # (afaict, it doesn't make sense), so we only provide that default when
+      # client cert auth is disabled.
+      config.cacert = mkIf config.disableAuthentication (mkDefault null);
     };
 
 in
@@ -225,15 +254,16 @@ in
 
   options = {
     services.ghostunnel.enable = mkEnableOption "ghostunnel";
-
     services.ghostunnel.package = mkPackageOption pkgs "ghostunnel" { };
 
     services.ghostunnel.servers = mkOption {
+      default = { };
+
       description = ''
         Server mode ghostunnels (TLS listener -> plain TCP/UNIX target)
       '';
+
       type = types.attrsOf (types.submodule module);
-      default = { };
     };
   };
 

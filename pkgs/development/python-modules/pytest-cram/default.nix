@@ -1,21 +1,17 @@
 {
   lib,
+  bash,
   buildPythonPackage,
+  cram,
   fetchPypi,
+  pytest_7,
   pythonAtLeast,
   setuptools,
-  pytest_7,
-  cram,
-  bash,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-cram";
   version = "0.2.2";
-  pyproject = true;
-
-  # relies on the imp module
-  disabled = pythonAtLeast "3.12";
 
   src = fetchPypi {
     inherit pname version;
@@ -28,10 +24,6 @@ buildPythonPackage rec {
       --replace "/bin/bash" "${bash}/bin/bash"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ cram ];
-
   # https://github.com/tbekolay/pytest-cram/issues/15
   nativeCheckInputs = [ pytest_7 ];
 
@@ -41,6 +33,12 @@ buildPythonPackage rec {
     rm pytest_cram/tests/__init__.py
     pytest pytest_cram/ --ignore=pytest_cram/tests/test_examples.py
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ cram ];
+  # relies on the imp module
+  disabled = pythonAtLeast "3.12";
+  pyproject = true;
 
   meta = {
     description = "Test command-line applications with pytest and cram";

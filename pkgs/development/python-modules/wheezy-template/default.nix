@@ -7,20 +7,20 @@
 buildPythonPackage rec {
   pname = "wheezy.template";
   version = "3.2.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-hknPXHGPPNjRAr0TYVosPaTntsjwQjOKZBCU+qFlIHw=";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "wheezy.template" ];
 
   meta = {
-    homepage = "https://wheezytemplate.readthedocs.io/en/latest/";
     description = "Lightweight template library";
-    mainProgram = "wheezy.template";
+    homepage = "https://wheezytemplate.readthedocs.io/en/latest/";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "wheezy.template";
   };
 }

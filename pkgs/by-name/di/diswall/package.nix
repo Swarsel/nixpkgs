@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,17 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5kKVEdzN38gyovGAg3/FE5sbSwCBEiQH1GPsDeQ+rCg=";
   };
 
-  cargoHash = "sha256-WXaNLlTbZc2On19azFUbcsx0fA2LpsNNWxO6BzJ469M=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-WXaNLlTbZc2On19azFUbcsx0fA2LpsNNWxO6BzJ469M=";
   env.OPENSSL_NO_VENDOR = 1;
-
   doCheck = false;
 
   meta = {
     description = "Distributed firewall";
+
     longDescription = ''
       Diswall (distributed firewall) - a client of distributed firewall
       working on many servers and using NATS for the transport level.
@@ -37,6 +35,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       protection of whole infrastructure (as anti-shodan) preventing
       intruder to get any system information.
     '';
+
     homepage = "https://www.diswall.stream";
     license = with lib.licenses; [ gpl3 ];
     maintainers = with lib.maintainers; [ izorkin ];

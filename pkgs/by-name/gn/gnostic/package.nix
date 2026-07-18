@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,13 +16,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Wyv5czvD3IwE236vlAdq8I/DnhPXxdbwZtUhun+97x4=";
-
   # some tests are broken and others require network access
   doCheck = false;
 
   meta = {
-    homepage = "https://github.com/google/gnostic";
     description = "Compiler for APIs described by the OpenAPI Specification with plugins for code generation and other API support tasks";
+    homepage = "https://github.com/google/gnostic";
     changelog = "https://github.com/google/gnostic/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];

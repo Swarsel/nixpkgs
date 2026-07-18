@@ -19,21 +19,18 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  enableParallelBuilding = true;
-
   buildInputs = [ libxcrypt ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
   buildFlags = [ "ubase-box" ];
+  enableParallelBuilding = true;
   installTargets = [ "ubase-box-install" ];
 
   passthru = {
-    updateScript = unstableGitUpdater { };
-
     tests = {
       ddCopiesBytes = testers.runCommand {
-        name = "ubase-dd-copies-bytes";
         buildInputs = [ finalAttrs.finalPackage ];
+        name = "ubase-dd-copies-bytes";
+
         script = ''
           dd if=/dev/zero of=test.bin bs=1 count=4
           set -- $(stat -t test.bin)
@@ -43,8 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
       };
 
       idMatchesUid = testers.runCommand {
-        name = "ubase-id-matches-uid";
         buildInputs = [ finalAttrs.finalPackage ];
+        name = "ubase-id-matches-uid";
+
         script = ''
           [ "$(id -u)" = "$UID" ]
           touch $out
@@ -52,8 +50,9 @@ stdenv.mkDerivation (finalAttrs: {
       };
 
       pagesizePositive = testers.runCommand {
-        name = "ubase-pagesize-positive";
         buildInputs = [ finalAttrs.finalPackage ];
+        name = "ubase-pagesize-positive";
+
         script = ''
           [ "$(pagesize)" -gt 0 ]
           touch $out
@@ -61,25 +60,29 @@ stdenv.mkDerivation (finalAttrs: {
       };
 
       whichIdIsBox = testers.runCommand {
-        name = "ubase-which-id-is-box";
         buildInputs = [
           which
           finalAttrs.finalPackage
         ];
+
+        name = "ubase-which-id-is-box";
+
         script = ''
           [ $(which id) -ef $(which ubase-box) ]
           touch $out
         '';
       };
     };
+
+    updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "Linux base utilities from suckless.org";
     homepage = "https://core.suckless.org/ubase/";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ Zaczero ];
     platforms = lib.platforms.linux;
     mainProgram = "ubase-box";
-    maintainers = with lib.maintainers; [ Zaczero ];
   };
 })

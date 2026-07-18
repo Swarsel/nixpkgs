@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "posting";
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "darrenburns";
@@ -16,15 +15,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-4L/MfXd6JYk2Viam9/gegpCkwrNWbK7A05Jnu/SedYs=";
   };
 
-  pythonRelaxDeps = true;
-
-  build-system = with python3Packages; [
-    hatchling
-  ];
-
   # Required for x resources themes
   buildInputs = [
     xrdb
+  ];
+
+  build-system = with python3Packages; [
+    hatchling
   ];
 
   dependencies =
@@ -49,16 +46,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ httpx.optional-dependencies.brotli
     ++ textual.optional-dependencies.syntax;
 
+  pyproject = true;
+  pythonRelaxDeps = true;
+
   meta = {
     description = "Modern API client that lives in your terminal";
-    mainProgram = "posting";
     homepage = "https://posting.sh/";
     changelog = "https://github.com/darrenburns/posting/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jorikvanveen
       fullmetalsheep
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "posting";
   };
 })

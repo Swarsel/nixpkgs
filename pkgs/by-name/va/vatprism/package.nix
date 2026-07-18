@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  jdk,
-  maven,
-  makeWrapper,
   fetchFromGitHub,
-  libGL,
-  libxkbcommon,
-  wayland,
+  copyDesktopItems,
   fontconfig,
+  jdk,
+  libGL,
   libx11,
   libxcursor,
   libxi,
+  libxkbcommon,
   libxrandr,
-  libxxf86vm,
   libxtst,
-  copyDesktopItems,
+  libxxf86vm,
   makeDesktopItem,
+  makeWrapper,
+  maven,
+  wayland,
 }:
 let
   libPath = lib.makeLibraryPath [
@@ -36,12 +36,16 @@ in
 maven.buildMavenPackage rec {
   pname = "vatprism";
   version = "0.3.6";
+
   src = fetchFromGitHub {
     owner = "marvk";
     repo = "vatprism";
     tag = "v${version}";
     hash = "sha256-A9HvO+tUrb/h9YZAKfTlgr+qxX7ucN/VJt4lRL94Ygg=";
   };
+
+  # https://github.com/marvk/vatprism/pull/141
+  patches = [ ./0001-Fix-build-on-JDK-21.patch ];
 
   postPatch =
     # mvvmFX 1.9.0-SNAPSHOT is no longer available in the repository
@@ -56,24 +60,6 @@ maven.buildMavenPackage rec {
     makeWrapper
     copyDesktopItems
   ];
-  # https://github.com/marvk/vatprism/pull/141
-  patches = [ ./0001-Fix-build-on-JDK-21.patch ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "vatprism";
-      desktopName = "VATprism";
-      exec = "vatprism";
-      terminal = false;
-      icon = "vatprism";
-    })
-  ];
-
-  mvnHash = # OpenJFX artifacts are platform dependent
-    if (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) then
-      "sha256-GeSO6aFXeWLVOF9DVvFZ4FNv//NYhF68Nd6rxgeBO70="
-    else
-      "sha256-j7SaDQKGMcXGdOKzv8zBFHpsqqFZzZzITW7I/ZXs+dI=";
 
   installPhase = ''
     runHook preInstall
@@ -101,19 +87,37 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      desktopName = "VATprism";
+      exec = "vatprism";
+      icon = "vatprism";
+      name = "vatprism";
+      terminal = false;
+    })
+  ];
+
+  mvnHash = # OpenJFX artifacts are platform dependent
+    if (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) then
+      "sha256-GeSO6aFXeWLVOF9DVvFZ4FNv//NYhF68Nd6rxgeBO70="
+    else
+      "sha256-j7SaDQKGMcXGdOKzv8zBFHpsqqFZzZzITW7I/ZXs+dI=";
+
   meta = {
-    changelog = "https://github.com/marvk/vatprism/raw/${src.rev}/CHANGELOG.md";
     description = "VATSIM map and data explorer";
+
     longDescription = ''
       VATprism is a VATSIM Map and VATSIM Data Explorer, VATSIM being the
       Virtual Air Traffic Simulation Network. VATprism allows users to explore
       available ATC services, connected pilots, Airports, Flight and Upper
       Information Regions and more!
     '';
+
     homepage = "https://vatprism.org/";
-    mainProgram = "vatprism";
+    changelog = "https://github.com/marvk/vatprism/raw/${src.rev}/CHANGELOG.md";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ thepuzzlemaker ];
+    platforms = lib.platforms.linux;
+    mainProgram = "vatprism";
   };
 }

@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
+  desktop-file-utils,
+  gettext,
+  glib,
   gnome,
   gtk4,
-  wrapGAppsHook4,
+  itstool,
   libadwaita,
   librsvg,
-  gettext,
-  itstool,
   libxml2,
   meson,
   ninja,
-  glib,
+  pkg-config,
   vala,
-  desktop-file-utils,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,12 +54,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Disassemble a pile of tiles by removing matching pairs";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-mahjongg";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-mahjongg/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Disassemble a pile of tiles by removing matching pairs";
-    mainProgram = "gnome-mahjongg";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-mahjongg";
+    teams = [ lib.teams.gnome ];
   };
 })

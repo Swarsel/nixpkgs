@@ -1,25 +1,18 @@
 {
   lib,
+  gtest,
   mkMesonLibrary,
-
-  nix-util-test-support,
   nix-store,
   nix-store-c,
-
+  nix-util-test-support,
   rapidcheck,
-
-  gtest,
-
   # Configuration Options
-
   version,
 }:
 
 mkMesonLibrary (finalAttrs: {
-  pname = "nix-store-test-support";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-store-test-support";
 
   propagatedBuildInputs = [
     nix-util-test-support
@@ -31,6 +24,8 @@ mkMesonLibrary (finalAttrs: {
 
   mesonFlags = [
   ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix ++ lib.platforms.windows;

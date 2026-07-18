@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
   c-ares,
   cmake,
   crc32c,
@@ -14,8 +13,9 @@
   nlohmann_json,
   openssl,
   pkg-config,
-  protobuf,
   pkgsBuildHost,
+  protobuf,
+  replaceVars,
   # default list of APIs: https://github.com/googleapis/google-cloud-cpp/blob/v2.44.0/cmake/GoogleCloudCppFeatures.cmake#L24
   apis ? [ "*" ],
   staticOnly ? stdenv.hostPlatform.isStatic,
@@ -24,11 +24,11 @@ let
   # defined in cmake/GoogleapisConfig.cmake
   googleapisRev = "8cd3749f4b98f2eeeef511c16431979aeb3a6502";
   googleapis = fetchFromGitHub {
+    hash = "sha256-w7jq21qLEiMhuI20C6iUeSskAfZCkZgDCPu5Flr8D48=";
     name = "googleapis-src";
     owner = "googleapis";
     repo = "googleapis";
     rev = googleapisRev;
-    hash = "sha256-w7jq21qLEiMhuI20C6iUeSskAfZCkZgDCPu5Flr8D48=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -84,7 +84,54 @@ stdenv.mkDerivation (finalAttrs: {
     gtest
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED_LIBS" (!staticOnly))
+    # unconditionally build tests to catch linker errors as early as possible
+    # this adds a good chunk of time to the build
+    (lib.cmakeBool "BUILD_TESTING" true)
+    (lib.cmakeBool "GOOGLE_CLOUD_CPP_ENABLE_EXAMPLES" false)
+
+    # Explicitly set this variable to true as otherwise `universe_domain` will be filtered out
+    # See https://github.com/googleapis/google-cloud-cpp/pull/15820 for context
+    (lib.cmakeBool "GOOGLE_CLOUD_CPP_ENABLE_UNIVERSE_DOMAIN" true)
+  ]
+  ++ lib.optionals (apis != [ "*" ]) [
+    (lib.cmakeFeature "GOOGLE_CLOUD_CPP_ENABLE" (lib.concatStringsSep ";" apis))
+  ]
+  ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    (lib.cmakeFeature "GOOGLE_CLOUD_CPP_GRPC_PLUGIN_EXECUTABLE" "${lib.getBin pkgsBuildHost.grpc}/bin/grpc_cpp_plugin")
+  ];
+
   doInstallCheck = true;
+
+  nativeInstallCheckInputs = lib.optionals finalAttrs.doInstallCheck [
+    gbenchmark
+    gtest
+  ];
+
+  installCheckPhase =
+    let
+      disabledTests = ''
+        bigtable_internal_data_connection_impl_test
+      ''
+      + lib.optionalString stdenv.hostPlatform.isDarwin ''
+        common_internal_async_connection_ready_test
+        bigtable_async_read_stream_test
+        bigtable_metadata_update_policy_test
+        bigtable_bigtable_benchmark_test
+        bigtable_embedded_server_test
+      '';
+    in
+    ''
+      runHook preInstallCheck
+
+      # Disable any integration tests, which need to contact the internet.
+      ctest \
+        --label-exclude integration-test \
+        --exclude-from-file <(echo '${disabledTests}')
+
+      runHook postInstallCheck
+    '';
 
   preInstallCheck =
     let
@@ -111,61 +158,14 @@ stdenv.mkDerivation (finalAttrs: {
       ''
     );
 
-  installCheckPhase =
-    let
-      disabledTests = ''
-        bigtable_internal_data_connection_impl_test
-      ''
-      + lib.optionalString stdenv.hostPlatform.isDarwin ''
-        common_internal_async_connection_ready_test
-        bigtable_async_read_stream_test
-        bigtable_metadata_update_policy_test
-        bigtable_bigtable_benchmark_test
-        bigtable_embedded_server_test
-      '';
-    in
-    ''
-      runHook preInstallCheck
-
-      # Disable any integration tests, which need to contact the internet.
-      ctest \
-        --label-exclude integration-test \
-        --exclude-from-file <(echo '${disabledTests}')
-
-      runHook postInstallCheck
-    '';
-
-  nativeInstallCheckInputs = lib.optionals finalAttrs.doInstallCheck [
-    gbenchmark
-    gtest
-  ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED_LIBS" (!staticOnly))
-    # unconditionally build tests to catch linker errors as early as possible
-    # this adds a good chunk of time to the build
-    (lib.cmakeBool "BUILD_TESTING" true)
-    (lib.cmakeBool "GOOGLE_CLOUD_CPP_ENABLE_EXAMPLES" false)
-
-    # Explicitly set this variable to true as otherwise `universe_domain` will be filtered out
-    # See https://github.com/googleapis/google-cloud-cpp/pull/15820 for context
-    (lib.cmakeBool "GOOGLE_CLOUD_CPP_ENABLE_UNIVERSE_DOMAIN" true)
-  ]
-  ++ lib.optionals (apis != [ "*" ]) [
-    (lib.cmakeFeature "GOOGLE_CLOUD_CPP_ENABLE" (lib.concatStringsSep ";" apis))
-  ]
-  ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-    (lib.cmakeFeature "GOOGLE_CLOUD_CPP_GRPC_PLUGIN_EXECUTABLE" "${lib.getBin pkgsBuildHost.grpc}/bin/grpc_cpp_plugin")
-  ];
-
   requiredSystemFeatures = [ "big-parallel" ];
 
   meta = {
-    license = with lib.licenses; [ asl20 ];
-    homepage = "https://github.com/googleapis/google-cloud-cpp";
     description = "C++ Idiomatic Clients for Google Cloud Platform services";
+    homepage = "https://github.com/googleapis/google-cloud-cpp";
     changelog = "https://github.com/googleapis/google-cloud-cpp/blob/v${finalAttrs.version}/CHANGELOG.md";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ cpcloud ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

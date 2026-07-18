@@ -2,28 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  libkrun,
-  passt,
+  coreutils,
   dhcpcd,
+  fex,
+  libkrun,
+  makeBinaryWrapper,
+  nix-update-script,
+  passt,
+  pkg-config,
+  rustPlatform,
   socat,
   systemd,
   udev,
-  pkg-config,
-  fex,
   writeShellApplication,
-  coreutils,
-  makeBinaryWrapper,
-  nix-update-script,
 }:
 let
   # TODO: Setup setuid wrappers.
   # E.g. FEX needs fusermount for rootfs functionality
   initScript = writeShellApplication {
     name = "muvm-init";
+
     runtimeInputs = [
       coreutils
     ];
+
     text = ''
       if [[ -f /etc/NIXOS ]]; then
         ln -s /run/muvm-host/run/current-system /run/current-system
@@ -61,8 +63,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-9lrJ622kPCfVo/QrtRmLLQs5rjh3FJE8EelqPHdU/vc=";
   };
 
-  cargoHash = "sha256-Ij2Tdn7HhQ815mXCuamfej4KpDjHALTusrx06t8M87w=";
-
   postPatch = ''
     substituteInPlace crates/muvm/src/guest/bin/muvm-guest.rs \
       --replace-fail "/usr/lib/systemd/systemd-udevd" "${systemd}/lib/systemd/systemd-udevd"
@@ -88,6 +88,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     udev
   ];
 
+  cargoHash = "sha256-Ij2Tdn7HhQ815mXCuamfej4KpDjHALTusrx06t8M87w=";
+
   postFixup = ''
     wrapProgram $out/bin/muvm ${wrapArgs}
   '';
@@ -97,14 +99,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
+    inherit (libkrun.meta) platforms;
     description = "Run programs from your system in a microVM";
     homepage = "https://github.com/AsahiLinux/muvm";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       RossComputerGuy
       nrabulinski
     ];
-    inherit (libkrun.meta) platforms;
+
     mainProgram = "muvm";
   };
 })

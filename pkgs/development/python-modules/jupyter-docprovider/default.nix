@@ -2,21 +2,19 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  hatchling,
   hatch-jupyter-builder,
+  hatchling,
   jupyter-collaboration,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jupyter-docprovider";
   version = "2.4.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "jupyter_docprovider";
     inherit (finalAttrs) version;
     hash = "sha256-DOMsS+96PQZfZ36D9lBlAq1oaD2PpzIBJaMWzviSx0s=";
+    pname = "jupyter_docprovider";
   };
 
   postPatch = ''
@@ -24,16 +22,17 @@ buildPythonPackage (finalAttrs: {
       --replace-fail ', "jupyterlab>=4.0.0"' ""
   '';
 
+  # no tests
+  doCheck = false;
+  __structuredAttrs = true;
+
   build-system = [
     hatchling
     hatch-jupyter-builder
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "jupyter_docprovider" ];
-
-  # no tests
-  doCheck = false;
-
   passthru.tests = jupyter-collaboration;
 
   meta = {

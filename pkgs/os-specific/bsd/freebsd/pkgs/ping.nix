@@ -1,24 +1,23 @@
 {
-  mkDerivation,
   lib,
-  libcasper,
   libcapsicum,
+  libcasper,
   libipsec,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/ping";
+  postPatch = ''
+    sed -i 's/4555/0555/' $BSDSRCDIR/sbin/ping/Makefile
+  '';
+
   buildInputs = [
     libcasper
     libcapsicum
     libipsec
   ];
 
-  postPatch = ''
-    sed -i 's/4555/0555/' $BSDSRCDIR/sbin/ping/Makefile
-  '';
-
   MK_TESTS = "no";
   clangFixup = true;
-
+  path = "sbin/ping";
   meta.platforms = lib.platforms.freebsd;
 }

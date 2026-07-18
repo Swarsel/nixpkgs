@@ -1,13 +1,13 @@
 {
-  fetchgit,
   lib,
   stdenv,
-  pkg-config,
+  autoreconfHook,
+  fetchgit,
   libnsl,
   libtirpc,
-  autoreconfHook,
-  useSystemd ? true,
+  pkg-config,
   systemd,
+  useSystemd ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./sunrpc.patch
   ];
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
   buildInputs = [
     libnsl
     libtirpc
@@ -38,19 +43,16 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-rpcuser=rpc"
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
-
   meta = {
     description = "ONC RPC portmapper";
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
-    homepage = "https://linux-nfs.org/";
-    maintainers = with lib.maintainers; [ zwang20 ];
+
     longDescription = ''
       Universal addresses to RPC program number mapper.
     '';
+
+    homepage = "https://linux-nfs.org/";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ zwang20 ];
+    platforms = lib.platforms.unix;
   };
 })

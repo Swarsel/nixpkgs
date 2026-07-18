@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cloudsmith-cli";
   version = "1.9.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cloudsmith-io";
@@ -25,6 +24,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail 'urllib3<2.0' 'urllib3'
   '';
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    pytest-cov-stub
+    freezegun
+    httpretty
+  ];
+
+  preCheck = ''
+    # When test_implicit_retry_for_status_codes calls initialise_api(),
+    # and no user strings like LOGNAME or USER is set, getpass will call
+    # getpwuid() which will then fail when we enable auto-allocate-uids.
+    export USER=nixbld
+    # https://github.com/NixOS/nixpkgs/issues/255262
+    cd "$out"
+  '';
+
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -40,37 +55,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    pytest-cov-stub
-    freezegun
-    httpretty
+  disabledTests = [
+    "TestMainCommand"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "cloudsmith_cli"
   ];
 
-  preCheck = ''
-    # When test_implicit_retry_for_status_codes calls initialise_api(),
-    # and no user strings like LOGNAME or USER is set, getpass will call
-    # getpwuid() which will then fail when we enable auto-allocate-uids.
-    export USER=nixbld
-    # https://github.com/NixOS/nixpkgs/issues/255262
-    cd "$out"
-  '';
-
-  disabledTests = [
-    "TestMainCommand"
-  ];
-
   meta = {
-    homepage = "https://help.cloudsmith.io/docs/cli/";
     description = "Cloudsmith Command Line Interface";
-    mainProgram = "cloudsmith";
+    homepage = "https://help.cloudsmith.io/docs/cli/";
     changelog = "https://github.com/cloudsmith-io/cloudsmith-cli/blob/v${finalAttrs.version}/CHANGELOG.md";
-    maintainers = with lib.maintainers; [ usertam ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ usertam ];
     platforms = lib.platforms.unix;
+    mainProgram = "cloudsmith";
   };
 })

@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   makeWrapper,
   perl,
   perlPackages,
@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     perl
   ]
@@ -25,20 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     TimeParseDate
     TimePeriod
   ]);
-
-  executables = [
-    "dirvish"
-    "dirvish-runall"
-    "dirvish-expire"
-    "dirvish-locate"
-  ];
-  manpages = [
-    "dirvish.8"
-    "dirvish-runall.8"
-    "dirvish-expire.8"
-    "dirvish-locate.8"
-    "dirvish.conf.5"
-  ];
 
   buildPhase = ''
     HEADER="#!${perl}/bin/perl
@@ -79,11 +66,26 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  executables = [
+    "dirvish"
+    "dirvish-runall"
+    "dirvish-expire"
+    "dirvish-locate"
+  ];
+
+  manpages = [
+    "dirvish.8"
+    "dirvish-runall.8"
+    "dirvish-expire.8"
+    "dirvish-locate.8"
+    "dirvish.conf.5"
+  ];
+
   meta = {
     description = "Fast, disk based, rotating network backup system";
     homepage = "http://dirvish.org/";
     license = lib.licenses.osl2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.winpat ];
+    platforms = lib.platforms.linux;
   };
 })

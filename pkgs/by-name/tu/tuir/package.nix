@@ -8,7 +8,6 @@ with python3Packages;
 buildPythonApplication (finalAttrs: {
   pname = "tuir";
   version = "1.31.1";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "Chocimier";
@@ -16,17 +15,6 @@ buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-lUK6gXwvVjiYrJXMSFlzp07Yt+nSkU933J4vBJWOLlg=";
   };
-
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = [
-    beautifulsoup4
-    decorator
-    kitchen
-    mailcap-fix
-    requests
-    six
-  ];
 
   nativeCheckInputs = [
     coverage
@@ -39,6 +27,16 @@ buildPythonApplication (finalAttrs: {
   ];
 
   __darwinAllowLocalNetworking = true; # for oauth tests
+  build-system = with python3Packages; [ setuptools ];
+
+  dependencies = [
+    beautifulsoup4
+    decorator
+    kitchen
+    mailcap-fix
+    requests
+    six
+  ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # AssertionError: assert ['pbcopy', 'w'] == ['xclip', '-s..., 'clipboard']
@@ -47,16 +45,19 @@ buildPythonApplication (finalAttrs: {
     "test_terminal_open_browser_display"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tuir" ];
 
   meta = {
     description = "Browse Reddit from your Terminal (fork of rtv)";
-    mainProgram = "tuir";
     homepage = "https://gitlab.com/Chocimier/tuir";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       brokenpip3
     ];
+
+    mainProgram = "tuir";
   };
 })

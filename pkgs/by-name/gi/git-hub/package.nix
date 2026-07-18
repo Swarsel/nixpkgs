@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitMinimal,
   docutils,
+  gitMinimal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,13 +17,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-fb/WDmBx1Vayu4fLeG+D1nmHJJawgIAAXcQsABsenBo=";
   };
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     gitMinimal # Used during build to generate Bash completion.
     docutils
   ];
 
-  postPatch = ''
-    patchShebangs .
+  postInstall = ''
+    # Remove inert ftdetect vim plugin and a README that's a man page subset:
+    rm -r $out/share/{doc,vim}
   '';
 
   enableParallelBuilding = true;
@@ -33,19 +38,16 @@ stdenv.mkDerivation (finalAttrs: {
     "sysconfdir=$(out)/etc"
   ];
 
-  postInstall = ''
-    # Remove inert ftdetect vim plugin and a README that's a man page subset:
-    rm -r $out/share/{doc,vim}
-  '';
-
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Git command line interface to GitHub";
+
     longDescription = ''
       A simple command line interface to GitHub, enabling most useful GitHub
       tasks (like creating and listing pull request or issues) to be accessed
       directly through the Git command line.
     '';
+
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.all;
     mainProgram = "git-hub";

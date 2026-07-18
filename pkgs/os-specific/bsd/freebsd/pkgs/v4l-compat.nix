@@ -5,12 +5,12 @@
 }:
 let
   types_h = fetchurl {
-    url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/3da53417998c611f340d75e45962da2fa912add5/multimedia/libv4l/files/types.h";
     hash = "sha256-vbw82kxDC02vFhqdK3klh52pk/ecL+HwmmgQYYMEV9w=";
+    url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/3da53417998c611f340d75e45962da2fa912add5/multimedia/libv4l/files/types.h";
   };
   videodev_h = fetchurl {
-    url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/3da53417998c611f340d75e45962da2fa912add5/multimedia/libv4l/files/videodev.h";
     hash = "sha256-tcSZeBkaRo+K6i/tUYjhgQdEAuMhstvWsyVydIevAU4=";
+    url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/3da53417998c611f340d75e45962da2fa912add5/multimedia/libv4l/files/videodev.h";
   };
 in
 stdenv.mkDerivation rec {
@@ -21,6 +21,18 @@ stdenv.mkDerivation rec {
     url = "mirror://kernel/linux/kernel/v${lib.versions.major version}.x/linux-${version}.tar.xz";
     hash = "sha256-5/dRhqoGQhFK+PGdmVWZNzAMonrK90UbNtT5sPhc8fU=";
   };
+
+  buildPhase = ":";
+
+  installPhase = ''
+    for f in $allFiles; do
+      mkdir -p $(dirname $out/include/$f)
+      cp include/uapi/$f $out/include/$f
+    done
+    cp ${types_h} $out/include/linux/types.h
+    cp ${videodev_h} $out/include/linux/videodev.h
+  '';
+
   allFiles = [
     "linux/cec.h"
     "linux/cec-funcs.h"
@@ -44,21 +56,10 @@ stdenv.mkDerivation rec {
     "linux/videodev2.h"
   ];
 
-  buildPhase = ":";
-
-  installPhase = ''
-    for f in $allFiles; do
-      mkdir -p $(dirname $out/include/$f)
-      cp include/uapi/$f $out/include/$f
-    done
-    cp ${types_h} $out/include/linux/types.h
-    cp ${videodev_h} $out/include/linux/videodev.h
-  '';
-
   meta = {
     description = "Video4Linux header files for FreeBSD";
+    license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.rhelmot ];
     platforms = lib.platforms.freebsd;
-    license = lib.licenses.gpl2Only;
   };
 }

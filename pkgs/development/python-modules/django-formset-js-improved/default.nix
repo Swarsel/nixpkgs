@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  setuptools,
+  buildPythonPackage,
   django,
   django-jquery-js,
+  fetchpatch,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-formset-js-improved";
   version = "0.5.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretix";
@@ -22,20 +21,17 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/pretix/django-formset-js/commit/7d8a33190d58ff9d75270264342eba82672d054e.patch";
       hash = "sha256-eBRP0eqMnH7UM9cToR+diejO6dMDDVt2bbUHLDcaWjk=";
+      url = "https://github.com/pretix/django-formset-js/commit/7d8a33190d58ff9d75270264342eba82672d054e.patch";
     })
   ];
 
-  build-system = [ setuptools ];
-
   buildInputs = [ django ];
-
-  dependencies = [ django-jquery-js ];
-
-  pythonImportsCheck = [ "djangoformsetjs" ];
-
   doCheck = false; # no tests
+  build-system = [ setuptools ];
+  dependencies = [ django-jquery-js ];
+  pyproject = true;
+  pythonImportsCheck = [ "djangoformsetjs" ];
 
   meta = {
     description = "Wrapper for a JavaScript formset helper";

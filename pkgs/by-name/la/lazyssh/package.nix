@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -18,14 +18,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-OMlpqe7FJDqgppxt4t8lJ1KnXICOh6MXVXoKkYJ74Ks=";
 
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/lazyssh
+  '';
+
   ldflags = [
     "-X=main.version=${finalAttrs.version}"
     "-X=main.gitCommit=v${finalAttrs.version}"
   ];
-
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/lazyssh
-  '';
 
   passthru.updateScript = nix-update-script { };
 

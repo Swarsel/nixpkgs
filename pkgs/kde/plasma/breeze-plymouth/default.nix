@@ -1,17 +1,17 @@
 {
   lib,
-  mkKdeDerivation,
-  pkg-config,
-  plymouth,
   imagemagick,
+  mkKdeDerivation,
   netpbm,
   perl,
-  logoName ? null,
+  pkg-config,
+  plymouth,
+  bottomColor ? "black",
   logoFile ? null,
+  logoName ? null,
   osName ? null,
   osVersion ? null,
   topColor ? "black",
-  bottomColor ? "black",
 }:
 let
   validColors = [
@@ -34,27 +34,8 @@ assert lib.asserts.assertOneOf "topColor" topColor validColors;
 assert lib.asserts.assertOneOf "bottomColor" bottomColor validColors;
 mkKdeDerivation {
   pname = "breeze-plymouth";
-
   # FIXME(later): discuss with upstream
   patches = [ ./install-paths.patch ];
-
-  extraNativeBuildInputs = [
-    pkg-config
-  ]
-  ++ lib.optionals (logoFile != null) [
-    imagemagick
-    netpbm
-    perl
-  ];
-  extraBuildInputs = [ plymouth ];
-
-  extraCmakeFlags =
-    [ ]
-    ++ lib.optional (osName != null) "-DDISTRO_NAME=${osName}"
-    ++ lib.optional (osVersion != null) "-DDISTRO_VERSION=${osVersion}"
-    ++ lib.optional (logoName != null) "-DDISTRO_LOGO=${logoName}"
-    ++ lib.optional (topColor != null) "-DBACKGROUND_TOP_COLOR=${topColor}"
-    ++ lib.optional (bottomColor != null) "-DBACKGROUND_BOTTOM_COLOR=${bottomColor}";
 
   postPatch = ''
     substituteInPlace cmake/FindPlymouth.cmake --subst-var out
@@ -66,4 +47,23 @@ mkKdeDerivation {
     convert ${logoFile} -alpha Background -background "#000000" -fill "#000000" -flatten tmp.png
     pngtopnm tmp.png | pnmquant 16 | pnmtopng > breeze/images/16bit/${resolvedLogoName}.logo.png
   '';
+
+  extraBuildInputs = [ plymouth ];
+
+  extraCmakeFlags =
+    [ ]
+    ++ lib.optional (osName != null) "-DDISTRO_NAME=${osName}"
+    ++ lib.optional (osVersion != null) "-DDISTRO_VERSION=${osVersion}"
+    ++ lib.optional (logoName != null) "-DDISTRO_LOGO=${logoName}"
+    ++ lib.optional (topColor != null) "-DBACKGROUND_TOP_COLOR=${topColor}"
+    ++ lib.optional (bottomColor != null) "-DBACKGROUND_BOTTOM_COLOR=${bottomColor}";
+
+  extraNativeBuildInputs = [
+    pkg-config
+  ]
+  ++ lib.optionals (logoFile != null) [
+    imagemagick
+    netpbm
+    perl
+  ];
 }

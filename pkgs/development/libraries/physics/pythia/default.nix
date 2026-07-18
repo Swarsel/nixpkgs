@@ -19,10 +19,12 @@ stdenv.mkDerivation rec {
     url = "https://pythia.org/download/pythia83/pythia${
       builtins.replaceStrings [ "." ] [ "" ] version
     }.tgz";
+
     sha256 = "sha256-GuVR0U2sSV3f5rNEeSA16+QQ/mxgBNRKM14Ozg50Wt8=";
   };
 
   nativeBuildInputs = [ rsync ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
+
   buildInputs = [
     boost
     fastjet
@@ -50,10 +52,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Program for the generation of high-energy physics events";
-    mainProgram = "pythia8-config";
-    license = lib.licenses.gpl2Only;
     homepage = "https://pythia.org";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
+    mainProgram = "pythia8-config";
   };
 }

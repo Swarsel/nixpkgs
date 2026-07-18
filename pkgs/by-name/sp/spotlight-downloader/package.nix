@@ -1,10 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  msbuild,
-  mono,
+  fetchFromGitHub,
   makeWrapper,
+  mono,
+  msbuild,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,9 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Retrieve Windows Spotlight images from the Microsoft Spotlight API";
+    homepage = "https://github.com/ORelio/Spotlight-Downloader";
     license = lib.licenses.cddl;
     maintainers = with lib.maintainers; [ ulysseszhan ];
-    homepage = "https://github.com/ORelio/Spotlight-Downloader";
     platforms = lib.platforms.unix;
     mainProgram = "SpotlightDownloader";
   };

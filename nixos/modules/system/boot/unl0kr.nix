@@ -22,6 +22,8 @@ in
     };
 
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         Configuration for `unl0kr`.
 
@@ -40,27 +42,17 @@ in
           };
         }
       '';
-      default = { };
+
       type = lib.types.submodule { freeformType = settingsFormat.type; };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    meta.maintainers = with lib.maintainers; [ hustlerone ];
     assertions = [
       {
         assertion = cfg.enable -> config.boot.initrd.systemd.enable;
         message = "boot.initrd.unl0kr is only supported with boot.initrd.systemd.";
       }
-    ];
-
-    warnings = lib.mkMerge [
-      (lib.mkIf (config.hardware.amdgpu.initrd.enable) [
-        "Use early video loading at your risk. It's not guaranteed to work with unl0kr."
-      ])
-      (lib.mkIf (config.boot.plymouth.enable) [
-        "Upstream clearly intends unl0kr to not run with Plymouth. Good luck"
-      ])
     ];
 
     boot.initrd.availableKernelModules =
@@ -85,6 +77,13 @@ in
 
     boot.initrd.systemd = {
       contents."/etc/unl0kr.conf".source = settingsFormat.generate "unl0kr.conf" cfg.settings;
+
+      packages = [
+        pkgs.buffybox
+      ];
+
+      paths.unl0kr-agent.wantedBy = [ "local-fs-pre.target" ];
+
       storePaths = with pkgs; [
         libinput
         libinput.out
@@ -92,12 +91,17 @@ in
         (lib.getExe' cfg.package "unl0kr")
         "${cfg.package}/libexec/unl0kr-agent"
       ];
-
-      packages = [
-        pkgs.buffybox
-      ];
-
-      paths.unl0kr-agent.wantedBy = [ "local-fs-pre.target" ];
     };
+
+    warnings = lib.mkMerge [
+      (lib.mkIf (config.hardware.amdgpu.initrd.enable) [
+        "Use early video loading at your risk. It's not guaranteed to work with unl0kr."
+      ])
+      (lib.mkIf (config.boot.plymouth.enable) [
+        "Upstream clearly intends unl0kr to not run with Plymouth. Good luck"
+      ])
+    ];
+
+    meta.maintainers = with lib.maintainers; [ hustlerone ];
   };
 }

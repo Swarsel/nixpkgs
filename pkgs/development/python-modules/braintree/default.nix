@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   setuptools,
@@ -10,9 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "braintree";
   version = "4.45.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "braintree";
@@ -21,19 +18,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-cD0TKqf2c/wdFwDc78rEPm4ucZkYS1nk2Uo0oTfcJvE=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "braintree" ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   # Most integration tests require a running Braintree gateway.
   enabledTestPaths = [
     "tests/unit"
     "tests/integration/test_credentials_parser.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "braintree" ];
 
   meta = {
     description = "Python library for integration with Braintree";

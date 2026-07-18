@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   gtest,
-  static ? stdenv.hostPlatform.isStatic,
   cxxStandard ? null,
+  static ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,17 +25,21 @@ stdenv.mkDerivation (finalAttrs: {
     # Needed to cleanly apply the #1738 fix below.
     # https://github.com/abseil/abseil-cpp/issues/1737
     (fetchpatch {
-      url = "https://github.com/abseil/abseil-cpp/commit/9cb5e5d15c142e5cc43a2c1db87c8e4e5b6d38a5.patch";
       hash = "sha256-PTNmNJMk42Omwek0ackl4PjxifDP/+GaUitS60l+VB0=";
+      url = "https://github.com/abseil/abseil-cpp/commit/9cb5e5d15c142e5cc43a2c1db87c8e4e5b6d38a5.patch";
     })
 
     # Fix shell option group handling in pkgconfig files
     # https://github.com/abseil/abseil-cpp/pull/1738
     (fetchpatch {
-      url = "https://github.com/abseil/abseil-cpp/commit/bd0c9c58cac4463d96b574de3097422bb78215a8.patch";
       hash = "sha256-fB9pvkyNBXoDKLrVaNwliqrWEPTa2Y6OJMe2xgl5IBc=";
+      url = "https://github.com/abseil/abseil-cpp/commit/bd0c9c58cac4463d96b574de3097422bb78215a8.patch";
     })
   ];
+
+  strictDeps = true;
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ gtest ];
 
   cmakeFlags = [
     "-DABSL_BUILD_TEST_HELPERS=ON"
@@ -46,18 +50,12 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_CXX_STANDARD=${cxxStandard}"
   ];
 
-  strictDeps = true;
-
-  nativeBuildInputs = [ cmake ];
-
-  buildInputs = [ gtest ];
-
   meta = {
     description = "Open-source collection of C++ code designed to augment the C++ standard library";
     homepage = "https://abseil.io/";
     changelog = "https://github.com/abseil/abseil-cpp/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.GaetanLepage ];
+    platforms = lib.platforms.all;
   };
 })

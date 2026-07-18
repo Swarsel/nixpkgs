@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "open-meteo";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -50,12 +49,13 @@ buildPythonPackage rec {
     "test_timeout"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "open_meteo" ];
 
   meta = {
-    changelog = "https://github.com/frenck/python-open-meteo/releases/tag/v${version}";
     description = "Python client for the Open-Meteo API";
     homepage = "https://github.com/frenck/python-open-meteo";
+    changelog = "https://github.com/frenck/python-open-meteo/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
   };

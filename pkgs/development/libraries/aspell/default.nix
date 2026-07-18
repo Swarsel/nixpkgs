@@ -2,15 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  fetchzip,
-  perl,
-  ncurses,
-
   # for tests
   aspell,
+  fetchzip,
   glibc,
+  ncurses,
+  perl,
   runCommand,
-
   searchNixProfiles ? true,
 }:
 
@@ -20,8 +18,8 @@ let
   # dictionary like Debian does.
   devaMapsSource = fetchzip {
     name = "aspell-u-deva";
-    url = "https://ftp.gnu.org/gnu/aspell/dict/mr/aspell6-mr-0.10-0.tar.bz2";
     sha256 = "1v8cdl8x2j1d4vbvsq1xrqys69bbccd6mi03fywrhkrrljviyri1";
+    url = "https://ftp.gnu.org/gnu/aspell/dict/mr/aspell6-mr-0.10-0.tar.bz2";
   };
 
 in
@@ -42,12 +40,11 @@ stdenv.mkDerivation rec {
   '';
 
   nativeBuildInputs = [ perl ];
+
   buildInputs = [
     ncurses
     perl
   ];
-
-  doCheck = true;
 
   preConfigure = ''
     configureFlagsArray=(
@@ -55,6 +52,8 @@ stdenv.mkDerivation rec {
       --enable-pkgdatadir=$out/lib/aspell
     );
   '';
+
+  doCheck = true;
 
   # Include u-deva.cmap and u-deva.cset in the aspell package
   # to avoid conflict between 'mr' and 'hi' dictionaries as they

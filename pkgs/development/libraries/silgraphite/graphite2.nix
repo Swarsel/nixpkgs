@@ -1,24 +1,25 @@
 {
   lib,
   stdenv,
-  llvmPackages,
-  python3,
   fetchurl,
-  pkg-config,
-  freetype,
   cmake,
-  static ? stdenv.hostPlatform.isStatic,
+  freetype,
+  llvmPackages,
+  pkg-config,
+  python3,
   testers,
+  static ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.3.15";
   pname = "graphite2";
+  version = "1.3.15";
 
   src = fetchurl {
     url =
       with finalAttrs;
       "https://github.com/silnrsi/graphite/releases/download/${version}/${pname}-${version}.tgz";
+
     hash = "sha256-xryLQlJyRmUpf3ytDFWJcoXGc/m45ts1IqzoM1k/4LE=";
   };
 
@@ -27,21 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    (python3.withPackages (ps: [ ps.fonttools ]))
-    cmake
-  ];
-  buildInputs = [
-    freetype
-  ]
-  ++ lib.optional (stdenv.targetPlatform.useLLVM or false) (
-    llvmPackages.compiler-rt.override {
-      doFakeLibgcc = true;
-    }
-  );
-
   patches = lib.optionals stdenv.hostPlatform.isDarwin [ ./macosx.patch ];
+
   postPatch = ''
     # disable broken 'nametabletest' test, fails on gcc-13:
     #   https://github.com/silnrsi/graphite/pull/74
@@ -56,6 +44,21 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace CMakeLists.txt \
       --replace-fail ' ''${CMAKE_INSTALL_PREFIX}/include' " ${placeholder "dev"}/include"
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    (python3.withPackages (ps: [ ps.fonttools ]))
+    cmake
+  ];
+
+  buildInputs = [
+    freetype
+  ]
+  ++ lib.optional (stdenv.targetPlatform.useLLVM or false) (
+    llvmPackages.compiler-rt.override {
+      doFakeLibgcc = true;
+    }
+  );
 
   cmakeFlags = lib.optionals static [
     "-DBUILD_SHARED_LIBS=OFF"
@@ -80,8 +83,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://graphite.sil.org/";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.raskin ];
-    pkgConfigModules = [ "graphite2" ];
-    mainProgram = "gr2fonttest";
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "gr2fonttest";
+    pkgConfigModules = [ "graphite2" ];
   };
 })

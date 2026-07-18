@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   cabextract,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -15,14 +15,6 @@ stdenvNoCC.mkDerivation {
   };
 
   nativeBuildInputs = [ cabextract ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    cabextract --lowercase --filter '*.TTF' $src
-
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -39,15 +31,22 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    cabextract --lowercase --filter '*.TTF' $src
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "TrueType fonts from Microsoft Windows Vista For Traditional Chinese (Microsoft JhengHei)";
     homepage = "https://www.microsoft.com/typography/fonts/family.aspx";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ atkinschang ];
-
+    platforms = lib.platforms.all;
     # Set a non-zero priority to allow easy overriding of the
     # fontconfig configuration files.
     priority = 5;
-    platforms = lib.platforms.all;
   };
 }

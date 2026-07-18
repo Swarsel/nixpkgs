@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -33,6 +33,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Feature-rich pinyin schema for Rime";
+
     longDescription = ''
       万象拼音 is a quanpin and shuangpin input schema for Rime based on
       [万象 dictionaries and grammar models](https://github.com/amzxyz/RIME-LMDG),
@@ -59,11 +60,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         __include: wanxiang_suggested_default:/
       ```
     '';
+
     homepage = "https://github.com/amzxyz/rime_wanxiang";
-    downloadPage = "https://github.com/amzxyz/rime_wanxiang/releases";
     changelog = "https://github.com/amzxyz/rime_wanxiang/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.cc-by-40;
     maintainers = with lib.maintainers; [ rc-zb ];
     platforms = lib.platforms.all;
+    downloadPage = "https://github.com/amzxyz/rime_wanxiang/releases";
   };
 })

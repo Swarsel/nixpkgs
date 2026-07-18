@@ -14,12 +14,12 @@
 # [1]: https://github.com/NixOS/nixpkgs/pull/197478
 
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  llvmPackages_19,
   gitMinimal,
+  llvmPackages_19,
+  rustPlatform,
   writableTmpDirAsHomeHook,
 }:
 
@@ -52,6 +52,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoLock = {
     lockFile = ./Cargo.lock;
+
     outputHashes = {
       "test-helper-0.0.0" = "sha256-MjylM9agdGIGMp1Iip/jolHCzErST2XiEl5PIqt+ykg=";
     };
@@ -69,31 +70,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
+  checkFlags = [
+    "--skip=trybuild"
+    "--skip=ui_test"
+  ];
+
   # `cargo-llvm-cov` tests rely on `git ls-files.
   preCheck = ''
     git init -b main
     git add .
   '';
 
-  checkFlags = [
-    "--skip=trybuild"
-    "--skip=ui_test"
-  ];
-
   meta = {
     inherit homepage;
-    changelog = homepage + "/blob/v${version}/CHANGELOG.md";
     description = "Cargo subcommand to easily use LLVM source-based code coverage";
-    mainProgram = "cargo-llvm-cov";
+
     longDescription = ''
       In order for this to work, you either need to run `rustup component add llvm-
       tools-preview` or install the `llvm-tools-preview` component using your Nix
       library (e.g. fenix or rust-overlay)
     '';
+
+    changelog = homepage + "/blob/v${version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       wucke13
       matthiasbeyer
@@ -101,6 +105,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       chrjabs
     ];
 
+    mainProgram = "cargo-llvm-cov";
     broken = stdenv.targetPlatform.isRedox;
   };
 })

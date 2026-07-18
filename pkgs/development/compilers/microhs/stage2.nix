@@ -1,10 +1,10 @@
 {
+  stdenv,
   args,
+  callPackage,
   cpphs,
   microcabal-stage1,
   microhs-stage1,
-  stdenv,
-  callPackage,
 }:
 
 stdenv.mkDerivation (
@@ -26,8 +26,6 @@ stdenv.mkDerivation (
       CABALDIR = "${placeholder "out"}/lib/mcabal";
     };
 
-    dontBuild = true;
-
     installPhase = ''
       runHook preInstall
 
@@ -42,6 +40,8 @@ stdenv.mkDerivation (
       runHook postInstall
     '';
 
+    dontBuild = true;
+
     passthru = {
       inherit
         haskellCompilerName
@@ -49,13 +49,15 @@ stdenv.mkDerivation (
         microcabal-stage1
         microhs-stage1
         ;
-      targetPrefix = "";
+
       isMhs = true;
-      usesHugs = false;
+      targetPrefix = "";
 
       tests = {
         hello-world = callPackage ./test-hello-world.nix { microhs = finalAttrs.finalPackage; };
       };
+
+      usesHugs = false;
     };
   }
 )

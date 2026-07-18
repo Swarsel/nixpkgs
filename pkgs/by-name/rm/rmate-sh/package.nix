@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  patsh,
-  hostname,
   coreutils,
+  hostname,
+  patsh,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ patsh ];
-
   # needed for cross
   buildInputs = [ coreutils ];
 
@@ -45,16 +44,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Remote TextMate 2 implemented as shell script";
+
     longDescription = ''
       TextMate 2 has a nice feature where it is possible to edit
       files on a remote server using a helper script called 'rmate',
       which feeds the file back to the editor over a reverse tunnel.
       This is a rmate implementation in shell!
     '';
+
     homepage = "https://github.com/aurora/rmate";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ pbsds ];
+    platforms = lib.platforms.linux;
     mainProgram = "rmate";
   };
 })

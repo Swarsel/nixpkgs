@@ -1,17 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   gobject-introspection,
-  wrapGAppsHook3,
   killall,
+  python3Packages,
   socat,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "waypaper";
   version = "2.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anufrievroman";
@@ -25,6 +24,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapGAppsHook3
   ];
 
+  propagatedBuildInputs = [
+    killall
+    socat
+  ];
+
+  # has no tests
+  doCheck = false;
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -36,35 +47,28 @@ python3Packages.buildPythonApplication (finalAttrs: {
     screeninfo
   ];
 
-  propagatedBuildInputs = [
-    killall
-    socat
-  ];
-
-  # has no tests
-  doCheck = false;
-
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/anufrievroman/waypaper/releases/tag/${finalAttrs.version}";
     description = "GUI wallpaper setter for Wayland-based window managers";
-    mainProgram = "waypaper";
+
     longDescription = ''
       GUI wallpaper setter for Wayland-based window managers that works as a frontend for popular backends like swaybg and swww.
 
       If wallpaper does not change, make sure that swaybg or swww is installed.
     '';
+
     homepage = "https://github.com/anufrievroman/waypaper";
+    changelog = "https://github.com/anufrievroman/waypaper/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       prince213
       totalchaos
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "waypaper";
   };
 })

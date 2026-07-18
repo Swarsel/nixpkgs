@@ -1,34 +1,33 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  broken,
   kernel,
   kernelModuleMakeFlags,
   nvidia_x11,
   open,
   patches,
-  broken,
   hash ? null,
 }:
 
 assert open -> hash != null;
 
 stdenv.mkDerivation {
+  inherit patches;
   pname = "nvidia-${if open then "open" else "kernel-modules"}";
   version = "${nvidia_x11.version}-${kernel.version}";
 
   src =
     if open then
       fetchFromGitHub {
+        inherit hash;
         owner = "NVIDIA";
         repo = "open-gpu-kernel-modules";
         tag = nvidia_x11.version;
-        inherit hash;
       }
     else
       nvidia_x11.modsrc;
-
-  inherit patches;
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
@@ -46,16 +45,18 @@ stdenv.mkDerivation {
       "C_INCLUDE_PATH=${lib.getLib stdenv.cc.cc}/lib/clang/${lib.versions.major stdenv.cc.cc.version}/include"
     ];
 
-  buildTargets = [ "modules" ];
-  installTargets = [ "modules_install" ];
-  enableParallelBuilding = true;
-
   allowedReferences = [ ];
+  buildTargets = [ "modules" ];
+  enableParallelBuilding = true;
+  installTargets = [ "modules_install" ];
 
   meta = {
+    inherit broken;
     description = "NVIDIA Linux ${lib.optionalString open "Open "}GPU Kernel Modules";
+
     homepage =
       if open then "https://github.com/NVIDIA/open-gpu-kernel-modules" else nvidia_x11.meta.homepage;
+
     license =
       if open then
         with lib.licenses;
@@ -65,17 +66,19 @@ stdenv.mkDerivation {
         ]
       else
         nvidia_x11.meta.license;
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
+
     sourceProvenance =
       with lib.sourceTypes;
       [
         fromSource
       ]
       ++ lib.optional (!open) binaryNativeCode;
+
     maintainers = with lib.maintainers; [ nickcao ];
-    inherit broken;
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
   };
 }

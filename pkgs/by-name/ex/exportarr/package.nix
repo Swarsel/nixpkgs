@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,29 +17,27 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-XKIfOKgzJ41gQl/Jd8ZO3oNimZcoIY2d38ZojZAf53c=";
-
-  subPackages = [ "cmd/exportarr" ];
-
   env.CGO_ENABLE = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  tags = lib.optionals stdenv.hostPlatform.isLinux [ "netgo" ];
 
   preCheck = ''
     # Run all tests.
     unset subPackages
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [ "cmd/exportarr" ];
+  tags = lib.optionals stdenv.hostPlatform.isLinux [ "netgo" ];
+
   meta = {
     description = "AIO Prometheus Exporter for Sonarr, Radarr or Lidarr";
-    mainProgram = "exportarr";
     homepage = "https://github.com/onedr0p/exportarr";
     changelog = "https://github.com/onedr0p/exportarr/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ azahi ];
+    mainProgram = "exportarr";
   };
 })

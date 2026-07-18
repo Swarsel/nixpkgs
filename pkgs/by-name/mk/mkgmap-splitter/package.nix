@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  ant,
   fetchsvn,
   jdk,
   jre,
-  ant,
   makeWrapper,
   mkgmap,
   stripJavaArchivesHook,
@@ -17,6 +17,7 @@ let
   testInputs = import ./testinputs.nix { inherit fetchurl; };
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit doCheck;
   pname = "splitter";
   version = "654";
 
@@ -72,8 +73,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  inherit doCheck;
-
   checkPhase = ''
     runHook preCheck
     ant run.tests
@@ -101,15 +100,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Utility for splitting OpenStreetMap maps into tiles";
-    downloadPage = "https://www.mkgmap.org.uk/download/splitter.html";
     homepage = "https://www.mkgmap.org.uk/";
     license = lib.licenses.gpl2Only;
-    mainProgram = "splitter";
-    maintainers = with lib.maintainers; [ sikmir ];
-    platforms = lib.platforms.all;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
+
+    maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.all;
+    mainProgram = "splitter";
+    downloadPage = "https://www.mkgmap.org.uk/download/splitter.html";
   };
 })

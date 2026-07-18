@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  cyrus_sasl,
   # build-system
   distutils,
-  setuptools,
-
+  jaraco-functools,
   # native dependencies
   openldap,
-  cyrus_sasl,
-
   pyasn1,
   pyasn1-modules,
-
   # tests
   pytestCheckHook,
-  jaraco-functools,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-ldap";
   version = "3.4.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-ldap";
@@ -31,19 +26,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-uSP8c5gid5TBenBaNVdlteHatkctAafz6yFHuIYKiTY=";
   };
 
-  build-system = [
-    distutils
-    setuptools
-  ];
-
   buildInputs = [
     openldap
     cyrus_sasl
-  ];
-
-  dependencies = [
-    pyasn1
-    pyasn1-modules
   ];
 
   nativeCheckInputs = [
@@ -59,19 +44,31 @@ buildPythonPackage (finalAttrs: {
     export SCHEMA="${openldap}/etc/schema"
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    distutils
+    setuptools
+  ];
+
+  dependencies = [
+    pyasn1
+    pyasn1-modules
+  ];
+
   disabledTests = [
     # https://github.com/python-ldap/python-ldap/issues/501
     "test_tls_ext_noca"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
 
   meta = {
     description = "Python modules for implementing LDAP clients";
-    downloadPage = "https://github.com/python-ldap/python-ldap";
     homepage = "https://www.python-ldap.org/";
     changelog = "https://github.com/python-ldap/python-ldap/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.psfl;
     maintainers = [ ];
+    downloadPage = "https://github.com/python-ldap/python-ldap";
   };
 })

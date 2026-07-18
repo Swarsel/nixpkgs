@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pythinkingcleaner";
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "TheRealLink";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-YaHBZwJvgI3uFkFtZ4KWrKKGRPuNhBBrhCvGC65Jsks=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "pythinkingcleaner" ];
 
   meta = {

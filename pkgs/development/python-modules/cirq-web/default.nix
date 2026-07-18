@@ -7,26 +7,24 @@
 }:
 
 buildPythonPackage rec {
-  pname = "cirq-web";
-  pyproject = true;
   inherit (cirq-core) version src meta;
-
-  sourceRoot = "${src.name}/${pname}";
-
-  build-system = [ setuptools ];
-
-  dependencies = [ cirq-core ];
+  pname = "cirq-web";
 
   nativeCheckInputs = [
     pytest-benchmark
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ cirq-core ];
+
   # cirq's importlib hook doesn't work here
   #pythonImportsCheck = [ "cirq_web" ];
-
   disabledTestPaths = [
     # No need to test the version number
     "cirq_web/_version_test.py"
   ];
+
+  pyproject = true;
+  sourceRoot = "${src.name}/${pname}";
 }

@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitLab,
   buildPythonPackage,
+  poetry-core,
   pytestCheckHook,
   setuptools,
   six,
-  poetry-core,
-  fetchFromGitLab,
 }:
 
 buildPythonPackage {
   pname = "hcs-utils";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "hcs";
@@ -19,6 +18,8 @@ buildPythonPackage {
     rev = "77668de42895dedb6b4baddf4207f331776de897"; # No tags for 2.1
     hash = "sha256-T0a2lYi3umRZQInEsxnLf5p6+IxkUmGJhgW8l2ESDd0=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -34,7 +35,7 @@ buildPythonPackage {
     "test_blocking" # flaky, depends on comparing running time w/ magic value
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Library collecting some useful snippets";

@@ -16,19 +16,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-workstations";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_workstations";
     inherit (finalAttrs) version;
     hash = "sha256-UqFrc09BCap+10CJximc6cymUl8diSW9gxqZbPfn0UY=";
+    pname = "google_cloud_workstations";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -39,16 +40,16 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.workstations"
     "google.cloud.workstations_v1"
     "google.cloud.workstations_v1beta"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

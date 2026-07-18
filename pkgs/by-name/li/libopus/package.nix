@@ -2,18 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  gitUpdater,
-  meson,
-  python3,
-  ninja,
-  fixedPoint ? false,
-  withCustomModes ? true,
-  withIntrinsics ? stdenv.hostPlatform.isAarch || stdenv.hostPlatform.isx86,
-  withAsm ? false,
-
   # tests
   ffmpeg-headless,
+  gitUpdater,
+  meson,
+  ninja,
+  python3,
   testers,
+  fixedPoint ? false,
+  withAsm ? false,
+  withCustomModes ? true,
+  withIntrinsics ? stdenv.hostPlatform.isAarch || stdenv.hostPlatform.isx86,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-b/y1kyB76SWE3xWzJGbtZLvsmRCfAHyCIF8BlFckEaE=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Some tests time out easily on slower machines
     ./test-timeout.patch
@@ -33,11 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     patchShebangs meson/
   '';
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   nativeBuildInputs = [
     meson
@@ -57,18 +56,18 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = !stdenv.hostPlatform.isi686 && !stdenv.hostPlatform.isAarch32; # test_unit_LPC_inv_pred_gain fails
 
   passthru = {
-    updateScript = gitUpdater {
-      url = "https://gitlab.xiph.org/xiph/opus.git";
-      rev-prefix = "v";
-    };
-
     tests = {
       inherit ffmpeg-headless;
 
       pkg-config = testers.hasPkgConfigModules {
-        package = finalAttrs.finalPackage;
         moduleNames = [ "opus" ];
+        package = finalAttrs.finalPackage;
       };
+    };
+
+    updateScript = gitUpdater {
+      rev-prefix = "v";
+      url = "https://gitlab.xiph.org/xiph/opus.git";
     };
   };
 
@@ -77,10 +76,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://opus-codec.org/";
     changelog = "https://gitlab.xiph.org/xiph/opus/-/releases/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       getchoo
       jopejoe1
     ];
+
+    platforms = lib.platforms.all;
   };
 })

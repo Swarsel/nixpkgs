@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   setuptools-scm,
   sniffio,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "asgi-lifespan";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "florimondmanca";
@@ -23,16 +22,16 @@ buildPythonPackage rec {
     sed -i "/--cov/d" setup.cfg
   '';
 
+  # Circular dependencies, starlette
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ sniffio ];
-
-  # Circular dependencies, starlette
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "asgi_lifespan" ];
 
   meta = {

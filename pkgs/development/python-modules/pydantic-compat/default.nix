@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  gitMinimal,
   hatch-vcs,
   hatchling,
-  gitMinimal,
   importlib-metadata,
   pydantic,
   pytestCheckHook,
@@ -13,23 +13,24 @@
 buildPythonPackage rec {
   pname = "pydantic-compat";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyapp-kit";
     repo = "pydantic-compat";
     tag = "v${version}";
-    leaveDotGit = true;
     hash = "sha256-YJUfWu+nyGlwpJpxYghCKzj3CasdAaqYoNVCcfo/7YE=";
+    leaveDotGit = true;
   };
+
+  nativeBuildInputs = [
+    gitMinimal
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatch-vcs
     hatchling
-  ];
-
-  nativeBuildInputs = [
-    gitMinimal
   ];
 
   dependencies = [
@@ -37,9 +38,7 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  pythonImportsCheck = [ "pydantic_compat" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pytestFlags = [
     # pydantic.warnings.PydanticDeprecatedSince211: Accessing this attribute on the instance is
@@ -48,6 +47,8 @@ buildPythonPackage rec {
     "-Wignore::pydantic.warnings.PydanticDeprecatedSince211"
     "-Wignore::pydantic.warnings.PydanticDeprecatedSince212"
   ];
+
+  pythonImportsCheck = [ "pydantic_compat" ];
 
   meta = {
     description = "Compatibility layer for pydantic v1/v2";

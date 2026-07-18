@@ -21,8 +21,8 @@ buildGoModule (finalAttrs: {
     description = "Kubectl plugin to visualize Kubernetes resources and relationships";
     homepage = "https://github.com/steveteuber/kubectl-graph";
     changelog = "https://github.com/steveteuber/kubectl-graph/releases/tag/v${finalAttrs.version}";
-    mainProgram = "kubectl-graph";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.rksm ];
+    mainProgram = "kubectl-graph";
   };
 })

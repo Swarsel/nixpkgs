@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installShellFiles,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -27,16 +27,18 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Jump to custom directories in zsh";
+
     longDescription = ''
       `wd` (warp directory) lets you jump to custom directories in zsh, without
       using `cd`. Why? Because `cd` seems inefficient when the folder is
       frequently visited or has a long path.
     '';
+
     homepage = "https://github.com/mfaerevaag/wd";
     changelog = "https://github.com/mfaerevaag/wd/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.zimeg ];
-    mainProgram = "wd";
     platforms = lib.platforms.unix;
+    mainProgram = "wd";
   };
 }

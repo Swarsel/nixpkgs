@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
   alsa-lib,
+  buildGoModule,
+  nix-update-script,
   pkg-config,
   versionCheckHook,
-  nix-update-script,
 }:
 buildGoModule (finalAttrs: {
   pname = "waves";
@@ -19,22 +19,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-vl9xMUo6vaJfGAc5Cj1+bLPFYOVvZt+ZB0lkD+i8dtI=";
   };
 
-  vendorHash = "sha256-lps0OdY8KoILJh/roY78iC+bYHPeENioQoIsL6v/N0A=";
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ alsa-lib ];
+  vendorHash = "sha256-lps0OdY8KoILJh/roY78iC+bYHPeENioQoIsL6v/N0A=";
+  doCheck = !stdenv.hostPlatform.isDarwin;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

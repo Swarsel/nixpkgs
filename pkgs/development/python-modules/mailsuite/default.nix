@@ -1,13 +1,13 @@
 {
   lib,
-  azure-identity,
+  fetchFromGitHub,
   authres,
+  azure-identity,
   buildPythonPackage,
   cryptography,
   dkimpy,
   dnspython,
   expiringdict,
-  fetchFromGitHub,
   google-api-python-client,
   google-auth,
   google-auth-oauthlib,
@@ -23,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mailsuite";
   version = "2.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "seanthegeek";
@@ -32,7 +31,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-qQ+AaelLQED0mWCAItx/3d7o9QVUnhUVxvdCfnNRqzQ=";
   };
 
-  pythonRelaxDeps = [ "mail-parser" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -50,22 +51,22 @@ buildPythonPackage (finalAttrs: {
 
   optional-dependencies = {
     all = lib.concatAttrValues (lib.removeAttrs finalAttrs.passthru.optional-dependencies [ "all" ]);
+
     gmail = [
       google-api-python-client
       google-auth
       google-auth-oauthlib
     ];
+
     msgraph = [
       azure-identity
       msgraph-sdk
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "mailsuite" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pythonRelaxDeps = [ "mail-parser" ];
 
   meta = {
     description = "Python package to simplify receiving, parsing, and sending email";

@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull upstream fix for -fno-common toolchains.
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://github.com/OpenRTX/dmrconfig/commit/1a6901488db26262a6b69f80b0e795864e9e8d0a.patch";
       sha256 = "03px1y95a8aspd251i1jj8ggqfjvkqby4lhn5pb7l5c1lzh6h762";
+      url = "https://github.com/OpenRTX/dmrconfig/commit/1a6901488db26262a6b69f80b0e795864e9e8d0a.patch";
     })
   ];
 
@@ -32,16 +32,15 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  doInstallCheck = true;
-  preConfigure = ''
-    substituteInPlace Makefile \
-      --replace /usr/local/bin/dmrconfig $out/bin/dmrconfig
-  '';
-
   makeFlags = [
     "VERSION=${finalAttrs.version}"
     "GITCOUNT=0"
   ];
+
+  preConfigure = ''
+    substituteInPlace Makefile \
+      --replace /usr/local/bin/dmrconfig $out/bin/dmrconfig
+  '';
 
   installPhase = ''
     mkdir -p $out/bin $out/lib/udev/rules.d
@@ -49,11 +48,15 @@ stdenv.mkDerivation (finalAttrs: {
     install 99-dmr.rules $out/lib/udev/rules.d/99-dmr.rules
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "Configuration utility for DMR radios";
+
     longDescription = ''
       DMRconfig is a utility for programming digital radios via USB programming cable.
     '';
+
     homepage = "https://github.com/OpenRTX/dmrconfig";
     license = lib.licenses.asl20;
     maintainers = [ ];

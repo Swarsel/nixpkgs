@@ -3,14 +3,13 @@
   buildPythonPackage,
   fetchPypi,
   setuptools,
-  wheel,
   typeguard,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "scheduler";
   version = "0.8.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     typeguard
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "scheduler" ];
 
   meta = {

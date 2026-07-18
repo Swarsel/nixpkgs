@@ -4,28 +4,20 @@
   buildPythonPackage,
   cargo,
   libiconv,
-  rustPlatform,
-  rustc,
-  sudachi-rs,
-  setuptools-rust,
   pytestCheckHook,
   pythonAtLeast,
+  rustPlatform,
+  rustc,
+  setuptools-rust,
+  sudachi-rs,
   sudachidict-core,
-  tokenizers,
   sudachipy,
+  tokenizers,
 }:
 
 buildPythonPackage rec {
-  format = "setuptools";
-  pname = "sudachipy";
   inherit (sudachi-rs) src version;
-
-  disabled = pythonAtLeast "3.14"; # The pyo3 version used does not support 3.14+
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-qWuFY97qPoKVxWp29ywaMEr2fTc0Y4wDR9LK+40r6QI";
-  };
+  pname = "sudachipy";
 
   nativeBuildInputs = [
     cargo
@@ -49,10 +41,18 @@ buildPythonPackage rec {
     tokenizers
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-qWuFY97qPoKVxWp29ywaMEr2fTc0Y4wDR9LK+40r6QI";
+  };
+
+  disabled = pythonAtLeast "3.14"; # The pyo3 version used does not support 3.14+
+  format = "setuptools";
   pythonImportsCheck = [ "sudachipy" ];
 
   passthru = {
     inherit (sudachi-rs) updateScript;
+
     tests = {
       pytest = sudachipy.overridePythonAttrs (_: {
         doCheck = true;

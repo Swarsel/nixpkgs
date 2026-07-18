@@ -60,14 +60,28 @@ in
 
   options = {
     services.smokeping = {
+      config = mkOption {
+        default = null;
+
+        description = ''
+          Full smokeping config supplied by the user. Overrides
+          and replaces any other configuration supplied.
+        '';
+
+        type = types.nullOr types.lines;
+      };
+
       enable = mkEnableOption "smokeping service";
+      package = mkPackageOption pkgs "smokeping" { };
 
       alertConfig = mkOption {
-        type = types.lines;
         default = ''
           to = root@localhost
           from = smokeping@localhost
         '';
+
+        description = "Configuration for alerts.";
+
         example = ''
           to = alertee@address.somewhere
           from = smokealert@company.xy
@@ -78,25 +92,19 @@ in
           pattern = >0%,*12*,>0%,*12*,>0%
           comment = loss 3 times  in a row;
         '';
-        description = "Configuration for alerts.";
+
+        type = types.lines;
       };
+
       cgiUrl = mkOption {
-        type = types.str;
         default = "http://${cfg.hostName}/smokeping.cgi";
         defaultText = literalExpression ''"http://''${hostName}/smokeping.cgi"'';
-        example = "https://somewhere.example.com/smokeping.cgi";
         description = "URL to the smokeping cgi.";
+        example = "https://somewhere.example.com/smokeping.cgi";
+        type = types.str;
       };
-      config = mkOption {
-        type = types.nullOr types.lines;
-        default = null;
-        description = ''
-          Full smokeping config supplied by the user. Overrides
-          and replaces any other configuration supplied.
-        '';
-      };
+
       databaseConfig = mkOption {
-        type = types.lines;
         default = ''
           step     = 300
           pings    = 20
@@ -110,6 +118,12 @@ in
               MIN  0.5 144   720
 
         '';
+
+        description = ''
+          Configure the ping frequency and retention of the rrd files.
+          Once set, changing the interval will require deletion or migration of all
+          the collected data.'';
+
         example = ''
           # near constant pings.
           step     = 30
@@ -123,78 +137,88 @@ in
               MAX  0.5 144   7200
               MIN  0.5 144   7200
         '';
-        description = ''
-          Configure the ping frequency and retention of the rrd files.
-          Once set, changing the interval will require deletion or migration of all
-          the collected data.'';
-      };
-      extraConfig = mkOption {
+
         type = types.lines;
+      };
+
+      extraConfig = mkOption {
         default = "";
         description = "Any additional customization not already included.";
+        type = types.lines;
       };
-      hostName = mkOption {
-        type = types.str;
-        default = config.networking.fqdn;
-        defaultText = literalExpression "config.networking.fqdn";
-        example = "somewhere.example.com";
-        description = "DNS name for the urls generated in the cgi.";
-      };
-      imgUrl = mkOption {
-        type = types.str;
-        default = "cache";
-        defaultText = literalExpression ''"cache"'';
-        example = "https://somewhere.example.com/cache";
-        description = ''
-          Base url for images generated in the cgi.
 
-          The default is a relative URL to ensure it works also when e.g. forwarding
-          the GUI port via SSH.
-        '';
-      };
-      linkStyle = mkOption {
-        type = types.enum [
-          "original"
-          "absolute"
-          "relative"
-        ];
-        default = "relative";
-        example = "absolute";
-        description = "DNS name for the urls generated in the cgi.";
-      };
-      mailHost = mkOption {
-        type = types.str;
-        default = "";
-        example = "localhost";
-        description = "Use this SMTP server to send alerts";
-      };
-      owner = mkOption {
-        type = types.str;
-        default = "nobody";
-        example = "Bob Foobawr";
-        description = "Real name of the owner of the instance";
-      };
-      ownerEmail = mkOption {
-        type = types.str;
-        default = "no-reply@${cfg.hostName}";
-        defaultText = literalExpression ''"no-reply@''${hostName}"'';
-        example = "no-reply@yourdomain.com";
-        description = "Email contact for owner";
-      };
-      package = mkPackageOption pkgs "smokeping" { };
       host = mkOption {
-        type = types.nullOr types.str;
         default = "localhost";
-        example = "192.0.2.1"; # rfc5737 example IP for documentation
+
         description = ''
           Host/IP to bind to for the web server.
 
           Setting it to `null` skips passing the -h option to thttpd,
           which makes it bind to all interfaces.
         '';
+
+        example = "192.0.2.1"; # rfc5737 example IP for documentation
+        type = types.nullOr types.str;
       };
+
+      hostName = mkOption {
+        default = config.networking.fqdn;
+        defaultText = literalExpression "config.networking.fqdn";
+        description = "DNS name for the urls generated in the cgi.";
+        example = "somewhere.example.com";
+        type = types.str;
+      };
+
+      imgUrl = mkOption {
+        default = "cache";
+        defaultText = literalExpression ''"cache"'';
+
+        description = ''
+          Base url for images generated in the cgi.
+
+          The default is a relative URL to ensure it works also when e.g. forwarding
+          the GUI port via SSH.
+        '';
+
+        example = "https://somewhere.example.com/cache";
+        type = types.str;
+      };
+
+      linkStyle = mkOption {
+        default = "relative";
+        description = "DNS name for the urls generated in the cgi.";
+        example = "absolute";
+
+        type = types.enum [
+          "original"
+          "absolute"
+          "relative"
+        ];
+      };
+
+      mailHost = mkOption {
+        default = "";
+        description = "Use this SMTP server to send alerts";
+        example = "localhost";
+        type = types.str;
+      };
+
+      owner = mkOption {
+        default = "nobody";
+        description = "Real name of the owner of the instance";
+        example = "Bob Foobawr";
+        type = types.str;
+      };
+
+      ownerEmail = mkOption {
+        default = "no-reply@${cfg.hostName}";
+        defaultText = literalExpression ''"no-reply@''${hostName}"'';
+        description = "Email contact for owner";
+        example = "no-reply@yourdomain.com";
+        type = types.str;
+      };
+
       presentationConfig = mkOption {
-        type = types.lines;
         default = ''
           + charts
           menu = Charts
@@ -232,42 +256,50 @@ in
           "Last 10 Days"    10d
           "Last 360 Days"   360d
         '';
+
         description = "presentation graph style";
+        type = types.lines;
       };
+
       presentationTemplate = mkOption {
-        type = types.str;
         default = "${pkgs.smokeping}/etc/basepage.html.dist";
         defaultText = literalExpression ''"''${pkgs.smokeping}/etc/basepage.html.dist"'';
         description = "Default page layout for the web UI.";
+        type = types.str;
       };
+
       probeConfig = mkOption {
-        type = types.lines;
         default = ''
           + FPing
           binary = ${config.security.wrapperDir}/fping
         '';
+
         defaultText = literalExpression ''
           '''
             + FPing
             binary = ''${config.security.wrapperDir}/fping
           '''
         '';
+
         description = "Probe configuration";
+        type = types.lines;
       };
+
       sendmail = mkOption {
-        type = types.nullOr types.path;
         default = null;
-        example = "/run/wrappers/bin/sendmail";
         description = "Use this sendmail compatible script to deliver alerts";
+        example = "/run/wrappers/bin/sendmail";
+        type = types.nullOr types.path;
       };
+
       smokeMailTemplate = mkOption {
-        type = types.str;
         default = "${cfg.package}/etc/smokemail.dist";
         defaultText = literalExpression ''"''${package}/etc/smokemail.dist"'';
         description = "Specify the smokemail template for alerts.";
+        type = types.str;
       };
+
       targetConfig = mkOption {
-        type = types.lines;
         default = ''
           probe = FPing
           menu = Top
@@ -282,17 +314,21 @@ in
           title = This host
           host = localhost
         '';
+
         description = "Target configuration";
+        type = types.lines;
       };
+
       user = mkOption {
-        type = types.str;
         default = "smokeping";
         description = "User that runs smokeping and (optionally) thttpd. A group of the same name will be created as well.";
+        type = types.str;
       };
+
       webService = mkOption {
-        type = types.bool;
         default = true;
         description = "Enable a smokeping web interface";
+        type = types.bool;
       };
     };
 
@@ -305,44 +341,62 @@ in
         message = "services.smokeping: sendmail and Mailhost cannot both be enabled.";
       }
     ];
+
+    environment.etc."smokeping.conf".source = configPath;
+    environment.systemPackages = [ pkgs.fping ];
+
     security.wrappers = {
       fping = {
-        setuid = true;
-        owner = "root";
         group = "root";
+        owner = "root";
+        setuid = true;
         source = "${pkgs.fping}/bin/fping";
       };
     };
-    environment.etc."smokeping.conf".source = configPath;
-    environment.systemPackages = [ pkgs.fping ];
-    users.users.${cfg.user} = {
-      isNormalUser = false;
-      isSystemUser = true;
-      group = cfg.user;
-      description = "smokeping daemon user";
-      home = smokepingHome;
+
+    # use nginx to serve the smokeping web service
+    services.fcgiwrap.instances.smokeping = mkIf cfg.webService {
+      process.group = cfg.user;
+      process.user = cfg.user;
+      socket = { inherit (config.services.nginx) user group; };
     };
 
-    users.users.${config.services.nginx.user} = mkIf cfg.webService {
-      extraGroups = [
-        cfg.user # # user == group in this module
-      ];
-    };
+    services.nginx = mkIf cfg.webService {
+      enable = true;
 
-    users.groups.${cfg.user} = { };
+      virtualHosts."smokeping" = {
+        locations."/" = {
+          index = "smokeping.fcgi";
+          root = smokepingHome;
+        };
+
+        locations."/smokeping.fcgi" = {
+          extraConfig = ''
+            include ${config.services.nginx.package}/conf/fastcgi_params;
+            fastcgi_pass unix:${config.services.fcgiwrap.instances.smokeping.socket.address};
+            fastcgi_param SCRIPT_FILENAME ${smokepingHome}/smokeping.fcgi;
+            fastcgi_param DOCUMENT_ROOT ${smokepingHome};
+          '';
+        };
+
+        serverName = mkDefault cfg.host;
+      };
+    };
 
     systemd.services.smokeping = {
-      reloadTriggers = [ configPath ];
-      requiredBy = [ "multi-user.target" ];
-      serviceConfig = {
-        User = cfg.user;
-        Restart = "on-failure";
-        ExecStart = "${cfg.package}/bin/smokeping --config=/etc/smokeping.conf --nodaemon";
-      };
       preStart = ''
         ${cfg.package}/bin/smokeping --check --config=${configPath}
         ${cfg.package}/bin/smokeping --static --config=${configPath}
       '';
+
+      reloadTriggers = [ configPath ];
+      requiredBy = [ "multi-user.target" ];
+
+      serviceConfig = {
+        ExecStart = "${cfg.package}/bin/smokeping --config=/etc/smokeping.conf --nodaemon";
+        Restart = "on-failure";
+        User = cfg.user;
+      };
     };
 
     systemd.tmpfiles.rules = [
@@ -357,29 +411,20 @@ in
       "Z ${smokepingHome} 0750 ${cfg.user} ${cfg.user}"
     ];
 
-    # use nginx to serve the smokeping web service
-    services.fcgiwrap.instances.smokeping = mkIf cfg.webService {
-      process.user = cfg.user;
-      process.group = cfg.user;
-      socket = { inherit (config.services.nginx) user group; };
+    users.groups.${cfg.user} = { };
+
+    users.users.${cfg.user} = {
+      description = "smokeping daemon user";
+      group = cfg.user;
+      home = smokepingHome;
+      isNormalUser = false;
+      isSystemUser = true;
     };
-    services.nginx = mkIf cfg.webService {
-      enable = true;
-      virtualHosts."smokeping" = {
-        serverName = mkDefault cfg.host;
-        locations."/" = {
-          root = smokepingHome;
-          index = "smokeping.fcgi";
-        };
-        locations."/smokeping.fcgi" = {
-          extraConfig = ''
-            include ${config.services.nginx.package}/conf/fastcgi_params;
-            fastcgi_pass unix:${config.services.fcgiwrap.instances.smokeping.socket.address};
-            fastcgi_param SCRIPT_FILENAME ${smokepingHome}/smokeping.fcgi;
-            fastcgi_param DOCUMENT_ROOT ${smokepingHome};
-          '';
-        };
-      };
+
+    users.users.${config.services.nginx.user} = mkIf cfg.webService {
+      extraGroups = [
+        cfg.user # # user == group in this module
+      ];
     };
   };
 

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  fmt_9,
   libjack2,
   meson,
   ninja,
-  fmt_9,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -37,19 +37,23 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Simple app to help with JACK apps that behave strangely";
+
     longDescription = ''
       Creates a JACK passthrough client with an arbitrary name and number of
       ports. Common uses include tricking stubborn applications into creating
       more ports than they normally would or to prevent them from
       auto-connecting to certain things.
     '';
+
     homepage = "https://github.com/guysherman/jack-passthrough";
     # license unknown: https://github.com/guysherman/jack-passthrough/issues/2
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       PowerUser64
       l1npengtul
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "jack-passthru";
   };

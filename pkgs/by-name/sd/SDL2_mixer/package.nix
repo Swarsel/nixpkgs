@@ -1,20 +1,20 @@
 {
   lib,
-  SDL2,
+  stdenv,
   fetchFromGitHub,
+  SDL2,
   flac,
   fluidsynth,
+  game-music-emu,
   libogg,
   libvorbis,
+  libxmp,
   mpg123,
   opusfile,
   pkg-config,
   smpeg2,
-  stdenv,
   timidity,
   wavpack,
-  libxmp,
-  game-music-emu,
   # Boolean flags
   enableSdltest ? (!stdenv.hostPlatform.isDarwin),
 }:
@@ -29,6 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "release-${finalAttrs.version}";
     hash = "sha256-ln2RncnKbHIqvFia/ZlnbOGoVDJV8gF3538Wft3/wrw=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     SDL2
@@ -51,13 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     timidity
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  strictDeps = true;
-
   configureFlags = [
     (lib.enableFeature false "music-mod-modplug-shared")
     (lib.enableFeature false "music-mp3-mpg123-shared")
@@ -69,10 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/libsdl-org/SDL_mixer";
     description = "SDL multi-channel audio mixer library";
+    homepage = "https://github.com/libsdl-org/SDL_mixer";
     license = lib.licenses.zlib;
-    teams = [ lib.teams.sdl ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.sdl ];
   };
 })

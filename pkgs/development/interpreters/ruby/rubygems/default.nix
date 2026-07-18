@@ -1,8 +1,8 @@
 {
-  fetchurl,
-  gitUpdater,
   lib,
   stdenv,
+  fetchurl,
+  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,20 +27,22 @@ stdenv.mkDerivation rec {
   '';
 
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/rubygems/rubygems.git";
-    rev-prefix = "v";
     ignoredVersions = "(pre|alpha|beta|rc|bundler).*";
+    rev-prefix = "v";
+    url = "https://github.com/rubygems/rubygems.git";
   };
 
   meta = {
     description = "Package management framework for Ruby";
-    changelog = "https://github.com/rubygems/rubygems/blob/v${version}/CHANGELOG.md";
     homepage = "https://rubygems.org/";
+    changelog = "https://github.com/rubygems/rubygems/blob/v${version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit # or
       ruby
     ];
-    mainProgram = "gem";
+
     maintainers = with lib.maintainers; [ zimbatm ];
+    mainProgram = "gem";
   };
 }

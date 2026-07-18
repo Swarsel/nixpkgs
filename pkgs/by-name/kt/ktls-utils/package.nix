@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  glib,
   gnutls,
   keyutils,
-  glib,
   libnl,
-  systemd,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
   nix-update-script,
   nixosTests,
+  pkg-config,
+  systemd,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xBh9iSmTf8YCfahWnJvDx/nvz91NFZ3AiJ2JYs+pMfY=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -37,24 +42,18 @@ stdenv.mkDerivation (finalAttrs: {
     libnl
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   configureFlags = lib.optional withSystemd [ "--with-systemd" ];
-
   makeFlags = lib.optional withSystemd [ "unitdir=$(out)/lib/systemd/system" ];
-
   doCheck = true;
 
   passthru = {
-    updateScript = nix-update-script { };
-    tests.nixos = nixosTests.tlshd;
     services.default = {
       imports = [ (lib.modules.importApply ./service.nix { }) ];
       tlshd.package = finalAttrs.finalPackage;
     };
+
+    tests.nixos = nixosTests.tlshd;
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -63,7 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/oracle/ktls-utils/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
-    mainProgram = "tlshd";
     platforms = lib.platforms.linux;
+    mainProgram = "tlshd";
   };
 })

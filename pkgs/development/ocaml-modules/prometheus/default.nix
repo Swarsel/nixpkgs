@@ -1,11 +1,11 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
-  astring,
   asetmap,
-  re,
+  astring,
+  buildDunePackage,
   lwt,
+  re,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -25,10 +25,10 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/mirage/prometheus";
     description = "Client library for Prometheus monitoring";
+    homepage = "https://github.com/mirage/prometheus";
+    changelog = "https://raw.githubusercontent.com/mirage/prometheus/v${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.ulrikstrid ];
-    changelog = "https://raw.githubusercontent.com/mirage/prometheus/v${finalAttrs.version}/CHANGES.md";
   };
 })

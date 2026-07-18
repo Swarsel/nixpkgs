@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   sqlite,
   tcl,
+  unzip,
 }:
 
 let
   archiveVersion = import ./archive-version.nix lib;
   mkTool =
     {
-      pname,
-      makeTarget,
       description,
       homepage,
       mainProgram,
+      makeTarget,
+      pname,
     }:
     stdenv.mkDerivation rec {
       inherit pname;
@@ -31,40 +31,40 @@ let
 
       nativeBuildInputs = [ unzip ];
       buildInputs = [ tcl ];
-
       makeFlags = [ makeTarget ];
-
       installPhase = "install -Dt $out/bin ${makeTarget}";
 
       meta = {
         inherit description homepage mainProgram;
-        downloadPage = "http://sqlite.org/download.html";
         license = lib.licenses.publicDomain;
         maintainers = with lib.maintainers; [ johnazoidberg ];
         platforms = lib.platforms.unix;
+        downloadPage = "http://sqlite.org/download.html";
       };
     };
 in
 {
   sqldiff = mkTool {
     pname = "sqldiff";
-    makeTarget = "sqldiff";
     description = "Tool that displays the differences between SQLite databases";
     homepage = "https://www.sqlite.org/sqldiff.html";
     mainProgram = "sqldiff";
+    makeTarget = "sqldiff";
   };
+
   sqlite-analyzer = mkTool {
     pname = "sqlite-analyzer";
-    makeTarget = "sqlite3_analyzer";
     description = "Tool that shows statistics about SQLite databases";
     homepage = "https://www.sqlite.org/sqlanalyze.html";
     mainProgram = "sqlite3_analyzer";
+    makeTarget = "sqlite3_analyzer";
   };
+
   sqlite-rsync = mkTool {
     pname = "sqlite-rsync";
-    makeTarget = "sqlite3_rsync";
     description = "Database remote-copy tool for SQLite";
     homepage = "https://www.sqlite.org/rsync.html";
     mainProgram = "sqlite3_rsync";
+    makeTarget = "sqlite3_rsync";
   };
 }

@@ -1,33 +1,30 @@
 {
   lib,
+  args,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
-  args,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "clint";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-BSJMMrEHVWPQsW0AFfqvnaQ6ohTkohQOUfCHieekxao=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ args ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ args ];
+  pyproject = true;
   pythonImportsCheck = [ "clint" ];
 
   meta = {
-    homepage = "https://github.com/kennethreitz/clint";
     description = "Python Command Line Interface Tools";
+    homepage = "https://github.com/kennethreitz/clint";
     license = lib.licenses.isc;
     maintainers = [ ];
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,8 +15,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-h+CdiQh7IguCduIMCCI/UPIUAdXlNSHdkz6hrG10h3c=";
   };
 
-  vendorHash = "sha256-S2ZHfrbEjPDweazwWbMbEMcMl/i+8Nru0G0e7RjOJMk=";
-
   # Remove installing of binary from the Makefile (already taken care of by
   # `buildGoModule`)
   patches = [
@@ -29,6 +27,7 @@ buildGoModule (finalAttrs: {
       --replace "/usr/share/gopsuinfo" "$out/usr/share/gopsuinfo"
   '';
 
+  vendorHash = "sha256-S2ZHfrbEjPDweazwWbMbEMcMl/i+8Nru0G0e7RjOJMk=";
   # Install icons
   postInstall = "make install DESTDIR=$out";
 

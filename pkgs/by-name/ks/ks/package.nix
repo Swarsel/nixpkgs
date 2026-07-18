@@ -32,11 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    mainProgram = "ks";
-    homepage = "https://github.com/loteoo/ks";
     description = "Command-line secrets manager powered by macOS keychains";
+    homepage = "https://github.com/loteoo/ks";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ivankovnatsky ];
     platforms = lib.platforms.darwin;
+    mainProgram = "ks";
   };
 })

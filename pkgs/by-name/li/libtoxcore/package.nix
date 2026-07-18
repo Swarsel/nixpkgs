@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  libsodium,
-  ncurses,
-  libopus,
-  libvpx,
   check,
+  cmake,
   libconfig,
+  libopus,
+  libsodium,
+  libvpx,
+  ncurses,
   pkg-config,
 }:
 
@@ -27,11 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cmakeFlags = [
-    (lib.cmakeBool "DHT_BOOTSTRAP" true)
-    (lib.cmakeBool "BOOTSTRAP_DAEMON" true)
-  ]
-  ++ lib.optional buildToxAV (lib.cmakeBool "MUST_BUILD_TOXAV" true);
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
 
   buildInputs = [
     libsodium
@@ -43,10 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
     libvpx
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
+  cmakeFlags = [
+    (lib.cmakeBool "DHT_BOOTSTRAP" true)
+    (lib.cmakeBool "BOOTSTRAP_DAEMON" true)
+  ]
+  ++ lib.optional buildToxAV (lib.cmakeBool "MUST_BUILD_TOXAV" true);
 
   doCheck = true;
   nativeCheckInputs = [ check ];
@@ -56,17 +56,19 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '=''${prefix}/' '=' \
 
   '';
+
   # We might be getting the wrong pkg-config file anyway:
   # https://github.com/TokTok/c-toxcore/issues/2334
-
   meta = {
     description = "P2P FOSS instant messaging application aimed to replace Skype";
     homepage = "https://tox.chat";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       peterhoeg
       zatm8
     ];
+
     platforms = lib.platforms.all;
   };
 })

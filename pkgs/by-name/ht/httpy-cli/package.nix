@@ -1,19 +1,18 @@
 {
   lib,
-  python3Packages,
-  fetchPypi,
   curl,
+  fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "httpy-cli";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "httpy-cli";
     hash = "sha256-uhF/jF4buHMDiXOuuqjskynioz4qVBevQhdcUbH+91Q=";
+    pname = "httpy-cli";
   };
 
   propagatedBuildInputs = with python3Packages; [
@@ -21,14 +20,6 @@ python3Packages.buildPythonPackage rec {
     pygments
     requests
     urllib3
-  ];
-
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
-  pythonImportsCheck = [
-    "httpy"
   ];
 
   nativeCheckInputs = [
@@ -44,11 +35,21 @@ python3Packages.buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "httpy"
+  ];
+
   meta = {
     description = "Modern, user-friendly, programmable command-line HTTP client for the API";
     homepage = "https://github.com/knid/httpy";
     license = lib.licenses.mit;
-    mainProgram = "httpy";
     maintainers = with lib.maintainers; [ eymeric ];
+    mainProgram = "httpy";
   };
 }

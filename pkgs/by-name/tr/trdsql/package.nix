@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,23 +19,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-1s2fQue0mLhJ9dKILrERa21Ut05/zVCwL2txZlqcCqE=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/noborus/trdsql.Version=${finalAttrs.version}"
-  ];
-
   # macOS panic: open /etc/protocols: operation not permitted
   # vendor/modernc.org/libc/libc_darwin.go import vendor/modernc.org/libc/honnef.co/go/netdb
   # https://gitlab.com/cznic/libc/-/blob/v1.61.6/honnef.co/go/netdb/netdb.go#L697
   # https://gitlab.com/cznic/libc/-/blob/v1.61.6/honnef.co/go/netdb/netdb.go#L733
   # this two line read /etc/protocols and /etc/services, which is blocked by darwin sandbox
   doCheck = !stdenv.hostPlatform.isDarwin;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-version";
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -49,6 +41,13 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/noborus/trdsql.Version=${finalAttrs.version}"
+  ];
+
+  versionCheckProgramArg = "-version";
   passthru.updateScript = nix-update-script { };
 
   meta = {

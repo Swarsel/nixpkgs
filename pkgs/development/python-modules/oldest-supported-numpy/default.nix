@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "oldest-supported-numpy";
   version = "2023.12.21";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,9 +26,9 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ numpy ];
-
   # package has no tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Meta-package providing the oldest supported Numpy for a given Python version and platform";

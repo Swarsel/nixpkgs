@@ -21,7 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   buildInputs = [ perl ];
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -32,13 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Make recommendations for increased performance and stability of MariaDB/MySQL";
     homepage = "https://github.com/major/MySQLTuner-perl";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       peterhoeg
     ];
+
     mainProgram = "mysqltuner";
   };
 })

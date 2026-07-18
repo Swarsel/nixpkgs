@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   cmake,
-  kdePackages,
-  gettext,
-  zstd,
   fcitx5,
+  gettext,
+  kdePackages,
   librime,
+  pkg-config,
   rime-data,
   symlinkJoin,
+  zstd,
   rimeDataPkgs ? [ rime-data ],
 }:
 
@@ -22,10 +22,6 @@ stdenv.mkDerivation rec {
     url = "https://download.fcitx-im.org/fcitx5/${pname}/${pname}-${version}.tar.zst";
     hash = "sha256-dHiBH74dTnzabm23TrDAXV/oHSGMqdyBtrf0uyuwjWI=";
   };
-
-  cmakeFlags = [
-    "-DRIME_DATA_DIR=${placeholder "out"}/share/rime-data"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -40,20 +36,25 @@ stdenv.mkDerivation rec {
     librime
   ];
 
+  cmakeFlags = [
+    "-DRIME_DATA_DIR=${placeholder "out"}/share/rime-data"
+  ];
+
+  postInstall = ''
+    cp -r "${rimeDataDrv}/share/rime-data/." $out/share/rime-data/
+  '';
+
   rimeDataDrv = symlinkJoin {
-    name = "fcitx5-rime-data";
-    paths = rimeDataPkgs;
     postBuild = ''
       mkdir -p $out/share/rime-data
 
       # Ensure default.yaml exists
       [ -e "$out/share/rime-data/default.yaml" ] || touch "$out/share/rime-data/default.yaml"
     '';
-  };
 
-  postInstall = ''
-    cp -r "${rimeDataDrv}/share/rime-data/." $out/share/rime-data/
-  '';
+    name = "fcitx5-rime-data";
+    paths = rimeDataPkgs;
+  };
 
   meta = {
     description = "RIME support for Fcitx5";

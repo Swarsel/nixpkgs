@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   glew,
   glm,
-  libGLU,
+  icu74,
   libGL,
+  libGLU,
+  libsm,
   libx11,
   libxext,
   libxrender,
-  icu74,
-  libsm,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,9 +46,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Queries for a selection from the user and prints the region to stdout";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "slop";
   };
 })

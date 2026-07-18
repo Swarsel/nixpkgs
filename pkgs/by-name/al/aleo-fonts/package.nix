@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -22,7 +22,6 @@ stdenvNoCC.mkDerivation {
   ];
 
   nativeBuildInputs = [ installFonts ];
-
   preInstall = "rm -r fonts/old";
 
   meta = {

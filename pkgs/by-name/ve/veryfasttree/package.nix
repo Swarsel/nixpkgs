@@ -30,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Speeding up the estimation of phylogenetic trees for large alignments through parallelization and vectorization strategies";
-    mainProgram = "VeryFastTree";
     homepage = "https://github.com/citiususc/veryfasttree";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "VeryFastTree";
     # last successful hydra build on darwin was in 2024
     broken = stdenv.hostPlatform.isDarwin;
   };

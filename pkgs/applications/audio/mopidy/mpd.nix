@@ -1,32 +1,30 @@
 {
   lib,
-  pythonPackages,
   fetchPypi,
   mopidy,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-mpd";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "Mopidy-MPD";
     hash = "sha256-CeLMRqj9cwBvQrOx7XHVV8MjDjwOosONVlsN2o+vTVM=";
+    pname = "Mopidy-MPD";
   };
-
-  build-system = [ pythonPackages.setuptools ];
-
-  dependencies = [ mopidy ];
 
   # no tests implemented
   doCheck = false;
+  build-system = [ pythonPackages.setuptools ];
+  dependencies = [ mopidy ];
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_mpd" ];
 
   meta = {
-    homepage = "https://github.com/mopidy/mopidy-mpd";
     description = "Mopidy extension for controlling playback from MPD clients";
+    homepage = "https://github.com/mopidy/mopidy-mpd";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.tomahna ];
   };

@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "fivem-api";
   version = "0.1.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,12 +16,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ aiohttp ];
-
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "fivem" ];
 
   meta = {

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  coreutils,
+  dpkg,
+  file,
+  ghostscript,
+  gnugrep,
+  gnused,
   makeWrapper,
   perl,
-  gnused,
-  ghostscript,
-  file,
-  coreutils,
-  gnugrep,
   which,
 }:
 let
@@ -31,19 +31,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "cups-brother-mfcl2710dw";
   version = "4.0.0-1";
 
+  src = fetchurl {
+    url = "https://download.brother.com/welcome/dlf103526/mfcl2710dwpdrv-${finalAttrs.version}.i386.deb";
+    hash = "sha256-OOTvbCuyxw4k01CTMuBqG2boMN13q5xC7LacaweGmyw=";
+  };
+
   nativeBuildInputs = [
     dpkg
     makeWrapper
     autoPatchelfHook
   ];
+
   buildInputs = [ perl ];
-
-  dontUnpack = true;
-
-  src = fetchurl {
-    url = "https://download.brother.com/welcome/dlf103526/mfcl2710dwpdrv-${finalAttrs.version}.i386.deb";
-    hash = "sha256-OOTvbCuyxw4k01CTMuBqG2boMN13q5xC7LacaweGmyw=";
-  };
 
   installPhase = ''
     runHook preInstall
@@ -89,12 +88,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother MFC-L2710DW printer driver";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
-    platforms = map (arch: "${arch}-linux") arches;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ rosebeats ];
+    platforms = map (arch: "${arch}-linux") arches;
   };
 })

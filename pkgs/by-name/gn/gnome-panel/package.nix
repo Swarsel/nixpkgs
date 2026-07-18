@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoreconfHook,
   dconf,
@@ -9,9 +9,9 @@
   geocode-glib_2,
   gettext,
   glib,
+  gnome,
   gnome-desktop,
   gnome-menus,
-  gnome,
   gtk3,
   itstool,
   libgweather,
@@ -27,16 +27,16 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gnome-panel";
   version = "3.58.1";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/gnome-panel/${lib.versions.majorMinor finalAttrs.version}/gnome-panel-${finalAttrs.version}.tar.xz";
+    hash = "sha256-fovKQ6gaE0xmazp4uvKv+wxdMO+xvKZTiH/EGzHdXmQ=";
+  };
+
   outputs = [
     "out"
     "dev"
     "man"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/gnome-panel/${lib.versions.majorMinor finalAttrs.version}/gnome-panel-${finalAttrs.version}.tar.xz";
-    hash = "sha256-fovKQ6gaE0xmazp4uvKv+wxdMO+xvKZTiH/EGzHdXmQ=";
-  };
 
   patches = [
     # Load modules from path in `NIX_GNOME_PANEL_MODULESDIR` environment variable
@@ -44,13 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     # load modules from other packages as well.
     ./modulesdir-env-var.patch
   ];
-
-  preFixup = ''
-    gappsWrapperArgs+=(
-      --prefix XDG_DATA_DIRS : "${gnome-menus}/share"
-      --prefix XDG_CONFIG_DIRS : "${gnome-menus}/etc/xdg"
-    )
-  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -80,9 +73,16 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-eds"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
+
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --prefix XDG_DATA_DIRS : "${gnome-menus}/share"
+      --prefix XDG_CONFIG_DIRS : "${gnome-menus}/etc/xdg"
+    )
+  '';
+
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -93,11 +93,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Component of Gnome Flashback that provides panels and default applets for the desktop";
-    mainProgram = "gnome-panel";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-panel";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-panel/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-panel";
+    teams = [ lib.teams.gnome ];
   };
 })

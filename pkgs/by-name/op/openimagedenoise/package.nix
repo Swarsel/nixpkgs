@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
   cmake,
   config,
   cudaPackages,
-  cudaSupport ? config.cudaSupport,
   fetchzip,
   ispc,
-  lib,
-  python3,
-  stdenv,
   onetbb,
+  python3,
   xcodebuild,
+  cudaSupport ? config.cudaSupport,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SM0Bn4qgeqRJAXr2MMjNjfWJVTcciERZxMHiyx4Z1hA=";
   };
 
-  strictDeps = true;
-
   patches = lib.optionals cudaSupport [
     ./cuda.patch
   ];
@@ -33,6 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace cmake/oidn_platform.cmake \
       --replace-fail "set(CMAKE_CXX_STANDARD 11)" "set(CMAKE_CXX_STANDARD 14)"
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -58,11 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.openimagedenoise.org";
     description = "High-Performance Denoising Library for Ray Tracing";
+    homepage = "https://www.openimagedenoise.org";
+    changelog = "https://github.com/RenderKit/oidn/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.leshainc ];
     platforms = lib.platforms.unix;
-    changelog = "https://github.com/RenderKit/oidn/blob/v${finalAttrs.version}/CHANGELOG.md";
   };
 })

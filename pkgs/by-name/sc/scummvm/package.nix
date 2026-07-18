@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nasm,
+  SDL2,
   alsa-lib,
+  cctools,
   curl,
   flac,
   fluidsynth,
   freetype,
+  libGL,
+  libGLU,
   libjpeg,
   libmad,
   libmpeg2,
   libogg,
   libtheora,
   libvorbis,
-  libGLU,
-  libGL,
   libx11,
-  SDL2,
-  zlib,
-  cctools,
+  nasm,
   nix-update-script,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,14 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
       zlib
     ];
 
-  dontDisableStatic = true;
-
-  enableParallelBuilding = true;
-
-  configurePlatforms = [ "host" ];
   configureFlags = [
     "--enable-release"
   ];
+
+  env.NIX_CFLAGS_COMPILE = toString [ "-fpermissive" ];
 
   # They use 'install -s', that calls the native strip instead of the cross
   postConfigure = ''
@@ -76,7 +73,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail ${stdenv.hostPlatform.config}-ranlib ${cctools}/bin/ranlib
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString [ "-fpermissive" ];
+  configurePlatforms = [ "host" ];
+  dontDisableStatic = true;
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -84,10 +83,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Program to run certain classic graphical point-and-click adventure games (such as Monkey Island)";
-    mainProgram = "scummvm";
     homepage = "https://www.scummvm.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.unix;
+    mainProgram = "scummvm";
   };
 })

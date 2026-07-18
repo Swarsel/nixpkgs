@@ -8,7 +8,6 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "dnsmap";
-  tag = "0.36";
   version = "${finalAttrs.tag}-unstable-2024-08-20";
 
   src = fetchFromGitHub {
@@ -20,24 +19,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  preConfigure = ''
-    autoreconf -i
-  '';
-
-  configureFlags = [ "--prefix=$(out)" ];
-
   nativeBuildInputs = [
     autoconf
     automake
   ];
 
+  configureFlags = [ "--prefix=$(out)" ];
+
+  preConfigure = ''
+    autoreconf -i
+  '';
+
+  tag = "0.36";
+
   meta = {
     description = "Scan for subdomains using brute-force techniques";
     homepage = "https://github.com/resurrecting-open-source-projects/dnsmap";
-    license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ heywoodlh ];
     changelog = "https://github.com/resurrecting-open-source-projects/dnsmap/releases/tag/${finalAttrs.tag}";
+    license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ heywoodlh ];
+    platforms = lib.platforms.all;
     mainProgram = "dnsmap";
   };
 })

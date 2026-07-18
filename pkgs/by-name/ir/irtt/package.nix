@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,16 +17,16 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Mxdvb1d44dag1/jKjSVAzqYBed/lylyamgwQwj9THl4=";
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   meta = {
     description = "Measures round-trip time, one-way delay and other metrics using UDP";
     homepage = "https://github.com/heistp/irtt";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.tsheinen ];
-    mainProgram = "irtt";
     platforms = lib.platforms.linux;
+    mainProgram = "irtt";
   };
 })

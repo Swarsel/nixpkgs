@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  flex,
   bison,
-  readline,
+  flex,
   libssh,
   nixosTests,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,12 +15,16 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.19.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.nic.cz";
     owner = "labs";
     repo = "bird";
     tag = "v${finalAttrs.version}";
     hash = "sha256-8D83U9IgNQ0HDWk2WSQsRsy82bDmjkgectkCOXy2RyI=";
+    domain = "gitlab.nic.cz";
   };
+
+  patches = [
+    ./dont-create-sysconfdir-2.patch
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -33,23 +37,18 @@ stdenv.mkDerivation (finalAttrs: {
     libssh
   ];
 
-  patches = [
-    ./dont-create-sysconfdir-2.patch
-  ];
-
-  env.CPP = "${stdenv.cc.targetPrefix}cpp -E";
-
   configureFlags = [
     "--localstatedir=/var"
     "--runstatedir=/run/bird"
   ];
 
+  env.CPP = "${stdenv.cc.targetPrefix}cpp -E";
   passthru.tests = nixosTests.bird2;
 
   meta = {
-    changelog = "https://gitlab.nic.cz/labs/bird/-/blob/v${finalAttrs.version}/NEWS";
     description = "BIRD Internet Routing Daemon";
     homepage = "https://bird.network.cz";
+    changelog = "https://gitlab.nic.cz/labs/bird/-/blob/v${finalAttrs.version}/NEWS";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ herbetom ];
     platforms = lib.platforms.linux;

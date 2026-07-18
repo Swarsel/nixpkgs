@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildPackages,
   autoreconfHook,
-  pkg-config,
+  buildPackages,
+  curl,
+  gd,
   gettext,
-  libusb1,
-  libtool,
   libexif,
   libgphoto2,
   libjpeg,
-  curl,
+  libtool,
+  libusb1,
   libxml2,
-  gd,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,8 +26,6 @@ stdenv.mkDerivation rec {
     tag = "v${version}";
     hash = "sha256-+yPpoIgyXL/Qp2C4ykSlUg2BheWjzTEi6wID6yCsP/s=";
   };
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -45,16 +43,12 @@ stdenv.mkDerivation rec {
     gd
   ];
 
-  doInstallCheck = true;
-
   # These are mentioned in the Requires line of libgphoto's pkg-config file.
   propagatedBuildInputs = [ libexif ];
 
   env = lib.optionalAttrs stdenv.cc.isGNU {
     NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
   };
-
-  hardeningDisable = [ "format" ];
 
   postInstall =
     let
@@ -71,18 +65,24 @@ stdenv.mkDerivation rec {
           >$out/lib/udev/hwdb.d/20-gphoto.hwdb
     '';
 
+  doInstallCheck = true;
+  depsBuildBuild = [ pkg-config ];
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "http://www.gphoto.org/proj/libgphoto2/";
-    changelog = "https://github.com/gphoto/libgphoto2/blob/${src.tag}/NEWS";
     description = "Library for accessing digital cameras";
+
     longDescription = ''
       This is the library backend for gphoto2. It contains the code for PTP,
       MTP, and other vendor specific protocols for controlling and transferring data
       from digital cameras.
     '';
+
+    homepage = "http://www.gphoto.org/proj/libgphoto2/";
+    changelog = "https://github.com/gphoto/libgphoto2/blob/${src.tag}/NEWS";
     # XXX: the homepage claims LGPL, but several src files are lgpl21Plus
     license = lib.licenses.lgpl21Plus;
-    platforms = with lib.platforms; unix;
     maintainers = with lib.maintainers; [ jcumming ];
+    platforms = with lib.platforms; unix;
   };
 }

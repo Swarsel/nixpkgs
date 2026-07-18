@@ -1,15 +1,12 @@
 {
-  pkgs,
   buildPythonPackage,
-
-  # build-system
-  rustPlatform,
-
   # optional-dependencies
   onnxruntime,
-
+  pkgs,
   # tests
   pytestCheckHook,
+  # build-system
+  rustPlatform,
 }:
 buildPythonPackage (finalAttrs: {
   inherit (pkgs.pdf-oxide)
@@ -19,21 +16,16 @@ buildPythonPackage (finalAttrs: {
     cargoDeps
     ;
 
-  pyproject = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
   ];
 
-  optional-dependencies = {
-    ocr = [ onnxruntime ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  __structuredAttrs = true;
 
   disabledTests = [
     # AssertionError: assert (False or False or False)
@@ -42,6 +34,11 @@ buildPythonPackage (finalAttrs: {
     "test_issue_401_two_embedded_fonts_save_encrypted"
   ];
 
+  optional-dependencies = {
+    ocr = [ onnxruntime ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pdf_oxide" ];
 
   meta = pkgs.pdf-oxide.meta // {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-VLn7JPYYFmQ/9c0zKHWJBqtxwCbWgsN4FHlXrQiKMj4=";
+  # need network
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
     "-X=main.gitSha=${finalAttrs.src.tag}"
   ];
-
-  # need network
-  doCheck = false;
 
   meta = {
     description = "HTTP API client for the terminal";

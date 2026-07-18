@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   bash,
-  udevCheckHook,
   nix-update-script,
+  stdenvNoCC,
+  udevCheckHook,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -22,8 +22,6 @@ stdenvNoCC.mkDerivation {
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -34,16 +32,19 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Udev rules list for gaming devices";
     homepage = "https://github.com/ValveSoftware/steam-devices";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       azuwis
       yuannan
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

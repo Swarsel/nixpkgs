@@ -34,12 +34,12 @@ appimageTools.wrapType2 {
   '';
 
   meta = {
-    homepage = "https://www.mendeley.com";
     description = "Reference manager and academic social network";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://www.mendeley.com";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "mendeley-reference-manager";
   };
 

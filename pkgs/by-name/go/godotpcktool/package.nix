@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   cmake,
+  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "godotpcktool";
@@ -28,7 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/hhyyrylainen/GodotPckTool";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ambossmann ];
-    mainProgram = "godotpcktool";
     platforms = lib.platforms.linux;
+    mainProgram = "godotpcktool";
   };
 })

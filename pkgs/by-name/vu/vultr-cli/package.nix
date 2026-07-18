@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,14 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Cwgku9sjznwpNQ2vHSwOnX0ymt42V55vAb3PiRMaFjM=";
   };
 
-  vendorHash = "sha256-jno5BPZn7RXpnn23lTRLj4IDgiaMPBDdP9h8WG1VohI=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-jno5BPZn7RXpnn23lTRLj4IDgiaMPBDdP9h8WG1VohI=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd vultr-cli \
@@ -32,6 +26,11 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/vultr-cli completion fish) \
       --zsh <($out/bin/vultr-cli completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Official command line tool for Vultr services";

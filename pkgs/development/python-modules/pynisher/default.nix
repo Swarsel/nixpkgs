@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pynisher";
   version = "1.0.10";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   # No tests in the Pypi archive
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pynisher" ];
 
   meta = {

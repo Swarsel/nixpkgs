@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  undmg,
-  autoPatchelfHook,
   alsa-lib,
-  ncurses5,
-  libxxf86vm,
-  libxtst,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxft,
-  libxext,
-  libxcursor,
+  autoPatchelfHook,
   libx11,
+  libxcursor,
+  libxext,
+  libxft,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxtst,
+  libxxf86vm,
+  makeWrapper,
+  ncurses5,
+  undmg,
 }:
 
 let
@@ -24,26 +24,29 @@ let
 
   srcs = {
     aarch64-darwin = fetchurl {
-      url = "https://www.utc.fr/~mottelet/scilab/download/${version}/scilab-${version}-accelerate-arm64.dmg";
       sha256 = "sha256-L4dxD8R8bY5nd+4oDs5Yk0LlNsFykLnAM+oN/O87SRI=";
+      url = "https://www.utc.fr/~mottelet/scilab/download/${version}/scilab-${version}-accelerate-arm64.dmg";
     };
+
     x86_64-linux = fetchurl {
-      url = "https://www.scilab.org/download/${version}/scilab-${version}.bin.linux-x86_64.tar.gz";
       sha256 = "sha256-PuGnz2YdAhriavwnuf5Qyy0cnCeRHlWC6dQzfr7bLHk=";
+      url = "https://www.scilab.org/download/${version}/scilab-${version}.bin.linux-x86_64.tar.gz";
     };
   };
   src =
     srcs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
   meta = {
-    homepage = "http://www.scilab.org/";
     description = "Scientific software package for numerical computations (Matlab lookalike)";
+    homepage = "http://www.scilab.org/";
+    license = lib.licenses.gpl2Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     platforms = [
       "aarch64-darwin"
       "x86_64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.gpl2Only;
+
     mainProgram = "scilab";
   };
 
@@ -60,8 +63,6 @@ let
       undmg
     ];
 
-    sourceRoot = "scilab-${version}.app";
-
     installPhase = ''
       runHook preInstall
 
@@ -73,6 +74,7 @@ let
     '';
 
     dontCheckForBrokenSymlinks = true;
+    sourceRoot = "scilab-${version}.app";
   };
 
   linux = stdenv.mkDerivation {

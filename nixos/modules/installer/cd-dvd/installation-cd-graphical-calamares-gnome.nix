@@ -5,14 +5,16 @@
 {
   imports = [ ./installation-cd-graphical-calamares.nix ];
 
+  # Fix scaling for calamares on wayland
+  environment.variables = {
+    QT_QPA_PLATFORM = "$([[ $XDG_SESSION_TYPE = \"wayland\" ]] && echo \"wayland\")";
+  };
+
   isoImage.edition = lib.mkDefault "gnome";
 
   services.desktopManager.gnome = {
-    # Add Firefox and other tools useful for installation to the launcher
-    favoriteAppsOverride = ''
-      [org.gnome.shell]
-      favorite-apps=[ 'firefox.desktop', 'nixos-manual.desktop', 'org.gnome.Console.desktop', 'org.gnome.Nautilus.desktop', 'gparted.desktop', 'calamares.desktop' ]
-    '';
+    enable = true;
+    extraGSettingsOverridePackages = [ pkgs.gnome-settings-daemon ];
 
     # Override GNOME defaults to disable GNOME tour and disable suspend
     extraGSettingsOverrides = ''
@@ -25,14 +27,16 @@
       sleep-inactive-battery-type='nothing'
     '';
 
-    extraGSettingsOverridePackages = [ pkgs.gnome-settings-daemon ];
-
-    enable = true;
+    # Add Firefox and other tools useful for installation to the launcher
+    favoriteAppsOverride = ''
+      [org.gnome.shell]
+      favorite-apps=[ 'firefox.desktop', 'nixos-manual.desktop', 'org.gnome.Console.desktop', 'org.gnome.Nautilus.desktop', 'gparted.desktop', 'calamares.desktop' ]
+    '';
   };
 
-  # Fix scaling for calamares on wayland
-  environment.variables = {
-    QT_QPA_PLATFORM = "$([[ $XDG_SESSION_TYPE = \"wayland\" ]] && echo \"wayland\")";
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "nixos";
   };
 
   services.displayManager.gdm = {
@@ -44,10 +48,5 @@
     # * https://github.com/NixOS/nixpkgs/pull/63790
     # * https://gitlab.gnome.org/GNOME/gnome-control-center/issues/22
     autoSuspend = false;
-  };
-
-  services.displayManager.autoLogin = {
-    enable = true;
-    user = "nixos";
   };
 }

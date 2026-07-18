@@ -1,12 +1,12 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  qt6,
-  pkg-config,
+  gcc15Stdenv,
   hyprlang,
+  ninja,
+  pkg-config,
+  qt6,
 }:
 gcc15Stdenv.mkDerivation (finalAttrs: {
   pname = "hyprland-qt-support";

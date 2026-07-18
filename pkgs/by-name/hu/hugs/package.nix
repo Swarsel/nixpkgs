@@ -18,15 +18,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ bison ];
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-Wno-error=implicit-int"
-    "-Wno-error=implicit-function-declaration"
-  ];
-
-  postUnpack = "find -type f -exec sed -i 's@/bin/cp@cp@' {} +";
-
-  preConfigure = "unset STRIP";
-
   configureFlags = [
     "--enable-char-encoding=utf8" # require that the UTF-8 encoding is always used
     "--disable-path-canonicalization"
@@ -43,12 +34,20 @@ stdenv.mkDerivation {
     "--enable-pthreads" # build Hugs using POSIX threads C library
   ];
 
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-Wno-error=implicit-int"
+    "-Wno-error=implicit-function-declaration"
+  ];
+
+  preConfigure = "unset STRIP";
+  postUnpack = "find -type f -exec sed -i 's@/bin/cp@cp@' {} +";
+
   meta = {
-    mainProgram = "hugs";
-    homepage = "https://www.haskell.org/hugs";
     description = "Haskell interpreter";
-    maintainers = [ ];
+    homepage = "https://www.haskell.org/hugs";
     license = lib.licenses.bsd3;
+    maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "hugs";
   };
 }

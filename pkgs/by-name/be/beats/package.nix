@@ -21,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Swatch Internet Time implemented as a C program";
     homepage = "https://github.com/j0hax/beats";
     license = lib.licenses.gpl3Only;
-    description = "Swatch Internet Time implemented as a C program";
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.j0hax ];
+    platforms = lib.platforms.all;
     mainProgram = "beats";
   };
 })

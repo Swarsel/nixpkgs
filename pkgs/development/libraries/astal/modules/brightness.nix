@@ -4,10 +4,11 @@
   quarrel,
 }:
 buildAstalModule {
-  name = "brightness";
   buildInputs = [
     json-glib
     quarrel
   ];
+
+  name = "brightness";
   meta.description = "Astal module for brightness devices";
 }

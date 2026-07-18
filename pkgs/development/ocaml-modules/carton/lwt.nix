@@ -1,33 +1,32 @@
 {
-  buildDunePackage,
-  carton,
-  lwt,
-  decompress,
-  optint,
-  bigstringaf,
   alcotest,
   alcotest-lwt,
+  base64,
+  bigstringaf,
+  bos,
+  buildDunePackage,
+  carton,
+  checkseum,
   cstruct,
+  decompress,
+  digestif,
   fmt,
+  fpath,
+  git-binary, # pkgs.git
+  ke,
   logs,
+  lwt,
   mirage-flow,
+  optint,
   result,
   rresult,
-  ke,
-  base64,
-  bos,
-  checkseum,
-  digestif,
-  fpath,
   stdlib-shims,
-  git-binary, # pkgs.git
 }:
 
 buildDunePackage {
-  pname = "carton-lwt";
-
   inherit (carton) version src postPatch;
-  duneVersion = "3";
+  inherit (carton) meta;
+  pname = "carton-lwt";
 
   propagatedBuildInputs = [
     carton
@@ -40,9 +39,11 @@ buildDunePackage {
   # Tests fail with git 2.41
   # see https://github.com/mirage/ocaml-git/issues/617
   doCheck = false;
+
   nativeCheckInputs = [
     git-binary
   ];
+
   checkInputs = [
     alcotest
     alcotest-lwt
@@ -61,5 +62,5 @@ buildDunePackage {
     stdlib-shims
   ];
 
-  inherit (carton) meta;
+  duneVersion = "3";
 }

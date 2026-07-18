@@ -2,9 +2,9 @@
   lib,
   fetchFromGitLab,
   buildGoModule,
+  makeWrapper,
   nixosTests,
   postgresql,
-  makeWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,26 +18,27 @@ buildGoModule (finalAttrs: {
     hash = "sha256-vAsKTkFx8HLKDdXIQt6fEF3l7EzzvcilGfqNtBa0AMM=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/pg_dump_anon";
-
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-CwU1zoIayxvfnGL9kPdummPJiV+ECfSz4+q6gZGb8pw=";
 
-  passthru.tests = { inherit (nixosTests.postgresql) anonymizer; };
-
-  nativeBuildInputs = [ makeWrapper ];
   postInstall = ''
     wrapProgram $out/bin/pg_dump_anon \
       --prefix PATH : ${lib.makeBinPath [ postgresql ]}
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/pg_dump_anon";
+  passthru.tests = { inherit (nixosTests.postgresql) anonymizer; };
+
   meta = {
     description = "Export databases with data being anonymized with the anonymizer extension";
     homepage = "https://postgresql-anonymizer.readthedocs.io/en/stable/";
+    license = lib.licenses.postgresql;
+
     maintainers = [
       lib.maintainers.leona
       lib.maintainers.osnyx
     ];
-    license = lib.licenses.postgresql;
+
     mainProgram = "pg_dump_anon";
   };
 })

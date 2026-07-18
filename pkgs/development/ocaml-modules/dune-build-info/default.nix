@@ -5,17 +5,15 @@
 }:
 
 buildDunePackage {
-  pname = "dune-build-info";
   inherit (dune-action-plugin) src version;
-
-  dontAddPrefix = true;
-
+  pname = "dune-build-info";
   buildInputs = [ dune-action-plugin ];
+  dontAddPrefix = true;
 
   meta = {
     inherit (dune-action-plugin.meta) homepage;
     description = "Embed build information inside executables";
-    maintainers = [ lib.maintainers.bcdarwin ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.bcdarwin ];
   };
 }

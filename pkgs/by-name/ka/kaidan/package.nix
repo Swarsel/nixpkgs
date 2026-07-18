@@ -2,19 +2,17 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  nix-update-script,
-  nixosTests,
-
   # build
   cmake,
-  kdePackages,
-  pkg-config,
-  writableTmpDirAsHomeHook,
-
   # runtime
   gst_all_1,
+  kdePackages,
   kdsingleapplication,
+  nix-update-script,
+  nixosTests,
+  pkg-config,
   qxmpp,
+  writableTmpDirAsHomeHook,
   zxing-cpp,
 }:
 
@@ -23,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.14.0";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "network";
     repo = "kaidan";
     tag = "v${finalAttrs.version}";
     hash = "sha256-lKJU8GIkubHLYsP7r+TA+1rg+TMGONwjEcys19f62/w=";
+    domain = "invent.kde.org";
   };
 
   patches = [
@@ -73,12 +71,12 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=(--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0")
   '';
 
-  passthru.updateScript = nix-update-script { };
   passthru.tests.kaidan = nixosTests.kaidan;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "User-friendly and modern chat app, using XMPP";
-    mainProgram = "kaidan";
+
     longDescription = ''
       Kaidan is a user-friendly and modern chat app for every device. It uses
       the open communication protocol XMPP (Jabber). Unlike other chat apps,
@@ -88,15 +86,19 @@ stdenv.mkDerivation (finalAttrs: {
       stability issues. Current features include audio messages, video
       messages, and file sharing.
     '';
+
     homepage = "https://www.kaidan.im";
+
     license = with lib.licenses; [
       gpl3Plus
       mit
       asl20
       cc-by-sa-40
     ];
+
     maintainers = with lib.maintainers; [ astro ];
-    teams = with lib.teams; [ ngi ];
     platforms = with lib.platforms; linux;
+    mainProgram = "kaidan";
+    teams = with lib.teams; [ ngi ];
   };
 })

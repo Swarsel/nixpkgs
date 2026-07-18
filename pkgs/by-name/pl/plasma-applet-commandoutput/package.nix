@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,9 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Tjnm26EYKXtBM9JBHKI73AMvOW/rQ3qOw2JDYey7EfQ=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -27,11 +24,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    changelog = "https://github.com/Zren/plasma-applet-commandoutput/blob/${finalAttrs.src.rev}/Changelog.md";
     description = "Run a command periodically and render its output";
     homepage = "https://github.com/Zren/plasma-applet-commandoutput";
+    changelog = "https://github.com/Zren/plasma-applet-commandoutput/blob/${finalAttrs.src.rev}/Changelog.md";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       oliver-ni

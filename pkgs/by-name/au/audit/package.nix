@@ -6,27 +6,25 @@
   bash,
   bashNonInteractive,
   buildPackages,
-  linuxHeaders,
-  python3Packages,
-  swig,
-  libcap_ng,
-  installShellFiles,
-  makeWrapper,
+  callPackage,
+  coreutils,
   gawk,
   gnugrep,
-  coreutils,
-
+  installShellFiles,
+  libcap_ng,
+  linuxHeaders,
+  makeWrapper,
+  # passthru
+  nix-update-script,
+  nixosTests,
+  python3Packages,
+  swig,
+  testers,
   enablePython ?
     !stdenv.hostPlatform.isStatic
     && stdenv.hostPlatform.parsed.cpu.bits == stdenv.buildPlatform.parsed.cpu.bits,
-
-  # passthru
-  nix-update-script,
-  testers,
-  nixosTests,
-  pkgsStatic ? { }, # CI has allowVariants = false, in which case pkgsMusl would not be passed. So, instead add a default here.
   pkgsMusl ? { },
-  callPackage,
+  pkgsStatic ? { }, # CI has allowVariants = false, in which case pkgsMusl would not be passed. So, instead add a default here.
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "audit";
@@ -39,15 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GdJ9nzlDAdOazOHH/YWuEoELrJh+G5ZJUKwIqAKAzpo=";
   };
 
-  postPatch = ''
-    substituteInPlace bindings/swig/src/auditswig.i \
-      --replace-fail "/usr/include/linux/audit.h" \
-                     "${linuxHeaders}/include/linux/audit.h"
-  ''
-  + lib.optionalString (enablePython && finalAttrs.finalPackage.doCheck) ''
-    patchShebangs auparse/test/auparse_test.py
-  '';
-
   outputs = [
     "bin"
     "lib"
@@ -57,11 +46,16 @@ stdenv.mkDerivation (finalAttrs: {
     "scripts"
   ];
 
-  strictDeps = true;
+  postPatch = ''
+    substituteInPlace bindings/swig/src/auditswig.i \
+      --replace-fail "/usr/include/linux/audit.h" \
+                     "${linuxHeaders}/include/linux/audit.h"
+  ''
+  + lib.optionalString (enablePython && finalAttrs.finalPackage.doCheck) ''
+    patchShebangs auparse/test/auparse_test.py
+  '';
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -99,27 +93,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.withFeature enablePython "python3")
   ];
 
-  __structuredAttrs = true;
-
-  # lib output is part of the mandatory nixos system closure, so avoid bash here
-  outputChecks.lib.disallowedRequisites = [
-    bash
-    bashNonInteractive
-  ];
-
-  # bin output is used if audit is enabled, becoming part of the system closure.
-  outputChecks.bin.disallowedRequisites = [
-    bash
-    bashNonInteractive
-  ];
+  doCheck = false;
 
   nativeCheckInputs = lib.optionals enablePython [
     python3Packages.pythonImportsCheckHook
   ];
-
-  pythonImportsCheck = [ "audit" ];
-
-  doCheck = false;
 
   postInstall = ''
     installShellCompletion --bash init.d/audit.bash_completion
@@ -144,40 +122,66 @@ stdenv.mkDerivation (finalAttrs: {
       rm $out/lib/systemd/system/audit-rules.service
   '';
 
+  __structuredAttrs = true;
+
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ];
+
   enableParallelBuilding = true;
 
+  # bin output is used if audit is enabled, becoming part of the system closure.
+  outputChecks.bin.disallowedRequisites = [
+    bash
+    bashNonInteractive
+  ];
+
+  # lib output is part of the mandatory nixos system closure, so avoid bash here
+  outputChecks.lib.disallowedRequisites = [
+    bash
+    bashNonInteractive
+  ];
+
+  pythonImportsCheck = [ "audit" ];
+
   passthru = {
-    updateScript = nix-update-script { };
-    testsuite = callPackage ./testsuite.nix { };
     tests = {
-      musl = pkgsMusl.audit or null;
-      static = pkgsStatic.audit or null;
-      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
       inherit (nixosTests) audit audit-testsuite;
+      musl = pkgsMusl.audit or null;
+
       # Broken on a hardened kernel
       package = finalAttrs.finalPackage.overrideAttrs (previousAttrs: {
         pname = previousAttrs.pname + "-test";
         doCheck = true;
       });
+
+      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+      static = pkgsStatic.audit or null;
     };
+
+    testsuite = callPackage ./testsuite.nix { };
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://people.redhat.com/sgrubb/audit/";
     description = "Audit Library";
+    homepage = "https://people.redhat.com/sgrubb/audit/";
     changelog = "https://github.com/linux-audit/audit-userspace/releases/tag/v4.1.2";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ grimmauld ];
-    teams = [ lib.teams.security-review ];
-    pkgConfigModules = [
-      "audit"
-      "auparse"
-    ];
     platforms = lib.platforms.linux;
+
     identifiers.cpeParts =
       lib.meta.cpeFullVersionWithVendor "linux_audit_project" finalAttrs.version
       // {
         product = "linux_audit";
       };
+
+    pkgConfigModules = [
+      "audit"
+      "auparse"
+    ];
+
+    teams = [ lib.teams.security-review ];
   };
 })

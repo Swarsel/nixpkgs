@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   pkg-config,
-  xorgproto,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "sessreg";
@@ -16,7 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ xorgproto ];
 
@@ -34,12 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility to manage utmp & wtmp entries for X sessions";
     homepage = "https://gitlab.freedesktop.org/xorg/app/sessreg";
+
     license = with lib.licenses; [
       mitOpenGroup
       mit
     ];
-    mainProgram = "sessreg";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "sessreg";
   };
 })

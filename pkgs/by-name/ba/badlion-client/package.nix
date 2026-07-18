@@ -11,11 +11,12 @@ appimageTools.wrapAppImage rec {
 
   src = appimageTools.extractType2 {
     inherit pname version;
+
     src = fetchurl {
-      name = "badlion-client-linux";
       # https://www.badlion.net/download/client/latest/linux
       url = "https://web.archive.org/web/20250416011033/https://client-updates.badlion.net/BadlionClient";
       hash = "sha256-M2aG3vb1EBpvx8ODs67Ua1R7lBXSe2oIcSwFzSz91n4=";
+      name = "badlion-client-linux";
     };
   };
 
@@ -37,7 +38,7 @@ appimageTools.wrapAppImage rec {
     homepage = "https://client.badlion.net";
     license = lib.licenses.unfree;
     maintainers = [ ];
-    mainProgram = "badlion-client";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "badlion-client";
   };
 }

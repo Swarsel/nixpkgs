@@ -5,11 +5,11 @@
   autoreconfHook,
   bison,
   flex,
+  getent,
+  libcap,
   openldap,
   openssl,
   trousers,
-  libcap,
-  getent,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,18 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "ed378f463ef73364c89feb0fc923f4dc867332a3";
     hash = "sha256-1DxlsjPoK3kIQkfguhOlzP2d7dneYRz/Qwp4cH30AhU=";
   };
+
+  postPatch = ''
+    substituteInPlace configure.ac \
+      --replace-fail "/usr/sbin/" "" \
+      --replace-fail "/bin/" "" \
+      --replace-fail "usermod" "true" \
+      --replace-fail "useradd" "true" \
+      --replace-fail "groupadd" "true" \
+      --replace-fail "chmod" "true" \
+      --replace-fail "chown" "true" \
+      --replace-fail "chgrp" "true"
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -37,18 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     libcap
   ];
 
-  postPatch = ''
-    substituteInPlace configure.ac \
-      --replace-fail "/usr/sbin/" "" \
-      --replace-fail "/bin/" "" \
-      --replace-fail "usermod" "true" \
-      --replace-fail "useradd" "true" \
-      --replace-fail "groupadd" "true" \
-      --replace-fail "chmod" "true" \
-      --replace-fail "chown" "true" \
-      --replace-fail "chgrp" "true"
-  '';
-
   configureFlags = [
     "--prefix="
     "--disable-ccatok"
@@ -56,13 +56,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
-
   installFlags = [ "DESTDIR=${placeholder "out"}" ];
 
   meta = {
-    changelog = "https://github.com/opencryptoki/opencryptoki/blob/v${finalAttrs.version}/ChangeLog";
     description = "PKCS#11 implementation for Linux";
     homepage = "https://github.com/opencryptoki/opencryptoki";
+    changelog = "https://github.com/opencryptoki/opencryptoki/blob/v${finalAttrs.version}/ChangeLog";
     license = lib.licenses.cpl10;
     maintainers = [ ];
     platforms = lib.platforms.unix;

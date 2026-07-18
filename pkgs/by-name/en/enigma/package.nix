@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  makeWrapper,
-  pkg-config,
-  gettext,
-  imagemagick,
-  curl,
-  libpng,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
-  xercesc,
+  curl,
+  fetchpatch,
+  gettext,
+  imagemagick,
+  libpng,
+  makeWrapper,
+  pkg-config,
   xdg-utils,
+  xercesc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fix format string security warning (turned into error)
     (fetchpatch {
-      url = "https://github.com/Enigma-Game/Enigma/pull/70/commits/d25051eb6228c885e779a9674f8ee3979da30663.patch";
       hash = "sha256-L5C4NCZDDUKji9Tg4geKaiw3CkSY6rCoawqGKqR4dFM=";
+      url = "https://github.com/Enigma-Game/Enigma/pull/70/commits/d25051eb6228c885e779a9674f8ee3979da30663.patch";
     })
   ];
 
@@ -40,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     imagemagick
   ];
+
   buildInputs = [
     SDL2
     SDL2_image
@@ -69,14 +70,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Puzzle game inspired by Oxyd on the Atari ST and Rock'n'Roll on the Amiga";
-    mainProgram = "enigma";
+    homepage = "https://www.nongnu.org/enigma/";
+
     license = with lib.licenses; [
       gpl2
       free
     ]; # source + bundles libs + art
-    platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin;
+
     maintainers = with lib.maintainers; [ iblech ];
-    homepage = "https://www.nongnu.org/enigma/";
+    platforms = lib.platforms.unix;
+    mainProgram = "enigma";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

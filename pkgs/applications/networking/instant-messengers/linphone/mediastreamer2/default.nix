@@ -1,29 +1,27 @@
 {
+  lib,
   bctoolbox,
   bzrtp,
   ffmpeg_4,
   glew,
   gsm,
-  lib,
-  libsm,
-  libx11,
-  libxext,
   libopus,
   libpulseaudio,
-  qt6Packages,
+  libsm,
   libv4l,
   libvpx,
+  libx11,
+  libxext,
   mkLinphoneDerivation,
   ortp,
   python3,
+  qt6Packages,
   speex,
   sqlite,
   srtp,
 }:
 mkLinphoneDerivation (finalAttrs: {
   pname = "mediastreamer2";
-
-  dontWrapQtApps = true;
 
   patches = [
     # Plugins directory is normally fixed during compile time. This patch makes
@@ -33,6 +31,8 @@ mkLinphoneDerivation (finalAttrs: {
     # environment variable points to that directory.
     ./plugins_dir.patch
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     python3
@@ -63,8 +63,6 @@ mkLinphoneDerivation (finalAttrs: {
     libvpx # VP8 video codec
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     "-DENABLE_QT_GL=ON" # Build necessary MSQOGL plugin for Linphone desktop
     "-DCMAKE_C_FLAGS=-DGIT_VERSION=\"v${finalAttrs.version}\""
@@ -73,6 +71,7 @@ mkLinphoneDerivation (finalAttrs: {
   ];
 
   env.NIX_LDFLAGS = "-lXext";
+  dontWrapQtApps = true;
 
   meta = {
     description = "Powerful and lightweight streaming engine specialized for voice/video telephony applications. Part of the Linphone project";

@@ -16,17 +16,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pronovic/banner";
     description = "Print large banners to ASCII terminals";
-    mainProgram = "banner";
-    license = lib.licenses.gpl2Only;
 
     longDescription = ''
       An implementation of the traditional Unix-program used to display
       large characters.
     '';
 
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/pronovic/banner";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.all;
+    mainProgram = "banner";
   };
 })

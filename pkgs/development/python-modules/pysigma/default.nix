@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  diskcache-stubs,
-  diskcache,
   fetchFromGitHub,
+  buildPythonPackage,
+  diskcache,
+  diskcache-stubs,
   jinja2,
   jq,
   packaging,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysigma";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SigmaHQ";
@@ -29,12 +28,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-j9C7WPK6kXkmrENkh1CQWb72xjFxP7gUTyOeyas4wew=";
   };
 
-  pythonRelaxDeps = [
-    "diskcache-stubs"
-    "jinja2"
-    "packaging"
-    "pyparsing"
-    "types-pyyaml"
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
 
   build-system = [ poetry-core ];
@@ -52,11 +48,6 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTests = [
     # Tests require network connection
     "test_sigma_plugin_directory_default"
@@ -69,7 +60,16 @@ buildPythonPackage (finalAttrs: {
     "test_validator_valid_d3fend_tags_online"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sigma" ];
+
+  pythonRelaxDeps = [
+    "diskcache-stubs"
+    "jinja2"
+    "packaging"
+    "pyparsing"
+    "types-pyyaml"
+  ];
 
   meta = {
     description = "Library to parse and convert Sigma rules into queries";

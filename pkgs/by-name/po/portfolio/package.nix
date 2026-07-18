@@ -1,25 +1,26 @@
 {
+  lib,
+  fetchurl,
   autoPatchelfHook,
   copyDesktopItems,
-  fetchurl,
+  gitUpdater,
   glib,
   glib-networking,
   gtk3,
+  imagemagick,
   jdk21_headless,
   jre_minimal,
-  lib,
   libsecret,
   makeDesktopItem,
   makeWrapper,
   stdenvNoCC,
   webkitgtk_4_1,
   wrapGAppsHook3,
-  imagemagick,
-  gitUpdater,
 }:
 let
   jre = jre_minimal.override {
     jdk = jdk21_headless;
+
     modules = [
       "java.base"
       "java.desktop"
@@ -64,11 +65,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = runtimeDeps;
-
-  dontWrapGApps = true;
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -129,29 +125,34 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Portfolio";
-      exec = "portfolio";
-      icon = "portfolio";
+      categories = [ "Office" ];
       comment = "Calculate Investment Portfolio Performance";
       desktopName = "Portfolio Performance";
-      categories = [ "Office" ];
+      exec = "portfolio";
+      icon = "portfolio";
+      name = "Portfolio";
       startupWMClass = "Portfolio Performance";
     })
   ];
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontWrapGApps = true;
   passthru.updateScript = gitUpdater { url = "https://github.com/buchen/portfolio.git"; };
 
   meta = {
     description = "Simple tool to calculate the overall performance of an investment portfolio";
     homepage = "https://www.portfolio-performance.info/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.epl10;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       kilianar
       oyren
       shawn8901
     ];
-    mainProgram = "portfolio";
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "portfolio";
   };
 })

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   gettext,
-  makeWrapper,
-  ncurses,
   libdrm,
   libpciaccess,
   libxcb,
+  makeWrapper,
+  ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,11 +16,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.4";
 
   src = fetchFromGitHub {
-    sha256 = "0kwqddidr45s1blp0h8r8h1dd1p50l516yb6mb4s6zsc827xzgg3";
-    rev = "v${finalAttrs.version}";
-    repo = "radeontop";
     owner = "clbr";
+    repo = "radeontop";
+    rev = "v${finalAttrs.version}";
+    sha256 = "0kwqddidr45s1blp0h8r8h1dd1p50l516yb6mb4s6zsc827xzgg3";
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    gettext
+    makeWrapper
+  ];
 
   buildInputs = [
     ncurses
@@ -28,18 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpciaccess
     libxcb
   ];
-  nativeBuildInputs = [
-    pkg-config
-    gettext
-    makeWrapper
-  ];
-
-  enableParallelBuilding = true;
-
-  patchPhase = ''
-    substituteInPlace getver.sh --replace ver=unknown ver=${finalAttrs.version}
-    substituteInPlace Makefile --replace pkg-config "$PKG_CONFIG"
-  '';
 
   makeFlags = [ "PREFIX=$(out)" ];
 
@@ -48,9 +42,16 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix LD_LIBRARY_PATH : $out/lib
   '';
 
+  enableParallelBuilding = true;
+
+  patchPhase = ''
+    substituteInPlace getver.sh --replace ver=unknown ver=${finalAttrs.version}
+    substituteInPlace Makefile --replace pkg-config "$PKG_CONFIG"
+  '';
+
   meta = {
     description = "Top-like tool for viewing AMD Radeon GPU utilization";
-    mainProgram = "radeontop";
+
     longDescription = ''
       View GPU utilization, both for the total activity percent and individual
       blocks. Supports R600 and later cards: even Southern Islands should work.
@@ -58,8 +59,10 @@ stdenv.mkDerivation (finalAttrs: {
       is also valid for OpenCL loads; the other blocks are only useful for GL
       loads.
     '';
+
     homepage = "https://github.com/clbr/radeontop";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3;
+    platforms = lib.platforms.linux;
+    mainProgram = "radeontop";
   };
 })

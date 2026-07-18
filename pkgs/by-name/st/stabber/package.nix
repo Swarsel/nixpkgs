@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  glib,
   expat,
+  glib,
   libmicrohttpd,
+  pkg-config,
 }:
 stdenv.mkDerivation {
   pname = "stabber-unstable";
@@ -19,26 +19,27 @@ stdenv.mkDerivation {
     hash = "sha256-q3WfPjqD4AotdDukVMNg9Hz/Ns2PgBaoNk06sFm0E68=";
   };
 
-  preAutoreconf = ''
-    mkdir m4
-  '';
-
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     glib
     expat
     libmicrohttpd
   ];
 
+  preAutoreconf = ''
+    mkdir m4
+  '';
+
   meta = {
     description = "Stubbed XMPP Server";
-    mainProgram = "stabber";
     homepage = "https://github.com/profanity-im/stabber";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ hschaeidt ];
+    platforms = lib.platforms.unix;
+    mainProgram = "stabber";
   };
 }

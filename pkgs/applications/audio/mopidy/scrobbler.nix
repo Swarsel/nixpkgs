@@ -1,20 +1,22 @@
 {
   lib,
-  pythonPackages,
   fetchPypi,
   mopidy,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-scrobbler";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "Mopidy-Scrobbler";
     sha256 = "11vxgax4xgkggnq4fr1rh2rcvzspkkimck5p3h4phdj3qpnj0680";
+    pname = "Mopidy-Scrobbler";
   };
+
+  # no tests implemented
+  doCheck = false;
 
   build-system = [
     pythonPackages.setuptools
@@ -25,13 +27,12 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     pythonPackages.pylast
   ];
 
-  # no tests implemented
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_scrobbler" ];
 
   meta = {
-    homepage = "https://github.com/mopidy/mopidy-scrobbler";
     description = "Mopidy extension for scrobbling played tracks to Last.fm";
+    homepage = "https://github.com/mopidy/mopidy-scrobbler";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jakeisnt ];
   };

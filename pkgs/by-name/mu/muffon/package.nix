@@ -16,7 +16,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname src version;
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
@@ -34,9 +33,9 @@ appimageTools.wrapType2 {
     homepage = "https://muffon.netlify.app/";
     changelog = "https://github.com/staniel359/muffon/releases/tag/v${version}";
     license = lib.licenses.agpl3Only;
-    maintainers = with lib.maintainers; [ octodi ];
-    mainProgram = "muffon";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ octodi ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "muffon";
   };
 }

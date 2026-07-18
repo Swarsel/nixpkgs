@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   buildPackages,
   installShellFiles,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,23 +24,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-80YdmDyyofBoHhLcldI9l1chpI6NKScyLQneJ068q/U=";
   };
 
-  cargoHash = "sha256-b6N4cKzsYRJEhvxVAtc+kfQJeDJMD7IpkGm14e9Icuo=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-b6N4cKzsYRJEhvxVAtc+kfQJeDJMD7IpkGm14e9Icuo=";
   # Avoiding "Undefined symbols" such as "___unw_remove_find_dynamic_unwind_sections" since dprint 0.50.1
   # Adding "libunwind" in buildInputs did not resolve it.
   env.RUSTFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-C link-args=-Wl,-undefined,dynamic_lookup";
-
-  cargoBuildFlags = [
-    "--package=dprint"
-    # Required only for dprint package tests; the binary is removed in postInstall.
-    "--package=test-process-plugin"
-  ];
-
-  cargoTestFlags = [
-    "--package=dprint"
-  ];
 
   checkFlags = [
     # Require creating directory and network access
@@ -69,13 +57,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --fish <(${dprint} completions fish)
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     writableTmpDirAsHomeHook
     versionCheckHook
   ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/dprint";
+
+  cargoBuildFlags = [
+    "--package=dprint"
+    # Required only for dprint package tests; the binary is removed in postInstall.
+    "--package=test-process-plugin"
+  ];
+
+  cargoTestFlags = [
+    "--package=dprint"
+  ];
+
   versionCheckKeepEnvironment = [ "HOME" ];
+  versionCheckProgram = "${placeholder "out"}/bin/dprint";
 
   passthru = {
     updateScript = nix-update-script {
@@ -87,18 +87,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Code formatting platform written in Rust";
+
     longDescription = ''
       dprint is a pluggable and configurable code formatting platform written in Rust.
       It offers multiple WASM plugins to support various languages. It's written in
       Rust, so it’s small, fast, and portable.
     '';
-    changelog = "https://github.com/dprint/dprint/releases/tag/${finalAttrs.version}";
+
     homepage = "https://dprint.dev";
+    changelog = "https://github.com/dprint/dprint/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kachick
       phanirithvij
     ];
+
     mainProgram = "dprint";
   };
 })

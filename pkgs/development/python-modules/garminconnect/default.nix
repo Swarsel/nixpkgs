@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   curl-cffi,
-  fetchFromGitHub,
   garth,
   pdm-backend,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "garminconnect";
   version = "0.3.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cyberjunky";
@@ -21,8 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-2nhBLaITFZPzk6fWnS6VAllPxkFofTIU8M+2yLvQMdA=";
   };
 
-  pythonRelaxDeps = [ "garth" ];
-
+  # Tests require a token
+  doCheck = false;
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -32,10 +31,9 @@ buildPythonPackage (finalAttrs: {
     ua-generator
   ];
 
-  # Tests require a token
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "garminconnect" ];
+  pythonRelaxDeps = [ "garth" ];
 
   meta = {
     description = "Garmin Connect Python API wrapper";

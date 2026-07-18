@@ -1,32 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  # tests
+  ase,
+  buildPythonPackage,
   fetchpatch,
-
-  # build-system
-  setuptools,
-
+  gemmi,
+  gsd,
   # dependencies
   more-itertools,
   numpy,
-
-  # tests
-  ase,
-  gemmi,
-  gsd,
   pycifrw,
   pytest-doctestplus,
   pytestCheckHook,
+  # build-system
+  setuptools,
   sympy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "parsnip";
   version = "1.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "glotzerlab";
@@ -38,22 +32,15 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # Numpy 2.5 compatibility, see: https://github.com/glotzerlab/parsnip/pull/245
     (fetchpatch {
-      url = "https://github.com/glotzerlab/parsnip/commit/41a6bd6e42ea212203d5ce5864c687927b834586.patch";
+      hash = "sha256-Y91fITsPkmcct2tDsaHtNB8ct41IMtw1A+QnRwChc7k=";
+
       includes = [
         # Other files are changelog & credits
         "parsnip/parsnip.py"
       ];
-      hash = "sha256-Y91fITsPkmcct2tDsaHtNB8ct41IMtw1A+QnRwChc7k=";
+
+      url = "https://github.com/glotzerlab/parsnip/commit/41a6bd6e42ea212203d5ce5864c687927b834586.patch";
     })
-  ];
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    more-itertools
-    numpy
   ];
 
   nativeCheckInputs = [
@@ -66,13 +53,26 @@ buildPythonPackage (finalAttrs: {
     sympy
   ];
 
-  pythonImportsCheck = [
-    "parsnip"
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    more-itertools
+    numpy
   ];
 
   disabledTestPaths = [
     # Don't test docs
     "doc/source/"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "parsnip"
   ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   # webpack,
 }:
@@ -23,25 +23,26 @@ buildNpmPackage (finalAttrs: {
   '';
 
   npmDepsHash = "sha256-9VeeXBpQMww3Xb+tum+8julwek86k6S5Afqx9E2Ta14=";
-  npmInstallFlags = [ "--omit=dev" ];
-
-  dontNpmBuild = true;
-  dontNpmPrune = true;
 
   # Delete dangling symlinks
   preFixup = ''
     rm $out/lib/node_modules/eslint/node_modules/{eslint-config-eslint,@eslint/js}
   '';
 
+  dontNpmBuild = true;
+  dontNpmPrune = true;
+  npmInstallFlags = [ "--omit=dev" ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--generate-lockfile" ];
   };
 
   meta = {
-    changelog = "https://github.com/eslint/eslint/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Find and fix problems in your JavaScript code";
     homepage = "https://eslint.org";
+    changelog = "https://github.com/eslint/eslint/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mdaniels5757
       onny

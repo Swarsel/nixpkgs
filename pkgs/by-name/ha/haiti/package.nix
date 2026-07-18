@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   makeWrapper,
   ruby,
-  stdenv,
   versionCheckHook,
 }:
 
@@ -22,20 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     ruby
   ];
-
-  paintSrc = fetchFromGitHub {
-    owner = "janlelis";
-    repo = "paint";
-    rev = "7076784c5d57f178690d19e4f8644441ff73f518";
-    hash = "sha256-uITUfcZjOACeCGsozpUxAYd98Y9oFTgyXems2Q3aYRU=";
-  };
-
-  docoptSrc = fetchFromGitHub {
-    owner = "docopt";
-    repo = "docopt.rb";
-    rev = "794c47d7cb62ca71d65086623a55881449bc2f9e";
-    hash = "sha256-9DbKTPsZRRAqDkN2wMzBtbbtyKDcVSGmVDcekf4WBnw=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -84,12 +70,26 @@ stdenv.mkDerivation (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  docoptSrc = fetchFromGitHub {
+    hash = "sha256-9DbKTPsZRRAqDkN2wMzBtbbtyKDcVSGmVDcekf4WBnw=";
+    owner = "docopt";
+    repo = "docopt.rb";
+    rev = "794c47d7cb62ca71d65086623a55881449bc2f9e";
+  };
+
+  paintSrc = fetchFromGitHub {
+    hash = "sha256-uITUfcZjOACeCGsozpUxAYd98Y9oFTgyXems2Q3aYRU=";
+    owner = "janlelis";
+    repo = "paint";
+    rev = "7076784c5d57f178690d19e4f8644441ff73f518";
+  };
+
   meta = {
-    changelog = "https://github.com/noraj/haiti/releases/tag/v${finalAttrs.version}";
     description = "CLI tool to identify hash types";
     homepage = "https://github.com/noraj/haiti";
+    changelog = "https://github.com/noraj/haiti/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "haiti";
     platforms = lib.platforms.unix;
+    mainProgram = "haiti";
   };
 })

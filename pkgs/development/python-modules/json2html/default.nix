@@ -1,14 +1,13 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "json2html";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "softvar";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-Y+mwJ0p4Q2TKMU8qQvuvo08RiMdsReO7psgXaiW9ntk=";
   };
 
-  build-system = [ setuptools ];
-
   # no proper test available
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "json2html" ];
 
   meta = {

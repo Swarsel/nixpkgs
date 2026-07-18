@@ -1,10 +1,10 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   camlidl,
-  fuse,
   dune-configurator,
+  fuse,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -25,16 +25,17 @@ buildDunePackage (finalAttrs: {
 
   nativeBuildInputs = [ camlidl ];
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     camlidl
     fuse
   ];
 
   meta = {
-    homepage = "https://sourceforge.net/projects/ocamlfuse";
     description = "OCaml bindings for FUSE";
+    homepage = "https://sourceforge.net/projects/ocamlfuse";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bennofs ];
+    platforms = lib.platforms.linux;
   };
 })

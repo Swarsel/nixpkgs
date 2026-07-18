@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rdkafka,
-  pkg-config,
   fetchFromGitHub,
-  rustPlatform,
   fetchzip,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  rdkafka,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,27 +21,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Asb6064TqvL9kNkWBMj4Z+1j1yIM+iBWsN+R5EuMOVA=";
   };
 
-  env.LOCAL_ASSETS_PATH = fetchzip {
-    url = "https://parseable-prism-build.s3.us-east-2.amazonaws.com/v${finalAttrs.version}/build.zip";
-    hash = "sha256-gWzfucetsJJSSjI9nGm7I8xLo0t1VKb4AertiEGuLWA=";
-  };
-
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ rdkafka ];
   cargoHash = "sha256-1K+EY8YkAjLiWfqUkgkqQOveXjHzraEV51zz3gwGMNs=";
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ rdkafka ];
-
-  buildFeatures = [ "rdkafka/dynamic-linking" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  env.LOCAL_ASSETS_PATH = fetchzip {
+    hash = "sha256-gWzfucetsJJSSjI9nGm7I8xLo0t1VKb4AertiEGuLWA=";
+    url = "https://parseable-prism-build.s3.us-east-2.amazonaws.com/v${finalAttrs.version}/build.zip";
+  };
 
   # Disables tests that rely on hostnames.
   checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
     "--skip=generate_correct_path_with_current_time_and"
   ];
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildFeatures = [ "rdkafka/dynamic-linking" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

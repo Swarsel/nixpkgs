@@ -11,8 +11,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "hacksguard";
   version = "0.3";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "Rhacknarok";
     repo = "hacksguard";
@@ -20,14 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-3HD6FFZBJ7x5uDy0UEwQVaxpuNt4O2wmJgMspeFF6iQ=";
   };
 
-  cargoHash = "sha256-LLAPbXz8QAEUGs+37ZIFVNW1WfCVQbROfI7wQFaiy3E=";
-
   nativeBuildInputs = [ pkg-config ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  cargoHash = "sha256-LLAPbXz8QAEUGs+37ZIFVNW1WfCVQbROfI7wQFaiy3E=";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

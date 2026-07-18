@@ -3,18 +3,18 @@
   stdenv,
   fetchurl,
   alsa-lib,
-  libjack2,
   fftwFloat,
   libclthreads,
   libclxclient,
+  libjack2,
   libx11,
   libxft,
   zita-alsa-pcmi,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.9.4";
   pname = "japa";
+  version = "0.9.4";
 
   src = fetchurl {
     url = "https://kokkinizita.linuxaudio.org/linuxaudio/downloads/japa-${finalAttrs.version}.tar.bz2";
@@ -32,14 +32,14 @@ stdenv.mkDerivation (finalAttrs: {
     zita-alsa-pcmi
   ];
 
-  preConfigure = ''
-    cd ./source/
-  '';
-
   makeFlags = [
     "PREFIX=$(out)"
     "SUFFIX=''"
   ];
+
+  preConfigure = ''
+    cd ./source/
+  '';
 
   meta = {
     description = "'perceptual' or 'psychoacoustic' audio spectrum analyser for JACK and ALSA";

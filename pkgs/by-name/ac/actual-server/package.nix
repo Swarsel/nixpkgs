@@ -1,74 +1,48 @@
 {
   lib,
   stdenv,
-  cctools,
   fetchFromGitHub,
+  cctools,
   git,
   jq,
   makeBinaryWrapper,
+  nixosTests,
   nodejs_22,
   python3,
   xcbuild,
   yarn-berry_4,
-  nixosTests,
 }:
 let
   nodejs = nodejs_22;
   yarn-berry = yarn-berry_4.override { inherit nodejs; };
   version = "26.7.0";
   src = fetchFromGitHub {
-    name = "actualbudget-actual-source";
     owner = "actualbudget";
     repo = "actual";
     tag = "v${version}";
     hash = "sha256-KePWt08rAhLZUrgyN7tdFUQXR/5y0TvakReji4eMwxg=";
+    name = "actualbudget-actual-source";
   };
   translations = fetchFromGitHub {
+    hash = "sha256-u3EVA8J0VCLPafidGHhDiySB2fQdibntN+6FfErQi70=";
     name = "actualbudget-translations-source";
     owner = "actualbudget";
     repo = "translations";
     # Note to updaters: this repo is not tagged, so just update this to the Git
     # tip at the time the update is performed.
     rev = "c26df422b50745085191721b1f078664daac947d";
-    hash = "sha256-u3EVA8J0VCLPafidGHhDiySB2fQdibntN+6FfErQi70=";
   };
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  srcs = [
-    src
-    translations
-  ];
-  sourceRoot = "${src.name}/";
+  inherit version src;
+  pname = "actual-server";
 
   patches = [
     # Remove after upstream updates to Yarn 4.14
     # https://github.com/actualbudget/actual/blob/master/package.json#L123
     ./yarn-4.14-support.patch
   ];
-
-  nativeBuildInputs = [
-    yarn-berry
-    nodejs
-    (yarn-berry.yarnBerryConfigHook.override { inherit nodejs; })
-    (python3.withPackages (ps: [ ps.setuptools ])) # Used by node-gyp
-    makeBinaryWrapper
-    # lage (used by `bin/package-browser`) shells out to `git ls-tree` to
-    # compute file hashes for its build cache.
-    git
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    cctools
-    xcbuild
-  ];
-
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-    NODE_JQ_SKIP_INSTALL_BINARY = "true";
-    SHARP_IGNORE_GLOBAL_LIBVIPS = "1";
-  };
-  # during build, vite tries to access localhost
-  __darwinAllowLocalNetworking = true;
 
   postPatch = ''
     ln -sv ../../../${translations.name} ./packages/desktop-client/locale
@@ -95,6 +69,27 @@ stdenv.mkDerivation (finalAttrs: {
     cat <<< $(${lib.getExe jq} '.dependenciesMeta."sharp".built = false' ./package.json) > ./package.json
   '';
 
+  nativeBuildInputs = [
+    yarn-berry
+    nodejs
+    (yarn-berry.yarnBerryConfigHook.override { inherit nodejs; })
+    (python3.withPackages (ps: [ ps.setuptools ])) # Used by node-gyp
+    makeBinaryWrapper
+    # lage (used by `bin/package-browser`) shells out to `git ls-tree` to
+    # compute file hashes for its build cache.
+    git
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    cctools
+    xcbuild
+  ];
+
+  env = {
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+    NODE_JQ_SKIP_INSTALL_BINARY = "true";
+    SHARP_IGNORE_GLOBAL_LIBVIPS = "1";
+  };
+
   buildPhase = ''
     runHook preBuild
 
@@ -111,15 +106,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
-
-  missingHashes = ./missing-hashes.json;
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-eZxQAf2AfNd+0wrSEmE9kg5XWdqhE3Dlf6OGc1bZhXA=";
-  };
-
-  pname = "actual-server";
-  inherit version src;
 
   installPhase = ''
     runHook preInstall
@@ -149,6 +135,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # during build, vite tries to access localhost
+  __darwinAllowLocalNetworking = true;
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-eZxQAf2AfNd+0wrSEmE9kg5XWdqhE3Dlf6OGc1bZhXA=";
+  };
+
+  sourceRoot = "${src.name}/";
+
+  srcs = [
+    src
+    translations
+  ];
+
   passthru = {
     inherit (finalAttrs) offlineCache;
     inherit translations;
@@ -157,16 +159,18 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://actualbudget.org/docs/releases";
     description = "Super fast privacy-focused app for managing your finances";
     homepage = "https://actualbudget.org/";
-    mainProgram = "actual-server";
+    changelog = "https://actualbudget.org/docs/releases";
     license = lib.licenses.mit;
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = [
       lib.maintainers.oddlama
       lib.maintainers.patrickdag
       lib.maintainers.yash-garg
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "actual-server";
   };
 })

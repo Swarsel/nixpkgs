@@ -1,13 +1,14 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   prompt-toolkit,
   setuptools,
 }:
 buildPythonPackage rec {
   pname = "aiocmd";
   version = "0.1.5";
+
   src = fetchFromGitHub {
     owner = "KimiNewt";
     repo = "aiocmd";
@@ -15,14 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-C8dpeMTaoOMgfNP19JUYKUf+Vyw36Ry6dHkhaSm/QNk=";
   };
 
-  pyproject = true;
-
-  build-system = [ setuptools ];
-
-  dependencies = [ prompt-toolkit ];
-
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ prompt-toolkit ];
+  pyproject = true;
   pythonImportsCheck = [ "aiocmd" ];
 
   meta = {

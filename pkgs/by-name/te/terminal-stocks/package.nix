@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -18,14 +18,13 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-TAS7iPWXXLaDosM31WYpeXC2Gz01fucoFu7llwBHmxc=";
   dontNpmBuild = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal based application that provides stock price information";
     homepage = "https://github.com/shweshi/terminal-stocks";
-    maintainers = with lib.maintainers; [ mislavzanic ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ mislavzanic ];
     mainProgram = "terminal-stocks";
   };
 }

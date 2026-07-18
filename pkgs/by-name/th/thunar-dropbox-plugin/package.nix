@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  gtk3,
-  thunar,
   cmake,
-  ninja,
   gitUpdater,
+  gtk3,
+  ninja,
+  pkg-config,
+  thunar,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/Jeinzi/thunar-dropbox";
     description = "Plugin that adds context-menu items for Dropbox to Thunar";
+    homepage = "https://github.com/Jeinzi/thunar-dropbox";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];

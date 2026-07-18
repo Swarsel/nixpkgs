@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   graphviz,
   idapro,
   nix-update-script,
@@ -16,9 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ida-domain";
   version = "0.5.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "HexRaysSA";
@@ -27,13 +24,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-oa3VQgWDEr4tPQ166EugfS7QrW1DlRb/hwypwKP+Xv4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    idapro
-    packaging
-    typing-extensions
-  ];
+  # Requires IDE to be installed
+  doCheck = false;
 
   nativeCheckInputs = [
     graphviz
@@ -42,11 +34,17 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  # Requires IDE to be installed
-  doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
+  dependencies = [
+    idapro
+    packaging
+    typing-extensions
+  ];
+
+  pyproject = true;
   # pythonImportsCheck = [ "ida_domain" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  doxygen,
-  graphviz,
   boost,
   cgal,
+  cmake,
+  doxygen,
   gdal,
   glew,
   gmp,
+  graphviz,
   libGL,
   libGLU,
+  libsForQt5,
   libsm,
   mpfr,
   proj,
   python3,
-  libsForQt5,
 }:
 
 let
@@ -26,8 +26,8 @@ let
     ]
   );
   boost' = boost.override {
-    enablePython = true;
     inherit python;
+    enablePython = true;
   };
   cgal' = cgal.override {
     boost = boost';
@@ -69,10 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Desktop software for the interactive visualisation of plate-tectonics";
-    mainProgram = "gplates";
     homepage = "https://www.gplates.org";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.all;
+    mainProgram = "gplates";
     broken = stdenv.hostPlatform.isDarwin; # FIX: this check: https://github.com/GPlates/GPlates/blob/gplates/cmake/modules/Config_h.cmake#L72
   };
 })

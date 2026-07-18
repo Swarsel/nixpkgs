@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
-  stevedore,
+  buildPythonPackage,
+  flask,
   prettytable,
   pyserial,
-  flask,
+  requests,
+  setuptools,
+  stevedore,
 }:
 
 buildPythonPackage rec {
   pname = "concord232";
   version = "0.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JasonCarter80";
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     hash = "sha256-qMHFOKuNuk4Z/FDNRqh1nsnA5vCW+9YXGK6d7Td5O5s=";
   };
 
+  # Package has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,8 +33,7 @@ buildPythonPackage rec {
     flask
   ];
 
-  # Package has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "GE Concord 4 RS232 Serial Interface Library and Server";

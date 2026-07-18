@@ -1,33 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  isPy3k,
-  setuptools,
-  colorama,
-  texttable,
-  tqdm,
+  buildPythonPackage,
   certifi,
+  colorama,
+  gitFull,
+  gitSetupHook,
   housekeeping,
-  puremagic,
-  pydiffx,
-  typing-extensions,
   importlib-metadata,
   importlib-resources,
-  packaging,
-  pytestCheckHook,
-  pytest-env,
+  isPy3k,
   kgb,
-  gitSetupHook,
-  gitFull,
+  packaging,
+  puremagic,
+  pydiffx,
+  pytest-env,
+  pytestCheckHook,
+  setuptools,
   subversion,
+  texttable,
+  tqdm,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "rbtools";
   version = "5.2.1";
-  pyproject = true;
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "reviewboard";
@@ -35,6 +33,15 @@ buildPythonPackage rec {
     tag = "release-${version}";
     hash = "sha256-Ci9lHlP2X95y7ldHBbqb5qWozPj3TJ0AxeVhqzVsdFA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-env
+    kgb
+    gitSetupHook
+    gitFull
+    subversion
+  ];
 
   build-system = [ setuptools ];
 
@@ -52,16 +59,7 @@ buildPythonPackage rec {
     packaging
   ];
 
-  pythonRelaxDeps = [ "pydiffx" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-env
-    kgb
-    gitSetupHook
-    gitFull
-    subversion
-  ];
+  disabled = !isPy3k;
 
   disabledTestPaths = [
     "rbtools/utils/tests/test_repository.py::RepositoryMatchTests::test_find_matching_server_repository_no_match" # AttributeError: 'APICache' object has no attribute 'db'
@@ -78,11 +76,14 @@ buildPythonPackage rec {
     "rbtools/clients/tests/test_scanning.py::ScanningTests::test_scanning_nested_repos_2"
   ];
 
+  pyproject = true;
+  pythonRelaxDeps = [ "pydiffx" ];
+
   meta = {
-    homepage = "https://www.reviewboard.org/docs/rbtools/dev/";
     description = "RBTools is a set of command line tools for working with Review Board and RBCommons";
-    mainProgram = "rbt";
+    homepage = "https://www.reviewboard.org/docs/rbtools/dev/";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "rbt";
   };
 }

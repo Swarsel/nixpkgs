@@ -1,7 +1,7 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
 }:
 
 buildDotnetModule rec {
@@ -15,10 +15,6 @@ buildDotnetModule rec {
     hash = "sha256-nzCuKCntqYVhjSHljPkY5ziAjYH/qGUqukRPrHzhOzo=";
   };
 
-  projectFile = [ "cp2/cp2.csproj" ];
-
-  executables = [ "cp2" ];
-
   patches = [ ./retarget-net8.patch ];
 
   preBuild = ''
@@ -27,13 +23,18 @@ buildDotnetModule rec {
     export DOTNET_NOLOGO=1
   '';
 
+  executables = [ "cp2" ];
+  projectFile = [ "cp2/cp2.csproj" ];
+
   meta = {
     description = "File archive utility for Apple II disk images and file archives";
+
     longDescription = ''
       CiderPress 2 is a file archive utility for Apple II disk images and file
       archives. It can extract files from disk images and file archives, and
       create new archives.
     '';
+
     homepage = "https://github.com/fadden/CiderPress2";
     changelog = "https://github.com/fadden/CiderPress2/releases/tag/v${version}";
     license = lib.licenses.asl20;

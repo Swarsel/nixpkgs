@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  flutter335,
-  runCommand,
-  yq,
-  sly,
   _experimental-update-script-combinators,
+  flutter335,
   gitUpdater,
+  runCommand,
+  sly,
+  yq,
 }:
 
 flutter335.buildFlutterApplication rec {
@@ -20,23 +20,24 @@ flutter335.buildFlutterApplication rec {
     hash = "sha256-pFTP+oDY3pCSgO26ZtqUR+puMJSFZAEdbM2AqmfkNX8=";
   };
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
   postInstall = ''
     install -Dm0644 packaging/linux/page.kramo.Sly.svg $out/share/icons/hicolor/scalable/apps/page.kramo.Sly.svg
     install -Dm0644 packaging/linux/page.kramo.Sly.desktop $out/share/applications/sly.desktop
   '';
 
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   passthru = {
     pubspecSource =
       runCommand "pubspec.lock.json"
         {
-          nativeBuildInputs = [ yq ];
           inherit (sly) src;
+          nativeBuildInputs = [ yq ];
         }
         ''
           cat $src/pubspec.lock | yq > $out
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (gitUpdater { rev-prefix = "v"; })
       (_experimental-update-script-combinators.copyAttrOutputToFile "sly.pubspecSource" ./pubspec.lock.json)
@@ -46,9 +47,9 @@ flutter335.buildFlutterApplication rec {
   meta = {
     description = "Friendly image editor";
     homepage = "https://github.com/kra-mo/Sly";
-    mainProgram = "sly";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "sly";
   };
 }

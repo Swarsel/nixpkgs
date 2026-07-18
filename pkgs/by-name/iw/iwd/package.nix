@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  pkg-config,
-  ell,
   coreutils,
   docutils,
-  readline,
-  openssl,
-  python3Packages,
+  ell,
+  fetchgit,
   gitUpdater,
+  openssl,
+  pkg-config,
+  python3Packages,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,19 +23,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-78Zw/i2dXecvC+DDSunPlUzqJj0FFYf7Sm6iN5VXBbA=";
   };
 
-  patches = [
-    # Remove dbus config referencing the netdev group, which we don't have.
-    # Users are advised to use the wheel group instead.
-    ./no_netdev_group.diff
-  ];
-
   outputs = [
     "out"
     "man"
     "doc"
   ]
   ++ lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) "test";
-  separateDebugInfo = true;
+
+  patches = [
+    # Remove dbus config referencing the netdev group, which we don't have.
+    # Users are advised to use the wheel group instead.
+    ./no_netdev_group.diff
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -50,15 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
-  nativeCheckInputs = [ openssl ];
-
-  # wrapPython wraps the scripts in $test. They pull in gobject-introspection,
-  # which doesn't cross-compile.
-  pythonPath = lib.optionals (stdenv.hostPlatform == stdenv.buildPlatform) [
-    python3Packages.dbus-python
-    python3Packages.pygobject3
-  ];
-
   configureFlags = [
     "--enable-external-ell"
     "--enable-wired"
@@ -70,14 +60,8 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-systemd-networkdir=${placeholder "out"}/lib/systemd/network/"
   ];
 
-  postUnpack = ''
-    mkdir -p iwd/ell
-    ln -s ${ell.src}/ell/useful.h iwd/ell/useful.h
-    ln -s ${ell.src}/ell/asn1-private.h iwd/ell/asn1-private.h
-    patchShebangs .
-  '';
-
   doCheck = true;
+  nativeCheckInputs = [ openssl ];
 
   postInstall = ''
     mkdir -p $doc/share/doc
@@ -102,18 +86,36 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  postUnpack = ''
+    mkdir -p iwd/ell
+    ln -s ${ell.src}/ell/useful.h iwd/ell/useful.h
+    ln -s ${ell.src}/ell/asn1-private.h iwd/ell/asn1-private.h
+    patchShebangs .
+  '';
+
+  # wrapPython wraps the scripts in $test. They pull in gobject-introspection,
+  # which doesn't cross-compile.
+  pythonPath = lib.optionals (stdenv.hostPlatform == stdenv.buildPlatform) [
+    python3Packages.dbus-python
+    python3Packages.pygobject3
+  ];
+
+  separateDebugInfo = true;
+
   passthru.updateScript = gitUpdater {
     # No nicer place to find latest release.
     url = "https://git.kernel.org/pub/scm/network/wireless/iwd.git";
   };
 
   meta = {
-    homepage = "https://git.kernel.org/pub/scm/network/wireless/iwd.git";
     description = "Wireless daemon for Linux";
+    homepage = "https://git.kernel.org/pub/scm/network/wireless/iwd.git";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       fpletz
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

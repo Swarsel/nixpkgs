@@ -7,6 +7,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "dvd-vr";
   version = "0.9.7";
+
   src = fetchurl {
     url = "https://www.pixelbeat.org/programs/dvd-vr/dvd-vr-${finalAttrs.version}.tar.gz";
     sha256 = "13wkdia3c0ryda40b2nzpb9vddimasgc4w95hvl0k555k9k8bl0r";
@@ -19,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.pixelbeat.org/programs/dvd-vr/";
-    downloadPage = "https://www.pixelbeat.org/programs/dvd-vr/";
     description = "Utility to identify and optionally copy recordings from a DVD-VR format disc";
+    homepage = "https://www.pixelbeat.org/programs/dvd-vr/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     mainProgram = "dvd-vr";
+    downloadPage = "https://www.pixelbeat.org/programs/dvd-vr/";
   };
 })

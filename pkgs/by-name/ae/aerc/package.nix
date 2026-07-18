@@ -1,18 +1,18 @@
 {
   lib,
-  buildGoModule,
-  fetchFromSourcehut,
-  ncurses,
-  withNotmuch ? true,
-  notmuch,
-  scdoc,
-  python3Packages,
-  w3m,
-  dante,
-  gawk,
-  versionCheckHook,
   bashNonInteractive,
+  buildGoModule,
+  dante,
+  fetchFromSourcehut,
+  gawk,
+  ncurses,
   nix-update-script,
+  notmuch,
+  python3Packages,
+  scdoc,
+  versionCheckHook,
+  w3m,
+  withNotmuch ? true,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,14 +26,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-UBXMAIuB0F7gG0dkpEF/3V4QK6FEbQw2ZLGGmRF884I=";
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-E/DnfiHoDDNNoaNGZC/nvs8DiJ8F2+H2FzxpU7nK+bE=";
-
-  nativeBuildInputs = [
-    scdoc
-    python3Packages.wrapPython
-  ];
-
   patches = [ ./runtime-libexec.patch ];
 
   postPatch = ''
@@ -46,9 +38,10 @@ buildGoModule (finalAttrs: {
     rm contrib/linters.go
   '';
 
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
-  pythonPath = [ python3Packages.vobject ];
+  nativeBuildInputs = [
+    scdoc
+    python3Packages.wrapPython
+  ];
 
   buildInputs = [
     python3Packages.python
@@ -56,6 +49,9 @@ buildGoModule (finalAttrs: {
     bashNonInteractive
   ]
   ++ lib.optional withNotmuch notmuch;
+
+  vendorHash = "sha256-E/DnfiHoDDNNoaNGZC/nvs8DiJ8F2+H2FzxpU7nK+bE=";
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   installPhase = ''
     runHook preInstall
@@ -65,6 +61,9 @@ buildGoModule (finalAttrs: {
 
     runHook postInstall
   '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = ''
     wrapProgram $out/bin/aerc \
@@ -78,21 +77,22 @@ buildGoModule (finalAttrs: {
       }
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
+  proxyVendor = true;
+  pythonPath = [ python3Packages.vobject ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Email client for your terminal";
     homepage = "https://aerc-mail.org/";
     changelog = "https://git.sr.ht/~rjarry/aerc/tree/${finalAttrs.version}/item/CHANGELOG.md";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       defelo
       sikmir
     ];
-    mainProgram = "aerc";
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.unix;
+    mainProgram = "aerc";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromCodeberg,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "inhibridge";
@@ -17,11 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-bW0+oZJO4JFgDuLl5f7iVorSyN/ro+BRSTX0j15Oqb4=";
 
   meta = {
-    homepage = "https://codeberg.org/Scrumplex/inhibridge";
     description = "Simple daemon that bridges freedesktop.org ScreenSaver inhibitions to systemd-inhibit";
-    platforms = lib.platforms.linux;
+    homepage = "https://codeberg.org/Scrumplex/inhibridge";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ Scrumplex ];
+    platforms = lib.platforms.linux;
     mainProgram = "inhibridge";
   };
 })

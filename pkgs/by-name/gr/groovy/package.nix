@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  which,
-  makeWrapper,
+  copyDesktopItems,
   installShellFiles,
   jdk,
-  copyDesktopItems,
   makeDesktopItem,
+  makeWrapper,
+  unzip,
+  which,
 }:
 
 # at runtime, need jdk
@@ -27,19 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     unzip
     installShellFiles
     copyDesktopItems
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "groovy";
-      desktopName = "Groovy Console";
-      exec = "groovyConsole";
-      icon = "groovy";
-      comment = finalAttrs.meta.description;
-      terminal = false;
-      startupNotify = false;
-      categories = [ "Development" ];
-    })
   ];
 
   installPhase = ''
@@ -73,6 +60,19 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "Groovy Console";
+      exec = "groovyConsole";
+      icon = "groovy";
+      name = "groovy";
+      startupNotify = false;
+      terminal = false;
+    })
+  ];
 
   meta = {
     description = "Agile dynamic language for the Java Platform";

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  apk-tools,
+  busybox,
+  file,
+  findutils,
   gitUpdater,
   makeWrapper,
-  pkg-config,
-  file,
-  scdoc,
   openssl,
-  zlib,
-  busybox,
-  apk-tools,
   perl,
-  findutils,
+  pkg-config,
+  scdoc,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,12 +20,20 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.17.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.alpinelinux.org";
     owner = "alpine";
     repo = "abuild";
     tag = finalAttrs.version;
     hash = "sha256-CiKOvYEidpykufpEwZLvLys97VRhpEabiVEJ6NJexb4=";
+    domain = "gitlab.alpinelinux.org";
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    scdoc
+    makeWrapper
+    file
+    findutils
+  ];
 
   buildInputs = [
     openssl
@@ -43,27 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
     ))
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    scdoc
-    makeWrapper
-    file
-    findutils
-  ];
-
-  patchPhase = ''
-    substituteInPlace ./Makefile \
-      --replace-fail 'chmod 4555' '#chmod 4555' \
-      --replace-fail 'pkg-config' "$PKG_CONFIG"
-  '';
-
   makeFlags = [
     "prefix=${placeholder "out"}"
     "CFLAGS=-Wno-error"
-  ];
-
-  installFlags = [
-    "sysconfdir=${placeholder "out"}/etc"
   ];
 
   postInstall = ''
@@ -82,6 +72,16 @@ stdenv.mkDerivation (finalAttrs: {
         --prefix PATH : "${lib.makeBinPath [ apk-tools ]}" \
         --prefix PATH : "${placeholder "out"}/bin"
     done
+  '';
+
+  installFlags = [
+    "sysconfdir=${placeholder "out"}/etc"
+  ];
+
+  patchPhase = ''
+    substituteInPlace ./Makefile \
+      --replace-fail 'chmod 4555' '#chmod 4555' \
+      --replace-fail 'pkg-config' "$PKG_CONFIG"
   '';
 
   passthru.updateScript = gitUpdater {

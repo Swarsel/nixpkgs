@@ -1,16 +1,15 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
+  installShellFiles,
   python3,
   qt5,
-  stdenv,
-  installShellFiles,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "vimiv-qt";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "karlch";
@@ -19,16 +18,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sha256 = "sha256-28sk5qDVmrgXYX2wm5G8zv564vG6GwxNp+gjrFHCRfU=";
   };
 
-  build-system = with python3.pkgs; [ setuptools ];
-
   nativeBuildInputs = [
     installShellFiles
     qt5.wrapQtAppsHook
-  ];
-
-  dependencies = with python3.pkgs; [
-    pyqt5
-    py3exiv2
   ];
 
   buildInputs = [ qt5.qtsvg ] ++ lib.optionals stdenv.hostPlatform.isLinux [ qt5.qtwayland ];
@@ -45,20 +37,28 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     done
   '';
 
-  pythonImportsCheck = [ "vimiv" ];
-
-  # Vimiv has to be wrapped manually because it is a non-ELF executable.
-  dontWrapQtApps = true;
   preFixup = ''
     wrapQtApp $out/bin/vimiv
   '';
 
+  build-system = with python3.pkgs; [ setuptools ];
+
+  dependencies = with python3.pkgs; [
+    pyqt5
+    py3exiv2
+  ];
+
+  # Vimiv has to be wrapped manually because it is a non-ELF executable.
+  dontWrapQtApps = true;
+  pyproject = true;
+  pythonImportsCheck = [ "vimiv" ];
+
   meta = {
     description = "Image viewer with Vim-like keybindings (Qt port)";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://github.com/karlch/vimiv-qt";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ dschrempf ];
-    mainProgram = "vimiv";
     platforms = lib.platforms.all;
+    mainProgram = "vimiv";
   };
 })

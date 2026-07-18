@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,9 +21,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Wayland clipboard manager that will make you clap";
     homepage = "https://github.com/bjesus/clapboard";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bjesus
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "clapboard";
   };

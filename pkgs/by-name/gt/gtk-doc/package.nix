@@ -1,33 +1,29 @@
 {
   lib,
   fetchFromGitLab,
+  dblatex,
+  docbook-xsl-nons,
+  docbook_xml_dtd_43,
+  gettext,
+  gnome,
+  libxslt,
   meson,
   ninja,
   pkg-config,
   python3,
-  docbook_xml_dtd_43,
-  docbook-xsl-nons,
-  libxslt,
-  gettext,
-  gnome,
   withDblatex ? false,
-  dblatex,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "gtk-doc";
   version = "1.36.1";
 
-  outputDevdoc = "out";
-
-  pyproject = false;
-
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "gtk-doc";
     tag = version;
     hash = "sha256-8hB43BCAtT1B7/ak2i0FAlYD3Kb4rNCWfsJ+wqGu3FA=";
+    domain = "gitlab.gnome.org";
   };
 
   postPatch = ''
@@ -36,11 +32,6 @@ python3.pkgs.buildPythonApplication rec {
   '';
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    python3
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -59,11 +50,6 @@ python3.pkgs.buildPythonApplication rec {
     dblatex
   ];
 
-  pythonPath = with python3.pkgs; [
-    pygments # Needed for https://gitlab.gnome.org/GNOME/gtk-doc/blob/GTK_DOC_1_32/meson.build#L42
-    lxml
-  ];
-
   mesonFlags = [
     "-Dtests=false"
     "-Dyelp_manual=false"
@@ -78,6 +64,19 @@ python3.pkgs.buildPythonApplication rec {
       --replace "${python3}" ""
   '';
 
+  depsBuildBuild = [
+    python3
+    pkg-config
+  ];
+
+  outputDevdoc = "out";
+  pyproject = false;
+
+  pythonPath = with python3.pkgs; [
+    pygments # Needed for https://gitlab.gnome.org/GNOME/gtk-doc/blob/GTK_DOC_1_32/meson.build#L42
+    lxml
+  ];
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gtk-doc";
@@ -86,9 +85,9 @@ python3.pkgs.buildPythonApplication rec {
   };
 
   meta = {
-    changelog = "https://gitlab.gnome.org/GNOME/gtk-doc/-/blob/${src.tag}/NEWS";
     description = "Tools to extract documentation embedded in GTK and GNOME source code";
     homepage = "https://gitlab.gnome.org/GNOME/gtk-doc";
+    changelog = "https://gitlab.gnome.org/GNOME/gtk-doc/-/blob/${src.tag}/NEWS";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ pSub ];
     teams = [ lib.teams.gnome ];

@@ -1,36 +1,36 @@
 {
+  lib,
+  stdenv,
   buildPackages,
-  pkgsBuildBuild,
   callPackage,
-  writeText,
+  # testing
+  emptyFile,
+  nixos,
+  nixosTests,
+  pahole,
   perl,
+  pkgsBuildBuild,
+  rust-bindgen-unwrapped,
+  rustPlatform,
+  rustc-unwrapped,
+  writeText,
   bison ? null,
   flex ? null,
   gmp ? null,
   libmpc ? null,
   mpfr ? null,
-  pahole,
-  lib,
-  stdenv,
-  rustc-unwrapped,
-  rustPlatform,
-  rust-bindgen-unwrapped,
-  # testing
-  emptyFile,
-  nixos,
-  nixosTests,
 }@args':
 
 lib.makeOverridable (
   # The kernel source tarball.
   {
-    pname ? "linux",
-
+    stdenv ? args'.stdenv,
     src,
-
     # The kernel version.
     version,
-
+    autoModules ? true,
+    buildDTBs ? null,
+    buildPackages ? args'.buildPackages,
     # Allows overriding the default defconfig
     # TODO: Reconsider some of these defaults?
     defconfig ?
@@ -42,60 +42,44 @@ lib.makeOverridable (
         if stdenv.hostPlatform.isLittleEndian then "powernv_defconfig" else "ppc64_defconfig"
       else
         "defconfig",
-
-    # Legacy overrides to the intermediate kernel config, as string
-    extraConfig ? "",
-
-    # Additional make flags passed to kbuild
-    extraMakeFlags ? [ ],
-
     # enables the options in ./common-config.nix and lib/systems/platform.nix;
     # if `false` then only `structuredExtraConfig` is used
-    enableCommonConfig ? true
-
-    , # kernel intermediate config overrides, as a set
-    structuredExtraConfig ? { },
-
-    # The version number used for the module directory
-    # If unspecified, this is determined automatically from the version.
-    modDirVersion ? null,
-
+    enableCommonConfig ? true,
+    # Legacy overrides to the intermediate kernel config, as string
+    extraConfig ? "",
+    # Additional make flags passed to kbuild
+    extraMakeFlags ? [ ],
+    extraMeta ? { },
+    extraPassthru ? { },
     # An attribute set whose attributes express the availability of
     # certain features in this kernel.  E.g. `{ia32Emulation = true;}'
     # indicates a kernel that provides Intel wireless support.  Used in
     # NixOS to implement kernel-specific behaviour.
     features ? { },
-
-    # Custom seed used for CONFIG_GCC_PLUGIN_RANDSTRUCT if enabled. This is
-    # automatically extended with extra per-version and per-config values.
-    randstructSeed ? "",
-
+    ignoreConfigErrors ? !(stdenv.hostPlatform.isx86 || stdenv.hostPlatform.isAarch64),
+    isLTS ? false,
+    isZen ? false,
+    kernelArch ? stdenv.hostPlatform.linuxArch,
     # A list of patches to apply to the kernel.  Each element of this list
     # should be an attribute set {name, patch} where `name' is a
     # symbolic name and `patch' is the actual patch.  The patch may
     # optionally be compressed with gzip or bzip2.
     kernelPatches ? [ ],
-    ignoreConfigErrors ? !(stdenv.hostPlatform.isx86 || stdenv.hostPlatform.isAarch64),
-    extraMeta ? { },
-    extraPassthru ? { },
-
-    target ? null,
-    buildDTBs ? null,
-
-    isLTS ? false,
-    isZen ? false,
-
-    autoModules ? true,
+    kernelTests ? { },
+    # The version number used for the module directory
+    # If unspecified, this is determined automatically from the version.
+    modDirVersion ? null,
+    pkgsBuildBuild ? args'.pkgsBuildBuild,
+    pname ? "linux",
     # TODO: Remove this default?
     preferBuiltin ?
       stdenv.hostPlatform.isAarch || stdenv.hostPlatform.isRiscV || stdenv.hostPlatform.isLoongArch64,
-    kernelArch ? stdenv.hostPlatform.linuxArch,
-    kernelTests ? { },
-
-    stdenv ? args'.stdenv,
-    buildPackages ? args'.buildPackages,
-    pkgsBuildBuild ? args'.pkgsBuildBuild,
-
+    # Custom seed used for CONFIG_GCC_PLUGIN_RANDSTRUCT if enabled. This is
+    # automatically extended with extra per-version and per-config values.
+    randstructSeed ? "",
+    # kernel intermediate config overrides, as a set
+    structuredExtraConfig ? { },
+    target ? null,
     ...
   }@args:
 
@@ -109,17 +93,16 @@ lib.makeOverridable (
     kernelFeatures = lib.foldr (x: y: (x.features or { }) // y) (
       {
         efiBootStub = true;
-        netfilterRPFilter = true;
         ia32Emulation = true;
+        netfilterRPFilter = true;
       }
       // features
     ) kernelPatches;
 
     commonStructuredConfig = import ./common-config.nix {
       inherit lib stdenv version;
-      rustAvailable = lib.meta.availableOn stdenv.hostPlatform rustc-unwrapped;
-
       features = kernelFeatures; # Ensure we know of all extra patches, etc.
+      rustAvailable = lib.meta.availableOn stdenv.hostPlatform rustc-unwrapped;
     };
 
     intermediateNixConfig =
@@ -168,12 +151,17 @@ lib.makeOverridable (
         kernelArch
         extraMakeFlags
         ;
-      pname = "linux-config";
+
       inherit version;
+      inherit (kernel) src patches;
+      pname = "linux-config";
 
-      generateConfig = ./generate-config.pl;
+      postPatch = kernel.postPatch + ''
+        # Patch kconfig to print "###" after every question so that
+        # generate-config.pl from the generic builder can answer them.
+        sed -e '/fflush(stdout);/i\printf("###");' -i scripts/kconfig/conf.c
+      '';
 
-      depsBuildBuild = [ buildPackages.stdenv.cc ];
       nativeBuildInputs = [
         perl
         gmp
@@ -188,8 +176,6 @@ lib.makeOverridable (
         rustc-unwrapped
       ];
 
-      env.RUST_LIB_SRC = lib.optionalString withRust rustPlatform.rustLibSrc;
-
       makeFlags = import ./common-flags.nix {
         inherit
           lib
@@ -199,15 +185,7 @@ lib.makeOverridable (
           ;
       };
 
-      postPatch = kernel.postPatch + ''
-        # Patch kconfig to print "###" after every question so that
-        # generate-config.pl from the generic builder can answer them.
-        sed -e '/fflush(stdout);/i\printf("###");' -i scripts/kconfig/conf.c
-      '';
-
-      preUnpack = kernel.preUnpack or "";
-
-      inherit (kernel) src patches;
+      env.RUST_LIB_SRC = lib.optionalString withRust rustPlatform.rustLibSrc;
 
       buildPhase =
         let
@@ -254,11 +232,14 @@ lib.makeOverridable (
         '';
 
       installPhase = "mv $buildRoot/.config $out";
-
+      depsBuildBuild = [ buildPackages.stdenv.cc ];
       enableParallelBuilding = true;
+      generateConfig = ./generate-config.pl;
+      preUnpack = kernel.preUnpack or "";
 
       passthru = rec {
         module = import ../../../../nixos/modules/system/boot/kernel_config.nix;
+
         # used also in apache
         # { modules = [ { options = res.options; config = svc.config or svc; } ];
         #   check = false;
@@ -270,14 +251,14 @@ lib.makeOverridable (
             ]
             ++ lib.optionals enableCommonConfig [
               {
-                settings = commonStructuredConfig;
                 _file = "pkgs/os-specific/linux/kernel/common-config.nix";
+                settings = commonStructuredConfig;
               }
             ]
             ++ [
               {
-                settings = structuredExtraConfig;
                 _file = "structuredExtraConfig";
+                settings = structuredExtraConfig;
               }
             ]
             ++ structuredConfigFromPatches;
@@ -300,13 +281,14 @@ lib.makeOverridable (
           configfile
           modDirVersion
           ;
-        pos = builtins.unsafeGetAttrPos "version" args;
 
         config = {
-          CONFIG_MODULES = "y";
           CONFIG_FW_LOADER = "y";
+          CONFIG_MODULES = "y";
           CONFIG_RUST = if withRust then "y" else "n";
         };
+
+        pos = builtins.unsafeGetAttrPos "version" args;
       }
       // lib.optionalAttrs (target != null) {
         inherit target;
@@ -324,7 +306,6 @@ lib.makeOverridable (
         previousAttrs.passthru or { }
         // extraPassthru
         // {
-          features = kernelFeatures;
           inherit
             commonStructuredConfig
             structuredExtraConfig
@@ -343,6 +324,8 @@ lib.makeOverridable (
                 ncurses
               ]);
           });
+
+          features = kernelFeatures;
 
           tests =
             let
@@ -385,8 +368,8 @@ lib.makeOverridable (
                       in
                       {
                         kernelPatches = throw (explain "kernelPatches");
-                        structuredExtraConfig = throw (explain "structuredExtraConfig");
                         modDirVersion = throw (explain "modDirVersion");
+                        structuredExtraConfig = throw (explain "structuredExtraConfig");
                       }
                     )
                   )).version

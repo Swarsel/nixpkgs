@@ -2,36 +2,31 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch2,
-  meson,
-  ninja,
-  pkg-config,
   atk,
   cairo,
-  glib,
-  gtk3,
-  pango,
+  dbus,
+  fetchpatch2,
   fribidi,
-  vala,
-  libxml2,
-  perl,
   gettext,
+  glib,
   gnome,
   gobject-introspection,
-  dbus,
-  xvfb-run,
+  gtk3,
+  libxml2,
+  meson,
+  ninja,
+  pango,
+  perl,
+  pkg-config,
   shared-mime-info,
   testers,
+  vala,
+  xvfb-run,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gtksourceview";
   version = "4.8.4";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src =
     let
@@ -42,6 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
       sha256 = "fsnRj7KD0fhKOj7/O3pysJoQycAGWXs/uru1lYQgqH0=";
     };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # By default, the library loads syntaxes from XDG_DATA_DIRS and user directory
     # but not from its own datadr (it assumes it will be in XDG_DATA_DIRS).
@@ -51,16 +51,23 @@ stdenv.mkDerivation (finalAttrs: {
     # nix.lang: Add Nix syntax highlighting
     # https://gitlab.gnome.org/GNOME/gtksourceview/-/merge_requests/303
     (fetchpatch2 {
-      url = "https://gitlab.gnome.org/GNOME/gtksourceview/-/commit/685b3bd08869c2aefe33fad696a7f5f2dc831016.patch";
       hash = "sha256-yeYXJ2l/QS857C4UXOnMFyh0JsptA0TQt0lfD7wN5ic=";
+      url = "https://gitlab.gnome.org/GNOME/gtksourceview/-/commit/685b3bd08869c2aefe33fad696a7f5f2dc831016.patch";
     })
 
     # nix.lang: fix section name
     (fetchpatch2 {
-      url = "https://gitlab.gnome.org/GNOME/gtksourceview/-/commit/1dbbb01da98140e0b2d5d0c6c2df29247650ed83.patch";
       hash = "sha256-6HxLKQyI5DDvmKhmldQlwVPV62RfFa2gwWbcHA2cICs=";
+      url = "https://gitlab.gnome.org/GNOME/gtksourceview/-/commit/1dbbb01da98140e0b2d5d0c6c2df29247650ed83.patch";
     })
   ];
+
+  postPatch = ''
+    # https://gitlab.gnome.org/GNOME/gtksourceview/-/merge_requests/295
+    # build: drop unnecessary vapigen check
+    substituteInPlace meson.build \
+      --replace "if generate_vapi" "if false"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -88,21 +95,14 @@ stdenv.mkDerivation (finalAttrs: {
     shared-mime-info
   ];
 
+  # Broken by PCRE 2 bump in GLib.
+  # https://gitlab.gnome.org/GNOME/gtksourceview/-/issues/283
+  doCheck = false;
+
   nativeCheckInputs = [
     xvfb-run
     dbus
   ];
-
-  postPatch = ''
-    # https://gitlab.gnome.org/GNOME/gtksourceview/-/merge_requests/295
-    # build: drop unnecessary vapigen check
-    substituteInPlace meson.build \
-      --replace "if generate_vapi" "if false"
-  '';
-
-  # Broken by PCRE 2 bump in GLib.
-  # https://gitlab.gnome.org/GNOME/gtksourceview/-/issues/283
-  doCheck = false;
 
   checkPhase = ''
     runHook preCheck
@@ -117,10 +117,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "gtksourceview";
       attrPath = "gtksourceview4";
-      versionPolicy = "odd-unstable";
       freeze = true;
+      packageName = "gtksourceview";
+      versionPolicy = "odd-unstable";
     };
   };
 
@@ -129,9 +129,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Source code editing widget for GTK";
     homepage = "https://gitlab.gnome.org/GNOME/gtksourceview";
-    pkgConfigModules = [ "gtksourceview-4" ];
-    platforms = lib.platforms.unix;
     license = lib.licenses.lgpl21Plus;
+    platforms = lib.platforms.unix;
+    pkgConfigModules = [ "gtksourceview-4" ];
     teams = [ lib.teams.gnome ];
   };
 })

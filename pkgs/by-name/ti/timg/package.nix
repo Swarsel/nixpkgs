@@ -1,21 +1,21 @@
 {
-  cmake,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  cairo,
+  cmake,
   ffmpeg,
   graphicsmagick,
-  lib,
   libdeflate,
   libexif,
   libjpeg,
+  librsvg,
   libsixel,
   openslide,
-  poppler,
-  librsvg,
-  cairo,
   pkg-config,
-  stb,
+  poppler,
   qoi,
-  stdenv,
+  stb,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FdaO+UAKjmLKgVZ3AYGQ9VJQj9s48Ihr8TlZ4at5I3c=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
 
   buildInputs = [
     ffmpeg
@@ -44,11 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     stb
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
   cmakeFlags = [
     "-DTIMG_VERSION_FROM_GIT=Off"
     "-DWITH_VIDEO_DECODING=On"
@@ -61,8 +61,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Terminal image and video viewer";
     homepage = "https://timg.sh/";
     license = lib.licenses.gpl2Only;
-    mainProgram = "timg";
     maintainers = with lib.maintainers; [ hzeller ];
     platforms = lib.platforms.unix;
+    mainProgram = "timg";
   };
 })

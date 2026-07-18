@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   buildEnv,
-  makeWrapper,
-  yquake2,
   copyDesktopItems,
   makeDesktopItem,
+  makeWrapper,
+  yquake2,
 }:
 
 {
+  description,
   games,
   name,
-  description,
 }:
 
 let
@@ -29,8 +29,6 @@ stdenv.mkDerivation {
     makeWrapper
     copyDesktopItems
   ];
-
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -50,17 +48,20 @@ stdenv.mkDerivation {
   desktopItems = map (
     game:
     makeDesktopItem {
-      name = game.id;
-      exec = game.title;
-      icon = "yamagi-quake2";
-      desktopName = game.id;
-      comment = game.description;
       categories = [
         "Game"
         "Shooter"
       ];
+
+      comment = game.description;
+      desktopName = game.id;
+      exec = game.title;
+      icon = "yamagi-quake2";
+      name = game.id;
     }
   ) games;
+
+  dontUnpack = true;
 
   meta = {
     inherit description;

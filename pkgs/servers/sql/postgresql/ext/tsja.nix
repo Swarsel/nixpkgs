@@ -1,10 +1,10 @@
 {
-  fetchzip,
   lib,
+  stdenv,
+  fetchzip,
   mecab,
   postgresql,
   postgresqlTestExtension,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,24 +37,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
+
+    asserts = [
+      {
+        description = "make sure '日本語' is parsed as a separate lexeme";
+        expected = "true";
+        query = "EXISTS (SELECT 1 FROM ts_debug('japanese', 'PostgreSQLで日本語のテキスト検索ができます。') WHERE lexemes = '{日本語}')";
+      }
+    ];
+
     sql = ''
       \i ${finalAttrs.finalPackage}/share/postgresql/extension/libtsja_dbinit.sql
     '';
-    asserts = [
-      {
-        query = "EXISTS (SELECT 1 FROM ts_debug('japanese', 'PostgreSQLで日本語のテキスト検索ができます。') WHERE lexemes = '{日本語}')";
-        expected = "true";
-        description = "make sure '日本語' is parsed as a separate lexeme";
-      }
-    ];
   };
 
   meta = {
     description = "PostgreSQL extension implementing Japanese text search";
     homepage = "https://www.amris.jp/tsja/index.html";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ chayleaf ];
     # GNU-specific linker options are used
     platforms = lib.platforms.gnu;
-    license = lib.licenses.gpl2Only;
   };
 })

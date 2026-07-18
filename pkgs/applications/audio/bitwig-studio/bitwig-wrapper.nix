@@ -1,20 +1,13 @@
 {
   stdenv,
+  bitwig-studio-unwrapped,
   bubblewrap,
   mktemp,
   writeShellScript,
-  bitwig-studio-unwrapped,
 }:
 stdenv.mkDerivation {
   inherit (bitwig-studio-unwrapped) version;
-
   pname = "bitwig-studio";
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontPatchELF = true;
-  dontStrip = true;
 
   installPhase =
     let
@@ -46,4 +39,10 @@ stdenv.mkDerivation {
       cp ${wrapper} $out/bin/bitwig-studio
       cp -r ${bitwig-studio-unwrapped}/share $out
     '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatchELF = true;
+  dontStrip = true;
+  dontUnpack = true;
 }

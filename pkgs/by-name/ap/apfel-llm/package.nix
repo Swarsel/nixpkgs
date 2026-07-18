@@ -2,16 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "apfel-llm";
   version = "1.8.3";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   # Building from source requires swift 6.3.0 while nixpkgs only has 5.10.1
   src = fetchurl {
@@ -19,10 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1AA86f5+Poo5YCrtxT1rAPGBctQbNa5hdAZmI008/yU=";
   };
 
-  sourceRoot = ".";
-
-  dontBuild = true;
-  dontConfigure = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -34,9 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -44,11 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Arthur-Ficial/apfel";
     changelog = "https://github.com/Arthur-Ficial/apfel/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ arthurficial ];
-    platforms = [ "aarch64-darwin" ];
-    mainProgram = "apfel";
+
     sourceProvenance = [
       lib.sourceTypes.binaryNativeCode
     ];
+
+    maintainers = with lib.maintainers; [ arthurficial ];
+    platforms = [ "aarch64-darwin" ];
+    mainProgram = "apfel";
   };
 })

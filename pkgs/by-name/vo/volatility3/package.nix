@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "volatility3";
   version = "2.28.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "volatilityfoundation";
@@ -17,21 +16,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-QO3rwGlVRBWEjReIGRDTK0LPVFN+4omkvxITaFC+5e0=";
   };
 
-  build-system = with python3.pkgs; [ setuptools ];
-
   nativeBuildInputs = [ makeWrapper ];
-
-  dependencies = with python3.pkgs; [
-    capstone
-    jsonschema
-    pefile
-    pycryptodome
-    yara-python
-  ];
 
   preBuild = ''
     export HOME=$(mktemp -d);
   '';
+
+  # Project has no tests
+  doCheck = false;
 
   postFixup = ''
     for executable in vol volshell; do
@@ -45,20 +37,30 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     done
   '';
 
-  # Project has no tests
-  doCheck = false;
+  build-system = with python3.pkgs; [ setuptools ];
 
+  dependencies = with python3.pkgs; [
+    capstone
+    jsonschema
+    pefile
+    pycryptodome
+    yara-python
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "volatility3" ];
 
   meta = {
     description = "Volatile memory extraction frameworks";
     homepage = "https://www.volatilityfoundation.org/";
     changelog = "https://github.com/volatilityfoundation/volatility3/releases/tag/${finalAttrs.src.tag}";
+
     license = {
       # Volatility Software License 1.0
       free = false;
       url = "https://www.volatilityfoundation.org/license/vsl-v1.0";
     };
+
     maintainers = with lib.maintainers; [
       caverav
       fab

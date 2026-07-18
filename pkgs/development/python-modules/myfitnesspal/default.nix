@@ -21,14 +21,21 @@
 buildPythonPackage rec {
   pname = "myfitnesspal";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-eE807M8qFDlSMAcE+GFJyve1YfmlWmB3ML9VJhMUeIE=";
   };
 
-  pythonRelaxDeps = [ "typing-extensions" ];
+  postPatch = ''
+    # Remove overly restrictive version constraints
+    sed -i -e "s/>=.*//" requirements.txt
+
+    # https://github.com/coddingtonbear/python-measurement/pull/8
+    substituteInPlace tests/test_client.py \
+      --replace-fail "Weight" "Mass" \
+      --replace-fail '"Mass"' '"Weight"'
+  '';
 
   nativeBuildInputs = [ setuptools ];
 
@@ -51,27 +58,19 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  postPatch = ''
-    # Remove overly restrictive version constraints
-    sed -i -e "s/>=.*//" requirements.txt
-
-    # https://github.com/coddingtonbear/python-measurement/pull/8
-    substituteInPlace tests/test_client.py \
-      --replace-fail "Weight" "Mass" \
-      --replace-fail '"Mass"' '"Weight"'
-  '';
-
   disabledTests = [
     # Integration tests require an account to be set
     "test_integration"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "myfitnesspal" ];
+  pythonRelaxDeps = [ "typing-extensions" ];
 
   meta = {
     description = "Python module to access meal tracking data stored in MyFitnessPal";
-    mainProgram = "myfitnesspal";
     homepage = "https://github.com/coddingtonbear/python-myfitnesspal";
     license = lib.licenses.mit;
+    mainProgram = "myfitnesspal";
   };
 }

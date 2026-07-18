@@ -8,28 +8,33 @@ let
     { name, ... }:
     {
       options = {
-        name = lib.mkOption {
-          type = types.str;
-          default = name;
-          description = ''
-            Interface name
-          '';
-        };
-
-        vlan = lib.mkOption {
-          type = types.ints.unsigned;
-          description = ''
-            VLAN to which the network interface is connected.
-          '';
-        };
-
         assignIP = lib.mkOption {
-          type = types.bool;
           default = false;
+
           description = ''
             Automatically assign an IP address to the network interface using the same scheme as
             virtualisation.vlans.
           '';
+
+          type = types.bool;
+        };
+
+        name = lib.mkOption {
+          default = name;
+
+          description = ''
+            Interface name
+          '';
+
+          type = types.str;
+        };
+
+        vlan = lib.mkOption {
+          description = ''
+            VLAN to which the network interface is connected.
+          '';
+
+          type = types.ints.unsigned;
         };
       };
     }
@@ -46,8 +51,8 @@ let
       in
       lib.nameValuePair name {
         inherit name;
-        vlan = v.fst;
         assignIP = true;
+        vlan = v.fst;
       }
     )
   );
@@ -55,27 +60,50 @@ in
 {
   options = {
     networking.primaryIPAddress = lib.mkOption {
-      type = types.str;
       default = "";
-      internal = true;
       description = "Primary IP address used in /etc/hosts.";
+      internal = true;
+      type = types.str;
     };
 
     networking.primaryIPv6Address = lib.mkOption {
-      type = types.str;
       default = "";
-      internal = true;
       description = "Primary IPv6 address used in /etc/hosts.";
+      internal = true;
+      type = types.str;
+    };
+
+    virtualisation.allInterfaces = lib.mkOption {
+      default = vlansNumbered // cfg.interfaces;
+
+      description = ''
+        All network interfaces for the container or VM. Combines
+        {option}`virtualisation.vlans` and {option}`virtualisation.interfaces`.
+      '';
+
+      readOnly = true;
+      type = types.attrsOf interfaceType;
+    };
+
+    virtualisation.interfaces = lib.mkOption {
+      default = { };
+
+      description = ''
+        Extra network interfaces to add to the container or VM in addition to the ones
+        created by {option}`virtualisation.vlans`.
+      '';
+
+      example = {
+        enp1s0.vlan = 1;
+      };
+
+      type = types.attrsOf interfaceType;
     };
 
     virtualisation.vlans = lib.mkOption {
-      type = types.listOf types.ints.unsigned;
       default = if cfg.interfaces == { } then [ 1 ] else [ ];
       defaultText = lib.literalExpression "if config.virtualisation.interfaces == {} then [ 1 ] else [ ]";
-      example = [
-        1
-        2
-      ];
+
       description = ''
         Virtual networks to which the container or VM is connected. Each number «N» in
         this list causes the container to have a virtual Ethernet interface
@@ -83,30 +111,16 @@ in
         address `192.168.«N».«M»`, where «M» is the index of this container in
         the list of containers.
       '';
-    };
 
-    virtualisation.interfaces = lib.mkOption {
-      default = { };
-      example = {
-        enp1s0.vlan = 1;
-      };
-      description = ''
-        Extra network interfaces to add to the container or VM in addition to the ones
-        created by {option}`virtualisation.vlans`.
-      '';
-      type = types.attrsOf interfaceType;
-    };
+      example = [
+        1
+        2
+      ];
 
-    virtualisation.allInterfaces = lib.mkOption {
-      type = types.attrsOf interfaceType;
-      readOnly = true;
-      description = ''
-        All network interfaces for the container or VM. Combines
-        {option}`virtualisation.vlans` and {option}`virtualisation.interfaces`.
-      '';
-      default = vlansNumbered // cfg.interfaces;
+      type = types.listOf types.ints.unsigned;
     };
   };
+
   config = {
     assertions = [
       (
@@ -115,6 +129,7 @@ in
         in
         {
           assertion = conflictingKeys == { };
+
           message = ''
             `virtualisation.vlans` and `virtualisation.interfaces` have conflicting keys: ${lib.concatStringsSep "," (lib.attrNames conflictingKeys)}
           '';
@@ -128,6 +143,7 @@ in
         in
         {
           assertion = lib.allUnique allInterfaceNames;
+
           message = ''
             `virtualisation.vlans` and `virtualisation.interfaces` have conflicting interface names: ${lib.concatStringsSep "," allInterfaceNames}
           '';

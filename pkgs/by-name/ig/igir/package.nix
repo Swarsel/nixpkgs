@@ -1,13 +1,11 @@
 {
   lib,
-  buildNpmPackage,
+  stdenv,
   fetchFromGitHub,
-
   # for patching bundled 7z binary from the 7zip-bin node module
   # at lib/node_modules/igir/node_modules/7zip-bin/linux/x64/7za
   autoPatchelfHook,
-  stdenv,
-
+  buildNpmPackage,
   libusb1,
   libuv,
   libz,
@@ -27,8 +25,6 @@ buildNpmPackage rec {
     hash = "sha256-qs6CVmBLn23BOjr+d4WZeROFxqKy9vWx8iUVKBicKdk=";
   };
 
-  npmDepsHash = "sha256-ruFssMRX7fzEI7lwEb/a+0lYso9I3CufLK9uVZiuhoU=";
-
   # I have no clue why I have to do this
   postPatch = ''
     patchShebangs scripts/update-readme-help.sh
@@ -46,17 +42,18 @@ buildNpmPackage rec {
     systemd
   ];
 
+  npmDepsHash = "sha256-ruFssMRX7fzEI7lwEb/a+0lYso9I3CufLK9uVZiuhoU=";
   # from lib/node_modules/igir/node_modules/@node-rs/crc32-linux-x64-musl/crc32.linux-x64-musl.node
   # Irrelevant to our use
   autoPatchelfIgnoreMissingDeps = [ "libc.musl-x86_64.so.1" ];
 
   meta = {
     description = "Video game ROM collection manager to help filter, sort, patch, archive, and report on collections on any OS";
-    mainProgram = "igir";
     homepage = "https://igir.io";
     changelog = "https://github.com/emmercm/igir/releases/tag/${src.rev}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ mjm ];
     platforms = lib.platforms.linux;
+    mainProgram = "igir";
   };
 }

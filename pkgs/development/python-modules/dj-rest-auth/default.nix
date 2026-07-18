@@ -1,24 +1,23 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   django-allauth,
   djangorestframework,
   djangorestframework-simplejwt,
-  fetchFromGitHub,
+  pyotp,
+  pytest-django,
+  pytestCheckHook,
   python,
   responses,
   setuptools,
   unittest-xml-reporting,
-  pyotp,
-  pytestCheckHook,
-  pytest-django,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dj-rest-auth";
   version = "7.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iMerica";
@@ -27,21 +26,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-eUcve2KPcLjKKWU7AxQEZ0mokP185E43Xjm4b+4hQzA=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ django ];
-
-  dependencies = [ djangorestframework ];
-
-  optional-dependencies = {
-    with_social = [
-      django-allauth
-    ]
-    ++ django-allauth.optional-dependencies.socialaccount;
-    with_mfa = [
-      pyotp
-    ];
-  };
+  env.DJANGO_SETTINGS_MODULE = "dj_rest_auth.tests.settings";
 
   nativeCheckInputs = [
     pytest-django
@@ -53,18 +39,31 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  env.DJANGO_SETTINGS_MODULE = "dj_rest_auth.tests.settings";
-
   preCheck = ''
     # Make tests module available for the checkPhase
     export PYTHONPATH=$out/${python.sitePackages}/dj_rest_auth:$PYTHONPATH
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ djangorestframework ];
 
   disabledTests = [
     # Test connects to graph.facebook.com
     "TestSocialLoginSerializer"
   ];
 
+  optional-dependencies = {
+    with_mfa = [
+      pyotp
+    ];
+
+    with_social = [
+      django-allauth
+    ]
+    ++ django-allauth.optional-dependencies.socialaccount;
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "dj_rest_auth" ];
 
   meta = {

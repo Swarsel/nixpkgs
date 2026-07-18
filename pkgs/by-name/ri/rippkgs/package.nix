@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   sqlite,
 }:
 
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-nRaGbJg1zCHTL8y/Tk5dM1dSu2v06ECsZYyMPIQTlvg=";
   };
 
-  cargoHash = "sha256-bSgQ/dmOffWOYpgeNn0vTdzrM/aFkD3znN9c1u/sjQ0=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -26,6 +24,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     sqlite
   ];
+
+  cargoHash = "sha256-bSgQ/dmOffWOYpgeNn0vTdzrM/aFkD3znN9c1u/sjQ0=";
 
   meta = {
     description = "CLI for indexing and searching packages in Nix expressions";

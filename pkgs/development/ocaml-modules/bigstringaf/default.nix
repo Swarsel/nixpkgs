@@ -1,17 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  buildDunePackage,
   alcotest,
-  pkg-config,
+  buildDunePackage,
   dune-configurator,
+  pkg-config,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "bigstringaf";
   version = "0.10.0";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "inhabitedtype";
@@ -22,12 +20,14 @@ buildDunePackage (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dune-configurator ];
-
-  checkInputs = [ alcotest ];
   doCheck = true;
+  checkInputs = [ alcotest ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Bigstring intrinsics and fast blits based on memcpy/memmove";
+
     longDescription = ''
       Bigstring intrinsics and fast blits based on memcpy/memmove
 
@@ -39,9 +39,9 @@ buildDunePackage (finalAttrs: {
 
       So here they are. Go crazy.
     '';
+
     changelog = "https://github.com/inhabitedtype/bigstringaf/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.vbgl ];
-    inherit (finalAttrs.src.meta) homepage;
   };
 })

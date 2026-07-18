@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  makeWrapper,
-  pkg-config,
-  lrzsz,
-  ncurses,
   libiconv,
+  lrzsz,
+  makeWrapper,
+  ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,12 +15,20 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.10";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "minicom-team";
     repo = "minicom";
     rev = finalAttrs.version;
     sha256 = "sha256-wC6VlMRwuhV1zQ26wNx7gijuze8E2CvnzpqOSIPzq2s=";
+    domain = "salsa.debian.org";
   };
+
+  patches = [ ./xminicom_terminal_paths.patch ];
+
+  nativeBuildInputs = [
+    autoreconfHook
+    makeWrapper
+    pkg-config
+  ];
 
   buildInputs = [
     ncurses
@@ -29,20 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
     libiconv
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    makeWrapper
-    pkg-config
-  ];
-
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--sysconfdir=/etc"
     "--enable-lock-dir=/var/lock"
   ];
-
-  patches = [ ./xminicom_terminal_paths.patch ];
 
   preConfigure = ''
     # Have `configure' assume that the lock directory exists.
@@ -57,15 +55,19 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Modem control and terminal emulation program";
-    homepage = "https://salsa.debian.org/minicom-team/minicom";
-    license = lib.licenses.gpl2Plus;
+
     longDescription = ''
       Minicom is a menu driven communications program. It emulates ANSI
       and VT102 terminals. It has a dialing directory and auto zmodem
       download.
     '';
+
+    homepage = "https://salsa.debian.org/minicom-team/minicom";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.unix;
   };

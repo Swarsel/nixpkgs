@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
+  dysnomia,
   fetchpatch,
-  pkg-config,
+  getopt,
   glib,
+  libiconv,
+  libintl,
   libxml2,
   libxslt,
-  getopt,
-  dysnomia,
-  libintl,
-  libiconv,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,13 +26,14 @@ stdenv.mkDerivation rec {
     # https://github.com/svanderburg/disnix/pull/21
     # fix implicit function declaration
     (fetchpatch {
+      hash = "sha256-RZNVVdZ7Rx8n7qzbJOw8BHL8f07mvh8IKpfsWexuVLU=";
       name = "add-stdlib.h.patch";
       url = "https://github.com/svanderburg/disnix/commit/aa969f1d152acb35fc70c6c8db249b61f5a9eb41.patch";
-      hash = "sha256-RZNVVdZ7Rx8n7qzbJOw8BHL8f07mvh8IKpfsWexuVLU=";
     })
   ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glib
     libxml2
@@ -46,9 +47,11 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Nix-based distributed service deployment tool";
     license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       tomberek
     ];
+
     platforms = lib.platforms.unix;
   };
 }

@@ -1,13 +1,13 @@
 {
-  stdenv,
-  rustPlatform,
-  fetchFromGitHub,
   lib,
-  just,
-  pkg-config,
+  stdenv,
+  fetchFromGitHub,
   fd,
+  just,
   libqalculate,
   libxkbcommon,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,38 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Db3Lj1GuhoEP2iMwgEF8HnGAUkz0IIr3ZQWmNd1EaOY=";
   };
-
-  __structuredAttrs = true;
-
-  nativeBuildInputs = [
-    just
-    pkg-config
-  ];
-  buildInputs = [
-    libxkbcommon
-  ];
-
-  cargoHash = "sha256-9gYfQQQd/W3QQFavbLiJVFQDs0dkZtHDm3xNXZPzhLc=";
-
-  cargoBuildFlags = [
-    "--package"
-    "pop-launcher-bin"
-  ];
-  cargoTestFlags = [
-    "--package"
-    "pop-launcher-bin"
-  ];
-
-  dontUseJustBuild = true;
-  dontUseJustCheck = true;
-  justFlags = [
-    "--set"
-    "base-dir"
-    (placeholder "out")
-    "--set"
-    "target-dir"
-    "target/${stdenv.hostPlatform.rust.cargoShortTarget}/release"
-  ];
 
   postPatch = ''
     substituteInPlace justfile --replace-fail '#!/usr/bin/env' "#!$(command -v env)"
@@ -68,12 +36,46 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --replace-fail '/usr/bin/gnome-terminal' 'gnome-terminal'
   '';
 
+  nativeBuildInputs = [
+    just
+    pkg-config
+  ];
+
+  buildInputs = [
+    libxkbcommon
+  ];
+
+  cargoHash = "sha256-9gYfQQQd/W3QQFavbLiJVFQDs0dkZtHDm3xNXZPzhLc=";
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "--package"
+    "pop-launcher-bin"
+  ];
+
+  cargoTestFlags = [
+    "--package"
+    "pop-launcher-bin"
+  ];
+
+  dontUseJustBuild = true;
+  dontUseJustCheck = true;
+
+  justFlags = [
+    "--set"
+    "base-dir"
+    (placeholder "out")
+    "--set"
+    "target-dir"
+    "target/${stdenv.hostPlatform.rust.cargoShortTarget}/release"
+  ];
+
   meta = {
     description = "Modular IPC-based desktop launcher service";
     homepage = "https://github.com/pop-os/launcher";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ samhug ];
+    platforms = lib.platforms.linux;
     mainProgram = "pop-launcher";
     teams = [ lib.teams.cosmic ];
   };

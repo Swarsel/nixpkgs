@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  version,
+  enableShared,
+  hostIsTarget,
+  hostPlatform,
   langC,
   langCC,
   langJit,
-  enableShared,
-  targetPlatform,
-  hostPlatform,
-  withoutTargetLibc,
   libcCross,
-  hostIsTarget,
+  targetPlatform,
+  version,
+  withoutTargetLibc,
 }:
 
 assert !stdenv.targetPlatform.hasSharedLibraries -> !enableShared;
@@ -30,6 +30,7 @@ lib.pipe drv
               "all-gcc"
               "all-target-libgcc"
             ];
+
             installTargets = "install-gcc install-target-libgcc";
           }
         )
@@ -80,11 +81,7 @@ lib.pipe drv
             previousAttrs:
             lib.optionalAttrs ((!langC) || langJit || enableLibGccOutput) {
               outputs = previousAttrs.outputs ++ lib.optionals enableLibGccOutput [ "libgcc" ];
-              # This is a separate phase because gcc assembles its phase scripts
-              # in bash instead of nix (we should fix that).
-              preFixupPhases =
-                (previousAttrs.preFixupPhases or [ ])
-                ++ lib.optionals ((!langC) || enableLibGccOutput) [ "preFixupLibGccPhase" ];
+
               preFixupLibGccPhase =
                 # delete extra/unused builds of libgcc_s in non-langC builds
                 # (i.e. libgccjit, gnat, etc) to avoid potential confusion
@@ -166,6 +163,12 @@ lib.pipe drv
                     patchelf --set-rpath "" $libgcc/lib/libgcc_s.so.${libgcc_s-version-major}
                   ''
                 );
+
+              # This is a separate phase because gcc assembles its phase scripts
+              # in bash instead of nix (we should fix that).
+              preFixupPhases =
+                (previousAttrs.preFixupPhases or [ ])
+                ++ lib.optionals ((!langC) || enableLibGccOutput) [ "preFixupLibGccPhase" ];
             }
           )
         )

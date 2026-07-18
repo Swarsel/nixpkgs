@@ -32,9 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
       employed by gperf.
     '';
 
-    license = lib.licenses.gpl3Plus;
-
     homepage = "https://www.gnu.org/software/gperf/";
+    license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
     mainProgram = "gperf";
   };

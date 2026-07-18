@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   eglexternalplatform,
-  pkg-config,
+  libGL,
+  libdrm,
+  libgbm,
   meson,
   ninja,
-  libGL,
-  libgbm,
-  libdrm,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,9 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-OoHgvFbyd6JakSKyN7N97FMJHNYV1spj7zy3f1g/PN0=";
   };
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -40,10 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
     eglexternalplatform
   ];
 
+  __structuredAttrs = true;
   absolutizeEglExternalPlatformIcdJson = true;
 
-  strictDeps = true;
-  __structuredAttrs = true;
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
@@ -51,9 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GBM EGL external platform library";
     homepage = "https://github.com/NVIDIA/egl-gbm/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       ccicnce113424
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -2,12 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  perl,
-  pandoc,
-  python3,
   git,
-
+  makeWrapper,
+  pandoc,
+  perl,
+  python3,
   par2Support ? true,
   par2cmdline ? null,
 }:
@@ -31,26 +30,15 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "bup";
   inherit version;
+  pname = "bup";
 
   src = fetchFromGitHub {
-    repo = "bup";
     owner = "bup";
+    repo = "bup";
     tag = version;
     hash = "sha256-uqXlfTFRgCN9c00iQik+IMN6k81fpeY6gNscP54Xzgs=";
   };
-
-  buildInputs = [
-    python3
-  ];
-  nativeBuildInputs = [
-    pandoc
-    perl
-    makeWrapper
-  ];
-
-  configurePlatforms = [ ];
 
   postPatch = ''
     patchShebangs --build .
@@ -58,7 +46,15 @@ stdenv.mkDerivation {
       --replace-fail 'bup_git=' 'bup_git="${lib.getExe git}" #'
   '';
 
-  dontAddPrefix = true;
+  nativeBuildInputs = [
+    pandoc
+    perl
+    makeWrapper
+  ];
+
+  buildInputs = [
+    python3
+  ];
 
   makeFlags = [
     "MANDIR=$(out)/share/man"
@@ -81,19 +77,22 @@ stdenv.mkDerivation {
       --prefix NIX_PYTHONPATH : ${lib.makeSearchPathOutput "lib" python3.sitePackages pythonDeps}
   '';
 
+  configurePlatforms = [ ];
+  dontAddPrefix = true;
+
   meta = {
-    homepage = "https://github.com/bup/bup";
     description = "Efficient file backup system based on the git packfile format";
-    mainProgram = "bup";
-    license = lib.licenses.gpl2Plus;
 
     longDescription = ''
       Highly efficient file backup system based on the git packfile format.
       Capable of doing *fast* incremental backups of virtual machine images.
     '';
 
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    homepage = "https://github.com/bup/bup";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ rnhmjoj ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "bup";
     # bespoke ./configure does not like cross
     broken = stdenv.buildPlatform != stdenv.hostPlatform;
   };

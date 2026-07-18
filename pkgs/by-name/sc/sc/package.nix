@@ -1,34 +1,31 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  ncurses,
   bison,
-  lib,
+  ncurses,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "sc";
   version = "7.16_1.2.0";
 
   src = fetchFromGitHub {
-    repo = "sc";
     owner = "n-t-roff";
+    repo = "sc";
     tag = finalAttrs.version;
     hash = "sha256-4Ma3JWrK2udMLEAUboBGzfLTQjX+TdXG7ygvhS14BiM=";
   };
-
-  buildInputs = [ ncurses ];
-
-  nativeBuildInputs = [ bison ];
-
-  installFlags = [ "prefix=$(out)" ];
-
-  # Non-standard configure script
-  configurePhase = "./configure";
 
   outputs = [
     "out"
     "man"
   ];
+
+  nativeBuildInputs = [ bison ];
+  buildInputs = [ ncurses ];
+  # Non-standard configure script
+  configurePhase = "./configure";
+  installFlags = [ "prefix=$(out)" ];
 
   meta = {
     description = "Curses-based spreadsheet calculator";
@@ -42,7 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://github.com/n-t-roff/sc";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.claes ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  fetchFromGitHub,
-  wrapGAppsHook3,
-  gtk3,
   gdk-pixbuf,
   glib,
-  sane-backends,
+  gtk3,
   libnotify,
   libtiff,
+  sane-backends,
+  wrapGAppsHook3,
 }:
 
 buildDotnetModule rec {
@@ -29,29 +29,7 @@ buildDotnetModule rec {
     ./02-button-dpi.patch
   ];
 
-  projectFile = "NAPS2.App.Gtk/NAPS2.App.Gtk.csproj";
-  nugetDeps = ./deps.json;
-
-  dotnetFlags = [
-    "-p:TargetFrameworks=net9"
-  ];
-
-  executables = [ "naps2" ];
-
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
-  dotnet-runtime = dotnetCorePackages.runtime_9_0;
-
   nativeBuildInputs = [ wrapGAppsHook3 ];
-
-  selfContainedBuild = true;
-  runtimeDeps = [
-    gtk3
-    gdk-pixbuf
-    glib
-    sane-backends
-    libnotify
-    libtiff
-  ];
 
   postInstall = ''
     install -D NAPS2.Setup/config/linux/com.naps2.Naps2.desktop $out/share/applications/com.naps2.Naps2.desktop
@@ -70,6 +48,28 @@ buildDotnetModule rec {
         ;;
     esac
   '';
+
+  dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
+
+  dotnetFlags = [
+    "-p:TargetFrameworks=net9"
+  ];
+
+  executables = [ "naps2" ];
+  nugetDeps = ./deps.json;
+  projectFile = "NAPS2.App.Gtk/NAPS2.App.Gtk.csproj";
+
+  runtimeDeps = [
+    gtk3
+    gdk-pixbuf
+    glib
+    sane-backends
+    libnotify
+    libtiff
+  ];
+
+  selfContainedBuild = true;
 
   meta = {
     description = "Scan documents to PDF and more, as simply as possible";

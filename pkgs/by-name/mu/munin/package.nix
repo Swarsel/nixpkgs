@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  which,
+  bc,
   coreutils,
-  rrdtool,
+  jre8,
+  makeWrapper,
+  net-tools,
+  nixosTests,
   perlPackages,
   python3,
+  rrdtool,
   ruby,
-  jre8,
-  net-tools,
-  bc,
-  nixosTests,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.0.76";
   pname = "munin";
+  version = "2.0.76";
 
   src = fetchFromGitHub {
     owner = "munin-monitoring";
@@ -25,6 +25,17 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "sha256-9PfIzUObm3Nu2k2TFjbQ3cqIDkPz07ZUczEcfm3bpDc=";
   };
+
+  patches = [
+    # https://rt.cpan.org/Public/Bug/Display.html?id=75112
+    ./dont_preserve_source_dir_permissions.patch
+
+    # https://github.com/munin-monitoring/munin/pull/134
+    ./adding_servicedir_munin-node.patch
+
+    ./adding_sconfdir_munin-node.patch
+    ./preserve_environment.patch
+  ];
 
   nativeBuildInputs = [
     makeWrapper
@@ -67,28 +78,22 @@ stdenv.mkDerivation (finalAttrs: {
     perlPackages.IOStringy
   ];
 
+  # DESTDIR shouldn't be needed (and shouldn't have worked), but munin
+  # developers have forgotten to use PREFIX everywhere, so we use DESTDIR to
+  # ensure that everything is installed in $out.
+  makeFlags = [
+    "PREFIX=$(out)"
+    "DESTDIR=$(out)"
+    "PERLLIB=$(out)/${perlPackages.perl.libPrefix}"
+    "PERL=${perlPackages.perl.outPath}/bin/perl"
+    "PYTHON=${python3.interpreter}"
+    "RUBY=${ruby.outPath}/bin/ruby"
+    "JAVARUN=${jre8.outPath}/bin/java"
+    "PLUGINUSER=munin"
+  ];
+
   # needs to find a local perl module during build
   env.PERL_USE_UNSAFE_INC = "1";
-
-  # TODO: tests are failing https://munin-monitoring.org/ticket/1390#comment:1
-  # NOTE: important, test command always exits with 0, think of a way to abort the build once tests pass
-  doCheck = false;
-
-  checkPhase = ''
-    export PERL5LIB="$PERL5LIB:${rrdtool}/${perlPackages.perl.libPrefix}"
-    LC_ALL=C make -j1 test
-  '';
-
-  patches = [
-    # https://rt.cpan.org/Public/Bug/Display.html?id=75112
-    ./dont_preserve_source_dir_permissions.patch
-
-    # https://github.com/munin-monitoring/munin/pull/134
-    ./adding_servicedir_munin-node.patch
-
-    ./adding_sconfdir_munin-node.patch
-    ./preserve_environment.patch
-  ];
 
   preBuild = ''
     echo "${finalAttrs.version}" > RELEASE
@@ -105,23 +110,14 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i '/ENV{PATH}/d' node/lib/Munin/Node/Service.pm
   '';
 
-  # Disable parallel build, errors:
-  #  Can't locate Munin/Common/Defaults.pm in @INC ...
-  enableParallelBuilding = false;
+  # TODO: tests are failing https://munin-monitoring.org/ticket/1390#comment:1
+  # NOTE: important, test command always exits with 0, think of a way to abort the build once tests pass
+  doCheck = false;
 
-  # DESTDIR shouldn't be needed (and shouldn't have worked), but munin
-  # developers have forgotten to use PREFIX everywhere, so we use DESTDIR to
-  # ensure that everything is installed in $out.
-  makeFlags = [
-    "PREFIX=$(out)"
-    "DESTDIR=$(out)"
-    "PERLLIB=$(out)/${perlPackages.perl.libPrefix}"
-    "PERL=${perlPackages.perl.outPath}/bin/perl"
-    "PYTHON=${python3.interpreter}"
-    "RUBY=${ruby.outPath}/bin/ruby"
-    "JAVARUN=${jre8.outPath}/bin/java"
-    "PLUGINUSER=munin"
-  ];
+  checkPhase = ''
+    export PERL5LIB="$PERL5LIB:${rrdtool}/${perlPackages.perl.libPrefix}"
+    LC_ALL=C make -j1 test
+  '';
 
   postFixup = ''
     echo "Removing references to /usr/{bin,sbin}/ from munin plugins..."
@@ -162,16 +158,21 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # Disable parallel build, errors:
+  #  Can't locate Munin/Common/Defaults.pm in @INC ...
+  enableParallelBuilding = false;
   passthru.tests = { inherit (nixosTests) munin; };
 
   meta = {
     description = "Networked resource monitoring tool";
+
     longDescription = ''
       Munin is a monitoring tool that surveys all your computers and remembers
       what it saw. It presents all the information in graphs through a web
       interface. Munin can help analyze resource trends and 'what just happened
       to kill our performance?' problems.
     '';
+
     homepage = "https://munin-monitoring.org/";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.bjornfor ];

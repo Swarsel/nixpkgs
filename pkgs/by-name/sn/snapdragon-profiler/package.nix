@@ -1,26 +1,27 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
-  icoutils,
-  mono,
-  jre,
   androidenv,
+  copyDesktopItems,
+  coreutils,
   gtk-sharp-2_0,
   gtk2,
+  icoutils,
+  jre,
   libcxx,
-  coreutils,
+  makeDesktopItem,
+  makeWrapper,
+  mono,
   requireFile,
   archive ? requireFile {
-    name = "snapdragonprofiler_external_linux.tar.gz";
     message = ''
       This nix expression requires that "snapdragonprofiler_external_linux.tar.gz" is
       already part of the store. To get this archive, you need to download it from:
         https://developer.qualcomm.com/software/snapdragon-profiler
       and add it to the nix store with nix-store --add-fixed sha256 <FILE>.
     '';
+
+    name = "snapdragonprofiler_external_linux.tar.gz";
     sha256 = "c6731c417ca39fa9b0f190bd80c99b1603cf97d23becab9e47db6beafd6206b7";
   },
 }:
@@ -28,7 +29,6 @@
 stdenv.mkDerivation rec {
   pname = "snapdragon-profiler";
   version = "2021.2";
-
   src = archive;
 
   nativeBuildInputs = [
@@ -74,26 +74,27 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
-      desktopName = "Snapdragon Profiler";
-      exec = "snapdragon-profiler";
-      icon = "snapdragon-profiler";
-      comment = meta.description;
       categories = [
         "Development"
         "Debugger"
         "Graphics"
         "3DGraphics"
       ];
+
+      comment = meta.description;
+      desktopName = "Snapdragon Profiler";
+      exec = "snapdragon-profiler";
+      icon = "snapdragon-profiler";
+      name = pname;
     })
   ];
 
-  dontStrip = true; # Always needed on Mono
   dontPatchELF = true; # Certain libraries are to be deployed to the remote device, they should not be patched
+  dontStrip = true; # Always needed on Mono
 
   meta = {
-    homepage = "https://developer.qualcomm.com/software/snapdragon-profiler";
     description = "Profiler for Android devices running Snapdragon chips";
+    homepage = "https://developer.qualcomm.com/software/snapdragon-profiler";
     license = lib.licenses.unfree;
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];

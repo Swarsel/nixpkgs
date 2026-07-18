@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   click,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "rctclient";
   version = "0.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "svalouch";
@@ -19,13 +18,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-r8PUzAtFT8L7RteKpfnacmeIbG15brO8G6cPcvIo178=";
   };
 
-  build-system = [ setuptools ];
-
-  optional-dependencies.cli = [ click ];
-
-  pythonImportsCheck = [ "rctclient" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  optional-dependencies.cli = [ click ];
+  pyproject = true;
+  pythonImportsCheck = [ "rctclient" ];
 
   meta = {
     description = "Python implementation of the RCT Power GmbH Serial Communication Protocol";

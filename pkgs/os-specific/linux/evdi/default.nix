@@ -26,21 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tms+UNws+oBmwLvDFaDSIa/bUdSpK+CADodbsip3tRg=";
   };
 
-  prePatch = ''
-    substituteInPlace module/Makefile \
-      --replace-fail '/etc/os-release' '/dev/null'
-  '';
-
-  env.CFLAGS = toString [
-    "-Wno-error"
-    "-Wno-error=sign-compare"
-  ];
-
-  postBuild = ''
-    # Don't use makeFlags for userspace stuff
-    make library pyevdi
-  '';
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   buildInputs = [
@@ -55,11 +40,15 @@ stdenv.mkDerivation (finalAttrs: {
     "module"
   ];
 
-  hardeningDisable = [
-    "format"
-    "pic"
-    "fortify"
+  env.CFLAGS = toString [
+    "-Wno-error"
+    "-Wno-error=sign-compare"
   ];
+
+  postBuild = ''
+    # Don't use makeFlags for userspace stuff
+    make library pyevdi
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -70,17 +59,30 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  hardeningDisable = [
+    "format"
+    "pic"
+    "fortify"
+  ];
+
+  prePatch = ''
+    substituteInPlace module/Makefile \
+      --replace-fail '/etc/os-release' '/dev/null'
+  '';
+
   meta = {
-    broken = kernel.kernelOlder "4.19";
-    changelog = "https://github.com/DisplayLink/evdi/releases/tag/v${finalAttrs.version}";
     description = "Extensible Virtual Display Interface";
     homepage = "https://www.displaylink.com/";
+    changelog = "https://github.com/DisplayLink/evdi/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       lgpl21Plus
       gpl2Only
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    broken = kernel.kernelOlder "4.19";
   };
 })

@@ -49,8 +49,8 @@
   version with src and replacements only.
 */
 {
-  src,
   replacements,
+  src,
   dir ? null,
   isExecutable ? false,
   ...
@@ -77,11 +77,6 @@ let
       throw "Passing any of ${builtins.concatStringsSep ", " (builtins.attrNames forcedAttrs)} to replaceVarsWith is not supported.";
 
   forcedAttrs = {
-    doCheck = true;
-    dontUnpack = true;
-    preferLocalBuild = true;
-    allowSubstitutes = false;
-
     buildPhase = ''
       runHook preBuild
 
@@ -100,6 +95,8 @@ let
       runHook postBuild
     '';
 
+    doCheck = true;
+
     # Look for Nix identifiers surrounded by `@` that aren't substituted.
     checkPhase =
       let
@@ -117,6 +114,10 @@ let
         fi
         runHook postCheck
       '';
+
+    allowSubstitutes = false;
+    dontUnpack = true;
+    preferLocalBuild = true;
   };
 in
 

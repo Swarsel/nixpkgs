@@ -1,14 +1,14 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  clangStdenv,
+  git,
   libgeneral,
   libplist,
-  openssl,
   lzfse,
-  git,
+  openssl,
+  pkg-config,
 }:
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "img4tool";
@@ -24,6 +24,7 @@ clangStdenv.mkDerivation (finalAttrs: {
   # Do not depend on git to calculate version, instead
   # pass version via configureFlag
   patches = [ ./configure-version.patch ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -41,14 +42,12 @@ clangStdenv.mkDerivation (finalAttrs: {
     "--with-version-commit-count=${finalAttrs.version}"
   ];
 
-  strictDeps = true;
-
   meta = {
     description = "Socket daemon to multiplex connections from and to iOS devices";
     homepage = "https://github.com/tihmstar/img4tool";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.linux;
     mainProgram = "img4tool";
   };
 })

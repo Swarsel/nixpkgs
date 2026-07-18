@@ -1,15 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  bc,
   kernel,
   kernelModuleMakeFlags,
-  bc,
   nukeReferences,
 }:
 
 stdenv.mkDerivation rec {
-  name = "${pname}-${version}-${kernel.version}";
   pname = "rtl8189es";
   version = "2025-09-26";
 
@@ -25,17 +24,6 @@ stdenv.mkDerivation rec {
     nukeReferences
   ]
   ++ kernel.moduleBuildDependencies;
-
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
-
-  prePatch = ''
-    substituteInPlace ./Makefile --replace /lib/modules/ "${kernel.dev}/lib/modules/"
-    substituteInPlace ./Makefile --replace /sbin/depmod \#
-    substituteInPlace ./Makefile --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
-  '';
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KSRC=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
@@ -54,11 +42,24 @@ stdenv.mkDerivation rec {
     nuke-refs $out/lib/modules/*/kernel/net/wireless/*.ko
   '';
 
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
+
+  name = "${pname}-${version}-${kernel.version}";
+
+  prePatch = ''
+    substituteInPlace ./Makefile --replace /lib/modules/ "${kernel.dev}/lib/modules/"
+    substituteInPlace ./Makefile --replace /sbin/depmod \#
+    substituteInPlace ./Makefile --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
+  '';
+
   meta = {
     description = "Driver for Realtek rtl8189es";
     homepage = "https://github.com/jwrdegoede/rtl8189ES_linux";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ danielfullmer ];
+    platforms = lib.platforms.linux;
   };
 }

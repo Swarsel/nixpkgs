@@ -11,10 +11,11 @@ buildDunePackage (finalAttrs: {
 
   src = fetchurl {
     url = "https://github.com/ocaml-community/yojson/releases/download/${finalAttrs.version}/yojson-${finalAttrs.version}.tbz";
+
     hash =
       {
-        "3.0.0" = "sha256-mUFNp2CbkqAkdO9LSezaFe3Iy7pSKTQbEk5+RpXDlhA=";
         "2.2.2" = "sha256-mr+tjJp51HI60vZEjmacHmjb/IfMVKG3wGSwyQkSxZU=";
+        "3.0.0" = "sha256-mUFNp2CbkqAkdO9LSezaFe3Iy7pSKTQbEk5+RpXDlhA=";
       }
       ."${finalAttrs.version}";
   };

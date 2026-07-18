@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
   cmake,
+  gitUpdater,
   libsodium,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -18,13 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ libsodium ];
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
@@ -32,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Syndace/libxeddsa";
     changelog = "https://github.com/Syndace/libxeddsa/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    teams = with lib.teams; [ ngi ];
     maintainers = [ ];
     platforms = lib.platforms.all;
+    teams = with lib.teams; [ ngi ];
   };
 })

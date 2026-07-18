@@ -1,10 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-
   beautifulsoup4,
+  buildPythonPackage,
   fiona,
   geodatasets,
   geopandas,
@@ -13,6 +11,7 @@
   packaging,
   pandas,
   platformdirs,
+  pytestCheckHook,
   requests,
   scikit-learn,
   scipy,
@@ -23,7 +22,6 @@
 buildPythonPackage rec {
   pname = "libpysal";
   version = "4.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pysal";
@@ -31,6 +29,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-epwviJtQ97MxUA4Gpw6SJceCdBPFXnZBF13A1HiJcOo=";
   };
+
+  nativeCheckInputs = [
+    geodatasets
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export HOME=$TMPDIR
+  '';
 
   build-system = [ setuptools-scm ];
 
@@ -48,15 +55,6 @@ buildPythonPackage rec {
     scipy
     shapely
   ];
-
-  nativeCheckInputs = [
-    geodatasets
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    export HOME=$TMPDIR
-  '';
 
   # requires network access
   disabledTestPaths = [
@@ -76,6 +74,7 @@ buildPythonPackage rec {
     "libpysal/weights/tests/test_util.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "libpysal" ];
 
   meta = {

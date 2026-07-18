@@ -1,14 +1,14 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   cmake,
-  sqlite,
-  qt6,
   icoutils, # build and runtime deps.
+  qt6,
+  sqlite,
   wget,
-  wine,
   which, # runtime deps.
+  wine,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,17 +22,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5rj+EDsOZib78gWT003a4IN23cZQftnhVggIdLN6f7I=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    qt6.wrapQtAppsHook
+  ];
+
   buildInputs = [
     sqlite
     icoutils
     qt6.qtbase
     qt6.qtsvg
     qt6.qttools
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    qt6.wrapQtAppsHook
   ];
 
   # Add runtime deps.
@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://q4wine.brezblock.org.ua/";
     description = "Qt GUI for Wine to manage prefixes and applications";
+    homepage = "https://q4wine.brezblock.org.ua/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ rkitover ];
     platforms = lib.platforms.unix;

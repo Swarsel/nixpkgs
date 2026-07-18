@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -22,8 +22,8 @@ in
       enable = lib.mkEnableOption "torque computing node";
 
       serverNode = lib.mkOption {
-        type = lib.types.str;
         description = "Hostname running pbs server.";
+        type = lib.types.str;
       };
 
     };
@@ -32,6 +32,24 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ pkgs.torque ];
+
+    systemd.services.torque-mom = {
+      after = [
+        "torque-mom-init.service"
+        "network.target"
+      ];
+
+      path = [ torque ];
+      requires = [ "torque-mom-init.service" ];
+
+      serviceConfig = {
+        ExecStart = "${torque}/bin/pbs_mom";
+        PIDFile = "/var/spool/torque/mom_priv/mom.lock";
+        Type = "forking";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
 
     systemd.services.torque-mom-init = {
       path = with pkgs; [
@@ -50,23 +68,6 @@ in
 
       serviceConfig.Type = "oneshot";
       unitConfig.ConditionPathExists = "!/var/spool/torque";
-    };
-
-    systemd.services.torque-mom = {
-      path = [ torque ];
-
-      wantedBy = [ "multi-user.target" ];
-      requires = [ "torque-mom-init.service" ];
-      after = [
-        "torque-mom-init.service"
-        "network.target"
-      ];
-
-      serviceConfig = {
-        Type = "forking";
-        ExecStart = "${torque}/bin/pbs_mom";
-        PIDFile = "/var/spool/torque/mom_priv/mom.lock";
-      };
     };
 
   };

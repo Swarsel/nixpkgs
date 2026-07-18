@@ -1,9 +1,9 @@
 {
   lib,
-  perlPackages,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  perlPackages,
+  versionCheckHook,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -17,15 +17,7 @@ perlPackages.buildPerlPackage rec {
     hash = "sha256-OWw47okAs8x4Ri8+IJHPhy6YSkSN2sBlJ0v8h6GlhfU=";
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   outputs = [ "out" ];
-
-  makeMakerFlags = [ "INSTALLDIRS=vendor" ];
-
-  # Avoid creating perllocal.pod, which contains a timestamp
-  installTargets = [ "pure_install" ];
 
   # Makefile.PL only accepts DESTDIR and INSTALLDIRS, but we need to set more to make this work for NixOS.
   postPatch = ''
@@ -43,26 +35,33 @@ perlPackages.buildPerlPackage rec {
     patchShebangs .
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
+  strictDeps = true;
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  # Avoid creating perllocal.pod, which contains a timestamp
+  installTargets = [ "pure_install" ];
+  makeMakerFlags = [ "INSTALLDIRS=vendor" ];
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "PostgreSQL SQL syntax beautifier that can work as a console program or as a CGI";
     homepage = "https://github.com/darold/pgFormatter";
     changelog = "https://github.com/darold/pgFormatter/releases/tag/${src.tag}";
-    maintainers = with lib.maintainers; [
-      thunze
-      mfairley
-    ];
+
     license =
       with lib.licenses;
       AND [
         postgresql
         artistic2
       ];
+
+    maintainers = with lib.maintainers; [
+      thunze
+      mfairley
+    ];
+
     mainProgram = "pg_format";
   };
 }

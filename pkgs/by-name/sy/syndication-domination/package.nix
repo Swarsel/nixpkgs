@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  fmt,
+  html-tidy,
   meson,
   ninja,
   pkg-config,
   pugixml,
-  fmt,
-  html-tidy,
-  enablePython ? false,
   python3Packages,
+  enablePython ? false,
 }:
 
 stdenv.mkDerivation {
@@ -49,8 +49,8 @@ stdenv.mkDerivation {
     description = "RSS/Atom parser written in C++ with Python binding";
     homepage = "https://gitlab.com/gabmus/syndication-domination";
     license = lib.licenses.agpl3Only;
-    mainProgram = "SyndicationDomination";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.all;
+    mainProgram = "SyndicationDomination";
   };
 }

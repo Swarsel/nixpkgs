@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   cfg,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation rec {
-  pname = "sbcl-bootstrap";
   inherit (cfg) version;
+  pname = "sbcl-bootstrap";
 
   src = fetchurl {
-    url = "mirror://sourceforge/project/sbcl/sbcl/${version}/sbcl-${version}-${cfg.system}-binary.tar.bz2";
     inherit (cfg) sha256;
+    url = "mirror://sourceforge/project/sbcl/sbcl/${version}/sbcl-${version}-${cfg.system}-binary.tar.bz2";
   };
 
   nativeBuildInputs = [ makeWrapper ];

@@ -1,9 +1,8 @@
 {
-  fetchFromGitHub,
-  fetchpatch,
   lib,
   stdenv,
-
+  fetchFromGitHub,
+  fetchpatch,
   versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -17,19 +16,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-9kKKfb8STiCjaHiWgYEQsERNTnOXlwN8axIBJHg43zk=";
   };
 
-  __structuredAttrs = true;
-
-  strictDeps = true;
-
   patches = [
     (fetchpatch {
-      url = "https://github.com/BenjaminJurke/cohomCalg/commit/7aa864b5655c91eb2afc79c419bbf2bf8a4f791b.diff";
       hash = "sha256-JteQ3m2ELmMHaWCN9Sm954KKDn0ax8TywtbQ3dBWk80=";
+      url = "https://github.com/BenjaminJurke/cohomCalg/commit/7aa864b5655c91eb2afc79c419bbf2bf8a4f791b.diff";
     })
     ./fix-compilers.patch
   ];
 
-  enableParallelBuilding = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -37,18 +32,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
 
   meta = {
-    mainProgram = "cohomcalg";
     description = "Software package for computation of sheaf cohomologies for line bundles on toric varieties";
     homepage = "https://github.com/BenjaminJurke/cohomCalg";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ coolcuber ];
     platforms = lib.platforms.unix;
+    mainProgram = "cohomcalg";
   };
 })

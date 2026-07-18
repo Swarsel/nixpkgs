@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pydantic,
   pytestCheckHook,
   python-dotenv,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "typer-config";
   version = "1.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "maxb2";
@@ -29,21 +28,6 @@ buildPythonPackage rec {
       --replace-fail "uv_build>=0.7.19,<0.8.0" "uv_build"
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ typer ];
-
-  optional-dependencies = {
-    all = [
-      python-dotenv
-      pyyaml
-      toml
-    ];
-    python-dotenv = [ python-dotenv ];
-    toml = [ toml ];
-    yaml = [ pyyaml ];
-  };
-
   nativeCheckInputs = [
     pydantic
     pytestCheckHook
@@ -51,12 +35,28 @@ buildPythonPackage rec {
   ]
   ++ lib.flatten (builtins.attrValues optional-dependencies);
 
-  pythonImportsCheck = [ "typer_config" ];
+  build-system = [ uv-build ];
+  dependencies = [ typer ];
 
   disabledTestPaths = [
     # Don't test the example
     "tests/test_example.py"
   ];
+
+  optional-dependencies = {
+    all = [
+      python-dotenv
+      pyyaml
+      toml
+    ];
+
+    python-dotenv = [ python-dotenv ];
+    toml = [ toml ];
+    yaml = [ pyyaml ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "typer_config" ];
 
   meta = {
     description = "Utilities for working with configuration files in typer CLIs";

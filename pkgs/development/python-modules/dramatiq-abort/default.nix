@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  gevent,
-  pytestCheckHook,
-  pytest-cov-stub,
+  buildPythonPackage,
   dramatiq,
+  gevent,
+  pytest-cov-stub,
+  pytestCheckHook,
   redis,
   setuptools,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "dramatiq-abort";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Flared";
@@ -25,6 +24,12 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/Flared/dramatiq-abort/pull/38
     ./dramatiq-2.0-stub-broker-fail-fast.patch
+  ];
+
+  nativeCheckInputs = [
+    redis
+    pytestCheckHook
+    pytest-cov-stub
   ];
 
   build-system = [ setuptools ];
@@ -39,18 +44,13 @@ buildPythonPackage rec {
     redis = [ redis ];
   };
 
-  nativeCheckInputs = [
-    redis
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dramatiq_abort" ];
 
   meta = {
-    changelog = "https://github.com/Flared/dramatiq-abort/releases/tag/v${version}";
     description = "Dramatiq extension to abort message";
     homepage = "https://github.com/Flared/dramatiq-abort";
+    changelog = "https://github.com/Flared/dramatiq-abort/releases/tag/v${version}";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ tebriel ];
   };

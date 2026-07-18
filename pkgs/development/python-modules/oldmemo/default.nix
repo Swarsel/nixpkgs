@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
-
-  typing-extensions,
-  xeddsa,
+  buildPythonPackage,
+  cryptography,
   doubleratchet,
   omemo,
-  x3dh,
-  cryptography,
   protobuf,
-
+  setuptools,
+  typing-extensions,
+  x3dh,
+  xeddsa,
   xmlschema,
 }:
 
 buildPythonPackage rec {
   pname = "oldmemo";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Syndace";
@@ -45,6 +41,8 @@ buildPythonPackage rec {
   optional-dependencies.xml = [
     xmlschema
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "oldmemo"

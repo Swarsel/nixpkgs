@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   addDriverRunpath,
   cmake,
-  fetchFromGitHub,
   intel-compute-runtime,
-  openvino,
-  stdenv,
   nix-update-script,
+  openvino,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     tests = {
       inherit intel-compute-runtime openvino;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -43,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/oneapi-src/level-zero";
     changelog = "https://github.com/oneapi-src/level-zero/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.ziguana ];
+    platforms = lib.platforms.linux;
   };
 })

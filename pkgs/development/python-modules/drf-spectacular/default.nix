@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dj-rest-auth,
   django,
@@ -17,7 +18,6 @@
   drf-jwt,
   drf-nested-routers,
   drf-spectacular-sidecar,
-  fetchFromGitHub,
   fetchpatch,
   inflection,
   jsonschema,
@@ -32,7 +32,6 @@
 buildPythonPackage rec {
   pname = "drf-spectacular";
   version = "0.29.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tfranzel";
@@ -40,17 +39,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-7Eq0Z/BR/tvGS6RRRoy3jOyBQkc58QETHWy47S6tSD8=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    djangorestframework
-    inflection
-    jsonschema
-    pyyaml
-    uritemplate
-  ];
 
   nativeCheckInputs = [
     dj-rest-auth
@@ -73,6 +61,22 @@ buildPythonPackage rec {
   ]
   ++ django-allauth.optional-dependencies.socialaccount;
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    djangorestframework
+    inflection
+    jsonschema
+    pyyaml
+    uritemplate
+  ];
+
+  disabledTestPaths = [
+    # Outdated test artifact
+    "tests/contrib/test_pydantic.py"
+  ];
+
   disabledTests = [
     # Test requires django with gdal
     "test_rest_framework_gis"
@@ -84,14 +88,9 @@ buildPythonPackage rec {
     "test_model_choice_display_method_on_readonly"
   ];
 
-  disabledTestPaths = [
-    # Outdated test artifact
-    "tests/contrib/test_pydantic.py"
-  ];
-
-  pythonImportsCheck = [ "drf_spectacular" ];
-
   optional-dependencies.sidecar = [ drf-spectacular-sidecar ];
+  pyproject = true;
+  pythonImportsCheck = [ "drf_spectacular" ];
 
   meta = {
     description = "Sane and flexible OpenAPI 3 schema generation for Django REST framework";

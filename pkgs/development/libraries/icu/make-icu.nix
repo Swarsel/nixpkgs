@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  buildPackages,
+  stdenv,
   fetchurl,
+  buildPackages,
   fixDarwinDylibNames,
   testers,
   updateAutotoolsGnuConfigScriptsHook,
 }:
 
 {
-  version,
   hash,
-  patches ? [ ],
+  version,
   patchFlags ? [ ],
+  patches ? [ ],
   withStatic ? stdenv.hostPlatform.isStatic,
 }:
 
@@ -29,7 +29,11 @@ let
   #);
 
   baseAttrs = {
+    inherit patchFlags patches;
+
     src = fetchurl {
+      inherit hash;
+
       url =
         if lib.versionAtLeast version "78.1" then
           "https://github.com/unicode-org/icu/releases/download/release-${version}/icu4c-${version}-sources.tgz"
@@ -37,13 +41,7 @@ let
           "https://github.com/unicode-org/icu/releases/download/release-${release}/icu4c-${
             lib.replaceStrings [ "." ] [ "_" ] version
           }-src.tgz";
-      inherit hash;
     };
-
-    postUnpack = ''
-      sourceRoot=''${sourceRoot}/source
-      echo Source root reset to ''${sourceRoot}
-    '';
 
     # https://sourceware.org/glibc/wiki/Release/2.26#Removal_of_.27xlocale.h.27
     postPatch =
@@ -55,7 +53,14 @@ let
       else
         null; # won't find locale_t on darwin
 
-    inherit patchFlags patches;
+    configureFlags = [
+      "--disable-debug"
+    ]
+    ++ lib.optional (stdenv.hostPlatform.isFreeBSD || stdenv.hostPlatform.isDarwin) "--enable-rpath"
+    ++ lib.optional (
+      stdenv.buildPlatform != stdenv.hostPlatform
+    ) "--with-cross-build=${nativeBuildRoot}"
+    ++ lib.optional withStatic "--enable-static";
 
     preConfigure = ''
       sed -i -e "s|/bin/sh|${stdenv.shell}|" configure
@@ -69,28 +74,24 @@ let
     '';
 
     dontDisableStatic = withStatic;
-
-    configureFlags = [
-      "--disable-debug"
-    ]
-    ++ lib.optional (stdenv.hostPlatform.isFreeBSD || stdenv.hostPlatform.isDarwin) "--enable-rpath"
-    ++ lib.optional (
-      stdenv.buildPlatform != stdenv.hostPlatform
-    ) "--with-cross-build=${nativeBuildRoot}"
-    ++ lib.optional withStatic "--enable-static";
-
     enableParallelBuilding = true;
+
+    postUnpack = ''
+      sourceRoot=''${sourceRoot}/source
+      echo Source root reset to ''${sourceRoot}
+    '';
 
     meta = {
       description = "Unicode and globalization support library";
       homepage = "https://icu.unicode.org/";
       maintainers = with lib.maintainers; [ raskin ];
+      platforms = lib.platforms.all;
+
       pkgConfigModules = [
         "icu-i18n"
         "icu-io"
         "icu-uc"
       ];
-      platforms = lib.platforms.all;
     };
   };
 
@@ -102,7 +103,6 @@ let
       "dev"
     ]
     ++ lib.optional withStatic "static";
-    outputBin = "dev";
 
     nativeBuildInputs = [
       updateAutotoolsGnuConfigScriptsHook
@@ -148,11 +148,12 @@ let
       );
 
     postFixup = ''moveToOutput lib/icu "$dev" '';
+    outputBin = "dev";
   };
 
   buildRootOnlyAttrs = baseAttrs // {
-    pname = pname + "-build-root";
     inherit version;
+    pname = pname + "-build-root";
 
     preConfigure = baseAttrs.preConfigure + ''
       mkdir build
@@ -174,8 +175,8 @@ let
       finalAttrs:
       attrs
       // {
-        passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
         passthru.buildRootOnly = mkWithAttrs buildRootOnlyAttrs;
+        passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
       }
     );
 in

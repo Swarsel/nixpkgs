@@ -8,18 +8,18 @@
 buildPythonPackage rec {
   pname = "pymupdf-fonts";
   version = "1.0.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pymupdf_fonts";
     inherit version;
     hash = "sha256-rBLj7Er/o16aCsopE170HCO9vldYwzVdrCNphjCea8Y=";
+    pname = "pymupdf_fonts";
   };
 
   build-system = [
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pymupdf_fonts" ];
 
   meta = {

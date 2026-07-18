@@ -7,8 +7,8 @@ let
   version = "0.1.6";
 in
 buildGoModule {
-  pname = "gh-eco";
   inherit version;
+  pname = "gh-eco";
 
   src = fetchFromGitHub {
     owner = "jrnxf";
@@ -26,8 +26,8 @@ buildGoModule {
   ];
 
   meta = {
-    homepage = "https://github.com/coloradocolby/gh-eco";
     description = "gh extension to explore the ecosystem";
+    homepage = "https://github.com/coloradocolby/gh-eco";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ helium ];
     mainProgram = "gh-eco";

@@ -1,17 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   click,
+  poetry-core,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "click-aliases";
   version = "1.0.6";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "click-contrib";
@@ -21,16 +19,14 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ click ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "click_aliases" ];
 
   meta = {
-    homepage = "https://github.com/click-contrib/click-aliases";
     description = "Enable aliases for click";
+    homepage = "https://github.com/click-contrib/click-aliases";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ panicgh ];
   };

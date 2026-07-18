@@ -3,18 +3,18 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  pkg-config,
   gettext,
-  itstool,
+  gitUpdater,
   gtk3,
-  libxml2,
-  libxslt,
+  hicolor-icon-theme,
+  itstool,
   libatasmart,
   libnotify,
+  libxml2,
+  libxslt,
   lm_sensors,
   mate-panel,
-  hicolor-icon-theme,
-  gitUpdater,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix an invalid pointer crash with glib 2.83.2
     # https://github.com/mate-desktop/mate-sensors-applet/pull/137
     (fetchpatch {
-      url = "https://github.com/mate-desktop/mate-sensors-applet/commit/9b74dc16d852a40d37f7ce6c236406959fd013e5.patch";
       hash = "sha256-PjMc2uEFMljaiKOM5lf6MsdWztZkMfb2Vuxs9tgdaos=";
+      url = "https://github.com/mate-desktop/mate-sensors-applet/commit/9b74dc16d852a40d37f7ce6c236406959fd013e5.patch";
     })
   ];
 
@@ -53,18 +53,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--enable-in-process" ];
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-sensors-applet";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-sensors-applet";
   };
 
   meta = {
-    homepage = "https://github.com/mate-desktop/mate-sensors-applet";
     description = "MATE panel applet for hardware sensors";
+    homepage = "https://github.com/mate-desktop/mate-sensors-applet";
     license = with lib.licenses; [ gpl2Plus ];
     platforms = lib.platforms.linux;
     teams = [ lib.teams.mate ];

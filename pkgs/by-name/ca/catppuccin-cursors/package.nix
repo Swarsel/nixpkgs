@@ -1,23 +1,17 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  catppuccin-whiskers,
   inkscape,
   just,
-  xcursorgen,
-  catppuccin-whiskers,
   python3,
   python3Packages,
+  stdenvNoCC,
+  xcursorgen,
   zip,
 }:
 let
   dimensions = {
-    palette = [
-      "frappe"
-      "latte"
-      "macchiato"
-      "mocha"
-    ];
     color = [
       "Blue"
       "Dark"
@@ -36,14 +30,21 @@ let
       "Teal"
       "Yellow"
     ];
+
+    palette = [
+      "frappe"
+      "latte"
+      "macchiato"
+      "mocha"
+    ];
   };
-  variantName = { palette, color }: palette + color;
+  variantName = { color, palette }: palette + color;
   variants = lib.mapCartesianProduct variantName dimensions;
   version = "2.0.0";
 in
 stdenvNoCC.mkDerivation {
-  pname = "catppuccin-cursors";
   inherit version;
+  pname = "catppuccin-cursors";
 
   src = fetchFromGitHub {
     owner = "catppuccin";
@@ -51,6 +52,8 @@ stdenvNoCC.mkDerivation {
     rev = "v${version}";
     hash = "sha256-qis6p+/m7+DdRDYzLq9yB2eZGpfZe5z5xRsa/1HoIG4=";
   };
+
+  outputs = variants ++ [ "out" ]; # dummy "out" output to prevent breakage
 
   nativeBuildInputs = [
     just
@@ -61,10 +64,6 @@ stdenvNoCC.mkDerivation {
     python3Packages.pyside6
     zip
   ];
-
-  outputs = variants ++ [ "out" ]; # dummy "out" output to prevent breakage
-
-  outputsToInstall = [ ];
 
   buildPhase = ''
     runHook preBuild
@@ -100,11 +99,13 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  outputsToInstall = [ ];
+
   meta = {
     description = "Catppuccin cursor theme based on Volantes";
     homepage = "https://github.com/catppuccin/cursors";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ dixslyf ];
+    platforms = lib.platforms.linux;
   };
 }

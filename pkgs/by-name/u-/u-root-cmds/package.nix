@@ -5,6 +5,18 @@
 }:
 
 u-root.overrideAttrs (prevAttrs: {
+  nativeCheckInputs = [ which ];
+
+  preCheck = ''
+    rm cmds/core/brctl/*_test.go # Error: open /sys/class/net: no such file or directory
+    rm cmds/core/du/*_test.go # Error: expected 0 got 8
+    rm cmds/core/mkdir/*_test.go # Error: Mode = 'drwxr-xr-x', want: 'dgrwxrwxrwx'
+    rm cmds/core/netcat/*_test.go # Error: parseRemoteAddr(tcp, ::1) = [::1 localhost], want a subset of [::1 ip6-localhost]
+    rm cmds/exp/bzimage/*_test.go # Error: compressed KernelCode too big: was 611116, now 611124
+  '';
+
+  allowGoReference = false;
+
   subPackages = [
     "cmds/boot/boot"
     "cmds/boot/fitboot"
@@ -192,18 +204,6 @@ u-root.overrideAttrs (prevAttrs: {
     "cmds/fwtools/flash"
     "cmds/fwtools/spidev"
   ];
-
-  allowGoReference = false;
-
-  nativeCheckInputs = [ which ];
-
-  preCheck = ''
-    rm cmds/core/brctl/*_test.go # Error: open /sys/class/net: no such file or directory
-    rm cmds/core/du/*_test.go # Error: expected 0 got 8
-    rm cmds/core/mkdir/*_test.go # Error: Mode = 'drwxr-xr-x', want: 'dgrwxrwxrwx'
-    rm cmds/core/netcat/*_test.go # Error: parseRemoteAddr(tcp, ::1) = [::1 localhost], want a subset of [::1 ip6-localhost]
-    rm cmds/exp/bzimage/*_test.go # Error: compressed KernelCode too big: was 611116, now 611124
-  '';
 
   meta = (lib.removeAttrs prevAttrs.meta [ "mainProgram" ]) // {
     longDescription = "All u-root commands compiles as standalone binaries";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   websockets,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "graphql-subscription-manager";
   version = "0.7.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Danielhiversen";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # no tests implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "graphql_subscription_manager" ];
 
   meta = {

@@ -28,7 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/andy5995/canfigger/blob/${finalAttrs.src.rev}/ChangeLog.txt";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ iynaix ];
-    mainProgram = "canfigger";
     platforms = lib.platforms.all;
+    mainProgram = "canfigger";
   };
 })

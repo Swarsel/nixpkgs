@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -16,27 +16,28 @@ buildGoModule (finalAttrs: {
     hash = "sha256-4twWPp+ZgK6YmNL5RJmLKhtxe33T1GDCu1qejUbqXkA=";
   };
 
+  vendorHash = "sha256-/PnEQvaqADxwFvrHWOPFopQwdyUXBa6cf/H7a/RaHcg=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   ldflags = [
     "-X=main.version=${finalAttrs.version}"
     "-X=main.date=1970-01-01T00:00:00Z"
   ];
 
-  vendorHash = "sha256-/PnEQvaqADxwFvrHWOPFopQwdyUXBa6cf/H7a/RaHcg=";
-
   subPackages = [ "." ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/atlantis";
   versionCheckProgramArg = "version";
 
   meta = {
-    homepage = "https://github.com/runatlantis/atlantis";
     description = "Terraform Pull Request Automation";
-    mainProgram = "atlantis";
+    homepage = "https://github.com/runatlantis/atlantis";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       tebriel
     ];
+
+    mainProgram = "atlantis";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   blueprint-compiler,
   bzip2,
   callPackage,
-  fetchFromGitHub,
   fontconfig,
   freetype,
   glib,
@@ -12,8 +12,8 @@
   gst_all_1,
   gtk4-layer-shell,
   harfbuzz,
-  libadwaita,
   libGL,
+  libadwaita,
   libx11,
   libxml2,
   ncurses,
@@ -25,7 +25,6 @@
   versionCheckHook,
   wrapGAppsHook4,
   zig_0_15,
-
   # Upstream recommends a non-default level
   # https://github.com/ghostty-org/ghostty/blob/4b4d4062dfed7b37424c7210d1230242c709e990/PACKAGING.md#build-options
   optimizeLevel ? "ReleaseFast",
@@ -34,14 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ghostty";
   version = "1.3.1";
 
-  outputs = [
-    "out"
-    "man"
-    "shell_integration"
-    "terminfo"
-    "vim"
-  ];
-
   src = fetchFromGitHub {
     owner = "ghostty-org";
     repo = "ghostty";
@@ -49,9 +40,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+ddMmUe9Jjkun4qqW8XFXVgwVZdVHsGWcQzndgIlBjQ=";
   };
 
-  deps = callPackage ./deps.nix {
-    name = "${finalAttrs.pname}-cache-${finalAttrs.version}";
-  };
+  outputs = [
+    "out"
+    "man"
+    "shell_integration"
+    "terminfo"
+    "vim"
+  ];
 
   strictDeps = true;
 
@@ -91,26 +86,12 @@ stdenv.mkDerivation (finalAttrs: {
     harfbuzz
   ];
 
-  dontSetZigDefaultFlags = true;
-
-  zigCheckFlags = [
-    "--system"
-    "${finalAttrs.deps}"
-    "-Dversion-string=${finalAttrs.version}"
-    "-Dcpu=baseline"
-  ]
-  ++ lib.mapAttrsToList (name: package: "-fsys=${name} --search-prefix ${lib.getLib package}") {
-    inherit glslang;
-  };
-
-  # Only specify the optimization level for the actual build.
-  # Tests do not work on ReleaseFast as they rely on triggering
-  # specific integrity violations within the internal data structures.
-  zigBuildFlags = finalAttrs.zigCheckFlags ++ [
-    "-Doptimize=${optimizeLevel}"
-  ];
-
   doCheck = true;
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   /**
     Ghostty really likes all of it's resources to be in the same directory, so link them back after we split them
@@ -151,44 +132,69 @@ stdenv.mkDerivation (finalAttrs: {
     remove-references-to -t ${finalAttrs.deps} $out/bin/.ghostty-wrapped
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
+  deps = callPackage ./deps.nix {
+    name = "${finalAttrs.pname}-cache-${finalAttrs.version}";
+  };
+
+  dontSetZigDefaultFlags = true;
+
+  # Only specify the optimization level for the actual build.
+  # Tests do not work on ReleaseFast as they rely on triggering
+  # specific integrity violations within the internal data structures.
+  zigBuildFlags = finalAttrs.zigCheckFlags ++ [
+    "-Doptimize=${optimizeLevel}"
   ];
 
-  doInstallCheck = true;
+  zigCheckFlags = [
+    "--system"
+    "${finalAttrs.deps}"
+    "-Dversion-string=${finalAttrs.version}"
+    "-Dcpu=baseline"
+  ]
+  ++ lib.mapAttrsToList (name: package: "-fsys=${name} --search-prefix ${lib.getLib package}") {
+    inherit glslang;
+  };
 
   passthru = {
     tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
       inherit (nixosTests) allTerminfo;
       nixos = nixosTests.terminal-emulators.ghostty;
     };
+
     updateScript = ./update.nu;
   };
 
   meta = {
     description = "Fast, native, feature-rich terminal emulator pushing modern features";
+
     longDescription = ''
       Ghostty is a terminal emulator that differentiates itself by being
       fast, feature-rich, and native. While there are many excellent terminal
       emulators available, they all force you to choose between speed,
       features, or native UIs. Ghostty provides all three.
     '';
+
     homepage = "https://ghostty.org/";
-    donationPage = "https://ghostty.org/docs/sponsor";
-    downloadPage = "https://ghostty.org/download";
+
     changelog = "https://ghostty.org/docs/install/release-notes/${
       builtins.replaceStrings [ "." ] [ "-" ] finalAttrs.version
     }";
+
     license = lib.licenses.mit;
-    mainProgram = "ghostty";
+
     maintainers = with lib.maintainers; [
       jcollie
       pluiedev
       getchoo
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "ghostty";
+    donationPage = "https://ghostty.org/docs/sponsor";
+    downloadPage = "https://ghostty.org/download";
+
     outputsToInstall = [
       "out"
     ];
-    platforms = lib.platforms.linux;
   };
 })

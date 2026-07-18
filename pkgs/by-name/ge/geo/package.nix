@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  geo,
   nix-update-script,
   testers,
-  geo,
 }:
 
 buildGoModule (finalAttrs: {
@@ -31,12 +31,13 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = geo;
-      command = "${lib.getExe geo} --help";
       version = "v${finalAttrs.version}";
+      command = "${lib.getExe geo} --help";
+      package = geo;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

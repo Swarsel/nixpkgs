@@ -20,6 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
     tk
   ];
 
+  installPhase = ''
+    ./doinstall.tcl $out
+  '';
+
   patchPhase = ''
     for file in tkrev/tkrev.tcl tkdiff/tkdiff; do
         substituteInPlace "$file" \
@@ -27,13 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  installPhase = ''
-    ./doinstall.tcl $out
-  '';
-
   meta = {
-    homepage = "https://tkcvs.sourceforge.io";
     description = "TCL/TK GUI for cvs and subversion";
+    homepage = "https://tkcvs.sourceforge.io";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
   };

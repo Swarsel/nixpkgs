@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
-  nix-update-script,
   llvmPackages,
-  stdenv,
+  nix-update-script,
+  rustPlatform,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,8 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ./0001-increase-recursion-limit-to-fix-matrix-sdk-sqlite.patch
   ];
 
-  cargoHash = "sha256-uWYNFNoCiqw6gYuHZWmZmZVs7lKNvhzjwEyxgcbvv+8=";
-
   nativeBuildInputs = [
     installShellFiles
   ]
@@ -34,6 +32,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # TODO: Remove once #536365 reaches this branch
     llvmPackages.lld
   ];
+
+  cargoHash = "sha256-uWYNFNoCiqw6gYuHZWmZmZVs7lKNvhzjwEyxgcbvv+8=";
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     # TODO: Remove once #536365 reaches this branch
@@ -47,19 +47,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     install -D $src/iamb.desktop -t $out/share/applications
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Matrix client for Vim addicts";
-    mainProgram = "iamb";
     homepage = "https://github.com/ulyssa/iamb";
     changelog = "https://github.com/ulyssa/iamb/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ meain ];
+    mainProgram = "iamb";
   };
 })

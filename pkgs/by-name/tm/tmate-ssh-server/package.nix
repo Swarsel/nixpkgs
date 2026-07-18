@@ -4,16 +4,16 @@
   fetchFromGitHub,
   autoreconfHook,
   cmake,
-  libtool,
-  pkg-config,
-  zlib,
-  openssl,
   libevent,
-  ncurses,
-  ruby,
-  msgpack-c,
   libssh,
+  libtool,
+  msgpack-c,
+  ncurses,
   nixosTests,
+  openssl,
+  pkg-config,
+  ruby,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -50,15 +50,14 @@ stdenv.mkDerivation {
   ];
 
   dontUseCmakeConfigure = true;
-
   passthru.tests.tmate-ssh-server = nixosTests.tmate-ssh-server;
 
   meta = {
-    homepage = "https://tmate.io/";
     description = "tmate SSH Server";
+    homepage = "https://tmate.io/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ck3d ];
+    platforms = lib.platforms.unix;
     mainProgram = "tmate-ssh-server";
   };
 }

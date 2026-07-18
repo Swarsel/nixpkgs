@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   beautifulsoup4,
+  buildPythonPackage,
   deprecated,
   jmespath,
   lxml,
   oauthlib,
+  pytestCheckHook,
   requests,
   requests-kerberos,
   requests-oauthlib,
+  setuptools,
   six,
   typing-extensions,
-  pytestCheckHook,
-  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "atlassian-python-api";
   version = "4.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "atlassian-api";
@@ -28,6 +27,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-8zfM/3apGMo6sTPA5ESu2SkgVOJUA09Wz/pGR12fA7c=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -43,8 +43,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "atlassian" ];
 
   meta = {

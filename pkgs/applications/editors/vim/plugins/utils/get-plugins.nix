@@ -16,18 +16,20 @@ let
 
   parse = _name: value: {
     inherit (value) pname version;
-    homePage = value.meta.homepage;
-    license = value.meta.license.spdxId or null;
+
     checksum =
       if hasChecksum value then
         {
-          submodules = value.src.fetchSubmodules or false;
-          sha256 = value.src.outputHash;
           inherit (value.src) rev;
+          sha256 = value.src.outputHash;
+          submodules = value.src.fetchSubmodules or false;
           tag = value.src.tag or null;
         }
       else
         null;
+
+    homePage = value.meta.homepage;
+    license = value.meta.license.spdxId or null;
   };
 in
 lib.mapAttrs parse generated

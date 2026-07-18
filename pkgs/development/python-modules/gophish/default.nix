@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   appdirs,
   buildPythonPackage,
   certifi,
   chardet,
-  fetchFromGitHub,
   idna,
   packaging,
   pyparsing,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "gophish";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gophish";
@@ -27,8 +26,8 @@ buildPythonPackage rec {
     hash = "sha256-ITwwU/Xixyi9JSWbYf606HB7S5E4jiI0lEYcOdNg3mo=";
   };
 
-  pythonRelaxDeps = true;
-
+  # Module has no test
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,10 +43,9 @@ buildPythonPackage rec {
     urllib3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gophish" ];
-
-  # Module has no test
-  doCheck = false;
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Module to interact with Gophish";

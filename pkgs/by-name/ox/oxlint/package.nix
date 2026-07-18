@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpm_10,
-  nodejs_24,
-  nodejs-slim,
-  rustPlatform,
   cargo,
-  rustc,
   cmake,
+  fetchPnpmDeps,
   makeBinaryWrapper,
   nix-update-script,
+  nodejs-slim,
+  nodejs_24,
+  pnpmConfigHook,
+  pnpm_10,
   rust-jemalloc-sys,
+  rustPlatform,
+  rustc,
   tsgolint,
   versionCheckHook,
 }:
@@ -32,20 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sENfR27kqr/S25+43NiFEJsQrwYLqmuvTC/AhJETGsk=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-RkZ6e07SnJArjL0CNo5Qfo/hYrw1HIM4g8bvMJm9ypE=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-eSPMGwkgpNgyPS4eebGoGi+gu9xqw8OWGvK7DK2goMk=";
-  };
-
-  dontUseCmakeConfigure = true;
-
   nativeBuildInputs = [
     cargo
     cmake
@@ -58,7 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ rust-jemalloc-sys ];
-
   env.OXC_VERSION = finalAttrs.version;
 
   buildPhase = ''
@@ -88,8 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -171,17 +156,31 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-RkZ6e07SnJArjL0CNo5Qfo/hYrw1HIM4g8bvMJm9ypE=";
+  };
+
+  dontUseCmakeConfigure = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-eSPMGwkgpNgyPS4eebGoGi+gu9xqw8OWGvK7DK2goMk=";
+    pnpm = pnpm_10;
+  };
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=^oxlint_v([0-9.]+)$" ];
   };
 
   meta = {
+    inherit (nodejs-slim.meta) platforms;
     description = "Collection of JavaScript tools written in Rust";
     homepage = "https://github.com/oxc-project/oxc";
     changelog = "https://github.com/oxc-project/oxc/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ iamanaws ];
     mainProgram = "oxlint";
-    inherit (nodejs-slim.meta) platforms;
   };
 })

@@ -1,26 +1,26 @@
 {
   lib,
-  stdenvNoCC,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
   _7zz,
-  zstd,
   alsa-lib,
+  autoPatchelfHook,
   curl,
   fontconfig,
   libglvnd,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxi,
   libxkbcommon,
+  makeWrapper,
+  stdenvNoCC,
   vulkan-loader,
   wayland,
   xdg-utils,
-  libxi,
-  libxcursor,
-  libx11,
-  libxcb,
   xz, # liblzma
   zlib,
-  makeWrapper,
+  zstd,
   waylandSupport ? false,
 }:
 
@@ -34,12 +34,11 @@ let
   linux = stdenv.mkDerivation (finalAttrs: {
     inherit pname meta passthru;
     inherit (versions."linux_${linux_arch}") version;
+
     src = fetchurl {
       inherit (versions."linux_${linux_arch}") hash;
       url = "https://releases.warp.dev/stable/v${finalAttrs.version}/warp-terminal-v${finalAttrs.version}-1-${linux_arch}.pkg.tar.zst";
     };
-
-    sourceRoot = ".";
 
     postPatch = ''
       substituteInPlace usr/bin/warp-terminal \
@@ -60,19 +59,6 @@ let
       zlib
       xz
     ];
-
-    runtimeDependencies = [
-      libglvnd # for libegl
-      libxkbcommon
-      stdenv.cc.libc
-      vulkan-loader
-      xdg-utils
-      libx11
-      libxcb
-      libxcursor
-      libxi
-    ]
-    ++ lib.optionals waylandSupport [ wayland ];
 
     installPhase = ''
       runHook preInstall
@@ -95,17 +81,31 @@ let
         --add-needed libfontconfig.so.1 \
         $out/opt/warpdotdev/warp-terminal/warp
     '';
+
+    runtimeDependencies = [
+      libglvnd # for libegl
+      libxkbcommon
+      stdenv.cc.libc
+      vulkan-loader
+      xdg-utils
+      libx11
+      libxcb
+      libxcursor
+      libxi
+    ]
+    ++ lib.optionals waylandSupport [ wayland ];
+
+    sourceRoot = ".";
   });
 
   darwin = stdenvNoCC.mkDerivation (finalAttrs: {
     inherit pname meta passthru;
     inherit (versions.darwin) version;
+
     src = fetchurl {
       inherit (versions.darwin) hash;
       url = "https://releases.warp.dev/stable/v${finalAttrs.version}/Warp.dmg";
     };
-
-    sourceRoot = ".";
 
     # Warp.dmg is APFS formatted, which is unsupported by undmg
     nativeBuildInputs = [ _7zz ];
@@ -118,6 +118,8 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   });
 
   meta = {
@@ -125,11 +127,13 @@ let
     homepage = "https://www.warp.dev";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       _4evy
       johnrtitor
       logger
     ];
+
     platforms = lib.platforms.darwin ++ [
       "x86_64-linux"
       "aarch64-linux"

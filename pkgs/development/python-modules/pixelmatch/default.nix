@@ -4,8 +4,8 @@
   fetchgit,
   pillow,
   poetry-core,
-  pytestCheckHook,
   pytest-benchmark,
+  pytestCheckHook,
 }:
 let
   owner = "whtsky";
@@ -14,7 +14,6 @@ in
 buildPythonPackage rec {
   pname = "pixelmatch";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchgit {
     url = "https://github.com/whtsky/pixelmatch-py.git";
@@ -23,16 +22,17 @@ buildPythonPackage rec {
     fetchLFS = true;
   };
 
-  build-system = [
-    poetry-core
-  ];
-
   nativeCheckInputs = [
     pillow
     pytest-benchmark
     pytestCheckHook
   ];
 
+  build-system = [
+    poetry-core
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pixelmatch" ];
 
   meta = {

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   gobject-introspection,
-  wrapGAppsHook3,
-  python3,
   ibus,
+  python3,
+  wrapGAppsHook3,
 }:
 
 let
@@ -58,14 +58,16 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    isIbusEngine = true;
     description = "Input method (ibus) for entering unicode symbols and emoji by name";
     homepage = "https://github.com/salty-horse/ibus-uniemoji";
+
     license = with lib.licenses; [
       gpl3
       mit
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ aske ];
+    platforms = lib.platforms.linux;
+    isIbusEngine = true;
   };
 }

@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
   bluez,
+  buildPythonPackage,
   gattlib,
 }:
 
 buildPythonPackage {
   pname = "pybluez";
   version = "unstable-2022-01-28";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pybluez";
@@ -20,11 +19,10 @@ buildPythonPackage {
   };
 
   buildInputs = [ bluez ];
-
   propagatedBuildInputs = [ gattlib ];
-
   # there are no tests
   doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "bluetooth"

@@ -1,40 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cargo,
-  pkg-config,
   cmake,
-  kdePackages,
-  rustc,
-  rustPlatform,
   fetchpatch,
-
-  # common deps
-  libzip,
-  qt6Packages,
-
   # client deps
   ffmpeg,
-  libsecret,
-  libwebp,
-
   # optional client deps
   giflib,
-  libvpx,
-  miniupnpc,
-
+  kdePackages,
   # optional server deps
   libmicrohttpd,
+  libsecret,
   libsodium,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd ? null,
-
+  libvpx,
+  libwebp,
+  # common deps
+  libzip,
+  miniupnpc,
+  pkg-config,
+  qt6Packages,
+  rustPlatform,
+  rustc,
   # options
   buildClient ? true,
+  buildExtraTools ? false,
   buildServer ? true,
   buildServerGui ? true, # if false builds a headless server
-  buildExtraTools ? false,
+  systemd ? null,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 assert lib.assertMsg (
@@ -76,18 +71,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-0paLKxAEvlbExq426xTekBt+Dkphx7Wg/AtpYN3f/4w=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-u9fRbxKeQSou9Umw4EaqzzzDiN4zhyfx9sWnlZpfpxU=";
-  };
-
   patches = [
     # Remove for 2.3.1
     # QT updated and broke some functionality so we have to get the commit that fixes it from upstream
     (fetchpatch {
+      hash = "sha256-Z8mcPux8tvK5y1GirfKq1X9+kxHDIrnSLTd2MCSIxTg=";
       name = "qt-6.10.1.patch";
       url = "https://github.com/drawpile/Drawpile/commit/c4f69f79b1cb0d25e68b49e807ce6773ddb9dd3c.patch";
-      hash = "sha256-Z8mcPux8tvK5y1GirfKq1X9+kxHDIrnSLTd2MCSIxTg=";
     })
   ];
 
@@ -116,17 +106,24 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "TOOLS" buildExtraTools)
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-u9fRbxKeQSou9Umw4EaqzzzDiN4zhyfx9sWnlZpfpxU=";
+  };
+
   meta = {
     description = "Collaborative drawing program that allows multiple users to sketch on the same canvas simultaneously";
     homepage = "https://drawpile.net/";
-    downloadPage = "https://drawpile.net/download/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       fgaz
       qubic
     ];
+
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin;
+    downloadPage = "https://drawpile.net/download/";
   }
   // lib.optionalAttrs buildServer {
     mainProgram = "drawpile-srv";

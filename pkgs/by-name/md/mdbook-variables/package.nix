@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,17 +16,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-q8UbL1zBb1InYutgM3ZE7z9NdJKi68yjR2Za/o0jg9c=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "mdBook preprocessor to replace values with env variables";
-    mainProgram = "mdbook-variables";
     homepage = "https://gitlab.com/tglman/mdbook-variables";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ kraftnix ];
+    mainProgram = "mdbook-variables";
   };
 })

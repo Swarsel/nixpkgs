@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   ninja,
   python3,
-  fetchFromGitHub,
   versionCheckHook,
 }:
 
@@ -31,18 +31,19 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
-    changelog = "https://github.com/kuzudb/kuzu/releases/tag/v${finalAttrs.version}";
     description = "Embeddable property graph database management system";
     homepage = "https://kuzudb.com/";
+    changelog = "https://github.com/kuzudb/kuzu/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "kuzu";
     maintainers = with lib.maintainers; [ sdht0 ];
     platforms = lib.platforms.all;
+    mainProgram = "kuzu";
   };
 })

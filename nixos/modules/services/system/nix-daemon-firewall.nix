@@ -9,57 +9,60 @@ in
     enable = lib.mkEnableOption "firewalling for outgoing traffic of the nix daemon";
 
     allowLoopback = lib.mkOption {
-      description = "Whether to allow traffic on the loopback interface. Traffic is still subject to protocol/port rules";
       default = false;
+      description = "Whether to allow traffic on the loopback interface. Traffic is still subject to protocol/port rules";
       example = true;
-    };
-
-    allowPrivateNetworks = lib.mkOption {
-      description = "Whether to allow traffic to local networks. Traffic is still subject to protocol/port rules. Note that this option may break DNS resolution when the DNS resolver is in a local network";
-      default = true;
-      example = false;
     };
 
     allowNonTCPUDP = lib.mkOption {
-      description = "Whether to allow traffic that is neither TCP nor UDP";
-      type = lib.types.bool;
       default = false;
+      description = "Whether to allow traffic that is neither TCP nor UDP";
       example = true;
+      type = lib.types.bool;
+    };
+
+    allowPrivateNetworks = lib.mkOption {
+      default = true;
+      description = "Whether to allow traffic to local networks. Traffic is still subject to protocol/port rules. Note that this option may break DNS resolution when the DNS resolver is in a local network";
+      example = false;
     };
 
     allowedTCPPorts = lib.mkOption {
-      description = "TCP ports to which traffic is allowed. Specifying no ports will allow all TCP traffic";
-      type = lib.types.listOf (
-        lib.types.oneOf [
-          lib.types.singleLineStr
-          lib.types.port
-        ]
-      );
       default = [ ];
+      description = "TCP ports to which traffic is allowed. Specifying no ports will allow all TCP traffic";
+
       example = [
         "http"
         443
         "30000-31000"
       ];
-    };
 
-    allowedUDPPorts = lib.mkOption {
-      description = "UDP ports to which traffic is allowed. Specifying no ports will allow all UDP traffic";
       type = lib.types.listOf (
         lib.types.oneOf [
           lib.types.singleLineStr
           lib.types.port
         ]
       );
+    };
+
+    allowedUDPPorts = lib.mkOption {
       default = [ ];
+      description = "UDP ports to which traffic is allowed. Specifying no ports will allow all UDP traffic";
       example = [ 53 ];
+
+      type = lib.types.listOf (
+        lib.types.oneOf [
+          lib.types.singleLineStr
+          lib.types.port
+        ]
+      );
     };
 
     extraNftablesRules = lib.mkOption {
-      description = "Extra nftables rules to prepend to the generated ones";
-      type = lib.types.listOf lib.types.singleLineStr;
       default = [ ];
+      description = "Extra nftables rules to prepend to the generated ones";
       example = [ "ip daddr 1.1.1.1 udp dport accept" ];
+      type = lib.types.listOf lib.types.singleLineStr;
     };
   };
 
@@ -68,6 +71,7 @@ in
     assertions = [
       {
         assertion = config.networking.nftables.enable;
+
         message = ''
           The nix-daemon firewall requires an nftables-based firewall.
           networking.nftables.enable must be set to true.
@@ -75,6 +79,7 @@ in
       }
       {
         assertion = !config.networking.nftables.flushRuleset;
+
         message = ''
           The nix-daemon firewall writes extra tables to nftables.
           networking.nftables.flushRuleset must be set to false.
@@ -82,11 +87,10 @@ in
       }
     ];
 
-    systemd.services.nix-daemon = {
-      after = [ "nftables.service" ];
-      # Add the cgroup ID to a nft set on daemon start
-      serviceConfig.NFTSet = "cgroup:inet:nix_daemon_firewall:nix_daemon";
-    };
+    # Not supported by LKL yet so the ruleset check would fail
+    networking.nftables.preCheckRuleset = ''
+      sed -i 's/socket cgroupv2 level 2 @nix_daemon//g' ruleset.conf
+    '';
 
     # Generate nftables rules
     networking.nftables.ruleset = ''
@@ -137,9 +141,11 @@ in
         }
       }
     '';
-    # Not supported by LKL yet so the ruleset check would fail
-    networking.nftables.preCheckRuleset = ''
-      sed -i 's/socket cgroupv2 level 2 @nix_daemon//g' ruleset.conf
-    '';
+
+    systemd.services.nix-daemon = {
+      after = [ "nftables.service" ];
+      # Add the cgroup ID to a nft set on daemon start
+      serviceConfig.NFTSet = "cgroup:inet:nix_daemon_firewall:nix_daemon";
+    };
   };
 }

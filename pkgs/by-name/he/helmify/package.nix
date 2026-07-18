@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildGoModule (finalAttrs: {
   pname = "helmify";
   version = "0.4.20";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "arttor";
@@ -19,6 +18,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-a2uA2P9eenpgb2bFMvy3ioI9crG0FpvD1vEXqCwwwyw=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -26,9 +28,6 @@ buildGoModule (finalAttrs: {
     "-X main.commit=${finalAttrs.src.tag}"
     "-X main.date=19700101"
   ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -38,7 +37,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/arttor/helmify/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jlesquembre ];
-    mainProgram = "helmify";
     platforms = lib.platforms.unix;
+    mainProgram = "helmify";
   };
 })

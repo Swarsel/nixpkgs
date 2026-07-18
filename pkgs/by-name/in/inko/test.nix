@@ -1,7 +1,7 @@
 {
   inko,
-  writeText,
   runCommand,
+  writeText,
   ...
 }:
 

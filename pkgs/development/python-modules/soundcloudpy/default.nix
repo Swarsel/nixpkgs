@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "soundcloudpy";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "music-assistant";
@@ -18,15 +17,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-NuL6VIAssvYiGWqioMtf3Brw/G8Vt2P4/57l3k3db9g=";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
     aiohttp
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "soundcloudpy" ];
 
   meta = {

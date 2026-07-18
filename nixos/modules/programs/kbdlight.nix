@@ -14,10 +14,11 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ pkgs.kbdlight ];
+
     security.wrappers.kbdlight = {
-      setuid = true;
-      owner = "root";
       group = "root";
+      owner = "root";
+      setuid = true;
       source = "${pkgs.kbdlight.out}/bin/kbdlight";
     };
   };

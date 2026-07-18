@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitLab,
+  gnum4,
   ocaml,
   ocamlPackages,
-  gnum4,
-  fetchFromGitLab,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "caper";
@@ -17,6 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TSryjz0NrGdkc+6vmfBqsuVpV3N9FvteTFsVqpUcm0w=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     ocamlPackages.ocamlbuild
@@ -28,8 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     ocamlPackages.angstrom
   ];
-
-  strictDeps = true;
 
   buildPhase = ''
     runHook preBuild
@@ -46,6 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool for understanding and processing pcap (packet capture) expressions";
+
     longDescription = ''
       Caper is a tool for understanding and processing "pcap expressions" (also known as *tcpdump filters*) which are used for network packet analysis.
       Caper can be used for:
@@ -56,6 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
 
       More info can be found in the Caper paper (https://www.nik.network/caper/pcap_semantics.pdf).
     '';
+
     homepage = "https://gitlab.com/niksu/caper";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ willow_ch ];

@@ -1,8 +1,8 @@
 # Version can be selected with the 'version' argument, see generic.nix.
 {
   lib,
-  callPackage,
   buildDunePackage,
+  callPackage,
   menhir,
   ...
 }@args:
@@ -14,20 +14,19 @@ in
 assert (lib.versionAtLeast version "0.25.1");
 
 buildDunePackage {
-  pname = "ocamlformat-lib";
   inherit src version;
-
+  pname = "ocamlformat-lib";
   nativeBuildInputs = [ menhir ];
-
   propagatedBuildInputs = library_deps;
 
   meta = {
-    homepage = "https://github.com/ocaml-ppx/ocamlformat";
     description = "Auto-formatter for OCaml code (library)";
+    homepage = "https://github.com/ocaml-ppx/ocamlformat";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Zimmi48
       Julow
     ];
-    license = lib.licenses.mit;
   };
 }

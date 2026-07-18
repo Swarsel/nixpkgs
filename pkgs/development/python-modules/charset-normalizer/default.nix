@@ -1,10 +1,10 @@
 {
   lib,
-  aiohttp,
-  buildPythonPackage,
   fetchFromGitHub,
-  isPyPy,
+  aiohttp,
   ast-serialize,
+  buildPythonPackage,
+  isPyPy,
   mypy,
   pytestCheckHook,
   requests,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "charset-normalizer";
   version = "3.4.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jawah";
@@ -29,6 +28,9 @@ buildPythonPackage rec {
       --replace-fail "mypy>=1.4.1,<=1.20" "mypy"
   '';
 
+  env.CHARSET_NORMALIZER_USE_MYPYC = lib.optionalString withMypyc "1";
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ]
@@ -37,10 +39,7 @@ buildPythonPackage rec {
     mypy
   ];
 
-  env.CHARSET_NORMALIZER_USE_MYPYC = lib.optionalString withMypyc "1";
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "charset_normalizer" ];
 
   passthru.tests = {
@@ -49,10 +48,10 @@ buildPythonPackage rec {
 
   meta = {
     description = "Python module for encoding and language detection";
-    mainProgram = "normalizer";
     homepage = "https://charset-normalizer.readthedocs.io/";
     changelog = "https://github.com/jawah/charset_normalizer/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "normalizer";
   };
 }

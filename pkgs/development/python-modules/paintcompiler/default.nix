@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  fonttools,
   black,
+  buildPythonPackage,
+  fonttools,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "paintcompiler";
   version = "0.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simoncozens";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
     black
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "paintcompiler"
     "paintdecompiler"
@@ -35,7 +36,7 @@ buildPythonPackage rec {
     description = "Paint compiler for COLRv1 fonts";
     homepage = "https://github.com/simoncozens/paintcompiler";
     license = lib.licenses.asl20;
-    mainProgram = "paintcompiler";
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    mainProgram = "paintcompiler";
   };
 }

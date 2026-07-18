@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
   mlton,
+  perl,
 }:
 
 stdenv.mkDerivation {
@@ -19,21 +19,20 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ perl ];
   buildInputs = [ mlton ];
-
-  patchPhase = "patchShebangs .";
-
   buildPhase = "make mlton";
 
   installPhase = ''
     install -Dm0755 bin/mlton/metis $out/bin/metis
   '';
 
+  patchPhase = "patchShebangs .";
+
   meta = {
     description = "Automatic theorem prover for first-order logic with equality";
-    mainProgram = "metis";
     homepage = "https://www.gilith.com/research/metis/";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "metis";
   };
 }

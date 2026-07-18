@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pycolorecho,
   pytestCheckHook,
   setuptools,
-  pycolorecho,
 }:
 
 buildPythonPackage rec {
   pname = "pyloggermanager";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coldsofttech";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-1hfcmMLH2d71EV71ExKqjZ7TMcqVd1AQrEwJhmEWOVU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pycolorecho ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ pycolorecho ];
+  pyproject = true;
   pythonImportsCheck = [ "pyloggermanager" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   pytestCheckHook,
   python-dateutil,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyvesync";
   version = "3.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "webdjoe";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-pJv5CMsM82ZUfc9ZuuAut+wHp2pMHOeOqMcH1jg3uRs=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyyaml
+    requests
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,12 +37,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ mashumaro.optional-dependencies.orjson;
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyyaml
-    requests
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyvesync" ];
 
   meta = {

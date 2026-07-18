@@ -26,12 +26,13 @@ let
   settingsFormat = pkgs.formats.yaml { };
 
   getNames = name: vhostSettings: rec {
-    server = if vhostSettings.serverName != null then vhostSettings.serverName else name;
     cert =
       if lib.attrByPath [ "acme" "useHost" ] null vhostSettings == null then
         server
       else
         vhostSettings.acme.useHost;
+
+    server = if vhostSettings.serverName != null then vhostSettings.serverName else name;
   };
 
   # Attrset with the virtual hosts relevant to ACME configuration
@@ -43,8 +44,8 @@ let
       let
         names = getNames name value;
         virtualHostConfig = value // {
-          serverName = names.server;
           certName = names.cert;
+          serverName = names.server;
         };
       in
       acc ++ [ virtualHostConfig ]
@@ -89,11 +90,12 @@ let
         guidelinesJSON =
           lib.pipe
             {
+              sha256 = "sha256-aHdzLNPo4c6jlbS+Fg3R0X5VcdPKtUky0oX5Q7Y94SQ=";
+
               urls = [
                 "https://ssl-config.mozilla.org/guidelines/${version}.json"
                 "https://raw.githubusercontent.com/mozilla/ssl-config-generator/refs/tags/${git_tag}/src/static/guidelines/${version}.json"
               ];
-              sha256 = "sha256-aHdzLNPo4c6jlbS+Fg3R0X5VcdPKtUky0oX5Q7Y94SQ=";
             }
             [
               pkgs.fetchurl
@@ -123,6 +125,7 @@ let
         {
           "${names.server}:${toString acmePort}" = {
             listen.port = acmePort;
+
             paths."${acmeChallengePath}/" = {
               "file.dir" = value.acme.root + acmeChallengePath;
             };
@@ -139,6 +142,7 @@ let
         // lib.optionalAttrs (value.tls != null && value.tls.policy == "force") {
           "${names.server}:${toString port.HTTP}" = {
             listen.port = port.HTTP;
+
             paths."/" = {
               redirect = {
                 status = value.tls.redirectCode;
@@ -185,9 +189,9 @@ let
                       recs = mozTLSRecs.${tlsRecommendations};
                     in
                     {
-                      min-version = builtins.head recs.tls_versions;
                       cipher-preference = "server";
                       "cipher-suite-tls1.3" = recs.ciphersuites;
+                      min-version = builtins.head recs.tls_versions;
                     }
                     // lib.optionalAttrs (recs.ciphers.openssl != [ ]) {
                       cipher-suite = lib.concatStringsSep ":" recs.ciphers.openssl;
@@ -227,12 +231,13 @@ let
                     identity =
                       value.tls.identity
                       ++ lib.optional (builtins.elem names.cert acmeCertNames.all) {
-                        key-file = "${certs.${names.cert}.directory}/key.pem";
                         certificate-file = "${certs.${names.cert}.directory}/fullchain.pem";
+                        key-file = "${certs.${names.cert}.directory}/key.pem";
                       };
 
                     baseListen = {
                       port = port.TLS;
+
                       ssl = (lib.recursiveUpdate tlsRecAttrs value.tls.extraSettings) // {
                         inherit identity;
                       };
@@ -274,18 +279,6 @@ in
     services.h2o = {
       enable = mkEnableOption "H2O web server";
 
-      user = mkOption {
-        type = types.nonEmptyStr;
-        default = "h2o";
-        description = "User running H2O service";
-      };
-
-      group = mkOption {
-        type = types.nonEmptyStr;
-        default = "h2o";
-        description = "Group running H2O services";
-      };
-
       package = lib.mkPackageOption pkgs "h2o" {
         example = # nix
           ''
@@ -297,50 +290,38 @@ in
       };
 
       defaultHTTPListenPort = mkOption {
-        type = types.port;
         default = 80;
+
         description = ''
           If hosts do not specify listen.port, use these ports for HTTP by default.
         '';
+
         example = 8080;
+        type = types.port;
       };
 
       defaultTLSListenPort = mkOption {
-        type = types.port;
         default = 443;
+
         description = ''
           If hosts do not specify listen.port, use these ports for SSL by default.
         '';
+
         example = 8443;
+        type = types.port;
       };
 
       defaultTLSRecommendations = tlsRecommendationsOption;
 
-      settings = mkOption {
-        type = settingsFormat.type;
-        default = { };
-        description = "Configuration for H2O (see <https://h2o.examp1e.net/configure.html>)";
-        example =
-          literalExpression
-            # nix
-            ''
-              {
-                compress = "ON";
-                ssl-offload = "kernel";
-                http2-reprioritize-blocking-assets = "ON";
-                "file.mime.addtypes" = {
-                  "text/x-rst" = {
-                    extensions = [ ".rst" ];
-                    is_compressible = "YES";
-                  };
-                };
-              }
-            '';
+      group = mkOption {
+        default = "h2o";
+        description = "Group running H2O services";
+        type = types.nonEmptyStr;
       };
 
       hosts = mkOption {
-        type = types.attrsOf (types.submodule (import ./vhost-options.nix { inherit config lib; }));
         default = { };
+
         description = ''
           The `hosts` config to be merged with the settings.
 
@@ -349,6 +330,7 @@ in
           virtual host options in like `http` & `tls` or use `$HOST:$PORT`
           keys if manually specifying config.
         '';
+
         example =
           literalExpression
             # nix
@@ -375,6 +357,38 @@ in
                 };
               }
             '';
+
+        type = types.attrsOf (types.submodule (import ./vhost-options.nix { inherit config lib; }));
+      };
+
+      settings = mkOption {
+        default = { };
+        description = "Configuration for H2O (see <https://h2o.examp1e.net/configure.html>)";
+
+        example =
+          literalExpression
+            # nix
+            ''
+              {
+                compress = "ON";
+                ssl-offload = "kernel";
+                http2-reprioritize-blocking-assets = "ON";
+                "file.mime.addtypes" = {
+                  "text/x-rst" = {
+                    extensions = [ ".rst" ];
+                    is_compressible = "YES";
+                  };
+                };
+              }
+            '';
+
+        type = settingsFormat.type;
+      };
+
+      user = mkOption {
+        default = "h2o";
+        description = "User running H2O service";
+        type = types.nonEmptyStr;
       };
     };
   };
@@ -400,6 +414,7 @@ in
             # TLS short-hand (was manually specified)
             || (hasKeyPlusCert host.listen.ssl)
           ) (lib.attrValues h2oConfig.hosts);
+
         message = ''
           TLS support will require at least one non-empty certificate & key
           file. Use services.h2o.hosts.<name>.acme.enable,
@@ -414,110 +429,13 @@ in
       mkCertOwnershipAssertion {
         cert = certs.${name};
         groups = config.users.groups;
+
         services = [
           config.systemd.services.h2o
         ]
         ++ lib.optional (acmeCertNames.all != [ ]) config.systemd.services.h2o-config-reload;
       }
     ) acmeCertNames.all;
-
-    users = {
-      users.${cfg.user} = {
-        group = cfg.group;
-      }
-      // lib.optionalAttrs (cfg.user == "h2o") {
-        isSystemUser = true;
-      };
-      groups.${cfg.group} = { };
-    };
-
-    systemd.services.h2o = {
-      description = "H2O HTTP server";
-      wantedBy = [ "multi-user.target" ];
-      wants = lib.concatLists (map (certName: [ "acme-${certName}.service" ]) acmeCertNames.all);
-      # Since H2O will be hosting the challenges, H2O must be started
-      before = map (certName: "acme-order-renew-${certName}.service") acmeCertNames.all;
-      after = [
-        "network.target"
-      ]
-      ++ map (certName: "acme-${certName}.service") acmeCertNames.all;
-
-      serviceConfig = {
-        ExecStart = "${h2oExe} --mode 'master'";
-        ExecReload = [
-          "${h2oExe} --mode 'test'"
-          "${pkgs.coreutils}/bin/kill -HUP $MAINPID"
-        ];
-        ExecStop = "${pkgs.coreutils}/bin/kill -s QUIT $MAINPID";
-        User = cfg.user;
-        Group = cfg.group;
-        Restart = "always";
-        RestartSec = "10s";
-        RuntimeDirectory = "h2o";
-        RuntimeDirectoryMode = "0750";
-        CacheDirectory = "h2o";
-        CacheDirectoryMode = "0750";
-        LogsDirectory = "h2o";
-        LogsDirectoryMode = "0750";
-        ProtectSystem = "strict";
-        ProtectHome = mkDefault true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectHostname = true;
-        ProtectClock = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
-        ProtectControlGroups = true;
-        RestrictAddressFamilies = [
-          "AF_UNIX"
-          "AF_INET"
-          "AF_INET6"
-        ];
-        RestrictNamespaces = true;
-        LockPersonality = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-        RemoveIPC = true;
-        PrivateMounts = true;
-        AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
-        CapabilitiesBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
-      };
-
-      preStart = "${h2oExe} --mode 'test'";
-    };
-
-    # This service waits for all certificates to be available before reloading
-    # H2O configuration. `tlsTargets` are added to `wantedBy` + `before` which
-    # allows the `acme-order-renew-$cert.service` to signify the successful updating
-    # of certs end-to-end.
-    systemd.services.h2o-config-reload =
-      let
-        tlsServices = map (certName: "acme-order-renew-${certName}.service") acmeCertNames.all;
-      in
-      mkIf (acmeCertNames.all != [ ]) {
-        wantedBy = tlsServices ++ [ "multi-user.target" ];
-        after = tlsServices;
-        unitConfig = {
-          ConditionPathExists = map (
-            certName: "${certs.${certName}.directory}/fullchain.pem"
-          ) acmeCertNames.all;
-          # Disable rate limiting for this since it may be triggered quickly
-          # a bunch of times if a lot of certificates are renewed in quick
-          # succession. The reload itself is cheap, so even doing a lot of them
-          # in a short burst is fine.
-          #
-          # FIXME: like Nginx’s FIXME, there’s probably a better way to do
-          # this.
-          StartLimitIntervalSec = 0;
-        };
-        serviceConfig = {
-          Type = "oneshot";
-          TimeoutSec = 60;
-          ExecCondition = "/run/current-system/systemd/bin/systemctl -q is-active h2o.service";
-          ExecStart = "/run/current-system/systemd/bin/systemctl reload h2o.service";
-        };
-      };
 
     security.acme.certs =
       let
@@ -530,20 +448,128 @@ in
             acc
             // {
               "${vhostSettings.serverName}" = {
+                # Also nudge dnsProvider to null in case it is inherited
+                dnsProvider = lib.mkOverride (if hasRoot then 1000 else 2000) null;
+                extraDomainNames = vhostSettings.serverAliases;
                 group = mkDefault cfg.group;
                 # If `acme.root` is `null`, inherit `config.security.acme`.
                 # Since `config.security.acme.certs.<cert>.webroot`’s own
                 # default value should take precedence set priority higher than
                 # mkOptionDefault
                 webroot = lib.mkOverride (if hasRoot then 1000 else 2000) vhostSettings.acme.root;
-                # Also nudge dnsProvider to null in case it is inherited
-                dnsProvider = lib.mkOverride (if hasRoot then 1000 else 2000) null;
-                extraDomainNames = vhostSettings.serverAliases;
               };
             }
           else
             acc;
       in
       lib.lists.foldl mkCerts { } acmeEnabledHostsConfigs;
+
+    systemd.services.h2o = {
+      after = [
+        "network.target"
+      ]
+      ++ map (certName: "acme-${certName}.service") acmeCertNames.all;
+
+      # Since H2O will be hosting the challenges, H2O must be started
+      before = map (certName: "acme-order-renew-${certName}.service") acmeCertNames.all;
+      description = "H2O HTTP server";
+      preStart = "${h2oExe} --mode 'test'";
+
+      serviceConfig = {
+        AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+        CacheDirectory = "h2o";
+        CacheDirectoryMode = "0750";
+        CapabilitiesBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
+
+        ExecReload = [
+          "${h2oExe} --mode 'test'"
+          "${pkgs.coreutils}/bin/kill -HUP $MAINPID"
+        ];
+
+        ExecStart = "${h2oExe} --mode 'master'";
+        ExecStop = "${pkgs.coreutils}/bin/kill -s QUIT $MAINPID";
+        Group = cfg.group;
+        LockPersonality = true;
+        LogsDirectory = "h2o";
+        LogsDirectoryMode = "0750";
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = mkDefault true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        RemoveIPC = true;
+        Restart = "always";
+        RestartSec = "10s";
+
+        RestrictAddressFamilies = [
+          "AF_UNIX"
+          "AF_INET"
+          "AF_INET6"
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RuntimeDirectory = "h2o";
+        RuntimeDirectoryMode = "0750";
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = lib.concatLists (map (certName: [ "acme-${certName}.service" ]) acmeCertNames.all);
+    };
+
+    # This service waits for all certificates to be available before reloading
+    # H2O configuration. `tlsTargets` are added to `wantedBy` + `before` which
+    # allows the `acme-order-renew-$cert.service` to signify the successful updating
+    # of certs end-to-end.
+    systemd.services.h2o-config-reload =
+      let
+        tlsServices = map (certName: "acme-order-renew-${certName}.service") acmeCertNames.all;
+      in
+      mkIf (acmeCertNames.all != [ ]) {
+        after = tlsServices;
+
+        serviceConfig = {
+          ExecCondition = "/run/current-system/systemd/bin/systemctl -q is-active h2o.service";
+          ExecStart = "/run/current-system/systemd/bin/systemctl reload h2o.service";
+          TimeoutSec = 60;
+          Type = "oneshot";
+        };
+
+        unitConfig = {
+          ConditionPathExists = map (
+            certName: "${certs.${certName}.directory}/fullchain.pem"
+          ) acmeCertNames.all;
+
+          # Disable rate limiting for this since it may be triggered quickly
+          # a bunch of times if a lot of certificates are renewed in quick
+          # succession. The reload itself is cheap, so even doing a lot of them
+          # in a short burst is fine.
+          #
+          # FIXME: like Nginx’s FIXME, there’s probably a better way to do
+          # this.
+          StartLimitIntervalSec = 0;
+        };
+
+        wantedBy = tlsServices ++ [ "multi-user.target" ];
+      };
+
+    users = {
+      groups.${cfg.group} = { };
+
+      users.${cfg.user} = {
+        group = cfg.group;
+      }
+      // lib.optionalAttrs (cfg.user == "h2o") {
+        isSystemUser = true;
+      };
+    };
   };
 }

@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   devpi-server,
   ldap3,
-  pyyaml,
-
   # tests
   packaging-legacy,
   pytest-cov-stub,
   pytest-mock,
   pytestCheckHook,
+  pyyaml,
+  # build-system
+  setuptools,
   webtest,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "devpi-ldap";
   version = "2.1.1-unstable-2026-01-22";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "devpi";
@@ -36,6 +32,14 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"setuptools_changelog_shortener",' ""
   '';
 
+  nativeCheckInputs = [
+    packaging-legacy
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+    webtest
+  ];
+
   build-system = [
     setuptools
   ];
@@ -46,16 +50,8 @@ buildPythonPackage (finalAttrs: {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    packaging-legacy
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-    webtest
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "devpi_ldap" ];
-
   passthru.skipBulkUpdate = true; # avoid reversion to previous stable version
 
   meta = {

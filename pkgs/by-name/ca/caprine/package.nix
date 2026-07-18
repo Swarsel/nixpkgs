@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildNpmPackage,
-  makeDesktopItem,
   copyDesktopItems,
   electron,
+  makeDesktopItem,
   nix-update-script,
 }:
 
@@ -20,11 +20,10 @@ buildNpmPackage rec {
     hash = "sha256-hBGsqOqKMHNy2SNw1kHCQq1lPDd2S36L5pdKgD2O8FA=";
   };
 
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  npmDepsHash = "sha256-FgOHuMMUX92VHF6hdznoi7bhO/27t6+l038kmpqjctQ=";
-
+  patches = [ ./001-disable-auto-update.patch ];
   nativeBuildInputs = [ copyDesktopItems ];
+  npmDepsHash = "sha256-FgOHuMMUX92VHF6hdznoi7bhO/27t6+l038kmpqjctQ=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   postBuild = ''
     electron_dist="$(mktemp -d)"
@@ -38,8 +37,6 @@ buildNpmPackage rec {
         -c.electronDist="$electron_dist" \
         -c.electronVersion=${electron.version}
   '';
-
-  patches = [ ./001-disable-auto-update.patch ];
 
   installPhase = ''
     runHook preInstall
@@ -68,17 +65,18 @@ buildNpmPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "caprine";
-      exec = "caprine %U";
-      icon = "caprine";
-      desktopName = "Caprine";
-      comment = meta.description;
       categories = [
         "Network"
         "InstantMessaging"
         "Chat"
       ];
+
+      comment = meta.description;
+      desktopName = "Caprine";
+      exec = "caprine %U";
+      icon = "caprine";
       mimeTypes = [ "x-scheme-handler/caprine" ];
+      name = "caprine";
       terminal = false;
     })
   ];
@@ -86,13 +84,14 @@ buildNpmPackage rec {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/sindresorhus/caprine/releases/tag/${src.rev}";
+    inherit (electron.meta) platforms;
     description = "Elegant Facebook Messenger desktop app";
     homepage = "https://github.com/sindresorhus/caprine";
+    changelog = "https://github.com/sindresorhus/caprine/releases/tag/${src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       khaneliman
     ];
-    inherit (electron.meta) platforms;
   };
 }

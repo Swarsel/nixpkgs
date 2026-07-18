@@ -1,16 +1,15 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cryptography,
-  python-axolotl-curve25519,
+  fetchPypi,
   protobuf,
+  python-axolotl-curve25519,
 }:
 
 buildPythonPackage rec {
   pname = "python-axolotl";
   version = "0.2.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +22,12 @@ buildPythonPackage rec {
     protobuf
   ];
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/tgalal/python-axolotl";
     description = "Python port of libaxolotl-android";
-    maintainers = [ ];
+    homepage = "https://github.com/tgalal/python-axolotl";
     license = lib.licenses.gpl3;
+    maintainers = [ ];
   };
 }

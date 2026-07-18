@@ -1,26 +1,27 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  hatchling,
-  flask,
-  itsdangerous,
-  wtforms,
   email-validator,
+  fetchPypi,
+  flask,
+  hatchling,
+  itsdangerous,
   pytestCheckHook,
   setuptools,
+  wtforms,
 }:
 
 buildPythonPackage rec {
   pname = "flask-wtf";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "flask_wtf";
     inherit version;
     hash = "sha256-edLuHkNs9XC8y32RZTP6GHV6LxjCkKzP+rG5oLaEZms=";
+    pname = "flask_wtf";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -37,18 +38,18 @@ buildPythonPackage rec {
     email = [ email-validator ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_wtf" ];
 
   meta = {
     description = "Simple integration of Flask and WTForms";
+    homepage = "https://github.com/pallets-eco/flask-wtf/";
+    changelog = "https://github.com/pallets-eco/flask-wtf/releases/tag/v${version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       mic92
       anthonyroussel
     ];
-    homepage = "https://github.com/pallets-eco/flask-wtf/";
-    changelog = "https://github.com/pallets-eco/flask-wtf/releases/tag/v${version}";
   };
 }

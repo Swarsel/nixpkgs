@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   steampipe,
 }:
@@ -18,12 +18,6 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-atrctIm5m0OzeiIjs7ypYKflSgO+t0iWclwOM+oZGzM=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   doCheck = true;
 
   installPhase = ''
@@ -37,14 +31,19 @@ buildGoModule rec {
     runHook postInstall
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/turbot/steampipe-plugin-github/blob/v${version}/CHANGELOG.md";
     description = "GitHub Plugin for Steampipe";
-    homepage = "https://github.com/turbot/steampipe-plugin-github";
-    license = lib.licenses.asl20;
     longDescription = "Use SQL to instantly query repositories, users, gists and more from GitHub.";
+    homepage = "https://github.com/turbot/steampipe-plugin-github";
+    changelog = "https://github.com/turbot/steampipe-plugin-github/blob/v${version}/CHANGELOG.md";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ anthonyroussel ];
     platforms = steampipe.meta.platforms;
   };

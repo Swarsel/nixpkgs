@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   invoke,
   mock,
-  pytest7CheckHook,
   pytest-cov-stub,
+  pytest7CheckHook,
   setuptools,
   sphinx-rtd-theme,
   typing-extensions,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pydash";
   version = "8.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dgilland";
@@ -22,10 +21,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-8DPeM9Q9NrlVF9a6vIfJLGyyB2SrWpZZRHZKqU/DT2w=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
 
   nativeCheckInputs = [
     invoke
@@ -35,12 +30,16 @@ buildPythonPackage rec {
     sphinx-rtd-theme
   ];
 
-  pythonImportsCheck = [ "pydash" ];
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
 
   disabledTestPaths = [
     # Disable mypy testing
     "tests/pytest_mypy_testing/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pydash" ];
 
   meta = {
     description = "Python utility libraries for doing stuff in a functional way";

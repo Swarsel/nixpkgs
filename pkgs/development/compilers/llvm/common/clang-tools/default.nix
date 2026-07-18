@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  runCommand,
-  writeText,
-  clang-unwrapped,
   clang,
+  clang-unwrapped,
   libcxxClang,
   llvm_meta,
+  runCommand,
+  writeText,
   # enableLibcxx will use the c++ headers from clang instead of gcc.
   # This shouldn't have any effect on platforms that use clang as the default compiler already.
   enableLibcxx ? false,
@@ -15,8 +15,6 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "clang-tools";
   version = lib.getVersion clang-unwrapped;
-  dontUnpack = true;
-  clang = if enableLibcxx then libcxxClang else clang;
 
   installPhase = ''
     runHook preInstall
@@ -56,6 +54,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  clang = if enableLibcxx then libcxxClang else clang;
+  dontUnpack = true;
+
   passthru.tests =
     let
       src = writeText "main.cpp" ''
@@ -68,20 +69,22 @@ stdenv.mkDerivation (finalAttrs: {
 
     in
     {
-      smokeOk = runCommand "clang-tools-test-smoke-ok" { } ''
-        ${finalAttrs.finalPackage}/bin/clangd  --check=${src}
+      environmentErr = runCommand "clang-tools-test-environment-err" { } ''
+         (CLANGD_FLAGS="--query-driver='**'" ${finalAttrs.finalPackage}/bin/clangd --check=${src} 2>&1 || true) \
+            | grep 'use of undeclared identifier'
+
         touch $out
       '';
+
       smokeErr = runCommand "clang-tools-test-smoke-err" { } ''
         (${finalAttrs.finalPackage}/bin/clangd --query-driver='**' --check=${src} 2>&1 || true) \
             | grep 'use of undeclared identifier'
 
         touch $out
       '';
-      environmentErr = runCommand "clang-tools-test-environment-err" { } ''
-         (CLANGD_FLAGS="--query-driver='**'" ${finalAttrs.finalPackage}/bin/clangd --check=${src} 2>&1 || true) \
-            | grep 'use of undeclared identifier'
 
+      smokeOk = runCommand "clang-tools-test-smoke-ok" { } ''
+        ${finalAttrs.finalPackage}/bin/clangd  --check=${src}
         touch $out
       '';
     };

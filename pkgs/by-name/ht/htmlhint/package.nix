@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -18,11 +18,11 @@ buildNpmPackage rec {
   npmDepsHash = "sha256-baMVZNwKwXVQCkIgaQizYe9vjYKJXggUXsGMZmSrwdY=";
 
   meta = {
-    changelog = "https://github.com/htmlhint/HTMLHint/blob/${src.rev}/CHANGELOG.md";
     description = "Static code analysis tool for HTML";
     homepage = "https://github.com/htmlhint/HTMLHint";
+    changelog = "https://github.com/htmlhint/HTMLHint/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "htmlhint";
     maintainers = [ ];
+    mainProgram = "htmlhint";
   };
 }

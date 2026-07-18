@@ -1,8 +1,8 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
   pytestCheckHook,
-  lib,
   setuptools,
   setuptools-declarative-requirements,
   setuptools-scm,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-helpers-namespace";
   version = "2021.12.29";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,12 +24,12 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_helpers_namespace" ];
 
   meta = {
-    homepage = "https://github.com/saltstack/pytest-helpers-namespace";
     description = "PyTest Helpers Namespace";
+    homepage = "https://github.com/saltstack/pytest-helpers-namespace";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

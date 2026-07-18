@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   doctest,
-  fetchFromGitHub,
   fetchpatch,
-  lib,
   replaceVars,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,13 +48,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "General-purpose Parallel and Heterogeneous Task Programming System";
     homepage = "https://taskflow.github.io/";
+
     changelog =
       let
         release = lib.replaceStrings [ "." ] [ "-" ] finalAttrs.version;
       in
       "https://taskflow.github.io/taskflow/release-${release}.html";
+
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ dotlambda ];
+    platforms = lib.platforms.unix;
   };
 })

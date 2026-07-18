@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -16,8 +16,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-FSVNnSuybPfaC+iCwOT2wvxk/+Hazm0VRe2zmEw/Fss=";
   };
 
-  tags = [
-    "netgo"
+  vendorHash = "sha256-g4RPn2iQEw7XJIwwk0j2Lznuhh/Pw6W3gU/2j2lymy4=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
   ];
 
   ldflags = [
@@ -25,12 +28,9 @@ buildGoModule (finalAttrs: {
     "-X main.versionTag=${finalAttrs.version}"
   ];
 
-  vendorHash = "sha256-g4RPn2iQEw7XJIwwk0j2Lznuhh/Pw6W3gU/2j2lymy4=";
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
+  tags = [
+    "netgo"
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "command-line tool to perform health-checks for gRPC applications";

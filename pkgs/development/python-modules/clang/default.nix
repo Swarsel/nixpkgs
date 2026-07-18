@@ -25,10 +25,17 @@ let
   '';
 in
 buildPythonPackage {
-  pname = "clang";
-  pyproject = true;
-
   inherit (libclang) version src;
+  pname = "clang";
+
+  postPatch = ''
+    # link in our own build info to build as a python package
+    ln -s ${pyproject_toml} ./pyproject.toml
+    ln -s ${setup_cfg} ./setup.cfg
+
+    # set passed libclang for runtime
+    echo 'Config.set_library_path("${lib.getLib libclang}/lib")' >>./clang/cindex.py
+  '';
 
   buildInputs = [ setuptools ];
 
@@ -42,14 +49,7 @@ buildPythonPackage {
     fi
   '';
 
-  postPatch = ''
-    # link in our own build info to build as a python package
-    ln -s ${pyproject_toml} ./pyproject.toml
-    ln -s ${setup_cfg} ./setup.cfg
-
-    # set passed libclang for runtime
-    echo 'Config.set_library_path("${lib.getLib libclang}/lib")' >>./clang/cindex.py
-  '';
+  pyproject = true;
 
   meta = libclang.meta // {
     description = "Python bindings for the C language family frontend for LLVM";

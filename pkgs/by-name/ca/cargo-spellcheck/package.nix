@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,13 +16,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-tKf1PiQ1ojAbW+RKut+QczPy0wIfQcsthV4lRwvmjUw=";
   };
 
-  cargoHash = "sha256-0TsDcdO7qCVcj6eNVu/lcehwsO2IhpNzW1C9zLbXXJs=";
-
   nativeBuildInputs = [ rustPlatform.bindgenHook ];
-
+  cargoHash = "sha256-0TsDcdO7qCVcj6eNVu/lcehwsO2IhpNzW1C9zLbXXJs=";
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu17";
-
-  preCheck = "HOME=$(mktemp -d)";
 
   checkFlags = [
     "--skip=checker::hunspell::tests::hunspell_binding_is_sane"
@@ -30,19 +26,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=tests::e2e::issue_226"
   ];
 
+  preCheck = "HOME=$(mktemp -d)";
+
   meta = {
     description = "Checks rust documentation for spelling and grammar mistakes";
-    mainProgram = "cargo-spellcheck";
     homepage = "https://github.com/drahnr/cargo-spellcheck";
     changelog = "https://github.com/drahnr/cargo-spellcheck/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       newam
       matthiasbeyer
       chrjabs
     ];
+
+    mainProgram = "cargo-spellcheck";
   };
 })

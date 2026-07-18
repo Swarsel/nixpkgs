@@ -10,14 +10,15 @@
 buildPythonPackage rec {
   pname = "azure-cosmos";
   version = "4.14.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_cosmos";
     inherit version;
     hash = "sha256-MjmmBf4pyUt3ORgmdzqj0Nm75Lk5A/zltkNLDzJ0K6c=";
+    pname = "azure_cosmos";
   };
 
+  # Requires an active Azure Cosmos service
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,12 +26,9 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  pythonNamespaces = [ "azure" ];
-
-  # Requires an active Azure Cosmos service
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.cosmos" ];
+  pythonNamespaces = [ "azure" ];
 
   meta = {
     description = "Azure Cosmos DB API";

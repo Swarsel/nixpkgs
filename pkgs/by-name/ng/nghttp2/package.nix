@@ -2,35 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  installShellFiles,
-  pkg-config,
-
-  # Optional dependencies
-  enableApp ? with stdenv.hostPlatform; !(isWindows || isCygwin) && !isStatic,
   c-aresMinimal,
-  libev,
-  openssl,
-  zlib,
-  enableGetAssets ? false,
-  libxml2,
-  enableHpack ? false,
-  jansson,
-  enableHttp3 ? false,
-  ngtcp2,
-  nghttp3,
-  enableJemalloc ? false,
-  jemalloc,
-  enablePython ? false,
-  python3,
-
-  # Unit tests ; we have to set TZDIR, which is a GNUism.
-  enableTests ? stdenv.hostPlatform.isGnu,
   cunit,
-  tzdata,
-
   # downstream dependencies, for testing
   curl,
+  installShellFiles,
+  jansson,
+  jemalloc,
+  libev,
   libsoup_3,
+  libxml2,
+  nghttp3,
+  ngtcp2,
+  openssl,
+  pkg-config,
+  python3,
+  tzdata,
+  zlib,
+  # Optional dependencies
+  enableApp ? with stdenv.hostPlatform; !(isWindows || isCygwin) && !isStatic,
+  enableGetAssets ? false,
+  enableHpack ? false,
+  enableHttp3 ? false,
+  enableJemalloc ? false,
+  enablePython ? false,
+  # Unit tests ; we have to set TZDIR, which is a GNUism.
+  enableTests ? stdenv.hostPlatform.isGnu,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus cannot use fetchpatch!
@@ -59,6 +56,12 @@ stdenv.mkDerivation rec {
     "man"
   ];
 
+  # this could be accomplished by updateAutotoolsGnuConfigScriptsHook, but that causes infinite recursion
+  # necessary for FreeBSD code path in configure
+  postPatch = ''
+    substituteInPlace ./config.guess --replace-fail /usr/bin/uname uname
+  '';
+
   nativeBuildInputs = [ pkg-config ] ++ lib.optionals enableApp [ installShellFiles ];
 
   buildInputs =
@@ -77,8 +80,6 @@ stdenv.mkDerivation rec {
     ]
     ++ lib.optionals enablePython [ python3 ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--disable-examples"
     (lib.enableFeature enableApp "app")
@@ -87,18 +88,14 @@ stdenv.mkDerivation rec {
 
   # Unit tests require CUnit and setting TZDIR environment variable
   doCheck = enableTests;
+
   nativeCheckInputs = lib.optionals enableTests [
     cunit
     tzdata
   ];
+
   preCheck = lib.optionalString enableTests ''
     export TZDIR=${tzdata}/share/zoneinfo
-  '';
-
-  # this could be accomplished by updateAutotoolsGnuConfigScriptsHook, but that causes infinite recursion
-  # necessary for FreeBSD code path in configure
-  postPatch = ''
-    substituteInPlace ./config.guess --replace-fail /usr/bin/uname uname
   '';
 
   postInstall =
@@ -112,12 +109,15 @@ stdenv.mkDerivation rec {
       patchShebangs $out/share/nghttp2
     '';
 
+  enableParallelBuilding = true;
+
   passthru.tests = {
     inherit curl libsoup_3;
   };
 
   meta = {
     description = "HTTP/2 C library and tools";
+
     longDescription = ''
       nghttp2 is an implementation of the HyperText Transfer Protocol version 2 in C.
       The framing layer of HTTP/2 is implemented as a reusable C library. On top of that,

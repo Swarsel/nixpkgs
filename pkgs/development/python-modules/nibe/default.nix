@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aresponses,
   async-modbus,
   async-timeout,
@@ -7,7 +8,6 @@
   buildPythonPackage,
   construct,
   exceptiongroup,
-  fetchFromGitHub,
   pandas,
   pytest-asyncio,
   pytestCheckHook,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "nibe";
   version = "2.23.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yozik04";
@@ -28,7 +27,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jBLsddnhUKdIntKmux6N/J07fnoVCBq0IbWyiWGKvlw=";
   };
 
-  pythonRelaxDeps = [ "async-modbus" ];
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [ setuptools ];
 
@@ -41,21 +45,17 @@ buildPythonPackage (finalAttrs: {
   ];
 
   optional-dependencies = {
+    cli = [ asyncclick ];
+
     convert = [
       pandas
       python-slugify
     ];
-    cli = [ asyncclick ];
   };
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "nibe" ];
+  pythonRelaxDeps = [ "async-modbus" ];
 
   meta = {
     description = "Library for the communication with Nibe heatpumps";

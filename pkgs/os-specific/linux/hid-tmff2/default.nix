@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
@@ -20,6 +20,7 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
+  postPatch = "sed -i '/depmod -A/d' Makefile";
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
@@ -31,8 +32,6 @@ stdenv.mkDerivation {
   ];
 
   passthru.updateScript = unstableGitUpdater { };
-
-  postPatch = "sed -i '/depmod -A/d' Makefile";
 
   meta = {
     description = "Linux kernel module for Thrustmaster T300RS, T248 and TX(experimental)";

@@ -19,10 +19,11 @@ in
 
     systemd.services.inputplumber = {
       description = "InputPlumber Service";
-      wantedBy = [ "multi-user.target" ];
+
       environment = {
         XDG_DATA_DIRS = "/run/current-system/sw/share";
       };
+
       restartIfChanged = true;
 
       serviceConfig = {
@@ -30,6 +31,8 @@ in
         Restart = "on-failure";
         RestartSec = "5";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

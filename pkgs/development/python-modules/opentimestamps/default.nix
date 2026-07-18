@@ -1,17 +1,16 @@
 {
   lib,
-  python-bitcoinlib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitpython,
   pycryptodomex,
   pytestCheckHook,
+  python-bitcoinlib,
 }:
 
 buildPythonPackage rec {
   pname = "opentimestamps";
   version = "0.4.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "opentimestamps";
@@ -20,6 +19,12 @@ buildPythonPackage rec {
     hash = "sha256-clG/5NAPmmmoj4b3LdVwl58DHg1EFMIMu+erx+GT+NE=";
   };
 
+  # Remove a failing test which expects the test source file to reside in the
+  # project's Git repo
+  postPatch = ''
+    rm opentimestamps/tests/core/test_git.py
+  '';
+
   propagatedBuildInputs = [
     python-bitcoinlib
     gitpython
@@ -27,13 +32,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  # Remove a failing test which expects the test source file to reside in the
-  # project's Git repo
-  postPatch = ''
-    rm opentimestamps/tests/core/test_git.py
-  '';
-
+  format = "setuptools";
   pythonImportsCheck = [ "opentimestamps" ];
 
   meta = {

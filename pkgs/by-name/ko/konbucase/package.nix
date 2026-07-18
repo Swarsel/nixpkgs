@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blueprint-compiler,
+  chcase,
+  gtksourceview5,
+  libadwaita,
   meson,
   ninja,
-  vala,
-  pkg-config,
-  wrapGAppsHook3,
-  blueprint-compiler,
   pantheon,
-  gtksourceview5,
-  chcase,
-  libadwaita,
+  pkg-config,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/ryonakano/konbucase";
     description = "Case converting app suitable for coding or typing";
+    homepage = "https://github.com/ryonakano/konbucase";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.linux;
     mainProgram = "konbucase";

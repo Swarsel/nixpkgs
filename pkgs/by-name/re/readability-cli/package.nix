@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitLab,
+  buildNpmPackage,
   installShellFiles,
   nix-update-script,
 }:
@@ -24,11 +24,8 @@ buildNpmPackage (finalAttrs: {
       --replace-fail '.version(false)' '.version(false).scriptName("readable")'
   '';
 
-  npmDepsHash = "sha256-vzNUbC5q5mdmyQZYUsw9Qw/Uxk+H7meW2R8j9R5auPY=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  dontNpmBuild = true;
+  npmDepsHash = "sha256-vzNUbC5q5mdmyQZYUsw9Qw/Uxk+H7meW2R8j9R5auPY=";
 
   postInstall = ''
     installManPage readability-cli.1
@@ -39,6 +36,7 @@ buildNpmPackage (finalAttrs: {
       --zsh <(SHELL=zsh $out/bin/readable --completion)
   '';
 
+  dontNpmBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

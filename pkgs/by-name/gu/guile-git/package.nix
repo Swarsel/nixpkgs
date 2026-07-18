@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  autoreconfHook,
   fetchpatch,
   guile,
   libgit2,
-  scheme-bytestructures,
-  autoreconfHook,
   pkg-config,
+  scheme-bytestructures,
   texinfo,
 }:
 
@@ -25,43 +25,46 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # remove > 0.10.0
     (fetchpatch {
+      hash = "sha256-H0s7Ebl+HNL8Zak58kJmFETWZJcNq+Z5gTGRqU9gj58=";
       name = "catch-git-error-guile";
       url = "https://gitlab.com/guile-git/guile-git/-/commit/9c76c6b31e217c470c8576172b123be9c373dc9b.diff";
-      hash = "sha256-H0s7Ebl+HNL8Zak58kJmFETWZJcNq+Z5gTGRqU9gj58=";
     })
     # remove > 0.10.0
     (fetchpatch {
+      hash = "sha256-K2f67WXUBLI/09eF8Xg3JMX7gkISFTZK3yHu0VDVQ4E=";
       name = "test-typo";
       url = "https://gitlab.com/guile-git/guile-git/-/commit/4451c0808fbdf8cd13d486a18b03881f998f6e88.diff";
-      hash = "sha256-K2f67WXUBLI/09eF8Xg3JMX7gkISFTZK3yHu0VDVQ4E=";
     })
   ];
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     guile
     pkg-config
     texinfo
   ];
+
   buildInputs = [
     guile
   ];
+
   propagatedBuildInputs = [
     libgit2
     scheme-bytestructures
   ];
-  doCheck = true;
-  makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
 
-  enableParallelBuilding = true;
+  makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
 
   # Skipping proxy tests since it requires network access.
   postConfigure = ''
     sed -i -e '94i (test-skip 1)' ./tests/proxy.scm
   '';
 
+  doCheck = true;
   __darwinAllowLocalNetworking = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Bindings to Libgit2 for GNU Guile";

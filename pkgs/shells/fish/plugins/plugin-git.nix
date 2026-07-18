@@ -1,7 +1,7 @@
 {
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
+  buildFishPlugin,
 }:
 
 buildFishPlugin rec {
@@ -20,6 +20,7 @@ buildFishPlugin rec {
     homepage = "https://github.com/jhillyerd/plugin-git";
     changelog = "https://github.com/jhillyerd/plugin-git/releases/tag/v${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       unsolvedcypher

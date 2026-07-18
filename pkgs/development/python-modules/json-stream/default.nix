@@ -1,20 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   iconv,
+  json-stream-rs-tokenizer,
   pytestCheckHook,
   requests,
-  json-stream-rs-tokenizer,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "json-stream";
   version = "2.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "daggaz";
@@ -23,20 +22,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-fQuTvd2Kizy8icYoewvJJVDc7FXuXRQkwJfOCka3Eo4=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
-
   dependencies = [ json-stream-rs-tokenizer ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ iconv ];
+  disabledTests = [ "test_writer" ];
 
   optional-dependencies = {
     httpx = [ httpx ];
     requests = [ requests ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "json_stream" ];
-
-  disabledTests = [ "test_writer" ];
 
   meta = {
     description = "Streaming JSON parser";

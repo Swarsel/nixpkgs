@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cudaPackages,
-  fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
   nvidia-ml-py,
   pynvml,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pynvml";
   version = "13.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gpuopenanalytics";
@@ -21,23 +20,23 @@ buildPythonPackage rec {
     hash = "sha256-Jwj3cm0l7qR/q5jzwKbD52L7ePYCdzXrYFOceMA776M=";
   };
 
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "nvidia-ml-py"
-  ];
-
   dependencies = [ nvidia-ml-py ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pynvml_utils"
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  doCheck = false;
+  pythonRelaxDeps = [
+    "nvidia-ml-py"
+  ];
 
   passthru.tests.tester-nvmlInit = cudaPackages.writeGpuTestPython { libraries = [ pynvml ]; } ''
     from pynvml_utils import nvidia_smi  # noqa: F401

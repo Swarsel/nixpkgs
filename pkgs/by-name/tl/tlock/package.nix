@@ -30,12 +30,12 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    mainProgram = "tlock";
-    license = lib.licenses.mit;
-    homepage = "https://github.com/eklairs/tlock";
     description = "Two-Factor Authentication Tokens Manager in Terminal";
+    homepage = "https://github.com/eklairs/tlock";
     changelog = "https://github.com/eklairs/tlock/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ eklairs ];
     platforms = lib.platforms.unix;
+    mainProgram = "tlock";
   };
 })

@@ -1,24 +1,25 @@
 {
-  self,
   lib,
-  testers,
-  fetchzip,
   fetchurl,
-  writers,
-  symlinkJoin,
+  fetchzip,
   jq,
   prom2json,
+  self,
+  symlinkJoin,
+  testers,
+  writers,
 }:
 let
   common-config =
     { config, ... }:
     {
       imports = [ ./module.nix ];
+
       services.local-ai = {
         enable = true;
+        logLevel = "debug";
         package = self;
         threads = config.virtualisation.cores;
-        logLevel = "debug";
       };
     };
 
@@ -26,17 +27,19 @@ let
 in
 {
   version = testers.testVersion {
-    package = self;
     version = "v" + self.version;
     command = "local-ai --help";
+    package = self;
   };
 
   health = testers.runNixOSTest {
     name = self.name + "-health";
+
     nodes.machine = {
       imports = [ common-config ];
       virtualisation.memorySize = 2048;
     };
+
     testScript =
       let
         port = "8080";
@@ -59,56 +62,6 @@ in
   lib.optionalAttrs
     (!self.features.with_cublas && !self.features.with_clblas && !self.features.with_vulkan)
     {
-      # https://localai.io/features/embeddings/#llamacpp-embeddings
-      llamacpp-embeddings =
-        let
-          model = "embedding";
-          model-configs.${model} = {
-            parameters.model = fetchurl {
-              url = "https://huggingface.co/hugging-quants/Llama-3.2-1B-Instruct-Q4_K_M-GGUF/resolve/main/llama-3.2-1b-instruct-q4_k_m.gguf";
-              sha256 = "1d0e9419ec4e12aef73ccf4ffd122703e94c48344a96bc7c5f0f2772c2152ce3";
-            };
-            backend = "llama-cpp";
-            embeddings = true;
-          };
-
-          models = genModels model-configs;
-
-          requests.request = {
-            inherit model;
-            input = "Your text string goes here";
-          };
-        in
-        testers.runNixOSTest {
-          name = self.name + "-llamacpp-embeddings";
-          nodes.machine = {
-            imports = [ common-config ];
-            virtualisation.cores = 2;
-            virtualisation.memorySize = 3 * 4096;
-            services.local-ai.models = models;
-          };
-          passthru = {
-            inherit models requests;
-          };
-          testScript =
-            let
-              port = "8080";
-            in
-            ''
-              machine.wait_for_open_port(${port})
-              machine.succeed("curl -f http://localhost:${port}/readyz")
-              machine.succeed("curl -f http://localhost:${port}/v1/models --output models.json")
-              machine.succeed("${jq}/bin/jq --exit-status 'debug | .data[].id == \"${model}\"' models.json")
-
-              machine.succeed("curl -f http://localhost:${port}/embeddings --json @${writers.writeJSON "request.json" requests.request} --output embeddings.json")
-              machine.copy_from_vm("embeddings.json")
-              machine.succeed("${jq}/bin/jq --exit-status 'debug | .model == \"${model}\"' embeddings.json")
-
-              machine.succeed("${prom2json}/bin/prom2json http://localhost:${port}/metrics > metrics.json")
-              machine.copy_from_vm("metrics.json")
-            '';
-        };
-
       # https://localai.io/docs/getting-started/manual/
       llama =
         let
@@ -116,27 +69,34 @@ in
 
           # https://localai.io/advanced/#full-config-model-file-reference
           model-configs.${model} = rec {
-            context_size = 16 * 1024; # 128kb is possible, but needs 16GB RAM
             backend = "llama-cpp";
+            context_size = 16 * 1024; # 128kb is possible, but needs 16GB RAM
+
             parameters = {
+              frequency_penalty = 0;
+              max_tokens = 100;
+
               # https://ai.meta.com/blog/meta-llama-3-1/
               model = fetchurl {
-                url = "https://huggingface.co/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf";
                 sha256 = "f2be3e1a239c12c9f3f01a962b11fb2807f8032fdb63b0a5502ea42ddef55e44";
+                url = "https://huggingface.co/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf";
               };
-              # defaults from:
-              # https://deepinfra.com/meta-llama/Meta-Llama-3.1-8B-Instruct
-              temperature = 0.7;
-              top_p = 0.9;
-              top_k = 0;
+
               # following parameter leads to outputs like: !!!!!!!!!!!!!!!!!!!
               #repeat_penalty = 1;
               presence_penalty = 0;
-              frequency_penalty = 0;
-              max_tokens = 100;
+              # defaults from:
+              # https://deepinfra.com/meta-llama/Meta-Llama-3.1-8B-Instruct
+              temperature = 0.7;
+              top_k = 0;
+              top_p = 0.9;
             };
+
             stopwords = [ "<|eot_id|>" ];
+
             template = {
+              chat = "{{.Input}}<|start_header_id|>assistant<|end_header_id|>";
+
               # Templates implement following specifications
               # https://github.com/meta-llama/llama3/tree/main?tab=readme-ov-file#instruction-tuned-models
               # ... and are insprired by:
@@ -149,8 +109,6 @@ in
 
                 {{.Content}}${builtins.head stopwords}'';
 
-              chat = "{{.Input}}<|start_header_id|>assistant<|end_header_id|>";
-
               completion = "{{.Input}}";
             };
           };
@@ -161,40 +119,42 @@ in
             # https://localai.io/features/text-generation/#chat-completions
             chat-completions = {
               inherit model;
+
               messages = [
                 {
-                  role = "user";
                   content = "1 + 2 = ?";
+                  role = "user";
                 }
               ];
             };
-            # https://localai.io/features/text-generation/#edit-completions
-            edit-completions = {
-              inherit model;
-              instruction = "rephrase";
-              input = "Black cat jumped out of the window";
-              max_tokens = 50;
-            };
+
             # https://localai.io/features/text-generation/#completions
             completions = {
               inherit model;
               prompt = "A long time ago in a galaxy far, far away";
             };
+
+            # https://localai.io/features/text-generation/#edit-completions
+            edit-completions = {
+              inherit model;
+              input = "Black cat jumped out of the window";
+              instruction = "rephrase";
+              max_tokens = 50;
+            };
           };
         in
         testers.runNixOSTest {
           name = self.name + "-llama";
+
           nodes.machine = {
             imports = [ common-config ];
-            virtualisation.cores = 4;
-            virtualisation.memorySize = 8192;
             services.local-ai.models = models;
             # TODO: Add test case parallel requests
             services.local-ai.parallelRequests = 2;
+            virtualisation.cores = 4;
+            virtualisation.memorySize = 8192;
           };
-          passthru = {
-            inherit models requests;
-          };
+
           testScript =
             let
               port = "8080";
@@ -222,6 +182,64 @@ in
               machine.succeed("${prom2json}/bin/prom2json http://localhost:${port}/metrics > metrics.json")
               machine.copy_from_vm("metrics.json")
             '';
+
+          passthru = {
+            inherit models requests;
+          };
+        };
+
+      # https://localai.io/features/embeddings/#llamacpp-embeddings
+      llamacpp-embeddings =
+        let
+          model = "embedding";
+          model-configs.${model} = {
+            backend = "llama-cpp";
+            embeddings = true;
+
+            parameters.model = fetchurl {
+              sha256 = "1d0e9419ec4e12aef73ccf4ffd122703e94c48344a96bc7c5f0f2772c2152ce3";
+              url = "https://huggingface.co/hugging-quants/Llama-3.2-1B-Instruct-Q4_K_M-GGUF/resolve/main/llama-3.2-1b-instruct-q4_k_m.gguf";
+            };
+          };
+
+          models = genModels model-configs;
+
+          requests.request = {
+            inherit model;
+            input = "Your text string goes here";
+          };
+        in
+        testers.runNixOSTest {
+          name = self.name + "-llamacpp-embeddings";
+
+          nodes.machine = {
+            imports = [ common-config ];
+            services.local-ai.models = models;
+            virtualisation.cores = 2;
+            virtualisation.memorySize = 3 * 4096;
+          };
+
+          testScript =
+            let
+              port = "8080";
+            in
+            ''
+              machine.wait_for_open_port(${port})
+              machine.succeed("curl -f http://localhost:${port}/readyz")
+              machine.succeed("curl -f http://localhost:${port}/v1/models --output models.json")
+              machine.succeed("${jq}/bin/jq --exit-status 'debug | .data[].id == \"${model}\"' models.json")
+
+              machine.succeed("curl -f http://localhost:${port}/embeddings --json @${writers.writeJSON "request.json" requests.request} --output embeddings.json")
+              machine.copy_from_vm("embeddings.json")
+              machine.succeed("${jq}/bin/jq --exit-status 'debug | .model == \"${model}\"' embeddings.json")
+
+              machine.succeed("${prom2json}/bin/prom2json http://localhost:${port}/metrics > metrics.json")
+              machine.copy_from_vm("metrics.json")
+            '';
+
+          passthru = {
+            inherit models requests;
+          };
         };
 
     }
@@ -235,9 +253,10 @@ in
           model-stt = "whisper-en";
           model-configs.${model-stt} = {
             backend = "whisper";
+
             parameters.model = fetchurl {
-              url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en-q5_1.bin";
               hash = "sha256-x3xXZvHO8JtrfUfyG1Rsvd1BV4hrO11tT3CekeZsfCs=";
+              url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en-q5_1.bin";
             };
           };
 
@@ -253,31 +272,31 @@ in
             in
             symlinkJoin {
               inherit (models) name;
+
               paths = [
                 models
                 (fetchzip {
-                  url = "https://github.com/rhasspy/piper/releases/download/v0.0.2/voice-en-us-danny-low.tar.gz";
                   hash = "sha256-5wf+6H5HeQY0qgdqnAG1vSqtjIFM9lXH53OgouuPm0M=";
                   stripRoot = false;
+                  url = "https://github.com/rhasspy/piper/releases/download/v0.0.2/voice-en-us-danny-low.tar.gz";
                 })
               ];
             };
 
           requests.request = {
-            model = model-tts;
             input = "Hello, how are you?";
+            model = model-tts;
           };
         in
         testers.runNixOSTest {
           name = self.name + "-tts";
+
           nodes.machine = {
             imports = [ common-config ];
-            virtualisation.cores = 2;
             services.local-ai.models = models;
+            virtualisation.cores = 2;
           };
-          passthru = {
-            inherit models requests;
-          };
+
           testScript =
             let
               port = "8080";
@@ -298,5 +317,9 @@ in
               machine.succeed("${prom2json}/bin/prom2json http://localhost:${port}/metrics > metrics.json")
               machine.copy_from_vm("metrics.json")
             '';
+
+          passthru = {
+            inherit models requests;
+          };
         };
     }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pytest-asyncio-cooperative";
   version = "0.40.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "willemt";
@@ -18,12 +17,13 @@ buildPythonPackage rec {
     hash = "sha256-WA2swhgpn7Ct409tk91gQiHUZCXQLO0eznqskOVlU1U=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
   disabledTestPaths = [
     "example/hypothesis_test.py"
   ];
+
   disabledTests = [
     "test_tmp_path"
     "test_session_scope_gen"
@@ -34,6 +34,7 @@ buildPythonPackage rec {
     "test_shared_fixture_caching"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytest_asyncio_cooperative" ];
 
   meta = {

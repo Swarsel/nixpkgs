@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
   expandvars,
-  fetchFromGitHub,
   pytest-codspeed,
   pytest-cov-stub,
   pytest-xdist,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "propcache";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -28,12 +27,6 @@ buildPythonPackage rec {
       --replace "Cython ~=" "Cython >="
   '';
 
-  build-system = [
-    cython
-    expandvars
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pytest-codspeed
     pytest-cov-stub
@@ -41,6 +34,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [
+    cython
+    expandvars
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "propcache" ];
 
   meta = {

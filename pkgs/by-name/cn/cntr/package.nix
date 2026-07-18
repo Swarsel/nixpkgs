@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,18 +17,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-FBlKxQcQRkz5dYInot2WtZfUSAaX+7qlin+cLf3h8f4=";
-
   passthru.tests = nixosTests.cntr;
 
   meta = {
     description = "Container debugging tool based on FUSE";
     homepage = "https://github.com/Mic92/cntr";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       mic92
       sigmasquadron
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "cntr";
   };
 })

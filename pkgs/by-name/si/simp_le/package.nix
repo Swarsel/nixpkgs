@@ -1,17 +1,17 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  fetchPypi,
   bash,
+  fetchPypi,
+  python3,
 }:
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: {
       certbot = super.certbot.overridePythonAttrs rec {
         version = "3.1.0";
+
         src = fetchFromGitHub {
           owner = "certbot";
           repo = "certbot";
@@ -19,26 +19,30 @@ let
           hash = "sha256-lYGJgUNDzX+bE64GJ+djdKR+DXmhpcNbFJrAEnP86yQ=";
         };
       };
+
       josepy = super.josepy.overridePythonAttrs (old: rec {
         version = "1.15.0";
+
         src = fetchFromGitHub {
           owner = "certbot";
           repo = "josepy";
           tag = "v${version}";
           hash = "sha256-fK4JHDP9eKZf2WO+CqRdEjGwJg/WNLvoxiVrb5xQxRc=";
         };
+
         dependencies = with self; [
           pyopenssl
           cryptography
         ];
       });
     };
+
+    self = python;
   };
 in
 python.pkgs.buildPythonApplication rec {
   pname = "simp_le-client";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -52,9 +56,11 @@ python.pkgs.buildPythonApplication rec {
       --replace "/bin/sh" "${bash}/bin/sh"
   '';
 
-  pythonRelaxDeps = [
-    "acme"
-  ];
+  checkPhase = ''
+    runHook preCheck
+    $out/bin/simp_le --test
+    runHook postCheck
+  '';
 
   # both setuptools-scm and mock are runtime dependencies
   dependencies = with python.pkgs; [
@@ -69,19 +75,21 @@ python.pkgs.buildPythonApplication rec {
     six
   ];
 
-  checkPhase = ''
-    runHook preCheck
-    $out/bin/simp_le --test
-    runHook postCheck
-  '';
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "acme"
+  ];
 
   meta = {
-    homepage = "https://github.com/zenhack/simp_le";
     description = "Simple Let's Encrypt client";
+    homepage = "https://github.com/zenhack/simp_le";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       makefu
     ];
+
     platforms = lib.platforms.linux;
   };
 }

@@ -3,11 +3,11 @@
   fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  stdenvNoCC,
-  testers,
+  expect,
   jq,
   runCommand,
-  expect,
+  stdenvNoCC,
+  testers,
 }:
 let
   pname = "roslyn-ls";
@@ -37,24 +37,17 @@ let
 in
 buildDotnetModule (finalAttrs: {
   inherit pname dotnet-sdk dotnet-runtime;
+  # versioned independently from vscode-csharp
+  # "roslyn" in here:
+  # https://github.com/dotnet/vscode-csharp/blob/main/package.json
+  version = "5.9.0-1.26314.1";
 
-  vsVersion = "2.144.9-prerelease";
   src = fetchFromGitHub {
     owner = "dotnet";
     repo = "roslyn";
     rev = "VSCode-CSharp-${finalAttrs.vsVersion}";
     hash = "sha256-Cq1ynxtNaguLhVSSR04wUkqrn4/0YmwGxHfBZC4zMS8=";
   };
-
-  # versioned independently from vscode-csharp
-  # "roslyn" in here:
-  # https://github.com/dotnet/vscode-csharp/blob/main/package.json
-  version = "5.9.0-1.26314.1";
-  projectFile = "src/LanguageServer/${project}/${project}.csproj";
-  useDotnetFromEnv = true;
-  nugetDeps = ./deps.json;
-
-  nativeBuildInputs = [ jq ];
 
   patches = [
     # until made configurable/and or different location
@@ -68,29 +61,7 @@ buildDotnetModule (finalAttrs: {
     mv global.json.tmp global.json
   '';
 
-  # don't build binary
-  useAppHost = false;
-  dotnetFlags = [
-    "-p:TargetRid=${rid}"
-    # we don't want to build the binary
-    # and useAppHost is not enough, need to explicilty set to false
-    "-p:UseAppHost=false"
-    # avoid platform-specific crossgen packages
-    "-p:PublishReadyToRun=false"
-    # this removes the Microsoft.WindowsDesktop.App.Ref dependency
-    "-p:EnableWindowsTargeting=false"
-    # avoid unnecessary packages in deps.json
-    "-p:EnableAppHostPackDownload=false"
-    "-p:EnableRuntimePackDownload=false"
-  ];
-
-  executables = [ project ];
-
-  postInstall = ''
-    # fake executable that we substitute in postFixup
-    touch $out/lib/$pname/${project}
-    chmod +x $out/lib/$pname/${project}
-  '';
+  nativeBuildInputs = [ jq ];
 
   # problem and solution:
   # BuildHost project within roslyn is running Build target during publish -> --no-build removed
@@ -114,6 +85,12 @@ buildDotnetModule (finalAttrs: {
     runHook postInstall
   '';
 
+  postInstall = ''
+    # fake executable that we substitute in postFixup
+    touch $out/lib/$pname/${project}
+    chmod +x $out/lib/$pname/${project}
+  '';
+
   # force dotnet-runtime to run the dll
   # but keep the wrapper created with useDotnetFromEnv to allow LS to work properly on codebases
   postFixup = ''
@@ -121,6 +98,28 @@ buildDotnetModule (finalAttrs: {
     substituteInPlace $out/bin/${project} \
       --replace-fail "$out/lib/$pname/${project}" "${lib.getExe dotnet-runtime}\" \"$out/lib/$pname/${project}.dll"
   '';
+
+  dotnetFlags = [
+    "-p:TargetRid=${rid}"
+    # we don't want to build the binary
+    # and useAppHost is not enough, need to explicilty set to false
+    "-p:UseAppHost=false"
+    # avoid platform-specific crossgen packages
+    "-p:PublishReadyToRun=false"
+    # this removes the Microsoft.WindowsDesktop.App.Ref dependency
+    "-p:EnableWindowsTargeting=false"
+    # avoid unnecessary packages in deps.json
+    "-p:EnableAppHostPackDownload=false"
+    "-p:EnableRuntimePackDownload=false"
+  ];
+
+  executables = [ project ];
+  nugetDeps = ./deps.json;
+  projectFile = "src/LanguageServer/${project}/${project}.csproj";
+  # don't build binary
+  useAppHost = false;
+  useDotnetFromEnv = true;
+  vsVersion = "2.144.9-prerelease";
 
   passthru = {
     tests =
@@ -134,6 +133,7 @@ buildDotnetModule (finalAttrs: {
                 sdk
                 expect
               ];
+
               meta.timeout = 60;
             }
             ''
@@ -154,19 +154,20 @@ buildDotnetModule (finalAttrs: {
             '';
       in
       {
+        version = testers.testVersion { package = finalAttrs.finalPackage; };
+        no-sdk = with-sdk null;
+        with-net10-sdk = with-sdk dotnetCorePackages.sdk_10_0;
         # Make sure we can run with any supported SDK version, as well as without
         with-net8-sdk = with-sdk dotnetCorePackages.sdk_8_0;
         with-net9-sdk = with-sdk dotnetCorePackages.sdk_9_0;
-        with-net10-sdk = with-sdk dotnetCorePackages.sdk_10_0;
-        no-sdk = with-sdk null;
-        version = testers.testVersion { package = finalAttrs.finalPackage; };
       };
+
     updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://github.com/dotnet/vscode-csharp";
     description = "Language server behind C# Dev Kit for Visual Studio Code";
+    homepage = "https://github.com/dotnet/vscode-csharp";
     changelog = "https://github.com/dotnet/vscode-csharp/releases/tag/v${finalAttrs.vsVersion}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ konradmalik ];

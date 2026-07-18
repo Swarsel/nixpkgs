@@ -1,26 +1,26 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  menhir,
   alcotest,
+  astring,
   base,
+  buildDunePackage,
+  camlp-streams,
+  csexp,
   dune-build-info,
   either,
   fix,
   fpath,
+  menhir,
   menhirLib,
   menhirSdk,
   ocaml-version,
   ocamlformat-rpc-lib,
   ocp-indent,
+  odoc,
+  result,
   stdio,
   uuseg,
-  csexp,
-  astring,
-  result,
-  camlp-streams,
-  odoc,
 }:
 buildDunePackage (finalAttrs: {
   pname = "ocamlformat-mlx-lib";
@@ -32,6 +32,10 @@ buildDunePackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-IxX8FD7v9evHFTCnTJBtnUMUUTWI34zIifpciuJCuhs=";
   };
+
+  nativeBuildInputs = [
+    menhir
+  ];
 
   propagatedBuildInputs = [
     alcotest
@@ -54,16 +58,13 @@ buildDunePackage (finalAttrs: {
     odoc
   ];
 
-  nativeBuildInputs = [
-    menhir
-  ];
-
   meta = {
-    homepage = "https://github.com/ocaml-mlx/ocamlformat-mlx";
     description = "OCaml .mlx Code Formatter";
+    homepage = "https://github.com/ocaml-mlx/ocamlformat-mlx";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Denommus
     ];
-    license = lib.licenses.mit;
   };
 })

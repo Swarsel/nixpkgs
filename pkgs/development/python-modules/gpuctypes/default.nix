@@ -1,18 +1,18 @@
 {
   lib,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
   addDriverRunpath,
+  buildPythonPackage,
+  config,
+  cudaPackages,
+  gpuctypes,
+  ocl-icd,
+  pytestCheckHook,
+  replaceVars,
+  rocmPackages,
+  setuptools,
   cudaSupport ? config.cudaSupport,
   rocmSupport ? config.rocmSupport,
-  cudaPackages,
-  setuptools,
-  ocl-icd,
-  rocmPackages,
-  pytestCheckHook,
-  gpuctypes,
   testCudaRuntime ? false,
   testOpenclRuntime ? false,
   testRocmRuntime ? false,
@@ -23,11 +23,10 @@ assert testRocmRuntime -> rocmSupport;
 buildPythonPackage rec {
   pname = "gpuctypes";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "gpuctypes";
     owner = "tinygrad";
+    repo = "gpuctypes";
     tag = version;
     hash = "sha256-xUMvMBK1UhZaMZfik0Ia6+siyZGpCkBV+LTnQvzt/rw=";
   };
@@ -35,6 +34,7 @@ buildPythonPackage rec {
   patches = [
     (replaceVars ./0001-fix-dlopen-cuda.patch {
       inherit (addDriverRunpath) driverLink;
+
       libnvrtc =
         if cudaSupport then
           "${lib.getLib cudaPackages.cuda_nvrtc}/lib/libnvrtc.so"
@@ -42,8 +42,6 @@ buildPythonPackage rec {
           "Please import nixpkgs with `config.cudaSupport = true`";
     })
   ];
-
-  nativeBuildInputs = [ setuptools ];
 
   postPatch = ''
     substituteInPlace gpuctypes/opencl.py \
@@ -61,9 +59,12 @@ buildPythonPackage rec {
       --replace "/opt/rocm/lib/libamd_comgr.so" "${rocmPackages.rocm-comgr}/lib/libamd_comgr.so"
   '';
 
-  pythonImportsCheck = [ "gpuctypes" ];
-
+  nativeBuildInputs = [ setuptools ];
   nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = lib.optionalString (cudaSupport && !testCudaRuntime) ''
+    addToSearchPath LD_LIBRARY_PATH ${lib.getOutput "stubs" cudaPackages.cuda_cudart}/lib/stubs
+  '';
 
   disabledTestPaths =
     lib.optionals (!testOpenclRuntime) [ "test/test_opencl.py" ]
@@ -79,7 +80,11 @@ buildPythonPackage rec {
       "TestHIPDevice"
     ];
 
+  # If neither rocmSupport or cudaSupport is enabled, no tests are selected
+  dontUsePytestCheck = !(rocmSupport || cudaSupport) && (!testOpenclRuntime);
+  pyproject = true;
   pytestFlags = lib.optionals (testCudaRuntime || testOpenclRuntime || testRocmRuntime) [ "-v" ];
+  pythonImportsCheck = [ "gpuctypes" ];
 
   # Running these tests requires special configuration on the builder.
   # e.g. https://github.com/NixOS/nixpkgs/pull/256230 implements a nix
@@ -95,24 +100,20 @@ buildPythonPackage rec {
       cudaSupport = true;
       testCudaRuntime = true;
     };
+
     opencl = gpuctypes.override { testOpenclRuntime = true; };
+
     rocm = gpuctypes.override {
       rocmSupport = true;
       testRocmRuntime = true;
     };
   };
 
-  preCheck = lib.optionalString (cudaSupport && !testCudaRuntime) ''
-    addToSearchPath LD_LIBRARY_PATH ${lib.getOutput "stubs" cudaPackages.cuda_cudart}/lib/stubs
-  '';
-
-  # If neither rocmSupport or cudaSupport is enabled, no tests are selected
-  dontUsePytestCheck = !(rocmSupport || cudaSupport) && (!testOpenclRuntime);
-
   meta = {
     description = "Ctypes wrappers for HIP, CUDA, and OpenCL";
     homepage = "https://github.com/tinygrad/gpuctypes";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       matthewcroughan

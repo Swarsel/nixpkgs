@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qt5,
+  cmake,
   openssl,
+  pkg-config,
   # https://github.com/blueprint-freespeech/ricochet-refresh/issues/178
   protobuf_21,
-  pkg-config,
-  cmake,
+  qt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,13 +18,18 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "blueprint-freespeech";
     repo = "ricochet-refresh";
     tag = "v${finalAttrs.version}-release";
-    fetchSubmodules = true;
     hash = "sha256-bKleUuR3dnvZETnMx7FSpVflPB8rcijMhJbuH/MuTWE=";
+    fetchSubmodules = true;
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   strictDeps = true;
+
+  nativeBuildInputs = [
+    pkg-config
+    protobuf_21
+    cmake
+    qt5.wrapQtAppsHook
+  ];
 
   buildInputs =
     (with qt5; [
@@ -39,26 +44,19 @@ stdenv.mkDerivation (finalAttrs: {
       protobuf_21
     ];
 
-  nativeBuildInputs = [
-    pkg-config
-    protobuf_21
-    cmake
-    qt5.wrapQtAppsHook
-  ];
-
-  enableParallelBuilding = true;
-
-  cmakeBuildType = "MinSizeRel";
-
   # https://github.com/blueprint-freespeech/ricochet-refresh/blob/main/BUILDING.md
   cmakeFlags = [
     (lib.cmakeBool "RICOCHET_REFRESH_INSTALL_DESKTOP" true)
     (lib.cmakeBool "USE_SUBMODULE_FMT" true)
   ];
 
+  cmakeBuildType = "MinSizeRel";
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Secure chat without DNS or WebPKI";
-    mainProgram = "ricochet-refresh";
+
     longDescription = ''
       Ricochet Refresh is a peer-to-peer messenger app that uses Tor
       to connect clients.
@@ -75,9 +73,11 @@ stdenv.mkDerivation (finalAttrs: {
       Refresh upgrades the original Ricochet protocol to use the
       current onion "v3" ed25519 addresses.
     '';
+
     homepage = "https://www.ricochetrefresh.net/";
-    downloadPage = "https://github.com/blueprint-freespeech/ricochet-refresh/releases";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.linux;
+    mainProgram = "ricochet-refresh";
+    downloadPage = "https://github.com/blueprint-freespeech/ricochet-refresh/releases";
   };
 })

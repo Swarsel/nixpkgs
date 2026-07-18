@@ -1,31 +1,29 @@
 {
   lib,
-  mkDerivation,
-  gnuradioAtLeast,
-  fetchgit,
-  fetchpatch,
-  gnuradio,
-
+  airspy,
+  boost,
   # native
   cmake,
-  pkg-config,
-
+  fetchgit,
+  fetchpatch,
+  fftwFloat,
+  gmp,
+  gnuradio,
+  gnuradioAtLeast,
+  hackrf,
+  icu,
+  libbladeRF,
+  libsndfile,
   # buildInputs
   logLib,
-  libsndfile,
+  mkDerivation,
   mpir,
-  boost,
-  gmp,
-  thrift,
-  fftwFloat,
+  pkg-config,
   python,
-  uhd,
-  icu,
-  airspy,
-  hackrf,
-  libbladeRF,
   rtl-sdr,
   soapysdr-with-plugins,
+  thrift,
+  uhd,
   features ? { },
 }:
 
@@ -39,20 +37,27 @@ mkDerivation (finalAttrs: {
     hash = "sha256-jCUzBY1pYiEtcRQ97t9F6uEMVYw2NU0eoB5Xc2H6pGQ=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Fixes build with boost 1.89, see:
     # https://github.com/osmocom/gr-osmosdr/pull/29
     (fetchpatch {
-      url = "https://github.com/osmocom/gr-osmosdr/commit/06249f1f0930aa553ef8877b50503b9f5c77b4a0.patch";
       hash = "sha256-ofjuDvTT2PzRTR6UWchTQzmr9a83ka5TfUdlCBe4Is0=";
+      url = "https://github.com/osmocom/gr-osmosdr/commit/06249f1f0930aa553ef8877b50503b9f5c77b4a0.patch";
     })
   ];
 
-  disabled = gnuradioAtLeast "3.11";
-
-  outputs = [
-    "out"
-    "dev"
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ]
+  ++ lib.optionals (gnuradio.hasFeature "python-support") [
+    python.pkgs.mako
+    python
   ];
 
   buildInputs = [
@@ -78,19 +83,25 @@ mkDerivation (finalAttrs: {
     python.pkgs.numpy
     python.pkgs.pybind11
   ];
+
   cmakeFlags = [
     (if (gnuradio.hasFeature "python-support") then "-DENABLE_PYTHON=ON" else "-DENABLE_PYTHON=OFF")
   ]
   ++ finalAttrs.finalPackage.passthru.enabledFeaturesCmakeFlags;
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ]
-  ++ lib.optionals (gnuradio.hasFeature "python-support") [
-    python.pkgs.mako
-    python
-  ];
+
+  disabled = gnuradioAtLeast "3.11";
+
   passthru = {
+    enabledFeaturesCmakeFlags = lib.mapAttrsToList (
+      feat: val: lib.cmakeBool "ENABLE_${lib.toUpper feat}" val
+    ) features;
+
+    enabledFeaturesDeps = lib.pipe finalAttrs.finalPackage.passthru.featuresDeps [
+      (lib.filterAttrs (name: deps: features.${name} or true))
+      lib.attrValues
+      lib.flatten
+    ];
+
     featuresDeps = {
       # Other features don't have dependencies but can still be disabled in the
       # `features` argument.
@@ -100,14 +111,6 @@ mkDerivation (finalAttrs: {
       rtl = [ rtl-sdr ];
       soapy = [ soapysdr-with-plugins ];
     };
-    enabledFeaturesDeps = lib.pipe finalAttrs.finalPackage.passthru.featuresDeps [
-      (lib.filterAttrs (name: deps: features.${name} or true))
-      lib.attrValues
-      lib.flatten
-    ];
-    enabledFeaturesCmakeFlags = lib.mapAttrsToList (
-      feat: val: lib.cmakeBool "ENABLE_${lib.toUpper feat}" val
-    ) features;
   };
 
   meta = {

@@ -32,53 +32,60 @@ in
     services.opensmtpd = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Whether to enable the OpenSMTPD server.";
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "opensmtpd" { };
 
-      setSendmail = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Whether to set the system sendmail to OpenSMTPD's.";
-      };
-
       extraServerArgs = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
-        example = [
-          "-v"
-          "-P mta"
-        ];
+
         description = ''
           Extra command line arguments provided when the smtpd process
           is started.
         '';
-      };
 
-      serverConfiguration = lib.mkOption {
-        type = lib.types.lines;
-        example = ''
-          listen on lo
-          accept for any deliver to lmtp localhost:24
-        '';
-        description = ''
-          The contents of the smtpd.conf configuration file. See the
-          OpenSMTPD documentation for syntax information.
-        '';
+        example = [
+          "-v"
+          "-P mta"
+        ];
+
+        type = lib.types.listOf lib.types.str;
       };
 
       procPackages = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
         default = [ ];
+
         description = ''
           Packages to search for filters, tables, queues, and schedulers.
 
           Add packages here if you want to use them as as such, for example
           from the opensmtpd-table-* packages.
         '';
+
+        type = lib.types.listOf lib.types.package;
+      };
+
+      serverConfiguration = lib.mkOption {
+        description = ''
+          The contents of the smtpd.conf configuration file. See the
+          OpenSMTPD documentation for syntax information.
+        '';
+
+        example = ''
+          listen on lo
+          accept for any deliver to lmtp localhost:24
+        '';
+
+        type = lib.types.lines;
+      };
+
+      setSendmail = lib.mkOption {
+        default = true;
+        description = "Whether to set the system sendmail to OpenSMTPD's.";
+        type = lib.types.bool;
       };
     };
 
@@ -87,37 +94,20 @@ in
   ###### implementation
 
   config = lib.mkIf cfg.enable rec {
-    users.groups = {
-      smtpd.gid = config.ids.gids.smtpd;
-      smtpq.gid = config.ids.gids.smtpq;
-    };
-
-    users.users = {
-      smtpd = {
-        description = "OpenSMTPD process user";
-        uid = config.ids.uids.smtpd;
-        group = "smtpd";
-      };
-      smtpq = {
-        description = "OpenSMTPD queue user";
-        uid = config.ids.uids.smtpq;
-        group = "smtpq";
-      };
-    };
-
     security.wrappers = {
       makemap = {
-        owner = "root";
         group = "smtpq";
-        setuid = false;
+        owner = "root";
         setgid = true;
+        setuid = false;
         source = "${cfg.package}/bin/smtpctl";
       };
+
       smtpctl = {
-        owner = "root";
         group = "smtpq";
-        setuid = false;
+        owner = "root";
         setgid = true;
+        setuid = false;
         source = "${cfg.package}/bin/smtpctl";
       };
     };
@@ -125,32 +115,10 @@ in
     services.mail.sendmailSetuidWrapper = lib.mkIf cfg.setSendmail (
       security.wrappers.smtpctl
       // {
-        source = "${sendmail}/bin/sendmail";
         program = "sendmail";
+        source = "${sendmail}/bin/sendmail";
       }
     );
-
-    systemd.tmpfiles.settings.opensmtpd = {
-      "/var/spool/smtpd".d = {
-        mode = "0711";
-        user = "root";
-      };
-      "/var/spool/smtpd/offline".d = {
-        mode = "0770";
-        user = "root";
-        group = "smtpq";
-      };
-      "/var/spool/smtpd/purge".d = {
-        mode = "0700";
-        user = "smtpq";
-        group = "root";
-      };
-      "/var/spool/smtpd/queue".d = {
-        mode = "0700";
-        user = "smtpq";
-        group = "root";
-      };
-    };
 
     systemd.services.opensmtpd =
       let
@@ -161,10 +129,54 @@ in
         };
       in
       {
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
-        serviceConfig.ExecStart = "${cfg.package}/sbin/smtpd -d -f ${conf} ${args}";
         environment.OPENSMTPD_PROC_PATH = "${procEnv}/libexec/smtpd";
+        serviceConfig.ExecStart = "${cfg.package}/sbin/smtpd -d -f ${conf} ${args}";
+        wantedBy = [ "multi-user.target" ];
       };
+
+    systemd.tmpfiles.settings.opensmtpd = {
+      "/var/spool/smtpd".d = {
+        mode = "0711";
+        user = "root";
+      };
+
+      "/var/spool/smtpd/offline".d = {
+        group = "smtpq";
+        mode = "0770";
+        user = "root";
+      };
+
+      "/var/spool/smtpd/purge".d = {
+        group = "root";
+        mode = "0700";
+        user = "smtpq";
+      };
+
+      "/var/spool/smtpd/queue".d = {
+        group = "root";
+        mode = "0700";
+        user = "smtpq";
+      };
+    };
+
+    users.groups = {
+      smtpd.gid = config.ids.gids.smtpd;
+      smtpq.gid = config.ids.gids.smtpq;
+    };
+
+    users.users = {
+      smtpd = {
+        description = "OpenSMTPD process user";
+        group = "smtpd";
+        uid = config.ids.uids.smtpd;
+      };
+
+      smtpq = {
+        description = "OpenSMTPD queue user";
+        group = "smtpq";
+        uid = config.ids.uids.smtpq;
+      };
+    };
   };
 }

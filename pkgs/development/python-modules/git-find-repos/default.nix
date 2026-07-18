@@ -1,13 +1,12 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   setuptools-scm,
 }:
 buildPythonPackage rec {
   pname = "git-find-repos";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "acroz";
@@ -17,12 +16,13 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools-scm ];
+  pyproject = true;
 
   meta = {
     description = "Simple CLI tool for finding git repositories";
     homepage = "https://github.com/acroz/git-find-repos";
     license = lib.licenses.mit;
-    mainProgram = "git-find-repos";
     maintainers = [ lib.maintainers.yajo ];
+    mainProgram = "git-find-repos";
   };
 }

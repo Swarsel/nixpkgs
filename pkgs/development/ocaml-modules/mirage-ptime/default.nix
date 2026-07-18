@@ -1,14 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   ptime,
   version ? "5.2.0",
 }:
 
 buildDunePackage {
   inherit version;
-
   pname = "mirage-ptime";
 
   src = fetchurl {
@@ -20,9 +19,9 @@ buildDunePackage {
 
   meta = {
     description = "POSIX clock for MirageOS";
+    homepage = "https://github.com/mirage/mirage-ptime";
+    changelog = "https://raw.githubusercontent.com/mirage/mirage-ptime/refs/tags/v${version}/CHANGES.md";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
-    changelog = "https://raw.githubusercontent.com/mirage/mirage-ptime/refs/tags/v${version}/CHANGES.md";
-    homepage = "https://github.com/mirage/mirage-ptime";
   };
 }

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libpcap,
   libnet,
+  libpcap,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,16 +17,16 @@ stdenv.mkDerivation rec {
     hash = "sha256-KU4MLWtOFzzNr+I99fRbhBokhS1JUNL+OgVltkOGav4=";
   };
 
+  buildInputs = [
+    libpcap
+    libnet
+  ];
+
   # for reasons unknown --disable-static configure flag doesn't disable static
   # linking.. we instead override CFLAGS with -static omitted
   preBuild = ''
     makeFlagsArray=(CFLAGS=" -g -O2 -Wall")
   '';
-
-  buildInputs = [
-    libpcap
-    libnet
-  ];
 
   meta = {
     description = "Traceroute implementation using TCP packets";

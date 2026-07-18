@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  yarnConfigHook,
-  npmHooks,
-  nodejs-slim,
   fetchYarnDeps,
-  flavour ? [ "mocha" ],
+  nodejs-slim,
+  npmHooks,
+  stdenvNoCC,
+  yarnConfigHook,
   accents ? [ "blue" ],
+  flavour ? [ "mocha" ],
 }:
 let
   validFlavours = [
@@ -57,11 +57,6 @@ lib.checkListOfEnum "Invalid accent, valid accents are ${toString validAccents}"
       nodejs-slim
     ];
 
-    yarnOfflineCache = fetchYarnDeps {
-      yarnLock = "${finalAttrs.src}/yarn.lock";
-      hash = "sha256-2N4UI6Ap+zk7jtDCAsjGtwfDSiyOtB9YDOXUxYRCw60=";
-    };
-
     buildPhase = ''
       runHook preBuild
 
@@ -70,10 +65,6 @@ lib.checkListOfEnum "Invalid accent, valid accents are ${toString validAccents}"
 
       runHook postBuild
     '';
-
-    # "true" disables the dist phase, as there are no binaries and installation of themes
-    # will be handled in installPhase below.
-    distPhase = "true";
 
     installPhase = ''
       runHook preInstall
@@ -89,12 +80,21 @@ lib.checkListOfEnum "Invalid accent, valid accents are ${toString validAccents}"
       runHook postInstall
     '';
 
+    # "true" disables the dist phase, as there are no binaries and installation of themes
+    # will be handled in installPhase below.
+    distPhase = "true";
+
+    yarnOfflineCache = fetchYarnDeps {
+      hash = "sha256-2N4UI6Ap+zk7jtDCAsjGtwfDSiyOtB9YDOXUxYRCw60=";
+      yarnLock = "${finalAttrs.src}/yarn.lock";
+    };
+
     meta = {
       description = "Soothing pastel theme for Discord";
       homepage = "https://github.com/catppuccin/discord";
       license = lib.licenses.mit;
+      sourceProvenance = with lib.sourceTypes; [ fromSource ];
       maintainers = with lib.maintainers; [ NotAShelf ];
       platforms = lib.platforms.all;
-      sourceProvenance = with lib.sourceTypes; [ fromSource ];
     };
   })

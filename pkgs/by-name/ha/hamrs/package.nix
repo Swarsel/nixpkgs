@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   callPackage,
+  stdenvNoCC,
 }:
 
 let
@@ -12,18 +12,21 @@ let
     description = "Simple, portable logger tailored for activities like Parks on the Air, Field Day, and more";
     homepage = "https://hamrs.app/";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       ethancedwards8
       jhollowe
     ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
       "i686-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "hamrs";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 in
 if stdenvNoCC.hostPlatform.isDarwin then

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   git,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     install -m755 -Dt $out/bin git-test
     install -m444 -Dt $out/share/man/man1 git-test.1
@@ -28,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/git-test \
       --prefix PATH : "${lib.makeBinPath [ git ]}"
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Test your commits";

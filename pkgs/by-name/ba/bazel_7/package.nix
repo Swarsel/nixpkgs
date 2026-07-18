@@ -1,51 +1,51 @@
 {
-  stdenv,
   # nix tooling and utilities
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  writeTextFile,
-  replaceVars,
-  fetchpatch,
-  writeShellApplication,
-  makeBinaryWrapper,
   autoPatchelfHook,
-  buildFHSEnv,
+  bash,
   # this package (through the fixpoint glass)
   # TODO probably still need for tests at some point
   bazel_7,
-  bazel_self ? bazel_7,
-  # native build inputs
-  runtimeShell,
-  zip,
-  unzip,
-  bash,
-  coreutils,
-  which,
-  gawk,
-  gnused,
-  gnutar,
-  gnugrep,
-  gzip,
-  findutils,
-  diffutils,
-  gnupatch,
-  file,
-  installShellFiles,
-  lndir,
-  python3,
+  buildFHSEnv,
   # Apple dependencies
   cctools,
-  libtool,
+  coreutils,
   darwin,
+  diffutils,
+  fetchpatch,
+  file,
+  findutils,
+  gawk,
+  gnugrep,
+  gnupatch,
+  gnused,
+  gnutar,
+  gzip,
+  installShellFiles,
   # Allow to independently override the jdks used to build and run respectively
   jdk21_headless,
+  libtool,
+  lndir,
+  makeBinaryWrapper,
+  makeWrapper,
+  python3,
+  replaceVars,
+  # native build inputs
+  runtimeShell,
+  unzip,
+  which,
+  writeShellApplication,
+  writeTextFile,
+  zip,
+  bazel_self ? bazel_7,
   buildJdk ? jdk21_headless,
-  runJdk ? jdk21_headless,
   # Toggle for hacks for running bazel under buildBazelPackage:
   # Always assume all markers valid (this is needed because we remove markers; they are non-deterministic).
   # Also, don't clean up environment variables (so that NIX_ environment variables are passed to compilers).
   enableNixHacks ? false,
+  runJdk ? jdk21_headless,
   version ? "7.6.0",
 }:
 
@@ -105,8 +105,6 @@ let
 
   # Bootstrap an existing Bazel so we can vendor deps with vendor mode
   bazelBootstrap = stdenv.mkDerivation rec {
-    name = "bazelBootstrap";
-
     src =
       if stdenv.hostPlatform.system == "x86_64-linux" then
         fetchurl {
@@ -131,15 +129,12 @@ let
         };
 
     nativeBuildInputs = defaultShellUtils;
+
     buildInputs = [
       stdenv.cc.cc
     ]
     ++ lib.optional (!stdenv.hostPlatform.isDarwin) autoPatchelfHook;
 
-    dontUnpack = true;
-    dontPatch = true;
-    dontBuild = true;
-    dontStrip = true;
     installPhase = ''
       runHook preInstall
 
@@ -154,14 +149,19 @@ let
         --prefix PATH : ${lib.makeBinPath nativeBuildInputs}
     '';
 
+    dontBuild = true;
+    dontPatch = true;
+    dontStrip = true;
+    dontUnpack = true;
+    name = "bazelBootstrap";
     meta.sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 
   bazelFhs = buildFHSEnv {
-    pname = "bazel";
     inherit version;
-    targetPkgs = _: [ bazelBootstrap ];
+    pname = "bazel";
     runScript = "bazel";
+    targetPkgs = _: [ bazelBootstrap ];
   };
 
   # A FOD that vendors the Bazel dependencies using Bazel's new vendor mode.
@@ -173,36 +173,22 @@ let
       bazelForDeps = if stdenv.hostPlatform.isDarwin then bazelBootstrap else bazelFhs;
     in
     stdenv.mkDerivation {
-      name = "bazelDeps";
       inherit src version;
-      sourceRoot = ".";
+
       patches = [
         # The repo rule that creates a manifest of the bazel source for testing
         # the cli is not reproducible. This patch ensures that it is by sorting
         # the results in the repo rule rather than the downstream genrule.
         ./test_source_sort.patch
       ];
-      patchFlags = [
-        "--no-backup-if-mismatch"
-        "-p1"
-      ];
+
       nativeBuildInputs = [
         unzip
         runJdk
         bazelForDeps
       ]
       ++ lib.optional (stdenv.hostPlatform.isDarwin) libtool;
-      configurePhase = ''
-        runHook preConfigure
 
-        mkdir bazel_src
-        shopt -s dotglob extglob
-        mv !(bazel_src) bazel_src
-        mkdir vendor_dir
-
-        runHook postConfigure
-      '';
-      dontFixup = true;
       buildPhase = ''
         runHook preBuild
         export HOME=$(mktemp -d)
@@ -243,7 +229,20 @@ let
         cp -r --reflink=auto vendor_dir/* $out/vendor_dir
       '';
 
-      outputHashMode = "recursive";
+      configurePhase = ''
+        runHook preConfigure
+
+        mkdir bazel_src
+        shopt -s dotglob extglob
+        mv !(bazel_src) bazel_src
+        mkdir vendor_dir
+
+        runHook postConfigure
+      '';
+
+      dontFixup = true;
+      name = "bazelDeps";
+
       outputHash =
         if stdenv.hostPlatform.system == "x86_64-linux" then
           "sha256-yKy6IBIkjvN413kFMgkWCH3jAgF5AdpxrVnQyhgfWPA="
@@ -254,7 +253,16 @@ let
         else
           # x86_64-darwin
           "sha256-VDrqS9YByYxboF6AcjAR0BRZa5ioGgX1pjx09zPfWTE=";
+
       outputHashAlgo = "sha256";
+      outputHashMode = "recursive";
+
+      patchFlags = [
+        "--no-backup-if-mismatch"
+        "-p1"
+      ];
+
+      sourceRoot = ".";
 
     };
 
@@ -263,6 +271,7 @@ let
   bashWithDefaultShellUtilsSh = writeShellApplication {
     name = "bash";
     runtimeInputs = defaultShellUtils;
+
     text = ''
       if [[ "$PATH" == "/no-such-path" ]]; then
         export PATH=${defaultShellPath}
@@ -274,12 +283,14 @@ let
   # Script-based interpreters in shebangs aren't guaranteed to work,
   # especially on MacOS. So let's produce a binary
   bashWithDefaultShellUtils = stdenv.mkDerivation {
-    name = "bash";
     src = bashWithDefaultShellUtilsSh;
     nativeBuildInputs = [ makeBinaryWrapper ];
+
     buildPhase = ''
       makeWrapper ${bashWithDefaultShellUtilsSh}/bin/bash $out/bin/bash
     '';
+
+    name = "bash";
   };
 
   platforms = lib.platforms.linux ++ lib.platforms.darwin;
@@ -293,6 +304,7 @@ let
 
   bazelRC = writeTextFile {
     name = "bazel-rc";
+
     text = ''
       startup --server_javabase=${runJdk}
 
@@ -309,9 +321,9 @@ let
 
 in
 stdenv.mkDerivation rec {
-  pname = "bazel";
   inherit version src;
   inherit sourceRoot;
+  pname = "bazel";
 
   patches = [
     # Remote java toolchains do not work on NixOS because they download binaries,
@@ -392,8 +404,8 @@ stdenv.mkDerivation rec {
 
     # Fix build with gcc 15 by adding missing headers
     (fetchpatch {
-      url = "https://github.com/bazelbuild/bazel/commit/1d206cac050b6c7d9ce65403e6a9909a49bfe4bc.patch";
       hash = "sha256-Tg5o1Va7dd5hvXbWhZiog+VtuiqngqbbYOkCafVudDs=";
+      url = "https://github.com/bazelbuild/bazel/commit/1d206cac050b6c7d9ce65403e6a9909a49bfe4bc.patch";
     })
   ]
   # See enableNixHacks argument above.
@@ -533,28 +545,6 @@ stdenv.mkDerivation rec {
     + lib.optionalString stdenv.hostPlatform.isDarwin darwinPatches
     + genericPatches;
 
-  meta = {
-    homepage = "https://github.com/bazelbuild/bazel/";
-    description = "Build tool that builds code quickly and reliably";
-    sourceProvenance = with lib.sourceTypes; [
-      fromSource
-      binaryBytecode # source bundles dependencies as jars
-    ];
-    license = lib.licenses.asl20;
-    teams = [ lib.teams.bazel ];
-    mainProgram = "bazel";
-    inherit platforms;
-  };
-
-  # Bazel starts a local server and needs to bind a local address.
-  __darwinAllowLocalNetworking = true;
-
-  buildInputs = [
-    buildJdk
-    bashWithDefaultShellUtils
-  ]
-  ++ defaultShellUtils;
-
   # when a command can’t be found in a bazel build, you might also
   # need to add it to `defaultShellPath`.
   nativeBuildInputs = [
@@ -570,22 +560,22 @@ stdenv.mkDerivation rec {
     cctools
   ];
 
-  # Bazel makes extensive use of symlinks in the WORKSPACE.
-  # This causes problems with infinite symlinks if the build output is in the same location as the
-  # Bazel WORKSPACE. This is why before executing the build, the source code is moved into a
-  # subdirectory.
-  # Failing to do this causes "infinite symlink expansion detected"
-  preBuildPhases = [ "preBuildPhase" ];
-  preBuildPhase = ''
-    mkdir bazel_src
-    shopt -s dotglob extglob
-    mv !(bazel_src) bazel_src
-    # Augment bundled repository_cache with our extra paths
-    mkdir vendor_dir
-    ${lndir}/bin/lndir ${bazelDeps}/vendor_dir vendor_dir
-    rm vendor_dir/VENDOR.bazel
-    find vendor_dir -maxdepth 1 -type d -printf "pin(\"@@%P\")\n" > vendor_dir/VENDOR.bazel
-  '';
+  buildInputs = [
+    buildJdk
+    bashWithDefaultShellUtils
+  ]
+  ++ defaultShellUtils;
+
+  # Work around an issue with the old vendored zlib and modern versions
+  # of Clang on macOS.
+  #
+  # Fixed in newer versions of Bazel and rules_java; see
+  # <https://github.com/bazelbuild/bazel/issues/25124>.
+  #
+  # Credit to Homebrew for the hack:
+  # <https://github.com/Homebrew/homebrew-core/blob/b61d1f7d7963c08c472d829b25de5d0a06dc4b3d/Formula/b/bazel.rb#L55-L60>
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-fno-define-target-os-macros";
+
   buildPhase = ''
     runHook preBuild
     export HOME=$(mktemp -d)
@@ -718,18 +708,28 @@ stdenv.mkDerivation rec {
     echo "${cctools}" >> $out/nix-support/depends
   '';
 
-  dontStrip = true;
+  # Bazel starts a local server and needs to bind a local address.
+  __darwinAllowLocalNetworking = true;
   dontPatchELF = true;
+  dontStrip = true;
 
-  # Work around an issue with the old vendored zlib and modern versions
-  # of Clang on macOS.
-  #
-  # Fixed in newer versions of Bazel and rules_java; see
-  # <https://github.com/bazelbuild/bazel/issues/25124>.
-  #
-  # Credit to Homebrew for the hack:
-  # <https://github.com/Homebrew/homebrew-core/blob/b61d1f7d7963c08c472d829b25de5d0a06dc4b3d/Formula/b/bazel.rb#L55-L60>
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-fno-define-target-os-macros";
+  preBuildPhase = ''
+    mkdir bazel_src
+    shopt -s dotglob extglob
+    mv !(bazel_src) bazel_src
+    # Augment bundled repository_cache with our extra paths
+    mkdir vendor_dir
+    ${lndir}/bin/lndir ${bazelDeps}/vendor_dir vendor_dir
+    rm vendor_dir/VENDOR.bazel
+    find vendor_dir -maxdepth 1 -type d -printf "pin(\"@@%P\")\n" > vendor_dir/VENDOR.bazel
+  '';
+
+  # Bazel makes extensive use of symlinks in the WORKSPACE.
+  # This causes problems with infinite symlinks if the build output is in the same location as the
+  # Bazel WORKSPACE. This is why before executing the build, the source code is moved into a
+  # subdirectory.
+  # Failing to do this causes "infinite symlink expansion detected"
+  preBuildPhases = [ "preBuildPhase" ];
 
   passthru = {
     # TODO add some tests to cover basic functionality, and also tests for enableNixHacks=true (buildBazelPackage tests)
@@ -737,5 +737,20 @@ stdenv.mkDerivation rec {
 
     # For ease of debugging
     inherit bazelDeps bazelFhs bazelBootstrap;
+  };
+
+  meta = {
+    inherit platforms;
+    description = "Build tool that builds code quickly and reliably";
+    homepage = "https://github.com/bazelbuild/bazel/";
+    license = lib.licenses.asl20;
+
+    sourceProvenance = with lib.sourceTypes; [
+      fromSource
+      binaryBytecode # source bundles dependencies as jars
+    ];
+
+    mainProgram = "bazel";
+    teams = [ lib.teams.bazel ];
   };
 }

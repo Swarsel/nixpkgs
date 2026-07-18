@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
-  wget,
   makeWrapper,
   nix-update-script,
+  perl,
+  wget,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,7 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/apt-mirror/apt-mirror/blob/${finalAttrs.src.rev}/CHANGELOG";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
-    mainProgram = "apt-mirror";
     platforms = lib.platforms.all;
+    mainProgram = "apt-mirror";
   };
 })

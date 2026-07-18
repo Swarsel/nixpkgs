@@ -1,25 +1,25 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  wrapGAppsHook4,
+  appstream-glib,
+  blueprint-compiler,
+  desktop-file-utils,
+  gettext,
+  glib,
+  gobject-introspection,
+  gst_all_1,
+  libadwaita,
+  libnotify,
+  libportal,
+  librsvg,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  appstream-glib,
-  desktop-file-utils,
-  glib,
-  gobject-introspection,
-  blueprint-compiler,
-  libxml2,
-  libnotify,
-  libadwaita,
-  libportal,
-  gettext,
-  librsvg,
+  python3Packages,
   tesseract5,
+  wrapGAppsHook4,
   zbar,
-  gst_all_1,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -33,9 +33,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sha256 = "sha256-p1gqom9saNEIm6FXinEuIJtMGwjGfQx9uLpR2kb46Uw=";
   };
 
-  pyproject = false;
-
   patches = [ ./update-compatible-with-non-flatpak-env.patch ];
+
   postPatch = ''
     chmod +x ./build-aux/meson/postinstall.py
     patchShebangs ./build-aux/meson/postinstall.py
@@ -80,20 +79,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     gtts
   ];
 
-  # This is to prevent double-wrapping the package. We'll let
-  # Python do it by adding certain arguments inside of the
-  # wrapper instead.
-  dontWrapGApps = true;
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  # This is to prevent double-wrapping the package. We'll let
+  # Python do it by adding certain arguments inside of the
+  # wrapper instead.
+  dontWrapGApps = true;
+  pyproject = false;
+
   meta = {
-    homepage = "https://getfrog.app/";
     description = "Intuitive text extraction tool (OCR) for GNOME desktop";
+    homepage = "https://getfrog.app/";
     license = lib.licenses.mit;
-    mainProgram = "frog";
     maintainers = [ lib.maintainers.axodentally ];
     platforms = lib.platforms.linux;
+    mainProgram = "frog";
   };
 })

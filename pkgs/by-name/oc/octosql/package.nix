@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,15 +17,15 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-p/2UsvxxywQKtk/9wDa5fjS0z6xLLzDONuQ5AtnUonk=";
 
+  postInstall = ''
+    rm -v $out/bin/tester
+  '';
+
   ldflags = [
     "-s"
     "-w"
     "-X github.com/cube2222/octosql/cmd.VERSION=${finalAttrs.version}"
   ];
-
-  postInstall = ''
-    rm -v $out/bin/tester
-  '';
 
   meta = {
     description = "Commandline tool for joining, analyzing and transforming data from multiple databases and file formats using SQL";

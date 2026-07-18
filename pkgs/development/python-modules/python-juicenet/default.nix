@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "python-juicenet";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jesserockz";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # no tests implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyjuicenet" ];
 
   meta = {

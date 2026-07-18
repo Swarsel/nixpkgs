@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  fftw,
+  jdk_headless,
+  ladspa-header,
   libsamplerate,
   libsndfile,
-  fftw,
   lv2,
-  jdk_headless,
-  vamp-plugin-sdk,
-  ladspa-header,
   meson,
   ninja,
+  pkg-config,
+  vamp-plugin-sdk,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     jdk_headless
   ];
+
   buildInputs = [
     libsamplerate
     libsndfile
@@ -43,11 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
     ladspa-header
     lv2
   ];
-  makeFlags = [ "AR:=$(AR)" ];
 
   # TODO: package boost-test, so we can run the test suite. (Currently it fails
   # to find libboost_unit_test_framework.a.)
   mesonFlags = [ "-Dtests=disabled" ];
+  makeFlags = [ "AR:=$(AR)" ];
   doCheck = false;
 
   meta = {

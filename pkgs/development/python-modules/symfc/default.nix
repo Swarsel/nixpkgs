@@ -1,26 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   numpy,
-  scipy,
-  spglib,
-
   # tests
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
+  spglib,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "symfc";
   version = "1.7.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "symfc";
@@ -28,6 +23,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-bMG22yQszrAAh7qbQjIuaY3KjDXB95Y2OgkwKU+FW0E=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -39,16 +40,13 @@ buildPythonPackage (finalAttrs: {
     spglib
   ];
 
-  pythonImportsCheck = [ "symfc" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTests = lib.optionals stdenv.hostPlatform.isx86_64 [
     # assert (np.float64(0.5555555555555556) == 1.0 ± 1.0e-06
     "test_fc_basis_set_o3"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "symfc" ];
 
   meta = {
     description = "Generate symmetrized force constants";

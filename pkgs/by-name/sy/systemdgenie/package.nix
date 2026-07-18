@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
-  cmake,
+  stdenv,
   fetchFromGitLab,
+  cmake,
   kdePackages,
-  pkg-config,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -13,11 +13,11 @@ stdenv.mkDerivation {
   version = "0.99.0-unstable-2026-07-03";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
-    repo = "SystemdGenie";
     owner = "system";
+    repo = "SystemdGenie";
     rev = "5e30259b7a234291bb0e337c7c9e5b4892304c99";
     hash = "sha256-C6CwoHYqc3GS5xvIJA+Jv2cbe7iw7vqdxwh9Sh67ucw=";
+    domain = "invent.kde.org";
   };
 
   strictDeps = true;
@@ -40,10 +40,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Systemd management utility";
-    mainProgram = "systemdgenie";
     homepage = "https://kde.org";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.pasqui23 ];
     platforms = lib.platforms.linux;
+    mainProgram = "systemdgenie";
   };
 }

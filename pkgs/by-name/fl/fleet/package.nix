@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  yarnConfigHook,
-  yarnBuildHook,
-  nodejs_24,
-  fetchYarnDeps,
   buildGoModule,
+  fetchYarnDeps,
   go-bindata,
+  nodejs_24,
+  stdenvNoCC,
   versionCheckHook,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 let
   pname = "fleet";
@@ -21,22 +21,14 @@ let
   };
 
   frontend = stdenvNoCC.mkDerivation {
-    pname = "${pname}-frontend";
     inherit version src;
+    pname = "${pname}-frontend";
 
     nativeBuildInputs = [
       yarnConfigHook
       yarnBuildHook
       nodejs_24
     ];
-
-    yarnOfflineCache = fetchYarnDeps {
-      yarnLock = src + "/yarn.lock";
-      hash = "sha256-2gTV42OVgeH35rOrOgXiop+DGWtq2PpHqKY4mFblbAs=";
-    };
-
-    NODE_ENV = "production";
-    yarnBuildScript = "webpack";
 
     installPhase = ''
       runHook preInstall
@@ -49,23 +41,20 @@ let
 
       runHook postInstall
     '';
+
+    NODE_ENV = "production";
+    yarnBuildScript = "webpack";
+
+    yarnOfflineCache = fetchYarnDeps {
+      hash = "sha256-2gTV42OVgeH35rOrOgXiop+DGWtq2PpHqKY4mFblbAs=";
+      yarnLock = src + "/yarn.lock";
+    };
   };
 in
 buildGoModule (finalAttrs: {
   inherit pname version src;
-
-  vendorHash = "sha256-hgo+j2+gE0ArGRRvxC/0jcpv0Bp3hvBRO7Wl+9xl8io=";
-
-  subPackages = [
-    "cmd/fleet"
-  ];
-
-  ldflags = [
-    "-X github.com/fleetdm/fleet/v4/server/version.appName=fleet"
-    "-X github.com/fleetdm/fleet/v4/server/version.version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ go-bindata ];
+  vendorHash = "sha256-hgo+j2+gE0ArGRRvxC/0jcpv0Bp3hvBRO7Wl+9xl8io=";
 
   preBuild = ''
     cp -r ${frontend}/assets/* assets
@@ -76,30 +65,42 @@ buildGoModule (finalAttrs: {
       frontend/templates/ assets/... server/mail/templates
   '';
 
-  tags = [ "full" ];
-
   doInstallCheck = true;
-  versionCheckProgramArg = "version";
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
   __darwinAllowLocalNetworking = true;
 
+  ldflags = [
+    "-X github.com/fleetdm/fleet/v4/server/version.appName=fleet"
+    "-X github.com/fleetdm/fleet/v4/server/version.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/fleet"
+  ];
+
+  tags = [ "full" ];
+  versionCheckProgramArg = "version";
+
   passthru = {
     inherit frontend;
   };
 
   meta = {
+    description = "CLI tool to launch Fleet server";
     homepage = "https://github.com/fleetdm/fleet";
     changelog = "https://github.com/fleetdm/fleet/releases/tag/fleet-v${finalAttrs.version}";
-    description = "CLI tool to launch Fleet server";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       asauzeau
       lesuisse
       bddvlpr
     ];
+
     mainProgram = "fleet";
   };
 })

@@ -1,28 +1,16 @@
 {
   lib,
   stdenv,
-  skawarePackages,
-  targetPackages,
-  skalibs,
   execline,
   s6,
+  skalibs,
+  skawarePackages,
+  targetPackages,
 }:
 
 skawarePackages.buildPackage {
   pname = "s6-rc";
   version = "0.6.1.1";
-  sha256 = "sha256-tU8iajW+HuVqIovxpMOUN/ByvGTmnb81bnM+YGqGQC0=";
-
-  manpages = skawarePackages.buildManPages {
-    pname = "s6-rc-man-pages";
-    version = "0.6.0.0.1";
-    sha256 = "sha256-zHkh5H0/nXsLjHJE9PT+2ga8gK1evm4ktheMqqNV1hQ=";
-    description = "mdoc(7) versions of the documentation for the s6-rc service manager";
-    maintainers = [ lib.maintainers.qyliss ];
-  };
-
-  description = "Service manager for s6-based systems";
-  platforms = lib.platforms.unix;
 
   outputs = [
     # "bin" "lib"
@@ -76,5 +64,18 @@ skawarePackages.buildPackage {
     mv doc $doc/share/doc/s6-rc/html
     mv examples $doc/share/doc/s6-rc/examples
   '';
+
+  description = "Service manager for s6-based systems";
+
+  manpages = skawarePackages.buildManPages {
+    pname = "s6-rc-man-pages";
+    version = "0.6.0.0.1";
+    description = "mdoc(7) versions of the documentation for the s6-rc service manager";
+    maintainers = [ lib.maintainers.qyliss ];
+    sha256 = "sha256-zHkh5H0/nXsLjHJE9PT+2ga8gK1evm4ktheMqqNV1hQ=";
+  };
+
+  platforms = lib.platforms.unix;
+  sha256 = "sha256-tU8iajW+HuVqIovxpMOUN/ByvGTmnb81bnM+YGqGQC0=";
 
 }

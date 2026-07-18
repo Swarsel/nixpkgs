@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
+  clutter,
+  clutter-gtk,
+  desktop-file-utils,
   fetchgit,
+  gsound,
+  libgnome-games-support,
   meson,
   ninja,
   pkg-config,
   wrapGAppsHook3,
-  desktop-file-utils,
-  clutter,
-  clutter-gtk,
-  gsound,
-  libgnome-games-support,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,10 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Puzzle game similar to Bejeweled or Diamond Mine";
-    mainProgram = "gweled";
     homepage = "https://gweled.org";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ aleksana ];
+    platforms = lib.platforms.linux;
+    mainProgram = "gweled";
   };
 })

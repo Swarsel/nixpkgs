@@ -1,15 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "nix-auth";
   version = "0.1.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "numtide";
@@ -19,6 +18,10 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-5X+GG5h9rZTLhDvL6m9LrU5WGT5Ev+aXZ+5ffksBIM8=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -26,12 +29,7 @@ buildGoModule (finalAttrs: {
     "-X=github.com/numtide/nix-auth/internal/version.Version=${finalAttrs.version}"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

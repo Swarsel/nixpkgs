@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  setuptools,
   stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
+  setuptools,
 }:
 
 buildPythonPackage rec {
@@ -17,14 +17,13 @@ buildPythonPackage rec {
     hash = "sha256-4QB/yWpurH/ai49PBRECdCfRRQ0tAvzGnpXj+DeP1pE=";
   };
 
-  pyproject = true;
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cv2_enumerate_cameras" ];
 
   meta = {
-    homepage = "https://github.com/lukehugh/cv2_enumerate_cameras";
     description = "Retrieve the connected camera's name, VID, PID, and the corresponding OpenCV index";
+    homepage = "https://github.com/lukehugh/cv2_enumerate_cameras";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.qyliss ];
     # Needs pyobjc-framework-avfoundation; not currently packaged.

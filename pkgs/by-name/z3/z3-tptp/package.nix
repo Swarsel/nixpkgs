@@ -1,17 +1,13 @@
 {
   lib,
   stdenv,
-  z3,
   cmake,
+  z3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "z3-tptp";
   version = z3.version;
-
   src = z3.src;
-
-  sourceRoot = "${finalAttrs.src.name}/examples/tptp";
-
   nativeBuildInputs = [ cmake ];
   buildInputs = [ z3 ];
 
@@ -26,6 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     cp "z3_tptp5" "$out/bin/"
     ln -s "z3_tptp5" "$out/bin/z3-tptp"
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/examples/tptp";
 
   meta = {
     inherit (z3.meta) license homepage platforms;

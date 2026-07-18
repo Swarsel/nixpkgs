@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   curl,
   curlpp,
   inih,
-  openssl,
-  pugixml,
   nlohmann_json,
+  openssl,
+  pkg-config,
+  pugixml,
   zlib,
 }:
 
@@ -59,10 +59,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     curl
     curlpp
@@ -82,11 +84,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "MinIO C++ Client SDK for Amazon S3 Compatible Cloud Storage";
     homepage = "https://github.com/minio/minio-cpp";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       cyrusknopf
       drupol
       roquess
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

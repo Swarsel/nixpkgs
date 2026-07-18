@@ -35,13 +35,6 @@ stdenv.mkDerivation rec {
     ./musl-llvm.patch
   ];
 
-  nativeBuildInputs = [
-    updateAutotoolsGnuConfigScriptsHook
-    (lib.getBin xz)
-  ];
-  # If no explicit coreutils is given, use the one from stdenv.
-  buildInputs = [ coreutils ];
-
   # Disable stack-related gnulib tests on x86_64-darwin because they have problems running under
   # Rosetta 2: test-c-stack hangs, test-sigsegv-catch-stackoverflow and test-sigaction fail.
   # Disable all gnulib tests when building on Darwin due to test-nl_langinfo-mt failure
@@ -66,6 +59,14 @@ stdenv.mkDerivation rec {
     else
       null;
 
+  nativeBuildInputs = [
+    updateAutotoolsGnuConfigScriptsHook
+    (lib.getBin xz)
+  ];
+
+  # If no explicit coreutils is given, use the one from stdenv.
+  buildInputs = [ coreutils ];
+
   configureFlags =
     # "pr" need not be on the PATH as a run-time dep, so we need to tell
     # configure where it is. Covers the cross and native case alike.
@@ -79,13 +80,15 @@ stdenv.mkDerivation rec {
   doCheck = !stdenv.buildPlatform.isRiscV64;
 
   meta = {
-    homepage = "https://www.gnu.org/software/diffutils/diffutils.html";
     description = "Commands for showing the differences between files (diff, cmp, etc.)";
+    homepage = "https://www.gnu.org/software/diffutils/diffutils.html";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

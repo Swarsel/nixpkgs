@@ -1,8 +1,8 @@
 {
-  mediastreamer2,
-  openh264,
   lib,
+  mediastreamer2,
   mkLinphoneDerivation,
+  openh264,
 }:
 mkLinphoneDerivation {
   pname = "msopenh264";

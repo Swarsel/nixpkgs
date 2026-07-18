@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   fetchPnpmDeps,
-  testers,
   installShellFiles,
-  pkg-config,
-  openssl,
   nodejs,
-  pnpm_10,
+  openssl,
+  pkg-config,
   pnpmConfigHook,
+  pnpm_10,
   python3,
+  rustPlatform,
+  testers,
 }:
 
 let
@@ -28,19 +28,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-tq88qWrm243Go64LpH7kU89ryq2xm9nkIJI+ZeQU7IU=";
   };
 
-  cargoHash = "sha256-Qxx+BrioVBX5Yy6YVJAnYdNEZVqiZUJTnWNgc74sI44=";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    sourceRoot = "${finalAttrs.src.name}/ui";
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-9ifyIKFQiWKM0hzToibU4zuA64PmznqtpFWILFsFvGQ=";
-  };
-  pnpmRoot = "ui";
-
-  buildInputs = [ openssl ];
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -49,6 +36,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pnpm
     python3
   ];
+
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-Qxx+BrioVBX5Yy6YVJAnYdNEZVqiZUJTnWNgc74sI44=";
 
   env = {
     CXXFLAGS = "-std=c++20";
@@ -72,6 +62,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/${finalAttrs.meta.mainProgram} completion zsh) \
       --fish <($out/bin/${finalAttrs.meta.mainProgram} completion fish)
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-9ifyIKFQiWKM0hzToibU4zuA64PmznqtpFWILFsFvGQ=";
+    sourceRoot = "${finalAttrs.src.name}/ui";
+  };
+
+  pnpmRoot = "ui";
 
   passthru.tests.version = testers.testVersion {
     package = finalAttrs.finalPackage;

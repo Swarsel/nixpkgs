@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
   aiosmtpd,
-  jaraco-text,
+  buildPythonPackage,
   jaraco-collections,
+  jaraco-text,
   keyring,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "jaraco-email";
   version = "3.1.1";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -36,14 +34,14 @@ buildPythonPackage rec {
     keyring
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "jaraco.email" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
-    changelog = "https://github.com/jaraco/jaraco.email/blob/${src.tag}/NEWS.rst";
     description = "E-mail facilities by jaraco";
     homepage = "https://github.com/jaraco/jaraco.email";
+    changelog = "https://github.com/jaraco/jaraco.email/blob/${src.tag}/NEWS.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

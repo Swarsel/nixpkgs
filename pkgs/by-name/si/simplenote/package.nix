@@ -1,9 +1,9 @@
 {
-  appimageTools,
   lib,
   fetchurl,
-  nix-update-script,
+  appimageTools,
   makeDesktopItem,
+  nix-update-script,
 }:
 
 let
@@ -19,9 +19,20 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-
-  __structuredAttrs = true;
   strictDeps = true;
+  __structuredAttrs = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = "Simplenote for Linux";
+      exec = pname;
+      genericName = "Note Taking Application";
+      icon = "simplenote";
+      name = pname;
+      startupNotify = true;
+    })
+  ];
 
   extraInstallCommands = ''
     install -m 444 -D ${appimageContents}/${pname}.desktop -t $out/share/applications
@@ -38,27 +49,15 @@ appimageTools.wrapType2 {
       libappindicator-gtk3
     ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = pname;
-      exec = pname;
-      icon = "simplenote";
-      genericName = "Note Taking Application";
-      comment = "Simplenote for Linux";
-      categories = [ "Utility" ];
-      startupNotify = true;
-    })
-  ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "simplenote";
     description = "The simplest way to keep notes";
     homepage = "https://github.com/Automattic/simplenote-electron";
-    license = lib.licenses.gpl2Plus;
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ _2zqa ];
     changelog = "https://github.com/Automattic/simplenote-electron/releases/tag/v${version}/RELEASE-NOTES.md";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ _2zqa ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "simplenote";
   };
 }

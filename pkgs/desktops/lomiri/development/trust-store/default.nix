@@ -1,10 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  gitUpdater,
-  testers,
   # Uses boost/asio/io_service.hpp
   # Waiting for https://gitlab.com/ubports/development/core/trust-store/-/merge_requests/19 to get finished & merged
   boost186,
@@ -13,7 +10,9 @@
   dbus,
   dbus-cpp,
   doxygen,
+  fetchpatch,
   gettext,
+  gitUpdater,
   glog,
   graphviz,
   gtest,
@@ -24,6 +23,7 @@
   properties-cpp,
   qtbase,
   qtdeclarative,
+  testers,
   validatePkgConfig,
 }:
 
@@ -48,9 +48,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Remove when version > 2.0.2
     (fetchpatch {
+      hash = "sha256-3lrdVIzscXGiLKwftC5oECICVv3sBoS4UedfRHx7uOs=";
       name = "0001-trust-store-Fix-boost-184-compat.patch";
       url = "https://gitlab.com/ubports/development/core/trust-store/-/commit/569f6b35d8bcdb2ae5ff84549cd92cfc0899675b.patch";
-      hash = "sha256-3lrdVIzscXGiLKwftC5oECICVv3sBoS4UedfRHx7uOs=";
     })
 
     # Fix compatibility with glog 0.7.x
@@ -60,9 +60,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix compatibility with CMake 4 and beyond (for now)
     # Remove when version > 2.0.2
     (fetchpatch {
+      hash = "sha256-+ZkTQd6wphd29dTmEIBI7nADFjPQD5012/FVFOtdGbI=";
       name = "1002-trust-store-CMakeLists.txt-Bump-minimum-version-to-3.10.patch";
       url = "https://gitlab.com/ubports/development/core/trust-store/-/commit/64bc51f45e1407f16d389120508c2bcddf9e0d5b.patch";
-      hash = "sha256-+ZkTQd6wphd29dTmEIBI7nADFjPQD5012/FVFOtdGbI=";
     })
   ];
 
@@ -104,16 +104,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtdeclarative
   ];
 
-  nativeCheckInputs = [
-    dbus
-  ];
-
-  checkInputs = [
-    gtest
-  ];
-
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     # Requires mirclient API, unavailable in Mir 2.x
     # https://gitlab.com/ubports/development/core/trust-store/-/issues/2
@@ -130,10 +120,19 @@ stdenv.mkDerivation (finalAttrs: {
   #   same hang on upstream CI
   doCheck = false;
 
+  nativeCheckInputs = [
+    dbus
+  ];
+
+  checkInputs = [
+    gtest
+  ];
+
   preCheck = ''
     export XDG_DATA_HOME=$TMPDIR
   '';
 
+  dontWrapQtApps = true;
   # Starts & talks to DBus
   enableParallelChecking = false;
 
@@ -146,10 +145,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Common implementation of a trust store to be used by trusted helpers";
     homepage = "https://gitlab.com/ubports/development/core/trust-store";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "trust-store"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

@@ -11,49 +11,45 @@ let
   cfg = config.services.pppd;
 in
 {
-  meta = {
-    maintainers = [ ];
-  };
-
   options = {
     services.pppd = {
       enable = mkEnableOption "pppd";
-
       package = mkPackageOption pkgs "ppp" { };
 
       peers = mkOption {
         default = { };
         description = "pppd peers.";
+
         type = types.attrsOf (
           types.submodule (
             { name, ... }:
             {
               options = {
-                name = mkOption {
-                  type = types.str;
-                  default = name;
-                  example = "dialup";
-                  description = "Name of the PPP peer.";
+                config = mkOption {
+                  default = "";
+                  description = "pppd configuration for this peer, see the {manpage}`pppd(8)` man page.";
+                  type = types.lines;
                 };
 
                 enable = mkOption {
-                  type = types.bool;
                   default = true;
-                  example = false;
                   description = "Whether to enable this PPP peer.";
+                  example = false;
+                  type = types.bool;
                 };
 
                 autostart = mkOption {
-                  type = types.bool;
                   default = true;
-                  example = false;
                   description = "Whether the PPP session is automatically started at boot time.";
+                  example = false;
+                  type = types.bool;
                 };
 
-                config = mkOption {
-                  type = types.lines;
-                  default = "";
-                  description = "pppd configuration for this peer, see the {manpage}`pppd(8)` man page.";
+                name = mkOption {
+                  default = name;
+                  description = "Name of the PPP peer.";
+                  example = "dialup";
+                  type = types.str;
                 };
               };
             }
@@ -74,11 +70,11 @@ in
 
       mkSystemd = peerCfg: {
         name = "pppd-${peerCfg.name}";
+
         value = {
-          restartTriggers = [ config.environment.etc."ppp/peers/${peerCfg.name}".source ];
-          before = [ "network.target" ];
-          wants = [ "network.target" ];
           after = [ "network-pre.target" ];
+          before = [ "network.target" ];
+
           environment = {
             # pppd likes to write directly into /var/run. This is rude
             # on a modern system, so we use libredirect to transparently
@@ -86,6 +82,9 @@ in
             LD_PRELOAD = "${pkgs.libredirect}/lib/libredirect.so";
             NIX_REDIRECTS = "/var/run=/run/pppd";
           };
+
+          restartTriggers = [ config.environment.etc."ppp/peers/${peerCfg.name}".source ];
+
           serviceConfig =
             let
               capabilities = [
@@ -96,13 +95,9 @@ in
               ];
             in
             {
-              Type = "notify";
-              ExecStart = "${getBin cfg.package}/sbin/pppd call ${peerCfg.name} up_sdnotify nolog";
-              Restart = "always";
-              RestartSec = 5;
-
               AmbientCapabilities = capabilities;
               CapabilityBoundingSet = capabilities;
+              ExecStart = "${getBin cfg.package}/sbin/pppd call ${peerCfg.name} up_sdnotify nolog";
               KeyringMode = "private";
               LockPersonality = true;
               MemoryDenyWriteExecute = true;
@@ -117,6 +112,9 @@ in
               ProtectKernelTunables = false;
               ProtectSystem = "strict";
               RemoveIPC = true;
+              Restart = "always";
+              RestartSec = 5;
+
               RestrictAddressFamilies = [
                 "AF_ATMPVC"
                 "AF_ATMSVC"
@@ -128,13 +126,10 @@ in
                 "AF_PPPOX"
                 "AF_UNIX"
               ];
+
               RestrictNamespaces = true;
               RestrictRealtime = true;
               RestrictSUIDSGID = true;
-              SecureBits = "no-setuid-fixup-locked noroot-locked";
-              SystemCallFilter = "@system-service";
-              SystemCallArchitectures = "native";
-
               # All pppd instances on a system must share a runtime
               # directory in order for PPP multilink to work correctly. So
               # we give all instances the same /run/pppd directory to store
@@ -145,8 +140,14 @@ in
               # multilink database.
               RuntimeDirectory = "pppd";
               RuntimeDirectoryPreserve = true;
+              SecureBits = "no-setuid-fixup-locked noroot-locked";
+              SystemCallArchitectures = "native";
+              SystemCallFilter = "@system-service";
+              Type = "notify";
             };
+
           wantedBy = mkIf peerCfg.autostart [ "multi-user.target" ];
+          wants = [ "network.target" ];
         };
       };
 
@@ -158,4 +159,8 @@ in
       environment.etc = etcFiles;
       systemd.services = systemdConfigs;
     };
+
+  meta = {
+    maintainers = [ ];
+  };
 }

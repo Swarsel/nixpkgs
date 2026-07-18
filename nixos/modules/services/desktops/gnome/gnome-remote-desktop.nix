@@ -7,10 +7,6 @@
 }:
 
 {
-  meta = {
-    teams = [ lib.teams.gnome ];
-  };
-
   ###### interface
   options = {
     services.gnome.gnome-remote-desktop = {
@@ -20,26 +16,31 @@
 
   ###### implementation
   config = lib.mkIf config.services.gnome.gnome-remote-desktop.enable {
-    services.pipewire.enable = true;
-    services.dbus.packages = [ pkgs.gnome-remote-desktop ];
+    environment.systemPackages = [ pkgs.gnome-remote-desktop ];
+
     security.polkit = {
       enable = true;
       enablePkexecWrapper = lib.mkDefault true;
     };
 
-    environment.systemPackages = [ pkgs.gnome-remote-desktop ];
-
+    services.dbus.packages = [ pkgs.gnome-remote-desktop ];
+    services.pipewire.enable = true;
     systemd.packages = [ pkgs.gnome-remote-desktop ];
     systemd.tmpfiles.packages = [ pkgs.gnome-remote-desktop ];
 
     # TODO: if possible, switch to using provided g-r-d sysusers.d
     users = {
+      groups.gnome-remote-desktop = { };
+
       users.gnome-remote-desktop = {
-        isSystemUser = true;
         group = "gnome-remote-desktop";
         home = "/var/lib/gnome-remote-desktop";
+        isSystemUser = true;
       };
-      groups.gnome-remote-desktop = { };
     };
+  };
+
+  meta = {
+    teams = [ lib.teams.gnome ];
   };
 }

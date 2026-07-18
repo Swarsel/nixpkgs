@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cryptography,
   pytestCheckHook,
   requests,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "torpy";
   version = "1.1.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "torpyorg";
@@ -31,6 +30,7 @@ buildPythonPackage rec {
     "tests/integration"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "cryptography" ];
 
   meta = {

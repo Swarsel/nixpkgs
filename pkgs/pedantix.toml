@@ -1,0 +1,14 @@
+# Package recipes: order arguments and mkDerivation attributes the
+# nixpkgs way (lib/stdenv first, meta/passthru last, fetcher/meta attrs in
+# their customary order). nixfmt handles layout as a separate formatter.
+
+preset = "nixpkgs-package"
+formatter = "off"
+
+# Reordering drops the blank lines between a set's bindings; restore the
+# usual "blank line around multi-line bindings" grouping afterwards. This
+# uses [attrs].blank-lines rather than top-level-blank-lines because a
+# package body is wrapped in a `mkDerivation { ... }` call, which the
+# top-level spacing pass does not descend into.
+[attrs]
+blank-lines = 1

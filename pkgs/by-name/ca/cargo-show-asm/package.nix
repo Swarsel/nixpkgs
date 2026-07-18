@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
+  callPackage,
   fetchCrate,
   installShellFiles,
-  stdenv,
   nix-update-script,
-  callPackage,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,11 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-gR1+Daz3EY6HtijWqbaCg6nD2B8gi6EYMYFspW39nlw=";
   };
 
-  cargoHash = "sha256-QpitYFYRkzntVW15PJimVIX6AaIU+qVY7g3Y88GnKkA=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  cargoHash = "sha256-QpitYFYRkzntVW15PJimVIX6AaIU+qVY7g3Y88GnKkA=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd cargo-asm \
@@ -31,25 +31,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = lib.optionalAttrs stdenv.hostPlatform.isx86_64 {
       test-basic-x86_64 = callPackage ./test-basic-x86_64.nix { };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Cargo subcommand showing the assembly, LLVM-IR and MIR generated for Rust code";
     homepage = "https://github.com/pacak/cargo-show-asm";
     changelog = "https://github.com/pacak/cargo-show-asm/blob/${finalAttrs.version}/Changelog.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       oxalica
       matthiasbeyer
       chrjabs
     ];
+
     mainProgram = "cargo-asm";
   };
 })

@@ -12,59 +12,63 @@ in
   options = {
     services.shiori = {
       enable = lib.mkEnableOption "Shiori simple bookmarks manager";
-
       package = lib.mkPackageOption pkgs "shiori" { };
 
       address = lib.mkOption {
-        type = lib.types.str;
         default = "";
+
         description = ''
           The IP address on which Shiori will listen.
           If empty, listens on all interfaces.
         '';
-      };
 
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 8080;
-        description = "The port of the Shiori web application";
-      };
-
-      webRoot = lib.mkOption {
         type = lib.types.str;
-        default = "/";
-        example = "/shiori";
-        description = "The root of the Shiori web application";
+      };
+
+      databaseUrl = lib.mkOption {
+        default = null;
+        description = "The connection URL to connect to MySQL or PostgreSQL";
+        example = "postgres:///shiori?host=/run/postgresql";
+        type = lib.types.nullOr lib.types.str;
       };
 
       environmentFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
-        example = "/path/to/environmentFile";
+
         description = ''
           Path to file containing environment variables.
           Useful for passing down secrets.
           <https://github.com/go-shiori/shiori/blob/master/docs/Configuration.md#overall-configuration>
         '';
+
+        example = "/path/to/environmentFile";
+        type = lib.types.nullOr lib.types.path;
       };
 
-      databaseUrl = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        example = "postgres:///shiori?host=/run/postgresql";
-        description = "The connection URL to connect to MySQL or PostgreSQL";
+      port = lib.mkOption {
+        default = 8080;
+        description = "The port of the Shiori web application";
+        type = lib.types.port;
+      };
+
+      webRoot = lib.mkOption {
+        default = "/";
+        description = "The root of the Shiori web application";
+        example = "/shiori";
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.shiori = {
-      description = "Shiori simple bookmarks manager";
-      wantedBy = [ "multi-user.target" ];
       after = [
         "postgresql.target"
         "mysql.service"
       ];
+
+      description = "Shiori simple bookmarks manager";
+
       environment = {
         SHIORI_DIR = "/var/lib/shiori";
       }
@@ -73,15 +77,6 @@ in
       };
 
       serviceConfig = {
-        ExecStart = "${cfg.package}/bin/shiori server --address '${cfg.address}' --port '${toString cfg.port}' --webroot '${cfg.webRoot}'";
-
-        DynamicUser = true;
-        StateDirectory = "shiori";
-        # As the RootDirectory
-        RuntimeDirectory = "shiori";
-
-        # Security options
-        EnvironmentFile = lib.optional (cfg.environmentFile != null) cfg.environmentFile;
         BindReadOnlyPaths = [
           "/nix/store"
 
@@ -100,16 +95,15 @@ in
         ) "/var/run/mysqld";
 
         CapabilityBoundingSet = "";
-
         DeviceAllow = "";
-
+        DynamicUser = true;
+        # Security options
+        EnvironmentFile = lib.optional (cfg.environmentFile != null) cfg.environmentFile;
+        ExecStart = "${cfg.package}/bin/shiori server --address '${cfg.address}' --port '${toString cfg.port}' --webroot '${cfg.webRoot}'";
         LockPersonality = true;
-
         MemoryDenyWriteExecute = true;
-
         PrivateDevices = true;
         PrivateUsers = true;
-
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -118,19 +112,22 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
 
-        RestrictNamespaces = true;
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
+        RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
-
         RootDirectory = "/run/shiori";
-
+        # As the RootDirectory
+        RuntimeDirectory = "shiori";
+        StateDirectory = "shiori";
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
           "~@cpu-emulation"
@@ -142,6 +139,8 @@ in
           "~@setuid"
         ];
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

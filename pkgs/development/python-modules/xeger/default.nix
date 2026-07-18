@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "xeger";
   version = "0.3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "crdoconnor";
@@ -18,13 +17,13 @@ buildPythonPackage rec {
     hash = "sha256-XujytGzBwJ59C5VihuFUJUxqhyjOIU4sI60hXUqLQvM=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "xeger" ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "xeger" ];
 
   meta = {
     description = "Library to generate random strings from regular expressions";

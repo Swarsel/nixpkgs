@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   allegro,
   libjpeg,
   makeWrapper,
@@ -25,7 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
     else
       throw "System not supported";
 
+  patches = [ ./mkdir.patch ];
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     allegro
     libjpeg
@@ -36,13 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i s,/usr/share,$out/share, src/HGFX.cpp src/STDH.cpp
   '';
 
-  patches = [ ./mkdir.patch ];
-
   meta = {
     description = "Car racing game";
-    mainProgram = "racer";
     homepage = "http://hippo.nipax.cz/download.en.php";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "racer";
   };
 })

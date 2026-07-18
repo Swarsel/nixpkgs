@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  distutils,
   git,
   pytestCheckHook,
-  distutils,
   setuptools-scm,
   writeScript,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "setuptools-odoo";
   version = "3.3.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "acsone";
@@ -22,8 +21,23 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ distutils ];
-
   propagatedBuildInputs = [ setuptools-scm ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    git
+  ];
+
+  disabledTests = [
+    "test_addon1_uncommitted_change"
+    "test_addon1"
+    "test_addon2_uncommitted_version_change"
+    "test_odoo_addon1_sdist"
+    "test_odoo_addon1"
+    "test_odoo_addon5_wheel"
+  ];
+
+  format = "setuptools";
 
   # HACK https://github.com/NixOS/nixpkgs/pull/229460
   patchPhase = ''
@@ -55,20 +69,6 @@ buildPythonPackage rec {
 
     preBuildHooks+=(setuptoolsOdooHook)
   '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    git
-  ];
-
-  disabledTests = [
-    "test_addon1_uncommitted_change"
-    "test_addon1"
-    "test_addon2_uncommitted_version_change"
-    "test_odoo_addon1_sdist"
-    "test_odoo_addon1"
-    "test_odoo_addon5_wheel"
-  ];
 
   meta = {
     description = "Setuptools plugin for Odoo addons";

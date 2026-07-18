@@ -1,42 +1,38 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pbr,
-  setuptools,
-
+  buildPythonPackage,
+  coverage,
+  fixtures,
+  iso8601,
   # direct
   keystoneauth1,
-  iso8601,
+  openssl,
+  openstackdocstheme,
+  openstacksdk,
   oslo-i18n,
   oslo-serialization,
   oslo-utils,
-  prettytable,
-  stevedore,
-
-  # tests
-  stestrCheckHook,
-  versionCheckHook,
-  coverage,
-  fixtures,
-  requests-mock,
-  openstacksdk,
   osprofiler,
-  openssl,
-  testscenarios,
-  testtools,
-  tempest,
-
+  pbr,
+  prettytable,
+  requests-mock,
+  setuptools,
   # docs
   sphinxHook,
-  openstackdocstheme,
   sphinxcontrib-apidoc,
+  # tests
+  stestrCheckHook,
+  stevedore,
+  tempest,
+  testscenarios,
+  testtools,
+  versionCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-novaclient";
   version = "18.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -49,15 +45,29 @@ buildPythonPackage (finalAttrs: {
     ./fix-setup-cfg.patch
   ];
 
-  env.PBR_VERSION = finalAttrs.version;
-
   nativeBuildInputs = [
     openstackdocstheme
     sphinxcontrib-apidoc
     sphinxHook
   ];
 
-  sphinxBuilders = [ "man" ];
+  env.PBR_VERSION = finalAttrs.version;
+
+  nativeCheckInputs = [
+    stestrCheckHook
+    coverage
+    fixtures
+    requests-mock
+    openstacksdk
+    osprofiler
+    openssl
+    testscenarios
+    testtools
+    tempest
+  ];
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   build-system = [
     pbr
@@ -75,21 +85,7 @@ buildPythonPackage (finalAttrs: {
     stevedore
   ];
 
-  nativeCheckInputs = [
-    stestrCheckHook
-    coverage
-    fixtures
-    requests-mock
-    openstacksdk
-    osprofiler
-    openssl
-    testscenarios
-    testtools
-    tempest
-  ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "novaclient"
@@ -104,12 +100,14 @@ buildPythonPackage (finalAttrs: {
     "novaclient.tests.unit.v2"
   ];
 
+  sphinxBuilders = [ "man" ];
+
   meta = {
     description = "Client library for OpenStack Compute API";
-    mainProgram = "nova";
     homepage = "https://docs.openstack.org/python-novaclient/latest/";
-    downloadPage = "https://github.com/openstack/python-novaclient/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+    mainProgram = "nova";
+    downloadPage = "https://github.com/openstack/python-novaclient/releases/tag/${finalAttrs.src.tag}";
     teams = [ lib.teams.openstack ];
   };
 })

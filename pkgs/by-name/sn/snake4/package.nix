@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
+  libx11,
+  libxaw,
+  libxext,
+  libxpm,
+  libxt,
   shhmsg,
   shhopt,
-  libxt,
-  libxpm,
-  libxext,
-  libxaw,
-  libx11,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

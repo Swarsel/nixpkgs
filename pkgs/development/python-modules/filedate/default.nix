@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   python-dateutil,
   setuptools,
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "filedate";
   version = "3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kubinka0505";
@@ -17,8 +16,6 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-HvuGP+QlUlfAUfFmaVVvtPHGdrbWVxghQipnqTTvAQc=";
   };
-
-  sourceRoot = "${src.name}/Files";
 
   # The repo stores everything in "src" and uses setup.py to move "src" ->
   # "filedate" before calling setup() and then tries to rename "filedate" back
@@ -37,17 +34,14 @@ buildPythonPackage rec {
       --replace-fail "	os.rename(__title__, directory)" ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ python-dateutil ];
-
-  pythonImportsCheck = [ "filedate" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "tests/unit.py" ];
-
+  build-system = [ setuptools ];
+  dependencies = [ python-dateutil ];
   disabledTests = [ "test_created" ];
+  enabledTestPaths = [ "tests/unit.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "filedate" ];
+  sourceRoot = "${src.name}/Files";
 
   meta = {
     description = "Simple, convenient and cross-platform file date changing library";

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  six,
+  buildPythonPackage,
   mock,
   pyfakefs,
   pytest-forked,
   pytestCheckHook,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "pyu2f";
   version = "0.1.5a";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "google";
@@ -20,8 +19,6 @@ buildPythonPackage rec {
     tag = version;
     sha256 = "0mx7bn1p3n0fxyxa82wg3c719hby7vqkxv57fhf7zvhlg2zfnr0v";
   };
-
-  propagatedBuildInputs = [ six ];
 
   postPatch = ''
     for path in \
@@ -41,6 +38,8 @@ buildPythonPackage rec {
     done
   '';
 
+  propagatedBuildInputs = [ six ];
+
   nativeCheckInputs = [
     mock
     pyfakefs
@@ -52,6 +51,8 @@ buildPythonPackage rec {
     # API breakage with pyfakefs>=5.0
     "pyu2f/tests/hid/linux_test.py"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "U2F host library for interacting with a U2F device over USB";

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   ffmpeg,
-  libgphoto2,
   kmod,
+  libgphoto2,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "webcamize";
@@ -36,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/cowtoolz/webcamize";
     changelog = "https://github.com/cowtoolz/webcamize/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ imurx ];
+    platforms = lib.platforms.linux;
     mainProgram = "webcamize";
   };
 })

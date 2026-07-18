@@ -1,23 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiosqlite,
+  buildPythonPackage,
   cyscale,
+  pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
   websockets,
   xxhash,
-  pytestCheckHook,
-  pytest-asyncio,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "async-substrate-interface";
   version = "2.2.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "latent-to";
@@ -33,6 +30,12 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '/tmp/async-substrate-interface-test-cache' "$(mktemp -d)/cache"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -42,11 +45,6 @@ buildPythonPackage (finalAttrs: {
     xxhash
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
   # these tests open a live websocket/subtensor endpoint, unavailable in the build sandbox
   disabledTestPaths = [
     "tests/integration_tests"
@@ -54,6 +52,7 @@ buildPythonPackage (finalAttrs: {
     "tests/unit_tests/sync/test_block.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "async_substrate_interface" ];
 
   meta = {

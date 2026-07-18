@@ -1,21 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  python3Packages,
+  copyDesktopItems,
   gettext,
   git,
-  qt6,
-  versionCheckHook,
-  copyDesktopItems,
   imagemagick,
   nix-update-script,
+  python3Packages,
+  qt6,
+  versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "git-cola";
   version = "4.18.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "git-cola";
@@ -24,23 +23,6 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-oUh9XVj2FGRow3l5wBUGW+BN01ykLvsQH0uC/No22Do=";
   };
 
-  build-system = with python3Packages; [
-    setuptools-scm
-  ];
-
-  buildInputs = [
-    git
-    qt6.qtbase
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ qt6.qtwayland ];
-
-  dependencies = with python3Packages; [
-    polib
-    pyqt6
-    qtpy
-    send2trash
-  ];
-
   nativeBuildInputs = [
     gettext
     qt6.wrapQtAppsHook
@@ -48,26 +30,16 @@ python3Packages.buildPythonApplication rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ copyDesktopItems ];
 
+  buildInputs = [
+    git
+    qt6.qtbase
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ qt6.qtwayland ];
+
   nativeCheckInputs = [
     git
     python3Packages.pytestCheckHook
     versionCheckHook
-  ];
-
-  disabledTestPaths = [
-    "qtpy/"
-    "contrib/win32"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ "cola/inotify.py" ];
-
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
-  desktopItems = [
-    "share/applications/git-cola-folder-handler.desktop"
-    "share/applications/git-cola.desktop"
-    "share/applications/git-dag.desktop"
   ];
 
   postInstall = ''
@@ -77,6 +49,34 @@ python3Packages.buildPythonApplication rec {
     done
   '';
 
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  build-system = with python3Packages; [
+    setuptools-scm
+  ];
+
+  dependencies = with python3Packages; [
+    polib
+    pyqt6
+    qtpy
+    send2trash
+  ];
+
+  desktopItems = [
+    "share/applications/git-cola-folder-handler.desktop"
+    "share/applications/git-cola.desktop"
+    "share/applications/git-dag.desktop"
+  ];
+
+  disabledTestPaths = [
+    "qtpy/"
+    "contrib/win32"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ "cola/inotify.py" ];
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

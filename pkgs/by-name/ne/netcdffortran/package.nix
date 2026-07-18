@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  netcdf,
-  hdf5,
   curl,
   gfortran,
+  hdf5,
+  netcdf,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "netcdf-fortran";
@@ -19,25 +19,26 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ gfortran ];
+
   buildInputs = [
     netcdf
     hdf5
     curl
   ];
 
-  doCheck = true;
-
   env = {
-    FFLAGS = toString [ "-std=legacy" ];
     FCFLAGS = toString [ "-std=legacy" ];
+    FFLAGS = toString [ "-std=legacy" ];
   };
+
+  doCheck = true;
 
   meta = {
     description = "Fortran API to manipulate netcdf files";
-    mainProgram = "nf-config";
     homepage = "https://www.unidata.ucar.edu/software/netcdf/";
     license = lib.licenses.free;
     maintainers = [ lib.maintainers.bzizou ];
     platforms = lib.platforms.unix;
+    mainProgram = "nf-config";
   };
 })

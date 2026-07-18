@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bundlerEnv,
   ruby,
-  fetchFromGitHub,
 }:
 let
   version = "1.1";
   gems = bundlerEnv {
-    name = "tree-from-tags-${version}-gems";
     inherit ruby;
     gemdir = ./.;
+    name = "tree-from-tags-${version}-gems";
   };
 in
 stdenv.mkDerivation {
-  pname = "tree-from-tags";
   inherit version;
+  pname = "tree-from-tags";
 
   src = fetchFromGitHub {
     owner = "dbrock";
@@ -44,12 +44,14 @@ stdenv.mkDerivation {
   meta = {
     description = "Create file hierarchies from media tags";
     homepage = "https://www.emacswiki.org/emacs/Bongo";
-    platforms = ruby.meta.platforms;
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       livnev
       dbrock
     ];
-    license = lib.licenses.gpl2Plus;
+
+    platforms = ruby.meta.platforms;
     mainProgram = "tree-from-tags";
   };
 }

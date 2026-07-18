@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  attr,
+  bzip2,
+  cmake,
   fuse,
   fuse3,
-  bzip2,
   zlib,
-  attr,
-  cmake,
 }:
 
 stdenv.mkDerivation {
@@ -47,7 +47,6 @@ stdenv.mkDerivation {
   ++ lib.optional stdenv.hostPlatform.isLinux attr;
 
   cmakeFlags = lib.optional stdenv.hostPlatform.isDarwin "-DUSE_FUSE3=OFF";
-
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-DUSE_FUSE2";
 
   postFixup = ''
@@ -55,11 +54,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/sgan81/apfs-fuse";
     description = "FUSE driver for APFS (Apple File System)";
+    homepage = "https://github.com/sgan81/apfs-fuse";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "apfs-fuse";
     maintainers = with lib.maintainers; [ ealasu ];
     platforms = lib.platforms.unix;
+    mainProgram = "apfs-fuse";
   };
 }

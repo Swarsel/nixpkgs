@@ -1,6 +1,6 @@
 {
-  newScope,
   lib,
+  newScope,
   python3,
 }:
 
@@ -11,25 +11,11 @@ let
       inherit (self) callPackage;
     in
     {
-      callPackage = newScope self;
-
-      python3 = callPackage ./python.nix { inherit python3; };
-
-      hyperkitty = callPackage ./hyperkitty.nix { };
-
-      mailman = callPackage ./package.nix { };
-
-      mailman-hyperkitty = callPackage ./mailman-hyperkitty.nix { };
-
-      postorius = callPackage ./postorius.nix { };
-
-      web = callPackage ./web.nix { };
-
       buildEnvs =
         {
-          web ? self.web,
           mailman ? self.mailman,
           mailman-hyperkitty ? self.mailman-hyperkitty,
+          web ? self.web,
           withHyperkitty ? false,
           withLDAP ? false,
         }:
@@ -46,6 +32,7 @@ let
               ps.django-auth-ldap
             ]
           );
+
           webEnv = self.python3.withPackages (
             ps:
             [
@@ -58,6 +45,14 @@ let
             ]
           );
         };
+
+      callPackage = newScope self;
+      hyperkitty = callPackage ./hyperkitty.nix { };
+      mailman = callPackage ./package.nix { };
+      mailman-hyperkitty = callPackage ./mailman-hyperkitty.nix { };
+      postorius = callPackage ./postorius.nix { };
+      python3 = callPackage ./python.nix { inherit python3; };
+      web = callPackage ./web.nix { };
     }
   );
 

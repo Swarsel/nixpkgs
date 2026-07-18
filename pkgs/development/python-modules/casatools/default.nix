@@ -1,29 +1,29 @@
 {
   lib,
-  buildPythonPackage,
-  fetchgit,
   fetchurl,
-  common-updater-scripts,
-  curl,
-  gnugrep,
-  gnused,
-  writeShellScript,
-  cmake,
-  pkg-config,
-  swig,
-  flex,
   bison,
-  gfortran,
-  jdk,
-  setuptools,
-  wheel,
   build,
-  numpy,
+  buildPythonPackage,
   casaconfig,
   casacpp,
-  xercesc,
+  cmake,
+  common-updater-scripts,
+  curl,
+  fetchgit,
+  flex,
+  gfortran,
+  gnugrep,
+  gnused,
   grpc,
+  jdk,
+  numpy,
+  pkg-config,
   readline,
+  setuptools,
+  swig,
+  wheel,
+  writeShellScript,
+  xercesc,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "casatools";
@@ -36,9 +36,12 @@ buildPythonPackage (finalAttrs: {
     fetchSubmodules = false;
   };
 
-  sourceRoot = "${finalAttrs.src.name}/casatools";
-
-  format = "pyproject";
+  postPatch = ''
+    mkdir -p scripts/java
+    cp ${finalAttrs.xml_jar} scripts/java/${finalAttrs.jarName}
+    echo "${finalAttrs.version} ${finalAttrs.version}" > version.txt
+    sed -i 's/def compute_version():/def compute_version():\n    return "${finalAttrs.version}"\ndef _compute_version_orig():/' setup.py
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -54,8 +57,6 @@ buildPythonPackage (finalAttrs: {
     build
   ];
 
-  dontConfigure = true;
-
   buildInputs = [
     casacpp
     xercesc
@@ -67,22 +68,17 @@ buildPythonPackage (finalAttrs: {
     casaconfig
   ];
 
-  jarName = "xml-casa-assembly-1.88.jar";
-
-  xml_jar = fetchurl {
-    url = "http://casa.nrao.edu/download/devel/xml-casa/java/${finalAttrs.jarName}";
-    hash = "sha256-UJCiXLXAe7Prm1qGXJ9jbuZcgKhPTSrU8qnf4C5Goxs="; # xml-jar
-  };
-
-  postPatch = ''
-    mkdir -p scripts/java
-    cp ${finalAttrs.xml_jar} scripts/java/${finalAttrs.jarName}
-    echo "${finalAttrs.version} ${finalAttrs.version}" > version.txt
-    sed -i 's/def compute_version():/def compute_version():\n    return "${finalAttrs.version}"\ndef _compute_version_orig():/' setup.py
-  '';
-
   # Tests require a full CASA data directory and network access
   doCheck = false;
+  dontConfigure = true;
+  format = "pyproject";
+  jarName = "xml-casa-assembly-1.88.jar";
+  sourceRoot = "${finalAttrs.src.name}/casatools";
+
+  xml_jar = fetchurl {
+    hash = "sha256-UJCiXLXAe7Prm1qGXJ9jbuZcgKhPTSrU8qnf4C5Goxs="; # xml-jar
+    url = "http://casa.nrao.edu/download/devel/xml-casa/java/${finalAttrs.jarName}";
+  };
 
   passthru.updateScript = writeShellScript "update-casatools" ''
     set -euo pipefail
@@ -107,7 +103,7 @@ buildPythonPackage (finalAttrs: {
     description = "Python interface to core radio astronomy data processing routines";
     homepage = "https://casa.nrao.edu/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ kiranshila ];
+    platforms = lib.platforms.unix;
   };
 })

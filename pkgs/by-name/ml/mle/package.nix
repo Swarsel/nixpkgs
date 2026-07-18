@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pcre2,
-  uthash,
+  installShellFiles,
   lua5_4,
   makeWrapper,
-  installShellFiles,
+  pcre2,
+  uthash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,18 +40,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  installFlags = [ "prefix=${placeholder "out"}" ];
-
   postInstall = ''
     installManPage mle.1
   '';
+
+  installFlags = [ "prefix=${placeholder "out"}" ];
 
   meta = {
     description = "Small, flexible, terminal-based text editor";
     homepage = "https://github.com/adsr/mle";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ adsr ];
+    platforms = lib.platforms.unix;
     mainProgram = "mle";
   };
 })

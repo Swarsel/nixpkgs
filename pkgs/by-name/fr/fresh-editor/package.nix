@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  gitMinimal,
   gzip,
   makeBinaryWrapper,
-  pkg-config,
-  openssl,
-  gitMinimal,
-  python3,
   nix-update-script,
+  openssl,
+  pkg-config,
+  python3,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,15 +22,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-fVBDjcX0AjUTH+vKV5H4NYmknJYfHNHRizuzjQTHYpA=";
   };
 
-  cargoHash = "sha256-bsIyf63U7/GNZnCD8g6RBykCiArwlD5v1YhrZNsf1is=";
-
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     gzip
     makeBinaryWrapper
     pkg-config
   ];
+
+  buildInputs = [
+    openssl
+  ];
+
+  cargoHash = "sha256-bsIyf63U7/GNZnCD8g6RBykCiArwlD5v1YhrZNsf1is=";
+
+  preBuild = ''
+    mkdir -p $out/share/fresh-editor/plugins/
+  '';
 
   nativeCheckInputs = [
     python3
@@ -38,13 +44,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rustPlatform.bindgenHook
   ];
 
-  buildInputs = [
-    openssl
+  # Due to issues with incorrect import paths with the actual app, I have disabled the checks below. Need to report upstream.
+  checkFlags = [
+    "--skip=e2e::"
+    "--skip=services::plugins::embedded::tests::test_extract_plugins"
   ];
-
-  preBuild = ''
-    mkdir -p $out/share/fresh-editor/plugins/
-  '';
 
   postInstall = ''
     wrapProgram $out/bin/${finalAttrs.meta.mainProgram} \
@@ -53,21 +57,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rm -rf $out/bin/fresh.dSYM
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   # Tests create a local http server to check update functionality
   __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
-  # Due to issues with incorrect import paths with the actual app, I have disabled the checks below. Need to report upstream.
-  checkFlags = [
-    "--skip=e2e::"
-    "--skip=services::plugins::embedded::tests::test_extract_plugins"
-  ];
   cargoTestFlags = [
     "--lib"
     "--bins"
   ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -76,15 +75,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/sinelaw/fresh";
     changelog = "https://github.com/sinelaw/fresh/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
+
+    sourceProvenance = with lib.sourceTypes; [
+      fromSource
+    ];
+
     maintainers = with lib.maintainers; [
       chillcicada
       dwt
       randoneering
     ];
-    mainProgram = "fresh";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [
-      fromSource
-    ];
+    mainProgram = "fresh";
   };
 })

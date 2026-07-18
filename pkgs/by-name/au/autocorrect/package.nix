@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,6 +22,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "-p"
     "autocorrect-cli"
   ];
+
   cargoTestFlags = [
     "-p"
     "autocorrect-cli"
@@ -31,10 +32,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Linter and formatter for help you improve copywriting, to correct spaces, punctuations between CJK (Chinese, Japanese, Korean)";
-    mainProgram = "autocorrect";
     homepage = "https://huacnlee.github.io/autocorrect";
     changelog = "https://github.com/huacnlee/autocorrect/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ definfo ];
+    mainProgram = "autocorrect";
   };
 })

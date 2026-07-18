@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  portaudio,
   boost,
   ganv,
   gtkmm2,
   libjack2,
   lilv,
+  meson,
+  ninja,
   pkg-config,
+  portaudio,
   python3,
   raul,
   sord,
   sratom,
   suil,
-  meson,
-  ninja,
 }:
 
 stdenv.mkDerivation {
@@ -28,6 +28,8 @@ stdenv.mkDerivation {
     rev = "bbdab98ed282291b6e29a944359c360c9cca127e";
     hash = "sha256-BllWeVmEkHQaZD9Ba7H0JMRlxVROJ8pkIiC2VXYiweA=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -50,20 +52,18 @@ stdenv.mkDerivation {
     suil
   ];
 
-  strictDeps = true;
-
   # lv2specgen.py is not packaged in lv2 but required to build docs
   mesonFlags = [ "-Ddocs=disabled" ];
-
-  pythonPath = [
-    python3
-    python3.pkgs.rdflib
-  ];
 
   postInstall = ''
     wrapPythonProgramsIn "$out/bin" "$out ''${pythonPath[*]}"
     wrapProgram "$out/bin/ingen" --set INGEN_UI_PATH "$out/share/ingen/ingen_gui.ui"
   '';
+
+  pythonPath = [
+    python3
+    python3.pkgs.rdflib
+  ];
 
   meta = {
     description = "Modular audio processing system using JACK and LV2 or LADSPA plugins";

@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   coreutils,
   jq,
+  stdenvNoCC,
 }:
 
 /**
@@ -42,20 +42,12 @@
 assert builtins.langVersion >= 5;
 
 stdenvNoCC.mkDerivation {
-  name = "closure-info";
-
-  __structuredAttrs = true;
-
-  exportReferencesGraph.closure = rootPaths;
-
-  preferLocalBuild = true;
-
   nativeBuildInputs = [
     coreutils
     jq
   ];
 
-  empty = rootPaths == [ ];
+  __structuredAttrs = true;
 
   buildCommand = ''
     out=''${outputs[out]}
@@ -72,4 +64,9 @@ stdenvNoCC.mkDerivation {
     fi
 
   '';
+
+  empty = rootPaths == [ ];
+  exportReferencesGraph.closure = rootPaths;
+  name = "closure-info";
+  preferLocalBuild = true;
 }

@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-WdYi8EVxQ6xPtld8JyZlUmgpxroevBehtkRANovMh2E=";
   };
 
-  dontBuild = true;
-
   buildInputs = [ guile ];
 
   installPhase = ''
@@ -26,12 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "System information fetcher written in GNU Guile Scheme";
     homepage = "https://github.com/KikyTokamuro/fetch.scm";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ vel ];
+    platforms = lib.platforms.all;
     mainProgram = "fetch-scm";
   };
 })

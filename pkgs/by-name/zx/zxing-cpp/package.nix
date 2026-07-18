@@ -1,11 +1,11 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
-  gitUpdater,
-  python3,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  gitUpdater,
   libzint,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,15 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
     tests = {
       inherit (python3.pkgs) zxing-cpp;
     };
+
     updateScript = gitUpdater {
       rev-prefix = "v";
     };
   };
 
   meta = {
-    homepage = "https://github.com/zxing-cpp/zxing-cpp";
-    changelog = "https://github.com/zxing-cpp/zxing-cpp/releases/tag/${finalAttrs.src.rev}";
     description = "C++ port of zxing (a Java barcode image processing library)";
+
     longDescription = ''
       ZXing-C++ ("zebra crossing") is an open-source, multi-format 1D/2D barcode
       image processing library implemented in C++.
@@ -56,6 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
       and performance. It can both read and write barcodes in a number of
       formats.
     '';
+
+    homepage = "https://github.com/zxing-cpp/zxing-cpp";
+    changelog = "https://github.com/zxing-cpp/zxing-cpp/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lukegb ];
     platforms = lib.platforms.unix;

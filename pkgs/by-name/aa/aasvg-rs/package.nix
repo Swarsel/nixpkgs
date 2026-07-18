@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -10,8 +10,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    pname = "aasvg-cli";
     hash = "sha256-0qGCXHSCTg2yXLxREOfY7lOA3ZQCNFvST6GTBIsG/f4=";
+    pname = "aasvg-cli";
   };
 
   cargoHash = "sha256-zl3IPKKG738cr1Au4Vw9SRstgOp57hM/JhPRNl0VsII=";

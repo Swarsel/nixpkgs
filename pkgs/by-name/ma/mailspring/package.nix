@@ -1,17 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildNpmPackage,
   callPackage,
-  fetchFromGitHub,
-
+  electron_41,
+  html-tidy,
   makeBinaryWrapper,
   pkg-config,
   wrapGAppsHook3,
   zip,
-
-  electron_41,
-  html-tidy,
-
   # Command line arguments which are always set e.g "--password-store=kwallet6"
   commandLineArgs ? "",
 }:
@@ -36,23 +33,24 @@ let
   mailspring-sync = callPackage ./mailsync.nix { inherit src version; };
 
   mailspring-app = buildNpmPackage {
-    pname = "mailspring-app";
     inherit version src patches;
+    pname = "mailspring-app";
     postPatch = "cd app"; # we don't use sourceRoot so that we don't have to make the patch relative to it
     npmDepsHash = "sha256-/caWmbN4Sl3DVPLXSaXrCHEyRsk/p3FwDqSZ7lfNgUk=";
-    dontNpmBuild = true;
     env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
-    npmFlags = [ "--ignore-scripts" ];
-
-    makeCacheWritable = true;
     installPhase = ''
       cp -r . "$out"
     '';
 
+    dontNpmBuild = true;
+    makeCacheWritable = true;
+    npmFlags = [ "--ignore-scripts" ];
+
     meta = {
       description = "Node dependencies for the Mailspring electron frontend";
       license = lib.licenses.gpl3Plus;
+
       platforms = [
         "x86_64-linux"
         "aarch64-linux"
@@ -62,10 +60,13 @@ let
   };
 in
 buildNpmPackage (finalAttrs: {
-  pname = "mailspring";
   inherit version src patches;
+  pname = "mailspring";
 
-  npmDepsHash = "sha256-nHKFuTdk3qbAiSHksSo++mc8TMasspuym7MYxjuTTHI=";
+  # Remove the postinstall script to stop it from downloading a recompiled mailspring-sync binary
+  postPatch = ''
+    echo "" > scripts/postinstall.js
+  '';
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -74,14 +75,8 @@ buildNpmPackage (finalAttrs: {
     zip
   ];
 
-  npmFlags = [ "--ignore-scripts" ];
-
+  npmDepsHash = "sha256-nHKFuTdk3qbAiSHksSo++mc8TMasspuym7MYxjuTTHI=";
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  # Remove the postinstall script to stop it from downloading a recompiled mailspring-sync binary
-  postPatch = ''
-    echo "" > scripts/postinstall.js
-  '';
 
   preConfigure = ''
     chmod +w app
@@ -138,22 +133,28 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  npmFlags = [ "--ignore-scripts" ];
+
   meta = {
     description = "Beautiful, fast and maintained fork of Nylas Mail by one of the original authors";
-    downloadPage = "https://github.com/Foundry376/Mailspring/releases";
-    changelog = "https://github.com/Foundry376/Mailspring/releases/tag/${finalAttrs.version}";
-    homepage = "https://getmailspring.com";
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       Mailspring is an open-source mail client forked from Nylas Mail and built with Electron.
       Mailspring's sync engine is open source and written in C++ and C. It runs locally on your computer.
     '';
-    mainProgram = "mailspring";
+
+    homepage = "https://getmailspring.com";
+    changelog = "https://github.com/Foundry376/Mailspring/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ wrench-exile-legacy ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "mailspring";
+    downloadPage = "https://github.com/Foundry376/Mailspring/releases";
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchYarnDeps,
   fetchFromGitHub,
-  yarnConfigHook,
-  npmHooks,
-  nodejs,
+  fetchYarnDeps,
   git,
   nix-update-script,
+  nodejs,
+  npmHooks,
+  yarnConfigHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "auto-changelog";
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ticQpDOQieLaWXfavDKIH0jSenRimp5QYeJy42BjpKw=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-NGQbzogQi0XbeGd7fYNyw0i9Yo9j91CfeTdO7nhq4Yw=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     npmHooks.npmInstallHook
@@ -32,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   nativeCheckInputs = [ git ];
 
   checkPhase = ''
@@ -41,6 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-NGQbzogQi0XbeGd7fYNyw0i9Yo9j91CfeTdO7nhq4Yw=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -48,7 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/cookpete/auto-changelog";
     changelog = "https://github.com/cookpete/auto-changelog/blob/master/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "auto-changelog";
     maintainers = [ ];
+    mainProgram = "auto-changelog";
   };
 })

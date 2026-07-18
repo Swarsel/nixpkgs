@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   # dependencies
   eth-hash,
   # nativeCheckInputs
   hypothesis,
-  pytestCheckHook,
   pytest-xdist,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "eth-bloom";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -23,10 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-WrBLFICPyb+1bIitHZ172A1p1VYqLR75YfJ5/IBqDr8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ eth-hash ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
@@ -34,12 +29,16 @@ buildPythonPackage rec {
   ]
   ++ eth-hash.optional-dependencies.pycryptodome;
 
-  pythonImportsCheck = [ "eth_bloom" ];
+  build-system = [ setuptools ];
+  dependencies = [ eth-hash ];
 
   disabledTests = [
     # not testable in nix build
     "test_install_local_wheel"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "eth_bloom" ];
 
   meta = {
     description = "Implementation of the Ethereum bloom filter";

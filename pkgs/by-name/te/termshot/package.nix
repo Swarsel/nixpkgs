@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,17 +18,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-fLbRo8f2tNN1vZGsriZ8cL4gU+wa/SfCUBrDLGXd70M=";
+  checkFlags = [ "-skip=^TestPtexec$" ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
     "-X github.com/homeport/termshot/internal/cmd.version=${finalAttrs.version}"
   ];
-
-  checkFlags = [ "-skip=^TestPtexec$" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  motif,
   libxpm,
   libxt,
+  motif,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-WFGqclLa2VIIRSkXNkAjJWLexKfEQCCfGW1T1KWoB00=";
   };
 
-  hardeningDisable = [ "format" ];
-
   buildInputs = [
     motif
     libxpm
@@ -26,7 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # the linux config works fine on darwin too!
   buildFlags = lib.optional (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin) "linux";
-
   env.NIX_CFLAGS_COMPILE = "-DBUILD_UNTESTED_NEDIT -L${motif}/lib";
 
   installPhase = ''
@@ -34,10 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
     cp -p source/nedit source/nc $out/bin
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "https://sourceforge.net/projects/nedit";
     description = "Fast, compact Motif/X11 plain text editor";
-    platforms = with lib.platforms; linux ++ darwin;
+    homepage = "https://sourceforge.net/projects/nedit";
     license = lib.licenses.gpl2;
+    platforms = with lib.platforms; linux ++ darwin;
   };
 })

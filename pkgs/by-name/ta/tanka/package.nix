@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,22 +16,11 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-jfDaS4kHHfX94dK1pCVyPdesYTZP/9Vzd1y2Sv7Snzw=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-gcoUkMygjVVTIaf5Y77ipViaB44/r1MNjJyaUiLafLQ=";
-
-  doCheck = false;
   # Required for versions >= 0.28 as they introduce a gowork.sum file. This is only used for tests so we can safely disable GOWORK
   env.GOWORK = "off";
-
-  subPackages = [ "cmd/tk" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-extldflags '-static'"
-    "-X github.com/grafana/tanka/pkg/tanka.CurrentVersion=v${finalAttrs.version}"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
+  doCheck = false;
 
   postInstall = ''
     echo "complete -C $out/bin/tk tk" > tk.bash
@@ -60,6 +49,15 @@ buildGoModule (finalAttrs: {
       --fish tk.fish \
       --zsh tk.zsh
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-extldflags '-static'"
+    "-X github.com/grafana/tanka/pkg/tanka.CurrentVersion=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/tk" ];
 
   meta = {
     description = "Flexible, reusable and concise configuration for Kubernetes";

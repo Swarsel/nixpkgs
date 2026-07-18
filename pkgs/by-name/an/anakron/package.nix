@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   mkfontscale,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -35,9 +35,11 @@ stdenvNoCC.mkDerivation rec {
     homepage = "https://github.com/molarmanful/ANAKRON";
     changelog = "https://github.com/molarmanful/ANAKRON/releases/tag/v${version}";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       ejiektpobehuk
     ];
+
+    platforms = lib.platforms.all;
   };
 }

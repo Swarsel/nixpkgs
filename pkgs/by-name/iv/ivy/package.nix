@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -9,26 +9,26 @@ buildGoModule (finalAttrs: {
   version = "0.4.0";
 
   src = fetchFromGitHub {
-    rev = "v${finalAttrs.version}";
     owner = "robpike";
     repo = "ivy";
+    rev = "v${finalAttrs.version}";
     hash = "sha256-O+CQUS2EYPnRf8AbL2arhF7m5vhPUnDFXJsYst9/Eqg=";
   };
 
   vendorHash = null;
-
-  subPackages = [ "." ];
 
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "." ];
+
   meta = {
-    homepage = "https://github.com/robpike/ivy";
     description = "APL-like calculator";
-    mainProgram = "ivy";
+    homepage = "https://github.com/robpike/ivy";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ smasher164 ];
+    mainProgram = "ivy";
   };
 })

@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -14,30 +14,27 @@ in
 {
   options.services.tranquil-pds = {
     enable = lib.mkEnableOption "tranquil-pds AT Protocol personal data server";
-
     package = mkPackageOption pkgs "tranquil-pds" { };
 
-    user = mkOption {
-      type = types.str;
-      default = "tranquil-pds";
-      description = "User under which tranquil-pds runs";
-    };
-
-    group = mkOption {
-      type = types.str;
-      default = "tranquil-pds";
-      description = "Group under which tranquil-pds runs";
-    };
-
     dataDir = mkOption {
-      type = types.str;
       default = "/var/lib/tranquil-pds";
       description = "Working directory for tranquil-pds. Also expected to be used for data (blobs)";
+      type = types.str;
+    };
+
+    database.createLocally = mkOption {
+      default = false;
+
+      description = ''
+        Create the postgres database and user on the local host.
+      '';
+
+      type = types.bool;
     };
 
     environmentFiles = mkOption {
-      type = types.listOf types.path;
       default = [ ];
+
       description = ''
         File to load environment variables from. Loaded variables override
         values set in {option}`environment`.
@@ -49,77 +46,17 @@ in
         openssl rand -base64 48
         ```
       '';
+
+      type = types.listOf types.path;
     };
 
-    database.createLocally = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Create the postgres database and user on the local host.
-      '';
+    group = mkOption {
+      default = "tranquil-pds";
+      description = "Group under which tranquil-pds runs";
+      type = types.str;
     };
 
     settings = mkOption {
-      type = types.submodule {
-        freeformType = settingsFormat.type;
-
-        options = {
-          server = {
-            host = mkOption {
-              type = types.str;
-              default = "127.0.0.1";
-              description = "Host for tranquil-pds to listen on";
-            };
-
-            port = mkOption {
-              type = types.int;
-              default = 3000;
-              description = "Port for tranquil-pds to listen on";
-            };
-
-            hostname = mkOption {
-              type = types.str;
-              default = "";
-              example = "pds.example.com";
-              description = "The public-facing hostname of the PDS";
-            };
-
-            max_blob_size = mkOption {
-              type = types.int;
-              default = 10737418240; # 10 GiB
-              description = "Maximum allowed blob size in bytes.";
-            };
-          };
-
-          frontend = {
-            enabled =
-              lib.mkEnableOption "serving the frontend from the backend. Disable to serve the frontend manually"
-              // {
-                default = true;
-              };
-
-            dir = mkPackageOption pkgs "tranquil-pds-frontend" { };
-          };
-
-          storage = {
-            path = mkOption {
-              type = types.path;
-              default = "${cfg.dataDir}/blobs";
-              defaultText = "\${cfg.dataDir}/blobs";
-              description = "Directory for storing blobs";
-            };
-          };
-          tranquil_store = {
-            data_dir = mkOption {
-              type = types.path;
-              default = "${cfg.dataDir}/store";
-              defaultText = "\${cfg.dataDir}/store";
-              description = "Directory for tranquil-store files";
-            };
-          };
-        };
-      };
-
       description = ''
         Configuration options to set for the service. Secrets should be
         specified using {option}`environmentFile`.
@@ -127,6 +64,73 @@ in
         Refer to <https://tangled.org/tranquil.farm/tranquil-pds/blob/main/example.toml>
         for available configuration options.
       '';
+
+      type = types.submodule {
+        options = {
+          frontend = {
+            dir = mkPackageOption pkgs "tranquil-pds-frontend" { };
+
+            enabled =
+              lib.mkEnableOption "serving the frontend from the backend. Disable to serve the frontend manually"
+              // {
+                default = true;
+              };
+          };
+
+          server = {
+            host = mkOption {
+              default = "127.0.0.1";
+              description = "Host for tranquil-pds to listen on";
+              type = types.str;
+            };
+
+            hostname = mkOption {
+              default = "";
+              description = "The public-facing hostname of the PDS";
+              example = "pds.example.com";
+              type = types.str;
+            };
+
+            max_blob_size = mkOption {
+              default = 10737418240; # 10 GiB
+              description = "Maximum allowed blob size in bytes.";
+              type = types.int;
+            };
+
+            port = mkOption {
+              default = 3000;
+              description = "Port for tranquil-pds to listen on";
+              type = types.int;
+            };
+          };
+
+          storage = {
+            path = mkOption {
+              default = "${cfg.dataDir}/blobs";
+              defaultText = "\${cfg.dataDir}/blobs";
+              description = "Directory for storing blobs";
+              type = types.path;
+            };
+          };
+
+          tranquil_store = {
+            data_dir = mkOption {
+              default = "${cfg.dataDir}/store";
+              defaultText = "\${cfg.dataDir}/store";
+              description = "Directory for tranquil-store files";
+              type = types.path;
+            };
+          };
+        };
+
+        freeformType = settingsFormat.type;
+      };
+    };
+
+    user = mkOption {
+      default = "tranquil-pds";
+      description = "User under which tranquil-pds runs";
+      type = types.str;
     };
   };
 
@@ -136,10 +140,11 @@ in
         services.postgresql = {
           enable = true;
           ensureDatabases = [ cfg.user ];
+
           ensureUsers = [
             {
-              name = cfg.user;
               ensureDBOwnership = true;
+              name = cfg.user;
             }
           ];
         };
@@ -148,34 +153,12 @@ in
           lib.mkDefault "postgresql:///${cfg.user}?host=/run/postgresql";
 
         systemd.services.tranquil-pds = {
-          requires = [ "postgresql.service" ];
           after = [ "postgresql.service" ];
+          requires = [ "postgresql.service" ];
         };
       })
 
       {
-        users.users.${cfg.user} = {
-          isSystemUser = true;
-          inherit (cfg) group;
-          home = cfg.dataDir;
-        };
-
-        users.groups.${cfg.group} = { };
-
-        systemd.tmpfiles.settings."tranquil-pds" =
-          lib.genAttrs
-            [
-              cfg.dataDir
-              cfg.settings.storage.path
-              cfg.settings.tranquil_store.data_dir
-            ]
-            (_: {
-              d = {
-                mode = "0750";
-                inherit (cfg) user group;
-              };
-            });
-
         environment.etc = {
           "tranquil-pds/config.toml".source =
             let
@@ -188,60 +171,86 @@ in
         };
 
         systemd.services.tranquil-pds = {
-          description = "Tranquil PDS - ATProtocol Personal Data Server";
           after = [ "network-online.target" ];
-          wants = [ "network-online.target" ];
-          wantedBy = [ "multi-user.target" ];
+          description = "Tranquil PDS - ATProtocol Personal Data Server";
 
           serviceConfig = {
-            User = cfg.user;
-            Group = cfg.group;
-            UMask = "0077";
+            CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
+            EnvironmentFile = cfg.environmentFiles;
             ExecStart = lib.getExe cfg.package;
-            Restart = "on-failure";
-            RestartSec = 5;
+            Group = cfg.group;
+            LockPersonality = true;
+            MemoryDenyWriteExecute = true;
+            NoNewPrivileges = true;
+            PrivateDevices = true;
+            PrivateMounts = true;
+            PrivateTmp = true;
+            PrivateUsers = true;
+            ProcSubset = "pid";
+            ProtectClock = true;
+            ProtectControlGroups = true;
+            ProtectHome = true;
+            ProtectHostname = true;
+            ProtectKernelLogs = true;
+            ProtectKernelModules = true;
+            ProtectKernelTunables = true;
+            ProtectProc = "invisible";
+            ProtectSystem = "strict";
 
-            WorkingDirectory = cfg.dataDir;
-            StateDirectory = "tranquil-pds";
             ReadWritePaths = [
               cfg.settings.storage.path
             ];
 
-            EnvironmentFile = cfg.environmentFiles;
+            RemoveIPC = true;
+            Restart = "on-failure";
+            RestartSec = 5;
 
-            CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
-            ProtectProc = "invisible";
-            ProcSubset = "pid";
-            NoNewPrivileges = true;
-            ProtectSystem = "strict";
-            ProtectHome = true;
-            PrivateTmp = true;
-            PrivateDevices = true;
-            PrivateUsers = true;
-            ProtectHostname = true;
-            ProtectClock = true;
-            ProtectKernelTunables = true;
-            ProtectKernelModules = true;
-            ProtectKernelLogs = true;
-            ProtectControlGroups = true;
             RestrictAddressFamilies = [
               "AF_INET"
               "AF_INET6"
               "AF_UNIX"
             ];
+
             RestrictNamespaces = true;
-            LockPersonality = true;
-            MemoryDenyWriteExecute = true;
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
-            RemoveIPC = true;
-            PrivateMounts = true;
+            StateDirectory = "tranquil-pds";
+            SystemCallArchitectures = "native";
+
             SystemCallFilter = [
               "@system-service"
               "~@privileged @resources"
             ];
-            SystemCallArchitectures = "native";
+
+            UMask = "0077";
+            User = cfg.user;
+            WorkingDirectory = cfg.dataDir;
           };
+
+          wantedBy = [ "multi-user.target" ];
+          wants = [ "network-online.target" ];
+        };
+
+        systemd.tmpfiles.settings."tranquil-pds" =
+          lib.genAttrs
+            [
+              cfg.dataDir
+              cfg.settings.storage.path
+              cfg.settings.tranquil_store.data_dir
+            ]
+            (_: {
+              d = {
+                inherit (cfg) user group;
+                mode = "0750";
+              };
+            });
+
+        users.groups.${cfg.group} = { };
+
+        users.users.${cfg.user} = {
+          inherit (cfg) group;
+          home = cfg.dataDir;
+          isSystemUser = true;
         };
       }
     ]

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -17,15 +17,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-quIQXrJ/ANOyh76Q3ZErUamLDfJpqPMYSZe9wUyS0Pg=";
+  # Most of the tests are failing.
+  doCheck = false;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-
-  doInstallCheck = true;
-
-  # Most of the tests are failing.
-  doCheck = false;
 
   meta = {
     description = "Universal MCP Gateway - Single-port multiplexing with Meta-MCP for ~95% context token savings";

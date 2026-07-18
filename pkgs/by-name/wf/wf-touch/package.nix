@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
-  meson,
   cmake,
-  ninja,
-  glm,
   doctest,
+  fetchpatch,
+  glm,
+  meson,
+  ninja,
+  pkg-config,
   unstableGitUpdater,
 }:
 
@@ -23,6 +23,17 @@ stdenv.mkDerivation {
     hash = "sha256-MjsYeKWL16vMKETtKM5xWXszlYUOEk3ghwYI85Lv4SE=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  # Patch wf-touch to generate pkgconfig
+  patches = fetchpatch {
+    hash = "sha256-3YK5YnO0NCwshs1reJFjJ9tIEhTNSS0fPWUDFo3XA3s=";
+    url = "https://raw.githubusercontent.com/horriblename/hyprgrass/736119f828eecaed2deaae1d6ff1f50d6dabaaba/nix/wf-touch.patch";
+  };
+
   nativeBuildInputs = [
     meson
     pkg-config
@@ -31,22 +42,8 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ doctest ];
-
   propagatedBuildInputs = [ glm ];
-
   mesonBuildType = "release";
-
-  # Patch wf-touch to generate pkgconfig
-  patches = fetchpatch {
-    url = "https://raw.githubusercontent.com/horriblename/hyprgrass/736119f828eecaed2deaae1d6ff1f50d6dabaaba/nix/wf-touch.patch";
-    hash = "sha256-3YK5YnO0NCwshs1reJFjJ9tIEhTNSS0fPWUDFo3XA3s=";
-  };
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

@@ -1,28 +1,26 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-path";
   version = "0.1.3";
-  pyproject = true;
 
   # no tags on GitHub
   src = fetchPypi {
-    pname = "python_path";
     inherit version;
     hash = "sha256-ti2arB2k2u4/A27QiFMs+LaGZtOqEDVn3CK2U5MWyLM=";
+    pname = "python_path";
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "python_path" ];
 
   # upstream has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "python_path" ];
 
   meta = {
     description = "Clean way to import scripts on other folders via a context manager";

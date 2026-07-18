@@ -1,6 +1,6 @@
 {
-  libdisplay-info,
   fetchFromGitLab,
+  libdisplay-info,
 }:
 
 libdisplay-info.overrideAttrs (
@@ -8,11 +8,11 @@ libdisplay-info.overrideAttrs (
     version = "0.2.0";
 
     src = fetchFromGitLab {
-      domain = "gitlab.freedesktop.org";
       owner = "emersion";
       repo = "libdisplay-info";
       rev = finalAttrs.version;
       sha256 = "sha256-6xmWBrPHghjok43eIDGeshpUEQTuwWLXNHg7CnBUt3Q=";
+      domain = "gitlab.freedesktop.org";
     };
   }
 )

@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildDotnetModule,
-  dotnet-sdk_9,
   dotnet-runtime_9,
+  dotnet-sdk_9,
   nix-update-script,
 }:
 buildDotnetModule rec {
@@ -18,9 +18,12 @@ buildDotnetModule rec {
     fetchSubmodules = true;
   };
 
-  dotnet-sdk = dotnet-sdk_9;
+  doCheck = false; # The same.
   dotnet-runtime = dotnet-runtime_9;
+  dotnet-sdk = dotnet-sdk_9;
   executables = [ "TShock.Server" ];
+  nugetDeps = ./deps.json;
+  nugetSource = "https://api.nuget.org/v3/index.json";
 
   projectFile = [
     "TShockAPI/TShockAPI.csproj"
@@ -30,16 +33,11 @@ buildDotnetModule rec {
     "TShockPluginManager/TShockPluginManager.csproj"
   ]; # Excluding tests because they can't build for some reason
 
-  doCheck = false; # The same.
-
-  nugetSource = "https://api.nuget.org/v3/index.json";
-  nugetDeps = ./deps.json;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/Pryaxis/TShock";
     description = "Modded server software for Terraria, providing a plugin system and inbuilt tools such as anti-cheat, server-side characters, groups, permissions, and item bans";
+    homepage = "https://github.com/Pryaxis/TShock";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.proggerx ];
     mainProgram = "TShock.Server";

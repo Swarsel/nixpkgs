@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   expat,
-  pkg-config,
-  netsurf-buildsystem,
+  fetchpatch,
+  libhubbub,
   libparserutils,
   libwapcaplet,
-  libhubbub,
+  netsurf-buildsystem,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,14 +47,16 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/projects/libdom/";
+    inherit (netsurf-buildsystem.meta) maintainers platforms;
     description = "Document Object Model library for netsurf browser";
+
     longDescription = ''
       LibDOM is an implementation of the W3C DOM, written in C. It is currently
       in development for use with NetSurf and is intended to be suitable for use
       in other projects under a more permissive license.
     '';
+
+    homepage = "https://www.netsurf-browser.org/projects/libdom/";
     license = lib.licenses.mit;
-    inherit (netsurf-buildsystem.meta) maintainers platforms;
   };
 })

@@ -20,35 +20,48 @@ let
   collectorIsDisabled = final: elem final cfg.disabledCollectors;
 in
 {
-  port = 9100;
   extraOpts = {
-    enabledCollectors = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "systemd" ];
-      description = ''
-        Collectors to enable. The collectors listed here are enabled in addition to the default ones.
-      '';
-    };
     disabledCollectors = mkOption {
-      type = types.listOf types.str;
       default = [ ];
-      example = [ "timex" ];
+
       description = ''
         Collectors to disable which are enabled by default.
       '';
+
+      example = [ "timex" ];
+      type = types.listOf types.str;
+    };
+
+    enabledCollectors = mkOption {
+      default = [ ];
+
+      description = ''
+        Collectors to enable. The collectors listed here are enabled in addition to the default ones.
+      '';
+
+      example = [ "systemd" ];
+      type = types.listOf types.str;
     };
   };
+
+  port = 9100;
+
   serviceOpts = {
     serviceConfig = {
       DynamicUser = false;
-      RuntimeDirectory = "prometheus-node-exporter";
+
       ExecStart = ''
         ${pkgs.prometheus-node-exporter}/bin/node_exporter \
           ${concatMapStringsSep " " (x: "--collector." + x) cfg.enabledCollectors} \
           ${concatMapStringsSep " " (x: "--no-collector." + x) cfg.disabledCollectors} \
           --web.listen-address ${cfg.listenAddress}:${toString cfg.port} ${concatStringsSep " " cfg.extraFlags}
       '';
+
+      # The timex collector needs to access clock APIs
+      ProtectClock = collectorIsDisabled "timex";
+      # Allow space monitoring under /home
+      ProtectHome = true;
+
       RestrictAddressFamilies =
         optionals (collectorIsEnabled "logind" || collectorIsEnabled "systemd") [
           # needs access to dbus via unix sockets (logind/systemd)
@@ -61,10 +74,8 @@ in
               # needs netlink sockets for wireless collector
               "AF_NETLINK"
             ];
-      # The timex collector needs to access clock APIs
-      ProtectClock = collectorIsDisabled "timex";
-      # Allow space monitoring under /home
-      ProtectHome = true;
+
+      RuntimeDirectory = "prometheus-node-exporter";
     };
   };
 }

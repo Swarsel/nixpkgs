@@ -9,7 +9,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "luminaut";
   version = "0.13.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "luminaut-org";
@@ -18,7 +17,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-TPb/Rk1cLCwItfsv/R2qyixCXA8aNnltiGePjdpO6GM=";
   };
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = with python3.pkgs; [
+    moto
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [ hatchling ];
 
@@ -38,14 +41,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tqdm
   ]);
 
-  nativeCheckInputs = with python3.pkgs; [
-    moto
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "luminaut" ];
-
   disabledTests = [
     # Tests require setting a region
     "test_explore_region"
@@ -54,6 +49,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_skip_resource"
     "test_discover_public_ips_only_runs_if_aws_enabled"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "luminaut" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Tool to detect exposure of resources deployed in AWS";

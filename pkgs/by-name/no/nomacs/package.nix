@@ -1,27 +1,26 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   exiv2,
-  fetchFromGitHub,
-  libraw,
   kdePackages,
-  qt6,
+  libraw,
   libtiff,
   opencv4,
   pkg-config,
-  stdenv,
+  qt6,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "nomacs";
   version = "3.23.1";
-  hash = "sha256-Udc+J+AYJZviWJhPtWvtXDss7Wqm9Gc9T8KsfOkx4EE=";
 
   src = fetchFromGitHub {
+    inherit (finalAttrs) hash;
     owner = "nomacs";
     repo = "nomacs";
     rev = finalAttrs.version;
     fetchSubmodules = false; # We'll use our own
-    inherit (finalAttrs) hash;
   };
 
   outputs = [
@@ -29,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   # man pages are not installed on Darwin, see cmake/{Mac,Unix}BuildTarget.cmake
   ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ "man" ];
-
-  sourceRoot = "${finalAttrs.src.name}/ImageLounge";
 
   nativeBuildInputs = [
     cmake
@@ -69,6 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
     mv $out/nomacs.app $out/Applications/nomacs.app
     mv $out/libnomacsCore.dylib $out/lib/libnomacsCore.dylib
   '';
+
   # FIXME:
   # why can't we have nomacs look in the "standard" plugin directory???
   # None of the wrap stuff worked...
@@ -77,9 +75,13 @@ stdenv.mkDerivation (finalAttrs: {
     mv $out/lib/nomacs-plugins $out/bin/plugins
   '';
 
+  hash = "sha256-Udc+J+AYJZviWJhPtWvtXDss7Wqm9Gc9T8KsfOkx4EE=";
+  sourceRoot = "${finalAttrs.src.name}/ImageLounge";
+
   meta = {
-    homepage = "https://nomacs.org";
+    inherit (qt6.qtbase.meta) platforms;
     description = "Qt-based image viewer";
+
     longDescription = ''
       nomacs is a free, open source image viewer, which supports multiple
       platforms. You can use it for viewing all common image formats including
@@ -96,13 +98,16 @@ stdenv.mkDerivation (finalAttrs: {
       regular expression. Activating the cache allows for instantly switching
       between images.
     '';
+
+    homepage = "https://nomacs.org";
     changelog = "https://github.com/nomacs/nomacs/releases/tag/${finalAttrs.src.rev}";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "nomacs";
+
     maintainers = with lib.maintainers; [
       mindavi
       ppenguin
     ];
-    inherit (qt6.qtbase.meta) platforms;
+
+    mainProgram = "nomacs";
   };
 })

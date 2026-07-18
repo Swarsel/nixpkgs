@@ -2,12 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
   # build inputs
   cacert,
+  fetchpatch,
   libuuid,
-
   # build inputs (darwin)
   readline,
 }:
@@ -23,23 +21,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Tl/XU9Hy/VZw59S4K478EaLgE88/oTzLCe+DoVwtlcU=";
   };
 
-  buildInputs = [
-    libuuid
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    readline
-  ];
-
   patches = [
     # https://github.com/premake/premake-core/issues/2614
     (fetchpatch {
+      hash = "sha256-ZGhNUoXZbbW9ioFnAgPwypYhepoChtWF1SOCxs1WLj8=";
       name = "0001-premake5-Fix-filters-using-alias-value.patch";
       url = "https://github.com/premake/premake-core/commit/d01097bb38da6855beeef7158b8b04ab1e63249b.patch";
-      hash = "sha256-ZGhNUoXZbbW9ioFnAgPwypYhepoChtWF1SOCxs1WLj8=";
     })
 
     ./no-curl-ca.patch
   ];
+
   postPatch = ''
     substituteInPlace contrib/curl/premake5.lua \
       --replace-fail "ca = nil" "ca = '${cacert}/etc/ssl/certs/ca-bundle.crt'"
@@ -56,6 +48,19 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail SharedLib StaticLib
   '';
 
+  buildInputs = [
+    libuuid
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    readline
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString (
+    lib.optionals stdenv.cc.isClang [
+      "-Wno-error=implicit-function-declaration"
+    ]
+  );
+
   buildPhase =
     if stdenv.hostPlatform.isDarwin then
       # Error compiling the builtin zlib source, but it's not used currently
@@ -70,12 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
           -f Bootstrap.mak linux
       '';
 
-  env.NIX_CFLAGS_COMPILE = toString (
-    lib.optionals stdenv.cc.isClang [
-      "-Wno-error=implicit-function-declaration"
-    ]
-  );
-
   installPhase = ''
     install -Dm755 bin/release/premake5 $out/bin/premake5
   '';
@@ -84,15 +83,17 @@ stdenv.mkDerivation (finalAttrs: {
   setupHook = ./setup-hook.sh;
 
   meta = {
-    homepage = "https://premake.github.io";
     description = "Simple build configuration and project generation tool using lua";
-    mainProgram = "premake5";
+    homepage = "https://premake.github.io";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.sarahec ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "premake5";
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   babel,
+  buildPythonPackage,
+  hatchling,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "hatch-babel";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "NiklasRosenstein";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hatch_babel" ];
 
   meta = {

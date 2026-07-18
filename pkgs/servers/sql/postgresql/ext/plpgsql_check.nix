@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
   postgresqlTestExtension,
@@ -26,9 +26,9 @@ postgresqlBuildExtension (finalAttrs: {
     description = "Linter tool for language PL/pgSQL";
     homepage = "https://github.com/okbob/plpgsql_check";
     changelog = "https://github.com/okbob/plpgsql_check/releases/tag/v${finalAttrs.version}";
-    platforms = postgresql.meta.platforms;
     license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = postgresql.meta.platforms;
     broken = lib.versionOlder postgresql.version "14";
   };
 })

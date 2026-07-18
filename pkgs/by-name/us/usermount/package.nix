@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   dbus,
-  libnotify,
-  udisks,
   gdk-pixbuf,
+  libnotify,
+  pkg-config,
+  udisks,
 }:
 
 stdenv.mkDerivation {
@@ -21,6 +21,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     dbus
     libnotify
@@ -36,10 +37,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/tom5760/usermount";
     description = "Simple tool to automatically mount removable drives using UDisks2 and D-Bus";
-    mainProgram = "usermount";
+    homepage = "https://github.com/tom5760/usermount";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
+    mainProgram = "usermount";
   };
 }

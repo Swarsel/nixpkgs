@@ -1,11 +1,11 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
+  jdk25,
   jre,
   makeWrapper,
   nix-update-script,
-  jdk25,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,12 +16,9 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://packages.jetbrains.team/maven/p/amper/amper/org/jetbrains/kotlin/kotlin-cli/${finalAttrs.version}/kotlin-cli-${finalAttrs.version}-dist.tgz";
     hash = "sha256-De0qQ09r8ZOyTiptVsO6RD9CMnIRVaZaqoNyeJQSES8=";
   };
-  sourceRoot = ".";
-  dontBuild = true;
-  nativeBuildInputs = [ makeWrapper ];
 
   strictDeps = true;
-  __structuredAttrs = true;
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     mkdir -p $out/share/kotlin-cli
@@ -44,6 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  sourceRoot = ".";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--url=https://github.com/JetBrains/kotlin-toolchain"
@@ -54,9 +55,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Kotlin Toolchain CLI";
     homepage = "https://github.com/JetBrains/kotlin-toolchain";
     license = lib.licenses.asl20;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = [ lib.maintainers.dshatz ];
     platforms = jre.meta.platforms;
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     mainProgram = "kotlin";
   };
 })

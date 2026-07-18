@@ -1,13 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   buildPackages,
   cmake,
-  fetchFromGitHub,
   fetchpatch2,
-  lib,
   ninja,
-  stdenv,
   versionCheckHook,
-
 }:
 
 let
@@ -32,15 +31,16 @@ let
   ];
 
   quick-lint-js-build-tools = buildPackages.stdenv.mkDerivation {
-    pname = "quick-lint-js-build-tools";
     inherit version src;
+    inherit cmakeFlags;
+    pname = "quick-lint-js-build-tools";
 
     nativeBuildInputs = [
       cmake
       ninja
     ];
-    inherit cmakeFlags;
-    ninjaFlags = "quick-lint-js-build-tools";
+
+    doCheck = false;
 
     installPhase = ''
       runHook preInstall
@@ -48,17 +48,18 @@ let
       runHook postInstall
     '';
 
-    doCheck = false;
+    ninjaFlags = "quick-lint-js-build-tools";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "quick-lint-js";
   inherit version src;
+  inherit cmakeFlags;
+  pname = "quick-lint-js";
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/quick-lint/quick-lint-js/commit/a2798b35021f34bc798e2b70ec703075dd5eb7f6.patch";
       hash = "sha256-jEzFFntk94HQPNYLqU1XlwCnhaqt95Kk3TXmfqBGxBc=";
+      url = "https://github.com/quick-lint/quick-lint-js/commit/a2798b35021f34bc798e2b70ec703075dd5eb7f6.patch";
     })
   ];
 
@@ -67,14 +68,12 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
   ];
 
-  inherit cmakeFlags;
-
   doCheck = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     # Expose quick-lint-js-build-tools to nix repl as quick-lint-js.build-tools.
@@ -83,12 +82,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Find bugs in Javascript programs";
-    mainProgram = "quick-lint-js";
     homepage = "https://quick-lint-js.com";
-    downloadPage = "https://github.com/quick-lint/quick-lint-js";
     changelog = "https://github.com/quick-lint/quick-lint-js/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ratsclub ];
     platforms = lib.platforms.all;
+    mainProgram = "quick-lint-js";
+    downloadPage = "https://github.com/quick-lint/quick-lint-js";
   };
 })

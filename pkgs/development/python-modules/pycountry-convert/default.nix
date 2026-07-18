@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pycountry,
   repoze-lru,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pycountry-convert";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,7 +21,16 @@ buildPythonPackage rec {
       --replace-fail "pytest-runner" ""
   '';
 
+  propagatedBuildInputs = [
+    pycountry
+    repoze-lru
+  ];
+
+  # upstream has no tests
+  doCheck = false;
   build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "pycountry_convert" ];
 
   pythonRemoveDeps = [
     "pprintpp"
@@ -31,16 +39,6 @@ buildPythonPackage rec {
     "repoze-lru"
     "pytest-mock"
   ];
-
-  propagatedBuildInputs = [
-    pycountry
-    repoze-lru
-  ];
-
-  pythonImportsCheck = [ "pycountry_convert" ];
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "Python conversion functions between ISO country codes, countries, and continents";

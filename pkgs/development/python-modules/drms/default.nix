@@ -1,27 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  astropy,
+  buildPythonPackage,
+  # dependencies
+  numpy,
+  packaging,
+  pandas,
+  pytest-doctestplus,
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  numpy,
-  pandas,
-  packaging,
-
-  astropy,
-  pytestCheckHook,
-  pytest-doctestplus,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "drms";
   version = "0.9.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "sunpy";
@@ -29,6 +24,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-f5t59a24aD8iXa3/zikgBnJeuUnZ4cvvpJuOfc80Xcw=";
   };
+
+  nativeCheckInputs = [
+    astropy
+    pytestCheckHook
+    pytest-doctestplus
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -41,19 +44,14 @@ buildPythonPackage (finalAttrs: {
     packaging
   ];
 
-  nativeCheckInputs = [
-    astropy
-    pytestCheckHook
-    pytest-doctestplus
-  ];
+  disabledTestPaths = [ "docs/tutorial.rst" ];
 
   disabledTests = [
     "test_query_hexadecimal_strings"
     "test_jsocinfoconstants" # Need network
   ];
 
-  disabledTestPaths = [ "docs/tutorial.rst" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "drms" ];
 
   meta = {

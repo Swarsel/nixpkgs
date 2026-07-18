@@ -1,26 +1,25 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  gtk3,
   bash,
-  networkmanager,
   bluez,
   brightnessctl,
-  power-profiles-daemon,
-  gammastep,
-  pulseaudio,
   desktop-file-utils,
-  wrapGAppsHook3,
+  gammastep,
   gobject-introspection,
-  upower,
+  gtk3,
+  networkmanager,
   nix-update-script,
+  power-profiles-daemon,
+  pulseaudio,
+  python3Packages,
+  upower,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "better-control";
   version = "6.12.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "better-ecosystem";
@@ -28,10 +27,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Dt+se8eOmF8Nzm+/bnYBSIyX0XHSXV9iCPF82qXhzug=";
   };
-
-  build-system = with python3Packages; [
-    setuptools
-  ];
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -44,15 +39,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
     gtk3
   ];
 
-  # Check src/utils/dependencies.py
-  runtimeDeps = [
-    pulseaudio
-    networkmanager
-    bluez
-    brightnessctl
-    power-profiles-daemon
-    gammastep
-    upower
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
+  # Project has no tests
+  doCheck = false;
+
+  postInstall = ''
+    rm $out/bin/betterctl
+    chmod +x $out/share/better-control/better_control.py
+    substituteInPlace $out/bin/* \
+      --replace-fail "python3 " ""
+    substituteInPlace $out/share/applications/better-control.desktop \
+      --replace-fail "/usr/bin/" ""
+  '';
+
+  postFixup = ''
+    wrapPythonProgramsIn "$out/share/better-control" "$out ''${pythonPath[*]}"
+  '';
+
+  build-system = with python3Packages; [
+    setuptools
   ];
 
   dependencies = with python3Packages; [
@@ -66,8 +71,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pycairo
   ];
 
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   dontWrapGApps = true;
 
   makeWrapperArgs = [
@@ -75,21 +78,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "--prefix PATH : ${lib.makeBinPath finalAttrs.runtimeDeps}"
   ];
 
-  postInstall = ''
-    rm $out/bin/betterctl
-    chmod +x $out/share/better-control/better_control.py
-    substituteInPlace $out/bin/* \
-      --replace-fail "python3 " ""
-    substituteInPlace $out/share/applications/better-control.desktop \
-      --replace-fail "/usr/bin/" ""
-  '';
+  pyproject = false;
 
-  # Project has no tests
-  doCheck = false;
-
-  postFixup = ''
-    wrapPythonProgramsIn "$out/share/better-control" "$out ''${pythonPath[*]}"
-  '';
+  # Check src/utils/dependencies.py
+  runtimeDeps = [
+    pulseaudio
+    networkmanager
+    bluez
+    brightnessctl
+    power-profiles-daemon
+    gammastep
+    upower
+  ];
 
   passthru.updateScript = nix-update-script { };
 

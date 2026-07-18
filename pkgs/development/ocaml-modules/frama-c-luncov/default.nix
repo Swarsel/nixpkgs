@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitLab,
   buildDunePackage,
   dune-site,
-  fetchFromGitLab,
   frama-c,
   menhir,
   unionFind,
@@ -14,12 +14,12 @@ buildDunePackage (finalAttrs: {
   version = "0.2.4-unstable-2025-11-24";
 
   src = fetchFromGitLab {
-    group = "pub";
     owner = "ltest";
     repo = "luncov";
-    domain = "git.frama-c.com";
     rev = "76b14a41ae9e5eacb90649cb1401a75e37a61d52"; # latest commit from stable/germanium branch
     hash = "sha256-dp693isevR4N4V/3FZ1lnbw0xjR+CuAK8BD/Bwvny0E";
+    domain = "git.frama-c.com";
+    group = "pub";
   };
 
   nativeBuildInputs = [

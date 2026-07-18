@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "stringparser";
   version = "0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hgrecco";
@@ -26,9 +25,8 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ typing-extensions ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "stringparser" ];
 
   meta = {

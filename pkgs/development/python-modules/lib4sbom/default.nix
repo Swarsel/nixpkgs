@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
   fastjsonschema,
-  fetchFromGitHub,
   jsonschema,
   pytestCheckHook,
   pyyaml,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "lib4sbom";
   version = "0.9.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anthonyharrison";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     hash = "sha256-oH/mUN14s9c8n7yhHV0MMXpIZhaYSfdPsyxX1kjk0+Q=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,8 +34,6 @@ buildPythonPackage rec {
     semantic-version
     xmlschema
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # stub tests that always fail
@@ -58,6 +56,7 @@ buildPythonPackage rec {
     "test_set_originator"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "lib4sbom" ];
 
   meta = {

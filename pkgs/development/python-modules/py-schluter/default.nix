@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "py-schluter";
   version = "0.1.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-FS6aflpRDoIHsE4XIf93Q6MsO9ApRbU+efm7zWpw/dY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "schluter" ];
 
   meta = {

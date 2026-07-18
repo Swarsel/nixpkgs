@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   fftwSinglePrec,
   libsndfile,
+  libxml2,
+  pkg-config,
   sigutils,
   soapysdr-with-plugins,
-  libxml2,
   volk,
   zlib,
 }:
@@ -47,10 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Channel scanner based on sigutils library";
     homepage = "https://github.com/BatchDrake/suscan";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       polygon
       oxapentane
     ];
+
+    platforms = lib.platforms.all;
   };
 })

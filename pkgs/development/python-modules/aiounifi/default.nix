@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   orjson,
   pyotp,
   pytest-aiohttp,
@@ -19,9 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiounifi";
   version = "91";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "Kane610";
@@ -36,15 +33,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "wheel==0.47.0" "wheel"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    orjson
-    pyotp
-    segno
-  ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-aiohttp
@@ -54,6 +42,17 @@ buildPythonPackage (finalAttrs: {
     trustme
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    orjson
+    pyotp
+    segno
+  ];
+
+  disabled = pythonOlder "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "aiounifi" ];
 
   meta = {

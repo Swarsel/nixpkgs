@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gfortran,
   cmake,
+  gfortran,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Modern Fortran JSON API";
     homepage = "https://github.com/jacobwilliams/json-fortran";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
   };
 })

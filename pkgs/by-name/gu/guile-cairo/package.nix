@@ -21,20 +21,20 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     cairo
     expat
     guile
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = false; # Cannot find unit-test module from guile-lib
   nativeCheckInputs = [ guile-lib ];
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.nongnu.org/guile-cairo/";
     description = "Cairo bindings for GNU Guile";
+
     longDescription = ''
       Guile-Cairo wraps the Cairo graphics library for Guile Scheme.
 
@@ -44,6 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
       maintained graphics library with all of the benefits of Scheme: memory
       management, exceptions, macros, and a dynamic programming environment.
     '';
+
+    homepage = "https://www.nongnu.org/guile-cairo/";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
     platforms = guile.meta.platforms;

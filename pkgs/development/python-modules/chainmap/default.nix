@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "chainmap";
   version = "1.0.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # Requires tox
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Backport/clone of ChainMap";

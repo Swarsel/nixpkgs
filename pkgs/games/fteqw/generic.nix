@@ -1,16 +1,16 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildFlags,
+  buildInputs,
+  description,
   libopus,
   libxrandr,
   pname,
-  releaseFile ? pname,
-  buildFlags,
-  buildInputs,
   nativeBuildInputs ? [ ],
   postFixup ? "",
-  description,
+  releaseFile ? pname,
   ...
 }:
 
@@ -22,6 +22,7 @@ stdenv.mkDerivation {
     nativeBuildInputs
     postFixup
     ;
+
   version = "0-unstable-2025-06-25";
 
   src = fetchFromGitHub {
@@ -31,19 +32,18 @@ stdenv.mkDerivation {
     hash = "sha256-g8dKNRHAZvNfCT3ciDSyKJVqjENml39k26NqkP7sQvA=";
   };
 
-  makeFlags = [
-    "PKGCONFIG=$(PKG_CONFIG)"
-    "-C"
-    "engine"
-  ];
-
-  enableParallelBuilding = true;
   postPatch = ''
     substituteInPlace ./engine/Makefile \
       --replace "I/usr/include/opus" "I${libopus.dev}/include/opus"
     substituteInPlace ./engine/gl/gl_vidlinuxglx.c \
       --replace 'Sys_LoadLibrary("libXrandr"' 'Sys_LoadLibrary("${libxrandr}/lib/libXrandr.so"'
   '';
+
+  makeFlags = [
+    "PKGCONFIG=$(PKG_CONFIG)"
+    "-C"
+    "engine"
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -53,9 +53,11 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     inherit description;
-    homepage = "https://fteqw.org";
+
     longDescription = ''
       FTE is a game engine baed on QuakeWorld able to
       play games such as Quake 1, 2, 3, and Hexen 2.
@@ -63,8 +65,10 @@ stdenv.mkDerivation {
       limits, vulkan and OpenGL renderers, a dedicated
       server, and fteqcc, for easier QuakeC development
     '';
-    maintainers = with lib.maintainers; [ necrophcodr ];
+
+    homepage = "https://fteqw.org";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ necrophcodr ];
     platforms = lib.platforms.linux;
   };
 }

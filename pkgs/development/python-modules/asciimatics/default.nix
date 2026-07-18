@@ -12,13 +12,13 @@
 buildPythonPackage rec {
   pname = "asciimatics";
   version = "1.15.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-z905gEJydRnYtz5iuO+CwL7P7U60IImcO5bJjQuWgho=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -27,7 +27,7 @@ buildPythonPackage rec {
     wcwidth
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "asciimatics.effects"

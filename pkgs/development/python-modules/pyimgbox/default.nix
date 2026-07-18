@@ -1,8 +1,8 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchFromCodeberg,
-  beautifulsoup4,
   httpx,
   pytest-asyncio,
   pytest-httpserver,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyimgbox";
   version = "1.0.7";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "plotski";
@@ -22,6 +21,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-HYKi5nYXJ+5ytQEFVMMm1HxEsD1zMU7cE2mOdwuZxvk=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-httpserver
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -32,13 +38,7 @@ buildPythonPackage (finalAttrs: {
     beautifulsoup4
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-httpserver
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyimgbox" ];
 
   meta = {

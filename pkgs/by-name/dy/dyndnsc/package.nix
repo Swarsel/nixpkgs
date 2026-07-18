@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dyndnsc";
   version = "0.6.1-unstable-2024-02-25";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "infothrill";
@@ -21,6 +20,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail '"pytest-runner"' ""
   '';
 
+  nativeCheckInputs = with python3Packages; [
+    pytest-console-scripts
+    pytestCheckHook
+  ];
+
+  # Allow tests that bind or connect to localhost on macOS.
+  __darwinAllowLocalNetworking = true;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -33,11 +39,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     responses
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytest-console-scripts
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # dnswanip connects to an external server to discover the
     # machine's IP address.
@@ -45,11 +46,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # AssertionError
     "test_null_dummy"
   ];
-  # Allow tests that bind or connect to localhost on macOS.
-  __darwinAllowLocalNetworking = true;
+
+  pyproject = true;
 
   meta = {
     description = "Dynamic DNS update client with support for multiple protocols";
+
     longDescription = ''
       Dyndnsc is a command line client for sending updates to Dynamic
       DNS (DDNS, DynDNS) services. It supports multiple protocols and
@@ -60,11 +62,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
       mode for running unattended. It has a plugin system to provide
       external notification services.
     '';
+
     homepage = "https://github.com/infothrill/python-dyndnsc";
     changelog = "https://github.com/infothrill/python-dyndnsc/blob/${finalAttrs.src.rev}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "dyndnsc";
     platforms = lib.platforms.unix;
+    mainProgram = "dyndnsc";
   };
 })

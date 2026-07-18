@@ -2,9 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  avahi,
   cmake,
   curl,
+  libei,
   libice,
+  libportal,
   libsm,
   libx11,
   libxdmcp,
@@ -12,14 +15,11 @@
   libxinerama,
   libxrandr,
   libxtst,
-  libei,
-  libportal,
   openssl,
-  pkgsStatic,
   pkg-config,
+  pkgsStatic,
   qt6,
   wrapGAppsHook3,
-  avahi,
   avahi' ? avahi.override { withLibdnssdCompat = true; },
   withLibei ? !stdenv.hostPlatform.isDarwin,
 }:
@@ -71,7 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withLibei "-DINPUTLEAP_BUILD_LIBEI=ON";
 
-  dontWrapGApps = true;
   preFixup = ''
     qtWrapperArgs+=(
       "''${gappsWrapperArgs[@]}"
@@ -79,8 +78,11 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  dontWrapGApps = true;
+
   meta = {
     description = "Open-source KVM software";
+
     longDescription = ''
       Input Leap is software that mimics the functionality of a KVM switch, which historically
       would allow you to use a single keyboard and mouse to control multiple computers by
@@ -89,13 +91,16 @@ stdenv.mkDerivation (finalAttrs: {
       to control by moving your mouse to the edge of the screen, or by using a keypress
       to switch focus to a different system.
     '';
+
     homepage = "https://github.com/input-leap/input-leap";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       phryneas
       twey
       shymega
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

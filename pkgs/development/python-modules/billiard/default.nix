@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   psutil,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "billiard";
   version = "4.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "celery";
@@ -19,19 +18,20 @@ buildPythonPackage rec {
     hash = "sha256-7DwS3fdYhMNVYR0RIoMFyxNpj56VrGlbF4mIgLKPrOQ=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     psutil
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "billiard" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # time sensitive
     "test_on_ready_counter_is_synchronized"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "billiard" ];
 
   meta = {
     description = "Python multiprocessing fork with improvements and bugfixes";

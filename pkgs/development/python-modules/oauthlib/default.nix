@@ -1,25 +1,23 @@
 {
   lib,
+  fetchFromGitHub,
   blinker,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
-  mock,
-  pyjwt,
-  pytestCheckHook,
-  setuptools,
-
   # for passthru.tests
   django-allauth,
   django-oauth-toolkit,
   google-auth-oauthlib,
+  mock,
+  pyjwt,
+  pytestCheckHook,
   requests-oauthlib,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "oauthlib";
   version = "3.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oauthlib";
@@ -29,15 +27,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  optional-dependencies = {
-    rsa = [ cryptography ];
-    signedtoken = [
-      cryptography
-      pyjwt
-    ];
-    signals = [ blinker ];
-  };
 
   nativeCheckInputs = [
     mock
@@ -50,6 +39,17 @@ buildPythonPackage rec {
     "test_fetch_access_token"
   ];
 
+  optional-dependencies = {
+    rsa = [ cryptography ];
+    signals = [ blinker ];
+
+    signedtoken = [
+      cryptography
+      pyjwt
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "oauthlib" ];
 
   passthru.tests = {
@@ -62,9 +62,9 @@ buildPythonPackage rec {
   };
 
   meta = {
-    changelog = "https://github.com/oauthlib/oauthlib/blob/${src.tag}/CHANGELOG.rst";
     description = "Generic, spec-compliant, thorough implementation of the OAuth request-signing logic";
     homepage = "https://github.com/oauthlib/oauthlib";
+    changelog = "https://github.com/oauthlib/oauthlib/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ prikhi ];
   };

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  nodejs,
   libelf,
   libunwind,
+  nodejs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,14 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
       src/integration/malt-{webview,passwd}.sh.in
   '';
 
-  cmakeFlags = [
-    (lib.cmakeBool "ENABLE_JEMALLOC" false)
-  ];
-
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libelf
     libunwind
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "ENABLE_JEMALLOC" false)
   ];
 
   meta = {

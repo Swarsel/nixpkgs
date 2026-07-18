@@ -1,13 +1,12 @@
 {
   lib,
   buildPythonPackage,
-  setuptools,
-  sphinx,
   cairosvg,
+  fetchPypi,
   inkscape,
   librsvg,
-  fetchPypi,
-
+  setuptools,
+  sphinx,
   withCairosvg ? false,
   withInkscape ? false,
   withLibrsvg ? true,
@@ -18,12 +17,11 @@ assert (withCairosvg || withInkscape || withLibrsvg);
 buildPythonPackage rec {
   pname = "sphinxcontrib-svg2pdfconverter";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "sphinxcontrib_svg2pdfconverter";
     hash = "sha256-q5yPEIA5HiMYEtIKvyZXpp7jVXRWOxAUQU+VOWSpX6M=";
+    pname = "sphinxcontrib_svg2pdfconverter";
   };
 
   # for enabled modules: provide the full path to the binary
@@ -37,11 +35,10 @@ buildPythonPackage rec {
         --replace-fail "'inkscape_converter_bin', 'inkscape'" "'inkscape_converter_bin', '${lib.getExe inkscape}'"
     '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ sphinx ] ++ lib.optional withCairosvg cairosvg;
-
   doCheck = false; # no tests
+  build-system = [ setuptools ];
+  dependencies = [ sphinx ] ++ lib.optional withCairosvg cairosvg;
+  pyproject = true;
 
   pythonImportsCheck =
     lib.optional withCairosvg "sphinxcontrib.cairosvgconverter"

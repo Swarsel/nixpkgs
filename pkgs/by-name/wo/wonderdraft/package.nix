@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  requireFile,
+  alsa-lib,
   dpkg,
-  libxrandr,
+  libGL,
+  libx11,
+  libxcursor,
   libxi,
   libxinerama,
-  libxcursor,
-  libx11,
-  libGL,
-  alsa-lib,
+  libxrandr,
   pulseaudio,
+  requireFile,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,17 +18,14 @@ stdenv.mkDerivation rec {
   version = "1.1.8.2b";
 
   src = requireFile {
-    name = "Wonderdraft-${version}-Linux64.deb";
     url = "https://wonderdraft.net/";
     hash = "sha256-3eYnEH6P94z9axFsrkJA4QMcHyg/gNRczqL3h5Sc2Tg=";
+    name = "Wonderdraft-${version}-Linux64.deb";
   };
 
   nativeBuildInputs = [
     dpkg
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -40,6 +37,7 @@ stdenv.mkDerivation rec {
     ln -s $out/opt/Wonderdraft/Wonderdraft.x86_64 $out/bin/Wonderdraft.x86_64
     runHook postInstall
   '';
+
   preFixup =
     let
       libPath = lib.makeLibraryPath [
@@ -60,12 +58,15 @@ stdenv.mkDerivation rec {
         $out/opt/Wonderdraft/Wonderdraft.x86_64
     '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://wonderdraft.net/";
     description = "Mapmaking tool for Tabletop Roleplaying Games, designed for city, region, or world scale";
+    homepage = "https://wonderdraft.net/";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ jsusk ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ jsusk ];
+    platforms = [ "x86_64-linux" ];
   };
 }

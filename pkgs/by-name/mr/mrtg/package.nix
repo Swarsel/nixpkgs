@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchurl,
   fetchpatch,
-  perl,
   gd,
+  makeWrapper,
+  perl,
   rrdtool,
 }:
 
@@ -26,6 +26,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-x/EcteIXpQDYfuO10mxYqGUu28DTKRaIu3krAQ+uQ6w=";
   };
 
+  patches = [
+    # gcc14 broke detection of printf format specifiers
+    # building from master seems to be fixed upstream, so next release can (likely) drop the patch
+    ./configure-long-long-format-gcc14.patch
+    # fix gcc15 build, remove after next release
+    (fetchpatch {
+      excludes = [ "CHANGES" ];
+      extraPrefix = "";
+      hash = "sha256-9k16WrCAETuk5DJf5pmeXFHc4AZD9Acmtq/7P24tpwc=";
+      name = "fix-gcc15.patch";
+      stripLen = 2;
+      url = "https://github.com/oetiker/mrtg/commit/a64a83210643114b3a892e70ce07ded5bd5de054.patch";
+    })
+  ];
+
   nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
@@ -34,21 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     perlWithPkgs
     gd
     rrdtool
-  ];
-
-  patches = [
-    # gcc14 broke detection of printf format specifiers
-    # building from master seems to be fixed upstream, so next release can (likely) drop the patch
-    ./configure-long-long-format-gcc14.patch
-    # fix gcc15 build, remove after next release
-    (fetchpatch {
-      name = "fix-gcc15.patch";
-      url = "https://github.com/oetiker/mrtg/commit/a64a83210643114b3a892e70ce07ded5bd5de054.patch";
-      hash = "sha256-9k16WrCAETuk5DJf5pmeXFHc4AZD9Acmtq/7P24tpwc=";
-      excludes = [ "CHANGES" ];
-      stripLen = 2;
-      extraPrefix = "";
-    })
   ];
 
   env.NIX_CFLAGS_LINK = "-lm";
@@ -62,10 +62,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Multi Router Traffic Grapher";
     homepage = "https://oss.oetiker.ch/mrtg/";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       robberer
       usovalx
     ];
+
     platforms = lib.platforms.unix;
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  zsh,
   installShellFiles,
   ncurses,
-  unstableGitUpdater,
-  testers,
   runCommand,
+  stdenvNoCC,
+  testers,
+  unstableGitUpdater,
+  zsh,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -21,22 +21,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-2onqjtPIsgiEJj00oP5xXGkPZGQpGPVwcBOhmicqKcs=";
   };
 
-  strictDeps = true;
-  doInstallCheck = true;
-
-  nativeBuildInputs = [ installShellFiles ];
-  buildInputs = [
-    zsh
-    ncurses
-  ];
-  nativeInstallCheckInputs = [ zsh ];
-
   patches = [ ./no-external-call.patch ];
 
   postPatch = ''
     substituteInPlace revolver \
       --replace-fail "tput cols" "${ncurses}/bin/tput cols"
   '';
+
+  strictDeps = true;
+  nativeBuildInputs = [ installShellFiles ];
+
+  buildInputs = [
+    zsh
+    ncurses
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -50,6 +48,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     installShellCompletion --cmd revolver --zsh revolver.zsh-completion
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ zsh ];
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -60,6 +61,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   passthru = {
     tests = {
+      version = testers.testVersion {
+        # Wrong '0.2.0' version in the code
+        version = "0.2.0";
+        package = finalAttrs.finalPackage;
+      };
+
       demo = runCommand "revolver-demo" { nativeBuildInputs = [ finalAttrs.finalPackage ]; } ''
         export HOME="$TEMPDIR"
 
@@ -73,24 +80,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
         mkdir $out
       '';
-      version = testers.testVersion {
-        package = finalAttrs.finalPackage;
-        # Wrong '0.2.0' version in the code
-        version = "0.2.0";
-      };
     };
+
     updateScript = unstableGitUpdater {
       tagPrefix = "v";
     };
   };
 
   meta = {
+    inherit (zsh.meta) platforms;
     description = "Progress spinner for ZSH scripts";
     homepage = "https://github.com/molovo/revolver";
-    downloadPage = "https://github.com/molovo/revolver/releases";
     license = lib.licenses.mit;
-    mainProgram = "revolver";
-    inherit (zsh.meta) platforms;
     maintainers = with lib.maintainers; [ d-brasher ];
+    mainProgram = "revolver";
+    downloadPage = "https://github.com/molovo/revolver/releases";
   };
 })

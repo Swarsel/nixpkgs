@@ -1,25 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  qt6,
-
-  # nativeBuildInputs
-  cmake,
-  pkg-config,
-
   # buildInputs
   boost,
+  # nativeBuildInputs
+  cmake,
   curl,
   libevent,
   libzip,
   miniupnpc,
   openssl,
+  pkg-config,
   qrencode,
-
+  qt6,
+  withDbus ? withGui,
   # options
   withGui ? true,
-  withDbus ? withGui,
   withQrencode ? withGui,
   withUpnp ? false,
 }:
@@ -36,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -74,18 +70,22 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "DEFAULT_UPNP" withUpnp)
   ];
 
+  __structuredAttrs = true;
+
   meta = {
     description = "POS-based cryptocurrency that rewards users for participating on the BOINC network";
+
     longDescription = ''
       A POS-based cryptocurrency that rewards users for participating on the BOINC network,
       using peer-to-peer technology to operate with no central authority - managing transactions,
       issuing money and contributing to scientific research are carried out collectively by the network
     '';
+
     homepage = "https://gridcoin.us/";
+    changelog = "https://github.com/gridcoin-community/Gridcoin-Research/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ gigglesquid ];
     platforms = lib.platforms.linux;
-    changelog = "https://github.com/gridcoin-community/Gridcoin-Research/releases/tag/${finalAttrs.src.tag}";
     mainProgram = if withGui then "gridcoinresearch" else "gridcoinresearchd";
   };
 })

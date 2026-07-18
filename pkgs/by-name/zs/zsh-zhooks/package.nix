@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "zsh-zhooks";
@@ -14,22 +14,24 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-zahXMPeJ8kb/UZd85RBcMbomB7HjfEKzQKjF2NnumhQ=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     install -m755 -D zhooks.plugin.zsh --target-directory $out/share/zsh/zhooks
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Tool for displaying the code for all Zsh hook functions";
-    homepage = "https://github.com/agkozak/zhooks";
-    license = lib.licenses.mit;
+
     longDescription = ''
       This Zsh plugin is a tool for displaying the code for all Zsh hook functions (such as precmd), as well as the contents of
       hook arrays (such as precmd_functions).
     '';
+
+    homepage = "https://github.com/agkozak/zhooks";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.fidgetingbits ];
     platforms = lib.platforms.all;
   };

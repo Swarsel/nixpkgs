@@ -1,32 +1,28 @@
 {
-  buildPythonPackage,
-  pythonAtLeast,
-  fetchFromGitHub,
-  setuptools,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  assertpy,
+  buildPythonPackage,
   libjpeg,
   numba,
   opencv-python,
   pandas,
   pkg-config,
-  pytorch-pfn-extras,
-  terminaltables,
-  tqdm,
-  pytestCheckHook,
-  assertpy,
   psutil,
+  pytestCheckHook,
+  pythonAtLeast,
+  pytorch-pfn-extras,
+  setuptools,
+  terminaltables,
   torchvision,
+  tqdm,
   webdataset,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "ffcv";
   version = "1.0.0";
-  pyproject = true;
-
-  # version 1.0.0 uses distutils which was removed in Python 3.12
-  disabled = pythonAtLeast "3.12";
 
   src = fetchFromGitHub {
     owner = "libffcv";
@@ -43,9 +39,9 @@ buildPythonPackage rec {
       --replace-fail "'psutil'," ""
   '';
 
-  build-system = [ setuptools ];
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ libjpeg ];
+
   propagatedBuildInputs = [
     opencv-python
     numba
@@ -55,7 +51,13 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  pythonImportsCheck = [ "ffcv" ];
+  nativeCheckInputs = [
+    assertpy
+    psutil
+    pytestCheckHook
+    torchvision
+    webdataset
+  ];
 
   # C/C++ python modules are only in the installed output and not in the build
   # directory. Since tests are run from the build directory python prefers to
@@ -68,13 +70,9 @@ buildPythonPackage rec {
     cd tests
   '';
 
-  nativeCheckInputs = [
-    assertpy
-    psutil
-    pytestCheckHook
-    torchvision
-    webdataset
-  ];
+  build-system = [ setuptools ];
+  # version 1.0.0 uses distutils which was removed in Python 3.12
+  disabled = pythonAtLeast "3.12";
 
   disabledTestPaths = [
     # Tests require network access and do not work in the sandbox
@@ -100,14 +98,19 @@ buildPythonPackage rec {
     "test_traversal_random_distributed_with_indices"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "ffcv" ];
+
   meta = {
     description = "FFCV: Fast Forward Computer Vision";
     homepage = "https://ffcv.io";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       samuela
       djacu
     ];
+
     # OSError: dlopen(libc.so.6, 0x0006): tried: '/usr/lib/libc.so.6' (no such file, not in dyld cache),
     # 'libc.so.6' (no such file), '/usr/local/lib/libc.so.6' (no such file), '/usr/lib/libc.so.6' (no such file, not in dyld cache)
     broken = stdenv.hostPlatform.isDarwin;

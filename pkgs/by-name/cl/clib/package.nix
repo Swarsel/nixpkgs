@@ -6,19 +6,18 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.8.7";
   pname = "clib";
+  version = "2.8.7";
 
   src = fetchFromGitHub {
-    rev = finalAttrs.version;
     owner = "clibs";
     repo = "clib";
+    rev = finalAttrs.version;
     sha256 = "sha256-uL8prMk2DrYLjCmZW8DdbCg5FJ5uksT3vIATyOW2ZzY=";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
   buildInputs = [ curl ];
+  makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "C micro-package manager";

@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchurl,
+  adwaita-icon-theme,
   gettext,
-  itstool,
-  libxml2,
-  pkg-config,
+  glib,
+  gnome,
   gnome-panel,
   gtk3,
-  glib,
-  libwnck,
+  gucharmap,
+  itstool,
   libgtop,
+  libgweather,
   libnotify,
+  libwnck,
+  libxml2,
+  linuxPackages,
+  pkg-config,
+  polkit,
+  tinysparql,
   upower,
   wirelesstools,
-  linuxPackages,
-  adwaita-icon-theme,
-  libgweather,
-  gucharmap,
-  tinysparql,
-  polkit,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,12 +58,10 @@ stdenv.mkDerivation (finalAttrs: {
     linuxPackages.cpupower
   ];
 
-  enableParallelBuilding = true;
-
-  doCheck = true;
-
   # Don't try to install modules to gnome panel's directory, as it's read only
   env.PKG_CONFIG_LIBGNOME_PANEL_MODULESDIR = "${placeholder "out"}/lib/gnome-panel/modules";
+  doCheck = true;
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -74,11 +72,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Applets for use with the GNOME panel";
-    mainProgram = "cpufreq-selector";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-applets";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-applets/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "cpufreq-selector";
+    teams = [ lib.teams.gnome ];
   };
 })

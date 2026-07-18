@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   filelock,
   idna,
   pytest-mock,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tldextract";
   version = "5.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "john-kurkowski";
@@ -45,14 +44,17 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tldextract" ];
 
   meta = {
     description = "Python module to accurately separate the TLD from the domain of an URL";
+
     longDescription = ''
       tldextract accurately separates the gTLD or ccTLD (generic or country code top-level domain)
       from the registered domain and subdomains of a URL.
     '';
+
     homepage = "https://github.com/john-kurkowski/tldextract";
     changelog = "https://github.com/john-kurkowski/tldextract/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;

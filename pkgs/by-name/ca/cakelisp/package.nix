@@ -17,8 +17,6 @@ stdenv.mkDerivation {
     hash = "sha256-wFyqAbHrBMFKqMYlBjS6flYHPn3Rxtaiqb1rRmlZrB4=";
   };
 
-  buildInputs = [ gcc ];
-
   postPatch = ''
     substituteInPlace runtime/HotReloading.cake \
         --replace '"/usr/bin/g++"' '"${gcc}/bin/g++"'
@@ -31,13 +29,14 @@ stdenv.mkDerivation {
     substituteInPlace Bootstrap.cake --replace '--export-dynamic' '-export_dynamic'
   '';
 
+  buildInputs = [ gcc ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=format";
+
   buildPhase = ''
     runHook preBuild
     ./Build.sh
     runHook postBuild
   '';
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=format";
 
   installPhase = ''
     runHook preInstall
@@ -51,11 +50,11 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Performance-oriented Lisp-like language";
-    mainProgram = "cakelisp";
     homepage = "https://macoy.me/code/macoy/cakelisp";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.darwin ++ lib.platforms.linux;
     maintainers = [ lib.maintainers.sbond75 ];
+    platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    mainProgram = "cakelisp";
     # never built on aarch64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;
   };

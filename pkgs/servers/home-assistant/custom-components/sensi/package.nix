@@ -5,8 +5,6 @@
   python-socketio,
 }:
 buildHomeAssistantComponent rec {
-  owner = "iprak";
-  domain = "sensi";
   version = "2.1.4";
 
   src = fetchFromGitHub {
@@ -25,11 +23,14 @@ buildHomeAssistantComponent rec {
     python-socketio
   ];
 
+  domain = "sensi";
+  owner = "iprak";
+
   meta = {
-    changelog = "https://github.com/iprak/sensi/releases/tag/v${version}";
     description = "HomeAssistant integration for Sensi thermostat";
     homepage = "https://github.com/iprak/sensi";
-    maintainers = [ ];
+    changelog = "https://github.com/iprak/sensi/releases/tag/v${version}";
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

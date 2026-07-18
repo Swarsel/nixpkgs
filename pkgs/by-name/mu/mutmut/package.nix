@@ -7,11 +7,10 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mutmut";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "mutmut";
     owner = "boxed";
+    repo = "mutmut";
     tag = finalAttrs.version;
     hash = "sha256-+e2FmfpGtK401IW8LNqeHk0v8Hh5rF3LbZJkSOJ3yPY=";
   };
@@ -21,7 +20,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
   '';
 
   doCheck = false;
-
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -32,16 +30,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     textual
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mutmut" ];
 
   meta = {
     description = "Mutation testing system for Python, with a strong focus on ease of use";
-    mainProgram = "mutmut";
     homepage = "https://github.com/boxed/mutmut";
     changelog = "https://github.com/boxed/mutmut/blob/${finalAttrs.version}/HISTORY.rst";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       l0b0
     ];
+
+    mainProgram = "mutmut";
   };
 })

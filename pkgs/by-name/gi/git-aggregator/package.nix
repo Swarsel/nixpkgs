@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   gitMinimal,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "git-aggregator";
   version = "4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "acsone";
@@ -16,6 +15,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-sZYh3CN15WTCQ59W24ERJdP48EJt571cbkswLQ3JL2g=";
   };
+
+  nativeCheckInputs = [
+    gitMinimal
+  ];
+
+  preCheck = ''
+    export HOME="$(mktemp -d)"
+    git config --global user.name John
+    git config --global user.email john@localhost
+    git config --global init.defaultBranch master
+    git config --global pull.rebase false
+  '';
 
   build-system = with python3Packages; [
     setuptools-scm
@@ -29,17 +40,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    gitMinimal
-  ];
-
-  preCheck = ''
-    export HOME="$(mktemp -d)"
-    git config --global user.name John
-    git config --global user.email john@localhost
-    git config --global init.defaultBranch master
-    git config --global pull.rebase false
-  '';
+  pyproject = true;
 
   meta = {
     description = "Manage the aggregation of git branches from different remotes to build a consolidated one";

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  libinput,
-  wmctrl,
-  python3,
   coreutils,
-  xdotool ? null,
+  libinput,
+  makeWrapper,
+  python3,
+  wmctrl,
   extraUtilsPath ? lib.optional (xdotool != null) xdotool,
+  xdotool ? null,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libinput-gestures";
@@ -20,13 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-oMteEOx2bwPBLgxB9uSE7zuR5vmuqX6J1Tk5nxefWa4=";
   };
+
   patches = [
     ./0001-hardcode-name.patch
     ./0002-paths.patch
   ];
-
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ python3 ];
 
   postPatch = ''
     substituteInPlace libinput-gestures-setup --replace-fail /usr/ /
@@ -36,11 +34,16 @@ stdenv.mkDerivation (finalAttrs: {
       --subst-var-by libinput "${libinput}/bin/libinput" \
       --subst-var-by wmctrl   "${wmctrl}/bin/wmctrl"
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ python3 ];
+
   installPhase = ''
     runHook preInstall
     ${stdenv.shell} libinput-gestures-setup -d "$out" install
     runHook postInstall
   '';
+
   postFixup = ''
     rm "$out/bin/libinput-gestures-setup"
     substituteInPlace "$out/share/systemd/user/libinput-gestures.service" --replace "/usr" "$out"
@@ -52,11 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/bulletmark/libinput-gestures";
     description = "Gesture mapper for libinput";
-    mainProgram = "libinput-gestures";
+    homepage = "https://github.com/bulletmark/libinput-gestures";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ teozkr ];
+    platforms = lib.platforms.linux;
+    mainProgram = "libinput-gestures";
   };
 })

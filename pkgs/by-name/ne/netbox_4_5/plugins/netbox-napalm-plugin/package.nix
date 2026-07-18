@@ -1,20 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  django,
+  napalm,
   netbox,
   python,
-  napalm,
-  django,
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "netbox-napalm-plugin";
   version = "0.3.4";
-  pyproject = true;
-  __structuredAttrs = true;
-
-  disabled = python.pythonVersion != netbox.python.pythonVersion;
 
   src = fetchFromGitHub {
     owner = "netbox-community";
@@ -23,24 +19,25 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-PdX69SS0SAeUuN2zwcv54Ooih1hyR9a19e7sc5tJvuQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ napalm ];
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail 'napalm<5.0' 'napalm'
+  '';
 
   nativeCheckInputs = [
     netbox
     django
   ];
 
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail 'napalm<5.0' 'napalm'
-  '';
-
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ napalm ];
+  disabled = python.pythonVersion != netbox.python.pythonVersion;
+  pyproject = true;
   pythonImportsCheck = [ "netbox_napalm_plugin" ];
 
   meta = {
@@ -48,7 +45,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/netbox-community/netbox-napalm-plugin";
     changelog = "https://github.com/netbox-community/netbox-napalm-plugin/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ felbinger ];
+    platforms = lib.platforms.linux;
   };
 })

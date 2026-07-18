@@ -1,16 +1,16 @@
 {
   lib,
-  blst,
-  libusb1,
   stdenv,
-  buildPackages,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  blst,
+  buildGoModule,
+  buildPackages,
   installShellFiles,
+  libusb1,
   makeWrapper,
-  writableTmpDirAsHomeHook,
   nix-update-script,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "avalanche-cli";
@@ -23,7 +23,19 @@ buildGoModule (finalAttrs: {
     hash = "sha256-bAZJRFlry7vYTTf95kTOJwcjYelN40n264oeykx7nxc=";
   };
 
-  proxyVendor = true;
+  patches = [ ./skip_min_version_check.patch ];
+
+  nativeBuildInputs = [
+    installShellFiles
+    makeWrapper
+    writableTmpDirAsHomeHook
+  ];
+
+  buildInputs = [
+    blst
+    libusb1
+  ];
+
   vendorHash = "sha256-0+YwlCHjiU46y333RSuaha4pLKFTYlj+M9+TFAALamY=";
 
   env = {
@@ -33,23 +45,7 @@ buildGoModule (finalAttrs: {
     CGO_CFLAGS_ALLOW = "-O -D__BLST_PORTABLE__";
   };
 
-  ldflags = [
-    "-s"
-    "-X=github.com/ava-labs/avalanche-cli/cmd.Version=${finalAttrs.version}"
-  ];
-
-  buildInputs = [
-    blst
-    libusb1
-  ];
-
-  nativeBuildInputs = [
-    installShellFiles
-    makeWrapper
-    writableTmpDirAsHomeHook
-  ];
-
-  patches = [ ./skip_min_version_check.patch ];
+  doCheck = false;
 
   postInstall =
     let
@@ -72,11 +68,16 @@ buildGoModule (finalAttrs: {
         --zsh <(${exe} completion zsh)
     '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/avalanche";
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
-  doCheck = false;
+  ldflags = [
+    "-s"
+    "-X=github.com/ava-labs/avalanche-cli/cmd.Version=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+  versionCheckProgram = "${placeholder "out"}/bin/avalanche";
 
   meta = {
     description = "Command line tool that gives developers access to everything Avalanche";

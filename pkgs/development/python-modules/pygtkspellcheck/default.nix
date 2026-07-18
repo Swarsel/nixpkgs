@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pygtkspellcheck";
   version = "5.0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -31,12 +30,12 @@ buildPythonPackage (finalAttrs: {
   ];
 
   doCheck = false; # there are no tests
-
+  pyproject = true;
   pythonImportsCheck = [ "gtkspellcheck" ];
 
   meta = {
-    homepage = "https://github.com/koehlma/pygtkspellcheck";
     description = "Python spell-checking library for GtkTextViews based on Enchant";
+    homepage = "https://github.com/koehlma/pygtkspellcheck";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
   };

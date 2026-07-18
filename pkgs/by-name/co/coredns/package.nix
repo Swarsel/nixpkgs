@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nixosTests,
   externalPlugins ? [ ],
@@ -13,6 +13,7 @@ let
   attrsToSources = attrs: map ({ repo, version, ... }: "${repo}@${version}") attrs;
 in
 buildGoModule (finalAttrs: {
+  inherit vendorHash;
   pname = "coredns";
   version = "1.14.3";
 
@@ -23,14 +24,59 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Uk4oWsUxaGdLQzX5JywYzi7pmQHGo06uQdLeOkP4U/s";
   };
 
-  inherit vendorHash;
-
-  nativeBuildInputs = [ installShellFiles ];
-
   outputs = [
     "out"
     "man"
   ];
+
+  postPatch = ''
+    substituteInPlace test/file_cname_proxy_test.go \
+      --replace-fail \
+        "TestZoneExternalCNAMELookupWithProxy" \
+        "SkipZoneExternalCNAMELookupWithProxy"
+
+    substituteInPlace test/readme_test.go \
+      --replace-fail "TestReadme" "SkipReadme"
+
+    substituteInPlace test/metrics_test.go \
+      --replace-fail "TestMetricsRewriteRequestSize" "SkipMetricsRewriteRequestSize"
+
+    substituteInPlace test/quic_test.go \
+      --replace-fail "TestQUICReloadDoesNotPanic" "SkipQUICReloadDoesNotPanic"
+
+    # this test fails if any external plugins were imported.
+    # it's a lint rather than a test of functionality, so it's safe to disable.
+    substituteInPlace test/presubmit_test.go \
+      --replace-fail "TestImportOrdering" "SkipImportOrdering"
+
+    substituteInPlace plugin/pkg/parse/transport_test.go \
+      --replace-fail \
+        "TestTransport" \
+        "SkipTransport"
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # loopback interface is lo0 on macos
+    sed -E -i 's/\blo\b/lo0/' plugin/bind/setup_test.go
+
+    # test is apparently outdated but only exhibits this on darwin
+    substituteInPlace test/corefile_test.go \
+      --replace-fail "TestCorefile1" "SkipCorefile1"
+  '';
+
+  nativeBuildInputs = [ installShellFiles ];
+
+  preBuild = ''
+    chmod -R u+w vendor
+    mv -t . vendor/go.{mod,sum} vendor/plugin.cfg
+
+    CC= GOOS= GOARCH= go generate
+  '';
+
+  postInstall = ''
+    installManPage man/*
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   overrideModAttrs = {
     # Add plugins before vendoring the modules.
@@ -88,64 +134,17 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  preBuild = ''
-    chmod -R u+w vendor
-    mv -t . vendor/go.{mod,sum} vendor/plugin.cfg
-
-    CC= GOOS= GOARCH= go generate
-  '';
-
-  postPatch = ''
-    substituteInPlace test/file_cname_proxy_test.go \
-      --replace-fail \
-        "TestZoneExternalCNAMELookupWithProxy" \
-        "SkipZoneExternalCNAMELookupWithProxy"
-
-    substituteInPlace test/readme_test.go \
-      --replace-fail "TestReadme" "SkipReadme"
-
-    substituteInPlace test/metrics_test.go \
-      --replace-fail "TestMetricsRewriteRequestSize" "SkipMetricsRewriteRequestSize"
-
-    substituteInPlace test/quic_test.go \
-      --replace-fail "TestQUICReloadDoesNotPanic" "SkipQUICReloadDoesNotPanic"
-
-    # this test fails if any external plugins were imported.
-    # it's a lint rather than a test of functionality, so it's safe to disable.
-    substituteInPlace test/presubmit_test.go \
-      --replace-fail "TestImportOrdering" "SkipImportOrdering"
-
-    substituteInPlace plugin/pkg/parse/transport_test.go \
-      --replace-fail \
-        "TestTransport" \
-        "SkipTransport"
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # loopback interface is lo0 on macos
-    sed -E -i 's/\blo\b/lo0/' plugin/bind/setup_test.go
-
-    # test is apparently outdated but only exhibits this on darwin
-    substituteInPlace test/corefile_test.go \
-      --replace-fail "TestCorefile1" "SkipCorefile1"
-  '';
-
-  __darwinAllowLocalNetworking = true;
-
-  postInstall = ''
-    installManPage man/*
-  '';
-
   passthru.tests = {
     coredns-external-plugins = nixosTests.coredns;
-    kubernetes-single-node = nixosTests.kubernetes.dns-single-node;
     kubernetes-multi-node = nixosTests.kubernetes.dns-multi-node;
+    kubernetes-single-node = nixosTests.kubernetes.dns-single-node;
   };
 
   meta = {
-    homepage = "https://coredns.io";
     description = "DNS server that runs middleware";
-    mainProgram = "coredns";
+    homepage = "https://coredns.io";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       deltaevo
       djds
@@ -153,5 +152,7 @@ buildGoModule (finalAttrs: {
       rtreffer
       rushmorem
     ];
+
+    mainProgram = "coredns";
   };
 })

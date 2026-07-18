@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
   writeScript,
   # Can be overridden to alter the display name in steam
   # This could be useful if multiple versions should be installed together
@@ -15,10 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${finalAttrs.version}/${finalAttrs.version}.tar.gz";
     hash = "sha256-I7SSvzQQ/NqdvwjpJ9IFFtAaTS+rgHUyXx0us1vIOnw=";
   };
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   outputs = [
     "out"
@@ -45,6 +41,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail "${finalAttrs.version}" "${steamDisplayName}"
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
   /*
     We use the created releases, and not the tags, for the update script as nix-update loads releases.atom
     that contains both. Sometimes upstream pushes the tags but the Github releases don't get created due to
@@ -67,15 +67,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       (This is intended for use in the `programs.steam.extraCompatPackages` option only.)
     '';
+
     homepage = "https://github.com/GloriousEggroll/proton-ge-custom";
     license = lib.licenses.bsd3;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       Gliczy
       NotAShelf
       Scrumplex
       shawn8901
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 })

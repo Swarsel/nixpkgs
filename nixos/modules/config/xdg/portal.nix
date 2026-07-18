@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -31,62 +31,10 @@ in
     ] "This option has been removed due to being unsupported and discouraged by the GTK developers.")
   ];
 
-  meta = {
-    teams = [ teams.freedesktop ];
-  };
-
   options.xdg.portal = {
-    enable =
-      mkEnableOption "[xdg desktop integration](https://github.com/flatpak/xdg-desktop-portal)"
-      // {
-        default = false;
-      };
-
-    extraPortals = mkOption {
-      type = types.listOf types.package;
-      default = [ ];
-      description = ''
-        List of additional portals to add to path. Portals allow interaction
-        with system, like choosing files or taking screenshots. At minimum,
-        a desktop portal implementation should be listed. GNOME and KDE already
-        adds `xdg-desktop-portal-gtk`; and
-        `xdg-desktop-portal-kde` respectively. On other desktop
-        environments you probably want to add them yourself.
-      '';
-    };
-
-    xdgOpenUsePortal = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Sets environment variable `NIXOS_XDG_OPEN_USE_PORTAL` to `1`
-        This will make `xdg-open` use the portal to open programs, which resolves bugs involving
-        programs opening inside FHS envs or with unexpected env vars set from wrappers.
-        See [#160923](https://github.com/NixOS/nixpkgs/issues/160923) for more info.
-      '';
-    };
-
     config = mkOption {
-      type = types.attrsOf associationOptions;
       default = { };
-      example = {
-        x-cinnamon = {
-          default = [
-            "xapp"
-            "gtk"
-          ];
-        };
-        pantheon = {
-          default = [
-            "pantheon"
-            "gtk"
-          ];
-          "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
-        };
-        common = {
-          default = [ "gtk" ];
-        };
-      };
+
       description = ''
         Sets which portal backend should be used to provide the implementation
         for the requested interface. For details check {manpage}`portals.conf(5)`.
@@ -95,18 +43,78 @@ in
         for {file}`xdg.portal.config.$desktop` and {file}`portals.conf` for {file}`xdg.portal.config.common`
         as an exception.
       '';
+
+      example = {
+        common = {
+          default = [ "gtk" ];
+        };
+
+        pantheon = {
+          default = [
+            "pantheon"
+            "gtk"
+          ];
+
+          "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+        };
+
+        x-cinnamon = {
+          default = [
+            "xapp"
+            "gtk"
+          ];
+        };
+      };
+
+      type = types.attrsOf associationOptions;
     };
 
+    enable =
+      mkEnableOption "[xdg desktop integration](https://github.com/flatpak/xdg-desktop-portal)"
+      // {
+        default = false;
+      };
+
     configPackages = mkOption {
-      type = types.listOf types.package;
       default = [ ];
-      example = lib.literalExpression "[ pkgs.gnome-session ]";
+
       description = ''
         List of packages that provide XDG desktop portal configuration, usually in
         the form of {file}`share/xdg-desktop-portal/$desktop-portals.conf`.
 
         Note that configs in `xdg.portal.config` will be preferred if set.
       '';
+
+      example = lib.literalExpression "[ pkgs.gnome-session ]";
+      type = types.listOf types.package;
+    };
+
+    extraPortals = mkOption {
+      default = [ ];
+
+      description = ''
+        List of additional portals to add to path. Portals allow interaction
+        with system, like choosing files or taking screenshots. At minimum,
+        a desktop portal implementation should be listed. GNOME and KDE already
+        adds `xdg-desktop-portal-gtk`; and
+        `xdg-desktop-portal-kde` respectively. On other desktop
+        environments you probably want to add them yourself.
+      '';
+
+      type = types.listOf types.package;
+    };
+
+    xdgOpenUsePortal = mkOption {
+      default = false;
+
+      description = ''
+        Sets environment variable `NIXOS_XDG_OPEN_USE_PORTAL` to `1`
+        This will make `xdg-open` use the portal to open programs, which resolves bugs involving
+        programs opening inside FHS envs or with unexpected env vars set from wrappers.
+        See [#160923](https://github.com/NixOS/nixpkgs/issues/160923) for more info.
+      '';
+
+      type = types.bool;
     };
   };
 
@@ -116,19 +124,6 @@ in
       packages = [ pkgs.xdg-desktop-portal ] ++ cfg.extraPortals;
     in
     mkIf cfg.enable {
-      warnings = lib.optional (cfg.configPackages == [ ] && cfg.config == { }) ''
-        xdg-desktop-portal 1.17 reworked how portal implementations are loaded, you
-        should either set `xdg.portal.config` or `xdg.portal.configPackages`
-        to specify which portal backend to use for the requested interface.
-
-        https://github.com/flatpak/xdg-desktop-portal/blob/1.18.1/doc/portals.conf.rst.in
-
-        If you simply want to keep the behaviour in < 1.17, which uses the first
-        portal implementation found in lexicographical order, use the following:
-
-        xdg.portal.config.common.default = "*";
-      '';
-
       assertions = [
         {
           assertion = cfg.extraPortals != [ ];
@@ -136,11 +131,17 @@ in
         }
       ];
 
-      services.dbus.packages = packages;
-      systemd.packages = packages;
-
       environment = {
-        systemPackages = packages ++ cfg.configPackages;
+        etc = lib.concatMapAttrs (
+          desktop: conf:
+          lib.optionalAttrs (conf != { }) {
+            "xdg/xdg-desktop-portal/${
+              lib.optionalString (desktop != "common") "${desktop}-"
+            }portals.conf".text =
+              lib.generators.toINI { } { preferred = conf; };
+          }
+        ) cfg.config;
+
         pathsToLink = [
           # Portal definitions and upstream desktop environment portal configurations.
           "/share/xdg-desktop-portal"
@@ -153,15 +154,27 @@ in
           NIX_XDG_DESKTOP_PORTAL_DIR = "/run/current-system/sw/share/xdg-desktop-portal/portals";
         };
 
-        etc = lib.concatMapAttrs (
-          desktop: conf:
-          lib.optionalAttrs (conf != { }) {
-            "xdg/xdg-desktop-portal/${
-              lib.optionalString (desktop != "common") "${desktop}-"
-            }portals.conf".text =
-              lib.generators.toINI { } { preferred = conf; };
-          }
-        ) cfg.config;
+        systemPackages = packages ++ cfg.configPackages;
       };
+
+      services.dbus.packages = packages;
+      systemd.packages = packages;
+
+      warnings = lib.optional (cfg.configPackages == [ ] && cfg.config == { }) ''
+        xdg-desktop-portal 1.17 reworked how portal implementations are loaded, you
+        should either set `xdg.portal.config` or `xdg.portal.configPackages`
+        to specify which portal backend to use for the requested interface.
+
+        https://github.com/flatpak/xdg-desktop-portal/blob/1.18.1/doc/portals.conf.rst.in
+
+        If you simply want to keep the behaviour in < 1.17, which uses the first
+        portal implementation found in lexicographical order, use the following:
+
+        xdg.portal.config.common.default = "*";
+      '';
     };
+
+  meta = {
+    teams = [ teams.freedesktop ];
+  };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   woff2,
 }:
 
@@ -40,10 +40,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://plus.excalidraw.com/excalifont";
     description = "Font based on the original handwritten Virgil font carefully curated to improve legibility while preserving its hand-drawn nature";
-    platforms = lib.platforms.all;
-    maintainers = [ ];
+    homepage = "https://plus.excalidraw.com/excalifont";
     license = lib.licenses.ofl;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

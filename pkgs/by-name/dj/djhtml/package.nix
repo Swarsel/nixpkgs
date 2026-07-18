@@ -1,12 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "djhtml";
   version = "3.0.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rtts";
@@ -16,12 +15,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   build-system = [ python3Packages.setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "djhtml" ];
 
   meta = {
-    homepage = "https://github.com/rtts/djhtml";
     description = "Django/Jinja template indenter";
+    homepage = "https://github.com/rtts/djhtml";
     changelog = "https://github.com/rtts/djhtml/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];

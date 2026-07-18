@@ -1,31 +1,29 @@
 {
   lib,
   buildPythonPackage,
+  distutils,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   numpy,
-  tensorflow,
-  pythonAtLeast,
-  distutils,
-
   # tests
   pytestCheckHook,
+  pythonAtLeast,
+  # build-system
+  setuptools,
+  tensorflow,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "tf-keras";
   inherit (tensorflow) version;
-  pyproject = true;
+  pname = "tf-keras";
 
   src = fetchPypi {
-    pname = "tf_keras";
     inherit (finalAttrs) version;
     hash = "sha256-+a8PJUbNVTLeD656SB80ocoiU3N9TNEAD2txPccz93A=";
+    pname = "tf_keras";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -37,9 +35,8 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals (pythonAtLeast "3.12") [ distutils ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tf_keras" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Deep learning for humans";

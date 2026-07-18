@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -14,11 +14,7 @@ stdenvNoCC.mkDerivation rec {
     stripRoot = false;
   };
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
   doCheck = false;
-  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
@@ -27,6 +23,11 @@ stdenvNoCC.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
 
   meta = {
     description = "Free and open-source monospaced font from Evil Martians";

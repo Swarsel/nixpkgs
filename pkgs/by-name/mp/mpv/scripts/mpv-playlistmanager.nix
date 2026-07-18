@@ -1,7 +1,7 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   unstableGitUpdater,
   yt-dlp,
 }:
@@ -16,13 +16,14 @@ buildLua {
     rev = "2eb09e1e7a2f66549145b728d570fda83703ed86";
     hash = "sha256-NZ6tRq0DLzg1NlpIwbMZPoWQmJZ0cynDuyF5TGazOfc=";
   };
-  passthru.updateScript = unstableGitUpdater { };
 
   postPatch = ''
     substituteInPlace playlistmanager.lua \
       --replace-fail 'youtube_dl_executable = "yt-dlp",' \
       'youtube_dl_executable = "${lib.getExe yt-dlp}"',
   '';
+
+  passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Mpv lua script to create and manage playlists";

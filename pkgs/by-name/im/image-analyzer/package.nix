@@ -1,17 +1,17 @@
 {
-  cmake,
-  pkg-config,
-  gobject-introspection,
-  wrapGAppsHook3,
-  python3Packages,
-  libxml2,
-  gnuplot,
+  lib,
+  fetchurl,
   adwaita-icon-theme,
+  cmake,
   gdk-pixbuf,
+  gnuplot,
+  gobject-introspection,
   intltool,
   libmirage,
-  fetchurl,
-  lib,
+  libxml2,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook3,
   writeScript,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -22,6 +22,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     url = "mirror://sourceforge/cdemu/image-analyzer-${finalAttrs.version}.tar.xz";
     hash = "sha256-vsfDmtjrvAC49ynnJ7QguBfSVnt/sBpCy/Eau2l1/jQ=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    wrapGAppsHook3
+    intltool
+    gobject-introspection
+  ];
 
   buildInputs = [
     libxml2
@@ -36,20 +44,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     matplotlib
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    wrapGAppsHook3
-    intltool
-    gobject-introspection
-  ];
-
-  pyproject = false;
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  dontWrapGApps = true;
+  pyproject = false;
 
   passthru = {
     updateScript = writeScript "update-image-analyzer" ''
@@ -67,6 +67,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Suite of tools for emulating optical drives and discs";
+
     longDescription = ''
       CDEmu consists of:
 
@@ -78,9 +79,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
       Optical media emulated by CDemu can be mounted within Linux. Automounting is also allowed.
     '';
+
     homepage = "https://cdemu.sourceforge.io/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bendlas ];
+    platforms = lib.platforms.linux;
   };
 })

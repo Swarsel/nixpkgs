@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "5.1";
   pname = "messer-slim";
+  version = "5.1";
 
   src = fetchFromGitHub {
     owner = "MesserLab";

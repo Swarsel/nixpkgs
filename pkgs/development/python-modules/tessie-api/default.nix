@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
+  buildPythonPackage,
   hatchling,
-  pytz,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
+  pytz,
 }:
 
 buildPythonPackage rec {
   pname = "tessie-api";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "andrewgierens";
@@ -21,6 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-Ia5J7dGbcfEa6rEKyJzEnzVnMC3HyI7l5g20v7d7Gjo=";
   };
 
+  # Tests require API credentials
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -28,15 +35,8 @@ buildPythonPackage rec {
     pytz
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tessie_api" ];
-
-  # Tests require API credentials
-  doCheck = false;
 
   meta = {
     description = "Python wrapper for the Tessie API";

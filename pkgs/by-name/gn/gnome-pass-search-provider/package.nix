@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gobject-introspection,
+  gtk3,
   python3Packages,
   wrapGAppsHook3,
-  gtk3,
-  gobject-introspection,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-AJyfvA7PrBwQROHcczvQjL+UxI/61mRir1HmCr3BwDY=";
   };
+
+  postPatch = ''
+    substituteInPlace  conf/org.gnome.Pass.SearchProvider.service.{dbus,systemd} \
+      --replace-fail "/usr/lib" "$LIBDIR"
+  '';
 
   nativeBuildInputs = [
     python3Packages.wrapPython
@@ -35,14 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    LIBDIR = placeholder "out" + "/lib";
     DATADIR = placeholder "out" + "/share";
+    LIBDIR = placeholder "out" + "/lib";
   };
-
-  postPatch = ''
-    substituteInPlace  conf/org.gnome.Pass.SearchProvider.service.{dbus,systemd} \
-      --replace-fail "/usr/lib" "$LIBDIR"
-  '';
 
   installPhase = ''
     runHook preInstall

@@ -1,8 +1,8 @@
 {
-  options,
   config,
   lib,
   pkgs,
+  options,
   ...
 }:
 
@@ -15,15 +15,18 @@ in
 {
   options = {
     system.activatable = mkOption {
-      type = types.bool;
       default = true;
+
       description = ''
         Whether to add the activation script to the system profile.
 
         The default, to have the script available all the time, is what we normally
         do, but for image based systems, this may not be needed or not be desirable.
       '';
+
+      type = types.bool;
     };
+
     system.activatableSystemBuilderCommands = options.system.systemBuilderCommands // {
       description = ''
         Like `system.systemBuilderCommands`, but only for the commands that are
@@ -36,33 +39,36 @@ in
         a discussion.
       '';
     };
+
     system.build.separateActivationScript = mkOption {
-      type = types.package;
       description = ''
         A separate activation script package that's not part of the system profile.
 
         This is useful for configurations where `system.activatable` is `false`.
         Otherwise, you can just use `system.build.toplevel`.
       '';
+
+      type = types.package;
     };
   };
+
   config =
     let
       activationScript = lib.getExe (
         (pkgs.writeShellApplication {
+          bashOptions = [ ];
+          checkPhase = "";
           name = "activate";
           text = config.system.activationScripts.script;
-          checkPhase = "";
-          bashOptions = [ ];
         }).overrideAttrs
           { preferLocalBuild = true; }
       );
       dryActivationScript = lib.getExe (
         (pkgs.writeShellApplication {
+          bashOptions = [ ];
+          checkPhase = "";
           name = "dry-activate";
           text = config.system.dryActivationScript;
-          checkPhase = "";
-          bashOptions = [ ];
         }).overrideAttrs
           { preferLocalBuild = true; }
       );
@@ -79,20 +85,21 @@ in
           ${lib.getExe pkgs.buildPackages.gnused} --in-place --expression "s|@out@|''${!toplevelVar}|g" $out/activate $out/dry-activate
         '';
 
-      system.systemBuilderCommands = lib.mkIf config.system.activatable config.system.activatableSystemBuilderCommands;
-      system.systemBuilderArgs = lib.mkIf config.system.activatable {
-        toplevelVar = "out";
-      };
-
       system.build.separateActivationScript =
         pkgs.runCommand "separate-activation-script"
           {
-            toplevelVar = "toplevel";
             toplevel = config.system.build.toplevel;
+            toplevelVar = "toplevel";
           }
           ''
             mkdir $out
             ${config.system.activatableSystemBuilderCommands}
           '';
+
+      system.systemBuilderArgs = lib.mkIf config.system.activatable {
+        toplevelVar = "out";
+      };
+
+      system.systemBuilderCommands = lib.mkIf config.system.activatable config.system.activatableSystemBuilderCommands;
     };
 }

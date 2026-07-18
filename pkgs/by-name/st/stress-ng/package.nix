@@ -9,11 +9,11 @@
   libapparmor,
   libbsd,
   libcap,
+  libgbm,
   libgcrypt,
+  libglvnd,
   lksctp-tools,
   zlib,
-  libglvnd,
-  libgbm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,7 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isMusl "-D_LINUX_SYSINFO_H=1";
-
   # Won't build on i686 because the binary will be linked again in the
   # install phase without checking the dependencies. This will prevent
   # triggering the rebuild. Why this only happens on i686 remains a
@@ -66,6 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Stress test a computer system";
+
     longDescription = ''
       stress-ng will stress test a computer system in various selectable ways. It
       was designed to exercise various physical subsystems of a computer as well as
@@ -90,14 +90,17 @@ stdenv.mkDerivation (finalAttrs: {
       hardware. However, it has never been intended to be used as a precise benchmark
       test suite, so do NOT use it in this manner.
     '';
+
     homepage = "https://github.com/ColinIanKing/stress-ng";
-    downloadPage = "https://github.com/ColinIanKing/stress-ng/tags";
     changelog = "https://github.com/ColinIanKing/stress-ng/raw/V${finalAttrs.version}/debian/changelog";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       dbeley
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "stress-ng";
+    downloadPage = "https://github.com/ColinIanKing/stress-ng/tags";
   };
 })

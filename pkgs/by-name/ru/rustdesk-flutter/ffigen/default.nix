@@ -1,7 +1,7 @@
 {
-  buildDartApplication,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildDartApplication,
   flutter,
 }:
 
@@ -21,10 +21,9 @@ buildDartApplication rec {
     ln -s ${flutter}/bin/dart $out/bin/dart
   '';
 
-  sourceRoot = "${src.name}/pkgs/ffigen";
-  pubspecLock = lib.importJSON ./ffigen.pubspec.lock.json;
   dartEntryPoints."bin/ffigen" = "bin/ffigen.dart";
-
-  meta.mainProgram = "ffigen";
+  pubspecLock = lib.importJSON ./ffigen.pubspec.lock.json;
+  sourceRoot = "${src.name}/pkgs/ffigen";
   meta.license = lib.licenses.bsd3;
+  meta.mainProgram = "ffigen";
 }

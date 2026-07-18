@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.6.1";
   pname = "commons-math";
+  version = "3.6.1";
 
   src = fetchurl {
     url = "mirror://apache/commons/math/binaries/commons-math3-${finalAttrs.version}-bin.tar.gz";
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://commons.apache.org/proper/commons-math/";
     description = "Library of lightweight, self-contained mathematics and statistics components";
-    maintainers = [ ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://commons.apache.org/proper/commons-math/";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = [ ];
     platforms = with lib.platforms; unix;
   };
 })

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   gtk-engine-murrine,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
   configureFlags = [ "--disable-unity" ];
 
   postInstall = ''
@@ -37,11 +35,13 @@ stdenv.mkDerivation (finalAttrs: {
     cp AUTHORS README.md $out/share/doc/$pname/
   '';
 
+  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Theme for GTK 3, GTK 2, Gnome-Shell, and Cinnamon";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
   };
 })

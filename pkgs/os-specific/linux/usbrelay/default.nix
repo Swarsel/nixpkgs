@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   hidapi,
   installShellFiles,
@@ -36,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool to control USB HID relays";
-    mainProgram = "usbrelay";
     homepage = "https://github.com/darrylb123/usbrelay";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ wentasah ];
     platforms = lib.platforms.linux;
+    mainProgram = "usbrelay";
   };
 })

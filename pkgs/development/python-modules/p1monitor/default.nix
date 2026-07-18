@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "p1monitor";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "klaasnicolaas";
@@ -29,13 +28,6 @@ buildPythonPackage rec {
       --replace '"0.0.0"' '"${version}"'
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    yarl
-  ];
-
   nativeCheckInputs = [
     aresponses
     pytest-asyncio
@@ -44,6 +36,14 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+    yarl
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "p1monitor" ];
 
   meta = {

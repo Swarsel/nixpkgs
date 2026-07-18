@@ -11,6 +11,7 @@
           owner = "HansKristian-Work";
           repo = "vkd3d-proton";
           tag = "v${self.version}";
+          hash = "sha256-8YA/I5UL6G5v4uZE2qKqXzHWeZxg67jm20rONKocvvE=";
           fetchSubmodules = true;
           #
           # Some files are filled by using Git commands; it requires deepClone.
@@ -24,6 +25,7 @@
           # - Remove `.git` afterwards.
           #
           deepClone = true;
+
           postFetch = ''
             cd $out
             mkdir -p .nixpkgs-auxfiles/
@@ -31,7 +33,6 @@
             git describe --always --tags --dirty=+ > .nixpkgs-auxfiles/vkd3d_version
             find $out -name .git -print0 | xargs -0 rm -fr
           '';
-          hash = "sha256-8YA/I5UL6G5v4uZE2qKqXzHWeZxg67jm20rONKocvvE=";
         };
       };
     in

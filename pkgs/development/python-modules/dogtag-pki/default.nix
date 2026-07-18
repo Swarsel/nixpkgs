@@ -1,8 +1,8 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
   cryptography,
+  fetchPypi,
   python-ldap,
   requests,
   six,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "dogtag-pki";
   version = "11.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -22,11 +21,14 @@ buildPythonPackage rec {
     cryptography
     python-ldap
   ];
-  pythonImportsCheck = [ "pki" ];
+
   propagatedBuildInputs = [
     requests
     six
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "pki" ];
 
   meta = {
     description = "Enterprise-class Certificate Authority";

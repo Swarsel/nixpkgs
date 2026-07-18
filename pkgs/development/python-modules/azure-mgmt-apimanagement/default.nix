@@ -11,14 +11,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-apimanagement";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_apimanagement";
     inherit version;
     hash = "sha256-Crf+F+cP4xVM2ED/R9GdekYQIXAD6qfCGs81EableZk=";
+    pname = "azure_mgmt_apimanagement";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +28,7 @@ buildPythonPackage rec {
     isodate
   ];
 
-  # no tests included
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.common"

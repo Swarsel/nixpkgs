@@ -14,13 +14,13 @@ stdenv.mkDerivation {
     hash = "sha256-yeLTQP8TYDkaMmynRxmATPi2/5VxkUZsYd44UQwz4PY=";
   };
 
-  strictDeps = true;
-
   # Static build does not work on darwin due to linker issues
   postPatch = ''
     substituteInPlace Makefile --replace-fail \
       "CFLAGS += -g -static -Wall" "CFLAGS += -g -Wall"
   '';
+
+  strictDeps = true;
 
   # Default build target tries to compile binary for Android
   buildPhase = ''
@@ -37,11 +37,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/djrbliss/loki";
     description = "Tool for custom firmware on AT&T/Verizon Samsung and LG devices";
+    homepage = "https://github.com/djrbliss/loki";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ ungeskriptet ];
-    teams = [ lib.teams.android ];
     mainProgram = "loki_tool";
+    teams = [ lib.teams.android ];
   };
 }

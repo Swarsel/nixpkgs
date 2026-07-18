@@ -18,7 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Musepack SV7 decoder library";
-    platforms = lib.platforms.unix;
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.unix;
   };
 })

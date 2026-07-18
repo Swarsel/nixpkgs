@@ -1,9 +1,9 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  zstd,
+  fetchurl,
   directoryListingUpdater,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -11,11 +11,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.69";
 
   src = fetchurl {
+    hash = "sha256-uwJGQHL3ad2YMv2ZlSZzTJDrTWb7VtU1FUCnUMiKd/Y=";
+
     urls = [
       "https://invisible-island.net/archives/diffstat/diffstat-${finalAttrs.version}.tgz"
       "https://invisible-mirror.net/archives/diffstat/diffstat-${finalAttrs.version}.tgz"
     ];
-    hash = "sha256-uwJGQHL3ad2YMv2ZlSZzTJDrTWb7VtU1FUCnUMiKd/Y=";
   };
 
   buildInputs = [ zstd ];
@@ -26,15 +27,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Read output of diff and display a histogram of the changes";
-    mainProgram = "diffstat";
+
     longDescription = ''
       diffstat reads the output of diff and displays a histogram of the
       insertions, deletions, and modifications per-file. It is useful for
       reviewing large, complex patch files.
     '';
+
     homepage = "https://invisible-island.net/diffstat/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.unix;
+    mainProgram = "diffstat";
   };
 })

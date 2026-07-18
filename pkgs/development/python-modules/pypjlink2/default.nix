@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   appdirs,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pypjlink2";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "benoitlouy";
@@ -18,6 +17,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-0RVI9DX5JaVWntSu5du5SU45NC70TZJyVrvMuVR7grA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -27,9 +30,7 @@ buildPythonPackage rec {
     appdirs
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pypjlink"

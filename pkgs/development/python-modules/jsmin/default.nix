@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "jsmin";
   version = "3.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,8 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "jsmin/test.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "jsmin" ];
 
   meta = {

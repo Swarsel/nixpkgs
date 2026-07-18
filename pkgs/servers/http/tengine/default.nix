@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
-  zlib,
-  pcre2,
-  libxcrypt,
-  libxml2,
-  libxslt,
-  replaceVars,
   gd,
   geoip,
   gperftools,
   jemalloc,
+  libxcrypt,
+  libxml2,
+  libxslt,
   nixosTests,
+  openssl,
+  pcre2,
+  replaceVars,
+  zlib,
+  modules ? [ ],
   withDebug ? false,
   withMail ? false,
   withStream ? false,
-  modules ? [ ],
   ...
 }:
 
@@ -25,8 +25,8 @@ let
   inherit (lib) optional optionals optionalString;
 in
 stdenv.mkDerivation rec {
-  version = "3.1.0";
   pname = "tengine";
+  version = "3.1.0";
 
   src = fetchFromGitHub {
     owner = "alibaba";
@@ -34,6 +34,18 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-cClSNBlresMHqJrqSFWvUo589TlwJ2tL5FWJG9QBuis=";
   };
+
+  patches = [
+    ../nginx/nix-etag-1.15.4.patch
+    ./check-resolv-conf.patch
+    ../nginx/nix-skip-check-logs-path.patch
+  ];
+
+  postPatch = ''
+    substituteInPlace src/http/ngx_http_core_module.c \
+      --replace-fail '@nixStoreDir@' "$NIX_STORE" \
+      --replace-fail '@nixStoreDirLen@' "''${#NIX_STORE}"
+  '';
 
   buildInputs = [
     openssl
@@ -48,18 +60,6 @@ stdenv.mkDerivation rec {
     jemalloc
   ]
   ++ lib.concatMap (mod: mod.inputs or [ ]) modules;
-
-  patches = [
-    ../nginx/nix-etag-1.15.4.patch
-    ./check-resolv-conf.patch
-    ../nginx/nix-skip-check-logs-path.patch
-  ];
-
-  postPatch = ''
-    substituteInPlace src/http/ngx_http_core_module.c \
-      --replace-fail '@nixStoreDir@' "$NIX_STORE" \
-      --replace-fail '@nixStoreDirLen@' "''${#NIX_STORE}"
-  '';
 
   configureFlags = [
     "--with-http_ssl_module"
@@ -137,11 +137,11 @@ stdenv.mkDerivation rec {
 
   preConfigure = (lib.concatMapStringsSep "\n" (mod: mod.preConfigure or "") modules);
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     mv $out/sbin $out/bin
   '';
+
+  enableParallelBuilding = true;
 
   passthru = {
     inherit modules;
@@ -150,10 +150,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Web server based on Nginx and has many advanced features, originated by Taobao";
-    mainProgram = "nginx";
     homepage = "https://tengine.taobao.org";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = lib.platforms.all;
+    mainProgram = "nginx";
   };
 }

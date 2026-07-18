@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
+  desktop-file-utils,
+  granite7,
+  gtk4,
+  libadwaita,
+  libgee,
   meson,
   ninja,
-  vala,
-  desktop-file-utils,
-  gtk4,
-  granite7,
-  libadwaita,
-  vte-gtk4,
-  libgee,
+  nix-update-script,
   pcre2,
+  pkg-config,
+  vala,
+  vte-gtk4,
   wrapGAppsHook4,
 }:
 
@@ -52,14 +52,16 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Terminal emulator designed for elementary OS";
+
     longDescription = ''
       A super lightweight, beautiful, and simple terminal. Comes with sane defaults, browser-class tabs, sudo paste protection,
       smart copy/paste, and little to no configuration.
     '';
+
     homepage = "https://github.com/elementary/terminal";
     license = lib.licenses.lgpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.terminal";
+    teams = [ lib.teams.pantheon ];
   };
 }

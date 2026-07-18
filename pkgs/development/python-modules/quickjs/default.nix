@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  pkgs,
   poetry-core,
   pytestCheckHook,
-  pkgs,
+  setuptools,
 }:
 
 let
@@ -15,7 +15,6 @@ in
 buildPythonPackage rec {
   pname = "quickjs";
   version = "1.19.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PetterS";
@@ -26,13 +25,6 @@ buildPythonPackage rec {
 
   patches = [ ./0001-Update-for-QuickJS-2025-04-26-release.patch ];
 
-  # Upstream uses Git submodules; let's de-vendor and use Nix, so that we gain security fixes like
-  # https://github.com/NixOS/nixpkgs/pull/407469
-  prePatch = ''
-    rmdir upstream-quickjs
-    ln -s ${srcOnly quickjs} upstream-quickjs
-  '';
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail poetry>=1.5.0 poetry \
@@ -40,13 +32,21 @@ buildPythonPackage rec {
       --replace-fail 'version = "0"' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     poetry-core
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  # Upstream uses Git submodules; let's de-vendor and use Nix, so that we gain security fixes like
+  # https://github.com/NixOS/nixpkgs/pull/407469
+  prePatch = ''
+    rmdir upstream-quickjs
+    ln -s ${srcOnly quickjs} upstream-quickjs
+  '';
 
+  pyproject = true;
   pythonImportsCheck = [ "quickjs" ];
 
   meta = {

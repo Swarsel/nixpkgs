@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "oset";
   version = "0.1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,6 +14,7 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Ordered set";

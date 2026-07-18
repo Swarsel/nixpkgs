@@ -6,7 +6,6 @@
 
 melpaBuild {
   pname = "font-lock-plus";
-  ename = "font-lock+";
   version = "208-unstable-2022-04-02";
 
   src = fetchFromGitHub {
@@ -16,9 +15,11 @@ melpaBuild {
     hash = "sha256-er+knxqAejgKAtOnhqHfsGN286biHFdeMIUlbW7JyYw=";
   };
 
+  ename = "font-lock+";
+
   meta = {
-    homepage = "https://github.com/emacsmirror/font-lock-plus";
     description = "Enhancements to standard library font-lock.el";
+    homepage = "https://github.com/emacsmirror/font-lock-plus";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
   };

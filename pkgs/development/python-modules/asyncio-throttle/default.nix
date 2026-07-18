@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-asyncio,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "asyncio-throttle";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hallazzang";
@@ -19,13 +18,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-u1qminadb29zh90k+L5KSK0jkU2OaWQocRBU1qpnUsM=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "asyncio_throttle" ];
 
   meta = {

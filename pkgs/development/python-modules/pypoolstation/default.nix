@@ -11,13 +11,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "pypoolstation";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-blTvbvuIS2YISd0jBR/TXOSm594htGB7lc9JpA+3ayM=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     importlib-metadata
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pypoolstation" ];
 
   meta = {

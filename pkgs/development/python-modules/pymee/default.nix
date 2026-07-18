@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
-  websockets,
+  buildPythonPackage,
   regex,
+  setuptools,
+  websockets,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pymee";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "FreshlyBrewedCode";
@@ -20,17 +19,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-VNKIA/1juhkn11nkW52htvE4daXJoySeEyevWbboUek=";
   };
 
+  # no tests
+  doCheck = false;
   build-system = [ setuptools ];
+
   dependencies = [
     aiohttp
     websockets
     regex
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pymee" ];
-
-  # no tests
-  doCheck = false;
 
   meta = {
     description = "Python library to interact with homee";

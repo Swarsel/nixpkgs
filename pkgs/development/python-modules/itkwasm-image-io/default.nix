@@ -13,20 +13,21 @@
 buildPythonPackage (finalAttrs: {
   pname = "itkwasm-image-io";
   version = "1.6.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "itkwasm_image_io";
     inherit (finalAttrs) version;
     hash = "sha256-Iwb6Xd+N3P+QsWhhu5q1Dx/joUClNgHBaWrgUalx0V4=";
+    pname = "itkwasm_image_io";
   };
+
+  nativeBuildInputs = [ writableTmpDirAsHomeHook ];
+  # No tests available
+  doCheck = false;
 
   build-system = [
     hatch-vcs
     hatchling
   ];
-
-  nativeBuildInputs = [ writableTmpDirAsHomeHook ];
 
   dependencies = [
     itkwasm
@@ -34,10 +35,8 @@ buildPythonPackage (finalAttrs: {
     itkwasm-image-io-wasi
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "itkwasm_image_io" ];
-
-  # No tests available
-  doCheck = false;
 
   meta = {
     description = "Input and output for scientific and medical image file formats";

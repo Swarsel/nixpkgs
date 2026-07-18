@@ -1,39 +1,38 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  autoflake,
+  black,
+  buildPythonPackage,
   # propagated build inputs
   click,
-  fastapi,
-  jinja2,
-  mypy,
-  nbconvert,
-  python-multipart,
-  pandas,
-  types-requests,
-  types-ujson,
-  uvicorn,
-  autoflake,
-  # native check inputs
-  pytestCheckHook,
-  black,
   coverage,
+  fastapi,
   flake8,
   httpx,
   ipython,
+  jinja2,
+  mypy,
+  nbconvert,
+  nbdev,
+  pandas,
   pytest-cov-stub,
+  pytest-mock,
+  # native check inputs
+  pytestCheckHook,
+  python-multipart,
   requests,
   requests-toolbelt,
-  nbdev,
-  pytest-mock,
+  types-requests,
+  types-ujson,
+  uvicorn,
 }:
 let
   version = "0.10.11";
 in
 buildPythonPackage {
-  pname = "unstructured-api-tools";
   inherit version;
-  format = "setuptools";
+  pname = "unstructured-api-tools";
 
   src = fetchFromGitHub {
     owner = "Unstructured-IO";
@@ -57,17 +56,15 @@ buildPythonPackage {
   ]
   ++ uvicorn.optional-dependencies.standard;
 
-  pythonImportsCheck = [ "unstructured_api_tools" ];
-
   # test require file generation but it complains about a missing file mypy
   doCheck = false;
+
   # preCheck = ''
   #   substituteInPlace Makefile \
   #     --replace "PYTHONPATH=." "" \
   #     --replace "mypy" "${mypy}/bin/mypy"
   #   make generate-test-api
   # '';
-
   nativeCheckInputs = [
     pytestCheckHook
     black
@@ -82,12 +79,15 @@ buildPythonPackage {
     pytest-mock
   ];
 
+  format = "setuptools";
+  pythonImportsCheck = [ "unstructured_api_tools" ];
+
   meta = {
     description = "";
-    mainProgram = "unstructured_api_tools";
     homepage = "https://github.com/Unstructured-IO/unstructured-api-tools";
     changelog = "https://github.com/Unstructured-IO/unstructured-api-tools/blob/${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ happysalada ];
+    mainProgram = "unstructured_api_tools";
   };
 }

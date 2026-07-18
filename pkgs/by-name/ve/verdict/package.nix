@@ -21,17 +21,17 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
   ];
 
+  doCheck = true;
+
   nativeCheckInputs = [
     gtest
   ];
 
-  doCheck = true;
-
   meta = {
     description = "Compute functions of 2- and 3-dimensional regions";
     homepage = "https://github.com/sandialabs/verdict";
-    license = lib.licenses.bsd3;
     changelog = "https://github.com/sandialabs/verdict/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
   };

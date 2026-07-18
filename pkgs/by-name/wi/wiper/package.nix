@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 let
   version = "0.2.1";
 in
 rustPlatform.buildRustPackage {
-  pname = "wiper";
   inherit version;
+  pname = "wiper";
 
   src = fetchFromGitHub {
     owner = "ikebastuz";
@@ -21,8 +21,8 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Disk analyser and cleanup tool";
-    changelog = "https://github.com/ikebastuz/wiper/releases/tag/v${version}";
     homepage = "https://github.com/ikebastuz/wiper";
+    changelog = "https://github.com/ikebastuz/wiper/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ isabelroses ];
     mainProgram = "wiper";

@@ -1,6 +1,6 @@
 {
-  nano,
   expect,
+  nano,
   runCommand,
   writeScriptBin,
 }:
@@ -37,6 +37,7 @@ runCommand "nano-test-expect"
       nano
       expect
     ];
+
     passthru = { inherit expect-script; };
   }
   ''

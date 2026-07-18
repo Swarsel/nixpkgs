@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "kerberos";
   version = "1.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ libkrb5 ];
-
   # No tests in archive
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Kerberos high-level interface";

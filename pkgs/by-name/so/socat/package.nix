@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
   fetchurl,
+  buildPackages,
   net-tools,
   openssl,
   readline,
-  stdenv,
   which,
-  buildPackages,
 }:
 
 stdenv.mkDerivation rec {
@@ -25,6 +25,11 @@ stdenv.mkDerivation rec {
       --replace /sbin/ifconfig ifconfig
   '';
 
+  buildInputs = [
+    openssl
+    readline
+  ];
+
   configureFlags =
     lib.optionals (!stdenv.hostPlatform.isLinux) [
       "--disable-posixmq"
@@ -33,18 +38,14 @@ stdenv.mkDerivation rec {
       "--disable-dccp"
     ];
 
-  buildInputs = [
-    openssl
-    readline
-  ];
-
-  enableParallelBuilding = true;
+  doCheck = false; # fails a bunch, hangs
 
   nativeCheckInputs = [
     which
     net-tools
   ];
-  doCheck = false; # fails a bunch, hangs
+
+  enableParallelBuilding = true;
 
   passthru.tests = lib.optionalAttrs stdenv.buildPlatform.isLinux {
     musl = buildPackages.pkgsMusl.socat;
@@ -53,9 +54,9 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Utility for bidirectional data transfer between two independent data channels";
     homepage = "http://www.dest-unreach.org/socat/";
-    platforms = lib.platforms.unix;
     license = with lib.licenses; [ gpl2Only ];
     maintainers = with lib.maintainers; [ ryan4yin ];
+    platforms = lib.platforms.unix;
     mainProgram = "socat";
   };
 }

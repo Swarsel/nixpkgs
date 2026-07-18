@@ -1,15 +1,15 @@
 {
   lib,
-  writeScript,
-  common-updater-scripts,
+  fetchurl,
   bash,
+  common-updater-scripts,
   coreutils,
   curl,
-  fetchurl,
   gnugrep,
   gnupg,
   gnused,
   nix,
+  writeScript,
 }:
 
 let
@@ -17,16 +17,16 @@ let
 
   signingKeys = lib.lists.map fetchurl [
     {
-      url = "https://github.com/spesmilo/electrum/raw/master/pubkeys/Emzy.asc";
       hash = "sha256-QG0cM6AKlSKFacVlhcso/xvrooUdF7oqoppyezt0hjE=";
+      url = "https://github.com/spesmilo/electrum/raw/master/pubkeys/Emzy.asc";
     }
     {
-      url = "https://github.com/spesmilo/electrum/raw/master/pubkeys/ThomasV.asc";
       hash = "sha256-37ApVZlI+2EevxQIKXVKVpktt1Ls3UbWq4dfio2ORdo=";
+      url = "https://github.com/spesmilo/electrum/raw/master/pubkeys/ThomasV.asc";
     }
     {
-      url = "https://github.com/spesmilo/electrum/raw/master/pubkeys/sombernight_releasekey.asc";
       hash = "sha256-GgdPJ9TB5hh5SPCcTZURfqXkrU4qwl0dCci52V/wpdQ=";
+      url = "https://github.com/spesmilo/electrum/raw/master/pubkeys/sombernight_releasekey.asc";
     }
   ];
 

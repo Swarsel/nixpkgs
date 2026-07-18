@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   dask,
   numpy,
-  scipy,
   pims,
-
   # tests
   pyarrow,
   pytestCheckHook,
   scikit-image,
+  scipy,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dask-image";
   version = "2026.5.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "dask";
@@ -37,6 +32,14 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "--flake8" ""
   '';
 
+  nativeCheckInputs = [
+    pyarrow
+    pytestCheckHook
+    scikit-image
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
     setuptools-scm
@@ -48,14 +51,6 @@ buildPythonPackage (finalAttrs: {
     pims
     scipy
   ];
-
-  nativeCheckInputs = [
-    pyarrow
-    pytestCheckHook
-    scikit-image
-  ];
-
-  pythonImportsCheck = [ "dask_image" ];
 
   disabledTests = [
     # The following tests are from 'tests/test_dask_image/test_ndmeasure/test_find_objects.py' and
@@ -72,6 +67,9 @@ buildPythonPackage (finalAttrs: {
     "test_generic_filter_identity"
     "test_generic_filter_comprehensions"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dask_image" ];
 
   meta = {
     description = "Distributed image processing";

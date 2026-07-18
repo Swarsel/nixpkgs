@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
-  which,
   cmake,
+  fetchpatch,
   fftwSinglePrec,
   libsamplerate,
+  pkg-config,
   qtbase,
+  which,
 }:
 
 stdenv.mkDerivation {
@@ -24,9 +24,9 @@ stdenv.mkDerivation {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/lastfm/liblastfm/commit/9c5d072b55f2863310e40291677e6397e9cbc3c2.patch";
       name = "0001-Remove-deprecated-staging-server-and-fix-test-for-QT5-at-Ubuntu-19.10.patch";
       sha256 = "04r14prydxshjgfws3pjajjmp2msszhjjs1mjh8s66yg29vq620l";
+      url = "https://github.com/lastfm/liblastfm/commit/9c5d072b55f2863310e40291677e6397e9cbc3c2.patch";
     })
   ];
 
@@ -43,6 +43,7 @@ stdenv.mkDerivation {
     which
     cmake
   ];
+
   buildInputs = [
     fftwSinglePrec
     libsamplerate
@@ -56,10 +57,10 @@ stdenv.mkDerivation {
   dontWrapQtApps = true;
 
   meta = {
-    homepage = "https://github.com/lastfm/liblastfm";
     description = "Official LastFM library";
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
+    homepage = "https://github.com/lastfm/liblastfm";
     license = lib.licenses.gpl3;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

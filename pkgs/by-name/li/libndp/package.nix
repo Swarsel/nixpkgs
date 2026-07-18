@@ -17,9 +17,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchurl {
+      hash = "sha256-1ZcXgZv3mYtt5NaK4rUMnScWVajlWQ+anzBDS5IfgJI=";
       name = "musl.patch";
       url = "https://git.alpinelinux.org/aports/plain/community/libndp/0001-Patch-libndp.c.patch?id=00406a9c697d88f531962cb63e5343488a959b93";
-      hash = "sha256-1ZcXgZv3mYtt5NaK4rUMnScWVajlWQ+anzBDS5IfgJI=";
     })
   ];
 
@@ -30,17 +30,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/jpirko/libndp.git";
     rev-prefix = "v";
+    url = "https://github.com/jpirko/libndp.git";
   };
 
   meta = {
-    homepage = "http://libndp.org/";
     description = "Library for Neighbor Discovery Protocol";
-    mainProgram = "ndptool";
-    platforms = lib.platforms.linux;
-    maintainers = [ ];
+    homepage = "http://libndp.org/";
     license = lib.licenses.lgpl21;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ndptool";
   };
 
 })

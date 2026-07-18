@@ -1,13 +1,13 @@
 {
-  jre,
   lib,
   stdenv,
-  gradle,
-  makeWrapper,
   fetchFromGitHub,
-  versionCheckHook,
+  gradle,
   installShellFiles,
+  jre,
+  makeWrapper,
   stripJavaArchivesHook,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-iCBD9al7TbueG2kwkI6qzZT2Rixm1OanNBz1MuLapXI=";
   };
 
-  gradleBuildTask = "jvmJar";
-
   nativeBuildInputs = [
     gradle
     makeWrapper
@@ -30,15 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     stripJavaArchivesHook
   ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  # this is required for using mitm-cache on Darwin
-  __darwinAllowLocalNetworking = true;
-
-  gradleCheckTask = "jvmTest";
   doCheck = true;
 
   installPhase = ''
@@ -61,26 +50,39 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  # this is required for using mitm-cache on Darwin
+  __darwinAllowLocalNetworking = true;
+  gradleBuildTask = "jvmJar";
+  gradleCheckTask = "jvmTest";
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
 
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Multiplatform modpack manager for Minecraft: Java Edition";
+
     longDescription = ''
       With Pakku, you can create modpacks for CurseForge, Modrinth or both simultaneously.
 
       It's a package manager that significantly simplifies Minecraft modpack development, inspired by package managers like npm and Cargo. In addition to package management itself, it enables support for version control, simplifies collaboration options, and adds support for CI/CD.
     '';
+
     homepage = "https://github.com/juraj-hrivnak/Pakku";
-    downloadPage = "https://github.com/juraj-hrivnak/Pakku/releases/tag/v${finalAttrs.version}";
     changelog = "https://github.com/juraj-hrivnak/Pakku/releases/tag/v${finalAttrs.version}";
-    mainProgram = "pakku";
     license = lib.licenses.eupl12;
-    platforms = jre.meta.platforms;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # mitm cache
     ];
+
     maintainers = with lib.maintainers; [ redlonghead ];
+    platforms = jre.meta.platforms;
+    mainProgram = "pakku";
+    downloadPage = "https://github.com/juraj-hrivnak/Pakku/releases/tag/v${finalAttrs.version}";
   };
 })

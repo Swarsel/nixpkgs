@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  clang_20,
-  buildNpmPackage,
-  nodejs_22,
   bruno,
-  pkg-config,
-  pango,
-  testers,
   bruno-cli,
+  buildNpmPackage,
+  clang_20,
+  nodejs_22,
+  pango,
+  pkg-config,
+  testers,
 }:
 
 let
@@ -16,17 +16,10 @@ let
 in
 buildNpmPackage {
   inherit pname;
-
   # since they only make releases and git tags for bruno,
   # we lie about bruno-cli's version and say it's the same as bruno's
   # to keep them in sync with easier maintenance
   inherit (bruno) version src npmDepsHash;
-
-  # npm dependency install fails with nodejs_24: https://github.com/NixOS/nixpkgs/issues/474535
-  nodejs = nodejs_22;
-
-  npmWorkspace = "packages/bruno-cli";
-  npmFlags = [ "--legacy-peer-deps" ];
 
   nativeBuildInputs = [
     pkg-config
@@ -37,15 +30,13 @@ buildNpmPackage {
     pango
   ];
 
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
+
   postConfigure = ''
     # sh: line 1: /build/source/packages/bruno-converters/node_modules/.bin/rimraf: cannot execute: required file not found
     patchShebangs packages/*/node_modules
   '';
 
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
-
-  # remove giflib dependency
-  npmRebuildFlags = [ "--ignore-scripts" ];
   preBuild = ''
     # upstream keeps removing and adding back canvas, only patch it when it is present
     if [[ -e node_modules/canvas/binding.gyp ]]; then
@@ -70,8 +61,6 @@ buildNpmPackage {
 
     runHook postBuild
   '';
-
-  npmPackFlags = [ "--ignore-scripts" ];
 
   postInstall = ''
     cp -r packages $out/lib/node_modules/usebruno
@@ -103,9 +92,18 @@ buildNpmPackage {
       --prefix NODE_PATH : $out/lib/node_modules
   '';
 
+  # npm dependency install fails with nodejs_24: https://github.com/NixOS/nixpkgs/issues/474535
+  nodejs = nodejs_22;
+  npmFlags = [ "--legacy-peer-deps" ];
+  npmPackFlags = [ "--ignore-scripts" ];
+  # remove giflib dependency
+  npmRebuildFlags = [ "--ignore-scripts" ];
+  npmWorkspace = "packages/bruno-cli";
+
   passthru.tests.help = testers.runCommand {
-    name = "${pname}-help-test";
     nativeBuildInputs = [ bruno-cli ];
+    name = "${pname}-help-test";
+
     script = ''
       bru --help && touch $out
     '';
@@ -115,13 +113,15 @@ buildNpmPackage {
     description = "CLI of the open-source IDE For exploring and testing APIs";
     homepage = "https://www.usebruno.com";
     license = lib.licenses.mit;
-    mainProgram = "bru";
+
     maintainers = with lib.maintainers; [
       gepbird
       kashw2
       mattpolzin
       water-sucks
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "bru";
   };
 }

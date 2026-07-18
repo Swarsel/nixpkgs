@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "cron-descriptor";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Salamek";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-EdOcAuheCV1I/dQu4FpQ3DYx4TfPy5TyuSSmivQGy3w=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
   pythonImportsCheck = [ "cron_descriptor" ];
 
   meta = {

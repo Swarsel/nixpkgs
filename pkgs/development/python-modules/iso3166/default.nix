@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "iso3166";
   version = "2.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "deactivated";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "iso3166" ];
 
   meta = {

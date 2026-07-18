@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   opuslib,
   protobuf,
-  pytestCheckHook,
   pycrypto,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage {
   pname = "pymumble";
   version = "unstable-2024-10-20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tjni";
@@ -20,6 +19,11 @@ buildPythonPackage {
     rev = "3241e84e5ce162a20597e4df6a9c443122357fec";
     hash = "sha256-9lfWvfrS+vUFTf9jo4T+VHkm9u/hVjsDszLBQIEZVcQ=";
   };
+
+  nativeCheckInputs = [
+    pycrypto
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -30,10 +34,7 @@ buildPythonPackage {
     protobuf
   ];
 
-  nativeCheckInputs = [
-    pycrypto
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pymumble_py3"
@@ -44,6 +45,7 @@ buildPythonPackage {
     description = "Library to create mumble bots";
     homepage = "https://github.com/tjni/pymumble";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thelegy
     ];

@@ -1,17 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  nix-update-script,
   buildNpmPackage,
-  versionCheckHook,
   jdk,
+  nix-update-script,
+  versionCheckHook,
 }:
 
 buildNpmPackage (finalAttrs: {
   pname = "npm-groovy-lint";
   version = "17.0.5";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "nvuillam";
@@ -20,12 +18,11 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-Cq4SPOqR2mb2Foc1jlrA6B7qJBcmgLfcC84iTc4+tcw=";
   };
 
+  strictDeps = true;
   npmDepsHash = "sha256-XGXiuqA0JmuFVretXDjWejV9HJAK6eWR9/LR3rUI99s=";
-
-  passthru.updateScript = nix-update-script { };
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   makeWrapperArgs = [
     "--prefix"
@@ -34,13 +31,15 @@ buildNpmPackage (finalAttrs: {
     (lib.makeBinPath [ jdk ])
   ];
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Lint, format and auto-fix your Groovy / Jenkinsfile / Gradle files using command line";
     homepage = "https://github.com/nvuillam/npm-groovy-lint";
     changelog = "https://github.com/nvuillam/npm-groovy-lint/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jlesquembre ];
-    mainProgram = "npm-groovy-lint";
     platforms = lib.platforms.all;
+    mainProgram = "npm-groovy-lint";
   };
 })

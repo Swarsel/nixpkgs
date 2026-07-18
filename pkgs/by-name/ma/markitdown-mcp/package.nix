@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "markitdown-mcp";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -17,14 +16,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-sqWfft/yaI/0FavhIbAHqltgVfTNk0GJk/phyvdn7Ck=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/markitdown-mcp";
-
   build-system = [
     python3Packages.hatchling
-  ];
-
-  pythonRelaxDeps = [
-    "mcp"
   ];
 
   dependencies = with python3Packages; [
@@ -32,10 +25,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     mcp
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "markitdown_mcp"
   ];
 
+  pythonRelaxDeps = [
+    "mcp"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/packages/markitdown-mcp";
   passthru.updateScript = gitUpdater { };
 
   meta = {
@@ -44,7 +44,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/microsoft/markitdown/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = python3Packages.markitdown.meta.maintainers;
-    mainProgram = "markitdown-mcp";
     platforms = lib.platforms.all;
+    mainProgram = "markitdown-mcp";
   };
 })

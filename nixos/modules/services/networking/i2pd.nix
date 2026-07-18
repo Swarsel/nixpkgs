@@ -41,33 +41,37 @@ let
 
   mkEndpointOpt = name: addr: port: {
     enable = mkEnableOption name;
-    name = mkOption {
-      type = types.str;
-      default = name;
-      description = "The endpoint name.";
-    };
+
     address = mkOption {
-      type = types.str;
       default = addr;
       description = "Bind address for ${name} endpoint.";
+      type = types.str;
     };
+
+    name = mkOption {
+      default = name;
+      description = "The endpoint name.";
+      type = types.str;
+    };
+
     port = mkOption {
-      type = types.port;
       default = port;
       description = "Bind port for ${name} endpoint.";
+      type = types.port;
     };
   };
 
   i2cpOpts = name: {
     length = mkOption {
-      type = types.int;
-      description = "Guaranteed minimum hops for ${name} tunnels.";
       default = 3;
-    };
-    quantity = mkOption {
+      description = "Guaranteed minimum hops for ${name} tunnels.";
       type = types.int;
-      description = "Number of simultaneous ${name} tunnels.";
+    };
+
+    quantity = mkOption {
       default = 5;
+      description = "Number of simultaneous ${name} tunnels.";
+      type = types.int;
     };
   };
 
@@ -75,42 +79,51 @@ let
     name: addr: port: keyloc:
     (mkEndpointOpt name addr port)
     // {
+      inbound = i2cpOpts name;
+
       keys = mkOption {
-        type = nullOr str;
         default = keyloc;
+
         description = ''
           File to persist ${lib.toUpper name} keys.
         '';
+
+        type = nullOr str;
       };
-      inbound = i2cpOpts name;
-      outbound = i2cpOpts name;
-      latency.min = mkOption {
-        type = with types; nullOr int;
-        description = "Min latency for tunnels.";
-        default = null;
-      };
+
       latency.max = mkOption {
-        type = with types; nullOr int;
-        description = "Max latency for tunnels.";
         default = null;
+        description = "Max latency for tunnels.";
+        type = with types; nullOr int;
       };
+
+      latency.min = mkOption {
+        default = null;
+        description = "Min latency for tunnels.";
+        type = with types; nullOr int;
+      };
+
+      outbound = i2cpOpts name;
     };
 
   commonTunOpts =
     name:
     {
-      outbound = i2cpOpts name;
-      inbound = i2cpOpts name;
       crypto.tagsToSend = mkOption {
-        type = types.int;
-        description = "Number of ElGamal/AES tags to send.";
         default = 40;
+        description = "Number of ElGamal/AES tags to send.";
+        type = types.int;
       };
+
+      inbound = i2cpOpts name;
+
       keys = mkOption {
-        type = types.str;
         default = name + "-keys.dat";
         description = "Keyset used for tunnel identity.";
+        type = types.str;
       };
+
+      outbound = i2cpOpts name;
     }
     // mkEndpointOpt name "127.0.0.1" 0;
 
@@ -303,96 +316,74 @@ in
 
       package = lib.mkPackageOption pkgs "i2pd" { };
 
-      logLevel = mkOption {
-        type = types.enum [
-          "debug"
-          "info"
-          "warn"
-          "error"
-        ];
-        default = "error";
-        description = ''
-          The log level. {command}`i2pd` defaults to "info"
-          but that generates copious amounts of log messages.
-
-          We default to "error" which is similar to the default log
-          level of {command}`tor`.
-        '';
-      };
-
-      logCLFTime = mkEnableOption "full CLF-formatted date and time to log";
-
       address = mkOption {
-        type = nullOr str;
         default = null;
+
         description = ''
           Your external IP or hostname.
         '';
+
+        type = nullOr str;
       };
 
-      family = mkOption {
-        type = nullOr str;
-        default = null;
+      addressbook.defaulturl = mkOption {
+        default = "http://joajgazyztfssty4w2on5oaqksz6tqoxbduy553y34mf4byv6gpq.b32.i2p/export/alive-hosts.txt";
+
         description = ''
-          Specify a family the router belongs to.
+          AddressBook subscription URL for initial setup
         '';
+
+        type = types.str;
+      };
+
+      addressbook.subscriptions = mkOption {
+        default = [
+          "http://inr.i2p/export/alive-hosts.txt"
+          "http://i2p-projekt.i2p/hosts.txt"
+          "http://stats.i2p/cgi-bin/newhosts.txt"
+        ];
+
+        description = ''
+          AddressBook subscription URLs
+        '';
+
+        type = listOf str;
+      };
+
+      bandwidth = mkOption {
+        default = null;
+
+        description = ''
+          Set a router bandwidth limit integer in KBps.
+          If not set, {command}`i2pd` defaults to 32KBps.
+        '';
+
+        type = with types; nullOr int;
       };
 
       dataDir = mkOption {
-        type = nullOr str;
         default = null;
+
         description = ''
           Alternative path to storage of i2pd data (RI, keys, peer profiles, ...)
         '';
-      };
 
-      share = mkOption {
-        type = types.int;
-        default = 100;
-        description = ''
-          Limit of transit traffic from max bandwidth in percents.
-        '';
-      };
-
-      ifname = mkOption {
         type = nullOr str;
-        default = null;
-        description = ''
-          Network interface to bind to.
-        '';
       };
 
-      ifname4 = mkOption {
+      enableIPv4 = mkEnableTrueOption "IPv4 connectivity";
+      enableIPv6 = mkEnableOption "IPv6 connectivity";
+      exploratory.inbound = i2cpOpts "exploratory";
+      exploratory.outbound = i2cpOpts "exploratory";
+
+      family = mkOption {
+        default = null;
+
+        description = ''
+          Specify a family the router belongs to.
+        '';
+
         type = nullOr str;
-        default = null;
-        description = ''
-          IPv4 interface to bind to.
-        '';
-      };
-
-      ifname6 = mkOption {
-        type = nullOr str;
-        default = null;
-        description = ''
-          IPv6 interface to bind to.
-        '';
-      };
-
-      ntcpProxy = mkOption {
-        type = nullOr str;
-        default = null;
-        description = ''
-          Proxy URL for NTCP transport.
-        '';
-      };
-
-      ntcp = mkEnableTrueOption "ntcp";
-      ssu = mkEnableTrueOption "ssu";
-
-      notransit = mkEnableOption "notransit" // {
-        description = ''
-          Tells the router to not accept transit tunnels during startup.
-        '';
       };
 
       floodfill = mkEnableOption "floodfill" // {
@@ -402,42 +393,257 @@ in
         '';
       };
 
-      netid = mkOption {
+      ifname = mkOption {
+        default = null;
+
+        description = ''
+          Network interface to bind to.
+        '';
+
+        type = nullOr str;
+      };
+
+      ifname4 = mkOption {
+        default = null;
+
+        description = ''
+          IPv4 interface to bind to.
+        '';
+
+        type = nullOr str;
+      };
+
+      ifname6 = mkOption {
+        default = null;
+
+        description = ''
+          IPv6 interface to bind to.
+        '';
+
+        type = nullOr str;
+      };
+
+      inTunnels = mkOption {
+        default = { };
+
+        description = ''
+          Serve something on I2P network at port and delegate requests to address inPort.
+        '';
+
+        type = attrsOf (
+          submodule (
+            { name, ... }:
+            {
+              options = {
+                accessList = mkOption {
+                  default = [ ];
+                  description = "I2P nodes that are allowed to connect to this service.";
+                  type = listOf str;
+                };
+
+                inPort = mkOption {
+                  default = 0;
+                  description = "Service port. Default to the tunnel's listen port.";
+                  type = types.port;
+                };
+
+                type = mkOption {
+                  default = "server";
+                  description = "Tunnel type.";
+
+                  type = types.enum [
+                    "server"
+                    "http"
+                    "irc"
+                    "udpserver"
+                  ];
+                };
+              }
+              // commonTunOpts name;
+
+              config = {
+                name = mkDefault name;
+              };
+            }
+          )
+        );
+      };
+
+      limits.coreSize = mkOption {
+        default = 0;
+
+        description = ''
+          Maximum size of corefile in Kb (0 - use system limit).
+        '';
+
         type = types.int;
+      };
+
+      limits.ntcpHard = mkOption {
+        default = 0;
+
+        description = ''
+          Maximum number of active transit sessions.
+        '';
+
+        type = types.int;
+      };
+
+      limits.ntcpSoft = mkOption {
+        default = 0;
+
+        description = ''
+          Threshold to start probabalistic backoff with ntcp sessions (default: use system limit).
+        '';
+
+        type = types.int;
+      };
+
+      limits.ntcpThreads = mkOption {
+        default = 1;
+
+        description = ''
+          Maximum number of threads used by NTCP DH worker.
+        '';
+
+        type = types.int;
+      };
+
+      limits.openFiles = mkOption {
+        default = 0;
+
+        description = ''
+          Maximum number of open files (0 - use system default).
+        '';
+
+        type = types.int;
+      };
+
+      limits.transittunnels = mkOption {
+        default = 2500;
+
+        description = ''
+          Maximum number of active transit sessions.
+        '';
+
+        type = types.int;
+      };
+
+      logCLFTime = mkEnableOption "full CLF-formatted date and time to log";
+
+      logLevel = mkOption {
+        default = "error";
+
+        description = ''
+          The log level. {command}`i2pd` defaults to "info"
+          but that generates copious amounts of log messages.
+
+          We default to "error" which is similar to the default log
+          level of {command}`tor`.
+        '';
+
+        type = types.enum [
+          "debug"
+          "info"
+          "warn"
+          "error"
+        ];
+      };
+
+      nat = mkEnableTrueOption "NAT bypass";
+
+      netid = mkOption {
         default = 2;
+
         description = ''
           I2P overlay netid.
         '';
+
+        type = types.int;
       };
 
-      bandwidth = mkOption {
-        type = with types; nullOr int;
-        default = null;
+      notransit = mkEnableOption "notransit" // {
         description = ''
-          Set a router bandwidth limit integer in KBps.
-          If not set, {command}`i2pd` defaults to 32KBps.
+          Tells the router to not accept transit tunnels during startup.
         '';
+      };
+
+      ntcp = mkEnableTrueOption "ntcp";
+      ntcp2.enable = mkEnableTrueOption "NTCP2";
+
+      ntcp2.port = mkOption {
+        default = 0;
+
+        description = ''
+          Port to listen for incoming NTCP2 connections (0=auto).
+        '';
+
+        type = types.port;
+      };
+
+      ntcp2.published = mkEnableOption "NTCP2 publication";
+
+      ntcpProxy = mkOption {
+        default = null;
+
+        description = ''
+          Proxy URL for NTCP transport.
+        '';
+
+        type = nullOr str;
+      };
+
+      outTunnels = mkOption {
+        default = { };
+
+        description = ''
+          Connect to someone as a client and establish a local accept endpoint
+        '';
+
+        type = attrsOf (
+          submodule (
+            { name, ... }:
+            {
+              options = {
+                destination = mkOption {
+                  description = "Remote endpoint, I2P hostname or b32.i2p address.";
+                  type = types.str;
+                };
+
+                destinationPort = mkOption {
+                  default = null;
+                  description = "Connect to particular port at destination.";
+                  type = with types; nullOr port;
+                };
+
+                type = mkOption {
+                  default = "client";
+                  description = "Tunnel type.";
+
+                  type = types.enum [
+                    "client"
+                    "udpclient"
+                  ];
+                };
+              }
+              // commonTunOpts name;
+
+              config = {
+                name = mkDefault name;
+              };
+            }
+          )
+        );
       };
 
       port = mkOption {
-        type = with types; nullOr port;
         default = null;
+
         description = ''
           I2P listen port. If no one is given the router will pick between 9111 and 30777.
         '';
-      };
 
-      enableIPv4 = mkEnableTrueOption "IPv4 connectivity";
-      enableIPv6 = mkEnableOption "IPv6 connectivity";
-      nat = mkEnableTrueOption "NAT bypass";
-
-      upnp.enable = mkEnableOption "UPnP service discovery";
-      upnp.name = mkOption {
-        type = types.str;
-        default = "I2Pd";
-        description = ''
-          Name i2pd appears in UPnP forwardings list.
-        '';
+        type = with types; nullOr port;
       };
 
       precomputation.elgamal = mkEnableTrueOption "Precomputed ElGamal tables" // {
@@ -451,312 +657,211 @@ in
         '';
       };
 
-      reseed.verify = mkEnableOption "SU3 signature verification";
-
-      reseed.file = mkOption {
-        type = nullOr str;
-        default = null;
-        description = ''
-          Full path to SU3 file to reseed from.
-        '';
-      };
-
-      reseed.urls = mkOption {
-        type = listOf str;
-        default = [ ];
-        description = ''
-          Reseed URLs.
-        '';
-      };
-
-      reseed.floodfill = mkOption {
-        type = nullOr str;
-        default = null;
-        description = ''
-          Path to router info of floodfill to reseed from.
-        '';
-      };
-
-      reseed.zipfile = mkOption {
-        type = nullOr str;
-        default = null;
-        description = ''
-          Path to local .zip file to reseed from.
-        '';
-      };
-
-      reseed.proxy = mkOption {
-        type = nullOr str;
-        default = null;
-        description = ''
-          URL for reseed proxy, supports http/socks.
-        '';
-      };
-
-      addressbook.defaulturl = mkOption {
-        type = types.str;
-        default = "http://joajgazyztfssty4w2on5oaqksz6tqoxbduy553y34mf4byv6gpq.b32.i2p/export/alive-hosts.txt";
-        description = ''
-          AddressBook subscription URL for initial setup
-        '';
-      };
-      addressbook.subscriptions = mkOption {
-        type = listOf str;
-        default = [
-          "http://inr.i2p/export/alive-hosts.txt"
-          "http://i2p-projekt.i2p/hosts.txt"
-          "http://stats.i2p/cgi-bin/newhosts.txt"
-        ];
-        description = ''
-          AddressBook subscription URLs
-        '';
-      };
-
-      trust.enable = mkEnableOption "explicit trust options";
-
-      trust.family = mkOption {
-        type = nullOr str;
-        default = null;
-        description = ''
-          Router Family to trust for first hops.
-        '';
-      };
-
-      trust.routers = mkOption {
-        type = listOf str;
-        default = [ ];
-        description = ''
-          Only connect to the listed routers.
-        '';
-      };
-
-      trust.hidden = mkEnableOption "router concealment";
-
-      websocket = mkEndpointOpt "websockets" "127.0.0.1" 7666;
-
-      exploratory.inbound = i2cpOpts "exploratory";
-      exploratory.outbound = i2cpOpts "exploratory";
-
-      ntcp2.enable = mkEnableTrueOption "NTCP2";
-      ntcp2.published = mkEnableOption "NTCP2 publication";
-      ntcp2.port = mkOption {
-        type = types.port;
-        default = 0;
-        description = ''
-          Port to listen for incoming NTCP2 connections (0=auto).
-        '';
-      };
-
-      ssu2 = {
-        enable = mkEnableTrueOption "SSU2";
-        published = mkEnableOption "SSU2 publication";
-        port = mkOption {
-          type = types.port;
-          default = 0;
-          description = ''
-            Port to listen for incoming SSU2 connections (0=auto).
-          '';
-        };
-      };
-
-      limits.transittunnels = mkOption {
-        type = types.int;
-        default = 2500;
-        description = ''
-          Maximum number of active transit sessions.
-        '';
-      };
-
-      limits.coreSize = mkOption {
-        type = types.int;
-        default = 0;
-        description = ''
-          Maximum size of corefile in Kb (0 - use system limit).
-        '';
-      };
-
-      limits.openFiles = mkOption {
-        type = types.int;
-        default = 0;
-        description = ''
-          Maximum number of open files (0 - use system default).
-        '';
-      };
-
-      limits.ntcpHard = mkOption {
-        type = types.int;
-        default = 0;
-        description = ''
-          Maximum number of active transit sessions.
-        '';
-      };
-
-      limits.ntcpSoft = mkOption {
-        type = types.int;
-        default = 0;
-        description = ''
-          Threshold to start probabalistic backoff with ntcp sessions (default: use system limit).
-        '';
-      };
-
-      limits.ntcpThreads = mkOption {
-        type = types.int;
-        default = 1;
-        description = ''
-          Maximum number of threads used by NTCP DH worker.
-        '';
-      };
-
-      yggdrasil.enable = mkEnableOption "Yggdrasil";
-
-      yggdrasil.address = mkOption {
-        type = nullOr str;
-        default = null;
-        description = ''
-          Your local yggdrasil address. Specify it if you want to bind your router to a
-          particular address.
-        '';
-      };
+      proto.bob = mkEndpointOpt "bob" "127.0.0.1" 2827;
 
       proto.http = (mkEndpointOpt "http" "127.0.0.1" 7070) // {
 
         auth = mkEnableOption "webconsole authentication";
 
-        user = mkOption {
-          type = types.str;
-          default = "i2pd";
-          description = ''
-            Username for webconsole access
-          '';
-        };
-
-        pass = mkOption {
-          type = types.str;
-          default = "i2pd";
-          description = ''
-            Password for webconsole access.
-          '';
-        };
-
-        strictHeaders = mkOption {
-          type = nullOr bool;
-          default = null;
-          description = ''
-            Enable strict host checking on WebUI.
-          '';
-        };
-
         hostname = mkOption {
-          type = nullOr str;
           default = null;
+
           description = ''
             Expected hostname for WebUI.
           '';
+
+          type = nullOr str;
+        };
+
+        pass = mkOption {
+          default = "i2pd";
+
+          description = ''
+            Password for webconsole access.
+          '';
+
+          type = types.str;
+        };
+
+        strictHeaders = mkOption {
+          default = null;
+
+          description = ''
+            Enable strict host checking on WebUI.
+          '';
+
+          type = nullOr bool;
+        };
+
+        user = mkOption {
+          default = "i2pd";
+
+          description = ''
+            Username for webconsole access
+          '';
+
+          type = types.str;
         };
       };
 
       proto.httpProxy = (mkKeyedEndpointOpt "httpproxy" "127.0.0.1" 4444 "httpproxy-keys.dat") // {
         outproxy = mkOption {
-          type = nullOr str;
           default = null;
           description = "Upstream outproxy bind address.";
-        };
-      };
-      proto.socksProxy = (mkKeyedEndpointOpt "socksproxy" "127.0.0.1" 4447 "socksproxy-keys.dat") // {
-        outproxyEnable = mkEnableOption "SOCKS outproxy";
-        outproxy = mkOption {
-          type = types.str;
-          default = "127.0.0.1";
-          description = "Upstream outproxy bind address.";
-        };
-        outproxyPort = mkOption {
-          type = types.port;
-          default = 4444;
-          description = "Upstream outproxy bind port.";
+          type = nullOr str;
         };
       };
 
-      proto.sam = mkEndpointOpt "sam" "127.0.0.1" 7656;
-      proto.bob = mkEndpointOpt "bob" "127.0.0.1" 2827;
       proto.i2cp = mkEndpointOpt "i2cp" "127.0.0.1" 7654;
       proto.i2pControl = mkEndpointOpt "i2pcontrol" "127.0.0.1" 7650;
+      proto.sam = mkEndpointOpt "sam" "127.0.0.1" 7656;
 
-      outTunnels = mkOption {
-        default = { };
-        type = attrsOf (
-          submodule (
-            { name, ... }:
-            {
-              options = {
-                type = mkOption {
-                  type = types.enum [
-                    "client"
-                    "udpclient"
-                  ];
-                  default = "client";
-                  description = "Tunnel type.";
-                };
-                destination = mkOption {
-                  type = types.str;
-                  description = "Remote endpoint, I2P hostname or b32.i2p address.";
-                };
-                destinationPort = mkOption {
-                  type = with types; nullOr port;
-                  default = null;
-                  description = "Connect to particular port at destination.";
-                };
-              }
-              // commonTunOpts name;
-              config = {
-                name = mkDefault name;
-              };
-            }
-          )
-        );
-        description = ''
-          Connect to someone as a client and establish a local accept endpoint
-        '';
+      proto.socksProxy = (mkKeyedEndpointOpt "socksproxy" "127.0.0.1" 4447 "socksproxy-keys.dat") // {
+        outproxy = mkOption {
+          default = "127.0.0.1";
+          description = "Upstream outproxy bind address.";
+          type = types.str;
+        };
+
+        outproxyEnable = mkEnableOption "SOCKS outproxy";
+
+        outproxyPort = mkOption {
+          default = 4444;
+          description = "Upstream outproxy bind port.";
+          type = types.port;
+        };
       };
 
-      inTunnels = mkOption {
-        default = { };
-        type = attrsOf (
-          submodule (
-            { name, ... }:
-            {
-              options = {
-                type = mkOption {
-                  type = types.enum [
-                    "server"
-                    "http"
-                    "irc"
-                    "udpserver"
-                  ];
-                  default = "server";
-                  description = "Tunnel type.";
-                };
-                inPort = mkOption {
-                  type = types.port;
-                  default = 0;
-                  description = "Service port. Default to the tunnel's listen port.";
-                };
-                accessList = mkOption {
-                  type = listOf str;
-                  default = [ ];
-                  description = "I2P nodes that are allowed to connect to this service.";
-                };
-              }
-              // commonTunOpts name;
-              config = {
-                name = mkDefault name;
-              };
-            }
-          )
-        );
+      reseed.file = mkOption {
+        default = null;
+
         description = ''
-          Serve something on I2P network at port and delegate requests to address inPort.
+          Full path to SU3 file to reseed from.
         '';
+
+        type = nullOr str;
       };
+
+      reseed.floodfill = mkOption {
+        default = null;
+
+        description = ''
+          Path to router info of floodfill to reseed from.
+        '';
+
+        type = nullOr str;
+      };
+
+      reseed.proxy = mkOption {
+        default = null;
+
+        description = ''
+          URL for reseed proxy, supports http/socks.
+        '';
+
+        type = nullOr str;
+      };
+
+      reseed.urls = mkOption {
+        default = [ ];
+
+        description = ''
+          Reseed URLs.
+        '';
+
+        type = listOf str;
+      };
+
+      reseed.verify = mkEnableOption "SU3 signature verification";
+
+      reseed.zipfile = mkOption {
+        default = null;
+
+        description = ''
+          Path to local .zip file to reseed from.
+        '';
+
+        type = nullOr str;
+      };
+
+      share = mkOption {
+        default = 100;
+
+        description = ''
+          Limit of transit traffic from max bandwidth in percents.
+        '';
+
+        type = types.int;
+      };
+
+      ssu = mkEnableTrueOption "ssu";
+
+      ssu2 = {
+        enable = mkEnableTrueOption "SSU2";
+
+        port = mkOption {
+          default = 0;
+
+          description = ''
+            Port to listen for incoming SSU2 connections (0=auto).
+          '';
+
+          type = types.port;
+        };
+
+        published = mkEnableOption "SSU2 publication";
+      };
+
+      trust.enable = mkEnableOption "explicit trust options";
+
+      trust.family = mkOption {
+        default = null;
+
+        description = ''
+          Router Family to trust for first hops.
+        '';
+
+        type = nullOr str;
+      };
+
+      trust.hidden = mkEnableOption "router concealment";
+
+      trust.routers = mkOption {
+        default = [ ];
+
+        description = ''
+          Only connect to the listed routers.
+        '';
+
+        type = listOf str;
+      };
+
+      upnp.enable = mkEnableOption "UPnP service discovery";
+
+      upnp.name = mkOption {
+        default = "I2Pd";
+
+        description = ''
+          Name i2pd appears in UPnP forwardings list.
+        '';
+
+        type = types.str;
+      };
+
+      websocket = mkEndpointOpt "websockets" "127.0.0.1" 7666;
+
+      yggdrasil.address = mkOption {
+        default = null;
+
+        description = ''
+          Your local yggdrasil address. Specify it if you want to bind your router to a
+          particular address.
+        '';
+
+        type = nullOr str;
+      };
+
+      yggdrasil.enable = mkEnableOption "Yggdrasil";
     };
   };
 
@@ -764,26 +869,28 @@ in
 
   config = mkIf cfg.enable {
 
-    users.users.i2pd = {
-      group = "i2pd";
-      description = "I2Pd User";
-      home = homeDir;
-      createHome = true;
-      uid = config.ids.uids.i2pd;
+    systemd.services.i2pd = {
+      after = [ "network.target" ];
+      description = "Minimal I2P router";
+
+      serviceConfig = {
+        ExecStart = "${cfg.package}/bin/i2pd ${i2pdFlags}";
+        Restart = "on-abort";
+        User = "i2pd";
+        WorkingDirectory = homeDir;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups.i2pd.gid = config.ids.gids.i2pd;
 
-    systemd.services.i2pd = {
-      description = "Minimal I2P router";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        User = "i2pd";
-        WorkingDirectory = homeDir;
-        Restart = "on-abort";
-        ExecStart = "${cfg.package}/bin/i2pd ${i2pdFlags}";
-      };
+    users.users.i2pd = {
+      createHome = true;
+      description = "I2Pd User";
+      group = "i2pd";
+      home = homeDir;
+      uid = config.ids.uids.i2pd;
     };
   };
 }

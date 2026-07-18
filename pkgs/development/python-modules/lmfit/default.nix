@@ -1,35 +1,38 @@
 {
   lib,
+  # dependencies
+  asteval,
   buildPythonPackage,
+  dill,
   fetchPypi,
-
+  matplotlib,
+  numpy,
+  pandas,
+  pytest-cov-stub,
+  # tests
+  pytestCheckHook,
+  scipy,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  asteval,
-  dill,
-  numpy,
-  scipy,
   uncertainties,
-
-  # tests
-  pytestCheckHook,
-  pytest-cov-stub,
-  matplotlib,
-  pandas,
 }:
 
 buildPythonPackage rec {
   pname = "lmfit";
   version = "1.3.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-PCLCjEP3F/bFtKO9geiTohSXOcJqWSwEby4zwjz75Jc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    matplotlib
+    pandas
+  ];
 
   build-system = [
     setuptools
@@ -44,16 +47,9 @@ buildPythonPackage rec {
     uncertainties
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    matplotlib
-    pandas
-  ];
-
-  pythonImportsCheck = [ "lmfit" ];
-
   disabledTests = [ "test_check_ast_errors" ];
+  pyproject = true;
+  pythonImportsCheck = [ "lmfit" ];
 
   meta = {
     description = "Least-Squares Minimization with Bounds and Constraints";

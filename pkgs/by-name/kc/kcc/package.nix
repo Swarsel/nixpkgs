@@ -1,22 +1,19 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  makeDesktopItem,
   copyDesktopItems,
-
-  qt6,
-  archiveSupport ? true,
-  p7zip,
-
-  versionCheckHook,
+  makeDesktopItem,
   nix-update-script,
+  p7zip,
+  python3,
+  qt6,
+  versionCheckHook,
+  archiveSupport ? true,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "kcc";
   version = "9.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ciromattia";
@@ -35,6 +32,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     qt6.qtwayland
   ];
 
+  postInstall = ''
+    install -Dm644 \
+      icons/comic2ebook.png \
+      "$out/share/icons/hicolor/256x256/apps/kcc.png"
+  '';
+
+  nativeInstallCheckInputs = [ versionCheckHook ];
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -52,6 +56,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     numpy
   ];
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Graphics" ];
+      comment = "A comic and manga converter for ebook readers";
+      desktopName = "Kindle Comic Converter";
+      exec = "kcc";
+      icon = "kcc";
+      name = "kcc";
+    })
+  ];
+
   # Note: python scripts wouldn't get wrapped anyway, but let's be explicit about it
   dontWrapQtApps = true;
 
@@ -62,39 +77,24 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "--prefix PATH : ${lib.makeBinPath [ p7zip ]}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  pyproject = true;
   versionCheckProgram = "${placeholder "out"}/bin/kcc-c2e";
-
-  postInstall = ''
-    install -Dm644 \
-      icons/comic2ebook.png \
-      "$out/share/icons/hicolor/256x256/apps/kcc.png"
-  '';
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "kcc";
-      exec = "kcc";
-      icon = "kcc";
-      desktopName = "Kindle Comic Converter";
-      comment = "A comic and manga converter for ebook readers";
-      categories = [ "Graphics" ];
-    })
-  ];
-
   meta = {
     description = "Python app to convert comic/manga files or folders to EPUB, Panel View MOBI or E-Ink optimized CBZ";
     homepage = "https://kcc.iosphe.re";
-    mainProgram = "kcc";
     changelog = "https://github.com/ciromattia/kcc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       dawidsowa
       adfaure
     ];
+
+    mainProgram = "kcc";
   };
 })

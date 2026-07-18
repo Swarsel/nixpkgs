@@ -3,12 +3,12 @@
 # We cannot use INSTALL.pl but it’s not that bad:install the dependencies and copies the .pm files should be ok
 {
   lib,
-  htslib,
-  perlPackages,
   stdenv,
   fetchFromGitHub,
-  perl,
+  htslib,
   makeWrapper,
+  perl,
+  perlPackages,
 }:
 
 let
@@ -24,12 +24,14 @@ let
     # Copy modules directly
     stdenv.mkDerivation {
       inherit name version;
+
       src = fetchFromGitHub {
         inherit sha256 version;
         owner = "Ensembl";
         repo = name;
         rev = "release/${version}";
       };
+
       installPhase = ''
         runHook preInstall
 
@@ -49,6 +51,7 @@ let
   ensembl-xs = perlPackages.buildPerlPackage rec {
     pname = "ensembl-xs";
     version = "2.3.2";
+
     src = fetchFromGitHub {
       inherit version;
       owner = "Ensembl";
@@ -56,6 +59,10 @@ let
       rev = version;
       sha256 = "1qqnski532f4bz32wxbqd9w1sz40rjh81ipp9p02k3rlaf1gp1fa";
     };
+
+    # Test do not work -- wrong include path
+    doCheck = false;
+
     # PREFIX is important
     configurePhase = ''
       runHook preConfigure
@@ -64,8 +71,6 @@ let
 
       runHook postConfigure
     '';
-    # Test do not work -- wrong include path
-    doCheck = false;
   };
 
   # it contains compiled versions of certain key subroutines used in VEP
@@ -77,6 +82,17 @@ in
 perlPackages.buildPerlModule rec {
   inherit version;
   pname = "vep";
+
+  src = fetchFromGitHub {
+    owner = "Ensembl";
+    repo = "ensembl-${pname}";
+    rev = "release/${version}";
+    sha256 = "sha256-6lRdWV2ispl+mpBhkZez/d9PxOw1fkNUWeG8mUIqBJc=";
+  };
+
+  outputs = [ "out" ];
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs =
     (with perlPackages; [
       ArchiveZip
@@ -96,19 +112,9 @@ perlPackages.buildPerlModule rec {
       ensembl-io
       ensembl-variation
     ];
+
   propagatedBuildInputs = [ htslib ];
-  src = fetchFromGitHub {
-    owner = "Ensembl";
-    repo = "ensembl-${pname}";
-    rev = "release/${version}";
-    sha256 = "sha256-6lRdWV2ispl+mpBhkZez/d9PxOw1fkNUWeG8mUIqBJc=";
-  };
-
-  nativeBuildInputs = [ makeWrapper ];
-  dontBuild = true;
   doCheck = false;
-
-  outputs = [ "out" ];
 
   installPhase = ''
     runHook preInstall
@@ -127,12 +133,14 @@ perlPackages.buildPerlModule rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://www.ensembl.org/info/docs/tools/vep/index.html";
     description = "Annotate genetics variants based on genes, transcripts, and protein sequence, as well as regulatory regions";
+    homepage = "https://www.ensembl.org/info/docs/tools/vep/index.html";
     license = lib.licenses.asl20;
-    mainProgram = "vep";
     maintainers = with lib.maintainers; [ apraga ];
     platforms = lib.platforms.unix;
+    mainProgram = "vep";
   };
 }

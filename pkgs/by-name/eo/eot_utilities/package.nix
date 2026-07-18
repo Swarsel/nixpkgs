@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ pkg-config ];
 
   meta = {
-    homepage = "https://www.w3.org/Tools/eot-utils/";
     description = "Create Embedded Open Type from OpenType or TrueType font";
+    homepage = "https://www.w3.org/Tools/eot-utils/";
     license = lib.licenses.w3c;
     platforms = with lib.platforms; unix;
   };

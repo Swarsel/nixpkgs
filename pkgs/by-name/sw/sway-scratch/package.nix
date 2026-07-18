@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-ba0d7rbGwK3KNxd6pdoqqCwfHrs/Lt7hl0APkGT+0gw=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -25,7 +24,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/aokellermann/sway-scratch";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ LilleAila ];
-    mainProgram = "sway-scratch";
     platforms = lib.platforms.linux;
+    mainProgram = "sway-scratch";
   };
 })

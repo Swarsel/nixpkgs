@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildDotnetModule,
-  dotnetCorePackages,
-  xz,
-  pcre2,
   autoPatchelfHook,
   bintools,
-  fixDarwinDylibNames,
-  darwin,
-  fontconfig,
-  libgdiplus,
-  libxrandr,
-  glib,
-  writeShellScriptBin,
   blender,
-  openssl,
-  libkrb5,
+  buildDotnetModule,
+  darwin,
+  dotnetCorePackages,
+  fixDarwinDylibNames,
+  fontconfig,
+  glib,
   icu,
+  libgdiplus,
+  libkrb5,
+  libxrandr,
+  openssl,
+  pcre2,
+  writeShellScriptBin,
+  xz,
 }:
 let
 
@@ -84,43 +84,6 @@ buildDotnetModule rec {
     icu
   ];
 
-  runtimeDeps = [
-    xz
-    pcre2
-    libgdiplus
-    glib
-    libxrandr
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ blender ];
-
-  # there is no "*.so.3" or "*.so.5" in nixpkgs. So ignore the warning
-  # and add it later
-  autoPatchelfIgnoreMissingDeps = [
-    "libpcre.so.3"
-    "liblzma.so.5"
-  ];
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
-  projectFile = [
-    "LogicReinc.BlendFarm.Client/LogicReinc.BlendFarm.Client.csproj"
-    "LogicReinc.BlendFarm.Server/LogicReinc.BlendFarm.Server.csproj"
-    "LogicReinc.BlendFarm/LogicReinc.BlendFarm.csproj"
-  ];
-  nugetDeps = ./deps.json;
-  executables = [
-    "LogicReinc.BlendFarm"
-    "LogicReinc.BlendFarm.Server"
-  ];
-
-  # add libraries not found by autopatchelf
-  libPath = lib.makeLibraryPath [
-    pcre2
-    xz
-  ];
-  makeWrapperArgs = [ "--prefix LD_LIBRARY_PATH : ${libPath}" ];
-
   postInstall =
     lib.optionalString stdenv.hostPlatform.isLinux ''
       mkdir -p $out/bin
@@ -131,12 +94,51 @@ buildDotnetModule rec {
       ln -s ${libgdiplus}/lib/libgdiplus.dylib $out/lib/blendfarm/
     '';
 
+  # there is no "*.so.3" or "*.so.5" in nixpkgs. So ignore the warning
+  # and add it later
+  autoPatchelfIgnoreMissingDeps = [
+    "libpcre.so.3"
+    "liblzma.so.5"
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+
+  executables = [
+    "LogicReinc.BlendFarm"
+    "LogicReinc.BlendFarm.Server"
+  ];
+
+  # add libraries not found by autopatchelf
+  libPath = lib.makeLibraryPath [
+    pcre2
+    xz
+  ];
+
+  makeWrapperArgs = [ "--prefix LD_LIBRARY_PATH : ${libPath}" ];
+  nugetDeps = ./deps.json;
+
+  projectFile = [
+    "LogicReinc.BlendFarm.Client/LogicReinc.BlendFarm.Client.csproj"
+    "LogicReinc.BlendFarm.Server/LogicReinc.BlendFarm.Server.csproj"
+    "LogicReinc.BlendFarm/LogicReinc.BlendFarm.csproj"
+  ];
+
+  runtimeDeps = [
+    xz
+    pcre2
+    libgdiplus
+    glib
+    libxrandr
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ blender ];
+
   meta = {
     description = "Open-source, cross-platform, stand-alone, Network Renderer for Blender";
     homepage = "https://github.com/LogicReinc/LogicReinc.BlendFarm";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ gador ];
-    mainProgram = "blendfarm-nix";
     platforms = lib.platforms.unix;
+    mainProgram = "blendfarm-nix";
   };
 }

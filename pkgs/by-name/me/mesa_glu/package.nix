@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
+  gitUpdater,
+  libGLX,
   meson,
   ninja,
   pkg-config,
-  libGLX,
   testers,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,17 +23,18 @@ stdenv.mkDerivation (finalAttrs: {
       hash = "sha256-vUP+EvN0sRkusV/iDkX/RWubwmq1fw7ukZ+Wyg+KMw8=";
     };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
   ];
-  propagatedBuildInputs = [ libGLX ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  propagatedBuildInputs = [ libGLX ];
 
   mesonFlags = lib.optionals stdenv.hostPlatform.isDarwin [
     "-Dgl_provider=gl" # glvnd is default
@@ -45,10 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
     tests = {
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     };
+
     updateScript = gitUpdater {
+      rev-prefix = "glu-";
       # No nicer place to find latest release.
       url = "https://gitlab.freedesktop.org/mesa/glu";
-      rev-prefix = "glu-";
     };
   };
 
@@ -56,8 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "OpenGL utility library";
     homepage = "https://cgit.freedesktop.org/mesa/glu/";
     license = lib.licenses.sgi-b-20;
-    pkgConfigModules = [ "glu" ];
     platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isAndroid;
+    pkgConfigModules = [ "glu" ];
   };
 })

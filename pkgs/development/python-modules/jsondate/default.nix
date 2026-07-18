@@ -6,9 +6,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.1.3";
-  format = "setuptools";
   pname = "jsondate";
+  version = "0.1.3";
 
   src = fetchFromGitHub {
     owner = "ilya-kolpakov";
@@ -19,10 +18,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/ilya-kolpakov/jsondate";
     description = "JSON with datetime handling";
+    homepage = "https://github.com/ilya-kolpakov/jsondate";
     license = lib.licenses.mit;
   };
 }

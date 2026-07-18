@@ -36,14 +36,14 @@ let
 
   default-fetcher =
     {
-      domain ? "github.com",
-      owner ? "",
       repo,
       rev,
-      name ? "source",
-      hash ? null,
-      sha256 ? null,
       artifact ? null,
+      domain ? "github.com",
+      hash ? null,
+      name ? "source",
+      owner ? "",
+      sha256 ? null,
       ...
     }@args:
     let
@@ -52,25 +52,27 @@ let
           [
             {
               cond = artifact != null;
+
               out = {
                 ext = "tbz";
-                fmt = "tbz";
                 fetchfun = fetchurl;
+                fmt = "tbz";
               };
             }
             {
               cond = args ? hash || args ? sha256;
+
               out = {
                 ext = "zip";
-                fmt = "zip";
                 fetchfun = fetchzip;
+                fmt = "zip";
               };
             }
           ]
           {
             ext = "tar.gz";
-            fmt = "tarball";
             fetchfun = fetchTarball;
+            fmt = "tarball";
           };
     in
     with kind;
@@ -112,11 +114,11 @@ let
     fetch { inherit url; };
 in
 {
-  fetcher ? default-fetcher,
   location,
+  fetcher ? default-fetcher,
   release ? { },
-  releaseRev ? (v: v),
   releaseArtifact ? (v: null),
+  releaseRev ? (v: v),
 }:
 let
   isVersion = x: isString x && match "^/.*" x == null && release ? ${x};
@@ -133,6 +135,7 @@ arg:
 switch arg [
   {
     case = isNull;
+
     out = {
       version = "broken";
       src = "";
@@ -141,6 +144,7 @@ switch arg [
   }
   {
     case = isPathString;
+
     out = {
       version = "dev";
       src = arg;
@@ -148,6 +152,7 @@ switch arg [
   }
   {
     case = pred.union isVersion isShortVersion;
+
     out =
       let
         v = if isVersion arg then arg else shortVersion arg;
@@ -168,6 +173,7 @@ switch arg [
       in
       {
         version = rv.version or v;
+
         src =
           rv.src or (fetcher (
             location
@@ -181,6 +187,7 @@ switch arg [
   }
   {
     case = isString;
+
     out =
       let
         splitted = filter isString (split ":" arg);
@@ -190,6 +197,7 @@ switch arg [
       in
       {
         inherit version;
+
         src = fetcher (
           location // { inherit rev; } // (optionalAttrs has-owner { owner = head splitted; })
         );
@@ -197,6 +205,7 @@ switch arg [
   }
   {
     case = isAttrs;
+
     out = {
       version = arg.version or "dev";
       src = (arg.fetcher or fetcher) (location // (arg.location or { }));
@@ -204,11 +213,13 @@ switch arg [
   }
   {
     case = isPath;
+
     out = {
       version = "dev";
+
       src = builtins.path {
-        path = arg;
         name = location.name or "source";
+        path = arg;
       };
     };
   }

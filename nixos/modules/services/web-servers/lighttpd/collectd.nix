@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 
@@ -18,13 +18,15 @@ let
   '';
 
   defaultCollectionCgi = config.services.collectd.package.overrideDerivation (old: {
-    name = "collection.cgi";
-    dontConfigure = true;
     buildPhase = "true";
+    dontConfigure = true;
+
     installPhase = ''
       substituteInPlace contrib/collection.cgi --replace '"/etc/collection.conf"' '$ENV{COLLECTION_CONF}'
       cp contrib/collection.cgi $out
     '';
+
+    name = "collection.cgi";
   });
 in
 {
@@ -34,15 +36,18 @@ in
     enable = mkEnableOption "collectd subservice accessible at http://yourserver/collectd";
 
     collectionCgi = mkOption {
-      type = types.path;
       default = defaultCollectionCgi;
+
       defaultText = literalMD ''
         `config.${options.services.collectd.package}` configured for lighttpd
       '';
+
       description = ''
         Path to collection.cgi script from (collectd sources)/contrib/collection.cgi
         This option allows to use a customized version
       '';
+
+      type = types.path;
     };
   };
 

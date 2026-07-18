@@ -1,31 +1,30 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoconf,
   automake,
-  darwin,
-  libtool,
-  pkg-config,
-  pkgsStatic,
-
   # for passthru.tests
   bind,
   cmake,
+  darwin,
   knot-resolver_5,
-  sbclPackages,
+  libtool,
   luajitPackages,
   mosquitto,
   neovim,
   nodejs,
   ocamlPackages,
+  pkg-config,
+  pkgsStatic,
   python3,
+  sbclPackages,
   testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.52.1";
   pname = "libuv";
+  version = "1.52.1";
 
   src = fetchFromGitHub {
     owner = "libuv";
@@ -172,12 +171,6 @@ stdenv.mkDerivation (finalAttrs: {
     LIBTOOLIZE=libtoolize ./autogen.sh
   '';
 
-  enableParallelBuilding = true;
-
-  # separateDebugInfo breaks static build
-  # https://github.com/NixOS/nixpkgs/issues/219466
-  separateDebugInfo = !stdenv.hostPlatform.isStatic;
-
   doCheck =
     # routinely hangs on powerpc64le
     !stdenv.hostPlatform.isPower64;
@@ -189,6 +182,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Some of the tests use localhost networking.
   __darwinAllowLocalNetworking = true;
+  enableParallelBuilding = true;
+  # separateDebugInfo breaks static build
+  # https://github.com/NixOS/nixpkgs/issues/219466
+  separateDebugInfo = !stdenv.hostPlatform.isStatic;
 
   passthru.tests = {
     inherit
@@ -199,23 +196,22 @@ stdenv.mkDerivation (finalAttrs: {
       neovim
       nodejs
       ;
+
     inherit (sbclPackages) cl-libuv;
     luajit-libluv = luajitPackages.libluv;
     luajit-luv = luajitPackages.luv;
     ocaml-luv = ocamlPackages.luv;
+    pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     python-pyuv = python3.pkgs.pyuv;
     python-uvloop = python3.pkgs.uvloop;
     static = pkgsStatic.libuv;
-    pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Multi-platform support library with a focus on asynchronous I/O";
     homepage = "https://libuv.org/";
     changelog = "https://github.com/libuv/libuv/blob/v${finalAttrs.version}/ChangeLog";
-    pkgConfigModules = [ "libuv" ];
-    maintainers = with lib.maintainers; [ miniharinn ];
-    platforms = lib.platforms.all;
+
     license = with lib.licenses; [
       mit
       isc
@@ -223,7 +219,11 @@ stdenv.mkDerivation (finalAttrs: {
       bsd3
       cc-by-40
     ];
+
+    maintainers = with lib.maintainers; [ miniharinn ];
+    platforms = lib.platforms.all;
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "libuv" finalAttrs.version;
+    pkgConfigModules = [ "libuv" ];
   };
 
 })

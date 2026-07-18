@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "hepunits";
   version = "2.4.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,6 +26,8 @@ buildPythonPackage rec {
     pytestCheckHook
     pint
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Units and constants in the HEP system of units";

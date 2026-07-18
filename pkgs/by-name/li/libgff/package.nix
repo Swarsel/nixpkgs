@@ -26,10 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Lightweight GTF/GFF parsers exposing a C++ interface";
     homepage = "https://github.com/COMBINE-lab/libgff";
-    downloadPage = "https://github.com/COMBINE-lab/libgff/releases";
     changelog = "https://github.com/COMBINE-lab/libgff/releases/tag/" + "v${finalAttrs.version}";
     license = lib.licenses.boost;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.kupac ];
+    platforms = lib.platforms.all;
+    downloadPage = "https://github.com/COMBINE-lab/libgff/releases";
   };
 })

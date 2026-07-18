@@ -1,23 +1,21 @@
 {
   lib,
-  ocamlPackages,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  python3,
+  docfd,
   dune,
+  fetchpatch,
   makeWrapper,
+  ocamlPackages,
   pandoc,
   poppler-utils,
+  python3,
   testers,
-  docfd,
 }:
 
 ocamlPackages.buildDunePackage rec {
   pname = "docfd";
   version = "12.3.2";
-
-  minimalOCamlVersion = "5.1";
 
   src = fetchFromGitHub {
     owner = "darrenldl";
@@ -31,9 +29,9 @@ ocamlPackages.buildDunePackage rec {
     ./nottui-unix.patch
     # Compatibility with lwd ≥ 0.5
     (fetchpatch {
-      url = "https://github.com/darrenldl/docfd/commit/439ff57e80778f684cf8526b3b33c745a02da2a7.patch";
-      includes = [ "*.ml" ];
       hash = "sha256-bB+zta2VcrDd42FUD9ExBui787LmtN3PMyb/MJQO7u0=";
+      includes = [ "*.ml" ];
+      url = "https://github.com/darrenldl/docfd/commit/439ff57e80778f684cf8526b3b33c745a02da2a7.patch";
     })
   ];
 
@@ -76,16 +74,19 @@ ocamlPackages.buildDunePackage rec {
     }"
   '';
 
+  minimalOCamlVersion = "5.1";
   passthru.tests.version = testers.testVersion { package = docfd; };
 
   meta = {
     description = "TUI multiline fuzzy document finder";
+
     longDescription = ''
       Think interactive grep for text and other document files.
       Word/token based instead of regex and line based, so you
       can search across lines easily. Aims to provide good UX via
       integration with common text editors and other file viewers.
     '';
+
     homepage = "https://github.com/darrenldl/docfd";
     license = lib.licenses.mit;
     maintainers = [ ];

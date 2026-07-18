@@ -1,44 +1,43 @@
 {
   cudnn = {
-    shortName = "cuDNN EULA";
-    fullName = "cuDNN SUPPLEMENT TO SOFTWARE LICENSE AGREEMENT FOR NVIDIA SOFTWARE DEVELOPMENT KITS";
-    url = "https://docs.nvidia.com/deeplearning/cudnn/backend/latest/reference/eula.html";
     free = false;
+    fullName = "cuDNN SUPPLEMENT TO SOFTWARE LICENSE AGREEMENT FOR NVIDIA SOFTWARE DEVELOPMENT KITS";
     redistributable = false;
+    shortName = "cuDNN EULA";
+    url = "https://docs.nvidia.com/deeplearning/cudnn/backend/latest/reference/eula.html";
   };
 
   cusparse_lt = {
-    shortName = "cuSPARSELt EULA";
-    fullName = "cuSPARSELt SUPPLEMENT TO SOFTWARE LICENSE AGREEMENT FOR NVIDIA SOFTWARE DEVELOPMENT KITS";
-    url = "https://docs.nvidia.com/cuda/cusparselt/license.html";
     free = false;
+    fullName = "cuSPARSELt SUPPLEMENT TO SOFTWARE LICENSE AGREEMENT FOR NVIDIA SOFTWARE DEVELOPMENT KITS";
     redistributable = false;
+    shortName = "cuSPARSELt EULA";
+    url = "https://docs.nvidia.com/cuda/cusparselt/license.html";
   };
 
   cutensor = {
-    shortName = "cuTENSOR EULA";
+    free = false;
     fullName = "cuTENSOR SUPPLEMENT TO SOFTWARE LICENSE AGREEMENT FOR NVIDIA SOFTWARE DEVELOPMENT KITS";
+    redistributable = false;
+    shortName = "cuTENSOR EULA";
     url = "https://docs.nvidia.com/cuda/cutensor/latest/license.html";
-    free = false;
-    redistributable = false;
-  };
-
-  tensorrt = {
-    shortName = "TensorRT EULA";
-    fullName = "TensorRT SUPPLEMENT TO SOFTWARE LICENSE AGREEMENT FOR NVIDIA SOFTWARE DEVELOPMENT KITS";
-    url = "https://docs.nvidia.com/deeplearning/tensorrt/latest/reference/sla.html";
-    free = false;
-    redistributable = false;
   };
 
   math_sdk_sla = {
-    shortName = "NVIDIA Math SDK SLA";
-    fullName = "LICENSE AGREEMENT FOR NVIDIA MATH LIBRARIES SOFTWARE DEVELOPMENT KITS";
-    url = "https://developer.download.nvidia.com/compute/mathdx/License.txt";
     free = false;
+    fullName = "LICENSE AGREEMENT FOR NVIDIA MATH LIBRARIES SOFTWARE DEVELOPMENT KITS";
     redistributable = false;
+    shortName = "NVIDIA Math SDK SLA";
+    url = "https://developer.download.nvidia.com/compute/mathdx/License.txt";
   };
 
+  tensorrt = {
+    free = false;
+    fullName = "TensorRT SUPPLEMENT TO SOFTWARE LICENSE AGREEMENT FOR NVIDIA SOFTWARE DEVELOPMENT KITS";
+    redistributable = false;
+    shortName = "TensorRT EULA";
+    url = "https://docs.nvidia.com/deeplearning/tensorrt/latest/reference/sla.html";
+  };
   # "license": "CUDA Toolkit",
   # "license": "NVIDIA Driver",
   # "license": "NVIDIA Proprietary",

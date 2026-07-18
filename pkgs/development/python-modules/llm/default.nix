@@ -1,33 +1,33 @@
 {
   lib,
-  runCommand,
-  callPackage,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  pytestCheckHook,
-  replaceVars,
-  setuptools,
+  buildPythonPackage,
+  callPackage,
   click-default-group,
+  cogapp,
   condense-json,
+  fetchpatch,
+  llm-echo,
   numpy,
   openai,
   pip,
   pluggy,
   puremagic,
   pydantic,
-  python,
-  python-ulid,
-  pyyaml,
-  sqlite-migrate,
-  cogapp,
   pytest-asyncio,
   pytest-httpx,
   pytest-recording,
+  pytestCheckHook,
+  python,
+  python-ulid,
+  pyyaml,
+  replaceVars,
+  runCommand,
+  setuptools,
   sqlite,
+  sqlite-migrate,
   sqlite-utils,
   syrupy,
-  llm-echo,
 }:
 let
   /**
@@ -168,9 +168,6 @@ let
   llm = buildPythonPackage rec {
     pname = "llm";
     version = "0.30";
-    pyproject = true;
-
-    build-system = [ setuptools ];
 
     src = fetchFromGitHub {
       owner = "simonw";
@@ -186,8 +183,8 @@ let
     # TODO: Remove when sqlite 3.52.x is released.
     ++ lib.optionals (sqlite.version == "3.51.1") [
       (fetchpatch {
-        url = "https://github.com/simonw/llm/commit/6e24b883c3e3c4ddd2ec9006714d0a9ec17b59da.patch";
         hash = "sha256-4AKQdZCr6qxuWnjWoSW6I44hPL5e7tnvREx2Ns0WwNc=";
+        url = "https://github.com/simonw/llm/commit/6e24b883c3e3c4ddd2ec9006714d0a9ec17b59da.patch";
       })
     ];
 
@@ -195,6 +192,26 @@ let
       substituteInPlace llm/cli.py \
         --replace-fail "@listOfPackagedPlugins@" "$(< ${listOfPackagedPlugins})"
     '';
+
+    doCheck = true;
+
+    nativeCheckInputs = [
+      cogapp
+      numpy
+      pytest-asyncio
+      pytest-httpx
+      pytest-recording
+      syrupy
+      pytestCheckHook
+    ];
+
+    # The tests make use of `llm_echo` but that would be a circular dependency.
+    # So we make a local copy in this derivation, as it's a super-simple package of one file.
+    preCheck = ''
+      cp ${llm-echo.src}/llm_echo.py llm_echo.py
+    '';
+
+    build-system = [ setuptools ];
 
     dependencies = [
       click-default-group
@@ -212,32 +229,6 @@ let
       sqlite-utils
     ];
 
-    nativeCheckInputs = [
-      cogapp
-      numpy
-      pytest-asyncio
-      pytest-httpx
-      pytest-recording
-      syrupy
-      pytestCheckHook
-    ];
-
-    doCheck = true;
-
-    # The tests make use of `llm_echo` but that would be a circular dependency.
-    # So we make a local copy in this derivation, as it's a super-simple package of one file.
-    preCheck = ''
-      cp ${llm-echo.src}/llm_echo.py llm_echo.py
-    '';
-
-    pytestFlags = [
-      "-svv"
-    ];
-
-    enabledTestPaths = [
-      "tests/"
-    ];
-
     disabledTests = [
       # AssertionError: The following responses are mocked but not requested:
       # - Match POST request on https://api.openai.com/v1/chat/completions
@@ -247,6 +238,16 @@ let
       # TypeError: CliRunner.__init__() got an unexpected keyword argument 'mix_stderr
       # https://github.com/simonw/llm/issues/1293
       "test_embed_multi_files_encoding"
+    ];
+
+    enabledTestPaths = [
+      "tests/"
+    ];
+
+    pyproject = true;
+
+    pytestFlags = [
+      "-svv"
     ];
 
     pythonImportsCheck = [ "llm" ];
@@ -263,16 +264,18 @@ let
     };
 
     meta = {
-      homepage = "https://github.com/simonw/llm";
       description = "Access large language models from the command-line";
+      homepage = "https://github.com/simonw/llm";
       changelog = "https://github.com/simonw/llm/releases/tag/${src.tag}";
       license = lib.licenses.asl20;
-      mainProgram = "llm";
+
       maintainers = with lib.maintainers; [
         aldoborrero
         mccartykim
         philiptaron
       ];
+
+      mainProgram = "llm";
     };
   };
 in

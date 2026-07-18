@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  esbuild,
   buildNpmPackage,
-  makeWrapper,
+  esbuild,
   formats,
+  makeWrapper,
+  nixosTests,
   databaseType ? "sqlite",
   edition ? "oss",
   environmentVariables ? { },
-  nixosTests,
 }:
 
 assert lib.assertOneOf "databaseType" databaseType [
@@ -37,28 +37,12 @@ buildNpmPackage (finalAttrs: {
   pname = "pangolin";
   version = "1.19.4";
 
-  __structuredAttrs = true;
-  enableParallelBuilding = true;
-
   src = fetchFromGitHub {
     owner = "fosrl";
     repo = "pangolin";
     tag = finalAttrs.version;
     hash = "sha256-Joo7N92ZbKybD15ojIIoEtjLjzcho5PqAzuGlj17zag=";
   };
-
-  npmDepsFetcherVersion = 2;
-  npmDepsHash = "sha256-XOuP3WgV9Xt2uRhHVmnjjf46RV+Pv1pl8a71yTizn10=";
-
-  nativeBuildInputs = [
-    esbuild
-    makeWrapper
-  ];
-
-  # remove the proprietary code
-  postUnpack = lib.optionalString (edition == "oss") ''
-    rm -rf server/private
-  '';
 
   # upstream inconsistently updates this
   # so leaving this here in case it's needed
@@ -67,6 +51,13 @@ buildNpmPackage (finalAttrs: {
       'export const APP_VERSION = "${lib.versions.majorMinor finalAttrs.version + ".0"}";' \
       'export const APP_VERSION = "${finalAttrs.version}";'
   '';
+
+  nativeBuildInputs = [
+    esbuild
+    makeWrapper
+  ];
+
+  npmDepsHash = "sha256-XOuP3WgV9Xt2uRhHVmnjjf46RV+Pv1pl8a71yTizn10=";
 
   preBuild = ''
     npm run set:${db false}
@@ -116,9 +107,9 @@ buildNpmPackage (finalAttrs: {
         isServer:
         (lib.concatMapAttrsStringSep " " (name: value: "--set ${name} ${value}") (
           {
-            NODE_OPTIONS = "enable-source-maps";
-            NODE_ENV = "development";
             ENVIRONMENT = "prod";
+            NODE_ENV = "development";
+            NODE_OPTIONS = "enable-source-maps";
           }
           // environmentVariables
         ))
@@ -151,18 +142,27 @@ buildNpmPackage (finalAttrs: {
       )
       [
         {
-          mjs = "cli";
           command = "pangctl";
+          mjs = "cli";
         }
         {
-          mjs = "migrations";
           command = "migrate-pangolin-database";
+          mjs = "migrations";
         }
         {
-          mjs = "server";
           command = "pangolin";
+          mjs = "server";
         }
       ];
+
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+  npmDepsFetcherVersion = 2;
+
+  # remove the proprietary code
+  postUnpack = lib.optionalString (edition == "oss") ''
+    rm -rf server/private
+  '';
 
   passthru = {
     inherit databaseType;
@@ -174,10 +174,12 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://github.com/fosrl/pangolin";
     changelog = "https://github.com/fosrl/pangolin/releases/tag/${finalAttrs.version}";
     license = [ lib.licenses.agpl3Only ] ++ lib.optional (edition != "oss") lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       jackr
       water-sucks
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "pangolin";
   };

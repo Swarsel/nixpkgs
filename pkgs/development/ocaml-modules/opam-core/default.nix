@@ -1,20 +1,19 @@
 {
   lib,
   buildDunePackage,
-  opam,
   jsonm,
   ocamlgraph,
+  opam,
+  patch,
   re,
   sha,
   swhid_core,
   uutf,
-  patch,
 }:
 
 buildDunePackage {
-  pname = "opam-core";
-
   inherit (opam) src version;
+  pname = "opam-core";
 
   propagatedBuildInputs = [
     jsonm

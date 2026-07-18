@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
-  nix-update-script,
+  fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
+  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,23 +22,8 @@ buildGoModule (finalAttrs: {
     ./disable-fortify.diff
   ];
 
-  vendorHash = null;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "cmd/dlv" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  hardeningDisable = [ "fortify" ];
-
-  preCheck = ''
-    XDG_CONFIG_HOME=$(mktemp -d)
-  '';
-
+  vendorHash = null;
   # Disable tests on Darwin as they require various workarounds.
   #
   # - Tests requiring local networking fail with or without sandbox,
@@ -46,6 +31,10 @@ buildGoModule (finalAttrs: {
   # - CGO_FLAGS warnings break tests' expected stdout/stderr outputs.
   # - DAP test binaries exit prematurely.
   doCheck = !stdenv.hostPlatform.isDarwin;
+
+  preCheck = ''
+    XDG_CONFIG_HOME=$(mktemp -d)
+  '';
 
   postInstall = ''
     # add symlink for vscode golang extension
@@ -60,15 +49,22 @@ buildGoModule (finalAttrs: {
 
   # delve doesn't support --version
   doInstallCheck = false;
+  hardeningDisable = [ "fortify" ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [ "cmd/dlv" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Debugger for the Go programming language";
     homepage = "https://github.com/go-delve/delve";
     changelog = "https://github.com/go-delve/delve/blob/v${finalAttrs.version}/CHANGELOG.md";
-    maintainers = with lib.maintainers; [ vdemeester ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ vdemeester ];
     mainProgram = "dlv";
   };
 })

@@ -1,15 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pi1wire";
   version = "0.3.0";
-
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ushiboy";
@@ -24,6 +22,7 @@ buildPythonPackage rec {
     "test_find_all_sensors" # flaky
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pi1wire" ];
 
   meta = {

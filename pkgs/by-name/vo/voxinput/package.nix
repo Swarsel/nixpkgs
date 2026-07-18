@@ -1,23 +1,23 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  makeWrapper,
-  pkg-config,
-  libpulseaudio,
-  dotool,
-  libGL,
-  libxxf86vm,
-  libxrandr,
-  libxi,
-  libxinerama,
-  libxcursor,
-  libx11,
-  libxkbcommon,
-  wayland,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  dotool,
+  libGL,
+  libpulseaudio,
+  libx11,
+  libxcursor,
+  libxi,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
+  libxxf86vm,
+  makeWrapper,
   nix-update-script,
+  pkg-config,
   testers,
+  wayland,
 }:
 
 buildGoModule (finalAttrs: {
@@ -30,8 +30,6 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Zb3tz8YuS2VJWXbr8+yBuL89vlDXadFowSzWuZ5a0WI=";
   };
-
-  vendorHash = "sha256-NMuHvhN1A6TQ18Z1H8k8Sy7Py9744Xv95MZz0QvExQY=";
 
   nativeBuildInputs = [
     makeWrapper
@@ -53,6 +51,8 @@ buildGoModule (finalAttrs: {
     wayland
   ];
 
+  vendorHash = "sha256-NMuHvhN1A6TQ18Z1H8k8Sy7Py9744Xv95MZz0QvExQY=";
+
   # To take advantage of the udev rule something like `services.udev.packages = [ nixpkgs.voxinput ]`
   # needs to be added to your configuration.nix
   postInstall = ''
@@ -71,21 +71,22 @@ buildGoModule (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "voxinput ver";
       version = "v${finalAttrs.version}";
+      command = "voxinput ver";
+      package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/richiejp/VoxInput";
     description = "Voice to text for any Linux app via dotool/uinput and the LocalAI/OpenAI transcription API";
+    homepage = "https://github.com/richiejp/VoxInput";
+    changelog = "https://github.com/richiejp/VoxInput/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.richiejp ];
     platforms = lib.platforms.unix;
-    changelog = "https://github.com/richiejp/VoxInput/releases/tag/v${finalAttrs.version}";
     mainProgram = "voxinput";
   };
 })

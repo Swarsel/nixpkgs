@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   gotrue-supabase,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-sUQsUCapnNlVMuCMsgC3Pq2Z4Ooz2XO0dRnF1aqPH2I=";
+  # integration tests require network to connect to postgres database
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -25,21 +27,18 @@ buildGoModule (finalAttrs: {
     "-X github.com/supabase/auth/internal/utilities.Version=${finalAttrs.version}"
   ];
 
-  # integration tests require network to connect to postgres database
-  doCheck = false;
-
   passthru.tests.version = testers.testVersion {
-    package = gotrue-supabase;
-    command = "auth version";
     inherit (finalAttrs) version;
+    command = "auth version";
+    package = gotrue-supabase;
   };
 
   meta = {
-    homepage = "https://github.com/supabase/auth";
     description = "JWT based API for managing users and issuing JWT tokens";
-    mainProgram = "auth";
+    homepage = "https://github.com/supabase/auth";
     changelog = "https://github.com/supabase/auth/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "auth";
   };
 })

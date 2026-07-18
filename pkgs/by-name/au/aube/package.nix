@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   cacert,
   cmake,
   gitMinimal,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,15 +20,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-lnW5ZLcdkpt662wDSj5YsnL7wILkJw3xoBs+3n7XWGY=";
   };
 
-  cargoHash = "sha256-Ox3l2VqtHfrAICTj7CL99EL5dXF43snPu7/X1ZFYceM=";
-
+  strictDeps = true;
   nativeBuildInputs = [ cmake ]; # libz-ng-sys
-
+  cargoHash = "sha256-Ox3l2VqtHfrAICTj7CL99EL5dXF43snPu7/X1ZFYceM=";
+  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
   nativeCheckInputs = [ gitMinimal ];
-
-  postInstall = ''
-    rm -f $out/bin/generate-{error-codes,settings}-docs
-  '';
 
   checkFlags = [
     # failed on x86_64-linux
@@ -38,27 +34,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=http::ticket_cache::tests::roundtrip_persists_across_open"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  postInstall = ''
+    rm -f $out/bin/generate-{error-codes,settings}-docs
+  '';
 
-  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
-  passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
-
-  strictDeps = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
   __structuredAttrs = true;
+  passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
   meta = {
     description = "Fast Node.js package manager";
     homepage = "https://github.com/jdx/aube";
     changelog = "https://github.com/jdx/aube/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       chillcicada
       Br1ght0ne
     ];
+
     mainProgram = "aube";
   };
 })

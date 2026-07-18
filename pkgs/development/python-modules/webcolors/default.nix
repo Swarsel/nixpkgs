@@ -2,24 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   pdm-backend,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "webcolors";
   version = "25.10.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-YquuhlBPZtD2NkwqhSDeSgxHuAwD/DpfGBX+2+98Gb8=";
   };
 
-  build-system = [ pdm-backend ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ pdm-backend ];
+  pyproject = true;
   pythonImportsCheck = [ "webcolors" ];
 
   meta = {

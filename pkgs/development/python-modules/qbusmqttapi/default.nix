@@ -1,16 +1,15 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  hatchling,
+  fetchFromGitHub,
   aiohttp,
+  buildPythonPackage,
+  hatchling,
   yarl,
 }:
 
 buildPythonPackage rec {
   pname = "qbusmqttapi";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Qbus-iot";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
       --replace-fail '"0.0.0"' '"${version}"'
   '';
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -32,10 +33,8 @@ buildPythonPackage rec {
     yarl
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "qbusmqttapi" ];
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "MQTT API for Qbus Home Automation";

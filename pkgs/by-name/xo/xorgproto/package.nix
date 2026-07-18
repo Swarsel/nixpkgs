@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  pkg-config,
-  python3,
   meson,
   ninja,
-  writeScript,
+  pkg-config,
+  python3,
   testers,
+  writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xorgproto";
@@ -37,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   mesonFlags = [ "-Dlegacy=true" ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -45,12 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "X Window System unified protocol definitions";
     homepage = "https://gitlab.freedesktop.org/xorg/proto/xorgproto";
+
     license = with lib.licenses; [
       # The copyright notices are split between each protocol, so to be able to validate this,
       # I listed all the components that have the license for each license:
@@ -86,7 +88,10 @@ stdenv.mkDerivation (finalAttrs: {
       # upstream issue: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/issues/53
       #unfree
     ];
+
     maintainers = [ ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
+
     pkgConfigModules = [
       "applewmproto"
       "bigreqsproto"
@@ -128,6 +133,5 @@ stdenv.mkDerivation (finalAttrs: {
       "xproxymngproto"
       "xwaylandproto"
     ];
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
   };
 })

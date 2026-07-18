@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -23,82 +23,37 @@ in
   options.services.zapret = {
     enable = lib.mkEnableOption "the Zapret DPI bypass service.";
     package = lib.mkPackageOption pkgs "zapret" { };
-    params = lib.mkOption {
-      default = [ ];
-      type = with lib.types; listOf str;
-      example = [
-        "--dpi-desync=fake,disorder2"
-        "--dpi-desync-ttl=1"
-        "--dpi-desync-autottl=2"
-      ];
-      description = ''
-        Specify the bypass parameters for Zapret binary.
-        There are no universal parameters as they vary between different networks, so you'll have to find them yourself.
 
-        This can be done by running the `blockcheck` binary from zapret package, i.e. `nix-shell -p nftables zapret --command blockcheck` (or `iptables` instead of `nftables` if that is what your firewall is using).
-        It'll try different params and then tell you which params are working for your network.
-      '';
-    };
-    whitelist = lib.mkOption {
-      default = [ ];
-      type = with lib.types; listOf str;
-      example = [
-        "youtube.com"
-        "googlevideo.com"
-        "ytimg.com"
-        "youtu.be"
-      ];
-      description = ''
-        Specify a list of domains to bypass. All other domains will be ignored.
-        You can specify either whitelist or blacklist, but not both.
-        If neither are specified, then bypass all domains.
-
-        It is recommended to specify the whitelist. This will make sure that other resources won't be affected by this service.
-      '';
-    };
     blacklist = lib.mkOption {
       default = [ ];
-      type = with lib.types; listOf str;
-      example = [
-        "example.com"
-      ];
+
       description = ''
         Specify a list of domains NOT to bypass. All other domains will be bypassed.
         You can specify either whitelist or blacklist, but not both.
         If neither are specified, then bypass all domains.
       '';
+
+      example = [
+        "example.com"
+      ];
+
+      type = with lib.types; listOf str;
     };
-    qnum = lib.mkOption {
-      default = 200;
-      type = lib.types.int;
-      description = ''
-        Routing queue number.
-        Only change this if you already use the default queue number somewhere else.
-      '';
-    };
+
     configureFirewall = lib.mkOption {
       default = true;
-      type = lib.types.bool;
+
       description = ''
         Whether to setup firewall routing so that system http(s) traffic is forwarded via this service.
         Disable if you want to set it up manually.
       '';
-    };
-    httpSupport = lib.mkOption {
-      default = true;
+
       type = lib.types.bool;
-      description = ''
-        Whether to route http traffic on port 80.
-        Http bypass rarely works and you might want to disable it if you don't utilise http connections.
-      '';
     };
+
     httpMode = lib.mkOption {
       default = "first";
-      type = lib.types.enum [
-        "first"
-        "full"
-      ];
-      example = "full";
+
       description = ''
         By default this service only changes the first packet sent, which is enough in most cases.
         But there are DPIs that monitor the whole traffic within a session.
@@ -106,26 +61,103 @@ in
 
         Set the mode to `full` if http doesn't work.
       '';
+
+      example = "full";
+
+      type = lib.types.enum [
+        "first"
+        "full"
+      ];
     };
-    udpSupport = lib.mkOption {
-      default = false;
-      type = lib.types.bool;
+
+    httpSupport = lib.mkOption {
+      default = true;
+
       description = ''
-        Enable UDP routing.
-        This requires you to specify `udpPorts` and `--dpi-desync-any-protocol` parameter.
+        Whether to route http traffic on port 80.
+        Http bypass rarely works and you might want to disable it if you don't utilise http connections.
       '';
+
+      type = lib.types.bool;
     };
+
+    params = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Specify the bypass parameters for Zapret binary.
+        There are no universal parameters as they vary between different networks, so you'll have to find them yourself.
+
+        This can be done by running the `blockcheck` binary from zapret package, i.e. `nix-shell -p nftables zapret --command blockcheck` (or `iptables` instead of `nftables` if that is what your firewall is using).
+        It'll try different params and then tell you which params are working for your network.
+      '';
+
+      example = [
+        "--dpi-desync=fake,disorder2"
+        "--dpi-desync-ttl=1"
+        "--dpi-desync-autottl=2"
+      ];
+
+      type = with lib.types; listOf str;
+    };
+
+    qnum = lib.mkOption {
+      default = 200;
+
+      description = ''
+        Routing queue number.
+        Only change this if you already use the default queue number somewhere else.
+      '';
+
+      type = lib.types.int;
+    };
+
     udpPorts = lib.mkOption {
       default = [ ];
-      type = with lib.types; listOf str;
-      example = [
-        "50000:50099"
-        "1234"
-      ];
+
       description = ''
         List of UDP ports to route.
         Port ranges are delimited with a colon like this "50000:50099".
       '';
+
+      example = [
+        "50000:50099"
+        "1234"
+      ];
+
+      type = with lib.types; listOf str;
+    };
+
+    udpSupport = lib.mkOption {
+      default = false;
+
+      description = ''
+        Enable UDP routing.
+        This requires you to specify `udpPorts` and `--dpi-desync-any-protocol` parameter.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    whitelist = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Specify a list of domains to bypass. All other domains will be ignored.
+        You can specify either whitelist or blacklist, but not both.
+        If neither are specified, then bypass all domains.
+
+        It is recommended to specify the whitelist. This will make sure that other resources won't be affected by this service.
+      '';
+
+      example = [
+        "youtube.com"
+        "googlevideo.com"
+        "ytimg.com"
+        "youtu.be"
+      ];
+
+      type = with lib.types; listOf str;
     };
   };
 
@@ -152,33 +184,34 @@ in
         ];
 
         systemd.services.zapret = {
-          description = "DPI bypass service";
-          wantedBy = [ "multi-user.target" ];
           after = [ "network.target" ];
-          serviceConfig = {
-            ExecStart = "${cfg.package}/bin/nfqws --pidfile=/run/nfqws.pid ${params} ${whitelist} ${blacklist} --qnum=${qnum}";
-            Type = "simple";
-            PIDFile = "/run/nfqws.pid";
-            Restart = "always";
-            RuntimeMaxSec = "1h"; # This service loves to crash silently or cause network slowdowns. It also restarts instantly. Restarting it at least hourly provided the best experience.
+          description = "DPI bypass service";
 
+          serviceConfig = {
             # Hardening.
             DevicePolicy = "closed";
+            ExecStart = "${cfg.package}/bin/nfqws --pidfile=/run/nfqws.pid ${params} ${whitelist} ${blacklist} --qnum=${qnum}";
             KeyringMode = "private";
-            PrivateTmp = true;
+            PIDFile = "/run/nfqws.pid";
             PrivateMounts = true;
+            PrivateTmp = true;
             ProtectHome = true;
             ProtectHostname = true;
             ProtectKernelModules = true;
             ProtectKernelTunables = true;
-            ProtectSystem = "strict";
             ProtectProc = "invisible";
+            ProtectSystem = "strict";
             RemoveIPC = true;
+            Restart = "always";
             RestrictNamespaces = true;
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
+            RuntimeMaxSec = "1h"; # This service loves to crash silently or cause network slowdowns. It also restarts instantly. Restarting it at least hourly provided the best experience.
             SystemCallArchitectures = "native";
+            Type = "simple";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
       }
 

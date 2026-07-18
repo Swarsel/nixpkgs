@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  linuxPackages,
   git,
-  kernel ? linuxPackages.kernel,
   kernelModuleMakeFlags,
+  linuxPackages,
+  kernel ? linuxPackages.kernel,
 }:
 stdenv.mkDerivation {
   pname = "msi-ec-kmods";
@@ -18,25 +18,22 @@ stdenv.mkDerivation {
     hash = "sha256-9jynXUvSZT2smyciK8GqojC/4MtxtqfQvJcf5RgPXKY=";
   };
 
-  dontMakeSourcesWritable = false;
-
   patches = [
     ./patches/makefile.patch
     ./patches/kernel-string-choices.patch
   ];
 
-  hardeningDisable = [ "pic" ];
+  nativeBuildInputs = kernel.moduleBuildDependencies ++ [ git ];
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNELDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     "INSTALL_MOD_PATH=$(out)"
   ];
 
-  nativeBuildInputs = kernel.moduleBuildDependencies ++ [ git ];
-
-  installTargets = [ "modules_install" ];
-
+  dontMakeSourcesWritable = false;
   enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+  installTargets = [ "modules_install" ];
 
   meta = {
     description = "Kernel modules for MSI Embedded controller";

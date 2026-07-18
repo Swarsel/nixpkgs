@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
 }:
@@ -18,11 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ autoreconfHook ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     install -Dm444 -t $out/share/doc/mscompress ChangeLog README TODO
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = ''Microsoft "compress.exe/expand.exe" compatible (de)compressor'';

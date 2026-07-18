@@ -1,55 +1,57 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   autoPatchelfHook,
   buildFHSEnv,
   elfutils,
-  extraEnv ? { },
-  fetchurl,
   ffmpeg_6-headless,
-  lib,
   libdrm,
   libgbm,
   libpulseaudio,
   libva,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-wm,
+  libxcomposite,
+  libxdamage,
+  libxinerama,
   libxkbcommon,
   libxml2_13,
+  libxrandr,
+  libxrender,
+  libxshmfence,
+  libxtst,
   makeShellWrapper,
   minizip,
   nss,
   squashfsTools,
-  stdenv,
   writeShellScript,
   xkeyboard_config,
-  libxcb-wm,
-  libxcb-render-util,
-  libxcb-keysyms,
-  libxcb-image,
-  libxtst,
-  libxrender,
-  libxrandr,
-  libxinerama,
-  libxdamage,
-  libxcomposite,
   xrandr,
-  libxshmfence,
+  extraEnv ? { },
 }:
 let
   pname = "plex-htpc";
   version = "1.71.1";
   rev = "73";
   meta = {
-    homepage = "https://plex.tv/";
     description = "Plex HTPC client for the big screen";
+
     longDescription = ''
       Plex HTPC for Linux is your client for playing on your Linux computer
       connected to the big screen. It features a 10-foot interface with a
       powerful playback engine.
     '';
-    maintainers = with lib.maintainers; [ detroyejr ];
+
+    homepage = "https://plex.tv/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ detroyejr ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "plex-htpc";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
   plex-htpc = stdenv.mkDerivation {
     inherit pname version meta;
@@ -58,6 +60,8 @@ let
       url = "https://api.snapcraft.io/api/v1/snaps/download/81OP06hEXlwmMrpMAhe5hyLy5bQ9q6Kz_${rev}.snap";
       hash = "sha512-n9pXRx8s6AwhIJm7PmUIOB8pXqzyNFzdmwJMonQ4WzWvA5tPI27x0slQ6WUxRBQJoLScGckyGAFxIGWRylNr3g==";
     };
+
+    strictDeps = true;
 
     nativeBuildInputs = [
       autoPatchelfHook
@@ -90,18 +94,6 @@ let
       xrandr
     ];
 
-    strictDeps = true;
-
-    unpackPhase = ''
-      runHook preUnpack
-      unsquashfs "$src"
-      cd squashfs-root
-      runHook postUnpack
-    '';
-
-    dontStrip = true;
-    dontWrapQtApps = true;
-
     installPhase = ''
       runHook preInstall
 
@@ -132,15 +124,20 @@ let
 
       runHook postInstall
     '';
+
+    dontStrip = true;
+    dontWrapQtApps = true;
+
+    unpackPhase = ''
+      runHook preUnpack
+      unsquashfs "$src"
+      cd squashfs-root
+      runHook postUnpack
+    '';
   };
 in
 buildFHSEnv {
   inherit pname version meta;
-  targetPkgs = pkgs: [
-    alsa-lib
-    libdrm
-    xkeyboard_config
-  ];
 
   extraInstallCommands = ''
     mkdir -p $out/share/applications $out/share/icons/hicolor/scalable/apps
@@ -173,5 +170,12 @@ buildFHSEnv {
     set +o allexport
     exec ${plex-htpc}/Plex.sh
   '';
+
+  targetPkgs = pkgs: [
+    alsa-lib
+    libdrm
+    xkeyboard_config
+  ];
+
   passthru.updateScript = ./update.sh;
 }

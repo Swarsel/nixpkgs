@@ -14,15 +14,14 @@ stdenv.mkDerivation {
     sha256 = "0aw59kq74yqh0qbdkldfl6l83d0bz833232xr2w4741szck43kss";
   };
 
-  dontUnpack = true;
-
-  passthru.scripts = [ "url_hint.py" ];
-
   installPhase = ''
     runHook preInstall
     install -D $src $out/share/url_hint.py
     runHook postInstall
   '';
+
+  dontUnpack = true;
+  passthru.scripts = [ "url_hint.py" ];
 
   meta = {
     inherit (weechat.meta) platforms;

@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -11,16 +11,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.2.3";
 
   src = fetchCrate {
-    pname = "csv2svg";
     inherit (finalAttrs) version;
     hash = "sha256-DNnMYpzQTzGVsAp0YScqiO260mwShVTE/cwXkU/Q5IE=";
+    pname = "csv2svg";
   };
 
   cargoHash = "sha256-f6ZMCkMVkPi4XfzRUZq7JDhCBz57K58UqY69T9mNzrU=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   curl,
   openssl,
+  pkg-config,
   zlib,
 }:
 
@@ -36,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/ZerBea/hcxtools";
     changelog = "https://github.com/ZerBea/hcxtools/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ dywedir ];
+    platforms = lib.platforms.linux;
   };
 })

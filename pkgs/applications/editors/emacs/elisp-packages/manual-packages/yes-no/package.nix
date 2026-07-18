@@ -14,8 +14,8 @@ melpaBuild {
   };
 
   meta = {
-    homepage = "https://www.emacswiki.org/emacs/yes-no.el";
     description = "Specify use of `y-or-n-p' or `yes-or-no-p' on a case-by-case basis";
+    homepage = "https://www.emacswiki.org/emacs/yes-no.el";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ jcs090218 ];
   };

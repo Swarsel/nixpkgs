@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bluetooth-sensor-state-data,
   buildPythonPackage,
-  fetchFromGitHub,
   home-assistant-bluetooth,
   poetry-core,
   pytest-cov-stub,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "tilt-ble";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-u40xpjwxOdM7FUIPQG9g8q86cZHv21HCxbtnvAAgfgU=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -30,11 +34,7 @@ buildPythonPackage rec {
     sensor-state-data
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tilt_ble" ];
 
   meta = {

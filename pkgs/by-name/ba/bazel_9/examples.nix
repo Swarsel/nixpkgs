@@ -1,14 +1,14 @@
 {
-  fetchFromGitHub,
   lib,
-  bazel_9,
-  libgcc,
-  cctools,
   stdenv,
-  jdk_headless,
+  fetchFromGitHub,
+  bazel_9,
   callPackage,
-  zlib,
+  cctools,
+  jdk_headless,
+  libgcc,
   libxcrypt-legacy,
+  zlib,
 }:
 let
   bazelPackage = callPackage ./build-support/bazelPackage.nix { };
@@ -27,75 +27,30 @@ let
   inherit (callPackage ./build-support/patching.nix { }) addFilePatch;
 in
 {
-  java = bazelPackage {
-    inherit src registry;
-    sourceRoot = "source/java-tutorial";
-    name = "java-tutorial";
-    targets = [ "//:ProjectRunner" ];
-    bazel = bazel_9;
-    commandArgs = [
-      "--extra_toolchains=@@rules_java++toolchains+local_jdk//:all"
-      "--tool_java_runtime_version=local_jdk_21"
-    ]
-    ++ lib.optional stdenv.hostPlatform.isDarwin "--spawn_strategy=local";
-    env = {
-      JAVA_HOME = jdk_headless.home;
-      USE_BAZEL_VERSION = bazel_9.version;
-    };
-    installPhase = ''
-      mkdir $out
-      cp bazel-bin/ProjectRunner.jar $out/
-    '';
-    buildInputs = [
-      libgcc
-      libxcrypt-legacy
-      stdenv.cc.cc.lib
-    ];
-    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
-    patches = [
-      ./patches/examples/java-tutorial.patch
-      (addFilePatch {
-        path = "b/rules_cc.patch";
-        file = ./patches/examples/rules_cc.patch;
-      })
-    ];
-    bazelVendorDepsFOD = {
-      outputHash =
-        {
-          aarch64-darwin = "sha256-Jth981+r20azC/CqoWN3LK5USm8zUIpL9Xt88+TcL1o=";
-          aarch64-linux = "sha256-4E/QCSOXTN/dW65xz/n47tXW0PlHUOP1UP+TwJfMueI=";
-          x86_64-linux = "sha256-HzgFpbEBZ8efA5pwUsGZjt9bKiAXslB17OZQcm3cspc=";
-        }
-        .${stdenv.hostPlatform.system};
-      outputHashAlgo = "sha256";
-    };
-  };
   cpp = bazelPackage {
     inherit src registry;
-    sourceRoot = "source/cpp-tutorial/stage3";
-    name = "cpp-tutorial";
-    targets = [ "//main:hello-world" ];
-    bazel = bazel_9;
+
+    patches = [
+      ./patches/examples/cpp-tutorial.patch
+      (addFilePatch {
+        file = ./patches/examples/rules_cc.patch;
+        path = "b/rules_cc.patch";
+      })
+    ];
+
+    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
+
+    env = {
+      USE_BAZEL_VERSION = bazel_9.version;
+    };
+
     installPhase = ''
       mkdir $out
       cp bazel-bin/main/hello-world $out/
     '';
-    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
-    commandArgs = lib.optionals (stdenv.hostPlatform.isDarwin) [
-      "--host_cxxopt=-xc++"
-      "--cxxopt=-xc++"
-      "--spawn_strategy=local"
-    ];
-    env = {
-      USE_BAZEL_VERSION = bazel_9.version;
-    };
-    patches = [
-      ./patches/examples/cpp-tutorial.patch
-      (addFilePatch {
-        path = "b/rules_cc.patch";
-        file = ./patches/examples/rules_cc.patch;
-      })
-    ];
+
+    bazel = bazel_9;
+
     bazelRepoCacheFOD = {
       outputHash =
         {
@@ -104,36 +59,105 @@ in
           x86_64-linux = "sha256-CbA4Kcn6656xnK6DkN4TZ7u1/mizA49Im9hRCU86TGs=";
         }
         .${stdenv.hostPlatform.system};
+
       outputHashAlgo = "sha256";
     };
+
+    commandArgs = lib.optionals (stdenv.hostPlatform.isDarwin) [
+      "--host_cxxopt=-xc++"
+      "--cxxopt=-xc++"
+      "--spawn_strategy=local"
+    ];
+
+    name = "cpp-tutorial";
+    sourceRoot = "source/cpp-tutorial/stage3";
+    targets = [ "//main:hello-world" ];
   };
-  rust = bazelPackage {
+
+  java = bazelPackage {
     inherit src registry;
-    sourceRoot = "source/rust-examples/01-hello-world";
-    name = "rust-examples-01-hello-world";
-    targets = [ "//:bin" ];
-    bazel = bazel_9;
+
+    patches = [
+      ./patches/examples/java-tutorial.patch
+      (addFilePatch {
+        file = ./patches/examples/rules_cc.patch;
+        path = "b/rules_cc.patch";
+      })
+    ];
+
+    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
+
+    buildInputs = [
+      libgcc
+      libxcrypt-legacy
+      stdenv.cc.cc.lib
+    ];
+
     env = {
+      JAVA_HOME = jdk_headless.home;
       USE_BAZEL_VERSION = bazel_9.version;
     };
+
     installPhase = ''
       mkdir $out
-      cp bazel-bin/bin $out/hello-world
+      cp bazel-bin/ProjectRunner.jar $out/
     '';
+
+    bazel = bazel_9;
+
+    bazelVendorDepsFOD = {
+      outputHash =
+        {
+          aarch64-darwin = "sha256-Jth981+r20azC/CqoWN3LK5USm8zUIpL9Xt88+TcL1o=";
+          aarch64-linux = "sha256-4E/QCSOXTN/dW65xz/n47tXW0PlHUOP1UP+TwJfMueI=";
+          x86_64-linux = "sha256-HzgFpbEBZ8efA5pwUsGZjt9bKiAXslB17OZQcm3cspc=";
+        }
+        .${stdenv.hostPlatform.system};
+
+      outputHashAlgo = "sha256";
+    };
+
+    commandArgs = [
+      "--extra_toolchains=@@rules_java++toolchains+local_jdk//:all"
+      "--tool_java_runtime_version=local_jdk_21"
+    ]
+    ++ lib.optional stdenv.hostPlatform.isDarwin "--spawn_strategy=local";
+
+    name = "java-tutorial";
+    sourceRoot = "source/java-tutorial";
+    targets = [ "//:ProjectRunner" ];
+  };
+
+  rust = bazelPackage {
+    inherit src registry;
+
+    patches = [
+      ./patches/examples/rust-examples.patch
+      (addFilePatch {
+        file = ./patches/examples/rules_cc.patch;
+        path = "b/rules_cc.patch";
+      })
+    ];
+
+    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
+
     buildInputs = [
       zlib
       libgcc
     ];
-    nativeBuildInputs = lib.optional (stdenv.hostPlatform.isDarwin) cctools;
-    commandArgs = lib.optional stdenv.hostPlatform.isDarwin "--spawn_strategy=local";
+
+    env = {
+      USE_BAZEL_VERSION = bazel_9.version;
+    };
+
+    installPhase = ''
+      mkdir $out
+      cp bazel-bin/bin $out/hello-world
+    '';
+
     autoPatchelfIgnoreMissingDeps = [ "librustc_driver-*.so" ];
-    patches = [
-      ./patches/examples/rust-examples.patch
-      (addFilePatch {
-        path = "b/rules_cc.patch";
-        file = ./patches/examples/rules_cc.patch;
-      })
-    ];
+    bazel = bazel_9;
+
     bazelVendorDepsFOD = {
       outputHash =
         {
@@ -142,7 +166,13 @@ in
           x86_64-linux = "sha256-YURF8Zjueq3BN5GfEx5L+C4hGmr5qfJc7OngqZ17384=";
         }
         .${stdenv.hostPlatform.system};
+
       outputHashAlgo = "sha256";
     };
+
+    commandArgs = lib.optional stdenv.hostPlatform.isDarwin "--spawn_strategy=local";
+    name = "rust-examples-01-hello-world";
+    sourceRoot = "source/rust-examples/01-hello-world";
+    targets = [ "//:bin" ];
   };
 }

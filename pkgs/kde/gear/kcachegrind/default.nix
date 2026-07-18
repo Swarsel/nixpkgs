@@ -1,12 +1,11 @@
 {
   lib,
+  graphviz,
   mkKdeDerivation,
   qttools,
-  graphviz,
 }:
 mkKdeDerivation {
   pname = "kcachegrind";
-
   extraNativeBuildInputs = [ qttools ];
 
   qtWrapperArgs = [

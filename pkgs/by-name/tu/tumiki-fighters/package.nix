@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
-  unzip,
-  ldc,
-  libGL,
   SDL,
   SDL_mixer,
   bulletml,
+  fetchpatch,
+  ldc,
+  libGL,
+  unzip,
 }:
 
 let
@@ -16,8 +16,8 @@ let
     patchname: hash:
     fetchpatch {
       name = "${patchname}.patch";
-      url = "https://sources.debian.org/data/main/t/tumiki-fighters/0.2.dfsg1-10/debian/patches/${patchname}.patch";
       sha256 = hash;
+      url = "https://sources.debian.org/data/main/t/tumiki-fighters/0.2.dfsg1-10/debian/patches/${patchname}.patch";
     };
 
 in
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://abagames.sakura.ne.jp/windows/tf${
       lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }.zip";
+
     sha256 = "0djykfc1r8ysapklm621h89ana1c4qzc1m5nr9bqw4iccnmvwk3p";
   };
 
@@ -86,11 +87,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.asahi-net.or.jp/~cs8k-cyu/windows/tf_e.html";
     description = "Sticky 2D shooter";
-    mainProgram = "tumiki-fighters";
+    homepage = "http://www.asahi-net.or.jp/~cs8k-cyu/windows/tf_e.html";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "tumiki-fighters";
   };
 })

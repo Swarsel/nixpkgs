@@ -1,18 +1,17 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
   infotagger,
-  requests,
   inputstream-adaptive,
   inputstreamhelper,
+  rel,
+  requests,
 }:
 
 buildKodiAddon rec {
   pname = "invidious";
-  namespace = "plugin.video.invidious";
   version = "0.2.6";
 
   src = fetchzip {
@@ -27,16 +26,19 @@ buildKodiAddon rec {
     inputstreamhelper
   ];
 
+  namespace = "plugin.video.invidious";
+
   passthru = {
     pythonPath = "resources/lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.invidious";
     };
   };
 
   meta = {
-    homepage = "https://github.com/petterreinholdtsen/kodi-invidious-plugin";
     description = "Privacy-friendly way of watching YouTube content";
+    homepage = "https://github.com/petterreinholdtsen/kodi-invidious-plugin";
     license = lib.licenses.mit;
     teams = [ lib.teams.kodi ];
   };

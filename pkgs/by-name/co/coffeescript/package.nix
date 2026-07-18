@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -27,7 +27,7 @@ buildNpmPackage rec {
     description = "Little language that compiles into JavaScript";
     homepage = "https://github.com/jashkenas/coffeescript";
     license = lib.licenses.mit;
-    mainProgram = "coffee";
     maintainers = with lib.maintainers; [ cdmistman ];
+    mainProgram = "coffee";
   };
 }

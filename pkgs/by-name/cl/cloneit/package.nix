@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   unstableGitUpdater,
 }:
 rustPlatform.buildRustPackage {
@@ -17,12 +17,10 @@ rustPlatform.buildRustPackage {
     sha256 = "sha256-rvhUArJR8ipMRIWpzUY9NUBwqj9TWjX6qtBJp/v3p+Q=";
   };
 
-  cargoHash = "sha256-ZcowTGIl6RiP6qpP5LqgePCgII+qgEcebe5pq4ubv6o=";
-
   strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-ZcowTGIl6RiP6qpP5LqgePCgII+qgEcebe5pq4ubv6o=";
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

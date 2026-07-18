@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   cmark,
   editorconfig-core-c,
-  fetchurl,
   flatpak,
   gi-docgen,
   glib,
@@ -40,20 +40,22 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libfoundry${lib.optionalString withGtk "-gtk"}";
   version = "1.1.1";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/foundry/${lib.versions.majorMinor finalAttrs.version}/foundry-${finalAttrs.version}.tar.xz";
+    hash = "sha256-RtsNZENsMTYRyv37TKDVzsK5e+fXpfG+fujQFQ1PJcg=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/foundry/${lib.versions.majorMinor finalAttrs.version}/foundry-${finalAttrs.version}.tar.xz";
-    hash = "sha256-RtsNZENsMTYRyv37TKDVzsK5e+fXpfG+fujQFQ1PJcg=";
-  };
-
   patches = [
     ./host_sdk_filename_nixos.patch
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gi-docgen
@@ -96,8 +98,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpeas2
   ];
 
-  strictDeps = true;
-
   mesonFlags = [
     (lib.mesonBool "docs" true)
     (lib.mesonBool "gtk" withGtk)
@@ -109,17 +109,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru.updateScript = gnome.updateScript {
-    packageName = "foundry";
     attrPath = "libfoundry";
+    packageName = "foundry";
   };
 
   meta = {
     description = "Command line tool and library that can be used to build developer tools";
-    mainProgram = "foundry";
     homepage = "https://gitlab.gnome.org/GNOME/foundry";
     changelog = "https://gitlab.gnome.org/GNOME/foundry/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "foundry";
+    teams = [ lib.teams.gnome ];
   };
 })

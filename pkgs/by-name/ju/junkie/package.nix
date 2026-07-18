@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
-  libpcap,
+  fetchpatch,
   guile_2_2,
+  libpcap,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull upstream patch for -fno-common toolchains:
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://github.com/rixed/junkie/commit/52209c5b0c9a09981739ede9701cd73e82a88ea5.patch";
       sha256 = "1qg01jinqn5wr2mz77rzaidnrli35di0k7lnx6kfm7dh7v8kxbrr";
+      url = "https://github.com/rixed/junkie/commit/52209c5b0c9a09981739ede9701cd73e82a88ea5.patch";
     })
   ];
 
@@ -35,15 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i '10i#undef IP_DONTFRAG' include/junkie/proto/ip.h
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
   buildInputs = [
     libpcap
     guile_2_2
     openssl
   ];
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
+
   configureFlags = [
     "GUILELIBDIR=\${out}/${guile_2_2.siteDir}"
     "GUILECACHEDIR=\${out}/${guile_2_2.siteCcacheDir}"
@@ -51,10 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Deep packet inspection swiss-army knife";
-    homepage = "https://github.com/rixed/junkie";
-    license = lib.licenses.agpl3Plus;
-    maintainers = [ lib.maintainers.rixed ];
-    platforms = lib.platforms.unix;
+
     longDescription = ''
       Junkie is a network sniffer like Tcpdump or Wireshark, but designed to
       be easy to program and extend.
@@ -64,5 +63,10 @@ stdenv.mkDerivation (finalAttrs: {
       - a nettop tool;
       - a tool listing TLS certificates...
     '';
+
+    homepage = "https://github.com/rixed/junkie";
+    license = lib.licenses.agpl3Plus;
+    maintainers = [ lib.maintainers.rixed ];
+    platforms = lib.platforms.unix;
   };
 })

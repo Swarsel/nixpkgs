@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
+  clr,
   cmake,
-  rocm-cmake,
+  fmt,
+  gfortran,
+  gtest,
+  lapack-reference,
   rocblas,
+  rocm-cmake,
+  rocmUpdateScript,
   rocprim,
   rocsparse,
-  clr,
-  fmt,
-  gtest,
-  gfortran,
-  lapack-reference,
-  buildTests ? false,
   buildBenchmarks ? false,
+  buildTests ? false,
   gpuTargets ? (
     clr.localGpuTargets or [
       "gfx900"
@@ -39,6 +39,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "rocsolver${clr.gpuArchSuffix}";
   version = "7.2.3";
 
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-n+Y8RheA0UYeSfpvOw5zfwe4VAW5hsKjlCXtBceGhf0=";
+
+    sparseCheckout = [
+      "projects/rocsolver"
+      "shared"
+    ];
+  };
+
   outputs = [
     "out"
   ]
@@ -48,18 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals buildBenchmarks [
     "benchmark"
   ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/rocsolver"
-      "shared"
-    ];
-    hash = "sha256-n+Y8RheA0UYeSfpvOw5zfwe4VAW5hsKjlCXtBceGhf0=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocsolver";
 
   nativeBuildInputs = [
     cmake
@@ -120,17 +120,17 @@ stdenv.mkDerivation (finalAttrs: {
       rmdir $out/bin
     '';
 
-  passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
-
   requiredSystemFeatures = [ "big-parallel" ];
+  sourceRoot = "${finalAttrs.src.name}/projects/rocsolver";
+  passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "ROCm LAPACK implementation";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/rocsolver";
     license = with lib.licenses; [ bsd2 ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
-    timeout = 14400; # 4 hours
     maxSilent = 14400; # 4 hours
+    teams = [ lib.teams.rocm ];
+    timeout = 14400; # 4 hours
   };
 })

@@ -1,10 +1,10 @@
 {
-  pname,
-  version,
-  hash,
   fetchurl,
+  hash,
+  pname,
   stdenvNoCC,
   undmg,
+  version,
   metaCommon ? { },
 }:
 
@@ -12,12 +12,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   inherit pname version;
 
   src = fetchurl {
-    name = "WinBox-${finalAttrs.version}.dmg";
-    url = "https://download.mikrotik.com/routeros/winbox/${finalAttrs.version}/WinBox.dmg";
     inherit hash;
+    url = "https://download.mikrotik.com/routeros/winbox/${finalAttrs.version}/WinBox.dmg";
+    name = "WinBox-${finalAttrs.version}.dmg";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [ undmg ];
 
@@ -30,6 +28,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  sourceRoot = ".";
 
   meta = metaCommon // {
     platforms = [ "aarch64-darwin" ];

@@ -6,8 +6,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "cdnninja";
-  domain = "yoto";
   version = "3.2.1";
 
   src = fetchFromGitHub {
@@ -21,11 +19,14 @@ buildHomeAssistantComponent rec {
     yoto-api
   ];
 
+  domain = "yoto";
+  owner = "cdnninja";
+
   meta = {
-    changelog = "https://github.com/cdnninja/yoto_ha/releases/tag/${src.tag}";
     description = "Home Assistant Integration for Yoto";
     homepage = "https://github.com/cdnninja/yoto_ha";
-    maintainers = with lib.maintainers; [ seberm ];
+    changelog = "https://github.com/cdnninja/yoto_ha/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ seberm ];
   };
 }

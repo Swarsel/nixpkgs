@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
   fetchYarnDeps,
-  stdenv,
-  nix-update-script,
-  yarn,
-  nodejs,
-  nixosTests,
   fixup-yarn-lock,
+  nix-update-script,
+  nixosTests,
+  nodejs,
+  yarn,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,21 +24,44 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-OkOUgW6BHJKIdY1soMqTXhL6RYy3567iL1/VZasIdvQ=";
 
+  preBuild = ''
+    cp -R ${finalAttrs.passthru.ui}/ ui/build/
+  '';
+
+  doCheck = false;
+  subPackages = [ "cmd/alice-lg" ];
+
+  passthru = {
+    tests = nixosTests.alice-lg;
+    updateScript = nix-update-script { };
+  };
+
   passthru.ui = stdenv.mkDerivation {
+    inherit (finalAttrs) version;
     pname = "alice-lg-ui";
     src = "${finalAttrs.src}/ui";
-    inherit (finalAttrs) version;
-
-    yarnOfflineCache = fetchYarnDeps {
-      yarnLock = finalAttrs.src + "/ui/yarn.lock";
-      hash = "sha256-PwByNIegKYTOT8Yg3nDMDFZiLRVkbX07z99YaDiBsIY=";
-    };
 
     nativeBuildInputs = [
       nodejs
       yarn
       fixup-yarn-lock
     ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      ./node_modules/.bin/react-scripts build
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mv build $out
+
+      runHook postInstall
+    '';
 
     configurePhase = ''
       runHook preConfigure
@@ -57,38 +80,15 @@ buildGoModule (finalAttrs: {
       runHook postConfigure
     '';
 
-    buildPhase = ''
-      runHook preBuild
-
-      ./node_modules/.bin/react-scripts build
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      mv build $out
-
-      runHook postInstall
-    '';
-  };
-
-  preBuild = ''
-    cp -R ${finalAttrs.passthru.ui}/ ui/build/
-  '';
-
-  subPackages = [ "cmd/alice-lg" ];
-  doCheck = false;
-
-  passthru = {
-    tests = nixosTests.alice-lg;
-    updateScript = nix-update-script { };
+    yarnOfflineCache = fetchYarnDeps {
+      hash = "sha256-PwByNIegKYTOT8Yg3nDMDFZiLRVkbX07z99YaDiBsIY=";
+      yarnLock = finalAttrs.src + "/ui/yarn.lock";
+    };
   };
 
   meta = {
-    homepage = "https://github.com/alice-lg/alice-lg";
     description = "Looking-glass for BGP sessions";
+    homepage = "https://github.com/alice-lg/alice-lg";
     changelog = "https://github.com/alice-lg/alice-lg/blob/main/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ stv0g ];

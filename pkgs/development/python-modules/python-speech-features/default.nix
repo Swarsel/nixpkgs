@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   numpy,
-  scipy,
   pytestCheckHook,
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-speech-features";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jameslyons";
@@ -19,6 +18,10 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-IAQujxQ5hOXFNOIEhWsGOTeWqxyBmqL5HSVD4KYEn3U=";
   };
+
+  nativeBuildInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -29,9 +32,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeBuildInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "python_speech_features"

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   libpng,
+  pkg-config,
   zlib,
 }:
 
@@ -19,6 +19,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libpng
     zlib
@@ -36,8 +37,8 @@ stdenv.mkDerivation {
     description = "Lossy compression of PNG images";
     homepage = "https://github.com/foobaz/pngloss";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ _2gn ];
+    platforms = lib.platforms.all;
     mainProgram = "pngloss";
   };
 }

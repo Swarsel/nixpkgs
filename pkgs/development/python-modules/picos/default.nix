@@ -1,34 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  numpy,
-  cvxopt,
-  python,
-  networkx,
-  scipy,
-  pythonOlder,
   stdenv,
+  buildPythonPackage,
+  cvxopt,
+  fetchPypi,
+  networkx,
+  numpy,
+  python,
+  pythonOlder,
+  scipy,
 }:
 
 buildPythonPackage rec {
   pname = "picos";
   version = "2.6.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-869PnpjwxEnrS2Atfk4CzAkn56kJSqU/XXmnSHZZ5DM=";
   };
-
-  # Needed only for the tests
-  nativeCheckInputs = [ networkx ];
-
-  dependencies = [
-    numpy
-    cvxopt
-    scipy
-  ];
 
   postPatch =
     lib.optionalString (pythonOlder "3.12") ''
@@ -40,6 +30,9 @@ buildPythonPackage rec {
       rm tests/ptest_quantentr.py
     '';
 
+  # Needed only for the tests
+  nativeCheckInputs = [ networkx ];
+
   checkPhase = ''
     runHook preCheck
 
@@ -47,6 +40,14 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  dependencies = [
+    numpy
+    cvxopt
+    scipy
+  ];
+
+  format = "setuptools";
 
   meta = {
     description = "Python interface to conic optimization solvers";

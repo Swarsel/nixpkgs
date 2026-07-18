@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  udev,
-  openssl,
+  fetchFromGitHub,
   boost,
   cmake,
   git,
   level-zero,
-  fetchFromGitHub,
+  openssl,
+  udev,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,20 +18,9 @@ stdenv.mkDerivation rec {
     owner = "intel";
     repo = "linux-npu-driver";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-aH7npJompKYlyq2RPXHn/lflQ1C/yYcTp2K+6kX/L0w=";
+    fetchSubmodules = true;
   };
-
-  buildInputs = [
-    udev
-    openssl
-    boost
-    level-zero
-  ];
-
-  nativeBuildInputs = [
-    cmake
-  ];
 
   outputs = [
     "out"
@@ -64,6 +53,17 @@ stdenv.mkDerivation rec {
       "DESTINATION $firmware/lib/firmware/intel/vpu/"
   '';
 
+  nativeBuildInputs = [
+    cmake
+  ];
+
+  buildInputs = [
+    udev
+    openssl
+    boost
+    level-zero
+  ];
+
   installPhase = ''
     cmake --install . --component level-zero-npu
     cmake --install . --component validation-npu
@@ -71,10 +71,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/intel/linux-npu-driver";
     description = "Intel NPU (Neural Processing Unit) Standalone Driver";
-    platforms = [ "x86_64-linux" ];
+    homepage = "https://github.com/intel/linux-npu-driver";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pseudocc ];
+    platforms = [ "x86_64-linux" ];
   };
 }

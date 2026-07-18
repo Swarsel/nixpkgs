@@ -2,40 +2,39 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  pkg-config,
-  libpng,
-  libtiff,
-  zlib,
-  lcms2,
-  jpipLibSupport ? false, # JPIP library & executables
-  jpipServerSupport ? false,
   curl,
   fcgi, # JPIP Server
-  jdk,
-
+  fetchpatch,
   # for passthru.tests
   ffmpeg,
   gdal,
   gdcm,
   ghostscript,
   imagemagick,
+  jdk,
+  lcms2,
   leptonica,
+  libpng,
+  libtiff,
   mupdf,
+  pkg-config,
   poppler,
   python3,
   vips,
+  zlib,
+  jpipLibSupport ? false, # JPIP library & executables
+  jpipServerSupport ? false,
 }:
 
 let
   # may need to get updated with package
   # https://github.com/uclouvain/openjpeg-data
   test-data = fetchFromGitHub {
+    hash = "sha256-ckZHCZV5UJicVUoi/mZDwvCJneXC3X+NA8Byp6GLE0w=";
     owner = "uclouvain";
     repo = "openjpeg-data";
     rev = "39524bd3a601d90ed8e0177559400d23945f96a9";
-    hash = "sha256-ckZHCZV5UJicVUoi/mZDwvCJneXC3X+NA8Byp6GLE0w=";
   };
 in
 stdenv.mkDerivation rec {
@@ -54,18 +53,6 @@ stdenv.mkDerivation rec {
     "dev"
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
-    "-DBUILD_CODEC=ON"
-    "-DBUILD_THIRDPARTY=OFF"
-    (lib.cmakeBool "BUILD_JPIP" jpipLibSupport)
-    (lib.cmakeBool "BUILD_JPIP_SERVER" jpipServerSupport)
-    "-DBUILD_VIEWER=OFF"
-    "-DBUILD_JAVA=OFF"
-    (lib.cmakeBool "BUILD_TESTING" doCheck)
-  ]
-  ++ lib.optional doCheck "-DOPJ_DATA_ROOT=${test-data}";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -83,6 +70,18 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional jpipLibSupport jdk;
 
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
+    "-DBUILD_CODEC=ON"
+    "-DBUILD_THIRDPARTY=OFF"
+    (lib.cmakeBool "BUILD_JPIP" jpipLibSupport)
+    (lib.cmakeBool "BUILD_JPIP_SERVER" jpipServerSupport)
+    "-DBUILD_VIEWER=OFF"
+    "-DBUILD_JAVA=OFF"
+    (lib.cmakeBool "BUILD_TESTING" doCheck)
+  ]
+  ++ lib.optional doCheck "-DOPJ_DATA_ROOT=${test-data}";
+
   # tests did fail on powerpc64
   doCheck = !stdenv.hostPlatform.isPower64 && stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
@@ -95,11 +94,8 @@ stdenv.mkDerivation rec {
 
   passthru = {
     incDir = "openjpeg-${lib.versions.majorMinor version}";
-    tests = {
-      ffmpeg = ffmpeg.override { withOpenjpeg = true; };
-      imagemagick = imagemagick.override { openjpegSupport = true; };
-      pillow = python3.pkgs.pillow;
 
+    tests = {
       inherit
         gdal
         gdcm
@@ -109,15 +105,19 @@ stdenv.mkDerivation rec {
         poppler
         vips
         ;
+
+      ffmpeg = ffmpeg.override { withOpenjpeg = true; };
+      imagemagick = imagemagick.override { openjpegSupport = true; };
+      pillow = python3.pkgs.pillow;
     };
   };
 
   meta = {
     description = "Open-source JPEG 2000 codec written in C language";
     homepage = "https://www.openjpeg.org/";
+    changelog = "https://github.com/uclouvain/openjpeg/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = lib.platforms.all;
-    changelog = "https://github.com/uclouvain/openjpeg/blob/v${version}/CHANGELOG.md";
   };
 }

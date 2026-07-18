@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   pkg-config,
   protobuf,
+  rustPlatform,
   xz,
 }:
 
@@ -26,10 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ xz ];
-
-  doCheck = false; # There are no tests
-
   cargoHash = "sha256-6L1FJWEaDBqpJvj9uGjYuAqqDoQlkVwOWfbG46Amkkw=";
+  doCheck = false; # There are no tests
 
   meta = {
     description = "Command-line tool to extract partitions from Android OTA files";

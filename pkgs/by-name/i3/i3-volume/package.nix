@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  makeWrapper,
-  gawk,
-  bc,
-  jq,
-  wireplumber,
-  pipewire,
-  coreutils,
-  gnugrep,
-  libpulseaudio,
   alsa-lib,
+  bc,
+  coreutils,
+  gawk,
+  gitUpdater,
+  gnugrep,
+  jq,
   libnotify,
+  libpulseaudio,
+  makeWrapper,
+  pipewire,
+  wireplumber,
 }:
 
 stdenv.mkDerivation rec {
@@ -34,8 +34,6 @@ stdenv.mkDerivation rec {
     alsa-lib
     libnotify
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -61,6 +59,8 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";
   };
@@ -68,14 +68,16 @@ stdenv.mkDerivation rec {
   # Example usage for `services.pipewire.enabled = true;` (will use `amixer` program) - `i3-volume -a -n -c 0 up 100`
   meta = {
     description = "Volume control with on-screen display notifications";
+
     longDescription = ''
       Use keyboard volume keys to mute, increase, or decrease the volume. Volume indicators in status lines will be updated and, when notifications are enabled, a popup will display the volume level.
 
       Works with any window manager, such as [i3wm](https://i3wm.org/), [bspwm](https://github.com/baskerville/bspwm), and [KDE](https://kde.org/), as a standalone script, or with statusbars such as [polybar](https://github.com/polybar/polybar), [i3blocks](https://github.com/vivien/i3blocks), [i3status](https://github.com/i3/i3status), and more.
     '';
+
     homepage = "https://github.com/hastinbe/i3-volume";
-    mainProgram = "i3-volume";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
+    mainProgram = "i3-volume";
   };
 }

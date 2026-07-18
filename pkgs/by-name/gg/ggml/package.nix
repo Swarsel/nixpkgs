@@ -9,9 +9,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ggml";
   version = "0.16.0";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "ggml-org";
     repo = "ggml";
@@ -32,9 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
         "@CMAKE_INSTALL_FULL_LIBDIR@"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
   ];
+
+  __structuredAttrs = true;
 
   meta = {
     description = "Tensor library for machine learning";

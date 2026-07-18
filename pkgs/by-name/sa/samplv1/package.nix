@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libjack2,
   alsa-lib,
+  cmake,
+  kdePackages,
+  libjack2,
   liblo,
   libsndfile,
   lv2,
+  pkg-config,
   rubberband,
-  cmake,
-  kdePackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,10 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Old-school all-digital polyphonic sampler synthesizer with stereo fx";
-    mainProgram = "samplv1_jack";
     homepage = "http://samplv1.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "samplv1_jack";
   };
 })

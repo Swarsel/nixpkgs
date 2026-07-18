@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -20,8 +20,8 @@ postgresqlBuildExtension (finalAttrs: {
     description = "Simple extension to PostgreSQL that requires criteria for UPDATE and DELETE";
     homepage = "https://github.com/eradman/pg-safeupdate";
     changelog = "https://github.com/eradman/pg-safeupdate/raw/${finalAttrs.version}/NEWS";
-    platforms = postgresql.meta.platforms;
-    maintainers = with lib.maintainers; [ wolfgangwalther ];
     license = lib.licenses.postgresql;
+    maintainers = with lib.maintainers; [ wolfgangwalther ];
+    platforms = postgresql.meta.platforms;
   };
 })

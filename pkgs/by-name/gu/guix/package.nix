@@ -1,13 +1,14 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  graphviz,
-  gettext,
   autoreconfHook,
+  bzip2,
   disarchive,
+  fetchgit,
+  gettext,
   git,
   glibcLocales,
+  graphviz,
   guile,
   guile-avahi,
   guile-gcrypt,
@@ -18,25 +19,23 @@
   guile-lzlib,
   guile-lzma,
   guile-semver,
-  guile-ssh,
   guile-sqlite3,
+  guile-ssh,
   guile-zlib,
   guile-zstd,
   help2man,
+  libgcrypt,
   makeWrapper,
+  nixosTests,
   pkg-config,
   po4a,
   scheme-bytestructures,
   slirp4netns,
-  texinfo,
-  bzip2,
-  libgcrypt,
   sqlite,
-  nixosTests,
-
+  texinfo,
+  confDir ? "/etc",
   stateDir ? "/var",
   storeDir ? "/gnu/store",
-  confDir ? "/etc",
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "guix";
@@ -126,13 +125,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-apparmor-profile-dir=$(out)/etc/apparmor.d"
   ];
 
-  preAutoreconf = ''
-    echo ${finalAttrs.version} > .tarball-version
-    ./bootstrap
-  '';
-
-  enableParallelBuilding = true;
-
   postInstall = ''
     for f in $out/bin/*; do
       wrapProgram $f \
@@ -142,12 +134,20 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = true;
+
+  preAutoreconf = ''
+    echo ${finalAttrs.version} > .tarball-version
+    ./bootstrap
+  '';
+
   passthru.tests = {
     inherit (nixosTests) guix;
   };
 
   meta = {
     description = "Functional package manager with a Scheme interface";
+
     longDescription = ''
       GNU Guix is a purely functional package manager for the GNU system, and a distribution thereof.
       In addition to standard package management features, Guix supports
@@ -160,15 +160,18 @@ stdenv.mkDerivation (finalAttrs: {
       Guix.
       Guix is based on the Nix package manager.
     '';
+
     homepage = "https://guix.gnu.org/";
-    donationPage = "https://guix.gnu.org/donate/";
     changelog = "https://codeberg.org/guix/guix/raw/tag/v${finalAttrs.version}/NEWS";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "guix";
+
     maintainers = with lib.maintainers; [
       cafkafk
       hpfr
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "guix";
+    donationPage = "https://guix.gnu.org/donate/";
   };
 })

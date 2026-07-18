@@ -1,25 +1,23 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
-  setuptools,
   lxml,
+  setuptools,
   six,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "xml-marshaller";
   version = "1.0.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "xml_marshaller";
     inherit (finalAttrs) version;
     hash = "sha256-QvBALLDD8o5nZQ5Z4bembhadK6jcydWKQpJaSmGqqJM=";
+    pname = "xml_marshaller";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,6 +25,7 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "xml_marshaller" ];
 
   meta = {

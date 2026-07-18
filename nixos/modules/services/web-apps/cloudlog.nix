@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -52,9 +52,6 @@ let
     ${cfg.extraConfig}
   '';
   package = pkgs.stdenv.mkDerivation rec {
-    pname = "cloudlog";
-    version = src.version;
-    src = pkgs.cloudlog;
     installPhase = ''
       mkdir -p $out
       cp -r * $out/
@@ -71,240 +68,311 @@ let
         ln -s ${cfg.dataDir}/$directory $out/$directory
       done
     '';
+
+    pname = "cloudlog";
+    src = pkgs.cloudlog;
+    version = src.version;
   };
 in
 {
   options.services.cloudlog = with types; {
     enable = mkEnableOption "Cloudlog";
-    dataDir = mkOption {
-      type = str;
-      default = "/var/lib/cloudlog";
-      description = "Cloudlog data directory.";
-    };
+
     baseUrl = mkOption {
-      type = str;
       default = "http://localhost";
       description = "Cloudlog base URL";
-    };
-    user = mkOption {
       type = str;
-      default = "cloudlog";
-      description = "User account under which Cloudlog runs.";
     };
+
+    dataDir = mkOption {
+      default = "/var/lib/cloudlog";
+      description = "Cloudlog data directory.";
+      type = str;
+    };
+
     database = {
       createLocally = mkOption {
-        type = types.bool;
         default = true;
         description = "Create the database and database user locally.";
+        type = types.bool;
       };
+
       host = mkOption {
-        type = str;
-        description = "MySQL database host";
         default = "localhost";
+        description = "MySQL database host";
+        type = str;
       };
+
       name = mkOption {
-        type = str;
+        default = "cloudlog";
         description = "MySQL database name.";
-        default = "cloudlog";
-      };
-      user = mkOption {
         type = str;
-        description = "MySQL user name.";
-        default = "cloudlog";
       };
+
       passwordFile = mkOption {
-        type = nullOr str;
-        description = "MySQL user password file.";
         default = null;
+        description = "MySQL user password file.";
+        type = nullOr str;
+      };
+
+      user = mkOption {
+        default = "cloudlog";
+        description = "MySQL user name.";
+        type = str;
       };
     };
-    poolConfig = mkOption {
-      type = attrsOf (oneOf [
-        str
-        int
-        bool
-      ]);
-      default = {
-        "pm" = "dynamic";
-        "pm.max_children" = 32;
-        "pm.start_servers" = 2;
-        "pm.min_spare_servers" = 2;
-        "pm.max_spare_servers" = 4;
-        "pm.max_requests" = 500;
-      };
-      description = ''
-        Options for Cloudlog's PHP-FPM pool.
-      '';
-    };
-    virtualHost = mkOption {
-      type = nullOr str;
-      default = "localhost";
-      description = ''
-        Name of the nginx virtualhost to use and setup. If null, do not setup
-         any virtualhost.
-      '';
-    };
+
     extraConfig = mkOption {
+      default = "";
+
       description = ''
         Any additional text to be appended to the config.php
         configuration file. This is a PHP script. For configuration
         settings, see <https://github.com/magicbug/Cloudlog/wiki/Cloudlog.php-Configuration-File>.
       '';
-      default = "";
-      type = str;
+
       example = ''
         $config['show_time'] = TRUE;
       '';
+
+      type = str;
     };
-    upload-lotw = {
-      enable = mkOption {
-        type = bool;
-        default = true;
-        description = ''
-          Whether to periodically upload logs to LoTW. If enabled, a systemd
-          timer will run the log upload task as specified by the interval
-           option.
-        '';
+
+    poolConfig = mkOption {
+      default = {
+        "pm" = "dynamic";
+        "pm.max_children" = 32;
+        "pm.max_requests" = 500;
+        "pm.max_spare_servers" = 4;
+        "pm.min_spare_servers" = 2;
+        "pm.start_servers" = 2;
       };
-      interval = mkOption {
-        type = str;
-        default = "daily";
-        description = ''
-          Specification (in the format described by {manpage}`systemd.time(7)`) of the
-          time at which the LoTW upload will occur.
-        '';
-      };
+
+      description = ''
+        Options for Cloudlog's PHP-FPM pool.
+      '';
+
+      type = attrsOf (oneOf [
+        str
+        int
+        bool
+      ]);
     };
-    upload-clublog = {
-      enable = mkOption {
-        type = bool;
-        default = true;
-        description = ''
-          Whether to periodically upload logs to Clublog. If enabled, a systemd
-          timer will run the log upload task as specified by the interval option.
-        '';
-      };
-      interval = mkOption {
-        type = str;
-        default = "daily";
-        description = ''
-          Specification (in the format described by {manpage}`systemd.time(7)`) of the time
-          at which the Clublog upload will occur.
-        '';
-      };
-    };
-    update-lotw-users = {
-      enable = mkOption {
-        type = bool;
-        default = true;
-        description = ''
-          Whether to periodically update the list of LoTW users. If enabled, a
-          systemd timer will run the update task as specified by the interval
-          option.
-        '';
-      };
-      interval = mkOption {
-        type = str;
-        default = "weekly";
-        description = ''
-          Specification (in the format described by {manpage}`systemd.time(7)`) of the
-          time at which the LoTW user update will occur.
-        '';
-      };
-    };
-    update-dok = {
-      enable = mkOption {
-        type = bool;
-        default = true;
-        description = ''
-          Whether to periodically update the DOK resource file. If enabled, a
-          systemd timer will run the update task as specified by the interval option.
-        '';
-      };
-      interval = mkOption {
-        type = str;
-        default = "monthly";
-        description = ''
-          Specification (in the format described by {manpage}`systemd.time(7)`) of the
-          time at which the DOK update will occur.
-        '';
-      };
-    };
+
     update-clublog-scp = {
       enable = mkOption {
-        type = bool;
         default = true;
+
         description = ''
           Whether to periodically update the Clublog SCP database. If enabled,
           a systemd timer will run the update task as specified by the interval
           option.
         '';
+
+        type = bool;
       };
+
       interval = mkOption {
-        type = str;
         default = "monthly";
+
         description = ''
           Specification (in the format described by {manpage}`systemd.time(7)`) of the time
           at which the Clublog SCP update will occur.
         '';
+
+        type = str;
       };
     };
+
+    update-dok = {
+      enable = mkOption {
+        default = true;
+
+        description = ''
+          Whether to periodically update the DOK resource file. If enabled, a
+          systemd timer will run the update task as specified by the interval option.
+        '';
+
+        type = bool;
+      };
+
+      interval = mkOption {
+        default = "monthly";
+
+        description = ''
+          Specification (in the format described by {manpage}`systemd.time(7)`) of the
+          time at which the DOK update will occur.
+        '';
+
+        type = str;
+      };
+    };
+
+    update-lotw-users = {
+      enable = mkOption {
+        default = true;
+
+        description = ''
+          Whether to periodically update the list of LoTW users. If enabled, a
+          systemd timer will run the update task as specified by the interval
+          option.
+        '';
+
+        type = bool;
+      };
+
+      interval = mkOption {
+        default = "weekly";
+
+        description = ''
+          Specification (in the format described by {manpage}`systemd.time(7)`) of the
+          time at which the LoTW user update will occur.
+        '';
+
+        type = str;
+      };
+    };
+
+    update-sota = {
+      enable = mkOption {
+        default = true;
+
+        description = ''
+          Whether to periodically update the SOTA database. If enabled, a
+          systemd timer will run the update task as specified by the interval option.
+        '';
+
+        type = bool;
+      };
+
+      interval = mkOption {
+        default = "monthly";
+
+        description = ''
+          Specification (in the format described by {manpage}`systemd.time(7)`) of the time
+          at which the SOTA update will occur.
+        '';
+
+        type = str;
+      };
+    };
+
     update-wwff = {
       enable = mkOption {
-        type = bool;
         default = true;
+
         description = ''
           Whether to periodically update the WWFF database. If enabled, a
           systemd timer will run the update task as specified by the interval
           option.
         '';
+
+        type = bool;
       };
+
       interval = mkOption {
-        type = str;
         default = "monthly";
+
         description = ''
           Specification (in the format described by {manpage}`systemd.time(7)`) of the time
           at which the WWFF update will occur.
         '';
+
+        type = str;
       };
     };
+
+    upload-clublog = {
+      enable = mkOption {
+        default = true;
+
+        description = ''
+          Whether to periodically upload logs to Clublog. If enabled, a systemd
+          timer will run the log upload task as specified by the interval option.
+        '';
+
+        type = bool;
+      };
+
+      interval = mkOption {
+        default = "daily";
+
+        description = ''
+          Specification (in the format described by {manpage}`systemd.time(7)`) of the time
+          at which the Clublog upload will occur.
+        '';
+
+        type = str;
+      };
+    };
+
+    upload-lotw = {
+      enable = mkOption {
+        default = true;
+
+        description = ''
+          Whether to periodically upload logs to LoTW. If enabled, a systemd
+          timer will run the log upload task as specified by the interval
+           option.
+        '';
+
+        type = bool;
+      };
+
+      interval = mkOption {
+        default = "daily";
+
+        description = ''
+          Specification (in the format described by {manpage}`systemd.time(7)`) of the
+          time at which the LoTW upload will occur.
+        '';
+
+        type = str;
+      };
+    };
+
     upload-qrz = {
       enable = mkOption {
-        type = bool;
         default = true;
+
         description = ''
           Whether to periodically upload logs to QRZ. If enabled, a systemd
           timer will run the update task as specified by the interval option.
         '';
+
+        type = bool;
       };
+
       interval = mkOption {
-        type = str;
         default = "daily";
+
         description = ''
           Specification (in the format described by {manpage}`systemd.time(7)`) of the
           time at which the QRZ upload will occur.
         '';
+
+        type = str;
       };
     };
-    update-sota = {
-      enable = mkOption {
-        type = bool;
-        default = true;
-        description = ''
-          Whether to periodically update the SOTA database. If enabled, a
-          systemd timer will run the update task as specified by the interval option.
-        '';
-      };
-      interval = mkOption {
-        type = str;
-        default = "monthly";
-        description = ''
-          Specification (in the format described by {manpage}`systemd.time(7)`) of the time
-          at which the SOTA update will occur.
-        '';
-      };
+
+    user = mkOption {
+      default = "cloudlog";
+      description = "User account under which Cloudlog runs.";
+      type = str;
+    };
+
+    virtualHost = mkOption {
+      default = "localhost";
+
+      description = ''
+        Name of the nginx virtualhost to use and setup. If null, do not setup
+         any virtualhost.
+      '';
+
+      type = nullOr str;
     };
   };
+
   config = mkIf cfg.enable {
 
     assertions = [
@@ -314,24 +382,28 @@ in
       }
     ];
 
-    services.phpfpm = {
-      pools.cloudlog = {
-        inherit (cfg) user;
-        group = config.services.nginx.group;
-        settings = {
-          "listen.owner" = config.services.nginx.user;
-          "listen.group" = config.services.nginx.group;
+    services.mysql = mkIf cfg.database.createLocally {
+      enable = true;
+      ensureDatabases = [ cfg.database.name ];
+
+      ensureUsers = [
+        {
+          ensurePermissions = {
+            "${cfg.database.name}.*" = "ALL PRIVILEGES";
+          };
+
+          name = cfg.database.user;
         }
-        // cfg.poolConfig;
-      };
+      ];
     };
 
     services.nginx = mkIf (cfg.virtualHost != null) {
       enable = true;
+
       virtualHosts = {
         "${cfg.virtualHost}" = {
-          root = "${package}";
           locations."/".tryFiles = "$uri /index.php$is_args$args";
+
           locations."~ ^/index.php(/|$)".extraConfig = ''
             include ${config.services.nginx.package}/conf/fastcgi_params;
             include ${pkgs.nginx}/conf/fastcgi.conf;
@@ -339,33 +411,31 @@ in
             fastcgi_pass unix:${config.services.phpfpm.pools.cloudlog.socket};
             fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
           '';
+
+          root = "${package}";
         };
       };
     };
 
-    services.mysql = mkIf cfg.database.createLocally {
-      enable = true;
-      ensureDatabases = [ cfg.database.name ];
-      ensureUsers = [
-        {
-          name = cfg.database.user;
-          ensurePermissions = {
-            "${cfg.database.name}.*" = "ALL PRIVILEGES";
-          };
+    services.phpfpm = {
+      pools.cloudlog = {
+        inherit (cfg) user;
+        group = config.services.nginx.group;
+
+        settings = {
+          "listen.group" = config.services.nginx.group;
+          "listen.owner" = config.services.nginx.user;
         }
-      ];
+        // cfg.poolConfig;
+      };
     };
 
     systemd = {
       services = {
         cloudlog-setup-database = mkIf cfg.database.createLocally {
-          description = "Set up cloudlog database";
-          serviceConfig = {
-            Type = "oneshot";
-            RemainAfterExit = true;
-          };
-          wantedBy = [ "phpfpm-cloudlog.service" ];
           after = [ "mysql.service" ];
+          description = "Set up cloudlog database";
+
           script =
             let
               mysql = "${config.services.mysql.package}/bin/mysql";
@@ -376,125 +446,164 @@ in
                 touch ${cfg.dataDir}/.dbexists
               fi
             '';
+
+          serviceConfig = {
+            RemainAfterExit = true;
+            Type = "oneshot";
+          };
+
+          wantedBy = [ "phpfpm-cloudlog.service" ];
         };
-        cloudlog-upload-lotw = {
-          description = "Upload QSOs to LoTW if certs have been provided";
-          enable = cfg.upload-lotw.enable;
-          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/lotw/lotw_upload";
-        };
-        cloudlog-update-lotw-users = {
-          description = "Update LOTW Users Database";
-          enable = cfg.update-lotw-users.enable;
-          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/lotw/load_users";
-        };
-        cloudlog-update-dok = {
-          description = "Update DOK File for autocomplete";
-          enable = cfg.update-dok.enable;
-          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/update/update_dok";
-        };
+
         cloudlog-update-clublog-scp = {
-          description = "Update Clublog SCP Database File";
           enable = cfg.update-clublog-scp.enable;
+          description = "Update Clublog SCP Database File";
           script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/update/update_clublog_scp";
         };
-        cloudlog-update-wwff = {
-          description = "Update WWFF File for autocomplete";
-          enable = cfg.update-wwff.enable;
-          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/update/update_wwff";
-        };
-        cloudlog-upload-qrz = {
-          description = "Upload QSOs to QRZ Logbook";
-          enable = cfg.upload-qrz.enable;
-          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/qrz/upload";
-        };
-        cloudlog-update-sota = {
-          description = "Update SOTA File for autocomplete";
-          enable = cfg.update-sota.enable;
-          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/update/update_sota";
-        };
-      };
-      timers = {
-        cloudlog-upload-lotw = {
-          enable = cfg.upload-lotw.enable;
-          wantedBy = [ "timers.target" ];
-          partOf = [ "cloudlog-upload-lotw.service" ];
-          after = [ "phpfpm-cloudlog.service" ];
-          timerConfig = {
-            OnCalendar = cfg.upload-lotw.interval;
-            Persistent = true;
-          };
-        };
-        cloudlog-upload-clublog = {
-          enable = cfg.upload-clublog.enable;
-          wantedBy = [ "timers.target" ];
-          partOf = [ "cloudlog-upload-clublog.service" ];
-          after = [ "phpfpm-cloudlog.service" ];
-          timerConfig = {
-            OnCalendar = cfg.upload-clublog.interval;
-            Persistent = true;
-          };
-        };
-        cloudlog-update-lotw-users = {
-          enable = cfg.update-lotw-users.enable;
-          wantedBy = [ "timers.target" ];
-          partOf = [ "cloudlog-update-lotw-users.service" ];
-          after = [ "phpfpm-cloudlog.service" ];
-          timerConfig = {
-            OnCalendar = cfg.update-lotw-users.interval;
-            Persistent = true;
-          };
-        };
+
         cloudlog-update-dok = {
           enable = cfg.update-dok.enable;
-          wantedBy = [ "timers.target" ];
-          partOf = [ "cloudlog-update-dok.service" ];
-          after = [ "phpfpm-cloudlog.service" ];
-          timerConfig = {
-            OnCalendar = cfg.update-dok.interval;
-            Persistent = true;
-          };
+          description = "Update DOK File for autocomplete";
+          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/update/update_dok";
         };
+
+        cloudlog-update-lotw-users = {
+          enable = cfg.update-lotw-users.enable;
+          description = "Update LOTW Users Database";
+          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/lotw/load_users";
+        };
+
+        cloudlog-update-sota = {
+          enable = cfg.update-sota.enable;
+          description = "Update SOTA File for autocomplete";
+          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/update/update_sota";
+        };
+
+        cloudlog-update-wwff = {
+          enable = cfg.update-wwff.enable;
+          description = "Update WWFF File for autocomplete";
+          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/update/update_wwff";
+        };
+
+        cloudlog-upload-lotw = {
+          enable = cfg.upload-lotw.enable;
+          description = "Upload QSOs to LoTW if certs have been provided";
+          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/lotw/lotw_upload";
+        };
+
+        cloudlog-upload-qrz = {
+          enable = cfg.upload-qrz.enable;
+          description = "Upload QSOs to QRZ Logbook";
+          script = "${pkgs.curl}/bin/curl -s ${cfg.baseUrl}/qrz/upload";
+        };
+      };
+
+      timers = {
         cloudlog-update-clublog-scp = {
           enable = cfg.update-clublog-scp.enable;
-          wantedBy = [ "timers.target" ];
-          partOf = [ "cloudlog-update-clublog-scp.service" ];
           after = [ "phpfpm-cloudlog.service" ];
+          partOf = [ "cloudlog-update-clublog-scp.service" ];
+
           timerConfig = {
             OnCalendar = cfg.update-clublog-scp.interval;
             Persistent = true;
           };
-        };
-        cloudlog-update-wwff = {
-          enable = cfg.update-wwff.enable;
+
           wantedBy = [ "timers.target" ];
-          partOf = [ "cloudlog-update-wwff.service" ];
+        };
+
+        cloudlog-update-dok = {
+          enable = cfg.update-dok.enable;
           after = [ "phpfpm-cloudlog.service" ];
+          partOf = [ "cloudlog-update-dok.service" ];
+
           timerConfig = {
-            OnCalendar = cfg.update-wwff.interval;
+            OnCalendar = cfg.update-dok.interval;
             Persistent = true;
           };
-        };
-        cloudlog-upload-qrz = {
-          enable = cfg.upload-qrz.enable;
+
           wantedBy = [ "timers.target" ];
-          partOf = [ "cloudlog-upload-qrz.service" ];
+        };
+
+        cloudlog-update-lotw-users = {
+          enable = cfg.update-lotw-users.enable;
           after = [ "phpfpm-cloudlog.service" ];
+          partOf = [ "cloudlog-update-lotw-users.service" ];
+
           timerConfig = {
-            OnCalendar = cfg.upload-qrz.interval;
+            OnCalendar = cfg.update-lotw-users.interval;
             Persistent = true;
           };
+
+          wantedBy = [ "timers.target" ];
         };
+
         cloudlog-update-sota = {
           enable = cfg.update-sota.enable;
-          wantedBy = [ "timers.target" ];
-          partOf = [ "cloudlog-update-sota.service" ];
           after = [ "phpfpm-cloudlog.service" ];
+          partOf = [ "cloudlog-update-sota.service" ];
+
           timerConfig = {
             OnCalendar = cfg.update-sota.interval;
             Persistent = true;
           };
+
+          wantedBy = [ "timers.target" ];
+        };
+
+        cloudlog-update-wwff = {
+          enable = cfg.update-wwff.enable;
+          after = [ "phpfpm-cloudlog.service" ];
+          partOf = [ "cloudlog-update-wwff.service" ];
+
+          timerConfig = {
+            OnCalendar = cfg.update-wwff.interval;
+            Persistent = true;
+          };
+
+          wantedBy = [ "timers.target" ];
+        };
+
+        cloudlog-upload-clublog = {
+          enable = cfg.upload-clublog.enable;
+          after = [ "phpfpm-cloudlog.service" ];
+          partOf = [ "cloudlog-upload-clublog.service" ];
+
+          timerConfig = {
+            OnCalendar = cfg.upload-clublog.interval;
+            Persistent = true;
+          };
+
+          wantedBy = [ "timers.target" ];
+        };
+
+        cloudlog-upload-lotw = {
+          enable = cfg.upload-lotw.enable;
+          after = [ "phpfpm-cloudlog.service" ];
+          partOf = [ "cloudlog-upload-lotw.service" ];
+
+          timerConfig = {
+            OnCalendar = cfg.upload-lotw.interval;
+            Persistent = true;
+          };
+
+          wantedBy = [ "timers.target" ];
+        };
+
+        cloudlog-upload-qrz = {
+          enable = cfg.upload-qrz.enable;
+          after = [ "phpfpm-cloudlog.service" ];
+          partOf = [ "cloudlog-upload-qrz.service" ];
+
+          timerConfig = {
+            OnCalendar = cfg.upload-qrz.interval;
+            Persistent = true;
+          };
+
+          wantedBy = [ "timers.target" ];
         };
       };
+
       tmpfiles.rules =
         let
           group = config.services.nginx.group;
@@ -524,9 +633,10 @@ in
     };
 
     users.users."${cfg.user}" = {
-      isSystemUser = true;
       group = config.services.nginx.group;
+      isSystemUser = true;
     };
   };
+
   meta.maintainers = pkgs.cloudlog.meta.maintainers;
 }

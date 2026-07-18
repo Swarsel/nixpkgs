@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  makeWrapper,
-  ninja,
   SDL2,
   SDL2_image,
   SDL2_mixer,
+  cmake,
+  makeWrapper,
+  ninja,
   nix-update-script,
 }:
 
@@ -23,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     makeWrapper
@@ -35,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2_mixer
   ];
 
-  strictDeps = true;
+  env.NIX_CFLAGS_COMPILE = "-I ../deps/TimeUtils/include";
 
   postInstall = ''
     id="org.regular_dev.biplanes_revival"
@@ -58,17 +60,15 @@ stdenv.mkDerivation (finalAttrs: {
       --set BIPLANES_ASSETS_ROOT "$out/share/biplanes-revival";
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-I ../deps/TimeUtils/include";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "BiplanesRevival";
     description = "Old cellphone arcade recreated for PC";
     homepage = "https://regular-dev.org/biplanes-revival";
     changelog = "https://github.com/regular-dev/biplanes-revival/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "BiplanesRevival";
   };
 })

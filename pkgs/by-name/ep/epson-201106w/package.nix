@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  rpmextract,
   autoreconfHook,
+  cups,
   file,
   libjpeg,
-  cups,
+  rpmextract,
 }:
 
 let
@@ -15,17 +15,17 @@ let
 in
 stdenv.mkDerivation {
 
-  pname = "epson-201106w";
   inherit version;
+  pname = "epson-201106w";
 
   src = fetchurl {
+    sha256 = "1yig1xrh1ikblbp7sx706n5nnc237wy4mbch23ymy6akbgqg4aig";
+
     # NOTE: Don't forget to update the webarchive link too!
     urls = [
       "https://download.ebz.epson.net/dsc/op/stable/SRPMS/epson-inkjet-printer-201106w-${version}-1lsb3.2.src.rpm"
       "https://web.archive.org/web/https://download.ebz.epson.net/dsc/op/stable/SRPMS/epson-inkjet-printer-201106w-${version}-1lsb3.2.src.rpm"
     ];
-
-    sha256 = "1yig1xrh1ikblbp7sx706n5nnc237wy4mbch23ymy6akbgqg4aig";
   };
 
   nativeBuildInputs = [
@@ -38,17 +38,6 @@ stdenv.mkDerivation {
     libjpeg
     cups
   ];
-
-  unpackPhase = ''
-    rpmextract $src
-    tar -zxf epson-inkjet-printer-201106w-${version}.tar.gz
-    tar -zxf epson-inkjet-printer-filter-${filterVersion}.tar.gz
-    for ppd in epson-inkjet-printer-201106w-${version}/ppds/*; do
-      substituteInPlace $ppd --replace "/opt/epson-inkjet-printer-201106w" "$out"
-      substituteInPlace $ppd --replace "/cups/lib" "/lib/cups"
-    done
-    cd epson-inkjet-printer-filter-${filterVersion}
-  '';
 
   preConfigure = ''
     chmod +x configure
@@ -64,9 +53,20 @@ stdenv.mkDerivation {
     cp -a README $out/doc/README.driver
   '';
 
+  unpackPhase = ''
+    rpmextract $src
+    tar -zxf epson-inkjet-printer-201106w-${version}.tar.gz
+    tar -zxf epson-inkjet-printer-filter-${filterVersion}.tar.gz
+    for ppd in epson-inkjet-printer-201106w-${version}/ppds/*; do
+      substituteInPlace $ppd --replace "/opt/epson-inkjet-printer-201106w" "$out"
+      substituteInPlace $ppd --replace "/cups/lib" "/lib/cups"
+    done
+    cd epson-inkjet-printer-filter-${filterVersion}
+  '';
+
   meta = {
-    homepage = "https://www.openprinting.org/driver/epson-201106w";
     description = "Epson printer driver (BX535WD, BX630FW, BX635FWD, ME940FW, NX530, NX635, NX635, SX535WD, WorkForce 545, WorkForce 645";
+
     longDescription = ''
       This software is a filter program used with the Common UNIX Printing
       System (CUPS) under Linux. It supplies high quality printing with
@@ -86,11 +86,15 @@ stdenv.mkDerivation {
           drivers = [ pkgs.epson-201106w ];
         };
     '';
+
+    homepage = "https://www.openprinting.org/driver/epson-201106w";
+
     license = with lib.licenses; [
       lgpl21
       epson
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.nphilou ];
+    platforms = lib.platforms.linux;
   };
 }

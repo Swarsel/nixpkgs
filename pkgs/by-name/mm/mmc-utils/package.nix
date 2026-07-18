@@ -32,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Configure MMC storage devices from userspace";
-    mainProgram = "mmc";
     homepage = "https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "mmc";
   };
 })

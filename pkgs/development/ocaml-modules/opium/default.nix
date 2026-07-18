@@ -1,8 +1,9 @@
 {
-  buildDunePackage,
   lib,
+  alcotest-lwt,
   astring,
   base64,
+  buildDunePackage,
   cmdliner,
   fmt,
   httpaf,
@@ -18,14 +19,11 @@
   tyxml,
   uri,
   yojson,
-  alcotest-lwt,
 }:
 
 buildDunePackage {
-  pname = "opium";
-  minimalOCamlVersion = "4.08";
-
   inherit (rock) src version;
+  pname = "opium";
 
   propagatedBuildInputs = [
     astring
@@ -48,9 +46,12 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest-lwt
   ];
+
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "OCaml web framework";

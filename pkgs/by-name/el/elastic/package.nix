@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  blueprint-compiler,
+  desktop-file-utils,
+  gtk4,
+  gtksourceview5,
+  libadwaita,
+  libgee,
   meson,
   ninja,
-  pkg-config,
-  vala,
-  gtk4,
-  libgee,
-  libadwaita,
-  gtksourceview5,
-  blueprint-compiler,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  template-glib,
   nix-update-script,
+  pkg-config,
+  template-glib,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,11 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.0.3";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "elastic";
     rev = finalAttrs.version;
     hash = "sha256-NAxztd+Q5TlBAuXCgGPT6aTfj5mVsNdU+5WoNM8Bb84=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -55,10 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Design spring animations";
     homepage = "https://gitlab.gnome.org/World/elastic/";
     changelog = "https://gitlab.gnome.org/World/elastic/-/releases/${finalAttrs.version}";
-    mainProgram = "app.drey.Elastic";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ _0xMRTT ];
+    platforms = lib.platforms.unix;
+    mainProgram = "app.drey.Elastic";
     teams = [ lib.teams.gnome-circle ];
   };
 })

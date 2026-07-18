@@ -1,34 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  pkg-config,
-
-  # buildInputs
-  ffmpeg,
-
+  buildPythonPackage,
   # build-system
   cmake,
-  setuptools,
-  torch,
-
+  cudaPackages,
+  # buildInputs
+  ffmpeg,
+  # nativeBuildInputs
+  pkg-config,
   # tests
   pytestCheckHook,
+  setuptools,
+  torch,
   torchvision,
-
   cudaSupport ? torch.cudaSupport,
-  cudaPackages,
   rocmSupport ? torch.rocmSupport,
 }:
 
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "torchcodec";
   version = "0.14.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "meta-pytorch";
@@ -81,39 +74,37 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     ]
   );
 
-  build-system = [
-    cmake
-    setuptools
-    torch
-  ];
-  dontUseCmakeConfigure = true;
-
-  dependencies = [
-    torch
-  ];
-
   env = {
+    ENABLE_CUDA = cudaSupport;
     # Upstream (Meta) is cautious with linking against GPL ffmpeg
     # We explicitly want to link against our packaged ffmpeg
     I_CONFIRM_THIS_IS_NOT_A_LICENSE_VIOLATION = true;
-
-    ENABLE_CUDA = cudaSupport;
   }
   // lib.optionalAttrs cudaSupport {
     TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" torch.cudaCapabilities}";
   }
   // lib.optionalAttrs rocmSupport {
+    CMAKE_CXX_FLAGS = "-I${torch.rocmtoolkit_joined}/include";
+    PYTORCH_ROCM_ARCH = torch.gpuTargetString;
     ROCM_PATH = torch.rocmtoolkit_joined;
     ROCM_SOURCE_DIR = torch.rocmtoolkit_joined;
-    PYTORCH_ROCM_ARCH = torch.gpuTargetString;
-    CMAKE_CXX_FLAGS = "-I${torch.rocmtoolkit_joined}/include";
   };
-
-  pythonImportsCheck = [ "torchcodec" ];
 
   nativeCheckInputs = [
     pytestCheckHook
     torchvision
+  ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    cmake
+    setuptools
+    torch
+  ];
+
+  dependencies = [
+    torch
   ];
 
   disabledTests =
@@ -183,11 +174,16 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
       "test_throws_exception_if_seek_too_far"
     ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "torchcodec" ];
+
   meta = {
     description = "PyTorch media decoding and encoding";
     homepage = "https://github.com/meta-pytorch/torchcodec";
     changelog = "https://github.com/meta-pytorch/torchcodec/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       caniko

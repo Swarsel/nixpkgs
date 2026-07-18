@@ -1,26 +1,26 @@
 {
-  stdenvNoCC,
-  stdenv,
   lib,
-  dpkg,
-  autoPatchelfHook,
-  makeWrapper,
+  stdenv,
   fetchurl,
   alsa-lib,
-  openssl,
-  udev,
+  autoPatchelfHook,
+  curl,
+  dpkg,
+  ffmpeg_7,
   libglvnd,
-  libx11,
-  libxcursor,
-  libxi,
-  libxrandr,
-  libxfixes,
+  libjpeg8,
+  libpng,
   libpulseaudio,
   libva,
-  ffmpeg_7,
-  libpng,
-  libjpeg8,
-  curl,
+  libx11,
+  libxcursor,
+  libxfixes,
+  libxi,
+  libxrandr,
+  makeWrapper,
+  openssl,
+  stdenvNoCC,
+  udev,
   vulkan-loader,
   zenity,
 }:
@@ -46,6 +46,48 @@ stdenvNoCC.mkDerivation {
     libx11
   ];
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir $out
+    mv usr/* $out
+
+    wrapProgram $out/bin/parsecd \
+      --prefix PATH : "$binPath" \
+      --prefix LD_LIBRARY_PATH : "$runtimeDependenciesPath" \
+      --run "$prepareParsec"
+
+    substituteInPlace $out/share/applications/parsecd.desktop \
+      --replace "/usr/bin/parsecd" "parsecd" \
+      --replace "/usr/share/icons" "${placeholder "out"}/share/icons"
+
+    runHook postInstall
+  '';
+
+  binPath = lib.makeBinPath [
+    zenity
+  ];
+
+  # Only the main binary needs to be patched, the wrapper script handles
+  # everything else. The libraries in `share/parsec/skel` would otherwise
+  # contain dangling references when copied out of the nix store.
+  dontAutoPatchelf = true;
+
+  fixupPhase = ''
+    runHook preFixup
+
+    autoPatchelf $out/bin
+
+    runHook postFixup
+  '';
+
+  prepareParsec = ''
+    if [[ ! -e "$HOME/.parsec/appdata.json" ]]; then
+      mkdir -p "$HOME/.parsec"
+      cp --no-preserve=mode,ownership,timestamps ${placeholder "out"}/share/parsec/skel/* "$HOME/.parsec/"
+    fi
+  '';
+
   runtimeDependenciesPath = lib.makeLibraryPath [
     stdenv.cc.cc
     libglvnd
@@ -66,57 +108,17 @@ stdenvNoCC.mkDerivation {
     vulkan-loader
   ];
 
-  binPath = lib.makeBinPath [
-    zenity
-  ];
-
-  prepareParsec = ''
-    if [[ ! -e "$HOME/.parsec/appdata.json" ]]; then
-      mkdir -p "$HOME/.parsec"
-      cp --no-preserve=mode,ownership,timestamps ${placeholder "out"}/share/parsec/skel/* "$HOME/.parsec/"
-    fi
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir $out
-    mv usr/* $out
-
-    wrapProgram $out/bin/parsecd \
-      --prefix PATH : "$binPath" \
-      --prefix LD_LIBRARY_PATH : "$runtimeDependenciesPath" \
-      --run "$prepareParsec"
-
-    substituteInPlace $out/share/applications/parsecd.desktop \
-      --replace "/usr/bin/parsecd" "parsecd" \
-      --replace "/usr/share/icons" "${placeholder "out"}/share/icons"
-
-    runHook postInstall
-  '';
-
-  # Only the main binary needs to be patched, the wrapper script handles
-  # everything else. The libraries in `share/parsec/skel` would otherwise
-  # contain dangling references when copied out of the nix store.
-  dontAutoPatchelf = true;
-
-  fixupPhase = ''
-    runHook preFixup
-
-    autoPatchelf $out/bin
-
-    runHook postFixup
-  '';
-
   meta = {
+    description = "Remote streaming service client";
     homepage = "https://parsec.app/";
     changelog = "https://parsec.app/changelog";
-    description = "Remote streaming service client";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       arcnmx
       pabloaul
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "parsecd";
   };

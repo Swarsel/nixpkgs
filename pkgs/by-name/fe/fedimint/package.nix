@@ -1,28 +1,36 @@
 {
   lib,
-  buildPackages,
   fetchFromGitHub,
+  buildPackages,
   openssl,
   pkg-config,
   protobuf,
   rustPlatform,
-  version ? "0.7.1",
-  hash ? "sha256-7meBYUN7sG1OAtMEm6I66+ptf4EfsbA+dm5/4P3IRV4=",
   cargoHash ? "sha256-4cFuasH2hvrnzTBTFifHEMtXZKsBv7OVpuwPlV19GGw=",
+  hash ? "sha256-7meBYUN7sG1OAtMEm6I66+ptf4EfsbA+dm5/4P3IRV4=",
+  version ? "0.7.1",
 }:
 
 rustPlatform.buildRustPackage rec {
-  pname = "fedimint";
   inherit version;
+  inherit cargoHash;
+  pname = "fedimint";
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "fedimint";
     repo = "fedimint";
     rev = "v${version}";
-    inherit hash;
   };
 
-  inherit cargoHash;
+  outputs = [
+    "out"
+    "fedimintCli"
+    "fedimint"
+    "gateway"
+    "gatewayCli"
+    "devimint"
+  ];
 
   nativeBuildInputs = [
     protobuf
@@ -34,14 +42,15 @@ rustPlatform.buildRustPackage rec {
     openssl
   ];
 
-  outputs = [
-    "out"
-    "fedimintCli"
-    "fedimint"
-    "gateway"
-    "gatewayCli"
-    "devimint"
-  ];
+  env = {
+    FEDIMINT_BUILD_FORCE_GIT_HASH = "0000000000000000000000000000000000000000";
+    OPENSSL_DIR = openssl.dev;
+    PROTOC = "${buildPackages.protobuf}/bin/protoc";
+    PROTOC_INCLUDE = "${protobuf}/include";
+  };
+
+  # currently broken, will require some upstream fixes
+  doCheck = false;
 
   postInstall = ''
     mkdir -p $fedimint/bin $fedimintCli/bin $gateway/bin $gatewayCli/bin $devimint/bin
@@ -64,17 +73,6 @@ rustPlatform.buildRustPackage rec {
 
     cp -a $releaseDir/devimint $devimint/bin/
   '';
-
-  env = {
-    PROTOC = "${buildPackages.protobuf}/bin/protoc";
-    PROTOC_INCLUDE = "${protobuf}/include";
-    OPENSSL_DIR = openssl.dev;
-
-    FEDIMINT_BUILD_FORCE_GIT_HASH = "0000000000000000000000000000000000000000";
-  };
-
-  # currently broken, will require some upstream fixes
-  doCheck = false;
 
   meta = {
     description = "Federated E-Cash Mint";

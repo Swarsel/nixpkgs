@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxext,
   libxi,
-  writeScript,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxtst";
@@ -20,7 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -31,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -39,11 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Library for the XTEST and RECORD X11 extensions";
+
     longDescription = ''
       The XTEST extension is a minimal set of client and server extensions required to completely
       test the X11 server with no user intervention. This extension is not intended to support
@@ -51,7 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
       The RECORD extension supports the recording and reporting of all core X protocol and arbitrary
       X extension protocol.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxtst";
+
     license = with lib.licenses; [
       mitOpenGroup
       hpndSellVariant
@@ -59,8 +62,9 @@ stdenv.mkDerivation (finalAttrs: {
       x11
       hpndDocSell
     ];
+
     maintainers = [ ];
-    pkgConfigModules = [ "xtst" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xtst" ];
   };
 })

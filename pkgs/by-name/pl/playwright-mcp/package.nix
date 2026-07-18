@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   makeWrapper,
   playwright-driver,
   playwright-test,
@@ -18,9 +18,8 @@ buildNpmPackage rec {
     hash = "sha256-0ED8MlH9ugFP+suBaKJ1WubfGq/agcMjys92RXql88s=";
   };
 
-  npmDepsHash = "sha256-cH37gqlEhJQnhtCzlQEqIHweFufbjft22z1rHXLJ/u8=";
-
   nativeBuildInputs = [ makeWrapper ];
+  npmDepsHash = "sha256-cH37gqlEhJQnhtCzlQEqIHweFufbjft22z1rHXLJ/u8=";
 
   # Codex MCP smoke test (after `codex mcp add playwright-nix --env DISPLAY=:0 -- $out/bin/playwright-mcp --headless --isolated`):
   # timeout 45s codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check "Use only playwright-nix MCP tools. Navigate to https://example.com and return only the page title."
@@ -45,11 +44,11 @@ buildNpmPackage rec {
   };
 
   meta = {
-    changelog = "https://github.com/Microsoft/playwright-mcp/releases/tag/v${version}";
     description = "Playwright MCP server";
     homepage = "https://github.com/Microsoft/playwright-mcp";
+    changelog = "https://github.com/Microsoft/playwright-mcp/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    mainProgram = "playwright-mcp";
     maintainers = [ lib.maintainers.kalekseev ];
+    mainProgram = "playwright-mcp";
   };
 }

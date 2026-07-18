@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
+  copyDesktopItems,
+  desktopToDarwinBundle,
   jre,
   makeBinaryWrapper,
-  copyDesktopItems,
   makeDesktopItem,
-  desktopToDarwinBundle,
   unzip,
 }:
 
 let
   icon = fetchurl {
-    url = "https://github.com/logisim-evolution/logisim-evolution/raw/9e0afa3cd6a8bfa75dab61830822cde83c70bb4b/artwork/logisim-evolution-icon.svg";
     hash = "sha256-DNRimhNFt6jLdjqv7o2cNz38K6XnevxD0rGymym3xBs=";
+    url = "https://github.com/logisim-evolution/logisim-evolution/raw/9e0afa3cd6a8bfa75dab61830822cde83c70bb4b/artwork/logisim-evolution-icon.svg";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -24,7 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/logisim-evolution/logisim-evolution/releases/download/v${finalAttrs.version}/logisim-evolution-${finalAttrs.version}-all.jar";
     hash = "sha256-/mOGoyF6WRvMMRpO2knh9Do4m0md09D29A80T8hfJXc=";
   };
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -33,17 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     desktopToDarwinBundle
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "logisim-evolution";
-      desktopName = "Logisim-evolution";
-      exec = "logisim-evolution";
-      icon = "logisim-evolution";
-      comment = finalAttrs.meta.description;
-      categories = [ "Education" ];
-    })
   ];
 
   installPhase = ''
@@ -56,14 +44,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Education" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "Logisim-evolution";
+      exec = "logisim-evolution";
+      icon = "logisim-evolution";
+      name = "logisim-evolution";
+    })
+  ];
+
+  dontUnpack = true;
+
   meta = {
-    changelog = "https://github.com/logisim-evolution/logisim-evolution/releases/tag/v${finalAttrs.version}";
-    homepage = "https://github.com/logisim-evolution/logisim-evolution";
     description = "Digital logic designer and simulator";
-    mainProgram = "logisim-evolution";
-    maintainers = with lib.maintainers; [ emilytrau ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://github.com/logisim-evolution/logisim-evolution";
+    changelog = "https://github.com/logisim-evolution/logisim-evolution/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.unix;
+    mainProgram = "logisim-evolution";
   };
 })

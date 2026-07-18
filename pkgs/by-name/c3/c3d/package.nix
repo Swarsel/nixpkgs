@@ -19,15 +19,14 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ itk ];
-
   cmakeFlags = [ "-DCONVERT3D_USE_ITK_REMOTE_MODULES=OFF" ];
 
   meta = {
-    homepage = "https://github.com/pyushkevich/c3d";
     description = "Medical imaging processing tool";
+    homepage = "https://github.com/pyushkevich/c3d";
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl3;
     broken = stdenv.hostPlatform.isAarch64;
     # /build/source/itkextras/OneDimensionalInPlaceAccumulateFilter.txx:312:10: fatal error: xmmintrin.h: No such file or directory
   };

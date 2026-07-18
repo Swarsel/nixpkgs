@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-2kr0nYKCRjHJkyp8/fdxssoDY6jJ03Bnc21Dw34GvB8=";
+  env.CGO_ENABLED = 0;
 
   # config.Build not defined as it would break r-ryantm
   ldflags = [
@@ -23,8 +24,6 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X github.com/joyrex2001/kubedock/internal/config.Version=${finalAttrs.version}"
   ];
-
-  env.CGO_ENABLED = 0;
 
   meta = {
     description = "Minimal implementation of the Docker API that will orchestrate containers on a Kubernetes cluster";

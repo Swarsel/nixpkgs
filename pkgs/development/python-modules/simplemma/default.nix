@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   marisa-trie,
   platformdirs,
   pytest,
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "simplemma";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adbar";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-VT6+wjyrHLquccnZpDTow7omDqeqlfbrdW3fozo/biU=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -33,11 +37,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "simplemma" ];
 
   meta = {

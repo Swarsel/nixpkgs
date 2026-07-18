@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   azure-core,
   azure-identity,
+  buildPythonPackage,
   opencensus,
   psutil,
   requests,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "opencensus-ext-azure";
   version = "1.1.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "census-instrumentation";
@@ -22,8 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-fnqflSyNnkEy9XYoirk4iDZI1zYTRMbrYMyQ/4ge3Rs=";
   };
 
-  sourceRoot = "${src.name}/contrib/opencensus-ext-azure";
-
+  doCheck = false; # tests are not included in the PyPi tarball
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,14 +32,15 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "opencensus.ext.azure" ];
-
-  doCheck = false; # tests are not included in the PyPi tarball
+  sourceRoot = "${src.name}/contrib/opencensus-ext-azure";
 
   meta = {
-    homepage = "https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure";
     description = "OpenCensus Azure Monitor Exporter";
+    homepage = "https://github.com/census-instrumentation/opencensus-python/tree/master/contrib/opencensus-ext-azure";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       billhuang
       evilmav

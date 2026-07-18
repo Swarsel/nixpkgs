@@ -37,17 +37,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeFlags = [ "-DBUILD_TESTING=ON" ];
-
   doCheck = true;
-
   # fails due to very slight numerical tolerance issue
   ctestFlags = [ "--exclude-regex=Regression Deformation Field" ];
 
   meta = {
-    homepage = "https://github.com/KCL-BMEIS/niftyreg";
     description = "Medical image registration software";
+    homepage = "https://github.com/KCL-BMEIS/niftyreg";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = [ "x86_64-linux" ];
-    license = lib.licenses.bsd3;
   };
 })

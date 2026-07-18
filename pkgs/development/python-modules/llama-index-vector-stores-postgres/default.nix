@@ -3,26 +3,21 @@
   asyncpg,
   buildPythonPackage,
   fetchPypi,
+  hatchling,
   llama-index-core,
   pgvector,
-  hatchling,
   psycopg2,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "llama-index-vector-stores-postgres";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_vector_stores_postgres";
     inherit (finalAttrs) version;
     hash = "sha256-4/cvFvCod2thC0RiW1/KtVpZd84vpafTsWIwahDZtOg=";
+    pname = "llama_index_vector_stores_postgres";
   };
-
-  pythonRemoveDeps = [ "psycopg2-binary" ];
-
-  pythonRelaxDeps = [ "pgvector" ];
 
   build-system = [ hatchling ];
 
@@ -33,7 +28,10 @@ buildPythonPackage (finalAttrs: {
     psycopg2
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.vector_stores.postgres" ];
+  pythonRelaxDeps = [ "pgvector" ];
+  pythonRemoveDeps = [ "psycopg2-binary" ];
 
   meta = {
     description = "LlamaIndex Vector Store Integration for Postgres";

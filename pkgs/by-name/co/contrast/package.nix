@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   cairo,
   cargo,
@@ -24,17 +24,12 @@ stdenv.mkDerivation rec {
   version = "0.0.11";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    group = "World";
     owner = "design";
     repo = "contrast";
     tag = version;
     hash = "sha256-8A1qX1H0cET5AUvMoHC1/VyIQiaTysEY5RJRrVYvGng=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-Nj5MkYDeYUzgqegCbPt/XofSCw8ULFXAD7XHNecPznc=";
+    domain = "gitlab.gnome.org";
+    group = "World";
   };
 
   nativeBuildInputs = [
@@ -57,6 +52,11 @@ stdenv.mkDerivation rec {
     pango
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-Nj5MkYDeYUzgqegCbPt/XofSCw8ULFXAD7XHNecPznc=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -66,7 +66,7 @@ stdenv.mkDerivation rec {
     homepage = "https://gitlab.gnome.org/World/design/contrast";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "contrast";
     platforms = lib.platforms.linux;
+    mainProgram = "contrast";
   };
 }

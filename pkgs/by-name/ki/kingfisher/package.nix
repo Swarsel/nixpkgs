@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   boost,
   cmake,
-  fetchFromGitHub,
   libgit2,
   nix-update-script,
   openssl,
@@ -18,16 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "kingfisher";
   version = "1.106.0";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "mongodb";
     repo = "kingfisher";
     tag = "v${finalAttrs.version}";
     hash = "sha256-HzS+ZNulmrhDstxleUztNhAscZZ5VqrBlzozH12Qz40=";
   };
-
-  cargoHash = "sha256-F5RgsrCWDkaLm+/5DsSQ3NMtPi6+e0oddHm+KhY2gNQ=";
 
   nativeBuildInputs = [
     cmake
@@ -43,17 +39,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-F5RgsrCWDkaLm+/5DsSQ3NMtPi6+e0oddHm+KhY2gNQ=";
 
   env = {
     LIBSQLITE3_SYS_USE_PKG_CONFIG = true;
   };
 
-  doInstallCheck = true;
-
   # Integration tests exceed memory limits and can crash
   doCheck = false;
-
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

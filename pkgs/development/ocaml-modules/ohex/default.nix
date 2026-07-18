@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
   alcotest,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {

@@ -1,18 +1,18 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  autoPatchelfHook,
-  makeBinaryWrapper,
-  wrapGAppsHook3,
-  dpkg,
   alsa-lib,
+  autoPatchelfHook,
+  dpkg,
   gtk3,
   libgbm,
-  nss,
-  libxkbfile,
   libsecret,
+  libxkbfile,
+  makeBinaryWrapper,
   nix-update-script,
+  nss,
+  stdenvNoCC,
+  wrapGAppsHook3,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -41,17 +41,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     libxkbfile
     libsecret
   ];
-
-  autoPatchelfIgnoreMissingDeps = [
-    # Rovium binary is musl-static, libc is embedded
-    "libc.musl-x86_64.so.1"
-  ];
-
-  unpackPhase = ''
-    runHook preUnpack
-    dpkg-deb -x $src .
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -83,7 +72,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  autoPatchelfIgnoreMissingDeps = [
+    # Rovium binary is musl-static, libc is embedded
+    "libc.musl-x86_64.so.1"
+  ];
+
   dontWrapQtApps = true;
+
+  unpackPhase = ''
+    runHook preUnpack
+    dpkg-deb -x $src .
+    runHook postUnpack
+  '';
 
   passthru.updateScript = nix-update-script { };
 
@@ -91,9 +91,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Integrated Development Environment for ROS and Robotics";
     homepage = "https://rovium.dev";
     license = lib.licenses.unfreeRedistributable;
-    maintainers = with lib.maintainers; [ maximiliancf ];
-    mainProgram = "rovium";
-    platforms = [ "x86_64-linux" ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ maximiliancf ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "rovium";
   };
 })

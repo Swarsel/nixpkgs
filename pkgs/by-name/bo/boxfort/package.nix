@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  gitMinimal,
   meson,
   ninja,
+  pkg-config,
   python3Packages,
-  gitMinimal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fgX2Ilb01qa9myuz6yiC67WKeai2m/csncS6u5and3o=";
   };
 
+  outputs = [
+    "dev"
+    "out"
+  ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -31,24 +36,20 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs ci/isdir.py
   '';
 
-  nativeCheckInputs = with python3Packages; [ cram ];
-
   doCheck = true;
-
-  outputs = [
-    "dev"
-    "out"
-  ];
+  nativeCheckInputs = with python3Packages; [ cram ];
 
   meta = {
     description = "Convenient & cross-platform sandboxing C library";
     homepage = "https://github.com/Snaipe/BoxFort";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sigmanificient
       thesola10
       Yumasi
     ];
+
     platforms = lib.platforms.unix;
   };
 })

@@ -11,12 +11,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "llama-index-vector-stores-qdrant";
   version = "0.10.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_vector_stores_qdrant";
     inherit (finalAttrs) version;
     hash = "sha256-MSK2RJAce1jmFv2eftT9HsJgTGPxuFxdatRIIK8ym+I=";
+    pname = "llama_index_vector_stores_qdrant";
   };
 
   build-system = [ hatchling ];
@@ -27,6 +26,7 @@ buildPythonPackage (finalAttrs: {
     qdrant-client
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.vector_stores.qdrant" ];
 
   meta = {

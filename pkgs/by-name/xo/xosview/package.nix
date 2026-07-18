@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  dontConfigure = true;
-
   buildInputs = [
     libx11
     libxpm
@@ -34,12 +32,14 @@ stdenv.mkDerivation (finalAttrs: {
     "PLATFORM=linux"
   ];
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "http://www.pogo.org.uk/~mark/xosview/";
     description = "Classic system monitoring tool";
+    homepage = "http://www.pogo.org.uk/~mark/xosview/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "xosview";
     maintainers = [ ];
     platforms = with lib.platforms; linux;
+    mainProgram = "xosview";
   };
 })

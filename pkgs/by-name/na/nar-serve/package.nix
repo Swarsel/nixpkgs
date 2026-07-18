@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 buildGoModule (finalAttrs: {
@@ -16,19 +16,19 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-td9NYHGYJYPlIj2tnf5I/GnJQOOgODc6TakHFwxyvLQ=";
-
   doCheck = false;
-
   passthru.tests = { inherit (nixosTests) nar-serve; };
 
   meta = {
     description = "Serve NAR file contents via HTTP";
-    mainProgram = "nar-serve";
     homepage = "https://github.com/numtide/nar-serve";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       rizary
       zimbatm
     ];
+
+    mainProgram = "nar-serve";
   };
 })

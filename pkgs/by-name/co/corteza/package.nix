@@ -1,12 +1,11 @@
 {
-  withLocales ? true,
-
+  lib,
+  fetchFromGitHub,
   buildGoModule,
   callPackage,
-  fetchFromGitHub,
-  lib,
   nixosTests,
   stdenvNoCC,
+  withLocales ? true,
 }:
 
 let
@@ -19,16 +18,18 @@ let
   };
   meta = {
     description = "Low-code platform";
+
     longDescription = ''
       The Corteza low-code platform lets you build and iterate CRM, business
       process and other structured data apps fast, create intelligent business
       process workflows and connect with almost any data source.
     '';
+
     homepage = "https://cortezaproject.org/";
-    downloadPage = "https://github.com/cortezaproject/corteza/releases";
     changelog = "https://docs.cortezaproject.org/corteza-docs/${lib.versions.majorMinor version}/changelog/index.html";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ prince213 ];
+    downloadPage = "https://github.com/cortezaproject/corteza/releases";
     teams = with lib.teams; [ ngi ];
   };
 
@@ -41,9 +42,10 @@ let
         hash
         meta
         ;
+
       pname = "corteza-webapp-${name}";
-      sourceDir = "client/web/${name}";
       extraFiles = "../../../{README.md,LICENSE,CONTRIBUTING.md,DCO}";
+      sourceDir = "client/web/${name}";
     };
 
   webApps = lib.mapAttrs mkWebApp {
@@ -59,9 +61,9 @@ let
   server-webconsole = callPackage ./buildYarnDistOnly.nix {
     inherit version src meta;
     pname = "corteza-server-webconsole";
+    hash = "sha256-GMXrQtplreg/3bWfRwQQwDNiHQNl6YHF5nhmFNCYsiM=";
     sourceDir = "server/webconsole";
     yarnLock = ./server-webconsole-yarn.lock;
-    hash = "sha256-GMXrQtplreg/3bWfRwQQwDNiHQNl6YHF5nhmFNCYsiM=";
   };
 
   corteza-locale = fetchFromGitHub {
@@ -72,11 +74,8 @@ let
   };
 
   corteza-webapp = stdenvNoCC.mkDerivation (finalAttrs: {
-    pname = "corteza-webapp";
     inherit version meta;
-
-    srcs = lib.attrValues webApps;
-    sourceRoot = ".";
+    pname = "corteza-webapp";
 
     buildPhase = ''
       runHook preBuild
@@ -101,13 +100,14 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
+    srcs = lib.attrValues webApps;
   });
 
   corteza-server = buildGoModule (finalAttrs: {
-    pname = "corteza-server";
     inherit version src;
-
-    sourceRoot = "${finalAttrs.src.name}/server";
+    pname = "corteza-server";
     # already vendored
     vendorHash = null;
 
@@ -119,26 +119,25 @@ let
       cp -r ${corteza-locale}/src/* pkg/locale/src/
     '';
 
-    subPackages = [ "cmd/corteza" ];
-
     postInstall = ''
       mv $out/bin/corteza{,-server}
       cp -r provision .env.example ../{README.md,LICENSE,CONTRIBUTING.md,DCO} $out
       rm -f $out/provision/README.adoc $out/provision/update.sh
     '';
 
+    sourceRoot = "${finalAttrs.src.name}/server";
+    subPackages = [ "cmd/corteza" ];
+
     meta = meta // {
-      mainProgram = "corteza-server";
       platforms = lib.platforms.unix;
+      mainProgram = "corteza-server";
     };
   });
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "corteza";
   inherit version;
-
-  srcs = lib.attrValues finalAttrs.passthru.srcs;
-  sourceRoot = ".";
+  inherit (corteza-server) meta;
+  pname = "corteza";
 
   buildPhase = ''
     runHook preBuild
@@ -159,10 +158,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+  srcs = lib.attrValues finalAttrs.passthru.srcs;
+
   passthru = {
     srcs = { inherit corteza-server corteza-webapp; };
     tests = { inherit (nixosTests) corteza; };
   };
-
-  inherit (corteza-server) meta;
 })

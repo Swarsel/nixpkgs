@@ -10,19 +10,17 @@
 buildPythonPackage rec {
   pname = "pytest-xvfb";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pytest_xvfb";
     inherit version;
     hash = "sha256-kFk2NEJ9l0snLoRXk+RTP1uCfJ2EwFGHkBNiRQQXXkQ=";
+    pname = "pytest_xvfb";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
+  build-system = [ setuptools ];
   dependencies = [ pyvirtualdisplay ];
+  pyproject = true;
 
   meta = {
     description = "Pytest plugin to run Xvfb for tests";

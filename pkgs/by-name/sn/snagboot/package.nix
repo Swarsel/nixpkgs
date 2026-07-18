@@ -2,17 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gitUpdater,
   python3Packages,
   snagboot,
   testers,
-  gitUpdater,
   udevCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "snagboot";
   version = "2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bootlin";
@@ -21,16 +20,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-ZjN4k5prOoEdAT4z37XiHdnUgLsz3zeR3+0zxY+2420=";
   };
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
-  pythonRemoveDeps = [
-    "swig"
-  ];
-
   nativeBuildInputs = [
     udevCheckHook
+  ];
+
+  postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
+    rules="src/snagrecover/50-snagboot.rules"
+    if [ ! -f "$rules" ]; then
+        echo "$rules is missing, must update the Nix file."
+        exit 1
+    fi
+
+    mkdir -p "$out/lib/udev/rules.d"
+    cp "$rules" "$out/lib/udev/rules.d/50-snagboot.rules"
+  '';
+
+  build-system = with python3Packages; [
+    setuptools
   ];
 
   dependencies = with python3Packages; [
@@ -45,39 +51,33 @@ python3Packages.buildPythonApplication (finalAttrs: {
     xmodem
   ];
 
-  pythonRelaxDeps = [ "pylibfdt" ];
-
   optional-dependencies = with python3Packages; {
     gui = [ kivy ];
   };
 
-  postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
-    rules="src/snagrecover/50-snagboot.rules"
-    if [ ! -f "$rules" ]; then
-        echo "$rules is missing, must update the Nix file."
-        exit 1
-    fi
+  pyproject = true;
+  pythonRelaxDeps = [ "pylibfdt" ];
 
-    mkdir -p "$out/lib/udev/rules.d"
-    cp "$rules" "$out/lib/udev/rules.d/50-snagboot.rules"
-  '';
+  pythonRemoveDeps = [
+    "swig"
+  ];
 
   passthru = {
-    updateScript = gitUpdater {
-      rev-prefix = "v";
-      ignoredVersions = ".(rc|beta).*";
+    tests.version = testers.testVersion {
+      version = "v${finalAttrs.version}";
+      command = "snagrecover --version";
+      package = snagboot;
     };
 
-    tests.version = testers.testVersion {
-      package = snagboot;
-      command = "snagrecover --version";
-      version = "v${finalAttrs.version}";
+    updateScript = gitUpdater {
+      ignoredVersions = ".(rc|beta).*";
+      rev-prefix = "v";
     };
   };
 
   meta = {
-    homepage = "https://github.com/bootlin/snagboot";
     description = "Generic recovery and reflashing tool for embedded platforms";
+    homepage = "https://github.com/bootlin/snagboot";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ otavio ];
   };

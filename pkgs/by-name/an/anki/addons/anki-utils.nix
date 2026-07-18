@@ -1,36 +1,37 @@
 {
   lib,
   stdenv,
-  symlinkJoin,
-  lndir,
   formats,
-  runCommand,
+  lndir,
   nix-update-script,
+  runCommand,
+  symlinkJoin,
 }:
 {
   buildAnkiAddon = lib.extendMkDerivation {
     constructDrv = stdenv.mkDerivation;
+
     extendDrvArgs =
       finalAttrs:
       {
         pname,
-        configurePhase ? ''
-          runHook preConfigure
-          runHook postConfigure
-        '',
         buildPhase ? ''
           runHook preBuild
           runHook postBuild
         '',
-        strictDeps ? true,
+        configurePhase ? ''
+          runHook preConfigure
+          runHook postConfigure
+        '',
         dontPatchELF ? true,
         dontStrip ? true,
-        passthru ? { },
         meta ? { },
+        passthru ? { },
         # Script run after "user_files" folder is populated.
         # Used when an add-on needs to process and change "user_files" based
         # on what the user added to it.
         processUserFiles ? "",
+        strictDeps ? true,
         ...
       }:
       {
@@ -44,8 +45,6 @@
 
         pname = "anki-addon-${pname}";
 
-        installPrefix = "share/anki/addons/${pname}";
-
         installPhase = ''
           runHook preInstall
 
@@ -55,8 +54,11 @@
           runHook postInstall
         '';
 
+        installPrefix = "share/anki/addons/${pname}";
+
         passthru = {
           updateScript = nix-update-script { };
+
           withConfig =
             {
               # JSON add-on config. The available options for an add-on are in its
@@ -72,12 +74,8 @@
               addonMetaConfig = metaConfigFormat.generate "meta.json" { inherit config; };
             in
             symlinkJoin {
-              pname = "${finalAttrs.pname}-with-config";
               inherit (finalAttrs) version meta;
-
-              paths = [
-                finalAttrs.finalPackage
-              ];
+              pname = "${finalAttrs.pname}-with-config";
 
               postBuild = ''
                 cd $out/${finalAttrs.installPrefix}
@@ -96,6 +94,10 @@
 
                 ${processUserFiles}
               '';
+
+              paths = [
+                finalAttrs.finalPackage
+              ];
             };
         }
         // passthru;

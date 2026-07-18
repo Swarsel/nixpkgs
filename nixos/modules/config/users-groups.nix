@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 
@@ -126,257 +126,120 @@ let
   '';
 
   userOpts =
-    { name, config, ... }:
+    { config, name, ... }:
     {
 
       options = {
 
         enable = mkOption {
-          type = types.bool;
           default = true;
-          example = false;
+
           description = ''
             If set to false, the user account will not be created. This is useful for when you wish to conditionally
             disable user accounts.
           '';
+
+          example = false;
+          type = types.bool;
         };
 
-        name = mkOption {
-          type = types.passwdEntry types.str;
-          apply =
-            x:
-            assert (
-              stringLength x < 32 || abort "Username '${x}' is longer than 31 characters which is not allowed!"
-            );
-            x;
+        autoSubUidGidRange = mkOption {
+          default = false;
+
           description = ''
-            The name of the user account. If undefined, the name of the
-            attribute set will be used.
+            Automatically allocate subordinate user and group ids for this user.
+            Allocated range is currently always of size 65536.
           '';
+
+          example = true;
+          type = types.bool;
+        };
+
+        createHome = mkOption {
+          default = false;
+
+          description = ''
+            Whether to create the home directory and ensure ownership as well as
+            permissions to match the user.
+          '';
+
+          type = types.bool;
+        };
+
+        cryptHomeLuks = mkOption {
+          default = null;
+
+          description = ''
+            Path to encrypted luks device that contains
+            the user's home directory.
+          '';
+
+          type = with types; nullOr str;
         };
 
         description = mkOption {
-          type = types.passwdEntry types.str;
           default = "";
-          example = "Alice Q. User";
+
           description = ''
             A short description of the user account, typically the
             user's full name.  This is actually the “GECOS” or “comment”
             field in {file}`/etc/passwd`.
           '';
+
+          example = "Alice Q. User";
+          type = types.passwdEntry types.str;
         };
 
-        uid = mkOption {
-          type = with types; nullOr int;
+        expires = mkOption {
           default = null;
+
           description = ''
-            The account UID. If the UID is null, a free UID is picked on
-            activation.
+            Set the date on which the user's account will no longer be
+            accessible. The date is expressed in the format YYYY-MM-DD, or null
+            to disable the expiry.
+            A user whose account is locked must contact the system
+            administrator before being able to use the system again.
           '';
+
+          type = types.nullOr (types.strMatching "[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}");
         };
 
-        isSystemUser = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Indicates if the user is a system user or not. This option
-            only has an effect if {option}`uid` is
-            {option}`null`, in which case it determines whether
-            the user's UID is allocated in the range for system users
-            (below 1000) or in the range for normal users (starting at
-            1000).
-            Exactly one of `isNormalUser` and
-            `isSystemUser` must be true.
-          '';
-        };
-
-        isNormalUser = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Indicates whether this is an account for a “real” user.
-            This automatically sets {option}`group` to `users`,
-            {option}`createHome` to `true`,
-            {option}`home` to {file}`/home/«username»`,
-            {option}`useDefaultShell` to `true`,
-            and {option}`isSystemUser` to `false`.
-            Exactly one of `isNormalUser` and `isSystemUser` must be true.
-          '';
+        extraGroups = mkOption {
+          default = [ ];
+          description = "The user's auxiliary groups.";
+          type = types.listOf types.str;
         };
 
         group = mkOption {
-          type = types.str;
           apply =
             x:
             assert (
               stringLength x < 32 || abort "Group name '${x}' is longer than 31 characters which is not allowed!"
             );
             x;
+
           default = "";
           description = "The user's primary group.";
-        };
-
-        extraGroups = mkOption {
-          type = types.listOf types.str;
-          default = [ ];
-          description = "The user's auxiliary groups.";
-        };
-
-        home = mkOption {
-          type = types.passwdEntry types.path;
-          default = "/var/empty";
-          description = "The user's home directory.";
-        };
-
-        homeMode = mkOption {
-          type = types.strMatching "[0-7]{1,5}";
-          default = "700";
-          description = "The user's home directory mode in numeric format. See {manpage}`chmod(1)`. The mode is only applied if {option}`users.users.<name>.createHome` is true.";
-        };
-
-        cryptHomeLuks = mkOption {
-          type = with types; nullOr str;
-          default = null;
-          description = ''
-            Path to encrypted luks device that contains
-            the user's home directory.
-          '';
-        };
-
-        pamMount = mkOption {
-          type = with types; attrsOf str;
-          default = { };
-          description = ''
-            Attributes for user's entry in
-            {file}`pam_mount.conf.xml`.
-            Useful attributes might include `path`,
-            `options`, `fstype`, and `server`.
-            See <https://pam-mount.sourceforge.net/pam_mount.conf.5.html>
-            for more information.
-          '';
-        };
-
-        shell = mkOption {
-          type = types.nullOr (types.either types.shellPackage (types.passwdEntry types.path));
-          default = pkgs.shadow;
-          defaultText = literalExpression "pkgs.shadow";
-          example = literalExpression "pkgs.bashInteractive";
-          description = ''
-            The path to the user's shell. Can use shell derivations,
-            like `pkgs.bashInteractive`. Don’t
-            forget to enable your shell in
-            `programs` if necessary,
-            like `programs.zsh.enable = true;`.
-          '';
-        };
-
-        ignoreShellProgramCheck = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            By default, nixos will check that programs.SHELL.enable is set to
-            true if the user has a custom shell specified. If that behavior isn't
-            required and there are custom overrides in place to make sure that the
-            shell is functional, set this to true.
-          '';
-        };
-
-        subUidRanges = mkOption {
-          type = with types; listOf (submodule subordinateUidRange);
-          default = [ ];
-          example = [
-            {
-              startUid = 1000;
-              count = 1;
-            }
-            {
-              startUid = 100001;
-              count = 65534;
-            }
-          ];
-          description = ''
-            Subordinate user ids that user is allowed to use.
-            They are set into {file}`/etc/subuid` and are used
-            by `newuidmap` for user namespaces.
-          '';
-        };
-
-        subGidRanges = mkOption {
-          type = with types; listOf (submodule subordinateGidRange);
-          default = [ ];
-          example = [
-            {
-              startGid = 100;
-              count = 1;
-            }
-            {
-              startGid = 1001;
-              count = 999;
-            }
-          ];
-          description = ''
-            Subordinate group ids that user is allowed to use.
-            They are set into {file}`/etc/subgid` and are used
-            by `newgidmap` for user namespaces.
-          '';
-        };
-
-        autoSubUidGidRange = mkOption {
-          type = types.bool;
-          default = false;
-          example = true;
-          description = ''
-            Automatically allocate subordinate user and group ids for this user.
-            Allocated range is currently always of size 65536.
-          '';
-        };
-
-        createHome = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Whether to create the home directory and ensure ownership as well as
-            permissions to match the user.
-          '';
-        };
-
-        useDefaultShell = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            If true, the user's shell will be set to
-            {option}`users.defaultUserShell`.
-          '';
+          type = types.str;
         };
 
         hashedPassword = mkOption {
-          type = with types; nullOr (passwdEntry str);
           default = null;
+
           description = ''
             Specifies the hashed password for the user.
 
             ${passwordDescription}
             ${hashedPasswordDescription}
           '';
-        };
 
-        password = mkOption {
-          type = with types; nullOr str;
-          default = null;
-          description = ''
-            Specifies the (clear text) password for the user.
-            Warning: do not set confidential information here
-            because it is world-readable in the Nix store. This option
-            should only be used for public accounts.
-
-            ${passwordDescription}
-          '';
+          type = with types; nullOr (passwdEntry str);
         };
 
         hashedPasswordFile = mkOption {
-          type = with types; nullOr str;
           default = config.passwordFile;
           defaultText = literalExpression "null";
+
           description = ''
             The full path to a file that contains the hash of the user's
             password. The password file is read on each system activation. The
@@ -385,18 +248,38 @@ let
 
             ${passwordDescription}
           '';
+
+          type = with types; nullOr str;
         };
 
-        passwordFile = mkOption {
-          type = with types; nullOr str;
-          default = null;
-          visible = false;
-          description = "Deprecated alias of hashedPasswordFile";
+        home = mkOption {
+          default = "/var/empty";
+          description = "The user's home directory.";
+          type = types.passwdEntry types.path;
+        };
+
+        homeMode = mkOption {
+          default = "700";
+          description = "The user's home directory mode in numeric format. See {manpage}`chmod(1)`. The mode is only applied if {option}`users.users.<name>.createHome` is true.";
+          type = types.strMatching "[0-7]{1,5}";
+        };
+
+        ignoreShellProgramCheck = mkOption {
+          default = false;
+
+          description = ''
+            By default, nixos will check that programs.SHELL.enable is set to
+            true if the user has a custom shell specified. If that behavior isn't
+            required and there are custom overrides in place to make sure that the
+            shell is functional, set this to true.
+          '';
+
+          type = types.bool;
         };
 
         initialHashedPassword = mkOption {
-          type = with types; nullOr (passwdEntry str);
           default = null;
+
           description = ''
             Specifies the initial hashed password for the user, i.e. the
             hashed password assigned if the user does not already
@@ -408,11 +291,13 @@ let
             ${passwordDescription}
             ${hashedPasswordDescription}
           '';
+
+          type = with types; nullOr (passwdEntry str);
         };
 
         initialPassword = mkOption {
-          type = with types; nullOr str;
           default = null;
+
           description = ''
             Specifies the initial password for the user, i.e. the
             password assigned if the user does not already exist. If
@@ -427,35 +312,46 @@ let
 
             ${passwordDescription}
           '';
+
+          type = with types; nullOr str;
         };
 
-        packages = mkOption {
-          type = types.listOf types.package;
-          default = [ ];
-          example = literalExpression "[ pkgs.firefox pkgs.thunderbird ]";
+        isNormalUser = mkOption {
+          default = false;
+
           description = ''
-            The set of packages that should be made available to the user.
-            This is in contrast to {option}`environment.systemPackages`,
-            which adds packages to all users.
+            Indicates whether this is an account for a “real” user.
+            This automatically sets {option}`group` to `users`,
+            {option}`createHome` to `true`,
+            {option}`home` to {file}`/home/«username»`,
+            {option}`useDefaultShell` to `true`,
+            and {option}`isSystemUser` to `false`.
+            Exactly one of `isNormalUser` and `isSystemUser` must be true.
           '';
+
+          type = types.bool;
         };
 
-        expires = mkOption {
-          type = types.nullOr (types.strMatching "[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}");
-          default = null;
+        isSystemUser = mkOption {
+          default = false;
+
           description = ''
-            Set the date on which the user's account will no longer be
-            accessible. The date is expressed in the format YYYY-MM-DD, or null
-            to disable the expiry.
-            A user whose account is locked must contact the system
-            administrator before being able to use the system again.
+            Indicates if the user is a system user or not. This option
+            only has an effect if {option}`uid` is
+            {option}`null`, in which case it determines whether
+            the user's UID is allocated in the range for system users
+            (below 1000) or in the range for normal users (starting at
+            1000).
+            Exactly one of `isNormalUser` and
+            `isSystemUser` must be true.
           '';
+
+          type = types.bool;
         };
 
         linger = mkOption {
-          type = types.nullOr types.bool;
-          example = true;
           default = null;
+
           description = ''
             Whether to enable or disable lingering for this user.  Without
             lingering, user units will not be started until the user logs in,
@@ -469,6 +365,159 @@ let
             running `loginctl enable-linger` or `loginctl disable-linger`
             respectively.
           '';
+
+          example = true;
+          type = types.nullOr types.bool;
+        };
+
+        name = mkOption {
+          apply =
+            x:
+            assert (
+              stringLength x < 32 || abort "Username '${x}' is longer than 31 characters which is not allowed!"
+            );
+            x;
+
+          description = ''
+            The name of the user account. If undefined, the name of the
+            attribute set will be used.
+          '';
+
+          type = types.passwdEntry types.str;
+        };
+
+        packages = mkOption {
+          default = [ ];
+
+          description = ''
+            The set of packages that should be made available to the user.
+            This is in contrast to {option}`environment.systemPackages`,
+            which adds packages to all users.
+          '';
+
+          example = literalExpression "[ pkgs.firefox pkgs.thunderbird ]";
+          type = types.listOf types.package;
+        };
+
+        pamMount = mkOption {
+          default = { };
+
+          description = ''
+            Attributes for user's entry in
+            {file}`pam_mount.conf.xml`.
+            Useful attributes might include `path`,
+            `options`, `fstype`, and `server`.
+            See <https://pam-mount.sourceforge.net/pam_mount.conf.5.html>
+            for more information.
+          '';
+
+          type = with types; attrsOf str;
+        };
+
+        password = mkOption {
+          default = null;
+
+          description = ''
+            Specifies the (clear text) password for the user.
+            Warning: do not set confidential information here
+            because it is world-readable in the Nix store. This option
+            should only be used for public accounts.
+
+            ${passwordDescription}
+          '';
+
+          type = with types; nullOr str;
+        };
+
+        passwordFile = mkOption {
+          default = null;
+          description = "Deprecated alias of hashedPasswordFile";
+          type = with types; nullOr str;
+          visible = false;
+        };
+
+        shell = mkOption {
+          default = pkgs.shadow;
+          defaultText = literalExpression "pkgs.shadow";
+
+          description = ''
+            The path to the user's shell. Can use shell derivations,
+            like `pkgs.bashInteractive`. Don’t
+            forget to enable your shell in
+            `programs` if necessary,
+            like `programs.zsh.enable = true;`.
+          '';
+
+          example = literalExpression "pkgs.bashInteractive";
+          type = types.nullOr (types.either types.shellPackage (types.passwdEntry types.path));
+        };
+
+        subGidRanges = mkOption {
+          default = [ ];
+
+          description = ''
+            Subordinate group ids that user is allowed to use.
+            They are set into {file}`/etc/subgid` and are used
+            by `newgidmap` for user namespaces.
+          '';
+
+          example = [
+            {
+              count = 1;
+              startGid = 100;
+            }
+            {
+              count = 999;
+              startGid = 1001;
+            }
+          ];
+
+          type = with types; listOf (submodule subordinateGidRange);
+        };
+
+        subUidRanges = mkOption {
+          default = [ ];
+
+          description = ''
+            Subordinate user ids that user is allowed to use.
+            They are set into {file}`/etc/subuid` and are used
+            by `newuidmap` for user namespaces.
+          '';
+
+          example = [
+            {
+              count = 1;
+              startUid = 1000;
+            }
+            {
+              count = 65534;
+              startUid = 100001;
+            }
+          ];
+
+          type = with types; listOf (submodule subordinateUidRange);
+        };
+
+        uid = mkOption {
+          default = null;
+
+          description = ''
+            The account UID. If the UID is null, a free UID is picked on
+            activation.
+          '';
+
+          type = with types; nullOr int;
+        };
+
+        useDefaultShell = mkOption {
+          default = false;
+
+          description = ''
+            If true, the user's shell will be set to
+            {option}`users.defaultUserShell`.
+          '';
+
+          type = types.bool;
         };
       };
 
@@ -478,12 +527,12 @@ let
           shell = mkIf config.useDefaultShell (mkDefault cfg.defaultUserShell);
         }
         (mkIf config.isNormalUser {
-          group = mkDefault "users";
           createHome = mkDefault true;
+          group = mkDefault "users";
           home = mkDefault "${cfg.defaultUserHome}/${config.name}";
           homeMode = mkDefault "700";
-          useDefaultShell = mkDefault true;
           isSystemUser = mkDefault false;
+          useDefaultShell = mkDefault true;
         })
         # If !mutableUsers, setting ‘initialPassword’ is equivalent to
         # setting ‘password’ (and similarly for hashed passwords).
@@ -501,79 +550,88 @@ let
     };
 
   groupOpts =
-    { name, config, ... }:
+    { config, name, ... }:
     {
 
       options = {
 
-        name = mkOption {
-          type = types.passwdEntry types.str;
-          description = ''
-            The name of the group. If undefined, the name of the attribute set
-            will be used.
-          '';
-        };
-
         gid = mkOption {
-          type = with types; nullOr int;
           default = null;
+
           description = ''
             The group GID. If the GID is null, a free GID is picked on
             activation.
           '';
+
+          type = with types; nullOr int;
         };
 
         members = mkOption {
-          type = with types; listOf (passwdEntry str);
           default = [ ];
+
           description = ''
             The user names of the group members, added to the
             `/etc/group` file.
           '';
+
+          type = with types; listOf (passwdEntry str);
+        };
+
+        name = mkOption {
+          description = ''
+            The name of the group. If undefined, the name of the attribute set
+            will be used.
+          '';
+
+          type = types.passwdEntry types.str;
         };
 
       };
 
       config = {
-        name = mkDefault name;
-
         members = mapAttrsToList (n: u: u.name) (
           filterAttrs (n: u: u.enable && elem config.name u.extraGroups) cfg.users
         );
+
+        name = mkDefault name;
       };
 
     };
 
   subordinateUidRange = {
     options = {
-      startUid = mkOption {
+      count = mkOption {
+        default = 1;
+        description = "Count of subordinate user ids";
         type = types.int;
+      };
+
+      startUid = mkOption {
         description = ''
           Start of the range of subordinate user ids that user is
           allowed to use.
         '';
-      };
-      count = mkOption {
+
         type = types.int;
-        default = 1;
-        description = "Count of subordinate user ids";
       };
     };
   };
 
   subordinateGidRange = {
     options = {
-      startGid = mkOption {
+      count = mkOption {
+        default = 1;
+        description = "Count of subordinate group ids";
         type = types.int;
+      };
+
+      startGid = mkOption {
         description = ''
           Start of the range of subordinate group ids that user is
           allowed to use.
         '';
-      };
-      count = mkOption {
+
         type = types.int;
-        default = 1;
-        description = "Count of subordinate group ids";
       };
     };
   };
@@ -583,7 +641,7 @@ let
     !(foldr
       (
         name:
-        args@{ dup, acc }:
+        args@{ acc, dup }:
         let
           id = toString (getAttr idAttr (getAttr name set));
           exists = hasAttr id acc;
@@ -600,18 +658,18 @@ let
           args
         else if exists then
           trace "Duplicate ${idAttr} ${id}" {
-            dup = true;
             acc = null;
+            dup = true;
           }
         else
           {
-            dup = false;
             acc = newAcc;
+            dup = false;
           }
       )
       {
-        dup = false;
         acc = { };
+        dup = false;
       }
       (attrNames set)
     ).dup;
@@ -633,6 +691,8 @@ let
   spec = pkgs.writeText "users-groups.json" (
     builtins.toJSON {
       inherit (cfg) mutableUsers;
+      groups = attrValues cfg.groups;
+
       users = mapAttrsToList (_: u: {
         inherit (u)
           name
@@ -653,9 +713,9 @@ let
           initialHashedPassword
           expires
           ;
+
         shell = utils.toShellPath u.shell;
       }) (filterAttrs (_: u: u.enable) cfg.users);
-      groups = attrValues cfg.groups;
     }
   );
 
@@ -678,9 +738,139 @@ in
   ###### interface
   options = {
 
-    users.mutableUsers = mkOption {
+    boot.initrd.systemd.groups = mkOption {
+      default = { };
+
+      description = ''
+        Groups to include in initrd.
+      '';
+
+      type = types.attrsOf (
+        types.submodule (
+          { name, ... }:
+          {
+            options.gid = mkOption {
+              default = cfg.groups.${name}.gid;
+              defaultText = literalExpression "config.users.groups.\${name}.gid";
+
+              description = ''
+                ID of the group in initrd.
+              '';
+
+              type = types.int;
+            };
+          }
+        )
+      );
+    };
+
+    # systemd initrd
+    boot.initrd.systemd.users = mkOption {
+      default = { };
+
+      description = ''
+        Users to include in initrd.
+      '';
+
+      type = types.attrsOf (
+        types.submodule (
+          { name, ... }:
+          {
+            options.group = mkOption {
+              default = cfg.users.${name}.group;
+              defaultText = literalExpression "config.users.users.\${name}.group";
+
+              description = ''
+                Group the user belongs to in initrd.
+              '';
+
+              type = types.singleLineStr;
+            };
+
+            options.shell = mkOption {
+              default = "${pkgs.shadow}/bin/nologin";
+              defaultText = literalExpression "\${pkgs.shadow}/bin/nologin";
+
+              description = ''
+                The path to the user's shell in initrd.
+              '';
+
+              type = types.passwdEntry types.path;
+            };
+
+            options.uid = mkOption {
+              default = cfg.users.${name}.uid;
+              defaultText = literalExpression "config.users.users.\${name}.uid";
+
+              description = ''
+                ID of the user in initrd.
+              '';
+
+              type = types.int;
+            };
+          }
+        )
+      );
+    };
+
+    users.allowNoPasswordLogin = mkOption {
+      default = false;
+
+      description = ''
+        Disable checking that at least the `root` user or a user in the `wheel` group can log in using
+        a password or an SSH key.
+
+        WARNING: enabling this can lock you out of your system. Enable this only if you know what are you doing.
+      '';
+
       type = types.bool;
+    };
+
+    users.defaultUserHome = mkOption {
+      default = "/home";
+
+      description = ''
+        The default home directory for normal users.
+      '';
+
+      type = types.str;
+    };
+
+    users.enforceIdUniqueness = mkOption {
       default = true;
+
+      description = ''
+        Whether to require that no two users/groups share the same uid/gid.
+      '';
+
+      type = types.bool;
+    };
+
+    users.groups = mkOption {
+      default = { };
+
+      description = ''
+        Additional groups to be created automatically by the system.
+      '';
+
+      example = {
+        hackers = { };
+        students.gid = 1001;
+      };
+
+      type = with types; attrsOf (submodule groupOpts);
+    };
+
+    users.manageLingering = mkOption {
+      default = true;
+      description = "Whether to manage whether users linger or not.";
+      example = false;
+      type = types.bool;
+    };
+
+    users.mutableUsers = mkOption {
+      default = true;
+
       description = ''
         If set to `true`, you are free to add new users and groups to the system
         with the ordinary `useradd` and
@@ -701,133 +891,31 @@ in
         `users.users` configuration on activation.
         :::
       '';
-    };
 
-    users.enforceIdUniqueness = mkOption {
       type = types.bool;
-      default = true;
-      description = ''
-        Whether to require that no two users/groups share the same uid/gid.
-      '';
-    };
-
-    users.manageLingering = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Whether to manage whether users linger or not.";
-      example = false;
     };
 
     users.users = mkOption {
       default = { };
-      type = with types; attrsOf (submodule userOpts);
-      example = {
-        alice = {
-          uid = 1234;
-          description = "Alice Q. User";
-          home = "/home/alice";
-          createHome = true;
-          group = "users";
-          extraGroups = [ "wheel" ];
-          shell = "/bin/sh";
-        };
-      };
+
       description = ''
         Additional user accounts to be created automatically by the system.
         This can also be used to set options for root.
       '';
-    };
 
-    users.groups = mkOption {
-      default = { };
       example = {
-        students.gid = 1001;
-        hackers = { };
+        alice = {
+          createHome = true;
+          description = "Alice Q. User";
+          extraGroups = [ "wheel" ];
+          group = "users";
+          home = "/home/alice";
+          shell = "/bin/sh";
+          uid = 1234;
+        };
       };
-      type = with types; attrsOf (submodule groupOpts);
-      description = ''
-        Additional groups to be created automatically by the system.
-      '';
-    };
 
-    users.allowNoPasswordLogin = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Disable checking that at least the `root` user or a user in the `wheel` group can log in using
-        a password or an SSH key.
-
-        WARNING: enabling this can lock you out of your system. Enable this only if you know what are you doing.
-      '';
-    };
-
-    users.defaultUserHome = mkOption {
-      type = types.str;
-      default = "/home";
-      description = ''
-        The default home directory for normal users.
-      '';
-    };
-
-    # systemd initrd
-    boot.initrd.systemd.users = mkOption {
-      description = ''
-        Users to include in initrd.
-      '';
-      default = { };
-      type = types.attrsOf (
-        types.submodule (
-          { name, ... }:
-          {
-            options.uid = mkOption {
-              type = types.int;
-              description = ''
-                ID of the user in initrd.
-              '';
-              defaultText = literalExpression "config.users.users.\${name}.uid";
-              default = cfg.users.${name}.uid;
-            };
-            options.group = mkOption {
-              type = types.singleLineStr;
-              description = ''
-                Group the user belongs to in initrd.
-              '';
-              defaultText = literalExpression "config.users.users.\${name}.group";
-              default = cfg.users.${name}.group;
-            };
-            options.shell = mkOption {
-              type = types.passwdEntry types.path;
-              description = ''
-                The path to the user's shell in initrd.
-              '';
-              default = "${pkgs.shadow}/bin/nologin";
-              defaultText = literalExpression "\${pkgs.shadow}/bin/nologin";
-            };
-          }
-        )
-      );
-    };
-
-    boot.initrd.systemd.groups = mkOption {
-      description = ''
-        Groups to include in initrd.
-      '';
-      default = { };
-      type = types.attrsOf (
-        types.submodule (
-          { name, ... }:
-          {
-            options.gid = mkOption {
-              type = types.int;
-              description = ''
-                ID of the group in initrd.
-              '';
-              defaultText = literalExpression "config.users.groups.\${name}.gid";
-              default = cfg.groups.${name}.gid;
-            };
-          }
-        )
-      );
+      type = with types; attrsOf (submodule userOpts);
     };
   };
 
@@ -839,53 +927,299 @@ in
     in
     {
 
-      users.users = {
-        root = {
-          uid = ids.uids.root;
-          description = "System administrator";
-          home = "/root";
-          shell = mkDefault cfg.defaultUserShell;
-          group = "root";
+      assertions = [
+        {
+          assertion = !cfg.enforceIdUniqueness || (uidsAreUnique && gidsAreUnique);
+          message = "UIDs and GIDs must be unique!";
+        }
+        {
+          assertion = !cfg.enforceIdUniqueness || (sdInitrdUidsAreUnique && sdInitrdGidsAreUnique);
+          message = "systemd initrd UIDs and GIDs must be unique!";
+        }
+        {
+          assertion = usersWithoutExistingGroup == { };
+
+          message =
+            let
+              errUsers = lib.attrNames usersWithoutExistingGroup;
+              missingGroups = lib.unique (lib.mapAttrsToList (n: u: u.group) usersWithoutExistingGroup);
+              mkConfigHint = group: "users.groups.${group} = {};";
+            in
+            ''
+              The following users have a primary group that is undefined: ${lib.concatStringsSep " " errUsers}
+              Hint: Add this to your NixOS configuration:
+                ${lib.concatStringsSep "\n  " (map mkConfigHint missingGroups)}
+            '';
+        }
+        {
+          assertion = !cfg.mutableUsers -> length usersWithNullShells == 0;
+
+          message = ''
+            users.mutableUsers = false has been set,
+            but found users that have their shell set to null.
+            If you wish to disable login, set their shell to pkgs.shadow (the default).
+            Misconfigured users: ${lib.concatStringsSep " " usersWithNullShells}
+          '';
+        }
+        {
+          # If mutableUsers is false, to prevent users creating a
+          # configuration that locks them out of the system, ensure that
+          # there is at least one "privileged" account that has a
+          # password or an SSH authorized key. Privileged accounts are
+          # root and users in the wheel group.
+          # The check does not apply when users.allowNoPasswordLogin
+          # The check does not apply when users.mutableUsers
+          assertion =
+            !cfg.mutableUsers
+            -> !cfg.allowNoPasswordLogin
+            -> any id (
+              mapAttrsToList (
+                name: user:
+                (
+                  name == "root"
+                  || user.group == "wheel"
+                  || elem "wheel" user.extraGroups
+                  || elem name (cfg.groups.wheel.members or [ ])
+                )
+                && (
+                  allowsLogin user.hashedPassword
+                  || user.password != null
+                  || user.hashedPasswordFile != null
+                  || user.openssh.authorizedKeys.keys != [ ]
+                  || user.openssh.authorizedKeys.keyFiles != [ ]
+                )
+              ) cfg.users
+              ++ [
+                config.security.googleOsLogin.enable
+              ]
+            );
+
+          message = ''
+            Neither the root account nor any wheel user has a password or SSH authorized key.
+            You must set one to prevent being locked out of your system.
+            If you really want to be locked out of your system, set users.allowNoPasswordLogin = true;
+            However you are most probably better off by setting users.mutableUsers = true; and
+            manually running passwd root to set the root password.
+          '';
+        }
+      ]
+      ++ flip mapAttrsToList config.boot.initrd.systemd.users (
+        name: user: {
+          assertion = config.boot.initrd.systemd.enable -> (baseNameOf user.shell != "cryptsetup-askpass");
+
+          message = ''
+            cryptsetup-askpass is not available in systemd stage 1. Please remove it from: boot.initrd.systemd.users.${name}.shell
+
+            Use `systemctl default` instead; see the NixOS 26.05 release notes for details. If you want to continue restricting the command for SSH login, you can use `command="systemctl default"` in SSH authorized keys instead; see `sshd(8)`.
+          '';
+        }
+      )
+      ++ flatten (
+        flip mapAttrsToList cfg.users (
+          name: user:
+          [
+            (
+              let
+                # Things fail in various ways with especially non-ascii usernames.
+                # This regex mirrors the one from shadow's is_valid_name:
+                # https://github.com/shadow-maint/shadow/blob/bee77ffc291dfed2a133496db465eaa55e2b0fec/lib/chkname.c#L68
+                # though without the trailing $, because Samba 3 got its last release
+                # over 10 years ago and is not in Nixpkgs anymore,
+                # while later versions don't appear to require anything like that.
+                nameRegex = "[a-zA-Z0-9_.][a-zA-Z0-9_.-]*";
+              in
+              {
+                assertion = builtins.match nameRegex user.name != null;
+                message = "The username \"${user.name}\" is not valid, it does not match the regex \"${nameRegex}\".";
+              }
+            )
+            {
+              assertion = (user.hashedPassword != null) -> (match ".*:.*" user.hashedPassword == null);
+
+              message = ''
+                The password hash of user "${user.name}" contains a ":" character.
+                This is invalid and would break the login system because the fields
+                of /etc/shadow (file where hashes are stored) are colon-separated.
+                Please check the value of option `users.users."${user.name}".hashedPassword`.'';
+            }
+            {
+              assertion = user.isNormalUser && user.uid != null -> user.uid >= 1000;
+
+              message = ''
+                A user cannot have a users.users.${user.name}.uid set below 1000 and set users.users.${user.name}.isNormalUser.
+                Either users.users.${user.name}.isSystemUser must be set to true instead of users.users.${user.name}.isNormalUser
+                or users.users.${user.name}.uid must be changed to 1000 or above.
+              '';
+            }
+            {
+              assertion =
+                let
+                  # we do an extra check on isNormalUser here, to not trigger this assertion when isNormalUser is set and uid to < 1000
+                  isEffectivelySystemUser =
+                    user.isSystemUser || (user.uid != null && user.uid < 1000 && !user.isNormalUser);
+                in
+                xor isEffectivelySystemUser user.isNormalUser;
+
+              message = ''
+                Exactly one of users.users.${user.name}.isSystemUser and users.users.${user.name}.isNormalUser must be set.
+              '';
+            }
+            {
+              assertion = user.group != "";
+
+              message = ''
+                users.users.${user.name}.group is unset. This used to default to
+                nogroup, but this is unsafe. For example you can create a group
+                for this user with:
+                users.users.${user.name}.group = "${user.name}";
+                users.groups.${user.name} = {};
+              '';
+            }
+            {
+              assertion = user.linger != null -> cfg.manageLingering;
+
+              message = ''
+                users.manageLingering is set to false, but
+                users.users.${user.name}.linger is configured.
+
+                If you want NixOS to manage whether user accounts linger or
+                not, you must set users.manageLingering to true.  This is the
+                default setting.
+
+                If you do not want NixOS to manage whether user accounts linger
+                or not, you must set users.users.${user.name}.linger to null.
+                This is the default setting provided system.stateVersion is at
+                least "25.11".
+              '';
+            }
+          ]
+          ++ (map
+            (shell: {
+              assertion =
+                !user.ignoreShellProgramCheck
+                -> (user.shell == pkgs.${shell})
+                -> (config.programs.${shell}.enable == true);
+
+              message = ''
+                users.users.${user.name}.shell is set to ${shell}, but
+                programs.${shell}.enable is not true. This will cause the ${shell}
+                shell to lack the basic nix directories in its PATH and might make
+                logging in as that user impossible. You can fix it with:
+                programs.${shell}.enable = true;
+
+                If you know what you're doing and you are fine with the behavior,
+                set users.users.${user.name}.ignoreShellProgramCheck = true;
+                instead.
+              '';
+            })
+            [
+              "fish"
+              "xonsh"
+              "zsh"
+            ]
+          )
+        )
+      );
+
+      # systemd initrd
+      boot.initrd.systemd = lib.mkIf config.boot.initrd.systemd.enable {
+        contents = {
+          "/etc/group".text = ''
+            ${lib.concatStringsSep "\n" (
+              lib.mapAttrsToList (n: { gid }: "${n}:x:${toString gid}:") config.boot.initrd.systemd.groups
+            )}
+          '';
+
+          "/etc/passwd".text = ''
+            ${lib.concatStringsSep "\n" (
+              lib.mapAttrsToList (
+                n:
+                {
+                  group,
+                  shell,
+                  uid,
+                }:
+                let
+                  g = config.boot.initrd.systemd.groups.${group};
+                in
+                "${n}:x:${toString uid}:${toString g.gid}::/var/empty:${shell}"
+              ) config.boot.initrd.systemd.users
+            )}
+          '';
+
+          "/etc/shells".text =
+            lib.concatStringsSep "\n" (
+              lib.unique (lib.mapAttrsToList (_: u: u.shell) config.boot.initrd.systemd.users)
+            )
+            + "\n";
         };
-        nobody = {
-          uid = ids.uids.nobody;
-          isSystemUser = true;
-          description = "Unprivileged account (don't use!)";
-          group = "nogroup";
+
+        groups = {
+          audio = { };
+          cdrom = { };
+          clock = { };
+          dialout = { };
+          disk = { };
+          input = { };
+          kmem = { };
+          kvm = { };
+          lp = { };
+          nogroup = { };
+          render = { };
+          root = { };
+          sgx = { };
+          systemd-journal = { };
+          tape = { };
+          tty = { };
+          video = { };
+          video = { };
+        };
+
+        storePaths = [ "${pkgs.shadow}/bin/nologin" ];
+
+        users = {
+          nobody = { };
+
+          root = {
+            shell = lib.mkDefault "/bin/bash";
+          };
         };
       };
 
-      users.groups = {
-        root.gid = ids.gids.root;
-        wheel.gid = ids.gids.wheel;
-        disk.gid = ids.gids.disk;
-        kmem.gid = ids.gids.kmem;
-        tty.gid = ids.gids.tty;
-        floppy.gid = ids.gids.floppy;
-        uucp.gid = ids.gids.uucp;
-        lp.gid = ids.gids.lp;
-        cdrom.gid = ids.gids.cdrom;
-        tape.gid = ids.gids.tape;
-        audio.gid = ids.gids.audio;
-        video.gid = ids.gids.video;
-        dialout.gid = ids.gids.dialout;
-        nogroup.gid = ids.gids.nogroup;
-        users.gid = ids.gids.users;
-        nixbld.gid = ids.gids.nixbld;
-        utmp.gid = ids.gids.utmp;
-        adm.gid = ids.gids.adm;
-        input.gid = ids.gids.input;
-        kvm.gid = ids.gids.kvm;
-        render.gid = ids.gids.render;
-        sgx.gid = ids.gids.sgx;
-        shadow.gid = ids.gids.shadow;
-        clock.gid = ids.gids.clock;
-      };
+      environment.etc = mapAttrs' (
+        _:
+        { name, packages, ... }:
+        {
+          name = "profiles/per-user/${name}";
+
+          value.source = pkgs.buildEnv {
+            inherit (config.environment) pathsToLink extraOutputsToInstall;
+            inherit (config.system.path) ignoreCollisions postBuild;
+            name = "user-environment";
+            paths = packages;
+          };
+        }
+      ) (filterAttrs (_: u: u.packages != [ ]) cfg.users);
+
+      environment.profiles = [
+        "$HOME/.nix-profile"
+        "\${XDG_STATE_HOME}/nix/profile"
+        "$HOME/.local/state/nix/profile"
+        "/etc/profiles/per-user/$USER"
+      ];
+
+      # Install all the user shells
+      environment.systemPackages = systemShells;
+      # for backwards compatibility
+      system.activationScripts.groups = stringAfter [ "users" ] "";
+      # for backwards compatibility
+      system.activationScripts.hashes = stringAfter [ "users" ] "";
 
       system.activationScripts.users =
         if !config.systemd.sysusers.enable && !config.services.userborn.enable then
           {
             supportsDryActivation = true;
+
             text = ''
               install -m 0700 -d /root
               install -m 0755 -d /home
@@ -903,7 +1237,6 @@ in
           ""; # keep around for backwards compatibility
 
       systemd.services.linger-users = lib.mkIf cfg.manageLingering {
-        wantedBy = [ "multi-user.target" ];
         after = [ "systemd-logind.service" ];
         requires = [ "systemd-logind.service" ];
 
@@ -944,287 +1277,57 @@ in
           '';
 
         serviceConfig = {
-          Type = "oneshot";
           StateDirectory = "systemd/linger";
+          Type = "oneshot";
           WorkingDirectory = "/var/lib/systemd/linger";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
-      # for backwards compatibility
-      system.activationScripts.hashes = stringAfter [ "users" ] "";
-
-      # for backwards compatibility
-      system.activationScripts.groups = stringAfter [ "users" ] "";
-
-      # Install all the user shells
-      environment.systemPackages = systemShells;
-
-      environment.etc = mapAttrs' (
-        _:
-        { packages, name, ... }:
-        {
-          name = "profiles/per-user/${name}";
-          value.source = pkgs.buildEnv {
-            name = "user-environment";
-            paths = packages;
-            inherit (config.environment) pathsToLink extraOutputsToInstall;
-            inherit (config.system.path) ignoreCollisions postBuild;
-          };
-        }
-      ) (filterAttrs (_: u: u.packages != [ ]) cfg.users);
-
-      environment.profiles = [
-        "$HOME/.nix-profile"
-        "\${XDG_STATE_HOME}/nix/profile"
-        "$HOME/.local/state/nix/profile"
-        "/etc/profiles/per-user/$USER"
-      ];
-
-      # systemd initrd
-      boot.initrd.systemd = lib.mkIf config.boot.initrd.systemd.enable {
-        contents = {
-          "/etc/passwd".text = ''
-            ${lib.concatStringsSep "\n" (
-              lib.mapAttrsToList (
-                n:
-                {
-                  uid,
-                  group,
-                  shell,
-                }:
-                let
-                  g = config.boot.initrd.systemd.groups.${group};
-                in
-                "${n}:x:${toString uid}:${toString g.gid}::/var/empty:${shell}"
-              ) config.boot.initrd.systemd.users
-            )}
-          '';
-          "/etc/group".text = ''
-            ${lib.concatStringsSep "\n" (
-              lib.mapAttrsToList (n: { gid }: "${n}:x:${toString gid}:") config.boot.initrd.systemd.groups
-            )}
-          '';
-          "/etc/shells".text =
-            lib.concatStringsSep "\n" (
-              lib.unique (lib.mapAttrsToList (_: u: u.shell) config.boot.initrd.systemd.users)
-            )
-            + "\n";
-        };
-
-        storePaths = [ "${pkgs.shadow}/bin/nologin" ];
-
-        users = {
-          root = {
-            shell = lib.mkDefault "/bin/bash";
-          };
-          nobody = { };
-        };
-
-        groups = {
-          root = { };
-          nogroup = { };
-          systemd-journal = { };
-          tty = { };
-          dialout = { };
-          kmem = { };
-          input = { };
-          video = { };
-          render = { };
-          sgx = { };
-          audio = { };
-          video = { };
-          lp = { };
-          disk = { };
-          cdrom = { };
-          tape = { };
-          kvm = { };
-          clock = { };
-        };
+      users.groups = {
+        adm.gid = ids.gids.adm;
+        audio.gid = ids.gids.audio;
+        cdrom.gid = ids.gids.cdrom;
+        clock.gid = ids.gids.clock;
+        dialout.gid = ids.gids.dialout;
+        disk.gid = ids.gids.disk;
+        floppy.gid = ids.gids.floppy;
+        input.gid = ids.gids.input;
+        kmem.gid = ids.gids.kmem;
+        kvm.gid = ids.gids.kvm;
+        lp.gid = ids.gids.lp;
+        nixbld.gid = ids.gids.nixbld;
+        nogroup.gid = ids.gids.nogroup;
+        render.gid = ids.gids.render;
+        root.gid = ids.gids.root;
+        sgx.gid = ids.gids.sgx;
+        shadow.gid = ids.gids.shadow;
+        tape.gid = ids.gids.tape;
+        tty.gid = ids.gids.tty;
+        users.gid = ids.gids.users;
+        utmp.gid = ids.gids.utmp;
+        uucp.gid = ids.gids.uucp;
+        video.gid = ids.gids.video;
+        wheel.gid = ids.gids.wheel;
       };
 
-      assertions = [
-        {
-          assertion = !cfg.enforceIdUniqueness || (uidsAreUnique && gidsAreUnique);
-          message = "UIDs and GIDs must be unique!";
-        }
-        {
-          assertion = !cfg.enforceIdUniqueness || (sdInitrdUidsAreUnique && sdInitrdGidsAreUnique);
-          message = "systemd initrd UIDs and GIDs must be unique!";
-        }
-        {
-          assertion = usersWithoutExistingGroup == { };
-          message =
-            let
-              errUsers = lib.attrNames usersWithoutExistingGroup;
-              missingGroups = lib.unique (lib.mapAttrsToList (n: u: u.group) usersWithoutExistingGroup);
-              mkConfigHint = group: "users.groups.${group} = {};";
-            in
-            ''
-              The following users have a primary group that is undefined: ${lib.concatStringsSep " " errUsers}
-              Hint: Add this to your NixOS configuration:
-                ${lib.concatStringsSep "\n  " (map mkConfigHint missingGroups)}
-            '';
-        }
-        {
-          assertion = !cfg.mutableUsers -> length usersWithNullShells == 0;
-          message = ''
-            users.mutableUsers = false has been set,
-            but found users that have their shell set to null.
-            If you wish to disable login, set their shell to pkgs.shadow (the default).
-            Misconfigured users: ${lib.concatStringsSep " " usersWithNullShells}
-          '';
-        }
-        {
-          # If mutableUsers is false, to prevent users creating a
-          # configuration that locks them out of the system, ensure that
-          # there is at least one "privileged" account that has a
-          # password or an SSH authorized key. Privileged accounts are
-          # root and users in the wheel group.
-          # The check does not apply when users.allowNoPasswordLogin
-          # The check does not apply when users.mutableUsers
-          assertion =
-            !cfg.mutableUsers
-            -> !cfg.allowNoPasswordLogin
-            -> any id (
-              mapAttrsToList (
-                name: user:
-                (
-                  name == "root"
-                  || user.group == "wheel"
-                  || elem "wheel" user.extraGroups
-                  || elem name (cfg.groups.wheel.members or [ ])
-                )
-                && (
-                  allowsLogin user.hashedPassword
-                  || user.password != null
-                  || user.hashedPasswordFile != null
-                  || user.openssh.authorizedKeys.keys != [ ]
-                  || user.openssh.authorizedKeys.keyFiles != [ ]
-                )
-              ) cfg.users
-              ++ [
-                config.security.googleOsLogin.enable
-              ]
-            );
-          message = ''
-            Neither the root account nor any wheel user has a password or SSH authorized key.
-            You must set one to prevent being locked out of your system.
-            If you really want to be locked out of your system, set users.allowNoPasswordLogin = true;
-            However you are most probably better off by setting users.mutableUsers = true; and
-            manually running passwd root to set the root password.
-          '';
-        }
-      ]
-      ++ flip mapAttrsToList config.boot.initrd.systemd.users (
-        name: user: {
-          assertion = config.boot.initrd.systemd.enable -> (baseNameOf user.shell != "cryptsetup-askpass");
-          message = ''
-            cryptsetup-askpass is not available in systemd stage 1. Please remove it from: boot.initrd.systemd.users.${name}.shell
+      users.users = {
+        nobody = {
+          description = "Unprivileged account (don't use!)";
+          group = "nogroup";
+          isSystemUser = true;
+          uid = ids.uids.nobody;
+        };
 
-            Use `systemctl default` instead; see the NixOS 26.05 release notes for details. If you want to continue restricting the command for SSH login, you can use `command="systemctl default"` in SSH authorized keys instead; see `sshd(8)`.
-          '';
-        }
-      )
-      ++ flatten (
-        flip mapAttrsToList cfg.users (
-          name: user:
-          [
-            (
-              let
-                # Things fail in various ways with especially non-ascii usernames.
-                # This regex mirrors the one from shadow's is_valid_name:
-                # https://github.com/shadow-maint/shadow/blob/bee77ffc291dfed2a133496db465eaa55e2b0fec/lib/chkname.c#L68
-                # though without the trailing $, because Samba 3 got its last release
-                # over 10 years ago and is not in Nixpkgs anymore,
-                # while later versions don't appear to require anything like that.
-                nameRegex = "[a-zA-Z0-9_.][a-zA-Z0-9_.-]*";
-              in
-              {
-                assertion = builtins.match nameRegex user.name != null;
-                message = "The username \"${user.name}\" is not valid, it does not match the regex \"${nameRegex}\".";
-              }
-            )
-            {
-              assertion = (user.hashedPassword != null) -> (match ".*:.*" user.hashedPassword == null);
-              message = ''
-                The password hash of user "${user.name}" contains a ":" character.
-                This is invalid and would break the login system because the fields
-                of /etc/shadow (file where hashes are stored) are colon-separated.
-                Please check the value of option `users.users."${user.name}".hashedPassword`.'';
-            }
-            {
-              assertion = user.isNormalUser && user.uid != null -> user.uid >= 1000;
-              message = ''
-                A user cannot have a users.users.${user.name}.uid set below 1000 and set users.users.${user.name}.isNormalUser.
-                Either users.users.${user.name}.isSystemUser must be set to true instead of users.users.${user.name}.isNormalUser
-                or users.users.${user.name}.uid must be changed to 1000 or above.
-              '';
-            }
-            {
-              assertion =
-                let
-                  # we do an extra check on isNormalUser here, to not trigger this assertion when isNormalUser is set and uid to < 1000
-                  isEffectivelySystemUser =
-                    user.isSystemUser || (user.uid != null && user.uid < 1000 && !user.isNormalUser);
-                in
-                xor isEffectivelySystemUser user.isNormalUser;
-              message = ''
-                Exactly one of users.users.${user.name}.isSystemUser and users.users.${user.name}.isNormalUser must be set.
-              '';
-            }
-            {
-              assertion = user.group != "";
-              message = ''
-                users.users.${user.name}.group is unset. This used to default to
-                nogroup, but this is unsafe. For example you can create a group
-                for this user with:
-                users.users.${user.name}.group = "${user.name}";
-                users.groups.${user.name} = {};
-              '';
-            }
-            {
-              assertion = user.linger != null -> cfg.manageLingering;
-              message = ''
-                users.manageLingering is set to false, but
-                users.users.${user.name}.linger is configured.
-
-                If you want NixOS to manage whether user accounts linger or
-                not, you must set users.manageLingering to true.  This is the
-                default setting.
-
-                If you do not want NixOS to manage whether user accounts linger
-                or not, you must set users.users.${user.name}.linger to null.
-                This is the default setting provided system.stateVersion is at
-                least "25.11".
-              '';
-            }
-          ]
-          ++ (map
-            (shell: {
-              assertion =
-                !user.ignoreShellProgramCheck
-                -> (user.shell == pkgs.${shell})
-                -> (config.programs.${shell}.enable == true);
-              message = ''
-                users.users.${user.name}.shell is set to ${shell}, but
-                programs.${shell}.enable is not true. This will cause the ${shell}
-                shell to lack the basic nix directories in its PATH and might make
-                logging in as that user impossible. You can fix it with:
-                programs.${shell}.enable = true;
-
-                If you know what you're doing and you are fine with the behavior,
-                set users.users.${user.name}.ignoreShellProgramCheck = true;
-                instead.
-              '';
-            })
-            [
-              "fish"
-              "xonsh"
-              "zsh"
-            ]
-          )
-        )
-      );
+        root = {
+          description = "System administrator";
+          group = "root";
+          home = "/root";
+          shell = mkDefault cfg.defaultUserShell;
+          uid = ids.uids.root;
+        };
+      };
 
       warnings =
         flip concatMap (attrValues cfg.users) (

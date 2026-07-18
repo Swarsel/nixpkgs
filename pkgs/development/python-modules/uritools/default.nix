@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "uritools";
   version = "6.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "uritools" ];
 
   meta = {

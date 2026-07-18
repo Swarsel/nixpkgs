@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "oscscreen";
   version = "unstable-2023-03-23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "outscale";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "oscscreen" ];
 
   meta = {

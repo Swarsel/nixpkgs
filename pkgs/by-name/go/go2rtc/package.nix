@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-fbDHuLuajAMOQwqyvLdQJYglcygjo4EDqPEjeiSWz2Y=";
-
   env.CGO_ENABLED = 0;
+  doCheck = false; # tests fail
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  doCheck = false; # tests fail
 
   meta = {
     description = "Ultimate camera streaming application with support RTSP, RTMP, HTTP-FLV, WebRTC, MSE, HLS, MJPEG, HomeKit, FFmpeg, etc";

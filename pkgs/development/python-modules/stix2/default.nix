@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
+  buildPythonPackage,
   haversine,
   medallion,
+  pytestCheckHook,
   pytz,
   rapidfuzz,
   requests,
+  setuptools,
   simplejson,
   stix2-patterns,
   taxii2-client,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "stix2";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oasis-open";
@@ -25,6 +24,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qm6VFufD9A4rSBHaDkqeYqOLRvE97SY0++o4ND0l3I0=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    haversine
+    medallion
+    rapidfuzz
+    taxii2-client
+  ];
 
   build-system = [ setuptools ];
 
@@ -35,14 +42,6 @@ buildPythonPackage (finalAttrs: {
     stix2-patterns
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    haversine
-    medallion
-    rapidfuzz
-    taxii2-client
-  ];
-
   disabledTests = [
     # flaky tests
     "test_graph_equivalence_with_filesystem_source"
@@ -50,6 +49,7 @@ buildPythonPackage (finalAttrs: {
     "test_object_similarity_prop_scores"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "stix2" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio_0,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "aresponses";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aresponses";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-RklXlIsbdq46/7D6Hv4mdskunqw1a7SFF09OjhrvMRY=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,22 +28,19 @@ buildPythonPackage rec {
     pytest-asyncio_0
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # Disable tests which requires network access
     "test_foo"
     "test_passthrough"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "aresponses" ];
 
   meta = {
-    changelog = "https://github.com/aresponses/aresponses/blob/${src.rev}/README.md#changelog";
     description = "Asyncio testing server";
     homepage = "https://github.com/aresponses/aresponses";
+    changelog = "https://github.com/aresponses/aresponses/blob/${src.rev}/README.md#changelog";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ makefu ];
   };

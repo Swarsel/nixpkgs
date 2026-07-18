@@ -15,6 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-r5UT8z8vvFZDffsl6CqBXuvBaZ/sl1WLxJi26CxkpAw=";
   };
 
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
+
   preBuild = ''
     sed -i s/gcc/${stdenv.cc.targetPrefix}gcc/g Makefile
   ''
@@ -28,21 +30,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-
   meta = {
-    homepage = "http://www.deadhat.com/";
     description = ''
       C program to generate random data using several random models,
       with parameterized non uniformities and flexible output formats
     '';
+
+    homepage = "http://www.deadhat.com/";
     license = lib.licenses.gpl2Only;
-    # djenrandom uses x86 specific instructions, therefore we can only compile for the x86 architecture
-    platforms = lib.platforms.x86;
+
     maintainers = with lib.maintainers; [
       orichter
       thillux
     ];
+
+    # djenrandom uses x86 specific instructions, therefore we can only compile for the x86 architecture
+    platforms = lib.platforms.x86;
     mainProgram = "djenrandom";
   };
 })

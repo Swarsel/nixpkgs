@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   fontconfig,
+  libx11,
+  libxcursor,
+  libxi,
   libxkbcommon,
+  libxscrnsaver,
   openssl,
   pkg-config,
-  libxscrnsaver,
-  libxi,
-  libxcursor,
-  libx11,
+  rustPlatform,
   vulkan-loader,
   wayland,
 }:
@@ -24,8 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-UMkFEbLdwZsSJviO29FNmLYLL5/HofhriMptpjSAYuY=";
   };
-
-  cargoHash = "sha256-fdslQutVEGq1EG+Q8QAYKf9XfoostvHKWZrr4YwEowQ=";
 
   nativeBuildInputs = [
     pkg-config
@@ -42,6 +40,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     vulkan-loader
     wayland
   ];
+
+  cargoHash = "sha256-fdslQutVEGq1EG+Q8QAYKf9XfoostvHKWZrr4YwEowQ=";
 
   checkFlags = [
     # panicked at src/tests/timer_tests.rs:30:9
@@ -61,13 +61,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Track your time without being tracked";
-    mainProgram = "furtherance";
     homepage = "https://github.com/unobserved-io/Furtherance";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       CaptainJawZ
       locnide
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "furtherance";
   };
 })

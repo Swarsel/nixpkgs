@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
   boost188,
   mdds,
+  pkg-config,
   python3,
 }:
 let

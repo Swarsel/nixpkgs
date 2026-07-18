@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -32,8 +32,7 @@ stdenvNoCC.mkDerivation {
     description = "Place to share Nushell scripts with each other";
     homepage = "https://github.com/nushell/nu_scripts";
     license = lib.licenses.mit;
-
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.CardboardTurkey ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libxcb,
+  pkg-config,
   writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -16,9 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ libxcb ];
 
   passthru = {
@@ -36,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Utility to list interned atoms defined on X server";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xlsatoms";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xlsatoms";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xlsatoms";
   };
 })

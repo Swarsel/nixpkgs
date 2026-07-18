@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dnspython,
-  fetchFromGitHub,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "srvlookup";
   version = "3.0.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "gmr";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ dnspython ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "srvlookup" ];
 
   meta = {

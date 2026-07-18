@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   fontconfig,
-  pkg-config,
-  wayland,
   libxkbcommon,
   makeWrapper,
+  pkg-config,
+  rustPlatform,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,32 +20,33 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-hDonn6as5TGoYOOFVzhWxOUKzqEQ66aFWz0O3gtBGS4=";
   };
 
-  cargoHash = "sha256-DOkgKcLPZzZaC+2vWNZ4BoaR0HhoaaKYQS7IQUJtK44=";
-
-  libPath = lib.makeLibraryPath [
-    wayland
-    libxkbcommon
+  nativeBuildInputs = [
+    makeWrapper
+    pkg-config
   ];
 
   buildInputs = [
     fontconfig
     libxkbcommon
   ];
-  nativeBuildInputs = [
-    makeWrapper
-    pkg-config
-  ];
+
+  cargoHash = "sha256-DOkgKcLPZzZaC+2vWNZ4BoaR0HhoaaKYQS7IQUJtK44=";
 
   postInstall = ''
     wrapProgram "$out/bin/kickoff" --prefix LD_LIBRARY_PATH : "${finalAttrs.libPath}"
   '';
 
+  libPath = lib.makeLibraryPath [
+    wayland
+    libxkbcommon
+  ];
+
   meta = {
     description = "Minimalistic program launcher";
-    mainProgram = "kickoff";
     homepage = "https://github.com/j0ru/kickoff";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pyxels ];
     platforms = lib.platforms.linux;
+    mainProgram = "kickoff";
   };
 })

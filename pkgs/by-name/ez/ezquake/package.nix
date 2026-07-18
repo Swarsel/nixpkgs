@@ -1,21 +1,21 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   cmake,
   curlMinimal,
   expat,
-  fetchFromGitHub,
   jansson,
-  lib,
   libGL,
-  libx11,
   libjpeg,
   libpng,
   libsndfile,
+  libx11,
   minizip,
   nix-update-script,
   pcre2,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "QW-Group";
     repo = "ezquake-source";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-AJe7ZvF88gKrW6IsTLpYI7RmzetFGZifntHzX7aNcG4=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -54,8 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     pcre2
   ];
 
-  enableParallelBuilding = true;
-
   installPhase =
     let
       sys = lib.last (lib.splitString "-" stdenv.hostPlatform.system);
@@ -70,14 +68,15 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://ezquake.com/";
     description = "Modern QuakeWorld client focused on competitive online play";
-    mainProgram = "ezquake";
+    homepage = "https://ezquake.com/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ edwtjo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ezquake";
   };
 })

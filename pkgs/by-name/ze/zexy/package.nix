@@ -10,15 +10,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.4.4";
 
   src = fetchFromGitLab {
-    domain = "git.iem.at";
     owner = "pd";
     repo = "zexy";
     tag = "v${finalAttrs.version}";
     hash = "sha256-9+kWnfYLSOI2PaFQVzlaq1EjzUeOZvVRomGfWSLNXCw=";
+    domain = "git.iem.at";
   };
 
   buildInputs = [ puredata ];
-
   makeFlags = [ "PDLIBDIR=$(out)" ];
 
   meta = {

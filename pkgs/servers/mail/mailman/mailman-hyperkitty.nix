@@ -1,16 +1,15 @@
 {
   lib,
-  python3,
   fetchPypi,
   mailman,
   nixosTests,
+  python3,
 }:
 
 with python3.pkgs;
 buildPythonPackage (finalAttrs: {
   pname = "mailman-hyperkitty";
   version = "1.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -23,6 +22,9 @@ buildPythonPackage (finalAttrs: {
     zope-interface
   ];
 
+  # There is an AssertionError
+  doCheck = false;
+
   nativeCheckInputs = [
     mock
     nose2
@@ -32,8 +34,7 @@ buildPythonPackage (finalAttrs: {
     ${python.interpreter} -m nose2 -v
   '';
 
-  # There is an AssertionError
-  doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "mailman_hyperkitty"

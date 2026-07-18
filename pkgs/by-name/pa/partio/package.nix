@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unzip,
   cmake,
-  libglut,
-  libGLU,
-  libGL,
-  zlib,
-  swig,
   doxygen,
-  libxmu,
+  libGL,
+  libGLU,
+  libglut,
   libxi,
+  libxmu,
   python3,
+  swig,
+  unzip,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,6 +31,10 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "lib"
   ];
+
+  # TODO:
+  # Sexpr support
+  strictDeps = true;
 
   nativeBuildInputs = [
     unzip
@@ -51,16 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
     libGL
   ];
 
-  # TODO:
-  # Sexpr support
-
-  strictDeps = true;
-
   meta = {
     description = "C++ (with python bindings) library for easily reading/writing/manipulating common animation particle formats such as PDB, BGEO, PTC";
     homepage = "https://github.com/wdas/partio";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.guibou ];
+    platforms = lib.platforms.unix;
   };
 })

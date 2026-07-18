@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
   aiohttp,
   beautifulsoup4,
+  buildPythonPackage,
+  freezegun,
   lxml,
   pyjwt,
-  freezegun,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "volkswagencarnet";
   version = "5.4.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "robinostlund";
@@ -29,6 +28,12 @@ buildPythonPackage rec {
       --replace-fail 'pytest_plugins = ["pytest_cov"]' 'pytest_plugins = []'
   '';
 
+  nativeCheckInputs = [
+    freezegun
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -38,18 +43,13 @@ buildPythonPackage rec {
     pyjwt
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "volkswagencarnet" ];
 
-  nativeCheckInputs = [
-    freezegun
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/robinostlund/volkswagencarnet/releases/tag/${src.tag}";
     description = "Python library for volkswagen carnet";
     homepage = "https://github.com/robinostlund/volkswagencarnet";
+    changelog = "https://github.com/robinostlund/volkswagencarnet/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # upgrade cmake minimum version
     (fetchpatch {
-      url = "https://github.com/HardySimpson/zlog/commit/3715879775f725260aeda14f94887bbc7a007e29.patch?full_index=1";
       hash = "sha256-RCI+jZauSO0O0ETjs0nUd4CC2wLLVsjH8iuOmIgWhck=";
+      url = "https://github.com/HardySimpson/zlog/commit/3715879775f725260aeda14f94887bbc7a007e29.patch?full_index=1";
     })
   ];
 
@@ -32,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://hardysimpson.github.io/zlog/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
-    mainProgram = "zlog-chk-conf";
     platforms = lib.platforms.unix;
+    mainProgram = "zlog-chk-conf";
   };
 })

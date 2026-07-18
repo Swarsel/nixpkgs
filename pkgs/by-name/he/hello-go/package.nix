@@ -4,12 +4,8 @@
 }:
 
 buildGoModule {
-  name = "hello-go";
-
   src = ./src;
-
   vendorHash = null;
-
   env.CGO_ENABLED = 0;
 
   # go installs binary into $out/bin/$GOOS_$GOARCH/hello-go in cross compilation
@@ -17,8 +13,11 @@ buildGoModule {
     [[ -f "$out/bin/hello-go" ]] || ln -s ./''${GOOS}_''${GOARCH}/hello-go $out/bin/hello-go
   '';
 
+  name = "hello-go";
+
   meta = {
     description = "Simple program printing hello world in Go";
+
     longDescription = ''
       hello-go is a simple program printing "Hello, world!" written in Go,
       aiming at testing programs that involves analyzing executables or
@@ -39,6 +38,7 @@ buildGoModule {
       See https://pkg.go.dev/internal/platform#pkg-variables for a list
       of available platforms.
     '';
+
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aleksana ];
     mainProgram = "hello-go";

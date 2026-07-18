@@ -1,9 +1,9 @@
 {
   lib,
+  fetchurl,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
-  fetchurl,
   glib,
   gnome,
   gobject-introspection,
@@ -20,7 +20,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "showtime";
   version = "50.0";
-  pyproject = false;
 
   src = fetchurl {
     url = "mirror://gnome/sources/showtime/${lib.versions.major finalAttrs.version}/showtime-${finalAttrs.version}.tar.xz";
@@ -28,10 +27,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     appstream
@@ -59,15 +54,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   dependencies = with python3Packages; [ pygobject3 ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   dontWrapGApps = true;
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
-
-  pythonImportsCheck = [ "showtime" ];
 
   preInstallCheck = ''
     export XDG_DATA_DIRS="${glib.makeSchemaDataDirPath "$out" "$name"}:$XDG_DATA_DIRS"
     export HOME="$TEMPDIR"
   '';
+
+  pyproject = false;
+  pythonImportsCheck = [ "showtime" ];
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -80,7 +80,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://apps.gnome.org/Showtime";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ getchoo ];
-    teams = [ lib.teams.gnome ];
     mainProgram = "showtime";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -15,19 +15,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-vpc-access";
   version = "1.17.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_vpc_access";
     inherit (finalAttrs) version;
     hash = "sha256-c5HvaQIykWRNAuDSBhv72kHZs8qgMY8cyvn5N7mahY4=";
+    pname = "google_cloud_vpc_access";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -37,15 +38,15 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.vpcaccess"
     "google.cloud.vpcaccess_v1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

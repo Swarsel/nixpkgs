@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cargo,
-  meson,
-  ninja,
-  pkg-config,
-  protobuf,
-  rustPlatform,
-  rustc,
-  wrapGAppsHook4,
+  appstream,
+  blueprint-compiler,
   cairo,
+  cargo,
   dbus,
+  desktop-file-utils,
   gdk-pixbuf,
   glib,
   gtk4,
   libadwaita,
+  meson,
+  ninja,
   pango,
-  blueprint-compiler,
-  desktop-file-utils,
-  appstream,
+  pkg-config,
+  protobuf,
   python3Packages,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "packet";
@@ -31,11 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "packet";
     tag = finalAttrs.version;
     hash = "sha256-zR2WZER49xsxaiZbFGFOukHE3w0odxVi9WJTI4FSWJ0=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-ODrM8oGQpi+DpG4YQYibtVHbicuHOjZAlZ1wW2Gulec=";
   };
 
   nativeBuildInputs = [
@@ -71,13 +66,18 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/packet/plugins $out/share/nautilus-python/extensions
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-ODrM8oGQpi+DpG4YQYibtVHbicuHOjZAlZ1wW2Gulec=";
+  };
+
   meta = {
     description = "Quick Share client for Linux";
     homepage = "https://github.com/nozwock/packet";
     changelog = "https://github.com/nozwock/packet/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ontake ];
-    mainProgram = "packet";
     platforms = lib.platforms.linux;
+    mainProgram = "packet";
   };
 })

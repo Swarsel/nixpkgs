@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  buildPackages,
   m4,
   cxx ? !stdenv.hostPlatform.useAndroidPrebuilt && !stdenv.hostPlatform.isWasm,
-  buildPackages,
   withStatic ? stdenv.hostPlatform.isStatic,
 }:
 
@@ -23,12 +23,13 @@ let
     version = "6.3.0";
 
     src = fetchurl {
+      hash = "sha256-rCghGnz7YJuuLiyNYFjWbI/pZDT3QM9v4uR7AA0cIMs=";
+
       # we need to use bz2, others aren't in bootstrapping stdenv
       urls = [
         "mirror://gnu/gmp/gmp-${version}.tar.bz2"
         "ftp://ftp.gmplib.org/pub/gmp-${version}/gmp-${version}.tar.bz2"
       ];
-      hash = "sha256-rCghGnz7YJuuLiyNYFjWbI/pZDT3QM9v4uR7AA0cIMs=";
     };
 
     #outputs TODO: split $cxx due to libstdc++ dependency
@@ -39,10 +40,8 @@ let
       "dev"
       "info"
     ];
-    passthru.static = self.out;
 
     strictDeps = true;
-    depsBuildBuild = [ buildPackages.stdenv.cc ];
     nativeBuildInputs = [ m4 ];
 
     configureFlags = [
@@ -73,18 +72,13 @@ let
     ++ optional (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) "--disable-assembly";
 
     doCheck = true; # not cross;
-
+    depsBuildBuild = [ buildPackages.stdenv.cc ];
     dontDisableStatic = withStatic;
-
     enableParallelBuilding = true;
+    passthru.static = self.out;
 
     meta = {
-      homepage = "https://gmplib.org/";
       description = "GNU multiple precision arithmetic library";
-      license = with lib.licenses; [
-        lgpl3Only
-        gpl2Only
-      ];
 
       longDescription = ''
         GMP is a free library for arbitrary precision arithmetic, operating
@@ -108,8 +102,15 @@ let
         asymptotically faster algorithms.
       '';
 
-      platforms = lib.platforms.all;
+      homepage = "https://gmplib.org/";
+
+      license = with lib.licenses; [
+        lgpl3Only
+        gpl2Only
+      ];
+
       maintainers = [ ];
+      platforms = lib.platforms.all;
     };
   };
 in

@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  python3Packages,
-  nix-update-script,
   installFonts,
+  nix-update-script,
+  python3Packages,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -24,8 +24,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     python3Packages.fonttools
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   buildPhase = ''
     runHook preBuild
 
@@ -36,11 +34,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://nomfoundation.org/nom-tools/Nom-Font";
     description = "Hán-Nôm Coded Character Set and Nom Na Tong Regular Reference Font";
+    homepage = "https://nomfoundation.org/nom-tools/Nom-Font";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.eclairevoyant ];
     platforms = lib.platforms.all;

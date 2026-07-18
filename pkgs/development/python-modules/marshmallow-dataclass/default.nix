@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   marshmallow,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "marshmallow-dataclass";
   version = "8.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lovasoa";
@@ -25,10 +24,15 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # Fix test_set_only_work_in_hashable_types on Python 3.14, https://github.com/lovasoa/marshmallow_dataclass/pull/286
     (fetchpatch {
+      hash = "sha256-T2UbZdCj4+HRglMp8w3kU20sUcN6WoSyKiLNr1kSius=";
       name = "fix-test.patch";
       url = "https://github.com/lovasoa/marshmallow_dataclass/commit/9a2ea19924a3cd5fadeb41663bfca64b9c0f75e4.patch";
-      hash = "sha256-T2UbZdCj4+HRglMp8w3kU20sUcN6WoSyKiLNr1kSius=";
     })
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    typeguard
   ];
 
   build-system = [ setuptools ];
@@ -38,19 +42,16 @@ buildPythonPackage (finalAttrs: {
     typing-inspect
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    typeguard
+  disabledTests = [
+    # TypeError: UserId is not a dataclass and cannot be turned into one.
+    "test_newtype"
   ];
+
+  pyproject = true;
 
   pytestFlags = [
     # DeprecationWarning: The distutils package is deprecated and slated for removal in Python 3.12.
     "-Wignore::DeprecationWarning"
-  ];
-
-  disabledTests = [
-    # TypeError: UserId is not a dataclass and cannot be turned into one.
-    "test_newtype"
   ];
 
   pythonImportsCheck = [ "marshmallow_dataclass" ];

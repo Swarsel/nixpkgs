@@ -1,13 +1,14 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   lua,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "sol2";
   version = "3.5.0";
+
   src = fetchFromGitHub {
     owner = "ThePhD";
     repo = "sol2";
@@ -27,12 +28,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Lua API wrapper with advanced features and top notch performance";
+
     longDescription = ''
       sol2 is a C++ library binding to Lua.
       It currently supports all Lua versions 5.1+ (LuaJIT 2.0+ and MoonJIT included).
       sol2 aims to be easy to use and easy to add to a project.
       The library is header-only for easy integration with projects, and a single header can be used for drag-and-drop start up.
     '';
+
     homepage = "https://github.com/ThePhD/sol2";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mrcjkb ];

@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitLab,
   appstream,
   dblatex,
   desktop-file-utils,
   docbook-xsl-nons,
   docbook_xml_dtd_45,
-  fetchFromGitLab,
   gdk-pixbuf,
   graphene,
   gtk-mac-integration-gtk3,
@@ -27,11 +27,11 @@ let
     version = "0-unstable-2024-05-24";
 
     src = fetchFromGitLab {
-      domain = "gitlab.gnome.org";
       owner = "ZanderBrown";
       repo = "xpm-pixbuf";
       rev = "d290a0c846687b22d2a8c5aaec83a6689f30e1c3";
       hash = "sha256-LU6nKe7IIecF/3wwhlwR1hyABBvfwvujVW5zJJSzkqo=";
+      domain = "gitlab.gnome.org";
     };
 
     nativeBuildInputs = [
@@ -43,8 +43,8 @@ let
     buildInputs = [ gdk-pixbuf ];
 
     meta = {
-      license = lib.licenses.lgpl21;
       homepage = "https://gitlab.gnome.org/ZanderBrown/xpm-pixbuf";
+      license = lib.licenses.lgpl21;
     };
   };
 in
@@ -53,11 +53,11 @@ stdenv.mkDerivation {
   version = "unstable-2025-10-26";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "dia";
     rev = "efdf829e8afdbbeb371820932769e35415ebe886";
     hash = "sha256-VFFU5iJnVJdZ2tkNszZ2ooBD+GiCL6MqanzpEWIJerk=";
+    domain = "gitlab.gnome.org";
   };
 
   postPatch = ''
@@ -67,8 +67,6 @@ stdenv.mkDerivation {
   '';
 
   strictDeps = true;
-
-  dontUseCmakeConfigure = true;
 
   nativeBuildInputs = [
     appstream
@@ -104,12 +102,14 @@ stdenv.mkDerivation {
       --replace-fail "Exec=dia" "Exec=$out/bin/dia"
   '';
 
+  dontUseCmakeConfigure = true;
+
   meta = {
     description = "Gnome Diagram drawing software";
-    mainProgram = "dia";
     homepage = "https://wiki.gnome.org/Apps/Dia";
-    maintainers = with lib.maintainers; [ raskin ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
+    mainProgram = "dia";
   };
 }

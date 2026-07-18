@@ -145,55 +145,10 @@ let
     in
     {
       options = {
-        present = mkOption {
-          description = "Whether to ensure that this organization is present or absent.";
-          type = types.bool;
-          default = true;
-        };
-
-        description = mkOption {
-          description = "Optional description for the organization.";
-          default = null;
-          type = types.nullOr types.str;
-        };
-
-        buckets = mkOption {
-          description = "Buckets to provision in this organization.";
-          default = { };
-          type = types.attrsOf (
-            types.submodule (
-              bucketSubmod:
-              let
-                bucket = bucketSubmod.config._module.args.name;
-              in
-              {
-                options = {
-                  present = mkOption {
-                    description = "Whether to ensure that this bucket is present or absent.";
-                    type = types.bool;
-                    default = true;
-                  };
-
-                  description = mkOption {
-                    description = "Optional description for the bucket.";
-                    default = null;
-                    type = types.nullOr types.str;
-                  };
-
-                  retention = mkOption {
-                    type = types.ints.unsigned;
-                    default = 0;
-                    description = "The duration in seconds for which the bucket will retain data (0 is infinite).";
-                  };
-                };
-              }
-            )
-          );
-        };
-
         auths = mkOption {
-          description = "API tokens to provision for the user in this organization.";
           default = { };
+          description = "API tokens to provision for the user in this organization.";
+
           type = types.attrsOf (
             types.submodule (
               authSubmod:
@@ -202,50 +157,54 @@ let
               in
               {
                 options = {
-                  id = mkOption {
-                    description = "A unique identifier for this authentication token. Since influx doesn't store names for tokens, this will be hashed and appended to the description to identify the token.";
-                    readOnly = true;
-                    default = builtins.substring 0 32 (builtins.hashString "sha256" "${org}:${auth}");
-                    defaultText = "<a hash derived from org and name>";
-                    type = types.str;
-                  };
-
-                  present = mkOption {
-                    description = "Whether to ensure that this user is present or absent.";
+                  allAccess = mkOption {
+                    default = false;
+                    description = "Grants all permissions in the associated organization.";
                     type = types.bool;
-                    default = true;
                   };
 
                   description = mkOption {
+                    default = null;
+
                     description = ''
                       Optional description for the API token.
                       Note that the actual token will always be created with a descriptionregardless
                       of whether this is given or not. The name is always added plus a unique suffix
                       to later identify the token to track whether it has already been created.
                     '';
-                    default = null;
+
                     type = types.nullOr types.str;
                   };
 
-                  tokenFile = mkOption {
-                    type = types.nullOr types.path;
-                    default = null;
-                    description = "The token value. If not given, influx will automatically generate one.";
+                  id = mkOption {
+                    default = builtins.substring 0 32 (builtins.hashString "sha256" "${org}:${auth}");
+                    defaultText = "<a hash derived from org and name>";
+                    description = "A unique identifier for this authentication token. Since influx doesn't store names for tokens, this will be hashed and appended to the description to identify the token.";
+                    readOnly = true;
+                    type = types.str;
                   };
 
                   operator = mkOption {
-                    description = "Grants all permissions in all organizations.";
                     default = false;
+                    description = "Grants all permissions in all organizations.";
                     type = types.bool;
                   };
 
-                  allAccess = mkOption {
-                    description = "Grants all permissions in the associated organization.";
-                    default = false;
+                  present = mkOption {
+                    default = true;
+                    description = "Whether to ensure that this user is present or absent.";
                     type = types.bool;
+                  };
+
+                  readBuckets = mkOption {
+                    default = [ ];
+                    description = "The organization's buckets which should be allowed to be read";
+                    type = types.listOf types.str;
                   };
 
                   readPermissions = mkOption {
+                    default = [ ];
+
                     description = ''
                       The read permissions to include for this token. Access is usually granted only
                       for resources in the associated organization.
@@ -260,11 +219,25 @@ let
                       `buckets` grants read access to all associated buckets. Use `readBuckets` to define
                       more granular access permissions.
                     '';
-                    default = [ ];
+
                     type = types.listOf (types.enum validPermissions);
                   };
 
+                  tokenFile = mkOption {
+                    default = null;
+                    description = "The token value. If not given, influx will automatically generate one.";
+                    type = types.nullOr types.path;
+                  };
+
+                  writeBuckets = mkOption {
+                    default = [ ];
+                    description = "The organization's buckets which should be allowed to be written";
+                    type = types.listOf types.str;
+                  };
+
                   writePermissions = mkOption {
+                    default = [ ];
+
                     description = ''
                       The read permissions to include for this token. Access is usually granted only
                       for resources in the associated organization.
@@ -279,25 +252,60 @@ let
                       `buckets` grants write access to all associated buckets. Use `writeBuckets` to define
                       more granular access permissions.
                     '';
-                    default = [ ];
+
                     type = types.listOf (types.enum validPermissions);
-                  };
-
-                  readBuckets = mkOption {
-                    description = "The organization's buckets which should be allowed to be read";
-                    default = [ ];
-                    type = types.listOf types.str;
-                  };
-
-                  writeBuckets = mkOption {
-                    description = "The organization's buckets which should be allowed to be written";
-                    default = [ ];
-                    type = types.listOf types.str;
                   };
                 };
               }
             )
           );
+        };
+
+        buckets = mkOption {
+          default = { };
+          description = "Buckets to provision in this organization.";
+
+          type = types.attrsOf (
+            types.submodule (
+              bucketSubmod:
+              let
+                bucket = bucketSubmod.config._module.args.name;
+              in
+              {
+                options = {
+                  description = mkOption {
+                    default = null;
+                    description = "Optional description for the bucket.";
+                    type = types.nullOr types.str;
+                  };
+
+                  present = mkOption {
+                    default = true;
+                    description = "Whether to ensure that this bucket is present or absent.";
+                    type = types.bool;
+                  };
+
+                  retention = mkOption {
+                    default = 0;
+                    description = "The duration in seconds for which the bucket will retain data (0 is infinite).";
+                    type = types.ints.unsigned;
+                  };
+                };
+              }
+            )
+          );
+        };
+
+        description = mkOption {
+          default = null;
+          description = "Optional description for the organization.";
+          type = types.nullOr types.str;
+        };
+
+        present = mkOption {
+          default = true;
+          description = "Whether to ensure that this organization is present or absent.";
+          type = types.bool;
         };
       };
     }
@@ -307,56 +315,51 @@ in
   options = {
     services.influxdb2 = {
       enable = mkEnableOption "the influxdb2 server";
-
       package = mkPackageOption pkgs "influxdb2" { };
-
-      settings = mkOption {
-        default = { };
-        description = "configuration options for influxdb2, see <https://docs.influxdata.com/influxdb/v2.0/reference/config-options> for details.";
-        type = format.type;
-      };
 
       provision = {
         enable = mkEnableOption "initial database setup and provisioning";
 
         initialSetup = {
-          organization = mkOption {
-            type = types.str;
-            example = "main";
-            description = "Primary organization name";
-          };
-
           bucket = mkOption {
-            type = types.str;
-            example = "example";
             description = "Primary bucket name";
-          };
-
-          username = mkOption {
+            example = "example";
             type = types.str;
-            default = "admin";
-            description = "Primary username";
           };
 
-          retention = mkOption {
-            type = types.ints.unsigned;
-            default = 0;
-            description = "The duration in seconds for which the bucket will retain data (0 is infinite).";
+          organization = mkOption {
+            description = "Primary organization name";
+            example = "main";
+            type = types.str;
           };
 
           passwordFile = mkOption {
-            type = types.path;
             description = "Password for primary user. Don't use a file from the nix store!";
+            type = types.path;
+          };
+
+          retention = mkOption {
+            default = 0;
+            description = "The duration in seconds for which the bucket will retain data (0 is infinite).";
+            type = types.ints.unsigned;
           };
 
           tokenFile = mkOption {
-            type = types.path;
             description = "API Token to set for the admin user. Don't use a file from the nix store!";
+            type = types.path;
+          };
+
+          username = mkOption {
+            default = "admin";
+            description = "Primary username";
+            type = types.str;
           };
         };
 
         organizations = mkOption {
+          default = { };
           description = "Organizations to provision.";
+
           example = literalExpression ''
             {
               myorg = {
@@ -372,19 +375,21 @@ in
               };
             }
           '';
-          default = { };
+
           type = types.attrsOf organizationSubmodule;
         };
 
         users = mkOption {
-          description = "Users to provision.";
           default = { };
+          description = "Users to provision.";
+
           example = literalExpression ''
             {
               # admin = {}; /* The initialSetup.username will automatically be added. */
               myuser.passwordFile = "/run/secrets/myuser_password";
             }
           '';
+
           type = types.attrsOf (
             types.submodule (
               userSubmod:
@@ -394,22 +399,28 @@ in
               in
               {
                 options = {
-                  present = mkOption {
-                    description = "Whether to ensure that this user is present or absent.";
-                    type = types.bool;
-                    default = true;
+                  passwordFile = mkOption {
+                    default = null;
+                    description = "Password for the user. If unset, the user will not be able to log in until a password is set by an operator! Don't use a file from the nix store!";
+                    type = types.nullOr types.path;
                   };
 
-                  passwordFile = mkOption {
-                    description = "Password for the user. If unset, the user will not be able to log in until a password is set by an operator! Don't use a file from the nix store!";
-                    default = null;
-                    type = types.nullOr types.path;
+                  present = mkOption {
+                    default = true;
+                    description = "Whether to ensure that this user is present or absent.";
+                    type = types.bool;
                   };
                 };
               }
             )
           );
         };
+      };
+
+      settings = mkOption {
+        default = { };
+        description = "configuration options for influxdb2, see <https://docs.influxdata.com/influxdb/v2.0/reference/config-options> for details.";
+        type = format.type;
       };
     };
   };
@@ -438,6 +449,7 @@ in
                     || auth.writeBuckets != [ ]
                   )
                 ];
+
               message = "influxdb2: provision.organizations.${orgName}.auths.${authName}: The `operator` and `allAccess` options are mutually exclusive with each other and the granular permission settings.";
             }
             (
@@ -469,45 +481,20 @@ in
           inherit (cfg.provision.initialSetup) retention;
         };
       };
+
       users.${cfg.provision.initialSetup.username} = {
         inherit (cfg.provision.initialSetup) passwordFile;
       };
     };
 
     systemd.services.influxdb2 = {
+      after = [ "network.target" ];
       description = "InfluxDB is an open-source, distributed, time series database";
       documentation = [ "https://docs.influxdata.com/influxdb/" ];
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
+
       environment = {
         INFLUXD_CONFIG_PATH = configFile;
         ZONEINFO = "${pkgs.tzdata}/share/zoneinfo";
-      };
-      serviceConfig = {
-        Type = "exec"; # When credentials are used with systemd before v257 this is necessary to make the service start reliably (see systemd/systemd#33953)
-        ExecStart = "${cfg.package}/bin/influxd --bolt-path \${STATE_DIRECTORY}/influxd.bolt --engine-path \${STATE_DIRECTORY}/engine";
-        StateDirectory = "influxdb2";
-        User = "influxdb2";
-        Group = "influxdb2";
-        CapabilityBoundingSet = "";
-        SystemCallFilter = "@system-service";
-        LimitNOFILE = 65536;
-        KillMode = "control-group";
-        Restart = "on-failure";
-        LoadCredential = mkIf cfg.provision.enable [
-          "admin-password:${cfg.provision.initialSetup.passwordFile}"
-          "admin-token:${cfg.provision.initialSetup.tokenFile}"
-        ];
-
-        ExecStartPost = [
-          waitUntilServiceIsReady
-        ]
-        ++ (lib.optionals cfg.provision.enable (
-          [ provisioningScript ]
-          ++
-            # Only the restarter runs with elevated privileges
-            optional anyAuthDefined "+${restarterScript}"
-        ));
       };
 
       path = [
@@ -543,14 +530,46 @@ in
             ${getExe pkgs.influxdb2-token-manipulator} "$STATE_DIRECTORY/influxd.bolt" ${tokenMappings}
           fi
         '';
-    };
 
-    users.extraUsers.influxdb2 = {
-      isSystemUser = true;
-      group = "influxdb2";
+      serviceConfig = {
+        CapabilityBoundingSet = "";
+        ExecStart = "${cfg.package}/bin/influxd --bolt-path \${STATE_DIRECTORY}/influxd.bolt --engine-path \${STATE_DIRECTORY}/engine";
+
+        ExecStartPost = [
+          waitUntilServiceIsReady
+        ]
+        ++ (lib.optionals cfg.provision.enable (
+          [ provisioningScript ]
+          ++
+            # Only the restarter runs with elevated privileges
+            optional anyAuthDefined "+${restarterScript}"
+        ));
+
+        Group = "influxdb2";
+        KillMode = "control-group";
+        LimitNOFILE = 65536;
+
+        LoadCredential = mkIf cfg.provision.enable [
+          "admin-password:${cfg.provision.initialSetup.passwordFile}"
+          "admin-token:${cfg.provision.initialSetup.tokenFile}"
+        ];
+
+        Restart = "on-failure";
+        StateDirectory = "influxdb2";
+        SystemCallFilter = "@system-service";
+        Type = "exec"; # When credentials are used with systemd before v257 this is necessary to make the service start reliably (see systemd/systemd#33953)
+        User = "influxdb2";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.extraGroups.influxdb2 = { };
+
+    users.extraUsers.influxdb2 = {
+      group = "influxdb2";
+      isSystemUser = true;
+    };
   };
 
   meta.maintainers = with lib.maintainers; [

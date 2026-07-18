@@ -9,9 +9,9 @@ let
   cfgContents = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (n: v: ''${n} = "${v}"'') (
       lib.filterAttrs (_k: v: v != null) {
+        cgroup_filter_out = cfg.cgroupFilterOut;
         log_dir = cfg.dirs.log;
         store_dir = cfg.dirs.store;
-        cgroup_filter_out = cfg.cgroupFilterOut;
       }
     )
   );
@@ -19,18 +19,18 @@ let
   mkDisableOption =
     n:
     lib.mkOption {
-      type = lib.types.bool;
       default = true;
       description = "Whether to enable ${n}.";
+      type = lib.types.bool;
     };
   optionalType =
     ty: x:
     lib.mkOption (
       x
       // {
+        default = null;
         description = x.description;
         type = (lib.types.nullOr ty);
-        default = null;
       }
     );
   optionalPath = optionalType lib.types.path;
@@ -46,12 +46,24 @@ in
         description = "A regexp matching the full paths of cgroups whose data shouldn't be collected";
         example = "user.slice.*";
       };
+
       collect = {
         diskStats = mkDisableOption "dist_stat collection";
-        ioStats = lib.mkEnableOption "io.stat collection for cgroups";
         exitStats = mkDisableOption "eBPF-based exitstats";
+        ioStats = lib.mkEnableOption "io.stat collection for cgroups";
       };
+
       compression.enable = lib.mkEnableOption "data compression";
+
+      dirs = {
+        log = optionalPath { description = "Where to store below's logs"; };
+
+        store = optionalPath {
+          description = "Where to store below's data";
+          example = "/var/lib/below";
+        };
+      };
+
       retention = {
         size = optionalInt {
           description = ''
@@ -64,6 +76,7 @@ in
             :::
           '';
         };
+
         time = optionalInt {
           description = ''
             Retention time, in seconds.
@@ -79,27 +92,19 @@ in
           '';
         };
       };
-      dirs = {
-        log = optionalPath { description = "Where to store below's logs"; };
-        store = optionalPath {
-          description = "Where to store below's data";
-          example = "/var/lib/below";
-        };
-      };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.below ];
     # /etc/below.conf is also referred to by the `below` CLI tool,
     #  so this can't be a store-only file whose path is passed to the service
     environment.etc."below/below.conf".text = cfgContents;
+    environment.systemPackages = [ pkgs.below ];
 
     systemd = {
       packages = [ pkgs.below ];
+
       services.below = {
-        # Workaround for https://github.com/NixOS/nixpkgs/issues/81138
-        wantedBy = [ "multi-user.target" ];
         restartTriggers = [ cfgContents ];
 
         serviceConfig.ExecStart = [
@@ -118,6 +123,9 @@ in
             ))
           )
         ];
+
+        # Workaround for https://github.com/NixOS/nixpkgs/issues/81138
+        wantedBy = [ "multi-user.target" ];
       };
     };
   };

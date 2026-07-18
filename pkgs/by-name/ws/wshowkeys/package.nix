@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  pkg-config,
-  wayland-scanner,
-  ninja,
   cairo,
   libinput,
+  libxkbcommon,
+  meson,
+  ninja,
   pango,
+  pkg-config,
   wayland,
   wayland-protocols,
-  libxkbcommon,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation {
@@ -26,12 +26,14 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     pkg-config
     wayland-scanner
     ninja
   ];
+
   buildInputs = [
     cairo
     libinput
@@ -43,6 +45,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Displays keys being pressed on a Wayland session";
+
     longDescription = ''
       Displays keypresses on screen on supported Wayland compositors (requires
       wlr_layer_shell_v1 support).
@@ -50,17 +53,21 @@ stdenv.mkDerivation {
       permissions are dropped after startup. The NixOS module provides such a
       setuid binary (use "programs.wshowkeys.enable = true;").
     '';
+
     homepage = "https://github.com/ammgws/wshowkeys";
+
     license = with lib.licenses; [
       gpl3Only
       mit
     ];
-    # Some portions of the code are taken from Sway which is MIT licensed.
-    # TODO: gpl3Only or gpl3Plus (ask upstream)?
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       berbiche
     ];
+
+    # Some portions of the code are taken from Sway which is MIT licensed.
+    # TODO: gpl3Only or gpl3Plus (ask upstream)?
+    platforms = lib.platforms.linux;
     mainProgram = "wshowkeys";
   };
 }

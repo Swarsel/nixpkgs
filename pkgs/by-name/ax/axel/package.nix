@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   autoconf-archive,
-  pkg-config,
+  autoreconfHook,
   gettext,
   openssl,
+  pkg-config,
   txt2man,
 }:
 
@@ -38,19 +38,19 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  installFlags = [ "ETCDIR=${placeholder "out"}/etc" ];
-
   postInstall = ''
     mkdir -p $out/share/doc
     cp doc/axelrc.example $out/share/doc/axelrc.example
   '';
 
+  installFlags = [ "ETCDIR=${placeholder "out"}/etc" ];
+
   meta = {
     description = "Console downloading program with some features for parallel connections for faster downloading";
     homepage = "https://github.com/axel-download-accelerator/axel";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = with lib.platforms; unix;
-    license = lib.licenses.gpl2Plus;
     mainProgram = "axel";
   };
 })

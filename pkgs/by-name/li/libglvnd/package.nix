@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  autoreconfHook,
-  pkg-config,
-  python3,
   addDriverRunpath,
+  autoreconfHook,
+  fetchpatch,
   libx11,
   libxext,
+  pkg-config,
+  python3,
   xorgproto,
 }:
 
@@ -17,33 +17,26 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.7.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "glvnd";
     repo = "libglvnd";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-2U9JtpGyP4lbxtVJeP5GUgh5XthloPvFIw28+nldYx8=";
+    domain = "gitlab.freedesktop.org";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Enable 64-bit file APIs on 32-bit systems:
     #   https://gitlab.freedesktop.org/glvnd/libglvnd/-/merge_requests/288
     (fetchpatch {
+      hash = "sha256-Y6YCzd/jZ1VZP9bFlHkHjzSwShXeA7iJWdyfxpgT2l0=";
       name = "large-file.patch";
       url = "https://gitlab.freedesktop.org/glvnd/libglvnd/-/commit/956d2d3f531841cabfeddd940be4c48b00c226b4.patch";
-      hash = "sha256-Y6YCzd/jZ1VZP9bFlHkHjzSwShXeA7iJWdyfxpgT2l0=";
     })
-  ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-    python3
-    addDriverRunpath
-  ];
-  buildInputs = [
-    libx11
-    libxext
-    xorgproto
   ];
 
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -54,6 +47,26 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/GLdispatch/Makefile.am \
       --replace "-Xlinker --version-script=$(VERSION_SCRIPT)" "-Xlinker"
   '';
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    python3
+    addDriverRunpath
+  ];
+
+  buildInputs = [
+    libx11
+    libxext
+    xorgproto
+  ];
+
+  configureFlags =
+    [ ]
+    # Indirectly: https://bugs.freedesktop.org/show_bug.cgi?id=35268
+    ++ lib.optional stdenv.hostPlatform.isMusl "--disable-tls"
+    # Remove when aarch64-darwin asm support is upstream: https://gitlab.freedesktop.org/glvnd/libglvnd/-/issues/216
+    ++ lib.optional (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) "--disable-asm";
 
   env.NIX_CFLAGS_COMPILE = toString (
     [
@@ -69,18 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  configureFlags =
-    [ ]
-    # Indirectly: https://bugs.freedesktop.org/show_bug.cgi?id=35268
-    ++ lib.optional stdenv.hostPlatform.isMusl "--disable-tls"
-    # Remove when aarch64-darwin asm support is upstream: https://gitlab.freedesktop.org/glvnd/libglvnd/-/issues/216
-    ++ lib.optional (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) "--disable-asm";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   # Set RUNPATH so that libGLX can find driver libraries in /run/opengl-driver(-32)/lib.
   # Note that libEGL does not need it because it uses driver config files which should
   # contain absolute paths to libraries.
@@ -91,7 +92,9 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = { inherit (addDriverRunpath) driverLink; };
 
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "GL Vendor-Neutral Dispatch library";
+
     longDescription = ''
       libglvnd is a vendor-neutral dispatch layer for arbitrating OpenGL API
       calls between multiple vendors. It allows multiple drivers from different
@@ -99,9 +102,10 @@ stdenv.mkDerivation (finalAttrs: {
       dispatch each API call to at runtime.
       Both GLX and EGL are supported, in any combination with OpenGL and OpenGL ES.
     '';
-    inherit (finalAttrs.src.meta) homepage;
+
     # https://gitlab.freedesktop.org/glvnd/libglvnd#libglvnd:
     changelog = "https://gitlab.freedesktop.org/glvnd/libglvnd/-/tags/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       bsd1
@@ -109,9 +113,10 @@ stdenv.mkDerivation (finalAttrs: {
       gpl3Only
       asl20
     ];
+
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     # https://gitlab.freedesktop.org/glvnd/libglvnd/-/issues/212
     badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
-    maintainers = [ ];
   };
 })

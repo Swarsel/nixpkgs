@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   fastembed,
-  fetchFromGitHub,
   grpcio,
   grpcio-tools,
   httpx,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "qdrant-client";
   version = "1.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "qdrant";
@@ -27,11 +26,15 @@ buildPythonPackage rec {
     hash = "sha256-ZBP1D67u+KZmBi614nuToauI+xhdH1PKD3g6xRfFQxk=";
   };
 
-  build-system = [ poetry-core ];
+  # Tests require network access
+  doCheck = false;
 
-  pythonRelaxDeps = [
-    "portalocker"
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
   ];
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     grpcio
@@ -44,19 +47,16 @@ buildPythonPackage rec {
   ]
   ++ httpx.optional-dependencies.http2;
 
-  pythonImportsCheck = [ "qdrant_client" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
-  # Tests require network access
-  doCheck = false;
-
   optional-dependencies = {
     fastembed = [ fastembed ];
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "qdrant_client" ];
+
+  pythonRelaxDeps = [
+    "portalocker"
+  ];
 
   meta = {
     description = "Python client for Qdrant vector search engine";

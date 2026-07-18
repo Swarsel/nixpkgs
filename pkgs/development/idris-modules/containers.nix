@@ -1,18 +1,13 @@
 {
-  build-idris-package,
+  lib,
   fetchFromGitHub,
+  build-idris-package,
   effects,
   test,
-  lib,
 }:
 build-idris-package {
   pname = "containers";
   version = "2017-09-10";
-
-  idrisDeps = [
-    effects
-    test
-  ];
 
   src = fetchFromGitHub {
     owner = "jfdm";
@@ -20,6 +15,11 @@ build-idris-package {
     rev = "fb96aaa3f40faa432cd7a36d956dbc4fe9279234";
     sha256 = "0vyjadd9sb8qcbzvzhnqwc8wa7ma770c10xhn96jsqsnzr81k52d";
   };
+
+  idrisDeps = [
+    effects
+    test
+  ];
 
   meta = {
     description = "Various data structures for use in the Idris Language";

@@ -4,8 +4,8 @@
   fetchFromGitHub,
   callPackage,
   cmake,
-  vcpkg,
   imgui,
+  vcpkg,
 }:
 
 stdenv.mkDerivation rec {
@@ -19,13 +19,13 @@ stdenv.mkDerivation rec {
     hash = "sha256-HNzNRHPLr352EDkAci4nx5qQnPI308rGH8yHkF+n5OY=";
   };
 
-  cmakeRules = "${vcpkg.src}/ports/implot";
   postPatch = ''
     cp "$cmakeRules"/CMakeLists.txt ./
   '';
 
-  buildInputs = [ imgui ];
   nativeBuildInputs = [ cmake ];
+  buildInputs = [ imgui ];
+  cmakeRules = "${vcpkg.src}/ports/implot";
 
   passthru.tests = {
     implot-demos = callPackage ./demos { };

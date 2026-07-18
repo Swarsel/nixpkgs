@@ -1,18 +1,20 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "addic7ed-cli";
   version = "1.4.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     sha256 = "182cpwxpdybsgl1nps850ysvvjbqlnx149kri4hxhgm58nqq0qf5";
   };
+
+  # Tests require network access
+  doCheck = false;
 
   build-system = with python3Packages; [
     setuptools
@@ -23,8 +25,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyquery
   ];
 
-  # Tests require network access
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "addic7ed_cli" ];
 
   meta = {

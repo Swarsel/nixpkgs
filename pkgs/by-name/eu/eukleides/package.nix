@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch2,
   bison,
+  fetchpatch2,
   flex,
-  makeWrapper,
   getopt,
+  makeWrapper,
   readline,
   texinfo,
   versionCheckHook,
@@ -17,13 +17,19 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.5.4";
 
   src = fetchFromGitLab {
-    # official upstream www.eukleides.org is down
-    domain = "salsa.debian.org";
     owner = "georgesk";
     repo = "eukleides";
     rev = "upstream/${finalAttrs.version}";
     hash = "sha256-keX7k14X/97zHh87A/7vUsfGc/S6fByd+rewW+LkJeM=";
+    # official upstream www.eukleides.org is down
+    domain = "salsa.debian.org";
   };
+
+  outputs = [
+    "out"
+    "doc"
+    "tex"
+  ];
 
   patches = [
     # use $CC instead of hardcoded gcc
@@ -33,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     # fix curly brace escaping in eukleides.texi for newer texinfo compatiblity
     ./texinfo-escape.patch
     (fetchpatch2 {
-      url = "https://salsa.debian.org/georgesk/eukleides/-/raw/debian/1.5.4-6/debian/patches/fixes-for-gcc15.patch";
       hash = "sha256-MVC2bkMGkkDqF/kg8MPvOYacUOXshaG2RZ0a9UVXLSI=";
+      url = "https://salsa.debian.org/georgesk/eukleides/-/raw/debian/1.5.4-6/debian/patches/fixes-for-gcc15.patch";
     })
   ];
 
@@ -50,6 +56,12 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
+  # Workaround build failure on -fno-common toolchains like upstream
+  # gcc-10. Otherwise build fails as:
+  #   ld: eukleides_build/triangle.o:(.bss+0x28): multiple definition of `A';
+  #     eukleides_build/quadrilateral.o:(.bss+0x18): first defined here
+  env.NIX_CFLAGS_COMPILE = "-fcommon";
+
   preConfigure = ''
     substituteInPlace Makefile \
       --replace-fail mktexlsr true
@@ -62,18 +74,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '$(SHARE_DIR)/texmf' "$tex"
   '';
 
-  # Workaround build failure on -fno-common toolchains like upstream
-  # gcc-10. Otherwise build fails as:
-  #   ld: eukleides_build/triangle.o:(.bss+0x28): multiple definition of `A';
-  #     eukleides_build/quadrilateral.o:(.bss+0x18): first defined here
-  env.NIX_CFLAGS_COMPILE = "-fcommon";
-
   preBuild = ''
     mkdir build/eukleides_build
     mkdir build/euktopst_build
   '';
-
-  enableParallelBuilding = true;
 
   preInstall = ''
     mkdir -p $out/bin
@@ -84,11 +88,9 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ getopt ]}
   '';
 
-  outputs = [
-    "out"
-    "doc"
-    "tex"
-  ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
 
   # packages needed by euktoeps, euktopdf and eukleides.sty
   passthru.tlDeps = ps: [
@@ -98,13 +100,8 @@ stdenv.mkDerivation (finalAttrs: {
     ps.moreverb
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   meta = {
     description = "Geometry Drawing Language";
-    homepage = "http://www.eukleides.org/";
-    license = lib.licenses.gpl3Plus;
 
     longDescription = ''
       Eukleides is a computer language devoted to elementary plane
@@ -115,6 +112,8 @@ stdenv.mkDerivation (finalAttrs: {
       circles and conics.
     '';
 
+    homepage = "http://www.eukleides.org/";
+    license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
   };
 })

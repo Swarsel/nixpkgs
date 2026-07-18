@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  makeWrapper,
   gmp,
+  makeWrapper,
   ncurses,
-  zlib,
   readline,
   testers,
+  zlib,
 }:
 
 let
@@ -18,16 +18,7 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "saw-tools";
   version = "1.5";
-
   src = fetchurl sources.${stdenv.hostPlatform.system};
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    gmp
-    ncurses
-    readline
-    stdenv.cc.libc
-    zlib
-  ];
 
   nativeBuildInputs =
     lib.optionals stdenv.hostPlatform.isLinux [
@@ -36,6 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     ++ [
       makeWrapper
     ];
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    gmp
+    ncurses
+    readline
+    stdenv.cc.libc
+    zlib
+  ];
 
   installPhase = ''
     mkdir -p $out/lib $out/share
@@ -47,20 +46,22 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "saw --version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Tools for software verification and analysis";
     homepage = "https://tools.galois.com/saw";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.bsd3;
-    platforms = lib.attrNames sources;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       thelissimus
     ];
+
+    platforms = lib.attrNames sources;
     mainProgram = "saw";
   };
 })

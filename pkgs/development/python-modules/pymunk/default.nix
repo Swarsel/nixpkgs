@@ -1,17 +1,16 @@
 {
   lib,
   buildPythonPackage,
+  cffi,
   fetchPypi,
+  pytestCheckHook,
   python,
   setuptools,
-  cffi,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pymunk";
   version = "7.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,18 +19,15 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ cffi ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ cffi ];
-
   preBuild = ''
     ${python.pythonOnBuildForHost.interpreter} setup.py build_ext --inplace
   '';
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ cffi ];
   enabledTestPaths = [ "pymunk/tests" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pymunk" ];
 
   meta = {

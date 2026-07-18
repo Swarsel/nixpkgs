@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
+  libiconv,
   openssl,
   pam,
-  libiconv,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,6 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-aJeIAxndXi5zwckBlhNQn4jrW42qWCGjb7yj14XCR7g=";
   };
 
+  buildInputs = [
+    zlib
+    pam
+    openssl
+    libiconv
+  ];
+
   configureFlags = [
     "--with-syslog"
     "--with-zlib"
@@ -26,18 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-iconv"
   ];
 
-  buildInputs = [
-    zlib
-    pam
-    openssl
-    libiconv
-  ];
-
   meta = {
     description = "Next Generation IRC Daemon";
-    mainProgram = "ngircd";
     homepage = "https://ngircd.barton.de";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.all;
+    mainProgram = "ngircd";
   };
 })

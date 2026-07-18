@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoconf
     automake
   ];
+
   buildInputs = [ mandoc ];
 
   preConfigure = ''
@@ -31,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://software.internet2.edu/owamp/";
     description = "Tool for performing one-way active measurements";
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.teto ];
+    homepage = "http://software.internet2.edu/owamp/";
     license = lib.licenses.asl20;
+    maintainers = [ lib.maintainers.teto ];
+    platforms = lib.platforms.linux;
   };
 })

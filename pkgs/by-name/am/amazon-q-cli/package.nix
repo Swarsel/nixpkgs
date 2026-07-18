@@ -1,16 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "amazon-q-cli";
   version = "1.19.7";
-
-  passthru.updateScript = nix-update-script { };
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -24,21 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoHash = "sha256-BlHdEMt3Z/dBnU8PevH9/g/64G1Vz5lwAps0gv60cmw=";
-
-  cargoBuildFlags = [
-    "-p"
-    "chat_cli"
-  ];
-
-  postInstall = ''
-    install -m 0755 $out/bin/chat_cli $out/bin/amazon-q
-    rm -f $out/bin/chat_cli $out/bin/test_mcp_server
-  '';
-
-  cargoTestFlags = [
-    "-p"
-    "chat_cli"
-  ];
 
   # skip integration tests that have external dependencies
   checkFlags = [
@@ -69,19 +52,38 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=request::tests::request_test"
   ];
 
+  postInstall = ''
+    install -m 0755 $out/bin/chat_cli $out/bin/amazon-q
+    rm -f $out/bin/chat_cli $out/bin/test_mcp_server
+  '';
+
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoBuildFlags = [
+    "-p"
+    "chat_cli"
+  ];
+
+  cargoTestFlags = [
+    "-p"
+    "chat_cli"
+  ];
+
   versionCheckProgram = "${placeholder "out"}/bin/amazon-q";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Amazon Q Developer AI coding agent CLI";
     homepage = "https://github.com/aws/amazon-q-developer-cli";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
-    mainProgram = "amazon-q";
+
     maintainers = [ lib.maintainers.jamesward ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "amazon-q";
   };
 })

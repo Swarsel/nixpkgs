@@ -24,7 +24,7 @@ in
 
     powerManagement.scsiLinkPolicy = mkOption {
       default = null;
-      type = types.nullOr (types.enum allowedValues);
+
       description = ''
         SCSI link power management policy. The kernel default is
         "max_performance".
@@ -32,6 +32,8 @@ in
         "med_power_with_dipm" is supported by kernel versions
         4.15 and newer.
       '';
+
+      type = types.nullOr (types.enum allowedValues);
     };
 
   };

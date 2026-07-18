@@ -1,37 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  boto3,
-  langchain,
-  langchain-core,
-  numpy,
-  pydantic,
-
   # optional-dependencies
   anthropic,
+  # dependencies
+  boto3,
+  buildPythonPackage,
+  # passthru
+  gitUpdater,
+  # build-system
+  hatchling,
+  langchain,
   langchain-anthropic,
-
+  langchain-core,
   # tests
   langchain-tests,
+  numpy,
+  pydantic,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
-
-  # passthru
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-aws";
   version = "1.6.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -45,8 +38,16 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "--snapshot-warn-unused" ""
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/libs/aws";
+  nativeCheckInputs = [
+    anthropic
+    langchain-tests
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -57,10 +58,12 @@ buildPythonPackage (finalAttrs: {
     pydantic
   ];
 
-  pythonRelaxDeps = [
-    # Boto3 spec has outstripped the version requirement
-    "boto3"
+  disabledTests = [
+    # Fails when langchain-core gets ahead of this package
+    "test_serdes"
   ];
+
+  enabledTestPaths = [ "tests/unit_tests" ];
 
   optional-dependencies = {
     anthropic = anthropic.optional-dependencies.bedrock ++ [
@@ -68,38 +71,32 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    anthropic
-    langchain-tests
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+  pyproject = true;
+  pythonImportsCheck = [ "langchain_aws" ];
 
-  enabledTestPaths = [ "tests/unit_tests" ];
-
-  disabledTests = [
-    # Fails when langchain-core gets ahead of this package
-    "test_serdes"
+  pythonRelaxDeps = [
+    # Boto3 spec has outstripped the version requirement
+    "boto3"
   ];
 
-  pythonImportsCheck = [ "langchain_aws" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/aws";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-aws==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-aws==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain-aws/releases/tag/${finalAttrs.src.tag}";
     description = "Build LangChain application on AWS";
     homepage = "https://github.com/langchain-ai/langchain-aws/";
+    changelog = "https://github.com/langchain-ai/langchain-aws/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       natsukium
       sarahec

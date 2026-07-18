@@ -7,16 +7,10 @@
 }:
 
 buildPythonPackage {
-  pname = "marisa";
   inherit (marisa) src version;
-  pyproject = true;
-
+  pname = "marisa";
   patches = marisa.patches or [ ];
-
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ swig ];
-
   buildInputs = [ marisa ];
 
   preBuild = ''
@@ -27,16 +21,19 @@ buildPythonPackage {
 
   # upstream has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "marisa" ];
 
   meta = {
     description = "Python bindings for marisa";
     homepage = "https://github.com/s-yata/marisa-trie";
+
     license = with lib.licenses; [
       bsd2
       lgpl21Plus
     ];
+
     maintainers = with lib.maintainers; [ dotlambda ];
   };
 }

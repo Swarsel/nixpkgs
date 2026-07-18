@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   gitUpdater,
   opentelemetry-api,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "microsoft-kiota-abstractions";
   version = "1.11.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -24,7 +23,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Fd9XSO3H1Au8y+Acft5to7hi7QNwWcmP0/NeWZlufjg=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/abstractions/";
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ flit-core ];
 
@@ -34,19 +37,14 @@ buildPythonPackage (finalAttrs: {
     std-uritemplate
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # ValueError: Illegal class passed as substitution, found <class 'datetime.datetime'> at col: 39
     "test_sets_datetime_values_in_path_parameters"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "kiota_abstractions" ];
-
+  sourceRoot = "${finalAttrs.src.name}/packages/abstractions/";
   # detects the wrong tag on the repo
   passthru.skipBulkUpdate = true;
 

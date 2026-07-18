@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,11 +16,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-bj7YB7xNlfdrYYZv3CDuqkm+/pg+C1KwizPTlNqQWt8=";
-
   __structuredAttrs = true;
 
   meta = {
     description = "Cross-platform patching of shared libraries in Rust";
+
     longDescription = ''
       Arwen is a command-line utility and Rust library designed to modify
       executable files and shared libraries.
@@ -36,11 +36,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       widely-used patchelf (for ELF files) and install_name_tool (for Mach-O
       files). It combines the core functionalities of both into a single tool.
     '';
+
     homepage = "https://github.com/nichmor/arwen";
-    mainProgram = "arwen";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ eljamm ];
+    platforms = lib.platforms.all;
+    mainProgram = "arwen";
     teams = with lib.teams; [ ngi ];
   };
 })

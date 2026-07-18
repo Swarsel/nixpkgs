@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
-  libxscrnsaver,
-  libxext,
-  glib,
   dbus,
+  glib,
+  libx11,
+  libxext,
+  libxscrnsaver,
   pkg-config,
   systemd,
 }:
@@ -33,22 +33,22 @@ stdenv.mkDerivation {
     systemd
   ];
 
-  patchPhase = ''
-    substituteInPlace Makefile \
-      --replace "libsystemd-login" "libsystemd"
-  '';
-
   installPhase = ''
     make install prefix=$out bindir=$out/bin docdir=$out/share/doc \
       mandir=$out/share/man INSTALL="install -c" INSTALLDATA="install -c -m 644"
   '';
 
+  patchPhase = ''
+    substituteInPlace Makefile \
+      --replace "libsystemd-login" "libsystemd"
+  '';
+
   meta = {
     description = "MacBook automatic light sensor daemon";
-    mainProgram = "lightum";
     homepage = "https://github.com/poliva/lightum";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ puffnfresh ];
     platforms = lib.platforms.linux;
+    mainProgram = "lightum";
   };
 }

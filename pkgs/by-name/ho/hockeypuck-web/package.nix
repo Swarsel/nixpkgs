@@ -1,16 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   hockeypuck,
   nixosTests,
 }:
 
 stdenv.mkDerivation {
-  pname = "hockeypuck-web";
-
   inherit (hockeypuck) version src;
-
-  dontBuild = true; # We should just copy the web templates
+  pname = "hockeypuck-web";
 
   installPhase = ''
     mkdir -p $out/share/
@@ -19,6 +16,7 @@ stdenv.mkDerivation {
     cp -vr contrib/templates $out/share/
   '';
 
+  dontBuild = true; # We should just copy the web templates
   passthru.tests = nixosTests.hockeypuck;
 
   meta = {

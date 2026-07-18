@@ -1,16 +1,12 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   bibtexparser,
+  buildPythonPackage,
   cdcs,
   datamodeldict,
+  fetchPypi,
   habanero,
   ipywidgets,
   lxml,
@@ -19,6 +15,8 @@
   pandas,
   requests,
   scipy,
+  # build-system
+  setuptools,
   unidecode,
   xmltodict,
   yabadaba,
@@ -27,7 +25,6 @@
 buildPythonPackage rec {
   pname = "potentials";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "usnistgov";
@@ -36,6 +33,8 @@ buildPythonPackage rec {
     hash = "sha256-R6LGRmi6xeNp81qylXBAVdL62/SN87TvuyRqueQD6DA=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -55,9 +54,7 @@ buildPythonPackage rec {
     yabadaba
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "potentials" ];
 
   meta = {

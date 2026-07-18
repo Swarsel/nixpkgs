@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   gfortran,
-  buildType ? "meson",
   meson,
   ninja,
-  cmake,
   pkg-config,
   test-drive,
+  buildType ? "meson",
 }:
 
 assert (
@@ -21,8 +21,6 @@ assert (
 stdenv.mkDerivation (finalAttrs: {
   pname = "toml-f";
   version = "0.5.1";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "toml-f";
@@ -31,10 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-lReez2rSAJVnLFngjUYgGkm+HUDH8VsCC2m9zYOOr4A=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Fix wrong generation of package config include paths
     ./cmake.patch
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gfortran
@@ -50,27 +55,25 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ test-drive ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   cmakeFlags = [
     "-Dtest-drive_DIR=${test-drive}"
   ];
 
   # tftest-build fails on aarch64-linux
   doCheck = !stdenv.hostPlatform.isAarch64;
+  __structuredAttrs = true;
 
   meta = {
     description = "TOML parser implementation for data serialization and deserialization in Fortran";
+    homepage = "https://github.com/toml-f/toml-f";
+    changelog = "https://github.com/toml-f/toml-f/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    homepage = "https://github.com/toml-f/toml-f";
-    changelog = "https://github.com/toml-f/toml-f/releases/tag/${finalAttrs.src.tag}";
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
   };
 })

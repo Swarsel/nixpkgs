@@ -18,23 +18,24 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ tomb ];
 
-  dontBuild = true;
-
-  installFlags = [ "PREFIX=$(out)" ];
-
   postFixup = ''
     substituteInPlace $out/lib/password-store/extensions/tomb.bash \
       --replace 'TOMB="''${PASSWORD_STORE_TOMB:-tomb}"' 'TOMB="''${PASSWORD_STORE_TOMB:-${tomb}/bin/tomb}"'
   '';
 
+  dontBuild = true;
+  installFlags = [ "PREFIX=$(out)" ];
+
   meta = {
     description = "Pass extension that keeps the password store encrypted inside a tomb";
     homepage = "https://github.com/roddhjav/pass-tomb";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       fpletz
       tadfisher
     ];
+
     platforms = lib.platforms.unix;
   };
 }

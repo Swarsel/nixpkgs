@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
+  btrfs-progs,
   coreutils,
+  gawk,
   getopt,
   gnugrep,
   gnused,
-  gawk,
-  btrfs-progs,
+  makeWrapper,
   syslogSupport ? true,
   util-linux ? null,
 }:
 assert syslogSupport -> util-linux != null;
 stdenv.mkDerivation rec {
-  version = "2.1.1";
   pname = "btrfs-auto-snapshot";
+  version = "2.1.1";
 
   src = fetchFromGitHub {
     owner = "hunleyd";
@@ -24,13 +24,18 @@ stdenv.mkDerivation rec {
     hash = "sha256-QpXD0u593BYONjscXSc7oZGUydygs/Hfk3A7MOpn8jQ=";
   };
 
-  dontBuild = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     install -Dm755 btrfs-auto-snapshot $out/bin/btrfs-auto-snapshot
   '';
+
+  postFixup = ''
+    wrapProgram $out/bin/btrfs-auto-snapshot \
+      --prefix PATH : "${wrapperPath}"
+  '';
+
+  dontBuild = true;
 
   wrapperPath = lib.makeBinPath (
     [
@@ -44,18 +49,8 @@ stdenv.mkDerivation rec {
     ++ lib.optional syslogSupport util-linux
   );
 
-  postFixup = ''
-    wrapProgram $out/bin/btrfs-auto-snapshot \
-      --prefix PATH : "${wrapperPath}"
-  '';
-
   meta = {
     description = "BTRFS Automatic Snapshot Service for Linux";
-    homepage = "https://github.com/hunleyd/btrfs-auto-snapshot";
-    license = lib.licenses.gpl2;
-    mainProgram = "btrfs-auto-snapshot";
-    maintainers = with lib.maintainers; [ motiejus ];
-    platforms = lib.platforms.linux;
 
     longDescription = ''
       btrfs-auto-snapshot is a Bash script designed to bring as much of the
@@ -69,5 +64,11 @@ stdenv.mkDerivation rec {
       Snapshots are stored in a '.btrfs' directory at the root of the BTRFS
       filesystem being snapped and are read-only by default.
     '';
+
+    homepage = "https://github.com/hunleyd/btrfs-auto-snapshot";
+    license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ motiejus ];
+    platforms = lib.platforms.linux;
+    mainProgram = "btrfs-auto-snapshot";
   };
 }

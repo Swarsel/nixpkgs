@@ -1,8 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -16,6 +15,8 @@ buildNpmPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rjj6kG0f9dbwc3MOS3sXBp1tNOfbOgWAQzm7MbImMk8=";
   };
+
+  npmDepsHash = "sha256-68/85gX0/9wZNOTpiy3AHqTW6FU9RoaeCKf8IQPOqys=";
 
   installPhase = ''
     runHook preInstall
@@ -31,19 +32,19 @@ buildNpmPackage (finalAttrs: {
   # The project is dependency free
   dontNpmBuild = true;
   forceEmptyCache = true;
-  npmDepsHash = "sha256-68/85gX0/9wZNOTpiy3AHqTW6FU9RoaeCKf8IQPOqys=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Git hooks made easy";
-    mainProgram = "husky";
     homepage = "https://github.com/typicode/husky";
     changelog = "https://github.com/typicode/husky/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       iamanaws
       mrdev023
     ];
+
+    mainProgram = "husky";
   };
 })

@@ -8,11 +8,11 @@
 
 let
   src = fetchFromGitHub {
+    inherit pname version meta;
     owner = "numediart";
     repo = "MBROLA-voices";
     rev = "fe05a0ccef6a941207fd6aaad0b31294a1f93a51";
     hash = "sha256-QBUggnde5iNeCESzxE0btVVTDOxc3Kdk483mdGUXHvA=";
-    inherit pname version meta;
   };
 
   pname = "mbrola-voices";
@@ -29,6 +29,7 @@ if (languages == [ ]) then
 else
   stdenv.mkDerivation {
     inherit src;
+    inherit pname version meta;
 
     postPatch = ''
       shopt -s extglob
@@ -45,6 +46,4 @@ else
 
       runHook postInstall
     '';
-
-    inherit pname version meta;
   }

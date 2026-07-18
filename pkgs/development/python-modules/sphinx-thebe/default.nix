@@ -10,12 +10,11 @@
 buildPythonPackage rec {
   pname = "sphinx-thebe";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "sphinx_thebe";
     hash = "sha256-V2BH9FVg6C9kql8VIAsesJTc/hxbj1MaimW9II4lpJM=";
+    pname = "sphinx_thebe";
   };
 
   nativeBuildInputs = [
@@ -24,7 +23,7 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ sphinx ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_thebe" ];
 
   meta = {

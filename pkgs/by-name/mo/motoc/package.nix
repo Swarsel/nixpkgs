@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  openxr-loader,
   nix-update-script,
+  openxr-loader,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-j3Ti2YnZGTkiqC32jnaBaWQ+g4L9+ZiSbanfUxdqMN4=";
   };
 
-  cargoHash = "sha256-fQFuKqcDqqtsh4GxoBuFF6gyd6mV5PjCntPbCdQU41A=";
-
   buildInputs = [
     openxr-loader
   ];
 
+  cargoHash = "sha256-fQFuKqcDqqtsh4GxoBuFF6gyd6mV5PjCntPbCdQU41A=";
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -17,54 +17,32 @@ in
     enable = lib.mkEnableOption "flannel networking";
 
     openFirewallPorts = lib.mkOption {
+      default = true;
       description = "Whether to open the Flannel UDP ports in the firewall on all interfaces.";
       type = lib.types.bool;
-      default = true;
     };
   };
 
   ###### implementation
   config = lib.mkIf cfg.enable {
-    services.flannel = {
-
-      enable = lib.mkDefault true;
-      network = lib.mkDefault top.clusterCidr;
-      inherit storageBackend;
-      nodeName = config.services.kubernetes.kubelet.hostname;
-    };
-
-    services.kubernetes.kubelet = {
-      cni.config = lib.mkDefault [
-        {
-          name = "mynet";
-          type = "flannel";
-          cniVersion = "0.3.1";
-          delegate = {
-            isDefaultGateway = true;
-            hairpinMode = true;
-            bridge = "mynet";
-          };
-        }
-      ];
-    };
-
     networking = {
-      firewall.allowedUDPPorts = lib.mkIf cfg.openFirewallPorts [
-        8285 # flannel udp
-        8472 # flannel vxlan
-      ];
       dhcpcd.denyInterfaces = [
         "mynet*"
         "flannel*"
       ];
+
+      firewall.allowedUDPPorts = lib.mkIf cfg.openFirewallPorts [
+        8285 # flannel udp
+        8472 # flannel vxlan
+      ];
     };
 
-    services.kubernetes.pki.certs = {
-      flannelClient = top.lib.mkCert {
-        name = "flannel-client";
-        CN = "flannel-client";
-        action = "systemctl restart flannel.service";
-      };
+    services.flannel = {
+
+      inherit storageBackend;
+      enable = lib.mkDefault true;
+      network = lib.mkDefault top.clusterCidr;
+      nodeName = config.services.kubernetes.kubelet.hostname;
     };
 
     # give flannel some kubernetes rbac permissions if applicable
@@ -75,9 +53,11 @@ in
           flannel-cr = {
             apiVersion = "rbac.authorization.k8s.io/v1";
             kind = "ClusterRole";
+
             metadata = {
               name = "flannel";
             };
+
             rules = [
               {
                 apiGroups = [ "" ];
@@ -87,6 +67,7 @@ in
               {
                 apiGroups = [ "" ];
                 resources = [ "nodes" ];
+
                 verbs = [
                   "list"
                   "watch"
@@ -103,14 +84,17 @@ in
           flannel-crb = {
             apiVersion = "rbac.authorization.k8s.io/v1";
             kind = "ClusterRoleBinding";
+
             metadata = {
               name = "flannel";
             };
+
             roleRef = {
               apiGroup = "rbac.authorization.k8s.io";
               kind = "ClusterRole";
               name = "flannel";
             };
+
             subjects = [
               {
                 kind = "User";
@@ -120,6 +104,31 @@ in
           };
 
         };
+
+    services.kubernetes.kubelet = {
+      cni.config = lib.mkDefault [
+        {
+          cniVersion = "0.3.1";
+
+          delegate = {
+            bridge = "mynet";
+            hairpinMode = true;
+            isDefaultGateway = true;
+          };
+
+          name = "mynet";
+          type = "flannel";
+        }
+      ];
+    };
+
+    services.kubernetes.pki.certs = {
+      flannelClient = top.lib.mkCert {
+        CN = "flannel-client";
+        action = "systemctl restart flannel.service";
+        name = "flannel-client";
+      };
+    };
   };
 
   meta.buildDocsInSandbox = false;

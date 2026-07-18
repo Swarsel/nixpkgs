@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-
-  doCheck ? true, # test suite depends on dejagnu which cannot be used during bootstrapping
   dejagnu,
+  fetchpatch,
+  doCheck ? true, # test suite depends on dejagnu which cannot be used during bootstrapping
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit doCheck;
   pname = "libffi";
   version = "3.3";
 
@@ -17,21 +17,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cvunkicD3fp6Ao1ROsFahcjVTI1n9V+lpIAohdxlIFY=";
   };
 
-  patches = [
-    # Backport gcc-15 fix:
-    #   https://github.com/libffi/libffi/pull/861
-    (fetchpatch {
-      name = "gcc-15.patch";
-      url = "https://github.com/libffi/libffi/commit/0859f8431242d5adff21420b9cab538d2af527b5.patch";
-      hash = "sha256-Py4ZAhVyXsfLxr4pnYAH7/lcsQOmpToFgvjQvLg9XVc=";
-    })
-  ];
-
   outputs = [
     "out"
     "dev"
     "man"
     "info"
+  ];
+
+  patches = [
+    # Backport gcc-15 fix:
+    #   https://github.com/libffi/libffi/pull/861
+    (fetchpatch {
+      hash = "sha256-Py4ZAhVyXsfLxr4pnYAH7/lcsQOmpToFgvjQvLg9XVc=";
+      name = "gcc-15.patch";
+      url = "https://github.com/libffi/libffi/commit/0859f8431242d5adff21420b9cab538d2af527b5.patch";
+    })
   ];
 
   configureFlags = [
@@ -45,8 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-exec-static-tramp"
   ];
 
-  # with fortify3, tests fail for some reason
-  hardeningDisable = [ "fortify3" ];
+  nativeCheckInputs = [ dejagnu ];
 
   preCheck = ''
     # The tests use -O0 which is not compatible with -D_FORTIFY_SOURCE.
@@ -54,13 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   dontStrip = stdenv.hostPlatform != stdenv.buildPlatform; # Don't run the native `strip' when cross-compiling.
-
-  inherit doCheck;
-
-  nativeCheckInputs = [ dejagnu ];
+  # with fortify3, tests fail for some reason
+  hardeningDisable = [ "fortify3" ];
 
   meta = {
     description = "Foreign function call interface library";
+
     longDescription = ''
       The libffi library provides a portable, high level programming
       interface to various calling conventions.  This allows a
@@ -75,6 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
       interface.  A layer must exist above libffi that handles type
       conversions for values passed between the two languages.
     '';
+
     homepage = "http://sourceware.org/libffi/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ armeenm ];

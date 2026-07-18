@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   asciidoctor,
   botan3,
   bzip2,
   cmake,
-  fetchFromGitHub,
   gnupg,
   gtest,
   json_c,
@@ -26,26 +26,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GEgogKPMqBYYufCcjbaCmlNWtV/hxx3ZMfij+HAoHx8=";
   };
 
-  buildInputs = [
-    zlib
-    bzip2
-    json_c
-    botan3
-    sexpp
+  # NOTE: check-only inputs should ideally be moved to nativeCheckInputs, but it
+  # would fail during buildPhase.
+  # nativeCheckInputs = [ gtest python3 ];
+  outputs = [
+    "out"
+    "lib"
+    "dev"
   ];
 
   patches = [
     # tracked at https://github.com/rnpgp/rnp/pull/2381
     ./0001-fix-build-with-Botan-3.11.patch
-  ];
-
-  cmakeFlags = [
-    "-DCMAKE_INSTALL_PREFIX=${placeholder "out"}"
-    "-DBUILD_SHARED_LIBS=on"
-    "-DBUILD_TESTING=on"
-    "-DDOWNLOAD_GTEST=off"
-    "-DDOWNLOAD_RUBYRNP=off"
-    "-DSYSTEM_LIBSEXPP=on"
   ];
 
   nativeBuildInputs = [
@@ -57,14 +49,21 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
-  # NOTE: check-only inputs should ideally be moved to nativeCheckInputs, but it
-  # would fail during buildPhase.
-  # nativeCheckInputs = [ gtest python3 ];
+  buildInputs = [
+    zlib
+    bzip2
+    json_c
+    botan3
+    sexpp
+  ];
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
+  cmakeFlags = [
+    "-DCMAKE_INSTALL_PREFIX=${placeholder "out"}"
+    "-DBUILD_SHARED_LIBS=on"
+    "-DBUILD_TESTING=on"
+    "-DDOWNLOAD_GTEST=off"
+    "-DDOWNLOAD_RUBYRNP=off"
+    "-DSYSTEM_LIBSEXPP=on"
   ];
 
   preConfigure = ''
@@ -72,10 +71,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/rnpgp/rnp";
     description = "High performance C++ OpenPGP library, fully compliant to RFC 4880";
+    homepage = "https://github.com/rnpgp/rnp";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ribose-jeffreylau ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pillow,
-  requests,
-  urwid,
   pytestCheckHook,
+  requests,
+  setuptools,
+  urwid,
 }:
 
 buildPythonPackage rec {
   pname = "term-image";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AnonymouX47";
@@ -27,6 +26,11 @@ buildPythonPackage rec {
       --replace-fail '"error"' '#"error"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.urwid;
+
   build-system = [
     setuptools
   ];
@@ -36,23 +40,18 @@ buildPythonPackage rec {
     pillow
   ];
 
-  optional-dependencies = {
-    urwid = [ urwid ];
-  };
-
-  pythonRelaxDeps = [ "pillow" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.urwid;
-
   disabledTestPaths = [
     # test_url needs online access
     "tests/test_image/test_url.py"
   ];
 
+  optional-dependencies = {
+    urwid = [ urwid ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "term_image" ];
+  pythonRelaxDeps = [ "pillow" ];
 
   meta = {
     description = "Display images in the terminal with python";

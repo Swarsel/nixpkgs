@@ -1,14 +1,14 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  qt6,
-  pkg-config,
+  fetchpatch,
+  gcc15Stdenv,
+  hyprland-qt-support,
   hyprutils,
   pciutils,
-  hyprland-qt-support,
+  pkg-config,
+  qt6,
 }:
 let
   inherit (lib.strings) makeBinPath;
@@ -28,8 +28,8 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     # Fix Qt6::WaylandClientPrivate not found
     # https://github.com/hyprwm/hyprsysteminfo/pull/21
     (fetchpatch {
-      url = "https://github.com/hyprwm/hyprsysteminfo/commit/fe81610278676d26ff47f62770ac238220285d3a.patch";
       hash = "sha256-rfKyV0gkfXEhTcPHlAB+yxZ+92umBV22YOK9aLMMBhM=";
+      url = "https://github.com/hyprwm/hyprsysteminfo/commit/fe81610278676d26ff47f62770ac238220285d3a.patch";
     })
   ];
 
@@ -56,8 +56,8 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     description = "Tiny qt6/qml application to display information about the running system";
     homepage = "https://github.com/hyprwm/hyprsysteminfo";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
-    mainProgram = "hyprsysteminfo";
     platforms = lib.platforms.linux;
+    mainProgram = "hyprsysteminfo";
+    teams = [ lib.teams.hyprland ];
   };
 })

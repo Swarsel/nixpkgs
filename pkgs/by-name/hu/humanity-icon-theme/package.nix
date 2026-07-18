@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  gtk3,
   adwaita-icon-theme,
+  gtk3,
   hicolor-icon-theme,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -25,11 +25,6 @@ stdenvNoCC.mkDerivation rec {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
-  # Upstream ships a bunch of those, and is very dead
-  dontCheckForBrokenSymlinks = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -44,11 +39,15 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  # Upstream ships a bunch of those, and is very dead
+  dontCheckForBrokenSymlinks = true;
+  dontDropIconThemeCache = true;
+
   meta = {
     description = "Humanity icons from Ubuntu";
     homepage = "https://launchpad.net/humanity/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -1,18 +1,17 @@
 {
   lib,
-  fetchFromGitLab,
-  gitUpdater,
-  python3Packages,
   stdenv,
+  fetchFromGitLab,
   docker,
   git,
+  gitUpdater,
+  python3Packages,
   which,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "clickable";
   version = "8.9.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "clickable";
@@ -21,8 +20,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-hrtAx/RKBlVf8cguPAGd55/m0D6YLu678f+aqeIzRos=";
   };
 
-  __structuredAttrs = true;
+  nativeCheckInputs = [
+    docker
+    git
+    python3Packages.pytestCheckHook
+    which
+  ];
 
+  __structuredAttrs = true;
   build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
@@ -32,13 +37,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     jsonschema
     argcomplete
     watchdog
-  ];
-
-  nativeCheckInputs = [
-    docker
-    git
-    python3Packages.pytestCheckHook
-    which
   ];
 
   disabledTests = [
@@ -74,17 +72,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "TestIdeQtCreatorCommand and test_recurse_replace"
   ];
 
+  pyproject = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Build system for Ubuntu Touch apps";
-    mainProgram = "clickable";
     homepage = "https://clickable-ut.dev";
+
     changelog = "https://clickable-ut.dev/en/latest/changelog.html#changes-in-v${
       lib.strings.replaceStrings [ "." ] [ "-" ] finalAttrs.version
     }";
+
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ ilyakooo0 ];
+    mainProgram = "clickable";
     teams = [ lib.teams.lomiri ];
   };
 })

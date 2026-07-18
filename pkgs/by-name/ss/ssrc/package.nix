@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "High quality audio sampling rate converter";
+
     longDescription = ''
       This program converts sampling rates of PCM wav files. This
       program also has a function to apply dither to its output and
@@ -36,9 +37,9 @@ stdenv.mkDerivation (finalAttrs: {
       without audible degradation.
     '';
 
-    version = finalAttrs.version;
     homepage = "https://shibatch.sourceforge.net/";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
+    version = finalAttrs.version;
   };
 })

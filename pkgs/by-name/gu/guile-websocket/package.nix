@@ -4,8 +4,8 @@
   fetchurl,
   guile,
   guile-gnutls,
-  texinfo,
   pkg-config,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,17 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     guile
     pkg-config
     texinfo
   ];
+
   buildInputs = [
     guile
     guile-gnutls
   ];
-  doCheck = true;
+
   makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
+  doCheck = true;
 
   meta = {
     description = "Provides an implementation of the WebSocket protocol in Guile";

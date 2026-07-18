@@ -2,29 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "yubico-client";
   version = "1.13.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-47hs0qEjEF7frK1AVRx7JunBGT2B/+Fo7nBOv9PREWI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # pypi package missing test_utils and github releases is behind
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "yubico_client" ];
 
   meta = {

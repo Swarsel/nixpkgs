@@ -1,19 +1,17 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  buildPackages,
   installShellFiles,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  buildPackages,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "conftest";
   version = "0.63.0";
-
-  __darwinAllowLocalNetworking = true; # required for tests
 
   src = fetchFromGitHub {
     owner = "open-policy-agent";
@@ -21,16 +19,15 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-gmfzMup4fdsbdyUufxjcJRPF2faj3RUlvIn2ciyalaQ=";
   };
-  vendorHash = "sha256-pBUWM6st5FhhOki3n9NIN4/U8JB7Kq3Aph3AtQs+Ogg=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/open-policy-agent/conftest/internal/commands.version=${finalAttrs.version}"
-  ];
 
   nativeBuildInputs = [
     installShellFiles
+  ];
+
+  vendorHash = "sha256-pBUWM6st5FhhOki3n9NIN4/U8JB7Kq3Aph3AtQs+Ogg=";
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
   ];
 
   postInstall =
@@ -48,22 +45,23 @@ buildGoModule (finalAttrs: {
         --zsh <(${conftest}/bin/conftest completion zsh)
     '';
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-  ];
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true; # required for tests
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/open-policy-agent/conftest/internal/commands.version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Write tests against structured configuration data";
-    mainProgram = "conftest";
-    downloadPage = "https://github.com/open-policy-agent/conftest";
-    homepage = "https://www.conftest.dev";
-    changelog = "https://github.com/open-policy-agent/conftest/releases/tag/v${finalAttrs.version}";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       Conftest helps you write tests against structured configuration data.
       Using Conftest you can write tests for your Kubernetes configuration,
@@ -74,9 +72,17 @@ buildGoModule (finalAttrs: {
       assertions. You can read more about Rego in 'How do I write policies' in
       the Open Policy Agent documentation.
     '';
+
+    homepage = "https://www.conftest.dev";
+    changelog = "https://github.com/open-policy-agent/conftest/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jk
       yurrriq
     ];
+
+    mainProgram = "conftest";
+    downloadPage = "https://github.com/open-policy-agent/conftest";
   };
 })

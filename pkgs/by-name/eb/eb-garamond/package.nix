@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
   python3,
+  stdenvNoCC,
   ttfautohint-nox,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -22,16 +22,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     "webfont"
   ];
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail "@\$(SFNTTOOL) -w \$< \$@"   "@fontforge -lang=ff -c 'Open(\$\$1); Generate(\$\$2)' \$< \$@"
+  '';
+
   nativeBuildInputs = [
     installFonts
     (python3.withPackages (p: [ p.fontforge ]))
     ttfautohint-nox
   ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail "@\$(SFNTTOOL) -w \$< \$@"   "@fontforge -lang=ff -c 'Open(\$\$1); Generate(\$\$2)' \$< \$@"
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -47,14 +47,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.georgduffner.at/ebgaramond/";
     description = "Digitization of the Garamond shown on the Egenolff-Berner specimen";
+    homepage = "http://www.georgduffner.at/ebgaramond/";
+    license = lib.licenses.ofl;
+
     maintainers = with lib.maintainers; [
       bengsparks
       relrod
       rycee
     ];
-    license = lib.licenses.ofl;
+
     platforms = lib.platforms.all;
   };
 })

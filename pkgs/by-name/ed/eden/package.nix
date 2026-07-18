@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  cmake,
-  ninja,
+  fetchurl,
   SDL2,
   boost,
+  callPackage,
   catch2_3,
+  cmake,
   cpp-jwt,
   cubeb,
   enet,
   fetchFromGitea,
   fetchpatch,
-  fetchurl,
   ffmpeg-headless,
   fmt,
   frozen-containers,
@@ -22,6 +22,7 @@
   libopus,
   libusb1,
   lz4,
+  ninja,
   nlohmann_json,
   oaknut,
   openssl,
@@ -38,18 +39,17 @@
   vulkan-loader,
   vulkan-memory-allocator,
   vulkan-utility-libraries,
+  writeScript,
   xbyak,
   zlib,
   zstd,
-  writeScript,
-  callPackage,
 }:
 
 let
   # Old yuzu compat list, the project does not publish its own at the moment
   compat-list = fetchurl {
-    url = "https://raw.githubusercontent.com/flathub/org.yuzu_emu.yuzu/4abf1d239aba843180abfed58fa8541432fece5b/compatibility_list.json";
     hash = "sha256-OC22KdawYK9yKiffqc1rtgrBanVExYMi9jqhvkwMD6w=";
+    url = "https://raw.githubusercontent.com/flathub/org.yuzu_emu.yuzu/4abf1d239aba843180abfed58fa8541432fece5b/compatibility_list.json";
   };
 
   nx_tzdb = callPackage ./nx_tzdb.nix { };
@@ -60,15 +60,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.2.1";
 
   src = fetchFromGitea {
-    domain = "git.eden-emu.dev";
     owner = "eden-emu";
     repo = "eden";
     tag = "v${finalAttrs.version}";
     hash = "sha256-79/JmIRWysoc3psJqMFyiNc2gjTY4VhJfdNaiTvisMk=";
+    domain = "git.eden-emu.dev";
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -122,13 +121,6 @@ stdenv.mkDerivation (finalAttrs: {
     oaknut
   ];
 
-  doCheck = true;
-
-  checkInputs = [
-    catch2_3
-    oaknut
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "YUZU_TESTS" false) # some timer tests are flaky
@@ -154,6 +146,13 @@ stdenv.mkDerivation (finalAttrs: {
     ln -sf ${compat-list} ./dist/compatibility_list/compatibility_list.json
   '';
 
+  doCheck = true;
+
+  checkInputs = [
+    catch2_3
+    oaknut
+  ];
+
   postInstall = ''
     install -Dm444 $src/dist/72-yuzu-input.rules $out/lib/udev/rules.d/72-yuzu-input.rules
   '';
@@ -166,6 +165,8 @@ stdenv.mkDerivation (finalAttrs: {
       ]
     })
   '';
+
+  __structuredAttrs = true;
 
   passthru = {
     inherit nx_tzdb compat-list;
@@ -184,8 +185,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Switch 1 emulator derived from Yuzu and Sudachi";
     homepage = "https://eden-emu.dev/";
-    mainProgram = "eden";
-    maintainers = with lib.maintainers; [ marcin-serwin ];
+
     license = with lib.licenses; [
       # Primary
       gpl3Plus
@@ -212,9 +212,14 @@ stdenv.mkDerivation (finalAttrs: {
       mpl20
       wtfpl
     ];
+
+    maintainers = with lib.maintainers; [ marcin-serwin ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "eden";
   };
 })

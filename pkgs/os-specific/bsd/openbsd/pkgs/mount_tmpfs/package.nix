@@ -3,6 +3,6 @@
 }:
 
 mkDerivation {
-  path = "sbin/mount_tmpfs";
   extraPaths = [ "sbin/mount" ];
+  path = "sbin/mount_tmpfs";
 }

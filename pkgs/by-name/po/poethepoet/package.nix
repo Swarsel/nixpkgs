@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "poethepoet";
   version = "0.46.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nat-n";
@@ -32,6 +31,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "poethepoet" ];
 
   meta = {

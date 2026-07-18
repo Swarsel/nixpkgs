@@ -1,7 +1,7 @@
 {
   lib,
-  callPackage,
   fetchFromGitHub,
+  callPackage,
 }:
 
 callPackage ../generic.nix rec {
@@ -15,10 +15,6 @@ callPackage ../generic.nix rec {
     hash = "sha256-/s+3FarO1iSW7f6SMkVxb9OSSEgVpM3gFUWFd+orcp4=";
   };
 
-  sourceRoot = src.name + "/pixel-towers-master";
-
-  desktopName = "Tower Pixel Dungeon";
-
   patches = [ ];
 
   # Sprite sources (Paint.NET files) and other files interfere with the build process.
@@ -26,9 +22,12 @@ callPackage ../generic.nix rec {
     rm core/src/main/assets/{levelsplashes,sprites}/*.pdn
   '';
 
+  desktopName = "Tower Pixel Dungeon";
+  sourceRoot = src.name + "/pixel-towers-master";
+
   meta = {
+    description = "Turn-based tower defense game based on Shattered Pixel Dungeon";
     homepage = "https://github.com/FixAkaTheFix/Tower-Pixel-Dungeon";
     downloadPage = "https://github.com/FixAkaTheFix/Tower-Pixel-Dungeon/releases";
-    description = "Turn-based tower defense game based on Shattered Pixel Dungeon";
   };
 }

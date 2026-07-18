@@ -3,13 +3,13 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  openssl,
-  ncurses,
-  pkg-config,
   glib,
-  loudmouth,
-  libotr,
   gpgme,
+  libotr,
+  loudmouth,
+  ncurses,
+  openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,14 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull upstream patch for ncurses-6.3.
     (fetchpatch {
       name = "ncurses-6.3.patch";
-      url = "https://github.com/McKael/mcabber/commit/5a0893d69023b77b7671731defbdca5d47731130.patch";
       sha256 = "01bc23z0mva9l9jv587sq2r9w3diachgkmb9ad99hlzgj02fmq4v";
       stripLen = 1;
+      url = "https://github.com/McKael/mcabber/commit/5a0893d69023b77b7671731defbdca5d47731130.patch";
     })
     ./add-missing-arguments-to-function-prototypes.patch
   ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openssl
     ncurses
@@ -51,12 +52,12 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "http://mcabber.com/";
     description = "Small Jabber console client";
-    mainProgram = "mcabber";
+    homepage = "http://mcabber.com/";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = with lib.platforms; linux;
+    mainProgram = "mcabber";
     downloadPage = "http://mcabber.com/files/";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,15 +16,14 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-78oODw+CBCk5JRJbDqLqVmzTVImP7Z7o6jRIimDxZDQ=";
-
   dontNpmBuild = true;
 
   meta = {
-    changelog = "https://github.com/isaacs/node-glob/blob/${src.rev}/changelog.md";
     description = "Little globber for Node.js";
     homepage = "https://github.com/isaacs/node-glob";
+    changelog = "https://github.com/isaacs/node-glob/blob/${src.rev}/changelog.md";
     license = lib.licenses.isc;
-    mainProgram = "glob";
     maintainers = [ ];
+    mainProgram = "glob";
   };
 }

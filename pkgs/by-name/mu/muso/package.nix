@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   pkg-config,
+  rustPlatform,
   wrapGAppsHook3,
 }:
 
@@ -23,6 +23,8 @@ rustPlatform.buildRustPackage {
     wrapGAppsHook3
   ];
 
+  cargoHash = "sha256-L0ZQoz9J5Hxg98puk1RbKuybLboIoOsy5qqGnvEPi1U=";
+
   preConfigure = ''
     substituteInPlace lib/utils.rs \
       --replace "/usr/share/muso" "$out/share/muso"
@@ -33,14 +35,12 @@ rustPlatform.buildRustPackage {
     cp share/* $out/share/muso/
   '';
 
-  cargoHash = "sha256-L0ZQoz9J5Hxg98puk1RbKuybLboIoOsy5qqGnvEPi1U=";
-
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Automatic music sorter (based on ID3 tags)";
-    mainProgram = "muso";
     homepage = "https://github.com/quebin31/muso";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ crertel ];
+    mainProgram = "muso";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bats,
   cmake,
-  fetchFromGitHub,
-  lib,
   ninja,
   python3,
-  stdenv,
   uncrustify,
   versionCheckHook,
 }:
@@ -33,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-  checkTarget = "check";
+
   nativeCheckInputs = [
     bats
     python3
@@ -41,16 +41,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doInstallCheck = true;
+  checkTarget = "check";
   installCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Parser generator for C";
+
     longDescription = ''
       PackCC is a parser generator for C. Its main features are as follows:
       - Generates your parser in C from a grammar described in a PEG,
       - Gives your parser great efficiency by packrat parsing,
       - Supports direct and indirect left-recursive grammar rules.
     '';
+
     homepage = "https://github.com/arithy/packcc";
     changelog = "https://github.com/arithy/packcc/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;

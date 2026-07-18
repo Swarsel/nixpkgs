@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.2.3";
   pname = "antigen";
+  version = "2.2.3";
 
   src = fetchurl {
     url = "https://github.com/zsh-users/antigen/releases/download/v${finalAttrs.version}/antigen.zsh";
@@ -14,13 +14,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  dontUnpack = true;
 
   installPhase = ''
     outdir=$out/share/antigen
     mkdir -p $outdir
     cp $src $outdir/antigen.zsh
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Plugin manager for zsh";

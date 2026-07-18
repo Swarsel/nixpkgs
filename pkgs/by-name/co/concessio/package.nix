@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   gjs,
   glib,
   gobject-introspection,
@@ -62,7 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/ronniedroid/concessio";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "io.github.ronniedroid.concessio";
     platforms = lib.intersectLists lib.platforms.linux gjs.meta.platforms;
+    mainProgram = "io.github.ronniedroid.concessio";
   };
 })

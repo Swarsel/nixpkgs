@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildDunePackage,
   fetchFromGitHub,
-  cmdliner,
   afl-persistent,
+  buildDunePackage,
   calendar,
+  cmdliner,
   fpath,
   pprint,
-  uutf,
-  uunf,
   uucp,
+  uunf,
+  uutf,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -31,6 +31,10 @@ buildDunePackage (finalAttrs: {
     cmdliner
     afl-persistent
   ];
+
+  # uunf is broken on aarch64
+  doCheck = !stdenv.hostPlatform.isAarch64;
+
   checkInputs = [
     calendar
     fpath
@@ -39,8 +43,6 @@ buildDunePackage (finalAttrs: {
     uunf
     uucp
   ];
-  # uunf is broken on aarch64
-  doCheck = !stdenv.hostPlatform.isAarch64;
 
   meta = {
     description = "Property fuzzing for OCaml";

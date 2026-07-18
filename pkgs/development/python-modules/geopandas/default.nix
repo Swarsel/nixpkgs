@@ -1,40 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  packaging,
-  pandas,
-  pyogrio,
-  pyproj,
-  shapely,
-
+  buildPythonPackage,
   # optional-dependencies
   folium,
   geoalchemy2,
   geopy,
   mapclassify,
   matplotlib,
+  # dependencies
+  packaging,
+  pandas,
   psycopg,
   pyarrow,
-  sqlalchemy,
-  xyzservices,
-
+  pyogrio,
+  pyproj,
   # tests
   pytestCheckHook,
   rtree,
+  # build-system
+  setuptools,
+  shapely,
+  sqlalchemy,
   writableTmpDirAsHomeHook,
+  xyzservices,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "geopandas";
   version = "1.1.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "geopandas";
@@ -43,6 +37,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7XWPPLuJjc6x+Vb16z0bEjYe1lX710vz5Rwjg/WFHH0=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    rtree
+    writableTmpDirAsHomeHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.all;
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -52,6 +54,13 @@ buildPythonPackage (finalAttrs: {
     pyproj
     shapely
   ];
+
+  disabledTests = [
+    # Requires network access
+    "test_read_file_url"
+  ];
+
+  enabledTestPaths = [ "geopandas" ];
 
   optional-dependencies = {
     all = [
@@ -73,20 +82,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    rtree
-    writableTmpDirAsHomeHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.all;
-
-  disabledTests = [
-    # Requires network access
-    "test_read_file_url"
-  ];
-
-  enabledTestPaths = [ "geopandas" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "geopandas" ];
 
   meta = {

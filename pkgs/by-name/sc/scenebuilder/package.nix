@@ -1,12 +1,12 @@
 {
   lib,
-  jdk21,
-  maven,
   fetchFromGitHub,
-  makeDesktopItem,
   copyDesktopItems,
   glib,
+  jdk21,
+  makeDesktopItem,
   makeWrapper,
+  maven,
   wrapGAppsHook3,
 }:
 
@@ -40,22 +40,12 @@ maven.buildMavenPackage rec {
         --replace-fail "\''${maven.build.timestamp}" "$(date -d "@$SOURCE_DATE_EPOCH" '+%Y-%m-%d %H:%M:%S')"
   '';
 
-  mvnJdk = jdk;
-  mvnParameters = toString [
-    "-Dmaven.test.skip"
-    "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z"
-  ];
-
-  mvnHash = "sha256-fS7dS2Q4ORThLBwDOzJJnRboNNRmhp0RG6Dae9fl+pw=";
-
   nativeBuildInputs = [
     copyDesktopItems
     glib
     makeWrapper
     wrapGAppsHook3
   ];
-
-  dontWrapGApps = true; # prevent double wrapping
 
   installPhase = ''
     runHook preInstall
@@ -76,31 +66,44 @@ maven.buildMavenPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "scenebuilder";
-      exec = "scenebuilder";
-      icon = "scenebuilder";
+      categories = [ "Development" ];
       comment = "A visual, drag'n'drop, layout tool for designing JavaFX application user interfaces.";
       desktopName = "Scene Builder";
+      exec = "scenebuilder";
+      icon = "scenebuilder";
+
       mimeTypes = [
         "application/java"
         "application/java-vm"
         "application/java-archive"
       ];
-      categories = [ "Development" ];
+
+      name = "scenebuilder";
     })
   ];
 
+  dontWrapGApps = true; # prevent double wrapping
+  mvnHash = "sha256-fS7dS2Q4ORThLBwDOzJJnRboNNRmhp0RG6Dae9fl+pw=";
+  mvnJdk = jdk;
+
+  mvnParameters = toString [
+    "-Dmaven.test.skip"
+    "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z"
+  ];
+
   meta = {
-    changelog = "https://github.com/gluonhq/scenebuilder/releases/tag/${src.rev}";
     description = "Visual, drag'n'drop, layout tool for designing JavaFX application user interfaces";
     homepage = "https://gluonhq.com/products/scene-builder/";
+    changelog = "https://github.com/gluonhq/scenebuilder/releases/tag/${src.rev}";
     license = lib.licenses.bsd3;
-    mainProgram = "scenebuilder";
-    maintainers = with lib.maintainers; [ wirew0rm ];
-    platforms = jdk.meta.platforms;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
+
+    maintainers = with lib.maintainers; [ wirew0rm ];
+    platforms = jdk.meta.platforms;
+    mainProgram = "scenebuilder";
   };
 }

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,9 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Dobb+l24nL01od+KET3PGgDzFaYr1LPhkPrbpA3G6y4=";
   };
 
-  cargoHash = "sha256-ZwF5nNI2ESwgaH129MhcJPlhtmxqwhhQ9W49u9bilRk=";
+  postPatch = ''
+    rm .cargo/config.toml
+  '';
 
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-ZwF5nNI2ESwgaH129MhcJPlhtmxqwhhQ9W49u9bilRk=";
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_LDFLAGS = toString [
@@ -33,10 +36,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=help"
     "--skip=help_short"
   ];
-
-  postPatch = ''
-    rm .cargo/config.toml
-  '';
 
   postInstall = ''
     installManPage doc/watchexec.1
@@ -57,10 +56,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Executes commands in response to file modifications";
     homepage = "https://watchexec.github.io/";
     license = with lib.licenses; [ asl20 ];
+
     maintainers = with lib.maintainers; [
       michalrus
       prince213
     ];
+
     mainProgram = "watchexec";
   };
 })

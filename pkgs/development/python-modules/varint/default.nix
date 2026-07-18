@@ -1,12 +1,11 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
 }:
 buildPythonPackage rec {
   pname = "varint";
   version = "1.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,7 +14,7 @@ buildPythonPackage rec {
 
   # No tests are available
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "varint" ];
 
   meta = {

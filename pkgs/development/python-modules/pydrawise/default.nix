@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   apischema,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   gql,
   graphql-core,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pydrawise";
   version = "2026.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dknowles2";
@@ -26,6 +25,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-j1ovfQGi5DpDPWVwUA0mDIDztjVKkB7wFuK2HunXc3c=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    freezegun
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -40,13 +46,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    freezegun
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pydrawise" ];
 
   meta = {

@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  meson,
-  ninja,
-  pkg-config,
-  mono,
   glib,
-  pango,
   gtk3,
+  meson,
+  mono,
+  ninja,
+  pango,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,14 +23,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-I15XpW2NotOK1gExCNgJOHd6QVGW9mGkWfeHfJGdLwI=";
   };
 
+  patches = [
+    (fetchpatch {
+      hash = "sha256-w3BbnEU6ye9WsNBNiELbbGOkXYsE3SACopRF0Dbfr3k=";
+      name = "fix-unknown-variable-gdk_api_includes.patch";
+      url = "https://github.com/GLibSharp/GtkSharp/commit/a1ffef907e06303bbd2787ced5c82a8bf6a7eef1.patch";
+    })
+  ];
+
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
-  ];
-
-  mesonFlags = [
-    "-Dinstall=true"
   ];
 
   buildInputs = [
@@ -40,15 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ];
 
-  dontStrip = true;
-
-  patches = [
-    (fetchpatch {
-      name = "fix-unknown-variable-gdk_api_includes.patch";
-      url = "https://github.com/GLibSharp/GtkSharp/commit/a1ffef907e06303bbd2787ced5c82a8bf6a7eef1.patch";
-      hash = "sha256-w3BbnEU6ye9WsNBNiELbbGOkXYsE3SACopRF0Dbfr3k=";
-    })
+  mesonFlags = [
+    "-Dinstall=true"
   ];
+
+  dontStrip = true;
 
   passthru = {
     inherit gtk3;

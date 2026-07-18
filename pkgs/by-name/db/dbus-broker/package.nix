@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
+  dbus,
   docutils,
+  expat,
+  fetchpatch,
+  linuxHeaders,
   meson,
   ninja,
   pkg-config,
-  dbus,
-  linuxHeaders,
   systemd,
-  expat,
 }:
 
 let
@@ -19,33 +19,38 @@ let
       peterhoeg
       rvdp
     ];
+
     platforms = lib.platforms.linux;
   };
 
   dep =
     {
+      hash,
       pname,
       version,
-      hash,
-      rev ? "v${version}",
       buildInputs ? [ ],
+      rev ? "v${version}",
     }:
     stdenv.mkDerivation {
       inherit pname version;
+      inherit buildInputs;
+
       src = fetchFromGitHub {
+        inherit hash rev;
         owner = "c-util";
         repo = pname;
-        inherit hash rev;
       };
+
       nativeBuildInputs = [
         meson
         ninja
         pkg-config
       ];
-      inherit buildInputs;
+
       meta = meta // {
         description = "C-Util Project is a collection of utility libraries for the C11 language";
         homepage = "https://c-util.github.io/";
+
         license = [
           lib.licenses.asl20
           lib.licenses.lgpl21Plus
@@ -60,22 +65,26 @@ let
   c-dvar = dep {
     pname = "c-dvar";
     version = "1.2.0";
-    hash = "sha256-OlV6yR1tNWFN+rxPPGmbfbh7WyB6FwORyZR1V553iYE=";
+
     buildInputs = [
       c-stdaux
       c-utf8
     ];
+
+    hash = "sha256-OlV6yR1tNWFN+rxPPGmbfbh7WyB6FwORyZR1V553iYE=";
   };
   c-ini = dep {
     pname = "c-ini";
     version = "1.1.0";
-    hash = "sha256-wa7aNl20hkb/83c4AkQ/0YFDdmBs4XGW+WLUtBWIC98=";
+
     buildInputs = [
       c-list
       c-rbtree
       c-stdaux
       c-utf8
     ];
+
+    hash = "sha256-wa7aNl20hkb/83c4AkQ/0YFDdmBs4XGW+WLUtBWIC98=";
   };
   c-list = dep {
     pname = "c-list";
@@ -85,14 +94,14 @@ let
   c-rbtree = dep {
     pname = "c-rbtree";
     version = "3.2.0";
-    hash = "sha256-dTMeawhPLRtHvMXfXCrT5iCdoh7qS3v+raC6c+t+X38=";
     buildInputs = [ c-stdaux ];
+    hash = "sha256-dTMeawhPLRtHvMXfXCrT5iCdoh7qS3v+raC6c+t+X38=";
   };
   c-shquote = dep {
     pname = "c-shquote";
     version = "1.1.0";
-    hash = "sha256-z6hpQ/kpCYAngMNfxLkfsxaGtvP4yBMigX1lGpIIzMQ=";
     buildInputs = [ c-stdaux ];
+    hash = "sha256-z6hpQ/kpCYAngMNfxLkfsxaGtvP4yBMigX1lGpIIzMQ=";
   };
   c-stdaux = dep {
     pname = "c-stdaux";
@@ -102,8 +111,8 @@ let
   c-utf8 = dep {
     pname = "c-utf8";
     version = "1.1.0";
-    hash = "sha256-9vBYylbt1ypJwIAQJd/oiAueh+4VYcn/KzofQuhUea0=";
     buildInputs = [ c-stdaux ];
+    hash = "sha256-9vBYylbt1ypJwIAQJd/oiAueh+4VYcn/KzofQuhUea0=";
   };
 
 in
@@ -123,9 +132,9 @@ stdenv.mkDerivation (finalAttrs: {
     ./paths.patch
     ./disable-test.patch
     (fetchpatch {
+      hash = "sha256-+QgZzm/qRnVSr0wDNw9Np3LRreRKl6CQXJextLPy6fc=";
       name = "backport-test-sockopt-6.16-fix.patch";
       url = "https://github.com/bus1/dbus-broker/commit/fd5c6e191bffcf5b3e6c9abb8b0b03479accc04b.patch";
-      hash = "sha256-+QgZzm/qRnVSr0wDNw9Np3LRreRKl6CQXJextLPy6fc=";
     })
   ];
 
@@ -158,10 +167,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
+    PKG_CONFIG_SYSTEMD_CATALOGDIR = "${placeholder "out"}/lib/systemd/catalog";
     PKG_CONFIG_SYSTEMD_SYSTEMDSYSTEMUNITDIR = "${placeholder "out"}/lib/systemd/system";
     PKG_CONFIG_SYSTEMD_SYSTEMDUSERUNITDIR = "${placeholder "out"}/lib/systemd/user";
-    PKG_CONFIG_SYSTEMD_CATALOGDIR = "${placeholder "out"}/lib/systemd/catalog";
   };
+
+  doCheck = true;
 
   postInstall = ''
     install -Dm444 $src/README.md $out/share/doc/dbus-broker/README
@@ -169,8 +180,6 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i $out/lib/systemd/{system,user}/dbus-broker.service \
       -e 's,^ExecReload.*busctl,ExecReload=${systemd}/bin/busctl,'
   '';
-
-  doCheck = true;
 
   meta = meta // {
     description = "Linux D-Bus Message Broker";

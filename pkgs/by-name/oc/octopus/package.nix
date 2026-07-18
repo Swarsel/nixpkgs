@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  cmake,
-  pkg-config,
-  ninja,
-  gfortran,
-  which,
-  perl,
-  procps,
-  libvdwxc,
-  libyaml,
-  libxc,
-  fftw,
-  blas,
-  lapack,
-  gsl,
-  netcdf,
   arpack,
-  spglib,
+  blas,
+  cmake,
+  fftw,
+  gfortran,
+  gsl,
+  lapack,
+  libvdwxc,
+  libxc,
+  libyaml,
   metis,
-  scalapack,
   mpi,
-  enableMpi ? true,
+  netcdf,
+  ninja,
+  perl,
+  pkg-config,
+  procps,
   python3,
+  scalapack,
+  spglib,
+  which,
+  enableMpi ? true,
 }:
 
 assert (!blas.isILP64) && (!lapack.isILP64);
@@ -45,6 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "testsuite"
   ];
+
+  postPatch = ''
+    patchShebangs ./
+  '';
 
   nativeBuildInputs = [
     which
@@ -73,7 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional enableMpi scalapack;
 
   propagatedBuildInputs = lib.optional enableMpi mpi;
-  propagatedUserEnvPkgs = lib.optional enableMpi mpi;
 
   cmakeFlags = [
     (lib.cmakeBool "OCTOPUS_MPI" enableMpi)
@@ -82,16 +85,12 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "OCTOPUS_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
   ];
 
-  nativeCheckInputs = lib.optional enableMpi mpi;
-  doCheck = false; # requires installed data
-
-  postPatch = ''
-    patchShebangs ./
-  '';
-
   postConfigure = ''
     patchShebangs testsuite/oct-run_testsuite.sh
   '';
+
+  doCheck = false; # requires installed data
+  nativeCheckInputs = lib.optional enableMpi mpi;
 
   postInstall = ''
     mkdir -p $testsuite
@@ -99,19 +98,21 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
-
+  propagatedUserEnvPkgs = lib.optional enableMpi mpi;
   passthru = lib.attrsets.optionalAttrs enableMpi { inherit mpi; };
 
   meta = {
     description = "Real-space time dependent density-functional theory code";
     homepage = "https://octopus-code.org";
-    maintainers = with lib.maintainers; [ markuskowa ];
+
     license = with lib.licenses; [
       gpl2Only
       asl20
       lgpl3Plus
       bsd3
     ];
+
+    maintainers = with lib.maintainers; [ markuskowa ];
     platforms = [ "x86_64-linux" ];
   };
 })

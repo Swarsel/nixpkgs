@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -20,9 +20,9 @@ postgresqlBuildExtension (finalAttrs: {
     description = "Partition management extension for PostgreSQL";
     homepage = "https://github.com/pgpartman/pg_partman";
     changelog = "https://github.com/pgpartman/pg_partman/blob/v${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.postgresql;
     maintainers = with lib.maintainers; [ ggpeti ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.postgresql;
     broken = lib.versionOlder postgresql.version "14";
   };
 })

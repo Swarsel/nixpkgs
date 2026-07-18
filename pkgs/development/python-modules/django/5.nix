@@ -1,48 +1,42 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-
-  # build-system
-  setuptools,
-
-  # patched in
-  geos,
-  gdal,
-  withGdal ? false,
-
-  # dependencies
-  asgiref,
-  sqlparse,
-
-  # optional-dependencies
-  argon2-cffi,
-  bcrypt,
-
   # tests
   aiosmtpd,
+  # optional-dependencies
+  argon2-cffi,
+  # dependencies
+  asgiref,
+  bcrypt,
+  buildPythonPackage,
   docutils,
+  gdal,
   geoip2,
+  # patched in
+  geos,
   jinja2,
   numpy,
   pillow,
   pylibmc,
   pymemcache,
   python,
-  pyyaml,
   pytz,
+  pyyaml,
   redis,
+  replaceVars,
   selenium,
+  # build-system
+  setuptools,
+  sqlparse,
   tblib,
   tzdata,
+  withGdal ? false,
 }:
 
 buildPythonPackage rec {
   pname = "django";
   version = "5.2.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django";
@@ -62,9 +56,9 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals withGdal [
     (replaceVars ./5.2/gdal.patch {
-      geos = geos;
-      gdal = gdal;
       extension = stdenv.hostPlatform.extensions.sharedLibrary;
+      gdal = gdal;
+      geos = geos;
     })
   ];
 
@@ -72,18 +66,6 @@ buildPythonPackage rec {
     substituteInPlace tests/utils_tests/test_autoreload.py \
       --replace-fail "/usr/bin/python" "${python.interpreter}"
   '';
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    asgiref
-    sqlparse
-  ];
-
-  optional-dependencies = {
-    argon2 = [ argon2-cffi ];
-    bcrypt = [ bcrypt ];
-  };
 
   nativeCheckInputs = [
     # tests/requirements/py3.txt
@@ -129,11 +111,24 @@ buildPythonPackage rec {
   '';
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    asgiref
+    sqlparse
+  ];
+
+  optional-dependencies = {
+    argon2 = [ argon2-cffi ];
+    bcrypt = [ bcrypt ];
+  };
+
+  pyproject = true;
 
   meta = {
-    changelog = "https://docs.djangoproject.com/en/${lib.versions.majorMinor version}/releases/${version}/";
     description = "High-level Python Web framework that encourages rapid development and clean, pragmatic design";
     homepage = "https://www.djangoproject.com";
+    changelog = "https://docs.djangoproject.com/en/${lib.versions.majorMinor version}/releases/${version}/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ hexa ];
   };

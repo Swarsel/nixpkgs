@@ -29,6 +29,8 @@ stdenv.mkDerivation {
     "--with-libs=${libndtypes}/lib"
   ];
 
+  doCheck = true;
+
   # other packages which depend on libxnd seem to expect overflow.h, but
   # it doesn't seem to be included in the installed headers. for now this
   # works, but the generic name of the header could produce problems
@@ -36,8 +38,6 @@ stdenv.mkDerivation {
   postInstall = ''
     cp libxnd/overflow.h $out/include/overflow.h
   '';
-
-  doCheck = true;
 
   meta = {
     description = "C library for managing typed memory blocks and Python container module";

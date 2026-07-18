@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  msbuild,
-  mono,
+  autoPatchelfHook,
+  copyDesktopItems,
+  gtk2-x11,
   libGL,
   libpng,
   libx11,
-  gtk2-x11,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
+  mono,
+  msbuild,
   unstableGitUpdater,
-  autoPatchelfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,20 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "9d7a12b1164dc53964b594395f9d5d825a43ac12";
     hash = "sha256-FwGfrvF+UrmEw1lvcU4qL9OOP0n/ZmQTsIjQIxRvkmg=";
   };
-
-  nativeBuildInputs = [
-    msbuild
-    makeWrapper
-    copyDesktopItems
-    autoPatchelfHook
-  ];
-
-  buildInputs = [
-    libGL
-    libpng
-    libx11
-    gtk2-x11
-  ];
 
   postPatch =
     let
@@ -57,6 +43,20 @@ stdenv.mkDerivation (finalAttrs: {
         sed -i 's/>0<\/GitCommitHash>/>${gitCommitHash}<\/GitCommitHash>/g' "$file"
       done
     '';
+
+  nativeBuildInputs = [
+    msbuild
+    makeWrapper
+    copyDesktopItems
+    autoPatchelfHook
+  ];
+
+  buildInputs = [
+    libGL
+    libpng
+    libx11
+    gtk2-x11
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -112,33 +112,36 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "ultimate-doom-builder";
-      exec = "ultimate-doom-builder";
-      icon = "ultimate-doom-builder";
-      desktopName = "Ultimate Doom Builder";
-      comment = finalAttrs.meta.description;
       categories = [
         "Game"
         "Development"
         "Graphics"
         "3DGraphics"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Ultimate Doom Builder";
+      exec = "ultimate-doom-builder";
+      icon = "ultimate-doom-builder";
+      name = "ultimate-doom-builder";
     })
   ];
 
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/jewalky/UltimateDoomBuilder";
     description = "Advanced Doom map editor based on Doom Builder 2 with Mono support";
-    mainProgram = "ultimate-doom-builder";
+
     longDescription = ''
       Ultimate Doom Builder is a map editor for Doom, Heretic, Hexen, and Strife.
       It is a continuation of Doom Builder 2 with many new features and improvements,
       including cross-platform support via Mono.
     '';
+
+    homepage = "https://github.com/jewalky/UltimateDoomBuilder";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ sophronesis ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ultimate-doom-builder";
   };
 })

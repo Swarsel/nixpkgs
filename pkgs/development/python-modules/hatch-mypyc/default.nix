@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  build,
+  buildPythonPackage,
   hatchling,
   mypy,
   pathspec,
-  setuptools,
-  build,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hatch-mypyc";
   version = "0.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ofek";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-3bIi2tlAcBurWqqPDVTJ1/EU2KTd1XVU97jFOaYtW5U=";
   };
+
+  doCheck = false; # network access
 
   build-system = [
     hatchling
@@ -33,7 +34,7 @@ buildPythonPackage (finalAttrs: {
     setuptools
   ];
 
-  doCheck = false; # network access
+  pyproject = true;
 
   pythonImportsCheck = [
     "hatch_mypyc"

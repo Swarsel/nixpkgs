@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  patchelf,
   gmp,
+  patchelf,
 }:
 let
   dynamic-linker = stdenv.cc.bintools.dynamicLinker;
@@ -26,8 +26,8 @@ stdenv.mkDerivation rec {
     else
       throw "Architecture not supported";
 
-  buildInputs = [ gmp ];
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isLinux patchelf;
+  buildInputs = [ gmp ];
 
   buildPhase = ''
     make update \

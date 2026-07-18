@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-hfu3Verbrq0to3I5/gX6ZhVr7ewjHNamzvaUcmcUIRU=";
   };
 
-  cargoHash = "sha256-K/++/NdOLSvhxQ8LBS+jnthCRJxScoOjWSp7pmfHVaQ=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-K/++/NdOLSvhxQ8LBS+jnthCRJxScoOjWSp7pmfHVaQ=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd joshuto \
@@ -33,10 +32,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/kamiyaa/joshuto";
     changelog = "https://github.com/kamiyaa/joshuto/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       totoroot
       xrelkd
     ];
+
     mainProgram = "joshuto";
   };
 })

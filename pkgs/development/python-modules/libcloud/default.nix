@@ -9,12 +9,16 @@
 buildPythonPackage rec {
   pname = "apache-libcloud";
   version = "3.8.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-db9MCxI7wiXiTKlfyhw1vjCxnmu4X+6ngUBNQ8QnbJE=";
   };
+
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace "setup_requires=pytest_runner," "setup_requires=[],"
+  '';
 
   propagatedBuildInputs = [
     pycrypto
@@ -25,14 +29,9 @@ buildPythonPackage rec {
     cp libcloud/test/secrets.py-dist libcloud/test/secrets.py
   '';
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace "setup_requires=pytest_runner," "setup_requires=[],"
-  '';
-
   # requires a certificates file
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "libcloud" ];
 
   meta = {

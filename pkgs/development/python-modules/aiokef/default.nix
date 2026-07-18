@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   tenacity,
 }:
 
 buildPythonPackage rec {
   pname = "aiokef";
   version = "0.2.17";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "basnijholt";
@@ -36,6 +35,7 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "tests" ];
+  format = "setuptools";
   pythonImportsCheck = [ "aiokef" ];
 
   meta = {

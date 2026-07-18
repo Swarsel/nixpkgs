@@ -1,4 +1,4 @@
-{ _cuda, lib }:
+{ lib, _cuda }:
 {
   /**
     Returns whether a capability should be built by default for a particular CUDA version.

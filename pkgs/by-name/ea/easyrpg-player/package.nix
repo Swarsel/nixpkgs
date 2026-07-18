@@ -2,11 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
   asciidoctor,
   cmake,
   doxygen,
-  pkg-config,
-  alsa-lib,
   flac,
   fluidsynth,
   fmt,
@@ -33,6 +32,7 @@
   opusfile,
   pcre2,
   pixman,
+  pkg-config,
   sdl3,
   speexdsp,
   wildmidi,
@@ -111,6 +111,8 @@ stdenv.mkDerivation rec {
     "test_runner_player"
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir $out/bin
     mv Package $out/Applications
@@ -118,7 +120,6 @@ stdenv.mkDerivation rec {
   '';
 
   enableParallelChecking = true;
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   meta = {
     description = "RPG Maker 2000/2003 and EasyRPG games interpreter";

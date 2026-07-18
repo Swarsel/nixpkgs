@@ -15,8 +15,8 @@ let
   scdaemonUdevRev = "01898735a015541e3ffb43c7245ac1e612f40836";
 
   scdaemonRules = pkgs.fetchurl {
-    url = "https://salsa.debian.org/debian/gnupg2/-/raw/${scdaemonUdevRev}/debian/scdaemon.udev";
     sha256 = "08v0vp6950bz7galvc92zdss89y9vcwbinmbfcdldy8x72w6rqr3";
+    url = "https://salsa.debian.org/debian/gnupg2/-/raw/${scdaemonUdevRev}/debian/scdaemon.udev";
   };
 
   # per debian's udev deb hook (https://man7.org/linux/man-pages/man1/dh_installudev.1.html)

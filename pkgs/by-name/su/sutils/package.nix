@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.2";
   pname = "sutils";
+  version = "0.2";
 
   src = fetchFromGitHub {
     owner = "baskerville";
@@ -16,17 +16,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0i2g6a6xdaq3w613dhq7mnsz4ymwqn6kvkyan5kgy49mzq97va6j";
   };
 
-  hardeningDisable = [ "format" ];
-
   buildInputs = [ alsa-lib ];
-
+  hardeningDisable = [ "format" ];
   prePatch = ''sed -i "s@/usr/local@$out@" Makefile'';
 
   meta = {
     description = "Small command-line utilities";
     homepage = "https://github.com/baskerville/sutils";
-    maintainers = [ lib.maintainers.meisternu ];
     license = lib.licenses.unlicense;
+    maintainers = [ lib.maintainers.meisternu ];
     platforms = lib.platforms.linux;
   };
 })

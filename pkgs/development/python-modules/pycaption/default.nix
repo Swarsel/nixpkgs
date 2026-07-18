@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   beautifulsoup4,
-  lxml,
+  buildPythonPackage,
   cssutils,
+  lxml,
   nltk,
   pytest-lazy-fixture,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pycaption";
   version = "2.2.28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pbs";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-BXDCjUqJVuVCehusrk5j4+yZTimnmOcHMWheWJJoJOo=";
   };
+
+  nativeCheckInputs = [
+    pytest-lazy-fixture
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -35,15 +39,12 @@ buildPythonPackage (finalAttrs: {
     transcript = [ nltk ];
   };
 
-  nativeCheckInputs = [
-    pytest-lazy-fixture
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/pbs/pycaption/blob/${finalAttrs.src.tag}/docs/changelog.rst";
     description = "Closed caption converter";
     homepage = "https://github.com/pbs/pycaption";
+    changelog = "https://github.com/pbs/pycaption/blob/${finalAttrs.src.tag}/docs/changelog.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

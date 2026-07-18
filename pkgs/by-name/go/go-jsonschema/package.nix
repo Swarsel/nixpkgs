@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -16,19 +16,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-NkqAeSGWVKvIkik4j9wE2O5LV9sDP3RE/B0LilYml7A=";
-
-  ldflags = [
-    "-X main.version=v${finalAttrs.version}"
-    "-s"
-    "-w"
-  ];
-
   env.GOWORK = "off";
 
   # Tests are in a nested Go module which makes things difficult.
   preBuild = ''
     rm -rf tests
   '';
+
+  ldflags = [
+    "-X main.version=v${finalAttrs.version}"
+    "-s"
+    "-w"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -37,9 +36,11 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/omissis/go-jsonschema";
     changelog = "https://github.com/omissis/go-jsonschema/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       shellhazard
     ];
+
     mainProgram = "go-jsonschema";
   };
 })

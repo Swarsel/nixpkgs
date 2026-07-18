@@ -2,20 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  boost183,
-  libseccomp,
-  flex,
-  swig,
   bison,
+  boost183,
   cmake,
-  python3Packages,
+  flex,
+  libseccomp,
   makeShellWrapper,
+  python3Packages,
+  swig,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "grap";
   version = "1.3.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "QuoSecGmbH";
@@ -23,31 +22,6 @@ python3Packages.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-zLIKoNOdrmTyZkQGRogeKfIRk4kpG0hmeN0519SJbbo=";
   };
-
-  dependencies = with python3Packages; [
-    setuptools
-    capstone
-  ];
-
-  nativeBuildInputs = [
-    bison
-    cmake
-    flex
-    swig
-    makeShellWrapper
-  ];
-
-  buildInputs = [
-    libseccomp
-  ]
-  ++ boost183.all;
-
-  strictDeps = true;
-
-  cmakeFlags = [
-    "-DPYTHON_SITE_DIR=${placeholder "out"}/${python3Packages.python.sitePackages}"
-    "../src"
-  ];
 
   postPatch = ''
     substituteInPlace src/CMakeLists.txt \
@@ -62,6 +36,26 @@ python3Packages.buildPythonApplication rec {
     substituteInPlace src/tools/setup.py --replace-fail "distutils.core" "setuptools"
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    bison
+    cmake
+    flex
+    swig
+    makeShellWrapper
+  ];
+
+  buildInputs = [
+    libseccomp
+  ]
+  ++ boost183.all;
+
+  cmakeFlags = [
+    "-DPYTHON_SITE_DIR=${placeholder "out"}/${python3Packages.python.sitePackages}"
+    "../src"
+  ];
+
   postInstall = ''
     cd $out/${python3Packages.python.sitePackages}
 
@@ -70,13 +64,22 @@ python3Packages.buildPythonApplication rec {
       --replace-fail "imp." "importlib."
   '';
 
+  dependencies = with python3Packages; [
+    setuptools
+    capstone
+  ];
+
+  pyproject = false;
+
   meta = {
     description = "Define and match graph patterns within binaries";
+
     longDescription = ''
       grap takes patterns and binary files, uses a Casptone-based disassembler to obtain the control flow graphs from the binaries, then matches the patterns against them.
 
       Patterns are user-defined graphs with instruction conditions ("opcode is xor and arg1 is eax") and repetition conditions (3 identical instructions, basic blocks...).
     '';
+
     homepage = "https://github.com/QuoSecGmbH/grap/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ s1341 ];

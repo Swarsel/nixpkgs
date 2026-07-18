@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
-  pkgsCross ? { },
   versionCheckHook,
+  pkgsCross ? { },
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,20 +19,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-dOh8IRsluAy0vdHEXmevQxPCU33afNeuNPTq4Sxxb2g=";
-
   env.CGO_ENABLED = 0;
-
-  subPackages = [
-    "cmd/agent"
-    "cmd/proxy"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-extldflags '-static'"
-    "-X main.version=${finalAttrs.version}"
-  ];
+  # Tests require network access
+  doCheck = false;
 
   # This will prefix all the binaries with ligolo-
   postInstall = ''
@@ -41,20 +30,31 @@ buildGoModule (finalAttrs: {
     done
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/ligolo-agent";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-extldflags '-static'"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/agent"
+    "cmd/proxy"
+  ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/ligolo-agent";
 
   passthru = {
     tests = {
-      win = pkgsCross.mingwW64.ligolo-ng or null;
       linux64 = pkgsCross.gnu64.ligolo-ng or null;
+      win = pkgsCross.mingwW64.ligolo-ng or null;
     };
+
     updateScript = nix-update-script { };
   };
-
-  # Tests require network access
-  doCheck = false;
 
   meta = {
     description = "Advanced TUN-based tunneling/pivoting tool";

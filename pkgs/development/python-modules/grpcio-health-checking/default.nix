@@ -12,12 +12,11 @@
 buildPythonPackage rec {
   pname = "grpcio-health-checking";
   version = "1.81.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "grpcio_health_checking";
     inherit version;
     hash = "sha256-CfMWdPGs3PIUvE5kDru77xZbB3of1kg0eVGW1Sv9zjk=";
+    pname = "grpcio_health_checking";
   };
 
   propagatedBuildInputs = [
@@ -25,12 +24,11 @@ buildPythonPackage rec {
     protobuf
   ];
 
-  pythonRelaxDeps = [ "grpcio" ];
-
-  pythonImportsCheck = [ "grpc_health" ];
-
   # no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "grpc_health" ];
+  pythonRelaxDeps = [ "grpcio" ];
 
   meta = {
     description = "Standard Health Checking Service for gRPC";

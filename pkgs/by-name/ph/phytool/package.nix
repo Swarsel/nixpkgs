@@ -1,12 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
 }:
 stdenv.mkDerivation {
-  __structuredAttrs = true;
-  strictDeps = true;
-
   pname = "phytool";
   version = "2-unstable-2024-07-14";
 
@@ -17,6 +14,8 @@ stdenv.mkDerivation {
     hash = "sha256-8e2DVjG/2CtJ/+FLzMa1VKajJZfFqjD54XQAMY+0q3U=";
   };
 
+  strictDeps = true;
+
   makeFlags = [
     "PREFIX=$(out)"
   ];
@@ -24,6 +23,8 @@ stdenv.mkDerivation {
   preInstall = ''
     mkdir -p "$out/bin"
   '';
+
+  __structuredAttrs = true;
 
   meta = {
     description = "Linux MDIO register access";

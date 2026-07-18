@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  deterministic-uname,
   addBinToPathHook,
+  deterministic-uname,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "zxpy";
   version = "1.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tusharsadhwani";
@@ -17,10 +16,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-/VITHN517lPUmhLYgJHBYYvvlJdGg2Hhnwk47Mp9uc0=";
   };
-
-  build-system = with python3Packages; [
-    setuptools
-  ];
 
   nativeCheckInputs =
     with python3Packages;
@@ -32,6 +27,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
       addBinToPathHook
     ];
 
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "zx" ];
 
   meta = {

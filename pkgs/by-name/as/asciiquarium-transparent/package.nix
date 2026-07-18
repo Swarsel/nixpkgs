@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ perl ];
+
   installPhase = ''
     runHook preInstall
     install -Dm555 asciiquarium -t $out/bin
@@ -30,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Aquarium/sea animation in ASCII art (with option of transparent background)";
     homepage = "https://github.com/nothub/asciiquarium";
     license = lib.licenses.gpl2Only;
-    mainProgram = "asciiquarium";
     maintainers = with lib.maintainers; [ quantenzitrone ];
     platforms = perl.meta.platforms;
+    mainProgram = "asciiquarium";
   };
 })

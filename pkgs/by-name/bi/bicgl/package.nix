@@ -2,18 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  libminc,
   bicpl,
+  cmake,
   libGLU,
   libglut,
+  libminc,
 }:
 
 stdenv.mkDerivation rec {
   pname = "bicgl";
   version = "unstable-2018-04-06";
-
-  owner = "BIC-MNI";
 
   src = fetchFromGitHub {
     inherit owner;
@@ -22,7 +20,13 @@ stdenv.mkDerivation rec {
     sha256 = "0lzirdi1mf4yl8srq7vjn746sbydz7h0wjh7wy8gycy6hq04qrg4";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libminc
     bicpl
@@ -35,16 +39,13 @@ stdenv.mkDerivation rec {
     "-DBICPL_DIR=${bicpl}/lib"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
-  '';
+  owner = "BIC-MNI";
 
   meta = {
-    homepage = "https://github.com/${owner}/bicgl";
     description = "Brain Imaging Centre graphics library";
+    homepage = "https://github.com/${owner}/bicgl";
+    license = lib.licenses.hpndUc;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.hpndUc;
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "autoskope-client";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mcisk";
@@ -20,19 +19,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ThrI5BzjxVg4K1fvRZvPfDycAh4A9rm226FSpk3a/zs=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+
   disabledTestMarks = [
     "integration"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "autoskope_client" ];
 
   meta = {

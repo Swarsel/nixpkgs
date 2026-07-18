@@ -1,9 +1,9 @@
 {
   lib,
-  autoreconfHook,
-  pkg-config,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,6 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "MDNS Name Service Switch (NSS) plug-in";
+
     longDescription = ''
       `nss-mdns' is a plugin for the GNU Name Service Switch (NSS)
       functionality of the GNU C Library (glibc) providing host name
@@ -44,10 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
       resolution by common Unix/Linux programs in the ad-hoc mDNS
       domain `.local'.
     '';
+
     homepage = "https://github.com/avahi/nss-mdns/";
     license = lib.licenses.lgpl2Plus;
+    maintainers = [ ];
     # Supports both the GNU and FreeBSD NSS.
     platforms = lib.platforms.gnu ++ lib.platforms.linux ++ lib.platforms.freebsd;
-    maintainers = [ ];
   };
 })

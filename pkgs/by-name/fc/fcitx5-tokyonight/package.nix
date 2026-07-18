@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 stdenvNoCC.mkDerivation {
@@ -14,9 +14,6 @@ stdenvNoCC.mkDerivation {
     rev = "f7454ab387d6b071ee12ff7ee819f0c7030fdf2c";
     hash = "sha256-swOy0kDZUdqtC2sPSZEBLnHSs8dpQ/QfFMObI6BARfo=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -32,6 +29,8 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

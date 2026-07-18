@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchFromGitHub,
-  cmake,
-  curl,
-  nasm,
-  game-music-emu,
-  libpng,
   SDL2,
   SDL2_mixer,
+  cmake,
+  copyDesktopItems,
+  curl,
+  fetchzip,
+  game-music-emu,
+  libpng,
   libvpx,
   libyuv,
-  zlib,
   makeBinaryWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  nasm,
   pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,15 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-iMbrbZCarMebP+ruu1JH4kwks6rR9A9CMquDUnMCUhU=";
   };
 
-  assets = fetchzip {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-assets";
-    url = "https://github.com/KartKrewDev/RingRacers/releases/download/v${finalAttrs.version}/Dr.Robotnik.s-Ring-Racers-v${finalAttrs.version}-Assets.zip";
-    hash = "sha256-vL3Ceu6/tIOl/+TJFjntCksDdjpgLc1aNHvSx6x8/90=";
-    stripRoot = false;
-  };
-
   strictDeps = true;
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     cmake
@@ -64,18 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DGME_INCLUDE_DIR=${game-music-emu}/include"
     "-DSDL2_MIXER_INCLUDE_DIR=${lib.getDev SDL2_mixer}/include/SDL2"
     "-DSDL2_INCLUDE_DIR=${lib.getDev SDL2}/include/SDL2"
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "ringracers";
-      exec = "ringracers";
-      icon = "ringracers";
-      comment = "This is Racing at the Next Level";
-      desktopName = "Dr. Robotnik's Ring Racers";
-      startupWMClass = ".ringracers-wrapped";
-      categories = [ "Game" ];
-    })
   ];
 
   installPhase =
@@ -109,15 +89,38 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  assets = fetchzip {
+    hash = "sha256-vL3Ceu6/tIOl/+TJFjntCksDdjpgLc1aNHvSx6x8/90=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-assets";
+    stripRoot = false;
+    url = "https://github.com/KartKrewDev/RingRacers/releases/download/v${finalAttrs.version}/Dr.Robotnik.s-Ring-Racers-v${finalAttrs.version}-Assets.zip";
+  };
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "This is Racing at the Next Level";
+      desktopName = "Dr. Robotnik's Ring Racers";
+      exec = "ringracers";
+      icon = "ringracers";
+      name = "ringracers";
+      startupWMClass = ".ringracers-wrapped";
+    })
+  ];
+
+  enableParallelBuilding = true;
+
   meta = {
     description = "Kart racing video game based on Sonic Robo Blast 2 (SRB2), itself based on a modified version of Doom Legacy";
     homepage = "https://kartkrew.org";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       donovanglover
       iedame
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "ringracers";
   };
 })

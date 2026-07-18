@@ -10,12 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ax25-tools";
   version = "0.0.10-rc5";
 
-  strictDeps = true;
-
-  nativeBuildInputs = [ autoreconfHook ];
-
-  buildInputs = [ libax25 ];
-
   # src from linux-ax25.in-berlin.de remote has been
   # unreliable, pointing to github mirror from the radiocatalog
   src = fetchFromGitHub {
@@ -24,6 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "ax25-tools-${finalAttrs.version}";
     hash = "sha256-yoFflC3KU3cKQEENj4MF793TvUdf38C2Q9B7nMuLgMg=";
   };
+
+  strictDeps = true;
+  nativeBuildInputs = [ autoreconfHook ];
+  buildInputs = [ libax25 ];
 
   configureFlags = [
     "--sysconfdir=/etc"

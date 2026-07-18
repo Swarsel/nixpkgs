@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   azure-identity,
   azure-storage-blob,
   billiard,
@@ -14,12 +15,11 @@
   click-plugins,
   click-repl,
   cryptography,
-  exceptiongroup,
   django,
   elastic-transport,
   elasticsearch,
   ephem,
-  fetchFromGitHub,
+  exceptiongroup,
   gevent,
   google-cloud-firestore,
   google-cloud-storage,
@@ -39,9 +39,9 @@
   python-memcached,
   pyzmq,
   setuptools,
-  tzlocal,
   sphinx-autobuild,
   tblib,
+  tzlocal,
   urllib3,
   vine,
   zstandard,
@@ -53,7 +53,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "celery";
   version = "5.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "celery";
@@ -65,6 +64,15 @@ buildPythonPackage (finalAttrs: {
   patches = lib.optionals (!withAmqpRepl) [
     ./remove-amqp-repl.patch
   ];
+
+  nativeCheckInputs = [
+    moto
+    pytest-celery
+    pytest-click
+    pytest-timeout
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -82,80 +90,6 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optionals withAmqpRepl [
     click-repl
   ];
-
-  optional-dependencies = {
-    # Everything commented is not packaged
-    # see https://github.com/celery/celery/tree/main/requirements/extras
-    arangodb = [
-      # pyarango
-    ];
-    auth = [ cryptography ];
-    azureblockblob = [
-      azure-identity
-      azure-storage-blob
-    ];
-    brotli = if isPyPy then [ brotlipy ] else [ brotli ];
-    cassandra = [ cassandra-driver ];
-    consul = [
-      # python-consul2
-    ];
-    cosmosdbsql = [ pydocumentdb ];
-    couchbase = [ ];
-    couchdb = [
-      # pycouchdb
-    ];
-    django = [ django ];
-    dynamodb = [ boto3 ];
-    elasticsearch = [
-      elasticsearch
-      elastic-transport
-    ];
-    eventlet = [ ];
-    gcs = [
-      google-cloud-firestore
-      google-cloud-storage
-      grpcio
-    ];
-    gevent = [ gevent ];
-    memcache = [ pylibmc ];
-    mongodb = kombu.optional-dependencies.mongodb;
-    msgpack = kombu.optional-dependencies.msgpack;
-    pydantic = [ pydantic ];
-    pymemcache = [ python-memcached ];
-    pyro = [ ];
-    pytest = [
-      pytest-celery
-    ]
-    ++ pytest-celery.optional-dependencies.all;
-    redis = kombu.optional-dependencies.redis;
-    s3 = [ boto3 ];
-    slmq = [
-      # softlayer-messaging
-    ];
-    solar = lib.optionals isPyPy [ ephem ];
-    sphinxautobuild = [ sphinx-autobuild ];
-    sqlalchemy = kombu.optional-dependencies.sqlalchemy;
-    sqs = [
-      boto3
-      urllib3
-    ]
-    ++ kombu.optional-dependencies.sqs;
-    tblib = [ tblib ];
-    thread = [ ];
-    yaml = kombu.optional-dependencies.yaml;
-    zeromq = [ pyzmq ];
-    zookeeper = [ kazoo ];
-    zsdt = [ zstandard ];
-  };
-
-  nativeCheckInputs = [
-    moto
-    pytest-celery
-    pytest-click
-    pytest-timeout
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   disabledTestPaths = [
     # test_eventlet touches network
@@ -212,6 +146,89 @@ buildPythonPackage (finalAttrs: {
     "test_open"
   ];
 
+  optional-dependencies = {
+    # Everything commented is not packaged
+    # see https://github.com/celery/celery/tree/main/requirements/extras
+    arangodb = [
+      # pyarango
+    ];
+
+    auth = [ cryptography ];
+
+    azureblockblob = [
+      azure-identity
+      azure-storage-blob
+    ];
+
+    brotli = if isPyPy then [ brotlipy ] else [ brotli ];
+    cassandra = [ cassandra-driver ];
+
+    consul = [
+      # python-consul2
+    ];
+
+    cosmosdbsql = [ pydocumentdb ];
+    couchbase = [ ];
+
+    couchdb = [
+      # pycouchdb
+    ];
+
+    django = [ django ];
+    dynamodb = [ boto3 ];
+
+    elasticsearch = [
+      elasticsearch
+      elastic-transport
+    ];
+
+    eventlet = [ ];
+
+    gcs = [
+      google-cloud-firestore
+      google-cloud-storage
+      grpcio
+    ];
+
+    gevent = [ gevent ];
+    memcache = [ pylibmc ];
+    mongodb = kombu.optional-dependencies.mongodb;
+    msgpack = kombu.optional-dependencies.msgpack;
+    pydantic = [ pydantic ];
+    pymemcache = [ python-memcached ];
+    pyro = [ ];
+
+    pytest = [
+      pytest-celery
+    ]
+    ++ pytest-celery.optional-dependencies.all;
+
+    redis = kombu.optional-dependencies.redis;
+    s3 = [ boto3 ];
+
+    slmq = [
+      # softlayer-messaging
+    ];
+
+    solar = lib.optionals isPyPy [ ephem ];
+    sphinxautobuild = [ sphinx-autobuild ];
+    sqlalchemy = kombu.optional-dependencies.sqlalchemy;
+
+    sqs = [
+      boto3
+      urllib3
+    ]
+    ++ kombu.optional-dependencies.sqs;
+
+    tblib = [ tblib ];
+    thread = [ ];
+    yaml = kombu.optional-dependencies.yaml;
+    zeromq = [ pyzmq ];
+    zookeeper = [ kazoo ];
+    zsdt = [ zstandard ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "celery" ];
 
   meta = {

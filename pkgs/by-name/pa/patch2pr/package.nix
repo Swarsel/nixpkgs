@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   patch2pr,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,9 +25,9 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru.tests.patch2pr-version = testers.testVersion {
-    package = patch2pr;
-    command = "${patch2pr.meta.mainProgram} --version";
     version = finalAttrs.version;
+    command = "${patch2pr.meta.mainProgram} --version";
+    package = patch2pr;
   };
 
   meta = {

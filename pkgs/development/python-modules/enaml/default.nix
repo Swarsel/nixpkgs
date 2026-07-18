@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   atom,
   buildPythonPackage,
   bytecode,
   cppy,
-  fetchFromGitHub,
   kiwisolver,
   pegen,
   ply,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "enaml";
   version = "0.19.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nucleic";
@@ -44,6 +43,7 @@ buildPythonPackage rec {
 
   # qt bindings cannot be found during tests
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "enaml"

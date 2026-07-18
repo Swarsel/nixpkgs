@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  makeWrapper,
-  pkg-config,
-  cmake,
-  libiconv,
   cargo,
+  cmake,
   gcc,
+  libiconv,
+  makeWrapper,
   mold-unwrapped,
-  rustc,
   nix-update-script,
-
+  pkg-config,
+  rustPlatform,
+  rustc,
   # On non-darwin, `mold` is the default linker, but it's broken on Darwin.
   withMold ? with stdenv.hostPlatform; isUnix && !isDarwin,
 }:
@@ -28,28 +27,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-8dV+NNtU4HFerrgRyc1kO+MSsMTJJItTtJylEIN014g=";
   };
 
-  cargoHash = "sha256-HJrEXt6O7qCNJ/xOh4kjmqKJ22EVwBTzV1S+q98k0VQ=";
-
-  env.RUST_SRC_PATH = "${rustPlatform.rustLibSrc}";
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
     cmake
   ];
+
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
 
-  checkFlags = [
-    # outdated rust-analyzer (disabled, upstream)
-    # https://github.com/evcxr/evcxr/blob/fcdac75f49dcab3229524e671d4417d36c12130b/evcxr/tests/integration_tests.rs#L741
-    # https://github.com/evcxr/evcxr/issues/295
-    "--skip=partially_inferred_variable_type"
-    # fail, but can't reproduce in the REPL
-    "--skip=code_completion"
-    "--skip=save_and_restore_variables"
-  ];
+  cargoHash = "sha256-HJrEXt6O7qCNJ/xOh4kjmqKJ22EVwBTzV1S+q98k0VQ=";
+  env.RUST_SRC_PATH = "${rustPlatform.rustLibSrc}";
 
   # Some tests fail when types aren't explicitly specified, but which can't be
   # reproduced inside the REPL.
@@ -63,6 +52,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail "let owned = \"owned\"" "let owned:String = \"owned\""    `# question_mark_operator` \
       --replace-fail "let mut owned_mut =" "let mut owned_mut: String ="
   '';
+
+  checkFlags = [
+    # outdated rust-analyzer (disabled, upstream)
+    # https://github.com/evcxr/evcxr/blob/fcdac75f49dcab3229524e671d4417d36c12130b/evcxr/tests/integration_tests.rs#L741
+    # https://github.com/evcxr/evcxr/issues/295
+    "--skip=partially_inferred_variable_type"
+    # fail, but can't reproduce in the REPL
+    "--skip=code_completion"
+    "--skip=save_and_restore_variables"
+  ];
 
   postInstall =
     let
@@ -93,10 +92,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Evaluation context for Rust";
     homepage = "https://github.com/evcxr/evcxr";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       protoben
       ma27
     ];
+
     mainProgram = "evcxr";
   };
 })

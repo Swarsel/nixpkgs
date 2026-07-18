@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   paho-mqtt,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyeconet";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "w1ll1am23";
@@ -19,19 +18,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-sQXIMm5ddkqkFgTYOsy9srKxLUy505iFhrtGAbOLzc0=";
   };
 
+  # Tests require credentials
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "paho-mqtt" ];
 
   dependencies = [
     paho-mqtt
     aiohttp
   ];
 
-  # Tests require credentials
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyeconet" ];
+  pythonRelaxDeps = [ "paho-mqtt" ];
 
   meta = {
     description = "Python interface to the EcoNet API";

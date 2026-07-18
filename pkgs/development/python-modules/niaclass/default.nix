@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   niapy,
   numpy,
   pandas,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "niaclass";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firefly-cpp";
@@ -22,11 +21,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-hJ3ZNl13s/woL4G08nNFqL+/olXUtg9MZQQr0BGX0ys=";
   };
-
-  pythonRelaxDeps = [
-    "numpy"
-    "pandas"
-  ];
 
   nativeBuildInputs = [
     poetry-core
@@ -46,8 +40,13 @@ buildPythonPackage rec {
   '';
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "niaclass" ];
+
+  pythonRelaxDeps = [
+    "numpy"
+    "pandas"
+  ];
 
   meta = {
     description = "Framework for solving classification tasks using Nature-inspired algorithms";

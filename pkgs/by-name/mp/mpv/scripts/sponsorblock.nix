@@ -1,10 +1,10 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   fetchpatch,
-  python3,
   nix-update-script,
+  python3,
 }:
 
 # Usage: `pkgs.mpv.override { scripts = [ pkgs.mpvScripts.sponsorblock ]; }`
@@ -24,12 +24,12 @@ buildLua {
     # Necessary to avoid sponsorblock to write in the nix store at runtime.
     # https://github.com/po5/mpv_sponsorblock/pull/17
     (fetchpatch {
-      url = "https://github.com/po5/mpv_sponsorblock/pull/17/commits/e65b360a7d03a3430b4829e457a6670b2f617b09.patch";
       sha256 = "00wv0pvbz0dz2ibka66zhl2jk0pil4pyv6ipjfz37i81q6szyhs5";
+      url = "https://github.com/po5/mpv_sponsorblock/pull/17/commits/e65b360a7d03a3430b4829e457a6670b2f617b09.patch";
     })
     (fetchpatch {
-      url = "https://github.com/po5/mpv_sponsorblock/pull/17/commits/3832304d959205e99120a14c0560ed3c37104b08.patch";
       sha256 = "149ffvn714n2m3mqs8mgrbs24bcr74kqfkx7wyql36ndhm88xd2z";
+      url = "https://github.com/po5/mpv_sponsorblock/pull/17/commits/3832304d959205e99120a14c0560ed3c37104b08.patch";
     })
   ];
 
@@ -40,7 +40,6 @@ buildLua {
   '';
 
   extraScriptsToCopy = [ "sponsorblock_shared" ];
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {

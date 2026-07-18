@@ -2,36 +2,34 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
+  alsa-lib,
+  aubio,
   autoPatchelfHook,
-  makeDesktopItem,
-  copyDesktopItems,
-  cmake,
-  pkg-config,
+  beamPackages,
+  boost186,
   catch2_3,
-  ncurses,
+  cmake,
+  copyDesktopItems,
+  crossguid,
+  fmt,
+  gl3w,
+  jack-example-tools,
+  jack2,
   kdePackages,
   kissfftFloat,
-  crossguid,
-  reproc,
-  platform-folders,
-  ruby_3_3,
-  beamPackages,
-  alsa-lib,
-  rtmidi,
-  boost186,
-  aubio,
-  jack2,
-  jack-example-tools,
-  pipewire,
-  supercollider-with-sc3-plugins,
+  makeDesktopItem,
+  ncurses,
   parallel,
-
-  withTauWidget ? false,
-
+  pipewire,
+  pkg-config,
+  platform-folders,
+  reproc,
+  rtmidi,
+  ruby_3_3,
+  supercollider-with-sc3-plugins,
   withImGui ? false,
-  gl3w,
-  SDL2,
-  fmt,
+  withTauWidget ? false,
 }@args:
 
 let
@@ -54,13 +52,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sF/ksVhUzSV5P3Oe/T8hAiFMFiuOMEPmuBlUZtPSvtk=";
   };
 
-  mixFodDeps = beamPackages.fetchMixDeps {
-    inherit (finalAttrs) version;
-    pname = "mix-deps-sonic-pi";
-    mixEnv = "test";
-    src = "${finalAttrs.src}/app/server/beam/tau";
-    hash = "sha256-UoETv6X/Q/RmKb0uCsu59DH7OF0H+A9e7+4uRM/B1Wk=";
-  };
+  # Fix shebangs on files in app and bin scripts
+  postPatch = ''
+    patchShebangs app bin
+  '';
 
   strictDeps = true;
 
@@ -104,25 +99,12 @@ stdenv.mkDerivation (finalAttrs: {
     fmt
   ];
 
-  nativeCheckInputs = [
-    parallel
-    supercollider-with-sc3-plugins
-    jack2
-  ];
-
   cmakeFlags = [
     "-DUSE_SYSTEM_LIBS=ON"
     "-DBUILD_IMGUI_INTERFACE=${if withImGui then "ON" else "OFF"}"
     "-DWITH_QT_GUI_WEBENGINE=${if withTauWidget then "ON" else "OFF"}"
     "-DAPP_INSTALL_ROOT=${placeholder "out"}/app"
   ];
-
-  doCheck = true;
-
-  # Fix shebangs on files in app and bin scripts
-  postPatch = ''
-    patchShebangs app bin
-  '';
 
   preConfigure =
     # Set build environment
@@ -156,6 +138,14 @@ stdenv.mkDerivation (finalAttrs: {
   postBuild = ''
     ../linux-post-tau-prod-release.sh -o
   '';
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    parallel
+    supercollider-with-sc3-plugins
+    jack2
+  ];
 
   checkPhase = ''
     runHook preCheck
@@ -200,8 +190,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  # $out/bin/sonic-pi is a shell script, and wrapQtAppsHook doesn't wrap them.
-  dontWrapQtApps = true;
   preFixup = ''
     patchelf --shrink-rpath --allowed-rpath-prefixes "$NIX_STORE" $out/app/build/gui/sonic-pi
   ''
@@ -241,38 +229,52 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  stripDebugList = [
-    "app"
-    "bin"
-  ];
-
   desktopItems = [
     (makeDesktopItem {
-      name = "sonic-pi";
-      exec = "sonic-pi";
-      icon = "sonic-pi";
-      desktopName = "Sonic Pi";
-      comment = finalAttrs.meta.description;
       categories = [
         "Audio"
         "AudioVideo"
         "Education"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Sonic Pi";
+      exec = "sonic-pi";
+      icon = "sonic-pi";
+      name = "sonic-pi";
     })
+  ];
+
+  # $out/bin/sonic-pi is a shell script, and wrapQtAppsHook doesn't wrap them.
+  dontWrapQtApps = true;
+
+  mixFodDeps = beamPackages.fetchMixDeps {
+    inherit (finalAttrs) version;
+    pname = "mix-deps-sonic-pi";
+    src = "${finalAttrs.src}/app/server/beam/tau";
+    hash = "sha256-UoETv6X/Q/RmKb0uCsu59DH7OF0H+A9e7+4uRM/B1Wk=";
+    mixEnv = "test";
+  };
+
+  stripDebugList = [
+    "app"
+    "bin"
   ];
 
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://sonic-pi.net/";
     description = "Free live coding synth for everyone originally designed to support computing and music lessons within schools";
+    homepage = "https://sonic-pi.net/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Phlogistique
       kamilchm
       c0deaddict
       sohalt
     ];
+
     platforms = lib.platforms.linux;
   };
 })

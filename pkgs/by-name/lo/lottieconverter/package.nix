@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  giflib,
   libpng,
   rlottie,
-  giflib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libpng
     rlottie
@@ -38,14 +39,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/sot-tech/LottieConverter/";
     description = "Lottie converter utility";
+    homepage = "https://github.com/sot-tech/LottieConverter/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       CRTified
       nickcao
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "lottieconverter";
   };
 })

@@ -1,35 +1,34 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  numpy,
-  scipy,
-  pandas,
-  matplotlib,
-  seaborn,
-  tqdm,
-  sortedcontainers,
-  dill,
   casadi,
+  dill,
+  fetchPypi,
+  matplotlib,
+  numpy,
+  pandas,
+  scipy,
+  seaborn,
+  setuptools,
+  sortedcontainers,
+  tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aerosandbox";
   version = "4.2.8";
-  format = "wheel";
 
   src = fetchPypi {
-    pname = "AeroSandbox";
     inherit (finalAttrs) version;
-    format = "wheel";
-
-    python = "py3";
-    dist = "py3";
     hash = "sha256-+rrZzaBWyc9a20bUlsB0iDqYkn+ldlKT0lFfCy2yeXk=";
+    dist = "py3";
+    format = "wheel";
+    pname = "AeroSandbox";
+    python = "py3";
   };
 
   build-system = [ setuptools ];
+
   dependencies = [
     numpy
     scipy
@@ -42,6 +41,7 @@ buildPythonPackage (finalAttrs: {
     casadi
   ];
 
+  format = "wheel";
   pythonImportsCheck = [ "aerosandbox" ];
 
   pythonRemoveDeps = [

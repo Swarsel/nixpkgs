@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   apispec,
   buildPythonPackage,
-  fetchFromGitHub,
   jinja2,
   packaging,
   pytest-aiohttp,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aiohttp-apispec";
   version = "3.0.0b2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "maximdanilchenko";
@@ -26,6 +25,11 @@ buildPythonPackage rec {
 
   doCheck = false;
 
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytestCheckHook
+  ];
+
   /*
     postPatch = ''
       substituteInPlace tests/conftest.py \
@@ -33,7 +37,6 @@ buildPythonPackage rec {
         --replace-fail 'return loop.run_until_complete' 'return event_loop.run_until_complete'
     '';
   */
-
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,11 +47,7 @@ buildPythonPackage rec {
     webargs
   ];
 
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiohttp_apispec" ];
 
   meta = {

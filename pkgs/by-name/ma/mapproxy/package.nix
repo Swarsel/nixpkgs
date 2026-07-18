@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mapproxy";
   version = "6.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mapproxy";
@@ -17,13 +16,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-uEnmYL6dzjR5p6MVXW23IJY1tJqfMhCjbHBDnlvaYrE=";
   };
 
-  prePatch = ''
-    substituteInPlace mapproxy/util/ext/serving.py --replace-warn "args = [sys.executable] + sys.argv" "args = sys.argv"
-  '';
-
+  # Tests are disabled:
+  # 1) Dependency list is huge.
+  #    https://github.com/mapproxy/mapproxy/blob/master/requirements-tests.txt
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
-
-  pythonRemoveDeps = [ "future" ];
 
   dependencies = with python3Packages; [
     babel
@@ -41,12 +38,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     werkzeug
   ];
 
-  # Tests are disabled:
-  # 1) Dependency list is huge.
-  #    https://github.com/mapproxy/mapproxy/blob/master/requirements-tests.txt
-  doCheck = false;
+  prePatch = ''
+    substituteInPlace mapproxy/util/ext/serving.py --replace-warn "args = [sys.executable] + sys.argv" "args = sys.argv"
+  '';
 
+  pyproject = true;
   pythonImportsCheck = [ "mapproxy" ];
+  pythonRemoveDeps = [ "future" ];
 
   meta = {
     description = "Open source proxy for geospatial data";

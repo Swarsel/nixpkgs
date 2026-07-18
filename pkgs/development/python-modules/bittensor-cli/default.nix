@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
   aiohttp,
   async-substrate-interface,
   backoff,
   bittensor-drand,
   bittensor-wallet,
+  buildPythonPackage,
   cyscale,
+  flit-core,
   gitpython,
   jinja2,
   netaddr,
@@ -17,19 +17,16 @@
   plotille,
   plotly,
   pycryptodome,
+  pytest-asyncio,
+  pytestCheckHook,
   pyyaml,
   rich,
   typer,
-  pytestCheckHook,
-  pytest-asyncio,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bittensor-cli";
   version = "9.23.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "latent-to";
@@ -38,6 +35,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-rwPYuDfRi3L1BvNN+MoqJlJjyp/vyK7/p6iyB7RJ9Wk=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
+  __structuredAttrs = true;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -60,20 +63,15 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
+  # e2e tests require a running subtensor node
+  disabledTestPaths = [ "tests/e2e_tests" ];
+  pyproject = true;
+  pythonImportsCheck = [ "bittensor_cli" ];
+
   pythonRelaxDeps = [
     "rich"
     "typer"
   ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
-  # e2e tests require a running subtensor node
-  disabledTestPaths = [ "tests/e2e_tests" ];
-
-  pythonImportsCheck = [ "bittensor_cli" ];
 
   meta = {
     description = "Bittensor command line tool";

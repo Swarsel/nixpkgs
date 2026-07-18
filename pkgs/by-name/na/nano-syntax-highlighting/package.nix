@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  expect,
+  nano,
   nix-update-script,
   runCommand,
   writeScriptBin,
-  expect,
-  nano,
 }:
 stdenv.mkDerivation (finalAttrs: rec {
   pname = "nano-syntax-highlighting";
@@ -19,13 +19,13 @@ stdenv.mkDerivation (finalAttrs: rec {
     hash = "sha256-tcRNoeg0j/z9wFZjIc1CJXOKieWrvlLq9pblB0kE6yc=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/share
 
     install *.nanorc $out/share/
   '';
+
+  dontBuild = true;
 
   passthru = {
     tests.noSyntaxError =
@@ -58,9 +58,11 @@ stdenv.mkDerivation (finalAttrs: rec {
     description = "Improved Nano Syntax Highlighting Files, fork of nanorc";
     homepage = "https://github.com/galenguyer/nano-syntax-highlighting";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       ilai-deutel
     ];
+
     platforms = lib.platforms.all;
   };
 })

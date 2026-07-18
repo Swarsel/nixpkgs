@@ -1,22 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
   fetchFromGitHub,
   anyio,
   async-generator,
-  h11,
+  buildPythonPackage,
   curio,
+  h11,
   overly,
   pytestCheckHook,
+  pythonAtLeast,
   trio,
 }:
 
 buildPythonPackage rec {
   pname = "asks";
   version = "3.0.0";
-
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "theelous3";
@@ -44,6 +42,7 @@ buildPythonPackage rec {
     "test_https_get_checks_cert"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "asks" ];
 
   meta = {

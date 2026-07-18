@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
+  buildPythonPackage,
   jinja2,
+  pytestCheckHook,
+  pythonAtLeast,
   setuptools-scm,
   shtab,
   tomli,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "help2man";
   version = "0.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Freed-Wu";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-BIDn+LQzBtDHUtFvIRL3NMXNouO3cMLibuYBoFtCUxI=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     jinja2
@@ -31,8 +32,6 @@ buildPythonPackage rec {
 
   dependencies = [ jinja2 ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = lib.optionals (pythonAtLeast "3.13") [
     # Checks the output of `help2man --help`.
     # Broken since 3.13 due to changes in `argparse`.
@@ -40,6 +39,7 @@ buildPythonPackage rec {
     "test_help"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "help2man" ];
 
   meta = {

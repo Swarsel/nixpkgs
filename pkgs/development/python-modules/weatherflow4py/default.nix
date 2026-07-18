@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   dataclasses-json,
-  fetchFromGitHub,
   hatchling,
   marshmallow,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "weatherflow4py";
   version = "1.5.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jeeftor";
@@ -23,6 +22,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-8uGdgNWjUPOtR3lLt6VhWZSH/wcATlL8l1ILPm8d5jQ=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -33,20 +38,14 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
-  pythonRelaxDeps = [ "marshmallow" ];
-
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "weatherflow4py" ];
-
   disabledTests = [
     # KeyError
     "test_convert_json_to_weather_data4"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "weatherflow4py" ];
+  pythonRelaxDeps = [ "marshmallow" ];
 
   meta = {
     description = "Module to interact with the WeatherFlow REST API";

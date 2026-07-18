@@ -1,48 +1,44 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchNpmDeps,
-  configurable-http-proxy,
-
-  # nativeBuildInputs
-  nodejs,
-  npmHooks,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
-  # dependencies
-  alembic,
-  certipy,
-  idna,
-  jinja2,
-  jupyter-events,
-  oauthlib,
-  packaging,
-  pamela,
-  prometheus-client,
-  pydantic,
-  python-dateutil,
-  requests,
-  sqlalchemy,
-  tornado,
-  traitlets,
-
   # tests
   addBinToPathHook,
+  # dependencies
+  alembic,
   beautifulsoup4,
+  buildPythonPackage,
+  certipy,
+  configurable-http-proxy,
   cryptography,
+  fetchNpmDeps,
+  idna,
+  jinja2,
   jsonschema,
+  jupyter-events,
   jupyterlab,
   mock,
   nbclassic,
+  # nativeBuildInputs
+  nodejs,
+  npmHooks,
+  oauthlib,
+  packaging,
+  pamela,
   playwright,
+  prometheus-client,
+  pydantic,
   pytest-asyncio,
   pytestCheckHook,
+  python-dateutil,
+  requests,
   requests-mock,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  sqlalchemy,
+  tornado,
+  traitlets,
   versionCheckHook,
   virtualenv,
   # darwin-only
@@ -52,19 +48,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "jupyterhub";
   version = "5.5.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jupyterhub";
     repo = "jupyterhub";
     tag = finalAttrs.version;
     hash = "sha256-BDU0RP6NRRnSZelRadhvSm2mfsuewyMwpcRlDBPDC0E=";
-  };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-64FRdLHBpnywpCLjsMoXmWp/tK00+QwNIR9yAoQFIbg=";
   };
 
   postPatch = ''
@@ -83,6 +72,30 @@ buildPythonPackage (finalAttrs: {
     nodejs
     npmHooks.npmConfigHook
   ];
+
+  nativeCheckInputs = [
+    addBinToPathHook
+    beautifulsoup4
+    cryptography
+    jsonschema
+    jupyterlab
+    mock
+    nbclassic
+    playwright
+    pytest-asyncio
+    pytestCheckHook
+    requests-mock
+    versionCheckHook
+    virtualenv
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # PermissionError: [Errno 13] Permission denied:
+    # '/private/tmp/temp_user_1/Library/Jupyter/runtime/jpserver-45402-open.html'
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -107,47 +120,6 @@ buildPythonPackage (finalAttrs: {
     traitlets
   ];
 
-  pythonImportsCheck = [ "jupyterhub" ];
-
-  nativeCheckInputs = [
-    addBinToPathHook
-    beautifulsoup4
-    cryptography
-    jsonschema
-    jupyterlab
-    mock
-    nbclassic
-    playwright
-    pytest-asyncio
-    pytestCheckHook
-    requests-mock
-    versionCheckHook
-    virtualenv
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # PermissionError: [Errno 13] Permission denied:
-    # '/private/tmp/temp_user_1/Library/Jupyter/runtime/jpserver-45402-open.html'
-    writableTmpDirAsHomeHook
-  ];
-
-  disabledTests = [
-    # Tries to install older versions through pip
-    "test_upgrade"
-    # Testcase fails to find requests import
-    "test_external_service"
-    # Attempts to do TLS connection
-    "test_connection_notebook_wrong_certs"
-    # AttributeError: 'coroutine' object...
-    "test_valid_events"
-    "test_invalid_events"
-    "test_user_group_roles"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Server connection times out under load on Darwin
-    "test_server_token_role"
-    "test_share_flow_full"
-  ];
-
   disabledTestPaths = [
     # Not testing with a running instance
     # AttributeError: 'coroutine' object has no attribute 'db'
@@ -168,17 +140,43 @@ buildPythonPackage (finalAttrs: {
     "jupyterhub/tests/test_user.py"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  disabledTests = [
+    # Tries to install older versions through pip
+    "test_upgrade"
+    # Testcase fails to find requests import
+    "test_external_service"
+    # Attempts to do TLS connection
+    "test_connection_notebook_wrong_certs"
+    # AttributeError: 'coroutine' object...
+    "test_valid_events"
+    "test_invalid_events"
+    "test_user_group_roles"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # Server connection times out under load on Darwin
+    "test_server_token_role"
+    "test_share_flow_full"
+  ];
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-64FRdLHBpnywpCLjsMoXmWp/tK00+QwNIR9yAoQFIbg=";
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "jupyterhub" ];
 
   meta = {
     description = "Serves multiple Jupyter notebook instances";
     homepage = "https://github.com/jupyterhub/jupyterhub";
     changelog = "https://github.com/jupyterhub/jupyterhub/blob/${finalAttrs.src.tag}/docs/source/reference/changelog.md";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.jupyter ];
+
     badPlatforms = [
       # E   OSError: dlopen(/nix/store/43zml0mlr17r5jsagxr00xxx91hz9lky-openpam-20170430/lib/libpam.so, 6): image not found
       # lib.systems.inspect.patterns.isDarwin
     ];
+
+    teams = [ lib.teams.jupyter ];
   };
 })

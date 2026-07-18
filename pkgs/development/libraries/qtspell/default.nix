@@ -40,15 +40,14 @@ stdenv.mkDerivation rec {
   ];
 
   cmakeFlags = [ "-DQT_VER=6" ];
-
   dontWrapQtApps = true;
 
   meta = {
     description = "Provides spell-checking to Qt's text widgets, using the enchant spell-checking library";
     homepage = "https://github.com/manisandro/qtspell";
     changelog = "https://github.com/manisandro/qtspell/blob/${version}/NEWS";
-    maintainers = with lib.maintainers; [ dansbandit ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ dansbandit ];
     platforms = lib.platforms.all;
   };
 }

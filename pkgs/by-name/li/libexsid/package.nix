@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
+  doxygen,
+  fetchpatch,
+  libftdi1,
   pkg-config,
   docSupport ? true,
-  doxygen,
-  libftdi1,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,15 +21,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1qbiri549fma8c72nmj3cpz3sn1vc256kfafnygkmkzg7wdmgi7r";
   };
 
+  outputs = [ "out" ] ++ lib.optional docSupport "doc";
+
   patches = [
     # fix build with GCC 15 by removing unneeded argument
     (fetchpatch {
-      url = "https://github.com/libsidplayfp/exsid-driver/commit/99bfaf25f73f96d588a38a4309fa5f18c364f4d4.patch";
       hash = "sha256-wg/oJieejyXiP5Ff9FRfACNELUt5021kXS1/zT7dMgA=";
+      url = "https://github.com/libsidplayfp/exsid-driver/commit/99bfaf25f73f96d588a38a4309fa5f18c364f4d4.patch";
     })
   ];
-
-  outputs = [ "out" ] ++ lib.optional docSupport "doc";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -39,14 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ libftdi1 ];
 
-  enableParallelBuilding = true;
-
-  installTargets = [ "install" ] ++ lib.optional docSupport "doc";
-
   postInstall = lib.optionalString docSupport ''
     mkdir -p $doc/share/libexsid/doc
     cp -r docs/html $doc/share/libexsid/doc/
   '';
+
+  enableParallelBuilding = true;
+  installTargets = [ "install" ] ++ lib.optional docSupport "doc";
 
   meta = {
     description = "Driver for exSID USB";

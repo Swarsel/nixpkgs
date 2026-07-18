@@ -23,37 +23,38 @@ let
 
 in
 {
-  meta.doc = ./onedrive.md;
-
   options.services.onedrive = {
     enable = lib.mkEnableOption "OneDrive service";
-
     package = lib.mkPackageOption pkgs "onedrive" { };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
 
+    systemd.user.services.onedrive-launcher = {
+      serviceConfig = {
+        ExecStart = "${onedriveLauncher}/bin/onedrive-launcher";
+        Type = "oneshot";
+      };
+
+      wantedBy = [ "default.target" ];
+    };
+
     systemd.user.services."onedrive@" = {
       description = "Onedrive sync service";
 
       serviceConfig = {
-        Type = "simple";
         ExecStart = ''
           ${cfg.package}/bin/onedrive --monitor --confdir=%h/.config/%i
         '';
-        Restart = "on-failure";
-        RestartSec = 3;
-        RestartPreventExitStatus = 3;
-      };
-    };
 
-    systemd.user.services.onedrive-launcher = {
-      wantedBy = [ "default.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${onedriveLauncher}/bin/onedrive-launcher";
+        Restart = "on-failure";
+        RestartPreventExitStatus = 3;
+        RestartSec = 3;
+        Type = "simple";
       };
     };
   };
+
+  meta.doc = ./onedrive.md;
 }

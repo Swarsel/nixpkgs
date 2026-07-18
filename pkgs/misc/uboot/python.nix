@@ -1,16 +1,15 @@
 {
   lib,
-  python3Packages,
-  fetchPypi,
-  makeWrapper,
-
   armTrustedFirmwareTools,
   bzip2,
   cbfstool,
+  fetchPypi,
   gzip,
   lz4,
   lzop,
+  makeWrapper,
   openssl,
+  python3Packages,
   ubootTools,
   vboot-utils,
   xilinx-bootgen,
@@ -24,53 +23,6 @@ let
   version = "0.0.7";
 in
 rec {
-
-  u_boot_pylib = python3Packages.buildPythonPackage rec {
-    pname = "u_boot_pylib";
-    inherit version;
-    pyproject = true;
-
-    src = fetchPypi {
-      inherit pname version;
-      hash = "sha256-A5r20Y8mgxhOhaKMpd5MJN5ubzPbkodAO0Tr0RN1SRA=";
-    };
-
-    build-system = with python3Packages; [
-      setuptools
-    ];
-
-    checkPhase = ''
-      ${python3Packages.python.interpreter} "src/$pname/__main__.py"
-      # There are some tests in other files, but they are broken
-    '';
-
-    pythonImportsCheck = [ "u_boot_pylib" ];
-  };
-
-  dtoc = python3Packages.buildPythonPackage rec {
-    pname = "dtoc";
-    inherit version;
-    pyproject = true;
-
-    src = fetchPypi {
-      inherit pname version;
-      hash = "sha256-NA96CznIxjqpw2Ik8AJpJkJ/ei+kQTCUExwFgssV+CM=";
-    };
-
-    build-system = with python3Packages; [
-      setuptools
-    ];
-
-    dependencies =
-      (with python3Packages; [
-        libfdt
-      ])
-      ++ [
-        u_boot_pylib
-      ];
-
-    pythonImportsCheck = [ "dtoc" ];
-  };
 
   binman =
     let
@@ -92,9 +44,8 @@ rec {
       ];
     in
     python3Packages.buildPythonApplication rec {
-      pname = "binary_manager";
       inherit version;
-      pyproject = true;
+      pname = "binary_manager";
 
       src = fetchPypi {
         inherit pname version;
@@ -104,17 +55,16 @@ rec {
       patches = [
         ./binman-resources.patch
       ];
-      patchFlags = [
-        "-p2"
-        "-d"
-        "src"
-      ];
+
+      nativeBuildInputs = [ makeWrapper ];
+
+      preFixup = ''
+        wrapProgram "$out/bin/binman" --prefix PATH : "${lib.makeBinPath btools}"
+      '';
 
       build-system = with python3Packages; [
         setuptools
       ];
-
-      nativeBuildInputs = [ makeWrapper ];
 
       dependencies =
         (with python3Packages; [
@@ -128,15 +78,43 @@ rec {
           u_boot_pylib
         ];
 
-      preFixup = ''
-        wrapProgram "$out/bin/binman" --prefix PATH : "${lib.makeBinPath btools}"
-      '';
+      patchFlags = [
+        "-p2"
+        "-d"
+        "src"
+      ];
+
+      pyproject = true;
     };
 
-  patman = python3Packages.buildPythonApplication rec {
-    pname = "patch_manager";
+  dtoc = python3Packages.buildPythonPackage rec {
     inherit version;
+    pname = "dtoc";
+
+    src = fetchPypi {
+      inherit pname version;
+      hash = "sha256-NA96CznIxjqpw2Ik8AJpJkJ/ei+kQTCUExwFgssV+CM=";
+    };
+
+    build-system = with python3Packages; [
+      setuptools
+    ];
+
+    dependencies =
+      (with python3Packages; [
+        libfdt
+      ])
+      ++ [
+        u_boot_pylib
+      ];
+
     pyproject = true;
+    pythonImportsCheck = [ "dtoc" ];
+  };
+
+  patman = python3Packages.buildPythonApplication rec {
+    inherit version;
+    pname = "patch_manager";
 
     src = fetchPypi {
       inherit pname version;
@@ -155,6 +133,30 @@ rec {
       ++ [
         u_boot_pylib
       ];
+
+    pyproject = true;
+  };
+
+  u_boot_pylib = python3Packages.buildPythonPackage rec {
+    inherit version;
+    pname = "u_boot_pylib";
+
+    src = fetchPypi {
+      inherit pname version;
+      hash = "sha256-A5r20Y8mgxhOhaKMpd5MJN5ubzPbkodAO0Tr0RN1SRA=";
+    };
+
+    checkPhase = ''
+      ${python3Packages.python.interpreter} "src/$pname/__main__.py"
+      # There are some tests in other files, but they are broken
+    '';
+
+    build-system = with python3Packages; [
+      setuptools
+    ];
+
+    pyproject = true;
+    pythonImportsCheck = [ "u_boot_pylib" ];
   };
 
 }

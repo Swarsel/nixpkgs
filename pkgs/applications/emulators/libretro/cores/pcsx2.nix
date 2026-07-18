@@ -1,7 +1,7 @@
 {
   lib,
-  cmake,
   fetchFromGitHub,
+  cmake,
   libGL,
   libGLU,
   mkLibretroCore,
@@ -10,7 +10,6 @@
   xz,
 }:
 mkLibretroCore {
-  core = "pcsx2";
   version = "0-unstable-2026-06-29";
 
   src = fetchFromGitHub {
@@ -20,18 +19,6 @@ mkLibretroCore {
     hash = "sha256-djGM6hMQCvJQG2+PWDRLeM+13/Q8upD25uhH4vU/yko=";
     fetchSubmodules = true;
   };
-
-  extraNativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
-  extraBuildInputs = [
-    libGL
-    libGLU
-    perl
-    xz
-  ];
 
   cmakeFlags = with lib.strings; [
     # Workaround the following error:
@@ -49,9 +36,22 @@ mkLibretroCore {
     (cmakeFeature "ARCH_FLAG" "-msse4.1")
   ];
 
-  makefile = "Makefile";
-
   preInstall = "cd bin";
+  core = "pcsx2";
+
+  extraBuildInputs = [
+    libGL
+    libGLU
+    perl
+    xz
+  ];
+
+  extraNativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  makefile = "Makefile";
 
   meta = {
     description = "Port of PCSX2 to libretro";

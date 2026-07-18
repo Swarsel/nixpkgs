@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  hatchling,
   aiohttp,
   async-timeout,
   attrs,
-  multidict,
+  buildPythonPackage,
   colorlog,
+  hatchling,
+  mock,
+  multidict,
   pynacl,
+  pytest-asyncio,
   pytest-cov-stub,
   pytest-randomly,
-  pytest-asyncio,
-  mock,
+  pytestCheckHook,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "hikari";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hikari-py";
@@ -30,6 +29,7 @@ buildPythonPackage (finalAttrs: {
     # to retrieve the commit SHA, and remove the directory afterwards,
     # since it is not needed after that.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -37,7 +37,10 @@ buildPythonPackage (finalAttrs: {
     '';
   };
 
-  build-system = [ hatchling ];
+  postPatch = ''
+    substituteInPlace hikari/_about.py \
+      --replace-fail "__git_sha1__: typing.Final[str] = \"HEAD\"" "__git_sha1__: typing.Final[str] = \"$(cat $src/COMMIT)\""
+  '';
 
   propagatedBuildInputs = [
     aiohttp
@@ -45,12 +48,6 @@ buildPythonPackage (finalAttrs: {
     multidict
     colorlog
   ];
-
-  pythonRelaxDeps = true;
-
-  optional-dependencies = {
-    server = [ pynacl ];
-  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -61,18 +58,22 @@ buildPythonPackage (finalAttrs: {
     async-timeout
   ];
 
-  pythonImportsCheck = [ "hikari" ];
+  build-system = [ hatchling ];
 
-  postPatch = ''
-    substituteInPlace hikari/_about.py \
-      --replace-fail "__git_sha1__: typing.Final[str] = \"HEAD\"" "__git_sha1__: typing.Final[str] = \"$(cat $src/COMMIT)\""
-  '';
+  optional-dependencies = {
+    server = [ pynacl ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "hikari" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Discord API wrapper for Python written with asyncio";
     homepage = "https://www.hikari-py.dev/";
     changelog = "https://github.com/hikari-py/hikari/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       tomodachi94
       sigmanificient

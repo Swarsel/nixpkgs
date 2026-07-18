@@ -1,31 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   docutils,
+  # optional-dependencies
+  hatch,
+  # build-system
+  hatchling,
   jupyter-server,
   jupyterlab-server,
   jupyterlite-core,
   jupytext,
-  nbformat,
-  sphinx,
-
-  # optional-dependencies
-  hatch,
   myst-parser,
+  nbformat,
   pydata-sphinx-theme,
+  sphinx,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jupyterlite-sphinx";
   version = "0.22.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jupyterlite";
@@ -33,6 +28,10 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-eww/VyHbAp78Bz2jg43XHmetEDrXEqXK45cnXHElG80=";
   };
+
+  # upstream has no tests
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -52,6 +51,7 @@ buildPythonPackage (finalAttrs: {
     dev = [
       hatch
     ];
+
     docs = [
       #jupyterlite-xeus # missing, but not important
       myst-parser
@@ -59,15 +59,14 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  pythonRelaxDeps = [
-    "jupyterlite-core"
-  ];
-
-  # upstream has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "jupyterlite_sphinx"
+  ];
+
+  pythonRelaxDeps = [
+    "jupyterlite-core"
   ];
 
   passthru.deps.jupytext = jupytext.overridePythonAttrs (oldAttrs: {

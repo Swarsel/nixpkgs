@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytest-xdist,
+  # nativeCheckInputs
+  pytestCheckHook,
   setuptools,
   # dependencies
   typing-extensions,
-  # nativeCheckInputs
-  pytestCheckHook,
-  pytest-xdist,
 }:
 
 buildPythonPackage rec {
   pname = "eth-typing";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -22,21 +21,21 @@ buildPythonPackage rec {
     hash = "sha256-bdZrrglsJGNsqD6ShsqPO6ljViZr9Ms9A8Km45pnEYA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-xdist
   ];
 
-  pythonImportsCheck = [ "eth_typing" ];
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
 
   disabledTests = [
     # side-effect: runs pip online check and is blocked by sandbox
     "test_install_local_wheel"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "eth_typing" ];
 
   meta = {
     description = "Common type annotations for Ethereum Python packages";

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
-  setuptools,
-  pytestCheckHook,
-  pytest-django,
   django-crispy-forms,
+  pytest-django,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "crispy-bootstrap5";
   version = "2026.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-crispy-forms";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-7XRb8KP0LSE78woqsU6mdbUAjxldWHY1vwfuBoLfsw0=";
   };
 
+  nativeCheckInputs = [
+    pytest-django
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     django-crispy-forms
   ];
 
-  nativeCheckInputs = [
-    pytest-django
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "crispy_bootstrap5" ];
 
   meta = {

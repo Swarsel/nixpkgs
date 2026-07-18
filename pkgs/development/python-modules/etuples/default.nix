@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cons,
   multipledispatch,
   py,
-  pytestCheckHook,
   pytest-html,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "etuples";
   version = "0.3.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pythological";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-h5MLj1z3qZiUXcNIDtUIbV5zeyTzxerbSezFD5Q27n0=";
   };
+
+  nativeCheckInputs = [
+    py
+    pytestCheckHook
+    pytest-html
+  ];
 
   build-system = [
     setuptools
@@ -33,11 +38,7 @@ buildPythonPackage rec {
     multipledispatch
   ];
 
-  nativeCheckInputs = [
-    py
-    pytestCheckHook
-    pytest-html
-  ];
+  pyproject = true;
 
   pytestFlags = [
     "--html=testing-report.html"

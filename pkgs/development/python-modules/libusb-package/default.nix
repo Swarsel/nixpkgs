@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
+  libusb1,
   pyusb,
   replaceVars,
   setuptools,
   setuptools-scm,
-  stdenv,
   tomli,
-  libusb1,
 }:
 
 buildPythonPackage rec {
   pname = "libusb-package";
   version = "1.0.26.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyocd";
@@ -29,12 +28,6 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [
-    setuptools
-    setuptools-scm
-    tomli
-  ];
-
   nativeCheckInputs = [
     pyusb
   ];
@@ -46,6 +39,14 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [
+    setuptools
+    setuptools-scm
+    tomli
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Python package for simplified libusb distribution and usage with pyOCD";

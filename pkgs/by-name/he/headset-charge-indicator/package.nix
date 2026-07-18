@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  headsetcontrol,
-  wrapGAppsHook3,
-  python3,
-  gtk3,
   gobject-introspection,
+  gtk3,
+  headsetcontrol,
   libayatana-appindicator,
+  python3,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -62,12 +62,12 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/centic9/headset-charge-indicator";
     description = "App-indicator for GNOME desktops for controlling some features of various wireless headsets";
     longDescription = "A simple app-indicator for GNOME desktops to display the battery charge of some wireless headsets which also allows to control some functions like LEDs, sidetone and others.";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ zebreus ];
+    homepage = "https://github.com/centic9/headset-charge-indicator";
     license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ zebreus ];
+    platforms = lib.platforms.linux;
     mainProgram = "headset-charge-indicator.py";
   };
 }

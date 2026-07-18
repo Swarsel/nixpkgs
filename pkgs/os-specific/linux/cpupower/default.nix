@@ -2,21 +2,15 @@
   lib,
   stdenv,
   buildPackages,
+  gettext,
   kernel,
   pciutils,
-  gettext,
   which,
 }:
 
 stdenv.mkDerivation {
-  pname = "cpupower";
   inherit (kernel) version src patches;
-
-  nativeBuildInputs = [
-    gettext
-    which
-  ];
-  buildInputs = [ pciutils ];
+  pname = "cpupower";
 
   postPatch = ''
     cd tools/power/cpupower
@@ -25,33 +19,40 @@ stdenv.mkDerivation {
     sed -i 's,/usr/bin/install,${buildPackages.coreutils}/bin/install,' Makefile
   '';
 
+  nativeBuildInputs = [
+    gettext
+    which
+  ];
+
+  buildInputs = [ pciutils ];
+
   makeFlags = [
     "CROSS=${stdenv.cc.targetPrefix}"
     "CC=${stdenv.cc.targetPrefix}cc"
     "LD=${stdenv.cc.targetPrefix}cc"
   ];
 
+  enableParallelBuilding = true;
+
   installFlags = lib.mapAttrsToList (n: v: "${n}dir=${placeholder "out"}/${v}") {
+    bash_completion_ = "share/bash-completion/completions";
     bin = "bin";
-    sbin = "sbin";
-    man = "share/man";
+    conf = "etc";
+    doc = "share/doc/cpupower";
     include = "include";
     lib = "lib";
     libexec = "libexec";
     locale = "share/locale";
-    doc = "share/doc/cpupower";
-    conf = "etc";
-    bash_completion_ = "share/bash-completion/completions";
+    man = "share/man";
+    sbin = "sbin";
     unit = "lib/systemd/system";
   };
-
-  enableParallelBuilding = true;
 
   meta = {
     description = "Tool to examine and tune power saving features";
     homepage = "https://www.kernel.org/";
     license = lib.licenses.gpl2Only;
-    mainProgram = "cpupower";
     platforms = lib.platforms.linux;
+    mainProgram = "cpupower";
   };
 }

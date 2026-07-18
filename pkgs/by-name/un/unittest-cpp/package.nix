@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # GCC12 Patch
     (fetchpatch {
-      url = "https://github.com/unittest-cpp/unittest-cpp/pull/185/commits/f361c2a1034c02ba8059648f9a04662d6e2b5553.patch";
       hash = "sha256-xyhV2VBelw/uktUXSZ3JBxgG+8/Mout/JiXEZVV2+2Y=";
+      url = "https://github.com/unittest-cpp/unittest-cpp/pull/185/commits/f361c2a1034c02ba8059648f9a04662d6e2b5553.patch";
     })
   ];
 
@@ -33,17 +33,15 @@ stdenv.mkDerivation (finalAttrs: {
         'cmake_minimum_required(VERSION 3.10)'
   '';
 
+  nativeBuildInputs = [ cmake ];
   # Fix 'Version:' setting in .pc file. TODO: remove once upstreamed:
   #     https://github.com/unittest-cpp/unittest-cpp/pull/188
   cmakeFlags = [ "-DPACKAGE_VERSION=${finalAttrs.version}" ];
-
-  nativeBuildInputs = [ cmake ];
-
   doCheck = false;
 
   meta = {
-    homepage = "https://github.com/unittest-cpp/unittest-cpp";
     description = "Lightweight unit testing framework for C++";
+    homepage = "https://github.com/unittest-cpp/unittest-cpp";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;

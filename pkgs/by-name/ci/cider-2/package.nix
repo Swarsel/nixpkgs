@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  autoPatchelfHook,
-  makeWrapper,
-
   # Required dependencies for autoPatchelfHook
   alsa-lib,
   asar,
+  autoPatchelfHook,
+  dpkg,
   gtk3,
-  libgbm,
   libGL,
+  libgbm,
+  makeWrapper,
   nspr,
   nss,
   widevine-cdm,
@@ -40,12 +39,6 @@ stdenv.mkDerivation rec {
     nspr
     nss
   ];
-
-  unpackPhase = ''
-    runHook preUnpack
-    dpkg-deb --fsys-tarfile $src | tar --extract
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -86,17 +79,25 @@ stdenv.mkDerivation rec {
     rm -r $out/share/pixmaps
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+    dpkg-deb --fsys-tarfile $src | tar --extract
+    runHook postUnpack
+  '';
+
   passthru.updateScript = ./updater.sh;
 
   meta = {
     description = "Powerful music player that allows you listen to your favorite tracks with style";
     homepage = "https://cider.sh";
     license = lib.licenses.unfree;
-    mainProgram = "cider-2";
+
     maintainers = with lib.maintainers; [
       amadejkastelic
       l0r3v
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "cider-2";
   };
 }

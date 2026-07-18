@@ -7,12 +7,7 @@
 buildGhidraExtension {
   pname = "machinelearning";
   version = lib.getVersion ghidra;
-
   src = "${ghidra}/lib/ghidra/Extensions/Ghidra/${ghidra.distroPrefix}_MachineLearning.zip";
-  dontUnpack = true;
-
-  # Built as part ghidra
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -23,13 +18,19 @@ buildGhidraExtension {
     runHook postInstall
   '';
 
+  # Built as part ghidra
+  dontBuild = true;
+  dontUnpack = true;
+
   meta = {
     inherit (ghidra.meta) homepage license;
     description = "Finds functions using ML";
-    downloadPage = "https://github.com/NationalSecurityAgency/ghidra/tree/master/Ghidra/Extensions/MachineLearning";
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
+
+    downloadPage = "https://github.com/NationalSecurityAgency/ghidra/tree/master/Ghidra/Extensions/MachineLearning";
   };
 }

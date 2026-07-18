@@ -4,20 +4,20 @@
   fetchFromGitHub,
   # build and doc tooling
   asciidoctor,
-  doxygen,
-  graphviz,
-  python3,
-  ruby,
-  qpdf,
-  udevCheckHook,
   # build deps
   curl,
+  doxygen,
   glibcLocales,
+  graphviz,
   jdk,
   libedit,
   librist,
   openssl,
+  python3,
+  qpdf,
+  ruby,
   srt,
+  udevCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,13 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-bFnsGoElXeStIX5KwonJuF0x7DDzhzq+3oygkUOmZE0=";
   };
+
+  # remove tests which break the sandbox
+  patches = [ ./tests.patch ];
+
+  postPatch = ''
+    patchShebangs scripts
+  '';
 
   nativeBuildInputs = [
     asciidoctor
@@ -51,12 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     srt
   ];
 
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    patchShebangs scripts
-  '';
-
   # see CONFIG.txt in the sources
   makeFlags = [
     "CXXFLAGS_NO_WARNINGS=-Wno-deprecated-declarations"
@@ -69,11 +70,10 @@ stdenv.mkDerivation (finalAttrs: {
     "SYSROOT=${placeholder "out"}"
   ];
 
-  # remove tests which break the sandbox
-  patches = [ ./tests.patch ];
-  checkTarget = "test";
   doCheck = true;
   doInstallCheck = true;
+  checkTarget = "test";
+  enableParallelBuilding = true;
 
   installTargets = [
     "install-tools"
@@ -83,9 +83,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "MPEG Transport Stream Toolkit";
     homepage = "https://github.com/tsduck/tsduck";
-    mainProgram = "tsversion";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ siriobalmelli ];
     platforms = lib.platforms.all;
+    mainProgram = "tsversion";
   };
 })

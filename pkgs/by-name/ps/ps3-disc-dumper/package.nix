@@ -1,11 +1,11 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  zlib,
-  openssl,
+  buildDotnetModule,
   dotnetCorePackages,
   nix-update-script,
+  openssl,
+  zlib,
 }:
 
 buildDotnetModule rec {
@@ -19,12 +19,12 @@ buildDotnetModule rec {
     hash = "sha256-JF+qN4YR2thE/ByUjvDMDgMtPuD3jKZL0qGvPBCxYQ4=";
   };
 
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  dotnet-runtime = dotnetCorePackages.sdk_10_0;
-  dotnetRestoreFlags = [ "-p:Configuration=${buildType}" ];
   buildType = "Linux";
-  projectFile = "UI.Avalonia/UI.Avalonia.csproj";
+  dotnet-runtime = dotnetCorePackages.sdk_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  dotnetRestoreFlags = [ "-p:Configuration=${buildType}" ];
   nugetDeps = ./deps.json;
+  projectFile = "UI.Avalonia/UI.Avalonia.csproj";
 
   runtimeDeps = [
     zlib
@@ -37,11 +37,13 @@ buildDotnetModule rec {
     description = "Handy utility to make decrypted PS3 disc dumps";
     homepage = "https://github.com/13xforever/ps3-disc-dumper";
     license = lib.licenses.mit;
-    mainProgram = "ps3-disc-dumper";
+
     maintainers = with lib.maintainers; [
       evanjs
       gepbird
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "ps3-disc-dumper";
   };
 }

@@ -1,29 +1,27 @@
 {
-  buildDunePackage,
-  irmin,
-  ppx_irmin,
-  mtime,
+  alcotest-lwt,
   astring,
+  buildDunePackage,
+  cmdliner,
   fmt,
+  hex,
+  irmin,
   jsonm,
   logs,
   lwt,
-  metrics-unix,
-  ocaml-syntax-shims,
-  cmdliner,
   metrics,
-  alcotest-lwt,
-  hex,
-  vector,
+  metrics-unix,
+  mtime,
+  ocaml-syntax-shims,
+  ppx_irmin,
   qcheck-alcotest,
+  vector,
 }:
 
 buildDunePackage {
 
-  pname = "irmin-test";
-
   inherit (irmin) version src;
-
+  pname = "irmin-test";
   nativeBuildInputs = [ ppx_irmin ];
 
   propagatedBuildInputs = [
@@ -43,6 +41,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     hex
     qcheck-alcotest

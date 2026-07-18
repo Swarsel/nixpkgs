@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aio-georss-client,
   aiointercept,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   python-dateutil,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aio-georss-gdacs";
   version = "2026.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -23,15 +22,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-2Ot7w2TU7nwnHePFCaCr7LZNbKbOLxADnHoieFUGg40=";
   };
 
-  __darwinAllowLocalNetworking = true;
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aio-georss-client
-    python-dateutil
-  ];
-
   nativeCheckInputs = [
     aiointercept
     aioresponses
@@ -39,6 +29,15 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aio-georss-client
+    python-dateutil
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "aio_georss_gdacs" ];
 
   meta = {

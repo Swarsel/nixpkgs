@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   cmake,
   versionCheckHook,
@@ -18,9 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
 
-  # upstream repo includes a build/ directory
-  cmakeBuildDir = "_build";
-
   cmakeFlags = lib.optional asLibrary [
     "-DBUILD_SHARED_LIBS=ON"
   ];
@@ -29,15 +26,17 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm444 ../src/astyle.h $out/include/astyle.h
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = !asLibrary;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  # upstream repo includes a build/ directory
+  cmakeBuildDir = "_build";
 
   meta = {
     description = "Source code indenter, formatter, and beautifier for C, C++, C# and Java";
-    mainProgram = "astyle";
     homepage = "https://astyle.sourceforge.net/";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ carlossless ];
     platforms = lib.platforms.unix;
+    mainProgram = "astyle";
   };
 })

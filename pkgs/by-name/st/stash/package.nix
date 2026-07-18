@@ -1,12 +1,12 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  fetchYarnDeps,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  fetchYarnDeps,
   nixosTests,
   nodejs,
   stash,
-  stdenv,
   testers,
   yarnBuildHook,
   yarnConfigHook,
@@ -26,14 +26,14 @@ buildGoModule (
   finalAttrs:
   let
     frontend = stdenv.mkDerivation (final: {
-      pname = "${finalAttrs.pname}-ui";
       inherit (finalAttrs) version gitHash;
+      pname = "${finalAttrs.pname}-ui";
       src = "${finalAttrs.src}/ui/v2.5";
 
-      yarnOfflineCache = fetchYarnDeps {
-        yarnLock = "${final.src}/yarn.lock";
-        hash = finalAttrs.yarnHash;
-      };
+      postPatch = ''
+        substituteInPlace codegen.ts \
+          --replace-fail "../../graphql/" "${finalAttrs.src}/graphql/"
+      '';
 
       nativeBuildInputs = [
         yarnConfigHook
@@ -41,11 +41,6 @@ buildGoModule (
         # Needed for executing package.json scripts
         nodejs
       ];
-
-      postPatch = ''
-        substituteInPlace codegen.ts \
-          --replace-fail "../../graphql/" "${finalAttrs.src}/graphql/"
-      '';
 
       buildPhase = ''
         runHook preBuild
@@ -64,8 +59,13 @@ buildGoModule (
         runHook postBuild
       '';
 
-      dontInstall = true;
       dontFixup = true;
+      dontInstall = true;
+
+      yarnOfflineCache = fetchYarnDeps {
+        hash = finalAttrs.yarnHash;
+        yarnLock = "${final.src}/yarn.lock";
+      };
     });
   in
   {
@@ -84,24 +84,11 @@ buildGoModule (
       hash = srcHash;
     };
 
-    ldflags = [
-      "-s"
-      "-w"
-      "-X 'github.com/stashapp/stash/internal/build.buildstamp=1970-01-01 00:00:00'"
-      "-X 'github.com/stashapp/stash/internal/build.githash=${finalAttrs.gitHash}'"
-      "-X 'github.com/stashapp/stash/internal/build.version=v${finalAttrs.version}'"
-      "-X 'github.com/stashapp/stash/internal/build.officialBuild=false'"
-    ];
-    tags = [
-      "sqlite_stat4"
-      "sqlite_math_functions"
-    ];
-
-    subPackages = [ "cmd/stash" ];
-
     postPatch = ''
       cp -a ${frontend} ui/v2.5/build
     '';
+
+    strictDeps = true;
 
     preBuild = ''
       # `go mod tidy` requires internet access and does nothing
@@ -110,34 +97,54 @@ buildGoModule (
       GOFLAGS="''${GOFLAGS/-trimpath/}" go generate ./cmd/stash
     '';
 
-    strictDeps = true;
+    ldflags = [
+      "-s"
+      "-w"
+      "-X 'github.com/stashapp/stash/internal/build.buildstamp=1970-01-01 00:00:00'"
+      "-X 'github.com/stashapp/stash/internal/build.githash=${finalAttrs.gitHash}'"
+      "-X 'github.com/stashapp/stash/internal/build.version=v${finalAttrs.version}'"
+      "-X 'github.com/stashapp/stash/internal/build.officialBuild=false'"
+    ];
+
+    subPackages = [ "cmd/stash" ];
+
+    tags = [
+      "sqlite_stat4"
+      "sqlite_math_functions"
+    ];
 
     passthru = {
       inherit frontend;
-      updateScript = ./update.py;
+
       tests = {
         inherit (nixosTests) stash;
+
         version = testers.testVersion {
-          package = stash;
           version = "v${finalAttrs.version} (${finalAttrs.gitHash}) - Unofficial Build - 1970-01-01 00:00:00";
+          package = stash;
         };
       };
+
+      updateScript = ./update.py;
     };
 
     meta = {
-      mainProgram = "stash";
       description = "Organizer for your adult videos/images";
-      license = lib.licenses.agpl3Only;
       homepage = "https://stashapp.cc/";
       changelog = "https://github.com/stashapp/stash/blob/v${finalAttrs.version}/ui/v2.5/src/docs/en/Changelog/v${lib.versions.major finalAttrs.version}${lib.versions.minor finalAttrs.version}0.md";
+      license = lib.licenses.agpl3Only;
+
       maintainers = with lib.maintainers; [
         DrakeTDL
       ];
+
       platforms = [
         "x86_64-linux"
         "aarch64-linux"
         "aarch64-darwin"
       ];
+
+      mainProgram = "stash";
     };
   }
 )

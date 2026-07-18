@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytest,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mslex";
   version = "1.3.0";
-  pyproject = true; # fallback to setup.py if pyproject.toml is not present
 
   src = fetchFromGitHub {
     owner = "smoofra";
@@ -18,16 +17,18 @@ buildPythonPackage rec {
     hash = "sha256-vr36OTCTJFZRXlkeGgN4UOlH+6uAkMvqTEO9qL8X98w=";
   };
 
+  nativeCheckInputs = [
+    pytest
+  ];
+
   build-system = [
     setuptools
   ];
 
+  pyproject = true; # fallback to setup.py if pyproject.toml is not present
+
   pythonImportsCheck = [
     "mslex"
-  ];
-
-  nativeCheckInputs = [
-    pytest
   ];
 
   meta = {

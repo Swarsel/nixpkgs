@@ -2,37 +2,37 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   autoconf,
   automake116x,
-  zlib,
-  shadow,
-  capabilitiesSupport ? stdenv.hostPlatform.isLinux,
+  coreutils,
+  cryptsetup,
+  gitUpdater,
+  installShellFiles,
   libcap_ng,
   libxcrypt,
+  ncurses,
+  nixosTests,
+  pam,
+  pkg-config,
+  po4a,
+  shadow,
+  sqlite,
+  systemdLibs,
+  zlib,
+  capabilitiesSupport ? stdenv.hostPlatform.isLinux,
   # Disable this by default because `mount` is setuid. However, we also support
   # "dlopen" as a value here. Note that the nixpkgs setuid wrapper and ld-linux.so will filter out LD_LIBRARY_PATH
   # if you set this to dlopen, so ensure you're accessing it without the wrapper if you depend on that.
   cryptsetupSupport ? false,
-  cryptsetup,
   ncursesSupport ? true,
-  ncurses,
-  pamSupport ? lib.meta.availableOn stdenv.hostPlatform pam,
-  pam,
-  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
-  systemdLibs,
-  sqlite,
   nlsSupport ? true,
-  translateManpages ? true,
-  po4a,
-  installShellFiles,
-  writeSupport ? stdenv.hostPlatform.isLinux,
+  pamSupport ? lib.meta.availableOn stdenv.hostPlatform pam,
   shadowSupport ? stdenv.hostPlatform.isLinux,
-  coreutils,
+  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
+  translateManpages ? true,
   # Doesn't build on Darwin, only makes sense on systems which have pam
   withLastlog ? !stdenv.hostPlatform.isDarwin && lib.meta.availableOn stdenv.hostPlatform pam,
-  gitUpdater,
-  nixosTests,
+  writeSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 # lastlog requires PAM, or else it's broken.
@@ -49,15 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://kernel/linux/utils/util-linux/v${lib.versions.majorMinor finalAttrs.version}/util-linux-${finalAttrs.version}.tar.xz";
     hash = "sha256-A6BdOt+WAu8Sjy2gW4SzIFzmDDUeVzfANw90AAZ5zoo=";
   };
-
-  # Note: fetchpatch/fetchpatch2 cause infinite recursion with util-linuxMinimal.
-  # Prefer fetchurl for the below instead of vendoring patches; it will work.
-  patches = [
-    # Search $PATH for the shutdown binary instead of hard-coding /sbin/shutdown,
-    # which isn't valid on NixOS (and a compatibility link on most other modern
-    # distros anyway).
-    ./rtcwake-search-PATH-for-shutdown.patch
-  ];
 
   # We separate some of the utilities into their own outputs. This
   # allows putting together smaller systems depending on only part of
@@ -79,7 +70,15 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withLastlog [
     "lastlog"
   ];
-  separateDebugInfo = true;
+
+  # Note: fetchpatch/fetchpatch2 cause infinite recursion with util-linuxMinimal.
+  # Prefer fetchurl for the below instead of vendoring patches; it will work.
+  patches = [
+    # Search $PATH for the shutdown binary instead of hard-coding /sbin/shutdown,
+    # which isn't valid on NixOS (and a compatibility link on most other modern
+    # distros anyway).
+    ./rtcwake-search-PATH-for-shutdown.patch
+  ];
 
   postPatch = ''
     patchShebangs tests/run.sh tools/all_syscalls tools/all_errnos
@@ -99,6 +98,26 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace lib/c_strtod.c --replace-fail __APPLE__ __FreeBSD__
     sed -E -i -e '/_POSIX_C_SOURCE/d' -e '/_XOPEN_SOURCE/d' misc-utils/hardlink.c
   '';
+
+  nativeBuildInputs = [
+    autoconf
+    automake116x
+    installShellFiles
+    pkg-config
+  ]
+  ++ lib.optionals translateManpages [ po4a ]
+  ++ lib.optionals (cryptsetupSupport == "dlopen") [ cryptsetup ];
+
+  buildInputs = [
+    zlib
+    libxcrypt
+    sqlite
+  ]
+  ++ lib.optionals (cryptsetupSupport == true) [ cryptsetup ]
+  ++ lib.optionals pamSupport [ pam ]
+  ++ lib.optionals capabilitiesSupport [ libcap_ng ]
+  ++ lib.optionals ncursesSupport [ ncurses ]
+  ++ lib.optionals systemdSupport [ systemdLibs ];
 
   # !!! It would be better to obtain the path to the mount helpers
   # (/sbin/mount.*) through an environment variable, but that's
@@ -151,27 +170,7 @@ stdenv.mkDerivation (finalAttrs: {
     "usrsbin_execdir=${placeholder "bin"}/sbin"
   ];
 
-  nativeBuildInputs = [
-    autoconf
-    automake116x
-    installShellFiles
-    pkg-config
-  ]
-  ++ lib.optionals translateManpages [ po4a ]
-  ++ lib.optionals (cryptsetupSupport == "dlopen") [ cryptsetup ];
-
-  buildInputs = [
-    zlib
-    libxcrypt
-    sqlite
-  ]
-  ++ lib.optionals (cryptsetupSupport == true) [ cryptsetup ]
-  ++ lib.optionals pamSupport [ pam ]
-  ++ lib.optionals capabilitiesSupport [ libcap_ng ]
-  ++ lib.optionals ncursesSupport [ ncurses ]
-  ++ lib.optionals systemdSupport [ systemdLibs ];
-
-  enableParallelBuilding = true;
+  doCheck = false; # "For development purpose only. Don't execute on production system!"
 
   postInstall = ''
     moveToOutput sbin/nologin "$login"
@@ -209,7 +208,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "$bin/bin/lastlog2" "$lastlog/bin/lastlog2"
   '';
 
-  doCheck = false; # "For development purpose only. Don't execute on production system!"
+  enableParallelBuilding = true;
+  separateDebugInfo = true;
 
   passthru = {
     # encode upstream assumption to be used in man-db
@@ -222,17 +222,18 @@ stdenv.mkDerivation (finalAttrs: {
   }
   // lib.optionalAttrs (!isMinimal) {
     updateScript = gitUpdater {
+      ignoredVersions = "(-rc|-start|-devel).*";
+      rev-prefix = "v";
       # No nicer place to find latest release.
       url = "https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git";
-      rev-prefix = "v";
-      ignoredVersions = "(-rc|-start|-devel).*";
     };
   };
 
   meta = {
-    homepage = "https://www.kernel.org/pub/linux/utils/util-linux/";
     description = "Set of system utilities for Linux";
+    homepage = "https://www.kernel.org/pub/linux/utils/util-linux/";
     changelog = "https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v${lib.versions.majorMinor finalAttrs.version}/v${finalAttrs.version}-ReleaseNotes";
+
     # https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git/tree/README.licensing
     license = with lib.licenses; [
       gpl2Only
@@ -243,9 +244,11 @@ stdenv.mkDerivation (finalAttrs: {
       bsdOriginalUC
       publicDomain
     ];
+
     maintainers = with lib.maintainers; [ numinit ];
-    teams = [ lib.teams.security-review ];
     platforms = lib.platforms.unix;
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "kernel" finalAttrs.version;
+
     pkgConfigModules = [
       "blkid"
       "fdisk"
@@ -253,8 +256,8 @@ stdenv.mkDerivation (finalAttrs: {
       "smartcols"
       "uuid"
     ];
-    priority = 6; # lower priority than coreutils ("kill") and shadow ("login" etc.) packages
 
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "kernel" finalAttrs.version;
+    priority = 6; # lower priority than coreutils ("kill") and shadow ("login" etc.) packages
+    teams = [ lib.teams.security-review ];
   };
 })

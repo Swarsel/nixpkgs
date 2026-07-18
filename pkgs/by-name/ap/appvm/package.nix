@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  makeWrapper,
   nix,
   virt-viewer,
-  makeWrapper,
 }:
 
 let
@@ -31,9 +31,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-n+YputGiNWSOYbwes/rjz0h3RWZONDTc8+LDc0La/KU=";
   };
 
-  vendorHash = "sha256-8eU+Mf5dxL/bAMMShXvj8I1Kdd4ysBTWvgYIXwLStPI=";
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-8eU+Mf5dxL/bAMMShXvj8I1Kdd4ysBTWvgYIXwLStPI=";
 
   postFixup = ''
     wrapProgram $out/bin/appvm \
@@ -48,11 +47,12 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Nix-based app VMs";
     homepage = "https://code.dumpstack.io/tools/appvm";
+    license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       dump_stack
       cab404
       onny
     ];
-    license = lib.licenses.gpl3;
   };
 })

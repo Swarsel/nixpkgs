@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
+  _experimental-update-script-combinators,
   cargo-tauri,
   cinny,
   desktop-file-utils,
-  wrapGAppsHook3,
-  makeBinaryWrapper,
-  pkg-config,
-  openssl,
   glib-networking,
-  webkitgtk_4_1,
   jq,
+  makeBinaryWrapper,
   moreutils,
   nix-update-script,
-  _experimental-update-script-combinators,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,10 +29,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/A/O42jwwK2iDV1IdRjOO8fE/AZ0h7UWAZZLozOqUWs=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src-tauri";
-
-  cargoHash = "sha256-EF8gpfeZasazq0NKrjItt4bkgautQjYjEegf1OlWLOw=";
-
   postPatch =
     let
       cinny' = cinny.override {
@@ -45,18 +41,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ${lib.getExe jq} \
         '.build.frontendDist = "${cinny'}" | del(.build.beforeBuildCommand) | .bundle.createUpdaterArtifacts = false' tauri.conf.json \
         | ${lib.getExe' moreutils "sponge"} tauri.conf.json
-    '';
-
-  postInstall =
-    lib.optionalString stdenv.hostPlatform.isDarwin ''
-      mkdir -p "$out/bin"
-      makeWrapper "$out/Applications/Cinny.app/Contents/MacOS/Cinny" "$out/bin/cinny"
-    ''
-    + lib.optionalString stdenv.hostPlatform.isLinux ''
-      desktop-file-edit \
-        --set-comment "Yet another matrix client for desktop" \
-        --set-key="Categories" --set-value="Network;InstantMessaging;" \
-        $out/share/applications/Cinny.desktop
     '';
 
   nativeBuildInputs = [
@@ -77,8 +61,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  buildNoDefaultFeatures = true;
+  cargoHash = "sha256-EF8gpfeZasazq0NKrjItt4bkgautQjYjEegf1OlWLOw=";
+
+  postInstall =
+    lib.optionalString stdenv.hostPlatform.isDarwin ''
+      mkdir -p "$out/bin"
+      makeWrapper "$out/Applications/Cinny.app/Contents/MacOS/Cinny" "$out/bin/cinny"
+    ''
+    + lib.optionalString stdenv.hostPlatform.isLinux ''
+      desktop-file-edit \
+        --set-comment "Yet another matrix client for desktop" \
+        --set-key="Categories" --set-value="Network;InstantMessaging;" \
+        $out/share/applications/Cinny.desktop
+    '';
+
   buildFeatures = [ "custom-protocol" ];
+  buildNoDefaultFeatures = true;
+  sourceRoot = "${finalAttrs.src.name}/src-tauri";
 
   passthru = {
     updateScript = _experimental-update-script-combinators.sequence [
@@ -90,12 +89,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Yet another matrix client for desktop";
     homepage = "https://github.com/cinnyapp/cinny-desktop";
+    license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       qyriad
       rebmit
       ryand56
     ];
-    license = lib.licenses.agpl3Only;
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "cinny";
   };

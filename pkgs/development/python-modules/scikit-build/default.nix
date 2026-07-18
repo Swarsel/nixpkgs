@@ -1,34 +1,33 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  fetchpatch2,
-  hatch-fancy-pypi-readme,
-  hatch-vcs,
-  hatchling,
-  distro,
-  packaging,
-  setuptools,
-  wheel,
   # Test Inputs
   cmake,
   cython,
+  distro,
+  fetchPypi,
+  fetchpatch2,
   git,
-  pytestCheckHook,
+  hatch-fancy-pypi-readme,
+  hatch-vcs,
+  hatchling,
+  packaging,
   pytest-mock,
+  pytestCheckHook,
   requests,
+  setuptools,
   virtualenv,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "scikit-build";
   version = "0.19.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "scikit_build";
     inherit version;
     hash = "sha256-RuGy1xND0U5MB9fmCQLmc8eN77miwoK3CtgPuFAq3i4=";
+    pname = "scikit_build";
   };
 
   # This line in the filterwarnings section of the pytest configuration leads to this error:
@@ -36,6 +35,16 @@ buildPythonPackage rec {
   postPatch = ''
     sed -i "/'error',/d" pyproject.toml
   '';
+
+  nativeCheckInputs = [
+    cmake
+    cython
+    git
+    pytestCheckHook
+    pytest-mock
+    requests
+    virtualenv
+  ];
 
   build-system = [
     hatch-fancy-pypi-readme
@@ -49,18 +58,6 @@ buildPythonPackage rec {
     setuptools
     wheel
   ];
-
-  nativeCheckInputs = [
-    cmake
-    cython
-    git
-    pytestCheckHook
-    pytest-mock
-    requests
-    virtualenv
-  ];
-
-  dontUseCmakeConfigure = true;
 
   disabledTests = [
     "test_hello_develop" # tries setuptools develop install
@@ -82,14 +79,19 @@ buildPythonPackage rec {
     "test_sdist_with_symlinks"
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/scikit-build/scikit-build/blob/${version}/CHANGES.rst";
     description = "Improved build system generator for CPython C/C++/Fortran/Cython extensions";
     homepage = "https://github.com/scikit-build/scikit-build";
+    changelog = "https://github.com/scikit-build/scikit-build/blob/${version}/CHANGES.rst";
+
     license = with lib.licenses; [
       mit
       bsd2
     ]; # BSD due to reuses of PyNE code
+
     maintainers = with lib.maintainers; [ FlorianFranzen ];
   };
 }

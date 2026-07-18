@@ -1,15 +1,17 @@
 {
   lib,
   fetchFromGitHub ? null,
-  release_version ? null,
   gitRelease ? null,
-  officialRelease ? null,
   monorepoSrc' ? null,
+  officialRelease ? null,
+  release_version ? null,
   version ? null,
 }@args:
 
 rec {
   llvm_meta = {
+    identifiers.cpeParts.vendor = "llvm";
+
     license =
       with lib.licenses;
       # Contributions after June 1st, 2024 are only licensed under asl20 and
@@ -21,10 +23,7 @@ rec {
         ]
       else
         ncsa;
-    teams = [
-      lib.teams.llvm
-      lib.teams.security-review
-    ];
+
     # See llvm/cmake/config-ix.cmake.
     platforms =
       lib.platforms.aarch64
@@ -38,23 +37,11 @@ rec {
       ++ lib.platforms.m68k
       ++ lib.platforms.loongarch64;
 
-    identifiers.cpeParts.vendor = "llvm";
+    teams = [
+      lib.teams.llvm
+      lib.teams.security-review
+    ];
   };
-
-  releaseInfo =
-    if gitRelease != null then
-      rec {
-        original = gitRelease;
-        release_version = args.version or original.version;
-        version = gitRelease.rev-version;
-      }
-    else
-      rec {
-        original = officialRelease;
-        release_version = args.version or original.version;
-        version =
-          if original ? candidate then "${release_version}-${original.candidate}" else release_version;
-      };
 
   monorepoSrc =
     if monorepoSrc' != null then
@@ -65,10 +52,26 @@ rec {
         rev = if gitRelease != null then gitRelease.rev else "llvmorg-${releaseInfo.version}";
       in
       fetchFromGitHub rec {
+        inherit rev sha256;
         owner = "llvm";
         repo = "llvm-project";
-        inherit rev sha256;
         passthru = { inherit owner repo rev; };
+      };
+
+  releaseInfo =
+    if gitRelease != null then
+      rec {
+        version = gitRelease.rev-version;
+        original = gitRelease;
+        release_version = args.version or original.version;
+      }
+    else
+      rec {
+        version =
+          if original ? candidate then "${release_version}-${original.candidate}" else release_version;
+
+        original = officialRelease;
+        release_version = args.version or original.version;
       };
 
 }

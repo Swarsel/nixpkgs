@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libtool,
   autoreconfHook,
+  help2man,
+  libtool,
   pcsclite,
-  qrencode,
+  pkg-config,
   python3,
   python3Packages,
-  help2man,
+  qrencode,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "virtualsmartcard-${finalAttrs.version}";
     hash = "sha256-+BrX2aqByUvIUbN4K+sdq9bH29FD2rtTt4q+URPgx7A=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/virtualsmartcard";
 
   nativeBuildInputs = [
     autoreconfHook
@@ -53,12 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
     wrapPythonPrograms
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/virtualsmartcard";
+
   meta = {
     description = "Emulates a smart card and makes it accessible through PC/SC";
     homepage = "http://frankmorgner.github.io/vsmartcard/virtualsmartcard/README.html";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ stargate01 ];
     platforms = lib.platforms.all;
     broken = stdenv.hostPlatform.isDarwin;
-    maintainers = with lib.maintainers; [ stargate01 ];
   };
 })

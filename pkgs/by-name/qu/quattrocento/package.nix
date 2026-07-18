@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -23,10 +23,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "http://www.impallari.com/quattrocento/";
     description = "Classic, elegant, sober and strong serif typeface";
+    homepage = "http://www.impallari.com/quattrocento/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.rycee ];
+    platforms = lib.platforms.all;
   };
 }

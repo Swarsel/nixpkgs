@@ -22,9 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     kpackage
     zip
   ];
-  buildInputs = [ kwin ];
-  dontWrapQtApps = true;
 
+  buildInputs = [ kwin ];
   buildFlags = [ "build" ];
 
   installPhase = ''
@@ -34,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "KDE KWin Script for snapping windows into zones";

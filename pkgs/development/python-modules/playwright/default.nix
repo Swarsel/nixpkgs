@@ -1,28 +1,23 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # patches
-  replaceVars,
+  buildPythonPackage,
+  # nativeBuildInputs
+  gitMinimal,
+  # dependencies
+  greenlet,
+  nixosTests,
   nodejs,
   playwright-driver,
-
+  pyee,
+  python,
+  # patches
+  replaceVars,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # nativeBuildInputs
-  gitMinimal,
   writableTmpDirAsHomeHook,
-
-  # dependencies
-  greenlet,
-  pyee,
-
-  python,
-  nixosTests,
 }:
 
 let
@@ -32,7 +27,6 @@ buildPythonPackage (finalAttrs: {
   pname = "playwright";
   # run ./pkgs/development/web/playwright/update.sh to update
   version = "1.61.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -65,36 +59,42 @@ buildPythonPackage (finalAttrs: {
     rm setup.py
   '';
 
-  build-system = [
-    setuptools-scm
-    setuptools
-  ];
-
   nativeBuildInputs = [
     gitMinimal
     writableTmpDirAsHomeHook
   ];
 
-  pythonRelaxDeps = [
-    "greenlet"
-    "pyee"
-  ];
-  dependencies = [
-    greenlet
-    pyee
-  ];
+  # Skip tests because they require network access.
+  doCheck = false;
 
   postInstall = ''
     ln -s ${driver} $out/${python.sitePackages}/playwright/driver
   '';
 
-  # Skip tests because they require network access.
-  doCheck = false;
+  build-system = [
+    setuptools-scm
+    setuptools
+  ];
 
+  dependencies = [
+    greenlet
+    pyee
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "playwright" ];
+
+  pythonRelaxDeps = [
+    "greenlet"
+    "pyee"
+  ];
 
   passthru = {
     inherit driver;
+    # Package and playwright driver versions are tightly coupled.
+    # Use the update script to ensure synchronized updates.
+    skipBulkUpdate = true;
+
     tests = {
       inherit driver;
       browsers = playwright-driver.browsers;
@@ -102,20 +102,19 @@ buildPythonPackage (finalAttrs: {
     // lib.optionalAttrs stdenv.hostPlatform.isLinux {
       inherit (nixosTests) playwright-python;
     };
-    # Package and playwright driver versions are tightly coupled.
-    # Use the update script to ensure synchronized updates.
-    skipBulkUpdate = true;
   };
 
   meta = {
     description = "Python version of the Playwright testing and automation library";
-    mainProgram = "playwright";
     homepage = "https://github.com/microsoft/playwright-python";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       techknowlogick
       yrd
       kalekseev
     ];
+
+    mainProgram = "playwright";
   };
 })

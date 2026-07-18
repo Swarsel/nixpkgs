@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  makeWrapper,
+  buildNpmPackage,
   chromium,
+  makeWrapper,
 }:
 
 buildNpmPackage rec {
@@ -17,26 +17,25 @@ buildNpmPackage rec {
     sha256 = "0xrb8r4qc9ds7wmfd30nslnkqylxqfwr4gqf7b30v651sjyds29x";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   npmDepsHash = "sha256-R22lXQuYNQ+TQ7U2l4wZeBmAl8AXHUPG/3qVQBi3Ezo=";
 
   env = {
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = true;
   };
 
-  dontNpmBuild = true;
-
-  nativeBuildInputs = [ makeWrapper ];
-
   postInstall = ''
     wrapProgram $out/bin/puppeteer \
       --set PUPPETEER_EXECUTABLE_PATH ${chromium}/bin/chromium
   '';
 
+  dontNpmBuild = true;
+
   meta = {
     description = "Command-line wrapper for generating PDF prints and PNG screenshots with Puppeteer";
     homepage = "https://github.com/JarvusInnovations/puppeteer-cli";
     license = lib.licenses.mit;
-    mainProgram = "puppeteer";
     maintainers = with lib.maintainers; [ chessai ];
+    mainProgram = "puppeteer";
   };
 }

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,14 +19,16 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Cloud enumeration tool";
-    mainProgram = "cloudbrute";
+
     longDescription = ''
       A tool to find a company (target) infrastructure, files, and apps on
       the top cloud providers (Amazon, Google, Microsoft, DigitalOcean,
       Alibaba, Vultr, Linode).
     '';
+
     homepage = "https://github.com/0xsha/CloudBrute";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "cloudbrute";
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  gitUpdater,
-  writeShellApplication,
   _experimental-update-script-combinators,
+  buildGoModule,
   galene,
+  gitUpdater,
   nix,
   sd,
+  writeShellApplication,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,9 +21,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-FXD90ishU3FBRj16tQx8wr+lSFl1dffNM1rU81Kfe1I=";
   };
 
-  vendorHash = "sha256-i/pWXgcd01PgH1Q+WEm0gP1leTFBhqGxVGnl6c+J1aQ=";
-
   strictDeps = true;
+  vendorHash = "sha256-i/pWXgcd01PgH1Q+WEm0gP1leTFBhqGxVGnl6c+J1aQ=";
 
   ldflags = [
     "-s"
@@ -31,15 +30,23 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru = {
+    updateScript = _experimental-update-script-combinators.sequence [
+      finalAttrs.passthru.updateScriptSrc.command
+      (lib.getExe finalAttrs.passthru.updateScriptVendor)
+    ];
+
     updateScriptSrc = gitUpdater {
       rev-prefix = "galene-ldap-";
     };
+
     updateScriptVendor = writeShellApplication {
       name = "update-galene-ldap-vendorHash";
+
       runtimeInputs = [
         nix
         sd
       ];
+
       text = ''
         export UPDATE_NIX_ATTR_PATH="''${UPDATE_NIX_ATTR_PATH:-galene-ldap}"
 
@@ -56,18 +63,14 @@ buildGoModule (finalAttrs: {
         ${sd.meta.mainProgram} --string-mode "$oldhash" "$newhash" "$fname"
       '';
     };
-    updateScript = _experimental-update-script-combinators.sequence [
-      finalAttrs.passthru.updateScriptSrc.command
-      (lib.getExe finalAttrs.passthru.updateScriptVendor)
-    ];
   };
 
   meta = {
+    inherit (galene.meta) maintainers;
     description = "LDAP support for the Galene videoconferencing server";
     homepage = "https://github.com/jech/galene-ldap";
     changelog = "https://github.com/jech/galene-ldap/raw/${finalAttrs.src.rev}/CHANGES";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
-    inherit (galene.meta) maintainers;
   };
 })

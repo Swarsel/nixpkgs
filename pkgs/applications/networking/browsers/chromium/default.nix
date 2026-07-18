@@ -1,41 +1,40 @@
 {
-  newScope,
-  config,
+  lib,
   stdenv,
-  makeWrapper,
+  adwaita-icon-theme,
   buildPackages,
-  ed,
-  gnugrep,
+  config,
   coreutils,
-  xdg-utils,
+  ed,
+  electron-source, # for warnObsoleteVersionConditional
+  fetchgit,
   glib,
+  gn,
+  gnugrep,
+  gsettings-desktop-schemas,
   gtk3,
   gtk4,
-  adwaita-icon-theme,
-  gsettings-desktop-schemas,
-  gn,
-  fetchgit,
-  libva,
-  pipewire,
-  wayland,
-  runCommand,
-  lib,
   libkrb5,
+  libva,
+  makeWrapper,
+  newScope,
+  pipewire,
+  pkgs,
+  pkgsBuildBuild,
+  runCommand,
+  wayland,
   widevine-cdm,
-  electron-source, # for warnObsoleteVersionConditional
-
+  xdg-utils,
+  commandLineArgs ? "",
+  cupsSupport ? true,
+  enableWideVine ? false,
+  proprietaryCodecs ? true,
+  pulseSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
+  ungoogled ? false, # Whether to build chromium or ungoogled-chromium
   # package customization
   # Note: enable* flags should not require full rebuilds (i.e. only affect the wrapper)
   upstream-info ?
     (lib.importJSON ./info.json).${if !ungoogled then "chromium" else "ungoogled-chromium"},
-  proprietaryCodecs ? true,
-  enableWideVine ? false,
-  ungoogled ? false, # Whether to build chromium or ungoogled-chromium
-  cupsSupport ? true,
-  pulseSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-  commandLineArgs ? "",
-  pkgsBuildBuild,
-  pkgs,
 }:
 
 let
@@ -71,19 +70,21 @@ let
   chromium = rec {
     inherit stdenv upstream-info;
 
+    browser = callPackage ./browser.nix {
+      inherit chromiumVersionAtLeast enableWideVine ungoogled;
+    };
+
     mkChromiumDerivation = callPackage ./common.nix {
       inherit chromiumVersionAtLeast versionRange;
+
       inherit
         proprietaryCodecs
         cupsSupport
         pulseSupport
         ungoogled
         ;
-      gnChromium = buildPackages.gn.override upstream-info.deps.gn;
-    };
 
-    browser = callPackage ./browser.nix {
-      inherit chromiumVersionAtLeast enableWideVine ungoogled;
+      gnChromium = buildPackages.gn.override upstream-info.deps.gn;
     };
 
     # ungoogled-chromium is, contrary to its name, not a build of
@@ -115,8 +116,14 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = lib.optionalString ungoogled "ungoogled-" + "chromium";
   inherit (chromium.browser) version;
+  inherit (chromium.browser) packageName;
+  pname = lib.optionalString ungoogled "ungoogled-" + "chromium";
+
+  outputs = [
+    "out"
+    "sandbox"
+  ];
 
   nativeBuildInputs = [
     makeWrapper
@@ -135,11 +142,6 @@ stdenv.mkDerivation {
 
     # Needed for kerberos at runtime
     libkrb5
-  ];
-
-  outputs = [
-    "out"
-    "sandbox"
   ];
 
   buildCommand =
@@ -209,11 +211,11 @@ stdenv.mkDerivation {
       done
     '';
 
-  inherit (chromium.browser) packageName;
-  meta = chromium.browser.meta;
   passthru = {
     inherit (chromium) upstream-info browser;
-    mkDerivation = chromium.mkChromiumDerivation;
     inherit sandboxExecutableName;
+    mkDerivation = chromium.mkChromiumDerivation;
   };
+
+  meta = chromium.browser.meta;
 }

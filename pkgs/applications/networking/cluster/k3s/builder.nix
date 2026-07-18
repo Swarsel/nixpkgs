@@ -1,40 +1,40 @@
 lib:
 {
-  # git tag
-  k3sVersion,
-  # commit hash
-  k3sCommit,
-  k3sRepoSha256 ? lib.fakeHash,
-  k3sVendorHash ? lib.fakeHash,
-  # taken from ./scripts/version.sh VERSION_ROOT
-  k3sRootVersion,
-  k3sRootSha256 ? lib.fakeHash,
   # Based on the traefik charts here: https://github.com/k3s-io/k3s/blob/d71ab6317e22dd34673faa307a412a37a16767f6/scripts/download#L29-L32
   # see also https://github.com/k3s-io/k3s/blob/d71ab6317e22dd34673faa307a412a37a16767f6/manifests/traefik.yaml#L8
   chartVersions,
+  # taken from ./scripts/version.sh PKG_CONTAINERD_K3S
+  containerdPackage,
+  # taken from ./scripts/version.sh VERSION_CONTAINERD
+  containerdVersion,
+  # run `grep github.com/kubernetes-sigs/cri-tools go.mod | head -n1 | awk '{print $4}'` in the k3s repo at the tag
+  criCtlVersion,
+  # taken from ./scripts/version.sh VERSION_CRI_DOCKERD
+  criDockerdVersion,
+  # taken from ./scripts/version.sh VERSION_FLANNEL_PLUGIN
+  flannelPluginVersion,
+  # taken from ./scripts/version.sh VERSION_FLANNEL
+  flannelVersion,
+  # taken from ./scripts/version.sh VERSION_HELM_JOB
+  helmJobVersion,
   # Air gap container images that are released as assets with every k3s release
   imagesVersions,
   # taken from ./scripts/version.sh VERSION_CNIPLUGINS
   k3sCNIVersion,
-  k3sCNISha256 ? lib.fakeHash,
-  # taken from ./scripts/version.sh VERSION_CONTAINERD
-  containerdVersion,
-  containerdSha256 ? lib.fakeHash,
-  # taken from ./scripts/version.sh PKG_CONTAINERD_K3S
-  containerdPackage,
-  # run `grep github.com/kubernetes-sigs/cri-tools go.mod | head -n1 | awk '{print $4}'` in the k3s repo at the tag
-  criCtlVersion,
-  updateScript ? null,
-  # taken from ./scripts/version.sh VERSION_FLANNEL
-  flannelVersion,
-  # taken from ./scripts/version.sh VERSION_FLANNEL_PLUGIN
-  flannelPluginVersion,
+  # commit hash
+  k3sCommit,
+  # taken from ./scripts/version.sh VERSION_ROOT
+  k3sRootVersion,
+  # git tag
+  k3sVersion,
   # taken from ./scripts/version.sh VERSION_KUBE_ROUTER
   kubeRouterVersion,
-  # taken from ./scripts/version.sh VERSION_CRI_DOCKERD
-  criDockerdVersion,
-  # taken from ./scripts/version.sh VERSION_HELM_JOB
-  helmJobVersion,
+  containerdSha256 ? lib.fakeHash,
+  k3sCNISha256 ? lib.fakeHash,
+  k3sRepoSha256 ? lib.fakeHash,
+  k3sRootSha256 ? lib.fakeHash,
+  k3sVendorHash ? lib.fakeHash,
+  updateScript ? null,
 }@attrs:
 
 # builder.nix contains a "builder" expression that, given k3s version and hash
@@ -44,6 +44,10 @@ lib:
 # It is likely we will have to split out additional builders for additional
 # versions in the future, or customize this one further.
 {
+  lib,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
   bash,
   bridge-utils,
   btrfs-progs,
@@ -51,9 +55,7 @@ lib:
   conntrack-tools,
   coreutils,
   ethtool,
-  fetchFromGitHub,
   fetchgit,
-  fetchurl,
   fetchzip,
   findutils,
   gnugrep,
@@ -62,30 +64,28 @@ lib:
   iproute2,
   ipset,
   iptables,
-  nftables,
   kmod,
-  lib,
   libseccomp,
   makeBinaryWrapper,
+  nftables,
   nixosTests,
-  overrideBundleAttrs ? { }, # An attrSet/function to override the `k3sBundle` derivation.
-  overrideCniPluginsAttrs ? { }, # An attrSet/function to override the `k3sCNIPlugins` derivation.
-  overrideContainerdAttrs ? { }, # An attrSet/function to override the `k3sContainerd` derivation.
   pkg-config,
   pkgsBuildBuild,
   procps,
   rsync,
   runCommand,
   runc,
+  shadow,
   socat,
   sqlite,
-  stdenv,
-  shadow,
   systemdMinimal,
   util-linuxMinimal,
+  versionCheckHook,
   yq-go,
   zstd,
-  versionCheckHook,
+  overrideBundleAttrs ? { }, # An attrSet/function to override the `k3sBundle` derivation.
+  overrideCniPluginsAttrs ? { }, # An attrSet/function to override the `k3sCNIPlugins` derivation.
+  overrideContainerdAttrs ? { }, # An attrSet/function to override the `k3sContainerd` derivation.
 }:
 
 # k3s is a kinda weird derivation. One of the main points of k3s is the
@@ -111,14 +111,13 @@ let
 
   baseMeta = {
     description = "Lightweight Kubernetes distribution";
-    license = lib.licenses.asl20;
     homepage = "https://k3s.io";
-    teams = [ lib.teams.k3s ];
+    license = lib.licenses.asl20;
     platforms = lib.platforms.linux;
-
     # resolves collisions with other installations of kubectl, crictl, ctr
     # prefer non-k3s versions
     priority = 5;
+    teams = [ lib.teams.k3s ];
   };
 
   # https://github.com/k3s-io/k3s/blob/fd48cd623340a4a6e3b2717dede368283cedec1a/scripts/build#L23-L59
@@ -188,8 +187,8 @@ let
   # aarch64 (arm64) and x86_64 (amd64), throws on other architectures.
   airgap-images =
     {
-      x86_64-linux = fetchurl imagesVersions.airgap-images-amd64-tar-zst;
       aarch64-linux = fetchurl imagesVersions.airgap-images-arm64-tar-zst;
+      x86_64-linux = fetchurl imagesVersions.airgap-images-amd64-tar-zst;
     }
     .${stdenv.hostPlatform.system}
       or (throw "k3s: no airgap images available for system ${stdenv.hostPlatform.system}, consider using an image archive with an explicit architecture.");
@@ -204,18 +203,15 @@ let
   # As such, we download it in order to grab 'etc' and bundle it into the final
   # k3s binary.
   k3sRoot = fetchzip {
-    # Note: marked as apache 2.0 license
-    url = "https://github.com/k3s-io/k3s-root/releases/download/v${k3sRootVersion}/k3s-root-amd64.tar";
     sha256 = k3sRootSha256;
     stripRoot = false;
+    # Note: marked as apache 2.0 license
+    url = "https://github.com/k3s-io/k3s-root/releases/download/v${k3sRootVersion}/k3s-root-amd64.tar";
   };
   k3sCNIPlugins =
     (buildGoModule rec {
       pname = "k3s-cni-plugins";
       version = k3sCNIVersion;
-      vendorHash = null;
-
-      subPackages = [ "." ];
 
       src = fetchFromGitHub {
         owner = "rancher";
@@ -224,9 +220,13 @@ let
         sha256 = k3sCNISha256;
       };
 
+      vendorHash = null;
+
       postInstall = ''
         mv $out/bin/plugins $out/bin/cni
       '';
+
+      subPackages = [ "." ];
 
       meta = baseMeta // {
         description = "CNI plugins, as patched by rancher for k3s";
@@ -236,9 +236,9 @@ let
   # Grab this separately from a build because it's used by both stages of the
   # k3s build.
   k3sRepo = fetchgit {
-    url = "https://github.com/k3s-io/k3s";
     rev = "v${k3sVersion}";
     sha256 = k3sRepoSha256;
+    url = "https://github.com/k3s-io/k3s";
   };
 
   # Modify the k3s installer script so that we can let it install only
@@ -299,27 +299,15 @@ let
     (buildGoModule {
       pname = "k3s-bin";
       version = k3sVersion;
-
       src = k3sRepo;
-      vendorHash = k3sVendorHash;
-
       nativeBuildInputs = [ pkg-config ];
+
       buildInputs = [
         libseccomp
         sqlite.dev
       ];
 
-      subPackages = [ "cmd/server" ];
-      ldflags = versionldflags;
-
-      tags = [
-        "ctrd"
-        "libsqlite3"
-        "linux"
-      ];
-
-      # Set flags for sqlite dbstat
-      CGO_CFLAGS = "-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_USE_ALLOCA=1";
+      vendorHash = k3sVendorHash;
 
       # Copy manifests and static charts pre build so they get embedded during build
       preBuild = ''
@@ -349,6 +337,17 @@ let
         popd
       '';
 
+      # Set flags for sqlite dbstat
+      CGO_CFLAGS = "-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_USE_ALLOCA=1";
+      ldflags = versionldflags;
+      subPackages = [ "cmd/server" ];
+
+      tags = [
+        "ctrd"
+        "libsqlite3"
+        "linux"
+      ];
+
       meta = baseMeta // {
         description = "Various binaries that get packaged into the final k3s binary";
       };
@@ -360,31 +359,25 @@ let
     (buildGoModule {
       pname = "k3s-containerd";
       version = containerdVersion;
+
       src = fetchFromGitHub {
         owner = "k3s-io";
         repo = "containerd";
         rev = "v${containerdVersion}";
         sha256 = containerdSha256;
       };
-      vendorHash = null;
+
       buildInputs = [ btrfs-progs ];
-      subPackages = [ "cmd/containerd-shim-runc-v2" ];
+      vendorHash = null;
       ldflags = versionldflags;
+      subPackages = [ "cmd/containerd-shim-runc-v2" ];
     }).overrideAttrs
       overrideContainerdAttrs;
 in
 buildGoModule (finalAttrs: {
   pname = "k3s";
   version = k3sVersion;
-  pos = builtins.unsafeGetAttrPos "k3sVersion" attrs;
-
-  tags = [
-    "libsqlite3"
-    "linux"
-    "ctrd"
-  ];
   src = k3sRepo;
-  vendorHash = k3sVendorHash;
 
   postPatch = ''
     # Nix prefers dynamically linked binaries over static binary.
@@ -408,37 +401,6 @@ buildGoModule (finalAttrs: {
         ""
   '';
 
-  # Important utilities used by the kubelet, see
-  # https://github.com/kubernetes/kubernetes/issues/26093#issuecomment-237202494
-  # Note the list in that issue is stale and some aren't relevant for k3s.
-  k3sRuntimeDeps = [
-    kmod
-    socat
-    iptables
-    nftables
-    iproute2
-    ipset
-    bridge-utils
-    ethtool
-    util-linuxMinimal # kubelet wants 'nsenter' and 'mount' from util-linux: https://github.com/kubernetes/kubernetes/issues/26093#issuecomment-705994388
-    conntrack-tools
-    runc
-    bash
-    shadow # kubelet wants 'getsubids' when using user namespaces
-  ];
-
-  k3sKillallDeps = [
-    bash
-    systemdMinimal
-    procps
-    coreutils
-    gnugrep
-    findutils
-    gnused
-  ];
-
-  buildInputs = finalAttrs.k3sRuntimeDeps;
-
   nativeBuildInputs = [
     makeBinaryWrapper
     rsync
@@ -446,12 +408,16 @@ buildGoModule (finalAttrs: {
     zstd
   ];
 
+  buildInputs = finalAttrs.k3sRuntimeDeps;
+
   # embedded in the final k3s cli
   propagatedBuildInputs = [
     k3sCNIPlugins
     k3sContainerd
     k3sBundle
   ];
+
+  vendorHash = k3sVendorHash;
 
   # We override most of buildPhase due to peculiarities in k3s's build.
   # Specifically, it has a 'go generate' which runs part of the package. See
@@ -501,6 +467,43 @@ buildGoModule (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  k3sKillallDeps = [
+    bash
+    systemdMinimal
+    procps
+    coreutils
+    gnugrep
+    findutils
+    gnused
+  ];
+
+  # Important utilities used by the kubelet, see
+  # https://github.com/kubernetes/kubernetes/issues/26093#issuecomment-237202494
+  # Note the list in that issue is stale and some aren't relevant for k3s.
+  k3sRuntimeDeps = [
+    kmod
+    socat
+    iptables
+    nftables
+    iproute2
+    ipset
+    bridge-utils
+    ethtool
+    util-linuxMinimal # kubelet wants 'nsenter' and 'mount' from util-linux: https://github.com/kubernetes/kubernetes/issues/26093#issuecomment-705994388
+    conntrack-tools
+    runc
+    bash
+    shadow # kubelet wants 'getsubids' when using user namespaces
+  ];
+
+  pos = builtins.unsafeGetAttrPos "k3sVersion" attrs;
+
+  tags = [
+    "libsqlite3"
+    "linux"
+    "ctrd"
+  ];
+
   passthru = {
     inherit
       airgap-images
@@ -511,6 +514,13 @@ buildGoModule (finalAttrs: {
       k3sBundle
       updateScript
       ;
+
+    airgapImages = throw "k3s.airgapImages was renamed to k3s.airgap-images";
+    airgapImagesAmd64 = throw "k3s.airgapImagesAmd64 was renamed to k3s.airgap-images-amd64-tar-zst";
+    airgapImagesArm = throw "k3s.airgapImagesArm was renamed to k3s.airgap-images-arm-tar-zst";
+    airgapImagesArm64 = throw "k3s.airgapImagesArm64 was renamed to k3s.airgap-images-arm64-tar-zst";
+    imagesList = throw "k3s.imagesList was removed";
+
     tests =
       let
         versionedPackage = "k3s_" + lib.replaceStrings [ "." ] [ "_" ] (lib.versions.majorMinor k3sVersion);
@@ -518,11 +528,6 @@ buildGoModule (finalAttrs: {
       lib.mapAttrs (name: _: nixosTests.k3s.${name}.${versionedPackage}) (
         lib.filterAttrs (n: _: n != "all") nixosTests.k3s
       );
-    imagesList = throw "k3s.imagesList was removed";
-    airgapImages = throw "k3s.airgapImages was renamed to k3s.airgap-images";
-    airgapImagesAmd64 = throw "k3s.airgapImagesAmd64 was renamed to k3s.airgap-images-amd64-tar-zst";
-    airgapImagesArm64 = throw "k3s.airgapImagesArm64 was renamed to k3s.airgap-images-arm64-tar-zst";
-    airgapImagesArm = throw "k3s.airgapImagesArm was renamed to k3s.airgap-images-arm-tar-zst";
   }
   // (lib.mapAttrs (_: value: fetchurl value) imagesVersions);
 

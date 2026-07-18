@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
-  pytestCheckHook,
+  buildPythonPackage,
   chardet,
   cssselect,
   lxml,
   lxml-html-clean,
+  poetry-core,
+  pytestCheckHook,
   timeout-decorator,
 }:
 
 buildPythonPackage rec {
   pname = "readability-lxml";
   version = "0.8.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "buriy";
@@ -23,12 +22,12 @@ buildPythonPackage rec {
     hash = "sha256-tL0OnvCrbrpBvcy+6RJ+u/BDdra+MnVT51DSAeYxJbc=";
   };
 
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "chardet"
-    "lxml"
+  nativeCheckInputs = [
+    pytestCheckHook
+    timeout-decorator
   ];
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     chardet
@@ -37,9 +36,11 @@ buildPythonPackage rec {
     lxml-html-clean
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    timeout-decorator
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "chardet"
+    "lxml"
   ];
 
   meta = {

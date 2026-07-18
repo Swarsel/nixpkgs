@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   alsa-lib,
   atk,
@@ -12,23 +12,23 @@
   gdk-pixbuf,
   glib,
   gtk3,
+  libdrm,
+  libgbm,
+  libpulseaudio,
   libx11,
-  libxscrnsaver,
+  libxcb,
   libxcomposite,
   libxcursor,
   libxdamage,
   libxext,
   libxfixes,
   libxi,
+  libxkbcommon,
   libxrandr,
   libxrender,
-  libxtst,
-  libdrm,
-  libpulseaudio,
-  libxcb,
-  libxkbcommon,
+  libxscrnsaver,
   libxshmfence,
-  libgbm,
+  libxtst,
   nspr,
   nss,
   pango,
@@ -75,7 +75,6 @@ in
 stdenv.mkDerivation rec {
   inherit (common) pname version;
   src = common.sources.${system} or (throw "Source for ${pname} is not available for ${system}");
-
   nativeBuildInputs = [ dpkg ];
 
   installPhase = ''
@@ -97,9 +96,9 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Note-taking tool for networked thought";
     homepage = "https://roamresearch.com/";
-    maintainers = with lib.maintainers; [ dbalan ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ dbalan ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "roam-research";
   };

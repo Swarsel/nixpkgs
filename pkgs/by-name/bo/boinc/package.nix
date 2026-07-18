@@ -1,28 +1,28 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
-  pkg-config,
-  m4,
   curl,
-  libGLU,
+  gtk3,
   libGL,
-  libxmu,
-  libxi,
+  libGLU,
   libglut,
   libjpeg,
-  libtool,
-  wxwidgets_3_2,
-  libxcb-util,
-  sqlite,
-  gtk3,
-  patchelf,
-  libxscrnsaver,
   libnotify,
+  libtool,
   libx11,
   libxcb,
+  libxcb-util,
+  libxi,
+  libxmu,
+  libxscrnsaver,
+  m4,
+  patchelf,
+  pkg-config,
+  sqlite,
+  wxwidgets_3_2,
   headless ? false,
 }:
 
@@ -31,11 +31,11 @@ stdenv.mkDerivation rec {
   version = "8.2.13";
 
   src = fetchFromGitHub {
-    name = "${pname}-${version}-src";
     owner = "BOINC";
     repo = "boinc";
     rev = "client_release/${lib.versions.majorMinor version}/${version}";
     hash = "sha256-BzP3yDGAhJ1DtrxLEc3s27EwJilMVi6A1NoTv0NwH9c=";
+    name = "${pname}-${version}-src";
   };
 
   nativeBuildInputs = [
@@ -67,6 +67,12 @@ stdenv.mkDerivation rec {
     libxcb-util
   ];
 
+  configureFlags = [
+    "--disable-server"
+    "--sysconfdir=${placeholder "out"}/etc"
+  ]
+  ++ lib.optionals headless [ "--disable-manager" ];
+
   env = lib.optionalAttrs (!headless) {
     NIX_LDFLAGS = "-lX11";
   };
@@ -75,23 +81,17 @@ stdenv.mkDerivation rec {
     ./_autosetup
   '';
 
-  enableParallelBuilding = true;
-
-  configureFlags = [
-    "--disable-server"
-    "--sysconfdir=${placeholder "out"}/etc"
-  ]
-  ++ lib.optionals headless [ "--disable-manager" ];
-
   postInstall = ''
     install --mode=444 -D 'client/scripts/boinc-client.service' "$out/etc/systemd/system/boinc.service"
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Free software for distributed and grid computing";
     homepage = "https://boinc.berkeley.edu/";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Luflosi ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   awesomeversion,
   backoff,
   buildPythonPackage,
   cachetools,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "rokuecp";
   version = "0.19.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ctalkington";
@@ -33,6 +32,14 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-freezegun
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -42,14 +49,6 @@ buildPythonPackage rec {
     xmltodict
     awesomeversion
     yarl
-  ];
-
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-freezegun
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -63,6 +62,7 @@ buildPythonPackage rec {
     "test_get_tv_channels_single_channel"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rokuecp" ];
 
   meta = {

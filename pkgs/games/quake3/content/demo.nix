@@ -8,8 +8,8 @@ let
   version = "1.11-6";
 in
 stdenv.mkDerivation {
-  pname = "quake3-demodata";
   inherit version;
+  pname = "quake3-demodata";
 
   src = fetchurl {
     url = "https://ftp.gwdg.de/pub/misc/ftp.idsoftware.com/idstuff/quake3/linux/linuxq3ademo-${version}.x86.gz.sh";
@@ -27,6 +27,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Demo of Quake 3 Arena, a classic first-person shooter";
+
     longDescription = ''
       Quake III Arena and it's demo don't offer current wide screen resolutions in the menu.
 
@@ -38,9 +39,10 @@ stdenv.mkDerivation {
 
       $ quake3 +set r_mode -1 +set r_customwidth 2560 +set r_customheight 1440 +set r_fullscreen 1
     '';
+
     homepage = "https://www.idsoftware.com/";
     license = lib.licenses.unfreeRedistributable;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

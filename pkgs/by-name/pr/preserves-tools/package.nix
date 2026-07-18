@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchCrate,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,9 +15,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Uyh5mXCypX3TDxxJtnTe6lBoVI8aqdG56ywn7htDGUY=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   cargoHash = "sha256-m07/fNuF78+PtG/trXZq9gllmKTt0w5BSMsq2UTKBbY=";
 
-  nativeBuildInputs = [ installShellFiles ];
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd preserves-tool \
       --bash <($out/bin/preserves-tool completions bash) \

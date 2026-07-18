@@ -1,13 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   cmake,
   cmake-extras,
   dbus,
   doxygen,
+  gitUpdater,
   glibcLocales,
   gsettings-qt,
   gtest,
@@ -20,6 +19,7 @@
   qtbase,
   qtdeclarative,
   qtxmlpatterns,
+  testers,
   ubports-click,
   validatePkgConfig,
   wrapQtAppsHook,
@@ -75,8 +75,15 @@ stdenv.mkDerivation (finalAttrs: {
     qtbase
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
+    (lib.cmakeBool "GSETTINGS_COMPILE" true)
+    (lib.cmakeBool "ENABLE_CLICK" true)
+  ];
+
   # Tests need to be able to check locale
   env.LC_ALL = lib.optionalString finalAttrs.finalPackage.doCheck "en_US.UTF-8";
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   nativeCheckInputs = [
     dbus
@@ -88,14 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
     libqtdbustest
     qtdeclarative
   ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
-    (lib.cmakeBool "GSETTINGS_COMPILE" true)
-    (lib.cmakeBool "ENABLE_CLICK" true)
-  ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   preCheck = ''
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/lib/qt-${qtbase.version}/plugins/
@@ -112,12 +111,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/libusermetrics";
     changelog = "https://gitlab.com/ubports/development/core/libusermetrics/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
     mainProgram = "usermetricsinput";
+
     pkgConfigModules = [
       "libusermetricsinput-1"
       "libusermetricsoutput-1"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

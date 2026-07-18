@@ -8,8 +8,6 @@ buildDunePackage (finalAttrs: {
   pname = "getopt";
   version = "20230213";
 
-  minimalOCamlVersion = "4.07";
-
   src = fetchFromGitHub {
     owner = "scemama";
     repo = "ocaml-getopt";
@@ -18,10 +16,11 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
+  minimalOCamlVersion = "4.07";
 
   meta = {
-    homepage = "https://github.com/scemama/ocaml-getopt";
     description = "Parsing of command line arguments (similar to GNU GetOpt) for OCaml";
+    homepage = "https://github.com/scemama/ocaml-getopt";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ulrikstrid ];
   };

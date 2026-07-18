@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   chex,
   equinox,
+  # build-system
+  hatchling,
   jax,
   jaxtyping,
   optax,
-  scikit-learn,
-  tqdm,
-
   # tests
   pytestCheckHook,
+  scikit-learn,
+  tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "flowmc";
   version = "0.4.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kazewong";
@@ -31,19 +27,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-D3K9cvmUvwsVAjvXdSDgYlqrzTYXVlSVQbfx7TANz8A=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
-
-  pythonRelaxDeps = [
-    "jax"
-  ];
-
-  pythonRemoveDeps = [
-    # Not actual runtime dependencies
-    "pre-commit"
-    "pyright"
-    "pytest"
-    "ruff"
-  ];
 
   dependencies = [
     chex
@@ -55,10 +40,6 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  pythonImportsCheck = [ "flowMC" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # ValueError: Expected None, got JitTracer(bool[3,2])
     "test/integration/test_quickstart.py"
@@ -68,6 +49,21 @@ buildPythonPackage (finalAttrs: {
     # ValueError: Expected None, got JitTracer(bool[3,2])
     "test_rqSpline"
     "test_training"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "flowMC" ];
+
+  pythonRelaxDeps = [
+    "jax"
+  ];
+
+  pythonRemoveDeps = [
+    # Not actual runtime dependencies
+    "pre-commit"
+    "pyright"
+    "pytest"
+    "ruff"
   ];
 
   meta = {

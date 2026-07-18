@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
+  autoPatchelfHook,
   fetchzip,
   icu,
-  autoPatchelfHook,
+  stdenvNoCC,
 }:
 
 let
@@ -13,35 +13,42 @@ let
 in
 stdenvNoCC.mkDerivation {
   inherit pname version;
+
   src = fetchzip {
     url = "https://github.com/EverestAPI/Everest/releases/download/stable-1.6314.0/main.zip";
-    extension = "zip";
     hash = "sha256-YM6zjANINWQlTNu3EJFKIVl9VhVY4Ednjp+I+6Ap7dI=";
+    extension = "zip";
   };
-  buildInputs = [
-    icu
-  ];
+
   nativeBuildInputs = [
     autoPatchelfHook
   ];
+
+  buildInputs = [
+    icu
+  ];
+
   postInstall = ''
     mkdir -p ${phome}
     cp -r * ${phome}
   '';
-  dontAutoPatchelf = true;
-  dontPatchELF = true;
-  dontStrip = true;
-  dontPatchShebangs = true;
+
   postFixup = ''
     autoPatchelf ${phome}/MiniInstaller-linux
   '';
+
+  dontAutoPatchelf = true;
+  dontPatchELF = true;
+  dontPatchShebangs = true;
+  dontStrip = true;
+
   meta = {
     description = "Celeste mod loader (don't install; use celestegame instead)";
-    license = with lib.licenses; [ mit ];
-    maintainers = with lib.maintainers; [ ulysseszhan ];
     homepage = "https://everestapi.github.io";
-    platforms = [ "x86_64-linux" ];
+    license = with lib.licenses; [ mit ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ ulysseszhan ];
+    platforms = [ "x86_64-linux" ];
   };
 
 }

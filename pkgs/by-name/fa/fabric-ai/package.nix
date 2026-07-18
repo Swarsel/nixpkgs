@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
 }:
@@ -17,17 +17,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-folZ+Y5l76SKo65RJAK7kZX6DJ/AL+iLkcV8NX+1DTA=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-DfI0SYMX1wfJ8V0tFYpjzCgqhR7H/0J1p5R3aNcrXTw=";
-
   # Fabric introduced plugin tests that fail in the nix build sandbox.
   doCheck = false;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = ''
     installShellCompletion \
@@ -35,6 +28,11 @@ buildGoModule (finalAttrs: {
       --zsh ./completions/_fabric \
       --fish ./completions/fabric.fish
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

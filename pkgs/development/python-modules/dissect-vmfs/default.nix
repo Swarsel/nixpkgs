@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "dissect-vmfs";
   version = "3.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-4c3JVbQidGvXurWaO+/E0OehGgiY5shE5BiIBwMrCWM=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,10 +32,6 @@ buildPythonPackage rec {
     dissect-util
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "dissect.vmfs" ];
-
   disabledTests = [
     # Archive not present
     "test_huge"
@@ -45,6 +42,9 @@ buildPythonPackage rec {
     "test_vmfs_content"
     "test_vmfs_jbosf"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dissect.vmfs" ];
 
   meta = {
     description = "Dissect module implementing a parser for the VMFS file system";

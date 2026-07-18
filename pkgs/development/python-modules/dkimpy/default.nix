@@ -1,26 +1,24 @@
 {
   lib,
+  authres,
+  buildPythonPackage,
+  dnspython,
   fetchPypi,
   openssl,
-  buildPythonPackage,
-  pytest,
-  dnspython,
   pynacl,
-  authres,
+  pytest,
   python,
 }:
 
 buildPythonPackage rec {
   pname = "dkimpy";
   version = "1.1.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-tfYPtHu/XY12LxNLzqDDiOumtJg0KmgqIfFoZUUJS3c=";
   };
 
-  nativeCheckInputs = [ pytest ];
   propagatedBuildInputs = [
     openssl
     dnspython
@@ -28,17 +26,22 @@ buildPythonPackage rec {
     authres
   ];
 
-  patchPhase = ''
-    substituteInPlace dkim/dknewkey.py --replace \
-      /usr/bin/openssl ${openssl}/bin/openssl
-  '';
+  nativeCheckInputs = [ pytest ];
 
   checkPhase = ''
     ${python.interpreter} ./test.py
   '';
 
+  format = "setuptools";
+
+  patchPhase = ''
+    substituteInPlace dkim/dknewkey.py --replace \
+      /usr/bin/openssl ${openssl}/bin/openssl
+  '';
+
   meta = {
     description = "DKIM + ARC email signing/verification tools + Python module";
+
     longDescription = ''
       Python module that implements DKIM (DomainKeys Identified Mail) email
       signing and verification. It also provides a number of convenient tools
@@ -46,6 +49,7 @@ buildPythonPackage rec {
       records. This version also supports the experimental Authenticated
       Received Chain (ARC) protocol.
     '';
+
     homepage = "https://launchpad.net/dkimpy";
     license = lib.licenses.bsd3;
   };

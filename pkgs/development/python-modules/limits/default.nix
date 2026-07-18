@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   coredis,
   deprecated,
-  fetchFromGitHub,
   flaky,
-  hatchling,
   hatch-vcs,
+  hatchling,
   hiro,
   importlib-resources,
   motor,
@@ -26,13 +26,13 @@
 buildPythonPackage rec {
   pname = "limits";
   version = "5.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alisaifee";
     repo = "limits";
     tag = version;
     hash = "sha256-svCvfQcidmfTPpe/GPrPxDhIPbmyoeIlXBR2vttTyHI=";
+
     postFetch = ''
       rm "$out/limits/_version.pyi"
     '';
@@ -42,30 +42,6 @@ buildPythonPackage rec {
     substituteInPlace pytest.ini \
       --replace-fail "-K" ""
   '';
-
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
-  dependencies = [
-    deprecated
-    importlib-resources
-    packaging
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    async-memcached = [ pymemcache ];
-    async-mongodb = [ motor ];
-    async-redis = [ coredis ];
-    async-valkey = [ valkey ];
-    memcached = [ pymemcache ];
-    mongodb = [ pymongo ];
-    redis = [ redis ];
-    rediscluster = [ redis ];
-    valkey = [ valkey ];
-  };
 
   env = {
     # make protobuf compatible with old versions
@@ -84,20 +60,16 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pytestFlags = [ "--benchmark-disable" ];
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
 
-  disabledTests = [
-    # requires docker
-    "TestAsyncConcurrency"
-    "TestAsyncFixedWindow"
-    "TestAsyncMovingWindow"
-    "TestAsyncSlidingWindow"
-    "TestConcreteStorages"
-    "TestConcurrency"
-    "TestFixedWindow"
-    "TestMovingWindow"
-    "TestRedisStorage"
-    "TestSlidingWindow"
+  dependencies = [
+    deprecated
+    importlib-resources
+    packaging
+    typing-extensions
   ];
 
   disabledTestMarks = [
@@ -116,6 +88,34 @@ buildPythonPackage rec {
     "tests/benchmarks/test_storage.py"
   ];
 
+  disabledTests = [
+    # requires docker
+    "TestAsyncConcurrency"
+    "TestAsyncFixedWindow"
+    "TestAsyncMovingWindow"
+    "TestAsyncSlidingWindow"
+    "TestConcreteStorages"
+    "TestConcurrency"
+    "TestFixedWindow"
+    "TestMovingWindow"
+    "TestRedisStorage"
+    "TestSlidingWindow"
+  ];
+
+  optional-dependencies = {
+    async-memcached = [ pymemcache ];
+    async-mongodb = [ motor ];
+    async-redis = [ coredis ];
+    async-valkey = [ valkey ];
+    memcached = [ pymemcache ];
+    mongodb = [ pymongo ];
+    redis = [ redis ];
+    rediscluster = [ redis ];
+    valkey = [ valkey ];
+  };
+
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
   pythonImportsCheck = [ "limits" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 let
   pname = "stemming";
@@ -9,7 +9,6 @@ let
 in
 buildPythonPackage {
   inherit version pname;
-  format = "setuptools";
 
   # Pypi source package doesn't contain tests
   src = fetchFromGitHub {
@@ -19,6 +18,7 @@ buildPythonPackage {
     hash = "sha256-wnmBCbxnCZ9mN1J7sLcN7OynMcvqgAnhEgpAwW2/xz4=";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "stemming" ];
 
   meta = {

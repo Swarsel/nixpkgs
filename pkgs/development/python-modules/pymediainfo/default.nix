@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   libmediainfo,
   pdm-backend,
   pytest,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pymediainfo";
   version = "7.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,8 +27,6 @@ buildPythonPackage rec {
                 "${libmediainfo}/lib/libmediainfo${stdenv.hostPlatform.extensions.sharedLibrary}.0"
   '';
 
-  build-system = [ pdm-backend ];
-
   nativeCheckInputs = [
     pytest
   ];
@@ -38,6 +35,8 @@ buildPythonPackage rec {
     py.test -k 'not test_parse_url' tests
   '';
 
+  build-system = [ pdm-backend ];
+  pyproject = true;
   pythonImportsCheck = [ "pymediainfo" ];
 
   meta = {

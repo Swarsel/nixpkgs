@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  pkg-config,
   curl,
   expat,
+  fetchFromCodeberg,
   gumbo,
-  sqlite,
   nix-update-script,
+  pkg-config,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     curl
     expat
@@ -31,7 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   makeFlags = [ "PREFIX=$(out)" ];
   installTargets = "install install-desktop";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -40,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://codeberg.org/newsraft/newsraft/releases/tag/newsraft-${finalAttrs.version}";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
-    mainProgram = "newsraft";
     platforms = lib.platforms.all;
+    mainProgram = "newsraft";
   };
 })

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -21,77 +21,76 @@ in
   options = {
     services.db-rest = {
       enable = mkEnableOption "db-rest service";
-
-      user = mkOption {
-        type = types.str;
-        default = "db-rest";
-        description = "User account under which db-rest runs.";
-      };
+      package = mkPackageOption pkgs "db-rest" { };
 
       group = mkOption {
-        type = types.str;
         default = "db-rest";
         description = "Group under which db-rest runs.";
+        type = types.str;
       };
 
       host = mkOption {
-        type = types.str;
         default = "127.0.0.1";
         description = "The host address the db-rest server should listen on.";
+        type = types.str;
       };
 
       port = mkOption {
-        type = types.port;
         default = 3000;
         description = "The port the db-rest server should listen on.";
+        type = types.port;
       };
 
       redis = {
         enable = mkOption {
-          type = types.bool;
           default = false;
           description = "Enable caching with redis for db-rest.";
+          type = types.bool;
         };
 
         createLocally = mkOption {
-          type = types.bool;
           default = true;
           description = "Configure a local redis server for db-rest.";
+          type = types.bool;
         };
 
         host = mkOption {
-          type = with types; nullOr str;
           default = null;
           description = "Redis host.";
-        };
-
-        port = mkOption {
-          type = with types; nullOr port;
-          default = null;
-          description = "Redis port.";
-        };
-
-        user = mkOption {
           type = with types; nullOr str;
-          default = null;
-          description = "Optional username used for authentication with redis.";
         };
 
         passwordFile = mkOption {
-          type = with types; nullOr path;
           default = null;
-          example = "/run/keys/db-rest/pasword-redis-db";
           description = "Path to a file containing the redis password.";
+          example = "/run/keys/db-rest/pasword-redis-db";
+          type = with types; nullOr path;
+        };
+
+        port = mkOption {
+          default = null;
+          description = "Redis port.";
+          type = with types; nullOr port;
         };
 
         useSSL = mkOption {
-          type = types.bool;
           default = true;
           description = "Use SSL if using a redis network connection.";
+          type = types.bool;
+        };
+
+        user = mkOption {
+          default = null;
+          description = "Optional username used for authentication with redis.";
+          type = with types; nullOr str;
         };
       };
 
-      package = mkPackageOption pkgs "db-rest" { };
+      user = mkOption {
+        default = "db-rest";
+        description = "User account under which db-rest runs.";
+        type = types.str;
+      };
     };
   };
 
@@ -101,71 +100,82 @@ in
         assertion =
           (cfg.redis.enable && !cfg.redis.createLocally)
           -> (cfg.redis.host != null && cfg.redis.port != null);
+
         message = ''
           {option}`services.db-rest.redis.createLocally` and redis network connection ({option}`services.db-rest.redis.host` or {option}`services.db-rest.redis.port`) enabled. Disable either of them.
         '';
       }
       {
         assertion = (cfg.redis.enable && !cfg.redis.createLocally) -> (cfg.redis.passwordFile != null);
+
         message = ''
           {option}`services.db-rest.redis.createLocally` is disabled, but {option}`services.db-rest.redis.passwordFile` is not set.
         '';
       }
     ];
 
+    services.redis.servers.db-rest.enable = cfg.redis.enable && cfg.redis.createLocally;
+
     systemd.services.db-rest = mkMerge [
       {
-        description = "db-rest service";
         after = [ "network.target" ] ++ lib.optional cfg.redis.createLocally "redis-db-rest.service";
+        description = "db-rest service";
+
+        environment = {
+          HOSTNAME = cfg.host;
+          NODE_ENV = "production";
+          NODE_EXTRA_CA_CERTS = config.security.pki.caBundle;
+          PORT = toString cfg.port;
+        };
+
         requires = lib.optional cfg.redis.createLocally "redis-db-rest.service";
-        wantedBy = [ "multi-user.target" ];
+
         serviceConfig = {
-          Type = "simple";
+          CapabilityBoundingSet = "";
+          ExecStart = mkDefault "${cfg.package}/bin/db-rest";
+          Group = cfg.group;
+
+          LoadCredential = lib.optional (
+            cfg.redis.enable && cfg.redis.passwordFile != null
+          ) "REDIS_PASSWORD:${cfg.redis.passwordFile}";
+
+          LockPersonality = true;
+          MemoryDenyWriteExecute = false;
+          NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateMounts = true;
+          PrivateTmp = true;
+          PrivateUsers = true;
+          ProcSubset = "pid";
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "invisible";
+          ProtectSystem = "strict";
+          RemoveIPC = true;
           Restart = "always";
           RestartSec = 5;
-          WorkingDirectory = cfg.package;
-          User = cfg.user;
-          Group = cfg.group;
+
           RestrictAddressFamilies = [
             "AF_UNIX"
             "AF_INET"
             "AF_INET6"
           ];
-          MemoryDenyWriteExecute = false;
-          LoadCredential = lib.optional (
-            cfg.redis.enable && cfg.redis.passwordFile != null
-          ) "REDIS_PASSWORD:${cfg.redis.passwordFile}";
-          ExecStart = mkDefault "${cfg.package}/bin/db-rest";
 
-          RemoveIPC = true;
-          NoNewPrivileges = true;
-          PrivateDevices = true;
-          ProtectClock = true;
-          ProtectKernelLogs = true;
-          ProtectControlGroups = true;
-          ProtectKernelModules = true;
-          PrivateMounts = true;
-          SystemCallArchitectures = "native";
-          ProtectHostname = true;
-          LockPersonality = true;
-          ProtectKernelTunables = true;
+          RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-          RestrictNamespaces = true;
-          ProtectSystem = "strict";
-          ProtectProc = "invisible";
-          ProcSubset = "pid";
-          ProtectHome = true;
-          PrivateUsers = true;
-          PrivateTmp = true;
-          CapabilityBoundingSet = "";
+          SystemCallArchitectures = "native";
+          Type = "simple";
+          User = cfg.user;
+          WorkingDirectory = cfg.package;
         };
-        environment = {
-          NODE_ENV = "production";
-          NODE_EXTRA_CA_CERTS = config.security.pki.caBundle;
-          HOSTNAME = cfg.host;
-          PORT = toString cfg.port;
-        };
+
+        wantedBy = [ "multi-user.target" ];
       }
       (mkIf cfg.redis.enable (
         if cfg.redis.createLocally then
@@ -187,19 +197,18 @@ in
       ))
     ];
 
+    users.groups = lib.mkIf (cfg.group == "db-rest") { db-rest = { }; };
+
     users.users = lib.mkMerge [
       (lib.mkIf (cfg.user == "db-rest") {
         db-rest = {
-          isSystemUser = true;
           group = cfg.group;
+          isSystemUser = true;
         };
       })
       (lib.mkIf cfg.redis.createLocally { ${cfg.user}.extraGroups = [ "redis-db-rest" ]; })
     ];
-
-    users.groups = lib.mkIf (cfg.group == "db-rest") { db-rest = { }; };
-
-    services.redis.servers.db-rest.enable = cfg.redis.enable && cfg.redis.createLocally;
   };
+
   meta.maintainers = with maintainers; [ marie ];
 }

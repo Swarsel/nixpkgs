@@ -2,11 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boringssl,
+  protobuf,
   rustPlatform,
   xcodebuild,
-  protobuf,
-  boringssl,
-
   withShared ? !stdenv.hostPlatform.isStatic,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,11 +15,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.94.4";
 
   src = fetchFromGitHub {
-    fetchSubmodules = true;
     owner = "signalapp";
     repo = "libsignal";
     tag = "v${finalAttrs.version}";
     hash = "sha256-Uh/j8cXUWgWgSo9UBfYOFuC8i+2YdMwGHcXf55PkGgU=";
+    fetchSubmodules = true;
   };
 
   postPatch =
@@ -40,28 +39,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcodebuild ];
 
+  cargoHash = "sha256-st6zTKvxSsyMce22E8nFsJMGjQkk9sEAzSCmyZP8x20=";
+
   env = {
     BORING_BSSL_INCLUDE_PATH = boringssl.dev + "/include";
     BORING_BSSL_PATH = boringssl;
     NIX_LDFLAGS = if stdenv.hostPlatform.isDarwin then "-lc++" else "-lstdc++";
   };
 
-  cargoHash = "sha256-st6zTKvxSsyMce22E8nFsJMGjQkk9sEAzSCmyZP8x20=";
+  postFixup = lib.optionalString (withShared && stdenv.hostPlatform.isDarwin) ''
+    dylib="$out/lib/libsignal_ffi.dylib"
+    install_name_tool -id "$dylib" "$dylib"
+  '';
 
   cargoBuildFlags = [
     "-p"
     "libsignal-ffi"
   ];
 
-  postFixup = lib.optionalString (withShared && stdenv.hostPlatform.isDarwin) ''
-    dylib="$out/lib/libsignal_ffi.dylib"
-    install_name_tool -id "$dylib" "$dylib"
-  '';
-
   meta = {
     description = "C ABI library which exposes Signal protocol logic";
     homepage = "https://github.com/signalapp/libsignal";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       pentane
       SchweGELBin

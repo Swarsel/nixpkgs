@@ -2,13 +2,13 @@
   lib,
   fetchurl,
   bash,
-  gcc,
-  musl,
   binutils,
   findutils,
+  gcc,
   gnumake,
   gnutar,
   gzip,
+  musl,
 }:
 let
   pname = "bzip2-static";
@@ -34,13 +34,6 @@ bash.runCommand "${pname}-${version}"
     ];
 
     passthru.tests = {
-      get-version =
-        result:
-        bash.runCommand "${pname}-get-version-${version}" { } ''
-          ${result}/bin/bzip2 --help
-          mkdir $out
-        '';
-
       compress =
         result:
         bash.runCommand "${pname}-compress-${version}" { } ''
@@ -52,6 +45,13 @@ bash.runCommand "${pname}-${version}"
           ${result}/bin/bzcat input.bz2 > bzcat-output
           read -r bzcatOutput < bzcat-output
           test "$bzcatOutput" = bootstrap
+          mkdir $out
+        '';
+
+      get-version =
+        result:
+        bash.runCommand "${pname}-get-version-${version}" { } ''
+          ${result}/bin/bzip2 --help
           mkdir $out
         '';
     };

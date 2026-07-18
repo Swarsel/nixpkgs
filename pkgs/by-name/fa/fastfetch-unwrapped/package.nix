@@ -49,9 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "fastfetch-unwrapped";
   version = "2.66.0";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "fastfetch-cli";
     repo = "fastfetch";
@@ -63,6 +60,15 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "man"
   ];
+
+  # Upstream completions run Python when shells expand options from
+  # `fastfetch --help-raw`. Keep this runtime dependency explicit until
+  # upstream generates static completions at build time.
+  postPatch = ''
+    substituteInPlace completions/fastfetch.{bash,fish,zsh} --replace-fail python3 '${python3.interpreter}'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -126,13 +132,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ENABLE_EMBEDDED_AMDGPUIDS" true)
   ];
 
-  # Upstream completions run Python when shells expand options from
-  # `fastfetch --help-raw`. Keep this runtime dependency explicit until
-  # upstream generates static completions at build time.
-  postPatch = ''
-    substituteInPlace completions/fastfetch.{bash,fish,zsh} --replace-fail python3 '${python3.interpreter}'
-  '';
-
   preConfigure = lib.optionalString stdenv.hostPlatform.isLinux ''
     buildDir="''${cmakeBuildDir:-build}"
     mkdir -p "$buildDir"
@@ -140,8 +139,9 @@ stdenv.mkDerivation (finalAttrs: {
     cp ${libdrm}/share/libdrm/amdgpu.ids "$buildDir/amdgpu.ids"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -149,21 +149,25 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Actively maintained, feature-rich and performance oriented, neofetch like system information tool";
-    homepage = "https://github.com/fastfetch-cli/fastfetch";
-    changelog = "https://github.com/fastfetch-cli/fastfetch/releases/tag/${finalAttrs.version}";
-    license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [
-      defelo
-      khaneliman
-      luftmensch-luftmensch
-    ];
-    platforms = lib.platforms.all;
-    mainProgram = "fastfetch";
+
     longDescription = ''
       Fast and highly customizable system info script.
 
       This unwrapped build compiles optional feature support but does not wrap
       runtime libraries into its closure.
     '';
+
+    homepage = "https://github.com/fastfetch-cli/fastfetch";
+    changelog = "https://github.com/fastfetch-cli/fastfetch/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.mit;
+
+    maintainers = with lib.maintainers; [
+      defelo
+      khaneliman
+      luftmensch-luftmensch
+    ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "fastfetch";
   };
 })

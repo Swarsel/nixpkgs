@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   django,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-treenode";
   version = "0.24.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fabiocaccamo";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
   dependencies = [
     django
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "treenode"

@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyjnius";
   version = "1.7.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     cython
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "jnius" ];
 
   meta = {

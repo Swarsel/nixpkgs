@@ -1,67 +1,64 @@
 {
   lib,
   stdenv,
+  at-spi2-core,
+  boost,
+  cairo,
   cmake,
-  libGLU,
-  libGL,
-  zlib,
-  wxGTK,
-  gtk3,
-  libx11,
+  curl,
+  dbus,
+  debug,
+  doxygen,
   gettext,
   glew,
   glm,
-  cairo,
-  curl,
-  openssl,
-  boost,
-  pkg-config,
-  doxygen,
   graphviz,
-  libpthread-stubs,
-  libxdmcp,
-  unixodbc,
-  libgit2,
-  libsecret,
-  libgcrypt,
-  libgpg-error,
-  ninja,
-  writableTmpDirAsHomeHook,
-
-  util-linuxMinimal,
-  libselinux,
-  libsepol,
-  libthai,
-  libdatrie,
-  libxkbcommon,
-  libepoxy,
-  dbus,
-  at-spi2-core,
-  libxtst,
-  pcre2,
-  libdeflate,
-
-  swig,
-  python,
-  poppler,
-  wxPython,
-  opencascade-occt_7_6,
-  libngspice,
-  libspnav,
-  valgrind,
-  protobuf_29,
-  nng,
-
-  stable,
-  testing,
+  gtk3,
   kicadSrc,
   kicadVersion,
-  withNgspice,
-  withScripting,
-  withI18n,
-  debug,
+  libGL,
+  libGLU,
+  libdatrie,
+  libdeflate,
+  libepoxy,
+  libgcrypt,
+  libgit2,
+  libgpg-error,
+  libngspice,
+  libpthread-stubs,
+  libsecret,
+  libselinux,
+  libsepol,
+  libspnav,
+  libthai,
+  libx11,
+  libxdmcp,
+  libxkbcommon,
+  libxtst,
+  ninja,
+  nng,
+  opencascade-occt_7_6,
+  openssl,
+  pcre2,
+  pkg-config,
+  poppler,
+  protobuf_29,
+  python,
   sanitizeAddress,
   sanitizeThreads,
+  stable,
+  swig,
+  testing,
+  unixodbc,
+  util-linuxMinimal,
+  valgrind,
+  withI18n,
+  withNgspice,
+  withScripting,
+  writableTmpDirAsHomeHook,
+  wxGTK,
+  wxPython,
+  zlib,
 }:
 
 assert lib.assertMsg (
@@ -81,7 +78,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "kicad-base";
   version = if stable then kicadVersion else builtins.substring 0 10 finalAttrs.src.rev;
-
   src = kicadSrc;
 
   patches = [
@@ -101,32 +97,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace cmake/CreateGitVersionHeader.cmake \
       --replace-fail "0000000000000000000000000000000000000000" "${finalAttrs.src.rev}"
   '';
-
-  preConfigure = optionalString debug ''
-    export CFLAGS="''${CFLAGS:-} -Og -ggdb"
-    export CXXFLAGS="''${CXXFLAGS:-} -Og -ggdb"
-  '';
-
-  cmakeFlags = [
-    (cmakeBool "KICAD_USE_EGL" true)
-    (cmakeFeature "OCC_INCLUDE_DIR" "${opencascade-occt}/include/opencascade")
-    # https://gitlab.com/kicad/code/kicad/-/issues/17133
-    (cmakeFeature "CMAKE_CTEST_ARGUMENTS" "--exclude-regex;qa_spice")
-    (cmakeBool "KICAD_USE_CMAKE_FINDPROTOBUF" false)
-    (cmakeBool "KICAD_SCRIPTING_WXPYTHON" withScripting)
-    (cmakeBool "KICAD_BUILD_I18N" withI18n)
-    (cmakeBool "KICAD_BUILD_QA_TESTS" (!finalAttrs.doInstallCheck))
-    (cmakeBool "KICAD_STDLIB_DEBUG" debug)
-    (cmakeBool "KICAD_USE_VALGRIND" debug)
-    (cmakeBool "KICAD_SANITIZE_ADDRESS" sanitizeAddress)
-    (cmakeBool "KICAD_SANITIZE_THREADS" sanitizeThreads)
-    (cmakeBool "KICAD_SPICE" (!(stable && !withNgspice)))
-  ]
-  ++ optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
-    (cmakeFeature "CMAKE_CTEST_ARGUMENTS" "--exclude-regex;'qa_spice|qa_cli'")
-  ];
-
-  cmakeBuildType = if debug then "Debug" else "Release";
 
   nativeBuildInputs = [
     cmake
@@ -189,9 +159,32 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optionals withNgspice [ libngspice ]
   ++ optionals debug [ valgrind ];
 
+  cmakeFlags = [
+    (cmakeBool "KICAD_USE_EGL" true)
+    (cmakeFeature "OCC_INCLUDE_DIR" "${opencascade-occt}/include/opencascade")
+    # https://gitlab.com/kicad/code/kicad/-/issues/17133
+    (cmakeFeature "CMAKE_CTEST_ARGUMENTS" "--exclude-regex;qa_spice")
+    (cmakeBool "KICAD_USE_CMAKE_FINDPROTOBUF" false)
+    (cmakeBool "KICAD_SCRIPTING_WXPYTHON" withScripting)
+    (cmakeBool "KICAD_BUILD_I18N" withI18n)
+    (cmakeBool "KICAD_BUILD_QA_TESTS" (!finalAttrs.doInstallCheck))
+    (cmakeBool "KICAD_STDLIB_DEBUG" debug)
+    (cmakeBool "KICAD_USE_VALGRIND" debug)
+    (cmakeBool "KICAD_SANITIZE_ADDRESS" sanitizeAddress)
+    (cmakeBool "KICAD_SANITIZE_THREADS" sanitizeThreads)
+    (cmakeBool "KICAD_SPICE" (!(stable && !withNgspice)))
+  ]
+  ++ optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
+    (cmakeFeature "CMAKE_CTEST_ARGUMENTS" "--exclude-regex;'qa_spice|qa_cli'")
+  ];
+
+  preConfigure = optionalString debug ''
+    export CFLAGS="''${CFLAGS:-} -Og -ggdb"
+    export CXXFLAGS="''${CXXFLAGS:-} -Og -ggdb"
+  '';
+
   # debug builds fail all but the python test
   doInstallCheck = !debug;
-  installCheckTarget = "test";
 
   nativeInstallCheckInputs = [
     (python.withPackages (
@@ -205,13 +198,17 @@ stdenv.mkDerivation (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
+  cmakeBuildType = if debug then "Debug" else "Release";
   dontStrip = debug;
+  installCheckTarget = "test";
 
   meta = {
     description = "Just the built source without the libraries";
+
     longDescription = ''
       Just the build products, the libraries are passed via an env var in the wrapper, default.nix
     '';
+
     homepage = "https://www.kicad.org/";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.all;

@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Share one language server instance between multiple LSP clients to save resources";
-    mainProgram = "lspmux";
     homepage = "https://codeberg.org/p2502/lspmux";
     license = with lib.licenses; [ eupl12 ];
     maintainers = with lib.maintainers; [ mrcjkb ];
+    mainProgram = "lspmux";
   };
 })

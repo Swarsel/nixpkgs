@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,10 +18,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   cargoHash = "sha256-kVqj+rYPxfv/9h+HDdSL5jU6DoU5KoJVVQot4O4WVNc=";
-
-  cargoBuildFlags = [ "--package trippy" ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     local INSTALL="$out/bin/trip"
@@ -30,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish <($out/bin/trip --generate fish) \
       --zsh <($out/bin/trip --generate zsh)
   '';
+
+  cargoBuildFlags = [ "--package trippy" ];
 
   meta = {
     description = "Network diagnostic tool";

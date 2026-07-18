@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  pkg-config,
-  ninja,
-  wayland-scanner,
+  gitUpdater,
   libdrm,
+  meson,
+  ninja,
+  pkg-config,
   wayland,
   wayland-protocols,
-  gitUpdater,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,18 +22,21 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     meson
     pkg-config
     ninja
     wayland-scanner
   ];
+
   buildInputs = [
     libdrm
     wayland
     wayland-protocols
   ];
+
+  depsBuildBuild = [ pkg-config ];
 
   passthru.updateScript = gitUpdater {
     url = "https://gitlab.freedesktop.org/wayland/wayland-utils.git";
@@ -41,15 +44,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Wayland utilities (wayland-info)";
+
     longDescription = ''
       A collection of Wayland related utilities:
       - wayland-info: A utility for displaying information about the Wayland
         protocols supported by a Wayland compositor.
     '';
+
     homepage = "https://gitlab.freedesktop.org/wayland/wayland-utils";
     license = lib.licenses.mit; # Expat version
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ wineee ];
+    platforms = lib.platforms.linux;
     mainProgram = "wayland-info";
   };
 })

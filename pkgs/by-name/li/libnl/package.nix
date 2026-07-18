@@ -1,22 +1,22 @@
 {
-  stdenv,
-  file,
   lib,
+  stdenv,
   fetchFromGitHub,
+  asciidoc,
   autoreconfHook,
   bison,
-  flex,
-  pkg-config,
-  pythonSupport ? false,
-  swig ? null,
-  python ? null,
-  enableDocs ? false,
   doxygen,
+  file,
+  flex,
   graphviz,
   mscgen,
-  asciidoc,
-  sourceHighlight,
+  pkg-config,
   python3Packages,
+  sourceHighlight,
+  enableDocs ? false,
+  python ? null,
+  pythonSupport ? false,
+  swig ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.12.0";
 
   src = fetchFromGitHub {
-    repo = "libnl";
     owner = "thom311";
+    repo = "libnl";
     rev = "libnl${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}";
     hash = "sha256-K77WamOf+/3PNXe/hI+OYg0EBgBqvDfNDamXYXcK7P8=";
   };
@@ -38,10 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional pythonSupport "py"
   ++ lib.optional enableDocs "doc";
-
-  enableParallelBuilding = true;
-
-  configureFlags = [ (lib.enableFeature enableDocs "doc") ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -61,6 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
     sourceHighlight
     python3Packages.pygments
   ];
+
+  configureFlags = [ (lib.enableFeature enableDocs "doc") ];
 
   postBuild = lib.optionalString pythonSupport ''
     cd python
@@ -82,13 +80,15 @@ stdenv.mkDerivation (finalAttrs: {
     mv "pythonlib/" "$py"
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     inherit pythonSupport;
   };
 
   meta = {
-    homepage = "http://www.infradead.org/~tgr/libnl/";
     description = "Linux Netlink interface library suite";
+    homepage = "http://www.infradead.org/~tgr/libnl/";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ fpletz ];
     platforms = lib.platforms.linux;

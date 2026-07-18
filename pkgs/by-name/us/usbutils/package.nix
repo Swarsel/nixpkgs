@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
   fetchpatch,
+  hwdata,
+  libusb1,
   meson,
   ninja,
   pkg-config,
-  libusb1,
-  hwdata,
   python3,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,28 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZZ9AxEDjG6hlxSyBijPTumqXNJ4zU/ixmFF5yyqnHsU=";
   };
 
-  patches = [
-    (replaceVars ./fix-paths.patch {
-      inherit hwdata;
-    })
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    (fetchpatch {
-      url = "https://raw.githubusercontent.com/Homebrew/homebrew-core/1cf441a09f572566b1b7c4695a4d169d1177248a/Patches/usbutils/portable.patch";
-      hash = "sha256-spTkWURij4sPLoWtDaWVMIk81AS5W+qUUOQL1pAZEvs=";
-    })
-  ];
-
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-  ];
-  buildInputs = [
-    libusb1
-    python3
-  ];
-
   outputs = [
     "out"
     "man"
@@ -51,22 +29,48 @@ stdenv.mkDerivation (finalAttrs: {
     "python" # uses sysfs
   ];
 
+  patches = [
+    (replaceVars ./fix-paths.patch {
+      inherit hwdata;
+    })
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    (fetchpatch {
+      hash = "sha256-spTkWURij4sPLoWtDaWVMIk81AS5W+qUUOQL1pAZEvs=";
+      url = "https://raw.githubusercontent.com/Homebrew/homebrew-core/1cf441a09f572566b1b7c4695a4d169d1177248a/Patches/usbutils/portable.patch";
+    })
+  ];
+
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+  ];
+
+  buildInputs = [
+    libusb1
+    python3
+  ];
+
   postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
     moveToOutput "bin/lsusb.py" "$python"
     install -Dm555 usbreset -t $out/bin
   '';
 
   meta = {
-    homepage = "http://www.linux-usb.org/";
     description = "Tools for working with USB devices, such as lsusb";
-    maintainers = with lib.maintainers; [
-      cafkafk
-      chuangzhu
-    ];
+    homepage = "http://www.linux-usb.org/";
+
     license = with lib.licenses; [
       gpl2Only # manpages, usbreset
       gpl2Plus # most of the code
     ];
+
+    maintainers = with lib.maintainers; [
+      cafkafk
+      chuangzhu
+    ];
+
     platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "lsusb";
   };

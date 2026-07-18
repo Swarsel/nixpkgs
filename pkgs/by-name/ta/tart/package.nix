@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   makeWrapper,
+  nix-update-script,
+  softnet,
+  stdenvNoCC,
+  versionCheckHook,
   # Softnet support ("--net-softnet") is disabled by default as it requires
   # passwordless-sudo when installed through nix. Alternatively users may install
   # softnet through other means with "setuid"-bit enabled.
   # See https://github.com/cirruslabs/softnet#installing
   enableSoftnet ? false,
-  softnet,
-  nix-update-script,
-  versionCheckHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "tart";
@@ -20,7 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/cirruslabs/tart/releases/download/${finalAttrs.version}/tart.tar.gz";
     hash = "sha256-wepqDaJp1oRjGqEVrXUM/JO5gfAKc12AUkZUbfwwdx0=";
   };
-  sourceRoot = ".";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -39,22 +38,27 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "macOS and Linux VMs on Apple Silicon to use in CI and other automations";
     homepage = "https://tart.run";
     license = lib.licenses.fairsource09;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       emilytrau
       aduh95
     ];
-    mainProgram = "tart";
+
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "tart";
   };
 })

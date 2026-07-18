@@ -1,33 +1,33 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
+  alsa-lib,
+  at-spi2-atk,
+  atkmm,
+  autoPatchelfHook,
+  cairo,
+  cups,
+  dbus,
+  dpkg,
+  expat,
+  glib,
+  gtk3,
+  libdrm,
+  libgbm,
+  libglvnd,
   libx11,
   libxcb,
   libxcomposite,
   libxdamage,
   libxext,
   libxfixes,
-  libxrandr,
-  stdenv,
-  lib,
-  alsa-lib,
-  at-spi2-atk,
-  atkmm,
-  cairo,
-  cups,
-  dbus,
-  expat,
-  glib,
-  gtk3,
-  libdrm,
-  libglvnd,
   libxkbcommon,
-  libgbm,
+  libxrandr,
   nspr,
   nss,
   pango,
   systemd,
-  fetchurl,
-  autoPatchelfHook,
-  dpkg,
 }:
 let
   glLibs = [
@@ -65,8 +65,8 @@ let
   version = "1.515.0";
 in
 stdenv.mkDerivation {
-  pname = "tana";
   inherit version buildInputs;
+  pname = "tana";
 
   src = fetchurl {
     url = "https://github.com/tanainc/tana-desktop-releases/releases/download/v${version}/tana_${version}_amd64.deb";
@@ -76,15 +76,6 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     autoPatchelfHook
     dpkg
-  ];
-
-  appendRunpaths = map (pkg: "${lib.getLib pkg}/lib") runpathPackages ++ [
-    "${placeholder "out"}/lib/tana"
-  ];
-
-  # Needed for Zygote
-  runtimeDependencies = [
-    systemd
   ];
 
   installPhase = ''
@@ -100,8 +91,18 @@ stdenv.mkDerivation {
       --replace "Name=tana" "Name=Tana"
   '';
 
+  appendRunpaths = map (pkg: "${lib.getLib pkg}/lib") runpathPackages ++ [
+    "${placeholder "out"}/lib/tana"
+  ];
+
+  # Needed for Zygote
+  runtimeDependencies = [
+    systemd
+  ];
+
   meta = {
     description = "Intelligent all-in-one workspace";
+
     longDescription = ''
       At its core, Tana is an outline editor which can be extended to
       cover multiple use-cases and different workflows.
@@ -111,6 +112,7 @@ stdenv.mkDerivation {
       To complete all, a powerful AI system is integrated to help with most
       of the tasks.
     '';
+
     homepage = "https://tana.inc";
     changelog = "https://tana.inc/releases";
     license = lib.licenses.unfree;

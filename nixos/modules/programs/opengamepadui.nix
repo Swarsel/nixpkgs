@@ -113,51 +113,59 @@ in
   options.programs.opengamepadui = {
     enable = lib.mkEnableOption "opengamepadui";
 
-    args = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = ''
-        Arguments to be passed to OpenGamepadUI
-      '';
-    };
-
     package = lib.mkPackageOption pkgs "OpenGamepadUI" {
       default = [ "opengamepadui" ];
     };
 
-    extraPackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
+    args = lib.mkOption {
       default = [ ];
+
+      description = ''
+        Arguments to be passed to OpenGamepadUI
+      '';
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    extraPackages = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Additional packages to add to the OpenGamepadUI environment.
+      '';
+
       example = lib.literalExpression ''
         with pkgs; [
           gamescope
         ]
       '';
-      description = ''
-        Additional packages to add to the OpenGamepadUI environment.
-      '';
+
+      type = lib.types.listOf lib.types.package;
     };
 
     fontPackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
       default = config.fonts.packages;
       defaultText = lib.literalExpression "builtins.filter lib.types.package.check config.fonts.packages";
-      example = lib.literalExpression "with pkgs; [ source-han-sans ]";
+
       description = ''
         Font packages to use in OpenGamepadUI.
 
         Defaults to system fonts, but could be overridden to use other fonts — useful for users who would like to customize CJK fonts used in opengamepadui. According to the [upstream issue](https://github.com/ValveSoftware/opengamepadui-for-linux/issues/10422#issuecomment-1944396010), opengamepadui only follows the per-user fontconfig configuration.
       '';
+
+      example = lib.literalExpression "with pkgs; [ source-han-sans ]";
+      type = lib.types.listOf lib.types.package;
     };
 
     gamescopeSession = lib.mkOption {
-      description = "Run a GameScope driven OpenGamepadUI session from your display-manager";
       default = { };
+      description = "Run a GameScope driven OpenGamepadUI session from your display-manager";
+
       type = lib.types.submodule {
         options = {
           enable = lib.mkEnableOption "GameScope Session";
+
           args = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
             default = [
               "--prefer-output"
               "*,eDP-1"
@@ -171,17 +179,22 @@ in
               "200"
               "--steam"
             ];
+
             description = ''
               Arguments to be passed to GameScope for the session.
             '';
+
+            type = lib.types.listOf lib.types.str;
           };
 
           env = lib.mkOption {
-            type = lib.types.attrsOf lib.types.str;
             default = { };
+
             description = ''
               Environmental variables to be passed to GameScope for the session.
             '';
+
+            type = lib.types.attrsOf lib.types.str;
           };
         };
       };
@@ -197,75 +210,73 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    hardware.graphics = {
-      # this fixes the "glXChooseVisual failed" bug, context: https://github.com/NixOS/nixpkgs/issues/47932
-      enable = true;
-      enable32Bit = pkgs.stdenv.hostPlatform.isx86_64;
-    };
-
-    security.wrappers = lib.mkIf (cfg.gamescopeSession.enable && gamescopeCfg.capSysNice) {
-      # needed or steam plugin fails
-      bwrap = {
-        owner = "root";
-        group = "root";
-        source = lib.getExe pkgs.bubblewrap;
-        setuid = true;
-      };
-    };
-
-    programs.opengamepadui.extraPackages = cfg.fontPackages;
-
-    programs.gamescope.enable = true;
-    services.displayManager.sessionPackages = lib.mkIf cfg.gamescopeSession.enable [
-      gamescopeSessionFile
-    ];
-
-    programs.opengamepadui.gamescopeSession.env = {
-      # Fix intel color corruption
-      # might come with some performance degradation but is better than a corrupted
-      # color image
-      INTEL_DEBUG = "norbc";
-      mesa_glthread = "true";
-      # This should be used by default by gamescope. Cannot hurt to force it anyway.
-      # Reported better framelimiting with this enabled
-      ENABLE_GAMESCOPE_WSI = "1";
-      # Force Qt applications to run under xwayland
-      QT_QPA_PLATFORM = "xcb";
-      # Some environment variables by default (taken from Deck session)
-      SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS = "0";
-      # There is no way to set a color space for an NV12
-      # buffer in Wayland. And the color management protocol that is
-      # meant to let this happen is missing the color range...
-      # So just workaround this with an ENV var that Remote Play Together
-      # and Gamescope will use for now.
-      GAMESCOPE_NV12_COLORSPACE = "k_EStreamColorspace_BT601";
-      # Workaround older versions of vkd3d-proton setting this
-      # too low (desc.BufferCount), resulting in symptoms that are potentially like
-      # swapchain starvation.
-      VKD3D_SWAPCHAIN_LATENCY_FRAMES = "3";
-      # To expose vram info from radv
-      WINEDLLOVERRIDES = "dxgi=n";
-      # Don't wait for buffers to idle on the client side before sending them to gamescope
-      vk_xwayland_wait_ready = "false";
-      # Temporary crutch until dummy plane interactions / etc are figured out
-      GAMESCOPE_DISABLE_ASYNC_FLIPS = "1";
-    };
-
-    # optionally enable 32bit pulseaudio support if pulseaudio is enabled
-    services.pulseaudio.support32Bit = config.services.pulseaudio.enable;
-    services.pipewire.alsa.support32Bit = config.services.pipewire.alsa.enable;
-
-    hardware.steam-hardware.enable = true;
-
-    services.inputplumber.enable = lib.mkDefault cfg.inputplumber.enable;
-    services.powerstation.enable = lib.mkDefault cfg.powerstation.enable;
-
     environment.pathsToLink = [ "/share" ];
 
     environment.systemPackages = [
       cfg.package
     ]
     ++ lib.optional cfg.gamescopeSession.enable opengamepadui-gamescope;
+
+    hardware.graphics = {
+      # this fixes the "glXChooseVisual failed" bug, context: https://github.com/NixOS/nixpkgs/issues/47932
+      enable = true;
+      enable32Bit = pkgs.stdenv.hostPlatform.isx86_64;
+    };
+
+    hardware.steam-hardware.enable = true;
+    programs.gamescope.enable = true;
+    programs.opengamepadui.extraPackages = cfg.fontPackages;
+
+    programs.opengamepadui.gamescopeSession.env = {
+      # This should be used by default by gamescope. Cannot hurt to force it anyway.
+      # Reported better framelimiting with this enabled
+      ENABLE_GAMESCOPE_WSI = "1";
+      # Temporary crutch until dummy plane interactions / etc are figured out
+      GAMESCOPE_DISABLE_ASYNC_FLIPS = "1";
+      # There is no way to set a color space for an NV12
+      # buffer in Wayland. And the color management protocol that is
+      # meant to let this happen is missing the color range...
+      # So just workaround this with an ENV var that Remote Play Together
+      # and Gamescope will use for now.
+      GAMESCOPE_NV12_COLORSPACE = "k_EStreamColorspace_BT601";
+      # Fix intel color corruption
+      # might come with some performance degradation but is better than a corrupted
+      # color image
+      INTEL_DEBUG = "norbc";
+      # Force Qt applications to run under xwayland
+      QT_QPA_PLATFORM = "xcb";
+      # Some environment variables by default (taken from Deck session)
+      SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS = "0";
+      # Workaround older versions of vkd3d-proton setting this
+      # too low (desc.BufferCount), resulting in symptoms that are potentially like
+      # swapchain starvation.
+      VKD3D_SWAPCHAIN_LATENCY_FRAMES = "3";
+      # To expose vram info from radv
+      WINEDLLOVERRIDES = "dxgi=n";
+      mesa_glthread = "true";
+      # Don't wait for buffers to idle on the client side before sending them to gamescope
+      vk_xwayland_wait_ready = "false";
+    };
+
+    security.wrappers = lib.mkIf (cfg.gamescopeSession.enable && gamescopeCfg.capSysNice) {
+      # needed or steam plugin fails
+      bwrap = {
+        group = "root";
+        owner = "root";
+        setuid = true;
+        source = lib.getExe pkgs.bubblewrap;
+      };
+    };
+
+    services.displayManager.sessionPackages = lib.mkIf cfg.gamescopeSession.enable [
+      gamescopeSessionFile
+    ];
+
+    services.inputplumber.enable = lib.mkDefault cfg.inputplumber.enable;
+    services.pipewire.alsa.support32Bit = config.services.pipewire.alsa.enable;
+    services.powerstation.enable = lib.mkDefault cfg.powerstation.enable;
+    # optionally enable 32bit pulseaudio support if pulseaudio is enabled
+    services.pulseaudio.support32Bit = config.services.pulseaudio.enable;
   };
 
   meta.maintainers = with lib.maintainers; [ shadowapex ];

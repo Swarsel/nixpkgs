@@ -1,8 +1,8 @@
 {
-  fetchFromGitHub,
-  gradle,
   lib,
+  fetchFromGitHub,
   REAndroidLibrary,
+  gradle,
 }:
 
 let
@@ -10,7 +10,6 @@ let
     pname = "arsclib";
     # 1.3.8 is not new enough for APKEditor because of API changes
     version = "1.3.8-unstable-2026-05-16";
-    projectName = "ARSCLib";
 
     src = fetchFromGitHub {
       owner = "REAndroid";
@@ -23,10 +22,11 @@ let
     };
 
     mitmCache = gradle.fetchDeps {
-      pkg = self;
       data = ./deps.json;
+      pkg = self;
     };
 
+    projectName = "ARSCLib";
     meta.license = lib.licenses.asl20;
   };
 in

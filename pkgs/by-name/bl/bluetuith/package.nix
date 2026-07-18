@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,9 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-38yPy0dhZ99smFQK0tvQLHah+Sn6DsXvNrh8nQaR5qk=";
-
-  subPackages = [ "." ];
-
   env.CGO_ENABLED = 0;
 
   ldflags = [
@@ -27,10 +24,12 @@ buildGoModule (finalAttrs: {
     "-X github.com/darkhz/bluetuith/cmd.Version=${finalAttrs.version}@nixpkgs"
   ];
 
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "TUI-based bluetooth connection manager";
+
     longDescription = ''
       Bluetuith can transfer files via OBEX, perform authenticated pairing,
       and (dis)connect different bluetooth devices. It interacts with bluetooth
@@ -38,13 +37,16 @@ buildGoModule (finalAttrs: {
       manage Bluetooth-based networking/tethering (PANU/DUN) and remote control
       devices. The TUI has mouse support.
     '';
+
     homepage = "https://github.com/bluetuith-org/bluetuith";
     changelog = "https://github.com/bluetuith-org/bluetuith/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
-    mainProgram = "bluetuith";
+
     maintainers = with lib.maintainers; [
       katexochen
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "bluetuith";
   };
 })

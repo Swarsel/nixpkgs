@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  gtkmm3,
   gtk3,
+  gtkmm3,
+  pkg-config,
   spdlog,
 }:
 
@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Windows task manager clone for Linux";
     homepage = "https://github.com/SlyFabi/WSysMon";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ totoroot ];
+    platforms = lib.platforms.linux;
     mainProgram = "WSysMon";
   };
 })

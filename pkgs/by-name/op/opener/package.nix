@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule rec {
@@ -17,8 +17,6 @@ buildGoModule rec {
     hash = "sha256-rYeQ45skFXWxdxMj0dye8IBEYcQCRqdt9nLVXF36od8=";
   };
 
-  vendorHash = "sha256-lju+QlWxUb11UV9NvXSgQ+ZG37WhyZVahJTM5voDEfw=";
-
   postPatch = ''
     substituteInPlace opener.go \
       --replace-fail \
@@ -26,6 +24,7 @@ buildGoModule rec {
         'var version string = "${version}"'
   '';
 
+  vendorHash = "sha256-lju+QlWxUb11UV9NvXSgQ+ZG37WhyZVahJTM5voDEfw=";
   __darwinAllowLocalNetworking = true;
 
   passthru = {

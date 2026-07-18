@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  wafHook,
   buildPackages,
-  python3,
-  readline,
-  libxslt,
-  libxcrypt,
   docbook-xsl-nons,
   docbook_xml_dtd_45,
+  libxcrypt,
+  libxslt,
+  pkg-config,
+  python3,
+  readline,
+  wafHook,
 }:
 
 let
@@ -50,6 +50,19 @@ stdenv.mkDerivation (finalAttrs: {
     libxcrypt
   ];
 
+  env = {
+    # python-config from build Python gives incorrect values when cross-compiling.
+    # If python-config is not found, the build falls back to using the sysconfig
+    # module, which works correctly in all cases.
+    PYTHON_CONFIG = "/invalid";
+  }
+  //
+    lib.optionalAttrs (stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17")
+      {
+        # https://reviews.llvm.org/D135402
+        NIX_LDFLAGS = "--undefined-version";
+      };
+
   # otherwise the configure script fails with
   # PYTHONHASHSEED=1 missing! Don't use waf directly, use ./configure and make!
   preConfigure = ''
@@ -61,7 +74,11 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +w answers
   '';
 
-  wafPath = "buildtools/bin/waf";
+  postFixup =
+    if stdenv.hostPlatform.isDarwin then
+      "install_name_tool -id $out/lib/libtdb.dylib $out/lib/libtdb.dylib"
+    else
+      null;
 
   wafConfigureFlags = [
     "--bundled-libraries=NONE"
@@ -77,33 +94,18 @@ stdenv.mkDerivation (finalAttrs: {
     )
   ];
 
-  postFixup =
-    if stdenv.hostPlatform.isDarwin then
-      "install_name_tool -id $out/lib/libtdb.dylib $out/lib/libtdb.dylib"
-    else
-      null;
-
-  env = {
-    # python-config from build Python gives incorrect values when cross-compiling.
-    # If python-config is not found, the build falls back to using the sysconfig
-    # module, which works correctly in all cases.
-    PYTHON_CONFIG = "/invalid";
-  }
-  //
-    lib.optionalAttrs (stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17")
-      {
-        # https://reviews.llvm.org/D135402
-        NIX_LDFLAGS = "--undefined-version";
-      };
+  wafPath = "buildtools/bin/waf";
 
   meta = {
     description = "Trivial database";
+
     longDescription = ''
       TDB is a Trivial Database. In concept, it is very much like GDBM,
       and BSD's DB except that it allows multiple simultaneous writers
       and uses locking internally to keep writers from trampling on each
       other. TDB is also extremely small.
     '';
+
     homepage = "https://tdb.samba.org/";
     license = lib.licenses.lgpl3Plus;
     platforms = lib.platforms.all;

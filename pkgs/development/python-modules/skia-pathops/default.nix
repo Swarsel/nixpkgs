@@ -2,27 +2,26 @@
   lib,
   stdenv,
   buildPythonPackage,
+  cctools,
   cython,
-  isPyPy,
-  ninja,
-  setuptools-scm,
-  setuptools,
   fetchPypi,
   gn,
+  isPyPy,
+  ninja,
   pytestCheckHook,
-  cctools,
+  setuptools,
+  setuptools-scm,
   xcodebuild,
 }:
 
 buildPythonPackage rec {
   pname = "skia-pathops";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "skia_pathops";
     inherit version;
     hash = "sha256-S22EWfb0ppKCyyb8oMK7CzIcxYqb+cxleaUqOR7cAxk=";
+    pname = "skia_pathops";
   };
 
   postPatch = ''
@@ -50,12 +49,6 @@ buildPythonPackage rec {
         EOF
       '';
 
-  build-system = [
-    cython
-    setuptools
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     ninja
   ]
@@ -66,6 +59,13 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
+  build-system = [
+    cython
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pathops" ];
 
   meta = {

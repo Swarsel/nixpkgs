@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  poetry-core,
   django,
-  pytestCheckHook,
+  poetry-core,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "django-split-settings";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wemake-services";
@@ -25,21 +24,20 @@ buildPythonPackage rec {
       --replace-fail "poetry.masonry" "poetry.core.masonry"
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ django ];
-
-  pythonImportsCheck = [ "split_settings" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ django ];
+  pyproject = true;
+  pythonImportsCheck = [ "split_settings" ];
+
   meta = {
     description = "Organize Django settings into multiple files and directories";
     homepage = "https://github.com/wemake-services/django-split-settings";
-    maintainers = with lib.maintainers; [ sikmir ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ sikmir ];
   };
 }

@@ -1,37 +1,31 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  gobject-introspection,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
-
+  clinfo,
   # buildInputs
   gdk-pixbuf,
+  # nativeBuildInputs
+  gobject-introspection,
   gtk4,
   libadwaita,
-  vulkan-tools,
-
-  # wrapper
-  python3,
-  clinfo,
   lsb-release,
   mesa-demos,
-  vdpauinfo,
-
+  meson,
+  ninja,
   # passthru
   nix-update-script,
+  pkg-config,
+  # wrapper
+  python3,
+  python3Packages,
+  vdpauinfo,
+  vulkan-tools,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gpu-viewer";
   version = "3.35";
-  pyproject = false;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "arunsivaramanneo";
@@ -55,14 +49,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     vulkan-tools
   ];
 
-  pythonPath = with python3Packages; [
-    click
-    pygobject3
-  ];
-
-  # Prevent double wrapping
-  dontWrapGApps = true;
-
   postFixup = ''
     makeWrapper ${python3.interpreter} $out/bin/gpu-viewer \
       --prefix PATH : "${
@@ -81,16 +67,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
       ''${gappsWrapperArgs[@]}
   '';
 
+  __structuredAttrs = true;
+  # Prevent double wrapping
+  dontWrapGApps = true;
+  pyproject = false;
+
+  pythonPath = with python3Packages; [
+    click
+    pygobject3
+  ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/arunsivaramanneo/GPU-Viewer";
     description = "Front-end to glxinfo, vulkaninfo, clinfo and es2_info";
+    homepage = "https://github.com/arunsivaramanneo/GPU-Viewer";
     changelog = "https://github.com/arunsivaramanneo/GPU-Viewer/releases/tag/${finalAttrs.src.tag}";
-    maintainers = with lib.maintainers; [ GaetanLepage ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ GaetanLepage ];
     platforms = lib.platforms.linux;
     mainProgram = "gpu-viewer";
   };

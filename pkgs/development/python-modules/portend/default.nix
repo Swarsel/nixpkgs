@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "portend";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -21,16 +20,13 @@ buildPythonPackage (finalAttrs: {
     sed -i "/coherent\.licensed/d" pyproject.toml;
   '';
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ tempora ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "portend" ];
-
   # Some of the tests use localhost networking.
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools-scm ];
+  dependencies = [ tempora ];
+  pyproject = true;
+  pythonImportsCheck = [ "portend" ];
 
   meta = {
     description = "Monitor TCP ports for bound or unbound states";

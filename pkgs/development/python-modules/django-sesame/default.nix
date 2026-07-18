@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   poetry-core,
   python,
   ua-parser,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "django-sesame";
   version = "3.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aaugustin";
@@ -27,8 +26,6 @@ buildPythonPackage rec {
     ua-parser
   ];
 
-  pythonImportsCheck = [ "sesame" ];
-
   checkPhase = ''
     runHook preCheck
 
@@ -36,6 +33,9 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  pyproject = true;
+  pythonImportsCheck = [ "sesame" ];
 
   meta = {
     description = "URLs with authentication tokens for automatic login";

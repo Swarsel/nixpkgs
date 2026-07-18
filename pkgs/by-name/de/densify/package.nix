@@ -1,20 +1,19 @@
 {
-  fetchFromGitHub,
   lib,
-  python3Packages,
-  gtk3,
+  fetchFromGitHub,
+  ghostscript,
+  gnugrep,
   gobject-introspection,
+  gtk3,
+  libnotify,
+  python3Packages,
   wrapGAppsHook3,
   xrandr,
-  gnugrep,
-  ghostscript,
-  libnotify,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "densify";
   version = "0.3.2";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "hkdb";
@@ -29,14 +28,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "/icon.png" "/../share/densify/icon.png"
   '';
 
-  dependencies = with python3Packages; [ pygobject3 ];
-
   nativeBuildInputs = [
     gobject-introspection
     wrapGAppsHook3
   ];
 
   buildInputs = [ gtk3 ];
+
+  installPhase = ''
+    runHook preInstall
+
+    install -Dm755 -t $out/bin densify
+    install -Dm644 -t $out/share/applications densify.desktop
+    install -Dm644 -t $out/share/densify desktop-icon.png icon.png
+
+    runHook postInstall
+  '';
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -51,22 +58,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    install -Dm755 -t $out/bin densify
-    install -Dm644 -t $out/share/applications densify.desktop
-    install -Dm644 -t $out/share/densify desktop-icon.png icon.png
-
-    runHook postInstall
-  '';
-
   postFixup = ''
     substituteInPlace $out/share/applications/densify.desktop \
       --replace-fail "/opt/Densify/densify" "densify" \
       --replace-fail "Path=/opt/Densify/" "Path=$out/bin/" \
       --replace-fail "/opt/Densify/desktop-icon.png" "$out/share/densify/desktop-icon.png"
   '';
+
+  dependencies = with python3Packages; [ pygobject3 ];
+  pyproject = false;
 
   meta = {
     description = "Compress PDF files with Ghostscript";

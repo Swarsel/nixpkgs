@@ -1,22 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  numpy,
+  pytestCheckHook,
+  python-dateutil,
+  requests,
   setuptools,
   wheel,
-  numpy,
-  python-dateutil,
-  xxhash,
-  pytestCheckHook,
-  requests,
   xdoctest,
+  xxhash,
 }:
 
 buildPythonPackage rec {
   pname = "ubelt";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Erotemic";
@@ -30,14 +29,6 @@ buildPythonPackage rec {
     wheel
   ];
 
-  optional-dependencies = {
-    optional = [
-      numpy
-      python-dateutil
-      xxhash
-    ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
     requests
@@ -48,15 +39,24 @@ buildPythonPackage rec {
     export HOME=$TMPDIR
   '';
 
+  __darwinAllowLocalNetworking = true;
+
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # fail due to sandbox environment
     "CacheStamp.expired"
     "userhome"
   ];
 
-  pythonImportsCheck = [ "ubelt" ];
+  optional-dependencies = {
+    optional = [
+      numpy
+      python-dateutil
+      xxhash
+    ];
+  };
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "ubelt" ];
 
   meta = {
     description = "Python utility library with a stdlib like feel and extra batteries. Paths, Progress, Dicts, Downloads, Caching, Hashing: ubelt makes it easy";

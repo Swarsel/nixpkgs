@@ -10,11 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "cyclonedds-cxx";
   version = "0.10.5";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "eclipse-cyclonedds";
     repo = "cyclonedds-cxx";
@@ -22,17 +17,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-whFVEQec/Ca+dr6R7z9mMrNg315z3oIWchVT+vQ36So=";
   };
 
-  nativeBuildInputs = [ cmake ];
+  outputs = [
+    "out"
+    "dev"
+  ];
 
+  nativeBuildInputs = [ cmake ];
   buildInputs = [ cyclonedds ];
 
   meta = {
     description = "C++ binding for Eclipse Cyclone DDS";
     homepage = "https://cyclonedds.io/";
+
     license = with lib.licenses; [
       epl20
       asl20
     ];
+
     maintainers = with lib.maintainers; [ linbreux ];
   };
 })

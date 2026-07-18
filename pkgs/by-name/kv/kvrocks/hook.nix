@@ -1,7 +1,7 @@
 {
   lib,
-  makeSetupHook,
   kvrocks,
+  makeSetupHook,
   valkey,
 }:
 

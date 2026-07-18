@@ -2,18 +2,21 @@
   lib,
   stdenv,
   dockapps-sources,
-  libx11,
-  libxpm,
-  libxext,
   libdockapp,
+  libx11,
+  libxext,
+  libxpm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit (dockapps-sources) version src;
   pname = "wmsm.app";
 
-  inherit (dockapps-sources) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/wmsm.app/wmsm";
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace "PREFIX	= /usr/X11R6/bin" "" \
+      --replace "/usr/bin/install" "install"
+  '';
 
   buildInputs = [
     libx11
@@ -22,17 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     libdockapp
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-std=gnu89";
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace "PREFIX	= /usr/X11R6/bin" "" \
-      --replace "/usr/bin/install" "install"
-  '';
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-std=gnu89";
 
   installPhase = ''
     runHook preInstall
@@ -43,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [
     "PREFIX=${placeholder "out"}/bin"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/wmsm.app/wmsm";
 
   meta = {
     description = "System monitor for Windowmaker";

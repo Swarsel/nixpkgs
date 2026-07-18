@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  fetchNpmDeps,
   buildGoModule,
+  fetchNpmDeps,
+  libheif,
   nodejs,
   npmHooks,
   pkg-config,
-  libheif,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,8 +20,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Q4hu3bcB16iuqASZvlv7nDvxj8CFX66qWp6DHIUTmh4=";
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-iuSu5MvNRt+eCZ9wxUwMo6X0joos7q9WPyXBwhn/0yE=";
+  postPatch = ''
+    substituteInPlace ./web/build-wasm.sh \
+      --replace-fail 'go.mau.fi/gomuks/version.Tag=$(git describe --exact-match --tags 2>/dev/null)' "go.mau.fi/gomuks/version.Tag=${finalAttrs.src.tag}" \
+      --replace-fail 'go.mau.fi/gomuks/version.Commit=$(git rev-parse HEAD)' "go.mau.fi/gomuks/version.Commit=unknown"
+  '';
 
   nativeBuildInputs = [
     nodejs
@@ -33,27 +36,26 @@ buildGoModule (finalAttrs: {
     libheif
   ];
 
+  vendorHash = "sha256-iuSu5MvNRt+eCZ9wxUwMo6X0joos7q9WPyXBwhn/0yE=";
+
   env = {
-    npmRoot = "web";
     npmDeps = fetchNpmDeps {
       src = "${finalAttrs.src}/web";
       hash = "sha256-RiOes+tmAxhA9IkyA6yWQXTjjXyZg2Z8FmPTgcmCg/g=";
     };
+
+    npmRoot = "web";
   };
 
-  postPatch = ''
-    substituteInPlace ./web/build-wasm.sh \
-      --replace-fail 'go.mau.fi/gomuks/version.Tag=$(git describe --exact-match --tags 2>/dev/null)' "go.mau.fi/gomuks/version.Tag=${finalAttrs.src.tag}" \
-      --replace-fail 'go.mau.fi/gomuks/version.Commit=$(git rev-parse HEAD)' "go.mau.fi/gomuks/version.Commit=unknown"
+  preBuild = ''
+    CGO_ENABLED=0 go generate ./web
   '';
 
   doCheck = false;
 
-  tags = [
-    "goolm"
-    "libheif"
-    "sqlite_fts5"
-  ];
+  postInstall = ''
+    mv $out/bin/gomuks $out/bin/gomuks-web
+  '';
 
   ldflags = [
     "-X 'go.mau.fi/gomuks/version.Tag=${finalAttrs.src.tag}'"
@@ -62,28 +64,28 @@ buildGoModule (finalAttrs: {
     "-X \"maunium.net/go/mautrix.GoModVersion=$(cat go.mod | grep 'maunium.net/go/mautrix ' | head -n1 | awk '{ print $2 })\""
   ];
 
+  proxyVendor = true;
+
   subPackages = [
     "cmd/gomuks"
     "cmd/gomuks-terminal"
     "cmd/archivemuks"
   ];
 
-  preBuild = ''
-    CGO_ENABLED=0 go generate ./web
-  '';
-
-  postInstall = ''
-    mv $out/bin/gomuks $out/bin/gomuks-web
-  '';
+  tags = [
+    "goolm"
+    "libheif"
+    "sqlite_fts5"
+  ];
 
   passthru.updateScript = ./update.sh;
 
   meta = {
-    mainProgram = "gomuks-web";
     description = "Matrix client written in Go";
     homepage = "https://github.com/tulir/gomuks";
     license = lib.licenses.agpl3Only;
     maintainers = [ lib.maintainers.zaphyra ];
     platforms = lib.platforms.unix;
+    mainProgram = "gomuks-web";
   };
 })

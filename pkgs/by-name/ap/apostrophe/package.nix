@@ -1,22 +1,22 @@
 {
   lib,
-  fetchFromGitLab,
-  gtksourceview5,
-  libspelling,
   fetchFromGitHub,
-  python312Packages,
+  fetchFromGitLab,
+  desktop-file-utils,
+  gobject-introspection,
+  gtksourceview5,
+  libadwaita,
+  libspelling,
   mathjax,
   meson,
   ninja,
-  pkg-config,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  gobject-introspection,
-  libadwaita,
-  webkitgtk_6_0,
-  texliveMedium,
-  shared-mime-info,
   nix-update-script,
+  pkg-config,
+  python312Packages,
+  shared-mime-info,
+  texliveMedium,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 let
@@ -25,19 +25,18 @@ let
   src = fetchFromGitLab {
     owner = "World";
     repo = "apostrophe";
-    domain = "gitlab.gnome.org";
     tag = "v${version}";
     hash = "sha256-Sj5Y4QPMYavdXbU+iVv76qOFNhgBjAeX9+/TvQHZzeI=";
+    domain = "gitlab.gnome.org";
   };
 
   reveal-js = fetchFromGitHub {
+    hash = "sha256-L6KVBw20K67lHT07Ws+ZC2DwdURahqyuyjAaK0kTgN0=";
     owner = "hakimel";
     repo = "reveal.js";
-
     # keep in sync with upstream shipped version
     # in build-aux/flatpak/org.gnome.gitlab.somas.Apostrophe.json
     tag = "5.1.0";
-    hash = "sha256-L6KVBw20K67lHT07Ws+ZC2DwdURahqyuyjAaK0kTgN0=";
   };
 in
 
@@ -46,7 +45,6 @@ in
 python312Packages.buildPythonApplication {
   inherit version src;
   pname = "apostrophe";
-  pyproject = false;
 
   postPatch = ''
     substituteInPlace build-aux/meson_post_install.py \
@@ -58,12 +56,6 @@ python312Packages.buildPythonApplication {
   + ''
     substituteInPlace apostrophe/preview_converter.py \
       --replace-fail "--mathjax" "--mathjax=file://${mathjax}/lib/node_modules/mathjax/tex-chtml-full.js"
-  '';
-
-  # Should be done in postInstall, but meson checks this eagerly before build
-  preConfigure = ''
-    install -d $out/share/apostrophe/libs
-    cp -r ${reveal-js} $out/share/apostrophe/libs/reveal.js
   '';
 
   nativeBuildInputs = [
@@ -82,15 +74,11 @@ python312Packages.buildPythonApplication {
     webkitgtk_6_0
   ];
 
-  dependencies = with python312Packages; [
-    pygobject3
-    pypandoc
-    chardet
-    levenshtein
-    regex
-  ];
-
-  dontWrapGApps = true;
+  # Should be done in postInstall, but meson checks this eagerly before build
+  preConfigure = ''
+    install -d $out/share/apostrophe/libs
+    cp -r ${reveal-js} $out/share/apostrophe/libs/reveal.js
+  '';
 
   preFixup = ''
     makeWrapperArgs+=(
@@ -100,20 +88,33 @@ python312Packages.buildPythonApplication {
     )
   '';
 
+  dependencies = with python312Packages; [
+    pygobject3
+    pypandoc
+    chardet
+    levenshtein
+    regex
+  ];
+
+  dontWrapGApps = true;
+  pyproject = false;
+
   passthru = {
     inherit reveal-js;
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/apostrophe";
     description = "Distraction free Markdown editor for GNU/Linux";
+    homepage = "https://gitlab.gnome.org/World/apostrophe";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       sternenseemann
     ];
-    teams = [ lib.teams.gnome-circle ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "apostrophe";
+    teams = [ lib.teams.gnome-circle ];
   };
 }

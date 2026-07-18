@@ -1,13 +1,12 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage {
   pname = "typechecks";
   version = "unstable-2023-07-13";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "openvax";
@@ -18,6 +17,7 @@ buildPythonPackage {
     hash = "sha256-GdmBtkyuzLfpk6oneWgJ5M1bnhGJ5/lSbGliwoAQWZs=";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "typechecks" ];
 
   meta = {

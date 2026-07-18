@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   httpx,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "biothings-client";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "biothings";
@@ -20,16 +19,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-SG664xpajbLLTRfqanqYJhKdZqAOXPTDNBcfCAdlZ5M=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ httpx ];
-
-  pythonImportsCheck = [ "biothings_client" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ httpx ];
 
   enabledTestPaths = [
     # All other tests make network requests to exercise the API
@@ -43,10 +39,13 @@ buildPythonPackage (finalAttrs: {
     "tests/test_variant.py::test_format_hgvs"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "biothings_client" ];
+
   meta = {
-    changelog = "https://github.com/biothings/biothings_client.py/blob/${finalAttrs.src.tag}/CHANGES.txt";
     description = "Wrapper to access Biothings.api-based backend services";
     homepage = "https://github.com/biothings/biothings_client.py";
+    changelog = "https://github.com/biothings/biothings_client.py/blob/${finalAttrs.src.tag}/CHANGES.txt";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ rayhem ];
   };

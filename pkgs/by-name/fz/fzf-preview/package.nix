@@ -1,17 +1,18 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   atool,
   bat,
   catdoc,
   chafa,
   exiftool,
   eza,
-  fetchFromGitHub,
   ffmpegthumbnailer,
   file,
   glow,
   gnumeric,
   jq,
-  lib,
   libcdio,
   makeWrapper,
   mediainfo,
@@ -19,7 +20,6 @@
   openssl,
   p7zip,
   poppler-utils,
-  stdenv,
   w3m,
 }:
 
@@ -79,12 +79,15 @@ stdenv.mkDerivation {
       be simple, fast, and highly compatible, making it a useful tool for anyone
       leveraging fzf for file navigation or search.
     '';
+
     homepage = "https://github.com/semi710/fzf-preview";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       semi710
     ];
-    mainProgram = "fzf-preview";
+
     platforms = lib.platforms.unix;
+    mainProgram = "fzf-preview";
   };
 }

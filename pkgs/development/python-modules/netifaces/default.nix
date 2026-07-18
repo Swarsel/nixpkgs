@@ -5,9 +5,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.11.0";
   pname = "netifaces";
-  format = "setuptools";
+  version = "0.11.0";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # No tests implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "netifaces" ];
 
   meta = {

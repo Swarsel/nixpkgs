@@ -16,11 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1qq5l6d0fn8azg7sj7a4m2jsmhlpswl5793clcxs1p34vy4wb2lp";
   };
 
+  buildInputs = [ libx11 ];
+
   installPhase = ''
     install -Dm555 -t $out/bin devour
   '';
-
-  buildInputs = [ libx11 ];
 
   meta = {
     description = "Hides your current window when launching an external program";

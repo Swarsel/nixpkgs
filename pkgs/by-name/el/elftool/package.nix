@@ -15,11 +15,9 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
-
+  makeFlags = [ "CC=c++" ];
   # Needed to fix `collect2: error: ld returned 1 exit status`
   env.NIX_LDFLAGS = if stdenv.hostPlatform.isDarwin then "-lc++" else "-lstdc++";
-
-  makeFlags = [ "CC=c++" ];
 
   installPhase = ''
     runHook preInstall
@@ -28,13 +26,13 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/osm0sis/elftool";
     description = "Program for packing and unpacking boot images from Sony mobile devices";
+    homepage = "https://github.com/osm0sis/elftool";
     # No license specified in the repository
     license = lib.licenses.free;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ ungeskriptet ];
-    teams = [ lib.teams.android ];
     mainProgram = "elftool";
+    teams = [ lib.teams.android ];
   };
 }

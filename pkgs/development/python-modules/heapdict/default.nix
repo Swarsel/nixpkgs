@@ -9,18 +9,16 @@
 buildPythonPackage rec {
   pname = "heapdict";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "HeapDict";
     inherit version;
     hash = "sha256-hJX1ez4D2ORtXxssxiyogayjkv1cwEjcCqLhptI+zbY=";
+    pname = "HeapDict";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "heapdict" ];
 
   meta = {

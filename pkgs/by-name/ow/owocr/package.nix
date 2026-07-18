@@ -1,12 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "owocr";
   version = "1.26.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AuroraWright";
@@ -23,6 +22,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "pystrayfix>=0.19.8" "pystray"
   '';
 
+  doCheck = false; # no tests
   build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
@@ -57,7 +57,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pywayland
   ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   meta = {
     description = "Optical character recognition for Japanese text";

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  tpm2-tss,
-  autoreconfHook,
   autoconf-archive,
+  autoreconfHook,
   pandoc,
   pkg-config,
-  withPlymouth ? false,
   plymouth,
   qrencode,
+  tpm2-tss,
+  withPlymouth ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,10 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-aeWhI2GQcWa0xAqlmHfcbCMg78UqcD6eanLlEVNVnRM=";
   };
-
-  preConfigure = ''
-    echo '0.3.0' > VERSION
-  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -40,13 +36,17 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withPlymouth plymouth;
 
+  preConfigure = ''
+    echo '0.3.0' > VERSION
+  '';
+
   meta = {
     description = "Attest the trustworthiness of a device against a human using time-based one-time passwords";
     homepage = "https://github.com/tpm2-software/tpm2-totp";
     changelog = "https://github.com/tpm2-software/tpm2-totp/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.bsd3;
-    mainProgram = "tpm2-totp";
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ raitobezarius ];
+    platforms = lib.platforms.all;
+    mainProgram = "tpm2-totp";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -16,8 +16,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-5D4RZAyJOL4hMU32Rmp3SYmjgqEtF36mZJr4YBG0k7E=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -26,13 +24,14 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://publicsuffix.org/";
     description = "Cross-vendor public domain suffix database";
-    platforms = lib.platforms.all;
+    homepage = "https://publicsuffix.org/";
     license = lib.licenses.mpl20;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

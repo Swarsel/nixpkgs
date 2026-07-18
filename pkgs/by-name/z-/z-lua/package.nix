@@ -17,10 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-S07YFyh6jKKQn8tpeTNReKLmpVxXzIF3jXCmst6B3+I=";
   };
 
-  dontBuild = true;
-
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ lua52Packages.lua ];
 
   installPhase = ''
@@ -34,9 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/skywind3000/z.lua";
     description = "New cd command that helps you navigate faster by learning your habits";
+    homepage = "https://github.com/skywind3000/z.lua";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "z.lua";

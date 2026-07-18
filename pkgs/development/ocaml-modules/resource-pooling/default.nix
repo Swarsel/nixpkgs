@@ -6,10 +6,8 @@
 }:
 
 buildDunePackage (finalAttrs: {
-  version = "1.2";
   pname = "resource-pooling";
-
-  minimalOCamlVersion = "4.06";
+  version = "1.2";
 
   src = fetchFromGitHub {
     owner = "ocsigen";
@@ -19,8 +17,8 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ lwt_log ];
-
   doCheck = true;
+  minimalOCamlVersion = "4.06";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;

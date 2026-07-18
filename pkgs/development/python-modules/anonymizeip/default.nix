@@ -2,14 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "anonymizeip";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "samuelmeuli";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-54q2R14Pdnw4FAmBufeq5NozsqC7C4W6QQPcjTSkM48=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "anonymizeip" ];
 
   meta = {

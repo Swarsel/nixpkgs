@@ -1,18 +1,17 @@
 {
   lib,
-  setuptools,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   pytz,
+  setuptools,
   xmltodict,
 }:
 
 buildPythonPackage rec {
   pname = "pymeteireann";
   version = "2024.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DylanGore";
@@ -20,6 +19,9 @@ buildPythonPackage rec {
     tag = version;
     sha256 = "sha256-b59I2h9A3QoXEBUYhbR0vsGGpQpOvFrqhHZnVCS8fLo=";
   };
+
+  # Project has no tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -32,9 +34,7 @@ buildPythonPackage rec {
     pytz
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "meteireann" ];
 
   meta = {

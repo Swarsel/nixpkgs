@@ -1,29 +1,38 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   distro,
+  fetchPypi,
+  fixtures,
   httplib2,
+  lazr-uri,
   oauthlib,
+  pytestCheckHook,
   setuptools,
   six,
   wadllib,
-  fixtures,
-  lazr-uri,
-  pytestCheckHook,
   wsgi-intercept,
 }:
 
 buildPythonPackage rec {
   pname = "lazr-restfulclient";
   version = "0.14.6";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "lazr.restfulclient";
     inherit version;
     hash = "sha256-Q/EqHTlIRjsUYgOMR7Qp3LXkLgun8uFlEbArpdKt/9s=";
+    pname = "lazr.restfulclient";
   };
+
+  # E   ModuleNotFoundError: No module named 'lazr.uri'
+  doCheck = false;
+
+  nativeCheckInputs = [
+    fixtures
+    lazr-uri
+    pytestCheckHook
+    wsgi-intercept
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,17 +45,8 @@ buildPythonPackage rec {
     wadllib
   ];
 
-  # E   ModuleNotFoundError: No module named 'lazr.uri'
-  doCheck = false;
-  nativeCheckInputs = [
-    fixtures
-    lazr-uri
-    pytestCheckHook
-    wsgi-intercept
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "lazr.restfulclient" ];
-
   pythonNamespaces = [ "lazr" ];
 
   meta = {

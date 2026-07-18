@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  docbook_xml_dtd_45,
+  docbook_xsl,
+  libxslt,
   pkg-config,
   systemd,
-  libxslt,
-  docbook_xsl,
-  docbook_xml_dtd_45,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

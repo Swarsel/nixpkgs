@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
   ladspa-header,
 }:
@@ -21,8 +21,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [ ladspa-header ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-alsa";
     description = "Bindings for the LADSPA API which provides audio effects";
+    homepage = "https://github.com/savonet/ocaml-alsa";
     license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.dandellion ];
   };

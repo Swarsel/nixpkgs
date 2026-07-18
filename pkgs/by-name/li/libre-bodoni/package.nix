@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -26,6 +26,7 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Bodoni fonts adapted for today's web requirements";
+
     longDescription = ''
       The Libre Bodoni fonts are based on the 19th century Morris Fuller
       Benton's ATF design, but specifically adapted for today's web
@@ -37,6 +38,7 @@ stdenvNoCC.mkDerivation rec {
       Libre Bodoni currently features four styles: Regular, Italic, Bold and
       Bold Italic.
     '';
+
     homepage = "https://github.com/impallari/Libre-Bodoni";
     license = lib.licenses.ofl;
     maintainers = [ ];

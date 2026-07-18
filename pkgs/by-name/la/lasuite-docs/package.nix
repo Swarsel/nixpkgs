@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
-  nixosTests,
   fetchYarnDeps,
-  python3,
+  nixosTests,
   nodejs,
+  python3,
+  python3Packages,
   yarnBuildHook,
   yarnConfigHook,
 }:
@@ -20,17 +20,7 @@ let
   };
 
   mail-templates = stdenv.mkDerivation {
-    name = "lasuite-docs-${version}-mjml";
     inherit src;
-
-    sourceRoot = "source/src/mail";
-
-    env.DOCS_DIR_MAILS = "${placeholder "out"}";
-
-    offlineCache = fetchYarnDeps {
-      yarnLock = "${src}/src/mail/yarn.lock";
-      hash = "sha256-miA1ysqNSaBZSb2B2uqTx1rea9R5/AgRfuCPr5X0bx8=";
-    };
 
     nativeBuildInputs = [
       nodejs
@@ -38,16 +28,22 @@ let
       yarnBuildHook
     ];
 
+    env.DOCS_DIR_MAILS = "${placeholder "out"}";
     dontInstall = true;
+    name = "lasuite-docs-${version}-mjml";
+
+    offlineCache = fetchYarnDeps {
+      hash = "sha256-miA1ysqNSaBZSb2B2uqTx1rea9R5/AgRfuCPr5X0bx8=";
+      yarnLock = "${src}/src/mail/yarn.lock";
+    };
+
+    sourceRoot = "source/src/mail";
   };
 in
 
 python3Packages.buildPythonApplication (finalAttrs: {
-  pname = "lasuite-docs";
-  pyproject = true;
   inherit version src;
-
-  sourceRoot = "${finalAttrs.src.name}/src/backend";
+  pname = "lasuite-docs";
 
   patches = [
     # Support configuration throught environment variables for SECURE_*
@@ -73,8 +69,37 @@ python3Packages.buildPythonApplication (finalAttrs: {
         "gethostname()" \
         "gethostname() + '.local'"
   '';
-  __darwinAllowLocalNetworking = true;
 
+  postBuild = ''
+    export DATA_DIR=$(pwd)/data
+    ${python3.pythonOnBuildForHost.interpreter} manage.py collectstatic --no-input --clear
+  '';
+
+  postInstall =
+    let
+      pythonPath = python3Packages.makePythonPath finalAttrs.passthru.dependencies;
+    in
+    ''
+      mkdir -p $out/{bin,share}
+
+      cp ./manage.py $out/bin/.manage.py
+      cp -r data/static $out/share
+      chmod +x $out/bin/.manage.py
+
+      makeWrapper $out/bin/.manage.py $out/bin/docs \
+        --prefix PYTHONPATH : "${pythonPath}"
+      makeWrapper ${lib.getExe python3Packages.celery} $out/bin/celery \
+        --prefix PYTHONPATH : "${pythonPath}:$out/${python3.sitePackages}"
+      makeWrapper ${lib.getExe python3Packages.gunicorn} $out/bin/gunicorn \
+        --prefix PYTHONPATH : "${pythonPath}:$out/${python3.sitePackages}"
+
+      mkdir -p $out/${python3.sitePackages}/core/templates
+      ln -sv ${mail-templates}/ $out/${python3.sitePackages}/core/templates/mail
+
+      cp -r impress/configuration $out/${python3.sitePackages}/impress/configuration
+    '';
+
+  __darwinAllowLocalNetworking = true;
   build-system = with python3Packages; [ uv-build ];
 
   dependencies =
@@ -131,36 +156,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ django-lasuite.optional-dependencies.all
     ++ django-storages.optional-dependencies.s3;
 
+  pyproject = true;
   pythonRelaxDeps = true;
-
-  postBuild = ''
-    export DATA_DIR=$(pwd)/data
-    ${python3.pythonOnBuildForHost.interpreter} manage.py collectstatic --no-input --clear
-  '';
-
-  postInstall =
-    let
-      pythonPath = python3Packages.makePythonPath finalAttrs.passthru.dependencies;
-    in
-    ''
-      mkdir -p $out/{bin,share}
-
-      cp ./manage.py $out/bin/.manage.py
-      cp -r data/static $out/share
-      chmod +x $out/bin/.manage.py
-
-      makeWrapper $out/bin/.manage.py $out/bin/docs \
-        --prefix PYTHONPATH : "${pythonPath}"
-      makeWrapper ${lib.getExe python3Packages.celery} $out/bin/celery \
-        --prefix PYTHONPATH : "${pythonPath}:$out/${python3.sitePackages}"
-      makeWrapper ${lib.getExe python3Packages.gunicorn} $out/bin/gunicorn \
-        --prefix PYTHONPATH : "${pythonPath}:$out/${python3.sitePackages}"
-
-      mkdir -p $out/${python3.sitePackages}/core/templates
-      ln -sv ${mail-templates}/ $out/${python3.sitePackages}/core/templates/mail
-
-      cp -r impress/configuration $out/${python3.sitePackages}/impress/configuration
-    '';
+  sourceRoot = "${finalAttrs.src.name}/src/backend";
 
   passthru.tests = {
     login-and-create-doc = nixosTests.lasuite-docs;
@@ -171,11 +169,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/suitenumerique/docs";
     changelog = "https://github.com/suitenumerique/docs/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       soyouzpanda
       ma27
     ];
-    mainProgram = "docs";
+
     platforms = lib.platforms.linux;
+    mainProgram = "docs";
   };
 })

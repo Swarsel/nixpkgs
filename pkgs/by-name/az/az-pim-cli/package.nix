@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
+  nix-update-script,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 buildGoModule (finalAttrs: {
   pname = "az-pim-cli";
@@ -24,18 +24,12 @@ buildGoModule (finalAttrs: {
     ./version-build-info.patch
   ];
 
-  vendorHash = "sha256-K4tv3IlVygV/aDR9twh60FX8pe4f0sXxoGNIsIV2oUA=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
+  vendorHash = "sha256-K4tv3IlVygV/aDR9twh60FX8pe4f0sXxoGNIsIV2oUA=";
   env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-X github.com/netr0m/az-pim-cli/cmd.version=v${finalAttrs.version}"
-  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd az-pim-cli \
@@ -45,13 +39,19 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     writableTmpDirAsHomeHook
     versionCheckHook
   ];
-  versionCheckProgramArg = "version";
-  versionCheckKeepEnvironment = [ "HOME" ];
 
+  ldflags = [
+    "-s"
+    "-X github.com/netr0m/az-pim-cli/cmd.version=v${finalAttrs.version}"
+  ];
+
+  versionCheckKeepEnvironment = [ "HOME" ];
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {

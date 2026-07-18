@@ -16,8 +16,8 @@ buildDunePackage (finalAttrs: {
   minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://github.com/backtracking/ocamlgraph";
     description = "Graph library for OCaml";
+    homepage = "https://github.com/backtracking/ocamlgraph";
     license = lib.licenses.lgpl21Only;
     maintainers = [ ];
   };

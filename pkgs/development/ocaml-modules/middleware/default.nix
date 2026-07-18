@@ -1,26 +1,26 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   alcotest,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "middleware";
   version = "0.0.1";
 
-  minimalOCamlVersion = "4.14.0";
-
   src = fetchurl {
     url = "https://github.com/skolemlabs/middleware/releases/download/${finalAttrs.version}/middleware-${finalAttrs.version}.tbz";
     hash = "sha256-zhLEGvyZiKrdBKWcEbB4PHvYzBlkrp1Ldnon0mP2Ypg=";
   };
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.14.0";
 
   meta = {
     description = "Composable stacked functions, which can respond to inner calls";

@@ -1,16 +1,15 @@
 {
   lib,
-  requests,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
+  requests,
   requests-mock,
 }:
 
 buildPythonPackage rec {
   pname = "simplehound";
   version = "0.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "robmarkcole";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "simplehound" ];
 
   meta = {

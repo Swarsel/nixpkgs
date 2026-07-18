@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nodejs,
 }:
 
@@ -15,12 +15,11 @@ buildNpmPackage {
     rev = "c36009e5c1711aa0f76bd17d63e33322535a87f9";
     hash = "sha256-ARd2Vi305lErYAZ3FN+hXocHCHxC3gr6mbrPn032zxc=";
   };
-  sourceRoot = "source/dummycloud";
-  npmDepsHash = "sha256-zN+iE9M12osr72z9Jvp80SdLeGahz7drvF+kx7914AE=";
 
   patches = [ ./0001-packge.json-Remove-dev-dependencies-for-repoducible-.patch ];
-
+  npmDepsHash = "sha256-zN+iE9M12osr72z9Jvp80SdLeGahz7drvF+kx7914AE=";
   dontNpmBuild = true;
+  sourceRoot = "source/dummycloud";
 
   meta = {
     description = "A dummy cloud server for DEYE microinverters (Node.js) and bridge to mqtt";

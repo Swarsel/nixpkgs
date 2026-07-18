@@ -1,22 +1,24 @@
 {
-  mkKdeDerivation,
-  qtdeclarative,
-  qttools,
-  pkg-config,
   aspell,
   hunspell,
+  mkKdeDerivation,
+  pkg-config,
+  qtdeclarative,
+  qttools,
 }:
 mkKdeDerivation {
   pname = "sonnet";
 
-  extraNativeBuildInputs = [
-    qttools
-    pkg-config
-  ];
   extraBuildInputs = [
     qtdeclarative
     aspell
     hunspell
   ];
+
+  extraNativeBuildInputs = [
+    qttools
+    pkg-config
+  ];
+
   meta.mainProgram = "parsetrigrams6";
 }

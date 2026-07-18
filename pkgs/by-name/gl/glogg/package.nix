@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libsForQt5,
   boost,
+  libsForQt5,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,9 +26,8 @@ stdenv.mkDerivation rec {
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
   ];
-  buildInputs = [ boost ];
 
-  qmakeFlags = [ "VERSION=${version}" ];
+  buildInputs = [ boost ];
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/Applications
@@ -36,15 +35,19 @@ stdenv.mkDerivation rec {
     rm -fr $out/{bin,share}
   '';
 
+  qmakeFlags = [ "VERSION=${version}" ];
+
   meta = {
     description = "Fast, smart log explorer";
-    mainProgram = "glogg";
+
     longDescription = ''
       A multi-platform GUI application to browse and search through long or complex log files. It is designed with programmers and system administrators in mind. glogg can be seen as a graphical, interactive combination of grep and less.
     '';
+
     homepage = "https://glogg.bonnefon.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "glogg";
   };
 }

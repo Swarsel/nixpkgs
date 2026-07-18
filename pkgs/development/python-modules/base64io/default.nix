@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "base64io";
   version = "1.0.3-unstable-2025-01-09";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -20,19 +19,19 @@ buildPythonPackage rec {
     hash = "sha256-1MUWjFFitJ3nqvVwAQYcAVVPhPs6NEgq7t/mI71u2Bk=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     mock
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
+    description = "Python stream implementation for base64 encoding/decoding";
     homepage = "https://base64io-python.readthedocs.io/";
     changelog = "https://github.com/aws/base64io-python/blob/${version}/CHANGELOG.rst";
-    description = "Python stream implementation for base64 encoding/decoding";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ anthonyroussel ];
   };

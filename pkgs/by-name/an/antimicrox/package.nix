@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  cmake,
-  kdePackages,
-  pkg-config,
-  itstool,
-  udevCheckHook,
+  fetchFromGitHub,
   SDL2,
+  cmake,
+  itstool,
+  kdePackages,
   libsForQt5,
   libxtst,
-  fetchFromGitHub,
+  pkg-config,
+  udevCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "sha256-ZIHhgyOpabWkdFZoha/Hj/1d8/b6qVolE6dn0xAFZVw=";
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+        --replace "/usr/lib/udev/rules.d/" "$out/lib/udev/rules.d/"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -38,18 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
     libxtst
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-        --replace "/usr/lib/udev/rules.d/" "$out/lib/udev/rules.d/"
-  '';
-
   doInstallCheck = true;
 
   meta = {
-    description = "GUI for mapping keyboard and mouse controls to a gamepad";
     inherit (finalAttrs.src.meta) homepage;
-    maintainers = [ ];
+    description = "GUI for mapping keyboard and mouse controls to a gamepad";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
     platforms = with lib.platforms; linux;
     mainProgram = "antimicrox";
   };

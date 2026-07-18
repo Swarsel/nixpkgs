@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   asgiref,
+  buildPythonPackage,
   hatchling,
   opentelemetry-api,
   opentelemetry-instrumentation,
@@ -13,9 +13,13 @@
 buildPythonPackage {
   inherit (opentelemetry-instrumentation) version src;
   pname = "opentelemetry-instrumentation-asgi";
-  pyproject = true;
+  # Tests have issues starting with 0.47b0
+  doCheck = false;
 
-  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-asgi";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -27,18 +31,12 @@ buildPythonPackage {
     opentelemetry-util-http
   ];
 
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytestCheckHook
-  ];
-
-  # Tests have issues starting with 0.47b0
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.instrumentation.asgi" ];
+  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-asgi";
 
   meta = opentelemetry-instrumentation.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-asgi";
     description = "ASGI instrumentation for OpenTelemetry";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-asgi";
   };
 }

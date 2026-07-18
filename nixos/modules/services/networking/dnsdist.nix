@@ -85,49 +85,35 @@ in
     services.dnsdist = {
       enable = lib.mkEnableOption "dnsdist domain name server";
 
-      listenAddress = lib.mkOption {
-        type = lib.types.str;
-        description = "Listen IP address";
-        default = "0.0.0.0";
-      };
-      listenPort = lib.mkOption {
-        type = lib.types.port;
-        description = "Listen port";
-        default = 53;
-      };
-
       dnscrypt = {
         enable = lib.mkEnableOption "a DNSCrypt endpoint to dnsdist";
 
+        certLifetime = lib.mkOption {
+          default = 15;
+
+          description = ''
+            The lifetime (in minutes) of the resolver certificate.
+            This will be automatically rotated before expiration.
+          '';
+
+          type = lib.types.ints.positive;
+        };
+
         listenAddress = lib.mkOption {
-          type = lib.types.str;
-          description = "Listen IP address of the endpoint";
           default = "0.0.0.0";
+          description = "Listen IP address of the endpoint";
+          type = lib.types.str;
         };
 
         listenPort = lib.mkOption {
-          type = lib.types.port;
-          description = "Listen port of the endpoint";
           default = 443;
-        };
-
-        providerName = lib.mkOption {
-          type = lib.types.str;
-          default = "2.dnscrypt-cert.${config.networking.hostName}";
-          defaultText = lib.literalExpression "2.dnscrypt-cert.\${config.networking.hostName}";
-          example = "2.dnscrypt-cert.myresolver";
-          description = ''
-            The name that will be given to this DNSCrypt resolver.
-
-            ::: {.note}
-            The provider name must start with `2.dnscrypt-cert.`.
-            :::
-          '';
+          description = "Listen port of the endpoint";
+          type = lib.types.port;
         };
 
         providerKey = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
           default = null;
+
           description = ''
             The filepath to the provider secret key.
             If not given a new provider key pair will be generated in
@@ -137,59 +123,84 @@ in
             The file must be readable by the dnsdist user/group.
             :::
           '';
+
+          type = lib.types.nullOr lib.types.path;
         };
 
-        certLifetime = lib.mkOption {
-          type = lib.types.ints.positive;
-          default = 15;
+        providerName = lib.mkOption {
+          default = "2.dnscrypt-cert.${config.networking.hostName}";
+          defaultText = lib.literalExpression "2.dnscrypt-cert.\${config.networking.hostName}";
+
           description = ''
-            The lifetime (in minutes) of the resolver certificate.
-            This will be automatically rotated before expiration.
+            The name that will be given to this DNSCrypt resolver.
+
+            ::: {.note}
+            The provider name must start with `2.dnscrypt-cert.`.
+            :::
           '';
+
+          example = "2.dnscrypt-cert.myresolver";
+          type = lib.types.str;
         };
 
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Extra lines to be added verbatim to dnsdist.conf.
         '';
+
+        type = lib.types.lines;
+      };
+
+      listenAddress = lib.mkOption {
+        default = "0.0.0.0";
+        description = "Listen IP address";
+        type = lib.types.str;
+      };
+
+      listenPort = lib.mkOption {
+        default = 53;
+        description = "Listen port";
+        type = lib.types.port;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.users.dnsdist = {
-      description = "dnsdist daemons user";
-      isSystemUser = true;
-      group = "dnsdist";
-    };
-
-    users.groups.dnsdist = { };
-
     systemd.packages = [ pkgs.dnsdist ];
 
     systemd.services.dnsdist = {
-      wantedBy = [ "multi-user.target" ];
-
-      startLimitIntervalSec = 0;
       serviceConfig = {
-        User = "dnsdist";
-        Group = "dnsdist";
-        RuntimeDirectory = "dnsdist";
-        StateDirectory = "dnsdist";
+        ExecStart = [
+          ""
+          "${pkgs.dnsdist}/bin/dnsdist --supervised --disable-syslog --config ${configFile}"
+        ];
+
         # upstream overrides for better nixos compatibility
         ExecStartPre = [
           ""
           "${pkgs.dnsdist}/bin/dnsdist --check-config --config ${configFile}"
         ];
-        ExecStart = [
-          ""
-          "${pkgs.dnsdist}/bin/dnsdist --supervised --disable-syslog --config ${configFile}"
-        ];
+
+        Group = "dnsdist";
+        RuntimeDirectory = "dnsdist";
+        StateDirectory = "dnsdist";
+        User = "dnsdist";
       };
+
+      startLimitIntervalSec = 0;
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.dnsdist = { };
+
+    users.users.dnsdist = {
+      description = "dnsdist daemons user";
+      group = "dnsdist";
+      isSystemUser = true;
     };
   };
 }

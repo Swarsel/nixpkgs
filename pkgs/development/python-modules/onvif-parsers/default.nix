@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   lxml,
   onvif-zeep-async,
-  zeep,
+  pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
-  pytest-asyncio,
+  setuptools,
+  zeep,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "onvif-parsers";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openvideolibs";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ukwcyycK3YFk0qHUPBD7Aoy3F3itXn0zUGq9I65b3Ns=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -31,12 +36,7 @@ buildPythonPackage (finalAttrs: {
     zeep
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "onvif_parsers" ];
 
   meta = {

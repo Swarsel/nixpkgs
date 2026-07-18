@@ -1,17 +1,17 @@
 {
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   fetchzip,
   jemalloc,
   llvmPackages,
   numkong,
-  stdenv,
 }:
 let
   sqliteSrc = fetchzip {
-    url = "https://sqlite.org/2024/sqlite-amalgamation-3450200.zip";
     hash = "sha256-nkDMIiTHjeiopPbGcviQekgSOYifuNM/kr07IHgQvoI=";
+    url = "https://sqlite.org/2024/sqlite-amalgamation-3450200.zip";
   };
 
   inherit (stdenv.hostPlatform.extensions) sharedLibrary;
@@ -20,29 +20,28 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "usearch";
   version = "2.25.3";
 
+  src = fetchFromGitHub {
+    owner = "unum-cloud";
+    repo = "USearch";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-lk6cBUwu3+ud/43HSmDWVP2RhXtH8+KmWSuREPoKQ4s=";
+    # we need to use the pinned stringzilla because the now removed (or partially by levenshtein replaced) hamming_distance is being used.
+    fetchSubmodules = true;
+  };
+
   outputs = [
     "out"
     "lib"
     "dev"
   ];
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  src = fetchFromGitHub {
-    owner = "unum-cloud";
-    repo = "USearch";
-    tag = "v${finalAttrs.version}";
-    # we need to use the pinned stringzilla because the now removed (or partially by levenshtein replaced) hamming_distance is being used.
-    fetchSubmodules = true;
-    hash = "sha256-lk6cBUwu3+ud/43HSmDWVP2RhXtH8+KmWSuREPoKQ4s=";
-  };
-
   postPatch = ''
     rm -r numkong
     # TODO: change numkong to provide a CMakeLists.txt file or pc config file, so that headers can be auto discovered
     ln -s ${numkong.src} numkong
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -52,6 +51,25 @@ stdenv.mkDerivation (finalAttrs: {
     jemalloc
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin llvmPackages.openmp;
+
+  cmakeFlags = [
+    # dependencies
+    (lib.cmakeBool "USEARCH_USE_JEMALLOC" true)
+    (lib.cmakeBool "USEARCH_USE_NUMKONG" true)
+    (lib.cmakeBool "USEARCH_USE_OPENMP" true)
+
+    # libraries
+    (lib.cmakeBool "USEARCH_BUILD_LIB_C" true)
+    (lib.cmakeBool "USEARCH_BUILD_SQLITE" true)
+    (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_SQLITE3" sqliteSrc.outPath)
+
+    # checks
+    (lib.cmakeBool "USEARCH_BUILD_TEST_C" true)
+    (lib.cmakeBool "USEARCH_BUILD_TEST_CPP" true)
+
+    # benchmarking not only wastes CPU, but also requires the clipp repo to be cloned
+    (lib.cmakeBool "USEARCH_BUILD_BENCH_CPP" false)
+  ];
 
   postInstall = ''
     install {libusearch*,sqlite/libsqlite3}${sharedLibrary} -t $lib/lib/
@@ -73,24 +91,7 @@ stdenv.mkDerivation (finalAttrs: {
       done
     '';
 
-  cmakeFlags = [
-    # dependencies
-    (lib.cmakeBool "USEARCH_USE_JEMALLOC" true)
-    (lib.cmakeBool "USEARCH_USE_NUMKONG" true)
-    (lib.cmakeBool "USEARCH_USE_OPENMP" true)
-
-    # libraries
-    (lib.cmakeBool "USEARCH_BUILD_LIB_C" true)
-    (lib.cmakeBool "USEARCH_BUILD_SQLITE" true)
-    (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_SQLITE3" sqliteSrc.outPath)
-
-    # checks
-    (lib.cmakeBool "USEARCH_BUILD_TEST_C" true)
-    (lib.cmakeBool "USEARCH_BUILD_TEST_CPP" true)
-
-    # benchmarking not only wastes CPU, but also requires the clipp repo to be cloned
-    (lib.cmakeBool "USEARCH_BUILD_BENCH_CPP" false)
-  ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Smaller & Faster Single-File Vector Search Engine from Unum";

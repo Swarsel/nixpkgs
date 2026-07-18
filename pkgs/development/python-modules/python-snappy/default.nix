@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cramjam,
+  fetchPypi,
   setuptools,
   snappy-cpp,
   unittestCheckHook,
@@ -11,24 +11,23 @@
 buildPythonPackage rec {
   pname = "python-snappy";
   version = "0.7.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_snappy";
     inherit version;
     hash = "sha256-QCFsG637LTiseB7LFiodDsQPjul0fmELz+/fp5SGzuM=";
+    pname = "python_snappy";
   };
+
+  buildInputs = [ snappy-cpp ];
+  nativeCheckInputs = [ unittestCheckHook ];
 
   build-system = [
     cramjam
     setuptools
   ];
 
-  buildInputs = [ snappy-cpp ];
-
   dependencies = [ cramjam ];
-
-  nativeCheckInputs = [ unittestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Python library for the snappy compression library from Google";

@@ -1,15 +1,13 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   msmart-ng,
-  pytestCheckHook,
   pytest-homeassistant-custom-component,
+  pytestCheckHook,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "mill1000";
-  domain = "midea_ac";
   version = "2026.7.0";
 
   src = fetchFromGitHub {
@@ -19,12 +17,12 @@ buildHomeAssistantComponent rec {
     hash = "sha256-lZfhZRvKdeisjQAHjYxPsyS2YL486wLtuf4ERw57vZ4=";
   };
 
-  dependencies = [ msmart-ng ];
-
   nativeCheckInputs = [
     pytest-homeassistant-custom-component
     pytestCheckHook
   ];
+
+  dependencies = [ msmart-ng ];
 
   disabledTests = [
     # tests try to open sockets
@@ -37,11 +35,15 @@ buildHomeAssistantComponent rec {
     "test_energy_sensor_request_enable"
   ];
 
+  domain = "midea_ac";
+  owner = "mill1000";
+
   meta = {
-    changelog = "https://github.com/mill1000/midea-ac-py/releases/tag/${src.tag}";
     description = "Home Assistant custom integration to control Midea (and associated brands) air conditioners via LAN";
     homepage = "https://github.com/mill1000/midea-ac-py";
+    changelog = "https://github.com/mill1000/midea-ac-py/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hexa
       emilylange

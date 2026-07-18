@@ -9,7 +9,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "openllm";
   version = "0.6.30";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bentoml";
@@ -24,14 +23,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "hatch-vcs==0.4.0" "hatch-vcs"
   '';
 
+  # No python tests
+  nativeCheckInputs = [
+    versionCheckHook
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # PermissionError: [Errno 1] Operation not permitted: '/var/empty/.openllm'
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = with python3Packages; [
     hatch-vcs
     hatchling
-  ];
-
-  pythonRelaxDeps = [
-    "bentoml"
-    "openai"
   ];
 
   dependencies = with python3Packages; [
@@ -48,30 +51,31 @@ python3Packages.buildPythonApplication (finalAttrs: {
     uv
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "openllm" ];
 
-  # No python tests
-  nativeCheckInputs = [
-    versionCheckHook
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # PermissionError: [Errno 1] Operation not permitted: '/var/empty/.openllm'
-    writableTmpDirAsHomeHook
+  pythonRelaxDeps = [
+    "bentoml"
+    "openai"
   ];
+
   versionCheckKeepEnvironment = lib.optionals stdenv.hostPlatform.isDarwin [ "HOME" ];
 
   meta = {
     description = "Run any open-source LLMs, such as Llama 3.1, Gemma, as OpenAI compatible API endpoint in the cloud";
     homepage = "https://github.com/bentoml/OpenLLM";
     changelog = "https://github.com/bentoml/OpenLLM/releases/tag/${finalAttrs.src.tag}";
-    knownVulnerabilities = [
-      "CVE-2026-15035"
-    ];
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       happysalada
       natsukium
     ];
+
     mainProgram = "openllm";
+
+    knownVulnerabilities = [
+      "CVE-2026-15035"
+    ];
   };
 })

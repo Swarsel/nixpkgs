@@ -10,14 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libax25";
   version = "0.0.12-rc5";
 
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    autoreconfHook
-    glibc
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isStatic [ glibc.static ];
-
   # src from linux-ax25.in-berlin.de remote has been
   # unreliable, pointing to github mirror from the radiocatalog
   src = fetchFromGitHub {
@@ -26,6 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "libax25-${finalAttrs.version}";
     hash = "sha256-MQDrroRZhtWJiu3N7FQVp5/sqe1MDjdwKu4ufnfHTUM=";
   };
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    glibc
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isStatic [ glibc.static ];
 
   configureFlags = [ "--sysconfdir=/etc" ];
 

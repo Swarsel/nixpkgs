@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   packaging,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "streamlit-notify";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pgarrett-scripps";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-MI+8fh7aKk7kOVxq3677cVWsiMmE0NSXWukN+Bc0noM=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     streamlit
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "streamlit_notify" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httplib2,
   keystoneauth1,
   openstackdocstheme,
@@ -13,11 +13,11 @@
   python-mistralclient,
   python-openstackclient,
   python-swiftclient,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools,
-  sphinxcontrib-apidoc,
   sphinxHook,
+  sphinxcontrib-apidoc,
   stestr,
   stevedore,
 }:
@@ -25,7 +25,6 @@
 buildPythonPackage rec {
   pname = "python-troveclient";
   version = "8.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -34,15 +33,28 @@ buildPythonPackage rec {
     hash = "sha256-ayNRhT337eG6NJM2ugAqiH6st+2s4gySIeNQ4jJb8nU=";
   };
 
-  env.PBR_VERSION = version;
-
   nativeBuildInputs = [
     openstackdocstheme
     sphinxHook
     sphinxcontrib-apidoc
   ];
 
-  sphinxBuilders = [ "man" ];
+  env.PBR_VERSION = version;
+
+  nativeCheckInputs = [
+    httplib2
+    requests-mock
+    stestr
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+    stestr run -e <(echo "
+    troveclient.tests.test_shell.ShellTest.test_help
+    troveclient.tests.test_shell.ShellTestKeystoneV3.test_help
+    ")
+    runHook postCheck
+  '';
 
   build-system = [
     pbr
@@ -62,26 +74,13 @@ buildPythonPackage rec {
     stevedore
   ];
 
-  nativeCheckInputs = [
-    httplib2
-    requests-mock
-    stestr
-  ];
-
-  checkPhase = ''
-    runHook preCheck
-    stestr run -e <(echo "
-    troveclient.tests.test_shell.ShellTest.test_help
-    troveclient.tests.test_shell.ShellTestKeystoneV3.test_help
-    ")
-    runHook postCheck
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "troveclient" ];
+  sphinxBuilders = [ "man" ];
 
   meta = {
-    homepage = "https://github.com/openstack/python-troveclient";
     description = "Client library for OpenStack Trove API";
+    homepage = "https://github.com/openstack/python-troveclient";
     license = lib.licenses.asl20;
     mainProgram = "trove";
     teams = [ lib.teams.openstack ];

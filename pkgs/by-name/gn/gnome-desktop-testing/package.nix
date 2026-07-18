@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  glib,
+  stdenv,
+  fetchFromGitLab,
   autoreconfHook,
+  glib,
+  nix-update-script,
   pkg-config,
   systemd,
-  fetchFromGitLab,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,11 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2021.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "gnome-desktop-testing";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-PWn4eEZskY0YgMpf6O2dgXNSu8b8T311vFHREv2HE/Q=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -41,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GNOME test runner for installed tests";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-desktop-testing";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.jtojnar ];
+    platforms = lib.platforms.linux;
   };
 })

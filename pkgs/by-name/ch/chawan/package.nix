@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchFromSourcehut,
-  makeBinaryWrapper,
-  openssl,
-  libssh2,
-  nim,
-  pkg-config,
   brotli,
+  fetchFromSourcehut,
   gitUpdater,
+  libssh2,
+  makeBinaryWrapper,
+  nim,
+  openssl,
+  pkg-config,
   versionCheckHook,
 }:
 
@@ -38,10 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildFlags = [
     "all"
   ];
-  installFlags = [
-    "DESTDIR=$(out)"
-    "PREFIX=/"
-  ];
 
   postInstall =
     let
@@ -53,10 +49,16 @@ stdenv.mkDerivation (finalAttrs: {
       wrapProgram $out/bin/mancha ${makeWrapperArgs}
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  installFlags = [
+    "DESTDIR=$(out)"
+    "PREFIX=/"
+  ];
 
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
@@ -65,8 +67,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://sr.ht/~bptato/chawan/";
     changelog = "https://git.sr.ht/~bptato/chawan/refs/v${finalAttrs.version}";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "cha";
   };
 })

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  which,
-  pkg-config,
-  zip,
+  gst_all_1,
   imagemagick,
+  pkg-config,
   qt5,
   taglib,
-  gst_all_1,
+  which,
+  zip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,10 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-ugly
   ]);
 
-  prefixKey = "--prefix ";
-
-  enableParallelBuilding = true;
-
   # FIXME: not added by gstreamer setup hook by default
   preFixup = ''
     qtWrapperArgs+=(
@@ -55,14 +51,17 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  enableParallelBuilding = true;
+  prefixKey = "--prefix ";
+
   meta = {
     description = "Music player with a waveform progress bar";
     homepage = "https://nulloy.com";
     changelog = "https://github.com/nulloy/nulloy/blob/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    mainProgram = "nulloy";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.all;
+    mainProgram = "nulloy";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

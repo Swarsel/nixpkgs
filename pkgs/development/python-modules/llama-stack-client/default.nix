@@ -10,8 +10,8 @@
   fire,
   hatch-fancy-pypi-readme,
   hatchling,
-  httpx-aiohttp,
   httpx,
+  httpx-aiohttp,
   nest-asyncio,
   openai,
   pandas,
@@ -33,18 +33,28 @@
 buildPythonPackage (finalAttrs: {
   pname = "llama-stack-client";
   version = "0.7.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_stack_client";
     inherit (finalAttrs) version;
     hash = "sha256-SxPWXuH1ob5eYoZyWWs2YWsyElJufS28QXnby2hgwWc=";
+    pname = "llama_stack_client";
   };
 
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "hatchling==1.26.3" "hatchling"
   '';
+
+  nativeCheckInputs = [
+    dirty-equals
+    nest-asyncio
+    openai
+    pytest-asyncio
+    pytest-xdist
+    pytestCheckHook
+    respx
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [
     hatch-fancy-pypi-readme
@@ -69,26 +79,6 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  optional-dependencies = {
-    aiohttp = [
-      aiohttp
-      httpx-aiohttp
-    ];
-  };
-
-  nativeCheckInputs = [
-    dirty-equals
-    nest-asyncio
-    openai
-    pytest-asyncio
-    pytest-xdist
-    pytestCheckHook
-    respx
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
-  pythonImportsCheck = [ "llama_stack_client" ];
-
   disabledTestPaths = [
     # Tests require network access
     "tests/api_resources/"
@@ -98,6 +88,16 @@ buildPythonPackage (finalAttrs: {
     # AttributeError: 'Agent' object has no attribute '_session_last_response_id'
     "tests/lib/agents/test_agent_responses.py::test_agent_tracks_multiple_sessions"
   ];
+
+  optional-dependencies = {
+    aiohttp = [
+      aiohttp
+      httpx-aiohttp
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "llama_stack_client" ];
 
   meta = {
     description = "Library for the llama-stack-client API";

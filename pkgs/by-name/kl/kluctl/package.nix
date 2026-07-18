@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   buildNpmPackage,
   buildPackages,
-  fetchFromGitHub,
   installShellFiles,
   makeWrapper,
   python3,
@@ -22,45 +22,36 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Adh2n8aE+DEBY1MC4laVPDdr5dq6FKSMEFLjbs74D4c=";
   };
 
-  subPackages = [ "cmd" ];
-
-  vendorHash = "sha256-cQJRU3vL5wJ0dgYMtN4qFdvJyp367I4N7GM6PhRvW0I=";
-
-  ldflags = [
-    "-s"
-    "-X main.version=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
 
-  # Depends on docker
-  doCheck = false;
+  vendorHash = "sha256-cQJRU3vL5wJ0dgYMtN4qFdvJyp367I4N7GM6PhRvW0I=";
 
   preBuild =
     let
       webui = buildNpmPackage {
-        pname = "kluctl-webui";
         inherit (finalAttrs) version src;
-
-        sourceRoot = "source/pkg/webui/ui";
-
+        pname = "kluctl-webui";
         npmDepsHash = "sha256-e5Ic3W1UPQn/2ggaYez7G7exXNZA6BobP4BTM6B6rlI=";
-
-        npmBuildScript = "build";
 
         installPhase = ''
           mkdir -p $out
           cp -r build $out/
         '';
+
+        npmBuildScript = "build";
+        sourceRoot = "source/pkg/webui/ui";
       };
     in
     ''
       rm -rf pkg/webui/ui/build
       cp -r ${webui}/build pkg/webui/ui/build
     '';
+
+  # Depends on docker
+  doCheck = false;
 
   postInstall =
     let
@@ -77,19 +68,29 @@ buildGoModule (finalAttrs: {
         --zsh  <(${emulator} $out/bin/kluctl completion zsh)
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  ldflags = [
+    "-s"
+    "-X main.version=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd" ];
 
   meta = {
     description = "Missing glue to put together large Kubernetes deployments";
-    mainProgram = "kluctl";
     homepage = "https://kluctl.io/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       sikmir
       netthier
     ];
+
+    mainProgram = "kluctl";
   };
 })

@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-
-  # build-system
-  pretix-plugin-build,
-  setuptools,
-
-  # runtime
-  openssl,
-
+  buildPythonPackage,
   # dependencies
   googlemaps,
+  # runtime
+  openssl,
+  # build-system
+  pretix-plugin-build,
+  replaceVars,
+  setuptools,
   wallet-py3k,
 }:
 
 buildPythonPackage rec {
   pname = "pretix-passbook";
   version = "1.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretix";
@@ -34,6 +30,8 @@ buildPythonPackage rec {
     })
   ];
 
+  doCheck = false; # no tests
+
   build-system = [
     pretix-plugin-build
     setuptools
@@ -44,7 +42,7 @@ buildPythonPackage rec {
     wallet-py3k
   ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   pythonImportsCheck = [
     "pretix_passbook"

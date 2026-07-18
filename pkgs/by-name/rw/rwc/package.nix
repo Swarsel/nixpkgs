@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Report when files are changed";
     homepage = "https://github.com/leahneukirchen/rwc";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ somasis ];
+    platforms = lib.platforms.linux;
     mainProgram = "rwc";
   };
 })

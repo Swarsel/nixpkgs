@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  rust-jemalloc-sys,
-  tree-sitter,
   nodejs,
+  rust-jemalloc-sys,
+  rustPlatform,
+  tree-sitter,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-RqR/A9ket9kSqCDZTm0bNtRLybJGXDpgPv9Rzhw0JxM=";
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
 
@@ -34,30 +32,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rust-jemalloc-sys
   ];
 
-  env = {
-    SQLX_OFFLINE = 1;
+  cargoHash = "sha256-RqR/A9ket9kSqCDZTm0bNtRLybJGXDpgPv9Rzhw0JxM=";
 
+  env = {
+    PGLS_VERSION = finalAttrs.version;
     # As specified in the upstream: https://github.com/supabase-community/postgres-language-server/blob/main/.github/workflows/release.yml
     RUSTFLAGS = "-C strip=symbols -C codegen-units=1";
-    PGLS_VERSION = finalAttrs.version;
+    SQLX_OFFLINE = 1;
   };
 
-  cargoBuildFlags = [ "-p=pgls_cli" ];
   # Many tests are integration tests requiring a running Postgres instance
   doCheck = false;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  cargoBuildFlags = [ "-p=pgls_cli" ];
 
   meta = {
     description = "Tools and language server for Postgres";
     homepage = "https://pg-language-server.com";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       myypo
     ];
+
     mainProgram = "postgres-language-server";
   };
 })

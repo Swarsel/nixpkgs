@@ -15,35 +15,36 @@ in
       enable = lib.mkEnableOption "the supergfxd service";
 
       settings = lib.mkOption {
-        type = lib.types.nullOr json.type;
         default = null;
+
         description = ''
           The content of /etc/supergfxd.conf.
           See <https://gitlab.com/asus-linux/supergfxctl/#config-options-etcsupergfxdconf>.
         '';
+
+        type = lib.types.nullOr json.type;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.supergfxctl ];
-
     environment.etc."supergfxd.conf" = lib.mkIf (cfg.settings != null) {
-      source = json.generate "supergfxd.conf" cfg.settings;
       mode = "0644";
+      source = json.generate "supergfxd.conf" cfg.settings;
     };
 
+    environment.systemPackages = [ pkgs.supergfxctl ];
     services.dbus.enable = true;
-
+    services.dbus.packages = [ pkgs.supergfxctl ];
+    services.udev.packages = [ pkgs.supergfxctl ];
     systemd.packages = [ pkgs.supergfxctl ];
-    systemd.services.supergfxd.wantedBy = [ "multi-user.target" ];
+
     systemd.services.supergfxd.path = [
       pkgs.kmod
       pkgs.pciutils
     ];
 
-    services.dbus.packages = [ pkgs.supergfxctl ];
-    services.udev.packages = [ pkgs.supergfxctl ];
+    systemd.services.supergfxd.wantedBy = [ "multi-user.target" ];
   };
 
   meta.maintainers = pkgs.supergfxctl.meta.maintainers;

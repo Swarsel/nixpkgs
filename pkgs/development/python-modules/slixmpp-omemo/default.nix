@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  slixmpp,
-  omemo,
+  buildPythonPackage,
   oldmemo,
-  twomemo,
-  typing-extensions,
-  pytestCheckHook,
+  omemo,
   pytest-asyncio,
   pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
+  slixmpp,
+  twomemo,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "slixmpp-omemo";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Syndace";
@@ -24,6 +23,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jecnNQu2FNG+d1FzXjLwmbgPi2oDovAAS/MopfY5+Bo=";
   };
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,17 +43,12 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ oldmemo.optional-dependencies.xml;
 
-  doCheck = true;
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
-  ];
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/Syndace/slixmpp-omemo/releases/tag/v${finalAttrs.version}/CHANGELOG.md";
     description = "Slixmpp plugin for the Multi-End Message and Object Encryption protocol";
     homepage = "https://github.com/Syndace/slixmpp-omemo";
+    changelog = "https://github.com/Syndace/slixmpp-omemo/releases/tag/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ marijanp ];
   };

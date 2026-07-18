@@ -8,23 +8,23 @@
 
 {
   channel,
-  version,
   sha256,
   vendorHash,
+  version,
 }:
 
 buildGoModule rec {
-  pname = "linkerd-${channel}";
   inherit version vendorHash;
+  pname = "linkerd-${channel}";
 
   src = fetchFromGitHub {
+    inherit sha256;
     owner = "linkerd";
     repo = "linkerd2";
     rev = "${channel}-${version}";
-    inherit sha256;
   };
 
-  subPackages = [ "cli" ];
+  nativeBuildInputs = [ installShellFiles ];
 
   preBuild = ''
     env GOFLAGS="" go generate ./pkg/charts/static
@@ -32,18 +32,6 @@ buildGoModule rec {
     env GOFLAGS="" go generate ./multicluster/static
     env GOFLAGS="" go generate ./viz/static
   '';
-
-  tags = [
-    "prod"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/linkerd/linkerd2/pkg/version.Version=${src.rev}"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = ''
     mv $out/bin/cli $out/bin/linkerd
@@ -56,19 +44,34 @@ buildGoModule rec {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/linkerd version --client | grep ${src.rev} > /dev/null
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/linkerd/linkerd2/pkg/version.Version=${src.rev}"
+  ];
+
+  subPackages = [ "cli" ];
+
+  tags = [
+    "prod"
+  ];
 
   passthru.updateScript = (./. + "/update-${channel}.sh");
 
   meta = {
     description = "Simple Kubernetes service mesh that improves security, observability and reliability";
-    mainProgram = "linkerd";
-    downloadPage = "https://github.com/linkerd/linkerd2/";
     homepage = "https://linkerd.io/";
     license = lib.licenses.asl20;
+
     maintainers = [
     ];
+
+    mainProgram = "linkerd";
+    downloadPage = "https://github.com/linkerd/linkerd2/";
   };
 }

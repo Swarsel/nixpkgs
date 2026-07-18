@@ -21,12 +21,14 @@ let
       }
       (
         lib.recursiveUpdate {
-          Server = cfg.server;
           Cache = cfg.cache;
+
           Config = cfg.config // {
             hmacKey = "@hmac@";
           };
+
           Preferences = cfg.preferences;
+          Server = cfg.server;
         } cfg.settings
       )
     }
@@ -72,130 +74,34 @@ in
 
   options = {
     services.nitter = {
-      enable = lib.mkEnableOption "Nitter, an alternative Twitter front-end";
-
-      package = lib.mkPackageOption pkgs "nitter" { };
-
-      server = {
-        address = lib.mkOption {
-          type = lib.types.str;
-          default = "0.0.0.0";
-          example = "127.0.0.1";
-          description = "The address to listen on.";
-        };
-
-        port = lib.mkOption {
-          type = lib.types.port;
-          default = 8080;
-          example = 8000;
-          description = "The port to listen on.";
-        };
-
-        https = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Set secure attribute on cookies. Keep it disabled to enable cookies when not using HTTPS.";
-        };
-
-        httpMaxConnections = lib.mkOption {
-          type = lib.types.int;
-          default = 100;
-          description = "Maximum number of HTTP connections.";
-        };
-
-        staticDir = lib.mkOption {
-          type = lib.types.path;
-          default = "${cfg.package}/share/nitter/public";
-          defaultText = lib.literalExpression ''"''${config.services.nitter.package}/share/nitter/public"'';
-          description = "Path to the static files directory.";
-        };
-
-        title = lib.mkOption {
-          type = lib.types.str;
-          default = "nitter";
-          description = "Title of the instance.";
-        };
-
-        hostname = lib.mkOption {
-          type = lib.types.str;
-          default = "localhost";
-          example = "nitter.net";
-          description = "Hostname of the instance.";
-        };
-      };
-
-      cache = {
-        listMinutes = lib.mkOption {
-          type = lib.types.int;
-          default = 240;
-          description = "How long to cache list info (not the tweets, so keep it high).";
-        };
-
-        rssMinutes = lib.mkOption {
-          type = lib.types.int;
-          default = 10;
-          description = "How long to cache RSS queries.";
-        };
-
-        redisHost = lib.mkOption {
-          type = lib.types.str;
-          default = "localhost";
-          description = "Redis host.";
-        };
-
-        redisPort = lib.mkOption {
-          type = lib.types.port;
-          default = 6379;
-          description = "Redis port.";
-        };
-
-        redisConnections = lib.mkOption {
-          type = lib.types.int;
-          default = 20;
-          description = "Redis connection pool size.";
-        };
-
-        redisMaxConnections = lib.mkOption {
-          type = lib.types.int;
-          default = 30;
-          description = ''
-            Maximum number of connections to Redis.
-
-            New connections are opened when none are available, but if the
-            pool size goes above this, they are closed when released, do not
-            worry about this unless you receive tons of requests per second.
-          '';
-        };
-      };
-
       config = {
         base64Media = lib.mkOption {
-          type = lib.types.bool;
           default = false;
           description = "Use base64 encoding for proxied media URLs.";
+          type = lib.types.bool;
         };
+
+        enableDebug = lib.mkEnableOption "request logs and debug endpoints";
 
         enableRSS = lib.mkEnableOption "RSS feeds" // {
           default = true;
         };
 
-        enableDebug = lib.mkEnableOption "request logs and debug endpoints";
-
         proxy = lib.mkOption {
-          type = lib.types.str;
           default = "";
           description = "URL to a HTTP/HTTPS proxy.";
+          type = lib.types.str;
         };
 
         proxyAuth = lib.mkOption {
-          type = lib.types.str;
           default = "";
           description = "Credentials for proxy.";
+          type = lib.types.str;
         };
 
         tokenCount = lib.mkOption {
-          type = lib.types.int;
           default = 10;
+
           description = ''
             Minimum amount of usable tokens.
 
@@ -205,130 +111,230 @@ in
             least tokenCount usable tokens. Only increase this if you receive
             major bursts all the time.
           '';
+
+          type = lib.types.int;
         };
+      };
+
+      enable = lib.mkEnableOption "Nitter, an alternative Twitter front-end";
+      package = lib.mkPackageOption pkgs "nitter" { };
+
+      cache = {
+        listMinutes = lib.mkOption {
+          default = 240;
+          description = "How long to cache list info (not the tweets, so keep it high).";
+          type = lib.types.int;
+        };
+
+        redisConnections = lib.mkOption {
+          default = 20;
+          description = "Redis connection pool size.";
+          type = lib.types.int;
+        };
+
+        redisHost = lib.mkOption {
+          default = "localhost";
+          description = "Redis host.";
+          type = lib.types.str;
+        };
+
+        redisMaxConnections = lib.mkOption {
+          default = 30;
+
+          description = ''
+            Maximum number of connections to Redis.
+
+            New connections are opened when none are available, but if the
+            pool size goes above this, they are closed when released, do not
+            worry about this unless you receive tons of requests per second.
+          '';
+
+          type = lib.types.int;
+        };
+
+        redisPort = lib.mkOption {
+          default = 6379;
+          description = "Redis port.";
+          type = lib.types.port;
+        };
+
+        rssMinutes = lib.mkOption {
+          default = 10;
+          description = "How long to cache RSS queries.";
+          type = lib.types.int;
+        };
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+        description = "Open ports in the firewall for Nitter web interface.";
+        type = lib.types.bool;
       };
 
       preferences = {
-        replaceTwitter = lib.mkOption {
-          type = lib.types.str;
-          default = "";
-          example = "nitter.net";
-          description = "Replace Twitter links with links to this instance (blank to disable).";
-        };
-
-        replaceYouTube = lib.mkOption {
-          type = lib.types.str;
-          default = "";
-          example = "piped.kavin.rocks";
-          description = "Replace YouTube links with links to this instance (blank to disable).";
-        };
-
-        replaceReddit = lib.mkOption {
-          type = lib.types.str;
-          default = "";
-          example = "teddit.net";
-          description = "Replace Reddit links with links to this instance (blank to disable).";
-        };
-
-        mp4Playback = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Enable MP4 video playback.";
-        };
-
-        hlsPlayback = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable HLS video streaming (requires JavaScript).";
-        };
-
-        proxyVideos = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Proxy video streaming through the server (might be slow).";
-        };
-
-        muteVideos = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Mute videos by default.";
-        };
-
         autoplayGifs = lib.mkOption {
-          type = lib.types.bool;
           default = true;
           description = "Autoplay GIFs.";
-        };
-
-        theme = lib.mkOption {
-          type = lib.types.str;
-          default = "Nitter";
-          description = "Instance theme.";
-        };
-
-        infiniteScroll = lib.mkOption {
           type = lib.types.bool;
-          default = false;
-          description = "Infinite scrolling (requires JavaScript, experimental!).";
-        };
-
-        stickyProfile = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Make profile sidebar stick to top.";
         };
 
         bidiSupport = lib.mkOption {
-          type = lib.types.bool;
           default = false;
           description = "Support bidirectional text (makes clicking on tweets harder).";
-        };
-
-        hideTweetStats = lib.mkOption {
           type = lib.types.bool;
-          default = false;
-          description = "Hide tweet stats (replies, retweets, likes).";
         };
 
         hideBanner = lib.mkOption {
-          type = lib.types.bool;
           default = false;
           description = "Hide profile banner.";
+          type = lib.types.bool;
         };
 
         hidePins = lib.mkOption {
-          type = lib.types.bool;
           default = false;
           description = "Hide pinned tweets.";
+          type = lib.types.bool;
         };
 
         hideReplies = lib.mkOption {
-          type = lib.types.bool;
           default = false;
           description = "Hide tweet replies.";
+          type = lib.types.bool;
+        };
+
+        hideTweetStats = lib.mkOption {
+          default = false;
+          description = "Hide tweet stats (replies, retweets, likes).";
+          type = lib.types.bool;
+        };
+
+        hlsPlayback = lib.mkOption {
+          default = false;
+          description = "Enable HLS video streaming (requires JavaScript).";
+          type = lib.types.bool;
+        };
+
+        infiniteScroll = lib.mkOption {
+          default = false;
+          description = "Infinite scrolling (requires JavaScript, experimental!).";
+          type = lib.types.bool;
+        };
+
+        mp4Playback = lib.mkOption {
+          default = true;
+          description = "Enable MP4 video playback.";
+          type = lib.types.bool;
+        };
+
+        muteVideos = lib.mkOption {
+          default = false;
+          description = "Mute videos by default.";
+          type = lib.types.bool;
+        };
+
+        proxyVideos = lib.mkOption {
+          default = true;
+          description = "Proxy video streaming through the server (might be slow).";
+          type = lib.types.bool;
+        };
+
+        replaceReddit = lib.mkOption {
+          default = "";
+          description = "Replace Reddit links with links to this instance (blank to disable).";
+          example = "teddit.net";
+          type = lib.types.str;
+        };
+
+        replaceTwitter = lib.mkOption {
+          default = "";
+          description = "Replace Twitter links with links to this instance (blank to disable).";
+          example = "nitter.net";
+          type = lib.types.str;
+        };
+
+        replaceYouTube = lib.mkOption {
+          default = "";
+          description = "Replace YouTube links with links to this instance (blank to disable).";
+          example = "piped.kavin.rocks";
+          type = lib.types.str;
         };
 
         squareAvatars = lib.mkOption {
-          type = lib.types.bool;
           default = false;
           description = "Square profile pictures.";
+          type = lib.types.bool;
+        };
+
+        stickyProfile = lib.mkOption {
+          default = true;
+          description = "Make profile sidebar stick to top.";
+          type = lib.types.bool;
+        };
+
+        theme = lib.mkOption {
+          default = "Nitter";
+          description = "Instance theme.";
+          type = lib.types.str;
         };
       };
 
-      settings = lib.mkOption {
-        type = lib.types.attrs;
-        default = { };
-        description = ''
-          Add settings here to override NixOS module generated settings.
+      redisCreateLocally = lib.mkOption {
+        default = true;
+        description = "Configure local Redis server for Nitter.";
+        type = lib.types.bool;
+      };
 
-          Check the official repository for the available settings:
-          <https://github.com/zedeus/nitter/blob/master/nitter.example.conf>
-        '';
+      server = {
+        address = lib.mkOption {
+          default = "0.0.0.0";
+          description = "The address to listen on.";
+          example = "127.0.0.1";
+          type = lib.types.str;
+        };
+
+        hostname = lib.mkOption {
+          default = "localhost";
+          description = "Hostname of the instance.";
+          example = "nitter.net";
+          type = lib.types.str;
+        };
+
+        httpMaxConnections = lib.mkOption {
+          default = 100;
+          description = "Maximum number of HTTP connections.";
+          type = lib.types.int;
+        };
+
+        https = lib.mkOption {
+          default = false;
+          description = "Set secure attribute on cookies. Keep it disabled to enable cookies when not using HTTPS.";
+          type = lib.types.bool;
+        };
+
+        port = lib.mkOption {
+          default = 8080;
+          description = "The port to listen on.";
+          example = 8000;
+          type = lib.types.port;
+        };
+
+        staticDir = lib.mkOption {
+          default = "${cfg.package}/share/nitter/public";
+          defaultText = lib.literalExpression ''"''${config.services.nitter.package}/share/nitter/public"'';
+          description = "Path to the static files directory.";
+          type = lib.types.path;
+        };
+
+        title = lib.mkOption {
+          default = "nitter";
+          description = "Title of the instance.";
+          type = lib.types.str;
+        };
       };
 
       sessionsFile = lib.mkOption {
-        type = lib.types.path;
         default = "/var/lib/nitter/sessions.jsonl";
+
         description = ''
           Path to the session tokens file.
 
@@ -341,18 +347,21 @@ in
           See <https://github.com/zedeus/nitter/wiki/Creating-session-tokens>
           for more information on session tokens and how to generate them.
         '';
+
+        type = lib.types.path;
       };
 
-      redisCreateLocally = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Configure local Redis server for Nitter.";
-      };
+      settings = lib.mkOption {
+        default = { };
 
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Open ports in the firewall for Nitter web interface.";
+        description = ''
+          Add settings here to override NixOS module generated settings.
+
+          Check the official repository for the available settings:
+          <https://github.com/zedeus/nitter/blob/master/nitter.example.conf>
+        '';
+
+        type = lib.types.attrs;
       };
     };
   };
@@ -362,34 +371,39 @@ in
       {
         assertion =
           !cfg.redisCreateLocally || (cfg.cache.redisHost == "localhost" && cfg.cache.redisPort == 6379);
+
         message = "When services.nitter.redisCreateLocally is enabled, you need to use localhost:6379 as a cache server.";
       }
     ];
 
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.server.port ];
+    };
+
+    services.redis.servers.nitter = lib.mkIf (cfg.redisCreateLocally) {
+      enable = true;
+      port = cfg.cache.redisPort;
+    };
+
     systemd.services.nitter = {
-      description = "Nitter (An alternative Twitter front-end)";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
+      description = "Nitter (An alternative Twitter front-end)";
+
       serviceConfig = {
+        AmbientCapabilities = lib.mkIf (cfg.server.port < 1024) [ "CAP_NET_BIND_SERVICE" ];
+        # Hardening
+        CapabilityBoundingSet = if (cfg.server.port < 1024) then [ "CAP_NET_BIND_SERVICE" ] else [ "" ];
+        DeviceAllow = [ "" ];
         DynamicUser = true;
-        LoadCredential = "sessionsFile:${cfg.sessionsFile}";
-        StateDirectory = "nitter";
+
         Environment = [
           "NITTER_CONF_FILE=/var/lib/nitter/nitter.conf"
           "NITTER_SESSIONS_FILE=%d/sessionsFile"
         ];
-        # Some parts of Nitter expect `public` folder in working directory,
-        # see https://github.com/zedeus/nitter/issues/414
-        WorkingDirectory = "${cfg.package}/share/nitter";
+
         ExecStart = "${cfg.package}/bin/nitter";
         ExecStartPre = "${preStart}";
-        AmbientCapabilities = lib.mkIf (cfg.server.port < 1024) [ "CAP_NET_BIND_SERVICE" ];
-        Restart = "on-failure";
-        RestartSec = "5s";
-        # Hardening
-        CapabilityBoundingSet = if (cfg.server.port < 1024) then [ "CAP_NET_BIND_SERVICE" ] else [ "" ];
-        DeviceAllow = [ "" ];
+        LoadCredential = "sessionsFile:${cfg.sessionsFile}";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         PrivateDevices = true;
@@ -405,30 +419,34 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+        Restart = "on-failure";
+        RestartSec = "5s";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "nitter";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
+
         UMask = "0077";
+        # Some parts of Nitter expect `public` folder in working directory,
+        # see https://github.com/zedeus/nitter/issues/414
+        WorkingDirectory = "${cfg.package}/share/nitter";
       };
-    };
 
-    services.redis.servers.nitter = lib.mkIf (cfg.redisCreateLocally) {
-      enable = true;
-      port = cfg.cache.redisPort;
-    };
-
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.server.port ];
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 }

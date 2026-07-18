@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  libiconv,
   installShellFiles,
+  libiconv,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,10 +23,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-15FUA4fszbAVXop3IyOHfxroyTt9/SkWZsSTUh9RtwY=";
   };
 
-  cargoHash = "sha256-IkwCa+MioL2F3fiUYm3HQOeO2yb+58YQzM9YJ2oILj4=";
-  cargoExtraArgs = "-p nix-weather";
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openssl
     installShellFiles
@@ -35,11 +38,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
+  cargoHash = "sha256-IkwCa+MioL2F3fiUYm3HQOeO2yb+58YQzM9YJ2oILj4=";
   # This is where `build.rs` puts manpages
   env.MAN_OUT = "./man";
 
@@ -54,12 +53,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cd ../..
   '';
 
+  cargoExtraArgs = "-p nix-weather";
   # We are the only distro that will ever package this, thus ryanbot will not
   # be able to find updates through repology and we need this.
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Check Cache Availablility of NixOS Configurations";
+
     longDescription = ''
       Fast rust tool to check availability of your entire system in caches. It
       so to speak "checks the weather" before going to update. Useful for
@@ -67,14 +68,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
       Heavily inspired by guix weather.
     '';
+
     homepage = "https://git.fem.gg/cafkafk/nix-weather";
     changelog = "https://git.fem.gg/cafkafk/nix-weather/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.eupl12;
-    mainProgram = "nix-weather";
+
     maintainers = with lib.maintainers; [
       cafkafk
       freyacodes
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "nix-weather";
   };
 })

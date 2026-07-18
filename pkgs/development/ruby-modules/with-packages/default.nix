@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   buildEnv,
   buildRubyGem,
-  ruby,
   gemConfig,
   makeBinaryWrapper,
+  ruby,
 }:
 
 /*
@@ -54,6 +54,7 @@ let
       gemEnv = buildEnv {
         name = "ruby-gems";
         paths = selected;
+
         pathsToLink = [
           "/lib"
           "/bin"
@@ -62,26 +63,26 @@ let
       };
 
       wrappedRuby = stdenv.mkDerivation {
-        name = "wrapped-${ruby.name}";
         nativeBuildInputs = [ makeBinaryWrapper ];
+
         buildCommand = ''
           mkdir -p $out/bin
           for i in ${ruby}/bin/*; do
             makeWrapper "$i" $out/bin/$(basename "$i") --set GEM_PATH ${gemEnv}/${ruby.gemPath}
           done
         '';
+
+        name = "wrapped-${ruby.name}";
       };
 
     in
     stdenv.mkDerivation {
-      name = "${ruby.name}-with-packages";
       nativeBuildInputs = [ makeBinaryWrapper ];
+
       buildInputs = [
         ruby
       ]
       ++ selected;
-
-      dontUnpack = true;
 
       installPhase = ''
         for i in ${ruby}/bin/* ${gemEnv}/bin/*; do
@@ -91,6 +92,9 @@ let
 
         ln -s ${ruby}/nix-support $out/nix-support
       '';
+
+      dontUnpack = true;
+      name = "${ruby.name}-with-packages";
 
       passthru = {
         inherit wrappedRuby;

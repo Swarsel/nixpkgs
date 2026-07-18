@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  sqlite,
   nixosTests,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sqlite,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-QtyFIN04t4XuZfgTja14YAJmYqfZNDh1Dygv2QlXyxY=";
   };
 
-  cargoHash = "sha256-CBRVFWr3FUy+aRT/xU9nbu8bvf0565jGkvSO1E8+1UI=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -29,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     sqlite
   ];
+
+  cargoHash = "sha256-CBRVFWr3FUy+aRT/xU9nbu8bvf0565jGkvSO1E8+1UI=";
 
   checkFlags = [
     # tests interact with Signal servers
@@ -45,11 +45,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/mollyim/mollysocket/releases/tag/${finalAttrs.version}";
     description = "Get Signal notifications via UnifiedPush";
     homepage = "https://github.com/mollyim/mollysocket";
+    changelog = "https://github.com/mollyim/mollysocket/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "mollysocket";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "mollysocket";
   };
 })

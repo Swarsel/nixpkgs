@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
-  makeWrapper,
   fetchFromGitHub,
+  autoreconfHook,
+  dmidecode,
+  hdparm,
+  libconfig,
+  makeWrapper,
   ncurses,
   parted,
   pkg-config,
-  libconfig,
-  hdparm,
   smartmontools,
-  dmidecode,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,13 +51,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Securely erase disks";
-    mainProgram = "nwipe";
     homepage = "https://github.com/martijnvanbrummelen/nwipe";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       vifino
       woffs
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "nwipe";
   };
 })

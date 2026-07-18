@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "ws4py";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -35,6 +34,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ws4py" ];
 
   meta = {

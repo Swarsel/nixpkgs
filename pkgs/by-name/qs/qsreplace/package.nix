@@ -23,12 +23,12 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/tomnomnom/qsreplace";
     description = "Accept URLs on stdin, replace all query string values with a user-supplied value";
-    mainProgram = "qsreplace";
+    homepage = "https://github.com/tomnomnom/qsreplace";
+    license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ averagebit ];
     platforms = lib.platforms.unix;
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
-    license = lib.licenses.mit;
+    mainProgram = "qsreplace";
   };
 })

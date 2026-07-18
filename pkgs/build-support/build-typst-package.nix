@@ -38,9 +38,7 @@ lib.extendMkDerivation {
       ...
     }@attrs:
     {
-      name = "typst-package-${finalAttrs.pname}-${finalAttrs.version}";
-
-      dontBuild = true;
+      propagatedBuildInputs = typstDeps;
 
       installPhase =
         let
@@ -53,7 +51,8 @@ lib.extendMkDerivation {
           runHook postInstall
         '';
 
-      propagatedBuildInputs = typstDeps;
+      dontBuild = true;
+      name = "typst-package-${finalAttrs.pname}-${finalAttrs.version}";
 
       passthru = {
         inherit typstDeps;

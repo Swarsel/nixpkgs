@@ -3,8 +3,8 @@
   attrs,
   buildPythonPackage,
   cattrs,
-  click-option-group,
   click,
+  click-option-group,
   fetchPypi,
   hatch-vcs,
   hatchling,
@@ -21,34 +21,11 @@
 buildPythonPackage rec {
   pname = "typed-settings";
   version = "25.3.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "typed_settings";
     inherit version;
     hash = "sha256-hl61LDGE9GdwVkWh5Y251xngi515V0SKKtjLvCLtIaY=";
-  };
-
-  build-system = [ hatchling ];
-
-  optional-dependencies = {
-    all = [
-      attrs
-      cattrs
-      click
-      click-option-group
-      jinja2
-      pydantic
-    ];
-    attrs = [ attrs ];
-    cattrs = [ cattrs ];
-    click = [ click ];
-    option-groups = [
-      click
-      click-option-group
-    ];
-    jinja = [ jinja2 ];
-    pydantic = [ pydantic ];
+    pname = "typed_settings";
   };
 
   nativeBuildInputs = [ hatch-vcs ];
@@ -63,13 +40,7 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  enabledTestPaths = [ "tests" ];
-
-  disabledTests = [
-    # 1Password CLI is not available
-    "TestOnePasswordLoader"
-    "test_handle_op"
-  ];
+  build-system = [ hatchling ];
 
   disabledTestPaths = [
     # 1Password CLI is not available
@@ -80,6 +51,38 @@ buildPythonPackage rec {
     "tests/test_cli_argparse.py"
   ];
 
+  disabledTests = [
+    # 1Password CLI is not available
+    "TestOnePasswordLoader"
+    "test_handle_op"
+  ];
+
+  enabledTestPaths = [ "tests" ];
+
+  optional-dependencies = {
+    all = [
+      attrs
+      cattrs
+      click
+      click-option-group
+      jinja2
+      pydantic
+    ];
+
+    attrs = [ attrs ];
+    cattrs = [ cattrs ];
+    click = [ click ];
+    jinja = [ jinja2 ];
+
+    option-groups = [
+      click
+      click-option-group
+    ];
+
+    pydantic = [ pydantic ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "typed_settings" ];
 
   meta = {

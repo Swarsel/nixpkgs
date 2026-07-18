@@ -21,15 +21,9 @@ with lib;
   config = {
 
     systemd.services.apply-ec2-data = {
-      description = "Apply EC2 Data";
-
-      wantedBy = [
-        "multi-user.target"
-        "sshd-keygen.service"
-      ];
-      before = [ "sshd-keygen.service" ];
       after = [ "fetch-ec2-metadata.service" ];
-
+      before = [ "sshd-keygen.service" ];
+      description = "Apply EC2 Data";
       path = [ pkgs.iproute2 ];
 
       script = ''
@@ -75,14 +69,19 @@ with lib;
         fi
       '';
 
-      serviceConfig.Type = "oneshot";
       serviceConfig.RemainAfterExit = true;
+      serviceConfig.Type = "oneshot";
+
+      wantedBy = [
+        "multi-user.target"
+        "sshd-keygen.service"
+      ];
     };
 
     systemd.services.print-host-key = {
-      description = "Print SSH Host Key";
-      wantedBy = [ "multi-user.target" ];
       after = [ "sshd-keygen.service" ];
+      description = "Print SSH Host Key";
+
       script = ''
         # Print the host public key on the console so that the user
         # can obtain it securely by parsing the output of
@@ -107,8 +106,10 @@ with lib;
         done
         echo "-----END SSH HOST KEY KEYS-----" > /dev/console
       '';
-      serviceConfig.Type = "oneshot";
+
       serviceConfig.RemainAfterExit = true;
+      serviceConfig.Type = "oneshot";
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

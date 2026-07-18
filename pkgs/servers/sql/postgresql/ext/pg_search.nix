@@ -1,15 +1,16 @@
 {
+  lib,
+  fetchurl,
+  fetchFromGitHub,
   buildPgrxExtension,
   cargo-pgrx_0_18_0,
-  fetchFromGitHub,
-  fetchurl,
-  lib,
   nix-update-script,
   pkg-config,
   postgresql,
 }:
 
 buildPgrxExtension (finalAttrs: {
+  inherit postgresql;
   pname = "pg_search";
   version = "0.24.2";
 
@@ -20,9 +21,11 @@ buildPgrxExtension (finalAttrs: {
     hash = "sha256-Oz/38hdNfyuRSjV7ErGNcuz9Ik4iDnQrj6fsNNTGYR4=";
   };
 
-  cargoHash = "sha256-jImzqOPHBcTQa5Jpi4gxpEYS+x56DFeArdzS0G3MfTY=";
+  nativeBuildInputs = [
+    pkg-config
+  ];
 
-  inherit postgresql;
+  cargoHash = "sha256-jImzqOPHBcTQa5Jpi4gxpEYS+x56DFeArdzS0G3MfTY=";
 
   preConfigure =
     let
@@ -43,22 +46,25 @@ buildPgrxExtension (finalAttrs: {
 
       dict = language: filename: hash: {
         inherit filename language;
+
         source = fetchurl {
-          url = "https://lindera.dev/${filename}";
           inherit hash;
+          url = "https://lindera.dev/${filename}";
         };
       };
 
       dictionaries = {
-        lindera-ko-dic =
-          dict "Korean" "mecab-ko-dic-2.1.1-20180720.tar.gz"
-            "sha256-cCztIcYWfp2a68Z0q17lSvWNREOXXylA030FZ8AgWRo=";
         lindera-cc-cedict =
           dict "Chinese" "CC-CEDICT-MeCab-0.1.0-20200409.tar.gz"
             "sha256-7Tz54+yKgGR/DseD3Ana1DuMytLplPXqtv8TpB0JFsg=";
+
         lindera-ipadic =
           dict "Japanese" "mecab-ipadic-2.7.0-20250920.tar.gz"
             "sha256-p7qfZF/+cJTlauHEqB0QDfj7seKLvheSYi6XKOFi2z0=";
+
+        lindera-ko-dic =
+          dict "Korean" "mecab-ko-dic-2.1.1-20180720.tar.gz"
+            "sha256-cCztIcYWfp2a68Z0q17lSvWNREOXXylA030FZ8AgWRo=";
       };
     in
     ''
@@ -71,6 +77,8 @@ buildPgrxExtension (finalAttrs: {
       echo "Lindera cache prepared at $LINDERA_CACHE"
     '';
 
+  # pgrx tests try to install the extension into postgresql nix store
+  doCheck = false;
   # To determinate which version of cargo-pgrx to use, consult the project's main Cargo.toml:
   # https://github.com/paradedb/paradedb/tree/${version}/Cargo.toml
   # In that file, check the version of pgrx and pgrx-tests under workspace.dependencies
@@ -81,13 +89,6 @@ buildPgrxExtension (finalAttrs: {
     "pg_search"
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-  ];
-
-  # pgrx tests try to install the extension into postgresql nix store
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -96,9 +97,9 @@ buildPgrxExtension (finalAttrs: {
     changelog = "https://github.com/paradedb/paradedb/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Only;
     maintainers = [ lib.maintainers.lucperkins ];
+    platforms = postgresql.meta.platforms;
     # For a list of versions, look under the features dictionary in:
     # https://github.com/paradedb/paradedb/tree/${version}/pg_search/Cargo.toml
     broken = lib.versionOlder postgresql.version "15";
-    platforms = postgresql.meta.platforms;
   };
 })

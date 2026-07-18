@@ -1,55 +1,50 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-  uv,
-
+  backports-zstd,
+  # tests
+  binary,
+  buildPythonPackage,
+  cargo,
+  # dependencies
+  click,
+  darwin,
+  flit-core,
+  gitMinimal,
   # build-system,
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  click,
   httpx,
   hyperlink,
   keyring,
+  nix-update-script,
   packaging,
   pexpect,
   platformdirs,
   pyproject-hooks,
+  pytest-mock,
+  pytest-xdist,
+  pytestCheckHook,
   python-discovery,
+  # python<3.14 only
+  pythonOlder,
+  replaceVars,
   rich,
+  setuptools,
   shellingham,
   tomli-w,
   tomlkit,
   userpath,
-  virtualenv,
-  # python<3.14 only
-  pythonOlder,
-  backports-zstd,
-
-  # tests
-  binary,
-  cargo,
-  flit-core,
-  gitMinimal,
-  pytest-mock,
-  pytest-xdist,
-  pytestCheckHook,
-  setuptools,
+  uv,
   versionCheckHook,
+  virtualenv,
   writableTmpDirAsHomeHook,
-
-  darwin,
-  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hatch";
   version = "1.16.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pypa";
@@ -64,17 +59,27 @@ buildPythonPackage (finalAttrs: {
     })
   ];
 
+  nativeCheckInputs = [
+    binary
+    flit-core
+    pytest-mock
+    pytest-xdist
+    pytestCheckHook
+    setuptools
+    cargo
+    gitMinimal
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    darwin.ps
+  ];
+
   build-system = [
     hatchling
     hatch-vcs
   ];
 
-  pythonRemoveDeps = [
-    "uv"
-  ];
-  pythonRelaxDeps = [
-    "virtualenv"
-  ];
   dependencies = [
     click
     hatchling
@@ -97,20 +102,65 @@ buildPythonPackage (finalAttrs: {
     backports-zstd
   ];
 
-  nativeCheckInputs = [
-    binary
-    flit-core
-    pytest-mock
-    pytest-xdist
-    pytestCheckHook
-    setuptools
-    cargo
-    gitMinimal
-    versionCheckHook
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    # httpx.ConnectError: [Errno -3] Temporary failure in name resolution
+    "tests/workspaces/test_config.py"
+
+    # additional comment `-*- coding: utf-8 -*-` in output
+    "tests/backend/builders/test_sdist.py"
+
+    # missing output `Syncing dependencies`
+    "tests/cli/build/test_build.py"
+    "tests/cli/project/test_metadata.py"
+    "tests/cli/version/test_version.py"
+
+    # AttributeError: 'WheelBuilderConfig' object has no attribute 'sbom_files'
+    "tests/backend/builders/test_wheel.py::TestSBOMFiles"
+
+    # some issue with the version of `binary`
+    "tests/dep/test_sync.py::test_dependency_not_found"
+    "tests/dep/test_sync.py::test_marker_unmet"
+
+    # AssertionError on the version metadata
+    # https://github.com/pypa/hatch/issues/1877
+    "tests/backend/metadata/test_spec.py::TestCoreMetadataV21::test_all"
+    "tests/backend/metadata/test_spec.py::TestCoreMetadataV21::test_license_expression"
+    "tests/backend/metadata/test_spec.py::TestCoreMetadataV22::test_all"
+    "tests/backend/metadata/test_spec.py::TestCoreMetadataV22::test_license_expression"
+    "tests/backend/metadata/test_spec.py::TestCoreMetadataV23::test_all"
+    "tests/backend/metadata/test_spec.py::TestCoreMetadataV23::test_license_expression"
+    "tests/backend/metadata/test_spec.py::TestCoreMetadataV23::test_license_files"
+    "tests/backend/metadata/test_spec.py::TestProjectMetadataFromCoreMetadata::test_license_files"
+
+    # Table title centering changed in newer Rich
+    "tests/cli/dep/show/test_table.py"
+    "tests/cli/env/test_show.py"
+    "tests/cli/python/test_show.py"
+
+    # Version scheme failures with newer packaging
+    "tests/backend/version/scheme/test_standard.py::TestWithEpoch::test_correct[minor,dev-1!0.1.0.dev0]"
+    "tests/backend/version/scheme/test_standard.py::TestMultiple::test_correct[minor,dev-0.1.0.dev0]"
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    darwin.ps
+    # AssertionError: assert [call('test h...2p32/bin/sh')] == [call('test h..., shell=True)]
+    # At index 0 diff:
+    #    call('test hatch-test.py3.10', shell=True, executable='/nix/store/b34ianga4diikh0kymkpqwmvba0mmzf7-bash-5.2p32/bin/sh')
+    # != call('test hatch-test.py3.10', shell=True)
+    "tests/cli/fmt/test_fmt.py"
+    "tests/cli/test/test_test.py"
+
+    # Dependency/versioning errors in the CLI tests, only seem to show up on Darwin
+    # https://github.com/pypa/hatch/issues/1893
+    "tests/cli/env/test_create.py::test_sync_dependencies_pip"
+    "tests/cli/env/test_create.py::test_sync_dependencies_uv"
+    "tests/cli/project/test_metadata.py::TestBuildDependenciesMissing::test_no_compatibility_check_if_exists"
+    "tests/cli/run/test_run.py::TestScriptRunner::test_dependencies"
+    "tests/cli/run/test_run.py::TestScriptRunner::test_dependencies_from_tool_config"
+    "tests/cli/run/test_run.py::test_dependency_hash_checking"
+    "tests/cli/run/test_run.py::test_sync_dependencies"
+    "tests/cli/run/test_run.py::test_sync_project_dependencies"
+    "tests/cli/run/test_run.py::test_sync_project_features"
+    "tests/cli/version/test_version.py::test_no_compatibility_check_if_exists"
   ];
 
   disabledTests = [
@@ -177,65 +227,14 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isAarch64 [ "test_resolve" ];
 
-  disabledTestPaths = [
-    # httpx.ConnectError: [Errno -3] Temporary failure in name resolution
-    "tests/workspaces/test_config.py"
+  pyproject = true;
 
-    # additional comment `-*- coding: utf-8 -*-` in output
-    "tests/backend/builders/test_sdist.py"
+  pythonRelaxDeps = [
+    "virtualenv"
+  ];
 
-    # missing output `Syncing dependencies`
-    "tests/cli/build/test_build.py"
-    "tests/cli/project/test_metadata.py"
-    "tests/cli/version/test_version.py"
-
-    # AttributeError: 'WheelBuilderConfig' object has no attribute 'sbom_files'
-    "tests/backend/builders/test_wheel.py::TestSBOMFiles"
-
-    # some issue with the version of `binary`
-    "tests/dep/test_sync.py::test_dependency_not_found"
-    "tests/dep/test_sync.py::test_marker_unmet"
-
-    # AssertionError on the version metadata
-    # https://github.com/pypa/hatch/issues/1877
-    "tests/backend/metadata/test_spec.py::TestCoreMetadataV21::test_all"
-    "tests/backend/metadata/test_spec.py::TestCoreMetadataV21::test_license_expression"
-    "tests/backend/metadata/test_spec.py::TestCoreMetadataV22::test_all"
-    "tests/backend/metadata/test_spec.py::TestCoreMetadataV22::test_license_expression"
-    "tests/backend/metadata/test_spec.py::TestCoreMetadataV23::test_all"
-    "tests/backend/metadata/test_spec.py::TestCoreMetadataV23::test_license_expression"
-    "tests/backend/metadata/test_spec.py::TestCoreMetadataV23::test_license_files"
-    "tests/backend/metadata/test_spec.py::TestProjectMetadataFromCoreMetadata::test_license_files"
-
-    # Table title centering changed in newer Rich
-    "tests/cli/dep/show/test_table.py"
-    "tests/cli/env/test_show.py"
-    "tests/cli/python/test_show.py"
-
-    # Version scheme failures with newer packaging
-    "tests/backend/version/scheme/test_standard.py::TestWithEpoch::test_correct[minor,dev-1!0.1.0.dev0]"
-    "tests/backend/version/scheme/test_standard.py::TestMultiple::test_correct[minor,dev-0.1.0.dev0]"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # AssertionError: assert [call('test h...2p32/bin/sh')] == [call('test h..., shell=True)]
-    # At index 0 diff:
-    #    call('test hatch-test.py3.10', shell=True, executable='/nix/store/b34ianga4diikh0kymkpqwmvba0mmzf7-bash-5.2p32/bin/sh')
-    # != call('test hatch-test.py3.10', shell=True)
-    "tests/cli/fmt/test_fmt.py"
-    "tests/cli/test/test_test.py"
-
-    # Dependency/versioning errors in the CLI tests, only seem to show up on Darwin
-    # https://github.com/pypa/hatch/issues/1893
-    "tests/cli/env/test_create.py::test_sync_dependencies_pip"
-    "tests/cli/env/test_create.py::test_sync_dependencies_uv"
-    "tests/cli/project/test_metadata.py::TestBuildDependenciesMissing::test_no_compatibility_check_if_exists"
-    "tests/cli/run/test_run.py::TestScriptRunner::test_dependencies"
-    "tests/cli/run/test_run.py::TestScriptRunner::test_dependencies_from_tool_config"
-    "tests/cli/run/test_run.py::test_dependency_hash_checking"
-    "tests/cli/run/test_run.py::test_sync_dependencies"
-    "tests/cli/run/test_run.py::test_sync_project_dependencies"
-    "tests/cli/run/test_run.py::test_sync_project_features"
-    "tests/cli/version/test_version.py::test_no_compatibility_check_if_exists"
+  pythonRemoveDeps = [
+    "uv"
   ];
 
   passthru = {

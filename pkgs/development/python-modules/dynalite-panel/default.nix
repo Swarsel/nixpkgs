@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "dynalite-panel";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,11 +20,10 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
-  pythonImportsCheck = [ "dynalite_panel" ];
-
   # upstream has no tests
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "dynalite_panel" ];
 
   meta = {
     description = "Dynalite panel for Home Assistant";

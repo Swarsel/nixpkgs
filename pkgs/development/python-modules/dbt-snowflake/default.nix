@@ -3,27 +3,23 @@
   buildPythonPackage,
   dbt-core,
   fetchPypi,
-  pytestCheckHook,
   hatchling,
+  pytestCheckHook,
   snowflake-connector-python,
 }:
 
 buildPythonPackage rec {
   pname = "dbt-snowflake";
   version = "1.11.1";
-  pyproject = true;
 
   # missing tags on GitHub
   src = fetchPypi {
-    pname = "dbt_snowflake";
     inherit version;
     hash = "sha256-C2uS13vwN9AuZ0XgrdRHMsunuzSwoM06HGFmJ45Bs0A=";
+    pname = "dbt_snowflake";
   };
 
-  pythonRelaxDeps = [
-    "certifi"
-  ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -32,9 +28,8 @@ buildPythonPackage rec {
   ]
   ++ snowflake-connector-python.optional-dependencies.secure-local-storage;
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "tests/unit" ];
+  pyproject = true;
 
   pytestFlags = [
     # pyproject.toml specifies -n auto which only pytest-xdist understands
@@ -42,6 +37,10 @@ buildPythonPackage rec {
   ];
 
   pythonImportsCheck = [ "dbt.adapters.snowflake" ];
+
+  pythonRelaxDeps = [
+    "certifi"
+  ];
 
   meta = {
     description = "Plugin enabling dbt to work with Snowflake";

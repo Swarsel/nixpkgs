@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   pytest-asyncio,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "volkszaehler";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-ecosystem";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DgsP3ol6VcOnoUJF1eQjNWR45SokElNosyfgvPZVihU=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "volkszaehler" ];
 
   meta = {

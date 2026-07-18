@@ -14,7 +14,6 @@ in
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "cvehound";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "evdenis";
@@ -22,6 +21,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-UvjmlAm/8B4KfE9grvvgn37Rui+ZRfs2oTLqYYgqcUQ=";
   };
+
+  # Tries to clone the kernel sources
+  doCheck = false;
+
+  nativeCheckInputs = with python3.pkgs; [
+    gitpython
+    psutil
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [
     setuptools
@@ -32,21 +40,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sympy
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    gitpython
-    psutil
-    pytestCheckHook
-  ];
-
-  # Tries to clone the kernel sources
-  doCheck = false;
-
   makeWrapperArgs = [
     "--prefix"
     "PATH"
     ":"
     (lib.makeBinPath finalAttrs.passthru.runtimeDeps)
   ];
+
+  pyproject = true;
 
   passthru = {
     inherit runtimeDeps;
@@ -56,11 +57,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     description = "Tool to check linux kernel source dump for known CVEs";
     homepage = "https://github.com/evdenis/cvehound";
     changelog = "https://github.com/evdenis/cvehound/blob/${finalAttrs.src.rev}/ChangeLog";
+
     # See https://github.com/evdenis/cvehound/issues/22
     license = with lib.licenses; [
       gpl2Only
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ ambroisie ];
   };
 })

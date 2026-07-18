@@ -1,17 +1,18 @@
 {
   lib,
   beam_minimal,
-  fetchFromGitea,
   cmake,
+  fetchFromGitea,
   file,
-  nixosTests,
   nix-update-script,
+  nixosTests,
 }:
 
 let
   beamPackages = beam_minimal.packages.erlang_27.extend (
     self: super: {
       elixir = self.elixir_1_17;
+
       rebar3 = self.rebar3WithPlugins {
         plugins = with self; [ pc ];
       };
@@ -23,23 +24,35 @@ beamPackages.mixRelease rec {
   version = "3.19.0";
 
   src = fetchFromGitea {
-    domain = "akkoma.dev";
     owner = "AkkomaGang";
     repo = "akkoma";
     tag = "v${version}";
     hash = "sha256-ASLnsmuWpfQKwpNNLUgI32Gdn/j+jUW5IBLlT8RUmcE=";
-
+    domain = "akkoma.dev";
     # upstream repository archive fetching is broken
     forceFetchGit = true;
   };
 
+  postPatch = ''
+    # Remove dependency on OS_Mon
+    sed -E -i 's/(^|\s):os_mon,//' \
+      mix.exs
+  '';
+
   nativeBuildInputs = [ cmake ];
   buildInputs = [ file ];
 
+  postBuild = ''
+    # Digest and compress static files
+    rm -f priv/static/READ_THIS_BEFORE_TOUCHING_FILES_HERE
+    mix do deps.loadpaths --no-deps-check, phx.digest --no-compile
+  '';
+
+  dontUseCmakeConfigure = true;
+
   mixFodDeps = beamPackages.fetchMixDeps {
-    pname = "mix-deps-akkoma";
     inherit src version;
-    hash = "sha256-O9A7XuQSSczGMcLMc6Fk0eh7PkjQ6sYJKSwdqoEPJJI=";
+    pname = "mix-deps-akkoma";
 
     postInstall = ''
       substituteInPlace "$out/http_signatures/mix.exs" \
@@ -57,32 +70,19 @@ beamPackages.mixRelease rec {
         cat ${./mime.exs} >>"$dep/config/config.exs"
       done
     '';
+
+    hash = "sha256-O9A7XuQSSczGMcLMc6Fk0eh7PkjQ6sYJKSwdqoEPJJI=";
   };
 
-  postPatch = ''
-    # Remove dependency on OS_Mon
-    sed -E -i 's/(^|\s):os_mon,//' \
-      mix.exs
-  '';
-
-  dontUseCmakeConfigure = true;
-
-  postBuild = ''
-    # Digest and compress static files
-    rm -f priv/static/READ_THIS_BEFORE_TOUCHING_FILES_HERE
-    mix do deps.loadpaths --no-deps-check, phx.digest --no-compile
-  '';
-
   passthru = {
-    tests = with nixosTests; {
-      inherit akkoma akkoma-confined;
-    };
-
     inherit mixFodDeps;
-
     # Used to make sure the service uses the same version of elixir as
     # the package
     elixirPackage = beamPackages.elixir;
+
+    tests = with nixosTests; {
+      inherit akkoma akkoma-confined;
+    };
 
     updateScript = nix-update-script { };
   };

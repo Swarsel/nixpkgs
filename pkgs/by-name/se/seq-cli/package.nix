@@ -1,7 +1,7 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   dotnetCorePackages,
   testers,
 }:
@@ -17,18 +17,16 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-qqvuxG/QkkYjYw+p5QxLBWYHyltKDWT3JT167bEAdEI=";
   };
 
-  projectFile = "src/SeqCli/SeqCli.csproj";
-  nugetDeps = ./deps.json;
-  dotnetInstallFlags = "-f net8.0";
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  dotnetInstallFlags = "-f net8.0";
   executables = [ "seqcli" ];
+  nugetDeps = ./deps.json;
+  projectFile = "src/SeqCli/SeqCli.csproj";
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "seqcli version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
@@ -36,7 +34,7 @@ buildDotnetModule (finalAttrs: {
     homepage = "https://github.com/datalust/seqcli";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ hausken ];
-    mainProgram = "seqcli";
     platforms = lib.platforms.all;
+    mainProgram = "seqcli";
   };
 })

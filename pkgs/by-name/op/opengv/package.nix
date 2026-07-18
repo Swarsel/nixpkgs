@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  eigen,
   fetchFromGitHub,
   cmake,
+  eigen,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "opengv";
@@ -16,6 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-LfnylJ9NCHlqjT76Tgku4NwxULJ+WDAcJQ2lDKGWSI4=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.1.3)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
   ];
@@ -24,15 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
     eigen
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.1.3)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
     description = "Collection of computer vision methods for solving geometric vision problems";
-    homepage = "https://github.com/laurentkneip/opengv";
-    license = lib.licenses.bsd2;
+
     longDescription = ''
       OpenGV is a collection of computer vision methods for solving
       geometric vision problems. It contains absolute-pose, relative-pose,
@@ -43,6 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
       to the above pages also shows links to precompiled Matlab mex-libraries.
       Please consult the documentation for more information.
     '';
+
+    homepage = "https://github.com/laurentkneip/opengv";
+    license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.locochoco ];
     platforms = lib.platforms.all;
   };

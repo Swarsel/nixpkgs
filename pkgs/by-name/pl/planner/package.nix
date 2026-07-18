@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitLab,
   desktop-file-utils,
-  gsettings-desktop-schemas,
   glib,
+  gsettings-desktop-schemas,
   gtk3,
   libgda5,
   libxml2,
@@ -21,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.14.92";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "planner";
     rev = finalAttrs.version;
     hash = "sha256-2LmNeyZURVtA52Vosyn44wT8zSaJn8tR+8sPM9atAwM=";
+    domain = "gitlab.gnome.org";
   };
 
   postPatch = ''
@@ -60,10 +60,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Project management tool for the GNOME desktop";
-    mainProgram = "planner";
     homepage = "https://gitlab.gnome.org/World/planner";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "planner";
   };
 })

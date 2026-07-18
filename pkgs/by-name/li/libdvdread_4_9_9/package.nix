@@ -15,7 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libdvdcss ];
-
   env.NIX_LDFLAGS = "-ldvdcss";
 
   postInstall = ''
@@ -23,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://dvdnav.mplayerhq.hu/";
     description = "Library for reading DVDs";
+    homepage = "http://dvdnav.mplayerhq.hu/";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.wmertens ];
     platforms = lib.platforms.linux;

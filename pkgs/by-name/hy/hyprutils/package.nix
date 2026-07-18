@@ -1,11 +1,11 @@
 {
   lib,
-  gcc15Stdenv,
-  cmake,
-  pkg-config,
-  pixman,
   fetchFromGitHub,
+  cmake,
+  gcc15Stdenv,
   nix-update-script,
+  pixman,
+  pkg-config,
 }:
 
 gcc15Stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,11 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jAcsogZwWMfXT9MfXxZzkwliAqIuZUV0p71h6Ba9ReE=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -28,23 +33,17 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     pixman
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   cmakeBuildType = "RelWithDebInfo";
   separateDebugInfo = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Small C++ library for utilities used across the Hypr* ecosystem";
     homepage = "https://github.com/hyprwm/hyprutils";
     changelog = "https://github.com/hyprwm/hyprutils/releases/tag/${finalAttrs.src.tag}";
-    description = "Small C++ library for utilities used across the Hypr* ecosystem";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ logger ];
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     teams = [ lib.teams.hyprland ];
-    maintainers = with lib.maintainers; [ logger ];
   };
 })

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  ffmpeg,
+  libgbm,
+  libpulseaudio,
   meson,
   ninja,
+  pipewire,
   pkg-config,
   scdoc,
-  wayland-scanner,
   wayland,
   wayland-protocols,
-  ffmpeg,
+  wayland-scanner,
   x264,
-  libpulseaudio,
-  pipewire,
-  libgbm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-scanner
     scdoc
   ];
+
   buildInputs = [
     wayland
     wayland-protocols
@@ -45,8 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    description = "Utility program for screen recording of wlroots-based compositors";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Utility program for screen recording of wlroots-based compositors";
     changelog = "https://github.com/ammen99/wf-recorder/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dywedir ];

@@ -1,22 +1,19 @@
 {
   lib,
-  python,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-
-  # build-system
-  setuptools,
-
-  # native dependencies
-  openmp,
-  xsimd,
-
-  # dependencies
-  ply,
+  beniget,
+  buildPythonPackage,
   gast,
   numpy,
-  beniget,
+  # native dependencies
+  openmp,
+  # dependencies
+  ply,
+  python,
+  replaceVars,
+  # build-system
+  setuptools,
+  xsimd,
 }:
 
 let
@@ -25,7 +22,6 @@ in
 buildPythonPackage rec {
   pname = "pythran";
   version = "0.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "serge-sans-paille";
@@ -49,6 +45,8 @@ buildPythonPackage rec {
     ln -s '${lib.getDev xsimd}'/include/xsimd pythran/
   '';
 
+  # Test suite is huge and has a circular dependency on scipy.
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -59,10 +57,7 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "gast"
-    "beniget"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pythran"
@@ -73,13 +68,15 @@ buildPythonPackage rec {
     "pythran.spec"
   ];
 
-  # Test suite is huge and has a circular dependency on scipy.
-  doCheck = false;
+  pythonRelaxDeps = [
+    "gast"
+    "beniget"
+  ];
 
   meta = {
-    changelog = "https://github.com/serge-sans-paille/pythran/blob/${src.tag}/Changelog";
     description = "Ahead of Time compiler for numeric kernels";
     homepage = "https://github.com/serge-sans-paille/pythran";
+    changelog = "https://github.com/serge-sans-paille/pythran/blob/${src.tag}/Changelog";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ doronbehar ];
   };

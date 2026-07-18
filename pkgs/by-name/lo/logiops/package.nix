@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
   glib,
-  udev,
-  libevdev,
   libconfig,
+  libevdev,
+  pkg-config,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     udev
     libevdev
@@ -48,10 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Unofficial userspace driver for HID++ Logitech devices";
-    mainProgram = "logid";
     homepage = "https://github.com/PixlOne/logiops";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = with lib.platforms; linux;
+    mainProgram = "logid";
   };
 })

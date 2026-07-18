@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ruby,
-  gnugrep,
+  darcs,
   diffutils,
   git,
-  darcs,
+  gnugrep,
+  ruby,
   unstableGitUpdater,
 }:
 
@@ -20,27 +20,6 @@ stdenv.mkDerivation {
     rev = "7b7bbc653c953772edffc2378cc0b2fe7632e1fa";
     hash = "sha256-94tHR4zLaXERQM2Eyy/S3DW/f0jGasA0i3FMF8I5tIo=";
   };
-
-  patchPhase =
-    let
-      matchExecution = ''(\<(output_of|system|run)\([^"%]*("|%w\()|^[^"`]*`)'';
-    in
-    ''
-      sed -r -i \
-        -e '1s|^#!.*|#!${ruby}/bin/ruby|' \
-        -e 's!${matchExecution}git\>!\1${git}/bin/git!' \
-        -e 's!${matchExecution}darcs\>!\1${darcs}/bin/darcs!' \
-        -e 's!${matchExecution}diff\>!\1${diffutils}/bin/diff!' \
-        -e 's!\<egrep\>!${gnugrep}/bin/egrep!g' \
-        -e 's!%w\(darcs init\)!%w(${darcs}/bin/darcs init)!' \
-        darcs-to-git
-    '';
-
-  installPhase = ''
-    install -vD darcs-to-git "$out/bin/darcs-to-git"
-  '';
-
-  passthru.updateScript = unstableGitUpdater { };
 
   doCheck = true;
 
@@ -85,6 +64,27 @@ stdenv.mkDerivation {
     cd "$orig_dir"
     rm -rf "$darcs_repos" "$git_repos" "$test_home"
   '';
+
+  installPhase = ''
+    install -vD darcs-to-git "$out/bin/darcs-to-git"
+  '';
+
+  patchPhase =
+    let
+      matchExecution = ''(\<(output_of|system|run)\([^"%]*("|%w\()|^[^"`]*`)'';
+    in
+    ''
+      sed -r -i \
+        -e '1s|^#!.*|#!${ruby}/bin/ruby|' \
+        -e 's!${matchExecution}git\>!\1${git}/bin/git!' \
+        -e 's!${matchExecution}darcs\>!\1${darcs}/bin/darcs!' \
+        -e 's!${matchExecution}diff\>!\1${diffutils}/bin/diff!' \
+        -e 's!\<egrep\>!${gnugrep}/bin/egrep!g' \
+        -e 's!%w\(darcs init\)!%w(${darcs}/bin/darcs init)!' \
+        darcs-to-git
+    '';
+
+  passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Converts a Darcs repository into a Git repository";

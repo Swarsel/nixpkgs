@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -40,14 +40,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-BFnTJE9QFWmPsx90hDTG8MusdnwaBPYJxM5bCFk3hew=";
-
-  doCheck = false;
-
-  subPackages = [ "." ];
-
   env.CGO_ENABLED = 0;
-
-  tags = [ "kqueue" ];
+  doCheck = false;
 
   ldflags =
     let
@@ -62,18 +56,23 @@ buildGoModule (finalAttrs: {
       "-X ${t}.CommitID=${finalAttrs.src.rev}"
     ];
 
+  subPackages = [ "." ];
+  tags = [ "kqueue" ];
   passthru.tests.minio = nixosTests.minio;
 
   meta = {
-    homepage = "https://www.minio.io/";
     description = "S3-compatible object storage server";
+    homepage = "https://www.minio.io/";
     changelog = "https://github.com/minio/minio/releases/tag/RELEASE.${finalAttrs.version}";
+    license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       bachp
       ryan4yin
     ];
-    license = lib.licenses.agpl3Plus;
+
     mainProgram = "minio";
+
     knownVulnerabilities = [
       "CVE-2026-40344: MinIO has an Unauthenticated Object Write via Missing Signature Verification in Unsigned-Trailer Uploads"
       "CVE-2026-41145: Unauthenticated Object Write via Query-String Credential Signature Bypass in Unsigned-Trailer Uploads"

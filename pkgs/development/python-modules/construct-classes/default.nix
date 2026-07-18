@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
-  flit-core,
-  construct,
   fetchFromGitHub,
+  buildPythonPackage,
+  construct,
+  flit-core,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "construct-classes";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matejcik";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-xRYf6Tg4XyQN+g8uOaws46KKb0abD/M/5Q+SlnzEp/8=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ construct ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  dependencies = [ construct ];
+  pyproject = true;
   pythonImportsCheck = [ "construct_classes" ];
 
   meta = {

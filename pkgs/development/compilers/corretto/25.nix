@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   gradle_9,
   jdk25,
-  lib,
-  stdenv,
-  rsync,
   pandoc,
+  rsync,
   runCommand,
   testers,
 }:
@@ -19,16 +19,19 @@ let
       runCommand
       testers
       ;
-    jdk = jdk25;
-    gradle = gradle_9;
+
     version = "25.0.1.9.1";
+
     src = fetchFromGitHub {
       owner = "corretto";
       repo = "corretto-25";
       rev = version;
       hash = "sha256-eAjepqxp5LVQgP/HcxwwdjbXxy5jUOJC4HYntcHNX0o=";
     };
+
     extraNativeBuildInputs = [ pandoc ];
+    gradle = gradle_9;
+    jdk = jdk25;
   };
 in
 corretto.overrideAttrs (

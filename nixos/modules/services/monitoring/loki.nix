@@ -26,36 +26,23 @@ in
 {
   options.services.loki = {
     enable = mkEnableOption "Grafana Loki";
-
-    user = mkOption {
-      type = types.str;
-      default = "loki";
-      description = ''
-        User under which the Loki service runs.
-      '';
-    };
-
     package = lib.mkPackageOption pkgs "grafana-loki" { };
 
-    group = mkOption {
-      type = types.str;
-      default = "loki";
-      description = ''
-        Group under which the Loki service runs.
-      '';
-    };
+    configFile = mkOption {
+      default = null;
 
-    dataDir = mkOption {
-      type = types.path;
-      default = "/var/lib/loki";
       description = ''
-        Specify the data directory for Loki.
+        Specify a configuration file that Loki should use.
+
+        Cannot be specified together with {option}`services.loki.configuration`.
       '';
+
+      type = types.nullOr types.path;
     };
 
     configuration = mkOption {
-      type = (pkgs.formats.json { }).type;
       default = { };
+
       description = ''
         Specify the configuration for Loki in Nix.
 
@@ -63,26 +50,50 @@ in
 
         Cannot be specified together with {option}`services.loki.configFile`.
       '';
+
+      type = (pkgs.formats.json { }).type;
     };
 
-    configFile = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      description = ''
-        Specify a configuration file that Loki should use.
+    dataDir = mkOption {
+      default = "/var/lib/loki";
 
-        Cannot be specified together with {option}`services.loki.configuration`.
+      description = ''
+        Specify the data directory for Loki.
       '';
+
+      type = types.path;
     };
 
     extraFlags = mkOption {
-      type = types.listOf types.str;
       default = [ ];
-      example = [ "--server.http-listen-port=3101" ];
+
       description = ''
         Specify a list of additional command line flags,
         which get escaped and are then passed to Loki.
       '';
+
+      example = [ "--server.http-listen-port=3101" ];
+      type = types.listOf types.str;
+    };
+
+    group = mkOption {
+      default = "loki";
+
+      description = ''
+        Group under which the Loki service runs.
+      '';
+
+      type = types.str;
+    };
+
+    user = mkOption {
+      default = "loki";
+
+      description = ''
+        User under which the Loki service runs.
+      '';
+
+      type = types.str;
     };
   };
 
@@ -93,6 +104,7 @@ in
           (cfg.configuration == { } -> cfg.configFile != null)
           && (cfg.configFile != null -> cfg.configuration == { })
         );
+
         message = ''
           Please specify either
           'services.loki.configuration' or
@@ -103,20 +115,9 @@ in
 
     environment.systemPackages = [ cfg.package ]; # logcli
 
-    users.groups.${cfg.group} = { };
-    users.users.${cfg.user} = {
-      description = "Loki Service User";
-      group = cfg.group;
-      home = cfg.dataDir;
-      createHome = true;
-      isSystemUser = true;
-    };
-
     systemd.services.loki = {
-      description = "Loki Service Daemon";
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Loki Service Daemon";
 
       serviceConfig =
         let
@@ -142,16 +143,29 @@ in
               '';
         in
         {
+          DevicePolicy = "closed";
           ExecStart = "${cfg.package}/bin/loki --config.file=${conf} ${escapeShellArgs cfg.extraFlags}";
-          User = cfg.user;
-          Restart = "always";
+          NoNewPrivileges = true;
           PrivateTmp = true;
           ProtectHome = true;
           ProtectSystem = "full";
-          DevicePolicy = "closed";
-          NoNewPrivileges = true;
+          Restart = "always";
+          User = cfg.user;
           WorkingDirectory = cfg.dataDir;
         };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
+    };
+
+    users.groups.${cfg.group} = { };
+
+    users.users.${cfg.user} = {
+      createHome = true;
+      description = "Loki Service User";
+      group = cfg.group;
+      home = cfg.dataDir;
+      isSystemUser = true;
     };
   };
 }

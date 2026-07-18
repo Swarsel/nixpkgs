@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   dataclass-wizard,
   dataclasses-json,
-  fetchFromGitHub,
   gitpython,
   hatchling,
   importlib-metadata,
@@ -27,7 +27,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "yardstick";
   version = "0.16.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anchore";
@@ -35,6 +34,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jKf1LH+YLRuds/5SKSgKm8PbI9OvkxgBhm5vOmg5EU0=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -58,13 +64,7 @@ buildPythonPackage (finalAttrs: {
     zstandard
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "yardstick" ];
 
   meta = {

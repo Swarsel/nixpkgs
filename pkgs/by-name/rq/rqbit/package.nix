@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  pkg-config,
-  openssl,
   buildNpmPackage,
-  nodejs,
+  installShellFiles,
   nix-update-script,
   nixosTests,
+  nodejs,
+  openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 let
@@ -25,12 +25,8 @@ let
   };
 
   rqbit-webui = buildNpmPackage {
-    pname = "rqbit-webui";
-
     inherit version src nodejs;
-
-    sourceRoot = "${src.name}/crates/librqbit/webui";
-
+    pname = "rqbit-webui";
     npmDepsHash = "sha256-vib8jpf7Jn1qv0m/dWJ4TbisByczNbtEd8hIM5ll2Q8=";
 
     installPhase = ''
@@ -41,12 +37,18 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = "${src.name}/crates/librqbit/webui";
   };
 in
 rustPlatform.buildRustPackage {
   inherit pname version src;
 
-  cargoHash = "sha256-gYasOjrG0oeT/6Ben57MKAvBtgpoSmZ93RZQqSXAxIc=";
+  postPatch = ''
+    # This script fascilitates the build of the webui,
+    #  we've already built that
+    rm crates/librqbit/build.rs
+  '';
 
   nativeBuildInputs = [
     installShellFiles
@@ -54,16 +56,11 @@ rustPlatform.buildRustPackage {
   ++ lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ openssl ];
+  cargoHash = "sha256-gYasOjrG0oeT/6Ben57MKAvBtgpoSmZ93RZQqSXAxIc=";
 
   preConfigure = ''
     mkdir -p crates/librqbit/webui/dist
     cp -R ${rqbit-webui}/dist/** crates/librqbit/webui/dist
-  '';
-
-  postPatch = ''
-    # This script fascilitates the build of the webui,
-    #  we've already built that
-    rm crates/librqbit/build.rs
   '';
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -72,20 +69,23 @@ rustPlatform.buildRustPackage {
     done
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
-    webui = rqbit-webui;
+    tests.testService = nixosTests.rqbit;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
         "webui"
       ];
     };
-    tests.testService = nixosTests.rqbit;
+
+    webui = rqbit-webui;
   };
 
   meta = {
@@ -93,10 +93,12 @@ rustPlatform.buildRustPackage {
     homepage = "https://github.com/ikatson/rqbit";
     changelog = "https://github.com/ikatson/rqbit/releases/tag/v${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       cafkafk
       toasteruwu
     ];
+
     mainProgram = "rqbit";
   };
 }

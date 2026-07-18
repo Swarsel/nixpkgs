@@ -72,16 +72,15 @@ in
 kaem.runCommand "${pname}-${version}"
   {
     inherit pname version;
-
     nativeBuildInputs = [ tinycc.compiler ];
 
     meta = {
       description = "GNU Patch, a program to apply differences to files";
       homepage = "https://www.gnu.org/software/patch";
       license = lib.licenses.gpl3Plus;
-      teams = [ lib.teams.minimal-bootstrap ];
-      mainProgram = "patch";
       platforms = lib.platforms.unix;
+      mainProgram = "patch";
+      teams = [ lib.teams.minimal-bootstrap ];
     };
   }
   ''

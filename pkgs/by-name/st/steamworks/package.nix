@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  bison,
-  cmake,
-  flex,
   arpa2cm,
   arpa2common,
+  bison,
   catch2,
+  cmake,
+  flex,
+  gitUpdater,
   log4cpp,
   openldap,
   sqlite,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,11 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   checkInputs = [
     catch2
   ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";
@@ -74,7 +74,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.com/arpa2/steamworks/-/blob/v${finalAttrs.version}/CHANGES";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.ethancedwards8 ];
-    teams = [ lib.teams.ngi ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.ngi ];
   };
 })

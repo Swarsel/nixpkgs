@@ -9,24 +9,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-tea-util";
   version = "0.3.14";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_tea_util";
     inherit (finalAttrs) version;
     hash = "sha256-cI58n2RkGjyeDlZjZdLyNnX418Kj4pcdlALO7eBAjNs=";
+    pname = "alibabacloud_tea_util";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ alibabacloud-tea ];
-
-  pythonImportsCheck = [ "alibabacloud_tea_util" ];
 
   # Module has only tests in the untagged upstream repo
   doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ alibabacloud-tea ];
+  pyproject = true;
+  pythonImportsCheck = [ "alibabacloud_tea_util" ];
 
   meta = {
     description = "Aliyun Tea Util Library for Python";

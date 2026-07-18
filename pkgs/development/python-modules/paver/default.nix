@@ -4,8 +4,8 @@
   cogapp,
   fetchPypi,
   mock,
-  setuptools,
   pytestCheckHook,
+  setuptools,
   six,
   virtualenv,
 }:
@@ -13,17 +13,12 @@
 buildPythonPackage rec {
   pname = "paver";
   version = "1.3.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "Paver";
     inherit version;
     hash = "sha256-0+ZJiIFIWrdQ7+QMUniYKpNDvGJ+E3sRrc7WJ3GTCMc=";
+    pname = "Paver";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
 
   checkInputs = [
     cogapp
@@ -32,7 +27,8 @@ buildPythonPackage rec {
     virtualenv
   ];
 
-  pythonImportsCheck = [ "paver" ];
+  build-system = [ setuptools ];
+  dependencies = [ six ];
 
   disabledTestPaths = [
     # Tests depend on distutils
@@ -41,11 +37,14 @@ buildPythonPackage rec {
     "paver/tests/test_tasks.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "paver" ];
+
   meta = {
     description = "Python-based build/distribution/deployment scripting tool";
-    mainProgram = "paver";
     homepage = "https://github.com/paver/paver";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "paver";
   };
 }

@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
-  pkg-config,
   fetchurl,
+  autoreconfHook,
+  curl,
+  docbook_xsl,
   expat,
+  gnutls,
   gpgme,
   libgcrypt,
   libxml2,
   libxslt,
-  gnutls,
-  curl,
-  docbook_xsl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,14 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./libdatovka-deprecated-fn-curl.patch
   ];
 
-  configureFlags = [
-    "--with-docbook-xsl-stylesheets=${docbook_xsl}/xml/xsl/docbook"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     expat
     gpgme
@@ -44,6 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
     gnutls
     curl
     docbook_xsl
+  ];
+
+  configureFlags = [
+    "--with-docbook-xsl-stylesheets=${docbook_xsl}/xml/xsl/docbook"
   ];
 
   meta = {

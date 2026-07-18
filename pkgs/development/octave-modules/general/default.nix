@@ -1,9 +1,9 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
-  pkg-config,
+  buildOctavePackage,
   nettle,
+  pkg-config,
 }:
 
 buildOctavePackage rec {
@@ -24,9 +24,9 @@ buildOctavePackage rec {
   ];
 
   meta = {
+    description = "General tools for Octave";
     homepage = "https://gnu-octave.github.io/packages/general/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "General tools for Octave";
   };
 }

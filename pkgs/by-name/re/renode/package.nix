@@ -1,24 +1,24 @@
 {
+  lib,
+  fetchFromGitHub,
   buildDotnetModule,
   cmake,
   dconf,
   dotnetCorePackages,
-  fetchFromGitHub,
   fetchpatch,
   gcc,
   glibcLocalesUtf8,
-  gtk3-x11,
   gtk3,
-  lib,
+  gtk3-x11,
   python3Packages,
 }:
 
 let
   resources = fetchFromGitHub {
+    hash = "sha256-wR3heL58NOQLENwCzL4lPM4KuvT/ON7dlc/KUqrlRjg=";
     owner = "renode";
     repo = "renode-resources";
     rev = "d3d69f8f17ed164ee23e46f0c06844a69bf4c004";
-    hash = "sha256-wR3heL58NOQLENwCzL4lPM4KuvT/ON7dlc/KUqrlRjg=";
   };
 
   pythonLibs =
@@ -43,12 +43,13 @@ let
           rev = "v6.1";
           hash = "sha256-l1VupBKi52UWqJMisT2CVnXph3fGxB63mBVvYdM1NWE=";
         };
+
         patches = (oldAttrs.patches or [ ]) ++ [
           (fetchpatch {
+            hash = "sha256-aSaror26x4kVkLVetPEbrJG4H1zstHsNWqmwqOys3zo=";
             # utest: Improve filtering of output sugar for Python 3.13+
             name = "python3.13-support.patch";
             url = "https://github.com/robotframework/robotframework/commit/921e352556dc8538b72de1e693e2a244d420a26d.patch";
-            hash = "sha256-aSaror26x4kVkLVetPEbrJG4H1zstHsNWqmwqOys3zo=";
           })
         ];
       }))
@@ -67,28 +68,7 @@ buildDotnetModule rec {
     fetchSubmodules = true;
   };
 
-  disallowedReferences = [
-    cmake
-    gcc
-    dotnet-sdk
-  ];
-
-  projectFile = "Renode_NET.sln";
-
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  dotnet-runtime = dotnetCorePackages.runtime_10_0;
-
-  nugetDeps = ./deps.json;
-
   patches = [ ./renode-test.patch ];
-
-  dotnetFlags = [ "-p:TargetFrameworks=net10.0" ];
-
-  prePatch = ''
-    sed -i 's/AssemblyVersion("%VERSION%.*")/AssemblyVersion("${version}.0")/g' src/Renode/Properties/AssemblyInfo.template
-    sed -i 's/AssemblyInformationalVersion("%INFORMATIONAL_VERSION%")/AssemblyInformationalVersion("${src.rev}")/g' src/Renode/Properties/AssemblyInfo.template
-    mv src/Renode/Properties/AssemblyInfo.template src/Renode/Properties/AssemblyInfo.cs
-  '';
 
   postPatch = ''
     # https://github.com/dotnet/roslyn/issues/37379#issuecomment-513371985
@@ -110,13 +90,6 @@ buildDotnetModule rec {
     cmake
     gcc
   ];
-  runtimeDeps = [
-    gtk3
-  ];
-
-  dontUseCmakeConfigure = true;
-
-  enableParallelBuilding = false;
 
   preBuild = ''
     mkdir -p lib/resources
@@ -160,8 +133,6 @@ buildDotnetModule rec {
     ln -s $out/lib/*.so src/Infrastructure/src/Emulator/Cores/bin/Release/lib
   '';
 
-  dotnetInstallFlags = [ "-p:TargetFramework=net10.0" ];
-
   postInstall = ''
     rm -rf build output/properties.csproj
     find . -type d -name obj -exec rm -rf {} +
@@ -180,20 +151,47 @@ buildDotnetModule rec {
     mv $out/bin/Renode $out/bin/renode
   '';
 
+  disallowedReferences = [
+    cmake
+    gcc
+    dotnet-sdk
+  ];
+
+  dontUseCmakeConfigure = true;
+  dotnet-runtime = dotnetCorePackages.runtime_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  dotnetFlags = [ "-p:TargetFrameworks=net10.0" ];
+  dotnetInstallFlags = [ "-p:TargetFramework=net10.0" ];
+  enableParallelBuilding = false;
   executables = [ "Renode" ];
+  nugetDeps = ./deps.json;
+
+  prePatch = ''
+    sed -i 's/AssemblyVersion("%VERSION%.*")/AssemblyVersion("${version}.0")/g' src/Renode/Properties/AssemblyInfo.template
+    sed -i 's/AssemblyInformationalVersion("%INFORMATIONAL_VERSION%")/AssemblyInformationalVersion("${src.rev}")/g' src/Renode/Properties/AssemblyInfo.template
+    mv src/Renode/Properties/AssemblyInfo.template src/Renode/Properties/AssemblyInfo.cs
+  '';
+
+  projectFile = "Renode_NET.sln";
+
+  runtimeDeps = [
+    gtk3
+  ];
 
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/renode/renode/blob/${version}/CHANGELOG.rst";
     description = "Virtual development framework for complex embedded systems";
-    downloadPage = "https://github.com/renode/renode";
     homepage = "https://renode.io";
+    changelog = "https://github.com/renode/renode/blob/${version}/CHANGELOG.rst";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       otavio
       znaniye
     ];
+
     platforms = [ "x86_64-linux" ];
+    downloadPage = "https://github.com/renode/renode";
   };
 }

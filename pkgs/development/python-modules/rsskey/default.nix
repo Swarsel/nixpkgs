@@ -1,9 +1,9 @@
 {
   lib,
   buildPythonPackage,
+  feedparser,
   fetchPypi,
   flit-core,
-  feedparser,
   httpx,
   loca,
   markdownify,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "rsskey";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -31,6 +30,7 @@ buildPythonPackage rec {
   ];
 
   doCheck = false; # upstream has no test
+  pyproject = true;
   pythonImportsCheck = [ "rsskey" ];
 
   meta = {

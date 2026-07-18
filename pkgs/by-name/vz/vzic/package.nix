@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
-  buildPackages,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
+  buildPackages,
   glib,
   libical,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "vzic";
@@ -48,13 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/libical/vzic";
     description = "Program to convert the IANA timezone database files into VTIMEZONE files compatible with the iCalendar specification";
+    homepage = "https://github.com/libical/vzic";
     changelog = "https://github.com/libical/vzic/blob/${finalAttrs.src.rev}/ChangeLog";
-    mainProgram = "vzic";
     license = with lib.licenses; [ gpl2Plus ];
     maintainers = with lib.maintainers; [ moraxyc ];
-    broken = !stdenv.hostPlatform.emulatorAvailable buildPackages;
     platforms = lib.platforms.unix;
+    mainProgram = "vzic";
+    broken = !stdenv.hostPlatform.emulatorAvailable buildPackages;
   };
 })

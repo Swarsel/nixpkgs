@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
-  makeBinaryWrapper,
-  azure-cli,
-  kubectl,
   stdenv,
+  fetchFromGitHub,
+  azure-cli,
+  buildGoModule,
+  installShellFiles,
+  kubectl,
+  makeBinaryWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,28 +20,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Zu/caWrTuyzS4ejJ5LTOCyLTsmJOFrkX0kUGM0zDfFs=";
   };
 
-  vendorHash = "sha256-eipcHVKKHBOey2fUGB4lf2pE/wdwGgsbYvCrvDG1JK8=";
-
-  subPackages = [ "cmd/aks-mcp" ];
-
   nativeBuildInputs = [
     installShellFiles
     makeBinaryWrapper
   ];
 
+  vendorHash = "sha256-eipcHVKKHBOey2fUGB4lf2pE/wdwGgsbYvCrvDG1JK8=";
   # Disable CGO and set environment variables
   env.CGO_ENABLED = "0";
-
-  tags = [ "withoutebpf" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/Azure/aks-mcp/internal/version.GitVersion=${finalAttrs.version}"
-    "-X github.com/Azure/aks-mcp/internal/version.GitCommit=${finalAttrs.src.rev}"
-    "-X github.com/Azure/aks-mcp/internal/version.GitTreeState=clean"
-    "-X github.com/Azure/aks-mcp/internal/version.BuildDate=1970-01-01T00:00:00Z"
-  ];
 
   checkFlags = [
     "-skip=TestAzure"
@@ -62,14 +48,28 @@ buildGoModule (finalAttrs: {
       }
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/Azure/aks-mcp/internal/version.GitVersion=${finalAttrs.version}"
+    "-X github.com/Azure/aks-mcp/internal/version.GitCommit=${finalAttrs.src.rev}"
+    "-X github.com/Azure/aks-mcp/internal/version.GitTreeState=clean"
+    "-X github.com/Azure/aks-mcp/internal/version.BuildDate=1970-01-01T00:00:00Z"
+  ];
+
+  subPackages = [ "cmd/aks-mcp" ];
+  tags = [ "withoutebpf" ];
+
   meta = {
     description = "Model Context Protocol server for Azure Kubernetes Service";
+
     longDescription = ''
       The AKS-MCP server enables AI assistants to interact with Azure Kubernetes
       Service clusters through the Model Context Protocol. It translates natural
       language requests into AKS operations and provides cluster information,
       network details, and resource management capabilities.
     '';
+
     homepage = "https://github.com/Azure/aks-mcp";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ priyaananthasankar ];

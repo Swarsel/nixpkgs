@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   click,
-
   # tests
   hypothesis,
   pytestCheckHook,
+  # build-system
+  setuptools,
   versionCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "mercantile";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mapbox";
@@ -27,18 +23,18 @@ buildPythonPackage rec {
     hash = "sha256-DiDXO2XnD3We6NhP81z7aIHzHrHDi/nkqy98OT9986w=";
   };
 
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+    versionCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
   dependencies = [
     click
-  ];
-
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-    versionCheckHook
   ];
 
   disabledTests = [
@@ -78,12 +74,14 @@ buildPythonPackage rec {
     "test_cli_tiles_seq"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Spherical mercator tile and coordinate utilities";
-    mainProgram = "mercantile";
     homepage = "https://github.com/mapbox/mercantile";
     changelog = "https://github.com/mapbox/mercantile/blob/${version}/CHANGES.txt";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ sikmir ];
+    mainProgram = "mercantile";
   };
 }

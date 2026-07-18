@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   appdirs,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   importlib-metadata,
   poetry-core,
   pyee,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "pyppeteer";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyppeteer";
@@ -37,12 +36,6 @@ buildPythonPackage rec {
     tqdm
     urllib3
     websockets
-  ];
-
-  pythonRelaxDeps = [
-    "pyee"
-    "urllib3"
-    "websockets"
   ];
 
   nativeCheckInputs = [
@@ -78,14 +71,21 @@ buildPythonPackage rec {
     "TestPDF"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyppeteer" ];
+
+  pythonRelaxDeps = [
+    "pyee"
+    "urllib3"
+    "websockets"
+  ];
 
   meta = {
     description = "Headless chrome/chromium automation library (unofficial port of puppeteer)";
-    mainProgram = "pyppeteer-install";
     homepage = "https://github.com/pyppeteer/pyppeteer";
     changelog = "https://github.com/pyppeteer/pyppeteer/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kmein ];
+    mainProgram = "pyppeteer-install";
   };
 }

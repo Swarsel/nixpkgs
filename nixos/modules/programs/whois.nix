@@ -22,33 +22,18 @@ in
 {
   options.programs.whois = {
     enable = lib.mkEnableOption "whois, an intelligent WHOIS client";
-
     package = lib.mkPackageOption pkgs "whois" { };
 
     settings = lib.mkOption {
-      type = lib.types.listOf (
-        lib.types.submodule {
-          options = {
-            pattern = lib.mkOption {
-              type = lib.types.str;
-              example = "\\.dn42$";
-              description = ''
-                Case-insensitive extended regular expression used to match the
-                WHOIS object identifier.
-              '';
-            };
-
-            server = lib.mkOption {
-              type = lib.types.str;
-              example = "whois.dn42";
-              description = ''
-                WHOIS server to use when {option}`pattern` matches.
-              '';
-            };
-          };
-        }
-      );
       default = [ ];
+
+      description = ''
+        WHOIS configuration entries written to {file}`/etc/whois.conf`.
+
+        Entries are written in the declared order, which matters when multiple
+        patterns may match the same query.
+      '';
+
       example = lib.literalExpression ''
         [
           {
@@ -69,20 +54,38 @@ in
           }
         ]
       '';
-      description = ''
-        WHOIS configuration entries written to {file}`/etc/whois.conf`.
 
-        Entries are written in the declared order, which matters when multiple
-        patterns may match the same query.
-      '';
+      type = lib.types.listOf (
+        lib.types.submodule {
+          options = {
+            pattern = lib.mkOption {
+              description = ''
+                Case-insensitive extended regular expression used to match the
+                WHOIS object identifier.
+              '';
+
+              example = "\\.dn42$";
+              type = lib.types.str;
+            };
+
+            server = lib.mkOption {
+              description = ''
+                WHOIS server to use when {option}`pattern` matches.
+              '';
+
+              example = "whois.dn42";
+              type = lib.types.str;
+            };
+          };
+        }
+      );
     };
 
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-
     environment.etc."whois.conf".text = configText;
+    environment.systemPackages = [ cfg.package ];
   };
 
   meta.maintainers = with lib.maintainers; [ Cryolitia ];

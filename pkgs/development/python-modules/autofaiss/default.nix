@@ -1,11 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   embedding-reader,
   faiss-cpu,
@@ -13,14 +9,14 @@
   fsspec,
   numpy,
   pyarrow,
-
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "autofaiss";
   version = "2.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "criteo";
@@ -29,26 +25,10 @@ buildPythonPackage rec {
     hash = "sha256-XuubpTxmyKdV9nWqLTljp5cNyIwLt2BKJYcBzwPNzD8=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
-  ];
-
-  pythonRemoveDeps = [
-    # The `dataclasses` packages is a python2-only backport, unnecessary in
-    # python3.
-    "dataclasses"
-  ];
-
-  pythonRelaxDeps = [
-    # As of v2.15.4, autofaiss asks for fire<0.5 but we have fire v0.5.0 in
-    # nixpkgs at the time of writing (2022-12-25).
-    "fire"
-    # As of v2.15.3, autofaiss asks for pyarrow<8 but we have pyarrow v9.0.0 in
-    # nixpkgs at the time of writing (2022-12-15).
-    "pyarrow"
-
-    # No official numpy2 support yet
-    "numpy"
   ];
 
   dependencies = [
@@ -59,8 +39,6 @@ buildPythonPackage rec {
     numpy
     pyarrow
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # Attempts to spin up a Spark cluster and talk to it which doesn't work in
@@ -77,12 +55,32 @@ buildPythonPackage rec {
     "test_quantize_with_multiple_inputs"
   ];
 
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    # As of v2.15.4, autofaiss asks for fire<0.5 but we have fire v0.5.0 in
+    # nixpkgs at the time of writing (2022-12-25).
+    "fire"
+    # As of v2.15.3, autofaiss asks for pyarrow<8 but we have pyarrow v9.0.0 in
+    # nixpkgs at the time of writing (2022-12-15).
+    "pyarrow"
+
+    # No official numpy2 support yet
+    "numpy"
+  ];
+
+  pythonRemoveDeps = [
+    # The `dataclasses` packages is a python2-only backport, unnecessary in
+    # python3.
+    "dataclasses"
+  ];
+
   meta = {
     description = "Automatically create Faiss knn indices with the most optimal similarity search parameters";
-    mainProgram = "autofaiss";
     homepage = "https://github.com/criteo/autofaiss";
     changelog = "https://github.com/criteo/autofaiss/blob/${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ samuela ];
+    mainProgram = "autofaiss";
   };
 }

@@ -22,19 +22,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
-  # package requires -Wno-format which collides with -Wformat-security
-  env.NIX_CFLAGS_COMPILE = "-Wno-format-security";
-
   makeFlags = [
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     "MDIR=$(out)"
   ];
 
+  # package requires -Wno-format which collides with -Wformat-security
+  env.NIX_CFLAGS_COMPILE = "-Wno-format-security";
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/DigitalDevices/dddvb";
     description = "Device driver for all Digital Devices DVB demodulator and modulator cards";
+    homepage = "https://github.com/DigitalDevices/dddvb";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.linux;

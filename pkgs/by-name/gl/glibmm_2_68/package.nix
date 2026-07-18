@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gnum4,
   glib,
-  libsigcxx30,
   gnome,
+  gnum4,
+  libsigcxx30,
   meson,
   ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "glibmm";
   version = "2.88.0";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/glibmm/${lib.versions.majorMinor finalAttrs.version}/glibmm-${finalAttrs.version}.tar.xz";
     hash = "sha256-plSdo6bEPeg7hxfa5UE8V6YNkvbsxiRhXGEtC7CtD+I=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     meson
@@ -42,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "glibmm";
       attrPath = "glibmm_2_68";
+      packageName = "glibmm";
       versionPolicy = "odd-unstable";
     };
   };
@@ -53,7 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gtkmm.org/";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

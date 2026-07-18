@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage {
   pname = "orgformat";
   version = "0-unstable-2024-10-23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "novoid";
@@ -20,6 +19,8 @@ buildPythonPackage {
   build-system = [
     setuptools
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "orgformat"

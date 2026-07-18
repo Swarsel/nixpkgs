@@ -1,36 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  blis,
-  cymem,
-  cython,
-  murmurhash,
-  numpy,
-  preshed,
-  setuptools,
-
   # buildInputs
   blas,
-
+  # build-system
+  blis,
+  buildPythonPackage,
   # dependencies
   catalogue,
   confection,
-  pydantic,
-  srsly,
-  wasabi,
-
+  cymem,
+  cython,
   # tests
   hypothesis,
+  murmurhash,
+  numpy,
+  preshed,
+  pydantic,
   pytestCheckHook,
+  setuptools,
+  srsly,
+  wasabi,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "thinc";
   version = "8.3.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -44,6 +39,21 @@ buildPythonPackage (finalAttrs: {
       --replace-fail coverage.exceptions.CoverageWarning ""
   '';
 
+  buildInputs = [
+    blas
+  ];
+
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+  ];
+
+  # avoid local paths, relative imports wont resolve correctly
+  preCheck = ''
+    mv thinc/tests tests
+    rm -r thinc
+  '';
+
   build-system = [
     blis
     cymem
@@ -52,10 +62,6 @@ buildPythonPackage (finalAttrs: {
     numpy
     preshed
     setuptools
-  ];
-
-  buildInputs = [
-    blas
   ];
 
   dependencies = [
@@ -71,24 +77,6 @@ buildPythonPackage (finalAttrs: {
     wasabi
   ];
 
-  pythonImportsCheck = [ "thinc" ];
-
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-  ];
-
-  # avoid local paths, relative imports wont resolve correctly
-  preCheck = ''
-    mv thinc/tests tests
-    rm -r thinc
-  '';
-
-  pytestFlags = [
-    # UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
-    "-Wignore::UserWarning"
-  ];
-
   disabledTestPaths = [
     # pydantic.v1.error_wrappers.ValidationError: 1 validation error for DefaultsSchema
     "tests/test_config.py"
@@ -98,6 +86,15 @@ buildPythonPackage (finalAttrs: {
     # RecursionError: Stack overflow (used 8148 kB)
     "test_pickle_with_flatten"
   ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    # UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+    "-Wignore::UserWarning"
+  ];
+
+  pythonImportsCheck = [ "thinc" ];
 
   meta = {
     description = "Library for NLP machine learning";

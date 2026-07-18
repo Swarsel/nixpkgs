@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchurl,
   buildPythonPackage,
   distro-info-data,
-  fetchurl,
-  lib,
   setuptools,
   unittestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "distro-info";
   version = "1.14";
-  pyproject = true;
 
   # Not using fetchFromGitLab because it incorrectly sets
   # SOURCE_DATE_EPOCH=315619200 (1980-01-02) and breaks tests.
@@ -24,15 +23,18 @@ buildPythonPackage rec {
       --replace-fail /usr/share/distro-info ${distro-info-data}/share/distro-info
   '';
 
-  build-system = [ setuptools ];
-  pypaBuildFlags = "python";
   nativeCheckInputs = [
     unittestCheckHook
   ];
+
   preCheck = ''
     cd python
     rm distro_info_test/test_flake8.py distro_info_test/test_pylint.py
   '';
+
+  build-system = [ setuptools ];
+  pypaBuildFlags = "python";
+  pyproject = true;
 
   meta = {
     description = "Information about Debian and Ubuntu releases";

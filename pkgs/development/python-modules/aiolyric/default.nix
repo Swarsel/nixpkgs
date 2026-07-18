@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   packaging,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiolyric";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "timmo001";
@@ -22,12 +21,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-+OYMe63sX5TtvJpNn6dzvnephlhS/MyFXmUerYZqF5A=";
   };
 
-  build-system = [
-    setuptools
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
   ];
 
-  pythonRelaxDeps = [
-    "packaging"
+  build-system = [
+    setuptools
   ];
 
   dependencies = [
@@ -35,17 +36,16 @@ buildPythonPackage (finalAttrs: {
     packaging
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "aiolyric" ];
-
   disabledTestPaths = [
     # _version file is no shipped
     "tests/test__version.py"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aiolyric" ];
+
+  pythonRelaxDeps = [
+    "packaging"
   ];
 
   meta = {

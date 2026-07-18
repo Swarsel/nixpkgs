@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  curl,
   fetchFromGitHub,
+  curl,
   json_c,
   nixosTests,
   pam,
@@ -32,8 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     json_c
   ];
 
-  env.NIX_CFLAGS_COMPILE = toString [ "-I${json_c.dev}/include/json-c" ];
-
   makeFlags = [
     "VERSION=${finalAttrs.version}"
     "PREFIX=$(out)"
@@ -42,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     "PRESETDIR=$(out)/etc/systemd/system-preset"
     "GOOGLEUSERSDIR=$(out)/google-users.d" # A readme is installed to this directory
   ];
+
+  env.NIX_CFLAGS_COMPILE = toString [ "-I${json_c.dev}/include/json-c" ];
 
   postInstall = ''
     sed -i "s,/usr/bin/,$out/bin/,g" $out/etc/systemd/system/google-oslogin-cache.service
@@ -54,10 +54,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/GoogleCloudPlatform/compute-image-packages";
     description = "OS Login Guest Environment for Google Compute Engine";
+    homepage = "https://github.com/GoogleCloudPlatform/compute-image-packages";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

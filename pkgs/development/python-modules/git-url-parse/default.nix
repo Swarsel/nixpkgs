@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pbr,
-  pytestCheckHook,
-
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "git-url-parse";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coala";
@@ -25,16 +23,15 @@ buildPythonPackage (finalAttrs: {
   # upstream repository (and we are installing from tarball instead)
   env.PBR_VERSION = finalAttrs.version;
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pbr ];
-
-  pythonImportsCheck = [ "giturlparse" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ pbr ];
+  pyproject = true;
+  pythonImportsCheck = [ "giturlparse" ];
 
   meta = {
     description = "Simple GIT URL parser";

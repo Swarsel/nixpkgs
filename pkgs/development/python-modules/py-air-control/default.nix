@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   coapthon3,
-  fetchFromGitHub,
   pycryptodomex,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "py-air-control";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rgerganov";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-3Qk1cmF31vJhUEckjfbYM9IDgD+gVkZtQlXel8iP/b8=";
   };
 
+  # tests sometimes hang forever on tear-down
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     coapthon3
   ];
 
-  # tests sometimes hang forever on tear-down
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyairctrl" ];
 
   meta = {

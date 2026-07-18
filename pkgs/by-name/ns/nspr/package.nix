@@ -15,15 +15,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-u9Au6HpVZ2Bjpj5byBngIn3iZmtHMHsqATRBTN9CNo4=";
   };
 
-  patches = [
-    ./0001-Makefile-use-SOURCE_DATE_EPOCH-for-reproducibility.patch
-  ];
-
   outputs = [
     "out"
     "dev"
   ];
-  outputBin = "dev";
+
+  patches = [
+    ./0001-Makefile-use-SOURCE_DATE_EPOCH-for-reproducibility.patch
+  ];
+
+  configureFlags = [
+    "--enable-optimize"
+    "--disable-debug"
+  ]
+  ++ lib.optional stdenv.hostPlatform.is64bit "--enable-64bit";
+
+  env.HOST_CC = "cc";
 
   preConfigure = ''
     cd nspr
@@ -33,33 +40,29 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace configure.in --replace '@executable_path/' "$out/lib/"
   '';
 
-  env.HOST_CC = "cc";
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-  configureFlags = [
-    "--enable-optimize"
-    "--disable-debug"
-  ]
-  ++ lib.optional stdenv.hostPlatform.is64bit "--enable-64bit";
-
   postInstall = ''
     find $out -name "*.a" -delete
     moveToOutput share "$dev" # just aclocal
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   enableParallelBuilding = true;
+  outputBin = "dev";
 
   passthru.tests = {
     inherit (nixosTests) firefox firefox-esr;
   };
 
   meta = {
-    homepage = "https://firefox-source-docs.mozilla.org/nspr/index.html";
     description = "Netscape Portable Runtime, a platform-neutral API for system-level and libc-like functions";
+    homepage = "https://firefox-source-docs.mozilla.org/nspr/index.html";
+    license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       ajs124
       hexa
     ];
+
     platforms = lib.platforms.all;
-    license = lib.licenses.mpl20;
   };
 })

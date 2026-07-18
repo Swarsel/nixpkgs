@@ -14,31 +14,34 @@ in
     enable = mkEnableOption "the nullidentdmod identd daemon";
 
     userid = mkOption {
-      type = nullOr str;
-      description = "User ID to return. Set to null to return a random string each time.";
       default = null;
+      description = "User ID to return. Set to null to return a random string each time.";
       example = "alice";
+      type = nullOr str;
     };
   };
 
   config = mkIf cfg.enable {
+    systemd.services."nullidentdmod@" = {
+      description = "NullidentdMod service";
+
+      serviceConfig = {
+        DynamicUser = true;
+
+        ExecStart = "${pkgs.nullidentdmod}/bin/nullidentdmod${
+          optionalString (cfg.userid != null) " ${cfg.userid}"
+        }";
+
+        StandardInput = "socket";
+        StandardOutput = "socket";
+      };
+    };
+
     systemd.sockets.nullidentdmod = {
       description = "Socket for identd (NullidentdMod)";
       listenStreams = [ "113" ];
       socketConfig.Accept = true;
       wantedBy = [ "sockets.target" ];
-    };
-
-    systemd.services."nullidentdmod@" = {
-      description = "NullidentdMod service";
-      serviceConfig = {
-        DynamicUser = true;
-        ExecStart = "${pkgs.nullidentdmod}/bin/nullidentdmod${
-          optionalString (cfg.userid != null) " ${cfg.userid}"
-        }";
-        StandardInput = "socket";
-        StandardOutput = "socket";
-      };
     };
   };
 }

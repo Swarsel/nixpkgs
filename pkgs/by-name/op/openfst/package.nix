@@ -14,6 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qOu7bz2S0H5nFQBYdHJRjPyHy3m5plSlqKuy0OspgBY=";
   };
 
+  nativeBuildInputs = [ autoreconfHook ];
+
   configureFlags = [
     "--enable-compact-fsts"
     "--enable-compress"
@@ -28,15 +30,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  nativeBuildInputs = [ autoreconfHook ];
-
   meta = {
     description = "Library for working with finite-state transducers";
+
     longDescription = ''
       Library for constructing, combining, optimizing, and searching weighted finite-state transducers (FSTs).
       FSTs have key applications in speech recognition and synthesis, machine translation, optical character recognition,
       pattern matching, string processing, machine learning, information extraction and retrieval among others
     '';
+
     homepage = "https://www.openfst.org/twiki/bin/view/FST/WebHome";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.dfordivam ];

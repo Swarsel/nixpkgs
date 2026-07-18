@@ -2,16 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  python3,
-  installShellFiles,
-  makeWrapper,
-  qt5,
-
   advancecomp,
+  installShellFiles,
   jpegoptim,
+  makeWrapper,
   optipng,
   pngcrush,
+  python3,
+  qt5,
 }:
 
 let
@@ -41,8 +39,6 @@ stdenv.mkDerivation {
     qt5.wrapQtAppsHook
   ];
 
-  dontWrapQtApps = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -61,11 +57,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "Cross-platform tool for optimizing PNG and JPG files";
     homepage = "https://github.com/Kilian/Trimage";
     license = lib.licenses.mit;
-    mainProgram = "trimage";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "trimage";
   };
 }

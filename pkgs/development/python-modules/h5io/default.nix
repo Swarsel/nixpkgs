@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   h5py,
   numpy,
-
+  pytest-cov-stub,
   # tests
   pytestCheckHook,
-  pytest-cov-stub,
   scipy,
+  # build-system
+  setuptools-scm,
   tables,
 }:
 
 buildPythonPackage rec {
   pname = "h5io";
   version = "0.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "h5io";
@@ -29,13 +25,6 @@ buildPythonPackage rec {
     hash = "sha256-ZkG9e7KtDvoRq9XCExYseE+Z7tMQTWcSiwsSrN5prdI=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    h5py
-    numpy
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
@@ -43,11 +32,19 @@ buildPythonPackage rec {
     tables
   ];
 
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    h5py
+    numpy
+  ];
+
   disabledTests = [
     # See https://github.com/h5io/h5io/issues/86
     "test_state_with_pathlib"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "h5io" ];
 
   meta = {

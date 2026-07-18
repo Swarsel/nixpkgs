@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  csxcad,
-  fparser,
-  tinyxml,
-  hdf5,
-  vtk,
   boost,
-  zlib,
   cmake,
-  octave,
-  mpi,
-  withQcsxcad ? true,
-  withMPI ? false,
-  withHyp2mat ? true,
-  qcsxcad,
+  csxcad,
+  fetchpatch,
+  fparser,
+  hdf5,
   hyp2mat,
+  mpi,
+  octave,
+  qcsxcad,
+  tinyxml,
+  vtk,
+  zlib,
+  withHyp2mat ? true,
+  withMPI ? false,
+  withQcsxcad ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,15 +34,15 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # ref. https://github.com/thliebig/openEMS/pull/183 merged upstream
     (fetchpatch {
+      hash = "sha256-q/ax7MZHwqSKAjx22uyV13YO/TXZa4bwikoQyItMB7E=";
       name = "update-cmake-minimum-required.patch";
       url = "https://github.com/thliebig/openEMS/commit/0fa7ba3aebc8ee531077973cfa136ead8e887872.patch";
-      hash = "sha256-q/ax7MZHwqSKAjx22uyV13YO/TXZa4bwikoQyItMB7E=";
     })
     # ref. https://github.com/thliebig/openEMS/pull/184 merged upstream
     (fetchpatch {
+      hash = "sha256-y3pvim/8XUKF5k7shj0D+8P6tdfSZ3E/gxTogbRtxdo=";
       name = "update-nf2ff-cmake-minimum-required.patch";
       url = "https://github.com/thliebig/openEMS/commit/e02e2a8414355482145240e4c2b2464d7a26dd9e.patch";
-      hash = "sha256-y3pvim/8XUKF5k7shj0D+8P6tdfSZ3E/gxTogbRtxdo=";
     })
     # boost 1.89 removed the boost_system stub library
     ./boost-1.89.patch
@@ -51,8 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     cmake
   ];
-
-  cmakeFlags = lib.optionals withMPI [ "-DWITH_MPI=ON" ];
 
   buildInputs = [
     fparser
@@ -67,6 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withQcsxcad [ qcsxcad ]
   ++ lib.optionals withMPI [ mpi ]
   ++ lib.optionals withHyp2mat [ hyp2mat ];
+
+  cmakeFlags = lib.optionals withMPI [ "-DWITH_MPI=ON" ];
 
   postFixup = ''
     substituteInPlace $out/share/openEMS/matlab/setup.m \

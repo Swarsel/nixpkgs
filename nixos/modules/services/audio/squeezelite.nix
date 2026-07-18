@@ -43,35 +43,38 @@ in
       defaultText = lib.literalExpression "if config.services.squeezelite.pulseaudio.enable then pkgs.squeezelite-pulse else pkgs.squeezelite";
     };
 
-    name = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      description = "name to report to server";
-      default = null;
+    extraArgs = lib.mkOption {
+      default = "";
+
+      description = ''
+        Additional command line arguments to pass to Squeezelite.
+      '';
+
+      type = lib.types.str;
     };
 
     mutableName = lib.mkOption {
-      type = lib.types.bool;
-      description = "store name in file, controllable by server";
       default = cfg.name == null;
       defaultText = lib.literalExpression "config.services.squeezelite.name == null";
+      description = "store name in file, controllable by server";
+      type = lib.types.bool;
+    };
+
+    name = lib.mkOption {
+      default = null;
+      description = "name to report to server";
+      type = lib.types.nullOr lib.types.str;
     };
 
     pulseaudio = {
       enable = lib.mkEnableOption "pulseaudio support";
+
       group = lib.mkOption {
-        type = lib.types.str;
-        description = "group for accessing to pulseaudio socket";
         default = if config.services.pulseaudio.systemWide then "pulse-access" else "pipewire";
         defaultText = lib.literalExpression ''if config.services.pulseaudio.systemWide then "pulse-access" else "pipewire"'';
+        description = "group for accessing to pulseaudio socket";
+        type = lib.types.str;
       };
-    };
-
-    extraArgs = lib.mkOption {
-      default = "";
-      type = lib.types.str;
-      description = ''
-        Additional command line arguments to pass to Squeezelite.
-      '';
     };
   };
 
@@ -92,6 +95,7 @@ in
               && config.services.pipewire.systemWide
             )
           );
+
         message = ''
           `services.squeezelite.pulseaudio.enable = true' requires a system-wide Pulseaudio server. Either:
           - `services.pulseaudio.enable = true' and `services.pulseaudio.systemWide = true'
@@ -103,13 +107,7 @@ in
     ];
 
     systemd.services.squeezelite = {
-      wantedBy = [
-        "multi-user.target"
-        # try and start squeezelite if it isn't already, e.g. a sound card plugged in
-        "sound.target"
-      ];
       after = serviceDeps;
-      requires = serviceDeps;
       description = "Software Squeezebox emulator";
 
       environment = {
@@ -117,7 +115,15 @@ in
         XDG_RUNTIME_DIR = "%t/squeezelite";
       };
 
+      requires = serviceDeps;
+
       serviceConfig = {
+        DynamicUser = true;
+
+        ExecStart = "${lib.getExe cfg.package} ${
+          lib.optionalString (cfg.name != null) "-n ${cfg.name} "
+        }${lib.optionalString cfg.mutableName "-N %S/squeezelite/player-name "}${cfg.extraArgs}";
+
         ExecStartPre = [
           # print available interfaces
           "${lib.getExe cfg.package} -l"
@@ -126,23 +132,27 @@ in
           # print available alsa controls
           "${lib.getExe cfg.package} -L"
         ];
-        ExecStart = "${lib.getExe cfg.package} ${
-          lib.optionalString (cfg.name != null) "-n ${cfg.name} "
-        }${lib.optionalString cfg.mutableName "-N %S/squeezelite/player-name "}${cfg.extraArgs}";
 
-        DynamicUser = true;
         RuntimeDirectory = "squeezelite";
         RuntimeDirectoryMode = "0700";
         StateDirectory = "squeezelite";
         StateDirectoryMode = "0700";
+
         SupplementaryGroups = [
           "audio"
         ]
         ++ lib.optionals cfg.pulseaudio.enable [
           cfg.pulseaudio.group
         ];
+
         TimeoutStopSec = "5";
       };
+
+      wantedBy = [
+        "multi-user.target"
+        # try and start squeezelite if it isn't already, e.g. a sound card plugged in
+        "sound.target"
+      ];
     };
   };
 }

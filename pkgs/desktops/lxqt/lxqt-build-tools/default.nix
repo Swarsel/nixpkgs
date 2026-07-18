@@ -3,23 +3,24 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  qtbase,
+  gitUpdater,
   glib,
   perl,
+  pkg-config,
+  qtbase,
   wrapQtAppsHook,
-  gitUpdater,
   version ? "2.4.0",
 }:
 
 stdenv.mkDerivation rec {
-  pname = "lxqt-build-tools";
   inherit version;
+  pname = "lxqt-build-tools";
 
   src = fetchFromGitHub {
     owner = "lxqt";
     repo = "lxqt-build-tools";
     rev = version;
+
     hash =
       {
         "0.13.0" = "sha256-4/hVlEdqqqd6CNitCRkIzsS1R941vPJdirIklp4acXA=";
@@ -55,22 +56,21 @@ stdenv.mkDerivation rec {
     perl # needed by LXQtTranslateDesktop.cmake
   ];
 
-  setupHook = ./setup-hook.sh;
-
   # We're dependent on this macro doing add_definitions in most places
   # But we have the setup-hook to set the values.
   postInstall = ''
     cp ${./LXQtConfigVars.cmake} $out/share/cmake/lxqt${lib.optionalString (lib.versionAtLeast version "2.0.0") "2"}-build-tools/modules/LXQtConfigVars.cmake
   '';
 
+  setupHook = ./setup-hook.sh;
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-build-tools";
     description = "Various packaging tools and scripts for LXQt applications";
-    mainProgram = "lxqt-transupdate";
+    homepage = "https://github.com/lxqt/lxqt-build-tools";
     license = lib.licenses.lgpl21Plus;
     platforms = with lib.platforms; unix;
+    mainProgram = "lxqt-transupdate";
     teams = [ lib.teams.lxqt ];
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,10 +20,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Better kubectl explain with the fuzzy finder";
-    mainProgram = "kubectl-explore";
     homepage = "https://github.com/keisku/kubectl-explore";
     changelog = "https://github.com/keisku/kubectl-explore/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.koralowiec ];
+    mainProgram = "kubectl-explore";
   };
 })

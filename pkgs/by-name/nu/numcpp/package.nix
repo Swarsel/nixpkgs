@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
-  python3,
+  cmake,
   gtest,
+  python3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "numcpp";
@@ -19,14 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./pytest-CMakeLists.patch ];
-
-  nativeCheckInputs = [
-    gtest
-    python3
-  ];
-
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ boost ];
 
   cmakeFlags = lib.optionals finalAttrs.finalPackage.doCheck [
@@ -34,14 +27,18 @@ stdenv.mkDerivation (finalAttrs: {
     "-DBUILD_MULTIPLE_TEST=ON"
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
   doCheck = !stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isStatic;
+
+  nativeCheckInputs = [
+    gtest
+    python3
+  ];
 
   postInstall = ''
     substituteInPlace $out/share/NumCpp/cmake/NumCppConfig.cmake \
       --replace-fail "\''${PACKAGE_PREFIX_DIR}/" ""
   '';
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
   meta = {
     description = "Templatized Header Only C++ Implementation of the Python NumPy Library";

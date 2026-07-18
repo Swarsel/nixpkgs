@@ -17,10 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Gv1ibTN+RkHQ0QjUEgvanVOm1j2G5w1PkLjKXycoP2c=";
   };
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/themes/${themeName}
@@ -29,11 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   meta = {
     description = "Bloody variant of the Ant theme";
     homepage = "https://github.com/EliverLara/${themeName}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ alexarice ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,16 +1,15 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
   lib,
-  pytestCheckHook,
+  fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
+  hatchling,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "flynt";
   version = "1.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ikamensh";
@@ -19,20 +18,21 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-SkkCA4fEHplt9HkEn+QOq4k9lW5qJeZzLZEbNEtKBSo=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatchling
     hatch-vcs
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "flynt" ];
 
   disabledTests = [
     # AssertionError
     "test_fstringify"
     "test_mixed_quote_types_unsafe"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "flynt" ];
 
   meta = {
     description = "Tool to automatically convert old string literal formatting to f-strings";

@@ -6,11 +6,8 @@
 
 bundlerApp {
   pname = "cddlc";
-
-  gemdir = ./.;
-
   exes = [ "cddlc" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "cddlc";
 
   meta = {

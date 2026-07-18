@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  xrdb,
   xlsfonts,
+  xrdb,
 }:
 
 stdenv.mkDerivation rec {

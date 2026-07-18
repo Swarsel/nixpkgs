@@ -4,24 +4,21 @@
   buildPackages,
   gmp,
   gnum4,
-
+  src,
   # Version specific args
   version,
-  src,
 }:
 
 stdenv.mkDerivation {
-  pname = "nettle";
-
   inherit version src;
+  pname = "nettle";
 
   outputs = [
     "out"
     "dev"
   ];
-  outputBin = "dev";
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  patches = lib.optional (stdenv.hostPlatform.system == "i686-cygwin") ./cygwin.patch;
   nativeBuildInputs = [ gnum4 ];
   propagatedBuildInputs = [ gmp ];
 
@@ -35,10 +32,9 @@ stdenv.mkDerivation {
     ++ lib.optional stdenv.hostPlatform.isSunOS "--with-include-path=${gmp.dev}/include";
 
   doCheck = (stdenv.hostPlatform.system != "i686-cygwin" && !stdenv.hostPlatform.isDarwin);
-
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   enableParallelBuilding = true;
-
-  patches = lib.optional (stdenv.hostPlatform.system == "i686-cygwin") ./cygwin.patch;
+  outputBin = "dev";
 
   meta = {
     description = "Cryptographic library";
@@ -66,12 +62,10 @@ stdenv.mkDerivation {
       I/O.
     '';
 
-    license = lib.licenses.gpl2Plus;
-
     homepage = "https://www.lysator.liu.se/~nisse/nettle/";
-
-    platforms = lib.platforms.all;
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.vcunat ];
+    platforms = lib.platforms.all;
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "nettle_project" version;
   };
 }

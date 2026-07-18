@@ -9,12 +9,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libtlsrpt";
   version = "0.5.0";
 
-  outputs = [
-    "out"
-    "dev"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "sys4";
     repo = "libtlsrpt";
@@ -22,8 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-h7bWxxllKFj8+/FfC4yHSmz+Qij1BcgV4OCQZr1OkA8=";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
+  outputs = [
+    "out"
+    "dev"
+    "man"
+  ];
 
+  nativeBuildInputs = [ autoreconfHook ];
   separateDebugInfo = true;
 
   meta = {

@@ -1,18 +1,16 @@
 {
+  alcotest,
   buildDunePackage,
   conan,
-  alcotest,
   crowbar,
   fmt,
   rresult,
 }:
 
 buildDunePackage {
-  pname = "conan-database";
   inherit (conan) version src;
-
+  pname = "conan-database";
   propagatedBuildInputs = [ conan ];
-
   doCheck = true;
 
   checkInputs = [

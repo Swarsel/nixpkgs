@@ -1,16 +1,15 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
-  pkg-config,
+  buildKodiBinaryAddon,
   glm,
   libGL,
+  pkg-config,
+  rel,
 }:
 
 buildKodiBinaryAddon rec {
   pname = "visualization-fishbmc";
-  namespace = "visualization.fishbmc";
   version = "21.0.2";
 
   src = fetchFromGitHub {
@@ -20,17 +19,20 @@ buildKodiBinaryAddon rec {
     hash = "sha256-4cU5g50ZRnkKSfT/V2hHw1l0PTFkvV4hrxAgPDpfCiw=";
   };
 
+  propagatedBuildInputs = [ glm ];
+
   extraBuildInputs = [
     pkg-config
     libGL
   ];
 
-  propagatedBuildInputs = [ glm ];
+  namespace = "visualization.fishbmc";
+
   meta = {
-    homepage = "https://github.com/xbmc/visualization.fishbmc";
     description = "FishBMC visualization for kodi";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/xbmc/visualization.fishbmc";
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

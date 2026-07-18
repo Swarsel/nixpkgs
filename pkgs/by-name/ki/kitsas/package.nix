@@ -40,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir build && cd build
   '';
 
-  qmakeFlags = [ "../kitsas/kitsas.pro" ];
-
   installPhase =
     lib.optionalString stdenv.hostPlatform.isDarwin ''
       mkdir -p $out/Applications
@@ -54,13 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
       install -Dm644 ../kitsas.desktop -t $out/share/applications
     '';
 
+  qmakeFlags = [ "../kitsas/kitsas.pro" ];
+
   meta = {
-    changelog = "https://github.com/artoh/kitupiikki/releases/tag/v${finalAttrs.version}";
     description = "Accounting tool suitable for Finnish associations and small business";
     homepage = "https://github.com/artoh/kitupiikki";
+    changelog = "https://github.com/artoh/kitupiikki/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "kitsas";
     maintainers = [ lib.maintainers.lajp ];
     platforms = lib.platforms.unix;
+    mainProgram = "kitsas";
   };
 })

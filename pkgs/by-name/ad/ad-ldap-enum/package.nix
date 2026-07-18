@@ -1,13 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   python3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "ad-ldap-enum";
   version = "0-unstable-2023-02-10";
+
   src = fetchFromGitHub {
     owner = "CroweCybersecurity";
     repo = "ad-ldap-enum";

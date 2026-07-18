@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   kustomize-lint,
   testers,
 }:
@@ -19,16 +19,16 @@ buildGoModule rec {
 
   vendorHash = "sha256-hCj3fmtt2lyD9ieGVPI1UXY1eDwBXEywOumzGJ+trXE=";
 
-  subPackages = [ "cmd/kustomize-lint" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "cmd/kustomize-lint" ];
+
   passthru.tests.version = testers.testVersion {
-    package = kustomize-lint;
     command = "kustomize-lint --version";
+    package = kustomize-lint;
   };
 
   meta = {

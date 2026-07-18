@@ -3,15 +3,14 @@
   buildPythonPackage,
   click,
   ecdsa,
-  hidapi,
   fetchPypi,
+  hidapi,
   pyaes,
 }:
 
 buildPythonPackage rec {
   pname = "ckcc-protocol";
   version = "1.5.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,14 +26,14 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "ckcc" ];
 
   meta = {
     description = "Communicate with your Coldcard using Python";
-    mainProgram = "ckcc";
     homepage = "https://github.com/Coldcard/ckcc-protocol";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hkjn ];
+    mainProgram = "ckcc";
   };
 }

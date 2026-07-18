@@ -1,18 +1,16 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
-
   # tests
   git,
   mercurial,
   patch,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "mozphab";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mozilla-conduit";
@@ -20,23 +18,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-CVpsq9YoEww47uruHYEsJk9YQ39ZFQsMdL0nBc8AHUM=";
   };
-
-  build-system = with python3.pkgs; [
-    setuptools
-    setuptools-scm
-  ];
-
-  pythonRelaxDeps = [ "glean-sdk" ];
-
-  dependencies = with python3.pkgs; [
-    colorama
-    distro
-    glean-sdk
-    packaging
-    python-hglib
-    sentry-sdk
-    setuptools
-  ];
 
   nativeCheckInputs = [
     git
@@ -55,12 +36,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     export HOME=$(mktemp -d)
   '';
 
-  disabledTests = [
-    # AttributeError: 'called_once' is not a valid assertion.
-    "test_commit"
-    # AttributeError: 'not_called' is not a valid assertion.
-    "test_finalize_no_evolve"
-    "test_patch"
+  build-system = with python3.pkgs; [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = with python3.pkgs; [
+    colorama
+    distro
+    glean-sdk
+    packaging
+    python-hglib
+    sentry-sdk
+    setuptools
   ];
 
   disabledTestPaths = [
@@ -75,17 +63,30 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "tests/test_sentry.py"
   ];
 
+  disabledTests = [
+    # AttributeError: 'called_once' is not a valid assertion.
+    "test_commit"
+    # AttributeError: 'not_called' is not a valid assertion.
+    "test_finalize_no_evolve"
+    "test_patch"
+  ];
+
+  pyproject = true;
+  pythonRelaxDeps = [ "glean-sdk" ];
+
   meta = {
     description = "Phabricator CLI from Mozilla to support submission of a series of commits";
-    mainProgram = "moz-phab";
+
     longDescription = ''
       moz-phab is a custom command-line tool, which communicates to
       Phabricator’s API, providing several conveniences, including support for
       submitting series of commits.
     '';
+
     homepage = "https://moz-conduit.readthedocs.io/en/latest/phabricator-user.html";
     license = lib.licenses.mpl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "moz-phab";
   };
 })

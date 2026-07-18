@@ -4,8 +4,8 @@
   fetchFromGitHub,
   cmake,
   llvmPackages,
-  z3,
   python3,
+  z3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,9 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'set(Z3_INCLUDE_DIRS “/usr/include”)' ""
   '';
 
-  # llvm-config --cxxflags exports -fno-exceptions, but z3's C++ headers require exception support.
-  env.NIX_CFLAGS_COMPILE = "-fexceptions";
-
   nativeBuildInputs = [
     cmake
   ];
@@ -37,18 +34,20 @@ stdenv.mkDerivation (finalAttrs: {
     z3
   ];
 
+  # llvm-config --cxxflags exports -fno-exceptions, but z3's C++ headers require exception support.
+  env.NIX_CFLAGS_COMPILE = "-fexceptions";
+  doCheck = true;
+
   checkInputs = [
     python3
   ];
-
-  doCheck = true;
 
   meta = {
     description = "SiMBA++ is a port of MBA Solver SiMBA to C/C++";
     homepage = "https://github.com/pgarba/SiMBA-";
     license = lib.licenses.gpl3Only;
-    mainProgram = "SiMBA++";
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.unix;
+    mainProgram = "SiMBA++";
   };
 })

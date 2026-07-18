@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
   versionCheckHook,
 }:
@@ -18,6 +18,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-EjTjXNRsYSeu4Ze1D3ZAiuPcdIbtqYAzQRQxXMxj5ts=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
@@ -33,17 +38,12 @@ buildGoModule (finalAttrs: {
     inherit (nixosTests.prometheus) pushgateway;
   };
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   meta = {
     description = "Allows ephemeral and batch jobs to expose metrics to Prometheus";
-    mainProgram = "pushgateway";
     homepage = "https://github.com/prometheus/pushgateway";
     changelog = "https://github.com/prometheus/pushgateway/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ benley ];
+    mainProgram = "pushgateway";
   };
 })

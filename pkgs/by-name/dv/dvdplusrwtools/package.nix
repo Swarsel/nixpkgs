@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   cdrtools,
+  fetchpatch,
   m4,
 }:
 
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
       (
         { pfile, sha256 }:
         fetchpatch {
-          url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-cdr/dvd+rw-tools/files/${pfile}?id=b510df361241e8f16314b1f14642305f0111dac6";
           inherit sha256;
+          url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-cdr/dvd+rw-tools/files/${pfile}?id=b510df361241e8f16314b1f14642305f0111dac6";
         }
       )
       [
@@ -91,12 +91,14 @@ stdenv.mkDerivation (finalAttrs: {
   );
 
   meta = {
-    homepage = "http://fy.chalmers.se/~appro/linux/DVD+RW/tools";
     description = "Tools for mastering Blu-ray and DVD+-RW/+-R media";
-    platforms = lib.platforms.unix;
+    homepage = "http://fy.chalmers.se/~appro/linux/DVD+RW/tools";
+
     license = with lib.licenses; [
       gpl2Only
       publicDomain
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

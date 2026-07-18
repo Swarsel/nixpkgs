@@ -1,25 +1,23 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-
   # build tools
   cargo-tauri,
-  nodejs_26,
-  pnpmConfigHook,
-  pnpm_11,
   fetchPnpmDeps,
-  pkg-config,
-  makeBinaryWrapper,
-  wrapGAppsHook4,
-
   # Linux dependencies
   glib-networking,
   libayatana-appindicator,
+  makeBinaryWrapper,
+  nix-update-script,
+  nodejs_26,
   openssl,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_11,
+  rustPlatform,
   webkitgtk_4_1,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (
@@ -50,14 +48,19 @@ rustPlatform.buildRustPackage (
       hash = "sha256-zBv/egEvmsZXklhKtN5fd2DOKH+UWcaGUUkFxz0G+JI=";
     };
 
-    cargoHash = "sha256-69r9ILhSov7A9zdWcPphGMXur/8lYyZYo7qSGPW9IzM=";
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs) pname version src;
-      pnpm = pnpm-patched;
-      hash = "sha256-1S1XR/E611LGivXpIK0kvkvXWPNqDzvFKPT7a1Qu1zg=";
-      fetcherVersion = 4;
-    };
+    postPatch =
+      lib.optionalString stdenv.hostPlatform.isLinux ''
+        for libappindicatorRs in $cargoDepsCopy/*/libappindicator-sys-*/src/lib.rs; do
+          if [[ -f "$libappindicatorRs" ]]; then
+            substituteInPlace "$libappindicatorRs" \
+              --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
+          fi
+        done
+      ''
+      + ''
+        substituteInPlace src-tauri/tauri.conf.json \
+          --replace-fail '"createUpdaterArtifacts": true' '"createUpdaterArtifacts": false'
+      '';
 
     nativeBuildInputs = [
       cargo-tauri.hook
@@ -82,22 +85,7 @@ rustPlatform.buildRustPackage (
       webkitgtk_4_1
     ];
 
-    cargoRoot = "src-tauri";
-    buildAndTestSubdir = "src-tauri";
-
-    postPatch =
-      lib.optionalString stdenv.hostPlatform.isLinux ''
-        for libappindicatorRs in $cargoDepsCopy/*/libappindicator-sys-*/src/lib.rs; do
-          if [[ -f "$libappindicatorRs" ]]; then
-            substituteInPlace "$libappindicatorRs" \
-              --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
-          fi
-        done
-      ''
-      + ''
-        substituteInPlace src-tauri/tauri.conf.json \
-          --replace-fail '"createUpdaterArtifacts": true' '"createUpdaterArtifacts": false'
-      '';
+    cargoHash = "sha256-69r9ILhSov7A9zdWcPphGMXur/8lYyZYo7qSGPW9IzM=";
 
     # This is needed since the signing keys are private, and are only used in CI during releases anyways. Regular users won't need this.
     preBuild = ''
@@ -105,6 +93,8 @@ rustPlatform.buildRustPackage (
       unset TAURI_SIGNING_PUBLIC_KEY
       pnpm build
     '';
+
+    doCheck = false;
 
     postInstall =
       if stdenv.hostPlatform.isDarwin then
@@ -126,7 +116,15 @@ rustPlatform.buildRustPackage (
           done
         '';
 
-    doCheck = false;
+    buildAndTestSubdir = "src-tauri";
+    cargoRoot = "src-tauri";
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname version src;
+      fetcherVersion = 4;
+      hash = "sha256-1S1XR/E611LGivXpIK0kvkvXWPNqDzvFKPT7a1Qu1zg=";
+      pnpm = pnpm-patched;
+    };
 
     passthru.updateScript = nix-update-script;
 
@@ -136,8 +134,8 @@ rustPlatform.buildRustPackage (
       changelog = "https://github.com/chiriapp/chiri/releases/tag/app-v${finalAttrs.version}";
       license = lib.licenses.zlib;
       maintainers = with lib.maintainers; [ SapphoSys ];
-      mainProgram = "chiri";
       platforms = lib.platforms.linux ++ lib.platforms.darwin;
+      mainProgram = "chiri";
     };
   }
 )

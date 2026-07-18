@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
   clang,
   glibc,
+  nix-update-script,
   openssl,
   pkg-config,
+  rustPlatform,
   sqlite,
   withPostQuantum ? true,
 }:
@@ -23,13 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-WOihUHFNqjQGObd+pfiNnjBq5GL/9NDeBiC7VzF/ZwE=";
   };
 
-  env = {
-    # Pass these include paths for bindgen in via the environment.
-    ${if !stdenv.hostPlatform.isDarwin then "OSSL_BINDGEN_CLANG_ARGS" else null} =
-      "-I${lib.getInclude glibc}/include";
-    LIBCLANG_PATH = "${lib.getLib clang.cc}/lib";
-  };
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -37,11 +30,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
-  cargoPatches = [
-    ./0001-Add-Cargo.lock.patch
-  ];
-
   cargoHash = "sha256-Kr2tvxPIcWS47ljH9l0qQTacX9BIV9vMmQyE8EG6qVE=";
+
+  env = {
+    # Pass these include paths for bindgen in via the environment.
+    ${if !stdenv.hostPlatform.isDarwin then "OSSL_BINDGEN_CLANG_ARGS" else null} =
+      "-I${lib.getInclude glibc}/include";
+
+    LIBCLANG_PATH = "${lib.getLib clang.cc}/lib";
+  };
+
+  doCheck = true;
 
   cargoBuildFlags = [
     "--no-default-features"
@@ -63,17 +62,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }"
   ];
 
-  doCheck = true;
+  cargoPatches = [
+    ./0001-Add-Cargo.lock.patch
+  ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "A PKCS#11 soft token written in Rust.";
     homepage = "https://github.com/latchset/kryoptic";
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       numinit
     ];
-    license = lib.licenses.gpl3Only;
+
     platforms = lib.platforms.all;
   };
 })

@@ -7,10 +7,10 @@
   eigen,
   gflags,
   glog,
-  suitesparse,
   metis,
-  runTests ? false,
+  suitesparse,
   enableStatic ? stdenv.hostPlatform.isStatic,
+  runTests ? false,
   withBlas ? true,
 }:
 
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
   buildInputs = lib.optional runTests gflags;
+
   propagatedBuildInputs = [
     eigen
     glog
@@ -51,13 +52,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = runTests;
-
   checkTarget = "test";
 
   meta = {
     description = "C++ library for modeling and solving large, complicated optimization problems";
-    license = lib.licenses.bsd3;
     homepage = "http://ceres-solver.org";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ giogadi ];
     platforms = lib.platforms.unix;
   };

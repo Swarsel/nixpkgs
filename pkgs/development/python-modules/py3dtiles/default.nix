@@ -2,86 +2,42 @@
   lib,
   fetchFromGitLab,
   addBinToPathHook,
-
   buildPythonPackage,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
-  # dependencies
-  lz4,
-  mapbox-earcut,
-  numba,
-  numpy,
-  psutil,
-  pygltflib,
-  pyproj,
-  pyzmq,
-
   # optional-dependencies
   ifcopenshell,
   lark,
   laspy,
+  # dependencies
+  lz4,
+  mapbox-earcut,
+  moreutils,
+  numba,
+  numpy,
   plyfile,
+  psutil,
   psycopg2-binary,
-
+  pygltflib,
+  pyproj,
   # tests
   pytest-benchmark,
   pytest-cov-stub,
   pytestCheckHook,
+  pyzmq,
+  # build-system
+  setuptools,
+  setuptools-scm,
   writeText,
-  moreutils,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "py3dtiles";
   version = "12.1.1";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "py3dtiles";
     repo = "py3dtiles";
     tag = "v${finalAttrs.version}";
     hash = "sha256-5zKp32Rn+bwUKVPb1XJxenHzRz0V7cgNmRwjWDYyKnI=";
-  };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "mapbox_earcut"
-    "numba"
-    "numpy"
-    "pyzmq"
-  ];
-  dependencies = [
-    lz4
-    mapbox-earcut
-    numba
-    numpy
-    psutil
-    pygltflib
-    pyproj
-    pyzmq
-  ];
-
-  optional-dependencies = {
-    ifc = [
-      ifcopenshell
-      lark
-    ];
-    las = [
-      laspy
-    ];
-    ply = [
-      plyfile
-    ];
-    postgres = [
-      psycopg2-binary
-    ];
   };
 
   nativeCheckInputs = [
@@ -119,6 +75,42 @@ buildPythonPackage (finalAttrs: {
       runHook postInstallCheck
     '';
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    lz4
+    mapbox-earcut
+    numba
+    numpy
+    psutil
+    pygltflib
+    pyproj
+    pyzmq
+  ];
+
+  optional-dependencies = {
+    ifc = [
+      ifcopenshell
+      lark
+    ];
+
+    las = [
+      laspy
+    ];
+
+    ply = [
+      plyfile
+    ];
+
+    postgres = [
+      psycopg2-binary
+    ];
+  };
+
+  pyproject = true;
   # disable benchmarks to reduce load on the builder
   pytestFlags = [ "--benchmark-disable" ];
 
@@ -126,13 +118,21 @@ buildPythonPackage (finalAttrs: {
     "py3dtiles"
   ];
 
+  pythonRelaxDeps = [
+    "mapbox_earcut"
+    "numba"
+    "numpy"
+    "pyzmq"
+  ];
+
   meta = {
-    changelog = "https://py3dtiles.org/main/changelog.html";
     description = "Python module to manage 3DTiles format";
-    downloadPage = "https://gitlab.com/py3dtiles/py3dtiles";
     homepage = "https://py3dtiles.org";
+    changelog = "https://py3dtiles.org/main/changelog.html";
     license = lib.licenses.asl20;
     mainProgram = "py3dtiles";
+    downloadPage = "https://gitlab.com/py3dtiles/py3dtiles";
+
     teams = with lib.teams; [
       geospatial
       ngi

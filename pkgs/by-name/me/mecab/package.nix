@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  libiconv,
-  callPackage,
   fetchFromGitHub,
+  callPackage,
+  libiconv,
 }:
 
 let
@@ -26,9 +26,9 @@ stdenv.mkDerivation (
         description = "Japanese morphological analysis system";
         homepage = "http://taku910.github.io/mecab";
         license = lib.licenses.bsd3;
+        maintainers = with lib.maintainers; [ auntie ];
         platforms = lib.platforms.unix;
         mainProgram = "mecab";
-        maintainers = with lib.maintainers; [ auntie ];
       };
     }
   )

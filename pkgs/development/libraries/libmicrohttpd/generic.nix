@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  libgcrypt,
   curl,
   gnutls,
-  pkg-config,
+  libgcrypt,
   libiconv,
   libintl,
-  version,
+  pkg-config,
   src,
+  version,
   meta ? { },
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libmicrohttpd";
   inherit version src;
+  pname = "libmicrohttpd";
 
   outputs = [
     "out"
@@ -22,7 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
     "info"
   ];
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libgcrypt
     curl
@@ -31,15 +33,15 @@ stdenv.mkDerivation (finalAttrs: {
     libintl
   ];
 
-  enableParallelBuilding = true;
+  # Disabled because the tests can time-out.
+  doCheck = false;
 
   preCheck = ''
     # Since `localhost' can't be resolved in a chroot, work around it.
     sed -i -e 's/localhost/127.0.0.1/g' src/test*/*.[ch]
   '';
 
-  # Disabled because the tests can time-out.
-  doCheck = false;
+  enableParallelBuilding = true;
 
   meta =
 
@@ -51,10 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
         it easy to run an HTTP server as part of another application.
       '';
 
-      license = lib.licenses.lgpl2Plus;
-
       homepage = "https://www.gnu.org/software/libmicrohttpd/";
-
+      license = lib.licenses.lgpl2Plus;
       maintainers = with lib.maintainers; [ fpletz ];
       platforms = lib.platforms.unix;
     }

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
   addDriverRunpath,
+  autoPatchelfHook,
   makeWrapper,
   ocl-icd,
   vulkan-loader,
@@ -13,13 +13,14 @@ let
   inherit (stdenv.hostPlatform.uname) processor;
   version = "5.5.1";
   sources = {
-    "x86_64-linux" = {
-      url = "https://cdn.geekbench.com/Geekbench-${version}-Linux.tar.gz";
-      hash = "sha256-MgN+VcPcjzYP4Wt/uxiNMTh+p1mA5I2M8CgzDjI5xAQ=";
-    };
     "aarch64-linux" = {
-      url = "https://cdn.geekbench.com/Geekbench-${version}-LinuxARMPreview.tar.gz";
       hash = "sha256-nrPKnsMqvw6+HGQAKxkQi/6lPEEca1VrDCaJUUuMvW8=";
+      url = "https://cdn.geekbench.com/Geekbench-${version}-LinuxARMPreview.tar.gz";
+    };
+
+    "x86_64-linux" = {
+      hash = "sha256-MgN+VcPcjzYP4Wt/uxiNMTh+p1mA5I2M8CgzDjI5xAQ=";
+      url = "https://cdn.geekbench.com/Geekbench-${version}-Linux.tar.gz";
     };
   };
 in
@@ -30,9 +31,6 @@ stdenv.mkDerivation {
   src = fetchurl (
     sources.${stdenv.system} or (throw "unsupported system ${stdenv.hostPlatform.system}")
   );
-
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -61,11 +59,14 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Cross-platform benchmark";
     homepage = "https://geekbench.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.michalrus ];
     platforms = builtins.attrNames sources;
     mainProgram = "geekbench5";

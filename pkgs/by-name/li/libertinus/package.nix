@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installFonts,
+  stdenvNoCC,
   zstd,
 }:
 
@@ -27,12 +27,14 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Libertinus font family";
+
     longDescription = ''
       The Libertinus font project began as a fork of the Linux Libertine and
       Linux Biolinum fonts. The original impetus was to add an OpenType math
       companion to the Libertine font families. Over time it grew into to a
       full-fledged fork addressing many of the bugs in the Libertine fonts.
     '';
+
     homepage = "https://github.com/alerque/libertinus";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ siddharthist ];

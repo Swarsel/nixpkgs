@@ -1,16 +1,16 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  fetchNpmDeps,
-  nixosTests,
   stdenv,
-  npmHooks,
-  nodejs,
-  esbuild,
+  fetchFromGitHub,
   brotli,
-  zstd,
+  buildGoModule,
+  esbuild,
+  fetchNpmDeps,
   nix-update-script,
+  nixosTests,
+  nodejs,
+  npmHooks,
+  zstd,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,13 +24,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-9/XIwSMEmnS3L/Wzg6ABso7R6W3TYkJomC8aFMycxZo=";
   };
 
-  vendorHash = "sha256-9CMD8Rn4q8b+hyrph+BqqS32ijZyJRNsop6ML7z5Zuk=";
-
-  npmDeps = fetchNpmDeps {
-    name = "anubis-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-2U91Dt+ymspjYgTtgCjahCNr6fIs85TT/k+I8M2aC9s=";
-  };
+  postPatch = ''
+    patchShebangs ./web/build.sh ./lib/challenge/preact/build.sh
+  '';
 
   nativeBuildInputs = [
     esbuild
@@ -41,25 +37,7 @@ buildGoModule (finalAttrs: {
     npmHooks.npmConfigHook
   ];
 
-  subPackages = [ "cmd/anubis" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/TecharoHQ/anubis.Version=v${finalAttrs.version}"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ "-extldflags=-static" ];
-
-  prePatch = ''
-    # we must forcefully disable the hook when creating the go vendor archive
-    if [[ $name =~ go-modules ]]; then
-      npmConfigHook() { true; }
-    fi
-  '';
-
-  postPatch = ''
-    patchShebangs ./web/build.sh ./lib/challenge/preact/build.sh
-  '';
+  vendorHash = "sha256-9CMD8Rn4q8b+hyrph+BqqS32ijZyJRNsop6ML7z5Zuk=";
 
   preBuild = ''
     # do not run when creating go vendor archive
@@ -75,6 +53,28 @@ buildGoModule (finalAttrs: {
     export DONT_USE_NETWORK=1
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/TecharoHQ/anubis.Version=v${finalAttrs.version}"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ "-extldflags=-static" ];
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-2U91Dt+ymspjYgTtgCjahCNr6fIs85TT/k+I8M2aC9s=";
+    name = "anubis-npm-deps";
+  };
+
+  prePatch = ''
+    # we must forcefully disable the hook when creating the go vendor archive
+    if [[ $name =~ go-modules ]]; then
+      npmConfigHook() { true; }
+    fi
+  '';
+
+  subPackages = [ "cmd/anubis" ];
+
   passthru = {
     tests = { inherit (nixosTests) anubis; };
     updateScript = nix-update-script { extraArgs = [ "--version-regex=^v(\\d+\\.\\d+\\.\\d+)$" ]; };
@@ -83,15 +83,17 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Weighs the soul of incoming HTTP requests using proof-of-work to stop AI crawlers";
     homepage = "https://anubis.techaro.lol/";
-    downloadPage = "https://github.com/TecharoHQ/anubis";
     changelog = "https://github.com/TecharoHQ/anubis/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       knightpp
       soopyc
       ryand56
       defelo
     ];
+
     mainProgram = "anubis";
+    downloadPage = "https://github.com/TecharoHQ/anubis";
   };
 })

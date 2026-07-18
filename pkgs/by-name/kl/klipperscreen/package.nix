@@ -1,15 +1,14 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  gobject-introspection,
   gitUpdater,
+  gobject-introspection,
+  python3,
+  wrapGAppsHook3,
 }:
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "KlipperScreen";
   version = "0.4.5";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "KlipperScreen";
@@ -22,6 +21,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     gobject-introspection
     wrapGAppsHook3
   ];
+
+  preFixup = ''
+    mkdir -p $out/bin
+    cp -r . $out/dist
+    gappsWrapperArgs+=(--set PYTHONPATH "$PYTHONPATH")
+    wrapGApp $out/dist/screen.py
+    ln -s $out/dist/screen.py $out/bin/KlipperScreen
+  '';
+
+  dontWrapGApps = true;
+  pyproject = false;
 
   pythonPath = with python3.pkgs; [
     jinja2
@@ -36,26 +46,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sdbus-networkmanager
   ];
 
-  dontWrapGApps = true;
-
-  preFixup = ''
-    mkdir -p $out/bin
-    cp -r . $out/dist
-    gappsWrapperArgs+=(--set PYTHONPATH "$PYTHONPATH")
-    wrapGApp $out/dist/screen.py
-    ln -s $out/dist/screen.py $out/bin/KlipperScreen
-  '';
-
   passthru.updateScript = gitUpdater { url = finalAttrs.meta.homepage; };
 
   meta = {
     description = "Touchscreen GUI for the Klipper 3D printer firmware";
     homepage = "https://github.com/jordanruthe/KlipperScreen";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       cab404
       saturn745
     ];
+
     mainProgram = "KlipperScreen";
   };
 })

@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  flit-core,
-  unittestCheckHook,
-
   # for passthru.tests
   awsebcli,
   black,
+  buildPythonPackage,
+  fetchPypi,
+  flit-core,
   hatchling,
+  unittestCheckHook,
   yamllint,
 }:
 
 buildPythonPackage rec {
   pname = "pathspec";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +21,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
-  pythonImportsCheck = [ "pathspec" ];
-
   checkInputs = [ unittestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "pathspec" ];
 
   passthru.tests = {
     inherit

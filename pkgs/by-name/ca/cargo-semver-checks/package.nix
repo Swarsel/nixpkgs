@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  cmake,
-  zlib,
-  testers,
   cargo-semver-checks,
+  cmake,
   nix-update-script,
+  rustPlatform,
+  testers,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-fF29YLYNL0gRD5ZcgBL19wO9DqLpXTQsxQkXlVw8U7A=";
   };
 
-  cargoHash = "sha256-VHxgPvlhasM3GnK1uMDA2vi0z3TxHWpCOlkWJhcV/F8=";
-
   nativeBuildInputs = [
     cmake
   ];
@@ -29,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     zlib
   ];
+
+  cargoHash = "sha256-VHxgPvlhasM3GnK1uMDA2vi0z3TxHWpCOlkWJhcV/F8=";
 
   checkFlags = [
     # requires internet access
@@ -56,16 +56,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Tool to scan your Rust crate for semver violations";
-    mainProgram = "cargo-semver-checks";
     homepage = "https://github.com/obi1kenobi/cargo-semver-checks";
     changelog = "https://github.com/obi1kenobi/cargo-semver-checks/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       chrjabs
     ];
+
+    mainProgram = "cargo-semver-checks";
   };
 })

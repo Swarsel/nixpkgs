@@ -15,13 +15,13 @@
 buildPythonPackage (finalAttrs: {
   pname = "standardwebhooks";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-tVe7LksWraF5pRfsD+bL7FrPl2xWGZIr8pxFf4mkUb0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,8 +33,7 @@ buildPythonPackage (finalAttrs: {
     types-python-dateutil
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "standardwebhooks" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,13 +17,13 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-LNcGNPupeyztuq5hpyDt/tIxMEI/yemhFhJHsh3ZzOU=";
 
-  subPackages = [ "." ];
-
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Client for Gatus, an automated developer-oriented status page";

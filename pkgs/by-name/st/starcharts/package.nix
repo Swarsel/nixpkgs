@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-9Z4meJHZeT/eF6WD25tP5CMGB7syxWWqHUTWrW03AME=";
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -23,14 +24,12 @@ buildGoModule (finalAttrs: {
     "-X=main.version=${finalAttrs.version}"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
     description = "Plot your repository stars over time";
-    mainProgram = "starcharts";
     homepage = "https://github.com/caarlos0/starcharts";
     changelog = "https://github.com/caarlos0/starcharts/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "starcharts";
   };
 })

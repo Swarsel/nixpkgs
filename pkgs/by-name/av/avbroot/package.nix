@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
+  bzip2,
   pkg-config,
   protobuf,
-  bzip2,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -19,14 +19,13 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-/c3jYaNGQP4mZA2/MJFWBgaXpTmylgrF3555qdhtr2E=";
   };
 
-  cargoHash = "sha256-H39Gi2Y3T9PA78ARkJ3i6qHWJSzV/a+TGwXOicEduKQ=";
-
   nativeBuildInputs = [
     pkg-config
     protobuf
   ];
 
   buildInputs = [ bzip2 ];
+  cargoHash = "sha256-H39Gi2Y3T9PA78ARkJ3i6qHWJSzV/a+TGwXOicEduKQ=";
 
   meta = {
     description = "Sign (and root) Android A/B OTAs with custom keys while preserving Android Verified Boot";

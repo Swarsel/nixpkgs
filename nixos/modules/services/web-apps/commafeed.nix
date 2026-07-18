@@ -10,28 +10,23 @@ in
 {
   options.services.commafeed = {
     enable = lib.mkEnableOption "CommaFeed";
-
     package = lib.mkPackageOption pkgs "commafeed" { };
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      description = "User under which CommaFeed runs.";
-      default = "commafeed";
-    };
-
-    group = lib.mkOption {
-      type = lib.types.str;
-      description = "Group under which CommaFeed runs.";
-      default = "commafeed";
-    };
-
-    stateDir = lib.mkOption {
-      type = lib.types.path;
-      description = "Directory holding all state for CommaFeed to run.";
-      default = "/var/lib/commafeed";
-    };
-
     environment = lib.mkOption {
+      default = { };
+
+      description = ''
+        Extra environment variables passed to CommaFeed, refer to
+        <https://github.com/Athou/commafeed/blob/master/commafeed-server/config.yml.example>
+        for supported values. The default user is `admin` and the default password is `admin`.
+        Correct configuration for H2 database is already provided.
+      '';
+
+      example = {
+        CF_SERVER_APPLICATIONCONNECTORS_0_PORT = 9090;
+        CF_SERVER_APPLICATIONCONNECTORS_0_TYPE = "http";
+      };
+
       type = lib.types.attrsOf (
         lib.types.oneOf [
           lib.types.bool
@@ -39,46 +34,53 @@ in
           lib.types.str
         ]
       );
-      description = ''
-        Extra environment variables passed to CommaFeed, refer to
-        <https://github.com/Athou/commafeed/blob/master/commafeed-server/config.yml.example>
-        for supported values. The default user is `admin` and the default password is `admin`.
-        Correct configuration for H2 database is already provided.
-      '';
-      default = { };
-      example = {
-        CF_SERVER_APPLICATIONCONNECTORS_0_TYPE = "http";
-        CF_SERVER_APPLICATIONCONNECTORS_0_PORT = 9090;
-      };
     };
 
     environmentFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
+      default = null;
+
       description = ''
         Environment file as defined in {manpage}`systemd.exec(5)`.
       '';
-      default = null;
+
       example = "/var/lib/commafeed/commafeed.env";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    group = lib.mkOption {
+      default = "commafeed";
+      description = "Group under which CommaFeed runs.";
+      type = lib.types.str;
+    };
+
+    stateDir = lib.mkOption {
+      default = "/var/lib/commafeed";
+      description = "Directory holding all state for CommaFeed to run.";
+      type = lib.types.path;
+    };
+
+    user = lib.mkOption {
+      default = "commafeed";
+      description = "User under which CommaFeed runs.";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.commafeed = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       environment = lib.mapAttrs (
         _: v: if lib.isBool v then lib.boolToString v else toString v
       ) cfg.environment;
+
       serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} server ${cfg.package}/share/config.yml";
-        User = cfg.user;
-        Group = cfg.group;
-        StateDirectory = baseNameOf cfg.stateDir;
-        WorkingDirectory = cfg.stateDir;
         # Hardening
         CapabilityBoundingSet = [ "" ];
         DevicePolicy = "closed";
         DynamicUser = true;
+        ExecStart = "${lib.getExe cfg.package} server ${cfg.package}/share/config.yml";
+        Group = cfg.group;
         LockPersonality = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
@@ -93,21 +95,30 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = true;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = baseNameOf cfg.stateDir;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
+
         UMask = "0077";
+        User = cfg.user;
+        WorkingDirectory = cfg.stateDir;
       }
       // lib.optionalAttrs (cfg.environmentFile != null) { EnvironmentFile = cfg.environmentFile; };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

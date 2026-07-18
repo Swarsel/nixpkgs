@@ -1,16 +1,15 @@
 {
   buildDunePackage,
   dream-pure,
-  lwt_ppx,
   httpun-ws,
+  lwt_ppx,
 }:
 
 buildDunePackage {
-  pname = "dream-httpaf";
-
   inherit (dream-pure) version src;
-
+  pname = "dream-httpaf";
   buildInputs = [ lwt_ppx ];
+
   propagatedBuildInputs = [
     dream-pure
     httpun-ws

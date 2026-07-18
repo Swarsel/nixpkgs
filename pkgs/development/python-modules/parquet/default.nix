@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   pytestCheckHook,
   python-snappy,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "parquet";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jcrobak";
@@ -24,12 +23,13 @@ buildPythonPackage rec {
   patches = [
     # Refactor deprecated unittest aliases, https://github.com/jcrobak/parquet-python/pull/83
     (fetchpatch {
+      hash = "sha256-4awxlzman/YMfOz1WYNR+mVn1ixGku9sqlaMJ1QITYs=";
       name = "unittest-aliases.patch";
       url = "https://github.com/jcrobak/parquet-python/commit/746bebd1e84d8945a3491e1ae5e44102ff534592.patch";
-      hash = "sha256-4awxlzman/YMfOz1WYNR+mVn1ixGku9sqlaMJ1QITYs=";
     })
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,7 +37,10 @@ buildPythonPackage rec {
     thriftpy2
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabledTestPaths = [
+    # Test is outdated
+    "test/test_read_support.py"
+  ];
 
   disabledTests = [
     # Fails with AttributeError
@@ -45,11 +48,7 @@ buildPythonPackage rec {
     "testFromExample"
   ];
 
-  disabledTestPaths = [
-    # Test is outdated
-    "test/test_read_support.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "parquet" ];
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   qt6,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cfclient";
   version = "2025.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bitcraze";
@@ -19,26 +18,28 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   strictDeps = true;
 
-  buildInputs = [
-    qt6.qtbase
-  ];
-
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
   ];
 
-  dontWrapQtApps = true;
+  buildInputs = [
+    qt6.qtbase
+  ];
+
+  # No tests
+  doCheck = false;
+
+  # Use wrapQtApp for Python scripts as the manual mentions that wrapQtAppsHook only applies to binaries
+  postFixup = ''
+    wrapQtApp "$out/bin/cfclient" \
+      --set QT_QPA_PLATFORM "wayland" \
+      --set XDG_CURRENT_DESKTOP "Wayland" \
+      ''${qtWrapperArgs[@]}
+  '';
 
   build-system = with python3Packages; [
     setuptools
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "numpy"
-    "pyqt6"
-    "pyzmq"
-    "vispy"
   ];
 
   dependencies = with python3Packages; [
@@ -58,16 +59,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     vispy
   ];
 
-  # No tests
-  doCheck = false;
+  dontWrapQtApps = true;
+  pyproject = true;
 
-  # Use wrapQtApp for Python scripts as the manual mentions that wrapQtAppsHook only applies to binaries
-  postFixup = ''
-    wrapQtApp "$out/bin/cfclient" \
-      --set QT_QPA_PLATFORM "wayland" \
-      --set XDG_CURRENT_DESKTOP "Wayland" \
-      ''${qtWrapperArgs[@]}
-  '';
+  pythonRelaxDeps = [
+    "numpy"
+    "pyqt6"
+    "pyzmq"
+    "vispy"
+  ];
 
   meta = {
     description = "Host applications and library for Crazyflie drones written in Python";

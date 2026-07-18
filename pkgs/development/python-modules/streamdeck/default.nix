@@ -3,14 +3,13 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
-  replaceVars,
   pkgs,
+  replaceVars,
 }:
 
 buildPythonPackage rec {
   pname = "streamdeck";
   version = "0.9.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,8 +23,9 @@ buildPythonPackage rec {
     })
   ];
 
-  pythonImportsCheck = [ "StreamDeck" ];
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "StreamDeck" ];
 
   meta = {
     description = "Python library to control the Elgato Stream Deck";

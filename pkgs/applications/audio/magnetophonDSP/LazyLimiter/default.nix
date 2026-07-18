@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     faust2lv2
   ];
 
-  dontWrapQtApps = true;
-
   buildPhase = ''
     faust2jaqt -vec -time -t 99999 LazyLimiter.dsp
     faust2lv2 -vec -time -t 99999  -gui LazyLimiter.dsp
@@ -36,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out/lib/lv2
     cp -r LazyLimiter.lv2/ $out/lib/lv2
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "Fast yet clean lookahead limiter for jack and lv2";

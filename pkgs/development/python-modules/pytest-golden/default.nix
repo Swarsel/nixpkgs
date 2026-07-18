@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   atomicwrites,
   buildPythonPackage,
-  fetchFromGitHub,
-  ruamel-yaml,
   hatchling,
   pytest,
   pytestCheckHook,
+  ruamel-yaml,
   testfixtures,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-golden";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oprypin";
@@ -22,13 +21,12 @@ buildPythonPackage rec {
     hash = "sha256-mjb8lBAoZxwUCN4AIMK/n70aC41Y4IV/+hrW11S9rcw=";
   };
 
-  pythonRelaxDeps = [ "testfixtures" ];
+  buildInputs = [ pytest ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
   ];
-
-  buildInputs = [ pytest ];
 
   dependencies = [
     atomicwrites
@@ -36,9 +34,9 @@ buildPythonPackage rec {
     testfixtures
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_golden" ];
+  pythonRelaxDeps = [ "testfixtures" ];
 
   meta = {
     description = "Plugin for pytest that offloads expected outputs to data files";

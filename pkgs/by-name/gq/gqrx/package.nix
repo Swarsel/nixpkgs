@@ -1,25 +1,25 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
+  alsa-lib,
   cmake,
   desktopToDarwinBundle,
-  pkg-config,
-  qt6Packages,
-  gnuradioMinimal,
-  thrift,
-  mpir,
   fftwFloat,
-  alsa-lib,
+  gnuradioMinimal,
+  hackrf,
   libjack2,
-  wrapGAppsHook3,
+  libpulseaudio,
+  mpir,
+  pkg-config,
+  portaudio,
+  qt6Packages,
   # drivers (optional):
   rtl-sdr,
-  hackrf,
-  stdenv,
-  pulseaudioSupport ? !stdenv.hostPlatform.isDarwin,
-  libpulseaudio,
+  thrift,
+  wrapGAppsHook3,
   portaudioSupport ? stdenv.hostPlatform.isDarwin,
-  portaudio,
+  pulseaudioSupport ? !stdenv.hostPlatform.isDarwin,
 }:
 
 assert pulseaudioSupport -> libpulseaudio != null;
@@ -83,29 +83,34 @@ gnuradioMinimal.pkgs.mkDerivation rec {
       "-D${if stdenv.hostPlatform.isDarwin then "OSX" else "LINUX"}_AUDIO_BACKEND=${audioBackend}"
     ];
 
-  # Prevent double-wrapping, inject wrapper args manually instead.
-  dontWrapGApps = true;
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  # Prevent double-wrapping, inject wrapper args manually instead.
+  dontWrapGApps = true;
+
   meta = {
     description = "Software defined radio (SDR) receiver";
-    mainProgram = "gqrx";
+
     longDescription = ''
       Gqrx is a software defined radio receiver powered by GNU Radio and the Qt
       GUI toolkit. It can process I/Q data from many types of input devices,
       including Funcube Dongle Pro/Pro+, rtl-sdr, HackRF, and Universal
       Software Radio Peripheral (USRP) devices.
     '';
+
     homepage = "https://gqrx.dk/";
     # Some of the code comes from the Cutesdr project, with a BSD license, but
     # it's currently unknown which version of the BSD license that is.
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       bjornfor
       fpletz
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "gqrx";
   };
 }

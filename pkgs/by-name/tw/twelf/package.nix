@@ -4,8 +4,8 @@
   fetchurl,
   fetchpatch,
   pkg-config,
-  smlnj,
   rsync,
+  smlnj,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,12 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix Emacs old-style backquotes: https://github.com/standardml/twelf/pull/3
     (fetchpatch {
-      url = "https://github.com/standardml/twelf/commit/7b3f3dbb8b8ec8d16d843875fce1e2bd6a50e3ae.patch";
       hash = "sha256-cSrgQFRPL+4zRtFXv3rLsAasjLfal0TZpXasEUtUSHc=";
+      url = "https://github.com/standardml/twelf/commit/7b3f3dbb8b8ec8d16d843875fce1e2bd6a50e3ae.patch";
     })
   ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     smlnj
     rsync
@@ -55,6 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Logic proof assistant";
+
     longDescription = ''
       Twelf is a language used to specify, implement, and prove properties of
       deductive systems such as programming languages and logics. Large
@@ -62,6 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
       a foundational proof-carrying-code system, and a type safety proof for
       Standard ML.
     '';
+
     homepage = "http://twelf.org/wiki/Main_Page";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jwiegley ];

@@ -2,31 +2,36 @@
   lib,
   stdenv,
   fetchurl,
+  cairo,
+  cyrus_sasl,
+  gdk-pixbuf,
+  gettext,
+  gi-docgen,
+  glib,
+  gmp,
+  gnome,
+  gnutls,
+  gobject-introspection,
+  gtk3,
+  libpulseaudio,
   meson,
   ninja,
-  gobject-introspection,
-  gnutls,
-  cairo,
-  glib,
-  pkg-config,
-  cyrus_sasl,
-  pulseaudioSupport ? stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-  gmp,
-  gtk3,
-  vala,
-  gettext,
   perl,
+  pkg-config,
   python3,
-  gi-docgen,
-  gnome,
-  gdk-pixbuf,
+  vala,
   zlib,
+  pulseaudioSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gtk-vnc";
   version = "1.5.0";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/gtk-vnc/${lib.versions.majorMinor finalAttrs.version}/gtk-vnc-${finalAttrs.version}.tar.xz";
+    sha256 = "wL60dHUorZMdpDrMVnxqAZD3/GJEZVce2czs4Cw03SM=";
+  };
 
   outputs = [
     "out"
@@ -35,11 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/gtk-vnc/${lib.versions.majorMinor finalAttrs.version}/gtk-vnc-${finalAttrs.version}.tar.xz";
-    sha256 = "wL60dHUorZMdpDrMVnxqAZD3/GJEZVce2czs4Cw03SM=";
-  };
 
   nativeBuildInputs = [
     meson
@@ -87,9 +87,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GTK VNC widget";
     homepage = "https://gitlab.gnome.org/GNOME/gtk-vnc";
     license = lib.licenses.lgpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "gvnccapture";
   };

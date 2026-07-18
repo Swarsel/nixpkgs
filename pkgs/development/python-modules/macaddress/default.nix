@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   hypothesis,
+  pytestCheckHook,
   reprshed,
 }:
 
 buildPythonPackage rec {
   pname = "macaddress";
   version = "2.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mentalisttraceur";
@@ -19,8 +18,6 @@ buildPythonPackage rec {
     hash = "sha256-2eD5Ui8kUduKLJ0mSiwaz7TQSeF1+2ASirp70V/8+EA=";
   };
 
-  pythonImportsCheck = [ "macaddress" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     hypothesis
@@ -28,10 +25,12 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "test.py" ];
+  format = "setuptools";
+  pythonImportsCheck = [ "macaddress" ];
 
   meta = {
-    homepage = "https://github.com/mentalisttraceur/python-macaddress";
     description = "Module for handling hardware identifiers like MAC addresses";
+    homepage = "https://github.com/mentalisttraceur/python-macaddress";
     license = lib.licenses.bsd0;
     maintainers = with lib.maintainers; [ netali ];
   };

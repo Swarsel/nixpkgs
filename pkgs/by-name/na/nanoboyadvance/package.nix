@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  python3Packages,
-  libsForQt5,
   SDL2,
+  cmake,
+  fetchpatch,
   fmt,
-  toml11,
+  libsForQt5,
   libunarr,
+  python3Packages,
+  toml11,
 }:
 
 let
   gladSrc = fetchFromGitHub {
+    hash = "sha256-Ba7nbd0DxDHfNXXu9DLfnxTQTiJIQYSES9CP5Bfq4K0=";
     owner = "Dav1dde";
     repo = "glad";
     rev = "v2.0.5";
-    hash = "sha256-Ba7nbd0DxDHfNXXu9DLfnxTQTiJIQYSES9CP5Bfq4K0=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -72,8 +72,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Cycle-accurate Nintendo Game Boy Advance emulator";
     homepage = "https://github.com/nba-emu/NanoBoyAdvance";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "NanoBoyAdvance";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.all;
+    mainProgram = "NanoBoyAdvance";
   };
 })

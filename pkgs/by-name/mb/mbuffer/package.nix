@@ -9,28 +9,32 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "mbuffer";
   version = "20260511";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchurl {
     url = "https://www.maier-komor.de/software/mbuffer/mbuffer-${finalAttrs.version}.tgz";
     sha256 = "sha256-E7qzbzlAj3oI+zaJEykK0PEXyTS6tgIJThj8wSPsV4M=";
   };
 
-  buildInputs = [
-    openssl
+  outputs = [
+    "out"
+    "man"
   ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     which
   ];
-  nativeCheckInputs = [
+
+  buildInputs = [
     openssl
   ];
 
   doCheck = true;
-  strictDeps = true;
+
+  nativeCheckInputs = [
+    openssl
+  ];
 
   __darwinAllowLocalNetworking = true;
 

@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gfortran,
-  buildType ? "meson",
+  blas,
   cmake,
+  gfortran,
+  lapack,
+  mctc-lib,
   meson,
+  mstore,
+  multicharge,
   ninja,
   pkg-config,
   python3,
-  blas,
-  lapack,
-  mctc-lib,
-  mstore,
-  multicharge,
+  buildType ? "meson",
 }:
 
 assert !blas.isILP64 && !lapack.isILP64;
@@ -27,8 +27,6 @@ assert (
 stdenv.mkDerivation (finalAttrs: {
   pname = "dftd4";
   version = "4.2.0";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "dftd4";
@@ -37,10 +35,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-uKjNOIza3/I0oREp88oFESoNqEdumo1AztIjcrVb1O8=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Fix pkg-config, meson and cmake paths for include and lib dirs
     ./build-paths.patch
   ];
+
+  postPatch = ''
+    patchShebangs --build \
+      config/install-mod.py \
+      app/tester.py
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gfortran
@@ -68,29 +79,21 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.strings.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   doCheck = true;
-
-  postPatch = ''
-    patchShebangs --build \
-      config/install-mod.py \
-      app/tester.py
-  '';
+  __structuredAttrs = true;
 
   meta = {
     description = "Generally Applicable Atomic-Charge Dependent London Dispersion Correction";
+    homepage = "https://github.com/grimme-lab/dftd4";
     changelog = "https://github.com/dftd4/dftd4/releases/tag/${finalAttrs.src.tag}";
-    mainProgram = "dftd4";
+
     license = with lib.licenses; [
       lgpl3Plus
       gpl3Plus
     ];
-    homepage = "https://github.com/grimme-lab/dftd4";
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
+    mainProgram = "dftd4";
   };
 })

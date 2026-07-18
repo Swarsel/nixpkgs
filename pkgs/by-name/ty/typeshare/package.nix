@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,11 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8Pm+z407FDBLy0Hq2+T1rttFKnRWTNPPYTCn11SHcS8=";
   };
 
-  cargoHash = "sha256-t5OJ4chxVhCRczfRPTZe2mkIDevSp7+1aVdplvJFCfg=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  buildFeatures = [ "go" ];
+  cargoHash = "sha256-t5OJ4chxVhCRczfRPTZe2mkIDevSp7+1aVdplvJFCfg=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd typeshare \
@@ -34,18 +31,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  buildFeatures = [ "go" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command Line Tool for generating language files with typeshare";
-    mainProgram = "typeshare";
     homepage = "https://github.com/1password/typeshare";
     changelog = "https://github.com/1password/typeshare/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "typeshare";
   };
 })

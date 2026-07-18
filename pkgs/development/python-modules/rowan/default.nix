@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  numpy,
   pytestCheckHook,
   scipy,
-  numpy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "rowan";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "glotzerlab";
@@ -23,15 +22,17 @@ buildPythonPackage rec {
   nativeBuildInputs = [
     setuptools
   ];
-  nativeCheckInputs = [
-    pytestCheckHook
-    scipy
-  ];
 
   propagatedBuildInputs = [
     numpy
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    scipy
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "rowan" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -12,8 +12,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://web.archive.org/web/20251220113913/https://cdn.rogueamoeba.com/soundsource/download/SoundSource.zip";
     hash = "sha256-tzgGUYaY6mIZXs3xxGC3b3AoJ/DcaESYr49zcDS7+Fo=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [ unzip ];
 
@@ -26,16 +24,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    changelog = "https://rogueamoeba.com/support/releasenotes/?product=SoundSource";
     description = "Sound controller for macOS";
     homepage = "https://rogueamoeba.com/soundsource";
+    changelog = "https://rogueamoeba.com/support/releasenotes/?product=SoundSource";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       emilytrau
       _4evy
     ];
+
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

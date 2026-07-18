@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "loramon";
   version = "0.9.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "markqvist";
@@ -24,12 +23,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyserial
   ];
 
+  pyproject = true;
+
   meta = {
     description = "LoRa packet sniffer for RNode hardware";
-    mainProgram = "loramon";
     homepage = "https://github.com/markqvist/LoRaMon";
     changelog = "https://github.com/markqvist/LoRaMon/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ erethon ];
+    mainProgram = "loramon";
   };
 })

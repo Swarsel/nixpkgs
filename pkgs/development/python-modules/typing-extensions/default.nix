@@ -1,9 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
-
   # reverse dependencies
   mashumaro,
   pydantic,
@@ -12,7 +11,6 @@
 buildPythonPackage rec {
   pname = "typing-extensions";
   version = "4.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python";
@@ -22,7 +20,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ flit-core ];
-
+  pyproject = true;
   pythonImportsCheck = [ "typing_extensions" ];
 
   passthru.tests = {
@@ -31,8 +29,8 @@ buildPythonPackage rec {
 
   meta = {
     description = "Backported and Experimental Type Hints for Python";
-    changelog = "https://github.com/python/typing_extensions/blob/${version}/CHANGELOG.md";
     homepage = "https://github.com/python/typing";
+    changelog = "https://github.com/python/typing_extensions/blob/${version}/CHANGELOG.md";
     license = lib.licenses.psfl;
     maintainers = with lib.maintainers; [ pmiddend ];
   };

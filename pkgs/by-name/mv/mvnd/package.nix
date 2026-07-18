@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   graalvmPackages,
   installShellFiles,
@@ -7,7 +8,6 @@
   maven,
   nix-update-script,
   runCommand,
-  stdenv,
   testers,
 }:
 
@@ -22,6 +22,7 @@ in
 maven.buildMavenPackage (finalAttrs: {
   pname = "mvnd";
   version = "1.0.6";
+
   src = fetchFromGitHub {
     owner = "apache";
     repo = "maven-mvnd";
@@ -29,17 +30,33 @@ maven.buildMavenPackage (finalAttrs: {
     sha256 = "sha256-0Po3LOsK3u984+g7ACtGa5KSgKfsAwLLORP6YEUHhKo=";
   };
 
-  # need graalvm at build-time for the `native-image` tool
-  mvnJdk = graalvmPackages.graalvm-ce;
-  mvnHash = "sha256-dgKQj6xa10MkFmxUckwW5FqKS3Tf95aP/RmKXSRqtCg=";
-
   nativeBuildInputs = [
     graalvmPackages.graalvm-ce
     installShellFiles
     makeWrapper
   ];
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin
+    mkdir -p $out/mvnd-home
+
+    cp -r dist/target/maven-mvnd-${finalAttrs.version}-${platformMap.${stdenv.system}}/* $out/mvnd-home
+    makeWrapper $out/mvnd-home/bin/mvnd $out/bin/mvnd \
+      --set-default MVND_HOME $out/mvnd-home
+
+    installShellCompletion --cmd mvnd \
+      --bash $out/mvnd-home/bin/mvnd-bash-completion.bash
+
+    runHook postInstall
+  '';
+
   mvnDepsParameters = finalAttrs.mvnParameters;
+  mvnHash = "sha256-dgKQj6xa10MkFmxUckwW5FqKS3Tf95aP/RmKXSRqtCg=";
+  # need graalvm at build-time for the `native-image` tool
+  mvnJdk = graalvmPackages.graalvm-ce;
+
   mvnParameters = lib.concatStringsSep " " (
     [
       "-Dmaven.buildNumber.skip=true" # skip build number generation; requires a git repository
@@ -59,22 +76,6 @@ maven.buildMavenPackage (finalAttrs: {
       "-DbuildArgs=-H:-CheckToolchain"
     ]
   );
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin
-    mkdir -p $out/mvnd-home
-
-    cp -r dist/target/maven-mvnd-${finalAttrs.version}-${platformMap.${stdenv.system}}/* $out/mvnd-home
-    makeWrapper $out/mvnd-home/bin/mvnd $out/bin/mvnd \
-      --set-default MVND_HOME $out/mvnd-home
-
-    installShellCompletion --cmd mvnd \
-      --bash $out/mvnd-home/bin/mvnd-bash-completion.bash
-
-    runHook postInstall
-  '';
 
   passthru = {
     updateScript = nix-update-script { };
@@ -101,8 +102,8 @@ maven.buildMavenPackage (finalAttrs: {
     description = "Apache Maven Daemon";
     homepage = "https://maven.apache.org/";
     license = lib.licenses.asl20;
-    platforms = builtins.attrNames platformMap;
     maintainers = with lib.maintainers; [ nathanregner ];
+    platforms = builtins.attrNames platformMap;
     mainProgram = "mvnd";
   };
 })

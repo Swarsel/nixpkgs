@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -16,10 +16,12 @@ buildDunePackage (finalAttrs: {
   meta = {
     description = "Compatibility Semaphore module";
     homepage = "https://github.com/mirage/semaphore-compat";
+
     license = with lib.licenses; [
       lgpl21Plus
       ocamlLgplLinkingException
     ];
+
     maintainers = [ lib.maintainers.sternenseemann ];
   };
 })

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libsForQt5,
   leptonica,
+  libsForQt5,
   tesseract4,
 }:
 
@@ -18,6 +18,14 @@ stdenv.mkDerivation {
     hash = "sha256-3dWnAu0CLO3atjbC1zJEnL3vzsIEecDDDhW3INMfCv4=";
   };
 
+  # https://github.com/zdenop/qt-box-editor/issues/87
+  postPatch = ''
+    sed -i '/allheaders.h/a#include <leptonica/pix_internal.h>' src/TessTools.h
+
+    substituteInPlace qt-box-editor.pro \
+      --replace '-llept' '-lleptonica'
+  '';
+
   nativeBuildInputs = [
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
@@ -30,20 +38,12 @@ stdenv.mkDerivation {
     tesseract4
   ];
 
-  # https://github.com/zdenop/qt-box-editor/issues/87
-  postPatch = ''
-    sed -i '/allheaders.h/a#include <leptonica/pix_internal.h>' src/TessTools.h
-
-    substituteInPlace qt-box-editor.pro \
-      --replace '-llept' '-lleptonica'
-  '';
-
   meta = {
     description = "Editor of tesseract-ocr box files";
-    mainProgram = "qt-box-editor-1.12rc1";
     homepage = "https://github.com/zdenop/qt-box-editor";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.costrouc ];
     platforms = lib.platforms.all;
+    mainProgram = "qt-box-editor-1.12rc1";
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,20 +18,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-OHjgG5qHBz0Q74uWLkN9Ok0NiVeT71qpEjzFdMFWlfs=";
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal dashboard for Docker monitoring across multiple hosts with Dozzle integration";
     homepage = "https://dtop.dev/";
-    downloadPage = "https://github.com/amir20/dtop";
     changelog = "https://github.com/amir20/dtop/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kpbaks ];
     mainProgram = "dtop";
+    downloadPage = "https://github.com/amir20/dtop";
   };
 })

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  lv2,
   cairo,
+  lv2,
   pkg-config,
 }:
 
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     lv2
     cairo

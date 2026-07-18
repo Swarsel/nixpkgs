@@ -11,14 +11,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-frontdoor";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_frontdoor";
     inherit version;
     hash = "sha256-DSV/vIE6r0wgPLpHfT4ODqNoxzeCPIlAksmsnEuExSg=";
+    pname = "azure_mgmt_frontdoor";
   };
 
+  # Tests are only available in mono repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage rec {
     isodate
   ];
 
-  # Tests are only available in mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.frontdoor" ];
 
   meta = {

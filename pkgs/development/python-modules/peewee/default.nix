@@ -1,23 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   apsw,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   flask,
+  mysql-connector-python,
+  psycopg2,
   python,
+  setuptools,
   sqlite,
   withMysql ? false,
-  mysql-connector-python,
   withPostgres ? false,
-  psycopg2,
-  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "peewee";
   version = "3.19.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coleifer";
@@ -25,8 +24,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-EO8gS5fMZ1GgJV2YMjy15XQGZa72fZF7dgG7RZUE9dA=";
   };
-
-  build-system = [ setuptools ];
 
   buildInputs = [
     sqlite
@@ -39,15 +36,16 @@ buildPythonPackage rec {
   ++ lib.optionals withPostgres [ psycopg2 ]
   ++ lib.optionals withMysql [ mysql-connector-python ];
 
-  nativeCheckInputs = [ flask ];
-
   doCheck = withPostgres;
+  nativeCheckInputs = [ flask ];
 
   checkPhase = ''
     rm -r playhouse # avoid using the folder in the cwd
     ${python.interpreter} runtests.py
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "peewee" ];
 
   meta = {

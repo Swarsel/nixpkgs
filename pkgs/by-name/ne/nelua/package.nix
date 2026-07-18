@@ -24,10 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   makeFlags = [ "PREFIX=$(out)" ];
-
-  nativeCheckInputs = [ luaPackages.luacheck ];
-
   doCheck = true;
+  nativeCheckInputs = [ luaPackages.luacheck ];
 
   passthru.updateScript = unstableGitUpdater {
     # no releases, only stale "latest" tag
@@ -38,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Minimal, efficient, statically-typed and meta-programmable systems programming language heavily inspired by Lua, which compiles to C and native code";
     homepage = "https://nelua.io/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

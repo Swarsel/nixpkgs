@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   writableTmpDirAsHomeHook,
 }:
 buildGoModule (finalAttrs: {
@@ -17,17 +17,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-/vMQIbpfnEzBhyCUgSd4XpeC9cEX/+AYIRDTOqgmCec=";
   };
 
-  vendorHash = "sha256-nMUqZWdq//q/DNthvpKiYLq8f95O0QoItyX5w4vHzSA=";
-
   nativeBuildInputs = [
     installShellFiles
     writableTmpDirAsHomeHook
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-nMUqZWdq//q/DNthvpKiYLq8f95O0QoItyX5w4vHzSA=";
 
   postInstall = ''
     installManPage man/j.1 man/jump.1
@@ -39,13 +34,20 @@ buildGoModule (finalAttrs: {
        --zsh <($out/bin/jump shell zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
     description = "Navigate directories faster by learning your habits";
+
     longDescription = ''
       Jump integrates with the shell and learns about your
       navigational habits by keeping track of the directories you visit. It
       strives to give you the best directory for the shortest search term.
     '';
+
     homepage = "https://github.com/gsamokovarov/jump";
     license = lib.licenses.mit;
     maintainers = [ ];

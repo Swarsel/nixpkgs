@@ -1,8 +1,8 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,12 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ cmake ];
 
   meta = {
+    description = "Asynchronous Low Latency C++17 Logging Library";
     homepage = "https://github.com/odygrd/quill";
     changelog = "https://github.com/odygrd/quill/blob/master/CHANGELOG.md";
-    downloadPage = "https://github.com/odygrd/quill";
-    description = "Asynchronous Low Latency C++17 Logging Library";
-    platforms = lib.platforms.all;
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.odygrd ];
+    platforms = lib.platforms.all;
+    downloadPage = "https://github.com/odygrd/quill";
   };
 })

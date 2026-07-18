@@ -4,8 +4,8 @@
   fetchFromGitHub,
   cmake,
   curl,
-  openssl,
   gitUpdater,
+  openssl,
   withCurl ? true,
   withOpenSSL ? true,
 }:
@@ -20,6 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-HbMenAL/UWsqQ1o7cMeWfwXkLh4GxIKV7iuZQD3hDA8=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     substituteInPlace cmake/coost.pc.in \
@@ -36,13 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withCurl "-DWITH_LIBCURL=ON"
   ++ lib.optional withOpenSSL "-DWITH_OPENSSL=ON";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
   passthru.updateScript = gitUpdater {
-    rev-prefix = "v";
     allowedVersions = "^[0-9]";
+    rev-prefix = "v";
   };
 
   meta = {

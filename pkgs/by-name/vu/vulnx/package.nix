@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -16,21 +16,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-oIoLInhErN1AojJ8GLLfxsp4Yy/S0UjnCESrVfOGp/4=";
   };
 
-  vendorHash = "sha256-xAdaTu/DRtolP6tXge42ntJvq7Wi9gDErRfX1HZposc=";
-
-  subPackages = [ "cmd/vulnx/" ];
-
-  ldflags = [ "-s" ];
-
-  __structuredAttrs = true;
-
   strictDeps = true;
+  vendorHash = "sha256-xAdaTu/DRtolP6tXge42ntJvq7Wi9gDErRfX1HZposc=";
+  __structuredAttrs = true;
+  ldflags = [ "-s" ];
+  subPackages = [ "cmd/vulnx/" ];
 
   # Issue with updater and version check
   # nativeInstallCheckInputs = [ versionCheckHook ];
   # doInstallCheck = true;
   # versionCheckProgramArg = [ "version" ];
-
   meta = {
     description = "Tool to work with CVEs";
     homepage = "https://github.com/projectdiscovery/vulnx";

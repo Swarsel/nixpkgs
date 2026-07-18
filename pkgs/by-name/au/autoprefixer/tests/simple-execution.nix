@@ -1,4 +1,4 @@
-{ runCommand, autoprefixer }:
+{ autoprefixer, runCommand }:
 
 let
   inherit (autoprefixer) pname version;

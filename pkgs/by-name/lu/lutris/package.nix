@@ -2,8 +2,8 @@
   lib,
   buildFHSEnv,
   lutris-unwrapped,
-  extraPkgs ? pkgs: [ ],
   extraLibraries ? pkgs: [ ],
+  extraPkgs ? pkgs: [ ],
   steamSupport ? true,
 }:
 
@@ -60,13 +60,115 @@ let
 
 in
 buildFHSEnv {
-  pname = "lutris";
   inherit (lutris-unwrapped) version;
+  pname = "lutris";
 
-  runScript = "lutris";
+  extraInstallCommands = ''
+    mkdir -p $out/share
+    ln -sf ${lutris-unwrapped}/share/applications $out/share
+    ln -sf ${lutris-unwrapped}/share/icons $out/share
+  '';
 
   # Many native and WINE games need 32bit
   multiArch = true;
+
+  multiPkgs =
+    pkgs:
+    with pkgs;
+    [
+      # Common
+      libsndfile
+      libtheora
+      libogg
+      libvorbis
+      libopus
+      libGLU
+      libpcap
+      libpulseaudio
+      libao
+      libevdev
+      udev
+      libgcrypt
+      libxml2
+      libusb1
+      libpng
+      libmpeg2
+      libv4l
+      libjpeg
+      libxkbcommon
+      libass
+      libcdio
+      libjack2
+      libsamplerate
+      libzip
+      libmad
+      libaio
+      libcap
+      libtiff
+      libva
+      libgphoto2
+      libxslt
+      libsndfile
+      giflib
+      zlib
+      glib
+      alsa-lib
+      zziplib
+      bash
+      dbus
+      keyutils
+      zip
+      cabextract
+      freetype
+      unzip
+      coreutils
+      readline
+      gcc
+      SDL
+      SDL2
+      curl
+      graphite2
+      gtk2
+      gtk3
+      udev
+      ncurses
+      wayland
+      libglvnd
+      vulkan-loader
+      xdg-utils
+      sqlite
+      gnutls
+      p11-kit
+      libbsd
+      harfbuzz
+
+      # PCSX2 // TODO: "libgobject-2.0.so.0: wrong ELF class: ELFCLASS64"
+
+      # WINE
+      cups
+      lcms2
+      mpg123
+      cairo
+      unixodbc
+      samba4
+      sane-backends
+      openldap
+      ocl-icd
+      util-linux
+      libkrb5
+
+      # Proton
+      libselinux
+
+      # Winetricks
+      fribidi
+      pango
+    ]
+    ++ xorgDeps pkgs
+    ++ gstreamerDeps pkgs
+    ++ extraLibraries pkgs;
+
+  runScript = "lutris";
 
   targetPkgs =
     pkgs:
@@ -197,112 +299,9 @@ buildFHSEnv {
     ++ lib.optional steamSupport pkgs.steam
     ++ extraPkgs pkgs;
 
-  multiPkgs =
-    pkgs:
-    with pkgs;
-    [
-      # Common
-      libsndfile
-      libtheora
-      libogg
-      libvorbis
-      libopus
-      libGLU
-      libpcap
-      libpulseaudio
-      libao
-      libevdev
-      udev
-      libgcrypt
-      libxml2
-      libusb1
-      libpng
-      libmpeg2
-      libv4l
-      libjpeg
-      libxkbcommon
-      libass
-      libcdio
-      libjack2
-      libsamplerate
-      libzip
-      libmad
-      libaio
-      libcap
-      libtiff
-      libva
-      libgphoto2
-      libxslt
-      libsndfile
-      giflib
-      zlib
-      glib
-      alsa-lib
-      zziplib
-      bash
-      dbus
-      keyutils
-      zip
-      cabextract
-      freetype
-      unzip
-      coreutils
-      readline
-      gcc
-      SDL
-      SDL2
-      curl
-      graphite2
-      gtk2
-      gtk3
-      udev
-      ncurses
-      wayland
-      libglvnd
-      vulkan-loader
-      xdg-utils
-      sqlite
-      gnutls
-      p11-kit
-      libbsd
-      harfbuzz
-
-      # PCSX2 // TODO: "libgobject-2.0.so.0: wrong ELF class: ELFCLASS64"
-
-      # WINE
-      cups
-      lcms2
-      mpg123
-      cairo
-      unixodbc
-      samba4
-      sane-backends
-      openldap
-      ocl-icd
-      util-linux
-      libkrb5
-
-      # Proton
-      libselinux
-
-      # Winetricks
-      fribidi
-      pango
-    ]
-    ++ xorgDeps pkgs
-    ++ gstreamerDeps pkgs
-    ++ extraLibraries pkgs;
-
-  extraInstallCommands = ''
-    mkdir -p $out/share
-    ln -sf ${lutris-unwrapped}/share/applications $out/share
-    ln -sf ${lutris-unwrapped}/share/icons $out/share
-  '';
-
   # allows for some gui applications to share IPC
   # this fixes certain issues where they don't render correctly
   unshareIpc = false;
-
   # Some applications such as Natron need access to MIT-SHM or other
   # shared memory mechanisms. Unsharing the pid namespace
   # breaks the ability for application to reference shared memory.

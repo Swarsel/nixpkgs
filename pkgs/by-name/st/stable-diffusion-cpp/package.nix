@@ -2,32 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  apple-sdk,
+  autoAddDriverRunpath,
+  clblast,
   cmake,
+  darwin,
   ninja,
   pkg-config,
   python3,
-  autoAddDriverRunpath,
-
-  config ? { },
-
-  cudaSupport ? (config.cudaSupport or false),
-  cudaPackages ? { },
-
-  rocmSupport ? (config.rocmSupport or false),
-  rocmPackages ? { },
-  rocmGpuTargets ? (rocmPackages.clr.localGpuTargets or rocmPackages.clr.gpuTargets or [ ]),
-
-  openclSupport ? false,
-  clblast,
-  vulkanSupport ? false,
   shaderc,
+  spirv-tools,
   vulkan-headers,
   vulkan-loader,
-  spirv-tools,
-
+  config ? { },
+  cudaPackages ? { },
+  cudaSupport ? (config.cudaSupport or false),
   metalSupport ? (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64),
-  darwin,
-  apple-sdk,
+  openclSupport ? false,
+  rocmGpuTargets ? (rocmPackages.clr.localGpuTargets or rocmPackages.clr.gpuTargets or [ ]),
+  rocmPackages ? { },
+  rocmSupport ? (config.rocmSupport or false),
+  vulkanSupport ? false,
 }:
 
 let
@@ -44,11 +39,6 @@ effectiveStdenv.mkDerivation (finalAttrs: {
   pname = "stable-diffusion-cpp";
   version = "master-741-484baa4";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "leejet";
     repo = "stable-diffusion.cpp";
@@ -56,6 +46,11 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7NM3wGgqdFRCYUwIzoD7bA5yvV7n07gncheQFU7iNIs=";
     fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -119,12 +114,14 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     description = "Stable Diffusion inference in pure C/C++";
     homepage = "https://github.com/leejet/stable-diffusion.cpp";
     license = lib.licenses.mit;
-    mainProgram = "sd";
+
     maintainers = with lib.maintainers; [
       adriangl
     ];
+
     platforms = lib.platforms.unix;
     badPlatforms = lib.optionals (cudaSupport || openclSupport) lib.platforms.darwin;
+    mainProgram = "sd";
     broken = metalSupport && !stdenv.hostPlatform.isDarwin;
   };
 })

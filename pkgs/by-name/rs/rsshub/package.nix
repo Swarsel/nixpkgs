@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
+  fetchPnpmDeps,
   makeBinaryWrapper,
   nix-update-script,
   nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
   replaceVars,
-  stdenv,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "rsshub";
@@ -27,13 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     })
     ./0002-fix-network-call.patch
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    fetcherVersion = 3;
-    hash = "sha256-ykKWrU9NCOXBuFb+I3TG5XFO81W4K9Y7fZk/KjB+5JI=";
-    pnpm = pnpm_10;
-  };
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -67,10 +60,18 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "$out/lib/rsshub/dist/index.mjs"
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-ykKWrU9NCOXBuFb+I3TG5XFO81W4K9Y7fZk/KjB+5JI=";
+    pnpm = pnpm_10;
+  };
+
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch=master" ]; };
 
   meta = {
     description = "RSS feed generator";
+
     longDescription = ''
       RSSHub is an open source, easy to use, and extensible RSS feed generator.
       It's capable of generating RSS feeds from pretty much everything.
@@ -79,10 +80,11 @@ stdenv.mkDerivation (finalAttrs: {
       our vibrant open source community is ensuring the deliver of RSSHub's new routes,
       new features and bug fixes.
     '';
+
     homepage = "https://docs.rsshub.app";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ xinyangli ];
-    mainProgram = "rsshub";
     platforms = lib.platforms.all;
+    mainProgram = "rsshub";
   };
 })

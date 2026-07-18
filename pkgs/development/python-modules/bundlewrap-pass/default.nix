@@ -1,16 +1,15 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   bundlewrap,
+  fetchPypi,
   pass,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "bundlewrap-pass";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,12 +25,12 @@ buildPythonPackage rec {
 
   # upstream has no checks
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "bwpass" ];
 
   meta = {
-    homepage = "https://pypi.org/project/bundlewrap-pass";
     description = "Use secrets from pass in your BundleWrap repo";
+    homepage = "https://pypi.org/project/bundlewrap-pass";
     license = lib.licenses.gpl3;
     maintainers = [ ];
   };

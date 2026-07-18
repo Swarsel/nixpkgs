@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
-  xorgproto,
   cairo,
+  libx11,
   lv2,
   pkg-config,
+  xorgproto,
 }:
 
 stdenv.mkDerivation {
@@ -21,6 +21,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     xorgproto
@@ -31,10 +32,10 @@ stdenv.mkDerivation {
   installFlags = [ "INSTALL_DIR=$(out)/lib/lv2" ];
 
   meta = {
-    homepage = "https://github.com/brummer10/MelMatchEQ.lv2";
     description = "Profiling EQ using a 26 step Mel Frequency Band";
-    maintainers = with lib.maintainers; [ magnetophon ];
+    homepage = "https://github.com/brummer10/MelMatchEQ.lv2";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ magnetophon ];
     platforms = lib.platforms.linux;
   };
 }

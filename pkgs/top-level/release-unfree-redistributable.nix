@@ -24,24 +24,24 @@
 */
 
 {
-  # The platforms for which we build Nixpkgs.
-  supportedSystems ? [
-    "x86_64-linux"
-    "aarch64-linux"
-  ],
+  # We only build the full package set on infrequently releasing channels.
+  full ? false,
   # Attributes passed to nixpkgs.
   nixpkgsArgs ? {
+    __allowFileset = false;
+
     config = {
       allowAliases = false;
       allowUnfree = true;
       cudaSupport = true;
       inHydra = true;
     };
-
-    __allowFileset = false;
   },
-  # We only build the full package set on infrequently releasing channels.
-  full ? false,
+  # The platforms for which we build Nixpkgs.
+  supportedSystems ? [
+    "x86_64-linux"
+    "aarch64-linux"
+  ],
 }:
 
 let

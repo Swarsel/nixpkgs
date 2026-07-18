@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -33,8 +33,8 @@ stdenvNoCC.mkDerivation rec {
     description = "Firmware for Intel 2200BG cards";
     homepage = "https://ipw2200.sourceforge.net/firmware.php";
     license = lib.licenses.unfreeRedistributableFirmware;
+    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
     maintainers = with lib.maintainers; [ sternenseemann ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
   };
 }

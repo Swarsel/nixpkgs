@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "jdatetime";
   version = "5.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ jalali-core ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jdatetime" ];
 
   meta = {

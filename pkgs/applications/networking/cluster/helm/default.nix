@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   testers,
   writableTmpDirAsHomeHook,
@@ -19,17 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-t7cdJjazG38T49y+x2B1akBNvZNXhN2ig3eNnHirV2g=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-6TJWtGTdTtzOpPvWsk4rtJwxZxkIxIA6QSAemOnHcJ4=";
-
-  subPackages = [ "cmd/helm" ];
-  ldflags = [
-    "-w"
-    "-s"
-    "-X helm.sh/helm/v4/internal/version.version=v${finalAttrs.version}"
-    "-X helm.sh/helm/v4/internal/version.metadata="
-    "-X helm.sh/helm/v4/internal/version.gitCommit=${finalAttrs.src.rev}"
-    "-X helm.sh/helm/v4/internal/version.gitTreeState=clean"
-  ];
 
   preBuild = ''
     # set k8s version to client-go version, to match upstream
@@ -47,12 +38,7 @@ buildGoModule (finalAttrs: {
     ldflags="''${ldflags} -X helm.sh/helm/v4/internal/version.kubeClientVersionMinor=''${K8S_MODULES_MINOR_VER}"
   '';
 
-  overrideModAttrs = _: {
-    # the goModules derivation will otherwise inherit the preBuild phase defined above
-    preBuild = "";
-  };
-
-  __darwinAllowLocalNetworking = true;
+  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   preCheck = ''
     # restore ldflags for tests
@@ -85,8 +71,6 @@ buildGoModule (finalAttrs: {
       --replace-fail "TestPullWithCredentialsCmd" "SkipPullWithCredentialsCmd"
   '';
 
-  nativeBuildInputs = [ installShellFiles ];
-  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     $out/bin/helm completion bash > helm.bash
     $out/bin/helm completion zsh > helm.zsh
@@ -94,17 +78,35 @@ buildGoModule (finalAttrs: {
     installShellCompletion helm.{bash,zsh,fish}
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-w"
+    "-s"
+    "-X helm.sh/helm/v4/internal/version.version=v${finalAttrs.version}"
+    "-X helm.sh/helm/v4/internal/version.metadata="
+    "-X helm.sh/helm/v4/internal/version.gitCommit=${finalAttrs.src.rev}"
+    "-X helm.sh/helm/v4/internal/version.gitTreeState=clean"
+  ];
+
+  overrideModAttrs = _: {
+    # the goModules derivation will otherwise inherit the preBuild phase defined above
+    preBuild = "";
+  };
+
+  subPackages = [ "cmd/helm" ];
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
-    command = "helm version";
     version = "v${finalAttrs.version}";
+    command = "helm version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
-    homepage = "https://github.com/helm/helm";
     description = "Package manager for kubernetes";
-    mainProgram = "helm";
+    homepage = "https://github.com/helm/helm";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       rlupton20
       edude03
@@ -113,5 +115,7 @@ buildGoModule (finalAttrs: {
       Chili-Man
       techknowlogick
     ];
+
+    mainProgram = "helm";
   };
 })

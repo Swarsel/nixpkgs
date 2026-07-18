@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  pkg-config,
   rustPlatform,
   udev,
-  pkg-config,
 }:
 
 rustPlatform.buildRustPackage {
@@ -17,10 +17,9 @@ rustPlatform.buildRustPackage {
     sha256 = "sha256-kGLMRqZHzRuXQNTjIuLz8JPC1c/ZK38msfkTIVnaomg=";
   };
 
-  cargoHash = "sha256-xjn9EHYa8LJnj3GCZuug4IznxNCLzb9dtEnoQHRcdh8=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ udev ];
+  cargoHash = "sha256-xjn9EHYa8LJnj3GCZuug4IznxNCLzb9dtEnoQHRcdh8=";
 
   meta = {
     description = "Application to configure Logitech wireless G933/G533 headsets";

@@ -3,18 +3,17 @@
   buildPythonPackage,
   fetchPypi,
   fetchpatch,
+  hypothesis,
+  pytestCheckHook,
   setuptools,
+  six,
   spark-parser,
   xdis,
-  pytestCheckHook,
-  hypothesis,
-  six,
 }:
 
 buildPythonPackage rec {
   pname = "uncompyle6";
   version = "3.9.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +22,20 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-z11AKF5RC4gibUbH3hI2Rsbn8VDg49SnKfqV4TuVnjc=";
       name = "support-xdis-6.3-api.patch";
       url = "https://github.com/rocky/python-uncompyle6/commit/62372825c62044428c29a9ce86b5afa81e93c5ae.patch";
-      hash = "sha256-z11AKF5RC4gibUbH3hI2Rsbn8VDg49SnKfqV4TuVnjc=";
     })
+  ];
+
+  # No tests are provided for versions past 3.8,
+  # as the project only targets bytecode of versions <= 3.8
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    hypothesis
+    six
   ];
 
   build-system = [ setuptools ];
@@ -36,17 +45,8 @@ buildPythonPackage rec {
     xdis
   ];
 
+  pyproject = true;
   pythonRelaxDeps = [ "spark-parser" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    hypothesis
-    six
-  ];
-
-  # No tests are provided for versions past 3.8,
-  # as the project only targets bytecode of versions <= 3.8
-  doCheck = false;
 
   meta = {
     description = "Bytecode decompiler for Python versions 3.8 and below";

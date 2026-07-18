@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   ant,
-  openjdk25,
-  swt,
   makeWrapper,
+  openjdk25,
   strip-nondeterminism,
+  swt,
   udevCheckHook,
 }:
 let
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     udevCheckHook
   ];
 
-  dontConfigure = true;
-
   buildPhase = ''
     runHook preBuild
     ant -f build/build.xml dist
@@ -38,12 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = false;
-  # Missing dependencies (e.g. junit). Does not work.
-  #checkPhase = ''
-  #  ant -f build/build.xml check
-  #'';
-
-  doInstallCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -74,22 +66,32 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Missing dependencies (e.g. junit). Does not work.
+  #checkPhase = ''
+  #  ant -f build/build.xml check
+  #'';
+  doInstallCheck = true;
+
   # manually call strip-nondeterminism because using stripJavaArchivesHook takes
   # too long to strip bundled jars
   postFixup = ''
     strip-nondeterminism --type jar $out/share/DataExplorer/{DataExplorer.jar,devices/*.jar}
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Graphical tool to analyze data, gathered from various hardware devices";
     homepage = "https://www.nongnu.org/dataexplorer/index.html";
     license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ panicgh ];
-    platforms = [ "x86_64-linux" ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode # contains RXTXcomm (JNI library with *.so files)
       binaryBytecode # contains thirdparty jar files, e.g. javax.json, org.glassfish.json
     ];
+
+    maintainers = with lib.maintainers; [ panicgh ];
+    platforms = [ "x86_64-linux" ];
   };
 })

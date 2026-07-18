@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
+  fetchpatch,
+  gettext,
+  glib,
+  gnome,
+  gobject-introspection,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  gettext,
-  libxml2,
-  gobject-introspection,
-  gnome,
-  glib,
 }:
 
 stdenv.mkDerivation rec {
@@ -25,20 +25,13 @@ stdenv.mkDerivation rec {
   patches = [
     # Upstream MR: https://gitlab.gnome.org/GNOME/totem-pl-parser/-/merge_requests/46
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/totem-pl-parser/-/commit/f4f69c9b99095416aaed18a73f7486ad9eb04aa9.patch";
       sha256 = "sha256-Uya5fgFgauv5rIpVK3CDGCieyMus7VjcLMMe/vQ2WWY=";
+      url = "https://gitlab.gnome.org/GNOME/totem-pl-parser/-/commit/f4f69c9b99095416aaed18a73f7486ad9eb04aa9.patch";
     })
   ];
 
-  passthru = {
-    updateScript = gnome.updateScript {
-      packageName = pname;
-      versionPolicy = "odd-unstable";
-    };
-  };
-
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -47,6 +40,7 @@ stdenv.mkDerivation rec {
     glib
     gobject-introspection
   ];
+
   buildInputs = [
     libxml2
     glib
@@ -56,11 +50,20 @@ stdenv.mkDerivation rec {
     "-Dintrospection=false"
   ];
 
+  depsBuildBuild = [ pkg-config ];
+
+  passthru = {
+    updateScript = gnome.updateScript {
+      packageName = pname;
+      versionPolicy = "odd-unstable";
+    };
+  };
+
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/totem-pl-parser";
     description = "Simple GObject-based library to parse and save a host of playlist formats";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/totem-pl-parser";
     license = lib.licenses.lgpl2;
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 }

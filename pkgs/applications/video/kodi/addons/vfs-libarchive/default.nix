@@ -1,19 +1,18 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
-  libarchive,
-  xz,
+  buildKodiBinaryAddon,
   bzip2,
-  zlib,
+  libarchive,
   lz4,
   lzo,
   openssl,
+  rel,
+  xz,
+  zlib,
 }:
 buildKodiBinaryAddon rec {
   pname = namespace;
-  namespace = "vfs.libarchive";
   version = "20.1.0";
 
   src = fetchFromGitHub {
@@ -32,6 +31,8 @@ buildKodiBinaryAddon rec {
     lzo
     openssl
   ];
+
+  namespace = "vfs.libarchive";
 
   meta = {
     description = "LibArchive Virtual Filesystem add-on for Kodi";

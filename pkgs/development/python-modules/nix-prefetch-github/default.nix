@@ -1,26 +1,20 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   git,
-  which,
-  unittestCheckHook,
-  sphinxHook,
-  sphinx-argparse,
+  nix,
   parameterized,
   setuptools,
-  nix,
+  sphinx-argparse,
+  sphinxHook,
+  unittestCheckHook,
+  which,
 }:
 
 buildPythonPackage rec {
   pname = "nix-prefetch-github";
   version = "7.1.0";
-  pyproject = true;
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "seppeljordan";
@@ -29,13 +23,20 @@ buildPythonPackage rec {
     hash = "sha256-eQd/MNlnuzXzgFzvwUMchvHoIvkIrbpGKV7iknO14Cc=";
   };
 
-  dependencies = [ nix ];
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     sphinxHook
     sphinx-argparse
     setuptools
   ];
+
+  # ignore tests which are impure
+  env.DISABLED_TESTS = "network requires_nix_build";
+
   nativeCheckInputs = [
     unittestCheckHook
     git
@@ -43,11 +44,10 @@ buildPythonPackage rec {
     parameterized
   ];
 
+  dependencies = [ nix ];
+  pyproject = true;
   sphinxBuilders = [ "man" ];
   sphinxRoot = "docs";
-
-  # ignore tests which are impure
-  env.DISABLED_TESTS = "network requires_nix_build";
 
   meta = {
     description = "Prefetch sources from github";

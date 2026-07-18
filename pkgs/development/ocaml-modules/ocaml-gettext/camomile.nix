@@ -1,14 +1,14 @@
 {
   lib,
   buildDunePackage,
-  ocaml_gettext,
   camomile,
+  ocaml_gettext,
   ounit2,
 }:
 
 buildDunePackage {
-  pname = "gettext-camomile";
   inherit (ocaml_gettext) src version;
+  pname = "gettext-camomile";
 
   propagatedBuildInputs = [
     camomile

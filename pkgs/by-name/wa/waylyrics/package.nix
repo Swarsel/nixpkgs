@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
-  openssl,
   dbus,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,24 +19,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-uXAcoy5fnnkqtmGmaEC6Ceu+dwmZKDPOFzxC4COuDbk=";
   };
 
-  cargoHash = "sha256-moB2G/QxN3oAfCoTHXjFpIOSB2wRogEUjzup+MTfR6E=";
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook4
   ];
+
   buildInputs = [
     openssl
     dbus
   ];
+
+  cargoHash = "sha256-moB2G/QxN3oAfCoTHXjFpIOSB2wRogEUjzup+MTfR6E=";
+  env.WAYLYRICS_THEME_PRESETS_DIR = "${placeholder "out"}/share/waylyrics/themes";
 
   checkFlags = [
     "--skip=tests::lrclib_lyric::get_lrclib_lyric" # Requires network access
     "--skip=tests::lrclib_lyric::search_lrclib_lyric" # Requires network access
     "--skip=tests::netease_lyric::get_netease_lyric" # Requires network access
   ];
-
-  env.WAYLYRICS_THEME_PRESETS_DIR = "${placeholder "out"}/share/waylyrics/themes";
 
   postInstall = ''
     # Install themes
@@ -64,16 +64,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Desktop lyrics with QQ and NetEase Music source";
-    mainProgram = "waylyrics";
     homepage = "https://github.com/waylyrics/waylyrics";
+
     license = with lib.licenses; [
       mit
       cc-by-40
     ];
+
     maintainers = with lib.maintainers; [
       shadowrz
       aleksana
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "waylyrics";
   };
 })

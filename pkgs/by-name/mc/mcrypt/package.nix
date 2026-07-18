@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.6.8";
   pname = "mcrypt";
+  version = "2.6.8";
 
   src = fetchurl {
     url = "mirror://sourceforge/mcrypt/MCrypt/${finalAttrs.version}/mcrypt-${finalAttrs.version}.tar.gz";
@@ -33,14 +33,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Replacement for old UNIX crypt(1)";
+
     longDescription = ''
       mcrypt, and the accompanying libmcrypt, are intended to be replacements
       for the old Unix crypt, except that they are under the GPL and support an
       ever-wider range of algorithms and modes.
     '';
+
     homepage = "https://mcrypt.sourceforge.net";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.qknight ];
+    platforms = lib.platforms.all;
   };
 })

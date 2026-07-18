@@ -12,18 +12,32 @@ let
 in
 {
   options.services.go-neb = {
+    config = lib.mkOption {
+      inherit (settingsFormat) type;
+
+      description = ''
+        Your {file}`config.yaml` as a Nix attribute set.
+        See [config.sample.yaml](https://github.com/matrix-org/go-neb/blob/master/config.sample.yaml)
+        for possible options.
+      '';
+    };
+
     enable = lib.mkEnableOption "an extensible matrix bot written in Go";
 
-    bindAddress = lib.mkOption {
+    baseUrl = lib.mkOption {
+      description = "Public-facing endpoint that can receive webhooks.";
       type = lib.types.str;
-      description = "Port (and optionally address) to listen on.";
+    };
+
+    bindAddress = lib.mkOption {
       default = ":4050";
+      description = "Port (and optionally address) to listen on.";
+      type = lib.types.str;
     };
 
     secretFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
-      example = "/run/keys/go-neb.env";
+
       description = ''
         Environment variables from this file will be interpolated into the
         final config file using envsubst with this syntax: `$ENVIRONMENT`
@@ -31,20 +45,9 @@ in
         The file should contain lines formatted as `SECRET_VAR=SECRET_VALUE`.
         This is useful to avoid putting secrets into the nix store.
       '';
-    };
 
-    baseUrl = lib.mkOption {
-      type = lib.types.str;
-      description = "Public-facing endpoint that can receive webhooks.";
-    };
-
-    config = lib.mkOption {
-      inherit (settingsFormat) type;
-      description = ''
-        Your {file}`config.yaml` as a Nix attribute set.
-        See [config.sample.yaml](https://github.com/matrix-org/go-neb/blob/master/config.sample.yaml)
-        for possible options.
-      '';
+      example = "/run/keys/go-neb.env";
+      type = lib.types.nullOr lib.types.path;
     };
   };
 
@@ -54,9 +57,9 @@ in
         finalConfigFile = if cfg.secretFile == null then configFile else "/var/run/go-neb/config.yaml";
       in
       {
-        description = "Extensible matrix bot written in Go";
         after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "Extensible matrix bot written in Go";
+
         environment = {
           BASE_URL = cfg.baseUrl;
           BIND_ADDRESS = cfg.bindAddress;
@@ -64,6 +67,9 @@ in
         };
 
         serviceConfig = {
+          DynamicUser = true;
+          ExecStart = "${pkgs.go-neb}/bin/go-neb";
+
           ExecStartPre = lib.optional (cfg.secretFile != null) (
             "+"
             + pkgs.writeShellScript "pre-start" ''
@@ -73,11 +79,12 @@ in
               chown go-neb ${finalConfigFile}
             ''
           );
+
           RuntimeDirectory = "go-neb";
-          ExecStart = "${pkgs.go-neb}/bin/go-neb";
           User = "go-neb";
-          DynamicUser = true;
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
   };
 

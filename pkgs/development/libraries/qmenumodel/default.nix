@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  testers,
   cmake,
   cmake-extras,
   dbus,
   dbus-test-runner,
+  gitUpdater,
   glib,
+  gobject-introspection,
   pkg-config,
   python3,
   qtbase,
   qtdeclarative,
-  gobject-introspection,
+  testers,
 }:
 
 let
@@ -61,6 +61,13 @@ stdenv.mkDerivation (finalAttrs: {
     qtdeclarative
   ];
 
+  cmakeFlags = [
+    (lib.strings.cmakeBool "ENABLE_QT6" withQt6)
+    (lib.strings.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     dbus
     dbus-test-runner
@@ -73,22 +80,14 @@ stdenv.mkDerivation (finalAttrs: {
     ))
   ];
 
-  dontWrapQtApps = true;
-
-  cmakeFlags = [
-    (lib.strings.cmakeBool "ENABLE_QT6" withQt6)
-    (lib.strings.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
-  ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  # Tests have been flaky sometimes, hoping that not running in parallel helps
-  enableParallelChecking = false;
-
   preCheck = ''
     # Tests all need some Qt stuff
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
   '';
+
+  dontWrapQtApps = true;
+  # Tests have been flaky sometimes, hoping that not running in parallel helps
+  enableParallelChecking = false;
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -97,16 +96,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt renderer for Ayatana Indicators";
+
     longDescription = ''
       QMenuModel - a Qt/QML binding for GMenuModel
       (see http://developer.gnome.org/gio/unstable/GMenuModel.html)
     '';
+
     homepage = "https://github.com/AyatanaIndicators/qmenumodel";
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "qmenumodel${lib.optionalString withQt6 "-qt6"}"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

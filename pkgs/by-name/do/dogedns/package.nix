@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
-  pkg-config,
   openssl,
   pandoc,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,13 +20,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SeC/GZ1AeEqRzxWc4oJ6JOvXfn3/LRcQz9uWXXqdTqU=";
   };
 
-  cargoHash = "sha256-vLdfmaIOSxNqs1Hq6NJMA8HDZas4E9rc+VHnFSlX/wg=";
-
   patches = [
     # remove date info to make the build reproducible
     # remove commit hash to avoid dependency on git and the need to keep `.git`
     ./remove-date-info.patch
   ];
+
+  nativeBuildInputs = [
+    installShellFiles
+    pandoc
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ openssl ];
+  cargoHash = "sha256-vLdfmaIOSxNqs1Hq6NJMA8HDZas4E9rc+VHnFSlX/wg=";
 
   checkFlags = [
     "--skip=options::test::all_mixed_3"
@@ -39,13 +46,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=options::test::two_classes"
   ];
 
-  nativeBuildInputs = [
-    installShellFiles
-    pandoc
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ openssl ];
-
   postInstall = ''
     installShellCompletion completions/doge.{bash,fish,zsh}
     installManPage ./target/man/*.1
@@ -55,7 +55,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Reviving a command-line DNS client";
     homepage = "https://github.com/Dj-Codeman/dog_community";
     license = lib.licenses.eupl12;
-    mainProgram = "doge";
     maintainers = with lib.maintainers; [ aktaboot ];
+    mainProgram = "doge";
   };
 })

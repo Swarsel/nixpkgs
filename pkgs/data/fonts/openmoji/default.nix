@@ -1,11 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nanoemoji,
   python3Packages,
+  stdenvNoCC,
   woff2,
   xmlstarlet,
+  # when at least one of the glyf_colr_0/1 formats is specified, whether to build maximum color fonts
+  # "none" to not build any, "svg" to build colr+svg, "bitmap" to build cbdt+colr+svg fonts
+  buildMaximumColorFonts ? "bitmap",
   # available color formats: ["cbdt" "glyf_colr_0" "glyf_colr_1" "sbix" "picosvgz" "untouchedsvgz"]
   # available black formats: ["glyf"]
   fontFormats ? [
@@ -14,14 +17,12 @@
     "glyf_colr_0"
     "glyf_colr_1"
   ],
-  # when at least one of the glyf_colr_0/1 formats is specified, whether to build maximum color fonts
-  # "none" to not build any, "svg" to build colr+svg, "bitmap" to build cbdt+colr+svg fonts
-  buildMaximumColorFonts ? "bitmap",
 }:
 let
   # all available methods
   methods = {
     black = [ "glyf" ];
+
     color = [
       "cbdt"
       "glyf_colr_0"
@@ -56,26 +57,17 @@ stdenvNoCC.mkDerivation rec {
     ./build.patch
   ];
 
+  postPatch = lib.optionalString (buildMaximumColorFonts == "bitmap") ''
+    substituteInPlace helpers/generate-fonts-runner.sh \
+      --replace 'maximum_color' 'maximum_color --bitmaps'
+  '';
+
   nativeBuildInputs = [
     nanoemoji
     python3Packages.fonttools
     woff2
     xmlstarlet
   ];
-
-  methods_black = builtins.filter (m: builtins.elem m fontFormats) methods.black;
-  methods_color = builtins.filter (m: builtins.elem m fontFormats) methods.color;
-  saturations =
-    lib.optional (methods_black != [ ]) "black" ++ lib.optional (methods_color != [ ]) "color";
-  maximumColorVersions = lib.optionals (buildMaximumColorFonts != "none") (
-    lib.optional (builtins.elem "glyf_colr_0" fontFormats) "0"
-    ++ lib.optional (builtins.elem "glyf_colr_1" fontFormats) "1"
-  );
-
-  postPatch = lib.optionalString (buildMaximumColorFonts == "bitmap") ''
-    substituteInPlace helpers/generate-fonts-runner.sh \
-      --replace 'maximum_color' 'maximum_color --bitmaps'
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -95,15 +87,28 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  maximumColorVersions = lib.optionals (buildMaximumColorFonts != "none") (
+    lib.optional (builtins.elem "glyf_colr_0" fontFormats) "0"
+    ++ lib.optional (builtins.elem "glyf_colr_1" fontFormats) "1"
+  );
+
+  methods_black = builtins.filter (m: builtins.elem m fontFormats) methods.black;
+  methods_color = builtins.filter (m: builtins.elem m fontFormats) methods.color;
+
+  saturations =
+    lib.optional (methods_black != [ ]) "black" ++ lib.optional (methods_color != [ ]) "color";
+
   meta = {
+    description = "Open-source emojis for designers, developers and everyone else";
+    homepage = "https://openmoji.org/";
     license = lib.licenses.cc-by-sa-40;
+
     maintainers = with lib.maintainers; [
       _999eagle
       fgaz
     ];
+
     platforms = lib.platforms.all;
-    homepage = "https://openmoji.org/";
     downloadPage = "https://github.com/hfg-gmuend/openmoji/releases";
-    description = "Open-source emojis for designers, developers and everyone else";
   };
 }

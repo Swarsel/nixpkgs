@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   click,
   cython,
+  setuptools,
   tabulate,
 }:
 
 buildPythonPackage rec {
   pname = "youtokentome";
   version = "1.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "VKCOM";
@@ -30,14 +29,15 @@ buildPythonPackage rec {
     tabulate
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "youtokentome" ];
 
   meta = {
     description = "Unsupervised text tokenizer";
-    mainProgram = "yttm";
     homepage = "https://github.com/VKCOM/YouTokenToMe";
     changelog = "https://github.com/VKCOM/YouTokenToMe/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "yttm";
   };
 }

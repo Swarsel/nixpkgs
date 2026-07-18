@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -21,8 +21,6 @@ buildNpmPackage rec {
     rm -rf dist
   '';
 
-  npmBuildScript = "dist";
-
   installPhase = ''
     runHook preInstall
 
@@ -31,10 +29,12 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  npmBuildScript = "dist";
+
   meta = {
-    changelog = "https://github.com/Clooos/bubble-card/releases/tag/v${version}";
     description = "Bubble Card is a minimalist card collection for Home Assistant with a nice pop-up touch";
     homepage = "https://github.com/Clooos/Bubble-Card";
+    changelog = "https://github.com/Clooos/bubble-card/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pta2002 ];
   };

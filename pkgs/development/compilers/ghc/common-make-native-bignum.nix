@@ -1,61 +1,62 @@
 {
-  version,
   sha256,
+  version,
   url ? "https://downloads.haskell.org/ghc/${version}/ghc-${version}-src.tar.xz",
 }:
 
 {
   lib,
   stdenv,
-  pkgsBuildTarget,
-  pkgsHostTarget,
-  buildPackages,
-  targetPackages,
-
+  fetchurl,
+  autoSignDarwinBinariesHook,
+  autoreconfHook,
+  bash,
   # build-tools
   bootPkgs,
-  autoreconfHook,
-  coreutils,
-  fetchpatch,
-  fetchurl,
-  perl,
-  python3,
-  sphinx,
-  xattr,
-  autoSignDarwinBinariesHook,
-  bash,
-
-  libiconv ? null,
-  ncurses,
-
-  # GHC can be built with system libffi or a bundled one.
-  libffi ? null,
-
-  useLLVM ? !(import ./common-have-ncg.nix { inherit lib stdenv version; }),
-
+  buildPackages,
   # LLVM is conceptually a run-time-only dependency, but for
   # non-x86, we need LLVM to bootstrap later stages, so it becomes a
   # build-time dependency too.
   buildTargetLlvmPackages,
+  coreutils,
+  fetchpatch,
+  gmp,
   llvmPackages,
-
+  ncurses,
+  numactl,
+  perl,
+  pkgsBuildTarget,
+  pkgsHostTarget,
+  python3,
+  sphinx,
+  targetPackages,
+  xattr,
+  # Whether to disable the large address space allocator
+  # necessary fix for iOS: https://www.reddit.com/r/haskell/comments/4ttdz1/building_an_osxi386_to_iosarm64_cross_compiler/d5qvd67/
+  disableLargeAddressSpace ? stdenv.targetPlatform.isiOS,
+  #  Whether to build sphinx documentation.
+  enableDocs ? (
+    # Docs disabled if we are building on musl because it's a large task to keep
+    # all `sphinx` dependencies building in this environment.
+    !stdenv.buildPlatform.isMusl
+  ),
+  enableHaddockProgram ?
+    # Disabled for cross; see note [HADDOCK_DOCS].
+    (stdenv.buildPlatform == stdenv.hostPlatform && stdenv.targetPlatform == stdenv.hostPlatform),
   # If enabled, GHC will be built with the GPL-free but slightly slower native
   # bignum backend instead of the faster but GPLed gmp backend.
   enableNativeBignum ?
     !(lib.meta.availableOn stdenv.hostPlatform gmp && lib.meta.availableOn stdenv.targetPlatform gmp),
-  gmp,
-
-  # If enabled, use -fPIC when compiling static libs.
-  enableRelocatedStaticLibs ? stdenv.targetPlatform != stdenv.hostPlatform,
-
+  # Enable NUMA support in RTS
+  enableNuma ? lib.meta.availableOn stdenv.targetPlatform numactl,
   # Exceeds Hydra output limit (at the time of writing ~3GB) when cross compiled to riscv64.
   # A riscv64 cross-compiler fits into the limit comfortably.
   enableProfiledLibs ? !stdenv.hostPlatform.isRiscV64,
-
+  # If enabled, use -fPIC when compiling static libs.
+  enableRelocatedStaticLibs ? stdenv.targetPlatform != stdenv.hostPlatform,
   # Whether to build dynamic libs for the standard library (on the target
   # platform). Static libs are always built.
   enableShared ? with stdenv.targetPlatform; !isWindows && !useiOSPrebuilt && !isStatic,
-
   # Whether to build terminfo.
   enableTerminfo ?
     !(
@@ -64,32 +65,6 @@
       || (stdenv.buildPlatform != stdenv.hostPlatform)
       || (stdenv.hostPlatform != stdenv.targetPlatform)
     ),
-
-  # Enable NUMA support in RTS
-  enableNuma ? lib.meta.availableOn stdenv.targetPlatform numactl,
-  numactl,
-
-  # What flavour to build. An empty string indicates no
-  # specific flavour and falls back to ghc default values.
-  ghcFlavour ? lib.optionalString (stdenv.targetPlatform != stdenv.hostPlatform) (
-    if useLLVM then "perf-cross" else "perf-cross-ncg"
-  ),
-
-  #  Whether to build sphinx documentation.
-  enableDocs ? (
-    # Docs disabled if we are building on musl because it's a large task to keep
-    # all `sphinx` dependencies building in this environment.
-    !stdenv.buildPlatform.isMusl
-  ),
-
-  enableHaddockProgram ?
-    # Disabled for cross; see note [HADDOCK_DOCS].
-    (stdenv.buildPlatform == stdenv.hostPlatform && stdenv.targetPlatform == stdenv.hostPlatform),
-
-  # Whether to disable the large address space allocator
-  # necessary fix for iOS: https://www.reddit.com/r/haskell/comments/4ttdz1/building_an_osxi386_to_iosarm64_cross_compiler/d5qvd67/
-  disableLargeAddressSpace ? stdenv.targetPlatform.isiOS,
-
   # Whether to build an unregisterised version of GHC.
   # GHC will normally auto-detect whether it can do a registered build, but this
   # option will force it to do an unregistered build when set to true.
@@ -97,6 +72,15 @@
   # Registerised RV64 compiler produces programs that segfault
   # See https://gitlab.haskell.org/ghc/ghc/-/issues/23957
   enableUnregisterised ? stdenv.hostPlatform.isRiscV64 || stdenv.targetPlatform.isRiscV64,
+  # What flavour to build. An empty string indicates no
+  # specific flavour and falls back to ghc default values.
+  ghcFlavour ? lib.optionalString (stdenv.targetPlatform != stdenv.hostPlatform) (
+    if useLLVM then "perf-cross" else "perf-cross-ncg"
+  ),
+  # GHC can be built with system libffi or a bundled one.
+  libffi ? null,
+  libiconv ? null,
+  useLLVM ? !(import ./common-have-ncg.nix { inherit lib stdenv version; }),
 }:
 
 assert !enableNativeBignum -> gmp != null;
@@ -192,34 +176,29 @@ let
     let
       tools =
         {
-          "cc" = cc;
-          "c++" = cc;
-          as = cc.bintools;
-
           ar = cc.bintools;
-          ranlib = cc.bintools;
-          nm = cc.bintools;
-          readelf = cc.bintools;
-          objdump = cc.bintools;
-
-          ld = cc.bintools;
-          "ld.gold" = cc.bintools;
-
-          otool = cc.bintools.bintools;
-
+          as = cc.bintools;
+          "c++" = cc;
+          "cc" = cc;
+          # clang is used as an assembler on darwin with the LLVM backend
+          clang = cc;
           # GHC needs install_name_tool on all darwin platforms. The same one can
           # be used on both platforms. It is safe to use with linker-generated
           # signatures because it will update the signatures automatically after
           # modifying the target binary.
           install_name_tool = cc.bintools.bintools;
+          ld = cc.bintools;
+          "ld.gold" = cc.bintools;
+          nm = cc.bintools;
+          objdump = cc.bintools;
+          otool = cc.bintools.bintools;
+          ranlib = cc.bintools;
+          readelf = cc.bintools;
 
           # strip on darwin is wrapped to enable deterministic mode.
           strip =
             # TODO(@sternenseemann): also use wrapper if linker == "bfd" or "gold"
             if stdenv.targetPlatform.isDarwin then cc.bintools else cc.bintools.bintools;
-
-          # clang is used as an assembler on darwin with the LLVM backend
-          clang = cc;
         }
         .${name};
     in
@@ -273,14 +252,12 @@ in
 
 stdenv.mkDerivation (
   rec {
-    pname = "${targetPrefix}ghc${variantSuffix}";
     inherit version;
+    pname = "${targetPrefix}ghc${variantSuffix}";
 
     src = fetchurl {
       inherit url sha256;
     };
-
-    enableParallelBuilding = true;
 
     outputs = [
       "out"
@@ -295,11 +272,11 @@ stdenv.mkDerivation (
       # Note that in normal situations this shouldn't be the case since nixpkgs
       # doesn't set -D_FILE_OFFSET_BITS=64 and friends (yet).
       (fetchpatch {
+        extraPrefix = "libraries/unix/";
         name = "unix-fix-ctimeval-size-32-bit.patch";
-        url = "https://github.com/haskell/unix/commit/8183e05b97ce870dd6582a3677cc82459ae566ec.patch";
         sha256 = "17q5yyigqr5kxlwwzb95sx567ysfxlw6bp3j4ji20lz0947aw6gv";
         stripLen = 1;
-        extraPrefix = "libraries/unix/";
+        url = "https://github.com/haskell/unix/commit/8183e05b97ce870dd6582a3677cc82459ae566ec.patch";
       })
 
       # Fix docs build with Sphinx >= 7 https://gitlab.haskell.org/ghc/ghc/-/issues/24129 krank:ignore-line
@@ -334,15 +311,15 @@ stdenv.mkDerivation (
     ++ [
       # Need to use this patch so the next one applies, passes file location info to the cc phase
       (fetchpatch {
+        hash = "sha256-DnTI+i1zMebeWvw75D59vMaEEBb2Nr9HusxTyhmdy2M=";
         name = "ghc-add-location-to-cc-phase.patch";
         url = "https://gitlab.haskell.org/ghc/ghc/-/commit/4a7256a75af2fc0318bef771a06949ffb3939d5a.patch";
-        hash = "sha256-DnTI+i1zMebeWvw75D59vMaEEBb2Nr9HusxTyhmdy2M=";
       })
       # Makes Cc phase directly generate object files instead of assembly
       (fetchpatch {
+        hash = "sha256-G8u7/MK/tGOEN8Wxccxj/YIOP7mL2G9Co1WKdHXOo6I=";
         name = "ghc-cc-directly-emit-object.patch";
         url = "https://gitlab.haskell.org/ghc/ghc/-/commit/96811ba491495b601ec7d6a32bef8563b0292109.patch";
-        hash = "sha256-G8u7/MK/tGOEN8Wxccxj/YIOP7mL2G9Co1WKdHXOo6I=";
       })
     ]
 
@@ -351,9 +328,9 @@ stdenv.mkDerivation (
     # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/13863
     ++ lib.optionals (lib.versions.majorMinor version == "9.4") [
       (fetchpatch {
+        hash = "sha256-Vr5wkiSE1S5e+cJ8pWUvG9KFpxtmvQ8wAy08ElGNp5E=";
         name = "ghc-hp2ps-c-gnu17.patch";
         url = "https://src.fedoraproject.org/rpms/ghc/raw/9c26d7c3c3de73509a25806e5663b37bcf2e0b4e/f/hp2ps-C-gnu17.patch";
-        hash = "sha256-Vr5wkiSE1S5e+cJ8pWUvG9KFpxtmvQ8wAy08ElGNp5E=";
       })
     ]
 
@@ -361,10 +338,10 @@ stdenv.mkDerivation (
       # Don't generate code that doesn't compile when --enable-relocatable is passed to Setup.hs
       # Can be removed if the Cabal library included with ghc backports the linked fix
       (fetchpatch {
-        url = "https://github.com/haskell/cabal/commit/6c796218c92f93c95e94d5ec2d077f6956f68e98.patch";
-        stripLen = 1;
         extraPrefix = "libraries/Cabal/";
         sha256 = "sha256-yRQ6YmMiwBwiYseC5BsrEtDgFbWvst+maGgDtdD0vAY=";
+        stripLen = 1;
+        url = "https://github.com/haskell/cabal/commit/6c796218c92f93c95e94d5ec2d077f6956f68e98.patch";
       })
     ]
 
@@ -376,8 +353,8 @@ stdenv.mkDerivation (
     ++ [
       (fetchpatch {
         name = "ghc-rts-adjustor-fix-i386-stack-overrun.patch";
-        url = "https://gitlab.haskell.org/ghc/ghc/-/commit/39bb6e583d64738db51441a556d499aa93a4fc4a.patch";
         sha256 = "0w5fx413z924bi2irsy1l4xapxxhrq158b5gn6jzrbsmhvmpirs0";
+        url = "https://gitlab.haskell.org/ghc/ghc/-/commit/39bb6e583d64738db51441a556d499aa93a4fc4a.patch";
       })
     ]
 
@@ -394,6 +371,77 @@ stdenv.mkDerivation (
     ++ (import ./common-llvm-patches.nix { inherit lib version fetchpatch; });
 
     postPatch = "patchShebangs .";
+    # Make sure we never relax`$PATH` and hooks support for compatibility.
+    strictDeps = true;
+
+    nativeBuildInputs = [
+      autoreconfHook
+      perl
+      python3
+      bootPkgs.alex
+      bootPkgs.happy
+      bootPkgs.hscolour
+      bootPkgs.ghc-settings-edit
+    ]
+    ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
+      autoSignDarwinBinariesHook
+    ]
+    ++ lib.optionals enableDocs [
+      sphinx
+    ];
+
+    buildInputs = [ bash ] ++ (libDeps hostPlatform);
+
+    # `--with` flags for libraries needed for RTS linker
+    configureFlags = [
+      "--datadir=$doc/share/doc/ghc"
+    ]
+    # ghc 9.10 and later use c17 by default. we use gnu17 on darwin for older
+    # ghc versions to match this and fix build issues with newer clang.
+    ++ lib.optionals (hostPlatform.isDarwin && lib.versionOlder version "9.10") [
+      "CFLAGS=-std=gnu17"
+    ]
+    ++ lib.optionals enableTerminfo [
+      "--with-curses-includes=${lib.getDev targetLibs.ncurses}/include"
+      "--with-curses-libraries=${lib.getLib targetLibs.ncurses}/lib"
+    ]
+    ++ lib.optionals (libffi != null) [
+      "--with-system-libffi"
+      "--with-ffi-includes=${targetLibs.libffi.dev}/include"
+      "--with-ffi-libraries=${targetLibs.libffi.out}/lib"
+    ]
+    ++ lib.optionals (targetPlatform == hostPlatform && !enableNativeBignum) [
+      "--with-gmp-includes=${targetLibs.gmp.dev}/include"
+      "--with-gmp-libraries=${targetLibs.gmp.out}/lib"
+    ]
+    ++
+      lib.optionals
+        (targetPlatform == hostPlatform && hostPlatform.libc != "glibc" && !targetPlatform.isWindows)
+        [
+          "--with-iconv-includes=${libiconv}/include"
+          "--with-iconv-libraries=${libiconv}/lib"
+        ]
+    ++ lib.optionals (targetPlatform != hostPlatform) [
+      "--enable-bootstrap-with-devel-snapshot"
+    ]
+    ++ lib.optionals useLdGold [
+      "CFLAGS=-fuse-ld=gold"
+      "CONF_GCC_LINKER_OPTS_STAGE1=-fuse-ld=gold"
+      "CONF_GCC_LINKER_OPTS_STAGE2=-fuse-ld=gold"
+    ]
+    ++ lib.optionals disableLargeAddressSpace [
+      "--disable-large-address-space"
+    ]
+    ++ lib.optionals enableNuma [
+      "--enable-numa"
+      "--with-libnuma-includes=${lib.getDev targetLibs.numactl}/include"
+      "--with-libnuma-libraries=${lib.getLib targetLibs.numactl}/lib"
+    ]
+    ++ lib.optionals enableUnregisterised [
+      "--enable-unregisterised"
+      # The C backend generates code incompatible with gnu23
+      "CONF_CC_OPTS_STAGE2=-std=gnu17"
+    ];
 
     # GHC is a bit confused on its cross terminology.
     # TODO(@sternenseemann): investigate coreutils dependencies and pass absolute paths
@@ -488,132 +536,6 @@ stdenv.mkDerivation (
       done
     '';
 
-    # Although it is usually correct to pass --host, we don't do that here because
-    # GHC's usage of build, host, and target is non-standard.
-    # See https://gitlab.haskell.org/ghc/ghc/-/wikis/building/cross-compiling
-    # TODO(@Ericson2314): Always pass "--target" and always prefix.
-    configurePlatforms = [
-      "build"
-    ]
-    ++ lib.optional (buildPlatform != hostPlatform || targetPlatform != hostPlatform) "target";
-
-    # `--with` flags for libraries needed for RTS linker
-    configureFlags = [
-      "--datadir=$doc/share/doc/ghc"
-    ]
-    # ghc 9.10 and later use c17 by default. we use gnu17 on darwin for older
-    # ghc versions to match this and fix build issues with newer clang.
-    ++ lib.optionals (hostPlatform.isDarwin && lib.versionOlder version "9.10") [
-      "CFLAGS=-std=gnu17"
-    ]
-    ++ lib.optionals enableTerminfo [
-      "--with-curses-includes=${lib.getDev targetLibs.ncurses}/include"
-      "--with-curses-libraries=${lib.getLib targetLibs.ncurses}/lib"
-    ]
-    ++ lib.optionals (libffi != null) [
-      "--with-system-libffi"
-      "--with-ffi-includes=${targetLibs.libffi.dev}/include"
-      "--with-ffi-libraries=${targetLibs.libffi.out}/lib"
-    ]
-    ++ lib.optionals (targetPlatform == hostPlatform && !enableNativeBignum) [
-      "--with-gmp-includes=${targetLibs.gmp.dev}/include"
-      "--with-gmp-libraries=${targetLibs.gmp.out}/lib"
-    ]
-    ++
-      lib.optionals
-        (targetPlatform == hostPlatform && hostPlatform.libc != "glibc" && !targetPlatform.isWindows)
-        [
-          "--with-iconv-includes=${libiconv}/include"
-          "--with-iconv-libraries=${libiconv}/lib"
-        ]
-    ++ lib.optionals (targetPlatform != hostPlatform) [
-      "--enable-bootstrap-with-devel-snapshot"
-    ]
-    ++ lib.optionals useLdGold [
-      "CFLAGS=-fuse-ld=gold"
-      "CONF_GCC_LINKER_OPTS_STAGE1=-fuse-ld=gold"
-      "CONF_GCC_LINKER_OPTS_STAGE2=-fuse-ld=gold"
-    ]
-    ++ lib.optionals disableLargeAddressSpace [
-      "--disable-large-address-space"
-    ]
-    ++ lib.optionals enableNuma [
-      "--enable-numa"
-      "--with-libnuma-includes=${lib.getDev targetLibs.numactl}/include"
-      "--with-libnuma-libraries=${lib.getLib targetLibs.numactl}/lib"
-    ]
-    ++ lib.optionals enableUnregisterised [
-      "--enable-unregisterised"
-      # The C backend generates code incompatible with gnu23
-      "CONF_CC_OPTS_STAGE2=-std=gnu17"
-    ];
-
-    # Make sure we never relax`$PATH` and hooks support for compatibility.
-    strictDeps = true;
-
-    # Don’t add -liconv to LDFLAGS automatically so that GHC will add it itself.
-    dontAddExtraLibs = true;
-
-    nativeBuildInputs = [
-      autoreconfHook
-      perl
-      python3
-      bootPkgs.alex
-      bootPkgs.happy
-      bootPkgs.hscolour
-      bootPkgs.ghc-settings-edit
-    ]
-    ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
-      autoSignDarwinBinariesHook
-    ]
-    ++ lib.optionals enableDocs [
-      sphinx
-    ];
-
-    # Everything the stage0 compiler needs to build stage1: CC, bintools, extra libs.
-    # See also GHC, {CC,LD,AR}_STAGE0 in preConfigure.
-    depsBuildBuild = [
-      # N.B. We do not declare bootPkgs.ghc in any of the stdenv.mkDerivation
-      # dependency lists to prevent the bintools setup hook from adding ghc's
-      # lib directory to the linker flags. Instead we tell configure about it
-      # via the GHC environment variable.
-      buildCC
-      # stage0 builds terminfo unconditionally, so we always need ncurses
-      ncurses
-    ];
-    # For building runtime libs
-    depsBuildTarget = toolsForTarget;
-
-    # Prevent stage0 ghc from leaking into the final result. This was an issue
-    # with GHC 9.6.
-    disallowedReferences = [
-      bootPkgs.ghc
-    ];
-
-    buildInputs = [ bash ] ++ (libDeps hostPlatform);
-
-    # stage1 GHC doesn't need to link against libnuma, so it's target specific
-    depsTargetTarget = map lib.getDev (
-      libDeps targetPlatform ++ lib.optionals enableNuma [ targetLibs.numactl ]
-    );
-    depsTargetTargetPropagated = map (lib.getOutput "out") (
-      libDeps targetPlatform ++ lib.optionals enableNuma [ targetLibs.numactl ]
-    );
-
-    # required, because otherwise all symbols from HSffi.o are stripped, and
-    # that in turn causes GHCi to abort
-    stripDebugFlags = [ "-S" ] ++ lib.optional (!targetPlatform.isDarwin) "--keep-file-symbols";
-
-    checkTarget = "test";
-
-    hardeningDisable = [
-      "format"
-    ];
-
-    # big-parallel allows us to build with more than 2 cores on
-    # Hydra which already warrants a significant speedup
-    requiredSystemFeatures = [ "big-parallel" ];
-
     # Install occasionally fails due to a race condition in minimal builds.
     # > /nix/store/wyzpysxwgs3qpvmylm9krmfzh2plicix-coreutils-9.7/bin/install -c -m 755 -d "/nix/store/xzb3390rhvhg2a0cvzmrvjspw1d8nf8h-ghc-riscv64-unknown-linux-gnu-9.4.8/bin"
     # > install: cannot create regular file '/nix/store/xzb3390rhvhg2a0cvzmrvjspw1d8nf8h-ghc-riscv64-unknown-linux-gnu-9.4.8/lib/ghc-9.4.8': No such file or directory
@@ -657,38 +579,92 @@ stdenv.mkDerivation (
       install -D -m 444 utils/completion/ghc.bash $out/share/bash-completion/completions/${targetPrefix}ghc
     '';
 
+    checkTarget = "test";
+
+    # Although it is usually correct to pass --host, we don't do that here because
+    # GHC's usage of build, host, and target is non-standard.
+    # See https://gitlab.haskell.org/ghc/ghc/-/wikis/building/cross-compiling
+    # TODO(@Ericson2314): Always pass "--target" and always prefix.
+    configurePlatforms = [
+      "build"
+    ]
+    ++ lib.optional (buildPlatform != hostPlatform || targetPlatform != hostPlatform) "target";
+
+    # Everything the stage0 compiler needs to build stage1: CC, bintools, extra libs.
+    # See also GHC, {CC,LD,AR}_STAGE0 in preConfigure.
+    depsBuildBuild = [
+      # N.B. We do not declare bootPkgs.ghc in any of the stdenv.mkDerivation
+      # dependency lists to prevent the bintools setup hook from adding ghc's
+      # lib directory to the linker flags. Instead we tell configure about it
+      # via the GHC environment variable.
+      buildCC
+      # stage0 builds terminfo unconditionally, so we always need ncurses
+      ncurses
+    ];
+
+    # For building runtime libs
+    depsBuildTarget = toolsForTarget;
+
+    # stage1 GHC doesn't need to link against libnuma, so it's target specific
+    depsTargetTarget = map lib.getDev (
+      libDeps targetPlatform ++ lib.optionals enableNuma [ targetLibs.numactl ]
+    );
+
+    depsTargetTargetPropagated = map (lib.getOutput "out") (
+      libDeps targetPlatform ++ lib.optionals enableNuma [ targetLibs.numactl ]
+    );
+
+    # Prevent stage0 ghc from leaking into the final result. This was an issue
+    # with GHC 9.6.
+    disallowedReferences = [
+      bootPkgs.ghc
+    ];
+
+    # Don’t add -liconv to LDFLAGS automatically so that GHC will add it itself.
+    dontAddExtraLibs = true;
+    enableParallelBuilding = true;
+
+    hardeningDisable = [
+      "format"
+    ];
+
+    # big-parallel allows us to build with more than 2 cores on
+    # Hydra which already warrants a significant speedup
+    requiredSystemFeatures = [ "big-parallel" ];
+    # required, because otherwise all symbols from HSffi.o are stripped, and
+    # that in turn causes GHCi to abort
+    stripDebugFlags = [ "-S" ] ++ lib.optional (!targetPlatform.isDarwin) "--keep-file-symbols";
+
     passthru = {
       inherit bootPkgs targetPrefix;
-
       inherit llvmPackages;
       inherit enableShared;
-
+      bootstrapAvailable = lib.meta.availableOn stdenv.buildPlatform bootPkgs.ghc;
       # This is used by the haskell builder to query
       # the presence of the haddock program.
       hasHaddock = enableHaddockProgram;
-
       # Our Cabal compiler name
       haskellCompilerName = "ghc-${version}";
-
-      bootstrapAvailable = lib.meta.availableOn stdenv.buildPlatform bootPkgs.ghc;
     };
 
     meta = {
-      homepage = "http://haskell.org/ghc";
+      inherit (bootPkgs.ghc.meta) license;
       description = "Glasgow Haskell Compiler";
+      homepage = "http://haskell.org/ghc";
+
       maintainers = with lib.maintainers; [
         guibou
       ];
+
+      platforms = lib.platforms.all;
       teams = [ lib.teams.haskell ];
       timeout = 24 * 3600;
-      platforms = lib.platforms.all;
-      inherit (bootPkgs.ghc.meta) license;
     };
 
   }
   // lib.optionalAttrs targetPlatform.useAndroidPrebuilt {
-    dontStrip = true;
     dontPatchELF = true;
+    dontStrip = true;
     noAuditTmpdir = true;
   }
 )

@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
-  fetchCrate,
-  pkg-config,
-  curl,
-  openssl,
   stdenv,
+  curl,
+  fetchCrate,
   libiconv,
+  openssl,
+  pkg-config,
   rav1e,
+  rustPlatform,
 }:
 
 let
@@ -20,16 +20,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) pname;
-    version = "${finalAttrs.version}+cargo-${cargoVersion}";
     hash = "sha256-yqSrpBZUa0NmsPawYKKgywmbbG4zgguwfDF667s7zdo=";
+    version = "${finalAttrs.version}+cargo-${cargoVersion}";
   };
-
-  cargoHash = "sha256-yeJWZtkgCRB0ipyTslsGcJi9Fi/XoWziuv74exRhAIk=";
 
   nativeBuildInputs = [
     pkg-config
     (lib.getDev curl)
   ];
+
   buildInputs = [
     openssl
     curl
@@ -38,8 +37,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
+  cargoHash = "sha256-yeJWZtkgCRB0ipyTslsGcJi9Fi/XoWziuv74exRhAIk=";
   # Ensure that we are avoiding build of the curl vendored in curl-sys
   doInstallCheck = stdenv.hostPlatform.libc == "glibc";
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -52,19 +53,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tests = {
       inherit rav1e;
     };
+
     updateScript.command = [ ./update.sh ];
   };
 
   meta = {
     description = "Cargo subcommand to build and install C-ABI compatible dynamic and static libraries";
+
     longDescription = ''
       Cargo C-ABI helpers. A cargo applet that produces and installs a correct
       pkg-config file, a static library and a dynamic library, and a C header
       to be used by any C (and C-compatible) software.
     '';
+
     homepage = "https://github.com/lu-zero/cargo-c";
     changelog = "https://github.com/lu-zero/cargo-c/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cpu
       matthiasbeyer

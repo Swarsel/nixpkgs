@@ -1,33 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatch-vcs,
-  hatchling,
-
+  buildPythonPackage,
+  dask,
   # dependencies
   dask-glm,
   distributed,
+  # build-system
+  hatch-vcs,
+  hatchling,
   multipledispatch,
   numba,
   numpy,
   packaging,
   pandas,
-  scikit-learn,
-  scipy,
-  dask,
-
   # tests
   pytest-mock,
   pytestCheckHook,
+  scikit-learn,
+  scipy,
 }:
 
 buildPythonPackage rec {
   pname = "dask-ml";
   version = "2025.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dask";
@@ -41,6 +37,13 @@ buildPythonPackage rec {
       --replace-fail 'addopts = "-rsx -v --durations=10 --color=yes"' \
                      'addopts = ["-rsx", "-v", "--durations=10", "--color=yes"]'
   '';
+
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatch-vcs
@@ -60,18 +63,6 @@ buildPythonPackage rec {
   ]
   ++ dask.optional-dependencies.array
   ++ dask.optional-dependencies.dataframe;
-
-  pythonImportsCheck = [
-    "dask_ml"
-    "dask_ml.naive_bayes"
-    "dask_ml.wrappers"
-    "dask_ml.utils"
-  ];
-
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
 
   disabledTestPaths = [
     # RuntimeError: Attempting to use an asynchronous Client in a synchronous context of `dask.compute`
@@ -123,7 +114,14 @@ buildPythonPackage rec {
     "test_soft_voting_frame"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "dask_ml"
+    "dask_ml.naive_bayes"
+    "dask_ml.wrappers"
+    "dask_ml.utils"
+  ];
 
   meta = {
     description = "Scalable Machine Learn with Dask";

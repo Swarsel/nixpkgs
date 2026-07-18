@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-E/W3HeQMvHuGgGI21It0nqsKUwCLrVmLGf3bSa8arwU=";
   };
 
-  cargoBuildFlags = [ "--package discord-presence-lsp" ];
   cargoHash = "sha256-oSUrQ6d5A4grI69j0NBr06WtIUnwV9AEkZuqW2IzKSQ=";
-
+  cargoBuildFlags = [ "--package discord-presence-lsp" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

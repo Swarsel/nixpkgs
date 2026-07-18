@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -15,17 +15,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-bzbTU9SA4dJKtQVkqESvV5o3l3MY4Uy7HDqo7jI3dhM=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/go/sendgmail";
-
   vendorHash = "sha256-0pjcO2Ati+mUSw614uEL3CatHSgbgDUfOBE8bWpjmcw=";
-
+  sourceRoot = "${finalAttrs.src.name}/go/sendgmail";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Mimic sendmail with Gmail for git send-email";
     homepage = "https://github.com/google/gmail-oauth2-tools/tree/master/go/sendgmail";
-    maintainers = [ lib.maintainers.samw ];
     license = lib.licenses.asl20;
+    maintainers = [ lib.maintainers.samw ];
     platforms = lib.platforms.unix;
     mainProgram = "sendgmail";
   };

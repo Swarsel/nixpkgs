@@ -1,14 +1,13 @@
 {
-  python3Packages,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  python3Packages,
   writeScript,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "kitti3";
   version = "0.5.1-unstable-2021-09-10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LandingEllipse";
@@ -31,6 +30,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.i3ipc
   ];
 
+  pyproject = true;
+
   passthru.updateScript = writeScript "update-kitti3" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p git common-updater-scripts perl tomlq
@@ -51,10 +52,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/LandingEllipse/kitti3";
     description = "Kitty drop-down service for sway & i3wm";
-    mainProgram = "kitti3";
+    homepage = "https://github.com/LandingEllipse/kitti3";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "kitti3";
   };
 })

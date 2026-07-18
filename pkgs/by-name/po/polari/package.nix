@@ -1,33 +1,33 @@
 {
-  stdenv,
   lib,
-  itstool,
+  stdenv,
   fetchurl,
+  desktop-file-utils,
   gdk-pixbuf,
+  gettext,
+  gjs,
+  glib,
+  glib-networking,
+  gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gspell,
+  gtk3,
+  gtk4,
+  itstool,
+  libadwaita,
+  libsecret,
+  libsoup_3,
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
   telepathy-glib,
   telepathy-idle,
   telepathy-mission-control,
-  gjs,
-  meson,
-  ninja,
-  gettext,
-  libxml2,
-  desktop-file-utils,
-  pkg-config,
-  gtk4,
   tinysparql,
-  libadwaita,
-  gtk3,
-  glib,
-  glib-networking,
-  libsecret,
-  libsoup_3,
   webkitgtk_4_1,
-  gobject-introspection,
-  gnome,
   wrapGAppsHook4,
-  gspell,
-  gsettings-desktop-schemas,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -110,14 +110,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Polari/";
     description = "IRC chat client designed to integrate with the GNOME desktop";
+    homepage = "https://apps.gnome.org/Polari/";
+    license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "polari";
+
     teams = [
       lib.teams.gnome
       lib.teams.gnome-circle
     ];
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
   };
 })

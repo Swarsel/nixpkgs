@@ -1,17 +1,17 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   aiofiles,
   buildPythonPackage,
   charset-normalizer,
   cryptography,
   fastapi,
-  fetchFromGitHub,
   hatchling,
-  lib,
   orjson,
   pytest-asyncio,
   pytest-httpbin,
   pytestCheckHook,
-  stdenv,
   urllib3-future,
   wassima,
 }:
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "niquests";
   version = "3.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jawah";
@@ -27,40 +26,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-9zBo59l/zDIMKnYX1jOMOCec+oRnCkqJjjJmjbAzoPM=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    charset-normalizer
-    urllib3-future
-    wassima
-  ];
-
-  optional-dependencies = {
-    inherit (urllib3-future.optional-dependencies)
-      brotli
-      socks
-      ws
-      zstd
-      ;
-    full = [
-      orjson
-    ]
-    ++ urllib3-future.optional-dependencies.brotli
-    ++ urllib3-future.optional-dependencies.socks
-    ++ urllib3-future.optional-dependencies.qh3
-    ++ urllib3-future.optional-dependencies.ws
-    ++ urllib3-future.optional-dependencies.zstd;
-    http3 = urllib3-future.optional-dependencies.qh3;
-    ocsp = urllib3-future.optional-dependencies.qh3;
-    speedups = [
-      orjson
-    ]
-    ++ urllib3-future.optional-dependencies.brotli
-    ++ urllib3-future.optional-dependencies.zstd;
-  };
-
-  pythonImportsCheck = [ "niquests" ];
 
   nativeCheckInputs = [
     aiofiles
@@ -71,6 +36,14 @@ buildPythonPackage rec {
     pytestCheckHook
   ]
   ++ optional-dependencies.socks;
+
+  build-system = [ hatchling ];
+
+  dependencies = [
+    charset-normalizer
+    urllib3-future
+    wassima
+  ];
 
   disabledTestPaths = [
     # tests connect to the internet
@@ -98,10 +71,40 @@ buildPythonPackage rec {
       "test_use_proxy_from_environment"
     ];
 
+  optional-dependencies = {
+    inherit (urllib3-future.optional-dependencies)
+      brotli
+      socks
+      ws
+      zstd
+      ;
+
+    full = [
+      orjson
+    ]
+    ++ urllib3-future.optional-dependencies.brotli
+    ++ urllib3-future.optional-dependencies.socks
+    ++ urllib3-future.optional-dependencies.qh3
+    ++ urllib3-future.optional-dependencies.ws
+    ++ urllib3-future.optional-dependencies.zstd;
+
+    http3 = urllib3-future.optional-dependencies.qh3;
+    ocsp = urllib3-future.optional-dependencies.qh3;
+
+    speedups = [
+      orjson
+    ]
+    ++ urllib3-future.optional-dependencies.brotli
+    ++ urllib3-future.optional-dependencies.zstd;
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "niquests" ];
+
   meta = {
-    changelog = "https://github.com/jawah/niquests/blob/${src.tag}/HISTORY.md";
     description = "Simple HTTP library that is a drop-in replacement for Requests";
     homepage = "https://github.com/jawah/niquests";
+    changelog = "https://github.com/jawah/niquests/blob/${src.tag}/HISTORY.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -2,28 +2,30 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  ant,
   fontconfig,
-  meson,
-  ninja,
-  withJava ? false,
+  freetype,
   jdk21,
   jre21_minimal, # Newer JDK's depend on a release with a fix for https://code.videolan.org/videolan/libbluray/-/issues/46
-  ant,
+  libaacs,
+  libbdplus,
+  libbluray-full, # Used for tests
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
   stripJavaArchivesHook,
   withAACS ? false,
-  libaacs,
   withBDplus ? false,
-  libbdplus,
-  withMetadata ? true,
-  libxml2,
   withFonts ? true,
-  freetype,
-  libbluray-full, # Used for tests
+  withJava ? false,
+  withMetadata ? true,
 }:
 
 let
   jre = jre21_minimal.override {
+    jdk = jdk21;
+
     modules = [
       "java.base"
       "java.datatransfer"
@@ -31,7 +33,6 @@ let
       "java.rmi"
       "java.xml"
     ];
-    jdk = jdk21;
   };
 in
 stdenv.mkDerivation rec {
@@ -70,15 +71,15 @@ stdenv.mkDerivation rec {
 
   propagatedBuildInputs = lib.optional withAACS libaacs;
 
-  env.NIX_LDFLAGS =
-    lib.optionalString withAACS "-L${libaacs}/lib -laacs"
-    + lib.optionalString withBDplus " -L${libbdplus}/lib -lbdplus";
-
   mesonFlags =
     lib.optional (!withJava) "-Dbdj_jar=disabled"
     ++ lib.optional withJava "-Djdk_home=${jre.home}"
     ++ lib.optional (!withMetadata) "-dlibxml2=disabled"
     ++ lib.optional (!withFonts) "-Dfreetype=disabled";
+
+  env.NIX_LDFLAGS =
+    lib.optionalString withAACS "-L${libaacs}/lib -laacs"
+    + lib.optionalString withBDplus " -L${libbdplus}/lib -lbdplus";
 
   passthru = {
     tests = {
@@ -88,9 +89,9 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "http://www.videolan.org/developers/libbluray.html";
     description = "Library to access Blu-Ray disks for video playback";
     longDescription = "See <https://wiki.archlinux.org/title/Blu-ray> how to use";
+    homepage = "http://www.videolan.org/developers/libbluray.html";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.amarshall ];
     platforms = lib.platforms.unix;

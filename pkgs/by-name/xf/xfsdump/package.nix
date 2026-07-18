@@ -3,13 +3,13 @@
   stdenv,
   fetchurl,
   attr,
-  gettext,
   autoconf,
   automake,
-  ncurses,
+  gettext,
   libtool,
   libuuid,
   libxfs,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,23 +21,24 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-nKPpEFWUX4pwvU1GXVRk9jFjDGVGKJbtpHnXNx/WHbc=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace "cp include/install-sh ." "cp -f include/install-sh ."
+  '';
+
   nativeBuildInputs = [
     autoconf
     automake
     gettext
     libtool
   ];
+
   buildInputs = [
     attr
     libuuid
     libxfs
     ncurses
   ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace "cp include/install-sh ." "cp -f include/install-sh ."
-  '';
 
   # Conifigure scripts don't check PATH, see xfstests derviation
   preConfigure = ''

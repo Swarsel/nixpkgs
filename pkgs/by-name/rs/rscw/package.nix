@@ -16,9 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1hxwxmqc5jinr14ya1idigqigc8qhy1vimzcwy2vmwdjay2sqik2";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     gtk2
     fftw
@@ -30,6 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     install -D -m 0755 rscw $out/bin/rscw
     install -D -m 0755 rscwx $out/bin/rscwx
   '';
+
+  sourceRoot = ".";
 
   meta = {
     description = "Receive CW through the soundcard";

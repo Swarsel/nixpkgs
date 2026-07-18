@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   asgiref,
   buildPythonPackage,
@@ -10,7 +11,6 @@
   django,
   email-validator,
   fastapi,
-  fetchFromGitHub,
   flask,
   freezegun,
   graphlib-backport,
@@ -34,8 +34,8 @@
   python-dateutil,
   python-multipart,
   rich,
-  sanic-testing,
   sanic,
+  sanic-testing,
   starlette,
   typer,
   typing-extensions,
@@ -46,7 +46,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "strawberry-graphql";
   version = "0.319.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "strawberry-graphql";
@@ -62,74 +61,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "--emoji" ""
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [
-    cross-web
-    graphql-core
-    python-dateutil
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    aiohttp = [
-      aiohttp
-      pytest-aiohttp
-    ];
-    asgi = [
-      starlette
-      python-multipart
-    ];
-    apollo-federation = [ protobuf ];
-    debug = [
-      rich
-      libcst
-    ];
-    debug-server = [
-      typer
-      libcst
-      pygments
-      python-multipart
-      rich
-      starlette
-      uvicorn
-    ];
-    django = [
-      django
-      pytest-django
-      asgiref
-    ];
-    channels = [
-      channels
-      asgiref
-    ];
-    flask = [
-      flask
-      pytest-flask
-    ];
-    opentelemetry = [
-      opentelemetry-api
-      opentelemetry-sdk
-    ];
-    pydantic = [ pydantic ];
-    sanic = [ sanic ];
-    fastapi = [
-      fastapi
-      python-multipart
-    ];
-    chalice = [ chalice ];
-    cli = [
-      pygments
-      rich
-      libcst
-      typer
-      graphlib-backport
-    ];
-    # starlite = [ starlite ];
-    # litestar = [ litestar ];
-    pyinstrument = [ pyinstrument ];
-  };
-
   nativeCheckInputs = [
     daphne
     email-validator
@@ -144,7 +75,15 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
-  pythonImportsCheck = [ "strawberry" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ uv-build ];
+
+  dependencies = [
+    cross-web
+    graphql-core
+    python-dateutil
+    typing-extensions
+  ];
 
   disabledTestPaths = [
     "tests/benchmarks/"
@@ -162,7 +101,79 @@ buildPythonPackage (finalAttrs: {
     "tests/litestar/"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    aiohttp = [
+      aiohttp
+      pytest-aiohttp
+    ];
+
+    apollo-federation = [ protobuf ];
+
+    asgi = [
+      starlette
+      python-multipart
+    ];
+
+    chalice = [ chalice ];
+
+    channels = [
+      channels
+      asgiref
+    ];
+
+    cli = [
+      pygments
+      rich
+      libcst
+      typer
+      graphlib-backport
+    ];
+
+    debug = [
+      rich
+      libcst
+    ];
+
+    debug-server = [
+      typer
+      libcst
+      pygments
+      python-multipart
+      rich
+      starlette
+      uvicorn
+    ];
+
+    django = [
+      django
+      pytest-django
+      asgiref
+    ];
+
+    fastapi = [
+      fastapi
+      python-multipart
+    ];
+
+    flask = [
+      flask
+      pytest-flask
+    ];
+
+    opentelemetry = [
+      opentelemetry-api
+      opentelemetry-sdk
+    ];
+
+    pydantic = [ pydantic ];
+    # starlite = [ starlite ];
+    # litestar = [ litestar ];
+    pyinstrument = [ pyinstrument ];
+    sanic = [ sanic ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "strawberry" ];
 
   meta = {
     description = "GraphQL library for Python that leverages type annotations";

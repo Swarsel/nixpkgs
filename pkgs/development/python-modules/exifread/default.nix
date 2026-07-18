@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "exifread";
   version = "3.5.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,12 +15,13 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Easy to use Python module to extract Exif metadata from tiff and jpeg files";
-    mainProgram = "EXIF.py";
     homepage = "https://github.com/ianare/exif-py";
     license = lib.licenses.bsd0;
     maintainers = [ ];
+    mainProgram = "EXIF.py";
   };
 }

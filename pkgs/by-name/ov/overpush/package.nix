@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
   pkg-config,
   versionCheckHook,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,23 +18,22 @@ buildGoModule (finalAttrs: {
     hash = "sha256-I4i1HhqvliSFiL8rFhKF5qrfPsUuxDTE79V/Q7Js+xs=";
   };
 
-  vendorHash = "sha256-2KUWWATRwwtA/1Nm2JQrDS8f0ZIca/f190DSNtjemZE=";
+  nativeBuildInputs = [
+    pkg-config
+  ];
 
+  vendorHash = "sha256-2KUWWATRwwtA/1Nm2JQrDS8f0ZIca/f190DSNtjemZE=";
   env.CGO_ENABLED = "0";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  nativeBuildInputs = [
-    pkg-config
-  ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

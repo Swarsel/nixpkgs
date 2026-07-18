@@ -9,24 +9,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-darabonba-signature-util";
   version = "0.0.4";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_darabonba_signature_util";
     inherit (finalAttrs) version;
     hash = "sha256-cdebKuZZV7z79pnO2JT9p4KzL5Y18WFmNVM+WpDV/rA=";
+    pname = "alibabacloud_darabonba_signature_util";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ cryptography ];
-
-  pythonImportsCheck = [ "alibabacloud_darabonba_signature_util" ];
 
   # Module has no tests
   doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ cryptography ];
+  pyproject = true;
+  pythonImportsCheck = [ "alibabacloud_darabonba_signature_util" ];
 
   meta = {
     description = "Darabonba Signature Util Library for Alibaba Cloud Python SDK";

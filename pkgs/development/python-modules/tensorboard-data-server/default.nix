@@ -7,17 +7,17 @@
 buildPythonPackage rec {
   pname = "tensorboard-data-server";
   version = "0.7.2";
-  format = "wheel";
 
   src = fetchPypi {
-    pname = "tensorboard_data_server";
     inherit version;
-    format = "wheel";
-    dist = "py3";
-    python = "py3";
     hash = "sha256-fgYQ0gWIlYiYODbsBdwJjoD5e357v/fplOu3j1eNDds=";
+    dist = "py3";
+    format = "wheel";
+    pname = "tensorboard_data_server";
+    python = "py3";
   };
 
+  format = "wheel";
   pythonImportsCheck = [ "tensorboard_data_server" ];
 
   meta = {

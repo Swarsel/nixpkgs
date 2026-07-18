@@ -1,37 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
-
+  buildPythonPackage,
   # build-system
   cmake,
   cython_0,
-  ninja,
-  oldest-supported-numpy,
-  setuptools,
-  scikit-build,
-
   # dependencies
   matplotlib,
   meshio,
+  ninja,
   numpy,
+  oldest-supported-numpy,
+  openssh,
   pyparsing,
-  python,
-  pyvista,
-  scipy,
-  sympy,
-  tables,
-
   # tests
   pytest,
-  openssh,
+  python,
+  pyvista,
+  scikit-build,
+  scipy,
+  setuptools,
+  sympy,
+  tables,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "sfepy";
   version = "2025.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sfepy";
@@ -68,32 +64,6 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  build-system = [
-    cmake
-    cython_0
-    ninja
-    oldest-supported-numpy
-    setuptools
-    scikit-build
-  ];
-
-  dontUseCmakeConfigure = true;
-
-  dependencies = [
-    matplotlib
-    meshio
-    numpy
-    pyparsing
-    pyvista
-    scipy
-    sympy
-    tables
-  ];
-
-  pythonRelaxDeps = [
-    "numpy"
-  ];
-
   nativeCheckInputs = [
     pytest
     writableTmpDirAsHomeHook
@@ -111,9 +81,36 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    cmake
+    cython_0
+    ninja
+    oldest-supported-numpy
+    setuptools
+    scikit-build
+  ];
+
+  dependencies = [
+    matplotlib
+    meshio
+    numpy
+    pyparsing
+    pyvista
+    scipy
+    sympy
+    tables
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "numpy"
+  ];
+
   meta = {
-    homepage = "https://sfepy.org/";
     description = "Simple Finite Elements in Python";
+    homepage = "https://sfepy.org/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ wd15 ];
   };

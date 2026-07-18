@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  distutils,
   # dependencies
   joblib,
   keras,
   lz4,
-  pythonAtLeast,
-  distutils,
-
   # tests
   pytestCheckHook,
+  pythonAtLeast,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mtcnn";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ipazc";
@@ -28,6 +24,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-gp+jfa1arD3PpJpuRFKIUznV0Lyjt3DPn/HHUviDXhk=";
   };
+
+  nativeCheckInputs = [
+    keras
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -39,13 +40,6 @@ buildPythonPackage rec {
     distutils
   ];
 
-  pythonImportsCheck = [ "mtcnn" ];
-
-  nativeCheckInputs = [
-    keras
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Failing since keras 3.13.0.
     # ValueError: Exception encountered when calling Conv2D.call().
@@ -54,6 +48,9 @@ buildPythonPackage rec {
     # and padding mode. Please check the input shape and convolution parameters.
     "test_detect_no_faces"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mtcnn" ];
 
   meta = {
     description = "MTCNN face detection implementation for TensorFlow";

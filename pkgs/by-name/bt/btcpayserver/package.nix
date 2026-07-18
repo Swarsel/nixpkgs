@@ -1,7 +1,7 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   dotnetCorePackages,
   altcoinSupport ? false,
 }:
@@ -17,28 +17,28 @@ buildDotnetModule rec {
     hash = "sha256-u4VNDKLOb6bEkdhRTmnGxyM+2a6mcdWwV1T4+HFK/14=";
   };
 
-  projectFile = "BTCPayServer/BTCPayServer.csproj";
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
-
-  buildType = if altcoinSupport then "Altcoins-Release" else "Release";
-
   # macOS has a case-insensitive filesystem, so these two can be the same file
   postFixup = ''
     mv $out/bin/{BTCPayServer,btcpayserver} || :
   '';
 
+  buildType = if altcoinSupport then "Altcoins-Release" else "Release";
+  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  nugetDeps = ./deps.json;
+  projectFile = "BTCPayServer/BTCPayServer.csproj";
+
   meta = {
     description = "Self-hosted, open-source cryptocurrency payment processor";
     homepage = "https://btcpayserver.org";
     changelog = "https://github.com/btcpayserver/btcpayserver/blob/v${version}/Changelog.md";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kcalvinalvin
       erikarvstedt
     ];
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

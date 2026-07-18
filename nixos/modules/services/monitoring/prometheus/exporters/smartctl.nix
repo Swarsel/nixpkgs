@@ -22,30 +22,35 @@ let
 
 in
 {
-  port = 9633;
-
   extraOpts = {
     devices = mkOption {
-      type = types.listOf types.str;
       default = [ ];
-      example = literalExpression ''
-        [ "/dev/sda", "/dev/nvme0n1" ];
-      '';
+
       description = ''
         Paths to the disks that will be monitored. Will autodiscover
         all disks if none given.
       '';
+
+      example = literalExpression ''
+        [ "/dev/sda", "/dev/nvme0n1" ];
+      '';
+
+      type = types.listOf types.str;
     };
 
     maxInterval = mkOption {
-      type = types.str;
       default = "60s";
-      example = "2m";
+
       description = ''
         Interval that limits how often a disk can be queried.
       '';
+
+      example = "2m";
+      type = types.str;
     };
   };
+
+  port = 9633;
 
   serviceOpts = {
     serviceConfig = {
@@ -53,24 +58,29 @@ in
         "CAP_SYS_RAWIO"
         "CAP_SYS_ADMIN"
       ];
+
       CapabilityBoundingSet = [
         "CAP_SYS_RAWIO"
         "CAP_SYS_ADMIN"
       ];
-      DevicePolicy = "closed";
+
       DeviceAllow = lib.mkOverride 50 [
         "block-blkext rw"
         "block-sd rw"
         "char-nvme rw"
       ];
+
+      DevicePolicy = "closed";
       ExecStart = "${pkgs.prometheus-smartctl-exporter}/bin/smartctl_exporter ${args}";
       PrivateDevices = lib.mkForce false;
-      ProtectProc = "invisible";
       ProcSubset = "pid";
+      ProtectProc = "invisible";
+
       SupplementaryGroups = [
         "disk"
         "smartctl-exporter-access"
       ];
+
       SystemCallFilter = [
         "@system-service"
         "~@privileged"

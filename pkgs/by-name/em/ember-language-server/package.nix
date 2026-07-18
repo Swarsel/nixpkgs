@@ -4,9 +4,9 @@
   fetchFromGitHub,
   fetchYarnDeps,
   nodejs,
+  yarnBuildHook,
   yarnConfigHook,
   yarnInstallHook,
-  yarnBuildHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/6j71pBmZor7C1u9BkptwwQonh6ZWoLmMDCMOGCpMik=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-vWCG+FDf6XTNrgqOQGMnE6xNZ5A8PU5DA+FcTLLurIg=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -33,11 +28,16 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
   ];
 
-  yarnBuildScript = "compile";
-
   postInstall = ''
     ln -s $out/bin/@ember-tooling/ember-language-server $out/bin/ember-language-server
   '';
+
+  yarnBuildScript = "compile";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-vWCG+FDf6XTNrgqOQGMnE6xNZ5A8PU5DA+FcTLLurIg=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   meta = {
     description = "Language Server Protocol implementation for Ember.js projects";

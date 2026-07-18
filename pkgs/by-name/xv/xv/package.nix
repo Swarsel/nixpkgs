@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  libxt,
-  libx11,
-  libpng,
-  libwebp,
-  libtiff,
-  libjpeg,
   jasper,
-  libxrandr,
   libexif,
+  libjpeg,
+  libpng,
+  libtiff,
+  libwebp,
+  libx11,
+  libxrandr,
+  libxt,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,6 +26,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libx11
     libxt
@@ -41,11 +42,13 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Classic image viewer and editor for X";
     homepage = "http://www.trilon.com/xv/";
+
     license = {
+      free = false;
       fullName = "XV License";
       url = "https://github.com/jasper-software/xv/blob/main/src/README";
-      free = false;
     };
+
     maintainers = with lib.maintainers; [ galen ];
   };
 }

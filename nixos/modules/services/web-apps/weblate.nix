@@ -15,6 +15,7 @@ let
   finalPackage = cfg.package.overridePythonAttrs (old: {
     # We only support the PostgreSQL backend in this module
     dependencies = old.dependencies ++ cfg.package.optional-dependencies.postgres;
+
     # Use a settings module in dataDir, to avoid having to rebuild the package
     # when user changes settings.
     makeWrapperArgs = (old.makeWrapperArgs or [ ]) ++ [
@@ -125,10 +126,10 @@ let
       '';
 
   environment = {
-    PYTHONPATH = "${settingsDir}:${pythonEnv}/${python.sitePackages}/";
-    DJANGO_SETTINGS_MODULE = "settings";
     # We run Weblate through gunicorn, so we can't utilise the env var set in the wrapper.
     inherit (finalPackage) GI_TYPELIB_PATH;
+    DJANGO_SETTINGS_MODULE = "settings";
+    PYTHONPATH = "${settingsDir}:${pythonEnv}/${python.sitePackages}/";
   };
 
   # Packages needed at runtime
@@ -153,13 +154,17 @@ in
   options = {
     services.weblate = {
       enable = lib.mkEnableOption "Weblate service";
-
       package = lib.mkPackageOption pkgs "weblate" { };
 
-      localDomain = lib.mkOption {
-        description = "The domain name serving your Weblate instance.";
-        example = "weblate.example.org";
-        type = lib.types.str;
+      configurePostgresql = lib.mkOption {
+        default = true;
+
+        description = ''
+          Whether to enable and configure a local PostgreSQL server by creating a user and database for weblate.
+          The default `settings` reference this database, if you disable this option you must provide a database URL in `extraConfig`.
+        '';
+
+        type = lib.types.bool;
       };
 
       djangoSecretKeyFile = lib.mkOption {
@@ -170,65 +175,67 @@ in
 
           Can be generated with `weblate-generate-secret-key` which is available as the `weblate` user.
         '';
+
         type = lib.types.path;
       };
 
-      configurePostgresql = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether to enable and configure a local PostgreSQL server by creating a user and database for weblate.
-          The default `settings` reference this database, if you disable this option you must provide a database URL in `extraConfig`.
-        '';
-      };
-
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Text to append to `settings.py` Weblate configuration file.
         '';
+
+        type = lib.types.lines;
+      };
+
+      localDomain = lib.mkOption {
+        description = "The domain name serving your Weblate instance.";
+        example = "weblate.example.org";
+        type = lib.types.str;
       };
 
       smtp = {
         enable = lib.mkEnableOption "Weblate SMTP support";
 
         from = lib.mkOption {
-          description = "The from address being used in sent emails.";
-          example = "weblate@example.com";
           default = config.services.weblate.smtp.user;
           defaultText = "config.services.weblate.smtp.user";
+          description = "The from address being used in sent emails.";
+          example = "weblate@example.com";
           type = lib.types.str;
-        };
-
-        user = lib.mkOption {
-          description = "SMTP login name.";
-          example = "weblate@example.org";
-          type = lib.types.nullOr lib.types.str;
-          default = null;
         };
 
         host = lib.mkOption {
           description = "SMTP host used when sending emails to users.";
-          type = lib.types.str;
           example = "127.0.0.1";
-        };
-
-        port = lib.mkOption {
-          description = "SMTP port used when sending emails to users.";
-          type = lib.types.port;
-          default = 587;
-          example = 25;
+          type = lib.types.str;
         };
 
         passwordFile = lib.mkOption {
+          default = null;
+
           description = ''
             Location of a file containing the SMTP password.
 
             This should be a path pointing to a file with secure permissions (not /nix/store).
           '';
+
           type = lib.types.nullOr lib.types.path;
+        };
+
+        port = lib.mkOption {
+          default = 587;
+          description = "SMTP port used when sending emails to users.";
+          example = 25;
+          type = lib.types.port;
+        };
+
+        user = lib.mkOption {
           default = null;
+          description = "SMTP login name.";
+          example = "weblate@example.org";
+          type = lib.types.nullOr lib.types.str;
         };
       };
     };
@@ -236,72 +243,117 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    systemd.tmpfiles.rules = [ "L+ ${settingsDir} - - - - ${settings_py}" ];
-
     services.nginx = {
       enable = true;
+
       virtualHosts."${cfg.localDomain}" = {
 
-        forceSSL = true;
         enableACME = true;
+        forceSSL = true;
 
         locations = {
-          "= /favicon.ico".alias = "${finalPackage}/${python.sitePackages}/weblate/static/favicon.ico";
-          "/static/".alias = "${finalPackage.static}/";
           "/".proxyPass = "http://unix:///run/weblate.socket";
+          "/static/".alias = "${finalPackage.static}/";
+          "= /favicon.ico".alias = "${finalPackage}/${python.sitePackages}/weblate/static/favicon.ico";
         };
       };
     };
 
-    systemd.services.weblate-postgresql-setup = {
-      description = "Weblate PostgreSQL setup";
-      after = [ "postgresql.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        User = "postgres";
-        Group = "postgres";
-        ExecStart = ''
-          ${config.services.postgresql.package}/bin/psql weblate -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
-        '';
-      };
+    services.postgresql = lib.mkIf cfg.configurePostgresql {
+      enable = true;
+      ensureDatabases = [ "weblate" ];
+
+      ensureUsers = [
+        {
+          ensureDBOwnership = true;
+          name = "weblate";
+        }
+      ];
     };
 
-    systemd.services.weblate-migrate = {
-      description = "Weblate migration";
-      after = [
-        "weblate-postgresql-setup.service"
-        "redis-weblate.service"
-      ];
-      requires = [
-        "weblate-postgresql-setup.service"
-        "redis-weblate.service"
-      ];
-      # We want this to be active on boot, not just on socket activation
-      wantedBy = [ "multi-user.target" ];
+    services.redis.servers.weblate = {
+      enable = true;
+      unixSocket = "/run/redis-weblate/redis.sock";
+      unixSocketPerm = 770;
+      user = "weblate";
+    };
+
+    systemd.services.weblate = {
       inherit environment;
+
+      after = [
+        "network.target"
+        "weblate-migrate.service"
+        "weblate-celery.service"
+      ];
+
+      description = "Weblate Gunicorn app";
       path = weblatePath;
+
+      # Weblate generates SSH wrappers with some preset options that use the
+      # absolute paths of the ssh and scp binaries internally.
+      # As the wrapper is only regenerated when the generator itself is changed,
+      # this absolute nix store path becomes unusable once ssh is updated and
+      # the path is garbage collected.
+      # As generating the wrappers is a quick operation, simply deleting the
+      # wrapper directory before service start ensures they are up to date.
+      preStart = ''
+        if [ -d "${cacheDir}/ssh" ]; then
+          rm -r "${cacheDir}/ssh"
+        fi
+      '';
+
+      requires = [
+        "weblate-migrate.service"
+        "weblate-celery.service"
+        "weblate.socket"
+      ];
+
       serviceConfig = {
-        Type = "oneshot";
-        StateDirectory = "weblate";
-        User = "weblate";
+        ExecReload = "${lib.getExe' pkgs.coreutils "kill"} -s HUP $MAINPID";
+
+        ExecStart =
+          let
+            gunicorn = python.pkgs.gunicorn.overridePythonAttrs (old: {
+              # Allows Gunicorn to set a meaningful process name
+              dependencies = (old.dependencies or [ ]) ++ old.optional-dependencies.setproctitle;
+            });
+          in
+          ''
+            ${lib.getExe gunicorn} \
+              --name=weblate \
+              --bind='unix:///run/weblate.socket' \
+              --preload \
+              weblate.wsgi
+          '';
+
         Group = "weblate";
-        ExecStart = "${finalPackage}/bin/weblate migrate --noinput";
+        KillMode = "mixed";
+        NotifyAccess = "all";
+        PrivateTmp = true;
+        RuntimeDirectory = "weblate";
+        StateDirectory = "weblate";
+        Type = "notify";
+        User = "weblate";
+        WorkingDirectory = dataDir;
       };
     };
 
     systemd.services.weblate-celery = {
-      description = "Weblate Celery";
       after = [
         "network.target"
         "redis-weblate.service"
         "postgresql.target"
       ];
-      # We want this to be active on boot, not just on socket activation
-      wantedBy = [ "multi-user.target" ];
+
+      description = "Weblate Celery";
+
       environment = environment // {
         CELERY_WORKER_RUNNING = "1";
       };
+
       path = weblatePath;
+
       # Recommendations from:
       # https://github.com/WeblateOrg/weblate/blob/main/weblate/examples/celery-weblate.service
       serviceConfig =
@@ -331,114 +383,93 @@ in
           '';
         in
         {
-          Type = "forking";
-          User = "weblate";
-          Group = "weblate";
-          WorkingDirectory = "${finalPackage}/${python.sitePackages}/weblate/";
-          RuntimeDirectory = "celery";
-          RuntimeDirectoryPreserve = "restart";
-          LogsDirectory = "celery";
-          ExecStart = cmd "start";
           ExecReload = cmd "restart";
+          ExecStart = cmd "start";
+
           ExecStop = ''
             ${pythonEnv}/bin/celery multi stopwait \
               ${nodes} \
               --pidfile=${pidFile}
           '';
+
+          Group = "weblate";
+          LogsDirectory = "celery";
           Restart = "always";
+          RuntimeDirectory = "celery";
+          RuntimeDirectoryPreserve = "restart";
+          Type = "forking";
+          User = "weblate";
+          WorkingDirectory = "${finalPackage}/${python.sitePackages}/weblate/";
         };
+
+      # We want this to be active on boot, not just on socket activation
+      wantedBy = [ "multi-user.target" ];
     };
 
-    systemd.services.weblate = {
-      description = "Weblate Gunicorn app";
-      after = [
-        "network.target"
-        "weblate-migrate.service"
-        "weblate-celery.service"
-      ];
-      requires = [
-        "weblate-migrate.service"
-        "weblate-celery.service"
-        "weblate.socket"
-      ];
+    systemd.services.weblate-migrate = {
       inherit environment;
+
+      after = [
+        "weblate-postgresql-setup.service"
+        "redis-weblate.service"
+      ];
+
+      description = "Weblate migration";
       path = weblatePath;
-      # Weblate generates SSH wrappers with some preset options that use the
-      # absolute paths of the ssh and scp binaries internally.
-      # As the wrapper is only regenerated when the generator itself is changed,
-      # this absolute nix store path becomes unusable once ssh is updated and
-      # the path is garbage collected.
-      # As generating the wrappers is a quick operation, simply deleting the
-      # wrapper directory before service start ensures they are up to date.
-      preStart = ''
-        if [ -d "${cacheDir}/ssh" ]; then
-          rm -r "${cacheDir}/ssh"
-        fi
-      '';
+
+      requires = [
+        "weblate-postgresql-setup.service"
+        "redis-weblate.service"
+      ];
+
       serviceConfig = {
-        Type = "notify";
-        NotifyAccess = "all";
-        ExecStart =
-          let
-            gunicorn = python.pkgs.gunicorn.overridePythonAttrs (old: {
-              # Allows Gunicorn to set a meaningful process name
-              dependencies = (old.dependencies or [ ]) ++ old.optional-dependencies.setproctitle;
-            });
-          in
-          ''
-            ${lib.getExe gunicorn} \
-              --name=weblate \
-              --bind='unix:///run/weblate.socket' \
-              --preload \
-              weblate.wsgi
-          '';
-        ExecReload = "${lib.getExe' pkgs.coreutils "kill"} -s HUP $MAINPID";
-        KillMode = "mixed";
-        PrivateTmp = true;
-        WorkingDirectory = dataDir;
-        StateDirectory = "weblate";
-        RuntimeDirectory = "weblate";
-        User = "weblate";
+        ExecStart = "${finalPackage}/bin/weblate migrate --noinput";
         Group = "weblate";
+        StateDirectory = "weblate";
+        Type = "oneshot";
+        User = "weblate";
+      };
+
+      # We want this to be active on boot, not just on socket activation
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.weblate-postgresql-setup = {
+      after = [ "postgresql.target" ];
+      description = "Weblate PostgreSQL setup";
+
+      serviceConfig = {
+        ExecStart = ''
+          ${config.services.postgresql.package}/bin/psql weblate -c "CREATE EXTENSION IF NOT EXISTS pg_trgm"
+        '';
+
+        Group = "postgres";
+        Type = "oneshot";
+        User = "postgres";
       };
     };
 
     systemd.sockets.weblate = {
       before = [ "nginx.service" ];
-      wantedBy = [ "sockets.target" ];
+
       socketConfig = {
         ListenStream = "/run/weblate.socket";
-        SocketUser = "weblate";
         SocketGroup = "weblate";
         SocketMode = "770";
+        SocketUser = "weblate";
       };
+
+      wantedBy = [ "sockets.target" ];
     };
 
-    services.redis.servers.weblate = {
-      enable = true;
-      user = "weblate";
-      unixSocket = "/run/redis-weblate/redis.sock";
-      unixSocketPerm = 770;
-    };
-
-    services.postgresql = lib.mkIf cfg.configurePostgresql {
-      enable = true;
-      ensureUsers = [
-        {
-          name = "weblate";
-          ensureDBOwnership = true;
-        }
-      ];
-      ensureDatabases = [ "weblate" ];
-    };
+    systemd.tmpfiles.rules = [ "L+ ${settingsDir} - - - - ${settings_py}" ];
+    users.groups.weblate.members = [ config.services.nginx.user ];
 
     users.users.weblate = {
-      isSystemUser = true;
       group = "weblate";
+      isSystemUser = true;
       packages = [ finalPackage ] ++ weblatePath;
     };
-
-    users.groups.weblate.members = [ config.services.nginx.user ];
   };
 
   meta.maintainers = with lib.maintainers; [ erictapen ];

@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  fetchzip,
   autoPatchelfHook,
-  makeWrapper,
   coreutils,
+  fetchzip,
   libredirect,
+  makeWrapper,
 }:
 let
   sources = {
     "x86_64-linux" = {
-      url = "https://github.com/CordyJ/Open-TuringPlus/releases/download/v6.2.1/opentplus-62-linux64.tar.gz";
       sha256 = "sha256-FoOlOcRWpStg4aerjr+FmcXXnwYftrqG1j4iZJ+4AzE=";
+      url = "https://github.com/CordyJ/Open-TuringPlus/releases/download/v6.2.1/opentplus-62-linux64.tar.gz";
     };
   };
 
@@ -30,7 +30,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "turingplus-bootstrap";
   version = "6.2.1";
-
   src = fetchzip sources."${stdenv.hostPlatform.system}";
 
   nativeBuildInputs = [
@@ -39,9 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     autoPatchelfHook
   ];
-  buildInputs = [ stdenv.cc.cc.lib ];
 
-  dontBuild = true;
+  buildInputs = [ stdenv.cc.cc.lib ];
 
   installPhase = ''
     runHook preInstall
@@ -72,17 +70,21 @@ stdenv.mkDerivation (finalAttrs: {
         --set NIX_ENFORCE_PURITY 0
     '';
 
+  dontBuild = true;
+
   meta = {
     description = "Extended version of the Turing programming language with concurrency and systems programming features";
-    mainProgram = "tpc";
-    platforms = [
-      "x86_64-linux"
-    ];
     homepage = "https://github.com/CordyJ/Open-TuringPlus";
-    downloadPage = "https://github.com/CordyJ/Open-TuringPlus/releases";
     changelog = "https://github.com/CordyJ/Open-TuringPlus/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ MysteryBlokHed ];
+
+    platforms = [
+      "x86_64-linux"
+    ];
+
+    mainProgram = "tpc";
+    downloadPage = "https://github.com/CordyJ/Open-TuringPlus/releases";
   };
 })

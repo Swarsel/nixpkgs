@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   webob,
 }:
 
 buildPythonPackage rec {
   pname = "wsgiproxy2";
   version = "0.5.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "gawel";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ webob ];
-
   # Circular dependency on webtest
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "wsgiproxy" ];
 
   meta = {

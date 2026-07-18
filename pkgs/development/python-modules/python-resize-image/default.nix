@@ -2,20 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pillow,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-resize-image";
   version = "1.1.20";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-sFXauRnWI+zo7JUmLUvb8AbLGhDoGOmzYiHIsYhfmSI=";
   };
+
+  doCheck = false; # sdist missing test artifact
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -26,13 +28,11 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "resizeimage"
   ];
-
-  doCheck = false; # sdist missing test artifact
-
-  __structuredAttrs = true;
 
   meta = {
     description = "Python package to easily resize images";

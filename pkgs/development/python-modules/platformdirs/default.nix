@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   appdirs,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   pytest-mock,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "platformdirs";
   version = "4.9.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tox-dev";
@@ -21,22 +20,23 @@ buildPythonPackage rec {
     hash = "sha256-/aoJquWRn1UQZa96uZba15tDO+IGEHN9/duu9JYXmd4=";
   };
 
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
   nativeCheckInputs = [
     appdirs
     pytest-mock
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "platformdirs" ];
-
   preCheck = ''
     unset XDG_DATA_DIRS
   '';
+
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "platformdirs" ];
 
   meta = {
     description = "Module for determining appropriate platform-specific directories";

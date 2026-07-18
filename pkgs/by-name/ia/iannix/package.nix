@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   alsa-lib,
-  pkg-config,
   libsForQt5,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -23,22 +23,22 @@ stdenv.mkDerivation {
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     alsa-lib
     libsForQt5.qtbase
     libsForQt5.qtscript
   ];
 
-  qmakeFlags = [ "PREFIX=/" ];
-
   installFlags = [ "INSTALL_ROOT=$(out)" ];
+  qmakeFlags = [ "PREFIX=/" ];
 
   meta = {
     description = "Graphical open-source sequencer";
-    mainProgram = "iannix";
     homepage = "https://www.iannix.org/";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "iannix";
   };
 }

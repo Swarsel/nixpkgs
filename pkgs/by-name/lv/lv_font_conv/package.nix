@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -26,9 +26,9 @@ buildNpmPackage rec {
 
   meta = {
     description = "Converts TTF/WOFF fonts to compact bitmap format";
-    mainProgram = "lv_font_conv";
     homepage = "https://lvgl.io/tools/fontconverter";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "lv_font_conv";
   };
 }

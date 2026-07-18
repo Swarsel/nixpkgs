@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   ncurses,
 }:
@@ -29,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Ethernet NIC Queue stats viewer";
-    mainProgram = "ethq";
     homepage = "https://github.com/isc-projects/ethq";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ethq";
   };
 })

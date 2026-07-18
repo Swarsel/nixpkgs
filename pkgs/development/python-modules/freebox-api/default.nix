@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytestCheckHook,
   urllib3,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "freebox-api";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hacf-fr";
@@ -20,18 +19,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-3M29mboTZMG9lZSt816PvAXzl2DaqiC2nhikcpn+gqU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [ "urllib3" ];
 
   dependencies = [
     aiohttp
     urllib3
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "freebox_api" ];
+  pythonRelaxDeps = [ "urllib3" ];
 
   meta = {
     description = "Python module to interact with the Freebox OS API";

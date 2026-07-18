@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  formencode,
+  paste,
+  pastedeploy,
+  pydispatcher,
   pytestCheckHook,
   setuptools,
-  formencode,
-  pastedeploy,
-  paste,
-  pydispatcher,
 }:
 
 buildPythonPackage rec {
   pname = "sqlobject";
   version = "3.13.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sqlobject";
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-Qbb48z4DrD/M8e26+5NjPcA0b3gxHeAxj1X/jSrTwx0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,13 +31,12 @@ buildPythonPackage rec {
     pydispatcher
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # https://github.com/sqlobject/sqlobject/issues/179
     "test_fail"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sqlobject" ];
 
   meta = {

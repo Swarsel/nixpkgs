@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   cryptography,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "satel-integra";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "c-soft";
@@ -21,6 +20,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-lNlre+0mOmIjrmYsAqt0QERERsXzKi0wRfbs1c//f/c=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -31,12 +36,7 @@ buildPythonPackage rec {
     cryptography
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "satel_integra" ];
 
   meta = {

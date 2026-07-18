@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-generate,
-  setuptools-scm,
+  buildPythonPackage,
   colorama,
   jinja2,
   jsonschema,
   pygls,
-  tree-sitter,
   pytestCheckHook,
+  setuptools-generate,
+  setuptools-scm,
+  tree-sitter,
 }:
 
 buildPythonPackage rec {
   pname = "lsp-tree-sitter";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "neomutt";
@@ -23,6 +22,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-H5yb33ZsqRtqm1zlnOI0WUfcM2VDKn+qyezmFNtdLGA=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools-generate
@@ -36,8 +37,8 @@ buildPythonPackage rec {
     pygls
     tree-sitter
   ];
-  nativeCheckInputs = [ pytestCheckHook ];
 
+  pyproject = true;
   pythonImportsCheck = [ "lsp_tree_sitter" ];
 
   meta = {

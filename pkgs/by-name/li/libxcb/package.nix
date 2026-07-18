@@ -2,19 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  python3,
   libpthread-stubs,
   libxau,
   libxdmcp,
-  xcb-proto,
+  pkg-config,
+  python3,
+  testers,
   windows,
   writeScript,
-  testers,
+  xcb-proto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxcb";
   version = "1.17.0";
+
+  src = fetchurl {
+    url = "mirror://xorg/individual/lib/libxcb-${finalAttrs.version}.tar.xz";
+    hash = "sha256-WZ6/mZZxD+pxYi5uGE86itW0PQ5fqMTkBxI8iKWabVU=";
+  };
 
   outputs = [
     "out"
@@ -22,11 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "doc"
   ];
-
-  src = fetchurl {
-    url = "mirror://xorg/individual/lib/libxcb-${finalAttrs.version}.tar.xz";
-    hash = "sha256-WZ6/mZZxD+pxYi5uGE86itW0PQ5fqMTkBxI8iKWabVU=";
-  };
 
   strictDeps = true;
 
@@ -45,7 +45,13 @@ stdenv.mkDerivation (finalAttrs: {
   # $dev/include/xcb/xcb.h includes pthread.h
   propagatedBuildInputs = lib.optional stdenv.hostPlatform.isMinGW windows.pthreads;
 
+  env = lib.optionalAttrs stdenv.hostPlatform.isMinGW {
+    NIX_CFLAGS_COMPILE = toString [ "-Wno-incompatible-pointer-types" ];
+  };
+
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -54,11 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
-  };
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isMinGW {
-    NIX_CFLAGS_COMPILE = toString [ "-Wno-incompatible-pointer-types" ];
   };
 
   meta = {
@@ -67,6 +68,8 @@ stdenv.mkDerivation (finalAttrs: {
     # gitlab wrongly says X11 Distribute Modifications
     license = lib.licenses.x11;
     maintainers = [ ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
+
     pkgConfigModules = [
       "xcb"
       "xcb-composite"
@@ -93,6 +96,5 @@ stdenv.mkDerivation (finalAttrs: {
       "xcb-xv"
       "xcb-xvmc"
     ];
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
   };
 })

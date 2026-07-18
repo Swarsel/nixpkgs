@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 let
@@ -33,12 +33,12 @@ buildGoModule {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    platforms = lib.platforms.all;
-    mainProgram = "kubectl-validate";
     description = "Tool for local validation of resources for native Kubernetes types and CRDs";
     homepage = "https://github.com/kubernetes-sigs/kubectl-validate";
     changelog = "https://github.com/kubernetes-sigs/kubectl-validate/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fd ];
+    platforms = lib.platforms.all;
+    mainProgram = "kubectl-validate";
   };
 }

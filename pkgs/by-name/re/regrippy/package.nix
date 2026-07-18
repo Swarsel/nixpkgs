@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "regrippy";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -24,6 +23,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     importlib-resources
     python-registry
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Modern Python-3-based alternative to RegRipper";

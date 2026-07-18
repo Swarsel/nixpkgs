@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  fetchzip,
-  stdenvNoCC,
-  nodejs-slim,
-  fetchNpmDeps,
   buildPackages,
-  php85,
-  nixosTests,
+  fetchNpmDeps,
+  fetchzip,
   nix-update-script,
+  nixosTests,
+  nodejs-slim,
+  php85,
+  stdenvNoCC,
   dataDir ? "/var/lib/firefly-iii",
 }:
 let
@@ -17,14 +17,14 @@ let
 
   # Release tarball contains translations downloaded from crowdin
   releaseTarball = fetchzip {
-    url = "https://github.com/firefly-iii/firefly-iii/releases/download/v${version}/FireflyIII-v${version}.tar.gz";
-    stripRoot = false;
     hash = "sha256-vPuLCjU8MzV5odoDl9QQXj4kKnT6QBSAPwvekMxJtEM=";
+    stripRoot = false;
+    url = "https://github.com/firefly-iii/firefly-iii/releases/download/v${version}/FireflyIII-v${version}.tar.gz";
   };
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "firefly-iii";
   inherit version;
+  pname = "firefly-iii";
 
   src = fetchFromGitHub {
     owner = "firefly-iii";
@@ -32,8 +32,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-MPBWurmtaIaKHRLf4TPCdgTVWRZ0JdZ0Ix2N7d80s8c=";
   };
-
-  buildInputs = [ php ];
 
   nativeBuildInputs = [
     nodejs-slim
@@ -44,35 +42,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     php.composerHooks2.composerInstallHook
   ];
 
-  composerVendor = php.mkComposerVendor {
-    inherit (finalAttrs) pname src version;
-    composerStrictValidation = true;
-    strictDeps = true;
-    vendorHash = "sha256-qjMDZbPpyTkKxvZhgNERe2ZuRFj7LmRW7XZoeezizbk=";
-  };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    name = "${finalAttrs.pname}-npm-deps";
-    hash = "sha256-QlLFhrD94mpfoe9mmCVmem9E4oPsLAGMMf+MbI/5Vx0=";
-  };
+  buildInputs = [ php ];
 
   preInstall = ''
     npm run prod --workspace=v1
     npm run build --workspace=v2
   '';
-
-  passthru = {
-    inherit releaseTarball;
-    phpPackage = php;
-    tests = nixosTests.firefly-iii;
-    updateScript = nix-update-script {
-      extraArgs = [
-        "--version-regex"
-        "v(\\d+\\.\\d+\\.\\d+)"
-      ];
-    };
-  };
 
   postInstall = ''
     chmod -R u+w $out/share
@@ -86,15 +61,43 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ln -s ${dataDir}/cache $out/bootstrap/cache
   '';
 
+  composerVendor = php.mkComposerVendor {
+    inherit (finalAttrs) pname src version;
+    strictDeps = true;
+    vendorHash = "sha256-qjMDZbPpyTkKxvZhgNERe2ZuRFj7LmRW7XZoeezizbk=";
+    composerStrictValidation = true;
+  };
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-QlLFhrD94mpfoe9mmCVmem9E4oPsLAGMMf+MbI/5Vx0=";
+    name = "${finalAttrs.pname}-npm-deps";
+  };
+
+  passthru = {
+    inherit releaseTarball;
+    phpPackage = php;
+    tests = nixosTests.firefly-iii;
+
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--version-regex"
+        "v(\\d+\\.\\d+\\.\\d+)"
+      ];
+    };
+  };
+
   meta = {
-    changelog = "https://github.com/firefly-iii/firefly-iii/releases/tag/v${finalAttrs.version}";
     description = "Firefly III: a personal finances manager";
     homepage = "https://github.com/firefly-iii/firefly-iii";
+    changelog = "https://github.com/firefly-iii/firefly-iii/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = [
       lib.maintainers.savyajha
       lib.maintainers.patrickdag
     ];
+
     hydraPlatforms = lib.platforms.linux; # build hangs on both Darwin platforms, needs investigation
   };
 })

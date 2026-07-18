@@ -9,22 +9,19 @@
 
 {
 
-  meta = {
-    teams = [ lib.teams.gnome ];
-  };
-
   ###### interface
-
   options = {
 
     services.gnome.sushi = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable Sushi, a quick previewer for nautilus.
         '';
+
+        type = lib.types.bool;
       };
 
     };
@@ -32,13 +29,15 @@
   };
 
   ###### implementation
-
   config = lib.mkIf config.services.gnome.sushi.enable {
 
     environment.systemPackages = [ pkgs.sushi ];
-
     services.dbus.packages = [ pkgs.sushi ];
 
+  };
+
+  meta = {
+    teams = [ lib.teams.gnome ];
   };
 
 }

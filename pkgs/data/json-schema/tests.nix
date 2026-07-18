@@ -1,6 +1,6 @@
 {
-  json-schema,
   lib,
+  json-schema,
   json-schema-catalog-rs,
   runCommand,
 }:

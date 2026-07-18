@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gtk3,
-  rgbds,
   SDL2,
-  wrapGAppsHook3,
-  glib,
   gdk-pixbuf,
+  glib,
+  gtk3,
   pkg-config,
+  rgbds,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,23 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Sk5/Wojl9rFkTuBFSGN/W8oq8OJNrV5W3E8PdsaMll8=";
   };
 
-  enableParallelBuilding = true;
-  # glib and wrapGAppsHook3 are needed to make the Open ROM menu work.
-  nativeBuildInputs = [
-    pkg-config
-    gdk-pixbuf
-    rgbds
-    glib
-    wrapGAppsHook3
-  ];
-  buildInputs = [ SDL2 ];
-
-  makeFlags = [
-    "CONF=release"
-    "FREEDESKTOP=true"
-    "PREFIX=$(out)"
-  ];
-
   patches = [
     ./xdg-install-patch.diff
   ];
@@ -48,16 +31,34 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '"libgtk-3.so"' '"${gtk3}/lib/libgtk-3.so"'
   '';
 
+  # glib and wrapGAppsHook3 are needed to make the Open ROM menu work.
+  nativeBuildInputs = [
+    pkg-config
+    gdk-pixbuf
+    rgbds
+    glib
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [ SDL2 ];
+
+  makeFlags = [
+    "CONF=release"
+    "FREEDESKTOP=true"
+    "PREFIX=$(out)"
+  ];
+
   postInstall = ''
     substituteInPlace $out/share/thumbnailers/sameboy.thumbnailer \
       --replace-fail "TryExec=sameboy-thumbnailer" "TryExec=$out/bin/sameboy-thumbnailer" \
       --replace-fail "Exec=sameboy-thumbnailer" "Exec=$out/bin/sameboy-thumbnailer"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://sameboy.github.io";
     description = "Game Boy, Game Boy Color, and Super Game Boy emulator";
-    mainProgram = "sameboy";
+
     longDescription = ''
       SameBoy is a user friendly Game Boy, Game Boy Color and Super
       Game Boy emulator for macOS, Windows and Unix-like platforms.
@@ -67,8 +68,11 @@ stdenv.mkDerivation (finalAttrs: {
       capabilities, SameBoy has all the features one would expect from
       an emulator – from save states to scaling filters.
     '';
+
+    homepage = "https://sameboy.github.io";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ NieDzejkob ];
     platforms = lib.platforms.linux;
+    mainProgram = "sameboy";
   };
 })

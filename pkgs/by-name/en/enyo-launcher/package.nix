@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   cmake,
   qt6,
@@ -20,14 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [ qt6.qtbase ];
 
   meta = {
-    homepage = "https://gitlab.com/sdcofer70/enyo-launcher";
     description = "Frontend for Doom engines";
-    mainProgram = "enyo-launcher";
+    homepage = "https://gitlab.com/sdcofer70/enyo-launcher";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.usrfriendly ];
+    platforms = lib.platforms.unix;
+    mainProgram = "enyo-launcher";
   };
 })

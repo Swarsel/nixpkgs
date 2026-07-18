@@ -2,44 +2,40 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # Native build inputs
-  autoPatchelfHook,
-  cmake,
-  pkg-config,
-
   # Dependencies
   alsa-lib,
-  freetype,
+  # Native build inputs
+  autoPatchelfHook,
+  callPackage,
+  cmake,
   curl,
-  libglvnd,
-  webkitgtk_4_1,
-  pcre2,
+  fontconfig,
+  freetype,
   ladspa-sdk,
-  libsysprof-capture,
-  util-linuxMinimal,
+  lerc,
+  libGL,
+  libdatrie,
+  libepoxy,
+  libglvnd,
   libselinux,
   libsepol,
+  libsysprof-capture,
   libthai,
-  libdatrie,
-  libxdmcp,
-  lerc,
-  libxkbcommon,
-  libepoxy,
-  libxtst,
-  sqlite,
-  fontconfig,
-
-  libGL,
   libx11,
   libxcursor,
+  libxdmcp,
   libxext,
   libxinerama,
+  libxkbcommon,
   libxrandr,
-
-  versionCheckHook,
+  libxtst,
   nix-update-script,
-  callPackage,
+  pcre2,
+  pkg-config,
+  sqlite,
+  util-linuxMinimal,
+  versionCheckHook,
+  webkitgtk_4_1,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -92,6 +88,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ fontconfig ];
+  cmakeFlags = [ "-DJUCE_BUILD_EXTRAS=ON" ];
+
+  postInstall = ''
+    cp extras/Projucer/Projucer_artefacts/Release/Projucer $out/bin/Projucer
+    ln -s $out/bin/Projucer $out/bin/projucer
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   runtimeDependencies = [
     libGL
@@ -102,23 +110,12 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
-  cmakeFlags = [ "-DJUCE_BUILD_EXTRAS=ON" ];
-
-  postInstall = ''
-    cp extras/Projucer/Projucer_artefacts/Release/Projucer $out/bin/Projucer
-    ln -s $out/bin/Projucer $out/bin/projucer
-  '';
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
   versionCheckProgram = "${placeholder "out"}/bin/juceaide";
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     projucerHook = callPackage ./projucerHook.nix { };
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -126,9 +123,11 @@ stdenv.mkDerivation (finalAttrs: {
     longDescription = "Open-source cross-platform C++ application framework for creating desktop and mobile applications, including VST, VST3, AU, AUv3, AAX and LV2 audio plug-ins";
     homepage = "https://juce.com/";
     changelog = "https://github.com/juce-framework/JUCE/blob/${finalAttrs.version}/CHANGE_LIST.md";
+
     license = with lib.licenses; [
       agpl3Only # Or alternatively the JUCE license, but that would not be included in nixpkgs then
     ];
+
     maintainers = with lib.maintainers; [ kashw2 ];
     platforms = lib.platforms.all;
     mainProgram = "juceaide";

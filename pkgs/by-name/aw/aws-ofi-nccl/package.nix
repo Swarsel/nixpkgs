@@ -2,22 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   autoAddDriverRunpath,
   autoreconfHook,
-  numactl,
-  libuuid,
-  rdma-core,
-  libfabric,
-  hwloc,
   cudaPackages,
+  hwloc,
+  libfabric,
+  libuuid,
+  nix-update-script,
+  numactl,
+  rdma-core,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "aws-ofi-nccl";
   version = "1.20.0";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -25,6 +23,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-QQlimX5sbdR+0PpQ3dLXcDqY5TthXF7Z5dtj6wIm+UQ=";
   };
+
+  postPatch = ''
+    patchShebangs m4
+    echo "$version" > .release_version
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoAddDriverRunpath
@@ -43,21 +48,17 @@ stdenv.mkDerivation (finalAttrs: {
     nccl
   ]);
 
-  postPatch = ''
-    patchShebangs m4
-    echo "$version" > .release_version
-  '';
-
-  preConfigure = ''
-    ./autogen.sh
-  '';
-
   configureFlags = [
     "--enable-platform-aws"
     "--with-cuda=${cudaPackages.cuda_nvcc}"
     "--with-libfabric=${libfabric}"
   ];
 
+  preConfigure = ''
+    ./autogen.sh
+  '';
+
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

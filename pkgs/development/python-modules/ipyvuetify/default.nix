@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  ipyvue,
   # Python Inputs
   setuptools,
-  ipyvue,
 }:
 
 buildPythonPackage rec {
   pname = "ipyvuetify";
   version = "1.11.3";
-  pyproject = true;
 
   # GitHub version tries to run npm (Node JS)
   src = fetchPypi {
@@ -25,11 +24,10 @@ buildPythonPackage rec {
       --replace-fail '"pynpm"' ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ ipyvue ];
-
   doCheck = false; # no tests on PyPi/GitHub
+  build-system = [ setuptools ];
+  dependencies = [ ipyvue ];
+  pyproject = true;
   pythonImportsCheck = [ "ipyvuetify" ];
 
   meta = {

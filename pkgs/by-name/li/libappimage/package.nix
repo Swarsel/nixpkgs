@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
   boost,
   cairo,
+  cmake,
+  fetchpatch,
   glib,
   libarchive,
   librsvg,
+  libtool,
+  pkg-config,
   squashfuse,
   xdg-utils-cxx,
   xz, # for liblzma
@@ -33,25 +33,26 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix build with GCC 13
     # FIXME: remove in next release
     (fetchpatch {
-      url = "https://github.com/AppImageCommunity/libappimage/commit/1e0515b23b90588ce406669134feca56ddcbbe43.patch";
       hash = "sha256-WIMvXNqC1stgPiBTRpXHWq3edIRnQomtRSW2qO52TRo=";
+      url = "https://github.com/AppImageCommunity/libappimage/commit/1e0515b23b90588ce406669134feca56ddcbbe43.patch";
     })
 
     # we really just want this for cmake 4 compatibility
     (fetchpatch {
-      name = "libappimage-use-system-gtest.patch";
-      url = "https://github.com/AppImageCommunity/libappimage/commit/7b83b7247fd2d86c330e09f534c9cec1b03f649f.patch";
       excludes = [
         "ci/*"
         "lib/gtest"
         "tests/*"
       ];
+
       hash = "sha256-H+ph5TfKJPFcAzw2c7pzmqvB9R50HtZP/DbroOxLTVU=";
+      name = "libappimage-use-system-gtest.patch";
+      url = "https://github.com/AppImageCommunity/libappimage/commit/7b83b7247fd2d86c330e09f534c9cec1b03f649f.patch";
     })
     (fetchpatch {
+      hash = "sha256-P6fPoiqVX3TrKGrU2EXIMBpQLGl7xNcy41Iq7vRM+n8=";
       name = "libappimage-fix-cmake-4.patch";
       url = "https://github.com/AppImageCommunity/libappimage/commit/e5f6ea562611d534dc8e899a12ddf15c50e820be.patch";
-      hash = "sha256-P6fPoiqVX3TrKGrU2EXIMBpQLGl7xNcy41Iq7vRM+n8=";
     })
   ];
 
@@ -61,13 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'includedir=''${prefix}/@CMAKE_INSTALL_INCLUDEDIR@' 'includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@'
   '';
 
-  cmakeFlags = [
-    "-DUSE_SYSTEM_BOOST=1"
-    "-DUSE_SYSTEM_LIBARCHIVE=1"
-    "-DUSE_SYSTEM_SQUASHFUSE=1"
-    "-DUSE_SYSTEM_XDGUTILS=1"
-    "-DUSE_SYSTEM_XZ=1"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -92,7 +87,13 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  strictDeps = true;
+  cmakeFlags = [
+    "-DUSE_SYSTEM_BOOST=1"
+    "-DUSE_SYSTEM_LIBARCHIVE=1"
+    "-DUSE_SYSTEM_SQUASHFUSE=1"
+    "-DUSE_SYSTEM_XDGUTILS=1"
+    "-DUSE_SYSTEM_XZ=1"
+  ];
 
   meta = {
     description = "Implements functionality for dealing with AppImage files";

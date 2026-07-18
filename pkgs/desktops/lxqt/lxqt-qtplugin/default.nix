@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   libdbusmenu-lxqt,
   libfm-qt,
   libqtxdg,
   lxqt-build-tools,
-  gitUpdater,
   qtbase,
   qtsvg,
   qttools,
@@ -25,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Ax12jHeNTyEI+2dYj9aW8S6wzDVKN+I9U7ufhx6rycQ=";
   };
 
+  postPatch = ''
+    substituteInPlace src/CMakeLists.txt \
+      --replace-fail "DESTINATION \"\''${QT_PLUGINS_DIR}" "DESTINATION \"$qtPluginPrefix"
+  '';
+
   nativeBuildInputs = [
     cmake
     lxqt-build-tools
@@ -40,16 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
     qtsvg
   ];
 
-  postPatch = ''
-    substituteInPlace src/CMakeLists.txt \
-      --replace-fail "DESTINATION \"\''${QT_PLUGINS_DIR}" "DESTINATION \"$qtPluginPrefix"
-  '';
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-qtplugin";
     description = "LXQt Qt platform integration plugin";
+    homepage = "https://github.com/lxqt/lxqt-qtplugin";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxqt ];

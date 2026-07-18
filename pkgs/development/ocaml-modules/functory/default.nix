@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
   findlib,
+  ocaml,
 }:
 
 let
@@ -21,31 +21,30 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "ocaml${ocaml.version}-functory";
   inherit (param) version;
+  pname = "ocaml${ocaml.version}-functory";
 
   src = fetchurl {
-    url = "https://www.lri.fr/~filliatr/functory/download/functory-${param.version}.tar.gz";
     inherit (param) sha256;
+    url = "https://www.lri.fr/~filliatr/functory/download/functory-${param.version}.tar.gz";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
     findlib
   ];
 
-  strictDeps = true;
-
+  createFindlibDestdir = true;
   installTargets = [ "ocamlfind-install" ];
 
-  createFindlibDestdir = true;
-
   meta = {
-    homepage = "https://www.lri.fr/~filliatr/functory/";
+    inherit (ocaml.meta) platforms;
     description = "Distributed computing library for Objective Caml which facilitates distributed execution of parallelizable computations in a seamless fashion";
+    homepage = "https://www.lri.fr/~filliatr/functory/";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.vbgl ];
     broken = lib.versionAtLeast ocaml.version "5.0";
-    inherit (ocaml.meta) platforms;
   };
 }

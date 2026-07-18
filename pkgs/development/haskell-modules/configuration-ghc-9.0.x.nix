@@ -1,12 +1,13 @@
 { }:
 
 self: super: {
+  Cabal = null;
+  Win32 = null;
   # Disable GHC 9.0.x core libraries.
   array = null;
   base = null;
   binary = null;
   bytestring = null;
-  Cabal = null;
   containers = null;
   deepseq = null;
   directory = null;
@@ -36,5 +37,4 @@ self: super: {
   transformers = null;
   unix = null;
   xhtml = null;
-  Win32 = null;
 }

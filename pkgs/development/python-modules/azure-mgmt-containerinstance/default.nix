@@ -1,22 +1,21 @@
 {
   lib,
+  azure-common,
+  azure-mgmt-core,
   buildPythonPackage,
   fetchPypi,
   msrest,
   msrestazure,
-  azure-common,
-  azure-mgmt-core,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-containerinstance";
   version = "10.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     hash = "sha256-eNQ3rbKFdPRIyDjtXwH5ztN4GWCYBh3rWdn3AxcEwX4=";
+    extension = "zip";
   };
 
   propagatedBuildInputs = [
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "azure.mgmt.containerinstance" ];
 
   meta = {

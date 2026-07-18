@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  kdePackages,
-  pkg-config,
   fcitx5,
-  m17n_lib,
-  m17n_db,
   gettext,
+  kdePackages,
+  m17n_db,
+  m17n_lib,
   nixosTests,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {

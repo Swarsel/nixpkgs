@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  oniguruma,
   installShellFiles,
-  zola,
+  oniguruma,
+  pkg-config,
+  rustPlatform,
   testers,
+  zola,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-mynoXNJE7IcP/0bMLUr/pJQbaEVEj2q/488Z4c9Tr5A=";
   };
 
-  cargoHash = "sha256-AEgyaKenTMKAoJjzcklFFWjy5H5hkNZvVnlMZmqQxlM=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -32,6 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     oniguruma
   ];
 
+  cargoHash = "sha256-AEgyaKenTMKAoJjzcklFFWjy5H5hkNZvVnlMZmqQxlM=";
   env.RUSTONIG_SYSTEM_LIBONIG = true;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -45,14 +44,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Fast static site generator with everything built-in";
-    mainProgram = "zola";
     homepage = "https://www.getzola.org/";
     changelog = "https://github.com/getzola/zola/raw/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dandellion
       dywedir
       _0x4A6F
     ];
+
+    mainProgram = "zola";
   };
 })

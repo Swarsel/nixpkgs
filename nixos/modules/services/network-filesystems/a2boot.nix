@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -13,26 +13,29 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.services.netatalk.partOf = [ "a2boot.service" ];
     systemd.services.a2boot = {
-      description = "a2boot daemon";
-      unitConfig.Documentation = "man:a2boot(8)";
       after = [
         "network.target"
         "netatalk.service"
       ];
-      wantedBy = [ "multi-user.target" ];
 
+      description = "a2boot daemon";
       path = [ pkgs.netatalk ];
 
       serviceConfig = {
-        Type = "forking";
         DynamicUser = true;
-        RuntimeDirectory = "a2boot";
         ExecStart = "${pkgs.netatalk}/bin/a2boot";
         Restart = "always";
+        RuntimeDirectory = "a2boot";
+        Type = "forking";
       };
+
+      unitConfig.Documentation = "man:a2boot(8)";
+      wantedBy = [ "multi-user.target" ];
     };
+
+    systemd.services.netatalk.partOf = [ "a2boot.service" ];
   };
+
   meta.maintainers = with lib.maintainers; [ matthewcroughan ];
 }

@@ -1,16 +1,14 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
   lz4,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "zfs_replicate";
   version = "4.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "alunduil";
@@ -28,6 +26,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
         '("${lib.getExe lz4}  | ", "/usr/bin/env - lz4 -d | ")'
   '';
 
+  nativeCheckInputs = with python3Packages; [
+    hypothesis
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
   build-system = with python3Packages; [
     poetry-core
   ];
@@ -37,23 +43,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     stringcase
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    hypothesis
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
     # AssertionError: Expected SystemExit or FileNotFoundError
     "zfs_test/replicate_test/cli_test/main_test.py"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "ZFS Snapshot Replication";
     homepage = "https://github.com/alunduil/zfs-replicate";
     changelog = "https://github.com/alunduil/zfs-replicate/blob/v${finalAttrs.version}/CHANGELOG.md";
-    mainProgram = "zfs-replicate";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ alunduil ];
+    mainProgram = "zfs-replicate";
   };
 })

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   llvmPackages,
@@ -22,14 +22,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ cmake ] ++ lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
-
   cmakeFlags = [ "-DCMAKE_INSTALL_LIBDIR=lib" ];
 
   meta = {
     description = "C++ and Python library for Polarizable Embedding";
     homepage = "https://github.com/maxscheurer/cppe";
     license = lib.licenses.lgpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.unix;
   };
 })

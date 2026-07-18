@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   libevent,
   libsodium,
   libuv,
@@ -24,16 +24,16 @@ stdenv.mkDerivation rec {
     owner = "oxen-io";
     repo = "lokinet";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-6TVMuT4O8zJj97873BTsR1PJU8NaBgYr/nBkc/EfQuQ=";
+    fetchSubmodules = true;
   };
 
   patches = [
     # Fix gcc-13 compatibility:
     (fetchpatch {
+      hash = "sha256-yCy4WXs6p67TMe4uPNAuQyJvtP3IbpJS81AeomNu9lU=";
       name = "gcc-13.patch";
       url = "https://github.com/oxen-io/lokinet/commit/89c5c73be48788ba14a55cb6d82d57208b487eaf.patch";
-      hash = "sha256-yCy4WXs6p67TMe4uPNAuQyJvtP3IbpJS81AeomNu9lU=";
     })
   ];
 
@@ -61,14 +61,14 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
-    # Upstream has received reports of incompatibilities with fmt, and other
-    # dependencies, see: https://github.com/oxen-io/lokinet/issues/2200.
-    # But our version of spdlog doesn't support fmt_9
-    broken = true;
     description = "Anonymous, decentralized and IP based overlay network for the internet";
     homepage = "https://lokinet.org/";
     changelog = "https://github.com/oxen-io/lokinet/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ wyndon ];
+    # Upstream has received reports of incompatibilities with fmt, and other
+    # dependencies, see: https://github.com/oxen-io/lokinet/issues/2200.
+    # But our version of spdlog doesn't support fmt_9
+    broken = true;
   };
 }

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
   coreutils,
+  installShellFiles,
   libblocksruntime,
   llvmPackages,
   ninja,
@@ -17,7 +17,6 @@
 python3.pkgs.buildPythonApplication rec {
   pname = "meson";
   version = "1.10.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mesonbuild";
@@ -86,6 +85,7 @@ python3.pkgs.buildPythonApplication rec {
       null;
 
   nativeBuildInputs = [ installShellFiles ];
+  env.hostPlatform = stdenv.targetPlatform.system;
 
   nativeCheckInputs = [
     ninja
@@ -173,13 +173,13 @@ python3.pkgs.buildPythonApplication rec {
       --replace "python3 -c " "${python3.interpreter} -c "
   '';
 
+  format = "setuptools";
   setupHook = ./setup-hook.sh;
-  env.hostPlatform = stdenv.targetPlatform.system;
 
   meta = {
-    homepage = "https://mesonbuild.com";
+    inherit (python3.meta) platforms;
     description = "Open source, fast and friendly build system made in Python";
-    mainProgram = "meson";
+
     longDescription = ''
       Meson is an open source build system meant to be both extremely fast, and,
       even more importantly, as user friendly as possible.
@@ -189,9 +189,11 @@ python3.pkgs.buildPythonApplication rec {
       second spent waiting for the build system to actually start compiling
       code.
     '';
+
+    homepage = "https://mesonbuild.com";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ qyliss ];
-    inherit (python3.meta) platforms;
+    mainProgram = "meson";
   };
 }
 # TODO: a more Nixpkgs-tailoired test suite

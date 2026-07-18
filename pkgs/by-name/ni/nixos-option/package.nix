@@ -7,14 +7,12 @@
   man-db,
   nix,
   nixosTests,
-  shellcheck,
   runCommand,
+  shellcheck,
   stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
-  name = "nixos-option";
-
   src = ./nixos-option.sh;
 
   nativeBuildInputs = [
@@ -23,14 +21,9 @@ stdenvNoCC.mkDerivation {
   ];
 
   env = {
-    nixosOptionNix = "${./nixos-option.nix}";
     nixosOptionManpage = "${placeholder "out"}/share/man";
+    nixosOptionNix = "${./nixos-option.nix}";
   };
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontPatch = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -54,8 +47,15 @@ stdenvNoCC.mkDerivation {
       }
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatch = true;
+  dontUnpack = true;
+  name = "nixos-option";
+
   passthru.tests = {
     installer-simpleUefiSystemdBoot = nixosTests.installer.simpleUefiSystemdBoot;
+
     shellcheck = runCommand "nixos-option-shellchecked" { nativeBuildInputs = [ shellcheck ]; } ''
       shellcheck ${./nixos-option.sh} && touch $out
     '';
@@ -64,11 +64,13 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Evaluate NixOS configuration and return the properties of given option";
     license = lib.licenses.mit;
-    mainProgram = "nixos-option";
+
     maintainers = with lib.maintainers; [
       FireyFly
       azuwis
       aleksana
     ];
+
+    mainProgram = "nixos-option";
   };
 }

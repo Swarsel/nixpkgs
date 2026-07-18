@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -14,15 +14,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     owner = "pop-os";
     repo = "cosmic-wallpapers";
     tag = "epoch-${finalAttrs.version}";
-    forceFetchGit = true;
-    fetchLFS = true;
     hash = "sha256-m2cYppfitpBDKK8CC9i/lUrC9rfSYTuqUSZSyIKKGyg=";
+    fetchLFS = true;
+    forceFetchGit = true;
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
-
   makeFlags = [ "prefix=${placeholder "out"}" ];
+  __structuredAttrs = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -34,6 +33,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Wallpapers for the COSMIC Desktop Environment";
     homepage = "https://system76.com/cosmic";
+
     license = with lib.licenses; [
       # A_stormy_stellar_nursery_esa_379309.jpg: https://www.esa.int/ESA_Multimedia/Images/2017/06/A_stormy_stellar_nursery
       # webb-inspired-wallpaper-system76.jpg
@@ -46,7 +46,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       # round_moons_nasa.jpg: https://www.planetary.org/space-images/the-solar-systems-round-moons
       publicDomain
     ];
-    teams = [ lib.teams.cosmic ];
+
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.cosmic ];
   };
 })

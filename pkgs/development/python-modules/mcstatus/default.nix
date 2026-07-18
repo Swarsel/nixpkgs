@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   asyncio-dgram,
   buildPythonPackage,
   dnspython,
-  fetchFromGitHub,
   hatchling,
   pytest-asyncio,
   pytest-cov-stub,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mcstatus";
   version = "14.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "py-mine";
@@ -24,6 +23,17 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-EyBaBC1Ly2549oFohtEulQMXIeRhQjtzvO+XPmwl8Zs=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-rerunfailures
+    pytest-cov-stub
+    pytestCheckHook
+    typing-extensions
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatchling
@@ -35,19 +45,6 @@ buildPythonPackage (finalAttrs: {
     dnspython
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-rerunfailures
-    pytest-cov-stub
-    pytestCheckHook
-    typing-extensions
-  ];
-
-  pythonImportsCheck = [ "mcstatus" ];
-
   disabledTests = [
     # DNS features are limited in the sandbox
     "test_resolve_localhost"
@@ -55,15 +52,20 @@ buildPythonPackage (finalAttrs: {
     "test_java_server_with_query_port"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "mcstatus" ];
+
   meta = {
     description = "Python library for checking the status of Minecraft servers";
     homepage = "https://github.com/py-mine/mcstatus";
     changelog = "https://github.com/py-mine/mcstatus/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fab
       PerchunPak
     ];
+
     mainProgram = "mcstatus";
   };
 })

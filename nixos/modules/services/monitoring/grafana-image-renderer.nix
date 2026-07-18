@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   utils,
   ...
 }:
@@ -9,20 +9,6 @@ let
   cfg = config.services.grafana-image-renderer;
 
   format = {
-    type =
-      with lib.types;
-      attrsOf (
-        attrsOf (oneOf [
-          str
-          int
-          bool
-          (listOf (oneOf [
-            str
-            int
-          ]))
-        ])
-      );
-
     generate = lib.flip lib.pipe [
       # Remove legacy option prefixes that only exist for backwards-compat
       (lib.flip removeAttrs [
@@ -56,6 +42,20 @@ let
       # Turn into a string
       utils.escapeSystemdExecArgs
     ];
+
+    type =
+      with lib.types;
+      attrsOf (
+        attrsOf (oneOf [
+          str
+          int
+          bool
+          (listOf (oneOf [
+            str
+            int
+          ]))
+        ])
+      );
   };
 in
 {
@@ -89,12 +89,16 @@ in
 
   options.services.grafana-image-renderer = {
     enable = lib.mkEnableOption "grafana-image-renderer";
-
     provisionGrafana = lib.mkEnableOption "Grafana configuration for grafana-image-renderer";
 
     settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Configuration attributes for `grafana-image-renderer`.
+      '';
+
       type = lib.types.submodule {
-        freeformType = format.type;
         imports = [
           ../../misc/assertions.nix
           (lib.mkRenamedOptionModule
@@ -160,29 +164,30 @@ in
         ];
 
         options = {
-          server.addr = lib.mkOption {
-            type = lib.types.str;
-            default = "localhost:8081";
-            description = ''
-              Listen address of the service.
-            '';
-          };
           browser.path = lib.mkOption {
-            type = lib.types.path;
             default = lib.getExe pkgs.chromium;
             defaultText = lib.literalExpression "lib.getExe pkgs.chromium";
+
             description = ''
               Path to the executable of the chromium to use.
             '';
+
+            type = lib.types.path;
+          };
+
+          server.addr = lib.mkOption {
+            default = "localhost:8081";
+
+            description = ''
+              Listen address of the service.
+            '';
+
+            type = lib.types.str;
           };
         };
+
+        freeformType = format.type;
       };
-
-      default = { };
-
-      description = ''
-        Configuration attributes for `grafana-image-renderer`.
-      '';
     };
   };
 
@@ -190,6 +195,7 @@ in
     assertions = [
       {
         assertion = cfg.provisionGrafana -> config.services.grafana.enable;
+
         message = ''
           To provision a Grafana instance to use grafana-image-renderer,
           `services.grafana.enable` must be set to `true`!
@@ -198,8 +204,8 @@ in
     ];
 
     services.grafana.settings.rendering = lib.mkIf cfg.provisionGrafana {
-      server_url = "http://${toString cfg.settings.server.addr}/render";
       callback_url = "http://${config.services.grafana.settings.server.http_addr}:${toString config.services.grafana.settings.server.http_port}";
+      server_url = "http://${toString cfg.settings.server.addr}/render";
     };
 
     services.grafana-image-renderer.settings = {
@@ -207,23 +213,20 @@ in
     };
 
     systemd.services.grafana-image-renderer = {
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
       description = "Grafana backend plugin that handles rendering of panels & dashboards to PNGs using headless browser (Chromium/Chrome)";
 
       serviceConfig = {
-        DynamicUser = true;
-        PrivateTmp = true;
-        ExecStart = "${lib.getExe pkgs.grafana-image-renderer} server ${format.generate cfg.settings}";
-        Restart = "always";
         AmbientCapabilities = "";
         CapabilityBoundingSet = "";
+        DynamicUser = true;
+        ExecStart = "${lib.getExe pkgs.grafana-image-renderer} server ${format.generate cfg.settings}";
         LockPersonality = true;
         MountAPIVFS = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateMounts = true;
+        PrivateTmp = true;
         PrivateUsers = true;
         ProtectClock = true;
         ProtectControlGroups = "strict";
@@ -235,17 +238,23 @@ in
         ProtectProc = "invisible";
         ProtectSystem = "full";
         RemoveIPC = true;
+        Restart = "always";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
         UMask = 27;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

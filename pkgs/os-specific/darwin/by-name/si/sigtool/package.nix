@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,7 +24,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
-
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {

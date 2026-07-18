@@ -2,41 +2,41 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  replaceVars,
-  pkg-config,
+  dbus,
+  gettext,
   glib,
-  shadow,
   gobject-introspection,
-  polkit,
-  systemdLibs,
+  json_c,
+  libxcrypt,
   meson,
   mesonEmulatorHook,
-  dbus,
-  json_c,
   ninja,
-  python3,
-  vala,
-  gettext,
-  libxcrypt,
   nixosTests,
+  pkg-config,
+  polkit,
+  python3,
+  replaceVars,
+  shadow,
+  systemdLibs,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "accountsservice";
   version = "26.27.3";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "accountsservice";
     repo = "accountsservice";
     tag = finalAttrs.version;
     hash = "sha256-/n0YCPZaf1SsTScidFUZcxfJkpv/+Bnb6Z7oKL+clgE=";
+    domain = "gitlab.freedesktop.org";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Hardcode dependency paths.
@@ -58,6 +58,14 @@ stdenv.mkDerivation (finalAttrs: {
     # `readlink display-manager.service` won't return any of the candidates.
     ./get-dm-type-from-config.patch
   ];
+
+  postPatch = ''
+    chmod +x meson_post_install.py
+    patchShebangs meson_post_install.py
+
+    substituteInPlace meson.build \
+      --replace-fail "run_command(['./generate-version.sh'], check: true).stdout().strip()" "'${finalAttrs.version}'"
+  '';
 
   nativeBuildInputs = [
     gettext
@@ -83,6 +91,12 @@ stdenv.mkDerivation (finalAttrs: {
     libxcrypt
   ];
 
+  mesonFlags = [
+    "-Dadmin_group=wheel"
+    "-Dlocalstatedir=/var"
+    "-Dsystemdsystemunitdir=${placeholder "out"}/etc/systemd/system"
+  ];
+
   env =
     lib.optionalAttrs (stdenv.cc.isGNU && (lib.versionAtLeast (lib.getVersion stdenv.cc.cc) "14"))
       {
@@ -93,29 +107,15 @@ stdenv.mkDerivation (finalAttrs: {
         ];
       };
 
-  mesonFlags = [
-    "-Dadmin_group=wheel"
-    "-Dlocalstatedir=/var"
-    "-Dsystemdsystemunitdir=${placeholder "out"}/etc/systemd/system"
-  ];
-
-  postPatch = ''
-    chmod +x meson_post_install.py
-    patchShebangs meson_post_install.py
-
-    substituteInPlace meson.build \
-      --replace-fail "run_command(['./generate-version.sh'], check: true).stdout().strip()" "'${finalAttrs.version}'"
-  '';
-
   passthru.tests = { inherit (nixosTests) accountsservice; };
 
   meta = {
-    changelog = "https://gitlab.freedesktop.org/accountsservice/accountsservice/-/releases/${finalAttrs.src.tag}";
     description = "D-Bus interface for user account query and manipulation";
     homepage = "https://www.freedesktop.org/wiki/Software/AccountsService";
+    changelog = "https://gitlab.freedesktop.org/accountsservice/accountsservice/-/releases/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pSub ];
-    teams = with lib.teams; [ freedesktop ];
     platforms = lib.platforms.linux;
+    teams = with lib.teams; [ freedesktop ];
   };
 })

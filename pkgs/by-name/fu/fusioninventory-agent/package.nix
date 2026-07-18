@@ -1,14 +1,14 @@
 {
   lib,
-  perlPackages,
-  nix,
-  dmidecode,
-  pciutils,
-  usbutils,
-  iproute2,
-  net-tools,
   fetchFromGitHub,
+  dmidecode,
+  iproute2,
   makeWrapper,
+  net-tools,
+  nix,
+  pciutils,
+  perlPackages,
+  usbutils,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -22,6 +22,8 @@ perlPackages.buildPerlPackage rec {
     sha256 = "1hbp5a9m03n6a80xc8z640zs71qhqk4ifafr6fp0vvzzvq097ip2";
   };
 
+  outputs = [ "out" ];
+
   postPatch = ''
 
     patchShebangs bin
@@ -32,8 +34,8 @@ perlPackages.buildPerlPackage rec {
       --replace /sbin/ip ${iproute2}/sbin/ip
   '';
 
-  buildTools = [ ];
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = (
     with perlPackages;
     [
@@ -58,6 +60,7 @@ perlPackages.buildPerlPackage rec {
       TestNoWarnings
     ]
   );
+
   propagatedBuildInputs = with perlPackages; [
     FileWhich
     LWP
@@ -94,11 +97,11 @@ perlPackages.buildPerlPackage rec {
     done
   '';
 
-  outputs = [ "out" ];
+  buildTools = [ ];
 
   meta = {
-    homepage = "https://www.fusioninventory.org";
     description = "FusionInventory unified Agent for UNIX, Linux, Windows and MacOSX";
+    homepage = "https://www.fusioninventory.org";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.phile314 ];
   };

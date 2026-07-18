@@ -20,12 +20,6 @@ buildGoModule (finalAttrs: {
   pname = "wuffs";
   version = "0.4.0-alpha.9";
 
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-  ];
-
   src = fetchFromGitHub {
     owner = "google";
     repo = "wuffs";
@@ -33,25 +27,24 @@ buildGoModule (finalAttrs: {
     hash = "sha256-XbupK4QYnPudUlO5tRWrQRncGHITzJL//Yk/E7WNxYk=";
   };
 
-  vendorHash = null;
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+  ];
 
   strictDeps = true;
   nativeBuildInputs = [ makeBinaryWrapper ];
-
-  subPackages = [
-    "cmd/wuffs-c"
-    "cmd/wuffs"
-  ];
-
+  vendorHash = null;
   # There are no checks
   doCheck = false;
 
   postInstall =
     let
       pkgconfig = replaceVars ./wuffs.pc {
-        LIB = placeholder "lib";
-        DEV = placeholder "dev";
         DESCRIPTION = finalAttrs.meta.description;
+        DEV = placeholder "dev";
+        LIB = placeholder "lib";
         VERSION = finalAttrs.version;
       };
     in
@@ -69,18 +62,26 @@ buildGoModule (finalAttrs: {
       install -Dm444 ${pkgconfig} "$dev/lib/pkgconfig/wuffs.pc"
     '';
 
+  subPackages = [
+    "cmd/wuffs-c"
+    "cmd/wuffs"
+  ];
+
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
-    homepage = "https://github.com/google/wuffs";
     description = "memory-safe programming language and standard library for wrangling untrusted data";
-    mainProgram = "wuffs";
-    pkgConfigModules = [ "wuffs" ];
+    homepage = "https://github.com/google/wuffs";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = [
     ];
+
+    mainProgram = "wuffs";
+    pkgConfigModules = [ "wuffs" ];
   };
 })

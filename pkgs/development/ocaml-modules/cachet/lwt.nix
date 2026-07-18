@@ -1,17 +1,19 @@
 {
+  alcotest,
   buildDunePackage,
   cachet,
   lwt,
-  alcotest,
 }:
 
 buildDunePackage {
-  pname = "cachet-lwt";
   inherit (cachet) src version;
+  pname = "cachet-lwt";
+
   propagatedBuildInputs = [
     cachet
     lwt
   ];
+
   doCheck = true;
   checkInputs = [ alcotest ];
 

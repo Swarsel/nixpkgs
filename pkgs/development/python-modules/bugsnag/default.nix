@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   blinker,
   buildPythonPackage,
-  fetchFromGitHub,
   flask,
+  pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
   webob,
-  pytestCheckHook,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage rec {
   pname = "bugsnag";
   version = "4.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bugsnag";
@@ -22,23 +21,14 @@ buildPythonPackage rec {
     hash = "sha256-32dq68MCvfQztCwwtGD2qRQfLSEnog+HEtq/Zei0JXI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ webob ];
-
-  optional-dependencies = {
-    flask = [
-      blinker
-      flask
-    ];
-  };
-
-  pythonImportsCheck = [ "bugsnag" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ webob ];
 
   disabledTestPaths = [
     # Extra dependencies
@@ -53,7 +43,15 @@ buildPythonPackage rec {
     "tests/test_client.py::ClientTest::test_exception_hook_does_not_leave_a_breadcrumb_if_errors_are_disabled"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    flask = [
+      blinker
+      flask
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "bugsnag" ];
 
   meta = {
     description = "Automatic error monitoring for Python applications";

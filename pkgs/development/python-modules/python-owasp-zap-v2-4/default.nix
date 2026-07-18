@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pyhamcrest,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-owasp-zap-v2-4";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zaproxy";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-a0F6asx8Dl1T/OqNhHukHRbq+LUqsl3im+y1k096pfE=";
   };
 
+  nativeCheckInputs = [
+    pyhamcrest
+    pytestCheckHook
+    requests-mock
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,12 +34,7 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  nativeCheckInputs = [
-    pyhamcrest
-    pytestCheckHook
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "zapv2" ];
 
   meta = {

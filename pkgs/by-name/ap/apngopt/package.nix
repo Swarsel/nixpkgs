@@ -13,8 +13,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "mirror://sourceforge/apng/apngopt-${finalAttrs.version}-src.zip";
-    stripRoot = false;
     hash = "sha256-MAqth5Yt7+SabY6iEgSFcaBmuHvA0ZkNdXSgvhKao1Y=";
+    stripRoot = false;
   };
 
   patches = [
@@ -32,11 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     zopfli
   ];
 
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}c++" ];
+
   preBuild = ''
     buildFlagsArray+=("LIBS=-lzopfli -lstdc++ -lpng -lz")
   '';
-
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}c++" ];
 
   installPhase = ''
     runHook preInstall
@@ -45,8 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://sourceforge.net/projects/apng/";
     description = "Optimizes APNG animations";
+    homepage = "https://sourceforge.net/projects/apng/";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;

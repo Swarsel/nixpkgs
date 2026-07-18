@@ -39,34 +39,27 @@ in
 
     package = mkPackageOption pkgs "x2goserver" { };
 
-    superenicer = {
-      enable = mkEnableOption "superenicer" // {
-        description = ''
-          Enables the SupeReNicer code in x2gocleansessions, this will renice
-          suspended sessions to nice level 19 and renice them to level 0 if the
-          session becomes marked as running again
-        '';
-      };
-    };
-
     nxagentDefaultOptions = mkOption {
-      type = types.listOf types.str;
       default = [
         "-extension GLX"
         "-nolisten tcp"
       ];
+
       description = ''
         List of default nx agent options.
       '';
+
+      type = types.listOf types.str;
     };
 
     settings = mkOption {
-      type = types.attrsOf types.attrs;
       default = { };
+
       description = ''
         x2goserver.conf ini configuration as nix attributes. See
         `x2goserver.conf(5)` for details
       '';
+
       example = literalExpression ''
         {
           superenicer = {
@@ -76,41 +69,77 @@ in
           telekinesis = { "enable" = "no"; };
         }
       '';
+
+      type = types.attrsOf types.attrs;
+    };
+
+    superenicer = {
+      enable = mkEnableOption "superenicer" // {
+        description = ''
+          Enables the SupeReNicer code in x2gocleansessions, this will renice
+          suspended sessions to nice level 19 and renice them to level 0 if the
+          session becomes marked as running again
+        '';
+      };
     };
   };
 
   config = mkIf cfg.enable {
 
-    # x2goserver can run X11 program even if "services.xserver.enable = false"
-    xdg = {
-      autostart.enable = true;
-      menus.enable = true;
-      mime.enable = true;
-      icons.enable = true;
-    };
-
     environment.systemPackages = [ cfg.package ];
 
-    users.groups.x2go = { };
-    users.users.x2go = {
-      home = "/var/lib/x2go/db";
+    # https://bugs.x2go.org/cgi-bin/bugreport.cgi?bug=276
+    security.sudo.extraConfig = ''
+      Defaults  env_keep+=QT_GRAPHICSSYSTEM
+    '';
+
+    security.sudo-rs.extraConfig = ''
+      Defaults  env_keep+=QT_GRAPHICSSYSTEM
+    '';
+
+    security.wrappers.x2goprintWrapper = {
       group = "x2go";
-      isSystemUser = true;
+      owner = "x2go";
+      setgid = true;
+      setuid = false;
+      source = "${cfg.package}/bin/x2goprint";
     };
 
     security.wrappers.x2gosqliteWrapper = {
+      group = "x2go";
+      owner = "x2go";
+      setgid = true;
+      setuid = false;
       source = "${cfg.package}/lib/x2go/libx2go-server-db-sqlite3-wrapper.pl";
-      owner = "x2go";
-      group = "x2go";
-      setuid = false;
-      setgid = true;
     };
-    security.wrappers.x2goprintWrapper = {
-      source = "${cfg.package}/bin/x2goprint";
-      owner = "x2go";
-      group = "x2go";
-      setuid = false;
-      setgid = true;
+
+    systemd.services.x2goserver = {
+      description = "X2Go Server Daemon";
+
+      preStart = ''
+        if [ ! -e /var/lib/x2go/setup_ran ]
+        then
+          mkdir -p /var/lib/x2go/conf
+          cp -r ${cfg.package}/etc/x2go/* /var/lib/x2go/conf/
+          ln -sf ${x2goServerConf} /var/lib/x2go/conf/x2goserver.conf
+          ln -sf ${x2goAgentOptions} /var/lib/x2go/conf/x2goagent.options
+          ${cfg.package}/bin/x2godbadmin --createdb
+          touch /var/lib/x2go/setup_ran
+        fi
+      '';
+
+      serviceConfig = {
+        ExecStart = "${cfg.package}/bin/x2gocleansessions";
+        Group = "x2go";
+        PIDFile = "/run/x2go/x2goserver.pid";
+        RuntimeDirectory = "x2go";
+        StateDirectory = "x2go";
+        Type = "forking";
+        User = "x2go";
+      };
+
+      unitConfig.Documentation = "man:x2goserver.conf(5)";
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.tmpfiles.rules =
@@ -169,38 +198,20 @@ in
         "L+ /usr/local/bin/xmodmap - - - - ${xmodmap}/bin/xmodmap"
       ];
 
-    systemd.services.x2goserver = {
-      description = "X2Go Server Daemon";
-      wantedBy = [ "multi-user.target" ];
-      unitConfig.Documentation = "man:x2goserver.conf(5)";
-      serviceConfig = {
-        Type = "forking";
-        ExecStart = "${cfg.package}/bin/x2gocleansessions";
-        PIDFile = "/run/x2go/x2goserver.pid";
-        User = "x2go";
-        Group = "x2go";
-        RuntimeDirectory = "x2go";
-        StateDirectory = "x2go";
-      };
-      preStart = ''
-        if [ ! -e /var/lib/x2go/setup_ran ]
-        then
-          mkdir -p /var/lib/x2go/conf
-          cp -r ${cfg.package}/etc/x2go/* /var/lib/x2go/conf/
-          ln -sf ${x2goServerConf} /var/lib/x2go/conf/x2goserver.conf
-          ln -sf ${x2goAgentOptions} /var/lib/x2go/conf/x2goagent.options
-          ${cfg.package}/bin/x2godbadmin --createdb
-          touch /var/lib/x2go/setup_ran
-        fi
-      '';
+    users.groups.x2go = { };
+
+    users.users.x2go = {
+      group = "x2go";
+      home = "/var/lib/x2go/db";
+      isSystemUser = true;
     };
 
-    # https://bugs.x2go.org/cgi-bin/bugreport.cgi?bug=276
-    security.sudo.extraConfig = ''
-      Defaults  env_keep+=QT_GRAPHICSSYSTEM
-    '';
-    security.sudo-rs.extraConfig = ''
-      Defaults  env_keep+=QT_GRAPHICSSYSTEM
-    '';
+    # x2goserver can run X11 program even if "services.xserver.enable = false"
+    xdg = {
+      autostart.enable = true;
+      icons.enable = true;
+      menus.enable = true;
+      mime.enable = true;
+    };
   };
 }

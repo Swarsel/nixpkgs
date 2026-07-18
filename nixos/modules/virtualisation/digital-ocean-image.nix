@@ -16,12 +16,14 @@ in
     ./disk-size-option.nix
     ../image/file-options.nix
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2411;
       from = [
         "virtualisation"
         "digitalOceanImage"
         "diskSize"
       ];
+
+      sinceRelease = 2411;
+
       to = [
         "virtualisation"
         "diskSize"
@@ -30,9 +32,26 @@ in
   ];
 
   options = {
+    virtualisation.digitalOceanImage.compressionMethod = mkOption {
+      default = "gzip";
+
+      description = ''
+        Disk image compression method. Choose bzip2 to generate smaller images that
+        take longer to generate but will consume less metered storage space on your
+        Digital Ocean account.
+      '';
+
+      example = "bzip2";
+
+      type = types.enum [
+        "gzip"
+        "bzip2"
+      ];
+    };
+
     virtualisation.digitalOceanImage.configFile = mkOption {
-      type = with types; nullOr path;
       default = null;
+
       description = ''
         A path to a configuration file which will be placed at
         `/etc/nixos/configuration.nix` and be used when switching
@@ -40,20 +59,8 @@ in
         configuration is used that imports
         `(modulesPath + "/virtualisation/digital-ocean-config.nix")`.
       '';
-    };
 
-    virtualisation.digitalOceanImage.compressionMethod = mkOption {
-      type = types.enum [
-        "gzip"
-        "bzip2"
-      ];
-      default = "gzip";
-      example = "bzip2";
-      description = ''
-        Disk image compression method. Choose bzip2 to generate smaller images that
-        take longer to generate but will consume less metered storage space on your
-        Digital Ocean account.
-      '';
+      type = with types; nullOr path;
     };
   };
 
@@ -67,42 +74,48 @@ in
         format
         (
           {
-            "gzip" = "gz";
             "bzip2" = "bz2";
+            "gzip" = "gz";
           }
           .${cfg.compressionMethod}
         )
       ];
-      system.nixos.tags = [ "digital-ocean" ];
-      system.build.image = config.system.build.digitalOceanImage;
+
       system.build.digitalOceanImage = import ../../lib/make-disk-image.nix {
-        name = "digital-ocean-image";
         inherit (config.image) baseName;
         inherit (config.virtualisation) diskSize;
+
         inherit
           config
           lib
           pkgs
           format
           ;
+
+        configFile =
+          if cfg.configFile == null then
+            config.virtualisation.digitalOcean.defaultConfigFile
+          else
+            cfg.configFile;
+
+        name = "digital-ocean-image";
+
         postVM =
           let
             compress =
               {
-                "gzip" = "${pkgs.gzip}/bin/gzip";
                 "bzip2" = "${pkgs.bzip2}/bin/bzip2";
+                "gzip" = "${pkgs.gzip}/bin/gzip";
               }
               .${cfg.compressionMethod};
           in
           ''
             ${compress} $diskImage
           '';
-        configFile =
-          if cfg.configFile == null then
-            config.virtualisation.digitalOcean.defaultConfigFile
-          else
-            cfg.configFile;
       };
+
+      system.build.image = config.system.build.digitalOceanImage;
+      system.nixos.tags = [ "digital-ocean" ];
 
     };
 

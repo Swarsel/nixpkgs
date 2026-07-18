@@ -1,15 +1,14 @@
 {
-  mkDerivation,
-  libevent,
   byacc,
+  libevent,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/slaacd";
-
   postPatch = ''
     sed -i 's/DPADD/#DPADD/' $BSDSRCDIR/sbin/slaacd/Makefile
   '';
 
   buildInputs = [ libevent ];
   extraNativeBuildInputs = [ byacc ];
+  path = "sbin/slaacd";
 }

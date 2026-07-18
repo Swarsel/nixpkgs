@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
-  electron,
-  libsecret,
   asar,
-  python3,
-  glib,
-  desktop-file-utils,
   callPackage,
+  desktop-file-utils,
+  dpkg,
+  electron,
+  glib,
+  libsecret,
+  makeWrapper,
+  python3,
 }:
 
 let
@@ -23,15 +23,9 @@ in
 
 stdenv.mkDerivation {
 
-  pname = "standardnotes";
-
-  src = fetchurl (srcjson.deb.${stdenv.hostPlatform.system} or throwSystem);
-
   inherit (srcjson) version;
-
-  dontConfigure = true;
-
-  dontBuild = true;
+  pname = "standardnotes";
+  src = fetchurl (srcjson.deb.${stdenv.hostPlatform.system} or throwSystem);
 
   nativeBuildInputs = [
     makeWrapper
@@ -76,21 +70,27 @@ stdenv.mkDerivation {
       runHook postInstall
     '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = callPackage ./update.nix { };
 
   meta = {
     description = "Simple and private notes app";
+
     longDescription = ''
       Standard Notes is a private notes app that features unmatched simplicity,
       end-to-end encryption, powerful extensions, and open-source applications.
     '';
+
     homepage = "https://standardnotes.com";
     license = lib.licenses.agpl3Only;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       mgregoire
       chuangzhu
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     platforms = builtins.attrNames srcjson.deb;
     mainProgram = "standardnotes";
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pydantic,
   setuptools,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pydantic-scim";
   version = "0.0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chalk-ai";
@@ -19,22 +18,21 @@ buildPythonPackage rec {
     hash = "sha256-Hbc94v/+slXRGDKKbMui8WPwn28/1XcKvHkbLebWtj0=";
   };
 
-  nativeBuildInputs = [
-    setuptools
-    setuptools-scm
-  ];
-
   postPatch = ''
     substituteInPlace setup.py \
       --replace 'version=get_version(),' 'version="${version}",'
   '';
 
+  nativeBuildInputs = [
+    setuptools
+    setuptools-scm
+  ];
+
   propagatedBuildInputs = [ pydantic ] ++ pydantic.optional-dependencies.email;
-
-  pythonImportsCheck = [ "pydanticscim" ];
-
   # no tests
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "pydanticscim" ];
 
   meta = {
     description = "Pydantic types for SCIM";

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  jre,
   coreutils,
-  which,
+  jre,
   makeWrapper,
   # For the test
   pkgs,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,15 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "SPARQL server";
+    homepage = "https://jena.apache.org";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ raskin ];
-    platforms = lib.platforms.all;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    homepage = "https://jena.apache.org";
-    downloadPage = "https://archive.apache.org/dist/jena/binaries/";
+
+    maintainers = with lib.maintainers; [ raskin ];
+    platforms = lib.platforms.all;
     mainProgram = "fuseki";
+    downloadPage = "https://archive.apache.org/dist/jena/binaries/";
   };
 })

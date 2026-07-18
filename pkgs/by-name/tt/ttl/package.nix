@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,13 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-xY0z5GH6aLL38wOH6B2V9pAv9HnrJfpmQDjDKGSL4qo=";
   };
 
-  cargoHash = "sha256-zYO3sY/MdDPfypDeseabTtwMeeUZQ8OiVfch+5fRetI=";
-
   nativeBuildInputs = [
     installShellFiles
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  cargoHash = "sha256-zYO3sY/MdDPfypDeseabTtwMeeUZQ8OiVfch+5fRetI=";
 
   postInstall = ''
     installShellCompletion --cmd ttl \
@@ -33,25 +32,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/ttl --completions zsh)
   '';
 
+  doInstallCheck = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Modern traceroute/mtr-style TUI";
+
     longDescription = ''
       ttl provides a live traceroute interface that can trace multiple targets,
       detect ECMP paths, run PMTUD, export JSON/CSV reports, and optionally
       enrich hop data with DNS, ASN, geolocation, and PeeringDB information.
     '';
-    mainProgram = "ttl";
+
     homepage = "https://github.com/lance0/ttl";
     changelog = "https://github.com/lance0/ttl/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ vincentbernat ];
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
+    maintainers = with lib.maintainers; [ vincentbernat ];
     platforms = lib.platforms.all;
+    mainProgram = "ttl";
   };
 })

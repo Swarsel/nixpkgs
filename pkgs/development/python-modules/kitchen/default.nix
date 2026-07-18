@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "kitchen";
   version = "1.2.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Waiting for upstream's clean-up
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "kitchen" ];
 
   meta = {

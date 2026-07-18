@@ -1,9 +1,9 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
   jinja2,
-  lib,
   setuptools,
   setuptools-scm,
   systemrdl-compiler,
@@ -12,8 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "peakrdl-regblock";
   version = "1.3.1";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SystemRDL";
@@ -32,6 +30,7 @@ buildPythonPackage (finalAttrs: {
     systemrdl-compiler
   ];
 
+  pyproject = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

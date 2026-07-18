@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  dfl-applications,
+  dfl-ipc,
+  dfl-login1,
+  dfl-utils,
+  kdePackages,
   meson,
+  mpv,
   ninja,
   pkg-config,
-  kdePackages,
   qt6,
-  dfl-ipc,
-  dfl-utils,
-  dfl-applications,
-  dfl-login1,
   mpvSupport ? true,
-  mpv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,7 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.com/marcusbritanicus/QtGreet/-/blob/${finalAttrs.src.rev}/Changelog";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
-    mainProgram = "qtgreet";
     platforms = lib.platforms.linux;
+    mainProgram = "qtgreet";
   };
 })

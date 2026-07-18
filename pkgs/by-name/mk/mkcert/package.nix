@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-DdA7s+N5S1ivwUgZ+M2W/HCp/7neeoqRQL0umn3m6Do=";
-
   doCheck = false;
 
   ldflags = [
@@ -26,10 +25,10 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/FiloSottile/mkcert";
     description = "Simple tool for making locally-trusted development certificates";
-    mainProgram = "mkcert";
+    homepage = "https://github.com/FiloSottile/mkcert";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "mkcert";
   };
 })

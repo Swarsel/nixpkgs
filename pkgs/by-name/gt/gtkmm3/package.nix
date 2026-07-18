@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  atkmm,
+  cairomm,
+  gdk-pixbuf,
+  glib,
+  glibmm,
+  gnome,
+  gtk3,
+  libepoxy,
   meson,
   ninja,
-  python3,
-  gtk3,
-  glibmm,
-  cairomm,
   pangomm,
-  atkmm,
-  libepoxy,
-  gnome,
-  glib,
-  gdk-pixbuf,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     glib
     gdk-pixbuf # for gdk-pixbuf-pixdata
   ];
+
   buildInputs = [ libepoxy ];
 
   propagatedBuildInputs = [
@@ -54,10 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "gtkmm";
       attrPath = "gtkmm3";
-      versionPolicy = "odd-unstable";
       freeze = true;
+      packageName = "gtkmm";
+      versionPolicy = "odd-unstable";
     };
   };
 
@@ -75,9 +76,7 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://gtkmm.gnome.org/";
-
     license = lib.licenses.lgpl2Plus;
-
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
   };

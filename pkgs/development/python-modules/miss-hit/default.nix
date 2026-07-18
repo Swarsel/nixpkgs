@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   coverage,
   miss-hit-core,
+  pytestCheckHook,
   python,
   setuptools,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "miss-hit";
   version = "0.9.44";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "florianschanda";
@@ -20,20 +19,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-dJZIleDWmdarhmxoKvQxWvI/Tmx9pSCNlgFXj5NFIUc=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    miss-hit-core
-  ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    cp setup_agpl.py setup.py
-
-    runHook postConfigure
-  '';
 
   nativeCheckInputs = [
     coverage
@@ -48,6 +33,22 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+
+  configurePhase = ''
+    runHook preConfigure
+
+    cp setup_agpl.py setup.py
+
+    runHook postConfigure
+  '';
+
+  dependencies = [
+    miss-hit-core
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "miss_hit"
   ];
@@ -57,6 +58,7 @@ buildPythonPackage rec {
     homepage = "https://misshit.org/";
     changelog = "https://github.com/florianschanda/miss_hit/releases/tag/${version}";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       jacobkoziej
     ];

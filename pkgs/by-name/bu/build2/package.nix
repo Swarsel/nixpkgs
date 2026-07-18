@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   # Break cycle by using self-contained toolchain for bootstrapping
   build2-bootstrap,
-  fetchurl,
+  buildPackages,
   fixDarwinDylibNames,
   libbutl,
   libpkgconf,
-  buildPackages,
   enableShared ? !stdenv.hostPlatform.isStatic,
   enableStatic ? !enableShared,
 }:
@@ -18,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "build2";
   version = "0.18.1";
 
+  src = fetchurl {
+    url = "https://pkg.cppget.org/1/alpha/build2/build2-${finalAttrs.version}.tar.gz";
+    hash = "sha256-BLMBd/1kofVuB2MalPyuj4lXNMi3p5uuzVIJUzQv3A0=";
+  };
+
   outputs = [
     "out"
     "dev"
@@ -25,28 +30,22 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  setupHook = build2-bootstrap.setupHook;
-
-  src = fetchurl {
-    url = "https://pkg.cppget.org/1/alpha/build2/build2-${finalAttrs.version}.tar.gz";
-    hash = "sha256-BLMBd/1kofVuB2MalPyuj4lXNMi3p5uuzVIJUzQv3A0=";
-  };
-
   patches = [
     # Remove any build/host config entries which refer to nix store paths
     ./remove-config-store-paths.patch
   ]
   ++ build2-bootstrap.patches;
 
+  postPatch = ''
+    patchShebangs --build tests/bash/testscript
+  '';
+
   strictDeps = true;
+
   nativeBuildInputs = [
     build2-bootstrap
   ];
-  disallowedReferences = [
-    build2-bootstrap
-    libbutl.dev
-    libpkgconf.dev
-  ];
+
   buildInputs = [
     libbutl
     libpkgconf
@@ -65,16 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.getBin buildPackages.llvmPackages.lld)
   ];
 
-  postPatch = ''
-    patchShebangs --build tests/bash/testscript
-  '';
-
-  build2ConfigureFlags = [
-    "config.bin.lib=${configSharedStatic enableShared enableStatic}"
-    "config.cc.poptions+=-I${lib.getDev libpkgconf}/include/pkgconf"
-    "config.build2.libpkgconf=true"
-  ];
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     install_name_tool -add_rpath "''${!outputLib}/lib" "''${!outputBin}/bin/b"
   '';
@@ -84,9 +73,23 @@ stdenv.mkDerivation (finalAttrs: {
       --subst-var-by isTargetDarwin '${toString stdenv.targetPlatform.isDarwin}'
   '';
 
+  build2ConfigureFlags = [
+    "config.bin.lib=${configSharedStatic enableShared enableStatic}"
+    "config.cc.poptions+=-I${lib.getDev libpkgconf}/include/pkgconf"
+    "config.build2.libpkgconf=true"
+  ];
+
+  disallowedReferences = [
+    build2-bootstrap
+    libbutl.dev
+    libpkgconf.dev
+  ];
+
+  setupHook = build2-bootstrap.setupHook;
+
   passthru = {
-    bootstrap = build2-bootstrap;
     inherit configSharedStatic;
+    bootstrap = build2-bootstrap;
   };
 
   meta = {
@@ -97,7 +100,9 @@ stdenv.mkDerivation (finalAttrs: {
       platforms
       maintainers
       ;
+
     description = "Build2 build system";
+
     longDescription = ''
       build2 is an open source (MIT), cross-platform build toolchain
       that aims to approximate Rust Cargo's convenience for developing
@@ -110,6 +115,7 @@ stdenv.mkDerivation (finalAttrs: {
       at C/C++ projects as well as mixed-language projects involving
       one of these languages (see bash and rust modules, for example).
     '';
+
     mainProgram = "b";
   };
 })

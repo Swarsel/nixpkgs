@@ -1,20 +1,21 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "tensorboard_plugin_wit";
   version = "1.7.0";
-  format = "wheel";
 
   src = fetchPypi {
     inherit pname version;
+    sha256 = "0nv855qm2fav70lndsrv810pqgg41sbmd70fk86wk18ih825yxzf";
     format = "wheel";
     python = "py3";
-    sha256 = "0nv855qm2fav70lndsrv810pqgg41sbmd70fk86wk18ih825yxzf";
   };
+
+  format = "wheel";
 
   meta = {
     description = "What-If Tool TensorBoard plugin";

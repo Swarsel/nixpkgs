@@ -1,21 +1,21 @@
 {
+  lib,
   stdenv,
-  testers,
   fetchurl,
   autoreconfHook,
+  bash-completion,
+  cdrkit,
+  curl,
+  e2fsprogs,
+  gnutls,
+  libnbd,
+  libssh,
+  libtool,
   makeWrapper,
   pkg-config,
-  bash-completion,
-  gnutls,
-  libtool,
-  curl,
+  testers,
   xz,
   zlib-ng,
-  libssh,
-  libnbd,
-  lib,
-  cdrkit,
-  e2fsprogs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,10 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://download.libguestfs.org/nbdkit/${lib.versions.majorMinor finalAttrs.version}-stable/nbdkit-${finalAttrs.version}.tar.gz";
     hash = "sha256-WQRLqBtYkPBmeK2I4aCt1P7r78fjVLsCOnUEjml1lmM=";
   };
-
-  prePatch = ''
-    patchShebangs .
-  '';
 
   strictDeps = true;
 
@@ -73,8 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-example4"
   ];
 
-  installFlags = [ "bashcompdir=$(out)/share/bash-completion/completions" ];
-
   postInstall = ''
     for bin in $out/bin/*; do
       wrapProgram "$bin" \
@@ -87,11 +81,17 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  installFlags = [ "bashcompdir=$(out)/share/bash-completion/completions" ];
+
+  prePatch = ''
+    patchShebangs .
+  '';
+
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
-    homepage = "https://gitlab.com/nbdkit/nbdkit";
     description = "NBD server with stable plugin ABI and permissive license";
+    homepage = "https://gitlab.com/nbdkit/nbdkit";
     license = with lib.licenses; bsd3;
     maintainers = with lib.maintainers; [ lukts30 ];
     platforms = lib.platforms.unix;

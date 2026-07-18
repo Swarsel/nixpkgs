@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 let
@@ -87,36 +87,119 @@ in
       [ "services" "cyrus-imap" "imapdSettings" "tls_client_ca_file" ]
     )
   ];
+
   options.services.cyrus-imap = {
     enable = mkEnableOption "Cyrus IMAP, an email, contacts and calendar server";
-    debug = mkEnableOption "debugging messages for the Cyrus master process";
 
-    listenQueue = mkOption {
-      type = int;
-      default = 32;
-      description = ''
-        Socket listen queue backlog size. See {manpage}`listen(2)` for more information about a backlog.
-        Default is 32, which may be increased if you have a very high connection rate.
-      '';
+    cyrusConfigFile = mkOption {
+      apply = v: if v != null then v else pkgs.writeText "cyrus.conf" cyrusConfig;
+      default = null;
+      description = "Path to the configuration file used for Cyrus.";
+      type = nullOr path;
     };
-    tmpDBDir = mkOption {
-      type = path;
-      default = "/run/cyrus/db";
-      description = ''
-        Location where DB files are stored.
-        Databases in this directory are recreated upon startup, so ideally they should live in ephemeral storage for best performance.
-      '';
-    };
+
     cyrusSettings = mkOption {
+      description = "Cyrus configuration settings. See [cyrus.conf(5)](https://www.cyrusimap.org/imap/reference/manpages/configs/cyrus.conf.html)";
+
       type = submodule {
-        freeformType = attrsOf (
-          attrsOf (oneOf [
-            bool
-            int
-            (listOf str)
-          ])
-        );
         options = {
+          DAEMON = mkOption {
+            default = { };
+
+            description = ''
+              This section lists long running daemons to start before any SERVICES are spawned. {manpage}`master(8)` will ensure that these processes are running, restarting any process which dies or forks. All listed processes will be shutdown when {manpage}`master(8)` is exiting.
+            '';
+          };
+
+          EVENTS = mkOption {
+            default = {
+              checkpoint = {
+                cmd = [
+                  "ctl_cyrusdb"
+                  "-c"
+                ];
+
+                period = 30;
+              };
+
+              deleteprune = {
+                at = 430;
+
+                cmd = [
+                  "cyr_expire"
+                  "-E"
+                  "4"
+                  "-D"
+                  "28"
+                ];
+              };
+
+              delprune = {
+                at = 400;
+
+                cmd = [
+                  "cyr_expire"
+                  "-E"
+                  "3"
+                ];
+              };
+
+              expungeprune = {
+                at = 445;
+
+                cmd = [
+                  "cyr_expire"
+                  "-E"
+                  "4"
+                  "-X"
+                  "28"
+                ];
+              };
+
+              tlsprune = {
+                at = 400;
+                cmd = [ "tls_prune" ];
+              };
+            };
+
+            description = ''
+              This section lists processes that should be run at specific intervals, similar to cron jobs. This section is typically used to perform scheduled cleanup/maintenance.
+            '';
+          };
+
+          SERVICES = mkOption {
+            default = {
+              imap = {
+                cmd = [ "imapd" ];
+                listen = "imap";
+                prefork = 0;
+              };
+
+              lmtpunix = {
+                cmd = [ "lmtpd" ];
+                listen = "/run/cyrus/lmtp";
+                prefork = 0;
+              };
+
+              notify = {
+                cmd = [ "notifyd" ];
+                listen = "/run/cyrus/notify";
+                prefork = 0;
+                proto = "udp";
+              };
+
+              pop3 = {
+                cmd = [ "pop3d" ];
+                listen = "pop3";
+                prefork = 0;
+              };
+            };
+
+            description = ''
+              This section is the heart of the cyrus.conf file. It lists the processes that should be spawned to handle client connections made on certain Internet/UNIX sockets.
+            '';
+          };
+
           START = mkOption {
             default = {
               recover = {
@@ -126,135 +209,41 @@ in
                 ];
               };
             };
+
             description = ''
               This section lists the processes to run before any SERVICES are spawned.
               This section is typically used to initialize databases.
               Master itself will not startup until all tasks in START have completed, so put no blocking commands here.
             '';
           };
-          SERVICES = mkOption {
-            default = {
-              imap = {
-                cmd = [ "imapd" ];
-                listen = "imap";
-                prefork = 0;
-              };
-              pop3 = {
-                cmd = [ "pop3d" ];
-                listen = "pop3";
-                prefork = 0;
-              };
-              lmtpunix = {
-                cmd = [ "lmtpd" ];
-                listen = "/run/cyrus/lmtp";
-                prefork = 0;
-              };
-              notify = {
-                cmd = [ "notifyd" ];
-                listen = "/run/cyrus/notify";
-                proto = "udp";
-                prefork = 0;
-              };
-            };
-            description = ''
-              This section is the heart of the cyrus.conf file. It lists the processes that should be spawned to handle client connections made on certain Internet/UNIX sockets.
-            '';
-          };
-          EVENTS = mkOption {
-            default = {
-              tlsprune = {
-                cmd = [ "tls_prune" ];
-                at = 400;
-              };
-              delprune = {
-                cmd = [
-                  "cyr_expire"
-                  "-E"
-                  "3"
-                ];
-                at = 400;
-              };
-              deleteprune = {
-                cmd = [
-                  "cyr_expire"
-                  "-E"
-                  "4"
-                  "-D"
-                  "28"
-                ];
-                at = 430;
-              };
-              expungeprune = {
-                cmd = [
-                  "cyr_expire"
-                  "-E"
-                  "4"
-                  "-X"
-                  "28"
-                ];
-                at = 445;
-              };
-              checkpoint = {
-                cmd = [
-                  "ctl_cyrusdb"
-                  "-c"
-                ];
-                period = 30;
-              };
-            };
-            description = ''
-              This section lists processes that should be run at specific intervals, similar to cron jobs. This section is typically used to perform scheduled cleanup/maintenance.
-            '';
-          };
-          DAEMON = mkOption {
-            default = { };
-            description = ''
-              This section lists long running daemons to start before any SERVICES are spawned. {manpage}`master(8)` will ensure that these processes are running, restarting any process which dies or forks. All listed processes will be shutdown when {manpage}`master(8)` is exiting.
-            '';
-          };
         };
+
+        freeformType = attrsOf (
+          attrsOf (oneOf [
+            bool
+            int
+            (listOf str)
+          ])
+        );
       };
-      description = "Cyrus configuration settings. See [cyrus.conf(5)](https://www.cyrusimap.org/imap/reference/manpages/configs/cyrus.conf.html)";
     };
+
+    debug = mkEnableOption "debugging messages for the Cyrus master process";
+
+    group = mkOption {
+      default = null;
+      description = "Cyrus IMAP group name. If this is not set, a group named `cyrus` will be created.";
+      type = nullOr str;
+    };
+
+    imapdConfigFile = mkOption {
+      apply = v: if v != null then v else pkgs.writeText "imapd.conf" imapdConfig;
+      default = null;
+      description = "Path to the configuration file used for cyrus-imap.";
+      type = nullOr path;
+    };
+
     imapdSettings = mkOption {
-      type = submodule {
-        freeformType = attrsOf (oneOf [
-          str
-          int
-          bool
-          (listOf str)
-        ]);
-        options = {
-          configdirectory = mkOption {
-            type = path;
-            default = "/var/lib/cyrus";
-            description = ''
-              The pathname of the IMAP configuration directory.
-            '';
-          };
-          lmtpsocket = mkOption {
-            type = path;
-            default = "/run/cyrus/lmtp";
-            description = ''
-              Unix socket that lmtpd listens on, used by {manpage}`deliver(8)`. This should match the path specified in {manpage}`cyrus.conf(5)`.
-            '';
-          };
-          idlesocket = mkOption {
-            type = path;
-            default = "/run/cyrus/idle";
-            description = ''
-              Unix socket that idled listens on.
-            '';
-          };
-          notifysocket = mkOption {
-            type = path;
-            default = "/run/cyrus/notify";
-            description = ''
-              Unix domain socket that the mail notification daemon listens on.
-            '';
-          };
-        };
-      };
       default = {
         admins = [ "cyrus" ];
         allowplaintext = true;
@@ -262,10 +251,12 @@ in
         defaultpartition = "default";
         duplicate_db_path = "/run/cyrus/db/deliver.db";
         hashimapspool = true;
+
         httpmodules = [
           "carddav"
           "caldav"
         ];
+
         mboxname_lockpath = "/run/cyrus/lock";
         partition-default = "/var/lib/cyrus/storage";
         popminpoll = 1;
@@ -281,94 +272,151 @@ in
         tls_sessions_db_path = "/run/cyrus/db/tls_sessions.db";
         virtdomains = "on";
       };
+
       description = "IMAP configuration settings. See [imapd.conf(5)](https://www.cyrusimap.org/imap/reference/manpages/configs/imapd.conf.html)";
+
+      type = submodule {
+        options = {
+          configdirectory = mkOption {
+            default = "/var/lib/cyrus";
+
+            description = ''
+              The pathname of the IMAP configuration directory.
+            '';
+
+            type = path;
+          };
+
+          idlesocket = mkOption {
+            default = "/run/cyrus/idle";
+
+            description = ''
+              Unix socket that idled listens on.
+            '';
+
+            type = path;
+          };
+
+          lmtpsocket = mkOption {
+            default = "/run/cyrus/lmtp";
+
+            description = ''
+              Unix socket that lmtpd listens on, used by {manpage}`deliver(8)`. This should match the path specified in {manpage}`cyrus.conf(5)`.
+            '';
+
+            type = path;
+          };
+
+          notifysocket = mkOption {
+            default = "/run/cyrus/notify";
+
+            description = ''
+              Unix domain socket that the mail notification daemon listens on.
+            '';
+
+            type = path;
+          };
+        };
+
+        freeformType = attrsOf (oneOf [
+          str
+          int
+          bool
+          (listOf str)
+        ]);
+      };
+    };
+
+    listenQueue = mkOption {
+      default = 32;
+
+      description = ''
+        Socket listen queue backlog size. See {manpage}`listen(2)` for more information about a backlog.
+        Default is 32, which may be increased if you have a very high connection rate.
+      '';
+
+      type = int;
+    };
+
+    tmpDBDir = mkOption {
+      default = "/run/cyrus/db";
+
+      description = ''
+        Location where DB files are stored.
+        Databases in this directory are recreated upon startup, so ideally they should live in ephemeral storage for best performance.
+      '';
+
+      type = path;
     };
 
     user = mkOption {
-      type = nullOr str;
       default = null;
       description = "Cyrus IMAP user name. If this is not set, a user named `cyrus` will be created.";
-    };
-
-    group = mkOption {
       type = nullOr str;
-      default = null;
-      description = "Cyrus IMAP group name. If this is not set, a group named `cyrus` will be created.";
-    };
-
-    imapdConfigFile = mkOption {
-      type = nullOr path;
-      default = null;
-      description = "Path to the configuration file used for cyrus-imap.";
-      apply = v: if v != null then v else pkgs.writeText "imapd.conf" imapdConfig;
-    };
-
-    cyrusConfigFile = mkOption {
-      type = nullOr path;
-      default = null;
-      description = "Path to the configuration file used for Cyrus.";
-      apply = v: if v != null then v else pkgs.writeText "cyrus.conf" cyrusConfig;
     };
   };
 
   config = mkIf cfg.enable {
-    users.users.cyrus = optionalAttrs (cfg.user == null) {
-      description = "Cyrus IMAP user";
-      isSystemUser = true;
-      group = optionalString (cfg.group == null) "cyrus";
-    };
-
-    users.groups.cyrus = optionalAttrs (cfg.group == null) { };
-
-    environment.etc."imapd.conf".source = cfg.imapdConfigFile;
     environment.etc."cyrus.conf".source = cfg.cyrusConfigFile;
+    environment.etc."imapd.conf".source = cfg.imapdConfigFile;
+    environment.systemPackages = [ cyrus-imapdPkg ];
 
     systemd.services.cyrus-imap = {
+      after = [ "network.target" ];
       description = "Cyrus IMAP server";
 
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      environment = {
+        CYRUS_VERBOSE = mkIf cfg.debug "1";
+        LISTENQUEUE = toString cfg.listenQueue;
+      };
+
       restartTriggers = [
         "/etc/imapd.conf"
         "/etc/cyrus.conf"
       ];
 
-      startLimitIntervalSec = 60;
-      environment = {
-        CYRUS_VERBOSE = mkIf cfg.debug "1";
-        LISTENQUEUE = toString cfg.listenQueue;
-      };
       serviceConfig = {
-        User = if (cfg.user == null) then "cyrus" else cfg.user;
-        Group = if (cfg.group == null) then "cyrus" else cfg.group;
-        Type = "simple";
-        ExecStartPre = "${lib.getExe' pkgs.coreutils "mkdir"} -p '${cfg.imapdSettings.configdirectory}/socket' '${cfg.tmpDBDir}' /run/cyrus/proc /run/cyrus/lock";
-        ExecStart = "${cyrus-imapdPkg}/libexec/master -l $LISTENQUEUE -C /etc/imapd.conf -M /etc/cyrus.conf -p /run/cyrus/master.pid -D";
-        Restart = "on-failure";
-        RestartSec = "1s";
-        RuntimeDirectory = "cyrus";
-        StateDirectory = "cyrus";
-
         # Hardening
         AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectSystem = "full";
         CapabilityBoundingSet = [ "~CAP_NET_ADMIN CAP_SYS_ADMIN CAP_SYS_BOOT CAP_SYS_MODULE" ];
+        ExecStart = "${cyrus-imapdPkg}/libexec/master -l $LISTENQUEUE -C /etc/imapd.conf -M /etc/cyrus.conf -p /run/cyrus/master.pid -D";
+        ExecStartPre = "${lib.getExe' pkgs.coreutils "mkdir"} -p '${cfg.imapdSettings.configdirectory}/socket' '${cfg.tmpDBDir}' /run/cyrus/proc /run/cyrus/lock";
+        Group = if (cfg.group == null) then "cyrus" else cfg.group;
         MemoryDenyWriteExecute = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        ProtectControlGroups = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        ProtectControlGroups = true;
+        ProtectSystem = "full";
+        Restart = "on-failure";
+        RestartSec = "1s";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_NETLINK"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        RuntimeDirectory = "cyrus";
+        StateDirectory = "cyrus";
+        Type = "simple";
+        User = if (cfg.user == null) then "cyrus" else cfg.user;
       };
+
+      startLimitIntervalSec = 60;
+      wantedBy = [ "multi-user.target" ];
     };
-    environment.systemPackages = [ cyrus-imapdPkg ];
+
+    users.groups.cyrus = optionalAttrs (cfg.group == null) { };
+
+    users.users.cyrus = optionalAttrs (cfg.user == null) {
+      description = "Cyrus IMAP user";
+      group = optionalString (cfg.group == null) "cyrus";
+      isSystemUser = true;
+    };
   };
 }

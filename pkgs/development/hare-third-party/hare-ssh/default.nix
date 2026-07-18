@@ -1,8 +1,8 @@
 {
-  fetchFromSourcehut,
-  hareHook,
   lib,
   stdenv,
+  fetchFromSourcehut,
+  hareHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,17 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ hareHook ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   doCheck = true;
 
   meta = {
-    homepage = "https://git.sr.ht/~sircmpwn/hare-ssh/";
+    inherit (hareHook.meta) platforms badPlatforms;
     description = "SSH client & server protocol implementation for Hare";
+    homepage = "https://git.sr.ht/~sircmpwn/hare-ssh/";
     license = with lib.licenses; [ mpl20 ];
     maintainers = with lib.maintainers; [ patwid ];
-
-    inherit (hareHook.meta) platforms badPlatforms;
   };
 })

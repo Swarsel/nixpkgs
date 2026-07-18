@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  bash,
   fetchFromGitHub,
+  bash,
   makeWrapper,
 }:
 
@@ -17,9 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qGLmrbyeyhHG6ONs7TJLTm68xpvxB1iAnMUApfTSqEk=";
   };
 
-  buildInputs = [ bash ];
-
   nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ bash ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -34,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/diego-treitos/linux-smart-enumeration/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "lse.sh";
     platforms = lib.platforms.all;
+    mainProgram = "lse.sh";
   };
 })

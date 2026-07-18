@@ -1,7 +1,7 @@
 {
-  appimageTools,
-  fetchurl,
   lib,
+  fetchurl,
+  appimageTools,
   makeWrapper,
 }:
 
@@ -16,7 +16,6 @@ in
 
 appimageTools.wrapType2 {
   inherit pname version src;
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands =
@@ -33,24 +32,26 @@ appimageTools.wrapType2 {
         --replace-fail 'Exec=AppRun --no-sandbox' 'Exec=wootility'
     '';
 
-  profile = ''
-    export LC_ALL=C.UTF-8
-  '';
-
   extraPkgs =
     pkgs: with pkgs; [
       libxkbfile
     ];
 
+  profile = ''
+    export LC_ALL=C.UTF-8
+  '';
+
   meta = {
-    homepage = "https://wooting.io/wootility";
     description = "Customization and management software for Wooting keyboards";
-    platforms = lib.platforms.linux;
+    homepage = "https://wooting.io/wootility";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       sodiboo
       returntoreality
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "wootility";
   };
 }

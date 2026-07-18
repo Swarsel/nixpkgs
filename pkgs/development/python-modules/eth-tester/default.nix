@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   # dependencies
   eth-abi,
   eth-account,
   eth-keys,
   eth-utils,
-  pydantic,
-  rlp,
-  semantic-version,
   # nativeCheckInputs
   py-evm,
-  pytestCheckHook,
+  pydantic,
   pytest-xdist,
+  pytestCheckHook,
+  rlp,
+  semantic-version,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "eth-tester";
   version = "0.13.0-beta.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -28,6 +27,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ssPtsEQAyaJde/empEpGU1bf3s4yxwlEXqpacN5GWDw=";
   };
+
+  nativeCheckInputs = [
+    py-evm
+    pytestCheckHook
+    pytest-xdist
+  ];
 
   build-system = [ setuptools ];
 
@@ -41,17 +46,12 @@ buildPythonPackage rec {
     semantic-version
   ];
 
-  nativeCheckInputs = [
-    py-evm
-    pytestCheckHook
-    pytest-xdist
-  ];
-
-  pythonImportsCheck = [ "eth_tester" ];
-
   disabledTests = [
     "test_install_local_wheel"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "eth_tester" ];
 
   meta = {
     description = "Tool suite for testing ethereum applications";

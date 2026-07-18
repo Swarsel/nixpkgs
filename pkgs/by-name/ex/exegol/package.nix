@@ -7,8 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "exegol";
   version = "5.1.10";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ThePorgs";
@@ -17,15 +15,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-iyzTBZHOzr6CfZDqHvycdWZply/BXH7kESaO5pDLBMY=";
   };
 
+  doCheck = true;
+  __structuredAttrs = true;
   build-system = with python3Packages; [ pdm-backend ];
-
-  pythonRelaxDeps = [
-    "argcomplete"
-    "cryptography"
-    "requests"
-    "rich"
-    "supabase"
-  ];
 
   dependencies =
     with python3Packages;
@@ -48,12 +40,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
       tzlocal
     ];
 
-  doCheck = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "exegol" ];
+
+  pythonRelaxDeps = [
+    "argcomplete"
+    "cryptography"
+    "requests"
+    "rich"
+    "supabase"
+  ];
 
   meta = {
     description = "Fully featured and community-driven hacking environment";
+
     longDescription = ''
       Exegol is a community-driven hacking environment, powerful and yet
       simple enough to be used by anyone in day to day engagements. Exegol is
@@ -62,23 +62,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
       hunters, researchers, beginners and advanced users, defenders, from
       stylish macOS users and corporate Windows pros to UNIX-like power users.
     '';
+
     homepage = "https://github.com/ThePorgs/Exegol";
     changelog = "https://github.com/ThePorgs/Exegol/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       gpl3Only
       {
-        fullName = "Exegol Software License (ESL) - Version 1.0";
-        url = "https://docs.exegol.com/legal/software-license";
         # Please use exegol4 if you prefer to avoid the unfree version of Exegol.
         free = false;
+        fullName = "Exegol Software License (ESL) - Version 1.0";
         redistributable = false;
+        url = "https://docs.exegol.com/legal/software-license";
       }
     ];
-    mainProgram = "exegol";
+
     maintainers = with lib.maintainers; [
       _0b11stan
       charB66
       macbucheron
     ];
+
+    mainProgram = "exegol";
   };
 })

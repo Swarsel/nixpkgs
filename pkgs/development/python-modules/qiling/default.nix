@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "qiling";
   version = "1.4.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -44,7 +43,7 @@ buildPythonPackage rec {
   # Tests are broken (attempt to import a file that tells you not to import it,
   # amongst other things)
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "qiling" ];
 
   meta = {
@@ -52,7 +51,7 @@ buildPythonPackage rec {
     homepage = "https://qiling.io/";
     changelog = "https://github.com/qilingframework/qiling/releases/tag/${version}";
     license = lib.licenses.gpl2Only;
-    broken = true;
     maintainers = [ ];
+    broken = true;
   };
 }

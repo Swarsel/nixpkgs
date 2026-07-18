@@ -23,9 +23,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    users.groups.plugdev = { };
     environment.systemPackages = [ cfg.package ];
     services.udev.packages = [ cfg.package ];
+    users.groups.plugdev = { };
   };
 
   meta = {

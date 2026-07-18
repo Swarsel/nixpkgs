@@ -1,19 +1,17 @@
 {
+  lib,
   fetchFromGitHub,
   buildPythonPackage,
-  lib,
-  setuptools,
-  requests,
-  tqdm,
-  psutil,
-  toml,
   pip,
+  psutil,
+  requests,
+  setuptools,
+  toml,
+  tqdm,
 }:
 buildPythonPackage rec {
   pname = "language-tool-python";
   version = "3.4.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jxmorris12";
@@ -23,6 +21,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
+
   dependencies = [
     requests
     tqdm
@@ -31,12 +30,14 @@ buildPythonPackage rec {
     pip
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Free python grammar checker";
     homepage = "https://github.com/jxmorris12/language_tool_python";
+    changelog = "https://github.com/jxmorris12/language_tool_python/releases/tag/${src.tag}";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ justdeeevin ];
     platforms = lib.platforms.all;
-    changelog = "https://github.com/jxmorris12/language_tool_python/releases/tag/${src.tag}";
   };
 }

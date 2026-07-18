@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  sfml_2,
   libffcall,
-  libusb-compat-0_1,
   libudev-zero,
+  libusb-compat-0_1,
+  sfml_2,
 }:
 
 stdenv.mkDerivation {
@@ -19,15 +19,17 @@ stdenv.mkDerivation {
     hash = "sha256-h8LuhTgFOFnyDeFeoEanD64/nmDyLeh6R9tw9X6GP8g=";
   };
 
-  prePatch = ''
-    # camera module fails to build with opencv, due to missing V4L2 support
-    rm -rf src/camera
+  outputs = [
+    "out"
+    "dev"
+  ];
 
-    substituteInPlace Makefile \
-      --replace-fail "/bin/echo" "echo"
-  '';
-
-  enableParallelBuilding = true;
+  buildInputs = [
+    sfml_2
+    libffcall
+    libusb-compat-0_1
+    libudev-zero
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -40,23 +42,21 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  buildInputs = [
-    sfml_2
-    libffcall
-    libusb-compat-0_1
-    libudev-zero
-  ];
+  enableParallelBuilding = true;
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  prePatch = ''
+    # camera module fails to build with opencv, due to missing V4L2 support
+    rm -rf src/camera
+
+    substituteInPlace Makefile \
+      --replace-fail "/bin/echo" "echo"
+  '';
 
   meta = {
     description = "Multimedia library for rookies and prototyping";
     homepage = "https://liblapin.org?lan=en";
-    platforms = lib.platforms.unix;
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ sigmanificient ];
+    platforms = lib.platforms.unix;
   };
 }

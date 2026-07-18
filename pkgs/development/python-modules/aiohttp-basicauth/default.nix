@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-asyncio,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "aiohttp-basicauth";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "romis2012";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     pytest-asyncio
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "aiohttp_basicauth" ];
 
   meta = {

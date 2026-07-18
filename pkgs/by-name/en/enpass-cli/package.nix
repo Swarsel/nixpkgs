@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  sqlcipher,
-  pkg-config,
+  buildGoModule,
   nix-update-script,
+  pkg-config,
+  sqlcipher,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,8 +18,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-SloFiV+tmdjiHjeS/SsDMLZ9gjNB/EOmgexMXpu253I=";
   };
 
-  vendorHash = "sha256-S02hHPA7WSAMLELhfD+2cmsbhxsCiXdPbikU/GGubPc=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -28,6 +26,7 @@ buildGoModule (finalAttrs: {
     sqlcipher
   ];
 
+  vendorHash = "sha256-S02hHPA7WSAMLELhfD+2cmsbhxsCiXdPbikU/GGubPc=";
   env.CGO_ENABLED = "1";
 
   postInstall = ''
@@ -38,10 +37,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Command line client for Enpass password manager";
-    mainProgram = "enpass-cli";
     homepage = "https://github.com/HazCod/enpass-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ deej-io ];
     platforms = lib.platforms.unix;
+    mainProgram = "enpass-cli";
   };
 })

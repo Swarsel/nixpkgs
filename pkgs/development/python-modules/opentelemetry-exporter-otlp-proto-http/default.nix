@@ -8,17 +8,20 @@
   opentelemetry-proto,
   opentelemetry-sdk,
   opentelemetry-test-utils,
+  pytestCheckHook,
   requests,
   responses,
-  pytestCheckHook,
 }:
 
 buildPythonPackage {
   inherit (opentelemetry-api) version src;
   pname = "opentelemetry-exporter-otlp-proto-http";
-  pyproject = true;
 
-  sourceRoot = "${opentelemetry-api.src.name}/exporter/opentelemetry-exporter-otlp-proto-http";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytestCheckHook
+    responses
+  ];
 
   build-system = [ hatchling ];
 
@@ -32,16 +35,12 @@ buildPythonPackage {
     requests
   ];
 
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytestCheckHook
-    responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.exporter.otlp.proto.http" ];
+  sourceRoot = "${opentelemetry-api.src.name}/exporter/opentelemetry-exporter-otlp-proto-http";
 
   meta = opentelemetry-api.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-otlp-proto-http";
     description = "OpenTelemetry Collector Protobuf over HTTP Exporter";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-otlp-proto-http";
   };
 }

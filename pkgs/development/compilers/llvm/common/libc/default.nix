@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
+  cmake,
+  linuxHeaders,
   llvm_meta,
-  src ? null,
-  monorepoSrc ? null,
-  version,
-  release_version,
-  runCommand,
+  ninja,
   python3,
   python3Packages,
-  patches ? [ ],
-  cmake,
-  ninja,
+  release_version,
+  runCommand,
+  version,
   isFullBuild ? true,
-  linuxHeaders,
+  monorepoSrc ? null,
+  patches ? [ ],
+  src ? null,
 }:
 let
   pname = "libc";
@@ -36,10 +36,12 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit pname version patches;
-
   src = src';
+  outputs = [ "out" ] ++ (lib.optional isFullBuild "dev");
 
-  sourceRoot = "${finalAttrs.src.name}/runtimes";
+  postPatch = ''
+    cd ../runtimes
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -49,35 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ (lib.optional needHdrGen python3Packages.pyyaml);
 
   buildInputs = lib.optional (isFullBuild && stdenv.hostPlatform.isLinux) linuxHeaders;
-
-  outputs = [ "out" ] ++ (lib.optional isFullBuild "dev");
-
-  postUnpack = lib.optionalString needHdrGen ''
-    chmod +w $sourceRoot/../$pname/utils/hdrgen
-    patchShebangs $sourceRoot/../$pname/utils/hdrgen/main.py
-    chmod +x $sourceRoot/../$pname/utils/hdrgen/main.py
-  '';
-
-  prePatch = ''
-    cd ../${finalAttrs.pname}
-    chmod -R u+w ../
-  '';
-
-  postPatch = ''
-    cd ../runtimes
-  '';
-
-  postInstall =
-    lib.optionalString (!isFullBuild) ''
-      substituteAll ${./libc-shim.tpl} $out/lib/libc.so
-    ''
-    # LLVM libc doesn't recognize static vs dynamic yet.
-    # Treat LLVM libc as a static libc, requires this symlink until upstream fixes it.
-    + lib.optionalString (isFullBuild && stdenv.hostPlatform.isLinux) ''
-      ln $out/lib/crt1.o $out/lib/Scrt1.o
-    '';
-
-  libc = if (!isFullBuild) then stdenv.cc.libc else null;
 
   cmakeFlags = [
     (lib.cmakeBool "LLVM_LIBC_FULL_BUILD" isFullBuild)
@@ -93,15 +66,40 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "CMAKE_CXX_COMPILER_WORKS" true)
   ];
 
+  postInstall =
+    lib.optionalString (!isFullBuild) ''
+      substituteAll ${./libc-shim.tpl} $out/lib/libc.so
+    ''
+    # LLVM libc doesn't recognize static vs dynamic yet.
+    # Treat LLVM libc as a static libc, requires this symlink until upstream fixes it.
+    + lib.optionalString (isFullBuild && stdenv.hostPlatform.isLinux) ''
+      ln $out/lib/crt1.o $out/lib/Scrt1.o
+    '';
+
+  libc = if (!isFullBuild) then stdenv.cc.libc else null;
+
+  postUnpack = lib.optionalString needHdrGen ''
+    chmod +w $sourceRoot/../$pname/utils/hdrgen
+    patchShebangs $sourceRoot/../$pname/utils/hdrgen/main.py
+    chmod +x $sourceRoot/../$pname/utils/hdrgen/main.py
+  '';
+
+  prePatch = ''
+    cd ../${finalAttrs.pname}
+    chmod -R u+w ../
+  '';
+
+  sourceRoot = "${finalAttrs.src.name}/runtimes";
+
   # For the update script:
   passthru = {
-    monorepoSrc = monorepoSrc;
     inherit isFullBuild;
+    monorepoSrc = monorepoSrc;
   };
 
   meta = llvm_meta // {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "https://libc.llvm.org/";
     description = "Standard C library for LLVM";
+    homepage = "https://libc.llvm.org/";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

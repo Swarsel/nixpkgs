@@ -1,21 +1,18 @@
 {
-  descent3-unwrapped,
   lib,
+  descent3-unwrapped,
   makeBinaryWrapper,
   runCommand,
 }:
 
 runCommand "descent3-${descent3-unwrapped.version}"
   {
-    pname = "descent3";
     inherit (descent3-unwrapped) version;
+    pname = "descent3";
     nativeBuildInputs = [ makeBinaryWrapper ];
     passthru.unwrapped = descent3-unwrapped;
 
     meta = descent3-unwrapped.meta // {
-      # The code that produces the wrapper is in the Nixpkgs repo, and the
-      # Nixpkgs repo is MIT Licensed.
-      license = [ lib.licenses.mit ];
       longDescription = ''
         Playing Descent 3 using the Nix package manager is a little bit awkward
         at the moment. This wrapper makes it slightly less awkward. Here’s how
@@ -47,6 +44,10 @@ runCommand "descent3-${descent3-unwrapped.version}"
             Descent3
             ```
       '';
+
+      # The code that produces the wrapper is in the Nixpkgs repo, and the
+      # Nixpkgs repo is MIT Licensed.
+      license = [ lib.licenses.mit ];
     };
   }
   ''

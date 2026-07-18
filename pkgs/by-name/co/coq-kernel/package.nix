@@ -1,11 +1,11 @@
 {
   lib,
   callPackage,
-  runCommand,
-  makeWrapper,
   coq,
   imagemagick,
+  makeWrapper,
   python312,
+  runCommand,
 }:
 
 # Jupyter console:
@@ -51,8 +51,8 @@ let
   launcher =
     runCommand "coq-kernel-launcher"
       {
-        nativeBuildInputs = [ makeWrapper ];
         inherit (coq-jupyter) pname version;
+        nativeBuildInputs = [ makeWrapper ];
       }
       ''
         mkdir -p $out/bin
@@ -63,29 +63,33 @@ let
       '';
 
   definitionWithPackages = packages: {
-    displayName = (if isRocq then "Rocq " else "Coq ") + coq.version;
-    argv = [
-      "${launcher}/bin/coq-kernel"
-      "-f"
-      "{connection_file}"
-    ];
-    language = "coq";
-    logo32 = "${logos}/logo-32x32.png";
-    logo64 = "${logos}/logo-64x64.png";
     env = lib.listToAttrs [
       {
         name = if isRocq then "ROCQPATH" else "COQPATH";
+
         value = lib.concatStringsSep ":" (
           map (x: "${x}/lib/coq/${coq.coq-version}/user-contrib/") packages
         );
       }
       {
         name = "OCAMLPATH";
+
         value = lib.concatStringsSep ":" (
           map (x: "${x}/lib/ocaml/${coq.ocaml.version}/site-lib/") ([ coq.ocamlPackages.findlib ] ++ packages)
         );
       }
     ];
+
+    argv = [
+      "${launcher}/bin/coq-kernel"
+      "-f"
+      "{connection_file}"
+    ];
+
+    displayName = (if isRocq then "Rocq " else "Coq ") + coq.version;
+    language = "coq";
+    logo32 = "${logos}/logo-32x32.png";
+    logo64 = "${logos}/logo-64x64.png";
   };
 
 in

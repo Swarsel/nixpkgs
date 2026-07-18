@@ -26,10 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Mozilla's Universal Charset Detector C/C++ API";
-    mainProgram = "chardet-config";
     homepage = "ftp://ftp.oops.org/pub/oops/libchardet/index.html";
     license = lib.licenses.mpl11;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "chardet-config";
   };
 })

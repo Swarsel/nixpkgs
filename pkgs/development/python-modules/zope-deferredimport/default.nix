@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
-  zope-proxy,
   unittestCheckHook,
+  zope-proxy,
 }:
 
 buildPythonPackage rec {
   pname = "zope-deferredimport";
   version = "6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -24,17 +23,13 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ zope-proxy ];
-
-  pythonImportsCheck = [ "zope.deferredimport" ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
-  unittestFlagsArray = [ "src/zope/deferredimport" ];
-
+  build-system = [ setuptools ];
+  dependencies = [ zope-proxy ];
+  pyproject = true;
+  pythonImportsCheck = [ "zope.deferredimport" ];
   pythonNamespaces = [ "zope" ];
+  unittestFlagsArray = [ "src/zope/deferredimport" ];
 
   meta = {
     description = "Allows you to perform imports names that will only be resolved when used in the code";

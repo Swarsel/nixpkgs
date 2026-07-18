@@ -20,7 +20,6 @@ let
   # Careful: OpenLDAP seems to be very picky about the indentation of
   # this file.  Directives HAVE to start in the first column!
   ldapConfig = {
-    target = "ldap.conf";
     source = pkgs.writeText "ldap.conf" ''
       uri ${config.users.ldap.server}
       base ${config.users.ldap.base}
@@ -35,6 +34,8 @@ let
       ''}
       ${lib.optionalString (cfg.extraConfig != "") cfg.extraConfig}
     '';
+
+    target = "ldap.conf";
   };
 
   nslcdConfig = pkgs.writeText "nslcd.conf" ''
@@ -61,143 +62,53 @@ in
 
 {
 
-  ###### interface
+  imports = [
+    (mkRenamedOptionModule
+      [ "users" "ldap" "bind" "password" ]
+      [ "users" "ldap" "bind" "passwordFile" ]
+    )
+  ];
 
+  ###### interface
   options = {
 
     users.ldap = {
 
       enable = mkEnableOption "authentication against an LDAP server";
 
-      loginPam = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Whether to include authentication against LDAP in login PAM.";
-      };
-
-      nsswitch = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Whether to include lookup against LDAP in NSS.";
-      };
-
-      server = mkOption {
-        type = types.str;
-        example = "ldap://ldap.example.org/";
-        description = "The URL of the LDAP server.";
-      };
-
       base = mkOption {
-        type = types.str;
-        example = "dc=example,dc=org";
         description = "The distinguished name of the search base.";
-      };
-
-      useTLS = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          If enabled, use TLS (encryption) over an LDAP (port 389)
-          connection.  The alternative is to specify an LDAPS server (port
-          636) in {option}`users.ldap.server` or to forego
-          security.
-        '';
-      };
-
-      timeLimit = mkOption {
-        default = 0;
-        type = types.int;
-        description = ''
-          Specifies the time limit (in seconds) to use when performing
-          searches. A value of zero (0), which is the default, is to
-          wait indefinitely for searches to be completed.
-        '';
-      };
-
-      daemon = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Whether to let the nslcd daemon (nss-pam-ldapd) handle the
-            LDAP lookups for NSS and PAM. This can improve performance,
-            and if you need to bind to the LDAP server with a password,
-            it increases security, since only the nslcd user needs to
-            have access to the bindpw file, not everyone that uses NSS
-            and/or PAM. If this option is enabled, a local nscd user is
-            created automatically, and the nslcd service is started
-            automatically when the network get up.
-          '';
-        };
-
-        extraConfig = mkOption {
-          default = "";
-          type = types.lines;
-          description = ''
-            Extra configuration options that will be added verbatim at
-            the end of the nslcd configuration file ({manpage}`nslcd.conf(5)`).
-          '';
-        };
-
-        rootpwmoddn = mkOption {
-          default = "";
-          example = "cn=admin,dc=example,dc=com";
-          type = types.str;
-          description = ''
-            The distinguished name to use to bind to the LDAP server
-            when the root user tries to modify a user's password.
-          '';
-        };
-
-        rootpwmodpwFile = mkOption {
-          default = "";
-          example = "/run/keys/nslcd.rootpwmodpw";
-          type = types.str;
-          description = ''
-            The path to a file containing the credentials with which to bind to
-            the LDAP server if the root user tries to change a user's password.
-          '';
-        };
+        example = "dc=example,dc=org";
+        type = types.str;
       };
 
       bind = {
         distinguishedName = mkOption {
           default = "";
-          example = "cn=admin,dc=example,dc=com";
-          type = types.str;
+
           description = ''
             The distinguished name to bind to the LDAP server with. If this
             is not specified, an anonymous bind will be done.
           '';
+
+          example = "cn=admin,dc=example,dc=com";
+          type = types.str;
         };
 
         passwordFile = mkOption {
           default = "/etc/ldap/bind.password";
-          type = types.str;
+
           description = ''
             The path to a file containing the credentials to use when binding
             to the LDAP server (if not binding anonymously).
           '';
-        };
 
-        timeLimit = mkOption {
-          default = 30;
-          type = types.int;
-          description = ''
-            Specifies the time limit (in seconds) to use when connecting
-            to the directory server. This is distinct from the time limit
-            specified in {option}`users.ldap.timeLimit` and affects
-            the initial server connection only.
-          '';
+          type = types.str;
         };
 
         policy = mkOption {
           default = "hard_open";
-          type = types.enum [
-            "hard_open"
-            "hard_init"
-            "soft"
-          ];
+
           description = ''
             Specifies the policy to use for reconnecting to an unavailable
             LDAP server. The default is `hard_open`, which
@@ -211,12 +122,85 @@ in
             failure. All hard reconnect policies block with exponential
             backoff before retrying.
           '';
+
+          type = types.enum [
+            "hard_open"
+            "hard_init"
+            "soft"
+          ];
+        };
+
+        timeLimit = mkOption {
+          default = 30;
+
+          description = ''
+            Specifies the time limit (in seconds) to use when connecting
+            to the directory server. This is distinct from the time limit
+            specified in {option}`users.ldap.timeLimit` and affects
+            the initial server connection only.
+          '';
+
+          type = types.int;
+        };
+      };
+
+      daemon = {
+        enable = mkOption {
+          default = false;
+
+          description = ''
+            Whether to let the nslcd daemon (nss-pam-ldapd) handle the
+            LDAP lookups for NSS and PAM. This can improve performance,
+            and if you need to bind to the LDAP server with a password,
+            it increases security, since only the nslcd user needs to
+            have access to the bindpw file, not everyone that uses NSS
+            and/or PAM. If this option is enabled, a local nscd user is
+            created automatically, and the nslcd service is started
+            automatically when the network get up.
+          '';
+
+          type = types.bool;
+        };
+
+        extraConfig = mkOption {
+          default = "";
+
+          description = ''
+            Extra configuration options that will be added verbatim at
+            the end of the nslcd configuration file ({manpage}`nslcd.conf(5)`).
+          '';
+
+          type = types.lines;
+        };
+
+        rootpwmoddn = mkOption {
+          default = "";
+
+          description = ''
+            The distinguished name to use to bind to the LDAP server
+            when the root user tries to modify a user's password.
+          '';
+
+          example = "cn=admin,dc=example,dc=com";
+          type = types.str;
+        };
+
+        rootpwmodpwFile = mkOption {
+          default = "";
+
+          description = ''
+            The path to a file containing the credentials with which to bind to
+            the LDAP server if the root user tries to change a user's password.
+          '';
+
+          example = "/run/keys/nslcd.rootpwmodpw";
+          type = types.str;
         };
       };
 
       extraConfig = mkOption {
         default = "";
-        type = types.lines;
+
         description = ''
           Extra configuration options that will be added verbatim at
           the end of the ldap configuration file ({manpage}`ldap.conf(5)`).
@@ -224,6 +208,51 @@ in
           configuration will not be used. In that case, use
           {option}`users.ldap.daemon.extraConfig` instead.
         '';
+
+        type = types.lines;
+      };
+
+      loginPam = mkOption {
+        default = true;
+        description = "Whether to include authentication against LDAP in login PAM.";
+        type = types.bool;
+      };
+
+      nsswitch = mkOption {
+        default = true;
+        description = "Whether to include lookup against LDAP in NSS.";
+        type = types.bool;
+      };
+
+      server = mkOption {
+        description = "The URL of the LDAP server.";
+        example = "ldap://ldap.example.org/";
+        type = types.str;
+      };
+
+      timeLimit = mkOption {
+        default = 0;
+
+        description = ''
+          Specifies the time limit (in seconds) to use when performing
+          searches. A value of zero (0), which is the default, is to
+          wait indefinitely for searches to be completed.
+        '';
+
+        type = types.int;
+      };
+
+      useTLS = mkOption {
+        default = false;
+
+        description = ''
+          If enabled, use TLS (encryption) over an LDAP (port 389)
+          connection.  The alternative is to specify an LDAPS server (port
+          636) in {option}`users.ldap.server` or to forego
+          security.
+        '';
+
+        type = types.bool;
       };
 
     };
@@ -231,45 +260,30 @@ in
   };
 
   ###### implementation
-
   config = mkIf cfg.enable {
 
     environment.etc = lib.optionalAttrs (!cfg.daemon.enable) {
       "ldap.conf" = ldapConfig;
     };
 
-    system.nssModules = mkIf cfg.nsswitch (
-      lib.singleton (if cfg.daemon.enable then pkgs.nss_pam_ldapd else pkgs.nss_ldap)
-    );
-
     system.nssDatabases.group = lib.optional cfg.nsswitch "ldap";
     system.nssDatabases.passwd = lib.optional cfg.nsswitch "ldap";
     system.nssDatabases.shadow = lib.optional cfg.nsswitch "ldap";
 
-    users = mkIf cfg.daemon.enable {
-      groups.nslcd = {
-        gid = config.ids.gids.nslcd;
-      };
-
-      users.nslcd = {
-        uid = config.ids.uids.nslcd;
-        description = "nslcd user.";
-        group = "nslcd";
-      };
-    };
+    system.nssModules = mkIf cfg.nsswitch (
+      lib.singleton (if cfg.daemon.enable then pkgs.nss_pam_ldapd else pkgs.nss_ldap)
+    );
 
     systemd.services = mkMerge [
       (mkIf (!cfg.daemon.enable) {
         ldap-password = {
-          wantedBy = [ "sysinit.target" ];
           before = [
             "sysinit.target"
             "shutdown.target"
           ];
+
           conflicts = [ "shutdown.target" ];
-          unitConfig.DefaultDependencies = false;
-          serviceConfig.Type = "oneshot";
-          serviceConfig.RemainAfterExit = true;
+
           script = ''
             if test -f "${cfg.bind.passwordFile}" ; then
               umask 0077
@@ -279,13 +293,16 @@ in
               mv -fT "$conf" /etc/ldap.conf
             fi
           '';
+
+          serviceConfig.RemainAfterExit = true;
+          serviceConfig.Type = "oneshot";
+          unitConfig.DefaultDependencies = false;
+          wantedBy = [ "sysinit.target" ];
         };
       })
 
       (mkIf cfg.daemon.enable {
         nslcd = {
-          wantedBy = [ "multi-user.target" ];
-
           preStart = ''
             umask 0077
             conf="$(mktemp)"
@@ -306,25 +323,32 @@ in
           ];
 
           serviceConfig = {
-            ExecStart = "${nslcdWrapped}/bin/nslcd";
-            Type = "forking";
-            Restart = "always";
-            User = "nslcd";
-            Group = "nslcd";
-            RuntimeDirectory = [ "nslcd" ];
-            PIDFile = "/run/nslcd/nslcd.pid";
             AmbientCapabilities = "CAP_SYS_RESOURCE";
+            ExecStart = "${nslcdWrapped}/bin/nslcd";
+            Group = "nslcd";
+            PIDFile = "/run/nslcd/nslcd.pid";
+            Restart = "always";
+            RuntimeDirectory = [ "nslcd" ];
+            Type = "forking";
+            User = "nslcd";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
       })
     ];
 
-  };
+    users = mkIf cfg.daemon.enable {
+      groups.nslcd = {
+        gid = config.ids.gids.nslcd;
+      };
 
-  imports = [
-    (mkRenamedOptionModule
-      [ "users" "ldap" "bind" "password" ]
-      [ "users" "ldap" "bind" "passwordFile" ]
-    )
-  ];
+      users.nslcd = {
+        description = "nslcd user.";
+        group = "nslcd";
+        uid = config.ids.uids.nslcd;
+      };
+    };
+
+  };
 }

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  versionCheckHook,
   elkhound,
   ocaml-ng,
   perl,
+  versionCheckHook,
   which,
 }:
 

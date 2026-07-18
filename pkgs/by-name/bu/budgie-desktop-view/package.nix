@@ -4,8 +4,8 @@
   fetchFromGitHub,
   desktop-file-utils,
   glib,
-  gtk3,
   gtk-layer-shell,
+  gtk3,
   intltool,
   libxfce4windowing,
   meson,
@@ -55,8 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/BuddiesOfBudgie/budgie-desktop-view";
     changelog = "https://github.com/BuddiesOfBudgie/budgie-desktop-view/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.budgie ];
-    mainProgram = "org.buddiesofbudgie.budgie-desktop-view";
     platforms = lib.platforms.linux;
+    mainProgram = "org.buddiesofbudgie.budgie-desktop-view";
+    teams = [ lib.teams.budgie ];
   };
 })

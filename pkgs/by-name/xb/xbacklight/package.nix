@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libxcb,
   libxcb-util,
+  pkg-config,
   writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -38,15 +37,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Utility to adjust X backlight brightness using RandR extension";
+
     longDescription = ''
       Xbacklight is used to adjust the backlight brightness where supported.
       It uses the RandR extension to find all outputs on the X server supporting backlight
       brightness control and changes them all in the same way.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xbacklight";
     license = lib.licenses.hpndSellVariant;
-    mainProgram = "xbacklight";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xbacklight";
   };
 })

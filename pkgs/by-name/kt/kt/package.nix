@@ -16,20 +16,19 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-PeNpDro6G78KLN6B2CDhsTKamRTWQyxPJYWuuv6sUyw=";
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  doCheck = false;
-
   meta = {
     description = "Kafka command line tool";
     homepage = "https://github.com/fgeller/kt";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ utdemir ];
     platforms = with lib.platforms; unix;
-    license = lib.licenses.mit;
     mainProgram = "kt";
   };
 })

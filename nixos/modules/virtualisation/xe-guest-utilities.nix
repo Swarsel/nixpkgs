@@ -13,54 +13,65 @@ in
       enable = lib.mkEnableOption "the XenServer guest utilities daemon";
     };
   };
+
   config = lib.mkIf cfg.enable {
     services.udev.packages = [ pkgs.xe-guest-utilities ];
-    systemd.tmpfiles.rules = [ "d /run/xenstored 0755 - - -" ];
+
+    systemd.mounts = [
+      {
+        description = "Mount /proc/xen files";
+        type = "xenfs";
+
+        unitConfig = {
+          ConditionPathExists = "/proc/xen";
+          RefuseManualStop = "true";
+        };
+
+        what = "xenfs";
+        where = "/proc/xen";
+      }
+    ];
 
     systemd.services.xe-daemon = {
-      description = "xen daemon file";
-      wantedBy = [ "multi-user.target" ];
       after = [ "xe-linux-distribution.service" ];
-      requires = [ "proc-xen.mount" ];
+      description = "xen daemon file";
+
       path = [
         pkgs.coreutils
         pkgs.iproute2
       ];
+
+      requires = [ "proc-xen.mount" ];
+
       serviceConfig = {
-        PIDFile = "/run/xe-daemon.pid";
         ExecStart = "${pkgs.xe-guest-utilities}/bin/xe-daemon -p /run/xe-daemon.pid";
         ExecStop = "${pkgs.procps}/bin/pkill -TERM -F /run/xe-daemon.pid";
+        PIDFile = "/run/xe-daemon.pid";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.xe-linux-distribution = {
-      description = "xen linux distribution service";
-      wantedBy = [ "multi-user.target" ];
       before = [ "xend.service" ];
+      description = "xen linux distribution service";
+
       path = [
         pkgs.xe-guest-utilities
         pkgs.coreutils
         pkgs.gawk
         pkgs.gnused
       ];
+
       serviceConfig = {
-        Type = "simple";
-        RemainAfterExit = "yes";
         ExecStart = "${pkgs.xe-guest-utilities}/bin/xe-linux-distribution /var/cache/xe-linux-distribution";
+        RemainAfterExit = "yes";
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    systemd.mounts = [
-      {
-        description = "Mount /proc/xen files";
-        what = "xenfs";
-        where = "/proc/xen";
-        type = "xenfs";
-        unitConfig = {
-          ConditionPathExists = "/proc/xen";
-          RefuseManualStop = "true";
-        };
-      }
-    ];
+    systemd.tmpfiles.rules = [ "d /run/xenstored 0755 - - -" ];
   };
 }

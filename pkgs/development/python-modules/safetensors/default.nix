@@ -1,36 +1,32 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-
+  buildPythonPackage,
+  flax,
+  fsspec,
+  h5py,
+  huggingface-hub,
+  hypothesis,
+  jax,
+  mlx,
   # optional-dependencies
   numpy,
   packaging,
-  torch,
-  tensorflow,
-  flax,
-  jax,
-  mlx,
   paddlepaddle,
-  h5py,
-  huggingface-hub,
-  setuptools-rust,
   pytest,
   pytest-benchmark,
-  hypothesis,
-  fsspec,
-
   # tests
   pytestCheckHook,
+  rustPlatform,
+  setuptools-rust,
+  tensorflow,
+  torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "safetensors";
   version = "0.8.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -38,10 +34,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jD12fRcQ9mPQVr3M1G5pP9rC3cPE5Eu9m9Ga5N9Tsqg=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/bindings/python";
-
-  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
 
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
@@ -52,41 +44,6 @@ buildPythonPackage (finalAttrs: {
     rustPlatform.maturinBuildHook
   ];
 
-  optional-dependencies = lib.fix (self: {
-    numpy = [ numpy ];
-    torch = self.numpy ++ [
-      packaging
-      torch
-    ];
-    tensorflow = self.numpy ++ [
-      tensorflow
-    ];
-    pinned-tf = self.numpy ++ [
-      tensorflow
-    ];
-    jax = self.numpy ++ [
-      flax
-      jax
-    ];
-    mlx = [
-      mlx
-    ];
-    paddlepaddle = self.numpy ++ [
-      paddlepaddle
-    ];
-    testing = self.numpy ++ [
-      h5py
-      huggingface-hub
-      setuptools-rust
-      pytest
-      pytest-benchmark
-      hypothesis
-      fsspec
-    ];
-    all = self.torch ++ self.numpy ++ self.pinned-tf ++ self.jax ++ self.paddlepaddle ++ self.testing;
-    dev = self.all;
-  });
-
   nativeCheckInputs = [
     h5py
     numpy
@@ -95,7 +52,19 @@ buildPythonPackage (finalAttrs: {
     fsspec
   ];
 
-  enabledTestPaths = [ "tests" ];
+  __structuredAttrs = true;
+  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
+
+  # don't require PaddlePaddle (not in Nixpkgs), Flax, or Tensorflow (onerous) to run tests:
+  disabledTestPaths = [
+    "tests/test_flax_comparison.py"
+    "tests/test_paddle_comparison.py"
+    "tests/test_tf_comparison.py"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # don't require mlx (not in Nixpkgs) to run tests
+    "tests/test_mlx_comparison.py"
+  ];
 
   disabledTests = [
     # AttributeError: module 'torch' has no attribute 'float4_e2m1fn_x2'
@@ -110,22 +79,58 @@ buildPythonPackage (finalAttrs: {
     "test_numpy_slice"
   ];
 
-  # don't require PaddlePaddle (not in Nixpkgs), Flax, or Tensorflow (onerous) to run tests:
-  disabledTestPaths = [
-    "tests/test_flax_comparison.py"
-    "tests/test_paddle_comparison.py"
-    "tests/test_tf_comparison.py"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # don't require mlx (not in Nixpkgs) to run tests
-    "tests/test_mlx_comparison.py"
-  ];
+  enabledTestPaths = [ "tests" ];
 
+  optional-dependencies = lib.fix (self: {
+    all = self.torch ++ self.numpy ++ self.pinned-tf ++ self.jax ++ self.paddlepaddle ++ self.testing;
+    dev = self.all;
+
+    jax = self.numpy ++ [
+      flax
+      jax
+    ];
+
+    mlx = [
+      mlx
+    ];
+
+    numpy = [ numpy ];
+
+    paddlepaddle = self.numpy ++ [
+      paddlepaddle
+    ];
+
+    pinned-tf = self.numpy ++ [
+      tensorflow
+    ];
+
+    tensorflow = self.numpy ++ [
+      tensorflow
+    ];
+
+    testing = self.numpy ++ [
+      h5py
+      huggingface-hub
+      setuptools-rust
+      pytest
+      pytest-benchmark
+      hypothesis
+      fsspec
+    ];
+
+    torch = self.numpy ++ [
+      packaging
+      torch
+    ];
+  });
+
+  pyproject = true;
   pythonImportsCheck = [ "safetensors" ];
+  sourceRoot = "${finalAttrs.src.name}/bindings/python";
 
   meta = {
-    homepage = "https://github.com/huggingface/safetensors";
     description = "Fast (zero-copy) and safe (unlike pickle) format for storing tensors";
+    homepage = "https://github.com/huggingface/safetensors";
     changelog = "https://github.com/huggingface/safetensors/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bcdarwin ];

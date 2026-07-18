@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,11 +19,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Table of contents for mdbook (in sidebar)";
-    mainProgram = "mdbook-pagetoc";
     homepage = "https://github.com/slowsage/mdbook-pagetoc";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "mdbook-pagetoc";
   };
 })

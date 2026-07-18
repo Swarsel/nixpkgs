@@ -1,12 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  readline,
   gmp,
+  makeWrapper,
   pari,
+  readline,
   zlib,
+  # Kept for backwards compatibility. Overrides packageSet to "full".
+  keepAllPackages ? false,
   # one of
   # - "minimal" (~400M):
   #     Install the bare minimum of packages required by gap to start.
@@ -18,8 +20,6 @@
   # - "full" (~1.7G):
   #     Install all available packages. This takes a lot of space.
   packageSet ? "standard",
-  # Kept for backwards compatibility. Overrides packageSet to "full".
-  keepAllPackages ? false,
 }:
 let
   # packages absolutely required for gap to start
@@ -78,10 +78,9 @@ stdenv.mkDerivation rec {
     hash = "sha256-YEnVPpmxLiXC2EjbIaxKBjgKRv5MQVckPVVv4GkwBCw=";
   };
 
-  # remove all non-essential packages (which take up a lot of space)
-  preConfigure = lib.optionalString (!keepAll) (removeNonWhitelistedPkgs packagesToKeep) + ''
-    patchShebangs .
-  '';
+  nativeBuildInputs = [
+    makeWrapper
+  ];
 
   buildInputs = [
     readline
@@ -89,20 +88,43 @@ stdenv.mkDerivation rec {
     zlib
   ];
 
-  nativeBuildInputs = [
-    makeWrapper
-  ];
-
   propagatedBuildInputs = [
     pari # used at runtime by the alnuth package
   ];
+
+  # remove all non-essential packages (which take up a lot of space)
+  preConfigure = lib.optionalString (!keepAll) (removeNonWhitelistedPkgs packagesToKeep) + ''
+    patchShebangs .
+  '';
+
+  postBuild = ''
+    pushd pkg
+    # failures are ignored unless --strict is set
+    bash ../bin/BuildPackages.sh ${lib.optionalString (!keepAll) "--strict"}
+    popd
+  '';
+
+  postInstall = ''
+    # make install creates an empty pkg dir. since we run "make check" on
+    # installCheckPhase to make sure the installed GAP finds its libraries, we
+    # also install the tst dir. this is probably excessively cautious, see
+    # https://github.com/NixOS/nixpkgs/pull/192548#discussion_r992824942
+    rm -r "$out/share/gap/pkg"
+    cp -ar pkg tst "$out/share/gap"
+    cp -a etc/Makefile.gappkg "$out/share/gap/etc"
+  '';
 
   # "teststandard" is a superset of the tests run by "check". it takes ~20min
   # instead of ~1min. tests are run twice, once with all packages loaded and
   # once without.
   # installCheckTarget = "teststandard";
-
   doInstallCheck = true;
+
+  preFixup = ''
+    # patchelf won't strip references to the build dir if it still exists
+    rm -rf pkg
+  '';
+
   installCheckTarget = "check";
 
   preInstallCheck = ''
@@ -125,40 +147,18 @@ stdenv.mkDerivation rec {
     )
   '';
 
-  postBuild = ''
-    pushd pkg
-    # failures are ignored unless --strict is set
-    bash ../bin/BuildPackages.sh ${lib.optionalString (!keepAll) "--strict"}
-    popd
-  '';
-
-  postInstall = ''
-    # make install creates an empty pkg dir. since we run "make check" on
-    # installCheckPhase to make sure the installed GAP finds its libraries, we
-    # also install the tst dir. this is probably excessively cautious, see
-    # https://github.com/NixOS/nixpkgs/pull/192548#discussion_r992824942
-    rm -r "$out/share/gap/pkg"
-    cp -ar pkg tst "$out/share/gap"
-    cp -a etc/Makefile.gappkg "$out/share/gap/etc"
-  '';
-
-  preFixup = ''
-    # patchelf won't strip references to the build dir if it still exists
-    rm -rf pkg
-  '';
-
   meta = {
     description = "Computational discrete algebra system";
-    # We are also grateful to ChrisJefferson for previous work on the package,
-    # and to ChrisJefferson and fingolfin for help with GAP-related questions
-    # from the upstream point of view.
-    teams = [ lib.teams.sage ];
+    homepage = "https://www.gap-system.org";
+    license = lib.licenses.gpl2;
     platforms = lib.platforms.all;
     # keeping all packages increases the package size considerably, which is
     # why a local build is preferable in that situation. The timeframe is
     # reasonable and that way the binary cache doesn't get overloaded.
     hydraPlatforms = lib.optionals (!keepAllPackages) meta.platforms;
-    license = lib.licenses.gpl2;
-    homepage = "https://www.gap-system.org";
+    # We are also grateful to ChrisJefferson for previous work on the package,
+    # and to ChrisJefferson and fingolfin for help with GAP-related questions
+    # from the upstream point of view.
+    teams = [ lib.teams.sage ];
   };
 }

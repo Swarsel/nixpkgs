@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
   autoreconfHook,
-  wrapGAppsHook3,
   gtkmm3,
   libpulseaudio,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,11 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.4.2";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "dqpb";
     repo = "gmetronome";
     rev = finalAttrs.version;
     hash = "sha256-/UWOvVeZILDR29VjBK+mFJt1hzWcOljOr7J7+cMrKtM=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/dqpb/gmetronome";
     changelog = "https://gitlab.gnome.org/dqpb/gmetronome/-/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ aleksana ];
+    platforms = lib.platforms.unix;
     mainProgram = "gmetronome";
     broken = stdenv.hostPlatform.isDarwin;
   };

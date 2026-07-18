@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   extractcode-7z,
   extractcode-libarchive,
   patch,
-  six,
-  typecode,
-
   # tests
   pytest-xdist,
   pytestCheckHook,
+  # build-system
+  setuptools-scm,
+  six,
+  typecode,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "extractcode";
   version = "31.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aboutcode-org";
@@ -30,7 +26,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-KTLhTvTn5awIJD32lsztm6nh15eoFew1mGJvHIT8H2U=";
   };
 
-  dontConfigure = true;
+  nativeCheckInputs = [
+    pytest-xdist
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -40,11 +39,6 @@ buildPythonPackage (finalAttrs: {
     patch
     six
     typecode
-  ];
-
-  nativeCheckInputs = [
-    pytest-xdist
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
@@ -78,15 +72,17 @@ buildPythonPackage (finalAttrs: {
     "test_get_best_handler_nuget_is_selected_over_zip3"
   ];
 
+  dontConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "extractcode" ];
 
   meta = {
     description = "Universal archive extractor using z7zip, libarchive, other libraries and the Python standard library";
     homepage = "https://github.com/aboutcode-org/extractcode";
     changelog = "https://github.com/aboutcode-org/extractcode/releases/tag/v${finalAttrs.version}";
-    mainProgram = "extractcode";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ eljamm ];
+    mainProgram = "extractcode";
     teams = with lib.teams; [ ngi ];
   };
 })

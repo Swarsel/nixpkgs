@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocaml,
   findlib,
   nix-update-script,
+  ocaml,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.9.1";
   pname = "ocaml${ocaml.version}-camlpdf";
+  version = "2.9.1";
 
   src = fetchFromGitHub {
     owner = "johnwhitington";
@@ -18,12 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-f3Bm64T27eiIzOY2nwdzMRH68VlyNp2jXpOPyBouSCs=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
   ];
-
-  strictDeps = true;
 
   preInstall = ''
     mkdir -p $out/lib/ocaml/${ocaml.version}/site-lib/stublibs
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/johnwhitington/camlpdf/blob/${finalAttrs.src.rev}/Changes.txt";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ vbgl ];
-    teams = with lib.teams; [ ngi ];
     broken = lib.versionOlder ocaml.version "4.10";
+    teams = with lib.teams; [ ngi ];
   };
 })

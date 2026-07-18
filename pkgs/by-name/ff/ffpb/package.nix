@@ -1,25 +1,23 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ffpb";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     sha256 = "7eVqbLpMHS1sBw2vYS4cTtyVdnnknGtEI8190VlXflk=";
   };
 
-  build-system = [ python3Packages.setuptools ];
-
-  dependencies = [ python3Packages.tqdm ];
-
   # tests require working internet connection
   doCheck = false;
+  build-system = [ python3Packages.setuptools ];
+  dependencies = [ python3Packages.tqdm ];
+  pyproject = true;
 
   meta = {
     description = "FFmpeg progress formatter to display a nice progress bar and an adaptative ETA timer";

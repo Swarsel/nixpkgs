@@ -1,4 +1,4 @@
-{ pkgs, haskellLib }:
+{ haskellLib, pkgs }:
 
 self: super:
 
@@ -18,104 +18,12 @@ in
 
 {
 
-  # Disable GHC core libraries.
-  array = null;
-  base = null;
-  binary = null;
-  bytestring = null;
-  Cabal = null;
-  Cabal-syntax = null;
-  containers = null;
-  deepseq = null;
-  directory = null;
-  exceptions = null;
-  filepath = null;
-  ghc-bignum = null;
-  ghc-boot = null;
-  ghc-boot-th = null;
-  ghc-compact = null;
-  ghc-heap = null;
-  ghc-prim = null;
-  ghci = null;
-  haskeline = null;
-  hpc = null;
-  integer-gmp = null;
-  libiserv = null;
-  mtl = null;
-  parsec = null;
-  pretty = null;
-  process = null;
-  rts = null;
-  stm = null;
-  semaphore-compat = null;
-  system-cxx-std-lib = null;
-  template-haskell = null;
-  # GHC only builds terminfo if it is a native compiler
-  terminfo =
-    if pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform then
-      null
-    else
-      doDistribute self.terminfo_0_4_1_7;
-  text = null;
-  time = null;
-  transformers = null;
-  unix = null;
-  xhtml = null;
-  Win32 = null;
-
-  # Becomes a core package in GHC >= 9.10
-  os-string = doDistribute self.os-string_2_0_10;
-
-  # Become core packages in GHC >= 9.10, no release compatible with GHC < 9.10 is available
-  ghc-experimental = null;
-  ghc-internal = null;
-  # Become core packages in GHC >= 9.10, but aren't uploaded to Hackage
-  ghc-toolchain = null;
-  ghc-platform = null;
-
-  #
-  # Version upgrades
-  #
-  ghc-tags = self.ghc-tags_1_8;
-
-  #
-  # Jailbreaks
-  #
-  hashing = doJailbreak super.hashing; # bytestring <0.12
-  hevm = appendPatch (pkgs.fetchpatch {
-    url = "https://github.com/hellwolf/hevm/commit/338674d1fe22d46ea1e8582b24c224d76d47d0f3.patch";
-    name = "release-0.54.2-ghc-9.8.4-patch";
-    sha256 = "sha256-Mo65FfP1nh7QTY+oLia22hj4eV2v9hpXlYsrFKljA3E=";
-  }) super.hevm;
-  HaskellNet-SSL = doJailbreak super.HaskellNet-SSL; # bytestring >=0.9 && <0.12
-  inflections = doJailbreak super.inflections; # text >=0.2 && <2.1
-
-  #
-  # Test suite issues
-  #
-  pcre-heavy = dontCheck super.pcre-heavy; # GHC warnings cause the tests to fail
-
-  #
-  # Other build fixes
-  #
-
-  # 2023-12-23: It needs this to build under ghc-9.6.3.
-  #   A factor of 100 is insufficient, 200 seems seems to work.
-  hip = appendConfigureFlag "--ghc-options=-fsimpl-tick-factor=200" super.hip;
-
-  # A given major version of ghc-exactprint only supports one version of GHC.
-  ghc-exactprint = doDistribute super.ghc-exactprint_1_8_0_0;
-
-  haddock-library = doJailbreak super.haddock-library;
-  ghc-lib = doDistribute self.ghc-lib_9_8_5_20250214;
-  ghc-lib-parser = doDistribute self.ghc-lib-parser_9_8_5_20250214;
-  ghc-lib-parser-ex = doDistribute self.ghc-lib-parser-ex_9_8_0_2;
   inherit
     (
       let
         hls_overlay = lself: lsuper: {
-          Cabal-syntax = lself.Cabal-syntax_3_10_3_0;
           Cabal = lself.Cabal_3_10_3_0;
+          Cabal-syntax = lself.Cabal-syntax_3_10_3_0;
           extensions = dontCheck (doJailbreak lself.extensions_0_1_0_1);
         };
       in
@@ -124,13 +32,15 @@ in
         floskell = doJailbreak super.floskell;
         fourmolu = dontCheck (doJailbreak self.fourmolu_0_15_0_0);
         ghcide = super.ghcide;
+
         haskell-language-server = addBuildDepends [
           self.retrie
           self.floskell
           self.markdown-unlit
         ] super.haskell-language-server;
-        hls-plugin-api = super.hls-plugin-api;
+
         hlint = self.hlint_3_8;
+        hls-plugin-api = super.hls-plugin-api;
         lsp-types = super.lsp-types;
         ormolu = self.ormolu_0_7_4_0;
         retrie = doJailbreak (unmarkBroken super.retrie);
@@ -149,4 +59,92 @@ in
     retrie
     stylish-haskell
     ;
+
+  Cabal = null;
+  Cabal-syntax = null;
+  HaskellNet-SSL = doJailbreak super.HaskellNet-SSL; # bytestring >=0.9 && <0.12
+  Win32 = null;
+  # Disable GHC core libraries.
+  array = null;
+  base = null;
+  binary = null;
+  bytestring = null;
+  containers = null;
+  deepseq = null;
+  directory = null;
+  exceptions = null;
+  filepath = null;
+  ghc-bignum = null;
+  ghc-boot = null;
+  ghc-boot-th = null;
+  ghc-compact = null;
+  # A given major version of ghc-exactprint only supports one version of GHC.
+  ghc-exactprint = doDistribute super.ghc-exactprint_1_8_0_0;
+  # Become core packages in GHC >= 9.10, no release compatible with GHC < 9.10 is available
+  ghc-experimental = null;
+  ghc-heap = null;
+  ghc-internal = null;
+  ghc-lib = doDistribute self.ghc-lib_9_8_5_20250214;
+  ghc-lib-parser = doDistribute self.ghc-lib-parser_9_8_5_20250214;
+  ghc-lib-parser-ex = doDistribute self.ghc-lib-parser-ex_9_8_0_2;
+  ghc-platform = null;
+  ghc-prim = null;
+  #
+  # Version upgrades
+  #
+  ghc-tags = self.ghc-tags_1_8;
+  # Become core packages in GHC >= 9.10, but aren't uploaded to Hackage
+  ghc-toolchain = null;
+  ghci = null;
+  haddock-library = doJailbreak super.haddock-library;
+  #
+  # Jailbreaks
+  #
+  hashing = doJailbreak super.hashing; # bytestring <0.12
+  haskeline = null;
+
+  hevm = appendPatch (pkgs.fetchpatch {
+    name = "release-0.54.2-ghc-9.8.4-patch";
+    sha256 = "sha256-Mo65FfP1nh7QTY+oLia22hj4eV2v9hpXlYsrFKljA3E=";
+    url = "https://github.com/hellwolf/hevm/commit/338674d1fe22d46ea1e8582b24c224d76d47d0f3.patch";
+  }) super.hevm;
+
+  #
+  # Other build fixes
+  #
+  # 2023-12-23: It needs this to build under ghc-9.6.3.
+  #   A factor of 100 is insufficient, 200 seems seems to work.
+  hip = appendConfigureFlag "--ghc-options=-fsimpl-tick-factor=200" super.hip;
+  hpc = null;
+  inflections = doJailbreak super.inflections; # text >=0.2 && <2.1
+  integer-gmp = null;
+  libiserv = null;
+  mtl = null;
+  # Becomes a core package in GHC >= 9.10
+  os-string = doDistribute self.os-string_2_0_10;
+  parsec = null;
+  #
+  # Test suite issues
+  #
+  pcre-heavy = dontCheck super.pcre-heavy; # GHC warnings cause the tests to fail
+  pretty = null;
+  process = null;
+  rts = null;
+  semaphore-compat = null;
+  stm = null;
+  system-cxx-std-lib = null;
+  template-haskell = null;
+
+  # GHC only builds terminfo if it is a native compiler
+  terminfo =
+    if pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform then
+      null
+    else
+      doDistribute self.terminfo_0_4_1_7;
+
+  text = null;
+  time = null;
+  transformers = null;
+  unix = null;
+  xhtml = null;
 }

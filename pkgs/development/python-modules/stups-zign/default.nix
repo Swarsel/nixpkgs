@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-  setuptools,
-  stups-tokens,
-  stups-cli-support,
-  pytestCheckHook,
   isPy3k,
+  pytestCheckHook,
+  setuptools,
+  stups-cli-support,
+  stups-tokens,
 }:
 
 buildPythonPackage rec {
   pname = "stups-zign";
   version = "1.2";
-  pyproject = true;
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "zalando-stups";
@@ -26,10 +24,16 @@ buildPythonPackage rec {
   patches = [
     # pytest 5 is currently unsupported. Fetch and apply a pr that resolves this.
     (fetchpatch {
-      url = "https://github.com/zalando-stups/zign/commit/50140720211e547b0e59f7ddb39a732f0cc73ad7.patch";
       sha256 = "1zmyvg1z1asaqqsmxvsx0srvxd6gkgavppvg3dblxwhkml01awqk";
+      url = "https://github.com/zalando-stups/zign/commit/50140720211e547b0e59f7ddb39a732f0cc73ad7.patch";
     })
   ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = "
+    export HOME=$TEMPDIR
+  ";
 
   build-system = [ setuptools ];
 
@@ -38,11 +42,8 @@ buildPythonPackage rec {
     stups-cli-support
   ];
 
-  preCheck = "
-    export HOME=$TEMPDIR
-  ";
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabled = !isPy3k;
+  pyproject = true;
 
   meta = {
     description = "OAuth2 token management command line utility";

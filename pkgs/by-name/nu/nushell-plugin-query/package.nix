@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
-  nushell,
-  nix-update-script,
-  pkg-config,
-  openssl,
+  stdenv,
   curl,
+  nix-update-script,
+  nushell,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "nu_plugin_query";
   inherit (nushell) version src cargoHash;
-
+  pname = "nu_plugin_query";
   nativeBuildInputs = [ pkg-config ] ++ lib.optionals stdenv.cc.isClang [ rustPlatform.bindgenHook ];
+
   buildInputs = [
     openssl
     curl
@@ -28,11 +28,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Nushell plugin to query JSON, XML, and various web data";
-    mainProgram = "nu_plugin_query";
     homepage = "https://github.com/nushell/nushell/tree/${finalAttrs.version}/crates/nu_plugin_query";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       happysalada
     ];
+
+    mainProgram = "nu_plugin_query";
   };
 })

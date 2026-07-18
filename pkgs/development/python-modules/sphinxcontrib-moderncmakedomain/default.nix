@@ -11,17 +11,12 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-moderncmakedomain";
   version = "3.29.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "sphinxcontrib_moderncmakedomain";
     hash = "sha256-NYfe8kH/JXfQu+8RgQoILp3sG3ij1LSgZiQLXz3BtbI=";
+    pname = "sphinxcontrib_moderncmakedomain";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [ sphinx ];
 
   nativeCheckInputs = [
     defusedxml
@@ -29,6 +24,9 @@ buildPythonPackage rec {
     sphinx
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ sphinx ];
+  pyproject = true;
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

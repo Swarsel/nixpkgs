@@ -2,9 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  python3Packages,
-  wrapGAppsHook3,
   atk,
   dbus,
   evemu,
@@ -13,14 +10,17 @@
   gobject-introspection,
   grail,
   gtk3,
-  libxtst,
-  libxi,
-  libxext,
   libx11,
+  libxext,
+  libxi,
+  libxtst,
   pango,
-  xorg-server,
+  pkg-config,
+  python3Packages,
   testers,
   validatePkgConfig,
+  wrapGAppsHook3,
+  xorg-server,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,12 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://launchpad.net/geis/trunk/${finalAttrs.version}/+download/geis-${finalAttrs.version}.tar.xz";
     hash = "sha256-imD1aDhSCUA4kE5pDSPMWpCpgPxS2mfw8oiQuqJccOs=";
   };
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=misleading-indentation -Wno-error=pointer-compare";
-
-  hardeningDisable = [ "format" ];
-
-  pythonPath = with python3Packages; [ pygobject3 ];
 
   nativeBuildInputs = [
     pkg-config
@@ -63,6 +57,15 @@ stdenv.mkDerivation (finalAttrs: {
     xorg-server
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=misleading-indentation -Wno-error=pointer-compare";
+
+  preFixup = ''
+    buildPythonPath "$out ''${pythonPath[*]}"
+    gappsWrapperArgs+=(--set PYTHONPATH "$program_PYTHONPATH")
+  '';
+
+  hardeningDisable = [ "format" ];
+
   prePatch = ''
     substituteInPlace python/geis/geis_v2.py --replace-fail \
       "ctypes.util.find_library(\"geis\")" "'$out/lib/libgeis.so'"
@@ -72,10 +75,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "hasattr(imp" "hasattr(importlib"
   '';
 
-  preFixup = ''
-    buildPythonPath "$out ''${pythonPath[*]}"
-    gappsWrapperArgs+=(--set PYTHONPATH "$program_PYTHONPATH")
-  '';
+  pythonPath = with python3Packages; [ pygobject3 ];
 
   passthru.tests.pkg-config = testers.hasPkgConfigModules {
     package = finalAttrs.finalPackage;

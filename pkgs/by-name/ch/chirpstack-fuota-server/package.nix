@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   unstableGitUpdater,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "chirpstack-fuota-server";
@@ -18,19 +18,20 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-dTmHkauFelqMo5MpB/TyK5yVax5d4/+g9twjmsRG3e0=";
 
+  checkFlags = [
+    "-skip=TestStorage" # Depends on external database server
+  ];
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
   versionCheckProgramArg = "version";
-  checkFlags = [
-    "-skip=TestStorage" # Depends on external database server
-  ];
 
   passthru.updateScript = unstableGitUpdater {
     tagPrefix = "v";

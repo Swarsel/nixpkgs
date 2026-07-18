@@ -11,11 +11,13 @@ in
 {
   options.services.crossfire-server = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         If enabled, the Crossfire game server will be started at boot.
       '';
+
+      type = lib.types.bool;
     };
 
     package = lib.mkPackageOption pkgs "crossfire-server" {
@@ -26,42 +28,9 @@ in
       '';
     };
 
-    dataDir = lib.mkOption {
-      type = lib.types.str;
-      default = "${cfg.package}/share/crossfire";
-      defaultText = lib.literalExpression ''"''${config.services.crossfire.package}/share/crossfire"'';
-      description = ''
-        Where to load readonly data from -- maps, archetypes, treasure tables,
-        and the like. If you plan to edit the data on the live server (rather
-        than overlaying the crossfire-maps and crossfire-arch packages and
-        nixos-rebuilding), point this somewhere read-write and copy the data
-        there before starting the server.
-      '';
-    };
-
-    stateDir = lib.mkOption {
-      type = lib.types.str;
-      default = "/var/lib/crossfire";
-      description = ''
-        Where to store runtime data (save files, persistent items, etc).
-
-        If left at the default, this will be automatically created on server
-        startup if it does not already exist. If changed, it is the admin's
-        responsibility to make sure that the directory exists and is writeable
-        by the `crossfire` user.
-      '';
-    };
-
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Whether to open ports in the firewall for the server.
-      '';
-    };
-
     configFiles = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
+      default = { };
+
       description = ''
         Text to append to the corresponding configuration files. Note that the
         files given in the example are *not* the complete set of files available
@@ -73,6 +42,7 @@ in
         overwrite the example files that come with the server, rather than being
         appended to them as the other configuration files are.
       '';
+
       example = lib.literalExpression ''
         {
           dm_file = '''
@@ -100,20 +70,52 @@ in
           ''';
         }
       '';
-      default = { };
+
+      type = lib.types.attrsOf lib.types.str;
+    };
+
+    dataDir = lib.mkOption {
+      default = "${cfg.package}/share/crossfire";
+      defaultText = lib.literalExpression ''"''${config.services.crossfire.package}/share/crossfire"'';
+
+      description = ''
+        Where to load readonly data from -- maps, archetypes, treasure tables,
+        and the like. If you plan to edit the data on the live server (rather
+        than overlaying the crossfire-maps and crossfire-arch packages and
+        nixos-rebuilding), point this somewhere read-write and copy the data
+        there before starting the server.
+      '';
+
+      type = lib.types.str;
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to open ports in the firewall for the server.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    stateDir = lib.mkOption {
+      default = "/var/lib/crossfire";
+
+      description = ''
+        Where to store runtime data (save files, persistent items, etc).
+
+        If left at the default, this will be automatically created on server
+        startup if it does not already exist. If changed, it is the admin's
+        responsibility to make sure that the directory exists and is writeable
+        by the `crossfire` user.
+      '';
+
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.users.crossfire = {
-      description = "Crossfire server daemon user";
-      home = cfg.stateDir;
-      createHome = false;
-      isSystemUser = true;
-      group = "crossfire";
-    };
-    users.groups.crossfire = { };
-
     # Merge the cfg.configFiles setting with the default files shipped with
     # Crossfire.
     # For most files this consists of reading ${crossfire}/etc/crossfire/${name}
@@ -125,6 +127,7 @@ in
           name: value:
           lib.attrsets.nameValuePair "crossfire/${name}" {
             mode = "0644";
+
             text =
               (lib.optionalString (
                 !lib.elem name [
@@ -152,23 +155,13 @@ in
           // cfg.configFiles
         );
 
-    systemd.services.crossfire-server = {
-      description = "Crossfire Server Daemon";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ serverPort ];
+    };
 
-      serviceConfig = lib.mkMerge [
-        {
-          ExecStart = "${cfg.package}/bin/crossfire-server -conf /etc/crossfire -local '${cfg.stateDir}' -data '${cfg.dataDir}'";
-          Restart = "always";
-          User = "crossfire";
-          Group = "crossfire";
-          WorkingDirectory = cfg.stateDir;
-        }
-        (lib.mkIf (cfg.stateDir == "/var/lib/crossfire") {
-          StateDirectory = "crossfire";
-        })
-      ];
+    systemd.services.crossfire-server = {
+      after = [ "network.target" ];
+      description = "Crossfire Server Daemon";
 
       # The crossfire server needs access to a bunch of files at runtime that
       # are not created automatically at server startup; they're meant to be
@@ -184,10 +177,31 @@ in
             "${cfg.package}/var/crossfire/" "${cfg.stateDir}/"
         fi
       '';
+
+      serviceConfig = lib.mkMerge [
+        {
+          ExecStart = "${cfg.package}/bin/crossfire-server -conf /etc/crossfire -local '${cfg.stateDir}' -data '${cfg.dataDir}'";
+          Group = "crossfire";
+          Restart = "always";
+          User = "crossfire";
+          WorkingDirectory = cfg.stateDir;
+        }
+        (lib.mkIf (cfg.stateDir == "/var/lib/crossfire") {
+          StateDirectory = "crossfire";
+        })
+      ];
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ serverPort ];
+    users.groups.crossfire = { };
+
+    users.users.crossfire = {
+      createHome = false;
+      description = "Crossfire server daemon user";
+      group = "crossfire";
+      home = cfg.stateDir;
+      isSystemUser = true;
     };
   };
 }

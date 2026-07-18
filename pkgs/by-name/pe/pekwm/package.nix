@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gawk,
   cmake,
+  gawk,
   gnugrep,
+  gnused,
+  libjpeg,
+  libpng,
   libxext,
   libxft,
   libxinerama,
   libxpm,
   libxrandr,
-  libjpeg,
-  libpng,
   pkg-config,
   runtimeShell,
-  gnused,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,13 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "release-${finalAttrs.version}";
     hash = "sha256-rwvecE9T+/zZg0rRUDl/DEMGH9ZmuvYj/Rz6vzmMv1I=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -43,13 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpng
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  strictDeps = true;
-
   cmakeFlags = [
     "-DAWK=${lib.getBin gawk}/bin/awk"
     "-DGREP=${lib.getBin gnugrep}/bin/grep"
@@ -58,8 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.pekwm.se/";
     description = "Lightweight window manager";
+
     longDescription = ''
       pekwm is a window manager that once upon a time was based on the aewm++
       window manager, but it has evolved enough that it no longer resembles
@@ -73,10 +73,12 @@ stdenv.mkDerivation (finalAttrs: {
         they should when starting applications.
       - Chainable Keygrabber, usability for everyone.
     '';
+
+    homepage = "https://www.pekwm.se/";
     changelog = "https://raw.githubusercontent.com/pekwm/pekwm/release-${finalAttrs.version}/NEWS.md";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "pekwm";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "pekwm";
   };
 })

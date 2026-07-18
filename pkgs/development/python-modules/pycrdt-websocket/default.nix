@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   anyio,
-  pycrdt,
-  pycrdt-store,
-  sqlite-anyio,
-
+  buildPythonPackage,
   # optional-dependencies
   channels,
-
+  # build-system
+  hatchling,
   # tests
   httpx-ws,
   hypercorn,
+  pycrdt,
+  pycrdt-store,
   pytest-asyncio,
   pytestCheckHook,
+  sqlite-anyio,
   trio,
   uvicorn,
   websockets,
@@ -28,8 +24,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pycrdt-websocket";
   version = "0.16.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "y-crdt";
@@ -37,21 +31,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-H9QxMxNCIvykGpdxNAtAbVpaJlpnq9O76nTh1raVfJU=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    anyio
-    pycrdt
-    pycrdt-store
-    sqlite-anyio
-  ];
-
-  optional-dependencies = {
-    django = [ channels ];
-  };
-
-  pythonImportsCheck = [ "pycrdt.websocket" ];
 
   nativeCheckInputs = [
     httpx-ws
@@ -63,11 +42,15 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
-  disabledTests = [
-    # Looking for a certfile
-    # FileNotFoundError: [Errno 2] No such file or directory
-    "test_asgi"
-    "test_yroom_restart"
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    anyio
+    pycrdt
+    pycrdt-store
+    sqlite-anyio
   ];
 
   disabledTestPaths = [
@@ -75,7 +58,19 @@ buildPythonPackage (finalAttrs: {
     "tests/test_pycrdt_yjs.py"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  disabledTests = [
+    # Looking for a certfile
+    # FileNotFoundError: [Errno 2] No such file or directory
+    "test_asgi"
+    "test_yroom_restart"
+  ];
+
+  optional-dependencies = {
+    django = [ channels ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pycrdt.websocket" ];
 
   meta = {
     description = "WebSocket Connector for pycrdt";

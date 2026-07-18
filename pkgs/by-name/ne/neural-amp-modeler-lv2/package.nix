@@ -13,8 +13,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "mikeoliphant";
     repo = "neural-amp-modeler-lv2";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-5BOZOocZWWSWawXJFMAgM0NR0s0CbkzDVr6fnvZMvd0=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    maintainers = [ lib.maintainers.viraptor ];
     description = "Neural Amp Modeler LV2 plugin implementation";
     homepage = finalAttrs.src.meta.homepage;
     license = [ lib.licenses.gpl3 ];
+    maintainers = [ lib.maintainers.viraptor ];
   };
 })

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rofi,
   gnused,
+  rofi,
 }:
 
 stdenv.mkDerivation {
@@ -32,8 +32,8 @@ stdenv.mkDerivation {
   meta = {
     description = "Generates menu based applications using rofi";
     homepage = "https://github.com/octotep/menugen";
+    license = lib.licenses.unfree;
     maintainers = [ ];
     platforms = lib.platforms.all;
-    license = lib.licenses.unfree;
   };
 }

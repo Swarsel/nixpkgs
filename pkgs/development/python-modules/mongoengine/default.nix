@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pymongo,
-  six,
   blinker,
-  pytestCheckHook,
-  pillow,
+  buildPythonPackage,
   coverage,
+  pillow,
+  pymongo,
+  pytestCheckHook,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "mongoengine";
   version = "0.29.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "MongoEngine";
@@ -22,10 +21,19 @@ buildPythonPackage rec {
     hash = "sha256-trWCKmCa+q+qtzF0HKCZMnko1cvvpwJvczLFuKtB83E=";
   };
 
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace "coverage==4.2" "coverage" \
+      --replace "pymongo>=3.4,<=4.0" "pymongo"
+  '';
+
   propagatedBuildInputs = [
     pymongo
     six
   ];
+
+  # tests require mongodb running in background
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -34,15 +42,7 @@ buildPythonPackage rec {
     blinker
   ];
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace "coverage==4.2" "coverage" \
-      --replace "pymongo>=3.4,<=4.0" "pymongo"
-  '';
-
-  # tests require mongodb running in background
-  doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "mongoengine" ];
 
   meta = {

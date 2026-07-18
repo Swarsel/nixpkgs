@@ -1,21 +1,17 @@
 {
   stdenv,
-  cmake,
-  ninja,
-  core,
-  openssl,
-  libxml2,
   fetchFromGitHub,
-  nix-update-script,
+  cmake,
+  core,
+  libxml2,
   meta,
+  ninja,
+  nix-update-script,
+  openssl,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "azure-sdk-for-cpp-storage-common";
   version = "12.12.0";
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -23,7 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "azure-storage-common_${finalAttrs.version}";
     hash = "sha256-cycBXSvc3G8TdLnI4Ht1lBd9ndPOjxWFQA54a24iUsY=";
   };
-  sourceRoot = "${finalAttrs.src.name}/sdk/storage/azure-storage-common";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     sed -i '/CMAKE_CXX_STANDARD/d' CMakeLists.txt
@@ -40,24 +40,27 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
     libxml2
   ];
-  propagatedBuildInputs = [ core ];
 
-  env = {
-    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
-  };
+  propagatedBuildInputs = [ core ];
 
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
     "-DWARNINGS_AS_ERRORS=OFF"
   ];
 
+  env = {
+    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
+  };
+
+  # See note in ./core.nix.
+  doCheck = false;
+
   postInstall = ''
     moveToOutput "share" "$dev"
     moveToOutput "share/$(basename "$sourceRoot")-cpp/copyright" "$out"
   '';
 
-  # See note in ./core.nix.
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/sdk/storage/azure-storage-common";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

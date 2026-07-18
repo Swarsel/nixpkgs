@@ -1,98 +1,90 @@
 {
   lib,
   stdenv,
-  overrideScope,
-  ceph-meta,
-  ceph-src,
-
+  # Runtime dependencies
+  arrow-cpp,
   # Build time
   autoconf,
   automake,
-  cmake,
-  ensureNewerSourcesHook,
-  fmt,
-  git,
-  libtool,
-  makeWrapper,
-  nasm,
-  pkg-config,
-  which,
-
-  # Tests
-  nixosTests,
-
-  # Runtime dependencies
-
-  arrow-cpp,
   babeltrace,
-  ceph-boost,
   bzip2,
+  ceph-boost,
+  ceph-meta,
+  ceph-python-env,
+  ceph-rocksdb,
+  ceph-src,
+  cmake,
+  # Crypto Dependencies
+  cryptopp,
   cryptsetup,
   cunit,
-  e2fsprogs,
+  # Optional Dependencies
+  curl,
   doxygen,
+  e2fsprogs,
+  ensureNewerSourcesHook,
+  expat,
+  fmt,
+  fuse3,
   getopt,
-  gperf,
-  graphviz,
+  git,
   gnugrep,
+  gperf,
+  # Mallocs
+  gperftools,
+  graphviz,
   gtest,
   icu,
+  jemalloc,
+  keyutils,
   kmod,
+  libaio,
+  libatomic_ops,
   libcap,
   libcap_ng,
+  libedit,
   libnbd,
   libnl,
+  libs3,
+  libtool,
+  liburing,
+  libuuid,
+  libxfs,
   libxml2,
+  # Linux Only Dependencies
+  linuxHeaders,
   lmdb,
   lttng-ust,
   # Ceph currently requires >= 5.3
   lua5_4,
   lvm2,
   lz4,
-  oath-toolkit,
-  openldap,
-  parted,
-  ceph-python-env,
-  rdkafka,
-  ceph-rocksdb,
-  snappy,
-  openssh,
-  sqlite,
-  utf8proc,
-  xfsprogs,
-  zlib,
-  zstd,
-
-  # Optional Dependencies
-  curl,
-  expat,
-  fuse3,
-  libatomic_ops,
-  libedit,
-  libs3,
-  yasm,
-
-  # Mallocs
-  gperftools,
-  jemalloc,
-
-  # Crypto Dependencies
-  cryptopp,
+  makeWrapper,
+  nasm,
+  # Tests
+  nixosTests,
   nspr,
   nss,
-
-  # Linux Only Dependencies
-  linuxHeaders,
-  systemd,
-  util-linux,
-  libuuid,
-  udev,
-  keyutils,
-  rdma-core,
+  oath-toolkit,
+  openldap,
+  openssh,
+  overrideScope,
+  parted,
+  pkg-config,
   rabbitmq-c,
-  libaio,
-  libxfs,
-  liburing,
+  rdkafka,
+  rdma-core,
+  snappy,
+  sqlite,
+  systemd,
+  udev,
+  utf8proc,
+  util-linux,
+  which,
+  xfsprogs,
+  yasm,
+  zlib,
+  zstd,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
@@ -136,19 +128,30 @@ let
       "none";
 
   cryptoLibsMap = {
+    cryptopp = [ optCryptopp ];
+    none = [ ];
+
     nss = [
       optNss
       optNspr
     ];
-    cryptopp = [ optCryptopp ];
-    none = [ ];
   };
 
 in
 stdenv.mkDerivation {
-  pname = "ceph";
   inherit (ceph-src) version;
+  inherit (ceph-python-env) sitePackages;
+  pname = "ceph";
   src = ceph-src;
+
+  outputs = [
+    "out"
+    "lib"
+    "client"
+    "dev"
+    "doc"
+    "man"
+  ];
 
   nativeBuildInputs = [
     autoconf # `autoreconf` is called, e.g. for `qatlib_ext`
@@ -233,51 +236,6 @@ stdenv.mkDerivation {
       optLibedit
     ];
 
-  inherit (ceph-python-env) sitePackages;
-
-  # Picked up, amongst others, by `wrapPythonPrograms`.
-  pythonPath = [
-    ceph-python-env
-    "${placeholder "out"}/${ceph-python-env.sitePackages}"
-  ];
-
-  # * `unset AS` because otherwise the Ceph CMake build errors with
-  #       configure: error: No modern nasm or yasm found as required. Nasm should be v2.11.01 or later (v2.13 for AVX512) and yasm should be 1.2.0 or later.
-  #   because the code at
-  #       https://github.com/intel/isa-l/blob/633add1b569fe927bace3960d7c84ed9c1b38bb9/configure.ac#L99-L191
-  #   doesn't even consider using `nasm` or `yasm` but instead uses `$AS`
-  #   from `gcc-wrapper`.
-  #   (Ceph's error message is extra confusing, because it says
-  #   `No modern nasm or yasm found` when in fact it found e.g. `nasm`
-  #   but then uses `$AS` instead.
-  # * replace /sbin and /bin based paths with direct nix store paths
-  # * increase the `command` buffer size since 2 nix store paths cannot fit within 128 characters
-  preConfigure = ''
-    unset AS
-
-    substituteInPlace src/common/module.c \
-      --replace-fail "char command[128];" "char command[256];" \
-      --replace-fail "/sbin/modinfo"  "${kmod}/bin/modinfo" \
-      --replace-fail "/sbin/modprobe" "${kmod}/bin/modprobe" \
-      --replace-fail "/bin/grep" "${gnugrep}/bin/grep"
-
-    # Patch remount to use full path to mount(8), otherwise ceph-fuse fails when run
-    # from a systemd unit for example.
-    substituteInPlace src/client/fuse_ll.cc \
-      --replace-fail "mount -i -o remount" "${util-linux}/bin/mount -i -o remount"
-
-    substituteInPlace systemd/*.service.in \
-      --replace-quiet "/bin/kill" "${util-linux}/bin/kill"
-
-    substituteInPlace src/{ceph-osd-prestart.sh,ceph-post-file.in,init-ceph.in} \
-       --replace-fail "GETOPT=/usr/local/bin/getopt" "GETOPT=${getopt}/bin/getopt" \
-       --replace-fail "GETOPT=getopt" "GETOPT=${getopt}/bin/getopt"
-
-    # The install target needs to be in PYTHONPATH for "*.pth support" check to succeed
-    export PYTHONPATH=$PYTHONPATH:$lib/$sitePackages:$out/$sitePackages
-    patchShebangs src/
-  '';
-
   cmakeFlags = [
     (lib.cmakeOptionType "path" "CMAKE_INSTALL_DATADIR" "${placeholder "lib"}/lib")
 
@@ -333,6 +291,43 @@ stdenv.mkDerivation {
   # TODO: investigate setting this to false on other platforms
   ++ lib.optional stdenv.hostPlatform.isLinux (lib.cmakeBool "WITH_SYSTEM_LIBURING" true);
 
+  # * `unset AS` because otherwise the Ceph CMake build errors with
+  #       configure: error: No modern nasm or yasm found as required. Nasm should be v2.11.01 or later (v2.13 for AVX512) and yasm should be 1.2.0 or later.
+  #   because the code at
+  #       https://github.com/intel/isa-l/blob/633add1b569fe927bace3960d7c84ed9c1b38bb9/configure.ac#L99-L191
+  #   doesn't even consider using `nasm` or `yasm` but instead uses `$AS`
+  #   from `gcc-wrapper`.
+  #   (Ceph's error message is extra confusing, because it says
+  #   `No modern nasm or yasm found` when in fact it found e.g. `nasm`
+  #   but then uses `$AS` instead.
+  # * replace /sbin and /bin based paths with direct nix store paths
+  # * increase the `command` buffer size since 2 nix store paths cannot fit within 128 characters
+  preConfigure = ''
+    unset AS
+
+    substituteInPlace src/common/module.c \
+      --replace-fail "char command[128];" "char command[256];" \
+      --replace-fail "/sbin/modinfo"  "${kmod}/bin/modinfo" \
+      --replace-fail "/sbin/modprobe" "${kmod}/bin/modprobe" \
+      --replace-fail "/bin/grep" "${gnugrep}/bin/grep"
+
+    # Patch remount to use full path to mount(8), otherwise ceph-fuse fails when run
+    # from a systemd unit for example.
+    substituteInPlace src/client/fuse_ll.cc \
+      --replace-fail "mount -i -o remount" "${util-linux}/bin/mount -i -o remount"
+
+    substituteInPlace systemd/*.service.in \
+      --replace-quiet "/bin/kill" "${util-linux}/bin/kill"
+
+    substituteInPlace src/{ceph-osd-prestart.sh,ceph-post-file.in,init-ceph.in} \
+       --replace-fail "GETOPT=/usr/local/bin/getopt" "GETOPT=${getopt}/bin/getopt" \
+       --replace-fail "GETOPT=getopt" "GETOPT=${getopt}/bin/getopt"
+
+    # The install target needs to be in PYTHONPATH for "*.pth support" check to succeed
+    export PYTHONPATH=$PYTHONPATH:$lib/$sitePackages:$out/$sitePackages
+    patchShebangs src/
+  '';
+
   preBuild =
     # The legacy-option-headers target is not correctly empbedded in the build graph.
     # It also contains some internal race conditions that we work around by building with `-j 1`.
@@ -340,6 +335,8 @@ stdenv.mkDerivation {
     ''
       cmake --build . --target legacy-option-headers -j 1
     '';
+
+  doCheck = false; # uses pip to install things from the internet
 
   postFixup = ''
     wrapPythonPrograms
@@ -370,27 +367,21 @@ stdenv.mkDerivation {
     substituteInPlace $client/bin/.ceph-wrapped --replace-fail $out $client
   '';
 
-  outputs = [
-    "out"
-    "lib"
-    "client"
-    "dev"
-    "doc"
-    "man"
+  # Picked up, amongst others, by `wrapPythonPrograms`.
+  pythonPath = [
+    ceph-python-env
+    "${placeholder "out"}/${ceph-python-env.sitePackages}"
   ];
-
-  doCheck = false; # uses pip to install things from the internet
 
   # Takes 7+h to build with 2 cores.
   requiredSystemFeatures = [ "big-parallel" ];
-
-  meta = ceph-meta "Distributed storage system";
 
   passthru = {
     inherit (ceph-src) version;
     inherit overrideScope;
     inherit arrow-cpp;
     pythonEnv = ceph-python-env;
+
     tests = {
       inherit (nixosTests)
         ceph-multi-node-bluestore
@@ -402,4 +393,6 @@ stdenv.mkDerivation {
         ;
     };
   };
+
+  meta = ceph-meta "Distributed storage system";
 }

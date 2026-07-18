@@ -1,20 +1,20 @@
 {
   lib,
+  bitstring,
   buildDunePackage,
   fetchpatch,
   ocaml,
-  bitstring,
-  ppxlib,
   ounit,
+  ppxlib,
 }:
 
 buildDunePackage {
-  pname = "ppx_bitstring";
   inherit (bitstring) version src;
+  pname = "ppx_bitstring";
 
   patches = lib.optional (lib.versionAtLeast ppxlib.version "0.36") (fetchpatch {
-    url = "https://github.com/xguerin/bitstring/commit/b42d4924cbb5ec5fd5309e6807852b63f456f35d.patch";
     hash = "sha256-wtpSnGOzIUTmB3LhyHGopecy7F/5SYFOwaR6eReV+6g=";
+    url = "https://github.com/xguerin/bitstring/commit/b42d4924cbb5ec5fd5309e6807852b63f456f35d.patch";
   });
 
   buildInputs = [

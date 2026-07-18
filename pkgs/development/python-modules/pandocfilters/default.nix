@@ -5,9 +5,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "1.5.1";
-  format = "setuptools";
   pname = "pandocfilters";
+  version = "1.5.1";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # No tests available
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python module for writing pandoc filters, with a collection of examples";

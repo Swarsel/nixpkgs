@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitLab,
+  buildGoModule,
   fetchpatch2,
 }:
 
@@ -19,8 +19,8 @@ buildGoModule (finalAttrs: {
   patches = [
     # fix a unicode mismatch to make test pass
     (fetchpatch2 {
-      url = "https://gitlab.com/cznic/golex/-/commit/a735a3b62b5fb36a715ba4e280270f9ca91c5e59.patch";
       hash = "sha256-Q/Vyh91IwL3ConWpJU0akslkaVhHTkBmrMbmDVU3Txs=";
+      url = "https://gitlab.com/cznic/golex/-/commit/a735a3b62b5fb36a715ba4e280270f9ca91c5e59.patch";
     })
   ];
 
@@ -30,7 +30,7 @@ buildGoModule (finalAttrs: {
     description = "Lex/flex like utility rendering .l formated data to Go source code";
     homepage = "https://pkg.go.dev/modernc.org/golex";
     license = lib.licenses.bsd3;
-    mainProgram = "golex";
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "golex";
   };
 })

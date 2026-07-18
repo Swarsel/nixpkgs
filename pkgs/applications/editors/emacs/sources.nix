@@ -7,13 +7,13 @@
 let
   mkArgs =
     {
-      pname,
-      version,
-      variant,
-      patches ? _: [ ],
-      rev,
       hash,
+      pname,
+      rev,
+      variant,
+      version,
       meta ? { },
+      patches ? _: [ ],
     }:
     {
       inherit
@@ -25,32 +25,28 @@ let
 
       src =
         {
-          "mainline" = (
-            fetchgit {
-              url = "https://https.git.savannah.gnu.org/git/emacs.git";
-              inherit rev hash;
-            }
-          );
           "macport" = (
             fetchFromGitHub {
+              inherit rev hash;
               owner = "jdtsmith";
               repo = "emacs-mac";
+            }
+          );
+
+          "mainline" = (
+            fetchgit {
               inherit rev hash;
+              url = "https://https.git.savannah.gnu.org/git/emacs.git";
             }
           );
         }
         .${variant};
 
       meta = {
-        homepage =
-          {
-            "mainline" = "https://www.gnu.org/software/emacs/";
-            "macport" = "https://github.com/jdtsmith/emacs-mac";
-          }
-          .${variant};
         description =
           "Extensible, customizable GNU text editor"
           + lib.optionalString (variant == "macport") " - macport variant";
+
         longDescription = ''
           GNU Emacs is an extensible, customizable text editor—and more. At its core
           is an interpreter for Emacs Lisp, a dialect of the Lisp programming
@@ -72,15 +68,29 @@ let
           tailored for macOS. Moved to a fork of the latter starting with emacs v30 as the
           original project seems to be currently dormant.
         '';
-        changelog =
+
+        homepage =
           {
-            "mainline" = "https://cgit.git.savannah.gnu.org/cgit/emacs.git/plain/etc/NEWS?h=${rev}";
-            "macport" = "https://github.com/jdtsmith/emacs-mac/blob/${rev}/NEWS-mac";
+            "macport" = "https://github.com/jdtsmith/emacs-mac";
+            "mainline" = "https://www.gnu.org/software/emacs/";
           }
           .${variant};
+
+        changelog =
+          {
+            "macport" = "https://github.com/jdtsmith/emacs-mac/blob/${rev}/NEWS-mac";
+            "mainline" = "https://cgit.git.savannah.gnu.org/cgit/emacs.git/plain/etc/NEWS?h=${rev}";
+          }
+          .${variant};
+
         license = lib.licenses.gpl3Plus;
+
         maintainers =
           {
+            "macport" = with lib.maintainers; [
+              kfiz
+            ];
+
             "mainline" = with lib.maintainers; [
               AndersonTorres
               adisbladis
@@ -88,77 +98,80 @@ let
               linj
               panchoh
             ];
-            "macport" = with lib.maintainers; [
-              kfiz
-            ];
           }
           .${variant};
+
         platforms =
           {
-            "mainline" = lib.platforms.all;
             "macport" = lib.platforms.darwin;
+            "mainline" = lib.platforms.all;
           }
           .${variant};
+
         mainProgram = "emacs";
       }
       // meta;
     };
 in
 {
-  emacs31 = import ./make-emacs.nix (mkArgs {
-    pname = "emacs";
-    version = "31.0.90";
-    variant = "mainline";
-    rev = "emacs-31.0.90";
-    hash = "sha256-Rzlnn+NKQ+jICXLNop27RnVInq79myn4hueJieDO2Ck=";
-  });
-
   emacs30 = import ./make-emacs.nix (mkArgs {
     pname = "emacs";
     version = "30.2";
-    variant = "mainline";
-    rev = "emacs-30.2";
-    hash = "sha256-3Lfb3HqdlXqSnwJfxe7npa4GGR9djldy8bKRpkQCdSA=";
+
     patches = fetchpatch: [
       (fetchpatch {
+        hash = "sha256-ny44eIi8DUa9pQhVGzhGz4H6FXU4+ki86SITLXhkwpw=";
         name = "fix-off-by-one-mistake-80851-CVE-2026-6861.patch";
         url = "https://cgit.git.savannah.gnu.org/cgit/emacs.git/patch/?id=8f535370b9efbc91673b20c6987a5cae4f6dc562";
-        hash = "sha256-ny44eIi8DUa9pQhVGzhGz4H6FXU4+ki86SITLXhkwpw=";
       })
       (builtins.path {
         name = "inhibit-lexical-cookie-warning-67916.patch";
         path = ./inhibit-lexical-cookie-warning-67916-30.patch;
       })
       (fetchpatch {
+        hash = "sha256-3pWeRxjAhr3ntBR3xDhoDUZDjU6xICU23NUpb/Vl6R4=";
         # tree-sitter 0.26 compatibility fix, see https://bugs.gentoo.org/970856
         url = "https://gitweb.gentoo.org/proj/emacs-patches.git/plain/emacs/30.2/01_all_treesit-0.26.patch?id=d0f47979806d9be5a190fdb4ffa1bde439b2d616";
-        hash = "sha256-3pWeRxjAhr3ntBR3xDhoDUZDjU6xICU23NUpb/Vl6R4=";
       })
       (fetchpatch {
+        hash = "sha256-0GPyfKLSaB09a8hamrSf6lx4Qk8Big4AKMOivkN1wEM=";
         # tree-sitter 0.26 compatibility fix, see https://bugs.gentoo.org/971731
         url = "https://gitweb.gentoo.org/proj/emacs-patches.git/plain/emacs/30.2/02_all_ts-query-pred.patch?id=86190bf195b3e17108372d8ad89eb57037180dd2";
-        hash = "sha256-0GPyfKLSaB09a8hamrSf6lx4Qk8Big4AKMOivkN1wEM=";
       })
     ];
+
+    hash = "sha256-3Lfb3HqdlXqSnwJfxe7npa4GGR9djldy8bKRpkQCdSA=";
+    rev = "emacs-30.2";
+    variant = "mainline";
   });
 
   emacs30-macport = import ./make-emacs.nix (mkArgs {
     pname = "emacs-mac";
     version = "30.2.50";
-    variant = "macport";
-    rev = "emacs-mac-30.2.1";
-    hash = "sha256-KFgQZBW0QRX0k4k8gkVuGhNTfxArOH1+rwUzsmyEuss=";
+
     patches = fetchpatch: [
       (fetchpatch {
+        hash = "sha256-3pWeRxjAhr3ntBR3xDhoDUZDjU6xICU23NUpb/Vl6R4=";
         # tree-sitter 0.26 compatibility fix, see https://bugs.gentoo.org/970856
         url = "https://gitweb.gentoo.org/proj/emacs-patches.git/plain/emacs/30.2/01_all_treesit-0.26.patch?id=d0f47979806d9be5a190fdb4ffa1bde439b2d616";
-        hash = "sha256-3pWeRxjAhr3ntBR3xDhoDUZDjU6xICU23NUpb/Vl6R4=";
       })
       (fetchpatch {
+        hash = "sha256-0GPyfKLSaB09a8hamrSf6lx4Qk8Big4AKMOivkN1wEM=";
         # tree-sitter 0.26 compatibility fix, see https://bugs.gentoo.org/971731
         url = "https://gitweb.gentoo.org/proj/emacs-patches.git/plain/emacs/30.2/02_all_ts-query-pred.patch?id=86190bf195b3e17108372d8ad89eb57037180dd2";
-        hash = "sha256-0GPyfKLSaB09a8hamrSf6lx4Qk8Big4AKMOivkN1wEM=";
       })
     ];
+
+    hash = "sha256-KFgQZBW0QRX0k4k8gkVuGhNTfxArOH1+rwUzsmyEuss=";
+    rev = "emacs-mac-30.2.1";
+    variant = "macport";
+  });
+
+  emacs31 = import ./make-emacs.nix (mkArgs {
+    pname = "emacs";
+    version = "31.0.90";
+    hash = "sha256-Rzlnn+NKQ+jICXLNop27RnVInq79myn4hueJieDO2Ck=";
+    rev = "emacs-31.0.90";
+    variant = "mainline";
   });
 }

@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  sphinx,
   pdf2svg,
+  sphinx,
   texliveSmall,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-tikz";
   version = "0.4.20";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -31,18 +30,16 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ sphinx ];
-
   # no tests in package
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "sphinxcontrib.tikz" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {
     description = "TikZ extension for Sphinx";
     homepage = "https://bitbucket.org/philexander/tikz";
-    maintainers = [ ];
     license = lib.licenses.bsd3;
+    maintainers = [ ];
   };
 }

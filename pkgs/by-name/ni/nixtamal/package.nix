@@ -1,37 +1,48 @@
 {
   lib,
   stdenv,
-  fetchdarcs,
-  python3Packages,
-  ocamlPackages,
-  darwin,
-  makeBinaryWrapper,
-  removeReferencesTo,
-  installShellFiles,
   coreutils,
   curl,
+  darwin,
+  fetchdarcs,
   gawk,
+  installShellFiles,
+  makeBinaryWrapper,
   nix-prefetch-darcs,
   nix-prefetch-fossil,
   nix-prefetch-git,
   nix-prefetch-pijul,
-  testers,
   nixtamal,
+  ocamlPackages,
+  python3Packages,
+  removeReferencesTo,
+  testers,
 }:
 
 ocamlPackages.buildDunePackage (finalAttrs: {
   pname = "nixtamal";
   version = "1.9.0";
-  release_year = 2026;
-
-  minimalOCamlVersion = "5.3";
 
   src = fetchdarcs {
     url = "https://darcs.toastal.in.th/nixtamal/stable/";
-    mirrors = [ "https://smeder.ee/~toastal/nixtamal.darcs" ];
     rev = finalAttrs.version;
     hash = "sha256-Uybm9zTxIMFq82A4eCayeFCia/uW7HjhIquvO9LTfjE=";
+    mirrors = [ "https://smeder.ee/~toastal/nixtamal.darcs" ];
   };
+
+  outputs = [
+    "bin"
+    "data"
+    "doc"
+    "lib"
+    "man"
+    "out"
+  ];
+
+  postPatch = ''
+    substituteInPlace bin/main.ml --subst-var version
+    substituteInPlace lib/lock_loader.ml --subst-var release_year
+  '';
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -68,28 +79,14 @@ ocamlPackages.buildDunePackage (finalAttrs: {
     xdg
   ];
 
+  doCheck = true;
+
   checkInputs = with ocamlPackages; [
     alcotest
     ppx_deriving_qcheck
     qcheck
     qcheck-alcotest
     qcheck-core
-  ];
-
-  postPatch = ''
-    substituteInPlace bin/main.ml --subst-var version
-    substituteInPlace lib/lock_loader.ml --subst-var release_year
-  '';
-
-  doCheck = true;
-
-  outputs = [
-    "bin"
-    "data"
-    "doc"
-    "lib"
-    "man"
-    "out"
   ];
 
   installPhase = ''
@@ -138,24 +135,17 @@ ocamlPackages.buildDunePackage (finalAttrs: {
     runHook postInstall
   '';
 
+  minimalOCamlVersion = "5.3";
+  release_year = 2026;
+
   passthru.tests.version = testers.testVersion {
-    package = nixtamal.bin;
     command = "${nixtamal.meta.mainProgram} --version";
+    package = nixtamal.bin;
   };
 
   meta = {
-    license = with lib.licenses; [ gpl3Plus ];
-    platforms = lib.platforms.unix;
-    mainProgram = "nixtamal";
-    outputsToInstall = [
-      "bin"
-      "data"
-      "doc"
-      "man"
-    ];
-    homepage = "https://nixtamal.toast.al";
-    changelog = "https://nixtamal.toast.al/changelog/";
     description = "Fulfilling input pinning for Nix";
+
     longDescription = ''
       • Automate the manual work of input pinning for dependency management
       • Allow easy ways to lock & refresh those inputs
@@ -169,6 +159,19 @@ ocamlPackages.buildDunePackage (finalAttrs: {
       • Custom freshness commands
       • No experimental Nix features required
     '';
+
+    homepage = "https://nixtamal.toast.al";
+    changelog = "https://nixtamal.toast.al/changelog/";
+    license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ toastal ];
+    platforms = lib.platforms.unix;
+    mainProgram = "nixtamal";
+
+    outputsToInstall = [
+      "bin"
+      "data"
+      "doc"
+      "man"
+    ];
   };
 })

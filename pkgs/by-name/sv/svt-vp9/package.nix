@@ -4,9 +4,9 @@
   fetchFromGitHub,
   cmake,
   ninja,
-  yasm,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
+  yasm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,20 +32,21 @@ stdenv.mkDerivation (finalAttrs: {
     yasm
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "VP9-compliant encoder targeting performance levels applicable to both VOD and live video applications";
-    changelog = "https://github.com/OpenVisualCloud/SVT-VP9/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/OpenVisualCloud/SVT-VP9";
+    changelog = "https://github.com/OpenVisualCloud/SVT-VP9/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd2Patent;
+
     maintainers = with lib.maintainers; [
       niklaskorz
     ];
-    mainProgram = "SvtVp9EncApp";
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "SvtVp9EncApp";
   };
 })

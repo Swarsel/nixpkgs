@@ -1,10 +1,10 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  nix-update-script,
   nodejs,
   python3,
-  nix-update-script,
 }:
 
 buildNpmPackage rec {
@@ -18,9 +18,8 @@ buildNpmPackage rec {
     hash = "sha256-52LU5I2pNjSb9+nJjiczp/dLWRTwQDC+thyGXBvkBBA=";
   };
 
-  npmDepsHash = "sha256-BJqjaqTeg5i+ECGMuiBYVToK2i2XCOVP9yeDFz6nP4k=";
-
   nativeBuildInputs = [ python3 ];
+  npmDepsHash = "sha256-BJqjaqTeg5i+ECGMuiBYVToK2i2XCOVP9yeDFz6nP4k=";
 
   installPhase = ''
     mkdir -p $out/share

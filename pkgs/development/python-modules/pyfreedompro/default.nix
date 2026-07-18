@@ -1,14 +1,13 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
-  aiohttp,
 }:
 
 buildPythonPackage rec {
   pname = "pyfreedompro";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # upstream has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "aiohttp" ];
 
   meta = {

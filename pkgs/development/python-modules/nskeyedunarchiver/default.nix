@@ -1,14 +1,13 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "nskeyedunarchiver";
   version = "1.5.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "NSKeyedUnArchiver" ];
 
   meta = {

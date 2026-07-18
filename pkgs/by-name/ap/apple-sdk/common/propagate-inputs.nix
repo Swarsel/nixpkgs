@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
   cups,
   darwin,
   db,
   libiconv,
   ncurses,
-  stdenv,
   stdenvNoCC,
   xcbuild,
 }:
@@ -14,25 +14,17 @@ let
   # CUPS has too many dependencies to build as part of the Darwin bootstrap. It’s also typically taken as an explicit
   # dependency by other packages, so building only the headers (to satisfy other SDK headers) should be okay.
   cupsHeaders = darwin.bootstrapStdenv.mkDerivation {
+    inherit (cups) src;
     pname = "${lib.getName cups}-headers";
     version = lib.getVersion cups;
-
-    inherit (cups) src;
-
     patches = cups.patches or [ ];
-
     strictDeps = true;
-
-    dontBuild = true;
-
     buildInputs = [ darwin.libresolv ]; # The `configure` script requires libresolv headers.
-
     # CUPS’s configure script fails to find `ar` when cross-compiling.
     configureFlags = [ "ac_cv_path_AR=${stdenv.cc.targetPrefix}ar" ];
-
-    installTargets = [ "install-headers" ];
-
     __structuredAttrs = true;
+    dontBuild = true;
+    installTargets = [ "install-headers" ];
 
     meta = {
       inherit (cups.meta)

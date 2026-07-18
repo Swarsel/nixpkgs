@@ -1,15 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "vegur";
   version = "${finalAttrs.majorVersion}.${finalAttrs.minorVersion}";
-  majorVersion = "0";
-  minorVersion = "701";
 
   src = fetchzip {
     url = "https://dotcolon.net/files/fonts/vegur_${finalAttrs.majorVersion}${finalAttrs.minorVersion}.zip";
@@ -18,15 +16,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ installFonts ];
+  majorVersion = "0";
+  minorVersion = "701";
 
   meta = {
-    homepage = "https://dotcolon.net/fonts/vegur/";
     description = "Humanist sans serif font";
-    platforms = lib.platforms.all;
+    homepage = "https://dotcolon.net/fonts/vegur/";
+    license = lib.licenses.cc0;
+
     maintainers = with lib.maintainers; [
       djacu
       minijackson
     ];
-    license = lib.licenses.cc0;
+
+    platforms = lib.platforms.all;
   };
 })

@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   git,
-  gtkmm4,
   gtk4-layer-shell,
-  wrapGAppsHook4,
+  gtkmm4,
+  pkg-config,
   unstableGitUpdater,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation {
@@ -49,8 +49,8 @@ stdenv.mkDerivation {
     description = "Simple program launcher using GTK4";
     homepage = "https://github.com/System64fumo/sysmenu";
     license = lib.licenses.wtfpl;
-    mainProgram = "sysmenu";
     maintainers = with lib.maintainers; [ matteopacini ];
     platforms = lib.platforms.linux;
+    mainProgram = "sysmenu";
   };
 }

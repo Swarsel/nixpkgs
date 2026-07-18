@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   isort,
   poetry-core,
   pytest,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-isort";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stephrdev";
@@ -21,13 +20,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ isort ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_isort" ];
 
   meta = {

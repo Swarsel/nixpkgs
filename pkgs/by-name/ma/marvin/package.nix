@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
   coreutils,
+  dpkg,
+  fontconfig,
+  freetype,
   gawk,
   gnugrep,
   gnused,
-  openjdk17,
-  freetype,
-  fontconfig,
-  libxi,
   libx11,
   libxext,
-  libxtst,
+  libxi,
   libxrender,
+  libxtst,
+  makeWrapper,
+  openjdk17,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "25.5.0";
 
   src = fetchurl {
-    name = "marvin-${finalAttrs.version}.deb";
     url = "https://dl.chemaxon.com/marvin/${finalAttrs.version}/marvin_linux_${finalAttrs.version}.deb";
     hash = "sha256-+fTO6cEJL4QRFpLQ9CXZFt7Jg3otR3ZMWN5vH+3QXmA=";
+    name = "marvin-${finalAttrs.version}.deb";
   };
 
   nativeBuildInputs = [
@@ -42,10 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxtst
     libxrender
   ];
-
-  unpackPhase = ''
-    dpkg-deb -x $src opt
-  '';
 
   installPhase = ''
     wrapBin() {
@@ -86,11 +82,15 @@ stdenv.mkDerivation (finalAttrs: {
     )}
   '';
 
+  unpackPhase = ''
+    dpkg-deb -x $src opt
+  '';
+
   meta = {
     description = "Chemical modelling, analysis and structure drawing program";
     homepage = "https://chemaxon.com/products/marvin";
-    maintainers = with lib.maintainers; [ fusion809 ];
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ fusion809 ];
     platforms = lib.platforms.linux;
   };
 })

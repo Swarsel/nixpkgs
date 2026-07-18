@@ -23,11 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${m2libc}/include/M2libc M2libc
   '';
 
-  # Upstream overrides the optimisation to be -O0, which is incompatible with fortify. Let's disable it.
-  hardeningDisable = [ "fortify" ];
-
   doCheck = true;
-  checkTarget = "test";
   nativeCheckInputs = [ mescc-tools ];
 
   installPhase = ''
@@ -38,12 +34,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  checkTarget = "test";
+  # Upstream overrides the optimisation to be -O0, which is incompatible with fortify. Let's disable it.
+  hardeningDisable = [ "fortify" ];
+
   meta = {
+    inherit (m2libc.meta) platforms;
     description = "Macro Expander Saving Our m2-PLANET";
     homepage = "https://github.com/oriansj/M2-Mesoplanet";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.minimal-bootstrap ];
-    inherit (m2libc.meta) platforms;
     mainProgram = "M2-Mesoplanet";
+    teams = [ lib.teams.minimal-bootstrap ];
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   ciso8601,
-  fetchFromGitHub,
   mashumaro,
   pytest-asyncio,
   pytest-cov-stub,
@@ -18,30 +18,12 @@
 buildPythonPackage rec {
   pname = "aiortm";
   version = "0.12.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "MartinHjelmare";
     repo = "aiortm";
     tag = "v${version}";
     hash = "sha256-6idPxFW1h9kyeivBdZ8tEznPCmZLK7Uno+ZKP21WoeA=";
-  };
-
-  pythonRelaxDeps = [ "typer" ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    ciso8601
-    mashumaro
-    yarl
-  ];
-
-  optional-dependencies = {
-    cli = [ typer ];
   };
 
   nativeCheckInputs = [
@@ -52,7 +34,24 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    ciso8601
+    mashumaro
+    yarl
+  ];
+
+  disabled = pythonOlder "3.12";
+
+  optional-dependencies = {
+    cli = [ typer ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "aiortm" ];
+  pythonRelaxDeps = [ "typer" ];
 
   meta = {
     description = "Library for the Remember the Milk API";

@@ -20,10 +20,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Scan networks searching for NetBIOS information";
-    mainProgram = "nbtscan";
     homepage = "https://github.com/resurrecting-open-source-projects/nbtscan";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "nbtscan";
   };
 }

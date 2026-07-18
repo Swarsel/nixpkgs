@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-AOhH98qGHISf8AZw3MSMnS5ADL6wQJ5jlo4PXsw7CAo=";
   };
 
-  __structuredAttrs = true;
-
   # Upstream hardcodes `-fuse-ld=/usr/bin/ld` for darwin targets, which the
   # Nix clang wrapper rejects ("invalid linker name"). Drop the flag and let
   # the wrapper pick the right linker.
@@ -28,9 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   cargoHash = "sha256-l1Gp9FVtrGhzobM2Wdq110y1W7V6PNsQsJLBJ3sgOEs=";
-
-  cargoBuildFlags = [ "--package=ghost-complete" ];
-
   # Integration tests in crates/ghost-complete/tests/smoke.rs spawn a real
   # PTY + shell and exercise terminal I/O, which isn't available in the
   # Nix build sandbox.
@@ -52,9 +47,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
       shell/ghost-complete.fish
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  cargoBuildFlags = [ "--package=ghost-complete" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -63,7 +59,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/StanMarek/ghost-complete/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ imcvampire ];
-    mainProgram = "ghost-complete";
     platforms = lib.platforms.darwin;
+    mainProgram = "ghost-complete";
   };
 })

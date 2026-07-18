@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
+  amqpcat,
   crystal,
   openssl,
   testers,
-  amqpcat,
 }:
 
 crystal.buildCrystalPackage rec {
@@ -18,9 +18,6 @@ crystal.buildCrystalPackage rec {
     hash = "sha256-wUsDqatZVcfvtTlK4eOYvFFCyyO8nkrBksvN6Od4DG0=";
   };
 
-  format = "shards";
-  shardsFile = ./shards.nix;
-
   buildInputs = [ openssl ];
 
   preConfigure = ''
@@ -31,6 +28,8 @@ crystal.buildCrystalPackage rec {
 
   # Tests require network access
   doCheck = false;
+  format = "shards";
+  shardsFile = ./shards.nix;
 
   passthru.tests.version = testers.testVersion {
     package = amqpcat;
@@ -38,9 +37,9 @@ crystal.buildCrystalPackage rec {
 
   meta = {
     description = "CLI tool for publishing to and consuming from AMQP servers";
-    mainProgram = "amqpcat";
     homepage = "https://github.com/cloudamqp/amqpcat";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "amqpcat";
   };
 }

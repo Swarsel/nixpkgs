@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libGL,
   pkg-config,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libGL,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,6 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Dynamic parallax wallpaper engine with multi-compositor support for Linux";
+
     longDescription = ''
       hyprlax is a GPU-accelerated Wayland wallpaper daemon with parallax effects.
 
@@ -49,10 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
       - Lightweight native client using compositor-specific protocols
       - Seamless animation interrupts and chaining
     '';
+
     homepage = "https://github.com/sandwichfarm/hyprlax";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers._6543 ];
+    platforms = lib.platforms.linux;
     mainProgram = "hyprlax";
   };
 })

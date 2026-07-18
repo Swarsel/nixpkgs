@@ -1,25 +1,33 @@
 {
   lib,
-  stdenvNoCC,
-  haskellPackages,
   fetchurl,
+  haskellPackages,
+  stdenvNoCC,
   writers,
 }:
 
 stdenvNoCC.mkDerivation rec {
-  pname = "hledger-check-fancyassertions";
   inherit (haskellPackages.hledger-lib) version;
+  pname = "hledger-check-fancyassertions";
 
   src = fetchurl {
-    name = "hledger-check-fancyassertion-${version}.hs";
     url = "https://raw.githubusercontent.com/simonmichael/hledger/hledger-lib-${version}/bin/hledger-check-fancyassertions.hs";
     hash = "sha256-ISA7ED0HgyWOxfaufaFpNb1dHfE+1+Xh4SRCZ64yM6E=";
+    name = "hledger-check-fancyassertion-${version}.hs";
   };
 
-  dontUnpack = true;
+  installPhase = ''
+    runHook preInstall
+    install -D $executable $out/bin/${pname}
+    runHook postInstall
+  '';
+
   dontBuild = true;
+  dontUnpack = true;
 
   executable = writers.writeHaskell "hledger-check-fancyassertions" {
+    inherit (haskellPackages) ghc;
+
     libraries = with haskellPackages; [
       hledger-lib
       base
@@ -34,14 +42,7 @@ stdenvNoCC.mkDerivation rec {
       time
       transformers
     ];
-    inherit (haskellPackages) ghc;
   } src;
-
-  installPhase = ''
-    runHook preInstall
-    install -D $executable $out/bin/${pname}
-    runHook postInstall
-  '';
 
   meta = {
     description = "Complex account balance assertions for hledger journals";

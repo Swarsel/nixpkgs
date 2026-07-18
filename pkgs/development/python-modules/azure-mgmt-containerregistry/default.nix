@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   azure-common,
   azure-mgmt-core,
+  buildPythonPackage,
+  fetchPypi,
   isodate,
   setuptools,
   typing-extensions,
@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-containerregistry";
   version = "15.1.0b1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_containerregistry";
     inherit version;
     hash = "sha256-h7sN4yuZ4aSTqlLUz083PvDaFoHdjmmhH4dhvpNAkLE=";
+    pname = "azure_mgmt_containerregistry";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +30,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # no tests included
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.common"

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   faker,
-  fetchFromGitHub,
   pytest-aiohttp,
   pytest-mock,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiolookin";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ANMalko";
@@ -21,10 +20,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-G3/lUgV60CMLskUo83TlvLLIfJtu5DEz+94mdVI4OrI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
 
   doCheck = false; # all tests are async and no async plugin is configured
 
@@ -35,6 +30,9 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aiolookin" ];
 
   meta = {

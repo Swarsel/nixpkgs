@@ -1,17 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
-  versionCheckHook,
   nix-update-script,
+  stdenvNoCC,
+  versionCheckHook,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "license-plist";
   version = "3.27.7";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchzip {
     url = "https://github.com/mono0926/LicensePlist/releases/download/${finalAttrs.version}/portable_licenseplist.zip";
@@ -19,8 +16,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  dontConfigure = true;
-  dontBuild = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -30,7 +26,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -38,9 +36,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/mono0926/LicensePlist";
     changelog = "https://github.com/mono0926/LicensePlist/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "license-plist";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ jeremystucki ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    mainProgram = "license-plist";
   };
 })

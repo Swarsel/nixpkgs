@@ -15,25 +15,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-uT8MYgH9kANQ0t+7jqjOOvQIZf5ImdQruZLLlCejwcc=";
   };
 
-  cargoHash = "sha256-Aj4U2xyfNhf3HDSEd1SQ5TyO2MXn2/hrfnG0ZayzMtU=";
-
   patches = [
     ./icon-paths.patch
   ];
 
-  # don't build swayrbar
-  buildAndTestSubdir = finalAttrs.pname;
+  cargoHash = "sha256-Aj4U2xyfNhf3HDSEd1SQ5TyO2MXn2/hrfnG0ZayzMtU=";
 
   preCheck = ''
     export HOME=$TMPDIR
   '';
 
+  # don't build swayrbar
+  buildAndTestSubdir = finalAttrs.pname;
+
   meta = {
     description = "Window switcher (and more) for sway";
     homepage = "https://git.sr.ht/~tsdh/swayr";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "swayr";
     maintainers = with lib.maintainers; [ artturin ];
     platforms = lib.platforms.linux;
+    mainProgram = "swayr";
   };
 })

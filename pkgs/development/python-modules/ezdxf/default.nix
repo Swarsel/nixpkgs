@@ -1,31 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pyparsing,
-  typing-extensions,
-  pytestCheckHook,
-  setuptools,
+  buildPythonPackage,
   cython,
-  numpy,
   fonttools,
-  pillow,
-  pyside6,
-  matplotlib,
-  pymupdf,
-  pyqt5,
-  withGui ? false,
-  qt6,
-  librecad,
   gitUpdater,
+  librecad,
+  matplotlib,
+  numpy,
+  pillow,
+  pymupdf,
+  pyparsing,
+  pyqt5,
+  pyside6,
+  pytestCheckHook,
+  qt6,
+  setuptools,
+  typing-extensions,
+  withGui ? false,
 }:
 
 buildPythonPackage rec {
-  version = "1.4.3";
   pname = "ezdxf";
-
-  pyproject = true;
+  version = "1.4.3";
 
   src = fetchFromGitHub {
     owner = "mozman";
@@ -35,49 +33,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = lib.optionals withGui [ qt6.wrapQtAppsHook ];
-
-  dependencies = [
-    pyparsing
-    typing-extensions
-    numpy
-    fonttools
-  ]
-  ++ lib.optionals withGui ([ qt6.qtbase ] ++ optional-dependencies.draw);
-
-  optional-dependencies = {
-    draw = [
-      pyside6
-      matplotlib
-      pymupdf
-      pillow
-    ];
-    draw5 = [
-      pyqt5
-      matplotlib
-      pymupdf
-      pillow
-    ];
-  };
-
-  build-system = [
-    setuptools
-    cython
-  ];
-
-  dontWrapQtApps = true;
-
-  preFixup = lib.optionalString withGui ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
-  checkInputs = [ pillow ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [
-    "ezdxf"
-    "ezdxf.addons"
-  ];
+  checkInputs = [ pillow ];
 
   preCheck = ''
     ln -s "${librecad}/${
@@ -88,19 +45,61 @@ buildPythonPackage rec {
     }/fonts" fonts/librecad
   '';
 
+  preFixup = lib.optionalString withGui ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  build-system = [
+    setuptools
+    cython
+  ];
+
+  dependencies = [
+    pyparsing
+    typing-extensions
+    numpy
+    fonttools
+  ]
+  ++ lib.optionals withGui ([ qt6.qtbase ] ++ optional-dependencies.draw);
+
+  dontWrapQtApps = true;
+
+  optional-dependencies = {
+    draw = [
+      pyside6
+      matplotlib
+      pymupdf
+      pillow
+    ];
+
+    draw5 = [
+      pyqt5
+      matplotlib
+      pymupdf
+      pillow
+    ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "ezdxf"
+    "ezdxf.addons"
+  ];
+
   # The default updateScript of Python packages does not filter prerelease versions.
   passthru.updateScript = gitUpdater {
-    rev-prefix = "v";
     allowedVersions = "^[0-9]+\\.[0-9]+\\.[0-9]+$";
+    rev-prefix = "v";
   };
 
   meta = {
     description = "Python package to read and write DXF drawings (interface to the DXF file format)";
-    mainProgram = "ezdxf";
     homepage = "https://ezdxf.mozman.at/";
     changelog = "https://github.com/mozman/ezdxf/blob/${src.rev}/notes/pages/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "ezdxf";
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   ctypes,
   dune-configurator,
 }:
@@ -18,16 +18,15 @@
     hash = "sha256-bi+7T9qXByVPIy86lBMiJ2LTKCoNesrKZPa3VEDyINA=";
   };
 
+  buildInputs = [ dune-configurator ];
   propagatedBuildInputs = [ ctypes ];
 
-  buildInputs = [ dune-configurator ];
-
   meta = {
-    homepage = "https://github.com/owlbarn/eigen";
     description = "Minimal/incomplete Ocaml interface to Eigen3, mostly for Owl";
-    platforms = lib.platforms.x86_64;
-    maintainers = with lib.maintainers; [ bcdarwin ];
+    homepage = "https://github.com/owlbarn/eigen";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ bcdarwin ];
+    platforms = lib.platforms.x86_64;
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

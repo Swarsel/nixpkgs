@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  which,
-  ronn,
   opencv,
+  pkg-config,
+  ronn,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     which
     ronn
   ];
-  buildInputs = [ opencv ];
 
+  buildInputs = [ opencv ];
   makeFlags = [ "prefix=$(out)" ];
 
   meta = {

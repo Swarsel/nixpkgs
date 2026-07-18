@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ obs-studio ];
 
   cmakeFlags = [
@@ -32,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Plugin for OBS Studio to clone sources";
     homepage = "https://github.com/exeldro/obs-source-clone";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
     platforms = lib.platforms.linux;
   };
 })

@@ -5,15 +5,14 @@
   importlib-metadata,
   logilab-common,
   pip,
-  six,
   pytestCheckHook,
   setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "logilab-constraint";
   version = "1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -43,6 +42,7 @@ buildPythonPackage rec {
     "Abstract"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "logilab.constraint" ];
 
   meta = {

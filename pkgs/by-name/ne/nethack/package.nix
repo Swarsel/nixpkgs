@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  bash,
+  bdftopcf,
+  buildPackages,
+  copyDesktopItems,
   coreutils,
+  font-adobe-75dpi,
+  font-misc-misc,
   groff,
-  ncurses,
   gzip,
   less,
-  bash,
-  buildPackages,
-  x11Mode ? false,
-  qtMode ? false,
   libxaw,
   libxext,
   libxpm,
-  bdftopcf,
+  makeDesktopItem,
   mkfontdir,
-  xset,
-  font-misc-misc,
-  font-adobe-75dpi,
+  ncurses,
   pkg-config,
   qt5,
-  copyDesktopItems,
-  makeDesktopItem,
+  xset,
+  qtMode ? false,
+  x11Mode ? false,
 }:
 
 let
@@ -51,7 +51,6 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "5.0.0";
   pname =
     if x11Mode then
       "nethack-x11"
@@ -60,70 +59,15 @@ stdenv.mkDerivation (finalAttrs: {
     else
       "nethack";
 
+  version = "5.0.0";
+
   src = fetchurl {
     url = "https://nethack.org/download/${finalAttrs.version}/nethack-${
       lib.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }-src.tgz";
+
     sha256 = "sha256-KVm3iGqsdhhbkK6gyfgNFDQ/YE3grpaz3Sp2D3qzvek=";
   };
-
-  postUnpack =
-    let
-      lua548 = fetchurl {
-        url = "https://www.lua.org/ftp/lua-5.4.8.tar.gz";
-        hash = "sha256-TxjdrhVOeT5G7qtyfFnvHAwMK3ROe5QhlxDXb1MGKa4=";
-      };
-    in
-    ''
-      mkdir -p NetHack-${finalAttrs.version}/lib
-      tar zxf ${lua548} -C NetHack-${finalAttrs.version}/lib
-    '';
-
-  buildInputs = [
-    ncurses
-  ]
-  ++ lib.optionals x11Mode [
-    libxaw
-    libxext
-    libxpm
-  ]
-  ++ lib.optionals qtMode [
-    gzip
-    qt5.qtbase.bin
-    qt5.qtmultimedia.bin
-  ];
-
-  nativeBuildInputs = [
-    copyDesktopItems
-    groff
-    pkg-config
-  ]
-  ++ lib.optionals x11Mode [
-    mkfontdir
-    bdftopcf
-  ]
-  ++ lib.optionals qtMode [
-    mkfontdir
-    qt5.qtbase.dev
-    qt5.qtmultimedia.dev
-    qt5.wrapQtAppsHook
-    bdftopcf
-  ];
-
-  makeFlags = [
-    "PREFIX=$(out)"
-    "WANT_WIN_TTY=1"
-    "WANT_WIN_CURSES=1"
-    "WANT_DEFAULT=curses"
-  ]
-  ++ lib.optionals x11Mode [
-    "WANT_WIN_X11=1"
-    "WANT_DEFAULT=X11"
-  ]
-  ++ lib.optionals qtMode [
-    "WANT_WIN_QT=1"
-    "WANT_DEFAULT=Qt"
-  ];
 
   postPatch = ''
     sed -e '/^ *cd /d' -i sys/unix/nethack.sh
@@ -186,18 +130,51 @@ stdenv.mkDerivation (finalAttrs: {
     }
   '';
 
-  configurePhase = ''
-    pushd sys/unix
-    sh setup.sh hints/${hint}
-    popd
-  '';
+  nativeBuildInputs = [
+    copyDesktopItems
+    groff
+    pkg-config
+  ]
+  ++ lib.optionals x11Mode [
+    mkfontdir
+    bdftopcf
+  ]
+  ++ lib.optionals qtMode [
+    mkfontdir
+    qt5.qtbase.dev
+    qt5.qtmultimedia.dev
+    qt5.wrapQtAppsHook
+    bdftopcf
+  ];
 
-  # https://github.com/NixOS/nixpkgs/issues/294751
-  enableParallelBuilding = false;
+  buildInputs = [
+    ncurses
+  ]
+  ++ lib.optionals x11Mode [
+    libxaw
+    libxext
+    libxpm
+  ]
+  ++ lib.optionals qtMode [
+    gzip
+    qt5.qtbase.bin
+    qt5.qtmultimedia.bin
+  ];
 
-  preFixup = lib.optionalString qtMode ''
-    wrapQtApp "$out/games/nethack"
-  '';
+  makeFlags = [
+    "PREFIX=$(out)"
+    "WANT_WIN_TTY=1"
+    "WANT_WIN_CURSES=1"
+    "WANT_DEFAULT=curses"
+  ]
+  ++ lib.optionals x11Mode [
+    "WANT_WIN_X11=1"
+    "WANT_DEFAULT=X11"
+  ]
+  ++ lib.optionals qtMode [
+    "WANT_WIN_QT=1"
+    "WANT_DEFAULT=Qt"
+  ];
 
   postInstall = ''
     mkdir -p $out/games/lib/nethackuserdir
@@ -251,9 +228,26 @@ stdenv.mkDerivation (finalAttrs: {
     ''}
   '';
 
+  preFixup = lib.optionalString qtMode ''
+    wrapQtApp "$out/games/nethack"
+  '';
+
+  configurePhase = ''
+    pushd sys/unix
+    sh setup.sh hints/${hint}
+    popd
+  '';
+
   desktopItems = lib.optionals (x11Mode || qtMode) [
     (makeDesktopItem {
-      name = "NetHack";
+      categories = [
+        "Game"
+        "ActionGame"
+      ];
+
+      comment = "NetHack is a single player dungeon exploration game";
+      desktopName = "NetHack";
+
       exec =
         if x11Mode then
           "nethack-x11"
@@ -261,22 +255,34 @@ stdenv.mkDerivation (finalAttrs: {
           "nethack-qt"
         else
           "nethack";
+
       icon = "nethack";
-      desktopName = "NetHack";
-      comment = "NetHack is a single player dungeon exploration game";
-      categories = [
-        "Game"
-        "ActionGame"
-      ];
+      name = "NetHack";
     })
   ];
+
+  # https://github.com/NixOS/nixpkgs/issues/294751
+  enableParallelBuilding = false;
+
+  postUnpack =
+    let
+      lua548 = fetchurl {
+        hash = "sha256-TxjdrhVOeT5G7qtyfFnvHAwMK3ROe5QhlxDXb1MGKa4=";
+        url = "https://www.lua.org/ftp/lua-5.4.8.tar.gz";
+      };
+    in
+    ''
+      mkdir -p NetHack-${finalAttrs.version}/lib
+      tar zxf ${lua548} -C NetHack-${finalAttrs.version}/lib
+    '';
 
   meta = {
     description = "Rogue-like game";
     homepage = "http://nethack.org/";
     license = lib.licenses.ngpl;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ olduser101 ];
+    platforms = lib.platforms.unix;
+
     mainProgram =
       if x11Mode then
         "nethack-x11"

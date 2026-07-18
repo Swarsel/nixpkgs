@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  click,
-  robotframework,
-  robotframework-pythonlibcore,
-  selenium,
   approvaltests,
+  buildPythonPackage,
+  click,
   pytest-mockito,
   pytestCheckHook,
+  robotframework,
+  robotframework-pythonlibcore,
   robotstatuschecker,
+  selenium,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "robotframework-seleniumlibrary";
   version = "6.9.0";
-  pyproject = true;
 
   # no tests included in PyPI tarball
   src = fetchFromGitHub {
@@ -25,15 +24,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-NiB1dJWivyDc1ucldQ2cs3jTWt3hHY6AGsboKPmY+mo=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    click
-    robotframework
-    robotframework-pythonlibcore
-    selenium
-  ];
 
   nativeCheckInputs = [
     approvaltests
@@ -47,11 +37,21 @@ buildPythonPackage (finalAttrs: {
   '';
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    click
+    robotframework
+    robotframework-pythonlibcore
+    selenium
+  ];
+
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/robotframework/SeleniumLibrary/blob/${finalAttrs.src.tag}/docs/SeleniumLibrary-${finalAttrs.version}.rst";
     description = "Web testing library for Robot Framework";
     homepage = "https://github.com/robotframework/SeleniumLibrary";
+    changelog = "https://github.com/robotframework/SeleniumLibrary/blob/${finalAttrs.src.tag}/docs/SeleniumLibrary-${finalAttrs.version}.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

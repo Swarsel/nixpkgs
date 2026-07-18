@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   makeWrapper,
-  samba,
-  perl,
   openldap,
+  perl,
+  samba,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-/R0P4Ft9Y0LZwKwhDGAe36UKviih6CNbJbj1lcNKEkM=";
   };
-
-  dontBuild = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -44,12 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Tool for enumerating information from Windows and Samba systems";
-    mainProgram = "enum4linux";
     homepage = "https://labs.portcullis.co.uk/tools/enum4linux/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fishi0x01 ];
     platforms = lib.platforms.unix;
+    mainProgram = "enum4linux";
   };
 })

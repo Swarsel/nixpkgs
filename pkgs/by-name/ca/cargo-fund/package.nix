@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  curl,
+  libiconv,
+  openssl,
   pkg-config,
   rustPlatform,
-  curl,
-  openssl,
-  libiconv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,11 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8mnCwWwReNH9s/gbxIhe7XdJRIA6BSUKm5jzykU5qMU=";
   };
 
-  cargoHash = "sha256-9NozPJzQIuF2KHaT6t4qBU0qKtBbM05mHxzmHlU3Dr4=";
-
-  # The tests need a GitHub API token.
-  doCheck = false;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -35,14 +30,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     curl
   ];
 
+  cargoHash = "sha256-9NozPJzQIuF2KHaT6t4qBU0qKtBbM05mHxzmHlU3Dr4=";
+  # The tests need a GitHub API token.
+  doCheck = false;
+
   meta = {
     description = "Discover funding links for your project's dependencies";
-    mainProgram = "cargo-fund";
     homepage = "https://github.com/acfoltzer/cargo-fund";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = with lib.maintainers; [ johntitor ];
+    mainProgram = "cargo-fund";
   };
 })

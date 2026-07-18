@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-  pytestCheckHook,
+  buildPythonPackage,
   pycryptodomex,
+  pytestCheckHook,
+  pythonOlder,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyzipper";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "danifus";
@@ -20,17 +19,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-an+DmsyoIAwYvYXGFnJ/3+KIf6sqNJlA7uJp0leV18I=";
   };
 
-  __darwinAllowLocalNetworking = true;
-
-  build-system = [ setuptools ];
-
-  dependencies = [ pycryptodomex ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pyzipper" ];
-
   doCheck = pythonOlder "3.13"; # depends on removed nntplib battery
+  nativeCheckInputs = [ pytestCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ pycryptodomex ];
 
   disabledTests = [
     # Tests are parsing CLI output
@@ -46,6 +39,9 @@ buildPythonPackage (finalAttrs: {
     # Test wants to import asyncore
     "test_CleanImport"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyzipper" ];
 
   meta = {
     description = "Python zipfile extensions";

@@ -1,42 +1,36 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
+  addBinToPathHook,
+  buildPythonPackage,
+  callPackage,
+  coreutils,
+  gitMinimal,
+  glibcLocales,
+  man,
+  nix-update-script,
+  pip,
   ply,
   prompt-toolkit,
   pygments,
-
-  addBinToPathHook,
-  writableTmpDirAsHomeHook,
-  gitMinimal,
-  glibcLocales,
-  pip,
   pyte,
   pytest-mock,
   pytest-rerunfailures,
   pytest-subprocess,
   pytest-timeout,
   pytestCheckHook,
-  requests,
-  virtualenv,
-
-  man,
-  util-linux,
-
-  coreutils,
-
-  nix-update-script,
   python,
-  callPackage,
+  requests,
+  setuptools,
+  util-linux,
+  virtualenv,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "xonsh";
   version = "0.24.0";
-  pyproject = true;
 
   # PyPI package ships incomplete tests
   src = fetchFromGitHub {
@@ -46,15 +40,15 @@ buildPythonPackage rec {
     hash = "sha256-lavVT3NRsBtf6efTeZOeFwPiS7VZvsCjVZiQhl17zkE=";
   };
 
-  build-system = [
-    setuptools
-  ];
+  postPatch = ''
+    sed -i -e 's|/bin/ls|${lib.getExe' coreutils "ls"}|' tests/test_execer.py
+    sed -i -e 's|SHELL=xonsh|SHELL=$out/bin/xonsh|' tests/xintegration/test_integrations.py
 
-  dependencies = [
-    ply
-    prompt-toolkit
-    pygments
-  ];
+    for script in conftest.py tests/xintegration/test_integrations.py scripts/xon.sh $(find -name "*.xsh"); do
+      sed -i -e 's|/usr/bin/env|${lib.getExe' coreutils "env"}|' $script
+    done
+    patchShebangs .
+  '';
 
   nativeCheckInputs = [
     addBinToPathHook
@@ -77,6 +71,21 @@ buildPythonPackage rec {
     # required by test_man_completion
     man
     util-linux
+  ];
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    ply
+    prompt-toolkit
+    pygments
+  ];
+
+  disabledTestPaths = [
+    # don't run stress tests when building package
+    "tests/xintegration/test_stress.py"
   ];
 
   disabledTests = [
@@ -128,38 +137,24 @@ buildPythonPackage rec {
     "test_complete_inner_command_after_env_assign"
   ];
 
-  disabledTestPaths = [
-    # don't run stress tests when building package
-    "tests/xintegration/test_stress.py"
-  ];
-
   # https://github.com/NixOS/nixpkgs/issues/248978
   dontWrapPythonPrograms = true;
-
-  postPatch = ''
-    sed -i -e 's|/bin/ls|${lib.getExe' coreutils "ls"}|' tests/test_execer.py
-    sed -i -e 's|SHELL=xonsh|SHELL=$out/bin/xonsh|' tests/xintegration/test_integrations.py
-
-    for script in conftest.py tests/xintegration/test_integrations.py scripts/xon.sh $(find -name "*.xsh"); do
-      sed -i -e 's|/usr/bin/env|${lib.getExe' coreutils "env"}|' $script
-    done
-    patchShebangs .
-  '';
+  pyproject = true;
 
   passthru = {
     inherit python;
     shellPath = "/bin/xonsh";
-    wrapper = throw "The top-level xonsh package is now wrapped. Use it directly.";
     updateScript = nix-update-script { };
+    wrapper = throw "The top-level xonsh package is now wrapped. Use it directly.";
     xontribs = import ./xontribs { inherit callPackage; };
   };
 
   meta = {
-    homepage = "https://xon.sh/";
     description = "Python-powered shell";
+    homepage = "https://xon.sh/";
     changelog = "https://github.com/xonsh/xonsh/blob/${version}/CHANGELOG.md";
     license = with lib.licenses; [ bsd3 ];
-    mainProgram = "xonsh";
     maintainers = with lib.maintainers; [ samlukeyes123 ];
+    mainProgram = "xonsh";
   };
 }

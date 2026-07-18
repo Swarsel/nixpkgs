@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
   libxcb,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,11 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-DzbbeVZifuxgmIu3yNv6EI7Jyh8MA0/oSaR5IEPNUN8=";
   };
 
-  cargoHash = "sha256-B1sxbifMTnr6tLZCAuxVlQPL5oKCUL0wtw3/wOyfyyw=";
-
   nativeBuildInputs = [ installShellFiles ];
-
   buildInputs = [ libxcb ];
+  cargoHash = "sha256-B1sxbifMTnr6tLZCAuxVlQPL5oKCUL0wtw3/wOyfyyw=";
 
   postInstall = ''
     installManPage $releaseDir/../man/kmon.8
@@ -34,10 +32,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/orhun/kmon";
     changelog = "https://github.com/orhun/kmon/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "kmon";
   };
 })

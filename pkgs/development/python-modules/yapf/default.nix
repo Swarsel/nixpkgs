@@ -2,23 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   importlib-metadata,
   platformdirs,
-  tomli,
   pytestCheckHook,
+  setuptools,
+  tomli,
 }:
 
 buildPythonPackage rec {
   pname = "yapf";
   version = "0.43.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-ANOqJL/t/5QgsuDV2fWrbZ1CaOcq+/Wbs/pUJ4HVIY4=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,12 +27,11 @@ buildPythonPackage rec {
     tomli
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/google/yapf/blob/v${version}/CHANGELOG.md";
-    homepage = "https://github.com/google/yapf";
     description = "Yet Another Python Formatter";
+
     longDescription = ''
       Most of the current formatters for Python --- e.g., autopep8, and pep8ify
       --- are made to remove lint errors from code. This has some obvious
@@ -53,10 +52,15 @@ buildPythonPackage rec {
       that a programmer would write if they were following the style guide. It
       takes away some of the drudgery of maintaining your code.
     '';
+
+    homepage = "https://github.com/google/yapf";
+    changelog = "https://github.com/google/yapf/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "yapf";
+
     maintainers = with lib.maintainers; [
       siddharthist
     ];
+
+    mainProgram = "yapf";
   };
 }

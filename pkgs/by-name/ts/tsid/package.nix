@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   doxygen,
   eiquadprog,
-  fetchFromGitHub,
-  lib,
   osqp-eigen,
-  pkg-config,
   pinocchio,
+  pkg-config,
   proxsuite,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,13 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-f/SecQfEmrlelVR5584KIHFwwrp5Cy2aBMKI/rxuPmc=";
   };
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_PYTHON_INTERFACE" false)
-    (lib.cmakeBool "BUILD_WITH_OSQP" true)
-    (lib.cmakeBool "BUILD_WITH_PROXQP" true)
-    (lib.cmakeBool "INSTALL_DOCUMENTATION" true)
-  ];
 
   outputs = [
     "out"
@@ -45,6 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
     osqp-eigen
     pinocchio
     proxsuite
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_PYTHON_INTERFACE" false)
+    (lib.cmakeBool "BUILD_WITH_OSQP" true)
+    (lib.cmakeBool "BUILD_WITH_PROXQP" true)
+    (lib.cmakeBool "INSTALL_DOCUMENTATION" true)
   ];
 
   doCheck = true;

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   qt6,
 }:
 
@@ -15,14 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "vnotex";
     repo = "vnote";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-Ukik02qP7a86dgBTghD9wGKGpXkdGdxczg01APtcOAM=";
+    fetchSubmodules = true;
   };
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/vnotex/vnote/commit/7c59d0d061d30f8f1f57eab855b73d3b1f452df1.patch";
       hash = "sha256-gt2JDO9kGR/bjTtqTaAdHDHm9UC3XMG6KgKeDdhhNNg=";
+      url = "https://github.com/vnotex/vnote/commit/7c59d0d061d30f8f1f57eab855b73d3b1f452df1.patch";
     })
   ];
 
@@ -41,12 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://vnotex.github.io/vnote";
     description = "Pleasant note-taking platform";
-    mainProgram = "vnote";
+    homepage = "https://vnotex.github.io/vnote";
     changelog = "https://github.com/vnotex/vnote/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "vnote";
   };
 })

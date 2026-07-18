@@ -19,6 +19,7 @@
   libtasn1,
   libxslt,
   lz4,
+  nix-update-script,
   p11-kit,
   perlPackages,
   pkg-config,
@@ -30,7 +31,6 @@
   zstd,
   withDocs ? true,
   withNLS ? true,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,11 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.3.1";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "apt-team";
     repo = "apt";
     rev = finalAttrs.version;
     hash = "sha256-93DR4MfKuJ4sF1BHCZyyR04v+WIoEMBW+GvLy7OhuWk=";
+    domain = "salsa.debian.org";
   };
 
   # cycle detection; lib can't be split
@@ -105,12 +105,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://salsa.debian.org/apt-team/apt";
     description = "Command-line package management tools used on Debian-based systems";
+    homepage = "https://salsa.debian.org/apt-team/apt";
     changelog = "https://salsa.debian.org/apt-team/apt/-/raw/${finalAttrs.version}/debian/changelog";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "apt";
     maintainers = with lib.maintainers; [ VZstless ];
     platforms = lib.platforms.linux;
+    mainProgram = "apt";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   flaky,
   pyjwt,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "globus-sdk";
   version = "4.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "globus";
@@ -23,20 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-q3fYU8/r6IfoC55iN83jAGdFrhnXx7bTtvuf0R4RBv4=";
   };
 
-  build-system = [ setuptools ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
-  dependencies = [
-    cryptography
-    requests
-    pyjwt
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   checkInputs = [
@@ -44,6 +29,20 @@ buildPythonPackage rec {
     responses
   ];
 
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cryptography
+    requests
+    pyjwt
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "globus_sdk" ];
 
   meta = {

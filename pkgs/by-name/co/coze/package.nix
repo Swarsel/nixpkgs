@@ -23,9 +23,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "CLI client for Coze, a cryptographic JSON messaging specification";
-    mainProgram = "coze";
     homepage = "https://github.com/Cyphrme/CozeCLI";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ qbit ];
+    mainProgram = "coze";
   };
 })

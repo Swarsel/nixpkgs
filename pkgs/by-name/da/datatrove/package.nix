@@ -7,9 +7,8 @@ let
   version = "0.2.0";
 in
 python3Packages.buildPythonPackage {
-  pname = "datatrove";
   inherit version;
-  pyproject = true;
+  pname = "datatrove";
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -33,6 +32,7 @@ python3Packages.buildPythonPackage {
   ];
 
   nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
+
   dependencies = with python3Packages; [
     boto3
     fasteners
@@ -53,7 +53,9 @@ python3Packages.buildPythonPackage {
     "tests/pipeline/test_exact_substrings.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "datatrove" ];
+
   meta = {
     description = "Set of platform-agnostic customizable pipeline processing blocks for data processing";
     homepage = "https://github.com/huggingface/datatrove";

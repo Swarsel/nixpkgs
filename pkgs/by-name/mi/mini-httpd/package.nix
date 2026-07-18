@@ -20,19 +20,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = [ boost ];
-
+  env.NIX_CFLAGS_COMPILE = toString [ "-std=c++14" ];
   enableParallelBuilding = true;
 
-  env.NIX_CFLAGS_COMPILE = toString [ "-std=c++14" ];
-
   meta = {
-    homepage = "http://mini-httpd.nongnu.org/";
     description = "Minimalistic high-performance web server";
-    mainProgram = "httpd";
+    homepage = "http://mini-httpd.nongnu.org/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.peti ];
+    platforms = lib.platforms.linux;
+    mainProgram = "httpd";
   };
 })

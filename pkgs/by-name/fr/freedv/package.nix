@@ -2,42 +2,42 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cacert,
+  apple-sdk_15,
   autoconf,
   automake,
-  libtool,
+  cacert,
   cmake,
-  pkg-config,
-  macdylibbundler,
-  makeWrapper,
-  darwin,
   codec2,
+  darwin,
+  dbus,
+  hamlib_4,
   libpulseaudio,
   libsamplerate,
   libsndfile,
+  libtool,
   lpcnet,
+  macdylibbundler,
+  makeWrapper,
+  nix-update-script,
+  pkg-config,
   portaudio,
   speexdsp,
-  hamlib_4,
-  wxwidgets_3_2,
-  dbus,
-  apple-sdk_15,
-  nix-update-script,
   wget,
+  wxwidgets_3_2,
 }:
 
 let
   codec2' = codec2.override { freedvSupport = true; };
   ebur128Src = fetchFromGitHub {
+    hash = "sha256-UKO2k+kKH/dwt2xfaYMrH/GXjEkIrnxh1kGG/3P5d3Y=";
     owner = "jiixyj";
     repo = "libebur128";
     rev = "v1.2.6";
-    hash = "sha256-UKO2k+kKH/dwt2xfaYMrH/GXjEkIrnxh1kGG/3P5d3Y=";
   };
   opusSrc = fetchFromGitHub {
+    hash = "sha256-P84gjnuiQQBVBExJBY3sUbwo00lXY6HB+AMpx/oovRg=";
     owner = "xiph";
-    repo = "opus";
-    rev = "940d4e5af64351ca8ba8390df3f555484c567fbb";
+
     postFetch = ''
       cd $out
       export NIX_SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt
@@ -46,19 +46,21 @@ let
       substituteInPlace autogen.sh \
         --replace-fail 'dnn/download_model.sh "4ed9445b96698bad25d852e912b41495ddfa30c8dbc8a55f9cde5826ed793453"' ""
     '';
-    hash = "sha256-P84gjnuiQQBVBExJBY3sUbwo00lXY6HB+AMpx/oovRg=";
+
+    repo = "opus";
+    rev = "940d4e5af64351ca8ba8390df3f555484c567fbb";
   };
   radaeSrc = fetchFromGitHub {
+    hash = "sha256-ziEhYZarzQtQ1akAxF54kcX6o38gJeUJ08jipSWXnxQ=";
     owner = "peterbmarks";
     repo = "radae_nopy";
     rev = "d72ec84e795493249db44d5939eb9b05438f956a";
-    hash = "sha256-ziEhYZarzQtQ1akAxF54kcX6o38gJeUJ08jipSWXnxQ=";
   };
   rnnoiseSrc = fetchFromGitHub {
-    owner = "xiph";
-    repo = "rnnoise";
-    rev = "70f1d256acd4b34a572f999a05c87bf00b67730d";
     nativeBuildInputs = [ wget ];
+    hash = "sha256-t/AwOCuHb5Oahy1fDI3Sc9M08Xz3dSAavhYatRC1OIk=";
+    owner = "xiph";
+
     postFetch = ''
       cd $out
       export NIX_SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt
@@ -67,7 +69,9 @@ let
       substituteInPlace autogen.sh \
         --replace-fail "./download_model.sh" ""
     '';
-    hash = "sha256-t/AwOCuHb5Oahy1fDI3Sc9M08Xz3dSAavhYatRC1OIk=";
+
+    repo = "rnnoise";
+    rev = "70f1d256acd4b34a572f999a05c87bf00b67730d";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -162,7 +166,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-I${codec2'.src}/src";
-
   doCheck = false;
 
   postInstall = ''
@@ -183,13 +186,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://freedv.org/";
     description = "Digital voice for HF radio";
+    homepage = "https://freedv.org/";
     license = lib.licenses.lgpl21Only;
+
     maintainers = with lib.maintainers; [
       mvs
       wegank
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "freedv";
   };

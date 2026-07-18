@@ -24,31 +24,12 @@
 buildPythonPackage rec {
   pname = "google-cloud-logging";
   version = "3.16.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_logging";
     inherit version;
     hash = "sha256-CKMHa48PckIZ1vc7KiQu9p1R6LziJhM66+QaJfI/VAA=";
+    pname = "google_cloud_logging";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
-
-  dependencies = [
-    google-api-core
-    google-cloud-appengine-logging
-    google-cloud-audit-log
-    google-cloud-core
-    grpc-google-iam-v1
-    opentelemetry-api
-    proto-plus
-    protobuf
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
 
   nativeCheckInputs = [
     django
@@ -66,12 +47,19 @@ buildPythonPackage rec {
     rm -r google
   '';
 
-  disabledTests = [
-    # Test requires credentials
-    "test_write_log_entries"
-    # No need for a second import check
-    "test_namespace_package_compat"
-  ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    google-cloud-appengine-logging
+    google-cloud-audit-log
+    google-cloud-core
+    grpc-google-iam-v1
+    opentelemetry-api
+    proto-plus
+    protobuf
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
 
   disabledTestPaths = [
     # Tests require credentials
@@ -79,9 +67,22 @@ buildPythonPackage rec {
     "tests/unit/test__gapic.py"
   ];
 
+  disabledTests = [
+    # Test requires credentials
+    "test_write_log_entries"
+    # No need for a second import check
+    "test_namespace_package_compat"
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.logging"
     "google.cloud.logging_v2"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

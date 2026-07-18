@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   nodejs,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -27,11 +27,11 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
+    inherit (nodejs.meta) platforms;
     description = "Eat the dollar sign in the command you just pasted into your terminal";
-    mainProgram = "$";
     homepage = "https://github.com/xtyrrell/undollar";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pyrox0 ];
-    inherit (nodejs.meta) platforms;
+    mainProgram = "$";
   };
 }

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  makeBinaryWrapper,
-  darkplaces,
   copyDesktopItems,
+  darkplaces,
+  makeBinaryWrapper,
   makeDesktopItem,
+  unzip,
 }:
 
 let
@@ -15,8 +15,8 @@ let
   version_short = lib.replaceStrings [ "." ] [ "" ] version;
 in
 stdenv.mkDerivation {
-  pname = "nexuiz";
   inherit version;
+  pname = "nexuiz";
 
   src = fetchurl {
     url = "mirror://sourceforge/nexuiz/nexuiz-${version_short}.zip";
@@ -28,14 +28,6 @@ stdenv.mkDerivation {
     copyDesktopItems
     makeBinaryWrapper
   ];
-
-  postUnpack = ''
-    cd Nexuiz/sources/
-    unzip enginesource*.zip
-    cd ../../
-  '';
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -55,17 +47,26 @@ stdenv.mkDerivation {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Nexuiz";
-      exec = "nexuiz";
-      icon = "nexuiz";
-      desktopName = "Nexuiz";
-      comment = "A free first-person shooter video game developed and published by Alientrap";
       categories = [
         "Game"
         "ActionGame"
       ];
+
+      comment = "A free first-person shooter video game developed and published by Alientrap";
+      desktopName = "Nexuiz";
+      exec = "nexuiz";
+      icon = "nexuiz";
+      name = "Nexuiz";
     })
   ];
+
+  dontBuild = true;
+
+  postUnpack = ''
+    cd Nexuiz/sources/
+    unzip enginesource*.zip
+    cd ../../
+  '';
 
   meta = {
     description = "Free fast-paced first-person shooter";

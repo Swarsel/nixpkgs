@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   decorator,
   deprecated,
-  fetchFromGitHub,
   icecream,
   invoke,
   mock,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "fabric";
   version = "3.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fabric";
@@ -24,6 +23,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-GbZQ6rFKQyJZXYfe9b4j6yjKgAB0ct8AD1xYG0yGZl8=";
   };
+
+  nativeCheckInputs = [
+    icecream
+    mock
+    pytest-relaxed
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -33,17 +39,6 @@ buildPythonPackage rec {
     deprecated
     decorator
   ];
-
-  nativeCheckInputs = [
-    icecream
-    mock
-    pytest-relaxed
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "tests/*.py" ];
-
-  pythonImportsCheck = [ "fabric" ];
 
   disabledTests = [
     # Tests are out-dated
@@ -67,6 +62,10 @@ buildPythonPackage rec {
     "fake_agent"
     "fake"
   ];
+
+  enabledTestPaths = [ "tests/*.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "fabric" ];
 
   meta = {
     description = "Pythonic remote execution";

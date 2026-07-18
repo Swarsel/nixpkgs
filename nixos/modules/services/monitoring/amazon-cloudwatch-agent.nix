@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -22,10 +22,36 @@ in
   options.services.amazon-cloudwatch-agent = {
     enable = lib.mkEnableOption "Amazon CloudWatch Agent";
     package = lib.mkPackageOption pkgs "amazon-cloudwatch-agent" { };
+
+    commonConfiguration = lib.mkOption {
+      default = { };
+
+      description = ''
+        See {option}`commonConfigurationFile`.
+
+        {option}`commonConfigurationFile` takes precedence over {option}`commonConfiguration`.
+      '';
+
+      example = {
+        credentials = {
+          shared_credential_file = "/path/to/credentials";
+          shared_credential_profile = "profile_name";
+        };
+
+        proxy = {
+          http_proxy = "http_url";
+          https_proxy = "https_url";
+          no_proxy = "domain";
+        };
+      };
+
+      type = tomlFormat.type;
+    };
+
     commonConfigurationFile = lib.mkOption {
-      type = lib.types.path;
       default = tomlFormat.generate "common-config.toml" cfg.commonConfiguration;
       defaultText = lib.literalExpression ''tomlFormat.generate "common-config.toml" cfg.commonConfiguration'';
+
       description = ''
         Amazon CloudWatch Agent common configuration. See
         <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-commandline-fleet.html#CloudWatch-Agent-profile-instance-first>
@@ -38,32 +64,92 @@ in
         As a result, `nixos-rebuild` won't reload/restart the systemd unit when mutable path contents change.
         `systemctl restart amazon-cloudwatch-agent.service` must be used instead.
       '';
-      example = "/etc/amazon-cloudwatch-agent/amazon-cloudwatch-agent.json";
-    };
-    commonConfiguration = lib.mkOption {
-      type = tomlFormat.type;
-      default = { };
-      description = ''
-        See {option}`commonConfigurationFile`.
 
-        {option}`commonConfigurationFile` takes precedence over {option}`commonConfiguration`.
+      example = "/etc/amazon-cloudwatch-agent/amazon-cloudwatch-agent.json";
+      type = lib.types.path;
+    };
+
+    configuration = lib.mkOption {
+      default = { };
+
+      description = ''
+        See {option}`configurationFile`.
+
+        {option}`configurationFile` takes precedence over {option}`configuration`.
       '';
+
+      # Subset of "CloudWatch agent configuration file: Complete examples" and "CloudWatch agent configuration file: Traces section" in the description link.
+      #
+      # Log file path changed from "/opt/aws/amazon-cloudwatch-agent/logs" to "/var/log/amazon-cloudwatch-agent" to follow the FHS.
       example = {
-        credentials = {
-          shared_credential_profile = "profile_name";
-          shared_credential_file = "/path/to/credentials";
+        agent = {
+          logfile = "/var/log/amazon-cloudwatch-agent/amazon-cloudwatch-agent.log";
+          metrics_collection_interval = 10;
         };
-        proxy = {
-          http_proxy = "http_url";
-          https_proxy = "https_url";
-          no_proxy = "domain";
+
+        logs = {
+          force_flush_interval = 15;
+          log_stream_name = "log_stream_name";
+
+          logs_collected = {
+            files = {
+              collect_list = [
+                {
+                  file_path = "/var/log/amazon-cloudwatch-agent/amazon-cloudwatch-agent.log";
+                  log_group_name = "amazon-cloudwatch-agent.log";
+                  log_stream_name = "{instance_id}";
+                  timezone = "UTC";
+                }
+              ];
+            };
+          };
+        };
+
+        metrics = {
+          metrics_collected = {
+            cpu = {
+              append_dimensions = {
+                customized_dimension_key_1 = "customized_dimension_value_1";
+                customized_dimension_key_2 = "customized_dimension_value_2";
+              };
+
+              measurement = [
+                {
+                  name = "cpu_usage_idle";
+                  rename = "CPU_USAGE_IDLE";
+                  unit = "Percent";
+                }
+                {
+                  name = "cpu_usage_nice";
+                  unit = "Percent";
+                }
+                "cpu_usage_guest"
+              ];
+
+              metrics_collection_interval = 10;
+              resource = [ "*" ];
+              totalcpu = false;
+            };
+          };
+
+          namespace = "MyCustomNamespace";
+        };
+
+        traces = {
+          traces_collected = {
+            oltp = { };
+            xray = { };
+          };
         };
       };
+
+      type = jsonFormat.type;
     };
+
     configurationFile = lib.mkOption {
-      type = lib.types.path;
       default = jsonFormat.generate "amazon-cloudwatch-agent.json" cfg.configuration;
       defaultText = lib.literalExpression ''jsonFormat.generate "amazon-cloudwatch-agent.json" cfg.configuration'';
+
       description = ''
         Amazon CloudWatch Agent configuration file. See
         <https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Agent-Configuration-File-Details.html>
@@ -80,101 +166,65 @@ in
         As a result, `nixos-rebuild` won't reload/restart the systemd unit when mutable path contents change.
         `systemctl restart amazon-cloudwatch-agent.service` must be used instead.
       '';
-      example = "/etc/amazon-cloudwatch-agent/amazon-cloudwatch-agent.json";
-    };
-    configuration = lib.mkOption {
-      type = jsonFormat.type;
-      default = { };
-      description = ''
-        See {option}`configurationFile`.
 
-        {option}`configurationFile` takes precedence over {option}`configuration`.
-      '';
-      # Subset of "CloudWatch agent configuration file: Complete examples" and "CloudWatch agent configuration file: Traces section" in the description link.
-      #
-      # Log file path changed from "/opt/aws/amazon-cloudwatch-agent/logs" to "/var/log/amazon-cloudwatch-agent" to follow the FHS.
-      example = {
-        agent = {
-          metrics_collection_interval = 10;
-          logfile = "/var/log/amazon-cloudwatch-agent/amazon-cloudwatch-agent.log";
-        };
-        metrics = {
-          namespace = "MyCustomNamespace";
-          metrics_collected = {
-            cpu = {
-              resource = [ "*" ];
-              measurement = [
-                {
-                  name = "cpu_usage_idle";
-                  rename = "CPU_USAGE_IDLE";
-                  unit = "Percent";
-                }
-                {
-                  name = "cpu_usage_nice";
-                  unit = "Percent";
-                }
-                "cpu_usage_guest"
-              ];
-              totalcpu = false;
-              metrics_collection_interval = 10;
-              append_dimensions = {
-                customized_dimension_key_1 = "customized_dimension_value_1";
-                customized_dimension_key_2 = "customized_dimension_value_2";
-              };
-            };
-          };
-        };
-        logs = {
-          logs_collected = {
-            files = {
-              collect_list = [
-                {
-                  file_path = "/var/log/amazon-cloudwatch-agent/amazon-cloudwatch-agent.log";
-                  log_group_name = "amazon-cloudwatch-agent.log";
-                  log_stream_name = "{instance_id}";
-                  timezone = "UTC";
-                }
-              ];
-            };
-          };
-          log_stream_name = "log_stream_name";
-          force_flush_interval = 15;
-        };
-        traces = {
-          traces_collected = {
-            xray = { };
-            oltp = { };
-          };
-        };
-      };
+      example = "/etc/amazon-cloudwatch-agent/amazon-cloudwatch-agent.json";
+      type = lib.types.path;
     };
-    # Replaces "agent.run_as_user" from the configuration file.
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "root";
-      description = ''
-        The user that runs the Amazon CloudWatch Agent.
-      '';
-      example = "amazon-cloudwatch-agent";
-    };
+
     mode = lib.mkOption {
-      type = lib.types.str;
       default = "auto";
+
       description = ''
         Amazon CloudWatch Agent mode. Indicates whether the agent is running in EC2 ("ec2"), on-premises ("onPremise"),
         or if it should guess based on metadata endpoints like IMDS or the ECS task metadata endpoint ("auto").
       '';
+
       example = "onPremise";
+      type = lib.types.str;
+    };
+
+    # Replaces "agent.run_as_user" from the configuration file.
+    user = lib.mkOption {
+      default = "root";
+
+      description = ''
+        The user that runs the Amazon CloudWatch Agent.
+      '';
+
+      example = "amazon-cloudwatch-agent";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     # See https://github.com/aws/amazon-cloudwatch-agent/blob/v1.300049.1/packaging/dependencies/amazon-cloudwatch-agent.service.
     systemd.services.amazon-cloudwatch-agent = {
-      description = "Amazon CloudWatch Agent";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Amazon CloudWatch Agent";
+
       serviceConfig = {
+        ExecStart = builtins.concatStringsSep " " [
+          "${cfg.package}/bin/amazon-cloudwatch-agent"
+          "-config \${RUNTIME_DIRECTORY}/amazon-cloudwatch-agent.toml"
+          "-envconfig \${RUNTIME_DIRECTORY}/env-config.json"
+          "-otelconfig \${RUNTIME_DIRECTORY}/amazon-cloudwatch-agent.yaml"
+          "-pidfile \${RUNTIME_DIRECTORY}/amazon-cloudwatch-agent.pid"
+        ];
+
+        ExecStartPre = builtins.concatStringsSep " " [
+          "${cfg.package}/bin/config-translator"
+          "-config ${cfg.commonConfigurationFile}"
+          "-input ${cfg.configurationFile}"
+          "-input-dir ${configurationDirectory}"
+          "-mode ${cfg.mode}"
+          "-output \${RUNTIME_DIRECTORY}/amazon-cloudwatch-agent.toml"
+        ];
+
+        KillMode = "process";
+        LogsDirectory = "amazon-cloudwatch-agent";
+        Restart = "on-failure";
+        RestartSec = 60;
+        RuntimeDirectory = "amazon-cloudwatch-agent";
         Type = "simple";
         # "start-amazon-cloudwatch-agent" assumes the package is installed at "/opt/aws/amazon-cloudwatch-agent" so we can't use it.
         #
@@ -188,27 +238,9 @@ in
         #
         # Re-implementing with systemd options.
         User = cfg.user;
-        RuntimeDirectory = "amazon-cloudwatch-agent";
-        LogsDirectory = "amazon-cloudwatch-agent";
-        ExecStartPre = builtins.concatStringsSep " " [
-          "${cfg.package}/bin/config-translator"
-          "-config ${cfg.commonConfigurationFile}"
-          "-input ${cfg.configurationFile}"
-          "-input-dir ${configurationDirectory}"
-          "-mode ${cfg.mode}"
-          "-output \${RUNTIME_DIRECTORY}/amazon-cloudwatch-agent.toml"
-        ];
-        ExecStart = builtins.concatStringsSep " " [
-          "${cfg.package}/bin/amazon-cloudwatch-agent"
-          "-config \${RUNTIME_DIRECTORY}/amazon-cloudwatch-agent.toml"
-          "-envconfig \${RUNTIME_DIRECTORY}/env-config.json"
-          "-otelconfig \${RUNTIME_DIRECTORY}/amazon-cloudwatch-agent.yaml"
-          "-pidfile \${RUNTIME_DIRECTORY}/amazon-cloudwatch-agent.pid"
-        ];
-        KillMode = "process";
-        Restart = "on-failure";
-        RestartSec = 60;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

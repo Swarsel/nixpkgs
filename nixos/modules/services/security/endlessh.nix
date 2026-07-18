@@ -11,46 +11,55 @@ in
   options.services.endlessh = {
     enable = lib.mkEnableOption "endlessh service";
 
+    extraOptions = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Additional command line options to pass to the endlessh daemon.
+      '';
+
+      example = [
+        "-6"
+        "-d 9000"
+        "-v"
+      ];
+
+      type = with lib.types; listOf str;
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to open a firewall port for the SSH listener.
+      '';
+
+      type = lib.types.bool;
+    };
+
     port = lib.mkOption {
-      type = lib.types.port;
       default = 2222;
-      example = 22;
+
       description = ''
         Specifies on which port the endlessh daemon listens for SSH
         connections.
 
         Setting this to `22` may conflict with {option}`services.openssh`.
       '';
-    };
 
-    extraOptions = lib.mkOption {
-      type = with lib.types; listOf str;
-      default = [ ];
-      example = [
-        "-6"
-        "-d 9000"
-        "-v"
-      ];
-      description = ''
-        Additional command line options to pass to the endlessh daemon.
-      '';
-    };
-
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Whether to open a firewall port for the SSH listener.
-      '';
+      example = 22;
+      type = lib.types.port;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = with cfg; lib.optionals openFirewall [ port ];
+
     systemd.services.endlessh = {
       description = "SSH tarpit";
       documentation = [ "man:endlessh(1)" ];
       requires = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig =
         let
           needsPrivileges = cfg.port < 1024;
@@ -58,7 +67,11 @@ in
           rootDirectory = "/run/endlessh";
         in
         {
-          Restart = "always";
+          AmbientCapabilities = capabilities;
+          BindReadOnlyPaths = [ builtins.storeDir ];
+          CapabilityBoundingSet = capabilities;
+          DynamicUser = true;
+
           ExecStart =
             with cfg;
             lib.concatStringsSep " " (
@@ -68,21 +81,15 @@ in
               ]
               ++ extraOptions
             );
-          DynamicUser = true;
-          RootDirectory = rootDirectory;
-          BindReadOnlyPaths = [ builtins.storeDir ];
+
           InaccessiblePaths = [ "-+${rootDirectory}" ];
-          RuntimeDirectory = baseNameOf rootDirectory;
-          RuntimeDirectoryMode = "700";
-          AmbientCapabilities = capabilities;
-          CapabilityBoundingSet = capabilities;
-          UMask = "0077";
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
           PrivateDevices = true;
           PrivateTmp = true;
           PrivateUsers = !needsPrivileges;
+          ProcSubset = "pid";
           ProtectClock = true;
           ProtectControlGroups = true;
           ProtectHome = true;
@@ -90,27 +97,35 @@ in
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
-          ProtectSystem = "strict";
           ProtectProc = "noaccess";
-          ProcSubset = "pid";
+          ProtectSystem = "strict";
           RemoveIPC = true;
+          Restart = "always";
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
+          RootDirectory = rootDirectory;
+          RuntimeDirectory = baseNameOf rootDirectory;
+          RuntimeDirectoryMode = "700";
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
             "~@resources"
             "~@privileged"
           ];
-        };
-    };
 
-    networking.firewall.allowedTCPPorts = with cfg; lib.optionals openFirewall [ port ];
+          UMask = "0077";
+        };
+
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 
   meta.maintainers = with lib.maintainers; [ azahi ];

@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiofiles,
   aiohttp,
+  buildPythonPackage,
   colorlog,
   commonregex,
   defusedxml,
   deprecated,
   ifaddr,
-  pycryptodome,
   platformdirs,
+  pycryptodome,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "midea-local";
   version = "6.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "midea-lan";
@@ -40,11 +39,13 @@ buildPythonPackage rec {
     platformdirs
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Control your Midea M-Smart appliances via local area network";
     homepage = "https://github.com/midea-lan/midea-local";
     changelog = "https://github.com/midea-lan/midea-local/releases/tag/${src.tag}";
-    maintainers = with lib.maintainers; [ k900 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ k900 ];
   };
 }

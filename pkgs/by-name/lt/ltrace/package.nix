@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  fetchgit,
   autoreconfHook,
   dejagnu,
   elfutils,
+  fetchgit,
 }:
 
 stdenv.mkDerivation {
@@ -17,31 +17,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-HqellbKh2ZDHxslXl7SSIXtpjV1sodtgVwh8hgTC3Dc=";
   };
 
-  nativeBuildInputs = [ autoreconfHook ]; # Some patches impact ./configure.
-  buildInputs = [ elfutils ];
-  nativeCheckInputs = [ dejagnu ];
-
-  # Import Fedora's (very) large patch series: bug fixes, architecture support,
-  # etc. RH/Fedora are currently working with upstream to merge all these
-  # patches for the next major branch.
-  prePatch =
-    let
-      fedora = fetchgit {
-        url = "https://src.fedoraproject.org/rpms/ltrace.git";
-        rev = "00f430ccbebdbd13bdd4d7ee6303b091cf005542";
-        sha256 = "sha256-FBGEgmaslu7xrJtZ2WsYwu9Cw1ZQrWRV1+Eu9qLXO4s=";
-      };
-    in
-    ''
-      # Order matters, read the patch list from the RPM spec. Our own patches
-      # are applied on top of the Fedora baseline.
-      fedorapatches=""
-      for p in $(grep '^Patch[0-9]\+:' ${fedora}/ltrace.spec | awk '{ print $2 }'); do
-        fedorapatches="$fedorapatches ${fedora}/$p"
-      done
-      patches="$fedorapatches $patches"
-    '';
-
   # Cherry-pick extra patches for recent glibc support in the test suite.
   patches = [
     # https://gitlab.com/cespedes/ltrace/-/merge_requests/14
@@ -50,17 +25,21 @@ stdenv.mkDerivation {
     ./sysdeps-x86.patch
     # print-instruction-pointer.exp doesn't expect ASLR
     (fetchurl {
-      url = "https://github.com/gentoo/gentoo/raw/a2eb7e103ec985ff90f59e722e0a8a43373972a2/dev-debug/ltrace/files/ltrace-0.7.3-print-test-pie.patch";
       hash = "sha256-QRsUoN3WLzfiY5GDPwVYXtJPFMJt6rcc6eE96SAtI6Q=";
+      url = "https://github.com/gentoo/gentoo/raw/a2eb7e103ec985ff90f59e722e0a8a43373972a2/dev-debug/ltrace/files/ltrace-0.7.3-print-test-pie.patch";
     })
     # fix pointer conversion warning with Gcc15
     (fetchurl {
-      url = "https://gitlab.com/cespedes/ltrace/-/commit/d888b448740abd4d5846535ef1dc5ba1c74a134a.patch";
       hash = "sha256-9XAeulMUUvLh6Q9ppSL6d5kA2UPPyzCjwibcXH260Bo=";
+      url = "https://gitlab.com/cespedes/ltrace/-/commit/d888b448740abd4d5846535ef1dc5ba1c74a134a.patch";
     })
   ];
 
+  nativeBuildInputs = [ autoreconfHook ]; # Some patches impact ./configure.
+  buildInputs = [ elfutils ];
   doCheck = true;
+  nativeCheckInputs = [ dejagnu ];
+
   checkPhase = ''
     # Hardening options interfere with some of the low-level expectations in
     # the test suite (e.g. printf ends up redirected to __printf_chk).
@@ -73,12 +52,33 @@ stdenv.mkDerivation {
       make check
   '';
 
+  # Import Fedora's (very) large patch series: bug fixes, architecture support,
+  # etc. RH/Fedora are currently working with upstream to merge all these
+  # patches for the next major branch.
+  prePatch =
+    let
+      fedora = fetchgit {
+        rev = "00f430ccbebdbd13bdd4d7ee6303b091cf005542";
+        sha256 = "sha256-FBGEgmaslu7xrJtZ2WsYwu9Cw1ZQrWRV1+Eu9qLXO4s=";
+        url = "https://src.fedoraproject.org/rpms/ltrace.git";
+      };
+    in
+    ''
+      # Order matters, read the patch list from the RPM spec. Our own patches
+      # are applied on top of the Fedora baseline.
+      fedorapatches=""
+      for p in $(grep '^Patch[0-9]\+:' ${fedora}/ltrace.spec | awk '{ print $2 }'); do
+        fedorapatches="$fedorapatches ${fedora}/$p"
+      done
+      patches="$fedorapatches $patches"
+    '';
+
   meta = {
     description = "Library call tracer";
-    mainProgram = "ltrace";
     homepage = "https://www.ltrace.org/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ltrace";
   };
 }

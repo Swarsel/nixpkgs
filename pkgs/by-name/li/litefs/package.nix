@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,8 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-i0gYhPwcs3dfWy6GANlUl1Nc+dXD8KuAT71FATwxpDo=";
-
-  subPackages = [ "cmd/litefs" ];
+  doCheck = false; # fails
 
   # following https://github.com/superfly/litefs/blob/main/Dockerfile
   ldflags = [
@@ -27,13 +26,13 @@ buildGoModule (finalAttrs: {
     "-extldflags=-static"
   ];
 
+  subPackages = [ "cmd/litefs" ];
+
   tags = [
     "osusergo"
     "netgo"
     "sqlite_omit_load_extension"
   ];
-
-  doCheck = false; # fails
 
   meta = {
     description = "FUSE-based file system for replicating SQLite databases across a cluster of machines";

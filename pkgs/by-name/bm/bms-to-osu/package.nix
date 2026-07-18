@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildDotnetModule,
-  ncurses,
   ffmpeg,
+  ncurses,
 }:
 
 buildDotnetModule {
@@ -17,6 +17,8 @@ buildDotnetModule {
     hash = "sha256-JaehaKjV2fGyH6hAKwoo0t2B+hRWOjpQoIJpZq8J8C8=";
   };
 
+  executables = [ "BmsToOsu" ];
+
   makeWrapperArgs = [
     "--suffix"
     "PATH"
@@ -26,14 +28,13 @@ buildDotnetModule {
 
   nugetDeps = ./deps.json;
   projectFile = "BmsToOsu.sln";
-  executables = [ "BmsToOsu" ];
   runtimeDeps = [ ncurses ];
 
   meta = {
     description = "Convert BMS files to osu! beatmap files";
+    homepage = "https://github.com/QingQiz/BmsToOsu";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ ulysseszhan ];
-    homepage = "https://github.com/QingQiz/BmsToOsu";
     platforms = lib.platforms.unix;
     mainProgram = "BmsToOsu";
   };

@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   apache-tvm-ffi,
+  buildPythonPackage,
   einops,
-  nvidia-cutlass-dsl,
-  torch,
-  torch-c-dlpack-ext,
-
   # optional-dependencies
   # nvidia-matmul-heuristics,
   jax,
+  nvidia-cutlass-dsl,
   # jax-tvm-ffi,
   pandas,
+  # build-system
+  setuptools,
+  torch,
+  torch-c-dlpack-ext,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "quack-kernels";
   version = "0.5.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Dao-AILab";
@@ -31,6 +26,10 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-L6kReIaCTVxJPYkkYn5aCXCChAsaxn/ikcBHTHzDmgs=";
   };
+
+  # Fatal Python error: Aborted
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -45,28 +44,29 @@ buildPythonPackage (finalAttrs: {
   ];
 
   optional-dependencies = {
+    bench = [
+      pandas
+    ];
+
     heuristics = [
       # nvidia-matmul-heuristics
     ];
+
     jax = [
       jax
       # jax-tvm-ffi
     ];
-    bench = [
-      pandas
-    ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "quack" ];
-
-  # Fatal Python error: Aborted
-  doCheck = false;
 
   meta = {
     description = "Quirky Assortment of CuTe Kernels";
     homepage = "https://github.com/Dao-AILab/quack";
     changelog = "https://github.com/Dao-AILab/quack/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       prince213

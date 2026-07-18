@@ -1,46 +1,39 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # xarray
+  arviz-base,
+  buildPythonPackage,
   # build-system
   flit-core,
-
-  # dependencies
-  numpy,
-  scipy,
-
   # optional-dependencies
   # doc
   h5netcdf,
   jupyter-sphinx,
   myst-nb,
   myst-parser,
+  # numba
+  numba,
+  # dependencies
+  numpy,
   numpydoc,
+  # test
+  pytest,
+  pytest-cov,
+  # tests
+  pytestCheckHook,
+  scipy,
   sphinx,
   sphinx-book-theme,
   sphinx-copybutton,
   sphinx-design,
-  # numba
-  numba,
-  xarray-einstats,
-  # test
-  pytest,
-  pytest-cov,
-
-  # xarray
-  arviz-base,
   xarray,
-
-  # tests
-  pytestCheckHook,
+  xarray-einstats,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "arviz-stats";
   version = "1.2.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "arviz-devs";
@@ -48,6 +41,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-KA36JGqgsYs5fF1AndsTBkXQ6U/duoebDQ1TOEmaCSc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     flit-core
@@ -71,19 +70,23 @@ buildPythonPackage (finalAttrs: {
       sphinx-copybutton
       sphinx-design
     ];
+
     numba = [
       numba
       xarray-einstats
     ];
+
     test = [
       pytest
       pytest-cov
     ];
+
     test-xarray = [
       h5netcdf
       pytest
       pytest-cov
     ];
+
     xarray = [
       arviz-base
       xarray
@@ -91,11 +94,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "arviz_stats" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Statistical computation and diagnostics for ArviZ";

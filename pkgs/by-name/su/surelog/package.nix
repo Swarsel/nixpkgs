@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  python3,
-  pkg-config,
-  libuuid,
-  openjdk,
-  gperftools,
-  gtest,
-  uhdm,
   antlr4,
   capnproto,
+  cmake,
+  gperftools,
+  gtest,
+  libuuid,
   nlohmann_json,
+  openjdk,
+  pkg-config,
+  python3,
+  uhdm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -61,6 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "-DSURELOG_WITH_TCMALLOC=Off" ];
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     make -j $NIX_BUILD_CORES UnitTests
@@ -72,11 +73,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "SystemVerilog 2017 Pre-processor, Parser, Elaborator, UHDM Compiler";
     homepage = "https://github.com/chipsalliance/Surelog";
     license = lib.licenses.asl20;
-    mainProgram = "surelog";
+
     maintainers = with lib.maintainers; [
       matthuszagh
       hzeller
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "surelog";
   };
 })

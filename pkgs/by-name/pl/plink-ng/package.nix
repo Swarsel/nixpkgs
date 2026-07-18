@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
   blas,
   lapack,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,19 +36,19 @@ stdenv.mkDerivation (finalAttrs: {
     );
   '';
 
-  makefile = "Makefile.std";
-
   installPhase = ''
     mkdir -p $out/bin
     cp plink $out/bin
   '';
 
+  makefile = "Makefile.std";
+
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "Comprehensive update to the PLINK association analysis toolset";
-    mainProgram = "plink";
     homepage = "https://www.cog-genomics.org/plink2";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.linux;
+    mainProgram = "plink";
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

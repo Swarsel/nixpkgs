@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   composeXcodeWrapper,
 }:
 {
@@ -18,7 +18,6 @@ let
   xcodewrapper = composeXcodeWrapper xcodewrapperArgs;
 in
 stdenv.mkDerivation {
-  name = lib.replaceStrings [ " " ] [ "" ] name;
   buildCommand = ''
     mkdir -p $out/bin
     cat > $out/bin/run-test-simulator << "EOF"
@@ -62,4 +61,6 @@ stdenv.mkDerivation {
       chmod +x $out/bin/run-test-simulator
     ''}
   '';
+
+  name = lib.replaceStrings [ " " ] [ "" ] name;
 }

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
-  python,
   fetchFromGitHub,
+  buildPythonPackage,
   cmake,
-  sip4,
   distutils,
+  python,
+  sip4,
 }:
 
 buildPythonPackage rec {
   pname = "libsavitar";
   version = "4.12.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Ultimaker";
@@ -27,6 +26,8 @@ buildPythonPackage rec {
       --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     sip4
@@ -37,13 +38,13 @@ buildPythonPackage rec {
     distutils
   ];
 
-  strictDeps = true;
+  pyproject = false;
 
   meta = {
     description = "C++ implementation of 3mf loading with SIP python bindings";
     homepage = "https://github.com/Ultimaker/libSavitar";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

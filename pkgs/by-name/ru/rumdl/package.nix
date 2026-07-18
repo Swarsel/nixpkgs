@@ -1,19 +1,17 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  installShellFiles,
-  gitMinimal,
   stdenv,
-  versionCheckHook,
+  fetchFromGitHub,
+  gitMinimal,
+  installShellFiles,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rumdl";
   version = "0.2.31";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "rvben";
@@ -22,30 +20,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-sKL1Sn7ipv/5fGwblSTwwLnMEmmNqapBv4phS7sELFY=";
   };
 
-  cargoHash = "sha256-Q9SQq5oyimRgxB+5FuRn73c00pqjeDDxuJ/klcvKck8=";
-
-  cargoBuildFlags = [
-    "--bin=rumdl"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
+  cargoHash = "sha256-Q9SQq5oyimRgxB+5FuRn73c00pqjeDDxuJ/klcvKck8=";
+
   nativeCheckInputs = [
     gitMinimal
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  useNextest = true;
-
-  cargoTestFlags = [
-    "--lib"
-
-    # Prefer the "smoke" profile over "ci" to exclude flaky tests: https://github.com/rvben/rumdl/pull/341
-    "--profile"
-    "smoke"
   ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -56,9 +38,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "--bin=rumdl"
+  ];
+
+  cargoTestFlags = [
+    "--lib"
+
+    # Prefer the "smoke" profile over "ci" to exclude flaky tests: https://github.com/rvben/rumdl/pull/341
+    "--profile"
+    "smoke"
+  ];
+
+  useNextest = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -66,19 +66,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Markdown linter and formatter";
+
     longDescription = ''
       rumdl is a high-performance Markdown linter and formatter
       that helps ensure consistency and best practices in your Markdown files.
     '';
+
     homepage = "https://github.com/rvben/rumdl";
     changelog = "https://github.com/rvben/rumdl/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kachick
       hasnep
       faukah
     ];
-    mainProgram = "rumdl";
+
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "rumdl";
   };
 })

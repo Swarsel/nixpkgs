@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   gflags,
@@ -26,9 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ gtest ];
-
   propagatedBuildInputs = [ gflags ];
 
   cmakeFlags = [
@@ -39,12 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Explicitly disabling unwind support sidesteps the issue.
     "-DWITH_UNWIND=OFF"
   ];
-
-  doCheck = true;
-
-  # There are some non-thread safe tests that can fail
-  enableParallelChecking = false;
-  nativeCheckInputs = [ perl ];
 
   env.GTEST_FILTER =
     let
@@ -66,6 +58,9 @@ stdenv.mkDerivation (finalAttrs: {
         ];
     in
     "-${builtins.concatStringsSep ":" filteredTests}";
+
+  doCheck = true;
+  nativeCheckInputs = [ perl ];
 
   checkPhase =
     let
@@ -91,14 +86,19 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postCheck
     '';
 
+  # There are some non-thread safe tests that can fail
+  enableParallelChecking = false;
+
   meta = {
+    description = "Library for application-level logging";
     homepage = "https://github.com/google/glog";
     license = lib.licenses.bsd3;
-    description = "Library for application-level logging";
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       nh2
       r-burns
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

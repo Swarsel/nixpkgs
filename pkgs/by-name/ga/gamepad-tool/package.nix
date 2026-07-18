@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
-  fetchurl,
-  dpkg,
   lib,
-  qt5,
-  autoPatchelfHook,
+  fetchurl,
   SDL2,
+  autoPatchelfHook,
+  dpkg,
+  qt5,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -22,8 +22,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     qt5.wrapQtAppsHook
     autoPatchelfHook
   ];
-
-  dontBuild = true;
 
   buildInputs = [
     SDL2
@@ -42,12 +40,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Simple GUI tool to create/modify gamepad mappings for games that use SDL2 Game Controller API";
     homepage = "https://generalarcade.com/gamepadtool/";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ gador ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "gamepad-tool";
   };
 })

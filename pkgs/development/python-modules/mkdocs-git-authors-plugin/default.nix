@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  mkdocs,
+  buildPythonPackage,
   gitMinimal,
+  mkdocs,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-git-authors-plugin";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "timvink";
@@ -29,7 +28,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ mkdocs ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs_git_authors_plugin" ];
 
   meta = {

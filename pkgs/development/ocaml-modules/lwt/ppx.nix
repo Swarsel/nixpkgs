@@ -7,8 +7,8 @@
 }:
 
 buildDunePackage {
-  pname = "lwt_ppx";
   inherit (lwt) version src;
+  pname = "lwt_ppx";
 
   propagatedBuildInputs = [
     lwt
@@ -16,7 +16,7 @@ buildDunePackage {
   ];
 
   meta = {
-    description = "Ppx syntax extension for Lwt";
     inherit (lwt.meta) license homepage maintainers;
+    description = "Ppx syntax extension for Lwt";
   };
 }

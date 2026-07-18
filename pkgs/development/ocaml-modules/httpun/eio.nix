@@ -1,13 +1,12 @@
 {
   buildDunePackage,
-  httpun,
   gluten-eio,
+  httpun,
 }:
 
 buildDunePackage {
-  pname = "httpun-eio";
-
   inherit (httpun) src version;
+  pname = "httpun-eio";
 
   propagatedBuildInputs = [
     gluten-eio

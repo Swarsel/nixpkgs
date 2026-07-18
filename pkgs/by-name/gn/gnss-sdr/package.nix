@@ -1,26 +1,26 @@
 {
   lib,
-  fetchpatch,
   fetchFromGitHub,
   armadillo,
+  blas,
   cmake,
-  gmp,
-  glog,
-  gtest,
-  openssl,
+  fetchpatch,
   gflags,
+  glog,
+  gmp,
   gnuradio,
-  thrift,
-  enableRawUdp ? true,
+  gtest,
+  lapack,
   libpcap,
+  matio,
+  openssl,
   orc,
   pkg-config,
-  blas,
-  lapack,
-  matio,
-  pugixml,
   protobuf,
+  pugixml,
+  thrift,
   enableOsmosdr ? true,
+  enableRawUdp ? true,
 }:
 
 gnuradio.pkgs.mkDerivation rec {
@@ -40,8 +40,8 @@ gnuradio.pkgs.mkDerivation rec {
     # should be sent upstream.
     ./fix_libcpu_features_install_path.patch
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/g/gnss-sdr/0.0.20-2/debian/patches/boost1.90.diff";
       hash = "sha256-IeLV0DIVzw+Nix9RmrqrbGDEjquvSws114UsdYphV58=";
+      url = "https://sources.debian.org/data/main/g/gnss-sdr/0.0.20-2/debian/patches/boost1.90.diff";
     })
   ];
 
@@ -51,9 +51,6 @@ gnuradio.pkgs.mkDerivation rec {
     gnuradio.unwrapped.python
     gnuradio.unwrapped.python.pkgs.mako
     gnuradio.unwrapped.python.pkgs.six
-  ];
-  nativeCheckInputs = [
-    gtest
   ];
 
   buildInputs = [
@@ -117,6 +114,10 @@ gnuradio.pkgs.mkDerivation rec {
     # armadillo is built using both, so skip checking for them.
     (lib.cmakeFeature "BLAS_LIBRARIES" "-lblas")
     (lib.cmakeFeature "LAPACK_LIBRARIES" "-llapack")
+  ];
+
+  nativeCheckInputs = [
+    gtest
   ];
 
   meta = {

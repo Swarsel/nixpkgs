@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
   findlib,
+  ocaml,
   ocamlbuild,
   topkg,
   uchar,
-  uutf,
-  uunf,
   uucd,
+  uunf,
+  uutf,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  name = "ocaml${ocaml.version}-${finalAttrs.pname}-${finalAttrs.version}";
+  inherit (topkg) installPhase;
   pname = "uucp";
   version = "17.0.0";
 
@@ -22,12 +22,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mSQtTn4DYa15pYWFt0J+/BEpJRaa+6uIKnifMV4Euhs=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
     ocamlbuild
     topkg
   ];
+
   buildInputs = [
     topkg
     uutf
@@ -37,28 +40,27 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ uchar ];
 
-  strictDeps = true;
-
   buildPhase = ''
     runHook preBuild
     ${topkg.buildPhase} --with-cmdliner false --tests ${lib.boolToString finalAttrs.doCheck}
     runHook postBuild
   '';
 
-  inherit (topkg) installPhase;
-
   doCheck = true;
+  checkInputs = [ uucd ];
+
   checkPhase = ''
     runHook preCheck
     ${topkg.run} test
     runHook postCheck
   '';
-  checkInputs = [ uucd ];
+
+  name = "ocaml${ocaml.version}-${finalAttrs.pname}-${finalAttrs.version}";
 
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "OCaml library providing efficient access to a selection of character properties of the Unicode character database";
     homepage = "https://erratique.ch/software/uucp";
-    inherit (ocaml.meta) platforms;
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.vbgl ];
   };

@@ -1,22 +1,22 @@
 {
-  pkgs,
-  stdenv,
   lib,
-  haskellLib,
-  ghc,
+  stdenv,
   all-cabal-hashes,
   buildHaskellPackages,
+  ghc,
+  haskellLib,
+  pkgs,
   compilerConfig ? (self: super: { }),
-  packageSetConfig ? (self: super: { }),
-  overrides ? (self: super: { }),
+  configurationArm ? import ./configuration-arm.nix,
+  configurationCommon ? import ./configuration-common.nix,
+  configurationDarwin ? import ./configuration-darwin.nix,
+  configurationJS ? import ./configuration-ghcjs-9.x.nix,
+  configurationNix ? import ./configuration-nix.nix,
+  configurationWindows ? import ./configuration-windows.nix,
   initialPackages ? import ./initial-packages.nix,
   nonHackagePackages ? import ./non-hackage-packages.nix,
-  configurationCommon ? import ./configuration-common.nix,
-  configurationNix ? import ./configuration-nix.nix,
-  configurationArm ? import ./configuration-arm.nix,
-  configurationDarwin ? import ./configuration-darwin.nix,
-  configurationWindows ? import ./configuration-windows.nix,
-  configurationJS ? import ./configuration-ghcjs-9.x.nix,
+  overrides ? (self: super: { }),
+  packageSetConfig ? (self: super: { }),
 }:
 
 let
@@ -25,7 +25,6 @@ let
   inherit (haskellLib) makePackageSet;
 
   haskellPackages = pkgs.callPackage makePackageSet {
-    package-set = initialPackages;
     inherit
       stdenv
       haskellLib
@@ -34,6 +33,8 @@ let
       all-cabal-hashes
       buildHaskellPackages
       ;
+
+    package-set = initialPackages;
   };
 
   platformConfigurations =

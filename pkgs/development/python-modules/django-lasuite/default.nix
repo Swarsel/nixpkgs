@@ -1,29 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
+  celery,
   django,
   django-configurations,
   djangorestframework,
+  factory-boy,
+  freezegun,
+  hatchling,
   joserfc,
   mozilla-django-oidc,
+  nixosTests,
   pyjwt,
+  pytest-django,
+  pytestCheckHook,
   requests,
   requests-toolbelt,
-  factory-boy,
-  pytest-django,
   responses,
-  celery,
-  freezegun,
-  pytestCheckHook,
-  nixosTests,
 }:
 
 buildPythonPackage rec {
   pname = "django-lasuite";
   version = "0.0.27";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "suitenumerique";
@@ -31,6 +30,20 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-bYV5/cPvmSU43oL7+9rCcISl0JqFPeK/xd22Kcg92II=";
   };
+
+  nativeCheckInputs = [
+    factory-boy
+    freezegun
+    pytestCheckHook
+    pytest-django
+    responses
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  preCheck = ''
+    export PYTHONPATH=tests:$PYTHONPATH
+    export DJANGO_SETTINGS_MODULE=test_project.settings
+  '';
 
   build-system = [ hatchling ];
 
@@ -51,23 +64,9 @@ buildPythonPackage rec {
     malware_detection = [ celery ];
   });
 
-  pythonRelaxDeps = true;
-
-  nativeCheckInputs = [
-    factory-boy
-    freezegun
-    pytestCheckHook
-    pytest-django
-    responses
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  preCheck = ''
-    export PYTHONPATH=tests:$PYTHONPATH
-    export DJANGO_SETTINGS_MODULE=test_project.settings
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "lasuite" ];
+  pythonRelaxDeps = true;
 
   passthru.tests = {
     inherit (nixosTests)

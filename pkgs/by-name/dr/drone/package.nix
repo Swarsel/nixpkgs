@@ -17,22 +17,23 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-BHfuQ4bloqvdqHK4HSlzHVd9r0yhGkWqLY0XZazwiZQ=";
+  doCheck = false;
 
   tags = lib.optionals (!enableUnfree) [
     "oss"
     "nolimit"
   ];
 
-  doCheck = false;
-
   meta = {
     description = "Continuous Integration platform built on container technology";
-    mainProgram = "drone-server";
     homepage = "https://github.com/harness/harness";
+    license = with lib.licenses; if enableUnfree then unfreeRedistributable else asl20;
+
     maintainers = with lib.maintainers; [
       vdemeester
       techknowlogick
     ];
-    license = with lib.licenses; if enableUnfree then unfreeRedistributable else asl20;
+
+    mainProgram = "drone-server";
   };
 })

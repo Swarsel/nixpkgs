@@ -1,13 +1,13 @@
 {
-  curl,
-  fetchFromGitHub,
-  gmp,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  curl,
+  gmp,
+  nix-update-script,
   ocl-icd,
   opencl-headers,
-  stdenv,
   versionCheckHook,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-QnQTAwsReKY7Rqm8spXmHZwfrw5VCsOOAtvhzE4GmHg=";
   };
-
-  enableParallelBuilding = true;
 
   buildInputs = [
     curl
@@ -39,25 +37,28 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  enableParallelBuilding = true;
   versionCheckProgramArg = "-v";
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=unstable" ]; };
 
   meta = {
     description = "GPU-accelerated Mersenne primality testing";
+
     longDescription = ''
       PrMers is a high-performance GPU application for Lucas–Lehmer (LL), PRP, and P-1 testing of Mersenne numbers.
          It uses OpenCL and integer NTT/IBDWT kernels and is built for long, reliable runs with checkpointing and PrimeNet submission.
     '';
+
     homepage = "https://github.com/cherubrock-seb/PrMers";
-    downloadPage = "https://github.com/cherubrock-seb/PrMers/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ dstremur ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ dstremur ];
     platforms = lib.platforms.linux;
     mainProgram = "prmers";
+    downloadPage = "https://github.com/cherubrock-seb/PrMers/releases/tag/v${finalAttrs.version}";
   };
 })

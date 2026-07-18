@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/GenericMappingTools/dcw-gmt";
     description = "Vector basemap of the world, for use with GMT";
+
     longDescription = ''
       The Digital Chart of the World is a comprehensive 1:1,000,000 scale vector
       basemap of the world. The charts were designed to meet the needs of pilots
@@ -36,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
       - It contains more state boundaries (the largest 8 countries, Great Britain and Norway are now represented).
       - The data have been reformatted to save space and are distributed as a single deflated netCDF-4 file.
     '';
+
+    homepage = "https://github.com/GenericMappingTools/dcw-gmt";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ tviti ];
     teams = [ lib.teams.geospatial ];

@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   expat,
-  libpng,
-  udunits,
-  netcdf,
-  libxt,
-  libxaw,
-  libx11,
-  libsm,
   libice,
+  libpng,
+  libsm,
+  libx11,
+  libxaw,
+  libxt,
+  netcdf,
+  udunits,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Visual browser for netCDF format files";
     homepage = "http://meteora.ucsd.edu/~pierce/ncview_home_page.html";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ncview";
     maintainers = with lib.maintainers; [ jmettes ];
     platforms = lib.platforms.all;
+    mainProgram = "ncview";
   };
 })

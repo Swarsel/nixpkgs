@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nbformat,
-  nbclient,
+  buildPythonPackage,
   ipykernel,
+  nbclient,
+  nbformat,
   pandas,
   pytestCheckHook,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "testbook";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nteract";
@@ -23,12 +22,12 @@ buildPythonPackage rec {
     hash = "sha256-qaDgae/5TRpjmjOf7aom7TC5HLHp0PHM/ds47AKtq8U=";
   };
 
+  nativeBuildInputs = [ setuptools ];
+
   propagatedBuildInputs = [
     nbclient
     nbformat
   ];
-
-  nativeBuildInputs = [ setuptools ];
 
   nativeCheckInputs = [
     ipykernel
@@ -37,6 +36,7 @@ buildPythonPackage rec {
     traitlets
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "testbook" ];
 
   meta = {

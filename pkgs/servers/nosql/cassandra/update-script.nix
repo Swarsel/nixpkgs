@@ -1,10 +1,10 @@
 {
-  git,
   lib,
+  generation,
+  git,
+  gnupg,
   runtimeShell,
   writeScript,
-  generation,
-  gnupg,
 }:
 let
   inherit (lib) makeBinPath;

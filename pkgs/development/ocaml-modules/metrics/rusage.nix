@@ -1,16 +1,13 @@
 {
   buildDunePackage,
-  metrics,
   fmt,
   logs,
+  metrics,
 }:
 
 buildDunePackage {
-  pname = "metrics-rusage";
   inherit (metrics) src version;
-
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
+  pname = "metrics-rusage";
 
   propagatedBuildInputs = [
     fmt
@@ -19,6 +16,8 @@ buildDunePackage {
   ];
 
   doCheck = true;
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = metrics.meta // {
     description = "Resource usage (getrusage) sources for the Metrics library";

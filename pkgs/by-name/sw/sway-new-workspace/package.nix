@@ -21,8 +21,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Command to create new Sway workpaces";
     homepage = "https://github.com/nzig/sway-new-workspace";
     license = lib.licenses.mit;
-    mainProgram = "sway-new-workspace";
     maintainers = with lib.maintainers; [ bbenno ];
     platforms = lib.platforms.linux;
+    mainProgram = "sway-new-workspace";
   };
 })

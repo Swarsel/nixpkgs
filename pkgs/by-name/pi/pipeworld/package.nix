@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,10 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-PbKejghMkLZdeQJD9fObw9xhGH24IX72X7pyjapTXJM=";
   };
 
-  dontConfigure = true;
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,9 +24,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/letoram/pipeworld";
     description = "Dataflow 'spreadsheet' desktop environment";
+
     longDescription = ''
       Pipeworld is a zooming dataflow tool and desktop heavily inspired by
       userland. It is built using the arcan desktop engine.
@@ -44,6 +43,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       application within another desktop as a 'substitute' for your normal
       terminal emulator.
     '';
+
+    homepage = "https://github.com/letoram/pipeworld";
     license = with lib.licenses; [ bsd3 ];
     maintainers = [ ];
     platforms = lib.platforms.all;

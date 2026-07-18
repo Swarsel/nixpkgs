@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   django-polymorphic,
   djangorestframework,
@@ -14,7 +14,6 @@
 buildPythonPackage {
   pname = "django-rest-polymorphic";
   version = "0.1.10";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "apirobot";
@@ -37,6 +36,7 @@ buildPythonPackage {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "rest_polymorphic" ];
 
   meta = {

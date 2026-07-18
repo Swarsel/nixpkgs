@@ -4,13 +4,11 @@
   fetchFromGitLab,
   # build support
   autoreconfHook,
-  flex,
-  gnulib,
-  pkg-config,
-  texinfo,
   # libraries
   brotli,
   bzip2,
+  flex,
+  gnulib,
   gpgme,
   libhsts,
   libidn2,
@@ -19,22 +17,18 @@
   nghttp2,
   openssl,
   pcre2,
-  sslSupport ? true,
+  pkg-config,
+  texinfo,
+  versionCheckHook,
   xz,
   zlib,
   zstd,
-  versionCheckHook,
+  sslSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "wget2";
   version = "2.2.1";
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
 
   src = fetchFromGitLab {
     owner = "gnuwget";
@@ -42,6 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-od5Zyeod3auMY3u0IxMEMHnGeKGzEgMk+W5jjMQqSXc=";
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
   # wget2_noinstall contains forbidden reference to /build/
   postPatch = ''
@@ -76,6 +76,18 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
+  configureFlags = [
+    (lib.enableFeature false "shared")
+    # TODO: https://gitlab.com/gnuwget/wget2/-/issues/537
+    (lib.withFeatureAs sslSupport "ssl" "openssl")
+  ];
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   # TODO: include translation files
   autoreconfPhase = ''
     # copy gnulib into build dir and make writable.
@@ -87,20 +99,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./bootstrap --no-git --gnulib-srcdir=gnulib --skip-po
   '';
 
-  configureFlags = [
-    (lib.enableFeature false "shared")
-    # TODO: https://gitlab.com/gnuwget/wget2/-/issues/537
-    (lib.withFeatureAs sslSupport "ssl" "openssl")
-  ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   meta = {
     description = "Successor of GNU Wget, a file and recursive website downloader";
+
     longDescription = ''
       Designed and written from scratch it wraps around libwget, that provides the basic
       functions needed by a web client.
@@ -108,12 +111,15 @@ stdenv.mkDerivation (finalAttrs: {
       In many cases Wget2 downloads much faster than Wget1.x due to HTTP2, HTTP compression,
       parallel connections and use of If-Modified-Since HTTP header.
     '';
+
     homepage = "https://gitlab.com/gnuwget/wget2";
+
     # wget2 GPLv3+; libwget LGPLv3+
     license = with lib.licenses; [
       gpl3Plus
       lgpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
     mainProgram = "wget2";
   };

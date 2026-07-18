@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  libsodium ? null,
   asciidoc,
-  xmlto,
-  enableCurve ? true,
-  enableDrafts ? false,
-  fetchpatch,
-  withLibsodium ? libsodium != null,
   # for passthru.tests
   azmq,
+  cmake,
   cppzmq,
   czmq,
-  zmqpp,
+  fetchpatch,
   ffmpeg,
+  pkg-config,
   python3,
   testers,
+  xmlto,
+  zmqpp,
+  enableCurve ? true,
+  enableDrafts ? false,
+  libsodium ? null,
+  withLibsodium ? libsodium != null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,23 +36,29 @@ stdenv.mkDerivation (finalAttrs: {
     # Use proper STREQUAL instead of EQUAL to compare strings
     # See: https://github.com/zeromq/libzmq/pull/4711
     (fetchpatch {
-      url = "https://github.com/zeromq/libzmq/pull/4711/commits/55bd6b3df06734730d3012c17bc26681e25b549d.patch";
       hash = "sha256-/FVah+s7f1hWXv3MXkYfIiV1XAiMVDa0tmt4BQmSgmY=";
       name = "cacheline_undefined.patch";
+      url = "https://github.com/zeromq/libzmq/pull/4711/commits/55bd6b3df06734730d3012c17bc26681e25b549d.patch";
     })
 
     # Fix the build with CMake 4.
     (fetchpatch {
+      hash = "sha256-oauAZV6pThplcn2v9mQxhxlUhYgpbly0JBLYik+zoJE=";
       name = "zeromq-fix-cmake-4-1.patch";
       url = "https://github.com/zeromq/libzmq/commit/34f7fa22022bed9e0e390ed3580a1c83ac4a2834.patch";
-      hash = "sha256-oauAZV6pThplcn2v9mQxhxlUhYgpbly0JBLYik+zoJE=";
     })
     (fetchpatch {
+      hash = "sha256-FKvZi7pTUx+wLUR8Suf+pRFg8I5OHpJ93gEmTxUrmO4=";
       name = "zeromq-fix-cmake-4-2.patch";
       url = "https://github.com/zeromq/libzmq/commit/b91a6201307b72beb522300366aad763d19b1456.patch";
-      hash = "sha256-FKvZi7pTUx+wLUR8Suf+pRFg8I5OHpJ93gEmTxUrmO4=";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace '$'{prefix}/'$'{CMAKE_INSTALL_LIBDIR} '$'{CMAKE_INSTALL_FULL_LIBDIR} \
+      --replace '$'{prefix}/'$'{CMAKE_INSTALL_INCLUDEDIR} '$'{CMAKE_INSTALL_FULL_INCLUDEDIR}
+  '';
 
   strictDeps = true;
 
@@ -71,12 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ENABLE_DRAFTS" enableDrafts)
     (lib.cmakeBool "WITH_LIBSODIUM" withLibsodium)
   ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace '$'{prefix}/'$'{CMAKE_INSTALL_LIBDIR} '$'{CMAKE_INSTALL_FULL_LIBDIR} \
-      --replace '$'{prefix}/'$'{CMAKE_INSTALL_INCLUDEDIR} '$'{CMAKE_INSTALL_FULL_INCLUDEDIR}
-  '';
 
   postBuild = ''
     # From https://gitlab.archlinux.org/archlinux/packaging/packages/zeromq/-/blob/main/PKGBUILD
@@ -108,18 +108,19 @@ stdenv.mkDerivation (finalAttrs: {
       czmq
       zmqpp
       ;
-    pyzmq = python3.pkgs.pyzmq;
+
     ffmpeg = ffmpeg.override { withZmq = true; };
     pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    pyzmq = python3.pkgs.pyzmq;
   };
 
   meta = {
-    branch = "4";
-    homepage = "http://www.zeromq.org";
     description = "Intelligent Transport Layer";
+    homepage = "http://www.zeromq.org";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.all;
+    branch = "4";
     pkgConfigModules = [ "libzmq" ];
   };
 })

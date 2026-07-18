@@ -1,9 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiofiles,
+  aiohttp,
   asgi-csrf,
+  asgiref,
+  beautifulsoup4,
+  buildPythonPackage,
   click,
   click-default-group,
   flexcache,
@@ -16,23 +19,19 @@
   mergedeep,
   platformdirs,
   pluggy,
-  pyyaml,
-  typing-extensions,
-  uvicorn,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-timeout,
-  aiohttp,
-  beautifulsoup4,
-  asgiref,
+  pytestCheckHook,
+  pyyaml,
   setuptools,
   trustme,
+  typing-extensions,
+  uvicorn,
 }:
 
 buildPythonPackage rec {
   pname = "datasette";
   version = "0.65.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -46,12 +45,16 @@ buildPythonPackage rec {
       --replace '"pytest-runner"' ""
   '';
 
-  build-system = [ setuptools ];
-
-  pythonRemoveDeps = [
-    "pip"
-    "setuptools"
+  nativeCheckInputs = [
+    aiohttp
+    beautifulsoup4
+    pytest-asyncio
+    pytest-timeout
+    pytestCheckHook
+    trustme
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     aiofiles
@@ -75,18 +78,9 @@ buildPythonPackage rec {
     uvicorn
   ];
 
-  nativeCheckInputs = [
-    aiohttp
-    beautifulsoup4
-    pytest-asyncio
-    pytest-timeout
-    pytestCheckHook
-    trustme
-  ];
-
-  pytestFlags = [
-    # datasette/app.py:14: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
-    "-Wignore::DeprecationWarning"
+  disabledTests = [
+    "facet"
+    "_invalid_database" # checks error message when connecting to invalid database
   ];
 
   # takes 30-180 mins to run entire test suite, not worth the CPU resources, slows down reviews
@@ -96,9 +90,11 @@ buildPythonPackage rec {
     "tests/test_csv.py"
   ];
 
-  disabledTests = [
-    "facet"
-    "_invalid_database" # checks error message when connecting to invalid database
+  pyproject = true;
+
+  pytestFlags = [
+    # datasette/app.py:14: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    "-Wignore::DeprecationWarning"
   ];
 
   pythonImportsCheck = [
@@ -111,12 +107,17 @@ buildPythonPackage rec {
     "datasette.plugins"
   ];
 
+  pythonRemoveDeps = [
+    "pip"
+    "setuptools"
+  ];
+
   meta = {
     description = "Multi-tool for exploring and publishing data";
-    mainProgram = "datasette";
     homepage = "https://datasette.io/";
     changelog = "https://github.com/simonw/datasette/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "datasette";
   };
 }

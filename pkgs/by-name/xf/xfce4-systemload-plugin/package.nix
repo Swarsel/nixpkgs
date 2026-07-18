@@ -3,18 +3,18 @@
   stdenv,
   fetchurl,
   gettext,
-  meson,
-  ninja,
-  pkg-config,
-  xfce4-panel,
+  gitUpdater,
   glib,
   gtk3,
   libgtop,
   libxfce4ui,
   libxfce4util,
+  meson,
+  ninja,
+  pkg-config,
   upower,
+  xfce4-panel,
   xfconf,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,13 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.xfce.org/panel-plugins/xfce4-systemload-plugin";
     rev-prefix = "xfce4-systemload-plugin-";
+    url = "https://gitlab.xfce.org/panel-plugins/xfce4-systemload-plugin";
   };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-systemload-plugin";
     description = "System load plugin for Xfce panel";
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-systemload-plugin";
     license = lib.licenses.bsd2;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];

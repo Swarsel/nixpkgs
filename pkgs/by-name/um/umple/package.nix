@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
-  runCommand,
   fetchurl,
   fetchFromGitHub,
   gradle_8, # incompatible with gradle 9+
   installShellFiles,
+  jre_headless,
   makeBinaryWrapper,
   opentxl,
-  jre_headless,
+  runCommand,
+  stdenvNoCC,
 }:
 let
   versions = lib.importJSON ./versions.json;
@@ -19,16 +19,16 @@ let
 
   # Not managed through Gradle
   joptSimple = fetchFromGitHub {
+    hash = "sha256-sOQaEq2qzvEwJzwZIcMQus3tetzA6O2VPl8XUJAtupM=";
     owner = "jopt-simple";
     repo = "jopt-simple";
     tag = "jopt-simple-4.4";
-    hash = "sha256-sOQaEq2qzvEwJzwZIcMQus3tetzA6O2VPl8XUJAtupM=";
   };
 
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "umple";
   inherit version;
+  pname = "umple";
 
   src = fetchFromGitHub {
     owner = "umple";
@@ -44,17 +44,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ./replace-version.patch
     # Fixes broken working directory + updates Jar paths for manpage generation task
     ./fix-manpage.patch
-  ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  nativeBuildInputs = [
-    gradle_8
-    gradle_8.jdk
-    installShellFiles
-    makeBinaryWrapper
-    opentxl
   ];
 
   postPatch = ''
@@ -75,23 +64,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     find . -type f \( -name '*.java' -o -name '*.ump' \) -exec sed -i "s/@UMPLE_VERSION@/${longVersion}/g" {} +
   '';
 
-  mitmCache = gradle_8.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
+  strictDeps = true;
 
-  __darwinAllowLocalNetworking = true;
-
-  gradleBuildTask = "quickbuild";
-
-  gradleFlags = [
-    # Network-dependent tasks
-    "--exclude-task=downloadUmpleJar"
-    "--exclude-task=downloadJOptSimpleVendorZip"
-    "--exclude-task=downloadAndUnzipJOptSimpleVendor"
-    "--exclude-task=prepareJOptSimpleVendor"
-    # Tasks that try to modify readonly files
-    "--exclude-task=cleanUpUmple"
+  nativeBuildInputs = [
+    gradle_8
+    gradle_8.jdk
+    installShellFiles
+    makeBinaryWrapper
+    opentxl
   ];
 
   postBuild = ''
@@ -120,19 +100,37 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru = {
-    updateScript = ./update.sh;
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  gradleBuildTask = "quickbuild";
 
+  gradleFlags = [
+    # Network-dependent tasks
+    "--exclude-task=downloadUmpleJar"
+    "--exclude-task=downloadJOptSimpleVendorZip"
+    "--exclude-task=downloadAndUnzipJOptSimpleVendor"
+    "--exclude-task=prepareJOptSimpleVendor"
+    # Tasks that try to modify readonly files
+    "--exclude-task=cleanUpUmple"
+  ];
+
+  mitmCache = gradle_8.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
+  passthru = {
     bootstrap = umpleJar;
 
     tests."2dshapes" =
       runCommand "umple-test"
         {
+          src = ./2DShapes.ump;
+
           nativeBuildInputs = [
             finalAttrs.finalPackage
             gradle_8.jdk
           ];
-          src = ./2DShapes.ump;
         }
         ''
           set -euo pipefail
@@ -142,18 +140,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
           java -cp bin Shapes.core.Shape2D
           touch $out
         '';
+
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Model-oriented programming language and modelling tool for integrating UML constructs into high-level languages";
-    mainProgram = "umple";
     homepage = "https://github.com/umple/umple";
-    downloadPage = "https://github.com/umple/umple/releases";
     license = lib.licenses.mit;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
+
     maintainers = with lib.maintainers; [ MysteryBlokHed ];
+    mainProgram = "umple";
+    downloadPage = "https://github.com/umple/umple/releases";
   };
 })

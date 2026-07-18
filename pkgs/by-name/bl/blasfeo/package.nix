@@ -1,9 +1,9 @@
 {
-  cmake,
-  fetchFromGitHub,
-  fetchpatch,
   lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  fetchpatch,
   withTarget ? "GENERIC",
 }:
 
@@ -20,14 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-bH5xUKAjNFCO9rRc655BcMiUesNFFln+iEPC5JHcQAU=";
       name = "blasfeo-fix-cmake-4.patch";
       url = "https://github.com/giaf/blasfeo/commit/75078e2b6153d1c8bc5329e83a82d4d4d3eefd76.patch";
-      hash = "sha256-bH5xUKAjNFCO9rRc655BcMiUesNFFln+iEPC5JHcQAU=";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
-
   cmakeFlags = [ "-DTARGET=${withTarget}" ];
 
   meta = {

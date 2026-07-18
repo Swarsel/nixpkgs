@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  aptly,
+  buildGoModule,
+  bzip2,
+  gnupg,
+  graphviz,
   installShellFiles,
   makeWrapper,
-  gnupg,
-  bzip2,
-  xz,
-  graphviz,
   testers,
-  aptly,
+  xz,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,24 +23,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-fjNN8EffY9G8YX/uME5ehs2zZj/YRA62y/muqigWSnE=";
   };
 
-  vendorHash = "sha256-QPYKdiEiV1iS3xJ3A66ILUXAlj0TGXuGf11wzdX3Z7Y=";
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-QPYKdiEiV1iS3xJ3A66ILUXAlj0TGXuGf11wzdX3Z7Y=";
 
   preBuild = ''
     echo ${finalAttrs.version} > VERSION
   '';
-  excludedPackages = [
-    "system"
-  ];
+
+  doCheck = false;
 
   postInstall = ''
     installShellCompletion --bash --name aptly completion.d/aptly
@@ -56,23 +50,32 @@ buildGoModule (finalAttrs: {
       }
   '';
 
-  doCheck = false;
+  excludedPackages = [
+    "system"
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   passthru.tests.version = testers.testVersion {
-    package = aptly;
     command = "aptly version";
+    package = aptly;
   };
 
   meta = {
-    homepage = "https://www.aptly.info";
     description = "Debian repository management tool";
-    license = lib.licenses.mit;
+    homepage = "https://www.aptly.info";
     changelog = "https://github.com/aptly-dev/aptly/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cdepillabout
       montag451
       wraithm
     ];
+
     mainProgram = "aptly";
   };
 })

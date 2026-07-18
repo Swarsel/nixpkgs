@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   chromium,
   python3,
 }:
@@ -16,14 +16,15 @@ buildNpmPackage {
     rev = "af0f6f119edd8bf82bce3860fa55cfad869ac874";
     hash = "sha256-5pozqrIIanoLF4eugLxPRsUaoUYJurliovFFBYO/mC4=";
   };
-  npmDepsHash = "sha256-wiBpWw9nb/pWVGIc4Vl/IxxR5ic0LzLMMr3WxRNvYdM=";
 
-  nativeCheckInputs = [ chromium ];
-  doCheck = stdenv.hostPlatform.isLinux;
+  npmDepsHash = "sha256-wiBpWw9nb/pWVGIc4Vl/IxxR5ic0LzLMMr3WxRNvYdM=";
 
   postBuild = ''
     patchShebangs ./single-file
   '';
+
+  doCheck = stdenv.hostPlatform.isLinux;
+  nativeCheckInputs = [ chromium ];
 
   checkPhase = ''
     runHook preCheck

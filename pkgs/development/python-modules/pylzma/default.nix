@@ -8,7 +8,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pylzma";
   version = "0.6.0";
-  pyproject = true;
 
   # This vendors an old LZMA SDK
   # After some discussion, it seemed most reasonable to keep it that way
@@ -19,12 +18,12 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pylzma" ];
 
   meta = {
-    homepage = "https://www.joachim-bauch.de/projects/pylzma/";
     description = "Platform independent python bindings for the LZMA compression library";
+    homepage = "https://www.joachim-bauch.de/projects/pylzma/";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

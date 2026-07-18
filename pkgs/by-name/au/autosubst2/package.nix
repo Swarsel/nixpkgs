@@ -1,7 +1,7 @@
 {
   lib,
-  haskellPackages,
   fetchFromGitHub,
+  haskellPackages,
 }:
 
 haskellPackages.mkDerivation {
@@ -14,10 +14,22 @@ haskellPackages.mkDerivation {
     rev = "8a71e1dc4dea81f13a9572ea302064eb374566c6";
     hash = "sha256-3n87NBi3NbuDb44/oEnzjNk/TAHUwATJYuaw70k/tpk=";
   };
-  patches = [ ./imports.patch ];
 
-  isLibrary = true;
+  patches = [ ./imports.patch ];
+  doCheck = false;
+  description = "Tool for generating de Bruijn boilerplate Coq code to handle substitutions in languages with binders";
+
+  executableHaskellDepends = with haskellPackages; [
+    base
+    optparse-applicative
+    wl-pprint
+    directory
+  ];
+
+  homepage = "https://github.com/uds-psl/autosubst2";
   isExecutable = true;
+  isLibrary = true;
+
   libraryHaskellDepends = with haskellPackages; [
     base
     parsec
@@ -28,22 +40,14 @@ haskellPackages.mkDerivation {
     graphviz
     text
   ];
-  executableHaskellDepends = with haskellPackages; [
-    base
-    optparse-applicative
-    wl-pprint
-    directory
-  ];
+
+  license = lib.licenses.bsd3;
+  mainProgram = "as2-exe";
+  maintainers = with lib.maintainers; [ chen ];
+
   testHaskellDepends = with haskellPackages; [
     base
     QuickCheck
     containers
   ];
-  doCheck = false;
-
-  homepage = "https://github.com/uds-psl/autosubst2";
-  description = "Tool for generating de Bruijn boilerplate Coq code to handle substitutions in languages with binders";
-  maintainers = with lib.maintainers; [ chen ];
-  license = lib.licenses.bsd3;
-  mainProgram = "as2-exe";
 }

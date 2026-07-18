@@ -3,18 +3,17 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
+  glslang,
+  libx11,
+  libxml2,
+  lz4,
+  miniz,
   ninja,
   python3,
-  miniz,
-  lz4,
-  libxml2,
-  libx11,
-  glslang,
+  runCommandCC,
   unordered_dense,
   versionCheckHook,
-  gitUpdater,
-  runCommandCC,
-
   # Required for compiling to SPIR-V or GLSL
   withGlslang ? true,
 }:
@@ -31,17 +30,17 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  postPatch = ''
-    # Header location has moved in glslang 15+
-    substituteInPlace source/slang-glslang/slang-glslang.cpp \
-      --replace-fail '"SPIRV/GlslangToSpv.h"' '"glslang/SPIRV/GlslangToSpv.h"'
-  '';
-
   outputs = [
     "out"
     "dev"
     "doc"
   ];
+
+  postPatch = ''
+    # Header location has moved in glslang 15+
+    substituteInPlace source/slang-glslang/slang-glslang.cpp \
+      --replace-fail '"SPIRV/GlslangToSpv.h"' '"glslang/SPIRV/GlslangToSpv.h"'
+  '';
 
   strictDeps = true;
 
@@ -64,24 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     # SPIRV-tools is included in glslang.
     glslang
   ];
-
-  separateDebugInfo = true;
-
-  # Required for spaces in cmakeFlags, see https://github.com/NixOS/nixpkgs/issues/114044
-  __structuredAttrs = true;
-
-  preConfigure =
-    lib.optionalString stdenv.hostPlatform.isLinux ''
-      # required to handle LTO objects
-      export AR="${stdenv.cc.targetPrefix}gcc-ar"
-      export NM="${stdenv.cc.targetPrefix}gcc-nm"
-      export RANLIB="${stdenv.cc.targetPrefix}gcc-ranlib"
-    ''
-    + ''
-      # cmake setup hook only sets CMAKE_AR and CMAKE_RANLIB, but not these
-      prependToVar cmakeFlags "-DCMAKE_CXX_COMPILER_AR=$(command -v $AR)"
-      prependToVar cmakeFlags "-DCMAKE_CXX_COMPILER_RANLIB=$(command -v $RANLIB)"
-    '';
 
   cmakeFlags = [
     "-GNinja Multi-Config"
@@ -113,21 +94,33 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "SLANG_ENABLE_SLANG_GLSLANG" false)
   ];
 
+  preConfigure =
+    lib.optionalString stdenv.hostPlatform.isLinux ''
+      # required to handle LTO objects
+      export AR="${stdenv.cc.targetPrefix}gcc-ar"
+      export NM="${stdenv.cc.targetPrefix}gcc-nm"
+      export RANLIB="${stdenv.cc.targetPrefix}gcc-ranlib"
+    ''
+    + ''
+      # cmake setup hook only sets CMAKE_AR and CMAKE_RANLIB, but not these
+      prependToVar cmakeFlags "-DCMAKE_CXX_COMPILER_AR=$(command -v $AR)"
+      prependToVar cmakeFlags "-DCMAKE_CXX_COMPILER_RANLIB=$(command -v $RANLIB)"
+    '';
+
   postInstall = ''
     mkdir -p $dev/lib
     mv {$out,$dev}/lib/cmake
   '';
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  # Required for spaces in cmakeFlags, see https://github.com/NixOS/nixpkgs/issues/114044
+  __structuredAttrs = true;
+  separateDebugInfo = true;
   versionCheckProgram = "${placeholder "out"}/bin/slangc";
   versionCheckProgramArg = "-v";
-  doInstallCheck = true;
 
   passthru = {
-    updateScript = gitUpdater {
-      rev-prefix = "v";
-      ignoredVersions = "*-draft";
-    };
     tests.hello =
       runCommandCC "compile-hello-world"
         {
@@ -148,21 +141,29 @@ stdenv.mkDerivation (finalAttrs: {
 
           touch $out
         '';
+
+    updateScript = gitUpdater {
+      ignoredVersions = "*-draft";
+      rev-prefix = "v";
+    };
   };
 
   meta = {
     description = "Shading language that makes it easier to build and maintain large shader codebases in a modular and extensible fashion";
     homepage = "https://github.com/shader-slang/slang";
     changelog = "https://github.com/shader-slang/slang/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       llvm-exception
     ];
+
     maintainers = with lib.maintainers; [
       niklaskorz
       samestep
     ];
-    mainProgram = "slangc";
+
     platforms = lib.platforms.all;
+    mainProgram = "slangc";
   };
 })

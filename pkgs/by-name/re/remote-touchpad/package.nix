@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   libxi,
   libxrandr,
   libxt,
@@ -25,16 +25,16 @@ buildGoModule (finalAttrs: {
     libxt
     libxtst
   ];
-  tags = [ "portal,x11" ];
 
   vendorHash = "sha256-nkzvE59H7adyzveXYFI1NVwIh8chBRrVZZKfLY0fEaw=";
+  tags = [ "portal,x11" ];
 
   meta = {
     description = "Control mouse and keyboard from the web browser of a smartphone";
-    mainProgram = "remote-touchpad";
     homepage = "https://github.com/unrud/remote-touchpad";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ schnusch ];
     platforms = lib.platforms.linux;
+    mainProgram = "remote-touchpad";
   };
 })

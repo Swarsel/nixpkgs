@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   email-validator,
-  fetchFromGitHub,
   hatchling,
   jinja2,
   lxml,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "beanhub-inbox";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LaunchPlatform";
@@ -26,6 +25,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-WWfZsJRm2rJI85vmFt/AtV++5vpSTJZpRrk3PdHMhAA=";
   };
+
+  nativeCheckInputs = [
+    pytest-dotenv
+    pytest-factoryboy
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -38,13 +44,7 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    pytest-dotenv
-    pytest-factoryboy
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "beanhub_inbox" ];
 
   meta = {

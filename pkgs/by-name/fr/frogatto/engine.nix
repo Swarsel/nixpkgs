@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  which,
-  boost,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
-  glew,
-  zlib,
-  icu,
-  pkg-config,
+  boost,
   cairo,
-  libvpx,
+  glew,
   glm,
+  icu,
+  libvpx,
+  pkg-config,
+  which,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -50,19 +50,19 @@ stdenv.mkDerivation {
 
   env.CXXFLAGS = "-DGLM_ENABLE_EXPERIMENTAL -Wno-error=deprecated-declarations";
 
-  enableParallelBuilding = true;
-
   installPhase = ''
     mkdir -p $out/bin $out/share/frogatto
     cp -ar data images modules $out/share/frogatto/
     cp -a anura $out/bin/frogatto
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/anura-engine/anura";
     description = "Game engine used by Frogatto";
+    homepage = "https://github.com/anura-engine/anura";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ astro ];
+    platforms = lib.platforms.linux;
   };
 }

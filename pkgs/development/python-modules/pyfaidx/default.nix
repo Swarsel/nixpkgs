@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  biopython,
+  buildPythonPackage,
+  fsspec,
   glibcLocales,
+  htslib,
   importlib-metadata,
   packaging,
-  htslib,
-  fsspec,
   pytestCheckHook,
-  biopython,
   setuptools,
   setuptools-scm,
 }:
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyfaidx";
   version = "0.9.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mdshw5";
@@ -24,6 +23,17 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-hefRqpI9xzlfdUbr8mpQ6I1+EGAmS50f28avbtRMlSk=";
   };
+
+  # Require a network access to download test files
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    biopython
+    htslib
+    fsspec
+    glibcLocales
+  ];
 
   build-system = [
     setuptools
@@ -35,18 +45,8 @@ buildPythonPackage (finalAttrs: {
     packaging
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    biopython
-    htslib
-    fsspec
-    glibcLocales
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyfaidx" ];
-
-  # Require a network access to download test files
-  doCheck = false;
 
   meta = {
     description = "Python classes for indexing, retrieval, and in-place modification of FASTA files using a samtools compatible index";

@@ -1,15 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   anki,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "ki";
   version = "0-unstable-2023-11-08";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langfield";
@@ -22,6 +20,15 @@ python3Packages.buildPythonApplication {
     ./fix-beartype-error.patch
     ./replace-deprecated-distutils-with-setuptools.patch
     ./update-to-newer-anki-versions.patch
+  ];
+
+  nativeCheckInputs = with python3Packages; [
+    bitstring
+    checksumdir
+    gitpython
+    loguru
+    pytest-mock
+    pytestCheckHook
   ];
 
   build-system = with python3Packages; [
@@ -41,15 +48,6 @@ python3Packages.buildPythonApplication {
     whatthepatch
   ]);
 
-  nativeCheckInputs = with python3Packages; [
-    bitstring
-    checksumdir
-    gitpython
-    loguru
-    pytest-mock
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # requires git to not be in path, but git is needed for other tests
     "test_clone_cleans_up_on_error"
@@ -57,6 +55,7 @@ python3Packages.buildPythonApplication {
   ];
 
   dontCheckRuntimeDeps = true;
+  pyproject = true;
 
   meta = {
     description = "Version control for Anki collections";

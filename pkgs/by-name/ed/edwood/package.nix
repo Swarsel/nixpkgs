@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
   plan9port,
 }:
@@ -17,16 +17,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-jKDwNq/iMFqVpPq14kZa+T5fES54f4BAujXUwGlbiTE=";
   };
 
-  vendorHash = "sha256-M7fa46BERNRHbCsAiGqt4GHVVTyrW6iIb6gRc4UuZxA=";
-
   nativeBuildInputs = [
     makeWrapper
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-M7fa46BERNRHbCsAiGqt4GHVVTyrW6iIb6gRc4UuZxA=";
+  doCheck = false; # Tests has lots of hardcoded mess.
 
   postInstall = ''
     mkdir -p $out/share
@@ -37,15 +33,20 @@ buildGoModule (finalAttrs: {
       --set PLAN9 $out/share # envvar is read by edwood to determine the font path prefix
   '';
 
-  doCheck = false; # Tests has lots of hardcoded mess.
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Go version of Plan9 Acme Editor";
     homepage = "https://github.com/rjkroege/edwood";
+
     license = with lib.licenses; [
       mit
       bsd3
     ];
+
     maintainers = [ ];
     mainProgram = "edwood";
   };

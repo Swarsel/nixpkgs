@@ -1,33 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cmake,
-  ninja,
-  setuptools,
-  torch,
-
-  # dependencies
-  requests,
-  urllib3,
-
   # tests
   datasets,
   expecttest,
+  ninja,
   parameterized,
   pytest-xdist,
   pytestCheckHook,
   pythonAtLeast,
+  # dependencies
+  requests,
+  setuptools,
+  torch,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "torchdata";
   version = "0.11.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "meta-pytorch";
@@ -36,27 +31,26 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-TSkZLL4WDSacuX4tl0+1bKSJCRI3LEhAyU3ztdlUvgk=";
   };
 
-  build-system = [
-    cmake
-    ninja
-    setuptools
-    torch
-  ];
-  dontUseCmakeConfigure = true;
-
-  dependencies = [
-    requests
-    urllib3
-  ];
-
-  pythonImportsCheck = [ "torchdata" ];
-
   nativeCheckInputs = [
     datasets
     expecttest
     parameterized
     pytest-xdist
     pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    cmake
+    ninja
+    setuptools
+    torch
+  ];
+
+  dependencies = [
+    requests
+    urllib3
   ];
 
   disabledTests = [
@@ -75,6 +69,10 @@ buildPythonPackage (finalAttrs: {
     # RuntimeError: DataLoader timed out after 5 seconds
     "test_ind_worker_queue"
   ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "torchdata" ];
 
   meta = {
     description = "Iterative enhancement to the PyTorch torch.utils.data.DataLoader and torch.utils.data.Dataset/IterableDataset";

@@ -18,13 +18,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ perl ];
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-fcommon"
-    "-O2"
-    "-Wno-implicit-int" # clang, gcc 14
-    "-std=gnu17" # gcc 15
-  ];
-
   configureFlags = [
     "--with-erlangstorage"
     "--sbindir=$(out)/bin"
@@ -33,6 +26,13 @@ stdenv.mkDerivation {
   ];
 
   makeFlags = [ "INSTALL=install" ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-fcommon"
+    "-O2"
+    "-Wno-implicit-int" # clang, gcc 14
+    "-std=gnu17" # gcc 15
+  ];
 
   preInstall = ''
     mkdir -p $out/bin $out/share/man/man8 $out/etc
@@ -43,7 +43,7 @@ stdenv.mkDerivation {
     homepage = "http://thelifeofkenneth.com/aprx";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ sarcasticadmin ];
-    mainProgram = "aprx";
     platforms = lib.platforms.unix;
+    mainProgram = "aprx";
   };
 }

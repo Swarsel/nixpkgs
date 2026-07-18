@@ -1,10 +1,10 @@
 {
-  callPackage,
   lib,
-  python3,
   stdenv,
   fetchFromGitHub,
+  callPackage,
   nixosTests,
+  python3,
 }:
 let
   version = "0.19.0";
@@ -28,17 +28,14 @@ let
   frontend = callPackage ./frontend.nix { inherit src version meta; };
 
   python = python3.override {
-    self = python;
     packageOverrides = (self: super: { django = super.django_5; });
+    self = python;
   };
 
 in
 python.pkgs.buildPythonApplication (finalAttrs: {
-  pname = "lasuite-drive";
-  pyproject = true;
   inherit version src;
-
-  sourceRoot = "${finalAttrs.src.name}/src/backend";
+  pname = "lasuite-drive";
 
   patches = [
     # Support configuration throught environment variables for SECURE_*
@@ -47,6 +44,47 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     ./pyproject_build.patch
   ];
 
+  postPatch = ''
+    # Put assets inside a data directory
+    # so uv will copy the assets directory
+    # entirely
+    mkdir data
+    mv assets data
+  ''
+  + (lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace impress/settings.py \
+      --replace-fail \
+        "gethostname()" \
+        "gethostname() + '.local'"
+  '');
+
+  postBuild = ''
+    export DATA_DIR=$(pwd)/data
+    ${python.pythonOnBuildForHost.interpreter} manage.py collectstatic --no-input --clear
+  '';
+
+  postInstall =
+    let
+      pythonPath = python.pkgs.makePythonPath finalAttrs.passthru.dependencies;
+    in
+    ''
+      mkdir -p $out/{bin,share}
+      cp ./manage.py $out/bin/.manage.py
+      cp -r data/static $out/share
+      chmod +x $out/bin/.manage.py
+      makeWrapper $out/bin/.manage.py $out/bin/drive \
+        --prefix PYTHONPATH : "${pythonPath}"
+      makeWrapper ${lib.getExe python.pkgs.celery} $out/bin/celery \
+        --prefix PYTHONPATH : "${pythonPath}:$out/${python.sitePackages}"
+      makeWrapper ${lib.getExe python.pkgs.gunicorn} $out/bin/gunicorn \
+        --prefix PYTHONPATH : "${pythonPath}:$out/${python.sitePackages}"
+
+      mkdir -p $out/${python.sitePackages}/core/templates
+      ln -sv ${mail}/ $out/${python.sitePackages}/core/templates/mail
+    '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
   build-system = with python.pkgs; [ uv-build ];
 
   dependencies =
@@ -99,56 +137,17 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     ++ celery.optional-dependencies.redis
     ++ django-storages.optional-dependencies.s3;
 
+  pyproject = true;
   pythonRelaxDeps = true;
-
-  postPatch = ''
-    # Put assets inside a data directory
-    # so uv will copy the assets directory
-    # entirely
-    mkdir data
-    mv assets data
-  ''
-  + (lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace impress/settings.py \
-      --replace-fail \
-        "gethostname()" \
-        "gethostname() + '.local'"
-  '');
-  __darwinAllowLocalNetworking = true;
-
-  postBuild = ''
-    export DATA_DIR=$(pwd)/data
-    ${python.pythonOnBuildForHost.interpreter} manage.py collectstatic --no-input --clear
-  '';
-
-  postInstall =
-    let
-      pythonPath = python.pkgs.makePythonPath finalAttrs.passthru.dependencies;
-    in
-    ''
-      mkdir -p $out/{bin,share}
-      cp ./manage.py $out/bin/.manage.py
-      cp -r data/static $out/share
-      chmod +x $out/bin/.manage.py
-      makeWrapper $out/bin/.manage.py $out/bin/drive \
-        --prefix PYTHONPATH : "${pythonPath}"
-      makeWrapper ${lib.getExe python.pkgs.celery} $out/bin/celery \
-        --prefix PYTHONPATH : "${pythonPath}:$out/${python.sitePackages}"
-      makeWrapper ${lib.getExe python.pkgs.gunicorn} $out/bin/gunicorn \
-        --prefix PYTHONPATH : "${pythonPath}:$out/${python.sitePackages}"
-
-      mkdir -p $out/${python.sitePackages}/core/templates
-      ln -sv ${mail}/ $out/${python.sitePackages}/core/templates/mail
-    '';
+  sourceRoot = "${finalAttrs.src.name}/src/backend";
 
   passthru = {
     inherit mail frontend;
+
     tests = {
       login-upload-and-download-file = nixosTests.lasuite-drive;
     };
   };
-
-  __structuredAttrs = true;
 
   meta = meta // {
     description = "A collaborative file sharing and document management platform that scales. Built with Django and React. Opensource alternative to Sharepoint or Google Drive";

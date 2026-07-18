@@ -15,35 +15,39 @@ in
   options = {
     services.telegraf = {
       enable = lib.mkEnableOption "telegraf server";
-
       package = lib.mkPackageOption pkgs "telegraf" { };
 
       environmentFiles = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
         default = [ ];
-        example = [ "/run/keys/telegraf.env" ];
+
         description = ''
           File to load as environment file. Environment variables from this file
           will be interpolated into the config file using envsubst with this
           syntax: `$ENVIRONMENT` or `''${VARIABLE}`.
           This is useful to avoid putting secrets into the nix store.
         '';
+
+        example = [ "/run/keys/telegraf.env" ];
+        type = lib.types.listOf lib.types.path;
       };
 
       extraConfig = lib.mkOption {
         default = { };
         description = "Extra configuration options for telegraf";
-        type = settingsFormat.type;
+
         example = {
-          outputs.influxdb = {
-            urls = [ "http://localhost:8086" ];
-            database = "telegraf";
-          };
           inputs.statsd = {
-            service_address = ":8125";
             delete_timings = true;
+            service_address = ":8125";
+          };
+
+          outputs.influxdb = {
+            database = "telegraf";
+            urls = [ "http://localhost:8086" ];
           };
         };
+
+        type = settingsFormat.type;
       };
     };
   };
@@ -54,6 +58,7 @@ in
       inputs = { };
       outputs = { };
     };
+
     systemd.services.telegraf =
       let
         finalConfigFile =
@@ -63,38 +68,43 @@ in
             "/var/run/telegraf/config.toml";
       in
       {
-        description = "Telegraf Agent";
-        wantedBy = [ "multi-user.target" ];
-        wants = [ "network-online.target" ];
         after = [ "network-online.target" ];
+        description = "Telegraf Agent";
+
         path =
           lib.optional (config.services.telegraf.extraConfig.inputs ? procstat) pkgs.procps
           ++ lib.optional (config.services.telegraf.extraConfig.inputs ? ping) pkgs.iputils;
+
         serviceConfig = {
+          # for ping probes
+          AmbientCapabilities = [ "CAP_NET_RAW" ];
           EnvironmentFile = config.services.telegraf.environmentFiles;
+          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+          ExecStart = "${cfg.package}/bin/telegraf -config ${finalConfigFile}";
+
           ExecStartPre = lib.optional (config.services.telegraf.environmentFiles != [ ]) (
             pkgs.writeShellScript "pre-start" ''
               umask 077
               ${pkgs.envsubst}/bin/envsubst -i "${configFile}" > /var/run/telegraf/config.toml
             ''
           );
-          ExecStart = "${cfg.package}/bin/telegraf -config ${finalConfigFile}";
-          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-          RuntimeDirectory = "telegraf";
-          User = "telegraf";
+
           Group = "telegraf";
           Restart = "on-failure";
-          # for ping probes
-          AmbientCapabilities = [ "CAP_NET_RAW" ];
+          RuntimeDirectory = "telegraf";
+          User = "telegraf";
         };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       };
 
-    users.users.telegraf = {
-      uid = config.ids.uids.telegraf;
-      group = "telegraf";
-      description = "telegraf daemon user";
-    };
-
     users.groups.telegraf = { };
+
+    users.users.telegraf = {
+      description = "telegraf daemon user";
+      group = "telegraf";
+      uid = config.ids.uids.telegraf;
+    };
   };
 }

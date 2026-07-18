@@ -62,9 +62,11 @@ let
 
   pretixManageWrapper = pkgs.writeShellApplication {
     name = "pretix-manage";
+
     runtimeInputs = with pkgs; [
       util-linux
     ];
+
     text = ''
       cd ${cfg.settings.pretix.datadir}
       export PRETIX_CONFIG_FILE=${configFile}
@@ -79,61 +81,73 @@ let
   };
 in
 {
-  meta = {
-    maintainers = with lib.maintainers; [ hexa ];
-  };
-
   options.services.pretix = {
     enable = mkEnableOption "Pretix, a ticket shop application for conferences, festivals, concerts, etc";
-
     package = mkPackageOption pkgs "pretix" { };
 
-    group = mkOption {
-      type = types.str;
-      default = "pretix";
-      description = ''
-        Group under which pretix should run.
-      '';
+    celery = {
+      extraArgs = mkOption {
+        apply = utils.escapeSystemdExecArgs;
+        default = [ ];
+
+        description = ''
+          Extra arguments to pass to celery.
+
+          See <https://docs.celeryq.dev/en/stable/reference/cli.html#celery-worker> for more info.
+        '';
+
+        type = with types; listOf str;
+      };
     };
 
-    user = mkOption {
-      type = types.str;
-      default = "pretix";
+    database.createLocally = mkOption {
+      default = true;
+
       description = ''
-        User under which pretix should run.
+        Whether to automatically set up the database on the local DBMS instance.
+
+        Only supported for PostgreSQL. Not required for sqlite.
       '';
+
+      example = false;
+      type = types.bool;
     };
 
     environmentFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
-      example = "/run/keys/pretix-secrets.env";
+
       description = ''
         Environment file to pass secret configuration values.
 
         Each line must follow the `PRETIX_SECTION_KEY=value` pattern.
       '';
+
+      example = "/run/keys/pretix-secrets.env";
+      type = types.nullOr types.path;
     };
 
-    plugins = mkOption {
-      type = types.listOf types.package;
-      default = [ ];
-      example = literalExpression ''
-        with config.services.pretix.package.plugins; [
-          passbook
-          pages
-        ];
-      '';
+    group = mkOption {
+      default = "pretix";
+
       description = ''
-        Pretix plugins to install into the Python environment.
+        Group under which pretix should run.
       '';
+
+      type = types.str;
     };
 
     gunicorn.extraArgs = mkOption {
-      type = with types; listOf str;
+      apply = escapeShellArgs;
+
       default = [
         "--name=pretix"
       ];
+
+      description = ''
+        Extra arguments to pass to gunicorn.
+        See <https://docs.pretix.eu/en/latest/admin/installation/manual_smallscale.html#start-pretix-as-a-service> for details.
+      '';
+
       example = [
         "--name=pretix"
         "--workers=4"
@@ -141,289 +155,327 @@ in
         "--max-requests-jitter=50"
         "--log-level=info"
       ];
-      description = ''
-        Extra arguments to pass to gunicorn.
-        See <https://docs.pretix.eu/en/latest/admin/installation/manual_smallscale.html#start-pretix-as-a-service> for details.
-      '';
-      apply = escapeShellArgs;
-    };
 
-    celery = {
-      extraArgs = mkOption {
-        type = with types; listOf str;
-        default = [ ];
-        description = ''
-          Extra arguments to pass to celery.
-
-          See <https://docs.celeryq.dev/en/stable/reference/cli.html#celery-worker> for more info.
-        '';
-        apply = utils.escapeSystemdExecArgs;
-      };
+      type = with types; listOf str;
     };
 
     nginx = {
       enable = mkOption {
-        type = types.bool;
         default = true;
-        example = false;
+
         description = ''
           Whether to set up an nginx virtual host.
         '';
+
+        example = false;
+        type = types.bool;
       };
 
       domain = mkOption {
-        type = types.str;
-        example = "talks.example.com";
         description = ''
           The domain name under which to set up the virtual host.
         '';
+
+        example = "talks.example.com";
+        type = types.str;
       };
     };
 
-    database.createLocally = mkOption {
-      type = types.bool;
-      default = true;
-      example = false;
-      description = ''
-        Whether to automatically set up the database on the local DBMS instance.
+    plugins = mkOption {
+      default = [ ];
 
-        Only supported for PostgreSQL. Not required for sqlite.
+      description = ''
+        Pretix plugins to install into the Python environment.
       '';
+
+      example = literalExpression ''
+        with config.services.pretix.package.plugins; [
+          passbook
+          pages
+        ];
+      '';
+
+      type = types.listOf types.package;
     };
 
     settings = mkOption {
-      type = types.submodule {
-        freeformType = format.type;
-        options = {
-          pretix = {
-            instance_name = mkOption {
-              type = types.str;
-              example = "tickets.example.com";
-              description = ''
-                The name of this installation.
-              '';
-            };
-
-            url = mkOption {
-              type = types.str;
-              example = "https://tickets.example.com";
-              description = ''
-                The installation’s full URL, without a trailing slash.
-              '';
-            };
-
-            cachedir = mkOption {
-              type = types.path;
-              default = "/var/cache/pretix";
-              description = ''
-                Directory for storing temporary files.
-              '';
-            };
-
-            datadir = mkOption {
-              type = types.path;
-              default = "/var/lib/pretix";
-              description = ''
-                Directory for storing user uploads and similar data.
-              '';
-            };
-
-            logdir = mkOption {
-              type = types.path;
-              default = "/var/log/pretix";
-              description = ''
-                Directory for storing log files.
-              '';
-            };
-
-            currency = mkOption {
-              type = types.str;
-              default = "EUR";
-              example = "USD";
-              description = ''
-                Default currency for events in its ISO 4217 three-letter code.
-              '';
-            };
-
-            registration = mkOption {
-              type = types.bool;
-              default = false;
-              example = true;
-              description = ''
-                Whether to allow registration of new admin users.
-              '';
-            };
-          };
-
-          database = {
-            backend = mkOption {
-              type = types.enum [
-                "sqlite3"
-                "postgresql"
-              ];
-              default = "postgresql";
-              description = ''
-                Database backend to use.
-
-                Only postgresql is recommended for production setups.
-              '';
-            };
-
-            host = mkOption {
-              type = with types; nullOr str;
-              default = if cfg.settings.database.backend == "postgresql" then "/run/postgresql" else null;
-              defaultText = literalExpression ''
-                if config.services.pretix.settings..database.backend == "postgresql" then "/run/postgresql"
-                else null
-              '';
-              description = ''
-                Database host or socket path.
-              '';
-            };
-
-            name = mkOption {
-              type = types.str;
-              default = "pretix";
-              description = ''
-                Database name.
-              '';
-            };
-
-            user = mkOption {
-              type = types.str;
-              default = "pretix";
-              description = ''
-                Database username.
-              '';
-            };
-          };
-
-          mail = {
-            from = mkOption {
-              type = types.str;
-              example = "tickets@example.com";
-              description = ''
-                E-Mail address used in the `FROM` header of outgoing mails.
-              '';
-            };
-
-            host = mkOption {
-              type = types.str;
-              default = "localhost";
-              example = "mail.example.com";
-              description = ''
-                Hostname of the SMTP server use for mail delivery.
-              '';
-            };
-
-            port = mkOption {
-              type = types.port;
-              default = 25;
-              example = 587;
-              description = ''
-                Port of the SMTP server to use for mail delivery.
-              '';
-            };
-          };
-
-          celery = {
-            backend = mkOption {
-              type = types.str;
-              default = "redis+socket://${config.services.redis.servers.pretix.unixSocket}?virtual_host=1";
-              defaultText = literalExpression ''
-                redis+socket://''${config.services.redis.servers.pretix.unixSocket}?virtual_host=1
-              '';
-              description = ''
-                URI to the celery backend used for the asynchronous job queue.
-              '';
-            };
-
-            broker = mkOption {
-              type = types.str;
-              default = "redis+socket://${config.services.redis.servers.pretix.unixSocket}?virtual_host=2";
-              defaultText = literalExpression ''
-                redis+socket://''${config.services.redis.servers.pretix.unixSocket}?virtual_host=2
-              '';
-              description = ''
-                URI to the celery broker used for the asynchronous job queue.
-              '';
-            };
-          };
-
-          redis = {
-            location = mkOption {
-              type = with types; nullOr str;
-              default = "unix://${config.services.redis.servers.pretix.unixSocket}?db=0";
-              defaultText = literalExpression ''
-                "unix://''${config.services.redis.servers.pretix.unixSocket}?db=0"
-              '';
-              description = ''
-                URI to the redis server, used to speed up locking, caching and session storage.
-              '';
-            };
-
-            sessions = mkOption {
-              type = types.bool;
-              default = true;
-              example = false;
-              description = ''
-                Whether to use redis as the session storage.
-              '';
-            };
-          };
-
-          memcached = {
-            location = mkOption {
-              type = with types; nullOr str;
-              default = null;
-              example = "127.0.0.1:11211";
-              description = ''
-                The `host:port` combination or the path to the UNIX socket of a memcached instance.
-
-                Can be used instead of Redis for caching.
-              '';
-            };
-          };
-
-          tools = {
-            pdftk = mkOption {
-              type = types.path;
-              default = getExe pkgs.pdftk;
-              defaultText = literalExpression ''
-                lib.getExe pkgs.pdftk
-              '';
-              description = ''
-                Path to the pdftk executable.
-              '';
-            };
-          };
-        };
-      };
       default = { };
+
       description = ''
         pretix configuration as a Nix attribute set. All settings can also be passed
         from the environment.
 
         See <https://docs.pretix.eu/en/latest/admin/config.html> for possible options.
       '';
+
+      type = types.submodule {
+        options = {
+          celery = {
+            backend = mkOption {
+              default = "redis+socket://${config.services.redis.servers.pretix.unixSocket}?virtual_host=1";
+
+              defaultText = literalExpression ''
+                redis+socket://''${config.services.redis.servers.pretix.unixSocket}?virtual_host=1
+              '';
+
+              description = ''
+                URI to the celery backend used for the asynchronous job queue.
+              '';
+
+              type = types.str;
+            };
+
+            broker = mkOption {
+              default = "redis+socket://${config.services.redis.servers.pretix.unixSocket}?virtual_host=2";
+
+              defaultText = literalExpression ''
+                redis+socket://''${config.services.redis.servers.pretix.unixSocket}?virtual_host=2
+              '';
+
+              description = ''
+                URI to the celery broker used for the asynchronous job queue.
+              '';
+
+              type = types.str;
+            };
+          };
+
+          database = {
+            backend = mkOption {
+              default = "postgresql";
+
+              description = ''
+                Database backend to use.
+
+                Only postgresql is recommended for production setups.
+              '';
+
+              type = types.enum [
+                "sqlite3"
+                "postgresql"
+              ];
+            };
+
+            host = mkOption {
+              default = if cfg.settings.database.backend == "postgresql" then "/run/postgresql" else null;
+
+              defaultText = literalExpression ''
+                if config.services.pretix.settings..database.backend == "postgresql" then "/run/postgresql"
+                else null
+              '';
+
+              description = ''
+                Database host or socket path.
+              '';
+
+              type = with types; nullOr str;
+            };
+
+            name = mkOption {
+              default = "pretix";
+
+              description = ''
+                Database name.
+              '';
+
+              type = types.str;
+            };
+
+            user = mkOption {
+              default = "pretix";
+
+              description = ''
+                Database username.
+              '';
+
+              type = types.str;
+            };
+          };
+
+          mail = {
+            from = mkOption {
+              description = ''
+                E-Mail address used in the `FROM` header of outgoing mails.
+              '';
+
+              example = "tickets@example.com";
+              type = types.str;
+            };
+
+            host = mkOption {
+              default = "localhost";
+
+              description = ''
+                Hostname of the SMTP server use for mail delivery.
+              '';
+
+              example = "mail.example.com";
+              type = types.str;
+            };
+
+            port = mkOption {
+              default = 25;
+
+              description = ''
+                Port of the SMTP server to use for mail delivery.
+              '';
+
+              example = 587;
+              type = types.port;
+            };
+          };
+
+          memcached = {
+            location = mkOption {
+              default = null;
+
+              description = ''
+                The `host:port` combination or the path to the UNIX socket of a memcached instance.
+
+                Can be used instead of Redis for caching.
+              '';
+
+              example = "127.0.0.1:11211";
+              type = with types; nullOr str;
+            };
+          };
+
+          pretix = {
+            cachedir = mkOption {
+              default = "/var/cache/pretix";
+
+              description = ''
+                Directory for storing temporary files.
+              '';
+
+              type = types.path;
+            };
+
+            currency = mkOption {
+              default = "EUR";
+
+              description = ''
+                Default currency for events in its ISO 4217 three-letter code.
+              '';
+
+              example = "USD";
+              type = types.str;
+            };
+
+            datadir = mkOption {
+              default = "/var/lib/pretix";
+
+              description = ''
+                Directory for storing user uploads and similar data.
+              '';
+
+              type = types.path;
+            };
+
+            instance_name = mkOption {
+              description = ''
+                The name of this installation.
+              '';
+
+              example = "tickets.example.com";
+              type = types.str;
+            };
+
+            logdir = mkOption {
+              default = "/var/log/pretix";
+
+              description = ''
+                Directory for storing log files.
+              '';
+
+              type = types.path;
+            };
+
+            registration = mkOption {
+              default = false;
+
+              description = ''
+                Whether to allow registration of new admin users.
+              '';
+
+              example = true;
+              type = types.bool;
+            };
+
+            url = mkOption {
+              description = ''
+                The installation’s full URL, without a trailing slash.
+              '';
+
+              example = "https://tickets.example.com";
+              type = types.str;
+            };
+          };
+
+          redis = {
+            location = mkOption {
+              default = "unix://${config.services.redis.servers.pretix.unixSocket}?db=0";
+
+              defaultText = literalExpression ''
+                "unix://''${config.services.redis.servers.pretix.unixSocket}?db=0"
+              '';
+
+              description = ''
+                URI to the redis server, used to speed up locking, caching and session storage.
+              '';
+
+              type = with types; nullOr str;
+            };
+
+            sessions = mkOption {
+              default = true;
+
+              description = ''
+                Whether to use redis as the session storage.
+              '';
+
+              example = false;
+              type = types.bool;
+            };
+          };
+
+          tools = {
+            pdftk = mkOption {
+              default = getExe pkgs.pdftk;
+
+              defaultText = literalExpression ''
+                lib.getExe pkgs.pdftk
+              '';
+
+              description = ''
+                Path to the pdftk executable.
+              '';
+
+              type = types.path;
+            };
+          };
+        };
+
+        freeformType = format.type;
+      };
+    };
+
+    user = mkOption {
+      default = "pretix";
+
+      description = ''
+        User under which pretix should run.
+      '';
+
+      type = types.str;
     };
   };
 
   config = mkIf cfg.enable {
     # https://docs.pretix.eu/en/latest/admin/installation/index.html
-
     environment.systemPackages = [
       pretixManageWrapper
     ];
-
-    services.logrotate.settings.pretix = {
-      files = "${cfg.settings.pretix.logdir}/*.log";
-      su = "${cfg.user} ${cfg.group}";
-      frequency = "weekly";
-      rotate = "12";
-      copytruncate = true;
-      compress = true;
-    };
 
     services = {
       nginx = mkIf cfg.nginx.enable {
@@ -433,33 +485,40 @@ in
         recommendedProxySettings = mkDefault true;
         recommendedTlsSettings = mkDefault true;
         upstreams.pretix.servers."unix:/run/pretix/pretix.sock" = { };
+
         virtualHosts.${cfg.nginx.domain} = {
           # https://docs.pretix.eu/en/latest/admin/installation/manual_smallscale.html#ssl
           extraConfig = ''
             more_set_headers Referrer-Policy same-origin;
             more_set_headers X-Content-Type-Options nosniff;
           '';
+
           locations = {
             "/".proxyPass = "http://pretix";
+
             "/media/" = {
               alias = "${cfg.settings.pretix.datadir}/media/";
+
               extraConfig = ''
                 access_log off;
                 expires 7d;
               '';
             };
-            "^~ (/media/(cachedfiles|invoices)|/static/(staticfiles.json|CACHE/manifest.json))" = {
-              extraConfig = ''
-                deny all;
-                return 404;
-              '';
-            };
+
             "/static/" = {
               alias = "${finalPackage}/${cfg.package.python.sitePackages}/pretix/static.dist/";
+
               extraConfig = ''
                 access_log off;
                 more_set_headers Cache-Control "public";
                 expires 365d;
+              '';
+            };
+
+            "^~ (/media/(cachedfiles|invoices)|/static/(staticfiles.json|CACHE/manifest.json))" = {
+              extraConfig = ''
+                deny all;
+                return 404;
               '';
             };
           };
@@ -468,42 +527,46 @@ in
 
       postgresql = mkIf (cfg.database.createLocally && cfg.settings.database.backend == "postgresql") {
         enable = true;
+        ensureDatabases = [ cfg.settings.database.name ];
+
         ensureUsers = [
           {
-            name = cfg.settings.database.user;
             ensureDBOwnership = true;
+            name = cfg.settings.database.user;
           }
         ];
-        ensureDatabases = [ cfg.settings.database.name ];
       };
 
       redis.servers.pretix.enable = withRedis;
+    };
+
+    services.logrotate.settings.pretix = {
+      compress = true;
+      copytruncate = true;
+      files = "${cfg.settings.pretix.logdir}/*.log";
+      frequency = "weekly";
+      rotate = "12";
+      su = "${cfg.user} ${cfg.group}";
     };
 
     systemd.services =
       let
         commonUnitConfig = {
           environment.PRETIX_CONFIG_FILE = configFile;
+
           serviceConfig = {
-            User = "pretix";
-            Group = "pretix";
+            AmbientCapabilities = "";
+            CacheDirectory = "pretix";
+            CapabilityBoundingSet = [ "" ];
+            DevicePolicy = "closed";
+
             EnvironmentFile = optionals (cfg.environmentFile != null) [
               cfg.environmentFile
             ];
-            StateDirectory = [
-              "pretix"
-            ];
-            StateDirectoryMode = "0750";
-            CacheDirectory = "pretix";
-            LogsDirectory = "pretix";
-            WorkingDirectory = cfg.settings.pretix.datadir;
-            SupplementaryGroups = optionals withRedis [
-              "redis-pretix"
-            ];
-            AmbientCapabilities = "";
-            CapabilityBoundingSet = [ "" ];
-            DevicePolicy = "closed";
+
+            Group = "pretix";
             LockPersonality = true;
+            LogsDirectory = "pretix";
             MemoryDenyWriteExecute = false; # required by pdftk
             NoNewPrivileges = true;
             PrivateDevices = true;
@@ -518,33 +581,65 @@ in
             ProtectProc = "invisible";
             ProtectSystem = "strict";
             RemoveIPC = true;
+
             RestrictAddressFamilies = [
               "AF_INET"
               "AF_INET6"
               "AF_UNIX"
             ];
+
             RestrictNamespaces = true;
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
+
+            StateDirectory = [
+              "pretix"
+            ];
+
+            StateDirectoryMode = "0750";
+
+            SupplementaryGroups = optionals withRedis [
+              "redis-pretix"
+            ];
+
             SystemCallArchitectures = "native";
+
             SystemCallFilter = [
               "@system-service"
               "~@privileged"
               "@chown"
             ];
+
             UMask = "0027";
+            User = "pretix";
+            WorkingDirectory = cfg.settings.pretix.datadir;
           };
         };
       in
       {
+        nginx.serviceConfig.SupplementaryGroups = mkIf cfg.nginx.enable [ "pretix" ];
+
+        pretix-periodic = recursiveUpdate commonUnitConfig {
+          description = "pretix periodic task runner";
+
+          serviceConfig = {
+            ExecStart = "${getExe' pythonEnv "pretix-manage"} runperiodic";
+            Type = "oneshot";
+          };
+
+          # every 15 minutes
+          startAt = [ "*:3,18,33,48" ];
+        };
+
         pretix-web = recursiveUpdate commonUnitConfig {
-          description = "pretix web service";
           after = [
             "network.target"
             "redis-pretix.service"
             "postgresql.target"
           ];
-          wantedBy = [ "multi-user.target" ];
+
+          description = "pretix web service";
+
           preStart = ''
             versionFile="${cfg.settings.pretix.datadir}/.version"
             version=$(cat "$versionFile" 2>/dev/null || echo 0)
@@ -560,39 +655,33 @@ in
               echo "$configuredPlugins" > "$pluginsFile"
             fi
           '';
-          serviceConfig = {
-            TimeoutStartSec = "15min";
-            ExecStart = "${getExe' pythonEnv "gunicorn"} --bind unix:/run/pretix/pretix.sock ${cfg.gunicorn.extraArgs} pretix.wsgi";
-            RuntimeDirectory = "pretix";
-            Restart = "on-failure";
-          };
-        };
 
-        pretix-periodic = recursiveUpdate commonUnitConfig {
-          description = "pretix periodic task runner";
-          # every 15 minutes
-          startAt = [ "*:3,18,33,48" ];
           serviceConfig = {
-            Type = "oneshot";
-            ExecStart = "${getExe' pythonEnv "pretix-manage"} runperiodic";
+            ExecStart = "${getExe' pythonEnv "gunicorn"} --bind unix:/run/pretix/pretix.sock ${cfg.gunicorn.extraArgs} pretix.wsgi";
+            Restart = "on-failure";
+            RuntimeDirectory = "pretix";
+            TimeoutStartSec = "15min";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
 
         pretix-worker = recursiveUpdate commonUnitConfig {
-          description = "pretix asynchronous job runner";
           after = [
             "network.target"
             "redis-pretix.service"
             "postgresql.target"
           ];
-          wantedBy = [ "multi-user.target" ];
+
+          description = "pretix asynchronous job runner";
+
           serviceConfig = {
             ExecStart = "${getExe' pythonEnv "celery"} -A pretix.celery_app worker ${cfg.celery.extraArgs}";
             Restart = "on-failure";
           };
-        };
 
-        nginx.serviceConfig.SupplementaryGroups = mkIf cfg.nginx.enable [ "pretix" ];
+          wantedBy = [ "multi-user.target" ];
+        };
       };
 
     systemd.sockets.pretix-web.socketConfig = {
@@ -602,10 +691,15 @@ in
 
     users = {
       groups.${cfg.group} = { };
+
       users.${cfg.user} = {
-        isSystemUser = true;
         inherit (cfg) group;
+        isSystemUser = true;
       };
     };
+  };
+
+  meta = {
+    maintainers = with lib.maintainers; [ hexa ];
   };
 }

@@ -1,288 +1,21 @@
 {
   lib,
   stdenv,
-  buildEnv,
-  runCommand,
   fetchurl,
+  buildEnv,
   file,
+  runCommand,
   texlive,
+  texliveConTeXt,
+  texliveFull,
+  texliveInfraOnly,
+  texliveMedium,
+  texliveSmall,
   writeShellScript,
   writeText,
-  texliveInfraOnly,
-  texliveConTeXt,
-  texliveSmall,
-  texliveMedium,
-  texliveFull,
 }:
 
 rec {
-
-  mkTeXTest = lib.makeOverridable (
-    {
-      name,
-      format,
-      text,
-      texLive ? texliveSmall,
-      options ? "-interaction=errorstopmode",
-      preTest ? "",
-      postTest ? "",
-      ...
-    }@attrs:
-    runCommand "texlive-test-tex-${name}"
-      (
-        {
-          nativeBuildInputs = [ texLive ] ++ attrs.nativeBuildInputs or [ ];
-          text = builtins.toFile "${name}.tex" text;
-        }
-        // removeAttrs attrs [
-          "nativeBuildInputs"
-          "text"
-          "texLive"
-        ]
-      )
-      ''
-        export HOME="$(mktemp -d)"
-        mkdir "$out"
-        cd "$out"
-        cp "$text" "$name.tex"
-        ${preTest}
-        $format $options "$name.tex"
-        ${postTest}
-      ''
-  );
-
-  tlpdbNix =
-    runCommand "texlive-test-tlpdb-nix"
-      {
-        nixpkgsTlpdbNix = ../../tools/typesetting/tex/texlive/tlpdb.nix;
-        tlpdbNix = texlive.tlpdb.nix;
-      }
-      ''
-        mkdir -p "$out"
-        diff -u "''${nixpkgsTlpdbNix}" "''${tlpdbNix}" | tee "$out/tlpdb.nix.patch"
-      '';
-
-  # test two completely different font discovery mechanisms, both of which were once broken:
-  #  - lualatex uses its own luaotfload script (#220228)
-  #  - xelatex uses fontconfig (#228196)
-  opentype-fonts = lib.recurseIntoAttrs rec {
-    lualatex = mkTeXTest {
-      name = "opentype-fonts-lualatex";
-      format = "lualatex";
-      texLive = texliveSmall.withPackages (ps: [ ps.libertinus-fonts ]);
-      text = ''
-        \documentclass{article}
-        \usepackage{fontspec}
-        \setmainfont{Libertinus Serif}
-        \begin{document}
-          \LaTeX{} is great
-        \end{document}
-      '';
-    };
-    xelatex = lualatex.override {
-      name = "opentype-fonts-xelatex";
-      format = "xelatex";
-    };
-  };
-
-  chktex =
-    runCommand "texlive-test-chktex"
-      {
-        nativeBuildInputs = [
-          (texlive.withPackages (ps: [ ps.chktex ]))
-        ];
-        input = builtins.toFile "chktex-sample.tex" ''
-          \documentclass{article}
-          \begin{document}
-            \LaTeX is great
-          \end{document}
-        '';
-      }
-      ''
-        # chktex is supposed to return 2 when it (successfully) finds warnings, but no errors,
-        # see http://git.savannah.nongnu.org/cgit/chktex.git/commit/?id=ec0fb9b58f02a62ff0bfec98b997208e9d7a5998
-        (set +e; chktex -v -nall -w1 "$input" 2>&1; [ $? = 2 ] || exit 1; set -e)  | tee "$out"
-        # also check that the output does indeed contain "One warning printed"
-        grep "One warning printed" "$out"
-      '';
-
-  context = mkTeXTest {
-    name = "texlive-test-context";
-    format = "context";
-    texLive = texliveConTeXt;
-    # check that the PDF has been created: we have hit cases of context
-    # failing with exit status 0 due to a misconfigured texlive
-    postTest = ''
-      if [[ ! -f "$name".pdf ]] ; then
-        echo "ConTeXt test failed: file '$name.pdf' not found"
-        exit 1
-      fi
-    '';
-    text = ''
-      \starttext
-      \startsection[title={ConTeXt test document}]
-        This is an {\em incredibly} simple ConTeXt document.
-      \stopsection
-      \stoptext
-    '';
-  };
-
-  dvipng = lib.recurseIntoAttrs {
-    # https://github.com/NixOS/nixpkgs/issues/75605
-    basic =
-      runCommand "texlive-test-dvipng-basic"
-        {
-          nativeBuildInputs = [
-            file
-            texliveMedium
-          ];
-          input = fetchurl {
-            name = "test_dvipng.tex";
-            url = "http://git.savannah.nongnu.org/cgit/dvipng.git/plain/test_dvipng.tex?id=b872753590a18605260078f56cbd6f28d39dc035";
-            sha256 = "1pjpf1jvwj2pv5crzdgcrzvbmn7kfmgxa39pcvskl4pa0c9hl88n";
-          };
-        }
-        ''
-          cp "$input" ./document.tex
-
-          latex document.tex
-          dvipng -T tight -strict -picky document.dvi
-          for f in document*.png; do
-            file "$f" | tee output
-            grep PNG output
-          done
-
-          mkdir "$out"
-          mv document*.png "$out"/
-        '';
-
-    # test dvipng's limited capability to render postscript specials via GS
-    ghostscript =
-      runCommand "texlive-test-ghostscript"
-        {
-          nativeBuildInputs = [
-            file
-            (texliveSmall.withPackages (ps: [ ps.dvipng ]))
-          ];
-          input = builtins.toFile "postscript-sample.tex" ''
-            \documentclass{minimal}
-            \begin{document}
-              Ni
-              \special{ps:
-                newpath
-                0 0 moveto
-                7 7 rlineto
-                0 7 moveto
-                7 -7 rlineto
-                stroke
-                showpage
-              }
-            \end{document}
-          '';
-          gs_trap = writeShellScript "gs_trap.sh" ''
-            exit 1
-          '';
-        }
-        ''
-          cp "$gs_trap" ./gs
-          export PATH=$PWD:$PATH
-          # check that the trap works
-          gs && exit 1
-
-          cp "$input" ./document.tex
-
-          latex document.tex
-          dvipng -T 1in,1in -strict -picky document.dvi
-          for f in document*.png; do
-            file "$f" | tee output
-            grep PNG output
-          done
-
-          mkdir "$out"
-          mv document*.png "$out"/
-        '';
-  };
-
-  # https://github.com/NixOS/nixpkgs/issues/75070
-  dvisvgm =
-    runCommand "texlive-test-dvisvgm"
-      {
-        nativeBuildInputs = [
-          file
-          texliveMedium
-        ];
-        input = builtins.toFile "dvisvgm-sample.tex" ''
-          \documentclass{article}
-          \begin{document}
-            mwe
-          \end{document}
-        '';
-      }
-      ''
-        cp "$input" ./document.tex
-
-        latex document.tex
-        dvisvgm document.dvi -n -o document_dvi.svg
-        cat document_dvi.svg
-        file document_dvi.svg | grep SVG
-
-        pdflatex document.tex
-        dvisvgm -P document.pdf -n -o document_pdf.svg
-        cat document_pdf.svg
-        file document_pdf.svg | grep SVG
-
-        mkdir "$out"
-        mv document*.svg "$out"/
-      '';
-
-  texdoc =
-    runCommand "texlive-test-texdoc"
-      {
-        nativeBuildInputs = [
-          ((texlive.withPackages (ps: [ ps.texdoc ])).overrideAttrs { withDocs = true; })
-        ];
-      }
-      ''
-        texdoc --version
-
-        texdoc --debug --list texdoc | tee "$out"
-        grep texdoc.pdf "$out"
-      '';
-
-  # check that the default language is US English
-  defaultLanguage = lib.recurseIntoAttrs rec {
-    # language.def
-    etex = mkTeXTest {
-      name = "default-language-etex";
-      format = "etex";
-      text = ''
-        \catcode`\@=11
-        \ifnum\language=\lang@USenglish \message{[tests.texlive] Default language is US English.}
-        \else\errmessage{[tests.texlive] Error: default language is NOT US English.}\fi
-        \ifnum\language=0\message{[tests.texlive] Default language has id 0.}
-        \else\errmessage{[tests.texlive] Error: default language does NOT have id 0.}\fi
-        \bye
-      '';
-    };
-    # language.dat
-    latex = mkTeXTest {
-      name = "default-language-latex";
-      format = "latex";
-      text = ''
-        \makeatletter
-        \ifnum\language=\l@USenglish \GenericWarning{}{[tests.texlive] Default language is US English}
-        \else\GenericError{}{[tests.texlive] Error: default language is NOT US English}{}{}\fi
-        \ifnum\language=0\GenericWarning{}{[tests.texlive] Default language has id 0}
-        \else\GenericError{}{[tests.texlive] Error: default language does NOT have id 0}{}{}\fi
-        \stop
-      '';
-    };
-    # language.dat.lua
-    luatex = etex.override {
-      name = "default-language-luatex";
-      format = "luatex";
-    };
-  };
 
   # check that all languages are available, including synonyms
   allLanguages =
@@ -293,9 +26,16 @@ rec {
     lib.recurseIntoAttrs {
       # language.def
       etex = mkTeXTest {
-        name = "all-languages-etex";
-        format = "etex";
         inherit hyphenBase texLive;
+        format = "etex";
+        name = "all-languages-etex";
+
+        preTest = ''
+          texLanguages="$(sed -n -E 's/^\\addlanguage\s*\{([^}]+)\}.*$/\1/p' < "$hyphenBase"/tex/generic/config/language.def)"
+          texLanguages="''${texLanguages//$'\n'/,}"
+          substituteInPlace "$name.tex" --subst-var texLanguages
+        '';
+
         text = ''
           \catcode`\@=11
           \input kvsetkeys.sty
@@ -306,17 +46,20 @@ rec {
           \comma@parse{@texLanguages@}\CheckLang
           \bye
         '';
+      };
+
+      # language.dat
+      latex = mkTeXTest {
+        inherit hyphenBase texLive;
+        format = "latex";
+        name = "all-languages-latex";
+
         preTest = ''
-          texLanguages="$(sed -n -E 's/^\\addlanguage\s*\{([^}]+)\}.*$/\1/p' < "$hyphenBase"/tex/generic/config/language.def)"
+          texLanguages="$(sed -n -E 's/^([^%= \t]+).*$/\1/p' < "$hyphenBase"/tex/generic/config/language.dat)"
           texLanguages="''${texLanguages//$'\n'/,}"
           substituteInPlace "$name.tex" --subst-var texLanguages
         '';
-      };
-      # language.dat
-      latex = mkTeXTest {
-        name = "all-languages-latex";
-        format = "latex";
-        inherit hyphenBase texLive;
+
         text = ''
           \makeatletter
           \@for\Lang:=italian,@texLanguages@\do{
@@ -328,17 +71,20 @@ rec {
           }
           \stop
         '';
+      };
+
+      # language.dat.lua
+      luatex = mkTeXTest {
+        inherit hyphenBase texLive;
+        format = "luatex";
+        name = "all-languages-luatex";
+
         preTest = ''
-          texLanguages="$(sed -n -E 's/^([^%= \t]+).*$/\1/p' < "$hyphenBase"/tex/generic/config/language.dat)"
+          texLanguages="$(sed -n -E 's/^.*\[("|'\''')(.*)("|'\''')].*$/\2/p' < "$hyphenBase"/tex/generic/config/language.dat.lua)"
           texLanguages="''${texLanguages//$'\n'/,}"
           substituteInPlace "$name.tex" --subst-var texLanguages
         '';
-      };
-      # language.dat.lua
-      luatex = mkTeXTest {
-        name = "all-languages-luatex";
-        format = "luatex";
-        inherit hyphenBase texLive;
+
         text = ''
           \directlua{
             require('luatex-hyphen.lua')
@@ -354,98 +100,8 @@ rec {
           }
           \bye
         '';
-        preTest = ''
-          texLanguages="$(sed -n -E 's/^.*\[("|'\''')(.*)("|'\''')].*$/\2/p' < "$hyphenBase"/tex/generic/config/language.dat.lua)"
-          texLanguages="''${texLanguages//$'\n'/,}"
-          substituteInPlace "$name.tex" --subst-var texLanguages
-        '';
       };
     };
-
-  # test that language files are generated as expected
-  hyphen-base =
-    runCommand "texlive-test-hyphen-base"
-      {
-        hyphenBase = texlive.pkgs.hyphen-base;
-        schemeFull = texliveFull;
-        schemeInfraOnly = texliveInfraOnly;
-      }
-      ''
-        mkdir -p "$out"/{scheme-infraonly,scheme-full}
-
-        # create language files with no hyphenation patterns
-        cat "$hyphenBase"/tex/generic/config/language.us >language.dat
-        cat "$hyphenBase"/tex/generic/config/language.us.def >language.def
-        cat "$hyphenBase"/tex/generic/config/language.us.lua >language.dat.lua
-
-        cat >>language.dat.lua <<EOF
-        }
-        EOF
-
-        cat >>language.def <<EOF
-        %%% No changes may be made beyond this point.
-
-        \uselanguage {USenglish}             %%% This MUST be the last line of the file.
-        EOF
-
-        for fname in language.{dat,def,dat.lua} ; do
-          diff --ignore-matching-lines='^\(%\|--\) Generated by ' -u \
-            {"$hyphenBase","$schemeFull"/share/texmf-var}/tex/generic/config/"$fname" \
-            | tee "$out/scheme-full/$fname.patch"
-          diff --ignore-matching-lines='^\(%\|--\) Generated by ' -u \
-            {,"$schemeInfraOnly"/share/texmf-var/tex/generic/config/}"$fname" \
-            | tee "$out/scheme-infraonly/$fname.patch"
-        done
-      '';
-
-  # verify that l3build works correctly
-  l3build =
-    runCommand "texlive-test-l3build"
-      {
-        nativeBuildInputs = [ (texliveSmall.withPackages (ps: [ ps.l3build ])) ];
-      }
-      ''
-        cat >>build.lua <<EOF
-        module = "texlive-test-l3build"
-        typesetfiles = {"*.tex"}
-        EOF
-
-        cat >>test-l3build.tex <<EOF
-        \documentclass{article}
-        \begin{document}
-        l3build ran successfully.
-        \end{document}
-        EOF
-
-        l3build doc
-        l3build install --full --texmfhome "$out"
-      '';
-
-  # verify that the restricted mode gets enabled when
-  # needed (detected by checking if it disallows --gscmd)
-  repstopdf =
-    runCommand "texlive-test-repstopdf"
-      {
-        nativeBuildInputs = [ (texlive.withPackages (ps: [ ps.epstopdf ])) ];
-      }
-      ''
-        ! (epstopdf --gscmd echo /dev/null 2>&1 || true) | grep forbidden >/dev/null
-        (repstopdf --gscmd echo /dev/null 2>&1 || true) | grep forbidden >/dev/null
-        mkdir "$out"
-      '';
-
-  # verify that the restricted mode gets enabled when
-  # needed (detected by checking if it disallows --gscmd)
-  rpdfcrop =
-    runCommand "texlive-test-rpdfcrop"
-      {
-        nativeBuildInputs = [ (texlive.withPackages (ps: [ ps.pdfcrop ])) ];
-      }
-      ''
-        ! (pdfcrop --gscmd echo $(command -v pdfcrop) 2>&1 || true) | grep 'restricted mode' >/dev/null
-        (rpdfcrop --gscmd echo $(command -v pdfcrop) 2>&1 || true) | grep 'restricted mode' >/dev/null
-        mkdir "$out"
-      '';
 
   # check that all binaries run successfully, in the following sense:
   # (1) run --version, -v, --help, -h successfully; or
@@ -787,6 +443,7 @@ rec {
           latexTestTex
           texTestTex
           ;
+
         texliveScheme = texliveFull;
       }
       ''
@@ -896,35 +553,295 @@ rec {
         [[ $failedCount = 0 ]]
       '';
 
-  # check that all scripts have a Nix shebang
-  shebangs =
+  chktex =
+    runCommand "texlive-test-chktex"
+      {
+        nativeBuildInputs = [
+          (texlive.withPackages (ps: [ ps.chktex ]))
+        ];
+
+        input = builtins.toFile "chktex-sample.tex" ''
+          \documentclass{article}
+          \begin{document}
+            \LaTeX is great
+          \end{document}
+        '';
+      }
+      ''
+        # chktex is supposed to return 2 when it (successfully) finds warnings, but no errors,
+        # see http://git.savannah.nongnu.org/cgit/chktex.git/commit/?id=ec0fb9b58f02a62ff0bfec98b997208e9d7a5998
+        (set +e; chktex -v -nall -w1 "$input" 2>&1; [ $? = 2 ] || exit 1; set -e)  | tee "$out"
+        # also check that the output does indeed contain "One warning printed"
+        grep "One warning printed" "$out"
+      '';
+
+  context = mkTeXTest {
+    format = "context";
+    name = "texlive-test-context";
+
+    # check that the PDF has been created: we have hit cases of context
+    # failing with exit status 0 due to a misconfigured texlive
+    postTest = ''
+      if [[ ! -f "$name".pdf ]] ; then
+        echo "ConTeXt test failed: file '$name.pdf' not found"
+        exit 1
+      fi
+    '';
+
+    texLive = texliveConTeXt;
+
+    text = ''
+      \starttext
+      \startsection[title={ConTeXt test document}]
+        This is an {\em incredibly} simple ConTeXt document.
+      \stopsection
+      \stoptext
+    '';
+  };
+
+  # check that the default language is US English
+  defaultLanguage = lib.recurseIntoAttrs rec {
+    # language.def
+    etex = mkTeXTest {
+      format = "etex";
+      name = "default-language-etex";
+
+      text = ''
+        \catcode`\@=11
+        \ifnum\language=\lang@USenglish \message{[tests.texlive] Default language is US English.}
+        \else\errmessage{[tests.texlive] Error: default language is NOT US English.}\fi
+        \ifnum\language=0\message{[tests.texlive] Default language has id 0.}
+        \else\errmessage{[tests.texlive] Error: default language does NOT have id 0.}\fi
+        \bye
+      '';
+    };
+
+    # language.dat
+    latex = mkTeXTest {
+      format = "latex";
+      name = "default-language-latex";
+
+      text = ''
+        \makeatletter
+        \ifnum\language=\l@USenglish \GenericWarning{}{[tests.texlive] Default language is US English}
+        \else\GenericError{}{[tests.texlive] Error: default language is NOT US English}{}{}\fi
+        \ifnum\language=0\GenericWarning{}{[tests.texlive] Default language has id 0}
+        \else\GenericError{}{[tests.texlive] Error: default language does NOT have id 0}{}{}\fi
+        \stop
+      '';
+    };
+
+    # language.dat.lua
+    luatex = etex.override {
+      format = "luatex";
+      name = "default-language-luatex";
+    };
+  };
+
+  dvipng = lib.recurseIntoAttrs {
+    # https://github.com/NixOS/nixpkgs/issues/75605
+    basic =
+      runCommand "texlive-test-dvipng-basic"
+        {
+          nativeBuildInputs = [
+            file
+            texliveMedium
+          ];
+
+          input = fetchurl {
+            name = "test_dvipng.tex";
+            sha256 = "1pjpf1jvwj2pv5crzdgcrzvbmn7kfmgxa39pcvskl4pa0c9hl88n";
+            url = "http://git.savannah.nongnu.org/cgit/dvipng.git/plain/test_dvipng.tex?id=b872753590a18605260078f56cbd6f28d39dc035";
+          };
+        }
+        ''
+          cp "$input" ./document.tex
+
+          latex document.tex
+          dvipng -T tight -strict -picky document.dvi
+          for f in document*.png; do
+            file "$f" | tee output
+            grep PNG output
+          done
+
+          mkdir "$out"
+          mv document*.png "$out"/
+        '';
+
+    # test dvipng's limited capability to render postscript specials via GS
+    ghostscript =
+      runCommand "texlive-test-ghostscript"
+        {
+          nativeBuildInputs = [
+            file
+            (texliveSmall.withPackages (ps: [ ps.dvipng ]))
+          ];
+
+          gs_trap = writeShellScript "gs_trap.sh" ''
+            exit 1
+          '';
+
+          input = builtins.toFile "postscript-sample.tex" ''
+            \documentclass{minimal}
+            \begin{document}
+              Ni
+              \special{ps:
+                newpath
+                0 0 moveto
+                7 7 rlineto
+                0 7 moveto
+                7 -7 rlineto
+                stroke
+                showpage
+              }
+            \end{document}
+          '';
+        }
+        ''
+          cp "$gs_trap" ./gs
+          export PATH=$PWD:$PATH
+          # check that the trap works
+          gs && exit 1
+
+          cp "$input" ./document.tex
+
+          latex document.tex
+          dvipng -T 1in,1in -strict -picky document.dvi
+          for f in document*.png; do
+            file "$f" | tee output
+            grep PNG output
+          done
+
+          mkdir "$out"
+          mv document*.png "$out"/
+        '';
+  };
+
+  # https://github.com/NixOS/nixpkgs/issues/75070
+  dvisvgm =
+    runCommand "texlive-test-dvisvgm"
+      {
+        nativeBuildInputs = [
+          file
+          texliveMedium
+        ];
+
+        input = builtins.toFile "dvisvgm-sample.tex" ''
+          \documentclass{article}
+          \begin{document}
+            mwe
+          \end{document}
+        '';
+      }
+      ''
+        cp "$input" ./document.tex
+
+        latex document.tex
+        dvisvgm document.dvi -n -o document_dvi.svg
+        cat document_dvi.svg
+        file document_dvi.svg | grep SVG
+
+        pdflatex document.tex
+        dvisvgm -P document.pdf -n -o document_pdf.svg
+        cat document_pdf.svg
+        file document_pdf.svg | grep SVG
+
+        mkdir "$out"
+        mv document*.svg "$out"/
+      '';
+
+  # verify that all fixed hashes are present
+  # this is effectively an eval-time assertion, converted into a derivation for
+  # ease of testing
+  fixedHashes =
     let
-      binPackages = lib.catAttrs "out" (lib.attrValues texlive.pkgs);
+      fods = lib.concatMap (
+        p:
+        lib.optional (p ? tex && lib.isDerivation p.tex) p.tex
+        ++ lib.optional (p ? texdoc) p.texdoc
+        ++ lib.optional (p ? texsource) p.texsource
+        ++ lib.optional (p ? tlpkg) p.tlpkg
+      ) (lib.attrValues texlive.pkgs);
+      errorText = lib.concatMapStrings (
+        p:
+        lib.optionalString (
+          !p ? outputHash
+        ) "${p.pname}-${p.tlOutputName} does not have a fixed output hash\n"
+      ) fods;
     in
-    runCommand "texlive-test-shebangs" { } (
+    runCommand "texlive-test-fixed-hashes"
+      {
+        inherit errorText;
+        passAsFile = [ "errorText" ];
+      }
       ''
-        echo "checking that all texlive scripts shebangs are in '$NIX_STORE'"
-        declare -i scriptCount=0 invalidCount=0
+        if [[ -s "$errorTextPath" ]] ; then
+          cat "$errorTextPath"
+          echo Failed: some TeX Live packages do not have fixed output hashes. Please read UPGRADING.md for how to generate a new fixed-hashes.nix.
+          exit 1
+        else
+          touch "$out"
+        fi
+      '';
+
+  # test that language files are generated as expected
+  hyphen-base =
+    runCommand "texlive-test-hyphen-base"
+      {
+        hyphenBase = texlive.pkgs.hyphen-base;
+        schemeFull = texliveFull;
+        schemeInfraOnly = texliveInfraOnly;
+      }
       ''
-      + (lib.concatMapStrings (pkg: ''
-        for bin in '${pkg.outPath}'/bin/* ; do
-          grep -I -q . "$bin" || continue  # ignore binary files
-          [[ -x "$bin" ]] || continue # ignore non-executable files (such as context.lua)
-          scriptCount=$((scriptCount + 1))
-          read -r cmdline < "$bin"
-          read -r interp <<< "$cmdline"
-          if [[ "$interp" != "#!$NIX_STORE"/* && "$interp" != "#! $NIX_STORE"/* ]] ; then
-            echo "error: non-nix shebang '$interp' in script '$bin'"
-            invalidCount=$((invalidCount + 1))
-          fi
+        mkdir -p "$out"/{scheme-infraonly,scheme-full}
+
+        # create language files with no hyphenation patterns
+        cat "$hyphenBase"/tex/generic/config/language.us >language.dat
+        cat "$hyphenBase"/tex/generic/config/language.us.def >language.def
+        cat "$hyphenBase"/tex/generic/config/language.us.lua >language.dat.lua
+
+        cat >>language.dat.lua <<EOF
+        }
+        EOF
+
+        cat >>language.def <<EOF
+        %%% No changes may be made beyond this point.
+
+        \uselanguage {USenglish}             %%% This MUST be the last line of the file.
+        EOF
+
+        for fname in language.{dat,def,dat.lua} ; do
+          diff --ignore-matching-lines='^\(%\|--\) Generated by ' -u \
+            {"$hyphenBase","$schemeFull"/share/texmf-var}/tex/generic/config/"$fname" \
+            | tee "$out/scheme-full/$fname.patch"
+          diff --ignore-matching-lines='^\(%\|--\) Generated by ' -u \
+            {,"$schemeInfraOnly"/share/texmf-var/tex/generic/config/}"$fname" \
+            | tee "$out/scheme-infraonly/$fname.patch"
         done
-      '') binPackages)
-      + ''
-        echo "checked $scriptCount scripts, found $invalidCount non-nix shebangs"
-        [[ $invalidCount -gt 0 ]] && exit 1
-        mkdir -p "$out"
+      '';
+
+  # verify that l3build works correctly
+  l3build =
+    runCommand "texlive-test-l3build"
+      {
+        nativeBuildInputs = [ (texliveSmall.withPackages (ps: [ ps.l3build ])) ];
+      }
       ''
-    );
+        cat >>build.lua <<EOF
+        module = "texlive-test-l3build"
+        typesetfiles = {"*.tex"}
+        EOF
+
+        cat >>test-l3build.tex <<EOF
+        \documentclass{article}
+        \begin{document}
+        l3build ran successfully.
+        \end{document}
+        EOF
+
+        l3build doc
+        l3build install --full --texmfhome "$out"
+      '';
 
   # verify that the precomputed licensing information in default.nix
   # does indeed match the metadata of the individual packages.
@@ -975,37 +892,143 @@ rec {
           ''
       );
 
-  # verify that all fixed hashes are present
-  # this is effectively an eval-time assertion, converted into a derivation for
-  # ease of testing
-  fixedHashes =
-    let
-      fods = lib.concatMap (
-        p:
-        lib.optional (p ? tex && lib.isDerivation p.tex) p.tex
-        ++ lib.optional (p ? texdoc) p.texdoc
-        ++ lib.optional (p ? texsource) p.texsource
-        ++ lib.optional (p ? tlpkg) p.tlpkg
-      ) (lib.attrValues texlive.pkgs);
-      errorText = lib.concatMapStrings (
-        p:
-        lib.optionalString (
-          !p ? outputHash
-        ) "${p.pname}-${p.tlOutputName} does not have a fixed output hash\n"
-      ) fods;
-    in
-    runCommand "texlive-test-fixed-hashes"
+  mkTeXTest = lib.makeOverridable (
+    {
+      format,
+      name,
+      text,
+      options ? "-interaction=errorstopmode",
+      postTest ? "",
+      preTest ? "",
+      texLive ? texliveSmall,
+      ...
+    }@attrs:
+    runCommand "texlive-test-tex-${name}"
+      (
+        {
+          nativeBuildInputs = [ texLive ] ++ attrs.nativeBuildInputs or [ ];
+          text = builtins.toFile "${name}.tex" text;
+        }
+        // removeAttrs attrs [
+          "nativeBuildInputs"
+          "text"
+          "texLive"
+        ]
+      )
+      ''
+        export HOME="$(mktemp -d)"
+        mkdir "$out"
+        cd "$out"
+        cp "$text" "$name.tex"
+        ${preTest}
+        $format $options "$name.tex"
+        ${postTest}
+      ''
+  );
+
+  # test two completely different font discovery mechanisms, both of which were once broken:
+  #  - lualatex uses its own luaotfload script (#220228)
+  #  - xelatex uses fontconfig (#228196)
+  opentype-fonts = lib.recurseIntoAttrs rec {
+    lualatex = mkTeXTest {
+      format = "lualatex";
+      name = "opentype-fonts-lualatex";
+      texLive = texliveSmall.withPackages (ps: [ ps.libertinus-fonts ]);
+
+      text = ''
+        \documentclass{article}
+        \usepackage{fontspec}
+        \setmainfont{Libertinus Serif}
+        \begin{document}
+          \LaTeX{} is great
+        \end{document}
+      '';
+    };
+
+    xelatex = lualatex.override {
+      format = "xelatex";
+      name = "opentype-fonts-xelatex";
+    };
+  };
+
+  # verify that the restricted mode gets enabled when
+  # needed (detected by checking if it disallows --gscmd)
+  repstopdf =
+    runCommand "texlive-test-repstopdf"
       {
-        inherit errorText;
-        passAsFile = [ "errorText" ];
+        nativeBuildInputs = [ (texlive.withPackages (ps: [ ps.epstopdf ])) ];
       }
       ''
-        if [[ -s "$errorTextPath" ]] ; then
-          cat "$errorTextPath"
-          echo Failed: some TeX Live packages do not have fixed output hashes. Please read UPGRADING.md for how to generate a new fixed-hashes.nix.
-          exit 1
-        else
-          touch "$out"
-        fi
+        ! (epstopdf --gscmd echo /dev/null 2>&1 || true) | grep forbidden >/dev/null
+        (repstopdf --gscmd echo /dev/null 2>&1 || true) | grep forbidden >/dev/null
+        mkdir "$out"
+      '';
+
+  # verify that the restricted mode gets enabled when
+  # needed (detected by checking if it disallows --gscmd)
+  rpdfcrop =
+    runCommand "texlive-test-rpdfcrop"
+      {
+        nativeBuildInputs = [ (texlive.withPackages (ps: [ ps.pdfcrop ])) ];
+      }
+      ''
+        ! (pdfcrop --gscmd echo $(command -v pdfcrop) 2>&1 || true) | grep 'restricted mode' >/dev/null
+        (rpdfcrop --gscmd echo $(command -v pdfcrop) 2>&1 || true) | grep 'restricted mode' >/dev/null
+        mkdir "$out"
+      '';
+
+  # check that all scripts have a Nix shebang
+  shebangs =
+    let
+      binPackages = lib.catAttrs "out" (lib.attrValues texlive.pkgs);
+    in
+    runCommand "texlive-test-shebangs" { } (
+      ''
+        echo "checking that all texlive scripts shebangs are in '$NIX_STORE'"
+        declare -i scriptCount=0 invalidCount=0
+      ''
+      + (lib.concatMapStrings (pkg: ''
+        for bin in '${pkg.outPath}'/bin/* ; do
+          grep -I -q . "$bin" || continue  # ignore binary files
+          [[ -x "$bin" ]] || continue # ignore non-executable files (such as context.lua)
+          scriptCount=$((scriptCount + 1))
+          read -r cmdline < "$bin"
+          read -r interp <<< "$cmdline"
+          if [[ "$interp" != "#!$NIX_STORE"/* && "$interp" != "#! $NIX_STORE"/* ]] ; then
+            echo "error: non-nix shebang '$interp' in script '$bin'"
+            invalidCount=$((invalidCount + 1))
+          fi
+        done
+      '') binPackages)
+      + ''
+        echo "checked $scriptCount scripts, found $invalidCount non-nix shebangs"
+        [[ $invalidCount -gt 0 ]] && exit 1
+        mkdir -p "$out"
+      ''
+    );
+
+  texdoc =
+    runCommand "texlive-test-texdoc"
+      {
+        nativeBuildInputs = [
+          ((texlive.withPackages (ps: [ ps.texdoc ])).overrideAttrs { withDocs = true; })
+        ];
+      }
+      ''
+        texdoc --version
+
+        texdoc --debug --list texdoc | tee "$out"
+        grep texdoc.pdf "$out"
+      '';
+
+  tlpdbNix =
+    runCommand "texlive-test-tlpdb-nix"
+      {
+        nixpkgsTlpdbNix = ../../tools/typesetting/tex/texlive/tlpdb.nix;
+        tlpdbNix = texlive.tlpdb.nix;
+      }
+      ''
+        mkdir -p "$out"
+        diff -u "''${nixpkgsTlpdbNix}" "''${tlpdbNix}" | tee "$out/tlpdb.nix.patch"
       '';
 }

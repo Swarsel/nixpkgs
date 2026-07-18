@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  cmake,
-  pkg-config,
-  miniupnpc,
   bzip2,
-  speex,
-  libmicrohttpd,
-  libxml2,
-  libxslt,
-  sqlcipher,
-  rapidjson,
-  libxscrnsaver,
-  libsForQt5,
+  cmake,
+  fetchpatch2,
   libgnome-keyring,
+  libmicrohttpd,
+  libsForQt5,
+  libxml2,
+  libxscrnsaver,
+  libxslt,
+  miniupnpc,
+  pkg-config,
+  rapidjson,
+  speex,
+  sqlcipher,
 }:
 
 stdenv.mkDerivation rec {
@@ -37,44 +37,11 @@ stdenv.mkDerivation rec {
 
     # Support the miniupnpc-2.2.8 API change
     (fetchpatch2 {
-      url = "https://github.com/RetroShare/libretroshare/commit/f1b89c4f87d77714571b4135c301bf0429096a20.patch?full_index=1";
+      extraPrefix = "libretroshare/";
       hash = "sha256-UiZMsUFaOZTLj/dx1rLr5bTR1CQ6nt2+IygQdvwJqwc=";
       stripLen = 1;
-      extraPrefix = "libretroshare/";
+      url = "https://github.com/RetroShare/libretroshare/commit/f1b89c4f87d77714571b4135c301bf0429096a20.patch?full_index=1";
     })
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-    libsForQt5.qmake
-    cmake
-    libsForQt5.wrapQtAppsHook
-  ];
-  buildInputs = [
-    speex
-    miniupnpc
-    libsForQt5.qtmultimedia
-    libsForQt5.qtx11extras
-    libsForQt5.qtbase
-    libgnome-keyring
-    bzip2
-    libxscrnsaver
-    libxml2
-    libxslt
-    sqlcipher
-    libmicrohttpd
-    rapidjson
-  ];
-
-  qmakeFlags = [
-    # Upnp library autodetection doesn't work
-    "RS_UPNP_LIB=miniupnpc"
-
-    # These values are normally found from the .git folder
-    "RS_MAJOR_VERSION=${lib.versions.major version}"
-    "RS_MINOR_VERSION=${lib.versions.minor version}"
-    "RS_MINI_VERSION=${lib.versions.patch version}"
-    "RS_EXTRA_VERSION="
   ];
 
   postPatch = ''
@@ -104,16 +71,50 @@ stdenv.mkDerivation rec {
       --replace-fail "cmake_minimum_required(VERSION 2.8)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    libsForQt5.qmake
+    cmake
+    libsForQt5.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    speex
+    miniupnpc
+    libsForQt5.qtmultimedia
+    libsForQt5.qtx11extras
+    libsForQt5.qtbase
+    libgnome-keyring
+    bzip2
+    libxscrnsaver
+    libxml2
+    libxslt
+    sqlcipher
+    libmicrohttpd
+    rapidjson
+  ];
+
   postInstall = ''
     # BT DHT bootstrap
     cp libbitdht/src/bitdht/bdboot.txt $out/share/retroshare
   '';
 
+  qmakeFlags = [
+    # Upnp library autodetection doesn't work
+    "RS_UPNP_LIB=miniupnpc"
+
+    # These values are normally found from the .git folder
+    "RS_MAJOR_VERSION=${lib.versions.major version}"
+    "RS_MINOR_VERSION=${lib.versions.minor version}"
+    "RS_MINI_VERSION=${lib.versions.patch version}"
+    "RS_EXTRA_VERSION="
+  ];
+
   meta = {
     description = "Decentralized peer to peer chat application";
     homepage = "https://retroshare.cc/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ StijnDW ];
+    platforms = lib.platforms.linux;
   };
 }

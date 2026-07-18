@@ -9,15 +9,19 @@
 stdenv.mkDerivation rec {
   pname = "canokey-qemu";
   version = "0-unstable-2026-03-24";
-  rev = "41044ec17ddb835b3e5acb385a2e429aa74af627";
 
   src = fetchFromGitHub {
+    inherit rev;
     owner = "canokeys";
     repo = "canokey-qemu";
-    inherit rev;
-    fetchSubmodules = true;
     hash = "sha256-eunhMRp3HJ80kCCZbiMGNjA9b0uUMzOsSeNh61d1iJU=";
+    fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     substituteInPlace canokey-core/CMakeLists.txt \
@@ -27,6 +31,12 @@ stdenv.mkDerivation rec {
     substituteInPlace CMakeLists.txt \
       --replace-fail "add_library(canokey-qemu SHARED" "add_library(canokey-qemu STATIC"
   '');
+
+  nativeBuildInputs = [
+    cmake
+    python3Packages.jsonschema
+    python3Packages.jinja2
+  ];
 
   preConfigure = ''
     cmakeFlagsArray+=(
@@ -62,23 +72,13 @@ stdenv.mkDerivation rec {
     )
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    python3Packages.jsonschema
-    python3Packages.jinja2
-  ];
-
+  rev = "41044ec17ddb835b3e5acb385a2e429aa74af627";
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/canokeys/canokey-qemu";
     description = "CanoKey QEMU Virtual Card";
     longDescription = "A virtual OPENPGP and FIDO2 card. Only for testing purpose. There is no warranty on security.";
+    homepage = "https://github.com/canokeys/canokey-qemu";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ symphorien ];
   };

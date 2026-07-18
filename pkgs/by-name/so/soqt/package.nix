@@ -4,9 +4,9 @@
   fetchFromGitHub,
   cmake,
   coin3d,
+  nix-update-script,
   qt6,
   testers,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,18 +35,19 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = {
     tests = {
       cmake-config = testers.hasCmakeConfigModules {
+        nativeBuildInputs = [ qt6.wrapQtAppsHook ];
         moduleNames = [ "soqt" ];
         package = finalAttrs.finalPackage;
-        nativeBuildInputs = [ qt6.wrapQtAppsHook ];
       };
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Glue between Coin high-level 3D visualization library and Qt";
     homepage = "https://github.com/coin3d/soqt";
     license = lib.licenses.bsd3;
-    description = "Glue between Coin high-level 3D visualization library and Qt";
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

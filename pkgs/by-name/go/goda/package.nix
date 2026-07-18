@@ -1,8 +1,8 @@
 {
   lib,
-  nix-update-script,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-jtri/73UnpI5oyykW2DYiH0vra62+jk8VIHhcWT2oJA=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/loov/goda";
     description = "Go Dependency Analysis toolkit";
-    maintainers = with lib.maintainers; [ michaeladler ];
+    homepage = "https://github.com/loov/goda";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ michaeladler ];
     mainProgram = "goda";
   };
 })

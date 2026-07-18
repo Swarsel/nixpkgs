@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   testers,
   wizer,
 }:
@@ -21,21 +21,21 @@ rustPlatform.buildRustPackage rec {
 
   cargoHash = "sha256-WocaIib0IXlAWGVyRygOmHl1LBkrahbcCIHffRMX+J0=";
 
-  cargoBuildFlags = [
-    "--bin"
-    pname
-  ];
+  # Setting $HOME to a temporary directory is necessary to prevent checks from failing, as
+  # the test suite creates a cache directory at $HOME/Library/Caches/BytecodeAlliance.wasmtime.
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
 
   buildFeatures = [
     "env_logger"
     "structopt"
   ];
 
-  # Setting $HOME to a temporary directory is necessary to prevent checks from failing, as
-  # the test suite creates a cache directory at $HOME/Library/Caches/BytecodeAlliance.wasmtime.
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
+  cargoBuildFlags = [
+    "--bin"
+    pname
+  ];
 
   passthru.tests = {
     version = testers.testVersion { package = wizer; };
@@ -43,11 +43,13 @@ rustPlatform.buildRustPackage rec {
 
   meta = {
     description = "WebAssembly pre-initializer";
-    mainProgram = "wizer";
     homepage = "https://github.com/bytecodealliance/wizer";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       lucperkins
     ];
+
+    mainProgram = "wizer";
   };
 }

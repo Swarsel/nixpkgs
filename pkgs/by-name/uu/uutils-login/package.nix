@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-zgKNU24HJFT/DISWflKNN9R88cioLxBNdL8eexCRAOE=";
-
   cargoBuildFlags = [ "--workspace" ];
 
   passthru.updateScript = nix-update-script {
@@ -28,8 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Rust reimplemtation of the login project";
     homepage = "https://github.com/uutils/login";
     license = lib.licenses.mit;
-    mainProgram = "shadow";
     maintainers = with lib.maintainers; [ kyehn ];
     platforms = lib.platforms.unix;
+    mainProgram = "shadow";
   };
 })

@@ -1,4 +1,4 @@
-{ pkgsCross, lib }:
+{ lib, pkgsCross }:
 let
   root = ./.;
   pkgs' = pkgsCross.wasi32;
@@ -9,6 +9,7 @@ let
     pkg.overrideAttrs (old: {
       # these hacks are needed until https://github.com/NixOS/nixpkgs/pull/463720#pullrequestreview-3841639011 is resolved
       nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [ pkgs'.lld ];
+
       env = old.env or { } // {
         RUSTFLAGS = old.env.RUSTFLAGS or "" + " -C linker=wasm-ld";
       };

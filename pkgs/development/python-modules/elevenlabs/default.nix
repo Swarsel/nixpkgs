@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  httpx,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  httpx,
   poetry-core,
   pyaudio,
   pydantic,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "elevenlabs";
   version = "2.56.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "elevenlabs";
@@ -24,6 +23,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Ps4W8uSv2eH5DSJpDBmaitrv+AegA+UJKjiiAfK5gOQ=";
   };
 
+  # tests access the API on the internet
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -39,15 +40,13 @@ buildPythonPackage (finalAttrs: {
     pyaudio = [ pyaudio ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "elevenlabs" ];
 
-  # tests access the API on the internet
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/elevenlabs/elevenlabs-python/releases/tag/${finalAttrs.src.tag}";
     description = "Official Python API for ElevenLabs Text to Speech";
     homepage = "https://github.com/elevenlabs/elevenlabs-python";
+    changelog = "https://github.com/elevenlabs/elevenlabs-python/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

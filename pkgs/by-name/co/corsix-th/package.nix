@@ -1,7 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  SDL2,
+  SDL2_mixer,
   cmake,
   curl,
   doxygen,
@@ -9,11 +11,9 @@
   freetype,
   lua,
   makeWrapper,
-  SDL2,
-  SDL2_mixer,
-  timidity,
   # Update
   nix-update-script,
+  timidity,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -79,13 +79,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Reimplementation of the 1997 Bullfrog business sim Theme Hospital";
-    mainProgram = "corsix-th";
     homepage = "https://corsixth.com/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hughobrien
       matteopacini
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "corsix-th";
   };
 })

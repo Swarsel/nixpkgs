@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "orvibo";
   version = "1.1.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "happyleavesaoc";
@@ -18,6 +17,7 @@ buildPythonPackage rec {
 
   # Project as no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "orvibo" ];
 
   meta = {

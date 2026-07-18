@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
   fftw,
+  pkg-config,
   speexdsp,
   withFft ? !stdenv.hostPlatform.isMinGW,
 }:
@@ -18,22 +18,22 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-S0TU8rOKNwotmKeDKf78VqDPk9HBvnACkhe6rmYo/uo=";
   };
 
-  postPatch = ''
-    sed -i '/AC_CONFIG_MACRO_DIR/i PKG_PROG_PKG_CONFIG' configure.ac
-  '';
-
   outputs = [
     "out"
     "dev"
     "doc"
   ];
 
+  postPatch = ''
+    sed -i '/AC_CONFIG_MACRO_DIR/i PKG_PROG_PKG_CONFIG' configure.ac
+  '';
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
-  buildInputs = lib.optionals withFft [ fftw ] ++ [ speexdsp ];
 
+  buildInputs = lib.optionals withFft [ fftw ] ++ [ speexdsp ];
   # TODO: Remove this will help with immediate backward compatibility
   propagatedBuildInputs = [ speexdsp ];
 
@@ -42,8 +42,8 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
-    homepage = "https://www.speex.org/";
     description = "Open Source/Free Software patent-free audio compression format designed for speech";
+    homepage = "https://www.speex.org/";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.unix ++ lib.platforms.windows;
   };

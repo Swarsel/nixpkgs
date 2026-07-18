@@ -19,6 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8re4ubDgsTjc/WrE60b6eXBrGEJSKJTEXd/XMdJ79nM=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     halibut
@@ -30,13 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  strictDeps = true;
-
   passthru.tests = {
     approximation = callPackage ./tests/approximation.nix {
       spigot = finalAttrs.finalPackage;
@@ -44,11 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.chiark.greenend.org.uk/~sgtatham/spigot/";
     description = "Command-line exact real calculator";
-    mainProgram = "spigot";
+    homepage = "https://www.chiark.greenend.org.uk/~sgtatham/spigot/";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "spigot";
   };
 })

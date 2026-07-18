@@ -29,13 +29,13 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    version = "3.20";
     description = "Simple, reliable literate-programming macro preprocessor";
-    mainProgram = "fw";
     homepage = "http://www.ross.net/funnelweb/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "fw";
+    version = "3.20";
   };
 }
 #TODO: implement it for other platforms

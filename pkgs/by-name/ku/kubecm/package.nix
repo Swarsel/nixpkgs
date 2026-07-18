@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-5wTxVzpvwD6jx6Cfa0ChIi8wQCrnqzZM2jvwGpQdq50=";
   };
 
-  vendorHash = "sha256-TyJpFN8JEWpzCHKUX3iYUHhTOOAp5I1YEzhUkWPXx8A=";
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/sunny0826/kubecm/version.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-TyJpFN8JEWpzCHKUX3iYUHhTOOAp5I1YEzhUkWPXx8A=";
+  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd kubecm \
@@ -33,16 +28,22 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/kubecm completion zsh)
   '';
 
-  doCheck = false;
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/sunny0826/kubecm/version.Version=${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Manage your kubeconfig more easily";
     homepage = "https://github.com/sunny0826/kubecm/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       qjoly
       sailord
     ];
+
     mainProgram = "kubecm";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  pkgs,
   fetchFromGitHub,
-  python3Packages,
   buildNpmPackage,
+  pkgs,
+  python3Packages,
   writableTmpDirAsHomeHook,
 }:
 let
@@ -19,21 +19,18 @@ let
 
   dashboard = buildNpmPackage {
     inherit pname version src;
-
-    sourceRoot = "${src.name}/sky/dashboard";
     npmDepsHash = "sha256-8uZzkDJkaDPFXXsGy29jkaw6g8bPe3drbboYHHa6YuU=";
 
     installPhase = ''
       mkdir -p $out
       cp -r out/* $out/
     '';
+
+    sourceRoot = "${src.name}/sky/dashboard";
   };
 in
 python3Packages.buildPythonApplication (finalAttrs: {
   inherit pname version src;
-
-  pyproject = true;
-  pythonRelaxDeps = true;
 
   patches = [
     ./0001-Fix-docker-flag-default-for-Click-8.2-compatibility.patch
@@ -42,13 +39,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ./CVE-2026-13482.patch
   ];
 
+  postPatch = ''
+    substituteInPlace sky/setup_files/dependencies.py --replace-fail 'casbin' 'pycasbin'
+    substituteInPlace pyproject.toml --replace-fail 'buildkite-test-collector' ""
+  '';
+
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
   ];
 
-  postPatch = ''
-    substituteInPlace sky/setup_files/dependencies.py --replace-fail 'casbin' 'pycasbin'
-    substituteInPlace pyproject.toml --replace-fail 'buildkite-test-collector' ""
+  postInstall = ''
+    mkdir -p $out/${python3Packages.python.sitePackages}/sky/dashboard/out
+    cp -r ${dashboard}/* $out/${python3Packages.python.sitePackages}/sky/dashboard/out/
+  '';
+
+  postFixup = ''
+    chmod +x $out/${python3Packages.python.sitePackages}/sky/templates/websocket_proxy.py
+    wrapPythonProgramsIn "$out/${python3Packages.python.sitePackages}/sky/templates" "$out ''${pythonPath[*]}"
   '';
 
   build-system = with python3Packages; [
@@ -153,13 +160,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
       ++ self.ray;
 
       cloudfare = self.aws;
-
       #    cudo = [cudo-compute];
       #
       #    do = [pydo azure-core azure-common];
-
       docker = [ docker ];
-
       fluidstack = [ ];
 
       gcp = [
@@ -182,14 +186,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
       ];
 
       lambda = [ ];
-
       #    nebius = [
       #      nebius
       #    ]
       #    ++ self.aws;
-
       paperspace = [ ];
-
       ray = [ ray ] ++ ray.optional-dependencies.default;
 
       remote = [
@@ -197,8 +198,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
         protobuf
       ];
 
-      # runpod = [ runpod ];
+      scp = self.ray;
 
+      # runpod = [ runpod ];
       server = [
         pycasbin
         passlib
@@ -206,27 +208,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
         sqlalchemy-adapter
       ];
 
-      scp = self.ray;
-
       ssh = self.kubernetes;
 
       # vast = [vastai-sdk];
-
       vsphere = [
         pyvmomi
         # vsphere-automation-sdk
       ];
     });
 
-  postInstall = ''
-    mkdir -p $out/${python3Packages.python.sitePackages}/sky/dashboard/out
-    cp -r ${dashboard}/* $out/${python3Packages.python.sitePackages}/sky/dashboard/out/
-  '';
-
-  postFixup = ''
-    chmod +x $out/${python3Packages.python.sitePackages}/sky/templates/websocket_proxy.py
-    wrapPythonProgramsIn "$out/${python3Packages.python.sitePackages}/sky/templates" "$out ''${pythonPath[*]}"
-  '';
+  pyproject = true;
 
   # Excluding the tests as it fails with error:
   # Message: 'Config loaded from /build/source/examples/admin_policy/restful_policy.yaml:\nadmin_policy: http://localhost:8080\n'
@@ -243,25 +234,30 @@ python3Packages.buildPythonApplication (finalAttrs: {
   #    pytest-env
   #    pytest-xdist
   #  ];
-
   pythonImportsCheck = [
     "sky"
   ];
 
+  pythonRelaxDeps = true;
+
   meta = {
     description = "Run LLMs and AI on any Cloud";
+
     longDescription = ''
       SkyPilot is a framework for running LLMs, AI, and batch jobs on any
       cloud, offering maximum cost savings, highest GPU availability, and
       managed execution.
     '';
+
     homepage = "https://github.com/skypilot-org/skypilot";
     changelog = "https://github.com/skypilot-org/skypilot/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       seanrmurphy
       daspk04
     ];
+
     mainProgram = "sky";
   };
 })

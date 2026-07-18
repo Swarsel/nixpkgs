@@ -27,10 +27,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "Collection of OBS filters to give your stream that retro feel";
     homepage = "https://github.com/FiniteSingularity/obs-retro-effects";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

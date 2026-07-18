@@ -11,23 +11,22 @@
 buildPythonPackage (finalAttrs: {
   pname = "itkwasm-image-io-emscripten";
   version = "1.6.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "itkwasm_image_io_emscripten";
     inherit (finalAttrs) version;
     hash = "sha256-lFYLpPM4LVSPANpKGg7WSYrrfvpmE2T1w4igidUUL3I=";
+    pname = "itkwasm_image_io_emscripten";
   };
+
+  nativeBuildInputs = [ writableTmpDirAsHomeHook ];
 
   build-system = [
     hatch-vcs
     hatchling
   ];
 
-  nativeBuildInputs = [ writableTmpDirAsHomeHook ];
-
   dependencies = [ itkwasm ];
-
+  pyproject = true;
   pythonImportsCheck = [ "itkwasm_image_io_emscripten" ];
 
   meta = {

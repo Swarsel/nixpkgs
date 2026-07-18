@@ -1,9 +1,10 @@
 {
   lib,
   stdenv,
-  darwin,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  colima,
+  darwin,
   installShellFiles,
   krunkit,
   lima-full,
@@ -11,7 +12,6 @@
   procps,
   qemu,
   testers,
-  colima,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,25 +25,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-FBFL3VO6t7SaGnZBT2qBD1DbRg14klBpiPiaELbRfIY=";
     # We need the git revision
     leaveDotGit = true;
+
     postFetch = ''
       git -C $out rev-parse --short HEAD > $out/.git-revision
       rm -rf $out/.git
     '';
   };
-
-  nativeBuildInputs = [
-    installShellFiles
-    makeWrapper
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.DarwinTools ];
-
-  vendorHash = "sha256-j1RuG3CTGfVNfT/v+C2pZgb58c9cxa2op3LA/F5rNWo=";
-
-  # disable flaky Test_extractZones
-  # https://hydra.nixos.org/build/212378003/log
-  excludedPackages = "gvproxy";
-
-  env.CGO_ENABLED = 1;
 
   postPatch = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
     substituteInPlace cmd/daemon/daemon.go \
@@ -52,6 +39,15 @@ buildGoModule (finalAttrs: {
     substituteInPlace daemon/process/vmnet/vmnet.go \
       --replace-fail '/usr/bin/pkill' '${lib.getExe' procps "pkill"}'
   '';
+
+  nativeBuildInputs = [
+    installShellFiles
+    makeWrapper
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.DarwinTools ];
+
+  vendorHash = "sha256-j1RuG3CTGfVNfT/v+C2pZgb58c9cxa2op3LA/F5rNWo=";
+  env.CGO_ENABLED = 1;
 
   preConfigure = ''
     ldflags="-s -w -X github.com/abiosoft/colima/config.appVersion=${finalAttrs.version} \
@@ -77,19 +73,25 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/colima completion zsh)
   '';
 
+  # disable flaky Test_extractZones
+  # https://hydra.nixos.org/build/212378003/log
+  excludedPackages = "gvproxy";
+
   passthru.tests.version = testers.testVersion {
-    package = colima;
     command = "HOME=$(mktemp -d) colima version";
+    package = colima;
   };
 
   meta = {
     description = "Container runtimes with minimal setup";
     homepage = "https://github.com/abiosoft/colima";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aaschmid
       tricktron
     ];
+
     mainProgram = "colima";
   };
 })

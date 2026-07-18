@@ -10,15 +10,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2015-02-03";
 
   src = fetchFromGitHub {
-    sha256 = "0f40hqx1dbqpwrhyf42h5982jwqv8j5zp5hwwakz6600hyqvnnz7";
-    rev = "bb24e1c3a79016cfdffb9d28189485766d655ec6";
-    repo = "ipad_charge";
     owner = "mkorenkov";
+    repo = "ipad_charge";
+    rev = "bb24e1c3a79016cfdffb9d28189485766d655ec6";
+    sha256 = "0f40hqx1dbqpwrhyf42h5982jwqv8j5zp5hwwakz6600hyqvnnz7";
   };
-
-  buildInputs = [ libusb1 ];
-
-  doInstallCheck = true;
 
   postPatch = ''
     substituteInPlace Makefile \
@@ -29,20 +25,25 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "/usr" "$out"
   '';
 
-  enableParallelBuilding = true;
+  buildInputs = [ libusb1 ];
 
   preInstall = ''
     mkdir -p $out/{bin,lib/udev/rules.d}
   '';
 
+  doInstallCheck = true;
+  enableParallelBuilding = true;
+
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Apple device USB charging utility for Linux";
+
     longDescription = ''
       USB charging control utility used to enable/disable charging of an Apple
       device connected to USB port. For a list of supported devices, see
       https://github.com/mkorenkov/ipad_charge#supported-devices.
     '';
+
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     mainProgram = "ipad_charge";

@@ -19,8 +19,8 @@ melpaBuild {
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
   meta = {
-    homepage = "https://www.emacswiki.org/emacs/IsearchPlus";
     description = "Search text- or overlay-property contexts";
+    homepage = "https://www.emacswiki.org/emacs/IsearchPlus";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ leungbk ];
   };

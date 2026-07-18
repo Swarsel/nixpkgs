@@ -17,21 +17,22 @@ let
     ;
 in
 {
-  port = 9436;
   extraOpts = {
     configFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         Path to a mikrotik exporter configuration file. Mutually exclusive with
         {option}`configuration` option.
       '';
+
       example = literalExpression "./mikrotik.yml";
+      type = types.nullOr types.path;
     };
 
     configuration = mkOption {
-      type = types.nullOr types.attrs;
       default = null;
+
       description = ''
         Mikrotik exporter configuration as nix attribute set. Mutually exclusive with
         {option}`configFile` option.
@@ -39,6 +40,7 @@ in
         See <https://github.com/nshttpd/mikrotik-exporter/blob/master/README.md>
         for the description of the configuration file format.
       '';
+
       example = literalExpression ''
         {
           devices = [
@@ -57,8 +59,13 @@ in
           };
         }
       '';
+
+      type = types.nullOr types.attrs;
     };
   };
+
+  port = 9436;
+
   serviceOpts =
     let
       configFile =

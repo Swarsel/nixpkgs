@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  isPyPy,
   isPy3k,
+  isPyPy,
   python,
 }:
 
 buildPythonPackage rec {
-  version = "0.99.2dev-384-2b73caca";
-  format = "setuptools";
   pname = "kaa-base";
+  version = "0.99.2dev-384-2b73caca";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,8 +17,6 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
-
-  disabled = isPyPy || isPy3k;
 
   # Same as in buildPythonPackage except that it does not pass --old-and-unmanageable
   installPhase = ''
@@ -42,6 +39,9 @@ buildPythonPackage rec {
 
     runHook postInstall
   '';
+
+  disabled = isPyPy || isPy3k;
+  format = "setuptools";
 
   meta = {
     description = "Generic application framework, providing the foundation for other modules";

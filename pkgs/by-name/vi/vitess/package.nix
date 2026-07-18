@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   sqlite,
 }:
 
@@ -16,19 +16,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-cLpVpdYpMzJX5Y4RBuUp2SbedBHiqG+SRu8Oh+dowFY=";
   };
 
-  vendorHash = "sha256-YhWa5eUeMCqmA+8Mi3lxQTSQ29xMpWWAb2BQPN1/+N8=";
-
   buildInputs = [ sqlite ];
-
-  subPackages = [ "go/cmd/..." ];
-
+  vendorHash = "sha256-YhWa5eUeMCqmA+8Mi3lxQTSQ29xMpWWAb2BQPN1/+N8=";
   # integration tests require access to syslog and root
   doCheck = false;
+  subPackages = [ "go/cmd/..." ];
 
   meta = {
+    description = "Database clustering system for horizontal scaling of MySQL";
     homepage = "https://vitess.io/";
     changelog = "https://github.com/vitessio/vitess/releases/tag/v${finalAttrs.version}";
-    description = "Database clustering system for horizontal scaling of MySQL";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

@@ -1,26 +1,25 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   configargparse,
-  fetchFromGitHub,
+  flask,
   gevent,
+  gevent-websocket,
   hatch-vcs,
   hatchling,
   platformdirs,
+  pytestCheckHook,
   python-engineio,
   python-socketio,
   requests,
-  gevent-websocket,
-  tomli,
-  flask,
   requests-mock,
-  pytestCheckHook,
+  tomli,
 }:
 
 buildPythonPackage rec {
   pname = "locust-cloud";
   version = "1.30.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "locustcloud";
@@ -28,6 +27,18 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-GJS0+CUYMz3G98I7Edj2qEsIFTp5wzsuSMmN7DlZPjA=";
   };
+
+  nativeCheckInputs = [
+    flask
+    gevent-websocket
+    pytestCheckHook
+    requests-mock
+  ];
+
+  preCheck = ''
+    export LOCUSTCLOUD_USERNAME=dummy
+    export LOCUSTCLOUD_PASSWORD=dummy
+  '';
 
   build-system = [
     hatchling
@@ -44,20 +55,6 @@ buildPythonPackage rec {
     tomli
   ];
 
-  nativeCheckInputs = [
-    flask
-    gevent-websocket
-    pytestCheckHook
-    requests-mock
-  ];
-
-  pythonImportsCheck = [ "locust_cloud" ];
-
-  preCheck = ''
-    export LOCUSTCLOUD_USERNAME=dummy
-    export LOCUSTCLOUD_PASSWORD=dummy
-  '';
-
   disabledTestPaths = [
     # Tests require network access
     "tests/web_login_test.py"
@@ -66,6 +63,9 @@ buildPythonPackage rec {
     # AssertionError
     "tests/import_finder_test.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "locust_cloud" ];
 
   meta = {
     description = "Hosted version of Locust to run distributed load tests";

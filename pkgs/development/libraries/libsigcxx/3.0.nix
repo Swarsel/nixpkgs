@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
+  gnome,
   meson,
   ninja,
-  gnome,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,18 +34,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "libsigc++";
       attrPath = "libsigcxx30";
+      packageName = "libsigc++";
       versionPolicy = "odd-unstable";
     };
   };
 
   meta = {
+    description = "Typesafe callback system for standard C++";
     homepage = "https://libsigcplusplus.github.io/libsigcplusplus/";
     changelog = "https://github.com/libsigcplusplus/libsigcplusplus/blob/${finalAttrs.src.tag}/NEWS";
-    description = "Typesafe callback system for standard C++";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.gnome ];
   };
 })

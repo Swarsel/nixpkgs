@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   cargo,
   dbus,
@@ -12,21 +12,21 @@
   glib-networking,
   gst_all_1,
   gtk4,
+  lcms2,
   libadwaita,
+  libglycin-gtk4,
+  libseccomp,
+  libshumate,
+  libxml2,
   meson,
   ninja,
+  nix-update-script,
   openssl,
   pkg-config,
   rustPlatform,
   rustc,
   sqlite,
   wrapGAppsHook4,
-  libglycin-gtk4,
-  libshumate,
-  libseccomp,
-  libxml2,
-  lcms2,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation rec {
@@ -34,16 +34,11 @@ stdenv.mkDerivation rec {
   version = "5.1.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "Shortwave";
     rev = version;
     hash = "sha256-MiaozChp5QF/Q0fCTCgnyGJLyIftTkMAbmfRQ/73QP8=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-v6aphHunZrXPiuKRFT+EcWJySmQOOT433ST+m8j1z4w=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -82,17 +77,22 @@ stdenv.mkDerivation rec {
     gst-plugins-bad
   ]);
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-v6aphHunZrXPiuKRFT+EcWJySmQOOT433ST+m8j1z4w=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/Shortwave";
     description = "Find and listen to internet radio stations";
-    mainProgram = "shortwave";
-    maintainers = with lib.maintainers; [ lasandell ];
-    teams = [ lib.teams.gnome-circle ];
+    homepage = "https://gitlab.gnome.org/World/Shortwave";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ lasandell ];
     platforms = lib.platforms.linux;
+    mainProgram = "shortwave";
+    teams = [ lib.teams.gnome-circle ];
   };
 }

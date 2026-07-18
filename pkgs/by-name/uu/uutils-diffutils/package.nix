@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -31,6 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -42,12 +43,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/uutils/diffutils/releases/tag/v${finalAttrs.version}";
     description = "Drop-in replacement of diffutils in Rust";
     homepage = "https://github.com/uutils/diffutils";
+    changelog = "https://github.com/uutils/diffutils/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "diffutils";
     maintainers = with lib.maintainers; [ defelo ];
     platforms = lib.platforms.unix;
+    mainProgram = "diffutils";
   };
 })

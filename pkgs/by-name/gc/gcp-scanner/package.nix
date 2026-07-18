@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gcp-scanner";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "google";
@@ -15,8 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-6bIrSaTqpXQjB64YWAI64DlgQBD2XD+zMvKymMtwpDk=";
   };
-
-  pythonRelaxDeps = true;
 
   nativeBuildInputs = with python3.pkgs; [
     setuptools
@@ -36,15 +33,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [
-    "gcp_scanner"
-  ];
-
   disabledTests = [
     # Tests require credentials
     "TestCrawler"
     "test_acceptance"
   ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "gcp_scanner"
+  ];
+
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Comprehensive scanner for Google Cloud";

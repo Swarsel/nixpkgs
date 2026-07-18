@@ -2,33 +2,33 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  validatePkgConfig,
   freexl,
   geos,
+  libiconv,
   librttopo,
   libxml2,
   minizip,
+  pkg-config,
   proj,
   sqlite,
-  libiconv,
-  zlib,
   testers,
+  validatePkgConfig,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libspatialite";
   version = "5.1.0";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "https://www.gaia-gis.it/gaia-sins/libspatialite-sources/libspatialite-${finalAttrs.version}.tar.gz";
     hash = "sha256-Q74t00na/+AW3RQAxdEShYKMIv6jXKUQnyHz7VBgUIA=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Drop use of deprecated libxml2 HTTP API.
@@ -65,12 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-geosconfig=${lib.getExe' (lib.getDev geos) "geos-config"}"
   ];
 
-  enableParallelBuilding = true;
-
-  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    ln -s $out/lib/mod_spatialite.{so,dylib}
-  '';
-
   # Failed tests (linux & darwin):
   # - check_virtualtable6
   # - check_drop_rename
@@ -81,6 +75,12 @@ stdenv.mkDerivation (finalAttrs: {
     export DYLD_LIBRARY_PATH=$(pwd)/src/.libs
   '';
 
+  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    ln -s $out/lib/mod_spatialite.{so,dylib}
+  '';
+
+  enableParallelBuilding = true;
+
   passthru.tests = {
     pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
@@ -88,15 +88,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Extensible spatial index library in C++";
     homepage = "https://www.gaia-gis.it/fossil/libspatialite";
+
     # They allow any of these
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
       mpl11
     ];
-    pkgConfigModules = [ "spatialite" ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ dotlambda ];
+    platforms = lib.platforms.unix;
+    pkgConfigModules = [ "spatialite" ];
     teams = [ lib.teams.geospatial ];
   };
 })

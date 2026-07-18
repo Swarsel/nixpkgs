@@ -21,10 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "CAN userspace utilities and tools (for use with Linux SocketCAN)";
     homepage = "https://github.com/linux-can/can-utils";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       bjornfor
       Luflosi
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

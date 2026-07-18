@@ -1,12 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-
   # nativeBuildInputs
   installShellFiles,
+  rustPlatform,
   scdoc,
-
   # nativeInstallCheckInputs
   versionCheckHook,
 }:
@@ -22,26 +20,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-WWM3OnPJm5BvD2l5KnKrlfKqvMcyrpStcji1joq28hg=";
   };
 
-  cargoHash = "sha256-N6zjgcaJRwRdmvIXzwFeiW1YCpRV6P2P7uj7D2EK0IQ=";
-
   nativeBuildInputs = [
     installShellFiles
     scdoc
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-N6zjgcaJRwRdmvIXzwFeiW1YCpRV6P2P7uj7D2EK0IQ=";
 
   postInstall = ''
     scdoc < doc/mastermind.6.scd > mastermind.6
     installManPage mastermind.6
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   meta = {
     description = "A game of cunning and logic";
     homepage = "https://github.com/mahyarmirrashed/mastermind";
     license = lib.licenses.mit;
-    mainProgram = "mastermind";
     maintainers = with lib.maintainers; [ mahyarmirrashed ];
+    mainProgram = "mastermind";
   };
 })

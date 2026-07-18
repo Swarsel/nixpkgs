@@ -1,4 +1,4 @@
-{ _cuda, lib }:
+{ lib, _cuda }:
 let
   cudaLib = _cuda.lib;
 in

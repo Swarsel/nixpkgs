@@ -2,45 +2,45 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
+  cmake,
+  libGL,
+  libjpeg,
+  libpng,
+  libx11,
   makeDesktopItem,
   makeWrapper,
-  cmake,
-  libjpeg,
-  zlib,
-  libpng,
-  libGL,
-  libx11,
-  SDL2,
   unstableGitUpdater,
+  zlib,
 }:
 
 let
   jamp = makeDesktopItem rec {
-    name = "jamp";
-    exec = name;
-    icon = "OpenJK_Icon_128";
+    categories = [ "Game" ];
     comment = "Open Source Jedi Academy game released by Raven Software";
     desktopName = "Jedi Academy (Multi Player)";
+    exec = name;
     genericName = "Jedi Academy";
-    categories = [ "Game" ];
+    icon = "OpenJK_Icon_128";
+    name = "jamp";
   };
   jasp = makeDesktopItem rec {
-    name = "jasp";
-    exec = name;
-    icon = "OpenJK_Icon_128";
+    categories = [ "Game" ];
     comment = "Open Source Jedi Academy game released by Raven Software";
     desktopName = "Jedi Academy (Single Player)";
+    exec = name;
     genericName = "Jedi Academy";
-    categories = [ "Game" ];
+    icon = "OpenJK_Icon_128";
+    name = "jasp";
   };
   josp = makeDesktopItem rec {
-    name = "josp";
-    exec = name;
-    icon = "OpenJK_Icon_128";
+    categories = [ "Game" ];
     comment = "Open Source Jedi Outcast game released by Raven Software";
     desktopName = "Jedi Outcast (Single Player)";
+    exec = name;
     genericName = "Jedi Outcast";
-    categories = [ "Game" ];
+    icon = "OpenJK_Icon_128";
+    name = "josp";
   };
 in
 stdenv.mkDerivation {
@@ -54,12 +54,19 @@ stdenv.mkDerivation {
     hash = "sha256-XTGe/V4FnQSQA9fY6MmpECs1f2PPk+yTZkAL93UoH/I=";
   };
 
-  dontAddPrefix = true;
+  outputs = [
+    "out"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    "openjo"
+    "openja"
+  ];
 
   nativeBuildInputs = [
     makeWrapper
     cmake
   ];
+
   buildInputs = [
     libjpeg
     zlib
@@ -69,18 +76,6 @@ stdenv.mkDerivation {
     SDL2
   ];
 
-  outputs = [
-    "out"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    "openjo"
-    "openja"
-  ];
-
-  # move from $out/JediAcademy to $out/opt/JediAcademy
-  preConfigure = ''
-    cmakeFlagsArray=("-DCMAKE_INSTALL_PREFIX=$out/opt")
-  '';
   cmakeFlags = [
     "-DBuildJK2SPEngine:BOOL=ON"
     "-DBuildJK2SPGame:BOOL=ON"
@@ -91,6 +86,11 @@ stdenv.mkDerivation {
     "-DUseInternalJPEG:BOOL=OFF"
     "-DUseInternalPNG:BOOL=OFF"
   ];
+
+  # move from $out/JediAcademy to $out/opt/JediAcademy
+  preConfigure = ''
+    cmakeFlagsArray=("-DCMAKE_INSTALL_PREFIX=$out/opt")
+  '';
 
   postInstall =
     if stdenv.hostPlatform.isLinux then
@@ -152,13 +152,14 @@ stdenv.mkDerivation {
     done
   '';
 
+  dontAddPrefix = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Open-source engine for Star Wars Jedi Academy game";
     homepage = "https://github.com/JACoders/OpenJK";
     license = lib.licenses.gpl2Only;
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = with lib.maintainers; [ r4v3n6101 ];
+    platforms = with lib.platforms; linux ++ darwin;
   };
 }

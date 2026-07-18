@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   cmake,
   nix-update-script,
   vst2-sdk,
@@ -17,25 +17,9 @@ stdenv.mkDerivation {
     hash = "sha256-MOGVRIxlxyJk4LCW5iVtukV4fAnVoc+wORw2REGRyPc=";
   };
 
-  # we patch helpers because honestly im spooked out by where those variables
-  # came from.
-  prePatch = ''
-    mkdir -p plugins/LinuxVST/include
-    ln -s ${vst2-sdk} plugins/LinuxVST/include/vstsdk
-  '';
-
   patches = [
     ./cmakelists-and-helper.patch
   ];
-
-  # we are building for linux, so we go to linux
-  preConfigure = ''
-    cd plugins/LinuxVST
-  '';
-
-  cmakeBuildType = "Release";
-
-  cmakeFlags = [ ];
 
   nativeBuildInputs = [
     cmake
@@ -44,6 +28,13 @@ stdenv.mkDerivation {
   buildInputs = [
     vst2-sdk
   ];
+
+  cmakeFlags = [ ];
+
+  # we are building for linux, so we go to linux
+  preConfigure = ''
+    cd plugins/LinuxVST
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -54,15 +45,26 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  cmakeBuildType = "Release";
+
+  # we patch helpers because honestly im spooked out by where those variables
+  # came from.
+  prePatch = ''
+    mkdir -p plugins/LinuxVST/include
+    ln -s ${vst2-sdk} plugins/LinuxVST/include/vstsdk
+  '';
+
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "All Airwindows VST Plugins";
     homepage = "https://airwindows.com/";
-    platforms = lib.platforms.linux;
+
     license = [
       lib.licenses.mit
     ];
+
     maintainers = [ lib.maintainers.l1npengtul ];
+    platforms = lib.platforms.linux;
   };
 }

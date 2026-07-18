@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
   # Deps
   gdk-pixbuf,
   glib,
   graphene,
   gtk4,
+  nix-update-script,
   openssl,
   pango,
   pkg-config,
+  rustPlatform,
   wrapGAppsHook4,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,11 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-WYwuYNbapD0cIifQALtfgMNqXs5KMvaCsQqUdifJwf8=";
   };
-
-  cargoHash = "sha256-dh4WPk6rU/HsUVJTMrMPsqKXpOmb/0LUAsGTbmdI6Ts=";
-
-  # Tests require network access and a running Steam client. Skipping.
-  doCheck = false;
 
   nativeBuildInputs = [
     glib
@@ -44,23 +39,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pango
   ];
 
+  cargoHash = "sha256-dh4WPk6rU/HsUVJTMrMPsqKXpOmb/0LUAsGTbmdI6Ts=";
+  env.PKG_CONFIG_PATH = "${openssl.dev}/lib/pkgconfig";
+  # Tests require network access and a running Steam client. Skipping.
+  doCheck = false;
+
   postInstall = ''
     install -Dm644 assets/org.samrewritten.SamRewritten.gschema.xml \
       $out/share/glib-2.0/schemas/org.samrewritten.SamRewritten.gschema.xml
     glib-compile-schemas $out/share/glib-2.0/schemas
   '';
 
-  env.PKG_CONFIG_PATH = "${openssl.dev}/lib/pkgconfig";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Modern Steam achievements manager for Windows and Linux";
-    mainProgram = "samrewritten";
     homepage = "https://github.com/PaulCombal/SamRewritten";
     changelog = "https://github.com/PaulCombal/SamRewritten/releases";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ ludovicopiero ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "samrewritten";
   };
 })

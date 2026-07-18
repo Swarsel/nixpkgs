@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,15 +17,15 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-fF1tHhOtw1ms6447lna40NrZT3ItpiQu31Y0psXt1/Y=";
 
+  postInstall = ''
+    ln -s $out/bin/microplane $out/bin/mp
+  '';
+
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  postInstall = ''
-    ln -s $out/bin/microplane $out/bin/mp
-  '';
 
   meta = {
     description = "CLI tool to make git changes across many repos";

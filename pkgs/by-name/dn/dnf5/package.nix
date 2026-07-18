@@ -2,45 +2,40 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  acl,
   appstream,
   cmake,
+  cppunit,
   createrepo_c,
   doxygen,
+  fmt,
   gettext,
   help2man,
-  pkg-config,
-  python3Packages,
-  cppunit,
-  fmt,
   json_c,
   libmodulemd,
+  libpkgmanifest,
   librepo,
-  util-linux,
   libsolv,
   libxml2,
   libyaml,
-  libpkgmanifest,
-  acl,
+  nix-update-script,
   pcre2,
+  pkg-config,
+  python3Packages,
   rpm,
   sdbus-cpp_2,
   sphinx,
   sqlite,
   systemd,
-  versionCheckHook,
   toml11,
+  util-linux,
+  versionCheckHook,
   zchunk,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "dnf5";
   version = "5.4.2.1";
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "rpm-software-management";
@@ -48,6 +43,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Z+k47LC3gaBQ3y3090MLsSvPKlwPUVrYEBboKhskTik=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -86,9 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
     zchunk
   ];
 
-  # workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105329
-  env.NIX_CFLAGS_COMPILE = "-Wno-restrict -Wno-maybe-uninitialized";
-
   cmakeFlags = [
     (lib.cmakeBool "WITH_PERL5" false)
     (lib.cmakeBool "WITH_PYTHON3" false)
@@ -102,9 +99,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_INSTALL_LIBDIR" "lib")
   ];
 
+  # workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105329
+  env.NIX_CFLAGS_COMPILE = "-Wno-restrict -Wno-maybe-uninitialized";
+
   postBuild = ''
     make doc
   '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   prePatch = ''
     substituteInPlace CMakeLists.txt \
@@ -117,8 +120,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/etc/bash_completion.d" "$out/etc/bash_completion.d"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
   preVersionCheck = ''
     export HOME=$(mktemp -d)
   '';
@@ -130,11 +131,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/rpm-software-management/dnf5";
     changelog = "https://github.com/rpm-software-management/dnf5/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       malt3
       katexochen
     ];
-    mainProgram = "dnf5";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "dnf5";
   };
 })

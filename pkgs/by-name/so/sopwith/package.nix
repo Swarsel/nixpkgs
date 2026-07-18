@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  glib,
   SDL2,
+  autoreconfHook,
+  glib,
   libGL,
   pkg-config,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,11 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/fragglet/sdl-sopwith";
     description = "Classic biplane shoot ‘em-up game";
+    homepage = "https://github.com/fragglet/sdl-sopwith";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "sopwith";
     maintainers = with lib.maintainers; [ evilbulgarian ];
     platforms = lib.platforms.unix;
+    mainProgram = "sopwith";
   };
 })

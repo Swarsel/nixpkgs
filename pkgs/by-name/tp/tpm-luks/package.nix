@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  gawk,
-  trousers,
   cryptsetup,
+  gawk,
   openssl,
+  trousers,
 }:
 
 stdenv.mkDerivation {
@@ -26,6 +26,7 @@ stdenv.mkDerivation {
   ];
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     gawk
     trousers
@@ -43,8 +44,8 @@ stdenv.mkDerivation {
   meta = {
     description = "LUKS key storage in TPM NVRAM";
     homepage = "https://github.com/shpedoikal/tpm-luks/";
-    maintainers = [ ];
     license = with lib.licenses; [ gpl2Only ];
+    maintainers = [ ];
     platforms = lib.platforms.linux;
   };
 }

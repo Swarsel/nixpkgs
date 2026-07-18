@@ -1,30 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build system
-  hatchling,
-
   # dependencies
   aiosqlite,
+  buildPythonPackage,
+  # passthru
+  gitUpdater,
+  # build system
+  hatchling,
   langgraph-checkpoint,
-  sqlite-vec,
-
   # testing
   pytest-asyncio,
   pytestCheckHook,
   sqlite,
-
-  # passthru
-  gitUpdater,
+  sqlite-vec,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langgraph-checkpoint-sqlite";
   version = "3.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -33,33 +27,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-xSYJ9D86GuaJEgQYk+pkJ4O7HK6HXfAOGBv4f1CBY5g=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/libs/checkpoint-sqlite";
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+    sqlite
+  ];
 
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
     aiosqlite
     langgraph-checkpoint
     sqlite-vec
-  ];
-
-  pythonRelaxDeps = [
-    "aiosqlite"
-
-    # Bug: version is showing up as 0.0.0
-    # https://github.com/NixOS/nixpkgs/issues/427197
-    "sqlite-vec"
-
-    # Checkpoint clients are lagging behind langgraph-checkpoint
-    "langgraph-checkpoint"
-  ];
-
-  pythonImportsCheck = [ "langgraph.checkpoint.sqlite" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-    sqlite
   ];
 
   disabledTestPaths = [
@@ -75,20 +55,38 @@ buildPythonPackage (finalAttrs: {
     "test_search"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "langgraph.checkpoint.sqlite" ];
+
+  pythonRelaxDeps = [
+    "aiosqlite"
+
+    # Bug: version is showing up as 0.0.0
+    # https://github.com/NixOS/nixpkgs/issues/427197
+    "sqlite-vec"
+
+    # Checkpoint clients are lagging behind langgraph-checkpoint
+    "langgraph-checkpoint"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/libs/checkpoint-sqlite";
+
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "checkpointsqlite==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "checkpointsqlite==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langgraph/releases/tag/${finalAttrs.src.tag}";
     description = "Library with a SQLite implementation of LangGraph checkpoint saver";
     homepage = "https://github.com/langchain-ai/langgraph/tree/main/libs/checkpoint-sqlite";
+    changelog = "https://github.com/langchain-ai/langgraph/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sarahec
     ];

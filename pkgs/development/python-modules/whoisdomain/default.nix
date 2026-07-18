@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "whoisdomain";
   version = "1.20260326.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mboot-github";
@@ -17,12 +16,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4EWxQq88RWH3yQYVfo07U7jG5ws+SJ7SAq2Mc8nyeRU=";
   };
 
-  build-system = [ hatchling ];
-
-  pythonImportsCheck = [ "whoisdomain" ];
-
   # Tests require network access
   doCheck = false;
+  build-system = [ hatchling ];
+  pyproject = true;
+  pythonImportsCheck = [ "whoisdomain" ];
 
   meta = {
     description = "Module to perform whois lookups";

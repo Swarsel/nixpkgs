@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aws-sam-cli,
   boto3,
   buildPythonPackage,
   cfn-lint,
-  fetchFromGitHub,
   mock,
   moto,
   mypy-boto3-ebs,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "dsnap";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RhinoSecurityLabs";
@@ -32,20 +31,9 @@ buildPythonPackage rec {
       --replace-fail 'urllib3 = "^1.26.4"' 'urllib3 = "*"'
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    boto3
-    urllib3
-  ];
-
-  optional-dependencies = {
-    cli = [ typer ];
-    scannerd = [
-      aws-sam-cli
-      cfn-lint
-    ];
-  };
+  # https://github.com/RhinoSecurityLabs/dsnap/issues/26
+  # ImportError: cannot import name 'mock_iam' from 'moto'
+  doCheck = false;
 
   nativeCheckInputs = [
     mock
@@ -55,10 +43,23 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  # https://github.com/RhinoSecurityLabs/dsnap/issues/26
-  # ImportError: cannot import name 'mock_iam' from 'moto'
-  doCheck = false;
+  build-system = [ poetry-core ];
 
+  dependencies = [
+    boto3
+    urllib3
+  ];
+
+  optional-dependencies = {
+    cli = [ typer ];
+
+    scannerd = [
+      aws-sam-cli
+      cfn-lint
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "dsnap" ];
 
   meta = {

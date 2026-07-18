@@ -1,36 +1,36 @@
 {
   lib,
   stdenv,
-  fetchzip,
+  apprise,
   autoPatchelfHook,
-  makeWrapper,
-  copyDesktopItems,
-  makeDesktopItem,
-  jellyfin-ffmpeg,
-  handbrake,
-  mkvtoolnix,
   ccextractor,
-  gtk3,
-  libayatana-appindicator,
-  wayland,
-  libxkbcommon,
-  libxcb,
-  leptonica,
+  copyDesktopItems,
+  fetchzip,
   glib,
   gobject-introspection,
+  gtk3,
+  handbrake,
+  jellyfin-ffmpeg,
+  leptonica,
+  libayatana-appindicator,
   libx11,
+  libxcb,
   libxcursor,
   libxfixes,
-  tesseract4,
-  perl,
-  apprise,
-  openssl,
+  libxkbcommon,
+  makeDesktopItem,
+  makeWrapper,
+  mkvtoolnix,
   nixosTests,
+  openssl,
+  perl,
+  tesseract4,
+  wayland,
 }:
 {
-  pname,
   component, # "server" or "node"
   hashes,
+  pname,
   includeInPath ? [ ], # Additional packages to include in PATH
   installIcons ? false, # Whether to install icon files
   passthru ? { }, # Additional passthru attributes
@@ -38,9 +38,9 @@
 let
   platform =
     {
-      x86_64-linux = "linux_x64";
-      aarch64-linux = "linux_arm64";
       aarch64-darwin = "darwin_arm64";
+      aarch64-linux = "linux_arm64";
+      x86_64-linux = "linux_x64";
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
@@ -109,6 +109,18 @@ stdenv.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
+  postPatch = ''
+    rm -rf ./assets/app/ffmpeg
+    rm -rf ./assets/app/ccextractor
+
+    substituteInPlace node_modules/exiftool-vendored.pl/bin/exiftool \
+      --replace-fail "#!/usr/bin/perl" "#!${perl}/bin/perl"
+
+    # * exiftool-vendored checks for /usr/bin/perl existence; when missing (NixOS), it sets ignoreShebang=true which breaks spawn by using shell:true with an env lacking PATH. Since we patched the shebang, force ignoreShebang to false.
+    substituteInPlace node_modules/exiftool-vendored/dist/ExifTool.js \
+      --replace-fail '!_fs.existsSync("/usr/bin/perl")' 'false'
+  '';
+
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
@@ -132,18 +144,6 @@ stdenv.mkDerivation (finalAttrs: {
     apprise
     openssl
   ];
-
-  postPatch = ''
-    rm -rf ./assets/app/ffmpeg
-    rm -rf ./assets/app/ccextractor
-
-    substituteInPlace node_modules/exiftool-vendored.pl/bin/exiftool \
-      --replace-fail "#!/usr/bin/perl" "#!${perl}/bin/perl"
-
-    # * exiftool-vendored checks for /usr/bin/perl existence; when missing (NixOS), it sets ignoreShebang=true which breaks spawn by using shell:true with an env lacking PATH. Since we patched the shebang, force ignoreShebang to false.
-    substituteInPlace node_modules/exiftool-vendored/dist/ExifTool.js \
-      --replace-fail '!_fs.existsSync("/usr/bin/perl")' 'false'
-  '';
 
   preInstall = ''
     mkdir -p $out/{bin,share/${pname}}
@@ -184,22 +184,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
     (makeDesktopItem {
+      categories = [ "Utility" ];
       desktopName = "Tdarr ${componentUpper} Tray";
-      name = "Tdarr ${componentUpper} Tray";
       exec = "${pname}-tray";
+      icon = if installIcons then pname else "";
+      name = "Tdarr ${componentUpper} Tray";
       terminal = false;
       type = "Application";
-      icon = if installIcons then pname else "";
-      categories = [ "Utility" ];
     })
   ];
 
   passthru = {
+    tests.nixos = nixosTests.tdarr;
+
     updateScript = {
       command = [ ./update-hashes.sh ];
       supportedFeatures = [ "commit" ];
     };
-    tests.nixos = nixosTests.tdarr;
   }
   // passthru;
 
@@ -207,12 +208,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Distributed transcode automation ${component} using FFmpeg/HandBrake";
     homepage = "https://tdarr.io";
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ mistyttm ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [ mistyttm ];
+
     mainProgram = pname;
   };
 })

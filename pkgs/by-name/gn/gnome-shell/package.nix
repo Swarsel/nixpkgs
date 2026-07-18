@@ -1,71 +1,71 @@
 {
-  fetchurl,
-  fetchpatch,
-  replaceVars,
   lib,
   stdenv,
-  docutils,
-  meson,
-  ninja,
-  pkg-config,
-  gnome,
-  json-glib,
-  gettext,
-  libsecret,
-  python3,
-  polkit,
-  networkmanager,
-  gi-docgen,
-  at-spi2-core,
-  unzip,
-  shared-mime-info,
-  libgweather,
-  libjxl,
-  librsvg,
-  webp-pixbuf-loader,
-  geoclue2,
-  desktop-file-utils,
-  libpulseaudio,
-  libical,
-  gobject-introspection,
-  wrapGAppsHook4,
-  libxslt,
-  gcr_4,
+  fetchurl,
   accountsservice,
+  adwaita-icon-theme,
+  at-spi2-core,
+  bash-completion,
+  desktop-file-utils,
+  docutils,
+  evolution-data-server-gtk4,
+  fetchpatch,
+  gcr_4,
   gdk-pixbuf,
   gdm,
-  upower,
-  ibus,
-  libnma-gtk4,
-  gnome-desktop,
-  gsettings-desktop-schemas,
-  gnome-keyring,
-  glib,
+  geoclue2,
+  gettext,
+  gi-docgen,
   gjs,
-  mutter,
-  evolution-data-server-gtk4,
-  gtk4,
-  libadwaita,
-  sassc,
-  systemd,
-  pipewire,
-  gst_all_1,
-  adwaita-icon-theme,
+  glib,
   glycin-loaders,
+  gnome,
+  gnome-autoar,
   gnome-bluetooth,
   gnome-clocks,
+  gnome-desktop,
+  gnome-keyring,
   gnome-settings-daemon,
-  gnome-autoar,
-  bash-completion,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gst_all_1,
+  gtk4,
+  ibus,
+  json-glib,
   lcms2,
-  libgbm,
   libGL,
-  libxi,
-  libx11,
-  libxkbcommon,
+  libadwaita,
+  libgbm,
+  libgweather,
+  libical,
+  libjxl,
+  libnma-gtk4,
+  libpulseaudio,
+  librsvg,
+  libsecret,
   libsoup_3,
+  libx11,
+  libxi,
+  libxkbcommon,
   libxml2,
+  libxslt,
+  meson,
+  mutter,
+  networkmanager,
+  ninja,
+  pipewire,
+  pkg-config,
+  polkit,
+  python3,
+  replaceVars,
+  sassc,
+  shared-mime-info,
+  systemd,
+  unzip,
+  upower,
   webkitgtk_6_0,
+  webp-pixbuf-loader,
+  wrapGAppsHook4,
 }:
 
 let
@@ -75,15 +75,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gnome-shell";
   version = "50.2";
 
-  outputs = [
-    "out"
-    "devdoc"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/gnome-shell/${lib.versions.major finalAttrs.version}/gnome-shell-${finalAttrs.version}.tar.xz";
     hash = "sha256-UyFUIOUO/dTQYRultZ4Qy0yJ+j9R4q3f2Vyt4GGgmik=";
   };
+
+  outputs = [
+    "out"
+    "devdoc"
+  ];
 
   patches = [
     # Hardcode paths to various dependencies so that they can be found at runtime.
@@ -107,10 +107,20 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Work around failing fingerprint auth
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/gnome-shell/raw/dcd112d9708954187e7490564c2229d82ba5326f/f/0001-gdm-Work-around-failing-fingerprint-auth.patch";
       hash = "sha256-mgXty5HhiwUO1UV3/eDgWtauQKM0cRFQ0U7uocST25s=";
+      url = "https://src.fedoraproject.org/rpms/gnome-shell/raw/dcd112d9708954187e7490564c2229d82ba5326f/f/0001-gdm-Work-around-failing-fingerprint-auth.patch";
     })
   ];
+
+  postPatch = ''
+    patchShebangs \
+      src/data-to-c.py \
+      build-aux/generate-app-list.py
+
+    # We can generate it ourselves.
+    rm -f man/gnome-shell.1
+    rm data/theme/gnome-shell-{light,dark}.css
+  '';
 
   nativeBuildInputs = [
     docutils # for rst2man
@@ -189,16 +199,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dtests=false"
   ];
 
-  postPatch = ''
-    patchShebangs \
-      src/data-to-c.py \
-      build-aux/generate-app-list.py
-
-    # We can generate it ourselves.
-    rm -f man/gnome-shell.1
-    rm data/theme/gnome-shell-{light,dark}.css
-  '';
-
   preInstall = ''
     # gnome-shell contains GSettings schema overrides for Mutter.
     schemadir="$out/share/glib-2.0/schemas"
@@ -248,6 +248,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     mozillaPlugin = "/lib/mozilla/plugins";
+
     updateScript = gnome.updateScript {
       packageName = "gnome-shell";
     };
@@ -258,8 +259,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/gnome-shell";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 
 })

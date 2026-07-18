@@ -1,18 +1,18 @@
 {
   lib,
-  fetchurl,
-  fetchpatch,
   stdenv,
-  gnutls,
-  glib,
-  pkg-config,
+  fetchurl,
   check,
+  fetchpatch,
+  glib,
+  gnutls,
   libotr,
+  pkg-config,
   python3,
   enableLibPurple ? false,
-  pidgin ? null,
   enablePam ? false,
   pam ? null,
+  pidgin ? null,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,6 +23,14 @@ stdenv.mkDerivation rec {
     url = "mirror://bitlbee/src/bitlbee-${version}.tar.gz";
     sha256 = "0zhhcbcr59sx9h4maf8zamzv2waya7sbsl7w74gbyilvy93dw5cz";
   };
+
+  patches = [
+    # This should be dropped once the issue is fixed upstream.
+    (fetchpatch {
+      sha256 = "144dpm4kq7c268fpww1q3n88ayg068n73fbabr5arh1zryw48qfv";
+      url = "https://github.com/bitlbee/bitlbee/commit/6ff651b3ec93e5fd74f80766d5e9714d963137bc.diff";
+    })
+  ];
 
   nativeBuildInputs = [ pkg-config ] ++ lib.optional doCheck check;
 
@@ -44,20 +52,8 @@ stdenv.mkDerivation rec {
   ++ lib.optional enableLibPurple "--purple=1"
   ++ lib.optional enablePam "--pam=1";
 
-  patches = [
-    # This should be dropped once the issue is fixed upstream.
-    (fetchpatch {
-      url = "https://github.com/bitlbee/bitlbee/commit/6ff651b3ec93e5fd74f80766d5e9714d963137bc.diff";
-      sha256 = "144dpm4kq7c268fpww1q3n88ayg068n73fbabr5arh1zryw48qfv";
-    })
-  ];
-
-  installTargets = [
-    "install"
-    "install-dev"
-  ];
-
   doCheck = !enableLibPurple; # Checks fail with libpurple for some reason
+
   checkPhase = ''
     # check flags set VERBOSE=y which breaks the build due overriding a command
     make check
@@ -65,9 +61,13 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
+  installTargets = [
+    "install"
+    "install-dev"
+  ];
+
   meta = {
     description = "IRC instant messaging gateway";
-    mainProgram = "bitlbee";
 
     longDescription = ''
       BitlBee brings IM (instant messaging) to IRC clients.  It's a
@@ -87,6 +87,8 @@ stdenv.mkDerivation rec {
       lassulus
       pSub
     ];
+
     platforms = lib.platforms.gnu ++ lib.platforms.linux; # arbitrary choice
+    mainProgram = "bitlbee";
   };
 }

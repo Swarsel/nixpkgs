@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.gnu.org/software/guile-opengl/";
     description = "Guile bindings for the OpenGL graphics API";
+    homepage = "https://www.gnu.org/software/guile-opengl/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

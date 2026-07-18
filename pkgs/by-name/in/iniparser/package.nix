@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  fetchFromGitLab,
   fetchFromGitHub,
-  replaceVars,
-  symlinkJoin,
+  fetchFromGitLab,
   cmake,
+  ctestCheckHook,
   doxygen,
+  replaceVars,
   ruby,
-  validatePkgConfig,
+  symlinkJoin,
   testers,
   unity-test,
-  ctestCheckHook,
+  validatePkgConfig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
     }
   );
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     doxygen
@@ -44,11 +46,14 @@ stdenv.mkDerivation (finalAttrs: {
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
   ];
+
   doCheck = true;
+
   nativeCheckInputs = [
     ruby
     ctestCheckHook
   ];
+
   checkInputs = [
     (
       (unity-test.override {
@@ -64,17 +69,15 @@ stdenv.mkDerivation (finalAttrs: {
     ln -sv $out/include/iniparser/*.h $out/include/
   '';
 
-  strictDeps = true;
-
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
-    homepage = "https://gitlab.com/iniparser/iniparser";
     description = "Free standalone ini file parsing library";
+    homepage = "https://gitlab.com/iniparser/iniparser";
     changelog = "https://gitlab.com/iniparser/iniparser/-/releases/v${finalAttrs.version}";
     license = lib.licenses.mit;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     pkgConfigModules = [ "iniparser" ];
-    maintainers = [ ];
   };
 })

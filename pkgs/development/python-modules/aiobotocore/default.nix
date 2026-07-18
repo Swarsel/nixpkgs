@@ -1,31 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
   aioitertools,
-  botocore,
-  python-dateutil,
-  jmespath,
-  multidict,
-  urllib3,
-  wrapt,
   anyio,
-  dill,
-  moto,
-  time-machine,
-  werkzeug,
   awscli,
   boto3,
+  botocore,
+  buildPythonPackage,
+  dill,
   httpx,
-  setuptools,
+  jmespath,
+  moto,
+  multidict,
   pytestCheckHook,
+  python-dateutil,
+  setuptools,
+  time-machine,
+  urllib3,
+  werkzeug,
+  wrapt,
 }:
 
 buildPythonPackage rec {
   pname = "aiobotocore";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -34,9 +33,17 @@ buildPythonPackage rec {
     hash = "sha256-/Yf2rt/5FH1WiD2VV2hEksM1XleEl4YRBqGQI4GVa8Q=";
   };
 
-  # Relax version constraints: aiobotocore works with newer botocore versions
-  # the pinning used to match some `extras_require` we're not using.
-  pythonRelaxDeps = [ "botocore" ];
+  nativeCheckInputs = [
+    anyio
+    dill
+    moto
+    time-machine
+    werkzeug
+    pytestCheckHook
+  ]
+  ++ moto.optional-dependencies.server;
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -53,27 +60,9 @@ buildPythonPackage rec {
     wrapt
   ];
 
-  optional-dependencies = {
-    awscli = [ awscli ];
-    boto3 = [ boto3 ];
-    httpx = [ httpx ];
-  };
-
-  nativeCheckInputs = [
-    anyio
-    dill
-    moto
-    time-machine
-    werkzeug
-    pytestCheckHook
-  ]
-  ++ moto.optional-dependencies.server;
-
-  pythonImportsCheck = [ "aiobotocore" ];
-
-  disabledTests = [
-    # TypeError: sequence item 1: expected str instance, MagicMock found
-    "test_signers_generate_db_auth_token"
+  disabledTestMarks = [
+    # Exclude localonly tests (incompatible with moto mocks)
+    "localonly"
   ];
 
   disabledTestPaths = [
@@ -91,12 +80,22 @@ buildPythonPackage rec {
     "tests/test_waiter.py"
   ];
 
-  disabledTestMarks = [
-    # Exclude localonly tests (incompatible with moto mocks)
-    "localonly"
+  disabledTests = [
+    # TypeError: sequence item 1: expected str instance, MagicMock found
+    "test_signers_generate_db_auth_token"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    awscli = [ awscli ];
+    boto3 = [ boto3 ];
+    httpx = [ httpx ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "aiobotocore" ];
+  # Relax version constraints: aiobotocore works with newer botocore versions
+  # the pinning used to match some `extras_require` we're not using.
+  pythonRelaxDeps = [ "botocore" ];
 
   meta = {
     description = "Python client for amazon services";

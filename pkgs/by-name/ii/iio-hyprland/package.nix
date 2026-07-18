@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  meson,
   cmake,
-  pkg-config,
   dbus,
+  meson,
   ninja,
+  pkg-config,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation {
@@ -21,7 +21,6 @@ stdenv.mkDerivation {
     hash = "sha256-YTbCWQVmpshvtY//e6kPQtbn/Msbjx9NN0j0LQFzfNE=";
   };
 
-  buildInputs = [ dbus ];
   nativeBuildInputs = [
     meson
     cmake
@@ -29,6 +28,7 @@ stdenv.mkDerivation {
     ninja
   ];
 
+  buildInputs = [ dbus ];
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

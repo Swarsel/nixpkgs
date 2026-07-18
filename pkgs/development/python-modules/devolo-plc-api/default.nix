@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   httpx,
   protobuf,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "devolo-plc-api";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "2Fake";
@@ -31,12 +30,12 @@ buildPythonPackage rec {
   patches = [
     # Add Python 3.14 support
     (fetchpatch {
-      url = "https://github.com/2Fake/devolo_plc_api/commit/3b1c167e2df5909910e97bf1626de88b17fb94d1.patch";
       hash = "sha256-oaLYMvRl2Zcum9XkFQ1Dm1/F/BhURLGKrwh6FguVL9Y=";
+      url = "https://github.com/2Fake/devolo_plc_api/commit/3b1c167e2df5909910e97bf1626de88b17fb94d1.patch";
     })
     (fetchpatch {
-      url = "https://github.com/2Fake/devolo_plc_api/pull/224.patch";
       hash = "sha256-fDGYhjA/tMFKQnEtix1no8Wf+cp9Ph7keXRq1+sH6YA=";
+      url = "https://github.com/2Fake/devolo_plc_api/pull/224.patch";
     })
   ];
 
@@ -45,6 +44,15 @@ buildPythonPackage rec {
       --replace-fail "protobuf>=4.22.0" "protobuf"
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio_0
+    pytest-httpx
+    pytest-mock
+    pytestCheckHook
+    syrupy
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -55,21 +63,12 @@ buildPythonPackage rec {
     zeroconf
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    pytest-asyncio_0
-    pytest-httpx
-    pytest-mock
-    pytestCheckHook
-    syrupy
-  ];
-
   disabledTests = [
     # pytest-httpx compat issue
     "test_wrong_password_type"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "devolo_plc_api" ];
 
   meta = {

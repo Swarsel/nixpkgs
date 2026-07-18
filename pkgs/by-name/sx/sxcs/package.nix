@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromCodeberg,
-  libxcursor,
-  libx11,
-  libxrender,
   installShellFiles,
+  libx11,
+  libxcursor,
+  libxrender,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,23 +19,24 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7Dz14gARdiHZApT20PGS5pop327XROBeAXeKUeHo7iA=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  nativeBuildInputs = [ installShellFiles ];
+
   buildInputs = [
     libx11
     libxcursor
     libxrender
   ];
-  nativeBuildInputs = [ installShellFiles ];
 
   buildPhase = ''
     runHook preBuild
     ${stdenv.cc.targetPrefix}cc -o sxcs sxcs.c -O3 -s -l X11 -l Xcursor -l Xrender
     runHook postBuild
   '';
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   installPhase = ''
     runHook preInstall

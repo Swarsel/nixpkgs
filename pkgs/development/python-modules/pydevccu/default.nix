@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   orjson,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,9 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pydevccu";
   version = "0.2.5";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "SukramJ";
@@ -24,19 +21,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Sf8XBvkf6dRuA6daJ48WJHuVYBhznDcPWLl+4xm46n0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
-  optional-dependencies = {
-    fast = [ orjson ];
-  };
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  disabled = pythonOlder "3.13";
+
+  optional-dependencies = {
+    fast = [ orjson ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pydevccu" ];
 
   meta = {

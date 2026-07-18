@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  python3Packages,
   mercurial,
+  python3Packages,
   qt5,
 }:
 
@@ -10,42 +10,22 @@ let
   version = "7.0.1";
 in
 python3Packages.buildPythonApplication {
-  pname = "tortoisehg";
   inherit version;
-  pyproject = true;
+  pname = "tortoisehg";
 
   src = fetchurl {
     url = "https://www.mercurial-scm.org/release/tortoisehg/targz/tortoisehg-${version}.tar.gz";
     hash = "sha256-rCDLZ2ppD3Y71c31UNir/1pW1QBJViMP9JdoJiWf0nk=";
   };
 
-  build-system = with python3Packages; [ setuptools ];
-
   nativeBuildInputs = [
     qt5.wrapQtAppsHook
-  ];
-
-  dependencies = with python3Packages; [
-    mercurial
-    # The one from python3Packages
-    qscintilla-qt5
-    iniparse
   ];
 
   buildInputs = [
     # Makes wrapQtAppsHook add these qt libraries to the wrapper search paths
     qt5.qtwayland
   ];
-
-  # In order to spare double wrapping, we use:
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-  # Convenient alias
-  postInstall = ''
-    ln -s $out/bin/thg $out/bin/tortoisehg
-    install -D --mode=0644 contrib/thg.desktop --target-directory $out/share/applications/
-  '';
 
   # In python3Packages.buildPythonApplication doCheck is always true, and we
   # override it to not run the default unittests
@@ -64,6 +44,28 @@ python3Packages.buildPythonApplication {
     runHook postCheck
   '';
 
+  # Convenient alias
+  postInstall = ''
+    ln -s $out/bin/thg $out/bin/tortoisehg
+    install -D --mode=0644 contrib/thg.desktop --target-directory $out/share/applications/
+  '';
+
+  # In order to spare double wrapping, we use:
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  build-system = with python3Packages; [ setuptools ];
+
+  dependencies = with python3Packages; [
+    mercurial
+    # The one from python3Packages
+    qscintilla-qt5
+    iniparse
+  ];
+
+  pyproject = true;
+
   passthru = {
     # If at some point we'll override this argument, it might be useful to have
     # access to it here.
@@ -74,9 +76,11 @@ python3Packages.buildPythonApplication {
     description = "Qt based graphical tool for working with Mercurial";
     homepage = "https://tortoisehg.bitbucket.io/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       gbtb
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

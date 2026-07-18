@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   crossplane,
-  fetchFromGitHub,
   jellyfish,
   jproperties,
-  jsonschema-specifications,
   jsonschema,
+  jsonschema-specifications,
   luhn,
   lxml,
   pytest-mock,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "whispers";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adeptex";
@@ -37,7 +36,19 @@ buildPythonPackage rec {
       --replace-fail '"pytest-runner"' ""
   '';
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    # Pinning test highly sensitive to semgrep version
+    substituteInPlace tests/unit/test_main.py \
+      --replace-fail '("--ast", 434),' ""
+
+    # Some tests need the binary available in PATH
+    export PATH=$out/bin:$PATH
+  '';
 
   build-system = [ setuptools ];
 
@@ -57,26 +68,14 @@ buildPythonPackage rec {
     wrapt
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # Pinning tests highly sensitive to semgrep version
     "tests/unit/plugins/test_semgrep.py"
   ];
 
-  preCheck = ''
-    # Pinning test highly sensitive to semgrep version
-    substituteInPlace tests/unit/test_main.py \
-      --replace-fail '("--ast", 434),' ""
-
-    # Some tests need the binary available in PATH
-    export PATH=$out/bin:$PATH
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "whispers" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Tool to identify hardcoded secrets in static structured text";

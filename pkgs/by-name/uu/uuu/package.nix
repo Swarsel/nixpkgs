@@ -2,15 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-
+  bzip2,
   cmake,
   installShellFiles,
-  pkg-config,
-
-  bzip2,
   libusb1,
+  nix-update-script,
   openssl,
+  pkg-config,
   tinyxml-2,
   zlib,
   zstd,
@@ -27,12 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+m3r/QxOnTjemqIaZ/2cxDHtHlw7qxu9PbTsQYyMaEY=";
   };
 
-  passthru.updateScript = nix-update-script {
-    extraArgs = [
-      "--version-regex"
-      "uuu_([0-9.]+)"
-    ];
-  };
+  postPatch = ''
+    # Avoid the need of calling Git during the build.
+    echo "uuu_${finalAttrs.version}" > .tarball-version
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -49,11 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  postPatch = ''
-    # Avoid the need of calling Git during the build.
-    echo "uuu_${finalAttrs.version}" > .tarball-version
-  '';
-
   postInstall = ''
     installShellCompletion --bash --name uuu.bash ${./completion.bash}
 
@@ -63,12 +54,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
 
+  passthru.updateScript = nix-update-script {
+    extraArgs = [
+      "--version-regex"
+      "uuu_([0-9.]+)"
+    ];
+  };
+
   meta = {
     description = "Freescale/NXP I.MX Chip image deploy tools";
     homepage = "https://github.com/nxp-imx/mfgtools";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ otavio ];
-    mainProgram = "uuu";
     platforms = lib.platforms.all;
+    mainProgram = "uuu";
   };
 })

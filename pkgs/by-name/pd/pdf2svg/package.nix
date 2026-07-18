@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   cairo,
   gtk2,
+  pkg-config,
   poppler,
 }:
 
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     cairo
     poppler

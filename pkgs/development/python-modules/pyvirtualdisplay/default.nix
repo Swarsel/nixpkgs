@@ -2,37 +2,34 @@
   lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
-  replaceVars,
-  xorg-server,
-  xvfb,
-  xmessage,
-  xdpyinfo,
-  xauth,
-
-  # build-system
-  setuptools,
-
   # tests
   easyprocess,
   entrypoint2,
+  fetchPypi,
   pillow,
   psutil,
   pytest-timeout,
   pytest-xdist,
   pytestCheckHook,
+  replaceVars,
+  # build-system
+  setuptools,
   vncdo,
+  xauth,
+  xdpyinfo,
+  xmessage,
+  xorg-server,
+  xvfb,
 }:
 
 buildPythonPackage rec {
   pname = "pyvirtualdisplay";
   version = "3.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "PyVirtualDisplay";
     inherit version;
     hash = "sha256-CXVbw86263JfsH7KVCX0PyNY078I4A0qm3kqGu3RYVk=";
+    pname = "PyVirtualDisplay";
   };
 
   patches = lib.optionals stdenv.hostPlatform.isLinux [
@@ -41,8 +38,6 @@ buildPythonPackage rec {
       xdpyinfo = lib.getExe xdpyinfo;
     })
   ];
-
-  build-system = [ setuptools ];
 
   doCheck = stdenv.hostPlatform.isLinux;
 
@@ -59,6 +54,8 @@ buildPythonPackage rec {
     xvfb
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pytestFlags = [ "-v" ];
 
   meta = {

@@ -19,6 +19,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     obs-studio
     qtbase
@@ -28,18 +29,18 @@ stdenv.mkDerivation rec {
     "-DBUILD_OUT_OF_TREE=On"
   ];
 
-  dontWrapQtApps = true;
-
   postInstall = ''
     rm -rf $out/obs-plugins
     mv $out/data $out/share/obs
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "OBS Studio filter for applying an arbitrary shader to a source";
     homepage = "https://github.com/exeldro/obs-shaderfilter";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

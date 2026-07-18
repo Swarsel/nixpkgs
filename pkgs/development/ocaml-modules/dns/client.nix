@@ -1,16 +1,16 @@
 {
+  alcotest,
   buildDunePackage,
   dns,
+  domain-name,
   mirage-crypto-rng,
   mtime,
   randomconv,
-  domain-name,
-  alcotest,
 }:
 
 buildDunePackage {
-  pname = "dns-client";
   inherit (dns) src version;
+  pname = "dns-client";
 
   propagatedBuildInputs = [
     dns
@@ -19,8 +19,9 @@ buildDunePackage {
     mtime
     mirage-crypto-rng
   ];
-  checkInputs = [ alcotest ];
+
   doCheck = true;
+  checkInputs = [ alcotest ];
 
   meta = dns.meta // {
     description = "Pure DNS resolver API";

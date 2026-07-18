@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
   setuptools-scm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "heatzypy";
   version = "2.5.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Cyr-ius";
@@ -19,16 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-6vdzxQGNQSMCFYA/nQ2T72RUWmBRvb9v0YcxVbjtG94=";
   };
 
+  # Module has no tests
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ aiohttp ];
-
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "heatzypy" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -23,21 +23,21 @@ in
 
   options.services.peerflix = {
     enable = lib.mkOption {
-      description = "Whether to enable peerflix service.";
       default = false;
+      description = "Whether to enable peerflix service.";
       type = lib.types.bool;
     };
 
-    stateDir = lib.mkOption {
-      description = "Peerflix state directory.";
-      default = "/var/lib/peerflix";
+    downloadDir = lib.mkOption {
+      default = "${cfg.stateDir}/torrents";
+      defaultText = lib.literalExpression ''"''${config.${opt.stateDir}}/torrents"'';
+      description = "Peerflix temporary download directory.";
       type = lib.types.path;
     };
 
-    downloadDir = lib.mkOption {
-      description = "Peerflix temporary download directory.";
-      default = "${cfg.stateDir}/torrents";
-      defaultText = lib.literalExpression ''"''${config.${opt.stateDir}}/torrents"'';
+    stateDir = lib.mkOption {
+      default = "/var/lib/peerflix";
+      description = "Peerflix state directory.";
       type = lib.types.path;
     };
   };
@@ -45,14 +45,9 @@ in
   ###### implementation
 
   config = lib.mkIf cfg.enable {
-    systemd.tmpfiles.rules = [
-      "d '${cfg.stateDir}' - peerflix - - -"
-    ];
-
     systemd.services.peerflix = {
-      description = "Peerflix Daemon";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Peerflix Daemon";
       environment.HOME = cfg.stateDir;
 
       preStart = ''
@@ -64,12 +59,19 @@ in
         ExecStart = "${pkgs.peerflix-server}/bin/peerflix-server";
         User = "peerflix";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    users.users.peerflix = {
-      isSystemUser = true;
-      group = "peerflix";
-    };
+    systemd.tmpfiles.rules = [
+      "d '${cfg.stateDir}' - peerflix - - -"
+    ];
+
     users.groups.peerflix = { };
+
+    users.users.peerflix = {
+      group = "peerflix";
+      isSystemUser = true;
+    };
   };
 }

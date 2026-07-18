@@ -22,10 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Space Invaders clone based on ncurses";
-    mainProgram = "ninvaders";
     homepage = "https://ninvaders.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ _1000101 ];
     platforms = lib.platforms.all;
+    mainProgram = "ninvaders";
   };
 })

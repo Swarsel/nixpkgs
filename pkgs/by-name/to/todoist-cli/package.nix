@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   testers,
   todoist-cli,
 }:
@@ -17,9 +17,7 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-q50gIxHYdwW7cUO6FaUr3em1NX6kNw/+T8T+QLaB6Wk=";
-
   doCheck = true;
-
   __structuredAttrs = true;
 
   passthru.tests.version = testers.testVersion {

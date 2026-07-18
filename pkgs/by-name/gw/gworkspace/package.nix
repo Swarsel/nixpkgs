@@ -1,7 +1,7 @@
 {
   lib,
-  clangStdenv,
   fetchurl,
+  clangStdenv,
   gnustep-back,
   gnustep-systempreferences,
   wrapGNUstepAppsHook,
@@ -32,11 +32,13 @@ clangStdenv.mkDerivation (finalAttrs: {
     description = "Workspace manager for GNUstep";
     homepage = "https://gnustep.github.io/";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "GWorkspace";
+
     maintainers = with lib.maintainers; [
       ashalkhakov
       dblsaiko
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "GWorkspace";
   };
 })

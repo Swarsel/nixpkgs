@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  uv-dynamic-versioning,
-  pytestCheckHook,
-  pytest-localserver,
   numpy,
   pillow,
   pydicom,
+  pytest-localserver,
+  pytestCheckHook,
   requests,
   retrying,
+  uv-dynamic-versioning,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dicomweb-client";
   version = "0.61.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ImagingDataCommons";
@@ -24,6 +23,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-uCImuJDZr2gyWnLCU2JCmkGO/EloRty1fIRujwzYzAg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-localserver
+  ];
 
   build-system = [
     hatchling
@@ -38,11 +42,7 @@ buildPythonPackage (finalAttrs: {
     retrying
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-localserver
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dicomweb_client" ];
 
   meta = {

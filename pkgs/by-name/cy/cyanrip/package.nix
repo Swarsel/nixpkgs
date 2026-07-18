@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
+  curl,
   ffmpeg-headless,
   libcdio,
   libcdio-paranoia,
   libmusicbrainz,
-  curl,
+  meson,
+  ninja,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "cyanrip";
@@ -37,12 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Bule-ish CD ripper";
     homepage = "https://github.com/cyanreg/cyanrip";
     changelog = "https://github.com/cyanreg/cyanrip/releases/tag/${finalAttrs.src.rev}";
-    description = "Bule-ish CD ripper";
-    mainProgram = "cyanrip";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.zane ];
+    platforms = lib.platforms.all;
+    mainProgram = "cyanrip";
   };
 })

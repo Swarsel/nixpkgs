@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  pkg-config,
-  libsodium,
   buildGoModule,
+  libsodium,
   nix-update-script,
   nixosTests,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,22 +15,20 @@ buildGoModule (finalAttrs: {
   src = fetchFromGitHub {
     owner = "ente";
     repo = "ente";
-    sparseCheckout = [ "server" ];
     tag = "photos-v${finalAttrs.version}";
     hash = "sha256-9MWmJ3QUgS7BToTnSZzTi4ywGW1RtwrCO+9yQJkvejM=";
+    sparseCheckout = [ "server" ];
   };
-
-  vendorHash = "sha256-qrcfNacMR2hwdtezwYrYTPpr1ALCwZktSW8UiyzGXjQ=";
-
-  sourceRoot = "${finalAttrs.src.name}/server";
 
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     libsodium
   ];
 
+  vendorHash = "sha256-qrcfNacMR2hwdtezwYrYTPpr1ALCwZktSW8UiyzGXjQ=";
   # fatal: "Not running tests in non-test environment"
   doCheck = false;
 
@@ -43,8 +41,11 @@ buildGoModule (finalAttrs: {
       $out/share/museum
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/server";
+
   passthru = {
     tests.ente = nixosTests.ente;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -58,12 +59,14 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/ente/ente/tree/main/server";
     changelog = "https://github.com/ente/ente/releases/tag/photos-v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       pinpox
       oddlama
       nicegamer7
     ];
-    mainProgram = "museum";
+
     platforms = lib.platforms.linux;
+    mainProgram = "museum";
   };
 })

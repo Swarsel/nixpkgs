@@ -1,6 +1,7 @@
 {
-  fetchFromGitLab,
   lib,
+  stdenv,
+  fetchFromGitLab,
   libxkbcommon,
   makeWrapper,
   meson,
@@ -9,7 +10,6 @@
   pixman,
   pkg-config,
   scdoc,
-  stdenv,
   wayland,
   wayland-protocols,
   wayland-scanner,
@@ -22,18 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.3";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "wayback";
     repo = "wayback";
     tag = finalAttrs.version;
     hash = "sha256-/H0+zOAdrejHMNRcc94Wjgc4/s/M1rUegPcX+pBQcrY=";
+    domain = "gitlab.freedesktop.org";
   };
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     makeWrapper
@@ -58,6 +54,10 @@ stdenv.mkDerivation (finalAttrs: {
       --set XWAYBACK_PATH "$out/bin/Xwayback"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -65,8 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://wayback.freedesktop.org";
     changelog = "https://gitlab.freedesktop.org/wayback/wayback/-/releases/${finalAttrs.version}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ dramforever ];
     platforms = lib.platforms.linux;
     mainProgram = "Xwayback";
-    maintainers = with lib.maintainers; [ dramforever ];
   };
 })

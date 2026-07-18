@@ -1,6 +1,5 @@
 {
   buildPythonPackage,
-  stestrCheckHook,
   ddt,
   hacking,
   jsonschema,
@@ -10,16 +9,13 @@
   prometheus-client,
   requests-mock,
   stestr,
+  stestrCheckHook,
   testscenarios,
 }:
 
 buildPythonPackage {
-  pname = "openstacksdk-tests";
   inherit (openstacksdk) version src;
-  pyproject = false;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "openstacksdk-tests";
 
   nativeCheckInputs = [
     stestrCheckHook
@@ -61,5 +57,9 @@ buildPythonPackage {
     "openstack.tests.unit.test_stats.TestStats.test_list_projects"
     "openstack.tests.unit.test_stats.TestStats.test_timeout"
   ];
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 
 }

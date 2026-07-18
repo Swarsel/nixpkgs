@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   libusb-package,
   numpy,
   packaging,
-  pyusb,
-  scipy,
   pytestCheckHook,
+  pyusb,
   pyyaml,
+  scipy,
+  setuptools,
+  setuptools-scm,
   udevCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "cflib";
   version = "0.1.31";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bitcraze";
@@ -28,41 +27,9 @@ buildPythonPackage rec {
 
   strictDeps = true;
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "numpy"
-    "packaging"
-  ];
-
-  dependencies = [
-    libusb-package
-    numpy
-    packaging
-    pyusb
-    scipy
-  ];
-
-  disabledTestPaths = [
-    # exception: Cannot find a Crazyradio Dongle (HW required)
-    "examples/radio/radio_test.py"
-    "sys_test/single_cf_grounded/"
-    "sys_test/swarm_test_rig/"
-  ];
-
-  pythonImportsCheck = [ "cflib" ];
   nativeCheckInputs = [
     pytestCheckHook
     pyyaml
-  ];
-
-  # The udevCheckHook is used to verify udev rules
-  # requires diInstallCheck to be enabled, which is default for pythonPackages
-  nativeInstallCheckInputs = [
-    udevCheckHook
   ];
 
   # Install udev rules as defined
@@ -80,6 +47,40 @@ buildPythonPackage rec {
     SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", MODE="0664", GROUP="plugdev"
     EOF
   '';
+
+  # The udevCheckHook is used to verify udev rules
+  # requires diInstallCheck to be enabled, which is default for pythonPackages
+  nativeInstallCheckInputs = [
+    udevCheckHook
+  ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    libusb-package
+    numpy
+    packaging
+    pyusb
+    scipy
+  ];
+
+  disabledTestPaths = [
+    # exception: Cannot find a Crazyradio Dongle (HW required)
+    "examples/radio/radio_test.py"
+    "sys_test/single_cf_grounded/"
+    "sys_test/swarm_test_rig/"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "cflib" ];
+
+  pythonRelaxDeps = [
+    "numpy"
+    "packaging"
+  ];
 
   meta = {
     description = "Python library for the Crazyflie quadcopter by Bitcraze";

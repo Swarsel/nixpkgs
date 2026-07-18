@@ -1,31 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   decorator,
   imageio,
   imageio-ffmpeg,
   numpy,
   proglog,
-  python-dotenv,
-  requests,
-  tqdm,
-
   # tests
   pytest-timeout,
   pytestCheckHook,
+  python-dotenv,
+  requests,
+  # build-system
+  setuptools,
+  tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "moviepy";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Zulko";
@@ -34,9 +30,12 @@ buildPythonPackage rec {
     hash = "sha256-3vt/EyEOv6yNPgewkgcWcjM0TbQ6IfkR6nytS/WpRyg=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    pytest-timeout
+    pytestCheckHook
+  ];
 
-  pythonRelaxDeps = [ "pillow" ];
+  build-system = [ setuptools ];
 
   dependencies = [
     decorator
@@ -49,15 +48,14 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  nativeCheckInputs = [
-    pytest-timeout
-    pytestCheckHook
+  disabledTestPaths = [
+    "tests/test_compositing.py"
+    "tests/test_fx.py"
+    "tests/test_ImageSequenceClip.py"
+    "tests/test_TextClip.py"
+    "tests/test_VideoClip.py"
+    "tests/test_videotools.py"
   ];
-
-  # See https://github.com/NixOS/nixpkgs/issues/381908 and https://github.com/NixOS/nixpkgs/issues/385450.
-  pytestFlags = [ "--timeout=600" ];
-
-  pythonImportsCheck = [ "moviepy" ];
 
   disabledTests = [
     # stalls
@@ -78,14 +76,11 @@ buildPythonPackage rec {
     "test_issue_1682"
   ];
 
-  disabledTestPaths = [
-    "tests/test_compositing.py"
-    "tests/test_fx.py"
-    "tests/test_ImageSequenceClip.py"
-    "tests/test_TextClip.py"
-    "tests/test_VideoClip.py"
-    "tests/test_videotools.py"
-  ];
+  pyproject = true;
+  # See https://github.com/NixOS/nixpkgs/issues/381908 and https://github.com/NixOS/nixpkgs/issues/385450.
+  pytestFlags = [ "--timeout=600" ];
+  pythonImportsCheck = [ "moviepy" ];
+  pythonRelaxDeps = [ "pillow" ];
 
   meta = {
     description = "Video editing with Python";

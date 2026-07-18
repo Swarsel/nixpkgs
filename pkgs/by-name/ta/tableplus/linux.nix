@@ -1,23 +1,23 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoPatchelfHook,
   dpkg,
-  fetchurl,
   gtk3,
   gtksourceview3,
   krb5,
-  lib,
   libgee,
   libsecret,
-  libxkbcommon,
-  stdenv,
-  wrapGAppsHook3,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxext,
-  libxcursor,
   libx11,
   libxcb,
+  libxcursor,
+  libxext,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxrender,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,10 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcb
   ];
 
-  unpackPhase = ''
-    dpkg-deb -x $src .
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -68,13 +64,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    dpkg-deb -x $src .
+  '';
+
   meta = {
     description = "Database management made easy";
     homepage = "https://tableplus.com";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ rhydianjenkins ];
     platforms = lib.platforms.linux;
     mainProgram = "tableplus";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 })

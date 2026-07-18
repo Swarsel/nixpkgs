@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   httpx,
   hypothesis_6_136,
   mypy,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "returns";
   version = "0.26.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dry-python";
@@ -30,7 +29,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ typing-extensions ];
 
   nativeCheckInputs = [
@@ -48,9 +46,9 @@ buildPythonPackage rec {
     trio
   ];
 
-  pythonImportsCheck = [ "returns" ];
-
   disabledTestPaths = [ "typesafety" ];
+  pyproject = true;
+  pythonImportsCheck = [ "returns" ];
 
   meta = {
     description = "Make your functions return something meaningful, typed, and safe";

@@ -1,6 +1,6 @@
 args@{
-  pkgs,
   lib,
   callPackage,
+  pkgs,
 }:
 self: (import ./hackage-packages.nix args self)

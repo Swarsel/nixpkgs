@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  gfortran,
-  blas,
-  lapack,
-  scalapack,
-  useMpi ? false,
-  mpi,
   fetchFromGitLab,
+  blas,
   cmake,
+  elpa,
+  gfortran,
+  lapack,
+  mpi,
+  ninja,
+  nix-update-script,
   pkg-config,
   readline,
-  ninja,
-  elpa,
-  nix-update-script,
+  scalapack,
+  useMpi ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,11 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-pud8RlJAT+0TwyPRsbf5D/8FfLjZvPYPf84Xb7UH6os=";
     fetchSubmodules = true;
-  };
-
-  passthru = {
-    inherit mpi;
-    updateScript = nix-update-script { };
   };
 
   nativeBuildInputs = [
@@ -51,15 +46,13 @@ stdenv.mkDerivation (finalAttrs: {
     scalapack
   ];
 
-  env.NIX_LDFLAGS = "-lm";
-
   cmakeFlags = [
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
     "-DCMAKE_INSTALL_INCLUDEDIR=include"
     "-DCMAKE_INSTALL_LIBDIR=lib"
   ];
 
-  enableParallelBuilding = false; # Started making trouble with gcc-11
+  env.NIX_LDFLAGS = "-lm";
 
   preBuild =
     if useMpi then
@@ -77,9 +70,16 @@ stdenv.mkDerivation (finalAttrs: {
         );
       '';
 
+  enableParallelBuilding = false; # Started making trouble with gcc-11
+
+  passthru = {
+    inherit mpi;
+    updateScript = nix-update-script { };
+  };
+
   meta = {
     description = "First-principles materials simulation code using DFT";
-    mainProgram = "siesta";
+
     longDescription = ''
       SIESTA is both a method and its computer program
       implementation, to perform efficient electronic structure
@@ -93,9 +93,11 @@ stdenv.mkDerivation (finalAttrs: {
       matching the quality of other approaches, such as plane-wave
       and all-electron methods.
     '';
+
     homepage = "https://siesta-project.org/siesta/";
     license = lib.licenses.gpl2;
-    platforms = [ "x86_64-linux" ];
     maintainers = [ lib.maintainers.costrouc ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "siesta";
   };
 })

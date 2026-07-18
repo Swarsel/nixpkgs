@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
   eigen,
-  zlib,
   llvmPackages,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,11 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://iqtree.github.io/";
     description = "Efficient and versatile phylogenomic software by maximum likelihood";
-    mainProgram = "iqtree3";
+    homepage = "https://iqtree.github.io/";
     license = lib.licenses.lgpl2;
     maintainers = with lib.maintainers; [ bzizou ];
     platforms = lib.platforms.linux;
+    mainProgram = "iqtree3";
   };
 })

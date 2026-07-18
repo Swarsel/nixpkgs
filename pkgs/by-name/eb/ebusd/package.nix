@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  pkgs,
   fetchFromGitHub,
-  fetchpatch,
   argparse,
-  mosquitto,
-  cmake,
   autoconf,
   automake,
+  cmake,
+  fetchpatch,
   libtool,
-  pkg-config,
+  mosquitto,
   openssl,
+  pkg-config,
+  pkgs,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,6 +24,10 @@ stdenv.mkDerivation rec {
     rev = version;
     sha256 = "sha256-CmArhkJfxf8lL6FoHRQKjk/8ObfEy3Xef9DUtOVKRas=";
   };
+
+  patches = [
+    ./patches/ebusd-cmake.patch
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -39,19 +43,15 @@ stdenv.mkDerivation rec {
     openssl
   ];
 
-  patches = [
-    ./patches/ebusd-cmake.patch
-  ];
-
-  preInstall = ''
-    mkdir -p $out/usr/bin
-  '';
-
   cmakeFlags = [
     "-DCMAKE_INSTALL_SYSCONFDIR=${placeholder "out"}/etc"
     "-DCMAKE_INSTALL_BINDIR=${placeholder "out"}/bin"
     "-DCMAKE_INSTALL_LOCALSTATEDIR=${placeholder "TMPDIR"}"
   ];
+
+  preInstall = ''
+    mkdir -p $out/usr/bin
+  '';
 
   postInstall = ''
     rmdir $out/usr/bin

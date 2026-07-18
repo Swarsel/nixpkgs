@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  openssl,
   coreutils,
   nixosTests,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Qk+003adkSsE3kPSHMMnSM39MSHE8dJtVJmSpUZ44Go=";
   };
 
-  buildInputs = [ openssl ];
-
   postPatch = ''
     substituteInPlace libcperciva/cpusupport/Build/cpusupport.sh \
       --replace "dirname" "${coreutils}/bin/dirname" \
@@ -27,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "rm" "${coreutils}/bin/rm"   \
       --replace "2>/dev/null" "2>stderr.log"
   '';
+
+  buildInputs = [ openssl ];
 
   installPhase = ''
     runHook preInstall
@@ -41,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Utility for secure encrypted channels between sockets";
     homepage = "https://www.tarsnap.com/spiped.html";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.thoughtpolice ];
+    platforms = lib.platforms.unix;
   };
 })

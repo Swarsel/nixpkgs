@@ -2,40 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  autoreconfHook,
   autoconf-archive,
-  pkgconf,
-  libtool,
+  autoreconfHook,
   bison,
-  libevent,
-  zlib,
-  libressl,
   db,
-  pam,
+  libevent,
+  libressl,
+  libtool,
   libxcrypt,
   nixosTests,
+  pam,
+  pkgconf,
+  zlib,
   binPath ? "/run/wrappers/bin",
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "opensmtpd";
   version = "7.8.0p0";
-
-  nativeBuildInputs = [
-    autoreconfHook
-    autoconf-archive
-    pkgconf
-    libtool
-    bison
-  ];
-  buildInputs = [
-    libevent
-    zlib
-    libressl
-    db
-    pam
-    libxcrypt
-  ];
 
   src = fetchurl {
     url = "https://www.opensmtpd.org/archives/opensmtpd-${finalAttrs.version}.tar.gz";
@@ -60,6 +44,23 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "@@PATH_SENDMAIL@@" "\"${binPath}/sendmail\""
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    autoconf-archive
+    pkgconf
+    libtool
+    bison
+  ];
+
+  buildInputs = [
+    libevent
+    zlib
+    libressl
+    db
+    pam
+    libxcrypt
+  ];
+
   configureFlags = [
     "--sysconfdir=/etc"
     "--localstatedir=/var"
@@ -81,21 +82,25 @@ stdenv.mkDerivation (finalAttrs: {
     "localstatedir=\${TMPDIR}"
   ];
 
+  passthru.tests = {
+    basic-functionality-and-dovecot-interaction = nixosTests.opensmtpd;
+    rspamd-integration = nixosTests.opensmtpd-rspamd;
+  };
+
   meta = {
-    homepage = "https://www.opensmtpd.org/";
     description = ''
       A free implementation of the server-side SMTP protocol as defined by
       RFC 5321, with some additional standard extensions
     '';
+
+    homepage = "https://www.opensmtpd.org/";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       obadz
       vifino
     ];
-  };
-  passthru.tests = {
-    basic-functionality-and-dovecot-interaction = nixosTests.opensmtpd;
-    rspamd-integration = nixosTests.opensmtpd-rspamd;
+
+    platforms = lib.platforms.linux;
   };
 })

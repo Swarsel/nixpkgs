@@ -16,14 +16,12 @@ stdenv.mkDerivation {
     sha256 = "XWwkuw+Um/cflRWjIeIgQUxJLrk2DLDmx7K+pMWvIlI=";
   };
 
+  doCheck = true;
+
   nativeCheckInputs = [
     python3.pkgs.inkex
     python3.pkgs.pytestCheckHook
   ];
-
-  dontBuild = true;
-
-  doCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -32,6 +30,8 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Inkscape extension which removes all matrix transforms by applying them recursively to shapes";

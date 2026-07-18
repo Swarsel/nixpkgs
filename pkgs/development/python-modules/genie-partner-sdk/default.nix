@@ -1,29 +1,26 @@
 {
   lib,
-  buildPythonPackage,
-  hatchling,
   aiohttp,
+  buildPythonPackage,
   fetchPypi,
+  hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "genie-partner-sdk";
   version = "1.0.11";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "genie_partner_sdk";
     hash = "sha256-eNeN+mtpPzY6p0iVo/ot0eLza/aeJP70PxNHx7/MVoY=";
+    pname = "genie_partner_sdk";
   };
 
   nativeBuildInputs = [ hatchling ];
-
   propagatedBuildInputs = [ aiohttp ];
-
   # No tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "genie_partner_sdk" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  melpaBuild,
   fetchFromGitHub,
+  melpaBuild,
   unstableGitUpdater,
 }:
 
@@ -19,8 +19,8 @@ melpaBuild {
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
   meta = {
-    homepage = "https://github.com/devonsparks/wat-mode";
     description = "Emacs major mode for WebAssembly's text format";
+    homepage = "https://github.com/devonsparks/wat-mode";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ nagy ];
   };

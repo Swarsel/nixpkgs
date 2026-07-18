@@ -26,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Smart pointer constructs for the (GNU) C programming language";
     homepage = "https://github.com/Snaipe/libcsptr";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.fragamus ];
+    platforms = lib.platforms.all;
   };
 })

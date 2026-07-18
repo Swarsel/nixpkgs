@@ -1,23 +1,16 @@
 {
   lib,
-  makeImpureTest,
-  writableTmpDirAsHomeHook,
-  miopen,
   clr,
-  rocm-smi,
+  makeImpureTest,
+  miopen,
   name,
+  rocm-smi,
   testScript,
+  writableTmpDirAsHomeHook,
 }:
 
 makeImpureTest {
   inherit name;
-  testedPackage = "rocmPackages.miopen";
-
-  sandboxPaths = [
-    "/sys"
-    "/dev/dri"
-    "/dev/kfd"
-  ];
 
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
@@ -26,10 +19,18 @@ makeImpureTest {
     rocm-smi
   ];
 
+  sandboxPaths = [
+    "/sys"
+    "/dev/dri"
+    "/dev/kfd"
+  ];
+
   testScript = ''
     rocm-smi
     ${testScript}
   '';
+
+  testedPackage = "rocmPackages.miopen";
 
   meta = {
     teams = [ lib.teams.rocm ];

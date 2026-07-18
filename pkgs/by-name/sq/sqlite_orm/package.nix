@@ -1,9 +1,9 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
-  sqlite,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  sqlite,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "sqlite_orm";
@@ -16,6 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tlmUYHH0V4qsKSTdrg/OrS9eOEseIDAIU/HN8YK36go=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
   ];
@@ -23,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   propagatedBuildInputs = [
     sqlite
   ];
-
-  strictDeps = true;
 
   meta = {
     description = "Light header only SQLite ORM";

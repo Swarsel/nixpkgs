@@ -25,11 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/intel/libipt/releases/tag/v${finalAttrs.version}";
     description = "Intel Processor Trace decoder library";
     homepage = "https://github.com/intel/libipt";
+    changelog = "https://github.com/intel/libipt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

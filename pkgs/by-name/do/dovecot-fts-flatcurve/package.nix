@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   # only build for dovecot 2.3 as the package is part of dovecot since 2.4
   dovecot_2_3,
+  pkg-config,
   xapian,
 }:
 
@@ -20,13 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-96sR/pl0G0sSjh/YrXdgVgASJPhrL32xHCbBGrDxzoU=";
   };
 
-  buildInputs = [
-    xapian
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
+  ];
+
+  buildInputs = [
+    xapian
   ];
 
   configureFlags = [
@@ -35,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://slusarz.github.io/dovecot-fts-flatcurve/";
     description = "Dovecot FTS Flatcurve plugin (Xapian)";
+    homepage = "https://slusarz.github.io/dovecot-fts-flatcurve/";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ euxane ];
     platforms = lib.platforms.unix;

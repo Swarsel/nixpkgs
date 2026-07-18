@@ -1,19 +1,19 @@
 {
   lib,
-  dpkg,
   stdenv,
   fetchurl,
-  buildFHSEnv,
-  autoPatchelfHook,
-  writeShellScript,
-  zenity,
-  nss,
-  gtk2,
   alsa-lib,
+  autoPatchelfHook,
+  buildFHSEnv,
   dbus-glib,
-  libxtst,
+  dpkg,
+  gtk2,
   libxdamage,
   libxscrnsaver,
+  libxtst,
+  nss,
+  writeShellScript,
+  zenity,
 }:
 
 let
@@ -25,21 +25,28 @@ let
 
     src =
       {
-        x86_64-linux = fetchurl {
-          url = sources.amd64_url;
-          hash = sources.amd64_hash;
-        };
         aarch64-linux = fetchurl {
-          url = sources.arm64_url;
           hash = sources.arm64_hash;
+          url = sources.arm64_url;
         };
+
         loongarch64-linux = fetchurl {
-          url = sources.loongarch64_url;
           hash = sources.loongarch64_hash;
+          url = sources.loongarch64_url;
+        };
+
+        x86_64-linux = fetchurl {
+          hash = sources.amd64_hash;
+          url = sources.amd64_url;
         };
       }
       .${stdenv.hostPlatform.system}
         or (throw "${pname}-${version}: ${stdenv.hostPlatform.system} is unsupported.");
+
+    nativeBuildInputs = [
+      dpkg
+      autoPatchelfHook
+    ];
 
     buildInputs = [
       nss
@@ -49,11 +56,6 @@ let
       libxtst
       libxdamage
       libxscrnsaver
-    ];
-
-    nativeBuildInputs = [
-      dpkg
-      autoPatchelfHook
     ];
 
     installPhase = ''
@@ -77,6 +79,7 @@ let
       homepage = "https://www.xunlei.com";
       license = lib.licenses.unfree;
       maintainers = [ lib.maintainers.linuxwhata ];
+
       platforms = [
         "x86_64-linux"
         "aarch64-linux"
@@ -87,16 +90,18 @@ let
 in
 buildFHSEnv {
   inherit (xunlei-unwrapped) pname version meta;
-  runScript = writeShellScript "xunlei-launcher" ''
-    exec ${xunlei-unwrapped}/lib/xunlei/thunder -start $1 "$@"
-  '';
+
   extraInstallCommands = ''
     mkdir -p $out
     ln -s ${xunlei-unwrapped}/share $out/share
   '';
 
-  passthru.updateScript = ./update.sh;
-
   includeClosures = true;
+
+  runScript = writeShellScript "xunlei-launcher" ''
+    exec ${xunlei-unwrapped}/lib/xunlei/thunder -start $1 "$@"
+  '';
+
   targetPkgs = pkgs: [ zenity ]; # system tray click events
+  passthru.updateScript = ./update.sh;
 }

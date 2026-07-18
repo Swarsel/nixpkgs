@@ -19,15 +19,14 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-AS1vEnNLDLsNaIZ6pLrsQpQy9+bSoCn5oyj8SXjJ+OE=";
-
   # swayws does not have any tests
   doCheck = false;
 
   meta = {
     description = "Sway workspace tool which allows easy moving of workspaces to and from outputs";
-    mainProgram = "swayws";
     homepage = "https://gitlab.com/w0lff/swayws";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "swayws";
   };
 }

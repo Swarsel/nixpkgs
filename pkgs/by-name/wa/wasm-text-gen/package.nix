@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  nodejs,
-  makeBinaryWrapper,
   gcc,
+  makeBinaryWrapper,
   nix-update-script,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "wasm-text-gen";
@@ -27,11 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     patchShebangs scripts/
   '';
-
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-gweiisUVp1D4BAcyuf3V81jN+ehm6z5ztftG+tc7M+A=";
-  };
 
   nativeBuildInputs = [
     yarnConfigHook
@@ -58,6 +53,11 @@ stdenv.mkDerivation (finalAttrs: {
       --set NODE_PATH "$out/lib/node_modules"
     runHook postInstall
   '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-gweiisUVp1D4BAcyuf3V81jN+ehm6z5ztftG+tc7M+A=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

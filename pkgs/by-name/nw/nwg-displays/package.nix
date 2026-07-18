@@ -8,15 +8,14 @@
   gtk3,
   pango,
   python3Packages,
+  wlr-randr,
   wrapGAppsHook3,
   hyprlandSupport ? true,
-  wlr-randr,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nwg-displays";
   version = "0.4.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "nwg-piotr";
@@ -47,7 +46,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wlr-randr
   ];
 
-  dontWrapGApps = true;
+  # Upstream has no tests
+  doCheck = false;
 
   postInstall = ''
     install -Dm444 nwg-displays.svg -t $out/share/icons/hicolor/scalable/apps
@@ -58,15 +58,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}");
   '';
 
-  # Upstream has no tests
-  doCheck = false;
+  dontWrapGApps = true;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/nwg-piotr/nwg-displays";
     description = "Output management utility for Sway, Hyprland and Niri";
+    homepage = "https://github.com/nwg-piotr/nwg-displays";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ qf0xb ];
+    platforms = lib.platforms.linux;
     mainProgram = "nwg-displays";
   };
 })

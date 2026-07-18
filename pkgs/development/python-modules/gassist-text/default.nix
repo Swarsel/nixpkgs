@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   google-auth,
   grpcio,
   protobuf,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "gassist-text";
   version = "0.0.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tronikos";
@@ -34,7 +33,7 @@ buildPythonPackage rec {
   ];
 
   checkInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "gassist_text" ];
 
   meta = {

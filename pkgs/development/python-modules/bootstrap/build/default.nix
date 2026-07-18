@@ -1,22 +1,21 @@
 {
   stdenv,
-  python,
   build,
   flit-core,
   installer,
+  makeWrapper,
   packaging,
   pyproject-hooks,
+  python,
   tomli,
-  makeWrapper,
 }:
 let
   buildBootstrapPythonModule =
     basePackage: attrs:
     stdenv.mkDerivation (
       {
-        pname = "${python.libPrefix}-bootstrap-${basePackage.pname}";
         inherit (basePackage) version src meta;
-
+        pname = "${python.libPrefix}-bootstrap-${basePackage.pname}";
         nativeBuildInputs = [ makeWrapper ];
 
         buildPhase = ''

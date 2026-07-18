@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   imageio,
-  numpy,
-  pytestCheckHook,
-  scikit-image,
-  slicerator,
-  packaging,
-  tifffile,
   jinja2,
   jpype1,
   matplotlib,
   moviepy,
+  numpy,
+  packaging,
+  pytestCheckHook,
+  scikit-image,
   setuptools,
+  slicerator,
+  tifffile,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pims";
   version = "0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "soft-matter";
@@ -27,6 +26,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-3SBZk11w6eTZFmETMRJaYncxY38CYne1KzoF5oRgzuY=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.extras;
 
   build-system = [
     setuptools
@@ -40,6 +44,19 @@ buildPythonPackage (finalAttrs: {
     tifffile # imported within try-excet block so optional but setup.py requires it.
   ];
 
+  disabledTestPaths = [
+    # AssertionError: Tuples differ: (377, 505, 4) != (384, 512, 4)
+    "pims/tests/test_display.py"
+
+    # tests require internet connection
+    "pims/tests/test_bioformats.py"
+  ];
+
+  disabledTests = [
+    # NotImplementedError: Do not know how to deal with infinite readers
+    "TestVideo_ImageIO"
+  ];
+
   optional-dependencies = {
     # CI says its extras
     extras = [
@@ -51,29 +68,13 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.extras;
-
-  pythonImportsCheck = [ "pims" ];
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::Warning"
   ];
 
-  disabledTests = [
-    # NotImplementedError: Do not know how to deal with infinite readers
-    "TestVideo_ImageIO"
-  ];
-
-  disabledTestPaths = [
-    # AssertionError: Tuples differ: (377, 505, 4) != (384, 512, 4)
-    "pims/tests/test_display.py"
-
-    # tests require internet connection
-    "pims/tests/test_bioformats.py"
-  ];
+  pythonImportsCheck = [ "pims" ];
 
   meta = {
     description = "Module to load video and sequential images in various formats";

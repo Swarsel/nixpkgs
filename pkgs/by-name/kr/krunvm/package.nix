@@ -1,7 +1,6 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   asciidoctor,
   buildah,
@@ -11,6 +10,7 @@
   libiconv,
   libkrun,
   makeWrapper,
+  rustPlatform,
   rustc,
 }:
 
@@ -25,13 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-peOaPivQKOwioh5skPNFiA3ptHv9pSsnjpy43cms8O8=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-MRcQ0Vnd3PJqE2q981JpXPjwMUKT4t+RcOvzWptK7PQ=";
-  };
+  postPatch = ''
+    # do not pollute etc
+    substituteInPlace src/utils.rs \
+      --replace-fail "etc/containers" "share/krunvm/containers"
+  '';
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
@@ -51,26 +51,27 @@ stdenv.mkDerivation (finalAttrs: {
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
-  postPatch = ''
-    # do not pollute etc
-    substituteInPlace src/utils.rs \
-      --replace-fail "etc/containers" "share/krunvm/containers"
-  '';
-
   postInstall = ''
     mkdir -p $out/share/krunvm/containers
     install -D -m755 ${buildah-unwrapped.src}/tests/registries.conf $out/share/krunvm/containers/registries.conf
     install -D -m755 ${buildah-unwrapped.src}/tests/policy.json $out/share/krunvm/containers/policy.json
   '';
 
-  # It attaches entitlements with codesign and strip removes those,
-  # voiding the entitlements and making it non-operational.
-  dontStrip = stdenv.hostPlatform.isDarwin;
-
   postFixup = ''
     wrapProgram $out/bin/krunvm \
       --prefix PATH : ${lib.makeBinPath [ buildah ]}
   '';
+
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-MRcQ0Vnd3PJqE2q981JpXPjwMUKT4t+RcOvzWptK7PQ=";
+  };
+
+  # It attaches entitlements with codesign and strip removes those,
+  # voiding the entitlements and making it non-operational.
+  dontStrip = stdenv.hostPlatform.isDarwin;
 
   meta = {
     description = "CLI-based utility for creating microVMs from OCI images";

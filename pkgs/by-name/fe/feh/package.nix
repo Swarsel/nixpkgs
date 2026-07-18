@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  libxt,
-  libxinerama,
-  libx11,
+  curl,
   imlib2Full,
+  jpegexiforient,
+  libexif,
   libjpeg,
   libpng,
-  curl,
-  libexif,
-  jpegexiforient,
+  libx11,
+  libxinerama,
+  libxt,
+  makeWrapper,
   perl,
   enableAutoreload ? !stdenv.hostPlatform.isDarwin,
 }:
@@ -54,7 +54,9 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional stdenv.hostPlatform.isDarwin "verscmp=0"
   ++ lib.optional enableAutoreload "inotify=1";
 
-  installTargets = [ "install" ];
+  doCheck = true;
+  nativeCheckInputs = lib.singleton (perl.withPackages (p: [ p.TestCommand ]));
+
   postInstall = ''
     wrapProgram "$out/bin/feh" --prefix PATH : "${
       lib.makeBinPath [
@@ -65,8 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
                                --add-flags '--theme=feh'
   '';
 
-  nativeCheckInputs = lib.singleton (perl.withPackages (p: [ p.TestCommand ]));
-  doCheck = true;
+  installTargets = [ "install" ];
 
   meta = {
     description = "Light-weight image viewer";
@@ -74,9 +75,11 @@ stdenv.mkDerivation (finalAttrs: {
     # released under a variant of the MIT license
     # https://spdx.org/licenses/MIT-feh.html
     license = lib.licenses.mit-feh;
+
     maintainers = with lib.maintainers; [
       gepbird
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "feh";
   };

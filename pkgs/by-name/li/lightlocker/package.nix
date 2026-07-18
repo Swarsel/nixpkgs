@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  gtk3,
-  glib,
-  intltool,
   dbus-glib,
+  glib,
+  gtk3,
+  intltool,
   libx11,
+  libxext,
   libxscrnsaver,
   libxxf86vm,
-  libxext,
-  systemd,
+  meson,
+  ninja,
+  nix-update-script,
   pantheon,
+  pkg-config,
+  systemd,
   wrapGAppsHook3,
 }:
 
@@ -23,17 +23,17 @@ stdenv.mkDerivation rec {
   pname = "light-locker";
   version = "1.9.0";
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "the-cavalry";
     repo = "light-locker";
     rev = "v${version}";
     sha256 = "1z5lcd02gqax65qc14hj5khifg7gr53zy3s5i6apba50lbdlfk46";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     intltool
@@ -75,8 +75,8 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://github.com/the-cavalry/light-locker";
     description = "Simple session-locker for LightDM";
+
     longDescription = ''
       A simple locker (forked from gnome-screensaver) that aims to
       have simple, sane, secure defaults and be well integrated with
@@ -86,9 +86,11 @@ stdenv.mkDerivation rec {
       It relies on LightDM for locking and unlocking your session via
       ConsoleKit/UPower or logind/systemd.
     '';
+
+    homepage = "https://github.com/the-cavalry/light-locker";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ obadz ];
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.pantheon ];
   };
 }

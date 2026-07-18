@@ -15,6 +15,13 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "getdns";
   version = "1.7.3";
+
+  src = fetchurl {
+    url = "https://getdnsapi.net/releases/getdns-${lib.concatStringsSep "-" (lib.splitVersion finalAttrs.version)}/getdns-${finalAttrs.version}.tar.gz";
+    # upstream publishes hashes in hex format
+    sha256 = "f1404ca250f02e37a118aa00cf0ec2cbe11896e060c6d369c6761baea7d55a2c";
+  };
+
   outputs = [
     "out"
     "dev"
@@ -22,11 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  src = fetchurl {
-    url = "https://getdnsapi.net/releases/getdns-${lib.concatStringsSep "-" (lib.splitVersion finalAttrs.version)}/getdns-${finalAttrs.version}.tar.gz";
-    # upstream publishes hashes in hex format
-    sha256 = "f1404ca250f02e37a118aa00cf0ec2cbe11896e060c6d369c6761baea7d55a2c";
-  };
+  # https://github.com/getdnsapi/getdns/issues/517
+  postPatch = ''
+    substituteInPlace getdns.pc.in \
+      --replace '$'{exec_prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
+      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -40,18 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (!enableStubOnly) unbound;
 
   cmakeFlags = [ (lib.strings.cmakeBool "ENABLE_STUB_ONLY" enableStubOnly) ];
-
-  # https://github.com/getdnsapi/getdns/issues/517
-  postPatch = ''
-    substituteInPlace getdns.pc.in \
-      --replace '$'{exec_prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
-      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
-  '';
-
   postInstall = "rm -r $out/share/doc";
 
   meta = {
     description = "Modern asynchronous DNS API";
+
     longDescription = ''
       getdns is an implementation of a modern asynchronous DNS API; the
       specification was originally edited by Paul Hoffman. It is intended to make all
@@ -63,10 +64,13 @@ stdenv.mkDerivation (finalAttrs: {
       inspire application developers to implement innovative security solutions in
       their applications.
     '';
+
     homepage = "https://getdnsapi.net";
+    license = lib.licenses.bsd3;
+
     maintainers = [
     ];
-    license = lib.licenses.bsd3;
+
     platforms = lib.platforms.all;
   };
 })

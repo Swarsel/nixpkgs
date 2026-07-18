@@ -1,76 +1,76 @@
 {
   lib,
   stdenv,
-  buildPackages,
-  replaceVars,
   fetchurl,
-  fetchpatch,
-  pkg-config,
+  buildPackages,
+  cairo,
+  cups,
+  darwinMinVersionHook,
   docutils,
+  fetchpatch,
+  fribidi,
+  gdk-pixbuf,
   gettext,
-  graphene,
   gi-docgen,
+  glib,
+  gnome,
+  gobject-introspection,
+  graphene,
+  gsettings-desktop-schemas,
+  gst_all_1,
+  harfbuzz,
+  isocodes,
+  libGL,
+  libdrm,
+  libepoxy,
+  libexecinfo,
+  libice,
+  libjpeg,
+  libpng,
+  libsm,
+  libtiff,
+  libxcursor,
+  libxdamage,
+  libxi,
+  libxinerama,
+  libxkbcommon,
+  libxml2,
+  libxrandr,
+  libxrender,
+  llvmPackages,
+  makeWrapper,
   meson,
   mesonEmulatorHook,
   ninja,
-  python3,
-  makeWrapper,
-  shared-mime-info,
-  isocodes,
-  glib,
-  cairo,
   pango,
-  gdk-pixbuf,
-  gobject-introspection,
-  fribidi,
-  harfbuzz,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxinerama,
-  libxdamage,
-  libxcursor,
-  libsm,
-  libice,
-  libepoxy,
-  libxkbcommon,
-  libpng,
-  libtiff,
-  libjpeg,
-  libxml2,
-  gnome,
-  gsettings-desktop-schemas,
-  gst_all_1,
+  pkg-config,
+  python3,
+  replaceVars,
   sassc,
-  trackerSupport ? stdenv.hostPlatform.isLinux,
-  tinysparql,
-  x11Support ? stdenv.hostPlatform.isLinux,
-  waylandSupport ? stdenv.hostPlatform.isLinux,
-  libGL,
-  vulkanSupport ? stdenv.hostPlatform.isLinux,
   shaderc,
-  vulkan-loader,
+  shared-mime-info,
+  testers,
+  tinysparql,
   vulkan-headers,
-  libdrm,
+  vulkan-loader,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  xineramaSupport ? stdenv.hostPlatform.isLinux,
-  cupsSupport ? stdenv.hostPlatform.isLinux,
-  compileSchemas ? stdenv.hostPlatform.emulatorAvailable buildPackages,
-  cups,
-  libexecinfo,
-  llvmPackages,
   broadwaySupport ? true,
-  testers,
-  darwinMinVersionHook,
+  compileSchemas ? stdenv.hostPlatform.emulatorAvailable buildPackages,
+  cupsSupport ? stdenv.hostPlatform.isLinux,
+  trackerSupport ? stdenv.hostPlatform.isLinux,
+  vulkanSupport ? stdenv.hostPlatform.isLinux,
+  waylandSupport ? stdenv.hostPlatform.isLinux,
+  x11Support ? stdenv.hostPlatform.isLinux,
+  xineramaSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 let
 
   gtkCleanImmodulesCache = replaceVars ./hooks/clean-immodules-cache.sh {
-    gtk_module_path = "gtk-4.0";
     gtk_binary_version = "4.0.0";
+    gtk_module_path = "gtk-4.0";
   };
 
 in
@@ -79,34 +79,44 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gtk4";
   version = "4.22.4";
 
-  outputs = [
-    "out"
-    "dev"
-  ]
-  ++ lib.optionals x11Support [ "devdoc" ];
-  outputBin = "dev";
-
-  setupHooks = [
-    ./hooks/drop-icon-theme-cache.sh
-    gtkCleanImmodulesCache
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/gtk/${lib.versions.majorMinor finalAttrs.version}/gtk-${finalAttrs.version}.tar.xz";
     hash = "sha256-Ub2fYMfSOmZaVWxzZMIfsuTiglZrPn4JJFXo+RAzCJM=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ]
+  ++ lib.optionals x11Support [ "devdoc" ];
+
   patches = [
     (fetchpatch {
+      hash = "sha256-DJIL6M3XcsjBoMO77OxNi84d1DxAphAfot3N7Nq1QqQ=";
       name = "fix-32bit-VkImage-null.patch";
       url = "https://gitlab.gnome.org/GNOME/gtk/-/commit/10d43de8f4f942cb591ada3103474bd7213425f1.patch";
-      hash = "sha256-DJIL6M3XcsjBoMO77OxNi84d1DxAphAfot3N7Nq1QqQ=";
     })
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  postPatch = ''
+    # this conditional gates the installation of share/gsettings-schemas/.../glib-2.0/schemas/gschemas.compiled.
+    substituteInPlace meson.build \
+      --replace 'if not meson.is_cross_build()' 'if ${lib.boolToString compileSchemas}'
+
+    files=(
+      build-aux/meson/gen-profile-conf.py
+      build-aux/meson/gen-visibility-macros.py
+      demos/gtk-demo/geninclude.py
+      gdk/broadway/gen-c-array.py
+      gdk/gen-gdk-gresources-xml.py
+      gtk/gen-gtk-gresources-xml.py
+      gtk/gentypefuncs.py
+    )
+
+    chmod +x ''${files[@]}
+    patchShebangs ''${files[@]}
+
+  '';
 
   nativeBuildInputs = [
     docutils # for rst2man, rst2html5
@@ -179,8 +189,8 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isMusl [
     libexecinfo
   ];
-  #TODO: colord?
 
+  #TODO: colord?
   propagatedBuildInputs = [
     # Required by pkg-config files.
     cairo
@@ -215,10 +225,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dmedia-gstreamer=disabled" # requires gstreamer-gl
   ];
 
-  doCheck = false; # needs X11
-
-  separateDebugInfo = stdenv.hostPlatform.isLinux;
-
   # These are the defines that'd you'd get with --enable-debug=minimum (default).
   # See: https://developer.gnome.org/gtk3/stable/gtk-building.html#extra-configuration-options
   env = {
@@ -232,25 +238,7 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_LINK = "--ld-path=${lib.getExe' llvmPackages.lld "ld64.lld"}";
   };
 
-  postPatch = ''
-    # this conditional gates the installation of share/gsettings-schemas/.../glib-2.0/schemas/gschemas.compiled.
-    substituteInPlace meson.build \
-      --replace 'if not meson.is_cross_build()' 'if ${lib.boolToString compileSchemas}'
-
-    files=(
-      build-aux/meson/gen-profile-conf.py
-      build-aux/meson/gen-visibility-macros.py
-      demos/gtk-demo/geninclude.py
-      gdk/broadway/gen-c-array.py
-      gdk/gen-gdk-gresources-xml.py
-      gtk/gen-gtk-gresources-xml.py
-      gtk/gentypefuncs.py
-    )
-
-    chmod +x ''${files[@]}
-    patchShebangs ''${files[@]}
-
-  '';
+  doCheck = false; # needs X11
 
   preInstall = ''
     OLD_PATH="$PATH"
@@ -291,21 +279,35 @@ stdenv.mkDerivation (finalAttrs: {
       moveToOutput "share/doc" "$devdoc"
     '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  outputBin = "dev";
+  separateDebugInfo = stdenv.hostPlatform.isLinux;
+
+  setupHooks = [
+    ./hooks/drop-icon-theme-cache.sh
+    gtkCleanImmodulesCache
+  ];
+
   passthru = {
-    updateScript = gnome.updateScript {
-      packageName = "gtk";
-      versionPolicy = "odd-unstable";
-      attrPath = "gtk4";
-    };
     tests = {
       pkg-config = testers.hasPkgConfigModules {
         package = finalAttrs.finalPackage;
       };
     };
+
+    updateScript = gnome.updateScript {
+      attrPath = "gtk4";
+      packageName = "gtk";
+      versionPolicy = "odd-unstable";
+    };
   };
 
   meta = {
     description = "Multi-platform toolkit for creating graphical user interfaces";
+
     longDescription = ''
       GTK is a highly usable, feature rich toolkit for creating
       graphical user interfaces which boasts cross platform
@@ -316,12 +318,13 @@ stdenv.mkDerivation (finalAttrs: {
       proprietary software with GTK without any license fees or
       royalties.
     '';
+
     homepage = "https://www.gtk.org/";
+    changelog = "https://gitlab.gnome.org/GNOME/gtk/-/raw/${finalAttrs.version}/NEWS";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.all;
-    changelog = "https://gitlab.gnome.org/GNOME/gtk/-/raw/${finalAttrs.version}/NEWS";
+
     pkgConfigModules = [
       "gtk4"
     ]
@@ -337,5 +340,7 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals x11Support [
       "gtk4-x11"
     ];
+
+    teams = [ lib.teams.gnome ];
   };
 })

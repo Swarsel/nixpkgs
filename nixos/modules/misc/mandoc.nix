@@ -29,35 +29,27 @@ let
   makeLeadingSlashes = map (path: if builtins.substring 0 1 path != "/" then "/${path}" else path);
 in
 {
-  meta.maintainers = [ lib.maintainers.sternenseemann ];
-
   options = {
     documentation.man.mandoc = {
       enable = lib.mkEnableOption "mandoc as the default man page viewer";
 
-      manPath = lib.mkOption {
-        type = with lib.types; listOf str;
-        default = [ "share/man" ];
-        example = lib.literalExpression "[ \"share/man\" \"share/man/fr\" ]";
-        apply = makeLeadingSlashes;
+      package = lib.mkOption {
+        default = pkgs.mandoc;
+        defaultText = lib.literalExpression "pkgs.mandoc";
+
         description = ''
-          Change the paths included in the MANPATH environment variable,
-          i. e. the directories where {manpage}`man(1)`
-          looks for section-specific directories of man pages.
-          You only need to change this setting if you want extra man pages
-          (e. g. in non-english languages). All values must be strings that
-          are a valid path from the target prefix (without including it).
-          The first value given takes priority. Note that this will not
-          add manpath directives to {manpage}`man.conf(5)`.
+          The `mandoc` derivation to use. Useful to override
+          configuration options used for the package.
         '';
+
+        type = lib.types.package;
       };
 
       cachePath = lib.mkOption {
-        type = with lib.types; listOf str;
+        apply = makeLeadingSlashes;
         default = cfg.manPath;
         defaultText = lib.literalExpression "config.documentation.man.mandoc.manPath";
-        example = lib.literalExpression "[ \"share/man\" \"share/man/fr\" ]";
-        apply = makeLeadingSlashes;
+
         description = ''
           Change the paths where mandoc {manpage}`makewhatis(8)`generates the
           manual page index caches. {option}`documentation.man.cache.enable`
@@ -72,27 +64,49 @@ in
           indexed or {option}`documentation.man.manPath` contains paths that
           can't be indexed.
         '';
+
+        example = lib.literalExpression "[ \"share/man\" \"share/man/fr\" ]";
+        type = with lib.types; listOf str;
       };
 
-      package = lib.mkOption {
-        type = lib.types.package;
-        default = pkgs.mandoc;
-        defaultText = lib.literalExpression "pkgs.mandoc";
+      extraConfig = lib.mkOption {
+        default = "";
+
         description = ''
-          The `mandoc` derivation to use. Useful to override
-          configuration options used for the package.
+          Extra configuration to write to {manpage}`man.conf(5)`.
         '';
+
+        type = lib.types.lines;
+      };
+
+      manPath = lib.mkOption {
+        apply = makeLeadingSlashes;
+        default = [ "share/man" ];
+
+        description = ''
+          Change the paths included in the MANPATH environment variable,
+          i. e. the directories where {manpage}`man(1)`
+          looks for section-specific directories of man pages.
+          You only need to change this setting if you want extra man pages
+          (e. g. in non-english languages). All values must be strings that
+          are a valid path from the target prefix (without including it).
+          The first value given takes priority. Note that this will not
+          add manpath directives to {manpage}`man.conf(5)`.
+        '';
+
+        example = lib.literalExpression "[ \"share/man\" \"share/man/fr\" ]";
+        type = with lib.types; listOf str;
       };
 
       settings = lib.mkOption {
-        description = "Configuration for {manpage}`man.conf(5)`";
         default = { };
+        description = "Configuration for {manpage}`man.conf(5)`";
+
         type = lib.types.submodule {
           options = {
             manpath = lib.mkOption {
-              type = with lib.types; listOf str;
               default = [ ];
-              example = lib.literalExpression "[ \"/run/current-system/sw/share/man\" ]";
+
               description = ''
                 Override the default search path for {manpage}`man(1)`,
                 {manpage}`apropos(1)`, and {manpage}`makewhatis(8)`. It can be
@@ -103,32 +117,42 @@ in
                 specify the manpath in this way, set
                 {option}`documentation.man.mandoc.manPath` to an empty list (`[]`).
               '';
+
+              example = lib.literalExpression "[ \"/run/current-system/sw/share/man\" ]";
+              type = with lib.types; listOf str;
             };
+
             output.fragment = lib.mkOption {
-              type = lib.types.bool;
               default = false;
-              example = true;
+
               description = ''
                 Whether to omit the <!DOCTYPE> declaration and the <html>, <head>, and <body>
                 elements and only emit the subtree below the <body> element in HTML
                 output of {manpage}`mandoc(1)`. The style argument will be ignored.
                 This is useful when embedding manual content within existing documents.
               '';
+
+              example = true;
+              type = lib.types.bool;
             };
+
             output.includes = lib.mkOption {
-              type = with lib.types; nullOr str;
               default = null;
-              example = lib.literalExpression "../src/%I.html";
+
               description = ''
                 A string of relative path used as a template for the output path of
                 linked header files (usually via the In macro) in HTML output.
                 Instances of `%I` are replaced with the include filename. The
                 default is not to present a hyperlink.
               '';
+
+              example = lib.literalExpression "../src/%I.html";
+              type = with lib.types; nullOr str;
             };
+
             output.indent = lib.mkOption {
-              type = with lib.types; nullOr int;
               default = null;
+
               description = ''
                 Number of blank characters at the left margin for normal text,
                 default of `5` for {manpage}`mdoc(7)` and `7` for
@@ -137,11 +161,13 @@ in
                 line breaks. When output is to a pager on a terminal that is less
                 than 66 columns wide, the default is reduced to three columns.
               '';
+
+              type = with lib.types; nullOr int;
             };
+
             output.man = lib.mkOption {
-              type = with lib.types; nullOr str;
               default = null;
-              example = lib.literalExpression "../html%S/%N.%S.html";
+
               description = ''
                 A template for linked manuals (usually via the Xr macro) in HTML
                 output. Instances of ‘%N’ and ‘%S’ are replaced with the linked
@@ -150,10 +176,14 @@ in
                 If two formats are given and a file %N.%S exists in the current
                 directory, the first format is used; otherwise, the second format is used.
               '';
-            };
-            output.paper = lib.mkOption {
+
+              example = lib.literalExpression "../html%S/%N.%S.html";
               type = with lib.types; nullOr str;
+            };
+
+            output.paper = lib.mkOption {
               default = null;
+
               description = ''
                 This option is for generating PostScript and PDF output. The paper
                 size name may be one of `a3`, `a4`, `a5`, `legal`, or `letter`.
@@ -163,23 +193,30 @@ in
                 the Times font family, 11-point. Margins are calculated as 1/9 the
                 page length and width. Line-height is 1.4m.
               '';
+
+              type = with lib.types; nullOr str;
             };
+
             output.style = lib.mkOption {
-              type = with lib.types; nullOr path;
               default = null;
+
               description = ''
                 Path to the file used for an external style-sheet. This must be a
                 valid absolute or relative URI.
               '';
+
+              type = with lib.types; nullOr path;
             };
+
             output.toc = lib.mkEnableOption ''
               printing a table of contents near the beginning of the HTML output
               of {manpage}`mandoc(1)` if an input file contains at least two
               non-standard sections
             '';
+
             output.width = lib.mkOption {
-              type = with lib.types; nullOr int;
               default = null;
+
               description = ''
                 The ASCII and UTF-8 output width, default is `78`. When output is a
                 pager on a terminal that is less than 79 columns wide, the
@@ -187,25 +224,17 @@ in
                 lines that are output in literal mode are never wrapped and may
                 exceed the output width.
               '';
+
+              type = with lib.types; nullOr int;
             };
           };
         };
-      };
-
-      extraConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        description = ''
-          Extra configuration to write to {manpage}`man.conf(5)`.
-        '';
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment = {
-      systemPackages = [ cfg.package ];
-
       etc."man.conf".text = lib.concatStringsSep "\n" (
         (map (path: "manpath ${path}") cfg.settings.manpath)
         ++ (toMandocOutput cfg.settings.output)
@@ -226,6 +255,9 @@ in
 
       # tell mandoc the paths containing man pages
       profileRelativeSessionVariables."MANPATH" = lib.mkIf (cfg.manPath != [ ]) cfg.manPath;
+      systemPackages = [ cfg.package ];
     };
   };
+
+  meta.maintainers = [ lib.maintainers.sternenseemann ];
 }

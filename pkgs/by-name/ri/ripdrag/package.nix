@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
   gtk4,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,18 +20,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-syirR3t3AxThwIPMviGaSeXpDz2ApDGZOozPJ5bGEt4=";
   };
 
-  cargoHash = "sha256-/OczChiDDK6Y2CxpjfgWkTwweKe4FVpOMlsB+qMp/r8=";
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook4
   ];
 
   buildInputs = [ gtk4 ];
-
+  cargoHash = "sha256-/OczChiDDK6Y2CxpjfgWkTwweKe4FVpOMlsB+qMp/r8=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

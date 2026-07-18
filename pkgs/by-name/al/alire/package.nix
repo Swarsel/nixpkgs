@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gprbuild,
   gnat,
+  gprbuild,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,18 +15,17 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "alire";
     tag = "v${finalAttrs.version}";
     hash = "sha256-YOUFTKbqbFfdYNWcGCvtFCDCW2tH8E3YuRQrV522Px4=";
-
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    patchShebangs ./dev/build.sh ./scripts/version-patcher.sh
+  '';
 
   nativeBuildInputs = [
     gprbuild
     gnat
   ];
-
-  postPatch = ''
-    patchShebangs ./dev/build.sh ./scripts/version-patcher.sh
-  '';
 
   buildPhase = ''
     runHook preBuild

@@ -2,23 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   # nativeBuildInputs
   cmake,
-
   # buildInputs
   flac,
   freetype,
   glew,
   libjpeg,
   libvorbis,
-  openal,
-  udev,
   libx11,
+  libxcb-image,
   libxcursor,
   libxrandr,
   libxrender,
-  libxcb-image,
+  openal,
+  udev,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "sfml";
@@ -32,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     flac
     freetype
@@ -58,15 +57,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple and fast multimedia library";
-    homepage = "https://www.sfml-dev.org/";
-    changelog = "https://github.com/SFML/SFML/blob/${finalAttrs.version}/changelog.md";
+
     longDescription = ''
       SFML is a simple, fast, cross-platform and object-oriented multimedia API.
       It provides access to windowing, graphics, audio and network.
       It is written in C++, and has bindings for various languages such as C, .Net, Ruby, Python.
     '';
+
+    homepage = "https://www.sfml-dev.org/";
+    changelog = "https://github.com/SFML/SFML/blob/${finalAttrs.version}/changelog.md";
     license = lib.licenses.zlib;
     platforms = lib.platforms.unix;
+
     badPlatforms = [
       # error: implicit instantiation of undefined template 'std::char_traits<unsigned int>'
       lib.systems.inspect.patterns.isDarwin

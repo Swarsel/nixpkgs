@@ -1,35 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pkgconfig,
-  setuptools-scm,
-
-  # nativeBuildInputs
-  pkg-config,
+  buildPythonPackage,
+  # tests
+  hypothesis,
   # pkgconfig,
-
   # buildInputs
   libtool,
   libxml2,
   libxslt,
-  xmlsec,
-
   # dependencies
   lxml,
-
-  # tests
-  hypothesis,
+  # nativeBuildInputs
+  pkg-config,
+  # build-system
+  pkgconfig,
   pytestCheckHook,
+  setuptools-scm,
+  xmlsec,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "xmlsec";
   version = "1.3.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xmlsec";
@@ -44,11 +38,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "setuptools==" "setuptools>="
   '';
 
-  build-system = [
-    pkgconfig
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -60,12 +49,17 @@ buildPythonPackage (finalAttrs: {
     xmlsec
   ];
 
-  dependencies = [ lxml ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
+
+  build-system = [
+    pkgconfig
+    setuptools-scm
+  ];
+
+  dependencies = [ lxml ];
 
   disabledTestPaths = [
     # Full git clone required for test_doc_examples
@@ -77,6 +71,7 @@ buildPythonPackage (finalAttrs: {
     "test_reinitialize_module"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "xmlsec" ];
 
   meta = {

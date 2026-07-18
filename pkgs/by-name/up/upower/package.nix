@@ -2,36 +2,36 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  makeWrapper,
-  pkg-config,
-  libxslt,
-  meson,
-  ninja,
-  python3,
+  buildPackages,
   dbus,
-  umockdev,
-  libeatmydata,
-  gtk-doc,
   docbook-xsl-nons,
-  udev,
-  libgudev,
-  libusb1,
-  glib,
+  fetchpatch,
   gettext,
-  polkit,
-  nixosTests,
-  useIMobileDevice ? true,
+  glib,
+  gobject-introspection,
+  gtk-doc,
+  libeatmydata,
+  libgudev,
   libimobiledevice,
-  withDocs ? withIntrospection,
+  libusb1,
+  libxslt,
+  makeWrapper,
+  meson,
   mesonEmulatorHook,
+  ninja,
+  nixosTests,
+  pkg-config,
+  polkit,
+  python3,
+  systemd,
+  udev,
+  umockdev,
+  useIMobileDevice ? true,
+  withDocs ? withIntrospection,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  buildPackages,
-  gobject-introspection,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd,
 }:
 
 assert withDocs -> withIntrospection;
@@ -40,20 +40,20 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "upower";
   version = "1.91.1";
 
+  src = fetchFromGitLab {
+    owner = "upower";
+    repo = "upower";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-uXKhg3w1ybuRrIvSRBFRtuHN/eB8i8l3GBKryU+6Voo=";
+    domain = "gitlab.freedesktop.org";
+  };
+
   outputs = [
     "out"
     "dev"
   ]
   ++ lib.optionals withDocs [ "devdoc" ]
   ++ lib.optionals withIntrospection [ "installedTests" ];
-
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "upower";
-    repo = "upower";
-    rev = "v${finalAttrs.version}";
-    hash = "sha256-uXKhg3w1ybuRrIvSRBFRtuHN/eB8i8l3GBKryU+6Voo=";
-  };
 
   patches =
     lib.optionals (stdenv.hostPlatform.system == "i686-linux") [
@@ -65,11 +65,15 @@ stdenv.mkDerivation (finalAttrs: {
       ./installed-tests-path.patch
     ];
 
-  strictDeps = true;
+  postPatch = ''
+    patchShebangs src/linux/integration-test.py
+    patchShebangs src/linux/unittest_inspector.py
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+    substituteInPlace src/linux/integration-test.py \
+      --replace-fail "/usr/share/dbus-1" "$out/share/dbus-1"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -116,18 +120,6 @@ stdenv.mkDerivation (finalAttrs: {
     libimobiledevice
   ];
 
-  nativeCheckInputs = [
-    libeatmydata
-  ]
-  ++ lib.optionals withIntrospection [
-    python3.pkgs.dbus-python
-    python3.pkgs.python-dbusmock
-    python3.pkgs.pygobject3
-    dbus
-    umockdev
-    python3.pkgs.packaging
-  ];
-
   propagatedBuildInputs = [
     glib
     polkit
@@ -145,16 +137,29 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dinstalled_test_prefix=${placeholder "installedTests"}"
   ];
 
+  env = {
+    # HACK: We want to install configuration files to $out/etc
+    # but upower should read them from /etc on a NixOS system.
+    # With autotools, it was possible to override Make variables
+    # at install time but Meson does not support this
+    # so we need to convince it to install all files to a temporary
+    # location using DESTDIR and then move it to proper one in postInstall.
+    DESTDIR = "dest";
+  };
+
   doCheck = true;
-  doInstallCheck = true;
 
-  postPatch = ''
-    patchShebangs src/linux/integration-test.py
-    patchShebangs src/linux/unittest_inspector.py
-
-    substituteInPlace src/linux/integration-test.py \
-      --replace-fail "/usr/share/dbus-1" "$out/share/dbus-1"
-  '';
+  nativeCheckInputs = [
+    libeatmydata
+  ]
+  ++ lib.optionals withIntrospection [
+    python3.pkgs.dbus-python
+    python3.pkgs.python-dbusmock
+    python3.pkgs.pygobject3
+    dbus
+    umockdev
+    python3.pkgs.packaging
+  ];
 
   preCheck = ''
     # Our gobject-introspection patches make the shared library paths absolute
@@ -204,6 +209,8 @@ stdenv.mkDerivation (finalAttrs: {
     ! test -e "$DESTDIR"
   '';
 
+  doInstallCheck = true;
+
   postFixup = lib.optionalString withIntrospection ''
     wrapProgram "$installedTests/libexec/upower/integration-test.py" \
       --prefix GI_TYPELIB_PATH : "${
@@ -219,15 +226,9 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
-  env = {
-    # HACK: We want to install configuration files to $out/etc
-    # but upower should read them from /etc on a NixOS system.
-    # With autotools, it was possible to override Make variables
-    # at install time but Meson does not support this
-    # so we need to convince it to install all files to a temporary
-    # location using DESTDIR and then move it to proper one in postInstall.
-    DESTDIR = "dest";
-  };
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   passthru = {
     tests = {
@@ -236,12 +237,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "D-Bus service for power management";
     homepage = "https://upower.freedesktop.org/";
     changelog = "https://gitlab.freedesktop.org/upower/upower/-/blob/v${finalAttrs.version}/NEWS";
-    description = "D-Bus service for power management";
+    license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "upower";
     teams = [ lib.teams.freedesktop ];
-    platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
   };
 })

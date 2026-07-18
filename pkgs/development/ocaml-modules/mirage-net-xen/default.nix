@@ -1,26 +1,24 @@
 {
   buildDunePackage,
-  netchannel,
-  ppx_sexp_conv,
-  lwt,
   cstruct,
+  io-page,
+  logs,
+  lwt,
+  lwt-dllist,
   mirage-net,
   mirage-xen,
-  io-page,
-  lwt-dllist,
-  logs,
+  netchannel,
+  ppx_sexp_conv,
 }:
 
 buildDunePackage {
-  pname = "mirage-net-xen";
-
   inherit (netchannel)
     src
     version
     meta
     ;
 
-  duneVersion = "3";
+  pname = "mirage-net-xen";
 
   nativeBuildInputs = [
     ppx_sexp_conv
@@ -36,4 +34,6 @@ buildDunePackage {
     lwt-dllist
     logs
   ];
+
+  duneVersion = "3";
 }

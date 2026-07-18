@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cwl-upgrader,
   cwlformat,
-  fetchFromGitHub,
   hatchling,
   jsonschema,
   packaging,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cwl-utils";
   version = "0.42";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "common-workflow-language";
@@ -27,6 +26,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-4RmKVhYfyB7idO6euo0jJuHjW19Ybt9MIbNTM0WSAb4=";
   };
+
+  nativeCheckInputs = [
+    cwlformat
+    jsonschema
+    pytest-mock
+    pytest-xdist
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -38,16 +45,6 @@ buildPythonPackage (finalAttrs: {
     ruamel-yaml
     schema-salad
   ];
-
-  nativeCheckInputs = [
-    cwlformat
-    jsonschema
-    pytest-mock
-    pytest-xdist
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "cwl_utils" ];
 
   disabledTests = [
     # Don't run tests which require Node.js
@@ -61,6 +58,9 @@ buildPythonPackage (finalAttrs: {
     "test_remote_packing_github_soft_links"
     "test_cwl_inputs_to_jsonschema"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "cwl_utils" ];
 
   meta = {
     description = "Utilities for CWL";

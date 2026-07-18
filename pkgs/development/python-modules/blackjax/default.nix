@@ -1,36 +1,30 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
+  # checks
+  chex,
   # dependencies
   jax,
+  # optional-dependencies
+  jax-tap,
   jaxlib,
   numpy,
   optax,
-  scipy,
-  typing-extensions,
-
-  # optional-dependencies
-  jax-tap,
-  tqdm,
-
-  # checks
-  chex,
   pytest-xdist,
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  tqdm,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "blackjax";
   version = "1.6";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "blackjax-devs";
@@ -38,6 +32,15 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-qLOAmUQxr1xtlJB/TMnjFkvvHUwh0XKpPN+FVD8ju8Y=";
   };
+
+  nativeCheckInputs = [
+    chex
+    pytestCheckHook
+    pytest-xdist
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.progress;
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -52,20 +55,6 @@ buildPythonPackage (finalAttrs: {
     scipy
     typing-extensions
   ];
-
-  optional-dependencies = {
-    progress = [
-      jax-tap
-      tqdm
-    ];
-  };
-
-  nativeCheckInputs = [
-    chex
-    pytestCheckHook
-    pytest-xdist
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.progress;
 
   disabledTestPaths = [
     "tests/test_benchmarks.py"
@@ -98,11 +87,19 @@ buildPythonPackage (finalAttrs: {
     "test_equal_matrices"
   ];
 
+  optional-dependencies = {
+    progress = [
+      jax-tap
+      tqdm
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "blackjax" ];
 
   meta = {
-    homepage = "https://blackjax-devs.github.io/blackjax";
     description = "Sampling library designed for ease of use, speed and modularity";
+    homepage = "https://blackjax-devs.github.io/blackjax";
     changelog = "https://github.com/blackjax-devs/blackjax/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bcdarwin ];

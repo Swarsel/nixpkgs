@@ -1,18 +1,18 @@
 {
   lib,
-  mkKdeDerivation,
   fetchFromGitLab,
+  mkKdeDerivation,
 }:
 mkKdeDerivation {
   pname = "alpaka";
   version = "0-unstable-2024-02-27";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "utilities";
     repo = "alpaka";
     rev = "64ef70f062920e2d62b5a9337485ccbf0eb86b97";
     hash = "sha256-YDn86+byjvCK525EQsGTCKf88Ovhvii848nTJHGP1bg=";
+    domain = "invent.kde.org";
   };
 
   meta.license = with lib.licenses; [
@@ -22,5 +22,6 @@ mkKdeDerivation {
     gpl2Plus
     gpl3Only
   ];
+
   meta.mainProgram = "alpaka";
 }

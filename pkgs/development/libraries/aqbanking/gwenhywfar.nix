@@ -2,18 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  gnutls,
-  openssl,
-  libgcrypt,
-  libgpg-error,
-  pkg-config,
   gettext,
-  which,
-
+  gnutls,
   # GUI support
   gtk3,
+  libgcrypt,
+  libgpg-error,
+  openssl,
+  pkg-config,
   qt5,
-
+  which,
   pluginSearchPaths ? [
     "/run/current-system/sw/lib/gwenhywfar/plugins"
     ".nix-profile/lib/gwenhywfar/plugins"
@@ -24,22 +22,13 @@ let
   inherit ((import ./sources.nix).gwenhywfar) hash releaseId version;
 in
 stdenv.mkDerivation rec {
-  pname = "gwenhywfar";
   inherit version;
+  pname = "gwenhywfar";
 
   src = fetchurl {
-    url = "https://www.aquamaniac.de/rdm/attachments/download/${releaseId}/gwenhywfar-${version}.tar.gz";
     inherit hash;
+    url = "https://www.aquamaniac.de/rdm/attachments/download/${releaseId}/gwenhywfar-${version}.tar.gz";
   };
-
-  configureFlags = [
-    "--with-openssl-includes=${openssl.dev}/include"
-    "--with-openssl-libs=${lib.getLib openssl}/lib"
-  ];
-
-  preConfigure = ''
-    configureFlagsArray+=("--with-guis=gtk3 qt5")
-  '';
 
   postPatch =
     let
@@ -83,6 +72,15 @@ stdenv.mkDerivation rec {
     libgcrypt
     libgpg-error
   ];
+
+  configureFlags = [
+    "--with-openssl-includes=${openssl.dev}/include"
+    "--with-openssl-libs=${lib.getLib openssl}/lib"
+  ];
+
+  preConfigure = ''
+    configureFlagsArray+=("--with-guis=gtk3 qt5")
+  '';
 
   dontWrapQtApps = true;
 

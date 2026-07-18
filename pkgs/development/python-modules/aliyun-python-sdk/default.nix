@@ -11,22 +11,19 @@ let
   buildAliyunSdkPackage =
     serviceName: version: hash:
     buildPythonPackage (finalAttrs: {
-      pname = "aliyun-python-sdk-${serviceName}";
       inherit version;
-      pyproject = true;
+      pname = "aliyun-python-sdk-${serviceName}";
 
       src = fetchPypi {
-        pname = "aliyun-python-sdk-${serviceName}";
         inherit version hash;
+        pname = "aliyun-python-sdk-${serviceName}";
       };
-
-      build-system = [ setuptools ];
-
-      dependencies = [ aliyun-python-sdk-core ];
 
       # All components are stored in a mono repo
       doCheck = false;
-
+      build-system = [ setuptools ];
+      dependencies = [ aliyun-python-sdk-core ];
+      pyproject = true;
       pythonImportsCheck = [ "aliyunsdk${toUnderscore serviceName}" ];
 
       meta = {
@@ -42,20 +39,18 @@ let
   buildAliyunSdkWheelPackage =
     serviceName: version: hash:
     buildPythonPackage (finalAttrs: {
-      pname = "aliyun-python-sdk-${serviceName}";
       inherit version;
-      format = "wheel";
+      pname = "aliyun-python-sdk-${serviceName}";
 
       src = fetchPypi {
-        pname = "aliyun_python_sdk_${toUnderscore serviceName}";
         inherit version hash;
         format = "wheel";
+        pname = "aliyun_python_sdk_${toUnderscore serviceName}";
       };
 
-      dependencies = [ aliyun-python-sdk-core ];
-
       doCheck = false;
-
+      dependencies = [ aliyun-python-sdk-core ];
+      format = "wheel";
       pythonImportsCheck = [ "aliyunsdk${toUnderscore serviceName}" ];
 
       meta = {
@@ -240,6 +235,10 @@ in
     buildAliyunSdkPackage "clickhouse" "3.1.6"
       "sha256-GjYzErL/18ND5KRz0PQ/dihSm2ekAoxy2ZrXymHKGxI=";
 
+  aliyun-python-sdk-cloud-siem =
+    buildAliyunSdkWheelPackage "cloud-siem" "1.0.5"
+      "sha256-dSkIuxH+PVqpdp5lp5BQQYdG/UPxBGd4yL1xfjFCkKU=";
+
   aliyun-python-sdk-cloudapi =
     buildAliyunSdkPackage "cloudapi" "4.9.2"
       "sha256-+K9dZP7gpF9bB7jBoBsZ1xbPix6S06ly47ttZl3RX4w=";
@@ -259,10 +258,6 @@ in
   aliyun-python-sdk-cloudphone =
     buildAliyunSdkPackage "cloudphone" "1.0.1"
       "sha256-hBkCsR4/aLE1wy+GlpwfzforIBtDG/UaI78lJZkU7Zg=";
-
-  aliyun-python-sdk-cloud-siem =
-    buildAliyunSdkWheelPackage "cloud-siem" "1.0.5"
-      "sha256-dSkIuxH+PVqpdp5lp5BQQYdG/UPxBGd4yL1xfjFCkKU=";
 
   aliyun-python-sdk-cms =
     buildAliyunSdkPackage "cms" "7.0.33"
@@ -492,6 +487,10 @@ in
     buildAliyunSdkPackage "ens" "3.0.23"
       "sha256-s9qNHbsOITb8/tEsKtHpmuIRBCUk2v77Gj1lhSaqep8=";
 
+  aliyun-python-sdk-es-serverless =
+    buildAliyunSdkPackage "es-serverless" "1.0.0"
+      "sha256-GTwMtgqElNgmhN5n/2rGsWgvCZ/8oEoYD0TLTYtgRLI=";
+
   aliyun-python-sdk-esa =
     buildAliyunSdkPackage "esa" "1.0.0"
       "sha256-zkonVNChsFg2XWYt8AHFj6rRNwd019IGaex759OwBDo=";
@@ -499,10 +498,6 @@ in
   aliyun-python-sdk-ess =
     buildAliyunSdkPackage "ess" "2.3.32"
       "sha256-5MC/wnt2w7cgV+7WSzGOEWL77V4VrAcRnKi5Qn6VRnE=";
-
-  aliyun-python-sdk-es-serverless =
-    buildAliyunSdkPackage "es-serverless" "1.0.0"
-      "sha256-GTwMtgqElNgmhN5n/2rGsWgvCZ/8oEoYD0TLTYtgRLI=";
 
   aliyun-python-sdk-et-industry-openapi =
     buildAliyunSdkPackage "et-industry-openapi" "3.6"
@@ -824,6 +819,10 @@ in
     buildAliyunSdkPackage "quotas" "1.0.4"
       "sha256-oidX8n7QZXxlEqGySwEeIl5nI1bL0tcb1CSduXMO3Jk=";
 
+  aliyun-python-sdk-r-kvstore =
+    buildAliyunSdkWheelPackage "r-kvstore" "2.20.17"
+      "sha256-TGu2Z/k809MSGPtKekyjKdwgpSbRPuqmMSKv5FDKgGg=";
+
   aliyun-python-sdk-ram =
     buildAliyunSdkPackage "ram" "3.3.1"
       "sha256-D9SC1XdnhizZ29bJkro8RCuOGZ1DvfKzNrXUGk7ceVc=";
@@ -855,10 +854,6 @@ in
   aliyun-python-sdk-retailcloud =
     buildAliyunSdkPackage "retailcloud" "2.0.20"
       "sha256-85xhtAahv6iQODUe1eXH/Kb7npUmu+IJ34JpAle+egY=";
-
-  aliyun-python-sdk-r-kvstore =
-    buildAliyunSdkWheelPackage "r-kvstore" "2.20.17"
-      "sha256-TGu2Z/k809MSGPtKekyjKdwgpSbRPuqmMSKv5FDKgGg=";
 
   aliyun-python-sdk-ros =
     buildAliyunSdkWheelPackage "ros" "3.6.1"

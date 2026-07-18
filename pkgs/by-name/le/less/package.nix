@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
   fetchurl,
   ncurses,
   pcre2,
-  stdenv,
   versionCheckHook,
   # Boolean options
   withSecure ? false,
@@ -23,14 +23,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-IKCworslJfpTx+7pvrhUtMnPFy6rsgmvcCB0NUe/6fs=";
   };
 
-  buildInputs = [
-    ncurses
-    pcre2
-  ];
-
   outputs = [
     "out"
     "man"
+  ];
+
+  strictDeps = true;
+
+  buildInputs = [
+    ncurses
+    pcre2
   ];
 
   configureFlags = [
@@ -39,23 +41,24 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.withFeature withSecure "secure")
   ];
 
-  strictDeps = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
-    homepage = "https://www.greenwoodsoftware.com/less/";
     description = "More advanced file pager than 'more'";
+    homepage = "https://www.greenwoodsoftware.com/less/";
     changelog = "https://www.greenwoodsoftware.com/less/news.${finalAttrs.version}.html";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "less";
+
     maintainers = with lib.maintainers; [
       mdaniels5757
       yiyu
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "less";
   };
 })

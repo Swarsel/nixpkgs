@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 let
   version = "0.0.12";
 in
 buildGoModule {
-  pname = "stunner";
   inherit version;
+  pname = "stunner";
 
   src = fetchFromGitHub {
     owner = "jaxxstorm";
@@ -26,6 +26,7 @@ buildGoModule {
 
   meta = {
     description = "Detect your NAT quickly and easily, and that's the bottom line";
+
     longDescription = ''
       Stunner is a small Go CLI tool that sends STUN Binding Requests to
       multiple Tailscale DERP servers (or any STUN servers you specify) and
@@ -34,6 +35,7 @@ buildGoModule {
       otherwise, by analyzing how multiple STUN servers perceive your external
       IP/port mapping.
     '';
+
     homepage = "https://github.com/jaxxstorm/stunner";
     changelog = "https://github.com/jaxxstorm/stunner/releases/tag/v${version}";
     license = lib.licenses.mit;

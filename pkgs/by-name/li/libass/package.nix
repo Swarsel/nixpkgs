@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  yasm,
   freetype,
   fribidi,
   harfbuzz,
-  fontconfigSupport ? true,
-  fontconfig ? null, # fontconfig support
-  largeTilesSupport ? false, # Use larger tiles in the rasterizer
   libiconv,
+  pkg-config,
+  yasm,
+  fontconfig ? null, # fontconfig support
+  fontconfigSupport ? true,
+  largeTilesSupport ? false, # Use larger tiles in the rasterizer
 }:
 
 assert fontconfigSupport -> fontconfig != null;
@@ -29,11 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  configureFlags = [
-    (lib.enableFeature fontconfigSupport "fontconfig")
-    (lib.enableFeature largeTilesSupport "large-tiles")
-  ];
-
   nativeBuildInputs = [
     pkg-config
     yasm
@@ -46,11 +41,16 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional fontconfigSupport fontconfig;
 
+  configureFlags = [
+    (lib.enableFeature fontconfigSupport "fontconfig")
+    (lib.enableFeature largeTilesSupport "large-tiles")
+  ];
+
   meta = {
     description = "Portable ASS/SSA subtitle renderer";
     homepage = "https://github.com/libass/libass";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

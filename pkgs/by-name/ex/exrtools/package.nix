@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  openexr,
-  libpng12,
   libjpeg,
+  libpng12,
+  openexr,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openexr
     libpng12
@@ -27,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Collection of utilities for manipulating OpenEXR images";
     homepage = "http://scanline.ca/exrtools";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.juliendehos ];
+    platforms = lib.platforms.linux;
   };
 })

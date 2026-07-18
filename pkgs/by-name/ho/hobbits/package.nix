@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  pffft,
   libpcap,
   libusb1,
+  pffft,
+  pkg-config,
   python3,
   qt5,
 }:
@@ -31,6 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-warn "SELF_CONTAINED_APP OR APPLE" "SELF_CONTAINED_APP"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    qt5.wrapQtAppsHook
+  ];
+
   buildInputs = [
     pffft
     libpcap
@@ -38,14 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    qt5.wrapQtAppsHook
-  ];
-
   cmakeFlags = [ (lib.cmakeBool "USE_SYSTEM_PFFFT" true) ];
-
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isAarch64 "-Wno-error=narrowing";
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''

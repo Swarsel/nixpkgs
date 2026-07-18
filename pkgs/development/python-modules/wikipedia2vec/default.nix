@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   cython,
-  fetchFromGitHub,
   jieba,
   joblib,
   lmdb,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "wikipedia2vec";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wikipedia2vec";
@@ -49,14 +48,15 @@ buildPythonPackage rec {
     bash cythonize.sh
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "wikipedia2vec" ];
 
   meta = {
     description = "Tool for learning vector representations of words and entities from Wikipedia";
-    mainProgram = "wikipedia2vec";
     homepage = "https://wikipedia2vec.github.io/wikipedia2vec/";
     changelog = "https://github.com/wikipedia2vec/wikipedia2vec/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ derdennisop ];
+    mainProgram = "wikipedia2vec";
   };
 }

@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   cacert,
   installShellFiles,
   libredirect,
-  pkg-config,
   openssl,
+  pkg-config,
   rust-jemalloc-sys,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -23,13 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-WkV4tiDjaFy0fttR7HhhqxWF2VggQfdNMLIZzxjTCOA=";
   };
 
-  cargoHash = "sha256-KZZKV5DXABfgjXRc+BhO0AGONaKxoCNKYxTnupzvZV0=";
-
-  env = {
-    CARGO_PROFILE_RELEASE_LTO = "fat";
-    CARGO_PROFILE_RELEASE_CODEGEN_UNITS = "1";
-  };
-
   nativeBuildInputs = [
     installShellFiles
   ]
@@ -42,9 +35,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rust-jemalloc-sys
   ];
 
-  checkInputs = [ cacert ];
+  cargoHash = "sha256-KZZKV5DXABfgjXRc+BhO0AGONaKxoCNKYxTnupzvZV0=";
+
+  env = {
+    CARGO_PROFILE_RELEASE_CODEGEN_UNITS = "1";
+    CARGO_PROFILE_RELEASE_LTO = "fat";
+  };
+
+  doCheck = true;
+
   nativeCheckInputs = [
     libredirect.hook
+  ];
+
+  checkInputs = [ cacert ];
+
+  checkFlags = [
+    "--skip=test_google"
+    "--skip=test_proxy"
   ];
 
   preCheck = ''
@@ -52,22 +60,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     export NIX_REDIRECTS="/etc/resolv.conf=$(realpath resolv.conf)"
   '';
 
-  doCheck = true;
-  checkFlags = [
-    "--skip=test_google"
-    "--skip=test_proxy"
-  ];
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     for shell in bash fish zsh; do
       installShellCompletion --cmd oha --$shell <($out/bin/oha --completions $shell)
     done
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "HTTP load generator inspired by rakyll/hey with tui animation";

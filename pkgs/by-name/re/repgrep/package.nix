@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   asciidoctor,
   installShellFiles,
   makeWrapper,
   ripgrep,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,13 +20,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-hLRl8mKRaufneJNBQqPsH+48ZQGxFBNgulXcaK4/6s4=";
   };
 
-  cargoHash = "sha256-ALp6BQNWpylHPBeLs/4hugN1ulCdctOmgu55Lmt8wjI=";
-
   nativeBuildInputs = [
     asciidoctor
     installShellFiles
     makeWrapper
   ];
+
+  cargoHash = "sha256-ALp6BQNWpylHPBeLs/4hugN1ulCdctOmgu55Lmt8wjI=";
 
   postInstall = ''
     wrapProgram $out/bin/rgr \
@@ -48,11 +48,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Interactive replacer for ripgrep that makes it easy to find and replace across files on the command line";
     homepage = "https://github.com/acheronfail/repgrep";
     changelog = "https://github.com/acheronfail/repgrep/blob/${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       asl20
       unlicense
     ];
+
     maintainers = with lib.maintainers; [ iamanaws ];
     mainProgram = "rgr";
   };

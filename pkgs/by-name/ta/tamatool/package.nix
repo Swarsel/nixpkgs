@@ -2,12 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zip,
-  copyDesktopItems,
-  libpng,
   SDL2,
   SDL2_image,
-
+  copyDesktopItems,
+  libpng,
+  zip,
   # Optionally bundle a ROM file
   rom ? null,
 }:
@@ -58,8 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_LDFLAGS = "-framework CoreFoundation";
   };
 
-  desktopItems = [ "linux/tamatool.desktop" ];
-
   installPhase = ''
     runHook preInstall
     install -Dm755 linux/tamatool $out/bin/tamatool
@@ -69,6 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
     ${lib.optionalString (rom != null) "install -Dm677 ${rom} $out/share/tamatool/rom.bin"}
     runHook postInstall
   '';
+
+  desktopItems = [ "linux/tamatool.desktop" ];
 
   meta = {
     description = "Cross-platform Tamagotchi P1 explorer";

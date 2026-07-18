@@ -15,14 +15,20 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.5.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "emersion";
     repo = "wlr-randr";
     rev = "v${finalAttrs.version}";
     hash = "sha256-lHOGpY0IVnR8QdSqJbtIA4FkhmQ/zDiFNqqXyj8iw/s=";
+    domain = "gitlab.freedesktop.org";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -30,14 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     scdoc
     wayland-scanner
   ];
+
   buildInputs = [ wayland ];
+
   depsBuildBuild = [
     pkg-config
-  ];
-
-  outputs = [
-    "out"
-    "man"
   ];
 
   meta = {

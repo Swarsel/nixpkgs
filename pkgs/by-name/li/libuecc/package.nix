@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
+  cmake,
   fetchgit,
   fetchpatch,
-  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "7";
   pname = "libuecc";
+  version = "7";
 
   src = fetchgit {
     url = "git://git.universe-factory.net/libuecc";
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Backport CMake 4 support
     (fetchpatch {
-      url = "https://github.com/neocturne/libuecc/commit/b3812bf5ab1777193c4b85863311c33997d141f9.patch";
       hash = "sha256-3h+LC5JlSXNiJlEQxSQzC7+5s+nMp+ll2NQQC5HzTf0=";
+      url = "https://github.com/neocturne/libuecc/commit/b3812bf5ab1777193c4b85863311c33997d141f9.patch";
     })
   ];
 
@@ -30,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Very small Elliptic Curve Cryptography library";
     homepage = "https://git.universe-factory.net/libuecc";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.unix;
   };
 })

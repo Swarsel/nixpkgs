@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
-  fetchFromGitHub,
   pillow,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ascii-magic";
   version = "2.7.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LeandroBarone";
@@ -20,20 +19,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-werCg7LW7MKMoYp/QxZU74MSc6WmscwWfvGRG4Dn60c=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    ln -s ascii_magic/tests/*.{jpg,png} ./
+  '';
+
   build-system = [ setuptools ];
 
   dependencies = [
     colorama
     pillow
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "ascii_magic" ];
-
-  preCheck = ''
-    ln -s ascii_magic/tests/*.{jpg,png} ./
-  '';
 
   disabledTests = [
     # Test requires network access
@@ -43,6 +40,9 @@ buildPythonPackage (finalAttrs: {
     # No clipboard in the sandbox
     "test_from_clipboard"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ascii_magic" ];
 
   meta = {
     description = "Python module to converts pictures into ASCII art";

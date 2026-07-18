@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiormq,
   buildPythonPackage,
-  fetchFromGitHub,
   uv-build,
   yarl,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "aio-pika";
   version = "9.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mosquito";
@@ -24,6 +23,9 @@ buildPythonPackage rec {
       --replace-fail "uv_build>=0.9.26,<0.10.0" uv_build
   '';
 
+  # Tests require running a RabbitMQ server.
+  # They rely on having AMQP_URL set or running Docker.
+  doCheck = false;
   build-system = [ uv-build ];
 
   dependencies = [
@@ -31,10 +33,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  # Tests require running a RabbitMQ server.
-  # They rely on having AMQP_URL set or running Docker.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aio_pika" ];
 
   meta = {

@@ -1,13 +1,11 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
   benqprojector,
+  buildHomeAssistantComponent,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "rrooggiieerr";
-  domain = "benqprojector";
   version = "0.1.4";
 
   src = fetchFromGitHub {
@@ -18,6 +16,8 @@ buildHomeAssistantComponent rec {
   };
 
   dependencies = [ benqprojector ];
+  domain = "benqprojector";
+  owner = "rrooggiieerr";
 
   meta = rec {
     description = "Home Assistant integration for BenQ projectors";

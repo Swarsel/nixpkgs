@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   kwindowsystem,
   liblxqt,
   libqtxdg,
@@ -15,7 +16,6 @@
   qttools,
   qtwayland,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -51,11 +51,11 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-policykit";
     description = "LXQt PolicyKit agent";
-    mainProgram = "lxqt-policykit-agent";
+    homepage = "https://github.com/lxqt/lxqt-policykit";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "lxqt-policykit-agent";
     teams = [ lib.teams.lxqt ];
   };
 }

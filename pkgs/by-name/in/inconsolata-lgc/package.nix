@@ -26,6 +26,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Fork of Inconsolata font, with proper support of Cyrillic and Greek";
+
     longDescription = ''
       Inconsolata is one of the most suitable font for programmers created by Raph
       Levien. Since the original Inconsolata does not contain Cyrillic alphabet,
@@ -49,9 +50,10 @@ stdenv.mkDerivation rec {
       * Straight quotation marks.
     '';
 
+    homepage = "https://github.com/MihailJP/Inconsolata-LGC";
     # See `License.txt' for details.
     license = lib.licenses.ofl;
-    homepage = "https://github.com/MihailJP/Inconsolata-LGC";
+
     maintainers = with lib.maintainers; [
       avnik
     ];

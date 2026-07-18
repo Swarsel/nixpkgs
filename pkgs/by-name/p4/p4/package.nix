@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  fetchzip,
-  lib,
   emptyDirectory,
-  linkFarm,
+  fetchzip,
   jam,
+  linkFarm,
   openssl,
   testers,
 }:
@@ -42,6 +42,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6+DOJPeVzP4x0UsN9MlZRAyusapBTICX0BuyvVBQBC8=";
   };
 
+  outputs = [
+    "out"
+    "bin"
+    "dev"
+  ];
+
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     # same error as https://github.com/pocoproject/poco/issues/4586
     substituteInPlace zlib/zutil.h \
@@ -50,11 +56,50 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ jam ];
 
-  outputs = [
-    "out"
-    "bin"
-    "dev"
-  ];
+  env = {
+    "C++FLAGS" = toString (
+      # Avoid a compilation error that only occurs for 4-byte longs.
+      lib.optionals stdenv.hostPlatform.isi686 [ "-Wno-narrowing" ]
+      # See the "Header dependency changes" section of
+      # https://www.gnu.org/software/gcc/gcc-11/porting_to.html for more
+      # information on why we need to include these.
+      ++
+        lib.optionals
+          (stdenv.cc.isClang || (stdenv.cc.isGNU && lib.versionAtLeast stdenv.cc.cc.version "11.0.0"))
+          [
+            "-include"
+            "limits"
+            "-include"
+            "thread"
+          ]
+    );
+
+    CCFLAGS = toString (
+      # The file contrib/optimizations/slide_hash_neon.h is missing from the
+      # upstream distribution. It comes from the Android/Chromium sources.
+      lib.optionals stdenv.hostPlatform.isAarch64 [ "-I${androidZlibContrib}" ]
+    );
+  };
+
+  preBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    export MACOSX_SDK=$SDKROOT
+  '';
+
+  buildPhase = ''
+    runHook preBuild
+    jam $jamFlags -j$NIX_BUILD_CORES p4
+    jam $jamFlags -j$NIX_BUILD_CORES -sPRODUCTION=yes p4api.tar
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $bin/bin $dev $out
+    cp bin.unix/p4 $bin/bin
+    cp -r bin.unix/p4api-*/include $dev
+    cp -r bin.unix/p4api-*/lib $out
+    runHook postInstall
+  '';
 
   hardeningDisable = lib.optionals stdenv.hostPlatform.isDarwin [ "strictoverflow" ];
 
@@ -79,65 +124,22 @@ stdenv.mkDerivation (finalAttrs: {
     "-sLIBC++DIR=${lib.getLib stdenv.cc.libcxx}/lib"
   ];
 
-  env = {
-    CCFLAGS = toString (
-      # The file contrib/optimizations/slide_hash_neon.h is missing from the
-      # upstream distribution. It comes from the Android/Chromium sources.
-      lib.optionals stdenv.hostPlatform.isAarch64 [ "-I${androidZlibContrib}" ]
-    );
-
-    "C++FLAGS" = toString (
-      # Avoid a compilation error that only occurs for 4-byte longs.
-      lib.optionals stdenv.hostPlatform.isi686 [ "-Wno-narrowing" ]
-      # See the "Header dependency changes" section of
-      # https://www.gnu.org/software/gcc/gcc-11/porting_to.html for more
-      # information on why we need to include these.
-      ++
-        lib.optionals
-          (stdenv.cc.isClang || (stdenv.cc.isGNU && lib.versionAtLeast stdenv.cc.cc.version "11.0.0"))
-          [
-            "-include"
-            "limits"
-            "-include"
-            "thread"
-          ]
-    );
-  };
-
-  preBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    export MACOSX_SDK=$SDKROOT
-  '';
-
-  buildPhase = ''
-    runHook preBuild
-    jam $jamFlags -j$NIX_BUILD_CORES p4
-    jam $jamFlags -j$NIX_BUILD_CORES -sPRODUCTION=yes p4api.tar
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $bin/bin $dev $out
-    cp bin.unix/p4 $bin/bin
-    cp -r bin.unix/p4api-*/include $dev
-    cp -r bin.unix/p4api-*/lib $out
-    runHook postInstall
-  '';
-
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "p4 -V";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Perforce Helix Core command-line client and APIs";
     homepage = "https://www.perforce.com";
     license = lib.licenses.bsd2;
-    mainProgram = "p4";
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       corngood
       impl
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "p4";
   };
 })

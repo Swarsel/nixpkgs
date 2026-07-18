@@ -9,19 +9,17 @@ perlPackages.buildPerlPackage rec {
   version = "1.10";
 
   src = fetchurl {
-    sha256 = "0r0wj6v8z9fzlh9pb5617kyjdf92ppmlbzajaarrq729bbb6ln5m";
     url = "https://www.gson.org/egypt/download/egypt-${version}.tar.gz";
+    sha256 = "0r0wj6v8z9fzlh9pb5617kyjdf92ppmlbzajaarrq729bbb6ln5m";
   };
 
   outputs = [ "out" ];
-
-  enableParallelBuilding = true;
-
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Tool for making call graphs of C programmes";
-    mainProgram = "egypt";
+
     longDescription = ''
       Egypt is a simple tool for creating call graphs of C programs. It neither
       analyzes source code nor lays out graphs. Instead, it leaves the source
@@ -30,11 +28,15 @@ perlPackages.buildPerlPackage rec {
       Egypt is simply a very small Perl script that glues these existing tools
       together.
     '';
+
     homepage = "http://www.gson.org/egypt/";
+
     license = with lib.licenses; [
       artistic1
       gpl1Plus
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "egypt";
   };
 }

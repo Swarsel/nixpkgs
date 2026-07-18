@@ -4,8 +4,8 @@
   fetchurl,
   jre,
   makeWrapper,
-  testers,
   swagger-codegen3,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://maven/io/swagger/codegen/v3/swagger-codegen-cli/${finalAttrs.version}/swagger-codegen-cli-${finalAttrs.version}.jar";
     hash = "sha256-Na6aWKq1SU/zWfxRf4ZH73lJy/dwbzz7coXP61zFv+E=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -32,18 +30,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   passthru.tests.version = testers.testVersion {
-    package = swagger-codegen3;
     command = "swagger-codegen3 version";
+    package = swagger-codegen3;
   };
 
   meta = {
     description = "Allows generation of API client libraries (SDK generation), server stubs and documentation automatically given an OpenAPI Spec";
     homepage = "https://github.com/swagger-api/swagger-codegen/tree/3.0.0";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers._1000101 ];
-    mainProgram = "swagger-codegen3";
     platforms = lib.platforms.all;
+    mainProgram = "swagger-codegen3";
   };
 })

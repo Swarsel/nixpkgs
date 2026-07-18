@@ -10,16 +10,10 @@
 }:
 
 stdenv.mkDerivation {
-  name = "auto-patchelf-structured-log-test";
-
   src = fetchurl {
     url = "https://tonelib.net/download/221222/ToneLib-Jam-amd64.deb";
     sha256 = "sha256-c6At2lRPngQPpE7O+VY/Hsfw+QfIb3COIuHfbqqIEuM=";
   };
-
-  unpackCmd = ''
-    dpkg -x $curSrc source
-  '';
 
   nativeBuildInputs = [
     dpkg
@@ -52,6 +46,12 @@ stdenv.mkDerivation {
     })' log.jsonl
 
     cp log.jsonl $out
+  '';
+
+  name = "auto-patchelf-structured-log-test";
+
+  unpackCmd = ''
+    dpkg -x $curSrc source
   '';
 
 }

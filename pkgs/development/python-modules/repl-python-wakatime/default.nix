@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ipython,
   keyring,
   ptpython,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "repl-python-wakatime";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wakatime";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-U7p0TnGtjxssYAMk6QteeU1Vdq7mrjdDZvwYhyNOIoY=";
   };
+
+  nativeCheckInputs = [
+    keyring
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -34,11 +38,7 @@ buildPythonPackage (finalAttrs: {
     ipython
   ];
 
-  nativeCheckInputs = [
-    keyring
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "repl_python_wakatime" ];
 
   meta = {

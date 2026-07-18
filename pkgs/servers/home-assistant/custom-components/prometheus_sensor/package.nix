@@ -5,8 +5,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "mweinelt";
-  domain = "prometheus_sensor";
   version = "1.3.0";
 
   src = fetchFromGitHub {
@@ -16,11 +14,14 @@ buildHomeAssistantComponent rec {
     hash = "sha256-uIC/yGqjigVURZYVMMLY33VqRbadSCqTtT0Qtaq71uc=";
   };
 
+  domain = "prometheus_sensor";
+  owner = "mweinelt";
+
   meta = {
-    changelog = "https://github.com/mweinelt/ha-prometheus-sensor/blob/${version}/CHANGELOG.md";
     description = "Import prometheus query results into Home Assistant";
     homepage = "https://github.com/mweinelt/ha-prometheus-sensor";
-    maintainers = with lib.maintainers; [ hexa ];
+    changelog = "https://github.com/mweinelt/ha-prometheus-sensor/blob/${version}/CHANGELOG.md";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ hexa ];
   };
 }

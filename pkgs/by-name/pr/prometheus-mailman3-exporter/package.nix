@@ -1,9 +1,9 @@
 {
   lib,
-  python3,
   stdenv,
   fetchFromGitHub,
   fetchpatch2,
+  python3,
 }:
 
 let
@@ -33,13 +33,13 @@ stdenv.mkDerivation rec {
   patches = [
     # https://github.com/rivimey/mailman3_exporter/pull/3
     (fetchpatch2 {
-      url = "https://github.com/MarcelCoding/mailman3_exporter/commit/65070106451c6aafe8956387111343e490e34df8.patch?full_index=1";
       hash = "sha256-2XM0ktLC4+7/PEgeToVR84Gfjx1UKxl/+jo6JGnVZMw=";
+      url = "https://github.com/MarcelCoding/mailman3_exporter/commit/65070106451c6aafe8956387111343e490e34df8.patch?full_index=1";
     })
     # https://github.com/rivimey/mailman3_exporter/pull/4
     (fetchpatch2 {
-      url = "https://github.com/MarcelCoding/mailman3_exporter/commit/a7850a1e9ce65f91683eef67eb1c6537c2c2eb77.patch?full_index=1";
       hash = "sha256-bBIin/7Y1bWrvxCuw1kJG8gaoKjkKdQnxfqpRipvyFs=";
+      url = "https://github.com/MarcelCoding/mailman3_exporter/commit/a7850a1e9ce65f91683eef67eb1c6537c2c2eb77.patch?full_index=1";
     })
   ];
 
@@ -57,7 +57,7 @@ stdenv.mkDerivation rec {
     # no license in repo
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ marcel ];
-    mainProgram = "mailman3_exporter";
     platforms = lib.platforms.all;
+    mainProgram = "mailman3_exporter";
   };
 }

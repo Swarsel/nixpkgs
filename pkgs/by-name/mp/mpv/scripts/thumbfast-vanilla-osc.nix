@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  unstableGitUpdater,
   buildLua,
+  unstableGitUpdater,
 }:
 
 buildLua {
@@ -15,9 +15,9 @@ buildLua {
     rev = "9d78edc167553ccea6290832982d0bc15838b4ac";
     hash = "sha256-AG3w5B8lBcSXV4cbvX3nQ9hri/895xDbTsdaqF+RL64=";
   };
-  passthru.updateScript = unstableGitUpdater { branch = "vanilla-osc"; };
 
   scriptPath = "player/lua/osc.lua";
+  passthru.updateScript = unstableGitUpdater { branch = "vanilla-osc"; };
 
   meta = {
     description = "Modified version of the vanilla UI with thumbfast support";

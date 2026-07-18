@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   packaging,
-  pytestCheckHook,
   pip,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "argparse-manpage";
   version = "4.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "praiskup";
@@ -30,22 +29,23 @@ buildPythonPackage rec {
     pip
   ];
 
+  disabledTestPaths = [
+    # network access to install setuptools, likely due to pip update
+    "tests/test_examples.py"
+  ];
+
   disabledTests = [
     # TypeError: dist must be a Distribution instance
     "test_old_example"
     "test_old_example_file_name"
   ];
 
-  disabledTestPaths = [
-    # network access to install setuptools, likely due to pip update
-    "tests/test_examples.py"
-  ];
-
-  pythonImportsCheck = [ "argparse_manpage" ];
-
   optional-dependencies = {
     setuptools = [ setuptools ];
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "argparse_manpage" ];
 
   meta = {
     description = "Automatically build man-pages for your Python project";

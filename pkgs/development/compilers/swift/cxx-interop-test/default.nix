@@ -2,19 +2,26 @@
   lib,
   stdenv,
   swift,
-  swiftpm,
   swiftPackages,
+  swiftpm,
 }:
 
 swiftPackages.stdenv.mkDerivation (finalAttrs: {
-  name = "swift-cxx-interop-test";
-
   src = ./src;
 
   nativeBuildInputs = [
     swift
     swiftpm
   ];
+
+  env = {
+    # Gross hack copied from `protoc-gen-swift` :(
+    LD_LIBRARY_PATH = lib.optionalString stdenv.hostPlatform.isLinux (
+      lib.makeLibraryPath [
+        swiftPackages.Dispatch
+      ]
+    );
+  };
 
   installPhase = ''
     runHook preInstall
@@ -26,6 +33,8 @@ swiftPackages.stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -34,16 +43,7 @@ swiftPackages.stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  doInstallCheck = true;
-
-  env = {
-    # Gross hack copied from `protoc-gen-swift` :(
-    LD_LIBRARY_PATH = lib.optionalString stdenv.hostPlatform.isLinux (
-      lib.makeLibraryPath [
-        swiftPackages.Dispatch
-      ]
-    );
-  };
+  name = "swift-cxx-interop-test";
 
   meta = {
     inherit (swift.meta)
@@ -51,6 +51,7 @@ swiftPackages.stdenv.mkDerivation (finalAttrs: {
       platforms
       badPlatforms
       ;
+
     license = lib.licenses.mit;
     mainProgram = "CxxInteropTest";
   };

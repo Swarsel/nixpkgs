@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  ncurses,
   buildPackages,
+  ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -22,7 +22,8 @@ stdenv.mkDerivation {
     substituteInPlace configure --replace "./conftest" "echo"
   '';
 
-  enableParallelBuilding = true;
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ ncurses ];
 
   makeFlags = [
     "PKG_CONFIG=${buildPackages.pkg-config}/bin/${buildPackages.pkg-config.targetPrefix}pkg-config"
@@ -32,15 +33,14 @@ stdenv.mkDerivation {
     install -m 555 -Dt $out/bin mg
     install -m 444 -Dt $out/share/man/man1 mg.1
   '';
-  nativeBuildInputs = [ pkg-config ];
 
-  buildInputs = [ ncurses ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Micro GNU/emacs, a portable version of the mg maintained by the OpenBSD team";
     homepage = "https://man.openbsd.org/OpenBSD-current/man1/mg.1";
     license = lib.licenses.publicDomain;
-    mainProgram = "mg";
     platforms = lib.platforms.all;
+    mainProgram = "mg";
   };
 }

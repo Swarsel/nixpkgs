@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  popt,
   libiconv,
+  popt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,20 +19,18 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = [ popt ];
+  propagatedBuildInputs = [ libiconv ];
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_LDFLAGS = "-liconv";
   };
 
-  propagatedBuildInputs = [ libiconv ];
-
   meta = {
-    homepage = "https://github.com/Etersoft/libnatspec";
     description = "Library intended to smooth national specificities in using of programs";
-    mainProgram = "natspec";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/Etersoft/libnatspec";
     license = lib.licenses.lgpl21;
+    platforms = lib.platforms.unix;
+    mainProgram = "natspec";
   };
 })

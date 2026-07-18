@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
   writeScript,
 }:
@@ -9,7 +9,6 @@
 buildGoModule (finalAttrs: {
   pname = "enry";
   version = "1.3.0";
-  commitSha = "f10711437bfbb25b15506eb69dde24bb7decd222"; # matches version
 
   src = fetchFromGitHub {
     owner = "go-enry";
@@ -19,14 +18,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-tUDhpeXlKpo1jnNyk0U3CcXroOlv7lHVUxc1wAnysG4=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  commitSha = "f10711437bfbb25b15506eb69dde24bb7decd222"; # matches version
 
   ldflags = [
     "-X main.version=${finalAttrs.version}"
     "-X main.commit=${finalAttrs.commitSha}"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru.updateScript = writeScript "update-enry" ''
     #!/usr/bin/env nix-shell
@@ -48,10 +47,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Programming language detector based on go-enry/go-enry/v2 library";
-    mainProgram = "enry";
     homepage = "https://github.com/go-enry/enry";
     changelog = "https://github.com/go-enry/enry/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dvcorreia ];
+    mainProgram = "enry";
   };
 })

@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "pytransportnsw";
   version = "0.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "PyTransportNSW";
     inherit version;
     sha256 = "00jklgjirmc58hiaqqc2n2rgixvx91bgrd6lv6hv28k51kid10f3";
+    pname = "PyTransportNSW";
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "TransportNSW" ];
 
   meta = {

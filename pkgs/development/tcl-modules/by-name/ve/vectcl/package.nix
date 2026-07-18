@@ -1,7 +1,7 @@
 {
   lib,
-  mkTclDerivation,
   fetchFromGitHub,
+  mkTclDerivation,
   tcl,
 }:
 
@@ -19,10 +19,10 @@ mkTclDerivation rec {
   env.NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration -std=gnu17";
 
   meta = {
-    homepage = "https://auriocus.github.io/VecTcl/";
     description = "Numeric array and linear algebra extension for Tcl";
-    maintainers = with lib.maintainers; [ fgaz ];
+    homepage = "https://auriocus.github.io/VecTcl/";
     license = lib.licenses.tcltk;
+    maintainers = with lib.maintainers; [ fgaz ];
     broken = tcl.isTcl9;
   };
 }

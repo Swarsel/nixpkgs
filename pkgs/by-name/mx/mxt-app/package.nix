@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.46";
   pname = "mxt-app";
+  version = "1.46";
 
   src = fetchFromGitHub {
     owner = "atmel-maxtouch";
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ autoreconfHook ];
   buildInputs = [ libtool ];
-
   hardeningDisable = [ "fortify" ];
 
   meta = {

@@ -1,19 +1,20 @@
 {
+  openssl,
+  pkg-config,
   qtModule,
   qtbase,
   qtdeclarative,
   qtserialport,
-  pkg-config,
-  openssl,
 }:
 
 qtModule {
   pname = "qtpositioning";
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
+
   propagatedBuildInputs = [
     qtbase
     qtdeclarative
     qtserialport
   ];
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ openssl ];
 }

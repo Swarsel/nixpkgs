@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gzip,
-  popt,
-  autoreconfHook,
-  aclSupport ? stdenv.hostPlatform.isLinux,
   acl,
+  autoreconfHook,
   coreutils,
+  gzip,
   nixosTests,
+  popt,
+  aclSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,19 +22,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-D7E2mpC7v2kbsb1EyhR6hLvGbnIvGB2MK1n1gptYyKI=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  nativeBuildInputs = [ autoreconfHook ];
+  buildInputs = [ popt ] ++ lib.optionals aclSupport [ acl ];
+
   # Logrotate wants to access the 'mail' program; to be done.
   configureFlags = [
     "--with-compress-command=${gzip}/bin/gzip"
     "--with-uncompress-command=${gzip}/bin/gunzip"
   ];
 
-  nativeBuildInputs = [ autoreconfHook ];
-  buildInputs = [ popt ] ++ lib.optionals aclSupport [ acl ];
-
-  outputs = [
-    "out"
-    "man"
-  ];
+  doCheck = true;
 
   preCheck = ''
     sed -i 's#/bin/date#${lib.getExe' coreutils "date"}#' test/*.sh
@@ -46,20 +48,19 @@ stdenv.mkDerivation (finalAttrs: {
     # Depends on a working root user, which we don't have in the sandbox
     sed -i '2iexit 77' test/test-0110.sh
   '';
-  doCheck = true;
 
   passthru.tests = {
     nixos-logrotate = nixosTests.logrotate;
   };
 
   meta = {
-    homepage = "https://github.com/logrotate/logrotate";
     description = "Rotates and compresses system logs";
+    homepage = "https://github.com/logrotate/logrotate";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.tobim ];
-    teams = [ lib.teams.security-review ];
     platforms = lib.platforms.all;
     mainProgram = "logrotate";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "logrotate_project" finalAttrs.version;
+    teams = [ lib.teams.security-review ];
   };
 })

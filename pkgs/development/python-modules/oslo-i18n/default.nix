@@ -5,19 +5,18 @@
   oslotest,
   pbr,
   setuptools,
-  testscenarios,
   stestr,
+  testscenarios,
 }:
 
 buildPythonPackage rec {
   pname = "oslo-i18n";
   version = "6.8.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "oslo_i18n";
     inherit version;
     hash = "sha256-oLTGTBOWhp1xRNymCtl8frAo949h+RxwB1MSOAUZl98=";
+    pname = "oslo_i18n";
   };
 
   postPatch = ''
@@ -25,11 +24,6 @@ buildPythonPackage rec {
     # so instead of removing them one by one remove everything
     rm test-requirements.txt
   '';
-
-  build-system = [
-    pbr
-    setuptools
-  ];
 
   nativeCheckInputs = [
     oslotest
@@ -48,6 +42,12 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "oslo_i18n" ];
 
   meta = {

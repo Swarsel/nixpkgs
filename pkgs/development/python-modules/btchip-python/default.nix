@@ -1,16 +1,15 @@
 {
   lib,
   buildPythonPackage,
+  ecdsa,
   fetchPypi,
   hidapi,
   pyscard,
-  ecdsa,
 }:
 
 buildPythonPackage rec {
   pname = "btchip-python";
   version = "0.1.32";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -28,11 +27,10 @@ buildPythonPackage rec {
     ecdsa
   ];
 
-  optional-dependencies.smartcard = [ pyscard ];
-
   # tests requires hardware
   doCheck = false;
-
+  format = "setuptools";
+  optional-dependencies.smartcard = [ pyscard ];
   pythonImportsCheck = [ "btchip.btchip" ];
 
   meta = {

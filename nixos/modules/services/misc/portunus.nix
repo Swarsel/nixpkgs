@@ -11,60 +11,7 @@ in
 {
   options.services.portunus = {
     enable = lib.mkEnableOption "Portunus, a self-contained user/group management and authentication service for LDAP";
-
-    domain = lib.mkOption {
-      type = lib.types.str;
-      example = "sso.example.com";
-      description = "Subdomain which gets reverse proxied to Portunus webserver.";
-    };
-
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 8080;
-      description = ''
-        Port where the Portunus webserver should listen on.
-
-        This must be put behind a TLS-capable reverse proxy because Portunus only listens on localhost.
-      '';
-    };
-
     package = lib.mkPackageOption pkgs "portunus" { };
-
-    seedPath = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      description = ''
-        Path to a portunus seed file in json format.
-        See <https://github.com/majewsky/portunus#seeding-users-and-groups-from-static-configuration> for available options.
-      '';
-    };
-
-    seedSettings = lib.mkOption {
-      type = with lib.types; nullOr (attrsOf (listOf (attrsOf anything)));
-      default = null;
-      description = ''
-        Seed settings for users and groups.
-        See upstream for format <https://github.com/majewsky/portunus#seeding-users-and-groups-from-static-configuration>
-      '';
-    };
-
-    stateDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/portunus";
-      description = "Path where Portunus stores its state.";
-    };
-
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "portunus";
-      description = "User account under which Portunus runs its webserver.";
-    };
-
-    group = lib.mkOption {
-      type = lib.types.str;
-      default = "portunus";
-      description = "Group account under which Portunus runs its webserver.";
-    };
 
     dex = {
       enable = lib.mkEnableOption ''
@@ -76,27 +23,8 @@ in
       '';
 
       oidcClients = lib.mkOption {
-        type = lib.types.listOf (
-          lib.types.submodule {
-            options = {
-              callbackURL = lib.mkOption {
-                type = lib.types.str;
-                description = "URL where the OIDC client should redirect";
-              };
-              id = lib.mkOption {
-                type = lib.types.str;
-                description = "ID of the OIDC client";
-              };
-            };
-          }
-        );
         default = [ ];
-        example = [
-          {
-            callbackURL = "https://example.com/client/oidc/callback";
-            id = "service";
-          }
-        ];
+
         description = ''
           List of OIDC clients.
 
@@ -107,40 +35,84 @@ in
           Make sure the id only contains characters that are allowed in an environment variable name, e.g. no -.
           :::
         '';
+
+        example = [
+          {
+            callbackURL = "https://example.com/client/oidc/callback";
+            id = "service";
+          }
+        ];
+
+        type = lib.types.listOf (
+          lib.types.submodule {
+            options = {
+              callbackURL = lib.mkOption {
+                description = "URL where the OIDC client should redirect";
+                type = lib.types.str;
+              };
+
+              id = lib.mkOption {
+                description = "ID of the OIDC client";
+                type = lib.types.str;
+              };
+            };
+          }
+        );
       };
 
       port = lib.mkOption {
-        type = lib.types.port;
         default = 5556;
         description = "Port where dex should listen on.";
+        type = lib.types.port;
       };
+    };
+
+    domain = lib.mkOption {
+      description = "Subdomain which gets reverse proxied to Portunus webserver.";
+      example = "sso.example.com";
+      type = lib.types.str;
+    };
+
+    group = lib.mkOption {
+      default = "portunus";
+      description = "Group account under which Portunus runs its webserver.";
+      type = lib.types.str;
     };
 
     ldap = {
       package = lib.mkPackageOption pkgs "openldap" { };
 
-      searchUserName = lib.mkOption {
+      group = lib.mkOption {
+        default = "openldap";
+        description = "Group account under which Portunus runs its LDAP server.";
         type = lib.types.str;
+      };
+
+      searchUserName = lib.mkOption {
         default = "";
-        example = "admin";
+
         description = ''
           The login name of the search user.
           This user account must be configured in Portunus either manually or via seeding.
         '';
+
+        example = "admin";
+        type = lib.types.str;
       };
 
       suffix = lib.mkOption {
-        type = lib.types.str;
-        example = "dc=example,dc=org";
         description = ''
           The DN of the topmost entry in your LDAP directory.
           Please refer to the Portunus documentation for more information on how this impacts the structure of the LDAP directory.
         '';
+
+        example = "dc=example,dc=org";
+        type = lib.types.str;
       };
 
       tls = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable LDAPS protocol.
           This also adds two entries to the `/etc/hosts` file to point [](#opt-services.portunus.domain) to localhost,
@@ -148,19 +120,61 @@ in
 
           This requires a TLS certificate for [](#opt-services.portunus.domain) to be configured via [](#opt-security.acme.certs).
         '';
+
+        type = lib.types.bool;
       };
 
       user = lib.mkOption {
-        type = lib.types.str;
         default = "openldap";
         description = "User account under which Portunus runs its LDAP server.";
-      };
-
-      group = lib.mkOption {
         type = lib.types.str;
-        default = "openldap";
-        description = "Group account under which Portunus runs its LDAP server.";
       };
+    };
+
+    port = lib.mkOption {
+      default = 8080;
+
+      description = ''
+        Port where the Portunus webserver should listen on.
+
+        This must be put behind a TLS-capable reverse proxy because Portunus only listens on localhost.
+      '';
+
+      type = lib.types.port;
+    };
+
+    seedPath = lib.mkOption {
+      default = null;
+
+      description = ''
+        Path to a portunus seed file in json format.
+        See <https://github.com/majewsky/portunus#seeding-users-and-groups-from-static-configuration> for available options.
+      '';
+
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    seedSettings = lib.mkOption {
+      default = null;
+
+      description = ''
+        Seed settings for users and groups.
+        See upstream for format <https://github.com/majewsky/portunus#seeding-users-and-groups-from-static-configuration>
+      '';
+
+      type = with lib.types; nullOr (attrsOf (listOf (attrsOf anything)));
+    };
+
+    stateDir = lib.mkOption {
+      default = "/var/lib/portunus";
+      description = "Path where Portunus stores its state.";
+      type = lib.types.path;
+    };
+
+    user = lib.mkOption {
+      default = "portunus";
+      description = "User account under which Portunus runs its webserver.";
+      type = lib.types.str;
     };
   };
 
@@ -177,60 +191,69 @@ in
 
     # allow connecting via ldaps /w certificate without opening ports
     networking.hosts = lib.mkIf cfg.ldap.tls {
-      "::1" = [ cfg.domain ];
       "127.0.0.1" = [ cfg.domain ];
+      "::1" = [ cfg.domain ];
     };
 
     services = {
       dex = lib.mkIf cfg.dex.enable {
         enable = true;
+
         settings = {
-          issuer = "https://${cfg.domain}/dex";
-          web.http = "127.0.0.1:${toString cfg.dex.port}";
-          storage = {
-            type = "sqlite3";
-            config.file = "/var/lib/dex/dex.db";
-          };
-          enablePasswordDB = false;
           connectors = [
             {
-              type = "ldap";
-              id = "ldap";
-              name = "LDAP";
               config = {
-                host = "${cfg.domain}:636";
                 bindDN = "uid=${cfg.ldap.searchUserName},ou=users,${cfg.ldap.suffix}";
                 bindPW = "$DEX_SEARCH_USER_PASSWORD";
-                userSearch = {
-                  baseDN = "ou=users,${cfg.ldap.suffix}";
-                  filter = "(objectclass=person)";
-                  username = "uid";
-                  idAttr = "uid";
-                  emailAttr = "mail";
-                  nameAttr = "cn";
-                  preferredUsernameAttr = "uid";
-                };
+
                 groupSearch = {
                   baseDN = "ou=groups,${cfg.ldap.suffix}";
                   filter = "(objectclass=groupOfNames)";
                   nameAttr = "cn";
+
                   userMatchers = [
                     {
-                      userAttr = "DN";
                       groupAttr = "member";
+                      userAttr = "DN";
                     }
                   ];
                 };
+
+                host = "${cfg.domain}:636";
+
+                userSearch = {
+                  baseDN = "ou=users,${cfg.ldap.suffix}";
+                  emailAttr = "mail";
+                  filter = "(objectclass=person)";
+                  idAttr = "uid";
+                  nameAttr = "cn";
+                  preferredUsernameAttr = "uid";
+                  username = "uid";
+                };
               };
+
+              id = "ldap";
+              name = "LDAP";
+              type = "ldap";
             }
           ];
 
+          enablePasswordDB = false;
+          issuer = "https://${cfg.domain}/dex";
+
           staticClients = lib.forEach cfg.dex.oidcClients (client: {
             inherit (client) id;
-            redirectURIs = [ client.callbackURL ];
             name = "OIDC for ${client.id}";
+            redirectURIs = [ client.callbackURL ];
             secretEnv = "DEX_CLIENT_${client.id}";
           });
+
+          storage = {
+            config.file = "/var/lib/dex/dex.db";
+            type = "sqlite3";
+          };
+
+          web.http = "127.0.0.1:${toString cfg.dex.port}";
         };
       };
 
@@ -251,24 +274,20 @@ in
       };
 
       portunus = {
-        description = "Self-contained authentication service";
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
-        serviceConfig = {
-          ExecStart = "${cfg.package}/bin/portunus-orchestrator";
-          Restart = "on-failure";
-        };
+        description = "Self-contained authentication service";
+
         environment = {
           PORTUNUS_LDAP_SUFFIX = cfg.ldap.suffix;
           PORTUNUS_SERVER_BINARY = "${cfg.package}/bin/portunus-server";
           PORTUNUS_SERVER_GROUP = cfg.group;
-          PORTUNUS_SERVER_USER = cfg.user;
           PORTUNUS_SERVER_HTTP_LISTEN = "127.0.0.1:${toString cfg.port}";
           PORTUNUS_SERVER_STATE_DIR = cfg.stateDir;
+          PORTUNUS_SERVER_USER = cfg.user;
           PORTUNUS_SLAPD_BINARY = "${cfg.ldap.package}/libexec/slapd";
           PORTUNUS_SLAPD_GROUP = cfg.ldap.group;
-          PORTUNUS_SLAPD_USER = cfg.ldap.user;
           PORTUNUS_SLAPD_SCHEMA_DIR = "${cfg.ldap.package}/etc/schema";
+          PORTUNUS_SLAPD_USER = cfg.ldap.user;
         }
         // (lib.optionalAttrs (cfg.seedPath != null) {
           PORTUNUS_SEED_PATH = cfg.seedPath;
@@ -285,8 +304,24 @@ in
             PORTUNUS_SLAPD_TLS_PRIVATE_KEY = "${acmeDirectory}/key.pem";
           }
         ));
+
+        serviceConfig = {
+          ExecStart = "${cfg.package}/bin/portunus-orchestrator";
+          Restart = "on-failure";
+        };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
+
+    users.groups = lib.mkMerge [
+      (lib.mkIf (cfg.ldap.user == "openldap") {
+        openldap = { };
+      })
+      (lib.mkIf (cfg.user == "portunus") {
+        portunus = { };
+      })
+    ];
 
     users.users = lib.mkMerge [
       (lib.mkIf (cfg.ldap.user == "openldap") {
@@ -300,15 +335,6 @@ in
           group = cfg.group;
           isSystemUser = true;
         };
-      })
-    ];
-
-    users.groups = lib.mkMerge [
-      (lib.mkIf (cfg.ldap.user == "openldap") {
-        openldap = { };
-      })
-      (lib.mkIf (cfg.user == "portunus") {
-        portunus = { };
       })
     ];
   };

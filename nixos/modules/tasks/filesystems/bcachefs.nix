@@ -128,32 +128,21 @@ let
     in
     {
       name = "unlock-bcachefs-${utils.escapeSystemdPath fs.mountPoint}";
+
       value = {
-        description = "Unlock bcachefs for ${fs.mountPoint}";
-        requiredBy = [ mountUnit ];
         after = [ deviceUnit ] ++ requiredUnits ++ wantedUnits;
+
         before = [
           mountUnit
           "shutdown.target"
         ];
+
         bindsTo = [ deviceUnit ];
-        requires = requiredUnits;
-        wants = wantedUnits;
-        unitConfig = {
-          RequiresMountsFor = requiredMounts;
-          WantsMountsFor = wantedMounts;
-        };
         conflicts = [ "shutdown.target" ];
-        unitConfig.DefaultDependencies = false;
-        serviceConfig = {
-          Type = "oneshot";
-          ExecCondition = "${cfg.package}/bin/bcachefs unlock -c \"${device}\"";
-          Restart = "on-failure";
-          RestartMode = "direct";
-          # Ideally, this service would lock the key on stop.
-          # As is, RemainAfterExit doesn't accomplish anything.
-          RemainAfterExit = true;
-        };
+        description = "Unlock bcachefs for ${fs.mountPoint}";
+        requiredBy = [ mountUnit ];
+        requires = requiredUnits;
+
         script =
           let
             unlock = ''${cfg.package}/bin/bcachefs unlock "${device}"'';
@@ -173,6 +162,24 @@ let
             ''
               ${unlockInteractively}
             '';
+
+        serviceConfig = {
+          ExecCondition = "${cfg.package}/bin/bcachefs unlock -c \"${device}\"";
+          # Ideally, this service would lock the key on stop.
+          # As is, RemainAfterExit doesn't accomplish anything.
+          RemainAfterExit = true;
+          Restart = "on-failure";
+          RestartMode = "direct";
+          Type = "oneshot";
+        };
+
+        unitConfig = {
+          RequiresMountsFor = requiredMounts;
+          WantsMountsFor = wantedMounts;
+        };
+
+        unitConfig.DefaultDependencies = false;
+        wants = wantedUnits;
       };
     };
 in
@@ -187,10 +194,10 @@ in
     };
 
     modulePackage = lib.mkOption {
-      type = lib.types.package;
       # See NOTE in linux-kernels.nix
       default = config.boot.kernelPackages.callPackage cfg.package.kernelModule { };
       internal = true;
+      type = lib.types.package;
     };
   };
 
@@ -198,18 +205,18 @@ in
     enable = lib.mkEnableOption "regular bcachefs scrub";
 
     fileSystems = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      example = [ "/" ];
       description = ''
         List of paths to bcachefs filesystems to regularly call {command}`bcachefs scrub` on.
         Defaults to all mount points with bcachefs filesystems.
       '';
+
+      example = [ "/" ];
+      type = lib.types.listOf lib.types.path;
     };
 
     interval = lib.mkOption {
       default = "monthly";
-      type = lib.types.str;
-      example = "weekly";
+
       description = ''
         Systemd calendar expression for when to scrub bcachefs filesystems.
         The recommended period is a month but could be less.
@@ -217,6 +224,9 @@ in
         {manpage}`systemd.time(7)`
         for more information on the syntax.
       '';
+
+      example = "weekly";
+      type = lib.types.str;
     };
   };
 
@@ -242,14 +252,14 @@ in
           }
         ];
 
+        boot.extraModulePackages = [ cfg.modulePackage ];
+        services.udev.packages = [ cfg.package ];
         # needed for systemd-remount-fs
         system.fsPackages = [ cfg.package ];
-        services.udev.packages = [ cfg.package ];
-
-        boot.extraModulePackages = [ cfg.modulePackage ];
 
         systemd = {
           packages = [ cfg.package ];
+
           services = lib.mapAttrs' (mkUnits "") (
             lib.filterAttrs (n: fs: (fs.fsType == "bcachefs") && (!utils.fsNeededForBoot fs)) config.fileSystems
           );
@@ -268,19 +278,12 @@ in
           "poly1305"
           "chacha20"
         ];
-        boot.initrd.systemd.extraBin = {
-          # do we need this? boot/systemd.nix:566 & boot/systemd/initrd.nix:357
-          "bcachefs" = "${cfg.package}/bin/bcachefs";
-          "mount.bcachefs" = "${cfg.package}/bin/mount.bcachefs";
-        };
-        boot.initrd.systemd.storePaths = [
-          # Used by the ExecStart= in bcachefs-wait-devices@.service.
-          "${cfg.package}/sbin/bcachefs"
-        ];
+
         boot.initrd.extraUtilsCommands = lib.mkIf (!config.boot.initrd.systemd.enable) ''
           copy_bin_and_libs ${cfg.package}/bin/bcachefs
           copy_bin_and_libs ${cfg.package}/bin/mount.bcachefs
         '';
+
         boot.initrd.extraUtilsCommandsTest = lib.mkIf (!config.boot.initrd.systemd.enable) ''
           $out/bin/bcachefs version
         '';
@@ -289,8 +292,19 @@ in
           commonFunctions + lib.concatStrings (lib.mapAttrsToList openCommand bootFs)
         );
 
+        boot.initrd.systemd.extraBin = {
+          # do we need this? boot/systemd.nix:566 & boot/systemd/initrd.nix:357
+          "bcachefs" = "${cfg.package}/bin/bcachefs";
+          "mount.bcachefs" = "${cfg.package}/bin/mount.bcachefs";
+        };
+
         boot.initrd.systemd.packages = [ cfg.package ];
         boot.initrd.systemd.services = lib.mapAttrs' (mkUnits "/sysroot") bootFs;
+
+        boot.initrd.systemd.storePaths = [
+          # Used by the ExecStart= in bcachefs-wait-devices@.service.
+          "${cfg.package}/sbin/bcachefs"
+        ];
       })
 
       (lib.mkIf (cfgScrub.enable) {
@@ -301,6 +315,7 @@ in
           }
           {
             assertion = cfgScrub.enable -> (cfgScrub.fileSystems != [ ]);
+
             message = ''
               If 'services.bcachefs.autoScrub' is enabled, you need to have at least one
               bcachefs file system mounted via 'fileSystems' or specify a list manually
@@ -324,12 +339,48 @@ in
             map (e: e.mountPoint) (
               uniqueDeviceList (
                 lib.mapAttrsToList (name: fs: {
-                  mountPoint = fs.mountPoint;
                   device = fs.device;
+                  mountPoint = fs.mountPoint;
                 }) (lib.filterAttrs (name: fs: fs.fsType == "bcachefs") config.fileSystems)
               )
             )
           );
+
+        systemd.services =
+          let
+            scrubService =
+              fs:
+              let
+                fs' = if fs == "/" then "root" else utils.escapeSystemdPath fs;
+              in
+              lib.nameValuePair "bcachefs-scrub-${fs'}" {
+                before = [
+                  "shutdown.target"
+                  "sleep.target"
+                ];
+
+                # scrub prevents suspend2ram or proper shutdown
+                conflicts = [
+                  "shutdown.target"
+                  "sleep.target"
+                ];
+
+                description = "bcachefs scrub on ${fs}";
+
+                serviceConfig = {
+                  ExecStart = lib.join " " [
+                    (lib.getExe cfg.package)
+                    (if lib.versionOlder cfg.package.version "v1.34.0" then "data scrub" else "scrub")
+                    (utils.escapeSystemdExecArg fs)
+                  ];
+
+                  IOSchedulingClass = "idle";
+                  Nice = 19;
+                  Type = "oneshot";
+                };
+              };
+          in
+          lib.listToAttrs (map scrubService cfgScrub.fileSystems);
 
         systemd.timers =
           let
@@ -341,49 +392,16 @@ in
               lib.nameValuePair "bcachefs-scrub-${fs'}" {
                 description = "regular bcachefs scrub timer on ${fs}";
 
-                wantedBy = [ "timers.target" ];
                 timerConfig = {
-                  OnCalendar = cfgScrub.interval;
                   AccuracySec = "1d";
+                  OnCalendar = cfgScrub.interval;
                   Persistent = true;
                 };
+
+                wantedBy = [ "timers.target" ];
               };
           in
           lib.listToAttrs (map scrubTimer cfgScrub.fileSystems);
-
-        systemd.services =
-          let
-            scrubService =
-              fs:
-              let
-                fs' = if fs == "/" then "root" else utils.escapeSystemdPath fs;
-              in
-              lib.nameValuePair "bcachefs-scrub-${fs'}" {
-                description = "bcachefs scrub on ${fs}";
-                # scrub prevents suspend2ram or proper shutdown
-                conflicts = [
-                  "shutdown.target"
-                  "sleep.target"
-                ];
-                before = [
-                  "shutdown.target"
-                  "sleep.target"
-                ];
-
-                serviceConfig = {
-                  Type = "oneshot";
-                  Nice = 19;
-                  IOSchedulingClass = "idle";
-
-                  ExecStart = lib.join " " [
-                    (lib.getExe cfg.package)
-                    (if lib.versionOlder cfg.package.version "v1.34.0" then "data scrub" else "scrub")
-                    (utils.escapeSystemdExecArg fs)
-                  ];
-                };
-              };
-          in
-          lib.listToAttrs (map scrubService cfgScrub.fileSystems);
       })
     ]
   );

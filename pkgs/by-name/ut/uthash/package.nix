@@ -18,12 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
   nativeCheckInputs = [ perl ];
-  checkTarget = "all";
   preCheck = "cd tests";
 
   installPhase = ''
     install -Dm644 $src/include/*.h -t $out/include
   '';
+
+  checkTarget = "all";
 
   meta = {
     description = "Hash table for C structures";

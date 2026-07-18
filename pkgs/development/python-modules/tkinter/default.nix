@@ -2,11 +2,11 @@
   lib,
   stdenv,
   buildPythonPackage,
-  replaceVars,
-  setuptools,
   python,
   pythonAtLeast,
   pythonOlder,
+  replaceVars,
+  setuptools,
   tcl,
   tclPackages,
   tk,
@@ -16,43 +16,9 @@
 buildPythonPackage {
   pname = "tkinter";
   version = python.version;
-  pyproject = true;
-
   src = python.src;
-
-  prePatch = ''
-    python_src=$PWD
-    tkinter_src=$PWD/../tkinter
-    mkdir -p "$tkinter_src"
-
-    # copy the module bits and pieces from the python source
-    cp -v  Modules/{_tkinter.c,tkinter.h} "$tkinter_src"
-    cp -rv Modules/clinic "$tkinter_src"
-    cp -rv Lib/tkinter "$tkinter_src"
-
-    # install our custom pyproject.toml
-    cp ${
-      replaceVars ./pyproject.toml {
-        python_version = python.version;
-        python_internal_dir = "${python}/include/${python.libPrefix}/internal";
-      }
-    } "$tkinter_src"/pyproject.toml
-
-  ''
-  + lib.optionalString (pythonOlder "3.13") ''
-    substituteInPlace "$tkinter_src/tkinter/tix.py" --replace-fail \
-      "os.environ.get('TIX_LIBRARY')" \
-      "os.environ.get('TIX_LIBRARY') or '${tclPackages.tix}/lib'"
-  '';
-
   # Adapted from https://github.com/python/cpython/pull/124542
   patches = lib.optional (pythonOlder "3.12") ./fix-ttk-notebook-test.patch;
-
-  preConfigure = ''
-    cd "$tkinter_src"
-  '';
-
-  build-system = [ setuptools ];
 
   buildInputs = [
     tcl
@@ -60,17 +26,22 @@ buildPythonPackage {
   ];
 
   env = {
+    TCLTK_CFLAGS = toString [
+      "-I${lib.getDev tcl}/include"
+      "-I${lib.getDev tk}/include"
+    ];
+
     TCLTK_LIBS = toString [
       "-L${lib.getLib tcl}/lib"
       "-L${lib.getLib tk}/lib"
       "-l${tcl.libPrefix}"
       "-l${tk.libPrefix}"
     ];
-    TCLTK_CFLAGS = toString [
-      "-I${lib.getDev tcl}/include"
-      "-I${lib.getDev tk}/include"
-    ];
   };
+
+  preConfigure = ''
+    cd "$tkinter_src"
+  '';
 
   nativeCheckInputs = lib.optional stdenv.hostPlatform.isLinux xvfb-run;
 
@@ -121,11 +92,45 @@ buildPythonPackage {
       runHook postCheck
     '';
 
+  build-system = [ setuptools ];
+
+  prePatch = ''
+    python_src=$PWD
+    tkinter_src=$PWD/../tkinter
+    mkdir -p "$tkinter_src"
+
+    # copy the module bits and pieces from the python source
+    cp -v  Modules/{_tkinter.c,tkinter.h} "$tkinter_src"
+    cp -rv Modules/clinic "$tkinter_src"
+    cp -rv Lib/tkinter "$tkinter_src"
+
+    # install our custom pyproject.toml
+    cp ${
+      replaceVars ./pyproject.toml {
+        python_internal_dir = "${python}/include/${python.libPrefix}/internal";
+        python_version = python.version;
+      }
+    } "$tkinter_src"/pyproject.toml
+
+  ''
+  + lib.optionalString (pythonOlder "3.13") ''
+    substituteInPlace "$tkinter_src/tkinter/tix.py" --replace-fail \
+      "os.environ.get('TIX_LIBRARY')" \
+      "os.environ.get('TIX_LIBRARY') or '${tclPackages.tix}/lib'"
+  '';
+
+  pyproject = true;
   pythonImportsCheck = [ "tkinter" ];
 
   meta = {
+    inherit (python.meta)
+      license
+      maintainers
+      ;
+
     # Based on first sentence from https://docs.python.org/3/library/tkinter.html
     description = "Standard Python interface to the Tcl/Tk GUI toolkit";
+
     longDescription = ''
       The tkinter package (“Tk interface”) is the standard Python interface to
       the Tcl/Tk GUI toolkit. Both Tk and tkinter are available on most Unix
@@ -147,10 +152,7 @@ buildPythonPackage {
       these additions and changes, and refer to the official Tcl/Tk
       documentation for details that are unchanged.
     '';
+
     homepage = "https://docs.python.org/3/library/tkinter.html";
-    inherit (python.meta)
-      license
-      maintainers
-      ;
   };
 }

@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   jdk11,
-  maven,
-  makeWrapper,
   jre_headless,
+  makeWrapper,
+  maven,
   pcsclite,
   proot,
-  zlib,
   versionCheckHook,
+  zlib,
 }:
 
 let
@@ -27,29 +27,12 @@ in
 maven.buildMavenPackage rec {
   pname = "global-platform-pro";
   version = "25.10.20";
-  env.GPPRO_VERSION = "v25.10.20-0-g72f85b9"; # git describe --tags --always --long --dirty
 
   src = fetchFromGitHub {
     owner = "martinpaljak";
     repo = "GlobalPlatformPro";
     tag = "v${version}";
     hash = "sha256-H4rq68ECfdUvgTbG4Ho1EgAgD+1qTZu5DYfg+SjrDkw=";
-  };
-
-  mvnJdk = jdk11;
-  mvnHash = "sha256-tHqA408mUa5l53zdWmFmREI6Ds+vqexwMoYnJMflMCc=";
-
-  nativeBuildInputs = [
-    jdk11
-    makeWrapper
-  ];
-
-  # Fix build error due to missing .git directory:
-  #  Failed to execute goal pl.project13.maven:git-commit-id-plugin:4.0.0:revision (retrieve-git-info) on project gppro: .git directory is not found! Please specify a valid [dotGitDirectory] in your pom.xml -> [Help 1]
-  mvnParameters = "-Dmaven.gitcommitid.skip=true";
-
-  mvnFetchExtraArgs = {
-    preConfigure = defineMvnWrapper;
   };
 
   postPatch = ''
@@ -60,6 +43,12 @@ maven.buildMavenPackage rec {
     echo "git.commit.id.describe=''${GPPRO_VERSION}''${distro_suffix}" > "$git_properties_file"
   '';
 
+  nativeBuildInputs = [
+    jdk11
+    makeWrapper
+  ];
+
+  env.GPPRO_VERSION = "v25.10.20-0-g72f85b9"; # git describe --tags --always --long --dirty
   preConfigure = defineMvnWrapper;
 
   installPhase = ''
@@ -70,11 +59,22 @@ maven.buildMavenPackage rec {
       --prefix LD_LIBRARY_PATH : "${lib.getLib pcsclite}/lib"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  mvnFetchExtraArgs = {
+    preConfigure = defineMvnWrapper;
+  };
+
+  mvnHash = "sha256-tHqA408mUa5l53zdWmFmREI6Ds+vqexwMoYnJMflMCc=";
+  mvnJdk = jdk11;
+  # Fix build error due to missing .git directory:
+  #  Failed to execute goal pl.project13.maven:git-commit-id-plugin:4.0.0:revision (retrieve-git-info) on project gppro: .git directory is not found! Please specify a valid [dotGitDirectory] in your pom.xml -> [Help 1]
+  mvnParameters = "-Dmaven.gitcommitid.skip=true";
 
   meta = {
     description = "Command-line utility for managing applets and keys on Java Cards";
+
     longDescription = ''
       This command-line utility can be used to manage applets and keys
       on Java Cards. It is made available as the `gp` executable.
@@ -82,12 +82,15 @@ maven.buildMavenPackage rec {
       The executable requires the PC/SC daemon running for correct execution.
       If you run NixOS, it can be enabled with `services.pcscd.enable = true;`.
     '';
+
     homepage = "https://github.com/martinpaljak/GlobalPlatformPro";
+    license = with lib.licenses; [ lgpl3 ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
-    license = with lib.licenses; [ lgpl3 ];
+
     mainProgram = "gp";
   };
 }

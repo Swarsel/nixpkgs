@@ -1,8 +1,6 @@
 { buildRedist }:
 buildRedist {
-  redistName = "cuda";
   pname = "cuda_compat";
-
   # NOTE: Using multiple outputs with symlinks causes build cycles.
   # To avoid that (and troubleshooting why), we just use a single output.
   outputs = [ "out" ];
@@ -12,6 +10,8 @@ buildRedist {
     "libnvrm_gpu.so"
     "libnvrm_mem.so"
   ];
+
+  redistName = "cuda";
 
   meta = {
     description = "Provides minor version forward compatibility for the CUDA runtime";

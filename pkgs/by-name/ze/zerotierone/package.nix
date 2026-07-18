@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   buildPackages,
   cargo,
+  libiconv,
   lzo,
   openssl,
   pkg-config,
   ronn,
+  rustPlatform,
   rustc,
   zlib,
-  libiconv,
   # enableUnfree enables building the zerotier controller, which is subject to
   # a source-available license that permits non-commercial use
   enableUnfree ? false,
@@ -32,11 +32,10 @@ in
 stdenv.mkDerivation {
   inherit pname version src;
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    sourceRoot = "${src.name}/rustybits";
-    hash = "sha256-u3gqETbn4I+mtUeSkSym4s+qhA3eDb4Qaq7bl58M+AY=";
-  };
+  outputs = [
+    "out"
+    "man"
+  ];
 
   patches = [
     ./0001-darwin-disable-link-time-optimization.patch
@@ -46,16 +45,6 @@ stdenv.mkDerivation {
 
   postPatch = ''
     cp rustybits/Cargo.lock Cargo.lock
-  '';
-
-  preConfigure = ''
-    patchShebangs ./doc/build.sh
-    substituteInPlace ./doc/build.sh \
-      --replace '/usr/bin/ronn' '${buildPackages.ronn}/bin/ronn' \
-
-    substituteInPlace ./make-linux.mk \
-      --replace '-march=armv6zk' "" \
-      --replace '-mcpu=arm1176jzf-s' ""
   '';
 
   nativeBuildInputs = [
@@ -75,10 +64,24 @@ stdenv.mkDerivation {
     libiconv
   ];
 
-  enableParallelBuilding = true;
+  buildFlags = [
+    "all"
+    "selftest"
+  ]
+  ++ lib.optional enableUnfree "ZT_NONFREE=1";
 
   # Ensure Rust compiles for the right target
   env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTarget;
+
+  preConfigure = ''
+    patchShebangs ./doc/build.sh
+    substituteInPlace ./doc/build.sh \
+      --replace '/usr/bin/ronn' '${buildPackages.ronn}/bin/ronn' \
+
+    substituteInPlace ./make-linux.mk \
+      --replace '-march=armv6zk' "" \
+      --replace '-mcpu=arm1176jzf-s' ""
+  '';
 
   preBuild =
     if stdenv.hostPlatform.isDarwin then
@@ -101,12 +104,6 @@ stdenv.mkDerivation {
           ./rustybits/target/release/
       '';
 
-  buildFlags = [
-    "all"
-    "selftest"
-  ]
-  ++ lib.optional enableUnfree "ZT_NONFREE=1";
-
   # darwin: disabled due to a test which fails to bind to 127.0.0.1 in a sandbox.
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform && !stdenv.hostPlatform.isDarwin;
 
@@ -115,13 +112,6 @@ stdenv.mkDerivation {
     ./zerotier-selftest
     runHook postCheck
   '';
-
-  installFlags = [
-    # only linux has an install target, we borrow this for macOS as well
-    "-f"
-    "make-linux.mk"
-    "DESTDIR=$$out/upstream"
-  ];
 
   postInstall = ''
     mv $out/upstream/usr/sbin $out/bin
@@ -132,9 +122,19 @@ stdenv.mkDerivation {
     rm -rf $out/upstream
   '';
 
-  outputs = [
-    "out"
-    "man"
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-u3gqETbn4I+mtUeSkSym4s+qhA3eDb4Qaq7bl58M+AY=";
+    sourceRoot = "${src.name}/rustybits";
+  };
+
+  enableParallelBuilding = true;
+
+  installFlags = [
+    # only linux has an install target, we borrow this for macOS as well
+    "-f"
+    "make-linux.mk"
+    "DESTDIR=$$out/upstream"
   ];
 
   passthru.updateScript = ./update.sh;
@@ -143,12 +143,14 @@ stdenv.mkDerivation {
     description = "Create flat virtual Ethernet networks of almost unlimited size";
     homepage = "https://www.zerotier.com";
     license = if enableUnfree then lib.licenses.unfree else lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       zimbatm
       obadz
       danielfullmer
       mic92 # also can test darwin
     ];
+
     platforms = lib.platforms.unix;
   };
 }

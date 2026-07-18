@@ -30,69 +30,53 @@ in
 
   options.services.trilium-server = with lib; {
     enable = mkEnableOption "trilium-server";
-
     package = mkPackageOption pkgs "trilium-server" { };
 
     dataDir = mkOption {
-      type = types.str;
       default = "/var/lib/trilium";
+
       description = ''
         The directory storing the notes database and the configuration.
       '';
+
+      type = types.str;
     };
 
     environmentFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
-      example = "/secrets/trilium.env";
+
       description = ''
         File to load as the environment file. This allows you to pass secrets in without writing
         to the nix store.
       '';
-    };
 
-    instanceName = mkOption {
-      type = types.str;
-      default = "Trilium";
-      description = ''
-        Instance name used to distinguish between different instances
-      '';
-    };
-
-    noBackup = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Disable periodic database backups.
-      '';
-    };
-
-    noAuthentication = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        If set to true, no password is required to access the web frontend.
-      '';
+      example = "/secrets/trilium.env";
+      type = types.nullOr types.path;
     };
 
     host = mkOption {
-      type = types.str;
       default = "127.0.0.1";
+
       description = ''
         The host address to bind to (defaults to localhost).
       '';
+
+      type = types.str;
     };
 
-    port = mkOption {
-      type = types.port;
-      default = 8080;
+    instanceName = mkOption {
+      default = "Trilium";
+
       description = ''
-        The port number to bind to.
+        Instance name used to distinguish between different instances
       '';
+
+      type = types.str;
     };
 
     nginx = mkOption {
       default = { };
+
       description = ''
         Configuration for nginx reverse proxy.
       '';
@@ -100,47 +84,72 @@ in
       type = types.submodule {
         options = {
           enable = mkOption {
-            type = types.bool;
             default = false;
+
             description = ''
               Configure the nginx reverse proxy settings.
             '';
+
+            type = types.bool;
           };
 
           hostName = mkOption {
-            type = types.str;
             description = ''
               The hostname use to setup the virtualhost configuration
             '';
+
+            type = types.str;
           };
         };
       };
     };
-  };
 
-  meta.maintainers = with lib.maintainers; [ fliegendewurst ];
+    noAuthentication = mkOption {
+      default = false;
+
+      description = ''
+        If set to true, no password is required to access the web frontend.
+      '';
+
+      type = types.bool;
+    };
+
+    noBackup = mkOption {
+      default = false;
+
+      description = ''
+        Disable periodic database backups.
+      '';
+
+      type = types.bool;
+    };
+
+    port = mkOption {
+      default = 8080;
+
+      description = ''
+        The port number to bind to.
+      '';
+
+      type = types.port;
+    };
+  };
 
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       {
-        users.groups.trilium = { };
-        users.users.trilium = {
-          description = "Trilium User";
-          group = "trilium";
-          home = cfg.dataDir;
-          isSystemUser = true;
-        };
-
         systemd.services.trilium-server = {
-          wantedBy = [ "multi-user.target" ];
           environment.TRILIUM_DATA_DIR = cfg.dataDir;
+
           serviceConfig = {
-            ExecStart = lib.getExe cfg.package;
             EnvironmentFile = cfg.environmentFile;
-            User = "trilium";
+            ExecStart = lib.getExe cfg.package;
             Group = "trilium";
             PrivateTmp = "true";
+            User = "trilium";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
 
         systemd.tmpfiles.rules = [
@@ -148,14 +157,27 @@ in
           "L+ ${cfg.dataDir}/config.ini -    -       -       - ${configIni}"
         ];
 
+        users.groups.trilium = { };
+
+        users.users.trilium = {
+          description = "Trilium User";
+          group = "trilium";
+          home = cfg.dataDir;
+          isSystemUser = true;
+        };
+
       }
 
       (lib.mkIf cfg.nginx.enable {
         services.nginx = {
           enable = true;
+
           virtualHosts."${cfg.nginx.hostName}" = {
+            extraConfig = ''
+              client_max_body_size 0;
+            '';
+
             locations."/" = {
-              proxyPass = "http://${cfg.host}:${toString cfg.port}/";
               extraConfig = ''
                 proxy_http_version 1.1;
                 proxy_set_header Upgrade $http_upgrade;
@@ -163,13 +185,14 @@ in
                 proxy_set_header Host $host;
                 proxy_cache_bypass $http_upgrade;
               '';
+
+              proxyPass = "http://${cfg.host}:${toString cfg.port}/";
             };
-            extraConfig = ''
-              client_max_body_size 0;
-            '';
           };
         };
       })
     ]
   );
+
+  meta.maintainers = with lib.maintainers; [ fliegendewurst ];
 }

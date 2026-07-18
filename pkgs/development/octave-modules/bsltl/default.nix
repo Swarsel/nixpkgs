@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,9 +14,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "Free collection of OCTAVE/MATLAB routines for working with the biospeckle laser technique";
     homepage = "https://gnu-octave.github.io/packages/bsltl/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Free collection of OCTAVE/MATLAB routines for working with the biospeckle laser technique";
   };
 }

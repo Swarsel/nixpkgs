@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
+  nix-update-script,
+  versionCheckHook,
   yarnConfigHook,
   yarnInstallHook,
-  versionCheckHook,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,18 +20,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GUdo2qn+5YOefCSHlH+jv+gSZWlT8POzQlaN0+Yxuhk=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-B39MyCn4P8iqT/y2wPeHKJgYWzgB4I81usmzC0PH3qU=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnInstallHook
   ];
-  nativeInstallCheckInputs = [ versionCheckHook ];
+
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/ghost";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-B39MyCn4P8iqT/y2wPeHKJgYWzgB4I81usmzC0PH3qU=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   passthru = {
     updateScript = nix-update-script { };
@@ -39,10 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "CLI Tool for installing & updating Ghost";
-    mainProgram = "ghost";
     homepage = "https://ghost.org/docs/ghost-cli/";
     changelog = "https://github.com/TryGhost/Ghost-CLI/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cything ];
+    mainProgram = "ghost";
   };
 })

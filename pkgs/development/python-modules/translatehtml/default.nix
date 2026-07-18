@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
-  setuptools,
   argostranslate,
   beautifulsoup4,
+  buildPythonPackage,
+  setuptools,
+  writableTmpDirAsHomeHook,
 }:
 
 let
@@ -16,7 +16,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "translatehtml";
   version = "1.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "argosopentech";
@@ -25,20 +24,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-A94N/nfYSVwi0M3SpNFqlXrRNOCpIi9agOCAlH66QcI=";
   };
 
+  doCheck = !isAarch64Linux;
+  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "beautifulsoup4" ];
 
   dependencies = [
     argostranslate
     beautifulsoup4
   ];
 
+  pyproject = true;
   # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
   # terminate called after throwing an instance of 'onnxruntime::OnnxRuntimeException'
   pythonImportsCheck = lib.optional (!isAarch64Linux) "translatehtml";
-  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-  doCheck = !isAarch64Linux;
+  pythonRelaxDeps = [ "beautifulsoup4" ];
 
   meta = {
     description = "Translate HTML using Beautiful Soup and Argos Translate";

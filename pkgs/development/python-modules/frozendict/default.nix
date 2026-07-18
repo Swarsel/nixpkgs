@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "frozendict";
   version = "2.4.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Marco-Sulla";
@@ -17,6 +16,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ehx8X3jbKls/DVgCzWJ+nTX+m/Cdknnu/sjrAMxnJFo=";
   };
+
+  nativeBuildInputs = [ setuptools ];
 
   # build C version if it exists
   preBuild = ''
@@ -30,10 +31,8 @@ buildPythonPackage rec {
     fi
   '';
 
-  nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "frozendict" ];
 
   meta = {

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  clang,
-  # dependencies
-  pyyaml,
   blst,
+  buildPythonPackage,
+  clang,
   # checkPhase dependencies
   python,
+  # dependencies
+  pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ckzg";
   version = "2.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -23,21 +22,14 @@ buildPythonPackage rec {
     hash = "sha256-i7m1oFQ4WmY+TfETfQuznvQINt6+JfWztoRFnI/pV/s=";
   };
 
-  build-system = [ setuptools ];
-
-  nativeBuildInputs = [ clang ];
-
-  dependencies = [
-    pyyaml
-    blst
-  ];
-
   postPatch =
     # unvendor "blst"
     ''
       substituteInPlace setup.py \
         --replace-fail '"build_ext": CustomBuild,' ""
     '';
+
+  nativeBuildInputs = [ clang ];
 
   checkPhase = ''
     runHook preCheck
@@ -48,6 +40,14 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    pyyaml
+    blst
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "ckzg" ];
 
   meta = {

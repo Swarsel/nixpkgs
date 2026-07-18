@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6w0bHw2mHkZZ3ar5jD+g29S5LjGSrEM+dgs1kN7Mpyk=";
   };
 
-  cargoHash = "sha256-KSoo4f9MddGLGD2x9U3zFDHYreaAaNpBks9Udnq4Pa4=";
-
   patches = [ ./no-doctest.patch ];
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
+  cargoHash = "sha256-KSoo4f9MddGLGD2x9U3zFDHYreaAaNpBks9Udnq4Pa4=";
 
   postInstall = ''
     mv $out/bin/crdgen $out/bin/autokuma-crdgen
@@ -31,9 +29,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Utility that automates the creation of Uptime Kuma monitors";
     homepage = "https://github.com/BigBoot/AutoKuma";
-    mainProgram = "autokuma";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ hougo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "autokuma";
   };
 })

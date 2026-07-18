@@ -4,18 +4,18 @@
   fetchFromGitHub,
   autoreconfHook,
   bison,
-  flex,
-  pkg-config,
   curl,
+  flex,
   geoip,
   libmaxminddb,
   libxml2,
   lmdb,
   lua,
+  nixosTests,
   pcre2,
+  pkg-config,
   ssdeep,
   yajl,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,36 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [
-    autoreconfHook
-    bison
-    flex
-    pkg-config
-  ];
-
-  buildInputs = [
-    curl
-    geoip
-    libmaxminddb
-    libxml2
-    lmdb
-    lua
-    pcre2
-    ssdeep
-    yajl
-  ];
-
   outputs = [
     "out"
     "dev"
-  ];
-
-  configureFlags = [
-    "--enable-parser-generation"
-    "--disable-doxygen-doc"
-    "--disable-examples"
-    "--with-lmdb=${lmdb}"
-    "--with-ssdeep=${ssdeep}"
   ];
 
   postPatch = ''
@@ -86,6 +59,33 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "SecUnicodeMapFile unicode.mapping 20127" "SecUnicodeMapFile $out/share/modsecurity/unicode.mapping 20127"
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    bison
+    flex
+    pkg-config
+  ];
+
+  buildInputs = [
+    curl
+    geoip
+    libmaxminddb
+    libxml2
+    lmdb
+    lua
+    pcre2
+    ssdeep
+    yajl
+  ];
+
+  configureFlags = [
+    "--enable-parser-generation"
+    "--disable-doxygen-doc"
+    "--disable-examples"
+    "--with-lmdb=${lmdb}"
+    "--with-ssdeep=${ssdeep}"
+  ];
+
   postInstall = ''
     mkdir -p $out/share/modsecurity
     cp ${finalAttrs.src}/{AUTHORS,CHANGES,LICENSE,README.md,modsecurity.conf-recommended,unicode.mapping} $out/share/modsecurity
@@ -98,10 +98,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/owasp-modsecurity/ModSecurity";
     description = ''
       ModSecurity v3 library component.
     '';
+
     longDescription = ''
       Libmodsecurity is one component of the ModSecurity v3 project. The
       library codebase serves as an interface to ModSecurity Connectors taking
@@ -110,9 +110,11 @@ stdenv.mkDerivation (finalAttrs: {
       the ModSecurity SecRules format and apply them to HTTP content provided
       by your application via Connectors.
     '';
+
+    homepage = "https://github.com/owasp-modsecurity/ModSecurity";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = lib.platforms.all;
     mainProgram = "modsec-rules-check";
   };
 })

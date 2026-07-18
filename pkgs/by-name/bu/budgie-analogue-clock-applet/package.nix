@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  budgie-desktop,
+  gtk-layer-shell,
+  gtk3,
+  libpeas2,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   vala,
-  budgie-desktop,
-  gtk3,
-  gtk-layer-shell,
-  libpeas2,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,7 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/samlane-ma/analogue-clock-applet";
     changelog = "https://github.com/samlane-ma/analogue-clock-applet/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.budgie ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.budgie ];
   };
 })

@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
+  hatchling,
   mashumaro,
   orjson,
-  hatchling,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "zinvolt";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joostlek";
@@ -25,6 +24,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-e4kbAEUxJzc2qOnXhtNMFUeDcsUc/G1Wo0LHwTQcgXs=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [ hatchling ];
 
@@ -35,14 +42,7 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "zinvolt" ];
 
   meta = {

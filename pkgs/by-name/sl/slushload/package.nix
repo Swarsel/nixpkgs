@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   makeWrapper,
+  stdenvNoCC,
   wineWow64Packages,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-xXcLaEsM+4IrAi96JyPRCdIhQ8jhf44/4E3Ba18mddE=";
     stripRoot = false;
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -36,13 +34,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Make turbo tape images from .prg files";
     homepage = "https://csdb.dk/release/?id=212586";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    mainProgram = "slushload";
-    platforms = wineWow64Packages.stable.meta.platforms;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ matthewcroughan ];
+    platforms = wineWow64Packages.stable.meta.platforms;
+    mainProgram = "slushload";
   };
 })

@@ -11,34 +11,28 @@
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: {
       mistune = self.mistune_2;
     };
+
+    self = python;
   };
 in
 python.pkgs.buildPythonApplication rec {
   pname = "lektor";
   version = "3.4.0b14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lektor";
     repo = "lektor";
     tag = "v${version}";
+    hash = "sha256-Wr3MhUGihqlPyUlWM8KT+sb/FtHH/NfRNDT9QCKJj5k=";
+
     # fix for case-insensitive filesystems
     postFetch = ''
       rm -f $out/tests/demo-project/content/icc-profile-test/{LICENSE,license}.txt
     '';
-    hash = "sha256-Wr3MhUGihqlPyUlWM8KT+sb/FtHH/NfRNDT9QCKJj5k=";
   };
-
-  npmDeps = fetchNpmDeps {
-    src = "${src}/${npmRoot}";
-    hash = "sha256-zcvfVVLhHPas4ulyQ9HDG3f5Bofco1A6pDx9TmREOIk=";
-  };
-
-  npmRoot = "frontend";
 
   nativeBuildInputs = [
     python.pkgs.hatch-vcs
@@ -71,13 +65,13 @@ python.pkgs.buildPythonApplication rec {
     pytestCheckHook
   ];
 
+  postCheck = ''
+    make test-js
+  '';
+
   postInstall = ''
     cp -r lektor/translations "$out/${python.sitePackages}/lektor/"
   '';
-
-  pythonImportsCheck = [
-    "lektor"
-  ];
 
   disabledTests = [
     # Tests require network access
@@ -96,16 +90,24 @@ python.pkgs.buildPythonApplication rec {
     "test_sees_directory_moved_out"
   ];
 
-  postCheck = ''
-    make test-js
-  '';
+  npmDeps = fetchNpmDeps {
+    src = "${src}/${npmRoot}";
+    hash = "sha256-zcvfVVLhHPas4ulyQ9HDG3f5Bofco1A6pDx9TmREOIk=";
+  };
+
+  npmRoot = "frontend";
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "lektor"
+  ];
 
   meta = {
     description = "Static content management system";
     homepage = "https://www.getlektor.com/";
     changelog = "https://github.com/lektor/lektor/blob/v${version}/CHANGES.md";
     license = lib.licenses.bsd3;
-    mainProgram = "lektor";
     maintainers = [ ];
+    mainProgram = "lektor";
   };
 }

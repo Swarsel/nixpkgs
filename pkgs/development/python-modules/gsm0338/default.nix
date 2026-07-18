@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "gsm0338";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dsch";
@@ -19,9 +18,8 @@ buildPythonPackage {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "gsm0338" ];
 
   meta = {

@@ -4,19 +4,19 @@
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  mate-common,
-  pkg-config,
+  dconf,
   gettext,
+  gitUpdater,
   itstool,
   libxml2,
+  mate-common,
   mate-desktop,
-  dconf,
-  vte,
+  nixosTests,
   pcre2,
+  pkg-config,
+  vte,
   wrapGAppsHook3,
   yelp-tools,
-  gitUpdater,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "mate-desktop";
     repo = "mate-terminal";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-fgmYqcv+36QjOFVB7gdBrUi6eZhWFLsJa3Pm27Idx8E=";
+    fetchSubmodules = true;
   };
 
   strictDeps = true;
@@ -53,13 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
+  passthru.tests.test = nixosTests.terminal-emulators.mate-terminal;
 
   passthru.updateScript = gitUpdater {
     odd-unstable = true;
     rev-prefix = "v";
   };
-
-  passthru.tests.test = nixosTests.terminal-emulators.mate-terminal;
 
   meta = {
     description = "MATE desktop terminal emulator";

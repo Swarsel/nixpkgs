@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,6 +23,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Google Cloud Bigtable Tool";
+
     longDescription = ''
       `cbt` is the Google Cloud Bigtable Tool. A CLI utility to interact with Google Cloud Bigtable.
       The cbt CLI is a command-line interface for performing several different operations on Cloud Bigtable.
@@ -30,6 +31,7 @@ buildGoModule (finalAttrs: {
       An overview of its usage can be found in the [Google Cloud docs](https://cloud.google.com/bigtable/docs/cbt-overview).
       For information about Bigtable in general, see the [overview of Bigtable](https://cloud.google.com/bigtable/docs/overview).
     '';
+
     homepage = "https://github.com/googleapis/cloud-bigtable-cbt-cli";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ totoroot ];

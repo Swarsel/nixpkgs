@@ -17,17 +17,16 @@ stdenv.mkDerivation {
   };
 
   makeFlags = [ "prefix=$(out)" ];
-
   doCheck = !stdenv.hostPlatform.isDarwin;
-  checkTarget = "test";
   checkInputs = [ util-linux ]; # uuidgen
+  checkTarget = "test";
 
   meta = {
     description = "Embed binary & text files inside C binaries";
-    mainProgram = "bin2c";
     homepage = "https://github.com/adobe/bin2c";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.shadowrz ];
     platforms = lib.platforms.all;
+    mainProgram = "bin2c";
   };
 }

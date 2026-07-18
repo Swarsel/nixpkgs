@@ -12,17 +12,19 @@ callPackage ./common.nix (
     # Details from https://www.azul.com/downloads/?version=java-11-lts&package=jdk
     # Note that the latest build may differ by platform
     dists = {
-      x86_64-linux = {
+      aarch64-darwin = {
         inherit zuluVersion jdkVersion;
+
         hash =
           if enableJavaFX then
-            "sha256-6XkzzHuNjX8OrTLBhFbfQ4ZOjZPLJw2pWvk7CiJzPXE="
+            "sha256-X1ph5yeqI2GZZTIGn93szk8Ks1ekJ9KaE3LSeUuigP0="
           else
-            "sha256-40dhkwxjCwZ9WkSTd+caFSgRVLGviC2scfJOK8PKk/k=";
+            "sha256-/nViFbw2DKsHA8nIUffkbUdiWR3/MwEUIKcQ1JUOebE=";
       };
 
       aarch64-linux = {
         inherit zuluVersion jdkVersion;
+
         hash =
           if enableJavaFX then
             "sha256-yCispNSTxqPB8kg46tcDUWcjQQCn8bhtXM2w/oyrO54="
@@ -30,13 +32,14 @@ callPackage ./common.nix (
             "sha256-j6ItLEU1W32zgfky+M2mD5WSmeKDYWfXnwzLOxRl8Ps=";
       };
 
-      aarch64-darwin = {
+      x86_64-linux = {
         inherit zuluVersion jdkVersion;
+
         hash =
           if enableJavaFX then
-            "sha256-X1ph5yeqI2GZZTIGn93szk8Ks1ekJ9KaE3LSeUuigP0="
+            "sha256-6XkzzHuNjX8OrTLBhFbfQ4ZOjZPLJw2pWvk7CiJzPXE="
           else
-            "sha256-/nViFbw2DKsHA8nIUffkbUdiWR3/MwEUIKcQ1JUOebE=";
+            "sha256-40dhkwxjCwZ9WkSTd+caFSgRVLGviC2scfJOK8PKk/k=";
       };
     };
   }

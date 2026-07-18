@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  binutils,
   asciidoctor,
+  bashInteractive,
+  binutils,
   cmake,
-  perl,
+  ctestCheckHook,
+  doctest,
   fmt,
   hiredis,
+  makeWrapper,
+  nix-update-script,
+  perl,
+  replaceVars,
+  writableTmpDirAsHomeHook,
+  xcodebuild,
   xxhash,
   zstd,
-  bashInteractive,
-  doctest,
-  xcodebuild,
-  makeWrapper,
-  ctestCheckHook,
-  writableTmpDirAsHomeHook,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ccache";
     repo = "ccache";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-A0n+DO6IznETsAFUNIpBkQI6A3UilgEUbuyP3sqKDTk=";
+
     # `git archive` replaces `$Format:%H %D$` in cmake/CcacheVersion.cmake
     # we need to replace it with something reproducible
     # see https://github.com/NixOS/nixpkgs/pull/316524
@@ -41,7 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
         exit 1
       fi
     '';
-    hash = "sha256-A0n+DO6IznETsAFUNIpBkQI6A3UilgEUbuyP3sqKDTk=";
   };
 
   outputs = [
@@ -82,7 +83,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeFlags = lib.optional (!finalAttrs.finalPackage.doCheck) "-DENABLE_TESTING=OFF";
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -112,21 +112,12 @@ stdenv.mkDerivation (finalAttrs: {
     # A derivation that provides gcc and g++ commands, but that
     # will end up calling ccache for the given cacheDir
     links =
-      { unwrappedCC, extraConfig }:
+      { extraConfig, unwrappedCC }:
       stdenv.mkDerivation {
-        pname = "ccache-links";
         inherit (finalAttrs) version;
-        passthru = {
-          isClang = unwrappedCC.isClang or false;
-          isGNU = unwrappedCC.isGNU or false;
-          isCcache = true;
-        }
-        // builtins.intersectAttrs {
-          hardeningUnsupportedFlagsByTargetPlatform = null;
-          hardeningUnsupportedFlags = null;
-        } unwrappedCC;
-        lib = lib.getLib unwrappedCC;
+        pname = "ccache-links";
         nativeBuildInputs = [ makeWrapper ];
+
         # Unwrapped clang does not have a targetPrefix because it is multi-target
         # target is decided with argv0.
         buildCommand =
@@ -168,6 +159,18 @@ stdenv.mkDerivation (finalAttrs: {
             done
           '';
 
+        lib = lib.getLib unwrappedCC;
+
+        passthru = {
+          isCcache = true;
+          isClang = unwrappedCC.isClang or false;
+          isGNU = unwrappedCC.isGNU or false;
+        }
+        // builtins.intersectAttrs {
+          hardeningUnsupportedFlags = null;
+          hardeningUnsupportedFlagsByTargetPlatform = null;
+        } unwrappedCC;
+
         meta = {
           inherit (unwrappedCC.meta) mainProgram;
         };
@@ -179,16 +182,20 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Compiler cache for fast recompilation of C/C++ code";
     homepage = "https://ccache.dev";
-    downloadPage = "https://ccache.dev/download.html";
+
     changelog = "https://ccache.dev/releasenotes.html#_ccache_${
       builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }";
+
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       kira-bruneau
       r-burns
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "ccache";
+    downloadPage = "https://ccache.dev/download.html";
   };
 })

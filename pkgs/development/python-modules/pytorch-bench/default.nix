@@ -1,30 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   codecarbon,
   colorama,
   matplotlib,
+  # passthru
+  nix-update-script,
   numpy,
   nvidia-ml-py,
+  # build-system
+  setuptools,
   torch,
   torchprofile,
   tqdm,
-
-  # passthru
-  nix-update-script,
 }:
 
 buildPythonPackage {
   pname = "pytorch-bench";
   version = "0-unstable-2025-05-05";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "MaximeGloesener";
@@ -33,14 +28,12 @@ buildPythonPackage {
     hash = "sha256-+jd+H5hL+DotlLaBiaixb//hxyvEF6aAJYSHX1hfsP8=";
   };
 
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
 
-  pythonRemoveDeps = [
-    # pynvml is deprecated and replaced by nvidia-ml-py which provides the same API
-    "pynvml"
-  ];
   dependencies = [
     codecarbon
     colorama
@@ -52,7 +45,13 @@ buildPythonPackage {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytorch_bench" ];
+
+  pythonRemoveDeps = [
+    # pynvml is deprecated and replaced by nvidia-ml-py which provides the same API
+    "pynvml"
+  ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

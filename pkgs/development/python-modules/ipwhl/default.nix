@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchFromSourcehut,
+  flit-core,
   kubo,
   packaging,
   tomli,
-  flit-core,
 }:
 
 buildPythonPackage rec {
   pname = "ipwhl";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromSourcehut {
     owner = "~cnx";
@@ -22,11 +21,14 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ flit-core ];
   buildInputs = [ kubo ];
+
   propagatedBuildInputs = [
     packaging
     tomli
   ];
+
   doCheck = false; # there's no test
+  pyproject = true;
   pythonImportsCheck = [ "ipwhl" ];
 
   meta = {

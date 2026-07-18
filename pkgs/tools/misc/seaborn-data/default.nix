@@ -1,29 +1,30 @@
 {
   lib,
-  newScope,
   fetchFromGitHub,
-  unzip,
+  newScope,
   stdenvNoCC,
+  unzip,
 }:
 let
   base = {
     version = "unstable-2023-01-26";
     dontBuild = true;
+
     meta = {
       description = "Data repository for seaborn examples";
       homepage = "https://github.com/mwaskom/seaborn-data";
-      platforms = lib.platforms.all;
       maintainers = [ ];
+      platforms = lib.platforms.all;
     };
   };
   makeSeabornDataPackage =
-    { pname, hash }:
+    { hash, pname }:
     let
       src = fetchFromGitHub {
+        inherit hash;
         owner = "mwaskom";
         repo = "seaborn-data";
         rev = "2b29313169bf8dfa77d8dc930f7bd3eba559a906";
-        inherit hash;
         sparseCheckout = [ "${pname}.csv" ];
       };
     in
@@ -32,6 +33,7 @@ let
       // {
         inherit pname src;
         version = base.version;
+
         installPhase = ''
           runHook preInstall
 

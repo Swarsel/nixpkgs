@@ -2,24 +2,27 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
   buildPackages,
   bzip2,
   curlMinimal,
+  darwin,
   expat,
+  gitUpdater,
   libarchive,
+  libsForQt5,
   libuv,
   ncurses,
   openssl,
   pkg-config,
   ps,
-  sysctl,
+  replaceVars,
   rhash,
   sphinx,
+  sysctl,
   texinfo,
   xz,
   zlib,
-  darwin,
+  buildDocs ? !(isMinimalBuild || (uiToolkits == [ ])),
   isBootstrap ? null,
   isMinimalBuild ? (
     if isBootstrap != null then
@@ -27,12 +30,9 @@
     else
       false
   ),
+  uiToolkits ? [ ], # can contain "ncurses" and/or "qt5"
   useOpenSSL ? !isMinimalBuild,
   useSharedLibraries ? (!isMinimalBuild && !stdenv.hostPlatform.isCygwin),
-  uiToolkits ? [ ], # can contain "ncurses" and/or "qt5"
-  buildDocs ? !(isMinimalBuild || (uiToolkits == [ ])),
-  libsForQt5,
-  gitUpdater,
 }:
 
 let
@@ -50,12 +50,21 @@ stdenv.mkDerivation (finalAttrs: {
     + lib.optionalString isMinimalBuild "-minimal"
     + lib.optionalString cursesUI "-cursesUI"
     + lib.optionalString qt5UI "-qt5UI";
+
   version = "4.1.2";
 
   src = fetchurl {
     url = "https://cmake.org/files/v${lib.versions.majorMinor finalAttrs.version}/cmake-${finalAttrs.version}.tar.gz";
     hash = "sha256-ZD8EGCt7oyOrMfUm94UTT7ecujGIqFIgbvBHP+4oKhU=";
   };
+
+  outputs = [
+    "out"
+  ]
+  ++ lib.optionals buildDocs [
+    "man"
+    "info"
+  ];
 
   patches = [
     # Add NIXPKGS_CMAKE_PREFIX_PATH to cmake which is like CMAKE_PREFIX_PATH
@@ -84,23 +93,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./remove-impure-search-paths.patch
   ];
 
-  outputs = [
-    "out"
-  ]
-  ++ lib.optionals buildDocs [
-    "man"
-    "info"
-  ];
-  separateDebugInfo = true;
-  setOutputFlags = false;
-
-  setupHooks = [
-    ./setup-hook.sh
-    ./check-pc-files-hook.sh
-  ];
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   nativeBuildInputs =
     finalAttrs.setupHooks
     ++ [
@@ -123,28 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional useOpenSSL openssl
     ++ lib.optional cursesUI ncurses
     ++ lib.optional qt5UI qtbase;
-
-  # bootstrap is not autoconf and rejects --enable-static/--disable-shared
-  # FIXME: rebuild avoidance, drop optionalDrvAttr in staging
-  dontAddStaticConfigureFlags = lib.optionalDrvAttr stdenv.hostPlatform.isStatic true;
-
-  preConfigure = ''
-    substituteInPlace Modules/Platform/UnixPaths.cmake \
-      --subst-var-by libc_bin ${lib.getBin stdenv.cc.libc} \
-      --subst-var-by libc_dev ${lib.getDev stdenv.cc.libc} \
-      --subst-var-by libc_lib ${lib.getLib stdenv.cc.libc}
-    # CC_FOR_BUILD and CXX_FOR_BUILD are used to bootstrap cmake
-    configureFlags="--parallel=''${NIX_BUILD_CORES:-1} CC=$CC_FOR_BUILD CXX=$CXX_FOR_BUILD $configureFlags $cmakeFlags"
-  ''
-  + lib.optionalString (stdenv.hostPlatform.isStatic && useSharedLibraries) ''
-    # FindLibArchive ignores libarchive.pc's Libs.private
-    export NIX_LDFLAGS+=" $($PKG_CONFIG --static --libs-only-l libarchive)"
-  '';
-
-  # The configuration script is not autoconf-based, although being similar;
-  # triples and other interesting info are passed via CMAKE_* environment
-  # variables and commandline switches
-  configurePlatforms = [ ];
 
   configureFlags = [
     "--docdir=share/doc/${finalAttrs.pname}-${finalAttrs.version}"
@@ -190,25 +160,53 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_TESTING" false)
   ];
 
+  preConfigure = ''
+    substituteInPlace Modules/Platform/UnixPaths.cmake \
+      --subst-var-by libc_bin ${lib.getBin stdenv.cc.libc} \
+      --subst-var-by libc_dev ${lib.getDev stdenv.cc.libc} \
+      --subst-var-by libc_lib ${lib.getLib stdenv.cc.libc}
+    # CC_FOR_BUILD and CXX_FOR_BUILD are used to bootstrap cmake
+    configureFlags="--parallel=''${NIX_BUILD_CORES:-1} CC=$CC_FOR_BUILD CXX=$CXX_FOR_BUILD $configureFlags $cmakeFlags"
+  ''
+  + lib.optionalString (stdenv.hostPlatform.isStatic && useSharedLibraries) ''
+    # FindLibArchive ignores libarchive.pc's Libs.private
+    export NIX_LDFLAGS+=" $($PKG_CONFIG --static --libs-only-l libarchive)"
+  '';
+
+  doCheck = false; # fails
+
   # make install attempts to use the just-built cmake
   preInstall = lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
     sed -i 's|bin/cmake|${buildPackages.cmakeMinimal}/bin/cmake|g' Makefile
   '';
 
+  # The configuration script is not autoconf-based, although being similar;
+  # triples and other interesting info are passed via CMAKE_* environment
+  # variables and commandline switches
+  configurePlatforms = [ ];
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  # bootstrap is not autoconf and rejects --enable-static/--disable-shared
+  # FIXME: rebuild avoidance, drop optionalDrvAttr in staging
+  dontAddStaticConfigureFlags = lib.optionalDrvAttr stdenv.hostPlatform.isStatic true;
   dontUseCmakeConfigure = true;
   enableParallelBuilding = true;
+  separateDebugInfo = true;
+  setOutputFlags = false;
 
-  doCheck = false; # fails
+  setupHooks = [
+    ./setup-hook.sh
+    ./check-pc-files-hook.sh
+  ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.kitware.com/cmake/cmake.git";
-    rev-prefix = "v";
     ignoredVersions = "-"; # -rc1 and friends
+    rev-prefix = "v";
+    url = "https://gitlab.kitware.com/cmake/cmake.git";
   };
 
   meta = {
-    homepage = "https://cmake.org/";
     description = "Cross-platform, open-source build system generator";
+
     longDescription = ''
       CMake is an open-source, cross-platform family of tools designed to build,
       test and package software. CMake is used to control the software
@@ -216,6 +214,8 @@ stdenv.mkDerivation (finalAttrs: {
       configuration files, and generate native makefiles and workspaces that can
       be used in the compiler environment of your choice.
     '';
+
+    homepage = "https://cmake.org/";
     changelog = "https://cmake.org/cmake/help/v${lib.versions.majorMinor finalAttrs.version}/release/${lib.versions.majorMinor finalAttrs.version}.html";
     license = lib.licenses.bsd3;
     maintainers = [ ];

@@ -1,34 +1,34 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  adwaita-icon-theme,
   fetchpatch,
-  meson,
-  ninja,
+  gdk-pixbuf,
   gettext,
-  gst_all_1,
-  python3Packages,
-  shared-mime-info,
-  pkg-config,
-  gtk3,
   glib,
-  gobject-introspection,
-  totem-pl-parser,
-  wrapGAppsHook3,
-  itstool,
-  libxml2,
-  vala,
   gnome,
+  gnome-desktop,
+  gobject-introspection,
   grilo,
   grilo-plugins,
+  gsettings-desktop-schemas,
+  gst_all_1,
+  gtk3,
+  itstool,
   libepoxy,
+  libhandy,
   libpeas,
   libportal-gtk3,
-  libhandy,
-  adwaita-icon-theme,
-  gnome-desktop,
-  gsettings-desktop-schemas,
-  gdk-pixbuf,
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  python3Packages,
+  shared-mime-info,
+  totem-pl-parser,
+  vala,
+  wrapGAppsHook3,
   xvfb-run,
 }:
 
@@ -45,10 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
     # Use girepository-2.0
     # This will be ported to libpeas2 in https://gitlab.gnome.org/GNOME/totem/-/merge_requests/373
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/totem/raw/a213a514b7c2ac22d4e012e168e41eaf839e8112/f/girepository-2.0.patch";
       hash = "sha256-D+i45yebZMbA7Ybfog3bwtOghoIHHVMqyXiUcZTkpxk=";
+      url = "https://src.fedoraproject.org/rpms/totem/raw/a213a514b7c2ac22d4e012e168e41eaf839e8112/f/girepository-2.0.patch";
     })
   ];
+
+  postPatch = ''
+    chmod +x meson_compile_python.py # patchShebangs requires executable file
+    patchShebangs \
+      ./meson_compile_python.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -88,10 +94,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.pygobject3
   ];
 
-  nativeCheckInputs = [
-    xvfb-run
-  ];
-
   mesonFlags = [
     # TODO: https://github.com/NixOS/nixpkgs/issues/36468
     "-Dc_args=-I${glib.dev}/include/gio-unix-2.0"
@@ -99,11 +101,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    chmod +x meson_compile_python.py # patchShebangs requires executable file
-    patchShebangs \
-      ./meson_compile_python.py
-  '';
+  nativeCheckInputs = [
+    xvfb-run
+  ];
 
   checkPhase = ''
     runHook preCheck
@@ -121,13 +121,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Movie player for the GNOME desktop based on GStreamer";
     homepage = "https://apps.gnome.org/Totem/";
     changelog = "https://gitlab.gnome.org/GNOME/totem/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Movie player for the GNOME desktop based on GStreamer";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2Plus; # with exception to allow use of non-GPL compatible plug-ins
     platforms = lib.platforms.linux;
     # gst-inspect-1.0 is not smart enough for cross compiling
     broken = stdenv.buildPlatform != stdenv.hostPlatform;
+    teams = [ lib.teams.gnome ];
   };
 })

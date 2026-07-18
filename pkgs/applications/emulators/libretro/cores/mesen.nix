@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "mesen";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -14,8 +13,9 @@ mkLibretroCore {
     hash = "sha256-fDGG6U+yhpbcvKuSN30F0dM+NCXlPTPULNEqTZTL/Vc=";
   };
 
-  makefile = "Makefile";
   preBuild = "cd Libretro";
+  core = "mesen";
+  makefile = "Makefile";
 
   meta = {
     description = "Port of Mesen to libretro";

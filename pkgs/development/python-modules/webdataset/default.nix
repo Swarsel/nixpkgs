@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  curl,
-
-  # build-system
-  setuptools,
-
   # dependencies
   braceexpand,
-  numpy,
-  pyyaml,
-
+  buildPythonPackage,
+  curl,
   # tests
   imageio,
   lmdb,
   msgpack,
+  numpy,
   pytestCheckHook,
+  pyyaml,
+  # build-system
+  setuptools,
   torch,
   torchvision,
 }:
 buildPythonPackage {
   pname = "webdataset";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "webdataset";
@@ -40,16 +36,6 @@ buildPythonPackage {
         '"${lib.getExe curl}"'
   '';
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    braceexpand
-    numpy
-    pyyaml
-  ];
-
   nativeCheckInputs = [
     imageio
     lmdb
@@ -59,7 +45,15 @@ buildPythonPackage {
     torchvision
   ];
 
-  pythonImportsCheck = [ "webdataset" ];
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    braceexpand
+    numpy
+    pyyaml
+  ];
 
   disabledTests = [
     # Require network
@@ -76,11 +70,14 @@ buildPythonPackage {
     "test_unbatched"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "webdataset" ];
+
   meta = {
     description = "High-performance Python-based I/O system for large (and small) deep learning problems, with strong support for PyTorch";
-    mainProgram = "widsindex";
     homepage = "https://github.com/webdataset/webdataset";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ iynaix ];
+    mainProgram = "widsindex";
   };
 }

@@ -1,44 +1,41 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
   aioresponses,
   async-substrate-interface,
   asyncstdlib,
   bittensor-drand,
   bittensor-wallet,
+  buildPythonPackage,
   colorama,
   cyscale,
   fastapi,
+  freezegun,
+  httpx,
+  hypothesis,
   msgpack-numpy-opentensor,
   netaddr,
   numpy,
   packaging,
   pycryptodome,
   pydantic,
+  pytest-asyncio,
+  pytest-mock,
+  pytestCheckHook,
   python-statemachine,
   pyyaml,
   requests,
   retry,
+  setuptools,
   uvicorn,
-  freezegun,
-  httpx,
-  hypothesis,
-  pytest-mock,
-  pytestCheckHook,
-  pytest-asyncio,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bittensor";
   version = "10.5.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "latent-to";
@@ -59,12 +56,24 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'return self._config' 'return self._logging_config'
   '';
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "asyncstdlib"
-    "python-statemachine"
+  nativeBuildInputs = [
+    # bittensor/core/settings.py calls Path.home().mkdir() at import time.
+    # This is also hit by pythonImportsCheck when doCheck = false, so this does not go in nativeCheckInputs
+    writableTmpDirAsHomeHook
   ];
+
+  nativeCheckInputs = [
+    aioresponses
+    freezegun
+    httpx
+    hypothesis
+    pytest-mock
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
   dependencies = [
     aiohttp
@@ -86,22 +95,6 @@ buildPythonPackage (finalAttrs: {
     requests
     retry
     uvicorn
-  ];
-
-  nativeBuildInputs = [
-    # bittensor/core/settings.py calls Path.home().mkdir() at import time.
-    # This is also hit by pythonImportsCheck when doCheck = false, so this does not go in nativeCheckInputs
-    writableTmpDirAsHomeHook
-  ];
-
-  nativeCheckInputs = [
-    aioresponses
-    freezegun
-    httpx
-    hypothesis
-    pytest-mock
-    pytestCheckHook
-    pytest-asyncio
   ];
 
   # integration/e2e tests require a live subtensor node; torch tests require optional dep
@@ -132,7 +125,13 @@ buildPythonPackage (finalAttrs: {
     "test_threaded_fastapi"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bittensor" ];
+
+  pythonRelaxDeps = [
+    "asyncstdlib"
+    "python-statemachine"
+  ];
 
   meta = {
     description = "Bittensor SDK";

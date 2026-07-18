@@ -1,17 +1,18 @@
 {
   supportedSystems,
-  system ? builtins.currentSystem,
-  packageSet ? (import ../..),
-  scrubJobs ? true,
   # Attributes passed to nixpkgs. Don't build packages marked as unfree.
   nixpkgsArgs ? {
+    __allowFileset = false;
+
     config = {
       allowAliases = false;
       allowUnfree = false;
       inHydra = true;
     };
-    __allowFileset = false;
   },
+  packageSet ? (import ../..),
+  scrubJobs ? true,
+  system ? builtins.currentSystem,
 }:
 
 let

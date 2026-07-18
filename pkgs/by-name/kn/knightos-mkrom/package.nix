@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libxslt,
   asciidoc,
+  libxslt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,23 +18,25 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     asciidoc
     libxslt.bin
   ];
 
   installFlags = [ "DESTDIR=$(out)" ];
+
   installTargets = [
     "install"
     "install_man"
   ];
 
   meta = {
-    homepage = "https://knightos.org/";
     description = "Packages KnightOS distribution files into a ROM";
-    mainProgram = "mkrom";
+    homepage = "https://knightos.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.all;
+    mainProgram = "mkrom";
   };
 })

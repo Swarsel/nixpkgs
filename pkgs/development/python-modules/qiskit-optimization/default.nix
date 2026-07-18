@@ -1,29 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  ddt,
   # Python Inputs
   decorator,
   docplex,
   networkx,
   numpy,
-  qiskit,
-  scipy,
+  pylatexenc,
   # Check Inputs
   pytestCheckHook,
-  ddt,
-  pylatexenc,
+  qiskit,
   qiskit-aer,
+  scipy,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "qiskit-optimization";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "qiskit";
@@ -54,17 +51,18 @@ buildPythonPackage rec {
     qiskit-aer
   ];
 
-  pythonImportsCheck = [ "qiskit_optimization" ];
+  pyproject = true;
   pytestFlags = [ "--durations=10" ];
+  pythonImportsCheck = [ "qiskit_optimization" ];
 
   meta = {
-    # broken because it depends on qiskit-algorithms which is not yet packaged in nixpkgs
-    broken = true;
     description = "Software for developing quantum computing programs";
     homepage = "https://qiskit.org";
-    downloadPage = "https://github.com/QISKit/qiskit-optimization/releases";
     changelog = "https://qiskit.org/documentation/release_notes.html";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    # broken because it depends on qiskit-algorithms which is not yet packaged in nixpkgs
+    broken = true;
+    downloadPage = "https://github.com/QISKit/qiskit-optimization/releases";
   };
 }

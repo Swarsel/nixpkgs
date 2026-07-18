@@ -1,52 +1,50 @@
 {
-  # Parameters for overriding
-  src,
-  version,
-  commitDate,
-  llvmMajorVersion,
-  vc-intrinsics-src,
-  make-unified-runtime,
   # Regular dependencies
   lib,
   stdenv,
   cmake,
-  ninja,
-  python3,
-  pkg-config,
-  zstd,
-  hwloc,
+  commitDate,
+  config,
   emhash,
+  graphviz-nox,
+  hwloc,
   level-zero,
-  opencl-headers,
-  libxml2,
   libedit,
+  libxml2,
+  llvmMajorVersion,
   llvmPackages_22,
+  make-unified-runtime,
+  ninja,
+  opencl-headers,
   parallel-hashmap,
+  pkg-config,
+  python3,
   spirv-headers,
   spirv-tools,
-  zlib,
+  # Parameters for overriding
+  src,
+  vc-intrinsics-src,
+  version,
   wrapCC,
-  graphviz-nox,
-  rocmPackages ? { },
-  rocmGpuTargets ? lib.optionalString (rocmPackages ? clr.gpuTargets) (
-    builtins.concatStringsSep ";" rocmPackages.clr.gpuTargets
-  ),
-  config,
+  zlib,
+  zstd,
   cudaSupport ? config.cudaSupport,
-  rocmSupport ? config.rocmSupport,
+  enableManpages ? true,
   # TODO: Should there be a flag like config.levelZeroSupport?
   # NOTE: Level Zero does not always fail gracefully, so when not explicitly set by the user,
   #       and other acceleration is already selected, disable it by default.
   levelZeroSupport ? !(cudaSupport || rocmSupport),
   nativeCpuSupport ? true,
-  enableManpages ? true,
+  rocmGpuTargets ? lib.optionalString (rocmPackages ? clr.gpuTargets) (
+    builtins.concatStringsSep ";" rocmPackages.clr.gpuTargets
+  ),
+  rocmPackages ? { },
+  rocmSupport ? config.rocmSupport,
 }:
 let
   # See the postPatch phase for details on why this is used
   ccWrapperStub = wrapCC (
     stdenv.mkDerivation {
-      name = "ccWrapperStub";
-      dontUnpack = true;
       installPhase = ''
         mkdir -p $out/bin
         cat > $out/bin/clang-${llvmMajorVersion} <<'EOF'
@@ -57,6 +55,9 @@ let
         cp $out/bin/clang-${llvmMajorVersion} $out/bin/clang
         cp $out/bin/clang-${llvmMajorVersion} $out/bin/clang++
       '';
+
+      dontUnpack = true;
+      name = "ccWrapperStub";
       passthru.isClang = true;
     }
   );
@@ -83,9 +84,8 @@ in
 # Tip: This build plays nice with ccacheStdenv.
 #      Replace stdenv here to make debugging less tedious.
 stdenv.mkDerivation (finalAttrs: {
-  pname = "intel-llvm";
-
   inherit src version commitDate;
+  pname = "intel-llvm";
 
   outputs = [
     "out"
@@ -95,52 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Not adding (conditionally) a "man" output here to avoid complexity in the
     # wrapper, that is not worth it for a few kb.
   ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  nativeBuildInputs = [
-    cmake
-    ninja
-    python3
-    llvmPackages_22.bintools # For lld
-    pkg-config
-    zlib
-  ]
-  ++ lib.optionals enableManpages [
-    python3.pkgs.sphinx
-    python3.pkgs.myst-parser
-    graphviz-nox
-  ];
-
-  buildInputs = [
-    spirv-tools
-    libxml2
-    hwloc
-    emhash
-    parallel-hashmap
-    # Static ZSTD is required by sycl, see sycl/source/CMakeLists.txt:163
-    # Intels CMake/build system also enabled `LLVM_USE_STATIC_ZSTD` by default,
-    # so at no point does it link to a non-static ZSTD library.
-    # This may be related to the fork not supporting building shared libraries;
-    #  https://github.com/intel/llvm/issues/19060
-    (zstd.override { static = true; })
-  ]
-  ++ unified-runtime.buildInputs;
-
-  propagatedBuildInputs = [
-    zlib
-    libedit
-    opencl-headers
-  ];
-
-  cmakeBuildType = "Release";
-  # This is to shave a little bit of size off of the final NAR.
-  # Saves about 0.5GiB
-  # Note that the sum of all outputs needs to stay under 4GiB to be cached by Hydra.
-  # To check:
-  #  nix path-info --json --json-format 2 .#intel-llvm.unwrapped{,.lib,.dev,.python} | jq '[.. | .narSize? // empty] | add'
-  stripDebugFlags = [ "--strip-unneeded" ];
 
   patches = [
     # Fix paths so the output can be split properly
@@ -184,31 +138,42 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "NO_CMAKE_PACKAGE_REGISTRY" ""
   '';
 
-  preConfigure = ''
-    flags=$(python buildbot/configure.py \
-        --print-cmake-flags \
-        -t Release \
-        --docs \
-        --cmake-gen Ninja \
-        ${lib.optionalString cudaSupport "--cuda"} \
-        ${lib.optionalString rocmSupport "--hip"} \
-        ${lib.optionalString nativeCpuSupport "--native_cpu"} \
-        --use-lld \
-        ${lib.optionalString levelZeroSupport "--l0-headers ${lib.getInclude level-zero}/include/level_zero"} \
-        ${lib.optionalString levelZeroSupport "--l0-loader ${lib.getLib level-zero}/lib/libze_loader.so"} \
-    )
+  strictDeps = true;
 
-    # We eval because flags is separated as shell-escaped strings.
-    # We can't just split by space because it may contain escaped spaces,
-    # so we just let bash handle it.
-    # NOTE: We prepend, so that flags we set manually override what the build script does.
-    eval "prependToVar cmakeFlags $flags"
+  nativeBuildInputs = [
+    cmake
+    ninja
+    python3
+    llvmPackages_22.bintools # For lld
+    pkg-config
+    zlib
+  ]
+  ++ lib.optionals enableManpages [
+    python3.pkgs.sphinx
+    python3.pkgs.myst-parser
+    graphviz-nox
+  ];
 
-    # Remove the install prefix flag
-    cmakeFlags=(''${cmakeFlags[@]/-DCMAKE_INSTALL_PREFIX=$NIX_BUILD_TOP\/source\/build\/install})
-  '';
+  buildInputs = [
+    spirv-tools
+    libxml2
+    hwloc
+    emhash
+    parallel-hashmap
+    # Static ZSTD is required by sycl, see sycl/source/CMakeLists.txt:163
+    # Intels CMake/build system also enabled `LLVM_USE_STATIC_ZSTD` by default,
+    # so at no point does it link to a non-static ZSTD library.
+    # This may be related to the fork not supporting building shared libraries;
+    #  https://github.com/intel/llvm/issues/19060
+    (zstd.override { static = true; })
+  ]
+  ++ unified-runtime.buildInputs;
 
-  cmakeDir = "llvm";
+  propagatedBuildInputs = [
+    zlib
+    libedit
+    opencl-headers
+  ];
 
   cmakeFlags = [
     (lib.cmakeBool "LLVM_INSTALL_UTILS" true)
@@ -258,12 +223,29 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ unified-runtime.cmakeFlags;
 
-  # This hardening option causes compilation errors when compiling for amdgcn, spirv and others
-  # Must be disabled during intel-llvm's own build (especially for libdevice)
-  hardeningDisable = [ "zerocallusedregs" ];
+  preConfigure = ''
+    flags=$(python buildbot/configure.py \
+        --print-cmake-flags \
+        -t Release \
+        --docs \
+        --cmake-gen Ninja \
+        ${lib.optionalString cudaSupport "--cuda"} \
+        ${lib.optionalString rocmSupport "--hip"} \
+        ${lib.optionalString nativeCpuSupport "--native_cpu"} \
+        --use-lld \
+        ${lib.optionalString levelZeroSupport "--l0-headers ${lib.getInclude level-zero}/include/level_zero"} \
+        ${lib.optionalString levelZeroSupport "--l0-loader ${lib.getLib level-zero}/lib/libze_loader.so"} \
+    )
 
-  requiredSystemFeatures = [ "big-parallel" ];
-  enableParallelBuilding = true;
+    # We eval because flags is separated as shell-escaped strings.
+    # We can't just split by space because it may contain escaped spaces,
+    # so we just let bash handle it.
+    # NOTE: We prepend, so that flags we set manually override what the build script does.
+    eval "prependToVar cmakeFlags $flags"
+
+    # Remove the install prefix flag
+    cmakeFlags=(''${cmakeFlags[@]/-DCMAKE_INSTALL_PREFIX=$NIX_BUILD_TOP\/source\/build\/install})
+  '';
 
   # The vast majority of tests work, however many of the more relevant
   # ones struggle due to the lack of wrapping, causing it to
@@ -294,36 +276,51 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "../lib/clang/${llvmMajorVersion}" "$lib/lib/clang/${llvmMajorVersion}"
   '';
 
+  __structuredAttrs = true;
+  cmakeBuildType = "Release";
+  cmakeDir = "llvm";
+  enableParallelBuilding = true;
+  # This hardening option causes compilation errors when compiling for amdgcn, spirv and others
+  # Must be disabled during intel-llvm's own build (especially for libdevice)
+  hardeningDisable = [ "zerocallusedregs" ];
+  requiredSystemFeatures = [ "big-parallel" ];
+  # This is to shave a little bit of size off of the final NAR.
+  # Saves about 0.5GiB
+  # Note that the sum of all outputs needs to stay under 4GiB to be cached by Hydra.
+  # To check:
+  #  nix path-info --json --json-format 2 .#intel-llvm.unwrapped{,.lib,.dev,.python} | jq '[.. | .narSize? // empty] | add'
+  stripDebugFlags = [ "--strip-unneeded" ];
+
   passthru = {
-    isClang = true;
-
     inherit unified-runtime;
-
+    inherit llvmMajorVersion;
     # This is for easily referencing version-compatible LLVM libraries
     # and tools that aren't built in this derivation,
     # as well as nix tooling, such as the stdenv.
     baseLlvm = llvmPackages_22;
-
-    inherit llvmMajorVersion;
-
     # This hardening option causes compilation errors when compiling for amdgcn, spirv and others
     hardeningUnsupportedFlags = [ "zerocallusedregs" ];
+    isClang = true;
   };
 
   meta = {
     description = "Intel LLVM-based compiler with SYCL support";
+
     longDescription = ''
       Intel's LLVM-based compiler toolchain with Data Parallel C++ (DPC++)
       and SYCL support for heterogeneous computing across CPUs, GPUs, and FPGAs.
     '';
+
     homepage = "https://github.com/intel/llvm";
-    mainProgram = "clang";
+
     license = with lib.licenses; [
       ncsa
       asl20
       llvm-exception
     ];
+
     maintainers = with lib.maintainers; [ kilyanni ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "clang";
   };
 })

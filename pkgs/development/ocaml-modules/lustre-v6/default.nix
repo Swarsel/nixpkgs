@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   extlib,
   lutils,
   rdbg,
@@ -11,8 +11,6 @@
 buildDunePackage (finalAttrs: {
   pname = "lustre-v6";
   version = "6.107.4";
-
-  minimalOCamlVersion = "4.12";
 
   src = fetchurl {
     url = "https://www-verimag.imag.fr/DIST-TOOLS/SYNCHRONE/pool/lustre-v6.v${finalAttrs.version}.tgz";
@@ -26,14 +24,18 @@ buildDunePackage (finalAttrs: {
     yaml
   ];
 
+  minimalOCamlVersion = "4.12";
+
   meta = {
     description = "Lustre V6 compiler";
     homepage = "https://www-verimag.imag.fr/lustre-v6.html";
     license = lib.licenses.cecill21;
+
     maintainers = with lib.maintainers; [
       delta
       wegank
     ];
+
     mainProgram = "lv6";
   };
 })

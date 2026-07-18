@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   base58,
   beautifulsoup4,
   buildPythonPackage,
   colorama,
   cryptography,
   deepdiff,
-  fetchFromGitHub,
   gitpython,
   hatchling,
   humanfriendly,
@@ -36,9 +36,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "credsweeper";
   version = "1.16.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Samsung";
@@ -47,6 +44,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DiIT7DzH6ut/Ax2qgga5vKjeXocROGbHdARLWJijejY=";
   };
 
+  nativeCheckInputs = [
+    deepdiff
+    hypothesis
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -76,14 +80,6 @@ buildPythonPackage (finalAttrs: {
     xlrd
   ];
 
-  nativeCheckInputs = [
-    deepdiff
-    hypothesis
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "credsweeper" ];
-
   disabledTests = [
     # Probability tests
     "test_data_p"
@@ -94,6 +90,8 @@ buildPythonPackage (finalAttrs: {
     "test_rules_ml_p"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "credsweeper" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

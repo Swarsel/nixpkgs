@@ -1,19 +1,21 @@
 {
-  qtModule,
-  qtbase,
-  libwebp,
   jasper,
   libmng,
   libtiff,
+  libwebp,
+  qtModule,
+  qtbase,
 }:
 
 qtModule {
   pname = "qtimageformats";
-  propagatedBuildInputs = [ qtbase ];
+
   buildInputs = [
     libwebp
     jasper
     libmng
     libtiff
   ];
+
+  propagatedBuildInputs = [ qtbase ];
 }

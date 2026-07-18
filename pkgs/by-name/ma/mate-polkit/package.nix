@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gettext,
-  gtk3,
-  gobject-introspection,
-  libayatana-appindicator,
-  polkit,
   gitUpdater,
+  gobject-introspection,
+  gtk3,
+  libayatana-appindicator,
+  pkg-config,
+  polkit,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,9 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-polkit";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-polkit";
   };
 
   meta = {

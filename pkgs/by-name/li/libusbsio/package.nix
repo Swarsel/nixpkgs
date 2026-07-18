@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchzip,
-  pkg-config,
   fixDarwinDylibNames,
   libusb1,
+  pkg-config,
   systemdMinimal,
 }:
 
@@ -21,11 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     rm -r bin/*
   '';
 
-  makeFlags = [
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "BINDIR="
-  ];
-
   nativeBuildInputs = [
     pkg-config
   ]
@@ -41,6 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     systemdMinimal # libudev
   ];
 
+  makeFlags = [
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "BINDIR="
+  ];
+
   installPhase = ''
     runHook preInstall
     install -D bin/libusbsio${stdenv.hostPlatform.extensions.sharedLibrary} $out/lib/libusbsio${stdenv.hostPlatform.extensions.sharedLibrary}
@@ -48,11 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.nxp.com/design/software/development-software/library-for-windows-macos-and-ubuntu-linux:LIBUSBSIO";
     description = "Library for communicating with devices connected via the USB bridge on LPC-Link2 and MCU-Link debug probes on supported NXP microcontroller evaluation boards";
-    platforms = lib.platforms.all;
+    homepage = "https://www.nxp.com/design/software/development-software/library-for-windows-macos-and-ubuntu-linux:LIBUSBSIO";
     license = lib.licenses.bsd3;
+
     maintainers = [
     ];
+
+    platforms = lib.platforms.all;
   };
 })

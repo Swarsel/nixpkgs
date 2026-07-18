@@ -3,39 +3,26 @@
 
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   noto-fonts-color-emoji,
+  stdenvNoCC,
 }:
 
 let
   version = "17.0.2";
 
   twemojiSrc = fetchFromGitHub {
+    hash = "sha256-LeAIXrPzp6rmmrz4ixehaD4/U1i15NDR0wvYyFOjw0U=";
     name = "twemoji-src";
     owner = "jdecked";
     repo = "twemoji";
     rev = "v${version}";
-    hash = "sha256-LeAIXrPzp6rmmrz4ixehaD4/U1i15NDR0wvYyFOjw0U=";
   };
 in
 stdenvNoCC.mkDerivation rec {
-  pname = "twitter-color-emoji";
   inherit version;
-
-  srcs = [
-    noto-fonts-color-emoji.src
-    twemojiSrc
-  ];
-
-  sourceRoot = noto-fonts-color-emoji.src.name;
-
-  postUnpack = ''
-    chmod -R +w ${twemojiSrc.name}
-    mv ${twemojiSrc.name} ${noto-fonts-color-emoji.src.name}
-  '';
-
   inherit (noto-fonts-color-emoji) strictDeps depsBuildBuild nativeBuildInputs;
+  pname = "twitter-color-emoji";
 
   postPatch =
     let
@@ -70,21 +57,36 @@ stdenvNoCC.mkDerivation rec {
     "BYPASS_SEQUENCE_CHECK=True"
   ];
 
-  enableParallelBuilding = true;
-
   installPhase = ''
     install -Dm644 TwitterColorEmoji.ttf $out/share/fonts/truetype/TwitterColorEmoji.ttf
   '';
 
+  enableParallelBuilding = true;
+
+  postUnpack = ''
+    chmod -R +w ${twemojiSrc.name}
+    mv ${twemojiSrc.name} ${noto-fonts-color-emoji.src.name}
+  '';
+
+  sourceRoot = noto-fonts-color-emoji.src.name;
+
+  srcs = [
+    noto-fonts-color-emoji.src
+    twemojiSrc
+  ];
+
   meta = {
     description = "Color emoji font with a flat visual style, designed and used by Twitter";
+
     longDescription = ''
       A bitmap color emoji font built from Twitter's Twemoji emoji set
       with support for ZWJ, skin tone diversity and country flags.
 
       This font uses Google’s CBDT format making it work on Android and Linux graphical stack.
     '';
+
     homepage = "https://github.com/jdecked/twemoji";
+
     # In noto-emoji-fonts source
     ## noto-emoji code is in ASL 2.0 license
     ## Emoji fonts are under OFL license
@@ -101,6 +103,7 @@ stdenvNoCC.mkDerivation rec {
       cc-by-40
       mit
     ];
+
     maintainers = with lib.maintainers; [ emily ];
   };
 }

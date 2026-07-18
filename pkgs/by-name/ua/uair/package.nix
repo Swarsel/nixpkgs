@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   installShellFiles,
-  lib,
   rustPlatform,
   scdoc,
 }:
@@ -17,12 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-VytbtTQch8O5hCg3L3ANNOfFOyiQY1V7DvGMEKr1R04=";
   };
 
-  cargoHash = "sha256-5/CvyN/uOMIEhOg7uqon6bQd5EQDPVrfi7XnJF9mZyg=";
-
   nativeBuildInputs = [
     installShellFiles
     scdoc
   ];
+
+  cargoHash = "sha256-5/CvyN/uOMIEhOg7uqon6bQd5EQDPVrfi7XnJF9mZyg=";
 
   preFixup = ''
     scdoc < docs/uair.1.scd > docs/uair.1

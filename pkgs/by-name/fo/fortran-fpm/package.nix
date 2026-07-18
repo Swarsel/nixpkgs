@@ -3,13 +3,12 @@
   stdenv,
   fetchurl,
   gfortran,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "fortran-fpm";
-
   version = "0.13.0";
 
   src = fetchurl {
@@ -17,11 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ABz/bPEUXyFbqgiIuieswGzqMKibedGovpfbP/+8jNI=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ gfortran ];
-
-  buildPath = "build/bootstrap";
 
   buildPhase = ''
     runHook preBuild
@@ -41,10 +36,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  buildPath = "build/bootstrap";
+  dontUnpack = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -53,8 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Fortran Package Manager (fpm)";
     homepage = "https://fpm.fortran-lang.org";
-    maintainers = [ lib.maintainers.proofconstruction ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.proofconstruction ];
     platforms = lib.platforms.all;
     mainProgram = "fortran-fpm";
   };

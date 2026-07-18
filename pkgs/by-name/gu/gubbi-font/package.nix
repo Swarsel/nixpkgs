@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     installFonts
   ];
 
-  dontConfigure = true;
-
   preBuild = "patchShebangs generate.pe";
 
   installPhase = ''
@@ -31,11 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Kannada font";
-    maintainers = with lib.maintainers; [ pancaek ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ pancaek ];
     platforms = lib.platforms.all;
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
-  versionCheckHook,
   protobuf,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "chirpstack-gateway-mesh";
@@ -17,14 +17,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-t4W2G8NzVvcGp6nmCn4Wt9OUR9c7yceKdhDFb/RAk20=";
   };
 
-  cargoHash = "sha256-3292/Q9OCoxkIOgOwAle37Ltozt1CDGGeXw6lqT91kU=";
-
   nativeBuildInputs = [ protobuf ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  cargoHash = "sha256-3292/Q9OCoxkIOgOwAle37Ltozt1CDGGeXw6lqT91kU=";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

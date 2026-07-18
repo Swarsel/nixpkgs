@@ -1,38 +1,35 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  cmake,
-  installShellFiles,
-  writableTmpDirAsHomeHook,
-
+  SDL2,
   # deps for audio backends
   alsa-lib,
-  libpulseaudio,
-  portaudio,
-  libjack2,
-  SDL2,
-  gst_all_1,
+  cmake,
   dbus,
   fontconfig,
+  gst_all_1,
+  installShellFiles,
+  libjack2,
+  libpulseaudio,
   libsixel,
-
-  # build options
-  withStreaming ? true,
-  withDaemon ? true,
-  withAudioBackend ? "rodio", # alsa, pulseaudio, rodio, portaudio, jackaudio, rodiojack, sdl, gstreamer
-  withMediaControl ? true,
-  withImage ? true,
-  withNotify ? true,
-  withSixel ? true,
-  withFuzzy ? true,
-  stdenv,
   makeBinaryWrapper,
-
   # passthru
   nix-update-script,
+  openssl,
+  pkg-config,
+  portaudio,
+  rustPlatform,
+  writableTmpDirAsHomeHook,
+  withAudioBackend ? "rodio", # alsa, pulseaudio, rodio, portaudio, jackaudio, rodiojack, sdl, gstreamer
+  withDaemon ? true,
+  withFuzzy ? true,
+  withImage ? true,
+  withMediaControl ? true,
+  withNotify ? true,
+  withSixel ? true,
+  # build options
+  withStreaming ? true,
 }:
 
 assert lib.assertOneOf "withAudioBackend" withAudioBackend [
@@ -57,8 +54,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-SxzQdQOg+KS6jXJNifVkehR91g6gTHBYgyxfXx9WWI8=";
   };
-
-  cargoHash = "sha256-TmGdJXKOsTL9HVyEEe3PtiLMSDJV/TRokRBVAUdHL7I=";
 
   nativeBuildInputs = [
     pkg-config
@@ -95,18 +90,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gst_all_1.gst-plugins-good
   ];
 
-  buildNoDefaultFeatures = true;
-
-  buildFeatures =
-    [ ]
-    ++ lib.optionals (withAudioBackend != "") [ "${withAudioBackend}-backend" ]
-    ++ lib.optionals withMediaControl [ "media-control" ]
-    ++ lib.optionals withImage [ "image" ]
-    ++ lib.optionals withDaemon [ "daemon" ]
-    ++ lib.optionals withNotify [ "notify" ]
-    ++ lib.optionals withStreaming [ "streaming" ]
-    ++ lib.optionals withSixel [ "sixel" ]
-    ++ lib.optionals withFuzzy [ "fzf" ];
+  cargoHash = "sha256-TmGdJXKOsTL9HVyEEe3PtiLMSDJV/TRokRBVAUdHL7I=";
 
   postInstall =
     let
@@ -124,6 +108,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
          --zsh <($out/bin/spotify_player generate zsh)
     '';
 
+  buildFeatures =
+    [ ]
+    ++ lib.optionals (withAudioBackend != "") [ "${withAudioBackend}-backend" ]
+    ++ lib.optionals withMediaControl [ "media-control" ]
+    ++ lib.optionals withImage [ "image" ]
+    ++ lib.optionals withDaemon [ "daemon" ]
+    ++ lib.optionals withNotify [ "notify" ]
+    ++ lib.optionals withStreaming [ "streaming" ]
+    ++ lib.optionals withSixel [ "sixel" ]
+    ++ lib.optionals withFuzzy [ "fzf" ];
+
+  buildNoDefaultFeatures = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -132,13 +129,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Terminal spotify player that has feature parity with the official client";
     homepage = "https://github.com/aome510/spotify-player";
     changelog = "https://github.com/aome510/spotify-player/releases/tag/v${finalAttrs.version}";
-    mainProgram = "spotify_player";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       xyven1
       _71zenith
       caperren
       mattkang
     ];
+
+    mainProgram = "spotify_player";
   };
 })

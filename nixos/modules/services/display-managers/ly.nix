@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 
@@ -36,19 +36,19 @@ let
   '';
 
   defaultConfig = {
-    shutdown_cmd = "/run/current-system/systemd/bin/systemctl poweroff";
+    brightness_down_cmd = "${lib.getExe pkgs.brightnessctl} -q -n s 10%-";
+    brightness_up_cmd = "${lib.getExe pkgs.brightnessctl} -q -n s +10%";
+    path = "/run/current-system/sw/bin";
     restart_cmd = "/run/current-system/systemd/bin/systemctl reboot";
     service_name = "ly";
-    path = "/run/current-system/sw/bin";
+    setup_cmd = dmcfg.sessionData.wrapper;
+    shutdown_cmd = "/run/current-system/systemd/bin/systemctl poweroff";
     term_reset_cmd = "${pkgs.ncurses}/bin/tput reset";
     term_restore_cursor_cmd = "${pkgs.ncurses}/bin/tput cnorm";
     waylandsessions = "${dmcfg.sessionData.desktops}/share/wayland-sessions";
-    xsessions = "${dmcfg.sessionData.desktops}/share/xsessions";
-    xauth_cmd = lib.optionalString xcfg.enable "${pkgs.xauth}/bin/xauth";
     x_cmd = lib.optionalString xcfg.enable xserverWrapper;
-    setup_cmd = dmcfg.sessionData.wrapper;
-    brightness_up_cmd = "${lib.getExe pkgs.brightnessctl} -q -n s +10%";
-    brightness_down_cmd = "${lib.getExe pkgs.brightnessctl} -q -n s 10%-";
+    xauth_cmd = lib.optionalString xcfg.enable "${pkgs.xauth}/bin/xauth";
+    xsessions = "${dmcfg.sessionData.desktops}/share/xsessions";
   }
   // optionalAttrs dmcfg.autoLogin.enable {
     auto_login_service = "ly-autologin";
@@ -65,24 +65,27 @@ in
   options = {
     services.displayManager.ly = {
       enable = mkEnableOption "ly as the display manager";
-      x11Support = mkOption {
-        description = "Whether to enable support for X11";
-        type = lib.types.bool;
-        default = true;
-      };
-
       package = mkPackageOption pkgs [ "ly" ] { };
 
       settings = mkOption {
-        type = with lib.types; attrsOf iniFmt.lib.types.atom;
         default = { };
+
+        description = ''
+          Extra settings merged in and overwriting defaults in config.ini.
+        '';
+
         example = {
           load = false;
           save = false;
         };
-        description = ''
-          Extra settings merged in and overwriting defaults in config.ini.
-        '';
+
+        type = with lib.types; attrsOf iniFmt.lib.types.atom;
+      };
+
+      x11Support = mkOption {
+        default = true;
+        description = "Whether to enable support for X11";
+        type = lib.types.bool;
       };
     };
   };
@@ -92,79 +95,81 @@ in
     assertions = [
       {
         assertion = dmcfg.autoLogin.enable -> dmcfg.sessionData.autologinSession != null;
+
         message = ''
           ly auto-login requires that services.displayManager.defaultSession is set.
         '';
       }
     ];
 
+    environment = {
+      etc."ly/config.ini".source = cfgFile;
+      pathsToLink = [ "/share/ly" ];
+      systemPackages = [ ly ];
+    };
+
     security.pam.services = {
       ly = {
+        enableGnomeKeyring = lib.mkDefault config.services.gnome.gnome-keyring.enable;
         startSession = true;
         unixAuth = true;
-        enableGnomeKeyring = lib.mkDefault config.services.gnome.gnome-keyring.enable;
       };
     }
     // optionalAttrs dmcfg.autoLogin.enable {
       ly-autologin = {
-        useDefaultRules = false;
         rules = {
+          account = utils.pam.autoOrderRules [
+            {
+              control = "include";
+              modulePath = "ly";
+              name = "ly";
+            }
+          ];
+
           auth = utils.pam.autoOrderRules [
             {
-              name = "nologin";
               control = "requisite";
               modulePath = "${config.security.pam.package}/lib/security/pam_nologin.so";
+              name = "nologin";
             }
             {
-              name = "ly-normal-user";
-              control = "required";
-              modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
-              settings.quiet = true;
               args = lib.mkBefore [
                 "uid"
                 ">="
                 "1000"
               ];
+
+              control = "required";
+              modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
+              name = "ly-normal-user";
+              settings.quiet = true;
             }
             {
-              name = "permit";
               control = "required";
               modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
-            }
-          ];
-
-          account = utils.pam.autoOrderRules [
-            {
-              name = "ly";
-              control = "include";
-              modulePath = "ly";
+              name = "permit";
             }
           ];
 
           password = utils.pam.autoOrderRules [
             {
-              name = "ly";
               control = "include";
               modulePath = "ly";
+              name = "ly";
             }
           ];
 
           session = utils.pam.autoOrderRules [
             {
-              name = "ly";
               control = "include";
               modulePath = "ly";
+              name = "ly";
             }
           ];
         };
+
+        useDefaultRules = false;
       };
-    };
-
-    environment = {
-      etc."ly/config.ini".source = cfgFile;
-      systemPackages = [ ly ];
-
-      pathsToLink = [ "/share/ly" ];
     };
 
     services = {
@@ -172,6 +177,7 @@ in
 
       displayManager = {
         enable = true;
+
         generic = {
           enable = true;
           execCmd = "exec /run/current-system/sw/bin/ly";
@@ -198,11 +204,11 @@ in
         ];
 
         serviceConfig = {
-          Type = "idle";
           StandardInput = "tty";
           TTYPath = "/dev/tty${toString finalConfig.tty}";
           TTYReset = "yes";
           TTYVHangup = "yes";
+          Type = "idle";
         };
       };
     };

@@ -1,16 +1,15 @@
 {
-  buildDunePackage,
-  httpun-types,
+  alcotest,
   angstrom,
   bigstringaf,
+  buildDunePackage,
   faraday,
-  alcotest,
+  httpun-types,
 }:
 
 buildDunePackage {
-  pname = "httpun";
-
   inherit (httpun-types) src version;
+  pname = "httpun";
 
   propagatedBuildInputs = [
     angstrom

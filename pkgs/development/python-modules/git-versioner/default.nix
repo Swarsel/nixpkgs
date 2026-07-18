@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitLab,
   buildPythonPackage,
   setuptools-scm,
-  fetchFromGitLab,
 }:
 
 buildPythonPackage rec {
   pname = "git-versioner";
   version = "7.1";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "alelec";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
+  pyproject = true;
   pythonImportsCheck = [ "__version__" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,17 +18,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-iY0+iCIExTcYZP7ob1yAXd6zBhGMzK0pyFThAfgN4Yc=";
 
-  subPackages = [
-    "."
-    "tools/mount_gcsfuse"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.gcsfuseVersion=${finalAttrs.version}"
-  ];
-
   checkFlags =
     let
       skippedTests = [
@@ -43,6 +32,17 @@ buildGoModule (finalAttrs: {
     ln -s $out/bin/mount_gcsfuse $out/bin/mount.gcsfuse
     ln -s $out/bin/mount_gcsfuse $out/bin/mount.fuse.gcsfuse
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.gcsfuseVersion=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "."
+    "tools/mount_gcsfuse"
+  ];
 
   meta = {
     description = "User-space file system for interacting with Google Cloud Storage";

@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  pkg-config,
-  curl,
-  openssl,
   SDL2,
   alsa-lib,
+  cmake,
+  copyDesktopItems,
+  curl,
   libGL,
   libGLU,
   libx11,
-  libxi,
   libxcursor,
+  libxi,
   lua,
   makeDesktopItem,
-  copyDesktopItems,
+  ninja,
+  openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rfXHOff+PG5iA19iwEij4c5aFD9XrSF1GQhIBhWzKgg=";
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail 'set(CMAKE_OSX_ARCHITECTURES' '#set(CMAKE_OSX_ARCHITECTURES'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -59,35 +64,31 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ENABLE_RETRO_ACHIEVEMENTS" true)
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail 'set(CMAKE_OSX_ARCHITECTURES' '#set(CMAKE_OSX_ARCHITECTURES'
+  postInstall = ''
+    install -Dm644 $src/src/resources/icons/icon.png $out/share/pixmaps/skyemu.png
   '';
 
   desktopItems = [
     (makeDesktopItem {
-      name = "skyemu";
-      exec = "SkyEmu";
-      icon = "skyemu";
-      comment = "GameBoy, GameBoy Color, GameBoy Advance, and DS emulator";
-      desktopName = "SkyEmu";
       categories = [
         "Game"
         "Emulator"
       ];
+
+      comment = "GameBoy, GameBoy Color, GameBoy Advance, and DS emulator";
+      desktopName = "SkyEmu";
+      exec = "SkyEmu";
+      icon = "skyemu";
+      name = "skyemu";
     })
   ];
-
-  postInstall = ''
-    install -Dm644 $src/src/resources/icons/icon.png $out/share/pixmaps/skyemu.png
-  '';
 
   meta = {
     description = "Low level GameBoy, GameBoy Color, Game Boy Advance, and DS emulator";
     homepage = "https://github.com/skylersaleh/SkyEmu";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ liberodark ];
-    mainProgram = "SkyEmu";
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "SkyEmu";
   };
 })

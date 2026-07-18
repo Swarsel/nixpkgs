@@ -1,12 +1,12 @@
 {
   lib,
-  git,
-  dotnetCorePackages,
-  glibcLocales,
-  buildDotnetModule,
+  stdenv,
   fetchFromGitHub,
   bintools,
-  stdenv,
+  buildDotnetModule,
+  dotnetCorePackages,
+  git,
+  glibcLocales,
   mono,
   nix-update-script,
 }:
@@ -26,36 +26,17 @@ buildDotnetModule rec {
     leaveDotGit = true;
   };
 
-  # Fixes application reporting 0.0.0.0 as its version.
-  env.MINVERVERSIONOVERRIDE = version;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
-
   nativeBuildInputs = [
     git
     glibcLocales
     bintools
   ];
 
-  runtimeDeps = [ mono ];
-
-  executables = [ mainProgram ];
-
-  # This test has a problem running on macOS
-  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
-    "EventStore.Projections.Core.Tests.Services.grpc_service.ServerFeaturesTests<LogFormat+V2,String>.should_receive_expected_endpoints"
-    "EventStore.Projections.Core.Tests.Services.grpc_service.ServerFeaturesTests<LogFormat+V3,UInt32>.should_receive_expected_endpoints"
-  ];
-
-  nugetDeps = ./deps.json;
-
-  projectFile = "src/EventStore.ClusterNode/EventStore.ClusterNode.csproj";
-
+  # Fixes application reporting 0.0.0.0 as its version.
+  env.MINVERVERSIONOVERRIDE = version;
   doCheck = true;
-  testProjectFile = "src/EventStore.Projections.Core.Tests/EventStore.Projections.Core.Tests.csproj";
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/EventStore.ClusterNode --insecure \
       --db "$HOME/data" \
@@ -70,19 +51,34 @@ buildDotnetModule rec {
     kill "$PID";
   '';
 
+  # This test has a problem running on macOS
+  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
+    "EventStore.Projections.Core.Tests.Services.grpc_service.ServerFeaturesTests<LogFormat+V2,String>.should_receive_expected_endpoints"
+    "EventStore.Projections.Core.Tests.Services.grpc_service.ServerFeaturesTests<LogFormat+V3,UInt32>.should_receive_expected_endpoints"
+  ];
+
+  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ mainProgram ];
+  nugetDeps = ./deps.json;
+  projectFile = "src/EventStore.ClusterNode/EventStore.ClusterNode.csproj";
+  runtimeDeps = [ mono ];
+  testProjectFile = "src/EventStore.Projections.Core.Tests/EventStore.Projections.Core.Tests.csproj";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://geteventstore.com/";
+    inherit mainProgram;
     description = "Event sourcing database with processing logic in JavaScript";
+    homepage = "https://geteventstore.com/";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       puffnfresh
       mdarocha
     ];
+
     platforms = [
       "x86_64-linux"
     ];
-    inherit mainProgram;
   };
 }

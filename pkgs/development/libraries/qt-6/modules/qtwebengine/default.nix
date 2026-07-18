@@ -1,108 +1,85 @@
 {
-  qtModule,
-  qtdeclarative,
-  qtwebchannel,
-  qtpositioning,
-  qtwebsockets,
-  buildPackages,
-  bison,
-  coreutils,
-  fetchpatch2,
-  flex,
-  gperf,
-  ninja,
-  pkg-config,
-  python3,
-  which,
-  nodejs,
-  libxext,
-  libxdamage,
-  libxcomposite,
-  xrandr,
-  libxkbfile,
-  libpciaccess,
-  libxcursor,
-  libxscrnsaver,
-  libxrandr,
-  libxtst,
-  libxshmfence,
-  libxi,
-  cups,
-  fontconfig,
-  freetype,
-  harfbuzz,
-  icu,
-  dbus,
-  expat,
-  libdrm,
-  zlib,
-  minizip,
-  libjpeg,
-  libpng,
-  libtiff,
-  libwebp,
-  libopus,
-  jsoncpp,
-  protobuf,
-  srtp,
-  snappy,
-  nss,
-  libevent,
-  openssl,
-  alsa-lib,
-  pulseaudio,
-  libcap,
-  pciutils,
-  systemd,
-  pipewire,
-  gn,
-  ffmpeg,
   lib,
   stdenv,
-  glib,
-  libxml2,
-  libxslt,
-  lcms2,
-  libkrb5,
-  libgbm,
-  libva,
-  enableProprietaryCodecs ? true,
+  alsa-lib,
+  bison,
   # darwin
   bootstrap_cmds,
+  buildPackages,
   cctools,
+  coreutils,
+  cups,
+  dbus,
+  expat,
+  fetchpatch2,
+  ffmpeg,
+  flex,
+  fontconfig,
+  freetype,
+  glib,
+  gn,
+  gperf,
+  harfbuzz,
+  icu,
+  jsoncpp,
+  lcms2,
+  libcap,
+  libdrm,
+  libevent,
+  libgbm,
+  libjpeg,
+  libkrb5,
+  libopus,
+  libpciaccess,
+  libpng,
+  libtiff,
+  libva,
+  libwebp,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxi,
+  libxkbfile,
+  libxml2,
+  libxrandr,
+  libxscrnsaver,
+  libxshmfence,
+  libxslt,
+  libxtst,
+  minizip,
+  ninja,
+  nodejs,
+  nss,
+  openssl,
+  pciutils,
+  pipewire,
+  pkg-config,
+  protobuf,
+  pulseaudio,
+  python3,
+  qtModule,
+  qtdeclarative,
+  qtpositioning,
+  qtwebchannel,
+  qtwebsockets,
+  snappy,
+  srtp,
+  systemd,
+  which,
   xcbuild,
+  xrandr,
+  zlib,
+  enableProprietaryCodecs ? true,
 }:
 
 qtModule {
   pname = "qtwebengine";
-  nativeBuildInputs = [
-    bison
-    coreutils
-    flex
-    gperf
-    ninja
-    pkg-config
-    (python3.withPackages (ps: with ps; [ html5lib ]))
-    which
-    gn
-    nodejs
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    bootstrap_cmds
-    cctools
-    xcbuild
-  ];
-  doCheck = true;
+
   outputs = [
     "out"
     "dev"
   ];
-
-  dontUseGnConfigure = true;
-
-  # ninja builds some components with -Wno-format,
-  # which cannot be set at the same time as -Wformat-security
-  hardeningDisable = [ "format" ];
 
   patches = [
     # Don't assume /usr/share/X11, and also respect the XKB_CONFIG_ROOT
@@ -160,36 +137,26 @@ qtModule {
       --replace-fail "/usr/bin/xcrun" "${xcbuild}/bin/xcrun"
   '';
 
-  cmakeFlags = [
-    "-DQT_FEATURE_qtpdf_build=ON"
-    "-DQT_FEATURE_qtpdf_widgets_build=ON"
-    "-DQT_FEATURE_qtpdf_quick_build=ON"
-    "-DQT_FEATURE_pdf_v8=ON"
-    "-DQT_FEATURE_pdf_xfa=ON"
-    "-DQT_FEATURE_pdf_xfa_bmp=ON"
-    "-DQT_FEATURE_pdf_xfa_gif=ON"
-    "-DQT_FEATURE_pdf_xfa_png=ON"
-    "-DQT_FEATURE_pdf_xfa_tiff=ON"
-    "-DQT_FEATURE_webengine_system_libevent=ON"
-    "-DQT_FEATURE_webengine_system_ffmpeg=ON"
-    # android only. https://bugreports.qt.io/browse/QTBUG-100293
-    # "-DQT_FEATURE_webengine_native_spellchecker=ON"
-    "-DQT_FEATURE_webengine_sanitizer=ON"
-    "-DQT_FEATURE_webengine_kerberos=ON"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    "-DQT_FEATURE_webengine_system_libxml=ON"
-    "-DQT_FEATURE_webengine_webrtc_pipewire=ON"
-
-    # Appears not to work on some platforms
-    # https://github.com/Homebrew/homebrew-core/issues/104008
-    "-DQT_FEATURE_webengine_system_icu=ON"
-  ]
-  ++ lib.optionals enableProprietaryCodecs [
-    "-DQT_FEATURE_webengine_proprietary_codecs=ON"
+  nativeBuildInputs = [
+    bison
+    coreutils
+    flex
+    gperf
+    ninja
+    pkg-config
+    (python3.withPackages (ps: with ps; [ html5lib ]))
+    which
+    gn
+    nodejs
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0" # Per Qt 6’s deployment target (why doesn’t the hook work?)
+    bootstrap_cmds
+    cctools
+    xcbuild
+  ];
+
+  buildInputs = [
+    cups
   ];
 
   propagatedBuildInputs = [
@@ -268,21 +235,54 @@ qtModule {
     libva
   ];
 
-  buildInputs = [
-    cups
-  ];
+  cmakeFlags = [
+    "-DQT_FEATURE_qtpdf_build=ON"
+    "-DQT_FEATURE_qtpdf_widgets_build=ON"
+    "-DQT_FEATURE_qtpdf_quick_build=ON"
+    "-DQT_FEATURE_pdf_v8=ON"
+    "-DQT_FEATURE_pdf_xfa=ON"
+    "-DQT_FEATURE_pdf_xfa_bmp=ON"
+    "-DQT_FEATURE_pdf_xfa_gif=ON"
+    "-DQT_FEATURE_pdf_xfa_png=ON"
+    "-DQT_FEATURE_pdf_xfa_tiff=ON"
+    "-DQT_FEATURE_webengine_system_libevent=ON"
+    "-DQT_FEATURE_webengine_system_ffmpeg=ON"
+    # android only. https://bugreports.qt.io/browse/QTBUG-100293
+    # "-DQT_FEATURE_webengine_native_spellchecker=ON"
+    "-DQT_FEATURE_webengine_sanitizer=ON"
+    "-DQT_FEATURE_webengine_kerberos=ON"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    "-DQT_FEATURE_webengine_system_libxml=ON"
+    "-DQT_FEATURE_webengine_webrtc_pipewire=ON"
 
-  requiredSystemFeatures = [ "big-parallel" ];
+    # Appears not to work on some platforms
+    # https://github.com/Homebrew/homebrew-core/issues/104008
+    "-DQT_FEATURE_webengine_system_icu=ON"
+  ]
+  ++ lib.optionals enableProprietaryCodecs [
+    "-DQT_FEATURE_webengine_proprietary_codecs=ON"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0" # Per Qt 6’s deployment target (why doesn’t the hook work?)
+  ];
 
   preConfigure = ''
     export NINJAFLAGS="-j$NIX_BUILD_CORES"
   '';
 
+  doCheck = true;
+  dontUseGnConfigure = true;
+  # ninja builds some components with -Wno-format,
+  # which cannot be set at the same time as -Wformat-security
+  hardeningDisable = [ "format" ];
+  requiredSystemFeatures = [ "big-parallel" ];
   # Debug info is too big to link with LTO.
   separateDebugInfo = false;
 
   meta = {
     description = "Web engine based on the Chromium web browser";
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"
@@ -290,6 +290,7 @@ qtModule {
       "armv7l-linux"
       "x86_64-linux"
     ];
+
     # This build takes a long time; particularly on slow architectures
     # 1 hour on 32x3.6GHz -> maybe 12 hours on 4x2.4GHz
     timeout = 24 * 3600;

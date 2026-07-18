@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "witnessme";
   version = "0-unstable-2023-12-06";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "byt3bl33d3r";
@@ -21,13 +20,18 @@ python3.pkgs.buildPythonApplication {
   patches = [
     # Switch to poetry-core, https://github.com/byt3bl33d3r/WitnessMe/pull/48
     (fetchpatch {
+      hash = "sha256-ZcIt/ueLgVlZePgxYljRFtvF5t2zlB80HsNyjheCnxI=";
       name = "switch-poetry-core.patch";
       url = "https://github.com/byt3bl33d3r/WitnessMe/commit/147ce9fc7c9ac84712aa1ba2f7073bc2f29c8afe.patch";
-      hash = "sha256-ZcIt/ueLgVlZePgxYljRFtvF5t2zlB80HsNyjheCnxI=";
     })
   ];
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = with python3.pkgs; [
+    httpx
+    pytest-asyncio
+    pytestCheckHook
+    setuptools
+  ];
 
   build-system = with python3.pkgs; [
     poetry-core
@@ -51,17 +55,6 @@ python3.pkgs.buildPythonApplication {
     xmltodict
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    httpx
-    pytest-asyncio
-    pytestCheckHook
-    setuptools
-  ];
-
-  pythonImportsCheck = [
-    "witnessme"
-  ];
-
   disabledTestPaths = [
     # Tests require network access
     "tests/test_api.py"
@@ -69,6 +62,14 @@ python3.pkgs.buildPythonApplication {
     "tests/test_scan.py"
     "tests/test_target_parsing.py"
   ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "witnessme"
+  ];
+
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Web Inventory tool";

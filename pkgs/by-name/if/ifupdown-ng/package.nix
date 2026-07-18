@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libbsd,
-  pkg-config,
   coreutils,
   iproute2,
+  libbsd,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -18,10 +18,6 @@ stdenv.mkDerivation {
     rev = "fb07d0824b20d178e7acca9e85296822ac2539ac";
     hash = "sha256-c06NbF0LpyK3hTMxCeWyQcUP9dL17hOm3993wjW/OzQ=";
   };
-
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ libbsd ];
 
   postPatch = ''
     # The Makefile hardcodes -static; remove it to build dynamically.
@@ -51,6 +47,9 @@ stdenv.mkDerivation {
       --replace-fail '/usr/sbin/iwconfig' 'iwconfig'
   '';
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ libbsd ];
+
   makeFlags = [
     "SBINDIR=/bin"
     "EXECUTOR_PATH=/libexec/ifupdown-ng"
@@ -62,14 +61,16 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Next-generation network interface configuration tool";
+
     longDescription = ''
       ifupdown-ng is a network device manager that is largely compatible
       with Debian ifupdown, BusyBox ifupdown, and other implementations.
       It is used by Alpine Linux as its network management solution.
     '';
+
     homepage = "https://github.com/ifupdown-ng/ifupdown-ng";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ aanderse ];
+    platforms = lib.platforms.linux;
   };
 }

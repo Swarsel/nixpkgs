@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   go,
   versionCheckHook,
 }:
@@ -19,20 +19,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  tags = [
-    "noassets" # required to build synthing gui without generating assets
-  ];
-
-  ldflags = [
-    "-X github.com/wencaiwulue/kubevpn/v2/pkg/config.Version=v${finalAttrs.version}"
-    "-X github.com/wencaiwulue/kubevpn/v2/cmd/kubevpn/cmds.OsArch=${go.GOOS}/${go.GOARCH}"
-  ];
-
-  # Resolve configuration tests, which access $HOME
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
 
   checkFlags =
     let
@@ -52,19 +38,33 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  __darwinAllowLocalNetworking = true;
+  # Resolve configuration tests, which access $HOME
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-X github.com/wencaiwulue/kubevpn/v2/pkg/config.Version=v${finalAttrs.version}"
+    "-X github.com/wencaiwulue/kubevpn/v2/cmd/kubevpn/cmds.OsArch=${go.GOOS}/${go.GOARCH}"
+  ];
+
+  tags = [
+    "noassets" # required to build synthing gui without generating assets
+  ];
+
   versionCheckKeepEnvironment = [ "HOME" ];
   versionCheckProgramArg = "version";
 
   meta = {
-    changelog = "https://github.com/KubeNetworks/kubevpn/releases/tag/${finalAttrs.src.rev}";
     description = "Create a VPN and connect to Kubernetes cluster network, access resources, and more";
-    mainProgram = "kubevpn";
     homepage = "https://github.com/KubeNetworks/kubevpn";
+    changelog = "https://github.com/KubeNetworks/kubevpn/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mig4ng ];
+    mainProgram = "kubevpn";
   };
 })

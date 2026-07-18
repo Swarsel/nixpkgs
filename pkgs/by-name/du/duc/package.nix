@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  ncurses,
   pkg-config,
   tokyocabinet,
-  ncurses,
   cairo ? null,
-  pango ? null,
   enableCairo ? stdenv.hostPlatform.isLinux,
+  pango ? null,
 }:
 
 assert enableCairo -> cairo != null && pango != null;
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     tokyocabinet
     ncurses
@@ -43,12 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://duc.zevv.nl/";
     description = "Collection of tools for inspecting and visualizing disk usage";
+    homepage = "http://duc.zevv.nl/";
     license = lib.licenses.gpl2Only;
-
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "duc";
   };
 })

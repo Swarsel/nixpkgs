@@ -1,34 +1,33 @@
 {
-  stdenv,
   lib,
-  pkg-config,
-  cmake,
+  stdenv,
   fetchurl,
-  zlib,
-  bzip2,
-  file,
-  elfutils,
-  libarchive,
-  readline,
   audit,
-  popt,
-  xz,
-  python3,
-  lua,
-  llvmPackages,
-  sqlite,
-  zstd,
-  libcap,
+  autoconf,
+  bubblewrap,
+  bzip2,
+  cmake,
   darwinMinVersionHook,
+  elfutils,
+  file,
+  gettext,
+  gnupg,
+  libarchive,
+  libcap,
+  llvmPackages,
+  lua,
   openssl,
+  pkg-config,
+  popt,
+  python3,
+  readline,
   #, libselinux
   rpm-sequoia,
-  gettext,
+  sqlite,
   systemd,
-  bubblewrap,
-  autoconf,
-  gnupg,
-
+  xz,
+  zlib,
+  zstd,
   # Disable the unshare RPM plugin, which can be useful if
   # RPM is ran within the Nix sandbox.
   disableUnshare ? true,
@@ -43,6 +42,18 @@ stdenv.mkDerivation rec {
     hash = "sha256-UmR+EmODZFM6tnHLyOSFyW+fCIidk/4O0QSmYyZhEk8=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    "dev"
+  ];
+
+  patches = lib.optionals stdenv.hostPlatform.isDarwin [
+    ./sighandler_t-macos.patch
+  ];
+
   postPatch = ''
     sed -i 's#''${Python3_SITEARCH}#${placeholder "out"}/${python3.sitePackages}#' python/CMakeLists.txt
     sed -i 's#PATHS ENV MYPATH#PATHS ENV PATH#' CMakeLists.txt
@@ -53,15 +64,6 @@ stdenv.mkDerivation rec {
       --replace-fail "-fhardened" ""
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    "dev"
-  ];
-  separateDebugInfo = true;
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -70,6 +72,7 @@ stdenv.mkDerivation rec {
     gettext
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ bubblewrap ];
+
   buildInputs = [
     bzip2
     zlib
@@ -91,9 +94,11 @@ stdenv.mkDerivation rec {
     systemd
   ];
 
-  patches = lib.optionals stdenv.hostPlatform.isDarwin [
-    ./sighandler_t-macos.patch
-  ];
+  # rpm/rpmlib.h includes popt.h, and then the pkg-config file mentions these as linkage requirements
+  propagatedBuildInputs = [
+    popt
+  ]
+  ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform elfutils) elfutils;
 
   cmakeFlags = [
     "-DWITH_DBUS=OFF"
@@ -121,21 +126,18 @@ stdenv.mkDerivation rec {
     "-DHAVE_UNSHARE=OFF"
   ];
 
-  # rpm/rpmlib.h includes popt.h, and then the pkg-config file mentions these as linkage requirements
-  propagatedBuildInputs = [
-    popt
-  ]
-  ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform elfutils) elfutils;
-
   enableParallelBuilding = true;
+  separateDebugInfo = true;
 
   meta = {
+    description = "RPM package manager";
     homepage = "https://www.rpm.org/";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
-    description = "RPM package manager";
+
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };

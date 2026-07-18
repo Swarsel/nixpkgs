@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-GoMA0G3YXIkHeeIbW4/bOKSeAf2cQk5Tb1e4Rivwx/U=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -25,9 +24,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/AlexsJones/llmfit";
     changelog = "https://github.com/AlexsJones/llmfit/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
     mainProgram = "llmfit";
   };
 })

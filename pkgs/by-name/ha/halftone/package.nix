@@ -1,17 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  wrapGAppsHook4,
+  appstream-glib,
+  blueprint-compiler,
+  desktop-file-utils,
+  glib,
+  gobject-introspection,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  appstream-glib,
-  desktop-file-utils,
-  gobject-introspection,
-  glib,
-  blueprint-compiler,
-  libadwaita,
   python3Packages,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -24,9 +24,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-5hT6ulmUlOrFVL4nV0tfvgkKdYGusp+1rBINQy3ZvpI=";
   };
-
-  pyproject = false;
-  dontWrapGApps = true;
 
   nativeBuildInputs = [
     appstream-glib
@@ -53,12 +50,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+  pyproject = false;
+
   meta = {
-    homepage = "https://github.com/tfuxu/halftone";
     description = "Simple app for giving images that pixel-art style";
+    homepage = "https://github.com/tfuxu/halftone";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "halftone";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "halftone";
   };
 })

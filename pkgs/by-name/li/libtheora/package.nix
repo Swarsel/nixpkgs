@@ -5,8 +5,8 @@
   autoreconfHook,
   libogg,
   libvorbis,
-  pkg-config,
   perl,
+  pkg-config,
   testers,
   validatePkgConfig,
 }:
@@ -22,20 +22,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kzZh4V6wZX9MetDutuqjRenmdpy4PHaRU9MgtIwPpiU=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "devdoc"
+  ];
+
   patches = lib.optionals stdenv.hostPlatform.isMinGW [ ./mingw-remove-export.patch ];
 
   postPatch = lib.optionalString stdenv.hostPlatform.isAarch32 ''
     patchShebangs lib/arm/arm2gnu.pl
   '';
 
-  configureFlags = [ "--disable-examples" ];
-
-  outputs = [
-    "out"
-    "dev"
-    "devdoc"
-  ];
-  outputDoc = "devdoc";
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -52,23 +51,25 @@ stdenv.mkDerivation (finalAttrs: {
     libvorbis
   ];
 
-  strictDeps = true;
+  configureFlags = [ "--disable-examples" ];
+  outputDoc = "devdoc";
 
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
-      package = finalAttrs.finalPackage;
       moduleNames = [
         "theora"
         "theoradec"
         "theoraenc"
       ];
+
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
-    changelog = "https://gitlab.xiph.org/xiph/theora/-/releases/v${finalAttrs.version}";
     description = "Library for Theora, a free and open video compression format";
     homepage = "https://www.theora.org/";
+    changelog = "https://gitlab.xiph.org/xiph/theora/-/releases/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ getchoo ];
     platforms = lib.platforms.unix ++ lib.platforms.windows;

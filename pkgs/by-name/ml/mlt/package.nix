@@ -1,45 +1,45 @@
 {
-  config,
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   cmake,
-  pkg-config,
-  which,
+  config,
   ffmpeg,
   fftw,
   frei0r,
+  gdk-pixbuf,
+  gitUpdater,
+  glib,
+  ladspa-sdk,
+  ladspaPlugins,
+  libarchive,
   libdv,
   libjack2,
   libsamplerate,
   libvorbis,
-  libxml2,
   libx11,
+  libxml2,
   makeWrapper,
   movit,
   opencv4,
+  pkg-config,
+  python3,
   rtaudio,
   rubberband,
   sox,
-  vid-stab,
-  cudaSupport ? config.cudaSupport,
-  cudaPackages ? { },
-  enableJackrack ? stdenv.hostPlatform.isLinux,
-  gdk-pixbuf,
-  glib,
-  ladspa-sdk,
-  ladspaPlugins,
-  enablePython ? false,
-  python3,
   swig,
-  qtbase ? null,
-  wrapQtAppsHook ? null,
-  qtsvg ? null,
-  qt5compat ? null,
+  vid-stab,
+  which,
+  cudaPackages ? { },
+  cudaSupport ? config.cudaSupport,
+  enableJackrack ? stdenv.hostPlatform.isLinux,
+  enablePython ? false,
   enableSDL2 ? true,
-  SDL2,
-  gitUpdater,
-  libarchive,
+  qt5compat ? null,
+  qtbase ? null,
+  qtsvg ? null,
+  wrapQtAppsHook ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -56,6 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
     # submodules until upstream exports glaxnimate as a library: https://gitlab.com/mattbas/glaxnimate/-/issues/545
     fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -108,11 +113,6 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   cmakeFlags = [
     # RPATH of binary /nix/store/.../bin/... contains a forbidden reference to /build/
     (lib.cmakeBool "CMAKE_SKIP_BUILD_RPATH" true)
@@ -148,13 +148,16 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Open source multimedia framework, designed for television broadcasting";
     homepage = "https://www.mltframework.org/";
+
     license = with lib.licenses; [
       lgpl21Plus
       gpl2Plus
     ];
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     platforms = lib.platforms.unix;
   };
 })

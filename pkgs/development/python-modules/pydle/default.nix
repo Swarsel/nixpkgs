@@ -1,18 +1,18 @@
 {
+  lib,
   buildPythonPackage,
   fetchFromCodeberg,
-  lib,
   nix-update-script,
   poetry-core,
-  pytestCheckHook,
   pure-sasl,
   pytest-asyncio,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pydle";
   version = "1.1.0";
-  pyproject = true;
+
   src = fetchFromCodeberg {
     owner = "shiz";
     repo = "pydle";
@@ -20,22 +20,23 @@ buildPythonPackage rec {
     hash = "sha256-LxlE0JVKgwDcPB7QuKkmfBWG33pDzG0F9qaL88xF8r4=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    pure-sasl
-  ];
-
-  pythonImportsCheck = [
-    "pydle"
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    pure-sasl
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "pydle"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

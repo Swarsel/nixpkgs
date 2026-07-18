@@ -1,33 +1,33 @@
 {
+  lib,
   stdenv,
   fetchurl,
+  SDL,
+  aalib,
   autoconf,
   automake,
-  pkg-config,
-  replaceVars,
-  lib,
-  perl,
-  flex,
-  bison,
-  readline,
-  libexif,
   bash,
+  bison,
   buildPackages,
+  flex,
+  giflib,
+  inkscape,
+  libexif,
+  libjpeg,
+  libpng,
+  libtiff,
+  perl,
+  pkg-config,
+  readline,
+  replaceVars,
+  asciiArtSupport ? true,
+  gifSupport ? true,
+  jpegSupport ? true,
+  pngSupport ? true,
+  svgSupport ? true,
+  tiffSupport ? true,
   # SDL depends on Qt, which doesn't cross-compile
   x11Support ? (stdenv.buildPlatform.canExecute stdenv.hostPlatform),
-  SDL,
-  svgSupport ? true,
-  inkscape,
-  asciiArtSupport ? true,
-  aalib,
-  gifSupport ? true,
-  giflib,
-  tiffSupport ? true,
-  libtiff,
-  jpegSupport ? true,
-  libjpeg,
-  pngSupport ? true,
-  libpng,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,10 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # build tools with a build compiler
     (replaceVars ./native-tools.patch {
-      cc_for_build = lib.getExe buildPackages.stdenv.cc;
       # patch context
       FIM_WANT_CUSTOM_HARDCODED_CONSOLEFONT_TRUE = null;
       HAVE_RUNNABLE_TESTS_TRUE = null;
+      cc_for_build = lib.getExe buildPackages.stdenv.cc;
     })
   ];
 
@@ -89,14 +89,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Lightweight, highly customizable and scriptable image viewer";
+
     longDescription = ''
       FIM (Fbi IMproved) is a lightweight, console based image viewer that aims
       to be a highly customizable and scriptable for users who are comfortable
       with software like the VIM text editor or the Mutt mail user agent.
     '';
+
     homepage = "https://www.nongnu.org/fbi-improved/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

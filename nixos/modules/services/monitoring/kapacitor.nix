@@ -9,6 +9,7 @@ let
 
   kapacitorConf = pkgs.writeTextFile {
     name = "kapacitord.conf";
+
     text = ''
       hostname="${config.networking.hostName}"
       data_dir="${cfg.dataDir}"
@@ -61,57 +62,54 @@ in
   options.services.kapacitor = {
     enable = lib.mkEnableOption "kapacitor";
 
-    dataDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/kapacitor";
-      description = "Location where Kapacitor stores its state";
-    };
+    alerta = {
+      enable = lib.mkEnableOption "kapacitor alerta integration";
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 9092;
-      description = "Port of Kapacitor";
+      environment = lib.mkOption {
+        default = "Production";
+        description = "Default Alerta environment";
+        type = lib.types.str;
+      };
+
+      origin = lib.mkOption {
+        default = "kapacitor";
+        description = "Default origin of alert";
+        type = lib.types.str;
+      };
+
+      token = lib.mkOption {
+        default = "";
+        description = "Default Alerta authentication token";
+        type = lib.types.str;
+      };
+
+      url = lib.mkOption {
+        default = "http://localhost:5000";
+        description = "The URL to the Alerta REST API";
+        type = lib.types.str;
+      };
     };
 
     bind = lib.mkOption {
-      type = lib.types.str;
       default = "";
-      example = "0.0.0.0";
       description = "Address to bind to. The default is to bind to all addresses";
-    };
-
-    extraConfig = lib.mkOption {
-      description = "These lines go into kapacitord.conf verbatim.";
-      default = "";
-      type = lib.types.lines;
-    };
-
-    user = lib.mkOption {
+      example = "0.0.0.0";
       type = lib.types.str;
-      default = "kapacitor";
-      description = "User account under which Kapacitor runs";
     };
 
-    group = lib.mkOption {
-      type = lib.types.str;
-      default = "kapacitor";
-      description = "Group under which Kapacitor runs";
-    };
-
-    taskSnapshotInterval = lib.mkOption {
-      type = lib.types.str;
-      description = "Specifies how often to snapshot the task state  (in InfluxDB time units)";
-      default = "1m0s";
-    };
-
-    loadDirectory = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
-      description = "Directory where to load services from, such as tasks, templates and handlers (or null to disable service loading on startup)";
-      default = null;
+    dataDir = lib.mkOption {
+      default = "/var/lib/kapacitor";
+      description = "Location where Kapacitor stores its state";
+      type = lib.types.path;
     };
 
     defaultDatabase = {
       enable = lib.mkEnableOption "kapacitor.defaultDatabase";
+
+      password = lib.mkOption {
+        description = "The password to connect to the remote InfluxDB server";
+        type = lib.types.str;
+      };
 
       url = lib.mkOption {
         description = "The URL to an InfluxDB server that serves as the default database";
@@ -123,68 +121,73 @@ in
         description = "The username to connect to the remote InfluxDB server";
         type = lib.types.str;
       };
-
-      password = lib.mkOption {
-        description = "The password to connect to the remote InfluxDB server";
-        type = lib.types.str;
-      };
     };
 
-    alerta = {
-      enable = lib.mkEnableOption "kapacitor alerta integration";
+    extraConfig = lib.mkOption {
+      default = "";
+      description = "These lines go into kapacitord.conf verbatim.";
+      type = lib.types.lines;
+    };
 
-      url = lib.mkOption {
-        description = "The URL to the Alerta REST API";
-        default = "http://localhost:5000";
-        type = lib.types.str;
-      };
+    group = lib.mkOption {
+      default = "kapacitor";
+      description = "Group under which Kapacitor runs";
+      type = lib.types.str;
+    };
 
-      token = lib.mkOption {
-        description = "Default Alerta authentication token";
-        type = lib.types.str;
-        default = "";
-      };
+    loadDirectory = lib.mkOption {
+      default = null;
+      description = "Directory where to load services from, such as tasks, templates and handlers (or null to disable service loading on startup)";
+      type = lib.types.nullOr lib.types.path;
+    };
 
-      environment = lib.mkOption {
-        description = "Default Alerta environment";
-        type = lib.types.str;
-        default = "Production";
-      };
+    port = lib.mkOption {
+      default = 9092;
+      description = "Port of Kapacitor";
+      type = lib.types.port;
+    };
 
-      origin = lib.mkOption {
-        description = "Default origin of alert";
-        type = lib.types.str;
-        default = "kapacitor";
-      };
+    taskSnapshotInterval = lib.mkOption {
+      default = "1m0s";
+      description = "Specifies how often to snapshot the task state  (in InfluxDB time units)";
+      type = lib.types.str;
+    };
+
+    user = lib.mkOption {
+      default = "kapacitor";
+      description = "User account under which Kapacitor runs";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ pkgs.kapacitor ];
 
+    systemd.services.kapacitor = {
+      after = [ "network.target" ];
+      description = "Kapacitor Real-Time Stream Processing Engine";
+
+      serviceConfig = {
+        ExecStart = "${pkgs.kapacitor}/bin/kapacitord -config ${kapacitorConf}";
+        Group = "kapacitor";
+        User = "kapacitor";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
     systemd.tmpfiles.settings."10-kapacitor".${cfg.dataDir}.d = {
       inherit (cfg) user group;
     };
 
-    systemd.services.kapacitor = {
-      description = "Kapacitor Real-Time Stream Processing Engine";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-      serviceConfig = {
-        ExecStart = "${pkgs.kapacitor}/bin/kapacitord -config ${kapacitorConf}";
-        User = "kapacitor";
-        Group = "kapacitor";
-      };
+    users.groups.kapacitor = {
+      gid = config.ids.gids.kapacitor;
     };
 
     users.users.kapacitor = {
-      uid = config.ids.uids.kapacitor;
       description = "Kapacitor user";
       home = cfg.dataDir;
-    };
-
-    users.groups.kapacitor = {
-      gid = config.ids.gids.kapacitor;
+      uid = config.ids.uids.kapacitor;
     };
   };
 }

@@ -1,35 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
   # dependencies
   attrs,
+  # tests
+  black,
+  buildPythonPackage,
+  # build-system
+  flit-core,
+  ipykernel,
   jsonschema,
   nbclient,
   nbdime,
   nbformat,
-
   # buildInputs
   pytest,
-
-  # tests
-  black,
-  ipykernel,
   pytest-cov-stub,
   pytest-regressions,
   pytestCheckHook,
-  writableTmpDirAsHomeHook,
   pythonAtLeast,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-notebook";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chrisjsewell";
@@ -49,26 +44,7 @@ buildPythonPackage rec {
       --replace-fail "from coverage import CoverageData" ""
   '';
 
-  build-system = [
-    flit-core
-  ];
-
-  pythonRelaxDeps = [
-    "attrs"
-    "nbclient"
-  ];
-
-  dependencies = [
-    attrs
-    jsonschema
-    nbclient
-    nbdime
-    nbformat
-  ];
-
   buildInputs = [ pytest ];
-
-  pythonImportsCheck = [ "pytest_notebook" ];
 
   nativeCheckInputs = [
     black
@@ -77,6 +53,20 @@ buildPythonPackage rec {
     pytest-regressions
     pytestCheckHook
     writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    flit-core
+  ];
+
+  dependencies = [
+    attrs
+    jsonschema
+    nbclient
+    nbdime
+    nbformat
   ];
 
   disabledTests = [
@@ -96,12 +86,18 @@ buildPythonPackage rec {
     "test_documentation"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_notebook" ];
+
+  pythonRelaxDeps = [
+    "attrs"
+    "nbclient"
+  ];
 
   meta = {
-    changelog = "https://github.com/chrisjsewell/pytest-notebook/blob/${src.tag}/docs/source/changelog.md";
     description = "Pytest plugin for regression testing and regenerating Jupyter Notebooks";
     homepage = "https://github.com/chrisjsewell/pytest-notebook";
+    changelog = "https://github.com/chrisjsewell/pytest-notebook/blob/${src.tag}/docs/source/changelog.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

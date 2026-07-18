@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  python3,
-  withGodef ? true,
-  godef,
-  withGopls ? true,
-  gopls,
-  withRustAnalyzer ? true,
-  rust-analyzer,
-  withTypescript ? true,
-  typescript,
   abseil-cpp,
   boost,
-  llvmPackages,
+  cmake,
   fixDarwinDylibNames,
+  godef,
+  gopls,
+  llvmPackages,
+  ninja,
+  python3,
+  rust-analyzer,
+  typescript,
+  withGodef ? true,
+  withGopls ? true,
+  withRustAnalyzer ? true,
+  withTypescript ? true,
 }:
 
 stdenv.mkDerivation {
@@ -37,6 +37,7 @@ stdenv.mkDerivation {
     ninja
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
+
   buildInputs =
     with python3.pkgs;
     with llvmPackages;
@@ -56,8 +57,6 @@ stdenv.mkDerivation {
     export EXTRA_CMAKE_ARGS="-DPATH_TO_LLVM_ROOT=${llvmPackages.libllvm} -DUSE_SYSTEM_ABSEIL=true"
     ${python3.pythonOnBuildForHost.interpreter} build.py --system-libclang --clang-completer --ninja
   '';
-
-  dontConfigure = true;
 
   # remove the tests
   #
@@ -120,8 +119,11 @@ stdenv.mkDerivation {
       --replace __file__ "'$out/lib/ycmd/ycmd/__main__.py'"
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Code-completion and comprehension server";
+
     longDescription = ''
       Note if YouCompleteMe Vim plugin complains with;
 
@@ -131,13 +133,16 @@ stdenv.mkDerivation {
 
           let g:ycm_server_python_interpreter = "''${python3.interpreter}"
     '';
-    mainProgram = "ycmd";
+
     homepage = "https://github.com/ycm-core/ycmd";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       mel
       S0AndS0
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "ycmd";
   };
 }

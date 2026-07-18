@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = null;
 
+  postFixup = ''
+    install -vD *.json -t $out/share
+  '';
+
   ldflags = [
     "-s"
     "-w"
   ];
-
-  postFixup = ''
-    install -vD *.json -t $out/share
-  '';
 
   meta = {
     description = "Toolkit to help identify IoT related dashboards and scan them for default passwords and vulnerabilities";

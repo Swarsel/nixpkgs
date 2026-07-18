@@ -1,9 +1,9 @@
 {
-  buildPecl,
   lib,
-  pcre2,
   fetchFromGitHub,
+  buildPecl,
   fetchpatch,
+  pcre2,
 }:
 
 let
@@ -23,10 +23,10 @@ buildPecl {
   buildInputs = [ pcre2 ];
 
   meta = {
-    changelog = "https://github.com/krakjoe/pcov/releases/tag/v${version}";
     description = "Self contained php-code-coverage compatible driver for PHP";
-    license = lib.licenses.php301;
     homepage = "https://github.com/krakjoe/pcov";
+    changelog = "https://github.com/krakjoe/pcov/releases/tag/v${version}";
+    license = lib.licenses.php301;
     teams = [ lib.teams.php ];
   };
 }

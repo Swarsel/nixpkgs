@@ -1,13 +1,11 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   pymodbus,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "wills106";
-  domain = "solax_modbus";
   version = "2026.07.1";
 
   src = fetchFromGitHub {
@@ -18,11 +16,13 @@ buildHomeAssistantComponent rec {
   };
 
   dependencies = [ pymodbus ];
+  domain = "solax_modbus";
+  owner = "wills106";
 
   meta = {
-    changelog = "https://github.com/wills106/homeassistant-solax-modbus/releases/tag/${version}";
     description = "SolaX Power Modbus custom_component for Home Assistant (Supports some Ginlong Solis, Growatt, Sofar Solar, TIGO TSI & Qcells Q.Volt Hyb)";
     homepage = "https://github.com/wills106/homeassistant-solax-modbus";
+    changelog = "https://github.com/wills106/homeassistant-solax-modbus/releases/tag/${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ Luflosi ];
   };

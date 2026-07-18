@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 let
@@ -10,7 +10,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jmriebold";
@@ -25,11 +24,12 @@ buildPythonPackage {
       --replace '>=3.6.*' '>=3.6'
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "boilerpy3" ];
 
   meta = {
-    homepage = "https://github.com/jmriebold/BoilerPy3";
     description = "Python port of Boilerpipe library";
+    homepage = "https://github.com/jmriebold/BoilerPy3";
     changelog = "https://github.com/jmriebold/BoilerPy3/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ happysalada ];

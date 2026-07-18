@@ -1,44 +1,37 @@
 {
   lib,
   stdenv,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # patches
-  replaceVars,
   addDriverRunpath,
-  cudaPackages,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # nativeBuildInputs
   cmake,
-  ninja,
-  lit,
-  llvm,
-  writableTmpDirAsHomeHook,
-
+  config,
+  cudaPackages,
+  # dependencies
+  filelock,
   # buildInputs
   gtest,
   libxml2,
+  lit,
+  llvm,
   ncurses,
+  ninja,
   pybind11,
-  zlib,
-
-  # dependencies
-  filelock,
-
+  pytestCheckHook,
   # passthru
   python,
-  pytestCheckHook,
-  torchWithRocm,
-  runCommand,
-  triton,
+  pythonAtLeast,
+  # patches
+  replaceVars,
   rocmPackages,
-
+  runCommand,
+  # build-system
+  setuptools,
+  torchWithRocm,
+  triton,
+  writableTmpDirAsHomeHook,
+  zlib,
   cudaSupport ? config.cudaSupport,
 }:
 
@@ -48,8 +41,6 @@ in
 buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
   pname = "triton";
   version = "3.7.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   # Remember to bump triton-llvm as well!
   src = fetchFromGitHub {
@@ -119,8 +110,6 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
           '"${lib.getLib cudaPackages.libcublas}/lib/libcublas.so"'
     '';
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     cmake
     ninja
@@ -136,15 +125,6 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  cmakeFlags = [
-    (lib.cmakeFeature "LLVM_SYSPATH" "${llvm}")
-
-    # `find_package` is called with `NO_DEFAULT_PATH`
-    # https://cmake.org/cmake/help/latest/command/find_package.html
-    # https://github.com/triton-lang/triton/blob/c3c476f357f1e9768ea4e45aa5c17528449ab9ef/third_party/amd/CMakeLists.txt#L6
-    (lib.cmakeFeature "LLD_DIR" "${lib.getLib llvm}/lib/cmake/lld")
-  ];
-
   buildInputs = [
     gtest
     libxml2.dev
@@ -153,26 +133,14 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
     zlib
   ];
 
-  dependencies = [
-    filelock
-    # triton uses setuptools at runtime:
-    # https://github.com/NixOS/nixpkgs/pull/286763/#discussion_r1480392652
-    setuptools
+  cmakeFlags = [
+    (lib.cmakeFeature "LLVM_SYSPATH" "${llvm}")
+
+    # `find_package` is called with `NO_DEFAULT_PATH`
+    # https://cmake.org/cmake/help/latest/command/find_package.html
+    # https://github.com/triton-lang/triton/blob/c3c476f357f1e9768ea4e45aa5c17528449ab9ef/third_party/amd/CMakeLists.txt#L6
+    (lib.cmakeFeature "LLD_DIR" "${lib.getLib llvm}/lib/cmake/lld")
   ];
-
-  preConfigure =
-    # Ensure that the build process uses the requested number of cores
-    ''
-      export MAX_JOBS="$NIX_BUILD_CORES"
-    '';
-
-  # `examples/plugins` (an MLIR example dialect plugin and a unit-test helper lib) is built
-  # unconditionally with the Python module and shipped into `triton/plugins/`.
-  # It is unused at runtime and keeps a forbidden RPATH reference to the build directory, which
-  # fails the fixup phase.
-  postInstall = ''
-    rm -rf "$out/${python.sitePackages}/triton/plugins"
-  '';
 
   env = {
     TRITON_BUILD_PROTON = "OFF";
@@ -185,14 +153,54 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
       "-Wno-stringop-overread"
     ];
 
-    # TODO: Unused because of how TRITON_OFFLINE_BUILD currently works (subject to change)
-    TRITON_PTXAS_PATH = lib.getExe' cudaPackages.cuda_nvcc "ptxas"; # Make sure cudaPackages is the right version each update (See python/setup.py)
-    TRITON_CUOBJDUMP_PATH = lib.getExe' cudaPackages.cuda_cuobjdump "cuobjdump";
-    TRITON_NVDISASM_PATH = lib.getExe' cudaPackages.cuda_nvdisasm "nvdisasm";
     TRITON_CUDACRT_PATH = lib.getInclude cudaPackages.cuda_nvcc;
     TRITON_CUDART_PATH = lib.getInclude cudaPackages.cuda_cudart;
+    TRITON_CUOBJDUMP_PATH = lib.getExe' cudaPackages.cuda_cuobjdump "cuobjdump";
     TRITON_CUPTI_PATH = cudaPackages.cuda_cupti;
+    TRITON_NVDISASM_PATH = lib.getExe' cudaPackages.cuda_nvdisasm "nvdisasm";
+    # TODO: Unused because of how TRITON_OFFLINE_BUILD currently works (subject to change)
+    TRITON_PTXAS_PATH = lib.getExe' cudaPackages.cuda_nvcc "ptxas"; # Make sure cudaPackages is the right version each update (See python/setup.py)
   };
+
+  preConfigure =
+    # Ensure that the build process uses the requested number of cores
+    ''
+      export MAX_JOBS="$NIX_BUILD_CORES"
+    '';
+
+  nativeCheckInputs = [ cmake ];
+
+  preCheck = ''
+    # build/temp* refers to build_ext.build_temp (looked up in the build logs)
+    (cd ./build/temp* ; ctest)
+  '';
+
+  # `examples/plugins` (an MLIR example dialect plugin and a unit-test helper lib) is built
+  # unconditionally with the Python module and shipped into `triton/plugins/`.
+  # It is unused at runtime and keeps a forbidden RPATH reference to the build directory, which
+  # fails the fixup phase.
+  postInstall = ''
+    rm -rf "$out/${python.sitePackages}/triton/plugins"
+  '';
+
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    filelock
+    # triton uses setuptools at runtime:
+    # https://github.com/NixOS/nixpkgs/pull/286763/#discussion_r1480392652
+    setuptools
+  ];
+
+  # CMake is run by setup.py instead
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "triton"
+    "triton.language"
+  ];
 
   pythonRemoveDeps = [
     # Circular dependency, cf. https://github.com/triton-lang/triton/issues/1374
@@ -203,26 +211,10 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
     "lit"
   ];
 
-  # CMake is run by setup.py instead
-  dontUseCmakeConfigure = true;
-
-  nativeCheckInputs = [ cmake ];
-  preCheck = ''
-    # build/temp* refers to build_ext.build_temp (looked up in the build logs)
-    (cd ./build/temp* ; ctest)
-  '';
-
-  pythonImportsCheck = [
-    "triton"
-    "triton.language"
-  ];
-
   passthru = {
     gpuCheck = effectiveStdenv.mkDerivation {
-      pname = "triton-pytest";
       inherit (triton) version src;
-
-      requiredSystemFeatures = [ "cuda" ];
+      pname = "triton-pytest";
 
       nativeBuildInputs = [
         (python.withPackages (ps: [
@@ -232,13 +224,37 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
         ]))
       ];
 
-      dontBuild = true;
+      doCheck = true;
+
       nativeCheckInputs = [
         pytestCheckHook
         writableTmpDirAsHomeHook
       ];
 
-      doCheck = true;
+      checkPhase = "pytestCheckPhase";
+      installPhase = "touch $out";
+
+      disabledTestPaths = [
+        # torch.AcceleratorError: CUDA error: device-side assert triggered
+        "python/test/unit/test_debug.py"
+
+        # ptxas fatal   : Unexpected non-ASCII character encountered on line 1
+        # ptxas fatal   : Ptx assembly aborted due to errors
+        "python/test/unit/language/test_line_info.py"
+
+        # Triton Error [CUDA]: \n
+        "python/test/unit/tools/test_aot.py"
+
+        # ptxas fatal   : Unknown option 'sass'
+        "python/test/unit/tools/test_disasm.py"
+
+        # assert 'mma.sync.aligned.m16n8k16.row.col.f32.f16.f16.f32' in ptx
+        # AssertionError: assert 'mma.sync.aligned.m16n8k16.row.col.f32.f16.f16.f32' in ...
+        "python/test/unit/language/test_core.py::test_dot[1-1-2-32-1-False-False-None-ieee-float8e5-float32-1-None]"
+
+        # AssertionError: Tensor-likes are not close!
+        "python/test/unit/language/test_core.py::test_scaled_dot[64-128-128-True-False-True-e4m3-fp16-4-16-1]"
+      ];
 
       disabledTests = [
         # triton.runtime.errors.OutOfResources: out of resource: shared memory,
@@ -278,74 +294,32 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
         "test_tensor_descriptor_reshape_matmul"
       ];
 
-      disabledTestPaths = [
-        # torch.AcceleratorError: CUDA error: device-side assert triggered
-        "python/test/unit/test_debug.py"
-
-        # ptxas fatal   : Unexpected non-ASCII character encountered on line 1
-        # ptxas fatal   : Ptx assembly aborted due to errors
-        "python/test/unit/language/test_line_info.py"
-
-        # Triton Error [CUDA]: \n
-        "python/test/unit/tools/test_aot.py"
-
-        # ptxas fatal   : Unknown option 'sass'
-        "python/test/unit/tools/test_disasm.py"
-
-        # assert 'mma.sync.aligned.m16n8k16.row.col.f32.f16.f16.f32' in ptx
-        # AssertionError: assert 'mma.sync.aligned.m16n8k16.row.col.f32.f16.f16.f32' in ...
-        "python/test/unit/language/test_core.py::test_dot[1-1-2-32-1-False-False-None-ieee-float8e5-float32-1-None]"
-
-        # AssertionError: Tensor-likes are not close!
-        "python/test/unit/language/test_core.py::test_scaled_dot[64-128-128-True-False-True-e4m3-fp16-4-16-1]"
-      ];
+      dontBuild = true;
 
       enabledTestPaths = [
         "python/test/unit"
       ];
 
-      checkPhase = "pytestCheckPhase";
-
-      installPhase = "touch $out";
+      requiredSystemFeatures = [ "cuda" ];
     };
 
     tests = {
       # Ultimately, torch is our test suite:
       inherit torchWithRocm;
 
-      # Test that _get_path_to_hip_runtime_dylib works when ROCm is available at runtime
-      rocm-libamdhip64-path =
-        runCommand "triton-rocm-libamdhip64-path-test"
-          {
-            buildInputs = [
-              triton
-              python
-              rocmPackages.clr
-            ];
-          }
-          ''
-            python -c "
-            import os
-            import triton
-            path = triton.backends.amd.driver._get_path_to_hip_runtime_dylib()
-            print(f'libamdhip64 path: {path}')
-            assert os.path.exists(path)
-            " && touch $out
-          '';
-
       # Test as `nix run -f "<nixpkgs>" python3Packages.triton.tests.axpy-cuda`
       # or, using `programs.nix-required-mounts`, as `nix build -f "<nixpkgs>" python3Packages.triton.tests.axpy-cuda.gpuCheck`
       axpy-cuda =
         cudaPackages.writeGpuTestPython
           {
-            libraries = ps: [
-              ps.triton
-              ps.torch-no-triton
-            ];
-
             gpuCheckArgs.nativeBuildInputs = [
               # PermissionError: [Errno 13] Permission denied: '/homeless-shelter'
               writableTmpDirAsHomeHook
+            ];
+
+            libraries = ps: [
+              ps.triton
+              ps.torch-no-triton
             ];
           }
           ''
@@ -392,6 +366,26 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
               assert output_torch.sub(output_triton).abs().max().item() < 1e-6
               print("Triton axpy: OK")
           '';
+
+      # Test that _get_path_to_hip_runtime_dylib works when ROCm is available at runtime
+      rocm-libamdhip64-path =
+        runCommand "triton-rocm-libamdhip64-path-test"
+          {
+            buildInputs = [
+              triton
+              python
+              rocmPackages.clr
+            ];
+          }
+          ''
+            python -c "
+            import os
+            import triton
+            path = triton.backends.amd.driver._get_path_to_hip_runtime_dylib()
+            print(f'libamdhip64 path: {path}')
+            assert os.path.exists(path)
+            " && touch $out
+          '';
     };
   };
 
@@ -399,12 +393,14 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
     description = "Language and compiler for writing highly efficient custom Deep-Learning primitives";
     homepage = "https://github.com/triton-lang/triton";
     changelog = "https://github.com/triton-lang/triton/releases/tag/${finalAttrs.src.tag}";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       SomeoneSerge
       derdennisop
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -21,29 +21,32 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
+
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNELPATH=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
-
-  hardeningDisable = [ "pic" ];
 
   preBuild = ''
     sed -i -e "s,INSTALL_MOD_DIR=,INSTALL_MOD_PATH=$out INSTALL_MOD_DIR=," \
       -e /depmod/d Makefile
   '';
 
+  hardeningDisable = [ "pic" ];
+
   passthru.tests = {
     systemd-networkd-batadv = nixosTests.systemd-networkd-batadv;
   };
 
   meta = {
-    homepage = "https://www.open-mesh.org/projects/batman-adv/wiki/Wiki";
     description = "B.A.T.M.A.N. routing protocol in a linux kernel module for layer 2";
+    homepage = "https://www.open-mesh.org/projects/batman-adv/wiki/Wiki";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       fpletz
       philiptaron
     ];
+
     platforms = with lib.platforms; linux;
   };
 }

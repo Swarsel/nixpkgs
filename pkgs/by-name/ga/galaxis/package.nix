@@ -1,9 +1,9 @@
 {
   lib,
-  asciidoctor,
-  fetchFromGitLab,
-  ncurses,
   stdenv,
+  fetchFromGitLab,
+  asciidoctor,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  postPatch = ''
+    sed -i -E '/[[:space:]]*xmlto/ s|xmlto|xmlto --skip-validation|' Makefile
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     asciidoctor
   ];
@@ -30,17 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  strictDeps = true;
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "galaxis"
     "galaxis.6"
   ];
-
-  postPatch = ''
-    sed -i -E '/[[:space:]]*xmlto/ s|xmlto|xmlto --skip-validation|' Makefile
-  '';
 
   # This is better than sed-patch the Makefile
   installPhase = ''
@@ -53,6 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Rescue lifeboats lost in interstellar space";
+
     longDescription = ''
       Lifeboats from a crippled interstellar liner are adrift in a starfield. To
       find them, you can place probes that look in all eight compass directions
@@ -66,10 +67,11 @@ stdenv.mkDerivation (finalAttrs: {
       interface of the original, but compensates by automating away some of the
       game's simpler deductions.
     '';
+
     homepage = "http://catb.org/~esr/galaxis/";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "galaxis";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "galaxis";
   };
 })

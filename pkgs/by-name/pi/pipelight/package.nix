@@ -1,15 +1,15 @@
 {
   lib,
-  stdenv_32bit,
   fetchurl,
   bash,
   cabextract,
   curl,
   gnupg,
-  libx11,
-  libGLU,
   libGL,
+  libGLU,
+  libx11,
   pkgsi686Linux,
+  stdenv_32bit,
 }:
 
 let
@@ -22,14 +22,21 @@ let
 in
 stdenv'.mkDerivation (finalAttrs: {
 
-  version = "0.2.8.2";
-
   pname = "pipelight";
+  version = "0.2.8.2";
 
   src = fetchurl {
     url = "https://bitbucket.org/mmueller2012/pipelight/get/v${finalAttrs.version}.tar.gz";
     sha256 = "1kyy6knkr42k34rs661r0f5sf6l1s2jdbphdg89n73ynijqmzjhk";
   };
+
+  patches = [
+    ./pipelight.patch
+    ./wine-6.13-new-args.patch
+    # https://source.winehq.org/git/wine.git/commit/cf4a781e987a98a8d48610362a20a320c4a1016d
+    # adds ControlMask as a static variable.
+    ./wine-7.10-ControlMask.patch
+  ];
 
   buildInputs = [
     wine_custom
@@ -41,13 +48,14 @@ stdenv'.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = toString [ "-fpermissive" ];
 
-  patches = [
-    ./pipelight.patch
-    ./wine-6.13-new-args.patch
-    # https://source.winehq.org/git/wine.git/commit/cf4a781e987a98a8d48610362a20a320c4a1016d
-    # adds ControlMask as a static variable.
-    ./wine-7.10-ControlMask.patch
-  ];
+  postInstall = ''
+    $out/bin/pipelight-plugin --create-mozilla-plugins
+  '';
+
+  preFixup = ''
+    substituteInPlace $out/share/pipelight/install-dependency \
+      --replace cabextract ${cabextract}/bin/cabextract
+  '';
 
   configurePhase = ''
     patchShebangs .
@@ -61,35 +69,30 @@ stdenv'.mkDerivation (finalAttrs: {
       $configureFlags
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     mozillaPlugin = mozillaPluginPath;
     wine = wine_custom;
   };
 
-  postInstall = ''
-    $out/bin/pipelight-plugin --create-mozilla-plugins
-  '';
-
-  preFixup = ''
-    substituteInPlace $out/share/pipelight/install-dependency \
-      --replace cabextract ${cabextract}/bin/cabextract
-  '';
-
-  enableParallelBuilding = true;
-
   meta = {
+    description = "Wrapper for using Windows plugins in Linux browsers";
     homepage = "http://pipelight.net/";
+
     license = with lib.licenses; [
       mpl11
       gpl2Only
       lgpl21
     ];
-    description = "Wrapper for using Windows plugins in Linux browsers";
+
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     mainProgram = "pipelight-plugin";
   };
 })

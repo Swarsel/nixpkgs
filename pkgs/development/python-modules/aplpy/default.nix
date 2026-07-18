@@ -20,13 +20,21 @@
 buildPythonPackage rec {
   pname = "aplpy";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "aplpy";
     inherit version;
     hash = "sha256-P7PVueaMYXgVwXW+ema2ofP9QiBtaN/gQXZq0yIFJhA=";
+    pname = "aplpy";
   };
+
+  nativeCheckInputs = [
+    pytest-astropy
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    OPENMP_EXPECTED=0
+  '';
 
   build-system = [
     setuptools
@@ -45,15 +53,7 @@ buildPythonPackage rec {
     shapely
   ];
 
-  nativeCheckInputs = [
-    pytest-astropy
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    OPENMP_EXPECTED=0
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "aplpy" ];
 
   meta = {

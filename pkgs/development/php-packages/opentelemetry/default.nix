@@ -1,7 +1,7 @@
 {
   lib,
-  buildPecl,
   fetchFromGitHub,
+  buildPecl,
 }:
 
 let
@@ -18,16 +18,14 @@ buildPecl rec {
     hash = "sha256-L58QiuwCIaNPzeh+E7/16kgUNa7vfHCowU7eDKiiImc=";
   };
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-parentheses-equality";
+  doCheck = true;
   sourceRoot = "${src.name}/ext";
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-parentheses-equality";
-
-  doCheck = true;
-
   meta = {
-    changelog = "https://github.com/open-telemetry/opentelemetry-php-instrumentation/releases/tag/${version}";
     description = "OpenTelemetry PHP auto-instrumentation extension";
     homepage = "https://opentelemetry.io/";
+    changelog = "https://github.com/open-telemetry/opentelemetry-php-instrumentation/releases/tag/${version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  faust,
-  meson,
-  ninja,
-  pkg-config,
   boost,
   cairo,
+  faust,
   fftw,
   ladspa-sdk,
   libxcb,
-  lv2,
-  libxcb-wm,
   libxcb-util,
+  libxcb-wm,
+  lv2,
+  meson,
+  ninja,
+  pkg-config,
   zita-convolver,
   zita-resampler,
 }:
@@ -56,7 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Set of LADSPA and LV2 plugins for guitar sound processing";
     homepage = "https://github.com/olegkapitonov/Kapitonov-Plugins-Pack";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ magnetophon ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,9 +1,9 @@
 {
+  lib,
   buildGoModule,
   fetchFromSourcehut,
-  lib,
-  scdoc,
   installShellFiles,
+  scdoc,
 }:
 buildGoModule {
   pname = "ratt";
@@ -21,9 +21,7 @@ buildGoModule {
     scdoc
   ];
 
-  proxyVendor = true;
   vendorHash = "sha256-W1snHDmy6Pg35jYfNmV5DpRpQpp9Ju0JjzwMRYGoqXY==";
-
   # tests try to access the internet to scrape websites
   doCheck = false;
 
@@ -34,6 +32,8 @@ buildGoModule {
     scdoc < doc/ratt.5.scd > doc/ratt.5
     installManPage doc/ratt.5
   '';
+
+  proxyVendor = true;
 
   meta = {
     description = "Tool for converting websites to rss/atom feeds";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   oldest-supported-numpy,
   pytestCheckHook,
   scipy,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "ecos";
   version = "2.0.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "embotech";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
       --replace-fail "numpy >= 2.0.0" numpy
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,8 +33,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ecos" ];
 
   meta = {

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 let
   version = "1.8.4";
 in
 buildGoModule {
-  pname = "algolia-cli";
   inherit version;
+  pname = "algolia-cli";
 
   src = fetchFromGitHub {
     owner = "algolia";
@@ -19,17 +19,8 @@ buildGoModule {
     hash = "sha256-ltr31AnZPTtnfMWaUtsswUnIOXfR76X8pjM9D0uiLJo=";
   };
 
-  vendorHash = "sha256-WdNuwUz64IZq3gfvFhXX536/tZ/67Ki0xiqIj7sLSEM=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "cmd/algolia" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/algolia/cli/pkg/version.Version=${version}"
-  ];
+  vendorHash = "sha256-WdNuwUz64IZq3gfvFhXX536/tZ/67Ki0xiqIj7sLSEM=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd algolia \
@@ -38,11 +29,19 @@ buildGoModule {
       --zsh <($out/bin/algolia completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/algolia/cli/pkg/version.Version=${version}"
+  ];
+
+  subPackages = [ "cmd/algolia" ];
+
   meta = {
     description = "Algolia’s official CLI devtool";
-    mainProgram = "algolia";
     homepage = "https://algolia.com/doc/tools/cli/";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "algolia";
   };
 }

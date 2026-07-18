@@ -7,26 +7,30 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "s-tar";
   version = "1.6";
+
   src = fetchurl {
     url = "mirror://sourceforge/s-tar/star-${finalAttrs.version}.tar.bz2";
     sha256 = "0xpp8gf0ghwdgncdwx17fpadxislwrj48gcm42851hz6p8p6c60v";
   };
 
-  preConfigure = "rm configure";
-  preBuild = "sed 's_/bin/__g' -i RULES/*";
   makeFlags = [ "GMAKE_NOWARN=true" ];
   env.NIX_CFLAGS_COMPILE = "-std=c89";
-  installFlags = [
-    "DESTDIR=$(out)"
-    "INS_BASE=/"
-  ];
+  preConfigure = "rm configure";
+  preBuild = "sed 's_/bin/__g' -i RULES/*";
+
   postInstall = ''
     find $out/bin -type l -delete
     rm -r $out/etc $out/include $out/sbin
   '';
 
+  installFlags = [
+    "DESTDIR=$(out)"
+    "INS_BASE=/"
+  ];
+
   meta = {
     description = "Very fast tar like tape archiver with improved functionality";
+
     longDescription = ''
       Star archives and extracts multiple files to and from a single file called a tarfile.
       A tarfile is usually a magnetic tape, but it can be any file.
@@ -35,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
       The way star acts may be modified by additional options.
       Note that unpacking tar archives may be a security risk because star may overwrite existing files.
     '';
+
     homepage = "https://cdrtools.sourceforge.net/private/star.html";
     license = lib.licenses.cddl;
     maintainers = [ lib.maintainers.wucke13 ];

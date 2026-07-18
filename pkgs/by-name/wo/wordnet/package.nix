@@ -2,33 +2,26 @@
   lib,
   stdenv,
   fetchurl,
+  makeWrapper,
   tcl,
   tk,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.0";
   pname = "wordnet";
+  version = "3.0";
+
   src = fetchurl {
     url = "https://wordnetcode.princeton.edu/${finalAttrs.version}/WordNet-${finalAttrs.version}.tar.bz2";
     sha256 = "08pgjvd2vvmqk3h641x63nxp7wqimb9r30889mkyfh2agc62sjbc";
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     tcl
     tk
   ];
-
-  hardeningDisable = [ "format" ];
-
-  patchPhase = ''
-    sed "13i#define USE_INTERP_RESULT 1" -i src/stubs.c
-  '';
-
-  # Fails the build on clang-16 and on upcoming gcc-14.
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-int";
 
   # Needs the path to `tclConfig.sh' and `tkConfig.sh'.
   configureFlags = [
@@ -36,8 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-tk=${tk}/lib"
   ];
 
+  # Fails the build on clang-16 and on upcoming gcc-14.
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-int";
+
   postInstall = ''
     wrapProgram $out/bin/wnb    --prefix PATH : "$out/bin"
+  '';
+
+  hardeningDisable = [ "format" ];
+
+  patchPhase = ''
+    sed "13i#define USE_INTERP_RESULT 1" -i src/stubs.c
   '';
 
   meta = {

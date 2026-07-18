@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   autoPatchelfHook,
+  stdenvNoCC,
   versionCheckHook,
 }:
 let
@@ -13,35 +13,28 @@ let
   throwSystem = throw "Unsupported system: ${stdenvNoCC.hostPlatform.system}";
 
   sourceData = {
-    x86_64-linux = fetchurl {
-      url = "https://storage.googleapis.com/antigravity-public/antigravity-cli/${wholeVersion}/linux-x64/cli_linux_x64.tar.gz";
-      hash = "sha256-fjB132jrrViqHPQiMenYuDvyiVtbBYqxc2sLY4PHUAg=";
-    };
-    aarch64-linux = fetchurl {
-      url = "https://storage.googleapis.com/antigravity-public/antigravity-cli/${wholeVersion}/linux-arm/cli_linux_arm64.tar.gz";
-      hash = "sha256-oDZ+WHWsG4imwLFjyG69XRPJvvkH9EaaZRb/aQIb8tQ=";
-    };
     aarch64-darwin = fetchurl {
-      url = "https://storage.googleapis.com/antigravity-public/antigravity-cli/${wholeVersion}/darwin-arm/cli_mac_arm64.tar.gz";
       hash = "sha256-U/cwihF/cP5+7KSmkAToI5yOoYydguR5ZrKQMytpuCk=";
+      url = "https://storage.googleapis.com/antigravity-public/antigravity-cli/${wholeVersion}/darwin-arm/cli_mac_arm64.tar.gz";
+    };
+
+    aarch64-linux = fetchurl {
+      hash = "sha256-oDZ+WHWsG4imwLFjyG69XRPJvvkH9EaaZRb/aQIb8tQ=";
+      url = "https://storage.googleapis.com/antigravity-public/antigravity-cli/${wholeVersion}/linux-arm/cli_linux_arm64.tar.gz";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-fjB132jrrViqHPQiMenYuDvyiVtbBYqxc2sLY4PHUAg=";
+      url = "https://storage.googleapis.com/antigravity-public/antigravity-cli/${wholeVersion}/linux-x64/cli_linux_x64.tar.gz";
     };
   };
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "antigravity-cli";
   inherit version;
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
+  pname = "antigravity-cli";
   src = sourceData.${stdenvNoCC.hostPlatform.system} or throwSystem;
-
-  sourceRoot = ".";
-
+  strictDeps = true;
   nativeBuildInputs = lib.optionals stdenvNoCC.hostPlatform.isElf [ autoPatchelfHook ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -51,8 +44,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
 
   passthru = {
     inherit wholeVersion; # for the updateScript
@@ -64,12 +61,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://antigravity.google";
     changelog = "https://antigravity.google/changelog";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       adrielvelazquez
       u3kkasha
     ];
+
     platforms = lib.attrNames sourceData;
     mainProgram = "agy";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

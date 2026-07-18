@@ -1,22 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # tests
+  awkward,
+  buildPythonPackage,
+  dask-awkward,
   # build-system
   hatch-vcs,
   hatchling,
-
+  notebook,
+  numba,
   # dependencies
   numpy,
   packaging,
-
-  # tests
-  awkward,
-  dask-awkward,
-  notebook,
-  numba,
   papermill,
   pytestCheckHook,
   sympy,
@@ -25,8 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "vector";
   version = "1.8.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "scikit-hep";
@@ -34,16 +29,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qQesB6xYzAHMEmscdzoBLJqj36NLd5K1EaPLJlkSFOU=";
   };
-
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
-  dependencies = [
-    numpy
-    packaging
-  ];
 
   nativeCheckInputs = [
     awkward
@@ -55,9 +40,18 @@ buildPythonPackage (finalAttrs: {
     sympy
   ];
 
-  pythonImportsCheck = [ "vector" ];
-
   __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  build-system = [
+    hatch-vcs
+    hatchling
+  ];
+
+  dependencies = [
+    numpy
+    packaging
+  ];
 
   disabledTests = [
     # AssertionErrors in sympy tests
@@ -82,6 +76,9 @@ buildPythonPackage (finalAttrs: {
     # AssertionError: assert 2.1073424255447017e-08 == 0.0
     "test_issue_463"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "vector" ];
 
   meta = {
     description = "Library for 2D, 3D, and Lorentz vectors, especially arrays of vectors, to solve common physics problems in a NumPy-like way";

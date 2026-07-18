@@ -1,27 +1,24 @@
 {
-  uiua_versionType ? "stable",
-
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  versionCheckHook,
-
-  libffi,
-  audioSupport ? true,
   alsa-lib,
-  webcamSupport ? false,
   libGL,
-  libxkbcommon,
-  wayland,
-  libxrandr,
-  libxi,
-  libxcursor,
+  libffi,
   libx11,
-  windowSupport ? false,
-
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  pkg-config,
   runCommand,
+  rustPlatform,
+  versionCheckHook,
+  wayland,
+  audioSupport ? true,
+  uiua_versionType ? "stable",
+  webcamSupport ? false,
+  windowSupport ? false,
 }:
 
 let
@@ -34,13 +31,13 @@ let
 in
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "uiua";
   inherit (versionInfo) version cargoHash patches;
+  pname = "uiua";
 
   src = fetchFromGitHub {
+    inherit (versionInfo) tag hash;
     owner = "uiua-lang";
     repo = "uiua";
-    inherit (versionInfo) tag hash;
   };
 
   nativeBuildInputs =
@@ -52,12 +49,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ] # we force dynamic linking our own libffi below
   ++ lib.optionals (audioSupport && stdenv.hostPlatform.isLinux) [ alsa-lib ];
 
-  buildFeatures = [
-    "libffi/system"
-  ] # force libffi to be linked dynamically instead of rebuilding it
-  ++ lib.optional audioSupport "audio"
-  ++ lib.optional webcamSupport "webcam"
-  ++ lib.optional windowSupport "window";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup =
     let
@@ -75,10 +68,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       patchelf --add-rpath ${lib.makeLibraryPath runtimeDependencies} $out/bin/uiua
     '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  buildFeatures = [
+    "libffi/system"
+  ] # force libffi to be linked dynamically instead of rebuilding it
+  ++ lib.optional audioSupport "audio"
+  ++ lib.optional webcamSupport "webcam"
+  ++ lib.optional windowSupport "window";
 
-  passthru.updateScript = versionInfo.updateScript;
   passthru.tests.run =
     runCommand "uiua-test-run" { nativeBuildInputs = [ finalAttrs.finalPackage ]; }
       ''
@@ -87,21 +83,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
         touch $out
       '';
 
+  passthru.updateScript = versionInfo.updateScript;
+
   meta = {
-    changelog = "https://github.com/uiua-lang/uiua/blob/${finalAttrs.src.rev}/changelog.md";
     description = "Stack-oriented array programming language with a focus on simplicity, beauty, and tacit code";
+
     longDescription = ''
       Uiua combines the stack-oriented and array-oriented paradigms in a single
       language. Combining these already terse paradigms results in code with a very
       high information density and little syntactic noise.
     '';
+
     homepage = "https://www.uiua.org/";
+    changelog = "https://github.com/uiua-lang/uiua/blob/${finalAttrs.src.rev}/changelog.md";
     license = lib.licenses.mit;
-    mainProgram = "uiua";
+
     maintainers = with lib.maintainers; [
       cafkafk
       tomasajt
       defelo
     ];
+
+    mainProgram = "uiua";
   };
 })

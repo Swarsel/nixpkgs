@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchPypi,
   hatchling,
   pytestCheckHook,
@@ -11,22 +11,22 @@ buildPythonPackage rec {
   version = "0.5.0";
 
   src = fetchPypi {
-    pname = "litestar_htmx";
     inherit version;
     hash = "sha256-4C0aOpIXLIdINfo+Z0nWWun8Ym0N9GcZSQoWKT4hRvs=";
+    pname = "litestar_htmx";
   };
-
-  pyproject = true;
 
   build-system = [
     hatchling
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://docs.litestar.dev/latest/usage/htmx.html";
-    maintainers = with lib.maintainers; [ bot-wxt1221 ];
-    license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     description = "HTMX Integration for Litesstar";
+    homepage = "https://docs.litestar.dev/latest/usage/htmx.html";
+    license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.unix;
   };
 }

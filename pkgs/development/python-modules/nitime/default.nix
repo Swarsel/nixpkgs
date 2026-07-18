@@ -1,25 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   buildPythonPackage,
-  fetchPypi,
-  pytestCheckHook,
-  pytest-cov-stub,
   cython,
-  setuptools,
-  setuptools-scm,
-  wheel,
-  numpy,
-  scipy,
+  fetchPypi,
   matplotlib,
   networkx,
   nibabel,
+  numpy,
+  pytest-cov-stub,
+  pytestCheckHook,
+  scipy,
+  setuptools,
+  setuptools-scm,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "nitime";
   version = "0.12.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -41,12 +40,12 @@ buildPythonPackage rec {
     nibabel
   ];
 
+  doCheck = !stdenv.hostPlatform.isDarwin; # tests hang indefinitely
+
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
-
-  doCheck = !stdenv.hostPlatform.isDarwin; # tests hang indefinitely
 
   disabledTests = [
     # [doctest] nitime.tests.test_timeseries.test_UniformTime_repr
@@ -57,11 +56,12 @@ buildPythonPackage rec {
     "test_UniformTime_repr"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nitime" ];
 
   meta = {
-    homepage = "https://nipy.org/nitime";
     description = "Algorithms and containers for time-series analysis in time and spectral domains";
+    homepage = "https://nipy.org/nitime";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.bcdarwin ];
   };

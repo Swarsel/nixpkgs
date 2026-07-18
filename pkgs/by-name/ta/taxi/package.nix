@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  desktop-file-utils,
   fetchFromGitHub,
+  desktop-file-utils,
   gobject-introspection,
   gtk4,
   libadwaita,
@@ -49,14 +49,15 @@ stdenv.mkDerivation {
     libsoup_3
     pantheon.granite7
   ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/ellie-commons/taxi";
     description = "FTP Client that drives you anywhere";
+    homepage = "https://github.com/ellie-commons/taxi";
     license = lib.licenses.lgpl3Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
     mainProgram = "io.github.ellie_commons.taxi";
+    teams = [ lib.teams.pantheon ];
   };
 }

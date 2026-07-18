@@ -20,10 +20,8 @@ let
 
 in
 pypkgs.buildPythonApplication rec {
-  pname = "cc2538-bsl";
   inherit version src;
-  pyproject = true;
-
+  pname = "cc2538-bsl";
   # if you happen to run cc2538-bsl from a git repository of any kind, you will get the
   # version of *that* rather than the application itself because it will run 'git describe'
   patches = [ ./do_not_run_git.patch ];
@@ -35,6 +33,11 @@ pypkgs.buildPythonApplication rec {
 
   env.SETUPTOOLS_SCM_PRETEND_VERSION = version';
 
+  nativeCheckInputs = with pypkgs; [
+    pytestCheckHook
+    scripttest
+  ];
+
   build-system = with pypkgs; [
     setuptools-scm
   ];
@@ -43,11 +46,6 @@ pypkgs.buildPythonApplication rec {
     intelhex
     pyserial
     python-magic
-  ];
-
-  nativeCheckInputs = with pypkgs; [
-    pytestCheckHook
-    scripttest
   ];
 
   # we need to patch these tests to make them work inside our sandbox, so just disable them for
@@ -62,9 +60,11 @@ pypkgs.buildPythonApplication rec {
     $out/bin/${meta.mainProgram} --help
   '';
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/JelmerT/cc2538-bsl";
     description = "Flash TI SimpleLink chips (CC2538, CC13xx, CC26xx) over serial";
+    homepage = "https://github.com/JelmerT/cc2538-bsl";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ lorenz ];
     mainProgram = "cc2538-bsl";

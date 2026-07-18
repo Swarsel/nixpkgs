@@ -13,19 +13,19 @@
 buildPythonPackage rec {
   pname = "google-cloud-redis";
   version = "2.22.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_redis";
     inherit version;
     hash = "sha256-EFysFdIdh87u5BhHYY8A6mzKqjYLiws/0uQveaI9CGg=";
+    pname = "google_cloud_redis";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -34,15 +34,16 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.redis"
     "google.cloud.redis_v1"
     "google.cloud.redis_v1beta1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

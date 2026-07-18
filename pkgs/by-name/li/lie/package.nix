@@ -7,27 +7,10 @@
 }:
 
 stdenv.mkDerivation {
-  version = "2.2.2";
   # The current version of LiE is 2.2.2, which is more or less unchanged
   # since about the year 2000. Minor bugfixes do get applied now and then.
   pname = "lie";
-
-  meta = {
-    description = "Computer algebra package for Lie group computations";
-    mainProgram = "lie";
-    homepage = "http://wwwmathlabo.univ-poitiers.fr/~maavl/LiE/";
-    license = lib.licenses.lgpl3; # see the website
-
-    longDescription = ''
-      LiE is a computer algebra system that is specialised in computations
-      involving (reductive) Lie groups and their representations. It is
-      publicly available for free in source code. For a description of its
-      characteristics, we refer to the following sources of information.
-    ''; # take from the website
-
-    platforms = lib.platforms.linux;
-    maintainers = [ ]; # this package is probably not going to change anyway
-  };
+  version = "2.2.2";
 
   src = fetchurl {
     url = "http://wwwmathlabo.univ-poitiers.fr/~maavl/LiE/conLiE.tar.gz";
@@ -39,11 +22,6 @@ stdenv.mkDerivation {
     readline
   ];
 
-  patchPhase = ''
-    substituteInPlace make_lie \
-      --replace \`/bin/pwd\` $out
-  '';
-
   installPhase = ''
     mkdir -vp $out/bin
 
@@ -53,4 +31,26 @@ stdenv.mkDerivation {
     cp -v LEARN* $out
     cp -v INFO* $out
   '';
+
+  patchPhase = ''
+    substituteInPlace make_lie \
+      --replace \`/bin/pwd\` $out
+  '';
+
+  meta = {
+    description = "Computer algebra package for Lie group computations";
+
+    longDescription = ''
+      LiE is a computer algebra system that is specialised in computations
+      involving (reductive) Lie groups and their representations. It is
+      publicly available for free in source code. For a description of its
+      characteristics, we refer to the following sources of information.
+    ''; # take from the website
+
+    homepage = "http://wwwmathlabo.univ-poitiers.fr/~maavl/LiE/";
+    license = lib.licenses.lgpl3; # see the website
+    maintainers = [ ]; # this package is probably not going to change anyway
+    platforms = lib.platforms.linux;
+    mainProgram = "lie";
+  };
 }

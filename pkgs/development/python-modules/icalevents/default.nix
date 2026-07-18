@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  poetry-core,
+  buildPythonPackage,
   icalendar,
+  poetry-core,
   pook,
+  pytestCheckHook,
   python-dateutil,
   pytz,
   urllib3,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "icalevents";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-QDqmcZY/UANVKRjk1ZFEFHgrjtD+hXE4qd3tX64sE7c=";
   };
+
+  nativeCheckInputs = [
+    pook
+    pytestCheckHook
+  ];
 
   build-system = [
     poetry-core
@@ -34,24 +38,20 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    pook
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Makes HTTP calls
     "test_events_url"
     "test_events_async_url"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "icalevents" ];
 
   meta = {
-    changelog = "https://github.com/jazzband/icalevents/releases/tag/${src.tag}";
     description = "Python module for iCal URL/file parsing and querying";
     homepage = "https://github.com/jazzband/icalevents";
-    maintainers = with lib.maintainers; [ jamiemagee ];
+    changelog = "https://github.com/jazzband/icalevents/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ jamiemagee ];
   };
 }

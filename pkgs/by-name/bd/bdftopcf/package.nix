@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   pkg-config,
-  xorgproto,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "bdftopcf";
@@ -16,7 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ xorgproto ];
 
@@ -35,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Converts X font from Bitmap Distribution Format to Portable Compiled Format";
     homepage = "https://gitlab.freedesktop.org/xorg/util/bdftopcf";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "bdftopcf";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "bdftopcf";
   };
 })

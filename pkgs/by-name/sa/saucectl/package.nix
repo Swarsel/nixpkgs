@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,19 +15,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-l9iiMyL1OgjmWj2qbzQAobi+DFoecueaRP2SV6KGbn4=";
   };
 
+  vendorHash = "sha256-n/GblPFolUD+noxGI4yZbOGdAUxM0DXtpCybS+E0k3I=";
+  checkFlags = [ "-skip=^TestNewRequestWithContext$" ];
+
   ldflags = [
     "-X github.com/saucelabs/saucectl/internal/version.Version=${finalAttrs.version}"
     "-X github.com/saucelabs/saucectl/internal/version.GitCommit=${finalAttrs.version}"
   ];
 
-  vendorHash = "sha256-n/GblPFolUD+noxGI4yZbOGdAUxM0DXtpCybS+E0k3I=";
-
-  checkFlags = [ "-skip=^TestNewRequestWithContext$" ];
-
   meta = {
     description = "Command line interface for the Sauce Labs platform";
-    changelog = "https://github.com/saucelabs/saucectl/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/saucelabs/saucectl";
+    changelog = "https://github.com/saucelabs/saucectl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.apsl20;
     maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
     mainProgram = "saucectl";

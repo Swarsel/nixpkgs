@@ -3,30 +3,27 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   jsonschema,
   mwcli,
   mwtypes,
-
   # tests
   pytestCheckHook,
   pythonAtLeast,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mwxml";
   version = "0.3.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-yiIyqX6pMem7JPhbVKSRBYwjwHRXY3LnESRq+scGFuA=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,10 +31,6 @@ buildPythonPackage (finalAttrs: {
     mwcli
     mwtypes
   ];
-
-  pythonImportsCheck = [ "mwxml" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests =
     lib.optionals (pythonAtLeast "3.14") [
@@ -49,11 +42,14 @@ buildPythonPackage (finalAttrs: {
       "test_complex_error_handler"
     ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "mwxml" ];
+
   meta = {
     description = "Set of utilities for processing MediaWiki XML dump data";
-    mainProgram = "mwxml";
     homepage = "https://github.com/mediawiki-utilities/python-mwxml";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    mainProgram = "mwxml";
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  openssl,
   fetchFromGitHub,
-  versionCheckHook,
   asciidoc,
-  xmlto,
   docbook-xsl-nons,
   docbook_xml_dtd_45,
+  openssl,
+  versionCheckHook,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4+EGVtohM0vL/fXHCXohwWqIBTiIUGbt6AZ7JKpRCT8=";
   };
 
-  makeFlags = [ "prefix=${placeholder "out"}" ];
-  buildInputs = [ openssl ];
   nativeBuildInputs = [
     asciidoc
     xmlto
@@ -30,18 +28,22 @@ stdenv.mkDerivation (finalAttrs: {
     docbook_xml_dtd_45
   ];
 
+  buildInputs = [ openssl ];
+  makeFlags = [ "prefix=${placeholder "out"}" ];
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    mainProgram = "proxytunnel";
-    homepage = "http://proxytunnel.sf.net/";
     description = "Stealth tunneling through HTTP(S) proxies";
-    platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Only;
+    homepage = "http://proxytunnel.sf.net/";
     changelog = "https://github.com/proxytunnel/proxytunnel/raw/${finalAttrs.src.tag}/CHANGES";
+    license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       lenianiva
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "proxytunnel";
   };
 })

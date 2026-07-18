@@ -1,19 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  wheel,
+  buildPythonPackage,
   pytestCheckHook,
   pythonAtLeast,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "bacpypes";
   version = "0.18.6";
-  format = "setuptools";
-
-  # uses the removed asyncore module
-  disabled = pythonAtLeast "3.12";
 
   src = fetchFromGitHub {
     owner = "JoelBender";
@@ -29,14 +25,16 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ wheel ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  # uses the removed asyncore module
+  disabled = pythonAtLeast "3.12";
 
   disabledTests = [
     # Test fails with a an error: AssertionError: assert 30 == 31
     "test_recurring_task_5"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "bacpypes" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  clangStdenv,
   fetchurl,
+  clangStdenv,
   gnustep-libobjc,
   which,
 }:
@@ -15,37 +15,40 @@ clangStdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-k8oyC3BieevKU3YNqJ1MPyu8VH9HI5ZxQKNDRtnwTCQ=";
   };
 
+  patches = [ ./fixup-paths.patch ];
+  buildInputs = [ gnustep-libobjc ];
+  propagatedBuildInputs = [ which ];
+
   configureFlags = [
     "--with-layout=fhs-system"
     "--disable-install-p"
+  ];
+
+  makeFlags = [
+    "GNUSTEP_INSTALLATION_DOMAIN=SYSTEM"
   ];
 
   preConfigure = ''
     configureFlags="$configureFlags --with-config-file=$out/etc/GNUstep/GNUstep.conf"
   '';
 
-  makeFlags = [
-    "GNUSTEP_INSTALLATION_DOMAIN=SYSTEM"
-  ];
-
-  buildInputs = [ gnustep-libobjc ];
-
-  propagatedBuildInputs = [ which ];
-
-  patches = [ ./fixup-paths.patch ];
   setupHook = ./setup-hook.sh;
 
   meta = {
+    description = "Build manager for GNUstep";
+    homepage = "https://gnustep.github.io/";
+
     changelog = "https://github.com/gnustep/tools-make/releases/tag/make-${
       builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }";
-    description = "Build manager for GNUstep";
-    homepage = "https://gnustep.github.io/";
+
     license = lib.licenses.lgpl2Plus;
+
     maintainers = with lib.maintainers; [
       ashalkhakov
       dblsaiko
     ];
+
     platforms = lib.platforms.unix;
   };
 })

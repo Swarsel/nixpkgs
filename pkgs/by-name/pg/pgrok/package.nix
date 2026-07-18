@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  fetchPnpmDeps,
   nix-update-script,
   nodejs,
-  pnpm_11,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_11,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,12 +25,6 @@ buildGoModule (finalAttrs: {
     "server"
   ];
 
-  nativeBuildInputs = [
-    nodejs
-    pnpmConfigHook
-    pnpm_11
-  ];
-
   postPatch = ''
     # Rename directories to avoid binary naming conflicts (both would be named "cli")
     mv pgrok/cli pgrok/pgrok
@@ -43,18 +37,37 @@ buildGoModule (finalAttrs: {
       --replace-fail "../cli/internal/web/dist" "../pgrokd/internal/web/dist"
   '';
 
+  nativeBuildInputs = [
+    nodejs
+    pnpmConfigHook
+    pnpm_11
+  ];
+
+  vendorHash = "sha256-fhyyyXHUJsIWiCZbqtLZZRuIG9hb0LAkSo7lKW0i8Sk";
+
   env.pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs)
       pname
       version
       src
       ;
-    pnpm = pnpm_11;
+
     fetcherVersion = 4;
     hash = "sha256-8CLAtxqNgcVIUw4RKAy6jKlErmkgZYyVYFdrD+jyfAA=";
+    pnpm = pnpm_11;
   };
 
-  vendorHash = "sha256-fhyyyXHUJsIWiCZbqtLZZRuIG9hb0LAkSo7lKW0i8Sk";
+  preBuild = ''
+    pushd pgrokd/web
+
+    pnpm run build
+
+    popd
+  '';
+
+  postInstall = ''
+    moveToOutput bin/pgrokd $server
+  '';
 
   ldflags = [
     "-s"
@@ -68,18 +81,6 @@ buildGoModule (finalAttrs: {
     "pgrok/pgrok"
     "pgrokd/pgrokd"
   ];
-
-  preBuild = ''
-    pushd pgrokd/web
-
-    pnpm run build
-
-    popd
-  '';
-
-  postInstall = ''
-    moveToOutput bin/pgrokd $server
-  '';
 
   passthru.updateScript = nix-update-script { };
 

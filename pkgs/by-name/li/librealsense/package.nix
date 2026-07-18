@@ -1,31 +1,31 @@
 {
+  lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
   config,
   coreutils,
-  lib,
-  fetchFromGitHub,
-  runtimeShell,
-  cmake,
-  gnugrep,
-  gawk,
-  libusb1,
-  nlohmann_json,
-  ninja,
-  makeWrapper,
-  pkg-config,
-  gcc,
-  libgbm,
-  gtk3,
-  glfw,
-  libGLU,
   curl,
+  gawk,
+  gcc,
+  glfw,
+  gnugrep,
+  gtk3,
+  libGLU,
+  libgbm,
+  libusb1,
+  makeWrapper,
+  ninja,
+  nlohmann_json,
+  pkg-config,
+  runtimeShell,
   v4l-utils,
-  cudaSupport ? config.cudaSupport,
   cudaPackages ? { },
-  enablePython ? false,
-  pythonPackages ? null,
+  cudaSupport ? config.cudaSupport,
   enableExamples ? enableGUI, # currently broken without enableGUI
   enableGUI ? false,
+  enablePython ? false,
+  pythonPackages ? null,
 }:
 
 assert cudaSupport -> (cudaPackages ? cudatoolkit && cudaPackages.cudatoolkit != null);
@@ -40,11 +40,6 @@ stdenv'.mkDerivation rec {
   pname = "librealsense";
   version = "2.57.7";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "realsenseai";
     repo = "librealsense";
@@ -52,27 +47,9 @@ stdenv'.mkDerivation rec {
     sha256 = "sha256-d/FkvnUa7CqW25ZG8PY9+cd7uRL4zC1Md/JT8B/qAKU=";
   };
 
-  buildInputs = [
-    libusb1
-    gcc.cc.lib
-    nlohmann_json
-  ]
-  ++ lib.optionals cudaSupport [ cudaPackages.cuda_cudart ]
-  ++ lib.optionals enablePython (
-    with pythonPackages;
-    [
-      python
-      pybind11
-    ]
-  )
-  ++ lib.optionals (enableExamples || enableGUI) [
-    glfw
-  ]
-  ++ lib.optionals enableGUI [
-    libgbm
-    gtk3
-    libGLU
-    curl
+  outputs = [
+    "out"
+    "dev"
   ];
 
   patches = [
@@ -98,6 +75,29 @@ stdenv'.mkDerivation rec {
   ]
   ++ lib.optionals cudaSupport [
     cudaPackages.cuda_nvcc
+  ];
+
+  buildInputs = [
+    libusb1
+    gcc.cc.lib
+    nlohmann_json
+  ]
+  ++ lib.optionals cudaSupport [ cudaPackages.cuda_cudart ]
+  ++ lib.optionals enablePython (
+    with pythonPackages;
+    [
+      python
+      pybind11
+    ]
+  )
+  ++ lib.optionals (enableExamples || enableGUI) [
+    glfw
+  ]
+  ++ lib.optionals enableGUI [
+    libgbm
+    gtk3
+    libGLU
+    curl
   ];
 
   cmakeFlags = [
@@ -186,10 +186,12 @@ stdenv'.mkDerivation rec {
     description = "Cross-platform library for Intel® RealSense™ depth cameras (D400 series and the SR300)";
     homepage = "https://github.com/realsenseai/librealsense";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       brian-dawn
       pbsds
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = if enableGUI then "realsense-viewer" else "rs-enumerate-devices";
   };

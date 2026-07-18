@@ -1,27 +1,22 @@
 {
   lib,
-  git,
-  python3Packages,
   fetchFromGitHub,
+  git,
   installShellFiles,
+  python3Packages,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gita";
   version = "0.16.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "gita";
     owner = "nosarthur";
+    repo = "gita";
     tag = "v${finalAttrs.version}";
     hash = "sha256-JzfGj17YCYXmpGV2jSsGLsG1oqO5ynj7r3u/mkSBRBg=";
   };
-
-  build-system = [ python3Packages.setuptools ];
-
-  dependencies = [ python3Packages.argcomplete ];
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -29,15 +24,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     git
     python3Packages.pytestCheckHook
     writableTmpDirAsHomeHook
-  ];
-
-  enabledTestPaths = [
-    "${finalAttrs.src}/tests"
-  ];
-
-  disabledTests = [
-    # This test fails as it tries to write to the Nix store.
-    "test_set_first_time"
   ];
 
   # The test suite assumes that it is ran from a directory called "gita" that is
@@ -53,6 +39,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     installShellCompletion --fish --name gita auto-completion/fish/gita.fish
     installShellCompletion --zsh --name gita auto-completion/zsh/.gita-completion.zsh
   '';
+
+  build-system = [ python3Packages.setuptools ];
+  dependencies = [ python3Packages.argcomplete ];
+
+  disabledTests = [
+    # This test fails as it tries to write to the Nix store.
+    "test_set_first_time"
+  ];
+
+  enabledTestPaths = [
+    "${finalAttrs.src}/tests"
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Command-line tool to manage multiple git repos";

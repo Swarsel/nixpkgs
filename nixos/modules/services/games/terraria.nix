@@ -1,17 +1,17 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
   cfg = config.services.terraria;
   opt = options.services.terraria;
   worldSizeMap = {
-    small = 1;
-    medium = 2;
     large = 3;
+    medium = 2;
+    small = 1;
   };
   valFlag =
     name: val:
@@ -56,140 +56,157 @@ in
   options = {
     services.terraria = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           If enabled, starts a Terraria server. The server can be connected to via `tmux -S ''${config.${opt.dataDir}}/terraria.sock attach`
           for administration by users who are a part of the `terraria` group (use `C-b d` shortcut to detach again).
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "terraria" {
         default = "terraria-server";
       };
 
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 7777;
-        description = ''
-          Specifies the port to listen on.
-        '';
-      };
-
-      maxPlayers = lib.mkOption {
-        type = lib.types.ints.u8;
-        default = 255;
-        description = ''
-          Sets the max number of players (between 1 and 255).
-        '';
-      };
-
-      password = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Sets the server password. Leave `null` for no password.
-        '';
-      };
-
-      messageOfTheDay = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Set the server message of the day text.
-        '';
-      };
-
-      worldPath = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = ''
-          The path to the world file (`.wld`) which should be loaded.
-          If no world exists at this path, one will be created with the size
-          specified by `autoCreatedWorldSize`.
-        '';
-      };
-
       autoCreatedWorldSize = lib.mkOption {
+        default = "medium";
+
+        description = ''
+          Specifies the size of the auto-created world if `worldPath` does not
+          point to an existing world.
+        '';
+
         type = lib.types.enum [
           "small"
           "medium"
           "large"
         ];
-        default = "medium";
-        description = ''
-          Specifies the size of the auto-created world if `worldPath` does not
-          point to an existing world.
-        '';
       };
 
       banListPath = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
+
         description = ''
           The path to the ban list.
         '';
-      };
 
-      secure = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Adds additional cheat protection to the server.";
-      };
-
-      noUPnP = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Disables automatic Universal Plug and Play.";
-      };
-
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to open ports in the firewall";
+        type = lib.types.nullOr lib.types.path;
       };
 
       dataDir = lib.mkOption {
-        type = lib.types.str;
         default = "/var/lib/terraria";
-        example = "/srv/terraria";
         description = "Path to variable state data directory for terraria.";
+        example = "/srv/terraria";
+        type = lib.types.str;
+      };
+
+      maxPlayers = lib.mkOption {
+        default = 255;
+
+        description = ''
+          Sets the max number of players (between 1 and 255).
+        '';
+
+        type = lib.types.ints.u8;
+      };
+
+      messageOfTheDay = lib.mkOption {
+        default = null;
+
+        description = ''
+          Set the server message of the day text.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      noUPnP = lib.mkOption {
+        default = false;
+        description = "Disables automatic Universal Plug and Play.";
+        type = lib.types.bool;
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+        description = "Whether to open ports in the firewall";
+        type = lib.types.bool;
+      };
+
+      password = lib.mkOption {
+        default = null;
+
+        description = ''
+          Sets the server password. Leave `null` for no password.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      port = lib.mkOption {
+        default = 7777;
+
+        description = ''
+          Specifies the port to listen on.
+        '';
+
+        type = lib.types.port;
+      };
+
+      secure = lib.mkOption {
+        default = false;
+        description = "Adds additional cheat protection to the server.";
+        type = lib.types.bool;
+      };
+
+      worldPath = lib.mkOption {
+        default = null;
+
+        description = ''
+          The path to the world file (`.wld`) which should be loaded.
+          If no world exists at this path, one will be created with the size
+          specified by `autoCreatedWorldSize`.
+        '';
+
+        type = lib.types.nullOr lib.types.path;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.users.terraria = {
-      description = "Terraria server service user";
-      group = "terraria";
-      home = cfg.dataDir;
-      createHome = true;
-      uid = config.ids.uids.terraria;
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
+      allowedUDPPorts = [ cfg.port ];
+    };
+
+    systemd.services.terraria = {
+      after = [ "network.target" ];
+      description = "Terraria Server Service";
+
+      serviceConfig = {
+        ExecStart = "${tmuxCmd} new -d ${lib.getExe cfg.package} ${lib.concatStringsSep " " flags}";
+        ExecStop = "${stopScript} $MAINPID";
+        Group = "terraria";
+        GuessMainPID = true;
+        Type = "forking";
+        UMask = 7;
+        User = "terraria";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups.terraria = {
       gid = config.ids.gids.terraria;
     };
 
-    systemd.services.terraria = {
-      description = "Terraria Server Service";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-
-      serviceConfig = {
-        User = "terraria";
-        Group = "terraria";
-        Type = "forking";
-        GuessMainPID = true;
-        UMask = 7;
-        ExecStart = "${tmuxCmd} new -d ${lib.getExe cfg.package} ${lib.concatStringsSep " " flags}";
-        ExecStop = "${stopScript} $MAINPID";
-      };
-    };
-
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
-      allowedUDPPorts = [ cfg.port ];
+    users.users.terraria = {
+      createHome = true;
+      description = "Terraria server service user";
+      group = "terraria";
+      home = cfg.dataDir;
+      uid = config.ids.uids.terraria;
     };
 
   };

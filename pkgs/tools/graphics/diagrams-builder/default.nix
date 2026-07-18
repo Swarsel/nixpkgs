@@ -13,9 +13,9 @@
 {
   lib,
   stdenv,
+  diagrams-builder,
   ghcWithPackages,
   makeWrapper,
-  diagrams-builder,
   extraPackages ? (self: [ ]),
 }:
 
@@ -50,13 +50,10 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "diagrams-builder";
   inherit (diagrams-builder) version;
-
+  pname = "diagrams-builder";
   nativeBuildInputs = [ makeWrapper ];
-
   buildCommand = lib.concatStringsSep "\n" (map exeWrapper allBackends);
-
   # Will be faster to build the wrapper locally then to fetch it from a binary cache.
   preferLocalBuild = true;
   meta = diagrams-builder.meta;

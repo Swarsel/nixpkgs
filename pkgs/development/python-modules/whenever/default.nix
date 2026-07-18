@@ -2,25 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  cargo,
-  rustc,
-  libiconv,
   buildPythonPackage,
+  cargo,
+  freezegun,
+  hypothesis,
+  libiconv,
+  nix-update-script,
+  pytest-mypy-plugins,
+  pytestCheckHook,
+  rustPlatform,
+  rustc,
   setuptools,
   setuptools-rust,
-  pytestCheckHook,
-  pytest-mypy-plugins,
-  hypothesis,
-  freezegun,
   time-machine,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "whenever";
   version = "0.10.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ariebovenberg";
@@ -29,22 +28,13 @@ buildPythonPackage rec {
     hash = "sha256-D3jNrxNTBbSheymnI72xAhdvvRzsbjIk+Gp82X7AkdU=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    hash = "sha256-bmKUeVZwaqCN81v1YDnz66ZsUE8VTMBHlph6ZootKu8=";
-  };
-
-  build-system = [
-    setuptools
-    setuptools-rust
-    rustPlatform.cargoSetupHook
-    cargo
-    rustc
-  ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
+
+  # a bunch of failures, including an assumption of what the timezone on the host is
+  # TODO: try enabling on bump
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -55,6 +45,19 @@ buildPythonPackage rec {
     time-machine
   ];
 
+  build-system = [
+    setuptools
+    setuptools-rust
+    rustPlatform.cargoSetupHook
+    cargo
+    rustc
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-bmKUeVZwaqCN81v1YDnz66ZsUE8VTMBHlph6ZootKu8=";
+  };
+
   disabledTestPaths = [
     # benchmarks
     "benchmarks/python/test_date.py"
@@ -63,12 +66,8 @@ buildPythonPackage rec {
     "benchmarks/python/test_zoned_datetime.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "whenever" ];
-
-  # a bunch of failures, including an assumption of what the timezone on the host is
-  # TODO: try enabling on bump
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

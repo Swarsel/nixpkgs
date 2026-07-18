@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  python311,
-  libxslt,
-  texliveBasic,
-  enableAllFeatures ? false,
-  imagemagick,
   fig2dev,
-  inkscape,
   fontconfig,
   ghostscript,
-
+  imagemagick,
+  inkscape,
+  libxslt,
+  python311,
+  texliveBasic,
+  enableAllFeatures ? false,
   tex ? texliveBasic.withPackages (
     ps: with ps; [
       # satisfy all packages that ./configure mentions
@@ -97,19 +96,18 @@ stdenv.mkDerivation rec {
     done
   '';
 
-  dontBuild = true;
-
   installPhase = ''
     ${python311.interpreter} ./setup.py install --prefix="$out" --use-python-path --verbose
   '';
 
+  dontBuild = true;
   passthru = { inherit tex; };
 
   meta = {
     description = "Program to convert DocBook to DVI, PostScript or PDF via LaTeX or ConTeXt";
-    mainProgram = "dblatex";
     homepage = "https://dblatex.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "dblatex";
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   nix-update-script,
-  stdenv,
   wayland,
   wayland-protocols,
   wayland-scanner,
@@ -19,7 +19,13 @@ stdenv.mkDerivation {
     hash = "sha256-IUreWEOWF1loS5SiAh8XPFrKE35Pxv6e8hhvdtNvjiU=";
   };
 
-  __structuredAttrs = true;
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail "/usr/share/wayland-protocols" "${wayland-protocols}/share/wayland-protocols" \
+      --replace-fail "gcc" "${stdenv.cc.targetPrefix}cc" \
+      --replace-fail "install: default" "install: all"
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -30,23 +36,16 @@ stdenv.mkDerivation {
     wayland
   ];
 
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail "/usr/share/wayland-protocols" "${wayland-protocols}/share/wayland-protocols" \
-      --replace-fail "gcc" "${stdenv.cc.targetPrefix}cc" \
-      --replace-fail "install: default" "install: all"
-  '';
-
   makeFlags = [ "PREFIX=$(out)" ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Highlight and print the mouse cursor position on Wayland";
     homepage = "https://github.com/cjacker/wl-find-cursor";
     license = lib.licenses.mit;
-    mainProgram = "wl-find-cursor";
     maintainers = with lib.maintainers; [ ilkecan ];
     platforms = lib.platforms.linux;
+    mainProgram = "wl-find-cursor";
   };
 }

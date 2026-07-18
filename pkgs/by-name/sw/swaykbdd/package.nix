@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  json_c,
   meson,
   ninja,
-  json_c,
   pkg-config,
 }:
 
@@ -20,11 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
   ];
+
   buildInputs = [ json_c ];
 
   meta = {

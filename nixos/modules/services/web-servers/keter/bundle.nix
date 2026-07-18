@@ -3,20 +3,18 @@
   https://github.com/snoyberg/keter#bundling-your-app-for-keter
 */
 {
+  lib,
+  gnutar,
   keterDomain,
   keterExecutable,
-  gnutar,
-  writeTextFile,
-  lib,
   stdenv,
+  writeTextFile,
   ...
 }:
 
 let
   str.stanzas = [
     {
-      # we just use nix as an absolute path so we're not bundling any binaries
-      type = "webapp";
       /*
         Note that we're not actually putting the executable in the bundle,
         we already can use the nix store for copying, so we just
@@ -24,6 +22,8 @@ let
       */
       exec = keterExecutable;
       host = keterDomain;
+      # we just use nix as an absolute path so we're not bundling any binaries
+      type = "webapp";
     }
   ];
   configFile = writeTextFile {
@@ -33,7 +33,6 @@ let
 
 in
 stdenv.mkDerivation {
-  name = "keter-bundle";
   buildCommand = ''
     mkdir -p config
     cp ${configFile} config/keter.yaml
@@ -42,5 +41,7 @@ stdenv.mkDerivation {
     mkdir -p $out
     tar -zcvf $out/bundle.tar.gz.keter ./.
   '';
+
   buildInputs = [ gnutar ];
+  name = "keter-bundle";
 }

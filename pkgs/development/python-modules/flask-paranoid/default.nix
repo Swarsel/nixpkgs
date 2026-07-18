@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "flask-paranoid";
   version = "0.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "miguelgrinberg";
@@ -24,14 +23,13 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ flask ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "flask_paranoid" ];
 
   meta = {
-    homepage = "https://github.com/miguelgrinberg/flask-paranoid/";
     description = "Simple user session protection";
+    homepage = "https://github.com/miguelgrinberg/flask-paranoid/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ gador ];
   };

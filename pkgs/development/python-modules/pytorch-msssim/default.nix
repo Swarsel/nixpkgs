@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
-  wheel,
   torch,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "pytorch-msssim";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "VainF";
@@ -25,11 +24,10 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ torch ];
-
-  pythonImportsCheck = [ "pytorch_msssim" ];
-
   # This test doesn't have (automatic) tests
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "pytorch_msssim" ];
 
   meta = {
     description = "Fast and differentiable MS-SSIM and SSIM for pytorch";

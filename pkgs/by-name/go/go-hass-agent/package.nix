@@ -2,10 +2,10 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  nodejs,
-  npmHooks,
   fetchNpmDeps,
   nix-update-script,
+  nodejs,
+  npmHooks,
 }:
 buildGoModule (finalAttrs: {
   pname = "go-hass-agent";
@@ -18,7 +18,25 @@ buildGoModule (finalAttrs: {
     hash = "sha256-s5kzxzyfNGK57MtusjEjcm0Gn75Wu8vfwJEIaVz7m20=";
   };
 
+  nativeBuildInputs = [
+    nodejs
+    npmHooks.npmConfigHook
+  ];
+
   vendorHash = "sha256-ZiLYnEcugciobjAchzJZNQrE3G11ehf3vi6cIMxZiTQ=";
+
+  preBuild = ''
+    npm run build:js
+    npm run build:css
+  '';
+
+  desktopItems = [ "assets/start-go-hass-agent.desktop" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/joshuar/go-hass-agent/config.AppVersion=v${finalAttrs.version}"
+  ];
 
   npmDeps = fetchNpmDeps {
     inherit (finalAttrs) src;
@@ -30,29 +48,11 @@ buildGoModule (finalAttrs: {
     preBuild = "";
   };
 
-  nativeBuildInputs = [
-    nodejs
-    npmHooks.npmConfigHook
-  ];
-
-  preBuild = ''
-    npm run build:js
-    npm run build:css
-  '';
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/joshuar/go-hass-agent/config.AppVersion=v${finalAttrs.version}"
-  ];
-
-  desktopItems = [ "assets/start-go-hass-agent.desktop" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Home Assistant native app for desktop/laptop devices";
-    mainProgram = "go-hass-agent";
+
     longDescription = ''
       Go Hass Agent is an application to expose sensors, controls, and events
       from a device to Home Assistant. You can think of it as something similar
@@ -69,13 +69,17 @@ buildGoModule (finalAttrs: {
       dashboards, just like the companion app or any other “thing” you've added
       into Home Assistant.
     '';
-    license = lib.licenses.mit;
+
     homepage = "https://github.com/joshuar/go-hass-agent";
     changelog = "https://github.com/joshuar/go-hass-agent/blob/v${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ethancedwards8
       nadir-ishiguro
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "go-hass-agent";
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  git,
-  perl,
-  ncurses,
-  coreutils,
   fetchFromGitHub,
+  coreutils,
+  git,
   makeWrapper,
+  ncurses,
   nix-update-script,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     perl # needed for patchShebangs
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -53,21 +51,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/so-fancy/diff-so-fancy";
     description = "Good-looking diffs filter for git";
-    license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     longDescription = ''
       diff-so-fancy builds on the good-lookin' output of git contrib's
       diff-highlight to upgrade your diffs' appearances.
     '';
+
+    homepage = "https://github.com/so-fancy/diff-so-fancy";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fpletz
       ma27
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "diff-so-fancy";
   };
 })

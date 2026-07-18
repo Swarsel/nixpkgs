@@ -9,12 +9,14 @@ lib.makeScope newScope (self: {
   nvidia-container-toolkit-docker = self.callPackage ./package.nix { };
 
   nvidia-docker = symlinkJoin {
+    inherit (self.nvidia-docker-unwrapped) meta;
     name = "nvidia-docker";
+
     paths = [
       self.nvidia-docker-unwrapped
       self.nvidia-container-toolkit-docker
     ];
-    inherit (self.nvidia-docker-unwrapped) meta;
   };
+
   nvidia-docker-unwrapped = self.callPackage ./nvidia-docker.nix { };
 })

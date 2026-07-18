@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,15 +15,14 @@ buildGoModule (finalAttrs: {
     sha256 = "1izszf60nsa6pyxx3kd8qdrz3h47ylm17r9hzh9wk37f61pmm42j";
   };
 
-  subPackages = [ "." ];
-
   vendorHash = null;
+  subPackages = [ "." ];
 
   meta = {
     description = "Idempotent command-line utility for managing your /etc/hosts* file";
     homepage = "https://github.com/cbednarski/hostess";
-    mainProgram = "hostess";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ edlimerkaj ];
+    mainProgram = "hostess";
   };
 })

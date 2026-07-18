@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
-  nixosTests,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  nodejs,
-  pnpm_11,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  makeWrapper,
-  python3,
-  dart-sass,
   bash,
-  jemalloc,
+  dart-sass,
+  fetchPnpmDeps,
   ffmpeg-headless,
+  jemalloc,
+  makeWrapper,
+  nix-update-script,
+  nixosTests,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
+  python3,
   writeShellScript,
 }:
 let
@@ -53,17 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3
     dart-sass
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-GCkSASkgwUvlAlm8hiy4Yk/QMVerVGacxOh1AYouH0g=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -142,8 +131,21 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-GCkSASkgwUvlAlm8hiy4Yk/QMVerVGacxOh1AYouH0g=";
+  };
+
   passthru = {
     tests.misskey = nixosTests.misskey;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -157,8 +159,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://misskey-hub.net/";
     license = lib.licenses.agpl3Only;
     maintainers = [ lib.maintainers.feathecutie ];
-    teams = [ lib.teams.ngi ];
     platforms = lib.platforms.unix;
     mainProgram = "misskey";
+    teams = [ lib.teams.ngi ];
   };
 })

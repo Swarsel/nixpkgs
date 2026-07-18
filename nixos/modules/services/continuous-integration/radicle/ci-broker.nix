@@ -37,29 +37,9 @@ let
 in
 
 {
-  meta.teams = [ lib.teams.radicle ];
-
   options.services.radicle.ci.broker = {
     enable = lib.mkEnableOption "radicle-ci-broker";
-
     package = lib.mkPackageOption pkgs "radicle-ci-broker" { };
-
-    stateDir = lib.mkOption {
-      type = lib.types.path;
-      description = "State directory of radicle-ci-broker.";
-      default = "/var/lib/radicle-ci";
-    };
-
-    logDir = lib.mkOption {
-      type = lib.types.path;
-      description = "Log directory of radicle-ci-broker.";
-      default = "/var/log/radicle-ci";
-    };
-
-    enableHardening = lib.mkEnableOption "systemd hardening" // {
-      default = true;
-      example = false;
-    };
 
     checkConfig =
       lib.mkEnableOption "checking the {file}`ci-broker.yaml` file resulting from [](#opt-services.radicle.ci.broker.settings)"
@@ -68,76 +48,25 @@ in
         example = false;
       };
 
+    enableHardening = lib.mkEnableOption "systemd hardening" // {
+      default = true;
+      example = false;
+    };
+
+    logDir = lib.mkOption {
+      default = "/var/log/radicle-ci";
+      description = "Log directory of radicle-ci-broker.";
+      type = lib.types.path;
+    };
+
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = settingsFormat.type;
+      default = { };
 
-        options = {
-          db = lib.mkOption {
-            type = lib.types.path;
-            description = "Database file path.";
-            defaultText = lib.literalExpression ''"''${config.services.radicle.ci.broker.stateDir}/ci-broker.db"'';
-          };
-
-          report_dir = lib.mkOption {
-            type = lib.types.nullOr lib.types.path;
-            description = "Directory where HTML and JSON report pages are written.";
-            defaultText = lib.literalExpression ''"''${config.services.radicle.ci.broker.stateDir}/reports"'';
-          };
-
-          adapters = lib.mkOption {
-            type = lib.types.attrsOf (
-              lib.types.submodule {
-                freeformType = settingsFormat.type;
-
-                options = {
-                  command = lib.mkOption {
-                    type = lib.types.str;
-                    description = "Adapter command to run.";
-                  };
-                  env = lib.mkOption {
-                    type = lib.types.attrsOf settingsFormat.type;
-                    description = "Environment variables to add when running the adapter.";
-                    default = { };
-                  };
-                };
-              }
-            );
-            description = ''
-              CI adapters.
-              See also the options under [services.radicle.ci.adapters](#opt-services.radicle.ci.adapters.native.instances).
-            '';
-            default = { };
-          };
-
-          triggers = lib.mkOption {
-            type = lib.types.listOf (
-              lib.types.submodule {
-                freeformType = settingsFormat.type;
-
-                options = {
-                  adapter = lib.mkOption {
-                    type = lib.types.str;
-                    description = "Adapter name.";
-                  };
-
-                  filters = lib.mkOption {
-                    type = lib.types.listOf settingsFormat.type;
-                    description = "Trigger filter.";
-                  };
-                };
-              }
-            );
-            description = "CI triggers.";
-            default = [ ];
-          };
-        };
-      };
       description = ''
         Configuration of radicle-ci-broker.
         See <https://radicle.network/nodes/seed.radicle.dev/rad:zwTxygwuz5LDGBq255RA2CbNGrz8/tree/doc/userguide.md#configuration> for more information.
       '';
-      default = { };
+
       example = lib.literalExpression ''
         {
           adapters.native = {
@@ -169,6 +98,81 @@ in
           ];
         }
       '';
+
+      type = lib.types.submodule {
+        options = {
+          adapters = lib.mkOption {
+            default = { };
+
+            description = ''
+              CI adapters.
+              See also the options under [services.radicle.ci.adapters](#opt-services.radicle.ci.adapters.native.instances).
+            '';
+
+            type = lib.types.attrsOf (
+              lib.types.submodule {
+                options = {
+                  command = lib.mkOption {
+                    description = "Adapter command to run.";
+                    type = lib.types.str;
+                  };
+
+                  env = lib.mkOption {
+                    default = { };
+                    description = "Environment variables to add when running the adapter.";
+                    type = lib.types.attrsOf settingsFormat.type;
+                  };
+                };
+
+                freeformType = settingsFormat.type;
+              }
+            );
+          };
+
+          db = lib.mkOption {
+            defaultText = lib.literalExpression ''"''${config.services.radicle.ci.broker.stateDir}/ci-broker.db"'';
+            description = "Database file path.";
+            type = lib.types.path;
+          };
+
+          report_dir = lib.mkOption {
+            defaultText = lib.literalExpression ''"''${config.services.radicle.ci.broker.stateDir}/reports"'';
+            description = "Directory where HTML and JSON report pages are written.";
+            type = lib.types.nullOr lib.types.path;
+          };
+
+          triggers = lib.mkOption {
+            default = [ ];
+            description = "CI triggers.";
+
+            type = lib.types.listOf (
+              lib.types.submodule {
+                options = {
+                  adapter = lib.mkOption {
+                    description = "Adapter name.";
+                    type = lib.types.str;
+                  };
+
+                  filters = lib.mkOption {
+                    description = "Trigger filter.";
+                    type = lib.types.listOf settingsFormat.type;
+                  };
+                };
+
+                freeformType = settingsFormat.type;
+              }
+            );
+          };
+        };
+
+        freeformType = settingsFormat.type;
+      };
+    };
+
+    stateDir = lib.mkOption {
+      default = "/var/lib/radicle-ci";
+      description = "State directory of radicle-ci-broker.";
+      type = lib.types.path;
     };
   };
 
@@ -180,39 +184,35 @@ in
       }
     ];
 
+    environment.systemPackages = [ cibtool-system ];
+
     services.radicle.ci.broker.settings = {
       db = lib.mkDefault "${cfg.stateDir}/ci-broker.db";
       report_dir = lib.mkDefault "${cfg.stateDir}/reports";
     };
 
     systemd.services.radicle-ci-broker = {
-      wantedBy = [ "multi-user.target" ];
-
-      bindsTo = [ "radicle-node.service" ];
       after = [ "radicle-node.service" ];
-
+      bindsTo = [ "radicle-node.service" ];
       environment = { inherit RAD_HOME; };
 
       serviceConfig = lib.mkMerge [
         {
-          User = config.users.users.radicle.name;
-          Group = config.users.groups.radicle.name;
-          Restart = "always";
-
-          StateDirectory = lib.mkIf (cfg.stateDir == "/var/lib/radicle-ci") "radicle-ci";
-          LogsDirectory = lib.mkIf (cfg.logDir == "/var/log/radicle-ci") "radicle-ci";
-          RuntimeDirectory = "radicle-ci-broker";
-          WorkingDirectory = "/run/radicle-ci-broker";
-
-          ImportCredential = config.systemd.services.radicle-node.serviceConfig.ImportCredential or [ ];
-          LoadCredential = config.systemd.services.radicle-node.serviceConfig.LoadCredential or [ ];
-
           BindReadOnlyPaths = config.systemd.services.radicle-node.serviceConfig.BindReadOnlyPaths ++ [
             "/run/credentials/radicle-ci-broker.service/dev.radicle.node.secret:/var/lib/radicle/keys/radicle"
           ];
-          ReadWritePaths = [ RAD_HOME ];
 
           ExecStart = "${lib.getExe' cfg.package "cib"} --config ${configFile} process-events";
+          Group = config.users.groups.radicle.name;
+          ImportCredential = config.systemd.services.radicle-node.serviceConfig.ImportCredential or [ ];
+          LoadCredential = config.systemd.services.radicle-node.serviceConfig.LoadCredential or [ ];
+          LogsDirectory = lib.mkIf (cfg.logDir == "/var/log/radicle-ci") "radicle-ci";
+          ReadWritePaths = [ RAD_HOME ];
+          Restart = "always";
+          RuntimeDirectory = "radicle-ci-broker";
+          StateDirectory = lib.mkIf (cfg.stateDir == "/var/lib/radicle-ci") "radicle-ci";
+          User = config.users.users.radicle.name;
+          WorkingDirectory = "/run/radicle-ci-broker";
         }
 
         (lib.mkIf cfg.enableHardening {
@@ -241,21 +241,25 @@ in
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
             "~@resources"
           ];
+
           UMask = "0066";
         })
       ];
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.tmpfiles.settings.radicle-ci-broker.${cfg.settings.report_dir}.d = {
-      user = config.users.users.radicle.name;
       group = config.users.groups.radicle.name;
+      user = config.users.users.radicle.name;
     };
-
-    environment.systemPackages = [ cibtool-system ];
   };
+
+  meta.teams = [ lib.teams.radicle ];
 }

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pandas,
+  buildPythonPackage,
   numpy,
+  pandas,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pycatch22";
   version = "0.4.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DynamicsAndNeuralSystems";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pycatch22" ];
 
   meta = {

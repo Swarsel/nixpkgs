@@ -1,9 +1,9 @@
 {
-  pkgs,
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
+  pkgs,
 }:
 
 buildGoModule rec {
@@ -33,9 +33,9 @@ buildGoModule rec {
 
   meta = {
     description = "Prometheus Alertmanager alert acknowledgement management daemon";
-    mainProgram = "kthxbye";
     homepage = "https://github.com/prymitive/kthxbye";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ nukaduka ];
+    mainProgram = "kthxbye";
   };
 }

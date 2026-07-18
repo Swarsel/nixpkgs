@@ -2,25 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   # nativeBuildInputs
   cmake,
-  pkg-config,
-
   # buildInputs
   flac,
   freetype,
   glew,
   libjpeg,
   libvorbis,
-  miniaudio,
-  udev,
-  libxi,
   libx11,
+  libxcb-image,
   libxcursor,
+  libxi,
   libxrandr,
   libxrender,
-  libxcb-image,
+  miniaudio,
+  pkg-config,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,6 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     flac
     freetype
@@ -72,13 +71,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple and fast multimedia library";
-    homepage = "https://www.sfml-dev.org/";
-    changelog = "https://github.com/SFML/SFML/blob/${finalAttrs.version}/changelog.md";
+
     longDescription = ''
       SFML is a simple, fast, cross-platform and object-oriented multimedia API.
       It provides access to windowing, graphics, audio and network.
       It is written in C++, and has bindings for various languages such as C, .Net, Ruby, Python.
     '';
+
+    homepage = "https://www.sfml-dev.org/";
+    changelog = "https://github.com/SFML/SFML/blob/${finalAttrs.version}/changelog.md";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ GaetanLepage ];
     platforms = lib.platforms.unix;

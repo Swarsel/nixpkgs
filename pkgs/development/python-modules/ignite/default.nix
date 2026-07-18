@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  pytestCheckHook,
-  pytest-xdist,
-  torchvision,
   matplotlib,
   mock,
   packaging,
+  pytest-xdist,
+  pytestCheckHook,
   torch,
+  torchvision,
 }:
 
 buildPythonPackage rec {
   pname = "ignite";
   version = "0.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytorch";
@@ -24,12 +23,8 @@ buildPythonPackage rec {
     hash = "sha256-taf1T5zSX436Bn2qLL8ba/fXyFtu51uOvYcWerpEQ1E=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    packaging
-    torch
-  ];
+  # async isn't correctly closed so it will fail after test suite.
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -39,11 +34,11 @@ buildPythonPackage rec {
     torchvision
   ];
 
-  # async isn't correctly closed so it will fail after test suite.
-  doCheck = false;
+  build-system = [ hatchling ];
 
-  enabledTestPaths = [
-    "tests/"
+  dependencies = [
+    packaging
+    torch
   ];
 
   # Some packages are not in NixPkgs; other tests try to build distributed
@@ -77,6 +72,12 @@ buildPythonPackage rec {
     "trains"
     "visdom"
   ];
+
+  enabledTestPaths = [
+    "tests/"
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "ignite"

@@ -11,14 +11,14 @@
 buildPythonPackage rec {
   pname = "requests-gssapi";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "requests_gssapi";
     hash = "sha256-uifrMp9IQNllvI+l02DGJ8dDSe+mFWylAa2Jr8ahNPQ=";
+    pname = "requests_gssapi";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,8 +26,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "requests_gssapi" ];
 
   meta = {

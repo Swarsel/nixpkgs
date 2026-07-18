@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiortsp,
   buildPythonPackage,
-  fetchFromGitHub,
   orjson,
   pycryptodomex,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "reolink-aio";
   version = "0.21.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "starkillerOG";
@@ -22,6 +21,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-qBGUhqjHur3vKhpHmOHIQUxeBn+YAIjECdm33o1c3jg=";
   };
 
+  # All tests require a network device
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,10 +33,8 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "reolink_aio" ];
-
-  # All tests require a network device
-  doCheck = false;
 
   meta = {
     description = "Module to interact with the Reolink IP camera API";

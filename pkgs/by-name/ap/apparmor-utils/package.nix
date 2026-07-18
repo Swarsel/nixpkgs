@@ -1,24 +1,23 @@
 {
   lib,
-  makeWrapper,
-  gawk,
-  perl,
-  runtimeShellPackage,
   stdenv,
-  which,
-  linuxHeaders ? stdenv.cc.libc.linuxHeaders,
-  python3Packages,
-  buildPackages,
-
   # apparmor deps
   apparmor-parser,
+  buildPackages,
+  gawk,
+  makeWrapper,
+  perl,
+  python3Packages,
+  runtimeShellPackage,
+  which,
+  linuxHeaders ? stdenv.cc.libc.linuxHeaders,
 }:
 let
   inherit (python3Packages) libapparmor;
 in
 python3Packages.buildPythonApplication {
-  pname = "apparmor-utils";
   inherit (libapparmor) version src;
+  pname = "apparmor-utils";
 
   postPatch = ''
     patchShebangs common
@@ -35,10 +34,7 @@ python3Packages.buildPythonApplication {
     sed -i Makefile -e "/\<vim\>/d"
   '');
 
-  pyproject = false;
   strictDeps = true;
-
-  doCheck = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -51,18 +47,19 @@ python3Packages.buildPythonApplication {
     runtimeShellPackage
   ];
 
-  pythonPath = [
-    python3Packages.notify2
-    python3Packages.psutil
-    libapparmor
-  ];
-
   makeFlags = [
     "LANGS="
     "POD2MAN=${lib.getExe' buildPackages.perl "pod2man"}"
     "POD2HTML=${lib.getExe' buildPackages.perl "pod2html"}"
     "MANDIR=share/man"
   ];
+
+  doCheck = true;
+
+  postInstall = ''
+    wrapProgram $out/bin/aa-remove-unknown \
+     --prefix PATH : ${lib.makeBinPath [ gawk ]}
+  '';
 
   installFlags = [
     "DESTDIR=$(out)"
@@ -71,10 +68,13 @@ python3Packages.buildPythonApplication {
     "PYPREFIX="
   ];
 
-  postInstall = ''
-    wrapProgram $out/bin/aa-remove-unknown \
-     --prefix PATH : ${lib.makeBinPath [ gawk ]}
-  '';
+  pyproject = false;
+
+  pythonPath = [
+    python3Packages.notify2
+    python3Packages.psutil
+    libapparmor
+  ];
 
   meta = libapparmor.meta // {
     description = "Mandatory access control system - script user-land utilities";

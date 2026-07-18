@@ -2,21 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cctools,
+  copyDesktopItems,
+  electron_41,
   fetchYarnDeps,
   makeDesktopItem,
-
-  copyDesktopItems,
-  cctools,
   makeWrapper,
+  nix-update-script,
   nodejs-slim,
-  yarnConfigHook,
-  yarnBuildHook,
   wrapGAppsHook3,
   xcbuild,
-
-  electron_41,
-
-  nix-update-script,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 let
@@ -37,11 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./bump-abi-compat.patch
   ];
-
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src patches;
-    hash = "sha256-HRWp/lXXPSw2OdvBaEX0W3hnxL9NvIjIk62Dj+rKm1g=";
-  };
 
   nativeBuildInputs = [
     makeWrapper
@@ -104,8 +96,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontWrapGApps = true;
-
   # we use makeShellWrapper instead of the makeBinaryWrapper provided by wrapGAppsHook for proper shell variable expansion
   postFixup = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
     makeShellWrapper ${lib.getExe electron} $out/bin/koodo-reader \
@@ -118,12 +108,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "koodo-reader";
+      categories = [ "Office" ];
+      comment = finalAttrs.meta.description;
       desktopName = "Koodo Reader";
       exec = "koodo-reader %U";
       icon = "koodo-reader";
-      comment = finalAttrs.meta.description;
-      categories = [ "Office" ];
+
       mimeTypes = [
         "application/epub+zip"
         "application/pdf"
@@ -136,24 +126,35 @@ stdenv.mkDerivation (finalAttrs: {
         "application/x-cb7"
         "application/x-fictionbook+xml"
       ];
+
+      name = "koodo-reader";
       startupWMClass = "Koodo Reader";
       terminal = false;
     })
   ];
 
+  dontWrapGApps = true;
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src patches;
+    hash = "sha256-HRWp/lXXPSw2OdvBaEX0W3hnxL9NvIjIk62Dj+rKm1g=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/koodo-reader/koodo-reader/releases/tag/${finalAttrs.src.tag}";
     description = "Cross-platform ebook reader";
+
     longDescription = ''
       A modern ebook manager and reader with sync and backup capacities
       for Windows, macOS, Linux and Web
     '';
+
     homepage = "https://github.com/koodo-reader/koodo-reader";
+    changelog = "https://github.com/koodo-reader/koodo-reader/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Only;
-    mainProgram = "koodo-reader";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = electron.meta.platforms;
+    mainProgram = "koodo-reader";
   };
 })

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  xorgproto,
-  libxcb,
   autoreconfHook,
-  json-glib,
-  gtk-doc,
-  which,
   gobject-introspection,
+  gtk-doc,
+  json-glib,
+  libxcb,
+  pkg-config,
+  which,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     which
@@ -45,8 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "C interface library to i3wm";
     homepage = "https://github.com/altdesktop/i3ipc-glib";
-    maintainers = with lib.maintainers; [ teto ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ teto ];
     platforms = lib.platforms.linux;
   };
 })

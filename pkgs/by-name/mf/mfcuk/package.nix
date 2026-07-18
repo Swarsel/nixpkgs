@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libnfc,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -20,10 +20,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "MiFare Classic Universal toolKit";
-    mainProgram = "mfcuk";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://github.com/nfc-tools/mfcuk";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "mfcuk";
   };
 }

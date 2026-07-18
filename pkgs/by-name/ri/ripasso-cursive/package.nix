@@ -1,28 +1,25 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-
   # nativeBuildInputs
   gpgme,
   installShellFiles,
-  pkg-config,
-  python3,
-  writableTmpDirAsHomeHook,
-
   # buildInputs
   libgpg-error,
-  nettle,
-  openssl,
   libxcb,
-
+  nettle,
   nix-update-script,
+  openssl,
+  pkg-config,
+  python3,
+  rustPlatform,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  version = "0.7.0";
   pname = "ripasso-cursive";
+  version = "0.7.0";
 
   src = fetchFromGitHub {
     owner = "cortex";
@@ -31,13 +28,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-j98X/+UTea4lCtFfMpClnfcKlvxm4DpOujLc0xc3VUY=";
   };
 
-  cargoHash = "sha256-4/87+SOUXLoOxd3a4Kptxa98mh/BWlEhK55uu7+Jrec=";
-
   patches = [
     ./fix-tests.patch
   ];
-
-  cargoBuildFlags = [ "-p ripasso-cursive" ];
 
   nativeBuildInputs = [
     gpgme
@@ -56,6 +49,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxcb
   ];
 
+  cargoHash = "sha256-4/87+SOUXLoOxd3a4Kptxa98mh/BWlEhK55uu7+Jrec=";
+
   checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
     # Fails in the darwin sandbox with:
     # Attempted to create a NULL object.
@@ -67,16 +62,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage target/man-page/cursive/ripasso-cursive.1
   '';
 
+  cargoBuildFlags = [ "-p ripasso-cursive" ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Simple password manager written in Rust";
-    mainProgram = "ripasso-cursive";
     homepage = "https://github.com/cortex/ripasso";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ sgo ];
     platforms = lib.platforms.unix;
+    mainProgram = "ripasso-cursive";
   };
 })

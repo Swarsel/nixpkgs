@@ -1,45 +1,40 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
-  # dependencies
-  more-itertools,
-  prettytable,
-  sqlglot,
-  typing-extensions,
-
+  buildPythonPackage,
+  # databricks-sql-connector
+  databricks-sql-connector,
+  # duckdb
+  duckdb,
+  # tests
+  findspark,
   # optional-dependencies
   # bigquery
   google-cloud-bigquery,
   google-cloud-bigquery-storage,
-  # duckdb
-  duckdb,
-  pandas,
+  # dependencies
+  more-itertools,
   # openai
   openai,
+  pandas,
+  prettytable,
   # postgres
   psycopg2,
   # spark
   pyspark,
-  # databricks-sql-connector
-  databricks-sql-connector,
-
-  # tests
-  findspark,
   pytest-forked,
   pytest-postgresql,
   pytest-xdist,
   pytestCheckHook,
+  # build-system
+  setuptools-scm,
+  sqlglot,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "sqlframe";
   version = "3.46.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eakmanrq";
@@ -47,34 +42,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-WTeJXiIkyj9FgO1w3P6JsCTtpGzezWnsiz/boB9PdIU=";
   };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    more-itertools
-    prettytable
-    sqlglot
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    bigquery = [
-      google-cloud-bigquery
-      google-cloud-bigquery-storage
-    ]
-    ++ google-cloud-bigquery.optional-dependencies.pandas;
-    duckdb = [
-      duckdb
-      pandas
-    ];
-    openai = [ openai ];
-    pandas = [ pandas ];
-    postgres = [ psycopg2 ];
-    spark = [ pyspark ];
-    databricks = [ databricks-sql-connector ];
-  };
-
-  pythonImportsCheck = [ "sqlframe" ];
 
   nativeCheckInputs = [
     findspark
@@ -85,12 +52,13 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  disabledTests = [
-    # Requires google-cloud credentials
-    # google.auth.exceptions.DefaultCredentialsErro
-    "test_activate_bigquery_default_dataset"
-    # AttributeError: module 'sqlglot.expressions' has no attribute 'Acos'
-    "test_unquoted_identifiers"
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    more-itertools
+    prettytable
+    sqlglot
+    typing-extensions
   ];
 
   disabledTestPaths = [
@@ -100,6 +68,37 @@ buildPythonPackage rec {
     # AttributeError: module 'pyspark.sql.functions' has no attribute 'JVMView'
     "tests/unit/*/test_activate.py"
   ];
+
+  disabledTests = [
+    # Requires google-cloud credentials
+    # google.auth.exceptions.DefaultCredentialsErro
+    "test_activate_bigquery_default_dataset"
+    # AttributeError: module 'sqlglot.expressions' has no attribute 'Acos'
+    "test_unquoted_identifiers"
+  ];
+
+  optional-dependencies = {
+    bigquery = [
+      google-cloud-bigquery
+      google-cloud-bigquery-storage
+    ]
+    ++ google-cloud-bigquery.optional-dependencies.pandas;
+
+    databricks = [ databricks-sql-connector ];
+
+    duckdb = [
+      duckdb
+      pandas
+    ];
+
+    openai = [ openai ];
+    pandas = [ pandas ];
+    postgres = [ psycopg2 ];
+    spark = [ pyspark ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "sqlframe" ];
 
   meta = {
     description = "Turning PySpark Into a Universal DataFrame API";

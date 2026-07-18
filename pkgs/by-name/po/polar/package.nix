@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ruby,
   bundlerEnv,
+  ruby,
   udevCheckHook,
 }:
 let
@@ -13,9 +13,9 @@ let
   # > bundle install
   # > bundix
   gems = bundlerEnv {
-    name = "polar-env";
     inherit ruby;
     gemdir = ./.;
+    name = "polar-env";
   };
 
 in
@@ -32,22 +32,14 @@ stdenv.mkDerivation {
     sha256 = "0gqkqfrqnrsy6avg372xwqj22yz8g6r2hnzbw6197b1rf7zr1il7";
   };
 
-  prePatch = ''
-    for script in polar_*
-    do
-      substituteInPlace $script --replace "#{File.dirname(__FILE__)}/lib" "$out/lib/polar"
-    done
-  '';
-  buildInputs = [
-    gems
-    ruby
-  ];
-
   nativeBuildInputs = [
     udevCheckHook
   ];
 
-  doInstallCheck = true;
+  buildInputs = [
+    gems
+    ruby
+  ];
 
   # See: https://wiki.nixos.org/wiki/Packaging/Ruby
   #
@@ -71,8 +63,18 @@ stdenv.mkDerivation {
         done
   '';
 
+  doInstallCheck = true;
+
+  prePatch = ''
+    for script in polar_*
+    do
+      substituteInPlace $script --replace "#{File.dirname(__FILE__)}/lib" "$out/lib/polar"
+    done
+  '';
+
   meta = {
     description = "Command-line tools to interact with Polar watches";
+
     longDescription = ''
       A set of command line tools written in Ruby to interact with Polar watches
       and decode raw data files.
@@ -81,6 +83,7 @@ stdenv.mkDerivation {
 
         services.udev.packages = [ pkgs.polar ]
     '';
+
     homepage = "https://github.com/cmaion/polar";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ jluttine ];

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libnl,
-  popt,
   gnugrep,
+  libnl,
+  pkg-config,
+  popt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,14 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libnl
     popt
   ];
-
-  # Disable parallel build, errors:
-  #  *** No rule to make target 'libipvs/libipvs.a', needed by 'ipvsadm'.  Stop.
-  enableParallelBuilding = false;
 
   preBuild = ''
     makeFlagsArray+=(
@@ -42,6 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
   postInstall = ''
     sed -i -e "s|^PATH=.*|PATH=$out/bin:${gnugrep}/bin|" $out/sbin/ipvsadm-{restore,save}
   '';
+
+  # Disable parallel build, errors:
+  #  *** No rule to make target 'libipvs/libipvs.a', needed by 'ipvsadm'.  Stop.
+  enableParallelBuilding = false;
 
   meta = {
     description = "Linux Virtual Server support programs";

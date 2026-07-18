@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nixosTests,
   gitUpdater,
+  nixosTests,
+  stdenvNoCC,
   static ? false,
 }:
 
@@ -16,6 +16,7 @@ stdenvNoCC.mkDerivation rec {
     repo = "noto-cjk";
     tag = "Sans${version}";
     hash = "sha256-i3ZKoSy2SVs46IViha+Sg8atH4n3ywgrunHPLtVT4Pk=";
+
     sparseCheckout = [
       "Sans/OTC"
       "Sans/Variable/OTC"
@@ -38,7 +39,7 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Beautiful and free fonts for CJK languages";
-    homepage = "https://www.google.com/get/noto/help/cjk/";
+
     longDescription = ''
       Noto Sans CJK is a sans typeface designed as
       an intermediate style between the modern and traditional. It is
@@ -51,11 +52,15 @@ stdenvNoCC.mkDerivation rec {
       Japanese kana, vertical forms, and variant characters (itaiji); it
       supports Korean hangeul — both contemporary and archaic.
     '';
+
+    homepage = "https://www.google.com/get/noto/help/cjk/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       mathnerd314
       emily
     ];
+
+    platforms = lib.platforms.all;
   };
 }

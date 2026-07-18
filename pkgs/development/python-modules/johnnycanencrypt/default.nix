@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   libiconv,
   nettle,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "johnnycanencrypt";
   version = "0.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kushaldas";
@@ -25,17 +24,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-qpta6D5aslUwuJ0+voYrHFIDetlsUB6PkScrtl/plVs=";
   };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-EzHbV/IBbGjoKFIbXSo2dlf+DU7ZXV16bVR93Sq0lis=";
-  };
-
-  build-system = with rustPlatform; [
-    bindgenHook
-    cargoSetupHook
-    maturinBuildHook
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -54,11 +42,6 @@ buildPythonPackage rec {
     libiconv
   ];
 
-  dependencies = [
-    httpx
-    tzdata
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     vcrpy
@@ -69,6 +52,23 @@ buildPythonPackage rec {
     rm -r johnnycanencrypt
   '';
 
+  build-system = with rustPlatform; [
+    bindgenHook
+    cargoSetupHook
+    maturinBuildHook
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-EzHbV/IBbGjoKFIbXSo2dlf+DU7ZXV16bVR93Sq0lis=";
+  };
+
+  dependencies = [
+    httpx
+    tzdata
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "johnnycanencrypt" ];
 
   meta = {

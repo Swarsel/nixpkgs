@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  coreutils,
-  openjdk17,
-  makeWrapper,
   autoPatchelfHook,
-  zlib,
-  libzen,
-  libmediainfo,
+  coreutils,
   curlWithGnuTls,
-  libmms,
-  glib,
   genericUpdater,
+  glib,
+  libmediainfo,
+  libmms,
+  libzen,
+  makeWrapper,
+  openjdk17,
   writeShellScript,
+  zlib,
 }:
 
 let
   lanterna = fetchurl {
-    url = "https://search.maven.org/remotecontent?filepath=com/googlecode/lanterna/lanterna/3.1.3/lanterna-3.1.3.jar";
     hash = "sha256-4EeBz34i9+7iYwnx2IC74SQMLw6ThgNKJD8Hy6eMUOA=";
+    url = "https://search.maven.org/remotecontent?filepath=com/googlecode/lanterna/lanterna/3.1.3/lanterna-3.1.3.jar";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -31,7 +31,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1LYFc76wQOnmlkdGjE7ZuRh4FeM2o8ZM4sfDwx8hyBc=";
   };
 
-  unpackPhase = "tar xvf $src";
+  postPatch = ''
+    # replace lanterna.jar to be able to specify `com.googlecode.lanterna.terminal.UnixTerminal.sttyCommand`
+    cp ${lanterna} jar/lanterna.jar
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -47,12 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
-  postPatch = ''
-    # replace lanterna.jar to be able to specify `com.googlecode.lanterna.terminal.UnixTerminal.sttyCommand`
-    cp ${lanterna} jar/lanterna.jar
-  '';
-
-  dontBuild = true;
   installPhase = ''
     mkdir -p $out/opt $out/bin
     # Since FileBot has dependencies on relative paths between files, all required files are copied to the same location as is.
@@ -84,6 +81,9 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/opt/filebot.sh $out/bin/filebot
   '';
 
+  dontBuild = true;
+  unpackPhase = "tar xvf $src";
+
   passthru.updateScript = genericUpdater {
     versionLister = writeShellScript "filebot-versionLister" ''
       curl -s https://www.filebot.net \
@@ -93,22 +93,27 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Ultimate TV and Movie Renamer";
+
     longDescription = ''
       FileBot is the ultimate tool for organizing and renaming your Movies, TV
       Shows and Anime as well as fetching subtitles and artwork. It's smart and
       just works.
     '';
+
     homepage = "https://filebot.net";
     changelog = "https://www.filebot.net/forums/viewforum.php?f=7";
+    license = lib.licenses.unfreeRedistributable;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.unfreeRedistributable;
+
     maintainers = with lib.maintainers; [
       gleber
       felschr
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "filebot";
   };

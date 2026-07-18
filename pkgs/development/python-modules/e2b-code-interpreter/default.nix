@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   attrs,
+  buildPythonPackage,
   e2b,
   httpx,
+  # build-system
+  poetry-core,
 }:
 
 buildPythonPackage rec {
-  pname = "e2b-code-interpreter";
   inherit (e2b) version;
-  pyproject = true;
+  pname = "e2b-code-interpreter";
 
   src = fetchFromGitHub {
     owner = "e2b-dev";
@@ -24,7 +21,9 @@ buildPythonPackage rec {
     hash = "sha256-a2rc7BtV+qwtqlB+JtLCs0BKN15yfwmG3XWWO8we2LA=";
   };
 
-  sourceRoot = "${src.name}/python";
+  # Tests require an API key
+  # e2b.exceptions.AuthenticationException: API key is required, please visit the Team tab at https://e2b.dev/dashboard to get your API key.
+  doCheck = false;
 
   build-system = [
     poetry-core
@@ -36,11 +35,9 @@ buildPythonPackage rec {
     httpx
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "e2b_code_interpreter" ];
-
-  # Tests require an API key
-  # e2b.exceptions.AuthenticationException: API key is required, please visit the Team tab at https://e2b.dev/dashboard to get your API key.
-  doCheck = false;
+  sourceRoot = "${src.name}/python";
 
   meta = {
     description = "E2B Code Interpreter - Stateful code execution";

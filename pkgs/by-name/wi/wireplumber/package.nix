@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  nix-update-script,
-  # base build deps
-  meson,
-  pkg-config,
-  ninja,
-  # docs build deps
-  python3,
   doxygen,
-  graphviz,
-  # GI build deps
-  gobject-introspection,
   # runtime deps
   glib,
-  systemd,
+  # GI build deps
+  gobject-introspection,
+  graphviz,
   lua5_4,
+  # base build deps
+  meson,
+  ninja,
+  nix-update-script,
   pipewire,
+  pkg-config,
+  # docs build deps
+  python3,
+  systemd,
   # options
   enableDocs ? true,
   enableGI ? true,
@@ -27,23 +27,21 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "wireplumber";
   version = "0.5.15";
 
+  src = fetchFromGitLab {
+    owner = "pipewire";
+    repo = "wireplumber";
+    tag = finalAttrs.version;
+    hash = "sha256-28JrX8V23VpTe6GPI6g/JlN7412yJLMcwEre2Jv77qg=";
+    domain = "gitlab.freedesktop.org";
+  };
+
   outputs = [
     "out"
     "dev"
   ]
   ++ lib.optional enableDocs "doc";
 
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "pipewire";
-    repo = "wireplumber";
-    tag = finalAttrs.version;
-    hash = "sha256-28JrX8V23VpTe6GPI6g/JlN7412yJLMcwEre2Jv77qg=";
-  };
-
   strictDeps = true;
-  __structuredAttrs = true;
-  separateDebugInfo = true;
 
   nativeBuildInputs = [
     meson
@@ -87,16 +85,20 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "sysconfdir" "/etc")
   ];
 
+  __structuredAttrs = true;
+  separateDebugInfo = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Modular session / policy manager for PipeWire";
     homepage = "https://pipewire.org";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       k900
       qweered
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

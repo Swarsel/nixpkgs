@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,7 +15,7 @@ buildGoModule (finalAttrs: {
     hash = "sha256-WH6fweuntzIjoc7HodflPxEPsrJ/9t77d0z22CHjBVA=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/v2";
+  vendorHash = "sha256-qo5yG7DqScC4/bU7vWEKLqTZ/j+QMTg2vpl3WHjxLUI=";
 
   # not including web ui
   excludedPackages = [
@@ -23,15 +23,17 @@ buildGoModule (finalAttrs: {
     "pack"
   ];
 
-  vendorHash = "sha256-qo5yG7DqScC4/bU7vWEKLqTZ/j+QMTg2vpl3WHjxLUI=";
+  sourceRoot = "${finalAttrs.src.name}/v2";
 
   meta = {
     description = "Commandline utility and Go library for diffing and patching JSON values";
     homepage = "https://github.com/josephburnett/jd";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       juliusfreudenberger
     ];
+
     mainProgram = "jd";
   };
 })

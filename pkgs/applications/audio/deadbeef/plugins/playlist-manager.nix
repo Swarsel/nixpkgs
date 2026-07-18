@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   deadbeef,
   gtk3,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -27,6 +27,11 @@ stdenv.mkDerivation {
     gtk3
   ];
 
+  buildFlags = [
+    "CFLAGS=-I${deadbeef}/include/deadbeef"
+    "gtk3"
+  ];
+
   installPhase = ''
     runHook preInstall
 
@@ -35,11 +40,6 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
-
-  buildFlags = [
-    "CFLAGS=-I${deadbeef}/include/deadbeef"
-    "gtk3"
-  ];
 
   meta = {
     description = "Removes duplicate and vanished files from the current playlist";

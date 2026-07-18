@@ -9,9 +9,9 @@ let
   dragonflydb = pkgs.dragonflydb;
 
   settings = {
-    port = cfg.port;
     dir = "/var/lib/dragonflydb";
     keys_output_limit = cfg.keysOutputLimit;
+    port = cfg.port;
   }
   // (lib.optionalAttrs (cfg.bind != null) { bind = cfg.bind; })
   // (lib.optionalAttrs (cfg.requirePass != null) { requirepass = cfg.requirePass; })
@@ -28,75 +28,85 @@ in
     services.dragonflydb = {
       enable = lib.mkEnableOption "DragonflyDB";
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "dragonfly";
-        description = "The user to run DragonflyDB as";
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 6379;
-        description = "The TCP port to accept connections.";
-      };
-
       bind = lib.mkOption {
-        type = with lib.types; nullOr str;
         default = "127.0.0.1";
+
         description = ''
           The IP interface to bind to.
           `null` means "all interfaces".
         '';
-      };
 
-      requirePass = lib.mkOption {
         type = with lib.types; nullOr str;
-        default = null;
-        description = "Password for database";
-        example = "letmein!";
       };
 
-      maxMemory = lib.mkOption {
+      cacheMode = lib.mkOption {
+        default = null;
+
+        description = ''
+          Once this mode is on, Dragonfly will evict items least likely to be stumbled
+          upon in the future but only when it is near maxmemory limit.
+        '';
+
+        type = with lib.types; nullOr bool;
+      };
+
+      dbNum = lib.mkOption {
+        default = null;
+        description = "Maximum number of supported databases for `select`";
         type = with lib.types; nullOr ints.unsigned;
-        default = null;
-        description = ''
-          The maximum amount of memory to use for storage (in bytes).
-          `null` means this will be automatically set.
-        '';
-      };
-
-      memcachePort = lib.mkOption {
-        type = with lib.types; nullOr port;
-        default = null;
-        description = ''
-          To enable memcached compatible API on this port.
-          `null` means disabled.
-        '';
       };
 
       keysOutputLimit = lib.mkOption {
-        type = lib.types.ints.unsigned;
         default = 8192;
+
         description = ''
           Maximum number of returned keys in keys command.
           `keys` is a dangerous command.
           We truncate its result to avoid blowup in memory when fetching too many keys.
         '';
+
+        type = lib.types.ints.unsigned;
       };
 
-      dbNum = lib.mkOption {
-        type = with lib.types; nullOr ints.unsigned;
+      maxMemory = lib.mkOption {
         default = null;
-        description = "Maximum number of supported databases for `select`";
-      };
 
-      cacheMode = lib.mkOption {
-        type = with lib.types; nullOr bool;
-        default = null;
         description = ''
-          Once this mode is on, Dragonfly will evict items least likely to be stumbled
-          upon in the future but only when it is near maxmemory limit.
+          The maximum amount of memory to use for storage (in bytes).
+          `null` means this will be automatically set.
         '';
+
+        type = with lib.types; nullOr ints.unsigned;
+      };
+
+      memcachePort = lib.mkOption {
+        default = null;
+
+        description = ''
+          To enable memcached compatible API on this port.
+          `null` means disabled.
+        '';
+
+        type = with lib.types; nullOr port;
+      };
+
+      port = lib.mkOption {
+        default = 6379;
+        description = "The TCP port to accept connections.";
+        type = lib.types.port;
+      };
+
+      requirePass = lib.mkOption {
+        default = null;
+        description = "Password for database";
+        example = "letmein!";
+        type = with lib.types; nullOr str;
+      };
+
+      user = lib.mkOption {
+        default = "dragonfly";
+        description = "The user to run DragonflyDB as";
+        type = lib.types.str;
       };
     };
   };
@@ -105,54 +115,57 @@ in
 
   config = lib.mkIf config.services.dragonflydb.enable {
 
-    users.users = lib.optionalAttrs (cfg.user == "dragonfly") {
-      dragonfly.description = "DragonflyDB server user";
-      dragonfly.isSystemUser = true;
-      dragonfly.group = "dragonfly";
-    };
-    users.groups = lib.optionalAttrs (cfg.user == "dragonfly") { dragonfly = { }; };
-
     environment.systemPackages = [ dragonflydb ];
 
     systemd.services.dragonflydb = {
+      after = [ "network.target" ];
       description = "DragonflyDB server";
 
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-
       serviceConfig = {
+        # Caps
+        CapabilityBoundingSet = "";
+
         ExecStart = "${dragonflydb}/bin/dragonfly --alsologtostderr ${
           lib.concatStringsSep " " (lib.mapAttrsToList (n: v: "--${n} ${lib.escapeShellArg v}") settings)
         }";
 
-        User = cfg.user;
-
-        # Filesystem access
-        ReadWritePaths = [ settings.dir ];
-        StateDirectory = "dragonflydb";
-        StateDirectoryMode = "0700";
         # Process Properties
         LimitMEMLOCK = "infinity";
-        # Caps
-        CapabilityBoundingSet = "";
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
         # Sandboxing
         ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-        LockPersonality = true;
+        # Filesystem access
+        ReadWritePaths = [ settings.dir ];
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictRealtime = true;
-        PrivateMounts = true;
-        MemoryDenyWriteExecute = true;
+        StateDirectory = "dragonflydb";
+        StateDirectoryMode = "0700";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups = lib.optionalAttrs (cfg.user == "dragonfly") { dragonfly = { }; };
+
+    users.users = lib.optionalAttrs (cfg.user == "dragonfly") {
+      dragonfly.description = "DragonflyDB server user";
+      dragonfly.group = "dragonfly";
+      dragonfly.isSystemUser = true;
     };
   };
 }

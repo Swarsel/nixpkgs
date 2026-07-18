@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   requests,
+  setuptools,
   urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "xs1-api-client";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "markusressel";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     urllib3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "xs1_api_client" ];
 
   meta = {

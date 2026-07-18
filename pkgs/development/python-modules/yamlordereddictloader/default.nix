@@ -2,29 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "yamlordereddictloader";
   version = "0.4.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-Nq8vYhD8/12k/EwS4dgV+XPc60EETnleHwYRXWNLyhM=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyyaml ];
-
   # no tests
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ pyyaml ];
+  pyproject = true;
   pythonImportsCheck = [ "yamlordereddictloader" ];
 
   meta = {

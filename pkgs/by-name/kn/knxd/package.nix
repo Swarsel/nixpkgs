@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  indent,
-  perl,
   argp-standalone,
+  autoreconfHook,
+  buildPackages,
   fmt,
+  indent,
   libev,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd,
-  withUsb ? stdenv.hostPlatform.isLinux,
   libusb1,
+  perl,
+  pkg-config,
+  systemd,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
+  withUsb ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

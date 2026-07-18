@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   libusb1,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,28 +17,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-8YmdwhRYNOSAAa0hTC9f5nm+TDg2GiMbML+qNxJP3lw=";
   };
 
-  cargoHash = "sha256-Qz5yc3skpItCdoK4ffLbcT99YcOkvGfm3A/+QZ6FbBw=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ libusb1 ];
-
-  doInstallCheck = true;
+  cargoHash = "sha256-Qz5yc3skpItCdoK4ffLbcT99YcOkvGfm3A/+QZ6FbBw=";
 
   postInstall = ''
     mkdir -p $out/etc/udev/rules.d
     cp drivers/*.rules $out/etc/udev/rules.d
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "Tool to program ECP5 FPGAs";
-    mainProgram = "ecpdap";
+
     longDescription = ''
       ECPDAP allows you to program ECP5 FPGAs and attached SPI flash
       using CMSIS-DAP probes in JTAG mode.
     '';
+
     homepage = "https://github.com/adamgreig/ecpdap";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "ecpdap";
   };
 })

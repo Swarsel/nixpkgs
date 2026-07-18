@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  pkg-config,
-  openssl,
-  rust-jemalloc-sys-unprefixed,
-  sqlite,
   bash,
   coreutils,
   iproute2,
   iptables,
+  makeBinaryWrapper,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rust-jemalloc-sys-unprefixed,
+  rustPlatform,
+  sqlite,
 }:
 let
   binPath = lib.makeBinPath [
@@ -33,8 +33,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-E3msw4yG5RxKapHBvhGEVlsJiLgysCgjAtOrJ8fGES0=";
   };
 
-  cargoHash = "sha256-w+1JLxvflb8PQqNi5MnxoEcWctuaC6Ux3oNYJzB6oaE=";
-
   postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
     substituteInPlace binaries/geph5-client/src/vpn/*.sh \
       --replace-fail 'PATH=' 'PATH=${binPath}:'
@@ -42,10 +40,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace binaries/geph5-client/src/vpn/linux.rs \
       --replace-fail 'Command::new("sh")' 'Command::new("${bash}/bin/sh")' \
       --replace-fail '/usr/bin/env ' '${lib.getExe' coreutils "env"} '
-  '';
-
-  postInstall = ''
-    rm -rf "$out/lib"
   '';
 
   nativeBuildInputs = [
@@ -59,15 +53,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
-  env = {
-    OPENSSL_NO_VENDOR = true;
-    LIBSQLITE3_SYS_USE_PKG_CONFIG = "1";
-  };
+  cargoHash = "sha256-w+1JLxvflb8PQqNi5MnxoEcWctuaC6Ux3oNYJzB6oaE=";
 
-  buildFeatures = [
-    "aws_lambda"
-    # "windivert" # Only on Windows
-  ];
+  env = {
+    LIBSQLITE3_SYS_USE_PKG_CONFIG = "1";
+    OPENSSL_NO_VENDOR = true;
+  };
 
   checkFlags = [
     # Wrong test
@@ -86,11 +77,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=tests::test_failed_ping"
   ];
 
+  postInstall = ''
+    rm -rf "$out/lib"
+  '';
+
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     for program in $out/bin/*; do
       wrapProgram "$program" --prefix PATH : ${binPath}
     done
   '';
+
+  buildFeatures = [
+    "aws_lambda"
+    # "windivert" # Only on Windows
+  ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -103,12 +103,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Modular Internet censorship circumvention system designed specifically to deal with national filtering";
     homepage = "https://github.com/geph-official/geph5";
     changelog = "https://github.com/geph-official/geph5/releases/tag/geph5-client-v${finalAttrs.version}";
-    mainProgram = "geph5-client";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin; # VPN mode is not yet available on macOS.
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       penalty1083
       MCSeekeri
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin; # VPN mode is not yet available on macOS.
+    mainProgram = "geph5-client";
   };
 })

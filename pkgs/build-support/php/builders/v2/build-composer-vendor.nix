@@ -1,36 +1,34 @@
 {
-  stdenvNoCC,
   lib,
   php,
+  stdenvNoCC,
 }@toplevel:
 
 let
   mkComposerVendorOverride =
     finalAttrs:
     {
-      php ? toplevel.php,
+      buildInputs ? [ ],
       composer ? php.packages.composer,
       composerLock ? null,
-      vendorHash ? "",
       composerNoDev ? true,
       composerNoPlugins ? true,
       composerNoScripts ? true,
       composerStrictValidation ? true,
-      buildInputs ? [ ],
-      nativeBuildInputs ? [ ],
-      dontPatchShebangs ? true,
-      strictDeps ? true,
       doCheck ? true,
       doInstallCheck ? false,
       dontCheckForBrokenSymlinks ? true,
+      dontPatchShebangs ? true,
+      nativeBuildInputs ? [ ],
+      php ? toplevel.php,
+      strictDeps ? true,
+      vendorHash ? "",
       ...
     }@args:
     assert args ? pname || throw "mkComposerVendor expects pname argument.";
     assert args ? version || throw "mkComposerVendor expects version argument.";
     assert args ? src || throw "mkComposerVendor expects src argument.";
     {
-      name = "${args.pname}-composer-vendor-${args.version}";
-
       # See https://github.com/NixOS/nix/issues/6660
       inherit dontPatchShebangs;
 
@@ -45,14 +43,6 @@ let
         php
         php.composerHooks2.composerVendorHook
       ];
-
-      # Should we keep these empty phases?
-      configurePhase =
-        args.configurePhase or ''
-          runHook preConfigure
-
-          runHook postConfigure
-        '';
 
       buildPhase =
         args.buildPhase or ''
@@ -82,10 +72,21 @@ let
           runHook postInstallCheck
         '';
 
-      outputHashMode = "recursive";
+      # Should we keep these empty phases?
+      configurePhase =
+        args.configurePhase or ''
+          runHook preConfigure
+
+          runHook postConfigure
+        '';
+
+      name = "${args.pname}-composer-vendor-${args.version}";
+      outputHash = vendorHash;
+
       outputHashAlgo =
         if (finalAttrs ? vendorHash && finalAttrs.vendorHash != "") then null else "sha256";
-      outputHash = vendorHash;
+
+      outputHashMode = "recursive";
     };
 in
 lib.extendMkDerivation {

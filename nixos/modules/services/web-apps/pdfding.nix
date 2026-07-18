@@ -23,20 +23,20 @@ let
   usePostgres = cfg.database.type == "postgres";
 
   envVars = {
+    DATABASE_TYPE = "";
+    DATA_DIR = stateDir;
     # HOST_IP is used in the package derivation
     HOST_IP = cfg.hostName;
     HOST_NAME = concatStringsSep "," cfg.allowedHosts;
     HOST_PORT = toString cfg.port;
-    DATABASE_TYPE = "";
-    DATA_DIR = stateDir;
   }
   // optionalAttrs usePostgres {
     DATABASE_TYPE = "POSTGRES";
-    POSTGRES_PORT = toString cfg.database.port;
     # Django Uses the unix domain socket
     # if host is set to empty see https://docs.djangoproject.com/en/6.0/ref/settings/#host
     POSTGRES_HOST = lib.optionalString (!cfg.database.createLocally) cfg.database.host;
     POSTGRES_NAME = cfg.database.name;
+    POSTGRES_PORT = toString cfg.database.port;
     POSTGRES_USER = cfg.database.user;
   }
   // optionalAttrs cfg.consume.enable {
@@ -80,110 +80,46 @@ in
 
     package = mkPackageOption pkgs "pdfding" { };
 
-    user = mkOption {
-      type = types.str;
-      default = "pdfding";
-      description = "User account under which PdfDing runs";
-    };
-
-    group = mkOption {
-      type = types.str;
-      default = "pdfding";
-      description = "Group under which PdfDing runs";
-    };
-
-    hostName = mkOption {
-      type = types.str;
-      default = "0.0.0.0";
-      example = "pdfding.example.com";
-      description = "Listen address for PdfDing";
-    };
-
-    port = mkOption {
-      type = types.port;
-      default = 8000;
-      description = "Port on which PdfDing listens";
-    };
-
     allowedHosts = mkOption {
-      type = types.listOf types.str;
       default = [
         "127.0.0.1"
         "localhost"
       ];
+
       description = "Domains where PdfDing is allowed to run";
-    };
-
-    gunicorn.extraArgs = mkOption {
       type = types.listOf types.str;
-      description = "Command line arguments passed to Gunicorn server.";
-      default = [ ];
     };
 
-    extraEnvironment = mkOption {
-      type = types.attrsOf types.str;
-      default = { };
-      description = "Additional environment variables";
-    };
+    backup = {
+      enable = mkEnableOption "Backup functionality" // {
+        description = ''
+          Automatic backup of important data to a AWS S3 (or compatible) instance.
 
-    envFiles = mkOption {
-      type = types.listOf types.path;
-      description = "Environment variable files";
-      default = [ ];
-    };
-
-    secretKeyFile = mkOption {
-      type = types.path;
-      default = null;
-      description = "File containing the Django SECRET_KEY. ${secretRecommendation}";
-      example = "/run/secrets/pdfding-secret-key";
-    };
-
-    database = {
-      type = mkOption {
-        type = types.enum [
-          "sqlite"
-          "postgres"
-        ];
-        default = "sqlite";
-        description = "Database type to use";
+          When enabled and properly configured via environment variables,
+          important data is periodically uploaded to the specified s3
+          instance via cronjob.
+        '';
       };
 
-      host = mkOption {
-        type = types.str;
-        default = "";
-        description = "PostgreSQL host";
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 5432;
-        description = "PostgreSQL port";
-      };
-
-      name = mkOption {
-        type = types.str;
-        default = "pdfding";
-        description = "PostgreSQL database name";
-      };
-
-      user = mkOption {
-        type = types.str;
-        default = "pdfding";
-        description = "PostgreSQL user";
-      };
-
-      passwordFile = mkOption {
-        type = types.nullOr types.path;
+      endpoint = mkOption {
         default = null;
-        description = "File containing POSTGRES_PASSWORD. ${secretRecommendation}";
-        example = "/run/secrets/pdfding-db-password";
+        description = "The s3 endpoint for backups";
+        example = "127.0.0.1:9000";
+        type = types.nullOr types.str;
       };
 
-      createLocally = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to create a local PostgreSQL database automatically";
+      schedule = mkOption {
+        default = "0 2 * * *";
+
+        description = ''
+          The cron schedule for the consume task to trigger.
+          The format is "minute hour day month day_of_week"
+          Read
+            - https://github.com/mrmn2/PdfDing/blob/d0f21ec2f9fbee4b1a2f6b7e0e6c7ea7784ab1bc/pdfding/base/task_helpers.py#L5
+            - https://huey.readthedocs.io/en/latest/api.html#crontab
+        '';
+
+        type = types.str;
       };
     };
 
@@ -200,9 +136,10 @@ in
           are automatically deleted from the consume directory.
         '';
       };
+
       schedule = mkOption {
-        type = types.str;
         default = "*/5 * * * *";
+
         description = ''
           The cron schedule for the consume task to trigger.
           The format is "minute hour day month day_of_week"
@@ -210,49 +147,121 @@ in
             - https://github.com/mrmn2/PdfDing/blob/d0f21ec2f9fbee4b1a2f6b7e0e6c7ea7784ab1bc/pdfding/base/task_helpers.py#L5
             - https://huey.readthedocs.io/en/latest/api.html#crontab
         '';
-      };
-    };
 
-    backup = {
-      enable = mkEnableOption "Backup functionality" // {
-        description = ''
-          Automatic backup of important data to a AWS S3 (or compatible) instance.
-
-          When enabled and properly configured via environment variables,
-          important data is periodically uploaded to the specified s3
-          instance via cronjob.
-        '';
-      };
-      schedule = mkOption {
         type = types.str;
-        default = "0 2 * * *";
-        description = ''
-          The cron schedule for the consume task to trigger.
-          The format is "minute hour day month day_of_week"
-          Read
-            - https://github.com/mrmn2/PdfDing/blob/d0f21ec2f9fbee4b1a2f6b7e0e6c7ea7784ab1bc/pdfding/base/task_helpers.py#L5
-            - https://huey.readthedocs.io/en/latest/api.html#crontab
-        '';
-      };
-      endpoint = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = "The s3 endpoint for backups";
-        example = "127.0.0.1:9000";
       };
     };
 
-    openFirewall = lib.mkOption {
-      type = types.bool;
-      default = false;
-      description = "Open ports in the firewall for the PdfDing web interface.";
+    database = {
+      createLocally = mkOption {
+        default = false;
+        description = "Whether to create a local PostgreSQL database automatically";
+        type = types.bool;
+      };
+
+      host = mkOption {
+        default = "";
+        description = "PostgreSQL host";
+        type = types.str;
+      };
+
+      name = mkOption {
+        default = "pdfding";
+        description = "PostgreSQL database name";
+        type = types.str;
+      };
+
+      passwordFile = mkOption {
+        default = null;
+        description = "File containing POSTGRES_PASSWORD. ${secretRecommendation}";
+        example = "/run/secrets/pdfding-db-password";
+        type = types.nullOr types.path;
+      };
+
+      port = mkOption {
+        default = 5432;
+        description = "PostgreSQL port";
+        type = types.port;
+      };
+
+      type = mkOption {
+        default = "sqlite";
+        description = "Database type to use";
+
+        type = types.enum [
+          "sqlite"
+          "postgres"
+        ];
+      };
+
+      user = mkOption {
+        default = "pdfding";
+        description = "PostgreSQL user";
+        type = types.str;
+      };
+    };
+
+    envFiles = mkOption {
+      default = [ ];
+      description = "Environment variable files";
+      type = types.listOf types.path;
+    };
+
+    extraEnvironment = mkOption {
+      default = { };
+      description = "Additional environment variables";
+      type = types.attrsOf types.str;
+    };
+
+    group = mkOption {
+      default = "pdfding";
+      description = "Group under which PdfDing runs";
+      type = types.str;
+    };
+
+    gunicorn.extraArgs = mkOption {
+      default = [ ];
+      description = "Command line arguments passed to Gunicorn server.";
+      type = types.listOf types.str;
+    };
+
+    hostName = mkOption {
+      default = "0.0.0.0";
+      description = "Listen address for PdfDing";
+      example = "pdfding.example.com";
+      type = types.str;
     };
 
     installTestHelpers = mkOption {
-      type = types.bool;
       default = false;
-      internal = true;
       description = "Adds a few helper commands to systemPackages for nixos tests";
+      internal = true;
+      type = types.bool;
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+      description = "Open ports in the firewall for the PdfDing web interface.";
+      type = types.bool;
+    };
+
+    port = mkOption {
+      default = 8000;
+      description = "Port on which PdfDing listens";
+      type = types.port;
+    };
+
+    secretKeyFile = mkOption {
+      default = null;
+      description = "File containing the Django SECRET_KEY. ${secretRecommendation}";
+      example = "/run/secrets/pdfding-secret-key";
+      type = types.path;
+    };
+
+    user = mkOption {
+      default = "pdfding";
+      description = "User account under which PdfDing runs";
+      type = types.str;
     };
   };
 
@@ -282,13 +291,10 @@ in
         assertion =
           cfg.database.createLocally
           -> cfg.database.user == cfg.user && cfg.database.user == cfg.database.name;
+
         message = "services.pdfding.database.user should be the same as services.pdfding.user as well as services.pdfding.database.name when running a local db setup";
       }
     ];
-
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
-    };
 
     environment.systemPackages =
       let
@@ -330,12 +336,9 @@ in
         ])
       ];
 
-    users.users.${cfg.user} = {
-      isSystemUser = true;
-      group = cfg.group;
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
     };
-
-    users.groups.${cfg.group} = { };
 
     services.pdfding.envFiles = [ envFile ];
 
@@ -351,13 +354,25 @@ in
       "--log-level=error"
     ];
 
+    services.postgresql = lib.mkIf cfg.database.createLocally {
+      enable = true;
+      ensureDatabases = [ cfg.database.name ];
+
+      ensureUsers = [
+        {
+          ensureDBOwnership = true;
+          name = cfg.database.user;
+        }
+      ];
+    };
+
     systemd.services.pdfding = {
-      description = "PdfDing Web Service";
       after = [
         "network.target"
       ]
       ++ lib.optionals (usePostgres && cfg.database.createLocally) [ "postgresql.target" ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "PdfDing Web Service";
 
       preStart = ''
         ${loadCreds}
@@ -388,62 +403,64 @@ in
       '';
 
       serviceConfig = {
-        Type = "exec";
-        User = cfg.user;
-        Group = cfg.group;
         EnvironmentFile = cfg.envFiles;
+        Group = cfg.group;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        ProtectHome = true;
+        ProtectSystem = "strict";
+        Restart = "on-failure";
+        RestartSec = "5s";
+
         StateDirectory = [
           "pdfding"
           "pdfding/db"
           "pdfding/media"
         ]
         ++ lib.optional cfg.consume.enable "pdfding/consume";
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        Restart = "on-failure";
-        RestartSec = "5s";
+
+        Type = "exec";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.pdfding-background = lib.mkIf (cfg.consume.enable || cfg.backup.enable) {
-      description = "PdfDing Background Tasks (Huey)";
       after = [ "pdfding.service" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "PdfDing Background Tasks (Huey)";
+
       script = ''
         ${loadCreds}
         exec ${cfg.package}/bin/pdfding-manage run_huey
       '';
-      serviceConfig = {
-        Type = "exec";
-        User = cfg.user;
-        Group = cfg.group;
-        WorkingDirectory = stateDir;
-        EnvironmentFile = cfg.envFiles;
 
+      serviceConfig = {
+        EnvironmentFile = cfg.envFiles;
+        Group = cfg.group;
         NoNewPrivileges = true;
-        PrivateTmp = true;
         PrivateDevices = true;
-        ProtectSystem = "strict";
+        PrivateTmp = true;
         ProtectHome = true;
+        ProtectSystem = "strict";
         ReadWritePaths = [ stateDir ];
         Restart = "on-failure";
         RestartSec = "5s";
         TimeoutStopSec = 30;
+        Type = "exec";
+        User = cfg.user;
+        WorkingDirectory = stateDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    services.postgresql = lib.mkIf cfg.database.createLocally {
-      enable = true;
-      ensureDatabases = [ cfg.database.name ];
-      ensureUsers = [
-        {
-          name = cfg.database.user;
-          ensureDBOwnership = true;
-        }
-      ];
+    users.groups.${cfg.group} = { };
+
+    users.users.${cfg.user} = {
+      group = cfg.group;
+      isSystemUser = true;
     };
   };
 

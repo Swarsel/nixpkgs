@@ -13,12 +13,12 @@ stdenv.mkDerivation {
     sha256 = "1piap5v8wqq0aachrq6j50qkr01gzpyndl6vf661vyykrfq0nnd2";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/include
     cp $src $out/include/miniball.hpp
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Smallest Enclosing Balls of Points";

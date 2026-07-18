@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchzip,
   installShellFiles,
 }:
@@ -9,8 +9,8 @@
 let
   webconsoleVersion = "1.0.18";
   webconsoleDist = fetchzip {
-    url = "https://github.com/codenotary/immudb-webconsole/releases/download/v${webconsoleVersion}/immudb-webconsole.tar.gz";
     sha256 = "sha256-4BhTK+gKO8HW1CelGa30THpfkqfqFthK+b7p9QWl4Pw=";
+    url = "https://github.com/codenotary/immudb-webconsole/releases/download/v${webconsoleVersion}/immudb-webconsole.tar.gz";
   };
 in
 buildGoModule (finalAttrs: {
@@ -33,25 +33,14 @@ buildGoModule (finalAttrs: {
     fi
   '';
 
+  nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-7/TR+YjeeTQk+kY2WjYBeiP94onLJXrjJijYl5N6cPc=";
+
   preBuild = ''
     mkdir -p webconsole/dist
     cp -r ${webconsoleDist}/* ./webconsole/dist
     go generate -mod=mod -tags webconsole ./webconsole
   '';
-
-  vendorHash = "sha256-7/TR+YjeeTQk+kY2WjYBeiP94onLJXrjJijYl5N6cPc=";
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  tags = [ "webconsole" ];
-
-  ldflags = [ "-X github.com/codenotary/immudb/cmd/version.Version=${finalAttrs.version}" ];
-
-  subPackages = [
-    "cmd/immudb"
-    "cmd/immuclient"
-    "cmd/immuadmin"
-  ];
 
   postInstall = ''
     mkdir -p share/completions
@@ -63,14 +52,26 @@ buildGoModule (finalAttrs: {
     done
   '';
 
+  ldflags = [ "-X github.com/codenotary/immudb/cmd/version.Version=${finalAttrs.version}" ];
+
+  subPackages = [
+    "cmd/immudb"
+    "cmd/immuclient"
+    "cmd/immuadmin"
+  ];
+
+  tags = [ "webconsole" ];
+
   meta = {
-    changelog = "https://github.com/codenotary/immudb/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Immutable database based on zero trust, SQL and Key-Value, tamperproof, data change history";
     homepage = "https://github.com/codenotary/immudb";
+    changelog = "https://github.com/codenotary/immudb/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       bsl11
     ];
+
     maintainers = with lib.maintainers; [ hythera ];
   };
 })

@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  hatchling,
   hatch-vcs,
+  hatchling,
   pytest,
   pytestCheckHook,
 }:
@@ -11,23 +11,22 @@
 buildPythonPackage rec {
   pname = "pytest-repeat";
   version = "0.9.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pytest_repeat";
     inherit version;
     hash = "sha256-2SrBTfqm/8/mkX5dFvDJvII4DBNbA8Kl9BLSY38iRIU=";
+    pname = "pytest_repeat";
   };
+
+  buildInputs = [ pytest ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
     hatch-vcs
   ];
 
-  buildInputs = [ pytest ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_repeat" ];
 
   meta = {

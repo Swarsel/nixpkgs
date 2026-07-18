@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
+  cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     SDL2
     SDL2_image
@@ -36,11 +37,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Free/Libre Action Roleplaying Engine";
     homepage = "https://github.com/flareteam/flare-engine";
+    license = [ lib.licenses.gpl3Plus ];
+
     maintainers = with lib.maintainers; [
       aanderse
       McSinyx
     ];
-    license = [ lib.licenses.gpl3Plus ];
+
     platforms = lib.platforms.unix;
   };
 })

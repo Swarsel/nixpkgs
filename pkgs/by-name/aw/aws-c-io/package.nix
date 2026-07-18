@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   aws-c-cal,
   aws-c-common,
+  cmake,
   nix,
   s2n-tls,
 }:
@@ -41,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "AWS SDK for C module for IO and TLS";
     homepage = "https://github.com/awslabs/aws-c-io";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

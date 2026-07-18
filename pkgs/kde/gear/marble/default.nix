@@ -1,35 +1,24 @@
 {
+  gpsd,
+  krunner,
+  libplasma,
   mkKdeDerivation,
-
   perl,
+  phonon,
   pkg-config,
-  shared-mime-info,
-
+  protobuf,
   qtpositioning,
   qtsvg,
   qttools,
   qtwebengine,
-
-  krunner,
-  libplasma,
-  phonon,
-
-  gpsd,
-  protobuf,
   shapelib,
+  shared-mime-info,
 }:
 mkKdeDerivation {
   pname = "marble";
-
   # breaks with split outputs
   # FIXME: track this down
   outputs = [ "out" ];
-
-  extraNativeBuildInputs = [
-    perl
-    pkg-config
-    shared-mime-info
-  ];
 
   extraBuildInputs = [
     qtpositioning
@@ -45,5 +34,11 @@ mkKdeDerivation {
     # FIXME: libwlocate
     protobuf
     shapelib
+  ];
+
+  extraNativeBuildInputs = [
+    perl
+    pkg-config
+    shared-mime-info
   ];
 }

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
-  pkg-config,
-  perl,
   openssl,
+  perl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-rPYRYAp5grTgASFHKGBdOcO0TvbP7iD+GgL0ZLmHhos=";
   };
 
-  cargoHash = "sha256-m6gX/Tu3WCMzkXhWZ19bM9PL7lQ6Xg1R90/ptuswI1s=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -29,9 +27,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ openssl ];
-
-  buildAndTestSubdir = "crates/release_plz";
-
+  cargoHash = "sha256-m6gX/Tu3WCMzkXhWZ19bM9PL7lQ6Xg1R90/ptuswI1s=";
   # Tests depend on additional infrastructure to be running locally
   doCheck = false;
 
@@ -42,18 +38,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/${finalAttrs.meta.mainProgram} generate-completions zsh)
   '';
 
+  buildAndTestSubdir = "crates/release_plz";
+
   meta = {
     description = "Publish Rust crates from CI with a Release PR";
     homepage = "https://release-plz.ieni.dev";
     changelog = "https://github.com/MarcoIeni/release-plz/blob/release-plz-v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       dannixon
       chrjabs
     ];
+
     mainProgram = "release-plz";
     broken = stdenv.hostPlatform.isDarwin;
   };

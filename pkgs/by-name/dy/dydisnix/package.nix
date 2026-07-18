@@ -4,21 +4,21 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
+  disnix,
+  getopt,
+  gettext,
   glib,
+  libiconv,
+  libtool,
   libxml2,
   libxslt,
-  getopt,
-  libiconv,
-  gettext,
   nix,
-  disnix,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
-  version = "0-unstable-2020-11-02";
   pname = "dydisnix";
+  version = "0-unstable-2020-11-02";
 
   src = fetchFromGitHub {
     owner = "svanderburg";
@@ -33,6 +33,7 @@ stdenv.mkDerivation {
     automake
     libtool
   ];
+
   buildInputs = [
     glib
     libxml2
@@ -50,9 +51,11 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Toolset enabling self-adaptive redeployment on top of Disnix";
+
     longDescription = ''
       Dynamic Disnix is a (very experimental!) prototype extension framework for Disnix supporting dynamic (re)deployment of service-oriented systems.
     '';
+
     homepage = "https://github.com/svanderburg/dydisnix";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ lib.maintainers.tomberek ];

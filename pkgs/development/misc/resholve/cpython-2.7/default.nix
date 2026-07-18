@@ -2,48 +2,48 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
+  autoreconfHook,
   bzip2,
-  expat,
-  libffi,
-  gdbm,
+  coreutils,
   db,
+  expat,
+  fetchpatch,
+  gdbm,
+  hash,
+  libffi,
   ncurses,
   openssl,
-  readline,
-  sqlite,
-  tcl ? null,
-  tk ? null,
-  tclPackages,
-  libx11 ? null,
-  x11Support ? false,
-  zlib,
-  self,
-  coreutils,
-  autoreconfHook,
-  python-setup-hook,
-  # Some proprietary libs assume UCS2 unicode, especially on darwin :(
-  ucsEncoding ? 4,
-  # For the Python package set
-  packageOverrides ? (self: super: { }),
+  passthruFun,
   pkgsBuildBuild,
   pkgsBuildHost,
   pkgsBuildTarget,
   pkgsHostHost,
   pkgsTargetTarget,
+  python-setup-hook,
+  readline,
+  self,
   sourceVersion,
-  hash,
-  passthruFun,
-  static ? stdenv.hostPlatform.isStatic,
-  stripBytecode ? reproducibleBuild,
+  sqlite,
+  tclPackages,
+  zlib,
+  enableOptimizations ? false,
+  libx11 ? null,
+  # For the Python package set
+  packageOverrides ? (self: super: { }),
+  pythonAttr ? "python${sourceVersion.major}${sourceVersion.minor}",
   rebuildBytecode ? true,
   reproducibleBuild ? false,
-  enableOptimizations ? false,
+  static ? stdenv.hostPlatform.isStatic,
   strip2to3 ? false,
+  stripBytecode ? reproducibleBuild,
   stripConfig ? false,
   stripIdlelib ? false,
   stripTests ? false,
-  pythonAttr ? "python${sourceVersion.major}${sourceVersion.minor}",
+  tcl ? null,
+  tk ? null,
+  # Some proprietary libs assume UCS2 unicode, especially on darwin :(
+  ucsEncoding ? 4,
+  x11Support ? false,
 }:
 
 assert x11Support -> tcl != null && tk != null && libx11 != null;
@@ -76,21 +76,23 @@ let
   passthru =
     passthruFun rec {
       inherit self sourceVersion packageOverrides;
+      inherit hasDistutilsCxxPatch pythonAttr;
+      executable = libPrefix;
       implementation = "cpython";
       libPrefix = "python${pythonVersion}";
-      executable = libPrefix;
-      pythonVersion = with sourceVersion; "${major}.${minor}";
-      sitePackages = "lib/${libPrefix}/site-packages";
-      inherit hasDistutilsCxxPatch pythonAttr;
+
+      pythonABITags = [
+        "none"
+        "cp${sourceVersion.major}${sourceVersion.minor}"
+      ];
+
       pythonOnBuildForBuild = pkgsBuildBuild.${pythonAttr};
       pythonOnBuildForHost = pkgsBuildHost.${pythonAttr};
       pythonOnBuildForTarget = pkgsBuildTarget.${pythonAttr};
       pythonOnHostForHost = pkgsHostHost.${pythonAttr};
       pythonOnTargetForTarget = pkgsTargetTarget.${pythonAttr} or { };
-      pythonABITags = [
-        "none"
-        "cp${sourceVersion.major}${sourceVersion.minor}"
-      ];
+      pythonVersion = with sourceVersion; "${major}.${minor}";
+      sitePackages = "lib/${libPrefix}/site-packages";
     }
     // {
       inherit ucsEncoding;
@@ -101,10 +103,10 @@ let
   # ActiveState is a fork of cpython that includes fixes for security
   # issues after its EOL
   src = fetchFromGitHub {
+    inherit hash;
     owner = "ActiveState";
     repo = "cpython";
     rev = "v${version}";
-    inherit hash;
   };
 
   hasDistutilsCxxPatch = !(stdenv.cc.isGNU or false);
@@ -128,8 +130,8 @@ let
     # This bug was fixed upstream, but not backported to 2.7
     (fetchpatch {
       name = "re_match_index.patch";
-      url = "https://bugs.python.org/file43084/re_match_index.patch";
       sha256 = "0l9rw6r5r90iybdkp3hhl2pf0h0s1izc68h5d3ywrm92pq32wz57";
+      url = "https://bugs.python.org/file43084/re_match_index.patch";
     })
 
     # Fix race-condition during pyc creation. Has a slight backwards
@@ -150,9 +152,9 @@ let
 
     # fix openssl detection by reverting irrelevant change for us, to enable hashlib which is required by pip
     (fetchpatch {
-      url = "https://github.com/ActiveState/cpython/pull/35/commits/20ea5b46aaf1e7bdf9d6905ba8bece2cc73b05b0.patch";
-      revert = true;
       hash = "sha256-Lp5fGlcfJJ6p6vKmcLckJiAA2AZz4prjFE0aMEJxotw=";
+      revert = true;
+      url = "https://github.com/ActiveState/cpython/pull/35/commits/20ea5b46aaf1e7bdf9d6905ba8bece2cc73b05b0.patch";
     })
   ]
   ++ lib.optionals (x11Support && stdenv.hostPlatform.isDarwin) [
@@ -306,7 +308,6 @@ in
 with passthru;
 stdenv.mkDerivation (
   {
-    pname = "python";
     inherit version;
 
     inherit
@@ -318,21 +319,25 @@ stdenv.mkDerivation (
       configureFlags
       ;
 
-    env = {
-      LDFLAGS = lib.optionalString (!stdenv.hostPlatform.isDarwin) "-lgcc_s";
-      inherit (mkPaths buildInputs) C_INCLUDE_PATH LIBRARY_PATH;
-      NIX_CFLAGS_COMPILE =
-        lib.optionalString (stdenv.targetPlatform.system == "x86_64-darwin") "-msse2"
-        + lib.optionalString stdenv.hostPlatform.isMusl " -DTHREAD_STACK_SIZE=0x100000"
-        + " -std=gnu17";
-      DETERMINISTIC_BUILD = 1;
-    };
-
-    setupHook = python-setup-hook sitePackages;
+    inherit passthru;
+    pname = "python";
 
     postPatch = lib.optionalString (x11Support && ((tclPackages.tix or null) != null)) ''
       substituteInPlace "Lib/lib-tk/Tix.py" --replace "os.environ.get('TIX_LIBRARY')" "os.environ.get('TIX_LIBRARY') or '${tclPackages.tix}/lib'"
     '';
+
+    env = {
+      inherit (mkPaths buildInputs) C_INCLUDE_PATH LIBRARY_PATH;
+      DETERMINISTIC_BUILD = 1;
+      LDFLAGS = lib.optionalString (!stdenv.hostPlatform.isDarwin) "-lgcc_s";
+
+      NIX_CFLAGS_COMPILE =
+        lib.optionalString (stdenv.targetPlatform.system == "x86_64-darwin") "-msse2"
+        + lib.optionalString stdenv.hostPlatform.isMusl " -DTHREAD_STACK_SIZE=0x100000"
+        + " -std=gnu17";
+    };
+
+    doCheck = false; # expensive, and fails
 
     postInstall = ''
       # needed for some packages, especially packages that backport
@@ -374,8 +379,6 @@ stdenv.mkDerivation (
       cp libpython2.7.dll.a $out/lib
     '';
 
-    inherit passthru;
-
     postFixup = ''
       # Include a sitecustomize.py file. Note it causes an error when it's in postInstall with 2.7.
       cp ${../../../interpreters/python/sitecustomize.py} $out/${sitePackages}/sitecustomize.py
@@ -395,15 +398,13 @@ stdenv.mkDerivation (
       rm -R $out/lib/python*/test $out/lib/python*/**/test{,s}
     '';
 
-    enableParallelBuilding = true;
-
-    doCheck = false; # expensive, and fails
-
     __structuredAttrs = true;
+    enableParallelBuilding = true;
+    setupHook = python-setup-hook sitePackages;
 
     meta = {
-      homepage = "http://python.org";
       description = "High-level dynamically-typed programming language";
+
       longDescription = ''
         Python is a remarkably powerful dynamic programming language that
         is used in a wide variety of application domains. Some of its key
@@ -413,8 +414,11 @@ stdenv.mkDerivation (
         hierarchical packages; exception-based error handling; and very
         high level dynamic data types.
       '';
+
+      homepage = "http://python.org";
       license = lib.licenses.psfl;
       platforms = lib.platforms.all;
+
       knownVulnerabilities = [
         "Python 2.7 has reached its end of life after 2020-01-01. See https://www.python.org/doc/sunset-python-2/."
         # Quote: That means that we will not improve it anymore after that day,

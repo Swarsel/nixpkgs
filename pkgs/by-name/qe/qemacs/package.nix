@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   buildPackages,
-  which,
-  texi2html,
-  enableX11 ? true,
+  libpng,
   libx11,
   libxext,
   libxv,
-  libpng,
+  texi2html,
+  which,
+  enableX11 ? true,
 }:
 
 stdenv.mkDerivation {
@@ -33,14 +33,13 @@ stdenv.mkDerivation {
     which
     texi2html
   ];
+
   buildInputs = lib.optionals enableX11 [
     libpng
     libx11
     libxext
     libxv
   ];
-
-  enableParallelBuilding = true;
 
   configureFlags = [
     "--cross-prefix=${stdenv.cc.targetPrefix}"
@@ -59,9 +58,11 @@ stdenv.mkDerivation {
     mkdir -p $out/bin $out/man
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://bellard.org/qemacs/";
     description = "Very small but powerful UNIX editor";
+    homepage = "https://bellard.org/qemacs/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ iblech ];
   };

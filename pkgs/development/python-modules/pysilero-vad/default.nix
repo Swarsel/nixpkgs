@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   stdenv,
-
+  fetchFromGitHub,
+  buildPythonPackage,
   # build-system
   cmake,
   ninja,
-  scikit-build-core,
-
   # tests
   pytestCheckHook,
+  scikit-build-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pysilero-vad";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rhasspy";
@@ -25,6 +22,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-hpo+o645odIsWPyoqf1E94xvz5a/1yH8WAxSdL4QZeo=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    # don't shadow the build result during tests
+    rm -rf pysilero_vad
+  '';
+
   build-system = [
     cmake
     ninja
@@ -32,27 +36,19 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dontUseCmakeConfigure = true;
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pysilero_vad" ];
-
   # aarch64-linux onnxruntime tries to get cpu information from /sys, which isn't available
   # inside the nix build sandbox.
   #doCheck = stdenv.buildPlatform.system != "aarch64-linux";
   dontUsePythonImportsCheck = stdenv.buildPlatform.system == "aarch64-linux";
-
-  preCheck = ''
-    # don't shadow the build result during tests
-    rm -rf pysilero_vad
-  '';
+  pyproject = true;
+  pythonImportsCheck = [ "pysilero_vad" ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin; # ld: unknown option: --disable-new-dtags
     description = "Pre-packaged voice activity detector using silero-vad";
     homepage = "https://github.com/rhasspy/pysilero-vad";
     changelog = "https://github.com/rhasspy/pysilero-vad/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
+    broken = stdenv.hostPlatform.isDarwin; # ld: unknown option: --disable-new-dtags
   };
 })

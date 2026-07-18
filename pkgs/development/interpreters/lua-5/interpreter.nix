@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  readline,
-  compat ? false,
+  hash,
   makeWrapper,
-  self,
-  packageOverrides ? (final: prev: { }),
-  replaceVars,
+  passthruFun,
   pkgsBuildBuild,
   pkgsBuildHost,
   pkgsBuildTarget,
   pkgsHostHost,
   pkgsTargetTarget,
+  readline,
+  replaceVars,
+  self,
   version,
-  hash,
-  passthruFun,
-  patches ? [ ],
-  postConfigure ? null,
-  postBuild ? null,
-  staticOnly ? stdenv.hostPlatform.isStatic,
+  compat ? false,
   luaAttr ? "lua${lib.versions.major version}_${lib.versions.minor version}",
+  packageOverrides ? (final: prev: { }),
+  patches ? [ ],
+  postBuild ? null,
+  postConfigure ? null,
+  staticOnly ? stdenv.hostPlatform.isStatic,
 }@inputs:
 
 stdenv.mkDerivation (
@@ -60,29 +60,21 @@ stdenv.mkDerivation (
   in
 
   {
-    pname = "lua";
     inherit version;
-    outputs = [
-      "out"
-      "doc"
-    ];
+    inherit patches;
+    inherit postConfigure;
+    inherit postBuild;
+    pname = "lua";
 
     src = fetchurl {
       url = "https://www.lua.org/ftp/lua-${finalAttrs.version}.tar.gz";
       sha256 = hash;
     };
 
-    LuaPathSearchPaths = luaPackages.luaLib.luaPathList;
-    LuaCPathSearchPaths = luaPackages.luaLib.luaCPathList;
-    setupHook = builtins.toFile "lua-setup-hook" ''
-      source @out@/nix-support/utils.sh
-      addEnvHooks "$hostOffset" luaEnvHook
-    '';
-
-    nativeBuildInputs = [ makeWrapper ];
-    buildInputs = [ readline ];
-
-    inherit patches;
+    outputs = [
+      "out"
+      "doc"
+    ];
 
     postPatch = ''
       sed -i "s@#define LUA_ROOT[[:space:]]*\"/usr/local/\"@#define LUA_ROOT  \"$out/\"@g" src/luaconf.h
@@ -98,10 +90,8 @@ stdenv.mkDerivation (
       cat ${./lua-dso.make} >> src/Makefile
     '';
 
-    env = {
-      inherit luaversion;
-      pkgversion = version;
-    };
+    nativeBuildInputs = [ makeWrapper ];
+    buildInputs = [ readline ];
 
     # see configurePhase for additional flags (with space)
     makeFlags = [
@@ -119,43 +109,17 @@ stdenv.mkDerivation (
       "MYLIBS=-lncurses"
     ];
 
-    configurePhase = ''
-      runHook preConfigure
-
-      makeFlagsArray+=(CFLAGS='-O2 -fPIC${lib.optionalString compat compatFlags} $(${
-        if lib.versionAtLeast luaversion "5.2" then "SYSCFLAGS" else "MYCFLAGS"
-      })' )
-      makeFlagsArray+=(${lib.optionalString stdenv.hostPlatform.isDarwin "CC=\"$CC\""}${
-        lib.optionalString (
-          stdenv.buildPlatform != stdenv.hostPlatform
-        ) " 'AR=${stdenv.cc.targetPrefix}ar rcu'"
-      })
-
-      installFlagsArray=( TO_BIN="lua luac" INSTALL_DATA='cp -d' \
-        TO_LIB="${
-          if stdenv.hostPlatform.isDarwin then
-            "liblua.${finalAttrs.version}.dylib"
-          else
-            (
-              "liblua.a"
-              + lib.optionalString (
-                !staticOnly
-              ) " liblua.so liblua.so.${luaversion} liblua.so.${finalAttrs.version}"
-            )
-        }" )
-
-      runHook postConfigure
-    '';
-    inherit postConfigure;
-
-    inherit postBuild;
+    env = {
+      inherit luaversion;
+      pkgversion = version;
+    };
 
     postInstall = ''
       mkdir -p "$out/nix-support" "$out/share/doc/lua" "$out/lib/pkgconfig"
       cp ${
         replaceVars ./utils.sh {
-          luapathsearchpaths = lib.escapeShellArgs finalAttrs.LuaPathSearchPaths;
           luacpathsearchpaths = lib.escapeShellArgs finalAttrs.LuaCPathSearchPaths;
+          luapathsearchpaths = lib.escapeShellArgs finalAttrs.LuaPathSearchPaths;
         }
       } $out/nix-support/utils.sh
       mv "doc/"*.{gif,png,css,html} "$out/share/doc/lua/"
@@ -188,6 +152,42 @@ stdenv.mkDerivation (
       mv $out/share/doc/lua $out/share/doc/lua-${finalAttrs.version}
     '';
 
+    LuaCPathSearchPaths = luaPackages.luaLib.luaCPathList;
+    LuaPathSearchPaths = luaPackages.luaLib.luaPathList;
+
+    configurePhase = ''
+      runHook preConfigure
+
+      makeFlagsArray+=(CFLAGS='-O2 -fPIC${lib.optionalString compat compatFlags} $(${
+        if lib.versionAtLeast luaversion "5.2" then "SYSCFLAGS" else "MYCFLAGS"
+      })' )
+      makeFlagsArray+=(${lib.optionalString stdenv.hostPlatform.isDarwin "CC=\"$CC\""}${
+        lib.optionalString (
+          stdenv.buildPlatform != stdenv.hostPlatform
+        ) " 'AR=${stdenv.cc.targetPrefix}ar rcu'"
+      })
+
+      installFlagsArray=( TO_BIN="lua luac" INSTALL_DATA='cp -d' \
+        TO_LIB="${
+          if stdenv.hostPlatform.isDarwin then
+            "liblua.${finalAttrs.version}.dylib"
+          else
+            (
+              "liblua.a"
+              + lib.optionalString (
+                !staticOnly
+              ) " liblua.so liblua.so.${luaversion} liblua.so.${finalAttrs.version}"
+            )
+        }" )
+
+      runHook postConfigure
+    '';
+
+    setupHook = builtins.toFile "lua-setup-hook" ''
+      source @out@/nix-support/utils.sh
+      addEnvHooks "$hostOffset" luaEnvHook
+    '';
+
     # copied from python
     passthru =
       let
@@ -207,19 +207,21 @@ stdenv.mkDerivation (
           packageOverrides
           luaAttr
           ;
+
         executable = "lua";
         luaOnBuildForBuild = override pkgsBuildBuild.${luaAttr};
         luaOnBuildForHost = override pkgsBuildHost.${luaAttr};
         luaOnBuildForTarget = override pkgsBuildTarget.${luaAttr};
         luaOnHostForHost = override pkgsHostHost.${luaAttr};
+
         luaOnTargetForTarget = lib.optionalAttrs (lib.hasAttr luaAttr pkgsTargetTarget) (
           override pkgsTargetTarget.${luaAttr}
         );
       };
 
     meta = {
-      homepage = "https://www.lua.org";
       description = "Powerful, fast, lightweight, embeddable scripting language";
+
       longDescription = ''
         Lua combines simple procedural syntax with powerful data
         description constructs based on associative arrays and extensible
@@ -228,9 +230,11 @@ stdenv.mkDerivation (
         management with incremental garbage collection, making it ideal
         for configuration, scripting, and rapid prototyping.
       '';
-      mainProgram = "lua";
+
+      homepage = "https://www.lua.org";
       license = lib.licenses.mit;
       platforms = lib.platforms.unix;
+      mainProgram = "lua";
     };
   }
 )

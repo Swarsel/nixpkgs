@@ -1,22 +1,17 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nxdomain";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     sha256 = "0va7nkbdjgzrf7fnbxkh1140pbc62wyj86rdrrh5wmg3phiziqkb";
   };
-
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [ dnspython ];
 
   nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
 
@@ -26,12 +21,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     grep -q 'address=/example.org/' dnsmasq.conf
   '';
 
+  build-system = with python3Packages; [ setuptools ];
+  dependencies = with python3Packages; [ dnspython ];
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/zopieux/nxdomain";
     description = "Domain (ad) block list creator";
-    mainProgram = "nxdomain";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/zopieux/nxdomain";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ zopieux ];
+    platforms = lib.platforms.all;
+    mainProgram = "nxdomain";
   };
 })

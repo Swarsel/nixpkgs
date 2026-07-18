@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
   imagemagick,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -36,11 +36,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Shows thumbnails in terminal using sixel graphics";
     homepage = "https://github.com/hackerb9/lsix";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       justinlime
       kidonng
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "lsix";
   };
 })

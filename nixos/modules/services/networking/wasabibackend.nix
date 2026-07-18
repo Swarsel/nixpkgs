@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 
@@ -24,19 +24,19 @@ let
     BitcoinRpcConnectionString = "${cfg.rpc.user}:${cfg.rpc.password}";
   }
   // optionalAttrs (cfg.network == "mainnet") {
-    Network = "Main";
-    MainNetBitcoinP2pEndPoint = "${cfg.endpoint.ip}:${toString cfg.endpoint.port}";
     MainNetBitcoinCoreRpcEndPoint = "${cfg.rpc.ip}:${toString cfg.rpc.port}";
+    MainNetBitcoinP2pEndPoint = "${cfg.endpoint.ip}:${toString cfg.endpoint.port}";
+    Network = "Main";
   }
   // optionalAttrs (cfg.network == "testnet") {
     Network = "TestNet";
-    TestNetBitcoinP2pEndPoint = "${cfg.endpoint.ip}:${toString cfg.endpoint.port}";
     TestNetBitcoinCoreRpcEndPoint = "${cfg.rpc.ip}:${toString cfg.rpc.port}";
+    TestNetBitcoinP2pEndPoint = "${cfg.endpoint.ip}:${toString cfg.endpoint.port}";
   }
   // optionalAttrs (cfg.network == "regtest") {
     Network = "RegTest";
-    RegTestBitcoinP2pEndPoint = "${cfg.endpoint.ip}:${toString cfg.endpoint.port}";
     RegTestBitcoinCoreRpcEndPoint = "${cfg.rpc.ip}:${toString cfg.rpc.port}";
+    RegTestBitcoinP2pEndPoint = "${cfg.endpoint.ip}:${toString cfg.endpoint.port}";
   };
 
   configFile = pkgs.writeText "wasabibackend.conf" (builtins.toJSON confOptions);
@@ -49,104 +49,101 @@ in
     services.wasabibackend = {
       enable = mkEnableOption "Wasabi backend service";
 
-      dataDir = mkOption {
-        type = types.path;
-        default = "/var/lib/wasabibackend";
-        description = "The data directory for the Wasabi backend node.";
-      };
-
       customConfigFile = mkOption {
-        type = types.nullOr types.path;
         default = null;
         description = "Defines the path to a custom configuration file that is copied to the user's directory. Overrides any config options.";
+        type = types.nullOr types.path;
+      };
+
+      dataDir = mkOption {
+        default = "/var/lib/wasabibackend";
+        description = "The data directory for the Wasabi backend node.";
+        type = types.path;
+      };
+
+      endpoint = {
+        ip = mkOption {
+          default = "127.0.0.1";
+          description = "IP address for P2P connection to bitcoind.";
+          type = types.str;
+        };
+
+        port = mkOption {
+          default = 8333;
+          description = "Port for P2P connection to bitcoind.";
+          type = types.port;
+        };
+      };
+
+      group = mkOption {
+        default = cfg.user;
+        defaultText = literalExpression "config.${opt.user}";
+        description = "The group as which to run the wasabibackend node.";
+        type = types.str;
       };
 
       network = mkOption {
+        default = "mainnet";
+        description = "The network to use for the Wasabi backend service.";
+
         type = types.enum [
           "mainnet"
           "testnet"
           "regtest"
         ];
-        default = "mainnet";
-        description = "The network to use for the Wasabi backend service.";
-      };
-
-      endpoint = {
-        ip = mkOption {
-          type = types.str;
-          default = "127.0.0.1";
-          description = "IP address for P2P connection to bitcoind.";
-        };
-
-        port = mkOption {
-          type = types.port;
-          default = 8333;
-          description = "Port for P2P connection to bitcoind.";
-        };
       };
 
       rpc = {
         ip = mkOption {
-          type = types.str;
           default = "127.0.0.1";
           description = "IP address for RPC connection to bitcoind.";
-        };
-
-        port = mkOption {
-          type = types.port;
-          default = 8332;
-          description = "Port for RPC connection to bitcoind.";
-        };
-
-        user = mkOption {
           type = types.str;
-          default = "bitcoin";
-          description = "RPC user for the bitcoin endpoint.";
         };
 
         password = mkOption {
-          type = types.str;
           default = "password";
           description = "RPC password for the bitcoin endpoint. Warning: this is stored in cleartext in the Nix store! Use `configFile` or `passwordFile` if needed.";
+          type = types.str;
         };
 
         passwordFile = mkOption {
-          type = types.nullOr types.path;
           default = null;
           description = "File that contains the password of the RPC user.";
+          type = types.nullOr types.path;
+        };
+
+        port = mkOption {
+          default = 8332;
+          description = "Port for RPC connection to bitcoind.";
+          type = types.port;
+        };
+
+        user = mkOption {
+          default = "bitcoin";
+          description = "RPC user for the bitcoin endpoint.";
+          type = types.str;
         };
       };
 
       user = mkOption {
-        type = types.str;
         default = "wasabibackend";
         description = "The user as which to run the wasabibackend node.";
-      };
-
-      group = mkOption {
         type = types.str;
-        default = cfg.user;
-        defaultText = literalExpression "config.${opt.user}";
-        description = "The group as which to run the wasabibackend node.";
       };
     };
   };
 
   config = mkIf cfg.enable {
 
-    systemd.tmpfiles.rules = [
-      "d '${cfg.dataDir}' 0770 '${cfg.user}' '${cfg.group}' - -"
-    ];
-
     systemd.services.wasabibackend = {
-      description = "wasabibackend server";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
+      description = "wasabibackend server";
+
       environment = {
-        DOTNET_PRINT_TELEMETRY_MESSAGE = "false";
         DOTNET_CLI_TELEMETRY_OPTOUT = "true";
+        DOTNET_PRINT_TELEMETRY_MESSAGE = "false";
       };
+
       preStart = ''
         mkdir -p ${cfg.dataDir}/.walletwasabi/backend
         ${
@@ -166,23 +163,31 @@ in
         }
         chmod ug+w ${cfg.dataDir}/.walletwasabi/backend/Config.json
       '';
+
       serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
         ExecStart = "${pkgs.wasabibackend}/bin/WasabiBackend";
+        Group = cfg.group;
         ProtectSystem = "full";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
-    users.users.${cfg.user} = {
-      name = cfg.user;
-      group = cfg.group;
-      description = "wasabibackend daemon user";
-      home = cfg.dataDir;
-      isSystemUser = true;
-    };
+    systemd.tmpfiles.rules = [
+      "d '${cfg.dataDir}' 0770 '${cfg.user}' '${cfg.group}' - -"
+    ];
 
     users.groups.${cfg.group} = { };
+
+    users.users.${cfg.user} = {
+      description = "wasabibackend daemon user";
+      group = cfg.group;
+      home = cfg.dataDir;
+      isSystemUser = true;
+      name = cfg.user;
+    };
 
   };
 }

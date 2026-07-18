@@ -1,12 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  mlflow,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   cachetools,
   click,
@@ -15,6 +10,7 @@
   fastapi,
   gitpython,
   importlib-metadata,
+  mlflow,
   opentelemetry-api,
   opentelemetry-proto,
   opentelemetry-sdk,
@@ -24,6 +20,8 @@
   python-dotenv,
   pyyaml,
   requests,
+  # build-system
+  setuptools,
   sqlparse,
   starlette,
   typing-extensions,
@@ -31,10 +29,8 @@
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "mlflow-skinny";
   inherit (mlflow) version;
-  pyproject = true;
-  __structuredAttrs = true;
+  pname = "mlflow-skinny";
 
   src = fetchFromGitHub {
     owner = "mlflow";
@@ -43,8 +39,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-e11ZncpvThb1Nt6OH+O6Do74N3dphxBiK/HIeLQMxAw=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/libs/skinny";
-
+  # No tests in the skinny subtree.
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -70,10 +67,9 @@ buildPythonPackage (finalAttrs: {
     uvicorn
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mlflow" ];
-
-  # No tests in the skinny subtree.
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/libs/skinny";
 
   meta = mlflow.meta // {
     description = "Lightweight version of MLflow that is designed to minimize package size";

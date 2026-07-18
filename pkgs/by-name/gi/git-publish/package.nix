@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  python3,
-  perl,
   fetchFromGitHub,
   installShellFiles,
+  perl,
+  python3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "git-publish";
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     installShellFiles
   ];
+
   buildInputs = [ python3 ];
 
   installPhase = ''
@@ -35,9 +36,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Prepare and store patch revisions as git tags";
+    homepage = "https://github.com/stefanha/git-publish";
     license = lib.licenses.mit;
     maintainers = [ ];
-    homepage = "https://github.com/stefanha/git-publish";
     mainProgram = "git-publish";
   };
 })

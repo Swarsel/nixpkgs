@@ -1,45 +1,45 @@
 {
   lib,
   stdenv,
-  replaceVars,
   fetchFromGitHub,
   autoreconfHook,
-  gettext,
-  makeWrapper,
-  pkg-config,
-  vala,
-  wrapGAppsHook3,
+  buildPackages,
+  cldr-annotations,
   dbus,
-  systemd,
-  dconf ? null,
-  glib,
   gdk-pixbuf,
+  gettext,
+  glib,
   gobject-introspection,
+  gtk-doc,
   gtk3,
   gtk4,
-  gtk-doc,
-  libdbusmenu-gtk3,
-  runCommand,
   isocodes,
-  cldr-annotations,
+  json-glib,
+  libdbusmenu-gtk3,
+  libx11,
+  libxkbcommon,
+  makeWrapper,
+  nix-update-script,
+  nixosTests,
+  pkg-config,
+  python3,
+  replaceVars,
+  runCommand,
+  runtimeShell,
+  systemd,
   unicode-character-database,
   unicode-emoji,
-  python3,
-  json-glib,
-  libnotify ? null,
-  enableUI ? !libOnly,
-  withWayland ? !libOnly,
-  libxkbcommon,
+  vala,
+  versionCheckHook,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  buildPackages,
-  runtimeShell,
-  nixosTests,
-  versionCheckHook,
-  nix-update-script,
-  libx11,
+  wrapGAppsHook3,
+  dconf ? null,
+  enableUI ? !libOnly,
   libOnly ? false,
+  libnotify ? null,
+  withWayland ? !libOnly,
 }:
 
 let
@@ -76,26 +76,26 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MCxzMnG+g2FC4pZtDOP2c7vSRG5Zk6EfrkGnEyFvBfQ=";
   };
 
-  patches = [
-    (replaceVars ./fix-paths.patch {
-      pythonInterpreter = python3Runtime.interpreter;
-      pythonSitePackages = python3.sitePackages;
-      # patch context
-      prefix = null;
-      datarootdir = null;
-      localedir = null;
-      # removed line only
-      PYTHON = null;
-    })
-    ./build-without-dbus-launch.patch
-  ];
-
   outputs = [
     "out"
     "dev"
   ]
   ++ lib.optionals (!libOnly) [
     "installedTests"
+  ];
+
+  patches = [
+    (replaceVars ./fix-paths.patch {
+      # removed line only
+      PYTHON = null;
+      datarootdir = null;
+      localedir = null;
+      # patch context
+      prefix = null;
+      pythonInterpreter = python3Runtime.interpreter;
+      pythonSitePackages = python3.sitePackages;
+    })
+    ./build-without-dbus-launch.patch
   ];
 
   postPatch = ''
@@ -111,7 +111,54 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace bus/services/org.freedesktop.IBus.session.generic.service.in --replace "ExecStart=sh" "ExecStart=${runtimeShell}"
   '';
 
-  preAutoreconf = "touch ChangeLog";
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    gtk-doc
+    gettext
+    makeWrapper
+    pkg-config
+    python3BuildEnv
+    dbus-launch
+    glib # required to satisfy AM_PATH_GLIB_2_0
+    vala
+    gobject-introspection
+  ]
+  ++ lib.optionals (!libOnly) [
+    wrapGAppsHook3
+  ]
+  ++ lib.optionals withWayland [
+    wayland-scanner
+  ];
+
+  buildInputs = [
+    dbus
+    systemd
+    dconf
+    python3.pkgs.pygobject3 # for pygobject overrides
+    isocodes
+    json-glib
+    libx11
+    vala # for share/vala/Makefile.vapigen (PKG_CONFIG_VAPIGEN_VAPIGEN)
+  ]
+  ++ lib.optionals (!libOnly) [
+    gtk3
+    gtk4
+    gdk-pixbuf
+    libdbusmenu-gtk3
+    libnotify
+  ]
+  ++ lib.optionals withWayland [
+    libxkbcommon
+    wayland
+    wayland-protocols
+    wayland-scanner # For cross, build uses $PKG_CONFIG to look for wayland-scanner
+  ];
+
+  propagatedBuildInputs = [
+    glib
+  ];
 
   configureFlags = [
     # The `AX_PROG_{CC,CXX}_FOR_BUILD` autoconf macros can pick up unwrapped GCC binaries,
@@ -148,72 +195,16 @@ stdenv.mkDerivation (finalAttrs: {
     "test_sourcesdir=${placeholder "installedTests"}/share/installed-tests/ibus"
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-    gtk-doc
-    gettext
-    makeWrapper
-    pkg-config
-    python3BuildEnv
-    dbus-launch
-    glib # required to satisfy AM_PATH_GLIB_2_0
-    vala
-    gobject-introspection
-  ]
-  ++ lib.optionals (!libOnly) [
-    wrapGAppsHook3
-  ]
-  ++ lib.optionals withWayland [
-    wayland-scanner
-  ];
-
-  propagatedBuildInputs = [
-    glib
-  ];
-
-  buildInputs = [
-    dbus
-    systemd
-    dconf
-    python3.pkgs.pygobject3 # for pygobject overrides
-    isocodes
-    json-glib
-    libx11
-    vala # for share/vala/Makefile.vapigen (PKG_CONFIG_VAPIGEN_VAPIGEN)
-  ]
-  ++ lib.optionals (!libOnly) [
-    gtk3
-    gtk4
-    gdk-pixbuf
-    libdbusmenu-gtk3
-    libnotify
-  ]
-  ++ lib.optionals withWayland [
-    libxkbcommon
-    wayland
-    wayland-protocols
-    wayland-scanner # For cross, build uses $PKG_CONFIG to look for wayland-scanner
-  ];
-
-  enableParallelBuilding = true;
-  strictDeps = true;
-
   doCheck = false; # requires X11 daemon
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
-  versionCheckProgram = "${placeholder "out"}/bin/ibus";
 
   postInstall = lib.optionalString (!libOnly) ''
     # It has some hardcoded FHS paths and also we do not use it
     # since we set up the environment in NixOS tests anyway.
     moveToOutput "bin/ibus-desktop-testing-runner" "$installedTests"
   '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = lib.optionalString (!libOnly) ''
     # set necessary environment also for tests
@@ -222,20 +213,30 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  enableParallelBuilding = true;
+  preAutoreconf = "touch ChangeLog";
+  versionCheckProgram = "${placeholder "out"}/bin/ibus";
+  versionCheckProgramArg = "version";
+
   passthru = {
     tests = lib.optionalAttrs (!libOnly) {
       installed-tests = nixosTests.installed-tests.ibus;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/ibus/ibus/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://github.com/ibus/ibus";
     description = "Intelligent Input Bus, input method framework";
+    homepage = "https://github.com/ibus/ibus";
+    changelog = "https://github.com/ibus/ibus/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.lgpl21Plus;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "ibus";
-    maintainers = [ ];
   };
 })

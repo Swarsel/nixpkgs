@@ -1,8 +1,8 @@
 {
   lib,
-  writeShellScriptBin,
-  rss-bridge,
   php,
+  rss-bridge,
+  writeShellScriptBin,
 }:
 
 let
@@ -28,7 +28,6 @@ in
 '').overrideAttrs
   (oldAttrs: {
     pname = "rss-bridge-cli";
-
     version = rss-bridge.version;
 
     meta = {

@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
-  setuptools,
+  pytestCheckHook,
   requests,
+  setuptools,
   urllib3,
   websocket-client,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "jellyfin-apiclient-python";
   version = "1.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jellyfin";
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-lxwJgYysp/6C/eYviYJu5lfStWulHyl7WxqxMnOE5iw=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,8 +31,7 @@ buildPythonPackage rec {
     websocket-client
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jellyfin_apiclient_python" ];
 
   meta = {

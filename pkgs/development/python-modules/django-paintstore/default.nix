@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "django-paintstore";
   version = "0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,6 +14,7 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Django app that integrates jQuery ColorPicker with the Django admin";

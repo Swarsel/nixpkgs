@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
   copyDesktopItems,
-  unzip,
-  openjdk21,
-  openjfx21,
   glib,
   gsettings-desktop-schemas,
   gtk3,
-  wrapGAppsHook3,
   imagemagick,
+  makeDesktopItem,
   nix-update-script,
+  openjdk21,
+  openjfx21,
+  unzip,
+  wrapGAppsHook3,
 }:
 let
   openjdk = openjdk21.override (
@@ -33,42 +33,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-UClhTH/9oFfhjYsScBvmD4cKZUJwuAsiyRTiVkPAV0o=";
   };
 
-  unpackPhase = ''
-    runHook preUnpack
-
-    unzip -d jar ${finalAttrs.src}
-    unzip -d dist jar/bluej-dist.jar
-
-    runHook postUnpack
-  '';
-
-  sourceRoot = "dist";
-
   nativeBuildInputs = [
     wrapGAppsHook3
     copyDesktopItems
     imagemagick
     unzip
   ];
+
   buildInputs = [
     glib
     gtk3
-  ];
-
-  dontWrapGApps = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "BlueJ";
-      desktopName = "BlueJ";
-      exec = "bluej";
-      icon = "bluej";
-      comment = "A simple powerful Java IDE";
-      categories = [
-        "Application"
-        "Development"
-      ];
-    })
   ];
 
   installPhase = ''
@@ -96,22 +70,53 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Application"
+        "Development"
+      ];
+
+      comment = "A simple powerful Java IDE";
+      desktopName = "BlueJ";
+      exec = "bluej";
+      icon = "bluej";
+      name = "BlueJ";
+    })
+  ];
+
+  dontWrapGApps = true;
+  sourceRoot = "dist";
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    unzip -d jar ${finalAttrs.src}
+    unzip -d dist jar/bluej-dist.jar
+
+    runHook postUnpack
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple integrated development environment for Java";
     homepage = "https://www.bluej.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     license = with lib.licenses; [
       gpl2Plus
       classpathException20
     ];
-    mainProgram = "bluej";
+
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       weirdrock
       eveeifyeve # Darwin
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "bluej";
   };
 
 })

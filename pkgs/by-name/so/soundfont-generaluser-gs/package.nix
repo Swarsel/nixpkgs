@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -24,9 +24,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/CHANGELOG.md";
     description = "General MIDI SoundFont with a low memory footprint";
     homepage = "https://www.schristiancollins.com/generaluser.php";
+    changelog = "https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/CHANGELOG.md";
     license = lib.licenses.generaluser;
     maintainers = with lib.maintainers; [ keenanweaver ];
     platforms = lib.platforms.all;

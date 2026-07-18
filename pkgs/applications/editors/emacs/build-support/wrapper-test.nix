@@ -1,7 +1,7 @@
 {
-  runCommand,
   emacs,
   git,
+  runCommand,
 }:
 
 runCommand "test-emacs-withPackages-wrapper"
@@ -15,6 +15,7 @@ runCommand "test-emacs-withPackages-wrapper"
       ))
       git # needed by magit
     ];
+
     env = {
       # emulate a default NixOS env where INFOPATH is set like this (not ending with a ":")
       INFOPATH = "/fake-info-dir1:/fake-info-dir2";

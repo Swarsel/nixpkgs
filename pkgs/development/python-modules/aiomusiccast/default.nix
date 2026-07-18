@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   aiohttp,
+  buildPythonPackage,
+  hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "aiomusiccast";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vigonotion";
@@ -23,15 +22,15 @@ buildPythonPackage rec {
       --replace '"0.0.0"' '"${version}"'
   '';
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
     aiohttp
   ];
 
-  # upstream has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiomusiccast" ];
 
   meta = {

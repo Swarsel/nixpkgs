@@ -1,10 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
   # Python deps
   blockfrost-python,
+  buildPythonPackage,
   cachetools,
   cbor2,
   cose,
@@ -17,6 +16,7 @@
   poetry-core,
   pprintpp,
   pynacl,
+  pytestCheckHook,
   requests,
   setuptools,
   typeguard,
@@ -27,19 +27,20 @@
 let
   cose_0_9_dev8 = (cose.override { inherit cbor2; }).overridePythonAttrs (old: rec {
     version = "0.9.dev8";
+
     src = (
       old.src.override {
         rev = "v${version}";
         hash = "sha256-/jwq2C2nvHInsgPG4jZCr+XsvlUJdYewAkasrUPVaHM=";
       }
     );
+
     pythonImportsCheck = [ "cose" ];
   });
 in
 buildPythonPackage rec {
   pname = "pycardano";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Python-Cardano";
@@ -47,6 +48,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-W5N254tND7mI0oR82YhMFWn4zVVs3ygYOqXOBMO3sXY=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -72,16 +77,13 @@ buildPythonPackage rec {
     websockets
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "pycardano" ];
 
   pythonRelaxDeps = [
     "ogmios"
     "websockets"
   ];
-
-  pythonImportsCheck = [ "pycardano" ];
 
   meta = {
     description = "Lightweight Cardano library in Python";

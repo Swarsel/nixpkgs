@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,14 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-v/UCabpSt5weUH1+spbQFC4MCOozLXhmN/pEUZCVH84=";
+  doCheck = true;
+  nativeCheckInputs = [ versionCheckHook ];
 
   postInstall = ''
     install -Dm644 fish/functions/*.fish -t $out/share/fish/vendor_functions.d/
     install -Dm644 fish/conf.d/reef.fish -t $out/share/fish/vendor_conf.d/
   '';
-
-  nativeCheckInputs = [ versionCheckHook ];
-  doCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -34,7 +33,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/ZStud/reef";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nadir-ishiguro ];
-    mainProgram = "reef";
     platforms = lib.platforms.unix;
+    mainProgram = "reef";
   };
 })

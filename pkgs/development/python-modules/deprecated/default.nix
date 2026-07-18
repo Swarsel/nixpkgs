@@ -2,22 +2,16 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
+  pytestCheckHook,
   pythonAtLeast,
   setuptools_80,
-  wrapt,
-  pytestCheckHook,
   sphinxHook,
+  wrapt,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "deprecated";
   version = "1.3.1";
-  pyproject = true;
-
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   src = fetchFromGitHub {
     owner = "tantale";
@@ -26,13 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-1mB9aRZOsaW7Mqcu1SWIYTusQ7MlMvUucdTyfu++Nx8=";
   };
 
-  build-system = [ setuptools_80 ];
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   nativeBuildInputs = [ sphinxHook ];
-
-  dependencies = [ wrapt ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools_80 ];
+  dependencies = [ wrapt ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.13") [
     # assertion text mismatch
@@ -40,12 +36,13 @@ buildPythonPackage (finalAttrs: {
     "test_sphinx_deprecated_class_method__warns"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "deprecated" ];
 
   meta = {
-    changelog = "https://github.com/laurent-laporte-pro/deprecated/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://github.com/tantale/deprecated";
     description = "Python @deprecated decorator to deprecate old python classes, functions or methods";
+    homepage = "https://github.com/tantale/deprecated";
+    changelog = "https://github.com/laurent-laporte-pro/deprecated/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tilpner ];
   };

@@ -1,11 +1,11 @@
 {
+  lib,
   fetchFromGitHub,
   jq,
-  lib,
   nix-update,
   rustPlatform,
-  writeShellScript,
   versionCheckHook,
+  writeShellScript,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "zeekstd";
@@ -19,8 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-PpfNNRh+K61jfWtBYtWSx3cWXZ2v7tS52Ny1T1XSYVw=";
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru.updateScript = writeShellScript "update-zeekstd" ''
     latestVersion=$(curl ''${GITHUB_TOKEN:+-u ":$GITHUB_TOKEN"} --fail --silent https://api.github.com/repos/rorosen/zeekstd/releases/latest | ${lib.getExe jq} --raw-output .tag_name | sed -E 's/^v([0-9.]+)-cli$/\1/')

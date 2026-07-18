@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  subPackages = [ "cmd/kbld" ];
-
   env.CGO_ENABLED = 0;
 
   ldflags = [
     "-X=carvel.dev/kbld/pkg/kbld/version.Version=${finalAttrs.version}"
   ];
+
+  subPackages = [ "cmd/kbld" ];
 
   meta = {
     description = "Seamlessly incorporates image building and image pushing into your development and deployment workflows";

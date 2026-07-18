@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
   # Derivation stuff
   fetchFromGitHub,
-  lib,
-  makeWrapper,
-  stdenv,
   # Dependencies
   # Add these to the wrapper
   curl,
   gawk,
   gnugrep,
   gnused,
+  makeWrapper,
   socat,
   wget,
 }:
@@ -20,11 +20,12 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "javier-lopez";
     repo = "learn";
+    rev = "666e2c402723251ba19ce9d7c11b83b06c15a2c5";
+    hash = "sha256-jwPAEgti5DrjNnNVW/61GGTP+QedGAjz9kPwYhMAdTk=";
+
     sparseCheckout = [
       "sh/tools/simple-dlna-browser"
     ];
-    rev = "666e2c402723251ba19ce9d7c11b83b06c15a2c5";
-    hash = "sha256-jwPAEgti5DrjNnNVW/61GGTP+QedGAjz9kPwYhMAdTk=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -54,6 +55,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Query dlna media servers";
+
     longDescription = ''
       A bash script that allows simple interactions with [DLNA] media servers.
       It is a light-weight, CLI alternative to [VLC], [Kodi], and other players.
@@ -62,6 +64,7 @@ stdenv.mkDerivation {
       [Kodi]: https://kodi.tv/
       [VLC]: https://www.videolan.org/vlc/
     '';
+
     homepage = "https://github.com/javier-lopez/learn/blob/master/sh/tools/simple-dlna-browser";
     license = lib.licenses.fair;
     maintainers = [ ];

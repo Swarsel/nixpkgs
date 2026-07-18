@@ -3,11 +3,11 @@
   fetchFromGitHub,
   buildGoModule,
   buildNpmPackage,
-  makeWrapper,
   go-swag,
+  makeWrapper,
   nixosTests,
-  testers,
   pufferpanel,
+  testers,
 }:
 
 buildGoModule rec {
@@ -37,36 +37,12 @@ buildGoModule rec {
     ./skip-network-tests.patch
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/pufferpanel/pufferpanel/v2.Hash=none"
-    "-X=github.com/pufferpanel/pufferpanel/v2.Version=${version}-nixpkgs"
-  ];
-
-  frontend = buildNpmPackage {
-    pname = "pufferpanel-frontend";
-    inherit version;
-
-    src = "${src}/client";
-
-    npmDepsHash = "sha256-oWFXtV/dxzHv3sfIi01l1lHE5tcJgpVq87XgS6Iy62g=";
-
-    NODE_OPTIONS = "--openssl-legacy-provider";
-    npmBuildFlags = [
-      "--"
-      "--dest=${placeholder "out"}"
-    ];
-    dontNpmInstall = true;
-  };
-
   nativeBuildInputs = [
     makeWrapper
     go-swag
   ];
 
   vendorHash = "sha256-1U7l7YW1fu5M0/pPHTLamLsTQdEltesRODUn21SuP8w=";
-  proxyVendor = true;
 
   # Generate code for Swagger documentation endpoints (see web/swagger/docs.go).
   # Note that GOROOT embedded in go-swag is empty by default since it is built
@@ -96,11 +72,35 @@ buildGoModule rec {
     runHook postInstall
   '';
 
+  frontend = buildNpmPackage {
+    inherit version;
+    pname = "pufferpanel-frontend";
+    src = "${src}/client";
+    npmDepsHash = "sha256-oWFXtV/dxzHv3sfIi01l1lHE5tcJgpVq87XgS6Iy62g=";
+    NODE_OPTIONS = "--openssl-legacy-provider";
+    dontNpmInstall = true;
+
+    npmBuildFlags = [
+      "--"
+      "--dest=${placeholder "out"}"
+    ];
+  };
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/pufferpanel/pufferpanel/v2.Hash=none"
+    "-X=github.com/pufferpanel/pufferpanel/v2.Version=${version}-nixpkgs"
+  ];
+
+  proxyVendor = true;
+
   passthru.tests = {
     inherit (nixosTests) pufferpanel;
+
     version = testers.testVersion {
-      package = pufferpanel;
       command = "${pname} version";
+      package = pufferpanel;
     };
   };
 

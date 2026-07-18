@@ -2,20 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  SDL,
   libsndfile,
   wxwidgets_3_2,
-  SDL,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "pterm";
   version = "6.0.4";
-
-  buildInputs = [
-    libsndfile
-    SDL
-    wxwidgets_3_2
-  ];
 
   src = fetchurl {
     url = "https://www.cyber1.org/download/linux/pterm-${finalAttrs.version}.tar.bz2";
@@ -24,14 +18,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [ ./0001-dtnetsubs-remove-null-check.patch ];
 
+  buildInputs = [
+    libsndfile
+    SDL
+    wxwidgets_3_2
+  ];
+
+  env.PTERMVERSION = "${finalAttrs.version}";
+
   preBuild = ''
     substituteInPlace Makefile.common Makefile.wxpterm --replace "/bin/echo" "echo"
     echo "exit 0" > wxversion.py
   '';
-
-  hardeningDisable = [ "format" ];
-
-  env.PTERMVERSION = "${finalAttrs.version}";
 
   installPhase = ''
     runHook preInstall
@@ -41,13 +39,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Terminal emulator for the Cyber1 mainframe-based CYBIS system";
     homepage = "https://www.cyber1.org/";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ sarcasticadmin ];
-    mainProgram = "pterm";
     platforms = lib.platforms.unix;
+    mainProgram = "pterm";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

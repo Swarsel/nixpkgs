@@ -4,8 +4,8 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
   bash,
+  libtool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,13 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-P3LaDMMNPyEnA8nO1Bm7H0mW/hVBr0cFdg+p2JmWcGI=";
   };
 
-  strictDeps = true;
-  enableParallelBuilding = true;
-
   outputs = [
     "out"
     "dev"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoconf
@@ -43,11 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput bin/libnet-config "$dev"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/libnet/libnet";
     description = "Portable framework for low-level network packet construction";
-    mainProgram = "libnet-config";
+    homepage = "https://github.com/libnet/libnet";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;
+    mainProgram = "libnet-config";
   };
 })

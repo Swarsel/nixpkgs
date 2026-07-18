@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  asciidoc,
   gettext,
   ncurses,
-  asciidoc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,20 +19,21 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     asciidoc
     gettext
   ];
+
   buildInputs = [ ncurses ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ gettext ];
+  passthru.shellPath = "/bin/yash";
 
   meta = {
-    homepage = "https://yash.osdn.jp/index.html.en";
     description = "Yet another POSIX-compliant shell";
-    mainProgram = "yash";
+    homepage = "https://yash.osdn.jp/index.html.en";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ qbit ];
     platforms = lib.platforms.all;
+    mainProgram = "yash";
   };
-
-  passthru.shellPath = "/bin/yash";
 })

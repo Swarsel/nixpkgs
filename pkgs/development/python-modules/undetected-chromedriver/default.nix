@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
-
+  buildPythonPackage,
   looseversion,
   requests,
   selenium,
+  setuptools,
   websockets,
 }:
 
 buildPythonPackage {
   pname = "undetected-chromedriver";
   version = "3.5.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ultrafunkamsterdam";
@@ -24,6 +21,15 @@ buildPythonPackage {
     hash = "sha256-Qe+GrsUPnhjJMDgjdUCloapjj0ggFlm/Dr42WLcmb1o=";
   };
 
+  postPatch = ''
+    substituteInPlace undetected_chromedriver/patcher.py \
+      --replace-fail \
+        "from distutils.version import LooseVersion" \
+        "from looseversion import LooseVersion"
+  '';
+
+  # No tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,17 +39,8 @@ buildPythonPackage {
     websockets
   ];
 
-  # No tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "undetected_chromedriver" ];
-
-  postPatch = ''
-    substituteInPlace undetected_chromedriver/patcher.py \
-      --replace-fail \
-        "from distutils.version import LooseVersion" \
-        "from looseversion import LooseVersion"
-  '';
 
   meta = {
     description = "Python library for the custom Selenium ChromeDriver that passes all bot mitigation systems";

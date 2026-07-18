@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  onetbb,
-  libgit2,
   curl,
   fmt_11,
+  libgit2,
   nlohmann_json,
+  onetbb,
   pkg-config,
 }:
 
 let
   toml11 = fetchFromGitHub rec {
+    version = "4.2.0";
     owner = "ToruNiina";
     repo = "toml11";
-    version = "4.2.0";
-    tag = "v${version}";
     sha256 = "sha256-NUuEgTpq86rDcsQnpG0IsSmgLT0cXhd1y32gT57QPAw=";
+    tag = "v${version}";
   };
 in
 stdenv.mkDerivation rec {
@@ -44,6 +44,13 @@ stdenv.mkDerivation rec {
     curl
   ];
 
+  makeFlags = [
+    "RELEASE=1"
+    "COMMIT_HASH="
+    "COMMIT_SHORT_HASH="
+    "COMMIT_DATE="
+  ];
+
   # Skip git cloning toml11
   preConfigure = ''
     substituteInPlace Makefile \
@@ -56,22 +63,15 @@ stdenv.mkDerivation rec {
     cp -rf ${toml11} build/DEPS/toml11
   '';
 
-  makeFlags = [
-    "RELEASE=1"
-    "COMMIT_HASH="
-    "COMMIT_SHORT_HASH="
-    "COMMIT_DATE="
-  ];
-
   installFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
-    broken = (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
-    homepage = "https://cabinpkg.com";
     description = "Package manager and build system for C++";
+    homepage = "https://cabinpkg.com";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "cabin";
+    broken = (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
   };
 }

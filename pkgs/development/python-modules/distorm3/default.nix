@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   distutils,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
   yasm,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "distorm3";
   version = "3.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gdabah";
@@ -20,19 +19,20 @@ buildPythonPackage rec {
     hash = "sha256-Fhvxag2UN5wXEySP1n1pCahMQR/SfssywikeLmiASwQ=";
   };
 
-  build-system = [
-    distutils
-    setuptools
-  ];
+  # TypeError: __init__() missing 3 required positional...
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
     yasm
   ];
 
-  # TypeError: __init__() missing 3 required positional...
-  doCheck = false;
+  build-system = [
+    distutils
+    setuptools
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "distorm3" ];
 
   meta = {

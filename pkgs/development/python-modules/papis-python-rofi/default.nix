@@ -1,13 +1,12 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "papis-python-rofi";
   version = "1.0.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # No tests existing
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python module to make simple GUIs with Rofi";

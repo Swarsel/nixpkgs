@@ -1,7 +1,7 @@
 {
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
+  buildFishPlugin,
 }:
 buildFishPlugin {
   pname = "bang-bang";

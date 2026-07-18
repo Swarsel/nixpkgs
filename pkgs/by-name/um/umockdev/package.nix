@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  docbook-xsl-nons,
+  stdenv,
   fetchurl,
+  docbook-xsl-nons,
   glib,
   gobject-introspection,
   gtk-doc,
@@ -24,17 +24,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "umockdev";
   version = "0.19.3";
 
+  src = fetchurl {
+    url = "https://github.com/martinpitt/umockdev/releases/download/${finalAttrs.version}/umockdev-${finalAttrs.version}.tar.xz";
+    hash = "sha256-RuReq29la/wJJDjX4OXfTF9R0Y46gzYMK+aAsgehoLc=";
+  };
+
   outputs = [
     "bin"
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "https://github.com/martinpitt/umockdev/releases/download/${finalAttrs.version}/umockdev-${finalAttrs.version}.tar.xz";
-    hash = "sha256-RuReq29la/wJJDjX4OXfTF9R0Y46gzYMK+aAsgehoLc=";
-  };
 
   patches = [
     # Hardcode absolute paths to libraries so that consumers
@@ -48,6 +48,18 @@ stdenv.mkDerivation (finalAttrs: {
       udevadm = "${systemdMinimal}/bin/udevadm";
     })
   ];
+
+  postPatch = ''
+    # Substitute the path to this derivation in the patch we apply.
+    substituteInPlace src/umockdev-wrapper \
+      --subst-var-by 'LIBDIR' "''${!outputLib}/lib"
+  ''
+  + lib.optionalString stdenv.hostPlatform.isMusl ''
+    substituteInPlace src/libumockdev-preload.c \
+      --replace-fail libc.so.6 libc.so
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     docbook-xsl-nons
@@ -68,18 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpcap
   ];
 
-  checkInputs = lib.optionals finalAttrs.passthru.withGudev [
-    libgudev
-  ];
-
-  nativeCheckInputs = [
-    python3
-    usbutils
-    which
-  ];
-
-  strictDeps = true;
-
   mesonFlags = [
     "-Dgtk_doc=true"
   ];
@@ -87,15 +87,15 @@ stdenv.mkDerivation (finalAttrs: {
   # glibc valgrind can't measure musl binaries (and vice versa)
   doCheck = stdenv.hostPlatform.libc == stdenv.buildPlatform.libc;
 
-  postPatch = ''
-    # Substitute the path to this derivation in the patch we apply.
-    substituteInPlace src/umockdev-wrapper \
-      --subst-var-by 'LIBDIR' "''${!outputLib}/lib"
-  ''
-  + lib.optionalString stdenv.hostPlatform.isMusl ''
-    substituteInPlace src/libumockdev-preload.c \
-      --replace-fail libc.so.6 libc.so
-  '';
+  nativeCheckInputs = [
+    python3
+    usbutils
+    which
+  ];
+
+  checkInputs = lib.optionals finalAttrs.passthru.withGudev [
+    libgudev
+  ];
 
   preCheck = ''
     # Our patch makes the path to the `LD_PRELOAD`ed library absolute.
@@ -107,9 +107,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    # libgudev is needed for an optional test but it itself relies on umockdev for testing.
-    withGudev = false;
-
     tests = {
       withGudev = finalAttrs.finalPackage.overrideAttrs (attrs: {
         passthru = attrs.passthru // {
@@ -117,12 +114,15 @@ stdenv.mkDerivation (finalAttrs: {
         };
       });
     };
+
+    # libgudev is needed for an optional test but it itself relies on umockdev for testing.
+    withGudev = false;
   };
 
   meta = {
+    description = "Mock hardware devices for creating unit tests";
     homepage = "https://github.com/martinpitt/umockdev";
     changelog = "https://github.com/martinpitt/umockdev/releases/tag/${finalAttrs.version}";
-    description = "Mock hardware devices for creating unit tests";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ flokli ];
     platforms = with lib.platforms; linux;

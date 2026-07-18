@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  glib,
   gettext,
-  replaceVars,
+  glib,
   gnome-menus,
+  replaceVars,
 }:
 
 stdenv.mkDerivation rec {
@@ -33,14 +33,14 @@ stdenv.mkDerivation rec {
   makeFlags = [ "INSTALLBASE=${placeholder "out"}/share/gnome-shell/extensions" ];
 
   passthru = {
-    extensionUuid = "arcmenu@arcmenu.com";
     extensionPortalSlug = "arcmenu";
+    extensionUuid = "arcmenu@arcmenu.com";
   };
 
   meta = {
     description = "Application menu for GNOME Shell, designed to provide a more traditional user experience and workflow";
+    homepage = "https://gitlab.com/arcmenu/ArcMenu";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ dkabot ];
-    homepage = "https://gitlab.com/arcmenu/ArcMenu";
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   pytest-django,
   pytestCheckHook,
   uv-build,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "model-bakery";
   version = "1.23.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "model-bakers";
@@ -25,15 +24,14 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.9.26,<0.10.0" "uv_build"
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ django ];
-
   nativeCheckInputs = [
     pytest-django
     pytestCheckHook
   ];
 
+  build-system = [ uv-build ];
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "model_bakery" ];
 
   meta = {

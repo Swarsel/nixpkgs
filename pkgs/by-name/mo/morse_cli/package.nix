@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
   libnl,
-  zstd,
   libusb1,
+  openssl,
   pkg-config,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-K0J6iqUsEo1zuXnlPLxGUDipsMSRu2w4vW5lna/HJyU=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openssl
     libnl
@@ -27,15 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  nativeBuildInputs = [ pkg-config ];
+  makeFlags = [ "CONFIG_MORSE_TRANS_NL80211=1" ];
 
   env.NIX_CFLAGS_COMPILE = toString [
     "-I${libnl.dev}/include/libnl3"
     "-I${libusb1.dev}/include/libusb-1.0"
     "-Wno-error"
   ];
-
-  makeFlags = [ "CONFIG_MORSE_TRANS_NL80211=1" ];
 
   installPhase = ''
     runHook preInstall

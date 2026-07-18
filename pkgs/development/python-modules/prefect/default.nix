@@ -1,16 +1,6 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nixosTests,
-  nix-update-script,
-  pytestCheckHook,
-  pythonAtLeast,
-  pythonOlder,
-  replaceVars,
-  writableTmpDirAsHomeHook,
-  writeShellScriptBin,
-
   aiosqlite,
   alembic,
   amplitude-analytics,
@@ -19,6 +9,7 @@
   asgi-lifespan,
   asyncpg,
   boto3,
+  buildPythonPackage,
   cachetools,
   click,
   cloudpickle,
@@ -36,11 +27,13 @@
   httpcore,
   httpx,
   humanize,
-  jinja2-humanize-extension,
   jinja2,
+  jinja2-humanize-extension,
   jsonpatch,
   jsonschema,
   moto,
+  nix-update-script,
+  nixosTests,
   numpy,
   opentelemetry-api,
   opentelemetry-distro,
@@ -56,26 +49,30 @@
   pendulum,
   pluggy,
   prometheus-client,
+  pydantic,
   pydantic-core,
   pydantic-extra-types,
   pydantic-settings,
-  pydantic,
   pydocket,
   pytest-asyncio,
   pytest-env,
   pytest-timeout,
   pytest-xdist,
+  pytestCheckHook,
   python-dateutil,
   python-on-whales,
   python-slugify,
+  pythonAtLeast,
+  pythonOlder,
   pytz,
   pyyaml,
   readchar,
+  replaceVars,
   respx,
   rfc3339-validator,
   rich,
-  ruamel-yaml-clib,
   ruamel-yaml,
+  ruamel-yaml-clib,
   semver,
   sniffio,
   sqlalchemy,
@@ -87,13 +84,14 @@
   watchfiles,
   websockets,
   whenever,
+  writableTmpDirAsHomeHook,
+  writeShellScriptBin,
   yamllint,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "prefect";
   version = "3.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PrefectHQ";
@@ -118,6 +116,29 @@ buildPythonPackage (finalAttrs: {
   # versioningit: NotVCSError: Git not installed; assuming this isn't a Git repository
   nativeBuildInputs = [
     (writeShellScriptBin "git" "false")
+  ];
+
+  # FIXME: build killed at ~30%
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+
+    boto3
+    moto
+    numpy
+    opentelemetry-sdk
+    opentelemetry-test-utils
+    pytest-asyncio
+    pytest-env
+    pytest-timeout
+    pytest-xdist
+    respx
+    uv
+    uvicorn
+    watchfiles
+    yamllint
   ];
 
   build-system = [
@@ -191,45 +212,59 @@ buildPythonPackage (finalAttrs: {
     aws = [
       # prefect-aws
     ];
+
     azure = [
       # prefect-azure
     ];
+
     bitbucket = [
       # prefect-bitbucket
     ];
+
     buildx = [
       python-on-whales
     ];
+
     bundles = [
       uv
     ];
+
     dask = [
       # prefect-dask
     ];
+
     databricks = [
       # prefect-databricks
     ];
+
     dbt = [
       # prefect-dbt
     ];
+
     docker = [
       # prefect-docker
     ];
+
     email = [
       # prefect-email
     ];
+
     gcp = [
       # prefect-gcp
     ];
+
     github = [
       # prefect-github
     ];
+
     gitlab = [
       # prefect-gitlab
     ];
+
     kubernetes = [
       # prefect-kubernetes
     ];
+
     otel = [
       opentelemetry-distro
       opentelemetry-exporter-otlp
@@ -238,25 +273,33 @@ buildPythonPackage (finalAttrs: {
       opentelemetry-instrumentation-system-metrics
       opentelemetry-test-utils
     ];
+
     ray = [
       # prefect-ray
     ];
+
     redis = [
       # prefect-redis
     ];
+
     shell = [
       # prefect-shell
     ];
+
     slack = [
       # prefect-slack
     ];
+
     snowflake = [
       # prefect-snowflake
     ];
+
     sqlalchemy = [
       # prefect-sqlalchemy
     ];
   };
+
+  pyproject = true;
 
   passthru.tests = {
     inherit (nixosTests) prefect;
@@ -270,36 +313,16 @@ buildPythonPackage (finalAttrs: {
     };
   };
 
-  # FIXME: build killed at ~30%
-  doCheck = false;
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-
-    boto3
-    moto
-    numpy
-    opentelemetry-sdk
-    opentelemetry-test-utils
-    pytest-asyncio
-    pytest-env
-    pytest-timeout
-    pytest-xdist
-    respx
-    uv
-    uvicorn
-    watchfiles
-    yamllint
-  ];
-
   meta = {
     description = "Workflow orchestration framework for building resilient data pipelines in Python";
     homepage = "https://github.com/PrefectHQ/prefect";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       happysalada
       mrmebelman
     ];
+
     mainProgram = "prefect";
   };
 })

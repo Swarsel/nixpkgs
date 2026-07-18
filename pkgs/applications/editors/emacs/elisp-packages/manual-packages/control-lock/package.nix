@@ -14,8 +14,8 @@ melpaBuild {
   };
 
   meta = {
-    homepage = "https://www.emacswiki.org/emacs/control-lock.el";
     description = "Like caps-lock, but for your control key";
+    homepage = "https://www.emacswiki.org/emacs/control-lock.el";
     license = lib.licenses.free;
     platforms = lib.platforms.all;
   };

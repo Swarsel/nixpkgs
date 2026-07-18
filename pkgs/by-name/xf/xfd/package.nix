@@ -3,9 +3,6 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
-  util-macros,
-  wrapWithXFileSearchPathHook,
   fontconfig,
   libxaw,
   libxft,
@@ -13,20 +10,23 @@
   libxmu,
   libxrender,
   libxt,
-  xorgproto,
   nix-update-script,
+  pkg-config,
+  util-macros,
+  wrapWithXFileSearchPathHook,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xfd";
   version = "1.1.5";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "app";
     repo = "xfd";
     tag = "xfd-${finalAttrs.version}";
     hash = "sha256-mdDnS6315po8/DafpGJDzGJTPV0HsRbSLlqSaN11d6o=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
@@ -50,15 +50,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   installFlags = [ "appdefaultdir=$out/share/X11/app-defaults" ];
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=xfd-(.*)" ]; };
 
   meta = {
     description = "X font display utility, using either the X11 core protocol or libxft.";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xfd";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xfd";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xfd";
   };
 })

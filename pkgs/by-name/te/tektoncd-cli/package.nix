@@ -1,15 +1,12 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
-
-  writableTmpDirAsHomeHook,
-
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   buildPackages,
-
+  installShellFiles,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,26 +20,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-2n/RBMy3mkG9F9PtFaZ1TCyW9MYbGF1nr6GgL+ps7ok=";
   };
 
-  vendorHash = null;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/tektoncd/cli/pkg/cmd/version.clientVersion=${finalAttrs.version}"
-  ];
-
-  # tests bind to ::1
-  __darwinAllowLocalNetworking = true;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [
-    "cmd/tkn"
-  ];
-
-  excludedPackages = [
-    "test/e2e"
-  ];
+  vendorHash = null;
 
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
@@ -75,28 +54,51 @@ buildGoModule (finalAttrs: {
     ''
   );
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  # tests bind to ::1
+  __darwinAllowLocalNetworking = true;
+
+  excludedPackages = [
+    "test/e2e"
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/tektoncd/cli/pkg/cmd/version.clientVersion=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/tkn"
+  ];
+
   versionCheckProgramArg = "version";
 
   meta = {
-    homepage = "https://tekton.dev";
-    changelog = "https://github.com/tektoncd/cli/releases/tag/${finalAttrs.src.tag}";
     description = "Provides a CLI for interacting with Tekton - tkn";
+
     longDescription = ''
       The Tekton Pipelines cli project provides a CLI for interacting with
       Tekton! For your convenience, it is recommended that you install the
       Tekton CLI, tkn, together with the core component of Tekton, Tekton
       Pipelines.
     '';
+
+    homepage = "https://tekton.dev";
+    changelog = "https://github.com/tektoncd/cli/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jk
       mstrangfeld
       vdemeester
     ];
+
     mainProgram = "tkn";
   };
 })

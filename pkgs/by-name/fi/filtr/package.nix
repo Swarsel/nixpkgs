@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   fontconfig,
   freetype,
   libx11,
@@ -15,10 +14,10 @@
   libxinerama,
   libxrandr,
   libxtst,
+  pkg-config,
   writableTmpDirAsHomeHook,
-
-  buildVST3 ? true,
   buildLV2 ? true,
+  buildVST3 ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "tiagolr";
     repo = "filtr";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-diOM6Y2HrOP5wXg4tVXms7TYOSM16t06ZDg1/Q1L/zc=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -54,8 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
     libxtst
   ];
-
-  enableParallelBuilding = true;
 
   cmakeFlags = [
     (lib.cmakeBool "COPY_PLUGIN_AFTER_BUILD" false)
@@ -97,15 +94,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Envelope based filter modulator";
     homepage = "https://github.com/tiagolr/filtr";
     changelog = "https://github.com/tiagolr/filtr/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       magnetophon
       mrtnvgr
     ];
+
     platforms = lib.platforms.all;
   };
 })

@@ -1,14 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "meowfetch";
   version = "1.0.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "faynopi";
@@ -18,9 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-PnkXXNr+kIige1YB/vEG+sYI0X/rr+6Gtcnb0rW4YK0=";
-
+  __structuredAttrs = true;
   ldflags = [ "-s" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

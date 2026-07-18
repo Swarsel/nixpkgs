@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   packaging,
+  pillow,
+  pytestCheckHook,
   quantities,
   setuptools,
-  pytestCheckHook,
-  pillow,
   which,
 }:
 
 buildPythonPackage rec {
   pname = "neo";
   version = "0.14.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "NeuralEnsemble";
@@ -23,18 +22,18 @@ buildPythonPackage rec {
     hash = "sha256-VdT7PFSle8HxWfsPrrI+mHtsTO315+Sw0RGx8HSYtwk=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pillow
+    which
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     numpy
     packaging
     quantities
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pillow
-    which
   ];
 
   disabledTestPaths = [
@@ -47,6 +46,7 @@ buildPythonPackage rec {
     "test__time_slice_deepcopy_data"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "neo" ];
 
   meta = {

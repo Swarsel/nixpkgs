@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   boto3,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   mock,
   pytest-mock,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aws-encryption-sdk";
   version = "4.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -23,6 +22,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-E3Kc0GREozdXzM5LvH1iapYl9yr17TyxauCooeJeLxo=";
   };
+
+  nativeCheckInputs = [
+    mock
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,14 +37,6 @@ buildPythonPackage (finalAttrs: {
     cryptography
     wrapt
   ];
-
-  nativeCheckInputs = [
-    mock
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "test" ];
 
   disabledTestPaths = [
     # Tests require networking
@@ -54,6 +51,8 @@ buildPythonPackage (finalAttrs: {
     "test_happy_version"
   ];
 
+  enabledTestPaths = [ "test" ];
+  pyproject = true;
   pythonImportsCheck = [ "aws_encryption_sdk" ];
 
   meta = {

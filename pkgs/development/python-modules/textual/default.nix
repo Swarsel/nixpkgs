@@ -1,18 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
+  # tests
+  jinja2,
   # dependencies
   markdown-it-py,
-  platformdirs,
-  rich,
-  typing-extensions,
   mdit-py-plugins,
-
+  platformdirs,
+  # build-system
+  poetry-core,
+  pytest-aiohttp,
+  pytest-xdist,
+  pytestCheckHook,
+  rich,
+  syrupy,
+  time-machine,
   # optional-dependencies
   tree-sitter,
   tree-sitter-c-sharp,
@@ -25,21 +28,12 @@
   tree-sitter-sql,
   tree-sitter-yaml,
   tree-sitter-zeek,
-
-  # tests
-  jinja2,
-  pytest-aiohttp,
-  pytest-xdist,
-  pytestCheckHook,
-  syrupy,
-  time-machine,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "textual";
   version = "8.2.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Textualize";
@@ -48,11 +42,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4T+/eD0adPugDP7TCDoDaOe0OrEFskCUadLVEixmTwo=";
   };
 
+  nativeCheckInputs = [
+    jinja2
+    pytest-aiohttp
+    pytest-xdist
+    pytestCheckHook
+    syrupy
+    time-machine
+    tree-sitter
+    tree-sitter-markdown
+    tree-sitter-python
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
   build-system = [ poetry-core ];
 
-  pythonRelaxDeps = [
-    "rich"
-  ];
   dependencies = [
     markdown-it-py
     mdit-py-plugins
@@ -62,6 +67,19 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ markdown-it-py.optional-dependencies.plugins
   ++ markdown-it-py.optional-dependencies.linkify;
+
+  disabledTestPaths = [
+    # Snapshot tests require syrupy<4
+    "tests/snapshot_tests/test_snapshots.py"
+  ];
+
+  disabledTests = [
+    # Assertion issues
+    "test_textual_env_var"
+
+    # fixture 'snap_compare' not found
+    "test_progress_bar_width_1fr"
+  ];
 
   optional-dependencies = {
     syntax = [
@@ -79,30 +97,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    jinja2
-    pytest-aiohttp
-    pytest-xdist
-    pytestCheckHook
-    syrupy
-    time-machine
-    tree-sitter
-    tree-sitter-markdown
-    tree-sitter-python
-  ];
-
-  disabledTestPaths = [
-    # Snapshot tests require syrupy<4
-    "tests/snapshot_tests/test_snapshots.py"
-  ];
-
-  disabledTests = [
-    # Assertion issues
-    "test_textual_env_var"
-
-    # fixture 'snap_compare' not found
-    "test_progress_bar_width_1fr"
-  ];
+  pyproject = true;
 
   pytestFlags = [
     # Some tests in groups require state from previous tests
@@ -112,7 +107,9 @@ buildPythonPackage (finalAttrs: {
 
   pythonImportsCheck = [ "textual" ];
 
-  __darwinAllowLocalNetworking = true;
+  pythonRelaxDeps = [
+    "rich"
+  ];
 
   meta = {
     description = "TUI framework for Python inspired by modern web development";

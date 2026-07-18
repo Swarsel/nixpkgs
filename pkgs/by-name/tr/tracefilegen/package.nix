@@ -17,9 +17,14 @@ stdenv.mkDerivation rec {
     sha256 = "1gsx18ksgz5gwl3v62vgrmhxc0wc99i74qwhpn0h57zllk41drjc";
   };
 
-  nativeBuildInputs = [ cmake ];
-
   patches = [ ./gcc7.patch ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.2)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
+  nativeBuildInputs = [ cmake ];
 
   installPhase = ''
     install -Dm755 TraceFileGen $out/bin/TraceFileGen
@@ -27,18 +32,13 @@ stdenv.mkDerivation rec {
     cp -ar $src/Documentation/html $out/share/doc/${pname}-${version}/.
   '';
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.2)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
     description = "Automatically generate all types of basic memory management operations and write into trace files";
-    mainProgram = "TraceFileGen";
     homepage = "https://github.com/GarCoSim";
-    maintainers = [ lib.maintainers.cmcdragonkai ];
     license = lib.licenses.gpl2;
+    maintainers = [ lib.maintainers.cmcdragonkai ];
     platforms = lib.platforms.linux;
+    mainProgram = "TraceFileGen";
   };
 
 }

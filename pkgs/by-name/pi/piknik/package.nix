@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   piknik,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,8 +26,8 @@ buildGoModule (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = piknik;
       version = "v${finalAttrs.version}";
+      package = piknik;
     };
   };
 

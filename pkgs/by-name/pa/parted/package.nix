@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  lvm2,
-  libuuid,
-  gettext,
-  readline,
+  check,
   dosfstools,
   e2fsprogs,
+  gettext,
+  libuuid,
+  lvm2,
   perl,
+  pkg-config,
   python3,
+  readline,
   util-linux,
-  check,
   enableStatic ? stdenv.hostPlatform.isStatic,
 }:
 
@@ -36,6 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs tests
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
   buildInputs = [
     libuuid
     readline
@@ -43,14 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
     lvm2
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-  ];
   configureFlags = lib.optional enableStatic "--enable-static";
-
-  enableParallelBuilding = true;
-
   doCheck = !stdenv.hostPlatform.isMusl; # translation test
+
   nativeCheckInputs = [
     check
     dosfstools
@@ -59,6 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
     python3
     util-linux
   ];
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Create, destroy, resize, check, and copy partitions";

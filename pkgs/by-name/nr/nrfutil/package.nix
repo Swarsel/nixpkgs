@@ -1,22 +1,19 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-
+  autoPatchelfHook,
+  gcc,
+  installShellFiles,
+  libusb1,
+  makeWrapper,
+  nrfutil,
+  segger-jlink-headless,
+  stdenvNoCC,
+  symlinkJoin,
+  versionCheckHook,
   xz,
   zlib,
-  libusb1,
-  segger-jlink-headless,
-  gcc,
-
-  autoPatchelfHook,
-  versionCheckHook,
-  makeWrapper,
-  installShellFiles,
-
-  symlinkJoin,
   extensions ? [ ],
-  nrfutil,
 }:
 
 let
@@ -25,16 +22,18 @@ let
     sources.${stdenvNoCC.system} or (throw "unsupported platform ${stdenvNoCC.system}");
 
   sharedMeta = {
+    changelog = "https://docs.nordicsemi.com/bundle/nrfutil/page/guides/revision_history.html";
     description = "CLI tool for managing Nordic Semiconductor devices";
     homepage = "https://www.nordicsemi.com/Products/Development-tools/nRF-Util";
-    changelog = "https://docs.nordicsemi.com/bundle/nrfutil/page/guides/revision_history.html";
     license = lib.licenses.unfree;
-    platforms = lib.attrNames sources;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       h7x4
       ezrizhu
     ];
+
+    platforms = lib.attrNames sources;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 
   packages =
@@ -45,12 +44,12 @@ let
           package = platformSources.packages.${name};
         in
         stdenvNoCC.mkDerivation (finalAttrs: {
-          pname = name;
           inherit (package) version;
+          pname = name;
 
           src = fetchurl {
-            url = "https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/packages/${name}/${name}-${platformSources.triplet}-${package.version}.tar.gz";
             inherit (package) hash;
+            url = "https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/packages/${name}/${name}-${platformSources.triplet}-${package.version}.tar.gz";
           };
 
           nativeBuildInputs = [
@@ -65,9 +64,6 @@ let
             segger-jlink-headless
           ];
 
-          dontConfigure = true;
-          dontBuild = true;
-
           installPhase = ''
             runHook preInstall
 
@@ -78,9 +74,13 @@ let
           '';
 
           doInstallCheck = true;
+
           nativeInstallCheckInputs = [
             versionCheckHook
           ];
+
+          dontBuild = true;
+          dontConfigure = true;
 
           meta = sharedMeta // {
             mainProgram = name;
@@ -97,10 +97,8 @@ let
 
 in
 symlinkJoin {
-  pname = "nrfutil";
   inherit (platformSources.packages.nrfutil) version;
-
-  paths = packages;
+  pname = "nrfutil";
 
   nativeBuildInputs = [
     makeWrapper
@@ -137,6 +135,8 @@ symlinkJoin {
         --bash $(realpath "$out"/share/nrfutil-completion/scripts/bash/setup.bash) \
         --zsh $(realpath "$out"/share/nrfutil-completion/scripts/zsh/_nrfutil)
     '';
+
+  paths = packages;
 
   passthru = {
     updateScript = ./update.sh;

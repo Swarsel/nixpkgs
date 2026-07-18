@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  cmake,
   argtable,
   catch2,
+  cmake,
   curl,
   doxygen,
   hiredis,
   jsoncpp,
   libmicrohttpd,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,26 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "cinemast";
     repo = "libjson-rpc-cpp";
-    sha256 = "sha256-YCCZN4y88AixQeo24pk6YHfSCsJz8jJ97Dg40KM08cQ=";
     rev = "v${finalAttrs.version}";
+    sha256 = "sha256-YCCZN4y88AixQeo24pk6YHfSCsJz8jJ97Dg40KM08cQ=";
   };
-
-  env.NIX_CFLAGS_COMPILE = "-I${catch2}/include/catch2";
-
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-    doxygen
-  ];
-
-  buildInputs = [
-    argtable
-    catch2
-    curl
-    hiredis
-    jsoncpp
-    libmicrohttpd
-  ];
 
   postPatch = ''
     for f in cmake/FindArgtable.cmake \
@@ -60,18 +43,26 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "-std=c++11" "-std=c++17"
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+    doxygen
+  ];
+
+  buildInputs = [
+    argtable
+    catch2
+    curl
+    hiredis
+    jsoncpp
+    libmicrohttpd
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${catch2}/include/catch2";
+
   preConfigure = ''
     mkdir -p Build/Install
     pushd Build
-  '';
-
-  # this hack is needed because the cmake scripts
-  # require write permission to absolute paths
-  configurePhase = ''
-    runHook preConfigure
-    cmake .. -DCMAKE_INSTALL_PREFIX=$(pwd)/Install \
-             -DCMAKE_BUILD_TYPE=Release
-    runHook postConfigure
   '';
 
   preInstall = ''
@@ -91,6 +82,12 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out
   '';
 
+  installPhase = ''
+    runHook preInstall
+    make install
+    runHook postInstall
+  '';
+
   postInstall = ''
     sed -i -re "s#-([LI]).*/Build/Install(.*)#-\1$out\2#g" Install/lib64/pkgconfig/*.pc
     for f in Install/lib64/*.so* $(find Install/bin -executable -type f); do
@@ -99,19 +96,22 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r Install/* $out
   '';
 
-  installPhase = ''
-    runHook preInstall
-    make install
-    runHook postInstall
+  # this hack is needed because the cmake scripts
+  # require write permission to absolute paths
+  configurePhase = ''
+    runHook preConfigure
+    cmake .. -DCMAKE_INSTALL_PREFIX=$(pwd)/Install \
+             -DCMAKE_BUILD_TYPE=Release
+    runHook postConfigure
   '';
 
   meta = {
     description = "C++ framework for json-rpc (json remote procedure call)";
-    mainProgram = "jsonrpcstub";
     homepage = "https://github.com/cinemast/libjson-rpc-cpp";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ robertrichter ];
+    platforms = lib.platforms.linux;
+    mainProgram = "jsonrpcstub";
   };
 })

@@ -34,9 +34,9 @@
   mpg123,
   neon,
   ninja,
-  pkg-config,
   opusfile,
   pipewire,
+  pkg-config,
   qt6,
   soxr,
   vgmstream,
@@ -107,11 +107,11 @@ stdenv.mkDerivation rec {
     "-Dgtk=false"
   ];
 
-  dontWrapQtApps = true;
-
   postInstall = ''
     ln -s ${vgmstream.audacious}/lib/audacious/Input/* $out/lib/audacious/Input
   '';
+
+  dontWrapQtApps = true;
 
   meta = audacious-bare.meta // {
     description = "Plugins for Audacious music player";

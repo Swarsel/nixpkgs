@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchurl,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -13,12 +13,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-wszpCzh1VhqBlox7ywWi6WKUmxQUTsf5N5IiJumlEbM=";
   };
 
-  cargoVendorDir = "vendor";
   doCheck = false;
 
   postInstall = ''
     cp -r include $out
   '';
+
+  cargoVendorDir = "vendor";
 
   meta = {
     description = "Collection of tools that support workflows for working with authentic data and identity management";

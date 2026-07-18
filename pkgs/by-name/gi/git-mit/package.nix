@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   libgit2,
   openssl,
+  pkg-config,
+  rustPlatform,
   zlib,
 }:
 
@@ -12,8 +12,8 @@ let
   version = "6.5.3";
 in
 rustPlatform.buildRustPackage {
-  pname = "git-mit";
   inherit version;
+  pname = "git-mit";
 
   src = fetchFromGitHub {
     owner = "PurpleBooth";
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-vk0TxbvjjFqyisyeet2s3mp7+aPb99Lp0iLU59+pNG0=";
   };
 
-  cargoHash = "sha256-54s4Jnc6C6ysQnQ4AyxxghbTVVkud4KrZ9wLZ83OZmQ=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -31,6 +29,8 @@ rustPlatform.buildRustPackage {
     openssl
     zlib
   ];
+
+  cargoHash = "sha256-54s4Jnc6C6ysQnQ4AyxxghbTVVkud4KrZ9wLZ83OZmQ=";
 
   env = {
     LIBGIT2_NO_VENDOR = 1;

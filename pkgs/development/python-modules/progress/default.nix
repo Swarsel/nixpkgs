@@ -2,21 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
-  version = "1.6.1";
   pname = "progress";
-  pyproject = true;
+  version = "1.6.1";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-wbpxn4Ys6IUjKnWeq0eXH+dN/Hu3arilHvWUC601CGw=";
   };
-
-  build-system = [ setuptools ];
 
   checkPhase = ''
     runHook preCheck
@@ -24,9 +21,12 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/verigak/progress/";
     description = "Easy to use progress bars";
+    homepage = "https://github.com/verigak/progress/";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

@@ -1,28 +1,20 @@
 {
   lib,
   buildEnv,
-  typstPackages,
   makeBinaryWrapper,
   typst,
+  typstPackages,
 }:
 
 lib.makeOverridable (
   { ... }@typstPkgs:
   {
-    packages ? (ps: [ ]),
-    fonts ? [ ],
     extraWrapperArgs ? [ ],
+    fonts ? [ ],
+    packages ? (ps: [ ]),
   }:
   buildEnv {
     inherit (typst) meta;
-    name = "${typst.name}-env";
-
-    paths = lib.foldl' (acc: p: acc ++ lib.singleton p ++ p.propagatedBuildInputs) [ ] (
-      packages typstPkgs
-    );
-
-    pathsToLink = [ "/lib/typst-packages" ];
-
     nativeBuildInputs = [ makeBinaryWrapper ];
 
     postBuild = ''
@@ -41,5 +33,13 @@ lib.makeOverridable (
         ''${TYPST_FONT_PATHS:+--set TYPST_FONT_PATHS "$TYPST_FONT_PATHS"} \
         ${lib.escapeShellArgs extraWrapperArgs}
     '';
+
+    name = "${typst.name}-env";
+
+    paths = lib.foldl' (acc: p: acc ++ lib.singleton p ++ p.propagatedBuildInputs) [ ] (
+      packages typstPkgs
+    );
+
+    pathsToLink = [ "/lib/typst-packages" ];
   }
 ) typstPackages

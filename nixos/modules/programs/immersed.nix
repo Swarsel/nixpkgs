@@ -25,27 +25,28 @@ in
   options = {
     programs.immersed = {
       enable = lib.mkEnableOption "immersed";
+      package = lib.mkPackageOption pkgs "immersed" { };
 
       openFirewall = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Whether to open firewall ports for Immersed";
+        type = lib.types.bool;
       };
-
-      package = lib.mkPackageOption pkgs "immersed" { };
     };
   };
 
   config = lib.mkIf cfg.enable {
     boot = {
+      extraModprobeConfig = ''
+        options v4l2loopback exclusive_caps=1 card_label="v4l2loopback Virtual Camera"
+      '';
+
+      extraModulePackages = [ config.boot.kernelPackages.v4l2loopback ];
+
       kernelModules = [
         "v4l2loopback"
         "snd-aloop"
       ];
-      extraModulePackages = [ config.boot.kernelPackages.v4l2loopback ];
-      extraModprobeConfig = ''
-        options v4l2loopback exclusive_caps=1 card_label="v4l2loopback Virtual Camera"
-      '';
     };
 
     environment.systemPackages = [ cfg.package ];
@@ -53,6 +54,7 @@ in
     # https://immersed.helpscoutdocs.com/article/23-connection-troubleshooting-linux
     networking.firewall = lib.mkIf cfg.openFirewall {
       allowedTCPPorts = [ 21000 ];
+
       allowedUDPPorts = [
         21000
         21010

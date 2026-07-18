@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,14 +16,13 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-y81NdwF+RU20jmCi+Fou3Vc9ivt1x8JOj7biAsuSYDg=";
-
   dontNpmBuild = true;
 
   meta = {
     description = "Build native mobile applications using HTML, CSS and JavaScript";
     homepage = "https://github.com/apache/cordova-cli";
     license = lib.licenses.asl20;
-    mainProgram = "cordova";
     maintainers = with lib.maintainers; [ flosse ];
+    mainProgram = "cordova";
   };
 }

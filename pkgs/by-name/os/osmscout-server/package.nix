@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  abseil-cpp_202103,
   boost,
-  libsForQt5,
   kyotocabinet,
   libmicrohttpd,
   libosmscout,
   libpostal,
+  libsForQt5,
   libtiff,
   marisa,
   osrm-backend,
+  pkg-config,
   protobuf_21,
   sqlite,
   valhalla,
-  abseil-cpp_202103,
 }:
 
 let
   date = fetchFromGitHub {
+    hash = "sha256-Mq7Yd+y8M3JNG9BEScwVEmxGWYEy6gaNNSlTGgR9LB4=";
     owner = "HowardHinnant";
     repo = "date";
     rev = "a45ea7c17b4a7f320e199b71436074bd624c9e15";
-    hash = "sha256-Mq7Yd+y8M3JNG9BEScwVEmxGWYEy6gaNNSlTGgR9LB4=";
   };
   protobuf' = protobuf_21.override {
     abseil-cpp = abseil-cpp_202103.override {
@@ -67,13 +67,13 @@ stdenv.mkDerivation (finalAttrs: {
     date
   ];
 
+  # valhalla 3.6 headers use std::ranges/std::views (C++20).
+  env.NIX_CFLAGS_COMPILE = "-std=c++20";
+
   qmakeFlags = [
     "SCOUT_FLAVOR=qtcontrols"
     "CONFIG+=disable_mapnik" # Disable the optional mapnik backend
   ];
-
-  # valhalla 3.6 headers use std::ranges/std::views (C++20).
-  env.NIX_CFLAGS_COMPILE = "-std=c++20";
 
   meta = {
     description = "Maps server providing tiles, geocoder, and router";

@@ -4,8 +4,8 @@ in
 
 {
   lib,
-  jq,
   stdenv,
+  jq,
 }:
 
 self: super: {

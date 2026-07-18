@@ -1,20 +1,18 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  alcotest,
+  buildDunePackage,
+  fmt,
   ocaml,
   stdlib-shims,
-  uutf,
   uucp,
-  alcotest,
-  fmt,
+  uutf,
 }:
 
 buildDunePackage rec {
   pname = "terminal";
   version = "0.5.0";
-
-  minimalOCamlVersion = "4.03";
 
   src = fetchurl {
     url = "https://github.com/CraigFe/progress/releases/download/${version}/progress-${version}.tbz";
@@ -28,10 +26,13 @@ buildDunePackage rec {
   ];
 
   doCheck = lib.versionAtLeast ocaml.version "4.08";
+
   checkInputs = [
     alcotest
     fmt
   ];
+
+  minimalOCamlVersion = "4.03";
 
   meta = {
     description = "Basic utilities for interacting with terminals";

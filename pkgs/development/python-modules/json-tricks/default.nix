@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  pytest7CheckHook,
   numpy,
   pandas,
+  pytest7CheckHook,
   pytz,
 }:
 
 buildPythonPackage rec {
   pname = "json-tricks";
   version = "3.17.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mverleg";
@@ -27,6 +26,7 @@ buildPythonPackage rec {
     pytest7CheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "json_tricks" ];
 
   meta = {

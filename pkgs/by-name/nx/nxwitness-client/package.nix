@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   autoPatchelfHook,
   buildFHSEnv,
   dpkg,
-  fetchurl,
   glib,
   gst_all_1,
   libGL,
   libgudev,
   libudev-zero,
   libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-wm,
   libxkbfile,
   libxml2_13,
   libxslt,
   openal,
   qt6Packages,
   wayland,
-  libxcb-image,
-  libxcb-keysyms,
-  libxcb-render-util,
-  libxcb-wm,
 }:
 let
   version = "6.0.6";
@@ -54,8 +54,8 @@ let
   meta = {
     description = "Desktop Client for Nx Witness Video Systems";
     homepage = "https://nxvms.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ netali ];
     platforms = [ "x86_64-linux" ];
   };
@@ -75,13 +75,6 @@ let
       dpkg
     ];
 
-    autoPatchelfIgnoreMissingDeps = [
-      "libQt6WaylandEglClientHwIntegration.so.6"
-    ];
-
-    dontUnpack = true;
-    dontWrapQtApps = true;
-
     installPhase = ''
       dpkg -x $src $out
       rm -r $out/usr
@@ -99,11 +92,20 @@ let
       rm -r $out/lib/opengl
       rm -r $out/lib/libva-drivers
     '';
+
+    autoPatchelfIgnoreMissingDeps = [
+      "libQt6WaylandEglClientHwIntegration.so.6"
+    ];
+
+    dontUnpack = true;
+    dontWrapQtApps = true;
   });
 in
 # only runs in an FHS env for some reason
 buildFHSEnv {
   inherit (nxwitness_client) pname version meta;
+  runScript = "nxwitness_client";
+
   targetPkgs = (
     pkgs:
     [
@@ -111,5 +113,4 @@ buildFHSEnv {
     ]
     ++ buildInputs
   );
-  runScript = "nxwitness_client";
 }

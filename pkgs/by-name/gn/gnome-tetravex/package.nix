@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  gnome,
   adwaita-icon-theme,
-  gtk3,
-  wrapGAppsHook3,
-  libxml2,
+  desktop-file-utils,
   gettext,
+  gnome,
+  gtk3,
   itstool,
+  libxml2,
   meson,
   ninja,
+  pkg-config,
   python3,
   vala,
-  desktop-file-utils,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/gnome-tetravex/${lib.versions.majorMinor finalAttrs.version}/gnome-tetravex-${finalAttrs.version}.tar.xz";
     hash = "sha256-g4SawGTUVuHdRrbiAcaGFSYkw9HsS5mTWYWkmqeRcss=";
   };
+
+  postPatch = ''
+    chmod +x build-aux/meson_post_install.py
+    patchShebangs build-aux/meson_post_install.py
+  '';
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -42,21 +47,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ gtk3 ];
 
-  postPatch = ''
-    chmod +x build-aux/meson_post_install.py
-    patchShebangs build-aux/meson_post_install.py
-  '';
-
   passthru = {
     updateScript = gnome.updateScript { packageName = "gnome-tetravex"; };
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gnome-tetravex";
     description = "Complete the puzzle by matching numbered tiles";
-    mainProgram = "gnome-tetravex";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/gnome-tetravex";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-tetravex";
+    teams = [ lib.teams.gnome ];
   };
 })

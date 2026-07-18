@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-7y31iZoSJ98XDiC+Akahgfp/lI5haaek6UpFtaCtGW8=";
 
-  cargoBuildFlags = [ "--all-features" ];
-
   checkFlags = [
     # need fhs
     "--skip=utils::config::test::test_save_and_load"
@@ -32,15 +30,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     versionCheckHook
   ];
 
+  cargoBuildFlags = [ "--all-features" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Mihomo (Clash.Meta) TUI Client";
     homepage = "https://github.com/JohanChane/clashtui";
     changelog = "https://github.com/JohanChane/clashtui/releases/tag/v${finalAttrs.version}";
-    mainProgram = "clashtui";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ VZstless ];
+    platforms = lib.platforms.linux;
+    mainProgram = "clashtui";
   };
 })

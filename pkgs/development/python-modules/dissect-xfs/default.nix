@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "dissect-xfs";
   version = "3.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -20,6 +19,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-dFM/xYJR3wBvOe/8rLJz4AK2jmp67T5vo/4TCMRSXzw=";
   };
+
+  # Archive files seems to be corrupt
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,12 +34,8 @@ buildPythonPackage rec {
     dissect-util
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dissect.xfs" ];
-
-  # Archive files seems to be corrupt
-  doCheck = false;
 
   meta = {
     description = "Dissect module implementing a parser for the XFS file system";

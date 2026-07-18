@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   arrow,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-cov-stub,
   pytest-datafiles,
   pytest-vcr,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "restfly";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stevemcgrath";
@@ -25,6 +24,14 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-hHNsOFu2b4sb9zbdWVTwoU1HShLFqC+Q9/PJcEqu7Hg=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-datafiles
+    pytest-vcr
+    pytestCheckHook
+    responses
+  ];
 
   build-system = [ setuptools ];
 
@@ -35,19 +42,12 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-datafiles
-    pytest-vcr
-    pytestCheckHook
-    responses
-  ];
-
   disabledTests = [
     # Test requires network access
     "test_session_ssl_error"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "restfly" ];
 
   meta = {

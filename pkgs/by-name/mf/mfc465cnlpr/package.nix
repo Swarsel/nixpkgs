@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
   coreutils,
+  dpkg,
   file,
   gawk,
   ghostscript,
   gnused,
+  makeWrapper,
   pkgsi686Linux,
 }:
 
@@ -21,16 +21,10 @@ stdenv.mkDerivation rec {
     sha256 = "cfe0289510bf36bee6014286ea78b1ebc6bbb948dbfd3aee02f0664a7743f99b";
   };
 
-  unpackPhase = ''
-    dpkg-deb -x $src $out
-  '';
-
   nativeBuildInputs = [
     dpkg
     makeWrapper
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     dir=$out/usr/local/Brother/Printer/mfc465cn
@@ -64,11 +58,18 @@ stdenv.mkDerivation rec {
     chmod -R a+w $dir/inf/
   '';
 
+  dontBuild = true;
+
+  unpackPhase = ''
+    dpkg-deb -x $src $out
+  '';
+
   meta = {
     description = "Brother MFC-465CN LPR printer driver";
     homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ phrogg ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

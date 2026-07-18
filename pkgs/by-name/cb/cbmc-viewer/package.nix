@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cbmc-viewer";
   version = "3.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -19,6 +18,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     jinja2
     voluptuous
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Produces browsable summary of CBMC model checker output";

@@ -1,31 +1,31 @@
 {
-  buildVersion,
-  dev ? false,
   aarch64sha256,
+  buildVersion,
   x64sha256,
+  dev ? false,
 }:
 
 {
-  config,
-  fetchurl,
-  stdenv,
   lib,
-  libxtst,
-  libx11,
+  stdenv,
+  fetchurl,
+  bzip2,
+  cairo,
+  common-updater-scripts,
+  config,
+  curl,
   glib,
-  libglvnd,
   glibcLocales,
   gtk3,
-  cairo,
-  pango,
+  libglvnd,
+  libx11,
+  libxtst,
   makeWrapper,
+  openssl_3_5,
+  pango,
+  sqlite,
   wrapGAppsHook3,
   writeShellScript,
-  common-updater-scripts,
-  curl,
-  openssl_3_5,
-  bzip2,
-  sqlite,
 }:
 
 let
@@ -66,21 +66,17 @@ let
   binaryPackage = stdenv.mkDerivation (finalAttrs: {
     pname = "${pnameBase}-bin";
     version = buildVersion;
-
     src = finalAttrs.passthru.sources.${stdenv.hostPlatform.system};
 
-    dontStrip = true;
-    dontPatchELF = true;
+    nativeBuildInputs = [
+      makeWrapper
+      wrapGAppsHook3
+    ];
 
     buildInputs = [
       glib
       # for GSETTINGS_SCHEMAS_PATH
       gtk3
-    ];
-
-    nativeBuildInputs = [
-      makeWrapper
-      wrapGAppsHook3
     ];
 
     buildPhase = ''
@@ -125,8 +121,6 @@ let
       runHook postInstall
     '';
 
-    dontWrapGApps = true; # non-standard location, need to wrap the executables manually
-
     postFixup = ''
       ${lib.optionalString (lib.versionOlder buildVersion "4205") "sed -i 's#/usr/bin/pkexec#pkexec\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00#g' \"$out/${primaryBinary}\""}
 
@@ -135,15 +129,20 @@ let
         "''${gappsWrapperArgs[@]}"
     '';
 
+    dontPatchELF = true;
+    dontStrip = true;
+    dontWrapGApps = true; # non-standard location, need to wrap the executables manually
+
     passthru = {
       sources = {
         "aarch64-linux" = fetchurl {
-          url = downloadUrl "arm64";
           sha256 = aarch64sha256;
+          url = downloadUrl "arm64";
         };
+
         "x86_64-linux" = fetchurl {
-          url = downloadUrl "x64";
           sha256 = x64sha256;
+          url = downloadUrl "x64";
         };
       };
     };
@@ -152,8 +151,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = pnameBase;
   version = buildVersion;
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -180,6 +177,8 @@ stdenv.mkDerivation (finalAttrs: {
       ln -s ${binaryPackage}/Icon/$size/* $out/share/icons/hicolor/$size/apps
     done
   '';
+
+  dontUnpack = true;
 
   passthru = {
     unwrapped = binaryPackage;
@@ -217,19 +216,23 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Sophisticated text editor for code, markup and prose";
     homepage = "https://www.sublimetext.com/";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       jtojnar
       wmertens
       demin-dmitriy
       zimbatm
     ];
-    mainProgram = "subl";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "subl";
+
     problems = {
       removal.message = "We have removed Python 3.3 package support ahead of upstream schedule but if you do not use any old packages, this should just work.";
     }

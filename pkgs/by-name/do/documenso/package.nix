@@ -1,42 +1,43 @@
 {
   lib,
   stdenv,
-  nodejs,
+  fetchurl,
+  fetchFromGitHub,
+  autoPatchelfHook,
+  bash,
+  buildNpmPackage,
+  cairo,
+  gzip,
   node-gyp,
   node-pre-gyp,
-  pixman,
-  fetchFromGitHub,
-  fetchurl,
-  buildNpmPackage,
-  prisma_6,
-  prisma-engines_6,
-  vips,
-  pkg-config,
-  gzip,
-  autoPatchelfHook,
-  cairo,
-  pango,
-  bash,
+  nodejs,
   openssl,
+  pango,
+  pixman,
+  pkg-config,
+  prisma-engines_6,
+  prisma_6,
+  vips,
 }:
 
 let
   skiaCanvasVersion = "3.0.8";
   skiaCanvasTriplet =
     {
-      x86_64-linux = "linux-x64-glibc";
       aarch64-linux = "linux-arm64-glibc";
+      x86_64-linux = "linux-x64-glibc";
     }
     .${stdenv.hostPlatform.system}
       or (throw "unsupported skia-canvas platform ${stdenv.hostPlatform.system}");
   skiaCanvasPrebuild = fetchurl {
-    url = "https://github.com/samizdatco/skia-canvas/releases/download/v${skiaCanvasVersion}/${skiaCanvasTriplet}.gz";
     hash =
       {
-        x86_64-linux = "sha256-9FklKQWZ1LfLUhHBI/re4nvImddVZpbi4zPQ76xpN7I=";
         aarch64-linux = "sha256-BmXQemDAXZEqL9FFmus3cU6wRFwveEhAdjhUbD0uGnA=";
+        x86_64-linux = "sha256-9FklKQWZ1LfLUhHBI/re4nvImddVZpbi4zPQ76xpN7I=";
       }
       .${stdenv.hostPlatform.system};
+
+    url = "https://github.com/samizdatco/skia-canvas/releases/download/v${skiaCanvasVersion}/${skiaCanvasTriplet}.gz";
   };
 in
 buildNpmPackage (finalAttrs: {
@@ -56,9 +57,6 @@ buildNpmPackage (finalAttrs: {
     ./turbo.json.patch
   ];
 
-  npmDepsHash = "sha256-/Jt1ct/GSumu/pgTrmnVHdMhhg8J2Epvu7wnnCakqGs=";
-  npmDepsFetcherVersion = 2;
-
   nativeBuildInputs = [
     autoPatchelfHook
     gzip
@@ -77,15 +75,15 @@ buildNpmPackage (finalAttrs: {
     vips
   ];
 
-  npmRebuildFlags = [ "--ignore-scripts" ];
+  npmDepsHash = "sha256-/Jt1ct/GSumu/pgTrmnVHdMhhg8J2Epvu7wnnCakqGs=";
 
   env = {
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
-    PRISMA_QUERY_ENGINE_LIBRARY = "${lib.getLib prisma-engines_6}/lib/libquery_engine.node";
     PRISMA_QUERY_ENGINE_BINARY = lib.getExe' prisma-engines_6 "query-engine";
+    PRISMA_QUERY_ENGINE_LIBRARY = "${lib.getLib prisma-engines_6}/lib/libquery_engine.node";
     PRISMA_SCHEMA_ENGINE_BINARY = lib.getExe' prisma-engines_6 "schema-engine";
-    TURBO_NO_UPDATE_NOTIFIER = "true";
     TURBO_FORCE = "true";
+    TURBO_NO_UPDATE_NOTIFIER = "true";
     TURBO_REMOTE_CACHE_ENABLED = "false";
   };
 
@@ -157,15 +155,20 @@ buildNpmPackage (finalAttrs: {
     rm -Rf $out/lib/node_modules/@documenso/root/node_modules/@documenso/auth
   '';
 
+  npmDepsFetcherVersion = 2;
+  npmRebuildFlags = [ "--ignore-scripts" ];
+
   meta = {
     description = "Open Source DocuSign Alternative";
     homepage = "https://github.com/documenso/documenso";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ happysalada ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "documenso";
   };
 })

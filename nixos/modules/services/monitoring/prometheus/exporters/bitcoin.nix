@@ -10,84 +10,99 @@ let
   inherit (lib) mkOption types;
 in
 {
-  port = 9332;
   extraOpts = {
     package = lib.mkPackageOption pkgs "prometheus-bitcoin-exporter" { };
 
-    rpcUser = mkOption {
-      type = types.str;
-      default = "bitcoinrpc";
+    extraEnv = mkOption {
+      default = { };
+
       description = ''
-        RPC user name.
+        Extra environment variables for the exporter.
       '';
+
+      type = types.attrsOf types.str;
+    };
+
+    refreshSeconds = mkOption {
+      default = 300;
+
+      description = ''
+        How often to ask bitcoind for metrics.
+      '';
+
+      type = types.ints.unsigned;
+    };
+
+    rpcHost = mkOption {
+      default = "localhost";
+
+      description = ''
+        RPC host.
+      '';
+
+      type = types.str;
     };
 
     rpcPasswordFile = mkOption {
-      type = types.path;
       description = ''
         File containing RPC password.
       '';
+
+      type = types.path;
+    };
+
+    rpcPort = mkOption {
+      default = 8332;
+
+      description = ''
+        RPC port number.
+      '';
+
+      type = types.port;
     };
 
     rpcScheme = mkOption {
+      default = "http";
+
+      description = ''
+        Whether to connect to bitcoind over http or https.
+      '';
+
       type = types.enum [
         "http"
         "https"
       ];
-      default = "http";
-      description = ''
-        Whether to connect to bitcoind over http or https.
-      '';
     };
 
-    rpcHost = mkOption {
+    rpcUser = mkOption {
+      default = "bitcoinrpc";
+
+      description = ''
+        RPC user name.
+      '';
+
       type = types.str;
-      default = "localhost";
-      description = ''
-        RPC host.
-      '';
-    };
-
-    rpcPort = mkOption {
-      type = types.port;
-      default = 8332;
-      description = ''
-        RPC port number.
-      '';
-    };
-
-    refreshSeconds = mkOption {
-      type = types.ints.unsigned;
-      default = 300;
-      description = ''
-        How often to ask bitcoind for metrics.
-      '';
-    };
-
-    extraEnv = mkOption {
-      type = types.attrsOf types.str;
-      default = { };
-      description = ''
-        Extra environment variables for the exporter.
-      '';
     };
   };
-  serviceOpts = {
-    script = ''
-      BITCOIN_RPC_PASSWORD=$(cat ${cfg.rpcPasswordFile})
-      export BITCOIN_RPC_PASSWORD
-      exec ${cfg.package}/bin/bitcoind-monitor.py
-    '';
 
+  port = 9332;
+
+  serviceOpts = {
     environment = {
-      BITCOIN_RPC_USER = cfg.rpcUser;
-      BITCOIN_RPC_SCHEME = cfg.rpcScheme;
       BITCOIN_RPC_HOST = cfg.rpcHost;
       BITCOIN_RPC_PORT = toString cfg.rpcPort;
+      BITCOIN_RPC_SCHEME = cfg.rpcScheme;
+      BITCOIN_RPC_USER = cfg.rpcUser;
       METRICS_ADDR = cfg.listenAddress;
       METRICS_PORT = toString cfg.port;
       REFRESH_SECONDS = toString cfg.refreshSeconds;
     }
     // cfg.extraEnv;
+
+    script = ''
+      BITCOIN_RPC_PASSWORD=$(cat ${cfg.rpcPasswordFile})
+      export BITCOIN_RPC_PASSWORD
+      exec ${cfg.package}/bin/bitcoind-monitor.py
+    '';
   };
 }

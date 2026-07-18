@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  gettext,
-  python3,
-  python3Packages,
-  meson,
-  ninja,
-  udev,
   appstream,
   appstream-glib,
-  desktop-file-utils,
-  gtk3,
-  wrapGAppsHook3,
-  gobject-introspection,
   bash,
+  desktop-file-utils,
+  gettext,
+  gobject-introspection,
+  gtk3,
   linuxConsoleTools,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  python3Packages,
+  udev,
   udevCheckHook,
+  wrapGAppsHook3,
 }:
 
 let
@@ -36,9 +36,8 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.8.3";
-
   pname = "oversteer";
+  version = "0.8.3";
 
   src = fetchFromGitHub {
     owner = "berarma";
@@ -47,10 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-X58U7lFH53nCaXnE7uXgV7aea6qntNfH5TIt68xSefY=";
   };
 
-  buildInputs = [
-    bash
-    gtk3
-  ];
+  patches = [ ];
 
   nativeBuildInputs = [
     pkg-config
@@ -67,7 +63,10 @@ stdenv.mkDerivation (finalAttrs: {
     desktop-file-utils
   ];
 
-  dontUseCmakeConfigure = true;
+  buildInputs = [
+    bash
+    gtk3
+  ];
 
   propagatedBuildInputs = [
     python
@@ -81,12 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dudev_rules_dir=${placeholder "out"}/lib/udev/rules.d/"
   ];
 
-  preFixup = ''
-    gappsWrapperArgs+=(
-      --prefix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}"
-    )
-  '';
-
   postInstall = ''
     substituteInPlace $out/lib/udev/rules.d/* \
       --replace-fail /bin/sh ${bash}/bin/sh
@@ -96,15 +89,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
 
-  patches = [ ];
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --prefix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}"
+    )
+  '';
+
+  dontUseCmakeConfigure = true;
 
   meta = {
+    description = "Steering Wheel Manager for Linux";
     homepage = "https://github.com/berarma/oversteer";
     changelog = "https://github.com/berarma/oversteer/releases/tag/${finalAttrs.src.tag}";
-    description = "Steering Wheel Manager for Linux";
-    mainProgram = "oversteer";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.srounce ];
     platforms = lib.platforms.unix;
+    mainProgram = "oversteer";
   };
 })

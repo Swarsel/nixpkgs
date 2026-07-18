@@ -16,7 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   buildPhase = ''
     runHook preBuild
@@ -37,11 +36,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "ANSI C Library for PLY file format input and output";
     homepage = "https://github.com/diegonehab/rply";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ tmarkus ];
+    platforms = lib.platforms.linux;
   };
 })

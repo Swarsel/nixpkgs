@@ -13,16 +13,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "stackit-iaas";
   version = "1.4.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "stackit_iaas";
     inherit (finalAttrs) version;
     hash = "sha256-k1I7I0QjUMfr79kSlIXEwqU59pSpw2oPjt+rqYYgV+o=";
+    pname = "stackit_iaas";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -32,11 +32,8 @@ buildPythonPackage (finalAttrs: {
     stackit-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "stackit.iaas" ];
-
-  # Module has no tests
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   _7zz,
   installShellFiles,
+  stdenvNoCC,
 }:
 let
   inherit (stdenvNoCC.hostPlatform) system;
@@ -18,32 +18,23 @@ let
     system:
     { arch, hash }:
     fetchurl {
+      inherit hash;
+
       url = "https://cdn-updates.orbstack.dev/${arch}/OrbStack_v${
         lib.replaceString "-" "_" version
       }_${arch}.dmg";
-      inherit hash;
     }
   ) sourceData;
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "orbstack";
   inherit version;
-
+  pname = "orbstack";
   src = finalAttrs.passthru.sources.${system} or (throw "unsupported system ${system}");
-
-  # -snld prevents "ERROR: Dangerous symbolic link path was ignored"
-  # -xr'!*:com.apple.*' prevents macOS extended attributes (e.g. macl or
-  # quarantine) being turned into real files when extracting an APFS .dmg
-  # (e.g. Info.plist:com.apple.macl or Info.plist:com.apple.quarantine).
-  # These bogus files corrupt the .app bundle and prevent it from launching.
-  unpackCmd = "7zz x -snld -xr'!*:com.apple.*' $curSrc";
 
   nativeBuildInputs = [
     _7zz
     installShellFiles
   ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -65,21 +56,31 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     installShellCompletion --fish "$out"/Applications/OrbStack.app/Contents/Resources/completions/fish/{docker,kubectl,orbctl}.fish
   '';
 
+  sourceRoot = ".";
+  # -snld prevents "ERROR: Dangerous symbolic link path was ignored"
+  # -xr'!*:com.apple.*' prevents macOS extended attributes (e.g. macl or
+  # quarantine) being turned into real files when extracting an APFS .dmg
+  # (e.g. Info.plist:com.apple.macl or Info.plist:com.apple.quarantine).
+  # These bogus files corrupt the .app bundle and prevent it from launching.
+  unpackCmd = "7zz x -snld -xr'!*:com.apple.*' $curSrc";
+
   passthru = {
     inherit sources;
     updateScript = ./update.sh;
   };
 
   meta = {
+    description = "Fast, light, and easy way to run Docker containers and Linux machines";
+    homepage = "https://orbstack.dev/";
+
     changelog = "https://docs.orbstack.dev/release-notes#${
       builtins.replaceStrings [ "." ] [ "-" ] version
     }";
-    description = "Fast, light, and easy way to run Docker containers and Linux machines";
-    homepage = "https://orbstack.dev/";
+
     license = lib.licenses.unfree;
-    mainProgram = "orb";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ deejayem ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "orb";
   };
 })

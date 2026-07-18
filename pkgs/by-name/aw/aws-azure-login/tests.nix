@@ -1,7 +1,7 @@
 {
   lib,
-  runCommand,
   package,
+  runCommand,
 }:
 runCommand "${package.pname}-tests"
   {

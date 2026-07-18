@@ -1,17 +1,16 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  django,
   lib,
-  setuptools,
-  pytestCheckHook,
+  fetchFromGitHub,
+  buildPythonPackage,
+  django,
   pytest-django,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-waffle";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-waffle";
@@ -25,10 +24,6 @@ buildPythonPackage (finalAttrs: {
     ./middleware-compat.patch
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ django ];
-
   nativeCheckInputs = [
     pytest-django
     pytestCheckHook
@@ -38,11 +33,15 @@ buildPythonPackage (finalAttrs: {
     export DJANGO_SETTINGS_MODULE=test_settings
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ django ];
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/django-waffle/django-waffle/releases/tag/${finalAttrs.src.tag}";
     description = "Feature flipper for Django";
     homepage = "https://waffle.readthedocs.io/en/stable/";
-    maintainers = [ lib.maintainers.ma27 ];
+    changelog = "https://github.com/django-waffle/django-waffle/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
+    maintainers = [ lib.maintainers.ma27 ];
   };
 })

@@ -29,6 +29,7 @@ let
               "${as_user}${postgresql}/bin/pg_dumpall"
             else
               "${as_user}${postgresql}/bin/pg_dump";
+
           pg_restore_command = "${as_user}${postgresql}/bin/pg_restore";
           psql_command = "${as_user}${postgresql}/bin/psql";
         }
@@ -39,8 +40,8 @@ let
       mariadb_databases = map (
         d:
         {
-          mariadb_dump_command = "${mysql}/bin/mariadb-dump";
           mariadb_command = "${mysql}/bin/mariadb";
+          mariadb_dump_command = "${mysql}/bin/mariadb-dump";
         }
         // d
       ) s.mariadb_databases;
@@ -49,8 +50,8 @@ let
       mysql_databases = map (
         d:
         {
-          mysql_dump_command = "${mysql}/bin/mysqldump";
           mysql_command = "${mysql}/bin/mysql";
+          mysql_dump_command = "${mysql}/bin/mysqldump";
         }
         // d
       ) s.mysql_databases;
@@ -70,42 +71,30 @@ let
     with lib.types;
     submodule {
       options = {
-        path = lib.mkOption {
-          type = str;
-          description = ''
-            Path to the repository
-          '';
-        };
         label = lib.mkOption {
-          type = str;
           description = ''
             Label to the repository
           '';
+
+          type = str;
+        };
+
+        path = lib.mkOption {
+          description = ''
+            Path to the repository
+          '';
+
+          type = str;
         };
       };
     };
   cfgType =
     with lib.types;
     submodule {
-      freeformType = settingsFormat.type;
       options = {
-        source_directories = lib.mkOption {
-          type = listOf str;
-          default = [ ];
-          description = ''
-            List of source directories and files to backup. Globs and tildes are
-            expanded. Do not backslash spaces in path names.
-          '';
-          example = [
-            "/home"
-            "/etc"
-            "/var/log/syslog*"
-            "/home/user/path with spaces"
-          ];
-        };
         repositories = lib.mkOption {
-          type = listOf repository;
           default = [ ];
+
           description = ''
             A required list of local or remote repositories with paths and
             optional labels (which can be used with the --repository flag to
@@ -116,18 +105,41 @@ let
             then add local repository paths in the systemd service file to the
             ReadWritePaths list.
           '';
+
           example = [
             {
-              path = "ssh://user@backupserver/./sourcehostname.borg";
               label = "backupserver";
+              path = "ssh://user@backupserver/./sourcehostname.borg";
             }
             {
-              path = "/mnt/backup";
               label = "local";
+              path = "/mnt/backup";
             }
           ];
+
+          type = listOf repository;
+        };
+
+        source_directories = lib.mkOption {
+          default = [ ];
+
+          description = ''
+            List of source directories and files to backup. Globs and tildes are
+            expanded. Do not backslash spaces in path names.
+          '';
+
+          example = [
+            "/home"
+            "/etc"
+            "/var/log/syslog*"
+            "/home/user/path with spaces"
+          ];
+
+          type = listOf str;
         };
       };
+
+      freeformType = settingsFormat.type;
     };
 
   cfgfile = settingsFormat.generate "config.yaml" (addRequiredBinaries cfg.settings);
@@ -139,24 +151,28 @@ in
   options.services.borgmatic = {
     enable = lib.mkEnableOption "borgmatic";
 
-    settings = lib.mkOption {
-      description = ''
-        See <https://torsion.org/borgmatic/docs/reference/configuration/>
-      '';
-      default = null;
-      type = lib.types.nullOr cfgType;
-    };
-
     configurations = lib.mkOption {
+      default = { };
+
       description = ''
         Set of borgmatic configurations, see <https://torsion.org/borgmatic/docs/reference/configuration/>
       '';
-      default = { };
+
       type = lib.types.attrsOf cfgType;
     };
 
     enableConfigCheck = lib.mkEnableOption "checking all configurations during build time" // {
       default = true;
+    };
+
+    settings = lib.mkOption {
+      default = null;
+
+      description = ''
+        See <https://torsion.org/borgmatic/docs/reference/configuration/>
+      '';
+
+      type = lib.types.nullOr cfgType;
     };
   };
 
@@ -181,6 +197,20 @@ in
     in
     lib.mkIf cfg.enable {
 
+      environment.etc = configFiles;
+      environment.systemPackages = [ pkgs.borgmatic ];
+      system.checks = lib.mkIf cfg.enableConfigCheck (lib.mapAttrsToList borgmaticCheck configFiles);
+      systemd.packages = [ pkgs.borgmatic ];
+      systemd.services.borgmatic.path = [ pkgs.coreutils ];
+
+      systemd.services.borgmatic.serviceConfig = lib.optionalAttrs anycfgRequiresSudo {
+        CapabilityBoundingSet = "CAP_DAC_READ_SEARCH CAP_NET_RAW CAP_SETUID CAP_SETGID";
+        NoNewPrivileges = false;
+      };
+
+      # Workaround: https://github.com/NixOS/nixpkgs/issues/81138
+      systemd.timers.borgmatic.wantedBy = [ "timers.target" ];
+
       warnings =
         [ ]
         ++
@@ -189,21 +219,5 @@ in
         ++
           lib.optional (lib.catAttrs "location" (lib.attrValues cfg.configurations) != [ ])
             "`services.borgmatic.configurations.<name>.location` is deprecated, please move your options out of sections to the global scope";
-
-      environment.systemPackages = [ pkgs.borgmatic ];
-
-      environment.etc = configFiles;
-
-      systemd.packages = [ pkgs.borgmatic ];
-      systemd.services.borgmatic.path = [ pkgs.coreutils ];
-      systemd.services.borgmatic.serviceConfig = lib.optionalAttrs anycfgRequiresSudo {
-        NoNewPrivileges = false;
-        CapabilityBoundingSet = "CAP_DAC_READ_SEARCH CAP_NET_RAW CAP_SETUID CAP_SETGID";
-      };
-
-      # Workaround: https://github.com/NixOS/nixpkgs/issues/81138
-      systemd.timers.borgmatic.wantedBy = [ "timers.target" ];
-
-      system.checks = lib.mkIf cfg.enableConfigCheck (lib.mapAttrsToList borgmaticCheck configFiles);
     };
 }

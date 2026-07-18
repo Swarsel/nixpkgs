@@ -1,10 +1,10 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  alsa-lib,
+  buildDunePackage,
   dune-configurator,
   ladspa,
-  alsa-lib,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -19,14 +19,15 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     ladspa
     alsa-lib
   ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-dssi";
     description = "Bindings for the DSSI API which provides audio synthesizers";
+    homepage = "https://github.com/savonet/ocaml-dssi";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

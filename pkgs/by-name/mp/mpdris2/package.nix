@@ -1,7 +1,7 @@
 {
   lib,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   gettext,
   glib,
   gobject-introspection,
@@ -14,7 +14,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mpDris2";
   version = "0.9.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "eonpatapon";
@@ -23,9 +22,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-1Y6K3z8afUXeKhZzeiaEF3yqU0Ef7qdAj9vAkRlD2p8=";
   };
 
-  preConfigure = ''
-    intltoolize -f
-  '';
+  patches = [ ./fix-gettext-0.25.patch ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -40,6 +37,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libnotify
   ];
 
+  preConfigure = ''
+    intltoolize -f
+  '';
+
   dependencies = with python3Packages; [
     dbus-python
     python-mpd2
@@ -51,10 +52,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
   # and add its args to the existing ones for Python:
   # https://nixos.org/manual/nixpkgs/stable/#ssec-gnome-common-issues-double-wrapped
   dontWrapGApps = true;
-
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
-
-  patches = [ ./fix-gettext-0.25.patch ];
+  pyproject = false;
 
   meta = {
     description = "MPRIS 2 support for mpd";

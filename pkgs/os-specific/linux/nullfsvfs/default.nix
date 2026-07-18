@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
@@ -16,20 +16,11 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-BvixSZN9GqFS4llaiKHfkLb21+qG74YtyNb8bUP0jdU=";
   };
 
-  hardeningDisable = [ "pic" ];
-
-  enableParallelBuilding = true;
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KSRC=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
-
-  prePatch = ''
-    substituteInPlace "Makefile" \
-      --replace-fail "/lib/modules/\$(shell uname -r)/build" "\$(KSRC)"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -38,11 +29,19 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+
+  prePatch = ''
+    substituteInPlace "Makefile" \
+      --replace-fail "/lib/modules/\$(shell uname -r)/build" "\$(KSRC)"
+  '';
+
   meta = {
     description = "Virtual black hole file system that behaves like /dev/null";
     homepage = "https://github.com/abbbi/nullfsvfs";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ callumio ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  testers,
-  cmake,
-  ninja,
-  python3,
-  nix-update-script,
   abseil-cpp,
+  cmake,
   curl,
   gtest,
-  nlohmann_json,
   libpng,
-  libxml2,
   libwebm,
+  libxml2,
   mbedtls,
   mimalloc,
+  ninja,
+  nix-update-script,
+  nlohmann_json,
   protobuf,
+  python3,
+  testers,
   zlib,
 }:
 
@@ -70,11 +70,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       version = "v${finalAttrs.version}-nixpkgs-release";
+      package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -82,8 +83,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://shaka-project.github.io/shaka-packager/html/";
     changelog = "https://github.com/shaka-project/shaka-packager/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "packager";
     maintainers = with lib.maintainers; [ niklaskorz ];
     platforms = lib.platforms.all;
+    mainProgram = "packager";
   };
 })

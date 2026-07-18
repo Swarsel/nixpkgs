@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aenum,
   buildPythonPackage,
-  fetchFromGitHub,
   requests,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "wallbox";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cliviu74";
@@ -18,6 +17,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-1/hm0x71YTW3cA11Nw/e4xUol5T9lElgm1bKi1wRi3o=";
   };
+
+  # no tests implemented
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -28,9 +30,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # no tests implemented
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "wallbox" ];
 
   meta = {

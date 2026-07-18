@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  libarchive,
-  xar,
   installShellFiles,
+  libarchive,
   makeWrapper,
-  versionCheckHook,
   nix-update-script,
+  stdenvNoCC,
+  versionCheckHook,
+  xar,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -26,8 +26,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -45,6 +43,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --zsh <($out/bin/${finalAttrs.meta.mainProgram} --generate-completion-script zsh)
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   postFixup = ''
     wrapProgram $out/bin/container \
       --set-default CONTAINER_INSTALL_ROOT "$out"
@@ -52,10 +56,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --set-default CONTAINER_INSTALL_ROOT "$out"
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+  dontUnpack = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -66,12 +67,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/apple/container";
     changelog = "https://github.com/apple/container/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "container";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       xiaoxiangmoe
       Br1ght0ne
     ];
+
     platforms = [ "aarch64-darwin" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "container";
   };
 })

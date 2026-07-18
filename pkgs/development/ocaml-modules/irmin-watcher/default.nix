@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
   astring,
+  buildDunePackage,
   fmt,
   logs,
   lwt,
@@ -25,8 +25,8 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/mirage/irmin-watcher";
     description = "Portable Irmin watch backends using FSevents or Inotify";
+    homepage = "https://github.com/mirage/irmin-watcher";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
   };

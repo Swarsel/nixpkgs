@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
-  autoreconfHook,
-  gtk-doc,
-  pkg-config,
   atk,
+  autoreconfHook,
   cairo,
+  fetchpatch,
+  gettext,
   glib,
   gnome-common,
-  gtk2,
-  pango,
-  libxml2Python,
-  perl,
-  intltool,
-  gettext,
+  gtk-doc,
   gtk-mac-integration-gtk2,
+  gtk2,
+  intltool,
+  libxml2Python,
+  pango,
+  perl,
+  pkg-config,
   testers,
 }:
 
@@ -36,18 +36,15 @@ stdenv.mkDerivation (finalAttrs: {
   patches = lib.optionals stdenv.hostPlatform.isDarwin [
     (fetchpatch {
       name = "change-igemacintegration-to-gtkosxapplication.patch";
-      url = "https://gitlab.gnome.org/GNOME/gtksourceview/commit/e88357c5f210a8796104505c090fb6a04c213902.patch";
       sha256 = "0h5q79q9dqbg46zcyay71xn1pm4aji925gjd5j93v4wqn41wj5m7";
+      url = "https://gitlab.gnome.org/GNOME/gtksourceview/commit/e88357c5f210a8796104505c090fb6a04c213902.patch";
     })
     (fetchpatch {
       name = "update-to-gtk-mac-integration-2.0-api.patch";
-      url = "https://gitlab.gnome.org/GNOME/gtksourceview/commit/ab46e552e1d0dae73f72adac8d578e40bdadaf95.patch";
       sha256 = "0qzrbv4hpa0v8qbmpi2vp575n13lkrvp3cgllwrd2pslw1v9q3aj";
+      url = "https://gitlab.gnome.org/GNOME/gtksourceview/commit/ab46e552e1d0dae73f72adac8d578e40bdadaf95.patch";
     })
   ];
-
-  # Fix build with gcc 14
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   nativeBuildInputs = [
     pkg-config
@@ -73,8 +70,9 @@ stdenv.mkDerivation (finalAttrs: {
     gtk-mac-integration-gtk2
   ];
 
+  # Fix build with gcc 14
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
   doCheck = false; # requires X11 daemon
-
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {

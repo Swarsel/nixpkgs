@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  appstream-glib,
+  cairo,
+  desktop-file-utils,
   fetchpatch,
-  nix-update-script,
+  ffmpeg-full,
+  gettext,
+  gifski,
+  glib,
+  gsettings-desktop-schemas,
+  gst_all_1,
+  gtk3,
+  keybinder3,
+  libxml2,
   meson,
   ninja,
-  gettext,
-  desktop-file-utils,
-  appstream-glib,
+  nix-update-script,
   pkg-config,
+  python3,
   txt2man,
   vala,
-  wrapGAppsHook3,
-  gsettings-desktop-schemas,
-  gtk3,
-  glib,
-  cairo,
-  keybinder3,
-  ffmpeg-full,
-  python3,
-  libxml2,
-  gst_all_1,
   which,
-  gifski,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,10 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix compatibility with GNOME Shell ≥ 40.
     # https://github.com/phw/peek/pull/910
     (fetchpatch {
-      url = "https://github.com/phw/peek/commit/008d15316ab5428363c512b263ca8138cb8f52ba.patch";
       sha256 = "xxJ+r5uRk93MEzWTFla88ewZsnUl3+YKTenzDygtKP0=";
+      url = "https://github.com/phw/peek/commit/008d15316ab5428363c512b263ca8138cb8f52ba.patch";
     })
   ];
+
+  postPatch = ''
+    patchShebangs build-aux/meson/postinstall.py data/man/build_man.sh
+  '';
 
   nativeBuildInputs = [
     appstream-glib
@@ -71,10 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     keybinder3
   ];
 
-  postPatch = ''
-    patchShebangs build-aux/meson/postinstall.py data/man/build_man.sh
-  '';
-
   preFixup = ''
     gappsWrapperArgs+=(--prefix PATH : ${
       lib.makeBinPath [
@@ -90,8 +90,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/phw/peek";
     description = "Simple animated GIF screen recorder with an easy to use interface";
+    homepage = "https://github.com/phw/peek";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ puffnfresh ];
     platforms = lib.platforms.linux;

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  python3,
   boost186,
+  cmake,
   eigen,
-  libGLU,
   fltk,
+  libGLU,
+  onetbb,
+  python3,
   vtk,
   zlib,
-  onetbb,
 }:
 
 stdenv.mkDerivation {
@@ -24,22 +24,6 @@ stdenv.mkDerivation {
     hash = "sha256-77Om/+qApt9AiSYbaPc2QNh+RKcYajobD7VDhvPtf/I=";
     fetchSubmodules = true;
   };
-
-  cmakeFlags = [
-    "-DWITH_VTK=ON"
-    "-DMODULE_Deformable=ON"
-    "-DMODULE_Mapping=ON"
-    "-DMODULE_Scripting=ON"
-    "-DMODULE_Viewer=ON"
-    "-DMODULE_DrawEM=OFF"
-    "-DWITH_TBB=ON"
-    "-DWITH_GIFTICLIB=ON"
-    "-DWITH_NIFTILIB=ON"
-  ];
-
-  # tests don't seem to be maintained and gtest fails to link with BUILD_TESTING=ON;
-  # unclear if specific to Nixpkgs
-  doCheck = false;
 
   postPatch = ''
     # Their old `FindTBB` module conflicts with others.
@@ -57,13 +41,8 @@ stdenv.mkDerivation {
       --replace-fail "cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
-  postInstall = ''
-    install -Dm644 -t "$out/share/bash-completion/completions/mirtk" share/completion/bash/mirtk
-  '';
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-changes-meaning";
-
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     boost186
     eigen
@@ -75,12 +54,33 @@ stdenv.mkDerivation {
     zlib
   ];
 
+  cmakeFlags = [
+    "-DWITH_VTK=ON"
+    "-DMODULE_Deformable=ON"
+    "-DMODULE_Mapping=ON"
+    "-DMODULE_Scripting=ON"
+    "-DMODULE_Viewer=ON"
+    "-DMODULE_DrawEM=OFF"
+    "-DWITH_TBB=ON"
+    "-DWITH_GIFTICLIB=ON"
+    "-DWITH_NIFTILIB=ON"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-changes-meaning";
+  # tests don't seem to be maintained and gtest fails to link with BUILD_TESTING=ON;
+  # unclear if specific to Nixpkgs
+  doCheck = false;
+
+  postInstall = ''
+    install -Dm644 -t "$out/share/bash-completion/completions/mirtk" share/completion/bash/mirtk
+  '';
+
   meta = {
-    homepage = "https://github.com/BioMedIA/MIRTK";
     description = "Medical image registration library and tools";
-    mainProgram = "mirtk";
+    homepage = "https://github.com/BioMedIA/MIRTK";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.asl20;
+    mainProgram = "mirtk";
   };
 }

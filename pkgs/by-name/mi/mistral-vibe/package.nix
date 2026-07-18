@@ -1,11 +1,10 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
-
   # tests
   gitMinimal,
+  python3Packages,
   uv,
   versionCheckHook,
   writableTmpDirAsHomeHook,
@@ -14,8 +13,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mistral-vibe";
   version = "2.19.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mistralai";
@@ -24,13 +21,29 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-PODG/SQsZsixBz/j+k8ALBhXS1fPg3v/o6TXkTyzSIQ=";
   };
 
+  nativeCheckInputs = [
+    # vibe.core.agent_loop.TeleportError: Teleport requires git to be installed.
+    gitMinimal
+    python3Packages.pytest-asyncio
+    python3Packages.pytest-textual-snapshot
+    python3Packages.pytest-xdist
+    python3Packages.pytestCheckHook
+    python3Packages.respx
+    python3Packages.tomlkit
+    uv
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
   build-system = with python3Packages; [
     editables
     hatch-vcs
     hatchling
   ];
 
-  pythonRelaxDeps = true;
   dependencies =
     with python3Packages;
     [
@@ -131,22 +144,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
       secretstorage
     ];
 
-  pythonImportsCheck = [ "vibe" ];
+  disabledTestPaths = [
+    # This tests the install_script and fails. This is not relevant for nixpkgs.
+    "tests/test_install_script.py"
 
-  nativeCheckInputs = [
-    # vibe.core.agent_loop.TeleportError: Teleport requires git to be installed.
-    gitMinimal
-    python3Packages.pytest-asyncio
-    python3Packages.pytest-textual-snapshot
-    python3Packages.pytest-xdist
-    python3Packages.pytestCheckHook
-    python3Packages.respx
-    python3Packages.tomlkit
-    uv
-    versionCheckHook
-    writableTmpDirAsHomeHook
+    # All snapshot tests fail with AssertionError
+    "tests/snapshots/"
+
+    # Try to invoke `uv run vibe`
+    "tests/e2e/"
+
+    # ACP tests require network access
+    "tests/acp/test_acp.py"
+    "tests/acp/test_acp_entrypoint_smoke.py"
   ];
-  versionCheckKeepEnvironment = [ "HOME" ];
 
   disabledTests = [
     # vibe is spawned in a sub-process and fails to import `mcp`
@@ -215,33 +226,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_watcher_toggle_flow_off_on_off"
   ];
 
-  disabledTestPaths = [
-    # This tests the install_script and fails. This is not relevant for nixpkgs.
-    "tests/test_install_script.py"
-
-    # All snapshot tests fail with AssertionError
-    "tests/snapshots/"
-
-    # Try to invoke `uv run vibe`
-    "tests/e2e/"
-
-    # ACP tests require network access
-    "tests/acp/test_acp.py"
-    "tests/acp/test_acp_entrypoint_smoke.py"
-  ];
-
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "vibe" ];
+  pythonRelaxDeps = true;
+  versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
     description = "Minimal CLI coding agent by Mistral";
     homepage = "https://github.com/mistralai/mistral-vibe";
     changelog = "https://github.com/mistralai/mistral-vibe/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       shikanime
       mana-byte
     ];
+
     mainProgram = "vibe";
   };
 })

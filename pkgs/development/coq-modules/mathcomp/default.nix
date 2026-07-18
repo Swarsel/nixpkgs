@@ -12,17 +12,17 @@
 
 {
   lib,
-  ncurses,
-  graphviz,
-  lua,
-  fetchzip,
-  mkCoqDerivation,
-  withDoc ? false,
-  single ? false,
   coq,
+  fetchzip,
+  graphviz,
   hierarchy-builder,
+  lua,
+  mkCoqDerivation,
+  ncurses,
   stdlib,
+  single ? false,
   version ? null,
+  withDoc ? false,
 }@args:
 
 let
@@ -57,51 +57,54 @@ let
       (case (range "8.5" "8.7") "1.6.4")
     ] null;
   release = {
-    "2.5.0".hash = "sha256-M/6IP4WhTQ4j2Bc8nXBXjSjWO08QzNIYI+a2owfOh+8=";
-    "2.4.0".hash = "sha256-A1XgLLwZRvKS8QyceCkSQa7ue6TYyf5fMft5gSx9NOs=";
-    "2.3.0".hash = "sha256-wa6OBig8rhAT4iwupSylyCAMhO69rADa0MQIX5zzL+Q=";
-    "2.2.0".hash = "sha256-SPyWSI5kIP5w7VpgnQ4vnK56yEuWnJylNQOT7M77yoQ=";
-    "2.1.0".hash = "sha256-XDLx0BIkVRkSJ4sGCIE51j3rtkSGemNTs/cdVmTvxqo=";
-    "2.0.0".hash = "sha256-dpOmrHYUXBBS9kmmz7puzufxlbNpIZofpcTvJFLG5DI=";
-    "1.19.0".hash = "sha256-3kxS3qA+7WwQkXoFC/+kq3OEkv4kMEzQ/G3aXPsp1Q4=";
-    "1.18.0".hash = "sha256-mJJ/zvM2WtmBZU3U4oid/zCMvDXei/93v5hwyyqwiiY=";
-    "1.17.0".hash = "sha256-bUfoSTMiW/GzC1jKFay6DRqGzKPuLOSUsO6/wPSFwNg=";
-    "1.16.0".hash = "sha256-gXTKhRgSGeRBUnwdDezMsMKbOvxdffT+kViZ9e1gEz0=";
-    "1.15.0".hash = "sha256:1bp0jxl35ms54s0mdqky15w9af03f3i0n06qk12k4gw1xzvwqv21";
-    "1.14.0".hash = "sha256:07yamlp1c0g5nahkd2gpfhammcca74ga2s6qr7a3wm6y6j5pivk9";
-    "1.13.0".hash = "sha256:0j4cz2y1r1aw79snkcf1pmicgzf8swbaf9ippz0vg99a572zqzri";
-    "1.12.0".hash = "sha256:1ccfny1vwgmdl91kz5xlmhq4wz078xm4z5wpd0jy5rn890dx03wp";
-    "1.11.0".hash = "sha256:06a71d196wd5k4wg7khwqb7j7ifr7garhwkd54s86i0j7d6nhl3c";
     "1.10.0".hash = "sha256:1b9m6pwxxyivw7rgx82gn5kmgv2mfv3h3y0mmjcjfypi8ydkrlbv";
-    "1.9.0".hash = "sha256:0lid9zaazdi3d38l8042lczb02pw5m9wq0yysiilx891hgq2p81r";
-    "1.8.0".hash = "sha256:07l40is389ih8bi525gpqs3qp4yb2kl11r9c8ynk1ifpjzpnabwp";
-    "1.7.0".hash = "sha256:0wnhj9nqpx2bw6n1l4i8jgrw3pjajvckvj3lr4vzjb3my2lbxdd1";
-    "1.6.4".hash = "sha256:09ww48qbjsvpjmy1g9yhm0rrkq800ffq21p6fjkbwd34qvd82raz";
+    "1.11.0".hash = "sha256:06a71d196wd5k4wg7khwqb7j7ifr7garhwkd54s86i0j7d6nhl3c";
+    "1.12.0".hash = "sha256:1ccfny1vwgmdl91kz5xlmhq4wz078xm4z5wpd0jy5rn890dx03wp";
+    "1.13.0".hash = "sha256:0j4cz2y1r1aw79snkcf1pmicgzf8swbaf9ippz0vg99a572zqzri";
+    "1.14.0".hash = "sha256:07yamlp1c0g5nahkd2gpfhammcca74ga2s6qr7a3wm6y6j5pivk9";
+    "1.15.0".hash = "sha256:1bp0jxl35ms54s0mdqky15w9af03f3i0n06qk12k4gw1xzvwqv21";
+    "1.16.0".hash = "sha256-gXTKhRgSGeRBUnwdDezMsMKbOvxdffT+kViZ9e1gEz0=";
+    "1.17.0".hash = "sha256-bUfoSTMiW/GzC1jKFay6DRqGzKPuLOSUsO6/wPSFwNg=";
+    "1.18.0".hash = "sha256-mJJ/zvM2WtmBZU3U4oid/zCMvDXei/93v5hwyyqwiiY=";
+    "1.19.0".hash = "sha256-3kxS3qA+7WwQkXoFC/+kq3OEkv4kMEzQ/G3aXPsp1Q4=";
     "1.6.1".hash = "sha256:1ilw6vm4dlsdv9cd7kmf0vfrh2kkzr45wrqr8m37miy0byzr4p9i";
+    "1.6.4".hash = "sha256:09ww48qbjsvpjmy1g9yhm0rrkq800ffq21p6fjkbwd34qvd82raz";
+    "1.7.0".hash = "sha256:0wnhj9nqpx2bw6n1l4i8jgrw3pjajvckvj3lr4vzjb3my2lbxdd1";
+    "1.8.0".hash = "sha256:07l40is389ih8bi525gpqs3qp4yb2kl11r9c8ynk1ifpjzpnabwp";
+    "1.9.0".hash = "sha256:0lid9zaazdi3d38l8042lczb02pw5m9wq0yysiilx891hgq2p81r";
+    "2.0.0".hash = "sha256-dpOmrHYUXBBS9kmmz7puzufxlbNpIZofpcTvJFLG5DI=";
+    "2.1.0".hash = "sha256-XDLx0BIkVRkSJ4sGCIE51j3rtkSGemNTs/cdVmTvxqo=";
+    "2.2.0".hash = "sha256-SPyWSI5kIP5w7VpgnQ4vnK56yEuWnJylNQOT7M77yoQ=";
+    "2.3.0".hash = "sha256-wa6OBig8rhAT4iwupSylyCAMhO69rADa0MQIX5zzL+Q=";
+    "2.4.0".hash = "sha256-A1XgLLwZRvKS8QyceCkSQa7ue6TYyf5fMft5gSx9NOs=";
+    "2.5.0".hash = "sha256-M/6IP4WhTQ4j2Bc8nXBXjSjWO08QzNIYI+a2owfOh+8=";
   };
   releaseRev = v: "mathcomp-${v}";
 
   # list of core mathcomp packages sorted by dependency order
   packages = {
-    "boot" = [ ];
-    "order" = [ "boot" ];
-    "fingroup" = [ "boot" ];
-    "ssreflect" = [
-      "boot"
-      "order"
-    ];
     "algebra" = [
       "order"
       "fingroup"
     ];
-    "solvable" = [ "algebra" ];
-    "field" = [ "solvable" ];
-    "character" = [ "field" ];
+
     "all" = [ "character" ];
+    "boot" = [ ];
+    "character" = [ "field" ];
+    "field" = [ "solvable" ];
+    "fingroup" = [ "boot" ];
+    "order" = [ "boot" ];
+    "solvable" = [ "algebra" ];
+
+    "ssreflect" = [
+      "boot"
+      "order"
+    ];
   };
   meta = {
     homepage = "https://math-comp.github.io/";
     license = lib.licenses.cecill-b;
+
     maintainers = with lib.maintainers; [
       vbgl
       jwiegley
@@ -133,14 +136,13 @@ let
             meta
             ;
 
-          mlPlugin = lib.versions.isLe "8.6" coq.coq-version;
           nativeBuildInputs = lib.optionals withDoc [
             graphviz
             lua
           ];
+
           buildInputs = [ ncurses ];
           propagatedBuildInputs = mathcomp-deps;
-
           buildFlags = lib.optional withDoc "doc";
 
           preBuild = ''
@@ -157,17 +159,16 @@ let
             cd ${pkgpath} || cd ssreflect  # before 2.5, boot didn't exist, make it behave as ssreflect
           ''
           + lib.optionalString (package == "all") pkgallMake;
+
+          mlPlugin = lib.versions.isLe "8.6" coq.coq-version;
         }
         // lib.optionalAttrs (package != "single") { passthru = lib.mapAttrs (p: _: mathcomp_ p) packages; }
         // lib.optionalAttrs withDoc {
-          htmldoc_template = fetchzip {
-            url = "https://github.com/math-comp/math-comp.github.io/archive/doc-1.12.0.zip";
-            hash = "sha256:0y1352ha2yy6k2dl375sb1r68r1qi9dyyy7dyzj5lp9hxhhq69x8";
-          };
           postBuild = ''
             cp -rf _build_doc/* .
             rm -r _build_doc
           '';
+
           postInstall =
             let
               tgt = "$out/share/coq/${coq.coq-version}/";
@@ -177,8 +178,14 @@ let
               cp -r htmldoc ${tgt}
               cp -r $htmldoc_template/htmldoc_template/* ${tgt}/htmldoc/
             '';
+
           buildTargets = "doc";
           extraInstallFlags = [ "-f Makefile.coq" ];
+
+          htmldoc_template = fetchzip {
+            hash = "sha256:0y1352ha2yy6k2dl375sb1r68r1qi9dyyy7dyzj5lp9hxhhq69x8";
+            url = "https://github.com/math-comp/math-comp.github.io/archive/doc-1.12.0.zip";
+          };
         }
       );
       patched-derivation1 = derivation.overrideAttrs (
@@ -249,6 +256,7 @@ if coq.rocqPackages ? mathcomp && version != "2.3.0" && version != "2.4.0" then
   let
     mc = coq.rocqPackages.mathcomp.override {
       inherit version withDoc single;
+
       inherit
         ncurses
         graphviz
@@ -256,11 +264,15 @@ if coq.rocqPackages ? mathcomp && version != "2.3.0" && version != "2.4.0" then
         fetchzip
         hierarchy-builder
         ;
+
       inherit (coq.rocqPackages) rocq-core micromega-plugin;
     };
   in
   mc
   // {
+    character = mc.group-representation;
+    fingroup = mc.finite-group;
+
     ssreflect = mkCoqDerivation {
       inherit
         version
@@ -271,15 +283,16 @@ if coq.rocqPackages ? mathcomp && version != "2.3.0" && version != "2.4.0" then
         owner
         meta
         ;
+
       pname = "mathcomp-ssreflect";
+
       propagatedBuildInputs = [
         mc.boot
         mc.order
       ];
+
       preBuild = "cd ssreflect";
     };
-    fingroup = mc.finite-group;
-    character = mc.group-representation;
   }
 else
   mathcomp_ (if single then "single" else "all")

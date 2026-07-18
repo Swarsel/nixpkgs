@@ -2,41 +2,41 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  nx-libs,
-  xrandr,
-  xinit,
-  xhost,
-  xdpyinfo,
-  xauth,
-  libxcvt,
+  gawk,
   getopt,
   gnugrep,
-  gawk,
-  ps,
-  mount,
   iproute2,
-  python3,
   jq,
-  wmctrl,
-  xdotool,
-  xclip,
-  xpra,
+  libxcvt,
+  makeWrapper,
+  mount,
+  nx-libs,
+  ps,
+  python3,
   weston,
+  wmctrl,
+  xauth,
+  xclip,
+  xdotool,
+  xdpyinfo,
+  xhost,
+  xinit,
+  xpra,
+  xrandr,
   xwayland,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "x11docker";
   version = "7.8.0";
+
   src = fetchFromGitHub {
     owner = "mviereck";
     repo = "x11docker";
     tag = "v${finalAttrs.version}";
     hash = "sha256-mOxPNT6psRBTuTrMgASBTBr3dZzCSxanSkHKF84lmO8=";
   };
-  nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
+  nativeBuildInputs = [ makeWrapper ];
 
   # Don't install `x11docker-gui`, because requires `kaptain` dependency
   installPhase = ''
@@ -68,6 +68,8 @@ stdenv.mkDerivation (finalAttrs: {
         ]
       }"
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Run graphical applications with Docker";

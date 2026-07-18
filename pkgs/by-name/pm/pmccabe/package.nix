@@ -14,10 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./getopt_on_darwin.patch ];
-
   # GCC 14 made implicit function declarations an error. With this switch we turn them
   # back into a warning.
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
+  doCheck = true;
+  checkPhase = "make test";
 
   configurePhase = ''
     runHook preConfigure
@@ -31,14 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  checkPhase = "make test";
-
-  doCheck = true;
-
   meta = {
     description = "McCabe-style function complexity and line counting for C and C++";
-    homepage = "https://people.debian.org/~bame/pmccabe/";
-    license = lib.licenses.gpl2Plus;
 
     longDescription = ''
       pmccabe calculates McCabe-style cyclomatic complexity for C and
@@ -52,6 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
       trees or files; and vifn, to invoke vi given a function name rather
       than a file name.
     '';
+
+    homepage = "https://people.debian.org/~bame/pmccabe/";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.unix;
   };

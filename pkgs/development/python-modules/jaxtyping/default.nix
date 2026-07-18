@@ -1,35 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  wadler-lindig,
-
+  buildPythonPackage,
   # tests
   cloudpickle,
   equinox,
+  # build-system
+  hatchling,
   ipython,
   jax,
   jaxlib,
-  pytestCheckHook,
-  torch,
-  # python <= 3.12 only
-  tensorflow,
-
   # passthru
   jaxtyping,
+  pytestCheckHook,
+  pythonOlder,
+  # python <= 3.12 only
+  tensorflow,
+  torch,
+  # dependencies
+  wadler-lindig,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jaxtyping";
   version = "0.3.11";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "patrick-kidger";
@@ -38,13 +32,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-oC8n4YiV39EjRm8vYDFrUVJmEPeH814q7uIKdmpqnJk=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    wadler-lindig
-  ];
-
-  pythonImportsCheck = [ "jaxtyping" ];
+  doCheck = false;
 
   nativeCheckInputs = [
     cloudpickle
@@ -59,7 +47,15 @@ buildPythonPackage (finalAttrs: {
     tensorflow
   ];
 
-  doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    wadler-lindig
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "jaxtyping" ];
 
   # Enable tests via passthru to avoid cyclic dependency with equinox.
   passthru.tests = {

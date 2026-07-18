@@ -2,34 +2,34 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  wayland-scanner,
-  wayland,
-  wayland-protocols,
-  json_c,
-  libxkbcommon,
+  bash-completion,
   exiv2,
   fontconfig,
   giflib,
+  json_c,
+  libavif,
+  libdrm,
   libheif,
   libjpeg,
-  libwebp,
-  libtiff,
-  librsvg,
-  libpng,
   libjxl,
-  libavif,
-  libsixel,
+  libpng,
   libraw,
-  libdrm,
+  librsvg,
+  libsixel,
+  libtiff,
+  libwebp,
+  libxkbcommon,
   luajit,
+  meson,
+  ninja,
+  nix-update-script,
   openexr,
   openjpeg,
-  bash-completion,
+  pkg-config,
   testers,
-  nix-update-script,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,19 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  depsBuildBuild = [
-    pkg-config
-  ];
-
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
     wayland-scanner
-  ];
-
-  mesonFlags = [
-    (lib.mesonOption "version" finalAttrs.version)
   ];
 
   buildInputs = [
@@ -85,6 +77,14 @@ stdenv.mkDerivation (finalAttrs: {
     openjpeg
   ];
 
+  mesonFlags = [
+    (lib.mesonOption "version" finalAttrs.version)
+  ];
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
     tests.version = testers.testVersion {
       package = finalAttrs.finalPackage;
@@ -94,14 +94,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/artemsen/swayimg";
     description = "Image viewer for Sway/Wayland";
+    homepage = "https://github.com/artemsen/swayimg";
     changelog = "https://github.com/artemsen/swayimg/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthewcroughan
       Gliczy
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "swayimg";
   };

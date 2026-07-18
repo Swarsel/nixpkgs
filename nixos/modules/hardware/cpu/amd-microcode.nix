@@ -12,15 +12,17 @@ in
   ###### interface
   options = {
 
+    hardware.cpu.amd.microcodePackage = lib.mkPackageOption pkgs "microcode-amd" { };
+
     hardware.cpu.amd.updateMicrocode = lib.mkOption {
       default = false;
-      type = lib.types.bool;
+
       description = ''
         Update the CPU microcode for AMD processors.
       '';
-    };
 
-    hardware.cpu.amd.microcodePackage = lib.mkPackageOption pkgs "microcode-amd" { };
+      type = lib.types.bool;
+    };
   };
 
   ###### implementation

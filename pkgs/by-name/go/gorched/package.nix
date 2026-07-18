@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -14,13 +14,13 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-n4MKZqhgAIsgK9XPv2pF8mK0I4suSN02JkqY7Aj+LG0=";
   };
-  vendorHash = "sha256-ohFj0jEHt0SV3pC9+mz+XAjOJ6MIBFY7CJf+G++r72U=";
 
   postPatch = ''
     mkdir ./cmd/gorched
     mv ./cmd/main.go ./cmd/gorched/main.go
   '';
 
+  vendorHash = "sha256-ohFj0jEHt0SV3pC9+mz+XAjOJ6MIBFY7CJf+G++r72U=";
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,15 +1,14 @@
 {
   lib,
   stdenv,
-  callPackage,
   autoPatchelfHook,
+  callPackage,
   src,
 }:
 
 (stdenv.mkDerivation {
   inherit (src) name;
   inherit src;
-
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
 
   installPhase = ''

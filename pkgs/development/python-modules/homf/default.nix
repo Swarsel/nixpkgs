@@ -1,19 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   callPackage,
-  fetchFromGitHub,
-  # pytestCheckHook,
-  versionCheckHook,
-
   hatchling,
   packaging,
+  # pytestCheckHook,
+  versionCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "homf";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "duckinator";
@@ -22,10 +20,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-fDH6uJ2d/Jsnuudv+Qlv1tr3slxOJWh7b4smGS32n9A=";
   };
 
+  # There are currently no checks which do not require network access, which breaks the check hook somehow?
+  # nativeCheckInputs = [ pytestCheckHook ];
+  # disabledTestMarks = [ "network" ];
+  nativeBuildInputs = [ versionCheckHook ];
   build-system = [ hatchling ];
-
-  pythonRelaxDeps = [ "packaging" ];
   dependencies = [ packaging ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "homf"
@@ -34,20 +35,15 @@ buildPythonPackage (finalAttrs: {
     "homf.api.pypi"
   ];
 
-  # There are currently no checks which do not require network access, which breaks the check hook somehow?
-  # nativeCheckInputs = [ pytestCheckHook ];
-  # disabledTestMarks = [ "network" ];
-
-  nativeBuildInputs = [ versionCheckHook ];
-
+  pythonRelaxDeps = [ "packaging" ];
   # (Ab)using `callPackage` as a fix-point operator, so tests can use the `homf` drv
   passthru.tests = callPackage ./tests.nix { };
 
   meta = {
     description = "Asset download tool for GitHub Releases, PyPi, etc";
-    mainProgram = "homf";
     homepage = "https://github.com/duckinator/homf";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nicoo ];
+    mainProgram = "homf";
   };
 })

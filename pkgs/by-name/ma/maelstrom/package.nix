@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
   SDL2,
   SDL2_net,
+  makeDesktopItem,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,20 +37,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "maelstrom";
-      exec = "maelstrom";
-      desktopName = "Maelstrom";
-      genericName = "Maelstrom";
-      comment = "An arcade-style game resembling Asteroids";
       categories = [ "Game" ];
+      comment = "An arcade-style game resembling Asteroids";
+      desktopName = "Maelstrom";
+      exec = "maelstrom";
+      genericName = "Maelstrom";
+      name = "maelstrom";
     })
   ];
 
   meta = {
     description = "Arcade-style game resembling Asteroids";
-    mainProgram = "maelstrom";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ tmountain ];
+    platforms = lib.platforms.all;
+    mainProgram = "maelstrom";
   };
 })

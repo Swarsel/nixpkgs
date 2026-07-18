@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
-  setuptools,
-  setuptools-scm,
   deepdiff,
   nibabel,
   numpy,
-  pytestCheckHook,
   psutil,
+  pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "trx-python";
   version = "0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tee-ar-ex";
@@ -23,6 +22,15 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-gKPgP3GJ7QY0Piylk5L0HxnscRCREP1Hm5HZufL2h5g=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    psutil
+  ];
+
+  preCheck = ''
+    export HOME=$TMPDIR
+  '';
 
   build-system = [
     cython
@@ -36,24 +44,15 @@ buildPythonPackage rec {
     numpy
   ];
 
-  pythonImportsCheck = [ "trx" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    psutil
-  ];
-
-  preCheck = ''
-    export HOME=$TMPDIR
-  '';
-
-  enabledTestPaths = [ "trx/tests" ];
-
   disabledTestPaths = [
     # access to network
     "trx/tests/test_memmap.py"
     "trx/tests/test_io.py"
   ];
+
+  enabledTestPaths = [ "trx/tests" ];
+  pyproject = true;
+  pythonImportsCheck = [ "trx" ];
 
   meta = {
     description = "Python implementation of the TRX file format";

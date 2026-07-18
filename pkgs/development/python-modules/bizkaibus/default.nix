@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pythonOlder,
   setuptools,
 }:
@@ -10,9 +10,6 @@
 buildPythonPackage rec {
   pname = "bizkaibus";
   version = "0.2.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "UgaitzEtxebarria";
@@ -21,13 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-TM02pSSOELRGSwsKc5C+34W94K6mnS0C69aijsPqSWs=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "bizkaibus" ];
 
   meta = {

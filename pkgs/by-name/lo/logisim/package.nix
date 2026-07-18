@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  copyDesktopItems,
+  desktopToDarwinBundle,
   jre,
   makeBinaryWrapper,
-  copyDesktopItems,
   makeDesktopItem,
-  desktopToDarwinBundle,
   unzip,
 }:
 
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/project/circuit/${lib.versions.majorMinor finalAttrs.version}.x/${finalAttrs.version}/logisim-generic-${finalAttrs.version}.jar";
     hash = "sha256-Nip4wSrRjCA/7YaIcsSgHNnBIUE3nZLokrviw35ie8I=";
   };
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -27,17 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     desktopToDarwinBundle
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "logisim";
-      desktopName = "Logisim";
-      exec = "logisim";
-      icon = "logisim";
-      comment = finalAttrs.meta.description;
-      categories = [ "Education" ];
-    })
   ];
 
   installPhase = ''
@@ -56,13 +44,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Education" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "Logisim";
+      exec = "logisim";
+      icon = "logisim";
+      name = "logisim";
+    })
+  ];
+
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.cburch.com/logisim/";
     description = "Educational tool for designing and simulating digital logic circuits";
-    mainProgram = "logisim";
-    maintainers = with lib.maintainers; [ emilytrau ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "http://www.cburch.com/logisim/";
     license = lib.licenses.gpl2Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.unix;
+    mainProgram = "logisim";
   };
 })

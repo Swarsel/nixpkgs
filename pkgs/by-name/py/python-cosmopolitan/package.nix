@@ -1,15 +1,14 @@
 {
   lib,
   stdenv,
+  bintools-unwrapped,
   cosmopolitan,
   unzip,
-  bintools-unwrapped,
 }:
 
 stdenv.mkDerivation {
   pname = "python-cosmopolitan";
   version = "3.6.14";
-
   src = cosmopolitan.dist;
 
   nativeBuildInputs = [
@@ -19,12 +18,7 @@ stdenv.mkDerivation {
 
   # slashes are significant because upstream uses o/$(MODE)/foo.o
   buildFlags = [ "o//third_party/python" ];
-  checkTarget = "o//third_party/python/test";
-  enableParallelBuilding = true;
-
   doCheck = true;
-  dontConfigure = true;
-  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
@@ -32,13 +26,18 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  checkTarget = "o//third_party/python/test";
+  dontConfigure = true;
+  dontFixup = true;
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://justine.lol/cosmopolitan/";
     description = "Actually Portable Python using Cosmopolitan";
+    homepage = "https://justine.lol/cosmopolitan/";
+    license = lib.licenses.isc;
     platforms = lib.platforms.x86_64;
     badPlatforms = lib.platforms.darwin;
-    license = lib.licenses.isc;
-    teams = [ lib.teams.cosmopolitan ];
     mainProgram = "python.com";
+    teams = [ lib.teams.cosmopolitan ];
   };
 }

@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
-  callPackage,
+  stdenv,
   fetchFromGitHub,
-  cpio,
-  gzip,
-  glibc,
-  pkgsi686Linux,
-  pax-utils,
-  makeWrapper,
-  python3,
   aflplusplus,
+  callPackage,
+  cpio,
+  glibc,
+  gzip,
+  makeWrapper,
+  pax-utils,
+  pkgsi686Linux,
+  python3,
   qemu-nyx,
 }:
 
@@ -24,13 +24,9 @@ let
   ]);
 in
 stdenv.mkDerivation {
-  version = builtins.readFile (aflplusplus.src + "/nyx_mode/PACKER_VERSION");
   pname = "nyx-packer";
-
+  version = builtins.readFile (aflplusplus.src + "/nyx_mode/PACKER_VERSION");
   src = aflplusplus.src;
-  postUnpack = ''
-    sourceRoot="$sourceRoot/nyx_mode/packer"
-  '';
 
   patches = [
     # this patch does following things:
@@ -39,25 +35,6 @@ stdenv.mkDerivation {
     #   * apply Matt Morehouse's patch (https://github.com/nyx-fuzz/packer/pull/34)
     ./packer.patch
   ];
-
-  strictDeps = true;
-
-  # compile_64.sh / compile_loader use -O0; _FORTIFY_SOURCE needs optimization
-  hardeningDisable = [ "fortify" ];
-
-  nativeBuildInputs = [
-    cpio
-    gzip
-    makeWrapper
-  ];
-
-  buildInputs = [
-    glibc
-    glibc.static
-    pkgsi686Linux.glibc
-  ];
-
-  dontConfigure = true;
 
   postPatch = ''
     substituteInPlace packer/common/config.py \
@@ -98,6 +75,20 @@ stdenv.mkDerivation {
         'cp /lib64/libnss_compat.so.2' \
         'cp ${glibc}/lib/libnss_compat.so.2'
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cpio
+    gzip
+    makeWrapper
+  ];
+
+  buildInputs = [
+    glibc
+    glibc.static
+    pkgsi686Linux.glibc
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -146,11 +137,19 @@ stdenv.mkDerivation {
       -exec patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 {} \;
   '';
 
+  dontConfigure = true;
+  # compile_64.sh / compile_loader use -O0; _FORTIFY_SOURCE needs optimization
+  hardeningDisable = [ "fortify" ];
+
+  postUnpack = ''
+    sourceRoot="$sourceRoot/nyx_mode/packer"
+  '';
+
   meta = {
-    homepage = "https://github.com/nyx-fuzz/packer";
     description = "image packer for Nyx VMs";
+    homepage = "https://github.com/nyx-fuzz/packer";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.x86_64;
     maintainers = with lib.maintainers; [ ekzyis ];
+    platforms = lib.platforms.x86_64;
   };
 }

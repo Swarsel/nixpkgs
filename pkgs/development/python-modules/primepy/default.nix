@@ -9,12 +9,11 @@
 buildPythonPackage rec {
   pname = "primepy";
   version = "1.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "primePy";
     inherit version;
     hash = "sha256-Jf1+JTRLB4mlmEx12J8FT88fGAvvIMmY5L77rJLeRmk=";
+    pname = "primePy";
   };
 
   nativeBuildInputs = [
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     wheel
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "primePy" ];
 
   meta = {

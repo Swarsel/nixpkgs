@@ -1,21 +1,20 @@
 {
+  lib ? null,
   stdenv,
   fetchurl,
+  file,
+  gitUpdater,
+  groff,
+  libx11,
   makeWrapper,
+  ncurses,
   perl, # used to generate help tags
   pkg-config,
-  ncurses,
-  libx11,
-  file,
   which,
-  groff,
-
   # adds support for handling removable media (vifm-media). Linux only!
   mediaSupport ? false,
   python3 ? null,
   udisks ? null,
-  lib ? null,
-  gitUpdater,
 }:
 
 let
@@ -30,11 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QLwy7BDYKa2j0Cl9M81PMCxSC7QxKH1UT8CgWuRf2xs=";
   };
 
+  postPatch = ''
+    # Avoid '#!/usr/bin/env perl' references to build help.
+    patchShebangs --build src/helpztags
+  '';
+
   nativeBuildInputs = [
     perl
     pkg-config
     makeWrapper
   ];
+
   buildInputs = [
     ncurses
     libx11
@@ -42,13 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     which
     groff
   ];
-
-  postPatch = ''
-    # Avoid '#!/usr/bin/env perl' references to build help.
-    patchShebangs --build src/helpztags
-  '';
-
-  enableParallelBuilding = true;
 
   postFixup =
     let
@@ -63,20 +61,22 @@ stdenv.mkDerivation (finalAttrs: {
       ${lib.optionalString mediaSupport wrapVifmMedia}
     '';
 
+  enableParallelBuilding = true;
+
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/vifm/vifm.git";
-    rev-prefix = "v";
     ignoredVersions = "beta";
+    rev-prefix = "v";
+    url = "https://github.com/vifm/vifm.git";
   };
 
   meta = {
     description = "Vi-like file manager${lib.optionalString isFullPackage "; Includes support for optional features"}";
-    mainProgram = "vifm";
-    maintainers = with lib.maintainers; [ raskin ];
-    platforms = if mediaSupport then lib.platforms.linux else lib.platforms.unix;
-    license = lib.licenses.gpl2;
-    downloadPage = "https://vifm.info/downloads.shtml";
     homepage = "https://vifm.info/";
     changelog = "https://github.com/vifm/vifm/blob/v${finalAttrs.version}/ChangeLog";
+    license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ raskin ];
+    platforms = if mediaSupport then lib.platforms.linux else lib.platforms.unix;
+    mainProgram = "vifm";
+    downloadPage = "https://vifm.info/downloads.shtml";
   };
 })

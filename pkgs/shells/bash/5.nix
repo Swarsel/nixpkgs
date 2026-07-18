@@ -1,30 +1,28 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  updateAutotoolsGnuConfigScriptsHook,
   bison,
-  util-linuxMinimal,
+  buildPackages,
   coreutils,
-  libredirect,
   glibcLocales,
   gnused,
-
-  interactive ? true,
-  readline,
-  withDocs ? null,
-  forFHSEnv ? false,
-
+  libredirect,
   pkgsStatic,
+  readline,
+  updateAutotoolsGnuConfigScriptsHook,
+  util-linuxMinimal,
+  forFHSEnv ? false,
+  interactive ? true,
+  withDocs ? null,
 }:
 
 let
   upstreamPatches = import ./bash-5.3-patches.nix (
     nr: sha256:
     fetchurl {
-      url = "mirror://gnu/bash/bash-5.3-patches/bash53-${nr}";
       inherit sha256;
+      url = "mirror://gnu/bash/bash-5.3-patches/bash53-${nr}";
     }
   );
 in
@@ -36,20 +34,11 @@ lib.warnIf (withDocs != null)
   (fa: {
     pname = "bash${lib.optionalString interactive "-interactive"}";
     version = "5.3${fa.patch_suffix}";
-    patch_suffix = "p${toString (builtins.length upstreamPatches)}";
 
     src = fetchurl {
       url = "mirror://gnu/bash/bash-${lib.removeSuffix fa.patch_suffix fa.version}.tar.gz";
       hash = "sha256-DVzYaWX4aaJs9k9Lcb57lvkKO6iz104n6OnZ1VUPMbo=";
     };
-
-    hardeningDisable = [
-      "format"
-    ]
-    # bionic libc is super weird and has issues with fortify outside of its own libc, check this comment:
-    # https://github.com/NixOS/nixpkgs/pull/192630#discussion_r978985593
-    # or you can check libc/include/sys/cdefs.h in bionic source code
-    ++ lib.optionals (stdenv.hostPlatform.libc == "bionic") [ "fortify" ];
 
     outputs = [
       "out"
@@ -59,38 +48,6 @@ lib.warnIf (withDocs != null)
       "info"
     ];
 
-    separateDebugInfo = true;
-
-    env.NIX_CFLAGS_COMPILE = ''
-      -DSYS_BASHRC="/etc/bashrc"
-      -DSYS_BASH_LOGOUT="/etc/bash_logout"
-    ''
-    + lib.optionalString (!forFHSEnv) ''
-      -DDEFAULT_PATH_VALUE="/no-such-path"
-      -DSTANDARD_UTILS_PATH="/no-such-path"
-      -DDEFAULT_LOADABLE_BUILTINS_PATH="${placeholder "out"}/lib/bash:."
-    ''
-    + ''
-      -DNON_INTERACTIVE_LOGIN_SHELLS
-      -DSSH_SOURCE_BASHRC
-    ''
-    # Bash's configure script assumes that CC and CC_FOR_BUILD have the
-    # same default -std=... flags. But at this moment, for cross llvm and FreeBSD, we
-    # have CC_FOR_BUILD that defaults to c23, and a CC that default to
-    # something older, perhaps c17. This breaks the build because of
-    # bash's faulty assumptions.
-    #
-    # To fix, we simply force the standard to be the higher for CC to
-    # match CC_FOR_BUILD.
-    #
-    # Once FreeBSD and other contexts are built with a newer version of clang,
-    # this hack should be removed.
-    + lib.optionalString stdenv.cc.isClang ''
-      -std=c23
-    '';
-
-    patchFlags = [ "-p0" ];
-
     patches = upstreamPatches ++ [
       # Enable PGRP_PIPE independently of the kernel of the build machine.
       # This doesn't seem to be upstreamed despite such a mention of in https://github.com/NixOS/nixpkgs/pull/77196,
@@ -99,6 +56,16 @@ lib.warnIf (withDocs != null)
       # https://lists.gnu.org/archive/html/bug-bash/2015-05/msg00071.html
       ./pgrp-pipe-5.patch
     ];
+
+    strictDeps = true;
+
+    nativeBuildInputs = [
+      updateAutotoolsGnuConfigScriptsHook
+      bison
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [ stdenv.cc.bintools ];
+
+    buildInputs = lib.optionals interactive [ readline ];
 
     configureFlags = [
       # At least on Linux bash memory allocator has pathological performance
@@ -134,18 +101,33 @@ lib.warnIf (withDocs != null)
       "bash_cv_dev_fd=absent"
     ];
 
-    strictDeps = true;
-    # Note: Bison is needed because the patches above modify parse.y.
-    depsBuildBuild = [ buildPackages.stdenv.cc ];
-    nativeBuildInputs = [
-      updateAutotoolsGnuConfigScriptsHook
-      bison
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [ stdenv.cc.bintools ];
-
-    buildInputs = lib.optionals interactive [ readline ];
-
-    enableParallelBuilding = true;
+    env.NIX_CFLAGS_COMPILE = ''
+      -DSYS_BASHRC="/etc/bashrc"
+      -DSYS_BASH_LOGOUT="/etc/bash_logout"
+    ''
+    + lib.optionalString (!forFHSEnv) ''
+      -DDEFAULT_PATH_VALUE="/no-such-path"
+      -DSTANDARD_UTILS_PATH="/no-such-path"
+      -DDEFAULT_LOADABLE_BUILTINS_PATH="${placeholder "out"}/lib/bash:."
+    ''
+    + ''
+      -DNON_INTERACTIVE_LOGIN_SHELLS
+      -DSSH_SOURCE_BASHRC
+    ''
+    # Bash's configure script assumes that CC and CC_FOR_BUILD have the
+    # same default -std=... flags. But at this moment, for cross llvm and FreeBSD, we
+    # have CC_FOR_BUILD that defaults to c23, and a CC that default to
+    # something older, perhaps c17. This breaks the build because of
+    # bash's faulty assumptions.
+    #
+    # To fix, we simply force the standard to be the higher for CC to
+    # match CC_FOR_BUILD.
+    #
+    # Once FreeBSD and other contexts are built with a newer version of clang,
+    # this hack should be removed.
+    + lib.optionalString stdenv.cc.isClang ''
+      -std=c23
+    '';
 
     doCheck = false; # Can't be enabled by default due to dependency cycle, use passthru.tests.withChecks instead
 
@@ -166,24 +148,27 @@ lib.warnIf (withDocs != null)
           rm -rf "$out/share" "$out/bin/bashbug"
         '';
 
+    # Note: Bison is needed because the patches above modify parse.y.
+    depsBuildBuild = [ buildPackages.stdenv.cc ];
+    enableParallelBuilding = true;
+
+    hardeningDisable = [
+      "format"
+    ]
+    # bionic libc is super weird and has issues with fortify outside of its own libc, check this comment:
+    # https://github.com/NixOS/nixpkgs/pull/192630#discussion_r978985593
+    # or you can check libc/include/sys/cdefs.h in bionic source code
+    ++ lib.optionals (stdenv.hostPlatform.libc == "bionic") [ "fortify" ];
+
+    patchFlags = [ "-p0" ];
+    patch_suffix = "p${toString (builtins.length upstreamPatches)}";
+    separateDebugInfo = true;
+
     passthru = {
       shellPath = "/bin/bash";
       tests.static = pkgsStatic.bash;
+
       tests.withChecks = fa.finalPackage.overrideAttrs (attrs: {
-        doCheck = true;
-
-        nativeCheckInputs = attrs.nativeCheckInputs or [ ] ++ [
-          util-linuxMinimal
-          libredirect.hook
-          glibcLocales
-          gnused
-        ];
-
-        meta = attrs.meta // {
-          # Ignore Darwin for now, because the tests fail in many more ways than on Linux
-          broken = attrs.meta.broken or false || stdenv.buildPlatform.isDarwin;
-        };
-
         patches = attrs.patches or [ ] ++ [
           # See commit comment, also submitted upstream: https://lists.gnu.org/archive/html/bug-bash/2025-10/msg00054.html
           ./fail-tests.patch
@@ -196,14 +181,23 @@ lib.warnIf (withDocs != null)
           ./fix-invocation-tests.patch
         ];
 
+        doCheck = true;
+
+        nativeCheckInputs = attrs.nativeCheckInputs or [ ] ++ [
+          util-linuxMinimal
+          libredirect.hook
+          glibcLocales
+          gnused
+        ];
+
         preCheck = attrs.preCheck or "" + ''
           # Allows looking at actual outputs for failed tests
           export BASH_TSTOUT_KEEPDIR=$(mktemp -d)
           export HOME=$(mktemp -d)
           export NIX_REDIRECTS=${
             lib.concatMapAttrsStringSep ":" (name: value: "${name}=${value}") {
-              "/bin/echo" = lib.getExe' coreutils "echo";
               "/bin/cat" = lib.getExe' coreutils "cat";
+              "/bin/echo" = lib.getExe' coreutils "echo";
               "/bin/rm" = lib.getExe' coreutils "rm";
               "/usr" = "$(mktemp -d)";
             }
@@ -258,14 +252,19 @@ lib.warnIf (withDocs != null)
             sed -i "1iecho 'Skipping test $check' >&2 && exit 0" "tests/$check"
           done
         '';
+
+        meta = attrs.meta // {
+          # Ignore Darwin for now, because the tests fail in many more ways than on Linux
+          broken = attrs.meta.broken or false || stdenv.buildPlatform.isDarwin;
+        };
       });
     };
 
     meta = {
-      homepage = "https://www.gnu.org/software/bash/";
       description =
         "GNU Bourne-Again Shell, the de facto standard shell on Linux"
         + lib.optionalString interactive " (for interactive use)";
+
       longDescription = ''
         Bash is the shell, or command language interpreter, that will
         appear in the GNU operating system.  Bash is an sh-compatible
@@ -276,22 +275,26 @@ lib.warnIf (withDocs != null)
         interactive use.  In addition, most sh scripts can be run by
         Bash without modification.
       '';
+
+      homepage = "https://www.gnu.org/software/bash/";
       license = lib.licenses.gpl3Plus;
+      maintainers = with lib.maintainers; [ infinisil ];
       platforms = lib.platforms.all;
       # https://github.com/NixOS/nixpkgs/issues/333338
       badPlatforms = [ lib.systems.inspect.patterns.isMinGW ];
-      maintainers = with lib.maintainers; [ infinisil ];
-      teams = [ lib.teams.security-review ];
       mainProgram = "bash";
+
       identifiers.cpeParts =
         let
           versionSplit = lib.split "p" fa.version;
         in
         {
-          vendor = "gnu";
-          product = "bash";
           version = lib.elemAt versionSplit 0;
+          product = "bash";
           update = lib.elemAt versionSplit 2;
+          vendor = "gnu";
         };
+
+      teams = [ lib.teams.security-review ];
     };
   })

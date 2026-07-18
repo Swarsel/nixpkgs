@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
   kdePackages,
   opencloud-desktop-shell-integration-resources,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+Bu/kN4RvR/inWQHYcfWOF6BWHTFm5jlea/QeT4NhFQ=";
   };
 
+  nativeBuildInputs = [
+    cmake
+  ];
+
   buildInputs = [
     qt6.qtbase
     kdePackages.extra-cmake-modules
@@ -28,10 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     opencloud-desktop-shell-integration-resources
   ];
 
-  nativeBuildInputs = [
-    cmake
-  ];
-
   dontWrapQtApps = true;
 
   meta = {
@@ -39,7 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/opencloud-eu/desktop-shell-integration-dolphin";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ k900 ];
-    mainProgram = "opencloud-desktop-shell-integration-dolphin";
     platforms = lib.platforms.all;
+    mainProgram = "opencloud-desktop-shell-integration-dolphin";
   };
 })

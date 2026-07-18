@@ -1,9 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cbor2,
+  cmake,
   docopt,
-  fetchFromGitHub,
   fetchpatch2,
   jsonconversion,
   pytestCheckHook,
@@ -11,21 +12,21 @@
   setuptools,
   six,
   tabulate,
-  cmake,
 }:
 
 buildPythonPackage rec {
   pname = "amazon-ion";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "amazon-ion";
     repo = "ion-python";
     tag = "v${version}";
+    hash = "sha256-VBbxGXPAwS3jwEsm64yEKqJKVKGvPStboLjHoRcoonE=";
     # Test vectors require git submodule
     fetchSubmodules = true;
     leaveDotGit = true; # During ion-c submodule build git history/hash used to infer version
+
     postFetch = ''
       # Generated file should match output of command in ion-c/cmake/VersionHeader.cmake
       # Run Git before creating any files to avoid triggering false dirty suffix.
@@ -34,17 +35,16 @@ buildPythonPackage rec {
       # Based on https://github.com/NixOS/nixpkgs/blob/183125f9/pkgs/build-support/fetchgit/nix-prefetch-git#L358
       find "$out" -name .git -exec rm -rf '{}' '+'
     '';
-    hash = "sha256-VBbxGXPAwS3jwEsm64yEKqJKVKGvPStboLjHoRcoonE=";
   };
 
   patches = [
     # backport changes that adapt code to more strict compilers
     (fetchpatch2 {
-      name = "46aebb0-Address-incompatible-pointer-errors.patch";
-      url = "https://github.com/amazon-ion/ion-c/commit/46aebb0b650a4cf61425ef1a8e78e2443023e853.patch?full_index=1";
-      hash = "sha256-5qzSbZV9Oe5soJzkyCtVtWejedLEjAz7yuVotATPmbs=";
-      stripLen = 1;
       extraPrefix = "ion-c/";
+      hash = "sha256-5qzSbZV9Oe5soJzkyCtVtWejedLEjAz7yuVotATPmbs=";
+      name = "46aebb0-Address-incompatible-pointer-errors.patch";
+      stripLen = 1;
+      url = "https://github.com/amazon-ion/ion-c/commit/46aebb0b650a4cf61425ef1a8e78e2443023e853.patch?full_index=1";
     })
   ];
 
@@ -66,18 +66,23 @@ buildPythonPackage rec {
                      "set(IONC_FULL_VERSION \"$(cat ion-c/.nixpkgs-patching-IONC_FULL_VERSION.txt)\")"
   '';
 
-  build-system = [
-    setuptools
+  nativeBuildInputs = [
+    cmake
   ];
-
-  dontUseCmakeConfigure = true; # CMake invoked by install.py
 
   # Can't use cmakeFlags since we do not control invocation of cmake.
   # But build-release.sh in ion-c is sensitive to this env variable.
   env.CMAKE_FLAGS = "-DCMAKE_SKIP_BUILD_RPATH=ON";
 
-  nativeBuildInputs = [
-    cmake
+  nativeCheckInputs = [
+    cbor2
+    docopt
+    (pytestCheckHook.override { pytest = pytest_7; })
+    tabulate
+  ];
+
+  build-system = [
+    setuptools
   ];
 
   dependencies = [
@@ -85,11 +90,9 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [
-    cbor2
-    docopt
-    (pytestCheckHook.override { pytest = pytest_7; })
-    tabulate
+  disabledTestPaths = [
+    # Exclude benchmarks
+    "tests/test_benchmark_cli.py"
   ];
 
   disabledTests = [
@@ -100,10 +103,8 @@ buildPythonPackage rec {
     "multiple_top_level_object_json"
   ];
 
-  disabledTestPaths = [
-    # Exclude benchmarks
-    "tests/test_benchmark_cli.py"
-  ];
+  dontUseCmakeConfigure = true; # CMake invoked by install.py
+  pyproject = true;
 
   pythonImportsCheck = [
     "amazon.ion"
@@ -114,11 +115,13 @@ buildPythonPackage rec {
     description = "Python implementation of Amazon Ion";
     homepage = "https://github.com/amazon-ion/ion-python";
     changelog = "https://github.com/amazon-ion/ion-python/releases/tag/${src.tag}";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode
     ];
-    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [ terlar ];
   };
 }

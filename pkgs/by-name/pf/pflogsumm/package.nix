@@ -17,11 +17,13 @@ perlPackages.buildPerlPackage rec {
     "out"
     "man"
   ];
+
   buildInputs = [ perlPackages.DateCalc ];
 
   preConfigure = ''
     touch Makefile.PL
   '';
+
   doCheck = false;
 
   installPhase = ''
@@ -33,10 +35,10 @@ perlPackages.buildPerlPackage rec {
   '';
 
   meta = {
-    homepage = "http://jimsun.linxnet.com/postfix_contrib.html";
-    maintainers = [ ];
     description = "Postfix activity overview";
-    mainProgram = "pflogsumm";
+    homepage = "http://jimsun.linxnet.com/postfix_contrib.html";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
+    mainProgram = "pflogsumm";
   };
 }

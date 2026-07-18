@@ -42,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/matthewbauer/nix-bundle";
     description = "Create bundles from Nixpkgs attributes";
+
     longDescription = ''
       nix-bundle is a way to package Nix attributes into single-file
       executables.
@@ -55,6 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
       - Distro agnostic
       - No installation
     '';
+
+    homepage = "https://github.com/matthewbauer/nix-bundle";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;

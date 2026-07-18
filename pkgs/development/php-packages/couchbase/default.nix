@@ -1,11 +1,11 @@
 {
   lib,
-  buildPecl,
   fetchFromGitHub,
+  buildPecl,
   libcouchbase,
-  zlib,
-  replaceVars,
   php,
+  replaceVars,
+  zlib,
 }:
 let
   pname = "couchbase";
@@ -21,25 +21,25 @@ buildPecl {
     sha256 = "sha256-JpzLR4NcyShl2VTivj+15iAsTTsZmdMIdZYc3dLCbIA=";
   };
 
-  configureFlags = [ "--with-couchbase" ];
-
-  buildInputs = [
-    libcouchbase
-    zlib
-  ];
-
   patches = [
     (replaceVars ./libcouchbase.patch {
       inherit libcouchbase;
     })
   ];
 
+  buildInputs = [
+    libcouchbase
+    zlib
+  ];
+
+  configureFlags = [ "--with-couchbase" ];
+
   meta = {
-    changelog = "https://github.com/couchbase/php-couchbase/releases/tag/v${version}";
     description = "Couchbase Server PHP extension";
-    license = lib.licenses.asl20;
     homepage = "https://docs.couchbase.com/php-sdk/current/project-docs/sdk-release-notes.html";
-    teams = [ lib.teams.php ];
+    changelog = "https://github.com/couchbase/php-couchbase/releases/tag/v${version}";
+    license = lib.licenses.asl20;
     broken = lib.versionAtLeast php.version "8.3";
+    teams = [ lib.teams.php ];
   };
 }

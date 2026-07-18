@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "derpconf";
   version = "0.8.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "derpconf" ];
 
   meta = {

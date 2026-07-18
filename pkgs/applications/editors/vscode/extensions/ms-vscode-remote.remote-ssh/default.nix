@@ -81,17 +81,17 @@ let
   '';
 in
 buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "remote-ssh";
-    publisher = "ms-vscode-remote";
-    version = "0.124.0";
-    hash = "sha256-GokSJOEpHomkBbkPUBhVXWZCrGbi5oZTlw5PFV12ZBY=";
-  };
-
   postPatch = ''
     substituteInPlace "out/extension.js" \
       --replace '# Start the server\n' '${patch}'
   '';
+
+  mktplcRef = {
+    version = "0.124.0";
+    hash = "sha256-GokSJOEpHomkBbkPUBhVXWZCrGbi5oZTlw5PFV12ZBY=";
+    name = "remote-ssh";
+    publisher = "ms-vscode-remote";
+  };
 
   passthru.tests = {
     inherit (nixosTests) vscode-remote-ssh;

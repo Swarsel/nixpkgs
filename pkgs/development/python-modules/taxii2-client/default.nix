@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytz,
   requests,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "taxii2-client";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oasis-open";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     six
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "taxii2client" ];
 
   meta = {

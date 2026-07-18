@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
   libpcap,
-  boost,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,12 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Top utility that shows an estimated instantaneous bandwidth on USB buses and devices";
     homepage = "https://github.com/aguinet/usbtop";
     changelog = "https://github.com/aguinet/usbtop/raw/${finalAttrs.src.rev}/CHANGELOG";
-    description = "Top utility that shows an estimated instantaneous bandwidth on USB buses and devices";
-    mainProgram = "usbtop";
-    maintainers = [ ];
     license = lib.licenses.bsd3;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "usbtop";
   };
 })

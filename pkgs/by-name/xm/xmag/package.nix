@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  wrapWithXFileSearchPathHook,
-  xorgproto,
   libx11,
   libxaw,
   libxmu,
   libxt,
+  pkg-config,
+  wrapWithXFileSearchPathHook,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xmag";
@@ -51,12 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility to display a magnified snapshot of a portion of an X11 screen.";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xmag";
+
     license = with lib.licenses; [
       mitOpenGroup
       x11
     ];
-    mainProgram = "xmag";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xmag";
   };
 })

@@ -1,15 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  protobuf,
-  versionCheckHook,
   cmake,
-  pkg-config,
-  nodejs,
   fetchNpmDeps,
-  npmHooks,
   nix-update-script,
+  nodejs,
+  npmHooks,
+  pkg-config,
+  protobuf,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "clash-rs";
@@ -27,17 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ./skip-npm-ci.patch
   ];
 
-  cargoHash = "sha256-SlkqNu6Vk1D9aU4GgyNDW9Or3z8KSbEjwCUK9w3Jyx0=";
-
-  npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/clash-dashboard";
-    hash = "sha256-H8G3GuEh4JXZV1zxTfo89tl6D6WA5hWGOF9i8qP0njw=";
-  };
-
-  npmRoot = "clash-dashboard";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -46,10 +35,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     npmHooks.npmConfigHook
   ];
 
-  nativeInstallCheckInputs = [
-    protobuf
-    versionCheckHook
-  ];
+  cargoHash = "sha256-SlkqNu6Vk1D9aU4GgyNDW9Or3z8KSbEjwCUK9w3Jyx0=";
 
   env = {
     # requires nightly features: sync_unsafe_cell, unbounded_shifts, let_chains, ip
@@ -59,8 +45,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     RUSTFLAGS = "-A stable-features";
   };
 
-  buildFeatures = [ "plus" ];
-
   doCheck = false; # test failed
 
   postInstall = ''
@@ -69,6 +53,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    protobuf
+    versionCheckHook
+  ];
+
+  buildFeatures = [ "plus" ];
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-H8G3GuEh4JXZV1zxTfo89tl6D6WA5hWGOF9i8qP0njw=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+    sourceRoot = "${finalAttrs.src.name}/clash-dashboard";
+  };
+
+  npmRoot = "clash-dashboard";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -80,9 +80,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Custom protocol, rule based network proxy software";
     homepage = "https://github.com/Watfaq/clash-rs";
-    mainProgram = "clash";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ aaronjheng ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "clash";
   };
 })

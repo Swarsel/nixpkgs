@@ -48,8 +48,8 @@ let
   journalwatchConfigDir =
     pkgs.runCommand "journalwatch-config"
       {
-        preferLocalBuild = true;
         allowSubstitutes = false;
+        preferLocalBuild = true;
       }
       ''
         mkdir -p $out/journalwatch
@@ -62,125 +62,46 @@ in
   options = {
     services.journalwatch = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           If enabled, periodically check the journal with journalwatch and report the results by mail.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "journalwatch" { };
 
-      priority = lib.mkOption {
-        type = lib.types.ints.between 0 7;
-        default = 6;
-        description = ''
-          Lowest priority of message to be considered.
-          A value between 7 ("debug"), and 0 ("emerg"). Defaults to 6 ("info").
-          If you don't care about anything with "info" priority, you can reduce
-          this to e.g. 5 ("notice") to considerably reduce the amount of
-          messages without needing many {option}`filterBlocks`.
-        '';
-      };
+      accuracy = lib.mkOption {
+        default = "10min";
 
-      # HACK: this is a workaround for journalwatch's usage of socket.getfqdn() which always returns localhost if
-      # there's an alias for the localhost on a separate line in /etc/hosts, or take for ages if it's not present and
-      # then return something right-ish in the direction of /etc/hostname. Just bypass it completely.
-      mailFrom = lib.mkOption {
+        description = ''
+          The time window around the interval in which the journalwatch run will be scheduled.
+
+          The format is described in {manpage}`systemd.time(7)`.
+        '';
+
         type = lib.types.str;
-        default = "journalwatch@${config.networking.hostName}";
-        defaultText = lib.literalExpression ''"journalwatch@''${config.networking.hostName}"'';
-        description = ''
-          Mail address to send journalwatch reports from.
-        '';
-      };
-
-      mailTo = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Mail address to send journalwatch reports to.
-        '';
-      };
-
-      mailBinary = lib.mkOption {
-        type = lib.types.path;
-        default = "/run/wrappers/bin/sendmail";
-        description = ''
-          Sendmail-compatible binary to be used to send the messages.
-        '';
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.str;
         default = "";
+
         description = ''
           Extra lines to be added verbatim to the journalwatch/config configuration file.
           You can add any commandline argument to the config, without the '--'.
           See `journalwatch --help` for all arguments and their description.
         '';
+
+        type = lib.types.str;
       };
 
       filterBlocks = lib.mkOption {
-        type = lib.types.listOf (
-          lib.types.submodule {
-            options = {
-              match = lib.mkOption {
-                type = lib.types.str;
-                example = "SYSLOG_IDENTIFIER = systemd";
-                description = ''
-                  Syntax: `field = value`
-                  Specifies the log entry `field` this block should apply to.
-                  If the `field` of a message matches this `value`,
-                  this patternBlock's {option}`filters` are applied.
-                  If `value` starts and ends with a slash, it is interpreted as
-                  an extended python regular expression, if not, it's an exact match.
-                  The journal fields are explained in {manpage}`systemd.journal-fields(7)`.
-                '';
-              };
-
-              filters = lib.mkOption {
-                type = lib.types.str;
-                example = ''
-                  (Stopped|Stopping|Starting|Started) .*
-                  (Reached target|Stopped target) .*
-                '';
-                description = ''
-                  The filters to apply on all messages which satisfy {option}`match`.
-                  Any of those messages that match any specified filter will be removed from journalwatch's output.
-                  Each filter is an extended Python regular expression.
-                  You can specify multiple filters and separate them by newlines.
-                  Lines starting with '#' are comments. Inline-comments are not permitted.
-                '';
-              };
-            };
-          }
-        );
-
-        example = [
-          # examples taken from upstream
-          {
-            match = "_SYSTEMD_UNIT = systemd-logind.service";
-            filters = ''
-              New session [a-z]?\d+ of user \w+\.
-              Removed session [a-z]?\d+\.
-            '';
-          }
-
-          {
-            match = "SYSLOG_IDENTIFIER = /(CROND|crond)/";
-            filters = ''
-              pam_unix\(crond:session\): session (opened|closed) for user \w+
-              \(\w+\) CMD .*
-            '';
-          }
-        ];
-
         # another example from upstream.
         # very useful on priority = 6, and required as journalwatch throws an error when no pattern is defined at all.
         default = [
           {
-            match = "SYSLOG_IDENTIFIER = systemd";
             filters = ''
               (Stopped|Stopping|Starting|Started) .*
               (Created slice|Removed slice) user-\d*\.slice\.
@@ -188,6 +109,8 @@ in
               (Reached target|Stopped target) .*
               Startup finished in \d*ms\.
             '';
+
+            match = "SYSLOG_IDENTIFIER = systemd";
           }
         ];
 
@@ -202,35 +125,166 @@ in
           All regular expressions are extended Python regular expressions, for details
           see: http://doc.pyschools.com/html/regex.html
         '';
+
+        example = [
+          # examples taken from upstream
+          {
+            filters = ''
+              New session [a-z]?\d+ of user \w+\.
+              Removed session [a-z]?\d+\.
+            '';
+
+            match = "_SYSTEMD_UNIT = systemd-logind.service";
+          }
+
+          {
+            filters = ''
+              pam_unix\(crond:session\): session (opened|closed) for user \w+
+              \(\w+\) CMD .*
+            '';
+
+            match = "SYSLOG_IDENTIFIER = /(CROND|crond)/";
+          }
+        ];
+
+        type = lib.types.listOf (
+          lib.types.submodule {
+            options = {
+              filters = lib.mkOption {
+                description = ''
+                  The filters to apply on all messages which satisfy {option}`match`.
+                  Any of those messages that match any specified filter will be removed from journalwatch's output.
+                  Each filter is an extended Python regular expression.
+                  You can specify multiple filters and separate them by newlines.
+                  Lines starting with '#' are comments. Inline-comments are not permitted.
+                '';
+
+                example = ''
+                  (Stopped|Stopping|Starting|Started) .*
+                  (Reached target|Stopped target) .*
+                '';
+
+                type = lib.types.str;
+              };
+
+              match = lib.mkOption {
+                description = ''
+                  Syntax: `field = value`
+                  Specifies the log entry `field` this block should apply to.
+                  If the `field` of a message matches this `value`,
+                  this patternBlock's {option}`filters` are applied.
+                  If `value` starts and ends with a slash, it is interpreted as
+                  an extended python regular expression, if not, it's an exact match.
+                  The journal fields are explained in {manpage}`systemd.journal-fields(7)`.
+                '';
+
+                example = "SYSLOG_IDENTIFIER = systemd";
+                type = lib.types.str;
+              };
+            };
+          }
+        );
       };
 
       interval = lib.mkOption {
-        type = lib.types.str;
         default = "hourly";
+
         description = ''
           How often to run journalwatch.
 
           The format is described in {manpage}`systemd.time(7)`.
         '';
-      };
-      accuracy = lib.mkOption {
-        type = lib.types.str;
-        default = "10min";
-        description = ''
-          The time window around the interval in which the journalwatch run will be scheduled.
 
-          The format is described in {manpage}`systemd.time(7)`.
+        type = lib.types.str;
+      };
+
+      mailBinary = lib.mkOption {
+        default = "/run/wrappers/bin/sendmail";
+
+        description = ''
+          Sendmail-compatible binary to be used to send the messages.
         '';
+
+        type = lib.types.path;
+      };
+
+      # HACK: this is a workaround for journalwatch's usage of socket.getfqdn() which always returns localhost if
+      # there's an alias for the localhost on a separate line in /etc/hosts, or take for ages if it's not present and
+      # then return something right-ish in the direction of /etc/hostname. Just bypass it completely.
+      mailFrom = lib.mkOption {
+        default = "journalwatch@${config.networking.hostName}";
+        defaultText = lib.literalExpression ''"journalwatch@''${config.networking.hostName}"'';
+
+        description = ''
+          Mail address to send journalwatch reports from.
+        '';
+
+        type = lib.types.str;
+      };
+
+      mailTo = lib.mkOption {
+        default = null;
+
+        description = ''
+          Mail address to send journalwatch reports to.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      priority = lib.mkOption {
+        default = 6;
+
+        description = ''
+          Lowest priority of message to be considered.
+          A value between 7 ("debug"), and 0 ("emerg"). Defaults to 6 ("info").
+          If you don't care about anything with "info" priority, you can reduce
+          this to e.g. 5 ("notice") to considerably reduce the amount of
+          messages without needing many {option}`filterBlocks`.
+        '';
+
+        type = lib.types.ints.between 0 7;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
 
-    users.users.${user} = {
-      isSystemUser = true;
-      home = dataDir;
-      group = group;
+    systemd.services.journalwatch = {
+
+      environment = {
+        XDG_CONFIG_HOME = journalwatchConfigDir;
+        # journalwatch stores the last processed timpestamp here
+        # the share subdirectory is historic now that config home lives in /nix/store,
+        # but moving this in a backwards-compatible way is much more work than what's justified
+        # for cleaning that up.
+        XDG_DATA_HOME = "${dataDir}/share";
+      };
+
+      serviceConfig = {
+        ExecStart = "${lib.getExe cfg.package} mail";
+        Group = group;
+        IOSchedulingPriority = 7;
+        # lowest CPU and IO priority, but both still in best-effort class to prevent starvation
+        Nice = 19;
+        # requires a relative directory name to create beneath /var/lib
+        StateDirectory = user;
+        StateDirectoryMode = "0750";
+        Type = "oneshot";
+        User = user;
+      };
+    };
+
+    systemd.timers.journalwatch = {
+      description = "Periodic journalwatch run";
+
+      timerConfig = {
+        AccuracySec = cfg.accuracy;
+        OnCalendar = cfg.interval;
+        Persistent = true;
+      };
+
+      wantedBy = [ "timers.target" ];
     };
 
     systemd.tmpfiles.rules = [
@@ -239,38 +293,10 @@ in
       "R ${dataDir}/config"
     ];
 
-    systemd.services.journalwatch = {
-
-      environment = {
-        # journalwatch stores the last processed timpestamp here
-        # the share subdirectory is historic now that config home lives in /nix/store,
-        # but moving this in a backwards-compatible way is much more work than what's justified
-        # for cleaning that up.
-        XDG_DATA_HOME = "${dataDir}/share";
-        XDG_CONFIG_HOME = journalwatchConfigDir;
-      };
-      serviceConfig = {
-        User = user;
-        Group = group;
-        Type = "oneshot";
-        # requires a relative directory name to create beneath /var/lib
-        StateDirectory = user;
-        StateDirectoryMode = "0750";
-        ExecStart = "${lib.getExe cfg.package} mail";
-        # lowest CPU and IO priority, but both still in best-effort class to prevent starvation
-        Nice = 19;
-        IOSchedulingPriority = 7;
-      };
-    };
-
-    systemd.timers.journalwatch = {
-      description = "Periodic journalwatch run";
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnCalendar = cfg.interval;
-        AccuracySec = cfg.accuracy;
-        Persistent = true;
-      };
+    users.users.${user} = {
+      group = group;
+      home = dataDir;
+      isSystemUser = true;
     };
 
   };

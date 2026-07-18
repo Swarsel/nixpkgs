@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   jmespath,
   pytest-asyncio,
   pytest-cov-stub,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysma";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kellerza";
@@ -29,6 +28,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv-build>=0.9,<0.11" uv-build
   '';
 
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ uv-build ];
 
   dependencies = [
@@ -37,13 +43,7 @@ buildPythonPackage (finalAttrs: {
     jmespath
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pysma" ];
 
   meta = {

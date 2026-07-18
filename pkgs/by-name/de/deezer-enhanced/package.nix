@@ -1,35 +1,34 @@
 {
   ### Tools
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeWrapper,
+  alsa-lib,
+  at-spi2-atk,
   autoPatchelfHook,
+  cairo,
+  cups,
+  dbus,
   dpkg,
+  expat,
+  glib,
   gnutar,
-
-  ### Libs
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
+  gtk3,
+  libGL,
   libx11,
   libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
   libxkbcommon,
-  glib,
+  ### Libs
+  libxrandr,
+  makeWrapper,
   nss,
-  dbus,
-  at-spi2-atk,
-  cups,
-  gtk3,
-  pango,
-  cairo,
-  expat,
-  systemdLibs,
-  alsa-lib,
   nwjs,
-  libGL,
+  pango,
+  stdenvNoCC,
+  systemdLibs,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -76,14 +75,6 @@ stdenvNoCC.mkDerivation rec {
     nwjs # For libffmpeg.so
   ];
 
-  unpackPhase = ''
-    runHook preUnpack
-
-    dpkg-deb --fsys-tarfile $src | tar --no-same-owner --no-same-permissions -xvf -
-
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -123,13 +114,21 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    dpkg-deb --fsys-tarfile $src | tar --no-same-owner --no-same-permissions -xvf -
+
+    runHook postUnpack
+  '';
+
   meta = {
+    description = "Unofficial application for Deezer with enhanced features";
     homepage = "https://github.com/duzda/deezer-enhanced";
     changelog = "https://github.com/duzda/deezer-enhanced/releases/tag/v${version}";
-    description = "Unofficial application for Deezer with enhanced features";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ minegameYTB ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "deezer-enhanced";
-    maintainers = with lib.maintainers; [ minegameYTB ];
   };
 }

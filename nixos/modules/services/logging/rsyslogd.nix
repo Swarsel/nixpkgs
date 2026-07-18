@@ -39,41 +39,49 @@ in
     services.rsyslogd = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable syslogd.  Note that systemd also logs
           syslog messages, so you normally don't need to run syslogd.
         '';
+
+        type = lib.types.bool;
       };
 
       defaultConfig = lib.mkOption {
-        type = lib.types.lines;
         default = defaultConf;
+
         description = ''
           The default {file}`syslog.conf` file configures a
           fairly standard setup of log files, which can be extended by
           means of {var}`extraConfig`.
         '';
+
+        type = lib.types.lines;
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
-        example = "news.* -/var/log/news";
+
         description = ''
           Additional text appended to {file}`syslog.conf`,
           i.e. the contents of {var}`defaultConfig`.
         '';
+
+        example = "news.* -/var/log/news";
+        type = lib.types.lines;
       };
 
       extraParams = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
-        example = [ "-m 0" ];
+
         description = ''
           Additional parameters passed to {command}`rsyslogd`.
         '';
+
+        example = [ "-m 0" ];
+        type = lib.types.listOf lib.types.str;
       };
 
     };
@@ -88,10 +96,7 @@ in
 
     systemd.services.syslog = {
       description = "Syslog Daemon";
-
       requires = [ "syslog.socket" ];
-
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
         ExecStart = "${pkgs.rsyslog}/sbin/rsyslogd ${toString cfg.extraParams} -f ${syslogConf} -n";
@@ -99,6 +104,8 @@ in
         # Prevent syslogd output looping back through journald.
         StandardOutput = "null";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

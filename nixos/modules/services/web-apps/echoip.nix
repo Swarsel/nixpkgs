@@ -8,57 +8,70 @@ let
   cfg = config.services.echoip;
 in
 {
-  meta.maintainers = with lib.maintainers; [ defelo ];
-
   options.services.echoip = {
     enable = lib.mkEnableOption "echoip";
-
     package = lib.mkPackageOption pkgs "echoip" { };
-
-    virtualHost = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      description = ''
-        Name of the nginx virtual host to use and setup. If null, do not setup anything.
-      '';
-      default = null;
-    };
+    enablePortLookup = lib.mkEnableOption "port lookup";
+    enableReverseHostnameLookups = lib.mkEnableOption "reverse hostname lookups";
 
     extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      description = "Extra command line arguments to pass to echoip. See <https://github.com/mpolden/echoip> for details.";
       default = [ ];
+      description = "Extra command line arguments to pass to echoip. See <https://github.com/mpolden/echoip> for details.";
+      type = lib.types.listOf lib.types.str;
     };
 
     listenAddress = lib.mkOption {
-      type = lib.types.str;
-      description = "The address echoip should listen on";
       default = ":8080";
+      description = "The address echoip should listen on";
       example = "127.0.0.1:8000";
+      type = lib.types.str;
     };
 
-    enablePortLookup = lib.mkEnableOption "port lookup";
-
-    enableReverseHostnameLookups = lib.mkEnableOption "reverse hostname lookups";
-
     remoteIpHeader = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      description = "Header to trust for remote IP, if present";
       default = null;
+      description = "Header to trust for remote IP, if present";
       example = "X-Real-IP";
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    virtualHost = lib.mkOption {
+      default = null;
+
+      description = ''
+        Name of the nginx virtual host to use and setup. If null, do not setup anything.
+      '';
+
+      type = lib.types.nullOr lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.services.echoip = {
-      wantedBy = [ "multi-user.target" ];
+    services.echoip = lib.mkIf (cfg.virtualHost != null) {
+      listenAddress = lib.mkDefault "127.0.0.1:8080";
+      remoteIpHeader = "X-Real-IP";
+    };
 
-      wants = [ "network-online.target" ];
+    services.nginx = lib.mkIf (cfg.virtualHost != null) {
+      enable = true;
+
+      virtualHosts.${cfg.virtualHost} = {
+        locations."/" = {
+          proxyPass = "http://${cfg.listenAddress}";
+          recommendedProxySettings = true;
+        };
+      };
+    };
+
+    systemd.services.echoip = {
       after = [ "network-online.target" ];
 
       serviceConfig = {
-        User = "echoip";
-        Group = "echoip";
+        # Hardening
+        AmbientCapabilities = "";
+        CapabilityBoundingSet = [ "" ];
+        DevicePolicy = "closed";
         DynamicUser = true;
+
         ExecStart = lib.escapeShellArgs (
           [
             (lib.getExe cfg.package)
@@ -74,10 +87,7 @@ in
           ++ cfg.extraArgs
         );
 
-        # Hardening
-        AmbientCapabilities = "";
-        CapabilityBoundingSet = [ "" ];
-        DevicePolicy = "closed";
+        Group = "echoip";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -100,29 +110,22 @@ in
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
           "setrlimit"
         ];
+
         UMask = "0077";
+        User = "echoip";
       };
-    };
 
-    services.nginx = lib.mkIf (cfg.virtualHost != null) {
-      enable = true;
-      virtualHosts.${cfg.virtualHost} = {
-        locations."/" = {
-          proxyPass = "http://${cfg.listenAddress}";
-          recommendedProxySettings = true;
-        };
-      };
-    };
-
-    services.echoip = lib.mkIf (cfg.virtualHost != null) {
-      listenAddress = lib.mkDefault "127.0.0.1:8080";
-      remoteIpHeader = "X-Real-IP";
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ defelo ];
 }

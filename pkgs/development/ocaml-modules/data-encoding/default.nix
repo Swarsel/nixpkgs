@@ -1,23 +1,25 @@
 {
   lib,
-  buildDunePackage,
-  ppx_hash,
   bigstringaf,
+  buildDunePackage,
   either,
   ezjsonm,
-  zarith,
-  zarith_stubs_js ? null,
   hex,
   json-data-encoding,
   json-data-encoding-bson,
   ppx_expect,
+  ppx_hash,
+  zarith,
+  zarith_stubs_js ? null,
 }:
 
 buildDunePackage {
-  pname = "data-encoding";
   inherit (json-data-encoding) src version;
+  pname = "data-encoding";
 
-  minimalOCamlVersion = "4.10";
+  buildInputs = [
+    ppx_expect
+  ];
 
   propagatedBuildInputs = [
     bigstringaf
@@ -31,13 +33,11 @@ buildDunePackage {
     json-data-encoding-bson
   ];
 
-  buildInputs = [
-    ppx_expect
-  ];
+  minimalOCamlVersion = "4.10";
 
   meta = {
-    homepage = "https://gitlab.com/nomadic-labs/data-encoding";
     description = "Library of JSON and binary encoding combinators";
+    homepage = "https://gitlab.com/nomadic-labs/data-encoding";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ulrikstrid ];
   };

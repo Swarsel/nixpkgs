@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "batmon";
@@ -19,16 +19,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Interactive batteries viewer";
+
     longDescription = ''
       An interactive viewer, similar to top, htop and other *top utilities,
       but about the batteries installed in your notebook.
     '';
+
     homepage = "https://github.com/6543/batmon/";
     changelog = "https://github.com/6543/batmon/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "batmon";
-    platforms = with lib.platforms; unix ++ windows;
-    broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;
     maintainers = with lib.maintainers; [ _6543 ];
+    platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "batmon";
+    broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;
   };
 })

@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "4.3.4";
   pname = "randoop";
+  version = "4.3.4";
 
   src = fetchurl {
     url = "https://github.com/randoop/randoop/releases/download/v${finalAttrs.version}/randoop-${finalAttrs.version}.zip";
@@ -26,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Automatic test generation for Java";
     homepage = "https://randoop.github.io/randoop/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.linux;
   };

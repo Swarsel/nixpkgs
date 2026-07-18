@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  setuptools,
+  buildPythonPackage,
   commentjson,
+  fetchpatch,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "resolvelib";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sarugaku";
@@ -22,19 +21,19 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-sEH5R/U8APC1Lti47ZXHLruVwUbwfGp2HAp7nj+l1KM=";
       name = "fix-with-packaging-26.patch";
       url = "https://github.com/sarugaku/resolvelib/commit/017d3a7a9ecdd01f5349d263e31d196f4f27e483.patch";
-      hash = "sha256-sEH5R/U8APC1Lti47ZXHLruVwUbwfGp2HAp7nj+l1KM=";
     })
   ];
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     commentjson
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "resolvelib" ];
 
   meta = {

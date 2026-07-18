@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
   cmake,
   libspecbleach,
   lv2,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,20 +21,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GzOUcC161syjazazf+ywssWL0iH17eNhmhTBcjsuaQ0=";
   };
 
-  mesonFlags = [
-    "--prefix=${placeholder "out"}/lib/lv2"
-    "--buildtype=release"
-  ];
-
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
     cmake
   ];
+
   buildInputs = [
     libspecbleach
     lv2
+  ];
+
+  mesonFlags = [
+    "--prefix=${placeholder "out"}/lib/lv2"
+    "--buildtype=release"
   ];
 
   meta = {

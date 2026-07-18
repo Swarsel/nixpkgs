@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   hatch-vcs,
+  hatchling,
 }:
 
 let
   version = "1.0.0";
 in
 buildPythonPackage {
-  pname = "hatch-build-scripts";
   inherit version;
-  pyproject = true;
+  pname = "hatch-build-scripts";
 
   src = fetchFromGitHub {
     owner = "rmorshea";
@@ -22,9 +21,8 @@ buildPythonPackage {
   };
 
   build-system = [ hatchling ];
-
   dependencies = [ hatch-vcs ];
-
+  pyproject = true;
   pythonImportsCheck = [ "hatch_build_scripts" ];
 
   meta = {

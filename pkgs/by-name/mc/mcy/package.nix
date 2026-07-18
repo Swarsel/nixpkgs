@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  yosys,
   python3,
+  yosys,
 }:
 
 let
@@ -21,6 +21,18 @@ stdenv.mkDerivation {
   };
 
   buildInputs = [ python ];
+
+  installPhase = ''
+    mkdir -p $out/bin $out/share/mcy/{dash,scripts}
+    install mcy.py      $out/bin/mcy      && chmod +x $out/bin/mcy
+    install mcy-dash.py $out/bin/mcy-dash && chmod +x $out/bin/mcy-dash
+    cp -r dash/.    $out/share/mcy/dash/.
+    cp -r scripts/. $out/share/mcy/scripts/.
+  '';
+
+  # the build needs a bit of work...
+  dontBuild = true;
+
   patchPhase = ''
     chmod +x scripts/create_mutated.sh
     patchShebangs .
@@ -33,16 +45,6 @@ stdenv.mkDerivation {
       --replace 'subprocess.Popen(["mcy"' "subprocess.Popen([\"$out/bin/mcy\""
     substituteInPlace scripts/create_mutated.sh \
       --replace yosys '${lib.getExe yosys}'
-  '';
-
-  # the build needs a bit of work...
-  dontBuild = true;
-  installPhase = ''
-    mkdir -p $out/bin $out/share/mcy/{dash,scripts}
-    install mcy.py      $out/bin/mcy      && chmod +x $out/bin/mcy
-    install mcy-dash.py $out/bin/mcy-dash && chmod +x $out/bin/mcy-dash
-    cp -r dash/.    $out/share/mcy/dash/.
-    cp -r scripts/. $out/share/mcy/scripts/.
   '';
 
   meta = {

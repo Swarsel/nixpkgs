@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  installShellFiles,
+  stdenv,
   fetchFromGitHub,
+  installShellFiles,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Atomically create a file with content";
-    platforms = lib.platforms.linux;
-    license = lib.licenses.cc0;
     homepage = "https://git.vuxu.org/spit/";
+    license = lib.licenses.cc0;
     maintainers = [ lib.maintainers.sternenseemann ];
+    platforms = lib.platforms.linux;
     mainProgram = "spit";
   };
 })

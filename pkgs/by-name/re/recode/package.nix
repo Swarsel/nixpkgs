@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  python3Packages,
-  perl,
   flex,
-  texinfo,
   libiconv,
   libintl,
+  perl,
+  python3Packages,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,9 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ libintl ];
-
-  enableParallelBuilding = true;
-
   doCheck = true;
 
   nativeCheckInputs = with python3Packages; [
@@ -39,16 +36,20 @@ stdenv.mkDerivation (finalAttrs: {
     setuptools
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/rrthomas/recode";
     description = "Converts files between various character sets and usages";
-    mainProgram = "recode";
+    homepage = "https://github.com/rrthomas/recode";
     changelog = "https://github.com/rrthomas/recode/raw/v${finalAttrs.version}/NEWS";
-    platforms = lib.platforms.unix;
+
     license = with lib.licenses; [
       lgpl3Plus
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ jcumming ];
+    platforms = lib.platforms.unix;
+    mainProgram = "recode";
   };
 })

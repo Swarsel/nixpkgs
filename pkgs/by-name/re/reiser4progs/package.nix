@@ -16,8 +16,6 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ libaal ];
 
-  hardeningDisable = [ "format" ];
-
   preConfigure = ''
     substituteInPlace configure --replace " -static" ""
   '';
@@ -32,13 +30,14 @@ stdenv.mkDerivation rec {
     cp ./libmisc/.libs/libmisc.a $out/lib/libreiser4misc.a.la
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     inherit version;
-    homepage = "https://sourceforge.net/projects/reiser4/";
     description = "Reiser4 utilities";
+    homepage = "https://sourceforge.net/projects/reiser4/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
-
     # error: initialization of
     # 'int (*)(uint64_t *, uint64_t,  uint32_t,  int,  int)' {aka 'int (*)(long unsigned int *, long unsigned int,  unsigned int,  int,  int)'}
     # from incompatible pointer type

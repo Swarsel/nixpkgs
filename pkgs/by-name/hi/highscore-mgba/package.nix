@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libhighscore,
+  pkg-config,
   unstableGitUpdater,
 }:
 
@@ -60,9 +60,9 @@ stdenv.mkDerivation {
   };
 
   meta = {
+    inherit (libhighscore.meta) maintainers platforms;
     description = "Port of mGBA to Highscore";
     homepage = "https://github.com/highscore-emu/mednafen-highscore";
     license = lib.licenses.mpl20;
-    inherit (libhighscore.meta) maintainers platforms;
   };
 }

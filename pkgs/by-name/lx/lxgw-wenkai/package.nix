@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -17,10 +17,10 @@ stdenvNoCC.mkDerivation rec {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://lxgw.github.io/";
     description = "Open-source Chinese font derived from Fontworks' Klee One";
+    homepage = "https://lxgw.github.io/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ryanccn ];
+    platforms = lib.platforms.all;
   };
 }

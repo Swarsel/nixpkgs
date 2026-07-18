@@ -6,24 +6,26 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "turbostat";
   inherit (kernel) src version;
-
-  buildInputs = [ libcap ];
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
+  pname = "turbostat";
 
   postPatch = ''
     cd tools/power/x86/turbostat
   '';
 
+  buildInputs = [ libcap ];
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
+
   meta = {
     description = "Report processor frequency and idle statistics";
-    mainProgram = "turbostat";
     homepage = "https://www.kernel.org/";
     license = lib.licenses.gpl2Only;
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ]; # x86-specific
+
+    mainProgram = "turbostat";
   };
 }

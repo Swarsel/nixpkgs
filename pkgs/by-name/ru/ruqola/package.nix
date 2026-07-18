@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   cmake,
   kdePackages,
-  qt6,
   nix-update-script,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -13,11 +13,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.7.2";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "network";
     repo = "ruqola";
     tag = "v${finalAttrs.version}";
     hash = "sha256-6ModByNU47fWsUUp7TTqgStFViTZy5ZXPYcrj0Rwrpc=";
+    domain = "invent.kde.org";
   };
 
   nativeBuildInputs = [

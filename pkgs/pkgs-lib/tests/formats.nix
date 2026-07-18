@@ -10,13 +10,14 @@ let
       [ ]
       [
         {
+          # inject the name
+          file = "format-test-${name}";
+
           # explicitly throw here to trigger the code path that prints the error message for users
           value =
             lib.throwIfNot (format.type.check input)
               (builtins.trace input "definition does not pass the type's check function")
               input;
-          # inject the name
-          file = "format-test-${name}";
         }
       ];
 
@@ -25,8 +26,8 @@ let
     name: drv: expected:
     pkgs.runCommand name
       {
-        passAsFile = [ "expected" ];
         inherit expected drv;
+        passAsFile = [ "expected" ];
       }
       ''
         if diff -u "$expectedPath" "$drv"; then
@@ -42,12 +43,13 @@ let
   # in practice you do not have to supply the name parameter as this one will be added by runBuildTests
   shouldPass =
     {
+      expected,
       format,
       input,
-      expected,
     }:
     name: {
       name = "pass-${name}";
+
       path = runDiff "test-format-${name}" (format.generate "test-format-${name}" (
         mergeInput name format input
       )) expected;
@@ -76,11 +78,11 @@ let
       typeSucceeds =
         pkgs.runCommand "test-format-${name}"
           {
-            passAsFile = [ "inputText" ];
-            testName = name;
             # this will fail if the input contains functions as values
             # however that should get caught by the type check already
             inputText = builtins.toJSON input;
+            passAsFile = [ "inputText" ];
+            testName = name;
           }
           ''
             echo "Type check $testName passed when it shouldn't."
@@ -106,1151 +108,7 @@ let
 in
 runBuildTests {
 
-  jsonAtoms = shouldPass {
-    format = formats.json { };
-    input = {
-      null = null;
-      false = false;
-      true = true;
-      int = 10;
-      float = 3.141;
-      str = "foo";
-      attrs.foo = null;
-      list = [
-        null
-        null
-      ];
-      path = ./testfile;
-    };
-    expected = ''
-      {
-        "attrs": {
-          "foo": null
-        },
-        "false": false,
-        "float": 3.141,
-        "int": 10,
-        "list": [
-          null,
-          null
-        ],
-        "null": null,
-        "path": "${./testfile}",
-        "str": "foo",
-        "true": true
-      }
-    '';
-  };
-
-  jsonNull = shouldPass {
-    format = formats.json { };
-    input = null;
-    expected = ''
-      null
-    '';
-  };
-
-  yaml_1_1Atoms = shouldPass {
-    format = formats.yaml_1_1 { };
-    input = {
-      null = null;
-      false = false;
-      true = true;
-      float = 3.141;
-      str = "foo";
-      attrs.foo = null;
-      list = [
-        null
-        null
-      ];
-      path = ./testfile;
-      no = "no";
-      time = "22:30:00";
-    };
-    expected = ''
-      attrs:
-        foo: null
-      'false': false
-      float: 3.141
-      list:
-      - null
-      - null
-      'no': 'no'
-      'null': null
-      path: ${./testfile}
-      str: foo
-      time: '22:30:00'
-      'true': true
-    '';
-  };
-
-  yaml_1_1Null = shouldPass {
-    format = formats.yaml_1_1 { };
-    input = null;
-    expected = ''
-      null
-      ...
-    '';
-  };
-
-  yaml_1_2Atoms = shouldPass {
-    format = formats.yaml_1_2 { };
-    input = {
-      null = null;
-      false = false;
-      true = true;
-      float = 3.141;
-      str = "foo";
-      attrs.foo = null;
-      list = [
-        null
-        null
-      ];
-      path = ./testfile;
-      no = "no";
-      time = "22:30:00";
-    };
-    expected = ''
-      attrs:
-        foo: null
-      'false': false
-      float: 3.141
-      list:
-      - null
-      - null
-      no: no
-      'null': null
-      path: ${./testfile}
-      str: foo
-      time: 22:30:00
-      'true': true
-    '';
-  };
-
-  yaml_1_2Null = shouldPass {
-    format = formats.yaml_1_2 { };
-    input = null;
-    # nixfmt insists on removing indentation, so force it with ${"  "}
-    expected = ''
-
-      ${"  "}null
-    '';
-  };
-
-  iniAtoms = shouldPass {
-    format = formats.ini { };
-    input = {
-      foo = {
-        bool = true;
-        int = 10;
-        float = 3.141;
-        str = "string";
-      };
-    };
-    expected = ''
-      [foo]
-      bool=true
-      float=3.141000
-      int=10
-      str=string
-    '';
-  };
-
-  configobjAtoms = shouldPass {
-    format = formats.configobj { };
-    input = {
-      bool = true;
-      int = 10;
-      float = 3.141;
-      str = "string";
-    };
-    expected = ''
-      bool = True
-      float = 3.141
-      int = 10
-      str = string
-    '';
-  };
-
-  configobjListWithoutListToValue = shouldPass {
-    format = formats.configobj { };
-    input = {
-      items = [
-        1
-        true
-        "x"
-      ];
-    };
-    expected = ''
-      items = 1, True, x
-    '';
-  };
-
-  configobjNestedAttrsets = shouldPass {
-    format = formats.configobj { };
-    input = {
-      server = {
-        host = "127.0.0.1";
-        port = 8080;
-        enabled = true;
-        tags = [
-          "web"
-          "nix"
-          42
-        ];
-      };
-
-      logging = {
-        level = "info";
-        rotate = true;
-      };
-
-      interfaces = {
-        local = {
-          address = "123";
-          coin = {
-            foo = "bar";
-          };
-        };
-        remote = {
-          address = "456";
-        };
-      };
-    };
-    expected = ''
-      [interfaces]
-      [[local]]
-      address = 123
-      [[[coin]]]
-      foo = bar
-      [[remote]]
-      address = 456
-      [logging]
-      level = info
-      rotate = True
-      [server]
-      enabled = True
-      host = 127.0.0.1
-      port = 8080
-      tags = web, nix, 42
-    '';
-  };
-
-  configobjNullableValues = shouldPass {
-    format = formats.configobj { };
-    input = {
-      nullable = null;
-      nested = {
-        keep = "ok";
-        missing = null;
-      };
-    };
-    expected = ''
-      nullable = None
-      [nested]
-      keep = ok
-      missing = None
-    '';
-  };
-
-  configobjInvalidAtom = shouldFail {
-    format = formats.configobj { };
-    input = {
-      function = _: 1;
-    };
-  };
-
-  iniInvalidAtom = shouldFail {
-    format = formats.ini { };
-    input = {
-      foo = {
-        function = _: 1;
-      };
-    };
-  };
-
-  iniDuplicateKeysWithoutList = shouldFail {
-    format = formats.ini { };
-    input = {
-      foo = {
-        bar = [
-          null
-          true
-          "test"
-          1.2
-          10
-        ];
-        baz = false;
-        qux = "qux";
-      };
-    };
-  };
-
-  iniDuplicateKeys = shouldPass {
-    format = formats.ini { listsAsDuplicateKeys = true; };
-    input = {
-      foo = {
-        bar = [
-          null
-          true
-          "test"
-          1.2
-          10
-        ];
-        baz = false;
-        qux = "qux";
-      };
-    };
-    expected = ''
-      [foo]
-      bar=null
-      bar=true
-      bar=test
-      bar=1.200000
-      bar=10
-      baz=false
-      qux=qux
-    '';
-  };
-
-  iniListToValue = shouldPass {
-    format = formats.ini {
-      listToValue = lib.concatMapStringsSep ", " (lib.generators.mkValueStringDefault { });
-    };
-    input = {
-      foo = {
-        bar = [
-          null
-          true
-          "test"
-          1.2
-          10
-        ];
-        baz = false;
-        qux = "qux";
-      };
-    };
-    expected = ''
-      [foo]
-      bar=null, true, test, 1.200000, 10
-      baz=false
-      qux=qux
-    '';
-  };
-
-  iniCoercedDuplicateKeys = shouldPass rec {
-    format = formats.ini {
-      listsAsDuplicateKeys = true;
-      atomsCoercedToLists = true;
-    };
-    input =
-      format.type.merge
-        [ ]
-        [
-          {
-            file = "format-test-inner-iniCoercedDuplicateKeys";
-            value = {
-              foo = {
-                bar = 1;
-              };
-            };
-          }
-          {
-            file = "format-test-inner-iniCoercedDuplicateKeys";
-            value = {
-              foo = {
-                bar = 2;
-              };
-            };
-          }
-        ];
-    expected = ''
-      [foo]
-      bar=1
-      bar=2
-    '';
-  };
-
-  iniCoercedListToValue = shouldPass rec {
-    format = formats.ini {
-      listToValue = lib.concatMapStringsSep ", " (lib.generators.mkValueStringDefault { });
-      atomsCoercedToLists = true;
-    };
-    input =
-      format.type.merge
-        [ ]
-        [
-          {
-            file = "format-test-inner-iniCoercedListToValue";
-            value = {
-              foo = {
-                bar = 1;
-              };
-            };
-          }
-          {
-            file = "format-test-inner-iniCoercedListToValue";
-            value = {
-              foo = {
-                bar = 2;
-              };
-            };
-          }
-        ];
-    expected = ''
-      [foo]
-      bar=1, 2
-    '';
-  };
-
-  iniCoercedNoLists = shouldFail {
-    format = formats.ini { atomsCoercedToLists = true; };
-    input = {
-      foo = {
-        bar = 1;
-      };
-    };
-  };
-
-  iniNoCoercedNoLists = shouldFail {
-    format = formats.ini { atomsCoercedToLists = false; };
-    input = {
-      foo = {
-        bar = 1;
-      };
-    };
-  };
-
-  iniWithGlobalNoSections = shouldPass {
-    format = formats.iniWithGlobalSection { };
-    input = { };
-    expected = "";
-  };
-
-  iniWithGlobalOnlySections = shouldPass {
-    format = formats.iniWithGlobalSection { };
-    input = {
-      sections = {
-        foo = {
-          bar = "baz";
-        };
-      };
-    };
-    expected = ''
-      [foo]
-      bar=baz
-    '';
-  };
-
-  iniWithGlobalOnlyGlobal = shouldPass {
-    format = formats.iniWithGlobalSection { };
-    input = {
-      globalSection = {
-        bar = "baz";
-      };
-    };
-    expected = ''
-      bar=baz
-
-    '';
-  };
-
-  iniWithGlobalWrongSections = shouldFail {
-    format = formats.iniWithGlobalSection { };
-    input = {
-      foo = { };
-    };
-  };
-
-  iniWithGlobalEverything = shouldPass {
-    format = formats.iniWithGlobalSection { };
-    input = {
-      globalSection = {
-        bar = true;
-      };
-      sections = {
-        foo = {
-          bool = true;
-          int = 10;
-          float = 3.141;
-          str = "string";
-        };
-      };
-    };
-    expected = ''
-      bar=true
-
-      [foo]
-      bool=true
-      float=3.141000
-      int=10
-      str=string
-    '';
-  };
-
-  iniWithGlobalListToValue = shouldPass {
-    format = formats.iniWithGlobalSection {
-      listToValue = lib.concatMapStringsSep ", " (lib.generators.mkValueStringDefault { });
-    };
-    input = {
-      globalSection = {
-        bar = [
-          null
-          true
-          "test"
-          1.2
-          10
-        ];
-        baz = false;
-        qux = "qux";
-      };
-      sections = {
-        foo = {
-          bar = [
-            null
-            true
-            "test"
-            1.2
-            10
-          ];
-          baz = false;
-          qux = "qux";
-        };
-      };
-    };
-    expected = ''
-      bar=null, true, test, 1.200000, 10
-      baz=false
-      qux=qux
-
-      [foo]
-      bar=null, true, test, 1.200000, 10
-      baz=false
-      qux=qux
-    '';
-  };
-
-  iniWithGlobalCoercedDuplicateKeys = shouldPass rec {
-    format = formats.iniWithGlobalSection {
-      listsAsDuplicateKeys = true;
-      atomsCoercedToLists = true;
-    };
-    input =
-      format.type.merge
-        [ ]
-        [
-          {
-            file = "format-test-inner-iniWithGlobalCoercedDuplicateKeys";
-            value = {
-              globalSection = {
-                baz = 4;
-              };
-              sections = {
-                foo = {
-                  bar = 1;
-                };
-              };
-            };
-          }
-          {
-            file = "format-test-inner-iniWithGlobalCoercedDuplicateKeys";
-            value = {
-              globalSection = {
-                baz = 3;
-              };
-              sections = {
-                foo = {
-                  bar = 2;
-                };
-              };
-            };
-          }
-        ];
-    expected = ''
-      baz=3
-      baz=4
-
-      [foo]
-      bar=2
-      bar=1
-    '';
-  };
-
-  iniWithGlobalCoercedListToValue = shouldPass rec {
-    format = formats.iniWithGlobalSection {
-      listToValue = lib.concatMapStringsSep ", " (lib.generators.mkValueStringDefault { });
-      atomsCoercedToLists = true;
-    };
-    input =
-      format.type.merge
-        [ ]
-        [
-          {
-            file = "format-test-inner-iniWithGlobalCoercedListToValue";
-            value = {
-              globalSection = {
-                baz = 4;
-              };
-              sections = {
-                foo = {
-                  bar = 1;
-                };
-              };
-            };
-          }
-          {
-            file = "format-test-inner-iniWithGlobalCoercedListToValue";
-            value = {
-              globalSection = {
-                baz = 3;
-              };
-              sections = {
-                foo = {
-                  bar = 2;
-                };
-              };
-            };
-          }
-        ];
-    expected = ''
-      baz=3, 4
-
-      [foo]
-      bar=2, 1
-    '';
-  };
-
-  iniWithGlobalCoercedNoLists = shouldFail {
-    format = formats.iniWithGlobalSection { atomsCoercedToLists = true; };
-    input = {
-      globalSection = {
-        baz = 4;
-      };
-      foo = {
-        bar = 1;
-      };
-    };
-  };
-
-  iniWithGlobalNoCoercedNoLists = shouldFail {
-    format = formats.iniWithGlobalSection { atomsCoercedToLists = false; };
-    input = {
-      globalSection = {
-        baz = 4;
-      };
-      foo = {
-        bar = 1;
-      };
-    };
-  };
-
-  keyValueAtoms = shouldPass {
-    format = formats.keyValue { };
-    input = {
-      bool = true;
-      int = 10;
-      float = 3.141;
-      str = "string";
-    };
-    expected = ''
-      bool=true
-      float=3.141000
-      int=10
-      str=string
-    '';
-  };
-
-  keyValueDuplicateKeys = shouldPass {
-    format = formats.keyValue { listsAsDuplicateKeys = true; };
-    input = {
-      bar = [
-        null
-        true
-        "test"
-        1.2
-        10
-      ];
-      baz = false;
-      qux = "qux";
-    };
-    expected = ''
-      bar=null
-      bar=true
-      bar=test
-      bar=1.200000
-      bar=10
-      baz=false
-      qux=qux
-    '';
-  };
-
-  keyValueListToValue = shouldPass {
-    format = formats.keyValue {
-      listToValue = lib.concatMapStringsSep ", " (lib.generators.mkValueStringDefault { });
-    };
-    input = {
-      bar = [
-        null
-        true
-        "test"
-        1.2
-        10
-      ];
-      baz = false;
-      qux = "qux";
-    };
-    expected = ''
-      bar=null, true, test, 1.200000, 10
-      baz=false
-      qux=qux
-    '';
-  };
-
-  tomlAtoms = shouldPass {
-    format = formats.toml { };
-    input = {
-      false = false;
-      true = true;
-      int = 10;
-      float = 3.141;
-      str = "foo";
-      attrs.foo = "foo";
-      list = [
-        1
-        2
-      ];
-      level1.level2.level3.level4 = "deep";
-    };
-    expected = ''
-      false = false
-      float = 3.141
-      int = 10
-      list = [1, 2]
-      str = "foo"
-      true = true
-
-      [attrs]
-      foo = "foo"
-
-      [level1.level2.level3]
-      level4 = "deep"
-    '';
-  };
-
-  # Regression test for https://github.com/NixOS/nixpkgs/issues/511970
-  # yj crashes on arrays mixing scalars and attrsets (heterogeneous arrays),
-  # e.g. Helix language-server configs like ["bash-ls", {name = "ts-ls"; ...}].
-  # TOML 1.0 allows mixed-type arrays; the converter must emit them as
-  # inline arrays with inline tables.
-  tomlHeterogeneousArray = shouldPass {
-    format = formats.toml { };
-    input = {
-      language-server = [
-        "bash-language-server"
-        {
-          name = "typescript-language-server";
-          except-features = [ "diagnostics" ];
-        }
-      ];
-    };
-    expected = ''
-      language-server = ["bash-language-server", { except-features = ["diagnostics"], name = "typescript-language-server" }]
-    '';
-  };
-
-  # Regression test for https://github.com/sclevine/yj/issues/52
-  # yj truncates keys at the first comma because it stores TOML keys in Go
-  # struct tags, where commas are option separators.
-  # e.g. "stack(x,n)" is emitted as "stack(x" — silently losing data.
-  tomlCommaInKey = shouldPass {
-    format = formats.toml { };
-    input = {
-      "stack(x,n)" = "foobar";
-    };
-    expected = ''
-      "stack(x,n)" = "foobar"
-    '';
-  };
-
-  tomlNull = shouldFail {
-    format = formats.toml { };
-    input = null;
-  };
-
-  cdnAtoms = shouldPass {
-    format = formats.cdn { };
-    input = {
-      null = null;
-      false = false;
-      true = true;
-      int = 10;
-      float = 3.141;
-      str = "foo";
-      attrs.foo = null;
-      list = [
-        1
-        null
-      ];
-      path = ./testfile;
-    };
-    expected = ''
-      attrs {
-        "foo": null
-      }
-      "false": false
-      "float": 3.141
-      "int": 10
-      list [
-        1,
-        null
-      ]
-      "null": null
-      "path": "${./testfile}"
-      "str": "foo"
-      "true": true
-    '';
-  };
-
-  cdnNull = shouldPass {
-    format = formats.cdn { };
-    input = null;
-    expected = ''
-      null: null
-    '';
-  };
-
-  # This test is responsible for
-  #   1. testing type coercions
-  #   2. providing a more readable example test
-  # Whereas java-properties/default.nix tests the low level escaping, etc.
-  javaProperties = shouldPass {
-    format = formats.javaProperties { };
-    input = {
-      floaty = 3.1415;
-      tautologies = true;
-      contradictions = false;
-      foo = "bar";
-      # # Disallowed at eval time, because it's ambiguous:
-      # # add to store or convert to string?
-      # root = /root;
-      "1" = 2;
-      package = pkgs.hello;
-      "ütf 8" = "dûh";
-      # NB: Some editors (vscode) show this _whole_ line in right-to-left order
-      "الجبر" = "أكثر من مجرد أرقام";
-    };
-    expected = ''
-      # Generated with Nix
-
-      1 = 2
-      contradictions = false
-      floaty = 3.141500
-      foo = bar
-      package = ${pkgs.hello}
-      tautologies = true
-      \u00fctf\ 8 = d\u00fbh
-      \u0627\u0644\u062c\u0628\u0631 = \u0623\u0643\u062b\u0631 \u0645\u0646 \u0645\u062c\u0631\u062f \u0623\u0631\u0642\u0627\u0645
-    '';
-  };
-
-  luaTable = shouldPass {
-    format = formats.lua { };
-    input = {
-      null = null;
-      false = false;
-      true = true;
-      int = 10;
-      float = 3.141;
-      str = "foo";
-      attrs.foo = null;
-      list = [
-        null
-        null
-      ];
-      path = ./testfile;
-      inline = lib.mkLuaInline "hello('world')";
-    };
-    expected = ''
-      return {
-        ["attrs"] = {
-          ["foo"] = nil,
-        },
-        ["false"] = false,
-        ["float"] = 3.141,
-        ["inline"] = (hello("world")),
-        ["int"] = 10,
-        ["list"] = {
-          nil,
-          nil,
-        },
-        ["null"] = nil,
-        ["path"] = "${./testfile}",
-        ["str"] = "foo",
-        ["true"] = true,
-      }
-    '';
-  };
-
-  luaBindings = shouldPass {
-    format = formats.lua {
-      asBindings = true;
-    };
-    input = {
-      null = null;
-      _false = false;
-      _true = true;
-      int = 10;
-      float = 3.141;
-      str = "foo";
-      attrs.foo = null;
-      list = [
-        null
-        null
-      ];
-      path = ./testfile;
-      inline = lib.mkLuaInline "hello('world')";
-    };
-    expected = ''
-      _false = false
-      _true = true
-      attrs = {
-        ["foo"] = nil,
-      }
-      float = 3.141
-      inline = (hello("world"))
-      int = 10
-      list = {
-        nil,
-        nil,
-      }
-      null = nil
-      path = "${./testfile}"
-      str = "foo"
-    '';
-  };
-
-  luaNull = shouldPass {
-    format = formats.lua { };
-    input = null;
-    expected = ''
-      return nil
-    '';
-  };
-
-  nixConfAtoms = shouldPass {
-    format = formats.nixConf {
-      package = pkgs.nix;
-      version = pkgs.nix.version;
-      extraOptions = "ignore-try = false";
-    };
-    input = {
-      auto-optimise-store = true;
-      cores = 0;
-      store = "auto";
-    };
-    # note that null type is hard to test here,
-    # as it involves a trailing space our formatter will remove here
-    expected = ''
-      # WARNING: this file is generated from the nix.* options in
-      # your NixOS configuration, typically
-      # /etc/nixos/configuration.nix.  Do not edit it!
-      auto-optimise-store = true
-      cores = 0
-      store = auto
-
-      ignore-try = false
-    '';
-  };
-
-  nixConfNull = shouldFail {
-    format = formats.nixConf {
-      package = pkgs.nix;
-      version = pkgs.nix.version;
-      extraOptions = "ignore-try = false";
-    };
-    input = null;
-  };
-
-  phpAtoms = shouldPass rec {
-    format = formats.php { finalVariable = "config"; };
-    input = {
-      null = null;
-      false = false;
-      true = true;
-      int = 10;
-      float = 3.141;
-      str = "foo";
-      str_special = "foo\ntesthello'''";
-      attrs.foo = null;
-      list = [
-        null
-        null
-      ];
-      mixed = format.lib.mkMixedArray [ 10 3.141 ] {
-        str = "foo";
-        attrs.foo = null;
-      };
-      raw = format.lib.mkRaw "random_function()";
-    };
-    expected = ''
-      <?php
-      declare(strict_types=1);
-      $config = ['attrs' => ['foo' => null], 'false' => false, 'float' => 3.141000, 'int' => 10, 'list' => [null, null], 'mixed' => [10, 3.141000, 'attrs' => ['foo' => null], 'str' => 'foo'], 'null' => null, 'raw' => random_function(), 'str' => 'foo', 'str_special' => 'foo
-      testhello\'\'\'${"'"}, 'true' => true];
-    '';
-  };
-
-  phpNull = shouldPass {
-    format = formats.php { finalVariable = "config"; };
-    input = null;
-    expected = ''
-      <?php
-      declare(strict_types=1);
-      $config = null;
-    '';
-  };
-
-  pythonVars = shouldPass (
-    let
-      format = formats.pythonVars { };
-    in
-    {
-      inherit format;
-      input = {
-        _imports = [
-          "re"
-          "a.b.c"
-        ];
-
-        int = 10;
-        float = 3.141;
-        bool = true;
-        str = "foo";
-        str_special = "foo\ntesthello'''";
-        null = null;
-        list = [
-          null
-          1
-          "str"
-          true
-          (format.lib.mkRaw "1 if True else 2")
-        ];
-        attrs = {
-          foo = null;
-          conditional = format.lib.mkRaw "1 if True else 2";
-        };
-        func = format.lib.mkRaw "re.findall(r'\\bf[a-z]*', 'which foot or hand fell fastest')";
-      };
-      expected = ''
-        import re
-        import a.b.c
-
-        attrs = {
-            "conditional": 1 if True else 2,
-            "foo": None,
-        }
-        bool = True
-        float = 3.141
-        func = re.findall(r"\bf[a-z]*", "which foot or hand fell fastest")
-        int = 10
-        list = [
-            None,
-            1,
-            "str",
-            True,
-            1 if True else 2,
-        ]
-        null = None
-        str = "foo"
-        str_special = "foo\ntesthello''''"
-      '';
-    }
-  );
-
-  pythonVarsNull = shouldFail {
-    format = formats.pythonVars { };
-    input = null;
-  };
-
-  phpReturn = shouldPass {
-    format = formats.php { };
-    input = {
-      int = 10;
-      float = 3.141;
-      str = "foo";
-      str_special = "foo\ntesthello'''";
-      attrs.foo = null;
-    };
-    expected = ''
-      <?php
-      declare(strict_types=1);
-      return ['attrs' => ['foo' => null], 'float' => 3.141000, 'int' => 10, 'str' => 'foo', 'str_special' => 'foo
-      testhello\'\'\'${"'"}];
-    '';
-  };
-
-  badgerfishToXmlGenerate = shouldPass {
-    format = formats.xml { };
-    input = {
-      root = {
-        "@id" = "123";
-        "@class" = "example";
-        child1 = {
-          "@name" = "child1Name";
-          "#text" = "text node";
-        };
-        child2 = {
-          grandchild = "This is a grandchild text node.";
-        };
-        nulltest = null;
-      };
-    };
-    expected = ''
-      <?xml version="1.0" encoding="utf-8"?>
-      <root class="example" id="123">
-        <child1 name="child1Name">text node</child1>
-        <child2>
-          <grandchild>This is a grandchild text node.</grandchild>
-        </child2>
-        <nulltest></nulltest>
-      </root>
-    '';
-  };
-
-  xmlNull = shouldFail {
-    format = formats.xml { };
-    input = null;
-  };
-
   PlistGenerate = shouldPass {
-    format = formats.plist { };
-    input = {
-      null = null;
-      false = false;
-      true = true;
-      int = 10;
-      float = 3.141;
-      str = "foo";
-      attrs.foo = 0;
-      list = [
-        1
-        "hello"
-        {
-          attrs = {
-            key = {
-              value = [
-                [
-                  1
-                  2
-                  3
-                ]
-                "test"
-              ];
-            };
-          };
-        }
-      ];
-    };
     expected = ''
       <?xml version="1.0" encoding="UTF-8"?>
       <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -1295,44 +153,250 @@ runBuildTests {
       ''\t<true/>
       </dict>
       </plist>'';
+
+    format = formats.plist { };
+
+    input = {
+      attrs.foo = 0;
+      false = false;
+      float = 3.141;
+      int = 10;
+
+      list = [
+        1
+        "hello"
+        {
+          attrs = {
+            key = {
+              value = [
+                [
+                  1
+                  2
+                  3
+                ]
+                "test"
+              ];
+            };
+          };
+        }
+      ];
+
+      null = null;
+      str = "foo";
+      true = true;
+    };
   };
 
   PlistNull = shouldPass {
-    format = formats.plist { };
-    input = null;
     expected = ''
       <?xml version="1.0" encoding="UTF-8"?>
       <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
       <plist version="1.0">
 
       </plist>'';
+
+    format = formats.plist { };
+    input = null;
+  };
+
+  badgerfishToXmlGenerate = shouldPass {
+    expected = ''
+      <?xml version="1.0" encoding="utf-8"?>
+      <root class="example" id="123">
+        <child1 name="child1Name">text node</child1>
+        <child2>
+          <grandchild>This is a grandchild text node.</grandchild>
+        </child2>
+        <nulltest></nulltest>
+      </root>
+    '';
+
+    format = formats.xml { };
+
+    input = {
+      root = {
+        "@class" = "example";
+        "@id" = "123";
+
+        child1 = {
+          "#text" = "text node";
+          "@name" = "child1Name";
+        };
+
+        child2 = {
+          grandchild = "This is a grandchild text node.";
+        };
+
+        nulltest = null;
+      };
+    };
+  };
+
+  cdnAtoms = shouldPass {
+    expected = ''
+      attrs {
+        "foo": null
+      }
+      "false": false
+      "float": 3.141
+      "int": 10
+      list [
+        1,
+        null
+      ]
+      "null": null
+      "path": "${./testfile}"
+      "str": "foo"
+      "true": true
+    '';
+
+    format = formats.cdn { };
+
+    input = {
+      attrs.foo = null;
+      false = false;
+      float = 3.141;
+      int = 10;
+
+      list = [
+        1
+        null
+      ];
+
+      null = null;
+      path = ./testfile;
+      str = "foo";
+      true = true;
+    };
+  };
+
+  cdnNull = shouldPass {
+    expected = ''
+      null: null
+    '';
+
+    format = formats.cdn { };
+    input = null;
+  };
+
+  configobjAtoms = shouldPass {
+    expected = ''
+      bool = True
+      float = 3.141
+      int = 10
+      str = string
+    '';
+
+    format = formats.configobj { };
+
+    input = {
+      bool = true;
+      float = 3.141;
+      int = 10;
+      str = "string";
+    };
+  };
+
+  configobjInvalidAtom = shouldFail {
+    format = formats.configobj { };
+
+    input = {
+      function = _: 1;
+    };
+  };
+
+  configobjListWithoutListToValue = shouldPass {
+    expected = ''
+      items = 1, True, x
+    '';
+
+    format = formats.configobj { };
+
+    input = {
+      items = [
+        1
+        true
+        "x"
+      ];
+    };
+  };
+
+  configobjNestedAttrsets = shouldPass {
+    expected = ''
+      [interfaces]
+      [[local]]
+      address = 123
+      [[[coin]]]
+      foo = bar
+      [[remote]]
+      address = 456
+      [logging]
+      level = info
+      rotate = True
+      [server]
+      enabled = True
+      host = 127.0.0.1
+      port = 8080
+      tags = web, nix, 42
+    '';
+
+    format = formats.configobj { };
+
+    input = {
+      interfaces = {
+        local = {
+          address = "123";
+
+          coin = {
+            foo = "bar";
+          };
+        };
+
+        remote = {
+          address = "456";
+        };
+      };
+
+      logging = {
+        level = "info";
+        rotate = true;
+      };
+
+      server = {
+        enabled = true;
+        host = "127.0.0.1";
+        port = 8080;
+
+        tags = [
+          "web"
+          "nix"
+          42
+        ];
+      };
+    };
+  };
+
+  configobjNullableValues = shouldPass {
+    expected = ''
+      nullable = None
+      [nested]
+      keep = ok
+      missing = None
+    '';
+
+    format = formats.configobj { };
+
+    input = {
+      nested = {
+        keep = "ok";
+        missing = null;
+      };
+
+      nullable = null;
+    };
   };
 
   hcl1Atoms = shouldPass {
-    format = formats.hcl1 { };
-    input = {
-      resource = {
-        aws_instance = {
-          example = {
-            ami = "ami-12345";
-            instance_type = "t2.micro";
-          };
-        };
-      };
-      variable = {
-        region = {
-          default = "us-east-1";
-        };
-      };
-      output = {
-        ip = {
-          value = "127.0.0.1";
-        };
-      };
-      primitive = "just a string";
-      number = 42;
-      enabled = true;
-    };
     expected = ''
       {
         "enabled": true,
@@ -1372,5 +436,1085 @@ runBuildTests {
         ]
       }
     '';
+
+    format = formats.hcl1 { };
+
+    input = {
+      enabled = true;
+      number = 42;
+
+      output = {
+        ip = {
+          value = "127.0.0.1";
+        };
+      };
+
+      primitive = "just a string";
+
+      resource = {
+        aws_instance = {
+          example = {
+            ami = "ami-12345";
+            instance_type = "t2.micro";
+          };
+        };
+      };
+
+      variable = {
+        region = {
+          default = "us-east-1";
+        };
+      };
+    };
+  };
+
+  iniAtoms = shouldPass {
+    expected = ''
+      [foo]
+      bool=true
+      float=3.141000
+      int=10
+      str=string
+    '';
+
+    format = formats.ini { };
+
+    input = {
+      foo = {
+        bool = true;
+        float = 3.141;
+        int = 10;
+        str = "string";
+      };
+    };
+  };
+
+  iniCoercedDuplicateKeys = shouldPass rec {
+    expected = ''
+      [foo]
+      bar=1
+      bar=2
+    '';
+
+    format = formats.ini {
+      atomsCoercedToLists = true;
+      listsAsDuplicateKeys = true;
+    };
+
+    input =
+      format.type.merge
+        [ ]
+        [
+          {
+            file = "format-test-inner-iniCoercedDuplicateKeys";
+
+            value = {
+              foo = {
+                bar = 1;
+              };
+            };
+          }
+          {
+            file = "format-test-inner-iniCoercedDuplicateKeys";
+
+            value = {
+              foo = {
+                bar = 2;
+              };
+            };
+          }
+        ];
+  };
+
+  iniCoercedListToValue = shouldPass rec {
+    expected = ''
+      [foo]
+      bar=1, 2
+    '';
+
+    format = formats.ini {
+      atomsCoercedToLists = true;
+      listToValue = lib.concatMapStringsSep ", " (lib.generators.mkValueStringDefault { });
+    };
+
+    input =
+      format.type.merge
+        [ ]
+        [
+          {
+            file = "format-test-inner-iniCoercedListToValue";
+
+            value = {
+              foo = {
+                bar = 1;
+              };
+            };
+          }
+          {
+            file = "format-test-inner-iniCoercedListToValue";
+
+            value = {
+              foo = {
+                bar = 2;
+              };
+            };
+          }
+        ];
+  };
+
+  iniCoercedNoLists = shouldFail {
+    format = formats.ini { atomsCoercedToLists = true; };
+
+    input = {
+      foo = {
+        bar = 1;
+      };
+    };
+  };
+
+  iniDuplicateKeys = shouldPass {
+    expected = ''
+      [foo]
+      bar=null
+      bar=true
+      bar=test
+      bar=1.200000
+      bar=10
+      baz=false
+      qux=qux
+    '';
+
+    format = formats.ini { listsAsDuplicateKeys = true; };
+
+    input = {
+      foo = {
+        bar = [
+          null
+          true
+          "test"
+          1.2
+          10
+        ];
+
+        baz = false;
+        qux = "qux";
+      };
+    };
+  };
+
+  iniDuplicateKeysWithoutList = shouldFail {
+    format = formats.ini { };
+
+    input = {
+      foo = {
+        bar = [
+          null
+          true
+          "test"
+          1.2
+          10
+        ];
+
+        baz = false;
+        qux = "qux";
+      };
+    };
+  };
+
+  iniInvalidAtom = shouldFail {
+    format = formats.ini { };
+
+    input = {
+      foo = {
+        function = _: 1;
+      };
+    };
+  };
+
+  iniListToValue = shouldPass {
+    expected = ''
+      [foo]
+      bar=null, true, test, 1.200000, 10
+      baz=false
+      qux=qux
+    '';
+
+    format = formats.ini {
+      listToValue = lib.concatMapStringsSep ", " (lib.generators.mkValueStringDefault { });
+    };
+
+    input = {
+      foo = {
+        bar = [
+          null
+          true
+          "test"
+          1.2
+          10
+        ];
+
+        baz = false;
+        qux = "qux";
+      };
+    };
+  };
+
+  iniNoCoercedNoLists = shouldFail {
+    format = formats.ini { atomsCoercedToLists = false; };
+
+    input = {
+      foo = {
+        bar = 1;
+      };
+    };
+  };
+
+  iniWithGlobalCoercedDuplicateKeys = shouldPass rec {
+    expected = ''
+      baz=3
+      baz=4
+
+      [foo]
+      bar=2
+      bar=1
+    '';
+
+    format = formats.iniWithGlobalSection {
+      atomsCoercedToLists = true;
+      listsAsDuplicateKeys = true;
+    };
+
+    input =
+      format.type.merge
+        [ ]
+        [
+          {
+            file = "format-test-inner-iniWithGlobalCoercedDuplicateKeys";
+
+            value = {
+              globalSection = {
+                baz = 4;
+              };
+
+              sections = {
+                foo = {
+                  bar = 1;
+                };
+              };
+            };
+          }
+          {
+            file = "format-test-inner-iniWithGlobalCoercedDuplicateKeys";
+
+            value = {
+              globalSection = {
+                baz = 3;
+              };
+
+              sections = {
+                foo = {
+                  bar = 2;
+                };
+              };
+            };
+          }
+        ];
+  };
+
+  iniWithGlobalCoercedListToValue = shouldPass rec {
+    expected = ''
+      baz=3, 4
+
+      [foo]
+      bar=2, 1
+    '';
+
+    format = formats.iniWithGlobalSection {
+      atomsCoercedToLists = true;
+      listToValue = lib.concatMapStringsSep ", " (lib.generators.mkValueStringDefault { });
+    };
+
+    input =
+      format.type.merge
+        [ ]
+        [
+          {
+            file = "format-test-inner-iniWithGlobalCoercedListToValue";
+
+            value = {
+              globalSection = {
+                baz = 4;
+              };
+
+              sections = {
+                foo = {
+                  bar = 1;
+                };
+              };
+            };
+          }
+          {
+            file = "format-test-inner-iniWithGlobalCoercedListToValue";
+
+            value = {
+              globalSection = {
+                baz = 3;
+              };
+
+              sections = {
+                foo = {
+                  bar = 2;
+                };
+              };
+            };
+          }
+        ];
+  };
+
+  iniWithGlobalCoercedNoLists = shouldFail {
+    format = formats.iniWithGlobalSection { atomsCoercedToLists = true; };
+
+    input = {
+      foo = {
+        bar = 1;
+      };
+
+      globalSection = {
+        baz = 4;
+      };
+    };
+  };
+
+  iniWithGlobalEverything = shouldPass {
+    expected = ''
+      bar=true
+
+      [foo]
+      bool=true
+      float=3.141000
+      int=10
+      str=string
+    '';
+
+    format = formats.iniWithGlobalSection { };
+
+    input = {
+      globalSection = {
+        bar = true;
+      };
+
+      sections = {
+        foo = {
+          bool = true;
+          float = 3.141;
+          int = 10;
+          str = "string";
+        };
+      };
+    };
+  };
+
+  iniWithGlobalListToValue = shouldPass {
+    expected = ''
+      bar=null, true, test, 1.200000, 10
+      baz=false
+      qux=qux
+
+      [foo]
+      bar=null, true, test, 1.200000, 10
+      baz=false
+      qux=qux
+    '';
+
+    format = formats.iniWithGlobalSection {
+      listToValue = lib.concatMapStringsSep ", " (lib.generators.mkValueStringDefault { });
+    };
+
+    input = {
+      globalSection = {
+        bar = [
+          null
+          true
+          "test"
+          1.2
+          10
+        ];
+
+        baz = false;
+        qux = "qux";
+      };
+
+      sections = {
+        foo = {
+          bar = [
+            null
+            true
+            "test"
+            1.2
+            10
+          ];
+
+          baz = false;
+          qux = "qux";
+        };
+      };
+    };
+  };
+
+  iniWithGlobalNoCoercedNoLists = shouldFail {
+    format = formats.iniWithGlobalSection { atomsCoercedToLists = false; };
+
+    input = {
+      foo = {
+        bar = 1;
+      };
+
+      globalSection = {
+        baz = 4;
+      };
+    };
+  };
+
+  iniWithGlobalNoSections = shouldPass {
+    expected = "";
+    format = formats.iniWithGlobalSection { };
+    input = { };
+  };
+
+  iniWithGlobalOnlyGlobal = shouldPass {
+    expected = ''
+      bar=baz
+
+    '';
+
+    format = formats.iniWithGlobalSection { };
+
+    input = {
+      globalSection = {
+        bar = "baz";
+      };
+    };
+  };
+
+  iniWithGlobalOnlySections = shouldPass {
+    expected = ''
+      [foo]
+      bar=baz
+    '';
+
+    format = formats.iniWithGlobalSection { };
+
+    input = {
+      sections = {
+        foo = {
+          bar = "baz";
+        };
+      };
+    };
+  };
+
+  iniWithGlobalWrongSections = shouldFail {
+    format = formats.iniWithGlobalSection { };
+
+    input = {
+      foo = { };
+    };
+  };
+
+  # This test is responsible for
+  #   1. testing type coercions
+  #   2. providing a more readable example test
+  # Whereas java-properties/default.nix tests the low level escaping, etc.
+  javaProperties = shouldPass {
+    expected = ''
+      # Generated with Nix
+
+      1 = 2
+      contradictions = false
+      floaty = 3.141500
+      foo = bar
+      package = ${pkgs.hello}
+      tautologies = true
+      \u00fctf\ 8 = d\u00fbh
+      \u0627\u0644\u062c\u0628\u0631 = \u0623\u0643\u062b\u0631 \u0645\u0646 \u0645\u062c\u0631\u062f \u0623\u0631\u0642\u0627\u0645
+    '';
+
+    format = formats.javaProperties { };
+
+    input = {
+      # # Disallowed at eval time, because it's ambiguous:
+      # # add to store or convert to string?
+      # root = /root;
+      "1" = 2;
+      contradictions = false;
+      floaty = 3.1415;
+      foo = "bar";
+      package = pkgs.hello;
+      tautologies = true;
+      "ütf 8" = "dûh";
+      # NB: Some editors (vscode) show this _whole_ line in right-to-left order
+      "الجبر" = "أكثر من مجرد أرقام";
+    };
+  };
+
+  jsonAtoms = shouldPass {
+    expected = ''
+      {
+        "attrs": {
+          "foo": null
+        },
+        "false": false,
+        "float": 3.141,
+        "int": 10,
+        "list": [
+          null,
+          null
+        ],
+        "null": null,
+        "path": "${./testfile}",
+        "str": "foo",
+        "true": true
+      }
+    '';
+
+    format = formats.json { };
+
+    input = {
+      attrs.foo = null;
+      false = false;
+      float = 3.141;
+      int = 10;
+
+      list = [
+        null
+        null
+      ];
+
+      null = null;
+      path = ./testfile;
+      str = "foo";
+      true = true;
+    };
+  };
+
+  jsonNull = shouldPass {
+    expected = ''
+      null
+    '';
+
+    format = formats.json { };
+    input = null;
+  };
+
+  keyValueAtoms = shouldPass {
+    expected = ''
+      bool=true
+      float=3.141000
+      int=10
+      str=string
+    '';
+
+    format = formats.keyValue { };
+
+    input = {
+      bool = true;
+      float = 3.141;
+      int = 10;
+      str = "string";
+    };
+  };
+
+  keyValueDuplicateKeys = shouldPass {
+    expected = ''
+      bar=null
+      bar=true
+      bar=test
+      bar=1.200000
+      bar=10
+      baz=false
+      qux=qux
+    '';
+
+    format = formats.keyValue { listsAsDuplicateKeys = true; };
+
+    input = {
+      bar = [
+        null
+        true
+        "test"
+        1.2
+        10
+      ];
+
+      baz = false;
+      qux = "qux";
+    };
+  };
+
+  keyValueListToValue = shouldPass {
+    expected = ''
+      bar=null, true, test, 1.200000, 10
+      baz=false
+      qux=qux
+    '';
+
+    format = formats.keyValue {
+      listToValue = lib.concatMapStringsSep ", " (lib.generators.mkValueStringDefault { });
+    };
+
+    input = {
+      bar = [
+        null
+        true
+        "test"
+        1.2
+        10
+      ];
+
+      baz = false;
+      qux = "qux";
+    };
+  };
+
+  luaBindings = shouldPass {
+    expected = ''
+      _false = false
+      _true = true
+      attrs = {
+        ["foo"] = nil,
+      }
+      float = 3.141
+      inline = (hello("world"))
+      int = 10
+      list = {
+        nil,
+        nil,
+      }
+      null = nil
+      path = "${./testfile}"
+      str = "foo"
+    '';
+
+    format = formats.lua {
+      asBindings = true;
+    };
+
+    input = {
+      _false = false;
+      _true = true;
+      attrs.foo = null;
+      float = 3.141;
+      inline = lib.mkLuaInline "hello('world')";
+      int = 10;
+
+      list = [
+        null
+        null
+      ];
+
+      null = null;
+      path = ./testfile;
+      str = "foo";
+    };
+  };
+
+  luaNull = shouldPass {
+    expected = ''
+      return nil
+    '';
+
+    format = formats.lua { };
+    input = null;
+  };
+
+  luaTable = shouldPass {
+    expected = ''
+      return {
+        ["attrs"] = {
+          ["foo"] = nil,
+        },
+        ["false"] = false,
+        ["float"] = 3.141,
+        ["inline"] = (hello("world")),
+        ["int"] = 10,
+        ["list"] = {
+          nil,
+          nil,
+        },
+        ["null"] = nil,
+        ["path"] = "${./testfile}",
+        ["str"] = "foo",
+        ["true"] = true,
+      }
+    '';
+
+    format = formats.lua { };
+
+    input = {
+      attrs.foo = null;
+      false = false;
+      float = 3.141;
+      inline = lib.mkLuaInline "hello('world')";
+      int = 10;
+
+      list = [
+        null
+        null
+      ];
+
+      null = null;
+      path = ./testfile;
+      str = "foo";
+      true = true;
+    };
+  };
+
+  nixConfAtoms = shouldPass {
+    # note that null type is hard to test here,
+    # as it involves a trailing space our formatter will remove here
+    expected = ''
+      # WARNING: this file is generated from the nix.* options in
+      # your NixOS configuration, typically
+      # /etc/nixos/configuration.nix.  Do not edit it!
+      auto-optimise-store = true
+      cores = 0
+      store = auto
+
+      ignore-try = false
+    '';
+
+    format = formats.nixConf {
+      version = pkgs.nix.version;
+      extraOptions = "ignore-try = false";
+      package = pkgs.nix;
+    };
+
+    input = {
+      auto-optimise-store = true;
+      cores = 0;
+      store = "auto";
+    };
+  };
+
+  nixConfNull = shouldFail {
+    format = formats.nixConf {
+      version = pkgs.nix.version;
+      extraOptions = "ignore-try = false";
+      package = pkgs.nix;
+    };
+
+    input = null;
+  };
+
+  phpAtoms = shouldPass rec {
+    expected = ''
+      <?php
+      declare(strict_types=1);
+      $config = ['attrs' => ['foo' => null], 'false' => false, 'float' => 3.141000, 'int' => 10, 'list' => [null, null], 'mixed' => [10, 3.141000, 'attrs' => ['foo' => null], 'str' => 'foo'], 'null' => null, 'raw' => random_function(), 'str' => 'foo', 'str_special' => 'foo
+      testhello\'\'\'${"'"}, 'true' => true];
+    '';
+
+    format = formats.php { finalVariable = "config"; };
+
+    input = {
+      attrs.foo = null;
+      false = false;
+      float = 3.141;
+      int = 10;
+
+      list = [
+        null
+        null
+      ];
+
+      mixed = format.lib.mkMixedArray [ 10 3.141 ] {
+        attrs.foo = null;
+        str = "foo";
+      };
+
+      null = null;
+      raw = format.lib.mkRaw "random_function()";
+      str = "foo";
+      str_special = "foo\ntesthello'''";
+      true = true;
+    };
+  };
+
+  phpNull = shouldPass {
+    expected = ''
+      <?php
+      declare(strict_types=1);
+      $config = null;
+    '';
+
+    format = formats.php { finalVariable = "config"; };
+    input = null;
+  };
+
+  phpReturn = shouldPass {
+    expected = ''
+      <?php
+      declare(strict_types=1);
+      return ['attrs' => ['foo' => null], 'float' => 3.141000, 'int' => 10, 'str' => 'foo', 'str_special' => 'foo
+      testhello\'\'\'${"'"}];
+    '';
+
+    format = formats.php { };
+
+    input = {
+      attrs.foo = null;
+      float = 3.141;
+      int = 10;
+      str = "foo";
+      str_special = "foo\ntesthello'''";
+    };
+  };
+
+  pythonVars = shouldPass (
+    let
+      format = formats.pythonVars { };
+    in
+    {
+      inherit format;
+
+      expected = ''
+        import re
+        import a.b.c
+
+        attrs = {
+            "conditional": 1 if True else 2,
+            "foo": None,
+        }
+        bool = True
+        float = 3.141
+        func = re.findall(r"\bf[a-z]*", "which foot or hand fell fastest")
+        int = 10
+        list = [
+            None,
+            1,
+            "str",
+            True,
+            1 if True else 2,
+        ]
+        null = None
+        str = "foo"
+        str_special = "foo\ntesthello''''"
+      '';
+
+      input = {
+        _imports = [
+          "re"
+          "a.b.c"
+        ];
+
+        attrs = {
+          conditional = format.lib.mkRaw "1 if True else 2";
+          foo = null;
+        };
+
+        bool = true;
+        float = 3.141;
+        func = format.lib.mkRaw "re.findall(r'\\bf[a-z]*', 'which foot or hand fell fastest')";
+        int = 10;
+
+        list = [
+          null
+          1
+          "str"
+          true
+          (format.lib.mkRaw "1 if True else 2")
+        ];
+
+        null = null;
+        str = "foo";
+        str_special = "foo\ntesthello'''";
+      };
+    }
+  );
+
+  pythonVarsNull = shouldFail {
+    format = formats.pythonVars { };
+    input = null;
+  };
+
+  tomlAtoms = shouldPass {
+    expected = ''
+      false = false
+      float = 3.141
+      int = 10
+      list = [1, 2]
+      str = "foo"
+      true = true
+
+      [attrs]
+      foo = "foo"
+
+      [level1.level2.level3]
+      level4 = "deep"
+    '';
+
+    format = formats.toml { };
+
+    input = {
+      attrs.foo = "foo";
+      false = false;
+      float = 3.141;
+      int = 10;
+      level1.level2.level3.level4 = "deep";
+
+      list = [
+        1
+        2
+      ];
+
+      str = "foo";
+      true = true;
+    };
+  };
+
+  # Regression test for https://github.com/sclevine/yj/issues/52
+  # yj truncates keys at the first comma because it stores TOML keys in Go
+  # struct tags, where commas are option separators.
+  # e.g. "stack(x,n)" is emitted as "stack(x" — silently losing data.
+  tomlCommaInKey = shouldPass {
+    expected = ''
+      "stack(x,n)" = "foobar"
+    '';
+
+    format = formats.toml { };
+
+    input = {
+      "stack(x,n)" = "foobar";
+    };
+  };
+
+  # Regression test for https://github.com/NixOS/nixpkgs/issues/511970
+  # yj crashes on arrays mixing scalars and attrsets (heterogeneous arrays),
+  # e.g. Helix language-server configs like ["bash-ls", {name = "ts-ls"; ...}].
+  # TOML 1.0 allows mixed-type arrays; the converter must emit them as
+  # inline arrays with inline tables.
+  tomlHeterogeneousArray = shouldPass {
+    expected = ''
+      language-server = ["bash-language-server", { except-features = ["diagnostics"], name = "typescript-language-server" }]
+    '';
+
+    format = formats.toml { };
+
+    input = {
+      language-server = [
+        "bash-language-server"
+        {
+          except-features = [ "diagnostics" ];
+          name = "typescript-language-server";
+        }
+      ];
+    };
+  };
+
+  tomlNull = shouldFail {
+    format = formats.toml { };
+    input = null;
+  };
+
+  xmlNull = shouldFail {
+    format = formats.xml { };
+    input = null;
+  };
+
+  yaml_1_1Atoms = shouldPass {
+    expected = ''
+      attrs:
+        foo: null
+      'false': false
+      float: 3.141
+      list:
+      - null
+      - null
+      'no': 'no'
+      'null': null
+      path: ${./testfile}
+      str: foo
+      time: '22:30:00'
+      'true': true
+    '';
+
+    format = formats.yaml_1_1 { };
+
+    input = {
+      attrs.foo = null;
+      false = false;
+      float = 3.141;
+
+      list = [
+        null
+        null
+      ];
+
+      no = "no";
+      null = null;
+      path = ./testfile;
+      str = "foo";
+      time = "22:30:00";
+      true = true;
+    };
+  };
+
+  yaml_1_1Null = shouldPass {
+    expected = ''
+      null
+      ...
+    '';
+
+    format = formats.yaml_1_1 { };
+    input = null;
+  };
+
+  yaml_1_2Atoms = shouldPass {
+    expected = ''
+      attrs:
+        foo: null
+      'false': false
+      float: 3.141
+      list:
+      - null
+      - null
+      no: no
+      'null': null
+      path: ${./testfile}
+      str: foo
+      time: 22:30:00
+      'true': true
+    '';
+
+    format = formats.yaml_1_2 { };
+
+    input = {
+      attrs.foo = null;
+      false = false;
+      float = 3.141;
+
+      list = [
+        null
+        null
+      ];
+
+      no = "no";
+      null = null;
+      path = ./testfile;
+      str = "foo";
+      time = "22:30:00";
+      true = true;
+    };
+  };
+
+  yaml_1_2Null = shouldPass {
+    # nixfmt insists on removing indentation, so force it with ${"  "}
+    expected = ''
+
+      ${"  "}null
+    '';
+
+    format = formats.yaml_1_2 { };
+    input = null;
   };
 }

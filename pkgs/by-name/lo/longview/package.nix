@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  glibc,
+  makeWrapper,
   perl,
   perlPackages,
-  makeWrapper,
-  glibc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.1.5";
   pname = "longview";
+  version = "1.1.5";
 
   src = fetchFromGitHub {
     owner = "linode";
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     perl
     glibc
@@ -53,8 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     DBDmysql
   ]);
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/bin $out/usr
     mv Linode $out
@@ -69,16 +68,20 @@ stdenv.mkDerivation (finalAttrs: {
      --suffix PERL5LIB : $out --suffix INC : $out
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://www.linode.com/longview";
+    inherit (finalAttrs) version;
     description = "Collects all of your system-level metrics and sends them to Linode";
-    mainProgram = "longview";
+    homepage = "https://www.linode.com/longview";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.rvl ];
-    inherit (finalAttrs) version;
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
+    mainProgram = "longview";
   };
 })

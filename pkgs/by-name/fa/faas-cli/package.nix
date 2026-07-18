@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
+  faas-cli,
   git,
   installShellFiles,
+  makeWrapper,
   testers,
-  faas-cli,
 }:
 let
   faasPlatform =
@@ -17,8 +17,8 @@ let
     in
     {
       "aarch64" = "arm64";
-      "armv7l" = "armhf";
       "armv6l" = "armhf";
+      "armv7l" = "armhf";
     }
     .${cpuName} or cpuName;
 in
@@ -33,24 +33,13 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-MctMhuaXJpm25VKqlhaAPG2QzSDQ//Ei8B1lRCKdz68=";
   };
 
-  vendorHash = null;
-
-  env.CGO_ENABLED = 0;
-
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/openfaas/faas-cli/version.GitCommit=ref/tags/${finalAttrs.version}"
-    "-X github.com/openfaas/faas-cli/version.Version=${finalAttrs.version}"
-    "-X github.com/openfaas/faas-cli/commands.Platform=${faasPlatform stdenv.hostPlatform}"
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
+
+  vendorHash = null;
+  env.CGO_ENABLED = 0;
 
   postInstall = ''
     wrapProgram "$out/bin/faas-cli" \
@@ -61,6 +50,16 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/faas-cli completion --shell zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/openfaas/faas-cli/version.GitCommit=ref/tags/${finalAttrs.version}"
+    "-X github.com/openfaas/faas-cli/version.Version=${finalAttrs.version}"
+    "-X github.com/openfaas/faas-cli/commands.Platform=${faasPlatform stdenv.hostPlatform}"
+  ];
+
+  subPackages = [ "." ];
+
   passthru.tests.version = testers.testVersion {
     command = "${faas-cli}/bin/faas-cli version --short-version --warn-update=false";
     package = faas-cli;
@@ -68,12 +67,14 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Official CLI for OpenFaaS";
-    mainProgram = "faas-cli";
     homepage = "https://github.com/openfaas/faas-cli";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       welteki
       techknowlogick
     ];
+
+    mainProgram = "faas-cli";
   };
 })

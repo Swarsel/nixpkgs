@@ -4,8 +4,8 @@
   blinker,
   buildPythonPackage,
   fetchPypi,
-  flask,
   fetchpatch2,
+  flask,
   mock,
   pytest8_3CheckHook,
   pytz,
@@ -16,12 +16,11 @@
 buildPythonPackage rec {
   pname = "flask-restful";
   version = "0.3.10";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "Flask-RESTful";
     inherit version;
     hash = "sha256-/kry7wAn34+bT3l6uiDFVmgBtq3plaxjtYir8aWc7Dc=";
+    pname = "Flask-RESTful";
   };
 
   # conditional so that overrides are easier for web applications
@@ -31,8 +30,8 @@ buildPythonPackage rec {
     ++ [
       # replace use nose by pytest: https://github.com/flask-restful/flask-restful/pull/970
       (fetchpatch2 {
-        url = "https://github.com/flask-restful/flask-restful/commit/6cc4b057e5450e0c84b3ee5f6f7a97e648a816d6.patch?full_index=1";
         hash = "sha256-kIjrkyL0OfX+gjoiYfchU0QYTPHz4JMCQcHLFH9oEF4=";
+        url = "https://github.com/flask-restful/flask-restful/commit/6cc4b057e5450e0c84b3ee5f6f7a97e648a816d6.patch?full_index=1";
       })
       ./fix-test-inputs.patch
     ];
@@ -61,15 +60,18 @@ buildPythonPackage rec {
     "test_rfc822_date_field_with_offset"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "flask_restful" ];
 
   meta = {
     description = "Framework for creating REST APIs";
-    homepage = "https://flask-restful.readthedocs.io";
+
     longDescription = ''
       Flask-RESTful provides the building blocks for creating a great
       REST API.
     '';
+
+    homepage = "https://flask-restful.readthedocs.io";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.5.1";
   pname = "libmpeg2";
+  version = "0.5.1";
 
   src = fetchurl {
     url = "http://libmpeg2.sourceforge.net/files/libmpeg2-${finalAttrs.version}.tar.gz";
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
   buildFlags = lib.optional stdenv.hostPlatform.isDarwin "CFLAGS=-std=gnu89";
 
   meta = {
-    homepage = "http://libmpeg2.sourceforge.net/";
     description = "Free library for decoding mpeg-2 and mpeg-1 video streams";
+    homepage = "http://libmpeg2.sourceforge.net/";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = with lib.platforms; unix;

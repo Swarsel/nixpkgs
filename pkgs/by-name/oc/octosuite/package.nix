@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "octosuite";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bellingcat";
@@ -22,6 +21,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail '"pyreadline3",' ""
   '';
 
+  # Project has no tests
+  doCheck = false;
+
   build-system = with python3.pkgs; [
     setuptools
     setuptools-scm
@@ -33,19 +35,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rich
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "octosuite"
   ];
 
-  # Project has no tests
-  doCheck = false;
-
   meta = {
     description = "Advanced Github OSINT framework";
-    mainProgram = "octosuite";
     homepage = "https://github.com/bellingcat/octosuite";
     changelog = "https://github.com/bellingcat/octosuite/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "octosuite";
   };
 })

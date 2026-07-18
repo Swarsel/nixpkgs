@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   nix-update-script,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "snappy-manifolds";
   version = "1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "3-manifolds";
@@ -19,7 +18,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "snappy_manifolds" ];
 
   passthru.updateScript = nix-update-script {
@@ -31,9 +30,10 @@ buildPythonPackage rec {
 
   meta = {
     description = "Database of snappy manifolds";
-    changelog = "https://github.com/3-manifolds/snappy_manifolds/releases/tag/${src.tag}";
     homepage = "https://snappy.computop.org";
+    changelog = "https://github.com/3-manifolds/snappy_manifolds/releases/tag/${src.tag}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       noiioiu
       alejo7797

@@ -4,10 +4,10 @@
   fetchFromGitHub,
   cmake,
   gtest,
-  static ? stdenv.hostPlatform.isStatic,
-  cxxStandard ? null,
   testers,
   validatePkgConfig,
+  cxxStandard ? null,
+  static ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,15 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NMdCALDFGGNNGyN17nwpRYBh/hoQoU7YMk66YDJndxQ=";
   };
 
-  cmakeFlags = [
-    (lib.cmakeBool "ABSL_BUILD_TEST_HELPERS" true)
-    (lib.cmakeBool "ABSL_USE_EXTERNAL_GOOGLETEST" true)
-    (lib.cmakeBool "BUILD_SHARED_LIBS" (!static))
-  ]
-  ++ lib.optionals (cxxStandard != null) [
-    (lib.cmakeFeature "CMAKE_CXX_STANDARD" cxxStandard)
-  ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -38,6 +29,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ gtest ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "ABSL_BUILD_TEST_HELPERS" true)
+    (lib.cmakeBool "ABSL_USE_EXTERNAL_GOOGLETEST" true)
+    (lib.cmakeBool "BUILD_SHARED_LIBS" (!static))
+  ]
+  ++ lib.optionals (cxxStandard != null) [
+    (lib.cmakeFeature "CMAKE_CXX_STANDARD" cxxStandard)
+  ];
 
   passthru.tests = {
     pkg-config = testers.hasPkgConfigModules {
@@ -50,8 +50,9 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://abseil.io/";
     changelog = "https://github.com/abseil/abseil-cpp/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.GaetanLepage ];
+    platforms = lib.platforms.all;
+
     pkgConfigModules = [
       "absl_log_internal_check_op"
       "absl_absl_check"

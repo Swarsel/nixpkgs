@@ -34,7 +34,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/johnkerl/miller";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ mstarzyk ];
-    mainProgram = "mlr";
     platforms = lib.platforms.all;
+    mainProgram = "mlr";
   };
 })

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
-  imlib2,
-  pkg-config,
   fetchpatch,
-  enableXinerama ? true,
+  imlib2,
+  libx11,
   libxinerama,
+  pkg-config,
+  enableXinerama ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.0.2";
   pname = "setroot";
+  version = "2.0.2";
 
   src = fetchFromGitHub {
     owner = "ttzhou";
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/ttzhou/setroot/commit/d8ff8edd7d7594d276d741186bf9ccf0bce30277.patch";
       sha256 = "sha256-e0iMSpiOmTOpQnp599fjH2UCPU4Oq1VKXcVypVoR9hw=";
+      url = "https://github.com/ttzhou/setroot/commit/d8ff8edd7d7594d276d741186bf9ccf0bce30277.patch";
     })
   ];
 
@@ -37,7 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals enableXinerama [ libxinerama ];
 
   buildFlags = [ (if enableXinerama then "xinerama=1" else "xinerama=0") ];
-
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {

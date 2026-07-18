@@ -1,64 +1,11 @@
 {
-  version,
   lib,
+  version,
   writeText,
 }:
 
 {
   inherit version;
-
-  mkBsdArch =
-    stdenv':
-    {
-      x86_64 = "amd64";
-      aarch64 = "aarch64";
-      i486 = "i386";
-      i586 = "i386";
-      i686 = "i386";
-      armv6l = "armv6";
-      armv7l = "armv7";
-      powerpc = "powerpc";
-      powerpc64 = "powerpc64";
-      powerpc64le = "powerpc64le";
-      riscv64 = "riscv64";
-    }
-    .${stdenv'.hostPlatform.parsed.cpu.name} or stdenv'.hostPlatform.parsed.cpu.name;
-
-  mkBsdCpuArch =
-    stdenv':
-    {
-      x86_64 = "amd64";
-      aarch64 = "aarch64";
-      i486 = "i386";
-      i586 = "i386";
-      i686 = "i386";
-      armv6l = "arm";
-      armv7l = "arm";
-      powerpc = "powerpc";
-      powerpc64 = "powerpc";
-      powerpc64le = "powerpc";
-      riscv64 = "riscv";
-    }
-    .${stdenv'.hostPlatform.parsed.cpu.name} or stdenv'.hostPlatform.parsed.cpu.name;
-
-  mkBsdMachine =
-    stdenv':
-    {
-      x86_64 = "amd64";
-      aarch64 = "arm64";
-      i486 = "i386";
-      i586 = "i386";
-      i686 = "i386";
-      armv6l = "arm";
-      armv7l = "arm";
-      powerpc = "powerpc";
-      powerpc64 = "powerpc";
-      powerpc64le = "powerpc";
-      riscv64 = "riscv";
-    }
-    .${stdenv'.hostPlatform.parsed.cpu.name} or stdenv'.hostPlatform.parsed.cpu.name;
-
-  install-wrapper = builtins.readFile ../../lib/install-wrapper.sh;
 
   # this function takes a list of patches and a list of paths and returns a list of derivations,
   # one per file that is patched, containing the actual patch contents. This allows us to have
@@ -120,4 +67,57 @@
         derivedPatches;
     in
     lib.lists.concatMap splitPatch consolidated;
+
+  install-wrapper = builtins.readFile ../../lib/install-wrapper.sh;
+
+  mkBsdArch =
+    stdenv':
+    {
+      aarch64 = "aarch64";
+      armv6l = "armv6";
+      armv7l = "armv7";
+      i486 = "i386";
+      i586 = "i386";
+      i686 = "i386";
+      powerpc = "powerpc";
+      powerpc64 = "powerpc64";
+      powerpc64le = "powerpc64le";
+      riscv64 = "riscv64";
+      x86_64 = "amd64";
+    }
+    .${stdenv'.hostPlatform.parsed.cpu.name} or stdenv'.hostPlatform.parsed.cpu.name;
+
+  mkBsdCpuArch =
+    stdenv':
+    {
+      aarch64 = "aarch64";
+      armv6l = "arm";
+      armv7l = "arm";
+      i486 = "i386";
+      i586 = "i386";
+      i686 = "i386";
+      powerpc = "powerpc";
+      powerpc64 = "powerpc";
+      powerpc64le = "powerpc";
+      riscv64 = "riscv";
+      x86_64 = "amd64";
+    }
+    .${stdenv'.hostPlatform.parsed.cpu.name} or stdenv'.hostPlatform.parsed.cpu.name;
+
+  mkBsdMachine =
+    stdenv':
+    {
+      aarch64 = "arm64";
+      armv6l = "arm";
+      armv7l = "arm";
+      i486 = "i386";
+      i586 = "i386";
+      i686 = "i386";
+      powerpc = "powerpc";
+      powerpc64 = "powerpc";
+      powerpc64le = "powerpc";
+      riscv64 = "riscv";
+      x86_64 = "amd64";
+    }
+    .${stdenv'.hostPlatform.parsed.cpu.name} or stdenv'.hostPlatform.parsed.cpu.name;
 }

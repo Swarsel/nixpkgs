@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Command-line tool for processing CSV, JSON and other structured data";
-    mainProgram = "each";
     homepage = "https://github.com/arraypad/each";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ thiagokokada ];
+    mainProgram = "each";
   };
 })

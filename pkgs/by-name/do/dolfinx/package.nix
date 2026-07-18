@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  spdlog,
-  pugixml,
-  boost,
-  petsc,
-  slepc,
-  kahip,
   adios2,
-  python3Packages,
+  boost,
   catch2_3,
+  cmake,
+  kahip,
+  petsc,
+  pkg-config,
+  pugixml,
+  python3Packages,
+  slepc,
+  spdlog,
   withParmetis ? false,
 }:
 let
   dolfinxPackages = petsc.petscPackages.overrideScope (
     final: prev: {
-      slepc = final.callPackage slepc.override { };
       adios2 = final.callPackage adios2.override { };
       kahip = final.callPackage kahip.override { };
+      slepc = final.callPackage slepc.override { };
     }
   );
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.11.0.post0";
   pname = "dolfinx";
+  version = "0.11.0.post0";
 
   src = fetchFromGitHub {
     owner = "fenics";
@@ -58,8 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.fenics-ffcx
   ];
 
-  cmakeDir = "../cpp";
-
   cmakeFlags = [
     (lib.cmakeBool "DOLFINX_ENABLE_ADIOS2" true)
     (lib.cmakeBool "DOLFINX_ENABLE_PETSC" true)
@@ -72,12 +70,12 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_INSTALL_INCLUDEDIR" "include")
   ];
 
+  cmakeDir = "../cpp";
+
   passthru.tests = {
     unittests = stdenv.mkDerivation {
-      pname = "${finalAttrs.pname}-unittests";
       inherit (finalAttrs) version src;
-
-      cmakeDir = "../cpp/test";
+      pname = "${finalAttrs.pname}-unittests";
 
       nativeBuildInputs = [
         cmake
@@ -85,27 +83,29 @@ stdenv.mkDerivation (finalAttrs: {
       ];
 
       buildInputs = [ finalAttrs.finalPackage ];
-
-      nativeCheckInputs = [ catch2_3 ];
-
       doCheck = true;
+      nativeCheckInputs = [ catch2_3 ];
 
       installPhase = ''
         touch $out
       '';
+
+      cmakeDir = "../cpp/test";
     };
   };
 
   meta = {
-    homepage = "https://fenicsproject.org";
-    downloadPage = "https://github.com/fenics/dolfinx";
     description = "Computational environment of FEniCSx and implements the FEniCS Problem Solving Environment in C++ and Python";
+    homepage = "https://fenicsproject.org";
     changelog = "https://github.com/fenics/dolfinx/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       bsd2
       lgpl3Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/fenics/dolfinx";
   };
 })

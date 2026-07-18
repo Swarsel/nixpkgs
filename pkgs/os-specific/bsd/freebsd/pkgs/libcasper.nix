@@ -1,18 +1,11 @@
 {
   lib,
   stdenv,
-  mkDerivation,
   libnv,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "lib/libcasper/libcasper";
-  extraPaths = [
-    "lib/Makefile.inc"
-    "lib/libcasper"
-  ];
   buildInputs = [ libnv ];
-
-  MK_TESTS = "no";
 
   makeFlags = [
     "STRIP=-s" # flag to install, not command
@@ -24,4 +17,13 @@ mkDerivation {
     make -C $BSDSRCDIR/lib/libcasper/services $makeFlags CFLAGS="-DWITH_CASPER -I$out/include"
     make -C $BSDSRCDIR/lib/libcasper/services $makeFlags install
   '';
+
+  MK_TESTS = "no";
+
+  extraPaths = [
+    "lib/Makefile.inc"
+    "lib/libcasper"
+  ];
+
+  path = "lib/libcasper/libcasper";
 }

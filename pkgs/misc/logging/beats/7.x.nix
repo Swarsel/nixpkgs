@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  elk7Version,
   buildGoModule,
+  config,
+  elk7Version,
   libpcap,
   nixosTests,
   systemd,
-  config,
 }:
 
 let
@@ -26,16 +26,17 @@ let
         };
 
         vendorHash = "sha256-JOCcceYYutC5MI+/lXBqcqiET+mcrG1e3kWySo3+NIk=";
-
         subPackages = [ package ];
 
         meta = {
           homepage = "https://www.elastic.co/products/beats";
           license = lib.licenses.asl20;
+
           maintainers = with lib.maintainers; [
             basvandijk
             dfithian
           ];
+
           platforms = lib.platforms.linux;
         }
         // (extraArgs.meta or { });
@@ -49,29 +50,37 @@ rec {
   auditbeat7 = beat "auditbeat" {
     meta.description = "Lightweight shipper for audit data";
   };
+
   filebeat7 = beat "filebeat" {
-    meta.description = "Lightweight shipper for logfiles";
     buildInputs = [ systemd ];
-    tags = [ "withjournald" ];
+
     postFixup = ''
       patchelf --set-rpath ${lib.makeLibraryPath [ (lib.getLib systemd) ]} "$out/bin/filebeat"
     '';
+
+    tags = [ "withjournald" ];
+    meta.description = "Lightweight shipper for logfiles";
   };
+
   heartbeat7 = beat "heartbeat" {
     meta.description = "Lightweight shipper for uptime monitoring";
   };
+
   metricbeat7 = beat "metricbeat" {
-    meta.description = "Lightweight shipper for metrics";
     passthru.tests = lib.optionalAttrs config.allowUnfree (
       assert metricbeat7.drvPath == nixosTests.elk.unfree.ELK-7.elkPackages.metricbeat.drvPath;
       {
         elk = nixosTests.elk.unfree.ELK-7;
       }
     );
+
+    meta.description = "Lightweight shipper for metrics";
   };
+
   packetbeat7 = beat "packetbeat" {
     buildInputs = [ libpcap ];
     meta.description = "Network packet analyzer that ships data to Elasticsearch";
+
     meta.longDescription = ''
       Packetbeat is an open source network packet analyzer that ships the
       data to Elasticsearch.

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   hatchling,
   pyhamcrest,
   python,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "django-currentuser";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zsoldosp";
@@ -21,13 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-1fg1KRu685hnAyHCOKKqvwU/K8Sm4D7/TRKLBI2tBu0=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ django ];
 
   nativeCheckInputs = [ pyhamcrest ];
 
@@ -41,6 +33,14 @@ buildPythonPackage rec {
     ${python.interpreter} manage.py test testapp
     runHook postCheck
   '';
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ django ];
+  pyproject = true;
 
   meta = {
     description = "Conveniently store reference to request user on thread/db level";

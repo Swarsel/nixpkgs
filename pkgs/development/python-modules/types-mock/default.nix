@@ -8,18 +8,17 @@
 buildPythonPackage rec {
   pname = "types-mock";
   version = "5.2.0.20250924";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_mock";
     inherit version;
     hash = "sha256-lTGXVDtBg/ADY+jmJvbHq+oaP3pN1p0Zmt23CwG2uzU=";
+    pname = "types_mock";
   };
-
-  build-system = [ setuptools ];
 
   # Module has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Type stub package for the mock package";

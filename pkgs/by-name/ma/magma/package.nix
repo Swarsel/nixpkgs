@@ -1,28 +1,28 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoPatchelfHook,
   blas,
   cmake,
+  config,
   cudaPackages,
-  cudaSupport ? config.cudaSupport,
-  fetchFromGitHub,
   fetchpatch,
   gfortran,
-  gpuTargets ? [ ], # Non-CUDA targets, that is HIP
-  rocmPackages,
   lapack,
-  lib,
   libpthread-stubs,
   ninja,
   perl,
   python3,
-  config,
+  rocmPackages,
+  runCommand,
+  writeShellApplication,
+  cudaSupport ? config.cudaSupport,
+  gpuTargets ? [ ], # Non-CUDA targets, that is HIP
   # At least one back-end has to be enabled,
   # and we can't default to CUDA since it's unfree
   rocmSupport ? !cudaSupport,
-  runCommand,
   static ? stdenv.hostPlatform.isStatic,
-  stdenv,
-  writeShellApplication,
 }:
 
 let
@@ -132,10 +132,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-Dfzq2gqoLSByCLWV5xvY/lXZeVa/yQ67lDSoIAa9jUU=";
       # [PATCH] Drop CMP0037 to fix cmake 4.0 build error
       name = "drop-cmp0037-old.patch";
       url = "https://github.com/icl-utk-edu/magma/commit/2fecaf3f0c811344363f713669c1fe30f6879acd.patch";
-      hash = "sha256-Dfzq2gqoLSByCLWV5xvY/lXZeVa/yQ67lDSoIAa9jUU=";
     })
   ]
   ++ lib.optionals cudaSupport [
@@ -143,25 +143,26 @@ stdenv.mkDerivation (finalAttrs: {
     # error: 'struct cudaDeviceProp' has no member named 'clockRate'
     # Context: https://github.com/icl-utk-edu/magma/issues/61
     (fetchpatch {
+      hash = "sha256-i9InbxD5HtfonB/GyF9nQhFmok3jZ73RxGcIciGBGvU=";
       name = "fix-cuda13-compat.patch";
       url = "https://github.com/icl-utk-edu/magma/commit/235aefb7b064954fce09d035c69907ba8a87cbcd.patch";
-      hash = "sha256-i9InbxD5HtfonB/GyF9nQhFmok3jZ73RxGcIciGBGvU=";
     })
   ]
   ++ lib.optionals rocmSupport [
     # TODO: Drop both these patches on next magma release
     (fetchpatch {
-      # ROCm 7.0 compat: use HIPBLAS_V2 types and APIs
-      # Requires building from git w/ make generate call. If applied to release tarball
-      # pre-generated hipified code will remain unpatched
-      name = "magma-ROCm-7.0-compat.patch";
-      url = "https://github.com/icl-utk-edu/magma/commit/02ecee0ccc56cce85194fdda18c9e0614797b2f9.patch";
-      hash = "sha256-vm58X30ZR02sOMsKrvxEcEF27tJYuuyZZrz+GGFNz5Q=";
       excludes = [
         "testing/testing_ztrsv_batched.cpp"
         "CMakeLists.txt"
         "Makefile"
       ];
+
+      hash = "sha256-vm58X30ZR02sOMsKrvxEcEF27tJYuuyZZrz+GGFNz5Q=";
+      # ROCm 7.0 compat: use HIPBLAS_V2 types and APIs
+      # Requires building from git w/ make generate call. If applied to release tarball
+      # pre-generated hipified code will remain unpatched
+      name = "magma-ROCm-7.0-compat.patch";
+      url = "https://github.com/icl-utk-edu/magma/commit/02ecee0ccc56cce85194fdda18c9e0614797b2f9.patch";
     })
     # Vendored patch with CMakeLists.txt and Makefile hunks from above commit (context differs)
     ./magma-hipblas-v2-buildflags.patch
@@ -184,18 +185,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lists.optionals cudaSupport [
     cudaPackages.cuda_nvcc
   ];
-
-  # README Step 0: generate precision variants and CMake.src.{hip|cuda} when building from git
-  # GPU_TARGET is a dummy value; CMake vars control target selection and `make generate`
-  # does not use the target setting, but the main makefile errors without it
-  preConfigure = ''
-    cat > make.inc <<EOF
-    BACKEND = ${if rocmSupport then "hip" else "cuda"}
-    FORT = true
-    GPU_TARGET = ${if rocmSupport then "gfx900" else "sm_90"}
-    EOF
-    make -j$NIX_BUILD_CORES generate
-  '';
 
   buildInputs = [
     libpthread-stubs
@@ -224,11 +213,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  env.CFLAGS = "-DADD_" + lib.optionalString rocmSupport " -fopenmp";
-  env.CXXFLAGS = finalAttrs.env.CFLAGS;
-  env.FFLAGS = "-DADD_";
-  env.ROCM_PATH = lib.optionalString rocmSupport rocmPackages.clr;
-
   cmakeFlags = [
     (strings.cmakeFeature "GPU_TARGET" gpuTargetString)
     (strings.cmakeBool "MAGMA_ENABLE_CUDA" cudaSupport)
@@ -247,6 +231,23 @@ stdenv.mkDerivation (finalAttrs: {
     (strings.cmakeFeature "CMAKE_C_COMPILER" "${rocmPackages.clang}/bin/clang")
     (strings.cmakeFeature "CMAKE_CXX_COMPILER" "${rocmPackages.clang}/bin/clang++")
   ];
+
+  env.CFLAGS = "-DADD_" + lib.optionalString rocmSupport " -fopenmp";
+  env.CXXFLAGS = finalAttrs.env.CFLAGS;
+  env.FFLAGS = "-DADD_";
+  env.ROCM_PATH = lib.optionalString rocmSupport rocmPackages.clr;
+
+  # README Step 0: generate precision variants and CMake.src.{hip|cuda} when building from git
+  # GPU_TARGET is a dummy value; CMake vars control target selection and `make generate`
+  # does not use the target setting, but the main makefile errors without it
+  preConfigure = ''
+    cat > make.inc <<EOF
+    BACKEND = ${if rocmSupport then "hip" else "cuda"}
+    FORT = true
+    GPU_TARGET = ${if rocmSupport then "gfx900" else "sm_90"}
+    EOF
+    make -j$NIX_BUILD_CORES generate
+  '';
 
   # Magma doesn't have a test suite we can easily run, just loose executables, all of which require a GPU.
   doCheck = false;
@@ -287,6 +288,7 @@ stdenv.mkDerivation (finalAttrs: {
       rocmSupport
       gpuTargets
       ;
+
     testers = {
       all =
         let
@@ -294,10 +296,13 @@ stdenv.mkDerivation (finalAttrs: {
         in
         writeShellApplication {
           derivationArgs = {
-            __structuredAttrs = true;
             strictDeps = true;
+            __structuredAttrs = true;
           };
+
           name = "magma-testers-all";
+          runtimeInputs = [ magma.test ];
+
           text = ''
             logWithDate() {
               printf "%s: %s\n" "$(date --utc --iso-8601=seconds)" "$*"
@@ -404,16 +409,16 @@ stdenv.mkDerivation (finalAttrs: {
 
             main
           '';
-          runtimeInputs = [ magma.test ];
         };
     };
+
     tests = {
       all =
         runCommand "magma-tests-all"
           {
-            __structuredAttrs = true;
             strictDeps = true;
             nativeBuildInputs = [ finalAttrs.passthru.testers.all ];
+            __structuredAttrs = true;
             requiredSystemFeatures = lib.optionals cudaSupport [ "cuda" ];
           }
           ''
@@ -428,11 +433,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Matrix Algebra on GPU and Multicore Architectures";
-    license = lib.licenses.bsd3;
     homepage = "https://icl.utk.edu/magma/";
     changelog = "https://github.com/icl-utk-edu/magma/blob/v${finalAttrs.version}/ReleaseNotes";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ connorbaker ];
+    platforms = lib.platforms.linux;
 
     # Cf. https://github.com/icl-utk-edu/magma/blob/v2.9.0/CMakeLists.txt#L24-L31
     broken =

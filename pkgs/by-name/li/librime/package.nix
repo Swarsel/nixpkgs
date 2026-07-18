@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
-  glog,
-  leveldb,
-  marisa,
-  opencc,
-  yaml-cpp,
-  gtest,
   capnproto,
-  pkg-config,
+  cmake,
+  glog,
+  gtest,
+  leveldb,
   librime-lua,
   librime-octagram,
+  marisa,
+  opencc,
+  pkg-config,
+  yaml-cpp,
   plugins ? [
     librime-lua
     librime-octagram
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
   preConfigure = copyPlugins;
 
   meta = {
-    homepage = "https://rime.im/";
     description = "Rime Input Method Engine, the core library";
+    homepage = "https://rime.im/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ vonfry ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;

@@ -4,14 +4,14 @@
   fetchFromGitHub,
   SDL2,
   SDL2_image,
-  libx11,
-  rtaudio,
-  rtmidi,
-  glew,
   alsa-lib,
   angelscript,
   cmake,
+  glew,
+  libx11,
   pkg-config,
+  rtaudio,
+  rtmidi,
   zenity,
   withEditor ? true,
 }:
@@ -43,11 +43,11 @@ stdenv.mkDerivation (finalAttrs: {
     zenity
   ];
 
-  hardeningDisable = [ "format" ];
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_EDITOR" withEditor)
   ];
+
+  hardeningDisable = [ "format" ];
 
   prePatch = ''
     # use nix store path instead of hardcoded /usr/share for support data
@@ -62,10 +62,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Modern \"Jedi Engine\" replacement supporting Dark Forces, mods, and in the future, Outlaws";
-    mainProgram = "theforceengine";
     homepage = "https://theforceengine.github.io";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ devusb ];
     platforms = lib.platforms.linux;
+    mainProgram = "theforceengine";
   };
 })

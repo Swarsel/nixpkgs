@@ -1,33 +1,33 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   cinnamon-desktop,
   cinnamon-translations,
   colord,
+  cups,
+  fontconfig,
   glib,
   gsettings-desktop-schemas,
   gtk3,
   lcms2,
   libcanberra-gtk3,
+  libgudev,
   libnotify,
-  wrapGAppsHook3,
-  pkg-config,
-  lib,
-  stdenv,
-  systemd,
-  upower,
-  cups,
-  polkit,
   librsvg,
   libwacom,
-  libxi,
-  libxext,
   libx11,
-  fontconfig,
-  tzdata,
-  nss,
-  libgudev,
+  libxext,
+  libxi,
   meson,
   ninja,
+  nss,
+  pkg-config,
+  polkit,
+  systemd,
+  tzdata,
+  upower,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,8 +41,24 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-zdrT9te/C62g1MZlILbicxaDWO+uS3iW448YBTpPz1Y=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     ./csd-backlight-helper-fix.patch
+  ];
+
+  postPatch = ''
+    sed "s|/usr/share/zoneinfo|${tzdata}/share/zoneinfo|g" -i plugins/datetime/system-timezone.h
+  '';
+
+  nativeBuildInputs = [
+    meson
+    ninja
+    wrapGAppsHook3
+    pkg-config
   ];
 
   buildInputs = [
@@ -68,22 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgudev
   ];
 
-  nativeBuildInputs = [
-    meson
-    ninja
-    wrapGAppsHook3
-    pkg-config
-  ];
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  postPatch = ''
-    sed "s|/usr/share/zoneinfo|${tzdata}/share/zoneinfo|g" -i plugins/datetime/system-timezone.h
-  '';
-
   # use locales from cinnamon-translations (not using --localedir because datadir is used)
   postInstall = ''
     ln -s ${cinnamon-translations}/share/locale $out/share/locale
@@ -96,8 +96,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/linuxmint/cinnamon-settings-daemon";
     description = "Settings daemon for the Cinnamon desktop";
+    homepage = "https://github.com/linuxmint/cinnamon-settings-daemon";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

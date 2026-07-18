@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,15 +17,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-rf4cazRrHxHdT4U58sJtAHU2pfZ5+oAerSVdEt9/bGA=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple and slim proxy to forward ports from and into linux network namespaces";
     homepage = "https://github.com/fooker/netns-proxy";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ fooker ];
     platforms = lib.platforms.linux;
     mainProgram = "netns-proxy";
-    maintainers = with lib.maintainers; [ fooker ];
   };
 })

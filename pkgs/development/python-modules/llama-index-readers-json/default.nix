@@ -2,28 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  llama-index-core,
   hatchling,
+  llama-index-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "llama-index-readers-json";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_readers_json";
     inherit (finalAttrs) version;
     hash = "sha256-315Uzbm3CuRJQpAwnrLxQ6zr0e1pCmM3JKMV6KhrEs8=";
+    pname = "llama_index_readers_json";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [ llama-index-core ];
 
   # Tests are only available in the mono repo
   doCheck = false;
-
+  build-system = [ hatchling ];
+  dependencies = [ llama-index-core ];
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.readers.json" ];
 
   meta = {

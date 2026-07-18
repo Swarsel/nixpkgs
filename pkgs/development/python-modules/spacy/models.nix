@@ -1,31 +1,31 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchurl,
+  buildPythonPackage,
+  jq,
+  moreutils,
+  nix,
   protobuf,
   pymorphy3,
   pymorphy3-dicts-uk,
   sentencepiece,
   setuptools,
   spacy,
-  spacy-pkuseg,
   spacy-curated-transformers,
-  sudachipy,
+  spacy-pkuseg,
   sudachidict-core,
+  sudachipy,
   transformers,
   writeScript,
-  stdenv,
-  jq,
-  nix,
-  moreutils,
 }:
 let
   buildModelPackage =
     {
-      pname,
-      version,
-      sha256,
       license,
+      pname,
+      sha256,
+      version,
     }:
 
     let
@@ -37,12 +37,26 @@ let
     in
     buildPythonPackage {
       inherit pname version;
-      pyproject = true;
 
       src = fetchurl {
-        url = "https://github.com/explosion/spacy-models/releases/download/${pname}-${version}/${pname}-${version}.tar.gz";
         inherit sha256;
+        url = "https://github.com/explosion/spacy-models/releases/download/${pname}-${version}/${pname}-${version}.tar.gz";
       };
+
+      postPatch =
+        lib.optionalString requires-protobuf ''
+          substituteInPlace meta.json \
+            --replace-fail "protobuf<3.21.0" "protobuf"
+        ''
+        + lib.optionalString (lang == "zh") ''
+          # Uses numpy 2.x, while the rest of the dependencies still uses
+          # numpy 1.x. Remove once all spaCy packages are updated for
+          # numpy 2.x.
+          substituteInPlace meta.json \
+            --replace-fail "spacy-pkuseg>=1.0.0,<2.0.0" "spacy-pkuseg"
+        '';
+
+      nativeBuildInputs = [ setuptools ] ++ lib.optionals requires-protobuf [ protobuf ];
 
       propagatedBuildInputs = [
         spacy
@@ -61,21 +75,7 @@ let
       ++ lib.optionals (lang == "zh") [ spacy-pkuseg ]
       ++ lib.optionals requires-sentencepiece [ sentencepiece ];
 
-      postPatch =
-        lib.optionalString requires-protobuf ''
-          substituteInPlace meta.json \
-            --replace-fail "protobuf<3.21.0" "protobuf"
-        ''
-        + lib.optionalString (lang == "zh") ''
-          # Uses numpy 2.x, while the rest of the dependencies still uses
-          # numpy 1.x. Remove once all spaCy packages are updated for
-          # numpy 2.x.
-          substituteInPlace meta.json \
-            --replace-fail "spacy-pkuseg>=1.0.0,<2.0.0" "spacy-pkuseg"
-        '';
-
-      nativeBuildInputs = [ setuptools ] ++ lib.optionals requires-protobuf [ protobuf ];
-
+      pyproject = true;
       pythonImportsCheck = [ pname ];
 
       passthru.updateScript = writeScript "update-spacy-models" ''

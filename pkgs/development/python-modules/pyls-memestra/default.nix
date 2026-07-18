@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # dependencies
   deprecated,
   memestra,
@@ -12,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pyls-memestra";
   version = "0.0.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "QuantStack";
@@ -21,15 +19,16 @@ buildPythonPackage rec {
     hash = "sha256-C1d2BibjpoZCPSy39PkdcLiLIwZZG+XTDWXVjTT1Bws=";
   };
 
+  # Tests fail because they rely on writing to read-only files
+  doCheck = false;
+
   dependencies = [
     deprecated
     memestra
     python-lsp-server
   ];
 
-  # Tests fail because they rely on writing to read-only files
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyls_memestra" ];
 
   meta = {

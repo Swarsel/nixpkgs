@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
-
-  # build-system
-  ninja,
-  setuptools,
-  torch,
-
-  # dependencies
-  einops,
-
   # tests
   apex,
-  pytestCheckHook,
-  sentencepiece,
-  timm,
-  transformers,
-  writableTmpDirAsHomeHook,
-
+  buildPythonPackage,
+  # dependencies
+  einops,
   # passthru
   flash-attn,
+  # build-system
+  ninja,
+  pytestCheckHook,
+  python,
+  sentencepiece,
+  setuptools,
+  timm,
+  torch,
+  transformers,
+  writableTmpDirAsHomeHook,
 }:
 
 let
@@ -31,37 +27,14 @@ let
   self = buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     pname = "flash-attention";
     version = "2.8.3.post1";
-    pyproject = true;
-    __structuredAttrs = true;
 
     src = fetchFromGitHub {
       owner = "Dao-AILab";
       repo = "flash-attention";
       tag = "v${finalAttrs.version}";
-      fetchSubmodules = true;
       hash = "sha256-IgK517JorAf9ERcimusF20HgnuETBNKgnGaOxWBuV/M=";
+      fetchSubmodules = true;
     };
-
-    preConfigure = ''
-      export MAX_JOBS="$NIX_BUILD_CORES"
-      export NVCC_THREADS=2
-    '';
-
-    env = lib.optionalAttrs cudaSupport {
-      FORCE_BUILD = "TRUE";
-      FLASH_ATTENTION_SKIP_CUDA_BUILD = "FALSE";
-
-      # 8.0;9.0;12.0
-      TORCH_CUDA_ARCH_LIST = lib.concatStringsSep ";" cudaCapabilities;
-      # 80;90;120
-      FLASH_ATTN_CUDA_ARCHS = lib.strings.concatMapStringsSep ";" dropDots cudaCapabilities;
-    };
-
-    build-system = [
-      ninja
-      setuptools
-      torch
-    ];
 
     nativeBuildInputs = [
       cudaPackages.cuda_nvcc
@@ -76,20 +49,22 @@ let
       cudaPackages.cuda_cudart # cuda_runtime.h cuda_runtime_api.h
     ];
 
-    dependencies = [
-      einops
-      torch
-    ];
+    env = lib.optionalAttrs cudaSupport {
+      FLASH_ATTENTION_SKIP_CUDA_BUILD = "FALSE";
+      # 80;90;120
+      FLASH_ATTN_CUDA_ARCHS = lib.strings.concatMapStringsSep ";" dropDots cudaCapabilities;
+      FORCE_BUILD = "TRUE";
+      # 8.0;9.0;12.0
+      TORCH_CUDA_ARCH_LIST = lib.concatStringsSep ";" cudaCapabilities;
+    };
 
-    # The CuTeDSL implementation (flash_attn/cute) is the FlashAttention-4 module,
-    # packaged separately as `flash-attn-4`. Drop the stale snapshot bundled in this
-    # FA2 release so the two packages don't collide on flash_attn/cute/ when a single
-    # environment installs both.
-    postInstall = ''
-      rm -rf "$out/${python.sitePackages}/flash_attn/cute"
+    preConfigure = ''
+      export MAX_JOBS="$NIX_BUILD_CORES"
+      export NVCC_THREADS=2
     '';
 
-    pythonImportsCheck = [ "flash_attn" ];
+    # Tests require access to a physical GPU
+    doCheck = false;
 
     nativeCheckInputs = [
       apex
@@ -100,8 +75,29 @@ let
       writableTmpDirAsHomeHook
     ];
 
-    enabledTestPaths = [
-      "tests/"
+    preCheck = ''
+      rm -rf flash_attn
+    '';
+
+    # The CuTeDSL implementation (flash_attn/cute) is the FlashAttention-4 module,
+    # packaged separately as `flash-attn-4`. Drop the stale snapshot bundled in this
+    # FA2 release so the two packages don't collide on flash_attn/cute/ when a single
+    # environment installs both.
+    postInstall = ''
+      rm -rf "$out/${python.sitePackages}/flash_attn/cute"
+    '';
+
+    __structuredAttrs = true;
+
+    build-system = [
+      ninja
+      setuptools
+      torch
+    ];
+
+    dependencies = [
+      einops
+      torch
     ];
 
     disabledTestPaths = [
@@ -125,26 +121,26 @@ let
       "tests/cute/test_flash_attn.py"
     ];
 
-    preCheck = ''
-      rm -rf flash_attn
-    '';
+    enabledTestPaths = [
+      "tests/"
+    ];
 
-    # Tests require access to a physical GPU
-    doCheck = false;
+    pyproject = true;
+    pythonImportsCheck = [ "flash_attn" ];
 
     passthru.gpuCheck = self.overridePythonAttrs {
-      requiredSystemFeatures = [ "cuda" ];
       doCheck = true;
+      requiredSystemFeatures = [ "cuda" ];
     };
 
     meta = {
-      # Upstream requires either CUDA or ROCm. Couldn't get it to work with ROCm for now.
-      broken = !cudaSupport;
       description = "Official implementation of FlashAttention and FlashAttention-2";
       homepage = "https://github.com/Dao-AILab/flash-attention/";
       changelog = "https://github.com/Dao-AILab/flash-attention/releases/tag/${finalAttrs.src.tag}";
       license = lib.licenses.bsd3;
       maintainers = with lib.maintainers; [ jherland ];
+      # Upstream requires either CUDA or ROCm. Couldn't get it to work with ROCm for now.
+      broken = !cudaSupport;
     };
   });
 in

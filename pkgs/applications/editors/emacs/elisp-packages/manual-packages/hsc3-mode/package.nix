@@ -1,19 +1,17 @@
 {
-  melpaBuild,
   haskell-mode,
   haskellPackages,
+  melpaBuild,
 }:
 
 let
   inherit (haskellPackages) hsc3;
 in
 melpaBuild {
+  inherit (hsc3) src version;
   pname = "hsc3-mode";
   ename = "hsc3";
-  inherit (hsc3) src version;
-
   files = ''("emacs/*.el")'';
-
   packageRequires = [ haskell-mode ];
 
   meta = {

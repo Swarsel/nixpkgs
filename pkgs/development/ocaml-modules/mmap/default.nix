@@ -1,8 +1,8 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   bigarray-compat,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -17,11 +17,13 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [ bigarray-compat ];
 
   meta = {
-    homepage = "https://github.com/mirage/mmap";
     description = "Function for mapping files in memory";
+
     longDescription = ''
       This project provides a Mmap.map_file functions for mapping files in memory.
     '';
+
+    homepage = "https://github.com/mirage/mmap";
     changelog = "https://raw.githubusercontent.com/mirage/mmap/refs/tags/v${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.vbgl ];

@@ -1,16 +1,16 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
-  gnuradio,
-  cmake,
-  pkg-config,
-  logLib,
-  mpir,
-  gmp,
   boost,
-  python,
+  cmake,
+  gmp,
+  gnuradio,
   gnuradioOlder,
+  logLib,
+  mkDerivation,
+  mpir,
+  pkg-config,
+  python,
 }:
 
 mkDerivation {
@@ -23,7 +23,6 @@ mkDerivation {
     rev = "862746dd1cf635c9c8a4bfbaa2c3a0ec3a5306c9";
     hash = "sha256-12IqFNMLvqTN2R8+M9bXiteG4nQ8TwIMECSQPpgKCxM=";
   };
-  disabled = gnuradioOlder "3.10";
 
   outputs = [
     "out"
@@ -49,6 +48,8 @@ mkDerivation {
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_PYTHON" (gnuradio.hasFeature "python-support"))
   ];
+
+  disabled = gnuradioOlder "3.10";
 
   meta = {
     description = "Fully-functional GNU Radio software-defined radio (SDR) implementation of a LoRa transceiver";

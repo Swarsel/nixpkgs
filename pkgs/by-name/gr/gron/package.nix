@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,18 +25,22 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Make JSON greppable";
-    mainProgram = "gron";
+
     longDescription = ''
       gron transforms JSON into discrete assignments to make it easier to grep
       for what you want and see the absolute 'path' to it. It eases the
       exploration of APIs that return large blobs of JSON but have terrible
       documentation.
     '';
+
     homepage = "https://github.com/tomnomnom/gron";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fgaz
       SuperSandro2000
     ];
+
+    mainProgram = "gron";
   };
 })

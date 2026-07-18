@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
   coreutils,
+  dpkg,
   gnugrep,
   gnused,
-  perl,
+  makeWrapper,
   mfcl2740dwlpr,
+  perl,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,8 +24,6 @@ stdenv.mkDerivation rec {
     dpkg
     makeWrapper
   ];
-
-  unpackPhase = "dpkg-deb -x $src $out";
 
   installPhase = ''
     basedir=${mfcl2740dwlpr}/opt/brother/Printers/MFCL2740DW
@@ -55,14 +53,17 @@ stdenv.mkDerivation rec {
     ln $dir/cupswrapper/brother-MFCL2740DW-cups-en.ppd $out/share/cups/model
   '';
 
+  unpackPhase = "dpkg-deb -x $src $out";
+
   meta = {
     description = "Brother MFC-L2740DW CUPS wrapper driver";
     homepage = "http://www.brother.com/";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ ];
   };
 }

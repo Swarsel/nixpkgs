@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   go-task,
 }:
 
@@ -21,18 +21,17 @@ buildGoModule rec {
     ./updater.patch
   ];
 
+  vendorHash = "sha256-Nrw7l3nV1sMVWs1HECQJYohKiD0gPvWQOLD7eohEd1A=";
+  doCheck = false; # require network connectivity
+
   excludedPackages = [
     "design"
   ];
-
-  vendorHash = "sha256-Nrw7l3nV1sMVWs1HECQJYohKiD0gPvWQOLD7eohEd1A=";
 
   ldflags = [
     "-X github.com/arduino/arduino-create-agent/version.versionString=${version}"
     "-X github.com/arduino/arduino-create-agent/version.commit=unknown"
   ];
-
-  doCheck = false; # require network connectivity
 
   meta = {
     description = "Agent to upload code to any USB connected Arduino board directly from the browser";

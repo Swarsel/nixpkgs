@@ -23,8 +23,6 @@ let
   xnu = sourceRelease "xnu";
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "text_cmds-deps-private-headers";
-
     buildCommand = ''
       install -D -t "$out/include" \
         '${libplatform}/private/_simple.h' \
@@ -35,17 +33,15 @@ let
       install -D -t "$out/include/CommonCrypto" \
         '${CommonCrypto}/include/Private/CommonDigestSPI.h'
     '';
+
+    name = "text_cmds-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "text_cmds";
-
   outputs = [
     "out"
     "man"
   ];
-
-  xcodeHash = "sha256-8Z6Goz94xP3HqAaSnFUurhZE8l3G1mK5KviXtxSPQhI=";
 
   postPatch = ''
     # Improve compatiblity with libmd in nixpkgs.
@@ -60,8 +56,6 @@ mkAppleDerivation {
       --replace-fail 'const void *, unsigned int, char *' 'const uint8_t *, size_t, char *'
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -75,10 +69,15 @@ mkAppleDerivation {
     zlib
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
+
   postInstall = ''
     # Patch the shebangs to use `sh` from shell_cmds.
     HOST_PATH='${lib.getBin shell_cmds}/bin' patchShebangs --host "$out/bin"
   '';
+
+  releaseName = "text_cmds";
+  xcodeHash = "sha256-8Z6Goz94xP3HqAaSnFUurhZE8l3G1mK5KviXtxSPQhI=";
 
   meta = {
     description = "Text commands for Darwin";

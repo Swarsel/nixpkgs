@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,11 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Z0RKEHeDhHjZtqXWueASMgiqnFRNsPe2rdoC7LZ/Mh8=";
   };
 
-  cargoHash = "sha256-rJoIElM7fYg+oEV5idUNGys88x6dFeO4Ux8TxJKNqPU=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  cargoHash = "sha256-rJoIElM7fYg+oEV5idUNGys88x6dFeO4Ux8TxJKNqPU=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd ocelot \
@@ -36,8 +36,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Process supervisor and init system written in Rust Programming Language";
     homepage = "https://github.com/xrelkd/ocelot";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ xrelkd ];
+    platforms = lib.platforms.linux;
     mainProgram = "ocelot";
   };
 })

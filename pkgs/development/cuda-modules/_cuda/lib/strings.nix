@@ -1,4 +1,4 @@
-{ _cuda, lib }:
+{ lib, _cuda }:
 let
   cudaLib = _cuda.lib;
 in
@@ -30,7 +30,6 @@ in
     :::
   */
   dotsToUnderscores = lib.replaceStrings [ "." ] [ "_" ];
-
   /**
     Removes the dots from a string.
 
@@ -99,8 +98,8 @@ in
   */
   formatCapabilities =
     {
-      cudaCapabilityToInfo,
       cudaCapabilities,
+      cudaCapabilityToInfo,
       cudaForwardCompat,
     }:
     let
@@ -183,7 +182,6 @@ in
       */
       # E.g. [ "sm_75" "sm_86" "compute_86" ]
       arches = realArches ++ lib.optionals cudaForwardCompat [ (lib.last virtualArches) ];
-
       /**
         The CMake-compatible CUDA architectures string for the given CUDA capabilities.
 
@@ -194,7 +192,6 @@ in
         ```
       */
       cmakeCudaArchitecturesString = cudaLib.mkCmakeCudaArchitecturesString cudaCapabilities;
-
       /**
         The gencode string for the given CUDA capabilities.
 
@@ -309,7 +306,6 @@ in
     :::
   */
   mkRealArchitecture = cudaCapability: "sm_" + cudaLib.dropDots cudaCapability;
-
   /**
     Create a versioned attribute name from a version by replacing dots with underscores.
 
@@ -346,7 +342,6 @@ in
     :::
   */
   mkVersionedName = name: version: "${name}_${cudaLib.dotsToUnderscores version}";
-
   /**
     Produces a virtual architecture string from a CUDA capability.
 

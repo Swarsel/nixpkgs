@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  func,
   installShellFiles,
   testers,
-  func,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-SYqkWE7dVFy6stibcWayU2J+oIFIfwNDoK6TzchgBzo=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-F/TQ1QwfQfum1DOY2xrzpTlm7jvuJQUjtBLY6pZfTh8=";
 
-  subPackages = [ "cmd/func" ];
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd func \
+      --bash <($out/bin/func completion bash) \
+      --zsh <($out/bin/func completion zsh)
+  '';
 
   ldflags = [
     "-X knative.dev/func/pkg/version.Vers=v${finalAttrs.version}"
@@ -30,26 +35,20 @@ buildGoModule (finalAttrs: {
     "-X knative.dev/func/pkg/version.Kver=${finalAttrs.src.tag}"
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd func \
-      --bash <($out/bin/func completion bash) \
-      --zsh <($out/bin/func completion zsh)
-  '';
+  subPackages = [ "cmd/func" ];
 
   passthru.tests.version = testers.testVersion {
-    package = func;
-    command = "func version";
     version = "v${finalAttrs.version}";
+    command = "func version";
+    package = func;
   };
 
   meta = {
     description = "Knative client library and CLI for creating, building, and deploying Knative Functions";
-    mainProgram = "func";
     homepage = "https://github.com/knative/func";
     changelog = "https://github.com/knative/func/releases/tag/knative-v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ maxwell-lt ];
+    mainProgram = "func";
   };
 })

@@ -2,20 +2,17 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
   # tests
   ghdl,
   iverilog,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "myhdl";
   version = "0.11.51";
-  pyproject = true;
 
   # No recent tags on GitHub
   src = fetchPypi {
@@ -23,18 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-nZEdYLRjk2rgS3byc4iu9oJazodnoNg63MBUMasGZiw=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     ghdl
     iverilog
     pytestCheckHook
   ];
 
-  enabledTestPaths = [
-    "myhdl/test"
+  build-system = [
+    setuptools
   ];
 
   disabledTestPaths = [
@@ -76,6 +69,12 @@ buildPythonPackage rec {
     "testBinaryOps"
     "testUnaryOps"
   ];
+
+  enabledTestPaths = [
+    "myhdl/test"
+  ];
+
+  pyproject = true;
 
   passthru = {
     # If using myhdl as a dependency, use these if needed and not ghdl and

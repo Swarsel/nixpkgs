@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # build-system
-  setuptools,
+  buildPythonPackage,
   # dependencies
   nbtlib,
+  # build-system
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "litemapy";
   version = "0.11.0b0";
-  pyproject = true;
-  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "SmylerMC";
@@ -27,6 +25,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "litemapy" ];
 
   meta = {
@@ -34,6 +34,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/SmylerMC/litemapy";
     changelog = "https://github.com/SmylerMC/litemapy/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       gdd
       kuflierl

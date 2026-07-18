@@ -2,19 +2,19 @@
   lib,
   fetchFromGitHub,
   fetchzip,
+  gitUpdater,
   nodejs,
   stdenvNoCC,
   testers,
-  gitUpdater,
   withNode ? true,
 }:
 
 let
   completion = fetchFromGitHub {
+    hash = "sha256-z7KPXeYPPRuaEPxgY6YqsLt9n8cSsW3n2FhOzVde1HU=";
     owner = "dsifford";
     repo = "yarn-completion";
     rev = "v0.17.0";
-    hash = "sha256-z7KPXeYPPRuaEPxgY6YqsLt9n8cSsW3n2FhOzVde1HU=";
   };
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -44,8 +44,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     );
 
     updateScript = gitUpdater {
-      url = "https://github.com/yarnpkg/yarn.git";
       rev-prefix = "v";
+      url = "https://github.com/yarnpkg/yarn.git";
     };
   };
 
@@ -54,9 +54,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://classic.yarnpkg.com/";
     changelog = "https://github.com/yarnpkg/yarn/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       screendriver
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "yarn";
   };

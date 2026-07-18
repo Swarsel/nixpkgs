@@ -8,8 +8,6 @@ stdenv.mkDerivation {
   pname = "tomcat-mysql-jdbc";
   version = mysql_jdbc.version;
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -18,6 +16,8 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     platforms = lib.platforms.unix;

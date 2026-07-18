@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   unittestCheckHook,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "enturclient";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hfurubotten";
@@ -20,8 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-83ui1BYqiRr+IwaJeXNppMnOTQCF9uJD5Kus93CDsUA=";
   };
 
-  pythonRelaxDeps = [ "async_timeout" ];
-
+  nativeCheckInputs = [ unittestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,10 +27,9 @@ buildPythonPackage (finalAttrs: {
     async-timeout
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "enturclient" ];
-
-  nativeCheckInputs = [ unittestCheckHook ];
-
+  pythonRelaxDeps = [ "async_timeout" ];
   unittestFlagsArray = [ "tests/dto/" ];
 
   meta = {

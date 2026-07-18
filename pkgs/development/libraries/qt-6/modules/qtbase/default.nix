@@ -1,97 +1,96 @@
 {
-  stdenv,
   lib,
-  src,
-  version,
+  stdenv,
+  at-spi2-core,
   bison,
-  flex,
-  gperf,
-  lndir,
-  perl,
-  pkg-config,
-  copyPathToStore,
-  makeSetupHook,
-  which,
   cmake,
-  ninja,
-  libproxy,
-  libxcb-cursor,
-  libxtst,
-  libxdmcp,
-  zstd,
-  double-conversion,
-  util-linux,
-  systemd,
-  systemdSupport ? stdenv.hostPlatform.isLinux,
-  libb2,
-  md4c,
-  mtdev,
-  lksctp-tools,
-  libselinux,
-  libsepol,
-  vulkan-headers,
-  vulkan-loader,
-  libthai,
-  libdrm,
-  libgbm,
-  libdatrie,
-  lttng-ust,
-  libepoxy,
+  copyPathToStore,
+  # optional dependencies
+  cups,
+  darwinVersionInputs,
   dbus,
+  double-conversion,
+  fetchpatch,
+  flex,
   fontconfig,
   freetype,
   glib,
+  gperf,
+  gtk3,
   harfbuzz,
   icu,
-  libx11,
-  libxcomposite,
-  libxext,
-  libxi,
-  libxrender,
+  libGL,
+  libb2,
+  libdatrie,
+  libdrm,
+  libepoxy,
+  libgbm,
+  libinput,
   libjpeg,
+  libmysqlclient,
   libpng,
+  libpq,
+  libproxy,
+  libselinux,
+  libsepol,
+  libthai,
+  libx11,
   libxcb,
-  libxkbcommon,
-  libxml2,
-  libxslt,
-  openssl,
-  pcre2,
-  sqlite,
-  udev,
-  libxcb-util,
+  libxcb-cursor,
   libxcb-image,
   libxcb-keysyms,
   libxcb-render-util,
+  libxcb-util,
   libxcb-wm,
-  zlib,
-  at-spi2-core,
-  unixodbc,
-  unixodbcDrivers,
-  libGL,
+  libxcomposite,
+  libxdmcp,
+  libxext,
+  libxi,
+  libxkbcommon,
+  libxml2,
+  libxrender,
+  libxslt,
+  libxtst,
+  lksctp-tools,
+  # TODO: Clean up on `staging`.
+  llvmPackages,
+  lndir,
+  lttng-ust,
+  makeSetupHook,
+  md4c,
   # darwin
   moltenvk,
   moveBuildTree,
-  darwinVersionInputs,
-  xcbuild,
+  mtdev,
+  ninja,
+  openssl,
+  pcre2,
+  perl,
+  pkg-config,
   # mingw
   pkgsBuildBuild,
-  # optional dependencies
-  cups,
-  libmysqlclient,
-  libpq,
-  withGtk3 ? false,
-  gtk3,
-  withLibinput ? false,
-  libinput,
-  withWayland ? lib.meta.availableOn stdenv.hostPlatform wayland,
+  sqlite,
+  src,
+  systemd,
+  udev,
+  unixodbc,
+  unixodbcDrivers,
+  util-linux,
+  version,
+  vulkan-headers,
+  vulkan-loader,
   wayland,
   wayland-scanner,
+  which,
+  xcbuild,
+  zlib,
+  zstd,
   # options
   qttranslations ? null,
-  fetchpatch,
-
-  # TODO: Clean up on `staging`.
-  llvmPackages,
+  systemdSupport ? stdenv.hostPlatform.isLinux,
+  withGtk3 ? false,
+  withLibinput ? false,
+  withWayland ? lib.meta.availableOn stdenv.hostPlatform wayland,
 }:
 
 let
@@ -102,9 +101,106 @@ let
   qtQmlPrefix = "lib/qt-6/qml";
 in
 stdenv.mkDerivation {
+  inherit src version;
   pname = "qtbase";
 
-  inherit src version;
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  patches = [
+    # look for Qt plugins in directories on PATH
+    ./derive-plugin-load-path-from-PATH.patch
+
+    # allow translations to be found outside of install prefix, as is the case in our split builds
+    ./allow-translations-outside-prefix.patch
+
+    # make internal find_package calls between Qt components work with split builds
+    ./use-cmake-path.patch
+
+    # always link to libraries by name in qmake-generated build scripts
+    ./qmake-always-use-libname.patch
+    # always explicitly list includedir in qmake-generated pkg-config files
+    ./qmake-fix-includedir.patch
+
+    # don't generate SBOM files by default, they don't work with our split installs anyway
+    ./no-sbom.patch
+
+    # use cmake from PATH in qt-cmake wrapper, to avoid qtbase runtime-depending on cmake
+    ./use-cmake-from-path.patch
+
+    # macdeployqt fixes
+    # get qmlimportscanner location from environment variable
+    ./find-qmlimportscanner.patch
+    # pass QML2_IMPORT_PATH from environment to qmlimportscanner
+    ./qmlimportscanner-import-path.patch
+    # don't pass qtbase's QML directory to qmlimportscanner if it's empty
+    ./skip-missing-qml-directory.patch
+
+    # another crash fix
+    (fetchpatch {
+      hash = "sha256-93tzp4O7dZxRZv7ilN/gbQSVmaeOGmxpYgM7aomN0n8=";
+      url = "https://github.com/qt/qtbase/commit/515cbbacfba9f4259c9c3b0714a31222c2b4c879.diff";
+    })
+  ];
+
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # TODO: Verify that this catches all the occurrences?
+    for file in \
+      cmake/QtPublicAppleHelpers.cmake \
+      mkspecs/features/mac/asset_catalogs.prf \
+      mkspecs/features/mac/default_pre.prf \
+      mkspecs/features/mac/sdk.mk \
+      mkspecs/features/mac/sdk.prf \
+      mkspecs/features/permissions.prf \
+      src/corelib/Qt6CoreMacros.cmake
+    do
+      substituteInPlace "$file" \
+        --replace-quiet /usr/bin/xcrun '${lib.getExe' xcbuild "xcrun"}' \
+        --replace-quiet /usr/bin/xcode-select '${lib.getExe' xcbuild "xcode-select"}' \
+        --replace-quiet /usr/libexec/PlistBuddy '${lib.getExe' xcbuild "PlistBuddy"}'
+    done
+
+    # Unlike Apple's PlistBuddy, xcbuild's only accepts capitalized commands,
+    # so the usage-description probe in permissions.prf always fails and the
+    # darwin permission plugins (Bluetooth, camera, ...) are silently never
+    # linked into qmake-built apps.
+    substituteInPlace mkspecs/features/permissions.prf \
+      --replace-fail "-c 'print " "-c 'Print "
+
+    substituteInPlace mkspecs/common/macx.conf \
+      --replace-fail 'CONFIG += ' 'CONFIG += no_default_rpath '
+  '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    bison
+    flex
+    gperf
+    lndir
+    perl
+    pkg-config
+    which
+    cmake
+    ninja
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    moveBuildTree
+    # TODO: Clean up on `staging`.
+    llvmPackages.lld
+  ];
+
+  buildInputs =
+    lib.optionals (lib.meta.availableOn stdenv.hostPlatform at-spi2-core) [
+      at-spi2-core
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin (darwinVersionInputs ++ [ moltenvk ])
+    ++ lib.optional withGtk3 gtk3
+    ++ lib.optional withLibinput libinput
+    ++ lib.optional (libmysqlclient != null && !stdenv.hostPlatform.isMinGW) libmysqlclient
+    ++ lib.optional (libpq != null && lib.meta.availableOn stdenv.hostPlatform libpq) libpq;
 
   propagatedBuildInputs = [
     libxml2
@@ -179,120 +275,6 @@ stdenv.mkDerivation {
     wayland-scanner
   ];
 
-  buildInputs =
-    lib.optionals (lib.meta.availableOn stdenv.hostPlatform at-spi2-core) [
-      at-spi2-core
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin (darwinVersionInputs ++ [ moltenvk ])
-    ++ lib.optional withGtk3 gtk3
-    ++ lib.optional withLibinput libinput
-    ++ lib.optional (libmysqlclient != null && !stdenv.hostPlatform.isMinGW) libmysqlclient
-    ++ lib.optional (libpq != null && lib.meta.availableOn stdenv.hostPlatform libpq) libpq;
-
-  nativeBuildInputs = [
-    bison
-    flex
-    gperf
-    lndir
-    perl
-    pkg-config
-    which
-    cmake
-    ninja
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    moveBuildTree
-    # TODO: Clean up on `staging`.
-    llvmPackages.lld
-  ];
-
-  propagatedNativeBuildInputs = [
-    lndir
-  ]
-  # I’m not sure if this is necessary, but the macOS mkspecs stuff
-  # tries to call `xcrun xcodebuild`, so better safe than sorry.
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild ]
-  # wayland-scanner needs to be propagated as both build
-  # (for the wayland-scanner binary) and host (for the
-  # actual wayland.xml protocol definition)
-  ++ lib.optionals withWayland [
-    wayland
-    wayland-scanner
-  ];
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
-
-  patches = [
-    # look for Qt plugins in directories on PATH
-    ./derive-plugin-load-path-from-PATH.patch
-
-    # allow translations to be found outside of install prefix, as is the case in our split builds
-    ./allow-translations-outside-prefix.patch
-
-    # make internal find_package calls between Qt components work with split builds
-    ./use-cmake-path.patch
-
-    # always link to libraries by name in qmake-generated build scripts
-    ./qmake-always-use-libname.patch
-    # always explicitly list includedir in qmake-generated pkg-config files
-    ./qmake-fix-includedir.patch
-
-    # don't generate SBOM files by default, they don't work with our split installs anyway
-    ./no-sbom.patch
-
-    # use cmake from PATH in qt-cmake wrapper, to avoid qtbase runtime-depending on cmake
-    ./use-cmake-from-path.patch
-
-    # macdeployqt fixes
-    # get qmlimportscanner location from environment variable
-    ./find-qmlimportscanner.patch
-    # pass QML2_IMPORT_PATH from environment to qmlimportscanner
-    ./qmlimportscanner-import-path.patch
-    # don't pass qtbase's QML directory to qmlimportscanner if it's empty
-    ./skip-missing-qml-directory.patch
-
-    # another crash fix
-    (fetchpatch {
-      url = "https://github.com/qt/qtbase/commit/515cbbacfba9f4259c9c3b0714a31222c2b4c879.diff";
-      hash = "sha256-93tzp4O7dZxRZv7ilN/gbQSVmaeOGmxpYgM7aomN0n8=";
-    })
-  ];
-
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # TODO: Verify that this catches all the occurrences?
-    for file in \
-      cmake/QtPublicAppleHelpers.cmake \
-      mkspecs/features/mac/asset_catalogs.prf \
-      mkspecs/features/mac/default_pre.prf \
-      mkspecs/features/mac/sdk.mk \
-      mkspecs/features/mac/sdk.prf \
-      mkspecs/features/permissions.prf \
-      src/corelib/Qt6CoreMacros.cmake
-    do
-      substituteInPlace "$file" \
-        --replace-quiet /usr/bin/xcrun '${lib.getExe' xcbuild "xcrun"}' \
-        --replace-quiet /usr/bin/xcode-select '${lib.getExe' xcbuild "xcode-select"}' \
-        --replace-quiet /usr/libexec/PlistBuddy '${lib.getExe' xcbuild "PlistBuddy"}'
-    done
-
-    # Unlike Apple's PlistBuddy, xcbuild's only accepts capitalized commands,
-    # so the usage-description probe in permissions.prf always fails and the
-    # darwin permission plugins (Bluetooth, camera, ...) are silently never
-    # linked into qmake-built apps.
-    substituteInPlace mkspecs/features/permissions.prf \
-      --replace-fail "-c 'print " "-c 'Print "
-
-    substituteInPlace mkspecs/common/macx.conf \
-      --replace-fail 'CONFIG += ' 'CONFIG += no_default_rpath '
-  '';
-
-  preHook = ''
-    . ${fix_qt_builtin_paths}
-    . ${fix_qt_module_paths}
-  '';
-
   cmakeFlags = [
     # makes Qt print the configure summary
     "--log-level=STATUS"
@@ -332,14 +314,6 @@ stdenv.mkDerivation {
 
   env.NIX_CFLAGS_COMPILE = "-DNIXPKGS_QT_PLUGIN_PREFIX=\"${qtPluginPrefix}\"";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-  separateDebugInfo = true;
-
-  moveToDev = false;
-
   postFixup = ''
     moveToOutput      "mkspecs/modules" "$dev"
     fixQtModulePaths  "$dev/mkspecs/modules"
@@ -364,11 +338,35 @@ stdenv.mkDerivation {
   '';
 
   dontWrapQtApps = true;
+  enableParallelBuilding = true;
+  moveToDev = false;
+
+  preHook = ''
+    . ${fix_qt_builtin_paths}
+    . ${fix_qt_module_paths}
+  '';
+
+  propagatedNativeBuildInputs = [
+    lndir
+  ]
+  # I’m not sure if this is necessary, but the macOS mkspecs stuff
+  # tries to call `xcrun xcodebuild`, so better safe than sorry.
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild ]
+  # wayland-scanner needs to be propagated as both build
+  # (for the wayland-scanner binary) and host (for the
+  # actual wayland.xml protocol definition)
+  ++ lib.optionals withWayland [
+    wayland
+    wayland-scanner
+  ];
+
+  separateDebugInfo = true;
 
   setupHook =
     let
       hook = makeSetupHook {
         name = "qtbase6-setup-hook";
+
         substitutions = {
           inherit
             fix_qt_builtin_paths
@@ -377,6 +375,7 @@ stdenv.mkDerivation {
             qtQmlPrefix
             ;
         };
+
         meta.license = lib.licenses.mit;
       } ../../hooks/qtbase-setup-hook.sh;
     in
@@ -387,18 +386,21 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://www.qt.io/";
     description = "Cross-platform application framework for C++";
+    homepage = "https://www.qt.io/";
+
     license = with lib.licenses; [
       fdl13Plus
       gpl2Plus
       lgpl21Plus
       lgpl3Plus
     ];
+
     maintainers = with lib.maintainers; [
       nickcao
       LunNova
     ];
+
     platforms = lib.platforms.unix ++ lib.platforms.windows;
   };
 }

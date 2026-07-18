@@ -1,39 +1,34 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
   fetchFromGitHub,
-  gradle,
-  jdk17,
-  zenity,
-
   # for arc
   SDL2,
-  pkg-config,
-  ant,
-  curl,
-  wget,
   alsa-lib,
   alsa-plugins,
+  ant,
+  copyDesktopItems,
+  curl,
   glew,
-
+  gradle,
+  jdk17,
+  makeDesktopItem,
+  makeWrapper,
+  nixosTests,
+  pkg-config,
+  wget,
+  zenity,
+  enableClient ? true,
+  enableServer ? true,
+  enableWayland ? false,
+  libjack2 ? null,
   # for soloud
   libpulseaudio ? null,
-  libjack2 ? null,
-
-  nixosTests,
-
   # Make the build version easily overridable.
   # Server and client build versions must match, and an empty build version means
   # any build is allowed, so this parameter acts as a simple whitelist.
   # Takes the package version and returns the build version.
   makeBuildVersion ? (v: v),
-  enableClient ? true,
-  enableServer ? true,
-
-  enableWayland ? false,
 }:
 
 let
@@ -44,33 +39,33 @@ let
   jdk = jdk17;
 
   Mindustry = fetchFromGitHub {
+    hash = "sha256-i29EbiKBVWab9YJWPWeVFQLLvRcigvHJPc7803A5e6g=";
     name = "Mindustry-source";
     owner = "Anuken";
     repo = "Mindustry";
     tag = "v${version}";
-    hash = "sha256-i29EbiKBVWab9YJWPWeVFQLLvRcigvHJPc7803A5e6g=";
   };
   Arc = fetchFromGitHub {
+    hash = "sha256-1HEPON+cfsPYhPtYwVhj7zrc7fMdwpOA6H2r8yp4erE=";
     name = "Arc-source";
     owner = "Anuken";
     repo = "Arc";
     tag = "v${version}";
-    hash = "sha256-1HEPON+cfsPYhPtYwVhj7zrc7fMdwpOA6H2r8yp4erE=";
   };
   soloud = fetchFromGitHub {
+    hash = "sha256-0/A3myfCYb+AMP3WH6stmXeb1eiA4dgX6H1Quj4AD9Q=";
     owner = "Anuken";
     repo = "soloud";
     # This is pinned in Arc's build.gradle
     tag = "2026.06.01";
-    hash = "sha256-0/A3myfCYb+AMP3WH6stmXeb1eiA4dgX6H1Quj4AD9Q=";
   };
 
   desktopItem = makeDesktopItem {
-    name = "Mindustry";
+    categories = [ "Game" ];
     desktopName = "Mindustry";
     exec = "mindustry";
     icon = "mindustry";
-    categories = [ "Game" ];
+    name = "Mindustry";
   };
 
 in
@@ -79,18 +74,6 @@ assert lib.assertMsg (
 ) "mindustry: at least one of 'enableClient' and 'enableServer' must be true";
 stdenv.mkDerivation {
   inherit pname version;
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    cp -r ${Mindustry} Mindustry
-    cp -r ${Arc} Arc
-    chmod -R u+w -- Mindustry Arc
-    cp -r ${soloud} Arc/arc-core/csrc/soloud
-    chmod -R u+w -- Arc/arc-core/csrc/soloud
-
-    runHook postUnpack
-  '';
 
   postPatch = ''
     # Ensure the prebuilt shared objects don't accidentally get shipped
@@ -132,18 +115,6 @@ stdenv.mkDerivation {
       --replace-fail "-m64" ""
   '';
 
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  buildInputs = lib.optionals enableClient [
-    SDL2
-    alsa-lib
-    glew
-  ];
   nativeBuildInputs = [
     pkg-config
     gradle
@@ -157,11 +128,10 @@ stdenv.mkDerivation {
     wget
   ];
 
-  desktopItems = lib.optional enableClient desktopItem;
-
-  gradleFlags = [
-    "-Pbuildversion=${buildVersion}"
-    "-Dorg.gradle.java.home=${jdk}"
+  buildInputs = lib.optionals enableClient [
+    SDL2
+    alsa-lib
+    glew
   ];
 
   buildPhase = ''
@@ -239,32 +209,62 @@ stdenv.mkDerivation {
       runHook postInstall
     '';
 
+  __darwinAllowLocalNetworking = true;
+  desktopItems = lib.optional enableClient desktopItem;
+
+  gradleFlags = [
+    "-Pbuildversion=${buildVersion}"
+    "-Dorg.gradle.java.home=${jdk}"
+  ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
+
   postGradleUpdate = ''
     # this fetches non-gradle dependencies
     cd ../Arc
     gradle preJni
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    cp -r ${Mindustry} Mindustry
+    cp -r ${Arc} Arc
+    chmod -R u+w -- Mindustry Arc
+    cp -r ${soloud} Arc/arc-core/csrc/soloud
+    chmod -R u+w -- Arc/arc-core/csrc/soloud
+
+    runHook postUnpack
+  '';
+
   passthru.tests.nixosTest = nixosTests.mindustry;
 
   meta = {
-    homepage = "https://mindustrygame.github.io/";
-    downloadPage = "https://github.com/Anuken/Mindustry/releases";
     description = "Sandbox tower defense game";
+    homepage = "https://mindustrygame.github.io/";
+    license = lib.licenses.gpl3Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
-    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       chkno
       fgaz
       thekostins
     ];
+
     platforms = lib.platforms.all;
+
     # TODO alsa-lib is linux-only, figure out what dependencies are required on Darwin
     broken =
       enableClient
       && (stdenv.hostPlatform.isDarwin || (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64));
+
+    downloadPage = "https://github.com/Anuken/Mindustry/releases";
   };
 }

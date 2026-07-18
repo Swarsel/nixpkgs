@@ -23,19 +23,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   # https://salsa.debian.org/debian/trinity/-/merge_requests/2
   env.NIX_CFLAGS_COMPILE = "-fomit-frame-pointer";
-
   enableParallelBuilding = true;
-
   installFlags = [ "DESTDIR=$(out)" ];
-
   passthru.updateScript = unstableGitUpdater { tagPrefix = "v"; };
 
   meta = {
     description = "Linux System call fuzz tester";
-    mainProgram = "trinity";
     homepage = "https://github.com/kernelslacker/trinity";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "trinity";
   };
 })

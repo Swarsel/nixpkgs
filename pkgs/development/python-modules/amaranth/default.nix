@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-backend,
-  jschon,
-  pyvcd,
-  jinja2,
+  buildPythonPackage,
   git,
-
+  jinja2,
+  jschon,
+  pdm-backend,
   # for tests
   pytestCheckHook,
+  pyvcd,
   sby,
   yices,
   yosys,
@@ -18,7 +17,6 @@
 buildPythonPackage rec {
   pname = "amaranth";
   version = "0.5.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "amaranth-lang";
@@ -34,14 +32,6 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ git ];
 
-  build-system = [ pdm-backend ];
-
-  dependencies = [
-    jschon
-    jinja2
-    pyvcd
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     sby
@@ -49,12 +39,12 @@ buildPythonPackage rec {
     yosys
   ];
 
-  pythonImportsCheck = [ "amaranth" ];
+  build-system = [ pdm-backend ];
 
-  disabledTests = [
-    "verilog"
-    "test_reversible"
-    "test_distance"
+  dependencies = [
+    jschon
+    jinja2
+    pyvcd
   ];
 
   disabledTestPaths = [
@@ -64,15 +54,26 @@ buildPythonPackage rec {
     "tests/test_lib_fifo.py"
   ];
 
+  disabledTests = [
+    "verilog"
+    "test_reversible"
+    "test_distance"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "amaranth" ];
+
   meta = {
     description = "Modern hardware definition language and toolchain based on Python";
     homepage = "https://amaranth-lang.org/docs/amaranth";
     changelog = "https://github.com/amaranth-lang/amaranth/blob/${src.tag}/docs/changes.rst";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       pbsds
     ];
+
     mainProgram = "amaranth-rpc";
   };
 }

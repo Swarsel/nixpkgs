@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  glib,
-  gobject-introspection,
   buildPackages,
+  glib,
+  # just for passthru
+  gnome,
+  gobject-introspection,
+  meson,
+  ninja,
+  pkg-config,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  meson,
-  ninja,
-  # just for passthru
-  gnome,
 }:
 
 stdenv.mkDerivation rec {
@@ -25,7 +25,7 @@ stdenv.mkDerivation rec {
   };
 
   strictDeps = true;
-  depsBuildBuild = [ pkg-config ];
+
   nativeBuildInputs = [
     glib
     meson
@@ -60,6 +60,8 @@ stdenv.mkDerivation rec {
     EOF
   '';
 
+  depsBuildBuild = [ pkg-config ];
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = pname;
@@ -67,8 +69,8 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas";
     description = "Collection of GSettings schemas for settings shared by various components of a desktop";
+    homepage = "https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas";
     license = lib.licenses.lgpl21Plus;
     teams = [ lib.teams.gnome ];
   };

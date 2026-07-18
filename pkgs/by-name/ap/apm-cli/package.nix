@@ -1,15 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "apm-cli";
   version = "0.21.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -22,6 +19,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail '"llm-github-models>=0.1.0",' ""
   '';
+
+  __structuredAttrs = true;
 
   build-system = with python3Packages; [
     setuptools
@@ -50,6 +49,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     build = [
       pyinstaller
     ];
+
     dev = [
       jsonschema
       mypy
@@ -61,6 +61,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
       ruff
     ];
   };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "apm_cli"

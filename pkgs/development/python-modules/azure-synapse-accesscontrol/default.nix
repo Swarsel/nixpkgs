@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "azure-synapse-accesscontrol";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     extension = "zip";
   };
 
+  # zero tests run
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage rec {
     msrest
   ];
 
-  # zero tests run
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.synapse.accesscontrol" ];
 
   meta = {

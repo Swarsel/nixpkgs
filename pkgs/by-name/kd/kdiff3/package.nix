@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   boost,
   cmake,
@@ -33,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeFlags = [ "-Wno-dev" ];
-
   env.LANG = "C.UTF-8";
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -41,11 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    inherit (kdePackages.qtbase.meta) platforms;
     description = "Compares and merges 2 or 3 files or directories";
-    mainProgram = "kdiff3";
     homepage = "https://invent.kde.org/sdk/kdiff3";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ peterhoeg ];
-    inherit (kdePackages.qtbase.meta) platforms;
+    mainProgram = "kdiff3";
   };
 })

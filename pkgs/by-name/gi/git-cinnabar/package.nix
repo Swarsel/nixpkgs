@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  bzip2,
   cargo,
+  curl,
   pkg-config,
   rustPlatform,
-  bzip2,
-  curl,
   zlib,
   zstd,
 }:
@@ -36,17 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-IVizzc2dKZ83dz3KBMDDiaFNdnS40cS++k8AywyvakQ=";
-  };
-
   env.ZSTD_SYS_USE_PKG_CONFIG = true;
-
-  enableParallelBuilding = true;
-
-  # Disable automated version-check
-  buildNoDefaultFeatures = true;
 
   installPhase = ''
     runHook preInstall
@@ -57,6 +47,16 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  # Disable automated version-check
+  buildNoDefaultFeatures = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-IVizzc2dKZ83dz3KBMDDiaFNdnS40cS++k8AywyvakQ=";
+  };
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Git remote helper to interact with mercurial repositories";

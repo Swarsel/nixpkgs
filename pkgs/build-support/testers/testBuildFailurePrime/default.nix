@@ -8,26 +8,20 @@
 lib.makeOverridable (
   {
     drv,
-    name ? "testBuildFailure-${drv.name}",
     expectedBuilderExitCode ? 1,
     expectedBuilderLogEntries ? [ ],
+    name ? "testBuildFailure-${drv.name}",
     script ? "",
   }:
   stdenvNoCC.mkDerivation (finalAttrs: {
-    __structuredAttrs = true;
-    strictDeps = true;
-
     inherit name;
-
-    nativeBuildInputs = [ finalAttrs.failed ];
-
-    failed = testers.testBuildFailure drv;
-
     inherit expectedBuilderExitCode expectedBuilderLogEntries;
-
     inherit script;
-
+    strictDeps = true;
+    nativeBuildInputs = [ finalAttrs.failed ];
+    __structuredAttrs = true;
     buildCommandPath = ./build-command.sh;
+    failed = testers.testBuildFailure drv;
 
     meta = {
       description = "Wrapper around testers.testBuildFailure to simplify common use cases";

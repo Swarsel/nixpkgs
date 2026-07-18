@@ -1,12 +1,12 @@
 {
   lib,
-  gccStdenv,
-  cudaPackages,
   fetchFromGitLab,
   config,
-  cudaSupport ? config.cudaSupport,
+  cudaPackages,
+  gccStdenv,
   pkg-config,
   versionCheckHook,
+  cudaSupport ? config.cudaSupport,
 }:
 
 let
@@ -29,6 +29,15 @@ stdenv.mkDerivation (finalAttrs: {
     ./set-cuda-archs.patch
   ];
 
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
+  buildInputs = lib.optionals cudaSupport [
+    cudaPackages.cudatoolkit
+    cudaPackages.cuda_cudart
+  ];
+
   configureFlags = (
     if cudaSupport then
       [
@@ -39,15 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
         "--enable-cpu"
       ]
   );
-
-  nativeBuildInputs = [
-    pkg-config
-  ];
-
-  buildInputs = lib.optionals cudaSupport [
-    cudaPackages.cudatoolkit
-    cudaPackages.cuda_cudart
-  ];
 
   env.NIX_CFLAGS_COMPILE = toString [
     # Workaround build failure on -fno-common toolchains like upstream
@@ -63,11 +63,11 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=implicit-function-declaration"
   ];
 
-  enableParallelBuilding = true;
-
-  installFlags = [ "prefix=$(out)" ];
-
   doInstallCheck = !cudaSupport;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -86,16 +86,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+  enableParallelBuilding = true;
+  installFlags = [ "prefix=$(out)" ];
 
   meta = {
     description = "Brute-force password cracker for TrueCrypt volumes, optimized for Nvidia Cuda technology";
-    mainProgram = "truecrack";
     homepage = "https://gitlab.com/kalilinux/packages/truecrack";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "truecrack";
   };
 })

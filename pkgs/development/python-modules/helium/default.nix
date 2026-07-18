@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  setuptools,
-  selenium,
+  buildPythonPackage,
   firefox,
   geckodriver,
   psutil,
   pytestCheckHook,
+  selenium,
+  setuptools,
   which,
   writableTmpDirAsHomeHook,
-  stdenv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "helium";
   version = "7.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mherrmann";
@@ -25,9 +24,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-I3qLp3v6aIwGIelzNE5gRnvp/eHVPfzJijUxlT28Wqs=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ selenium ];
+  # helium doesn't support testing on all platforms
+  doCheck = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64);
 
   nativeCheckInputs = [
     firefox
@@ -38,14 +36,14 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  # helium doesn't support testing on all platforms
-  doCheck = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64);
-
   # Selenium setup
   preCheck = ''
     export TEST_BROWSER=firefox
     export SE_OFFLINE=true
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ selenium ];
 
   disabledTestPaths = [
     # All of the tests here fail, maybe because we force a driver to be found via envvars?
@@ -55,6 +53,7 @@ buildPythonPackage (finalAttrs: {
     "tests/api/test_write.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "helium" ];
 
   meta = {

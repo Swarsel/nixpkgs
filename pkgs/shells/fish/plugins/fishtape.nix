@@ -1,7 +1,7 @@
 {
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
+  buildFishPlugin,
 }:
 
 buildFishPlugin rec {
@@ -15,7 +15,6 @@ buildFishPlugin rec {
     sha256 = "0dxcyhs2shhgy5xnwcimqja8vqsyk841x486lgq13i3y1h0kp2kd";
   };
 
-  checkFunctionDirs = [ "./" ]; # fishtape is introspective
   checkPhase = ''
     rm test/tty.fish  # test expects a tty
     fishtape test/*.fish
@@ -26,6 +25,8 @@ buildFishPlugin rec {
     mkdir functions
     mv fishtape.fish functions/
   '';
+
+  checkFunctionDirs = [ "./" ]; # fishtape is introspective
 
   meta = {
     description = "TAP-based test runner for Fish";

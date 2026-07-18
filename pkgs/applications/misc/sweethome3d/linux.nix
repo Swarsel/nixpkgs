@@ -2,24 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  makeDesktopItem,
-  jdk,
   ant,
-  stripJavaArchivesHook,
-  gtk3,
-  gsettings-desktop-schemas,
-  p7zip,
   autoPatchelfHook,
-  libxxf86vm,
-  libGL,
   copyDesktopItems,
-
-  pname,
-  version,
-  src,
+  gsettings-desktop-schemas,
+  gtk3,
+  jdk,
+  libGL,
+  libxxf86vm,
+  makeDesktopItem,
+  makeWrapper,
   meta,
+  p7zip,
   patches,
+  pname,
+  src,
+  stripJavaArchivesHook,
+  version,
 }:
 
 let
@@ -39,12 +38,13 @@ let
 
   icons = {
     "32x32" = fetchurl {
-      url = "http://sweethome3d.cvs.sourceforge.net/viewvc/sweethome3d/SweetHome3D/deploy/SweetHome3DIcon32x32.png";
       sha256 = "1r2fhfg27mx00nfv0qj66rhf719s2g1vhdis7bdc9mqk9x0mb0ir";
+      url = "http://sweethome3d.cvs.sourceforge.net/viewvc/sweethome3d/SweetHome3D/deploy/SweetHome3DIcon32x32.png";
     };
+
     "48x48" = fetchurl {
-      url = "http://sweethome3d.cvs.sourceforge.net/viewvc/sweethome3d/SweetHome3D/deploy/SweetHome3DIcon48x48.png";
       sha256 = "1ap6d75dyqqvx21wddvn8vw2apq3v803vmbxdriwd0dw9rq3zn4g";
+      url = "http://sweethome3d.cvs.sourceforge.net/viewvc/sweethome3d/SweetHome3D/deploy/SweetHome3DIcon48x48.png";
     };
   };
 
@@ -57,22 +57,6 @@ stdenv.mkDerivation {
     meta
     patches
     ;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "sweethome3d";
-      desktopName = "Sweet Home 3D";
-      icon = "sweethome3d";
-      comment = meta.description;
-      exec = meta.mainProgram;
-      genericName = "Computer Aided (Interior) Design";
-      categories = [
-        "Graphics"
-        "2DGraphics"
-        "3DGraphics"
-      ];
-    })
-  ];
 
   postPatch = ''
     addAutoPatchelfSearchPath ${jdk}/lib/openjdk/lib/
@@ -90,6 +74,7 @@ stdenv.mkDerivation {
     stripJavaArchivesHook
     copyDesktopItems
   ];
+
   buildInputs = [
     ant
     jdk
@@ -135,6 +120,23 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Graphics"
+        "2DGraphics"
+        "3DGraphics"
+      ];
+
+      comment = meta.description;
+      desktopName = "Sweet Home 3D";
+      exec = meta.mainProgram;
+      genericName = "Computer Aided (Interior) Design";
+      icon = "sweethome3d";
+      name = "sweethome3d";
+    })
+  ];
 
   dontStrip = true;
 }

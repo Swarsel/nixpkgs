@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
-  dpkg,
   atkmm,
+  autoPatchelfHook,
   cairo,
   cairomm,
+  dpkg,
   gtk3,
   gtkmm3,
+  libappindicator-gtk3,
   libnotify,
-  libsecret,
-  pangomm,
-  libxscrnsaver,
   libpulseaudio,
   librsvg,
+  libsecret,
+  libxscrnsaver,
   libzip,
   openssl,
-  libappindicator-gtk3,
+  pangomm,
 }:
 
 stdenv.mkDerivation rec {
@@ -51,8 +51,6 @@ stdenv.mkDerivation rec {
     libappindicator-gtk3
   ];
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -66,6 +64,8 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Modern instant messaging for home and work that prioritizes chat interoperability and security";

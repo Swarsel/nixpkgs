@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -12,81 +12,88 @@ let
 in
 
 {
-  meta.maintainers = with lib.maintainers; [ defelo ];
-
   options.services.olivetin = {
     enable = lib.mkEnableOption "OliveTin";
 
     package = lib.mkOption {
-      type = lib.types.package;
-      description = "The olivetin package to use.";
       default =
         if lib.versionAtLeast config.system.stateVersion "26.05" then pkgs.olivetin-3k else pkgs.olivetin;
+
       defaultText = lib.literalExpression ''
         if lib.versionAtLeast config.system.stateVersion "26.05"
         then pkgs.olivetin-3k
         else pkgs.olivetin
       '';
+
+      description = "The olivetin package to use.";
+      type = lib.types.package;
     };
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      description = "The user account under which OliveTin runs.";
-      default = "olivetin";
+    extraConfigFiles = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Config files to merge into the settings defined in [](#opt-services.olivetin.settings).
+        This is useful to avoid putting secrets into the nix store.
+        See <https://docs.olivetin.app/config.html> for more information.
+      '';
+
+      example = [ "/run/secrets/olivetin.yaml" ];
+      type = lib.types.listOf lib.types.path;
     };
 
     group = lib.mkOption {
-      type = lib.types.str;
-      description = "The group under which OliveTin runs.";
       default = "olivetin";
+      description = "The group under which OliveTin runs.";
+      type = lib.types.str;
     };
 
     path = lib.mkOption {
+      defaultText = lib.literalExpression ''
+        with pkgs; [ bash ]
+      '';
+
+      description = ''
+        Packages added to the service's {env}`PATH`.
+      '';
+
       type =
         with lib.types;
         listOf (oneOf [
           package
           str
         ]);
-      description = ''
-        Packages added to the service's {env}`PATH`.
-      '';
-      defaultText = lib.literalExpression ''
-        with pkgs; [ bash ]
-      '';
     };
 
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         Configuration of OliveTin. See <https://docs.olivetin.app/config.html> for more information.
       '';
-      default = { };
 
       type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-
         options = {
           ListenAddressSingleHTTPFrontend = lib.mkOption {
-            type = lib.types.str;
+            default = "127.0.0.1:8000";
+
             description = ''
               The address to listen on for the internal "microproxy" frontend.
             '';
-            default = "127.0.0.1:8000";
+
             example = "0.0.0.0:8000";
+            type = lib.types.str;
           };
         };
+
+        freeformType = settingsFormat.type;
       };
     };
 
-    extraConfigFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      default = [ ];
-      example = [ "/run/secrets/olivetin.yaml" ];
-      description = ''
-        Config files to merge into the settings defined in [](#opt-services.olivetin.settings).
-        This is useful to avoid putting secrets into the nix store.
-        See <https://docs.olivetin.app/config.html> for more information.
-      '';
+    user = lib.mkOption {
+      default = "olivetin";
+      description = "The user account under which OliveTin runs.";
+      type = lib.types.str;
     };
   };
 
@@ -96,20 +103,14 @@ in
     };
 
     systemd.services.olivetin = {
-      description = "OliveTin";
+      inherit (cfg) path;
 
-      wantedBy = [ "multi-user.target" ];
-
-      wants = [
-        "network-online.target"
-        "local-fs.target"
-      ];
       after = [
         "network-online.target"
         "local-fs.target"
       ];
 
-      inherit (cfg) path;
+      description = "OliveTin";
 
       preStart = ''
         shopt -s nullglob
@@ -125,16 +126,23 @@ in
       '';
 
       serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
-        RuntimeDirectory = "olivetin";
-        Restart = "always";
-
-        LoadCredential = lib.imap0 (i: path: "config-${toString i}.yaml:${path}") cfg.extraConfigFiles;
-
         ExecStart = "${lib.getExe cfg.package} -configdir /run/olivetin/config";
+        Group = cfg.group;
+        LoadCredential = lib.imap0 (i: path: "config-${toString i}.yaml:${path}") cfg.extraConfigFiles;
+        Restart = "always";
+        RuntimeDirectory = "olivetin";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "network-online.target"
+        "local-fs.target"
+      ];
     };
+
+    users.groups = lib.mkIf (cfg.group == "olivetin") { olivetin = { }; };
 
     users.users = lib.mkIf (cfg.user == "olivetin") {
       olivetin = {
@@ -142,7 +150,7 @@ in
         isSystemUser = true;
       };
     };
-
-    users.groups = lib.mkIf (cfg.group == "olivetin") { olivetin = { }; };
   };
+
+  meta.maintainers = with lib.maintainers; [ defelo ];
 }

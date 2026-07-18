@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
   appstream-glib,
   desktop-file-utils,
   fwupd,
   gettext,
+  gitUpdater,
   glib,
   gtk4,
+  help2man,
   libadwaita,
   libxmlb,
   meson,
   ninja,
   pkg-config,
   systemd,
-  help2man,
   wrapGAppsHook4,
 }:
 
@@ -24,11 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "49.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "gnome-firmware";
     rev = finalAttrs.version;
     sha256 = "sha256-3uU0N40O1eoK5JHWMwacSrBzOTq/c+qYwoH9kBOsqrM=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -60,11 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/gnome-firmware";
     description = "Tool for installing firmware on devices";
-    mainProgram = "gnome-firmware";
+    homepage = "https://gitlab.gnome.org/World/gnome-firmware";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-firmware";
+    teams = [ lib.teams.gnome ];
   };
 })

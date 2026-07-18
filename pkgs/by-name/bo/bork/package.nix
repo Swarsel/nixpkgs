@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   callPackage,
   curl,
-  fetchFromGitHub,
-  lib,
   stdenvNoCC,
   zig_0_14,
 }:
@@ -29,11 +29,11 @@ stdenvNoCC.mkDerivation {
     curl
   ];
 
-  zigBuildFlags = [ "--release=fast" ];
-
   postConfigure = ''
     ln -s ${callPackage ./deps.nix { }} $ZIG_GLOBAL_CACHE_DIR/p
   '';
+
+  zigBuildFlags = [ "--release=fast" ];
 
   meta = {
     description = "TUI chat client tailored for livecoding on Twitch";

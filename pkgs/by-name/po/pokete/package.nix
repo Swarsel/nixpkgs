@@ -1,17 +1,15 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  testers,
-  pokete,
   faketty,
+  pokete,
+  python3,
+  testers,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pokete";
   version = "0.9.1";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "lxgr-linux";
@@ -19,11 +17,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     sha256 = "sha256-T18908Einsgful8hYMVHl0cL4sIYFvhpy0MbLIcVhxs=";
   };
-
-  pythonPath = with python3.pkgs; [
-    scrap-engine
-    pynput
-  ];
 
   buildPhase = ''
     ${python3.interpreter} -O -m compileall .
@@ -40,19 +33,26 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     wrapPythonProgramsIn $out/share/pokete "''${pythonPath[*]}"
   '';
 
+  pyproject = false;
+
+  pythonPath = with python3.pkgs; [
+    scrap-engine
+    pynput
+  ];
+
   passthru.tests = {
     pokete-version = testers.testVersion {
-      package = pokete;
-      command = "${faketty}/bin/faketty pokete --help";
       version = "v${finalAttrs.version}";
+      command = "${faketty}/bin/faketty pokete --help";
+      package = pokete;
     };
   };
 
   meta = {
     description = "Terminal based Pokemon like game";
-    mainProgram = "pokete";
     homepage = "https://lxgr-linux.github.io/pokete";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fgaz ];
+    mainProgram = "pokete";
   };
 })

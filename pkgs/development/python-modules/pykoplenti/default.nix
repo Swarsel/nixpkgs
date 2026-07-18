@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
+  hatchling,
   prompt-toolkit,
   pycryptodome,
   pydantic,
-  hatchling,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pykoplenti";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stegm";
@@ -22,8 +21,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Mwh6QOdsvf32U09ebleEKL7vt3xz8tjiftVVxKL/lO4=";
   };
 
-  pythonRelaxDeps = [ "pydantic" ];
-
+  # Project has no tests
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -39,10 +38,9 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pykoplenti" ];
+  pythonRelaxDeps = [ "pydantic" ];
 
   meta = {
     description = "Python REST client API for Kostal Plenticore Inverters";

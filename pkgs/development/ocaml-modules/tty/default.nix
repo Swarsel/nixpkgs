@@ -1,15 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   uutf,
 }:
 
 buildDunePackage rec {
   pname = "tty";
   version = "0.0.2";
-
-  minimalOCamlVersion = "5.1";
 
   src = fetchurl {
     url = "https://github.com/leostera/tty/releases/download/${version}/tty-${version}.tbz";
@@ -21,6 +19,7 @@ buildDunePackage rec {
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "5.1";
 
   meta = {
     description = "Library for interacting with teletype and terminal emulators";

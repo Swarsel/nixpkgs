@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   flatbencode,
-
   # test
   pytest-cov-stub,
   pytest-httpserver,
   pytest-mock,
   pytest-xdist,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "torf";
   version = "4.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rndusr";
@@ -29,20 +25,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-6R3DF2pj9zotU/z/OKMbeG5tD7tBYuzSEi/f18NgHOo=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    flatbencode
-  ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytest-httpserver
     pytest-mock
     pytest-xdist
     pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    flatbencode
   ];
 
   disabledTests = [
@@ -57,9 +55,8 @@ buildPythonPackage (finalAttrs: {
     "test_callback_raises_exception"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "torf" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Create, parse and edit torrent files and magnet links";

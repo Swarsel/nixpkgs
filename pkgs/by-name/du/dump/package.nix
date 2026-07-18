@@ -5,9 +5,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   e2fsprogs,
   ncurses,
+  pkg-config,
   readline,
 }:
 
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     e2fsprogs
     ncurses
@@ -28,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://dump.sourceforge.io/";
     description = "Linux Ext2 filesystem dump/restore utilities";
+    homepage = "https://dump.sourceforge.io/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.linux;

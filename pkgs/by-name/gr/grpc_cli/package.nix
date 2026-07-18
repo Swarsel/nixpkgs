@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoconf,
   automake,
   cmake,
-  autoconf,
   curl,
   numactl,
 }:
@@ -12,6 +12,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "grpc_cli";
   version = "1.80.0";
+
   src = fetchFromGitHub {
     owner = "grpc";
     repo = "grpc";
@@ -19,18 +20,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/dpTRG5JcZY2VAsqOYNIpFW7ouSy/eC2STulP7qdSYg=";
     fetchSubmodules = true;
   };
+
   nativeBuildInputs = [
     automake
     cmake
     autoconf
   ];
+
   buildInputs = [
     curl
     numactl
   ];
+
   cmakeFlags = [ "-DgRPC_BUILD_TESTS=ON" ];
   makeFlags = [ "grpc_cli" ];
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isAarch64 "-Wno-error=format-security";
+
   installPhase = ''
     runHook preInstall
 
@@ -38,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
   meta = {
     description = "Command line tool for interacting with grpc services";
     homepage = "https://github.com/grpc/grpc";

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
+  colord,
+  desktop-file-utils,
+  gettext,
+  glib,
+  gnome,
+  gtk3,
+  itstool,
+  lcms2,
   meson,
   ninja,
   pkg-config,
-  gettext,
-  itstool,
-  desktop-file-utils,
-  gnome,
-  glib,
-  gtk3,
-  colord,
-  lcms2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/gnome-color-manager/${lib.versions.majorMinor finalAttrs.version}/gnome-color-manager-${finalAttrs.version}.tar.xz";
     hash = "sha256-OQTUKrtOpWbfC4gOgr8Ln4Y4bGkvFbMYRppMe+M6iH8=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -41,8 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     lcms2
   ];
 
-  strictDeps = true;
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gnome-color-manager";
@@ -53,7 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Set of graphical utilities for color management to be used in the GNOME desktop";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

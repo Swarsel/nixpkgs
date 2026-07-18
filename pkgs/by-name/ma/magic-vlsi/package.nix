@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitMinimal,
-  python3,
-  m4,
   cairo,
+  fixDarwinDylibNames,
+  gitMinimal,
   libx11,
+  m4,
   mesa,
   mesa_glu,
   ncurses,
+  nix-update-script,
+  python3,
   tcl,
   tcsh,
   tk,
-  fixDarwinDylibNames,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,7 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
     leaveDotGit = true;
   };
 
-  hardeningDisable = [ "fortify" ];
+  postPatch = ''
+    patchShebangs scripts/*
+  '';
 
   nativeBuildInputs = [
     python3
@@ -50,17 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
     tk
   ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--with-tcl=${tcl}"
     "--with-tk=${tk}"
     "--disable-werror"
   ];
 
-  postPatch = ''
-    patchShebangs scripts/*
-  '';
+  # gnu89 is needed for GCC 15 that is more strict about K&R style prototypes
+  env.NIX_CFLAGS_COMPILE = "-std=gnu89 -Wno-implicit-function-declaration";
+  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-headerpad_max_install_names";
 
   postInstall = ''
     # Fix necessary files missing in sys directory
@@ -89,10 +89,8 @@ stdenv.mkDerivation (finalAttrs: {
     install_name_tool -add_rpath ${mesa_glu.out}/lib $out/lib/magic/tcl/magicexec
   '';
 
-  # gnu89 is needed for GCC 15 that is more strict about K&R style prototypes
-  env.NIX_CFLAGS_COMPILE = "-std=gnu89 -Wno-implicit-function-declaration";
-  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-headerpad_max_install_names";
-
+  enableParallelBuilding = true;
+  hardeningDisable = [ "fortify" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

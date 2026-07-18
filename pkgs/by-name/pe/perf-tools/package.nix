@@ -18,6 +18,14 @@ stdenv.mkDerivation {
 
   buildInputs = [ perl ];
 
+  installPhase = ''
+    d=$out/libexec/perf-tools
+    mkdir -p $d $out/share
+    cp -prvd . $d/
+    ln -s $d/bin $out/bin
+    mv $d/man $out/share/
+  '';
+
   patchPhase = ''
     for i in execsnoop iolatency iosnoop kernel/funcslower killsnoop opensnoop; do
       substituteInPlace $i \
@@ -30,19 +38,11 @@ stdenv.mkDerivation {
     rm -rf examples deprecated
   '';
 
-  installPhase = ''
-    d=$out/libexec/perf-tools
-    mkdir -p $d $out/share
-    cp -prvd . $d/
-    ln -s $d/bin $out/bin
-    mv $d/man $out/share/
-  '';
-
   meta = {
-    platforms = lib.platforms.linux;
-    homepage = "https://github.com/brendangregg/perf-tools";
     description = "Performance analysis tools based on Linux perf_events (aka perf) and ftrace";
-    maintainers = [ ];
+    homepage = "https://github.com/brendangregg/perf-tools";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

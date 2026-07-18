@@ -1,18 +1,17 @@
 {
   lib,
   buildPythonPackage,
+  cairosvg,
   fetchPypi,
   setuptools-scm,
   sphinx,
   wavedrom,
   xcffib,
-  cairosvg,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-wavedrom";
   version = "3.0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -30,9 +29,8 @@ buildPythonPackage rec {
 
   # No tests included
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinxcontrib.wavedrom" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

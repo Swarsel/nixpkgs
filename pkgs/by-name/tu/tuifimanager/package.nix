@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
-  kdePackages,
   gnome-themes-extra,
-  qt6,
+  kdePackages,
   makeWrapper,
-  x11Support ? stdenv.hostPlatform.isLinux,
-  # pypinput is marked as broken for darwin
-  pynputSupport ? stdenv.hostPlatform.isLinux,
+  python3Packages,
+  qt6,
+  enableDragAndDrop ? false,
   # Experimental Drag & Drop support requires x11 & pyinput support
   hasDndSupport ? x11Support && pynputSupport,
-  enableDragAndDrop ? false,
+  # pypinput is marked as broken for darwin
+  pynputSupport ? stdenv.hostPlatform.isLinux,
+  x11Support ? stdenv.hostPlatform.isLinux,
 }:
 
 lib.throwIf (enableDragAndDrop && !hasDndSupport)
@@ -23,8 +23,6 @@ lib.throwIf (enableDragAndDrop && !hasDndSupport)
     pname = "tuifimanager";
     version = "5.2.6";
 
-    pyproject = true;
-
     src = fetchFromGitHub {
       owner = "GiorgosXou";
       repo = "TUIFIManager";
@@ -32,17 +30,29 @@ lib.throwIf (enableDragAndDrop && !hasDndSupport)
       hash = "sha256-cN1I/bCOO2YdxdHGNVbDDH1+P1q+tU3gbEeQjl8jmNI=";
     };
 
-    build-system = with python3Packages; [
-      setuptools
-      setuptools-scm
-    ];
-
     nativeBuildInputs =
       [ ]
       ++ (lib.optionals enableDragAndDrop [
         qt6.wrapQtAppsHook
         makeWrapper
       ]);
+
+    postFixup =
+      let
+        # fix missing 'adwaita' warning missing with ncurses tui
+        # see: https://github.com/NixOS/nixpkgs/issues/60918
+        theme = gnome-themes-extra;
+      in
+      lib.optionalString enableDragAndDrop ''
+        wrapProgram $out/bin/tuifi \
+          --prefix GTK_PATH : "${theme}/lib/gtk-2.0" \
+          --set tuifi_synth_dnd True
+      '';
+
+    build-system = with python3Packages; [
+      setuptools
+      setuptools-scm
+    ];
 
     dependencies = [
       python3Packages.send2trash
@@ -57,33 +67,26 @@ lib.throwIf (enableDragAndDrop && !hasDndSupport)
       kdePackages.qt6gtk2
     ]);
 
-    postFixup =
-      let
-        # fix missing 'adwaita' warning missing with ncurses tui
-        # see: https://github.com/NixOS/nixpkgs/issues/60918
-        theme = gnome-themes-extra;
-      in
-      lib.optionalString enableDragAndDrop ''
-        wrapProgram $out/bin/tuifi \
-          --prefix GTK_PATH : "${theme}/lib/gtk-2.0" \
-          --set tuifi_synth_dnd True
-      '';
-
+    pyproject = true;
     pythonImportsCheck = [ "TUIFIManager" ];
 
     meta = {
       description = "Cross-platform terminal-based termux-oriented file manager";
+
       longDescription = ''
         A cross-platform terminal-based termux-oriented file manager (and component),
         meant to be used with a Uni-Curses project or as is. This project is mainly an
         attempt to get more attention to the Uni-Curses project.
       '';
+
       homepage = "https://github.com/GiorgosXou/TUIFIManager";
       license = lib.licenses.gpl3Only;
+
       maintainers = with lib.maintainers; [
         michaelBelsanti
         sigmanificient
       ];
+
       mainProgram = "tuifi";
     };
   })

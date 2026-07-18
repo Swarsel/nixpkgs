@@ -2,43 +2,49 @@
   lib,
   stdenv,
   fetchurl,
-  gtk2,
-  pkg-config,
+  cfitsio,
   fftw,
   file,
   gnome2,
-  openexrSupport ? true,
-  openexr,
-  libzipSupport ? true,
-  libzip,
-  libxml2Support ? true,
-  libxml2,
-  libwebpSupport ? true,
+  gtk2,
+  libGL,
+  libpng,
+  libunique,
   libwebp,
+  libxml2,
+  libxmu,
+  libxslt,
+  libzip,
+  openexr,
+  pkg-config,
+  zlib,
+  fitsSupport ? true,
   # libxmu is not used if libunique is.
   libXmuSupport ? false,
-  libxmu,
-  libxsltSupport ? true,
-  libxslt,
-  fitsSupport ? true,
-  cfitsio,
-  zlibSupport ? true,
-  zlib,
-  libuniqueSupport ? true,
-  libunique,
   libpngSupport ? true,
-  libpng,
+  libuniqueSupport ? true,
+  libwebpSupport ? true,
+  libxml2Support ? true,
+  libxsltSupport ? true,
+  libzipSupport ? true,
+  openexrSupport ? true,
   openglSupport ? !stdenv.hostPlatform.isDarwin,
-  libGL,
+  zlibSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gwyddion";
   version = "2.70";
+
   src = fetchurl {
     url = "mirror://sourceforge/gwyddion/gwyddion-${finalAttrs.version}.tar.xz";
     hash = "sha256-lC9OBBlFqFC8MtBRk6EVrIpRGKb4Qa+m1N6lEPmRP1k=";
   };
+
+  # This patch corrects problems with python support, but should apply cleanly
+  # regardless of whether python support is enabled, and have no effects if
+  # it is disabled.
+  patches = [ ./codegen.patch ];
 
   nativeBuildInputs = [
     pkg-config
@@ -64,13 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional libuniqueSupport libunique
   ++ lib.optional libzipSupport libzip;
 
-  # This patch corrects problems with python support, but should apply cleanly
-  # regardless of whether python support is enabled, and have no effects if
-  # it is disabled.
-  patches = [ ./codegen.patch ];
   meta = {
-    homepage = "http://gwyddion.net/";
-
     description = "Scanning probe microscopy data visualization and analysis";
 
     longDescription = ''
@@ -83,9 +83,11 @@ stdenv.mkDerivation (finalAttrs: {
       analysis of profilometry data or thickness maps from imaging
       spectrophotometry.
     '';
+
+    homepage = "http://gwyddion.net/";
     license = lib.licenses.gpl2;
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = [ ];
+    platforms = with lib.platforms; linux ++ darwin;
     # never built on aarch64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;
   };

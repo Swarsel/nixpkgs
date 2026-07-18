@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohomematic,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   openccu-data,
   pydantic,
   pytest-asyncio,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiohomematic-config";
   version = "2026.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sukramj";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-uBIdBpjkEIPyuNxTEgTVc068K8UIVvdBXvwZ1MYh7rs=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-xdist
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -31,18 +36,13 @@ buildPythonPackage (finalAttrs: {
     pydantic
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiohomematic_config" ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-xdist
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/sukramj/aiohomematic-config/blob/${finalAttrs.src.tag}/changelog.md";
     description = "Presentation-layer library for Homematic device configuration UI";
     homepage = "https://github.com/sukramj/aiohomematic-config";
+    changelog = "https://github.com/sukramj/aiohomematic-config/blob/${finalAttrs.src.tag}/changelog.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dotlambda ];
   };

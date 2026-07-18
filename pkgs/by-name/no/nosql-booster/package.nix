@@ -1,8 +1,8 @@
 {
   lib,
-  platforms,
-  appimageTools,
   fetchurl,
+  appimageTools,
+  platforms,
 }:
 let
   pname = "nosql-booster";
@@ -12,11 +12,11 @@ let
     sha256 = "sha256-ZJdCHOodJel7Apb//s96vrf1Ruml/NLUMQ9eFFR9tfU=";
   };
   meta = {
-    homepage = "https://nosqlbooster.com/";
     description = "GUI tool for MongoDB Server";
+    homepage = "https://nosqlbooster.com/";
     changelog = "https://nosqlbooster.com/blog/announcing-nosqlbooster-81/#version-819";
-    maintainers = with lib.maintainers; [ guillaumematheron ];
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ guillaumematheron ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "nosql-booster";
   };

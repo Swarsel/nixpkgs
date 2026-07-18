@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   alsa-lib,
+  cmake,
   libjack2,
   libpulseaudio,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.0.0";
   pname = "libsoundio";
+  version = "2.0.0";
 
   src = fetchFromGitHub {
     owner = "andrewrk";
@@ -44,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Cross platform audio input and output";
     homepage = "http://libsound.io/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

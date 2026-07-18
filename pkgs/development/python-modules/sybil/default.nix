@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "sybil";
   version = "9.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simplistix";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-rr6zVY1yJVL/s/Wg5S4pSljj9Zq+jo7CZ6TZvtPpxow=";
   };
 
-  build-system = [ setuptools ];
-
   # Circular dependency with testfixtures
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "sybil" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromCodeberg,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {

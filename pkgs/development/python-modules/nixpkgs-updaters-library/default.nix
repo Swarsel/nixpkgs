@@ -1,15 +1,13 @@
 {
   lib,
-  buildPythonPackage,
-  pythonOlder,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   aiohttp,
+  aioresponses,
+  buildPythonPackage,
   frozendict,
+  # build-system
+  hatchling,
   inject,
   joblib,
   loguru,
@@ -18,22 +16,18 @@
   nurl,
   platformdirs,
   pydantic,
-  typer,
-
-  # tests
-  writableTmpDirAsHomeHook,
-  pytestCheckHook,
-  aioresponses,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-mock,
+  pytestCheckHook,
+  pythonOlder,
+  typer,
+  # tests
+  writableTmpDirAsHomeHook,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "nixpkgs-updaters-library";
   version = "3.1.1";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "PerchunPak";
@@ -49,6 +43,15 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"nix-prefetch-git"' '"${lib.getExe' nix-prefetch-git "nix-prefetch-git"}"'
   '';
 
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -62,14 +65,8 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-  ];
+  disabled = pythonOlder "3.13";
+  pyproject = true;
 
   meta = {
     description = "Boilerplate-less updater library for Nixpkgs ecosystems";

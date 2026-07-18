@@ -7,16 +7,16 @@
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "cohttp-server-lwt-unix";
   inherit (cohttp) version src;
+  pname = "cohttp-server-lwt-unix";
 
   propagatedBuildInputs = [
     http
     lwt
   ];
 
-  checkInputs = [ cohttp-lwt-unix ];
   doCheck = true;
+  checkInputs = [ cohttp-lwt-unix ];
 
   meta = cohttp.meta // {
     description = "Lightweight Cohttp + Lwt based HTTP server";

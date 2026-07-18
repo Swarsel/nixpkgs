@@ -1,7 +1,7 @@
 {
   lib,
-  cargo-tauri,
   fetchFromGitHub,
+  cargo-tauri,
   fetchNpmDeps,
   glib-networking,
   libayatana-appindicator,
@@ -25,16 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SZg4N9fm4+p2vROCx7BLdphHeWlFkQrjQETObwPP8H0=";
   };
 
-  npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-l6lgJsrBtnxdWFJUhm2ftrRA8yBw47EY0QA4xNYhG6c=";
-  };
-
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-  cargoHash = "sha256-XSso9/eZPqv+k+0TBL9bRXWqi9PC5LPhga2zMmVDuUE=";
-
   nativeBuildInputs = [
     cargo-tauri.hook
     nodejs
@@ -51,6 +41,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-XSso9/eZPqv+k+0TBL9bRXWqi9PC5LPhga2zMmVDuUE=";
+
   preFixup = ''
     mkdir -p $out/share/lib
     cp $src/assets/libsteam_api.so $out/share/lib
@@ -60,12 +52,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-l6lgJsrBtnxdWFJUhm2ftrRA8yBw47EY0QA4xNYhG6c=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Steam Achievement Manager for Linux";
     homepage = "https://github.com/jsnli/Samira";
     changelog = "https://github.com/jsnli/Samira/releases/tag/v${finalAttrs.version}";
+
     license = [
       lib.licenses.gpl3
       (
@@ -80,9 +82,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
         }
       )
     ];
+
+    maintainers = with lib.maintainers; [ PerchunPak ];
     # the libsteam_api.so supports only x86_64-linux
     platforms = [ "x86_64-linux" ];
     mainProgram = "samira";
-    maintainers = with lib.maintainers; [ PerchunPak ];
   };
 })

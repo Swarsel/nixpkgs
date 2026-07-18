@@ -1,6 +1,6 @@
 {
-  krunkit,
   lib,
+  krunkit,
   nixos,
   pkgs,
   runCommand,
@@ -13,12 +13,9 @@ let
 
   nixosConfig =
     (nixos {
-      nixpkgs.pkgs = linuxPkgs;
-
-      imports = [ "${pkgs.path}/nixos/modules/profiles/qemu-guest.nix" ];
-
       boot = {
         kernelParams = [ "console=hvc0" ];
+
         loader = {
           efi.canTouchEfiVariables = false;
           systemd-boot.enable = true;
@@ -40,35 +37,37 @@ let
         };
       };
 
+      imports = [ "${pkgs.path}/nixos/modules/profiles/qemu-guest.nix" ];
+      nixpkgs.pkgs = linuxPkgs;
+      system.stateVersion = lib.trivial.release;
+
       systemd.services.krunkit-boot-ok = {
-        wantedBy = [ "multi-user.target" ];
         after = [ "multi-user.target" ];
-        serviceConfig.Type = "oneshot";
+
         script = ''
           echo krunkit-boot-ok >/dev/hvc0
         '';
-      };
 
-      system.stateVersion = lib.trivial.release;
+        serviceConfig.Type = "oneshot";
+        wantedBy = [ "multi-user.target" ];
+      };
     }).config;
 
   image = import "${pkgs.path}/nixos/lib/make-disk-image.nix" {
     inherit lib;
-    config = nixosConfig;
-    pkgs = linuxPkgs;
-
     additionalSpace = "64M";
     baseName = "krunkit-nixos";
     bootSize = "128M";
+    config = nixosConfig;
     copyChannel = false;
     format = "raw";
     partitionTableType = "efi";
+    pkgs = linuxPkgs;
   };
 in
 runCommand "krunkit-nixos-boot-test"
   {
     requiredSystemFeatures = [ "apple-virt" ];
-
     meta.platforms = [ "aarch64-darwin" ];
   }
   ''

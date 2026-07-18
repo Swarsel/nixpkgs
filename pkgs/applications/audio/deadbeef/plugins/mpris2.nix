@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  deadbeef,
   autoreconfHook,
-  pkg-config,
+  deadbeef,
   glib,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "MPRISv2 plugin for the DeaDBeeF music player";
     homepage = "https://github.com/DeaDBeeF-Player/deadbeef-mpris2-plugin/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

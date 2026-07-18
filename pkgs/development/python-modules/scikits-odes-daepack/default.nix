@@ -9,29 +9,25 @@
 buildPythonPackage rec {
   inherit (scikits-odes-core) version src;
   pname = "scikits-odes-daepack";
-  pyproject = true;
-
-  sourceRoot = "${src.name}/packages/scikits-odes-daepack";
+  nativeBuildInputs = [ gfortran ];
+  # https://github.com/bmcage/odes/pull/204
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  # no tests
+  doCheck = false;
 
   build-system = [
     meson-python
     numpy
   ];
 
-  nativeBuildInputs = [ gfortran ];
-
   dependencies = [
     numpy
     scikits-odes-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "scikits_odes_daepack" ];
-
-  # no tests
-  doCheck = false;
-
-  # https://github.com/bmcage/odes/pull/204
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  sourceRoot = "${src.name}/packages/scikits-odes-daepack";
 
   meta = scikits-odes-core.meta // {
     description = "Wrapper around daepack";

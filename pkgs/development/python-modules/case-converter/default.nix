@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "case-converter";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chrisdoherty4";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-PS/9Ndl3oD9zimEf819dNoSAeNJPndVjT+dkfW7FIJs=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "caseconverter" ];
-
   doCheck = true;
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "caseconverter" ];
 
   meta = {
     description = "Case conversion library for Python";

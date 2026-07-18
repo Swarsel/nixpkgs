@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-copybutton";
   version = "0.5.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "executablebooks";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ sphinx ];
-
   doCheck = false; # no tests
-
+  format = "setuptools";
   pythonImportsCheck = [ "sphinx_copybutton" ];
 
   meta = {

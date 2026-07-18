@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   fetchpatch,
   libpcap,
   zlib,
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Avoid multiple definitions of CLOCK_REALTIME on macOS 11,
     # see https://github.com/emikulic/darkstat/pull/2
     (fetchpatch {
-      url = "https://github.com/emikulic/darkstat/commit/d2fd232e1167dee6e7a2d88b9ab7acf2a129f697.diff";
       sha256 = "0z5mpyc0q65qb6cn4xcrxl0vx21d8ibzaam5kjyrcw4icd8yg4jb";
+      url = "https://github.com/emikulic/darkstat/commit/d2fd232e1167dee6e7a2d88b9ab7acf2a129f697.diff";
     })
   ];
 
@@ -41,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Network statistics web interface";
+
     longDescription = ''
       Captures network traffic, calculates statistics about usage, and serves
       reports over HTTP. Features:
@@ -50,11 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
       - Small. Portable. Single-threaded. Efficient.
       - Supports IPv6.
     '';
+
     homepage = "http://unix4lyfe.org/darkstat";
     changelog = "https://github.com/emikulic/darkstat/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
-    platforms = with lib.platforms; unix;
     maintainers = with lib.maintainers; [ tbutter ];
+    platforms = with lib.platforms; unix;
     mainProgram = "darkstat";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   hypothesis,
   ifaddr,
   lxml,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pywemo";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pywemo";
@@ -25,6 +24,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/F9MhPmWSLT/ieI21rzJXvjEkH8xBttJYPaQ1wcVWOk=";
   };
 
+  nativeCheckInputs = [
+    hypothesis
+    pytest-vcr
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -35,14 +41,7 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    hypothesis
-    pytest-vcr
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pywemo" ];
 
   meta = {

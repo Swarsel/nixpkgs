@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   chardet,
-  pytestCheckHook,
   fetchpatch2,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pysrt";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "byroot";
@@ -22,21 +21,20 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/byroot/pysrt/commit/93f52f6d4f70f4e18dc71deeaae0ec1e9100a50f.patch?full_index=1";
       hash = "sha256-nikMPwj3OHvl6LunAfRk6ZbFUvVgPwF696Dt8R7BY4U=";
+      url = "https://github.com/byroot/pysrt/commit/93f52f6d4f70f4e18dc71deeaae0ec1e9100a50f.patch?full_index=1";
     })
   ];
 
-  build-system = [ setuptools ];
-
   propagatedBuildInputs = [ chardet ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
+    description = "Python library used to edit or create SubRip files";
     homepage = "https://github.com/byroot/pysrt";
     license = lib.licenses.gpl3Only;
-    description = "Python library used to edit or create SubRip files";
     mainProgram = "srt";
   };
 }

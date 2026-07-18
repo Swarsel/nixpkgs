@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   gopatch,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,14 +19,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-ZHXzaR8pd6kApY3PBl9GV1iRc2jdDHMfewDn1j9npjc=";
 
-  subPackages = [
-    "."
-  ];
-
   ldflags = [
     "-s"
     "-w"
     "-X=main._version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "."
   ];
 
   passthru.tests = {
@@ -37,10 +37,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Refactoring and code transformation tool for Go";
-    mainProgram = "gopatch";
     homepage = "https://github.com/uber-go/gopatch";
     changelog = "https://github.com/uber-go/gopatch/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "gopatch";
   };
 })

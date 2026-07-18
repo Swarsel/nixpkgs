@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,9 +23,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Massively parallel, optimal functional runtime in Rust";
-    mainProgram = "hvm";
     homepage = "https://github.com/higherorderco/hvm";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "hvm";
   };
 })

@@ -1,25 +1,24 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  beautifulsoup4,
   requests,
+  setuptools,
   unittestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "wikipedia";
   version = "1.4.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-2w+tGCn91EGxhSMG6YVjmCBNwHhtKZbdLgyLuOJhM7I=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ];
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,11 +26,9 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
-  unittestFlagsArray = [ "tests/ '*test.py'" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wikipedia" ];
+  unittestFlagsArray = [ "tests/ '*test.py'" ];
 
   meta = {
     description = "Pythonic wrapper for the Wikipedia API";

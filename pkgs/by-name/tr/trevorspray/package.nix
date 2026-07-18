@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "trevorspray";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -26,6 +25,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tldextract
     trevorproxy
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Modular password spraying tool";

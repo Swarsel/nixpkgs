@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,13 +17,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Zw2a3mBmYNvIYXg7TdO6zi9PHPyGDdbKj6eOVvBWVQY=";
-
-  subPackages = [ "cmd/kamal-proxy" ];
-
   env.CGO_ENABLED = 0;
-
   ldflags = [ "-s" ];
-
+  subPackages = [ "cmd/kamal-proxy" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -31,8 +27,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/basecamp/kamal-proxy";
     changelog = "https://github.com/basecamp/kamal-proxy/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "kamal-proxy";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ jasanfarah ];
+    platforms = lib.platforms.unix;
+    mainProgram = "kamal-proxy";
   };
 })

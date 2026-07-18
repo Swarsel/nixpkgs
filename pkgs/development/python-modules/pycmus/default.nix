@@ -10,12 +10,14 @@
 buildPythonPackage rec {
   pname = "pycmus";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Wk9J/XjKZB13o8QmdByVWHcAdfNOicwLaH2Sh4qJcIw=";
   };
+
+  # No tests available
+  doCheck = false;
 
   build-system = [
     pbr
@@ -26,8 +28,7 @@ buildPythonPackage rec {
     six
   ];
 
-  # No tests available
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "pycmus"

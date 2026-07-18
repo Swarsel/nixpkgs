@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   makeWrapper,
   python3,
-  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = finalAttrs.src.meta.homepage;
     description = "Android OTA payload dumper";
+    homepage = finalAttrs.src.meta.homepage;
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ DamienCassou ];
     mainProgram = "payload_dumper";

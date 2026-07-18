@@ -2,32 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildPythonPackage,
-
-  # build-system
-  flit-core,
-
-  # dependencies
-  flask,
-  cachelib,
-  msgspec,
-
   # tests
   boto3,
+  buildPythonPackage,
+  cachelib,
+  # dependencies
+  flask,
   flask-sqlalchemy,
+  # build-system
+  flit-core,
   memcachedTestHook,
+  msgspec,
+  pymemcache,
+  pymongo,
   pytestCheckHook,
+  python-memcached,
   redis,
   redisTestHook,
-  pymongo,
-  pymemcache,
-  python-memcached,
 }:
 
 buildPythonPackage rec {
   pname = "flask-session";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pallets-eco";
@@ -36,13 +32,8 @@ buildPythonPackage rec {
     hash = "sha256-QLtsM0MFgZbuLJPLc5/mUwyYc3bYxildNKNxOF8Z/3Y=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [
-    cachelib
-    flask
-    msgspec
-  ];
+  # Hang indefinitely
+  doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
 
   nativeCheckInputs = [
     flask-sqlalchemy
@@ -56,19 +47,24 @@ buildPythonPackage rec {
     boto3
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ flit-core ];
+
+  dependencies = [
+    cachelib
+    flask
+    msgspec
+  ];
+
+  disabledTestPaths = [ "tests/test_dynamodb.py" ];
+
   disabledTests = [
     # unfree
     "test_mongo_default"
   ];
 
-  disabledTestPaths = [ "tests/test_dynamodb.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_session" ];
-
-  __darwinAllowLocalNetworking = true;
-
-  # Hang indefinitely
-  doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
 
   meta = {
     description = "Flask extension that adds support for server-side sessions";

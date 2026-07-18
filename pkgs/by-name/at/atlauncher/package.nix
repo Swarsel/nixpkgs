@@ -1,25 +1,23 @@
 {
-  fetchFromGitHub,
-  gradle_8,
-  jdk17_headless,
-  jre,
   lib,
-  makeWrapper,
-  stdenvNoCC,
-
-  gamemodeSupport ? stdenvNoCC.hostPlatform.isLinux,
-  textToSpeechSupport ? stdenvNoCC.hostPlatform.isLinux,
-  additionalLibs ? [ ],
-
+  fetchFromGitHub,
   # dependencies
   flite,
   gamemode,
+  gradle_8,
+  jdk17_headless,
+  jre,
   libglvnd,
   libpulseaudio,
-  udev,
-  libxxf86vm,
-  libxcursor,
   libx11,
+  libxcursor,
+  libxxf86vm,
+  makeWrapper,
+  stdenvNoCC,
+  udev,
+  additionalLibs ? [ ],
+  gamemodeSupport ? stdenvNoCC.hostPlatform.isLinux,
+  textToSpeechSupport ? stdenvNoCC.hostPlatform.isLinux,
 }:
 let
   # "Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0."
@@ -47,18 +45,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
   doCheck = true;
-
-  gradleBuildTask = "shadowJar";
-
-  gradleFlags = [
-    "-Dorg.gradle.java.home=${jdk17_headless.home}"
-  ];
 
   installPhase =
     let
@@ -100,19 +87,32 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       install -D -m444 ${packagingDir}/atlauncher.svg -t $out/share/icons/hicolor/scalable/apps
     '';
 
+  gradleBuildTask = "shadowJar";
+
+  gradleFlags = [
+    "-Dorg.gradle.java.home=${jdk17_headless.home}"
+  ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   meta = {
-    broken = stdenvNoCC.hostPlatform.isDarwin; # https://github.com/NixOS/nixpkgs/issues/356259
-    changelog = "https://github.com/ATLauncher/ATLauncher/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Simple and easy to use Minecraft launcher which contains many different modpacks for you to choose from and play";
-    downloadPage = "https://atlauncher.com/downloads";
     homepage = "https://atlauncher.com";
+    changelog = "https://github.com/ATLauncher/ATLauncher/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3;
-    mainProgram = "atlauncher";
-    maintainers = with lib.maintainers; [ getpsyched ];
-    platforms = lib.platforms.all;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # mitm cache
     ];
+
+    maintainers = with lib.maintainers; [ getpsyched ];
+    platforms = lib.platforms.all;
+    mainProgram = "atlauncher";
+    broken = stdenvNoCC.hostPlatform.isDarwin; # https://github.com/NixOS/nixpkgs/issues/356259
+    downloadPage = "https://atlauncher.com/downloads";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,7 +16,6 @@ buildGoModule {
   };
 
   vendorHash = "sha256-RuBchKainwE6RM3AphKWjndGZc1nh7A/Xxcacq1r7Nk=";
-
   excludedPackages = [ "scripts" ];
 
   ldflags = [

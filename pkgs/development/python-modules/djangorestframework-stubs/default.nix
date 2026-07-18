@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-  django-stubs,
   fetchFromGitHub,
+  buildPythonPackage,
+  coreapi,
+  django-stubs,
   mypy,
   py,
-  coreapi,
   pytest-mypy-plugins,
   pytestCheckHook,
   requests,
-  types-pyyaml,
-  uv-build,
   types-markdown,
+  types-pyyaml,
   types-requests,
   typing-extensions,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "djangorestframework-stubs";
   version = "3.16.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "typeddjango";
@@ -32,6 +31,16 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.8.19,<0.10.0" "uv_build"
   '';
+
+  # Upstream recommends mypy > 1.7 which we don't have yet, thus all tests are failing with 3.14.5 and below
+  doCheck = false;
+
+  nativeCheckInputs = [
+    py
+    pytest-mypy-plugins
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ uv-build ];
 
@@ -49,16 +58,7 @@ buildPythonPackage rec {
     markdown = [ types-markdown ];
   };
 
-  nativeCheckInputs = [
-    py
-    pytest-mypy-plugins
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  # Upstream recommends mypy > 1.7 which we don't have yet, thus all tests are failing with 3.14.5 and below
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "rest_framework-stubs" ];
 
   meta = {

@@ -11,14 +11,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-scheduler";
   version = "7.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_scheduler";
     inherit version;
     hash = "sha256-hzabrRKnOzxk2e0/HlJvS7QvWnibgLfqn8EW+vsFH6U=";
+    pname = "azure_mgmt_scheduler";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage rec {
     msrest
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.scheduler" ];
 
   meta = {

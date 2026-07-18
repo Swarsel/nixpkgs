@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   hypothesis,
+  pytestCheckHook,
   six,
   strict-rfc3339,
 }:
@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "rfc3339-validator";
   version = "0.1.4";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "rfc3339_validator";
     inherit version;
     sha256 = "0srg0b89aikzinw72s433994k5gv5lfyarq1adhas11kz6yjm2hk";
+    pname = "rfc3339_validator";
   };
 
   propagatedBuildInputs = [ six ];
@@ -26,6 +25,8 @@ buildPythonPackage rec {
     hypothesis
     strict-rfc3339
   ];
+
+  format = "setuptools";
   pythonImportsCheck = [ "rfc3339_validator" ];
 
   meta = {

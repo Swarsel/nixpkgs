@@ -1,7 +1,7 @@
 {
   lib,
-  buildLakePackage,
   fetchFromGitHub,
+  buildLakePackage,
 }:
 
 buildLakePackage {
@@ -16,8 +16,6 @@ buildLakePackage {
     hash = "sha256-OOcKCQEgnn9zkkwjHOovMb/IprNomTDufLOfEXs7hFU=";
   };
 
-  leanPackageName = "batteries";
-
   # Pre-build static library for downstream executables.
   # TODO: upstream this to batteries
   postPatch = ''
@@ -27,6 +25,8 @@ buildLakePackage {
     name = "Batteries"
     defaultFacets = ["static"]'
   '';
+
+  leanPackageName = "batteries";
 
   meta = {
     description = "The batteries-included extended library for Lean 4";

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "autarco";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "klaasnicolaas";
@@ -32,6 +31,15 @@ buildPythonPackage rec {
       --replace-fail "0.0.0" "${version}"
   '';
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -41,16 +49,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "autarco" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 lib.extendMkDerivation {
   constructDrv = buildGoModule;
@@ -16,8 +16,8 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      version,
       sha256,
+      version,
       rev ? version,
       ...
     }:
@@ -25,25 +25,14 @@ lib.extendMkDerivation {
       pname = "kops";
 
       src = fetchFromGitHub {
-        rev = rev;
+        inherit sha256;
         owner = "kubernetes";
         repo = "kops";
-        inherit sha256;
+        rev = rev;
       };
 
-      vendorHash = null;
-
       nativeBuildInputs = [ installShellFiles ];
-
-      subPackages = [ "cmd/kops" ];
-
-      ldflags = [
-        "-s"
-        "-w"
-        "-X k8s.io/kops.Version=${finalAttrs.version}"
-        "-X k8s.io/kops.GitVersion=${finalAttrs.version}"
-      ];
-
+      vendorHash = null;
       doCheck = false;
 
       postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -53,16 +42,27 @@ lib.extendMkDerivation {
           --zsh <($GOPATH/bin/kops completion zsh)
       '';
 
+      ldflags = [
+        "-s"
+        "-w"
+        "-X k8s.io/kops.Version=${finalAttrs.version}"
+        "-X k8s.io/kops.GitVersion=${finalAttrs.version}"
+      ];
+
+      subPackages = [ "cmd/kops" ];
+
       meta = {
         description = "Easiest way to get a production Kubernetes up and running";
-        mainProgram = "kops";
         homepage = "https://github.com/kubernetes/kops";
         changelog = "https://github.com/kubernetes/kops/tree/master/docs/releases";
         license = lib.licenses.asl20;
+
         maintainers = with lib.maintainers; [
           zimbatm
           yurrriq
         ];
+
+        mainProgram = "kops";
       };
     };
 }

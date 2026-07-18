@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pymongo,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pymongo-inmemory";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kaizendorks";
@@ -34,26 +33,26 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ poetry-core ];
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    export HOME="$(mktemp -d)"
+  '';
 
   dependencies = [ pymongo ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTestPaths = [
     # new test with insufficient monkey patching, try to remove on next bump
     "tests/unit/test_mongod.py"
   ];
 
-  preCheck = ''
-    export HOME="$(mktemp -d)"
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "pymongo_inmemory" ];
 
   meta = {
-    homepage = "https://github.com/kaizendorks/pymongo_inmemory";
     description = "Mongo mocking library with an ephemeral MongoDB running in memory";
-    maintainers = with lib.maintainers; [ pbsds ];
+    homepage = "https://github.com/kaizendorks/pymongo_inmemory";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ pbsds ];
   };
 }

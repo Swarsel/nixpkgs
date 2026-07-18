@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
   setuptools,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "uri-template";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "plinss";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     ${python.interpreter} test.py
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "uri_template" ];
 
   meta = {

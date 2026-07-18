@@ -1,25 +1,24 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  copyDesktopItems,
   fetchPnpmDeps,
-  pnpm_10,
   ffmpeg-headless,
-  wails,
   glib-networking,
   gsettings-desktop-schemas,
   gtk3,
-  pnpmConfigHook,
   makeDesktopItem,
-  copyDesktopItems,
   makeWrapper,
+  pnpmConfigHook,
+  pnpm_10,
+  wails,
   wrapGAppsHook3,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "spotiflac";
   version = "7.1.8";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "afkarxyz";
@@ -41,27 +40,18 @@ buildGoModule (finalAttrs: {
     glib-networking
   ];
 
-  dontWrapGApps = true;
-
-  proxyVendor = true;
-
-  makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
+  vendorHash = "sha256-dTrfLnuo7W3m3mg32wBDv8IbmQA44KXsazRLdanIi/Y=";
 
   env = {
     pnpmDeps = fetchPnpmDeps {
       inherit (finalAttrs) pname version src;
-      sourceRoot = "${finalAttrs.src.name}/frontend";
-      pnpm = pnpm_10;
       fetcherVersion = 3;
       hash = "sha256-mecNGWbUATjNl1uWByxE1W1b8tfNyPIRMndcZSBl+XM=";
+      pnpm = pnpm_10;
+      sourceRoot = "${finalAttrs.src.name}/frontend";
     };
-    pnpmRoot = "frontend";
-  };
 
-  overrideModAttrs = {
-    preBuild = ''
-      wails build -tags webkit2_41 -o spotiflac
-    '';
+    pnpmRoot = "frontend";
   };
 
   buildPhase = ''
@@ -88,28 +78,41 @@ buildGoModule (finalAttrs: {
     runHook postInstall;
   '';
 
-  vendorHash = "sha256-dTrfLnuo7W3m3mg32wBDv8IbmQA44KXsazRLdanIi/Y=";
+  __structuredAttrs = true;
 
   desktopItems = [
     (makeDesktopItem {
-      name = "spotiflac";
+      categories = [ "AudioVideo" ];
       desktopName = "SpotiFLAC";
       exec = "spotiflac %u";
       icon = "SpotiFLAC";
+      name = "spotiflac";
       terminal = false;
-      categories = [ "AudioVideo" ];
     })
   ];
+
+  dontWrapGApps = true;
+  makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
+
+  overrideModAttrs = {
+    preBuild = ''
+      wails build -tags webkit2_41 -o spotiflac
+    '';
+  };
+
+  proxyVendor = true;
 
   meta = {
     description = "Get Spotify tracks in true FLAC from Tidal, Qobuz & Amazon Music — no account required";
     homepage = "https://github.com/afkarxyz/SpotiFLAC/";
     changelog = "https://github.com/afkarxyz/SpotiFLAC/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
-    mainProgram = "spotiflac";
+
     maintainers = with lib.maintainers; [
       Superredstone
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "spotiflac";
   };
 })

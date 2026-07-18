@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "piccata";
   version = "2.0.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "NordicSemiconductor";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     "test_client_server_communication"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "piccata" ];
 
   meta = {

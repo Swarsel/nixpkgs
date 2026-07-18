@@ -1,19 +1,16 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
+  nixosTests,
   openssl,
   pkg-config,
   rustPlatform,
-  nix-update-script,
-  nixosTests,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "harmonia";
   version = "3.1.0";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "nix-community";
@@ -22,23 +19,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-fm8PBugKnw72/dAXsRj84jf4EZK1BcVEdEWgtojIuA0=";
   };
 
-  cargoHash = "sha256-qp4frhNsWDma8uYcRe3BXmfIu6btYb8IaoXhk4oI4qM=";
-
-  doCheck = false;
-
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openssl
   ];
 
+  cargoHash = "sha256-qp4frhNsWDma8uYcRe3BXmfIu6btYb8IaoXhk4oI4qM=";
+  doCheck = false;
+  __structuredAttrs = true;
+
   passthru = {
+    tests = { inherit (nixosTests) harmonia; };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
         "harmonia-v(.*)"
       ];
     };
-    tests = { inherit (nixosTests) harmonia; };
   };
 
   meta = {

@@ -1,8 +1,9 @@
 {
   lib,
+  stdenv,
+  fetchFromGitLab,
   cargo,
   desktop-file-utils,
-  fetchFromGitLab,
   glib,
   gtk4,
   libadwaita,
@@ -12,7 +13,6 @@
   pkg-config,
   rustPlatform,
   rustc,
-  stdenv,
   wrapGAppsHook4,
 }:
 
@@ -21,17 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.6";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    group = "World";
     owner = "design";
     repo = "lorem";
     rev = finalAttrs.version;
     hash = "sha256-DY2UVB6N3vQehDm1s3KIjodUfyWu3QBo6NxWlPswDN4=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-DE0jzI9Tmusm6VT19PsmJoTYHQ4fjrg3ik6tAWhMVSA=";
+    domain = "gitlab.gnome.org";
+    group = "World";
   };
 
   nativeBuildInputs = [
@@ -51,17 +46,22 @@ stdenv.mkDerivation (finalAttrs: {
     libadwaita
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-DE0jzI9Tmusm6VT19PsmJoTYHQ4fjrg3ik6tAWhMVSA=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://gitlab.gnome.org/World/design/lorem/-/releases/${finalAttrs.version}";
     description = "Generate placeholder text";
     homepage = "https://apps.gnome.org/Lorem/";
+    changelog = "https://gitlab.gnome.org/World/design/lorem/-/releases/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "lorem";
     teams = [ lib.teams.gnome-circle ];
-    platforms = lib.platforms.linux;
   };
 })

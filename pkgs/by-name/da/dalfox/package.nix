@@ -18,19 +18,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-0amVlnLwwb7YAUbTce9gRmjv3W1FMgc2/XZQKCettTY=";
   };
 
-  cargoHash = "sha256-pxlUEGCrJjoakAVpXFq2q73wEWiODsHvdax12quDlec=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  cargoHash = "sha256-pxlUEGCrJjoakAVpXFq2q73wEWiODsHvdax12quDlec=";
   # Many unit tests perform live HTTP requests / OOB interactsh lookups and
   # fail in the sandbox.
   doCheck = false;
-
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Tool for analyzing parameter and XSS scanning";

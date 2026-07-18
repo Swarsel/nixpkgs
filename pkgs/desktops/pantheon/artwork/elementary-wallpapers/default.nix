@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   gettext,
   meson,
   ninja,
+  nix-update-script,
   python3,
 }:
 
@@ -20,17 +20,17 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-qbqYr+3Vqwi1UBD0fRW6lI2rj5Iy51taZRGxDTpKfpg=";
   };
 
+  postPatch = ''
+    chmod +x meson/symlink.py
+    patchShebangs meson/symlink.py
+  '';
+
   nativeBuildInputs = [
     gettext
     meson
     ninja
     python3
   ];
-
-  postPatch = ''
-    chmod +x meson/symlink.py
-    patchShebangs meson/symlink.py
-  '';
 
   passthru = {
     updateScript = nix-update-script { };

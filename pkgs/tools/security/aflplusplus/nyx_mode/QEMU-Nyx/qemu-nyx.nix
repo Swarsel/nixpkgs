@@ -1,40 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  python3,
-  pkg-config,
-  flex,
+  aflplusplus,
   bison,
+  flex,
   glib,
   pixman,
-  aflplusplus,
+  pkg-config,
+  python3,
 }:
 
 # this derivation assumes x86_64-linux
 assert stdenv.targetPlatform.system == "x86_64-linux";
 
 stdenv.mkDerivation {
-  version = builtins.readFile (aflplusplus.src + "/nyx_mode/QEMU_NYX_VERSION");
   pname = "QEMU-Nyx";
-
+  version = builtins.readFile (aflplusplus.src + "/nyx_mode/QEMU_NYX_VERSION");
   src = aflplusplus.src;
-  postUnpack = ''
-    sourceRoot="$sourceRoot/nyx_mode/QEMU-Nyx"
-  '';
-
-  # same flags for ./configure as ./compile_qemu_nyx.sh static would set
-  configureFlags = [
-    "--target-list=x86_64-softmmu"
-    "--disable-docs"
-    "--disable-gtk"
-    "--disable-werror"
-    "--disable-capstone"
-    "--disable-libssh"
-    "--disable-tools"
-    "--enable-nyx"
-    "--enable-nyx-static"
-  ];
 
   nativeBuildInputs = [
     python3
@@ -48,7 +31,18 @@ stdenv.mkDerivation {
     pixman
   ];
 
-  enableParallelBuilding = true;
+  # same flags for ./configure as ./compile_qemu_nyx.sh static would set
+  configureFlags = [
+    "--target-list=x86_64-softmmu"
+    "--disable-docs"
+    "--disable-gtk"
+    "--disable-werror"
+    "--disable-capstone"
+    "--disable-libssh"
+    "--disable-tools"
+    "--enable-nyx"
+    "--enable-nyx-static"
+  ];
 
   preConfigure = ''
     CAPSTONE_ROOT=$PWD/capstone_v4
@@ -67,11 +61,17 @@ stdenv.mkDerivation {
     export QEMU_CFLAGS="-I$CAPSTONE_ROOT/include/ -I$LIBXDC_ROOT/ $QEMU_CFLAGS"
   '';
 
+  enableParallelBuilding = true;
+
+  postUnpack = ''
+    sourceRoot="$sourceRoot/nyx_mode/QEMU-Nyx"
+  '';
+
   meta = {
-    homepage = "https://github.com/nyx-fuzz/QEMU-Nyx";
     description = "Nyx's fork of QEMU";
+    homepage = "https://github.com/nyx-fuzz/QEMU-Nyx";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.x86_64;
     maintainers = with lib.maintainers; [ ekzyis ];
+    platforms = lib.platforms.x86_64;
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage rec {
   pname = "telemt";
@@ -24,10 +24,10 @@ rustPlatform.buildRustPackage rec {
   ];
 
   meta = {
-    mainProgram = "telemt";
     description = "MTProxy for Telegram on Rust + Tokio";
     homepage = "https://github.com/telemt/telemt";
     maintainers = with lib.maintainers; [ r4v3n6101 ];
     platforms = lib.platforms.linux;
+    mainProgram = "telemt";
   };
 }

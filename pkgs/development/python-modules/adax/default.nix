@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "adax";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Danielhiversen";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-wmcZtiML02i1XfqpFzni2WDrxutTvP5laVvTAGtNg0Y=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     async-timeout
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "adax" ];
 
   meta = {

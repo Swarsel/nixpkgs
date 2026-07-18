@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
   pkg-config,
-  boost,
-  xercesc,
   python3Packages,
   qt6,
+  xercesc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,16 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.7.6";
 
   src = fetchFromGitHub {
-    repo = "Sigil";
     owner = "Sigil-Ebook";
+    repo = "Sigil";
     tag = finalAttrs.version;
     hash = "sha256-GbOTXyxj8HxEE833jUADzKbWpkzXHwjyoj9haIWB9Xk=";
   };
-
-  pythonPath = with python3Packages; [
-    lxml
-    dulwich
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -43,10 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.dulwich
   ];
 
-  prePatch = ''
-    sed -i '/^QTLIB_DIR=/ d' src/Resource_Files/bash/sigil-sh_install
-  '';
-
   installPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
     runHook preInstall
 
@@ -61,11 +52,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontWrapQtApps = true;
-
   preFixup = ''
     qtWrapperArgs+=(--prefix PYTHONPATH : "$PYTHONPATH")
   '';
+
+  dontWrapQtApps = true;
 
   fixupPhase =
     let
@@ -82,6 +73,15 @@ stdenv.mkDerivation (finalAttrs: {
 
       runHook postFixup
     '';
+
+  prePatch = ''
+    sed -i '/^QTLIB_DIR=/ d' src/Resource_Files/bash/sigil-sh_install
+  '';
+
+  pythonPath = with python3Packages; [
+    lxml
+    dulwich
+  ];
 
   meta = {
     description = "Free, open source, multi-platform ebook (ePub) editor";

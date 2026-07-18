@@ -1,17 +1,22 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  pkg-config,
+  fetchurl,
   autoreconfHook,
+  buildPackages,
   gettext,
   glib,
-  buildPackages,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gts";
   version = "0.7.6";
+
+  src = fetchurl {
+    url = "mirror://sourceforge/gts/gts-${finalAttrs.version}.tar.gz";
+    sha256 = "07mqx09jxh8cv9753y2d2jsv7wp8vjmrd7zcfpbrddz3wc9kx705";
+  };
 
   outputs = [
     "bin"
@@ -19,16 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
   ];
 
-  src = fetchurl {
-    url = "mirror://sourceforge/gts/gts-${finalAttrs.version}.tar.gz";
-    sha256 = "07mqx09jxh8cv9753y2d2jsv7wp8vjmrd7zcfpbrddz3wc9kx705";
-  };
-
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
     glib # required to satisfy AM_PATH_GLIB_2_0
   ];
+
   buildInputs = [ gettext ];
   propagatedBuildInputs = [ glib ];
 
@@ -36,8 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Doesn't build on Darwin with -std=gnu23. Apply uniformly as C standard target is something unlikely to vary across platforms.
     NIX_CFLAGS_COMPILE = "-std=gnu17";
   };
-
-  doCheck = false; # fails with "permission denied"
 
   preBuild = lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
     pushd src
@@ -49,9 +48,9 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/Makefile --replace "./predicates_init" "./predicates_init_build"
   '';
 
+  doCheck = false; # fails with "permission denied"
+
   meta = {
-    homepage = "https://gts.sourceforge.net/";
-    license = lib.licenses.lgpl2Plus;
     description = "GNU Triangulated Surface Library";
 
     longDescription = ''
@@ -59,6 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
       3D surfaces meshed with interconnected triangles.
     '';
 
+    homepage = "https://gts.sourceforge.net/";
+    license = lib.licenses.lgpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };

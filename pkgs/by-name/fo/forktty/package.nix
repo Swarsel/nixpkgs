@@ -13,6 +13,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6xc5eshCuCIOsDh0r2DizKAeypGH0TRRotZ4itsvpVk=";
   };
 
+  makeFlags = [
+    "prefix=$(out)"
+    "manprefix=$(out)/share/"
+  ];
+
   preBuild = ''
     sed -e s@/usr/bin/ginstall@install@g -i Makefile
   '';
@@ -21,11 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p "$out/bin"
     mkdir -p "$out/share/man/man8"
   '';
-
-  makeFlags = [
-    "prefix=$(out)"
-    "manprefix=$(out)/share/"
-  ];
 
   meta = {
     description = "Tool to detach from controlling TTY and attach to another";

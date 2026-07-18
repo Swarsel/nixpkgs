@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   perl,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ perl ];
-
   cargoHash = "sha256-lOQzFz579p89hDBh3Z7oO2iTITpJG9fFqW/rEq8DwJ0=";
-
-  doInstallCheck = true;
   doCheck = false;
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
 
@@ -30,9 +28,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Stacked-branch workflow for Git with an interactive TUI, smart PRs, and safe undo";
     homepage = "https://github.com/cesarferreira/stax";
     license = lib.licenses.mit;
-    mainProgram = "stax";
+
     maintainers = with lib.maintainers; [
       henrikvtcodes
     ];
+
+    mainProgram = "stax";
   };
 })

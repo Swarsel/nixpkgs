@@ -6,12 +6,11 @@
 
 {
   example_B1 = stdenv.mkDerivation {
-    name = "${geant4.name}-test-example_B1";
-
     inherit (geant4) src;
-
     nativeBuildInputs = [ cmake ];
     buildInputs = [ geant4 ];
+    doCheck = true;
+
     nativeCheckInputs = with geant4.data; [
       G4EMLOW
       G4ENSDFSTATE
@@ -19,11 +18,6 @@
       G4PhotonEvaporation
     ];
 
-    prePatch = ''
-      cd examples/basic/B1
-    '';
-
-    doCheck = true;
     checkPhase = ''
       runHook preCheck
 
@@ -38,6 +32,12 @@
       touch "$out"
 
       runHook postInstall
+    '';
+
+    name = "${geant4.name}-test-example_B1";
+
+    prePatch = ''
+      cd examples/basic/B1
     '';
   };
 }

@@ -1,18 +1,17 @@
 {
   lib,
   buildPythonPackage,
-  isPyPy,
   fetchPypi,
-  hatchling,
-  hatch-vcs,
   gevent,
+  hatch-vcs,
+  hatchling,
+  isPyPy,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "execnet";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -30,17 +29,19 @@ buildPythonPackage rec {
     rm testing/test_multi.py
   '';
 
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
   # sometimes crashes with: OSError: [Errno 9] Bad file descriptor
   doCheck = !isPyPy;
 
   nativeCheckInputs = [
     gevent
     pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    hatchling
+    hatch-vcs
   ];
 
   disabledTests = [
@@ -50,11 +51,9 @@ buildPythonPackage rec {
     "test_stdouterrin_setnull"
   ];
 
+  pyproject = true;
   pytestFlags = [ "-vvv" ];
-
   pythonImportsCheck = [ "execnet" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Distributed Python deployment and communication";

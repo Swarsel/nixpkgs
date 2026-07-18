@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
   findlib,
+  ocaml,
   ocamlbuild,
-  xmlm,
   topkg,
+  xmlm,
 }:
 
 let
@@ -15,13 +15,16 @@ let
   version = "17.0.0";
 in
 stdenv.mkDerivation {
-  pname = "ocaml${ocaml.version}-${pname}";
   inherit version;
+  inherit (topkg) buildPhase installPhase;
+  pname = "ocaml${ocaml.version}-${pname}";
 
   src = fetchurl {
     url = "${webpage}/releases/${pname}-${version}.tbz";
     hash = "sha256-ifjEBUN+Lqw4W9FeoGX4XBjnxcJL15ukd+aSSDS8KC0=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
@@ -29,19 +32,15 @@ stdenv.mkDerivation {
     ocamlbuild
     topkg
   ];
+
   buildInputs = [ topkg ];
-
-  strictDeps = true;
-
-  inherit (topkg) buildPhase installPhase;
-
   propagatedBuildInputs = [ xmlm ];
 
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "OCaml module to decode the data of the Unicode character database from its XML representation";
     homepage = webpage;
-    inherit (ocaml.meta) platforms;
-    maintainers = [ lib.maintainers.vbgl ];
     license = lib.licenses.bsd3;
+    maintainers = [ lib.maintainers.vbgl ];
   };
 }

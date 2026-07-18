@@ -1,28 +1,24 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
+  buildPythonPackage,
   defusedxml,
-  python-didl-lite,
-  voluptuous,
-
   # tests
   pytest-aiohttp,
   pytest-asyncio,
   pytestCheckHook,
+  python-didl-lite,
+  # build-system
+  setuptools,
+  voluptuous,
 }:
 
 buildPythonPackage rec {
   pname = "async-upnp-client";
   version = "0.46.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "StevenLooman";
@@ -30,6 +26,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-KJiEfu+JKDycBT14gFK4sBFCG3TN61DZEDth9y6CHp4=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-aiohttp
+    pytest-asyncio
+  ];
 
   build-system = [ setuptools ];
 
@@ -40,10 +42,9 @@ buildPythonPackage rec {
     voluptuous
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-aiohttp
-    pytest-asyncio
+  disabledTestPaths = [
+    # Tries to bind to multicast socket and fails to find proper interface
+    "tests/test_ssdp_listener.py"
   ];
 
   disabledTests = [
@@ -53,11 +54,7 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_deferred_callback_url" ];
 
-  disabledTestPaths = [
-    # Tries to bind to multicast socket and fails to find proper interface
-    "tests/test_ssdp_listener.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "async_upnp_client" ];
 
   meta = {

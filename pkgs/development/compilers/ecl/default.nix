@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  libtool,
   autoconf,
   automake,
-  texinfo,
-  gmp,
-  mpfr,
-  libffi,
-  makeWrapper,
-  noUnicode ? false,
-  gcc,
+  boehmgc,
   clang,
+  fetchpatch,
+  gcc,
+  gmp,
+  libffi,
+  libtool,
+  makeWrapper,
+  mpfr,
+  sbcl,
+  texinfo,
+  noUnicode ? false,
   threadSupport ? true,
   useBoehmgc ? false,
-  boehmgc,
-  sbcl,
 }:
 
 let
@@ -39,6 +39,7 @@ stdenv.mkDerivation rec {
     texinfo
     makeWrapper
   ];
+
   propagatedBuildInputs = [
     libffi
     gmp
@@ -64,13 +65,6 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional (!noUnicode) "--enable-unicode";
 
-  hardeningDisable = [ "format" ];
-
-  # ECL’s ‘make check’ only works after install, making it a de-facto
-  # installCheck.
-  doInstallCheck = true;
-  installCheckTarget = "check";
-
   postInstall = ''
     sed -e 's/@[-a-zA-Z_]*@//g' -i $out/bin/ecl-config
     wrapProgram "$out/bin/ecl" --prefix PATH ':' "${
@@ -81,16 +75,21 @@ stdenv.mkDerivation rec {
     }"
   '';
 
+  # ECL’s ‘make check’ only works after install, making it a de-facto
+  # installCheck.
+  doInstallCheck = true;
+  hardeningDisable = [ "format" ];
+  installCheckTarget = "check";
   # ECL is used as a bootstrap compiler for SBCL.
   passthru.tests.sbcl = sbcl;
 
   meta = {
     description = "Lisp implementation aiming to be small, fast and easy to embed";
     homepage = "https://common-lisp.net/project/ecl/";
+    changelog = "https://gitlab.com/embeddable-common-lisp/ecl/-/raw/${version}/CHANGELOG";
     license = lib.licenses.mit;
+    platforms = lib.platforms.unix;
     mainProgram = "ecl";
     teams = [ lib.teams.lisp ];
-    platforms = lib.platforms.unix;
-    changelog = "https://gitlab.com/embeddable-common-lisp/ecl/-/raw/${version}/CHANGELOG";
   };
 }

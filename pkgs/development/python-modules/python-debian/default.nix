@@ -1,26 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitLab,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   charset-normalizer,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-debian";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "python-debian-team";
     repo = "python-debian";
     tag = finalAttrs.version;
     hash = "sha256-v2b9xobxCrSz0tOEBo6awmQuTyykyJlsryPBMRU9EmM=";
+    domain = "salsa.debian.org";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -31,14 +34,11 @@ buildPythonPackage (finalAttrs: {
     charset-normalizer
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
     "tests/test_debfile.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "debian" ];
 
   meta = {

@@ -1,18 +1,18 @@
 {
   lib,
+  stdenv,
   fetchFromGitLab,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  wayland,
   autoPatchelfHook,
-  libxkbcommon,
   libGL,
   libx11,
   libxcursor,
   libxi,
-  stdenv,
+  libxkbcommon,
   makeWrapper,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  wayland,
   zenity,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -38,6 +38,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     (lib.getLib stdenv.cc.cc)
   ];
 
+  cargoHash = "sha256-WK3+YlBfHTo48+JBEBrgR23PTmyCZo98wg35VZmBdWA=";
+  # Avoid the network attempt from skia. See: https://github.com/cargo2nix/cargo2nix/issues/318
+  doCheck = false;
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
+    wrapProgram $out/bin/surfer \
+      --prefix PATH : ${lib.makeBinPath [ zenity ]}
+  '';
+
   # Wayland and X11 libs are required at runtime since winit uses dlopen
   runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux [
     wayland
@@ -47,16 +56,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxcursor
     libxi
   ];
-
-  cargoHash = "sha256-WK3+YlBfHTo48+JBEBrgR23PTmyCZo98wg35VZmBdWA=";
-
-  # Avoid the network attempt from skia. See: https://github.com/cargo2nix/cargo2nix/issues/318
-  doCheck = false;
-
-  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-    wrapProgram $out/bin/surfer \
-      --prefix PATH : ${lib.makeBinPath [ zenity ]}
-  '';
 
   meta = {
     description = "Extensible and Snappy Waveform Viewer";

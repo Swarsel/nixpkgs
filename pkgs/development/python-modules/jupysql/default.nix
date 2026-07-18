@@ -1,46 +1,40 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  ipython-genutils,
-  jinja2,
-  jupysql-plugin,
-  ploomber-core,
-  prettytable,
-  sqlalchemy,
-  sqlglot,
-  sqlparse,
-
+  buildPythonPackage,
   # optional-dependencies
   duckdb,
   duckdb-engine,
   grpcio,
   ipython,
+  # dependencies
+  ipython-genutils,
   ipywidgets,
+  jinja2,
+  jupysql-plugin,
   matplotlib,
   numpy,
   pandas,
+  ploomber-core,
   polars,
+  prettytable,
+  psutil,
   pyarrow,
   pyspark,
-
   # tests
   pytestCheckHook,
-  psutil,
+  # build-system
+  setuptools,
+  sqlalchemy,
+  sqlglot,
+  sqlparse,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "jupysql";
   version = "0.11.1";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ploomber";
@@ -49,7 +43,12 @@ buildPythonPackage rec {
     hash = "sha256-7wfKvKqDf8LlUiLoevNRxmq8x5wLheOgIeWz72oFcuw=";
   };
 
-  pythonRelaxDeps = [ "sqlalchemy" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    psutil
+    writableTmpDirAsHomeHook
+  ]
+  ++ optional-dependencies.dev;
 
   build-system = [ setuptools ];
 
@@ -65,26 +64,20 @@ buildPythonPackage rec {
   ]
   ++ pyspark.optional-dependencies.connect;
 
-  optional-dependencies.dev = [
-    duckdb
-    duckdb-engine
-    grpcio
-    ipython
-    ipywidgets
-    matplotlib
-    numpy
-    pandas
-    polars
-    pyarrow
-    pyspark
-  ];
+  disabledTestPaths = [
+    # require docker
+    "src/tests/integration"
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    psutil
-    writableTmpDirAsHomeHook
-  ]
-  ++ optional-dependencies.dev;
+    # want to download test data from the network
+    "src/tests/test_parse.py"
+    "src/tests/test_ggplot.py"
+    "src/tests/test_plot.py"
+    "src/tests/test_magic.py"
+    "src/tests/test_magic_plot.py"
+
+    # require js2py (which is unmaintained and insecure)
+    "src/tests/test_widget.py"
+  ];
 
   disabledTests = [
     # AttributeError: 'DataFrame' object has no attribute 'frame_equal'
@@ -112,23 +105,23 @@ buildPythonPackage rec {
     "test_no_errors_with_stored_query"
   ];
 
-  disabledTestPaths = [
-    # require docker
-    "src/tests/integration"
-
-    # want to download test data from the network
-    "src/tests/test_parse.py"
-    "src/tests/test_ggplot.py"
-    "src/tests/test_plot.py"
-    "src/tests/test_magic.py"
-    "src/tests/test_magic_plot.py"
-
-    # require js2py (which is unmaintained and insecure)
-    "src/tests/test_widget.py"
+  optional-dependencies.dev = [
+    duckdb
+    duckdb-engine
+    grpcio
+    ipython
+    ipywidgets
+    matplotlib
+    numpy
+    pandas
+    polars
+    pyarrow
+    pyspark
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sql" ];
-
+  pythonRelaxDeps = [ "sqlalchemy" ];
   # python-update-script picks up an 11-year old 0.38 over the current version
   passthru.skipBulkUpdate = true;
 

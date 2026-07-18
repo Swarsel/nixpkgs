@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
   writableTmpDirAsHomeHook,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "xnldorker";
   version = "4.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xnl-h4ck3r";
@@ -17,9 +16,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-2Oh341KTxD47aZVTikDMFs6e4HGfQ77BPptksw+6w7s=";
   };
 
-  build-system = with python3.pkgs; [ setuptools ];
-
   nativeBuildInputs = [ writableTmpDirAsHomeHook ];
+  # Project has no tests
+  doCheck = false;
+  build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
     beautifulsoup4
@@ -31,9 +31,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     urllib3
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "xnldorker" ];
 
   meta = {

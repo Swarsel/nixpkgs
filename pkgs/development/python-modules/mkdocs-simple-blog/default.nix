@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mkdocs,
   poetry-core,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 buildPythonPackage rec {
   pname = "mkdocs-simple-blog";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "FernandoCelmer";
@@ -19,17 +18,18 @@ buildPythonPackage rec {
     hash = "sha256-lp0+mJYyP7Qz/gJCI7+tKh9fZArWs2u1ZusnVUax7A4=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
     mkdocs
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs_simple_blog" ];
 
   meta = {

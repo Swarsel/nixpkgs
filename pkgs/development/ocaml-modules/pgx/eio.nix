@@ -8,20 +8,21 @@
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "pgx_eio";
   inherit (pgx) version src;
+  pname = "pgx_eio";
 
   propagatedBuildInputs = [
     eio
     pgx
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
     base64
     eio_main
   ];
-  doCheck = true;
 
   meta = pgx.meta // {
     description = "Pgx using Eio for IO";

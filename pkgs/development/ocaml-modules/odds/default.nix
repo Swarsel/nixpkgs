@@ -2,14 +2,12 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
-  menhir,
   cmdliner,
+  menhir,
 }:
 buildDunePackage (finalAttrs: {
   pname = "odds";
   version = "1.2";
-
-  minimalOCamlVersion = "5.0.0";
 
   src = fetchFromGitHub {
     owner = "raphael-proust";
@@ -18,13 +16,15 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-tPDowkpsJQKCoeuXOb9zPORoudUvkRBZ3OzkH2QE2zg=";
   };
 
+  nativeBuildInputs = [
+    menhir
+  ];
+
   buildInputs = [
     cmdliner
   ];
 
-  nativeBuildInputs = [
-    menhir
-  ];
+  minimalOCamlVersion = "5.0.0";
 
   meta = {
     description = "Dice roller";

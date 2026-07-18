@@ -1,8 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gettext,
+  gitUpdater,
   glib,
   gtk3,
   meson,
@@ -10,7 +11,6 @@
   pkg-config,
   thunar,
   xfconf,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,11 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.5.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "thunar-plugins";
     repo = "thunar-shares-plugin";
     tag = "thunar-shares-plugin-${finalAttrs.version}";
     hash = "sha256-sWLFagoLy1lbAsPYKm8GWwCH+Aa++cDXbRDwkNh6bKk=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;

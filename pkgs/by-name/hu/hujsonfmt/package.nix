@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 let
@@ -18,16 +18,15 @@ buildGoModule {
     hash = "sha256-5lEvWiCxU+5oKbBon8EvBUON9WtxDausRVFU1+q2TZE=";
   };
 
-  proxyVendor = true;
   vendorHash = "sha256-cvoj85BNnm/ZX1UnXKU2HjvjQkRZ9uN3U0BnD3DmiTE=";
-
+  proxyVendor = true;
   subPackages = [ "cmd/hujsonfmt" ];
 
   meta = {
-    homepage = "https://tailscale.com";
     description = "Automatic formatter for HuJSON / JSON With Comments and trailing Commas (JWCC)";
+    homepage = "https://tailscale.com";
     license = licenses.bsd3;
-    mainProgram = "hujsonfmt";
     maintainers = with maintainers; [ dan-theriault ];
+    mainProgram = "hujsonfmt";
   };
 }
